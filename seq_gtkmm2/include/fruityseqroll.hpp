@@ -1,5 +1,5 @@
-#ifndef SEQ24_FRUITYSEQROLL_HPP
-#define SEQ24_FRUITYSEQROLL_HPP
+#ifndef SEQ64_FRUITYSEQROLL_HPP
+#define SEQ64_FRUITYSEQROLL_HPP
 
 /*
  *  This file is part of seq24/sequencer64.
@@ -67,7 +67,7 @@ public:         // callbacks
     bool on_motion_notify_event (GdkEventMotion * a_ev, seqroll & ths);
 };
 
-#endif   // SEQ24_FRUITYSEQROLL_HPP
+#endif   // SEQ64_FRUITYSEQROLL_HPP
 
 /*
  * fruityseqroll.hpp

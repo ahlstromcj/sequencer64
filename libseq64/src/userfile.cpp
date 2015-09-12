@@ -113,7 +113,7 @@ userfile::parse (perform * a_perf)
         next_data_line(file);
         int ccs = 0;
         int cc = 0;
-        char cc_name[SEQ24_LINE_MAX];
+        char cc_name[SEQ64_LINE_MAX];
         sscanf(m_line, "%d", &ccs);
         for (int j = 0; j < ccs; j++)
         {

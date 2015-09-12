@@ -1,5 +1,5 @@
-#ifndef SEQ24_PLATFORM_MACROS_H
-#define SEQ24_PLATFORM_MACROS_H
+#ifndef SEQ64_PLATFORM_MACROS_H
+#define SEQ64_PLATFORM_MACROS_H
 
 /**
  * \file          platform_macros.h
@@ -283,7 +283,7 @@
 #endif
 #endif
 
-#endif                  /* SEQ24_PLATFORM_MACROS_H */
+#endif                  /* SEQ64_PLATFORM_MACROS_H */
 
 /*
  * platform_macros.h

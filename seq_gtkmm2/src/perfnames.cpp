@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-09-11
+ * \updates       2015-09-12
  * \license       GNU GPLv2 or above
  *
  */
@@ -41,7 +41,7 @@
  *  default.  To disable this feature, configure the build with the
  *  --disable-highlight option.
  *
- *      #define HIGHLIGHT_EMPTY_SEQS    // undefine for normal empty seqs
+ *      #define SEQ64_HIGHLIGHT_EMPTY_SEQS  // undefine for normal empty seqs
  */
 
 /**
@@ -147,7 +147,7 @@ perfnames::draw_sequence (int seqnum)
     {
         sequence * seq = m_mainperf->get_sequence(seqnum);
 
-#if HIGHLIGHT_EMPTY_SEQS
+#if SEQ64_HIGHLIGHT_EMPTY_SEQS
 
         /*
          * Setting seqempty to seq->event_count() == 0 here causes a
@@ -181,7 +181,7 @@ perfnames::draw_sequence (int seqnum)
         }
         if (m_mainperf->is_active(seqnum))
         {
-#if HIGHLIGHT_EMPTY_SEQS
+#if SEQ64_HIGHLIGHT_EMPTY_SEQS
             seqempty = seq->event_count() == 0;     // this works fine!
             if (seqempty)
                 m_gc->set_foreground(m_yellow);
@@ -202,7 +202,7 @@ perfnames::draw_sequence (int seqnum)
             char temp[50];
             m_sequence_active[seqnum] = true;
             font::Color col;
-#if HIGHLIGHT_EMPTY_SEQS
+#if SEQ64_HIGHLIGHT_EMPTY_SEQS
             if (seqempty)
                 col = font::BLACK_ON_YELLOW;
             else
@@ -237,7 +237,7 @@ perfnames::draw_sequence (int seqnum)
             );
             if (muted)
             {
-#if HIGHLIGHT_EMPTY_SEQS
+#if SEQ64_HIGHLIGHT_EMPTY_SEQS
                 if (seqempty)
                     col = font::YELLOW_ON_BLACK;
                 else

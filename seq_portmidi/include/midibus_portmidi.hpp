@@ -1,5 +1,5 @@
-#ifndef SEQ24_MIDIBUS_PORTMIDI_HPP
-#define SEQ24_MIDIBUS_PORTMIDI_HPP
+#ifndef SEQ64_MIDIBUS_PORTMIDI_HPP
+#define SEQ64_MIDIBUS_PORTMIDI_HPP
 
 /*
  *  This file is part of seq24/sequencer24.
@@ -219,7 +219,7 @@ private:
 
 #endif  // PLATFORM_WINDOWS
 
-#endif  // SEQ24_MIDIBUS_PORTMIDI_HPP
+#endif  // SEQ64_MIDIBUS_PORTMIDI_HPP
 
 /*
  * midibus_portmidi.hpp

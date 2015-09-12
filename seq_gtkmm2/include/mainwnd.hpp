@@ -1,5 +1,5 @@
-#ifndef SEQ24_MAINWND_HPP
-#define SEQ24_MAINWND_HPP
+#ifndef SEQ64_MAINWND_HPP
+#define SEQ64_MAINWND_HPP
 
 /*
  *  This file is part of seq24/sequencer64.
@@ -268,7 +268,7 @@ private:
 
 };
 
-#endif   // SEQ24_MAINWND_HPP
+#endif   // SEQ64_MAINWND_HPP
 
 /*
  * mainwnd.hpp

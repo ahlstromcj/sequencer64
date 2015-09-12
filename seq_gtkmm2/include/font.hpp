@@ -1,5 +1,5 @@
-#ifndef SEQ24_FONT_HPP
-#define SEQ24_FONT_HPP
+#ifndef SEQ64_FONT_HPP
+#define SEQ64_FONT_HPP
 
 /*
  *  This file is part of seq24/sequencer64.
@@ -144,7 +144,7 @@ public:
 
 extern font * p_font_renderer;
 
-#endif   // SEQ24_FONT_HPP
+#endif   // SEQ64_FONT_HPP
 
 /*
  * font.hpp

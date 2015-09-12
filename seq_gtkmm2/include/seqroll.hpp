@@ -1,5 +1,5 @@
-#ifndef SEQ24_SEQROLL_HPP
-#define SEQ24_SEQROLL_HPP
+#ifndef SEQ64_SEQROLL_HPP
+#define SEQ64_SEQROLL_HPP
 
 /*
  *  This file is part of seq24/sequencer64.
@@ -250,7 +250,7 @@ private:            // callbacks
     bool on_enter_notify_event (GdkEventCrossing * a_p0);
 };
 
-#endif   // SEQ24_SEQROLL_HPP
+#endif   // SEQ64_SEQROLL_HPP
 
 /*
  * seqroll.hpp

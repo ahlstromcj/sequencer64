@@ -1,5 +1,5 @@
-#ifndef SEQ24_SEQ24SEQ_HPP
-#define SEQ24_SEQ24SEQ_HPP
+#ifndef SEQ64_SEQ24SEQ_HPP
+#define SEQ64_SEQ24SEQ_HPP
 
 /*
  *  This file is part of seq24/sequencer64.
@@ -60,7 +60,7 @@ struct Seq24SeqEventInput
     bool on_motion_notify_event (GdkEventMotion * a_ev, seqevent & ths);
 };
 
-#endif   // SEQ24_SEQ24SEQ_HPP
+#endif   // SEQ64_SEQ24SEQ_HPP
 
 /*
  * seq24seq.hpp

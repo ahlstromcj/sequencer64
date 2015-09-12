@@ -1,5 +1,5 @@
-#ifndef SEQ24_SEQEDIT_HPP
-#define SEQ24_SEQEDIT_HPP
+#ifndef SEQ64_SEQEDIT_HPP
+#define SEQ64_SEQEDIT_HPP
 
 /*
  *  This file is part of seq24/sequencer64.
@@ -257,7 +257,7 @@ private:        // callbacks
     bool on_key_press_event (GdkEventKey * a_ev);
 };
 
-#endif   // SEQ24_SEQEDIT_HPP
+#endif   // SEQ64_SEQEDIT_HPP
 
 /*
  * seqedit.hpp

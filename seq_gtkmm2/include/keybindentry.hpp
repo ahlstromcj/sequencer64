@@ -1,5 +1,5 @@
-#ifndef SEQ24_KEYBINDENTRY_HPP
-#define SEQ24_KEYBINDENTRY_HPP
+#ifndef SEQ64_KEYBINDENTRY_HPP
+#define SEQ64_KEYBINDENTRY_HPP
 
 /*
  *  This file is part of seq24/sequencer64.
@@ -95,7 +95,7 @@ public:
     virtual bool on_key_press_event (GdkEventKey * event);
 };
 
-#endif   // SEQ24_KEYBINDENTRY_HPP
+#endif   // SEQ64_KEYBINDENTRY_HPP
 
 /*
  * keybindentry.hpp

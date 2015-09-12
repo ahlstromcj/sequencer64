@@ -1,5 +1,5 @@
-#ifndef SEQ24_SEQEVENT_HPP
-#define SEQ24_SEQEVENT_HPP
+#ifndef SEQ64_SEQEVENT_HPP
+#define SEQ64_SEQEVENT_HPP
 
 /*
  *  This file is part of seq24/sequencer64.
@@ -183,7 +183,7 @@ private:        // callbacks
 
 };
 
-#endif   // SEQ24_SEQEVENT_HPP
+#endif   // SEQ64_SEQEVENT_HPP
 
 /*
  * seqevent.hpp

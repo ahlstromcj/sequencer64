@@ -33,7 +33,7 @@
 
 #include "midibus.hpp"
 
-#ifdef HAVE_LIBASOUND
+#ifdef SEQ64_HAVE_LIBASOUND
 
 #include <sys/poll.h>
 
@@ -128,7 +128,7 @@ midibus::midibus
     m_name = tmp;
 }
 
-#endif   // HAVE_LIBASOUND
+#endif   // SEQ64_HAVE_LIBASOUND
 
 /**
  *  A rote empty destructor.
@@ -146,7 +146,7 @@ midibus::~midibus()
 bool midibus::init_out ()
 {
 
-#ifdef HAVE_LIBASOUND
+#ifdef SEQ64_HAVE_LIBASOUND
 
     int result = snd_seq_create_simple_port         /* create ports */
     (
@@ -177,7 +177,7 @@ bool midibus::init_out ()
         return false;
     }
 
-#endif  // HAVE_LIBASOUND
+#endif  // SEQ64_HAVE_LIBASOUND
 
     return true;
 }
@@ -189,7 +189,7 @@ bool midibus::init_out ()
 bool midibus::init_in ()
 {
 
-#ifdef HAVE_LIBASOUND
+#ifdef SEQ64_HAVE_LIBASOUND
 
     int result = snd_seq_create_simple_port             /* create ports */
     (
@@ -239,7 +239,7 @@ bool midibus::init_in ()
         return false;
     }
 
-#endif  // HAVE_LIBASOUND
+#endif  // SEQ64_HAVE_LIBASOUND
 
     return true;
 }
@@ -251,7 +251,7 @@ bool midibus::init_in ()
 bool midibus::init_out_sub ()
 {
 
-#ifdef HAVE_LIBASOUND
+#ifdef SEQ64_HAVE_LIBASOUND
 
     int result = snd_seq_create_simple_port             /* create ports */
     (
@@ -266,7 +266,7 @@ bool midibus::init_out_sub ()
         return false;
     }
 
-#endif  // HAVE_LIBASOUND
+#endif  // SEQ64_HAVE_LIBASOUND
 
     return true;
 }
@@ -278,7 +278,7 @@ bool midibus::init_out_sub ()
 bool midibus::init_in_sub ()
 {
 
-#ifdef HAVE_LIBASOUND
+#ifdef SEQ64_HAVE_LIBASOUND
 
     int result = snd_seq_create_simple_port             /* create ports */
     (
@@ -293,7 +293,7 @@ bool midibus::init_in_sub ()
         return false;
     }
 
-#endif  // HAVE_LIBASOUND
+#endif  // SEQ64_HAVE_LIBASOUND
 
     return true;
 }
@@ -305,7 +305,7 @@ bool midibus::init_in_sub ()
 bool midibus::deinit_in()
 {
 
-#ifdef HAVE_LIBASOUND
+#ifdef SEQ64_HAVE_LIBASOUND
 
     int result;
 
@@ -343,7 +343,7 @@ bool midibus::deinit_in()
         return false;
     }
 
-#endif  // HAVE_LIBASOUND
+#endif  // SEQ64_HAVE_LIBASOUND
 
     return true;
 }
@@ -367,7 +367,7 @@ midibus::print ()
 void
 midibus::play (event * a_e24, unsigned char a_channel)
 {
-#ifdef HAVE_LIBASOUND
+#ifdef SEQ64_HAVE_LIBASOUND
     automutex locker(m_mutex);
     snd_seq_event_t ev;
     snd_midi_event_t *midi_ev;      /* ALSA MIDI parser   */
@@ -395,7 +395,7 @@ midibus::play (event * a_e24, unsigned char a_channel)
     /* pump it into the queue */
 
     snd_seq_event_output(m_seq, &ev);
-#endif  // HAVE_LIBASOUND
+#endif  // SEQ64_HAVE_LIBASOUND
 }
 
 /**
@@ -416,7 +416,7 @@ min (long a, long b)
 void
 midibus::sysex (event * a_e24)
 {
-#ifdef HAVE_LIBASOUND
+#ifdef SEQ64_HAVE_LIBASOUND
     automutex locker(m_mutex);
     snd_seq_event_t ev;
 
@@ -447,7 +447,7 @@ midibus::sysex (event * a_e24)
         usleep(80000);
         flush();
     }
-#endif  // HAVE_LIBASOUND
+#endif  // SEQ64_HAVE_LIBASOUND
 }
 
 /**
@@ -457,7 +457,7 @@ midibus::sysex (event * a_e24)
 void
 midibus::flush ()
 {
-#ifdef HAVE_LIBASOUND
+#ifdef SEQ64_HAVE_LIBASOUND
     automutex locker(m_mutex);
     snd_seq_drain_output(m_seq);
 #endif
@@ -470,7 +470,7 @@ midibus::flush ()
 void
 midibus::init_clock (long a_tick)
 {
-#ifdef HAVE_LIBASOUND
+#ifdef SEQ64_HAVE_LIBASOUND
     if (m_clock_type == e_clock_pos && a_tick != 0)
     {
         continue_from(a_tick);
@@ -493,7 +493,7 @@ midibus::init_clock (long a_tick)
 
         m_lasttick = starting_tick - 1;
     }
-#endif  // HAVE_LIBASOUND
+#endif  // SEQ64_HAVE_LIBASOUND
 }
 
 /**
@@ -503,7 +503,7 @@ midibus::init_clock (long a_tick)
 void
 midibus::continue_from (long a_tick)
 {
-#ifdef HAVE_LIBASOUND
+#ifdef SEQ64_HAVE_LIBASOUND
 
     /*
      * Tell the device that we are going to start at a certain position.
@@ -544,7 +544,7 @@ midibus::continue_from (long a_tick)
         flush();
         snd_seq_event_output(m_seq, &ev);
     }
-#endif  // HAVE_LIBASOUND
+#endif  // SEQ64_HAVE_LIBASOUND
 }
 
 /**
@@ -555,7 +555,7 @@ midibus::continue_from (long a_tick)
 void
 midibus::start ()
 {
-#ifdef HAVE_LIBASOUND
+#ifdef SEQ64_HAVE_LIBASOUND
     m_lasttick = -1;
     if (m_clock_type != e_clock_off)
     {
@@ -568,7 +568,7 @@ midibus::start ()
         snd_seq_ev_set_direct(&ev);                     /* it's immediate */
         snd_seq_event_output(m_seq, &ev);               /* pump it into queue */
     }
-#endif  // HAVE_LIBASOUND
+#endif  // SEQ64_HAVE_LIBASOUND
 }
 
 /**
@@ -596,7 +596,7 @@ midibus::set_input (bool a_inputing)
 void
 midibus::stop ()
 {
-#ifdef HAVE_LIBASOUND
+#ifdef SEQ64_HAVE_LIBASOUND
     m_lasttick = -1;
     if (m_clock_type != e_clock_off)
     {
@@ -609,7 +609,7 @@ midibus::stop ()
         snd_seq_ev_set_direct(&ev);                     /* it's immediate */
         snd_seq_event_output(m_seq, &ev);               /* pump it into queue */
     }
-#endif  // HAVE_LIBASOUND
+#endif  // SEQ64_HAVE_LIBASOUND
 }
 
 /**
@@ -619,7 +619,7 @@ midibus::stop ()
 void
 midibus::clock (long a_tick)
 {
-#ifdef HAVE_LIBASOUND
+#ifdef SEQ64_HAVE_LIBASOUND
     automutex locker(m_mutex);
     if (m_clock_type != e_clock_off)
     {
@@ -652,7 +652,7 @@ midibus::clock (long a_tick)
         }
         flush();            /* and send out */
     }
-#endif  // HAVE_LIBASOUND
+#endif  // SEQ64_HAVE_LIBASOUND
 }
 
 #if 0

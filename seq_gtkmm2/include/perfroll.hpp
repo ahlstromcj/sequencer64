@@ -1,5 +1,5 @@
-#ifndef SEQ24_PERFROLL_HPP
-#define SEQ24_PERFROLL_HPP
+#ifndef SEQ64_PERFROLL_HPP
+#define SEQ64_PERFROLL_HPP
 
 /*
  *  This file is part of seq24/sequencer64.
@@ -145,7 +145,7 @@ private:        // callbacks
     bool on_key_press_event (GdkEventKey * a_p0);
 };
 
-#endif   // SEQ24_PERFROLL_HPP
+#endif   // SEQ64_PERFROLL_HPP
 
 /*
  * perfroll.hpp

@@ -1,5 +1,5 @@
-#ifndef SEQ24_PERFTIME_HPP
-#define SEQ24_PERFTIME_HPP
+#ifndef SEQ64_PERFTIME_HPP
+#define SEQ64_PERFTIME_HPP
 
 /*
  *  This file is part of seq24/sequencer64.
@@ -94,7 +94,7 @@ private:        // callbacks
     void on_size_allocate (Gtk::Allocation & a_r);
 };
 
-#endif   // SEQ24_PERFTIME_HPP
+#endif   // SEQ64_PERFTIME_HPP
 
 /*
  * perftime.hpp

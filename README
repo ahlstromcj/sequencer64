@@ -1,11 +1,10 @@
-README for Sequencer64 0.9.9.0
+README for Sequencer64 0.9.9.1
 Chris Ahlstrom
 2015-09-10 to 2015-09-12
 
 The sequencer64 project is a continuation of sequencer24 to refactor it to
 be tighter and easier to transition to to GTKmm 3, and much more.
-Currently, it is basically equivalent to that project, but with
-LASH support disabled by default in the configuration.
+Currently, it is basically equivalent to that project.
 
 The code has been broken up into libraries.  The next step
 is to better separate the GUI support from the MIDI and LASH support.

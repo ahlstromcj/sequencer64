@@ -1,5 +1,5 @@
-#ifndef SEQ24_SEQKEYS_HPP
-#define SEQ24_SEQKEYS_HPP
+#ifndef SEQ64_SEQKEYS_HPP
+#define SEQ64_SEQKEYS_HPP
 
 /*
  *  This file is part of seq24/sequencer64.
@@ -111,7 +111,7 @@ private:        // callbacks
 
 };
 
-#endif   // SEQ24_SEQKEYS_HPP
+#endif   // SEQ64_SEQKEYS_HPP
 
 /*
  * seqkeys.hpp

@@ -1,5 +1,5 @@
-#ifndef SEQ24_PERFROLL_INPUT_HPP
-#define SEQ24_PERFROLL_INPUT_HPP
+#ifndef SEQ64_PERFROLL_INPUT_HPP
+#define SEQ64_PERFROLL_INPUT_HPP
 
 /*
  *  This file is part of seq24/sequencer64.
@@ -143,7 +143,7 @@ private:
     void set_adding (bool a_adding, perfroll & roll);
 };
 
-#endif   // SEQ24_PERFROLL_INPUT_HPP
+#endif   // SEQ64_PERFROLL_INPUT_HPP
 
 /*
  * perfroll_input.hpp

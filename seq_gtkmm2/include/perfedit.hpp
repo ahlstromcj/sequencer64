@@ -1,5 +1,5 @@
-#ifndef SEQ24_PERFEDIT_HPP
-#define SEQ24_PERFEDIT_HPP
+#ifndef SEQ64_PERFEDIT_HPP
+#define SEQ64_PERFEDIT_HPP
 
 /*
  *  This file is part of seq24/sequencer64.
@@ -174,7 +174,7 @@ private:
     bool on_key_press_event (GdkEventKey * a_ev);
 };
 
-#endif   // SEQ24_PERFEDIT_HPP
+#endif   // SEQ64_PERFEDIT_HPP
 
 /*
  * perfedit.hpp

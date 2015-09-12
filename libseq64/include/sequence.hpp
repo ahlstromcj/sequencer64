@@ -1,5 +1,5 @@
-#ifndef SEQ24_SEQUENCE_HPP
-#define SEQ24_SEQUENCE_HPP
+#ifndef SEQ64_SEQUENCE_HPP
+#define SEQ64_SEQUENCE_HPP
 
 /*
  *  This file is part of seq24/sequencer64.
@@ -629,7 +629,7 @@ private:
 
 };
 
-#endif    // SEQ24_SEQUENCE_HPP
+#endif    // SEQ64_SEQUENCE_HPP
 
 /*
  * sequence.hpp

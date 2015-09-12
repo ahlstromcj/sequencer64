@@ -1,5 +1,5 @@
-#ifndef SEQ24_SEQMENU_HPP
-#define SEQ24_SEQMENU_HPP
+#ifndef SEQ64_SEQMENU_HPP
+#define SEQ64_SEQMENU_HPP
 
 /*
  *  This file is part of seq24/sequencer64.
@@ -143,7 +143,7 @@ private:            // callback
 
 };
 
-#endif   // SEQ24_SEQMENU_HPP
+#endif   // SEQ64_SEQMENU_HPP
 
 /*
  * seqmenu.hpp

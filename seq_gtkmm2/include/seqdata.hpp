@@ -1,5 +1,5 @@
-#ifndef SEQ24_SEQDATA_HPP
-#define SEQ24_SEQDATA_HPP
+#ifndef SEQ64_SEQDATA_HPP
+#define SEQ64_SEQDATA_HPP
 
 /*
  *  This file is part of seq24/sequencer64.
@@ -146,7 +146,7 @@ private:       // callbacks
 
 };
 
-#endif   // SEQ24_SEQDATA_HPP
+#endif   // SEQ64_SEQDATA_HPP
 
 /*
  * seqdata.hpp

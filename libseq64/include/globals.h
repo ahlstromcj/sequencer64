@@ -1,5 +1,5 @@
-#ifndef SEQ24_GLOBALS_HPP
-#define SEQ24_GLOBALS_HPP
+#ifndef SEQ64_GLOBALS_HPP
+#define SEQ64_GLOBALS_HPP
 
 /*
  *  This file is part of seq24/sequencer64.
@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-25
- * \updates       2015-09-01
+ * \updates       2015-09-12
  * \license       GNU GPLv2 or above
  *
  *  We're going to try to collect all the globals here in one module, and
@@ -826,7 +826,7 @@ extern interaction_method_e global_interactionmethod;
 
 extern bool global_allow_mod4_mode;
 
-#endif  // SEQ24_GLOBALS_HPP
+#endif  // SEQ64_GLOBALS_HPP
 
 /*
  * globals.h

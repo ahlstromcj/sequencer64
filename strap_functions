@@ -8,7 +8,7 @@
 # \library    	sequencer64
 # \author     	Chris Ahlstrom
 # \date       	2015-07-24
-# \update     	2015-09-10
+# \update     	2015-09-12
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -266,7 +266,7 @@ function clean_tree()
 #     The following remnant from an in-source build can screw up an
 #     out-of-source (e.g. debug) build if it remains around.
 
-      rm -f include/sequencer64-config.h
+      rm -f include/seq64-config.h
 
    fi
 }
@@ -560,7 +560,7 @@ function clean_project()
          rm -f include/stamp-h.in
          rm -f include/Makefile.in
          rm -f include/stamp-h1
-         rm -f include/config.h include/config.h.in include/sequencer64-config.h
+         rm -f include/config.h include/config.h.in include/seq64-config.h
          rm -f man/Makefile.in
 
       popd

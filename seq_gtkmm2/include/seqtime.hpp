@@ -1,5 +1,5 @@
-#ifndef SEQ24_SEQTIME_HPP
-#define SEQ24_SEQTIME_HPP
+#ifndef SEQ64_SEQTIME_HPP
+#define SEQ64_SEQTIME_HPP
 
 /*
  *  This file is part of seq24/sequencer64.
@@ -99,7 +99,7 @@ private:          // callbacks
 
 };
 
-#endif   // SEQ24_SEQTIME_HPP
+#endif   // SEQ64_SEQTIME_HPP
 
 /*
  * seqtime.hpp

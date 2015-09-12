@@ -1,5 +1,5 @@
-#ifndef SEQ24_PERFORM_HPP
-#define SEQ24_PERFORM_HPP
+#ifndef SEQ64_PERFORM_HPP
+#define SEQ64_PERFORM_HPP
 
 /*
  *  This file is part of seq24/sequencer64.
@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-09-10
+ * \updates       2015-09-12
  * \license       GNU GPLv2 or above
  *
  *  This class has way too many members.
@@ -44,10 +44,10 @@
 
 #include <pthread.h>
 
-#ifdef JACK_SUPPORT
+#ifdef SEQ64_JACK_SUPPORT
 #include <jack/jack.h>
 #include <jack/transport.h>
-#ifdef JACK_SESSION
+#ifdef SEQ64_JACK_SESSION
 #include <jack/session.h>
 #endif
 #endif
@@ -134,7 +134,7 @@ class perform
     friend class optionsfile;       // needs cleanup
     friend class options;
 
-#ifdef JACK_SUPPORT
+#ifdef SEQ64_JACK_SUPPORT
 
     friend int jack_sync_callback
     (
@@ -152,7 +152,7 @@ class perform
         void * arg
     );
 
-#endif  // JACK_SUPPORT
+#endif  // SEQ64_JACK_SUPPORT
 
 public:
 
@@ -272,7 +272,7 @@ private:
     RevSlotMap m_key_events_rev; // reverse lookup, keep in sync!!
     RevSlotMap m_key_groups_rev; // reverse lookup, keep in sync!!
 
-#ifdef JACK_SUPPORT
+#ifdef SEQ64_JACK_SUPPORT
 
 private:
 
@@ -284,7 +284,7 @@ private:
     jack_transport_state_t m_jack_transport_state_last;
     double m_jack_tick;
 
-#ifdef JACK_SESSION
+#ifdef SEQ64_JACK_SESSION
 
 public:
 
@@ -292,8 +292,8 @@ public:
 
 private:
 
-#endif  // JACK_SESSION
-#endif  // JACK_SUPPORT
+#endif  // SEQ64_JACK_SESSION
+#endif  // SEQ64_JACK_SUPPORT
 
     bool m_jack_running;
     bool m_jack_master;
@@ -515,13 +515,13 @@ public:
     void start (bool a_state);
     void stop ();
 
-#ifdef JACK_SUPPORT
-#ifdef JACK_SESSION
+#ifdef SEQ64_JACK_SUPPORT
+#ifdef SEQ64_JACK_SESSION
 
     bool jack_session_event ();
 
-#endif  // JACK_SESSION
-#endif  // JACK_SUPPORT
+#endif  // SEQ64_JACK_SESSION
+#endif  // SEQ64_JACK_SUPPORT
 
     void start_jack ();
     void stop_jack ();
@@ -675,7 +675,7 @@ extern void * input_thread_func (void * a_p);
  *  Global functions for JACK support and JACK sessions.
  */
 
-#ifdef JACK_SUPPORT
+#ifdef SEQ64_JACK_SUPPORT
 
 /*
  * Global JACK functions
@@ -706,13 +706,13 @@ extern void jack_timebase_callback
 
 extern int jack_process_callback (jack_nframes_t nframes, void * arg);
 
-#ifdef JACK_SESSION
+#ifdef SEQ64_JACK_SESSION
 extern void jack_session_callback (jack_session_event_t * ev, void * arg);
 #endif
 
-#endif   // JACK_SUPPORT
+#endif   // SEQ64_JACK_SUPPORT
 
-#endif   // SEQ24_PERFORM_HPP
+#endif   // SEQ64_PERFORM_HPP
 
 /*
  * perform.hpp

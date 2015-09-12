@@ -29,10 +29,10 @@ AC_CANONICAL_SYSTEM
 AM_INIT_AUTOMAKE([dist-bzip2])
 AC_CONFIG_HEADER([include/config.h])
 
-dnl Prepends "SEQUENCER64" to a lot of the macro definitions, for a better
+dnl Prepends "SEQ64" to a lot of the macro definitions, for a better
 dnl guarantee of avoiding naming conflicts.
 
-AX_PREFIX_CONFIG_H([include/sequencer64-config.h], [sequencer64])
+AX_PREFIX_CONFIG_H([include/seq64-config.h], [seq64])
 
 dnl New for autoconf 2.60, prevents spurious datarootdir warnings.
 
@@ -49,7 +49,7 @@ PACKAGE=sequencer64
 AC_DEFINE_UNQUOTED(PACKAGE, "$PACKAGE")
 AC_SUBST(PACKAGE)
 
-VERSION="0.9.9.0"
+VERSION="0.9.9.1"
 AC_DEFINE_UNQUOTED(VERSION, "$VERSION")
 AC_SUBST(VERSION)
 
@@ -404,7 +404,7 @@ AC_ARG_ENABLE(highlight,
     [highlight=$enableval],
     [highlight=yes])
 
-if test "$lash" != "no"; then
+if test "$highlight" != "no"; then
     AC_DEFINE(HIGHLIGHT_EMPTY_SEQS, 1, [Define to enable highlighting empty sequences])
 else
     AC_MSG_WARN([*** Highlighting empty sequences not enabled.]);
@@ -424,7 +424,7 @@ dnl #define API_VERSION "0.9"             // already defined on command line
 AH_TOP(
 
 #define VERSION_DATE_SHORT "2015-09-12"
-#define VERSION "0.9.9.0"
+#define VERSION "0.9.9.1"
 
 )
 

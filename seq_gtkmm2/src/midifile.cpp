@@ -52,7 +52,7 @@
  *  array in a configuration file.
  */
 
-#define SEQ24_MIDI_LINE_MAX            1024
+#define SEQ64_MIDI_LINE_MAX            1024
 
 /**
  *  The maximum length of a Seq24 track name.  This is a bit excessive.
@@ -982,7 +982,7 @@ midifile::write (perform * a_perf)
     if (! file.is_open())
         return false;
 
-    char file_buffer[SEQ24_MIDI_LINE_MAX];  /* enable bufferization     */
+    char file_buffer[SEQ64_MIDI_LINE_MAX];  /* enable bufferization     */
     file.rdbuf()->pubsetbuf(file_buffer, sizeof file_buffer);
     for
     (

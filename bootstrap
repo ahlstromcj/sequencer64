@@ -34,7 +34,7 @@ CYGWIN=binmode
 export CYGWIN
 
 export SEQUENCER64_SCRIPT_EDIT_DATE="2015-09-12"
-export SEQUENCER64_LIBRARY_API_VERSION="1.0"
+export SEQUENCER64_LIBRARY_API_VERSION="0.9"
 export SEQUENCER64_LIBRARY_VERSION="$SEQUENCER64_LIBRARY_API_VERSION.0"
 
 #******************************************************************************
@@ -338,7 +338,7 @@ E_O_F
 
 #************************************************************************
 # Create config and m4 directories.  Note that they might be empty for
-# this project.  Also create an include directory, mainly for config.h
+# this project.  Also create an include directory, mainly for "config.h"
 # stuff.
 #------------------------------------------------------------------------
 

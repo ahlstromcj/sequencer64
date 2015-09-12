@@ -1,5 +1,5 @@
-#ifndef SEQ24_EVENT_HPP
-#define SEQ24_EVENT_HPP
+#ifndef SEQ64_EVENT_HPP
+#define SEQ64_EVENT_HPP
 
 /*
  *  This file is part of seq24/sequencer64.
@@ -462,7 +462,7 @@ private:
     int get_rank () const;
 };
 
-#endif   // SEQ24_EVENT_HPP
+#endif   // SEQ64_EVENT_HPP
 
 /*
  * event.hpp

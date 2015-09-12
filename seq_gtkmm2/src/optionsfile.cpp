@@ -383,7 +383,7 @@ bool
 optionsfile::write (perform * a_perf)
 {
     std::ofstream file(m_name.c_str(), std::ios::out | std::ios::trunc);
-    char outs[SEQ24_LINE_MAX];
+    char outs[SEQ64_LINE_MAX];
     if (! file.is_open())
         return false;
 

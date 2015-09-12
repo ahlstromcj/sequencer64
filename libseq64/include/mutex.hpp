@@ -1,5 +1,5 @@
-#ifndef SEQ24_MUTEX_HPP
-#define SEQ24_MUTEX_HPP
+#ifndef SEQ64_MUTEX_HPP
+#define SEQ64_MUTEX_HPP
 
 /*
  *  This file is part of seq24/sequencer64.
@@ -168,7 +168,7 @@ public:
 
 };
 
-#endif  // SEQ24_MUTEX_HPP
+#endif  // SEQ64_MUTEX_HPP
 
 /*
  * mutex.hpp

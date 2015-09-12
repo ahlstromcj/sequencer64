@@ -1,5 +1,5 @@
-#ifndef SEQ24_MIDIBUS_COMMON_HPP
-#define SEQ24_MIDIBUS_COMMON_HPP
+#ifndef SEQ64_MIDIBUS_COMMON_HPP
+#define SEQ64_MIDIBUS_COMMON_HPP
 
 /*
  *  This file is part of seq24/sequencer64.
@@ -78,7 +78,7 @@ enum clock_e
     e_clock_mod
 };
 
-#endif  // SEQ24_MIDIBUS_COMMON_HPP
+#endif  // SEQ64_MIDIBUS_COMMON_HPP
 
 /*
  * midibus_common.hpp

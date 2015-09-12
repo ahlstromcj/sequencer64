@@ -41,15 +41,21 @@
 #include "perform.hpp"
 
 /**
+ *  The global pointer to the LASH driver instance.
+ */
+
+lash * global_lash_driver = nullptr;
+
+/**
  *  This constructor calls lash_extract(), using the command-line
- *  arguments, if LASH_SUPPORT is enabled.  We fixed the crazy usage of
+ *  arguments, if SEQ64_LASH_SUPPORT is enabled.  We fixed the crazy usage of
  *  argc and argv here and in the client code in the seq24 module.
  */
 
 lash::lash (int argc, char ** argv)
  :
     m_perform           (nullptr),
-#ifdef LASH_SUPPORT
+#ifdef SEQ64_LASH_SUPPORT
     m_client            (nullptr),
     m_lash_args         (nullptr),
     m_is_lash_supported (true)
@@ -57,7 +63,7 @@ lash::lash (int argc, char ** argv)
     m_is_lash_supported (false)
 #endif
 {
-#ifdef LASH_SUPPORT
+#ifdef SEQ64_LASH_SUPPORT
     m_lash_args = lash_extract_args(&argc, &argv);
 #endif
 }
@@ -72,10 +78,10 @@ void lash::init (perform * p)
     {
         m_perform = p;
 
-#ifdef LASH_SUPPORT
+#ifdef SEQ64_LASH_SUPPORT
         m_client = lash_init
         (
-            m_lash_args, PACKAGE_NAME, LASH_Config_File, LASH_PROTOCOL(2, 0)
+            m_lash_args, SEQ64_PACKAGE_NAME, LASH_Config_File, LASH_PROTOCOL(2, 0)
         );
         if (m_client == NULL)
         {
@@ -88,7 +94,7 @@ void lash::init (perform * p)
             lash_send_event(m_client, event);
             printf("[Connected to LASH]\n");
         }
-#endif // LASH_SUPPORT
+#endif // SEQ64_LASH_SUPPORT
     }
 }
 
@@ -99,7 +105,7 @@ void lash::init (perform * p)
 void
 lash::set_alsa_client_id (int id)
 {
-#ifdef LASH_SUPPORT
+#ifdef SEQ64_LASH_SUPPORT
     lash_alsa_client_id(m_client, id);
 #endif
 }
@@ -112,7 +118,7 @@ lash::set_alsa_client_id (int id)
 void
 lash::start ()
 {
-#ifdef LASH_SUPPORT
+#ifdef SEQ64_LASH_SUPPORT
     Glib::signal_timeout().connect
     (
         sigc::mem_fun(*this, &lash::process_events), 250
@@ -120,7 +126,7 @@ lash::start ()
 #endif
 }
 
-#ifdef LASH_SUPPORT
+#ifdef SEQ64_LASH_SUPPORT
 
 /**
  *  Process LASH events.
@@ -196,7 +202,7 @@ lash::handle_config (lash_config_t * conf)
      */
 }
 
-#endif // LASH_SUPPORT
+#endif // SEQ64_LASH_SUPPORT
 
 /*
  * lash.cpp

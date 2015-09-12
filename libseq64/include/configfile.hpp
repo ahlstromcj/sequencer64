@@ -1,5 +1,5 @@
-#ifndef SEQ24_CONFIGFILE_HPP
-#define SEQ24_CONFIGFILE_HPP
+#ifndef SEQ64_CONFIGFILE_HPP
+#define SEQ64_CONFIGFILE_HPP
 
 /*
  *  This file is part of seq24/sequencer64.
@@ -45,7 +45,7 @@ class perform;
  *  array in a configuration file.
  */
 
-#define SEQ24_LINE_MAX                 1024
+#define SEQ64_LINE_MAX                 1024
 
 /**
  *    This class is the abstract base class for optionsfile and userfile.
@@ -74,7 +74,7 @@ protected:
      *  an input line, and so needs to be a character buffer.
      */
 
-    char m_line[SEQ24_LINE_MAX];
+    char m_line[SEQ64_LINE_MAX];
 
 protected:
 
@@ -99,7 +99,7 @@ public:
 
 };
 
-#endif  // SEQ24_CONFIGFILE_HPP
+#endif  // SEQ64_CONFIGFILE_HPP
 
 /*
  * configfile.hpp

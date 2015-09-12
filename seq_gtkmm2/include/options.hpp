@@ -1,5 +1,5 @@
-#ifndef SEQ24_OPTIONS_HPP
-#define SEQ24_OPTIONS_HPP
+#ifndef SEQ64_OPTIONS_HPP
+#define SEQ64_OPTIONS_HPP
 
 /*
  *  This file is part of seq24/sequencer64.
@@ -123,7 +123,7 @@ private:
     void add_jack_sync_page ();
 };
 
-#endif   // SEQ24_OPTIONS_HPP
+#endif   // SEQ64_OPTIONS_HPP
 
 /*
  * options.hpp

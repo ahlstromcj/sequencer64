@@ -1,5 +1,5 @@
-#ifndef SEQ24_LASH_HPP
-#define SEQ24_LASH_HPP
+#ifndef SEQ64_LASH_HPP
+#define SEQ64_LASH_HPP
 
 /*
  *  This file is part of seq24/sequencer64.
@@ -27,14 +27,14 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-09-10
+ * \updates       2015-09-12
  * \license       GNU GPLv2 or above
  *
  */
 
 #include "easy_macros.h"               // platform and debugging macros
 
-#ifdef LASH_SUPPORT
+#ifdef SEQ64_LASH_SUPPORT
 #include <lash/lash.h>
 #endif
 
@@ -42,10 +42,10 @@ class perform;
 
 /**
  *  This class supports LASH operations, if compiled with LASH support
- *  (i.e LASH_SUPPORT is defined). All of the #ifdef skeleton work is done
- *  in this class in such a way that any other part of the code can use
- *  this class whether or not lash support is actually built in; the
- *  functions will just do nothing.
+ *  (i.e. SEQ64_LASH_SUPPORT is defined). All of the #ifdef skeleton work
+ *  is done in this class in such a way that any other part of the code
+ *  can use this class whether or not lash support is actually built in;
+ *  the functions will just do nothing.
  */
 
 class lash
@@ -55,7 +55,7 @@ private:
 
     perform * m_perform;
 
-#ifdef LASH_SUPPORT
+#ifdef SEQ64_LASH_SUPPORT
     lash_client_t * m_client;
     lash_args_t * m_lash_args;
 #endif
@@ -69,7 +69,7 @@ public:
     void set_alsa_client_id (int id);
     void start ();
 
-#ifdef LASH_SUPPORT
+#ifdef SEQ64_LASH_SUPPORT
 private:
 
     bool process_events ();
@@ -83,11 +83,11 @@ private:
  * Global LASH driver, defined in seq24.cpp.
  */
 
-#ifdef LASH_SUPPORT
+#ifdef SEQ64_LASH_SUPPORT
 extern lash * global_lash_driver;
 #endif
 
-#endif // SEQ24_LASH_HPP
+#endif // SEQ64_LASH_HPP
 
 /*
  * lash.hpp

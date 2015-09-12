@@ -1,5 +1,5 @@
-#ifndef SEQ24_OPTIONSFILE_HPP
-#define SEQ24_OPTIONSFILE_HPP
+#ifndef SEQ64_OPTIONSFILE_HPP
+#define SEQ64_OPTIONSFILE_HPP
 
 /*
  *  This file is part of seq24/sequencer64.
@@ -55,7 +55,7 @@ public:
 
 };
 
-#endif   // SEQ24_OPTIONSFILE_HPP
+#endif   // SEQ64_OPTIONSFILE_HPP
 
 /*
  * optionsfile.hpp

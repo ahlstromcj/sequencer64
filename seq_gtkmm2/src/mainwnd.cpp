@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-09-11
+ * \updates       2015-09-12
  * \license       GNU GPLv2 or above
  *
  */
@@ -956,14 +956,14 @@ mainwnd::about_dialog ()
 {
     Gtk::AboutDialog dialog;
     dialog.set_transient_for(*this);
-    dialog.set_name(PACKAGE_NAME);
-    dialog.set_version(VERSION " " VERSION_DATE_SHORT);
+    dialog.set_name(SEQ64_PACKAGE_NAME);
+    dialog.set_version(SEQ64_VERSION " " SEQ64_VERSION_DATE_SHORT);
     dialog.set_comments("Interactive MIDI Sequencer\n");
     dialog.set_copyright
     (
         "(C) 2002 - 2006 Rob C. Buse (Seq24)\n"
         "(C) 2008 - 2010 Seq24team (Seq24)\n"
-        "(C) 2015 Chris Ahlstrom (Sequencer24)"
+        "(C) 2015 Chris Ahlstrom (Sequencer64)"
     );
     dialog.set_website
     (
@@ -995,7 +995,7 @@ mainwnd::about_dialog ()
     );
     list_documenters.push_back
     (
-        "and <https://github.com/ahlstromcj/sequencer64-doc.git>"
+        "and <https://github.com/ahlstromcj/sequencer24-doc.git>"
     );
     dialog.set_documenters(list_documenters);
     dialog.show_all_children();
@@ -1327,8 +1327,9 @@ mainwnd::sequence_key (int a_seq)
 
 /**
  *  Updates the title shown in the title bar of the window.  Note that the
- *  name of the application is obtained by the "(PACKAGE)} construction.
- *  Never saw that thing before.  Perhaps it is a Glib thing.
+ *  name of the application is obtained by the "(SEQ64_PACKAGE)}
+ *  construction.  Never saw that thing before.  Perhaps it is a Glib
+ *  thing.
  */
 
 void
@@ -1336,9 +1337,9 @@ mainwnd::update_window_title ()
 {
     std::string title;
     if (global_filename == "")
-        title = (PACKAGE) + std::string(" - [unnamed]");
+        title = (SEQ64_PACKAGE) + std::string(" - [unnamed]");
     else
-        title = (PACKAGE) + std::string(" - [")
+        title = (SEQ64_PACKAGE) + std::string(" - [")
             + Glib::filename_to_utf8(global_filename)
             + std::string("]");
 

@@ -1,5 +1,5 @@
-#ifndef SEQ24_PERFNAMES_HPP
-#define SEQ24_PERFNAMES_HPP
+#ifndef SEQ64_PERFNAMES_HPP
+#define SEQ64_PERFNAMES_HPP
 
 /*
  *  This file is part of seq24/sequencer64.
@@ -92,7 +92,7 @@ private:    // Gtk callbacks
 
 };
 
-#endif   // SEQ24_PERFNAMES_HPP
+#endif   // SEQ64_PERFNAMES_HPP
 
 /*
  * perfnames.hpp

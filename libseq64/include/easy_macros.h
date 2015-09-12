@@ -1,5 +1,5 @@
-#ifndef SEQ24_EASY_MACROS_H
-#define SEQ24_EASY_MACROS_H
+#ifndef SEQ64_EASY_MACROS_H
+#define SEQ64_EASY_MACROS_H
 
 /**
  * \file          easy_macros.h
@@ -38,7 +38,7 @@
 #ifdef PLATFORM_WINDOWS
 #include "configwin32.h"
 #else
-#include "config.h"
+#include "seq64-config.h"
 #endif
 
 /**
@@ -249,7 +249,7 @@ extern bool not_nullptr_assert (void * ptr, const std::string & context);
 #define not_nullptr_assert(ptr, context) (not_nullptr(ptr))
 #endif
 
-#endif         /* SEQ24_EASY_MACROS_H */
+#endif         /* SEQ64_EASY_MACROS_H */
 
 /*
  * easy_macros.h

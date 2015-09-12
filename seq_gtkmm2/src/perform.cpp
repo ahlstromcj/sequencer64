@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-09-11
+ * \updates       2015-09-12
  * \license       GNU GPLv2 or above
  *
  */
@@ -99,7 +99,7 @@ perform::perform ()
     m_key_groups                (),
     m_key_events_rev            (),
     m_key_groups_rev            (),
-#ifdef JACK_SUPPORT
+#ifdef SEQ64_JACK_SUPPORT
     m_jack_client               (nullptr),
     m_jack_frame_current        (),
     m_jack_frame_last           (),
@@ -107,10 +107,10 @@ perform::perform ()
     m_jack_transport_state      (),
     m_jack_transport_state_last (),
     m_jack_tick                 (0.0),
-#ifdef JACK_SESSION
+#ifdef SEQ64_JACK_SESSION
     m_jsession_ev               (nullptr),
-#endif  // JACK_SESSION
-#endif  // JACK_SUPPORT
+#endif  // SEQ64_JACK_SESSION
+#endif  // SEQ64_JACK_SUPPORT
     m_jack_running              (false),
     m_jack_master               (false),
 
@@ -256,14 +256,14 @@ perform::init ()
 }
 
 /**
- *  Initializes JACK support, if JACK_SUPPORT is defined.
+ *  Initializes JACK support, if SEQ64_JACK_SUPPORT is defined.
  */
 
 void
 perform::init_jack ()
 {
 
-#ifdef JACK_SUPPORT
+#ifdef SEQ64_JACK_SUPPORT
 
     if (global_with_jack_transport  && ! m_jack_running)
     {
@@ -275,17 +275,24 @@ perform::init_jack ()
              * Become a new client of the JACK server.
              */
 
-#ifdef JACK_SESSION
+#ifdef SEQ64_JACK_SESSION
             if (global_jack_session_uuid.empty())
-                m_jack_client = jack_client_open(PACKAGE, JackNullOption, NULL);
-            else
+            {
                 m_jack_client = jack_client_open
                 (
-                    PACKAGE, JackSessionID, NULL,
+                    SEQ64_PACKAGE, JackNullOption, NULL
+                );
+            }
+            else
+            {
+                m_jack_client = jack_client_open
+                (
+                    SEQ64_PACKAGE, JackSessionID, NULL,
                     global_jack_session_uuid.c_str()
                 );
+            }
 #else
-            m_jack_client = jack_client_open(PACKAGE, JackNullOption, NULL);
+            m_jack_client = jack_client_open(SEQ64_PACKAGE, JackNullOption, NULL);
 #endif
 
             if (m_jack_client == 0)
@@ -309,7 +316,7 @@ perform::init_jack ()
 
             jack_set_process_callback(m_jack_client, jack_process_callback, NULL);
 
-#ifdef JACK_SESSION
+#ifdef SEQ64_JACK_SESSION
             if (jack_set_session_callback)
             {
                 jack_set_session_callback
@@ -343,7 +350,7 @@ perform::init_jack ()
 
         } while (0);                    // weird
     }
-#endif  // JACK_SUPPORT
+#endif  // SEQ64_JACK_SUPPORT
 }
 
 /**
@@ -353,7 +360,7 @@ perform::init_jack ()
 void
 perform::deinit_jack ()
 {
-#ifdef JACK_SUPPORT
+#ifdef SEQ64_JACK_SUPPORT
 
     if (m_jack_running)
     {
@@ -373,7 +380,7 @@ perform::deinit_jack ()
         printf("[JACK sync disabled]\n");
     }
 
-#endif  // JACK_SUPPORT
+#endif  // SEQ64_JACK_SUPPORT
 }
 
 /**
@@ -1320,7 +1327,7 @@ perform::copy_triggers ()
 void
 perform::start_jack ()
 {
-#ifdef JACK_SUPPORT
+#ifdef SEQ64_JACK_SUPPORT
     if (m_jack_running)
         jack_transport_start(m_jack_client);
 #endif
@@ -1333,7 +1340,7 @@ perform::start_jack ()
 void
 perform::stop_jack ()
 {
-#ifdef JACK_SUPPORT
+#ifdef SEQ64_JACK_SUPPORT
     if (m_jack_running)
         jack_transport_stop(m_jack_client);
 #endif
@@ -1350,7 +1357,7 @@ perform::stop_jack ()
 void
 perform::position_jack (bool a_state)
 {
-#ifdef JACK_SUPPORT
+#ifdef SEQ64_JACK_SUPPORT
 
     if (m_jack_running)
     {
@@ -1666,7 +1673,7 @@ jack_process_callback (jack_nframes_t nframes, void * arg)
     return 0;
 }
 
-#ifdef JACK_SUPPORT
+#ifdef SEQ64_JACK_SUPPORT
 
 /**
  *  This JACK synchronization callback informs the specified perform
@@ -1726,7 +1733,7 @@ int jack_sync_callback
     return 1;
 }
 
-#ifdef JACK_SESSION
+#ifdef SEQ64_JACK_SESSION
 
 /**
  *  Writes the MIDI file named "<jack session dir>-file.mid" using a
@@ -1782,8 +1789,8 @@ jack_session_callback (jack_session_event_t * event, void * arg)
     Glib::signal_idle().connect(sigc::mem_fun(*p, &perform::jack_session_event));
 }
 
-#endif  // JACK_SESSION
-#endif  // JACK_SUPPORT
+#endif  // SEQ64_JACK_SESSION
+#endif  // SEQ64_JACK_SUPPORT
 
 /**
  *  Performance output function.
@@ -1833,7 +1840,7 @@ perform::output_func ()
         bool dumping = false;
         bool init_clock = true;
 
-#ifdef JACK_SUPPORT
+#ifdef SEQ64_JACK_SUPPORT
         double jack_ticks_converted = 0.0;
         double jack_ticks_converted_last = 0.0;
         double jack_ticks_delta = 0.0;
@@ -1923,7 +1930,7 @@ perform::output_func ()
                 // init_clock = true;
             }
 
-#ifdef JACK_SUPPORT
+#ifdef SEQ64_JACK_SUPPORT
             if (m_jack_running)             // no init until we get a good lock
             {
                 init_clock = false;
@@ -2062,7 +2069,7 @@ perform::output_func ()
                 total_tick     += delta_tick;
                 dumping = true;
 
-#ifdef JACK_SUPPORT
+#ifdef SEQ64_JACK_SUPPORT
             }
 #endif
             /*
@@ -2818,7 +2825,7 @@ perform::set_key_group (unsigned int keycode, long group_slot)
 }
 
 
-#ifdef JACK_SUPPORT
+#ifdef SEQ64_JACK_SUPPORT
 
 /**
  *  This function...
@@ -2978,7 +2985,7 @@ int main ()
 
 #endif   // USE_MAIN_ROUTINE_FOR_JACK_TEST
 
-#endif   // JACK_SUPPORT
+#endif   // SEQ64_JACK_SUPPORT
 
 /*
  * perform.cpp

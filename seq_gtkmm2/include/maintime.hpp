@@ -1,5 +1,5 @@
-#ifndef SEQ24_MAINTIME_HPP
-#define SEQ24_MAINTIME_HPP
+#ifndef SEQ64_MAINTIME_HPP
+#define SEQ64_MAINTIME_HPP
 
 /*
  *  This file is part of seq24/sequencer64.
@@ -65,7 +65,7 @@ private:        // callbacks
 
 };
 
-#endif   // SEQ24_MAINTIME_HPP
+#endif   // SEQ64_MAINTIME_HPP
 
 /*
  * maintime.hpp

@@ -82,7 +82,7 @@ static struct option long_options[] =
     {0, 0, 0, 0}                                        /* terminator     */
 };
 
-static const std::string versiontext = PACKAGE " " VERSION "\n";
+static const std::string versiontext = SEQ64_PACKAGE " " SEQ64_VERSION "\n";
 
 /*
  * Global pointer!  Declared in font.h.
@@ -285,8 +285,11 @@ main (int argc, char * argv [])
     appname = appname.substr(appname.size()-applen, applen);
     if (appname == "seq24")
     {
-        global_legacy_format = true;
-        printf("Setting legacy seq24 file format.\n");
+        if (! global_legacy_format)
+        {
+            global_legacy_format = true;
+            printf("Setting legacy seq24 file format.\n");
+        }
     }
 
     /*
@@ -298,7 +301,6 @@ main (int argc, char * argv [])
         for (int j = 0; j < 16; j++)
             global_user_midi_bus_definitions[i].instrument[j] = -1;
     }
-
     for (int i = 0; i < c_max_instruments; i++)
     {
         for (int j = 0; j < MIDI_COUNT_MAX; j++)

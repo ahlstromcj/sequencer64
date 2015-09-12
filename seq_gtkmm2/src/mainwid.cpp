@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-09-11
+ * \updates       2015-09-12
  * \license       GNU GPLv2 or above
  *
  */
@@ -214,7 +214,7 @@ mainwid::draw_sequence_on_pixmap (int a_seq)
         if (m_mainperf->is_active(a_seq))
         {
             sequence * seq = m_mainperf->get_sequence(a_seq);
-#if HIGHLIGHT_EMPTY_SEQS
+#if SEQ64_HIGHLIGHT_EMPTY_SEQS
             if (seq->event_count() > 0)
             {
 #endif
@@ -230,7 +230,7 @@ mainwid::draw_sequence_on_pixmap (int a_seq)
                     m_background = m_white;
                     m_foreground = m_black;
                 }
-#if HIGHLIGHT_EMPTY_SEQS
+#if SEQ64_HIGHLIGHT_EMPTY_SEQS
             }
             else
             {
@@ -248,7 +248,7 @@ mainwid::draw_sequence_on_pixmap (int a_seq)
                     m_foreground = m_black;
                 }
             }
-#endif  // HIGHLIGHT_EMPTY_SEQS
+#endif  // SEQ64_HIGHLIGHT_EMPTY_SEQS
 
             m_gc->set_foreground(m_background);
             m_pixmap->draw_rectangle
@@ -260,7 +260,7 @@ mainwid::draw_sequence_on_pixmap (int a_seq)
             char temp[20];                      // SEQ_NAME_SIZE !
             snprintf(temp, sizeof temp, "%.13s", seq->get_name());
             font::Color col = font::BLACK;
-#if HIGHLIGHT_EMPTY_SEQS
+#if SEQ64_HIGHLIGHT_EMPTY_SEQS
             if (seq->event_count() > 0)
             {
 #endif
@@ -269,7 +269,7 @@ mainwid::draw_sequence_on_pixmap (int a_seq)
 
                 if (m_foreground == m_white)
                     col = font::WHITE;
-#if HIGHLIGHT_EMPTY_SEQS
+#if SEQ64_HIGHLIGHT_EMPTY_SEQS
             }
             else
             {
@@ -279,7 +279,7 @@ mainwid::draw_sequence_on_pixmap (int a_seq)
                 if (m_foreground == m_yellow)
                     col = font::YELLOW_ON_BLACK;
             }
-#endif  // HIGHLIGHT_EMPTY_SEQS
+#endif  // SEQ64_HIGHLIGHT_EMPTY_SEQS
 
             p_font_renderer->render_string_on_drawable      // name of pattern
             (

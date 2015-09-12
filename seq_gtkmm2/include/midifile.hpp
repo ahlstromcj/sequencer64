@@ -1,5 +1,5 @@
-#ifndef SEQ24_MIDIFILE_HPP
-#define SEQ24_MIDIFILE_HPP
+#ifndef SEQ64_MIDIFILE_HPP
+#define SEQ64_MIDIFILE_HPP
 
 /*
  *  This file is part of seq24/sequencer64.
@@ -153,7 +153,7 @@ private:
 
 };
 
-#endif   // SEQ24_MIDIFILE_HPP
+#endif   // SEQ64_MIDIFILE_HPP
 
 /*
  * midifile.hpp

@@ -1,5 +1,5 @@
-#ifndef SEQ24_FRUITYSEQ_HPP
-#define SEQ24_FRUITYSEQ_HPP
+#ifndef SEQ64_FRUITYSEQ_HPP
+#define SEQ64_FRUITYSEQ_HPP
 
 /*
  *  This file is part of seq24/sequencer64.
@@ -64,7 +64,7 @@ struct FruitySeqEventInput
     bool on_motion_notify_event (GdkEventMotion * a_ev, seqevent & ths);
 };
 
-#endif   // SEQ24_FRUITYSEQ_HPP
+#endif   // SEQ64_FRUITYSEQ_HPP
 
 /*
  * fruityseq.hpp

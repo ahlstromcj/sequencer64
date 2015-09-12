@@ -1,5 +1,5 @@
-#ifndef SEQ24_MASTERMIDIBUS_HPP
-#define SEQ24_MASTERMIDIBUS_HPP
+#ifndef SEQ64_MASTERMIDIBUS_HPP
+#define SEQ64_MASTERMIDIBUS_HPP
 
 /*
  *  This file is part of seq24/sequencer64.
@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-30
- * \updates       2015-09-10
+ * \updates       2015-09-12
  * \license       GNU GPLv2 or above
  *
  *  The mastermidibus module is the Linux version of the mastermidibus module.
@@ -38,7 +38,7 @@
 
 #include "midibus_common.hpp"
 
-#if HAVE_LIBASOUND                     // covers this whole module
+#if SEQ64_HAVE_LIBASOUND                // covers this whole module
 
 #include <alsa/asoundlib.h>
 #include <alsa/seq_midi_event.h>
@@ -289,9 +289,9 @@ private:
 
 };
 
-#endif  // HAVE_LIBASOUND
+#endif  // SEQ64_HAVE_LIBASOUND
 
-#endif  // SEQ24_MASTERMIDIBUS_HPP
+#endif  // SEQ64_MASTERMIDIBUS_HPP
 
 /*
  * mastermidibus.hpp

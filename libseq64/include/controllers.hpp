@@ -1,5 +1,5 @@
-#ifndef SEQ24_CONTROLLERS_HPP
-#define SEQ24_CONTROLLERS_HPP
+#ifndef SEQ64_CONTROLLERS_HPP
+#define SEQ64_CONTROLLERS_HPP
 
 /*
  *  This file is part of seq24/sequencer64.
@@ -174,7 +174,7 @@ std::string c_controller_names[MIDI_COUNT_MAX] =
     "127 Poly Operation"
 };
 
-#endif    // SEQ24_CONTROLLERS_HPP
+#endif    // SEQ64_CONTROLLERS_HPP
 
 /*
  * controllers.hpp

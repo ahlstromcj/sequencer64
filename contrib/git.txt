@@ -1,0 +1,60 @@
+Quick Reference for Git Processes
+Chris Ahlstrom
+2015-09-09 to 2015-09-12
+
+   https://github.com/Kunena/Kunena-Forum/wiki/
+      Create-a-new-branch-with-git-and-manage-branches and others
+
+In a github fork, keep the master branch clean (no changes pending).
+Then you can create a branch from your master. Each time you want to
+commit a bug or a feature, create a branch for it, which is a copy of your
+master branch.
+
+When you do a pull request on a branch, you can continue to work on another
+branch and make another pull request on this other branch.
+
+Create the branch on your local machine and switch to it:
+
+    $ git checkout -b [name_of_your_new_branch]
+
+When the branch is ready, push the branch to github:
+
+    $ git push origin [name_of_your_new_branch]
+
+Better, to make sure git pull will work, set an upstream branch:
+
+    $ git push -u origin [name_of_your_new_branch]
+
+When you want to commit something in your branch, be sure to first
+checkout the branch.
+
+Update your branch when the original branch from official repository has been
+updated:
+
+    $ git fetch [name_of_your_remote]
+
+Others can track your branch in this manner to simplify the git push
+command:
+
+    $ git checkout --track -b your_branch origin/your_branch
+    $ git commit ...
+    $ git push
+
+Then you need to apply to merge changes, if your branch is derivated from
+develop you need to do:
+
+    $ git merge [name_of_your_remote]/develop
+
+Delete a branch on your local filesystem, use -d or -D (to force):
+
+    $ git branch -d [name_of_your_new_branch]
+
+Delete the branch on github:
+
+    $ git push origin :[name_of_your_new_branch]
+
+Caching your credentials (be careful!):
+
+    $ git config credential.helper store
+
+# vim: sw=4 ts=4 wm=8 et ft=sh

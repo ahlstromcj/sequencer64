@@ -5,7 +5,7 @@
 # Compiled application
 
 Makefile.in
-sequencer26
+sequencer64
 aclocal.m4
 bootstrap.stamp
 configure

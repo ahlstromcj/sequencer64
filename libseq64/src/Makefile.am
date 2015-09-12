@@ -91,6 +91,7 @@ version = $(SEQUENCER64_API_MAJOR):$(SEQUENCER64_API_MINOR):$(SEQUENCER64_API_PA
 AM_CXXFLAGS = \
  -I../include \
  -I$(top_srcdir)/include \
+ -I$(top_srcdir)/seq_gtkmm2/include \
  $(GTKMM_CFLAGS) \
  $(JACK_CFLAGS) \
  $(LASH_CFLAGS) \

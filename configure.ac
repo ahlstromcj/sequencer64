@@ -85,7 +85,7 @@ AC_SUBST([SEQUENCER64_API_MAJOR])
 SEQUENCER64_API_MINOR="9"
 AC_SUBST([SEQUENCER64_API_MINOR])
 
-SEQUENCER64_API_PATCH="9"
+SEQUENCER64_API_PATCH="0"
 AC_SUBST([SEQUENCER64_API_PATCH])
 
 SEQUENCER64_OFFICIAL_VERSION="$SEQUENCER64_API_MAJOR.$SEQUENCER64_API_MINOR.$SEQUENCER64_API_PATCH"
@@ -378,7 +378,7 @@ dnl some of the perform code and other code from the GUI framework.
 AC_ARG_ENABLE(lash,
     [AS_HELP_STRING(--disable-lash, [Disable LASH support])],
     [lash=$enableval],
-    [lash=no])
+    [lash=yes])
 
 if test "$lash" != "no"; then
     PKG_CHECK_MODULES(LASH, lash-1.0 >= 0.5.0, lash_found="yes", lash_found="no")

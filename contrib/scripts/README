@@ -1,0 +1,18 @@
+Contributed Scripts
+Chris Ahlstrom
+2015-09-11 to 2015-09-11
+
+This directory contains contributed script for example of setting up various
+subsystems for Sequencer64 usage and testing.
+
+   binfuncs
+   Conk
+   Jack
+   marblemouse
+   MpdCtl
+   README
+   Seq24-Session
+   systemctl-doers
+   YoSeqAlsa
+
+# vim: sw=4 ts=4 wm=8 et ft=sh

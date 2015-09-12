@@ -1,0 +1,83 @@
+#!/bin/bash
+#
+#******************************************************************************
+# Conk
+#------------------------------------------------------------------------------
+##
+# \file        Conk
+# \library     Home/Audio
+# \author      Chris Ahlstrom
+# \date        2015-07-18
+# \update      2015-07-19
+# \version     $Revision$
+# \license     $XPC_SUITE_GPL_LICENSE$
+#
+#     This script provides a way to control two instances of Conky in a
+#     manner pretty specific to my setup.
+#
+#     This file can stop Conky, or restart it, according to my
+#     configuration.
+#
+#------------------------------------------------------------------------------
+ 
+ConkyStatus="on"
+DoHelp="no"
+
+if [ $# -ge 1 ] ; then
+
+   while [ "$1" != "" ] ; do
+
+      case "$1" in
+
+         start | in | on)
+            ConkyStatus="on"
+            ;;
+
+         stop | out | off)
+            ConkyStatus="off"
+            ;;
+
+
+         help)
+            DoHelp="yes"
+            ;;
+
+      esac
+      shift
+   done
+fi
+
+if [ "$DoHelp" == "yes" ] ; then
+
+cat << E_O_F
+
+Usage: Conk [options]
+
+Starts or stops two instances of Conky as per my .xsession file.
+Stopping Conky is useful when mpd is killed, and to get more room.
+
+Options:
+
+   out         Stop all Conky instances.
+   in          Restart the Conky instances.  This is the default action.
+   help        Show this text.
+
+Equivalent to "out" are "stop", and "off".
+Equivalent to "in" are "start", and "on".
+
+E_O_F
+
+elif [ "$ConkyStatus" == "off" ] ; then
+
+   killall conky > /dev/null
+
+else
+
+   /usr/bin/conky -p 1 -c /home/ahlstrom/.config/personal/conky/conkyrc 2> /dev/null &
+   /usr/bin/conky -p 1 -c /home/ahlstrom/.config/personal/conky/conky2rc 2> /dev/null &
+
+fi
+
+#------------------------------------------------------------------------------
+# vim: ft=sh
+#------------------------------------------------------------------------------

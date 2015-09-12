@@ -1,0 +1,89 @@
+Construction of "Where's Prince Brilliant" for ZynAddSubFx/Yoshimi
+Chris Ahlstrom
+2012-01-20 to 2015-09-09
+
+This file describes the importing of one of my old Cakewalk transcriptions, a
+rendering of "Where's Prince Brilliant?" from (unreliable) memory.
+
+Here's the original:
+
+   http://www.youtube.com/watch?v=G52Pw6tpFUY
+
+(I think they "cheated" with the percussion... live drums.  But that was 1970.)
+
+Obviously, my version is way off and raggy, due to my very weak musical
+skills and not-so-good musical memory.  But I was able to use it to learn
+how to work with the Seq24 MIDI editor and the Yoshimi/ZynAddSubFx software
+synthesizer.  Although Seq24 is geared towards creating patterns, it works
+pretty well for full tracks as well.
+
+All source files are located in the Seq24/WPB directory.
+
+Imported the original (created for Sound Blaster Wave and FM,
+plus MT-32) *.mid file into Seq24.  Reduced it to 8 voices:
+
+   1. Lead
+   2. Base
+   3. Strings
+   4. Alarum
+   5. Lead Alternate
+   6. Harpsichord
+   7. Accompaniment
+   8. Drum kit
+
+Picked a pre-existing drum kit for Yoshimi, the original Drums_Kit1.
+Remapped the MIDI tracks to this kit:
+
+Transpose   MIDI Note, Name            ZynAddSubFX Note, Name
+
+    -8      44, Bass Drum 1            36, Bass Drum 2
+     0      50, Tom Mid 1              50, Tom
+   -15      56, Shaker / Brush         41, Tom
+    +7      41, Tom Low 1              48, Tom
+     0      38, Snared Gated           38, Snare Drum 1
+   -15      57, Hi Hat Closed          42, Hit Hat (closed)
+   -19      54, Hand Clap              35, Bass Drum 1
+   -15      59, Hi Hat Open            44, Hit Hat (pedal)
+            
+Actually, we changed the key range of "Tom" from 41-50 to 41-60 to
+have access to more electronic toms at the high end.
+
+Saved instruments to wpb_yoshimi_params.xmz
+Modified Home Piano to be softer in volume.
+
+Yoshimi parts:
+
+   1. Ch 10.  Drums/Drums Kit (0001-Drums_Kit1b.xiz)
+   2. Ch  6.  Bells/Music Box (0002-Music_Box.xiz)
+   3. Ch  7.  Strings/Saw Strings 4 (0004-Saw Strings 4.xiz)
+   4. Ch  9.  Bass/Electric Bass (0041-Electric_Bass.xiz)
+   5. Ch  8.  Harpsichord Piano/Warm Piano (0139-Home Piano.xiz)
+   6. Ch  3.  Pad/Resonance Pad 2 (0009-Resonance Pad2.xiz)
+   7. Ch  2.  Pad/Resonance Pad 2 (0009-Resonance Pad2.xiz)
+   8. Ch  5.  Brass/errrrr (?)
+   9. Ch  4.  C_Ahlstrom/Sub Pseudo Steel Drums
+
+Channel 9 ("Alarum") is muted, doesn't really add anything good.
+
+Seq24 settings:
+
+   [1] seq24 1 Channel 10
+
+To set up and play the tune (using ALSA):
+
+   1. Make sure that the seq24 or sequencer24 config ("rc") files
+      specify 0 for manual-alsa-ports, and do not set up any MIDI clocks.
+
+   2. yoshimi -a -A -l wpb_yoshimi_params.xmz
+
+   3. sequencer24 wpb_yoshimi.midi &
+
+   4. File / Options / MIDI Clock:  Verify which MIDI buss Yoshimi is
+      on.  In our case, it is on buss 5 (buss 0 is Midi Through, and 1
+      through 4 are ports created by TiMidity).  There are probably better
+      ways to do this, but right click on each pattern to select buss 5 and
+      the channel shown after the dash in the lower left corner of each
+      pattern.  Probably best to save this to a new file, just in case.
+
+   5. Open the Song Editor of sequencer24.  Click the red play arrow.
+

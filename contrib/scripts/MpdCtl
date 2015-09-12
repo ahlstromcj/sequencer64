@@ -1,0 +1,70 @@
+#!/bin/bash
+#
+#******************************************************************************
+# MpdCtl
+#------------------------------------------------------------------------------
+##
+# \file        MpdCtl
+# \library     Home/Audio
+# \author      Chris Ahlstrom
+# \date        2015-07-18
+# \update      2015-07-19
+# \version     $Revision$
+# \license     $XPC_SUITE_GPL_LICENSE$
+#
+#     This script provides a way to control mpd in a systemd manner.
+#
+# Starts or stops mpd using systemctl of systemd.
+#
+# Requires the following permissions in /etc/sudoers.d:
+#
+# ahlstrom mlsasus =NOPASSWD: /bin/systemctl stop mpd.socket,
+#                             /bin/systemctl start mpd.socket
+# ahlstrom mlsasus =NOPASSWD: /bin/systemctl stop mpd.service,
+#                             /bin/systemctl start mpd.service
+#
+# On Debian, copy the file systemctl-doers to /etc/sudoers.d
+#
+# This file goes hand-in-hand with the "conk" script.
+#
+#------------------------------------------------------------------------------
+
+if [ "$1" == "start" ] ; then
+
+   sudo /bin/systemctl start mpd.socket
+   sudo /bin/systemctl start mpd.service
+
+elif [ "$1" == "stop" ] ; then
+
+   sudo /bin/systemctl stop mpd.socket
+   sudo /bin/systemctl stop mpd.service
+
+elif [ "$1" == "help" ] ; then
+
+cat << E_O_F
+
+Usage: MpdCtl [options]
+
+   Starts or stops MPD.  It uses sudo to bypass normal permissions to
+   manipulate the MPD daemon.
+
+   Note that generally one need only stop playback via mpd in order to
+   bring up other applications such as seq24 and yoshimi.
+
+Options:
+
+   stop        Stop MPD.
+   start       Restart MPD.
+   help        Show this text.
+
+E_O_F
+
+else
+
+   @echo "! Use options 'stop', 'start', or 'help'."
+
+fi
+
+#*****************************************************************************
+# vim: ts=3 sw=3 et ft=sh
+#-----------------------------------------------------------------------------

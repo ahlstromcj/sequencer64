@@ -1,0 +1,7 @@
+#!/usr/bin/make -f
+# -*- mode: makefile; coding: utf-8 -*-
+
+LDFLAGS+=-Wl,--as-needed
+
+%:
+	dh --with=autotools_dev $@

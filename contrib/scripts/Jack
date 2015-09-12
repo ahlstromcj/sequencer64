@@ -1,0 +1,233 @@
+#!/bin/bash
+#-----------------------------------------------------------------------------
+##
+# \file       	Jack
+# \library    	bin
+# \author     	Chris Ahlstrom
+# \date       	2015-03-15
+# \update      2015-07-19
+# \version    	$Revision$
+# \license    	$XPC_SUITE_GPL_LICENSE$
+#
+#     Jack is a script to turn a JACK session on and off for setups that do
+#     not have all sound running through JACK.  For example, my laptop
+#     generally runs the mpd daemon, streaming music, when I browse, do
+#     newsgroups, and write code.  So I need a special setup when I want to
+#     work with music through JACK.
+#
+#     This script generally assume that you have a ~/bin directory, and that
+#     it is part of your PATH.
+#
+#-----------------------------------------------------------------------------
+
+MyJackVersion="0.1 (2015-07-19)"
+
+#-----------------------------------------------------------------------------
+# Install the standard functions for this script.
+#-----------------------------------------------------------------------------
+
+. binfuncs
+
+#-----------------------------------------------------------------------------
+# Set up control variables and other variables for this script.  If some
+# options never apply to your setup, you can hard-wire them here.  You can
+# find the names of your audio devices using the command-line "aplay -l".
+# Note that the JackSettings below apply to the "alsa" back-end only.
+#-----------------------------------------------------------------------------
+
+MyScript="Jack"
+SetJack="on"                           # either "on" or "off"
+DoHelp="no"                            # --help:  either "no" or "yes"
+DoVersion="no"                         # --version
+DoMpd="yes"                            # --mpd, --no-mpd
+UseQjackCtrl="no"                      # --qjack, --qj
+DoConky="yes"                          # no option, hard-wired
+BackEnd="alsa"                         # adjust to your preference
+HwChannel="PCH"                        # modify to fit your system.
+HwRate="48000"                         # adjust to your preference
+PortMax="1024"                         # adjust to your preference, e.g. 256
+Periods="3"                            # normal value is 2
+AlsaMidi="raw"                         # or "seq"; see jackd man page
+JackSettings="-r$HwRate -p$PortMax -n$Periods -X$AlsaMidi -D -Chw:$HwChannel -Phw:$HwChannel"
+
+
+Error_StartRangeHere=100
+
+#------------------------------------------------------------------------------
+# Brute-force options loop
+#------------------------------------------------------------------------------
+
+if [ $# -ge 1 ] ; then
+   while [ "$1" != "" ] ; do
+      case "$1" in
+
+         --log)
+            shift
+            setlog "$1"
+            ;;
+
+         --new-log)
+            shift
+            setlog "$1"
+            rm -f "$LogFileName"
+            ;;
+
+         --on | on)
+            SetJack="on"
+            ;;
+
+         --off | off)
+            SetJack="off"
+            ;;
+
+         --mpd | mpd)
+            DoMpd="yes"
+            ;;
+
+         --no-mpd | no-mpd)
+            DoMpd="no"
+            ;;
+
+         --qjack | --qj | --qjackctl)
+            UseQjackCtrl="yes"
+            ;;
+
+         --version)
+            DoVersion="yes"
+            ;;
+
+         --help)
+            DoHelp="yes"
+            ;;
+
+         *)
+            die $Error_BadOption "$MyScript" "$ErrorMsg_BadOption" "$1"
+            ;;
+
+      esac
+      shift
+   done
+fi
+
+#------------------------------------------------------------------------------
+# Version information or help
+#------------------------------------------------------------------------------
+
+if [ $DoVersion == "yes" ] ; then
+   echo "Version $MyJackVersion"
+   exit 0
+fi
+
+if [ $DoHelp == "yes" ] ; then
+
+   cat << E_O_F
+Jack v. $MyJackVersion
+
+   The Jack script turns JACK on or turns JACK off, and also provides
+   support for controlling other processes that are needed for audio work,
+   or that interfere with JACK.  Steps:
+
+   -  Calls binfuncs to set up convenience functions for the Jack script.
+   -  Use systemd's 'systemctl' to stop 'mpd.socket' and 'mpd.service', to
+      free up audio for JACK to use.  This requires running as root or
+      setting yourself up in /etc/sudoers.d/systemctl-doers.
+   -  Start JACK (and optionally, QJackCtrl).
+
+Options:
+
+   --on or on        Turn Jack on.  This is the default operation.
+   --off or off      Turn Jack off.
+   --mpd or mpd      Manage MPD.  This is the default.
+   --no-mpd, no-mpd  Do not manage MPD.  Change the 'DoMpd' variable to 'no'
+                     in this script if you don't have MPD installed.
+   --qjack           Use QJackCtl to control JACK.  Otherwise, the 'jackd'
+                     command-line appliation is used.
+   --log file        Log error messages to a file.  Messages are appended to
+                     the existing file.
+   --new-log file    Log error messages to a file, but delete the old log first.
+   --help            Show this help banner.
+   --version         Show the version information.
+E_O_F
+
+   exit 0
+fi
+
+#------------------------------------------------------------------------------
+# Jack "on"
+#
+#  First do MPD control (from mpdctl script).  We also kill conky since we
+#  have a script that monitors MPD.
+#
+#------------------------------------------------------------------------------
+
+if [ $SetJack == "on" ] ; then
+
+   msg "$MyScript" "Jack on"
+   if [ $DoMpd == "yes" ] ; then
+      sudo /bin/systemctl stop mpd.socket
+      sudo /bin/systemctl stop mpd.service
+      if [ $DoConky == "yes" ] ; then
+         killall conky
+         conky & 2> /dev/null
+      fi
+   fi
+
+   if [ $UseQjackCtrl == "yes" ] ; then
+
+      #------------------------------------------------------------------------
+      #
+      #     Run qjackctl and start jack, with this setting in ~/.jackdrc or
+      #     ~/.config/rncbc.org/QjackCtl.conf:
+      #
+      #        /usr/bin/jackd -dalsa -dhw:0 -r48000 -p1024 -n2
+      #
+      #     Can also add --active-patchbay=<path>
+      #
+      #------------------------------------------------------------------------
+
+      msg "$MyScript" "Starting QJackCtl and JACK with 'qjackctl --start'"
+      qjackctl --start &
+      sleep 2
+
+   else
+
+      #------------------------------------------------------------------------
+      # From .jackdrc on ASUS laptop
+      # /usr/bin/jackd -dalsa -r48000 -p1024 -n3 -Xraw -D -Chw:PCH -Phw:PCH
+      # /usr/bin/jackd -dalsa -dhw:0 -r48000 -p1024 -n2 &
+      #------------------------------------------------------------------------
+
+      msg "$MyScript" "/usr/bin/jackd -d$BackEnd $JackSettings"
+      /usr/bin/jackd -d$BackEnd $JackSettings &
+      sleep 1
+
+   fi
+
+else
+
+   msg "$MyScript" "Jack off"
+
+   if [ $UseQjackCtrl == "yes" ] ; then
+      msg "$MyScript"  "Killing qjackctl..."
+      killall qjackctl
+      sleep 1
+   fi
+
+   msg "$MyScript" "Killing jackd..."
+   killall jackd
+   sleep 1
+
+   if [ $DoMpd == "yes" ] ; then
+      sudo /bin/systemctl start mpd.socket
+      sudo /bin/systemctl start mpd.service
+      sleep 1
+      if [ $DoConky == "yes" ] ; then
+         conky -c /home/ahlstrom/.conky2rc & 2> /dev/null
+      fi
+   fi
+
+fi       # SetJack
+
+#------------------------------------------------------------------------------
+# vim: ts=3 sw=3 et ft=sh
+#------------------------------------------------------------------------------

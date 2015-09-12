@@ -1,0 +1,104 @@
+#!/bin/bash
+#------------------------------------------------------------------------------
+##
+# \file        binfunc
+# \library     bin
+# \author      Chris Ahlstrom
+# \date        2015-03-15 to 2015-09-07
+# \version     $Revision$
+# \license    	$XPC_SUITE_GPL_LICENSE$
+#
+#     This script provides standard functions for my ~/bin scripts.
+#     An optional external variable, LogFileName, if defined, is used
+#     as the location to dump the log.
+#
+#------------------------------------------------------------------------------
+
+#------------------------------------------------------------------------------
+#  Provide a sane environment, just in case it is needed.
+#------------------------------------------------------------------------------
+
+LANG=C
+export LANG
+export BinEditDate="2015-09-07"
+
+#------------------------------------------------------------------------------
+# Global variables and standard error codes for our scripts
+#------------------------------------------------------------------------------
+
+LogFileName=""
+
+Error_BadOption=1
+ErrorMsg_BadOption="Unsupported option"
+Error_LogFile=2
+ErrorMsg_LogFile="Please specify a --log name."
+ErrorMsg_BadLogFile="Please specify a legal (no hyphen) --log name."
+
+#------------------------------------------------------------------------------
+# die $exitcode $project $errormessage ... <optional additional strings>
+#------------------------------------------------------------------------------
+
+function die()
+{
+   ExitCode=$1
+   CurrProject=$2
+   Message="? $3"
+#  Message+=$'\n'
+   shift 3
+   while [ "$1" != "" ] ; do
+      Message+="  "
+      Message+="$1"
+      Message+=$'\n'
+      shift
+   done
+
+   if [ "$LogFileName" != "" ] ; then
+      echo "$Message" >> $LogFileName
+   fi
+
+   echo ""
+   echo "$Message"
+   echo "  Run this script with the --help option for more information."
+   exit $ExitCode
+}
+
+#------------------------------------------------------------------------------
+# msg $project $errormessage ... <optional additional strings>
+#------------------------------------------------------------------------------
+
+function msg()
+{
+   CurrProject=$1
+   Message="* $2"
+   shift 2
+   while [ "$1" != "" ] ; do
+      Message+="  "
+      Message+="$1"
+      Message+=$'\n'
+      shift
+   done
+
+   if [ "$LogFileName" != "" ] ; then
+      echo "$Message" >> $LogFileName
+   fi
+
+   echo ""
+   echo "$Message"
+}
+
+#------------------------------------------------------------------------------
+# setlog $filename
+#------------------------------------------------------------------------------
+
+function setlog()
+{
+   if [ "$1" == "" ] ; then
+      die $Error_LogFile "$MyScript" "$ErrorMsg_LogFile"
+   else
+      export LogFileName="$1"
+   fi
+   SUBSTR="${1:0:1}"
+   if [ $SUBSTR == "-" ] ; then
+      die $Error_LogFile "$MyScript" "$ErrorMsg_BadLogFile"
+   fi
+}

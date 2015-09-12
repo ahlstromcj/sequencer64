@@ -1,0 +1,11 @@
+[Desktop Entry]
+Name=Sequencer64
+GenericName=
+Comment=MIDI Loop Sequencer
+Icon=/usr/share/pixmaps/sequencer24.xpm
+
+Type=Application
+Categories=AudioVideo;Audio;
+
+Exec=sequencer64
+Terminal=false

@@ -1,0 +1,181 @@
+/******************************************************************************
+ * doc/dox/license.dox
+ *-----------------------------------------------------------------------------
+ *
+ *    This module provides the license text for this project.
+ *
+ *------------------------------------------------------------------------*//**
+
+\file       license.dox
+
+   This file is a copy of the main license file.
+
+\page       gpl_license_subproject Licenses
+\library    This application and its libraries, sub-applications, and documents.
+\author     Chris Ahlstrom 2015-09-10
+
+\section gpl_license_text License Terms for the This Project.
+
+   Wherever the tag $XPC_SUITE_GPL_LICENSE$ appears, or wherever reference
+   to the GPL licensing scheme (any version) is mentioned, substitute the
+   appropriate license text, depending on whether the project is a library,
+   application, documentation, or server software.  We're not going to
+   include paragraphs of licensing information in every module; you are
+   responsible for coming here to read the licensing information.
+   
+   These licenses apply to each sub-project and file artifact in the
+   project with which this license description was packaged.
+
+   Wherever the term <b>XPC</b> is encountered in this project, it
+   refers to my projects, which go beyond the package that contains this
+   document.
+
+\section gpl_license_application XPC Application License
+
+   The <b>XPC</b> application license is either the <b>GNU GPLv2</b>.
+   or the <b>GNU GPLv3</b>.  Generally, projects that originate with me use
+   the latter language, while projects I have extended may specify the
+   former license.
+
+   Copyright (C) 2015-2015 by Chris Ahlstrom
+
+   This program is free software; you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation; either version 3 of the License, or (at
+   your option) any later version.
+
+   This program is distributed in the hope that it will be useful, but
+   WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License along
+   with this program; if not, write to the
+  
+\verbatim
+   Free Software Foundation, Inc.
+   51 Franklin Street, Fifth Floor
+   Boston, MA 02110-1301, USA.
+\endverbatim
+
+   The text of the GNU GPL version 3 license can also be found here:
+
+      http://www.gnu.org/licenses/gpl-3.0.txt
+
+\section gpl_license_library XPC Library License
+
+   The <b>XPC</b> library license is the <b>GNU LGPLv3</b>.
+
+   Copyright (C) 2015-2015 by Chris Ahlstrom
+
+   This library is free software; you can redistribute it and/or modify
+   it under the terms of the GNU Lesser General Public License as published
+   by the Free Software Foundation; either version 3 of the License, or (at
+   your option) any later version.
+
+   This library is distributed in the hope that it will be useful, but
+   WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Lesser Public License for more details.
+
+   You should have received a copy of the GNU Lesser General Public License
+   along with this library; if not, write to the
+  
+\verbatim
+   Free Software Foundation, Inc.
+   51 Franklin Street, Fifth Floor
+   Boston, MA 02110-1301, USA.
+\endverbatim
+
+   The text of the GNU LGPL version 3 license can also be found here:
+
+      http://www.gnu.org/licenses/lgpl-3.0.txt
+
+\section gpl_license_documentation XPC Documentation License
+
+   The <b>XPC</b> documentation license is the <b>GNU FDLv1.3</b>.
+
+   Copyright (C) 2015-2015 by Chris Ahlstrom
+
+   This documentation is free documentation; you can redistribute it and/or
+   modify it under the terms of the GNU Free Documentation License as
+   published by the Free Software Foundation; either version 1.3 of the
+   License, or (at your option) any later version.
+
+   This documentation is distributed in the hope that it will be useful, but
+   WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Free
+   Documentation License for more details.
+
+   You should have received a copy of the GNU Free Documentation License
+   along with this documentation; if not, write to the
+  
+\verbatim
+   Free Software Foundation, Inc.
+   51 Franklin Street, Fifth Floor
+   Boston, MA 02110-1301, USA.
+\endverbatim
+
+   The text of the GNU FDL version 1.3 license can also be found here:
+
+      http://www.gnu.org/licenses/fdl.txt
+
+\section gpl_license_affero XPC Affero License
+
+   The <b>XPC</b> "Affero" license is the <b>GNU AGPLv3</b>.
+
+   Copyright (C) 2015-2015 by Chris Ahlstrom
+
+   This server software is free server software; you can redistribute it and/or
+   modify it under the terms of the GNU Affero General Public License as
+   published by the Free Software Foundation; either version 1.3 of the
+   License, or (at your option) any later version.
+
+   This documentation is distributed in the hope that it will be useful, but
+   WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Free
+   Documentation License for more details.
+
+   You should have received a copy of the GNU Affero General Public License
+   along with this server software; if not, write to the
+  
+\verbatim
+   Free Software Foundation, Inc.
+   51 Franklin Street, Fifth Floor
+   Boston, MA 02110-1301, USA.
+\endverbatim
+
+   The text of the GNU AGPL version 3 license can also be found here:
+
+      http://www.gnu.org/licenses/agpl-3.0.txt
+
+   At the present time, no <b>XPC</b> project uses the "Affero" license.
+
+\section gpl_license_summary XPC License Summary
+
+   Include one of these licenses in your Doxygen documentation with one of 
+   the following Doxygen tags specified above:
+
+\verbatim
+      \ref gpl_license_subproject
+      \ref gpl_license_application
+      \ref gpl_license_library
+      \ref gpl_license_documentation
+      \ref gpl_license_affero
+\endverbatim
+
+For more information on navigating GNU licensing, see this page:
+
+      http://www.gnu.org/licenses/
+
+Copies of these licenses (and some logos) are provided in the <tt> licenses
+</tt> directory of the main project (or you can search for them at
+<i>gnu.org</i>).
+
+ *//*-------------------------------------------------------------------------*/
+
+/******************************************************************************
+ * doc/dox/license.dox
+ *----------------------------------------------------------------------------
+ * vim: ts=3 sw=3 et syntax=doxygen
+ *//*-------------------------------------------------------------------------*/

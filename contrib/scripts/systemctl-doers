@@ -1,0 +1,10 @@
+# Allow this user to stop and start systemd services.  Currently, the main use
+# is for stopping mpd in order to run jackd.
+#
+# Change the username and host to match your setup.
+#
+# ahlstrom mlsasus =NOPASSWD: /usr/bin/systemctl stop,/usr/bin/systemctl start
+
+ahlstrom mlsasus =NOPASSWD: /bin/systemctl stop mpd.socket,/bin/systemctl start mpd.socket
+ahlstrom mlsasus =NOPASSWD: /bin/systemctl stop mpd.service,/bin/systemctl start mpd.service
+

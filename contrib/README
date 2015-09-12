@@ -1,0 +1,17 @@
+Contributed Code and Ideas
+Chris Ahlstrom
+2015-09-10 to 2015-09-11
+
+This directory contains contributed code, patches, and ideas for
+future work and testing found on the Internet and elsewhere.
+
+Bootstrap files:
+
+   config.rpath
+   mkinstalldirs-1.10
+
+Other files:
+
+   HOME.gitignore  My current ~/.gitignore file.
+
+# vim: sw=4 ts=4 wm=8 et ft=sh

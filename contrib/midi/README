@@ -1,0 +1,19 @@
+Contributed MIDI Files
+Chris Ahlstrom
+2015-09-11 to 2015-09-11
+
+This directory contains contributed MIDI files for examples and testing.
+
+   click_4_4.midi:
+   
+        Holds a click-track for use with the Seq24-session script.
+
+   reset.mid:
+   
+        A file that resets all MIDI channels.
+
+   b4uacuse-GM-format.midi:
+   
+        Hopefully, a good General MIDI file; created by Sequencer24.
+
+# vim: sw=4 ts=4 wm=8 et ft=sh

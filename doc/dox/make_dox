@@ -1,0 +1,142 @@
+#!/bin/bash
+#
+#******************************************************************************
+# make_dox (generic)
+#------------------------------------------------------------------------------
+##
+# \file       	make_dox
+# \library    	generic
+# \author     	Chris Ahlstrom
+# \date       	2015-08-08
+# \update     	2015-08-09
+# \version    	$Revision$
+# \license    	$XPC_SUITE_GPL_LICENSE$
+#
+#     This file creates the doxygen documentation desired, by changing to
+#     the original directory, running doxygen, and moving the results back
+#     to the original directory.
+#
+#     This is our way of handling out-of-source builds of documentation,
+#     without getting into the complexities of GNU Autotools method of
+#     supporting Doxygen.
+#
+#     Apart from the complexity of this work, another reason for using a
+#     script, instead of putting the code in Makefile.am, is that we need
+#     some bash features (e.g. pushd/popd), and also need to be able to run
+#     only one instance of bash -- 'make' runs each line of code on its own
+#     instance.
+#
+# \param $1
+#     Provides the directory where the source files of our Doxygen-based
+#     documentation are kept.  These files end with our conventional
+#     extension for Doxygen documents:  *.dox.  Normally, this directory
+#     ends up being $(srcdir), or project/doc/dox.
+#
+# \param $2
+#     Provides a string indicating which documentation we want to make.
+#     At present, the two choices are:
+#
+#        -  userman.  Make the user manual; leave out the design
+#           documentation.
+#        -  reference.  Make the reference manual, for developers.
+#
+# \usage
+#     The normal usage occurs in the Makefile.am file:
+#
+#        $(srcdir)/make_dox $(srcdir) docs
+#
+#     The usage of $(srcdir) is necessary because we did not try to set up
+#     support for having automake copy this script and the *.dox documents
+#     to the out-of-source directory.  We really don't want to do Doxygen
+#     the in the GNU Autotools way.
+#
+#------------------------------------------------------------------------------
+
+#******************************************************************************
+# To copy files or not?
+#------------------------------------------------------------------------------
+#
+#     This file should support in-source builds or out-of-source builds.
+#
+#     For in-source builds, we cannot copy the results to the previous
+#     directory, because they are the same directory, and an error will
+#     occur.  So, for an in-source build, where $(srcdir) == ".", we will
+#     not try to copy files.
+#
+#     For the out-of-source build, we will copy the files back to the
+#     previous directory.
+#
+#------------------------------------------------------------------------------
+
+DOCOPY="yes"
+NEWDIR="$1"
+TARGET="$2"
+LASTDIR="`pwd`"
+
+if [ "$NEWDIR" == "clean" ] ; then
+   rm -f *.log
+   rm -rf html/
+   rm -rf latex/
+   exit 0
+fi
+
+if [ "$TARGET" == "" ] ; then
+   NEWDIR="."
+   TARGET="$1"
+   echo "Using current directory for target '$TARGET'..."
+fi
+
+if [ $NEWDIR == "." ] ; then
+   DOCOPY="no"
+fi
+
+if [ "$DOXYGEN" == "" ] ; then
+   DOXYGEN="doxygen"
+fi
+
+echo "Pushing to $NEWDIR"
+pushd $NEWDIR
+
+if [ "$TARGET" == "reference" ] ; then
+
+	echo "$DOXYGEN doxy-reference.cfg > dox-progress.log 2> dox-errors.log ..."
+	$DOXYGEN doxy-reference.cfg > dox-progress.log 2> dox-errors.log
+	sed -e 's/letterpaper,/letterpaper,margin=2cm,/' -i latex/refman.tex
+	make --directory=latex pdf
+	cp latex/refman.pdf ../reference_manual.pdf
+
+   if [ $? == 0 ] ; then
+
+      if [ $DOCOPY == "yes" ] ; then
+
+         cp -r html/ $LASTDIR
+         cp -r latex/ $LASTDIR
+         mv dox-progress.log  dox-errors.log $LASTDIR
+         rm -rf html/
+         rm -rf latex/
+
+      fi
+
+   else
+
+      echo "? doxygen on target '$TARGET' failed!"
+
+   fi
+
+elif [ "$TARGET" == "userman" ] ; then
+
+	echo "Option 'userman' not supported in this project."
+
+fi
+
+echo "Changing back to $LASTDIR"
+popd
+
+#******************************************************************************
+# make_dox (generic)
+#------------------------------------------------------------------------------
+# Local Variables:
+# End:
+#------------------------------------------------------------------------------
+# vim: ts=3 sw=3 et ft=sh
+#------------------------------------------------------------------------------

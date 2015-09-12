@@ -1,0 +1,468 @@
+#!/bin/bash
+#
+#******************************************************************************
+# bootstrap (sequencer64)
+#------------------------------------------------------------------------------
+##
+# \file       	bootstrap
+# \library    	sequencer64
+# \author     	Chris Ahlstrom
+# \date       	2015-09-10
+# \update     	2015-09-12
+# \version    	$Revision$
+# \license    	$XPC_SUITE_GPL_LICENSE$
+#
+#     The above is modified by the following to remove even the mild GPL
+#     restrictions:
+#
+#     Use this script in any manner whatsoever.  You don't even need to give
+#     me any credit.
+#
+#     However, keep in mind the value of the GPL in keeping software and its
+#     descendant modifications available to the community for all time.
+#     runs the configure script by default.
+#
+#------------------------------------------------------------------------------
+
+#******************************************************************************
+#  Provide a sane environment, just in case it is needed.
+#------------------------------------------------------------------------------
+
+LANG=C
+export LANG
+CYGWIN=binmode
+export CYGWIN
+
+export SEQUENCER64_SCRIPT_EDIT_DATE="2015-09-12"
+export SEQUENCER64_LIBRARY_API_VERSION="1.0"
+export SEQUENCER64_LIBRARY_VERSION="$SEQUENCER64_LIBRARY_API_VERSION.0"
+
+#******************************************************************************
+#  Version info
+#------------------------------------------------------------------------------
+
+if [ "$1" == "--version" ] || [ "$1" == "-v" ] ; then
+   echo "sequencer64 version $SEQUENCER64_LIBRARY_VERSION $SEQUENCER64_SCRIPT_EDIT_DATE"
+   exit 0
+fi
+
+#******************************************************************************
+#  Set up for local bootstrapping
+#------------------------------------------------------------------------------
+
+source strap_functions
+
+if [ $? != 0 ] ; then
+   echo "'source strap_functions' failed.  Must abort."
+   exit 255
+fi
+
+checkdir sequencer64
+
+#******************************************************************************
+#  Option settings
+#------------------------------------------------------------------------------
+
+DOBOOTSTRAP="yes"
+DOCLEAN="no"
+DOFULLCLEAN="no"
+DODEBUG="no"
+DOTESTONLY="no"
+DOVERSION="no"
+LOGFILENAME=""
+M4DIR="m4"
+
+#******************************************************************************
+#  Help
+#------------------------------------------------------------------------------
+
+if [ "$1" == "--help" ] ; then
+
+   cat << E_O_F
+Usage: ./bootstrap [options]                                 (0.1-2015-09-12)
+
+   'bootstrap' sets up GNU automake support and libtool support for the
+   sequencer64 project.  It can also super-clean the project.
+
+ --clean             Delete the usual junk files from the project.
+ --full-clean        Also delete all configure-related files.  The bootstrap
+                     script will need to be run again.
+ --prefix dest       Change the destination for installation.
+ --debug, -ed,       Also configure for debugging, which also disables
+   --enable-debug    shared libraries/libtool for easier debugging.
+ --help              Show this help text.
+
+   The default bootstraps the projects.  Then one should run 'configure',
+   which sets up for a normal release build.  A common option for
+   'configure' is --enable-debug, which adds --disable-shared and sets
+   --configure.
+E_O_F
+
+   exit 1
+
+fi
+
+#******************************************************************************
+#  Brute-force options loop
+#------------------------------------------------------------------------------
+
+if [ $# -ge 1 ] ; then
+
+   while [ "$1" != "" ] ; do
+
+#     echo "- Processing command-line option $1"
+
+      case "$1" in
+
+         --prefix)
+            shift
+            INSTALL_PREFIX="$1"
+            ;;
+
+         --no-bootstrap | -nb)
+            DOBOOTSTRAP="no"
+            ;;
+
+         --clean | clean)
+            DOBOOTSTRAP="no"
+            DOCLEAN="yes"
+            ;;
+
+         --full-clean | --super-clean)
+            DOBOOTSTRAP="no"
+            DOFULLCLEAN="yes"
+            DOCLEAN="yes"
+            ;;
+
+         --debug | -ed | --enable-debug)
+            DODEBUG="yes"
+            ;;
+
+         --version)
+            DOVERSION="yes"
+            DOBOOTSTRAP="no"
+            ;;
+
+         *)
+            echo "? Unsupported bootstrap option; --help for more information" ;
+            exit $EXIT_ERROR_NO_SUCH_OPTION
+            ;;
+
+      esac
+      shift
+   done
+fi
+
+#******************************************************************************
+#  Version info
+#------------------------------------------------------------------------------
+
+if [ $DOVERSION == "yes" ] ; then
+   echo "sequencer64 version $SEQUENCER64_LIBRARY_VERSION $SEQUENCER64_SCRIPT_EDIT_DATE"
+   exit 0
+fi
+
+#******************************************************************************
+#  Implement the clean option.
+#------------------------------------------------------------------------------
+#
+#     This goes well beyond "make clean" and "make distclean".  It cleans
+#     out /everything/ that gets created by bootstrapping and building the
+#     library and test application.
+#
+#------------------------------------------------------------------------------
+
+if [ $DOCLEAN == "yes" ] ; then
+   make clean 
+   clean_cfgfiles
+   clean_gnufiles
+   clean_tempfiles
+   clean_m4
+fi
+
+if [ $DOFULLCLEAN == "yes" ] ; then
+
+   rm -rf config
+   rm -rf include
+   rm -rf po
+   clean_debfiles
+   echo "   All junk files removed."
+
+fi
+
+if [ $DOBOOTSTRAP == "yes" ] ; then
+
+#************************************************************************
+#  Set up GNU Autotools
+#------------------------------------------------------------------------
+
+   AUTOMAKE_BAD=no
+   INSTALL_BAD=no
+   ACVERSION=
+   ACLOCAL=aclocal${ACVERSION}
+   AUTOCONF=autoconf
+   AUTOHEADER=autoheader
+   AUTOMAKE=automake
+   LIBTOOLIZE=libtoolize
+
+# Exit if a simple command exits with a non-zero status.
+
+   set -e
+
+# After expanding a simple command, display PS4 and the command with its
+# expanded arguments.  This setting makes any error messages too
+# difficult to read:
+#
+# set -x
+
+# Check Autoconf version and perform clean ups if all is well.
+
+   if [ -x `which autoconf` ] ; then
+
+      AC_VER=`autoconf --version | head -1 | sed 's/^[^0-9]*//'`
+      AC_VER_MAJOR=`echo $AC_VER | cut -f1 -d'.'`
+      AC_VER_MINOR=`echo $AC_VER | cut -f2 -d'.' | sed 's/[^0-9]*$//'`
+
+      if [ "$AC_VER_MAJOR" -lt "2" ] ; then
+
+         echo
+         echo "Autoconf 2.13 or greater may be needed to build configure."
+         echo "Edit the bootstrap file to ignore this test, if desired."
+         echo
+         exit $EXIT_ERROR_AUTOCONF_VERSION
+
+      fi
+
+      if [ "$AC_VER_MINOR" -lt "13" ] ; then
+
+         echo
+         echo "Autoconf 2.13 or greater may be needed to build configure."
+         echo "Edit the bootstrap file to ignore this test, if desired."
+         echo
+         exit $EXIT_ERROR_AUTOCONF_VERSION_2
+
+      fi
+
+      if [ "$AC_VER_MINOR" -lt "50" ] ; then
+
+         if [ -e configure.ac ] ; then
+            if [ ! -e configure.in ] ; then
+               ln -s configure.ac configure.in
+            fi
+         fi
+         echo "Some warnings about cross-compiling are normal."
+
+      else
+
+         rm -f configure.in
+         if [ -x configure ] ; then
+
+            echo The sequencer64 configure script already exists.  Replacing it.
+
+         fi
+      fi
+
+   else
+
+      cat << E_O_F
+
+   The GNU autoconf application was not found.  This project requires GNU
+   autoconf (and automake, autopoint, and ac-autoconf-archive) in order to
+   bootstrap itself.
+
+E_O_F
+      exit $EXIT_ERROR_AUTOCONF_VERSION_3
+   fi
+
+# Check for automake.
+
+   amvers="none"
+   if automake-1.8 --version >/dev/null 2>&1; then
+      amvers="-1.8"
+
+     # If we also have 1.6 (>> 1.6.1), use it instead because it is faster
+
+      if automake-1.6 --version >/dev/null 2>&1; then
+         if expr "`automake-1.6 --version | sed -e '1s/[^0-9]*//' -e q`" ">" "1.6.1" > /dev/null 2>&1; then
+            amvers="-1.6"
+         fi
+      fi
+   elif automake-1.7 --version >/dev/null 2>&1; then
+      amvers="-1.7"
+
+      # If we also have 1.6 (>> 1.6.1), use it instead because it is faster
+
+      if automake-1.6 --version >/dev/null 2>&1; then
+         if expr "`automake-1.6 --version | sed -e '1s/[^0-9]*//' -e q`" ">" "1.6.1" > /dev/null 2>&1; then
+            amvers="-1.6"
+         fi
+      fi
+
+   elif automake-1.6 --version >/dev/null 2>&1; then
+
+      amvers="-1.6"
+      if expr "`automake-1.6 --version | sed -e '1s/[^0-9]*//' -e q`" "<=" "1.6.1" > /dev/null 2>&1; then
+         AUTOMAKE_BAD=yes
+      fi
+
+   elif automake-1.5 --version >/dev/null 2>&1; then
+
+      INSTALL_BAD=yes
+      amvers="-1.5"
+
+   elif automake --version > /dev/null 2>&1; then
+
+      amvers=""
+      case "`automake --version | sed -e '1s/[^0-9]*//' -e q`" in
+         0|0.*|1|1.[01234]|1.[01234][-.]*)
+            amvers="none" ;;
+         1.5|1.5.*)
+            INSTALL_BAD=yes ;;
+         1.6|1.6.0|1.6.1)
+            AUTOMAKE_BAD=yes ;;
+      esac
+   fi
+
+#******************************************************************************
+# Check for the installation of the GNU gettext facility.
+# Autopoint is available from 0.11.3, but we need at least 0.11.5
+#------------------------------------------------------------------------------
+
+# Check for pkg-config
+
+   if pkg-config --version >/dev/null 2>&1; then
+      PKGCONFIG=yes
+   else
+      PKGCONFIG=no
+   fi
+
+#************************************************************************
+# Create config and m4 directories.  Note that they might be empty for
+# this project.  Also create an include directory, mainly for config.h
+# stuff.
+#------------------------------------------------------------------------
+
+   mkdir -p aux-files
+   mkdir -p config
+   mkdir -p m4
+   mkdir -p po
+   mkdir -p include
+
+#************************************************************************
+# Call a number of "auto" programs in the strict order shown below.  See
+# "info autopoint" for details.  Note:  Earlier versions of auto-tools
+# don't ignore duplicate definitions of macros.  (The system normally
+# provides m4 macros in /usr/share/aclocal, but the project also
+# provides them in the project's m4 directory.)
+#------------------------------------------------------------------------
+
+# We still need to make aux-files/config.rpath and some other files
+# available, since they are listed in configure.ac, and not provided by
+# autoconf:
+
+   cp contrib/config.rpath aux-files
+
+   run_cmd ${ACLOCAL} -I ${M4DIR} --install
+   run_cmd ${AUTOCONF}
+   run_cmd ${AUTOHEADER}
+
+#  The LT_INIT macro of libtool 2.0 (formerly called AC_PROG_LIBTOOL)
+#  would do this, but Debian ships with version 1.5 libtool, so we have
+#  to do things the old-fashioned way.
+
+   run_cmd ${LIBTOOLIZE} --automake --force --copy
+   run_cmd ${AUTOMAKE} --foreign --add-missing --copy
+
+# Automake seems to need this one, but doesn't provide it!
+
+   cp contrib/mkinstalldirs-1.10 aux-files/mkinstalldirs
+
+# At this point, remove files which always need to be regenerated.
+# Right now, this is done with the --clean option.
+
+   case "$PKGCONFIG" in
+
+     yes) ;;
+     no) cat << E_O_F
+
+   =============================================================================
+   NOTE: The "pkg-config" utility is not installed on your system; detection of
+      the gtk-2.0 and GNOME 2.0 libraries will not be reliable.
+E_O_F
+     ;;
+
+   esac
+
+   case "$AUTOMAKE_BAD" in
+     no) ;;
+     yes) cat << E_O_F
+
+   =============================================================================
+   NOTE: Your version of automake has a bug which prevents proper plugin
+      compilation. Either compile sequencer64 with the --disable-plugins flag, or
+      use a version of automake newer than 1.6.1 (1.6.2 is OK, and so are
+      the 1.5 series).
+E_O_F
+     ;;
+
+   esac
+
+   case "$INSTALL_BAD" in
+
+     no) ;;
+     yes) cat << E_O_F
+
+   =============================================================================
+   NOTE: Your version of automake has a bug which prevents proper installation.
+      Do not use "make install" with this version of automake, or use a
+      version of automake newer than 1.5 (such as 1.6 or 1.7).
+E_O_F
+     ;;
+
+   esac
+
+   if [ -x /usr/bin/dot ] ; then
+      echo "graphviz package found"
+   else
+      echo "! To build the documentation, you need to install graphviz."
+   fi
+
+   if [ -x /usr/bin/doxygen ] ; then
+      echo "doxygen package found"
+   else
+      echo "! To build the documentation, you need to install doxygen."
+   fi
+
+   echo "Bootstrap complete at `date`" >> bootstrap.stamp
+
+#************************************************************************
+# --configure
+#------------------------------------------------------------------------
+
+   if [ "$DOBOOTSTRAP" == "yes" ] ; then
+
+      if [ "$DODEBUG" == "yes" ] ; then
+
+         echo "Running './configure --enable-debug --disable-shared'..."
+         ./configure --enable-debug --disable-shared
+
+      else
+
+         cat << E_O_F
+
+Now run './configure' to configure sequencer64 for compilation, or './configure
+--help' for configuration options.
+E_O_F
+      fi
+   fi
+
+fi
+
+#******************************************************************************
+# bootstrap (sequencer64)
+#------------------------------------------------------------------------------
+# Local Variables:
+# End:
+#------------------------------------------------------------------------------
+# vim: ts=3 sw=3 et ft=sh
+#------------------------------------------------------------------------------

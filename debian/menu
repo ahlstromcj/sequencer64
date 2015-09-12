@@ -1,0 +1,8 @@
+?package(sequencer64):\
+ needs="X11"\
+ section="Applications/Sound"\
+ title="Sequencer64"\
+ command="/usr/bin/sequencer64"\
+ hints="MIDI,Music Editor"\
+ description="Sequencer64 is a simple MIDI sequencer based on Seq24."\
+ icon="/usr/share/pixmaps/sequencer24.xpm"

@@ -1,0 +1,26 @@
+README for Sequencer64 0.9.9.0
+Chris Ahlstrom
+2015-09-10 to 2015-09-12
+
+The sequencer64 project is a continuation of sequencer24 to refactor it to
+be tighter and easier to transition to to GTKmm 3, and much more.
+Currently, it is basically equivalent to that project, but with
+LASH support disabled by default in the configuration.
+
+The code has been broken up into libraries.  The next step
+is to better separate the GUI support from the MIDI and LASH support.
+
+This package is currently oriented to developers.  Please see the
+INSTALL file for a brief description on installation.
+
+See the ROADMAP file for more information and a kind of TODO list.
+
+Note that sequencer24 is pretty well documented by the following
+project, which provides a 60-page PDF file and its LaTeX source code:
+
+   https://github.com/ahlstromcj/sequencer24-doc.git
+
+However, we have found some documentation mistakes while researching, and
+will have to correct those mistakes soon.
+
+# vim: sw=4 ts=4 wm=8 et ft=sh

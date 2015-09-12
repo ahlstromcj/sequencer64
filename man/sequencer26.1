@@ -1,0 +1,103 @@
+.TH Sequencer64 "Sept 11 2015" "Version 0.9.9" "Sequencer64 Manual Page"
+
+.SH NAME
+Sequencer64 - Real time MIDI sequencer refactored from Seq24
+
+.SH SYNOPSIS
+.B sequencer64
+[\fIOPTIONS\fP] [\fIFILENAME\fP]
+
+.SH DESCRIPTION
+.PP
+\fISequencer64\fP is a real-time MIDI sequencer. It was created to
+provide a simple interface for editing and playing MIDI 'loops'.
+It uses gtk-2 for the user interface.
+
+.SH OPTIONS
+Sequencer64 accepts the following options:
+.TP 8
+.B  \-\-help
+Display a list of all commandline options
+.TP 8
+.B  \-\-version
+Display the program version
+.TP 8
+.B  \-\-legacy
+Save the MIDI file in the old Seq24 format, as unspecified
+binary data, instead of as a legal MIDI track with meta events.
+The user-interface will indicate this mode.  This mode is also
+used if the application is invoked as the
+\fIseq24\fP
+command.
+.TP 8
+.B \-\-lash
+If LASH support is compiled into the program, this option
+enables it.
+.TP 8
+.B \-\-file \fI<filename>\fP
+Load MIDI file on startup
+.TP 8
+.B \-\-manual_alsa_ports
+Sequencer64 won't attach alsa ports
+.TP 8
+.B \-\-showmidi
+Dumps incoming midi to screen
+.TP 8
+.B \-\-priority
+Runs higher priority with FIFO scheduler
+.TP 8
+.B \-\-pass_sysex
+Passes any incoming sysex messages to all outputs
+.TP 8
+.B \-\-ignore \fI<number>\fP
+Ignore ALSA device <number>
+.TP 8
+.B \-\-show_keys
+Prints pressed key value
+.TP 8
+.B \-\-interaction_method \fI<number>\fP
+Select mouse interaction method
+	(0 = sequencer64) (default)
+	(1 = fruity loops method)
+.TP 8
+.B \-\-jack_transport
+sequencer64 will sync to JACK transport
+.TP 8
+.B \-\-jack_master
+sequencer64 will try to be JACK master
+.TP 8
+.B \-\-jack_master_cond
+JACK master will fail if there is already a master
+.TP 8
+.B \-\-jack_start_mode \fI<x>\fP
+When sequencer64 is synced to JACK, the following play modes are available:
+	(0 = live mode)
+	(1 = song mode) (default)
+.TP 8
+.B \-\-stats
+Print statistics on commandline while running
+.TP 8
+.B \-\-jack_session_uuid \fI<uuid>\fP
+Set uuid for jack session
+
+.SH FILES
+\fB$HOME\fP/sequencer64rc stores the user-configuration settings for
+sequencer64.
+\fB$HOME\fP/sequencer64usr stores the MIDI-configuration settings for
+sequencer64, but is not present by default.
+
+.SH SUGGESTIONS AND BUG REPORTS
+Any bugs found should be reported to the upstream author and/or package 
+maintainer.
+
+.SH OTHER INFO
+The current Sequencer64 project homepage is a simple git repository at the
+https://github.com/ahlstromcj/sequencer64.git URL.
+
+It is released under the GNU GPL license.
+
+.SH AUTHOR
+Sequencer64 was written by Chris Ahlstrom <ahlstromcj@gmail.com>.
+Seq24 was written by Rob C. Buse <seq24@filter24.org> and the Seq24team.
+
+This manual page was written by Chris Ahlstrom <ahlstromcj@gmail.com>.

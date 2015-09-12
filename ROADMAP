@@ -1,0 +1,60 @@
+Sequencer64 Roadmap
+Chris Ahlstrom
+2015-09-10 to 2015-09-11
+
+The starting point for the Sequencer64 project is version 0.9.4 of
+Sequencer24.  Sequencer24 itself started with version 0.9.2 of Seq24.
+
+The following changes are planned ('x' means it is done, 'y' means it is
+in progress, and 'z' means it will be moved to a later branch):
+
+x  -  To fix:
+      -  Sometimes the editing of event values in the event data section
+         will not work. The workaround is to do a Ctrl-A, and the click in
+         the roll to deselect the selection; that makes the event value
+         editing work again.
+      -  The pattern right-click Cut menu entry does not seem to work.
+         The loop or pattern remains in place.  Is this actually meant to
+         cut selected events?
+      -  While one is typing in the name of the set in this field, the
+         keystrokes will affect the panel window, causing playback to
+         start and pattern boxes to be toggled!
+      -  While one is typing in the number of the set in the Set number field,
+         the keystrokes will affect the panel window, causing playback to
+         start and pattern boxes to be toggled!
+      -  Determine the feasibility of modifying selected sequences
+         to change the output port (MIDI buss) number.  Perhaps offload or
+         copy these specifications to the proprietary section.
+      -  Consider an option to override the proprietary section with data
+         from a file.
+   -  Branch off to a "Library" branch:
+      -  Break out non-GUI functionality into libsequencer64.
+      -  Unit test each element as appropriate using xpc-suite
+         functionality.
+      -  Add some base classes and additional member functions for common
+         functionality:
+         -  Gtk::Drawable-derived base class
+         -  Handle Windows vs. Linux code more cleanly.
+            -  Windows/Linux mastermidibus bases class
+            -  Windows/Linux midibus bases class
+         -  An autolock object to simplify many of the locked functions.
+      -  Enhance documentation and recreate it.
+      -  Rebuild application using library code.
+      -  Verify functionality.
+      -  Merge "Library" back into the main trunk.
+   -  Branch off to an "Enhancements" branch (highly provisional):
+      -  Convert to gtkmm-3.
+      -  Add optional build using Qt 5.
+      -  Flesh out the support for PortMidi.
+      -  Support MingW builds in Windows a la the Subatomic Glue port.
+
+Eventually, there will be a few features and fixes to try to add:
+
+   -  A MIDI event text pane to display (and later edit) all MIDI events.
+   -  Speed up the horizontal resize on the Song/Performance Editor.
+   -  Make it possible to use Alt or Ctrl plus a sequence-toggling
+      key to bring up an edit dialog for that sequence.
+   -  Get the Song editor's "Increase size of grid" button working.
+      Also document it.
+
+# vim: sw=4 ts=4 wm=8 et ft=sh

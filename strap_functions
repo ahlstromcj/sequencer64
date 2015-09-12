@@ -1,0 +1,601 @@
+#!/bin/bash
+#
+#******************************************************************************
+# strap_functions (sequencer64)
+#------------------------------------------------------------------------------
+##
+# \file       	strap_functions
+# \library    	sequencer64
+# \author     	Chris Ahlstrom
+# \date       	2015-07-24
+# \update     	2015-09-10
+# \version    	$Revision$
+# \license    	$XPC_SUITE_GPL_LICENSE$
+#
+#     The above is modified by the following to remove even the mild GPL
+#     restrictions:
+#
+#     Use this script in any manner whatsoever.  You don't even need to give
+#     me any credit.  However, keep in mind the value of the GPL in keeping
+#     software and its descendant modifications available to the community
+#     for all time.
+#
+#     This module provides some bootstrap- and build-related functions the
+#     top-level bootstrap script can use.  It does a much more thorough job
+#     of cleaning out junk/derived files.  We will ultimate have files
+#     produced by gcov, gprof, valgrind, and maybe some other development
+#     applications, and we don't want to distribute them accidentally.
+#
+# Functions defined:
+#
+#     -  exitcode = die (exitcode, itemname, errormessage)
+#        Writes out an error message with context information, and then
+#        aborts the script.
+#     -  exitcode = checkdir(subdir)
+#     -  void log (itemname, message)
+#     -  void checklog (void) [can abort]
+#     -  void run_cmd (nameofprogram) [can abort]
+#     -  void clean_tree (void)
+#     -  void clean_m4 (void)
+#     -  void clean_by_ext (list_of_extensions)
+#     -  void clean_tempfiles (void)
+#     -  void clean_cfgfiles (void)
+#     -  void clean_gnufiles (void)
+#     -  void clean_debfiles (void)
+#     -  void clean_doxfiles (void)
+#     -  void clean_winfiles (void)
+#     -  void clean_testapps (void)
+#     -  void clean_project (project_directory)
+#     -  void save_config_make (void)
+#
+#------------------------------------------------------------------------------
+
+#******************************************************************************
+#  Provide a sane environment, just in case it is needed.
+#------------------------------------------------------------------------------
+
+LANG=C
+export LANG
+CYGWIN=binmode
+export CYGWIN
+
+#******************************************************************************
+#  Known exit codes
+#------------------------------------------------------------------------------
+
+EXIT_ERROR_GENERIC=1
+EXIT_ERROR_NO_SUCH_OPTION=2
+EXIT_ERROR_LOG=3
+EXIT_ERROR_NO_SUCH_COMMAND=4
+EXIT_ERROR_NO_SCRIPTS_DIR=5
+EXIT_ERROR_AUTOCONF_VERSION=6
+EXIT_ERROR_AUTOCONF_VERSION_2=7
+EXIT_ERROR_AUTOCONF_VERSION_3=8
+EXIT_ERROR_GETTEXT=9
+EXIT_ERROR_WGET=10
+EXIT_ERROR_BOOTSTRAP_NOT_RUN=11
+EXIT_ERROR_HELP=12
+EXIT_ERROR_NO_SUBIDR=13
+EXIT_ERROR_TEST_ONLY=14
+EXIT_ERROR_NO_BUILDDIR=15
+EXIT_ERROR_NO_PROJECT=16
+EXIT_ERROR_NO_LOGNAME=17
+EXIT_ERROR_FAILED=18
+EXIT_ERROR_NO_SUCH_FILE=19
+EXIT_ERROR_TEST_FAILED=20
+EXIT_ERROR_NO_BFUNCTIONS=255
+
+#******************************************************************************
+# die $EXITCODE $PROJECT $ERRORMESSAGE ...
+#------------------------------------------------------------------------------
+#
+#     Emits the $PROJECT name provided, the $ERRORMESSAGE, and any other
+#     parameters provided.  Then it exits with the value of $EXITCODE.
+#
+#     For the bash shell, the exit codes range from 0 to 255.  If a larger
+#     value is provided, bash changes it modulo 256.  In other words, the
+#     exit code is a single unsigned byte.
+#
+#------------------------------------------------------------------------------
+
+function die()
+{
+   EXITCODE=$1
+   CURPROJECT=$2
+   MESSAGE="? [$CURPROJECT] $3"
+   MESSAGE+=$'\n'
+   shift 3
+   while [ "$1" != "" ] ; do
+      MESSAGE+="  "
+      MESSAGE+="$1"
+      MESSAGE+=$'\n'
+      shift
+   done
+
+   if [ "$DOLOG" == "yes" ] && [ "$LOGFILENAME" != "" ] ; then
+      echo "$MESSAGE" >> $LOGFILENAME
+   fi
+
+   echo "$MESSAGE"
+   echo "Run this script with the --help option for more information."
+   echo ""
+   exit $EXITCODE
+}
+
+#******************************************************************************
+# warn $EXITCODE $PROJECT $ERRORMESSAGE ...
+#------------------------------------------------------------------------------
+#
+#     Just like die(), except it returns the exit code instead of exiting.
+#
+#------------------------------------------------------------------------------
+
+function warn()
+{
+   EXITCODE=$1
+   CURPROJECT=$2
+   MESSAGE="? [$CURPROJECT] $3"
+   MESSAGE+=$'\n'
+   shift 3
+   while [ "$1" != "" ] ; do
+      MESSAGE+="  "
+      MESSAGE+="$1"
+      MESSAGE+=$'\n'
+      shift
+   done
+
+   if [ "$DOLOG" == "yes" ] && [ "$LOGFILENAME" != "" ] ; then
+      echo "$MESSAGE" >> $LOGFILENAME
+   fi
+
+   echo "$MESSAGE"
+   echo "Run this script with the --help option for more information."
+   echo ""
+   return $EXITCODE
+}
+
+#******************************************************************************
+#  checkdir $SUBDIR
+#------------------------------------------------------------------------------
+
+checkdir()
+{
+   if [ ! -d "$1" ] ; then
+      warn $EXIT_ERROR_NO_SUBDIR "checkdir()" \
+         "COULD NOT FIND THE '$1' DIRECTORY." "$\n" \
+         "Please run this script within the sequencer64 directory hierarchy"
+      return $EXIT_ERROR_NO_SUBDIR
+   else
+      return 0
+   fi
+}
+
+#******************************************************************************
+#  log $PROJECT $MESSAGE ...
+#------------------------------------------------------------------------------
+
+function log()
+{
+   CURPROJECT=$1
+   MESSAGE="[$CURPROJECT] $2"
+   MESSAGE+=$'\n'
+   shift 2
+   while [ "$1" != "" ] ; do
+      MESSAGE+="  "
+      MESSAGE+="$1"
+      MESSAGE+=$'\n'
+      shift
+   done
+
+   if [ $DOLOG == "yes" ] && [ $LOGFILENAME != "" ] ; then
+      echo "$MESSAGE" >> $LOGFILENAME
+   else
+      DOLOG="no"
+   fi
+
+   echo "$MESSAGE"
+}
+
+#******************************************************************************
+# checklog
+#------------------------------------------------------------------------------
+
+function checklog()
+{
+   if [ "$DOLOG" == "yes" ] ; then
+
+      if [ "$LOGFILENAME" == "" ] ; then
+         die $EXIT_ERROR_LOG "LOG" \
+            "? Missing name for the --log option."
+      else
+         echo "* Logging main commands to $LOGFILENAME..."
+         if [ ! -f $LOGFILENAME ] ; then
+
+            touch $LOGFILENAME
+            if [ $? != 0 ] ; then
+               die $EXIT_ERROR_LOG "LOG" \
+                  "? Creating log-file $LOGFILENAME failed, aborting!"
+            else
+               log "sequencer64 bootstrap script" "`date`"
+            fi
+         fi
+      fi
+   fi
+}
+
+#******************************************************************************
+#  run_cmd $NAME_OF_PROGRAM
+#------------------------------------------------------------------------------
+
+run_cmd()
+{
+   if [ "$DOBOOTSTRAP" == "yes" ] ; then
+      echo "* Running sequencer64 library suite build command $*"
+      if [ -x /usr/bin/$1 ] ; then
+         if ! $* ; then
+            die $EXIT_ERROR_NO_SUCH_COMMAND "run_cmd" \
+               "The bootstrap command failed!"
+         fi
+      else
+         die $EXIT_ERROR_NO_SUCH_COMMAND "run_cmd" \
+            "Program $1 does not exist, exiting script!"
+      fi
+   fi
+}
+
+#******************************************************************************
+#  clean_tree
+#------------------------------------------------------------------------------
+#
+#     Cleans out the whole sequencer64 tree of garbage.
+#
+#------------------------------------------------------------------------------
+
+function clean_tree()
+{
+   if [ $? == 0 ] ; then
+
+      clean_tempfiles
+      clean_gnufiles
+      clean_debfiles
+      clean_doxfiles
+      clean_winfiles
+      clean_testapps
+      clean_m4
+
+#     The following remnant from an in-source build can screw up an
+#     out-of-source (e.g. debug) build if it remains around.
+
+      rm -f include/sequencer64-config.h
+
+   fi
+}
+
+#******************************************************************************
+#  clean_m4
+#------------------------------------------------------------------------------
+#
+#     Script helper function for cleaning out auto-copied m4 files
+#
+#------------------------------------------------------------------------------
+
+function clean_m4()
+{
+   rm -f m4/codeset.m4
+   rm -f m4/gettext.m4
+   rm -f m4/glibc2.m4
+   rm -f m4/glibc21.m4
+   rm -f m4/iconv.m4
+   rm -f m4/intdiv0.m4
+   rm -f m4/intl.m4
+   rm -f m4/intldir.m4
+   rm -f m4/intmax.m4
+   rm -f m4/inttypes-pri.m4
+   rm -f m4/inttypes_h.m4
+   rm -f m4/lcmessage.m4
+   rm -f m4/lib-ld.m4
+   rm -f m4/lib-link.m4
+   rm -f m4/lib-prefix.m4
+   rm -f m4/libtool.m4
+   rm -f m4/lock.m4
+   rm -f m4/longdouble.m4
+   rm -f m4/longlong.m4
+   rm -f m4/lt*.m4
+   rm -f m4/nls.m4
+   rm -f m4/po.m4
+   rm -f m4/printf-posix.m4
+   rm -f m4/progtest.m4
+   rm -f m4/size_max.m4
+   rm -f m4/stdint_h.m4
+   rm -f m4/uintmax_t.m4
+   rm -f m4/ulonglong.m4
+   rm -f m4/visibility.m4
+   rm -f m4/wchar_t.m4
+   rm -f m4/wint_t.m4
+   rm -f m4/xsize.m4
+   rm -f m4/Makefile.in m4/Makefile m4/*.m4~
+}
+
+#******************************************************************************
+#  clean_by_ext $EXTLIST
+#------------------------------------------------------------------------------
+#
+#     Cleans out the whole sequencer64 tree of the obvious garbage,
+#     determined by file extension.
+#
+#------------------------------------------------------------------------------
+
+function clean_by_ext()
+{
+   for EXT in $1
+   do
+      find . -iname "*.$EXT" -exec rm -f '{}' \; 2> /dev/null
+   done
+}
+
+#******************************************************************************
+#  clean_tempfiles
+#------------------------------------------------------------------------------
+#
+#     Cleans out the whole sequencer64 tree of the obvious garbage,
+#     determined by file name.  This function covers temporary files not
+#     covered by other cleaning functions.
+#
+#------------------------------------------------------------------------------
+
+function clean_tempfiles()
+{
+   local TEMPFILES="core vgcore dox-stamp bootstrap.stamp"
+   echo "* Cleaning temp-files..."
+   for FILE in $TEMPFILES
+   do
+      find . -iname $FILE -exec rm -f '{}' \; 2> /dev/null
+   done
+
+# vim swap-files, backup files, my own temp files, log files
+
+   find . -name "out.*" -exec rm -f '{}' \; 2> /dev/null
+   find . -name "*.swp" -exec rm -f '{}' \; 2> /dev/null
+   find . -name ".*.swp" -exec rm -f '{}' \; 2> /dev/null
+   find . -name "*.t" -exec rm -f '{}' \; 2> /dev/null
+   find . -name "*.hexer" -exec rm -f '{}' \; 2> /dev/null
+   find . -name "*~" -exec rm -f '{}' \; 2> /dev/null
+   clean_by_ext "bak t tmp log"
+   find . -name "tmwrk*" -exec rm -rf '{}' \; 2> /dev/null
+   find . -name "tmpcvs*" -exec rm -rf '{}' \; 2> /dev/null
+   find . -name "tmp" -exec rm -rf '{}' \; 2> /dev/null
+
+#  find . -name "safety" -exec rm -rf '{}' \; 2> /dev/null
+}
+
+#******************************************************************************
+#  clean_cfgfiles
+#------------------------------------------------------------------------------
+#
+#     Cleans out the sequencer64 tree of GNU configure files.  Used for a
+#     full cleaning.
+#
+#------------------------------------------------------------------------------
+
+function clean_cfgfiles()
+{
+   local CFGFILES="configure libtool depcomp Makefile.in ltmain.sh"
+   echo "* Cleaning configure-related files..."
+   for FILE in $CFGFILES
+   do
+      find . -name $FILE -exec rm -f '{}' \; 2> /dev/null
+   done
+   rm -rf aux-files 
+}
+
+#******************************************************************************
+#  clean_gnufiles
+#------------------------------------------------------------------------------
+#
+#     Cleans out the whole sequencer64 tree of GNU droppings.
+#
+#     libtoolize files (these may be links).  But careful, though.  We need
+#     the following for "make dist":
+#
+#        config.guess  config.sub  depcomp  install-sh  ltmain.sh  missing
+#        texinfo.tex
+#
+#------------------------------------------------------------------------------
+
+function clean_gnufiles()
+{
+   local GNUFILES="configure.scan _configs.sed \
+ aclocal.m4 acinclude.m4 .dirstamp Makefile stamp-h1 \
+ config.lt config.status"
+
+   rm -f config.guess config.sub
+   rm -f config.guess.* config.sub.*
+
+   echo "* Cleaning GNU files..."
+   for FILE in $GNUFILES
+   do
+      find . -name $FILE -exec rm -f '{}' \; 2> /dev/null
+   done
+
+   local GNUEXTS="a la o lo Po so"
+
+   for EXT in $GNUEXTS
+   do
+      find . -iname "*.$EXT" -exec rm -f '{}' \; 2> /dev/null
+   done
+
+   local GNUDIRS="autom4te.cache .deps .libs"   # i18n
+
+   for DIR in $GNUDIRS
+   do
+      find . -name $DIR -exec rm -rf '{}' \; 2> /dev/null
+   done
+}
+
+#******************************************************************************
+# clean_debfiles
+#------------------------------------------------------------------------------
+#
+#     Cleans out the whole sequencer64 tree of Debian-related files.
+#
+#     We could run "dh_clean" instead.
+#
+#------------------------------------------------------------------------------
+
+function clean_debfiles()
+{
+   #  local DEBFILES="debian/files debian/*.log debian/*-dev"
+   #
+   #  echo "* Cleaning Debian files..."
+   #  echo "! clean_debfiles() needs work, just printing for now"
+   #  for FILE in $DEBFILES
+   #  do
+   #     find . -path "*.$FILE" # -exec rm -f '{}' \; 2> /dev/null
+   #  done
+
+   debian/rules clean
+}
+
+#******************************************************************************
+#  clean_doxfiles
+#------------------------------------------------------------------------------
+#
+#     Cleans out the whole sequencer64 tree of Doxygen-related files.  Be
+#     careful, as this function removes directories named "html" and
+#     "latex".  If you have actual need for such directories, rename them
+#     (e.g. "HTML" and "LaTeX").
+#
+#     This, of course, is a Chris convention.  :-)
+#
+#     PDFs are also removed; we will always derive them from Doxygen files.
+#
+#------------------------------------------------------------------------------
+
+function clean_doxfiles()
+{
+   echo "* Cleaning Doxygen files and PDFs..."
+   find . -name "html" -exec rm -rf '{}' \; 2> /dev/null
+   find . -name "latex" -exec rm -rf '{}' \; 2> /dev/null
+   find . -name "pdf" -exec rm -rf '{}' \; 2> /dev/null
+   clean_by_ext "pdf"
+}
+
+#******************************************************************************
+#  clean_winfiles
+#------------------------------------------------------------------------------
+#
+#     Cleans out the whole sequencer64 tree of Microsoft droppings,
+#     including those deucedly large SDF database (!) files.  "tds" files
+#     are Borland debugging symbol files.
+#
+#------------------------------------------------------------------------------
+
+function clean_winfiles()
+{
+   local WINEXTS="ccscc dll exe idb il? keep lib map obj ncb pch pdb sbr sdf \
+tds testsettings unloaded user"
+
+   echo "* Cleaning Windows-related files and directories..."
+   for EXT in $WINEXTS
+   do
+      find . -iname "*.$EXT" -exec rm -f '{}' \; 2> /dev/null
+   done
+
+   local WINDIRS="consoledebug debug release"
+
+   for DIR in $WINDIRS
+   do
+      find . -iname $DIR -exec rm -rf '{}' \; 2> /dev/null
+   done
+}
+
+#******************************************************************************
+#  clean_testapps
+#------------------------------------------------------------------------------
+#
+#     Cleans out the whole sequencer64 tree of the known unit-test and
+#     integration test applications.
+#
+#------------------------------------------------------------------------------
+
+function clean_testapps()
+{
+   TESTAPPS=""
+   echo "* Cleaning the test applications..."
+   for FILE in $TESTAPPS
+   do
+      find . -name "*.$FILE" -exec rm -f '{}' \; 2> /dev/null
+   done
+
+   local WINFILES="*.exe"
+
+   for FILE in $WINFILES
+   do
+      find . -name "*.$FILE" -exec rm -f '{}' \; 2> /dev/null
+   done
+}
+
+#******************************************************************************
+#  clean_project $SUBDIR
+#------------------------------------------------------------------------------
+#
+#     Script helper function for cleaning out auto-copied m4 files
+#
+#------------------------------------------------------------------------------
+
+function clean_project()
+{
+   if [ -d $1 ] ; then
+
+      pushd $1
+
+         make clean
+         clean_m4
+         rm -rf debian/lib$1
+         rm -f install-sh mkinstalldirs missing
+         rm -f Makefile.in
+         rm -f aux-files/*
+         rm -rf config
+         rm -f include/Makefile.in
+         rm -f include/stamp-h.in
+         rm -f include/Makefile.in
+         rm -f include/stamp-h1
+         rm -f include/config.h include/config.h.in include/sequencer64-config.h
+         rm -f man/Makefile.in
+
+      popd
+
+   else
+      die $EXIT_ERROR_NO_SUBDIR "clean_project()" \
+         "? Subirectory $1 does not exist"
+   fi
+}
+
+#******************************************************************************
+#  save_config_make $SUBDIR
+#------------------------------------------------------------------------------
+#
+#     Preserves the top-level configure.ac and Makefile.am files.  Also
+#     creates a default tarball for additional safety.
+#
+#------------------------------------------------------------------------------
+
+function save_config_make()
+{
+   cp configure.ac contrib/po/configure.ac.fresh
+   cp Makefile.am contrib/po/Makefile.am.fresh
+   cp configure.ac contrib/automake/configure.ac
+   cp Makefile.am contrib/automake/Makefile.am
+   pushd ..
+   ./pack
+   popd
+}
+
+#******************************************************************************
+# strap_functions (sequencer64)
+#------------------------------------------------------------------------------
+# Local Variables:
+# End:
+#------------------------------------------------------------------------------
+# vim: ts=3 sw=3 et ft=sh
+#------------------------------------------------------------------------------

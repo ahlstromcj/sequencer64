@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-09-10
+ * \updates       2015-09-13
  * \license       GNU GPLv2 or above
  *
  */
@@ -52,6 +52,9 @@ namespace Gtk
     class VBox;
     class VScrollbar;
 }
+
+namespace seq64
+{
 
 class perform;
 class seqroll;
@@ -257,7 +260,9 @@ private:        // callbacks
     bool on_key_press_event (GdkEventKey * a_ev);
 };
 
-#endif   // SEQ64_SEQEDIT_HPP
+}           // namespace seq64
+
+#endif      // SEQ64_SEQEDIT_HPP
 
 /*
  * seqedit.hpp

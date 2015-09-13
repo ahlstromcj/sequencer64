@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-09-12
+ * \updates       2015-09-13
  * \license       GNU GPLv2 or above
  *
  *  Not totally sure that the LASH support is completely finished, at this
@@ -39,6 +39,9 @@
 #include "lash.hpp"
 #include "midifile.hpp"
 #include "perform.hpp"
+
+namespace seq64
+{
 
 /**
  *  The global pointer to the LASH driver instance.
@@ -190,6 +193,7 @@ lash::handle_event (lash_event_t * ev)
 /**
  *  Handle a LASH configuration item.
  */
+
 void
 lash::handle_config (lash_config_t * conf)
 {
@@ -202,7 +206,9 @@ lash::handle_config (lash_config_t * conf)
      */
 }
 
-#endif // SEQ64_LASH_SUPPORT
+#endif      // SEQ64_LASH_SUPPORT
+
+}           // namespace seq64
 
 /*
  * lash.cpp

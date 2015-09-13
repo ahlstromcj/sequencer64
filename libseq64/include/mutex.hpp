@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-09-10
+ * \updates       2015-09-13
  * \license       GNU GPLv2 or above
  *
  *  This module defines the following classes:
@@ -39,6 +39,9 @@
  */
 
 #include <pthread.h>
+
+namespace seq64
+{
 
 /**
  *  The mutex class provides a simple wrapper for the pthread_mutex_t type
@@ -168,7 +171,9 @@ public:
 
 };
 
-#endif  // SEQ64_MUTEX_HPP
+}           // namespace seq64
+
+#endif      // SEQ64_MUTEX_HPP
 
 /*
  * mutex.hpp

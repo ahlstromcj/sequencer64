@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-09-10
+ * \updates       2015-09-13
  * \license       GNU GPLv2 or above
  *
  */
@@ -37,6 +37,9 @@
 #include <gtkmm/adjustment.h>
 
 #include "globals.h"
+
+namespace seq64
+{
 
 class AbstractPerfInput;
 class perform;
@@ -145,7 +148,9 @@ private:        // callbacks
     bool on_key_press_event (GdkEventKey * a_p0);
 };
 
-#endif   // SEQ64_PERFROLL_HPP
+}           // namespace seq64
+
+#endif      // SEQ64_PERFROLL_HPP
 
 /*
  * perfroll.hpp

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-09-11
+ * \updates       2015-09-13
  * \license       GNU GPLv2 or above
  *
  */
@@ -37,6 +37,9 @@
 #include "perfroll_input.hpp"
 #include "perfroll.hpp"
 #include "sequence.hpp"
+
+namespace seq64
+{
 
 /**
  *  Updates the mouse pointer, implementing a context-sensitive mouse.
@@ -646,6 +649,8 @@ Seq24PerfInput::on_motion_notify_event (GdkEventMotion * a_ev, perfroll & roll)
     }
     return true;
 }
+
+}           // namespace seq64
 
 /*
  * perfroll_input.cpp

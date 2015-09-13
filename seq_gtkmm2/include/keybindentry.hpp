@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-09-10
+ * \updates       2015-09-13
  * \license       GNU GPLv2 or above
  *
  *  This module define a GTK text-edit widget for getting keyboard button
@@ -40,6 +40,9 @@
 #include <gtkmm/entry.h>
 
 #include "easy_macros.h"               // nullptr
+
+namespace seq64
+{
 
 class perform;
 
@@ -95,7 +98,9 @@ public:
     virtual bool on_key_press_event (GdkEventKey * event);
 };
 
-#endif   // SEQ64_KEYBINDENTRY_HPP
+}           // namespace seq64
+
+#endif      // SEQ64_KEYBINDENTRY_HPP
 
 /*
  * keybindentry.hpp

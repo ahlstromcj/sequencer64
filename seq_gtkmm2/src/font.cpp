@@ -24,8 +24,12 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-09-12
+ * \updates       2015-09-13
  * \license       GNU GPLv2 or above
+ *
+ *  The interesting thing about this font class is that it implements a
+ *  font as a relatively large bitmap that holds each of the characters in
+ *  the font in a kind of grid.
  *
  */
 
@@ -35,6 +39,9 @@
 #include "pixmaps/font_b.xpm"           /* black on white                   */
 #include "pixmaps/font_yb.xpm"          /* yellow on black (inverse video)  */
 #include "pixmaps/font_y.xpm"           /* black on yellow                  */
+
+namespace seq64
+{
 
 /**
  *    Rote default constructor.
@@ -161,6 +168,8 @@ font::render_string_on_drawable
         );
     }
 }
+
+}           // namespace seq64
 
 /*
  * font.cpp

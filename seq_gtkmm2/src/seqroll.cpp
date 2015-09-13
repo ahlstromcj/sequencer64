@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-09-11
+ * \updates       2015-09-13
  * \license       GNU GPLv2 or above
  *
  */
@@ -41,6 +41,9 @@
 #include "sequence.hpp"
 #include "seqkeys.hpp"
 #include "perform.hpp"
+
+namespace seq64
+{
 
 /**
  *  Principal constructor.
@@ -1203,6 +1206,8 @@ seqroll::on_scroll_event (GdkEventScroll * a_ev)
     m_vadjust->clamp_page(val, val + m_vadjust->get_page_size());
     return true;
 }
+
+}           // namespace seq64
 
 /*
  * seqroll.cpp

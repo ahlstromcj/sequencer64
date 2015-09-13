@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-09-10
+ * \updates       2015-09-13
  * \license       GNU GPLv2 or above
  *
  *  The <tt> ~/.seq24rc </tt> configuration file is fairly simple in
@@ -47,6 +47,9 @@
 #include "midibus.hpp"
 #include "optionsfile.hpp"
 #include "perform.hpp"
+
+namespace seq64
+{
 
 /**
  *  Principal constructor.
@@ -742,6 +745,8 @@ optionsfile::write (const perform & a_perf)
     file.close();
     return true;
 }
+
+}           // namespace seq64
 
 /*
  * optionsfile.cpp

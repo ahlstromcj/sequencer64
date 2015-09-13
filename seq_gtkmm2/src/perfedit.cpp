@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-09-12
+ * \updates       2015-09-13
  * \license       GNU GPLv2 or above
  *
  */
@@ -78,6 +78,9 @@
 #include "pixmaps/perfedit.xpm"
 
 using namespace Gtk::Menu_Helpers;
+
+namespace seq64
+{
 
 /**
  *  Principal constructor, has a pointer to a perform object.
@@ -640,6 +643,8 @@ perfedit::on_key_press_event (GdkEventKey * a_ev)
 
     return false;
 }
+
+}           // namespace seq64
 
 /*
  * perfedit.cpp

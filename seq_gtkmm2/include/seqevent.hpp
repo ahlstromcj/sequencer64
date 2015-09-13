@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-09-10
+ * \updates       2015-09-13
  * \license       GNU GPLv2 or above
  *
  */
@@ -44,6 +44,9 @@ namespace Gtk
 {
     class Adjustment;
 }
+
+namespace seq64
+{
 
 class seqdata;
 class sequence;
@@ -183,7 +186,9 @@ private:        // callbacks
 
 };
 
-#endif   // SEQ64_SEQEVENT_HPP
+}           // namespace seq64
+
+#endif      // SEQ64_SEQEVENT_HPP
 
 /*
  * seqevent.hpp

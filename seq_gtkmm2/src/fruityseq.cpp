@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-08-02
- * \updates       2015-09-11
+ * \updates       2015-09-13
  * \license       GNU GPLv2 or above
  *
  *  This code was extracted from seqevent to make that module more
@@ -38,6 +38,9 @@
 #include "fruityseq.hpp"
 #include "seqevent.hpp"
 #include "sequence.hpp"               // needed for full usage of seqevent
+
+namespace seq64
+{
 
 /**
  *  Provides support for a context-sensitive mouse.
@@ -441,6 +444,8 @@ FruitySeqEventInput::on_motion_notify_event
     }
     return true;
 }
+
+}           // namespace seq64
 
 /*
  * fruityseq.cpp

@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-30
- * \updates       2015-09-12
+ * \updates       2015-09-13
  * \license       GNU GPLv2 or above
  *
  *  The mastermidibus module is the Linux version of the mastermidibus module.
@@ -42,6 +42,9 @@
 
 #include <alsa/asoundlib.h>
 #include <alsa/seq_midi_event.h>
+
+namespace seq64
+{
 
 /**
  *  The class that "supervises" all of the midibus objects?
@@ -267,31 +270,13 @@ public:
     void set_input (unsigned char a_bus, bool a_inputing);
     bool get_input (unsigned char a_bus);
 
-private:
-
-    /**
-     *  Mutex lock.  Replaced by automutex.
-
-    void lock ()
-    {
-        m_mutex.lock();
-    }
-     */
-
-    /**
-     *  Mutex unlock.  Replaced by automutex.
-
-    void unlock ()
-    {
-        m_mutex.unlock();
-    }
-     */
-
 };
 
-#endif  // SEQ64_HAVE_LIBASOUND
+#endif      // SEQ64_HAVE_LIBASOUND
 
-#endif  // SEQ64_MASTERMIDIBUS_HPP
+}           // namespace seq64
+
+#endif      // SEQ64_MASTERMIDIBUS_HPP
 
 /*
  * mastermidibus.hpp

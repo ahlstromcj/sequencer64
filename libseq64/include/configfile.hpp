@@ -38,6 +38,9 @@
 #include <list>
 #include <gtkmm/drawingarea.h>
 
+namespace seq64
+{
+
 class perform;
 
 /**
@@ -99,7 +102,9 @@ public:
 
 };
 
-#endif  // SEQ64_CONFIGFILE_HPP
+}           // namespace seq64
+
+#endif      // SEQ64_CONFIGFILE_HPP
 
 /*
  * configfile.hpp

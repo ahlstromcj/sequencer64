@@ -84,11 +84,16 @@ static struct option long_options[] =
 
 static const std::string versiontext = SEQ64_PACKAGE " " SEQ64_VERSION "\n";
 
+namespace seq64
+{
+
 /*
  * Global pointer!  Declared in font.h.
  */
 
-font * p_font_renderer = nullptr;
+    font * p_font_renderer = nullptr;
+
+}           // namespace seq64
 
 #ifdef PLATFORM_WINDOWS
 #define HOME "HOMEPATH"
@@ -307,9 +312,9 @@ main (int argc, char * argv [])
             global_user_instrument_definitions[i].controllers_active[j] = false;
     }
 
-    perform p;                         /* the main performance object */
-    p_font_renderer = new font();      /* set the font renderer       */
-    if (getenv(HOME) != NULL)          /* is $HOME set?               */
+    seq64::perform p;                           /* main performance object  */
+    seq64::p_font_renderer = new seq64::font(); /* set the font renderer    */
+    if (getenv(HOME) != NULL)                   /* is $HOME set?            */
     {
         /*
          *  Instead of the Seq24 names, use the new configuration
@@ -345,7 +350,7 @@ main (int argc, char * argv [])
         )
         {
             printf("Reading configuration [%s]\n", rcname.c_str());
-            optionsfile options(rcname);
+            seq64::optionsfile options(rcname);
             if (options.parse(p))
             {
                 // nothing to do upon success
@@ -365,7 +370,7 @@ main (int argc, char * argv [])
                     "Reading alternate configuration [%s]\n",
                     alt_rcname.c_str()
                 );
-                optionsfile options(alt_rcname);
+                seq64::optionsfile options(alt_rcname);
                 if (options.parse(p))
                     global_last_used_dir = home;
                 else
@@ -379,7 +384,7 @@ main (int argc, char * argv [])
         if (Glib::file_test(rcname, Glib::FILE_TEST_EXISTS))
         {
             printf("Reading 'user' configuration [%s]\n", rcname.c_str());
-            userfile user(rcname);
+            seq64::userfile user(rcname);
             if (! user.parse(p))
                 printf("? error reading [%s]\n", rcname.c_str());
         }
@@ -395,7 +400,7 @@ main (int argc, char * argv [])
                     "Reading 'user' configuration [%s]\n",
                     alt_rcname.c_str()
                 );
-                userfile user(alt_rcname);
+                seq64::userfile user(alt_rcname);
                 if (! user.parse(p))
                     printf("? error reading [%s]\n", alt_rcname.c_str());
             }
@@ -409,7 +414,7 @@ main (int argc, char * argv [])
     p.launch_output_thread();
     p.init_jack();
 
-    mainwnd seq24_window(&p);          /* push a mainwnd onto stack */
+    seq64::mainwnd seq24_window(&p);          /* push a mainwnd onto stack */
     if (optind < argc)
     {
         if (Glib::file_test(argv[optind], Glib::FILE_TEST_EXISTS))
@@ -452,7 +457,7 @@ main (int argc, char * argv [])
                 SLASH + global_config_filename;
 
         printf("Writing configuration [%s]\n", rcname.c_str());
-        optionsfile options(rcname);
+        seq64::optionsfile options(rcname);
         if (!options.write(p))
             printf("? error writing [%s]\n", rcname.c_str());
 

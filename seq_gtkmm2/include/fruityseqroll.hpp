@@ -28,10 +28,13 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-09-10
+ * \updates       2015-09-13
  * \license       GNU GPLv2 or above
  *
  */
+
+namespace seq64
+{
 
 class seqroll;
 
@@ -67,7 +70,9 @@ public:         // callbacks
     bool on_motion_notify_event (GdkEventMotion * a_ev, seqroll & ths);
 };
 
-#endif   // SEQ64_FRUITYSEQROLL_HPP
+}           // namespace seq64
+
+#endif      // SEQ64_FRUITYSEQROLL_HPP
 
 /*
  * fruityseqroll.hpp

@@ -25,13 +25,16 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-09-12
+ * \updates       2015-09-13
  * \license       GNU GPLv2 or above
  *
  *  This file provides a Linux-only implementation of MIDI support.
  */
 
 #include "midibus.hpp"
+
+namespace seq64
+{
 
 #ifdef SEQ64_HAVE_LIBASOUND
 
@@ -678,6 +681,8 @@ midibus::remove_queued_on_events (int a_tag)
 }
 
 #endif  // 0
+
+}           // namespace seq64
 
 /*
  * midibus.cpp

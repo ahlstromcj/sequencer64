@@ -54,6 +54,9 @@
 
 #include "mastermidibus.hpp"
 
+namespace seq64
+{
+
 class sequence;
 
 /*
@@ -135,6 +138,7 @@ struct performcallback
 class perform
 {
 
+    friend class keybindentry;
     friend class midifile;
     friend class optionsfile;       // needs cleanup
     friend class options;
@@ -603,9 +607,6 @@ public:
         return m_key_groups;
     }
 
-    void set_key_event (unsigned int keycode, long sequence_slot);
-    void set_key_group (unsigned int keycode, long group_slot);
-
     /**
      * \accessor m_show_ui_sequency_key
      *
@@ -667,6 +668,11 @@ private:
     void inner_start (bool a_state);
     void inner_stop ();
 
+    void set_all_key_events ();
+    void set_all_key_groups ();
+    void set_key_event (unsigned int keycode, long sequence_slot);
+    void set_key_group (unsigned int keycode, long group_slot);
+
 };
 
 /**
@@ -715,9 +721,11 @@ extern int jack_process_callback (jack_nframes_t nframes, void * arg);
 extern void jack_session_callback (jack_session_event_t * ev, void * arg);
 #endif
 
-#endif   // SEQ64_JACK_SUPPORT
+#endif      // SEQ64_JACK_SUPPORT
 
-#endif   // SEQ64_PERFORM_HPP
+}           // namespace seq64
+
+#endif      // SEQ64_PERFORM_HPP
 
 /*
  * perform.hpp

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-30
- * \updates       2015-09-12
+ * \updates       2015-09-13
  * \license       GNU GPLv2 or above
  *
  *  This file provides a Linux-only implementation of MIDI support.
@@ -43,6 +43,9 @@
 
 #include "mastermidibus.hpp"
 #include "midibus.hpp"
+
+namespace seq64
+{
 
 /**
  *  The mastermidibus constructor fills the array with our busses.
@@ -885,6 +888,8 @@ mastermidibus::set_sequence_input (bool a_state, sequence * a_seq)
     m_seq = a_seq;
     m_dumping_input = a_state;
 }
+
+}           // namespace seq64
 
 /*
  * mastermidibus.cpp

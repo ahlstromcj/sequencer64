@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-09-12
+ * \updates       2015-09-13
  * \license       GNU GPLv2 or above
  *
  */
@@ -37,6 +37,9 @@
 #ifdef SEQ64_LASH_SUPPORT
 #include <lash/lash.h>
 #endif
+
+namespace seq64
+{
 
 class perform;
 
@@ -87,7 +90,9 @@ private:
 extern lash * global_lash_driver;
 #endif
 
-#endif // SEQ64_LASH_HPP
+}           // namespace seq64
+
+#endif      // SEQ64_LASH_HPP
 
 /*
  * lash.hpp

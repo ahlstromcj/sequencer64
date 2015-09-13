@@ -28,20 +28,23 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-09-10
+ * \updates       2015-09-13
  * \license       GNU GPLv2 or above
  *
  */
 
 #include "sequence.hpp"
 
-class perform;
-class seqedit;
-
 namespace Gtk
 {
     class Menu;
 }
+
+namespace seq64
+{
+
+class perform;
+class seqedit;
 
 /**
  *  This class handles the right-click menu of the sequence slots in the
@@ -143,7 +146,9 @@ private:            // callback
 
 };
 
-#endif   // SEQ64_SEQMENU_HPP
+}           // namespace seq64
+
+#endif      // SEQ64_SEQMENU_HPP
 
 /*
  * seqmenu.hpp

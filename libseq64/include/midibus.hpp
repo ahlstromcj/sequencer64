@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-09-12
+ * \updates       2015-09-13
  * \license       GNU GPLv2 or above
  *
  *  The midibus module is the Linux version of the midibus module.
@@ -43,6 +43,9 @@
 
 #include <alsa/asoundlib.h>
 #include <alsa/seq_midi_event.h>
+
+namespace seq64
+{
 
 /**
  *  Provides a class for handling the MIDI buss on Linux.
@@ -269,31 +272,13 @@ public:
         return m_clock_mod;
     }
 
-private:
-
-    /**
-     *  Lock the mutex. Replaced by automutex
-
-    void lock ()
-    {
-        m_mutex.lock();
-    }
-     */
-
-    /**
-     *  Unlock the mutex. Replaced by automutex
-
-    void unlock ()
-    {
-        m_mutex.unlock();
-    }
-     */
-
 };
 
-#endif  // SEQ64_HAVE_LIBASOUND
+#endif      // SEQ64_HAVE_LIBASOUND
 
-#endif  // SEQ64_MIDIBUS_HPP
+}           // namespace seq64
+
+#endif      // SEQ64_MIDIBUS_HPP
 
 /*
  * midibus.hpp

@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-09-10
+ * \updates       2015-09-13
  * \license       GNU GPLv2 or above
  *
  *  This module also declares/defines the various constants, status-byte
@@ -41,6 +41,9 @@
  */
 
 #define MIDI_DATA_BYTE_COUNT           2
+
+namespace seq64
+{
 
 /**
  *  This highest bit of the status byte is always 1.
@@ -462,7 +465,9 @@ private:
     int get_rank () const;
 };
 
-#endif   // SEQ64_EVENT_HPP
+}           // namespace seq64
+
+#endif      // SEQ64_EVENT_HPP
 
 /*
  * event.hpp

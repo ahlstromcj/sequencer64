@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-09-10
+ * \updates       2015-09-13
  * \license       GNU GPLv2 or above
  *
  *  The mastermidibus_portmidi module is the Windows version of the
@@ -37,6 +37,9 @@
  */
 
 #include "midibus_common.hpp"
+
+namespace seq64
+{
 
 #ifdef PLATFORM_WINDOWS                // covers this whole module
 
@@ -247,31 +250,13 @@ public:
     void set_input (unsigned char a_bus, bool a_inputing);
     bool get_input (unsigned char a_bus);
 
-private:
-
-    /**
-     *  Mutex lock. Replaced by automutex.
-
-    void lock ()
-    {
-        m_mutex.lock();
-    }
-     */
-
-    /**
-     *  Mutex unlock. Replaced by automutex.
-
-    void unlock ()
-    {
-        m_mutex.unlock();
-    }
-     */
-
 };
 
-#endif  // PLATFORM_WINDOWS
+#endif      // PLATFORM_WINDOWS
 
-#endif  // SEQ64_MASTERMIDIBUS_PORTMIDI_HPP
+}           // namespace seq64
+
+#endif      // SEQ64_MASTERMIDIBUS_PORTMIDI_HPP
 
 /*
  * mastermidibus_portmidi.hpp

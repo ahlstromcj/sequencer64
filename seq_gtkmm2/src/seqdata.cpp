@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-09-11
+ * \updates       2015-09-13
  * \license       GNU GPLv2 or above
  *
  */
@@ -36,6 +36,9 @@
 #include "font.hpp"
 #include "seqdata.hpp"
 #include "sequence.hpp"
+
+namespace seq64
+{
 
 /**
  *  Principal constructor.  In the constructor you can only allocate
@@ -567,6 +570,8 @@ seqdata::on_size_allocate (Gtk::Allocation & a_r)
     m_window_y = a_r.get_height();
     update_sizes();
 }
+
+}           // namespace seq64
 
 /*
  * seqdata.cpp

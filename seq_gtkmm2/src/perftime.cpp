@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-09-11
+ * \updates       2015-09-13
  * \license       GNU GPLv2 or above
  *
  *  The time bar shows markers and numbers for the measures of the song,
@@ -37,6 +37,9 @@
 #include "perform.hpp"
 #include "perftime.hpp"
 #include "font.hpp"
+
+namespace seq64
+{
 
 /**
  *  Principal constructor.
@@ -289,6 +292,8 @@ perftime::on_size_allocate (Gtk::Allocation & a_r)
     m_window_x = a_r.get_width();
     m_window_y = a_r.get_height();
 }
+
+}           // namespace seq64
 
 /*
  * perftime.cpp

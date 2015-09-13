@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-09-11
+ * \updates       2015-09-13
  * \license       GNU GPLv2 or above
  *
  */
@@ -37,6 +37,9 @@
 #include "perfroll.hpp"
 #include "perfroll_input.hpp"
 #include "sequence.hpp"
+
+namespace seq64
+{
 
 /**
  *  Principal constructor.
@@ -863,6 +866,8 @@ perfroll::split_trigger (int a_sequence, long a_tick)
     draw_sequence_on(m_pixmap, a_sequence);
     draw_drawable_row(m_window, m_pixmap, m_drop_y);
 }
+
+}           // namespace seq64
 
 /*
  * perfroll.cpp

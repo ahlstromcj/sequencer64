@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-09-10
+ * \updates       2015-09-13
  * \license       GNU GPLv2 or above
  *
  */
@@ -46,6 +46,9 @@
 #endif
 
 #include "mutex.hpp"
+
+namespace seq64
+{
 
 /**
  *  Provides a set of methods for drawing certain items.
@@ -613,23 +616,11 @@ private:
     void remove (Events::iterator i);
     void remove (event * e);
 
-    /*
-     * Replaced by automutex.
-     *
-    void lock () const
-    {
-        m_mutex.lock();
-    }
-
-    void unlock () const
-    {
-        m_mutex.unlock();
-    }
-     */
-
 };
 
-#endif    // SEQ64_SEQUENCE_HPP
+}           // namespace seq64
+
+#endif      // SEQ64_SEQUENCE_HPP
 
 /*
  * sequence.hpp

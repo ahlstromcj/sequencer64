@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-09-12
+ * \updates       2015-09-13
  * \license       GNU GPLv2 or above
  *
  */
@@ -46,6 +46,12 @@ using namespace Gtk::Menu_Helpers;
  *  the --disable-highlight option.
  *
  *      #define HIGHLIGHT_EMPTY_SEQS    // undefine for normal empty seqs
+ */
+
+/**
+ *  The USE_GREY_GRID and USE_NORMAL_GRID can be undefined in combination
+ *  to obtain different kinds of looks for the main (patterns) window at
+ *  build time.  Try it and see for yourself!
  */
 
 #define USE_GREY_GRID                   // undefine for black boxes
@@ -76,6 +82,9 @@ using namespace Gtk::Menu_Helpers;
 \endverbatim
  *
  */
+
+namespace seq64
+{
 
 /**
  *  This constructor sets a lot of the members, but not all.  And it asks
@@ -796,6 +805,8 @@ mainwid::on_focus_out_event (GdkEventFocus *)
     unset_flags(Gtk::HAS_FOCUS);
     return false;
 }
+
+}           // namespace seq64
 
 /*
  * mainwid.cpp

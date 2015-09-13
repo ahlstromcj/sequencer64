@@ -35,6 +35,9 @@
 
 #include "configfile.hpp"
 
+namespace seq64
+{
+
 class perform;
 
 /**
@@ -55,7 +58,9 @@ public:
 
 };
 
-#endif   // SEQ64_OPTIONSFILE_HPP
+}           // namespace seq64
+
+#endif      // SEQ64_OPTIONSFILE_HPP
 
 /*
  * optionsfile.hpp

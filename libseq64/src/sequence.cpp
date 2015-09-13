@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-09-12
+ * \updates       2015-09-13
  * \license       GNU GPLv2 or above
  *
  */
@@ -34,6 +34,9 @@
 
 #include "mastermidibus.hpp"
 #include "sequence.hpp"
+
+namespace seq64
+{
 
 /**
  *  A static clipboard for holding pattern/sequence events.
@@ -3577,6 +3580,8 @@ sequence::fill_list (CharList * a_list, int a_pos)
     a_list->push_front(char(0x2F));
     a_list->push_front(char(0x00));
 }
+
+}           // namespace seq64
 
 /*
  * sequence.cpp

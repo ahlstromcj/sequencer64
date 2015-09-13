@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-09-11
+ * \updates       2015-09-13
  * \license       GNU GPLv2 or above
  *
  */
@@ -40,6 +40,9 @@
 #include "seqmenu.hpp"
 
 using namespace Gtk::Menu_Helpers;
+
+namespace seq64
+{
 
 /**
  *  Principal constructor.  Apart from filling in some fo the members,
@@ -341,6 +344,8 @@ seqmenu::seq_clear_perf ()
         m_mainperf->get_sequence(m_current_seq)->set_dirty();
     }
 }
+
+}           // namespace seq64
 
 /*
  * seqmenu.cpp

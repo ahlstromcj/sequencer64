@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-09-12
+ * \updates       2015-09-13
  * \license       GNU GPLv2 or above
  *
  */
@@ -81,6 +81,9 @@
 #include "pixmaps/seq-editor.xpm"
 
 using namespace Gtk::Menu_Helpers;
+
+namespace seq64
+{
 
 /**
  * Static data members.
@@ -2032,6 +2035,8 @@ seqedit::on_key_press_event (GdkEventKey * a_ev)
     else
         return Gtk::Window::on_key_press_event(a_ev);
 }
+
+}           // namespace seq64
 
 /*
  * seqedit.cpp

@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-09-12
+ * \updates       2015-09-13
  * \license       GNU GPLv2 or above
  *
  */
@@ -43,6 +43,9 @@
  *
  *      #define SEQ64_HIGHLIGHT_EMPTY_SEQS  // undefine for normal empty seqs
  */
+
+namespace seq64
+{
 
 /**
  *  Principal constructor for this user-interface object.
@@ -411,6 +414,8 @@ perfnames::redraw_dirty_sequences ()
         }
     }
 }
+
+}           // namespace seq64
 
 /*
  * perfnames.cpp

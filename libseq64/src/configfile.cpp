@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-09-12
+ * \updates       2015-09-13
  * \license       GNU GPLv2 or above
  *
  *  We found a couple of unused members in this module and removed them.
@@ -33,8 +33,11 @@
 
 #include <iostream>
 
-#include "configfile.hpp"
 #include "easy_macros.h"
+#include "configfile.hpp"
+
+namespace seq64
+{
 
 /**
  *  Provides the string constructor for a configuration file.
@@ -108,6 +111,8 @@ configfile::line_after (std::ifstream & a_file, const std::string & a_tag)
     }
     next_data_line(a_file);
 }
+
+}           // namespace seq64
 
 /*
  * configfile.cpp

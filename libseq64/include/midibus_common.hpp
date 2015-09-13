@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-09-10
+ * \updates       2015-09-13
  * \license       GNU GPLv2 or above
  *
  */
@@ -38,6 +38,9 @@
 #include "globals.h"
 #include "event.hpp"
 #include "mutex.hpp"
+
+namespace seq64
+{
 
 /*
  * Multiple forward references
@@ -78,7 +81,9 @@ enum clock_e
     e_clock_mod
 };
 
-#endif  // SEQ64_MIDIBUS_COMMON_HPP
+}           // namespace seq64
+
+#endif      // SEQ64_MIDIBUS_COMMON_HPP
 
 /*
  * midibus_common.hpp

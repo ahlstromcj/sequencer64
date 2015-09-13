@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-09-11
+ * \updates       2015-09-13
  * \license       GNU GPLv2 or above
  *
  */
@@ -36,6 +36,9 @@
 #include "seqevent.hpp"
 #include "seqdata.hpp"
 #include "sequence.hpp"
+
+namespace seq64
+{
 
 /**
  *  Principal constructor.
@@ -782,6 +785,8 @@ seqevent::on_key_press_event (GdkEventKey * a_p0)
     }
     return result;
 }
+
+}           // namespace seq64
 
 /*
  * seqevent.cpp

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-09-11
+ * \updates       2015-09-13
  * \license       GNU GPLv2 or above
  *
  *  Here is a list of the global variables used/stored/modified by this
@@ -68,6 +68,9 @@
 #include "options.hpp"
 #include "perform.hpp"
 #include "sequence.hpp"
+
+namespace seq64
+{
 
 /**
  *  Yet another way to define a constant.
@@ -830,6 +833,8 @@ options::transport_callback (button a_type, Gtk::Button * a_check)
         break;
     }
 }
+
+}           // namespace seq64
 
 /*
  * options.cpp

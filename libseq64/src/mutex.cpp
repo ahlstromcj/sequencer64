@@ -24,12 +24,15 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-09-11
+ * \updates       2015-09-13
  * \license       GNU GPLv2 or above
  *
  */
 
 #include "mutex.hpp"
+
+namespace seq64
+{
 
 /*
  *  Define the static enabler for the locking mutex.  This does not solve
@@ -113,6 +116,8 @@ condition_var::wait ()
 {
     pthread_cond_wait(&m_cond, &m_mutex_lock);
 }
+
+}           // namespace seq64
 
 /*
  * mutex.cpp

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-09-12
+ * \updates       2015-09-13
  * \license       GNU GPLv2 or above
  *
  */
@@ -64,6 +64,9 @@
 #include "pixmaps/sequencer64_legacy.xpm"
 
 using namespace Gtk::Menu_Helpers;          /* MenuElem, etc.                */
+
+namespace seq64
+{
 
 /**
  *  This static member provides a couple of pipes for signalling/messaging.
@@ -1444,6 +1447,8 @@ mainwnd::signal_action (Glib::IOCondition condition)
     }
     return result;
 }
+
+}           // namespace seq64
 
 /*
  * mainwnd.cpp

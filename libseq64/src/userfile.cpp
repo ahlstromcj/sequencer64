@@ -73,7 +73,7 @@ userfile::~userfile ()
  */
 
 bool
-userfile::parse (perform * a_perf)
+userfile::parse (perform & a_perf)
 {
     std::ifstream file(m_name.c_str(), std::ios::in | std::ios::ate);
     if (! file.is_open())
@@ -142,26 +142,26 @@ userfile::parse (perform * a_perf)
             "%d [ %d %d %ld %ld %ld %ld ] [ %d %d %ld %ld %ld %ld ] "
             "[ %d %d %ld %ld %ld %ld ]",
             &sequence,
-            &a_perf->get_midi_control_toggle(i)->m_active,
-            &a_perf->get_midi_control_toggle(i)->m_inverse_active,
-            &a_perf->get_midi_control_toggle(i)->m_status,
-            &a_perf->get_midi_control_toggle(i)->m_data,
-            &a_perf->get_midi_control_toggle(i)->m_min_value,
-            &a_perf->get_midi_control_toggle(i)->m_max_value,
+            &a_perf.get_midi_control_toggle(i)->m_active,
+            &a_perf.get_midi_control_toggle(i)->m_inverse_active,
+            &a_perf.get_midi_control_toggle(i)->m_status,
+            &a_perf.get_midi_control_toggle(i)->m_data,
+            &a_perf.get_midi_control_toggle(i)->m_min_value,
+            &a_perf.get_midi_control_toggle(i)->m_max_value,
 
-            &a_perf->get_midi_control_on(i)->m_active,
-            &a_perf->get_midi_control_on(i)->m_inverse_active,
-            &a_perf->get_midi_control_on(i)->m_status,
-            &a_perf->get_midi_control_on(i)->m_data,
-            &a_perf->get_midi_control_on(i)->m_min_value,
-            &a_perf->get_midi_control_on(i)->m_max_value,
+            &a_perf.get_midi_control_on(i)->m_active,
+            &a_perf.get_midi_control_on(i)->m_inverse_active,
+            &a_perf.get_midi_control_on(i)->m_status,
+            &a_perf.get_midi_control_on(i)->m_data,
+            &a_perf.get_midi_control_on(i)->m_min_value,
+            &a_perf.get_midi_control_on(i)->m_max_value,
 
-            &a_perf->get_midi_control_off(i)->m_active,
-            &a_perf->get_midi_control_off(i)->m_inverse_active,
-            &a_perf->get_midi_control_off(i)->m_status,
-            &a_perf->get_midi_control_off(i)->m_data,
-            &a_perf->get_midi_control_off(i)->m_min_value,
-            &a_perf->get_midi_control_off(i)->m_max_value
+            &a_perf.get_midi_control_off(i)->m_active,
+            &a_perf.get_midi_control_off(i)->m_inverse_active,
+            &a_perf.get_midi_control_off(i)->m_status,
+            &a_perf.get_midi_control_off(i)->m_data,
+            &a_perf.get_midi_control_off(i)->m_min_value,
+            &a_perf.get_midi_control_off(i)->m_max_value
         );
         next_data_line(file);
     }
@@ -175,7 +175,7 @@ userfile::parse (perform * a_perf)
     int mtx[c_seqs_in_set], j = 0;
     for (int i = 0; i < c_seqs_in_set; i++)
     {
-        a_perf->select_group_mute(j);
+        a_perf.select_group_mute(j);
         sscanf
         (
             m_line,
@@ -196,7 +196,7 @@ userfile::parse (perform * a_perf)
         );
         for (int k = 0; k < c_seqs_in_set; k++)
         {
-            a_perf->set_group_mute_state(k, mtx[k]);
+            a_perf.set_group_mute_state(k, mtx[k]);
         }
         j++;
         next_data_line(file);
@@ -209,66 +209,66 @@ userfile::parse (perform * a_perf)
     {
         long bus_on, bus;
         sscanf(m_line, "%ld %ld", &bus, &bus_on);
-        a_perf->master_bus().set_clock(bus, (clock_e) bus_on);
+        a_perf.master_bus().set_clock(bus, (clock_e) bus_on);
         next_data_line(file);
     }
     line_after(file, "[keyboard-control]");
     long keys = 0;
     sscanf(m_line, "%ld", &keys);
     next_data_line(file);
-    a_perf->key_events.clear();
+    a_perf.key_events.clear();
     for (int i = 0; i < keys; ++i)
     {
         long key = 0, seq = 0;
         sscanf(m_line, "%ld %ld", &key, &seq);
-        a_perf->set_key_event(key, seq);
+        a_perf.set_key_event(key, seq);
         next_data_line(file);
     }
     line_after(file, "[keyboard-group]");
     long groups = 0;
     sscanf(m_line, "%ld", &groups);
     next_data_line(file);
-    a_perf->key_groups.clear();
+    a_perf.key_groups.clear();
     for (int i = 0; i < groups; ++i)
     {
         long key = 0, group = 0;
         sscanf(m_line, "%ld %ld", &key, &group);
-        a_perf->set_key_group(key, group);
+        a_perf.set_key_group(key, group);
         next_data_line(file);
     }
-    sscanf(m_line, "%u %u", &a_perf->m_key_bpm_up, &a_perf->m_key_bpm_dn);
+    sscanf(m_line, "%u %u", &a_perf.m_key_bpm_up, &a_perf.m_key_bpm_dn);
     next_data_line(file);
     sscanf
     (
         m_line, "%u %u %u",
-        &a_perf->m_key_screenset_up,
-        &a_perf->m_key_screenset_dn,
-        &a_perf->m_key_set_playing_screenset
+        &a_perf.m_key_screenset_up,
+        &a_perf.m_key_screenset_dn,
+        &a_perf.m_key_set_playing_screenset
     );
     next_data_line(file);
     sscanf
     (
         m_line, "%u %u %u",
-        &a_perf->m_key_group_on,
-        &a_perf->m_key_group_off,
-        &a_perf->m_key_group_learn
+        &a_perf.m_key_group_on,
+        &a_perf.m_key_group_off,
+        &a_perf.m_key_group_learn
     );
     next_data_line(file);
     sscanf
     (
         m_line, "%u %u %u %u %u",
-        &a_perf->m_key_replace,
-        &a_perf->m_key_queue,
-        &a_perf->m_key_snapshot_1,
-        &a_perf->m_key_snapshot_2,
-        &a_perf->m_key_keep_queue
+        &a_perf.m_key_replace,
+        &a_perf.m_key_queue,
+        &a_perf.m_key_snapshot_1,
+        &a_perf.m_key_snapshot_2,
+        &a_perf.m_key_keep_queue
     );
     next_data_line(file);
-    sscanf(m_line, "%ld", &a_perf->m_show_ui_sequence_key);
+    sscanf(m_line, "%ld", &a_perf.m_show_ui_sequence_key);
     next_data_line(file);
-    sscanf(m_line, "%ld", &a_perf->m_key_start);
+    sscanf(m_line, "%ld", &a_perf.m_key_start);
     next_data_line(file);
-    sscanf(m_line, "%ld", &a_perf->m_key_stop);
+    sscanf(m_line, "%ld", &a_perf.m_key_stop);
 
     line_after(file, "[jack-transport]");
     long flag = 0;
@@ -291,7 +291,7 @@ userfile::parse (perform * a_perf)
     {
         long bus_on, bus;
         sscanf(m_line, "%ld %ld", &bus, &bus_on);
-        a_perf->master_bus().set_input(bus, (bool) bus_on);
+        a_perf.master_bus().set_input(bus, (bool) bus_on);
         next_data_line(file);
     }
 
@@ -331,7 +331,7 @@ userfile::parse (perform * a_perf)
  */
 
 bool
-userfile::write (perform * a_perf)
+userfile::write (const perform & a_perf)
 {
     return false;
 }

@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-09-11
+ * \updates       2015-09-13
  * \license       GNU GPLv2 or above
  *
  */
@@ -346,7 +346,7 @@ main (int argc, char * argv [])
         {
             printf("Reading configuration [%s]\n", rcname.c_str());
             optionsfile options(rcname);
-            if (options.parse(&p))
+            if (options.parse(p))
             {
                 // nothing to do upon success
             }
@@ -366,7 +366,7 @@ main (int argc, char * argv [])
                     alt_rcname.c_str()
                 );
                 optionsfile options(alt_rcname);
-                if (options.parse(&p))
+                if (options.parse(p))
                     global_last_used_dir = home;
                 else
                     printf("? error reading [%s]\n", alt_rcname.c_str());
@@ -380,7 +380,7 @@ main (int argc, char * argv [])
         {
             printf("Reading 'user' configuration [%s]\n", rcname.c_str());
             userfile user(rcname);
-            if (! user.parse(&p))
+            if (! user.parse(p))
                 printf("? error reading [%s]\n", rcname.c_str());
         }
         else
@@ -396,7 +396,7 @@ main (int argc, char * argv [])
                     alt_rcname.c_str()
                 );
                 userfile user(alt_rcname);
-                if (! user.parse(&p))
+                if (! user.parse(p))
                     printf("? error reading [%s]\n", alt_rcname.c_str());
             }
         }
@@ -453,8 +453,13 @@ main (int argc, char * argv [])
 
         printf("Writing configuration [%s]\n", rcname.c_str());
         optionsfile options(rcname);
-        if (!options.write(&p))
+        if (!options.write(p))
             printf("? error writing [%s]\n", rcname.c_str());
+
+        /*
+         * \todo
+         *      Flesh out the userfile writing code and write it.
+         */
     }
     else
         printf("? error calling getenv(\"%s\")\n", HOME);

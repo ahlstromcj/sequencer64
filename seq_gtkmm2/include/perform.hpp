@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-09-12
+ * \updates       2015-09-13
  * \license       GNU GPLv2 or above
  *
  *  This class has way too many members.
@@ -100,6 +100,11 @@ const int c_midi_control_mod_gmute    = c_midi_track_ctrl + 7;
 const int c_midi_control_mod_glearn   = c_midi_track_ctrl + 8;
 const int c_midi_control_play_ss      = c_midi_track_ctrl + 9;
 const int c_midi_controls             = c_midi_track_ctrl + 10;
+
+/**
+ *      Provides for notification of events.  Provide a response to a
+ *      group-learn change event.
+ */
 
 struct performcallback
 {
@@ -400,7 +405,7 @@ public:
         return ! is_sequence_valid(a_sequence);
     }
 
-    long get_tick ()
+    long get_tick () const
     {
         return m_tick;
     }

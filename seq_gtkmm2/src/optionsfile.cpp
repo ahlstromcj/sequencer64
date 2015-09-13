@@ -165,7 +165,7 @@ optionsfile::~optionsfile ()
  */
 
 bool
-optionsfile::parse (perform * a_perf)
+optionsfile::parse (perform & a_perf)
 {
     std::ifstream file(m_name.c_str(), std::ios::in | std::ios::ate);
     if (! file.is_open())
@@ -186,26 +186,26 @@ optionsfile::parse (perform * a_perf)
             " [ %d %d %ld %ld %ld %ld ]"
             " [ %d %d %ld %ld %ld %ld ]",
             &sequence,
-            (int *) &a_perf->get_midi_control_toggle(i)->m_active,
-            (int *) &a_perf->get_midi_control_toggle(i)->m_inverse_active,
-            &a_perf->get_midi_control_toggle(i)->m_status,
-            &a_perf->get_midi_control_toggle(i)->m_data,
-            &a_perf->get_midi_control_toggle(i)->m_min_value,
-            &a_perf->get_midi_control_toggle(i)->m_max_value,
+            (int *) &a_perf.get_midi_control_toggle(i)->m_active,
+            (int *) &a_perf.get_midi_control_toggle(i)->m_inverse_active,
+            &a_perf.get_midi_control_toggle(i)->m_status,
+            &a_perf.get_midi_control_toggle(i)->m_data,
+            &a_perf.get_midi_control_toggle(i)->m_min_value,
+            &a_perf.get_midi_control_toggle(i)->m_max_value,
 
-            (int *) &a_perf->get_midi_control_on(i)->m_active,
-            (int *) &a_perf->get_midi_control_on(i)->m_inverse_active,
-            &a_perf->get_midi_control_on(i)->m_status,
-            &a_perf->get_midi_control_on(i)->m_data,
-            &a_perf->get_midi_control_on(i)->m_min_value,
-            &a_perf->get_midi_control_on(i)->m_max_value,
+            (int *) &a_perf.get_midi_control_on(i)->m_active,
+            (int *) &a_perf.get_midi_control_on(i)->m_inverse_active,
+            &a_perf.get_midi_control_on(i)->m_status,
+            &a_perf.get_midi_control_on(i)->m_data,
+            &a_perf.get_midi_control_on(i)->m_min_value,
+            &a_perf.get_midi_control_on(i)->m_max_value,
 
-            (int *) &a_perf->get_midi_control_off(i)->m_active,
-            (int *) &a_perf->get_midi_control_off(i)->m_inverse_active,
-            &a_perf->get_midi_control_off(i)->m_status,
-            &a_perf->get_midi_control_off(i)->m_data,
-            &a_perf->get_midi_control_off(i)->m_min_value,
-            &a_perf->get_midi_control_off(i)->m_max_value
+            (int *) &a_perf.get_midi_control_off(i)->m_active,
+            (int *) &a_perf.get_midi_control_off(i)->m_inverse_active,
+            &a_perf.get_midi_control_off(i)->m_status,
+            &a_perf.get_midi_control_off(i)->m_data,
+            &a_perf.get_midi_control_off(i)->m_min_value,
+            &a_perf.get_midi_control_off(i)->m_max_value
         );
         next_data_line(file);
     }
@@ -218,7 +218,7 @@ optionsfile::parse (perform * a_perf)
     int j = 0;
     for (int i = 0; i < c_seqs_in_set; i++)
     {
-        a_perf->select_group_mute(j);
+        a_perf.select_group_mute(j);
         sscanf
         (
             m_line,
@@ -240,7 +240,7 @@ optionsfile::parse (perform * a_perf)
             &mtx[28], &mtx[29], &mtx[30], &mtx[31]
         );
         for (int k = 0; k < c_seqs_in_set; k++)
-            a_perf->set_group_mute_state(k, mtx[k]);
+            a_perf.set_group_mute_state(k, mtx[k]);
 
         j++;
         next_data_line(file);
@@ -254,7 +254,7 @@ optionsfile::parse (perform * a_perf)
     {
         long bus_on, bus;
         sscanf(m_line, "%ld %ld", &bus, &bus_on);
-        a_perf->master_bus().set_clock(bus, (clock_e) bus_on);
+        a_perf.master_bus().set_clock(bus, (clock_e) bus_on);
         next_data_line(file);
     }
 
@@ -262,12 +262,12 @@ optionsfile::parse (perform * a_perf)
     long keys = 0;
     sscanf(m_line, "%ld", &keys);
     next_data_line(file);
-    a_perf->get_key_events().clear();
+    a_perf.get_key_events().clear();
     for (int i = 0; i < keys; ++i)
     {
         long key = 0, seq = 0;
         sscanf(m_line, "%ld %ld", &key, &seq);
-        a_perf->set_key_event(key, seq);
+        a_perf.set_key_event(key, seq);
         next_data_line(file);
     }
 
@@ -275,50 +275,50 @@ optionsfile::parse (perform * a_perf)
     long groups = 0;
     sscanf(m_line, "%ld", &groups);
     next_data_line(file);
-    a_perf->get_key_groups().clear();
+    a_perf.get_key_groups().clear();
     for (int i = 0; i < groups; ++i)
     {
         long key = 0, group = 0;
         sscanf(m_line, "%ld %ld", &key, &group);
-        a_perf->set_key_group(key, group);
+        a_perf.set_key_group(key, group);
         next_data_line(file);
     }
-    sscanf(m_line, "%u %u", &a_perf->m_key_bpm_up, &a_perf->m_key_bpm_dn);
+    sscanf(m_line, "%u %u", &a_perf.m_key_bpm_up, &a_perf.m_key_bpm_dn);
     next_data_line(file);
     sscanf
     (
         m_line, "%u %u %u",
-        &a_perf->m_key_screenset_up,
-        &a_perf->m_key_screenset_dn,
-        &a_perf->m_key_set_playing_screenset
+        &a_perf.m_key_screenset_up,
+        &a_perf.m_key_screenset_dn,
+        &a_perf.m_key_set_playing_screenset
     );
     next_data_line(file);
     sscanf
     (
         m_line, "%u %u %u",
-        &a_perf->m_key_group_on,
-        &a_perf->m_key_group_off,
-        &a_perf->m_key_group_learn
+        &a_perf.m_key_group_on,
+        &a_perf.m_key_group_off,
+        &a_perf.m_key_group_learn
     );
     next_data_line(file);
     sscanf
     (
         m_line, "%u %u %u %u %u",
-        &a_perf->m_key_replace,
-        &a_perf->m_key_queue,
-        &a_perf->m_key_snapshot_1,
-        &a_perf->m_key_snapshot_2,
-        &a_perf->m_key_keep_queue
+        &a_perf.m_key_replace,
+        &a_perf.m_key_queue,
+        &a_perf.m_key_snapshot_1,
+        &a_perf.m_key_snapshot_2,
+        &a_perf.m_key_keep_queue
     );
 
     int show_key = 0;
     next_data_line(file);
     sscanf(m_line, "%d", &show_key);
-    a_perf->m_show_ui_sequence_key = (bool) show_key;
+    a_perf.m_show_ui_sequence_key = (bool) show_key;
     next_data_line(file);
-    sscanf(m_line, "%u", &a_perf->m_key_start);
+    sscanf(m_line, "%u", &a_perf.m_key_start);
     next_data_line(file);
-    sscanf(m_line, "%u", &a_perf->m_key_stop);
+    sscanf(m_line, "%u", &a_perf.m_key_stop);
 
     line_after(file, "[jack-transport]");
     long flag = 0;
@@ -345,7 +345,7 @@ optionsfile::parse (perform * a_perf)
     {
         long bus_on, bus;
         sscanf(m_line, "%ld %ld", &bus, &bus_on);
-        a_perf->master_bus().set_input(bus, (bool) bus_on);
+        a_perf.master_bus().set_input(bus, (bool) bus_on);
         next_data_line(file);
     }
 
@@ -377,13 +377,22 @@ optionsfile::parse (perform * a_perf)
 /**
  *  This options-writing function is just about as complex as the
  *  options-reading function.
+ *
+ * \param a_perf
+ *      Provides a const reference to the main perform object.  However,
+ *      we have to cast away the constness, because too many of the
+ *      perform getter functions are used in non-const contexts.
+ *
+ * \return
+ *      Returns true if the write operations all succeeded.
  */
 
 bool
-optionsfile::write (perform * a_perf)
+optionsfile::write (const perform & a_perf)
 {
     std::ofstream file(m_name.c_str(), std::ios::out | std::ios::trunc);
     char outs[SEQ64_LINE_MAX];
+    perform & uca_perf = const_cast<perform &>(a_perf);
     if (! file.is_open())
         return false;
 
@@ -458,26 +467,26 @@ optionsfile::write (perform * a_perf)
             " [%1d %1d %3ld %3ld %3ld %3ld]"
             " [%1d %1d %3ld %3ld %3ld %3ld]",
              i,
-             a_perf->get_midi_control_toggle(i)->m_active,
-             a_perf->get_midi_control_toggle(i)->m_inverse_active,
-             a_perf->get_midi_control_toggle(i)->m_status,
-             a_perf->get_midi_control_toggle(i)->m_data,
-             a_perf->get_midi_control_toggle(i)->m_min_value,
-             a_perf->get_midi_control_toggle(i)->m_max_value,
+             uca_perf.get_midi_control_toggle(i)->m_active,
+             uca_perf.get_midi_control_toggle(i)->m_inverse_active,
+             uca_perf.get_midi_control_toggle(i)->m_status,
+             uca_perf.get_midi_control_toggle(i)->m_data,
+             uca_perf.get_midi_control_toggle(i)->m_min_value,
+             uca_perf.get_midi_control_toggle(i)->m_max_value,
 
-             a_perf->get_midi_control_on(i)->m_active,
-             a_perf->get_midi_control_on(i)->m_inverse_active,
-             a_perf->get_midi_control_on(i)->m_status,
-             a_perf->get_midi_control_on(i)->m_data,
-             a_perf->get_midi_control_on(i)->m_min_value,
-             a_perf->get_midi_control_on(i)->m_max_value,
+             uca_perf.get_midi_control_on(i)->m_active,
+             uca_perf.get_midi_control_on(i)->m_inverse_active,
+             uca_perf.get_midi_control_on(i)->m_status,
+             uca_perf.get_midi_control_on(i)->m_data,
+             uca_perf.get_midi_control_on(i)->m_min_value,
+             uca_perf.get_midi_control_on(i)->m_max_value,
 
-             a_perf->get_midi_control_off(i)->m_active,
-             a_perf->get_midi_control_off(i)->m_inverse_active,
-             a_perf->get_midi_control_off(i)->m_status,
-             a_perf->get_midi_control_off(i)->m_data,
-             a_perf->get_midi_control_off(i)->m_min_value,
-             a_perf->get_midi_control_off(i)->m_max_value
+             uca_perf.get_midi_control_off(i)->m_active,
+             uca_perf.get_midi_control_off(i)->m_inverse_active,
+             uca_perf.get_midi_control_off(i)->m_status,
+             uca_perf.get_midi_control_off(i)->m_data,
+             uca_perf.get_midi_control_off(i)->m_min_value,
+             uca_perf.get_midi_control_off(i)->m_max_value
         );
         file << std::string(outs) << "\n";
     }
@@ -491,10 +500,10 @@ optionsfile::write (perform * a_perf)
     file <<  c_gmute_tracks << "\n";
     for (int j = 0; j < c_seqs_in_set; j++)
     {
-        a_perf->select_group_mute(j);
+        uca_perf.select_group_mute(j);
         for (int i = 0; i < c_seqs_in_set; i++)
         {
-            mtx[i] = a_perf->get_group_mute_state(i);
+            mtx[i] = uca_perf.get_group_mute_state(i);
         }
         snprintf
         (
@@ -523,20 +532,20 @@ optionsfile::write (perform * a_perf)
      * Bus mute/unmute data
      */
 
-    int buses = a_perf->master_bus().get_num_out_buses();
+    int buses = uca_perf.master_bus().get_num_out_buses();
     file << "\n[midi-clock]\n";
     file << buses << "\n";
     for (int i = 0; i < buses; i++)
     {
         file
             << "# "
-            << a_perf->master_bus().get_midi_out_bus_name(i)
+            << uca_perf.master_bus().get_midi_out_bus_name(i)
             << "\n"
             ;
         snprintf
         (
             outs, sizeof(outs), "%d %d",
-            i, (char) a_perf->master_bus().get_clock(i)
+            i, (char) uca_perf.master_bus().get_clock(i)
         );
         file << outs << "\n";
     }
@@ -554,7 +563,7 @@ optionsfile::write (perform * a_perf)
      * Bus input data
      */
 
-    buses = a_perf->master_bus().get_num_in_buses();
+    buses = uca_perf.master_bus().get_num_in_buses();
     file
         << "\n[midi-input]\n"
         << buses << "\n"
@@ -563,13 +572,13 @@ optionsfile::write (perform * a_perf)
     {
         file
             << "# "
-            << a_perf->master_bus().get_midi_in_bus_name(i)
+            << uca_perf.master_bus().get_midi_in_bus_name(i)
             << "\n"
             ;
         snprintf
         (
             outs, sizeof(outs), "%d %d",
-            i, (char) a_perf->master_bus().get_input(i)
+            i, (char) uca_perf.master_bus().get_input(i)
         );
         file << outs << "\n";
     }
@@ -611,8 +620,8 @@ optionsfile::write (perform * a_perf)
         << "\n"
         << (global_allow_mod4_mode ? "1" : "0") << "\n";   // @new 2015-08-28
 
-    size_t kevsize = a_perf->get_key_events().size() < (size_t) c_seqs_in_set ?
-         a_perf->get_key_events().size() :
+    size_t kevsize = uca_perf.get_key_events().size() < (size_t) c_seqs_in_set ?
+         uca_perf.get_key_events().size() :
          (size_t) c_seqs_in_set
          ;
     file
@@ -623,8 +632,8 @@ optionsfile::write (perform * a_perf)
 
     for
     (
-        perform::SlotMap::const_iterator i = a_perf->get_key_events().begin();
-        i != a_perf->get_key_events().end(); ++i
+        perform::SlotMap::const_iterator i = uca_perf.get_key_events().begin();
+        i != uca_perf.get_key_events().end(); ++i
     )
     {
         snprintf
@@ -634,8 +643,8 @@ optionsfile::write (perform * a_perf)
         );
         file << std::string(outs) << "\n";
     }
-    size_t kegsize = a_perf->get_key_groups().size() < size_t(c_seqs_in_set) ?
-         a_perf->get_key_groups().size() :
+    size_t kegsize = uca_perf.get_key_groups().size() < size_t(c_seqs_in_set) ?
+         uca_perf.get_key_groups().size() :
          (size_t)c_seqs_in_set
          ;
     file
@@ -647,8 +656,8 @@ optionsfile::write (perform * a_perf)
 
     for
     (
-        perform::SlotMap::const_iterator i = a_perf->get_key_groups().begin();
-        i != a_perf->get_key_groups().end(); ++i
+        perform::SlotMap::const_iterator i = uca_perf.get_key_groups().begin();
+        i != uca_perf.get_key_groups().end(); ++i
     )
     {
         snprintf
@@ -661,54 +670,54 @@ optionsfile::write (perform * a_perf)
 
     file
         << "# bpm up, down\n"
-        << a_perf->m_key_bpm_up << " "
-        << a_perf->m_key_bpm_dn << " # "
-        << gdk_keyval_name(a_perf->m_key_bpm_up) << " "
-        << gdk_keyval_name(a_perf->m_key_bpm_dn) << "\n"
+        << uca_perf.m_key_bpm_up << " "
+        << uca_perf.m_key_bpm_dn << " # "
+        << gdk_keyval_name(uca_perf.m_key_bpm_up) << " "
+        << gdk_keyval_name(uca_perf.m_key_bpm_dn) << "\n"
         ;
     file
         << "# screen set up, down, play\n"
-        << a_perf->m_key_screenset_up << " "
-        << a_perf->m_key_screenset_dn << " "
-        << a_perf->m_key_set_playing_screenset << " # "
-        << gdk_keyval_name(a_perf->m_key_screenset_up) << " "
-        << gdk_keyval_name(a_perf->m_key_screenset_dn) << " "
-        << gdk_keyval_name(a_perf->m_key_set_playing_screenset) << "\n"
+        << uca_perf.m_key_screenset_up << " "
+        << uca_perf.m_key_screenset_dn << " "
+        << uca_perf.m_key_set_playing_screenset << " # "
+        << gdk_keyval_name(uca_perf.m_key_screenset_up) << " "
+        << gdk_keyval_name(uca_perf.m_key_screenset_dn) << " "
+        << gdk_keyval_name(uca_perf.m_key_set_playing_screenset) << "\n"
         ;
     file
         << "# group on, off, learn\n"
-        << a_perf->m_key_group_on << " "
-        << a_perf->m_key_group_off << " "
-        << a_perf->m_key_group_learn << " # "
-        << gdk_keyval_name(a_perf->m_key_group_on) << " "
-        << gdk_keyval_name(a_perf->m_key_group_off) << " "
-        << gdk_keyval_name(a_perf->m_key_group_learn) << "\n"
+        << uca_perf.m_key_group_on << " "
+        << uca_perf.m_key_group_off << " "
+        << uca_perf.m_key_group_learn << " # "
+        << gdk_keyval_name(uca_perf.m_key_group_on) << " "
+        << gdk_keyval_name(uca_perf.m_key_group_off) << " "
+        << gdk_keyval_name(uca_perf.m_key_group_learn) << "\n"
         ;
     file
         << "# replace, queue, snapshot_1, snapshot 2, keep queue\n"
-        << a_perf->m_key_replace << " "
-        << a_perf->m_key_queue << " "
-        << a_perf->m_key_snapshot_1 << " "
-        << a_perf->m_key_snapshot_2 << " "
-        << a_perf->m_key_keep_queue << " # "
-        << gdk_keyval_name(a_perf->m_key_replace) << " "
-        << gdk_keyval_name(a_perf->m_key_queue) << " "
-        << gdk_keyval_name(a_perf->m_key_snapshot_1) << " "
-        << gdk_keyval_name(a_perf->m_key_snapshot_2) << " "
-        << gdk_keyval_name(a_perf->m_key_keep_queue) << "\n"
+        << uca_perf.m_key_replace << " "
+        << uca_perf.m_key_queue << " "
+        << uca_perf.m_key_snapshot_1 << " "
+        << uca_perf.m_key_snapshot_2 << " "
+        << uca_perf.m_key_keep_queue << " # "
+        << gdk_keyval_name(uca_perf.m_key_replace) << " "
+        << gdk_keyval_name(uca_perf.m_key_queue) << " "
+        << gdk_keyval_name(uca_perf.m_key_snapshot_1) << " "
+        << gdk_keyval_name(uca_perf.m_key_snapshot_2) << " "
+        << gdk_keyval_name(uca_perf.m_key_keep_queue) << "\n"
         ;
     file
-        << a_perf->m_show_ui_sequence_key
+        << uca_perf.m_show_ui_sequence_key
         << " # show_ui_sequence_key (1=true/0=false)\n"
         ;
     file
-        << a_perf->m_key_start << " # "
-        << gdk_keyval_name(a_perf->m_key_start)
+        << uca_perf.m_key_start << " # "
+        << gdk_keyval_name(uca_perf.m_key_start)
         << " start sequencer\n"
        ;
     file
-        << a_perf->m_key_stop << " # "
-        << gdk_keyval_name(a_perf->m_key_stop)
+        << uca_perf.m_key_stop << " # "
+        << gdk_keyval_name(uca_perf.m_key_stop)
         << " stop sequencer\n"
         ;
     file

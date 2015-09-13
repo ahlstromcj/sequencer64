@@ -57,6 +57,7 @@
 namespace seq64
 {
 
+class keys_perform;
 class sequence;
 
 /*
@@ -183,6 +184,12 @@ public:
 private:
 
     /**
+     *  Support for keys mapping, offloading to another class.
+     */
+
+    keys_perform & m_keys_support;
+
+    /**
      *  Mute group support.
      */
 
@@ -213,8 +220,6 @@ private:
     /**
      *  Provides our MIDI buss.
      */
-
-private:
 
     mastermidibus m_master_bus;
 
@@ -342,8 +347,17 @@ public:
 
 public:
 
-    perform ();
+    perform (keys_perform & mykeys);
     ~perform ();
+
+    /**
+     * \getter m_keys_support
+     */
+
+    keys_perform & keys ()
+    {
+        return m_keys_support;
+    }
 
     /**
      * \getter m_master_bus
@@ -557,8 +571,8 @@ public:
 
     void play (long a_tick);
     void set_orig_ticks (long a_tick);
-    void set_bpm (int a_bpm);
-    int  get_bpm ();
+    void set_bpm (int a_bpm);           /* more than just a setter  */
+    int get_bpm ();                     /* get BPM from the buss    */
 
     /**
      * \setter m_looping
@@ -672,6 +686,8 @@ private:
     void set_all_key_groups ();
     void set_key_event (unsigned int keycode, long sequence_slot);
     void set_key_group (unsigned int keycode, long group_slot);
+
+    int clamp_track (int track) const;
 
 };
 

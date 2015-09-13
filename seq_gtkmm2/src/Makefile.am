@@ -6,7 +6,7 @@
 # \library    	libseq_gtkmm2 library
 # \author     	Chris Ahlstrom
 # \date       	2015-09-11
-# \update      2015-09-12
+# \update      2015-09-13
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -124,6 +124,7 @@ libseq_gtkmm2_la_SOURCES = \
    fruityseq.cpp \
    fruityseqroll.cpp \
 	keybindentry.cpp \
+   keys_perform_gtk2.cpp \
 	maintime.cpp \
 	mainwid.cpp \
 	mainwnd.cpp \

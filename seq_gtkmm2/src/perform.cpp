@@ -39,6 +39,7 @@
 #include <gtkmm/accelkey.h>            // For keys
 #include <gtkmm/main.h>                // Gtk::Main
 
+#include "keys_perform.hpp"
 #include "perform.hpp"
 #include "midibus.hpp"
 #include "midifile.hpp"
@@ -53,21 +54,22 @@ namespace seq64
  *  of them public!
  */
 
-perform::perform ()
+perform::perform (keys_perform & mykeys)
  :
-    m_mute_group                (),     // boolean array
-    m_tracks_mute_state         (),     // boolean array
+    m_keys_support              (mykeys),
+    m_mute_group                (),         // boolean array
+    m_tracks_mute_state         (),         // boolean array
     m_mode_group                (true),
     m_mode_group_learn          (false),
     m_mute_group_selected       (0),
     m_playing_screen            (0),
-    m_seqs                      (),     // pointer array
-    m_seqs_active               (),     // boolean array
-    m_was_active_main           (),     // boolean array
-    m_was_active_edit           (),     // boolean array
-    m_was_active_perf           (),     // boolean array
-    m_was_active_names          (),     // boolean array
-    m_sequence_state            (),     // boolean array
+    m_seqs                      (),         // pointer array
+    m_seqs_active               (),         // boolean array
+    m_was_active_main           (),         // boolean array
+    m_was_active_edit           (),         // boolean array
+    m_was_active_perf           (),         // boolean array
+    m_was_active_names          (),         // boolean array
+    m_sequence_state            (),         // boolean array
     m_master_bus                (),
     m_out_thread                (),
     m_in_thread                 (),
@@ -117,21 +119,21 @@ perform::perform ()
 // public members:
 
     m_notify                    (), // vector of pointers
-    m_key_bpm_up                (GDK_apostrophe),
-    m_key_bpm_dn                (GDK_semicolon),
-    m_key_replace               (GDK_Control_L),
-    m_key_queue                 (GDK_Control_R),
-    m_key_keep_queue            (GDK_backslash),
-    m_key_snapshot_1            (GDK_Alt_L),
-    m_key_snapshot_2            (GDK_Alt_R),
-    m_key_screenset_up          (GDK_bracketright),
-    m_key_screenset_dn          (GDK_bracketleft),
-    m_key_set_playing_screenset (GDK_Home),
-    m_key_group_on              (GDK_igrave),
-    m_key_group_off             (GDK_apostrophe),       // a repeat
-    m_key_group_learn           (GDK_Insert),
-    m_key_start                 (GDK_space),
-    m_key_stop                  (GDK_Escape)
+    m_key_bpm_up                (GDK_apostrophe),       // KEYS
+    m_key_bpm_dn                (GDK_semicolon),        // KEYS
+    m_key_replace               (GDK_Control_L),        // KEYS
+    m_key_queue                 (GDK_Control_R),        // KEYS
+    m_key_keep_queue            (GDK_backslash),        // KEYS
+    m_key_snapshot_1            (GDK_Alt_L),            // KEYS
+    m_key_snapshot_2            (GDK_Alt_R),            // KEYS
+    m_key_screenset_up          (GDK_bracketright),     // KEYS
+    m_key_screenset_dn          (GDK_bracketleft),      // KEYS
+    m_key_set_playing_screenset (GDK_Home),             // KEYS
+    m_key_group_on              (GDK_igrave),           // KEYS
+    m_key_group_off             (GDK_apostrophe),       // a repeat // KEYS
+    m_key_group_learn           (GDK_Insert),           // KEYS
+    m_key_start                 (GDK_space),            // KEYS
+    m_key_stop                  (GDK_Escape)            // KEYS
 {
     for (int i = 0; i < c_max_sequence; i++)
     {
@@ -153,8 +155,8 @@ perform::perform ()
         m_midi_cc_on[i] = zero;
         m_midi_cc_off[i] = zero;
     }
-    set_all_key_events();
-    set_all_key_groups();
+    set_all_key_events();   // KEYS
+    set_all_key_groups();   // KEYS
 }
 
 /**
@@ -184,6 +186,8 @@ perform::~perform ()
 
 /**
  *  Initializes the master MIDI bus.
+ *
+ *  Who calls this routine?
  */
 
 void
@@ -194,6 +198,8 @@ perform::init ()
 
 /**
  *  Initializes JACK support, if SEQ64_JACK_SUPPORT is defined.
+ *
+ *  Who calls this routine?
  */
 
 void
@@ -342,23 +348,31 @@ perform::clear_all ()
 }
 
 /**
+ *  Provides common code to keep the track value valid.  Note the bug we
+ *  found, where we checked for track > c_seqs_in_set, but set it to
+ *  c_seqs_in_set - 1 in that case!
+ */
+
+inline int
+perform::clamp_track (int track) const
+{
+    if (track < 0)
+        track = 0;
+
+    if (track >= c_seqs_in_set)         // bug: was just ">" !!!
+        track = c_seqs_in_set - 1;
+
+    return track;
+}
+
+/**
  * \setter m_mute_group
  */
 
 void
 perform::set_group_mute_state (int a_g_track, bool a_mute_state)
 {
-    /*
-     * Common code
-     */
-
-    if (a_g_track < 0)
-        a_g_track = 0;
-
-    if (a_g_track > c_seqs_in_set)
-        a_g_track = c_seqs_in_set - 1;
-
-    int index = a_g_track + m_mute_group_selected * c_seqs_in_set;
+    int index = clamp_track(a_g_track) + m_mute_group_selected * c_seqs_in_set;
     m_mute_group[index] = a_mute_state;
 }
 
@@ -369,17 +383,7 @@ perform::set_group_mute_state (int a_g_track, bool a_mute_state)
 bool
 perform::get_group_mute_state (int a_g_track)
 {
-    /*
-     * Common code
-     */
-
-    if (a_g_track < 0)
-        a_g_track = 0;
-
-    if (a_g_track > c_seqs_in_set)
-        a_g_track = c_seqs_in_set - 1;
-
-    int index = a_g_track + m_mute_group_selected * c_seqs_in_set;
+    int index = clamp_track(a_g_track) + m_mute_group_selected * c_seqs_in_set;
     return m_mute_group[index];
 }
 
@@ -390,17 +394,8 @@ perform::get_group_mute_state (int a_g_track)
 void
 perform::select_group_mute (int a_g_mute)
 {
-    /*
-     * Common code
-     */
-
-    if (a_g_mute < 0)
-        a_g_mute = 0;
-
-    if (a_g_mute > c_seqs_in_set)
-        a_g_mute = c_seqs_in_set - 1;
-
-    int j = a_g_mute * c_seqs_in_set;
+    int gmute = clamp_track(a_g_mute);
+    int j = gmute * c_seqs_in_set;
     int k = m_playing_screen * c_seqs_in_set;
     bool error = false;
     if (m_mode_group_learn)
@@ -420,7 +415,7 @@ perform::select_group_mute (int a_g_mute)
         }
     }
     if (! error)
-        m_mute_group_selected = a_g_mute;
+        m_mute_group_selected = gmute;
 }
 
 /**
@@ -453,29 +448,24 @@ perform::unset_mode_group_learn ()
 
 /**
  *  Will need to study this one more closely.
+ *
+ * \param a_group
+ *      Provides the group to mute.  Note that this parameter is
+ *      essentially a track or sequence number.
  */
 
 void
 perform::select_mute_group (int a_group)
 {
-    int j = (a_group * c_seqs_in_set);
+    int group = clamp_track(a_group);
+    int j = group * c_seqs_in_set;
     int k = m_playing_screen * c_seqs_in_set;
-
-    /*
-     * Common code
-     */
-
-    if (a_group < 0)
-        a_group = 0;
-
-    if (a_group > c_seqs_in_set)
-        a_group = c_seqs_in_set - 1;
 
     /*
      * Should make this assignment contingent upon error.
      */
 
-    m_mute_group_selected = a_group;
+    m_mute_group_selected = group;
     bool error = false;
     for (int i = 0; i < c_seqs_in_set; i++)
     {
@@ -841,7 +831,7 @@ perform::set_bpm (int a_bpm)
     if (a_bpm > 500)
         a_bpm = 500;
 
-    if (!(m_jack_running && m_running))
+    if (! (m_jack_running && m_running))
     {
         m_master_bus.set_bpm(a_bpm);
     }
@@ -854,7 +844,7 @@ perform::set_bpm (int a_bpm)
 int
 perform::get_bpm ()
 {
-    return  m_master_bus.get_bpm();
+    return m_master_bus.get_bpm();
 }
 
 /**
@@ -2762,8 +2752,7 @@ jack_shutdown (void * arg)
 }
 
 /**
- *      Set the JACK position.  This function's body is currently
- *      effectively disabled.
+ *  Print the JACK position.
  */
 
 void
@@ -2783,69 +2772,7 @@ print_jack_pos (jack_position_t * jack_pos)
     printf("    next_time        [%f]\n", jack_pos->next_time);
 }
 
-#if USE_MAIN_ROUTINE_FOR_JACK_TEST
-
-/*
- * This section provides a main routine for testing purposes.
- */
-
-int main ()
-{
-    jack_client_t *client;
-
-    /* become a new client of the JACK server */
-
-    if ((client = jack_client_new("transport tester")) == 0)
-    {
-        fprintf(stderr, "jack server not running?\n");
-        return 1;
-    }
-    jack_on_shutdown(client, jack_shutdown, 0);
-    jack_set_sync_callback(client, jack_sync_callback, NULL);
-    if (jack_activate(client))
-    {
-        fprintf(stderr, "cannot activate client");
-        return 1;
-    }
-
-    bool cond = false; /* true if we want to fail if there is already a master */
-    if (jack_set_timebase_callback(client, cond, timebase, NULL) != 0)
-    {
-        printf("Unable to take over timebase or there is already a master.\n");
-        exit(1);
-    }
-
-    jack_position_t pos;
-    pos.valid = JackPositionBBT;
-    pos.bar = 0;
-    pos.beat = 0;
-    pos.tick = 0;
-    pos.beats_per_bar = time_beats_per_bar;
-    pos.beat_type = time_beat_type;
-    pos.ticks_per_beat = time_ticks_per_beat;
-    pos.beats_per_minute = time_beats_per_minute;
-    pos.bar_start_tick = 0.0;
-
-    // jack_transport_reposition( client, &pos );
-
-    jack_transport_start(client);
-
-    // void jack_transport_stop (jack_client_t *client);
-
-    int bob;
-    scanf("%d", &bob);
-
-    jack_transport_stop(client);
-    jack_release_timebase(client);
-    jack_client_close(client);
-    return 0;
-}
-
-#endif   // USE_MAIN_ROUTINE_FOR_JACK_TEST
-
 #endif   // SEQ64_JACK_SUPPORT
-
-// using namespace Gtk;
 
 void
 perform::set_all_key_events ()

@@ -42,6 +42,7 @@
 
 #include "globals.h"                   // full platform configuration
 #include "font.hpp"
+#include "keys_perform_gtk2.hpp"
 #include "mainwnd.hpp"
 #include "optionsfile.hpp"
 #include "perform.hpp"
@@ -312,7 +313,8 @@ main (int argc, char * argv [])
             global_user_instrument_definitions[i].controllers_active[j] = false;
     }
 
-    seq64::perform p;                           /* main performance object  */
+    seq64::keys_perform_gtk2 k;                 /* GUI-specific keys        */
+    seq64::perform p(k);                        /* main performance object  */
     seq64::p_font_renderer = new seq64::font(); /* set the font renderer    */
     if (getenv(HOME) != NULL)                   /* is $HOME set?            */
     {

@@ -1125,7 +1125,7 @@ mainwnd::on_key_press_event (GdkEventKey * a_ev)
             m_mainperf->set_bpm(m_mainperf->get_bpm() - 1);
             m_adjust_bpm->set_value(m_mainperf->get_bpm());
         }
-        if (a_ev->keyval ==  m_mainperf->m_key_bpm_up)
+        if (a_ev->keyval == m_mainperf->m_key_bpm_up)
         {
             m_mainperf->set_bpm(m_mainperf->get_bpm() + 1);
             m_adjust_bpm->set_value(m_mainperf->get_bpm());

@@ -6,7 +6,7 @@
 # \library    	libseq_gtkmm2 library
 # \author     	Chris Ahlstrom
 # \date       	2015-09-11
-# \update      2015-09-11
+# \update      2015-09-13
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -76,6 +76,7 @@ pkginclude_HEADERS = \
 	font.hpp \
    fruityseq.hpp \
    fruityseqroll.hpp \
+   gdk_basic_keys.h \
    gtk_helpers.h \
 	keybindentry.hpp \
 	maintime.hpp \

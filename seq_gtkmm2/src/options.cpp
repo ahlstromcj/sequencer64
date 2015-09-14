@@ -69,7 +69,7 @@
 #include "perform.hpp"
 #include "sequence.hpp"
 
-#ifndef NEW_KEYS_CODE
+#ifdef NEW_KEYS_CODE
 #include "keys_perform.hpp"
 #endif
 
@@ -267,7 +267,7 @@ options::add_midi_input_page ()
 #define AddKey(text, integer) \
     label = manage(new Gtk::Label(text)); \
     hbox->pack_start(*label, false, false, 4); \
-    entry = manage(new keybindentry(keybindentry::location, &integer)); \
+    entry = manage(new keybindentry(keybindentry::location, integer)); \
     hbox->pack_start(*entry, false, false, 4);
 
 /**
@@ -295,7 +295,7 @@ options::add_keyboard_page ()
             int(e_keylabelsonsequence), check
         )
     );
-    check->set_active(m_mainperf->m_show_ui_sequence_key);
+    check->set_active(m_mainperf->show_ui_sequence_key());
     mainbox->pack_start(*check, false, false);
 
     /* Frame for sequence toggle keys */
@@ -310,12 +310,6 @@ options::add_keyboard_page ()
     controlframe->add(*controltable);
 
     Gtk::Label * label = manage(new Gtk::Label("Start", Gtk::ALIGN_RIGHT));
-
-    /*
-     * TODO:  We will provide an address-returning function so that
-     *       "&m_mainperf->m_key_start" is replaced with
-     *       "m_mainperf->key().at_key_start()".
-     */
     keybindentry * entry = manage
     (
         new keybindentry(keybindentry::location, PERFKEY_ADDR(start))
@@ -468,17 +462,18 @@ options::add_keyboard_page ()
     AddKey
     (
         "Learn (while pressing a mute-group key):",
-        m_mainperf->m_key_group_learn
+        PERFKEY_ADDR(group_learn)
     );
-    AddKey("Disable:", m_mainperf->m_key_group_off);
-    AddKey("Enable:", m_mainperf->m_key_group_on);
+    AddKey("Disable:", PERFKEY_ADDR(group_off));
+    AddKey("Enable:", PERFKEY_ADDR(group_on));
     mainbox->pack_start(*hbox, false, false);
 }
 
 #undef AddKey
 
 /**
- *  Adds the Mouse page (tab) to the Options dialog.
+ *  Adds the Mouse page (tab) to the Options dialog.  It also creates a
+ *  Frame for mouse-interaction options.
  */
 
 void
@@ -486,8 +481,6 @@ options::add_mouse_page ()
 {
     Gtk::VBox * vbox = manage(new Gtk::VBox());
     m_notebook->append_page(*vbox, "_Mouse", true);
-
-    /* Frame for mouse-interaction options */
 
     Gtk::Frame * interactionframe = manage(new Gtk::Frame("Interaction method"));
     interactionframe->set_border_width(4);
@@ -759,7 +752,7 @@ options::input_callback (int a_bus, Gtk::Button * i_button)
     bool input = a_button->get_active();
     if (9999 == a_bus)                  // another manifest constant needed
     {
-        m_mainperf->m_show_ui_sequence_key = input;
+        m_mainperf->show_ui_sequence_key(input);
         for (int i = 0; i < c_max_sequence; i++)
         {
             if (m_mainperf->get_sequence(i))

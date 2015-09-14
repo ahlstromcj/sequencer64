@@ -74,9 +74,11 @@ struct keys_perform_transfer
 class keys_perform
 {
 
-    friend class options;               /* for member address access */
+    friend class options;               /* for member address access    */
+    friend class perform;               /* for map-types access         */
+    friend class optionsfile;           /* for map-types access         */
 
-public:
+protected:
 
     /**
      *  This typedef defines a map in which the key is the keycode,
@@ -293,6 +295,10 @@ public:
     {
         return m_show_ui_sequence_key;
     }
+    void show_ui_sequence_key (bool flag)
+    {
+        m_show_ui_sequence_key = flag;
+    }
 
     /*
      * Getters of keyboard mapping for sequence and groups.
@@ -403,7 +409,10 @@ protected:
     {
         return &m_key_stop;
     }
-
+    bool * at_show_ui_sequence_key ()
+    {
+        return &m_show_ui_sequence_key;
+    }
 
 };
 

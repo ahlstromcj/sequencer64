@@ -42,6 +42,10 @@
 #include "seqkeys.hpp"
 #include "perform.hpp"
 
+#ifdef NEW_KEYS_CODE
+#include "keys_perform.hpp"
+#endif
+
 namespace seq64
 {
 

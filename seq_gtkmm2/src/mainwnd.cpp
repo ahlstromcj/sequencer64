@@ -63,7 +63,7 @@
 #include "pixmaps/sequencer64_square.xpm"
 #include "pixmaps/sequencer64_legacy.xpm"
 
-#ifndef NEW_KEYS_CODE
+#ifdef NEW_KEYS_CODE
 #include "keys_perform.hpp"
 #endif
 
@@ -1073,9 +1073,6 @@ mainwnd::on_delete_event (GdkEventAny * a_e)
 
 /**
  *  Handles a key release event.
- *
- * \todo
- *      The perform m_key_* members should be functions.
  *
  * \return
  *      Always returns false.

@@ -39,7 +39,6 @@
 #include <gtkmm/accelkey.h>            // For keys
 #include <gtkmm/main.h>                // Gtk::Main
 
-#include "keys_perform.hpp"
 #include "perform.hpp"
 #include "midibus.hpp"
 #include "midifile.hpp"
@@ -88,7 +87,6 @@ perform::perform (keys_perform & mykeys)
     m_midiclockrunning          (false),
     m_midiclocktick             (0),
     m_midiclockpos              (-1),
-    m_show_ui_sequence_key      (true),
     m_screen_set_notepad        (),     // string array
     m_midi_cc_toggle            (),     // midi_control array
     m_midi_cc_on                (),     // midi_control array
@@ -115,10 +113,10 @@ perform::perform (keys_perform & mykeys)
 #endif  // SEQ64_JACK_SUPPORT
     m_jack_running              (false),
     m_jack_master               (false),
+    m_notify                    ()          // vector of pointers, public!
 
-// public members:
-
-    m_notify                    (), // vector of pointers
+#ifndef NEW_KEYS_CODE
+    , /* comma for initializer list */
     m_key_bpm_up                (GDK_apostrophe),       // KEYS
     m_key_bpm_dn                (GDK_semicolon),        // KEYS
     m_key_replace               (GDK_Control_L),        // KEYS
@@ -133,7 +131,9 @@ perform::perform (keys_perform & mykeys)
     m_key_group_off             (GDK_apostrophe),       // a repeat // KEYS
     m_key_group_learn           (GDK_Insert),           // KEYS
     m_key_start                 (GDK_space),            // KEYS
-    m_key_stop                  (GDK_Escape)            // KEYS
+    m_key_stop                  (GDK_Escape),           // KEYS
+    m_show_ui_sequence_key      (true)                  // KEYS
+#endif  // NEW_KEYS_CODE
 {
     for (int i = 0; i < c_max_sequence; i++)
     {
@@ -2852,23 +2852,19 @@ perform::set_all_key_groups ()
  *  At construction time, this function sets up one keycode and one event
  *  slot.
  *
- *  It is called 32 times, corresponding the pattern/sequence slots in the
- *  Patterns window.
+ *  It is called 32 times, corresponding to the pattern/sequence slots in
+ *  the Patterns window.
  */
 
 void
 perform::set_key_event (unsigned int keycode, long sequence_slot)
 {
-    /*
-     * Unhook the previous binding.
-     */
-
     SlotMap::iterator it1 = m_key_events.find(keycode);
     if (it1 != m_key_events.end())
     {
         RevSlotMap::iterator i = m_key_events_rev.find(it1->second);
         if (i != m_key_events_rev.end())
-            m_key_events_rev.erase(i);
+            m_key_events_rev.erase(i);          /* unhook previous binding  */
 
         m_key_events.erase(it1);
     }
@@ -2877,16 +2873,11 @@ perform::set_key_event (unsigned int keycode, long sequence_slot)
     {
         SlotMap::iterator i = m_key_events.find(it2->second);
         if (i != m_key_events.end())
-            m_key_events.erase(i);
+            m_key_events.erase(i);              /* unhook previous binding  */
 
         m_key_events_rev.erase(it2);
     }
-
-    /*
-     * Set the new binding.
-     */
-
-    m_key_events[keycode] = sequence_slot;
+    m_key_events[keycode] = sequence_slot;      /* set the new binding      */
     m_key_events_rev[sequence_slot] = keycode;
 }
 
@@ -2901,16 +2892,12 @@ perform::set_key_event (unsigned int keycode, long sequence_slot)
 void
 perform::set_key_group (unsigned int keycode, long group_slot)
 {
-    /*
-     * Unhook previous binding.
-     */
-
     SlotMap::iterator it1 = m_key_groups.find(keycode);
     if (it1 != m_key_groups.end())
     {
         RevSlotMap::iterator i = m_key_groups_rev.find(it1->second);
         if (i != m_key_groups_rev.end())
-            m_key_groups_rev.erase(i);
+            m_key_groups_rev.erase(i);          /* unhook previous binding  */
 
         m_key_groups.erase(it1);
     }
@@ -2919,16 +2906,11 @@ perform::set_key_group (unsigned int keycode, long group_slot)
     {
         SlotMap::iterator i = m_key_groups.find(it2->second);
         if (i != m_key_groups.end())
-            m_key_groups.erase(i);
+            m_key_groups.erase(i);              /* unhook previous binding  */
 
         m_key_groups_rev.erase(it2);
     }
-
-    /*
-     * Set the new binding.
-     */
-
-    m_key_groups[keycode] = group_slot;
+    m_key_groups[keycode] = group_slot;         /* set the new binding      */
     m_key_groups_rev[group_slot] = keycode;
 }
 

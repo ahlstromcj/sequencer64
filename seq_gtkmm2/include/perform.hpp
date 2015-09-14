@@ -52,20 +52,22 @@
 #endif
 #endif
 
+#include "keys_perform.hpp"
 #include "mastermidibus.hpp"
+
+#define NEW_KEYS_CODE /////
 
 #ifndef NEW_KEYS_CODE
 #define PERFKEY(x)              m_mainperf->m_key_##x
 #define PERFKEY_ADDR(x)         &m_mainperf->m_key_##x
 #else
-#define PERFKEY(x)              m_mainperf->keys().##x()
+#define PERFKEY(x)              m_mainperf->keys().x()
 #define PERFKEY_ADDR(x)         m_mainperf->keys().at_##x()
 #endif
 
 namespace seq64
 {
 
-class keys_perform;
 class sequence;
 
 /*
@@ -270,8 +272,6 @@ private:
 
 private:
 
-    bool m_show_ui_sequence_key;
-
     std::string m_screen_set_notepad[c_max_sets];
 
     midi_control m_midi_cc_toggle[c_midi_controls];
@@ -330,6 +330,8 @@ public:
 
     std::vector<performcallback *> m_notify;
 
+#ifndef NEW_KEYS_CODE
+
     /**
      *  Provides key assignments for some key sequencer features.
      *
@@ -352,6 +354,9 @@ public:
     unsigned int m_key_group_learn;
     unsigned int m_key_start;
     unsigned int m_key_stop;
+    bool m_show_ui_sequence_key;
+
+#endif  // NEW_KEYS_CODE
 
 public:
 
@@ -360,6 +365,17 @@ public:
 
     /**
      * \getter m_keys_support
+     *      The const getter.
+     */
+
+    const keys_perform & keys () const
+    {
+        return m_keys_support;
+    }
+
+    /**
+     * \getter m_keys_support
+     *      The un-const getter.
      */
 
     keys_perform & keys ()
@@ -637,7 +653,19 @@ public:
 
     bool show_ui_sequence_key () const
     {
+#ifndef NEW_KEYS_CODE
         return m_show_ui_sequence_key;
+#else
+        return keys().show_ui_sequence_key();
+#endif
+    }
+    void show_ui_sequence_key (bool flag)
+    {
+#ifndef NEW_KEYS_CODE
+        m_show_ui_sequence_key = flag;
+#else
+        keys().show_ui_sequence_key(flag);
+#endif
     }
 
     /*

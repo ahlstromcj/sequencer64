@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-09-13
+ * \updates       2015-09-14
  * \license       GNU GPLv2 or above
  *
  */
@@ -1081,10 +1081,10 @@ bool
 seqroll::on_key_press_event (GdkEventKey * a_p0)
 {
     bool result = false;
-    bool dont_toggle = m_mainperf->m_key_start != m_mainperf->m_key_stop;
+    bool dont_toggle = PERFKEY(start) != PERFKEY(stop);
     if
     (
-        a_p0->keyval ==  m_mainperf->m_key_start &&
+        a_p0->keyval ==  PERFKEY(start) &&
         (dont_toggle || ! global_is_pattern_playing)
     )
     {
@@ -1095,7 +1095,7 @@ seqroll::on_key_press_event (GdkEventKey * a_p0)
     }
     else if
     (
-        a_p0->keyval ==  m_mainperf->m_key_stop &&
+        a_p0->keyval ==  PERFKEY(stop) &&
         (dont_toggle || global_is_pattern_playing)
     )
     {

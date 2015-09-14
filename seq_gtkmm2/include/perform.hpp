@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-09-13
+ * \updates       2015-09-14
  * \license       GNU GPLv2 or above
  *
  *  This class has way too many members.
@@ -53,6 +53,14 @@
 #endif
 
 #include "mastermidibus.hpp"
+
+#ifndef NEW_KEYS_CODE
+#define PERFKEY(x)              m_mainperf->m_key_##x
+#define PERFKEY_ADDR(x)         &m_mainperf->m_key_##x
+#else
+#define PERFKEY(x)              m_mainperf->keys().##x()
+#define PERFKEY_ADDR(x)         m_mainperf->keys().at_##x()
+#endif
 
 namespace seq64
 {

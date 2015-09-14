@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-09-13
+ * \updates       2015-09-14
  * \license       GNU GPLv2 or above
  *
  *  This module define a GTK text-edit widget for getting keyboard button
@@ -46,8 +46,7 @@ namespace seq64
  *
  * \usage
  *      In options, a pointer to a new key-binding entry is managed by
- *      calling
- *      <code>keybindentry(keybindentry::location, &m_perf->m_key_start)</code>.
+ *      calling <tt>keybindentry(keybindentry::location, &perf->keyname)</tt>.
  *
  * \param t
  *      Provides the type of key-binding:  location, events, or groups.

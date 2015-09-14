@@ -288,7 +288,7 @@ optionsfile::parse (perform & a_perf)
         next_data_line(file);
     }
 
-#ifndef USE_NEW_KEYS_CODE
+#ifndef NEW_KEYS_CODE
 
     sscanf(m_line, "%u %u", &a_perf.m_key_bpm_up, &a_perf.m_key_bpm_dn);
     next_data_line(file);
@@ -327,7 +327,7 @@ optionsfile::parse (perform & a_perf)
     next_data_line(file);
     sscanf(m_line, "%u", &a_perf.m_key_stop);
 
-#else   // USE_NEW_KEYS_CODE
+#else   // NEW_KEYS_CODE
 
     keys_perform_transfer ktx;
     sscanf(m_line, "%u %u", &ktx.kpt_bpm_up, &ktx.kpt_bpm_dn);
@@ -368,7 +368,7 @@ optionsfile::parse (perform & a_perf)
     sscanf(m_line, "%u", &ktx.kpt_stop);
     a_perf.keys().set_keys(ktx);                /* copy into perform keys   */
 
-#endif  // USE_NEW_KEYS_CODE
+#endif  // NEW_KEYS_CODE
 
     line_after(file, "[jack-transport]");
     long flag = 0;
@@ -718,7 +718,7 @@ optionsfile::write (const perform & a_perf)
         file << std::string(outs) << "\n";
     }
 
-#ifndef USE_NEW_KEYS_CODE
+#ifndef NEW_KEYS_CODE
 
     file
         << "# bpm up, down\n"
@@ -773,7 +773,7 @@ optionsfile::write (const perform & a_perf)
         << " stop sequencer\n"
         ;
 
-#else   // USE_NEW_KEYS_CODE
+#else   // NEW_KEYS_CODE
 
     keys_perform_transfer ktx;
     uca_perf.keys().get_keys(ktx);      /* copy perform key to structure    */
@@ -830,7 +830,7 @@ optionsfile::write (const perform & a_perf)
         << " stop sequencer\n"
         ;
 
-#endif  // USE_NEW_KEYS_CODE
+#endif  // NEW_KEYS_CODE
 
     file
         << "\n[jack-transport]\n\n"

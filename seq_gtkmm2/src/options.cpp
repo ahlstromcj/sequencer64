@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-09-13
+ * \updates       2015-09-14
  * \license       GNU GPLv2 or above
  *
  *  Here is a list of the global variables used/stored/modified by this
@@ -68,6 +68,10 @@
 #include "options.hpp"
 #include "perform.hpp"
 #include "sequence.hpp"
+
+#ifndef NEW_KEYS_CODE
+#include "keys_perform.hpp"
+#endif
 
 namespace seq64
 {
@@ -314,10 +318,7 @@ options::add_keyboard_page ()
      */
     keybindentry * entry = manage
     (
-        new keybindentry
-        (
-            keybindentry::location, &m_mainperf->m_key_start
-        )
+        new keybindentry(keybindentry::location, PERFKEY_ADDR(start))
     );
     controltable->attach(*label, 0, 1, 0, 1);
     controltable->attach(*entry, 1, 2, 0, 1);
@@ -325,7 +326,7 @@ options::add_keyboard_page ()
     label = manage(new Gtk::Label("Stop", Gtk::ALIGN_RIGHT));
     entry = manage
     (
-        new keybindentry(keybindentry::location, &m_mainperf->m_key_stop)
+        new keybindentry(keybindentry::location, PERFKEY_ADDR(stop))
     );
     controltable->attach(*label, 0, 1, 1, 2);
     controltable->attach(*entry, 1, 2, 1, 2);
@@ -333,7 +334,7 @@ options::add_keyboard_page ()
     label = manage(new Gtk::Label("Snapshot 1", Gtk::ALIGN_RIGHT));
     entry = manage
     (
-        new keybindentry(keybindentry::location, &m_mainperf->m_key_snapshot_1)
+        new keybindentry(keybindentry::location, PERFKEY_ADDR(snapshot_1))
     );
     controltable->attach(*label, 2, 3, 0, 1);
     controltable->attach(*entry, 3, 4, 0, 1);
@@ -341,7 +342,7 @@ options::add_keyboard_page ()
     label = manage(new Gtk::Label("Snapshot 2", Gtk::ALIGN_RIGHT));
     entry = manage
     (
-        new keybindentry(keybindentry::location, &m_mainperf->m_key_snapshot_2)
+        new keybindentry(keybindentry::location, PERFKEY_ADDR(snapshot_2))
     );
     controltable->attach(*label, 2, 3, 1, 2);
     controltable->attach(*entry, 3, 4, 1, 2);
@@ -349,7 +350,7 @@ options::add_keyboard_page ()
     label = manage(new Gtk::Label("bpm down", Gtk::ALIGN_RIGHT));
     entry = manage
     (
-        new keybindentry(keybindentry::location, &m_mainperf->m_key_bpm_dn)
+        new keybindentry(keybindentry::location, PERFKEY_ADDR(bpm_dn))
     );
     controltable->attach(*label, 2, 3, 3, 4);
     controltable->attach(*entry, 3, 4, 3, 4);
@@ -357,7 +358,7 @@ options::add_keyboard_page ()
     label = manage(new Gtk::Label("bpm up", Gtk::ALIGN_RIGHT));
     entry = manage
     (
-        new keybindentry(keybindentry::location, &m_mainperf->m_key_bpm_up)
+        new keybindentry(keybindentry::location, PERFKEY_ADDR(bpm_up))
     );
     controltable->attach(*label, 2, 3, 2, 3);
     controltable->attach(*entry, 3, 4, 2, 3);
@@ -365,7 +366,7 @@ options::add_keyboard_page ()
     label = manage(new Gtk::Label("Replace", Gtk::ALIGN_RIGHT));
     entry = manage
     (
-        new keybindentry(keybindentry::location, &m_mainperf->m_key_replace)
+        new keybindentry(keybindentry::location, PERFKEY_ADDR(replace))
     );
     controltable->attach(*label, 4, 5, 0, 1);
     controltable->attach(*entry, 5, 6, 0, 1);
@@ -373,7 +374,7 @@ options::add_keyboard_page ()
     label = manage(new Gtk::Label("Queue", Gtk::ALIGN_RIGHT));
     entry = manage
     (
-        new keybindentry(keybindentry::location, &m_mainperf->m_key_queue)
+        new keybindentry(keybindentry::location, PERFKEY_ADDR(queue))
     );
     controltable->attach(*label, 4, 5, 1, 2);
     controltable->attach(*entry, 5, 6, 1, 2);
@@ -381,7 +382,7 @@ options::add_keyboard_page ()
     label = manage(new Gtk::Label("Keep queue", Gtk::ALIGN_RIGHT));
     entry = manage
     (
-        new keybindentry(keybindentry::location, &m_mainperf->m_key_keep_queue)
+        new keybindentry(keybindentry::location, PERFKEY_ADDR(keep_queue))
     );
     controltable->attach(*label, 4, 5, 2, 3);
     controltable->attach(*entry, 5, 6, 2, 3);
@@ -389,7 +390,7 @@ options::add_keyboard_page ()
     label = manage(new Gtk::Label("Screenset up", Gtk::ALIGN_RIGHT));
     entry = manage
     (
-        new keybindentry(keybindentry::location, &m_mainperf->m_key_screenset_up)
+        new keybindentry(keybindentry::location, PERFKEY_ADDR(screenset_up))
     );
     controltable->attach(*label, 6, 7, 0, 1);
     controltable->attach(*entry, 7, 8, 0, 1);
@@ -397,7 +398,7 @@ options::add_keyboard_page ()
     label = manage(new Gtk::Label("Screenset down", Gtk::ALIGN_RIGHT));
     entry = manage
     (
-        new keybindentry(keybindentry::location, &m_mainperf->m_key_screenset_dn)
+        new keybindentry(keybindentry::location, PERFKEY_ADDR(screenset_dn))
     );
     controltable->attach(*label, 6, 7, 1, 2);
     controltable->attach(*entry, 7, 8, 1, 2);
@@ -407,7 +408,7 @@ options::add_keyboard_page ()
     (
         new keybindentry
         (
-            keybindentry::location, &m_mainperf->m_key_set_playing_screenset
+            keybindentry::location, PERFKEY_ADDR(set_playing_screenset)
         )
     );
     controltable->attach(*label, 6, 7, 2, 3);

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-09-13
+ * \updates       2015-09-14
  * \license       GNU GPLv2 or above
  *
  */
@@ -62,6 +62,10 @@
 #include "pixmaps/seq24_32.xpm"
 #include "pixmaps/sequencer64_square.xpm"
 #include "pixmaps/sequencer64_legacy.xpm"
+
+#ifndef NEW_KEYS_CODE
+#include "keys_perform.hpp"
+#endif
 
 using namespace Gtk::Menu_Helpers;          /* MenuElem, etc.                */
 
@@ -1080,21 +1084,17 @@ mainwnd::on_delete_event (GdkEventAny * a_e)
 bool
 mainwnd::on_key_release_event (GdkEventKey * a_ev)
 {
-    if (a_ev->keyval == m_mainperf->m_key_replace)
+    if (a_ev->keyval == PERFKEY(replace))
         m_mainperf->unset_sequence_control_status(c_status_replace);
 
-    if (a_ev->keyval == m_mainperf->m_key_queue)
+    if (a_ev->keyval == PERFKEY(queue))
         m_mainperf->unset_sequence_control_status(c_status_queue);
 
-    if
-    (
-        a_ev->keyval == m_mainperf->m_key_snapshot_1 ||
-        a_ev->keyval == m_mainperf->m_key_snapshot_2
-    )
+    if (a_ev->keyval == PERFKEY(snapshot_1) || a_ev->keyval == PERFKEY(snapshot_2))
     {
         m_mainperf->unset_sequence_control_status(c_status_snapshot);
     }
-    if (a_ev->keyval == m_mainperf->m_key_group_learn)
+    if (a_ev->keyval == PERFKEY(group_learn))
         m_mainperf->unset_mode_group_learn();
 
     return false;
@@ -1120,36 +1120,36 @@ mainwnd::on_key_press_event (GdkEventKey * a_ev)
             printf("key_press[%d]\n", a_ev->keyval);
             fflush(stdout);
         }
-        if (a_ev->keyval == m_mainperf->m_key_bpm_dn)
+        if (a_ev->keyval == PERFKEY(bpm_dn))
         {
             m_mainperf->set_bpm(m_mainperf->get_bpm() - 1);
             m_adjust_bpm->set_value(m_mainperf->get_bpm());
         }
-        if (a_ev->keyval == m_mainperf->m_key_bpm_up)
+        if (a_ev->keyval == PERFKEY(bpm_up))
         {
             m_mainperf->set_bpm(m_mainperf->get_bpm() + 1);
             m_adjust_bpm->set_value(m_mainperf->get_bpm());
         }
-        if (a_ev->keyval == m_mainperf->m_key_replace)
+        if (a_ev->keyval == PERFKEY(replace))
             m_mainperf->set_sequence_control_status(c_status_replace);
 
         if
         (
-            (a_ev->keyval == m_mainperf->m_key_queue) ||
-            (a_ev->keyval == m_mainperf->m_key_keep_queue)
+            (a_ev->keyval == PERFKEY(queue)) ||
+            (a_ev->keyval == PERFKEY(keep_queue))
         )
         {
             m_mainperf->set_sequence_control_status(c_status_queue);
         }
         if
         (
-            a_ev->keyval == m_mainperf->m_key_snapshot_1 ||
-            a_ev->keyval == m_mainperf->m_key_snapshot_2
+            a_ev->keyval == PERFKEY(snapshot_1) ||
+            a_ev->keyval == PERFKEY(snapshot_2)
         )
         {
             m_mainperf->set_sequence_control_status(c_status_snapshot);
         }
-        if (a_ev->keyval == m_mainperf->m_key_screenset_dn)
+        if (a_ev->keyval == PERFKEY(screenset_dn))
         {
             /**
              * \todo
@@ -1170,7 +1170,7 @@ mainwnd::on_key_press_event (GdkEventKey * a_ev)
                 *m_mainperf->get_screen_set_notepad(m_mainperf->get_screenset())
             );
         }
-        if (a_ev->keyval == m_mainperf->m_key_screenset_up)
+        if (a_ev->keyval == PERFKEY(screenset_up))
         {
             /**
              * \todo
@@ -1186,16 +1186,16 @@ mainwnd::on_key_press_event (GdkEventKey * a_ev)
                 *m_mainperf->get_screen_set_notepad(m_mainperf->get_screenset())
             );
         }
-        if (a_ev->keyval == m_mainperf->m_key_set_playing_screenset)
+        if (a_ev->keyval == PERFKEY(set_playing_screenset))
             m_mainperf->set_playing_screenset();
 
-        if (a_ev->keyval == m_mainperf->m_key_group_on)
+        if (a_ev->keyval == PERFKEY(group_on))
             m_mainperf->set_mode_group_mute();
 
-        if (a_ev->keyval == m_mainperf->m_key_group_off)
+        if (a_ev->keyval == PERFKEY(group_off))
             m_mainperf->unset_mode_group_mute();
 
-        if (a_ev->keyval == m_mainperf->m_key_group_learn)
+        if (a_ev->keyval == PERFKEY(group_learn))
             m_mainperf->set_mode_group_learn();
 
         if (m_mainperf->get_key_groups().count(a_ev->keyval) != 0)
@@ -1207,8 +1207,7 @@ mainwnd::on_key_press_event (GdkEventKey * a_ev)
         }
         if                                      /* mute group learn         */
         (
-            m_mainperf->is_learn_mode() &&
-            a_ev->keyval != m_mainperf->m_key_group_learn
+            m_mainperf->is_learn_mode() && a_ev->keyval != PERFKEY(group_learn)
         )
         {
             if (m_mainperf->get_key_groups().count(a_ev->keyval) != 0)
@@ -1270,10 +1269,10 @@ mainwnd::on_key_press_event (GdkEventKey * a_ev)
          * SPACEBAR)
          */
 
-        bool dont_toggle = m_mainperf->m_key_start != m_mainperf->m_key_stop;
+        bool dont_toggle = PERFKEY(start) != PERFKEY(stop);
         if
         (
-            a_ev->keyval == m_mainperf->m_key_start &&
+            a_ev->keyval == PERFKEY(start) &&
             (dont_toggle || ! global_is_pattern_playing)
         )
         {
@@ -1281,7 +1280,7 @@ mainwnd::on_key_press_event (GdkEventKey * a_ev)
         }
         else if
         (
-            a_ev->keyval == m_mainperf->m_key_stop &&
+            a_ev->keyval == PERFKEY(stop) &&
             (dont_toggle || global_is_pattern_playing)
         )
         {

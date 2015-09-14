@@ -47,6 +47,7 @@
 #include "midibus.hpp"
 #include "optionsfile.hpp"
 #include "perform.hpp"
+#include "keys_perform.hpp"
 
 namespace seq64
 {
@@ -286,6 +287,9 @@ optionsfile::parse (perform & a_perf)
         a_perf.set_key_group(key, group);
         next_data_line(file);
     }
+
+#ifndef USE_NEW_KEYS_CODE
+
     sscanf(m_line, "%u %u", &a_perf.m_key_bpm_up, &a_perf.m_key_bpm_dn);
     next_data_line(file);
     sscanf
@@ -322,6 +326,49 @@ optionsfile::parse (perform & a_perf)
     sscanf(m_line, "%u", &a_perf.m_key_start);
     next_data_line(file);
     sscanf(m_line, "%u", &a_perf.m_key_stop);
+
+#else   // USE_NEW_KEYS_CODE
+
+    keys_perform_transfer ktx;
+    sscanf(m_line, "%u %u", &ktx.kpt_bpm_up, &ktx.kpt_bpm_dn);
+    next_data_line(file);
+    sscanf
+    (
+        m_line, "%u %u %u",
+        &ktx.kpt_screenset_up,
+        &ktx.kpt_screenset_dn,
+        &ktx.kpt_set_playing_screenset
+    );
+    next_data_line(file);
+    sscanf
+    (
+        m_line, "%u %u %u",
+        &ktx.kpt_group_on,
+        &ktx.kpt_group_off,
+        &ktx.kpt_group_learn
+    );
+    next_data_line(file);
+    sscanf
+    (
+        m_line, "%u %u %u %u %u",
+        &ktx.kpt_replace,
+        &ktx.kpt_queue,
+        &ktx.kpt_snapshot_1,
+        &ktx.kpt_snapshot_2,
+        &ktx.kpt_keep_queue
+    );
+
+    int show_key = 0;
+    next_data_line(file);
+    sscanf(m_line, "%d", &show_key);
+    ktx.kpt_show_ui_sequence_key = (bool) show_key;
+    next_data_line(file);
+    sscanf(m_line, "%u", &ktx.kpt_start);
+    next_data_line(file);
+    sscanf(m_line, "%u", &ktx.kpt_stop);
+    a_perf.keys().set_keys(ktx);                /* copy into perform keys   */
+
+#endif  // USE_NEW_KEYS_CODE
 
     line_after(file, "[jack-transport]");
     long flag = 0;
@@ -671,6 +718,8 @@ optionsfile::write (const perform & a_perf)
         file << std::string(outs) << "\n";
     }
 
+#ifndef USE_NEW_KEYS_CODE
+
     file
         << "# bpm up, down\n"
         << uca_perf.m_key_bpm_up << " "
@@ -723,6 +772,66 @@ optionsfile::write (const perform & a_perf)
         << gdk_keyval_name(uca_perf.m_key_stop)
         << " stop sequencer\n"
         ;
+
+#else   // USE_NEW_KEYS_CODE
+
+    keys_perform_transfer ktx;
+    uca_perf.keys().get_keys(ktx);      /* copy perform key to structure    */
+    file
+        << "# bpm up, down\n"
+        << ktx.kpt_bpm_up << " "
+        << ktx.kpt_bpm_dn << " # "
+        << gdk_keyval_name(ktx.kpt_bpm_up) << " "
+        << gdk_keyval_name(ktx.kpt_bpm_dn) << "\n"
+        ;
+    file
+        << "# screen set up, down, play\n"
+        << ktx.kpt_screenset_up << " "
+        << ktx.kpt_screenset_dn << " "
+        << ktx.kpt_set_playing_screenset << " # "
+        << gdk_keyval_name(ktx.kpt_screenset_up) << " "
+        << gdk_keyval_name(ktx.kpt_screenset_dn) << " "
+        << gdk_keyval_name(ktx.kpt_set_playing_screenset) << "\n"
+        ;
+    file
+        << "# group on, off, learn\n"
+        << ktx.kpt_group_on << " "
+        << ktx.kpt_group_off << " "
+        << ktx.kpt_group_learn << " # "
+        << gdk_keyval_name(ktx.kpt_group_on) << " "
+        << gdk_keyval_name(ktx.kpt_group_off) << " "
+        << gdk_keyval_name(ktx.kpt_group_learn) << "\n"
+        ;
+    file
+        << "# replace, queue, snapshot_1, snapshot 2, keep queue\n"
+        << ktx.kpt_replace << " "
+        << ktx.kpt_queue << " "
+        << ktx.kpt_snapshot_1 << " "
+        << ktx.kpt_snapshot_2 << " "
+        << ktx.kpt_keep_queue << " # "
+        << gdk_keyval_name(ktx.kpt_replace) << " "
+        << gdk_keyval_name(ktx.kpt_queue) << " "
+        << gdk_keyval_name(ktx.kpt_snapshot_1) << " "
+        << gdk_keyval_name(ktx.kpt_snapshot_2) << " "
+        << gdk_keyval_name(ktx.kpt_keep_queue) << "\n"
+        ;
+    file
+        << ktx.kpt_show_ui_sequence_key
+        << " # show_ui_sequence_key (1=true/0=false)\n"
+        ;
+    file
+        << ktx.kpt_start << " # "
+        << gdk_keyval_name(ktx.kpt_start)
+        << " start sequencer\n"
+       ;
+    file
+        << ktx.kpt_stop << " # "
+        << gdk_keyval_name(ktx.kpt_stop)
+        << " stop sequencer\n"
+        ;
+
+#endif  // USE_NEW_KEYS_CODE
+
     file
         << "\n[jack-transport]\n\n"
         << "# jack_transport - Enable sync with JACK Transport.\n"

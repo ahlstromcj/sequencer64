@@ -61,7 +61,10 @@ private:
      * Provides the type of keybindings that can be made.
      *
      * \var location
-     *      Used for binding to pattern/sequence boxes, we think.
+     *      Used for handling a keystroke made while a keyboard-options
+     *      field is active, for selecting a key via the keyboard, and
+     *      binding to pattern/sequence boxes, we think.  It is used in
+     *      the options class to associate a key with the binding.
      *
      * \var events
      *      Used for binding to events.
@@ -79,9 +82,30 @@ private:
 
 private:
 
+    /**
+     *  Points to the value of the key that is part of this key-binding.
+     *  Not yet sure by the address of this key value is needed.
+     *  It can be a null pointer, as well.
+     */
+
     unsigned int * m_key;
+
+    /**
+     *  Stores the type of key-binding.
+     */
+
     type m_type;
+
+    /**
+     *  Stores an optional pointer to a perform object.
+     */
+
     perform * m_perf;
+
+    /**
+     *  Provides???
+     */
+
     long m_slot;
 
 public:
@@ -95,6 +119,7 @@ public:
     );
 
     void set (unsigned int val);
+
     virtual bool on_key_press_event (GdkEventKey * event);
 };
 

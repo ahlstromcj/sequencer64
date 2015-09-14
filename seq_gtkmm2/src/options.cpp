@@ -306,6 +306,12 @@ options::add_keyboard_page ()
     controlframe->add(*controltable);
 
     Gtk::Label * label = manage(new Gtk::Label("Start", Gtk::ALIGN_RIGHT));
+
+    /*
+     * TODO:  We will provide an address-returning function so that
+     *       "&m_mainperf->m_key_start" is replaced with
+     *       "m_mainperf->key().at_key_start()".
+     */
     keybindentry * entry = manage
     (
         new keybindentry

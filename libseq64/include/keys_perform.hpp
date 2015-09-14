@@ -136,6 +136,10 @@ public:
     void set_keys (const keys_perform_transfer & kpt);
     void get_keys (keys_perform_transfer & kpt);
 
+    unsigned int * at_bpm_up ()
+    {
+        return &m_key_bpm_up;
+    }
     unsigned int bpm_up () const
     {
         return m_key_bpm_up;
@@ -145,6 +149,10 @@ public:
         m_key_bpm_up = x;
     }
 
+    unsigned int * at_bpm_dn ()
+    {
+        return & m_key_bpm_dn;
+    }
     unsigned int bpm_dn () const
     {
         return m_key_bpm_dn;
@@ -154,6 +162,10 @@ public:
         m_key_bpm_dn = x;
     }
 
+    unsigned int * at_replace ()
+    {
+        return &m_key_replace;
+    }
     unsigned int replace () const
     {
         return m_key_replace;
@@ -163,6 +175,10 @@ public:
         m_key_replace = x;
     }
 
+    unsigned int * at_queue ()
+    {
+        return &m_key_queue;
+    }
     unsigned int queue () const
     {
         return m_key_queue;
@@ -172,6 +188,10 @@ public:
         m_key_queue = x;
     }
 
+    unsigned int * at_keep_queue ()
+    {
+        return &m_key_keep_queue;
+    }
     unsigned int keep_queue () const
     {
         return m_key_keep_queue;
@@ -181,6 +201,10 @@ public:
         m_key_keep_queue = x;
     }
 
+    unsigned int * at_snapshot_1 ()
+    {
+        return &m_key_snapshot_1;
+    }
     unsigned int snapshot_1 () const
     {
         return m_key_snapshot_1;
@@ -190,6 +214,10 @@ public:
         m_key_snapshot_1 = x;
     }
 
+    unsigned int * at_snapshot_2 ()
+    {
+        return &m_key_snapshot_2;
+    }
     unsigned int snapshot_2 () const
     {
         return m_key_snapshot_2;
@@ -199,6 +227,10 @@ public:
         m_key_snapshot_2 = x;
     }
 
+    unsigned int * at_screenset_up ()
+    {
+        return &m_key_screenset_up;
+    }
     unsigned int screenset_up () const
     {
         return m_key_screenset_up;
@@ -208,6 +240,10 @@ public:
         m_key_screenset_up = x;
     }
 
+    unsigned int * at_screenset_dn ()
+    {
+        return &m_key_screenset_dn;
+    }
     unsigned int screenset_dn () const
     {
         return m_key_screenset_dn;
@@ -217,6 +253,10 @@ public:
         m_key_screenset_dn = x;
     }
 
+    unsigned int * at_set_playing_screenset ()
+    {
+        return &m_key_set_playing_screenset;
+    }
     unsigned int set_playing_screenset () const
     {
         return m_key_set_playing_screenset;
@@ -226,6 +266,10 @@ public:
         m_key_set_playing_screenset = x;
     }
 
+    unsigned int * at_group_on ()
+    {
+        return &m_key_group_on;
+    }
     unsigned int group_on () const
     {
         return m_key_group_on;
@@ -235,6 +279,10 @@ public:
         m_key_group_on = x;
     }
 
+    unsigned int * at_group_off ()
+    {
+        return &m_key_group_off;
+    }
     unsigned int group_off () const
     {
         return m_key_group_off;
@@ -244,6 +292,10 @@ public:
         m_key_group_off = x;
     }
 
+    unsigned int * at_group_learn ()
+    {
+        return &m_key_group_learn;
+    }
     unsigned int group_learn () const
     {
         return m_key_group_learn;
@@ -253,6 +305,10 @@ public:
         m_key_group_learn = x;
     }
 
+    unsigned int * at_key_start ()
+    {
+        return &m_key_start;
+    }
     unsigned int key_start () const
     {
         return m_key_start;
@@ -262,6 +318,10 @@ public:
         m_key_start = x;
     }
 
+    unsigned int * at_key_stop ()
+    {
+        return &m_key_stop;
+    }
     unsigned int key_stop () const
     {
         return m_key_stop;

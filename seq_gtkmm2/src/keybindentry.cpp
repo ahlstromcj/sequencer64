@@ -43,6 +43,27 @@ namespace seq64
 /**
  *  This constructor initializes the member with values dependent on the
  *  value type provided in the first parameter.
+ *
+ * \usage
+ *      In options, a pointer to a new key-binding entry is managed by
+ *      calling
+ *      <code>keybindentry(keybindentry::location, &m_perf->m_key_start)</code>.
+ *
+ * \param t
+ *      Provides the type of key-binding:  location, events, or groups.
+ *
+ * \param location_to_write
+ *      The location that holds the value of the key associated with
+ *      the key-binding.  The default value of this parameter is the null
+ *      pointer.
+ *
+ * \param p
+ *      Points to the performance object used with this key-binding.  The
+ *      default value of this parameter is the null pointer.
+ *
+ * \param s
+ *      Provides the slot value for this key-binding.  The default value
+ *      of this parameter is zero.
  */
 
 keybindentry::keybindentry
@@ -78,24 +99,38 @@ keybindentry::keybindentry
 /**
  *  Gets the key name from the integer value; if there is one, then it is
  *  printed into a temporary buffer, otherwise the value is printed into
- *  that buffer as is.  Then we call set_text(buf).  The set_width_char()
- *  function is then called.
+ *  that buffer as is.
+ *
+ *  Then we call set_text(buf).  The set_width_char() function is then
+ *  called.
  */
 
 void
 keybindentry::set (unsigned int val)
 {
-    char buf[256] = "";
-    char * special = gdk_keyval_name(val);
-    char * p_buf = &buf[strlen(buf)];           // why not just &buf[0]?
-    if (special)
+    char buf[64] = "";
+    char * special = gdk_keyval_name(val);  // long name of the key
+
+#if USE_SILLY_SPRINTF
+
+    char * p_buf = &buf[strlen(buf)];       // just past the end of buffer
+    if (not_nullptr(special))
         snprintf(p_buf, sizeof buf - (p_buf-buf), "%s", special);
     else
         snprintf(p_buf, sizeof buf - (p_buf-buf), "'%c'", (char) val);
 
+#else
+
+    if (not_nullptr(special))
+        snprintf(buf, sizeof(buf), "%s", special);
+    else
+        snprintf(buf, sizeof(buf), "'%c'", (char) val);
+
+#endif  // USE_SILLY_SPRINTF
+
     set_text(buf);
     int width = strlen(buf) - 1;
-    set_width_chars(1 <= width ? width : 1);
+    set_width_chars(width >= 1 ? width : 1);
 }
 
 /**
@@ -111,17 +146,19 @@ keybindentry::on_key_press_event (GdkEventKey * event)
     set(event->keyval);
     switch (m_type)
     {
-    case location:
-        if (m_key)
+    case location:          /* copy the pressed key into this binding   */
+        if (not_nullptr(m_key))
             *m_key = event->keyval;
         break;
 
-    case events:
-        m_perf->set_key_event(event->keyval, m_slot);
+    case events:            /* set the event key in the perform object  */
+        if (not_nullptr(m_perf))
+            m_perf->set_key_event(event->keyval, m_slot);
         break;
 
     case groups:
-        m_perf->set_key_group(event->keyval, m_slot);
+        if (not_nullptr(m_perf))
+            m_perf->set_key_group(event->keyval, m_slot);
         break;
     }
     return result;

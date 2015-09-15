@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-09-13
+ * \updates       2015-09-14
  * \license       GNU GPLv2 or above
  *
  */
@@ -83,7 +83,7 @@ private:
 };
 
 /*
- * Global LASH driver, defined in seq24.cpp.
+ * Global LASH driver, defined in sequencer64/sequencer64/sequencer64.cpp.
  */
 
 #ifdef SEQ64_LASH_SUPPORT

@@ -55,7 +55,14 @@
 #include "keys_perform.hpp"
 #include "mastermidibus.hpp"
 
-#define NEW_KEYS_CODE /////
+/**
+ *  While we sort out the usefulness of offloading the keybinding support
+ *  to another class, we want to be able to go back and forth, so that we
+ *  can verify that files are written identically in either case, and
+ *  functions and playback operate the same in either case.
+ */
+
+///// #define NEW_KEYS_CODE /////
 
 #ifndef NEW_KEYS_CODE
 #define PERFKEY(x)              m_mainperf->m_key_##x
@@ -638,11 +645,38 @@ public:
 
     SlotMap & get_key_events ()
     {
+#ifndef NEW_KEYS_CODE
         return m_key_events;
+#else
+        return keys().get_key_events();
+#endif
     }
+
     SlotMap & get_key_groups ()
     {
+#ifndef NEW_KEYS_CODE
         return m_key_groups;
+#else
+        return keys().get_key_groups();
+#endif
+    }
+
+    RevSlotMap & get_key_events_rev ()
+    {
+#ifndef NEW_KEYS_CODE
+        return m_key_events_rev;
+#else
+        return keys().get_key_events_rev();
+#endif
+    }
+
+    RevSlotMap & get_key_groups_rev ()
+    {
+#ifndef NEW_KEYS_CODE
+        return m_key_groups_rev;
+#else
+        return keys().get_key_groups_rev();
+#endif
     }
 
     /**
@@ -676,29 +710,29 @@ public:
 
     unsigned int lookup_keyevent_key (long seqnum)
     {
-        if (m_key_events_rev.count(seqnum))
-            return m_key_events_rev[seqnum];
+        if (get_key_events_rev().count(seqnum) > 0)
+            return get_key_events_rev()[seqnum];
         else
             return '?';
     }
     long lookup_keyevent_seq (unsigned int keycode)
     {
-        if (m_key_events.count(keycode))
-            return m_key_events[keycode];
+        if (get_key_events().count(keycode) > 0)
+            return get_key_events()[keycode];
         else
             return 0;
     }
     unsigned int lookup_keygroup_key (long groupnum)
     {
-        if (m_key_groups_rev.count(groupnum))
-            return m_key_groups_rev[groupnum];
+        if (get_key_groups_rev().count(groupnum))
+            return get_key_groups_rev()[groupnum];
         else
             return '?';
     }
     long lookup_keygroup_group (unsigned int keycode)
     {
-        if (m_key_groups.count(keycode))
-            return m_key_groups[keycode];
+        if (get_key_groups().count(keycode))
+            return get_key_groups()[keycode];
         else
             return 0;
     }

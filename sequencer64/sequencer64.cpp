@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-09-13
+ * \updates       2015-09-14
  * \license       GNU GPLv2 or above
  *
  */
@@ -40,7 +40,7 @@
 #include <gdkmm/cursor.h>
 #include <gtkmm/main.h>
 
-#include "globals.h"                   // full platform configuration
+#include "globals.h"                    // full platform configuration
 #include "font.hpp"
 #include "keys_perform_gtk2.hpp"
 #include "mainwnd.hpp"
@@ -48,10 +48,9 @@
 #include "perform.hpp"
 #include "userfile.hpp"
 
-#ifdef LASH_SUPPORT
-#include "lash.hpp"
-lash * global_lash_driver = nullptr;
-#endif  // LASH_SUPPORT
+#ifdef SEQ64_LASH_SUPPORT
+#include "lash.hpp"                     // seq64::lash & global_lash_driver
+#endif
 
 /**
  *  A structure for command parsing that provides the long forms of
@@ -62,7 +61,7 @@ lash * global_lash_driver = nullptr;
 static struct option long_options[] =
 {
     {"help",                0, 0, 'h'},
-#ifdef LASH_SUPPORT
+#ifdef SEQ64_LASH_SUPPORT
     {"lash",                0, 0, 'L'},                 /* new 2015-08-27 */
 #endif
     {"legacy",              0, 0, 'l'},                 /* new 2015-08-16 */
@@ -111,7 +110,7 @@ const char * const g_help_1a =
 "   -v, --version            Show program version information.\n"
 "   -l, --legacy             Write MIDI file in old Seq24 format.  Also set\n"
 "                            if Sequencer64 is called as 'seq24'.\n"
-#ifdef LASH_SUPPORT
+#ifdef SEQ64_LASH_SUPPORT
 "   -L, --lash               Activate built-in LASH support.\n"
 #endif
     ;
@@ -425,7 +424,7 @@ main (int argc, char * argv [])
             printf("? file not found: %s\n", argv[optind]);
     }
 
-#ifdef LASH_SUPPORT
+#ifdef SEQ64_LASH_SUPPORT
     if (global_lash_support)
     {
         /*
@@ -433,12 +432,12 @@ main (int argc, char * argv [])
          *  arguments), then connect to LASH daemon and poll events.
          */
 
-        global_lash_driver = new lash(argc, argv);
-        global_lash_driver->init(&p);
-        global_lash_driver->start();
+        seq64::global_lash_driver = new seq64::lash(argc, argv);
+        seq64::global_lash_driver->init(&p);
+        seq64::global_lash_driver->start();
     }
     else
-        global_lash_driver = nullptr;
+        seq64::global_lash_driver = nullptr;
 #endif
 
     kit.run(seq24_window);
@@ -471,9 +470,9 @@ main (int argc, char * argv [])
     else
         printf("? error calling getenv(\"%s\")\n", HOME);
 
-#ifdef LASH_SUPPORT
-    if (not_nullptr(global_lash_driver))
-        delete global_lash_driver;
+#ifdef SEQ64_LASH_SUPPORT
+    if (not_nullptr(seq64::global_lash_driver))
+        delete seq64::global_lash_driver;
 #endif
 
     return EXIT_SUCCESS;

@@ -2777,6 +2777,7 @@ print_jack_pos (jack_position_t * jack_pos)
 void
 perform::set_all_key_events ()
 {
+#ifndef NEW_KEYS_CODE
     set_key_event(GDK_KEY_1, 0);
     set_key_event(GDK_KEY_q, 1);
     set_key_event(GDK_KEY_a, 2);
@@ -2809,11 +2810,15 @@ perform::set_all_key_events ()
     set_key_event(GDK_KEY_i, 29);
     set_key_event(GDK_KEY_k, 30);
     set_key_event(GDK_KEY_comma, 31);
+#else
+    keys().set_all_key_events();
+#endif
 }
 
 void
 perform::set_all_key_groups ()
 {
+#ifndef NEW_KEYS_CODE
     set_key_group(GDK_KEY_exclam, 0);
     set_key_group(GDK_KEY_quotedbl, 1);
     set_key_group(GDK_KEY_numbersign, 2);
@@ -2846,6 +2851,9 @@ perform::set_all_key_groups ()
     set_key_group(GDK_KEY_X, 25);
     set_key_group(GDK_KEY_Y, 13);
     set_key_group(GDK_KEY_Z, 24);
+#else
+    keys().set_all_key_groups();
+#endif
 }
 
 /**
@@ -2859,6 +2867,7 @@ perform::set_all_key_groups ()
 void
 perform::set_key_event (unsigned int keycode, long sequence_slot)
 {
+#ifndef NEW_KEYS_CODE
     SlotMap::iterator it1 = m_key_events.find(keycode);
     if (it1 != m_key_events.end())
     {
@@ -2879,6 +2888,9 @@ perform::set_key_event (unsigned int keycode, long sequence_slot)
     }
     m_key_events[keycode] = sequence_slot;      /* set the new binding      */
     m_key_events_rev[sequence_slot] = keycode;
+#else
+    keys().set_key_event(keycode, sequence_slot);
+#endif
 }
 
 /**
@@ -2892,6 +2904,7 @@ perform::set_key_event (unsigned int keycode, long sequence_slot)
 void
 perform::set_key_group (unsigned int keycode, long group_slot)
 {
+#ifndef NEW_KEYS_CODE
     SlotMap::iterator it1 = m_key_groups.find(keycode);
     if (it1 != m_key_groups.end())
     {
@@ -2912,6 +2925,9 @@ perform::set_key_group (unsigned int keycode, long group_slot)
     }
     m_key_groups[keycode] = group_slot;         /* set the new binding      */
     m_key_groups_rev[group_slot] = keycode;
+#else
+    keys().set_key_group(keycode, group_slot);
+#endif
 }
 
 }           // namespace seq64

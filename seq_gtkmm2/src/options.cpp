@@ -69,10 +69,6 @@
 #include "perform.hpp"
 #include "sequence.hpp"
 
-#ifdef NEW_KEYS_CODE
-#include "keys_perform.hpp"
-#endif
-
 namespace seq64
 {
 
@@ -345,7 +341,7 @@ options::add_keyboard_page ()
     controltable->attach(*label, 2, 3, 1, 2);
     controltable->attach(*entry, 3, 4, 1, 2);
 
-    label = manage(new Gtk::Label("bpm down", Gtk::ALIGN_RIGHT));
+    label = manage(new Gtk::Label("BPM down", Gtk::ALIGN_RIGHT));
     entry = manage
     (
         new keybindentry(keybindentry::location, PERFKEY_ADDR(bpm_dn))
@@ -353,7 +349,7 @@ options::add_keyboard_page ()
     controltable->attach(*label, 2, 3, 3, 4);
     controltable->attach(*entry, 3, 4, 3, 4);
 
-    label = manage(new Gtk::Label("bpm up", Gtk::ALIGN_RIGHT));
+    label = manage(new Gtk::Label("BPM up", Gtk::ALIGN_RIGHT));
     entry = manage
     (
         new keybindentry(keybindentry::location, PERFKEY_ADDR(bpm_up))

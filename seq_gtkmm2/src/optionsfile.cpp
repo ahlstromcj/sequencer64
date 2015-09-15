@@ -47,7 +47,6 @@
 #include "midibus.hpp"
 #include "optionsfile.hpp"
 #include "perform.hpp"
-#include "keys_perform.hpp"
 
 namespace seq64
 {
@@ -547,7 +546,7 @@ optionsfile::write (const perform & a_perf)
 
     file << "\n[mute-group]\n";
     int mtx[c_seqs_in_set];
-    file <<  c_gmute_tracks << "\n";
+    file <<  c_gmute_tracks << "   # group mute track count\n";
     for (int j = 0; j < c_seqs_in_set; j++)
     {
         uca_perf.select_group_mute(j);
@@ -584,7 +583,7 @@ optionsfile::write (const perform & a_perf)
 
     int buses = uca_perf.master_bus().get_num_out_buses();
     file << "\n[midi-clock]\n";
-    file << buses << "\n";
+    file << buses << "   # number of MIDI clocks\n";
     for (int i = 0; i < buses; i++)
     {
         file
@@ -616,7 +615,7 @@ optionsfile::write (const perform & a_perf)
     buses = uca_perf.master_bus().get_num_in_buses();
     file
         << "\n[midi-input]\n"
-        << buses << "\n"
+        << buses << "   # number if MIDI busses\n"
         ;
     for (int i = 0; i < buses; i++)
     {
@@ -642,7 +641,7 @@ optionsfile::write (const perform & a_perf)
         << "# Set to 1 if you want seq24 to create its own ALSA ports and\n"
         << "# not connect to other clients\n"
         << "\n"
-        << global_manual_alsa_ports << "\n"
+        << global_manual_alsa_ports << "   # number of manual ALSA ports\n"
         ;
 
     /*
@@ -677,7 +676,7 @@ optionsfile::write (const perform & a_perf)
     file
         << "\n[keyboard-control]\n"
         << "# Key #, Sequence #\n"
-        << kevsize << "\n"
+        << kevsize << "   # number of keys\n"
         ;
 
     for
@@ -701,7 +700,7 @@ optionsfile::write (const perform & a_perf)
         << "\n[keyboard-group]\n"
         << "# Key #, group # \n"
         << "\n"
-        << kegsize << "\n"
+        << kegsize << "   # number of key groups\n"
         ;
 
     for

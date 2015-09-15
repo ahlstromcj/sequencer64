@@ -102,6 +102,12 @@ keybindentry::keybindentry
  *
  *  Then we call set_text(buf).  The set_width_char() function is then
  *  called.
+ *
+ *  Note the weird sprintf() call.  It seems to be necessary, otherwise
+ *  the output "rc" file gets a little messed up in the [keyboard-control]
+ *  section.  There is still a bug, though.  Selecting "<" (i.e. "less")
+ *  for the "Keep queue" key results in it being set to "Super_L" when
+ *  Sequencer26 re-reads the "rc" file.
  */
 
 void
@@ -110,7 +116,7 @@ keybindentry::set (unsigned int val)
     char buf[64] = "";
     char * special = gdk_keyval_name(val);  // long name of the key
 
-#if USE_SILLY_SPRINTF
+#ifndef USE_WEIRD_SPRINTF
 
     char * p_buf = &buf[strlen(buf)];       // just past the end of buffer
     if (not_nullptr(special))
@@ -125,7 +131,7 @@ keybindentry::set (unsigned int val)
     else
         snprintf(buf, sizeof(buf), "'%c'", (char) val);
 
-#endif  // USE_SILLY_SPRINTF
+#endif  // USE_WEIRD_SPRINTF
 
     set_text(buf);
     int width = strlen(buf) - 1;

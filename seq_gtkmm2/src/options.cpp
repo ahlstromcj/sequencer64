@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-09-14
+ * \updates       2015-09-15
  * \license       GNU GPLv2 or above
  *
  *  Here is a list of the global variables used/stored/modified by this
@@ -301,7 +301,10 @@ options::add_keyboard_page ()
 
     /* Frame for sequence toggle keys */
 
-    Gtk::Frame * controlframe = manage(new Gtk::Frame("Control keys"));
+    Gtk::Frame * controlframe = manage
+    (
+        new Gtk::Frame("Control keys [keyboard-group]")
+    );
     controlframe->set_border_width(4);
     mainbox->pack_start(*controlframe, Gtk::PACK_SHRINK);
 
@@ -411,7 +414,10 @@ options::add_keyboard_page ()
 
     /* Frame for sequence toggle keys */
 
-    Gtk::Frame * toggleframe = manage(new Gtk::Frame("Sequence toggle keys"));
+    Gtk::Frame * toggleframe = manage
+    (
+        new Gtk::Frame("Sequence toggle keys [keyboard-control]")
+    );
     toggleframe->set_border_width(4);
     mainbox->pack_start(*toggleframe, Gtk::PACK_SHRINK);
 
@@ -437,7 +443,10 @@ options::add_keyboard_page ()
 
     /* Frame for mute group slots */
 
-    Gtk::Frame * mutegroupframe = manage(new Gtk::Frame("Mute-group slots"));
+    Gtk::Frame * mutegroupframe = manage
+    (
+        new Gtk::Frame("Mute-group slots [keyboard-group]")
+    );
     mutegroupframe->set_border_width(4);
     mainbox->pack_start(*mutegroupframe, Gtk::PACK_SHRINK);
 

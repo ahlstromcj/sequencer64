@@ -546,7 +546,7 @@ optionsfile::write (const perform & a_perf)
 
     file << "\n[mute-group]\n";
     int mtx[c_seqs_in_set];
-    file <<  c_gmute_tracks << "   # group mute track count\n";
+    file <<  c_gmute_tracks << "   # group mute value count\n";
     for (int j = 0; j < c_seqs_in_set; j++)
     {
         uca_perf.select_group_mute(j);
@@ -583,17 +583,17 @@ optionsfile::write (const perform & a_perf)
 
     int buses = uca_perf.master_bus().get_num_out_buses();
     file << "\n[midi-clock]\n";
-    file << buses << "   # number of MIDI clocks\n";
+    file << buses << "   # number of MIDI clocks/busses\n";
     for (int i = 0; i < buses; i++)
     {
         file
-            << "# "
+            << "# Output buss name: "
             << uca_perf.master_bus().get_midi_out_bus_name(i)
             << "\n"
             ;
         snprintf
         (
-            outs, sizeof(outs), "%d %d",
+            outs, sizeof(outs), "%d %d  # buss number, clock status",
             i, (char) uca_perf.master_bus().get_clock(i)
         );
         file << outs << "\n";
@@ -615,7 +615,7 @@ optionsfile::write (const perform & a_perf)
     buses = uca_perf.master_bus().get_num_in_buses();
     file
         << "\n[midi-input]\n"
-        << buses << "   # number if MIDI busses\n"
+        << buses << "   # number of MIDI busses\n"
         ;
     for (int i = 0; i < buses; i++)
     {
@@ -670,8 +670,7 @@ optionsfile::write (const perform & a_perf)
         << (global_allow_mod4_mode ? "1" : "0") << "\n";   // @new 2015-08-28
 
     size_t kevsize = uca_perf.get_key_events().size() < (size_t) c_seqs_in_set ?
-         uca_perf.get_key_events().size() :
-         (size_t) c_seqs_in_set
+         uca_perf.get_key_events().size() : (size_t) c_seqs_in_set
          ;
     file
         << "\n[keyboard-control]\n"
@@ -711,7 +710,7 @@ optionsfile::write (const perform & a_perf)
     {
         snprintf
         (
-            outs, sizeof(outs), "%u  %ld # %s",
+            outs, sizeof(outs), "%u  %ld # %s key",
             i->first, i->second, gdk_keyval_name(i->first)
         );
         file << std::string(outs) << "\n";

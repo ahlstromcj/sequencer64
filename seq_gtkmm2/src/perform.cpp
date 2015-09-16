@@ -2862,6 +2862,15 @@ perform::set_all_key_groups ()
  *
  *  It is called 32 times, corresponding to the pattern/sequence slots in
  *  the Patterns window.
+ *
+ *  It first removes the given key-code from the regular and reverse
+ *  slot-maps.  Then it removes the sequence-slot from the regular and
+ *  reverse slot-maps.
+ *
+ *  Finally, it adds the sequence-slot with a key value of key-code, and
+ *  adds the key-code with a value of sequence-slot.
+ *
+ *  Why are we erasing four items instead of just two?
  */
 
 void
@@ -2899,6 +2908,8 @@ perform::set_key_event (unsigned int keycode, long sequence_slot)
  *
  *  It is called 32 times, corresponding the pattern/sequence slots in the
  *  Patterns window.
+ *
+ *  Compare it to the set_key_events() function.
  */
 
 void

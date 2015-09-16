@@ -154,16 +154,22 @@ keybindentry::on_key_press_event (GdkEventKey * event)
     case location:          /* copy the pressed key into this binding   */
         if (not_nullptr(m_key))
             *m_key = event->keyval;
+        else
+            warnprint("keybindentry(): null key pointer");
         break;
 
     case events:            /* set the event key in the perform object  */
         if (not_nullptr(m_perf))
             m_perf->set_key_event(event->keyval, m_slot);
+        else
+            warnprint("keybindentry(): null perform pointer for events");
         break;
 
-    case groups:
+    case groups:            /* set the group key in the perform object  */
         if (not_nullptr(m_perf))
             m_perf->set_key_group(event->keyval, m_slot);
+        else
+            warnprint("keybindentry(): null perform pointer for groups");
         break;
     }
     return result;

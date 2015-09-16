@@ -260,10 +260,10 @@ options::add_midi_input_page ()
  *  Local macro to use in the add_keyboard_page() function.
  */
 
-#define AddKey(text, integer) \
+#define AddKey(text, address) \
     label = manage(new Gtk::Label(text)); \
     hbox->pack_start(*label, false, false, 4); \
-    entry = manage(new keybindentry(keybindentry::location, integer)); \
+    entry = manage(new keybindentry(keybindentry::location, address)); \
     hbox->pack_start(*entry, false, false, 4);
 
 /**

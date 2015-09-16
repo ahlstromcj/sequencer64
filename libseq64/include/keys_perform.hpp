@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-09-13
- * \updates       2015-09-14
+ * \updates       2015-09-16
  * \license       GNU GPLv2 or above
  *
  *  This class has way too many members.
@@ -279,10 +279,18 @@ public:
     {
         return m_key_events;
     }
-
     SlotMap & get_key_groups ()
     {
         return m_key_groups;
+    }
+
+    RevSlotMap & get_key_events_rev ()
+    {
+        return m_key_events_rev;
+    }
+    RevSlotMap & get_key_groups_rev ()
+    {
+        return m_key_groups_rev;
     }
 
     /**
@@ -335,13 +343,26 @@ public:
             return 0;
     }
 
+    /**
+     *  Provides base class functionality.  Must be called by the
+     *  derived-class's override of this function.
+     */
+
     virtual void set_all_key_events ()
     {
-        // no code in base class
+        m_key_events.clear();
+        m_key_events_rev.clear();
     }
+
+    /**
+     *  Provides base class functionality.  Must be called by the
+     *  derived-class's override of this function.
+     */
+
     virtual void set_all_key_groups ()
     {
-        // no code in base class
+        m_key_groups.clear();
+        m_key_groups_rev.clear();
     }
 
     void set_key_event (unsigned int keycode, long sequence_slot);

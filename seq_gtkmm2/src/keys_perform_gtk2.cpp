@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-13
- * \updates       2015-09-13
+ * \updates       2015-09-16
  * \license       GNU GPLv2 or above
  *
  */
@@ -61,11 +61,14 @@ keys_perform_gtk2::~keys_perform_gtk2 ()
 
 /**
  *  Sets up the keys for arming/unmuting events in the Gtk-2 environment.
+ *  The base-class function call makes sure the the related lists are
+ *  cleared before rebuilding them here.
  */
 
 void
 keys_perform_gtk2::set_all_key_events ()
 {
+    keys_perform::set_all_key_events();
     set_key_event(GDK_KEY_1, 0);
     set_key_event(GDK_KEY_q, 1);
     set_key_event(GDK_KEY_a, 2);
@@ -102,11 +105,14 @@ keys_perform_gtk2::set_all_key_events ()
 
 /**
  *  Sets up the keys for group events in the Gtk-2 environment.
+ *  The base-class function call makes sure the the related lists are
+ *  cleared before rebuilding them here.
  */
 
 void
 keys_perform_gtk2::set_all_key_groups ()
 {
+    keys_perform::set_all_key_groups();
     set_key_group(GDK_KEY_exclam, 0);
     set_key_group(GDK_KEY_quotedbl, 1);
     set_key_group(GDK_KEY_numbersign, 2);

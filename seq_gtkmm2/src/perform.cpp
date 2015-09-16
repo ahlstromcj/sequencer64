@@ -2778,6 +2778,8 @@ void
 perform::set_all_key_events ()
 {
 #ifndef NEW_KEYS_CODE
+    m_key_events.clear();
+    m_key_events_rev.clear();
     set_key_event(GDK_KEY_1, 0);
     set_key_event(GDK_KEY_q, 1);
     set_key_event(GDK_KEY_a, 2);
@@ -2819,6 +2821,8 @@ void
 perform::set_all_key_groups ()
 {
 #ifndef NEW_KEYS_CODE
+    m_key_groups.clear();
+    m_key_groups_rev.clear();
     set_key_group(GDK_KEY_exclam, 0);
     set_key_group(GDK_KEY_quotedbl, 1);
     set_key_group(GDK_KEY_numbersign, 2);
@@ -2897,6 +2901,24 @@ perform::set_key_event (unsigned int keycode, long sequence_slot)
     }
     m_key_events[keycode] = sequence_slot;      /* set the new binding      */
     m_key_events_rev[sequence_slot] = keycode;
+
+    /*
+     * DEBUG code
+     */
+
+#ifdef USE_DEBUG_CODE
+    int kcsize = int(m_key_events.size());
+    if (kcsize >= 5 && kcsize >= 30)
+    {
+        int kcrsize = int(m_key_events_rev.size());
+        printf
+        (
+            "Read key=%u, seq=%ld, size=%d, rev=%d\n",
+            keycode, sequence_slot, kcsize, kcrsize
+        );
+    }
+#endif  // USE_DEBUG_CODE
+
 #else
     keys().set_key_event(keycode, sequence_slot);
 #endif
@@ -2936,6 +2958,24 @@ perform::set_key_group (unsigned int keycode, long group_slot)
     }
     m_key_groups[keycode] = group_slot;         /* set the new binding      */
     m_key_groups_rev[group_slot] = keycode;
+
+    /*
+     * DEBUG code
+     */
+
+#ifdef USE_DEBUG_CODE
+    int kcsize = int(m_key_groups.size());
+    if (kcsize >= 5 && kcsize >= 30)
+    {
+        int kcrsize = int(m_key_groups_rev.size());
+        printf
+        (
+            "Read group=%u, seq=%ld, size=%d, rev=%d\n",
+            keycode, group_slot, kcsize, kcrsize
+        );
+    }
+#endif  // USE_DEBUG_CODE
+
 #else
     keys().set_key_group(keycode, group_slot);
 #endif

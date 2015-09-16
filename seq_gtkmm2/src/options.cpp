@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-09-15
+ * \updates       2015-09-16
  * \license       GNU GPLv2 or above
  *
  *  Here is a list of the global variables used/stored/modified by this
@@ -479,7 +479,7 @@ options::add_keyboard_page ()
 
 /**
  *  Adds the Mouse page (tab) to the Options dialog.  It also creates a
- *  Frame for mouse-interaction options.
+ *  Frame for setting/viewing the mouse-interaction options.
  */
 
 void

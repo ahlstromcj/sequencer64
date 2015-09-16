@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-09-13
+ * \updates       2015-09-16
  * \license       GNU GPLv2 or above
  *
  *  The <tt> ~/.seq24rc </tt> configuration file is fairly simple in
@@ -265,7 +265,19 @@ optionsfile::parse (perform & a_perf)
     long keys = 0;
     sscanf(m_line, "%ld", &keys);
     next_data_line(file);
+
+    /*
+     * Bug involving the optionsfile and perform modules:  At the
+     * 4th or 5th line of data in the "rc" file, setting this key event
+     * results in the size remaining at 4, so the final size is 31.
+     * This bug is present even in seq24 r.0.9.2, and occurs only if the
+     * Keyboard options are actually edited.  Also, the size of the
+     * reverse container is constant at 32.  Clearing the latter container
+     * as well appears to fix the bug.
+     */
+
     a_perf.get_key_events().clear();
+    a_perf.get_key_events_rev().clear();       // \new ca 2015-09-16
     for (int i = 0; i < keys; ++i)
     {
         long key = 0, seq = 0;
@@ -279,6 +291,7 @@ optionsfile::parse (perform & a_perf)
     sscanf(m_line, "%ld", &groups);
     next_data_line(file);
     a_perf.get_key_groups().clear();
+    a_perf.get_key_groups_rev().clear();       // \new ca 2015-09-16
     for (int i = 0; i < groups; ++i)
     {
         long key = 0, group = 0;

@@ -27,8 +27,8 @@
  *
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
- * \date          2015-07-24
- * \updates       2015-09-16
+ * \date          2015-09-17
+ * \updates       2015-09-17
  * \license       GNU GPLv2 or above
  *
  *  This class has way too many members.
@@ -77,8 +77,6 @@ class jack_assistant
 
 private:
 
-private:
-
     jack_client_t * m_jack_client;
     jack_nframes_t m_jack_frame_current;
     jack_nframes_t m_jack_frame_last;
@@ -123,16 +121,16 @@ public:
         return m_jack_master;
     }
 
-    void init_jack ();
-    void deinit_jack ();
+    void init ();                       // init_jack ();
+    void deinit ();                     // deinit_jack ();
 
 #ifdef SEQ64_JACK_SESSION
-    bool jack_session_event ();
+    bool session_event();               // jack_session_event ();
 #endif
 
-    void start_jack ();
-    void stop_jack ();
-    void position_jack (bool a_state);
+    void start ();                      // start_jack();
+    void stop ();                       // stop();
+    void position (bool a_state);       // position_jack();
 
 };
 

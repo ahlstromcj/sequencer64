@@ -66,7 +66,7 @@ jack_assistant::jack_assistant ()
  *  The destructor ...
  */
 
-perform::~perform ()
+jack_assistant::~jack_assistant ()
 {
     // Anything to do?
 }
@@ -83,7 +83,7 @@ perform::~perform ()
  */
 
 bool
-perform::init_jack ()
+jack_assistant::init ()
 {
     if (global_with_jack_transport && ! m_jack_running)
     {
@@ -170,7 +170,7 @@ perform::init_jack ()
  */
 
 void
-perform::deinit_jack ()
+jack_assistant::deinit ()
 {
     if (m_jack_running)
     {
@@ -190,7 +190,7 @@ perform::deinit_jack ()
  */
 
 void
-perform::start_jack ()
+jack_assistant::start ()
 {
     if (m_jack_running)
         jack_transport_start(m_jack_client);
@@ -201,7 +201,7 @@ perform::start_jack ()
  */
 
 void
-perform::stop_jack ()
+jack_assistant::stop ()
 {
     if (m_jack_running)
         jack_transport_stop(m_jack_client);
@@ -216,7 +216,7 @@ perform::stop_jack ()
  */
 
 void
-perform::position_jack (bool a_state)
+jack_assistant::position (bool a_state)
 {
     if (m_jack_running)
     {
@@ -358,10 +358,12 @@ int jack_sync_callback
  *
  *  It doesn't really matter; this function can call Gtk::Main::quit().
  *
+ *  PROVIDE a hook to a perform object or GUI item to perfom the quit!!!!!
+ *  TRY to move midifile into this library!!!!!!!!
  */
 
 bool
-perform::jack_session_event ()
+jack_assistant::session_event ()
 {
     std::string fname(m_jsession_ev->session_dir);
     fname += "file.mid";
@@ -370,10 +372,21 @@ perform::jack_session_event ()
         "sequencer64 --file \"${SESSION_DIR}file.mid\" --jack_session_uuid "
     );
     cmd += m_jsession_ev->client_uuid;
+
+    /*
+     * MIDI file access!!!
+     */
+
     midifile f(fname, ! global_legacy_format);
     f.write(this);
+
     m_jsession_ev->command_line = strdup(cmd.c_str());
     jack_session_reply(m_jack_client, m_jsession_ev);
+
+    /*
+     * GUI framework access!!!
+     */
+
     if (m_jsession_ev->type == JackSessionSaveAndQuit)
         Gtk::Main::quit();
 

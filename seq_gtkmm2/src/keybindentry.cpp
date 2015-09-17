@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-09-15
+ * \updates       2015-09-16
  * \license       GNU GPLv2 or above
  *
  *  This module define a GTK text-edit widget for getting keyboard button
@@ -102,36 +102,17 @@ keybindentry::keybindentry
  *
  *  Then we call set_text(buf).  The set_width_char() function is then
  *  called.
- *
- *  Note the weird sprintf() call and the large buffer size. They seem to
- *  be necessary, otherwise the output "rc" file gets a little messed up in
- *  the [keyboard-control] section.  There is still a bug, though.
- *  Selecting "<" (i.e. "less") for the "Keep queue" key results in it
- *  being set to "Super_L" when Sequencer26 re-reads the "rc" file.
  */
 
 void
 keybindentry::set (unsigned int val)
 {
-    char buf[256] = "";
+    char buf[64] = "";
     char * special = gdk_keyval_name(val);  // long name of the key
-
-#ifndef USE_WEIRD_SPRINTF
-
-    char * p_buf = &buf[strlen(buf)];       // just past the end of buffer
-    if (not_nullptr(special))
-        snprintf(p_buf, sizeof buf - (p_buf-buf), "%s", special);
-    else
-        snprintf(p_buf, sizeof buf - (p_buf-buf), "'%c'", char(val));
-
-#else
-
     if (not_nullptr(special))
         snprintf(buf, sizeof(buf), "%s", special);
     else
         snprintf(buf, sizeof(buf), "'%c'", char(val));
-
-#endif  // USE_WEIRD_SPRINTF
 
     set_text(buf);
     int width = strlen(buf) - 1;
@@ -152,6 +133,7 @@ keybindentry::on_key_press_event (GdkEventKey * event)
     switch (m_type)
     {
     case location:          /* copy the pressed key into this binding   */
+
         if (not_nullptr(m_key))
             *m_key = event->keyval;
         else
@@ -159,6 +141,7 @@ keybindentry::on_key_press_event (GdkEventKey * event)
         break;
 
     case events:            /* set the event key in the perform object  */
+
         if (not_nullptr(m_perf))
             m_perf->set_key_event(event->keyval, m_slot);
         else
@@ -166,6 +149,7 @@ keybindentry::on_key_press_event (GdkEventKey * event)
         break;
 
     case groups:            /* set the group key in the perform object  */
+
         if (not_nullptr(m_perf))
             m_perf->set_key_group(event->keyval, m_slot);
         else

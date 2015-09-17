@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-09-14
+ * \updates       2015-09-16
  * \license       GNU GPLv2 or above
  *
  *  This class has way too many members.
@@ -59,10 +59,12 @@
  *  While we sort out the usefulness of offloading the keybinding support
  *  to another class, we want to be able to go back and forth, so that we
  *  can verify that files are written identically in either case, and
- *  functions and playback operate the same in either case.
+ *  functions and playback operate the same in either case.  Note the
+ *  tricky backward definition of the new feature :-).  The new feature
+ *  does seem to work.
  */
 
-///// #define NEW_KEYS_CODE /////
+#define NEW_KEYS_CODE
 
 #ifndef NEW_KEYS_CODE
 #define PERFKEY(x)              m_mainperf->m_key_##x

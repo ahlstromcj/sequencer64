@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-09-16
+ * \updates       2015-09-17
  * \license       GNU GPLv2 or above
  *
  */
@@ -1331,7 +1331,7 @@ perform::position_jack (bool a_state)
 }
 
 /**
- *  If JACK is note running, call inner_start() with the given state.
+ *  If JACK is not running, call inner_start() with the given state.
  *
  * \param a_state
  *      What does this state mean?
@@ -1345,7 +1345,7 @@ perform::start (bool a_state)
 }
 
 /**
- *  If JACK is note running, call inner_stop().
+ *  If JACK is not running, call inner_stop().
  *
  *  The logic seems backward her, in that we call inner_stop() if JACK is
  *  not running.  Or perhaps we misunderstand the meaning of

@@ -30,21 +30,11 @@
  *
  */
 
-#include <sched.h>
 #include <stdio.h>
-
-#ifndef PLATFORM_WINDOWS
-#include <time.h>
-#endif
-
-#include <gtkmm/accelkey.h>            // For keys
 #include <gtkmm/main.h>                // Gtk::Main
 
-#include "perform.hpp"
-#include "midibus.hpp"
+#include "jack_assistant.hpp"
 #include "midifile.hpp"
-#include "event.hpp"
-#include "sequence.hpp"
 
 namespace seq64
 {
@@ -279,36 +269,9 @@ perform::position_jack (bool a_state)
     pos.bar++;
     pos.beat++;
     jack_transport_reposition(m_jack_client, &pos);
+
 #endif  // WHY_IS_THIS_CODE_EFFECTIVELY_DISABLED
-}
 
-/**
- *  If JACK is note running, call inner_start() with the given state.
- *
- * \param a_state
- *      What does this state mean?
- */
-
-void
-perform::start (bool a_state)
-{
-    if (! m_jack_running)
-        inner_start(a_state);
-}
-
-/**
- *  If JACK is note running, call inner_stop().
- *
- *  The logic seems backward her, in that we call inner_stop() if JACK is
- *  not running.  Or perhaps we misunderstand the meaning of
- *  m_jack_running?
- */
-
-void
-perform::stop ()
-{
-    if (! m_jack_running)
-        inner_stop();
 }
 
 /*
@@ -347,9 +310,8 @@ int jack_sync_callback
     perform * p = (perform *) arg;
     p->m_jack_frame_current = jack_get_current_transport_frame(p->m_jack_client);
     p->m_jack_tick =
-        p->m_jack_frame_current *
-        p->m_jack_pos.ticks_per_beat *
-        p->m_jack_pos.beats_per_minute / (p->m_jack_pos.frame_rate * 60.0);
+        p->m_jack_frame_current * p->m_jack_pos.ticks_per_beat *
+        p->m_jack_pos.beats_per_minute / (p->m_jack_pos.frame_rate * 60.0) ;
 
     p->m_jack_frame_last = p->m_jack_frame_current;
     p->m_jack_transport_state_last = state;

@@ -48,6 +48,7 @@
 
 #include "globals.h"
 #include "gtk_helpers.h"
+#include "keys_perform.hpp"                 /* \new ca 2015-09-16           */
 #include "maintime.hpp"
 #include "mainwid.hpp"
 #include "mainwnd.hpp"
@@ -62,10 +63,6 @@
 #include "pixmaps/seq24_32.xpm"
 #include "pixmaps/sequencer64_square.xpm"
 #include "pixmaps/sequencer64_legacy.xpm"
-
-#ifdef NEW_KEYS_CODE
-#include "keys_perform.hpp"
-#endif
 
 using namespace Gtk::Menu_Helpers;          /* MenuElem, etc.                */
 

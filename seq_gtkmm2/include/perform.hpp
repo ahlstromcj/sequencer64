@@ -64,15 +64,8 @@
  *  does seem to work.
  */
 
-#define NEW_KEYS_CODE
-
-#ifndef NEW_KEYS_CODE
-#define PERFKEY(x)              m_mainperf->m_key_##x
-#define PERFKEY_ADDR(x)         &m_mainperf->m_key_##x
-#else
 #define PERFKEY(x)              m_mainperf->keys().x()
 #define PERFKEY_ADDR(x)         m_mainperf->keys().at_##x()
-#endif
 
 namespace seq64
 {
@@ -338,34 +331,6 @@ public:
      */
 
     std::vector<performcallback *> m_notify;
-
-#ifndef NEW_KEYS_CODE
-
-    /**
-     *  Provides key assignments for some key sequencer features.
-     *
-     *  Used in mainwnd, options, optionsfile, perfedit, seqroll,
-     *  userfile, and perform.
-     */
-
-    unsigned int m_key_bpm_up;
-    unsigned int m_key_bpm_dn;
-    unsigned int m_key_replace;
-    unsigned int m_key_queue;
-    unsigned int m_key_keep_queue;
-    unsigned int m_key_snapshot_1;
-    unsigned int m_key_snapshot_2;
-    unsigned int m_key_screenset_up;
-    unsigned int m_key_screenset_dn;
-    unsigned int m_key_set_playing_screenset;
-    unsigned int m_key_group_on;
-    unsigned int m_key_group_off;
-    unsigned int m_key_group_learn;
-    unsigned int m_key_start;
-    unsigned int m_key_stop;
-    bool m_show_ui_sequence_key;
-
-#endif  // NEW_KEYS_CODE
 
 public:
 
@@ -647,38 +612,22 @@ public:
 
     SlotMap & get_key_events ()
     {
-#ifndef NEW_KEYS_CODE
-        return m_key_events;
-#else
         return keys().get_key_events();
-#endif
     }
 
     SlotMap & get_key_groups ()
     {
-#ifndef NEW_KEYS_CODE
-        return m_key_groups;
-#else
         return keys().get_key_groups();
-#endif
     }
 
     RevSlotMap & get_key_events_rev ()
     {
-#ifndef NEW_KEYS_CODE
-        return m_key_events_rev;
-#else
         return keys().get_key_events_rev();
-#endif
     }
 
     RevSlotMap & get_key_groups_rev ()
     {
-#ifndef NEW_KEYS_CODE
-        return m_key_groups_rev;
-#else
         return keys().get_key_groups_rev();
-#endif
     }
 
     /**
@@ -689,19 +638,11 @@ public:
 
     bool show_ui_sequence_key () const
     {
-#ifndef NEW_KEYS_CODE
-        return m_show_ui_sequence_key;
-#else
         return keys().show_ui_sequence_key();
-#endif
     }
     void show_ui_sequence_key (bool flag)
     {
-#ifndef NEW_KEYS_CODE
-        m_show_ui_sequence_key = flag;
-#else
         keys().show_ui_sequence_key(flag);
-#endif
     }
 
     /*

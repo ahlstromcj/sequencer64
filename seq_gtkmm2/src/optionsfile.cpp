@@ -300,47 +300,6 @@ optionsfile::parse (perform & a_perf)
         next_data_line(file);
     }
 
-#ifndef NEW_KEYS_CODE
-
-    sscanf(m_line, "%u %u", &a_perf.m_key_bpm_up, &a_perf.m_key_bpm_dn);
-    next_data_line(file);
-    sscanf
-    (
-        m_line, "%u %u %u",
-        &a_perf.m_key_screenset_up,
-        &a_perf.m_key_screenset_dn,
-        &a_perf.m_key_set_playing_screenset
-    );
-    next_data_line(file);
-    sscanf
-    (
-        m_line, "%u %u %u",
-        &a_perf.m_key_group_on,
-        &a_perf.m_key_group_off,
-        &a_perf.m_key_group_learn
-    );
-    next_data_line(file);
-    sscanf
-    (
-        m_line, "%u %u %u %u %u",
-        &a_perf.m_key_replace,
-        &a_perf.m_key_queue,
-        &a_perf.m_key_snapshot_1,
-        &a_perf.m_key_snapshot_2,
-        &a_perf.m_key_keep_queue
-    );
-
-    int show_key = 0;
-    next_data_line(file);
-    sscanf(m_line, "%d", &show_key);
-    a_perf.m_show_ui_sequence_key = (bool) show_key;
-    next_data_line(file);
-    sscanf(m_line, "%u", &a_perf.m_key_start);
-    next_data_line(file);
-    sscanf(m_line, "%u", &a_perf.m_key_stop);
-
-#else   // NEW_KEYS_CODE
-
     keys_perform_transfer ktx;
     sscanf(m_line, "%u %u", &ktx.kpt_bpm_up, &ktx.kpt_bpm_dn);
     next_data_line(file);
@@ -379,8 +338,6 @@ optionsfile::parse (perform & a_perf)
     next_data_line(file);
     sscanf(m_line, "%u", &ktx.kpt_stop);
     a_perf.keys().set_keys(ktx);                /* copy into perform keys   */
-
-#endif  // NEW_KEYS_CODE
 
     line_after(file, "[jack-transport]");
     long flag = 0;
@@ -729,63 +686,6 @@ optionsfile::write (const perform & a_perf)
         file << std::string(outs) << "\n";
     }
 
-#ifndef NEW_KEYS_CODE
-
-    file
-        << "# bpm up, down\n"
-        << uca_perf.m_key_bpm_up << " "
-        << uca_perf.m_key_bpm_dn << " # "
-        << gdk_keyval_name(uca_perf.m_key_bpm_up) << " "
-        << gdk_keyval_name(uca_perf.m_key_bpm_dn) << "\n"
-        ;
-    file
-        << "# screen set up, down, play\n"
-        << uca_perf.m_key_screenset_up << " "
-        << uca_perf.m_key_screenset_dn << " "
-        << uca_perf.m_key_set_playing_screenset << " # "
-        << gdk_keyval_name(uca_perf.m_key_screenset_up) << " "
-        << gdk_keyval_name(uca_perf.m_key_screenset_dn) << " "
-        << gdk_keyval_name(uca_perf.m_key_set_playing_screenset) << "\n"
-        ;
-    file
-        << "# group on, off, learn\n"
-        << uca_perf.m_key_group_on << " "
-        << uca_perf.m_key_group_off << " "
-        << uca_perf.m_key_group_learn << " # "
-        << gdk_keyval_name(uca_perf.m_key_group_on) << " "
-        << gdk_keyval_name(uca_perf.m_key_group_off) << " "
-        << gdk_keyval_name(uca_perf.m_key_group_learn) << "\n"
-        ;
-    file
-        << "# replace, queue, snapshot_1, snapshot 2, keep queue\n"
-        << uca_perf.m_key_replace << " "
-        << uca_perf.m_key_queue << " "
-        << uca_perf.m_key_snapshot_1 << " "
-        << uca_perf.m_key_snapshot_2 << " "
-        << uca_perf.m_key_keep_queue << " # "
-        << gdk_keyval_name(uca_perf.m_key_replace) << " "
-        << gdk_keyval_name(uca_perf.m_key_queue) << " "
-        << gdk_keyval_name(uca_perf.m_key_snapshot_1) << " "
-        << gdk_keyval_name(uca_perf.m_key_snapshot_2) << " "
-        << gdk_keyval_name(uca_perf.m_key_keep_queue) << "\n"
-        ;
-    file
-        << uca_perf.m_show_ui_sequence_key
-        << " # show_ui_sequence_key (1=true/0=false)\n"
-        ;
-    file
-        << uca_perf.m_key_start << " # "
-        << gdk_keyval_name(uca_perf.m_key_start)
-        << " start sequencer\n"
-       ;
-    file
-        << uca_perf.m_key_stop << " # "
-        << gdk_keyval_name(uca_perf.m_key_stop)
-        << " stop sequencer\n"
-        ;
-
-#else   // NEW_KEYS_CODE
-
     keys_perform_transfer ktx;
     uca_perf.keys().get_keys(ktx);      /* copy perform key to structure    */
     file
@@ -840,8 +740,6 @@ optionsfile::write (const perform & a_perf)
         << gdk_keyval_name(ktx.kpt_stop)
         << " stop sequencer\n"
         ;
-
-#endif  // NEW_KEYS_CODE
 
     file
         << "\n[jack-transport]\n\n"

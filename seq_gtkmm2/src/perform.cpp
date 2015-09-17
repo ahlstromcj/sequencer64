@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-09-13
+ * \updates       2015-09-16
  * \license       GNU GPLv2 or above
  *
  */
@@ -114,26 +114,6 @@ perform::perform (keys_perform & mykeys)
     m_jack_running              (false),
     m_jack_master               (false),
     m_notify                    ()          // vector of pointers, public!
-
-#ifndef NEW_KEYS_CODE
-    , /* comma for initializer list */
-    m_key_bpm_up                (GDK_apostrophe),       // KEYS
-    m_key_bpm_dn                (GDK_semicolon),        // KEYS
-    m_key_replace               (GDK_Control_L),        // KEYS
-    m_key_queue                 (GDK_Control_R),        // KEYS
-    m_key_keep_queue            (GDK_backslash),        // KEYS
-    m_key_snapshot_1            (GDK_Alt_L),            // KEYS
-    m_key_snapshot_2            (GDK_Alt_R),            // KEYS
-    m_key_screenset_up          (GDK_bracketright),     // KEYS
-    m_key_screenset_dn          (GDK_bracketleft),      // KEYS
-    m_key_set_playing_screenset (GDK_Home),             // KEYS
-    m_key_group_on              (GDK_igrave),           // KEYS
-    m_key_group_off             (GDK_apostrophe),       // a repeat // KEYS
-    m_key_group_learn           (GDK_Insert),           // KEYS
-    m_key_start                 (GDK_space),            // KEYS
-    m_key_stop                  (GDK_Escape),           // KEYS
-    m_show_ui_sequence_key      (true)                  // KEYS
-#endif  // NEW_KEYS_CODE
 {
     for (int i = 0; i < c_max_sequence; i++)
     {
@@ -2777,87 +2757,13 @@ print_jack_pos (jack_position_t * jack_pos)
 void
 perform::set_all_key_events ()
 {
-#ifndef NEW_KEYS_CODE
-    m_key_events.clear();
-    m_key_events_rev.clear();
-    set_key_event(GDK_KEY_1, 0);
-    set_key_event(GDK_KEY_q, 1);
-    set_key_event(GDK_KEY_a, 2);
-    set_key_event(GDK_KEY_z, 3);
-    set_key_event(GDK_KEY_2, 4);
-    set_key_event(GDK_KEY_w, 5);
-    set_key_event(GDK_KEY_s, 6);
-    set_key_event(GDK_KEY_x, 7);
-    set_key_event(GDK_KEY_3, 8);
-    set_key_event(GDK_KEY_e, 9);
-    set_key_event(GDK_KEY_d, 10);
-    set_key_event(GDK_KEY_c, 11);
-    set_key_event(GDK_KEY_4, 12);
-    set_key_event(GDK_KEY_r, 13);
-    set_key_event(GDK_KEY_f, 14);
-    set_key_event(GDK_KEY_v, 15);
-    set_key_event(GDK_KEY_5, 16);
-    set_key_event(GDK_KEY_t, 17);
-    set_key_event(GDK_KEY_g, 18);
-    set_key_event(GDK_KEY_b, 19);
-    set_key_event(GDK_KEY_6, 20);
-    set_key_event(GDK_KEY_y, 21);
-    set_key_event(GDK_KEY_h, 22);
-    set_key_event(GDK_KEY_n, 23);
-    set_key_event(GDK_KEY_7, 24);
-    set_key_event(GDK_KEY_u, 25);
-    set_key_event(GDK_KEY_j, 26);
-    set_key_event(GDK_KEY_m, 27);
-    set_key_event(GDK_KEY_8, 28);
-    set_key_event(GDK_KEY_i, 29);
-    set_key_event(GDK_KEY_k, 30);
-    set_key_event(GDK_KEY_comma, 31);
-#else
     keys().set_all_key_events();
-#endif
 }
 
 void
 perform::set_all_key_groups ()
 {
-#ifndef NEW_KEYS_CODE
-    m_key_groups.clear();
-    m_key_groups_rev.clear();
-    set_key_group(GDK_KEY_exclam, 0);
-    set_key_group(GDK_KEY_quotedbl, 1);
-    set_key_group(GDK_KEY_numbersign, 2);
-    set_key_group(GDK_KEY_dollar, 3);
-    set_key_group(GDK_KEY_percent, 4);
-    set_key_group(GDK_KEY_ampersand, 5);
-    set_key_group(GDK_KEY_parenleft, 7);
-    set_key_group(GDK_KEY_slash, 6);
-    set_key_group(GDK_KEY_semicolon, 31);
-    set_key_group(GDK_KEY_A, 16);
-    set_key_group(GDK_KEY_B, 28);
-    set_key_group(GDK_KEY_C, 26);
-    set_key_group(GDK_KEY_D, 18);
-    set_key_group(GDK_KEY_E, 10);
-    set_key_group(GDK_KEY_F, 19);
-    set_key_group(GDK_KEY_G, 20);
-    set_key_group(GDK_KEY_H, 21);
-    set_key_group(GDK_KEY_I, 15);
-    set_key_group(GDK_KEY_J, 22);
-    set_key_group(GDK_KEY_K, 23);
-    set_key_group(GDK_KEY_M, 30);
-    set_key_group(GDK_KEY_N, 29);
-    set_key_group(GDK_KEY_Q, 8);
-    set_key_group(GDK_KEY_R, 11);
-    set_key_group(GDK_KEY_S, 17);
-    set_key_group(GDK_KEY_T, 12);
-    set_key_group(GDK_KEY_U, 14);
-    set_key_group(GDK_KEY_V, 27);
-    set_key_group(GDK_KEY_W, 9);
-    set_key_group(GDK_KEY_X, 25);
-    set_key_group(GDK_KEY_Y, 13);
-    set_key_group(GDK_KEY_Z, 24);
-#else
     keys().set_all_key_groups();
-#endif
 }
 
 /**
@@ -2880,48 +2786,7 @@ perform::set_all_key_groups ()
 void
 perform::set_key_event (unsigned int keycode, long sequence_slot)
 {
-#ifndef NEW_KEYS_CODE
-    SlotMap::iterator it1 = m_key_events.find(keycode);
-    if (it1 != m_key_events.end())
-    {
-        RevSlotMap::iterator i = m_key_events_rev.find(it1->second);
-        if (i != m_key_events_rev.end())
-            m_key_events_rev.erase(i);          /* unhook previous binding  */
-
-        m_key_events.erase(it1);
-    }
-    RevSlotMap::iterator it2 = m_key_events_rev.find(sequence_slot);
-    if (it2 != m_key_events_rev.end())
-    {
-        SlotMap::iterator i = m_key_events.find(it2->second);
-        if (i != m_key_events.end())
-            m_key_events.erase(i);              /* unhook previous binding  */
-
-        m_key_events_rev.erase(it2);
-    }
-    m_key_events[keycode] = sequence_slot;      /* set the new binding      */
-    m_key_events_rev[sequence_slot] = keycode;
-
-    /*
-     * DEBUG code
-     */
-
-#ifdef USE_DEBUG_CODE
-    int kcsize = int(m_key_events.size());
-    if (kcsize >= 5 && kcsize >= 30)
-    {
-        int kcrsize = int(m_key_events_rev.size());
-        printf
-        (
-            "Read key=%u, seq=%ld, size=%d, rev=%d\n",
-            keycode, sequence_slot, kcsize, kcrsize
-        );
-    }
-#endif  // USE_DEBUG_CODE
-
-#else
     keys().set_key_event(keycode, sequence_slot);
-#endif
 }
 
 /**
@@ -2937,48 +2802,7 @@ perform::set_key_event (unsigned int keycode, long sequence_slot)
 void
 perform::set_key_group (unsigned int keycode, long group_slot)
 {
-#ifndef NEW_KEYS_CODE
-    SlotMap::iterator it1 = m_key_groups.find(keycode);
-    if (it1 != m_key_groups.end())
-    {
-        RevSlotMap::iterator i = m_key_groups_rev.find(it1->second);
-        if (i != m_key_groups_rev.end())
-            m_key_groups_rev.erase(i);          /* unhook previous binding  */
-
-        m_key_groups.erase(it1);
-    }
-    RevSlotMap::iterator it2 = m_key_groups_rev.find(group_slot);
-    if (it2 != m_key_groups_rev.end())
-    {
-        SlotMap::iterator i = m_key_groups.find(it2->second);
-        if (i != m_key_groups.end())
-            m_key_groups.erase(i);              /* unhook previous binding  */
-
-        m_key_groups_rev.erase(it2);
-    }
-    m_key_groups[keycode] = group_slot;         /* set the new binding      */
-    m_key_groups_rev[group_slot] = keycode;
-
-    /*
-     * DEBUG code
-     */
-
-#ifdef USE_DEBUG_CODE
-    int kcsize = int(m_key_groups.size());
-    if (kcsize >= 5 && kcsize >= 30)
-    {
-        int kcrsize = int(m_key_groups_rev.size());
-        printf
-        (
-            "Read group=%u, seq=%ld, size=%d, rev=%d\n",
-            keycode, group_slot, kcsize, kcrsize
-        );
-    }
-#endif  // USE_DEBUG_CODE
-
-#else
     keys().set_key_group(keycode, group_slot);
-#endif
 }
 
 }           // namespace seq64

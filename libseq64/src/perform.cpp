@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-09-17
+ * \updates       2015-09-18
  * \license       GNU GPLv2 or above
  *
  */
@@ -36,8 +36,8 @@
 #include <time.h>
 #endif
 
-#include <gtkmm/accelkey.h>            // For keys
-#include <gtkmm/main.h>                // Gtk::Main
+// #include <gtkmm/accelkey.h>            // For keys
+// #include <gtkmm/main.h>                // Gtk::Main
 
 #include "perform.hpp"
 #include "midibus.hpp"
@@ -1403,9 +1403,6 @@ output_thread_func (void * a_pef)
 void
 perform::output_func ()
 {
-
-#ifdef THIS_FUNCTION_IS_READY
-
     while (m_outputing)
     {
         m_condition_var.lock();        // printf ("waiting for signal\n");
@@ -1416,6 +1413,16 @@ perform::output_func ()
                 break;
         }
         m_condition_var.unlock();
+
+        jack_scratchpad pad;
+        pad.js_current_tick = 0.0;      // tick and tick fraction
+        pad.js_total_tick = 0.0;
+        pad.js_clock_tick = 0.0;
+        pad.js_jack_stopped = false;
+        pad.js_dumping = false;
+        pad.js_init_clock = true;
+        pad.js_looping = m_looping;
+        pad.js_playback_mode = m_playback_mode;
 
 #ifndef PLATFORM_WINDOWS
         struct timespec last;               // beginning time
@@ -1431,9 +1438,6 @@ perform::output_func ()
         long delta;                         // difference between last & current
 #endif
 
-        double current_tick = 0.0;          // tick and tick fraction
-        double total_tick = 0.0;
-        double clock_tick = 0.0;
         long stats_total_tick = 0;
         long stats_loop_index = 0;
         long stats_min = 0x7FFFFFFF;
@@ -1443,10 +1447,6 @@ perform::output_func ()
         long stats_clock_width_us = 0;
         long stats_all[100];
         long stats_clock[100];
-        bool jack_stopped = false;
-        bool dumping = false;
-        bool init_clock = true;
-
         for (int i = 0; i < 100; i++)
         {
             stats_all[i] = 0;
@@ -1458,10 +1458,10 @@ perform::output_func ()
          * starting from the offset.
          */
 
-        if (m_playback_mode && ! m_jack_asst.is_running)
+        if (m_playback_mode && ! m_jack_asst.is_running())
         {
-            current_tick = m_starting_tick;
-            clock_tick = m_starting_tick;
+            pad.js_current_tick = m_starting_tick;
+            pad.js_clock_tick = m_starting_tick;
             set_orig_ticks(m_starting_tick);
         }
 
@@ -1525,49 +1525,35 @@ perform::output_func ()
             if (0 <= m_midiclockpos)
             {
                 delta_tick = 0;
-                clock_tick     = m_midiclockpos;
-                current_tick   = m_midiclockpos;
-                total_tick     = m_midiclockpos;
+                pad.js_clock_tick = pad.js_current_tick =
+                    pad.js_total_tick = m_midiclockpos;
+
                 m_midiclockpos = -1;
+
                 // init_clock = true;
             }
 
-            //
-            //  Set up structure for temp values and call
-            //  m_jack_asst.output(...)
-            //
-            //
-            //
-
 #ifdef SEQ64_JACK_SUPPORT
 
-            jack_scratchpad pad;
-            js_current_tick = 0.0;
-            js_total_tick = 0.0;
-            js_clock_tick = 0.0;
-            js_jack_stopped = false;
-            js_dumping = false;
-            js_init_clock = true;
-            js_looping = m_looping;
-            js_playback_mode = m_playback_mode;
-
-            // init_clock = m_jack_asst.output_func(); //
-#endif  // SEQ64_JACK_SUPPORT
-            if (1)
+            bool jackrunning = m_jack_asst.output(pad);
+            if (jackrunning)
             {
+                // code?
             }
             else
+
+#endif  // SEQ64_JACK_SUPPORT
+
             {
                 /*
                  * The default if JACK is not compiled in, or is not running.
                  * Add the delta to the current ticks.
                  */
 
-                clock_tick     += delta_tick;
-                current_tick   += delta_tick;
-                total_tick     += delta_tick;
-                dumping = true;
-
+                pad.js_clock_tick += delta_tick;
+                pad.js_current_tick += delta_tick;
+                pad.js_total_tick += delta_tick;
+                pad.js_dumping = true;
             }
 
             /*
@@ -1575,29 +1561,32 @@ perform::output_func ()
              * as soon as JACK gets a good lock on playback.
              */
 
-            if (init_clock)
+            if (pad.js_init_clock)
             {
-                m_master_bus.init_clock((long) clock_tick);
-                init_clock = false;
+                m_master_bus.init_clock(long(pad.js_clock_tick));
+                pad.js_init_clock = false;
             }
-            if (dumping)
+            if (pad.js_dumping)
             {
                 if (m_looping && m_playback_mode)
                 {
-                    if (current_tick >= get_right_tick())
+                    if (pad.js_current_tick >= get_right_tick())
                     {
-                        double leftover_tick = current_tick-(get_right_tick());
+                        double leftover_tick =
+                            pad.js_current_tick-(get_right_tick());
+
                         play(get_right_tick() - 1);     // play!
                         reset_sequences();              // reset!
                         set_orig_ticks(get_left_tick());
-                        current_tick = double(get_left_tick() + leftover_tick);
+                        pad.js_current_tick =
+                            double(get_left_tick() + leftover_tick);
                     }
                 }
-                play((long) current_tick);              // play!
-                m_master_bus.clock(long(clock_tick));   // MIDI clock
+                play(long(pad.js_current_tick));              // play!
+                m_master_bus.clock(long(pad.js_clock_tick));   // MIDI clock
                 if (global_stats)
                 {
-                    while (stats_total_tick <= total_tick)
+                    while (stats_total_tick <= pad.js_total_tick)
                     {
                         /* was there a tick ? */
 
@@ -1651,14 +1640,14 @@ perform::output_func ()
 
             /* check midi clock adjustment */
 
-            double next_total_tick = (total_tick + (c_ppqn / 24.0));
-            double next_clock_delta = (next_total_tick - total_tick - 1);
+            double next_total_tick = (pad.js_total_tick + (c_ppqn / 24.0));
+            double next_clock_delta = (next_total_tick - pad.js_total_tick - 1);
             double next_clock_delta_us =
                 ((next_clock_delta) * 60000000.0f / c_ppqn  / bpm);
 
             if (next_clock_delta_us < (c_thread_trigger_width_ms*1000.0f*2.0f))
             {
-                delta_us = (long)next_clock_delta_us;
+                delta_us = long(next_clock_delta_us);
             }
 
 #ifndef PLATFORM_WINDOWS                    // nanosleep() is actually Linux
@@ -1728,7 +1717,7 @@ perform::output_func ()
                     stats_avg = 0;
                 }
             }
-            if (jack_stopped)
+            if (pad.js_jack_stopped)
                 inner_stop();
         }
 
@@ -1752,8 +1741,6 @@ perform::output_func ()
         m_master_bus.stop();
     }
     pthread_exit(0);
-
-#endif  // THIS_FUNCTION_IS_READY
 }
 
 /**
@@ -2290,16 +2277,16 @@ jack_timebase_callback
         jack_tick = (jack_delta_tick < 0) ? -jack_delta_tick : jack_delta_tick;
 
         long ptick = 0, pbeat = 0, pbar = 0;
-        pbar  = (long)
+        long pbar = long
         (
-            (long) jack_tick / (pos->ticks_per_beat * pos->beats_per_bar)
+            long(jack_tick / long(pos->ticks_per_beat * pos->beats_per_bar))
         );
-        pbeat = (long)
+        long pbeat = long
         (
-            (long) jack_tick % (long)(pos->ticks_per_beat * pos->beats_per_bar)
+            long(jack_tick % long(pos->ticks_per_beat * pos->beats_per_bar))
         );
-        pbeat /= (long) pos->ticks_per_beat;
-        ptick = (long) jack_tick % (long) pos->ticks_per_beat;
+        pbeat /= long(pos->ticks_per_beat);
+        long ptick = (long(jack_tick) % long(pos->ticks_per_beat);
         pos->bar = pbar + 1;
         pos->beat = pbeat + 1;
         pos->tick = ptick;

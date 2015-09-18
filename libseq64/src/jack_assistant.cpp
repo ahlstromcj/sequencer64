@@ -449,31 +449,35 @@ jack_session_callback (jack_session_event_t * event, void * arg)
 /**
  *  Performance output function for JACK, called by the perform function
  *  of the same name.
+ *
+ * \return
+ *      Returns true if JACK is running.
  */
 
-#ifdef THIS_FUNCTION_IS_READY
-
-void
+bool
 jack_assistant::output (jack_scratchpad & pad)
 {
-    double jack_ticks_converted = 0.0;
-    double jack_ticks_converted_last = 0.0;
-    double jack_ticks_delta = 0.0;
     if (m_jack_running)             // no init until we get a good lock
     {
-        init_clock = false;
+        double jack_ticks_converted = 0.0;
+        double jack_ticks_converted_last = 0.0;
+        double jack_ticks_delta = 0.0;
+        pad.js_init_clock = false;
         m_jack_transport_state =
             jack_transport_query(m_jack_client, &m_jack_pos);
 
         m_jack_frame_current =
             jack_get_current_transport_frame(m_jack_client);
 
-        if (m_jack_transport_state_last == JackTransportStarting &&
-                m_jack_transport_state == JackTransportRolling)
+        if
+        (
+            m_jack_transport_state_last == JackTransportStarting &&
+            m_jack_transport_state == JackTransportRolling
+        )
         {
 
             m_jack_frame_last = m_jack_frame_current;
-            dumping = true;
+            pad.js_dumping = true;
             m_jack_tick =
                 m_jack_pos.frame * m_jack_pos.ticks_per_beat *
                 m_jack_pos.beats_per_minute / (m_jack_pos.frame_rate * 60.0)
@@ -481,40 +485,45 @@ jack_assistant::output (jack_scratchpad & pad)
 
             jack_ticks_converted = m_jack_tick *        /* convert ticks */
             (
-                (double) c_ppqn / (m_jack_pos.ticks_per_beat *
+                double(c_ppqn) / (m_jack_pos.ticks_per_beat *
                 m_jack_pos.beat_type / 4.0)
             );
 
-            set_orig_ticks((long) jack_ticks_converted);
-            current_tick = clock_tick = total_tick =
+            m_jack_parent.set_orig_ticks(long(jack_ticks_converted));
+            pad.js_current_tick = pad.js_clock_tick = pad.js_total_tick =
                 jack_ticks_converted_last = jack_ticks_converted;
 
-            init_clock = true;
+            pad.js_init_clock = true;
 
             /*
              * We need to make sure another thread can't modify these
              * values.
              */
 
-            if (m_looping && m_playback_mode)
+            if (pad.js_looping && pad.js_playback_mode)
             {
-                if (current_tick >= get_right_tick())
+                if (pad.js_current_tick >= m_jack_parent.get_right_tick())
                 {
-                    while (current_tick >= get_right_tick())
+                    while (pad.js_current_tick >= m_jack_parent.get_right_tick())
                     {
-                        double size = get_right_tick() - get_left_tick();
-                        current_tick = current_tick - size;
+                        double size = m_jack_parent.get_right_tick() -
+                            m_jack_parent.get_left_tick();
+
+                        pad.js_current_tick = pad.js_current_tick - size;
                     }
-                    reset_sequences();
-                    set_orig_ticks((long)current_tick);
+                    m_jack_parent.reset_sequences();
+                    m_jack_parent.set_orig_ticks(long(pad.js_current_tick));
                 }
             }
         }
-        if (m_jack_transport_state_last  ==  JackTransportRolling &&
-                m_jack_transport_state  == JackTransportStopped)
+        if
+        (
+            m_jack_transport_state_last == JackTransportRolling &&
+            m_jack_transport_state == JackTransportStopped
+        )
         {
             m_jack_transport_state_last = JackTransportStopped;
-            jack_stopped = true;
+            pad.js_jack_stopped = true;
         }
 
         /*
@@ -522,12 +531,11 @@ jack_assistant::output (jack_scratchpad & pad)
          * Transport is in a sane state if dumping == true.
          */
 
-        if (dumping)
+        if (pad.js_dumping)
         {
-            m_jack_frame_current =
-                jack_get_current_transport_frame(m_jack_client);
+            m_jack_frame_current = jack_get_current_transport_frame(m_jack_client);
 
-            // if we are moving ahead
+            /* if we are moving ahead... */
 
             if ((m_jack_frame_current > m_jack_frame_last))
             {
@@ -542,28 +550,25 @@ jack_assistant::output (jack_scratchpad & pad)
             jack_ticks_converted =      // convert ticks
                 m_jack_tick *
                 (
-                    (double) c_ppqn /
-                    (m_jack_pos.ticks_per_beat*m_jack_pos.beat_type/4.0)
+                    double(c_ppqn) /
+                    (m_jack_pos.ticks_per_beat * m_jack_pos.beat_type / 4.0)
                 );
 
-            jack_ticks_delta =
-                jack_ticks_converted - jack_ticks_converted_last;
-
-            clock_tick     += jack_ticks_delta;
-            current_tick   += jack_ticks_delta;
-            total_tick     += jack_ticks_delta;
+            jack_ticks_delta = jack_ticks_converted - jack_ticks_converted_last;
+            pad.js_clock_tick += jack_ticks_delta;
+            pad.js_current_tick += jack_ticks_delta;
+            pad.js_total_tick += jack_ticks_delta;
             m_jack_transport_state_last = m_jack_transport_state;
             jack_ticks_converted_last = jack_ticks_converted;
 
 #ifdef USE_DEBUGGING_OUTPUT
-            jack_debug_print(current_tick, ticks_delta);
+            jack_debug_print(pad.js_current_tick, jack_ticks_delta);
 #endif  // USE_DEBUGGING_OUTPUT
 
-        }               // if dumping (sane state)
-    }                   // if m_jack_running
+        }                               /* if dumping (sane state)  */
+    }                                   /* if m_jack_running        */
+    return m_jack_running;
 }
-
-#endif  // THIS_FUNCTION_IS_READY
 
 #ifdef USE_DEBUGGING_OUTPUT
 
@@ -574,36 +579,37 @@ jack_assistant::jack_debug_print
     double ticks_delta
 )
 {
-            double jack_tick = (m_jack_pos.bar-1) *
-                (m_jack_pos.ticks_per_beat * m_jack_pos.beats_per_bar ) +
-                (m_jack_pos.beat-1) * m_jack_pos.ticks_per_beat +
-                m_jack_pos.tick;
-            long ptick, pbeat, pbar;
-            long pbar = long
-            (
-                long(m_jack_tick) /
-                (m_jack_pos.ticks_per_beat * m_jack_pos.beats_per_bar)
-            );
-            long pbeat = long
-            (
-                long(m_jack_tick) %
-                (m_jack_pos.ticks_per_beat * m_jack_pos.beats_per_bar)
-            );
-            pbeat /= long(m_jack_pos.ticks_per_beat);
-            long ptick = long(m_jack_tick) % long(m_jack_pos.ticks_per_beat);
-            printf
-            (
-                "* current_tick[%lf] delta[%lf]"
-                "* bbb [%2d:%2d:%4d] "
-                "* jjj [%2d:%2d:%4d] "
-                "* jtick[%8.3f] mtick[%8.3f] delta[%8.3f]\n"
-                ,
-                current_tick, ticks_delta,
-                pbar+1, pbeat+1, ptick,
-                m_jack_pos.bar, m_jack_pos.beat, m_jack_pos.tick,
-                m_jack_tick, jack_tick, m_jack_tick-jack_tick
-            );
+    double jack_tick = (m_jack_pos.bar-1) *
+        (m_jack_pos.ticks_per_beat * m_jack_pos.beats_per_bar ) +
+        (m_jack_pos.beat-1) * m_jack_pos.ticks_per_beat +
+        m_jack_pos.tick
+        ;
+    long pbar = long
+    (
+        long(m_jack_tick) /
+        long(m_jack_pos.ticks_per_beat * m_jack_pos.beats_per_bar)
+    );
+    long pbeat = long
+    (
+        long(m_jack_tick) %
+        long(m_jack_pos.ticks_per_beat * m_jack_pos.beats_per_bar)
+    );
+    pbeat /= long(m_jack_pos.ticks_per_beat);
+    long ptick = long(m_jack_tick) % long(m_jack_pos.ticks_per_beat);
+    printf
+    (
+        "* current_tick[%f] delta[%f]"
+        "* bbb [%2ld:%2ld:%4ld] "
+        "* jjj [%2d:%2d:%4d] "
+        "* jtick[%8.3f] mtick[%8.3f] delta[%8.3f]\n"
+        ,
+        current_tick, ticks_delta,
+        pbar+1, pbeat+1, ptick,
+        m_jack_pos.bar, m_jack_pos.beat, m_jack_pos.tick,
+        m_jack_tick, jack_tick, m_jack_tick-jack_tick
+    );
 }
+
 #endif  // USE_DEBUGGING_OUTPUT
 
 // #ifdef SEQ64_JACK_SUPPORT

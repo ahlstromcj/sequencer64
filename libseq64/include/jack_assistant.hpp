@@ -31,7 +31,6 @@
  * \updates       2015-09-18
  * \license       GNU GPLv2 or above
  *
- *  This class has way too many members.
  */
 
 #include "globals.h"               // globals, nullptr, and config headers
@@ -161,6 +160,17 @@ public:
     void start ();                      // start_jack();
     void stop ();                       // stop();
     void position (bool a_state);       // position_jack();
+    bool output (jack_scratchpad & pad);
+
+private:
+
+#ifdef USE_DEBUGGING_OUTPUT
+    void jack_debug_print
+    (
+        double current_tick,
+        double ticks_delta
+    );
+#endif
 
 };
 

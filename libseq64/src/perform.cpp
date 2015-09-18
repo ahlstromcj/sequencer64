@@ -100,19 +100,8 @@ perform::perform (keys_perform & mykeys)
     m_key_events_rev            (),
     m_key_groups_rev            (),
 #ifdef SEQ64_JACK_SUPPORT
-    m_jack_client               (nullptr),
-    m_jack_frame_current        (),
-    m_jack_frame_last           (),
-    m_jack_pos                  (),
-    m_jack_transport_state      (),
-    m_jack_transport_state_last (),
-    m_jack_tick                 (0.0),
-#ifdef SEQ64_JACK_SESSION
-    m_jsession_ev               (nullptr),
-#endif  // SEQ64_JACK_SESSION
-#endif  // SEQ64_JACK_SUPPORT
-    m_jack_running              (false),
-    m_jack_master               (false),
+    m_jack_asst                 (*this),
+#endif
     m_notify                    ()          // vector of pointers, public!
 {
     for (int i = 0; i < c_max_sequence; i++)
@@ -135,8 +124,8 @@ perform::perform (keys_perform & mykeys)
         m_midi_cc_on[i] = zero;
         m_midi_cc_off[i] = zero;
     }
-    set_all_key_events();   // KEYS
-    set_all_key_groups();   // KEYS
+    set_all_key_events();
+    set_all_key_groups();
 }
 
 /**
@@ -185,99 +174,9 @@ perform::init ()
 void
 perform::init_jack ()
 {
-
 #ifdef SEQ64_JACK_SUPPORT
-
-    if (global_with_jack_transport  && ! m_jack_running)
-    {
-        m_jack_running = true;
-        m_jack_master = true;
-        do
-        {
-            /*
-             * Become a new client of the JACK server.
-             */
-
-#ifdef SEQ64_JACK_SESSION
-            if (global_jack_session_uuid.empty())
-            {
-                m_jack_client = jack_client_open
-                (
-                    SEQ64_PACKAGE, JackNullOption, NULL
-                );
-            }
-            else
-            {
-                m_jack_client = jack_client_open
-                (
-                    SEQ64_PACKAGE, JackSessionID, NULL,
-                    global_jack_session_uuid.c_str()
-                );
-            }
-#else
-            m_jack_client = jack_client_open(SEQ64_PACKAGE, JackNullOption, NULL);
+    m_jack_asst.init();
 #endif
-
-            if (m_jack_client == 0)
-            {
-                printf("JACK server is not running.\n[JACK sync disabled]\n");
-                m_jack_running = false;
-                break;
-            }
-
-            jack_on_shutdown(m_jack_client, jack_shutdown, (void *) this);
-            jack_set_sync_callback
-            (
-                m_jack_client, jack_sync_callback, (void *) this
-            );
-
-            /*
-             * ca 2015-07-23
-             * Implemented patch from freddix/seq24 GitHub project, to fix
-             * JACK transport.  One line of code.
-             */
-
-            jack_set_process_callback(m_jack_client, jack_process_callback, NULL);
-
-#ifdef SEQ64_JACK_SESSION
-            if (jack_set_session_callback)
-            {
-                jack_set_session_callback
-                (
-                    m_jack_client, jack_session_callback, (void *) this
-                );
-            }
-#endif
-            /* true if we want to fail if there is already a master */
-
-            bool cond = global_with_jack_master_cond;
-            if
-            (
-                global_with_jack_master &&
-                jack_set_timebase_callback
-                (
-                    m_jack_client, cond, jack_timebase_callback, this
-                ) == 0
-            )
-            {
-                printf("[JACK transport master]\n");
-                m_jack_master = true;
-            }
-            else
-            {
-                printf("[JACK transport slave]\n");
-                m_jack_master = false;
-            }
-            if (jack_activate(m_jack_client))
-            {
-                printf("Cannot register as JACK client\n");
-                m_jack_running = false;
-                break;
-            }
-
-        } while (0);                    // weird
-    }
-#endif  // SEQ64_JACK_SUPPORT
 }
 
 /**
@@ -288,26 +187,8 @@ void
 perform::deinit_jack ()
 {
 #ifdef SEQ64_JACK_SUPPORT
-
-    if (m_jack_running)
-    {
-        m_jack_running = false;
-        m_jack_master = false;
-        if (jack_release_timebase(m_jack_client))
-        {
-            printf("Cannot release Timebase.\n");
-        }
-        if (jack_client_close(m_jack_client))
-        {
-            printf("Cannot close JACK client.\n");
-        }
-    }
-    if (! m_jack_running)
-    {
-        printf("[JACK sync disabled]\n");
-    }
-
-#endif  // SEQ64_JACK_SUPPORT
+    m_jack_asst.deinit();
+#endif
 }
 
 /**
@@ -811,7 +692,14 @@ perform::set_bpm (int a_bpm)
     if (a_bpm > 500)
         a_bpm = 500;
 
-    if (! (m_jack_running && m_running))
+    /**
+     * \todo
+     *      I think this logic is wrong, in that it needs only one of the
+     *      two to be stopped before it sets the BPM, while it seems to me
+     *      that both should be stopped; to be determined.
+     */
+
+    if (! (m_jack_asst.is_running() && m_running))
     {
         m_master_bus.set_bpm(a_bpm);
     }
@@ -1240,8 +1128,7 @@ void
 perform::start_jack ()
 {
 #ifdef SEQ64_JACK_SUPPORT
-    if (m_jack_running)
-        jack_transport_start(m_jack_client);
+    m_jack_asst.start();
 #endif
 }
 
@@ -1253,8 +1140,7 @@ void
 perform::stop_jack ()
 {
 #ifdef SEQ64_JACK_SUPPORT
-    if (m_jack_running)
-        jack_transport_stop(m_jack_client);
+    m_jack_asst.stop();
 #endif
 }
 
@@ -1270,63 +1156,7 @@ void
 perform::position_jack (bool a_state)
 {
 #ifdef SEQ64_JACK_SUPPORT
-
-    if (m_jack_running)
-    {
-        jack_transport_locate(m_jack_client, 0);
-    }
-    return;
-
-#ifdef WHY_IS_THIS_CODE_EFFECTIVELY_DISABLED
-    jack_nframes_t rate = jack_get_sample_rate(m_jack_client);
-    long current_tick = 0;
-    if (a_state)
-    {
-        current_tick = m_left_tick;
-    }
-
-    jack_position_t pos;
-    pos.valid = JackPositionBBT;
-    pos.beats_per_bar = 4;
-    pos.beat_type = 4;
-    pos.ticks_per_beat = c_ppqn * 10;
-    pos.beats_per_minute =  m_master_bus.get_bpm();
-
-    /*
-     * Compute BBT info from frame number.  This is relatively simple
-     * here, but would become complex if we supported tempo or time
-     * signature changes at specific locations in the transport timeline.
-     */
-
-    current_tick *= 10;
-    pos.bar = int32_t
-    (
-        (current_tick / (long) pos.ticks_per_beat / pos.beats_per_bar);
-    );
-
-    pos.beat = int32_t(((current_tick / (long) pos.ticks_per_beat) % 4));
-    pos.tick = int32_t((current_tick % (c_ppqn * 10)));
-    pos.bar_start_tick = pos.bar * pos.beats_per_bar * pos.ticks_per_beat;
-    pos.frame_rate = rate;
-    pos.frame = (jack_nframes_t)
-    (
-        (current_tick * rate * 60.0) / (pos.ticks_per_beat * pos.beats_per_minute)
-    );
-
-    /*
-     * ticks * 10 = jack ticks;
-     * jack ticks / ticks per beat = num beats;
-     * num beats / beats per minute = num minutes
-     * num minutes * 60 = num seconds
-     * num secords * frame_rate  = frame
-     */
-
-    pos.bar++;
-    pos.beat++;
-    jack_transport_reposition(m_jack_client, &pos);
-
-#endif  // WHY_IS_THIS_CODE_EFFECTIVELY_DISABLED
-
+    m_jack_asst.position(a_state);
 #endif
 }
 
@@ -1340,7 +1170,7 @@ perform::position_jack (bool a_state)
 void
 perform::start (bool a_state)
 {
-    if (! m_jack_running)
+    if (! m_jack_asst.is_running())
         inner_start(a_state);
 }
 
@@ -1355,7 +1185,7 @@ perform::start (bool a_state)
 void
 perform::stop ()
 {
-    if (! m_jack_running)
+    if (! m_jack_asst.is_running())
         inner_stop();
 }
 
@@ -1479,13 +1309,6 @@ perform::launch_output_thread ()
         m_out_thread_launched = true;
 }
 
-
-void
-perform::set_playback_mode (bool a_playback_mode)
-{
-    m_playback_mode = a_playback_mode;
-}
-
 /**
  *  Creates the input thread using input_thread_func().
  *
@@ -1573,138 +1396,6 @@ output_thread_func (void * a_pef)
     return 0;
 }
 
-/*
- * ca 2015-07-23
- * Implemented second patch for JACK Transport from freddix/seq24
- * GitHub project.  Added the following function.
- */
-
-int
-jack_process_callback (jack_nframes_t nframes, void * arg)
-{
-    return 0;
-}
-
-#ifdef SEQ64_JACK_SUPPORT
-
-/**
- *  This JACK synchronization callback informs the specified perform
- *  object of the current state and parameters of JACK.
- *
- * \param state
- *      The JACK Transport state.
- *
- * \param pos
- *      The JACK position value.
- *
- * \param arg
- *      The pointer to the perform object.  Currently not checked for
- *      nullity.
- */
-
-int jack_sync_callback
-(
-    jack_transport_state_t state,
-    jack_position_t * pos,
-    void * arg                          // unchecked!!
-)
-{
-    perform * p = (perform *) arg;
-    p->m_jack_frame_current = jack_get_current_transport_frame(p->m_jack_client);
-    p->m_jack_tick =
-        p->m_jack_frame_current *
-        p->m_jack_pos.ticks_per_beat *
-        p->m_jack_pos.beats_per_minute / (p->m_jack_pos.frame_rate * 60.0);
-
-    p->m_jack_frame_last = p->m_jack_frame_current;
-    p->m_jack_transport_state_last = state;
-    p->m_jack_transport_state = state;
-    switch (state)
-    {
-    case JackTransportStopped:
-        //printf( "[JackTransportStopped]\n" );
-        break;
-
-    case JackTransportRolling:
-        //printf( "[JackTransportRolling]\n" );
-        break;
-
-    case JackTransportStarting:
-        //printf( "[JackTransportStarting]\n" );
-        p->inner_start(global_jack_start_mode);
-        break;
-
-    case JackTransportLooping:
-        //printf( "[JackTransportLooping]" );
-        break;
-
-    default:
-        break;
-    }
-    print_jack_pos(pos);
-    return 1;
-}
-
-#ifdef SEQ64_JACK_SESSION
-
-/**
- *  Writes the MIDI file named "<jack session dir>-file.mid" using a
- *  mididfile object, quits if told to by JACK, and can free the JACK
- *  session event.
- *
- *  ca 2015-07-24
- *  Just a note:  The OMA (OpenMandrivaAssociation) patch was already
- *  applied to seq24 v.0.9.2.  It put quotes around the --file argument.
- *
- *  Why are we using a Glib::ustring here?  Convenience.  But with
- *  C++11, we could use a lexical_cast<>.  No more ustring, baby!
- *
- *  It doesn't really matter; this function can call Gtk::Main::quit().
- *
- */
-
-bool
-perform::jack_session_event ()
-{
-    std::string fname(m_jsession_ev->session_dir);
-    fname += "file.mid";
-    std::string cmd
-    (
-        "sequencer64 --file \"${SESSION_DIR}file.mid\" --jack_session_uuid "
-    );
-    cmd += m_jsession_ev->client_uuid;
-    midifile f(fname, ! global_legacy_format);
-    f.write(this);
-    m_jsession_ev->command_line = strdup(cmd.c_str());
-    jack_session_reply(m_jack_client, m_jsession_ev);
-    if (m_jsession_ev->type == JackSessionSaveAndQuit)
-        Gtk::Main::quit();
-
-    jack_session_event_free(m_jsession_ev);
-    return false;
-}
-
-/**
- *  Set the m_jsession_ev (event) value of the perform object.
- *
- *  Glib is then used to connect in perform::jack_session_event().
- *
- * \param arg
- *      The pointer to the perform object.  Currently not checked for
- *      nullity.
- */
-
-void
-jack_session_callback (jack_session_event_t * event, void * arg)
-{
-    perform * p = (perform *) arg;
-    p->m_jsession_ev = event;
-    Glib::signal_idle().connect(sigc::mem_fun(*p, &perform::jack_session_event));
-}
-
-#endif  // SEQ64_JACK_SESSION
-#endif  // SEQ64_JACK_SUPPORT
-
 /**
  *  Performance output function.
  */
@@ -1712,6 +1403,9 @@ jack_session_callback (jack_session_event_t * event, void * arg)
 void
 perform::output_func ()
 {
+
+#ifdef THIS_FUNCTION_IS_READY
+
     while (m_outputing)
     {
         m_condition_var.lock();        // printf ("waiting for signal\n");
@@ -1769,7 +1463,7 @@ perform::output_func ()
          * starting from the offset.
          */
 
-        if (m_playback_mode && ! m_jack_running)
+        if (m_playback_mode && ! m_jack_asst.is_running)
         {
             current_tick = m_starting_tick;
             clock_tick = m_starting_tick;
@@ -1844,6 +1538,9 @@ perform::output_func ()
             }
 
 #ifdef SEQ64_JACK_SUPPORT
+
+            // init_clock = m_jack_asst.output_func(); //
+
             if (m_jack_running)             // no init until we get a good lock
             {
                 init_clock = false;
@@ -1967,8 +1664,8 @@ perform::output_func ()
                     );
 #endif
 
-                } // end if dumping / sane state
-            }     // if jack running
+                }               // if dumping (sane state)
+            }                   // if m_jack_running
             else
             {
 #endif
@@ -1982,9 +1679,8 @@ perform::output_func ()
                 total_tick     += delta_tick;
                 dumping = true;
 
-#ifdef SEQ64_JACK_SUPPORT
             }
-#endif
+
             /*
              * init_clock will be true when we run for the first time, or
              * as soon as JACK gets a good lock on playback.
@@ -2167,6 +1863,8 @@ perform::output_func ()
         m_master_bus.stop();
     }
     pthread_exit(0);
+
+#endif  // THIS_FUNCTION_IS_READY
 }
 
 /**
@@ -2653,7 +2351,9 @@ perform::sequence_playing_off (int a_sequence)
     }
 }
 
-#ifdef SEQ64_JACK_SUPPORT
+#ifdef USE_THIS_SEQ64_JACK_SUPPORT
+
+ FUNCTIONALITY MOVED TO jack_assistant module
 
 /**
  *  This function...
@@ -2752,7 +2452,7 @@ print_jack_pos (jack_position_t * jack_pos)
     printf("    next_time        [%f]\n", jack_pos->next_time);
 }
 
-#endif   // SEQ64_JACK_SUPPORT
+#endif   // USE_THIS_SEQ64_JACK_SUPPORT
 
 void
 perform::set_all_key_events ()

@@ -25,16 +25,18 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-14
- * \updates       2015-09-14
+ * \updates       2015-09-17
  * \license       GNU GPLv2 or above
  *
  */
 
 #include <stdio.h>
-#include <gtkmm/main.h>                // Gtk::Main
+
+// #include <gtkmm/main.h>                // Gtk::Main
 
 #include "jack_assistant.hpp"
 #include "midifile.hpp"
+#include "perform.hpp"
 
 namespace seq64
 {
@@ -44,8 +46,9 @@ namespace seq64
  *  of them public!
  */
 
-jack_assistant::jack_assistant ()
+jack_assistant::jack_assistant (perform & parent)
  :
+    m_jack_parent               (parent),
     m_jack_client               (nullptr),
     m_jack_frame_current        (),
     m_jack_frame_last           (),
@@ -73,7 +76,7 @@ jack_assistant::~jack_assistant ()
 
 /**
  *  Initializes JACK support, if SEQ64_JACK_SUPPORT is defined.
- *  Then we Become a new client of the JACK server.
+ *  Then we become a new client of the JACK server.
  *
  *  Who calls this routine?
  *
@@ -89,7 +92,7 @@ jack_assistant::init ()
     {
         m_jack_running = true;
         m_jack_master = true;
-        do
+
 #ifdef SEQ64_JACK_SESSION
         if (global_jack_session_uuid.empty())
         {
@@ -113,10 +116,15 @@ jack_assistant::init ()
             m_jack_running = false;
             return false;
         }
-        jack_on_shutdown(m_jack_client, jack_shutdown, (void *) this);
+
+        /*
+         * "this" should be the parent perform object.
+         */
+
+        jack_on_shutdown(m_jack_client, jack_shutdown, (void *) &m_jack_parent);
         jack_set_sync_callback
         (
-            m_jack_client, jack_sync_callback, (void *) this
+            m_jack_client, jack_sync_callback, (void *) &m_jack_parent
         );
 
         /*
@@ -132,7 +140,7 @@ jack_assistant::init ()
         {
             jack_set_session_callback
             (
-                m_jack_client, jack_session_callback, (void *) this
+                m_jack_client, jack_session_callback, (void *) &m_jack_parent
             );
         }
 #endif
@@ -144,7 +152,7 @@ jack_assistant::init ()
             global_with_jack_master &&
             jack_set_timebase_callback
             (
-                m_jack_client, cond, jack_timebase_callback, this
+                m_jack_client, cond, jack_timebase_callback, &m_jack_parent
             ) == 0
         )
         {
@@ -177,12 +185,18 @@ jack_assistant::deinit ()
         m_jack_running = false;
         m_jack_master = false;
         if (jack_release_timebase(m_jack_client))
+        {
             errprint("Cannot release Timebase.");
+        }
         if (jack_client_close(m_jack_client))
+        {
             errprint("Cannot close JACK client.");
+        }
     }
     if (! m_jack_running)
+    {
         infoprint("[JACK sync disabled]");
+    }
 }
 
 /**
@@ -300,22 +314,26 @@ jack_process_callback (jack_nframes_t nframes, void * arg)
  *      nullity.
  */
 
-int jack_sync_callback
+int
+jack_sync_callback
 (
     jack_transport_state_t state,
     jack_position_t * pos,
     void * arg                          // unchecked, dynamic_cast?
 )
 {
-    perform * p = (perform *) arg;
-    p->m_jack_frame_current = jack_get_current_transport_frame(p->m_jack_client);
-    p->m_jack_tick =
-        p->m_jack_frame_current * p->m_jack_pos.ticks_per_beat *
-        p->m_jack_pos.beats_per_minute / (p->m_jack_pos.frame_rate * 60.0) ;
+    // perform * p = (perform *) arg;
 
-    p->m_jack_frame_last = p->m_jack_frame_current;
-    p->m_jack_transport_state_last = state;
-    p->m_jack_transport_state = state;
+    jack_assistant * jack = (jack_assistant *) arg;
+
+    jack->m_jack_frame_current = jack_get_current_transport_frame(jack->m_jack_client);
+    jack->m_jack_tick =
+        jack->m_jack_frame_current * jack->m_jack_pos.ticks_per_beat *
+        jack->m_jack_pos.beats_per_minute / (jack->m_jack_pos.frame_rate * 60.0) ;
+
+    jack->m_jack_frame_last = jack->m_jack_frame_current;
+    jack->m_jack_transport_state_last = state;
+    jack->m_jack_transport_state = state;
     switch (state)
     {
     case JackTransportStopped:
@@ -328,7 +346,7 @@ int jack_sync_callback
 
     case JackTransportStarting:
         infoprint("[JackTransportStarting]");
-        p->inner_start(global_jack_start_mode);
+        jack->parent().inner_start(global_jack_start_mode);
         break;
 
     case JackTransportLooping:
@@ -378,17 +396,23 @@ jack_assistant::session_event ()
      */
 
     midifile f(fname, ! global_legacy_format);
-    f.write(this);
+    f.write(&m_jack_parent);
 
     m_jsession_ev->command_line = strdup(cmd.c_str());
     jack_session_reply(m_jack_client, m_jsession_ev);
 
     /*
      * GUI framework access!!!
-     */
+     *
+     * TO BE FIXED!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+     *
 
     if (m_jsession_ev->type == JackSessionSaveAndQuit)
         Gtk::Main::quit();
+
+     *
+     *
+     */
 
     jack_session_event_free(m_jsession_ev);
     return false;
@@ -407,9 +431,17 @@ jack_assistant::session_event ()
 void
 jack_session_callback (jack_session_event_t * event, void * arg)
 {
-    perform * p = (perform *) arg;
-    p->m_jsession_ev = event;
-    Glib::signal_idle().connect(sigc::mem_fun(*p, &perform::jack_session_event));
+    // perform * p = (perform *) arg;
+
+    jack_assistant * jack = (jack_assistant *) arg;
+    jack->m_jsession_ev = event;
+
+    // TO BE RECTIFIED SOON
+    //
+    // Glib::signal_idle().
+    //      connect(sigc::mem_fun(*p, &perform::jack_session_event));
+    //
+    // TO BE FIXED!!!!!!!!!
 }
 
 #endif  // SEQ64_JACK_SESSION
@@ -417,142 +449,15 @@ jack_session_callback (jack_session_event_t * event, void * arg)
 /**
  *  Performance output function for JACK, called by the perform function
  *  of the same name.
- */
 
 void
-perform::output_func ()
+jack_assistant::output_func ()
 {
-    double jack_ticks_converted = 0.0;
-    double jack_ticks_converted_last = 0.0;
-    double jack_ticks_delta = 0.0;
-    if (m_jack_running)             // no init until we get a good lock
-    {
-        init_clock = false;
-        m_jack_transport_state =
-            jack_transport_query(m_jack_client, &m_jack_pos);
-
-        m_jack_frame_current =
-            jack_get_current_transport_frame(m_jack_client);
-
-        if (m_jack_transport_state_last == JackTransportStarting &&
-                m_jack_transport_state == JackTransportRolling)
-        {
-
-            m_jack_frame_last = m_jack_frame_current;
-            dumping = true;
-            m_jack_tick =
-                m_jack_pos.frame *
-                m_jack_pos.ticks_per_beat *
-                m_jack_pos.beats_per_minute/(m_jack_pos.frame_rate*60.0);
-
-            jack_ticks_converted =  // convert ticks
-                m_jack_tick *
-                (
-                    (double) c_ppqn / (m_jack_pos.ticks_per_beat *
-                    m_jack_pos.beat_type / 4.0)
-                );
-
-            set_orig_ticks((long) jack_ticks_converted);
-            current_tick = clock_tick = total_tick =
-                jack_ticks_converted_last = jack_ticks_converted;
-
-            init_clock = true;
-            if (m_looping && m_playback_mode)
-            {
-                if (current_tick >= get_right_tick())
-                {
-                    while (current_tick >= get_right_tick())
-                    {
-                        double size = get_right_tick() - get_left_tick();
-                        current_tick = current_tick - size;
-                    }
-                    reset_sequences();
-                    set_orig_ticks((long)current_tick);
-                }
-            }
-        }
-        if (m_jack_transport_state_last  ==  JackTransportRolling &&
-                m_jack_transport_state  == JackTransportStopped)
-        {
-            m_jack_transport_state_last = JackTransportStopped;
-            jack_stopped = true;
-        }
-
-        /*
-         * Jack Transport is Rolling Now !!!
-         * Transport is in a sane state if dumping == true.
-         */
-
-        if (dumping)
-        {
-            m_jack_frame_current =
-                jack_get_current_transport_frame(m_jack_client);
-
-            // if we are moving ahead
-
-            if ((m_jack_frame_current > m_jack_frame_last))
-            {
-                m_jack_tick +=
-                    (m_jack_frame_current - m_jack_frame_last)  *
-                    m_jack_pos.ticks_per_beat *
-                    m_jack_pos.beats_per_minute /
-                    (m_jack_pos.frame_rate * 60.0);
-
-                m_jack_frame_last = m_jack_frame_current;
-            }
-            jack_ticks_converted =      // convert ticks
-                m_jack_tick *
-                (
-                    (double) c_ppqn /
-                    (m_jack_pos.ticks_per_beat*m_jack_pos.beat_type/4.0)
-                );
-
-            jack_ticks_delta =
-                jack_ticks_converted - jack_ticks_converted_last;
-
-            clock_tick     += jack_ticks_delta;
-            current_tick   += jack_ticks_delta;
-            total_tick     += jack_ticks_delta;
-            m_jack_transport_state_last = m_jack_transport_state;
-            jack_ticks_converted_last = jack_ticks_converted;
-
-#if USE_DEBUGGING_OUTPUT
-            double jack_tick = (m_jack_pos.bar-1) *
-                (m_jack_pos.ticks_per_beat * m_jack_pos.beats_per_bar ) +
-                (m_jack_pos.beat-1) * m_jack_pos.ticks_per_beat +
-                m_jack_pos.tick;
-            long ptick, pbeat, pbar;
-            pbar  = (long)
-            (
-                (long) m_jack_tick /
-                (m_jack_pos.ticks_per_beat * m_jack_pos.beats_per_bar)
-            );
-            pbeat = (long)
-            (
-                (long) m_jack_tick %
-                (m_jack_pos.ticks_per_beat * m_jack_pos.beats_per_bar)
-            );
-            pbeat = pbeat / (long) m_jack_pos.ticks_per_beat;
-            ptick = (long) m_jack_tick % (long) m_jack_pos.ticks_per_beat;
-            printf
-            (
-                "* current_tick[%lf] delta[%lf]"
-                "* bbb [%2d:%2d:%4d] "
-                "* jjj [%2d:%2d:%4d] "
-                "* jtick[%8.3f] mtick[%8.3f] delta[%8.3f]\n"
-                ,
-                current_tick, jack_ticks_delta,
-                pbar+1, pbeat+1, ptick,
-                m_jack_pos.bar, m_jack_pos.beat, m_jack_pos.tick,
-                m_jack_tick, jack_tick, m_jack_tick-jack_tick
-            );
-#endif
-
-        }
-    }
+    // TEMPORARY: currently can't find a way to move code from perform to here.
 }
+ */
 
-#ifdef SEQ64_JACK_SUPPORT
+// #ifdef SEQ64_JACK_SUPPORT
 
 /**
  *  This function...
@@ -574,13 +479,17 @@ jack_timebase_callback
     static jack_transport_state_t state_last;
 
     state_current = state;
-    perform * p = (perform *) arg;
-    current_frame = jack_get_current_transport_frame(p->m_jack_client);
+
+    // perform * p = (perform *) arg;
+
+    jack_assistant * jack = (jack_assistant *) arg;
+
+    current_frame = jack_get_current_transport_frame(jack->m_jack_client);
     pos->valid = JackPositionBBT;
     pos->beats_per_bar = 4;
     pos->beat_type = 4;
     pos->ticks_per_beat = c_ppqn * 10;
-    pos->beats_per_minute = p->get_bpm();
+    pos->beats_per_minute = jack->parent().get_bpm();
 
     /*
      * Compute BBT info from frame number.  This is relatively simple
@@ -625,8 +534,11 @@ jack_timebase_callback
 void
 jack_shutdown (void * arg)
 {
-    perform * p = (perform *) arg;
-    p->m_jack_running = false;
+    // perform * p = (perform *) arg;
+
+    jack_assistant * jack = (jack_assistant *) arg;
+
+    jack->m_jack_running = false;
     printf("JACK shut down.\nJACK sync Disabled.\n");
 }
 

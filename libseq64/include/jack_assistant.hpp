@@ -46,6 +46,8 @@
 namespace seq64
 {
 
+class perform;                          /* jack_assistant parent is a perform */
+
 /**
  *  This class provides the performance mode JACK support.
  */
@@ -53,8 +55,6 @@ namespace seq64
 class jack_assistant
 {
 
-// Are these function needed by jack_assistant?
-//
 #ifdef SEQ64_JACK_SUPPORT
 
     friend int jack_sync_callback
@@ -77,6 +77,7 @@ class jack_assistant
 
 private:
 
+    perform & m_jack_parent;
     jack_client_t * m_jack_client;
     jack_nframes_t m_jack_frame_current;
     jack_nframes_t m_jack_frame_last;
@@ -100,7 +101,7 @@ private:
 
 public:
 
-    jack_assistant ();
+    jack_assistant (perform & parent);
     ~jack_assistant ();
 
     /**
@@ -121,11 +122,21 @@ public:
         return m_jack_master;
     }
 
-    void init ();                       // init_jack ();
+    /**
+     * \getter m_jack_parent
+     *      Needed for external callbacks.
+     */
+
+    perform & parent ()
+    {
+        return m_jack_parent;
+    }
+
+    bool init ();                       // init_jack ();
     void deinit ();                     // deinit_jack ();
 
 #ifdef SEQ64_JACK_SESSION
-    bool session_event();               // jack_session_event ();
+    bool session_event ();              // jack_session_event ();
 #endif
 
     void start ();                      // start_jack();

@@ -6,7 +6,7 @@
 # \library    	libseq64 library
 # \author     	Chris Ahlstrom
 # \date       	2015-09-11
-# \update      2015-09-13
+# \update      2015-09-17
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -87,6 +87,7 @@ version = $(SEQUENCER64_API_MAJOR):$(SEQUENCER64_API_MINOR):$(SEQUENCER64_API_PA
 #******************************************************************************
 # Compiler and linker flags
 #------------------------------------------------------------------------------
+#------------------------------------------------------------------------------
 
 AM_CXXFLAGS = \
  -I../include \
@@ -120,10 +121,13 @@ libseq64_la_SOURCES = \
 	easy_macros.cpp \
 	event.cpp \
 	globals.cpp \
+   jack_assistant.cpp \
    keys_perform.cpp \
 	mastermidibus.cpp \
    midibus.cpp \
+   midifile.cpp \
 	mutex.cpp \
+   perform.cpp \
 	sequence.cpp \
 	userfile.cpp
 

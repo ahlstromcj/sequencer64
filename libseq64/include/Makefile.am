@@ -6,7 +6,7 @@
 # \library    	libseq64 library
 # \author     	Chris Ahlstrom
 # \date       	2015-09-11
-# \update      2015-09-13
+# \update      2015-09-17
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -75,11 +75,14 @@ pkginclude_HEADERS = \
 	easy_macros.h \
 	event.hpp \
 	globals.h \
+   jack_assistant.hpp \
    keys_perform.hpp \
 	mastermidibus.hpp \
 	midibus_common.hpp \
 	midibus.hpp \
+	midifile.hpp \
 	mutex.hpp \
+	perform.hpp \
 	platform_macros.h \
 	sequence.hpp \
 	userfile.hpp

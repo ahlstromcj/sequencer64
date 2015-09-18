@@ -6,7 +6,7 @@
 # \library    	libseq_gtkmm2 library
 # \author     	Chris Ahlstrom
 # \date       	2015-09-11
-# \update      2015-09-13
+# \update      2015-09-18
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -64,19 +64,22 @@ sequencer64libdir = @sequencer64libdir@
 #  Requires Gtk support via the perform module:
 #
 #     lash.hpp
-#     midifile.hpp
 #     optionsfile.hpp
+#
+#  Moved to libseq64:
+#
+#     midifile.hpp
+#     perform.hpp
+#     gdk_basic_keys.h
 #
 #----------------------------------------------------------------------------
 
 pkginclude_HEADERS = \
 	lash.hpp \
-	midifile.hpp \
 	optionsfile.hpp \
 	font.hpp \
    fruityseq.hpp \
    fruityseqroll.hpp \
-   gdk_basic_keys.h \
    gtk_helpers.h \
 	keybindentry.hpp \
 	maintime.hpp \
@@ -85,7 +88,6 @@ pkginclude_HEADERS = \
 	options.hpp \
 	perfedit.hpp \
 	perfnames.hpp \
-	perform.hpp \
 	perfroll.hpp \
 	perfroll_input.hpp \
 	perftime.hpp \
@@ -98,7 +100,6 @@ pkginclude_HEADERS = \
 	seqmenu.hpp \
 	seqroll.hpp \
 	seqtime.hpp
-	-rm -rf $(testsubdir)
 
 #******************************************************************************
 # uninstall-hook

@@ -250,6 +250,12 @@ private:
     bool m_inputing;
     bool m_outputing;
     bool m_looping;
+
+    /**
+     *  Specifies the playback mode.  There are two, "live" and "song",
+     *  but we're not yet sure what "true" indicates.
+     */
+
     bool m_playback_mode;
 
     long m_left_tick;
@@ -682,15 +688,21 @@ private:
         m_running = a_running;
     }
 
-    void set_playback_mode (bool a_playback_mode);
+    /**
+     * \setter m_playback_mode
+     */
+
+    void set_playback_mode (bool a_playback_mode)
+    {
+        m_playback_mode = a_playback_mode;
+    }
+
     void inner_start (bool a_state);
     void inner_stop ();
-
     void set_all_key_events ();
     void set_all_key_groups ();
     void set_key_event (unsigned int keycode, long sequence_slot);
     void set_key_group (unsigned int keycode, long group_slot);
-
     int clamp_track (int track) const;
 
 };
@@ -701,47 +713,6 @@ private:
 
 extern void * output_thread_func (void * a_p);
 extern void * input_thread_func (void * a_p);
-
-/**
- *  Global functions for JACK support and JACK sessions.
- */
-
-#ifdef SEQ64_JACK_SUPPORT
-
-/*
- * Global JACK functions
- */
-
-extern int jack_sync_callback
-(
-    jack_transport_state_t state,
-    jack_position_t * pos,
-    void * arg
-);
-extern void print_jack_pos (jack_position_t * jack_pos);
-extern void jack_shutdown (void * arg);
-extern void jack_timebase_callback
-(
-    jack_transport_state_t state,
-    jack_nframes_t nframes,
-    jack_position_t * pos,
-    int new_pos,
-    void * arg
-);
-
-/*
- * ca 2015-07-23
- * Implemented second patch for JACK Transport from freddix/seq24
- * GitHub project.  Added the following function.
- */
-
-extern int jack_process_callback (jack_nframes_t nframes, void * arg);
-
-#ifdef SEQ64_JACK_SESSION
-extern void jack_session_callback (jack_session_event_t * ev, void * arg);
-#endif
-
-#endif      // SEQ64_JACK_SUPPORT
 
 }           // namespace seq64
 

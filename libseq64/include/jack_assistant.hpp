@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-17
- * \updates       2015-09-17
+ * \updates       2015-09-18
  * \license       GNU GPLv2 or above
  *
  *  This class has way too many members.
@@ -47,6 +47,25 @@ namespace seq64
 {
 
 class perform;                          /* jack_assistant parent is a perform */
+
+/**
+ *  Provide a temporary structure for passing data and results between a
+ *  perform and jack_assistant object.  The jack_assistant class already
+ *  has access to the members of perform, but it needs access to and
+ *  modification of local variables in perform::output_func().
+ */
+
+struct jack_scratchpad
+{
+    double js_current_tick;
+    double js_total_tick;
+    double js_clock_tick;
+    bool js_jack_stopped;
+    bool js_dumping;
+    bool js_init_clock;
+    bool js_looping;                    /* perform::m_looping       */
+    bool js_playback_mode;              /* perform::m_playback_mode */
+};
 
 /**
  *  This class provides the performance mode JACK support.

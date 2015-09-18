@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-09-14
+ * \updates       2015-09-18
  * \license       GNU GPLv2 or above
  *
  *  Note that the parse function has some code that is not yet enabled.
@@ -76,7 +76,7 @@ userfile::~userfile ()
  */
 
 bool
-userfile::parse (perform & a_perf)
+userfile::parse (perform & /* a_perf */)
 {
     std::ifstream file(m_name.c_str(), std::ios::in | std::ios::ate);
     if (! file.is_open())
@@ -142,7 +142,7 @@ userfile::parse (perform & a_perf)
  */
 
 bool
-userfile::write (const perform & a_perf)
+userfile::write (const perform & /* a_perf */ )
 {
     return false;
 }

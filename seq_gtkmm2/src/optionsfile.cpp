@@ -20,12 +20,12 @@
  * \file          optionsfile.cpp
  *
  *  This module declares/defines the base class for managing the
- *  <tt> ~/.seq24rc </tt> configuration file.
+ *  <tt> ~/.seq24rc </tt> ("rc") configuration file.
  *
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-09-16
+ * \updates       2015-09-18
  * \license       GNU GPLv2 or above
  *
  *  The <tt> ~/.seq24rc </tt> configuration file is fairly simple in
@@ -411,7 +411,7 @@ optionsfile::write (const perform & a_perf)
 {
     std::ofstream file(m_name.c_str(), std::ios::out | std::ios::trunc);
     char outs[SEQ64_LINE_MAX];
-    perform & uca_perf = const_cast<perform &>(a_perf);
+    perform & ucperf = const_cast<perform &>(a_perf);
     if (! file.is_open())
         return false;
 
@@ -486,26 +486,26 @@ optionsfile::write (const perform & a_perf)
             " [%1d %1d %3ld %3ld %3ld %3ld]"
             " [%1d %1d %3ld %3ld %3ld %3ld]",
              i,
-             uca_perf.get_midi_control_toggle(i)->m_active,
-             uca_perf.get_midi_control_toggle(i)->m_inverse_active,
-             uca_perf.get_midi_control_toggle(i)->m_status,
-             uca_perf.get_midi_control_toggle(i)->m_data,
-             uca_perf.get_midi_control_toggle(i)->m_min_value,
-             uca_perf.get_midi_control_toggle(i)->m_max_value,
+             ucperf.get_midi_control_toggle(i)->m_active,
+             ucperf.get_midi_control_toggle(i)->m_inverse_active,
+             ucperf.get_midi_control_toggle(i)->m_status,
+             ucperf.get_midi_control_toggle(i)->m_data,
+             ucperf.get_midi_control_toggle(i)->m_min_value,
+             ucperf.get_midi_control_toggle(i)->m_max_value,
 
-             uca_perf.get_midi_control_on(i)->m_active,
-             uca_perf.get_midi_control_on(i)->m_inverse_active,
-             uca_perf.get_midi_control_on(i)->m_status,
-             uca_perf.get_midi_control_on(i)->m_data,
-             uca_perf.get_midi_control_on(i)->m_min_value,
-             uca_perf.get_midi_control_on(i)->m_max_value,
+             ucperf.get_midi_control_on(i)->m_active,
+             ucperf.get_midi_control_on(i)->m_inverse_active,
+             ucperf.get_midi_control_on(i)->m_status,
+             ucperf.get_midi_control_on(i)->m_data,
+             ucperf.get_midi_control_on(i)->m_min_value,
+             ucperf.get_midi_control_on(i)->m_max_value,
 
-             uca_perf.get_midi_control_off(i)->m_active,
-             uca_perf.get_midi_control_off(i)->m_inverse_active,
-             uca_perf.get_midi_control_off(i)->m_status,
-             uca_perf.get_midi_control_off(i)->m_data,
-             uca_perf.get_midi_control_off(i)->m_min_value,
-             uca_perf.get_midi_control_off(i)->m_max_value
+             ucperf.get_midi_control_off(i)->m_active,
+             ucperf.get_midi_control_off(i)->m_inverse_active,
+             ucperf.get_midi_control_off(i)->m_status,
+             ucperf.get_midi_control_off(i)->m_data,
+             ucperf.get_midi_control_off(i)->m_min_value,
+             ucperf.get_midi_control_off(i)->m_max_value
         );
         file << std::string(outs) << "\n";
     }
@@ -519,10 +519,10 @@ optionsfile::write (const perform & a_perf)
     file <<  c_gmute_tracks << "   # group mute value count\n";
     for (int j = 0; j < c_seqs_in_set; j++)
     {
-        uca_perf.select_group_mute(j);
+        ucperf.select_group_mute(j);
         for (int i = 0; i < c_seqs_in_set; i++)
         {
-            mtx[i] = uca_perf.get_group_mute_state(i);
+            mtx[i] = ucperf.get_group_mute_state(i);
         }
         snprintf
         (
@@ -551,20 +551,20 @@ optionsfile::write (const perform & a_perf)
      * Bus mute/unmute data
      */
 
-    int buses = uca_perf.master_bus().get_num_out_buses();
+    int buses = ucperf.master_bus().get_num_out_buses();
     file << "\n[midi-clock]\n";
     file << buses << "   # number of MIDI clocks/busses\n";
     for (int i = 0; i < buses; i++)
     {
         file
             << "# Output buss name: "
-            << uca_perf.master_bus().get_midi_out_bus_name(i)
+            << ucperf.master_bus().get_midi_out_bus_name(i)
             << "\n"
             ;
         snprintf
         (
             outs, sizeof(outs), "%d %d  # buss number, clock status",
-            i, (char) uca_perf.master_bus().get_clock(i)
+            i, (char) ucperf.master_bus().get_clock(i)
         );
         file << outs << "\n";
     }
@@ -582,7 +582,7 @@ optionsfile::write (const perform & a_perf)
      * Bus input data
      */
 
-    buses = uca_perf.master_bus().get_num_in_buses();
+    buses = ucperf.master_bus().get_num_in_buses();
     file
         << "\n[midi-input]\n"
         << buses << "   # number of MIDI busses\n"
@@ -591,13 +591,13 @@ optionsfile::write (const perform & a_perf)
     {
         file
             << "# "
-            << uca_perf.master_bus().get_midi_in_bus_name(i)
+            << ucperf.master_bus().get_midi_in_bus_name(i)
             << "\n"
             ;
         snprintf
         (
             outs, sizeof(outs), "%d %d",
-            i, (char) uca_perf.master_bus().get_input(i)
+            i, (char) ucperf.master_bus().get_input(i)
         );
         file << outs << "\n";
     }
@@ -639,8 +639,8 @@ optionsfile::write (const perform & a_perf)
         << "\n"
         << (global_allow_mod4_mode ? "1" : "0") << "\n";   // @new 2015-08-28
 
-    size_t kevsize = uca_perf.get_key_events().size() < (size_t) c_seqs_in_set ?
-         uca_perf.get_key_events().size() : (size_t) c_seqs_in_set
+    size_t kevsize = ucperf.get_key_events().size() < (size_t) c_seqs_in_set ?
+         ucperf.get_key_events().size() : (size_t) c_seqs_in_set
          ;
     file
         << "\n[keyboard-control]\n"
@@ -650,8 +650,8 @@ optionsfile::write (const perform & a_perf)
 
     for
     (
-        perform::SlotMap::const_iterator i = uca_perf.get_key_events().begin();
-        i != uca_perf.get_key_events().end(); ++i
+        keys_perform::SlotMap::const_iterator i = ucperf.get_key_events().begin();
+        i != ucperf.get_key_events().end(); ++i
     )
     {
         snprintf
@@ -661,8 +661,8 @@ optionsfile::write (const perform & a_perf)
         );
         file << std::string(outs) << "\n";
     }
-    size_t kegsize = uca_perf.get_key_groups().size() < size_t(c_seqs_in_set) ?
-         uca_perf.get_key_groups().size() :
+    size_t kegsize = ucperf.get_key_groups().size() < size_t(c_seqs_in_set) ?
+         ucperf.get_key_groups().size() :
          (size_t)c_seqs_in_set
          ;
     file
@@ -674,8 +674,8 @@ optionsfile::write (const perform & a_perf)
 
     for
     (
-        perform::SlotMap::const_iterator i = uca_perf.get_key_groups().begin();
-        i != uca_perf.get_key_groups().end(); ++i
+        keys_perform::SlotMap::const_iterator i = ucperf.get_key_groups().begin();
+        i != ucperf.get_key_groups().end(); ++i
     )
     {
         snprintf
@@ -687,7 +687,7 @@ optionsfile::write (const perform & a_perf)
     }
 
     keys_perform_transfer ktx;
-    uca_perf.keys().get_keys(ktx);      /* copy perform key to structure    */
+    ucperf.keys().get_keys(ktx);      /* copy perform key to structure    */
     file
         << "# bpm up, down\n"
         << ktx.kpt_bpm_up << " "

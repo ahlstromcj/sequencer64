@@ -73,8 +73,6 @@ struct jack_scratchpad
 class jack_assistant
 {
 
-#ifdef SEQ64_JACK_SUPPORT
-
     friend int jack_sync_callback
     (
         jack_transport_state_t state,
@@ -90,8 +88,6 @@ class jack_assistant
         int new_pos,
         void * arg
     );
-
-#endif  // SEQ64_JACK_SUPPORT
 
 private:
 
@@ -110,9 +106,9 @@ public:
 
     jack_session_event_t * m_jsession_ev;
 
-private:
+#endif
 
-#endif  // SEQ64_JACK_SESSION
+private:
 
     bool m_jack_running;
     bool m_jack_master;

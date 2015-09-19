@@ -33,11 +33,8 @@
 #include <stdio.h>
 
 #ifndef PLATFORM_WINDOWS
-#include <time.h>
+#include <time.h>                       // struct timespec
 #endif
-
-// #include <gtkmm/accelkey.h>            // For keys
-// #include <gtkmm/main.h>                // Gtk::Main
 
 #include "perform.hpp"
 #include "midibus.hpp"
@@ -50,12 +47,19 @@ namespace seq64
 
 /**
  *  This construction initializes a vast number of member variables, some
- *  of them public!
+ *  of them public (but we're working on that)!
+ *
+ * \param mykeys
+ *      Provides access to containers of keys and the "events" they
+ *      provide.  This is a base-class reference; for a real class, see
+ *      the keys_perform_gtk2 class in the seq_gtkmm2 GUI-specific library.
+ *      Note that we access the m_keys_support member using the keys()
+ *      accessor function.
  */
 
 perform::perform (keys_perform & mykeys)
  :
-    m_keys_support              (mykeys),
+    m_keys_support              (mykeys),   // accessed via keys() function
     m_mute_group                (),         // boolean array
     m_tracks_mute_state         (),         // boolean array
     m_mode_group                (true),
@@ -95,10 +99,6 @@ perform::perform (keys_perform & mykeys)
     m_control_status            (0),
     m_screen_set                (0),
     m_condition_var             (),
-    m_key_events                (),
-    m_key_groups                (),
-    m_key_events_rev            (),
-    m_key_groups_rev            (),
 #ifdef SEQ64_JACK_SUPPORT
     m_jack_asst                 (*this),
 #endif

@@ -28,21 +28,19 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-09-17
+ * \updates       2015-09-18
  * \license       GNU GPLv2 or above
  *
  *  This class has way too many members.
  */
 
-#include <gtkmm/drawingarea.h>
+#include <vector>                       // std::vector
+#include <pthread.h>
+#include "globals.h"                    // globals, nullptr, & config headers
 
-#include "globals.h"               // globals, nullptr, and config headers
-
-#ifndef PLATFORM_WINDOWS
+#ifndef PLATFORM_WINDOWS                // see globals.h, platform_macros.h
 #include <unistd.h>
 #endif
-
-#include <pthread.h>
 
 #ifdef SEQ64_JACK_SUPPORT
 #include "jack_assistant.hpp"
@@ -52,12 +50,8 @@
 #include "mastermidibus.hpp"
 
 /**
- *  While we sort out the usefulness of offloading the keybinding support
- *  to another class, we want to be able to go back and forth, so that we
- *  can verify that files are written identically in either case, and
- *  functions and playback operate the same in either case.  Note the
- *  tricky backward definition of the new feature :-).  The new feature
- *  does seem to work.
+ *  We have offloaded the keybinding support to another class, derived
+ *  from keys_perform.  The new feature does seem to work.
  */
 
 #define PERFKEY(x)              m_mainperf->keys().x()
@@ -149,45 +143,19 @@ class perform
 
     friend class keybindentry;
     friend class midifile;
-    friend class optionsfile;       // needs cleanup
+    friend class optionsfile;           // needs cleanup
     friend class options;
 
-#ifdef SEQ64_JACK_SUPPORT           // ???????????????????
+#ifdef SEQ64_JACK_SUPPORT
 
-    friend int jack_sync_callback
+    friend int jack_sync_callback       // accesses perform::inner_start()
     (
         jack_transport_state_t state,
         jack_position_t * pos,
         void * arg
     );
-    friend void jack_shutdown (void * arg);
-    friend void jack_timebase_callback
-    (
-        jack_transport_state_t state,
-        jack_nframes_t nframes,
-        jack_position_t * pos,
-        int new_pos,
-        void * arg
-    );
 
-#endif  // SEQ64_JACK_SUPPORT
-
-public:
-
-    /**
-     *  This typedef defines a map in which the key is the keycode,
-     *  that is, the integer value of a keystroke, and the value is the
-     *  pattern/sequence number or slot.
-     */
-
-    typedef std::map<unsigned int, long> SlotMap;       // lookup
-
-    /**
-     *  This typedef is like SlotMap, but used for lookup in the other
-     *  direction.
-     */
-
-    typedef std::map<long, unsigned int> RevSlotMap;    // reverse lookup
+#endif
 
 private:
 
@@ -269,8 +237,8 @@ private:
     long m_tick;
     bool m_usemidiclock;
     bool m_midiclockrunning;            // stopped or started
-    int  m_midiclocktick;
-    int  m_midiclockpos;
+    int m_midiclocktick;
+    int m_midiclockpos;
 
 private:
 
@@ -286,44 +254,14 @@ private:
 
     condition_var m_condition_var;
 
-    /*
-     *  Do not access these directly, use set/lookup functions declared
-     *  below.
-     */
-
-    SlotMap m_key_events;
-    SlotMap m_key_groups;
-    RevSlotMap m_key_events_rev; // reverse lookup, keep in sync!!
-    RevSlotMap m_key_groups_rev; // reverse lookup, keep in sync!!
-
 #ifdef SEQ64_JACK_SUPPORT
-
-private:
-
-    jack_assistant m_jack_asst;
-
-//  jack_client_t * m_jack_client;
-//  jack_nframes_t m_jack_frame_current;
-//  jack_nframes_t m_jack_frame_last;
-//  jack_position_t m_jack_pos;
-//  jack_transport_state_t m_jack_transport_state;
-//  jack_transport_state_t m_jack_transport_state_last;
-//  double m_jack_tick;
-
-//  jack_session_event_t * m_jsession_ev;
-
-private:
-
-#endif  // SEQ64_JACK_SUPPORT
-
-//  bool m_jack_running;
-//  bool m_jack_master;
+    jack_assistant m_jack_asst;         // implements most of the JACK stuff
+#endif
 
 public:
 
     /*
      *  Can register here for events.
-     *
      *  Used in mainwnd and perform.
      */
 
@@ -533,13 +471,9 @@ public:
     void start (bool a_state);
     void stop ();
 
-#ifdef SEQ64_JACK_SUPPORT
-#ifdef SEQ64_JACK_SESSION
-
-    bool jack_session_event ();
-
-#endif  // SEQ64_JACK_SESSION
-#endif  // SEQ64_JACK_SUPPORT
+    /*
+     * bool jack_session_event (); Replaced by jack_assistant::session_event().
+     */
 
     void start_jack ();
     void stop_jack ();
@@ -607,22 +541,22 @@ public:
     void save_playing_state ();
     void restore_playing_state ();
 
-    SlotMap & get_key_events ()
+    keys_perform::SlotMap & get_key_events ()
     {
         return keys().get_key_events();
     }
 
-    SlotMap & get_key_groups ()
+    keys_perform::SlotMap & get_key_groups ()
     {
         return keys().get_key_groups();
     }
 
-    RevSlotMap & get_key_events_rev ()
+    keys_perform::RevSlotMap & get_key_events_rev ()
     {
         return keys().get_key_events_rev();
     }
 
-    RevSlotMap & get_key_groups_rev ()
+    keys_perform::RevSlotMap & get_key_groups_rev ()
     {
         return keys().get_key_groups_rev();
     }

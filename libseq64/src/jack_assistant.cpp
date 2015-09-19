@@ -25,14 +25,12 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-14
- * \updates       2015-09-17
+ * \updates       2015-09-18
  * \license       GNU GPLv2 or above
  *
  */
 
 #include <stdio.h>
-
-// #include <gtkmm/main.h>                // Gtk::Main
 
 #include "jack_assistant.hpp"
 #include "midifile.hpp"
@@ -322,11 +320,11 @@ jack_sync_callback
     void * arg                          // unchecked, dynamic_cast?
 )
 {
-    // perform * p = (perform *) arg;
+    jack_assistant * jack = (jack_assistant *) arg; // p = (perform *) arg
 
-    jack_assistant * jack = (jack_assistant *) arg;
+    jack->m_jack_frame_current =
+        jack_get_current_transport_frame(jack->m_jack_client);
 
-    jack->m_jack_frame_current = jack_get_current_transport_frame(jack->m_jack_client);
     jack->m_jack_tick =
         jack->m_jack_frame_current * jack->m_jack_pos.ticks_per_beat *
         jack->m_jack_pos.beats_per_minute / (jack->m_jack_pos.frame_rate * 60.0) ;
@@ -391,11 +389,7 @@ jack_assistant::session_event ()
     );
     cmd += m_jsession_ev->client_uuid;
 
-    /*
-     * MIDI file access!!!
-     */
-
-    midifile f(fname, ! global_legacy_format);
+    midifile f(fname, ! global_legacy_format);      /* MIDI file access     */
     f.write(&m_jack_parent);
 
     m_jsession_ev->command_line = strdup(cmd.c_str());
@@ -439,7 +433,7 @@ jack_session_callback (jack_session_event_t * event, void * arg)
     // TO BE RECTIFIED SOON
     //
     // Glib::signal_idle().
-    //      connect(sigc::mem_fun(*p, &perform::jack_session_event));
+    //      connect(sigc::mem_fun(*p, &jack_assistant::session_event));
     //
     // TO BE FIXED!!!!!!!!!
 }

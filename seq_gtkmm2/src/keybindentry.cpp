@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-09-16
+ * \updates       2015-09-18
  * \license       GNU GPLv2 or above
  *
  *  This module define a GTK text-edit widget for getting keyboard button
@@ -137,7 +137,9 @@ keybindentry::on_key_press_event (GdkEventKey * event)
         if (not_nullptr(m_key))
             *m_key = event->keyval;
         else
+        {
             warnprint("keybindentry(): null key pointer");
+        }
         break;
 
     case events:            /* set the event key in the perform object  */
@@ -145,7 +147,9 @@ keybindentry::on_key_press_event (GdkEventKey * event)
         if (not_nullptr(m_perf))
             m_perf->set_key_event(event->keyval, m_slot);
         else
+        {
             warnprint("keybindentry(): null perform pointer for events");
+        }
         break;
 
     case groups:            /* set the group key in the perform object  */
@@ -153,7 +157,9 @@ keybindentry::on_key_press_event (GdkEventKey * event)
         if (not_nullptr(m_perf))
             m_perf->set_key_group(event->keyval, m_slot);
         else
+        {
             warnprint("keybindentry(): null perform pointer for groups");
+        }
         break;
     }
     return result;

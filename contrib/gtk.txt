@@ -1,0 +1,34 @@
+Notes for Factoring Out Gtk+
+Chris Ahlstrom
+2015-09-18 to 2015-09-18
+
+Keys:
+
+    The first factoring out is already done:  pulling Gtk/Gdk keystroke
+    support out of the perform class and providing that class with a
+    keys_perform-derived reference for actually manipulating the keys used
+    to control the performance.  This was a fairly easy refactoring, and
+    mainly provides access to the Gtk+ keys symbols.
+
+Quit:
+
+    <gtkmm/main.h>
+
+    In jack_assistant, the JackSessionSaveAndQuit session-event causes
+    Gtk::Main::quit() to be called.  Gtk::Main is a static instance, and
+    quit() is a static void function to exit the application.
+
+Connect:
+
+    <gtkmm/main.h>
+
+    In jack_assistant, there is a call to 
+
+    Glib::signal_idle().connect
+    (
+        sigc::mem_fun(*p, &jack_assistant::session_event)
+    )
+
+    The signature is "bool session_event ()".
+
+# vim: sw=4 ts=4 wm=8 et ft=sh

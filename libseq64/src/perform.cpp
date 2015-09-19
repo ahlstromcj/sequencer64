@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-09-18
+ * \updates       2015-09-19
  * \license       GNU GPLv2 or above
  *
  */
@@ -49,17 +49,18 @@ namespace seq64
  *  This construction initializes a vast number of member variables, some
  *  of them public (but we're working on that)!
  *
- * \param mykeys
- *      Provides access to containers of keys and the "events" they
+ * \param mygui
+ *      Provides access to the GUI assistant that holds many things,
+ *      including the containers of keys and the "events" they
  *      provide.  This is a base-class reference; for a real class, see
- *      the keys_perform_gtk2 class in the seq_gtkmm2 GUI-specific library.
- *      Note that we access the m_keys_support member using the keys()
+ *      the gui_assistant_gtk2 class in the seq_gtkmm2 GUI-specific library.
+ *      Note that we access the m_gui_support member using the gui()
  *      accessor function.
  */
 
-perform::perform (keys_perform & mykeys)
+perform::perform (gui_assistant & mygui)
  :
-    m_keys_support              (mykeys),   // accessed via keys() function
+    m_gui_support               (mygui),
     m_mute_group                (),         // boolean array
     m_tracks_mute_state         (),         // boolean array
     m_mode_group                (true),

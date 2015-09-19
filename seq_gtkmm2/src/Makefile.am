@@ -6,7 +6,7 @@
 # \library    	libseq_gtkmm2 library
 # \author     	Chris Ahlstrom
 # \date       	2015-09-11
-# \update      2015-09-18
+# \update      2015-09-19
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -126,6 +126,7 @@ libseq_gtkmm2_la_SOURCES = \
 	font.cpp \
    fruityseq.cpp \
    fruityseqroll.cpp \
+   gui_assistant_gtk2.cpp \
 	keybindentry.cpp \
    keys_perform_gtk2.cpp \
 	maintime.cpp \

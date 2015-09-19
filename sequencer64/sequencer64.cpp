@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-09-14
+ * \updates       2015-09-19
  * \license       GNU GPLv2 or above
  *
  */
@@ -42,7 +42,7 @@
 
 #include "globals.h"                    // full platform configuration
 #include "font.hpp"
-#include "keys_perform_gtk2.hpp"
+#include "gui_assistant_gtk2.hpp"
 #include "mainwnd.hpp"
 #include "optionsfile.hpp"
 #include "perform.hpp"
@@ -312,8 +312,13 @@ main (int argc, char * argv [])
             global_user_instrument_definitions[i].controllers_active[j] = false;
     }
 
-    seq64::keys_perform_gtk2 k;                 /* GUI-specific keys        */
-    seq64::perform p(k);                        /* main performance object  */
+    /*
+     * Set up objects that are specific to the Gtk-2 GUI.  Pass them to
+     * the perform constructor.  Create a font-render object.
+     */
+
+    seq64::gui_assistant_gtk2 gui;              /* GUI-specific objects     */
+    seq64::perform p(gui);                      /* main performance object  */
     seq64::p_font_renderer = new seq64::font(); /* set the font renderer    */
     if (getenv(HOME) != NULL)                   /* is $HOME set?            */
     {

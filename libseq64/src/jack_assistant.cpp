@@ -396,17 +396,12 @@ jack_assistant::session_event ()
     jack_session_reply(m_jack_client, m_jsession_ev);
 
     /*
-     * GUI framework access!!!
-     *
-     * TO BE FIXED!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-     *
-
-    if (m_jsession_ev->type == JackSessionSaveAndQuit)
-        Gtk::Main::quit();
-
-     *
-     *
+     *  if (m_jsession_ev->type == JackSessionSaveAndQuit)
+     *      Gtk::Main::quit();
      */
+
+     if (m_jsession_ev->type == JackSessionSaveAndQuit)
+        m_jack_parent.gui().quit();
 
     jack_session_event_free(m_jsession_ev);
     return false;
@@ -418,24 +413,22 @@ jack_assistant::session_event ()
  *  Glib is then used to connect in perform::jack_session_event().
  *
  * \param arg
- *      The pointer to the perform object.  Currently not checked for
- *      nullity.
+ *      The pointer to the jack_assistant object.  Currently not checked
+ *      for nullity.
  */
 
 void
 jack_session_callback (jack_session_event_t * event, void * arg)
 {
-    // perform * p = (perform *) arg;
-
     jack_assistant * jack = (jack_assistant *) arg;
     jack->m_jsession_ev = event;
 
-    // TO BE RECTIFIED SOON
-    //
-    // Glib::signal_idle().
-    //      connect(sigc::mem_fun(*p, &jack_assistant::session_event));
-    //
-    // TO BE FIXED!!!!!!!!!
+    /*
+     * Glib::signal_idle().
+     *      connect(sigc::mem_fun(*jack, &jack_assistant::session_event));
+     */
+
+    jack->parent().gui().jack_idle_connect(*jack);
 }
 
 #endif  // SEQ64_JACK_SESSION

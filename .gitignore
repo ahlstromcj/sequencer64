@@ -1,11 +1,11 @@
 # .gitignore for sequencer26
 #
-# Updates: 2015-09-12 to 2015-09-12
+# Updates: 2015-09-12 to 2015-09-19
 #
 # Compiled application
 
 Makefile.in
-sequencer64
+# sequencer64
 aclocal.m4
 bootstrap.stamp
 configure

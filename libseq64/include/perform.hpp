@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-09-18
+ * \updates       2015-09-19
  * \license       GNU GPLv2 or above
  *
  *  This class has way too many members.
@@ -46,8 +46,9 @@
 #include "jack_assistant.hpp"
 #endif
 
-#include "keys_perform.hpp"
-#include "mastermidibus.hpp"
+#include "gui_assistant.hpp"            // seq64::gui_assistant
+#include "keys_perform.hpp"             // seq64::keys_perform
+#include "mastermidibus.hpp"            // seq64::mastermidibus
 
 /**
  *  We have offloaded the keybinding support to another class, derived
@@ -160,10 +161,10 @@ class perform
 private:
 
     /**
-     *  Support for keys mapping, offloading to another class.
+     *  Support for a wide range of GUI-related operations.
      */
 
-    keys_perform & m_keys_support;
+    gui_assistant & m_gui_support;
 
     /**
      *  Mute group support.
@@ -269,27 +270,47 @@ public:
 
 public:
 
-    perform (keys_perform & mykeys);
+    perform (gui_assistant & mygui);
     ~perform ();
 
     /**
-     * \getter m_keys_support
+     * \getter m_gui_support
+     *      The const getter.
+     */
+
+    const gui_assistant & gui () const
+    {
+        return m_gui_support;
+    }
+
+    /**
+     * \getter m_gui_support
+     *      The un-const getter.
+     */
+
+    gui_assistant & gui ()
+    {
+        return m_gui_support;
+    }
+
+    /**
+     * \getter m_gui_support.keys()
      *      The const getter.
      */
 
     const keys_perform & keys () const
     {
-        return m_keys_support;
+        return gui().keys();
     }
 
     /**
-     * \getter m_keys_support
+     * \getter m_gui_support.keys()
      *      The un-const getter.
      */
 
     keys_perform & keys ()
     {
-        return m_keys_support;
+        return gui().keys();
     }
 
     /**

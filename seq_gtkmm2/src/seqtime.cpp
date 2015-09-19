@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-09-13
+ * \updates       2015-09-19
  * \license       GNU GPLv2 or above
  *
  *  The patterns/sequence editor is expandable in both directions, but the
@@ -235,7 +235,7 @@ seqtime::update_pixmap ()
 }
 
 /**
- *  Draws the pixmap_on the window.
+ *  Draws the pixmap on the window.
  */
 
 void
@@ -244,36 +244,33 @@ seqtime::draw_pixmap_on_window ()
     m_window->draw_drawable(m_gc, m_pixmap, 0, 0, 0, 0, m_window_x, m_window_y);
 }
 
+/**
+ *  Same as draw_pixmap_on_window().
+ */
+
 void
 seqtime::force_draw ()
 {
-    m_window->draw_drawable(m_gc,
-                            m_pixmap,
-                            0, 0,
-                            0, 0,
-                            m_window_x,
-                            m_window_y);
+    m_window->draw_drawable(m_gc, m_pixmap, 0, 0, 0, 0, m_window_x, m_window_y);
 }
+
+/**
+ *  Called when the window is drawn.  Call the base-class version of this
+ *  function first.  Then addition resources are allocated.
+ */
 
 void
 seqtime::on_realize()
 {
-    // we need to do the default realize
     Gtk::DrawingArea::on_realize();
-
-    //Gtk::Main::idle.connect(mem_fun(this,&seqtime::idleProgress));
     Glib::signal_timeout().connect(mem_fun(*this, &seqtime::idle_progress), 50);
-
-
-
-
-    // Now we can allocate any additional resources we need
-    m_window = get_window();
+    m_window = get_window();            // allocate additional resources
     m_gc = Gdk::GC::create(m_window);
     m_window->clear();
-
-    m_hadjust->signal_value_changed().connect(mem_fun(*this, &seqtime::change_horz));
-
+    m_hadjust->signal_value_changed().connect
+    (
+        mem_fun(*this, &seqtime::change_horz)
+    );
     update_sizes();
 }
 

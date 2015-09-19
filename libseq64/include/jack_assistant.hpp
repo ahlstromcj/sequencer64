@@ -26,14 +26,14 @@
  *  of performing (playing) a full MIDI song.
  *
  * \library       sequencer64 application
- * \author        Seq24 team; modifications by Chris Ahlstrom
+ * \author        Chris Ahlstrom
  * \date          2015-09-17
- * \updates       2015-09-18
+ * \updates       2015-09-19
  * \license       GNU GPLv2 or above
  *
  */
 
-#include "globals.h"               // globals, nullptr, and config headers
+#include "globals.h"                    // globals, nullptr, and config headers
 
 #include <jack/jack.h>
 #include <jack/transport.h>
@@ -45,7 +45,7 @@
 namespace seq64
 {
 
-class perform;                          /* jack_assistant parent is a perform */
+class perform;                          // jack_assistant parent is a perform
 
 /**
  *  Provide a temporary structure for passing data and results between a

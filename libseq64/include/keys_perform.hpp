@@ -28,13 +28,13 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-09-13
- * \updates       2015-09-16
+ * \updates       2015-09-19
  * \license       GNU GPLv2 or above
  *
  *  This class has way too many members.
  */
 
-#include <map>                          /* std::map */
+#include <map>                          // std::map
 
 namespace seq64
 {

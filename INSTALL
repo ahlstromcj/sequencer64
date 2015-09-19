@@ -1,22 +1,27 @@
-INSTALL for Sequencer64 v 0.9.9.0
+INSTALL for Sequencer64 v 0.9.9.2
 Chris Ahlstrom
-2015-09-10 to 2015-09-10
+2015-09-10 to 2015-09-19
 
 The current packaging for Sequencer64 is primarily aimed at developers.
 There is currently no configure script... it must be bootstrapped.
 
 Steps:
 
-   1.  Preload any DEPENDENCIES.  However, if some are missing, the
+   0.  Preload any DEPENDENCIES.  However, if some are missing, the
        configure script will tell you, or, at worst, a buld error will tell
        you.
+
+   1.  Check-out the branch you want.  Make a branch if you want to make
+       changes.
 
    2. From the top project directory, run the commands:
 
       $ ./bootstrap
       $ ./configure
 
-      For debugging without libtool getting in the way, just run:
+      For debugging without libtool getting in the way, just run the
+      following command, which will add the --enable-debug and
+      --disable-shared options to a configure run:
 
       $ ./bootstrap --enable-debug
 
@@ -25,7 +30,7 @@ Steps:
       $ make
 
       If you do not care about the documentation and debian packaging,
-      change to the "src" directory for running make.
+      change to the various sub-project directories before running make.
 
    4. To install, become root and run:
 

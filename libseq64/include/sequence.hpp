@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-09-13
+ * \updates       2015-09-20
  * \license       GNU GPLv2 or above
  *
  */
@@ -38,6 +38,7 @@
 #include <stack>
 
 #include "easy_macros.h"
+#include "event_list.hpp"
 
 #ifdef PLATFORM_WINDOWS
 #include "midibus_portmidi.hpp"
@@ -156,21 +157,20 @@ public:
 
 private:
 
-    typedef std::list<event> Events;
+    typedef std::stack<event_list> EventStack;
     typedef std::list<trigger> Triggers;
-    typedef std::stack<Events> EventStack;
     typedef std::stack<Triggers> TriggerStack;
     typedef std::list<char> CharList;
 
 private:
 
-    static Events m_events_clipboard;
+    static event_list m_events_clipboard;
 
     /**
      *  This list holds the current pattern/sequence events.
      */
 
-    Events m_events;
+    event_list m_events;
     Triggers m_triggers;
     trigger m_trigger_clipboard;
     EventStack m_events_undo;
@@ -180,8 +180,8 @@ private:
 
     /* markers */
 
-    Events::iterator m_iterator_play;
-    Events::iterator m_iterator_draw;
+    event_list::iterator m_iterator_play;
+    event_list::iterator m_iterator_draw;
     Triggers::iterator m_iterator_play_trigger;
     Triggers::iterator m_iterator_draw_trigger;
 
@@ -613,7 +613,7 @@ private:
     void split_trigger (trigger & trig, long a_split_tick);
     void adjust_trigger_offsets_to_length( long a_new_len);
     long adjust_offset (long a_offset);
-    void remove (Events::iterator i);
+    void remove (event_list::iterator i);
     void remove (event * e);
 
 };

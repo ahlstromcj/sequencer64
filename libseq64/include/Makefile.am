@@ -6,7 +6,7 @@
 # \library    	libseq64 library
 # \author     	Chris Ahlstrom
 # \date       	2015-09-11
-# \update      2015-09-19
+# \update      2015-09-20
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -64,7 +64,6 @@ sequencer64libdir = @sequencer64libdir@
 #  Requires Gtk support via the perform module:
 #
 #     lash.hpp
-#     midifile.hpp
 #     optionsfile.hpp
 #
 #----------------------------------------------------------------------------
@@ -74,6 +73,7 @@ pkginclude_HEADERS = \
 	controllers.hpp \
 	easy_macros.h \
 	event.hpp \
+	event_list.hpp \
 	globals.h \
    gui_assistant.hpp \
    jack_assistant.hpp \

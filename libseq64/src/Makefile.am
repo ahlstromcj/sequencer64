@@ -6,7 +6,7 @@
 # \library    	libseq64 library
 # \author     	Chris Ahlstrom
 # \date       	2015-09-11
-# \update      2015-09-19
+# \update      2015-09-20
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -111,7 +111,6 @@ lib_LTLIBRARIES = libseq64.la
 #  Requires Gtk support via the perform module:
 #
 #     lash.cpp
-#     midifile.cpp
 #     optionsfile.cpp
 #
 #----------------------------------------------------------------------------
@@ -120,6 +119,7 @@ libseq64_la_SOURCES = \
 	configfile.cpp \
 	easy_macros.cpp \
 	event.cpp \
+	event_list.cpp \
 	globals.cpp \
    gui_assistant.cpp \
    jack_assistant.cpp \

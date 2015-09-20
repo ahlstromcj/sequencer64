@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-09-13
+ * \updates       2015-09-20
  * \license       GNU GPLv2 or above
  *
  */
@@ -38,6 +38,10 @@
 
 namespace seq64
 {
+
+/*
+ * Section: event
+ */
 
 /**
  *  This constructor simply initializes all of the class members.
@@ -94,6 +98,11 @@ event::~event ()
  *
  *      The 0070 is the offset within the versions of the
  *      b4uacuse-seq24.midi file.
+ *
+ *      Because of this mis-feature, and the very slow speed of loading a
+ *      MIDI file when Sequencer64 is built for debugging, we are
+ *      exploring using an std::map instead of an std::list.  Search for
+ *      occurrences of the USE_EVENT_MAP macro.
  */
 
 bool
@@ -105,58 +114,6 @@ event::operator < (const event & a_rhsevent) const
         return (m_timestamp < a_rhsevent.m_timestamp);
 }
 
-#if USE_EXTRA_COMPARE_OPERATORS
-
-/*
- * Not sure we really need these extra operators.  No code uses them, the
- * modules build, link, and run just fine without them.
- */
-
-/**
- *  If the current timestamp equal the event's timestamp, then this
- *  function returns true if the current rank is greater than the event's
- *  rank.
- *
- *  Otherwise, it returns true if the current timestamp is greater than
- *  the event's timestamp.
- */
-
-bool
-event::operator > (const event & a_rhsevent) const
-{
-    if (m_timestamp == a_rhsevent.m_timestamp)
-        return get_rank() > a_rhsevent.get_rank();
-    else
-        return m_timestamp > a_rhsevent.m_timestamp;
-}
-
-/**
- *  Returns true if the current timestamp is less than or equal to the
- *  given value.
- *
- *  Note that this function doesn't really fit in with the operator > and
- *  operator < functions that take an event argument, but it is the
- *  complementary function for operator > taking a long argument..
- */
-
-bool
-event::operator <= (unsigned long a_rhslong) const
-{
-    return m_timestamp <= a_rhslong;
-}
-
-/**
- *  Returns true if the current timestamp is greater than the given value.
- */
-
-bool
-event::operator > (unsigned long a_rhslong) const
-{
-    return m_timestamp > a_rhslong;
-}
-
-#endif  // USE_EXTRA_COMPARE_OPERATORS
-
 /**
  *  Sets the m_status member to the value of a_status.  If a_status is a
  *  non-channel event, then the channel portion of the status is cleared.
@@ -167,7 +124,7 @@ event::set_status (char a_status)
 {
     if ((unsigned char) a_status >= 0xF0)
     {
-        m_status = (char) a_status;
+        m_status = a_status;
     }
     else
     {
@@ -175,7 +132,7 @@ event::set_status (char a_status)
          * Do a bitwise AND to clear the channel portion of the status.
          */
 
-        m_status = (char) (a_status & EVENT_CLEAR_CHAN_MASK);
+        m_status = char(a_status & EVENT_CLEAR_CHAN_MASK);
     }
 }
 

@@ -1,6 +1,6 @@
-README for Sequencer64 0.9.9.2 (merged the "perform" branch)
+README for Sequencer64 0.9.9.2 (branch = "sequencer")
 Chris Ahlstrom
-2015-09-10 to 2015-09-19
+2015-09-10 to 2015-09-20
 
 The sequencer64 project is a continuation of sequencer24 to refactor it to
 be tighter and easier to transition to to GTKmm 3, and much more.
@@ -8,6 +8,11 @@ Currently, it is basically equivalent to that project.
 
 The code has been broken up into libraries.  The next step
 is to better separate the GUI support from the MIDI and LASH support.
+
+In the meantime, we experimented with using std::multimap instead of
+std::list as an event-container.  It works well, and loads MIDI files a
+lot faster when compiled for debugging.  See the USE_EVENT_MAP macro
+in the libseq64/include/event_list.hpp module.
 
 This package is currently oriented to developers.  Please see the
 INSTALL file for a brief description on installation.
@@ -18,8 +23,5 @@ Note that sequencer24 is pretty well documented by the following
 project, which provides a 60-page PDF file and its LaTeX source code:
 
    https://github.com/ahlstromcj/sequencer24-doc.git
-
-However, we have found some documentation mistakes while researching, and
-will have to correct those mistakes soon.
 
 # vim: sw=4 ts=4 wm=8 et ft=sh

@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-09-13
+ * \updates       2015-09-20
  * \license       GNU GPLv2 or above
  *
  *  This module also declares/defines the various constants, status-byte
@@ -182,24 +182,19 @@ public:
     ~event ();
 
     /*
-     * Operator overloads
+     * Operator overload, the only one needed for sorting events in a list
+     * or a map.
      */
 
     bool operator < (const event & rhsevent) const;
-
-#if USE_EXTRA_COMPARE_OPERATORS
-    bool operator > (const event & rhsevent) const;
-    bool operator <= (unsigned long rhslong) const;
-    bool operator > (unsigned long rhslong) const;
-#endif  // USE_EXTRA_COMPARE_OPERATORS
 
     /**
      * \setter m_timestamp
      */
 
-    void set_timestamp (unsigned long a_time)
+    void set_timestamp (unsigned long time)
     {
-        m_timestamp = a_time;
+        m_timestamp = time;
     }
 
     /**
@@ -246,7 +241,7 @@ public:
     void increment_data2 ();
     void decrement_data2 ();
     void start_sysex ();
-    bool append_sysex (unsigned char *a_data, long size);
+    bool append_sysex (unsigned char * data, long size);
 
     /**
      * \getter m_sysex
@@ -454,8 +449,6 @@ public:
 
     void print ();
 
-private:
-
     /**
      *  This function is used in sorting MIDI status events (e.g. note
      *  on/off, aftertouch, control change, etc.)  The sort order is not
@@ -463,6 +456,7 @@ private:
      */
 
     int get_rank () const;
+
 };
 
 }           // namespace seq64

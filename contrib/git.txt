@@ -43,7 +43,13 @@ command:
 Then you need to apply to merge changes, if your branch is derivated from
 develop you need to do:
 
+    $ git checkout master
     $ git merge [name_of_your_remote]/develop
+
+If you set up an upstream branch, then this will suffice:
+
+    $ git checkout master
+    $ git merge develop
 
 Delete a branch on your local filesystem, use -d or -D (to force):
 

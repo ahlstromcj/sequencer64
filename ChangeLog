@@ -1,3 +1,9 @@
+2015-09-20  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+   * *.*: Merged the "sequencer" branch back.  Provides new event_list that
+   can be built using either a map (the new default) or the original list as
+   an event container. Tagged as version 0.9.9.3.
+
 2015-09-19  Chris Ahlstrom <ahlstromcj@gmail.com>
 
    * *.*: Merged the "perform" branch back.  Separated JACK support into a

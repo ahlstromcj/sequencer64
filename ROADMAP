@@ -5,6 +5,8 @@ Chris Ahlstrom
 The starting point for the Sequencer64 project is version 0.9.4 of
 Sequencer24.  Sequencer24 itself started with version 0.9.2 of Seq24.
 
+Latest version: 0.9.9.3
+
 The following changes are planned ('x' means it is done, 'y' means it is
 in progress, and 'z' means it will be moved to a later branch):
 
@@ -31,7 +33,6 @@ y  -  Branch off to various incremental branches:
       -  Enhance documentation and recreate it.
       -  Rebuild application using library code.
       -  Verify functionality.
-      -  Merge "Library" back into the main trunk.
    -  Branch off to an "Enhancements" branch (highly provisional):
       -  Convert to gtkmm-3.
       -  Add optional build using Qt 5.

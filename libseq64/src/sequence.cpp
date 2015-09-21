@@ -597,12 +597,10 @@ sequence::remove (event * e)
 }
 
 /**
- *  Removes marked events.
+ *  Removes marked events.  Note how this function handles removing a
+ *  value to avoid incrementing a now-invalid iterator.
  *
  * \threadsafe
- *
- * \todo
- *      Verify that this is the correct way to handle changing iterators.
  */
 
 void
@@ -1302,7 +1300,7 @@ void
 sequence::paste_selected (long tick, int note)
 {
     automutex locker(m_mutex);
-    event_list clipbd = m_events_clipboard;     /* copy clipboard */
+    event_list clipbd = m_events_clipboard;     /* copy clipboard           */
     for (event_list::iterator i = clipbd.begin(); i != clipbd.end(); i++)
         DREF(i).set_timestamp(DREF(i).get_timestamp() + tick);
 
@@ -1320,7 +1318,7 @@ sequence::paste_selected (long tick, int note)
             DREF(i).set_note(DREF(i).get_note() - (highest_note - note));
         }
     }
-    m_events.merge(clipbd, false);              /* don't presort clipboard */
+    m_events.merge(clipbd, false);              /* don't presort clipboard  */
     m_events.sort();
     verify_and_link();
     reset_draw_marker();
@@ -3182,30 +3180,31 @@ sequence::select_events
 
 /**
  *  Transposes notes by the given steps, in accordance with the given
- *  scale.
+ *  scale.  If the scale value is 0, this is "no scale", which is the
+ *  chromatic scale, where all 12 notes, including sharps and flats, are
+ *  part of the scale.
  */
 
 void
-sequence::transpose_notes (int a_steps, int a_scale)
+sequence::transpose_notes (int steps, int scale)
 {
     event e;
     event_list transposed_events;
-    automutex locker(m_mutex);
-    mark_selected();
-
     const int * transpose_table = nullptr;
-    if (a_steps < 0)
+    automutex locker(m_mutex);
+    mark_selected();                                /* mark original notes  */
+    if (steps < 0)
     {
-        transpose_table = &c_scales_transpose_dn[a_scale][0];
-        a_steps *= -1;
+        transpose_table = &c_scales_transpose_dn[scale][0];     /* down */
+        steps *= -1;
     }
     else
-        transpose_table = &c_scales_transpose_up[a_scale][0];
+        transpose_table = &c_scales_transpose_up[scale][0];     /* up   */
 
     for (event_list::iterator i = m_events.begin(); i != m_events.end(); i++)
     {
         event & er = DREF(i);
-        if                                          /* is it being moved ? */
+        if                                          /* is it being moved ?  */
         (
             (er.get_status() ==  EVENT_NOTE_ON ||
                 er.get_status() ==  EVENT_NOTE_OFF) && er.is_marked()
@@ -3220,18 +3219,18 @@ sequence::transpose_notes (int a_steps, int a_scale)
                 off_scale = true;
                 note -= 1;
             }
-            for (int x = 0; x < a_steps; ++x)
+            for (int x = 0; x < steps; ++x)
                 note += transpose_table[note % OCTAVE_SIZE];
 
             if (off_scale)
                 note += 1;
 
             e.set_note(note);
-            transposed_events.add(e, false);    // will sort afterward
+            transposed_events.add(e, false);        /* will sort afterward  */
         }
     }
-    remove_marked();
-    m_events.merge(transposed_events);      // transposed events get presorted
+    remove_marked();                    /* remove original selected notes   */
+    m_events.merge(transposed_events);  /* transposed events get presorted  */
     verify_and_link();
 }
 

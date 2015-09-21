@@ -830,6 +830,9 @@ seqedit::popup_tool_menu ()
 
 /**
  *  Implements the actions brought forth from the Tools (hammer) button.
+ *
+ *  Note that the push_undo() calls push all of the current events (in
+ *  sequence::m_events) onto the stack (as a single entry).
  */
 
 void

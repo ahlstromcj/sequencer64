@@ -78,7 +78,7 @@ namespace seq64
  *  The event_list class is a receptable for MIDI events.  Two
  *  implementations, an std::multimap, and the original, an std::list, are
  *  provided for comparison, and are selected at build time, by manually
- *  defining a machro.
+ *  defining the USE_EVENT_MAP macro near the top of this module.
  */
 
 class event_list
@@ -275,6 +275,15 @@ private:                                // functions for friend sequence
     void select_all ();
     void unselect_all ();
     void print ();
+
+    /**
+     * \getter m_events
+     */
+
+    const Events & events () const
+    {
+        return m_events;
+    }
 
 };
 

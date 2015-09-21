@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-30
- * \updates       2015-09-13
+ * \updates       2015-09-20
  * \license       GNU GPLv2 or above
  *
  *  This file provides a Linux-only implementation of MIDI support.
@@ -542,18 +542,18 @@ mastermidibus::get_midi_out_bus_name (int a_bus)
     }
     else
     {
-        char tmp[60];                           /* copy names */
+        char tmp[64];                           /* copy names */
         if (m_buses_out_init[a_bus])
         {
             snprintf
             (
-                tmp, 59, "[%d] %d:%d (disconnected)",
+                tmp, sizeof(tmp), "[%d] %d:%d (disconnected)",
                 a_bus, m_buses_out[a_bus]->get_client(),
                 m_buses_out[a_bus]->get_port()
             );
         }
         else
-            snprintf(tmp, 59, "[%d] (unconnected)", a_bus);
+            snprintf(tmp, sizeof(tmp), "[%d] (unconnected)", a_bus);
 
         return std::string(tmp);
     }
@@ -572,18 +572,18 @@ mastermidibus::get_midi_in_bus_name (int a_bus)
     }
     else
     {
-        char tmp[60];                       /* copy names */
+        char tmp[64];                       /* copy names */
         if (m_buses_in_init[a_bus])
         {
             snprintf
             (
-                tmp, 59, "[%d] %d:%d (disconnected)",
+                tmp, sizeof(tmp), "[%d] %d:%d (disconnected)",
                 a_bus, m_buses_in[a_bus]->get_client(),
                 m_buses_in[a_bus]->get_port()
             );
         }
         else
-            snprintf(tmp, 59, "[%d] (unconnected)", a_bus);
+            snprintf(tmp, sizeof(tmp), "[%d] (unconnected)", a_bus);
 
         return std::string(tmp);
     }

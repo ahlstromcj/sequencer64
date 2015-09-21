@@ -31,6 +31,7 @@
  */
 
 #include <stdio.h>                      // printf()
+#include "easy_macros.h"
 #include "event_list.hpp"
 
 namespace seq64
@@ -197,7 +198,8 @@ event_list::add (const event & e, bool postsort)
  *  For std::multimap, sorting is automatic.  However, unless move-construction
  *  is supported, merging will be less efficient than for the list
  *  version.  Also, we need a way to include duplicates of each event, so
- *  we need to use a multi-map.
+ *  we need to use a multi-map.  Once all this setup, merging is really
+ *  just insertion.
  */
 
 void
@@ -206,13 +208,19 @@ event_list::merge (event_list & el, bool presort)
     if (presort)
         el.sort();
 
-////////////////////// TODO
-////////////////////// TODO
-////////////////////// TODO
-////////////////////// TODO
-////////////////////// TODO
-
-
+    int initialsize = count();
+    int addedsize = el.count();
+    m_events.insert(el.events().begin(), el.events().end());
+    if (count() != (initialsize + addedsize))
+    {
+        char tmp[64];
+        snprintf
+        (
+            tmp, sizeof(tmp), "WARNING: %d + %d inserted = %d",
+            initialsize, addedsize, count()
+        );
+        warnprint(tmp);
+    }
 }
 
 #else   // USE_EVENT_MAP

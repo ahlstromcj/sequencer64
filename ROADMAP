@@ -1,11 +1,12 @@
 Sequencer64 Roadmap
 Chris Ahlstrom
-2015-09-10 to 2015-09-20
+2015-09-10 to 2015-09-21
 
 The starting point for the Sequencer64 project is version 0.9.4 of
 Sequencer24.  Sequencer24 itself started with version 0.9.2 of Seq24.
 
 Latest version: 0.9.9.3
+Current branch: guibase
 
 The following changes are planned ('x' means it is done, 'y' means it is
 in progress, and 'z' means it will be moved to a later branch):
@@ -15,7 +16,7 @@ y  -  Branch off to various incremental branches:
       x  -  Branch "perform":  refactoring the perform class for
             configuration file access and Gtk/Gdk support.  Also
             separated out the JACK support.  Finish on 2015-09-19.
-         -  Branch "guibase":  Creating a base class for Gtk::Drawable
+      y  -  Branch "guibase":  Creating a base class for Gtk::Drawable
             and using that in one of the GUI modules.
    x  -  Branch "sequencer": Try to replace sequencer event container with
          something faster.   We found that using std::multimap instead

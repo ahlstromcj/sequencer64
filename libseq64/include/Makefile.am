@@ -6,7 +6,7 @@
 # \library    	libseq64 library
 # \author     	Chris Ahlstrom
 # \date       	2015-09-11
-# \update      2015-09-20
+# \update      2015-09-21
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -76,6 +76,7 @@ pkginclude_HEADERS = \
 	event_list.hpp \
 	globals.h \
    gui_assistant.hpp \
+   gui_base.hpp \
    jack_assistant.hpp \
    keys_perform.hpp \
 	mastermidibus.hpp \

@@ -1,10 +1,11 @@
-README for Sequencer64 0.9.9.3 (merged from branch = "sequencer")
+README for Sequencer64 0.9.9.3 (current branch = "guibase")
 Chris Ahlstrom
-2015-09-10 to 2015-09-20
+2015-09-10 to 2015-09-21
 
 The sequencer64 project is a continuation of sequencer24 to refactor it to
 be tighter and easier to transition to to GTKmm 3, and much more.
-Currently, it is basically equivalent to that project.
+Currently, it is basically equivalent to that project in functionality,
+but the code is already significantly refactored.
 
 The code has been broken up into libraries.  The next step
 is to better separate the GUI support from the MIDI and LASH support.

@@ -35,7 +35,7 @@
 
 #include <gtkmm/drawingarea.h>
 
-#include "gui_bash.hpp"
+#include "gui_base.hpp"
 
 namespace Gtk
 {
@@ -45,11 +45,6 @@ namespace Gtk
 namespace seq64
 {
 
-// class sequence;
-// class perform;
-// class seqdata;
-// class seqevent;
-// class seqkeys;
 
 /**
  *  A small helper class representing a rectangle.
@@ -91,23 +86,8 @@ private:
     Glib::RefPtr<Gdk::Pixmap> m_background;
     rect m_old;
     rect m_selected;
-
-#if 0
-    sequence * const m_seq;
-    sequence * m_clipboard;
-    seqdata * const m_seqdata_wid;
-    seqevent * const m_seqevent_wid;
-    seqkeys * const m_seqkeys_wid;
-#endif  // 0
-
     int m_pos;
-
-    /**
-     * one pixel == m_zoom ticks*
-     */
-
     int m_zoom;
-
     int m_snap;
 
     /**
@@ -145,11 +125,7 @@ public:
     gui_drawingarea
     (
         perform * a_perf,
-//      sequence * a_seq,
         int a_zoom, int a_snap,
-//      seqdata * a_seqdata_wid,
-//      seqevent * a_seqevent_wid,
-//      seqkeys * a_seqkeys_wid,
         int a_pos,
         Gtk::Adjustment * a_hadjust,
         Gtk::Adjustment * a_vadjust

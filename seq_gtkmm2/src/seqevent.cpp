@@ -59,7 +59,7 @@ seqevent::seqevent
     m_black                 (Gdk::Color("black")),
     m_white                 (Gdk::Color("white")),
     m_grey                  (Gdk::Color("grey")),
-    m_red                   (Gdk::Color("orange")),
+    m_orange                (Gdk::Color("orange")),
     m_pixmap                (),
     m_window_x              (0),
     m_window_y              (0),
@@ -90,7 +90,7 @@ seqevent::seqevent
     colormap->alloc_color(m_black);
     colormap->alloc_color(m_white);
     colormap->alloc_color(m_grey);
-    colormap->alloc_color(m_red);
+    colormap->alloc_color(m_orange);
     add_events
     (
         Gdk::BUTTON_PRESS_MASK | Gdk::BUTTON_RELEASE_MASK |
@@ -321,7 +321,7 @@ seqevent::draw_events_on (Glib::RefPtr<Gdk::Drawable> a_draw)
             );
 
             if (selected)
-                m_gc->set_foreground(m_red);
+                m_gc->set_foreground(m_orange);
             else
                 m_gc->set_foreground(m_white);
 

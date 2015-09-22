@@ -44,7 +44,7 @@ namespace seq64
  *  measures.
  */
 
-class maintime: public Gtk::DrawingArea
+class maintime : public Gtk::DrawingArea
 {
 
 private:

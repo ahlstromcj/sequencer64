@@ -53,13 +53,16 @@ private:
 
     /**
      *  We will probably need this one.
-     */
 
     gui_assistant & m_gui_asst;
+     */
 
 public:
 
-    gui_base ();
+//  gui_base (gui_assistant & guiasst) : m_gui_asst (guiasst)
+    gui_base ()
+    {
+    }
     virtual ~gui_base ()
     {
         // stock base-class implementation

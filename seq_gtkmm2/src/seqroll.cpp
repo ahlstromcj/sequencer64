@@ -68,7 +68,7 @@ seqroll::seqroll
     m_white                 (Gdk::Color("white")),
     m_grey                  (Gdk::Color("gray")),
     m_dk_grey               (Gdk::Color("gray50")),
-    m_red                   (Gdk::Color("orange")),
+    m_orange                (Gdk::Color("orange")),
     m_pixmap                (),
     m_mainperf              (a_perf),
     m_window_x              (10),       // why so small?
@@ -121,7 +121,7 @@ seqroll::seqroll
     colormap->alloc_color(m_white);
     colormap->alloc_color(m_grey);
     colormap->alloc_color(m_dk_grey);
-    colormap->alloc_color(m_red);
+    colormap->alloc_color(m_orange);
 
 //  m_clipboard = new sequence();
 
@@ -616,7 +616,7 @@ seqroll::draw_events_on (Glib::RefPtr<Gdk::Drawable> a_draw)
                 if (note_width > 3)     /* draw inside box if there is room */
                 {
                     if (selected)
-                        m_gc->set_foreground(m_red);
+                        m_gc->set_foreground(m_orange);
                     else
                         m_gc->set_foreground(m_white);
 

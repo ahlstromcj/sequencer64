@@ -1,5 +1,5 @@
-#ifndef SEQ64_DRAWINGAREA_HPP
-#define SEQ64_DRAWINGAREA_HPP
+#ifndef SEQ64_GUI_DRAWINGAREA_GTK2_HPP
+#define SEQ64_GUI_DRAWINGAREA_GTK2_HPP
 
 /*
  *  This file is part of seq24/sequencer64.
@@ -45,6 +45,7 @@ namespace Gtk
 namespace seq64
 {
 
+class perform;                          // forward reference
 
 /**
  *  A small helper class representing a rectangle.
@@ -52,16 +53,18 @@ namespace seq64
 
 class rect
 {
+
 public:
 
     int x, y, height, width;
+
 };
 
 /**
  *  Implements the piano roll section of the pattern editor.
  */
 
-class gui_drawingarea : public Gtk::DrawingArea, gui_base
+class gui_drawingarea_gtk2 : public Gtk::DrawingArea, gui_base
 {
 
 private:
@@ -72,28 +75,35 @@ private:
     Gdk::Color m_white;
     Gdk::Color m_grey;
     Gdk::Color m_dk_grey;
-    Gdk::Color m_red;
+    Gdk::Color m_orange;
+
+    Gtk::Adjustment & m_vadjust;
+    Gtk::Adjustment & m_hadjust;
+
     Glib::RefPtr<Gdk::Pixmap> m_pixmap;
-    perform * const m_mainperf;
+    Glib::RefPtr<Gdk::Pixmap> m_background;
+
+    perform & m_mainperf;
+
+#if 0
     int m_window_x;
     int m_window_y;
     int m_current_x;
     int m_current_y;
     int m_drop_x;
     int m_drop_y;
-    Gtk::Adjustment * const m_vadjust;
-    Gtk::Adjustment * const m_hadjust;
-    Glib::RefPtr<Gdk::Pixmap> m_background;
     rect m_old;
-    rect m_selected;
     int m_pos;
     int m_zoom;
     int m_snap;
+#endif
 
+#if 0
     /**
      *  When highlighting a bunch of events.
      */
 
+    rect m_selected;
     bool m_selecting;
     bool m_moving;
     bool m_moving_init;
@@ -102,8 +112,9 @@ private:
     bool m_paste;
     bool m_is_drag_pasting;
     bool m_is_drag_pasting_start;
-    bool m_justselected_one;
+#endif
 
+#if 0
     /**
      *  Tells where the dragging started.
      */
@@ -116,21 +127,18 @@ private:
     int m_scroll_offset_key;
     int m_scroll_offset_x;
     int m_scroll_offset_y;
-    int m_background_sequence;
-    bool m_drawing_background_seq;
     bool m_ignore_redraw;
+#endif
 
 public:
 
-    gui_drawingarea
+    gui_drawingarea_gtk2
     (
-        perform * a_perf,
-        int a_zoom, int a_snap,
-        int a_pos,
-        Gtk::Adjustment * a_hadjust,
-        Gtk::Adjustment * a_vadjust
+        perform & a_perf,
+        Gtk::Adjustment & a_hadjust,
+        Gtk::Adjustment & a_vadjust
     );
-    ~gui_drawingarea ();
+    ~gui_drawingarea_gtk2 ();
 
 #if 0
     void reset ();
@@ -220,7 +228,7 @@ private:            // callbacks
 
 }           // namespace seq64
 
-#endif      // SEQ64_DRAWINGAREA_HPP
+#endif      // SEQ64_GUI_DRAWINGAREA_GTK2_HPP
 
 /*
  * gui_drawingarea.hpp

@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-21
- * \updates       2015-09-21
+ * \updates       2015-09-22
  * \license       GNU GPLv2 or above
  *
  *  This module defines some Gdk::Color objects.  However, note that this
@@ -41,12 +41,6 @@ namespace seq64
 {
 
 /**
- *  Provides a type for the color object.
- */
-
-typedef Gdk::Color Color;
-
-/**
  *  Implements a stock palette of Gdk::Color elements.  Note that this
  *  class must be derived from Gtk::DrawingArea (or Gtk::Widget) in order
  *  to get access to the get_default_colormap() function used in the
@@ -55,6 +49,12 @@ typedef Gdk::Color Color;
 
 class gui_palette_gtk2 : public Gtk::DrawingArea    // or Gtk::Widget
 {
+
+    /**
+     *  Provides a type for the color object.
+     */
+
+    typedef Gdk::Color Color;
 
 private:
 

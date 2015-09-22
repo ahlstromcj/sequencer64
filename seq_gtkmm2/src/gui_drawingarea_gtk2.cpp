@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-21
- * \updates       2015-09-21
+ * \updates       2015-09-22
  * \license       GNU GPLv2 or above
  *
  */
@@ -77,22 +77,13 @@ gui_drawingarea_gtk2::gui_drawingarea_gtk2
     Gtk::Adjustment & a_hadjust,
     Gtk::Adjustment & a_vadjust
 ) :
-    Gtk::DrawingArea        (),
-    gui_base                (),
+    gui_palette_gtk2        (),
     m_gc                    (),
     m_window                (),
-    m_black                 (Gdk::Color("black")),
-    m_white                 (Gdk::Color("white")),
-    m_grey                  (Gdk::Color("gray")),
-    m_dk_grey               (Gdk::Color("gray50")),
-    m_orange                (Gdk::Color("orange")),
-
     m_vadjust               (a_vadjust),
     m_hadjust               (a_hadjust),
-
     m_pixmap                (),
     m_background            (),         // another pixmap
-
     m_mainperf              (a_perf)    // ,
 
 #if 0
@@ -132,12 +123,6 @@ gui_drawingarea_gtk2::gui_drawingarea_gtk2
     m_ignore_redraw         (false)
 #endif
 {
-    Glib::RefPtr<Gdk::Colormap> colormap = get_default_colormap();
-    colormap->alloc_color(m_black);
-    colormap->alloc_color(m_white);
-    colormap->alloc_color(m_grey);
-    colormap->alloc_color(m_dk_grey);
-    colormap->alloc_color(m_orange);
     add_events
     (
         Gdk::BUTTON_PRESS_MASK | Gdk::BUTTON_RELEASE_MASK |

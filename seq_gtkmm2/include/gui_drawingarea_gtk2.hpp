@@ -28,14 +28,12 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-21
- * \updates       2015-09-21
+ * \updates       2015-09-22
  * \license       GNU GPLv2 or above
  *
  */
 
-#include <gtkmm/drawingarea.h>
-
-#include "gui_base.hpp"
+#include "gui_palette_gtk2.hpp"         // #include <gtkmm/drawingarea.h>
 
 namespace Gtk
 {
@@ -48,41 +46,36 @@ namespace seq64
 class perform;                          // forward reference
 
 /**
- *  A small helper class representing a rectangle.
+ *  Implements the basic drawing areas of the application.  Note that this
+ *  class really "isn't a" gui_pallete_gtk2; it should simply have one.
+ *  But that base class must be derived from Gtk::DrawingArea.  We don't
+ *  want to waste some space by using a "has-a" relationship, and also put
+ *  up with having to access the palette indirectly.  So, in this case, we
+ *  tolerate the less strict implementation.
  */
 
-class rect
+class gui_drawingarea_gtk2 : public gui_palette_gtk2
 {
 
 public:
 
-    int x, y, height, width;
+    /**
+     *  A small helper structure representing a rectangle.
+     */
 
-};
-
-/**
- *  Implements the piano roll section of the pattern editor.
- */
-
-class gui_drawingarea_gtk2 : public Gtk::DrawingArea, gui_base
-{
+    struct rect
+    {
+        public: int x, y, height, width;
+    };
 
 private:
 
     Glib::RefPtr<Gdk::GC> m_gc;
     Glib::RefPtr<Gdk::Window> m_window;
-    Gdk::Color m_black;
-    Gdk::Color m_white;
-    Gdk::Color m_grey;
-    Gdk::Color m_dk_grey;
-    Gdk::Color m_orange;
-
     Gtk::Adjustment & m_vadjust;
     Gtk::Adjustment & m_hadjust;
-
     Glib::RefPtr<Gdk::Pixmap> m_pixmap;
     Glib::RefPtr<Gdk::Pixmap> m_background;
-
     perform & m_mainperf;
 
 #if 0

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-09-18
+ * \updates       2015-09-23
  * \license       GNU GPLv2 or above
  *
  *  The <tt> ~/.seq24rc </tt> configuration file is fairly simple in
@@ -384,7 +384,7 @@ optionsfile::parse (perform & a_perf)
     long method = 0;
     line_after(file, "[interaction-method]");
     sscanf(m_line, "%ld", &method);
-    global_interactionmethod = interaction_method_e(method);
+    global_interactionmethod = interaction_method_t(method);
     next_data_line(file);                   // @new 2015-08-28
     sscanf(m_line, "%ld", &method);         //
     global_allow_mod4_mode = method != 0;   //

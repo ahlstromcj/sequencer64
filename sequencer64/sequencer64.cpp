@@ -277,7 +277,7 @@ main (int argc, char * argv [])
             break;
 
         case 'x':
-            global_interactionmethod = (interaction_method_e)atoi(optarg);
+            global_interactionmethod = interaction_method_t(atoi(optarg));
             break;
 
         default:

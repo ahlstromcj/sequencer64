@@ -16,6 +16,8 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+#include "globals.h"                    /* to support legacy variables */
+
 /**
  * \file          options_settings.cpp
  *
@@ -25,9 +27,11 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-22
- * \updates       2015-09-22
+ * \updates       2015-09-23
  * \license       GNU GPLv2 or above
  *
+ *  Note that this module also sets the legacy global variables, so that
+ *  they can be used by modules that have not yet been cleaned up.
  */
 
 #include "options_settings.hpp"
@@ -38,8 +42,7 @@
  */
 
 #if EXPOSE_THESE
-interaction_method_e global_interactionmethod = e_seq24_interaction;
-bool global_allow_mod4_mode = true;
+interaction_method_t global_interactionmethod = e_seq24_interaction;
 user_midi_bus_definition   global_user_midi_bus_definitions[c_max_busses];
 user_instrument_definition global_user_instrument_definitions[c_max_instruments];
 #endif
@@ -52,6 +55,7 @@ options_settings::options_settings ()
  :
     m_legacy_format             (false),
     m_lash_support              (false),
+    m_allow_mod4_mode           (false),
     m_show_midi                 (false),
     m_priority                  (false),
     m_stats                     (false),
@@ -65,6 +69,7 @@ options_settings::options_settings ()
     m_print_keys                (false),
     m_device_ignore             (false),
     m_device_ignore_num         (0),
+    m_interaction_method        (e_seq24_interaction),
     m_filename                  (),
     m_jack_session_uuid         (),
     m_last_used_dir             (),
@@ -85,6 +90,7 @@ options_settings::options_settings (const options_settings & rhs)
  :
     m_legacy_format             (rhs.m_legacy_format),
     m_lash_support              (rhs.m_lash_support),
+    m_allow_mod4_mode           (rhs.m_allow_mod4_mode),
     m_show_midi                 (rhs.m_show_midi),
     m_priority                  (rhs.m_priority),
     m_stats                     (rhs.m_stats),
@@ -98,6 +104,7 @@ options_settings::options_settings (const options_settings & rhs)
     m_print_keys                (rhs.m_print_keys),
     m_device_ignore             (rhs.m_device_ignore),
     m_device_ignore_num         (rhs.m_device_ignore_num),
+    m_interaction_method        (rhs.m_interaction_method),
     m_filename                  (rhs.m_filename),
     m_jack_session_uuid         (rhs.m_jack_session_uuid),
     m_last_used_dir             (rhs.m_last_used_dir),
@@ -121,6 +128,7 @@ options_settings::operator = (const options_settings & rhs)
     {
         m_legacy_format             = rhs.m_legacy_format;
         m_lash_support              = rhs.m_lash_support;
+        m_allow_mod4_mode           = rhs.m_allow_mod4_mode;
         m_show_midi                 = rhs.m_show_midi;
         m_priority                  = rhs.m_priority;
         m_stats                     = rhs.m_stats;
@@ -134,6 +142,7 @@ options_settings::operator = (const options_settings & rhs)
         m_print_keys                = rhs.m_print_keys;
         m_device_ignore             = rhs.m_device_ignore;
         m_device_ignore_num         = rhs.m_device_ignore_num;
+        m_interaction_method        = rhs.m_interaction_method;
         m_filename                  = rhs.m_filename;
         m_jack_session_uuid         = rhs.m_jack_session_uuid;
         m_last_used_dir             = rhs.m_last_used_dir;
@@ -168,6 +177,7 @@ options_settings::set_defaults ()
     m_print_keys                = false;
     m_device_ignore             = false;
     m_device_ignore_num         = 0;
+    m_device_ignore_num         = e_seq24_interaction;
     m_filename.clear();
     m_jack_session_uuid.clear();
     m_last_used_dir             = "/"
@@ -178,8 +188,129 @@ options_settings::set_defaults ()
     m_user_filename_alt         = ".seq24usr";
 }
 
-/*
- * options_settings.cpp
- *
- * vim: sw=4 ts=4 wm=8 et ft=cpp
+/**
+ * \setter m_device_ignore_num
+ *      However, please note that this value, while set in the options
+ *      processing of the main module, does not appear to be used anywhere
+ *      in the code in seq24, Sequencer24, and this application.
  */
+
+void
+device_ignore_num (int value)
+{
+    if (value >= 0)
+        m_device_ignore_num = value;
+}
+
+/**
+ * \setter m_interaction_method
+ */
+
+void
+interaction_method (interaction_method_t value)
+{
+    switch (value)
+    {
+    case e_seq24_interaction:
+    case e_fruity_interaction:
+
+        m_interaction_method = value;
+
+    default:
+        errprint("illegal interaction-method value");
+    }
+}
+
+/**
+ * \setter m_filename
+ */
+
+void
+filename (const std::string & value)
+{
+    if (! value.empty())
+        filename = value;
+}
+
+/**
+ * \setter m_jack_session_uuid
+ */
+
+void
+jack_session_uuid (const std::string & value)
+{
+    if (! value.empty())
+        jack_session_uuid = value;
+}
+
+/**
+ * \setter m_last_used_dir
+ */
+
+void
+last_used_dir (const std::string & value)
+{
+    if (! value.empty())
+        last_used_dir = value;
+}
+
+/**
+ * \setter m_config_directory
+ */
+
+void
+config_directory (const std::string & value)
+{
+    if (! value.empty())
+        config_directory = value;
+}
+
+/**
+ * \setter m_config_filename
+ */
+
+void
+config_filename (const std::string & value)
+{
+    if (! value.empty())
+        config_filename = value;
+}
+
+/**
+ * \setter m_user_filename
+ */
+
+void
+user_filename (const std::string & value)
+{
+    if (! value.empty())
+        user_filename = value;
+}
+
+/**
+ * \setter m_config_filename_alt;
+ */
+
+void
+config_filename_alt (const std::string & value)
+{
+    if (! value.empty())
+        config_filename_alt = value;
+}
+
+/**
+ * \setter m_user_filename_alt
+ */
+
+void
+user_filename_alt (const std::string & value)
+{
+    if (! value.empty())
+        user_filename_alt = value;
+}
+
+/*
+* options_settings.cpp
+*
+* vim: sw=4 ts=4 wm=8 et ft=cpp
+*/

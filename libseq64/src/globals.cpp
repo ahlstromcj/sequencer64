@@ -62,7 +62,7 @@ bool global_with_jack_master_cond = false;
 bool global_jack_start_mode = true;
 std::string global_jack_session_uuid = "";
 
-interaction_method_e global_interactionmethod = e_seq24_interaction;
+interaction_method_t global_interactionmethod = e_seq24_interaction;
 bool global_allow_mod4_mode = true;
 user_midi_bus_definition   global_user_midi_bus_definitions[c_max_busses];
 user_instrument_definition global_user_instrument_definitions[c_max_instruments];

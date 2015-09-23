@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-22
- * \updates       2015-09-22
+ * \updates       2015-09-23
  * \license       GNU GPLv2 or above
  *
  *  This collection of variables describes the options of the application,
@@ -36,8 +36,6 @@
  */
 
 #include <string>
-
-// #include "easy_macros.h"               // with platform_macros.h, too
 
 /**
  *  This class contains the options formerly named "global_xxxxxx".
@@ -48,8 +46,9 @@ class options_settings
 
 private:
 
-    bool m_legacy_format;               /* new 2015-08-16 */
-    bool m_lash_support;                /* new 2015-08-27 */
+    bool m_legacy_format;
+    bool m_lash_support;
+    bool m_allow_mod4_mode;
     bool m_show_midi;
     bool m_priority;
     bool m_stats;
@@ -61,8 +60,9 @@ private:
     bool m_manual_alsa_ports;
     bool m_is_pattern_playing;
     bool m_print_keys;
-    bool m_device_ignore;               /* seq24 module  */
-    int m_device_ignore_num;            /* seq24 module  */
+    bool m_device_ignore;                       /* seq24 module, unused!  */
+    int m_device_ignore_num;                    /* seq24 module, unused!  */
+    interaction_method_t m_interaction_method;
     std::string m_filename;
     std::string m_jack_session_uuid;
     std::string m_last_used_dir;
@@ -104,6 +104,20 @@ public:
     void lash_support (bool flag)
     {
         m_lash_support = flag;
+    }
+
+    /**
+     * \accessor m_allow_mod4_mode
+     */
+
+    bool allow_mod4_mode () const
+    {
+        return m_allow_mod4_mode;
+    }
+
+    void allow_mod4_mode (bool flag)
+    {
+        m_allow_mod4_mode = flag;
     }
 
     /**
@@ -275,7 +289,7 @@ public:
     }
 
     /**
-     * \accessor m_device_ignore_num
+     * \getter m_device_ignore_num
      */
 
     int device_ignore_num () const
@@ -283,13 +297,17 @@ public:
         return m_device_ignore_num;
     }
 
-    void device_ignore_num (int value)
+    /**
+     * \getter m_interaction_method
+     */
+
+    interaction_method_t interaction_method () const
     {
-        m_device_ignore_num = value;
+        return m_interaction_method;
     }
 
     /**
-     * \accessor m_filename
+     * \getter m_filename
      */
 
     const std::string & filename () const
@@ -297,13 +315,8 @@ public:
         return filename;
     }
 
-    void filename (const std::string & value)
-    {
-        filename = value;
-    }
-
     /**
-     * \accessor m_jack_session_uuid
+     * \getter m_jack_session_uuid
      */
 
     const std::string & jack_session_uuid () const
@@ -311,13 +324,8 @@ public:
         return jack_session_uuid;
     }
 
-    void jack_session_uuid (const std::string & value)
-    {
-        jack_session_uuid = value;
-    }
-
     /**
-     * \accessor m_last_used_dir
+     * \getter m_last_used_dir
      */
 
     const std::string & last_used_dir () const
@@ -325,13 +333,8 @@ public:
         return last_used_dir;
     }
 
-    void last_used_dir (const std::string & value)
-    {
-        last_used_dir = value;
-    }
-
     /**
-     * \accessor m_config_directory
+     * \getter m_config_directory
      */
 
     const std::string & config_directory () const
@@ -339,13 +342,8 @@ public:
         return config_directory;
     }
 
-    void config_directory (const std::string & value)
-    {
-        config_directory = value;
-    }
-
     /**
-     * \accessor m_config_filename
+     * \getter m_config_filename
      */
 
     const std::string & config_filename () const
@@ -353,13 +351,8 @@ public:
         return config_filename;
     }
 
-    void config_filename (const std::string & value)
-    {
-        config_filename = value;
-    }
-
     /**
-     * \accessor m_user_filename
+     * \getter m_user_filename
      */
 
     const std::string & user_filename () const
@@ -367,13 +360,8 @@ public:
         return user_filename;
     }
 
-    void user_filename (const std::string & value)
-    {
-        user_filename = value;
-    }
-
     /**
-     * \accessor m_config_filename_alt;
+     * \getter m_config_filename_alt;
      */
 
     const std::string & config_filename_alt; () const
@@ -381,14 +369,8 @@ public:
         return config_filename_alt;;
     }
 
-    void config_filename_alt; (const std::string & value)
-    {
-        config_filename_alt; = value;
-    }
-    std::string m_user_filename_alt;
-
     /**
-     * \accessor m_user_filename_alt
+     * \getter m_user_filename_alt
      */
 
     const std::string & user_filename_alt () const
@@ -396,10 +378,21 @@ public:
         return user_filename_alt;
     }
 
-    void user_filename_alt (const std::string & value)
-    {
-        user_filename_alt = value;
-    }
+    /*
+     * The setters for non-bool values, defined in the cpp file because
+     * they do some validation.
+     */
+
+    void device_ignore_num (int value);
+    void interaction_method (interaction_method_t value);
+    void filename (const std::string & value);
+    void jack_session_uuid (const std::string & value);
+    void last_used_dir (const std::string & value);
+    void config_directory (const std::string & value);
+    void config_filename (const std::string & value);
+    void user_filename (const std::string & value);
+    void config_filename_alt (const std::string & value);
+    void user_filename_alt (const std::string & value);
 
 };
 

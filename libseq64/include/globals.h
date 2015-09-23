@@ -781,7 +781,7 @@ enum mouse_action_e
  *  Provides codes for the mouse-handling used by the application.
  */
 
-enum interaction_method_e
+enum interaction_method_t
 {
     e_seq24_interaction,
     e_fruity_interaction,
@@ -815,7 +815,7 @@ const char * const c_interaction_method_descs[3] =
  *  "fruity".
  */
 
-extern interaction_method_e global_interactionmethod;
+extern interaction_method_t global_interactionmethod;
 
 /**
  *  Provides the value of usage of the Mod4 (Super or Windows) key in

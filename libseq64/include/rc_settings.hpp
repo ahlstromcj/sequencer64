@@ -1,5 +1,5 @@
-#ifndef SEQ64_OPTIONS_SETTINGS_HPP
-#define SEQ64_OPTIONS_SETTINGS_HPP
+#ifndef SEQ64_RC_SETTINGS_HPP
+#define SEQ64_RC_SETTINGS_HPP
 
 /*
  *  This file is part of seq24/sequencer64.
@@ -20,7 +20,7 @@
  */
 
 /**
- * \file          options_settings.h
+ * \file          rc_settings.h
  *
  *  This module declares/defines just some of the global (gasp!) variables
  *  in this application.
@@ -41,7 +41,7 @@
  *  This class contains the options formerly named "global_xxxxxx".
  */
 
-class options_settings
+class rc_settings
 {
 
 private:
@@ -74,9 +74,12 @@ private:
 
 public:
 
-    options_settings ();
-    options_settings (const options_settings & rhs);
-    options_settings & operator = (const options_settings & rhs);
+    rc_settings ();
+    rc_settings (const rc_settings & rhs);
+    rc_settings & operator = (const rc_settings & rhs);
+
+    void set_defaults ();
+    void globalize_settings ();
 
     /**
      * \accessor m_legacy_format
@@ -312,7 +315,7 @@ public:
 
     const std::string & filename () const
     {
-        return filename;
+        return m_filename;
     }
 
     /**
@@ -321,7 +324,7 @@ public:
 
     const std::string & jack_session_uuid () const
     {
-        return jack_session_uuid;
+        return m_jack_session_uuid;
     }
 
     /**
@@ -330,7 +333,7 @@ public:
 
     const std::string & last_used_dir () const
     {
-        return last_used_dir;
+        return m_last_used_dir;
     }
 
     /**
@@ -339,7 +342,7 @@ public:
 
     const std::string & config_directory () const
     {
-        return config_directory;
+        return m_config_directory;
     }
 
     /**
@@ -348,7 +351,7 @@ public:
 
     const std::string & config_filename () const
     {
-        return config_filename;
+        return m_config_filename;
     }
 
     /**
@@ -357,16 +360,16 @@ public:
 
     const std::string & user_filename () const
     {
-        return user_filename;
+        return m_user_filename;
     }
 
     /**
      * \getter m_config_filename_alt;
      */
 
-    const std::string & config_filename_alt; () const
+    const std::string & config_filename_alt () const
     {
-        return config_filename_alt;;
+        return m_config_filename_alt;
     }
 
     /**
@@ -375,7 +378,7 @@ public:
 
     const std::string & user_filename_alt () const
     {
-        return user_filename_alt;
+        return m_user_filename_alt;
     }
 
     /*
@@ -396,10 +399,10 @@ public:
 
 };
 
-#endif  // SEQ64_OPTIONS_SETTINGS_HPP
+#endif  // SEQ64_RC_SETTINGS_HPP
 
 /*
- * options_settings.h
+ * rc_settings.h
  *
  * vim: sw=4 ts=4 wm=8 et ft=cpp
  */

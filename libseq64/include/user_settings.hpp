@@ -90,10 +90,8 @@
 
 #define DEFAULT_TRIGLOOK_MS               2
 
-/************************************************************************/
-/* DEFAULT VALUES */
-/************************************************************************/
 
+#ifdef EXPOSE_THESE
 const int c_mainwnd_rows = 4;
 const int c_mainwnd_cols = 8;
 const int c_seqs_in_set = c_mainwnd_rows * c_mainwnd_cols;
@@ -121,7 +119,13 @@ const int c_mainwid_y =
     (c_seqarea_y + c_mainwid_spacing) * c_mainwnd_rows +
          c_control_height + c_mainwid_border * 2
 );
+#endif
 
+
+#if EXPOSE_THESE
+user_midi_bus_definition   global_user_midi_bus_definitions[c_max_busses];
+user_instrument_definition global_user_instrument_definitions[c_max_instruments];
+#endif
 
 /**
  *  Holds the current values of sequence settings and settings that can
@@ -140,7 +144,7 @@ class user_settings
      *  set of patterns known as a "screen set".
      */
 
-    int m_mainwnd_rows = 4;
+    int m_mainwnd_rows;
 
     /**
      *  Number of columns in the Patterns Panel.  The current value is 4,
@@ -149,21 +153,21 @@ class user_settings
      *  into a 4 x 8 set of patterns known as a "screen set".
      */
 
-    int m_mainwnd_cols = 8;
+    int m_mainwnd_cols;
 
     /**
      *  Number of patterns/sequences in the Patterns Panel, also known as
      *  a "set" or "screen set".  This value is 4 x 8 = 32 by default.
      */
 
-    int m_seqs_in_set = m_mainwnd_rows * m_mainwnd_cols;
+    int m_seqs_in_set;
 
     /**
      *  Number of group-mute tracks that can be support, which is
      *  m_seqs_in_set squared, or 1024.
      */
 
-    int m_gmute_tracks = m_seqs_in_set * m_seqs_in_set;
+    int m_gmute_tracks;
 
     /**
      *  Maximum number of screen sets that can be supported.  Basically,
@@ -171,7 +175,7 @@ class user_settings
      *  sets can be created.
      */
 
-    int m_max_sets = 32;
+    int m_max_sets;
 
     /*
      *  The maximum number of patterns supported is given by the number of
@@ -180,7 +184,7 @@ class user_settings
      *  m_max_sequence by default.
      */
 
-     int m_total_seqs = m_seqs_in_set * m_max_sets;
+     int m_total_seqs;
 
     /**
      *  The maximum number of patterns supported is given by the number of
@@ -188,7 +192,7 @@ class user_settings
      *  sets (32), or 1024 patterns.
      */
 
-    int m_max_sequence = m_seqs_in_set * m_max_sets;
+    int m_max_sequence;
 
     /**
      *  Constants for the mainwid class.  The m_text_x and m_text_y
@@ -205,8 +209,8 @@ class user_settings
      *  background).
      */
 
-    int m_text_x =  6;
-    int m_text_y = 12;
+    int m_text_x;
+    int m_text_y;
 
     /**
      *  Constants for the mainwid class.  The m_seqchars_x and
@@ -215,8 +219,8 @@ class user_settings
      *  characters, in a pattern/sequence box.
      */
 
-    int m_seqchars_x = 15;
-    int m_seqchars_y =  5;
+    int m_seqchars_x;
+    int m_seqchars_y;
 
     /**
      *  The m_seqarea_x and m_seqarea_y constants are derived from the
@@ -228,16 +232,16 @@ class user_settings
      *  mainwid.h, but is now in this file.
      */
 
-    int m_seqarea_x = m_text_x * m_seqchars_x;
-    int m_seqarea_y = m_text_y * m_seqchars_y;
+    int m_seqarea_x;
+    int m_seqarea_y;
 
     /**
      * Area of what?  Doesn't look at all like it is based on the size of
      * characters.  These are used only in the mainwid module.
      */
 
-    int m_seqarea_seq_x = m_text_x * 13;
-    int m_seqarea_seq_y = m_text_y * 2;
+    int m_seqarea_seq_x;
+    int m_seqarea_seq_y;
 
     /**
      *  These control sizes.  We'll try changing them and see what
@@ -246,8 +250,8 @@ class user_settings
      *  like it would be useful to make these values user-configurable.
      */
 
-    int m_mainwid_border = 0;             // try 2 or 3 instead of 0
-    int m_mainwid_spacing = 2;            // try 4 or 6 instead of 2
+    int m_mainwid_border;             // try 2 or 3 instead of 0
+    int m_mainwid_spacing;            // try 4 or 6 instead of 2
 
     /**
      *  This constants seems to be created for a future purpose, perhaps
@@ -256,35 +260,31 @@ class user_settings
      *  add anything to that value.
      */
 
-    int m_control_height = 0;
+    int m_control_height;
 
     /**
      * The width of the main pattern/sequence grid, in pixels.  Affected
      * by the m_mainwid_border and m_mainwid_spacing values.
      */
 
-    int m_mainwid_x =
-    (
-        (m_seqarea_x + m_mainwid_spacing) * m_mainwnd_cols -
-            m_mainwid_spacing + m_mainwid_border * 2
-    );
+    int m_mainwid_x;
 
     /*
      * The height  of the main pattern/sequence grid, in pixels.  Affected by
      * the m_mainwid_border and m_control_height values.
      */
 
-    int m_mainwid_y =
-    (
-        (m_seqarea_y + m_mainwid_spacing) * m_mainwnd_rows +
-             m_control_height + m_mainwid_border * 2
-    );
+    int m_mainwid_y;
 
 public:
 
     user_settings ();
     user_settings (const user_settings & rhs);
     user_settings & operator = (const user_settings & rhs);
+
+    void set_defaults ();
+    void normalize ();
+    void globalize_settings ();
 
     /**
      * \accessor m_mainwnd_rows
@@ -293,11 +293,6 @@ public:
     int mainwnd_rows () const
     {
         return m_mainwnd_rows;
-    }
-
-    void mainwnd_rows (int value)
-    {
-        m_mainwnd_rows = value;
     }
 
     /**
@@ -309,11 +304,6 @@ public:
         return m_mainwnd_cols;
     }
 
-    void mainwnd_cols (int value)
-    {
-        m_mainwnd_cols = value;
-    }
-
     /**
      * \accessor m_seqs_in_set
      */
@@ -321,11 +311,6 @@ public:
     int seqs_in_set () const
     {
         return m_seqs_in_set;
-    }
-
-    void seqs_in_set (int value)
-    {
-        m_seqs_in_set = value;
     }
 
     /**
@@ -337,11 +322,6 @@ public:
         return m_gmute_tracks;
     }
 
-    void gmute_tracks (int value)
-    {
-        m_gmute_tracks = value;
-    }
-
     /**
      * \accessor m_max_sets
      */
@@ -349,11 +329,6 @@ public:
     int max_sets () const
     {
         return m_max_sets;
-    }
-
-    void max_sets (int value)
-    {
-        m_max_sets = value;
     }
 
     /**
@@ -365,11 +340,6 @@ public:
         return m_max_sequence;
     }
 
-    void max_sequence (int value)
-    {
-        m_max_sequence = value;
-    }
-
     /**
      * \accessor m_text_x
      */
@@ -377,11 +347,6 @@ public:
     int text_x () const
     {
         return m_text_x;
-    }
-
-    void text_x (int value)
-    {
-        m_text_x = value;
     }
 
     /**
@@ -393,11 +358,6 @@ public:
         return m_text_y;
     }
 
-    void text_y (int value)
-    {
-        m_text_y = value;
-    }
-
     /**
      * \accessor m_seqchars_x
      */
@@ -405,11 +365,6 @@ public:
     int seqchars_x () const
     {
         return m_seqchars_x;
-    }
-
-    void seqchars_x (int value)
-    {
-        m_seqchars_x = value;
     }
 
     /**
@@ -421,11 +376,6 @@ public:
         return m_seqchars_y;
     }
 
-    void seqchars_y (int value)
-    {
-        m_seqchars_y = value;
-    }
-
     /**
      * \accessor m_seqarea_x
      */
@@ -433,11 +383,6 @@ public:
     int seqarea_x () const
     {
         return m_seqarea_x;
-    }
-
-    void seqarea_x (int value)
-    {
-        m_seqarea_x = value;
     }
 
     /**
@@ -449,11 +394,6 @@ public:
         return m_seqarea_y;
     }
 
-    void seqarea_y (int value)
-    {
-        m_seqarea_y = value;
-    }
-
     /**
      * \accessor m_seqarea_seq_x
      */
@@ -461,11 +401,6 @@ public:
     int seqarea_seq_x () const
     {
         return m_seqarea_seq_x;
-    }
-
-    void seqarea_seq_x (int value)
-    {
-        m_seqarea_seq_x = value;
     }
 
     /**
@@ -477,11 +412,6 @@ public:
         return m_seqarea_seq_y;
     }
 
-    void seqarea_seq_y (int value)
-    {
-        m_seqarea_seq_y = value;
-    }
-
     /**
      * \accessor m_mainwid_border
      */
@@ -489,11 +419,6 @@ public:
     int mainwid_border () const
     {
         return m_mainwid_border;
-    }
-
-    void mainwid_border (int value)
-    {
-        m_mainwid_border = value;
     }
 
     /**
@@ -505,11 +430,6 @@ public:
         return m_mainwid_spacing;
     }
 
-    void mainwid_spacing (int value)
-    {
-        m_mainwid_spacing = value;
-    }
-
     /**
      * \accessor m_control_height
      */
@@ -517,11 +437,6 @@ public:
     int control_height () const
     {
         return m_control_height;
-    }
-
-    void control_height (int value)
-    {
-        m_control_height = value;
     }
 
     /**
@@ -533,11 +448,6 @@ public:
         return m_mainwid_x;
     }
 
-    void mainwid_x (int value)
-    {
-        m_mainwid_x = value;
-    }
-
     /**
      * \accessor m_mainwid_y
      */
@@ -547,10 +457,25 @@ public:
         return m_mainwid_y;
     }
 
-    void mainwid_y (int value)
-    {
-        m_mainwid_y = value;
-    }
+    void mainwnd_rows (int value);
+    void mainwnd_cols (int value);
+    void seqs_in_set (int value);
+    void gmute_tracks (int value);
+    void max_sets (int value);
+    void max_sequence (int value);
+    void text_x (int value);
+    void text_y (int value);
+    void seqchars_x (int value);
+    void seqchars_y (int value);
+    void seqarea_x (int value);
+    void seqarea_y (int value);
+    void seqarea_seq_x (int value);
+    void seqarea_seq_y (int value);
+    void mainwid_border (int value);
+    void mainwid_spacing (int value);
+    void control_height (int value);
+    void mainwid_x (int value);
+    void mainwid_y (int value);
 
 };
 

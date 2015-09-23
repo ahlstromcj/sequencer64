@@ -19,7 +19,7 @@
 #include "globals.h"                    /* to support legacy variables */
 
 /**
- * \file          options_settings.cpp
+ * \file          rc_settings.cpp
  *
  *  This module declares/defines just some of the global (gasp!) variables
  *  in this application.
@@ -34,7 +34,7 @@
  *  they can be used by modules that have not yet been cleaned up.
  */
 
-#include "options_settings.hpp"
+#include "rc_settings.hpp"
 
 /*
  * Most of these variables were declared and used in other modules, but
@@ -51,7 +51,7 @@ user_instrument_definition global_user_instrument_definitions[c_max_instruments]
  *  Default constructor.
  */
 
-options_settings::options_settings ()
+rc_settings::rc_settings ()
  :
     m_legacy_format             (false),
     m_lash_support              (false),
@@ -86,7 +86,7 @@ options_settings::options_settings ()
  *  Copy constructor.
  */
 
-options_settings::options_settings (const options_settings & rhs)
+rc_settings::rc_settings (const rc_settings & rhs)
  :
     m_legacy_format             (rhs.m_legacy_format),
     m_lash_support              (rhs.m_lash_support),
@@ -121,8 +121,8 @@ options_settings::options_settings (const options_settings & rhs)
  *  Principal assignment operator.
  */
 
-options_settings &
-options_settings::operator = (const options_settings & rhs)
+rc_settings &
+rc_settings::operator = (const rc_settings & rhs)
 {
     if (this != &rhs)
     {
@@ -160,7 +160,7 @@ options_settings::operator = (const options_settings & rhs)
  */
 
 void
-options_settings::set_defaults ()
+rc_settings::set_defaults ()
 {
     m_legacy_format             = false;
     m_lash_support              = false;
@@ -180,12 +180,46 @@ options_settings::set_defaults ()
     m_device_ignore_num         = e_seq24_interaction;
     m_filename.clear();
     m_jack_session_uuid.clear();
-    m_last_used_dir             = "/"
+    m_last_used_dir             = "/";
     m_config_directory          = ".config/sequencer64";
     m_config_filename           = "sequencer64rc";
     m_user_filename             = "sequencer64user";
     m_config_filename_alt       = ".seq24rc";
     m_user_filename_alt         = ".seq24usr";
+}
+
+/**
+ *  Copies the current values of the member variables into their
+ *  corresponding global variables.
+ */
+
+void
+rc_settings::globalize_settings ()
+{
+    global_legacy_format             = m_legacy_format;
+    global_lash_support              = m_lash_support;
+    global_showmidi                  = m_show_midi;
+    global_priority                  = m_priority;
+    global_stats                     = m_stats;
+    global_pass_sysex                = m_pass_sysex;
+    global_with_jack_transport       = m_with_jack_transport;
+    global_with_jack_master          = m_with_jack_master;
+    global_with_jack_master_cond     = m_with_jack_master_cond;
+    global_jack_start_mode           = m_jack_start_mode;
+    global_manual_alsa_ports         = m_manual_alsa_ports;
+    global_is_pattern_playing        = m_is_pattern_playing;
+    global_print_keys                = m_print_keys;
+    global_device_ignore             = m_device_ignore;
+    global_device_ignore_num         = m_device_ignore_num;
+    global_device_ignore_num         = m_device_ignore_num;
+    global_filename                  = m_filename;
+    global_jack_session_uuid         = m_jack_session_uuid;
+    global_last_used_dir             = m_last_used_dir;
+    global_config_directory          = m_config_directory;
+    global_config_filename           = m_config_filename;
+    global_user_filename             = m_user_filename;
+    global_config_filename_alt       = m_config_filename_alt;
+    global_user_filename_alt         = m_user_filename_alt;
 }
 
 /**
@@ -196,7 +230,7 @@ options_settings::set_defaults ()
  */
 
 void
-device_ignore_num (int value)
+rc_settings::device_ignore_num (int value)
 {
     if (value >= 0)
         m_device_ignore_num = value;
@@ -207,7 +241,7 @@ device_ignore_num (int value)
  */
 
 void
-interaction_method (interaction_method_t value)
+rc_settings::interaction_method (interaction_method_t value)
 {
     switch (value)
     {
@@ -226,10 +260,10 @@ interaction_method (interaction_method_t value)
  */
 
 void
-filename (const std::string & value)
+rc_settings::filename (const std::string & value)
 {
     if (! value.empty())
-        filename = value;
+        m_filename = value;
 }
 
 /**
@@ -237,10 +271,10 @@ filename (const std::string & value)
  */
 
 void
-jack_session_uuid (const std::string & value)
+rc_settings::jack_session_uuid (const std::string & value)
 {
     if (! value.empty())
-        jack_session_uuid = value;
+        m_jack_session_uuid = value;
 }
 
 /**
@@ -248,10 +282,10 @@ jack_session_uuid (const std::string & value)
  */
 
 void
-last_used_dir (const std::string & value)
+rc_settings::last_used_dir (const std::string & value)
 {
     if (! value.empty())
-        last_used_dir = value;
+        m_last_used_dir = value;
 }
 
 /**
@@ -259,10 +293,10 @@ last_used_dir (const std::string & value)
  */
 
 void
-config_directory (const std::string & value)
+rc_settings::config_directory (const std::string & value)
 {
     if (! value.empty())
-        config_directory = value;
+        m_config_directory = value;
 }
 
 /**
@@ -270,10 +304,10 @@ config_directory (const std::string & value)
  */
 
 void
-config_filename (const std::string & value)
+rc_settings::config_filename (const std::string & value)
 {
     if (! value.empty())
-        config_filename = value;
+        m_config_filename = value;
 }
 
 /**
@@ -281,10 +315,10 @@ config_filename (const std::string & value)
  */
 
 void
-user_filename (const std::string & value)
+rc_settings::user_filename (const std::string & value)
 {
     if (! value.empty())
-        user_filename = value;
+        m_user_filename = value;
 }
 
 /**
@@ -292,10 +326,10 @@ user_filename (const std::string & value)
  */
 
 void
-config_filename_alt (const std::string & value)
+rc_settings::config_filename_alt (const std::string & value)
 {
     if (! value.empty())
-        config_filename_alt = value;
+        m_config_filename_alt = value;
 }
 
 /**
@@ -303,14 +337,14 @@ config_filename_alt (const std::string & value)
  */
 
 void
-user_filename_alt (const std::string & value)
+rc_settings::user_filename_alt (const std::string & value)
 {
     if (! value.empty())
-        user_filename_alt = value;
+        m_user_filename_alt = value;
 }
 
 /*
-* options_settings.cpp
+* rc_settings.cpp
 *
 * vim: sw=4 ts=4 wm=8 et ft=cpp
 */

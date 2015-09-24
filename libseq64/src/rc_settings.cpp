@@ -16,8 +16,6 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include "globals.h"                    /* to support legacy variables */
-
 /**
  * \file          rc_settings.cpp
  *
@@ -34,6 +32,14 @@
  *  they can be used by modules that have not yet been cleaned up.
  */
 
+#include <stdlib.h>                     /* getenv()                     */
+#include "globals.h"                    /* to support legacy variables  */
+
+#ifdef PLATFORM_UNIX
+#include <sys/types.h>                  /* for stat() and mkdir()       */
+#include <sys/stat.h>
+#endif
+
 #include "rc_settings.hpp"
 
 /*
@@ -45,6 +51,20 @@
 interaction_method_t global_interactionmethod = e_seq24_interaction;
 user_midi_bus_definition   global_user_midi_bus_definitions[c_max_busses];
 user_instrument_definition global_user_instrument_definitions[c_max_instruments];
+#endif
+
+/**
+ *  Select the HOME or HOMEPATH environment variables depending on whether
+ *  building for Windows or not.  Also select the appropriate directory
+ *  separator for SLASH.
+ */
+
+#ifdef PLATFORM_WINDOWS
+#define HOME "HOMEPATH"
+#define SLASH "\\"
+#else
+#define HOME "HOME"
+#define SLASH "/"
 #endif
 
 /**
@@ -220,6 +240,125 @@ rc_settings::globalize_settings ()
     global_user_filename             = m_user_filename;
     global_config_filename_alt       = m_config_filename_alt;
     global_user_filename_alt         = m_user_filename_alt;
+}
+
+/**
+ *  An internal function to ensure that the ~/.config/sequencer64
+ *  directory exists.  This function is actually a little more general
+ *  than that, but it is not sufficiently general, in general.
+ *
+ * \param pathname
+ *      Provides the name of the path to create.  The parent directory of
+ *      the final directory must already exist.
+ *
+ * \return
+ *      Returns true if the path-name exists.
+ */
+
+#ifdef PLATFORM_GNU
+#pragma GCC diagnostic ignored "-Wmissing-field-initializers"
+#endif
+
+bool
+rc_settings::make_directory (const std::string & pathname) const
+{
+    bool result = ! pathname.empty();
+    if (result)
+    {
+        static struct stat st =
+        {
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 /* and more for Linux! */
+        };
+        if (stat(pathname.c_str(), &st) == -1)
+        {
+            int rcode = mkdir(pathname.c_str(), 0700);
+            result = rcode == 0;
+        }
+    }
+    return result;
+}
+
+/**
+ *  Provides the directory for the configuration file, and also creates the
+ *  directory if necessary.
+ *
+ *  If the legacy format is in force, then the home directory for the
+ *  configuration is (in Linux) "/home/username", and the configuration file
+ *  is ".seq24rc".
+ *
+ *  If the new format is in force, then the home directory is (in Linux)
+ *  "/home/username/.config/sequencer64", and the configuration file is
+ *  "sequencer64rc".
+ *
+ * \return
+ *      Returns the selection home configuration directory.  If it does not
+ *      exist orcould not be created, then an empty string is returned.
+ */
+
+std::string
+rc_settings::home_config_directory () const
+{
+    std::string result;
+    char * env = getenv(HOME);
+    if (env != NULL)
+    {
+        std::string home(getenv(HOME));
+        result = home + SLASH;                      /* e.g. /home/username/  */
+        if (! global_rc_settings.legacy_format())
+        {
+            result += config_directory();           /* new, longer directory */
+            bool ok = make_directory(result);
+            if (! ok)
+            {
+                printf("? error creating [%s]\n", result.c_str());
+                result.clear();
+            }
+        }
+    }
+    else
+        printf("? error calling getenv(\"%s\")\n", HOME);
+
+    return result;
+}
+
+/**
+ *  Constructs the full path and file specification for the "rc" file
+ *  based on whether or not the legacy Seq24 filenames are being used.
+ */
+
+std::string
+rc_settings::config_filespec () const
+{
+    std::string result = home_config_directory();
+    if (! result.empty())
+    {
+        result += SLASH;
+        if (global_rc_settings.legacy_format())
+            result += config_filename_alt();
+        else
+            result += config_filename();
+    }
+    return result;
+}
+
+/**
+ *  Constructs the full path and file specification for the "user" file
+ *  based on whether or not the legacy Seq24 filenames are being used.
+ */
+
+std::string
+rc_settings::user_filespec () const
+{
+    std::string result = home_config_directory();
+    if (! result.empty())
+    {
+        result += SLASH;
+        if (global_rc_settings.legacy_format())
+            result += user_filename_alt();
+        else
+            result += user_filename();
+    }
+    return result;
 }
 
 /**

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-09-18
+ * \updates       2015-09-23
  * \license       GNU GPLv2 or above
  *
  *  Note that the parse function has some code that is not yet enabled.
@@ -80,7 +80,10 @@ userfile::parse (perform & /* a_perf */)
 {
     std::ifstream file(m_name.c_str(), std::ios::in | std::ios::ate);
     if (! file.is_open())
+    {
+        printf("? error opening [%s]\n", m_name.c_str());
         return false;
+    }
 
     file.seekg(0, std::ios::beg);                       /* seek to start */
     line_after(file, "[user-midi-bus-definitions]");    /* find the tag  */

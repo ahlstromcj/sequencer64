@@ -172,7 +172,10 @@ optionsfile::parse (perform & a_perf)
 {
     std::ifstream file(m_name.c_str(), std::ios::in | std::ios::ate);
     if (! file.is_open())
+    {
+        printf("? error opening [%s]\n", m_name.c_str());
         return false;
+    }
 
     file.seekg(0, std::ios::beg);                           /* seek to start */
     line_after(file, "[midi-control]");                     /* find section  */
@@ -413,7 +416,10 @@ optionsfile::write (const perform & a_perf)
     char outs[SEQ64_LINE_MAX];
     perform & ucperf = const_cast<perform &>(a_perf);
     if (! file.is_open())
+    {
+        printf("? error writing [%s]\n", m_name.c_str());
         return false;
+    }
 
     /*
      * Initial comments and MIDI control section

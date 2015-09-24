@@ -237,13 +237,14 @@ user_settings::mainwnd_cols (int value)
  * \warning
  *      This is a dependent value at present, and changing it is
  *      experimental.
- */
-
+ *
 void
 user_settings::seqs_in_set (int value)
 {
     m_seqs_in_set = value;
 }
+ *
+ */
 
 /**
  * \setter m_gmute_tracks
@@ -251,13 +252,14 @@ user_settings::seqs_in_set (int value)
  * \warning
  *      This is a dependent value at present, and changing it is
  *      experimental.
- */
-
+ *
 void
 user_settings::gmute_tracks (int value)
 {
     m_gmute_tracks = value;
 }
+ *
+ */
 
 /**
  * \setter m_max_sets
@@ -282,13 +284,14 @@ user_settings::max_sets (int value)
  * \warning
  *      This is a dependent value at present, and changing it is
  *      experimental.
- */
-
+ *
 void
 user_settings::max_sequence (int value)
 {
     m_max_sequence = value;
 }
+ *
+ */
 
 /**
  * \setter m_text_x
@@ -451,19 +454,20 @@ user_settings::control_height (int value)
     }
 }
 
-/**
+/*
  * \setter m_mainwid_x
  *
  * \warning
  *      This is a dependent value at present, and changing it is
  *      experimental.
- */
-
+ *
 void
 user_settings::mainwid_x (int value)
 {
     m_mainwid_x = value;
 }
+ *
+ */
 
 /**
  * \setter m_mainwid_y
@@ -471,13 +475,14 @@ user_settings::mainwid_x (int value)
  * \warning
  *      This is a dependent value at present, and changing it is
  *      experimental.
- */
-
+ *
 void
 user_settings::mainwid_y (int value)
 {
     m_mainwid_y = value;
 }
+ *
+ */
 
 /*
 * user_settings.cpp

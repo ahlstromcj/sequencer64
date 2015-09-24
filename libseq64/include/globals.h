@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-25
- * \updates       2015-09-12
+ * \updates       2015-09-23
  * \license       GNU GPLv2 or above
  *
  *  We're going to try to collect all the globals here in one module, and
@@ -53,7 +53,12 @@
 
 #include <string>
 
-#include "easy_macros.h"               // with platform_macros.h, too
+#include "easy_macros.h"                // with platform_macros.h, too
+#include "rc_settings.hpp"              // seq64::rc_settings
+#include "user_settings.hpp"            // seq64::user_settings
+
+extern rc_settings global_rc_settings;
+extern user_settings global_user_settings;
 
 /**
  *  A manifest constant for the normal number of semitones in an
@@ -775,17 +780,6 @@ enum mouse_action_e
     e_action_select,
     e_action_draw,
     e_action_grow
-};
-
-/**
- *  Provides codes for the mouse-handling used by the application.
- */
-
-enum interaction_method_t
-{
-    e_seq24_interaction,
-    e_fruity_interaction,
-    e_number_of_interactions    // keep this one last... a "size" value
 };
 
 /**

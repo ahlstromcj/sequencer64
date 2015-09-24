@@ -25,12 +25,27 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-08-07
- * \updates       2015-09-11
+ * \updates       2015-09-23
  * \license       GNU GPLv2 or above
  *
  */
 
 #include "globals.h"
+
+/**
+ *  Provide the eventual replacement for all of the other "global_xxx"
+ *  variables.
+ */
+
+rc_settings global_rc_settings;
+
+/**
+ *  Provide the eventual replacement for all of the other settings in the
+ *  "user" configuration file, plus some of the "constants" in the globals
+ *  module.
+ */
+
+user_settings global_user_settings;
 
 /*
  * Most of these variables were declared and used in other modules, but

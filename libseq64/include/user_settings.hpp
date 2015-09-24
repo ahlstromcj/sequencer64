@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-22
- * \updates       2015-09-22
+ * \updates       2015-09-23
  * \license       GNU GPLv2 or above
  *
  *  This collection of variables describes some facets of the
@@ -45,82 +45,6 @@
 #include <string>
 
 #include "easy_macros.h"               // with platform_macros.h, too
-
-/**
- *  A manifest constant for the normal number of semitones in an
- *  equally-tempered octave.  The name is short deliberately.
- */
-
-#define OCTAVE_SIZE                      12
-
-/**
- *  Manifest constant for the maximum value limit of a MIDI byte when used
- *  to limit the size of an array.
- */
-
-#define MIDI_COUNT_MAX                  128
-
-/**
- *  Default value for c_ppqn (global parts-per-quarter-note value).
- */
-
-#define DEFAULT_PPQN                    192
-
-/**
- *  Default value for c_bpm (global beats-per-minute)
- */
-
-#define DEFAULT_BPM                     120
-
-/**
- *  Default value for c_max_busses.
- */
-
-#define DEFAULT_BUSS_MAX                 32
-
-/**
- *  Default value for c_thread_trigger_width_ms.
- */
-
-#define DEFAULT_TRIGWIDTH_MS              4
-
-/**
- *  Default value for c_thread_trigger_width_ms.
- */
-
-#define DEFAULT_TRIGLOOK_MS               2
-
-
-#ifdef EXPOSE_THESE
-const int c_mainwnd_rows = 4;
-const int c_mainwnd_cols = 8;
-const int c_seqs_in_set = c_mainwnd_rows * c_mainwnd_cols;
-const int c_gmute_tracks = c_seqs_in_set * c_seqs_in_set;
-const int c_max_sets = 32;
-const int c_max_sequence = c_seqs_in_set * c_max_sets;
-const int c_text_x =  6;
-const int c_text_y = 12;
-const int c_seqchars_x = 15;
-const int c_seqchars_y =  5;
-const int c_seqarea_x = c_text_x * c_seqchars_x;
-const int c_seqarea_y = c_text_y * c_seqchars_y;
-const int c_seqarea_seq_x = c_text_x * 13;
-const int c_seqarea_seq_y = c_text_y * 2;
-const int c_mainwid_border = 0;             // try 2 or 3instead of 0
-const int c_mainwid_spacing = 2;            // try 4 or 6 instead of 2
-const int c_control_height = 0;
-const int c_mainwid_x =
-(
-    (c_seqarea_x + c_mainwid_spacing) * c_mainwnd_cols -
-        c_mainwid_spacing + c_mainwid_border * 2
-);
-const int c_mainwid_y =
-(
-    (c_seqarea_y + c_mainwid_spacing) * c_mainwnd_rows +
-         c_control_height + c_mainwid_border * 2
-);
-#endif
-
 
 #if EXPOSE_THESE
 user_midi_bus_definition   global_user_midi_bus_definitions[c_max_busses];
@@ -459,10 +383,7 @@ public:
 
     void mainwnd_rows (int value);
     void mainwnd_cols (int value);
-    void seqs_in_set (int value);
-    void gmute_tracks (int value);
     void max_sets (int value);
-    void max_sequence (int value);
     void text_x (int value);
     void text_y (int value);
     void seqchars_x (int value);
@@ -474,8 +395,17 @@ public:
     void mainwid_border (int value);
     void mainwid_spacing (int value);
     void control_height (int value);
-    void mainwid_x (int value);
-    void mainwid_y (int value);
+
+    /*
+     *  These values are calculated from other values in the normalize()
+     *  function:
+     *
+     *  void seqs_in_set (int value);
+     *  void gmute_tracks (int value);
+     *  void max_sequence (int value);
+     *  void mainwid_x (int value);
+     *  void mainwid_y (int value);
+     */
 
 };
 

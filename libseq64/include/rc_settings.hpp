@@ -38,6 +38,18 @@
 #include <string>
 
 /**
+ *  Provides codes for the mouse-handling used by the application.  Moved
+ *  here from the globals.h module.
+ */
+
+enum interaction_method_t
+{
+    e_seq24_interaction,
+    e_fruity_interaction,
+    e_number_of_interactions    // keep this one last... a "size" value
+};
+
+/**
  *  This class contains the options formerly named "global_xxxxxx".
  */
 
@@ -78,6 +90,9 @@ public:
     rc_settings (const rc_settings & rhs);
     rc_settings & operator = (const rc_settings & rhs);
 
+    std::string home_config_directory () const;
+    std::string config_filespec () const;
+    std::string user_filespec () const;
     void set_defaults ();
     void globalize_settings ();
 
@@ -396,6 +411,10 @@ public:
     void user_filename (const std::string & value);
     void config_filename_alt (const std::string & value);
     void user_filename_alt (const std::string & value);
+
+private:
+
+    bool make_directory (const std::string & pathname) const;
 
 };
 

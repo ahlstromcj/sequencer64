@@ -258,7 +258,9 @@ main (int argc, char * argv [])
     }
 
     /*
-     *  Prepare global MIDI definitions.
+     *  Prepare global MIDI definitions.  Why are only 16 instruments
+     *  supported in the first for-loop, but 64 (see globals.h) in the
+     *  second for-loop? TO BE MOVED TO user_settings !!!
      */
 
     for (int i = 0; i < c_max_busses; i++)
@@ -283,13 +285,12 @@ main (int argc, char * argv [])
     seq64::p_font_renderer = new seq64::font(); /* set the font renderer    */
 
     /*
-     *  Instead of the Seq24 names, use the new configuration
-     *  file-names, located in ~/.config/sequencer64.  If they aren't
-     *  found, then fall back to the legacy configuration file-names.
-     *  If the --legacy option is in force, use only the legacy
-     *  configuration file-name.  Note that we also ensure the
-     *  directory exists.  CURRENTLY LINUX-SPECIFIC.  See the
-     *  rc_settings class for how this works.
+     *  Instead of the Seq24 names, use the new configuration file-names,
+     *  located in ~/.config/sequencer64. However, if they aren't found,
+     *  we no longer fall back to the legacy configuration file-names.  If
+     *  the --legacy option is in force, use only the legacy configuration
+     *  file-name.  The code also ensures the directory exists.  CURRENTLY
+     *  LINUX-SPECIFIC.  See the rc_settings class for how this works.
      */
 
     std::string cfg_dir = global_rc_settings.home_config_directory();

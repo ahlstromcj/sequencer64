@@ -47,9 +47,39 @@
 #include "easy_macros.h"               // with platform_macros.h, too
 
 #if EXPOSE_THESE
-user_midi_bus_definition   global_user_midi_bus_definitions[c_max_busses];
-user_instrument_definition global_user_instrument_definitions[c_max_instruments];
+user_midi_bus_t global_user_midi_bus_definitions[c_max_busses];
+user_instrument_t global_user_instrument_definitions[c_max_instruments];
 #endif
+
+/**
+ *  Manifest constant for the maximum value limit of a MIDI byte when used
+ *  to limit the size of an array.
+ */
+
+#define MIDI_COUNT_MAX                  128
+
+/**
+ *  This structure corresponds to <tt> [user-midi-bus-0] </tt> definitions
+ *  in the <tt> ~/.seq24usr </tt> file.
+ */
+
+struct user_midi_bus_t
+{
+    std::string alias;
+    int instrument[16];
+};
+
+/**
+ *  This structure corresponds to <tt> [user-instrument-0] </tt>
+ *  definitions in the <tt> ~/.seq24usr </tt> file.
+ */
+
+struct user_instrument_t
+{
+    std::string instrument;
+    bool controllers_active[MIDI_COUNT_MAX];
+    std::string controllers[MIDI_COUNT_MAX];
+};
 
 /**
  *  Holds the current values of sequence settings and settings that can
@@ -60,6 +90,10 @@ user_instrument_definition global_user_instrument_definitions[c_max_instruments]
 
 class user_settings
 {
+    /*
+    user_midi_bus_t m_user_midi_bus_defs[c_max_busses];
+    user_instrument_t m_user_instrument_defs[c_max_instruments];
+    */
 
     /**
      *  Number of rows in the Patterns Panel.  The current value is 4, and

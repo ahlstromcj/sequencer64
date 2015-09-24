@@ -36,16 +36,6 @@
 
 #include "user_settings.hpp"
 
-/*
- * Most of these variables were declared and used in other modules, but
- * are now consolidated here.
- */
-
-#if EXPOSE_THESE
-user_midi_bus_definition   global_user_midi_bus_definitions[c_max_busses];
-user_instrument_definition global_user_instrument_definitions[c_max_instruments];
-#endif
-
 /**
  *  Default constructor.
  */
@@ -483,6 +473,35 @@ user_settings::mainwid_y (int value)
 }
  *
  */
+
+#if EXPOSE_THESE
+
+user_midi_bus_t   global_user_midi_bus_definitions[c_max_busses];
+user_instrument_t global_user_instrument_definitions[c_max_instruments];
+
+/**
+ *  Prepare global MIDI definitions.  Why are only 16 instruments
+ *  supported in the first for-loop, but 64 (see globals.h) in the
+ *  second for-loop?  Well, actually the 16 applies to the number of MIDI
+ *  busses, not instruments.
+ */
+
+void
+user_settings::prepare_midi_defs ()
+{
+    for (int i = 0; i < c_max_busses; i++)
+    {
+        for (int j = 0; j < 16; j++)
+            global_user_midi_bus_definitions[i].instrument[j] = -1;
+    }
+    for (int i = 0; i < c_max_instruments; i++)
+    {
+        for (int j = 0; j < MIDI_COUNT_MAX; j++)
+            global_user_instrument_definitions[i].controllers_active[j] = false;
+    }
+}
+
+#endif
 
 /*
 * user_settings.cpp

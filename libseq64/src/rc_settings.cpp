@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-22
- * \updates       2015-09-23
+ * \updates       2015-09-24
  * \license       GNU GPLv2 or above
  *
  *  Note that this module also sets the legacy global variables, so that
@@ -41,17 +41,6 @@
 #endif
 
 #include "rc_settings.hpp"
-
-/*
- * Most of these variables were declared and used in other modules, but
- * are now consolidated here.
- */
-
-#if EXPOSE_THESE
-interaction_method_t global_interactionmethod = e_seq24_interaction;
-user_midi_bus_definition   global_user_midi_bus_definitions[c_max_busses];
-user_instrument_definition global_user_instrument_definitions[c_max_instruments];
-#endif
 
 /**
  *  Select the HOME or HOMEPATH environment variables depending on whether

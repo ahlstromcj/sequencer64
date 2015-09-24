@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-25
- * \updates       2015-09-23
+ * \updates       2015-09-24
  * \license       GNU GPLv2 or above
  *
  *  We're going to try to collect all the globals here in one module, and
@@ -68,13 +68,6 @@ extern user_settings global_user_settings;
 #define OCTAVE_SIZE                      12
 
 /**
- *  Manifest constant for the maximum value limit of a MIDI byte when used
- *  to limit the size of an array.
- */
-
-#define MIDI_COUNT_MAX                  128
-
-/**
  *  Default value for c_ppqn (global parts-per-quarter-note value).
  */
 
@@ -91,6 +84,12 @@ extern user_settings global_user_settings;
  */
 
 #define DEFAULT_BUSS_MAX                 32
+
+/**
+ *  Default value for c_max_instruments.
+ */
+
+#define DEFAULT_INSTRUMENT_MAX           64     // but only 16 are loaded
 
 /**
  *  Default value for c_thread_trigger_width_ms.
@@ -448,7 +447,7 @@ const int c_perf_scale_x = 32;  // units are ticks per pixel
  *  <tt> ~/.seq24usr <tt> file.
  */
 
-const int c_max_instruments = 64;
+const int c_max_instruments = DEFAULT_INSTRUMENT_MAX;   // 64, not 16!!!
 
 /**
  *  These global values seemed to be use mainly in the options,
@@ -480,37 +479,11 @@ extern std::string global_config_filename_alt;
 extern std::string global_user_filename_alt;
 
 /**
- *  This structure corresponds to <tt> [user-midi-bus-0] </tt> definitions
- *  in the <tt> ~/.seq24usr </tt> file.
+ *  Global arrays.  To be moved to user_settings SOON.
  */
 
-struct user_midi_bus_definition
-{
-    std::string alias;
-    int instrument[16];
-};
-
-/**
- *  This structure corresponds to <tt> [user-instrument-0] </tt>
- *  definitions in the <tt> ~/.seq24usr </tt> file.
- */
-
-struct user_instrument_definition
-{
-    std::string instrument;
-    bool controllers_active[MIDI_COUNT_MAX];
-    std::string controllers[MIDI_COUNT_MAX];
-};
-
-/**
- *  Global arrays.
- */
-
-extern user_midi_bus_definition
-    global_user_midi_bus_definitions[c_max_busses];
-
-extern user_instrument_definition
-    global_user_instrument_definitions[c_max_instruments];
+extern user_midi_bus_t global_user_midi_bus_definitions[c_max_busses];
+extern user_instrument_t global_user_instrument_definitions[c_max_instruments];
 
 /**
  *  Corresponds to the small number of musical scales that the application

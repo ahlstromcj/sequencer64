@@ -203,7 +203,7 @@ rc_settings::set_defaults ()
  */
 
 void
-rc_settings::globalize_settings ()
+rc_settings::globalize ()
 {
     global_legacy_format             = m_legacy_format;
     global_lash_support              = m_lash_support;
@@ -229,6 +229,40 @@ rc_settings::globalize_settings ()
     global_user_filename             = m_user_filename;
     global_config_filename_alt       = m_config_filename_alt;
     global_user_filename_alt         = m_user_filename_alt;
+}
+
+/**
+ *  Copies the current values of the global variables into their
+ *  corresponding member variables.
+ */
+
+void
+rc_settings::get_globals ()
+{
+    m_legacy_format   = global_legacy_format;
+    m_lash_support   = global_lash_support;
+    m_show_midi   = global_showmidi;
+    m_priority   = global_priority;
+    m_stats   = global_stats;
+    m_pass_sysex   = global_pass_sysex;
+    m_with_jack_transport   = global_with_jack_transport;
+    m_with_jack_master   = global_with_jack_master;
+    m_with_jack_master_cond   = global_with_jack_master_cond;
+    m_jack_start_mode   = global_jack_start_mode;
+    m_manual_alsa_ports   = global_manual_alsa_ports;
+    m_is_pattern_playing   = global_is_pattern_playing;
+    m_print_keys   = global_print_keys;
+    m_device_ignore   = global_device_ignore;
+    m_device_ignore_num   = global_device_ignore_num;
+    m_device_ignore_num   = global_device_ignore_num;
+    m_filename   = global_filename;
+    m_jack_session_uuid   = global_jack_session_uuid;
+    m_last_used_dir   = global_last_used_dir;
+    m_config_directory   = global_config_directory;
+    m_config_filename   = global_config_filename;
+    m_user_filename   = global_user_filename;
+    m_config_filename_alt   = global_config_filename_alt;
+    m_user_filename_alt   = global_user_filename_alt;
 }
 
 /**

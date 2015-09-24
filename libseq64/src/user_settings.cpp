@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-23
- * \updates       2015-09-23
+ * \updates       2015-09-24
  * \license       GNU GPLv2 or above
  *
  *  Note that this module also sets the legacy global variables, so that
@@ -42,6 +42,8 @@
 
 user_settings::user_settings ()
  :
+    m_midi_bus_defs     (),     // currently a constant-size array
+    m_instrument_defs   (),     // currently a constant-size array
     m_mainwnd_rows      (0),
     m_mainwnd_cols      (0),
     m_seqs_in_set       (0),
@@ -72,6 +74,8 @@ user_settings::user_settings ()
 
 user_settings::user_settings (const user_settings & rhs)
  :
+    m_midi_bus_defs     (),                     // a constant-size array
+    m_instrument_defs   (),                     // a constant-size array
     m_mainwnd_rows      (rhs.m_mainwnd_rows),
     m_mainwnd_cols      (rhs.m_mainwnd_cols),
     m_seqs_in_set       (rhs.m_seqs_in_set),
@@ -93,7 +97,7 @@ user_settings::user_settings (const user_settings & rhs)
     m_mainwid_x         (rhs.m_mainwid_x),
     m_mainwid_y         (rhs.m_mainwid_y)
 {
-    // Empty body
+    copy_definitions(rhs);
 }
 
 /**
@@ -105,26 +109,30 @@ user_settings::operator = (const user_settings & rhs)
 {
     if (this != &rhs)
     {
-        m_mainwnd_rows      = m_mainwnd_rows;
-        m_mainwnd_cols      = m_mainwnd_cols;
-        m_seqs_in_set       = m_seqs_in_set;
-        m_gmute_tracks      = m_gmute_tracks;
-        m_max_sets          = m_max_sets;
-        m_total_seqs        = m_total_seqs;
-        m_max_sequence      = m_max_sequence;
-        m_text_x            = m_text_x;
-        m_text_y            = m_text_y;
-        m_seqchars_x        = m_seqchars_x;
-        m_seqchars_y        = m_seqchars_y;
-        m_seqarea_x         = m_seqarea_x;
-        m_seqarea_y         = m_seqarea_y;
-        m_seqarea_seq_x     = m_seqarea_seq_x;
-        m_seqarea_seq_y     = m_seqarea_seq_y;
-        m_mainwid_border    = m_mainwid_border;
-        m_mainwid_spacing   = m_mainwid_spacing;
-        m_control_height    = m_control_height;
-        m_mainwid_x         = m_mainwid_x;
-        m_mainwid_y         = m_mainwid_y;
+        // m_midi_bus_defs     = rhs.m_midi_bus_defs;   // a constant-size array
+        // m_instrument_defs   = rhs.m_instrument_defs; // a constant-size array
+
+        copy_definitions(rhs);
+        m_mainwnd_rows      = rhs.m_mainwnd_rows;
+        m_mainwnd_cols      = rhs.m_mainwnd_cols;
+        m_seqs_in_set       = rhs.m_seqs_in_set;
+        m_gmute_tracks      = rhs.m_gmute_tracks;
+        m_max_sets          = rhs.m_max_sets;
+        m_total_seqs        = rhs.m_total_seqs;
+        m_max_sequence      = rhs.m_max_sequence;
+        m_text_x            = rhs.m_text_x;
+        m_text_y            = rhs.m_text_y;
+        m_seqchars_x        = rhs.m_seqchars_x;
+        m_seqchars_y        = rhs.m_seqchars_y;
+        m_seqarea_x         = rhs.m_seqarea_x;
+        m_seqarea_y         = rhs.m_seqarea_y;
+        m_seqarea_seq_x     = rhs.m_seqarea_seq_x;
+        m_seqarea_seq_y     = rhs.m_seqarea_seq_y;
+        m_mainwid_border    = rhs.m_mainwid_border;
+        m_mainwid_spacing   = rhs.m_mainwid_spacing;
+        m_control_height    = rhs.m_control_height;
+        m_mainwid_x         = rhs.m_mainwid_x;
+        m_mainwid_y         = rhs.m_mainwid_y;
     }
     return *this;
 }
@@ -146,7 +154,8 @@ user_settings::set_defaults ()
     m_mainwid_border = 0;               // range: 0 to 3, try 2 or 3
     m_mainwid_spacing = 2;              // range: 2 to 6, try 4 or 6
     m_control_height = 0;               // range: 0 to 4
-    normalize();
+    normalize();                        // recalculate derived values
+    prepare_midi_defs();                // clears out the arrays
 }
 
 /**
@@ -178,13 +187,70 @@ user_settings::normalize ()
 
 /**
  *  Copies the current values of the member variables into their
- *  corresponding global variables.
+ *  corresponding global variables.  Should be called at initialization,
+ *  and after settings are read from the "user" configuration file.
  */
 
 void
-user_settings::globalize_settings ()
+user_settings::globalize ()
 {
-    // TO DO?
+    for (int i = 0; i < c_max_busses; i++)
+    {
+        for (int j = 0; j < 16; j++)
+            global_user_midi_bus_definitions[i].instrument[j] =
+                m_midi_bus_defs[i].instrument[j];
+    }
+    for (int i = 0; i < c_max_instruments; i++)
+    {
+        for (int j = 0; j < MIDI_COUNT_MAX; j++)
+            global_user_instrument_definitions[i].controllers_active[j] =
+                m_instrument_defs[i].controllers_active[j];
+    }
+}
+
+/**
+ *  Copies the current values of the global variables into their
+ *  corresponding member variables.  Should be called before settings are
+ *  written to the "user" configuration file.
+ */
+
+void
+user_settings::get_globals ()
+{
+    for (int i = 0; i < c_max_busses; i++)
+    {
+        for (int j = 0; j < 16; j++)
+            m_midi_bus_defs[i].instrument[j] =
+                global_user_midi_bus_definitions[i].instrument[j];
+    }
+    for (int i = 0; i < c_max_instruments; i++)
+    {
+        for (int j = 0; j < MIDI_COUNT_MAX; j++)
+            m_instrument_defs[i].controllers_active[j] =
+                global_user_instrument_definitions[i].controllers_active[j];
+    }
+}
+
+/**
+ *  Copies the array members from one instance of user_settings to this
+ *  one.
+ */
+
+void
+user_settings::copy_definitions (const user_settings & rhs)
+{
+    for (int i = 0; i < c_max_busses; i++)
+    {
+        for (int j = 0; j < 16; j++)
+            m_midi_bus_defs[i].instrument[j] =
+                rhs.m_midi_bus_defs[i].instrument[j];
+    }
+    for (int i = 0; i < c_max_instruments; i++)
+    {
+        for (int j = 0; j < MIDI_COUNT_MAX; j++)
+            m_instrument_defs[i].controllers_active[j] =
+                rhs.m_instrument_defs[i].controllers_active[j];
+    }
 }
 
 /**
@@ -474,11 +540,6 @@ user_settings::mainwid_y (int value)
  *
  */
 
-#if EXPOSE_THESE
-
-user_midi_bus_t   global_user_midi_bus_definitions[c_max_busses];
-user_instrument_t global_user_instrument_definitions[c_max_instruments];
-
 /**
  *  Prepare global MIDI definitions.  Why are only 16 instruments
  *  supported in the first for-loop, but 64 (see globals.h) in the
@@ -492,19 +553,17 @@ user_settings::prepare_midi_defs ()
     for (int i = 0; i < c_max_busses; i++)
     {
         for (int j = 0; j < 16; j++)
-            global_user_midi_bus_definitions[i].instrument[j] = -1;
+            m_midi_bus_defs[i].instrument[j] = -1;
     }
     for (int i = 0; i < c_max_instruments; i++)
     {
         for (int j = 0; j < MIDI_COUNT_MAX; j++)
-            global_user_instrument_definitions[i].controllers_active[j] = false;
+            m_instrument_defs[i].controllers_active[j] = false;
     }
 }
 
-#endif
-
 /*
-* user_settings.cpp
-*
-* vim: sw=4 ts=4 wm=8 et ft=cpp
-*/
+ * user_settings.cpp
+ *
+ * vim: sw=4 ts=4 wm=8 et ft=cpp
+ */

@@ -80,18 +80,6 @@ extern user_settings global_user_settings;
 #define DEFAULT_BPM                     120
 
 /**
- *  Default value for c_max_busses.
- */
-
-#define DEFAULT_BUSS_MAX                 32
-
-/**
- *  Default value for c_max_instruments.
- */
-
-#define DEFAULT_INSTRUMENT_MAX           64     // but only 16 are loaded
-
-/**
  *  Default value for c_thread_trigger_width_ms.
  */
 
@@ -175,13 +163,6 @@ const int c_ppqn = DEFAULT_PPQN;
  */
 
 const int c_bpm = DEFAULT_BPM;
-
-/**
- *  Provides the maximum number of MIDI buss definitions supported in the
- *  ~/.seq24usr file.
- */
-
-const int c_max_busses = DEFAULT_BUSS_MAX;
 
 /**
  *  The trigger width in milliseconds.  This value is 4 ms.
@@ -441,13 +422,6 @@ const int c_redraw_ms = 40;
 const int c_names_x = 6 * 24;
 const int c_names_y = 22;
 const int c_perf_scale_x = 32;  // units are ticks per pixel
-
-/**
- *  Provides the maximum number of instruments that can be defined in the
- *  <tt> ~/.seq24usr <tt> file.
- */
-
-const int c_max_instruments = DEFAULT_INSTRUMENT_MAX;   // 64, not 16!!!
 
 /**
  *  These global values seemed to be use mainly in the options,

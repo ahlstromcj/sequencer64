@@ -28,9 +28,11 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-09-13
+ * \updates       2015-09-24
  * \license       GNU GPLv2 or above
  *
+ *  The ~/.seq24rc or ~/.config/sequencer64/sequencer64rc files are
+ *  referred to as the "rc" files.
  */
 
 #include "configfile.hpp"
@@ -42,7 +44,8 @@ class perform;
 
 /**
  *  Provides a file for reading and writing the application' main
- *  configuration file.
+ *  configuration file.  The settings that are passed around are provided
+ *  or used by the perform class.
  */
 
 class optionsfile : public configfile
@@ -50,11 +53,11 @@ class optionsfile : public configfile
 
 public:
 
-    optionsfile (const std::string & a_name);
+    optionsfile (const std::string & name);
     ~optionsfile ();
 
-    bool parse (perform & a_perf);
-    bool write (const perform & a_perf);
+    bool parse (perform & perf);
+    bool write (const perform & perf);
 
 };
 

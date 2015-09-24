@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-09-23
+ * \updates       2015-09-24
  * \license       GNU GPLv2 or above
  *
  */
@@ -140,19 +140,20 @@ const char * const g_help_2 =
 int
 main (int argc, char * argv [])
 {
-    Gtk::Main kit(argc, argv);          /* strip GTK+ parameters         */
+    Gtk::Main kit(argc, argv);              /* strip GTK+ parameters        */
     int c;
-    global_rc_settings.set_defaults();  /* start out bare                */
-    for (;;)                            /* parse parameters              */
+    global_rc_settings.set_defaults();      /* start out with normal values */
+    global_user_settings.set_defaults();    /* start out with normal values */
+    for (;;)                                /* parse all parameters         */
     {
-        int option_index = 0;           /* getopt_long stores index here */
+        int option_index = 0;               /* getopt_long index storage    */
         c = getopt_long
         (
             argc, argv,
-            "ChlLi:jJmM:pPsSU:Vx:",     /* wrong: "C:hi:jJmM:pPsSU:Vx:"  */
+            "ChlLi:jJmM:pPsSU:Vx:",         /* wrong: "C:hi:jJmM:pPsSU:Vx:" */
             long_options, &option_index
         );
-        if (c == -1)                    /* detect the end of the options */
+        if (c == -1)                        /* detect the end of options    */
             break;
 
         switch (c)
@@ -256,24 +257,8 @@ main (int argc, char * argv [])
         global_rc_settings.legacy_format(true);
         printf("Setting legacy seq24 file format.\n");
     }
-
-    /*
-     *  Prepare global MIDI definitions.  Why are only 16 instruments
-     *  supported in the first for-loop, but 64 (see globals.h) in the
-     *  second for-loop? TO BE MOVED TO user_settings !!!
-     */
-
-    for (int i = 0; i < c_max_busses; i++)
-    {
-        for (int j = 0; j < 16; j++)
-            global_user_midi_bus_definitions[i].instrument[j] = -1;
-    }
-    for (int i = 0; i < c_max_instruments; i++)
-    {
-        for (int j = 0; j < MIDI_COUNT_MAX; j++)
-            global_user_instrument_definitions[i].controllers_active[j] = false;
-    }
-    global_rc_settings.globalize_settings();    /* copy to legacy globals   */
+    global_rc_settings.globalize();             /* copy to legacy globals   */
+    global_user_settings.globalize();           /* copy to legacy globals   */
 
     /*
      * Set up objects that are specific to the Gtk-2 GUI.  Pass them to
@@ -355,6 +340,7 @@ main (int argc, char * argv [])
      * --legacy option is in force.
      */
 
+    global_rc_settings.get_globals();             /* copy from legacy globals */
     rcname = global_rc_settings.config_filespec();
     printf("Writing configuration [%s]\n", rcname.c_str());
     seq64::optionsfile options(rcname);
@@ -367,6 +353,8 @@ main (int argc, char * argv [])
      * \todo
      *      Flesh out the userfile writing code and write it.
      */
+
+    global_user_settings.get_globals();           /* copy from legacy globals */
 
 #ifdef SEQ64_LASH_SUPPORT
     if (not_nullptr(seq64::global_lash_driver))

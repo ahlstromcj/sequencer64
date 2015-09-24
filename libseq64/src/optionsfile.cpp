@@ -20,28 +20,30 @@
  * \file          optionsfile.cpp
  *
  *  This module declares/defines the base class for managing the
- *  <tt> ~/.seq24rc </tt> ("rc") configuration file.
+ *  <tt> ~/.seq24rc </tt>
+ *  or <tt> ~/.config/sequencer64/sequencer64rc </tt>
+ *  ("rc") configuration files.
  *
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-09-23
+ * \updates       2015-09-24
  * \license       GNU GPLv2 or above
  *
- *  The <tt> ~/.seq24rc </tt> configuration file is fairly simple in
+ *  The <tt> ~/.seq24rc </tt>
+ *  or <tt> ~/.config/sequencer64/sequencer64rc </tt>
+ *  configuration file is fairly simple in
  *  layout.  The documentation for this module is supplemented by the
- *  following GitHub project:
+ *  following GitHub projects:
  *
  *      https://github.com/ahlstromcj/seq24-doc.git
+ *      https://github.com/ahlstromcj/sequencer24-doc.git
  *
- *  That document also relates these file setting to the application's
+ *  Those documents also relate these file setting to the application's
  *  command-line options.
  *
  *  Note that these options are primarily read/written from/to the perform
  *  object that is passed to the parse() and write() functions.
- *  For an easier-to-digest list of items read and written, see the file
- *  <tt> option-storage.txt </tt> in the <tt> contrib </tt>
- *  directory.
  */
 
 #include "midibus.hpp"
@@ -55,9 +57,9 @@ namespace seq64
  *  Principal constructor.
  */
 
-optionsfile::optionsfile (const std::string & a_name)
+optionsfile::optionsfile (const std::string & name)
  :
-    configfile  (a_name)               // base class constructor
+    configfile  (name)               // base class constructor
 {
     // Empty body
 }
@@ -276,7 +278,7 @@ optionsfile::parse (perform & a_perf)
      * This bug is present even in seq24 r.0.9.2, and occurs only if the
      * Keyboard options are actually edited.  Also, the size of the
      * reverse container is constant at 32.  Clearing the latter container
-     * as well appears to fix the bug.
+     * as well appears to fix both bugs.
      */
 
     a_perf.get_key_events().clear();
@@ -335,7 +337,7 @@ optionsfile::parse (perform & a_perf)
     int show_key = 0;
     next_data_line(file);
     sscanf(m_line, "%d", &show_key);
-    ktx.kpt_show_ui_sequence_key = (bool) show_key;
+    ktx.kpt_show_ui_sequence_key = bool(show_key);
     next_data_line(file);
     sscanf(m_line, "%u", &ktx.kpt_start);
     next_data_line(file);
@@ -345,19 +347,23 @@ optionsfile::parse (perform & a_perf)
     line_after(file, "[jack-transport]");
     long flag = 0;
     sscanf(m_line, "%ld", &flag);
-    global_with_jack_transport = (bool) flag;
+    global_with_jack_transport = bool(flag);
+    global_rc_settings.with_jack_transport(bool(flag));
 
     next_data_line(file);
     sscanf(m_line, "%ld", &flag);
-    global_with_jack_master = (bool) flag;
+    global_with_jack_master = bool(flag);
+    global_rc_settings.with_jack_master(bool(flag));
 
     next_data_line(file);
     sscanf(m_line, "%ld", &flag);
-    global_with_jack_master_cond = (bool) flag;
+    global_with_jack_master_cond = bool(flag);
+    global_rc_settings.with_jack_master_cond(bool(flag));
 
     next_data_line(file);
     sscanf(m_line, "%ld", &flag);
-    global_jack_start_mode = (bool) flag;
+    global_jack_start_mode = bool(flag);
+    global_rc_settings.jack_start_mode(bool(flag));
 
     line_after(file, "[midi-input]");
     buses = 0;
@@ -367,7 +373,7 @@ optionsfile::parse (perform & a_perf)
     {
         long bus_on, bus;
         sscanf(m_line, "%ld %ld", &bus, &bus_on);
-        a_perf.master_bus().set_input(bus, (bool) bus_on);
+        a_perf.master_bus().set_input(bus, bool(bus_on));
         next_data_line(file);
     }
 
@@ -378,19 +384,33 @@ optionsfile::parse (perform & a_perf)
 
     line_after(file, "[manual-alsa-ports]");
     sscanf(m_line, "%ld", &flag);
-    global_manual_alsa_ports = (bool) flag;
+    global_manual_alsa_ports = bool(flag);
+    global_rc_settings.manual_alsa_ports(bool(flag));
 
     line_after(file, "[last-used-dir]");
     if (m_line[0] == '/')
-        global_last_used_dir.assign(m_line); // FIXME: need check for valid path
+    {
+        // FIXME: need check for valid path
+        global_last_used_dir.assign(m_line);
+        global_rc_settings.last_used_dir(m_line);
+    }
 
     long method = 0;
     line_after(file, "[interaction-method]");
     sscanf(m_line, "%ld", &method);
     global_interactionmethod = interaction_method_t(method);
-    next_data_line(file);                   // @new 2015-08-28
-    sscanf(m_line, "%ld", &method);         //
-    global_allow_mod4_mode = method != 0;   //
+    global_rc_settings.interaction_method(interaction_method_t(method));
+
+    next_data_line(file);
+    sscanf(m_line, "%ld", &method);
+    global_allow_mod4_mode = method != 0;
+    global_rc_settings.manual_alsa_ports(method != 0);
+
+    /*
+     * We could call global_rc_settings.globalize() here, though
+     * only a few items above are affected by the read; the rest go into
+     * the perform object.
+     */
 
     file.close();
     return true;

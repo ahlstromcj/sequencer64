@@ -20,7 +20,7 @@
  */
 
 /**
- * \file          rc_settings.h
+ * \file          rc_settings.hpp
  *
  *  This module declares/defines just some of the global (gasp!) variables
  *  in this application.
@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-22
- * \updates       2015-09-23
+ * \updates       2015-09-24
  * \license       GNU GPLv2 or above
  *
  *  This collection of variables describes the options of the application,
@@ -94,7 +94,8 @@ public:
     std::string config_filespec () const;
     std::string user_filespec () const;
     void set_defaults ();
-    void globalize_settings ();
+    void globalize ();
+    void get_globals ();
 
     /**
      * \accessor m_legacy_format
@@ -421,7 +422,7 @@ private:
 #endif  // SEQ64_RC_SETTINGS_HPP
 
 /*
- * rc_settings.h
+ * rc_settings.hpp
  *
  * vim: sw=4 ts=4 wm=8 et ft=cpp
  */

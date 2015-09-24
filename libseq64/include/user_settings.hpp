@@ -20,7 +20,7 @@
  */
 
 /**
- * \file          user_settings.h
+ * \file          user_settings.hpp
  *
  *  This module declares/defines just some of the global (gasp!) variables
  *  in this application.
@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-22
- * \updates       2015-09-23
+ * \updates       2015-09-24
  * \license       GNU GPLv2 or above
  *
  *  This collection of variables describes some facets of the
@@ -46,10 +46,31 @@
 
 #include "easy_macros.h"               // with platform_macros.h, too
 
-#if EXPOSE_THESE
-user_midi_bus_t global_user_midi_bus_definitions[c_max_busses];
-user_instrument_t global_user_instrument_definitions[c_max_instruments];
-#endif
+/**
+ *  Default value for c_max_busses.
+ */
+
+#define DEFAULT_BUSS_MAX                 32
+
+/**
+ *  Provides the maximum number of MIDI buss definitions supported in the
+ *  ~/.seq24usr file.
+ */
+
+const int c_max_busses = DEFAULT_BUSS_MAX;
+
+/**
+ *  Default value for c_max_instruments.
+ */
+
+#define DEFAULT_INSTRUMENT_MAX           64     // but only 16 are loaded
+
+/**
+ *  Provides the maximum number of instruments that can be defined in the
+ *  <tt> ~/.seq24usr <tt> file.
+ */
+
+const int c_max_instruments = DEFAULT_INSTRUMENT_MAX;   // 64, not 16!!!
 
 /**
  *  Manifest constant for the maximum value limit of a MIDI byte when used
@@ -90,10 +111,21 @@ struct user_instrument_t
 
 class user_settings
 {
-    /*
-    user_midi_bus_t m_user_midi_bus_defs[c_max_busses];
-    user_instrument_t m_user_instrument_defs[c_max_instruments];
-    */
+    /**
+     *  Provides data about the MIDI busses, readable from the "user"
+     *  configuration file.  Will later make the size adjustable, if it
+     *  makes sense to do so.
+     */
+
+    user_midi_bus_t m_midi_bus_defs[c_max_busses];
+
+    /**
+     *  Provides data about the MIDI instruments, readable from the "user"
+     *  configuration file.  Will later make the size adjustable, if it
+     *  makes sense to do so.
+     */
+
+    user_instrument_t m_instrument_defs[c_max_instruments];
 
     /**
      *  Number of rows in the Patterns Panel.  The current value is 4, and
@@ -242,7 +274,9 @@ public:
 
     void set_defaults ();
     void normalize ();
-    void globalize_settings ();
+    void globalize ();
+    void get_globals ();
+    void prepare_midi_defs ();
 
     /**
      * \accessor m_mainwnd_rows
@@ -441,12 +475,16 @@ public:
      *  void mainwid_y (int value);
      */
 
+private:
+
+    void copy_definitions (const user_settings & rhs);
+
 };
 
 #endif  // SEQ64_USER_SETTINGS_HPP
 
 /*
- * user_settings.h
+ * user_settings.hpp
  *
  * vim: sw=4 ts=4 wm=8 et ft=cpp
  */

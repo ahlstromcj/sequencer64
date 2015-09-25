@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-09-24
+ * \updates       2015-09-25
  * \license       GNU GPLv2 or above
  *
  *  The <tt> ~/.seq24rc </tt>
@@ -403,7 +403,7 @@ optionsfile::parse (perform & a_perf)
 
     next_data_line(file);
     sscanf(m_line, "%ld", &method);
-    global_rc_settings.manual_alsa_ports(method != 0);
+    global_rc_settings.allow_mod4_mode(method != 0);
 
     /*
      * We could call global_rc_settings.globalize() here, though
@@ -445,14 +445,23 @@ optionsfile::write (const perform & a_perf)
      * Initial comments and MIDI control section
      */
 
+    if (global_rc_settings.legacy_format())
+    {
+        file << "# Seq24 0.9.2 initialization file (legacy format)\n";
+    }
+    else
+    {
+        file
+            << "# Sequencer26 0.9.9.4 (and above) initialization file\n"
+            << "# (Also works with Sequencer24)\n"
+            ;
+    }
     file
-        << "#\n"
-        << "# Sequencer26 0.9.9.4 (and above) initialization file\n"
-        << "# (Also works with Sequencer24)\n"
-        << "#\n"
-        << "[midi-control]\n"
-        <<  c_midi_controls << "\n"             // constant count
+        << "\n"
+        << "[midi-control]\n\n"
+        <<  c_midi_controls << "      # MIDI controls count\n" // constant count
         ;
+
     for (int i = 0; i < c_midi_controls; i++)
     {
         /*
@@ -471,47 +480,47 @@ optionsfile::write (const perform & a_perf)
         switch (i)
         {
         case c_seqs_in_set:                 // 32
-            file << "# mute in group\n";
+            file << "# mute in group section:\n";
             break;
 
         case c_midi_control_bpm_up:         // 64
-            file << "# bpm up\n";
+            file << "# bpm up:\n";
             break;
 
         case c_midi_control_bpm_dn:         // 65
-            file << "# bpm down\n";
+            file << "# bpm down:\n";
             break;
 
         case c_midi_control_ss_up:          // 66
-            file << "# screen set up\n";
+            file << "# screen set up:\n";
             break;
 
         case c_midi_control_ss_dn:          // 67
-            file << "# screen set down\n";
+            file << "# screen set down:\n";
             break;
 
         case c_midi_control_mod_replace:    // 68
-            file << "# mod replace\n";
+            file << "# mod replace:\n";
             break;
 
         case c_midi_control_mod_snapshot:   // 69
-            file << "# mod snapshot\n";
+            file << "# mod snapshot:\n";
             break;
 
         case c_midi_control_mod_queue:      // 70
-            file << "# mod queue\n";
+            file << "# mod queue:\n";
             break;
 
         case c_midi_control_mod_gmute:      // 71
-            file << "# mod gmute\n";
+            file << "# mod gmute:\n";
             break;
 
         case c_midi_control_mod_glearn:     // 72
-            file << "# mod glearn\n";
+            file << "# mod glearn:\n";
             break;
 
         case c_midi_control_play_ss:        // 73
-            file << "# screen set play\n";
+            file << "# screen set play:\n";
             break;
 
         /*
@@ -556,9 +565,9 @@ optionsfile::write (const perform & a_perf)
      * Group MIDI control
      */
 
-    file << "\n[mute-group]\n";
+    file << "\n[mute-group]\n\n";
     int mtx[c_seqs_in_set];
-    file <<  c_gmute_tracks << "   # group mute value count\n";
+    file <<  c_gmute_tracks << "    # group mute value count\n";
     for (int j = 0; j < c_seqs_in_set; j++)
     {
         ucperf.select_group_mute(j);
@@ -594,8 +603,8 @@ optionsfile::write (const perform & a_perf)
      */
 
     int buses = ucperf.master_bus().get_num_out_buses();
-    file << "\n[midi-clock]\n";
-    file << buses << "   # number of MIDI clocks/busses\n";
+    file << "\n[midi-clock]\n\n";
+    file << buses << "    # number of MIDI clocks/busses\n";
     for (int i = 0; i < buses; i++)
     {
         file
@@ -616,7 +625,7 @@ optionsfile::write (const perform & a_perf)
      */
 
     file
-        << "\n\n[midi-clock-mod-ticks]\n"
+        << "\n\n[midi-clock-mod-ticks]\n\n"
         << midibus::get_clock_mod() << "\n"
         ;
 
@@ -626,8 +635,8 @@ optionsfile::write (const perform & a_perf)
 
     buses = ucperf.master_bus().get_num_in_buses();
     file
-        << "\n[midi-input]\n"
-        << buses << "   # number of MIDI busses\n"
+        << "\n[midi-input]\n\n"
+        << buses << "   # number of MIDI busses\n\n"
         ;
     for (int i = 0; i < buses; i++)
     {
@@ -649,7 +658,7 @@ optionsfile::write (const perform & a_perf)
      */
 
     file
-        << "\n[manual-alsa-ports]\n"
+        << "\n[manual-alsa-ports]\n\n"
         << "# Set to 1 if you want seq24 to create its own ALSA ports and\n"
         << "# not connect to other clients\n"
         << "\n"
@@ -661,7 +670,7 @@ optionsfile::write (const perform & a_perf)
      */
 
     int x = 0;
-    file << "\n[interaction-method]\n";
+    file << "\n[interaction-method]\n\n";
     while (c_interaction_method_names[x] && c_interaction_method_descs[x])
     {
         file
@@ -671,11 +680,9 @@ optionsfile::write (const perform & a_perf)
             ;
         ++x;
     }
-    file << global_interactionmethod << "\n";
-
     file
-        << "\n"
-        << "# Set to 1 to allow seq24 to stay in note-adding mode when\n"
+        << "\n" << global_interactionmethod << "\n\n"
+        << "# Set to 1 to allow Sequencer64 to stay in note-adding mode when\n"
         << "# the right-click is released while holding the Mod4 (Super or\n"
         << "# Windows) key.\n"
         << "\n"
@@ -685,9 +692,9 @@ optionsfile::write (const perform & a_perf)
          ucperf.get_key_events().size() : (size_t) c_seqs_in_set
          ;
     file
-        << "\n[keyboard-control]\n"
-        << "# Key #, Sequence #\n"
-        << kevsize << "   # number of keys\n"
+        << "\n[keyboard-control]\n\n"
+        << kevsize << "     # number of keys\n\n"
+        << "# Key #  Sequence #  Key name\n\n"
         ;
 
     for
@@ -698,7 +705,7 @@ optionsfile::write (const perform & a_perf)
     {
         snprintf
         (
-            outs, sizeof(outs), "%u  %ld # %s",
+            outs, sizeof(outs), "%u  %ld   # %s",
             i->first, i->second, gdk_keyval_name(i->first)
         );
         file << std::string(outs) << "\n";
@@ -708,10 +715,9 @@ optionsfile::write (const perform & a_perf)
          (size_t)c_seqs_in_set
          ;
     file
-        << "\n[keyboard-group]\n"
-        << "# Key #, group # \n"
-        << "\n"
-        << kegsize << "   # number of key groups\n"
+        << "\n[keyboard-group]\n\n"
+        << kegsize << "     # number of key groups\n\n"
+        << "# Key #  group # Key name\n\n"
         ;
 
     for
@@ -722,7 +728,7 @@ optionsfile::write (const perform & a_perf)
     {
         snprintf
         (
-            outs, sizeof(outs), "%u  %ld # %s key",
+            outs, sizeof(outs), "%u  %ld   # %s",
             i->first, i->second, gdk_keyval_name(i->first)
         );
         file << std::string(outs) << "\n";
@@ -731,37 +737,37 @@ optionsfile::write (const perform & a_perf)
     keys_perform_transfer ktx;
     ucperf.keys().get_keys(ktx);      /* copy perform key to structure    */
     file
-        << "# bpm up, down\n"
+        << "# bpm up and bpm down:\n"
         << ktx.kpt_bpm_up << " "
-        << ktx.kpt_bpm_dn << " # "
+        << ktx.kpt_bpm_dn << "   # "
         << gdk_keyval_name(ktx.kpt_bpm_up) << " "
         << gdk_keyval_name(ktx.kpt_bpm_dn) << "\n"
         ;
     file
-        << "# screen set up, down, play\n"
+        << "# screen set up, screen set down, play:\n"
         << ktx.kpt_screenset_up << " "
         << ktx.kpt_screenset_dn << " "
-        << ktx.kpt_set_playing_screenset << " # "
+        << ktx.kpt_set_playing_screenset << "   # "
         << gdk_keyval_name(ktx.kpt_screenset_up) << " "
         << gdk_keyval_name(ktx.kpt_screenset_dn) << " "
         << gdk_keyval_name(ktx.kpt_set_playing_screenset) << "\n"
         ;
     file
-        << "# group on, off, learn\n"
+        << "# group on, group off, group learn:\n"
         << ktx.kpt_group_on << " "
         << ktx.kpt_group_off << " "
-        << ktx.kpt_group_learn << " # "
+        << ktx.kpt_group_learn << "   # "
         << gdk_keyval_name(ktx.kpt_group_on) << " "
         << gdk_keyval_name(ktx.kpt_group_off) << " "
         << gdk_keyval_name(ktx.kpt_group_learn) << "\n"
         ;
     file
-        << "# replace, queue, snapshot_1, snapshot 2, keep queue\n"
+        << "# replace, queue, snapshot_1, snapshot 2, keep queue:\n"
         << ktx.kpt_replace << " "
         << ktx.kpt_queue << " "
         << ktx.kpt_snapshot_1 << " "
         << ktx.kpt_snapshot_2 << " "
-        << ktx.kpt_keep_queue << " # "
+        << ktx.kpt_keep_queue << "   # "
         << gdk_keyval_name(ktx.kpt_replace) << " "
         << gdk_keyval_name(ktx.kpt_queue) << " "
         << gdk_keyval_name(ktx.kpt_snapshot_1) << " "
@@ -770,7 +776,7 @@ optionsfile::write (const perform & a_perf)
         ;
     file
         << (ktx.kpt_show_ui_sequence_key ? 1 : 0)
-        << " # show_ui_sequence_key (1 = true / 0 = false)\n"
+        << "    # show_ui_sequence_key (1 = true / 0 = false)\n"
         ;
     file
         << ktx.kpt_start << " # "
@@ -785,22 +791,26 @@ optionsfile::write (const perform & a_perf)
 
     file
         << "\n[jack-transport]\n\n"
-        << "# jack_transport - Enable sync with JACK Transport.\n"
+        << "# jack_transport - Enable sync with JACK Transport.\n\n"
         << global_with_jack_transport << "\n\n"
-        << "# jack_master - Seq24 will attempt to serve as JACK Master.\n"
+        << "# jack_master - Sequencer64 attempts to serve as JACK Master.\n\n"
         << global_with_jack_master << "\n\n"
-        << "# jack_master_cond - Seq24 won't be master if another master exists.\n"
+    << "# jack_master_cond - Sequencer64 is master if no other master exists.\n\n"
         << global_with_jack_master_cond  << "\n\n"
         << "# jack_start_mode\n"
         << "# 0 = Playback in live mode. Allows muting and unmuting of loops.\n"
-        << "# 1 = Playback uses the song editor's data.\n"
-        << global_jack_start_mode << "\n\n"
+        << "# 1 = Playback uses the song editor's data.\n\n"
+        << global_jack_start_mode << "\n"
         ;
     file
         << "\n[last-used-dir]\n\n"
-        << "# Last used directory.\n"
+        << "# Last used directory:\n\n"
         << global_last_used_dir << "\n\n"
         ;
+    if (global_rc_settings.legacy_format())
+        file << "# End of .seq24\n";
+    else
+        file << "# End of sequencer64rc\n";
 
     file.close();
     return true;

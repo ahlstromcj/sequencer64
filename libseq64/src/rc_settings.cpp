@@ -411,9 +411,11 @@ rc_settings::interaction_method (interaction_method_t value)
     case e_fruity_interaction:
 
         m_interaction_method = value;
+        break;
 
     default:
         errprint("illegal interaction-method value");
+        break;
     }
 }
 

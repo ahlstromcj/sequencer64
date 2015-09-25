@@ -74,7 +74,7 @@ optionsfile::~optionsfile ()
 }
 
 /**
- *  Parse the ~/.seq24rc file.
+ *  Parse the ~/.seq24rc or ~/.config/sequencer64/sequencer64rc file.
  *
  *  [midi-control]
  *
@@ -178,21 +178,29 @@ optionsfile::parse (perform & a_perf)
         printf("? error opening [%s]\n", m_name.c_str());
         return false;
     }
-
     file.seekg(0, std::ios::beg);                           /* seek to start */
     line_after(file, "[midi-control]");                     /* find section  */
     unsigned int sequences = 0;
     sscanf(m_line, "%u", &sequences);
+
+    /*
+     * The above value is called "sequences", but what was written was the
+     * value of c_midi_controls.  If we make that value non-constant, then
+     * we should modify that value, instead of the throw-away "sequences"
+     * values.  Note that c_midi_controls is, in a roundabout way, defined
+     * as 74.  See the old "dot-seq24rc" file in the contrib directory.
+     */
+
     next_data_line(file);
-    for (unsigned int i = 0; i < sequences; ++i)
+    for (unsigned int i = 0; i < sequences; ++i)    /* 0 to c_midi_controls-1 */
     {
         int sequence = 0;
         sscanf
         (
             m_line,
             "%d [ %d %d %ld %ld %ld %ld ]"
-            " [ %d %d %ld %ld %ld %ld ]"
-            " [ %d %d %ld %ld %ld %ld ]",
+              " [ %d %d %ld %ld %ld %ld ]"
+              " [ %d %d %ld %ld %ld %ld ]",
             &sequence,
             (int *) &a_perf.get_midi_control_toggle(i)->m_active,
             (int *) &a_perf.get_midi_control_toggle(i)->m_inverse_active,
@@ -231,20 +239,17 @@ optionsfile::parse (perform & a_perf)
         (
             m_line,
             "%d [%d %d %d %d %d %d %d %d]"
-            " [%d %d %d %d %d %d %d %d]"
-            " [%d %d %d %d %d %d %d %d]"
-            " [%d %d %d %d %d %d %d %d]",
+              " [%d %d %d %d %d %d %d %d]"
+              " [%d %d %d %d %d %d %d %d]"
+              " [%d %d %d %d %d %d %d %d]",
             &j,
-            &mtx[0], &mtx[1], &mtx[2], &mtx[3],
+            &mtx[0], &mtx[1], &mtx[2], &mtx[3],         /* 1st */
             &mtx[4], &mtx[5], &mtx[6], &mtx[7],
-
-            &mtx[8], &mtx[9], &mtx[10], &mtx[11],
+            &mtx[8], &mtx[9], &mtx[10], &mtx[11],       /* 2nd */
             &mtx[12], &mtx[13], &mtx[14], &mtx[15],
-
-            &mtx[16], &mtx[17], &mtx[18], &mtx[19],
+            &mtx[16], &mtx[17], &mtx[18], &mtx[19],     /* 3rd */
             &mtx[20], &mtx[21], &mtx[22], &mtx[23],
-
-            &mtx[24], &mtx[25], &mtx[26], &mtx[27],
+            &mtx[24], &mtx[25], &mtx[26], &mtx[27],     /* 4th */
             &mtx[28], &mtx[29], &mtx[30], &mtx[31]
         );
         for (int k = 0; k < c_seqs_in_set; k++)
@@ -347,22 +352,18 @@ optionsfile::parse (perform & a_perf)
     line_after(file, "[jack-transport]");
     long flag = 0;
     sscanf(m_line, "%ld", &flag);
-    global_with_jack_transport = bool(flag);
     global_rc_settings.with_jack_transport(bool(flag));
 
     next_data_line(file);
     sscanf(m_line, "%ld", &flag);
-    global_with_jack_master = bool(flag);
     global_rc_settings.with_jack_master(bool(flag));
 
     next_data_line(file);
     sscanf(m_line, "%ld", &flag);
-    global_with_jack_master_cond = bool(flag);
     global_rc_settings.with_jack_master_cond(bool(flag));
 
     next_data_line(file);
     sscanf(m_line, "%ld", &flag);
-    global_jack_start_mode = bool(flag);
     global_rc_settings.jack_start_mode(bool(flag));
 
     line_after(file, "[midi-input]");
@@ -384,13 +385,13 @@ optionsfile::parse (perform & a_perf)
 
     line_after(file, "[manual-alsa-ports]");
     sscanf(m_line, "%ld", &flag);
-    global_manual_alsa_ports = bool(flag);
     global_rc_settings.manual_alsa_ports(bool(flag));
 
     line_after(file, "[last-used-dir]");
     if (m_line[0] == '/')
     {
         // FIXME: need check for valid path
+
         global_last_used_dir.assign(m_line);
         global_rc_settings.last_used_dir(m_line);
     }
@@ -398,20 +399,19 @@ optionsfile::parse (perform & a_perf)
     long method = 0;
     line_after(file, "[interaction-method]");
     sscanf(m_line, "%ld", &method);
-    global_interactionmethod = interaction_method_t(method);
     global_rc_settings.interaction_method(interaction_method_t(method));
 
     next_data_line(file);
     sscanf(m_line, "%ld", &method);
-    global_allow_mod4_mode = method != 0;
     global_rc_settings.manual_alsa_ports(method != 0);
 
     /*
      * We could call global_rc_settings.globalize() here, though
      * only a few items above are affected by the read; the rest go into
-     * the perform object.
+     * the perform object.  Let's do it!
      */
 
+    global_rc_settings.globalize();
     file.close();
     return true;
 }
@@ -447,60 +447,76 @@ optionsfile::write (const perform & a_perf)
 
     file
         << "#\n"
-        << "# Sequencer24 0.9.4 (and above) initialization file\n"
+        << "# Sequencer26 0.9.9.4 (and above) initialization file\n"
+        << "# (Also works with Sequencer24)\n"
         << "#\n"
         << "[midi-control]\n"
-        <<  c_midi_controls << "\n"               // constant count
+        <<  c_midi_controls << "\n"             // constant count
         ;
     for (int i = 0; i < c_midi_controls; i++)
     {
-        /* 32 mutes for channel, 32 group mutes */
+        /*
+         * \tricky
+         *      32 mutes for channel, 32 group mutes, 9 odds-and-ends.
+         *      This first output item merely write a <i> comment </i> to
+         *      the "rc" file to indicate what the next section describes.
+         *      The first section of [midi-control] specifies 74 items.
+         *      The first 32 are unlabelled by a comment, and run from 0
+         *      to 31.  The next 32 are labelled "mute in group", and run
+         *      from 32 to 63.  The next 10 are each labelled, starting
+         *      with "bpm up" and ending with "screen set play", and are
+         *      each one line long.
+         */
 
         switch (i)
         {
-        case c_seqs_in_set:
+        case c_seqs_in_set:                 // 32
             file << "# mute in group\n";
             break;
 
-        case c_midi_control_bpm_up:
+        case c_midi_control_bpm_up:         // 64
             file << "# bpm up\n";
             break;
 
-        case c_midi_control_bpm_dn:
+        case c_midi_control_bpm_dn:         // 65
             file << "# bpm down\n";
             break;
 
-        case c_midi_control_ss_up:
+        case c_midi_control_ss_up:          // 66
             file << "# screen set up\n";
             break;
 
-        case c_midi_control_ss_dn:
+        case c_midi_control_ss_dn:          // 67
             file << "# screen set down\n";
             break;
 
-        case c_midi_control_mod_replace:
+        case c_midi_control_mod_replace:    // 68
             file << "# mod replace\n";
             break;
 
-        case c_midi_control_mod_snapshot:
+        case c_midi_control_mod_snapshot:   // 69
             file << "# mod snapshot\n";
             break;
 
-        case c_midi_control_mod_queue:
+        case c_midi_control_mod_queue:      // 70
             file << "# mod queue\n";
             break;
 
-        case c_midi_control_mod_gmute:
+        case c_midi_control_mod_gmute:      // 71
             file << "# mod gmute\n";
             break;
 
-        case c_midi_control_mod_glearn:
+        case c_midi_control_mod_glearn:     // 72
             file << "# mod glearn\n";
             break;
 
-        case c_midi_control_play_ss:
+        case c_midi_control_play_ss:        // 73
             file << "# screen set play\n";
             break;
+
+        /*
+         * case c_midi_controls:  74, the last value, not written.
+         */
 
         default:
             break;
@@ -753,8 +769,8 @@ optionsfile::write (const perform & a_perf)
         << gdk_keyval_name(ktx.kpt_keep_queue) << "\n"
         ;
     file
-        << ktx.kpt_show_ui_sequence_key
-        << " # show_ui_sequence_key (1=true/0=false)\n"
+        << (ktx.kpt_show_ui_sequence_key ? 1 : 0)
+        << " # show_ui_sequence_key (1 = true / 0 = false)\n"
         ;
     file
         << ktx.kpt_start << " # "

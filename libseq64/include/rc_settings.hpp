@@ -72,8 +72,8 @@ private:
     bool m_manual_alsa_ports;
     bool m_is_pattern_playing;
     bool m_print_keys;
-    bool m_device_ignore;                       /* seq24 module, unused!  */
-    int m_device_ignore_num;                    /* seq24 module, unused!  */
+    bool m_device_ignore;                       /* seq24 module, unused!    */
+    int m_device_ignore_num;                    /* seq24 module, unused!    */
     interaction_method_t m_interaction_method;
     std::string m_filename;
     std::string m_jack_session_uuid;

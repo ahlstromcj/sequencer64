@@ -80,6 +80,13 @@ const int c_max_instruments = DEFAULT_INSTRUMENT_MAX;   // 64, not 16!!!
 #define MIDI_COUNT_MAX                  128
 
 /**
+ *  Manifest constant for the maximum number of "instrument" values in a
+ *  user_midi_bus_t structure.
+ */
+
+#define MIDI_BUS_CHANNEL_MAX             16
+
+/**
  *  This structure corresponds to <tt> [user-midi-bus-0] </tt> definitions
  *  in the <tt> ~/.seq24usr </tt> file.
  */
@@ -87,7 +94,7 @@ const int c_max_instruments = DEFAULT_INSTRUMENT_MAX;   // 64, not 16!!!
 struct user_midi_bus_t
 {
     std::string alias;
-    int instrument[16];
+    int instrument[MIDI_BUS_CHANNEL_MAX];   // 16
 };
 
 /**
@@ -148,6 +155,9 @@ class user_settings
     /**
      *  Number of patterns/sequences in the Patterns Panel, also known as
      *  a "set" or "screen set".  This value is 4 x 8 = 32 by default.
+     *
+     * \warning
+     *      Currently part of the "rc" file and rc_settings!
      */
 
     int m_seqs_in_set;
@@ -278,8 +288,19 @@ public:
     void get_globals ();
     void prepare_midi_defs ();
 
+    user_midi_bus_t & bus (int index);
+    void bus_alias (int index, const std::string & ale);
+    void bus_instrument (int index, int channel, int instrum);
+
+    user_instrument_t & instrument (int index);
+    void instrument_name (int index, const std::string & instname);
+    void instrument_controllers
+    (
+        int index, int cc, const std::string & ccname, bool isactive
+    );
+
     /**
-     * \accessor m_mainwnd_rows
+     * \getter m_mainwnd_rows
      */
 
     int mainwnd_rows () const
@@ -288,7 +309,7 @@ public:
     }
 
     /**
-     * \accessor m_mainwnd_cols
+     * \getter m_mainwnd_cols
      */
 
     int mainwnd_cols () const
@@ -297,7 +318,7 @@ public:
     }
 
     /**
-     * \accessor m_seqs_in_set
+     * \getter m_seqs_in_set
      */
 
     int seqs_in_set () const
@@ -306,7 +327,7 @@ public:
     }
 
     /**
-     * \accessor m_gmute_tracks
+     * \getter m_gmute_tracks
      */
 
     int gmute_tracks () const
@@ -315,7 +336,7 @@ public:
     }
 
     /**
-     * \accessor m_max_sets
+     * \getter m_max_sets
      */
 
     int max_sets () const
@@ -324,7 +345,7 @@ public:
     }
 
     /**
-     * \accessor m_max_sequence
+     * \getter m_max_sequence
      */
 
     int max_sequence () const
@@ -333,7 +354,7 @@ public:
     }
 
     /**
-     * \accessor m_text_x
+     * \getter m_text_x
      */
 
     int text_x () const
@@ -342,7 +363,7 @@ public:
     }
 
     /**
-     * \accessor m_text_y
+     * \getter m_text_y
      */
 
     int text_y () const
@@ -351,7 +372,7 @@ public:
     }
 
     /**
-     * \accessor m_seqchars_x
+     * \getter m_seqchars_x
      */
 
     int seqchars_x () const
@@ -360,7 +381,7 @@ public:
     }
 
     /**
-     * \accessor m_seqchars_y
+     * \getter m_seqchars_y
      */
 
     int seqchars_y () const
@@ -369,7 +390,7 @@ public:
     }
 
     /**
-     * \accessor m_seqarea_x
+     * \getter m_seqarea_x
      */
 
     int seqarea_x () const
@@ -378,7 +399,7 @@ public:
     }
 
     /**
-     * \accessor m_seqarea_y
+     * \getter m_seqarea_y
      */
 
     int seqarea_y () const
@@ -387,7 +408,7 @@ public:
     }
 
     /**
-     * \accessor m_seqarea_seq_x
+     * \getter m_seqarea_seq_x
      */
 
     int seqarea_seq_x () const
@@ -396,7 +417,7 @@ public:
     }
 
     /**
-     * \accessor m_seqarea_seq_y
+     * \getter m_seqarea_seq_y
      */
 
     int seqarea_seq_y () const
@@ -405,7 +426,7 @@ public:
     }
 
     /**
-     * \accessor m_mainwid_border
+     * \getter m_mainwid_border
      */
 
     int mainwid_border () const
@@ -414,7 +435,7 @@ public:
     }
 
     /**
-     * \accessor m_mainwid_spacing
+     * \getter m_mainwid_spacing
      */
 
     int mainwid_spacing () const
@@ -423,7 +444,7 @@ public:
     }
 
     /**
-     * \accessor m_control_height
+     * \getter m_control_height
      */
 
     int control_height () const
@@ -432,7 +453,7 @@ public:
     }
 
     /**
-     * \accessor m_mainwid_x
+     * \getter m_mainwid_x
      */
 
     int mainwid_x () const
@@ -441,7 +462,7 @@ public:
     }
 
     /**
-     * \accessor m_mainwid_y
+     * \getter m_mainwid_y
      */
 
     int mainwid_y () const

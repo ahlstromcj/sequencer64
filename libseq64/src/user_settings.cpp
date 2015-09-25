@@ -254,6 +254,121 @@ user_settings::copy_definitions (const user_settings & rhs)
 }
 
 /**
+ * \getter m_midi_bus_defs[index]
+ *      If the index is out of range, then a bogus value is returned.
+ *      This bogus value has an alias of "bogus", and all the instrument
+ *      numbers are -1.
+ */
+
+user_midi_bus_t &
+user_settings::bus (int index)
+{
+    static user_midi_bus_t s_bogus;
+    static bool s_bogus_is_set = false;
+    if (! s_bogus_is_set)
+    {
+        s_bogus_is_set = true;
+        s_bogus.alias = "bogus";
+        for (int i = 0; i < MIDI_BUS_CHANNEL_MAX; ++i)       // 16
+        {
+            s_bogus.instrument[i] = -1;     /* disable channel i */
+        }
+    }
+    if (index >= 0 && index < c_max_busses)
+        return m_midi_bus_defs[index];
+    else
+        return s_bogus;
+}
+
+/**
+ * \getter m_midi_bus_defs[index].alias
+ */
+
+void
+user_settings::bus_alias (int index, const std::string & ale)
+{
+    user_midi_bus_t & mb = bus(index);
+    if (mb.alias != "bogus")
+        mb.alias = ale;
+}
+
+/**
+ * \getter m_midi_bus_defs[index].instrument[channel]
+ */
+
+void
+user_settings::bus_instrument (int index, int channel, int instrum)
+{
+    user_midi_bus_t & mb = bus(index);
+    if (mb.alias != "bogus")
+    {
+        if (channel >= 0 && channel < MIDI_BUS_CHANNEL_MAX)     // 16
+            mb.instrument[channel] = instrum;
+    }
+}
+
+/**
+ * \getter m_instrument_defs[index]
+ *      If the index is out of range, then a bogus value is returned.
+ *      This bogus value has a "bogus" instrument name, false for all
+ *      controllers_active[] values, and empty controllers[] string values.
+ */
+
+user_instrument_t &
+user_settings::instrument (int index)
+{
+    static user_instrument_t s_bogus;
+    static bool s_bogus_is_set = false;
+    if (! s_bogus_is_set)
+    {
+        s_bogus_is_set = true;
+        s_bogus.instrument = "bogus";
+        for (int i = 0; i < MIDI_COUNT_MAX; ++i)       // 16
+        {
+            s_bogus.controllers_active[i] = false;
+            s_bogus.controllers[i].clear();
+        }
+    }
+    if (index >= 0 && index < c_max_instruments)
+        return m_instrument_defs[index];
+    else
+        return s_bogus;
+}
+
+/**
+ * \getter m_midi_instrument_defs[index].instrument
+ */
+
+void
+user_settings::instrument_name (int index, const std::string & instname)
+{
+    user_instrument_t & mi = instrument(index);
+    if (mi.instrument != "bogus")
+        mi.instrument = instname;
+}
+
+/**
+ * \getter m_midi_instrument_defs[index].controllers, controllers_active
+ */
+
+void
+user_settings::instrument_controllers
+(
+    int index, int cc, const std::string & ccname, bool isactive
+)
+{
+    user_instrument_t & mi = instrument(index);
+    if (mi.instrument != "bogus")
+    {
+        if (cc >= 0 && cc < MIDI_COUNT_MAX)
+        {
+            mi.controllers[cc] = ccname;
+            mi.controllers_active[cc] = isactive;
+        }
+    }
+}
+
+/**
  * \setter m_mainwnd_rows
  *      This value is not modified unless the value parameter is
  *      between 4 and 8, inclusive.  The default value is 4.

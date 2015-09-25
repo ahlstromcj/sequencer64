@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-09-23
+ * \updates       2015-09-24
  * \license       GNU GPLv2 or above
  *
  *  Note that the parse function has some code that is not yet enabled.
@@ -94,7 +94,10 @@ userfile::parse (perform & /* a_perf */)
     {
         snprintf(bus_num, sizeof(bus_num), "%d", i);
         line_after(file, "[user-midi-bus-" + std::string(bus_num) + "]");
-        global_user_midi_bus_definitions[i].alias = m_line;
+
+        // global_user_midi_bus_definitions[i].alias = m_line;
+
+        global_user_settings.bus_alias(i, m_line);
         next_data_line(file);
         int instruments = 0;
         int instrument;
@@ -104,7 +107,10 @@ userfile::parse (perform & /* a_perf */)
         {
             next_data_line(file);
             sscanf(m_line, "%d %d", &channel, &instrument);
-            global_user_midi_bus_definitions[i].instrument[channel] = instrument;
+
+            // global_user_midi_bus_definitions[i].instrument[channel] = instrument;
+
+            global_user_settings.bus_instrument(i, channel, instrument);
         }
     }
     line_after(file, "[user-instrument-definitions]");
@@ -115,7 +121,10 @@ userfile::parse (perform & /* a_perf */)
     {
         snprintf(instrument_num, sizeof(instrument_num), "%d", i);
         line_after(file, "[user-instrument-"+std::string(instrument_num)+"]");
-        global_user_instrument_definitions[i].instrument = m_line;
+
+        // global_user_instrument_definitions[i].instrument = m_line;
+
+        global_user_settings.instrument_name(i, m_line);
         next_data_line(file);
         int ccs = 0;
         int cc = 0;
@@ -126,12 +135,22 @@ userfile::parse (perform & /* a_perf */)
             next_data_line(file);
             sscanf(m_line, "%d", &cc);
             sscanf(m_line, "%[^\n]", cc_name);
-            global_user_instrument_definitions[i].controllers[cc] =
-                std::string(cc_name);
 
-            global_user_instrument_definitions[i].controllers_active[cc] = true;
+        //  global_user_instrument_definitions[i].controllers_active[cc] = true;
+        //  global_user_instrument_definitions[i].controllers[cc] =
+        //      std::string(cc_name);
+
+            global_user_settings.instrument_controllers
+            (
+                i, cc, std::string(cc_name), true
+            );
         }
     }
+
+    /*
+     * TODO: More (new) variables to follow!
+     */
+
     file.close();
     return true;
 }

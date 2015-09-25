@@ -84,7 +84,6 @@ userfile::parse (perform & /* a_perf */)
         printf("? error opening [%s]\n", m_name.c_str());
         return false;
     }
-
     file.seekg(0, std::ios::beg);                       /* seek to start */
     line_after(file, "[user-midi-bus-definitions]");    /* find the tag  */
     int buses = 0;
@@ -97,7 +96,7 @@ userfile::parse (perform & /* a_perf */)
 
         // global_user_midi_bus_definitions[i].alias = m_line;
 
-        global_user_settings.bus_alias(i, m_line);
+        g_user_settings.bus_alias(i, m_line);
         next_data_line(file);
         int instruments = 0;
         int instrument;
@@ -110,7 +109,7 @@ userfile::parse (perform & /* a_perf */)
 
             // global_user_midi_bus_definitions[i].instrument[channel] = instrument;
 
-            global_user_settings.bus_instrument(i, channel, instrument);
+            g_user_settings.bus_instrument(i, channel, instrument);
         }
     }
     line_after(file, "[user-instrument-definitions]");
@@ -124,7 +123,7 @@ userfile::parse (perform & /* a_perf */)
 
         // global_user_instrument_definitions[i].instrument = m_line;
 
-        global_user_settings.instrument_name(i, m_line);
+        g_user_settings.instrument_name(i, m_line);
         next_data_line(file);
         int ccs = 0;
         int cc = 0;
@@ -140,7 +139,7 @@ userfile::parse (perform & /* a_perf */)
         //  global_user_instrument_definitions[i].controllers[cc] =
         //      std::string(cc_name);
 
-            global_user_settings.instrument_controllers
+            g_user_settings.instrument_controllers
             (
                 i, cc, std::string(cc_name), true
             );
@@ -151,6 +150,7 @@ userfile::parse (perform & /* a_perf */)
      * TODO: More (new) variables to follow!
      */
 
+    g_rc_settings.globalize();
     file.close();
     return true;
 }
@@ -166,7 +166,39 @@ userfile::parse (perform & /* a_perf */)
 bool
 userfile::write (const perform & /* a_perf */ )
 {
-    return false;
+    std::ofstream file(m_name.c_str(), std::ios::out | std::ios::trunc);
+    char outs[SEQ64_LINE_MAX];
+    if (! file.is_open())
+    {
+        printf("? error opening [%s] for writing\n", m_name.c_str());
+        return false;
+    }
+    if (g_rc_settings.legacy_format())
+    {
+        file << "# Seq24 0.9.2 user configuration file (legacy format)\n";
+    }
+    else
+    {
+        file << "# Sequencer26 0.9.9.4 (and above) user configuration file\n";
+    }
+
+    //////////////////////////////////////////////////////////////
+
+    file
+        << "\n"
+        << "[user-midi-bus-definitions]\n\n"
+        <<  "99999999"  << "      # MIDI controls count\n" // constant count
+        ;
+
+    //////////////////////////////////////////////////////////////
+
+
+    file
+        << "# End of " << m_name << "\n#\n"
+        << "# vim: sw=4 ts=4 wm=8 et ft=sh\n"
+        ;
+    file.close();
+    return true;
 }
 
 }           // namespace seq64

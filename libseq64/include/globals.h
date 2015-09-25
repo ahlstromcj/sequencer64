@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-25
- * \updates       2015-09-24
+ * \updates       2015-09-25
  * \license       GNU GPLv2 or above
  *
  *  We're going to try to collect all the globals here in one module, and
@@ -57,8 +57,8 @@
 #include "rc_settings.hpp"              // seq64::rc_settings
 #include "user_settings.hpp"            // seq64::user_settings
 
-extern rc_settings global_rc_settings;
-extern user_settings global_user_settings;
+extern rc_settings g_rc_settings;
+extern user_settings g_user_settings;
 
 /**
  *  A manifest constant for the normal number of semitones in an

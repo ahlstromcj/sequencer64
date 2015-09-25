@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-09-24
+ * \updates       2015-09-25
  * \license       GNU GPLv2 or above
  *
  */
@@ -142,8 +142,8 @@ main (int argc, char * argv [])
 {
     Gtk::Main kit(argc, argv);              /* strip GTK+ parameters        */
     int c;
-    global_rc_settings.set_defaults();      /* start out with normal values */
-    global_user_settings.set_defaults();    /* start out with normal values */
+    g_rc_settings.set_defaults();      /* start out with normal values */
+    g_user_settings.set_defaults();    /* start out with normal values */
     for (;;)                                /* parse all parameters         */
     {
         int option_index = 0;               /* getopt_long index storage    */
@@ -167,65 +167,65 @@ main (int argc, char * argv [])
             break;
 
         case 'l':
-            global_rc_settings.legacy_format(true);
+            g_rc_settings.legacy_format(true);
             printf("Setting legacy seq24 file format.\n");
             break;
 
         case 'L':
-            global_rc_settings.lash_support(true);
+            g_rc_settings.lash_support(true);
             printf("Activating LASH support.\n");
             break;
 
         case 'S':
-            global_rc_settings.stats(true);
+            g_rc_settings.stats(true);
             break;
 
         case 's':
-            global_rc_settings.show_midi(true);
+            g_rc_settings.show_midi(true);
             break;
 
         case 'p':
-            global_rc_settings.priority(true);
+            g_rc_settings.priority(true);
             break;
 
         case 'P':
-            global_rc_settings.pass_sysex(true);
+            g_rc_settings.pass_sysex(true);
             break;
 
         case 'k':
-            global_rc_settings.print_keys(true);
+            g_rc_settings.print_keys(true);
             break;
 
         case 'j':
-            global_rc_settings.with_jack_transport(true);
+            g_rc_settings.with_jack_transport(true);
             break;
 
         case 'J':
-            global_rc_settings.with_jack_master(true);
+            g_rc_settings.with_jack_master(true);
             break;
 
         case 'C':
-            global_rc_settings.with_jack_master_cond(true);
+            g_rc_settings.with_jack_master_cond(true);
             break;
 
         case 'M':
             if (atoi(optarg) > 0)
             {
-                global_rc_settings.jack_start_mode(true);
+                g_rc_settings.jack_start_mode(true);
             }
             else
             {
-                global_rc_settings.jack_start_mode(false);
+                g_rc_settings.jack_start_mode(false);
             }
             break;
 
         case 'm':
-            global_rc_settings.manual_alsa_ports(true);
+            g_rc_settings.manual_alsa_ports(true);
             break;
 
         case 'i':                           /* ignore ALSA device */
-            global_rc_settings.device_ignore(true);
-            global_rc_settings.device_ignore_num(atoi(optarg));
+            g_rc_settings.device_ignore(true);
+            g_rc_settings.device_ignore_num(atoi(optarg));
             break;
 
         case 'V':
@@ -234,11 +234,11 @@ main (int argc, char * argv [])
             break;
 
         case 'U':
-            global_rc_settings.jack_session_uuid(std::string(optarg));
+            g_rc_settings.jack_session_uuid(std::string(optarg));
             break;
 
         case 'x':
-            global_rc_settings.interaction_method
+            g_rc_settings.interaction_method
             (
                 interaction_method_t(atoi(optarg))
             );
@@ -254,11 +254,11 @@ main (int argc, char * argv [])
     appname = appname.substr(appname.size()-applen, applen);
     if (appname == "seq24")
     {
-        global_rc_settings.legacy_format(true);
+        g_rc_settings.legacy_format(true);
         printf("Setting legacy seq24 file format.\n");
     }
-    global_rc_settings.globalize();             /* copy to legacy globals   */
-    global_user_settings.globalize();           /* copy to legacy globals   */
+    g_rc_settings.globalize();             /* copy to legacy globals   */
+    g_user_settings.globalize();           /* copy to legacy globals   */
 
     /*
      * Set up objects that are specific to the Gtk-2 GUI.  Pass them to
@@ -278,21 +278,21 @@ main (int argc, char * argv [])
      *  LINUX-SPECIFIC.  See the rc_settings class for how this works.
      */
 
-    std::string cfg_dir = global_rc_settings.home_config_directory();
+    std::string cfg_dir = g_rc_settings.home_config_directory();
     if (cfg_dir.empty())
         return EXIT_FAILURE;
 
-    std::string rcname = global_rc_settings.config_filespec();
+    std::string rcname = g_rc_settings.config_filespec();
     if (Glib::file_test(rcname, Glib::FILE_TEST_EXISTS))
     {
         printf("Reading 'rc' configuration [%s]\n", rcname.c_str());
         seq64::optionsfile options(rcname);
         if (options.parse(p))
-            global_rc_settings.last_used_dir(cfg_dir);
+            g_rc_settings.last_used_dir(cfg_dir);
         else
             return EXIT_FAILURE;
     }
-    rcname = global_rc_settings.user_filespec();
+    rcname = g_rc_settings.user_filespec();
     if (Glib::file_test(rcname, Glib::FILE_TEST_EXISTS))
     {
         printf("Reading 'user' configuration [%s]\n", rcname.c_str());
@@ -340,21 +340,27 @@ main (int argc, char * argv [])
      * --legacy option is in force.
      */
 
-    global_rc_settings.get_globals();             /* copy from legacy globals */
-    rcname = global_rc_settings.config_filespec();
-    printf("Writing configuration [%s]\n", rcname.c_str());
+    g_rc_settings.get_globals();             /* copy from legacy globals */
+//  if (g_rc_settings.legacy_format())
+        rcname = g_rc_settings.config_filespec();
+//  else
+//      rcname = g_rc_settings.config_filespec();
+
+    printf("Writing rc configuration file [%s]\n", rcname.c_str());
     seq64::optionsfile options(rcname);
     if (options.write(p))
     {
         // Anything to do?
     }
 
-    /*
-     * \todo
-     *      Flesh out the userfile writing code and write it.
-     */
-
-    global_user_settings.get_globals();           /* copy from legacy globals */
+    g_user_settings.get_globals();           /* copy from legacy globals */
+    rcname = g_rc_settings.user_filespec();
+    printf("Writing user configuration file [%s]\n", rcname.c_str());
+    seq64::userfile userstuff(rcname);
+    if (userstuff.write(p))
+    {
+        // Anything to do?
+    }
 
 #ifdef SEQ64_LASH_SUPPORT
     if (not_nullptr(seq64::global_lash_driver))

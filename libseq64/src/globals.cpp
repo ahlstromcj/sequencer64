@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-08-07
- * \updates       2015-09-24
+ * \updates       2015-09-25
  * \license       GNU GPLv2 or above
  *
  */
@@ -37,7 +37,7 @@
  *  variables.
  */
 
-rc_settings global_rc_settings;
+rc_settings g_rc_settings;
 
 /**
  *  Provide the eventual replacement for all of the other settings in the
@@ -45,7 +45,7 @@ rc_settings global_rc_settings;
  *  module.
  */
 
-user_settings global_user_settings;
+user_settings g_user_settings;
 
 /*
  * Most of these variables were declared and used in other modules, but

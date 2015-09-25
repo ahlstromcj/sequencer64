@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-22
- * \updates       2015-09-24
+ * \updates       2015-09-25
  * \license       GNU GPLv2 or above
  *
  *  Note that this module also sets the legacy global variables, so that
@@ -191,8 +191,8 @@ rc_settings::set_defaults ()
     m_jack_session_uuid.clear();
     m_last_used_dir             = "/";
     m_config_directory          = ".config/sequencer64";
-    m_config_filename           = "sequencer64rc";
-    m_user_filename             = "sequencer64user";
+    m_config_filename           = "sequencer64.rc";
+    m_user_filename             = "sequencer64.usr";
     m_config_filename_alt       = ".seq24rc";
     m_user_filename_alt         = ".seq24usr";
 }
@@ -327,7 +327,7 @@ rc_settings::home_config_directory () const
     {
         std::string home(getenv(HOME));
         result = home + SLASH;                      /* e.g. /home/username/  */
-        if (! global_rc_settings.legacy_format())
+        if (! g_rc_settings.legacy_format())
         {
             result += config_directory();           /* new, longer directory */
             bool ok = make_directory(result);
@@ -356,7 +356,7 @@ rc_settings::config_filespec () const
     if (! result.empty())
     {
         result += SLASH;
-        if (global_rc_settings.legacy_format())
+        if (g_rc_settings.legacy_format())
             result += config_filename_alt();
         else
             result += config_filename();
@@ -376,7 +376,7 @@ rc_settings::user_filespec () const
     if (! result.empty())
     {
         result += SLASH;
-        if (global_rc_settings.legacy_format())
+        if (g_rc_settings.legacy_format())
             result += user_filename_alt();
         else
             result += user_filename();

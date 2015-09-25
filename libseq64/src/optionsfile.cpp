@@ -175,7 +175,7 @@ optionsfile::parse (perform & a_perf)
     std::ifstream file(m_name.c_str(), std::ios::in | std::ios::ate);
     if (! file.is_open())
     {
-        printf("? error opening [%s]\n", m_name.c_str());
+        printf("? error opening [%s] for reading\n", m_name.c_str());
         return false;
     }
     file.seekg(0, std::ios::beg);                           /* seek to start */
@@ -352,19 +352,19 @@ optionsfile::parse (perform & a_perf)
     line_after(file, "[jack-transport]");
     long flag = 0;
     sscanf(m_line, "%ld", &flag);
-    global_rc_settings.with_jack_transport(bool(flag));
+    g_rc_settings.with_jack_transport(bool(flag));
 
     next_data_line(file);
     sscanf(m_line, "%ld", &flag);
-    global_rc_settings.with_jack_master(bool(flag));
+    g_rc_settings.with_jack_master(bool(flag));
 
     next_data_line(file);
     sscanf(m_line, "%ld", &flag);
-    global_rc_settings.with_jack_master_cond(bool(flag));
+    g_rc_settings.with_jack_master_cond(bool(flag));
 
     next_data_line(file);
     sscanf(m_line, "%ld", &flag);
-    global_rc_settings.jack_start_mode(bool(flag));
+    g_rc_settings.jack_start_mode(bool(flag));
 
     line_after(file, "[midi-input]");
     buses = 0;
@@ -385,7 +385,7 @@ optionsfile::parse (perform & a_perf)
 
     line_after(file, "[manual-alsa-ports]");
     sscanf(m_line, "%ld", &flag);
-    global_rc_settings.manual_alsa_ports(bool(flag));
+    g_rc_settings.manual_alsa_ports(bool(flag));
 
     line_after(file, "[last-used-dir]");
     if (m_line[0] == '/')
@@ -393,25 +393,25 @@ optionsfile::parse (perform & a_perf)
         // FIXME: need check for valid path
 
         global_last_used_dir.assign(m_line);
-        global_rc_settings.last_used_dir(m_line);
+        g_rc_settings.last_used_dir(m_line);
     }
 
     long method = 0;
     line_after(file, "[interaction-method]");
     sscanf(m_line, "%ld", &method);
-    global_rc_settings.interaction_method(interaction_method_t(method));
+    g_rc_settings.interaction_method(interaction_method_t(method));
 
     next_data_line(file);
     sscanf(m_line, "%ld", &method);
-    global_rc_settings.allow_mod4_mode(method != 0);
+    g_rc_settings.allow_mod4_mode(method != 0);
 
     /*
-     * We could call global_rc_settings.globalize() here, though
+     * We could call g_rc_settings.globalize() here, though
      * only a few items above are affected by the read; the rest go into
      * the perform object.  Let's do it!
      */
 
-    global_rc_settings.globalize();
+    g_rc_settings.globalize();
     file.close();
     return true;
 }
@@ -437,7 +437,7 @@ optionsfile::write (const perform & a_perf)
     perform & ucperf = const_cast<perform &>(a_perf);
     if (! file.is_open())
     {
-        printf("? error writing [%s]\n", m_name.c_str());
+        printf("? error opening [%s] for writing\n", m_name.c_str());
         return false;
     }
 
@@ -445,14 +445,14 @@ optionsfile::write (const perform & a_perf)
      * Initial comments and MIDI control section
      */
 
-    if (global_rc_settings.legacy_format())
+    if (g_rc_settings.legacy_format())
     {
-        file << "# Seq24 0.9.2 initialization file (legacy format)\n";
+        file << "# Seq24 0.9.2 rc configuration file (legacy format)\n";
     }
     else
     {
         file
-            << "# Sequencer26 0.9.9.4 (and above) initialization file\n"
+            << "# Sequencer26 0.9.9.4 (and above) rc configuration file\n"
             << "# (Also works with Sequencer24)\n"
             ;
     }
@@ -807,11 +807,10 @@ optionsfile::write (const perform & a_perf)
         << "# Last used directory:\n\n"
         << global_last_used_dir << "\n\n"
         ;
-    if (global_rc_settings.legacy_format())
-        file << "# End of .seq24\n";
-    else
-        file << "# End of sequencer64rc\n";
-
+    file
+        << "# End of " << m_name << "\n#\n"
+        << "# vim: sw=4 ts=4 wm=8 et ft=sh\n"
+        ;
     file.close();
     return true;
 }

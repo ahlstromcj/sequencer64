@@ -92,6 +92,13 @@ extern user_settings g_user_settings;
 #define DEFAULT_TRIGLOOK_MS               2
 
 /**
+ *  Defines the maximum number of MIDI values, and one more than the
+ *  highest MIDI value, which is 127.
+ */
+
+#define MIDI_COUNT_MAX                  128
+
+/**
  *  Number of rows in the Patterns Panel.  The current value is 4, and
  *  probably won't change, since other values depend on it.  Together with
  *  c_mainwnd_cols, this value fixes the patterns grid into a 4 x 8 set of

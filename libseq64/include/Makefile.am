@@ -6,7 +6,7 @@
 # \library    	libseq64 library
 # \author     	Chris Ahlstrom
 # \date       	2015-09-11
-# \update      2015-09-24
+# \update      2015-09-25
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -88,7 +88,10 @@ pkginclude_HEADERS = \
 	platform_macros.h \
 	rc_settings.hpp \
 	sequence.hpp \
-	userfile.hpp
+	userfile.hpp \
+   user_instrument.hpp \
+   user_midi_bus.hpp \
+   user_settings.hpp 
 
 #******************************************************************************
 # uninstall-hook

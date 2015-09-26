@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-22
- * \updates       2015-09-24
+ * \updates       2015-09-25
  * \license       GNU GPLv2 or above
  *
  *  This collection of variables describes some facets of the
@@ -43,41 +43,11 @@
  */
 
 #include <string>
+#include <vector>
 
 #include "easy_macros.h"               // with platform_macros.h, too
-
-/**
- *  Default value for c_max_busses.
- */
-
-#define DEFAULT_BUSS_MAX                 32
-
-/**
- *  Provides the maximum number of MIDI buss definitions supported in the
- *  ~/.seq24usr file.
- */
-
-const int c_max_busses = DEFAULT_BUSS_MAX;
-
-/**
- *  Default value for c_max_instruments.
- */
-
-#define DEFAULT_INSTRUMENT_MAX           64     // but only 16 are loaded
-
-/**
- *  Provides the maximum number of instruments that can be defined in the
- *  <tt> ~/.seq24usr <tt> file.
- */
-
-const int c_max_instruments = DEFAULT_INSTRUMENT_MAX;   // 64, not 16!!!
-
-/**
- *  Manifest constant for the maximum value limit of a MIDI byte when used
- *  to limit the size of an array.
- */
-
-#define MIDI_COUNT_MAX                  128
+#include "user_instrument.hpp"
+#include "user_midi_bus.hpp"
 
 /**
  *  Manifest constant for the maximum number of "instrument" values in a
@@ -85,29 +55,6 @@ const int c_max_instruments = DEFAULT_INSTRUMENT_MAX;   // 64, not 16!!!
  */
 
 #define MIDI_BUS_CHANNEL_MAX             16
-
-/**
- *  This structure corresponds to <tt> [user-midi-bus-0] </tt> definitions
- *  in the <tt> ~/.seq24usr </tt> file.
- */
-
-struct user_midi_bus_t
-{
-    std::string alias;
-    int instrument[MIDI_BUS_CHANNEL_MAX];   // 16
-};
-
-/**
- *  This structure corresponds to <tt> [user-instrument-0] </tt>
- *  definitions in the <tt> ~/.seq24usr </tt> file.
- */
-
-struct user_instrument_t
-{
-    std::string instrument;
-    bool controllers_active[MIDI_COUNT_MAX];
-    std::string controllers[MIDI_COUNT_MAX];
-};
 
 /**
  *  Holds the current values of sequence settings and settings that can
@@ -124,7 +71,7 @@ class user_settings
      *  makes sense to do so.
      */
 
-    user_midi_bus_t m_midi_bus_defs[c_max_busses];
+    std::vector<user_midi_bus> m_midi_bus_defs;
 
     /**
      *  Provides data about the MIDI instruments, readable from the "user"
@@ -132,7 +79,7 @@ class user_settings
      *  makes sense to do so.
      */
 
-    user_instrument_t m_instrument_defs[c_max_instruments];
+    std::vector<user_instrument> m_instrument_defs;
 
     /**
      *  Number of rows in the Patterns Panel.  The current value is 4, and
@@ -288,11 +235,9 @@ public:
     void get_globals ();
     void prepare_midi_defs ();
 
-    user_midi_bus_t & bus (int index);
     void bus_alias (int index, const std::string & ale);
     void bus_instrument (int index, int channel, int instrum);
 
-    user_instrument_t & instrument (int index);
     void instrument_name (int index, const std::string & instname);
     void instrument_controllers
     (
@@ -498,7 +443,8 @@ public:
 
 private:
 
-    void copy_definitions (const user_settings & rhs);
+    user_midi_bus & bus (int index);
+    user_instrument & instrument (int index);
 
 };
 

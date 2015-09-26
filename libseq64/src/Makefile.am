@@ -6,7 +6,7 @@
 # \library    	libseq64 library
 # \author     	Chris Ahlstrom
 # \date       	2015-09-11
-# \update      2015-09-24
+# \update      2015-09-25
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -131,6 +131,8 @@ libseq64_la_SOURCES = \
    perform.cpp \
 	rc_settings.cpp \
 	sequence.cpp \
+	user_instrument.cpp \
+	user_midi_bus.cpp \
 	user_settings.cpp \
 	userfile.cpp
 

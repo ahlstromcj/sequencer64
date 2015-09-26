@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-23
- * \updates       2015-09-24
+ * \updates       2015-09-25
  * \license       GNU GPLv2 or above
  *
  *  Note that this module also sets the legacy global variables, so that
@@ -42,8 +42,8 @@
 
 user_settings::user_settings ()
  :
-    m_midi_bus_defs     (),     // currently a constant-size array
-    m_instrument_defs   (),     // currently a constant-size array
+    m_midi_bus_defs     (),         // vector
+    m_instrument_defs   (),         // vector
     m_mainwnd_rows      (0),
     m_mainwnd_cols      (0),
     m_seqs_in_set       (0),
@@ -74,8 +74,8 @@ user_settings::user_settings ()
 
 user_settings::user_settings (const user_settings & rhs)
  :
-    m_midi_bus_defs     (),                     // a constant-size array
-    m_instrument_defs   (),                     // a constant-size array
+    m_midi_bus_defs     (),         // vector
+    m_instrument_defs   (),         // vector
     m_mainwnd_rows      (rhs.m_mainwnd_rows),
     m_mainwnd_cols      (rhs.m_mainwnd_cols),
     m_seqs_in_set       (rhs.m_seqs_in_set),
@@ -97,7 +97,7 @@ user_settings::user_settings (const user_settings & rhs)
     m_mainwid_x         (rhs.m_mainwid_x),
     m_mainwid_y         (rhs.m_mainwid_y)
 {
-    copy_definitions(rhs);
+    // Empty body
 }
 
 /**
@@ -109,10 +109,8 @@ user_settings::operator = (const user_settings & rhs)
 {
     if (this != &rhs)
     {
-        // m_midi_bus_defs     = rhs.m_midi_bus_defs;   // a constant-size array
-        // m_instrument_defs   = rhs.m_instrument_defs; // a constant-size array
-
-        copy_definitions(rhs);
+        m_midi_bus_defs     = rhs.m_midi_bus_defs;
+        m_instrument_defs   = rhs.m_instrument_defs;
         m_mainwnd_rows      = rhs.m_mainwnd_rows;
         m_mainwnd_cols      = rhs.m_mainwnd_cols;
         m_seqs_in_set       = rhs.m_seqs_in_set;
@@ -138,12 +136,17 @@ user_settings::operator = (const user_settings & rhs)
 }
 
 /**
- *  Sets the default values.
+ *  Sets the default values.  For the m_midi_bus_defs and
+ *  m_instrument_defs members, this function can only iterate over the
+ *  current size of the vectors.  But the default size is zero!
  */
 
 void
 user_settings::set_defaults ()
 {
+    m_midi_bus_defs.clear();
+    m_instrument_defs.clear();
+
     m_mainwnd_rows = 4;                 // range: 4 to 8
     m_mainwnd_cols = 8;                 // range: 8 to 10
     m_max_sets = 32;                    // range: 32 to 64
@@ -194,18 +197,13 @@ user_settings::normalize ()
 void
 user_settings::globalize ()
 {
-    for (int i = 0; i < c_max_busses; i++)
-    {
-        for (int j = 0; j < 16; j++)
-            global_user_midi_bus_definitions[i].instrument[j] =
-                m_midi_bus_defs[i].instrument[j];
-    }
-    for (int i = 0; i < c_max_instruments; i++)
-    {
-        for (int j = 0; j < MIDI_COUNT_MAX; j++)
-            global_user_instrument_definitions[i].controllers_active[j] =
-                m_instrument_defs[i].controllers_active[j];
-    }
+#ifdef READY_TO_USE
+
+    MUST ITERATE OVER THE VECTOR!!!!
+
+    m_midi_bus_defs.set_global();
+    m_instrument_defs.set_global();
+#endif
 }
 
 /**
@@ -217,79 +215,56 @@ user_settings::globalize ()
 void
 user_settings::get_globals ()
 {
-    for (int i = 0; i < c_max_busses; i++)
-    {
-        for (int j = 0; j < 16; j++)
-            m_midi_bus_defs[i].instrument[j] =
-                global_user_midi_bus_definitions[i].instrument[j];
-    }
-    for (int i = 0; i < c_max_instruments; i++)
-    {
-        for (int j = 0; j < MIDI_COUNT_MAX; j++)
-            m_instrument_defs[i].controllers_active[j] =
-                global_user_instrument_definitions[i].controllers_active[j];
-    }
+#ifdef READY_TO_USE
+
+    MUST ITERATE OVER THE VECTOR!!!!
+
+    m_midi_bus_defs.get_global();
+    m_instrument_defs.get_global();
+#endif
 }
 
 /**
- *  Copies the array members from one instance of user_settings to this
- *  one.
- */
-
-void
-user_settings::copy_definitions (const user_settings & rhs)
-{
-    for (int i = 0; i < c_max_busses; i++)
-    {
-        for (int j = 0; j < 16; j++)
-            m_midi_bus_defs[i].instrument[j] =
-                rhs.m_midi_bus_defs[i].instrument[j];
-    }
-    for (int i = 0; i < c_max_instruments; i++)
-    {
-        for (int j = 0; j < MIDI_COUNT_MAX; j++)
-            m_instrument_defs[i].controllers_active[j] =
-                rhs.m_instrument_defs[i].controllers_active[j];
-    }
-}
-
-/**
- * \getter m_midi_bus_defs[index]
+ * \getter m_midi_bus_defs[index] (internal function)
  *      If the index is out of range, then a bogus value is returned.
- *      This bogus value has an alias of "bogus", and all the instrument
+ *      This bogus value has an alias of "BOGUS", and all the instrument
  *      numbers are -1.
  */
 
-user_midi_bus_t &
+user_midi_bus &
 user_settings::bus (int index)
 {
-    static user_midi_bus_t s_bogus;
+    static user_midi_bus s_bogus;
     static bool s_bogus_is_set = false;
     if (! s_bogus_is_set)
     {
         s_bogus_is_set = true;
-        s_bogus.alias = "bogus";
-        for (int i = 0; i < MIDI_BUS_CHANNEL_MAX; ++i)       // 16
+
+        // MAKE A FUNCTION TO DO THIS; CAN WE JUST USE ITS
+        // set_default() function somehow?????
+
+        s_bogus.set_name("BOGUS");
+        for (int i = 0; i < MIDI_BUS_CHANNEL_MAX; ++i)      // 16
         {
-            s_bogus.instrument[i] = -1;     /* disable channel i */
+            s_bogus.set_instrument(i, -1);          /* disable channel i */
         }
     }
-    if (index >= 0 && index < c_max_busses)
+    if (index >= 0 && index < int(m_midi_bus_defs.size()))  // c_max_busses
         return m_midi_bus_defs[index];
     else
         return s_bogus;
 }
 
 /**
- * \getter m_midi_bus_defs[index].alias
+ * \setter m_midi_bus_defs[index].name() [the alias field]
  */
 
 void
 user_settings::bus_alias (int index, const std::string & ale)
 {
-    user_midi_bus_t & mb = bus(index);
-    if (mb.alias != "bogus")
-        mb.alias = ale;
+    user_midi_bus & mb = bus(index);
+    if (mb.name() != "BOGUS")
+        mb.set_name(ale);
 }
 
 /**
@@ -299,37 +274,37 @@ user_settings::bus_alias (int index, const std::string & ale)
 void
 user_settings::bus_instrument (int index, int channel, int instrum)
 {
-    user_midi_bus_t & mb = bus(index);
-    if (mb.alias != "bogus")
-    {
-        if (channel >= 0 && channel < MIDI_BUS_CHANNEL_MAX)     // 16
-            mb.instrument[channel] = instrum;
-    }
+    user_midi_bus & mb = bus(index);
+    if (mb.name() != "BOGUS")
+        mb.set_instrument(channel, instrum);
 }
 
 /**
  * \getter m_instrument_defs[index]
  *      If the index is out of range, then a bogus value is returned.
- *      This bogus value has a "bogus" instrument name, false for all
+ *      This bogus value has a "BOGUS" instrument name, false for all
  *      controllers_active[] values, and empty controllers[] string values.
  */
 
-user_instrument_t &
+user_instrument &
 user_settings::instrument (int index)
 {
-    static user_instrument_t s_bogus;
+    static user_instrument s_bogus;
     static bool s_bogus_is_set = false;
     if (! s_bogus_is_set)
     {
         s_bogus_is_set = true;
-        s_bogus.instrument = "bogus";
-        for (int i = 0; i < MIDI_COUNT_MAX; ++i)       // 16
+
+        // MAKE A FUNCTION TO DO THIS; CAN WE JUST USE ITS
+        // set_default() function somehow?????
+
+        s_bogus.set_name("BOGUS");
+        for (int i = 0; i < MIDI_COUNT_MAX; ++i)        // 16
         {
-            s_bogus.controllers_active[i] = false;
-            s_bogus.controllers[i].clear();
+            s_bogus.set_controller(i, std::string(""), false);
         }
     }
-    if (index >= 0 && index < c_max_instruments)
+    if (index >= 0 && index < int(m_instrument_defs.size())) // c_max_instruments
         return m_instrument_defs[index];
     else
         return s_bogus;
@@ -342,9 +317,9 @@ user_settings::instrument (int index)
 void
 user_settings::instrument_name (int index, const std::string & instname)
 {
-    user_instrument_t & mi = instrument(index);
-    if (mi.instrument != "bogus")
-        mi.instrument = instname;
+    user_instrument & mi = instrument(index);
+    if (mi.name() != "BOGUS")
+        mi.set_name(instname);
 }
 
 /**
@@ -354,16 +329,20 @@ user_settings::instrument_name (int index, const std::string & instname)
 void
 user_settings::instrument_controllers
 (
-    int index, int cc, const std::string & ccname, bool isactive
+    int index,
+    int cc,
+    const std::string & ccname,
+    bool isactive
 )
 {
-    user_instrument_t & mi = instrument(index);
-    if (mi.instrument != "bogus")
+    user_instrument & mi = instrument(index);
+    if (mi.name() != "BOGUS")
     {
+        // ANY BETTER WAY TO DO THIS?
+
         if (cc >= 0 && cc < MIDI_COUNT_MAX)
         {
-            mi.controllers[cc] = ccname;
-            mi.controllers_active[cc] = isactive;
+            mi.set_controller(cc, ccname, isactive);
         }
     }
 }
@@ -665,6 +644,7 @@ user_settings::mainwid_y (int value)
 void
 user_settings::prepare_midi_defs ()
 {
+#ifdef THIS_IS_READY
     for (int i = 0; i < c_max_busses; i++)
     {
         for (int j = 0; j < 16; j++)
@@ -675,6 +655,7 @@ user_settings::prepare_midi_defs ()
         for (int j = 0; j < MIDI_COUNT_MAX; j++)
             m_instrument_defs[i].controllers_active[j] = false;
     }
+#endif
 }
 
 /*

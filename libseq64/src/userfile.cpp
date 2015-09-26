@@ -19,13 +19,14 @@
 /**
  * \file          userfile.cpp
  *
- *  This module declares/defines the base class for
- *  managing the user's ~/.seq24usr configuration file.
+ *  This module declares/defines the base class for managing the user's
+ *  <tt> ~/.seq24usr </tt> or <tt> ~/.config/sequencer64/sequencer64.rc
+ *  </tt> configuration file.
  *
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-09-24
+ * \updates       2015-09-25
  * \license       GNU GPLv2 or above
  *
  *  Note that the parse function has some code that is not yet enabled.
@@ -167,7 +168,7 @@ bool
 userfile::write (const perform & /* a_perf */ )
 {
     std::ofstream file(m_name.c_str(), std::ios::out | std::ios::trunc);
-    char outs[SEQ64_LINE_MAX];
+//  char outs[SEQ64_LINE_MAX];
     if (! file.is_open())
     {
         printf("? error opening [%s] for writing\n", m_name.c_str());

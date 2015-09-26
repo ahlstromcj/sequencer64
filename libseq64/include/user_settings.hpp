@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-22
- * \updates       2015-09-25
+ * \updates       2015-09-26
  * \license       GNU GPLv2 or above
  *
  *  This collection of variables describes some facets of the
@@ -67,16 +67,16 @@ class user_settings
 {
     /**
      *  Provides data about the MIDI busses, readable from the "user"
-     *  configuration file.  Will later make the size adjustable, if it
-     *  makes sense to do so.
+     *  configuration file.  Since this object is a vector, its size is
+     *  adjustable.
      */
 
     std::vector<user_midi_bus> m_midi_bus_defs;
 
     /**
      *  Provides data about the MIDI instruments, readable from the "user"
-     *  configuration file.  Will later make the size adjustable, if it
-     *  makes sense to do so.
+     *  configuration file.  The size is adjustable, and grows as objects
+     *  are added.
      */
 
     std::vector<user_instrument> m_instrument_defs;
@@ -231,18 +231,46 @@ public:
 
     void set_defaults ();
     void normalize ();
-    void globalize ();
+    void set_globals () const;
     void get_globals ();
+
+#ifdef THIS_IS_READY
     void prepare_midi_defs ();
+#endif
 
-    void bus_alias (int index, const std::string & ale);
+    bool add_bus (const std::string & alias);
+    bool add_instrument (const std::string & instname);
+
+    /**
+     * \getter m_midi_bus_defs.size()
+     */
+
+    int bus_count () const
+    {
+        return int(m_midi_bus_defs.size());
+    }
+
+    /**
+     * \getter m_instrument_defs.size()
+     */
+
+    int instrument_count () const
+    {
+        return int(m_instrument_defs.size());
+    }
+
     void bus_instrument (int index, int channel, int instrum);
-
-    void instrument_name (int index, const std::string & instname);
     void instrument_controllers
     (
         int index, int cc, const std::string & ccname, bool isactive
     );
+
+private:            // not really needed anymore
+
+    void bus_alias (int index, const std::string & alias);
+    void instrument_name (int index, const std::string & instname);
+
+public:
 
     /**
      * \getter m_mainwnd_rows

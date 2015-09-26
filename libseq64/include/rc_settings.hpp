@@ -94,7 +94,7 @@ public:
     std::string config_filespec () const;
     std::string user_filespec () const;
     void set_defaults ();
-    void globalize ();
+    void set_globals ();
     void get_globals ();
 
     /**

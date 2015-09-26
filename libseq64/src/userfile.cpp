@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-09-25
+ * \updates       2015-09-26
  * \license       GNU GPLv2 or above
  *
  *  Note that the parse function has some code that is not yet enabled.
@@ -89,15 +89,16 @@ userfile::parse (perform & /* a_perf */)
     line_after(file, "[user-midi-bus-definitions]");    /* find the tag  */
     int buses = 0;
     sscanf(m_line, "%d", &buses);                       /* atavistic!    */
-    char bus_num[4];
     for (int i = 0; i < buses; i++)
     {
+        char bus_num[4];
         snprintf(bus_num, sizeof(bus_num), "%d", i);
         line_after(file, "[user-midi-bus-" + std::string(bus_num) + "]");
 
         // global_user_midi_bus_definitions[i].alias = m_line;
+        // g_user_settings.bus_alias(i, m_line);
 
-        g_user_settings.bus_alias(i, m_line);
+        (void) g_user_settings.add_bus(m_line);
         next_data_line(file);
         int instruments = 0;
         int instrument;
@@ -108,41 +109,54 @@ userfile::parse (perform & /* a_perf */)
             next_data_line(file);
             sscanf(m_line, "%d %d", &channel, &instrument);
 
-            // global_user_midi_bus_definitions[i].instrument[channel] = instrument;
+            // global_user_midi_bus_definitions[i].instrument[channel] =
+            //      instrument;
+
+            /*
+             * This call assumes that add_bus() succeeded.  Otherwise, i
+             * would not match the size of the vector.
+             */
 
             g_user_settings.bus_instrument(i, channel, instrument);
         }
     }
+
     line_after(file, "[user-instrument-definitions]");
     int instruments = 0;
     sscanf(m_line, "%d", &instruments);
-    char instrument_num[4];
     for (int i = 0; i < instruments; i++)
     {
+        char instrument_num[4];
         snprintf(instrument_num, sizeof(instrument_num), "%d", i);
         line_after(file, "[user-instrument-"+std::string(instrument_num)+"]");
 
         // global_user_instrument_definitions[i].instrument = m_line;
+        // g_user_settings.instrument_name(i, m_line);
 
-        g_user_settings.instrument_name(i, m_line);
+        (void) g_user_settings.add_instrument(m_line);
         next_data_line(file);
+        char ccname[SEQ64_LINE_MAX];
         int ccs = 0;
-        int cc = 0;
-        char cc_name[SEQ64_LINE_MAX];
         sscanf(m_line, "%d", &ccs);
         for (int j = 0; j < ccs; j++)
         {
+            int c = 0;
             next_data_line(file);
-            sscanf(m_line, "%d", &cc);
-            sscanf(m_line, "%[^\n]", cc_name);
+            sscanf(m_line, "%d", &c);
+            sscanf(m_line, "%[^\n]", ccname);
 
-        //  global_user_instrument_definitions[i].controllers_active[cc] = true;
-        //  global_user_instrument_definitions[i].controllers[cc] =
-        //      std::string(cc_name);
+        //  global_user_instrument_definitions[i].controllers_active[c] = true;
+        //  global_user_instrument_definitions[i].controllers[c] =
+        //      std::string(ccname);
+
+            /*
+             * This call assumes that add_instrument() succeeded.
+             * Otherwise, i would not match the size of the vector.
+             */
 
             g_user_settings.instrument_controllers
             (
-                i, cc, std::string(cc_name), true
+                i, c, std::string(ccname), true
             );
         }
     }
@@ -151,7 +165,7 @@ userfile::parse (perform & /* a_perf */)
      * TODO: More (new) variables to follow!
      */
 
-    g_rc_settings.globalize();
+    g_user_settings.set_globals();
     file.close();
     return true;
 }
@@ -168,7 +182,6 @@ bool
 userfile::write (const perform & /* a_perf */ )
 {
     std::ofstream file(m_name.c_str(), std::ios::out | std::ios::trunc);
-//  char outs[SEQ64_LINE_MAX];
     if (! file.is_open())
     {
         printf("? error opening [%s] for writing\n", m_name.c_str());
@@ -186,13 +199,38 @@ userfile::write (const perform & /* a_perf */ )
     //////////////////////////////////////////////////////////////
 
     file
-        << "\n"
-        << "[user-midi-bus-definitions]\n\n"
-        <<  "99999999"  << "      # MIDI controls count\n" // constant count
+        << "\n[user-midi-bus-definitions]\n\n"
+        <<  g_user_settings.bus_count() << "     # MIDI buss list count\n"
         ;
+
+    for (int buss = 0; buss < g_user_settings.bus_count(); ++buss)
+    {
+        char bus_num[4];
+        snprintf(bus_num, sizeof(bus_num), "%d", buss);
+        file <<  "\n[user-midi-bus-" << std::string(bus_num) << "]\n\n";
+
+
+        // MORE TO COME
+    }
 
     //////////////////////////////////////////////////////////////
 
+    file
+        << "\n[user-instrument-definitions]\n\n"
+        <<  g_user_settings.instrument_count() << "     # instrument list count\n"
+        ;
+
+    for (int inst = 0; inst < g_user_settings.instrument_count(); ++inst)
+    {
+        char inst_num[4];
+        snprintf(inst_num, sizeof(inst_num), "%d", inst);
+        file <<  "\n[user-instrument-" << std::string(inst_num) << "]\n\n";
+
+
+        // MORE TO COME
+    }
+
+    //////////////////////////////////////////////////////////////
 
     file
         << "# End of " << m_name << "\n#\n"

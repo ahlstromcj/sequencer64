@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-25
- * \updates       2015-09-25
+ * \updates       2015-09-26
  * \license       GNU GPLv2 or above
  *
  *  Note that this module also sets the legacy global variables, so that
@@ -38,11 +38,13 @@
  *  Default constructor.
  */
 
-user_instrument::user_instrument ()
+user_instrument::user_instrument (const std::string & name)
  :
+    m_is_valid          (false),
     m_instrument_def    ()
 {
-    // Empty body
+    set_defaults();
+    set_name(name);
 }
 
 /**
@@ -51,6 +53,7 @@ user_instrument::user_instrument ()
 
 user_instrument::user_instrument (const user_instrument & rhs)
  :
+    m_is_valid          (rhs.m_is_valid),
     m_instrument_def    ()
 {
     copy_definitions(rhs);
@@ -65,18 +68,20 @@ user_instrument::operator = (const user_instrument & rhs)
 {
     if (this != &rhs)
     {
+        m_is_valid = rhs.m_is_valid;
         copy_definitions(rhs);
     }
     return *this;
 }
 
 /**
- *  Sets the default values.
+ *  Sets the default values.  Also invalidates the object.
  */
 
 void
 user_instrument::set_defaults ()
 {
+    m_is_valid = false;
     m_instrument_def.instrument.clear();
     for (int j = 0; j < MIDI_CONTROLLER_MAX; j++)
     {
@@ -93,6 +98,8 @@ user_instrument::set_defaults ()
  *  This function fills in all of the MIDI_CONTROLLER_MAX (128) values of the
  *  controllers and controllers_active fields.
  *
+ *  Note that this is done only if the object is valid.
+ *
  * \param instrum
  *      Provides the destination instrument number.  In order to support
  *      the legacy code, this index value must be less than
@@ -102,7 +109,7 @@ user_instrument::set_defaults ()
 void
 user_instrument::set_global (int instrum) const
 {
-    if (instrum >= 0 && instrum < c_max_instruments)
+    if (m_is_valid && instrum >= 0 && instrum < c_max_instruments)
     {
         global_user_instrument_definitions[instrum].instrument =
             m_instrument_def.instrument;
@@ -126,6 +133,9 @@ user_instrument::set_global (int instrum) const
  *  This function fills in all of the MIDI_CONTROLLER_MAX (128) values of
  *  the controllers and controllers_active fields.
  *
+ *  This function also sets the validity flag to true if the instrument
+ *  name is not empty; the rest of the values are not checked.
+ *
  * \param instrum
  *      Provides the source instrument number.  In order to support the
  *      legacy code, this index value must be less than c_max_instruments
@@ -137,9 +147,7 @@ user_instrument::get_global (int instrum)
 {
     if (instrum >= 0 && instrum < c_max_instruments)
     {
-        m_instrument_def.instrument =
-            global_user_instrument_definitions[instrum].instrument;
-
+        set_name(global_user_instrument_definitions[instrum].instrument);
         for (int c = 0; c < MIDI_CONTROLLER_MAX; c++)
         {
             m_instrument_def.controllers_active[c] =
@@ -153,16 +161,21 @@ user_instrument::get_global (int instrum)
 
 /**
  * \setter m_instrument_def.instrument
+ *
+ *      If the name parameter is not empty, the validity flag is set to
+ *      true, otherwise it is set to false.  Too tricky?
  */
 
 void
 user_instrument::set_name (const std::string & instname)
 {
     m_instrument_def.instrument = instname;
+    m_is_valid = ! instname.empty();
 }
 
 /**
  * \setter m_instrument_def.controllers[c] and .controllers_active[c]
+ *      Only sets the controller values if the object is already valid.
  *
  * \param c
  *      The index of the desired controller.
@@ -182,7 +195,7 @@ user_instrument::set_controller
     bool isactive
 )
 {
-    if (c >= 0 && c < MIDI_CONTROLLER_MAX)
+    if (m_is_valid && c >= 0 && c < MIDI_CONTROLLER_MAX)
     {
         m_instrument_def.controllers[c] = cname;
         m_instrument_def.controllers_active[c] = isactive;
@@ -197,15 +210,15 @@ user_instrument::set_controller
  *
  * \return
  *      The name of the desired controller has is returned.  If the
- *      index c is out of range, then a reference to an internal,
- *      empty string is returned.
+ *      index c is out of range, or the object is not valid, then a
+ *      reference to an internal, empty string is returned.
  */
 
 const std::string &
 user_instrument::controller_name (int c) const
 {
     static std::string s_empty;
-    if (c >= 0 && c < MIDI_CONTROLLER_MAX)
+    if (m_is_valid && c >= 0 && c < MIDI_CONTROLLER_MAX)
         return m_instrument_def.controllers[c];
     else
         return s_empty;
@@ -219,13 +232,14 @@ user_instrument::controller_name (int c) const
  *
  * \return
  *      The status of the desired controller has is returned.  If the
- *      index c is out of range, then false is returned.
+ *      index c is out of range, or the object is not valid, then false is
+ *      returned.
  */
 
 bool
 user_instrument::controller_active (int c) const
 {
-    if (c >= 0 && c < MIDI_CONTROLLER_MAX)
+    if (m_is_valid && c >= 0 && c < MIDI_CONTROLLER_MAX)
         return m_instrument_def.controllers_active[c];
     else
         return false;
@@ -233,7 +247,7 @@ user_instrument::controller_active (int c) const
 
 /**
  *  Copies the array members from one instance of user_instrument to this
- *  one.
+ *  one.  Does not include the validity flag.
  */
 
 void

@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-23
- * \updates       2015-09-25
+ * \updates       2015-09-26
  * \license       GNU GPLv2 or above
  *
  *  Note that this module also sets the legacy global variables, so that
@@ -158,7 +158,7 @@ user_settings::set_defaults ()
     m_mainwid_spacing = 2;              // range: 2 to 6, try 4 or 6
     m_control_height = 0;               // range: 0 to 4
     normalize();                        // recalculate derived values
-    prepare_midi_defs();                // clears out the arrays
+//  prepare_midi_defs();                // clears out the arrays
 }
 
 /**
@@ -195,15 +195,21 @@ user_settings::normalize ()
  */
 
 void
-user_settings::globalize ()
+user_settings::set_globals () const
 {
-#ifdef READY_TO_USE
+    std::vector<user_midi_bus>::const_iterator umi;
+    for (umi = m_midi_bus_defs.begin(); umi != m_midi_bus_defs.end(); ++umi)
+    {
+        for (int buss = 0; buss < c_max_busses; ++buss) // REMOVE CONSTANT!!!
+            umi->set_global(buss);
+    }
 
-    MUST ITERATE OVER THE VECTOR!!!!
-
-    m_midi_bus_defs.set_global();
-    m_instrument_defs.set_global();
-#endif
+    std::vector<user_instrument>::const_iterator uii;
+    for (uii = m_instrument_defs.begin(); uii != m_instrument_defs.end(); ++uii)
+    {
+        for (int in = 0; in < c_max_instruments; ++in) // REMOVE CONSTANT!!!
+            uii->set_global(in);
+    }
 }
 
 /**
@@ -215,115 +221,160 @@ user_settings::globalize ()
 void
 user_settings::get_globals ()
 {
-#ifdef READY_TO_USE
+    std::vector<user_midi_bus>::iterator umi;
+    for (umi = m_midi_bus_defs.begin(); umi != m_midi_bus_defs.end(); ++umi)
+    {
+        for (int buss = 0; buss < c_max_busses; ++buss) // REMOVE CONSTANT!!!
+            umi->get_global(buss);
+    }
 
-    MUST ITERATE OVER THE VECTOR!!!!
+    std::vector<user_instrument>::iterator uii;
+    for (uii = m_instrument_defs.begin(); uii != m_instrument_defs.end(); ++uii)
+    {
+        for (int in = 0; in < c_max_instruments; ++in) // REMOVE CONSTANT!!!
+            uii->get_global(in);
+    }
+}
 
-    m_midi_bus_defs.get_global();
-    m_instrument_defs.get_global();
-#endif
+/**
+ *  Adds a user bus to the container, but only does so if the name
+ *  parameter is not empty.
+ */
+
+bool
+user_settings::add_bus (const std::string & alias)
+{
+    bool result = ! alias.empty();
+    if (result)
+    {
+        size_t currentsize = m_midi_bus_defs.size();
+        user_midi_bus temp(alias);
+        if (temp.is_valid())
+            m_midi_bus_defs.push_back(temp);
+
+        result = m_midi_bus_defs.size() == currentsize + 1;
+    }
+    return result;
+}
+
+/**
+ *  Adds a user instrument to the container, but only does so if the name
+ *  parameter is not empty.
+ */
+
+bool
+user_settings::add_instrument (const std::string & name)
+{
+    bool result = ! name.empty();
+    if (result)
+    {
+        size_t currentsize = m_instrument_defs.size();
+        user_instrument temp(name);
+        if (temp.is_valid())
+            m_instrument_defs.push_back(temp);
+
+        result = m_instrument_defs.size() == currentsize + 1;
+    }
+    return result;
 }
 
 /**
  * \getter m_midi_bus_defs[index] (internal function)
- *      If the index is out of range, then a bogus value is returned.
- *      This bogus value has an alias of "BOGUS", and all the instrument
+ *      If the index is out of range, then an invalid object is returned.
+ *      This invlaid object has an empty alias, and all the instrument
  *      numbers are -1.
  */
 
 user_midi_bus &
 user_settings::bus (int index)
 {
-    static user_midi_bus s_bogus;
-    static bool s_bogus_is_set = false;
-    if (! s_bogus_is_set)
-    {
-        s_bogus_is_set = true;
-
-        // MAKE A FUNCTION TO DO THIS; CAN WE JUST USE ITS
-        // set_default() function somehow?????
-
-        s_bogus.set_name("BOGUS");
-        for (int i = 0; i < MIDI_BUS_CHANNEL_MAX; ++i)      // 16
-        {
-            s_bogus.set_instrument(i, -1);          /* disable channel i */
-        }
-    }
+    static user_midi_bus s_invalid;                     /* invalid by default */
     if (index >= 0 && index < int(m_midi_bus_defs.size()))  // c_max_busses
         return m_midi_bus_defs[index];
     else
-        return s_bogus;
+        return s_invalid;
 }
 
 /**
  * \setter m_midi_bus_defs[index].name() [the alias field]
+ *      Unfortunately, we cannot check the validity of the selected
+ *      object, but we can only set the name if not empty.  This function
+ *      cannot be used to invalidate an object.  It can make the object
+ *      valid, however, and should be called before the other setter
+ *      functions during normal processing.
+ *
+ * \note
+ *      Now we use the user_midi_bus constructor to provide the alias,
+ *      so bus_alias() is not so useful now.  And
+ *      user_midi_bus::set_name() is private now.
  */
 
 void
-user_settings::bus_alias (int index, const std::string & ale)
+user_settings::bus_alias (int /*index*/, const std::string & /*alias*/)
 {
+#if 0
     user_midi_bus & mb = bus(index);
-    if (mb.name() != "BOGUS")
-        mb.set_name(ale);
+    if (! alias.empty())
+        mb.set_name(alias);
+#endif
 }
 
 /**
  * \getter m_midi_bus_defs[index].instrument[channel]
+ *      Currently this function is used, in the userfile::parse()
+ *      function.
  */
 
 void
 user_settings::bus_instrument (int index, int channel, int instrum)
 {
     user_midi_bus & mb = bus(index);
-    if (mb.name() != "BOGUS")
-        mb.set_instrument(channel, instrum);
+    mb.set_instrument(channel, instrum);
 }
 
 /**
  * \getter m_instrument_defs[index]
- *      If the index is out of range, then a bogus value is returned.
- *      This bogus value has a "BOGUS" instrument name, false for all
+ *      If the index is out of range, then a invalid object is returned.
+ *      This invalid object has an empty(), instrument name, false for all
  *      controllers_active[] values, and empty controllers[] string values.
  */
 
 user_instrument &
 user_settings::instrument (int index)
 {
-    static user_instrument s_bogus;
-    static bool s_bogus_is_set = false;
-    if (! s_bogus_is_set)
-    {
-        s_bogus_is_set = true;
-
-        // MAKE A FUNCTION TO DO THIS; CAN WE JUST USE ITS
-        // set_default() function somehow?????
-
-        s_bogus.set_name("BOGUS");
-        for (int i = 0; i < MIDI_COUNT_MAX; ++i)        // 16
-        {
-            s_bogus.set_controller(i, std::string(""), false);
-        }
-    }
+    static user_instrument s_invalid;
     if (index >= 0 && index < int(m_instrument_defs.size())) // c_max_instruments
         return m_instrument_defs[index];
     else
-        return s_bogus;
+        return s_invalid;
 }
 
 /**
- * \getter m_midi_instrument_defs[index].instrument
+ * \setter m_midi_instrument_defs[index].instrument
+ *      Unfortunately, we cannot check the validity of the selected
+ *      object, but we can only set the name if not empty.  This function
+ *      cannot be used to invalidate an object.  It can make the object
+ *      valid, however, and should be called before the other setter
+ *      functions during normal processing.
+ *
+ * \note
+ *      Again, the constructor is more useful to set the name, so this
+ *      function here is not so useful.  And user_instrument::set_name() is
+ *      private now.
  */
 
 void
-user_settings::instrument_name (int index, const std::string & instname)
+user_settings::instrument_name (int /*index*/, const std::string & /*instname*/)
 {
+#if 0
     user_instrument & mi = instrument(index);
-    if (mi.name() != "BOGUS")
+    if (! instname.empty())
         mi.set_name(instname);
+#endif
 }
 
 /**
- * \getter m_midi_instrument_defs[index].controllers, controllers_active
+ * \setter m_midi_instrument_defs[index].controllers, controllers_active
  */
 
 void
@@ -336,15 +387,7 @@ user_settings::instrument_controllers
 )
 {
     user_instrument & mi = instrument(index);
-    if (mi.name() != "BOGUS")
-    {
-        // ANY BETTER WAY TO DO THIS?
-
-        if (cc >= 0 && cc < MIDI_COUNT_MAX)
-        {
-            mi.set_controller(cc, ccname, isactive);
-        }
-    }
+    mi.set_controller(cc, ccname, isactive);
 }
 
 /**
@@ -634,17 +677,19 @@ user_settings::mainwid_y (int value)
  *
  */
 
+#ifdef THIS_IS_READY
+
 /**
- *  Prepare global MIDI definitions.  Why are only 16 instruments
- *  supported in the first for-loop, but 64 (see globals.h) in the
- *  second for-loop?  Well, actually the 16 applies to the number of MIDI
- *  busses, not instruments.
+ *  Prepare global MIDI definitions.
+ *
+ *  We probably don't need this function, it just sets defaults, and now
+ *  that is done automatically via the constructors of the new objects
+ *  that wrap the user_midi_bus_t and user_instrument_t types.
  */
 
 void
 user_settings::prepare_midi_defs ()
 {
-#ifdef THIS_IS_READY
     for (int i = 0; i < c_max_busses; i++)
     {
         for (int j = 0; j < 16; j++)
@@ -655,8 +700,9 @@ user_settings::prepare_midi_defs ()
         for (int j = 0; j < MIDI_COUNT_MAX; j++)
             m_instrument_defs[i].controllers_active[j] = false;
     }
-#endif
 }
+
+#endif
 
 /*
  * user_settings.cpp

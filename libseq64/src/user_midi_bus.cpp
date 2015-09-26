@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-25
- * \updates       2015-09-25
+ * \updates       2015-09-26
  * \license       GNU GPLv2 or above
  *
  *  Note that this module also sets the legacy global variables, so that
@@ -38,11 +38,13 @@
  *  Default constructor.
  */
 
-user_midi_bus::user_midi_bus ()
+user_midi_bus::user_midi_bus (const std::string & name)
  :
+    m_is_valid          (false),
     m_midi_bus_def      ()
 {
-    // Empty body
+    set_defaults();
+    set_name(name);
 }
 
 /**
@@ -51,6 +53,7 @@ user_midi_bus::user_midi_bus ()
 
 user_midi_bus::user_midi_bus (const user_midi_bus & rhs)
  :
+    m_is_valid          (rhs.m_is_valid),
     m_midi_bus_def      ()                      // a constant-size array
 {
     copy_definitions(rhs);
@@ -65,18 +68,20 @@ user_midi_bus::operator = (const user_midi_bus & rhs)
 {
     if (this != &rhs)
     {
+        m_is_valid = rhs.m_is_valid;
         copy_definitions(rhs);
     }
     return *this;
 }
 
 /**
- *  Sets the default values.
+ *  Sets the default values.  Also invalidates the object.
  */
 
 void
 user_midi_bus::set_defaults ()
 {
+    m_is_valid = false;
     m_midi_bus_def.alias.clear();
     for (int channel = 0; channel < 16; channel++)
         m_midi_bus_def.instrument[channel] = -1;
@@ -87,6 +92,8 @@ user_midi_bus::set_defaults ()
  *  corresponding global variables.  Should be called at initialization,
  *  and after settings are read from the "user" configuration file.
  *
+ *  Note that this is done only if the object is valid.
+ *
  * \param buss
  *      Provides the destination buss number.  In order to support the
  *      legacy code, this index value must be less than c_max_busses (32).
@@ -95,7 +102,7 @@ user_midi_bus::set_defaults ()
 void
 user_midi_bus::set_global (int buss) const
 {
-    if (buss >= 0 && buss < c_max_busses)
+    if (m_is_valid && buss >= 0 && buss < c_max_busses)
     {
         global_user_midi_bus_definitions[buss].alias = m_midi_bus_def.alias;
         for (int channel = 0; channel < MIDI_BUS_CHANNEL_MAX; channel++)
@@ -111,6 +118,9 @@ user_midi_bus::set_global (int buss) const
  *  corresponding member variable.  Should be called before settings are
  *  written to the "user" configuration file.
  *
+ *  This function also sets the validity flag to true if the instrument
+ *  name is not empty; the rest of the values are not checked.
+ *
  * \param buss
  *      Provides the destination buss number.  In order to support the
  *      legacy code, this index value must be less than c_max_busses (32).
@@ -121,7 +131,7 @@ user_midi_bus::get_global (int buss)
 {
     if (buss >= 0 && buss < c_max_busses)
     {
-        m_midi_bus_def.alias = global_user_midi_bus_definitions[buss].alias;
+        set_name(global_user_midi_bus_definitions[buss].alias);
         for (int channel = 0; channel < MIDI_BUS_CHANNEL_MAX; channel++)
         {
             m_midi_bus_def.instrument[channel] =
@@ -138,13 +148,14 @@ user_midi_bus::get_global (int buss)
  *
  * \return
  *      The instrument number of the desired buss channel is returned.  If
- *      the channel number is out of range, then -1 is returned.
+ *      the channel number is out of range, or the object is not valid,
+ *      then -1 is returned.
  */
 
 int
 user_midi_bus::instrument (int channel) const
 {
-    if (channel >= 0 && channel < MIDI_BUS_CHANNEL_MAX)
+    if (m_is_valid && channel >= 0 && channel < MIDI_BUS_CHANNEL_MAX)
         return m_midi_bus_def.instrument[channel];
     else
         return -1;
@@ -152,6 +163,8 @@ user_midi_bus::instrument (int channel) const
 
 /**
  * \getter m_midi_bus_def.instrument[channel]
+ *
+ *      Does not alter the validity flag, just checks it.
  *
  * \param channel
  *      Provides the desired buss channel number.
@@ -163,13 +176,13 @@ user_midi_bus::instrument (int channel) const
 void
 user_midi_bus::set_instrument (int channel, int instrum)
 {
-    if (channel >= 0 && channel < MIDI_BUS_CHANNEL_MAX)
+    if (m_is_valid && channel >= 0 && channel < MIDI_BUS_CHANNEL_MAX)
         m_midi_bus_def.instrument[channel] = instrum;
 }
 
 /**
  *  Copies the member fields from one instance of user_midi_bus to this
- *  one.
+ *  one.  Does not include the validity flag.
  */
 
 void

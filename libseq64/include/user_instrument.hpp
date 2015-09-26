@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-25
- * \updates       2015-09-25
+ * \updates       2015-09-26
  * \license       GNU GPLv2 or above
  *
  */
@@ -83,6 +83,17 @@ class user_instrument
 {
 
     /**
+     *  Provides a validity flag, useful in returning a reference to a
+     *  bogus object for internal error-check.  Callers should check
+     *  this flag via the is_valid() accessor before using this object.
+     *  This flag is set to true when any valid member assignment occurs
+     *  via a public setter call.  However, setting an empty name for the
+     *  instrument member will render the object invalid.
+     */
+
+    bool m_is_valid;
+
+    /**
      *  The instance of the structure that this class wraps.
      */
 
@@ -90,9 +101,18 @@ class user_instrument
 
 public:
 
-    user_instrument ();
+    user_instrument (const std::string & name = "");
     user_instrument (const user_instrument & rhs);
     user_instrument & operator = (const user_instrument & rhs);
+
+    /**
+     * \getter m_is_valid
+     */
+
+    bool is_valid () const
+    {
+        return m_is_valid;
+    }
 
     void set_defaults ();
     void set_global (int instrum) const;
@@ -109,7 +129,6 @@ public:
     const std::string & controller_name (int c) const;
     bool controller_active (int c) const;
 
-    void set_name (const std::string & instname);
     void set_controller
     (
         int c, const std::string & cname, bool isactive
@@ -117,6 +136,7 @@ public:
 
 private:
 
+    void set_name (const std::string & instname);
     void copy_definitions (const user_instrument & rhs);
 
 };

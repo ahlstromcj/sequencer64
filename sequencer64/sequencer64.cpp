@@ -257,8 +257,8 @@ main (int argc, char * argv [])
         g_rc_settings.legacy_format(true);
         printf("Setting legacy seq24 file format.\n");
     }
-    g_rc_settings.globalize();             /* copy to legacy globals   */
-    g_user_settings.globalize();           /* copy to legacy globals   */
+    g_rc_settings.set_globals();                /* copy to legacy globals   */
+    g_user_settings.set_globals();              /* copy to legacy globals   */
 
     /*
      * Set up objects that are specific to the Gtk-2 GUI.  Pass them to

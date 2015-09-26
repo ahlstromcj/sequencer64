@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-09-25
+ * \updates       2015-09-26
  * \license       GNU GPLv2 or above
  *
  *  The <tt> ~/.seq24rc </tt>
@@ -406,12 +406,12 @@ optionsfile::parse (perform & a_perf)
     g_rc_settings.allow_mod4_mode(method != 0);
 
     /*
-     * We could call g_rc_settings.globalize() here, though
+     * We could call g_rc_settings.set_globals() here, though
      * only a few items above are affected by the read; the rest go into
      * the perform object.  Let's do it!
      */
 
-    g_rc_settings.globalize();
+    g_rc_settings.set_globals();
     file.close();
     return true;
 }

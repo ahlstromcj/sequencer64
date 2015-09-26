@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-22
- * \updates       2015-09-25
+ * \updates       2015-09-26
  * \license       GNU GPLv2 or above
  *
  *  Note that this module also sets the legacy global variables, so that
@@ -203,7 +203,7 @@ rc_settings::set_defaults ()
  */
 
 void
-rc_settings::globalize ()
+rc_settings::set_globals ()
 {
     global_legacy_format             = m_legacy_format;
     global_lash_support              = m_lash_support;

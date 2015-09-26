@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-25
- * \updates       2015-09-25
+ * \updates       2015-09-26
  * \license       GNU GPLv2 or above
  *
  */
@@ -79,6 +79,16 @@ class user_midi_bus
 {
 
     /**
+     *  Provides a validity flag, useful in returning a reference to a
+     *  bogus object for internal error-check.  Callers should check
+     *  this flag via the is_valid() accessor before using this object.
+     *  This flag is set to true when any valid member assignment occurs
+     *  via a public setter call.
+     */
+
+    bool m_is_valid;
+
+    /**
      *  The instance of the structure that this class wraps.
      */
 
@@ -86,9 +96,18 @@ class user_midi_bus
 
 public:
 
-    user_midi_bus ();
+    user_midi_bus (const std::string & name = "");
     user_midi_bus (const user_midi_bus & rhs);
     user_midi_bus & operator = (const user_midi_bus & rhs);
+
+    /**
+     * \getter m_is_valid
+     */
+
+    bool is_valid () const
+    {
+        return m_is_valid;
+    }
 
     void set_defaults ();
     void set_global (int buss) const;
@@ -105,18 +124,21 @@ public:
 
     int instrument (int channel) const;
 
+    void set_instrument (int channel, int instrum);
+
+private:
+
     /**
      * \setter m_midi_bus_def.alias (name of alias)
+     *      Also sets the validity flag according to the emptiness of the
+     *      name parameter.
      */
 
     void set_name (const std::string & name)
     {
         m_midi_bus_def.alias = name;
+        m_is_valid = ! name.empty();
     }
-
-    void set_instrument (int channel, int instrum);
-
-private:
 
     void copy_definitions (const user_midi_bus & rhs);
 

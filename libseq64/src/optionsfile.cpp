@@ -21,7 +21,7 @@
  *
  *  This module declares/defines the base class for managing the
  *  <tt> ~/.seq24rc </tt>
- *  or <tt> ~/.config/sequencer64/sequencer64rc </tt>
+ *  or <tt> ~/.config/sequencer64/sequencer64.rc </tt>
  *  ("rc") configuration files.
  *
  * \library       sequencer64 application
@@ -31,7 +31,7 @@
  * \license       GNU GPLv2 or above
  *
  *  The <tt> ~/.seq24rc </tt>
- *  or <tt> ~/.config/sequencer64/sequencer64rc </tt>
+ *  or <tt> ~/.config/sequencer64/sequencer64.rc </tt>
  *  configuration file is fairly simple in
  *  layout.  The documentation for this module is supplemented by the
  *  following GitHub projects:
@@ -74,7 +74,7 @@ optionsfile::~optionsfile ()
 }
 
 /**
- *  Parse the ~/.seq24rc or ~/.config/sequencer64/sequencer64rc file.
+ *  Parse the ~/.seq24rc or ~/.config/sequencer64/sequencer64.rc file.
  *
  *  [midi-control]
  *

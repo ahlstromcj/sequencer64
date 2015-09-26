@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-08-07
- * \updates       2015-09-25
+ * \updates       2015-09-26
  * \license       GNU GPLv2 or above
  *
  */
@@ -64,8 +64,8 @@ bool global_pass_sysex = false;
 std::string global_filename = "";
 std::string global_last_used_dir = "/";
 std::string global_config_directory = ".config/sequencer64";
-std::string global_config_filename = "sequencer64rc";
-std::string global_user_filename = "sequencer64usr";
+std::string global_config_filename = "sequencer64.rc";
+std::string global_user_filename = "sequencer64.usr";
 std::string global_config_filename_alt = ".seq24rc";
 std::string global_user_filename_alt = ".seq24usr";
 bool global_print_keys = false;

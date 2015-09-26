@@ -268,7 +268,7 @@ options::add_midi_input_page ()
 
 /**
  *  Adds the Keyboard page (tab) to the Options dialog.  This tab is the
- *  setup editor for the <tt> ~/.config/sequencer64/sequencer64rc </tt>
+ *  setup editor for the <tt> ~/.config/sequencer64/sequencer64.rc </tt>
  *  keybindings.
  */
 

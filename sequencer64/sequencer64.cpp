@@ -125,7 +125,7 @@ const char * const g_help_2 =
 "                            are available: 0 = live mode;\n"
 "                            1 = song mode (the default).\n"
 "   -S, --stats              Show global statistics.\n"
-"   -x, --interaction_method n  See ~/.config/sequencer64/sequencer64rc for "
+"   -x, --interaction_method n  See ~/.config/sequencer64/sequencer64.rc for "
 "                            methods to use.\n"
 "   -U, --jack_session_uuid u   Set UUID for JACK session\n"
 "\n\n\n"

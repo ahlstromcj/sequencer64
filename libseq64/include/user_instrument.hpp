@@ -126,6 +126,19 @@ public:
     {
         return m_instrument_def.instrument;
     }
+
+
+    /**
+     * \getter MIDI_CONTROLLER_MAX
+     *      Remember that the controller numbers for each MIDI instrument
+     *      range from 0 to 127 (MIDI_CONTROLLER_MAX-1).
+     */
+
+    int controller_count () const
+    {
+        return MIDI_CONTROLLER_MAX;
+    }
+
     const std::string & controller_name (int c) const;
     bool controller_active (int c) const;
 

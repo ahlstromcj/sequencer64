@@ -81,10 +81,12 @@ Print statistics on commandline while running
 Set uuid for jack session
 
 .SH FILES
-\fB$HOME\fP/sequencer64rc stores the user-configuration settings for
-sequencer64.
-\fB$HOME\fP/sequencer64usr stores the MIDI-configuration settings for
-sequencer64, but is not present by default.
+\fB$HOME\fP/sequencer64.rc stores the user-configuration settings for
+sequencer64.  If it does not exist, it will be generated with sequencer64
+exits.
+\fB$HOME\fP/sequencer64.usr stores the MIDI-configuration settings for
+sequencer64, but is not present by default.  A sample is provided with
+the project.
 
 .SH SUGGESTIONS AND BUG REPORTS
 Any bugs found should be reported to the upstream author and/or package 
@@ -93,6 +95,8 @@ maintainer.
 .SH OTHER INFO
 The current Sequencer64 project homepage is a simple git repository at the
 https://github.com/ahlstromcj/sequencer64.git URL.
+Reasonably up-to-date instructions can be found in the project at the
+https://github.com/ahlstromcj/sequencer24-doc.git URL.
 
 It is released under the GNU GPL license.
 
@@ -100,4 +104,4 @@ It is released under the GNU GPL license.
 Sequencer64 was written by Chris Ahlstrom <ahlstromcj@gmail.com>.
 Seq24 was written by Rob C. Buse <seq24@filter24.org> and the Seq24team.
 
-This manual page was written by Chris Ahlstrom <ahlstromcj@gmail.com>.
+This manual page was updated by Chris Ahlstrom <ahlstromcj@gmail.com>.

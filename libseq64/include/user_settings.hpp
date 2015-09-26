@@ -234,12 +234,30 @@ public:
     void set_globals () const;
     void get_globals ();
 
-#ifdef THIS_IS_READY
-    void prepare_midi_defs ();
-#endif
-
     bool add_bus (const std::string & alias);
     bool add_instrument (const std::string & instname);
+
+    /**
+     * \getter
+     *      Unlike the non-const version this function is public.
+     *      Cannot append the const specifier.
+     */
+
+    const user_midi_bus & bus (int index) // const
+    {
+        return private_bus(index);
+    }
+
+    /**
+     * \getter
+     *      Unlike the non-const version this function is public.
+     *      Cannot append the const specifier.
+     */
+
+    const user_instrument & instrument (int index) // const
+    {
+        return private_instrument(index);
+    }
 
     /**
      * \getter m_midi_bus_defs.size()
@@ -264,11 +282,6 @@ public:
     (
         int index, int cc, const std::string & ccname, bool isactive
     );
-
-private:            // not really needed anymore
-
-    void bus_alias (int index, const std::string & alias);
-    void instrument_name (int index, const std::string & instname);
 
 public:
 
@@ -471,8 +484,13 @@ public:
 
 private:
 
-    user_midi_bus & bus (int index);
-    user_instrument & instrument (int index);
+#if 0
+    void bus_alias (int index, const std::string & alias);
+    void instrument_name (int index, const std::string & instname);
+#endif
+
+    user_midi_bus & private_bus (int index);
+    user_instrument & private_instrument (int index);
 
 };
 

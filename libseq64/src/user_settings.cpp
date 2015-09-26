@@ -281,12 +281,12 @@ user_settings::add_instrument (const std::string & name)
 /**
  * \getter m_midi_bus_defs[index] (internal function)
  *      If the index is out of range, then an invalid object is returned.
- *      This invlaid object has an empty alias, and all the instrument
+ *      This invalid object has an empty alias, and all the instrument
  *      numbers are -1.
  */
 
 user_midi_bus &
-user_settings::bus (int index)
+user_settings::private_bus (int index)
 {
     static user_midi_bus s_invalid;                     /* invalid by default */
     if (index >= 0 && index < int(m_midi_bus_defs.size()))  // c_max_busses
@@ -295,7 +295,9 @@ user_settings::bus (int index)
         return s_invalid;
 }
 
-/**
+#if 0
+
+/*
  * \setter m_midi_bus_defs[index].name() [the alias field]
  *      Unfortunately, we cannot check the validity of the selected
  *      object, but we can only set the name if not empty.  This function
@@ -312,12 +314,12 @@ user_settings::bus (int index)
 void
 user_settings::bus_alias (int /*index*/, const std::string & /*alias*/)
 {
-#if 0
-    user_midi_bus & mb = bus(index);
+    user_midi_bus & mb = private_bus(index);
     if (! alias.empty())
         mb.set_name(alias);
-#endif
 }
+
+#endif      // 0
 
 /**
  * \getter m_midi_bus_defs[index].instrument[channel]
@@ -328,7 +330,7 @@ user_settings::bus_alias (int /*index*/, const std::string & /*alias*/)
 void
 user_settings::bus_instrument (int index, int channel, int instrum)
 {
-    user_midi_bus & mb = bus(index);
+    user_midi_bus & mb = private_bus(index);
     mb.set_instrument(channel, instrum);
 }
 
@@ -340,7 +342,7 @@ user_settings::bus_instrument (int index, int channel, int instrum)
  */
 
 user_instrument &
-user_settings::instrument (int index)
+user_settings::private_instrument (int index)
 {
     static user_instrument s_invalid;
     if (index >= 0 && index < int(m_instrument_defs.size())) // c_max_instruments
@@ -349,7 +351,9 @@ user_settings::instrument (int index)
         return s_invalid;
 }
 
-/**
+#if 0
+
+/*
  * \setter m_midi_instrument_defs[index].instrument
  *      Unfortunately, we cannot check the validity of the selected
  *      object, but we can only set the name if not empty.  This function
@@ -366,12 +370,12 @@ user_settings::instrument (int index)
 void
 user_settings::instrument_name (int /*index*/, const std::string & /*instname*/)
 {
-#if 0
-    user_instrument & mi = instrument(index);
+    user_instrument & mi = private_instrument(index);
     if (! instname.empty())
         mi.set_name(instname);
-#endif
 }
+
+#endif      // 0
 
 /**
  * \setter m_midi_instrument_defs[index].controllers, controllers_active
@@ -386,7 +390,7 @@ user_settings::instrument_controllers
     bool isactive
 )
 {
-    user_instrument & mi = instrument(index);
+    user_instrument & mi = private_instrument(index);
     mi.set_controller(cc, ccname, isactive);
 }
 
@@ -676,33 +680,6 @@ user_settings::mainwid_y (int value)
 }
  *
  */
-
-#ifdef THIS_IS_READY
-
-/**
- *  Prepare global MIDI definitions.
- *
- *  We probably don't need this function, it just sets defaults, and now
- *  that is done automatically via the constructors of the new objects
- *  that wrap the user_midi_bus_t and user_instrument_t types.
- */
-
-void
-user_settings::prepare_midi_defs ()
-{
-    for (int i = 0; i < c_max_busses; i++)
-    {
-        for (int j = 0; j < 16; j++)
-            m_midi_bus_defs[i].instrument[j] = -1;
-    }
-    for (int i = 0; i < c_max_instruments; i++)
-    {
-        for (int j = 0; j < MIDI_COUNT_MAX; j++)
-            m_instrument_defs[i].controllers_active[j] = false;
-    }
-}
-
-#endif
 
 /*
  * user_settings.cpp

@@ -311,7 +311,7 @@ rc_settings::make_directory (const std::string & pathname) const
  *
  *  If the new format is in force, then the home directory is (in Linux)
  *  "/home/username/.config/sequencer64", and the configuration file is
- *  "sequencer64rc".
+ *  "sequencer64.rc".
  *
  * \return
  *      Returns the selection home configuration directory.  If it does not

@@ -188,49 +188,108 @@ userfile::write (const perform & /* a_perf */ )
         return false;
     }
     if (g_rc_settings.legacy_format())
-    {
         file << "# Seq24 0.9.2 user configuration file (legacy format)\n";
-    }
     else
-    {
         file << "# Sequencer26 0.9.9.4 (and above) user configuration file\n";
-    }
-
-    //////////////////////////////////////////////////////////////
 
     file
-        << "\n[user-midi-bus-definitions]\n\n"
-        <<  g_user_settings.bus_count() << "     # MIDI buss list count\n"
+        << "#\n"
+        << "# In the following MIDI buss definitions, the channels are counted\n"
+        << "# from 0 to 15, not 1 to 16.  Instruments set to -1 are GM.  Any\n"
+        << "# unspecified channel/instrument pair defaults to GM.\n"
         ;
+
+    file
+        << "\n"
+        << "[user-midi-bus-definitions]\n\n"
+        <<  g_user_settings.bus_count()
+        << "     # number of user-defined MIDI busses\n"
+        ;
+
+    if (g_user_settings.bus_count() == 0)
+    {
+        file << "\n\n";
+    }
 
     for (int buss = 0; buss < g_user_settings.bus_count(); ++buss)
     {
-        char bus_num[4];
-        snprintf(bus_num, sizeof(bus_num), "%d", buss);
-        file <<  "\n[user-midi-bus-" << std::string(bus_num) << "]\n\n";
+        // char bus_num[4];
+        // snprintf(bus_num, sizeof(bus_num), "%d", buss);
+        // file <<  "\n[user-midi-bus-" << std::string(bus_num) << "]\n\n";
 
+        file <<  "\n[user-midi-bus-" << buss << "]\n\n";
+        const user_midi_bus & umb = g_user_settings.bus(buss);
+        if (umb.is_valid())
+        {
+            file
+                << "# Device name for this buss:\n"
+                << umb.name() << "\n\n"
+                << "# Number of channels:\n"
+                << umb.channel_count() << "\n\n"
+                << "# channel and instrument (program) number\n\n"
+                ;
 
-        // MORE TO COME
+            for (int channel = 0; channel < umb.channel_count(); ++channel)
+            {
+                if (umb.instrument(channel) != -1)
+                    file << channel << " " << umb.instrument(channel) << "\n";
+            }
+        }
+        else
+        {
+            file << "? This buss specification is invalid\n";
+        }
+        file << "\n# End of buss definition " << buss << "\n\n";
     }
 
-    //////////////////////////////////////////////////////////////
+    file
+        << "#\n"
+        << "# In the following MIDI instrument definitions, active controller\n"
+        << "# numbers (i.e. one supported by the instrument) are paired with\n"
+        << "# the (optional) name of the controller supported.\n"
+        ;
 
     file
-        << "\n[user-instrument-definitions]\n\n"
+        << "\n"
+        << "[user-instrument-definitions]\n\n"
         <<  g_user_settings.instrument_count() << "     # instrument list count\n"
         ;
 
-    for (int inst = 0; inst < g_user_settings.instrument_count(); ++inst)
+    if (g_user_settings.instrument_count() == 0)
     {
-        char inst_num[4];
-        snprintf(inst_num, sizeof(inst_num), "%d", inst);
-        file <<  "\n[user-instrument-" << std::string(inst_num) << "]\n\n";
-
-
-        // MORE TO COME
+        file << "\n\n";
     }
 
-    //////////////////////////////////////////////////////////////
+    for (int inst = 0; inst < g_user_settings.instrument_count(); ++inst)
+    {
+        // char inst_num[4];
+        // snprintf(inst_num, sizeof(inst_num), "%d", inst);
+        // file <<  "\n[user-instrument-" << std::string(inst_num) << "]\n\n";
+
+        file <<  "\n[user-instrument-" << inst << "]\n\n";
+        const user_instrument & uin = g_user_settings.instrument(inst);
+        if (uin.is_valid())
+        {
+            file
+                << "# Name of the instrument:\n"
+                << uin.name() << "\n\n"
+                << "# Number of MIDI controller values:\n"
+                << uin.controller_count() << "\n\n"
+                << "# controller number and (optional) name:\n\n"
+                ;
+
+            for (int ctlr = 0; ctlr < uin.controller_count(); ++ctlr)
+            {
+                if (uin.controller_active(ctlr))
+                    file << ctlr << " " << uin.controller_name(ctlr) << "\n";
+            }
+        }
+        else
+        {
+            file << "? This instrument specification is invalid\n";
+        }
+        file << "\n# End of instrument/controllers definition " << inst << "\n\n";
+    }
 
     file
         << "# End of " << m_name << "\n#\n"

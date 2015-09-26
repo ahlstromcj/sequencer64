@@ -122,8 +122,18 @@ public:
         return m_midi_bus_def.alias;
     }
 
-    int instrument (int channel) const;
+    /**
+     * \getter MIDI_BUS_CHANNEL_MAX
+     *      Remember that the instrument channels for each MIDI buss
+     *      range from 0 to 15 (MIDI_BUS_CHANNEL_MAX-1).
+     */
 
+    int channel_count () const
+    {
+        return MIDI_BUS_CHANNEL_MAX;
+    }
+
+    int instrument (int channel) const;
     void set_instrument (int channel, int instrum);
 
 private:

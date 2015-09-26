@@ -28,10 +28,10 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-09-24
+ * \updates       2015-09-26
  * \license       GNU GPLv2 or above
  *
- *  The ~/.seq24rc or ~/.config/sequencer64/sequencer64rc files are
+ *  The ~/.seq24rc or ~/.config/sequencer64/sequencer64.rc files are
  *  referred to as the "rc" files.
  */
 

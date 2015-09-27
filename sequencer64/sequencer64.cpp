@@ -183,7 +183,7 @@ main (int argc, char * argv [])
     std::string rcname = g_rc_settings.user_filespec();
     if (Glib::file_test(rcname, Glib::FILE_TEST_EXISTS))
     {
-        printf("Reading 'user' configuration [%s]\n", rcname.c_str());
+        printf("[Reading user configuration %s]\n", rcname.c_str());
         seq64::userfile user(rcname);
         if (user.parse(p))
         {
@@ -194,7 +194,7 @@ main (int argc, char * argv [])
     rcname = g_rc_settings.config_filespec();
     if (Glib::file_test(rcname, Glib::FILE_TEST_EXISTS))
     {
-        printf("Reading 'rc' configuration [%s]\n", rcname.c_str());
+        printf("[Reading rc configuration %s]\n", rcname.c_str());
         seq64::optionsfile options(rcname);
         if (options.parse(p))
             g_rc_settings.last_used_dir(cfg_dir);
@@ -372,7 +372,7 @@ main (int argc, char * argv [])
     g_rc_settings.get_globals();             /* copy from legacy globals */
     rcname = g_rc_settings.config_filespec();
 
-    printf("Writing rc configuration file [%s]\n", rcname.c_str());
+    printf("[Writing rc configuration %s]\n", rcname.c_str());
     seq64::optionsfile options(rcname);
     if (options.write(p))
     {
@@ -383,7 +383,7 @@ main (int argc, char * argv [])
     g_user_settings.get_globals();           /* copy from legacy globals */
     g_user_settings.dump_summary();
     rcname = g_rc_settings.user_filespec();
-    printf("Writing user configuration file [%s]\n", rcname.c_str());
+    printf("[Writing user configuration %s]\n", rcname.c_str());
     seq64::userfile userstuff(rcname);
     if (userstuff.write(p))
     {

@@ -90,7 +90,7 @@ make_section_name (const std::string & label, int value)
  *  Provides a debug dump of basic information to help debug a
  *  surprisingly intractable problem with all busses having the name and
  *  values of the last buss in the configuration.  Does work only if
- *  PLATFORM_DEBUG is defined.
+ *  PLATFORM_DEBUG is defined; see the user_settings class..
  */
 
 static void
@@ -282,10 +282,20 @@ userfile::write (const perform & /* a_perf */ )
                 << "# channel and instrument (program) number\n\n"
                 ;
 
-            for (int channel = 0; channel < umb.channel_count(); ++channel)
+            for (int channel = 0; channel < umb.channel_max(); ++channel)
             {
                 if (umb.instrument(channel) != GM_INSTRUMENT_FLAG)
                     file << channel << " " << umb.instrument(channel) << "\n";
+#if defined PLATFORM_DEBUG && defined SHOW_IGNORED_ITEMS
+                else
+                {
+                    fprintf
+                    (
+                        stderr, "bus %d, channel %d (%d) ignored\n",
+                        buss, channel, umb.instrument(channel)
+                    );
+                }
+#endif
             }
         }
         else
@@ -298,14 +308,15 @@ userfile::write (const perform & /* a_perf */ )
     file
         << "#\n"
         << "# In the following MIDI instrument definitions, active controller\n"
-        << "# numbers (i.e. one supported by the instrument) are paired with\n"
+        << "# numbers (i.e. supported by the instrument) are paired with\n"
         << "# the (optional) name of the controller supported.\n"
         ;
 
     file
         << "\n"
         << "[user-instrument-definitions]\n\n"
-        <<  g_user_settings.instrument_count() << "     # instrument list count\n"
+        <<  g_user_settings.instrument_count()
+        << "     # instrument list count\n"
         ;
 
     if (g_user_settings.instrument_count() == 0)
@@ -327,10 +338,20 @@ userfile::write (const perform & /* a_perf */ )
                 << "# controller number and (optional) name:\n\n"
                 ;
 
-            for (int ctlr = 0; ctlr < uin.controller_count(); ++ctlr)
+            for (int ctlr = 0; ctlr < uin.controller_max(); ++ctlr)
             {
                 if (uin.controller_active(ctlr))
                     file << ctlr << " " << uin.controller_name(ctlr) << "\n";
+#if defined PLATFORM_DEBUG && defined SHOW_IGNORED_ITEMS
+                else
+                {
+                    fprintf
+                    (
+                        stderr, "instrument %d, controller %d (%s) ignored\n",
+                        inst, ctlr, uin.controller_name(ctlr).c_str()
+                    );
+                }
+#endif
             }
         }
         else

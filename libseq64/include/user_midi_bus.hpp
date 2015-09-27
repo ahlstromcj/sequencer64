@@ -45,7 +45,7 @@
 
 /**
  *  Provides the maximum number of MIDI buss definitions supported in the
- *  ~/.seq24usr file.
+ *  "user" file.
  */
 
 const int c_max_busses = DEFAULT_BUSS_MAX;
@@ -131,14 +131,27 @@ public:
     }
 
     /**
+     * \getter m_channel_count
+     *      This function returns the number of channels.  Basically this
+     *      value is always the same as that returned by channel_max(),
+     *      but this pair of functions is consistent with the count
+     *      functions in the user_instrument class.
+     */
+
+    int channel_count () const
+    {
+        return m_channel_count;
+    }
+
+    /**
      * \getter MIDI_BUS_CHANNEL_MAX
      *      Remember that the instrument channels for each MIDI buss
      *      range from 0 to 15 (MIDI_BUS_CHANNEL_MAX-1).
      */
 
-    int channel_count () const
+    int channel_max () const
     {
-        return m_channel_count;             // MIDI_BUS_CHANNEL_MAX
+        return MIDI_BUS_CHANNEL_MAX;
     }
 
     int instrument (int channel) const;                     // getter

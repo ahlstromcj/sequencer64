@@ -1,0 +1,19 @@
+# gdbinit (~/.gdbinit)
+#
+#  Maintainer:    Chris Ahlstrom
+#  Last Change:   2013-09-16 to 2013-09-16
+#  Project:       Portable Configuration
+#  License:       None.  Use it in any manner whatsover, and don't blame me.
+#  Usage:
+#
+#     This file provides my personal version of .gdbinit.
+#     It is a personal settings file for the GNU debugger.
+#
+#     To use it, simply copy it to your home directory in this manner:
+#
+#        cp gdbinit ~/.gdbinit
+
+set print pretty on
+set print elements 0
+
+# vim: ts=3 noet ft=gdb syntax=gdb

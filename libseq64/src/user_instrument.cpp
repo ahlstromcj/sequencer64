@@ -210,6 +210,10 @@ user_instrument::set_controller
         m_instrument_def.controllers_active[c] = isactive;
         if (isactive)
             ++m_controller_count;
+        else
+        {
+            infoprint("Use this as a breakpoint");
+        }
     }
 }
 

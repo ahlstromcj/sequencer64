@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-25
- * \updates       2015-09-25
+ * \updates       2015-09-27
  * \license       GNU GPLv2 or above
  *
  *  We're going to try to collect all the globals here in one module, and
@@ -60,6 +60,13 @@
 extern rc_settings g_rc_settings;
 extern user_settings g_user_settings;
 
+/**
+ *  This constant indicates that a configuration file numeric value is
+ *  the default value for specifying that an instrument is a GM
+ *  instrument.  Used in the "user" configuration-file processing.
+ */
+
+#define GM_INSTRUMENT_FLAG              (-1)
 /**
  *  A manifest constant for the normal number of semitones in an
  *  equally-tempered octave.  The name is short deliberately.

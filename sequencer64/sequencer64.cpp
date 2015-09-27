@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-09-25
+ * \updates       2015-09-27
  * \license       GNU GPLv2 or above
  *
  */
@@ -135,6 +135,15 @@ const char * const g_help_2 =
  *  The standard C/C++ entry point to this application.  This first thing
  *  this function does is scan the argument vector and strip off all
  *  parameters known to GTK+.
+ *
+ *  The next thing is to set the various settings defaults, and then try to
+ *  read the "user" and "rc" configuration files, in that order.  There are
+ *  currently no options to change the names of those files.  If we add
+ *  that code, we'll move the parsing code to where the configuration
+ *  file-names are changed from the command-line.
+ *
+ *  The last thing is to override any other settings via the command-line
+ *  parameters.
  */
 
 int
@@ -142,9 +151,58 @@ main (int argc, char * argv [])
 {
     Gtk::Main kit(argc, argv);              /* strip GTK+ parameters        */
     int c;
-    g_rc_settings.set_defaults();      /* start out with normal values */
-    g_user_settings.set_defaults();    /* start out with normal values */
-    for (;;)                                /* parse all parameters         */
+    g_rc_settings.set_defaults();           /* start out with normal values */
+    g_user_settings.set_defaults();         /* start out with normal values */
+
+    /*
+     * Set up objects that are specific to the Gtk-2 GUI.  Pass them to
+     * the perform constructor.  Create a font-render object.
+     *
+     * ISSUE:  We really need to create the perform object after reading
+     * the configuration, but we also need to fill it in from the
+     * configuration, I believe.
+     */
+
+    seq64::gui_assistant_gtk2 gui;              /* GUI-specific objects     */
+    seq64::perform p(gui);                      /* main performance object  */
+    seq64::p_font_renderer = new seq64::font(); /* set the font renderer    */
+
+    /*
+     *  Instead of the Seq24 names, use the new configuration file-names,
+     *  located in ~/.config/sequencer64. However, if they aren't found,
+     *  we no longer fall back to the legacy configuration file-names.  If
+     *  the --legacy option is in force, use only the legacy configuration
+     *  file-name.  The code also ensures the directory exists.  CURRENTLY
+     *  LINUX-SPECIFIC.  See the rc_settings class for how this works.
+     */
+
+    std::string cfg_dir = g_rc_settings.home_config_directory();
+    if (cfg_dir.empty())
+        return EXIT_FAILURE;
+
+    std::string rcname = g_rc_settings.user_filespec();
+    if (Glib::file_test(rcname, Glib::FILE_TEST_EXISTS))
+    {
+        printf("Reading 'user' configuration [%s]\n", rcname.c_str());
+        seq64::userfile user(rcname);
+        if (user.parse(p))
+        {
+            // Nothing to do, and no exit needed here if it fails
+        }
+    }
+
+    rcname = g_rc_settings.config_filespec();
+    if (Glib::file_test(rcname, Glib::FILE_TEST_EXISTS))
+    {
+        printf("Reading 'rc' configuration [%s]\n", rcname.c_str());
+        seq64::optionsfile options(rcname);
+        if (options.parse(p))
+            g_rc_settings.last_used_dir(cfg_dir);
+        else
+            return EXIT_FAILURE;
+    }
+
+    for (;;)                                /* parse all command parameters */
     {
         int option_index = 0;               /* getopt_long index storage    */
         c = getopt_long
@@ -260,6 +318,8 @@ main (int argc, char * argv [])
     g_rc_settings.set_globals();                /* copy to legacy globals   */
     g_user_settings.set_globals();              /* copy to legacy globals   */
 
+#ifdef USE_THIS_INSTANCE_OF_CODE
+
     /*
      * Set up objects that are specific to the Gtk-2 GUI.  Pass them to
      * the perform constructor.  Create a font-render object.
@@ -269,45 +329,14 @@ main (int argc, char * argv [])
     seq64::perform p(gui);                      /* main performance object  */
     seq64::p_font_renderer = new seq64::font(); /* set the font renderer    */
 
-    /*
-     *  Instead of the Seq24 names, use the new configuration file-names,
-     *  located in ~/.config/sequencer64. However, if they aren't found,
-     *  we no longer fall back to the legacy configuration file-names.  If
-     *  the --legacy option is in force, use only the legacy configuration
-     *  file-name.  The code also ensures the directory exists.  CURRENTLY
-     *  LINUX-SPECIFIC.  See the rc_settings class for how this works.
-     */
+#endif  // USE_THIS_INSTANCE_OF_CODE
 
-    std::string cfg_dir = g_rc_settings.home_config_directory();
-    if (cfg_dir.empty())
-        return EXIT_FAILURE;
-
-    std::string rcname = g_rc_settings.config_filespec();
-    if (Glib::file_test(rcname, Glib::FILE_TEST_EXISTS))
-    {
-        printf("Reading 'rc' configuration [%s]\n", rcname.c_str());
-        seq64::optionsfile options(rcname);
-        if (options.parse(p))
-            g_rc_settings.last_used_dir(cfg_dir);
-        else
-            return EXIT_FAILURE;
-    }
-    rcname = g_rc_settings.user_filespec();
-    if (Glib::file_test(rcname, Glib::FILE_TEST_EXISTS))
-    {
-        printf("Reading 'user' configuration [%s]\n", rcname.c_str());
-        seq64::userfile user(rcname);
-        if (user.parse(p))
-        {
-            // Nothing to do, and no exit needed here if it fails
-        }
-    }
     p.init();
     p.launch_input_thread();
     p.launch_output_thread();
     p.init_jack();
 
-    seq64::mainwnd seq24_window(&p);          /* push a mainwnd onto stack */
+    seq64::mainwnd seq24_window(&p);            /* push mainwnd onto stack  */
     if (optind < argc)
     {
         if (Glib::file_test(argv[optind], Glib::FILE_TEST_EXISTS))
@@ -341,10 +370,7 @@ main (int argc, char * argv [])
      */
 
     g_rc_settings.get_globals();             /* copy from legacy globals */
-//  if (g_rc_settings.legacy_format())
-        rcname = g_rc_settings.config_filespec();
-//  else
-//      rcname = g_rc_settings.config_filespec();
+    rcname = g_rc_settings.config_filespec();
 
     printf("Writing rc configuration file [%s]\n", rcname.c_str());
     seq64::optionsfile options(rcname);
@@ -353,7 +379,9 @@ main (int argc, char * argv [])
         // Anything to do?
     }
 
+    g_user_settings.dump_summary();
     g_user_settings.get_globals();           /* copy from legacy globals */
+    g_user_settings.dump_summary();
     rcname = g_rc_settings.user_filespec();
     printf("Writing user configuration file [%s]\n", rcname.c_str());
     seq64::userfile userstuff(rcname);

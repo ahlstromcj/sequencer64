@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-09-26
+ * \updates       2015-09-27
  * \license       GNU GPLv2 or above
  *
  *  Note that the parse function has some code that is not yet enabled.
@@ -69,6 +69,37 @@ userfile::~userfile ()
 }
 
 /**
+ *  Provides a purely internal, ad hoc helper function to create numbered
+ *  section names for the userfile class.
+ */
+
+static std::string
+make_section_name (const std::string & label, int value)
+{
+    char temp[8];
+    snprintf(temp, sizeof(temp), "%d", value);
+    std::string result = "[";
+    result += label;
+    result += "-";
+    result += temp;
+    result += "]";
+    return result;
+}
+
+/**
+ *  Provides a debug dump of basic information to help debug a
+ *  surprisingly intractable problem with all busses having the name and
+ *  values of the last buss in the configuration.  Does work only if
+ *  PLATFORM_DEBUG is defined.
+ */
+
+static void
+dump_setting_summary ()
+{
+    g_user_settings.dump_summary();
+}
+
+/**
  *  Parses a "usr" file, filling in the given perform object.
  *  This function opens the file as a text file (line-oriented).
  *
@@ -82,42 +113,37 @@ userfile::parse (perform & /* a_perf */)
     std::ifstream file(m_name.c_str(), std::ios::in | std::ios::ate);
     if (! file.is_open())
     {
-        printf("? error opening [%s]\n", m_name.c_str());
+        fprintf(stderr, "? error opening [%s]\n", m_name.c_str());
         return false;
     }
     file.seekg(0, std::ios::beg);                       /* seek to start */
     line_after(file, "[user-midi-bus-definitions]");    /* find the tag  */
     int buses = 0;
     sscanf(m_line, "%d", &buses);                       /* atavistic!    */
-    for (int i = 0; i < buses; i++)
+    for (int bus = 0; bus < buses; ++bus)
     {
-        char bus_num[4];
-        snprintf(bus_num, sizeof(bus_num), "%d", i);
-        line_after(file, "[user-midi-bus-" + std::string(bus_num) + "]");
-
-        // global_user_midi_bus_definitions[i].alias = m_line;
-        // g_user_settings.bus_alias(i, m_line);
-
-        (void) g_user_settings.add_bus(m_line);
-        next_data_line(file);
-        int instruments = 0;
-        int instrument;
-        int channel;
-        sscanf(m_line, "%d", &instruments);
-        for (int j = 0; j < instruments; j++)
+        std::string label = make_section_name("user-midi-bus", bus);
+        line_after(file, label);
+        if (g_user_settings.add_bus(m_line))
         {
             next_data_line(file);
-            sscanf(m_line, "%d %d", &channel, &instrument);
-
-            // global_user_midi_bus_definitions[i].instrument[channel] =
-            //      instrument;
-
-            /*
-             * This call assumes that add_bus() succeeded.  Otherwise, i
-             * would not match the size of the vector.
-             */
-
-            g_user_settings.bus_instrument(i, channel, instrument);
+            int instruments = 0;
+            int instrument;
+            int channel;
+            sscanf(m_line, "%d", &instruments);
+            for (int j = 0; j < instruments; j++)
+            {
+                next_data_line(file);
+                sscanf(m_line, "%d %d", &channel, &instrument);
+                g_user_settings.bus_instrument(bus, channel, instrument);
+            }
+        }
+        else
+        {
+            fprintf
+            (
+                stderr, "? error adding %s (line = '%s')", label.c_str(), m_line
+            );
         }
     }
 
@@ -126,37 +152,31 @@ userfile::parse (perform & /* a_perf */)
     sscanf(m_line, "%d", &instruments);
     for (int i = 0; i < instruments; i++)
     {
-        char instrument_num[4];
-        snprintf(instrument_num, sizeof(instrument_num), "%d", i);
-        line_after(file, "[user-instrument-"+std::string(instrument_num)+"]");
-
-        // global_user_instrument_definitions[i].instrument = m_line;
-        // g_user_settings.instrument_name(i, m_line);
-
-        (void) g_user_settings.add_instrument(m_line);
-        next_data_line(file);
-        char ccname[SEQ64_LINE_MAX];
-        int ccs = 0;
-        sscanf(m_line, "%d", &ccs);
-        for (int j = 0; j < ccs; j++)
+        std::string label = make_section_name("user-instrument", i);
+        line_after(file, label);
+        if (g_user_settings.add_instrument(m_line))
         {
-            int c = 0;
             next_data_line(file);
-            sscanf(m_line, "%d", &c);
-            sscanf(m_line, "%[^\n]", ccname);
-
-        //  global_user_instrument_definitions[i].controllers_active[c] = true;
-        //  global_user_instrument_definitions[i].controllers[c] =
-        //      std::string(ccname);
-
-            /*
-             * This call assumes that add_instrument() succeeded.
-             * Otherwise, i would not match the size of the vector.
-             */
-
-            g_user_settings.instrument_controllers
+            char ccname[SEQ64_LINE_MAX];
+            int ccs = 0;
+            sscanf(m_line, "%d", &ccs);
+            for (int j = 0; j < ccs; j++)
+            {
+                int c = 0;
+                next_data_line(file);
+                sscanf(m_line, "%d", &c);
+                sscanf(m_line, "%[^\n]", ccname);
+                g_user_settings.instrument_controllers
+                (
+                    i, c, std::string(ccname), true
+                );
+            }
+        }
+        else
+        {
+            fprintf
             (
-                i, c, std::string(ccname), true
+                stderr, "? error adding %s (line = '%s')", label.c_str(), m_line
             );
         }
     }
@@ -166,6 +186,7 @@ userfile::parse (perform & /* a_perf */)
      */
 
     g_user_settings.set_globals();
+    dump_setting_summary();
     file.close();
     return true;
 }
@@ -184,9 +205,11 @@ userfile::write (const perform & /* a_perf */ )
     std::ofstream file(m_name.c_str(), std::ios::out | std::ios::trunc);
     if (! file.is_open())
     {
-        printf("? error opening [%s] for writing\n", m_name.c_str());
+        fprintf(stderr, "? error opening [%s] for writing\n", m_name.c_str());
         return false;
     }
+    g_user_settings.get_globals();
+    dump_setting_summary();
     if (g_rc_settings.legacy_format())
         file << "# Seq24 0.9.2 user configuration file (legacy format)\n";
     else
@@ -195,8 +218,8 @@ userfile::write (const perform & /* a_perf */ )
     file
         << "#\n"
         << "# In the following MIDI buss definitions, the channels are counted\n"
-        << "# from 0 to 15, not 1 to 16.  Instruments set to -1 are GM.  Any\n"
-        << "# unspecified channel/instrument pair defaults to GM.\n"
+        << "# from 0 to 15, not 1 to 16.  Instruments not specified are set to\n"
+        << "# -1 (GM_INSTRUMENT_FLAG) and are GM (General MIDI).\n"
         ;
 
     file
@@ -213,10 +236,6 @@ userfile::write (const perform & /* a_perf */ )
 
     for (int buss = 0; buss < g_user_settings.bus_count(); ++buss)
     {
-        // char bus_num[4];
-        // snprintf(bus_num, sizeof(bus_num), "%d", buss);
-        // file <<  "\n[user-midi-bus-" << std::string(bus_num) << "]\n\n";
-
         file <<  "\n[user-midi-bus-" << buss << "]\n\n";
         const user_midi_bus & umb = g_user_settings.bus(buss);
         if (umb.is_valid())
@@ -231,7 +250,7 @@ userfile::write (const perform & /* a_perf */ )
 
             for (int channel = 0; channel < umb.channel_count(); ++channel)
             {
-                if (umb.instrument(channel) != -1)
+                if (umb.instrument(channel) != GM_INSTRUMENT_FLAG)
                     file << channel << " " << umb.instrument(channel) << "\n";
             }
         }
@@ -262,10 +281,6 @@ userfile::write (const perform & /* a_perf */ )
 
     for (int inst = 0; inst < g_user_settings.instrument_count(); ++inst)
     {
-        // char inst_num[4];
-        // snprintf(inst_num, sizeof(inst_num), "%d", inst);
-        // file <<  "\n[user-instrument-" << std::string(inst_num) << "]\n\n";
-
         file <<  "\n[user-instrument-" << inst << "]\n\n";
         const user_instrument & uin = g_user_settings.instrument(inst);
         if (uin.is_valid())

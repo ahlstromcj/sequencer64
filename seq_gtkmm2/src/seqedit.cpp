@@ -1258,11 +1258,24 @@ seqedit::popup_midich_menu ()
 {
     m_menu_midich = manage(new Gtk::Menu());
     int midi_bus = m_seq->get_midi_bus();
-    char b[16];
-    for (int i = 0; i < 16; i++)                    /* midi channel menu */
+    for (int i = 0; i < MIDI_BUS_CHANNEL_MAX; i++)  /* MIDI channel menu */
     {
+        char b[4];                                  /* 2 digits or less  */
         snprintf(b, sizeof(b), "%d", i + 1);
         std::string name = std::string(b);
+
+        // TODO:
+        // int instrument = -1;                     // deliberately invalid
+        // const user_midi_bus & umb = g_user_settings.bus(midi_bus);
+        // if (umb.is_valid())
+        // {
+        //      instrument = umb.instrument(channnel)
+        // }
+        //
+        // or
+        //
+        // int instrument = g_user_settings.bus(midi_bus).instrument(channel);
+
         int instrument = global_user_midi_bus_definitions[midi_bus].instrument[i];
         if (instrument >= 0 && instrument < c_max_busses)
         {

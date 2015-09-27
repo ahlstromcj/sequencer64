@@ -83,10 +83,10 @@ user_instrument::set_defaults ()
 {
     m_is_valid = false;
     m_instrument_def.instrument.clear();
-    for (int j = 0; j < MIDI_CONTROLLER_MAX; j++)
+    for (int c = 0; c < MIDI_CONTROLLER_MAX; c++)
     {
-        m_instrument_def.controllers_active[j] = false;
-        m_instrument_def.controllers[j].clear();
+        m_instrument_def.controllers_active[c] = false;
+        m_instrument_def.controllers[c].clear();
     }
 }
 
@@ -109,7 +109,7 @@ user_instrument::set_defaults ()
 void
 user_instrument::set_global (int instrum) const
 {
-    if (m_is_valid && instrum >= 0 && instrum < c_max_instruments)
+    if (m_is_valid && instrum >= 0 && instrum < c_max_instruments) // CONST GLOBAL
     {
         global_user_instrument_definitions[instrum].instrument =
             m_instrument_def.instrument;
@@ -145,7 +145,7 @@ user_instrument::set_global (int instrum) const
 void
 user_instrument::get_global (int instrum)
 {
-    if (instrum >= 0 && instrum < c_max_instruments)
+    if (instrum >= 0 && instrum < c_max_instruments)        // CONST GLOBAL
     {
         set_name(global_user_instrument_definitions[instrum].instrument);
         for (int c = 0; c < MIDI_CONTROLLER_MAX; c++)

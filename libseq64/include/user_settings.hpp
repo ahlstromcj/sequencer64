@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-22
- * \updates       2015-09-26
+ * \updates       2015-09-27
  * \license       GNU GPLv2 or above
  *
  *  This collection of variables describes some facets of the
@@ -66,12 +66,30 @@
 class user_settings
 {
     /**
+     *  Internal type for the container of user_midi_bus objects.
+     *  Sorry about the "confusion" about "bus" versus "buss".
+     *  See Google for arguments about it.
+     */
+
+    typedef std::vector<user_midi_bus> Busses;
+    typedef std::vector<user_midi_bus>::iterator BussIterator;
+    typedef std::vector<user_midi_bus>::const_iterator BussConstIterator;
+
+    /**
      *  Provides data about the MIDI busses, readable from the "user"
      *  configuration file.  Since this object is a vector, its size is
      *  adjustable.
      */
 
-    std::vector<user_midi_bus> m_midi_bus_defs;
+    Busses m_midi_buses;
+
+    /**
+     *  Internal type for the container of user_instrument objects.
+     */
+
+    typedef std::vector<user_instrument> Instruments;
+    typedef std::vector<user_instrument>::iterator InstrumentIterator;
+    typedef std::vector<user_instrument>::const_iterator InstrumentConstIterator;
 
     /**
      *  Provides data about the MIDI instruments, readable from the "user"
@@ -79,7 +97,7 @@ class user_settings
      *  are added.
      */
 
-    std::vector<user_instrument> m_instrument_defs;
+    Instruments m_instruments;
 
     /**
      *  Number of rows in the Patterns Panel.  The current value is 4, and
@@ -260,28 +278,77 @@ public:
     }
 
     /**
-     * \getter m_midi_bus_defs.size()
+     * \getter m_midi_buses.size()
      */
 
     int bus_count () const
     {
-        return int(m_midi_bus_defs.size());
+        return int(m_midi_buses.size());
+    }
+
+    void bus_instrument (int index, int channel, int instrum);  // setter
+
+    /**
+     * \getter m_midi_buses[buss].instrument[channel]
+     * \todo
+     *      Do this for controllers values and for user_instrument
+     *      members.
+     */
+
+     int bus_instrument (int buss, int channel)
+     {
+          return bus(buss).instrument(channel);
+     }
+
+    /**
+     * \getter m_midi_buses[buss].name
+     */
+
+    const std::string & bus_name (int buss)
+    {
+        return bus(buss).name();
     }
 
     /**
-     * \getter m_instrument_defs.size()
+     * \getter m_instruments.size()
      */
 
     int instrument_count () const
     {
-        return int(m_instrument_defs.size());
+        return int(m_instruments.size());
     }
 
-    void bus_instrument (int index, int channel, int instrum);
-    void instrument_controllers
+    void instrument_controllers                         // dual setter
     (
         int index, int cc, const std::string & ccname, bool isactive
     );
+
+    /**
+     * \getter m_instruments[instrument].instrument (name of instrument)
+     */
+
+    const std::string & instrument_name (int instrum)
+    {
+        return instrument(instrum).name();
+    }
+
+    /**
+     * \getter m_instruments[instrument].controllers_active[controller]
+     */
+
+    bool instrument_controller_active (int instrum, int c)
+    {
+        return instrument(instrum).controller_active(c);
+    }
+
+    /**
+     * \getter m_instruments[instrument].controllers_active[controller]
+     */
+
+    const std::string & instrument_controller_name (int instrum, int c)
+    {
+        return instrument(instrum).controller_name(c);
+    }
 
 public:
 
@@ -482,6 +549,8 @@ public:
      *  void mainwid_y (int value);
      */
 
+    void dump_summary();
+
 private:
 
 #if 0
@@ -489,8 +558,8 @@ private:
     void instrument_name (int index, const std::string & instname);
 #endif
 
-    user_midi_bus & private_bus (int index);
-    user_instrument & private_instrument (int index);
+    user_midi_bus & private_bus (int buss);
+    user_instrument & private_instrument (int instrum);
 
 };
 

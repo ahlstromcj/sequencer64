@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-25
- * \updates       2015-09-26
+ * \updates       2015-09-27
  * \license       GNU GPLv2 or above
  *
  *  Note that this module also sets the legacy global variables, so that
@@ -75,7 +75,8 @@ user_midi_bus::operator = (const user_midi_bus & rhs)
 }
 
 /**
- *  Sets the default values.  Also invalidates the object.
+ *  Sets the default values.  Also invalidates the object.  All 16 of the
+ *  channels are set to GM_INSTRUMENT_FLAG (-1).
  */
 
 void
@@ -83,8 +84,8 @@ user_midi_bus::set_defaults ()
 {
     m_is_valid = false;
     m_midi_bus_def.alias.clear();
-    for (int channel = 0; channel < 16; channel++)
-        m_midi_bus_def.instrument[channel] = -1;
+    for (int channel = 0; channel < MIDI_BUS_CHANNEL_MAX; channel++)    // 16
+        m_midi_bus_def.instrument[channel] = GM_INSTRUMENT_FLAG;
 }
 
 /**
@@ -102,7 +103,7 @@ user_midi_bus::set_defaults ()
 void
 user_midi_bus::set_global (int buss) const
 {
-    if (m_is_valid && buss >= 0 && buss < c_max_busses)
+    if (m_is_valid && buss >= 0 && buss < c_max_busses) // CONST GLOBAL
     {
         global_user_midi_bus_definitions[buss].alias = m_midi_bus_def.alias;
         for (int channel = 0; channel < MIDI_BUS_CHANNEL_MAX; channel++)
@@ -129,7 +130,7 @@ user_midi_bus::set_global (int buss) const
 void
 user_midi_bus::get_global (int buss)
 {
-    if (buss >= 0 && buss < c_max_busses)
+    if (buss >= 0 && buss < c_max_busses)   // CONST GLOBAL
     {
         set_name(global_user_midi_bus_definitions[buss].alias);
         for (int channel = 0; channel < MIDI_BUS_CHANNEL_MAX; channel++)
@@ -149,7 +150,7 @@ user_midi_bus::get_global (int buss)
  * \return
  *      The instrument number of the desired buss channel is returned.  If
  *      the channel number is out of range, or the object is not valid,
- *      then -1 is returned.
+ *      then GM_INSTRUMENT_FLAG (-1) is returned.
  */
 
 int
@@ -158,7 +159,7 @@ user_midi_bus::instrument (int channel) const
     if (m_is_valid && channel >= 0 && channel < MIDI_BUS_CHANNEL_MAX)
         return m_midi_bus_def.instrument[channel];
     else
-        return -1;
+        return GM_INSTRUMENT_FLAG;
 }
 
 /**

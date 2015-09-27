@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-23
- * \updates       2015-09-26
+ * \updates       2015-09-27
  * \license       GNU GPLv2 or above
  *
  *  Note that this module also sets the legacy global variables, so that
@@ -42,8 +42,8 @@
 
 user_settings::user_settings ()
  :
-    m_midi_bus_defs     (),         // vector
-    m_instrument_defs   (),         // vector
+    m_midi_buses        (),         // vector
+    m_instruments       (),         // vector
     m_mainwnd_rows      (0),
     m_mainwnd_cols      (0),
     m_seqs_in_set       (0),
@@ -74,8 +74,8 @@ user_settings::user_settings ()
 
 user_settings::user_settings (const user_settings & rhs)
  :
-    m_midi_bus_defs     (),         // vector
-    m_instrument_defs   (),         // vector
+    m_midi_buses     (),         // vector
+    m_instruments   (),         // vector
     m_mainwnd_rows      (rhs.m_mainwnd_rows),
     m_mainwnd_cols      (rhs.m_mainwnd_cols),
     m_seqs_in_set       (rhs.m_seqs_in_set),
@@ -109,8 +109,8 @@ user_settings::operator = (const user_settings & rhs)
 {
     if (this != &rhs)
     {
-        m_midi_bus_defs     = rhs.m_midi_bus_defs;
-        m_instrument_defs   = rhs.m_instrument_defs;
+        m_midi_buses     = rhs.m_midi_buses;
+        m_instruments   = rhs.m_instruments;
         m_mainwnd_rows      = rhs.m_mainwnd_rows;
         m_mainwnd_cols      = rhs.m_mainwnd_cols;
         m_seqs_in_set       = rhs.m_seqs_in_set;
@@ -136,16 +136,16 @@ user_settings::operator = (const user_settings & rhs)
 }
 
 /**
- *  Sets the default values.  For the m_midi_bus_defs and
- *  m_instrument_defs members, this function can only iterate over the
+ *  Sets the default values.  For the m_midi_buses and
+ *  m_instruments members, this function can only iterate over the
  *  current size of the vectors.  But the default size is zero!
  */
 
 void
 user_settings::set_defaults ()
 {
-    m_midi_bus_defs.clear();
-    m_instrument_defs.clear();
+    m_midi_buses.clear();
+    m_instruments.clear();
 
     m_mainwnd_rows = 4;                 // range: 4 to 8
     m_mainwnd_cols = 8;                 // range: 8 to 10
@@ -158,7 +158,6 @@ user_settings::set_defaults ()
     m_mainwid_spacing = 2;              // range: 2 to 6, try 4 or 6
     m_control_height = 0;               // range: 0 to 4
     normalize();                        // recalculate derived values
-//  prepare_midi_defs();                // clears out the arrays
 }
 
 /**
@@ -197,18 +196,29 @@ user_settings::normalize ()
 void
 user_settings::set_globals () const
 {
-    std::vector<user_midi_bus>::const_iterator umi;
-    for (umi = m_midi_bus_defs.begin(); umi != m_midi_bus_defs.end(); ++umi)
+    int buss = 0;
+    for
+    (
+        BussConstIterator umi = m_midi_buses.begin();
+        umi != m_midi_buses.end(); ++umi
+    )
     {
-        for (int buss = 0; buss < c_max_busses; ++buss) // REMOVE CONSTANT!!!
-            umi->set_global(buss);
+        if (buss < c_max_busses)
+            umi->set_global(buss++);
+        else
+            break;
     }
 
-    std::vector<user_instrument>::const_iterator uii;
-    for (uii = m_instrument_defs.begin(); uii != m_instrument_defs.end(); ++uii)
+    int instrument = 0;
+    for
+    (
+        InstrumentConstIterator uii = m_instruments.begin();
+        uii != m_instruments.end(); ++uii)
     {
-        for (int in = 0; in < c_max_instruments; ++in) // REMOVE CONSTANT!!!
-            uii->set_global(in);
+        if (instrument < c_max_instruments)
+            uii->set_global(instrument++);
+        else
+            break;
     }
 }
 
@@ -221,18 +231,30 @@ user_settings::set_globals () const
 void
 user_settings::get_globals ()
 {
-    std::vector<user_midi_bus>::iterator umi;
-    for (umi = m_midi_bus_defs.begin(); umi != m_midi_bus_defs.end(); ++umi)
+    int buss = 0;
+    for
+    (
+        BussIterator umi = m_midi_buses.begin();
+        umi != m_midi_buses.end(); ++umi
+    )
     {
-        for (int buss = 0; buss < c_max_busses; ++buss) // REMOVE CONSTANT!!!
-            umi->get_global(buss);
+        if (buss < c_max_busses)
+            umi->get_global(buss++);
+        else
+            break;
     }
 
-    std::vector<user_instrument>::iterator uii;
-    for (uii = m_instrument_defs.begin(); uii != m_instrument_defs.end(); ++uii)
+    int instrument = 0;
+    for
+    (
+        InstrumentIterator uii = m_instruments.begin();
+        uii != m_instruments.end(); ++uii
+    )
     {
-        for (int in = 0; in < c_max_instruments; ++in) // REMOVE CONSTANT!!!
-            uii->get_global(in);
+        if (instrument < c_max_instruments)
+            uii->get_global(instrument++);
+        else
+            break;
     }
 }
 
@@ -247,12 +269,14 @@ user_settings::add_bus (const std::string & alias)
     bool result = ! alias.empty();
     if (result)
     {
-        size_t currentsize = m_midi_bus_defs.size();
+        size_t currentsize = m_midi_buses.size();
         user_midi_bus temp(alias);
-        if (temp.is_valid())
-            m_midi_bus_defs.push_back(temp);
-
-        result = m_midi_bus_defs.size() == currentsize + 1;
+        result = temp.is_valid();
+        if (result)
+        {
+            m_midi_buses.push_back(temp);
+            result = m_midi_buses.size() == currentsize + 1;
+        }
     }
     return result;
 }
@@ -268,18 +292,20 @@ user_settings::add_instrument (const std::string & name)
     bool result = ! name.empty();
     if (result)
     {
-        size_t currentsize = m_instrument_defs.size();
+        size_t currentsize = m_instruments.size();
         user_instrument temp(name);
-        if (temp.is_valid())
-            m_instrument_defs.push_back(temp);
-
-        result = m_instrument_defs.size() == currentsize + 1;
+        result = temp.is_valid();
+        if (result)
+        {
+            m_instruments.push_back(temp);
+            result = m_instruments.size() == currentsize + 1;
+        }
     }
     return result;
 }
 
 /**
- * \getter m_midi_bus_defs[index] (internal function)
+ * \getter m_midi_buses[index] (internal function)
  *      If the index is out of range, then an invalid object is returned.
  *      This invalid object has an empty alias, and all the instrument
  *      numbers are -1.
@@ -289,8 +315,8 @@ user_midi_bus &
 user_settings::private_bus (int index)
 {
     static user_midi_bus s_invalid;                     /* invalid by default */
-    if (index >= 0 && index < int(m_midi_bus_defs.size()))  // c_max_busses
-        return m_midi_bus_defs[index];
+    if (index >= 0 && index < int(m_midi_buses.size()))
+        return m_midi_buses[index];
     else
         return s_invalid;
 }
@@ -298,7 +324,7 @@ user_settings::private_bus (int index)
 #if 0
 
 /*
- * \setter m_midi_bus_defs[index].name() [the alias field]
+ * \setter m_midi_buses[index].name() [the alias field]
  *      Unfortunately, we cannot check the validity of the selected
  *      object, but we can only set the name if not empty.  This function
  *      cannot be used to invalidate an object.  It can make the object
@@ -322,7 +348,7 @@ user_settings::bus_alias (int /*index*/, const std::string & /*alias*/)
 #endif      // 0
 
 /**
- * \getter m_midi_bus_defs[index].instrument[channel]
+ * \getter m_midi_buses[index].instrument[channel]
  *      Currently this function is used, in the userfile::parse()
  *      function.
  */
@@ -335,7 +361,7 @@ user_settings::bus_instrument (int index, int channel, int instrum)
 }
 
 /**
- * \getter m_instrument_defs[index]
+ * \getter m_instruments[index]
  *      If the index is out of range, then a invalid object is returned.
  *      This invalid object has an empty(), instrument name, false for all
  *      controllers_active[] values, and empty controllers[] string values.
@@ -345,8 +371,8 @@ user_instrument &
 user_settings::private_instrument (int index)
 {
     static user_instrument s_invalid;
-    if (index >= 0 && index < int(m_instrument_defs.size())) // c_max_instruments
-        return m_instrument_defs[index];
+    if (index >= 0 && index < int(m_instruments.size()))
+        return m_instruments[index];
     else
         return s_invalid;
 }
@@ -680,6 +706,37 @@ user_settings::mainwid_y (int value)
 }
  *
  */
+
+/**
+ *  Provides a debug dump of basic information to help debug a
+ *  surprisingly intractable problem with all busses having the name and
+ *  values of the last buss in the configuration.  Does work only if
+ *  PLATFORM_DEBUG is defined.
+ */
+
+#ifdef PLATFORM_DEBUG
+
+void
+user_settings::dump_summary ()
+{
+    int buscount = bus_count();
+    printf("[user-midi-bus-definitions] %d busses\n", buscount);
+    for (int b = 0; b < buscount; ++b)
+    {
+        const user_midi_bus & umb = bus(b);
+        printf("   [user-midi-bus-%d] '%s'\n", b, umb.name().c_str());
+    }
+}
+
+#else   // PLATFORM_DEBUG
+
+void
+user_settings::dump_summary ()
+{
+    // Empty body
+}
+
+#endif  //  PLATFORM_DEBUG
 
 /*
  * user_settings.cpp

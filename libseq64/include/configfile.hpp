@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-09-13
+ * \updates       2015-09-27
  * \license       GNU GPLv2 or above
  *
  */
@@ -45,10 +45,11 @@ class perform;
 
 /**
  *  A manifest constant for controlling the length of a line-reading
- *  array in a configuration file.
+ *  array in a configuration file.  This value was 1024, but
+ *  realistically, 128 is more than enough.  We provide safety anyway.
  */
 
-#define SEQ64_LINE_MAX                 1024
+#define SEQ64_LINE_MAX                  128
 
 /**
  *    This class is the abstract base class for optionsfile and userfile.

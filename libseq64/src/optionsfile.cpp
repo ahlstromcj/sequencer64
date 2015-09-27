@@ -445,6 +445,7 @@ optionsfile::write (const perform & a_perf)
      * Initial comments and MIDI control section
      */
 
+    g_rc_settings.get_globals();
     if (g_rc_settings.legacy_format())
     {
         file << "# Seq24 0.9.2 rc configuration file (legacy format)\n";

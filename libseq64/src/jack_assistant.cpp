@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-14
- * \updates       2015-09-18
+ * \updates       2015-09-27
  * \license       GNU GPLv2 or above
  *
  */
@@ -192,9 +192,7 @@ jack_assistant::deinit ()
         }
     }
     if (! m_jack_running)
-    {
-        infoprint("[JACK sync disabled]");
-    }
+        printf("[JACK sync disabled]\n");
 }
 
 /**

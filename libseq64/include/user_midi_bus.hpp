@@ -133,8 +133,8 @@ public:
         return MIDI_BUS_CHANNEL_MAX;
     }
 
-    int instrument (int channel) const;
-    void set_instrument (int channel, int instrum);
+    int instrument (int channel) const;                     // getter
+    void set_instrument (int channel, int instrum);         // setter
 
 private:
 

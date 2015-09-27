@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-25
- * \updates       2015-09-26
+ * \updates       2015-09-27
  * \license       GNU GPLv2 or above
  *
  *  Note that this module also sets the legacy global variables, so that
@@ -41,6 +41,7 @@
 user_instrument::user_instrument (const std::string & name)
  :
     m_is_valid          (false),
+    m_controller_count  (0),
     m_instrument_def    ()
 {
     set_defaults();
@@ -54,6 +55,7 @@ user_instrument::user_instrument (const std::string & name)
 user_instrument::user_instrument (const user_instrument & rhs)
  :
     m_is_valid          (rhs.m_is_valid),
+    m_controller_count  (rhs.m_controller_count),
     m_instrument_def    ()
 {
     copy_definitions(rhs);
@@ -69,6 +71,7 @@ user_instrument::operator = (const user_instrument & rhs)
     if (this != &rhs)
     {
         m_is_valid = rhs.m_is_valid;
+        m_controller_count = rhs.m_controller_count;
         copy_definitions(rhs);
     }
     return *this;
@@ -82,6 +85,7 @@ void
 user_instrument::set_defaults ()
 {
     m_is_valid = false;
+    m_controller_count = 0;
     m_instrument_def.instrument.clear();
     for (int c = 0; c < MIDI_CONTROLLER_MAX; c++)
     {
@@ -145,16 +149,21 @@ user_instrument::set_global (int instrum) const
 void
 user_instrument::get_global (int instrum)
 {
-    if (instrum >= 0 && instrum < c_max_instruments)        // CONST GLOBAL
+    if (instrum >= 0 && instrum < c_max_instruments)  // CONST GLOBAL danger!
     {
+        m_controller_count = 0;
         set_name(global_user_instrument_definitions[instrum].instrument);
         for (int c = 0; c < MIDI_CONTROLLER_MAX; c++)
         {
-            m_instrument_def.controllers_active[c] =
+            bool active =
                 global_user_instrument_definitions[instrum].controllers_active[c];
 
+            m_instrument_def.controllers_active[c] = active;
             m_instrument_def.controllers[c] =
                 global_user_instrument_definitions[instrum].controllers[c];
+
+            if (active)
+                ++m_controller_count;
         }
     }
 }
@@ -199,6 +208,8 @@ user_instrument::set_controller
     {
         m_instrument_def.controllers[c] = cname;
         m_instrument_def.controllers_active[c] = isactive;
+        if (isactive)
+            ++m_controller_count;
     }
 }
 

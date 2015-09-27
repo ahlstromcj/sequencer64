@@ -286,7 +286,7 @@ public:
         return int(m_midi_buses.size());
     }
 
-    void bus_instrument (int index, int channel, int instrum);  // setter
+    void set_bus_instrument (int index, int channel, int instrum);
 
     /**
      * \getter m_midi_buses[buss].instrument[channel]
@@ -318,7 +318,7 @@ public:
         return int(m_instruments.size());
     }
 
-    void instrument_controllers                         // dual setter
+    void set_instrument_controllers
     (
         int index, int cc, const std::string & ccname, bool isactive
     );

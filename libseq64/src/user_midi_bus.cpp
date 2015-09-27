@@ -41,6 +41,7 @@
 user_midi_bus::user_midi_bus (const std::string & name)
  :
     m_is_valid          (false),
+    m_channel_count     (0),
     m_midi_bus_def      ()
 {
     set_defaults();
@@ -54,6 +55,7 @@ user_midi_bus::user_midi_bus (const std::string & name)
 user_midi_bus::user_midi_bus (const user_midi_bus & rhs)
  :
     m_is_valid          (rhs.m_is_valid),
+    m_channel_count     (rhs.m_channel_count),
     m_midi_bus_def      ()                      // a constant-size array
 {
     copy_definitions(rhs);
@@ -69,6 +71,7 @@ user_midi_bus::operator = (const user_midi_bus & rhs)
     if (this != &rhs)
     {
         m_is_valid = rhs.m_is_valid;
+        m_channel_count = rhs.m_channel_count;
         copy_definitions(rhs);
     }
     return *this;
@@ -83,6 +86,7 @@ void
 user_midi_bus::set_defaults ()
 {
     m_is_valid = false;
+    m_channel_count = 0;
     m_midi_bus_def.alias.clear();
     for (int channel = 0; channel < MIDI_BUS_CHANNEL_MAX; channel++)    // 16
         m_midi_bus_def.instrument[channel] = GM_INSTRUMENT_FLAG;
@@ -130,13 +134,16 @@ user_midi_bus::set_global (int buss) const
 void
 user_midi_bus::get_global (int buss)
 {
-    if (buss >= 0 && buss < c_max_busses)   // CONST GLOBAL
+    if (buss >= 0 && buss < c_max_busses)   // CONST GLOBAL and dangerous!
     {
+        m_channel_count = 0;
         set_name(global_user_midi_bus_definitions[buss].alias);
         for (int channel = 0; channel < MIDI_BUS_CHANNEL_MAX; channel++)
         {
-            m_midi_bus_def.instrument[channel] =
-                global_user_midi_bus_definitions[buss].instrument[channel];
+            int in = global_user_midi_bus_definitions[buss].instrument[channel];
+            m_midi_bus_def.instrument[channel] = in;
+            if (in != GM_INSTRUMENT_FLAG)
+                ++m_channel_count;
         }
     }
 }
@@ -178,7 +185,11 @@ void
 user_midi_bus::set_instrument (int channel, int instrum)
 {
     if (m_is_valid && channel >= 0 && channel < MIDI_BUS_CHANNEL_MAX)
+    {
         m_midi_bus_def.instrument[channel] = instrum;
+        if (instrum != GM_INSTRUMENT_FLAG)
+            ++m_channel_count;
+    }
 }
 
 /**

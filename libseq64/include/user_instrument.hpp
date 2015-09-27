@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-25
- * \updates       2015-09-26
+ * \updates       2015-09-27
  * \license       GNU GPLv2 or above
  *
  */
@@ -94,6 +94,14 @@ class user_instrument
     bool m_is_valid;
 
     /**
+     *  Provides the actual number of non-default controllers actually
+     *  set.  Often, the "user" configuration file has only a few out of
+     *  the 128 assigned explicitly.
+     */
+
+    int m_controller_count;
+
+    /**
      *  The instance of the structure that this class wraps.
      */
 
@@ -136,7 +144,7 @@ public:
 
     int controller_count () const
     {
-        return MIDI_CONTROLLER_MAX;
+        return m_controller_count;          // MIDI_CONTROLLER_MAX
     }
 
     const std::string & controller_name (int c) const;

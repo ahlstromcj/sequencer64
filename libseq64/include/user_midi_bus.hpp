@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-25
- * \updates       2015-09-26
+ * \updates       2015-09-27
  * \license       GNU GPLv2 or above
  *
  */
@@ -89,6 +89,14 @@ class user_midi_bus
     bool m_is_valid;
 
     /**
+     *  Provides the actual number of non-default buss channels actually
+     *  set.  Often, the "user" configuration file has only a few out of
+     *  the 16 assigned explicitly.
+     */
+
+    int m_channel_count;
+
+    /**
      *  The instance of the structure that this class wraps.
      */
 
@@ -130,7 +138,7 @@ public:
 
     int channel_count () const
     {
-        return MIDI_BUS_CHANNEL_MAX;
+        return m_channel_count;             // MIDI_BUS_CHANNEL_MAX
     }
 
     int instrument (int channel) const;                     // getter

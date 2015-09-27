@@ -135,14 +135,15 @@ userfile::parse (perform & /* a_perf */)
             {
                 next_data_line(file);
                 sscanf(m_line, "%d %d", &channel, &instrument);
-                g_user_settings.bus_instrument(bus, channel, instrument);
+                g_user_settings.set_bus_instrument(bus, channel, instrument);
             }
         }
         else
         {
             fprintf
             (
-                stderr, "? error adding %s (line = '%s')", label.c_str(), m_line
+                stderr, "? error adding %s (line = '%s')\n",
+                label.c_str(), m_line
             );
         }
     }
@@ -164,19 +165,35 @@ userfile::parse (perform & /* a_perf */)
             {
                 int c = 0;
                 next_data_line(file);
-                sscanf(m_line, "%d", &c);
-                sscanf(m_line, "%[^\n]", ccname);
-                g_user_settings.instrument_controllers
-                (
-                    i, c, std::string(ccname), true
-                );
+
+                // sscanf(m_line, "%d", &c);
+                // sscanf(m_line, "%[^\n]", ccname);
+
+                ccname[0] = 0;                              // clear the buffer
+                sscanf(m_line, "%d %[^\n]", &c, ccname);
+                if (c >= 0 && c < MIDI_CONTROLLER_MAX)      // 128
+                {
+                    g_user_settings.set_instrument_controllers
+                    (
+                        i, c, std::string(ccname), true
+                    );
+                }
+                else
+                {
+                    fprintf
+                    (
+                        stderr, "? illegal controller value %d for '%s'\n",
+                        c, label.c_str()
+                    );
+                }
             }
         }
         else
         {
             fprintf
             (
-                stderr, "? error adding %s (line = '%s')", label.c_str(), m_line
+                stderr, "? error adding %s (line = '%s')\n",
+                label.c_str(), m_line
             );
         }
     }
@@ -214,6 +231,23 @@ userfile::write (const perform & /* a_perf */ )
         file << "# Seq24 0.9.2 user configuration file (legacy format)\n";
     else
         file << "# Sequencer26 0.9.9.4 (and above) user configuration file\n";
+
+    file
+        << "#\n"
+        << "# Created by reading the following file and writing it back out via\n"
+        << "# the sequencer64 application.\n"
+        << "#\n"
+<< "# https://raw.githubusercontent.com/vext01/seq24/master/seq24usr.example\n"
+        << "#\n"
+        << "#  This is an example for a .seq24usr file. Edit and place in\n"
+        << "#  your home directory. It allows you to give an alias to each\n"
+        << "#  MIDI bus, MIDI channel, and MIDI control codes per channel.\n"
+        << "#\n"
+        << "#  1. Define your instruments and their control-code names,\n"
+        << "#     if they have them.\n"
+        << "#  2. Define a MIDI bus, its name, and what instruments are\n"
+        << "#     on which channel.\n"
+    ;
 
     file
         << "#\n"
@@ -258,7 +292,7 @@ userfile::write (const perform & /* a_perf */ )
         {
             file << "? This buss specification is invalid\n";
         }
-        file << "\n# End of buss definition " << buss << "\n\n";
+        file << "\n# End of buss definition " << buss << "\n";
     }
 
     file
@@ -286,7 +320,7 @@ userfile::write (const perform & /* a_perf */ )
         if (uin.is_valid())
         {
             file
-                << "# Name of the instrument:\n"
+                << "# Name of instrument:\n"
                 << uin.name() << "\n\n"
                 << "# Number of MIDI controller values:\n"
                 << uin.controller_count() << "\n\n"
@@ -303,11 +337,13 @@ userfile::write (const perform & /* a_perf */ )
         {
             file << "? This instrument specification is invalid\n";
         }
-        file << "\n# End of instrument/controllers definition " << inst << "\n\n";
+        file << "\n# End of instrument/controllers definition " << inst << "\n";
     }
 
     file
-        << "# End of " << m_name << "\n#\n"
+        << "#\n"
+        << "# End of " << m_name
+        << "\n#\n"
         << "# vim: sw=4 ts=4 wm=8 et ft=sh\n"
         ;
     file.close();

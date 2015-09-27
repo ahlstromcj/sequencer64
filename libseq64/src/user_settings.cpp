@@ -354,7 +354,7 @@ user_settings::bus_alias (int /*index*/, const std::string & /*alias*/)
  */
 
 void
-user_settings::bus_instrument (int index, int channel, int instrum)
+user_settings::set_bus_instrument (int index, int channel, int instrum)
 {
     user_midi_bus & mb = private_bus(index);
     mb.set_instrument(channel, instrum);
@@ -408,7 +408,7 @@ user_settings::instrument_name (int /*index*/, const std::string & /*instname*/)
  */
 
 void
-user_settings::instrument_controllers
+user_settings::set_instrument_controllers
 (
     int index,
     int cc,
@@ -710,11 +710,12 @@ user_settings::mainwid_y (int value)
 /**
  *  Provides a debug dump of basic information to help debug a
  *  surprisingly intractable problem with all busses having the name and
- *  values of the last buss in the configuration.  Does work only if
- *  PLATFORM_DEBUG is defined.
+ *  values of the last buss in the configuration.  Does its work only if
+ *  PLATFORM_DEBUG and USE_DUMP_SUMMARY are defined.  Only enabled in
+ *  emergencies :-D.
  */
 
-#ifdef PLATFORM_DEBUG
+#if defined PLATFORM_DEBUG && defined USE_DUMP_SUMMARY
 
 void
 user_settings::dump_summary ()

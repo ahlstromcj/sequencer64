@@ -747,7 +747,7 @@ mainwid::on_button_release_event (GdkEventButton * a_p0)
             draw_sequence_pixmap_on_window(m_old_seq);          // effective?
         }
     }
-    if (current_sequence() != -1 && a_p0->button == 3)       // launch menu (R button)
+    if (current_sequence() != -1 && a_p0->button == 3) // launch menu (R button)
         popup_menu();
 
     return true;

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-09-14
+ * \updates       2015-09-28
  * \license       GNU GPLv2 or above
  *
  */
@@ -45,6 +45,7 @@
 #include <gtkmm/messagedialog.h>
 #include <gtkmm/spinbutton.h>
 #include <gtkmm/stock.h>
+#include <gtkmm/tooltips.h>             // #include <gtkmm/tooltip.h>
 
 #include "globals.h"
 #include "gtk_helpers.h"
@@ -94,9 +95,7 @@ mainwnd::mainwnd (perform * a_p)
     performcallback         (),
     m_mainperf              (a_p),
     m_modified              (false),
-#if GTK_MINOR_VERSION < 12
     m_tooltips              (manage(new Gtk::Tooltips())),
-#endif
     m_menubar               (manage(new Gtk::MenuBar())),
     m_menu_file             (manage(new Gtk::Menu())),
     m_menu_view             (manage(new Gtk::Menu())),
@@ -494,7 +493,8 @@ mainwnd::options_dialog ()
 }
 
 /**
- *  Play!
+ *  Play!  Note that we call three perform member functions, so could let
+ *  perform do it.
  */
 
 void
@@ -507,7 +507,8 @@ mainwnd::start_playing ()
 }
 
 /**
- *  Stop!
+ *  Stop!  Note that we call two perform member functions, so could let
+ *  perform do it.
  */
 
 void
@@ -1165,7 +1166,7 @@ mainwnd::on_key_press_event (GdkEventKey * a_ev)
         {
             /**
              * \todo
-             *      Need a well-named perform furnction for incrementing
+             *      Need a well-named perform function for incrementing
              *      its screenset; it should return the new value.
              */
 

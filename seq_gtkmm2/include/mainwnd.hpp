@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-09-13
+ * \updates       2015-09-28
  * \license       GNU GPLv2 or above
  *
  *  The main windows is known as the "Patterns window" or "Patterns
@@ -49,10 +49,7 @@ namespace Gtk
     class MenuBar;
     class Menu;
     class SpinButton;
-
-#if GTK_MINOR_VERSION < 12
     class Tooltips;
-#endif
 }
 
 namespace seq64
@@ -92,9 +89,9 @@ private:
 
     bool m_modified;
 
-#if GTK_MINOR_VERSION < 12
+// #if GTK_MINOR_VERSION < 12
     Gtk::Tooltips * m_tooltips;
-#endif
+// #endif
 
     /**
      *  Theses objects support the menu and its sub-menus.

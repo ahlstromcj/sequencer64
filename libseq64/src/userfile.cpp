@@ -234,10 +234,11 @@ userfile::write (const perform & /* a_perf */ )
 
     file
         << "#\n"
-        << "# Created by reading the following file and writing it back out via\n"
+        << "# Created by reading the following file and writing it out via\n"
         << "# the sequencer64 application.\n"
         << "#\n"
-<< "# https://raw.githubusercontent.com/vext01/seq24/master/seq24usr.example\n"
+        << "# https://raw.githubusercontent.com/vext01/"
+               "seq24/master/seq24usr.example\n"
         << "#\n"
         << "#  This is an example for a .seq24usr file. Edit and place in\n"
         << "#  your home directory. It allows you to give an alias to each\n"
@@ -251,8 +252,8 @@ userfile::write (const perform & /* a_perf */ )
 
     file
         << "#\n"
-        << "# In the following MIDI buss definitions, the channels are counted\n"
-        << "# from 0 to 15, not 1 to 16.  Instruments not specified are set to\n"
+        << "# In the following MIDI buss definitions, channels are counted\n"
+        << "# from 0 to 15, not 1 to 16.  Instruments unspecified are set to\n"
         << "# -1 (GM_INSTRUMENT_FLAG) and are GM (General MIDI).\n"
         ;
 

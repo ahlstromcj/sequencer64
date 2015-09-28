@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-09-27
+ * \updates       2015-09-28
  * \license       GNU GPLv2 or above
  *
  */
@@ -197,7 +197,14 @@ main (int argc, char * argv [])
         printf("[Reading rc configuration %s]\n", rcname.c_str());
         seq64::optionsfile options(rcname);
         if (options.parse(p))
-            g_rc_settings.last_used_dir(cfg_dir);
+        {
+            /*
+             * Not necessary, and it resets the last-used-directory
+             * obtained from the "rc" configuration file.
+             *
+             * g_rc_settings.last_used_dir(cfg_dir);
+             */
+        }
         else
             return EXIT_FAILURE;
     }

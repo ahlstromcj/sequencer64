@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-09-26
+ * \updates       2015-09-28
  * \license       GNU GPLv2 or above
  *
  *  The <tt> ~/.seq24rc </tt>
@@ -199,29 +199,27 @@ optionsfile::parse (perform & a_perf)
         (
             m_line,
             "%d [ %d %d %ld %ld %ld %ld ]"
-              " [ %d %d %ld %ld %ld %ld ]"
-              " [ %d %d %ld %ld %ld %ld ]",
+                " [ %d %d %ld %ld %ld %ld ]"
+                " [ %d %d %ld %ld %ld %ld ]",
             &sequence,
             (int *) &a_perf.get_midi_control_toggle(i)->m_active,
-            (int *) &a_perf.get_midi_control_toggle(i)->m_inverse_active,
-            &a_perf.get_midi_control_toggle(i)->m_status,
-            &a_perf.get_midi_control_toggle(i)->m_data,
-            &a_perf.get_midi_control_toggle(i)->m_min_value,
-            &a_perf.get_midi_control_toggle(i)->m_max_value,
-
+                (int *) &a_perf.get_midi_control_toggle(i)->m_inverse_active,
+                &a_perf.get_midi_control_toggle(i)->m_status,
+                &a_perf.get_midi_control_toggle(i)->m_data,
+                &a_perf.get_midi_control_toggle(i)->m_min_value,
+                &a_perf.get_midi_control_toggle(i)->m_max_value,
             (int *) &a_perf.get_midi_control_on(i)->m_active,
-            (int *) &a_perf.get_midi_control_on(i)->m_inverse_active,
-            &a_perf.get_midi_control_on(i)->m_status,
-            &a_perf.get_midi_control_on(i)->m_data,
-            &a_perf.get_midi_control_on(i)->m_min_value,
-            &a_perf.get_midi_control_on(i)->m_max_value,
-
+                (int *) &a_perf.get_midi_control_on(i)->m_inverse_active,
+                &a_perf.get_midi_control_on(i)->m_status,
+                &a_perf.get_midi_control_on(i)->m_data,
+                &a_perf.get_midi_control_on(i)->m_min_value,
+                &a_perf.get_midi_control_on(i)->m_max_value,
             (int *) &a_perf.get_midi_control_off(i)->m_active,
-            (int *) &a_perf.get_midi_control_off(i)->m_inverse_active,
-            &a_perf.get_midi_control_off(i)->m_status,
-            &a_perf.get_midi_control_off(i)->m_data,
-            &a_perf.get_midi_control_off(i)->m_min_value,
-            &a_perf.get_midi_control_off(i)->m_max_value
+                (int *) &a_perf.get_midi_control_off(i)->m_inverse_active,
+                &a_perf.get_midi_control_off(i)->m_status,
+                &a_perf.get_midi_control_off(i)->m_data,
+                &a_perf.get_midi_control_off(i)->m_min_value,
+                &a_perf.get_midi_control_off(i)->m_max_value
         );
         next_data_line(file);
     }
@@ -243,14 +241,14 @@ optionsfile::parse (perform & a_perf)
               " [%d %d %d %d %d %d %d %d]"
               " [%d %d %d %d %d %d %d %d]",
             &j,
-            &mtx[0], &mtx[1], &mtx[2], &mtx[3],         /* 1st */
-            &mtx[4], &mtx[5], &mtx[6], &mtx[7],
-            &mtx[8], &mtx[9], &mtx[10], &mtx[11],       /* 2nd */
-            &mtx[12], &mtx[13], &mtx[14], &mtx[15],
-            &mtx[16], &mtx[17], &mtx[18], &mtx[19],     /* 3rd */
-            &mtx[20], &mtx[21], &mtx[22], &mtx[23],
-            &mtx[24], &mtx[25], &mtx[26], &mtx[27],     /* 4th */
-            &mtx[28], &mtx[29], &mtx[30], &mtx[31]
+            &mtx[0], &mtx[1], &mtx[2], &mtx[3],             /* 1st */
+                &mtx[4], &mtx[5], &mtx[6], &mtx[7],
+            &mtx[8], &mtx[9], &mtx[10], &mtx[11],           /* 2nd */
+                &mtx[12], &mtx[13], &mtx[14], &mtx[15],
+            &mtx[16], &mtx[17], &mtx[18], &mtx[19],         /* 3rd */
+                &mtx[20], &mtx[21], &mtx[22], &mtx[23],
+            &mtx[24], &mtx[25], &mtx[26], &mtx[27],         /* 4th */
+                &mtx[28], &mtx[29], &mtx[30], &mtx[31]
         );
         for (int k = 0; k < c_seqs_in_set; k++)
             a_perf.set_group_mute_state(k, mtx[k]);
@@ -390,10 +388,7 @@ optionsfile::parse (perform & a_perf)
     line_after(file, "[last-used-dir]");
     if (m_line[0] == '/')
     {
-        // FIXME: need check for valid path
-
-        global_last_used_dir.assign(m_line);
-        g_rc_settings.last_used_dir(m_line);
+        g_rc_settings.last_used_dir(m_line); // FIXME: check for valid path
     }
 
     long method = 0;
@@ -404,14 +399,7 @@ optionsfile::parse (perform & a_perf)
     next_data_line(file);
     sscanf(m_line, "%ld", &method);
     g_rc_settings.allow_mod4_mode(method != 0);
-
-    /*
-     * We could call g_rc_settings.set_globals() here, though
-     * only a few items above are affected by the read; the rest go into
-     * the perform object.  Let's do it!
-     */
-
-    g_rc_settings.set_globals();
+    g_rc_settings.set_globals();                // finalize it all
     file.close();
     return true;
 }
@@ -433,7 +421,6 @@ bool
 optionsfile::write (const perform & a_perf)
 {
     std::ofstream file(m_name.c_str(), std::ios::out | std::ios::trunc);
-    char outs[SEQ64_LINE_MAX];
     perform & ucperf = const_cast<perform &>(a_perf);
     if (! file.is_open())
     {
@@ -463,7 +450,8 @@ optionsfile::write (const perform & a_perf)
         <<  c_midi_controls << "      # MIDI controls count\n" // constant count
         ;
 
-    for (int i = 0; i < c_midi_controls; i++)
+    char outs[SEQ64_LINE_MAX];
+    for (int mcontrol = 0; mcontrol < c_midi_controls; mcontrol++)
     {
         /*
          * \tricky
@@ -478,7 +466,7 @@ optionsfile::write (const perform & a_perf)
          *      each one line long.
          */
 
-        switch (i)
+        switch (mcontrol)
         {
         case c_seqs_in_set:                 // 32
             file << "# mute in group section:\n";
@@ -535,29 +523,27 @@ optionsfile::write (const perform & a_perf)
         (
             outs, sizeof(outs),
             "%d [%1d %1d %3ld %3ld %3ld %3ld]"
-            " [%1d %1d %3ld %3ld %3ld %3ld]"
-            " [%1d %1d %3ld %3ld %3ld %3ld]",
-             i,
-             ucperf.get_midi_control_toggle(i)->m_active,
-             ucperf.get_midi_control_toggle(i)->m_inverse_active,
-             ucperf.get_midi_control_toggle(i)->m_status,
-             ucperf.get_midi_control_toggle(i)->m_data,
-             ucperf.get_midi_control_toggle(i)->m_min_value,
-             ucperf.get_midi_control_toggle(i)->m_max_value,
-
-             ucperf.get_midi_control_on(i)->m_active,
-             ucperf.get_midi_control_on(i)->m_inverse_active,
-             ucperf.get_midi_control_on(i)->m_status,
-             ucperf.get_midi_control_on(i)->m_data,
-             ucperf.get_midi_control_on(i)->m_min_value,
-             ucperf.get_midi_control_on(i)->m_max_value,
-
-             ucperf.get_midi_control_off(i)->m_active,
-             ucperf.get_midi_control_off(i)->m_inverse_active,
-             ucperf.get_midi_control_off(i)->m_status,
-             ucperf.get_midi_control_off(i)->m_data,
-             ucperf.get_midi_control_off(i)->m_min_value,
-             ucperf.get_midi_control_off(i)->m_max_value
+                " [%1d %1d %3ld %3ld %3ld %3ld]"
+                " [%1d %1d %3ld %3ld %3ld %3ld]",
+             mcontrol,
+             ucperf.get_midi_control_toggle(mcontrol)->m_active,
+                 ucperf.get_midi_control_toggle(mcontrol)->m_inverse_active,
+                 ucperf.get_midi_control_toggle(mcontrol)->m_status,
+                 ucperf.get_midi_control_toggle(mcontrol)->m_data,
+                 ucperf.get_midi_control_toggle(mcontrol)->m_min_value,
+                 ucperf.get_midi_control_toggle(mcontrol)->m_max_value,
+             ucperf.get_midi_control_on(mcontrol)->m_active,
+                 ucperf.get_midi_control_on(mcontrol)->m_inverse_active,
+                 ucperf.get_midi_control_on(mcontrol)->m_status,
+                 ucperf.get_midi_control_on(mcontrol)->m_data,
+                 ucperf.get_midi_control_on(mcontrol)->m_min_value,
+                 ucperf.get_midi_control_on(mcontrol)->m_max_value,
+             ucperf.get_midi_control_off(mcontrol)->m_active,
+                 ucperf.get_midi_control_off(mcontrol)->m_inverse_active,
+                 ucperf.get_midi_control_off(mcontrol)->m_status,
+                 ucperf.get_midi_control_off(mcontrol)->m_data,
+                 ucperf.get_midi_control_off(mcontrol)->m_min_value,
+                 ucperf.get_midi_control_off(mcontrol)->m_max_value
         );
         file << std::string(outs) << "\n";
     }
@@ -569,12 +555,12 @@ optionsfile::write (const perform & a_perf)
     file << "\n[mute-group]\n\n";
     int mtx[c_seqs_in_set];
     file <<  c_gmute_tracks << "    # group mute value count\n";
-    for (int j = 0; j < c_seqs_in_set; j++)
+    for (int seqj = 0; seqj < c_seqs_in_set; seqj++)
     {
-        ucperf.select_group_mute(j);
-        for (int i = 0; i < c_seqs_in_set; i++)
+        ucperf.select_group_mute(seqj);
+        for (int seqi = 0; seqi < c_seqs_in_set; seqi++)
         {
-            mtx[i] = ucperf.get_group_mute_state(i);
+            mtx[seqi] = ucperf.get_group_mute_state(seqi);
         }
         snprintf
         (
@@ -583,18 +569,15 @@ optionsfile::write (const perform & a_perf)
             " [%1d %1d %1d %1d %1d %1d %1d %1d]"
             " [%1d %1d %1d %1d %1d %1d %1d %1d]"
             " [%1d %1d %1d %1d %1d %1d %1d %1d]",
-            j,
+            seqj,
             mtx[0], mtx[1], mtx[2], mtx[3],
-            mtx[4], mtx[5], mtx[6], mtx[7],
-
+                mtx[4], mtx[5], mtx[6], mtx[7],
             mtx[8], mtx[9], mtx[10], mtx[11],
-            mtx[12], mtx[13], mtx[14], mtx[15],
-
+                mtx[12], mtx[13], mtx[14], mtx[15],
             mtx[16], mtx[17], mtx[18], mtx[19],
-            mtx[20], mtx[21], mtx[22], mtx[23],
-
+                mtx[20], mtx[21], mtx[22], mtx[23],
             mtx[24], mtx[25], mtx[26], mtx[27],
-            mtx[28], mtx[29], mtx[30], mtx[31]
+                mtx[28], mtx[29], mtx[30], mtx[31]
         );
         file << std::string(outs) << "\n";
     }
@@ -606,17 +589,17 @@ optionsfile::write (const perform & a_perf)
     int buses = ucperf.master_bus().get_num_out_buses();
     file << "\n[midi-clock]\n\n";
     file << buses << "    # number of MIDI clocks/busses\n";
-    for (int i = 0; i < buses; i++)
+    for (int bus = 0; bus < buses; bus++)
     {
         file
             << "# Output buss name: "
-            << ucperf.master_bus().get_midi_out_bus_name(i)
+            << ucperf.master_bus().get_midi_out_bus_name(bus)
             << "\n"
             ;
         snprintf
         (
             outs, sizeof(outs), "%d %d  # buss number, clock status",
-            i, (char) ucperf.master_bus().get_clock(i)
+            bus, (char) ucperf.master_bus().get_clock(bus)
         );
         file << outs << "\n";
     }
@@ -663,7 +646,8 @@ optionsfile::write (const perform & a_perf)
         << "# Set to 1 if you want seq24 to create its own ALSA ports and\n"
         << "# not connect to other clients\n"
         << "\n"
-        << global_manual_alsa_ports << "   # number of manual ALSA ports\n"
+        << g_rc_settings.manual_alsa_ports()
+        << "   # number of manual ALSA ports\n"
         ;
 
     /*
@@ -682,12 +666,14 @@ optionsfile::write (const perform & a_perf)
         ++x;
     }
     file
-        << "\n" << global_interactionmethod << "\n\n"
+        << "\n" << g_rc_settings.interaction_method() << "\n\n"
         << "# Set to 1 to allow Sequencer64 to stay in note-adding mode when\n"
         << "# the right-click is released while holding the Mod4 (Super or\n"
         << "# Windows) key.\n"
         << "\n"
-        << (global_allow_mod4_mode ? "1" : "0") << "\n";   // @new 2015-08-28
+        << (g_rc_settings.allow_mod4_mode() ? "1" : "0")   // @new 2015-08-28
+        << "\n"
+        ;
 
     size_t kevsize = ucperf.get_key_events().size() < (size_t) c_seqs_in_set ?
          ucperf.get_key_events().size() : (size_t) c_seqs_in_set
@@ -793,20 +779,20 @@ optionsfile::write (const perform & a_perf)
     file
         << "\n[jack-transport]\n\n"
         << "# jack_transport - Enable sync with JACK Transport.\n\n"
-        << global_with_jack_transport << "\n\n"
+        << g_rc_settings.with_jack_transport() << "\n\n"
         << "# jack_master - Sequencer64 attempts to serve as JACK Master.\n\n"
-        << global_with_jack_master << "\n\n"
+        << g_rc_settings.with_jack_master() << "\n\n"
     << "# jack_master_cond - Sequencer64 is master if no other master exists.\n\n"
-        << global_with_jack_master_cond  << "\n\n"
+        << g_rc_settings.with_jack_master_cond()  << "\n\n"
         << "# jack_start_mode\n"
         << "# 0 = Playback in live mode. Allows muting and unmuting of loops.\n"
         << "# 1 = Playback uses the song editor's data.\n\n"
-        << global_jack_start_mode << "\n"
+        << g_rc_settings.jack_start_mode() << "\n"
         ;
     file
         << "\n[last-used-dir]\n\n"
         << "# Last used directory:\n\n"
-        << global_last_used_dir << "\n\n"
+        << g_rc_settings.last_used_dir() << "\n\n"
         ;
     file
         << "# End of " << m_name << "\n#\n"

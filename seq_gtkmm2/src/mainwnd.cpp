@@ -222,19 +222,13 @@ mainwnd::mainwnd (perform * a_p)
      */
 
     Gtk::HBox * tophbox = manage(new Gtk::HBox(false, 0));
+    const char ** bitmap = g_rc_settings.legacy_format() ?
+        sequencer64_legacy_xpm : sequencer64_square_xpm ;
+
     tophbox->pack_start
     (
-        *manage
-        (
-            new Gtk::Image
-            (
-                Gdk::Pixbuf::create_from_xpm_data
-                (
-                    global_legacy_format ?
-                        sequencer64_legacy_xpm : sequencer64_square_xpm
-                )
-            )
-        ), false, false
+        *manage(new Gtk::Image(Gdk::Pixbuf::create_from_xpm_data(bitmap))),
+        false, false
     );
 
     /* Adjust placement of the logo. */
@@ -584,7 +578,7 @@ mainwnd::new_file ()
     (
         *m_mainperf->get_screen_set_notepad(m_mainperf->get_screenset())
     );
-    global_filename = "";           // clear()
+    g_rc_settings.filename("");
     update_window_title();
     is_modified(false);
 }
@@ -660,7 +654,7 @@ mainwnd::file_save_as ()
                 if (response == Gtk::RESPONSE_NO)
                     return;
             }
-            global_filename = fname;
+            g_rc_settings.filename(fname);
             update_window_title();
             save_file();
             break;
@@ -695,7 +689,8 @@ mainwnd::open_file (const std::string & fn)
     }
 
     global_last_used_dir = fn.substr(0, fn.rfind("/") + 1);
-    global_filename = fn;
+    // global_filename = fn;
+    g_rc_settings.filename(fn);
     update_window_title();
     m_main_wid->reset();
     m_entry_notes->set_text
@@ -760,13 +755,13 @@ bool
 mainwnd::save_file ()
 {
     bool result = false;
-    if (global_filename == "")
+    if (g_rc_settings.filename().empty())
     {
         file_save_as();
         return true;
     }
 
-    midifile f(global_filename, ! global_legacy_format);
+    midifile f(g_rc_settings.filename(), ! g_rc_settings.legacy_format());
     result = f.write(m_mainperf);
     if (! result)
     {
@@ -790,10 +785,11 @@ int
 mainwnd::query_save_changes ()
 {
     std::string query_str;
-    if (global_filename == "")
+    if (g_rc_settings.filename().empty())
         query_str = "Unnamed file was changed.\nSave changes?";
     else
-        query_str = "File '" + global_filename + "' was changed.\nSave changes?";
+        query_str = "File '" + g_rc_settings.filename() +
+            "' was changed.\nSave changes?";
 
     Gtk::MessageDialog dialog
     (
@@ -912,7 +908,8 @@ mainwnd::file_import_dialog ()
             );
             errdialog.run();
         }
-        global_filename = std::string(dlg.get_filename());
+        // global_filename = std::string(dlg.get_filename());
+        g_rc_settings.filename(std::string(dlg.get_filename()));
         update_window_title();
         is_modified(true);
         m_main_wid->reset();
@@ -1332,11 +1329,11 @@ void
 mainwnd::update_window_title ()
 {
     std::string title;
-    if (global_filename == "")
+    if (g_rc_settings.filename().empty())
         title = (SEQ64_PACKAGE) + std::string(" - [unnamed]");
     else
         title = (SEQ64_PACKAGE) + std::string(" - [")
-            + Glib::filename_to_utf8(global_filename)
+            + Glib::filename_to_utf8(g_rc_settings.filename())
             + std::string("]");
 
     set_title(title.c_str());

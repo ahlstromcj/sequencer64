@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-22
- * \updates       2015-09-24
+ * \updates       2015-09-27
  * \license       GNU GPLv2 or above
  *
  *  This collection of variables describes the options of the application,
@@ -75,7 +75,13 @@ private:
     bool m_device_ignore;                       /* seq24 module, unused!    */
     int m_device_ignore_num;                    /* seq24 module, unused!    */
     interaction_method_t m_interaction_method;
+
+    /**
+     *  Provides the name of current MIDI file.
+     */
+
     std::string m_filename;
+
     std::string m_jack_session_uuid;
     std::string m_last_used_dir;
     std::string m_config_directory;

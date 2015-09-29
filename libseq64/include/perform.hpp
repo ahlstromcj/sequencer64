@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-09-19
+ * \updates       2015-09-28
  * \license       GNU GPLv2 or above
  *
  *  This class has way too many members.
@@ -57,6 +57,13 @@
 
 #define PERFKEY(x)              m_mainperf->keys().x()
 #define PERFKEY_ADDR(x)         m_mainperf->keys().at_##x()
+
+/**
+ *  Uses a function returning a reference.
+ */
+
+#define PREFKEY(x)              perf().keys().x()
+#define PREFKEY_ADDR(x)         perf().keys().at_##x()
 
 namespace seq64
 {

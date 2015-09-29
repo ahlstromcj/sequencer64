@@ -38,7 +38,6 @@
 #include <string>
 #include <gtkmm/window.h>
 
-#include "gui_window_gtk2.hpp"
 #include "perform.hpp"                 // perform and performcallback
 
 namespace Gtk
@@ -67,9 +66,7 @@ class perfedit;
  *  implemented in the mainwid class.
  */
 
-// class mainwnd : public Gtk::Window, public performcallback
-
-class mainwnd : public gui_window_gtk2, public performcallback
+class mainwnd : public Gtk::Window, public performcallback
 {
 
 private:
@@ -82,17 +79,19 @@ private:
 
     /**
      *  Management object (?) for the performance mode.
+     */
 
     perform * m_mainperf;
-     */
 
     /**
      *  Flag for modifications to the loaded file.
-
-    bool m_modified;
      */
 
+    bool m_modified;
+
+// #if GTK_MINOR_VERSION < 12
     Gtk::Tooltips * m_tooltips;
+// #endif
 
     /**
      *  Theses objects support the menu and its sub-menus.
@@ -224,21 +223,21 @@ private:
 
     /**
      * \setter m_modified
+     */
 
     void is_modified (bool flag)
     {
         m_modified = flag;
     }
-     */
 
     /**
      * \getter m_modified
+     */
 
     bool is_modified () const
     {
         return m_modified;
     }
-     */
 
     void file_new ();
     void file_open ();

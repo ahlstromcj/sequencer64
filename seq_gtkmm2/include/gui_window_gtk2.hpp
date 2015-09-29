@@ -28,12 +28,12 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-22
- * \updates       2015-09-22
+ * \updates       2015-09-28
  * \license       GNU GPLv2 or above
  *
  */
 
-// #include <gtkmm/widget.h>       // somehow, can't forward-declare GdkEventAny
+#include "gui_base.hpp"
 
 /*
  *  Since these items are pointers, we were able to move (most) of the
@@ -58,15 +58,15 @@ class perform;
  *  This class supports a basic interface for Gtk::Window-derived objects.
  */
 
-class gui_window_gtk2 : public Gtk::Window
+class gui_window_gtk2 : public Gtk::Window, gui_base
 {
 
 private:
 
-    Gtk::Adjustment * m_vadjust;
-    Gtk::Adjustment * m_hadjust;
-    Gtk::VScrollbar * m_vscroll;
-    Gtk::HScrollbar * m_hscroll;
+//  Gtk::Adjustment * m_vadjust;
+//  Gtk::Adjustment * m_hadjust;
+//  Gtk::VScrollbar * m_vscroll;
+//  Gtk::HScrollbar * m_hscroll;
     perform & m_mainperf;
     bool m_modified;
 
@@ -74,6 +74,26 @@ public:
 
     gui_window_gtk2 (perform & a_perf);
     ~gui_window_gtk2 ();
+
+    /**
+     * \getter m_modified
+     */
+
+    bool is_modified () const
+    {
+        return m_modified;
+    }
+
+protected:
+
+    /**
+     * \getter m_mainperf
+     */
+
+    perform & perf ()               // convert to reference later
+    {
+        return m_mainperf;
+    }
 
     /**
      * \setter m_modified
@@ -84,13 +104,21 @@ public:
         m_modified = flag;
     }
 
-    /**
-     * \getter m_modified
-     */
-
-    bool is_modified () const
+    virtual void quit ()
     {
-        return m_modified;
+        // TO DO!!!!
+    }
+    virtual bool do_button_event (const click & /*ev*/ )
+    {
+        // TO DO!!!!
+
+        return false;
+    }
+    virtual bool do_key_event (const keystroke & /*k*/ )
+    {
+        // TO DO!!!!
+
+        return false;
     }
 
 private:

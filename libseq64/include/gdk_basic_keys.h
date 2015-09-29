@@ -192,50 +192,54 @@
 #endif      // GDK_KEY_Home
 
 /**
- * Types of modifiers, essentially copied from gtk-2.0/gdk/gdktypes.h.
+ *  Types of modifiers, essentially copied from gtk-2.0/gdk/gdktypes.h.
+ *  We have to tweak the names to avoid redeclaration errors and to
+ * "personalize" the values.  We change "GDK" to "SEQ64".
  */
 
 typedef enum
 {
-    GDK_NO_MASK         = 0,
-    GDK_SHIFT_MASK      = 1,
-    GDK_LOCK_MASK	    = 1 << 1,
-    GDK_CONTROL_MASK    = 1 << 2,
-    GDK_MOD1_MASK	    = 1 << 3,
-    GDK_MOD2_MASK	    = 1 << 4,
-    GDK_MOD3_MASK	    = 1 << 5,
-    GDK_MOD4_MASK	    = 1 << 6,
-    GDK_MOD5_MASK	    = 1 << 7,
-    GDK_BUTTON1_MASK    = 1 << 8,
-    GDK_BUTTON2_MASK    = 1 << 9,
-    GDK_BUTTON3_MASK    = 1 << 10,
-    GDK_BUTTON4_MASK    = 1 << 11,
-    GDK_BUTTON5_MASK    = 1 << 12,
+    SEQ64_NO_MASK           = 0,
+    SEQ64_SHIFT_MASK        = 1,
+    SEQ64_LOCK_MASK	        = 1 << 1,
+    SEQ64_CONTROL_MASK      = 1 << 2,
+    SEQ64_MOD1_MASK	        = 1 << 3,
+    SEQ64_MOD2_MASK	        = 1 << 4,
+    SEQ64_MOD3_MASK	        = 1 << 5,
+    SEQ64_MOD4_MASK	        = 1 << 6,
+    SEQ64_MOD5_MASK	        = 1 << 7,
+    SEQ64_BUTTON1_MASK      = 1 << 8,
+    SEQ64_BUTTON2_MASK      = 1 << 9,
+    SEQ64_BUTTON3_MASK      = 1 << 10,
+    SEQ64_BUTTON4_MASK      = 1 << 11,
+    SEQ64_BUTTON5_MASK      = 1 << 12,
 
     /*
     * Bits 13 and 14 are used by XKB, bits 15 to 25 are unused. Bit 29 is
     * used internally.
     */
 
-    GDK_SUPER_MASK      = 1 << 26,
-    GDK_HYPER_MASK      = 1 << 27,
-    GDK_META_MASK       = 1 << 28,
-    GDK_RELEASE_MASK    = 1 << 30   // GDK_MODIFIER_MASK = 0x5c001fff
+    SEQ64_SUPER_MASK        = 1 << 26,
+    SEQ64_HYPER_MASK        = 1 << 27,
+    SEQ64_META_MASK         = 1 << 28,
+    SEQ64_RELEASE_MASK      = 1 << 30   // GDK_MODIFIER_MASK = 0x5c001fff
 
-} gdk_modifier_t;
+} seq_modifier_t;
 
 /**
  * Types of scroll events, essentially copied from gtk-2.0/gdk/gdkevents.h.
+ *  We have to tweak the names to avoid redeclaration errors and to
+ * "personalize" the values.  We change "SEQ64" to "SEQ64".
  */
 
 typedef enum
 {
-    GDK_SCROLL_UP,
-    GDK_SCROLL_DOWN,
-    GDK_SCROLL_LEFT,
-    GDK_SCROLL_RIGHT
+    SEQ64_SCROLL_UP,
+    SEQ64_SCROLL_DOWN,
+    SEQ64_SCROLL_LEFT,
+    SEQ64_SCROLL_RIGHT
 
-} gdk_scroll_direction_t;
+} seq_scroll_direction_t;
 
 
 #endif      // SEQ64_GDK_BASIC_KEYS_HPP

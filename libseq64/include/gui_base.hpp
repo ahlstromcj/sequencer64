@@ -34,6 +34,13 @@
  *  Most of the GUI modules are publicly derived from Gtk::DrawingArea,
  *  and some from Gtk::Window.  In gtkmm-3, the former will be merged into
  *  the latter, but for now Gtk::DrawingArea will be used.
+ *
+ *  This module declares three classes:
+ *
+ *      -   seq64::click
+ *      -   seq64::keystroke
+ *      -   seq64::gui_base
+ *
  */
 
 #include "gdk_basic_keys.h"
@@ -77,19 +84,22 @@ private:
     int m_button;
 
     /**
-     *  The optional modifier value.  Note that GDK_NO_MASK is our word
+     *  The optional modifier value.  Note that SEQ64_NO_MASK is our word
      *  for 0, meaning "no modifier".
      */
 
-    gdk_modifier_t m_modifier;
+    seq_modifier_t m_modifier;
 
 public:
 
     click ();
     click
     (
-        int x, int y, int button, bool press = true,
-        gdk_modifier_t modkey = GDK_NO_MASK
+        int x,
+        int y,
+        int button,
+        bool press = true,
+        seq_modifier_t modkey = SEQ64_NO_MASK
     );
     click (const click & rhs);
     click & operator = (const click & rhs);
@@ -134,7 +144,7 @@ public:
      * \getter m_modifier
      */
 
-    gdk_modifier_t modifier () const
+    seq_modifier_t modifier () const
     {
         return m_modifier;
     }
@@ -142,11 +152,11 @@ public:
 };          // class click
 
 /**
- *  Encapsulates any practical key.  Useful in passing more generic
+ *  Encapsulates any practical keystroke.  Useful in passing more generic
  *  events to non-GUI classes.
  */
 
-class key
+class keystroke
 {
 
 private:
@@ -158,20 +168,6 @@ private:
     bool m_is_press;                    /* versus a release of the key */
 
     /**
-     *  The x-coordinate of the key.  0 is the left-most coordinate.
-     *  Not sure if this is useful yet.
-     */
-
-    int m_x;
-
-    /**
-     *  The y-coordinate of the key.  0 is the top-most coordinate.
-     *  Not sure if this is useful yet.
-     */
-
-    int m_y;
-
-    /**
      *  The key that was pressed or released.  Left is 1, mmiddle is 2,
      *  and right is 3.
      */
@@ -179,22 +175,23 @@ private:
     int m_key;
 
     /**
-     *  The optional modifier value.  Note that GDK_NO_MASK is our word
+     *  The optional modifier value.  Note that SEQ64_NO_MASK is our word
      *  for 0, meaning "no modifier".
      */
 
-    gdk_modifier_t m_modifier;
+    seq_modifier_t m_modifier;
 
 public:
 
-    key ();
-    key
+    keystroke ();
+    keystroke
     (
-        int x, int y, int key, bool press = true,
-        gdk_modifier_t modkey = GDK_NO_MASK
+        int key,
+        bool press = true,
+        seq_modifier_t modkey = SEQ64_NO_MASK
     );
-    key (const key & rhs);
-    key & operator = (const key & rhs);
+    keystroke (const keystroke & rhs);
+    keystroke & operator = (const keystroke & rhs);
 
     /**
      * \getter m_is_press
@@ -203,24 +200,6 @@ public:
     bool is_press () const
     {
         return m_is_press;
-    }
-
-    /**
-     * \getter m_x
-     */
-
-    int x () const
-    {
-        return m_x;
-    }
-
-    /**
-     * \getter m_y
-     */
-
-    int y () const
-    {
-        return m_y;
     }
 
     /**
@@ -236,7 +215,7 @@ public:
      * \getter m_modifier
      */
 
-    gdk_modifier_t modifier () const
+    seq_modifier_t modifier () const
     {
         return m_modifier;
     }
@@ -259,6 +238,7 @@ public:
 
     gui_base ()
     {
+        // Empty body
     }
     virtual ~gui_base ()
     {
@@ -266,6 +246,79 @@ public:
     }
 
     virtual void quit () = 0;
+
+protected:
+
+    virtual bool do_button_event (const click & ev) = 0;
+    virtual bool do_key_event (const keystroke & k) = 0;
+
+    // Other possible events:
+    //
+    //  do_scroll_event()
+    //  do_size_allocate()
+    //  do_size_request()
+    //  do_left_button_event()
+    //  do_right_button_event()
+
+    /**
+     *  Do-nothing interface function that might not need to be overridden
+     *  in many classes.
+     */
+
+    virtual bool do_realize_event ()
+    {
+        return true;
+    }
+
+    /**
+     *  Do-nothing interface function that might not need to be overridden
+     *  in many classes.
+     */
+
+    virtual bool do_expose_event ()
+    {
+        return true;
+    }
+
+    /**
+     *  Do-nothing interface function that might not need to be overridden
+     *  in many classes.
+     */
+
+    virtual bool do_focus_in_event ()
+    {
+        return true;
+    }
+
+    /**
+     *  Do-nothing interface function that might not need to be overridden
+     *  in many classes.
+     */
+
+    virtual bool do_focus_out_event ()
+    {
+        return true;
+    }
+
+    /**
+     *  Do-nothing interface function that might not need to be overridden
+     *  in many classes.
+     */
+
+    virtual bool do_motion_notify_event (click & /* ev */)
+    {
+        return true;
+    }
+
+    /**
+     *  Do-nothing interface function that might not need to be overridden
+     *  in many classes.
+     */
+
+    virtual bool do_delete_event ()
+    {
+        return true;
+    }
 
 };
 

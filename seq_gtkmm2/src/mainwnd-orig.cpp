@@ -91,19 +91,18 @@ int mainwnd::m_sigpipe[2];
 
 mainwnd::mainwnd (perform * a_p)
  :
-//  Gtk::Window             (),
-    gui_window_gtk2         (*a_p),
+    Gtk::Window             (),
     performcallback         (),
-//  perf()              (a_p),
-//  m_modified              (false),
+    m_mainperf              (a_p),
+    m_modified              (false),
     m_tooltips              (manage(new Gtk::Tooltips())),
     m_menubar               (manage(new Gtk::MenuBar())),
     m_menu_file             (manage(new Gtk::Menu())),
     m_menu_view             (manage(new Gtk::Menu())),
     m_menu_help             (manage(new Gtk::Menu())),
-    m_main_wid              (manage(new mainwid(&perf()))), // POINTER
+    m_main_wid              (manage(new mainwid(m_mainperf))),
     m_main_time             (manage(new maintime())),
-    m_perf_edit             (new perfedit(&perf())),  // copy construct // POINTER
+    m_perf_edit             (new perfedit(m_mainperf)),     // copy construct
     m_options               (nullptr),
     m_main_cursor           (),
     m_button_learn          (nullptr),
@@ -134,7 +133,7 @@ mainwnd::mainwnd (perform * a_p)
      *      Better as a member function.
      */
 
-    perf().m_notify.push_back(this);           // register for notification
+    m_mainperf->m_notify.push_back(this);           // register for notification
     update_window_title();                          // main window
     m_menubar->items().push_front(MenuElem("_File", *m_menu_file));
     m_menubar->items().push_back(MenuElem("_View", *m_menu_view));
@@ -306,7 +305,7 @@ mainwnd::mainwnd (perform * a_p)
 
     Gtk::HBox * bpmhbox = manage(new Gtk::HBox(false, 4));
     bottomhbox->pack_start(*bpmhbox, Gtk::PACK_SHRINK);
-    m_adjust_bpm = manage(new Gtk::Adjustment(perf().get_bpm(), 20, 500, 1));
+    m_adjust_bpm = manage(new Gtk::Adjustment(m_mainperf->get_bpm(), 20, 500, 1));
     m_spinbutton_bpm = manage(new Gtk::SpinButton(*m_adjust_bpm));
     m_spinbutton_bpm->set_editable(false);
     m_adjust_bpm->signal_value_changed().connect
@@ -332,7 +331,7 @@ mainwnd::mainwnd (perform * a_p)
     );
     m_entry_notes->set_text
     (
-        *perf().get_screen_set_notepad(perf().get_screenset())
+        *m_mainperf->get_screen_set_notepad(m_mainperf->get_screenset())
     );
     add_tooltip(m_entry_notes, "Enter screen set name");
     Gtk::Label * notelabel = manage(new Gtk::Label("_Name", true));
@@ -440,19 +439,19 @@ mainwnd::~mainwnd ()
 bool
 mainwnd::timer_callback ()
 {
-    long ticks = perf().get_tick();
+    long ticks = m_mainperf->get_tick();
     m_main_time->idle_progress(ticks);
     m_main_wid->update_markers(ticks);
-    if (m_adjust_bpm->get_value() != perf().get_bpm())
-        m_adjust_bpm->set_value(perf().get_bpm());
+    if (m_adjust_bpm->get_value() != m_mainperf->get_bpm())
+        m_adjust_bpm->set_value(m_mainperf->get_bpm());
 
-    if (m_adjust_ss->get_value() != perf().get_screenset())
+    if (m_adjust_ss->get_value() != m_mainperf->get_screenset())
     {
-        m_main_wid->set_screenset(perf().get_screenset());
-        m_adjust_ss->set_value(perf().get_screenset());
+        m_main_wid->set_screenset(m_mainperf->get_screenset());
+        m_adjust_ss->set_value(m_mainperf->get_screenset());
         m_entry_notes->set_text
         (
-            *perf().get_screen_set_notepad(perf().get_screenset())
+            *m_mainperf->get_screen_set_notepad(m_mainperf->get_screenset())
         );
     }
     return true;
@@ -489,7 +488,7 @@ mainwnd::options_dialog ()
     if (not_nullptr(m_options))
         delete m_options;
 
-    m_options = new options(*this, &perf());        // POINTER
+    m_options = new options(*this, m_mainperf);
     m_options->show_all();
 }
 
@@ -501,9 +500,9 @@ mainwnd::options_dialog ()
 void
 mainwnd::start_playing ()
 {
-    perf().position_jack(false);
-    perf().start(false);
-    perf().start_jack();
+    m_mainperf->position_jack(false);
+    m_mainperf->start(false);
+    m_mainperf->start_jack();
     global_is_pattern_playing = true;
 }
 
@@ -515,14 +514,14 @@ mainwnd::start_playing ()
 void
 mainwnd::stop_playing ()
 {
-    perf().stop_jack();
-    perf().stop();
+    m_mainperf->stop_jack();
+    m_mainperf->stop();
     m_main_wid->update_sequences_on_window();
     global_is_pattern_playing = false;
 }
 
 /**
- *  This handler responds to a learn-mode change from perf().
+ *  This handler responds to a learn-mode change from m_mainperf.
  */
 
 void
@@ -550,10 +549,10 @@ mainwnd::on_grouplearnchange (bool state)
 void
 mainwnd::learn_toggle ()
 {
-    if (perf().is_group_learning())
-        perf().unset_mode_group_learn();
+    if (m_mainperf->is_group_learning())
+        m_mainperf->unset_mode_group_learn();
     else
-        perf().set_mode_group_learn();
+        m_mainperf->set_mode_group_learn();
 }
 
 /**
@@ -574,11 +573,11 @@ mainwnd::file_new ()
 void
 mainwnd::new_file ()
 {
-    perf().clear_all();
+    m_mainperf->clear_all();
     m_main_wid->reset();
     m_entry_notes->set_text
     (
-        *perf().get_screen_set_notepad(perf().get_screenset())
+        *m_mainperf->get_screen_set_notepad(m_mainperf->get_screenset())
     );
     g_rc_settings.filename("");
     update_window_title();
@@ -675,8 +674,8 @@ mainwnd::open_file (const std::string & fn)
 {
     bool result;
     midifile f(fn);                     /* create object to represent file  */
-    perf().clear_all();
-    result = f.parse(&perf(), 0);       /* parsing handles old & new format */
+    m_mainperf->clear_all();
+    result = f.parse(m_mainperf, 0);    /* parsing handles old & new format */
     is_modified(! result);
     if (! result)
     {
@@ -697,9 +696,9 @@ mainwnd::open_file (const std::string & fn)
     m_main_wid->reset();
     m_entry_notes->set_text
     (
-        *perf().get_screen_set_notepad(perf().get_screenset())
+        *m_mainperf->get_screen_set_notepad(m_mainperf->get_screenset())
     );
-    m_adjust_bpm->set_value(perf().get_bpm());
+    m_adjust_bpm->set_value(m_mainperf->get_bpm());
 }
 
 /**
@@ -764,7 +763,7 @@ mainwnd::save_file ()
     }
 
     midifile f(g_rc_settings.filename(), ! g_rc_settings.legacy_format());
-    result = f.write(&perf());      // POINTER
+    result = f.write(m_mainperf);
     if (! result)
     {
         Gtk::MessageDialog errdialog
@@ -899,7 +898,7 @@ mainwnd::file_import_dialog ()
         try
         {
             midifile f(dlg.get_filename());
-            f.parse(&perf(), int(m_adjust_load_offset->get_value()));
+            f.parse(m_mainperf, (int) m_adjust_load_offset->get_value());
         }
         catch (...)
         {
@@ -917,9 +916,9 @@ mainwnd::file_import_dialog ()
         m_main_wid->reset();
         m_entry_notes->set_text
         (
-            *perf().get_screen_set_notepad(perf().get_screenset())
+            *m_mainperf->get_screen_set_notepad(m_mainperf->get_screenset())
         );
-        m_adjust_bpm->set_value(perf().get_bpm());
+        m_adjust_bpm->set_value(m_mainperf->get_bpm());
         break;
     }
 
@@ -1018,11 +1017,11 @@ mainwnd::about_dialog ()
 void
 mainwnd::adj_callback_ss ()
 {
-    perf().set_screenset((int) m_adjust_ss->get_value());
-    m_main_wid->set_screenset(perf().get_screenset());
+    m_mainperf->set_screenset((int) m_adjust_ss->get_value());
+    m_main_wid->set_screenset(m_mainperf->get_screenset());
     m_entry_notes->set_text
     (
-        *perf().get_screen_set_notepad(perf().get_screenset())
+        *m_mainperf->get_screen_set_notepad(m_mainperf->get_screenset())
     );
     is_modified(true);
 }
@@ -1034,7 +1033,7 @@ mainwnd::adj_callback_ss ()
 void
 mainwnd::adj_callback_bpm ()
 {
-    perf().set_bpm((int) m_adjust_bpm->get_value());
+    m_mainperf->set_bpm((int) m_adjust_bpm->get_value());
     is_modified(true);
 }
 
@@ -1046,7 +1045,7 @@ void
 mainwnd::edit_callback_notepad ()
 {
     std::string text = m_entry_notes->get_text();
-    perf().set_screen_set_notepad(perf().get_screenset(), &text);
+    m_mainperf->set_screen_set_notepad(m_mainperf->get_screenset(), &text);
     is_modified(true);
 }
 
@@ -1077,18 +1076,18 @@ mainwnd::on_delete_event (GdkEventAny * a_e)
 bool
 mainwnd::on_key_release_event (GdkEventKey * a_ev)
 {
-    if (a_ev->keyval == PREFKEY(replace))
-        perf().unset_sequence_control_status(c_status_replace);
+    if (a_ev->keyval == PERFKEY(replace))
+        m_mainperf->unset_sequence_control_status(c_status_replace);
 
-    if (a_ev->keyval == PREFKEY(queue))
-        perf().unset_sequence_control_status(c_status_queue);
+    if (a_ev->keyval == PERFKEY(queue))
+        m_mainperf->unset_sequence_control_status(c_status_queue);
 
-    if (a_ev->keyval == PREFKEY(snapshot_1) || a_ev->keyval == PREFKEY(snapshot_2))
+    if (a_ev->keyval == PERFKEY(snapshot_1) || a_ev->keyval == PERFKEY(snapshot_2))
     {
-        perf().unset_sequence_control_status(c_status_snapshot);
+        m_mainperf->unset_sequence_control_status(c_status_snapshot);
     }
-    if (a_ev->keyval == PREFKEY(group_learn))
-        perf().unset_mode_group_learn();
+    if (a_ev->keyval == PERFKEY(group_learn))
+        m_mainperf->unset_mode_group_learn();
 
     return false;
 }
@@ -1113,36 +1112,36 @@ mainwnd::on_key_press_event (GdkEventKey * a_ev)
             printf("key_press[%d]\n", a_ev->keyval);
             fflush(stdout);
         }
-        if (a_ev->keyval == PREFKEY(bpm_dn))
+        if (a_ev->keyval == PERFKEY(bpm_dn))
         {
-            perf().set_bpm(perf().get_bpm() - 1);
-            m_adjust_bpm->set_value(perf().get_bpm());
+            m_mainperf->set_bpm(m_mainperf->get_bpm() - 1);
+            m_adjust_bpm->set_value(m_mainperf->get_bpm());
         }
-        if (a_ev->keyval == PREFKEY(bpm_up))
+        if (a_ev->keyval == PERFKEY(bpm_up))
         {
-            perf().set_bpm(perf().get_bpm() + 1);
-            m_adjust_bpm->set_value(perf().get_bpm());
+            m_mainperf->set_bpm(m_mainperf->get_bpm() + 1);
+            m_adjust_bpm->set_value(m_mainperf->get_bpm());
         }
-        if (a_ev->keyval == PREFKEY(replace))
-            perf().set_sequence_control_status(c_status_replace);
+        if (a_ev->keyval == PERFKEY(replace))
+            m_mainperf->set_sequence_control_status(c_status_replace);
 
         if
         (
-            (a_ev->keyval == PREFKEY(queue)) ||
-            (a_ev->keyval == PREFKEY(keep_queue))
+            (a_ev->keyval == PERFKEY(queue)) ||
+            (a_ev->keyval == PERFKEY(keep_queue))
         )
         {
-            perf().set_sequence_control_status(c_status_queue);
+            m_mainperf->set_sequence_control_status(c_status_queue);
         }
         if
         (
-            a_ev->keyval == PREFKEY(snapshot_1) ||
-            a_ev->keyval == PREFKEY(snapshot_2)
+            a_ev->keyval == PERFKEY(snapshot_1) ||
+            a_ev->keyval == PERFKEY(snapshot_2)
         )
         {
-            perf().set_sequence_control_status(c_status_snapshot);
+            m_mainperf->set_sequence_control_status(c_status_snapshot);
         }
-        if (a_ev->keyval == PREFKEY(screenset_dn))
+        if (a_ev->keyval == PERFKEY(screenset_dn))
         {
             /**
              * \todo
@@ -1155,15 +1154,15 @@ mainwnd::on_key_press_event (GdkEventKey * a_ev)
              *      value; perhaps should return a reference as well.
              */
 
-            perf().set_screenset(perf().get_screenset() - 1);
-            m_main_wid->set_screenset(perf().get_screenset());
-            m_adjust_ss->set_value(perf().get_screenset());
+            m_mainperf->set_screenset(m_mainperf->get_screenset() - 1);
+            m_main_wid->set_screenset(m_mainperf->get_screenset());
+            m_adjust_ss->set_value(m_mainperf->get_screenset());
             m_entry_notes->set_text
             (
-                *perf().get_screen_set_notepad(perf().get_screenset())
+                *m_mainperf->get_screen_set_notepad(m_mainperf->get_screenset())
             );
         }
-        if (a_ev->keyval == PREFKEY(screenset_up))
+        if (a_ev->keyval == PERFKEY(screenset_up))
         {
             /**
              * \todo
@@ -1171,39 +1170,39 @@ mainwnd::on_key_press_event (GdkEventKey * a_ev)
              *      its screenset; it should return the new value.
              */
 
-            perf().set_screenset(perf().get_screenset() + 1);
-            m_main_wid->set_screenset(perf().get_screenset());
-            m_adjust_ss->set_value(perf().get_screenset());
+            m_mainperf->set_screenset(m_mainperf->get_screenset() + 1);
+            m_main_wid->set_screenset(m_mainperf->get_screenset());
+            m_adjust_ss->set_value(m_mainperf->get_screenset());
             m_entry_notes->set_text
             (
-                *perf().get_screen_set_notepad(perf().get_screenset())
+                *m_mainperf->get_screen_set_notepad(m_mainperf->get_screenset())
             );
         }
-        if (a_ev->keyval == PREFKEY(set_playing_screenset))
-            perf().set_playing_screenset();
+        if (a_ev->keyval == PERFKEY(set_playing_screenset))
+            m_mainperf->set_playing_screenset();
 
-        if (a_ev->keyval == PREFKEY(group_on))
-            perf().set_mode_group_mute();
+        if (a_ev->keyval == PERFKEY(group_on))
+            m_mainperf->set_mode_group_mute();
 
-        if (a_ev->keyval == PREFKEY(group_off))
-            perf().unset_mode_group_mute();
+        if (a_ev->keyval == PERFKEY(group_off))
+            m_mainperf->unset_mode_group_mute();
 
-        if (a_ev->keyval == PREFKEY(group_learn))
-            perf().set_mode_group_learn();
+        if (a_ev->keyval == PERFKEY(group_learn))
+            m_mainperf->set_mode_group_learn();
 
-        if (perf().get_key_groups().count(a_ev->keyval) != 0)
+        if (m_mainperf->get_key_groups().count(a_ev->keyval) != 0)
         {
-            perf().select_and_mute_group   /* activate mute group key  */
+            m_mainperf->select_and_mute_group   /* activate mute group key  */
             (
-                perf().lookup_keygroup_group(a_ev->keyval)
+                m_mainperf->lookup_keygroup_group(a_ev->keyval)
             );
         }
         if                                      /* mute group learn         */
         (
-            perf().is_learn_mode() && a_ev->keyval != PREFKEY(group_learn)
+            m_mainperf->is_learn_mode() && a_ev->keyval != PERFKEY(group_learn)
         )
         {
-            if (perf().get_key_groups().count(a_ev->keyval) != 0)
+            if (m_mainperf->get_key_groups().count(a_ev->keyval) != 0)
             {
                 std::ostringstream os;
                 os << "Key \""
@@ -1226,7 +1225,7 @@ mainwnd::on_key_press_event (GdkEventKey * a_ev)
                  * to off
                  */
 
-                perf().unset_mode_group_learn();
+                m_mainperf->unset_mode_group_learn();
             }
             else
             {
@@ -1252,7 +1251,7 @@ mainwnd::on_key_press_event (GdkEventKey * a_ev)
                  * to off.
                  */
 
-                perf().unset_mode_group_learn();
+                m_mainperf->unset_mode_group_learn();
             }
         }
 
@@ -1262,10 +1261,10 @@ mainwnd::on_key_press_event (GdkEventKey * a_ev)
          * SPACEBAR)
          */
 
-        bool dont_toggle = PREFKEY(start) != PREFKEY(stop);
+        bool dont_toggle = PERFKEY(start) != PERFKEY(stop);
         if
         (
-            a_ev->keyval == PREFKEY(start) &&
+            a_ev->keyval == PERFKEY(start) &&
             (dont_toggle || ! global_is_pattern_playing)
         )
         {
@@ -1273,7 +1272,7 @@ mainwnd::on_key_press_event (GdkEventKey * a_ev)
         }
         else if
         (
-            a_ev->keyval == PREFKEY(stop) &&
+            a_ev->keyval == PERFKEY(stop) &&
             (dont_toggle || global_is_pattern_playing)
         )
         {
@@ -1290,12 +1289,12 @@ mainwnd::on_key_press_event (GdkEventKey * a_ev)
          *      also see if the Alt key should be intercepted.
          */
 
-        if (perf().get_key_events().count(a_ev->keyval) != 0)
+        if (m_mainperf->get_key_events().count(a_ev->keyval) != 0)
         {
             guint modifiers = gtk_accelerator_get_default_mod_mask();
             bool ok = (a_ev->state & modifiers) != GDK_CONTROL_MASK;
             if (ok)
-                sequence_key(perf().lookup_keyevent_seq(a_ev->keyval));
+                sequence_key(m_mainperf->lookup_keyevent_seq(a_ev->keyval));
         }
     }
     return false;
@@ -1313,10 +1312,10 @@ mainwnd::on_key_press_event (GdkEventKey * a_ev)
 void
 mainwnd::sequence_key (int a_seq)
 {
-    int offset = perf().get_screenset() * c_mainwnd_rows * c_mainwnd_cols;
-    if (perf().is_active(a_seq + offset))
+    int offset = m_mainperf->get_screenset() * c_mainwnd_rows * c_mainwnd_cols;
+    if (m_mainperf->is_active(a_seq + offset))
     {
-        perf().sequence_playing_toggle(a_seq + offset);
+        m_mainperf->sequence_playing_toggle(a_seq + offset);
     }
 }
 

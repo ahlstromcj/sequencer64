@@ -100,11 +100,9 @@ FruitySeqEventInput::on_button_press_event
     }
     else
     {
-
         if (a_ev->button == 1)                      /* left mouse button     */
         {
             seqev.convert_x(seqev.m_drop_x, &tick_s);  /* x,y into tick/note */
-
             tick_f = tick_s + (seqev.m_zoom);       /* shift back some ticks */
             tick_s -= (tick_w);
             if (tick_s < 0)
@@ -437,7 +435,7 @@ FruitySeqEventInput::on_motion_notify_event
     }
     if (seqev.m_painting)
     {
-        seqev.m_current_x = (int) a_ev->x  + seqev.m_scroll_offset_x;;
+        seqev.m_current_x = (int) a_ev->x  + seqev.m_scroll_offset_x;
         seqev.snap_x(&seqev.m_current_x);
         seqev.convert_x(seqev.m_current_x, &tick);
         seqev.drop_event(tick);

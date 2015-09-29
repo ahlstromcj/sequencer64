@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-22
- * \updates       2015-09-22
+ * \updates       2015-09-28
  * \license       GNU GPLv2 or above
  *
  */
@@ -62,27 +62,10 @@ namespace seq64
 gui_window_gtk2::gui_window_gtk2 (perform & a_perf)
  :
     Gtk::Window         (),
-    m_vadjust           (manage(new Gtk::Adjustment(0, 0, 1, 1, 1, 1))),
-    m_hadjust           (manage(new Gtk::Adjustment(0, 0, 1, 1, 1, 1))),
-    m_vscroll           (manage(new Gtk::VScrollbar(*m_vadjust))),
-    m_hscroll           (manage(new Gtk::HScrollbar(*m_hadjust))),
+    gui_base            (),
     m_mainperf          (a_perf),
     m_modified          (false)
 {
-#if 0
-    set_icon(Gdk::Pixbuf::create_from_xpm_data(perfedit_xpm));
-    set_title("Sequencer24 - Song Editor");                   /* main window */
-    set_size_request(700, 400);
-    m_table->set_border_width(2);
-    m_hlbox->set_border_width(2);
-    m_button_grow->add
-    (
-        *manage(new Gtk::Arrow(Gtk::ARROW_RIGHT, Gtk::SHADOW_OUT))
-    );
-    m_button_grow->signal_clicked().connect(mem_fun(*this, &perfedit::grow));
-    add_tooltip(m_button_grow, "Increase size of Grid.");
-#endif
-
     add_events(Gdk::KEY_PRESS_MASK | Gdk::KEY_RELEASE_MASK);
 }
 

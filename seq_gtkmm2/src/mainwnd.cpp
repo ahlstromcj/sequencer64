@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-09-28
+ * \updates       2015-09-29
  * \license       GNU GPLv2 or above
  *
  */
@@ -89,18 +89,18 @@ int mainwnd::m_sigpipe[2];
  *      options does; make the perform parameter a reference.
  */
 
-mainwnd::mainwnd (perform * a_p)
+mainwnd::mainwnd (perform & a_p)
  :
-    gui_window_gtk2         (*a_p),
+    gui_window_gtk2         (a_p),
     performcallback         (),
     m_tooltips              (manage(new Gtk::Tooltips())),
     m_menubar               (manage(new Gtk::MenuBar())),
     m_menu_file             (manage(new Gtk::Menu())),
     m_menu_view             (manage(new Gtk::Menu())),
     m_menu_help             (manage(new Gtk::Menu())),
-    m_main_wid              (manage(new mainwid(&perf()))), // POINTER
+    m_main_wid              (manage(new mainwid(perf()))),
     m_main_time             (manage(new maintime())),
-    m_perf_edit             (new perfedit(&perf())),  // copy construct // POINTER
+    m_perf_edit             (new perfedit(perf())),  // copy construct
     m_options               (nullptr),
     m_main_cursor           (),
     m_button_learn          (nullptr),
@@ -484,7 +484,7 @@ mainwnd::options_dialog ()
     if (not_nullptr(m_options))
         delete m_options;
 
-    m_options = new options(*this, &perf());        // POINTER
+    m_options = new options(*this, perf());
     m_options->show_all();
 }
 
@@ -624,7 +624,7 @@ mainwnd::open_file (const std::string & fn)
     bool result;
     midifile f(fn);                     /* create object to represent file  */
     perf().clear_all();
-    result = f.parse(&perf(), 0);       /* parsing handles old & new format */
+    result = f.parse(perf(), 0);        /* parsing handles old & new format */
     is_modified(! result);
     if (! result)
     {
@@ -708,7 +708,7 @@ mainwnd::save_file ()
     }
 
     midifile f(g_rc_settings.filename(), ! g_rc_settings.legacy_format());
-    result = f.write(&perf());      // POINTER
+    result = f.write(perf());
     if (! result)
     {
         Gtk::MessageDialog errdialog
@@ -843,7 +843,7 @@ mainwnd::file_import_dialog ()
         try
         {
             midifile f(dlg.get_filename());
-            f.parse(&perf(), int(m_adjust_load_offset->get_value()));
+            f.parse(perf(), int(m_adjust_load_offset->get_value()));
         }
         catch (...)
         {

@@ -89,7 +89,7 @@ enum
 options::options
 (
     Gtk::Window & parent,
-    perform * a_p
+    perform & a_p
 ) :
     Gtk::Dialog                     ("Options", parent, true, true),
 #if GTK_MINOR_VERSION < 12
@@ -121,7 +121,7 @@ options::options
 void
 options::add_midi_clock_page ()
 {
-    int buses = m_mainperf->master_bus().get_num_out_buses();
+    int buses = perf().master_bus().get_num_out_buses();
     Gtk::VBox * vbox = manage(new Gtk::VBox());
     vbox->set_border_width(6);
     m_notebook->append_page(*vbox, "MIDI _Clock", true);
@@ -135,7 +135,7 @@ options::add_midi_clock_page ()
         (
             new Gtk::Label
             (
-                m_mainperf->master_bus().get_midi_out_bus_name(i), 0
+                perf().master_bus().get_midi_out_bus_name(i), 0
             )
         );
         hbox2->pack_start(*label, false, false);
@@ -190,7 +190,7 @@ options::add_midi_clock_page ()
         hbox2->pack_end(*rb_on, false, false);
         hbox2->pack_end(*rb_off, false, false);
         vbox->pack_start(*hbox2, false, false);
-        switch (m_mainperf->master_bus().get_clock(i))
+        switch (perf().master_bus().get_clock(i))
         {
         case e_clock_off:
             rb_off->set_active(1);
@@ -232,9 +232,7 @@ options::add_midi_clock_page ()
 void
 options::add_midi_input_page ()
 {
-    // Count the input busses
-
-    int buses = m_mainperf->master_bus().get_num_in_buses();
+    int buses = perf().master_bus().get_num_in_buses(); // input busses
     Gtk::VBox * vbox = manage(new Gtk::VBox());
     vbox->set_border_width(6);
     m_notebook->append_page(*vbox, "MIDI _Input", true);
@@ -244,14 +242,14 @@ options::add_midi_input_page ()
         (
             new Gtk::CheckButton
             (
-                m_mainperf->master_bus().get_midi_in_bus_name(i), 0
+                perf().master_bus().get_midi_in_bus_name(i), 0
             )
         );
         check->signal_toggled().connect
         (
             bind(mem_fun(*this, &options::input_callback), i, check)
         );
-        check->set_active(m_mainperf->master_bus().get_input(i));
+        check->set_active(perf().master_bus().get_input(i));
         vbox->pack_start(*check, false, false);
     }
 }
@@ -292,7 +290,7 @@ options::add_keyboard_page ()
             int(e_keylabelsonsequence), check
         )
     );
-    check->set_active(m_mainperf->show_ui_sequence_key());
+    check->set_active(perf().show_ui_sequence_key());
     mainbox->pack_start(*check, false, false);
 
     /* Frame for sequence toggle keys */
@@ -312,7 +310,7 @@ options::add_keyboard_page ()
     Gtk::Label * label = manage(new Gtk::Label("Start", Gtk::ALIGN_RIGHT));
     keybindentry * entry = manage
     (
-        new keybindentry(keybindentry::location, PERFKEY_ADDR(start))
+        new keybindentry(keybindentry::location, PREFKEY_ADDR(start))
     );
     controltable->attach(*label, 0, 1, 0, 1);
     controltable->attach(*entry, 1, 2, 0, 1);
@@ -320,7 +318,7 @@ options::add_keyboard_page ()
     label = manage(new Gtk::Label("Stop", Gtk::ALIGN_RIGHT));
     entry = manage
     (
-        new keybindentry(keybindentry::location, PERFKEY_ADDR(stop))
+        new keybindentry(keybindentry::location, PREFKEY_ADDR(stop))
     );
     controltable->attach(*label, 0, 1, 1, 2);
     controltable->attach(*entry, 1, 2, 1, 2);
@@ -328,7 +326,7 @@ options::add_keyboard_page ()
     label = manage(new Gtk::Label("Snapshot 1", Gtk::ALIGN_RIGHT));
     entry = manage
     (
-        new keybindentry(keybindentry::location, PERFKEY_ADDR(snapshot_1))
+        new keybindentry(keybindentry::location, PREFKEY_ADDR(snapshot_1))
     );
     controltable->attach(*label, 2, 3, 0, 1);
     controltable->attach(*entry, 3, 4, 0, 1);
@@ -336,7 +334,7 @@ options::add_keyboard_page ()
     label = manage(new Gtk::Label("Snapshot 2", Gtk::ALIGN_RIGHT));
     entry = manage
     (
-        new keybindentry(keybindentry::location, PERFKEY_ADDR(snapshot_2))
+        new keybindentry(keybindentry::location, PREFKEY_ADDR(snapshot_2))
     );
     controltable->attach(*label, 2, 3, 1, 2);
     controltable->attach(*entry, 3, 4, 1, 2);
@@ -344,7 +342,7 @@ options::add_keyboard_page ()
     label = manage(new Gtk::Label("BPM down", Gtk::ALIGN_RIGHT));
     entry = manage
     (
-        new keybindentry(keybindentry::location, PERFKEY_ADDR(bpm_dn))
+        new keybindentry(keybindentry::location, PREFKEY_ADDR(bpm_dn))
     );
     controltable->attach(*label, 2, 3, 3, 4);
     controltable->attach(*entry, 3, 4, 3, 4);
@@ -352,7 +350,7 @@ options::add_keyboard_page ()
     label = manage(new Gtk::Label("BPM up", Gtk::ALIGN_RIGHT));
     entry = manage
     (
-        new keybindentry(keybindentry::location, PERFKEY_ADDR(bpm_up))
+        new keybindentry(keybindentry::location, PREFKEY_ADDR(bpm_up))
     );
     controltable->attach(*label, 2, 3, 2, 3);
     controltable->attach(*entry, 3, 4, 2, 3);
@@ -360,7 +358,7 @@ options::add_keyboard_page ()
     label = manage(new Gtk::Label("Replace", Gtk::ALIGN_RIGHT));
     entry = manage
     (
-        new keybindentry(keybindentry::location, PERFKEY_ADDR(replace))
+        new keybindentry(keybindentry::location, PREFKEY_ADDR(replace))
     );
     controltable->attach(*label, 4, 5, 0, 1);
     controltable->attach(*entry, 5, 6, 0, 1);
@@ -368,7 +366,7 @@ options::add_keyboard_page ()
     label = manage(new Gtk::Label("Queue", Gtk::ALIGN_RIGHT));
     entry = manage
     (
-        new keybindentry(keybindentry::location, PERFKEY_ADDR(queue))
+        new keybindentry(keybindentry::location, PREFKEY_ADDR(queue))
     );
     controltable->attach(*label, 4, 5, 1, 2);
     controltable->attach(*entry, 5, 6, 1, 2);
@@ -376,7 +374,7 @@ options::add_keyboard_page ()
     label = manage(new Gtk::Label("Keep queue", Gtk::ALIGN_RIGHT));
     entry = manage
     (
-        new keybindentry(keybindentry::location, PERFKEY_ADDR(keep_queue))
+        new keybindentry(keybindentry::location, PREFKEY_ADDR(keep_queue))
     );
     controltable->attach(*label, 4, 5, 2, 3);
     controltable->attach(*entry, 5, 6, 2, 3);
@@ -384,7 +382,7 @@ options::add_keyboard_page ()
     label = manage(new Gtk::Label("Screenset up", Gtk::ALIGN_RIGHT));
     entry = manage
     (
-        new keybindentry(keybindentry::location, PERFKEY_ADDR(screenset_up))
+        new keybindentry(keybindentry::location, PREFKEY_ADDR(screenset_up))
     );
     controltable->attach(*label, 6, 7, 0, 1);
     controltable->attach(*entry, 7, 8, 0, 1);
@@ -392,7 +390,7 @@ options::add_keyboard_page ()
     label = manage(new Gtk::Label("Screenset down", Gtk::ALIGN_RIGHT));
     entry = manage
     (
-        new keybindentry(keybindentry::location, PERFKEY_ADDR(screenset_dn))
+        new keybindentry(keybindentry::location, PREFKEY_ADDR(screenset_dn))
     );
     controltable->attach(*label, 6, 7, 1, 2);
     controltable->attach(*entry, 7, 8, 1, 2);
@@ -402,7 +400,7 @@ options::add_keyboard_page ()
     (
         new keybindentry
         (
-            keybindentry::location, PERFKEY_ADDR(set_playing_screenset)
+            keybindentry::location, PREFKEY_ADDR(set_playing_screenset)
         )
     );
     controltable->attach(*label, 6, 7, 2, 3);
@@ -431,7 +429,7 @@ options::add_keyboard_page ()
         Gtk::Label * numlabel = manage(new Gtk::Label(buf, Gtk::ALIGN_RIGHT));
         entry = manage
         (
-            new keybindentry(keybindentry::events, NULL, m_mainperf, slot)
+            new keybindentry(keybindentry::events, NULL, &perf(), slot)
         );
         toggletable->attach(*numlabel, x, x+1, y, y+1);
         toggletable->attach(*entry, x+1, x+2, y, y+1);
@@ -459,7 +457,7 @@ options::add_keyboard_page ()
         Gtk::Label * numlabel = manage(new Gtk::Label(buf, Gtk::ALIGN_RIGHT));
         entry = manage
         (
-            new keybindentry(keybindentry::groups, NULL, m_mainperf, i)
+            new keybindentry(keybindentry::groups, NULL, &perf(), i)
         );
         mutegrouptable->attach(*numlabel, x, x+1, y, y+1);
         mutegrouptable->attach(*entry, x+1, x+2, y, y+1);
@@ -468,10 +466,10 @@ options::add_keyboard_page ()
     AddKey
     (
         "Learn (while pressing a mute-group key):",
-        PERFKEY_ADDR(group_learn)
+        PREFKEY_ADDR(group_learn)
     );
-    AddKey("Disable:", PERFKEY_ADDR(group_off));
-    AddKey("Enable:", PERFKEY_ADDR(group_on));
+    AddKey("Disable:", PREFKEY_ADDR(group_off));
+    AddKey("Enable:", PREFKEY_ADDR(group_on));
     mainbox->pack_start(*hbox, false, false);
 }
 
@@ -712,7 +710,7 @@ void
 options::clock_callback_off (int a_bus, Gtk::RadioButton * a_button)
 {
     if (a_button->get_active())
-        m_mainperf->master_bus().set_clock(a_bus, e_clock_off);
+        perf().master_bus().set_clock(a_bus, e_clock_off);
 }
 
 /**
@@ -723,7 +721,7 @@ void
 options::clock_callback_on (int a_bus, Gtk::RadioButton * a_button)
 {
     if (a_button->get_active())
-        m_mainperf->master_bus().set_clock(a_bus, e_clock_pos);
+        perf().master_bus().set_clock(a_bus, e_clock_pos);
 }
 
 /**
@@ -734,7 +732,7 @@ void
 options::clock_callback_mod (int a_bus, Gtk::RadioButton * a_button)
 {
     if (a_button->get_active())
-        m_mainperf->master_bus().set_clock(a_bus, e_clock_mod);
+        perf().master_bus().set_clock(a_bus, e_clock_mod);
 }
 
 /**
@@ -758,15 +756,15 @@ options::input_callback (int a_bus, Gtk::Button * i_button)
     bool input = a_button->get_active();
     if (9999 == a_bus)                  // another manifest constant needed
     {
-        m_mainperf->show_ui_sequence_key(input);
+        perf().show_ui_sequence_key(input);
         for (int i = 0; i < c_max_sequence; i++)
         {
-            if (m_mainperf->get_sequence(i))
-                m_mainperf->get_sequence(i)->set_dirty();
+            if (perf().get_sequence(i))
+                perf().get_sequence(i)->set_dirty();
         }
         return;
     }
-    m_mainperf->master_bus().set_input(a_bus, input);
+    perf().master_bus().set_input(a_bus, input);
 }
 
 /**
@@ -828,11 +826,11 @@ options::transport_callback (button a_type, Gtk::Button * a_check)
         break;
 
     case e_jack_connect:
-        m_mainperf->init_jack();
+        perf().init_jack();
         break;
 
     case e_jack_disconnect:
-        m_mainperf->deinit_jack();
+        perf().deinit_jack();
         break;
 
     default:

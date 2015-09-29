@@ -95,18 +95,18 @@ namespace seq64
  *      options does; make the perform parameter a reference.
  */
 
-perfedit::perfedit (perform * a_perf)
+perfedit::perfedit (perform & a_perf)
  :
-    Gtk::Window         (),
-    m_mainperf          (a_perf),
+    gui_window_gtk2     (a_perf),
+//  m_mainperf          (a_perf),
     m_table             (manage(new Gtk::Table(6, 3, false))),
     m_vadjust           (manage(new Gtk::Adjustment(0, 0, 1, 1, 1, 1))),
     m_hadjust           (manage(new Gtk::Adjustment(0, 0, 1, 1, 1, 1))),
     m_vscroll           (manage(new Gtk::VScrollbar(*m_vadjust))),
     m_hscroll           (manage(new Gtk::HScrollbar(*m_hadjust))),
-    m_perfnames         (manage(new perfnames(m_mainperf, m_vadjust))),
-    m_perfroll          (manage(new perfroll(m_mainperf, m_hadjust, m_vadjust))),
-    m_perftime          (manage(new perftime(m_mainperf, m_hadjust))),
+    m_perfnames         (manage(new perfnames(&perf(), m_vadjust))),
+    m_perfroll          (manage(new perfroll(&perf(), m_hadjust, m_vadjust))),
+    m_perftime          (manage(new perftime(&perf(), m_hadjust))),
     m_menu_snap         (manage(new Gtk::Menu())),
     m_button_snap       (manage(new Gtk::Button())),
     m_entry_snap        (manage(new Gtk::Entry())),
@@ -350,7 +350,7 @@ perfedit::~perfedit ()
 void
 perfedit::undo ()
 {
-    m_mainperf->pop_trigger_undo();
+    perf().pop_trigger_undo();
     m_perfroll->queue_draw();
 }
 
@@ -365,9 +365,9 @@ perfedit::undo ()
 void
 perfedit::start_playing ()
 {
-    m_mainperf->position_jack(true);
-    m_mainperf->start_jack();
-    m_mainperf->start(true);
+    perf().position_jack(true);
+    perf().start_jack();
+    perf().start(true);
 }
 
 /**
@@ -380,8 +380,8 @@ perfedit::start_playing ()
 void
 perfedit::stop_playing ()
 {
-    m_mainperf->stop_jack();
-    m_mainperf->stop();
+    perf().stop_jack();
+    perf().stop();
 }
 
 /**
@@ -394,8 +394,8 @@ perfedit::stop_playing ()
 void
 perfedit::collapse ()
 {
-    m_mainperf->push_trigger_undo();
-    m_mainperf->move_triggers(false);
+    perf().push_trigger_undo();
+    perf().move_triggers(false);
     m_perfroll->queue_draw();
     is_modified(true);
 }
@@ -412,8 +412,8 @@ perfedit::collapse ()
 void
 perfedit::copy ()
 {
-    m_mainperf->push_trigger_undo();
-    m_mainperf->copy_triggers();
+    perf().push_trigger_undo();
+    perf().copy_triggers();
     m_perfroll->queue_draw();
 }
 
@@ -427,8 +427,8 @@ perfedit::copy ()
 void
 perfedit::expand ()
 {
-    m_mainperf->push_trigger_undo();
-    m_mainperf->move_triggers(true);
+    perf().push_trigger_undo();
+    perf().move_triggers(true);
     m_perfroll->queue_draw();
     is_modified(true);
 }
@@ -440,7 +440,7 @@ perfedit::expand ()
 void
 perfedit::set_looped ()
 {
-    m_mainperf->set_looping(m_button_loop->get_active());
+    perf().set_looping(m_button_loop->get_active());
 }
 
 /**
@@ -609,11 +609,11 @@ perfedit::on_key_press_event (GdkEventKey * a_ev)
          *  to both triggers.
          */
 
-        bool dont_toggle = PERFKEY(start) != PERFKEY(stop);
+        bool dont_toggle = PREFKEY(start) != PREFKEY(stop);
         if
         (
-            a_ev->keyval == PERFKEY(start) &&
-            (dont_toggle || !m_mainperf->is_running())
+            a_ev->keyval == PREFKEY(start) &&
+            (dont_toggle || !perf().is_running())
         )
         {
             start_playing();
@@ -621,8 +621,8 @@ perfedit::on_key_press_event (GdkEventKey * a_ev)
         }
         else if
         (
-            a_ev->keyval == PERFKEY(stop) &&
-            (dont_toggle || m_mainperf->is_running())
+            a_ev->keyval == PREFKEY(stop) &&
+            (dont_toggle || perf().is_running())
         )
         {
             stop_playing();
@@ -631,8 +631,8 @@ perfedit::on_key_press_event (GdkEventKey * a_ev)
 
         if
         (
-            a_ev->keyval == PERFKEY(start) ||
-            a_ev->keyval == PERFKEY(stop)
+            a_ev->keyval == PREFKEY(start) ||
+            a_ev->keyval == PREFKEY(stop)
         )
         {
             event_was_handled = true;

@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-09-13
+ * \updates       2015-09-29
  * \license       GNU GPLv2 or above
  *
  */
@@ -87,7 +87,7 @@ private:
      *  The performance object to which some of these options apply.
      */
 
-    perform * m_mainperf;
+    perform & m_mainperf;
 
     /**
      *  The famous "OK" button's pointer.
@@ -103,9 +103,14 @@ private:
 
 public:
 
-    options (Gtk::Window & parent, perform * a_p);
+    options (Gtk::Window & parent, perform & a_p);
 
 private:
+
+    perform & perf ()
+    {
+        return m_mainperf;
+    }
 
     void clock_callback_off (int a_bus, Gtk::RadioButton * a_button);
     void clock_callback_on (int a_bus, Gtk::RadioButton * a_button);

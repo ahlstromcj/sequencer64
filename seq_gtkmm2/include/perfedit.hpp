@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-09-13
+ * \updates       2015-09-29
  * \license       GNU GPLv2 or above
  *
  */
@@ -36,6 +36,8 @@
 #include <list>
 #include <string>
 #include <gtkmm/widget.h>       // somehow, can't forward-declare GdkEventAny
+
+#include "gui_window_gtk2.hpp"
 
 /*
  *  Since these items are pointers, we were able to move (most) of the
@@ -81,12 +83,12 @@ class perftime;
  *  perfroll, and a perftime.
  */
 
-class perfedit : public Gtk::Window
+class perfedit : public gui_window_gtk2
 {
 
 private:
 
-    perform * m_mainperf;
+//  perform * m_mainperf;
     Gtk::Table * m_table;
     Gtk::Adjustment * m_vadjust;
     Gtk::Adjustment * m_hadjust;
@@ -132,7 +134,7 @@ private:
 
 public:
 
-    perfedit (perform * a_perf);
+    perfedit (perform & a_perf);
     ~perfedit ();
 
     void init_before_show ();

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-09-13
+ * \updates       2015-09-29
  * \license       GNU GPLv2 or above
  *
  */
@@ -45,12 +45,12 @@ namespace seq64
 {
 
 /**
- *  Principal constructor.  Apart from filling in some fo the members,
+ *  Principal constructor.  Apart from filling in some of the members,
  *  this function initializes the clipboard, so that we don't get a crash
  *  on a paste with no previous copy.
  */
 
-seqmenu::seqmenu (perform * a_p)
+seqmenu::seqmenu (perform & a_p)
  :
     m_menu          (nullptr),
     m_mainperf      (a_p),
@@ -59,7 +59,9 @@ seqmenu::seqmenu (perform * a_p)
     m_current_seq   (0),
     m_modified      (false)
 {
-    m_clipboard.set_master_midi_bus(&a_p->master_bus());    // precedence?
+    // m_clipboard.set_master_midi_bus(&a_p->master_bus());    // precedence?
+
+    m_clipboard.set_master_midi_bus(&m_mainperf.master_bus());
 }
 
 /**
@@ -89,7 +91,7 @@ seqmenu::popup_menu ()
         delete m_menu;
 
     m_menu = manage(new Gtk::Menu());
-    if (m_mainperf->is_active(m_current_seq))
+    if (m_mainperf.is_active(m_current_seq))
     {
         m_menu->items().push_back
         (
@@ -104,7 +106,7 @@ seqmenu::popup_menu ()
         );
     }
     m_menu->items().push_back(SeparatorElem());
-    if (m_mainperf->is_active(m_current_seq))
+    if (m_mainperf.is_active(m_current_seq))
     {
         m_menu->items().push_back
         (
@@ -125,7 +127,7 @@ seqmenu::popup_menu ()
     m_menu->items().push_back(SeparatorElem());
     Gtk::Menu * menu_song = manage(new Gtk::Menu());
     m_menu->items().push_back(MenuElem("Song", *menu_song));
-    if (m_mainperf->is_active(m_current_seq))
+    if (m_mainperf.is_active(m_current_seq))
     {
         menu_song->items().push_back
         (
@@ -136,7 +138,7 @@ seqmenu::popup_menu ()
     (
         MenuElem("Mute All Tracks", mem_fun(*this, &seqmenu::mute_all_tracks))
     );
-    if (m_mainperf->is_active(m_current_seq))
+    if (m_mainperf.is_active(m_current_seq))
     {
         m_menu->items().push_back(SeparatorElem());
         Gtk::Menu * menu_buses = manage(new Gtk::Menu());
@@ -144,7 +146,7 @@ seqmenu::popup_menu ()
 
         /* Get the MIDI buses */
 
-        mastermidibus & masterbus = m_mainperf->master_bus();
+        mastermidibus & masterbus = m_mainperf.master_bus();
         for (int i = 0; i < masterbus.get_num_out_buses(); i++)
         {
             Gtk::Menu * menu_channels = manage(new Gtk::Menu());
@@ -189,11 +191,11 @@ seqmenu::popup_menu ()
 void
 seqmenu::set_bus_and_midi_channel (int a_bus, int a_ch)
 {
-    if (m_mainperf->is_active(m_current_seq))
+    if (m_mainperf.is_active(m_current_seq))
     {
-        m_mainperf->get_sequence(m_current_seq)->set_midi_bus(a_bus);
-        m_mainperf->get_sequence(m_current_seq)->set_midi_channel(a_ch);
-        m_mainperf->get_sequence(m_current_seq)->set_dirty();
+        m_mainperf.get_sequence(m_current_seq)->set_midi_bus(a_bus);
+        m_mainperf.get_sequence(m_current_seq)->set_midi_channel(a_ch);
+        m_mainperf.get_sequence(m_current_seq)->set_dirty();
     }
 }
 
@@ -204,7 +206,7 @@ seqmenu::set_bus_and_midi_channel (int a_bus, int a_ch)
 void
 seqmenu::mute_all_tracks ()
 {
-    m_mainperf->mute_all_tracks();
+    m_mainperf.mute_all_tracks();
 }
 
 /**
@@ -224,27 +226,27 @@ void
 seqmenu::seq_edit ()
 {
     seqedit * sed;
-    if (m_mainperf->is_active(m_current_seq))
+    if (m_mainperf.is_active(m_current_seq))
     {
-        if (! m_mainperf->get_sequence(m_current_seq)->get_editing())
+        if (! m_mainperf.get_sequence(m_current_seq)->get_editing())
         {
             sed = new seqedit
             (
-                m_mainperf->get_sequence(m_current_seq),
-                m_mainperf, m_current_seq
+                m_mainperf.get_sequence(m_current_seq),
+                &m_mainperf, m_current_seq
             );
             m_seqedit = sed;            /* prevents "unused" warning      */
             is_modified(true);          /* could be deleted later, though */
         }
         else
-            m_mainperf->get_sequence(m_current_seq)->set_raise(true);
+            m_mainperf.get_sequence(m_current_seq)->set_raise(true);
     }
     else
     {
         seq_new();
         sed = new seqedit
         (
-            m_mainperf->get_sequence(m_current_seq), m_mainperf, m_current_seq
+            m_mainperf.get_sequence(m_current_seq), &m_mainperf, m_current_seq
         );
         m_seqedit = sed;                /* prevents "unused" warning      */
         is_modified(true);              /* could be deleted later, though */
@@ -259,10 +261,10 @@ seqmenu::seq_edit ()
 void
 seqmenu::seq_new ()
 {
-    if (! m_mainperf->is_active(m_current_seq))
+    if (! m_mainperf.is_active(m_current_seq))
     {
-        m_mainperf->new_sequence(m_current_seq);
-        m_mainperf->get_sequence(m_current_seq)->set_dirty();
+        m_mainperf.new_sequence(m_current_seq);
+        m_mainperf.get_sequence(m_current_seq)->set_dirty();
     }
 }
 
@@ -277,8 +279,8 @@ seqmenu::seq_new ()
 void
 seqmenu::seq_copy ()
 {
-    if (m_mainperf->is_active(m_current_seq))
-        m_clipboard = *(m_mainperf->get_sequence(m_current_seq));
+    if (m_mainperf.is_active(m_current_seq))
+        m_clipboard = *(m_mainperf.get_sequence(m_current_seq));
 }
 
 /**
@@ -294,11 +296,11 @@ seqmenu::seq_copy ()
 void
 seqmenu::seq_cut ()
 {
-    if (m_mainperf->is_active(m_current_seq) &&
-            ! m_mainperf->is_sequence_in_edit(m_current_seq))
+    if (m_mainperf.is_active(m_current_seq) &&
+            ! m_mainperf.is_sequence_in_edit(m_current_seq))
     {
-        m_clipboard = *(m_mainperf->get_sequence(m_current_seq));
-        m_mainperf->delete_sequence(m_current_seq);
+        m_clipboard = *(m_mainperf.get_sequence(m_current_seq));
+        m_mainperf.delete_sequence(m_current_seq);
         redraw(m_current_seq);
     }
 }
@@ -316,11 +318,11 @@ seqmenu::seq_cut ()
 void
 seqmenu::seq_paste ()
 {
-    if (! m_mainperf->is_active(m_current_seq))
+    if (! m_mainperf.is_active(m_current_seq))
     {
-        m_mainperf->new_sequence(m_current_seq);
-        *(m_mainperf->get_sequence(m_current_seq)) = m_clipboard;
-        m_mainperf->get_sequence(m_current_seq)->set_dirty();
+        m_mainperf.new_sequence(m_current_seq);
+        *(m_mainperf.get_sequence(m_current_seq)) = m_clipboard;
+        m_mainperf.get_sequence(m_current_seq)->set_dirty();
     }
 }
 
@@ -337,11 +339,11 @@ seqmenu::seq_paste ()
 void
 seqmenu::seq_clear_perf ()
 {
-    if (m_mainperf->is_active(m_current_seq))
+    if (m_mainperf.is_active(m_current_seq))
     {
-        m_mainperf->push_trigger_undo();
-        m_mainperf->clear_sequence_triggers(m_current_seq);
-        m_mainperf->get_sequence(m_current_seq)->set_dirty();
+        m_mainperf.push_trigger_undo();
+        m_mainperf.clear_sequence_triggers(m_current_seq);
+        m_mainperf.get_sequence(m_current_seq)->set_dirty();
     }
 }
 

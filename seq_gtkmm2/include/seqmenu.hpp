@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-09-13
+ * \updates       2015-09-29
  * \license       GNU GPLv2 or above
  *
  */
@@ -59,7 +59,7 @@ class seqmenu : public virtual Glib::ObjectBase
 private:
 
     Gtk::Menu * m_menu;
-    perform * m_mainperf;
+    perform & m_mainperf;
     sequence m_clipboard;
 
     /**
@@ -77,7 +77,7 @@ private:
 
 public:
 
-    seqmenu (perform * a_p);
+    seqmenu (perform & a_p);
 
     /**
      *  Provides a rote base-class destructor.  This is necessary in an

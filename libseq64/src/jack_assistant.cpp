@@ -388,7 +388,7 @@ jack_assistant::session_event ()
     cmd += m_jsession_ev->client_uuid;
 
     midifile f(fname, ! global_legacy_format);      /* MIDI file access     */
-    f.write(&m_jack_parent);
+    f.write(m_jack_parent);
 
     m_jsession_ev->command_line = strdup(cmd.c_str());
     jack_session_reply(m_jack_client, m_jsession_ev);
@@ -620,10 +620,7 @@ jack_timebase_callback
 
     state_current = state;
 
-    // perform * p = (perform *) arg;
-
     jack_assistant * jack = (jack_assistant *) arg;
-
     current_frame = jack_get_current_transport_frame(jack->m_jack_client);
     pos->valid = JackPositionBBT;
     pos->beats_per_bar = 4;
@@ -674,10 +671,7 @@ jack_timebase_callback
 void
 jack_shutdown (void * arg)
 {
-    // perform * p = (perform *) arg;
-
     jack_assistant * jack = (jack_assistant *) arg;
-
     jack->m_jack_running = false;
     printf("JACK shut down.\nJACK sync Disabled.\n");
 }

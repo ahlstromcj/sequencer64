@@ -217,7 +217,7 @@ midifile::read_varinum ()
  */
 
 bool
-midifile::parse (perform * a_perf, int a_screen_set)
+midifile::parse (perform & a_perf, int a_screen_set)
 {
     bool result = true;
     std::ifstream file
@@ -292,7 +292,7 @@ midifile::parse (perform * a_perf, int a_screen_set)
                 errprint("Memory allocation failed, midifile::parse()");
                 return false;
             }
-            seq->set_master_midi_bus(&a_perf->master_bus());    /* set buss  */
+            seq->set_master_midi_bus(&a_perf.master_bus());     /* set buss  */
             RunningTime = 0;                    /* reset time                */
             while (! done)                      /* get each event in the Trk */
             {
@@ -465,7 +465,7 @@ midifile::parse (perform * a_perf, int a_screen_set)
 
             /* Sequence has been filled, add it to the performance  */
 
-            a_perf->add_sequence(seq, perf + (a_screen_set * c_seqs_in_set));
+            a_perf.add_sequence(seq, perf + (a_screen_set * c_seqs_in_set));
         }
         else
         {
@@ -598,7 +598,7 @@ midifile::parse_prop_header (int file_size)
  */
 
 bool
-midifile::parse_proprietary_track (perform * a_perf, int file_size)
+midifile::parse_proprietary_track (perform & a_perf, int file_size)
 {
     bool result = true;
     unsigned long proprietary = parse_prop_header(file_size);
@@ -607,26 +607,26 @@ midifile::parse_proprietary_track (perform * a_perf, int file_size)
         unsigned long seqs = read_long();
         for (unsigned int i = 0; i < seqs; i++)
         {
-            a_perf->get_midi_control_toggle(i)->m_active = read_byte();
-            a_perf->get_midi_control_toggle(i)->m_inverse_active =
+            a_perf.get_midi_control_toggle(i)->m_active = read_byte();
+            a_perf.get_midi_control_toggle(i)->m_inverse_active =
                 read_byte();
 
-            a_perf->get_midi_control_toggle(i)->m_status = read_byte();
-            a_perf->get_midi_control_toggle(i)->m_data = read_byte();
-            a_perf->get_midi_control_toggle(i)->m_min_value = read_byte();
-            a_perf->get_midi_control_toggle(i)->m_max_value = read_byte();
-            a_perf->get_midi_control_on(i)->m_active = read_byte();
-            a_perf->get_midi_control_on(i)->m_inverse_active = read_byte();
-            a_perf->get_midi_control_on(i)->m_status = read_byte();
-            a_perf->get_midi_control_on(i)->m_data = read_byte();
-            a_perf->get_midi_control_on(i)->m_min_value = read_byte();
-            a_perf->get_midi_control_on(i)->m_max_value = read_byte();
-            a_perf->get_midi_control_off(i)->m_active = read_byte();
-            a_perf->get_midi_control_off(i)->m_inverse_active = read_byte();
-            a_perf->get_midi_control_off(i)->m_status = read_byte();
-            a_perf->get_midi_control_off(i)->m_data = read_byte();
-            a_perf->get_midi_control_off(i)->m_min_value = read_byte();
-            a_perf->get_midi_control_off(i)->m_max_value = read_byte();
+            a_perf.get_midi_control_toggle(i)->m_status = read_byte();
+            a_perf.get_midi_control_toggle(i)->m_data = read_byte();
+            a_perf.get_midi_control_toggle(i)->m_min_value = read_byte();
+            a_perf.get_midi_control_toggle(i)->m_max_value = read_byte();
+            a_perf.get_midi_control_on(i)->m_active = read_byte();
+            a_perf.get_midi_control_on(i)->m_inverse_active = read_byte();
+            a_perf.get_midi_control_on(i)->m_status = read_byte();
+            a_perf.get_midi_control_on(i)->m_data = read_byte();
+            a_perf.get_midi_control_on(i)->m_min_value = read_byte();
+            a_perf.get_midi_control_on(i)->m_max_value = read_byte();
+            a_perf.get_midi_control_off(i)->m_active = read_byte();
+            a_perf.get_midi_control_off(i)->m_inverse_active = read_byte();
+            a_perf.get_midi_control_off(i)->m_status = read_byte();
+            a_perf.get_midi_control_off(i)->m_data = read_byte();
+            a_perf.get_midi_control_off(i)->m_min_value = read_byte();
+            a_perf.get_midi_control_off(i)->m_max_value = read_byte();
         }
     }
     proprietary = parse_prop_header(file_size);
@@ -636,7 +636,7 @@ midifile::parse_proprietary_track (perform * a_perf, int file_size)
         for (unsigned int buss = 0; buss < busscount; buss++)
         {
             int clocktype = read_byte();
-            a_perf->master_bus().set_clock(buss, (clock_e) clocktype);
+            a_perf.master_bus().set_clock(buss, (clock_e) clocktype);
         }
     }
     proprietary = parse_prop_header(file_size);
@@ -650,14 +650,14 @@ midifile::parse_proprietary_track (perform * a_perf, int file_size)
             for (unsigned int i = 0; i < len; i++)
                 notess += read_byte();                  /* unsigned!        */
 
-            a_perf->set_screen_set_notepad(x, notess);
+            a_perf.set_screen_set_notepad(x, notess);
         }
     }
     proprietary = parse_prop_header(file_size);
     if (proprietary == c_bpmtag)
     {
         long bpm = read_long();
-        a_perf->set_bpm(bpm);
+        a_perf.set_bpm(bpm);
     }
 
     /* Read in the mute group information. */
@@ -674,7 +674,7 @@ midifile::parse_proprietary_track (perform * a_perf, int file_size)
         for (int i = 0; i < c_seqs_in_set; i++)
         {
             long groupmute = read_long();
-            a_perf->select_group_mute(groupmute);
+            a_perf.select_group_mute(groupmute);
 #ifdef PLATFORM_DEBUG_XXX
             if (groupmute != 0)
                 fprintf(stderr, "group-mute[%d] = %ld\n", i, groupmute);
@@ -682,7 +682,7 @@ midifile::parse_proprietary_track (perform * a_perf, int file_size)
             for (int k = 0; k < c_seqs_in_set; ++k)
             {
                 long gmutestate = read_long();
-                a_perf->set_group_mute_state(k, gmutestate);
+                a_perf.set_group_mute_state(k, gmutestate);
 #ifdef PLATFORM_DEBUG_XXX
                 if (gmutestate != 0)
                 {
@@ -934,12 +934,12 @@ midifile::prop_item_size (long data_length) const
  */
 
 bool
-midifile::write (perform * a_perf)
+midifile::write (perform & a_perf)
 {
     int numtracks = 0;
     for (int i = 0; i < c_max_sequence; i++) /* get number of active tracks */
     {
-        if (a_perf->is_active(i))
+        if (a_perf.is_active(i))
             numtracks++;
     }
     write_long(0x4D546864);                 /* MIDI Format 1 header MThd    */
@@ -954,9 +954,9 @@ midifile::write (perform * a_perf)
 
     for (int curtrack = 0; curtrack < c_max_sequence; curtrack++)
     {
-        if (a_perf->is_active(curtrack))
+        if (a_perf.is_active(curtrack))
         {
-            sequence * seq = a_perf->get_sequence(curtrack);
+            sequence * seq = a_perf.get_sequence(curtrack);
             std::list<char> l;              /* should be unsigned char! */
             seq->fill_list(&l, curtrack);
             write_long(0x4D54726B);         /* magic number 'MTrk'      */
@@ -1011,13 +1011,13 @@ midifile::write (perform * a_perf)
  */
 
 bool
-midifile::write_proprietary_track (perform * a_perf)
+midifile::write_proprietary_track (perform & a_perf)
 {
     long tracklength = 0;
     int cnotesz = 2;                            /* first value is short     */
     for (int s = 0; s < c_max_sets; s++)
     {
-        const std::string & note = a_perf->get_screen_set_notepad(s);
+        const std::string & note = a_perf.get_screen_set_notepad(s);
         cnotesz += 2 + note.length();           /* short + note length      */
     }
 
@@ -1051,21 +1051,21 @@ midifile::write_proprietary_track (perform * a_perf)
     write_short(c_max_sets);                    /* data, not a tag          */
     for (int s = 0; s < c_max_sets; s++)        /* see "cnotesz" calc       */
     {
-        const std::string & note = a_perf->get_screen_set_notepad(s);
+        const std::string & note = a_perf.get_screen_set_notepad(s);
         write_short(note.length());
         for (unsigned int n = 0; n < note.length(); n++)
             write_byte(note[n]);
     }
     write_prop_header(c_bpmtag, 4);             /* bpm tag + long data      */
-    write_long(a_perf->get_bpm());              /* 4 bytes                  */
+    write_long(a_perf.get_bpm());              /* 4 bytes                  */
     write_prop_header(c_mutegroups, gmutesz);   /* the mute groups tag etc. */
     write_long(c_gmute_tracks);                 /* data, not a tag          */
     for (int j = 0; j < c_seqs_in_set; ++j)     /* should be optional!      */
     {
-        a_perf->select_group_mute(j);
+        a_perf.select_group_mute(j);
         write_long(j);
         for (int i = 0; i < c_seqs_in_set; ++i)
-            write_long(a_perf->get_group_mute_state(i));
+            write_long(a_perf.get_group_mute_state(i));
     }
     if (m_new_format)
     {

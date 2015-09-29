@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-09-13
+ * \updates       2015-09-29
  * \license       GNU GPLv2 or above
  *
  */
@@ -93,7 +93,7 @@ namespace seq64
  *  changes.
  */
 
-mainwid::mainwid (perform * a_p)
+mainwid::mainwid (perform & a_p)
  :
     Gtk::DrawingArea    (),
     seqmenu             (a_p),
@@ -220,9 +220,9 @@ mainwid::draw_sequence_on_pixmap (int a_seq)
         (
             m_gc, true, base_x, base_y, c_seqarea_x, c_seqarea_y
         );
-        if (m_mainperf->is_active(a_seq))
+        if (m_mainperf.is_active(a_seq))
         {
-            sequence * seq = m_mainperf->get_sequence(a_seq);
+            sequence * seq = m_mainperf.get_sequence(a_seq);
 #if SEQ64_HIGHLIGHT_EMPTY_SEQS
             if (seq->event_count() > 0)
             {
@@ -300,12 +300,12 @@ mainwid::draw_sequence_on_pixmap (int a_seq)
              * char key =  m_seq_to_char[local_seq];        // obsolete
              */
 
-            if (m_mainperf->show_ui_sequence_key())
+            if (m_mainperf.show_ui_sequence_key())
             {
                 snprintf
                 (
                     temp, sizeof temp, "%c",
-                    (char) m_mainperf->lookup_keyevent_key(a_seq)
+                    (char) m_mainperf.lookup_keyevent_key(a_seq)
                 );
                 p_font_renderer->render_string_on_drawable  // shortcut key
                 (
@@ -502,12 +502,12 @@ mainwid::update_markers(int a_ticks)
 void
 mainwid::draw_marker_on_sequence (int a_seq, int a_tick)
 {
-    if (m_mainperf->is_dirty_main(a_seq))
+    if (m_mainperf.is_dirty_main(a_seq))
         update_sequence_on_window(a_seq);
 
-    if (m_mainperf->is_active(a_seq))
+    if (m_mainperf.is_active(a_seq))
     {
-        sequence * seq = m_mainperf->get_sequence(a_seq);
+        sequence * seq = m_mainperf.get_sequence(a_seq);
         if (seq->event_count() ==  0)
             return;                         /* new 2015-08-23 don't update */
 
@@ -637,7 +637,7 @@ mainwid::set_screenset (int a_ss)
     if (m_screenset >= c_max_sets)
         m_screenset = 0;
 
-    m_mainperf->set_offset(m_screenset);
+    m_mainperf.set_offset(m_screenset);
     reset();
 }
 
@@ -717,9 +717,9 @@ mainwid::on_button_release_event (GdkEventButton * a_p0)
 
     if (current_sequence() >= 0 && a_p0->button == 1 && ! m_moving)
     {
-        if (m_mainperf->is_active(current_sequence()))
+        if (m_mainperf.is_active(current_sequence()))
         {
-            m_mainperf->sequence_playing_toggle(current_sequence());
+            m_mainperf.sequence_playing_toggle(current_sequence());
             draw_sequence_on_pixmap(current_sequence());
             draw_sequence_pixmap_on_window(current_sequence());      // effective?
         }
@@ -729,20 +729,20 @@ mainwid::on_button_release_event (GdkEventButton * a_p0)
         m_moving = false;
         if          // if we're in a pattern, it is active, and in edit mode...
         (
-            ! m_mainperf->is_active(current_sequence()) &&
+            ! m_mainperf.is_active(current_sequence()) &&
             current_sequence() != -1 &&
-            ! m_mainperf->is_sequence_in_edit(current_sequence())
+            ! m_mainperf.is_sequence_in_edit(current_sequence())
         )
         {
-            m_mainperf->new_sequence(current_sequence());
-            *(m_mainperf->get_sequence(current_sequence())) = m_moving_seq;
+            m_mainperf.new_sequence(current_sequence());
+            *(m_mainperf.get_sequence(current_sequence())) = m_moving_seq;
             draw_sequence_on_pixmap(current_sequence());
             draw_sequence_pixmap_on_window(current_sequence());      // effective?
         }
         else
         {
-            m_mainperf->new_sequence(m_old_seq);
-            *(m_mainperf->get_sequence(m_old_seq)) = m_moving_seq;
+            m_mainperf.new_sequence(m_old_seq);
+            *(m_mainperf.get_sequence(m_old_seq)) = m_moving_seq;
             draw_sequence_on_pixmap(m_old_seq);
             draw_sequence_pixmap_on_window(m_old_seq);          // effective?
         }
@@ -767,15 +767,15 @@ mainwid::on_motion_notify_event (GdkEventMotion * a_p0)
         if
         (
             seq != current_sequence() && ! m_moving &&
-            ! m_mainperf->is_sequence_in_edit(current_sequence())
+            ! m_mainperf.is_sequence_in_edit(current_sequence())
         )
         {
-            if (m_mainperf->is_active(current_sequence()))
+            if (m_mainperf.is_active(current_sequence()))
             {
                 m_old_seq = current_sequence();
                 m_moving = true;
-                m_moving_seq = *(m_mainperf->get_sequence(current_sequence()));
-                m_mainperf->delete_sequence(current_sequence());
+                m_moving_seq = *(m_mainperf.get_sequence(current_sequence()));
+                m_mainperf.delete_sequence(current_sequence());
                 draw_sequence_on_pixmap(current_sequence());
                 draw_sequence_pixmap_on_window(current_sequence());  // effective?
             }

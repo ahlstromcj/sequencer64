@@ -182,7 +182,7 @@ private:
 
 public:
 
-    mainwnd (perform * a_p);
+    mainwnd (perform & a_p);
     ~mainwnd ();
 
     void open_file (const std::string &);

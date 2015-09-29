@@ -344,7 +344,7 @@ main (int argc, char * argv [])
     p.launch_output_thread();
     p.init_jack();
 
-    seq64::mainwnd seq24_window(&p);            /* push mainwnd onto stack  */
+    seq64::mainwnd seq24_window(p);             /* push mainwnd onto stack  */
     if (optind < argc)
     {
         if (Glib::file_test(argv[optind], Glib::FILE_TEST_EXISTS))

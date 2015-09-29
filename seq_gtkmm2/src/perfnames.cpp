@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-09-13
+ * \updates       2015-09-29
  * \license       GNU GPLv2 or above
  *
  */
@@ -54,7 +54,7 @@ namespace seq64
 perfnames::perfnames (perform * a_perf, Gtk::Adjustment * a_vadjust)
  :
     Gtk::DrawingArea    (),
-    seqmenu             (a_perf),
+    seqmenu             (*a_perf),
     m_gc                (),
     m_window            (),
     m_black             (Gdk::Color("black")),

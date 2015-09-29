@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-09-28
+ * \updates       2015-09-29
  * \license       GNU GPLv2 or above
  *
  *  This class has way too many members.
@@ -269,8 +269,7 @@ private:
 public:
 
     /*
-     *  Can register here for events.
-     *  Used in mainwnd and perform.
+     *  Can register here for events.  Used in mainwnd and perform.
      */
 
     std::vector<performcallback *> m_notify;
@@ -345,6 +344,16 @@ public:
     bool is_learn_mode () const
     {
         return m_mode_group_learn;
+    }
+
+    /**
+     *  Adds a pointer to an object to be notified by this perform object.
+     */
+
+    void enregister (performcallback * pfcb)
+    {
+        if (not_nullptr(pfcb))
+            m_notify.push_back(pfcb);
     }
 
     void init ();
@@ -442,8 +451,27 @@ public:
 
     void handle_midi_control (int a_control, bool a_state);
 
-    void set_screen_set_notepad (int a_screen_set, std::string * a_note);
-    std::string * get_screen_set_notepad (int a_screen_set);
+    const std::string & get_screen_set_notepad (int a_screen_set) const;
+
+    /**
+     *  Returns the notepad text for the current screen-set.
+     */
+
+    const std::string & current_screen_set_notepad () const
+    {
+        return get_screen_set_notepad(m_screen_set);
+    }
+
+    void set_screen_set_notepad (int screenset, const std::string & note);
+
+    /**
+     *  Sets the notepad text for the current screen-set.
+     */
+
+    void set_current_screen_set_notepad (const std::string & note)
+    {
+        set_screen_set_notepad(m_screen_set, note);
+    }
 
     void set_screenset (int a_ss);      // a little much to inline
 
@@ -639,24 +667,59 @@ public:
             return 0;
     }
 
+    /**
+     *  Encapsulates a series of calls used in mainwnd.
+     */
+
+    void start_playing ()
+    {
+        position_jack(false);
+        start(false);
+        start_jack();
+        g_rc_settings.is_pattern_playing(true);
+    }
+
+    /**
+     *  Encapsulates a series of calls used in mainwnd.
+     */
+
+    void stop_playing ()
+    {
+        stop_jack();
+        stop();
+        g_rc_settings.is_pattern_playing(false);
+    }
+
+    /**
+     *  Encapsulates some calls used in mainwnd.
+     */
+
+    void learn_toggle ()
+    {
+        if (is_group_learning())
+            unset_mode_group_learn();
+        else
+            set_mode_group_learn();
+    }
+
 private:
 
     /**
      * \setter m_running
      */
 
-    void set_running (bool a_running)
+    void set_running (bool running)
     {
-        m_running = a_running;
+        m_running = running;
     }
 
     /**
      * \setter m_playback_mode
      */
 
-    void set_playback_mode (bool a_playback_mode)
+    void set_playback_mode (bool playbackmode)
     {
-        m_playback_mode = a_playback_mode;
+        m_playback_mode = playbackmode;
     }
 
     void inner_start (bool a_state);

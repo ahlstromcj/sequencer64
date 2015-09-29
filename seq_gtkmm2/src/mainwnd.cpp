@@ -91,11 +91,8 @@ int mainwnd::m_sigpipe[2];
 
 mainwnd::mainwnd (perform * a_p)
  :
-//  Gtk::Window             (),
     gui_window_gtk2         (*a_p),
     performcallback         (),
-//  perf()              (a_p),
-//  m_modified              (false),
     m_tooltips              (manage(new Gtk::Tooltips())),
     m_menubar               (manage(new Gtk::MenuBar())),
     m_menu_file             (manage(new Gtk::Menu())),
@@ -134,7 +131,7 @@ mainwnd::mainwnd (perform * a_p)
      *      Better as a member function.
      */
 
-    perf().m_notify.push_back(this);           // register for notification
+    perf().enregister(this);                        // register for notification
     update_window_title();                          // main window
     m_menubar->items().push_front(MenuElem("_File", *m_menu_file));
     m_menubar->items().push_back(MenuElem("_View", *m_menu_view));
@@ -330,11 +327,9 @@ mainwnd::mainwnd (perform * a_p)
     (
         mem_fun(*this, &mainwnd::edit_callback_notepad)
     );
-    m_entry_notes->set_text
-    (
-        *perf().get_screen_set_notepad(perf().get_screenset())
-    );
+    m_entry_notes->set_text(perf().current_screen_set_notepad());
     add_tooltip(m_entry_notes, "Enter screen set name");
+
     Gtk::Label * notelabel = manage(new Gtk::Label("_Name", true));
     notelabel->set_mnemonic_widget(*m_entry_notes);
     notebox->pack_start(*notelabel, Gtk::PACK_SHRINK);
@@ -443,17 +438,17 @@ mainwnd::timer_callback ()
     long ticks = perf().get_tick();
     m_main_time->idle_progress(ticks);
     m_main_wid->update_markers(ticks);
-    if (m_adjust_bpm->get_value() != perf().get_bpm())
-        m_adjust_bpm->set_value(perf().get_bpm());
 
-    if (m_adjust_ss->get_value() != perf().get_screenset())
+    int bpm = perf().get_bpm();
+    if (m_adjust_bpm->get_value() != bpm)
+        m_adjust_bpm->set_value(bpm);
+
+    int screenset = perf().get_screenset();
+    if (m_adjust_ss->get_value() != screenset)
     {
-        m_main_wid->set_screenset(perf().get_screenset());
-        m_adjust_ss->set_value(perf().get_screenset());
-        m_entry_notes->set_text
-        (
-            *perf().get_screen_set_notepad(perf().get_screenset())
-        );
+        m_main_wid->set_screenset(screenset);
+        m_adjust_ss->set_value(screenset);
+        m_entry_notes->set_text(perf().current_screen_set_notepad());
     }
     return true;
 }
@@ -494,34 +489,6 @@ mainwnd::options_dialog ()
 }
 
 /**
- *  Play!  Note that we call three perform member functions, so could let
- *  perform do it.
- */
-
-void
-mainwnd::start_playing ()
-{
-    perf().position_jack(false);
-    perf().start(false);
-    perf().start_jack();
-    global_is_pattern_playing = true;
-}
-
-/**
- *  Stop!  Note that we call two perform member functions, so could let
- *  perform do it.
- */
-
-void
-mainwnd::stop_playing ()
-{
-    perf().stop_jack();
-    perf().stop();
-    m_main_wid->update_sequences_on_window();
-    global_is_pattern_playing = false;
-}
-
-/**
  *  This handler responds to a learn-mode change from perf().
  */
 
@@ -538,22 +505,6 @@ mainwnd::on_grouplearnchange (bool state)
             )
         )
     );
-}
-
-/**
- *  Toggle the group-learn status.
- *
- * \todo
- *      Make this a perform function, and forward to it here.
- */
-
-void
-mainwnd::learn_toggle ()
-{
-    if (perf().is_group_learning())
-        perf().unset_mode_group_learn();
-    else
-        perf().set_mode_group_learn();
 }
 
 /**
@@ -576,10 +527,7 @@ mainwnd::new_file ()
 {
     perf().clear_all();
     m_main_wid->reset();
-    m_entry_notes->set_text
-    (
-        *perf().get_screen_set_notepad(perf().get_screenset())
-    );
+    m_entry_notes->set_text(perf().current_screen_set_notepad());
     g_rc_settings.filename("");
     update_window_title();
     is_modified(false);
@@ -691,14 +639,10 @@ mainwnd::open_file (const std::string & fn)
     }
 
     global_last_used_dir = fn.substr(0, fn.rfind("/") + 1);
-    // global_filename = fn;
     g_rc_settings.filename(fn);
     update_window_title();
     m_main_wid->reset();
-    m_entry_notes->set_text
-    (
-        *perf().get_screen_set_notepad(perf().get_screenset())
-    );
+    m_entry_notes->set_text(perf().current_screen_set_notepad());
     m_adjust_bpm->set_value(perf().get_bpm());
 }
 
@@ -915,10 +859,7 @@ mainwnd::file_import_dialog ()
         update_window_title();
         is_modified(true);
         m_main_wid->reset();
-        m_entry_notes->set_text
-        (
-            *perf().get_screen_set_notepad(perf().get_screenset())
-        );
+        m_entry_notes->set_text(perf().current_screen_set_notepad());
         m_adjust_bpm->set_value(perf().get_bpm());
         break;
     }
@@ -941,7 +882,7 @@ mainwnd::file_exit ()
 {
     if (is_save())
     {
-        if (global_is_pattern_playing)
+        if (g_rc_settings.is_pattern_playing())
             stop_playing();
 
         hide();
@@ -1018,12 +959,9 @@ mainwnd::about_dialog ()
 void
 mainwnd::adj_callback_ss ()
 {
-    perf().set_screenset((int) m_adjust_ss->get_value());
+    perf().set_screenset(int(m_adjust_ss->get_value()));
     m_main_wid->set_screenset(perf().get_screenset());
-    m_entry_notes->set_text
-    (
-        *perf().get_screen_set_notepad(perf().get_screenset())
-    );
+    m_entry_notes->set_text(perf().current_screen_set_notepad());
     is_modified(true);
 }
 
@@ -1034,7 +972,7 @@ mainwnd::adj_callback_ss ()
 void
 mainwnd::adj_callback_bpm ()
 {
-    perf().set_bpm((int) m_adjust_bpm->get_value());
+    perf().set_bpm(int(m_adjust_bpm->get_value()));
     is_modified(true);
 }
 
@@ -1045,8 +983,11 @@ mainwnd::adj_callback_bpm ()
 void
 mainwnd::edit_callback_notepad ()
 {
-    std::string text = m_entry_notes->get_text();
-    perf().set_screen_set_notepad(perf().get_screenset(), &text);
+    const std::string & text = m_entry_notes->get_text();
+
+    // perf().set_screen_set_notepad(perf().get_screenset(), &text);
+
+    perf().set_current_screen_set_notepad(text);
     is_modified(true);
 }
 
@@ -1061,7 +1002,7 @@ bool
 mainwnd::on_delete_event (GdkEventAny * a_e)
 {
     bool result = is_save();
-    if (result && global_is_pattern_playing)
+    if (result && g_rc_settings.is_pattern_playing())
         stop_playing();
 
     return ! result;
@@ -1148,20 +1089,12 @@ mainwnd::on_key_press_event (GdkEventKey * a_ev)
              * \todo
              *      Need a well-named perform function for decrementing
              *      its screenset; it should return the new value.
-             *
-             * \todo
-             *      The perform get_screen_set_notepad() should have an
-             *      overload that uses the current perform screenset
-             *      value; perhaps should return a reference as well.
              */
 
             perf().set_screenset(perf().get_screenset() - 1);
             m_main_wid->set_screenset(perf().get_screenset());
             m_adjust_ss->set_value(perf().get_screenset());
-            m_entry_notes->set_text
-            (
-                *perf().get_screen_set_notepad(perf().get_screenset())
-            );
+            m_entry_notes->set_text(perf().current_screen_set_notepad());
         }
         if (a_ev->keyval == PREFKEY(screenset_up))
         {
@@ -1174,10 +1107,7 @@ mainwnd::on_key_press_event (GdkEventKey * a_ev)
             perf().set_screenset(perf().get_screenset() + 1);
             m_main_wid->set_screenset(perf().get_screenset());
             m_adjust_ss->set_value(perf().get_screenset());
-            m_entry_notes->set_text
-            (
-                *perf().get_screen_set_notepad(perf().get_screenset())
-            );
+            m_entry_notes->set_text(perf().current_screen_set_notepad());
         }
         if (a_ev->keyval == PREFKEY(set_playing_screenset))
             perf().set_playing_screenset();
@@ -1266,7 +1196,7 @@ mainwnd::on_key_press_event (GdkEventKey * a_ev)
         if
         (
             a_ev->keyval == PREFKEY(start) &&
-            (dont_toggle || ! global_is_pattern_playing)
+            (dont_toggle || ! g_rc_settings.is_pattern_playing())
         )
         {
             start_playing();
@@ -1274,7 +1204,7 @@ mainwnd::on_key_press_event (GdkEventKey * a_ev)
         else if
         (
             a_ev->keyval == PREFKEY(stop) &&
-            (dont_toggle || global_is_pattern_playing)
+            (dont_toggle || g_rc_settings.is_pattern_playing())
         )
         {
             stop_playing();

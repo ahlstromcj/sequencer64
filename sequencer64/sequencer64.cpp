@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-09-28
+ * \updates       2015-09-29
  * \license       GNU GPLv2 or above
  *
  */
@@ -43,6 +43,7 @@
 #include "globals.h"                    // full platform configuration
 #include "font.hpp"
 #include "gui_assistant_gtk2.hpp"
+#include "mainwid.hpp"                  // needed to fulfill mainwnd
 #include "mainwnd.hpp"
 #include "optionsfile.hpp"
 #include "perform.hpp"

@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-09-13
+ * \updates       2015-09-29
  * \license       GNU GPLv2 or above
  *
  *  For a quick guide to the MIDI format, see, for example:
@@ -650,7 +650,7 @@ midifile::parse_proprietary_track (perform * a_perf, int file_size)
             for (unsigned int i = 0; i < len; i++)
                 notess += read_byte();                  /* unsigned!        */
 
-            a_perf->set_screen_set_notepad(x, &notess);
+            a_perf->set_screen_set_notepad(x, notess);
         }
     }
     proprietary = parse_prop_header(file_size);
@@ -1015,10 +1015,10 @@ midifile::write_proprietary_track (perform * a_perf)
 {
     long tracklength = 0;
     int cnotesz = 2;                            /* first value is short     */
-    for (int i = 0; i < c_max_sets; i++)
+    for (int s = 0; s < c_max_sets; s++)
     {
-        std::string * note = a_perf->get_screen_set_notepad(i);
-        cnotesz += 2 + note->length();          /* short + note length      */
+        const std::string & note = a_perf->get_screen_set_notepad(s);
+        cnotesz += 2 + note.length();           /* short + note length      */
     }
 
     /*
@@ -1049,12 +1049,12 @@ midifile::write_proprietary_track (perform * a_perf)
     write_prop_header(c_midiclocks, 0);         /* bus mute/unmute data + 4 */
     write_prop_header(c_notes, cnotesz);        /* notepad data tag + data  */
     write_short(c_max_sets);                    /* data, not a tag          */
-    for (int i = 0; i < c_max_sets; i++)        /* see "cnotesz" calc       */
+    for (int s = 0; s < c_max_sets; s++)        /* see "cnotesz" calc       */
     {
-        std::string * note = a_perf->get_screen_set_notepad(i);
-        write_short(note->length());
-        for (unsigned int j = 0; j < note->length(); j++)
-            write_byte((*note)[j]);
+        const std::string & note = a_perf->get_screen_set_notepad(s);
+        write_short(note.length());
+        for (unsigned int n = 0; n < note.length(); n++)
+            write_byte(note[n]);
     }
     write_prop_header(c_bpmtag, 4);             /* bpm tag + long data      */
     write_long(a_perf->get_bpm());              /* 4 bytes                  */

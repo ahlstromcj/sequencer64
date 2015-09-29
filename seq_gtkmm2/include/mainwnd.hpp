@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-09-28
+ * \updates       2015-09-29
  * \license       GNU GPLv2 or above
  *
  *  The main windows is known as the "Patterns window" or "Patterns
@@ -67,8 +67,6 @@ class perfedit;
  *  implemented in the mainwid class.
  */
 
-// class mainwnd : public Gtk::Window, public performcallback
-
 class mainwnd : public gui_window_gtk2, public performcallback
 {
 
@@ -79,18 +77,6 @@ private:
      */
 
     static int m_sigpipe[2];
-
-    /**
-     *  Management object (?) for the performance mode.
-
-    perform * m_mainperf;
-     */
-
-    /**
-     *  Flag for modifications to the loaded file.
-
-    bool m_modified;
-     */
 
     Gtk::Tooltips * m_tooltips;
 
@@ -209,37 +195,35 @@ private:
     void options_dialog ();
     void about_dialog ();
 
-    void adj_callback_ss ();                // make 'em void at some point
+    void adj_callback_ss ();            // make 'em void at some point
     void adj_callback_bpm ();
     void edit_callback_notepad ();
     bool timer_callback ();
 
-    void start_playing ();
-    void stop_playing ();
-    void learn_toggle ();
+    void start_playing ()               // Play!
+    {
+        perf().start_playing();
+    }
+
+    void stop_playing ()                // Stop!
+    {
+        perf().stop_playing();
+        m_main_wid->update_sequences_on_window();
+    }
+
+    /**
+     *  Toggle the group-learn status.
+     */
+
+    void learn_toggle ()
+    {
+        perf().learn_toggle();
+    }
+
     void open_performance_edit ();
     void sequence_key (int a_seq);
     void update_window_title ();
-    void toLower (std::string &);    // isn't this std::string?
-
-    /**
-     * \setter m_modified
-
-    void is_modified (bool flag)
-    {
-        m_modified = flag;
-    }
-     */
-
-    /**
-     * \getter m_modified
-
-    bool is_modified () const
-    {
-        return m_modified;
-    }
-     */
-
+    void toLower (std::string &);       // isn't this part of std::string?
     void file_new ();
     void file_open ();
     void file_save ();

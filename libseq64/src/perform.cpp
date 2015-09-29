@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-09-19
+ * \updates       2015-09-29
  * \license       GNU GPLv2 or above
  *
  */
@@ -204,9 +204,9 @@ perform::clear_all ()
         if (is_active(i))
             delete_sequence(i);
 
-    std::string e;
+    std::string e;                          /* an empty string */
     for (int i = 0; i < c_max_sets; i++)
-        set_screen_set_notepad(i, &e);
+        set_screen_set_notepad(i, e);
 }
 
 /**
@@ -841,35 +841,43 @@ perform::print ()
 /**
  *  Copies the given string into m_screen_set_notepad[].
  *
- * \param a_screen_set
+ * \param screenset
  *      The ID number of the string set, an index into the
  *      m_screen_set_xxx[] arrays.
  *
- * \param a_notepad
+ * \param notepad
  *      Provides the string date to copy into the notepad.
  *      Not sure why a pointer is used, instead of nice "const std::string
  *      &" parameter.  And this pointer isn't checked.
  */
 
 void
-perform::set_screen_set_notepad (int a_screen_set, std::string * a_notepad)
+perform::set_screen_set_notepad (int screenset, const std::string & notepad)
 {
-    if (a_screen_set < c_max_sets)
-        m_screen_set_notepad[a_screen_set] = *a_notepad;
+    if (screenset >= 0 && screenset < c_max_sets)
+        m_screen_set_notepad[screenset] = notepad;
 }
 
 /**
  *  Retrieves the given string from m_screen_set_notepad[].
  *
- * \param a_screen_set
+ * \param screenset
  *      The ID number of the string set, an index into the
- *      m_screen_set_xxx[] arrays.
+ *      m_screen_set_notepad[] array.  This value is validated.
+ *
+ * \return
+ *      Returns a reference to the desired string, or to an empty string
+ *      if the screen-set number is invalid.
  */
 
-std::string *
-perform::get_screen_set_notepad (int a_screen_set)
+const std::string &
+perform::get_screen_set_notepad (int screenset) const
 {
-    return &m_screen_set_notepad[a_screen_set];
+    static std::string s_empty;
+    if ((screenset >= 0) && screenset < c_max_sets)
+        return m_screen_set_notepad[screenset];
+    else
+        return s_empty;
 }
 
 /**

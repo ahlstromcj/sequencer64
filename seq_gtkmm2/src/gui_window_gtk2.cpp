@@ -25,44 +25,31 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-22
- * \updates       2015-09-28
+ * \updates       2015-09-29
  * \license       GNU GPLv2 or above
  *
  */
 
 #include <gtkmm/adjustment.h>
 #include <gtkmm/window.h>
-// #include <gtkmm/widget.h>
 #include <gtkmm/scrollbar.h>
-
-// #include <sigc++/bind.h>
-// #include "gtk_helpers.h"
 
 #include "gui_window_gtk2.hpp"
 #include "perform.hpp"
-
-// using namespace Gtk::Menu_Helpers;
 
 namespace seq64
 {
 
 /**
- *  Principal constructor, has a pointer to a perform object.
- *  We've reordered the pointer members and put them in the initializer
- *  list to make the constructor a bit cleaner.
+ *  Principal constructor, has a reference to the all-important  perform object.
  *
  * \param a_perf
  *      Refers to the main performance object.
- *
- * \todo
- *      Offload most of the work into an initialization function like
- *      options does; make the perform parameter a reference.
  */
 
 gui_window_gtk2::gui_window_gtk2 (perform & a_perf)
  :
     Gtk::Window         (),
-    gui_base            (),
     m_mainperf          (a_perf),
     m_modified          (false)
 {
@@ -70,8 +57,7 @@ gui_window_gtk2::gui_window_gtk2 (perform & a_perf)
 }
 
 /**
- *  This rote constructor does nothing.  We're going to have to run the
- *  application through valgrind to make sure that nothing is left behind.
+ *  This rote constructor does nothing.
  */
 
 gui_window_gtk2::~gui_window_gtk2 ()

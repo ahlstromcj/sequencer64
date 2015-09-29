@@ -17,7 +17,7 @@
  */
 
 /**
- * \file          gui_base.cpp
+ * \file          gui_play_base.cpp
  *
  *  This module declares/defines the base class for handling many facets
  *  of using a GUI.
@@ -25,17 +25,17 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-09-28
- * \updates       2015-09-28
+ * \updates       2015-09-29
  * \license       GNU GPLv2 or above
  *
  *  This module defines 3 classes:
  *
  *      -   seq64::click
  *      -   seq64::keystroke
- *      -   seq64::gui_base
+ *      -   seq64::gui_play_base
  */
 
-#include "gui_base.hpp"            // seq64::gui_base
+#include "gui_play_base.hpp"            // seq64::gui_play_base
 
 namespace seq64
 {
@@ -137,7 +137,7 @@ keystroke::operator = (const keystroke & rhs)
 /**
  *  This constructor wires in some externally (for now) created objects.
 
-gui_base::gui_base ()
+gui_play_base::gui_play_base ()
  :
 {
     // no other code
@@ -147,7 +147,7 @@ gui_base::gui_base ()
 }           // namespace seq64
 
 /*
- * gui_base.cpp
+ * gui_play_base.cpp
  *
  * vim: sw=4 ts=4 wm=8 et ft=cpp
  */

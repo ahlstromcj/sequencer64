@@ -984,9 +984,6 @@ void
 mainwnd::edit_callback_notepad ()
 {
     const std::string & text = m_entry_notes->get_text();
-
-    // perf().set_screen_set_notepad(perf().get_screenset(), &text);
-
     perf().set_current_screen_set_notepad(text);
     is_modified(true);
 }
@@ -1054,15 +1051,24 @@ mainwnd::on_key_press_event (GdkEventKey * a_ev)
             printf("key_press[%d]\n", a_ev->keyval);
             fflush(stdout);
         }
+
+        // TODO:  USE else's OR switch() HERE, MAN!
+
         if (a_ev->keyval == PREFKEY(bpm_dn))
         {
-            perf().set_bpm(perf().get_bpm() - 1);
-            m_adjust_bpm->set_value(perf().get_bpm());
+            // perf().set_bpm(perf().get_bpm() - 1);
+            // m_adjust_bpm->set_value(perf().get_bpm());
+
+            int newbpm = perf().decrement_bpm();
+            m_adjust_bpm->set_value(newbpm);
         }
         if (a_ev->keyval == PREFKEY(bpm_up))
         {
-            perf().set_bpm(perf().get_bpm() + 1);
-            m_adjust_bpm->set_value(perf().get_bpm());
+            // perf().set_bpm(perf().get_bpm() + 1);
+            // m_adjust_bpm->set_value(perf().get_bpm());
+
+            int newbpm = perf().increment_bpm();
+            m_adjust_bpm->set_value(newbpm);
         }
         if (a_ev->keyval == PREFKEY(replace))
             perf().set_sequence_control_status(c_status_replace);
@@ -1091,9 +1097,13 @@ mainwnd::on_key_press_event (GdkEventKey * a_ev)
              *      its screenset; it should return the new value.
              */
 
-            perf().set_screenset(perf().get_screenset() - 1);
-            m_main_wid->set_screenset(perf().get_screenset());
-            m_adjust_ss->set_value(perf().get_screenset());
+            // perf().set_screenset(perf().get_screenset() - 1);
+            // m_main_wid->set_screenset(perf().get_screenset());
+            // m_adjust_ss->set_value(perf().get_screenset());
+
+            int newss = perf().decrement_screenset();
+            m_main_wid->set_screenset(newss);
+            m_adjust_ss->set_value(newss);
             m_entry_notes->set_text(perf().current_screen_set_notepad());
         }
         if (a_ev->keyval == PREFKEY(screenset_up))
@@ -1104,9 +1114,13 @@ mainwnd::on_key_press_event (GdkEventKey * a_ev)
              *      its screenset; it should return the new value.
              */
 
-            perf().set_screenset(perf().get_screenset() + 1);
-            m_main_wid->set_screenset(perf().get_screenset());
-            m_adjust_ss->set_value(perf().get_screenset());
+            // perf().set_screenset(perf().get_screenset() + 1);
+            // m_main_wid->set_screenset(perf().get_screenset());
+            // m_adjust_ss->set_value(perf().get_screenset());
+
+            int newss = perf().increment_screenset();
+            m_main_wid->set_screenset(newss);
+            m_adjust_ss->set_value(newss);
             m_entry_notes->set_text(perf().current_screen_set_notepad());
         }
         if (a_ev->keyval == PREFKEY(set_playing_screenset))
@@ -1217,7 +1231,7 @@ mainwnd::on_key_press_event (GdkEventKey * a_ev)
          *      However, do not do this if the Ctrl key is being pressed.
          *      Ctrl-E, for example, brings up the Song Editor, and should
          *      not toggle the sequence controlled by the "e" key.  Will
-         *      also see if the Alt key should be intercepted.
+         *      also see if the Alt key could/should be intercepted.
          */
 
         if (perf().get_key_events().count(a_ev->keyval) != 0)
@@ -1232,25 +1246,6 @@ mainwnd::on_key_press_event (GdkEventKey * a_ev)
 }
 
 /**
- *  Handle a sequence key to toggle the playing of an active pattern in
- *  the selected screen-set.
- *
- * \todo
- *      Better as a perform member function, so make this a forwarding
- *      function.
- */
-
-void
-mainwnd::sequence_key (int a_seq)
-{
-    int offset = perf().get_screenset() * c_mainwnd_rows * c_mainwnd_cols;
-    if (perf().is_active(a_seq + offset))
-    {
-        perf().sequence_playing_toggle(a_seq + offset);
-    }
-}
-
-/**
  *  Updates the title shown in the title bar of the window.  Note that the
  *  name of the application is obtained by the "(SEQ64_PACKAGE)}
  *  construction.  Never saw that thing before.  Perhaps it is a Glib
@@ -1260,17 +1255,14 @@ mainwnd::sequence_key (int a_seq)
 void
 mainwnd::update_window_title ()
 {
-    std::string title;
-    if (g_rc_settings.filename().empty())
-        title = (SEQ64_PACKAGE) + std::string(" - [unnamed]");
-    else
-        title = (SEQ64_PACKAGE) + std::string(" - [")
-            + Glib::filename_to_utf8(g_rc_settings.filename())
-            + std::string("]");
+    std::string title = (SEQ64_PACKAGE) + std::string(" - [");
+    std::string itemname = "unnamed";
+    if (! g_rc_settings.filename().empty())
+        itemname = Glib::filename_to_utf8(g_rc_settings.filename());
 
+    title += itemname + std::string("]");
     set_title(title.c_str());
 }
-
 
 /**
  *  This function is the handler for system signals (SIGUSR1, SIGINT...)

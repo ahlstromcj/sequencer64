@@ -20,7 +20,7 @@
  */
 
 /**
- * \file          gui_base.hpp
+ * \file          gui_play_base.hpp
  *
  *  This module declares/defines the base class for GUI frameworks used in
  *  some of the window-support modules.
@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-09-21
- * \updates       2015-09-28
+ * \updates       2015-09-29
  * \license       GNU GPLv2 or above
  *
  *  Most of the GUI modules are publicly derived from Gtk::DrawingArea,
@@ -39,7 +39,7 @@
  *
  *      -   seq64::click
  *      -   seq64::keystroke
- *      -   seq64::gui_base
+ *      -   seq64::gui_play_base
  *
  */
 
@@ -227,7 +227,7 @@ public:
  *  determined at this point.
  */
 
-class gui_base
+class gui_play_base
 {
 
 private:
@@ -236,11 +236,11 @@ private:
 
 public:
 
-    gui_base ()
+    gui_play_base ()
     {
         // Empty body
     }
-    virtual ~gui_base ()
+    virtual ~gui_play_base ()
     {
         // stock base-class implementation
     }
@@ -327,7 +327,7 @@ protected:
 #endif      // SEQ64_GUI_BASE_HPP
 
 /*
- * gui_base.hpp
+ * gui_play_base.hpp
  *
  * vim: sw=4 ts=4 wm=8 et ft=cpp
  */

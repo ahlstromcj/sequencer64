@@ -2390,6 +2390,24 @@ perform::set_key_group (unsigned int keycode, long group_slot)
     keys().set_key_group(keycode, group_slot);
 }
 
+/*
+ * Non-inline encapsulation functions start here.
+ */
+
+/**
+ *  Handle a sequence key to toggle the playing of an active pattern in
+ *  the selected screen-set.
+ */
+
+void
+perform::sequence_key (int seq)
+{
+    int offset = get_screenset() * c_mainwnd_rows * c_mainwnd_cols;
+    if (is_active(seq + offset))
+        sequence_playing_toggle(seq + offset);
+}
+
+
 }           // namespace seq64
 
 /*

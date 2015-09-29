@@ -221,7 +221,17 @@ private:
     }
 
     void open_performance_edit ();
-    void sequence_key (int a_seq);
+
+    /**
+     *  Use the sequence key to toggle the playing of an active pattern in
+     *  the current screen-set.
+     */
+
+    void sequence_key (int seq)
+    {
+        perf().sequence_key(seq);
+    }
+
     void update_window_title ();
     void toLower (std::string &);       // isn't this part of std::string?
     void file_new ();

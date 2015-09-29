@@ -702,6 +702,54 @@ public:
             set_mode_group_learn();
     }
 
+    /**
+     *  Encapsulates some calls used in mainwnd.  Actually does a lot of
+     *  work in those function calls.
+     */
+
+    int decrement_bpm ()
+    {
+        int result = get_bpm() - 1;
+        set_bpm(result);
+        return result;
+    }
+
+    /**
+     *  Encapsulates some calls used in mainwnd.  Actually does a lot of
+     *  work in those function calls.
+     */
+
+    int increment_bpm ()
+    {
+        int result = get_bpm() + 1;
+        set_bpm(result);
+        return result;
+    }
+
+    /**
+     *  Encapsulates some calls used in mainwnd.
+     */
+
+    int decrement_screenset ()
+    {
+        int result = get_screenset() - 1;
+        set_screenset(result);
+        return result;
+    }
+
+    /**
+     *  Encapsulates some calls used in mainwnd.
+     */
+
+    int increment_screenset ()
+    {
+        int result = get_screenset() + 1;
+        set_screenset(result);
+        return result;
+    }
+
+    void sequence_key (int seq);        // encapsulation
+
 private:
 
     /**

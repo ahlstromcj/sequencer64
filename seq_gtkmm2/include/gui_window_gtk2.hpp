@@ -44,7 +44,6 @@ namespace Gtk
     class Adjustment;
     class HScrollbar;
     class VScrollbar;
-//  class Window;
 }
 
 namespace seq64

@@ -232,8 +232,8 @@ seqmenu::seq_edit ()
         {
             sed = new seqedit
             (
-                m_mainperf.get_sequence(m_current_seq),
-                &m_mainperf, m_current_seq
+                *m_mainperf.get_sequence(m_current_seq),
+                m_mainperf, m_current_seq
             );
             m_seqedit = sed;            /* prevents "unused" warning      */
             is_modified(true);          /* could be deleted later, though */
@@ -246,7 +246,7 @@ seqmenu::seq_edit ()
         seq_new();
         sed = new seqedit
         (
-            m_mainperf.get_sequence(m_current_seq), &m_mainperf, m_current_seq
+            *m_mainperf.get_sequence(m_current_seq), m_mainperf, m_current_seq
         );
         m_seqedit = sed;                /* prevents "unused" warning      */
         is_modified(true);              /* could be deleted later, though */

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-09-13
+ * \updates       2015-09-29
  * \license       GNU GPLv2 or above
  *
  */
@@ -126,9 +126,9 @@ static const int c_transpose_h           = 12;      /* skipped 11 */
  *      options does; make the sequence and perform parameters references.
  */
 
-seqedit::seqedit (sequence * a_seq, perform * a_perf, int a_pos)
+seqedit::seqedit (sequence & a_seq, perform & a_perf, int a_pos)
  :
-    Gtk::Window         (),
+    gui_window_gtk2     (a_perf),
     m_zoom              (m_initial_zoom),
     m_snap              (m_initial_snap),
     m_note_length       (m_initial_note_length),
@@ -137,7 +137,7 @@ seqedit::seqedit (sequence * a_seq, perform * a_perf, int a_pos)
     m_sequence          (m_initial_sequence),
     m_measures          (0),
     m_seq               (a_seq),
-    m_mainperf          (a_perf),               /* set the performance */
+//  m_mainperf          (a_perf),               /* set the performance */
     m_menubar           (manage(new Gtk::MenuBar())),
     m_menu_tools        (manage(new Gtk::Menu())),
     m_menu_zoom         (manage(new Gtk::Menu())),
@@ -161,16 +161,16 @@ seqedit::seqedit (sequence * a_seq, perform * a_perf, int a_pos)
     m_hadjust           (manage(new Gtk::Adjustment(0, 0, 1, 1, 1, 1))),
     m_vscroll_new       (manage(new Gtk::VScrollbar(*m_vadjust))),
     m_hscroll_new       (manage(new Gtk::HScrollbar(*m_hadjust))),
-    m_seqkeys_wid       (manage(new seqkeys(m_seq, m_vadjust))),
-    m_seqtime_wid       (manage(new seqtime(m_seq, m_zoom, m_hadjust))),
-    m_seqdata_wid       (manage(new seqdata(m_seq, m_zoom, m_hadjust))),
+    m_seqkeys_wid       (manage(new seqkeys(&m_seq, m_vadjust))),
+    m_seqtime_wid       (manage(new seqtime(&m_seq, m_zoom, m_hadjust))),
+    m_seqdata_wid       (manage(new seqdata(&m_seq, m_zoom, m_hadjust))),
     m_seqevent_wid
     (
-        manage(new seqevent(m_seq, m_zoom, m_snap, m_seqdata_wid, m_hadjust))
+        manage(new seqevent(&m_seq, m_zoom, m_snap, m_seqdata_wid, m_hadjust))
     ),
     m_seqroll_wid
     (
-        manage(new seqroll(m_mainperf, m_seq, m_zoom, m_snap, m_seqdata_wid,
+        manage(new seqroll(&perf(), &m_seq, m_zoom, m_snap, m_seqdata_wid,
             m_seqevent_wid, m_seqkeys_wid, m_pos, m_hadjust, m_vadjust))
     ),
     m_table             (manage(new Gtk::Table(7, 4, false))),
@@ -221,10 +221,10 @@ seqedit::seqedit (sequence * a_seq, perform * a_perf, int a_pos)
 {
     std::string title = "seq24 - ";                         /* main window */
     set_icon(Gdk::Pixbuf::create_from_xpm_data(seq_editor_xpm));
-    title.append(m_seq->get_name());
+    title.append(m_seq.get_name());
     set_title(title);
     set_size_request(700, 500);
-    m_seq->set_editing(true);
+    m_seq.set_editing(true);
     create_menus();
 
 //  m_tooltips = manage(new Gtk::Tooltips()); /* tooltips */
@@ -322,9 +322,9 @@ seqedit::seqedit (sequence * a_seq, perform * a_perf, int a_pos)
         m_toggle_thru,
         "Incoming MIDI data passes thru to sequences MIDI bus and channel."
     );
-    m_toggle_play->set_active(m_seq->get_playing());
-    m_toggle_record->set_active(m_seq->get_recording());
-    m_toggle_thru->set_active(m_seq->get_thru());
+    m_toggle_play->set_active(m_seq.get_playing());
+    m_toggle_record->set_active(m_seq.get_recording());
+    m_toggle_thru->set_active(m_seq.get_thru());
     dhbox->pack_end(*m_button_rec_vol, false, false, 4);
     dhbox->pack_end(*m_toggle_q_rec, false, false, 4);
     dhbox->pack_end(*m_toggle_record, false, false, 4);
@@ -347,11 +347,11 @@ seqedit::seqedit (sequence * a_seq, perform * a_perf, int a_pos)
     set_snap(m_snap);
     set_note_length(m_note_length);
     set_background_sequence(m_sequence);
-    set_bpm(m_seq->get_bpm());
-    set_bw(m_seq->get_bw());
+    set_bpm(m_seq.get_bpm());
+    set_bw(m_seq.get_bw());
     set_measures(get_measures());
-    set_midi_channel(m_seq->get_midi_channel());
-    set_midi_bus(m_seq->get_midi_bus());
+    set_midi_channel(m_seq.get_midi_channel());
+    set_midi_bus(m_seq.get_midi_bus());
     set_data_type(EVENT_NOTE_ON);
     set_scale(m_scale);
     set_key(m_key);
@@ -841,51 +841,51 @@ seqedit::do_action (int a_action, int a_var)
     switch (a_action)
     {
     case c_select_all_notes:
-        m_seq->select_events(EVENT_NOTE_ON, 0);
-        m_seq->select_events(EVENT_NOTE_OFF, 0);
+        m_seq.select_events(EVENT_NOTE_ON, 0);
+        m_seq.select_events(EVENT_NOTE_OFF, 0);
         break;
 
     case c_select_all_events:
-        m_seq->select_events(m_editing_status, m_editing_cc);
+        m_seq.select_events(m_editing_status, m_editing_cc);
         break;
 
     case c_select_inverse_notes:
-        m_seq->select_events(EVENT_NOTE_ON, 0, true);
-        m_seq->select_events(EVENT_NOTE_OFF, 0, true);
+        m_seq.select_events(EVENT_NOTE_ON, 0, true);
+        m_seq.select_events(EVENT_NOTE_OFF, 0, true);
         break;
 
     case c_select_inverse_events:
-        m_seq->select_events(m_editing_status, m_editing_cc, true);
+        m_seq.select_events(m_editing_status, m_editing_cc, true);
         break;
 
     case c_quantize_notes:
-        m_seq->push_undo();
-        m_seq->quantize_events(EVENT_NOTE_ON, 0, m_snap, 1 , true);
+        m_seq.push_undo();
+        m_seq.quantize_events(EVENT_NOTE_ON, 0, m_snap, 1 , true);
         break;
 
     case c_quantize_events:
-        m_seq->push_undo();
-        m_seq->quantize_events(m_editing_status, m_editing_cc, m_snap, 1);
+        m_seq.push_undo();
+        m_seq.quantize_events(m_editing_status, m_editing_cc, m_snap, 1);
         break;
 
     case c_tighten_notes:
-        m_seq->push_undo();
-        m_seq->quantize_events(EVENT_NOTE_ON, 0, m_snap, 2 , true);
+        m_seq.push_undo();
+        m_seq.quantize_events(EVENT_NOTE_ON, 0, m_snap, 2 , true);
         break;
 
     case c_tighten_events:
-        m_seq->push_undo();
-        m_seq->quantize_events(m_editing_status, m_editing_cc, m_snap, 2);
+        m_seq.push_undo();
+        m_seq.quantize_events(m_editing_status, m_editing_cc, m_snap, 2);
         break;
 
     case c_transpose:
-        m_seq->push_undo();
-        m_seq->transpose_notes(a_var, 0);
+        m_seq.push_undo();
+        m_seq.transpose_notes(a_var, 0);
         break;
 
     case c_transpose_h:
-        m_seq->push_undo();
-        m_seq->transpose_notes(a_var, m_scale);
+        m_seq.push_undo();
+        m_seq.transpose_notes(a_var, m_scale);
         break;
 
     default:
@@ -913,7 +913,7 @@ seqedit::fill_top_bar ()
     m_entry_name = manage(new Gtk::Entry());            /* name              */
     m_entry_name->set_max_length(26);
     m_entry_name->set_width_chars(26);
-    m_entry_name->set_text(m_seq->get_name());
+    m_entry_name->set_text(m_seq.get_name());
     m_entry_name->select_region(0, 0);
     m_entry_name->set_position(0);
     m_entry_name->signal_changed().connect
@@ -1235,7 +1235,7 @@ void
 seqedit::popup_midibus_menu ()
 {
     m_menu_midibus = manage(new Gtk::Menu());
-    mastermidibus & masterbus = m_mainperf->master_bus();
+    mastermidibus & masterbus = perf().master_bus();
 
 #define SET_BUS         mem_fun(*this, &seqedit::set_midi_bus)
 
@@ -1257,7 +1257,7 @@ void
 seqedit::popup_midich_menu ()
 {
     m_menu_midich = manage(new Gtk::Menu());
-    int midi_bus = m_seq->get_midi_bus();
+    int midi_bus = m_seq.get_midi_bus();
     for (int i = 0; i < MIDI_BUS_CHANNEL_MAX; i++)  /* MIDI channel menu */
     {
         char b[4];                                  /* 2 digits or less  */
@@ -1322,7 +1322,7 @@ seqedit::popup_sequence_menu ()
         {
             char name[30];
             int i = ss * c_seqs_in_set + seq;
-            if (m_mainperf->is_active(i))
+            if (perf().is_active(i))
             {
                 if (! inserted)
                 {
@@ -1334,7 +1334,7 @@ seqedit::popup_sequence_menu ()
                         MenuElem(name, *menu_ss)
                     );
                 }
-                sequence *seq = m_mainperf->get_sequence(i);
+                sequence * seq = perf().get_sequence(i);
                 snprintf(name, sizeof(name), "[%d] %.13s", i, seq->get_name());
                 menu_ss->items().push_back
                 (
@@ -1356,19 +1356,19 @@ seqedit::set_background_sequence (int a_seq)
 {
     char name[30];
     m_initial_sequence = m_sequence = a_seq;
-    if (a_seq == -1 || !m_mainperf->is_active(a_seq))
+    if (a_seq == -1 || ! perf().is_active(a_seq))
     {
         m_entry_sequence->set_text("Off");
         m_seqroll_wid->set_background_sequence(false, 0);
     }
-    if (m_mainperf->is_active(a_seq))
+    if (perf().is_active(a_seq))
     {
         /**
          * \todo
          *      Make the sequence pointer a reference.
          */
 
-        sequence * seq = m_mainperf->get_sequence(a_seq);
+        sequence * seq = perf().get_sequence(a_seq);
         snprintf(name, sizeof(name), "[%d] %.13s", a_seq, seq->get_name());
         m_entry_sequence->set_text(name);
         m_seqroll_wid->set_background_sequence(true, a_seq);
@@ -1419,11 +1419,11 @@ seqedit::popup_event_menu ()
     bool channel_pressure = false;
     bool pitch_wheel = false;
     unsigned char status, cc;
-    int midi_bus = m_seq->get_midi_bus();
-    int midi_ch = m_seq->get_midi_channel();
+    int midi_bus = m_seq.get_midi_bus();
+    int midi_ch = m_seq.get_midi_channel();
     memset(ccs, false, sizeof(bool) * MIDI_COUNT_MAX);
-    m_seq->reset_draw_marker();
-    while (m_seq->get_next_event(&status, &cc))
+    m_seq.reset_draw_marker();
+    while (m_seq.get_next_event(&status, &cc))
     {
         switch (status)
         {
@@ -1592,7 +1592,7 @@ seqedit::set_midi_channel (int a_midichannel)
     char b[8];
     snprintf(b, sizeof(b), "%d", a_midichannel + 1);
     m_entry_channel->set_text(b);
-    m_seq->set_midi_channel(a_midichannel);
+    m_seq.set_midi_channel(a_midichannel);
 }
 
 /**
@@ -1603,8 +1603,8 @@ seqedit::set_midi_channel (int a_midichannel)
 void
 seqedit::set_midi_bus (int a_midibus)
 {
-    m_seq->set_midi_bus(a_midibus);
-    mastermidibus & mmb =  m_mainperf->master_bus();
+    m_seq.set_midi_bus(a_midibus);
+    mastermidibus & mmb =  perf().master_bus();
     m_entry_bus->set_text(mmb.get_midi_out_bus_name(a_midibus));
 }
 
@@ -1642,7 +1642,7 @@ seqedit::set_snap (int a_snap)
     m_initial_snap = a_snap;
     m_seqroll_wid->set_snap(m_snap);
     m_seqevent_wid->set_snap(m_snap);
-    m_seq->set_snap_tick(a_snap);
+    m_seq.set_snap_tick(a_snap);
 }
 
 /**
@@ -1697,7 +1697,7 @@ seqedit::set_key (int a_note)
 void
 seqedit::apply_length (int a_bpm, int a_bw, int a_measures)
 {
-    m_seq->set_length(a_measures * a_bpm * ((c_ppqn * 4) / a_bw));
+    m_seq.set_length(a_measures * a_bpm * ((c_ppqn * 4) / a_bw));
     m_seqroll_wid->reset();
     m_seqtime_wid->reset();
     m_seqdata_wid->reset();
@@ -1717,9 +1717,9 @@ seqedit::apply_length (int a_bpm, int a_bw, int a_measures)
 long
 seqedit::get_measures ()
 {
-    long units = ((m_seq->get_bpm() * (c_ppqn * 4)) /  m_seq->get_bw());
-    long measures = (m_seq->get_length() / units);
-    if (m_seq->get_length() % units != 0)
+    long units = ((m_seq.get_bpm() * (c_ppqn * 4)) /  m_seq.get_bw());
+    long measures = (m_seq.get_length() / units);
+    if (m_seq.get_length() % units != 0)
         measures++;
 
     return measures;
@@ -1737,7 +1737,7 @@ seqedit::set_measures (int a_length_measures)
     snprintf(b, sizeof(b), "%d", a_length_measures);
     m_entry_length->set_text(b);
     m_measures = a_length_measures;
-    apply_length(m_seq->get_bpm(), m_seq->get_bw(), a_length_measures);
+    apply_length(m_seq.get_bpm(), m_seq.get_bw(), a_length_measures);
 }
 
 /**
@@ -1751,11 +1751,11 @@ seqedit::set_bpm (int a_beats_per_measure)
     char b[8];
     snprintf(b, sizeof(b), "%d", a_beats_per_measure);
     m_entry_bpm->set_text(b);
-    if (a_beats_per_measure != m_seq->get_bpm())
+    if (a_beats_per_measure != m_seq.get_bpm())
     {
         long length = get_measures();
-        m_seq->set_bpm(a_beats_per_measure);
-        apply_length(a_beats_per_measure, m_seq->get_bw(), length);
+        m_seq.set_bpm(a_beats_per_measure);
+        apply_length(a_beats_per_measure, m_seq.get_bw(), length);
     }
 }
 
@@ -1770,11 +1770,11 @@ seqedit::set_bw (int a_beat_width)
     char b[8];
     snprintf(b, sizeof(b), "%d", a_beat_width);
     m_entry_bw->set_text(b);
-    if (a_beat_width != m_seq->get_bw())
+    if (a_beat_width != m_seq.get_bw())
     {
         long length = get_measures();
-        m_seq->set_bw(a_beat_width);
-        apply_length(m_seq->get_bpm(), a_beat_width, length);
+        m_seq.set_bw(a_beat_width);
+        apply_length(m_seq.get_bpm(), a_beat_width, length);
     }
 }
 
@@ -1785,7 +1785,7 @@ seqedit::set_bw (int a_beat_width)
 void
 seqedit::set_rec_vol (int a_rec_vol)
 {
-    m_seq->set_rec_vol(a_rec_vol);
+    m_seq.set_rec_vol(a_rec_vol);
 }
 
 /**
@@ -1796,7 +1796,7 @@ seqedit::set_rec_vol (int a_rec_vol)
 void
 seqedit::name_change_callback ()
 {
-    m_seq->set_name(m_entry_name->get_text());
+    m_seq.set_name(m_entry_name->get_text());
 }
 
 /**
@@ -1806,7 +1806,7 @@ seqedit::name_change_callback ()
 void
 seqedit::play_change_callback ()
 {
-    m_seq->set_playing(m_toggle_play->get_active());
+    m_seq.set_playing(m_toggle_play->get_active());
 }
 
 /**
@@ -1816,8 +1816,8 @@ seqedit::play_change_callback ()
 void
 seqedit::record_change_callback ()
 {
-    m_mainperf->master_bus().set_sequence_input(true, m_seq);
-    m_seq->set_recording(m_toggle_record->get_active());
+    perf().master_bus().set_sequence_input(true, &m_seq);
+    m_seq.set_recording(m_toggle_record->get_active());
 }
 
 /**
@@ -1827,7 +1827,7 @@ seqedit::record_change_callback ()
 void
 seqedit::q_rec_change_callback ()
 {
-    m_seq->set_quantized_rec(m_toggle_q_rec->get_active());
+    m_seq.set_quantized_rec(m_toggle_q_rec->get_active());
 }
 
 /**
@@ -1838,7 +1838,7 @@ seqedit::q_rec_change_callback ()
 void
 seqedit::undo_callback ()
 {
-    m_seq->pop_undo();
+    m_seq.pop_undo();
     m_seqroll_wid->redraw();
     m_seqtime_wid->redraw();
     m_seqdata_wid->redraw();
@@ -1853,7 +1853,7 @@ seqedit::undo_callback ()
 void
 seqedit::redo_callback ()
 {
-    m_seq->pop_redo();
+    m_seq.pop_redo();
     m_seqroll_wid->redraw();
     m_seqtime_wid->redraw();
     m_seqdata_wid->redraw();
@@ -1867,8 +1867,8 @@ seqedit::redo_callback ()
 void
 seqedit::thru_change_callback ()
 {
-    m_mainperf->master_bus().set_sequence_input(true, m_seq);
-    m_seq->set_thru(m_toggle_thru->get_active());
+    perf().master_bus().set_sequence_input(true, &m_seq);
+    m_seq.set_thru(m_toggle_thru->get_active());
 }
 
 /**
@@ -1896,8 +1896,8 @@ seqedit::set_data_type (unsigned char a_status, unsigned char a_control)
         snprintf(type, sizeof(type), "Aftertouch");
     else if (a_status == EVENT_CONTROL_CHANGE)
     {
-        int midi_bus = m_seq->get_midi_bus();
-        int midi_ch = m_seq->get_midi_channel();
+        int midi_bus = m_seq.get_midi_bus();
+        int midi_ch = m_seq.get_midi_channel();
         std::string controller_name(c_controller_names[a_control]);
         int instrument =
             global_user_midi_bus_definitions[midi_bus].instrument[midi_ch];
@@ -1941,12 +1941,12 @@ seqedit::set_data_type (unsigned char a_status, unsigned char a_control)
 bool
 seqedit::timeout ()
 {
-    if (m_seq->get_raise())
+    if (m_seq.get_raise())
     {
-        m_seq->set_raise(false);
+        m_seq.set_raise(false);
         raise();
     }
-    if (m_seq->is_dirty_edit())
+    if (m_seq.is_dirty_edit())
     {
         m_seqroll_wid->redraw_events();
         m_seqevent_wid->redraw();
@@ -1986,9 +1986,9 @@ seqedit::on_realize()
 bool
 seqedit::on_delete_event (GdkEventAny * a_event)
 {
-    m_seq->set_recording(false);
-    m_mainperf->master_bus().set_sequence_input(false, NULL);
-    m_seq->set_editing(false);
+    m_seq.set_recording(false);
+    perf().master_bus().set_sequence_input(false, NULL);
+    m_seq.set_editing(false);
     delete this;
     return false;
 }

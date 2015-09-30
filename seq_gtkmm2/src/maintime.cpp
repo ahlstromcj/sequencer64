@@ -55,7 +55,7 @@ static const int c_pill_width = 8;
  *  realized.
  */
 
-maintime::maintime()
+maintime::maintime ()
  :
     Gtk::DrawingArea    (),
     m_gc                (),

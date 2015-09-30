@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-09-16
+ * \updates       2015-09-29
  * \license       GNU GPLv2 or above
  *
  */
@@ -98,7 +98,6 @@ namespace seq64
 perfedit::perfedit (perform & a_perf)
  :
     gui_window_gtk2     (a_perf),
-//  m_mainperf          (a_perf),
     m_table             (manage(new Gtk::Table(6, 3, false))),
     m_vadjust           (manage(new Gtk::Adjustment(0, 0, 1, 1, 1, 1))),
     m_hadjust           (manage(new Gtk::Adjustment(0, 0, 1, 1, 1, 1))),
@@ -218,7 +217,7 @@ perfedit::perfedit (perform & a_perf)
         MenuElem("16", sigc::bind(mem_fun(*this, &perfedit::set_bw), 16))
     );
 
-    char b[20];
+    char b[4];
     for (int i = 0; i < 16; i++)
     {
         snprintf(b, sizeof(b), "%d", i + 1);

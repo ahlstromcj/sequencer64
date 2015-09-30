@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-21
- * \updates       2015-09-21
+ * \updates       2015-09-29
  * \license       GNU GPLv2 or above
  *
  */
@@ -43,7 +43,7 @@ gui_palette_gtk2::gui_palette_gtk2 ()
     Gtk::DrawingArea    (),
     m_black             (Color("black")),
     m_white             (Color("white")),
-    m_grey              (Color("gray")),
+    m_grey              (Color("grey")),
     m_dk_grey           (Color("gray50")),
     m_red               (Color("red")),
     m_orange            (Color("orange")),

@@ -37,6 +37,7 @@
 #include <gtkmm/drawingarea.h>
 #include <gtkmm/window.h>
 
+#include "gui_drawingarea_gtk2.hpp"
 #include "seqmenu.hpp"
 
 namespace seq64
@@ -48,52 +49,42 @@ class perform;
  *    This class implement the piano roll area of the application.
  */
 
-class mainwid : public Gtk::DrawingArea, public seqmenu
+// class mainwid : public Gtk::DrawingArea, public seqmenu
+
+class mainwid : public gui_drawingarea_gtk2, public seqmenu
 {
 
 private:
 
     static const char m_seq_to_char[c_seqs_in_set];
 
-    Glib::RefPtr<Gdk::GC> m_gc;
-    Glib::RefPtr<Gdk::Window> m_window;
-    Gdk::Color m_black;
-    Gdk::Color m_white;
-    Gdk::Color m_grey;
-    Gdk::Color m_yellow;
-    Gdk::Color m_background;
-    Gdk::Color m_foreground;
-    Glib::RefPtr<Gdk::Pixmap> m_pixmap;
-    perform & m_mainperf;
-    int m_window_x;
-    int m_window_y;
-
-    /**
-     *  The x and y value of the current location of the mouse (during
-     *  dragging?)
-     */
-
-    int m_current_x;
-    int m_current_y;
-
-    /**
-     *  These values are used when roping and highlighting a bunch of events.
-     *
-     *  The x and y value of where the dragging started.
-     */
-
-    int m_drop_x;
-    int m_drop_y;
-
     sequence m_moving_seq;
     bool m_button_down;
     bool m_moving;
-
     int m_old_seq;
     int m_screenset;
-
     long m_last_tick_x[c_max_sequence];
     bool m_last_playing[c_max_sequence];
+
+    /**
+     *  These values are assigned to the values given by the constants of
+     *  similar names in globals.h, and we will make them parameters
+     *  later.
+     */
+
+    int m_mainwnd_rows;
+    int m_mainwnd_cols;
+    int m_seqarea_x;
+    int m_seqarea_y;
+    int m_seqarea_seq_x;
+    int m_seqarea_seq_y;
+    int m_mainwid_x;
+    int m_mainwid_y;
+    int m_mainwid_border;
+    int m_mainwid_spacing;
+    int m_text_size_x;
+    int m_text_size_y;
+    int m_max_sets;
 
 public:
 
@@ -118,6 +109,7 @@ private:
     int seq_from_xy (int a_x, int a_y);
     int timeout ();
     void redraw (int a_seq);
+    void calculate_base_sizes (int a_seq, int & basex, int & basey);
 
 private:        // callbacks
 

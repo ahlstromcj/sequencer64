@@ -25,14 +25,15 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-21
- * \updates       2015-09-22
+ * \updates       2015-09-29
  * \license       GNU GPLv2 or above
  *
  */
 
+#include <gtkmm/adjustment.h>
+
 #if 0
 #include <gtkmm/accelkey.h>
-#include <gtkmm/adjustment.h>
 #include <gtkmm/button.h>
 #include <gtkmm/window.h>
 #include <gtkmm/accelgroup.h>
@@ -68,61 +69,103 @@ namespace seq64
 {
 
 /**
+ *  These two objects are used so we have some Adjustments to assign to
+ *  the Adjustment members for classes that don't use them.  Clumsy?  We
+ *  shall see.
+ *
+ *  Anyway, the parameters for this constructor are value, lower, upper,
+ *  step-increment, and two more values.
+ */
+
+Gtk::Adjustment gui_drawingarea_gtk2::m_hadjust_dummy
+(
+    0.0, 0.0, 1.0, 1.0, 1.0, 1.0
+);
+
+Gtk::Adjustment gui_drawingarea_gtk2::m_vadjust_dummy
+(
+    0.0, 0.0, 1.0, 1.0, 1.0, 1.0
+);
+
+/**
+ *  Perform-only constructor.
+ */
+
+gui_drawingarea_gtk2::gui_drawingarea_gtk2
+(
+    perform & perf,
+    int window_x,
+    int window_y
+) :
+    gui_palette_gtk2        (),
+    m_gc                    (),
+    m_window                (),
+    m_vadjust               (m_vadjust_dummy),
+    m_hadjust               (m_hadjust_dummy),
+    m_pixmap                (),
+    m_background            (),             // another pixmap
+    m_foreground            (),             // another pixmap
+    m_mainperf              (perf),
+    m_window_x              (window_x),
+    m_window_y              (window_y),
+    m_current_x             (0),
+    m_current_y             (0),
+    m_drop_x                (0),
+    m_drop_y                (0)
+{
+    gtk_drawarea_init();
+}
+
+/**
  *  Principal constructor.
  */
 
 gui_drawingarea_gtk2::gui_drawingarea_gtk2
 (
-    perform & a_perf,
-    Gtk::Adjustment & a_hadjust,
-    Gtk::Adjustment & a_vadjust
+    perform & perf,
+    Gtk::Adjustment & hadjust,
+    Gtk::Adjustment & vadjust,
+    int window_x,
+    int window_y
 ) :
     gui_palette_gtk2        (),
     m_gc                    (),
     m_window                (),
-    m_vadjust               (a_vadjust),
-    m_hadjust               (a_hadjust),
+    m_vadjust               (vadjust),
+    m_hadjust               (hadjust),
     m_pixmap                (),
-    m_background            (),         // another pixmap
-    m_mainperf              (a_perf)    // ,
-
-#if 0
-    m_window_x              (10),       // why so small?
-    m_window_y              (10),
+    m_background            (),             // another pixmap
+    m_foreground            (),             // another pixmap
+    m_mainperf              (perf),
+    m_window_x              (window_x),
+    m_window_y              (window_y),
     m_current_x             (0),
     m_current_y             (0),
     m_drop_x                (0),
-    m_drop_y                (0),
-    m_old                   (),
-    m_pos                   (a_pos),
-    m_zoom                  (a_zoom),   //
-    m_snap                  (a_snap),   //
-#endif
-
-#if 0
-    m_selected              (),
-    m_selecting             (false),
-    m_moving                (false),
-    m_moving_init           (false),
-    m_growing               (false),
-    m_painting              (false),
-    m_paste                 (false),
-    m_is_drag_pasting       (false),
-    m_is_drag_pasting_start (false),
-#endif
-
-#if 0
-    m_move_delta_x          (0),
-    m_move_delta_y          (0),
-    m_move_snap_offset_x    (0),
-    m_old_progress_x        (0),
-    m_scroll_offset_ticks   (0),
-    m_scroll_offset_key     (0),
-    m_scroll_offset_x       (0),
-    m_scroll_offset_y       (0),
-    m_ignore_redraw         (false)
-#endif
+    m_drop_y                (0)
 {
+    gtk_drawarea_init();
+}
+
+/**
+ *  Provides a destructor to delete allocated objects.
+ */
+
+gui_drawingarea_gtk2::~gui_drawingarea_gtk2 ()
+{
+    // Empty body
+}
+
+/**
+ *  Does basic initialization for each of the constructors.
+ */
+
+void
+gui_drawingarea_gtk2::gtk_drawarea_init ()
+{
+    if (m_window_x > 0 && m_window_y > 0)
+        set_size_request(m_window_x, m_window_y);
+
     add_events
     (
         Gdk::BUTTON_PRESS_MASK | Gdk::BUTTON_RELEASE_MASK |
@@ -132,15 +175,6 @@ gui_drawingarea_gtk2::gui_drawingarea_gtk2
         Gdk::SCROLL_MASK
     );
     set_double_buffered(false);
-}
-
-/**
- *  Provides a destructor to delete allocated objects.
- */
-
-gui_drawingarea_gtk2::~gui_drawingarea_gtk2 ()
-{
-    // 
 }
 
 }           // namespace seq64

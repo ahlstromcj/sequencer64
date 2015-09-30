@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-21
- * \updates       2015-09-22
+ * \updates       2015-09-29
  * \license       GNU GPLv2 or above
  *
  *  This module defines some Gdk::Color objects.  However, note that this
@@ -50,13 +50,13 @@ namespace seq64
 class gui_palette_gtk2 : public Gtk::DrawingArea    // or Gtk::Widget
 {
 
+protected:
+
     /**
      *  Provides a type for the color object.
      */
 
     typedef Gdk::Color Color;
-
-private:
 
     const Color m_black;
     const Color m_white;
@@ -68,6 +68,9 @@ private:
     const Color m_green;
     const Color m_blue;
     const Color m_cyan;
+
+    Color m_bg_color;               // m_background in some classes
+    Color m_fg_color;               // m_foreground in some classes
 
 public:
 

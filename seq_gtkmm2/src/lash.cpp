@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-09-13
+ * \updates       2015-09-29
  * \license       GNU GPLv2 or above
  *
  *  Not totally sure that the LASH support is completely finished, at this
@@ -160,13 +160,13 @@ lash::handle_event (lash_event_t * ev)
     if (type == LASH_Save_File)
     {
         midifile f(str + "/seq24.mid", ! global_legacy_format);
-        f.write(m_perform);
+        f.write(*m_perform);
         lash_send_event(m_client, lash_event_new_with_type(LASH_Save_File));
     }
     else if (type == LASH_Restore_File)
     {
         midifile f(str + "/seq24.mid");
-        f.parse(m_perform, 0);
+        f.parse(*m_perform, 0);
         lash_send_event(m_client, lash_event_new_with_type(LASH_Restore_File));
     }
     else if (type == LASH_Quit)
@@ -182,7 +182,7 @@ lash::handle_event (lash_event_t * ev)
 
 /*
  * ca 2015-07-24
- * Eliminate this annoying warning.  Will do it for Microsoft's bloddy
+ * Eliminate this annoying warning.  Will do it for Microsoft's bloody
  * compiler later.
  */
 

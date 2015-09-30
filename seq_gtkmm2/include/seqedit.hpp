@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-09-13
+ * \updates       2015-09-29
  * \license       GNU GPLv2 or above
  *
  */
@@ -36,6 +36,8 @@
 #include <list>
 #include <string>
 #include <gtkmm/window.h>
+
+#include "gui_window_gtk2.hpp"
 
 namespace Gtk
 {
@@ -79,7 +81,7 @@ class sequence;
  *  members.
  */
 
-class seqedit : public Gtk::Window
+class seqedit : public gui_window_gtk2
 {
 
 private:
@@ -115,8 +117,7 @@ private:
     int m_sequence;
     long m_measures;
 
-    sequence * const m_seq;
-    perform * const m_mainperf;
+    sequence & m_seq;
     Gtk::MenuBar * m_menubar;
     Gtk::Menu * m_menu_tools;
     Gtk::Menu * m_menu_zoom;
@@ -206,7 +207,7 @@ private:
 
 public:
 
-    seqedit (sequence * a_seq, perform * a_perf, int a_pos);
+    seqedit (sequence & a_seq, perform & a_perf, int a_pos);
     ~seqedit ();
 
 private:

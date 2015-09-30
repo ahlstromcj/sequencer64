@@ -95,44 +95,30 @@ namespace seq64
 
 mainwid::mainwid (perform & a_p)
  :
-    Gtk::DrawingArea    (),
-    seqmenu             (a_p),
-    m_gc                (),
-    m_window            (),
-    m_black             (Gdk::Color("black")),
-    m_white             (Gdk::Color("white")),
-    m_grey              (Gdk::Color("grey")),
-    m_yellow            (Gdk::Color("yellow")), // for empty-seq highlight
-    m_background        (),
-    m_foreground        (),
-    m_pixmap            (),
-    m_mainperf          (a_p),
-    m_window_x          (c_mainwid_x),
-    m_window_y          (c_mainwid_y),
-    m_current_x         (0),
-    m_current_y         (0),
-    m_drop_x            (0),
-    m_drop_y            (0),
-    m_moving_seq        (),
-    m_button_down       (false),
-    m_moving            (false),
-    m_old_seq           (0),
-    m_screenset         (0),
-    m_last_tick_x       (),     // an array of size c_max_sequence
-    m_last_playing      ()      // an array of size c_max_sequence
+    gui_drawingarea_gtk2    (a_p, c_mainwid_x, c_mainwid_y),
+    seqmenu                 (a_p),
+    m_moving_seq            (),
+    m_button_down           (false),
+    m_moving                (false),
+    m_old_seq               (0),
+    m_screenset             (0),
+    m_last_tick_x           (),     // an array of size c_max_sequence
+    m_last_playing          (),     // an array of size c_max_sequence
+    m_mainwnd_rows          (c_mainwnd_rows),
+    m_mainwnd_cols          (c_mainwnd_cols),
+    m_seqarea_x             (c_seqarea_x),
+    m_seqarea_y             (c_seqarea_y),
+    m_seqarea_seq_x         (c_seqarea_seq_x),
+    m_seqarea_seq_y         (c_seqarea_seq_y),
+    m_mainwid_x             (c_mainwid_x),
+    m_mainwid_y             (c_mainwid_y),
+    m_mainwid_border        (c_mainwid_border),
+    m_mainwid_spacing       (c_mainwid_spacing),
+    m_text_size_x           (c_text_x),
+    m_text_size_y           (c_text_y),
+    m_max_sets              (c_max_sets)
 {
-    Glib::RefPtr<Gdk::Colormap> colormap = get_default_colormap();
-    colormap->alloc_color(m_black);
-    colormap->alloc_color(m_white);
-    colormap->alloc_color(m_grey);
-    colormap->alloc_color(m_yellow);
-    set_size_request(c_mainwid_x, c_mainwid_y);
-    add_events
-    (
-        Gdk::BUTTON_PRESS_MASK | Gdk::BUTTON_RELEASE_MASK |
-        Gdk::KEY_PRESS_MASK | Gdk::BUTTON_MOTION_MASK | Gdk::FOCUS_CHANGE_MASK
-    );
-    set_double_buffered(false);
+    // It's all done in the base classes and the initializer list.
 }
 
 /**
@@ -151,13 +137,12 @@ mainwid::~mainwid ()
 void
 mainwid::draw_sequences_on_pixmap ()
 {
-    for (int i = 0; i < c_mainwnd_rows * c_mainwnd_cols; i++)
+    int slots = m_mainwnd_rows * m_mainwnd_cols;
+    for (int s = 0; s < slots; s++)
     {
-        draw_sequence_on_pixmap
-        (
-            i + (m_screenset * c_mainwnd_rows * c_mainwnd_cols)
-        );
-        m_last_tick_x[i + (m_screenset * c_mainwnd_rows * c_mainwnd_cols)] = 0;
+        int offset = (m_screenset * slots) + s;
+        draw_sequence_on_pixmap(offset);
+        m_last_tick_x[offset] = 0;
     }
 }
 
@@ -211,18 +196,16 @@ mainwid::draw_sequence_on_pixmap (int a_seq)
 {
     if (valid_sequence(a_seq))
     {
-        int i = (a_seq / c_mainwnd_rows) % c_mainwnd_cols;
-        int j =  a_seq % c_mainwnd_rows;
-        int base_x = (c_mainwid_border + (c_seqarea_x + c_mainwid_spacing) * i);
-        int base_y = (c_mainwid_border + (c_seqarea_y + c_mainwid_spacing) * j);
+        int base_x, base_y;
+        calculate_base_sizes(a_seq, base_x, base_y);    // side-effects
         m_gc->set_foreground(m_black);
         m_pixmap->draw_rectangle                // outer border of box
         (
-            m_gc, true, base_x, base_y, c_seqarea_x, c_seqarea_y
+            m_gc, true, base_x, base_y, m_seqarea_x, m_seqarea_y
         );
-        if (m_mainperf.is_active(a_seq))
+        if (perf().is_active(a_seq))
         {
-            sequence * seq = m_mainperf.get_sequence(a_seq);
+            sequence * seq = perf().get_sequence(a_seq);
 #if SEQ64_HIGHLIGHT_EMPTY_SEQS
             if (seq->event_count() > 0)
             {
@@ -230,14 +213,14 @@ mainwid::draw_sequence_on_pixmap (int a_seq)
                 if (seq->get_playing())
                 {
                     m_last_playing[a_seq] = true;   // active and playing
-                    m_background = m_black;
-                    m_foreground = m_white;
+                    m_bg_color = m_black;
+                    m_fg_color = m_white;
                 }
                 else
                 {
                     m_last_playing[a_seq] = false;  // active and not playing
-                    m_background = m_white;
-                    m_foreground = m_black;
+                    m_bg_color = m_white;
+                    m_fg_color = m_black;
                 }
 #if SEQ64_HIGHLIGHT_EMPTY_SEQS
             }
@@ -247,24 +230,24 @@ mainwid::draw_sequence_on_pixmap (int a_seq)
                 if (seq->get_playing())
                 {
                     m_last_playing[a_seq] = false;  // active and playing
-                    m_background = m_black;
-                    m_foreground = m_yellow;
+                    m_bg_color = m_black;
+                    m_fg_color = m_yellow;
                 }
                 else
                 {
                     m_last_playing[a_seq] = false;  // active and not playing
-                    m_background = m_yellow;
-                    m_foreground = m_black;
+                    m_bg_color = m_yellow;
+                    m_fg_color = m_black;
                 }
             }
 #endif  // SEQ64_HIGHLIGHT_EMPTY_SEQS
 
-            m_gc->set_foreground(m_background);
+            m_gc->set_foreground(m_bg_color);
             m_pixmap->draw_rectangle
             (
-                m_gc, true, base_x+1, base_y+1, c_seqarea_x-2, c_seqarea_y-2
+                m_gc, true, base_x+1, base_y+1, m_seqarea_x-2, m_seqarea_y-2
             );
-            m_gc->set_foreground(m_foreground);
+            m_gc->set_foreground(m_fg_color);
 
             char temp[20];                      // SEQ_NAME_SIZE !
             snprintf(temp, sizeof temp, "%.13s", seq->get_name());
@@ -273,26 +256,26 @@ mainwid::draw_sequence_on_pixmap (int a_seq)
             if (seq->event_count() > 0)
             {
 #endif
-                if (m_foreground == m_black)
+                if (m_fg_color == m_black)
                     col = font::BLACK;
 
-                if (m_foreground == m_white)
+                if (m_fg_color == m_white)
                     col = font::WHITE;
 #if SEQ64_HIGHLIGHT_EMPTY_SEQS
             }
             else
             {
-                if (m_foreground == m_black)
+                if (m_fg_color == m_black)
                     col = font::BLACK_ON_YELLOW;
 
-                if (m_foreground == m_yellow)
+                if (m_fg_color == m_yellow)
                     col = font::YELLOW_ON_BLACK;
             }
 #endif  // SEQ64_HIGHLIGHT_EMPTY_SEQS
 
             p_font_renderer->render_string_on_drawable      // name of pattern
             (
-                m_gc, base_x+c_text_x, base_y+4, m_pixmap, temp, col
+                m_gc, base_x+m_text_size_x, base_y+4, m_pixmap, temp, col
             );
 
             /*
@@ -300,16 +283,16 @@ mainwid::draw_sequence_on_pixmap (int a_seq)
              * char key =  m_seq_to_char[local_seq];        // obsolete
              */
 
-            if (m_mainperf.show_ui_sequence_key())
+            if (perf().show_ui_sequence_key())
             {
                 snprintf
                 (
                     temp, sizeof temp, "%c",
-                    (char) m_mainperf.lookup_keyevent_key(a_seq)
+                    (char) perf().lookup_keyevent_key(a_seq)
                 );
                 p_font_renderer->render_string_on_drawable  // shortcut key
                 (
-                    m_gc, base_x+c_seqarea_x-7, base_y + c_text_y*4 - 2,
+                    m_gc, base_x+m_seqarea_x-7, base_y + m_text_size_y*4 - 2,
                     m_pixmap, temp, col
                 );
             }
@@ -321,32 +304,32 @@ mainwid::draw_sequence_on_pixmap (int a_seq)
             );
             p_font_renderer->render_string_on_drawable      // bus, ch, etc.
             (
-                m_gc, base_x + c_text_x, base_y + c_text_y*4 - 2,
+                m_gc, base_x + m_text_size_x, base_y + m_text_size_y*4 - 2,
                 m_pixmap, temp, col
             );
 
-            int rectangle_x = base_x + c_text_x - 1;
-            int rectangle_y = base_y + c_text_y + c_text_x - 1;
+            int rectangle_x = base_x + m_text_size_x - 1;
+            int rectangle_y = base_y + m_text_size_y + m_text_size_x - 1;
             if (seq->get_queued())
             {
                 m_gc->set_foreground(m_grey);
                 m_pixmap->draw_rectangle
                 (
                     m_gc, true, rectangle_x - 2, rectangle_y - 1,
-                    c_seqarea_seq_x + 3, c_seqarea_seq_y + 3
+                    m_seqarea_seq_x + 3, m_seqarea_seq_y + 3
                 );
-                m_foreground = m_black;
+                m_fg_color = m_black;
             }
 
             /*
              * Draws the inner rectangle for all sequences.
              */
 
-            m_gc->set_foreground(m_foreground);
+            m_gc->set_foreground(m_fg_color);
             m_pixmap->draw_rectangle                        // ditto, unqueued
             (
                 m_gc, false, rectangle_x - 2, rectangle_y - 1,
-                c_seqarea_seq_x + 3, c_seqarea_seq_y + 3
+                m_seqarea_seq_x + 3, m_seqarea_seq_y + 3
             );
 
             int lowest_note = seq->get_lowest_note_event();
@@ -370,18 +353,18 @@ mainwid::draw_sequence_on_pixmap (int a_seq)
                 ) != DRAW_FIN
             )
             {
-                int note_y = c_seqarea_seq_y -
-                     (c_seqarea_seq_y * (note + 1 - lowest_note)) / height;
+                int note_y = m_seqarea_seq_y -
+                     (m_seqarea_seq_y * (note + 1 - lowest_note)) / height;
 
-                int tick_s_x = (tick_s * c_seqarea_seq_x)  / length;
-                int tick_f_x = (tick_f * c_seqarea_seq_x)  / length;
+                int tick_s_x = (tick_s * m_seqarea_seq_x)  / length;
+                int tick_f_x = (tick_f * m_seqarea_seq_x)  / length;
                 if (dt == DRAW_NOTE_ON || dt == DRAW_NOTE_OFF)
                     tick_f_x = tick_s_x + 1;
 
                 if (tick_f_x <= tick_s_x)
                     tick_f_x = tick_s_x + 1;
 
-                m_gc->set_foreground(m_foreground);
+                m_gc->set_foreground(m_fg_color);
                 m_pixmap->draw_line
                 (
                     m_gc, rectangle_x + tick_s_x,
@@ -411,13 +394,13 @@ mainwid::draw_sequence_on_pixmap (int a_seq)
             m_pixmap->draw_rectangle
             (
                 get_style()->get_bg_gc(Gtk::STATE_NORMAL),        // this->
-                true, base_x + 4, base_y, c_seqarea_x - 8, c_seqarea_y
+                true, base_x + 4, base_y, m_seqarea_x - 8, m_seqarea_y
             );
 #ifdef USE_NORMAL_GRID                      /* change box to "brackets"     */
             m_pixmap->draw_rectangle
             (
                 get_style()->get_bg_gc(Gtk::STATE_NORMAL),       // this->
-                true, base_x + 1, base_y + 1, c_seqarea_x - 2, c_seqarea_y - 2
+                true, base_x + 1, base_y + 1, m_seqarea_x - 2, m_seqarea_y - 2
             );
 #endif  // USE_NORMAL_GRID
 #endif  // USE_BLACK_GRID
@@ -433,8 +416,8 @@ mainwid::draw_sequence_on_pixmap (int a_seq)
 bool
 mainwid::valid_sequence (int a_seq)
 {
-    int boxes = c_mainwnd_rows * c_mainwnd_cols;
-    return a_seq >= (m_screenset * boxes) && a_seq < ((m_screenset+1) * boxes);
+    int slots = m_mainwnd_rows * m_mainwnd_cols;
+    return a_seq >= (m_screenset * slots) && a_seq < ((m_screenset+1) * slots);
 }
 
 
@@ -450,16 +433,28 @@ mainwid::draw_sequence_pixmap_on_window (int a_seq)         // effective?
 {
     if (valid_sequence(a_seq))
     {
-        int i = (a_seq / c_mainwnd_rows) % c_mainwnd_cols;
-        int j =  a_seq % c_mainwnd_rows;
-        int base_x = (c_mainwid_border + (c_seqarea_x + c_mainwid_spacing) * i);
-        int base_y = (c_mainwid_border + (c_seqarea_y + c_mainwid_spacing) * j);
+        int base_x, base_y;
+        calculate_base_sizes(a_seq, base_x, base_y);    // side-effects
         m_window->draw_drawable
         (
             m_gc, m_pixmap, base_x, base_y, base_x, base_y,
-            c_seqarea_x, c_seqarea_y
+            m_seqarea_x, m_seqarea_y
         );
     }
+}
+
+/**
+ *  Provides a way to calculate the base x and y size values for the
+ *  pattern map.  The values are returned as side-effects.
+ */
+
+void
+mainwid::calculate_base_sizes (int a_seq, int & basex, int & basey)
+{
+    int i = (a_seq / m_mainwnd_rows) % m_mainwnd_cols;
+    int j =  a_seq % m_mainwnd_rows;
+    basex = (m_mainwid_border + (m_seqarea_x + m_mainwid_spacing) * i);
+    basey = (m_mainwid_border + (m_seqarea_y + m_mainwid_spacing) * j);
 }
 
 /**
@@ -482,13 +477,9 @@ mainwid::redraw (int a_sequence)
 void
 mainwid::update_markers(int a_ticks)
 {
-    for (int i = 0; i < c_mainwnd_rows *  c_mainwnd_cols; i++)
-    {
-        draw_marker_on_sequence
-        (
-            i + (m_screenset * c_mainwnd_rows * c_mainwnd_cols), a_ticks
-        );
-    }
+    int slots = m_mainwnd_rows * m_mainwnd_cols;
+    for (int s = 0; s < slots; s++)
+        draw_marker_on_sequence(s + (m_screenset * slots), a_ticks);
 }
 
 /**
@@ -502,32 +493,31 @@ mainwid::update_markers(int a_ticks)
 void
 mainwid::draw_marker_on_sequence (int a_seq, int a_tick)
 {
-    if (m_mainperf.is_dirty_main(a_seq))
+    if (perf().is_dirty_main(a_seq))
         update_sequence_on_window(a_seq);
 
-    if (m_mainperf.is_active(a_seq))
+    if (perf().is_active(a_seq))
     {
-        sequence * seq = m_mainperf.get_sequence(a_seq);
+        sequence * seq = perf().get_sequence(a_seq);
         if (seq->event_count() ==  0)
             return;                         /* new 2015-08-23 don't update */
 
-        int i = (a_seq / c_mainwnd_rows) % c_mainwnd_cols;
-        int j =  a_seq % c_mainwnd_rows;
-        int base_x = (c_mainwid_border + (c_seqarea_x + c_mainwid_spacing) * i);
-        int base_y = (c_mainwid_border + (c_seqarea_y + c_mainwid_spacing) * j);
-        int rectangle_x = base_x + c_text_x - 1;
-        int rectangle_y = base_y + c_text_y + c_text_x - 1;
+        int base_x, base_y;
+        calculate_base_sizes(a_seq, base_x, base_y);    // side-effects
+
+        int rectangle_x = base_x + m_text_size_x - 1;
+        int rectangle_y = base_y + m_text_size_y + m_text_size_x - 1;
         int length = seq->get_length();
         a_tick += (length - seq->get_trigger_offset());
         a_tick %= length;
 
-        long tick_x = a_tick * c_seqarea_seq_x / length;
+        long tick_x = a_tick * m_seqarea_seq_x / length;
         m_window->draw_drawable
         (
             m_gc, m_pixmap,
             rectangle_x + m_last_tick_x[a_seq], rectangle_y + 1,
             rectangle_x + m_last_tick_x[a_seq], rectangle_y + 1,
-            1, c_seqarea_seq_y
+            1, m_seqarea_seq_y
         );
         m_last_tick_x[a_seq] = tick_x;
         if (seq->get_playing())
@@ -541,7 +531,7 @@ mainwid::draw_marker_on_sequence (int a_seq, int a_tick)
         m_window->draw_line
         (
             m_gc, rectangle_x + tick_x, rectangle_y + 1,
-            rectangle_x + tick_x, rectangle_y + c_seqarea_seq_y
+            rectangle_x + tick_x, rectangle_y + m_seqarea_seq_y
         );
     }
 }
@@ -585,29 +575,29 @@ mainwid::draw_pixmap_on_window ()
 int
 mainwid::seq_from_xy (int a_x, int a_y)
 {
-    int x = a_x - c_mainwid_border;         // adjust for border
-    int y = a_y - c_mainwid_border;
+    int x = a_x - m_mainwid_border;         // adjust for border
+    int y = a_y - m_mainwid_border;
     if                                      // is it in the box?
     (
-        x < 0 || x >= ((c_seqarea_x + c_mainwid_spacing) * c_mainwnd_cols) ||
-        y < 0 || y >= ((c_seqarea_y + c_mainwid_spacing) * c_mainwnd_rows)
+        x < 0 || x >= ((m_seqarea_x + m_mainwid_spacing) * m_mainwnd_cols) ||
+        y < 0 || y >= ((m_seqarea_y + m_mainwid_spacing) * m_mainwnd_rows)
     )
     {
         return -1;                          // no
     }
 
-    int box_test_x = x % (c_seqarea_x + c_mainwid_spacing); // box coordinate
-    int box_test_y = y % (c_seqarea_y + c_mainwid_spacing); // box coordinate
-    if (box_test_x > c_seqarea_x || box_test_y > c_seqarea_y)
+    int box_test_x = x % (m_seqarea_x + m_mainwid_spacing); // box coordinate
+    int box_test_y = y % (m_seqarea_y + m_mainwid_spacing); // box coordinate
+    if (box_test_x > m_seqarea_x || box_test_y > m_seqarea_y)
     {
         return -1;                          // right inactive side of area
     }
 
-    x /= (c_seqarea_x + c_mainwid_spacing);
-    y /= (c_seqarea_y + c_mainwid_spacing);
+    x /= (m_seqarea_x + m_mainwid_spacing);
+    y /= (m_seqarea_y + m_mainwid_spacing);
     int sequence =
     (
-        (x*c_mainwnd_rows + y) + (m_screenset*c_mainwnd_rows*c_mainwnd_cols)
+        (x*m_mainwnd_rows + y) + (m_screenset*m_mainwnd_rows*m_mainwnd_cols)
     );
     return sequence;
 }
@@ -632,12 +622,12 @@ mainwid::set_screenset (int a_ss)
 {
     m_screenset = a_ss;
     if (m_screenset < 0)
-        m_screenset = c_max_sets - 1;
+        m_screenset = m_max_sets - 1;
 
-    if (m_screenset >= c_max_sets)
+    if (m_screenset >= m_max_sets)
         m_screenset = 0;
 
-    m_mainperf.set_offset(m_screenset);
+    perf().set_offset(m_screenset);
     reset();
 }
 
@@ -660,7 +650,7 @@ mainwid::on_realize ()
     m_gc = Gdk::GC::create(m_window);       // graphics context?
     m_window->clear();
     p_font_renderer->init(m_window);
-    m_pixmap = Gdk::Pixmap::create(m_window, c_mainwid_x, c_mainwid_y, -1);
+    m_pixmap = Gdk::Pixmap::create(m_window, m_mainwid_x, m_mainwid_y, -1);
     fill_background_window();
     draw_sequences_on_pixmap();
 }
@@ -717,9 +707,9 @@ mainwid::on_button_release_event (GdkEventButton * a_p0)
 
     if (current_sequence() >= 0 && a_p0->button == 1 && ! m_moving)
     {
-        if (m_mainperf.is_active(current_sequence()))
+        if (perf().is_active(current_sequence()))
         {
-            m_mainperf.sequence_playing_toggle(current_sequence());
+            perf().sequence_playing_toggle(current_sequence());
             draw_sequence_on_pixmap(current_sequence());
             draw_sequence_pixmap_on_window(current_sequence());      // effective?
         }
@@ -729,20 +719,20 @@ mainwid::on_button_release_event (GdkEventButton * a_p0)
         m_moving = false;
         if          // if we're in a pattern, it is active, and in edit mode...
         (
-            ! m_mainperf.is_active(current_sequence()) &&
+            ! perf().is_active(current_sequence()) &&
             current_sequence() != -1 &&
-            ! m_mainperf.is_sequence_in_edit(current_sequence())
+            ! perf().is_sequence_in_edit(current_sequence())
         )
         {
-            m_mainperf.new_sequence(current_sequence());
-            *(m_mainperf.get_sequence(current_sequence())) = m_moving_seq;
+            perf().new_sequence(current_sequence());
+            *(perf().get_sequence(current_sequence())) = m_moving_seq;
             draw_sequence_on_pixmap(current_sequence());
             draw_sequence_pixmap_on_window(current_sequence());      // effective?
         }
         else
         {
-            m_mainperf.new_sequence(m_old_seq);
-            *(m_mainperf.get_sequence(m_old_seq)) = m_moving_seq;
+            perf().new_sequence(m_old_seq);
+            *(perf().get_sequence(m_old_seq)) = m_moving_seq;
             draw_sequence_on_pixmap(m_old_seq);
             draw_sequence_pixmap_on_window(m_old_seq);          // effective?
         }
@@ -767,15 +757,15 @@ mainwid::on_motion_notify_event (GdkEventMotion * a_p0)
         if
         (
             seq != current_sequence() && ! m_moving &&
-            ! m_mainperf.is_sequence_in_edit(current_sequence())
+            ! perf().is_sequence_in_edit(current_sequence())
         )
         {
-            if (m_mainperf.is_active(current_sequence()))
+            if (perf().is_active(current_sequence()))
             {
                 m_old_seq = current_sequence();
                 m_moving = true;
-                m_moving_seq = *(m_mainperf.get_sequence(current_sequence()));
-                m_mainperf.delete_sequence(current_sequence());
+                m_moving_seq = *(perf().get_sequence(current_sequence()));
+                perf().delete_sequence(current_sequence());
                 draw_sequence_on_pixmap(current_sequence());
                 draw_sequence_pixmap_on_window(current_sequence());  // effective?
             }

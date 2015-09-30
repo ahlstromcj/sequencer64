@@ -114,23 +114,16 @@ mainwnd::mainwnd (perform & a_perf)
     m_spinbutton_load_offset(nullptr),
     m_adjust_load_offset    (nullptr),
     m_entry_notes           (nullptr),
-    m_timeout_connect       ()                              // handler?
+    m_timeout_connect       ()                      // handler
 {
     set_icon(Gdk::Pixbuf::create_from_xpm_data(seq24_32_xpm));
 
     /*
      * This request always leaves the bottom panel partly obscured.
-     *
      * set_size_request(794, 350);
      */
 
     set_resizable(false);
-
-    /**
-     * \todo
-     *      Better as a member function.
-     */
-
     perf().enregister(this);                        // register for notification
     update_window_title();                          // main window
     m_menubar->items().push_front(MenuElem("_File", *m_menu_file));
@@ -251,8 +244,8 @@ mainwnd::mainwnd (perform & a_perf)
     (
         m_button_learn,
         "Mute Group Learn: "
-        "Click 'L', then press a mute-group key to store the mute state of "
-        "the sequences in that key. "
+        "Click the 'L' button, then press a mute-group key to store "
+        "the mute state of the sequences in that key. "
         "See File/Options/Keyboard for available mute-group keys "
         "and the corresponding hotkey for the 'L' button."
     );
@@ -567,7 +560,7 @@ mainwnd::file_save_as ()
         case Gtk::RESPONSE_OK:
         {
             std::string fname = dialog.get_filename();
-            Gtk::FileFilter* current_filter = dialog.get_filter();
+            Gtk::FileFilter * current_filter = dialog.get_filter();
             if
             (
                 (current_filter != NULL) &&
@@ -1000,7 +993,8 @@ mainwnd::on_delete_event (GdkEventAny * a_e)
 }
 
 /**
- *  Handles a key release event.
+ *  Handles a key release event.  Is this worth turning into a switch
+ *  statement?  Or offloading to a perform member function?
  *
  * \return
  *      Always returns false.
@@ -1015,7 +1009,11 @@ mainwnd::on_key_release_event (GdkEventKey * a_ev)
     if (a_ev->keyval == PREFKEY(queue))
         perf().unset_sequence_control_status(c_status_queue);
 
-    if (a_ev->keyval == PREFKEY(snapshot_1) || a_ev->keyval == PREFKEY(snapshot_2))
+    if
+    (
+        a_ev->keyval == PREFKEY(snapshot_1) ||
+        a_ev->keyval == PREFKEY(snapshot_2)
+    )
     {
         perf().unset_sequence_control_status(c_status_snapshot);
     }
@@ -1050,17 +1048,11 @@ mainwnd::on_key_press_event (GdkEventKey * a_ev)
 
         if (a_ev->keyval == PREFKEY(bpm_dn))
         {
-            // perf().set_bpm(perf().get_bpm() - 1);
-            // m_adjust_bpm->set_value(perf().get_bpm());
-
             int newbpm = perf().decrement_bpm();
             m_adjust_bpm->set_value(newbpm);
         }
         if (a_ev->keyval == PREFKEY(bpm_up))
         {
-            // perf().set_bpm(perf().get_bpm() + 1);
-            // m_adjust_bpm->set_value(perf().get_bpm());
-
             int newbpm = perf().increment_bpm();
             m_adjust_bpm->set_value(newbpm);
         }
@@ -1085,16 +1077,6 @@ mainwnd::on_key_press_event (GdkEventKey * a_ev)
         }
         if (a_ev->keyval == PREFKEY(screenset_dn))
         {
-            /**
-             * \todo
-             *      Need a well-named perform function for decrementing
-             *      its screenset; it should return the new value.
-             */
-
-            // perf().set_screenset(perf().get_screenset() - 1);
-            // m_main_wid->set_screenset(perf().get_screenset());
-            // m_adjust_ss->set_value(perf().get_screenset());
-
             int newss = perf().decrement_screenset();
             m_main_wid->set_screenset(newss);
             m_adjust_ss->set_value(newss);
@@ -1102,16 +1084,6 @@ mainwnd::on_key_press_event (GdkEventKey * a_ev)
         }
         if (a_ev->keyval == PREFKEY(screenset_up))
         {
-            /**
-             * \todo
-             *      Need a well-named perform function for incrementing
-             *      its screenset; it should return the new value.
-             */
-
-            // perf().set_screenset(perf().get_screenset() + 1);
-            // m_main_wid->set_screenset(perf().get_screenset());
-            // m_adjust_ss->set_value(perf().get_screenset());
-
             int newss = perf().increment_screenset();
             m_main_wid->set_screenset(newss);
             m_adjust_ss->set_value(newss);
@@ -1131,7 +1103,7 @@ mainwnd::on_key_press_event (GdkEventKey * a_ev)
 
         if (perf().get_key_groups().count(a_ev->keyval) != 0)
         {
-            perf().select_and_mute_group   /* activate mute group key  */
+            perf().select_and_mute_group        /* activate mute group key  */
             (
                 perf().lookup_keygroup_group(a_ev->keyval)
             );
@@ -1174,7 +1146,7 @@ mainwnd::on_key_press_event (GdkEventKey * a_ev)
                    << "\" (code = "
                    << a_ev->keyval
                    << ") is not one of the configured mute-group keys.\n"
-                   << "To change this see File/Options menu or ~/.seq24rc."
+                   << "To change this see File/Options menu or the rc file."
                    ;
 
                 Gtk::MessageDialog dialog

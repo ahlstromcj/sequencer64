@@ -63,6 +63,7 @@ sequencer64libdir = @sequencer64libdir@
 
 pkginclude_HEADERS = \
 	configfile.hpp \
+	click.hpp \
 	controllers.hpp \
 	easy_macros.h \
 	event.hpp \
@@ -72,6 +73,7 @@ pkginclude_HEADERS = \
    gui_play_base.hpp \
    jack_assistant.hpp \
    keys_perform.hpp \
+	keystroke.hpp \
 	lash.hpp \
 	mastermidibus.hpp \
 	midibus_common.hpp \

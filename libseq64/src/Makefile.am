@@ -110,6 +110,7 @@ lib_LTLIBRARIES = libseq64.la
 
 libseq64_la_SOURCES = \
 	configfile.cpp \
+	click.cpp \
 	easy_macros.cpp \
 	event.cpp \
 	event_list.cpp \
@@ -118,6 +119,7 @@ libseq64_la_SOURCES = \
    gui_play_base.cpp \
    jack_assistant.cpp \
    keys_perform.cpp \
+	keystroke.cpp \
 	lash.cpp \
 	mastermidibus.cpp \
    midibus.cpp \

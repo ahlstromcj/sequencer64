@@ -1,5 +1,5 @@
-#ifndef SEQ64_GUI_BASE_HPP
-#define SEQ64_GUI_BASE_HPP
+#ifndef SEQ64_GUI_PLAY_BASE_HPP
+#define SEQ64_GUI_PLAY_BASE_HPP
 
 /*
  *  This file is part of seq24/sequencer64.
@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-09-21
- * \updates       2015-09-29
+ * \updates       2015-09-30
  * \license       GNU GPLv2 or above
  *
  *  Most of the GUI modules are publicly derived from Gtk::DrawingArea,
@@ -43,184 +43,11 @@
  *
  */
 
-#include "gdk_basic_keys.h"
+#include "click.hpp"
+#include "keystroke.hpp"
 
 namespace seq64
 {
-
-/**
- *  Encapsulates any possible mouse click.  Useful in passing more generic
- *  events to non-GUI classes.
- */
-
-class click
-{
-
-private:
-
-    /**
-     *  Determines if the click was a press or a release.
-     */
-
-    bool m_is_press;                    /* versus a release of the button */
-
-    /**
-     *  The x-coordinate of the click.  0 is the left-most coordinate.
-     */
-
-    int m_x;
-
-    /**
-     *  The y-coordinate of the click.  0 is the top-most coordinate.
-     */
-
-    int m_y;
-
-    /**
-     *  The button that was pressed or released.  Left is 1, mmiddle is 2,
-     *  and right is 3.
-     */
-
-    int m_button;
-
-    /**
-     *  The optional modifier value.  Note that SEQ64_NO_MASK is our word
-     *  for 0, meaning "no modifier".
-     */
-
-    seq_modifier_t m_modifier;
-
-public:
-
-    click ();
-    click
-    (
-        int x,
-        int y,
-        int button,
-        bool press = true,
-        seq_modifier_t modkey = SEQ64_NO_MASK
-    );
-    click (const click & rhs);
-    click & operator = (const click & rhs);
-
-    /**
-     * \getter m_is_press
-     */
-
-    bool is_press () const
-    {
-        return m_is_press;
-    }
-
-    /**
-     * \getter m_x
-     */
-
-    int x () const
-    {
-        return m_x;
-    }
-
-    /**
-     * \getter m_y
-     */
-
-    int y () const
-    {
-        return m_y;
-    }
-
-    /**
-     * \getter m_button
-     */
-
-    int button () const
-    {
-        return m_button;
-    }
-
-    /**
-     * \getter m_modifier
-     */
-
-    seq_modifier_t modifier () const
-    {
-        return m_modifier;
-    }
-
-};          // class click
-
-/**
- *  Encapsulates any practical keystroke.  Useful in passing more generic
- *  events to non-GUI classes.
- */
-
-class keystroke
-{
-
-private:
-
-    /**
-     *  Determines if the key was a press or a release.
-     */
-
-    bool m_is_press;                    /* versus a release of the key */
-
-    /**
-     *  The key that was pressed or released.  Left is 1, mmiddle is 2,
-     *  and right is 3.
-     */
-
-    int m_key;
-
-    /**
-     *  The optional modifier value.  Note that SEQ64_NO_MASK is our word
-     *  for 0, meaning "no modifier".
-     */
-
-    seq_modifier_t m_modifier;
-
-public:
-
-    keystroke ();
-    keystroke
-    (
-        int key,
-        bool press = true,
-        seq_modifier_t modkey = SEQ64_NO_MASK
-    );
-    keystroke (const keystroke & rhs);
-    keystroke & operator = (const keystroke & rhs);
-
-    /**
-     * \getter m_is_press
-     */
-
-    bool is_press () const
-    {
-        return m_is_press;
-    }
-
-    /**
-     * \getter m_key
-     */
-
-    int key () const
-    {
-        return m_key;
-    }
-
-    /**
-     * \getter m_modifier
-     */
-
-    seq_modifier_t modifier () const
-    {
-        return m_modifier;
-    }
-
-};          // class key
 
 /**
  *  This class provides an interface for basic GUI support.  Much is to be
@@ -324,7 +151,7 @@ protected:
 
 }           // namespace seq64
 
-#endif      // SEQ64_GUI_BASE_HPP
+#endif      // SEQ64_GUI_PLAY_BASE_HPP
 
 /*
  * gui_play_base.hpp

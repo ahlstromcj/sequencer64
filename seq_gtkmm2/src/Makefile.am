@@ -6,7 +6,7 @@
 # \library    	libseq_gtkmm2 library
 # \author     	Chris Ahlstrom
 # \date       	2015-09-11
-# \update      2015-09-24
+# \update      2015-09-30
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -108,12 +108,9 @@ lib_LTLIBRARIES = libseq_gtkmm2.la
 # Source files
 #----------------------------------------------------------------------------
 #
-#  Requires Gtk support via the perform module:
-#
-#     lash.cpp
-#
 #  Moved to libseq64:
 #
+#     lash.cpp
 #     midifile.cpp
 #     optionsfile.cpp
 #     perform.cpp
@@ -121,7 +118,6 @@ lib_LTLIBRARIES = libseq_gtkmm2.la
 #----------------------------------------------------------------------------
 
 libseq_gtkmm2_la_SOURCES = \
-	lash.cpp \
 	font.cpp \
    fruityseq.cpp \
    fruityseqroll.cpp \

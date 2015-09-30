@@ -27,12 +27,12 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-09-14
+ * \updates       2015-09-30
  * \license       GNU GPLv2 or above
  *
  */
 
-#include "easy_macros.h"               // platform and debugging macros
+#include "easy_macros.h"                // platform and debugging macros
 
 #ifdef SEQ64_LASH_SUPPORT
 #include <lash/lash.h>
@@ -56,7 +56,11 @@ class lash
 
 private:
 
-    perform * m_perform;
+    /**
+     *  A hook into the single perform object in the application.
+     */
+
+    perform & m_perform;
 
 #ifdef SEQ64_LASH_SUPPORT
     lash_client_t * m_client;
@@ -67,15 +71,17 @@ private:
 
 public:
 
-    lash (int argc, char ** argv);
-    void init (perform * perform);
+    lash (perform & p, int argc, char ** argv);
     void set_alsa_client_id (int id);
     void start ();
 
 #ifdef SEQ64_LASH_SUPPORT
+
+    bool process_events ();             // only for gui_assistant
+
 private:
 
-    bool process_events ();
+    bool init ();
     void handle_event (lash_event_t * conf);
     void handle_config (lash_config_t * conf);
 #endif

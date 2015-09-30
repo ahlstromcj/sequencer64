@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-09-19
- * \updates       2015-09-19
+ * \updates       2015-09-30
  * \license       GNU GPLv2 or above
  *
  *  Note that this module automatically creates a Gtk-specific
@@ -43,6 +43,7 @@ namespace seq64
 {
 
 class jack_assistant;                   // forward reference
+class lash;                             // ditto
 class keys_perform;                     // ditto
 
 /**
@@ -66,6 +67,7 @@ public:
 
     virtual void quit ();
     virtual void jack_idle_connect (jack_assistant & jack);
+    virtual void lash_timeout_connect (lash & lashobject);
 
 };
 

@@ -6,7 +6,7 @@
 # \library    	libseq64 library
 # \author     	Chris Ahlstrom
 # \date       	2015-09-11
-# \update      2015-09-29
+# \update      2015-09-30
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -60,12 +60,6 @@ sequencer64libdir = @sequencer64libdir@
 #******************************************************************************
 # Source files
 #----------------------------------------------------------------------------
-#
-#  Requires Gtk support via the perform module:
-#
-#     lash.hpp
-#
-#----------------------------------------------------------------------------
 
 pkginclude_HEADERS = \
 	configfile.hpp \
@@ -78,6 +72,7 @@ pkginclude_HEADERS = \
    gui_play_base.hpp \
    jack_assistant.hpp \
    keys_perform.hpp \
+	lash.hpp \
 	mastermidibus.hpp \
 	midibus_common.hpp \
 	midibus.hpp \

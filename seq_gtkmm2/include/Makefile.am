@@ -6,7 +6,7 @@
 # \library    	libseq_gtkmm2 library
 # \author     	Chris Ahlstrom
 # \date       	2015-09-11
-# \update      2015-09-24
+# \update      2015-09-30
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -61,12 +61,9 @@ sequencer64libdir = @sequencer64libdir@
 # Source files
 #----------------------------------------------------------------------------
 #
-#  Requires Gtk support via the perform module:
-#
-#     lash.hpp
-#
 #  Moved to libseq64:
 #
+#     lash.hpp
 #     midifile.hpp
 #     optionsfile.hpp
 #     perform.hpp
@@ -75,7 +72,6 @@ sequencer64libdir = @sequencer64libdir@
 #----------------------------------------------------------------------------
 
 pkginclude_HEADERS = \
-	lash.hpp \
 	font.hpp \
    fruityseq.hpp \
    fruityseqroll.hpp \

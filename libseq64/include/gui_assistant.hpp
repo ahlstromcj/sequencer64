@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-09-19
- * \updates       2015-09-19
+ * \updates       2015-09-30
  * \license       GNU GPLv2 or above
  *
  */
@@ -37,7 +37,8 @@ namespace seq64
 {
 
 class jack_assistant;                   // forward reference
-class keys_perform;                     // forward reference
+class lash;                             // ditto
+class keys_perform;                     // ditto
 
 /**
  *  This class provides an interface for some of the GUI support needed
@@ -69,6 +70,7 @@ public:
 
     virtual void quit () = 0;
     virtual void jack_idle_connect (jack_assistant & jack) = 0;
+    virtual void lash_timeout_connect (lash & lashobject) = 0;
 
     /**
      * \getter m_keys_perform

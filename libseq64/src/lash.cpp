@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-09-29
+ * \updates       2015-09-30
  * \license       GNU GPLv2 or above
  *
  *  Not totally sure that the LASH support is completely finished, at this
@@ -33,8 +33,6 @@
  */
 
 #include <string>
-#include <sigc++/slot.h>
-#include <gtkmm.h>
 
 #include "lash.hpp"
 #include "midifile.hpp"
@@ -55,9 +53,9 @@ lash * global_lash_driver = nullptr;
  *  argc and argv here and in the client code in the seq24 module.
  */
 
-lash::lash (int argc, char ** argv)
+lash::lash (perform & p, int argc, char ** argv)
  :
-    m_perform           (nullptr),
+    m_perform           (p),
 #ifdef SEQ64_LASH_SUPPORT
     m_client            (nullptr),
     m_lash_args         (nullptr),
@@ -75,30 +73,35 @@ lash::lash (int argc, char ** argv)
  *  Initializes LASH support, if enabled.
  */
 
-void lash::init (perform * p)
+bool
+lash::init ()
 {
-    if (not_nullptr(p))
-    {
-        m_perform = p;
-
 #ifdef SEQ64_LASH_SUPPORT
-        m_client = lash_init
-        (
-            m_lash_args, SEQ64_PACKAGE_NAME, LASH_Config_File, LASH_PROTOCOL(2, 0)
-        );
-        if (m_client == NULL)
+    m_client = lash_init
+    (
+        m_lash_args, SEQ64_PACKAGE_NAME, LASH_Config_File, LASH_PROTOCOL(2, 0)
+    );
+    bool result = (m_client != NULL);
+    if (result)
+    {
+        lash_event_t * event = lash_event_new_with_type(LASH_Client_Name);
+        if (not_nullptr(event))
         {
-            fprintf(stderr, "Cannot connect to LASH; no session management.\n");
-        }
-        else
-        {
-            lash_event_t * event = lash_event_new_with_type(LASH_Client_Name);
             lash_event_set_string(event, "Seq24");
             lash_send_event(m_client, event);
             printf("[Connected to LASH]\n");
         }
-#endif // SEQ64_LASH_SUPPORT
+        else
+            fprintf(stderr, "Cannot communicate events with LASH.\n");
     }
+    else
+        fprintf(stderr, "Cannot connect to LASH; no session management.\n");
+
+    return result;
+
+#else
+    return true;
+#endif // SEQ64_LASH_SUPPORT
 }
 
 /**
@@ -122,10 +125,19 @@ void
 lash::start ()
 {
 #ifdef SEQ64_LASH_SUPPORT
-    Glib::signal_timeout().connect
-    (
-        sigc::mem_fun(*this, &lash::process_events), 250
-    );
+    if (init())
+    {
+        /*
+         * Let the perform object carry the GUI burden.
+         *
+         *  Glib::signal_timeout().connect
+         *  (
+         *      sigc::mem_fun(*this, &lash::process_events), 250
+         *  );
+         */
+
+        m_perform.gui().lash_timeout_connect(*this);
+    }
 #endif
 }
 
@@ -160,24 +172,22 @@ lash::handle_event (lash_event_t * ev)
     if (type == LASH_Save_File)
     {
         midifile f(str + "/seq24.mid", ! global_legacy_format);
-        f.write(*m_perform);
+        f.write(m_perform);
         lash_send_event(m_client, lash_event_new_with_type(LASH_Save_File));
     }
     else if (type == LASH_Restore_File)
     {
         midifile f(str + "/seq24.mid");
-        f.parse(*m_perform, 0);
+        f.parse(m_perform, 0);
         lash_send_event(m_client, lash_event_new_with_type(LASH_Restore_File));
     }
     else if (type == LASH_Quit)
     {
         m_client = NULL;
-        Gtk::Main::quit();
+        m_perform.gui().quit();         // Gtk::Main::quit();
     }
     else
-    {
         errprint("Warning:  Unhandled LASH event.");
-    }
 }
 
 /*

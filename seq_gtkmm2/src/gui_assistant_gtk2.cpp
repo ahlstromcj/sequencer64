@@ -25,15 +25,17 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-09-19
- * \updates       2015-09-19
+ * \updates       2015-09-30
  * \license       GNU GPLv2 or above
  *
  */
 
 #include <gtkmm/main.h>                 // Glib::Main
+#include <sigc++/slot.h>
 
 #include "gui_assistant_gtk2.hpp"       // seq64::gui_assistant_gtk2
 #include "jack_assistant.hpp"           // seq64::jack_assistant
+#include "lash.hpp"                     // seq64::lash
 
 namespace seq64
 {
@@ -80,6 +82,19 @@ gui_assistant_gtk2::jack_idle_connect (jack_assistant & jack)
     );
 }
 
+/**
+ *  Connects the LASH timeout-event callback to the Glib timeout object.
+ */
+
+void
+gui_assistant_gtk2::lash_timeout_connect (lash & lashobject)
+{
+    Glib::signal_timeout().connect
+    (
+        sigc::mem_fun(lashobject, &lash::process_events), 250   // timeout
+    );
+}
+
 }           // namespace seq64
 
 /*
@@ -87,4 +102,3 @@ gui_assistant_gtk2::jack_idle_connect (jack_assistant & jack)
  *
  * vim: sw=4 ts=4 wm=8 et ft=cpp
  */
-

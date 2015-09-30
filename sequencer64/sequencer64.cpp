@@ -361,8 +361,8 @@ main (int argc, char * argv [])
          *  arguments), then connect to LASH daemon and poll events.
          */
 
-        seq64::global_lash_driver = new seq64::lash(argc, argv);
-        seq64::global_lash_driver->init(&p);
+        seq64::global_lash_driver = new seq64::lash(p, argc, argv);
+        // seq64::global_lash_driver->init();
         seq64::global_lash_driver->start();
     }
     else

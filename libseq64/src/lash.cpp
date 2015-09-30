@@ -69,6 +69,8 @@ lash::lash (perform & p, int argc, char ** argv)
 #endif
 }
 
+#ifdef SEQ64_LASH_SUPPORT
+
 /**
  *  Initializes LASH support, if enabled.
  */
@@ -76,7 +78,6 @@ lash::lash (perform & p, int argc, char ** argv)
 bool
 lash::init ()
 {
-#ifdef SEQ64_LASH_SUPPORT
     m_client = lash_init
     (
         m_lash_args, SEQ64_PACKAGE_NAME, LASH_Config_File, LASH_PROTOCOL(2, 0)
@@ -98,11 +99,9 @@ lash::init ()
         fprintf(stderr, "Cannot connect to LASH; no session management.\n");
 
     return result;
-
-#else
-    return true;
-#endif // SEQ64_LASH_SUPPORT
 }
+
+#endif // SEQ64_LASH_SUPPORT
 
 /**
  *  Make ourselves a LASH ALSA client.

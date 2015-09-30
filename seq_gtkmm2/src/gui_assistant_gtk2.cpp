@@ -31,11 +31,14 @@
  */
 
 #include <gtkmm/main.h>                 // Glib::Main
-#include <sigc++/slot.h>
 
 #include "gui_assistant_gtk2.hpp"       // seq64::gui_assistant_gtk2
 #include "jack_assistant.hpp"           // seq64::jack_assistant
 #include "lash.hpp"                     // seq64::lash
+
+#ifdef SEQ64_LASH_SUPPORT
+#include <sigc++/slot.h>
+#endif
 
 namespace seq64
 {
@@ -89,10 +92,12 @@ gui_assistant_gtk2::jack_idle_connect (jack_assistant & jack)
 void
 gui_assistant_gtk2::lash_timeout_connect (lash & lashobject)
 {
+#ifdef SEQ64_LASH_SUPPORT
     Glib::signal_timeout().connect
     (
         sigc::mem_fun(lashobject, &lash::process_events), 250   // timeout
     );
+#endif
 }
 
 }           // namespace seq64

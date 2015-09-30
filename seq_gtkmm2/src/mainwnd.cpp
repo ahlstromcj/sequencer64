@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-09-29
+ * \updates       2015-09-30
  * \license       GNU GPLv2 or above
  *
  */
@@ -45,11 +45,11 @@
 #include <gtkmm/messagedialog.h>
 #include <gtkmm/spinbutton.h>
 #include <gtkmm/stock.h>
-#include <gtkmm/tooltips.h>             // #include <gtkmm/tooltip.h>
+#include <gtkmm/tooltips.h>
 
 #include "globals.h"
 #include "gtk_helpers.h"
-#include "keys_perform.hpp"                 /* \new ca 2015-09-16           */
+#include "keys_perform.hpp"             /* \new ca 2015-09-16           */
 #include "maintime.hpp"
 #include "mainwid.hpp"
 #include "mainwnd.hpp"
@@ -65,7 +65,7 @@
 #include "pixmaps/sequencer64_square.xpm"
 #include "pixmaps/sequencer64_legacy.xpm"
 
-using namespace Gtk::Menu_Helpers;          /* MenuElem, etc.                */
+using namespace Gtk::Menu_Helpers;      /* MenuElem, etc.                */
 
 namespace seq64
 {
@@ -100,7 +100,7 @@ mainwnd::mainwnd (perform & a_perf)
     m_menu_help             (manage(new Gtk::Menu())),
     m_main_wid              (manage(new mainwid(perf()))),
     m_main_time             (manage(new maintime())),
-    m_perf_edit             (new perfedit(perf())),  // copy construct
+    m_perf_edit             (new perfedit(perf())),
     m_options               (nullptr),
     m_main_cursor           (),
     m_button_learn          (nullptr),
@@ -495,15 +495,10 @@ mainwnd::options_dialog ()
 void
 mainwnd::on_grouplearnchange (bool state)
 {
+    const char ** bitmap = state ? learn2_xpm : learn_xpm ;
     m_button_learn->set_image
     (
-        *manage
-        (
-            new Gtk::Image
-            (
-                Gdk::Pixbuf::create_from_xpm_data(state ? learn2_xpm : learn_xpm)
-            )
-        )
+        *manage(new Gtk::Image(Gdk::Pixbuf::create_from_xpm_data(bitmap)))
     );
 }
 
@@ -565,7 +560,7 @@ mainwnd::file_save_as ()
     filter_any.set_name("Any files");
     filter_any.add_pattern("*");
     dialog.add_filter(filter_any);
-    dialog.set_current_folder(global_last_used_dir);
+    dialog.set_current_folder(g_rc_settings.last_used_dir());
     int response = dialog.run();
     switch (response)
     {
@@ -638,7 +633,7 @@ mainwnd::open_file (const std::string & fn)
         return;
     }
 
-    global_last_used_dir = fn.substr(0, fn.rfind("/") + 1);
+    g_rc_settings.last_used_dir(fn.substr(0, fn.rfind("/") + 1));
     g_rc_settings.filename(fn);
     update_window_title();
     m_main_wid->reset();
@@ -679,7 +674,7 @@ mainwnd::choose_file ()
     filter_any.set_name("Any files");
     filter_any.add_pattern("*");
     dlg.add_filter(filter_any);
-    dlg.set_current_folder(global_last_used_dir);
+    dlg.set_current_folder(g_rc_settings.last_used_dir());
 
     int result = dlg.run();
     switch (result)
@@ -814,7 +809,7 @@ mainwnd::file_import_dialog ()
     filter_any.set_name("Any files");
     filter_any.add_pattern("*");
     dlg.add_filter(filter_any);
-    dlg.set_current_folder(global_last_used_dir);
+    dlg.set_current_folder(g_rc_settings.last_used_dir());
 
     Gtk::ButtonBox * btnbox = dlg.get_action_area();
     Gtk::HBox hbox(false, 2);
@@ -854,7 +849,6 @@ mainwnd::file_import_dialog ()
             );
             errdialog.run();
         }
-        // global_filename = std::string(dlg.get_filename());
         g_rc_settings.filename(std::string(dlg.get_filename()));
         update_window_title();
         is_modified(true);
@@ -1046,7 +1040,7 @@ mainwnd::on_key_press_event (GdkEventKey * a_ev)
          * the entries in this list of if statements.
          */
 
-        if (global_print_keys)
+        if (g_rc_settings.print_keys())
         {
             printf("key_press[%d]\n", a_ev->keyval);
             fflush(stdout);

@@ -84,7 +84,8 @@ private:
     bool init ();
     void handle_event (lash_event_t * conf);
     void handle_config (lash_config_t * conf);
-#endif
+
+#endif  // SEQ64_LASH_SUPPORT
 
 };
 

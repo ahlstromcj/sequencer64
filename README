@@ -25,4 +25,4 @@ project, which provides a 60-page PDF file and its LaTeX source code:
 
    https://github.com/ahlstromcj/sequencer24-doc.git
 
-# vim: sw=4 ts=4 wm=8 et ft=sh
+# vim: sw=4 ts=4 wm=4 et ft=sh

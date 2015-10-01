@@ -1044,16 +1044,8 @@ mainwnd::on_key_press_event (GdkEventKey * a_ev)
             m_adjust_bpm->set_value(newbpm);
         }
 
-        /*
-         * This can be passed to perform:
-         */
-
         keystroke k(a_ev->keyval, KEYSTROKE_PRESS);
-        (void) perf().do_key_event(k);
-
-        /*
-         * End of perform-only calls.
-         */
+        (void) perf().do_key_event(k);                  // pass to perform
 
         if (a_ev->keyval == PREFKEY(screenset_dn))
         {
@@ -1201,7 +1193,7 @@ mainwnd::update_window_title ()
 
 /**
  *  This function is the handler for system signals (SIGUSR1, SIGINT...)
- *  It Writes a message to the pipe and leaves as soon as possible.
+ *  It writes a message to the pipe and leaves as soon as possible.
  */
 
 void
@@ -1302,5 +1294,5 @@ mainwnd::signal_action (Glib::IOCondition condition)
 /*
  * mainwnd.cpp
  *
- * vim: sw=4 ts=4 wm=8 et ft=cpp
+ * vim: sw=4 ts=4 wm=4 et ft=cpp
  */

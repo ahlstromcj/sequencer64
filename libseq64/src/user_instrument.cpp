@@ -281,5 +281,5 @@ user_instrument::copy_definitions (const user_instrument & rhs)
 /*
  * user_instrument.cpp
  *
- * vim: sw=4 ts=4 wm=8 et ft=cpp
+ * vim: sw=4 ts=4 wm=4 et ft=cpp
  */

@@ -1,0 +1,13 @@
+Compress Pseudo UML for Sequencer64
+Chris Ahlstrom
+2015-10-01 to 2015-10-01
+
+mainwnd:
+
+    refers:     perform
+    contains:   mainwid
+    contains:   maintime
+    contains:   perfedit
+    contains:   options
+
+# vim: sw=4 ts=4 wm=4 et ft=sh

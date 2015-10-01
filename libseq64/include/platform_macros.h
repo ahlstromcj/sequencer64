@@ -288,5 +288,5 @@
 /*
  * platform_macros.h
  *
- * vim: ts=4 sw=4 wm=8 et ft=c
+ * vim: ts=4 sw=4 wm=4 et ft=c
  */

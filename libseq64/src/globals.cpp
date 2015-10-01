@@ -85,5 +85,5 @@ user_instrument_t global_user_instrument_definitions[c_max_instruments];
 /*
  * globals.cpp
  *
- * vim: sw=4 ts=4 wm=8 et ft=cpp
+ * vim: sw=4 ts=4 wm=4 et ft=cpp
  */

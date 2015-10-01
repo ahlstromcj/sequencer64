@@ -70,5 +70,5 @@ gui_window_gtk2::~gui_window_gtk2 ()
 /*
  * gui_window_gtk2.cpp
  *
- * vim: sw=4 ts=4 wm=8 et ft=cpp
+ * vim: sw=4 ts=4 wm=4 et ft=cpp
  */

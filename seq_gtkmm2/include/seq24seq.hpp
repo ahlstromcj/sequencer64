@@ -70,5 +70,5 @@ struct Seq24SeqEventInput
 /*
  * seq24seq.hpp
  *
- * vim: sw=4 ts=4 wm=8 et ft=cpp
+ * vim: sw=4 ts=4 wm=4 et ft=cpp
  */

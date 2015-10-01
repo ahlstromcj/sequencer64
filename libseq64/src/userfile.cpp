@@ -366,7 +366,7 @@ userfile::write (const perform & /* a_perf */ )
         << "#\n"
         << "# End of " << m_name
         << "\n#\n"
-        << "# vim: sw=4 ts=4 wm=8 et ft=sh\n"
+        << "# vim: sw=4 ts=4 wm=4 et ft=sh\n"
         ;
     file.close();
     return true;
@@ -377,5 +377,5 @@ userfile::write (const perform & /* a_perf */ )
 /*
  * userfile.cpp
  *
- * vim: sw=4 ts=4 wm=8 et ft=cpp
+ * vim: sw=4 ts=4 wm=4 et ft=cpp
  */

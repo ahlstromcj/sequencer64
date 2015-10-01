@@ -197,5 +197,5 @@ keys_perform::set_key_group (unsigned int keycode, long group_slot)
 /*
  * keys_perform.cpp
  *
- * vim: sw=4 ts=4 wm=8 et ft=cpp
+ * vim: sw=4 ts=4 wm=4 et ft=cpp
  */

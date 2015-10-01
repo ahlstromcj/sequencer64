@@ -210,6 +210,6 @@ extern void jack_session_callback (jack_session_event_t * ev, void * arg);
 /*
  * jack_assistant.hpp
  *
- * vim: sw=4 ts=4 wm=8 et ft=cpp
+ * vim: sw=4 ts=4 wm=4 et ft=cpp
  */
 

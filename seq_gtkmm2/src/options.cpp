@@ -843,5 +843,5 @@ options::transport_callback (button a_type, Gtk::Button * a_check)
 /*
  * options.cpp
  *
- * vim: sw=4 ts=4 wm=8 et ft=cpp
+ * vim: sw=4 ts=4 wm=4 et ft=cpp
  */

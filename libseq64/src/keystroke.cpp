@@ -48,7 +48,7 @@ keystroke::keystroke ()
     // Empty body
 }
 
-keystroke::keystroke (int key, bool press, seq_modifier_t modkey)
+keystroke::keystroke (unsigned int key, bool press, seq_modifier_t modkey)
  :
     m_is_press  (press),
     m_key       (key),

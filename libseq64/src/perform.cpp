@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-09-29
+ * \updates       2015-09-30
  * \license       GNU GPLv2 or above
  *
  */
@@ -37,13 +37,18 @@
 #endif
 
 #include "perform.hpp"
+#include "event.hpp"
+#include "keystroke.hpp"
 #include "midibus.hpp"
 #include "midifile.hpp"
-#include "event.hpp"
 #include "sequence.hpp"
 
 namespace seq64
 {
+
+static const int c_status_replace  = 0x01;
+static const int c_status_snapshot = 0x02;
+static const int c_status_queue    = 0x04;
 
 /**
  *  This construction initializes a vast number of member variables, some
@@ -2407,6 +2412,53 @@ perform::sequence_key (int seq)
         sequence_playing_toggle(seq + offset);
 }
 
+/**
+ *  Provided for mainwnd::on_key_press_event() and
+ *  mainwnd::on_key_release_event() to call.
+ *
+ * \return
+ *      Returns true if the key was handled.
+ */
+
+bool
+perform::do_key_event (const keystroke & k)
+{
+    bool result = true;
+    unsigned int key = k.key();
+    if (k.is_press())
+    {
+        if (key == keys().replace())
+            set_sequence_control_status(c_status_replace);
+        else if (key == keys().queue() || key == keys().keep_queue())
+            set_sequence_control_status(c_status_queue);
+        else if (key == keys().snapshot_1() || key == keys().snapshot_2())
+            set_sequence_control_status(c_status_snapshot);
+        else if (key == keys().set_playing_screenset())
+            set_playing_screenset();
+        else if (key == keys().group_on())
+            set_mode_group_mute();
+        else if (key == keys().group_off())
+            unset_mode_group_mute();
+        else if (key == keys().group_learn())
+            set_mode_group_learn();
+        else
+            result = false;
+    }
+    else
+    {
+        if (key == keys().replace())
+            unset_sequence_control_status(c_status_replace);
+        else if (key == keys().queue())
+            unset_sequence_control_status(c_status_queue);
+        else if (key == keys().snapshot_1() || key == keys().snapshot_2())
+            unset_sequence_control_status(c_status_snapshot);
+        else if (key == keys().group_learn())
+            unset_mode_group_learn();
+        else
+            result = false;
+    }
+    return result;
+}
 
 }           // namespace seq64
 

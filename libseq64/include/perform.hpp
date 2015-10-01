@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-09-29
+ * \updates       2015-09-30
  * \license       GNU GPLv2 or above
  *
  *  This class has way too many members.
@@ -68,6 +68,7 @@
 namespace seq64
 {
 
+class keystroke;
 class sequence;
 
 /*
@@ -77,6 +78,7 @@ class sequence;
 
 class midi_control
 {
+
 public:
 
     bool m_active;
@@ -87,16 +89,12 @@ public:
     long m_max_value;
 };
 
-const int c_status_replace  = 0x01;
-const int c_status_snapshot = 0x02;
-const int c_status_queue    = 0x04;
-
 /*
  *  Pseudo control value for associating MIDI events (I think)
  *  with automation of some of the controls in seq24.  The lowest value is
  *  c_seqs_in_set * 2 = 64.
  *
- *  I think the reason for that value is to perhaps handle two set or
+ *  I think the reason for that value is to perhaps handle two sets or
  *  something like that.  Will figure it out later.
  *
  *  These values would be better off in an enumeration.
@@ -749,6 +747,7 @@ public:
     }
 
     void sequence_key (int seq);        // encapsulation
+    bool do_key_event (const keystroke & k);
 
 private:
 

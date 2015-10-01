@@ -39,6 +39,14 @@
 
 #include "gdk_basic_keys.h"
 
+/**
+ *  Provides readability macros for true and false, to indicate if a
+ *  keystroke is pressed, or released.
+ */
+
+#define KEYSTROKE_RELEASE       false
+#define KEYSTROKE_PRESS         true
+
 namespace seq64
 {
 
@@ -53,7 +61,8 @@ class keystroke
 private:
 
     /**
-     *  Determines if the key was a press or a release.
+     *  Determines if the key was a press or a release.  See the
+     *  KEYSTROKE_PRESS and KEYSTROKE_RELEASE readability macros.
      */
 
     bool m_is_press;                    /* versus a release of the key */
@@ -63,7 +72,7 @@ private:
      *  and right is 3.
      */
 
-    int m_key;
+    unsigned int m_key;
 
     /**
      *  The optional modifier value.  Note that SEQ64_NO_MASK is our word
@@ -77,7 +86,7 @@ public:
     keystroke ();
     keystroke
     (
-        int key,
+        unsigned int key,
         bool press = true,
         seq_modifier_t modkey = SEQ64_NO_MASK
     );
@@ -97,7 +106,7 @@ public:
      * \getter m_key
      */
 
-    int key () const
+    unsigned int key () const
     {
         return m_key;
     }

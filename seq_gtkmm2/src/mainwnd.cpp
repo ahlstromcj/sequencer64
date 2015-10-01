@@ -50,6 +50,7 @@
 #include "globals.h"
 #include "gtk_helpers.h"
 #include "keys_perform.hpp"             /* \new ca 2015-09-16           */
+#include "keystroke.hpp"
 #include "maintime.hpp"
 #include "mainwid.hpp"
 #include "mainwnd.hpp"
@@ -996,6 +997,9 @@ mainwnd::on_delete_event (GdkEventAny * a_e)
  *  Handles a key release event.  Is this worth turning into a switch
  *  statement?  Or offloading to a perform member function?
  *
+ * \todo
+ *      Test this functionality in old and new application.
+ *
  * \return
  *      Always returns false.
  */
@@ -1003,28 +1007,18 @@ mainwnd::on_delete_event (GdkEventAny * a_e)
 bool
 mainwnd::on_key_release_event (GdkEventKey * a_ev)
 {
-    if (a_ev->keyval == PREFKEY(replace))
-        perf().unset_sequence_control_status(c_status_replace);
-
-    if (a_ev->keyval == PREFKEY(queue))
-        perf().unset_sequence_control_status(c_status_queue);
-
-    if
-    (
-        a_ev->keyval == PREFKEY(snapshot_1) ||
-        a_ev->keyval == PREFKEY(snapshot_2)
-    )
-    {
-        perf().unset_sequence_control_status(c_status_snapshot);
-    }
-    if (a_ev->keyval == PREFKEY(group_learn))
-        perf().unset_mode_group_learn();
-
+    keystroke k(a_ev->keyval, KEYSTROKE_RELEASE);
+    (void) perf().do_key_event(k);
     return false;
 }
 
 /**
- *  Handles a key press event.
+ *  Handles a key press event.  It also handles the control-key and
+ *  modifier-key combinations matching the entries in its list of if
+ *  statements.
+ *
+ * \todo
+ *      Test this functionality in old and new application.
  */
 
 bool
@@ -1033,48 +1027,34 @@ mainwnd::on_key_press_event (GdkEventKey * a_ev)
     Gtk::Window::on_key_press_event(a_ev);
     if (a_ev->type == GDK_KEY_PRESS)
     {
-        /*
-         * Handle the control-key and modifier-key combinations matching
-         * the entries in this list of if statements.
-         */
-
         if (g_rc_settings.print_keys())
         {
             printf("key_press[%d]\n", a_ev->keyval);
             fflush(stdout);
         }
 
-        // TODO:  USE else's OR switch() HERE, MAN!
-
         if (a_ev->keyval == PREFKEY(bpm_dn))
         {
             int newbpm = perf().decrement_bpm();
             m_adjust_bpm->set_value(newbpm);
         }
-        if (a_ev->keyval == PREFKEY(bpm_up))
+        else if (a_ev->keyval == PREFKEY(bpm_up))
         {
             int newbpm = perf().increment_bpm();
             m_adjust_bpm->set_value(newbpm);
         }
-        if (a_ev->keyval == PREFKEY(replace))
-            perf().set_sequence_control_status(c_status_replace);
 
-        if
-        (
-            (a_ev->keyval == PREFKEY(queue)) ||
-            (a_ev->keyval == PREFKEY(keep_queue))
-        )
-        {
-            perf().set_sequence_control_status(c_status_queue);
-        }
-        if
-        (
-            a_ev->keyval == PREFKEY(snapshot_1) ||
-            a_ev->keyval == PREFKEY(snapshot_2)
-        )
-        {
-            perf().set_sequence_control_status(c_status_snapshot);
-        }
+        /*
+         * This can be passed to perform:
+         */
+
+        keystroke k(a_ev->keyval, KEYSTROKE_PRESS);
+        (void) perf().do_key_event(k);
+
+        /*
+         * End of perform-only calls.
+         */
+
         if (a_ev->keyval == PREFKEY(screenset_dn))
         {
             int newss = perf().decrement_screenset();
@@ -1089,17 +1069,6 @@ mainwnd::on_key_press_event (GdkEventKey * a_ev)
             m_adjust_ss->set_value(newss);
             m_entry_notes->set_text(perf().current_screen_set_notepad());
         }
-        if (a_ev->keyval == PREFKEY(set_playing_screenset))
-            perf().set_playing_screenset();
-
-        if (a_ev->keyval == PREFKEY(group_on))
-            perf().set_mode_group_mute();
-
-        if (a_ev->keyval == PREFKEY(group_off))
-            perf().unset_mode_group_mute();
-
-        if (a_ev->keyval == PREFKEY(group_learn))
-            perf().set_mode_group_learn();
 
         if (perf().get_key_groups().count(a_ev->keyval) != 0)
         {

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-09-30
+ * \updates       2015-10-01
  * \license       GNU GPLv2 or above
  *
  */
@@ -100,7 +100,7 @@ mainwnd::mainwnd (perform & a_perf)
     m_menu_view             (manage(new Gtk::Menu())),
     m_menu_help             (manage(new Gtk::Menu())),
     m_main_wid              (manage(new mainwid(perf()))),
-    m_main_time             (manage(new maintime())),
+    m_main_time             (manage(new maintime(perf()))),
     m_perf_edit             (new perfedit(perf())),
     m_options               (nullptr),
     m_main_cursor           (),

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-09-13
+ * \updates       2015-10-01
  * \license       GNU GPLv2 or above
  *
  *  The "time" window is the horizontal bar at the upper right of the main
@@ -55,78 +55,76 @@ static const int c_pill_width = 8;
  *  realized.
  */
 
-maintime::maintime ()
+maintime::maintime (perform & p)
  :
-    Gtk::DrawingArea    (),
-    m_gc                (),
-    m_window            (),
-    m_black             (Gdk::Color("black")),
-    m_white             (Gdk::Color("white")),
-    m_grey              (Gdk::Color("grey")),
-    m_tick              (0)
+    gui_drawingarea_gtk2    (p, c_maintime_x, c_maintime_y),
+    m_tick                  (0),
+    m_pill_width            (c_pill_width),
+    m_ppqn                  (c_ppqn)
 {
-    Glib::RefPtr<Gdk::Colormap> colormap = get_default_colormap();
-    colormap->alloc_color(m_black);
-    colormap->alloc_color(m_white);
-    colormap->alloc_color(m_grey);
+    // Empty body
 }
 
 /**
  *  Handles realization of the window.  It performs the base class's
  *  on_realize() function.  It then allocates some additional resources: a
  *  window, a GC (?), and it clears the window.  Then it sets the default
- *  size of the window, specified by c_maintime_x and c_maintime_y.
+ *  size of the window, specified by GUI constructor parameters.
  */
 
 void
 maintime::on_realize ()
 {
-    Gtk::DrawingArea::on_realize();     // we need to do the default realize
-    m_window = get_window();
-    m_gc = Gdk::GC::create(m_window);
-    m_window->clear();
-    set_size_request(c_maintime_x, c_maintime_y);
+    gui_drawingarea_gtk2::on_realize();
+
+    /*
+     * Handled in the base-class constructor.
+     *
+     * set_size_request(c_maintime_x, c_maintime_y);
+     */
 }
 
 /**
  *  This function clears the window, sets the foreground to black, draws
- *  the "time" window's rectangle, and more.
+ *  the "time" window's rectangle, and then draws a rectangle for noting the
+ *  progress of the beat, and the progress for a bar.
  *
- *  Idle hands do the devil's work.  We need to figure at a high level
- *  what this routine draws, what a maintime is, and where it is located.
+ *  Idle hands do the devil's work.  We should eventually support some generic
+ *  coloring for "dark themes".  The default coloring is better for "light
+ *  themes".
  */
 
 int
-maintime::idle_progress (long a_ticks)
+maintime::idle_progress (long ticks)
 {
-    m_tick = a_ticks;
+    m_tick = ticks;
     m_window->clear();
     m_gc->set_foreground(m_black);
     m_window->draw_rectangle
     (
-        m_gc, false, 0, 0, c_maintime_x - 1, c_maintime_y - 1
+        m_gc, false, 0, 0, m_window_x - 1, m_window_y - 1
     );
 
-    int width = c_maintime_x - 1 - c_pill_width;
-    int tick_x = ((m_tick % c_ppqn) * (c_maintime_x - 1)) / c_ppqn ;
-    int beat_x = (((m_tick / 4) % c_ppqn) * width) / c_ppqn ;
-    int bar_x = (((m_tick / 16) % c_ppqn) * width) / c_ppqn ;
-    if (tick_x <= (c_maintime_x / 4))
+    int width = m_window_x - m_pill_width - 1;
+    int tick_x = ((m_tick % m_ppqn) * (m_window_x - 1)) / m_ppqn ;
+    int beat_x = (((m_tick / 4) % m_ppqn) * width) / m_ppqn ;
+    int bar_x = (((m_tick / 16) % m_ppqn) * width) / m_ppqn ;
+    if (tick_x <= (m_window_x / 4))
     {
         m_gc->set_foreground(m_grey);
         m_window->draw_rectangle
         (
-            m_gc, true, 2, /*tick_x + 2,*/ 2, c_maintime_x - 4, c_maintime_y - 4
+            m_gc, true, 2, /*tick_x + 2,*/ 2, m_window_x - 4, m_window_y - 4
         );
     }
     m_gc->set_foreground(m_black);
     m_window->draw_rectangle
     (
-        m_gc, true, beat_x + 2, 2, c_pill_width, c_maintime_y - 4
+        m_gc, true, beat_x + 2, 2, m_pill_width, m_window_y - 4
     );
     m_window->draw_rectangle
     (
-        m_gc, true, bar_x + 2, 2, c_pill_width, c_maintime_y - 4
+        m_gc, true, bar_x + 2, 2, m_pill_width, m_window_y - 4
     );
     return true;
 }

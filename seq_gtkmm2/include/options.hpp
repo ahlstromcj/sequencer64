@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-09-29
+ * \updates       2015-10-01
  * \license       GNU GPLv2 or above
  *
  */
@@ -42,11 +42,8 @@ namespace Gtk
     class Notebook;
     class RadioButton;
     class Table;
-}
-
-#if GTK_MINOR_VERSION < 12
     class Tooltips;
-#endif
+}
 
 namespace seq64
 {
@@ -79,9 +76,7 @@ private:
 
 private:
 
-#if GTK_MINOR_VERSION < 12
     Gtk::Tooltips * m_tooltips;
-#endif
 
     /**
      *  The performance object to which some of these options apply.
@@ -122,7 +117,7 @@ private:
     void mouse_fruity_callback (Gtk::RadioButton *);
     void mouse_mod4_callback (Gtk::CheckButton *);
 
-    /* notebook pages */
+    /* Notebook pages (tabs) */
 
     void add_midi_clock_page ();
     void add_midi_input_page ();

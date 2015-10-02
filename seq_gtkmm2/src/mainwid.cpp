@@ -55,7 +55,7 @@ using namespace Gtk::Menu_Helpers;
  */
 
 #define USE_GREY_GRID                   // undefine for black boxes
-#define USE_NORMAL_GRID                 // undefine for grey box, black outline
+#define USE_NORMAL_GRID                 // undefine for black box, black outline
 
 /**
  *  Static array of characters for use in toggling patterns.
@@ -396,14 +396,15 @@ mainwid::draw_sequence_on_pixmap (int a_seq)
                 get_style()->get_bg_gc(Gtk::STATE_NORMAL),        // this->
                 true, base_x + 4, base_y, m_seqarea_x - 8, m_seqarea_y
             );
+#endif
+
 #ifdef USE_NORMAL_GRID                      /* change box to "brackets"     */
             m_pixmap->draw_rectangle
             (
                 get_style()->get_bg_gc(Gtk::STATE_NORMAL),       // this->
                 true, base_x + 1, base_y + 1, m_seqarea_x - 2, m_seqarea_y - 2
             );
-#endif  // USE_NORMAL_GRID
-#endif  // USE_BLACK_GRID
+#endif
 
         }
     }
@@ -644,11 +645,8 @@ mainwid::set_screenset (int a_ss)
 void
 mainwid::on_realize ()
 {
-    Gtk::DrawingArea::on_realize();         // base-class on_realize()
+    gui_drawingarea_gtk2::on_realize();
     set_flags(Gtk::CAN_FOCUS);
-    m_window = get_window();                // more resources
-    m_gc = Gdk::GC::create(m_window);       // graphics context?
-    m_window->clear();
     p_font_renderer->init(m_window);
     m_pixmap = Gdk::Pixmap::create(m_window, m_mainwid_x, m_mainwid_y, -1);
     fill_background_window();
@@ -667,8 +665,7 @@ mainwid::on_expose_event (GdkEventExpose * a_e)
         m_gc, m_pixmap,
         a_e->area.x, a_e->area.y,
         a_e->area.x, a_e->area.y,
-        a_e->area.width,
-        a_e->area.height
+        a_e->area.width, a_e->area.height
     );
     return true;
 }

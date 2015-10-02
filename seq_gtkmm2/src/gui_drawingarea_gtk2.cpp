@@ -177,6 +177,21 @@ gui_drawingarea_gtk2::gtk_drawarea_init ()
     set_double_buffered(false);
 }
 
+/**
+ *  For this GTK callback, on realization of window, initialize the shiz.
+ *  It allocates any additional resources that weren't initialized in the
+ *  constructor.
+ */
+
+void
+gui_drawingarea_gtk2::on_realize ()
+{
+    Gtk::DrawingArea::on_realize();         // base-class on_realize()
+    m_window = get_window();                // more resources
+    m_gc = Gdk::GC::create(m_window);       // graphics context?
+    m_window->clear();
+}
+
 }           // namespace seq64
 
 /*

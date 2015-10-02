@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-09-29
+ * \updates       2015-10-01
  * \license       GNU GPLv2 or above
  *
  */
@@ -88,7 +88,6 @@ class perfedit : public gui_window_gtk2
 
 private:
 
-//  perform * m_mainperf;
     Gtk::Table * m_table;
     Gtk::Adjustment * m_vadjust;
     Gtk::Adjustment * m_hadjust;
@@ -177,6 +176,7 @@ private:
     void on_realize ();
     bool on_delete_event (GdkEventAny * a_event);
     bool on_key_press_event (GdkEventKey * a_ev);
+
 };
 
 }           // namespace seq64

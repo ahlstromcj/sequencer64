@@ -28,12 +28,12 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-09-13
+ * \updates       2015-10-01
  * \license       GNU GPLv2 or above
  *
  */
 
-#include <gtkmm/drawingarea.h>
+#include "gui_drawingarea_gtk2.hpp"
 
 namespace seq64
 {
@@ -44,27 +44,24 @@ namespace seq64
  *  measures.
  */
 
-class maintime : public Gtk::DrawingArea
+class maintime : public gui_drawingarea_gtk2
 {
 
 private:
 
-    Glib::RefPtr<Gdk::GC> m_gc;
-    Glib::RefPtr<Gdk::Window> m_window;
-    Gdk::Color m_black;
-    Gdk::Color m_white;
-    Gdk::Color m_grey;
     long m_tick;
+    const int m_pill_width;
+    const int m_ppqn;
 
 public:
 
-    maintime ();
-    int idle_progress (long a_ticks);
+    maintime (perform & p);
+    int idle_progress (long ticks);
 
 private:        // callbacks
 
     void on_realize ();
-    bool on_expose_event (GdkEventExpose * a_ev);
+    bool on_expose_event (GdkEventExpose * ev);
 
 };
 

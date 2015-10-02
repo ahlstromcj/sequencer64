@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-09-29
+ * \updates       2015-10-01
  * \license       GNU GPLv2 or above
  *
  *  The main windows is known as the "Patterns window" or "Patterns
@@ -175,7 +175,7 @@ private:
     Gtk::Entry * m_entry_notes;
 
     /**
-     *  Provides a timeout handler?
+     *  Provides a timeout handler.
      */
 
     sigc::connection m_timeout_connect;

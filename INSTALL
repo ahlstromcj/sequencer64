@@ -1,15 +1,15 @@
-INSTALL for Sequencer64 v 0.9.9.2
+INSTALL for Sequencer64 v 0.9.9.3
 Chris Ahlstrom
-2015-09-10 to 2015-09-19
+2015-09-10 to 2015-10-01
 
 The current packaging for Sequencer64 is primarily aimed at developers.
 There is currently no configure script... it must be bootstrapped.
 
 Steps:
 
-   0.  Preload any DEPENDENCIES.  However, if some are missing, the
-       configure script will tell you, or, at worst, a buld error will tell
-       you.
+   0.  Preload any DEPENDENCIES, as listed at the end of this document.
+       However, if some are missing, the configure script will tell you,
+       or, at worst, a buld error will tell you.
 
    1.  Check-out the branch you want.  Make a branch if you want to make
        changes.
@@ -35,6 +35,50 @@ Steps:
    4. To install, become root and run:
 
       # make install
+
+CONFIGURE OPTIONS FOR APPLICATION FEATURES:
+
+    --disable-highlight
+
+        Undefines the SEQ64_HIGHLIGHT_EMPTY_SEQS  macro, which is
+        otherwise defined by default.  If defined, the application will
+        highlight empty sequences/patterns by coloring them yellow.
+
+    --disable-lash
+
+        Undefines the SEQ64_LASH_SUPPORT macro, which is otherwise defined
+        by default.
+
+    --disable-jack
+    
+        Undefines the SEQ64_JACK_SUPPORT macro, which is otherwise defined
+        by default.
+
+    --disable-jack-session
+
+        Undefines the SEQ64_JACK_SUPPORT macro, which is defined if JACK
+        support is defined, and the jack/session.h file is found.
+
+MACROS IN CODE:
+
+    The following items are not yet part of the configure script, but can
+    be edited manually to achieve the desired setting;
+
+    USE_GREY_GRID
+
+        If defined, this item causes the pattern slots/boxes to be colored
+        grey.  Otherwise, they are colored black.  By default, this value
+        is defined (in the mainwid module).
+
+    USE_NORMAL_GRID:
+
+        If defined, the box that outlines the pattern slots/boxes is
+        painted over to convert the box to look like a pair of brackets.
+        By default, this value is defined (in the mainwid module).
+
+    Defining both of the macros gives the normal Seq24 look for the
+    Pattern Window.  Eventually we might move these definitions into the
+    configure script, for easier modification.
 
 DEPENDENCIES:
 

@@ -1,13 +1,94 @@
-Compress Pseudo UML for Sequencer64
+Compressed Pseudo UML for Sequencer64
 Chris Ahlstrom
 2015-10-01 to 2015-10-01
 
-mainwnd:
+mainwnd--> gui_window_gtk2, performcallback
+   |
+   |<&>-- perform
+   |<*>-- mainwid -->  gui_drawingarea_gtk2
+   |         |    -->  seqmenu --> Glib::ObjectBase
+   |         |            |
+   |         |            |<&>-- perform
+   |         |            |<>--- sequence
+   |         |            |<*>-- seqedit
+   |         |
+   |         |<>--- sequence
+   |                    |
+   |                    |<>--- event_list, stack<event_list>
+   |                    |<>--- Triggers, stack<Triggers>
+   |
+   |<*>-- maintime --> gui_drawingarea_gtk2
+   |<*>-- perfedit --> gui_window_gtk2
+   |         |
+   |         |<*>-- perfnames --> Gtk::DrawingArea
+   |         |          |
+   |         |          |<*>-- perform
+   |         |
+   |         |<*>-- perfroll  --> Gtk::DrawingArea
+   |         |          |
+   |         |          |<*>-- perform
+   |         |          |<*>-- AbstractPerfInput
+   |         |          | friend FruityPerfInput
+   |         |          | friend Seq24PerfInput
+   |         |
+   |         |<*>-- perftime  --> Gtk::DrawingArea
+   |                    |
+   |                    |<*>-- perform
+   |
+   |<*>-- options  --> Gtk::Dialog
+             |
+             |<&>-- perform
+                       |
+                       |<&>-- gui_assistant
+                       |<*>-- sequence []
+                       |<>--- jack_assistant
+                       |<>--- mastermidibus
+                       |<>--- midi_control []
+                       |<*>-- performcallback <vector>
 
-    refers:     perform
-    contains:   mainwid
-    contains:   maintime
-    contains:   perfedit
-    contains:   options
+seqedit --> gui_window_gtk2
+   |
+   |<&>-- sequence
+   |<*>-- seqdata --> Gtk::DrawingArea
+   |         |
+   |         |<*>-- sequence
+   |         | friend seqevent
+   |         | friend seqroll
+   |
+   |<*>-- seqevent --> Gtk::DrawingArea
+   |         |
+   |         |<>--- FruitySeqEventInput
+   |         |<>--- Seq24SeqEventInput
+   |         |          |
+   |         |          |----> seqevent
+   |         |
+   |         |<*>-- sequence
+   |         |<*>-- seqdata
+   |
+   |<*>-- seqkeys --> Gtk::DrawingArea
+   |         |
+   |         |<*>-- sequence
+   |
+   |<*>-- seqroll --> Gtk::DrawingArea
+   |         |
+   |         |<&>-- perform
+   |         |<*>-- sequence
+   |         |<*>-- seqdata
+   |         |<*>-- seqevent
+   |         |<*>-- seqkeys
+   |         |<>--- FruitySeqRollInput
+   |         |<>--- Seq24SeqRollInput
+   |
+   |<*>-- seqtime --> Gtk::DrawingArea
+   |         |
+   |         |<*>-- sequence
+
+keybindentry --> Gtk::Entry
+   |
+   |<*>-- perform (optional)
+
+gui_drawingarea_gtk2 --> gui_palette_gtk2 --> Gtk::DrawingArea
+gui_window_gtk2      --> Gtk::Window
+keys_perform_gtk2    --> keys_perform
 
 # vim: sw=4 ts=4 wm=4 et ft=sh

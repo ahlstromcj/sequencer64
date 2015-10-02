@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-21
- * \updates       2015-09-29
+ * \updates       2015-10-01
  * \license       GNU GPLv2 or above
  *
  */
@@ -85,7 +85,8 @@ protected:              // private: should provide accessors
     perform & m_mainperf;
 
     /**
-     *  Window sizes?
+     *  Window sizes.  Could make this constant, but some windows are
+     *  resizable.
      */
 
     int m_window_x;
@@ -145,10 +146,13 @@ private:
 
     void gtk_drawarea_init ();
 
+protected:          // callbacks
+
+    void on_realize ();
+
 private:            // callbacks
 
 #if 0
-    void on_realize ();
     bool on_expose_event (GdkEventExpose * a_ev);
     bool on_button_press_event (GdkEventButton * a_ev);
     bool on_button_release_event (GdkEventButton * a_ev);

@@ -28,13 +28,12 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-09-13
+ * \updates       2015-10-02
  * \license       GNU GPLv2 or above
  *
  */
 
-#include <gtkmm/drawingarea.h>
-#include <gtkmm/window.h>
+#include "gui_drawingarea_gtk2.hpp"
 
 namespace Gtk
 {
@@ -51,32 +50,22 @@ class perform;
  *  "performance window", also known as the "song editor".
  */
 
-class perftime: public Gtk::DrawingArea
+class perftime : public gui_drawingarea_gtk2
 {
 
 private:
 
-    Glib::RefPtr<Gdk::GC> m_gc;
-    Glib::RefPtr<Gdk::Window> m_window;
-    Gdk::Color m_black;
-    Gdk::Color m_white;
-    Gdk::Color m_grey;
-    Glib::RefPtr<Gdk::Pixmap> m_pixmap;
-    perform * const m_mainperf;
-    int m_window_x;
-    int m_window_y;
-    Gtk::Adjustment * const m_hadjust;
     int m_4bar_offset;
     int m_snap;
     int m_measure_length;
 
 public:
 
-    perftime (perform * a_perf, Gtk::Adjustment * a_hadjust);
+    perftime (perform & perf, Gtk::Adjustment & hadjust);
 
     void reset ();
-    void set_scale (int a_scale);
-    void set_guides (int a_snap, int a_measure);
+    void set_scale (int scale);
+    void set_guides (int snap, int measure);
     void increment_size ();
 
 private:
@@ -91,10 +80,10 @@ private:
 private:        // callbacks
 
     void on_realize ();
-    bool on_expose_event (GdkEventExpose * a_ev);
-    bool on_button_press_event (GdkEventButton * a_ev);
-    bool on_button_release_event (GdkEventButton * a_ev);
-    void on_size_allocate (Gtk::Allocation & a_r);
+    bool on_expose_event (GdkEventExpose * ev);
+    bool on_button_press_event (GdkEventButton * ev);
+    bool on_button_release_event (GdkEventButton * ev);
+    void on_size_allocate (Gtk::Allocation & r);
 };
 
 }           // namespace seq64

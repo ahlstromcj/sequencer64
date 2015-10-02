@@ -105,7 +105,7 @@ perfedit::perfedit (perform & a_perf)
     m_hscroll           (manage(new Gtk::HScrollbar(*m_hadjust))),
     m_perfnames         (manage(new perfnames(&perf(), m_vadjust))),
     m_perfroll          (manage(new perfroll(&perf(), m_hadjust, m_vadjust))),
-    m_perftime          (manage(new perftime(&perf(), m_hadjust))),
+    m_perftime          (manage(new perftime(perf(), *m_hadjust))),
     m_menu_snap         (manage(new Gtk::Menu())),
     m_button_snap       (manage(new Gtk::Button())),
     m_entry_snap        (manage(new Gtk::Entry())),

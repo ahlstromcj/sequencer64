@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-09-13
+ * \updates       2015-10-02
  * \license       GNU GPLv2 or above
  *
  *  The time bar shows markers and numbers for the measures of the song,
@@ -48,33 +48,24 @@ namespace seq64
  *  get_window() returns 0 because we have not been realized.
  */
 
-perftime::perftime (perform * a_perf, Gtk::Adjustment * a_hadjust)
+perftime::perftime (perform & a_perf, Gtk::Adjustment & a_hadjust)
  :
-    m_gc                (),
-    m_window            (),
-    m_black             (Gdk::Color("black")),
-    m_white             (Gdk::Color("white")),
-    m_grey              (Gdk::Color("grey")),
-    m_pixmap            (),
-    m_mainperf          (a_perf),
-    m_window_x          (0),
-    m_window_y          (0),
-    m_hadjust           (a_hadjust),
+    gui_drawingarea_gtk2    (a_perf, a_hadjust, sm_vadjust_dummy),
     m_4bar_offset       (0),
     m_snap              (c_ppqn),
     m_measure_length    (c_ppqn * 4)
 {
-    add_events(Gdk::BUTTON_PRESS_MASK | Gdk::BUTTON_RELEASE_MASK);
+    /*
+     * This adds many fewer events than the base class.  Any bad effects?
+     *
+     * add_events(Gdk::BUTTON_PRESS_MASK | Gdk::BUTTON_RELEASE_MASK);
+     */
 
-    Glib::RefPtr<Gdk::Colormap> colormap = get_default_colormap();
-    colormap->alloc_color(m_black);
-    colormap->alloc_color(m_white);
-    colormap->alloc_color(m_grey);
-    m_hadjust->signal_value_changed().connect
+    m_hadjust.signal_value_changed().connect
     (
         mem_fun(*this, &perftime::change_horz)
     );
-    set_double_buffered(false);
+    // set_double_buffered(false);         ///// ?????
 }
 
 /**
@@ -104,9 +95,9 @@ perftime::update_sizes ()
 void
 perftime::change_horz ()
 {
-    if (m_4bar_offset != (int) m_hadjust->get_value())
+    if (m_4bar_offset != (int) m_hadjust.get_value())
     {
-        m_4bar_offset = (int) m_hadjust->get_value();
+        m_4bar_offset = (int) m_hadjust.get_value();
         queue_draw();
     }
 }
@@ -211,8 +202,8 @@ perftime::on_expose_event (GdkEventExpose * a_e)
         );
     }
 
-    long left = m_mainperf->get_left_tick();
-    long right = m_mainperf->get_right_tick();
+    long left = perf().get_left_tick();
+    long right = perf().get_right_tick();
 
     left -= (m_4bar_offset * 16 * c_ppqn);
     left /= c_perf_scale_x;
@@ -257,15 +248,15 @@ perftime::on_button_press_event (GdkEventButton * p0)
     tick -= (tick % m_snap);
 
     // if ( p0->button == 2 )                       // middle button
-    //      m_mainperf->set_start_tick(tick);
+    //      perf().set_start_tick(tick);
 
     if (p0->button == 1)                            // left button
     {
-        m_mainperf->set_left_tick(tick);
+        perf().set_left_tick(tick);
     }
     if (p0->button == 3)                            // right button
     {
-        m_mainperf->set_right_tick(tick + m_snap);
+        perf().set_right_tick(tick + m_snap);
     }
     queue_draw();
     return true;

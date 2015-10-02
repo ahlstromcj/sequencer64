@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-21
- * \updates       2015-09-29
+ * \updates       2015-10-02
  * \license       GNU GPLv2 or above
  *
  */
@@ -77,12 +77,12 @@ namespace seq64
  *  step-increment, and two more values.
  */
 
-Gtk::Adjustment gui_drawingarea_gtk2::m_hadjust_dummy
+Gtk::Adjustment gui_drawingarea_gtk2::sm_hadjust_dummy
 (
     0.0, 0.0, 1.0, 1.0, 1.0, 1.0
 );
 
-Gtk::Adjustment gui_drawingarea_gtk2::m_vadjust_dummy
+Gtk::Adjustment gui_drawingarea_gtk2::sm_vadjust_dummy
 (
     0.0, 0.0, 1.0, 1.0, 1.0, 1.0
 );
@@ -100,8 +100,8 @@ gui_drawingarea_gtk2::gui_drawingarea_gtk2
     gui_palette_gtk2        (),
     m_gc                    (),
     m_window                (),
-    m_vadjust               (m_vadjust_dummy),
-    m_hadjust               (m_hadjust_dummy),
+    m_vadjust               (sm_vadjust_dummy),
+    m_hadjust               (sm_hadjust_dummy),
     m_pixmap                (),
     m_background            (),             // another pixmap
     m_foreground            (),             // another pixmap

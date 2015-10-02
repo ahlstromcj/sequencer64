@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-09-30
- * \updates       2015-09-30
+ * \updates       2015-10-02
  * \license       GNU GPLv2 or above
  *
  *  Most of the GUI modules are publicly derived from Gtk::DrawingArea,
@@ -38,6 +38,14 @@
  */
 
 #include "gdk_basic_keys.h"
+
+/**
+ *  Readability macros for testing button clicks.
+ */
+
+#define CLICK_IS_LEFT(x)            ((x) == 1)
+#define CLICK_IS_MIDDLE(x)          ((x) == 2)
+#define CLICK_IS_RIGHT(x)           ((x) == 3)
 
 namespace seq64
 {

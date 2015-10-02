@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-21
- * \updates       2015-10-01
+ * \updates       2015-10-02
  * \license       GNU GPLv2 or above
  *
  */
@@ -70,8 +70,8 @@ public:
 
 protected:
 
-    static Gtk::Adjustment m_hadjust_dummy;
-    static Gtk::Adjustment m_vadjust_dummy;
+    static Gtk::Adjustment sm_hadjust_dummy;
+    static Gtk::Adjustment sm_vadjust_dummy;
 
 protected:              // private: should provide accessors
 

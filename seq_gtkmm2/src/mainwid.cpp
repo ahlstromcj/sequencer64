@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-09-29
+ * \updates       2015-10-02
  * \license       GNU GPLv2 or above
  *
  */
@@ -33,6 +33,7 @@
 #include <gtkmm/combo.h>                // Gtk::Entry
 #include <gtkmm/menubar.h>
 
+#include "click.hpp"                    // CLICK_IS_LEFT(), etc.
 #include "font.hpp"
 #include "mainwid.hpp"
 #include "perform.hpp"
@@ -304,7 +305,9 @@ mainwid::draw_sequence_on_pixmap (int a_seq)
             );
             p_font_renderer->render_string_on_drawable      // bus, ch, etc.
             (
-                m_gc, base_x + m_text_size_x, base_y + m_text_size_y*4 - 2,
+                m_gc,
+                base_x + m_text_size_x,
+                base_y + m_text_size_y * 4 - 2,
                 m_pixmap, temp, col
             );
 
@@ -346,10 +349,8 @@ mainwid::draw_sequence_on_pixmap (int a_seq)
             while                           // draws the note marks in inner box
             (
                 (
-                    dt = seq->get_next_note_event
-                    (
-                        &tick_s, &tick_f, &note, &selected, &velocity
-                    )
+                    dt = seq->get_next_note_event(
+                        &tick_s, &tick_f, &note, &selected, &velocity)
                 ) != DRAW_FIN
             )
             {
@@ -571,6 +572,9 @@ mainwid::draw_pixmap_on_window ()
 
 /**
  *  Translates XY corridinates in the Patterns Panel to a sequence number.
+ *
+ * \return
+ *      Returns -1 if the sequence number cannot be calculated.
  */
 
 int
@@ -590,15 +594,14 @@ mainwid::seq_from_xy (int a_x, int a_y)
     int box_test_x = x % (m_seqarea_x + m_mainwid_spacing); // box coordinate
     int box_test_y = y % (m_seqarea_y + m_mainwid_spacing); // box coordinate
     if (box_test_x > m_seqarea_x || box_test_y > m_seqarea_y)
-    {
         return -1;                          // right inactive side of area
-    }
 
     x /= (m_seqarea_x + m_mainwid_spacing);
     y /= (m_seqarea_y + m_mainwid_spacing);
     int sequence =
     (
-        (x*m_mainwnd_rows + y) + (m_screenset*m_mainwnd_rows*m_mainwnd_cols)
+        (x * m_mainwnd_rows + y) +
+            (m_screenset * m_mainwnd_rows * m_mainwnd_cols)
     );
     return sequence;
 }
@@ -681,7 +684,7 @@ mainwid::on_button_press_event (GdkEventButton * a_p0)
 {
     grab_focus();
     current_sequence(seq_from_xy(int(a_p0->x), int(a_p0->y)));
-    if (current_sequence() >= 0 && a_p0->button == 1)
+    if (current_sequence() >= 0 && CLICK_IS_LEFT(a_p0->button))
         m_button_down = true;
 
     return true;
@@ -702,16 +705,16 @@ mainwid::on_button_release_event (GdkEventButton * a_p0)
      * Have we hit a sequence with the L button?  Toggle its play mode.
      */
 
-    if (current_sequence() >= 0 && a_p0->button == 1 && ! m_moving)
+    if (current_sequence() >= 0 && CLICK_IS_LEFT(a_p0->button)  && ! m_moving)
     {
         if (perf().is_active(current_sequence()))
         {
             perf().sequence_playing_toggle(current_sequence());
             draw_sequence_on_pixmap(current_sequence());
-            draw_sequence_pixmap_on_window(current_sequence());      // effective?
+            draw_sequence_pixmap_on_window(current_sequence());  // effective?
         }
     }
-    if (a_p0->button == 1 && m_moving)
+    if (CLICK_IS_LEFT(a_p0->button) && m_moving)
     {
         m_moving = false;
         if          // if we're in a pattern, it is active, and in edit mode...
@@ -724,7 +727,7 @@ mainwid::on_button_release_event (GdkEventButton * a_p0)
             perf().new_sequence(current_sequence());
             *(perf().get_sequence(current_sequence())) = m_moving_seq;
             draw_sequence_on_pixmap(current_sequence());
-            draw_sequence_pixmap_on_window(current_sequence());      // effective?
+            draw_sequence_pixmap_on_window(current_sequence());  // effective?
         }
         else
         {
@@ -734,7 +737,7 @@ mainwid::on_button_release_event (GdkEventButton * a_p0)
             draw_sequence_pixmap_on_window(m_old_seq);          // effective?
         }
     }
-    if (current_sequence() != -1 && a_p0->button == 3) // launch menu (R button)
+    if (current_sequence() != -1 && CLICK_IS_RIGHT(a_p0->button))
         popup_menu();
 
     return true;

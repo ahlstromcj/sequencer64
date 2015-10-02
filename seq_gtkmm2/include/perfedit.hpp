@@ -36,6 +36,7 @@
 #include <list>
 #include <string>
 #include <gtkmm/widget.h>       // somehow, can't forward-declare GdkEventAny
+#include <gtkmm/window.h>       // somehow, can't forward-declare GdkEventAny
 
 #include "gui_window_gtk2.hpp"
 

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-09-29
+ * \updates       2015-10-02
  * \license       GNU GPLv2 or above
  *
  */
@@ -86,15 +86,17 @@ namespace seq64
 {
 
 /**
- * Static data members.
+ * Static data members.  These items apply to all of the instances of seqedit.
  */
 
-int seqedit::m_initial_zoom = 2;
-int seqedit::m_initial_snap = c_ppqn / 4;
-int seqedit::m_initial_note_length = c_ppqn / 4;
-int seqedit::m_initial_scale = 0;
-int seqedit::m_initial_key = 0;
-int seqedit::m_initial_sequence = -1;
+const int seqedit::mc_min_zoom      =  1;
+const int seqedit::mc_max_zoom      = 32;
+int seqedit::m_initial_zoom         =  2;
+int seqedit::m_initial_snap         = c_ppqn / 4;
+int seqedit::m_initial_note_length  = c_ppqn / 4;
+int seqedit::m_initial_scale        =  0;
+int seqedit::m_initial_key          =  0;
+int seqedit::m_initial_sequence     = -1;
 
 /**
  * Actions
@@ -109,7 +111,8 @@ static const int c_quantize_events       =  6;
 static const int c_tighten_events        =  8;
 static const int c_tighten_notes         =  9;
 static const int c_transpose             = 10;
-static const int c_transpose_h           = 12;      /* skipped 11 */
+static const int c_reserved              = 11;
+static const int c_transpose_h           = 12;
 
 /**
  *  Connects to a menu item, tells the performance to launch the timer
@@ -126,9 +129,9 @@ static const int c_transpose_h           = 12;      /* skipped 11 */
  *      options does; make the sequence and perform parameters references.
  */
 
-seqedit::seqedit (sequence & a_seq, perform & a_perf, int a_pos)
+seqedit::seqedit (sequence & seq, perform & p, int a_pos)
  :
-    gui_window_gtk2     (a_perf),
+    gui_window_gtk2     (p, 700, 500),          /* set_size_request(700, 500) */
     m_zoom              (m_initial_zoom),
     m_snap              (m_initial_snap),
     m_note_length       (m_initial_note_length),
@@ -136,8 +139,7 @@ seqedit::seqedit (sequence & a_seq, perform & a_perf, int a_pos)
     m_key               (m_initial_key),
     m_sequence          (m_initial_sequence),
     m_measures          (0),
-    m_seq               (a_seq),
-//  m_mainperf          (a_perf),               /* set the performance */
+    m_seq               (seq),
     m_menubar           (manage(new Gtk::MenuBar())),
     m_menu_tools        (manage(new Gtk::Menu())),
     m_menu_zoom         (manage(new Gtk::Menu())),
@@ -219,11 +221,11 @@ seqedit::seqedit (sequence & a_seq, perform & a_perf, int a_pos)
     m_editing_status    (0),
     m_editing_cc        (0)
 {
-    std::string title = "seq24 - ";                         /* main window */
+    std::string title = "Sequencer64 - ";                   /* main window */
     set_icon(Gdk::Pixbuf::create_from_xpm_data(seq_editor_xpm));
     title.append(m_seq.get_name());
     set_title(title);
-    set_size_request(700, 500);
+//  set_size_request(700, 500);         // now done by base class
     m_seq.set_editing(true);
     create_menus();
 
@@ -356,7 +358,7 @@ seqedit::seqedit (sequence & a_seq, perform & a_perf, int a_pos)
     set_scale(m_scale);
     set_key(m_key);
     m_seqroll_wid->set_ignore_redraw(false);
-    add_events(Gdk::SCROLL_MASK);
+    // add_events(Gdk::SCROLL_MASK);
 }
 
 /**

@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-22
- * \updates       2015-09-29
+ * \updates       2015-10-02
  * \license       GNU GPLv2 or above
  *
  */
@@ -61,11 +61,25 @@ class gui_window_gtk2 : public Gtk::Window
 private:
 
     perform & m_mainperf;
+
+    /**
+     *  Window sizes.  Could make this constant, but some windows are
+     *  resizable.
+     */
+
+    int m_window_x;
+    int m_window_y;
+
     bool m_modified;
 
 public:
 
-    gui_window_gtk2 (perform & a_perf);
+    gui_window_gtk2
+    (
+        perform & p,
+        int window_x = 0,
+        int window_y = 0
+    );
     ~gui_window_gtk2 ();
 
     /**
@@ -83,7 +97,7 @@ protected:
      * \getter m_mainperf
      */
 
-    perform & perf ()               // convert to reference later
+    perform & perf ()
     {
         return m_mainperf;
     }

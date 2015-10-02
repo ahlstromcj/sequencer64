@@ -1191,7 +1191,7 @@ perform::start (bool a_state)
 /**
  *  If JACK is not running, call inner_stop().
  *
- *  The logic seems backward her, in that we call inner_stop() if JACK is
+ *  The logic seems backward here, in that we call inner_stop() if JACK is
  *  not running.  Or perhaps we misunderstand the meaning of
  *  m_jack_running?
  */

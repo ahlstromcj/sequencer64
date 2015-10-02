@@ -24,13 +24,17 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-09-29
+ * \updates       2015-10-02
  * \license       GNU GPLv2 or above
  *
+ *  This module is almost exclusively user-interface code.  There are some
+ *  pointers yet that could be replaced by references, and a number of minor
+ *  issues that could be fixed.
  */
 
 #include <gtkmm/adjustment.h>
 
+#include "click.hpp"                    /* CLICK_IS_LEFT(), etc.    */
 #include "font.hpp"
 #include "perform.hpp"
 #include "perfnames.hpp"
@@ -39,9 +43,9 @@
  *  Adjustments to the performance window.  Sequences that don't have
  *  events show up as black-on-yellow.  This feature is enabled by
  *  default.  To disable this feature, configure the build with the
- *  --disable-highlight option.
+ *  "--disable-highlight" option.
  *
- *      #define SEQ64_HIGHLIGHT_EMPTY_SEQS  // undefine for normal empty seqs
+ *  #define SEQ64_HIGHLIGHT_EMPTY_SEQS  // undefine for normal empty seqs
  */
 
 namespace seq64
@@ -49,48 +53,44 @@ namespace seq64
 
 /**
  *  Principal constructor for this user-interface object.
+ *
+ *  Weird is that the window (x,y) are set to (c_names_x, 100), when c_names_y
+ *  is 22 in globals.h.
  */
 
-perfnames::perfnames (perform * a_perf, Gtk::Adjustment * a_vadjust)
+perfnames::perfnames (perform & p, Gtk::Adjustment & vadjust)
  :
-    Gtk::DrawingArea    (),
-    seqmenu             (*a_perf),
-    m_gc                (),
-    m_window            (),
-    m_black             (Gdk::Color("black")),
-    m_white             (Gdk::Color("white")),
-    m_grey              (Gdk::Color("grey")),
-    m_yellow            (Gdk::Color("yellow")),
-    m_pixmap            (),
-    m_mainperf          (a_perf),
-    m_window_x          (),
-    m_window_y          (),
-    m_vadjust           (a_vadjust),
-    m_sequence_offset   (0),
-    m_sequence_active   ()              // an array
+    gui_drawingarea_gtk2    (p, sm_hadjust_dummy, vadjust, c_names_x, 100),
+    seqmenu                 (p),
+    m_names_x               (c_names_x),
+    m_names_y               (c_names_y),
+    m_seqs_in_set           (c_seqs_in_set),
+    m_sequence_max          (c_max_sequence),
+    m_sequence_offset       (0),
+    m_sequence_active       ()              // an array
 {
-    add_events
-    (
-        Gdk::BUTTON_PRESS_MASK | Gdk::BUTTON_RELEASE_MASK | Gdk::SCROLL_MASK
-    );
-    set_size_request(c_names_x, 100);                   /* set default size */
-
     /*
-     *  In the constructor you can only allocate colors;
-     *  get_window() returns 0 because this window has not be realized.
+     * This is only a subset of what the base class sets:
+     *
+     *  add_events
+     *  (
+     *      Gdk::BUTTON_PRESS_MASK | Gdk::BUTTON_RELEASE_MASK |
+     *      Gdk::SCROLL_MASK
+     *  );
+     *  set_size_request(c_names_x, 100);   // set default size //
+     *  set_double_buffered(false);
      */
 
-    Glib::RefPtr<Gdk::Colormap> colormap = get_default_colormap();
-    colormap->alloc_color(m_black);
-    colormap->alloc_color(m_white);
-    colormap->alloc_color(m_grey);
-    colormap->alloc_color(m_yellow);
-    m_vadjust->signal_value_changed().connect
+    m_vadjust.signal_value_changed().connect
     (
         mem_fun(*(this), &perfnames::change_vert)
     );
-    set_double_buffered(false);
-    for (int i = 0; i < c_max_sequence; ++i)
+
+    /*
+     * \todo Change this to a dynamic container.
+     */
+
+    for (int i = 0; i < m_sequence_max; ++i)
         m_sequence_active[i] = false;
 }
 
@@ -101,41 +101,11 @@ perfnames::perfnames (perform * a_perf, Gtk::Adjustment * a_vadjust)
 void
 perfnames::change_vert ()
 {
-    if (m_sequence_offset != int(m_vadjust->get_value()))
+    if (m_sequence_offset != int(m_vadjust.get_value()))
     {
-        m_sequence_offset = int(m_vadjust->get_value());
+        m_sequence_offset = int(m_vadjust.get_value());
         queue_draw();
     }
-}
-
-/**
- *  This function does nothing.
- */
-
-void
-perfnames::update_pixmap ()
-{
-    // Empty body
-}
-
-/**
- *  This function does nothing.
- */
-
-void
-perfnames::draw_area ()
-{
-    // Empty body
-}
-
-/**
- *  Redraw the given sequence.
- */
-
-void
-perfnames::redraw (int sequence)
-{
-    draw_sequence(sequence);
 }
 
 /**
@@ -146,9 +116,9 @@ void
 perfnames::draw_sequence (int seqnum)
 {
     int i = seqnum - m_sequence_offset;
-    if (seqnum < c_max_sequence)
+    if (seqnum < m_sequence_max)
     {
-        sequence * seq = m_mainperf->get_sequence(seqnum);
+        sequence * seq = perf().get_sequence(seqnum);
 
 #if SEQ64_HIGHLIGHT_EMPTY_SEQS
 
@@ -162,16 +132,16 @@ perfnames::draw_sequence (int seqnum)
         m_gc->set_foreground(m_black);
         m_window->draw_rectangle
         (
-            m_gc, true, 0, (c_names_y * i) , c_names_x, c_names_y + 1
+            m_gc, true, 0, (m_names_y * i) , m_names_x, m_names_y + 1
         );
-        if (seqnum % c_seqs_in_set == 0)
+        if (seqnum % m_seqs_in_set == 0)
         {
-            char ss[3];
-            snprintf(ss, sizeof(ss), "%2d", seqnum / c_seqs_in_set);
+            char ss[4];
+            snprintf(ss, sizeof(ss), "%2d", seqnum / m_seqs_in_set);
             m_gc->set_foreground(m_white);
             p_font_renderer->render_string_on_drawable
             (
-                m_gc, 2, c_names_y * i + 2, m_window, ss, font::WHITE
+                m_gc, 2, m_names_y * i + 2, m_window, ss, font::WHITE
             );
         }
         else
@@ -179,10 +149,10 @@ perfnames::draw_sequence (int seqnum)
             m_gc->set_foreground(m_white);
             m_window->draw_rectangle
             (
-                m_gc, true, 1, (c_names_y * (i)), (6 * 2) + 1, c_names_y
+                m_gc, true, 1, (m_names_y * (i)), (6 * 2) + 1, m_names_y
             );
         }
-        if (m_mainperf->is_active(seqnum))
+        if (perf().is_active(seqnum))
         {
 #if SEQ64_HIGHLIGHT_EMPTY_SEQS
             seqempty = seq->event_count() == 0;     // this works fine!
@@ -198,9 +168,9 @@ perfnames::draw_sequence (int seqnum)
         m_window->draw_rectangle
         (
             m_gc, true, 6 * 2 + 3,
-            (c_names_y * i) + 1, c_names_x - 3 - (6 * 2), c_names_y - 1
+            (m_names_y * i) + 1, m_names_x - 3 - (6 * 2), m_names_y - 1
         );
-        if (m_mainperf->is_active(seqnum))
+        if (perf().is_active(seqnum))
         {
             char temp[50];
             m_sequence_active[seqnum] = true;
@@ -219,7 +189,7 @@ perfnames::draw_sequence (int seqnum)
             );
             p_font_renderer->render_string_on_drawable
             (
-                m_gc, 5 + 6 * 2, c_names_y * i + 2, m_window, temp, col
+                m_gc, 5 + 6 * 2, m_names_y * i + 2, m_window, temp, col
             );
             snprintf
             (
@@ -229,14 +199,14 @@ perfnames::draw_sequence (int seqnum)
             );
             p_font_renderer->render_string_on_drawable
             (
-                m_gc, 5 + 6 * 2, c_names_y * i + 12, m_window, temp, col
+                m_gc, 5 + 6 * 2, m_names_y * i + 12, m_window, temp, col
             );
 
             bool muted = seq->get_song_mute();
             m_gc->set_foreground(m_black);
             m_window->draw_rectangle
             (
-                m_gc, muted, 6 * 2 + 6 * 20 + 2, (c_names_y * i), 10, c_names_y
+                m_gc, muted, 6 * 2 + 6 * 20 + 2, (m_names_y * i), 10, m_names_y
             );
             if (muted)
             {
@@ -249,7 +219,7 @@ perfnames::draw_sequence (int seqnum)
 
                 p_font_renderer->render_string_on_drawable
                 (
-                    m_gc, 5 + 6 * 2 + 6 * 20, c_names_y * i + 2,
+                    m_gc, 5 + 6 * 2 + 6 * 20, m_names_y * i + 2,
                     m_window, "M", col
                 );
             }
@@ -257,7 +227,7 @@ perfnames::draw_sequence (int seqnum)
             {
                 p_font_renderer->render_string_on_drawable
                 (
-                    m_gc, 5 + 6 * 2 + 6 * 20, c_names_y * i + 2,
+                    m_gc, 5 + 6 * 2 + 6 * 20, m_names_y * i + 2,
                     m_window, "M", col
                 );
             }
@@ -268,26 +238,26 @@ perfnames::draw_sequence (int seqnum)
         m_gc->set_foreground(m_grey);
         m_window->draw_rectangle
         (
-            m_gc, true, 0, (c_names_y * i) + 1 , c_names_x, c_names_y
+            m_gc, true, 0, (m_names_y * i) + 1 , m_names_x, m_names_y
         );
     }
 }
 
 /**
- *  Converts a y-value into a sequence number, returned via the second
- *  parameter.
+ *  Converts a y-value into a sequence number and returns it.
  */
 
-void
-perfnames::convert_y (int a_y, int * a_seq)
+int
+perfnames::convert_y (int y)
 {
-    *a_seq = a_y / c_names_y;
-    *a_seq += m_sequence_offset;
-    if (*a_seq >= c_max_sequence)
-        *a_seq = c_max_sequence - 1;
+    int seq = y / m_names_y + m_sequence_offset;
+    if (seq >= m_sequence_max)
+        seq = m_sequence_max - 1;
 
-    if (*a_seq < 0)
-        *a_seq = 0;
+    if (seq < 0)
+        seq = 0;
+
+    return seq;
 }
 
 /**
@@ -299,14 +269,15 @@ bool
 perfnames::on_button_press_event (GdkEventButton * a_e)
 {
     int y = int(a_e->y);                            /* int x = (int) a_e->x; */
-    int seqnum;
-    convert_y(y, &seqnum);
+    int seqnum = convert_y(y);
     current_sequence(seqnum);
-    if (a_e->button == 1)                           /* left mouse button */
+    if (CLICK_IS_LEFT(a_e->button))
     {
-        if (m_mainperf->is_active(seqnum))
+        if (perf().is_active(seqnum))
         {
-            sequence * seq = m_mainperf->get_sequence(seqnum);
+            // TODO:  use reference here
+
+            sequence * seq = perf().get_sequence(seqnum);
             bool muted = seq->get_song_mute();
             seq->set_song_mute(! muted);
             queue_draw();
@@ -330,7 +301,7 @@ perfnames::on_realize ()
     m_window->clear();
     m_pixmap = Gdk::Pixmap::create
     (
-        m_window, c_names_x, c_names_y * c_max_sequence + 1, -1
+        m_window, m_names_x, m_names_y * m_sequence_max + 1, -1
     );
 }
 
@@ -341,7 +312,7 @@ perfnames::on_realize ()
 bool
 perfnames::on_expose_event (GdkEventExpose * a_e)
 {
-    int seqs = (m_window_y / c_names_y) + 1;
+    int seqs = (m_window_y / m_names_y) + 1;
     for (int i = 0; i < seqs; i++)
     {
         int sequence = i + m_sequence_offset;
@@ -358,7 +329,7 @@ perfnames::on_expose_event (GdkEventExpose * a_e)
 bool
 perfnames::on_button_release_event (GdkEventButton * p0)
 {
-    if (p0->button == 3)                        /* right mouse button   */
+    if (CLICK_IS_RIGHT(p0->button))
         popup_menu();
 
     return false;
@@ -369,15 +340,15 @@ perfnames::on_button_release_event (GdkEventButton * p0)
  */
 
 bool
-perfnames::on_scroll_event (GdkEventScroll * a_ev)
+perfnames::on_scroll_event (GdkEventScroll * ev)
 {
-    double val = m_vadjust->get_value();
-    if (a_ev->direction == GDK_SCROLL_UP)
-        val -= m_vadjust->get_step_increment();
-    if (a_ev->direction == GDK_SCROLL_DOWN)
-        val += m_vadjust->get_step_increment();
+    double val = m_vadjust.get_value();
+    if (ev->direction == GDK_SCROLL_UP)
+        val -= m_vadjust.get_step_increment();
+    if (ev->direction == GDK_SCROLL_DOWN)
+        val += m_vadjust.get_step_increment();
 
-    m_vadjust->clamp_page(val, val + m_vadjust->get_page_size());
+    m_vadjust.clamp_page(val, val + m_vadjust.get_page_size());
     return true;
 }
 
@@ -387,11 +358,11 @@ perfnames::on_scroll_event (GdkEventScroll * a_ev)
  */
 
 void
-perfnames::on_size_allocate (Gtk::Allocation & a_r)
+perfnames::on_size_allocate (Gtk::Allocation & a)
 {
-    Gtk::DrawingArea::on_size_allocate(a_r);
-    m_window_x = a_r.get_width();
-    m_window_y = a_r.get_height();
+    Gtk::DrawingArea::on_size_allocate(a);
+    m_window_x = a.get_width();             /* side-effect  */
+    m_window_y = a.get_height();            /* side-effect  */
 }
 
 /**
@@ -401,14 +372,13 @@ perfnames::on_size_allocate (Gtk::Allocation & a_r)
 void
 perfnames::redraw_dirty_sequences ()
 {
-    int y_s = 0;
-    int y_f = m_window_y / c_names_y;
-    for (int y = y_s; y <= y_f; y++)
+    int y_f = m_window_y / m_names_y;
+    for (int y = 0; y <= y_f; y++)
     {
         int seq = y + m_sequence_offset;
-        if (seq < c_max_sequence)
+        if (seq < m_sequence_max)
         {
-            bool dirty = (m_mainperf->is_dirty_names(seq));
+            bool dirty = (perf().is_dirty_names(seq));
             if (dirty)
                 draw_sequence(seq);
         }

@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-01
+ * \updates       2015-10-02
  * \license       GNU GPLv2 or above
  *
  */
@@ -39,6 +39,8 @@
 #include <gtkmm/window.h>       // somehow, can't forward-declare GdkEventAny
 
 #include "gui_window_gtk2.hpp"
+
+#define DEFAULT_PERFEDIT_SNAP   8
 
 /*
  *  Since these items are pointers, we were able to move (most) of the
@@ -130,11 +132,12 @@ private:
     int m_snap;
     int m_bpm;
     int m_bw;
+    int m_ppqn;
     bool m_modified;
 
 public:
 
-    perfedit (perform & a_perf);
+    perfedit (perform & p);
     ~perfedit ();
 
     void init_before_show ();
@@ -159,9 +162,9 @@ public:
 
 private:
 
-    void set_bpm (int a_beats_per_measure);
-    void set_bw (int a_beat_width);
-    void set_snap (int a_snap);
+    void set_bpm (int beats_per_measure);
+    void set_bw (int beat_width);
+    void set_snap (int snap);
     void set_guides ();
     void grow ();
     void start_playing ();
@@ -171,12 +174,12 @@ private:
     void collapse ();
     void copy ();
     void undo ();
-    void popup_menu (Gtk::Menu * a_menu);
+    void popup_menu (Gtk::Menu * menu);
     bool timeout ();
 
     void on_realize ();
-    bool on_delete_event (GdkEventAny * a_event);
-    bool on_key_press_event (GdkEventKey * a_ev);
+    bool on_delete_event (GdkEventAny * event);
+    bool on_key_press_event (GdkEventKey * ev);
 
 };
 

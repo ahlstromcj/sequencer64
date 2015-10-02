@@ -47,13 +47,25 @@ namespace seq64
  *      Refers to the main performance object.
  */
 
-gui_window_gtk2::gui_window_gtk2 (perform & a_perf)
- :
+gui_window_gtk2::gui_window_gtk2
+(
+    perform & p,
+    int window_x,
+    int window_y
+) :
     Gtk::Window         (),
-    m_mainperf          (a_perf),
+    m_mainperf          (p),
+    m_window_x          (window_x),
+    m_window_y          (window_y),
     m_modified          (false)
 {
-    add_events(Gdk::KEY_PRESS_MASK | Gdk::KEY_RELEASE_MASK);
+    add_events
+    (
+        Gdk::KEY_PRESS_MASK | Gdk::KEY_RELEASE_MASK |
+        Gdk::SCROLL_MASK
+    );
+    if (window_x > 0 && window_y > 0)
+        set_size_request(window_x, window_y);
 }
 
 /**

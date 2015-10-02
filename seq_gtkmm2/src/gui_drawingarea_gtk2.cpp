@@ -163,18 +163,17 @@ gui_drawingarea_gtk2::~gui_drawingarea_gtk2 ()
 void
 gui_drawingarea_gtk2::gtk_drawarea_init ()
 {
-    if (m_window_x > 0 && m_window_y > 0)
-        set_size_request(m_window_x, m_window_y);
-
     add_events
     (
         Gdk::BUTTON_PRESS_MASK | Gdk::BUTTON_RELEASE_MASK |
-        Gdk::POINTER_MOTION_MASK | Gdk::KEY_PRESS_MASK |
-        Gdk::KEY_RELEASE_MASK | Gdk::FOCUS_CHANGE_MASK |
-        Gdk::ENTER_NOTIFY_MASK | Gdk::LEAVE_NOTIFY_MASK |
-        Gdk::SCROLL_MASK
+        Gdk::POINTER_MOTION_MASK |
+        Gdk::KEY_PRESS_MASK | Gdk::KEY_RELEASE_MASK |
+        Gdk::FOCUS_CHANGE_MASK | Gdk::SCROLL_MASK |
+        Gdk::ENTER_NOTIFY_MASK | Gdk::LEAVE_NOTIFY_MASK
     );
     set_double_buffered(false);
+    if (m_window_x > 0 && m_window_y > 0)
+        set_size_request(m_window_x, m_window_y);
 }
 
 /**

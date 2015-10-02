@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-09-30
+ * \updates       2015-10-02
  * \license       GNU GPLv2 or above
  *
  *  This class has way too many members.
@@ -667,12 +667,15 @@ public:
 
     /**
      *  Encapsulates a series of calls used in mainwnd.
+     *
+     * \todo
+     *      Verify the usage and nature of this flag.
      */
 
-    void start_playing ()
+    void start_playing (bool flag = false)
     {
-        position_jack(false);
-        start(false);
+        position_jack(flag);
+        start(flag);
         start_jack();
         g_rc_settings.is_pattern_playing(true);
     }

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-09-16
+ * \updates       2015-10-02
  * \license       GNU GPLv2 or above
  *
  *  Here is a list of the global variables used/stored/modified by this
@@ -536,7 +536,7 @@ options::add_mouse_page ()
      *      Add a "Mod4" checkbox section here.
      */
 
-    Gtk::Frame * mod4frame = manage(new Gtk::Frame("Seq24 Options"));
+    Gtk::Frame * mod4frame = manage(new Gtk::Frame("Sequencer64 Options"));
     mod4frame->set_border_width(4);
     vbox->pack_start(*mod4frame, Gtk::PACK_SHRINK);
 
@@ -606,7 +606,7 @@ options::add_jack_sync_page ()
 
     check = manage(new Gtk::CheckButton("Trans_port Master", true));
     check->set_active(global_with_jack_master);
-    add_tooltip(check, "Seq24 will attempt to serve as JACK Master.");
+    add_tooltip(check, "Sequencer64 will attempt to serve as JACK Master.");
     check->signal_toggled().connect
     (
         bind(mem_fun(*this, &options::transport_callback), e_jack_master, check)
@@ -618,7 +618,7 @@ options::add_jack_sync_page ()
     add_tooltip
     (
         check,
-        "Seq24 will fail to be Master if there is already a Master set."
+        "Sequencer64 will fail to be Master if there is already a Master set."
     );
     check->signal_toggled().connect
     (

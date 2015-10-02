@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-25
- * \updates       2015-09-27
+ * \updates       2015-10-02
  * \license       GNU GPLv2 or above
  *
  *  We're going to try to collect all the globals here in one module, and
@@ -81,10 +81,25 @@ extern user_settings g_user_settings;
 #define DEFAULT_PPQN                    192
 
 /**
- *  Default value for c_bpm (global beats-per-minute)
+ *  Default value for c_bpm (global beats-per-minute, also known as "BPM").
+ *  Do not confuse this "bpm" with the other one, "beats per measure".
  */
 
 #define DEFAULT_BPM                     120
+
+/**
+ *  Default value for "beats-per-measure".  This is the "numerator" in a 4/4
+ *  time signature.  True?
+ */
+
+#define DEFAULT_BEATS_PER_MEASURE         4
+
+/**
+ *  Default value for "beat-width".  This is the "denominator" in a 4/4 time
+ *  signature.  True?
+ */
+
+#define DEFAULT_BEAT_WIDTH                4
 
 /**
  *  Default value for c_thread_trigger_width_ms.

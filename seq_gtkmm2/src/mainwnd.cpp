@@ -82,7 +82,7 @@ int mainwnd::m_sigpipe[2];
  *  This constructor is way too large; it would be nicer to provide a
  *  number of well-named initialization functions.
  *
- * \param a_perf
+ * \param p
  *      Refers to the main performance object.
  *
  * \todo
@@ -90,18 +90,18 @@ int mainwnd::m_sigpipe[2];
  *      options does; make the perform parameter a reference.
  */
 
-mainwnd::mainwnd (perform & a_perf)
+mainwnd::mainwnd (perform & p)
  :
-    gui_window_gtk2         (a_perf),
+    gui_window_gtk2         (p),
     performcallback         (),
     m_tooltips              (manage(new Gtk::Tooltips())),
     m_menubar               (manage(new Gtk::MenuBar())),
     m_menu_file             (manage(new Gtk::Menu())),
     m_menu_view             (manage(new Gtk::Menu())),
     m_menu_help             (manage(new Gtk::Menu())),
-    m_main_wid              (manage(new mainwid(perf()))),
-    m_main_time             (manage(new maintime(perf()))),
-    m_perf_edit             (new perfedit(perf())),
+    m_main_wid              (manage(new mainwid(perf()))),  // p
+    m_main_time             (manage(new maintime(perf()))), // p
+    m_perf_edit             (new perfedit(perf())),         // p
     m_options               (nullptr),
     m_main_cursor           (),
     m_button_learn          (nullptr),

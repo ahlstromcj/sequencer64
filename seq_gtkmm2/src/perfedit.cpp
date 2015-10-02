@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-09-29
+ * \updates       2015-10-02
  * \license       GNU GPLv2 or above
  *
  */
@@ -83,11 +83,11 @@ namespace seq64
 {
 
 /**
- *  Principal constructor, has a pointer to a perform object.
+ *  Principal constructor, has a reference to a perform object.
  *  We've reordered the pointer members and put them in the initializer
  *  list to make the constructor a bit cleaner.
  *
- * \param a_perf
+ * \param p
  *      Refers to the main performance object.
  *
  * \todo
@@ -95,15 +95,15 @@ namespace seq64
  *      options does; make the perform parameter a reference.
  */
 
-perfedit::perfedit (perform & a_perf)
+perfedit::perfedit (perform & p)
  :
-    gui_window_gtk2     (a_perf),
+    gui_window_gtk2     (p, 700, 400),      /* set_size_request(700, 400) */
     m_table             (manage(new Gtk::Table(6, 3, false))),
     m_vadjust           (manage(new Gtk::Adjustment(0, 0, 1, 1, 1, 1))),
     m_hadjust           (manage(new Gtk::Adjustment(0, 0, 1, 1, 1, 1))),
     m_vscroll           (manage(new Gtk::VScrollbar(*m_vadjust))),
     m_hscroll           (manage(new Gtk::HScrollbar(*m_hadjust))),
-    m_perfnames         (manage(new perfnames(&perf(), m_vadjust))),
+    m_perfnames         (manage(new perfnames(perf(), *m_vadjust))),
     m_perfroll          (manage(new perfroll(&perf(), m_hadjust, m_vadjust))),
     m_perftime          (manage(new perftime(perf(), *m_hadjust))),
     m_menu_snap         (manage(new Gtk::Menu())),
@@ -126,14 +126,15 @@ perfedit::perfedit (perform & a_perf)
     m_tooltips          (manage(new Gtk::Tooltips())),
     m_menu_bpm          (manage(new Gtk::Menu())),
     m_menu_bw           (manage(new Gtk::Menu())),
-    m_snap              (8),                    // (c_ppqn / 4),
-    m_bpm               (4),
-    m_bw                (4),
+    m_snap              (DEFAULT_PERFEDIT_SNAP),
+    m_bpm               (DEFAULT_BEATS_PER_MEASURE),
+    m_bw                (DEFAULT_BEAT_WIDTH),
+    m_ppqn              (c_ppqn),   /* normally 192 pulses per quarter note */
     m_modified          (false)
 {
     set_icon(Gdk::Pixbuf::create_from_xpm_data(perfedit_xpm));
-    set_title("Sequencer24 - Song Editor");                   /* main window */
-    set_size_request(700, 400);
+    set_title("Sequencer64 Song Editor");                   /* main window */
+//  set_size_request(700, 400);                             /* base class? */
     m_table->set_border_width(2);
     m_hlbox->set_border_width(2);
     m_button_grow->add
@@ -141,7 +142,7 @@ perfedit::perfedit (perform & a_perf)
         *manage(new Gtk::Arrow(Gtk::ARROW_RIGHT, Gtk::SHADOW_OUT))
     );
     m_button_grow->signal_clicked().connect(mem_fun(*this, &perfedit::grow));
-    add_tooltip(m_button_grow, "Increase size of Grid.");
+    add_tooltip(m_button_grow, "Increase size of grid");
 
     /*
      * Fill the table
@@ -193,7 +194,7 @@ perfedit::perfedit (perform & a_perf)
             mem_fun(*this, &perfedit::popup_menu), m_menu_snap
         )
     );
-    add_tooltip(m_button_snap, "Grid snap. (Fraction of Measure Length)");
+    add_tooltip(m_button_snap, "Grid snap (fraction of measure length)");
     m_entry_snap->set_size_request(40, -1);
     m_entry_snap->set_editable(false);
     m_menu_bw->items().push_back
@@ -234,7 +235,7 @@ perfedit::perfedit (perform & a_perf)
     (
         sigc::bind<Gtk::Menu *>(mem_fun(*this, &perfedit::popup_menu), m_menu_bpm)
     );
-    add_tooltip(m_button_bpm, "Time Signature. Beats per Measure.");
+    add_tooltip(m_button_bpm, "Time signature, beats per measure");
     m_entry_bpm->set_width_chars(2);
     m_entry_bpm->set_editable(false);
     m_button_bw->add                                /* beat width */
@@ -245,7 +246,7 @@ perfedit::perfedit (perform & a_perf)
     (
         sigc::bind<Gtk::Menu *>(mem_fun(*this, &perfedit::popup_menu), m_menu_bw)
     );
-    add_tooltip(m_button_bw, "Time Signature.  Length of Beat.");
+    add_tooltip(m_button_bw, "Time signature, length of beat");
     m_entry_bw->set_width_chars(2);
     m_entry_bw->set_editable(false);
     m_button_undo->add
@@ -256,8 +257,8 @@ perfedit::perfedit (perform & a_perf)
     (
         mem_fun(*this, &perfedit::undo)
     );
-    add_tooltip(m_button_undo, "Undo.");
-    m_button_expand->add                            /* expand */
+    add_tooltip(m_button_undo, "Undo");
+    m_button_expand->add                            /* expand           */
     (
         *manage(new Gtk::Image(Gdk::Pixbuf::create_from_xpm_data(expand_xpm)))
     );
@@ -265,8 +266,8 @@ perfedit::perfedit (perform & a_perf)
     (
         mem_fun(*this, &perfedit::expand)
     );
-    add_tooltip(m_button_expand, "Expand between L and R markers.");
-    m_button_collapse->add                          /* collapse */
+    add_tooltip(m_button_expand, "Expand between L and R markers");
+    m_button_collapse->add                          /* collapse         */
     (
         *manage(new Gtk::Image(Gdk::Pixbuf::create_from_xpm_data(collapse_xpm)))
     );
@@ -274,13 +275,13 @@ perfedit::perfedit (perform & a_perf)
     (
         mem_fun(*this, &perfedit::collapse)
     );
-    add_tooltip(m_button_collapse, "Collapse between L and R markers.");
+    add_tooltip(m_button_collapse, "Collapse between L and R markers");
     m_button_copy->add                              /* expand & copy    */
     (
         *manage(new Gtk::Image(Gdk::Pixbuf::create_from_xpm_data(copy_xpm)))
     );
     m_button_copy->signal_clicked().connect(mem_fun(*this, &perfedit::copy));
-    add_tooltip(m_button_copy, "Expand and copy between L and R markers.");
+    add_tooltip(m_button_copy, "Expand and copy between L and R markers");
     m_button_loop->add
     (
         *manage(new Gtk::Image(Gdk::Pixbuf::create_from_xpm_data(loop_xpm)))
@@ -289,7 +290,7 @@ perfedit::perfedit (perform & a_perf)
     (
         mem_fun(*this, &perfedit::set_looped)
     );
-    add_tooltip(m_button_loop, "Play looped between L and R.");
+    add_tooltip(m_button_loop, "Playback looped between L and R markers");
     m_button_stop->add
     (
         *manage(new Gtk::Image(Gdk::Pixbuf::create_from_xpm_data(stop_xpm)))
@@ -298,7 +299,7 @@ perfedit::perfedit (perform & a_perf)
     (
         mem_fun(*this, &perfedit::stop_playing)
     );
-    add_tooltip(m_button_stop, "Stop playing.");
+    add_tooltip(m_button_stop, "Stop playing");
     m_button_play->add
     (
         *manage(new Gtk::Image(Gdk::Pixbuf::create_from_xpm_data(play2_xpm)))
@@ -307,7 +308,7 @@ perfedit::perfedit (perform & a_perf)
     (
         mem_fun(*this, &perfedit::start_playing)
     );
-    add_tooltip(m_button_play, "Begin playing at L marker.");
+    add_tooltip(m_button_play, "Begin playing at L marker");
     m_hlbox->pack_end(*m_button_copy , false, false);
     m_hlbox->pack_end(*m_button_expand , false, false);
     m_hlbox->pack_end(*m_button_collapse , false, false);
@@ -328,7 +329,7 @@ perfedit::perfedit (perform & a_perf)
     set_snap(8);
     set_bpm(4);
     set_bw(4);
-    add_events(Gdk::KEY_PRESS_MASK | Gdk::KEY_RELEASE_MASK);
+    // add_events(Gdk::KEY_PRESS_MASK | Gdk::KEY_RELEASE_MASK);
 }
 
 /**
@@ -364,9 +365,11 @@ perfedit::undo ()
 void
 perfedit::start_playing ()
 {
-    perf().position_jack(true);
-    perf().start_jack();
-    perf().start(true);
+    // perf().position_jack(true);
+    // perf().start_jack();
+    // perf().start(true);
+
+    perf().start_playing(true);         // careful now, see perform!!!!
 }
 
 /**
@@ -476,12 +479,12 @@ perfedit::set_guides ()
  */
 
 void
-perfedit::set_snap (int a_snap)
+perfedit::set_snap (int snap)
 {
-    char b[32];
-    snprintf(b, sizeof(b), "1/%d", a_snap);
+    char b[8];
+    snprintf(b, sizeof(b), "1/%d", snap);
     m_entry_snap->set_text(b);
-    m_snap = a_snap;
+    m_snap = snap;
     set_guides();
 }
 
@@ -491,12 +494,12 @@ perfedit::set_snap (int a_snap)
  */
 
 void
-perfedit::set_bpm (int a_beats_per_measure)
+perfedit::set_bpm (int beats_per_measure)
 {
-    char b[32];
-    snprintf(b, sizeof(b), "%d", a_beats_per_measure);
+    char b[8];
+    snprintf(b, sizeof(b), "%d", beats_per_measure);
     m_entry_bpm->set_text(b);
-    m_bpm = a_beats_per_measure;
+    m_bpm = beats_per_measure;
     set_guides();
     // is_modified(true);
 }
@@ -507,12 +510,12 @@ perfedit::set_bpm (int a_beats_per_measure)
  */
 
 void
-perfedit::set_bw (int a_beat_width)
+perfedit::set_bw (int beat_width)
 {
-    char b[32];
-    snprintf(b, sizeof(b), "%d", a_beat_width);
+    char b[8];
+    snprintf(b, sizeof(b), "%d", beat_width);
     m_entry_bw->set_text(b);
-    m_bw = a_beat_width;
+    m_bw = beat_width;
     set_guides();
     // is_modified(true);
 }

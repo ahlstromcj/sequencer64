@@ -27,14 +27,15 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-09-13
+ * \updates       2015-10-02
  * \license       GNU GPLv2 or above
  *
+ *  This class supports the left side of the Performance window (also known
+ *  as the Song window).
  */
 
-#include <gtkmm/drawingarea.h>
-
 #include "globals.h"
+#include "gui_drawingarea_gtk2.hpp"
 #include "seqmenu.hpp"
 
 namespace Gtk
@@ -49,49 +50,72 @@ class perform;
 
 /**
  *  This class implements the left-side keyboard in the patterns window.
+ *
+ * \obsolete
+ *      Note the usage of virtual base classes.  Since these can add some
+ *      extra overhead, we should determine if we can do without the
+ *      virtuality (and indeed it doesn't seem to be needed).
  */
 
-class perfnames : public virtual Gtk::DrawingArea, public virtual seqmenu
+class perfnames : public gui_drawingarea_gtk2, public seqmenu
 {
+
 private:
 
-    Glib::RefPtr<Gdk::GC> m_gc;
-    Glib::RefPtr<Gdk::Window> m_window;
-    Gdk::Color m_black;
-    Gdk::Color m_white;
-    Gdk::Color m_grey;
-    Gdk::Color m_yellow;
-    Glib::RefPtr<Gdk::Pixmap> m_pixmap;
-    perform * m_mainperf;
-    int m_window_x;
-    int m_window_y;
-    Gtk::Adjustment * m_vadjust;
+    int m_names_x;
+    int m_names_y;
+    int m_seqs_in_set;
+    int m_sequence_max;                         // CONST
     int m_sequence_offset;
-    bool m_sequence_active[c_max_sequence];
+    bool m_sequence_active[c_max_sequence];     // CONST
 
 public:
 
-    perfnames (perform * a_perf, Gtk::Adjustment * a_vadjust);
+    perfnames (perform & p, Gtk::Adjustment & vadjust);
 
     void redraw_dirty_sequences ();
 
 private:
 
-    void draw_area ();
-    void update_pixmap ();
-    void convert_y (int a_y, int * a_note);
-    void draw_sequence (int a_sequence);
+    int convert_y (int y);
+    void draw_sequence (int sequence);
     void change_vert ();
-    void redraw (int a_sequence);
+
+    /**
+     *  This function does nothing.
+     */
+
+    void update_pixmap ()
+    {
+        // Empty body
+    }
+
+    /**
+     *  This function does nothing.
+     */
+
+    void draw_area ()
+    {
+        // Empty body
+    }
+
+    /**
+     *  Redraw the given sequence.
+     */
+
+    void redraw (int sequence)
+    {
+        draw_sequence(sequence);
+    }
 
 private:    // Gtk callbacks
 
     void on_realize ();
-    bool on_expose_event (GdkEventExpose * a_ev);
-    bool on_button_press_event (GdkEventButton * a_ev);
-    bool on_button_release_event (GdkEventButton * a_ev);
+    bool on_expose_event (GdkEventExpose * ev);
+    bool on_button_press_event (GdkEventButton * ev);
+    bool on_button_release_event (GdkEventButton * ev);
     void on_size_allocate (Gtk::Allocation &);
-    bool on_scroll_event (GdkEventScroll * a_ev) ;
+    bool on_scroll_event (GdkEventScroll * ev);
 
 };
 

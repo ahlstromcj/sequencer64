@@ -508,7 +508,7 @@ seqevent::convert_t (long a_ticks, int * a_x)
  */
 
 void
-seqevent::snap_y(int * a_y)
+seqevent::snap_y (int * a_y)
 {
     *a_y = *a_y - (*a_y % c_key_y);
 }

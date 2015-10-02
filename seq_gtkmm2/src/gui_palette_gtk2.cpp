@@ -36,6 +36,8 @@ namespace seq64
 
 /**
  *  Principal constructor.
+ *  In the constructor you can only allocate colors;
+ *  get_window() returns 0 because this window has not be realized.
  */
 
 gui_palette_gtk2::gui_palette_gtk2 ()

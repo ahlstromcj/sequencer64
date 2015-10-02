@@ -51,9 +51,9 @@ namespace seq64
 perftime::perftime (perform & a_perf, Gtk::Adjustment & a_hadjust)
  :
     gui_drawingarea_gtk2    (a_perf, a_hadjust, sm_vadjust_dummy),
-    m_4bar_offset       (0),
-    m_snap              (c_ppqn),
-    m_measure_length    (c_ppqn * 4)
+    m_4bar_offset           (0),
+    m_snap                  (c_ppqn),
+    m_measure_length        (c_ppqn * 4)
 {
     /*
      * This adds many fewer events than the base class.  Any bad effects?

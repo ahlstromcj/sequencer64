@@ -82,6 +82,12 @@ protected:              // private: should provide accessors
     Glib::RefPtr<Gdk::Pixmap> m_pixmap;
     Glib::RefPtr<Gdk::Pixmap> m_background;
     Glib::RefPtr<Gdk::Pixmap> m_foreground;
+
+    /**
+     *  A frequent hook into the main perform object.  We could move this
+     *  into yet another base class.  Probably not worth the effort.
+     */
+
     perform & m_mainperf;
 
     /**
@@ -117,7 +123,7 @@ public:
 
     gui_drawingarea_gtk2
     (
-        perform & a_perf,
+        perform & p,
         int window_x = 0,
         int window_y = 0
     );
@@ -137,7 +143,7 @@ protected:
      * \getter m_mainperf
      */
 
-    perform & perf ()               // convert to reference later
+    perform & perf ()
     {
         return m_mainperf;
     }

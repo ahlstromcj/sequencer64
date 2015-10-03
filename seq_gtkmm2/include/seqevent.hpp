@@ -27,16 +27,17 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-09-21
+ * \updates       2015-10-03
  * \license       GNU GPLv2 or above
  *
  */
 
-#include <gtkmm/drawingarea.h>
 #include <gdkmm/pixmap.h>
 #include <gdkmm/rectangle.h>
 #include <gtkmm/window.h>
 
+#include "globals.h"
+#include "gui_drawingarea_gtk2.hpp"
 #include "fruityseq.hpp"
 #include "seq24seq.hpp"
 
@@ -48,6 +49,7 @@ namespace Gtk
 namespace seq64
 {
 
+class perform;
 class seqdata;
 class sequence;
 
@@ -55,7 +57,7 @@ class sequence;
  *  Implements the piano event drawing area.
  */
 
-class seqevent : public Gtk::DrawingArea
+class seqevent : public gui_drawingarea_gtk2
 {
 
     friend struct FruitySeqEventInput;
@@ -70,27 +72,8 @@ private:
 
     FruitySeqEventInput m_fruity_interaction;
     Seq24SeqEventInput m_seq24_interaction;
-    Glib::RefPtr<Gdk::GC> m_gc;
-    Glib::RefPtr<Gdk::Window> m_window;
-    Gdk::Color m_black;
-    Gdk::Color m_white;
-    Gdk::Color m_grey;
-    Gdk::Color m_dk_grey;
-    Gdk::Color m_orange;
-    Glib::RefPtr<Gdk::Pixmap> m_pixmap;
-    int m_window_x;
-    int m_window_y;
 
-    /**
-     *  Indicates where the dragging started.
-     */
-
-    int m_drop_x;
-    int m_drop_y;
-    int m_current_x;
-    int m_current_y;
-    Gtk::Adjustment * const m_hadjust;
-    sequence * const m_seq;
+    sequence & m_seq;
 
     /**
      *  Zoom setting, means that one pixel == m_zoom ticks.
@@ -103,7 +86,7 @@ private:
     GdkRectangle m_selected;
     int m_scroll_offset_ticks;
     int m_scroll_offset_x;
-    seqdata * const m_seqdata_wid;
+    seqdata & m_seqdata_wid;
 
     /**
      *  Used when highlighting a bunch of events.
@@ -128,11 +111,12 @@ public:
 
     seqevent
     (
-        sequence * a_seq,
-        int a_zoom,
-        int a_snap,
-        seqdata * a_seqdata_wid,
-        Gtk::Adjustment * a_hadjust
+        sequence & seq,
+        perform & p,
+        int zoom,
+        int snap,
+        seqdata & seqdata_wid,
+        Gtk::Adjustment & hadjust
     );
 
     void reset ();
@@ -161,16 +145,45 @@ public:
 
 private:
 
-    void convert_x (int a_x, long * a_ticks);
-    void convert_t (long a_ticks, int * a_x);
-    void snap_y (int * a_y);
-    void snap_x (int * a_x);
-    void x_to_w (int a_x1, int a_x2, int * a_x, int * a_w);
+    void x_to_w (int a_x1, int a_x2, int & a_x, int & a_w);
     void drop_event (long a_tick);
     void draw_events_on (Glib::RefPtr<Gdk::Drawable> a_draw);
     void start_paste ();
     void change_horz ();
     void force_draw ();
+
+    /**
+     *  Takes the screen x coordinate, multiplies it by the current zoom, and
+     *  returns the tick value in the given parameter.  Why not just return it
+     *  normally?
+     */
+
+    void convert_x (int x, long & tick)
+    {
+        tick = x * m_zoom;
+    }
+
+    /**
+     *  Converts the given tick value to an x corrdinate, based on the zoom,
+     *  and returns it via the second parameter.  Why not just return it
+     *  normally?
+     */
+
+    void convert_t (long ticks, int & x)
+    {
+        x = ticks / m_zoom;
+    }
+
+    /**
+     *  This function performs a 'snap' on y.
+     */
+
+    void snap_y (int & y)
+    {
+        y -= (y % c_key_y);
+    }
+
+    void snap_x (int & a_x);
 
 private:        // callbacks
 

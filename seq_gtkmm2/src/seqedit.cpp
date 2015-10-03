@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-02
+ * \updates       2015-10-03
  * \license       GNU GPLv2 or above
  *
  */
@@ -163,17 +163,23 @@ seqedit::seqedit (sequence & seq, perform & p, int a_pos)
     m_hadjust           (manage(new Gtk::Adjustment(0, 0, 1, 1, 1, 1))),
     m_vscroll_new       (manage(new Gtk::VScrollbar(*m_vadjust))),
     m_hscroll_new       (manage(new Gtk::HScrollbar(*m_hadjust))),
-    m_seqkeys_wid       (manage(new seqkeys(&m_seq, m_vadjust))),
-    m_seqtime_wid       (manage(new seqtime(&m_seq, m_zoom, m_hadjust))),
-    m_seqdata_wid       (manage(new seqdata(&m_seq, m_zoom, m_hadjust))),
+    m_seqkeys_wid       (manage(new seqkeys(m_seq, p, *m_vadjust))),
+    m_seqtime_wid       (manage(new seqtime(m_seq, p, m_zoom, *m_hadjust))),
+    m_seqdata_wid       (manage(new seqdata(m_seq, p, m_zoom, *m_hadjust))),
     m_seqevent_wid
     (
-        manage(new seqevent(&m_seq, m_zoom, m_snap, m_seqdata_wid, m_hadjust))
+        manage(new seqevent(m_seq, p, m_zoom, m_snap, *m_seqdata_wid, *m_hadjust))
     ),
     m_seqroll_wid
     (
-        manage(new seqroll(&perf(), &m_seq, m_zoom, m_snap, m_seqdata_wid,
-            m_seqevent_wid, m_seqkeys_wid, m_pos, m_hadjust, m_vadjust))
+        manage
+        (
+            new seqroll
+            (
+                p, m_seq, m_zoom, m_snap, *m_seqkeys_wid, m_pos,
+                *m_hadjust, *m_vadjust
+            )
+        )
     ),
     m_table             (manage(new Gtk::Table(7, 4, false))),
     m_vbox              (manage(new Gtk::VBox(false, 2))),
@@ -225,7 +231,6 @@ seqedit::seqedit (sequence & seq, perform & p, int a_pos)
     set_icon(Gdk::Pixbuf::create_from_xpm_data(seq_editor_xpm));
     title.append(m_seq.get_name());
     set_title(title);
-//  set_size_request(700, 500);         // now done by base class
     m_seq.set_editing(true);
     create_menus();
 
@@ -286,7 +291,7 @@ seqedit::seqedit (sequence & seq, perform & p, int a_pos)
     (
         mem_fun(*this, &seqedit::play_change_callback)
     );
-    add_tooltip(m_toggle_play, "Sequence dumps data to MIDI bus.");
+    add_tooltip(m_toggle_play, "Sequence dumps data to MIDI bus");
     m_toggle_record->add
     (
         *manage(new Gtk::Image(Gdk::Pixbuf::create_from_xpm_data(rec_xpm)))
@@ -295,7 +300,7 @@ seqedit::seqedit (sequence & seq, perform & p, int a_pos)
     (
         mem_fun(*this, &seqedit::record_change_callback)
     );
-    add_tooltip(m_toggle_record, "Records incoming MIDI data.");
+    add_tooltip(m_toggle_record, "Records incoming MIDI data");
     m_toggle_q_rec->add
     (
         *manage(new Gtk::Image(Gdk::Pixbuf::create_from_xpm_data(q_rec_xpm)))
@@ -304,7 +309,7 @@ seqedit::seqedit (sequence & seq, perform & p, int a_pos)
     (
         mem_fun(*this, &seqedit::q_rec_change_callback)
     );
-    add_tooltip(m_toggle_q_rec, "Quantized record.");
+    add_tooltip(m_toggle_q_rec, "Quantized record");
     m_button_rec_vol->add(*manage(new Gtk::Label("Vol")));
     m_button_rec_vol->signal_clicked().connect
     (
@@ -322,7 +327,7 @@ seqedit::seqedit (sequence & seq, perform & p, int a_pos)
     add_tooltip
     (
         m_toggle_thru,
-        "Incoming MIDI data passes thru to sequences MIDI bus and channel."
+        "Incoming MIDI data passes through to sequence's MIDI bus and channel"
     );
     m_toggle_play->set_active(m_seq.get_playing());
     m_toggle_record->set_active(m_seq.get_recording());
@@ -934,7 +939,7 @@ seqedit::fill_top_bar ()
     (
         sigc::bind<Gtk::Menu *>(mem_fun(*this, &seqedit::popup_menu), m_menu_bpm)
     );
-    add_tooltip(m_button_bpm, "Time Signature. Beats per Measure");
+    add_tooltip(m_button_bpm, "Time signature, beats per measure");
     m_entry_bpm = manage(new Gtk::Entry());
     m_entry_bpm->set_width_chars(2);
     m_entry_bpm->set_editable(false);
@@ -950,7 +955,7 @@ seqedit::fill_top_bar ()
     (
         sigc::bind<Gtk::Menu *>(mem_fun(*this, &seqedit::popup_menu), m_menu_bw)
     );
-    add_tooltip(m_button_bw, "Time Signature. Length of Beat");
+    add_tooltip(m_button_bw, "Time signature, length/width of beat");
     m_entry_bw = manage(new Gtk::Entry());
     m_entry_bw->set_width_chars(2);
     m_entry_bw->set_editable(false);
@@ -965,7 +970,7 @@ seqedit::fill_top_bar ()
     (
         sigc::bind<Gtk::Menu *>(mem_fun(*this, &seqedit::popup_menu), m_menu_length)
     );
-    add_tooltip(m_button_length, "Sequence length in Bars.");
+    add_tooltip(m_button_length, "Sequence length in bars");
     m_entry_length = manage(new Gtk::Entry());
     m_entry_length->set_width_chars(2);
     m_entry_length->set_editable(false);
@@ -981,7 +986,7 @@ seqedit::fill_top_bar ()
     (
         mem_fun(*this, &seqedit::popup_midibus_menu)
     );
-    add_tooltip(m_button_bus, "Select Output Bus.");
+    add_tooltip(m_button_bus, "Select output bus");
     m_entry_bus = manage(new Gtk::Entry());
     m_entry_bus->set_max_length(60);
     m_entry_bus->set_width_chars(60);
@@ -997,7 +1002,7 @@ seqedit::fill_top_bar ()
     (
         mem_fun(*this, &seqedit::popup_midich_menu)
     );
-    add_tooltip(m_button_channel, "Select Midi channel.");
+    add_tooltip(m_button_channel, "Select MIDI channel");
     m_entry_channel = manage(new Gtk::Entry());
     m_entry_channel->set_width_chars(2);
     m_entry_channel->set_editable(false);
@@ -1017,7 +1022,7 @@ seqedit::fill_top_bar ()
     (
         mem_fun(*this, &seqedit::undo_callback)
     );
-    add_tooltip(m_button_undo, "Undo.");
+    add_tooltip(m_button_undo, "Undo");
     m_hbox2->pack_start(*m_button_undo , false, false);
     m_button_redo = manage(new Gtk::Button());              /* redo          */
     m_button_redo->add
@@ -1028,7 +1033,7 @@ seqedit::fill_top_bar ()
     (
         mem_fun(*this, &seqedit::redo_callback)
     );
-    add_tooltip(m_button_redo, "Redo.");
+    add_tooltip(m_button_redo, "Redo");
     m_hbox2->pack_start(*m_button_redo , false, false);
 
     /*
@@ -1046,7 +1051,7 @@ seqedit::fill_top_bar ()
     (
         sigc::bind(mem_fun(*this, &seqedit::do_action), c_quantize_notes, 0)
     );
-    add_tooltip(m_button_quantize, "Quantize Selection.");
+    add_tooltip(m_button_quantize, "Quantize selection");
     m_hbox2->pack_start(*m_button_quantize , false, false);
     m_hbox2->pack_start(*(manage(new Gtk::VSeparator())), false, false, 4);
     m_button_tools = manage(new Gtk::Button());             /* tools button  */
@@ -1058,7 +1063,7 @@ seqedit::fill_top_bar ()
     (
         mem_fun(*this, &seqedit::popup_tool_menu)
     );
-    m_tooltips->set_tip(*m_button_tools, "Tools.");
+    m_tooltips->set_tip(*m_button_tools, "Tools");
     m_hbox2->pack_start(*m_button_tools , false, false);
     m_hbox2->pack_start(*(manage(new Gtk::VSeparator())), false, false, 4);
     m_button_snap = manage(new Gtk::Button());              /* snap          */
@@ -1070,7 +1075,7 @@ seqedit::fill_top_bar ()
     (
         sigc::bind<Gtk::Menu *>(mem_fun(*this, &seqedit::popup_menu), m_menu_snap)
     );
-    add_tooltip(m_button_snap, "Grid snap.");
+    add_tooltip(m_button_snap, "Grid snap");
     m_entry_snap = manage(new Gtk::Entry());
     m_entry_snap->set_width_chars(5);
     m_entry_snap->set_editable(false);
@@ -1089,7 +1094,7 @@ seqedit::fill_top_bar ()
         sigc::bind<Gtk::Menu *>(mem_fun(*this, &seqedit::popup_menu),
             m_menu_note_length)
     );
-    add_tooltip(m_button_note_length, "Note Length.");
+    add_tooltip(m_button_note_length, "Note length");
     m_entry_note_length = manage(new Gtk::Entry());
     m_entry_note_length->set_width_chars(5);
     m_entry_note_length->set_editable(false);
@@ -1104,7 +1109,7 @@ seqedit::fill_top_bar ()
     (
         sigc::bind<Gtk::Menu *>(mem_fun(*this, &seqedit::popup_menu), m_menu_zoom)
     );
-    add_tooltip(m_button_zoom, "Zoom. Pixels to Ticks");
+    add_tooltip(m_button_zoom, "Zoom, pixels to ticks");
     m_entry_zoom = manage(new Gtk::Entry());
     m_entry_zoom->set_width_chars(4);
     m_entry_zoom->set_editable(false);
@@ -1120,7 +1125,7 @@ seqedit::fill_top_bar ()
     (
         sigc::bind<Gtk::Menu *>(mem_fun(*this, &seqedit::popup_menu), m_menu_key)
     );
-    add_tooltip(m_button_key, "Key of Sequence");
+    add_tooltip(m_button_key, "Musical key of sequence");
     m_entry_key = manage(new Gtk::Entry());
     m_entry_key->set_width_chars(5);
     m_entry_key->set_editable(false);
@@ -1135,7 +1140,7 @@ seqedit::fill_top_bar ()
     (
         sigc::bind<Gtk::Menu *>(mem_fun(*this, &seqedit::popup_menu), m_menu_scale)
     );
-    add_tooltip(m_button_scale, "Musical Scale");
+    add_tooltip(m_button_scale, "Musical scale");
     m_entry_scale = manage(new Gtk::Entry());
     m_entry_scale->set_width_chars(5);
     m_entry_scale->set_editable(false);
@@ -1151,7 +1156,7 @@ seqedit::fill_top_bar ()
     (
         mem_fun(*this, &seqedit::popup_sequence_menu)
     );
-    add_tooltip(m_button_sequence, "Background Sequence");
+    add_tooltip(m_button_sequence, "Background sequence to display");
     m_entry_sequence = manage(new Gtk::Entry());
     m_entry_sequence->set_width_chars(14);
     m_entry_sequence->set_editable(false);
@@ -1966,7 +1971,8 @@ seqedit::timeout ()
 void
 seqedit::on_realize()
 {
-    Gtk::Window::on_realize();
+//  Gtk::Window::on_realize();
+    gui_window_gtk2::on_realize();
     Glib::signal_timeout().connect
     (
         mem_fun(*this, &seqedit::timeout), c_redraw_ms

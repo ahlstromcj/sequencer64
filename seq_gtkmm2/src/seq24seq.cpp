@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-08-02
- * \updates       2015-09-13
+ * \updates       2015-10-03
  * \license       GNU GPLv2 or above
  *
  *  This code was extracted from seqevent to make that module more
@@ -35,9 +35,10 @@
 #include <gdkmm/cursor.h>
 #include <gtkmm/button.h>
 
+#include "click.hpp"                    /* CLICK_IS_LEFT(), etc.        */
 #include "seq24seq.hpp"
 #include "seqevent.hpp"
-#include "sequence.hpp"                 // needed for full usage of seqevent
+#include "sequence.hpp"                 /* for full usage of seqevent   */
 
 namespace seq64
 {
@@ -77,7 +78,7 @@ Seq24SeqEventInput::on_button_press_event
     long tick_s;
     long tick_f;
     long tick_w;
-    seqev.convert_x(c_eventevent_x, &tick_w);
+    seqev.convert_x(c_eventevent_x, tick_w);
 
     /* set values for dragging */
 
@@ -91,18 +92,18 @@ Seq24SeqEventInput::on_button_press_event
     seqev.m_old.height = 0;
     if (seqev.m_paste)
     {
-        seqev.snap_x(&seqev.m_current_x);
-        seqev.convert_x(seqev.m_current_x, &tick_s);
+        seqev.snap_x(seqev.m_current_x);
+        seqev.convert_x(seqev.m_current_x, tick_s);
         seqev.m_paste = false;
-        seqev.m_seq->push_undo();
-        seqev.m_seq->paste_selected(tick_s, 0);
+        seqev.m_seq.push_undo();
+        seqev.m_seq.paste_selected(tick_s, 0);
     }
     else
     {
         if (a_ev->button == 1)                      /* left mouse button     */
         {
-            seqev.convert_x(seqev.m_drop_x, &tick_s); /* x,y in to tick/note */
-            tick_f = tick_s + (seqev.m_zoom);       /* shift back a few ticks */
+            seqev.convert_x(seqev.m_drop_x, tick_s); /* x,y in to tick/note    */
+            tick_f = tick_s + (seqev.m_zoom);        /* shift back a few ticks */
             tick_s -= (tick_w);
             if (tick_s < 0)
                 tick_s = 0;
@@ -110,18 +111,15 @@ Seq24SeqEventInput::on_button_press_event
             if (m_adding)
             {
                 seqev.m_painting = true;
-                seqev.snap_x(&seqev.m_drop_x);
-                seqev.convert_x(seqev.m_drop_x, &tick_s); /* x,y to tick/note */
-
-                /* add note, length = little less than snap */
-
-                if
+                seqev.snap_x(seqev.m_drop_x);
+                seqev.convert_x(seqev.m_drop_x, tick_s); /* x,y to tick/note */
+                if              /* add note, length = little less than snap */
                 (
-                    ! seqev.m_seq->select_events(tick_s, tick_f,
+                    ! seqev.m_seq.select_events(tick_s, tick_f,
                        seqev.m_status, seqev.m_cc, sequence::e_would_select)
                 )
                 {
-                    seqev.m_seq->push_undo();
+                    seqev.m_seq.push_undo();
                     seqev.drop_event(tick_s);
                 }
             }
@@ -129,7 +127,7 @@ Seq24SeqEventInput::on_button_press_event
             {
                 if
                 (
-                    ! seqev.m_seq->select_events
+                    ! seqev.m_seq.select_events
                     (
                         tick_s, tick_f,
                         seqev.m_status, seqev.m_cc, sequence::e_is_selected
@@ -138,9 +136,9 @@ Seq24SeqEventInput::on_button_press_event
                 {
                     if (! (a_ev->state & GDK_CONTROL_MASK))
                     {
-                        seqev.m_seq->unselect();
+                        seqev.m_seq.unselect();
                     }
-                    numsel = seqev.m_seq->select_events
+                    numsel = seqev.m_seq.select_events
                     (
                         tick_s, tick_f,
                         seqev.m_status, seqev.m_cc, sequence::e_select_one
@@ -166,7 +164,7 @@ Seq24SeqEventInput::on_button_press_event
                 }
                 if
                 (
-                    seqev.m_seq->select_events
+                    seqev.m_seq.select_events
                     (
                         tick_s, tick_f,
                         seqev.m_status, seqev.m_cc, sequence::e_is_selected
@@ -178,11 +176,11 @@ Seq24SeqEventInput::on_button_press_event
 
                     /* get the box that selected elements are in */
 
-                    seqev.m_seq->get_selected_box(&tick_s, &note, &tick_f, &note);
+                    seqev.m_seq.get_selected_box(&tick_s, &note, &tick_f, &note);
                     tick_f += tick_w;
-                    seqev.convert_t(tick_s, &x); /* convert box to X,Y values */
-                    seqev.convert_t(tick_f, &w);
-                    w = w - x;                   /* w is coordinate now */
+                    seqev.convert_t(tick_s, x); /* convert box to X,Y values */
+                    seqev.convert_t(tick_f, w);
+                    w -= x;                     /* w is coordinate now       */
 
                     /*
                      * Set the m_selected rectangle to hold the
@@ -197,15 +195,15 @@ Seq24SeqEventInput::on_button_press_event
                     /* save offset that we get from the snap above */
 
                     int adjusted_selected_x = seqev.m_selected.x;
-                    seqev.snap_x(&adjusted_selected_x);
+                    seqev.snap_x(adjusted_selected_x);
                     seqev.m_move_snap_offset_x =
                         seqev.m_selected.x - adjusted_selected_x;
 
                     /* align selection for drawing */
 
-                    seqev.snap_x(&seqev.m_selected.x);
-                    seqev.snap_x(&seqev.m_current_x);
-                    seqev.snap_x(&seqev.m_drop_x);
+                    seqev.snap_x(seqev.m_selected.x);
+                    seqev.snap_x(seqev.m_current_x);
+                    seqev.snap_x(seqev.m_drop_x);
                 }
             }
         }
@@ -231,23 +229,23 @@ Seq24SeqEventInput::on_button_release_event
 {
     long tick_s;
     long tick_f;
-    int x, w;
     seqev.grab_focus();
-    seqev.m_current_x = (int) a_ev->x  + seqev.m_scroll_offset_x;;
+    seqev.m_current_x = int(a_ev->x)  + seqev.m_scroll_offset_x;
     if (seqev.m_moving)
-        seqev.snap_x(&seqev.m_current_x);
+        seqev.snap_x(seqev.m_current_x);
 
     int delta_x = seqev.m_current_x - seqev.m_drop_x;
     long delta_tick;
 
-    if (a_ev->button == 1)
+    if (CLICK_IS_LEFT(a_ev->button))
     {
         if (seqev.m_selecting)
         {
-            seqev.x_to_w(seqev.m_drop_x, seqev.m_current_x, &x, &w);
-            seqev.convert_x(x,   &tick_s);
-            seqev.convert_x(x + w, &tick_f);
-            (void) seqev.m_seq->select_events
+            int x, w;
+            seqev.x_to_w(seqev.m_drop_x, seqev.m_current_x, x, w);
+            seqev.convert_x(x, tick_s);
+            seqev.convert_x(x + w, tick_f);
+            (void) seqev.m_seq.select_events
             (
                 tick_s, tick_f, seqev.m_status, seqev.m_cc, sequence::e_select
             );
@@ -255,13 +253,13 @@ Seq24SeqEventInput::on_button_release_event
         if (seqev.m_moving)
         {
             delta_x -= seqev.m_move_snap_offset_x; /* adjust for snap       */
-            seqev.convert_x(delta_x, &delta_tick); /* to screen coordinates */
-            seqev.m_seq->push_undo();              /* still moves events    */
-            seqev.m_seq->move_selected_notes(delta_tick, 0);
+            seqev.convert_x(delta_x, delta_tick);  /* to screen coordinates */
+            seqev.m_seq.push_undo();              /* still moves events    */
+            seqev.m_seq.move_selected_notes(delta_tick, 0);
         }
         set_adding(m_adding, seqev);
     }
-    if (a_ev->button == 3)
+    if (CLICK_IS_RIGHT(a_ev->button))
     {
         set_adding(false, seqev);
     }
@@ -270,7 +268,7 @@ Seq24SeqEventInput::on_button_release_event
     seqev.m_growing = false;
     seqev.m_moving_init = false;
     seqev.m_painting = false;
-    seqev.m_seq->unpaint_all();
+    seqev.m_seq.unpaint_all();
     seqev.update_pixmap();            /* if they clicked, something changed */
     seqev.draw_pixmap_on_window();
     return true;
@@ -294,17 +292,17 @@ Seq24SeqEventInput::on_motion_notify_event
     }
     if (seqev.m_selecting || seqev.m_moving || seqev.m_paste)
     {
-        seqev.m_current_x = (int) a_ev->x  + seqev.m_scroll_offset_x;;
+        seqev.m_current_x = int(a_ev->x) + seqev.m_scroll_offset_x;
         if (seqev.m_moving || seqev.m_paste)
-            seqev.snap_x(&seqev.m_current_x);
+            seqev.snap_x(seqev.m_current_x);
 
         seqev.draw_selection_on_window();
     }
     if (seqev.m_painting)
     {
-        seqev.m_current_x = (int) a_ev->x  + seqev.m_scroll_offset_x;;
-        seqev.snap_x(&seqev.m_current_x);
-        seqev.convert_x(seqev.m_current_x, &tick);
+        seqev.m_current_x = int(a_ev->x) + seqev.m_scroll_offset_x;
+        seqev.snap_x(seqev.m_current_x);
+        seqev.convert_x(seqev.m_current_x, tick);
         seqev.drop_event(tick);
     }
     return true;

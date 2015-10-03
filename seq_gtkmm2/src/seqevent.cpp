@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-09-13
+ * \updates       2015-10-03
  * \license       GNU GPLv2 or above
  *
  */
@@ -46,36 +46,24 @@ namespace seq64
 
 seqevent::seqevent
 (
-    sequence * a_seq,
-    int a_zoom,
-    int a_snap,
-    seqdata * a_seqdata_wid,
-    Gtk::Adjustment * a_hadjust
+    sequence & seq,
+    perform & p,            // used only to satisfy gui_drawingarea_gtk2()
+    int zoom,
+    int snap,
+    seqdata & seqdata_wid,
+    Gtk::Adjustment & hadjust
 ) :
+    gui_drawingarea_gtk2    (p, hadjust, sm_vadjust_dummy, 10, c_eventarea_y),
     m_fruity_interaction    (),
     m_seq24_interaction     (),
-    m_gc                    (),
-    m_window                (),
-    m_black                 (Gdk::Color("black")),
-    m_white                 (Gdk::Color("white")),
-    m_grey                  (Gdk::Color("grey")),
-    m_orange                (Gdk::Color("orange")),
-    m_pixmap                (),
-    m_window_x              (0),
-    m_window_y              (0),
-    m_drop_x                (0),
-    m_drop_y                (0),
-    m_current_x             (0),
-    m_current_y             (0),
-    m_hadjust               (a_hadjust),
-    m_seq                   (a_seq),
-    m_zoom                  (a_zoom),
-    m_snap                  (a_snap),
+    m_seq                   (seq),
+    m_zoom                  (zoom),
+    m_snap                  (snap),
     m_old                   (),
     m_selected              (),
     m_scroll_offset_ticks   (0),
     m_scroll_offset_x       (0),
-    m_seqdata_wid           (a_seqdata_wid),
+    m_seqdata_wid           (seqdata_wid),
     m_selecting             (false),
     m_moving_init           (false),
     m_moving                (false),
@@ -86,19 +74,7 @@ seqevent::seqevent
     m_status                (EVENT_NOTE_ON),
     m_cc                    (0)
 {
-    Glib::RefPtr<Gdk::Colormap> colormap = get_default_colormap();
-    colormap->alloc_color(m_black);
-    colormap->alloc_color(m_white);
-    colormap->alloc_color(m_grey);
-    colormap->alloc_color(m_orange);
-    add_events
-    (
-        Gdk::BUTTON_PRESS_MASK | Gdk::BUTTON_RELEASE_MASK |
-        Gdk::POINTER_MOTION_MASK | Gdk::KEY_PRESS_MASK |
-        Gdk::KEY_RELEASE_MASK | Gdk::FOCUS_CHANGE_MASK
-    );
-    set_size_request(10, c_eventarea_y);
-    set_double_buffered(false);
+    // Empty body
 }
 
 /**
@@ -109,7 +85,7 @@ seqevent::seqevent
 void
 seqevent::change_horz ()
 {
-    m_scroll_offset_ticks = (int) m_hadjust->get_value();
+    m_scroll_offset_ticks = int(m_hadjust.get_value());
     m_scroll_offset_x = m_scroll_offset_ticks / m_zoom;
     update_pixmap();
     force_draw();
@@ -155,7 +131,7 @@ seqevent::update_sizes ()
 void
 seqevent::reset ()
 {
-    m_scroll_offset_ticks = (int) m_hadjust->get_value();
+    m_scroll_offset_ticks = int(m_hadjust.get_value());
     m_scroll_offset_x = m_scroll_offset_ticks / m_zoom;
     update_sizes();
     update_pixmap();
@@ -170,7 +146,7 @@ seqevent::reset ()
 void
 seqevent::redraw ()
 {
-    m_scroll_offset_ticks = (int) m_hadjust->get_value();
+    m_scroll_offset_ticks = int(m_hadjust.get_value());
     m_scroll_offset_x = m_scroll_offset_ticks / m_zoom;
     update_pixmap();
     draw_pixmap_on_window();
@@ -191,8 +167,8 @@ seqevent::draw_background ()
     );
 
     int measures_per_line = 1;
-    int ticks_per_measure =  m_seq->get_bpm() * (4 * c_ppqn) / m_seq->get_bw();
-    int ticks_per_beat = (4 * c_ppqn) / m_seq->get_bw();
+    int ticks_per_measure =  m_seq.get_bpm() * (4 * c_ppqn) / m_seq.get_bw();
+    int ticks_per_beat = (4 * c_ppqn) / m_seq.get_bw();
     int ticks_per_step = 6 * m_zoom;
     int ticks_per_m_line =  ticks_per_measure * measures_per_line;
     int start_tick = m_scroll_offset_ticks -
@@ -253,11 +229,11 @@ seqevent::draw_background ()
  */
 
 void
-seqevent::set_zoom (int a_zoom)
+seqevent::set_zoom (int zoom)
 {
-    if (m_zoom != a_zoom)
+    if (m_zoom != zoom)
     {
-        m_zoom = a_zoom;
+        m_zoom = zoom;
         reset();
     }
 }
@@ -268,11 +244,11 @@ seqevent::set_zoom (int a_zoom)
  */
 
 void
-seqevent::set_data_type (unsigned char a_status, unsigned char a_control = 0)
+seqevent::set_data_type (unsigned char status, unsigned char control = 0)
 {
-    m_status = a_status;
-    m_cc = a_control;
-    redraw();               // this->redraw();
+    m_status = status;
+    m_cc = control;
+    redraw();
 }
 
 /**
@@ -284,8 +260,8 @@ seqevent::update_pixmap ()
 {
     draw_background();
     draw_events_on_pixmap();
-    m_seqdata_wid->update_pixmap();
-    m_seqdata_wid->draw_pixmap_on_window();
+    m_seqdata_wid.update_pixmap();
+    m_seqdata_wid.draw_pixmap_on_window();
 }
 
 /**
@@ -303,10 +279,10 @@ seqevent::draw_events_on (Glib::RefPtr<Gdk::Drawable> a_draw)
 
     int start_tick = m_scroll_offset_ticks ;
     int end_tick = (m_window_x * m_zoom) + m_scroll_offset_ticks;
-    m_seq->reset_draw_marker();
+    m_seq.reset_draw_marker();
     while
     (
-        m_seq->get_next_event(m_status, m_cc, &tick, &d0, &d1, &selected)
+        m_seq.get_next_event(m_status, m_cc, &tick, &d0, &d1, &selected)
     )
     {
         if ((tick >= start_tick && tick <= end_tick))
@@ -352,13 +328,8 @@ seqevent::draw_events_on_pixmap ()
  *  Old comments:
  *
  *      It then tells event to do the same.
- *
  *      We changed something on this window, and chances are we need to
  *      update the event widget as well and update our velocity window.
- *
- *          m_seqdata_wid->update_pixmap();
- *          m_seqdata_wid->draw_pixmap_on_window();
- *          RCB ??
  */
 
 void
@@ -373,17 +344,17 @@ seqevent::draw_pixmap_on_window ()
  */
 
 void
-seqevent::x_to_w (int a_x1, int a_x2, int *a_x, int *a_w)
+seqevent::x_to_w (int a_x1, int a_x2, int & a_x, int & a_w)
 {
     if (a_x1 < a_x2)
     {
-        *a_x = a_x1;
-        *a_w = a_x2 - a_x1;
+        a_x = a_x1;
+        a_w = a_x2 - a_x1;
     }
     else
     {
-        *a_x = a_x2;
-        *a_w = a_x1 - a_x2;
+        a_x = a_x2;
+        a_w = a_x1 - a_x2;
     }
 }
 
@@ -401,14 +372,13 @@ seqevent::draw_selection_on_window ()
     (
         1, Gdk::LINE_SOLID, Gdk::CAP_NOT_LAST, Gdk::JOIN_MITER
     );
-
     m_window->draw_drawable                 /* replace old */
     (
         m_gc, m_pixmap, m_old.x, y, m_old.x, y, m_old.width + 1, h + 1
     );
     if (m_selecting)
     {
-        x_to_w(m_drop_x, m_current_x, &x, &w);
+        x_to_w(m_drop_x, m_current_x, x, w);
         x -= m_scroll_offset_x;
         m_old.x = x;
         m_old.width = w;
@@ -439,78 +409,33 @@ seqevent::force_draw ()
 }
 
 /**
- *  Starts a paste operation.
+ *  Starts a paste operation.  It gets the clipboard box that selected
+ *  elements are in, makes a coordinate conversion, and then, sets the
+ *  m_selected rectangle to hold the (x,y,w,h) of the selected events.
  */
 
 void
 seqevent::start_paste ()
 {
-    long tick_s;
-    long tick_f;
-    int note_h;
-    int note_l;
-    int x, w;
-    snap_x(&m_current_x);
-    snap_y(&m_current_x);
-    m_drop_x = m_current_x;
+    snap_x(m_current_x);
+    snap_y(m_current_x);
+    m_drop_x = m_current_x;                 /* protected member access   */
     m_drop_y = m_current_y;
     m_paste = true;
 
-    /* get the box that selected elements are in */
+    long tick_s, tick_f;
+    int note_h, note_l;
+    m_seq.get_clipboard_box(&tick_s, &note_h, &tick_f, &note_l);
 
-    m_seq->get_clipboard_box(&tick_s, &note_h, &tick_f, &note_l);
-
-    /* convert box to X,Y values */
-
-    convert_t(tick_s, &x);
-    convert_t(tick_f, &w);
-
-    /* w is actually coordinates now, so we have to change */
-
-    w = w - x;
-
-    /* set m_selected rectangle to hold the x,y,w,h of our selected events */
-
-    m_selected.x = x;
+    int x, w;
+    convert_t(tick_s, x);                   /* convert box to X,Y values */
+    convert_t(tick_f, w);
+    w -= x;                                 /* w is coordinates now      */
+    m_selected.x = x;                       /* set the new selection     */
     m_selected.width = w;
     m_selected.y = (c_eventarea_y - c_eventevent_y) / 2;
     m_selected.height = c_eventevent_y;
-
-    /* adjust for clipboard being shifted to tick 0 */
-
-    m_selected.x  += m_drop_x;
-}
-
-/**
- *  Takes the screen x coordinate, multiplies it by the current zoom, and
- *  returns the tick value in the given parameter.
- */
-
-void
-seqevent::convert_x (int a_x, long * a_tick)
-{
-    *a_tick = a_x * m_zoom;
-}
-
-/**
- *  Converts the given tick value to an x corrdinate, based on the zoom,
- *  and returns it via the second parameter.
- */
-
-void
-seqevent::convert_t (long a_ticks, int * a_x)
-{
-    *a_x = a_ticks /  m_zoom;
-}
-
-/**
- *  This function performs a 'snap' on y.
- */
-
-void
-seqevent::snap_y (int * a_y)
-{
-    *a_y = *a_y - (*a_y % c_key_y);
+    m_selected.x  += m_drop_x;              /* shift clipboard to tick 0 */
 }
 
 /**
@@ -523,13 +448,13 @@ seqevent::snap_y (int * a_y)
  */
 
 void
-seqevent::snap_x (int * a_x)
+seqevent::snap_x (int & x)
 {
     int mod = (m_snap / m_zoom);
     if (mod <= 0)
         mod = 1;
 
-    *a_x -= (*a_x % mod);       // *a_x = *a_x - (*a_x % mod);
+    x -= (x % mod);       // *a_x = *a_x - (*a_x % mod);
 }
 
 /**
@@ -541,12 +466,9 @@ seqevent::snap_x (int * a_x)
 void
 seqevent::on_realize ()
 {
-    Gtk::DrawingArea::on_realize();
+    gui_drawingarea_gtk2::on_realize();
     set_flags(Gtk::CAN_FOCUS);
-    m_window = get_window();
-    m_gc = Gdk::GC::create(m_window);
-    m_window->clear();
-    m_hadjust->signal_value_changed().connect
+    m_hadjust.signal_value_changed().connect
     (
         mem_fun(*this, &seqevent::change_horz)
     );
@@ -558,11 +480,11 @@ seqevent::on_realize ()
  */
 
 void
-seqevent::on_size_allocate (Gtk::Allocation & a_r)
+seqevent::on_size_allocate (Gtk::Allocation & a)
 {
-    Gtk::DrawingArea::on_size_allocate(a_r);
-    m_window_x = a_r.get_width();
-    m_window_y = a_r.get_height();
+    gui_drawingarea_gtk2::on_size_allocate(a);
+    m_window_x = a.get_width();
+    m_window_y = a.get_height();
     update_sizes();
 }
 
@@ -628,17 +550,14 @@ seqevent::drop_event (long a_tick)
     unsigned char d1 = 0x40;
     if (m_status == EVENT_AFTERTOUCH)
         d0 = 0;
-
-    if (m_status == EVENT_PROGRAM_CHANGE)
+    else if (m_status == EVENT_PROGRAM_CHANGE)
         d0 = 0;                             /* d0 == new patch */
-
-    if (m_status == EVENT_CHANNEL_PRESSURE)
+    else if (m_status == EVENT_CHANNEL_PRESSURE)
         d0 = 0x40;                          /* d0 == pressure */
-
-    if (m_status == EVENT_PITCH_WHEEL)
+    else if (m_status == EVENT_PITCH_WHEEL)
         d0 = 0;
 
-    m_seq->add_event(a_tick, status, d0, d1, true);
+    m_seq.add_event(a_tick, status, d0, d1, true);
 }
 
 /**
@@ -653,14 +572,13 @@ bool
 seqevent::on_button_release_event (GdkEventButton * a_ev)
 {
     bool result;
-
     switch (global_interactionmethod)
     {
     case e_fruity_interaction:
         result = m_fruity_interaction.on_button_release_event(a_ev, *this);
 
         /*
-         * FALL THROUGH
+         * FALL THROUGH.  Is this correct behavior?
          */
 
     case e_seq24_interaction:
@@ -686,14 +604,13 @@ bool
 seqevent::on_motion_notify_event (GdkEventMotion * a_ev)
 {
     bool result;
-
     switch (global_interactionmethod)
     {
     case e_fruity_interaction:
         result = m_fruity_interaction.on_motion_notify_event(a_ev, *this);
 
         /*
-         * FALL THROUGH
+         * FALL THROUGH.  Is this correct behavior?
          */
 
     case e_seq24_interaction:
@@ -747,23 +664,23 @@ seqevent::on_key_press_event (GdkEventKey * a_p0)
     {
         if (a_p0->keyval ==  GDK_Delete || a_p0->keyval == GDK_BackSpace)
         {
-            m_seq->push_undo();
-            m_seq->mark_selected();
-            m_seq->remove_marked();
+            m_seq.push_undo();
+            m_seq.mark_selected();
+            m_seq.remove_marked();
             result = true;
         }
         if (a_p0->state & GDK_CONTROL_MASK)
         {
             if (a_p0->keyval == GDK_x || a_p0->keyval == GDK_X) /* cut */
             {
-                m_seq->copy_selected();
-                m_seq->mark_selected();
-                m_seq->remove_marked();
+                m_seq.copy_selected();
+                m_seq.mark_selected();
+                m_seq.remove_marked();
                 result = true;
             }
             if (a_p0->keyval == GDK_c || a_p0->keyval == GDK_C) /* copy */
             {
-                m_seq->copy_selected();
+                m_seq.copy_selected();
                 result = true;
             }
             if (a_p0->keyval == GDK_v || a_p0->keyval == GDK_V) /* paste */
@@ -773,7 +690,7 @@ seqevent::on_key_press_event (GdkEventKey * a_p0)
             }
             if (a_p0->keyval == GDK_z || a_p0->keyval == GDK_Z) /* Undo */
             {
-                m_seq->pop_undo();
+                m_seq.pop_undo();
                 result = true;
             }
         }
@@ -781,7 +698,7 @@ seqevent::on_key_press_event (GdkEventKey * a_p0)
     if (result)
     {
         redraw();
-        m_seq->set_dirty();
+        m_seq.set_dirty();
     }
     return result;
 }

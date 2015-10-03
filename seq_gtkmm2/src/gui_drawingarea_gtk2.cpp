@@ -32,36 +32,6 @@
 
 #include <gtkmm/adjustment.h>
 
-#if 0
-#include <gtkmm/accelkey.h>
-#include <gtkmm/button.h>
-#include <gtkmm/window.h>
-#include <gtkmm/accelgroup.h>
-#include <gtkmm/box.h>
-#include <gtkmm/main.h>
-#include <gtkmm/menu.h>
-#include <gtkmm/menubar.h>
-#include <gtkmm/eventbox.h>
-#include <gtkmm/window.h>
-#include <gtkmm/table.h>
-#include <gtkmm/drawingarea.h>
-#include <gtkmm/widget.h>
-#include <gtkmm/scrollbar.h>
-#include <gtkmm/viewport.h>
-#include <gtkmm/combo.h>
-#include <gtkmm/label.h>
-#include <gtkmm/toolbar.h>
-#include <gtkmm/optionmenu.h>
-#include <gtkmm/togglebutton.h>
-#include <gtkmm/invisible.h>
-#include <gtkmm/separator.h>
-#include <gtkmm/tooltips.h>             // #include <gtkmm/tooltip.h>
-#include <gtkmm/invisible.h>
-#include <gtkmm/arrow.h>
-#include <gtkmm/image.h>
-#include <sigc++/bind.h>
-#endif  // 0
-
 #include "gui_drawingarea_gtk2.hpp"
 #include "perform.hpp"
 

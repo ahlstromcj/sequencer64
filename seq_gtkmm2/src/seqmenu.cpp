@@ -59,8 +59,6 @@ seqmenu::seqmenu (perform & a_p)
     m_current_seq   (0),
     m_modified      (false)
 {
-    // m_clipboard.set_master_midi_bus(&a_p->master_bus());    // precedence?
-
     m_clipboard.set_master_midi_bus(&m_mainperf.master_bus());
 }
 
@@ -78,7 +76,6 @@ seqmenu::~seqmenu ()
      *  delete(m_seqedit);
      */
 }
-
 
 /**
  *  This function sets up the File menu entries.

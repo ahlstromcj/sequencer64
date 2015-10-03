@@ -28,13 +28,14 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-09-13
+ * \updates       2015-10-03
  * \license       GNU GPLv2 or above
  *
  */
 
-#include <gtkmm/drawingarea.h>
 #include <gtkmm/window.h>
+
+#include "gui_drawingarea_gtk2.hpp"
 
 namespace Gtk
 {
@@ -44,27 +45,19 @@ namespace Gtk
 namespace seq64
 {
 
+class perform;
 class sequence;
 
 /**
  *    This class implements the piano time, whatever that is.
  */
 
-class seqtime: public Gtk::DrawingArea
+class seqtime : public gui_drawingarea_gtk2
 {
 
 private:
 
-    Glib::RefPtr<Gdk::GC> m_gc;
-    Glib::RefPtr<Gdk::Window> m_window;
-    Gdk::Color m_black;
-    Gdk::Color m_white;
-    Gdk::Color m_grey;
-    Glib::RefPtr<Gdk::Pixmap> m_pixmap;
-    int m_window_x;
-    int m_window_y;
-    Gtk::Adjustment * m_hadjust;
-    sequence * m_seq;
+    sequence & m_seq;
     int m_scroll_offset_ticks;
     int m_scroll_offset_x;
 
@@ -76,29 +69,68 @@ private:
 
 public:
 
-    seqtime (sequence * a_seq, int a_zoom, Gtk::Adjustment * a_hadjust);
+    seqtime
+    (
+        sequence & seq,
+        perform & p,
+        int zoom,
+        Gtk::Adjustment & hadjust
+    );
 
     void reset ();
     void redraw ();
-    void set_zoom (int a_zoom);
+
+    /**
+     *  Sets the zoom to the given value and resets the window.
+     */
+
+    void set_zoom (int zoom)
+    {
+        m_zoom = zoom;
+        reset();
+    }
 
 private:
 
     void draw_pixmap_on_window ();
     void draw_progress_on_window ();
     void update_pixmap ();
-    bool idle_progress ();
     void change_horz ();
     void update_sizes ();
     void force_draw ();
+
+    /**
+     *  Simply returns true.
+     */
+
+    bool idle_progress ()
+    {
+        return true;
+    }
 
 private:          // callbacks
 
     void on_realize ();
     bool on_expose_event (GdkEventExpose * a_ev);
-    bool on_button_press_event (GdkEventButton * a_ev);
-    bool on_button_release_event (GdkEventButton * a_ev);
     void on_size_allocate (Gtk::Allocation &);
+
+    /**
+     *  Implements the on-button-press event handler.  Simply returns false.
+     */
+
+    bool on_button_press_event (GdkEventButton * /*p0*/ )
+    {
+        return false;
+    }
+
+    /**
+     *  Implements the on-button-release event handler.  Simply returns false.
+     */
+
+    bool on_button_release_event (GdkEventButton * /*p0*/ )
+    {
+        return false;
+    }
 
 };
 

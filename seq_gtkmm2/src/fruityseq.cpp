@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-08-02
- * \updates       2015-09-13
+ * \updates       2015-10-03
  * \license       GNU GPLv2 or above
  *
  *  This code was extracted from seqevent to make that module more
@@ -35,9 +35,10 @@
 #include <gdkmm/cursor.h>
 #include <gtkmm/button.h>
 
+#include "click.hpp"                    /* CLICK_IS_LEFT() etc.             */
 #include "fruityseq.hpp"
 #include "seqevent.hpp"
-#include "sequence.hpp"               // needed for full usage of seqevent
+#include "sequence.hpp"                 /* for full usage of seqevent       */
 
 namespace seq64
 {
@@ -50,15 +51,15 @@ void
 FruitySeqEventInput::updateMousePtr (seqevent & seqev)
 {
     long tick_s, tick_w, tick_f, pos;
-    seqev.convert_x(seqev.m_current_x, &tick_s);
-    seqev.convert_x(c_eventevent_x, &tick_w);
+    seqev.convert_x(seqev.m_current_x, tick_s);
+    seqev.convert_x(c_eventevent_x, tick_w);
     tick_f = tick_s + tick_w;
     if (tick_s < 0)
         tick_s = 0;                    // clamp to 0
 
     if (m_is_drag_pasting || seqev.m_selecting || seqev.m_moving || seqev.m_paste)
         seqev.get_window()->set_cursor(Gdk::Cursor(Gdk::LEFT_PTR));
-    else if (seqev.m_seq->intersectEvents(tick_s, tick_f, seqev.m_status, pos))
+    else if (seqev.m_seq.intersectEvents(tick_s, tick_f, seqev.m_status, pos))
         seqev.get_window()->set_cursor(Gdk::Cursor(Gdk::CENTER_PTR));
     else
         seqev.get_window()->set_cursor(Gdk::Cursor(Gdk::PENCIL));
@@ -78,56 +79,56 @@ FruitySeqEventInput::on_button_press_event
     long tick_s;
     long tick_f;
     long tick_w;
-    seqev.convert_x(c_eventevent_x, &tick_w);
+    seqev.convert_x(c_eventevent_x, tick_w);
 
     /*
      * Set the values for dragging, then reset the box that holds the
      * dirty redraw spot.
      */
 
-    seqev.m_drop_x = seqev.m_current_x = (int) a_ev->x + seqev.m_scroll_offset_x;
+    seqev.m_drop_x = seqev.m_current_x = int(a_ev->x) + seqev.m_scroll_offset_x;
     seqev.m_old.x = 0;
     seqev.m_old.y = 0;
     seqev.m_old.width = 0;
     seqev.m_old.height = 0;
     if (seqev.m_paste)
     {
-        seqev.snap_x(&seqev.m_current_x);
-        seqev.convert_x(seqev.m_current_x, &tick_s);
+        seqev.snap_x(seqev.m_current_x);
+        seqev.convert_x(seqev.m_current_x, tick_s);
         seqev.m_paste = false;
-        seqev.m_seq->push_undo();
-        seqev.m_seq->paste_selected(tick_s, 0);
+        seqev.m_seq.push_undo();
+        seqev.m_seq.paste_selected(tick_s, 0);
     }
     else
     {
-        if (a_ev->button == 1)                      /* left mouse button     */
+        if (CLICK_IS_LEFT(a_ev->button))
         {
-            seqev.convert_x(seqev.m_drop_x, &tick_s);  /* x,y into tick/note */
-            tick_f = tick_s + (seqev.m_zoom);       /* shift back some ticks */
+            seqev.convert_x(seqev.m_drop_x, tick_s); /* x,y into tick/note    */
+            tick_f = tick_s + (seqev.m_zoom);        /* shift back some ticks */
             tick_s -= (tick_w);
             if (tick_s < 0)
                 tick_s = 0;
 
             if
             (
-                ! seqev.m_seq->select_events(tick_s, tick_f,
+                ! seqev.m_seq.select_events(tick_s, tick_f,
                        seqev.m_status, seqev.m_cc, sequence::e_would_select) &&
                 ! (a_ev->state & GDK_CONTROL_MASK)
             )
             {
                 seqev.m_painting = true;
-                seqev.snap_x(&seqev.m_drop_x);
-                seqev.convert_x(seqev.m_drop_x, &tick_s); /* x,y into tick/note */
+                seqev.snap_x(seqev.m_drop_x);
+                seqev.convert_x(seqev.m_drop_x, tick_s); /* x,y into tick/note */
 
                 /* add note, length = a little less than snap */
 
                 if
                 (
-                    ! seqev.m_seq->select_events(tick_s, tick_f,
+                    ! seqev.m_seq.select_events(tick_s, tick_f,
                            seqev.m_status, seqev.m_cc, sequence::e_would_select)
                 )
                 {
-                    seqev.m_seq->push_undo();
+                    seqev.m_seq.push_undo();
                     seqev.drop_event(tick_s);
                 }
             }
@@ -135,18 +136,18 @@ FruitySeqEventInput::on_button_press_event
             {
                 if
                 (
-                    ! seqev.m_seq->select_events(tick_s, tick_f,
+                    ! seqev.m_seq.select_events(tick_s, tick_f,
                            seqev.m_status, seqev.m_cc, sequence::e_is_selected)
                 )
                 {
                     if                              /* if clicking event */
                     (
-                        seqev.m_seq->select_events(tick_s, tick_f,
+                        seqev.m_seq.select_events(tick_s, tick_f,
                              seqev.m_status, seqev.m_cc, sequence::e_would_select)
                     )
                     {
                         if (!(a_ev->state & GDK_CONTROL_MASK))
-                            seqev.m_seq->unselect();
+                            seqev.m_seq.unselect();
                     }
                     else                            /* if clicking empty space */
                     {
@@ -158,13 +159,13 @@ FruitySeqEventInput::on_button_press_event
                                 (a_ev->state & GDK_SHIFT_MASK))
                         )
                         {
-                            seqev.m_seq->unselect();
+                            seqev.m_seq.unselect();
                         }
                     }
 
                     /* on direct click select only one event */
 
-                    numsel = seqev.m_seq->select_events
+                    numsel = seqev.m_seq.select_events
                     (
                         tick_s, tick_f,
                         seqev.m_status,
@@ -184,7 +185,7 @@ FruitySeqEventInput::on_button_press_event
 
                 if                      /* if event under cursor is selected */
                 (
-                    seqev.m_seq->select_events(tick_s, tick_f,
+                    seqev.m_seq.select_events(tick_s, tick_f,
                          seqev.m_status, seqev.m_cc, sequence::e_is_selected)
                 )
                 {
@@ -195,15 +196,15 @@ FruitySeqEventInput::on_button_press_event
 
                         /* get the box that selected elements are in */
 
-                        seqev.m_seq->get_selected_box
+                        seqev.m_seq.get_selected_box
                         (
                             &tick_s, &note, &tick_f, &note
                         );
                         tick_f += tick_w;
 
-                        seqev.convert_t(tick_s, &x); /* convert to X,Y values */
-                        seqev.convert_t(tick_f, &w);
-                        w = w - x;                   /* w is coordinates now */
+                        seqev.convert_t(tick_s, x); /* convert to X,Y values */
+                        seqev.convert_t(tick_f, w);
+                        w -= x;                     /* w is coordinates now  */
 
                         /* set the m_selected rectangle for x,y,w,h */
 
@@ -215,20 +216,20 @@ FruitySeqEventInput::on_button_press_event
                         /* save offset that we get from the snap above */
 
                         int adjusted_selected_x = seqev.m_selected.x;
-                        seqev.snap_x(&adjusted_selected_x);
+                        seqev.snap_x(adjusted_selected_x);
                         seqev.m_move_snap_offset_x =
                             seqev.m_selected.x - adjusted_selected_x;
 
                         /* align selection for drawing */
 
-                        seqev.snap_x(&seqev.m_selected.x);
-                        seqev.snap_x(&seqev.m_current_x);
-                        seqev.snap_x(&seqev.m_drop_x);
+                        seqev.snap_x(seqev.m_selected.x);
+                        seqev.snap_x(seqev.m_current_x);
+                        seqev.snap_x(seqev.m_drop_x);
                     }
                     else if /* ctrl left click when stuff already selected */
                     (
                         (a_ev->state & GDK_CONTROL_MASK) &&
-                        seqev.m_seq->select_events(tick_s, tick_f,
+                        seqev.m_seq.select_events(tick_s, tick_f,
                            seqev. m_status, seqev.m_cc, sequence::e_is_selected)
                     )
                     {
@@ -237,38 +238,37 @@ FruitySeqEventInput::on_button_press_event
                 }
             }
 
-        } /* end if button == 1 */
-
-        if (a_ev->button == 3)                        /* right button         */
+        }
+        if (CLICK_IS_RIGHT(a_ev->button))
         {
-            seqev.convert_x(seqev.m_drop_x, &tick_s); /* x,y in to tick/note  */
+            seqev.convert_x(seqev.m_drop_x, tick_s); /* x,y in to tick/note   */
 
-            tick_f = tick_s + (seqev.m_zoom);         /* shift back some ticks */
+            tick_f = tick_s + seqev.m_zoom;          /* shift back some ticks */
             tick_s -= (tick_w);
             if (tick_s < 0)
                 tick_s = 0;
 
             if                  /* erase event under cursor if there is one */
             (
-                seqev.m_seq->select_events(tick_s, tick_f,
+                seqev.m_seq.select_events(tick_s, tick_f,
                      seqev.m_status, seqev.m_cc, sequence::e_would_select)
             )
             {
                 /* remove only note under cursor, leave selection intact */
 
-                seqev.m_seq->push_undo();
-                seqev.m_seq->select_events
+                seqev.m_seq.push_undo();
+                seqev.m_seq.select_events
                 (
                     tick_s, tick_f,
                     seqev.m_status, seqev.m_cc, sequence::e_remove_one
                 );
                 seqev.redraw();
-                seqev.m_seq->set_dirty();
+                seqev.m_seq.set_dirty();
             }
             else                                        /* selecting          */
             {
                 if (!(a_ev->state & GDK_CONTROL_MASK))
-                    seqev.m_seq->unselect();
+                    seqev.m_seq.unselect();
 
                 /* nothing selected, start the selection box */
 
@@ -294,20 +294,19 @@ FruitySeqEventInput::on_button_release_event
 {
     long tick_s;
     long tick_f;
-    int x, w;
     seqev.grab_focus();
     seqev.m_current_x = (int) a_ev->x  + seqev.m_scroll_offset_x;;
     if (seqev.m_moving || m_is_drag_pasting)
-        seqev.snap_x(&seqev.m_current_x);
+        seqev.snap_x(seqev.m_current_x);
 
     int delta_x = seqev.m_current_x - seqev.m_drop_x;
     long delta_tick;
-    if (a_ev->button == 1)
+    if (CLICK_IS_LEFT(a_ev->button))
     {
         int current_x = seqev.m_current_x;
         long t_s, t_f;
-        seqev.snap_x(&current_x);
-        seqev.convert_x(current_x, &t_s);
+        seqev.snap_x(current_x);
+        seqev.convert_x(current_x, t_s);
         t_f = t_s + (seqev.m_zoom);                 /* shift back a few ticks */
         if (t_s < 0)
             t_s = 0;
@@ -322,8 +321,8 @@ FruitySeqEventInput::on_button_release_event
             m_is_drag_pasting = false;
             m_is_drag_pasting_start = false;
             seqev.m_paste = false; /* convert deltas into screen coordinates */
-            seqev.m_seq->push_undo();
-            seqev.m_seq->paste_selected(t_s, 0);
+            seqev.m_seq.push_undo();
+            seqev.m_seq.paste_selected(t_s, 0);
         }
 
         /* ctrl-left click but without movement - select a note */
@@ -341,7 +340,7 @@ FruitySeqEventInput::on_button_release_event
             if                                  /* deselect the event? */
             (
                 ! m_justselected_one &&
-                seqev.m_seq->select_events
+                seqev.m_seq.select_events
                 (
                     t_s, t_f,
                     seqev.m_status, seqev.m_cc, sequence::e_is_selected
@@ -349,7 +348,7 @@ FruitySeqEventInput::on_button_release_event
                 (a_ev->state & GDK_CONTROL_MASK)
             )
             {
-                (void) seqev.m_seq->select_events
+                (void) seqev.m_seq.select_events
                 (
                     t_s, t_f,
                     seqev.m_status, seqev.m_cc, sequence::e_deselect
@@ -359,39 +358,34 @@ FruitySeqEventInput::on_button_release_event
         m_justselected_one = false;         /* clear flag on left button up */
         if (seqev.m_moving)
         {
-            delta_x -= seqev.m_move_snap_offset_x; /* adjust for snap */
-            seqev.convert_x(delta_x, &delta_tick); /* deltas to screen coords */
-            seqev.m_seq->push_undo();              /* still moves events */
-            seqev.m_seq->move_selected_notes(delta_tick, 0);
+            delta_x -= seqev.m_move_snap_offset_x; /* adjust for snap         */
+            seqev.convert_x(delta_x, delta_tick);  /* deltas to screen coords */
+            seqev.m_seq.push_undo();              /* still moves events      */
+            seqev.m_seq.move_selected_notes(delta_tick, 0);
         }
     }
-    if (a_ev->button == 3 || a_ev->button == 1)
+    if (CLICK_IS_LEFT(a_ev->button) || CLICK_IS_RIGHT(a_ev->button))
     {
         if (seqev.m_selecting)
         {
-            seqev.x_to_w(seqev.m_drop_x, seqev.m_current_x, &x, &w);
-            seqev.convert_x(x,   &tick_s);
-            seqev.convert_x(x + w, &tick_f);
-            (void) seqev.m_seq->select_events
+            int x, w;
+            seqev.x_to_w(seqev.m_drop_x, seqev.m_current_x, x, w);
+            seqev.convert_x(x, tick_s);
+            seqev.convert_x(x + w, tick_f);
+            (void) seqev.m_seq.select_events
             (
                 tick_s, tick_f,
                 seqev.m_status, seqev.m_cc, sequence::e_toggle_selection
             );
         }
     }
-
-    /* turn off */
-
-    seqev.m_selecting = false;
+    seqev.m_selecting = false;          /* turn it all off */
     seqev.m_moving = false;
     seqev.m_growing = false;
     seqev.m_moving_init = false;
     seqev.m_painting = false;
-    seqev.m_seq->unpaint_all();
-
-    /* if they clicked, something changed */
-
-    seqev.update_pixmap();
+    seqev.m_seq.unpaint_all();
+    seqev.update_pixmap();              /* if they clicked, something changed */
     seqev.draw_pixmap_on_window();
     updateMousePtr(seqev);
     return true;
@@ -420,8 +414,8 @@ FruitySeqEventInput::on_motion_notify_event
 
     if (m_is_drag_pasting_start)
     {
-        seqev.m_seq->copy_selected();
-        seqev.m_seq->unselect();
+        seqev.m_seq.copy_selected();
+        seqev.m_seq.unselect();
         seqev.start_paste();
         m_is_drag_pasting_start = false;
         m_is_drag_pasting = true;
@@ -429,15 +423,15 @@ FruitySeqEventInput::on_motion_notify_event
     if (seqev.m_selecting || seqev.m_moving || seqev.m_paste)
     {
         if (seqev.m_moving || seqev.m_paste)
-            seqev.snap_x(&seqev.m_current_x);
+            seqev.snap_x(seqev.m_current_x);
 
         seqev.draw_selection_on_window();
     }
     if (seqev.m_painting)
     {
         seqev.m_current_x = (int) a_ev->x  + seqev.m_scroll_offset_x;
-        seqev.snap_x(&seqev.m_current_x);
-        seqev.convert_x(seqev.m_current_x, &tick);
+        seqev.snap_x(seqev.m_current_x);
+        seqev.convert_x(seqev.m_current_x, tick);
         seqev.drop_event(tick);
     }
     return true;

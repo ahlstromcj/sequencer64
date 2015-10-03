@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-09-13
+ * \updates       2015-10-03
  * \license       GNU GPLv2 or above
  *
  */
@@ -34,6 +34,7 @@
 #include <gtkmm/adjustment.h>
 
 #include "font.hpp"
+#include "perform.hpp"
 #include "seqdata.hpp"
 #include "sequence.hpp"
 
@@ -47,26 +48,14 @@ namespace seq64
 
 seqdata::seqdata
 (
-    sequence * a_seq,
-    int a_zoom,
-    Gtk::Adjustment * a_hadjust
+    sequence & seq,
+    perform & p,            // used only to satisfy gui_drawingarea_gtk2()
+    int zoom,
+    Gtk::Adjustment & hadjust
 ) :
-    // IDEA: m_text_font_5_7(Gdk_Font( c_font_5_7 )),
-    m_gc                    (),
-    m_window                (),
-    m_black                 (Gdk::Color("black")),
-    m_white                 (Gdk::Color("white")),
-    m_grey                  (Gdk::Color("grey")),
-    m_pixmap                (),
-    m_window_x              (0),
-    m_window_y              (0),
-    m_current_x             (0),
-    m_current_y             (0),
-    m_drop_x                (0),
-    m_drop_y                (0),
-    m_hadjust               (a_hadjust),
-    m_seq                   (a_seq),
-    m_zoom                  (a_zoom),
+    gui_drawingarea_gtk2    (p, hadjust, sm_vadjust_dummy, 10, c_dataarea_y),
+    m_seq                   (seq),
+    m_zoom                  (zoom),
     m_scroll_offset_ticks   (0),
     m_scroll_offset_x       (0),
     m_background_tile_x     (0),
@@ -77,19 +66,7 @@ seqdata::seqdata
     m_old                   (),
     m_dragging              (false)
 {
-    add_events
-    (
-        Gdk::BUTTON_PRESS_MASK | Gdk::BUTTON_RELEASE_MASK |
-        Gdk::POINTER_MOTION_MASK | Gdk::LEAVE_NOTIFY_MASK | Gdk::SCROLL_MASK
-    );
-
-    Glib::RefPtr<Gdk::Colormap> colormap = get_default_colormap();
-    colormap->alloc_color(m_black);
-    colormap->alloc_color(m_white);
-    colormap->alloc_color(m_grey);
     set_flags(Gtk::CAN_FOCUS);
-    set_double_buffered(false);
-    set_size_request(10, c_dataarea_y);
 }
 
 /**
@@ -132,11 +109,11 @@ seqdata::reset ()
  */
 
 void
-seqdata::set_zoom (int a_zoom)
+seqdata::set_zoom (int zoom)
 {
-    if (m_zoom != a_zoom)
+    if (m_zoom != zoom)
     {
-        m_zoom = a_zoom;
+        m_zoom = zoom;
         reset();
     }
 }
@@ -147,11 +124,11 @@ seqdata::set_zoom (int a_zoom)
  */
 
 void
-seqdata::set_data_type (unsigned char a_status, unsigned char a_control = 0)
+seqdata::set_data_type (unsigned char status, unsigned char control)
 {
-    m_status = a_status;
-    m_cc = a_control;
-    redraw();                   // this->redraw();   weird
+    m_status = status;
+    m_cc = control;
+    redraw();
 }
 
 /**
@@ -179,8 +156,8 @@ seqdata::draw_events_on (Glib::RefPtr<Gdk::Drawable> a_draw)
     m_gc->set_foreground(m_white);
     a_draw->draw_rectangle(m_gc, true, 0, 0, m_window_x, m_window_y);
     m_gc->set_foreground(m_black);
-    m_seq->reset_draw_marker();
-    while (m_seq->get_next_event(m_status, m_cc, &tick, &d0, &d1, &selected))
+    m_seq.reset_draw_marker();
+    while (m_seq.get_next_event(m_status, m_cc, &tick, &d0, &d1, &selected))
     {
         if (tick >= start_tick && tick <= end_tick)
         {
@@ -213,26 +190,6 @@ seqdata::draw_events_on (Glib::RefPtr<Gdk::Drawable> a_draw)
 }
 
 /**
- *  Simply calls draw_events_on() for this object's built-in pixmap.
- */
-
-void
-seqdata::draw_events_on_pixmap ()
-{
-    draw_events_on(m_pixmap);
-}
-
-/**
- *  Simply queues up a draw operation.
- */
-
-void
-seqdata::draw_pixmap_on_window ()
-{
-    queue_draw();
-}
-
-/**
  *  Draws events on this object's built-in window and pixmap.
  *  This drawing is done only if there is no dragging in progress, to
  *  guarantee no flicker.
@@ -251,20 +208,20 @@ seqdata::idle_redraw ()
 
 /**
  *  This function takes screen coordinates, and give us the horizontaol
- *  tick value based on the current zoom, returned vias the second
- *  paramater.
+ *  tick value based on the current zoom, returned via the second
+ *  parameter.
  */
 
 void
-seqdata::convert_x (int a_x, long * a_tick)
+seqdata::convert_x (int x, long & tick)
 {
-    *a_tick = a_x * m_zoom;
+    tick = x * m_zoom;
 }
 
 /**
- *  This function takes two points, and returns an Xwin rectangle,
- *  returned via the last four parameters.
- *  It checks the mins/maxes, then fills in x,y, and width, height.
+ *  This function takes two points, and returns an Xwin rectangle, returned
+ *  via the last four parameters.  It checks the mins/maxes, then fills in x,
+ *  y, and width, height.
  */
 
 void
@@ -272,29 +229,29 @@ seqdata::xy_to_rect
 (
     int a_x1,  int a_y1,
     int a_x2,  int a_y2,
-    int * a_x,  int * a_y,
-    int * a_w,  int * a_h
+    int & r_x,  int & r_y,
+    int & r_w,  int & r_h
 )
 {
     if (a_x1 < a_x2)
     {
-        *a_x = a_x1;
-        *a_w = a_x2 - a_x1;
+        r_x = a_x1;
+        r_w = a_x2 - a_x1;
     }
     else
     {
-        *a_x = a_x2;
-        *a_w = a_x1 - a_x2;
+        r_x = a_x2;
+        r_w = a_x1 - a_x2;
     }
     if (a_y1 < a_y2)
     {
-        *a_y = a_y1;
-        *a_h = a_y2 - a_y1;
+        r_y = a_y1;
+        r_h = a_y2 - a_y1;
     }
     else
     {
-        *a_y = a_y2;
-        *a_h = a_y1 - a_y2;
+        r_y = a_y2;
+        r_h = a_y1 - a_y2;
     }
 }
 
@@ -328,9 +285,9 @@ seqdata::on_motion_notify_event (GdkEventMotion * a_p0)
         }
 
         long tick_s, tick_f;
-        convert_x(adj_x_min, &tick_s);
-        convert_x(adj_x_max, &tick_f);
-        m_seq->change_event_data_range
+        convert_x(adj_x_min, tick_s);
+        convert_x(adj_x_max, tick_f);
+        m_seq.change_event_data_range
         (
             tick_s, tick_f, m_status, m_cc,
             c_dataarea_y - adj_y_min - 1, c_dataarea_y - adj_y_max - 1
@@ -376,13 +333,12 @@ seqdata::draw_line_on_window ()
     (
         1, Gdk::LINE_SOLID, Gdk::CAP_NOT_LAST, Gdk::JOIN_MITER
     );
-
     m_window->draw_drawable                         /* replace old */
     (
         m_gc, m_pixmap, m_old.x, m_old.y, m_old.x, m_old.y,
         m_old.width + 1, m_old.height + 1
     );
-    xy_to_rect(m_drop_x, m_drop_y, m_current_x, m_current_y, &x, &y, &w, &h);
+    xy_to_rect(m_drop_x, m_drop_y, m_current_x, m_current_y, x, y, w, h);
     x -= m_scroll_offset_x;
     m_old.x = x;
     m_old.y = y;
@@ -403,7 +359,7 @@ seqdata::draw_line_on_window ()
 void
 seqdata::change_horz ()
 {
-    m_scroll_offset_ticks = (int) m_hadjust->get_value();
+    m_scroll_offset_ticks = int(m_hadjust.get_value());
     m_scroll_offset_x = m_scroll_offset_ticks / m_zoom;
     update_pixmap();
     force_draw();
@@ -428,11 +384,8 @@ seqdata::force_draw ()
 void
 seqdata::on_realize ()
 {
-    Gtk::DrawingArea::on_realize();
-    m_window = get_window();
-    m_gc = Gdk::GC::create(m_window);
-    m_window->clear();
-    m_hadjust->signal_value_changed().connect
+    gui_drawingarea_gtk2::on_realize();
+    m_hadjust.signal_value_changed().connect
     (
         mem_fun(*this, &seqdata::change_horz)
     );
@@ -442,14 +395,13 @@ seqdata::on_realize ()
         m_gc->set_foreground(m_white);
         m_numbers[i]->draw_rectangle(m_gc, true, 0, 0, 6, 30);
 
-        char val[5];
+        char val[8];
+        char num[8];
         snprintf(val, sizeof(val), "%3d\n", i);
-        char num[6];
-        memset(num, 0, 6);              // FIX!!!
-        num[0] = val[0];
+        memset(num, 0, 8);
+        num[0] = val[0];                /* converting to unicode? */
         num[2] = val[1];
         num[4] = val[2];
-
         p_font_renderer->render_string_on_drawable
         (
             m_gc, 0, 0, m_numbers[i], &num[0], font::BLACK
@@ -496,10 +448,10 @@ seqdata::on_scroll_event (GdkEventScroll * a_ev)
         return false;
 
     if (a_ev->direction == GDK_SCROLL_UP)
-        m_seq->increment_selected(m_status, m_cc);
+        m_seq.increment_selected(m_status, m_cc);
 
     if (a_ev->direction == GDK_SCROLL_DOWN)
-        m_seq->decrement_selected(m_status, m_cc);
+        m_seq.decrement_selected(m_status, m_cc);
 
     update_pixmap();
     queue_draw();
@@ -515,14 +467,14 @@ seqdata::on_button_press_event (GdkEventButton * a_p0)
 {
     if (a_p0->type == GDK_BUTTON_PRESS)
     {
-        m_seq->push_undo();
-        m_drop_x = (int) a_p0->x + m_scroll_offset_x; /* set values for line */
+        m_seq.push_undo();
+        m_drop_x = (int) a_p0->x + m_scroll_offset_x; /* set values for line  */
         m_drop_y = (int) a_p0->y;
         m_old.x = 0;                /* reset box that holds dirty redraw spot */
         m_old.y = 0;
         m_old.width = 0;
         m_old.height = 0;
-        m_dragging = true;          /* we are potentially dragging now! */
+        m_dragging = true;          /* we are potentially dragging now!       */
     }
     return true;
 }
@@ -544,9 +496,9 @@ seqdata::on_button_release_event (GdkEventButton * a_p0)
             std::swap(m_current_x, m_drop_x);
             std::swap(m_current_y, m_drop_y);
         }
-        convert_x(m_drop_x, &tick_s);
-        convert_x(m_current_x, &tick_f);
-        m_seq->change_event_data_range
+        convert_x(m_drop_x, tick_s);
+        convert_x(m_current_x, tick_f);
+        m_seq.change_event_data_range
         (
             tick_s, tick_f, m_status, m_cc,
             c_dataarea_y - m_drop_y - 1, c_dataarea_y - m_current_y - 1
@@ -565,7 +517,7 @@ seqdata::on_button_release_event (GdkEventButton * a_p0)
 void
 seqdata::on_size_allocate (Gtk::Allocation & a_r)
 {
-    Gtk::DrawingArea::on_size_allocate(a_r);
+    gui_drawingarea_gtk2::on_size_allocate(a_r);
     m_window_x = a_r.get_width();
     m_window_y = a_r.get_height();
     update_sizes();

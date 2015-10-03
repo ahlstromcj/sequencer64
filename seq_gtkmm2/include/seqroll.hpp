@@ -28,13 +28,13 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-09-21
+ * \updates       2015-10-03
  * \license       GNU GPLv2 or above
  *
  */
 
-#include <gtkmm/drawingarea.h>
-
+#include "globals.h"
+#include "gui_drawingarea_gtk2.hpp"
 #include "fruityseqroll.hpp"
 #include "seq24seqroll.hpp"
 
@@ -67,38 +67,18 @@ public:
  *  Implements the piano roll section of the pattern editor.
  */
 
-class seqroll : public Gtk::DrawingArea
+class seqroll : public gui_drawingarea_gtk2
 {
     friend struct FruitySeqRollInput;
     friend struct Seq24SeqRollInput;
 
 private:
 
-    Glib::RefPtr<Gdk::GC> m_gc;
-    Glib::RefPtr<Gdk::Window> m_window;
-    Gdk::Color m_black;
-    Gdk::Color m_white;
-    Gdk::Color m_grey;
-    Gdk::Color m_dk_grey;
-    Gdk::Color m_orange;
-    Glib::RefPtr<Gdk::Pixmap> m_pixmap;
-    perform * const m_mainperf;
-    int m_window_x;
-    int m_window_y;
-    int m_current_x;
-    int m_current_y;
-    int m_drop_x;
-    int m_drop_y;
-    Gtk::Adjustment * const m_vadjust;
-    Gtk::Adjustment * const m_hadjust;
-    Glib::RefPtr<Gdk::Pixmap> m_background;
     rect m_old;
     rect m_selected;
-    sequence * const m_seq;
+    sequence & m_seq;
     sequence * m_clipboard;
-    seqdata * const m_seqdata_wid;
-    seqevent * const m_seqevent_wid;
-    seqkeys * const m_seqkeys_wid;
+    seqkeys & m_seqkeys_wid;
     FruitySeqRollInput m_fruity_interaction;
     Seq24SeqRollInput m_seq24_interaction;
     int m_pos;
@@ -155,56 +135,56 @@ public:
 
     seqroll
     (
-        perform * a_perf,
-        sequence * a_seq,
-        int a_zoom, int a_snap,
-        seqdata * a_seqdata_wid,
-        seqevent * a_seqevent_wid,
-        seqkeys * a_seqkeys_wid,
-        int a_pos,
-        Gtk::Adjustment * a_hadjust,
-        Gtk::Adjustment * a_vadjust
+        perform & perf,
+        sequence & seq,
+        int zoom, int snap,
+//      seqdata & seqdata_wid,
+//      seqevent & seqevent_wid,
+        seqkeys & seqkeys_wid,
+        int pos,
+        Gtk::Adjustment & hadjust,
+        Gtk::Adjustment & vadjust
     );
     ~seqroll ();
 
     void reset ();
     void redraw ();
     void redraw_events ();
-    void set_key (int a_key);
-    void set_scale (int a_scale);
+    void set_key (int key);
+    void set_scale (int scale);
 
     /**
      *  Sets the snap to the given value, and then resets the view.
      */
 
-    void set_snap (int a_snap)
+    void set_snap (int snap)
     {
-        m_snap = a_snap;
+        m_snap = snap;
         reset();
     }
 
-    void set_zoom (int a_zoom);
+    void set_zoom (int zoom);
 
     /**
      * \setter m_note_length
      */
 
-    void set_note_length (int a_note_length)
+    void set_note_length (int note_length)
     {
-        m_note_length = a_note_length;
+        m_note_length = note_length;
     }
 
     /**
      * \setter m_ignore_redraw
      */
 
-    void set_ignore_redraw (bool a_ignore)
+    void set_ignore_redraw (bool ignore)
     {
-        m_ignore_redraw = a_ignore;
+        m_ignore_redraw = ignore;
     }
 
-    void set_data_type (unsigned char a_status, unsigned char a_control);
-    void set_background_sequence (bool a_state, int a_seq);
+    void set_data_type (unsigned char status, unsigned char control);
+    void set_background_sequence (bool state, int seq);
     void update_pixmap ();
     void update_sizes ();
     void update_background ();
@@ -217,40 +197,58 @@ public:
 
 private:
 
-    void convert_xy (int a_x, int a_y, long * a_ticks, int * a_note);
-    void convert_tn (long a_ticks, int a_note, int * a_x, int * a_y);
-    void snap_y (int * a_y);
-    void snap_x (int * a_x);
+    void convert_xy (int x, int y, long & ticks, int & note);
+    void convert_tn (long ticks, int note, int & x, int & y);
+    void snap_y (int & y)
+    {
+        y -= (y % c_key_y);
+    }
+
+    void snap_x (int & x);
     void xy_to_rect
     (
-        int a_x1, int a_y1, int a_x2, int a_y2,
-        int * a_x, int * a_y, int * a_w, int * a_h
+        int x1, int y1, int x2, int y2,
+        int & x, int & y, int & w, int & h
     );
     void convert_tn_box_to_rect
     (
-        long a_tick_s, long a_tick_f, int a_note_h, int a_note_l,
-        int * a_x, int * a_y, int * a_w, int * a_h
+        long tick_s, long tick_f, int note_h, int note_l,
+        int & x, int & y, int & w, int & h
     );
-    void draw_events_on (Glib::RefPtr<Gdk::Drawable> a_draw);
+    void draw_events_on (Glib::RefPtr<Gdk::Drawable> draw);
     int idle_progress ();
     void change_horz ();
     void change_vert ();
     void force_draw ();
 
+private:            // special dual setters for friends
+
+    void set_current_drop_x (int x)
+    {
+        m_current_x = m_drop_x = x;
+    }
+
+    void set_current_drop_y (int y)
+    {
+        m_current_y = m_drop_y = y;
+    }
+
+
 private:            // callbacks
 
     void on_realize ();
-    bool on_expose_event (GdkEventExpose * a_ev);
-    bool on_button_press_event (GdkEventButton * a_ev);
-    bool on_button_release_event (GdkEventButton * a_ev);
-    bool on_motion_notify_event (GdkEventMotion * a_ev);
+    bool on_expose_event (GdkEventExpose * ev);
+    bool on_button_press_event (GdkEventButton * ev);
+    bool on_button_release_event (GdkEventButton * ev);
+    bool on_motion_notify_event (GdkEventMotion * ev);
     bool on_focus_in_event (GdkEventFocus *);
     bool on_focus_out_event (GdkEventFocus *);
-    bool on_key_press_event (GdkEventKey * a_p0);
+    bool on_key_press_event (GdkEventKey * ev);
     bool on_scroll_event (GdkEventScroll * a_ev);
     void on_size_allocate (Gtk::Allocation &);
-    bool on_leave_notify_event (GdkEventCrossing * a_p0);
-    bool on_enter_notify_event (GdkEventCrossing * a_p0);
+    bool on_leave_notify_event (GdkEventCrossing * p0);
+    bool on_enter_notify_event (GdkEventCrossing * p0);
+
 };
 
 }           // namespace seq64

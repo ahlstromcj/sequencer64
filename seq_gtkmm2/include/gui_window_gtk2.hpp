@@ -116,12 +116,6 @@ protected:
         // TO DO!!!!
     }
 
-private:
-
-//  void on_realize ();
-//  bool on_delete_event (GdkEventAny * a_event);
-//  bool on_key_press_event (GdkEventKey * a_ev);
-
 };
 
 }           // namespace seq64

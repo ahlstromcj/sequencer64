@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-09-19
+ * \updates       2015-10-03
  * \license       GNU GPLv2 or above
  *
  *  The patterns/sequence editor is expandable in both directions, but the
@@ -49,33 +49,18 @@ namespace seq64
 
 seqtime::seqtime
 (
-    sequence * a_seq,
-    int a_zoom,
-    Gtk::Adjustment * a_hadjust
+    sequence & seq,
+    perform & p,
+    int zoom,
+    Gtk::Adjustment & hadjust
 ) :
-    Gtk::DrawingArea        (),
-    m_gc                    (),
-    m_window                (),
-    m_black                 (Gdk::Color("black")),
-    m_white                 (Gdk::Color("white")),
-    m_grey                  (Gdk::Color("grey")),
-    m_pixmap                (),
-    m_window_x              (0),
-    m_window_y              (0),
-    m_hadjust               (a_hadjust),
-    m_seq                   (a_seq),
+    gui_drawingarea_gtk2    (p, hadjust, sm_vadjust_dummy, 10, c_timearea_y),
+    m_seq                   (seq),
     m_scroll_offset_ticks   (0),
     m_scroll_offset_x       (0),
-    m_zoom                  (a_zoom)
+    m_zoom                  (zoom)
 {
-    add_events(Gdk::BUTTON_PRESS_MASK | Gdk::BUTTON_RELEASE_MASK);
-
-    Glib::RefPtr<Gdk::Colormap> colormap = get_default_colormap();
-    colormap->alloc_color(m_black);
-    colormap->alloc_color(m_white);
-    colormap->alloc_color(m_grey);
-    set_size_request(10, c_timearea_y);                 /* set default size */
-    set_double_buffered(false);
+    // Empty body
 }
 
 /**
@@ -101,31 +86,10 @@ seqtime::update_sizes ()
 void
 seqtime::change_horz ()
 {
-    m_scroll_offset_ticks = (int) m_hadjust->get_value();
+    m_scroll_offset_ticks = int(m_hadjust.get_value());
     m_scroll_offset_x = m_scroll_offset_ticks / m_zoom;
     update_pixmap();
     force_draw();
-}
-
-/**
- *  Simply returns true.
- */
-
-bool
-seqtime::idle_progress ()
-{
-    return true;
-}
-
-/**
- *  Sets the zoom to the given value and resets the window.
- */
-
-void
-seqtime::set_zoom (int a_zoom)
-{
-    m_zoom = a_zoom;
-    reset();
 }
 
 /**
@@ -136,7 +100,7 @@ seqtime::set_zoom (int a_zoom)
 void
 seqtime::reset ()
 {
-    m_scroll_offset_ticks = (int) m_hadjust->get_value();
+    m_scroll_offset_ticks = int(m_hadjust.get_value());
     m_scroll_offset_x = m_scroll_offset_ticks / m_zoom;
     update_sizes();
     update_pixmap();
@@ -151,7 +115,7 @@ seqtime::reset ()
 void
 seqtime::redraw ()
 {
-    m_scroll_offset_ticks = (int) m_hadjust->get_value();
+    m_scroll_offset_ticks = int(m_hadjust.get_value());
     m_scroll_offset_x = m_scroll_offset_ticks / m_zoom;
     update_pixmap();
     draw_pixmap_on_window();
@@ -191,12 +155,12 @@ seqtime::update_pixmap ()
      * See the description in the banner.
      */
 
-    int measure_length_32nds =  m_seq->get_bpm() * 32 / m_seq->get_bw();
+    int measure_length_32nds =  m_seq.get_bpm() * 32 / m_seq.get_bw();
     int measures_per_line = (128 / measure_length_32nds) / (32 / m_zoom);
     if (measures_per_line <= 0)
         measures_per_line = 1;
 
-    int ticks_per_measure =  m_seq->get_bpm() * (4 * c_ppqn) / m_seq->get_bw();
+    int ticks_per_measure =  m_seq.get_bpm() * (4 * c_ppqn) / m_seq.get_bw();
     int ticks_per_step =  ticks_per_measure * measures_per_line;
     int start_tick = m_scroll_offset_ticks -
         (m_scroll_offset_ticks % ticks_per_step);
@@ -207,9 +171,7 @@ seqtime::update_pixmap ()
     for (int i = start_tick; i < end_tick; i += ticks_per_step)
     {
         int base_line = i / m_zoom;
-
-        /* beat */
-        m_pixmap->draw_line
+        m_pixmap->draw_line                             /* the beat */
         (
             m_gc, base_line - m_scroll_offset_x,
             0, base_line - m_scroll_offset_x, m_window_y
@@ -225,7 +187,7 @@ seqtime::update_pixmap ()
         );
     }
 
-    long end_x = m_seq->get_length() / m_zoom - m_scroll_offset_x;
+    long end_x = m_seq.get_length() / m_zoom - m_scroll_offset_x;
     m_gc->set_foreground(m_black);
     m_pixmap->draw_rectangle(m_gc, true, end_x, 9, 19, 8);
     p_font_renderer->render_string_on_drawable
@@ -262,12 +224,9 @@ seqtime::force_draw ()
 void
 seqtime::on_realize()
 {
-    Gtk::DrawingArea::on_realize();
+    gui_drawingarea_gtk2::on_realize();
     Glib::signal_timeout().connect(mem_fun(*this, &seqtime::idle_progress), 50);
-    m_window = get_window();            // allocate additional resources
-    m_gc = Gdk::GC::create(m_window);
-    m_window->clear();
-    m_hadjust->signal_value_changed().connect
+    m_hadjust.signal_value_changed().connect
     (
         mem_fun(*this, &seqtime::change_horz)
     );
@@ -294,46 +253,12 @@ seqtime::on_expose_event (GdkEventExpose * a_e)
  */
 
 void
-seqtime::on_size_allocate (Gtk::Allocation & a_r)
+seqtime::on_size_allocate (Gtk::Allocation & a)
 {
-    Gtk::DrawingArea::on_size_allocate(a_r);
-    m_window_x = a_r.get_width();
-    m_window_y = a_r.get_height();
+    gui_drawingarea_gtk2::on_size_allocate(a);
+    m_window_x = a.get_width();
+    m_window_y = a.get_height();
     update_sizes();
-}
-
-/*
- * ca 2015-07-24
- * Eliminate this annoying warning.  Will do it for Microsoft's bloddy
- * compiler later.
- */
-
-#ifdef PLATFORM_GNU
-#pragma GCC diagnostic ignored "-Wunused-parameter"
-#endif
-
-/**
- *  Implements the on-button-press event handler.  Simply returns false.
- */
-
-bool
-seqtime::on_button_press_event (GdkEventButton * p0)
-{
-    return false;
-}
-
-#ifdef PLATFORM_GNU
-#pragma GCC diagnostic ignored "-Wunused-parameter"
-#endif
-
-/**
- *  Implements the on-button-release event handler.  Simply returns false.
- */
-
-bool
-seqtime::on_button_release_event (GdkEventButton * p0)
-{
-    return false;
 }
 
 }           // namespace seq64

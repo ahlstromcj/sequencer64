@@ -49,13 +49,13 @@ mainwnd--> gui_window_gtk2, performcallback
 seqedit --> gui_window_gtk2
    |
    |<&>-- sequence
-   |<*>-- seqdata --> Gtk::DrawingArea
+   |<*>-- seqdata --> gui_drawingarea_gtk2
    |         |
    |         |<*>-- sequence
    |         | friend seqevent
    |         | friend seqroll
    |
-   |<*>-- seqevent --> Gtk::DrawingArea
+   |<*>-- seqevent --> gui_drawingarea_gtk2
    |         |
    |         |<>--- FruitySeqEventInput
    |         |<>--- Seq24SeqEventInput
@@ -65,11 +65,11 @@ seqedit --> gui_window_gtk2
    |         |<*>-- sequence
    |         |<*>-- seqdata
    |
-   |<*>-- seqkeys --> Gtk::DrawingArea
+   |<*>-- seqkeys --> gui_drawingarea_gtk2
    |         |
    |         |<*>-- sequence
    |
-   |<*>-- seqroll --> Gtk::DrawingArea
+   |<*>-- seqroll --> gui_drawingarea_gtk2
    |         |
    |         |<&>-- perform
    |         |<*>-- sequence
@@ -79,7 +79,7 @@ seqedit --> gui_window_gtk2
    |         |<>--- FruitySeqRollInput
    |         |<>--- Seq24SeqRollInput
    |
-   |<*>-- seqtime --> Gtk::DrawingArea
+   |<*>-- seqtime --> gui_drawingarea_gtk2
    |         |
    |         |<*>-- sequence
 

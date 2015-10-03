@@ -69,18 +69,6 @@ perfnames::perfnames (perform & p, Gtk::Adjustment & vadjust)
     m_sequence_offset       (0),
     m_sequence_active       ()              // an array
 {
-    /*
-     * This is only a subset of what the base class sets:
-     *
-     *  add_events
-     *  (
-     *      Gdk::BUTTON_PRESS_MASK | Gdk::BUTTON_RELEASE_MASK |
-     *      Gdk::SCROLL_MASK
-     *  );
-     *  set_size_request(c_names_x, 100);   // set default size //
-     *  set_double_buffered(false);
-     */
-
     m_vadjust.signal_value_changed().connect
     (
         mem_fun(*(this), &perfnames::change_vert)
@@ -296,9 +284,6 @@ void
 perfnames::on_realize ()
 {
     gui_drawingarea_gtk2::on_realize();
-//  m_window = get_window();
-//  m_gc = Gdk::GC::create(m_window);
-//  m_window->clear();
     m_pixmap = Gdk::Pixmap::create
     (
         m_window, m_names_x, m_names_y * m_sequence_max + 1, -1
@@ -360,7 +345,6 @@ perfnames::on_scroll_event (GdkEventScroll * ev)
 void
 perfnames::on_size_allocate (Gtk::Allocation & a)
 {
-    // Gtk::DrawingArea::on_size_allocate(a);
     gui_drawingarea_gtk2::on_size_allocate(a);
     m_window_x = a.get_width();             /* side-effect  */
     m_window_y = a.get_height();            /* side-effect  */

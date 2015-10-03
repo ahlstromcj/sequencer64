@@ -133,7 +133,7 @@ perfedit::perfedit (perform & p)
     m_modified          (false)
 {
     set_icon(Gdk::Pixbuf::create_from_xpm_data(perfedit_xpm));
-    set_title("Sequencer64 Song Editor");                   /* main window */
+    set_title("Sequencer64 - Song Editor");                 /* main window */
     m_table->set_border_width(2);
     m_hlbox->set_border_width(2);
     m_button_grow->add
@@ -562,7 +562,8 @@ perfedit::timeout ()
 void
 perfedit::on_realize ()
 {
-    Gtk::Window::on_realize();
+//  Gtk::Window::on_realize();
+    gui_window_gtk2::on_realize();
     Glib::signal_timeout().connect
     (
         mem_fun(*this, &perfedit::timeout), c_redraw_ms

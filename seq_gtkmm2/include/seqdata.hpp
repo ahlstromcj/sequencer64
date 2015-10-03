@@ -29,14 +29,13 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-09-13
+ * \updates       2015-10-03
  * \license       GNU GPLv2 or above
  *
  */
 
-#include <gtkmm/drawingarea.h>
-
 #include "globals.h"
+#include "gui_drawingarea_gtk2.hpp"
 
 namespace Gtk
 {
@@ -46,13 +45,14 @@ namespace Gtk
 namespace seq64
 {
 
+class perform;
 class sequence;
 
 /**
  *    This class supports drawing piano-roll eventis on a window.
  */
 
-class seqdata : public Gtk::DrawingArea
+class seqdata : public gui_drawingarea_gtk2
 {
 
     friend class seqroll;
@@ -60,20 +60,7 @@ class seqdata : public Gtk::DrawingArea
 
 private:
 
-    Glib::RefPtr<Gdk::GC> m_gc;
-    Glib::RefPtr<Gdk::Window> m_window;
-    Gdk::Color m_black;
-    Gdk::Color m_white;
-    Gdk::Color m_grey;
-    Glib::RefPtr<Gdk::Pixmap> m_pixmap;
-    int m_window_x;
-    int m_window_y;
-    int m_current_x;
-    int m_current_y;
-    int m_drop_x;
-    int m_drop_y;
-    Gtk::Adjustment * const m_hadjust;
-    sequence * const m_seq;
+    sequence & m_seq;
 
     /**
      *  one pixel == m_zoom ticks
@@ -98,7 +85,13 @@ private:
 
 public:
 
-    seqdata (sequence * a_seq, int a_zoom,  Gtk::Adjustment * a_hadjust);
+    seqdata
+    (
+        sequence & seq,
+        perform & p,
+        int zoom,
+        Gtk::Adjustment & hadjust
+    );
 
     void reset ();
 
@@ -120,21 +113,37 @@ public:
 private:
 
     void update_sizes ();
-    void draw_events_on_pixmap ();
-    void draw_pixmap_on_window ();
     void update_pixmap ();
     void draw_line_on_window ();
-    void convert_x (int a_x, long *a_tick);
+    void convert_x (int x, long & tick);
     void xy_to_rect
     (
-      int a_x1,  int a_y1,
-      int a_x2,  int a_y2,
-      int * a_x,  int * a_y,
-      int * a_w,  int * a_h
+      int a_x1, int a_y1,
+      int a_x2, int a_y2,
+      int & r_x, int & r_y,
+      int & r_w, int & r_h
    );
     void draw_events_on (Glib::RefPtr<Gdk::Drawable> a_draw);
     void change_horz ();
     void force_draw ();
+
+    /**
+     *  Simply calls draw_events_on() for this object's built-in pixmap.
+     */
+
+    void draw_events_on_pixmap ()
+    {
+        draw_events_on(m_pixmap);
+    }
+
+    /**
+     *  Simply queues up a draw operation.
+     */
+
+    void draw_pixmap_on_window ()
+    {
+        queue_draw();
+    }
 
 private:       // callbacks
 

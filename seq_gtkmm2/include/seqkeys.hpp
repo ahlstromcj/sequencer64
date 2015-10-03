@@ -28,13 +28,14 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-09-13
+ * \updates       2015-10-03
  * \license       GNU GPLv2 or above
  *
  */
 
-#include <gtkmm/drawingarea.h>
 #include <gtkmm/window.h>
+
+#include "gui_drawingarea_gtk2.hpp"
 
 namespace Gtk
 {
@@ -44,6 +45,7 @@ namespace Gtk
 namespace seq64
 {
 
+class perform;
 class sequence;
 
 /**
@@ -51,21 +53,12 @@ class sequence;
  *  editor.
  */
 
-class seqkeys : public Gtk::DrawingArea
+class seqkeys : public gui_drawingarea_gtk2
 {
 
 private:
 
-    Glib::RefPtr<Gdk::GC> m_gc;
-    Glib::RefPtr<Gdk::Window> m_window;
-    Gdk::Color m_black;
-    Gdk::Color m_white;
-    Gdk::Color m_grey;
-    Glib::RefPtr<Gdk::Pixmap> m_pixmap;
-    int m_window_x;
-    int m_window_y;
-    Gtk::Adjustment * m_vadjust;
-    sequence * m_seq;
+    sequence & m_seq;
     int m_scroll_offset_key;
     int m_scroll_offset_y;
     bool m_hint_state;
@@ -82,7 +75,12 @@ private:
 
 public:
 
-    seqkeys (sequence * a_seq, Gtk::Adjustment * a_vadjust);
+    seqkeys
+    (
+        sequence & seq,
+        perform & p,
+        Gtk::Adjustment & vadjust
+    );
 
     void set_scale (int a_scale);
     void set_key (int a_key);
@@ -93,7 +91,7 @@ private:
 
     void draw_area ();
     void update_pixmap ();
-    void convert_y (int a_y, int * a_note);
+    void convert_y (int a_y, int & a_note);
     void draw_key (int a_key, bool a_state);
     void change_vert ();
     void force_draw ();

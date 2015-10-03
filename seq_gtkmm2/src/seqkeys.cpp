@@ -25,13 +25,14 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-09-13
+ * \updates       2015-10-03
  * \license       GNU GPLv2 or above
  *
  */
 
 #include <gtkmm/adjustment.h>
 
+#include "click.hpp"                    /* CLICK_IS_LEFT() etc.     */
 #include "font.hpp"
 #include "seqkeys.hpp"
 #include "sequence.hpp"
@@ -45,20 +46,15 @@ namespace seq64
 
 seqkeys::seqkeys
 (
-    sequence * a_seq,
-    Gtk::Adjustment * a_vadjust
+    sequence & seq,
+    perform & p,
+    Gtk::Adjustment & vadjust
 ) :
-    Gtk::DrawingArea        (),
-    m_gc                    (),
-    m_window                (),
-    m_black                 (Gdk::Color("black")),
-    m_white                 (Gdk::Color("white")),
-    m_grey                  (Gdk::Color("grey")),
-    m_pixmap                (),
-    m_window_x              (0),
-    m_window_y              (0),
-    m_vadjust               (a_vadjust),
-    m_seq                   (a_seq),
+    gui_drawingarea_gtk2
+    (
+        p, sm_hadjust_dummy, vadjust, c_keyarea_x + 1, 10
+    ),
+    m_seq                   (seq),
     m_scroll_offset_key     (0),
     m_scroll_offset_y       (0),
     m_hint_state            (false),
@@ -68,19 +64,7 @@ seqkeys::seqkeys
     m_scale                 (0),
     m_key                   (0)
 {
-    add_events
-    (
-        Gdk::BUTTON_PRESS_MASK | Gdk::BUTTON_RELEASE_MASK |
-        Gdk::ENTER_NOTIFY_MASK | Gdk::LEAVE_NOTIFY_MASK |
-        Gdk::POINTER_MOTION_MASK | Gdk::SCROLL_MASK
-    );
-    set_size_request(c_keyarea_x + 1, 10);          /* set default size */
-
-    Glib::RefPtr<Gdk::Colormap> colormap = get_default_colormap();
-    colormap->alloc_color(m_black);
-    colormap->alloc_color(m_white);
-    colormap->alloc_color(m_grey);
-    set_double_buffered(false);
+    // Empty body
 }
 
 /**
@@ -88,11 +72,11 @@ seqkeys::seqkeys
  */
 
 void
-seqkeys::set_scale (int a_scale)
+seqkeys::set_scale (int scale)
 {
-    if (m_scale != a_scale)
+    if (m_scale != scale)
     {
-        m_scale = a_scale;
+        m_scale = scale;
         reset();
     }
 }
@@ -102,11 +86,11 @@ seqkeys::set_scale (int a_scale)
  */
 
 void
-seqkeys::set_key (int a_key)
+seqkeys::set_key (int key)
 {
-    if (m_key != a_key)
+    if (m_key != key)
     {
-        m_key = a_key;
+        m_key = key;
         reset();
     }
 }
@@ -219,9 +203,9 @@ seqkeys::force_draw ()
  */
 
 void
-seqkeys::convert_y (int a_y, int * a_note)
+seqkeys::convert_y (int y, int & note)
 {
-    *a_note = (c_rollarea_y - a_y - 2) / c_key_y;
+    note = (c_rollarea_y - y - 2) / c_key_y;
 }
 
 /**
@@ -229,31 +213,32 @@ seqkeys::convert_y (int a_y, int * a_note)
  */
 
 void
-seqkeys::set_hint_key (int a_key)
+seqkeys::set_hint_key (int key)
 {
     draw_key(m_hint_key, false);
-    m_hint_key = a_key;
+    m_hint_key = key;
     if (m_hint_state)
-        draw_key(a_key, true);
+        draw_key(key, true);
 }
 
 /**
  *  Sets the hint state to the given value.
  *
- * \param a_state
+ * \param state
  *      Provides the value for hinting, where true == on, false == off.
  */
 
 void
-seqkeys::set_hint_state (bool a_state)
+seqkeys::set_hint_state (bool state)
 {
-    m_hint_state = a_state;
-    if (!a_state)
+    m_hint_state = state;
+    if (! state)
         draw_key(m_hint_key, false);
 }
 
 /**
  *  Draws the given key according to the given state.
+ *  It accounts for the black keys and the white keys.
  *
  * \param a_key
  *      The key to be drawn.
@@ -297,7 +282,7 @@ seqkeys::draw_key (int a_key, bool a_state)
 void
 seqkeys::change_vert ()
 {
-    m_scroll_offset_key = (int) m_vadjust->get_value();
+    m_scroll_offset_key = int(m_vadjust.get_value());
     m_scroll_offset_y = m_scroll_offset_key * c_key_y,
     force_draw();
 }
@@ -311,13 +296,10 @@ seqkeys::change_vert ()
 void
 seqkeys::on_realize ()
 {
-    Gtk::DrawingArea::on_realize();
-    m_window = get_window();
-    m_gc = Gdk::GC::create(m_window);
-    m_window->clear();
+    gui_drawingarea_gtk2::on_realize();
     m_pixmap = Gdk::Pixmap::create(m_window, c_keyarea_x, c_keyarea_y, -1);
     update_pixmap();
-    m_vadjust->signal_value_changed().connect
+    m_vadjust.signal_value_changed().connect
     (
         mem_fun(*this, &seqkeys::change_vert)
     );
@@ -329,12 +311,12 @@ seqkeys::on_realize ()
  */
 
 bool
-seqkeys::on_expose_event (GdkEventExpose * a_e)
+seqkeys::on_expose_event (GdkEventExpose * ev)
 {
     m_window->draw_drawable
     (
-        m_gc, m_pixmap, a_e->area.x, a_e->area.y + m_scroll_offset_y,
-        a_e->area.x, a_e->area.y, a_e->area.width, a_e->area.height
+        m_gc, m_pixmap, ev->area.x, ev->area.y + m_scroll_offset_y,
+        ev->area.x, ev->area.y, ev->area.width, ev->area.height
     );
     return true;
 }
@@ -346,17 +328,17 @@ seqkeys::on_expose_event (GdkEventExpose * a_e)
  */
 
 bool
-seqkeys::on_button_press_event (GdkEventButton * a_e)
+seqkeys::on_button_press_event (GdkEventButton * ev)
 {
-    if (a_e->type == GDK_BUTTON_PRESS)
+    if (ev->type == GDK_BUTTON_PRESS)
     {
-        if (a_e->button == 1)
+        if (CLICK_IS_LEFT(ev->button))
         {
-            int y = int(a_e->y + m_scroll_offset_y);
+            int y = int(ev->y + m_scroll_offset_y);
             int note;
             m_keying = true;
-            convert_y(y, &note);
-            m_seq->play_note_on(note);
+            convert_y(y, note);
+            m_seq.play_note_on(note);
             m_keying_note = note;
         }
     }
@@ -372,14 +354,14 @@ seqkeys::on_button_press_event (GdkEventButton * a_e)
  */
 
 bool
-seqkeys::on_button_release_event (GdkEventButton * a_e)
+seqkeys::on_button_release_event (GdkEventButton * ev)
 {
-    if (a_e->type == GDK_BUTTON_RELEASE)
+    if (ev->type == GDK_BUTTON_RELEASE)
     {
-        if (a_e->button == 1 && m_keying)
+        if (CLICK_IS_LEFT(ev->button) && m_keying)
         {
             m_keying = false;
-            m_seq->play_note_off(m_keying_note);
+            m_seq.play_note_off(m_keying_note);
         }
     }
     return true;
@@ -393,15 +375,15 @@ bool
 seqkeys::on_motion_notify_event (GdkEventMotion * a_p0)
 {
     int note;
-    int y = (int) a_p0->y + m_scroll_offset_y;
-    convert_y(y, &note);
+    int y = int(a_p0->y + m_scroll_offset_y);
+    convert_y(y, note);
     set_hint_key(note);
     if (m_keying)
     {
         if (note != m_keying_note)
         {
-            m_seq->play_note_off(m_keying_note);
-            m_seq->play_note_on(note);
+            m_seq.play_note_off(m_keying_note);
+            m_seq.play_note_on(note);
             m_keying_note = note;
         }
     }
@@ -443,7 +425,7 @@ seqkeys::on_leave_notify_event (GdkEventCrossing * p0)
     if (m_keying)
     {
         m_keying = false;
-        m_seq->play_note_off(m_keying_note);
+        m_seq.play_note_off(m_keying_note);
     }
     set_hint_state(false);
     return true;
@@ -456,7 +438,7 @@ seqkeys::on_leave_notify_event (GdkEventCrossing * p0)
 void
 seqkeys::on_size_allocate (Gtk::Allocation & a_r)
 {
-    Gtk::DrawingArea::on_size_allocate(a_r);
+    gui_drawingarea_gtk2::on_size_allocate(a_r);
     m_window_x = a_r.get_width();
     m_window_y = a_r.get_height();
     queue_draw();
@@ -467,17 +449,17 @@ seqkeys::on_size_allocate (Gtk::Allocation & a_r)
  */
 
 bool
-seqkeys::on_scroll_event (GdkEventScroll * a_ev)
+seqkeys::on_scroll_event (GdkEventScroll * ev)
 {
-    double val = m_vadjust->get_value();
-    if (a_ev->direction == GDK_SCROLL_UP)
-        val -= m_vadjust->get_step_increment() / 6;
-    else if (a_ev->direction == GDK_SCROLL_DOWN)
-        val += m_vadjust->get_step_increment() / 6;
+    double val = m_vadjust.get_value();
+    if (ev->direction == GDK_SCROLL_UP)
+        val -= m_vadjust.get_step_increment() / 6;
+    else if (ev->direction == GDK_SCROLL_DOWN)
+        val += m_vadjust.get_step_increment() / 6;
     else
         return true;
 
-    m_vadjust->clamp_page(val, val + m_vadjust->get_page_size());
+    m_vadjust.clamp_page(val, val + m_vadjust.get_page_size());
     return true;
 }
 

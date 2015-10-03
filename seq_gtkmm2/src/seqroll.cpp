@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-09-16
+ * \updates       2015-10-03
  * \license       GNU GPLv2 or above
  *
  */
@@ -51,47 +51,26 @@ namespace seq64
 
 seqroll::seqroll
 (
-    perform * a_perf,
-    sequence * a_seq,
-    int a_zoom,
-    int a_snap,
-    seqdata * a_seqdata_wid,
-    seqevent * a_seqevent_wid,
-    seqkeys * a_seqkeys_wid,
-    int a_pos,
-    Gtk::Adjustment * a_hadjust,
-    Gtk::Adjustment * a_vadjust
+    perform & p,
+    sequence & seq,
+    int zoom,
+    int snap,
+    seqkeys & seqkeys_wid,
+    int pos,
+    Gtk::Adjustment & hadjust,
+    Gtk::Adjustment & vadjust
 ) :
-    m_gc                    (),
-    m_window                (),
-    m_black                 (Gdk::Color("black")),
-    m_white                 (Gdk::Color("white")),
-    m_grey                  (Gdk::Color("gray")),
-    m_dk_grey               (Gdk::Color("gray50")),
-    m_orange                (Gdk::Color("orange")),
-    m_pixmap                (),
-    m_mainperf              (a_perf),
-    m_window_x              (10),       // why so small?
-    m_window_y              (10),
-    m_current_x             (0),
-    m_current_y             (0),
-    m_drop_x                (0),
-    m_drop_y                (0),
-    m_vadjust               (a_vadjust),
-    m_hadjust               (a_hadjust),
-    m_background            (),         // another pixmap
+    gui_drawingarea_gtk2    (p, hadjust, vadjust, 10, 10),
     m_old                   (),
     m_selected              (),
-    m_seq                   (a_seq),
+    m_seq                   (seq),
     m_clipboard             (new sequence()),
-    m_seqdata_wid           (a_seqdata_wid),
-    m_seqevent_wid          (a_seqevent_wid),
-    m_seqkeys_wid           (a_seqkeys_wid),
+    m_seqkeys_wid           (seqkeys_wid),
     m_fruity_interaction    (),
     m_seq24_interaction     (),
-    m_pos                   (a_pos),
-    m_zoom                  (a_zoom),
-    m_snap                  (a_snap),
+    m_pos                   (pos),
+    m_zoom                  (zoom),
+    m_snap                  (snap),
     m_note_length           (0),
     m_scale                 (0),
     m_key                   (0),
@@ -116,24 +95,7 @@ seqroll::seqroll
     m_drawing_background_seq(false),
     m_ignore_redraw         (false)
 {
-    Glib::RefPtr<Gdk::Colormap> colormap = get_default_colormap();
-    colormap->alloc_color(m_black);
-    colormap->alloc_color(m_white);
-    colormap->alloc_color(m_grey);
-    colormap->alloc_color(m_dk_grey);
-    colormap->alloc_color(m_orange);
-
-//  m_clipboard = new sequence();
-
-    add_events
-    (
-        Gdk::BUTTON_PRESS_MASK | Gdk::BUTTON_RELEASE_MASK |
-        Gdk::POINTER_MOTION_MASK | Gdk::KEY_PRESS_MASK |
-        Gdk::KEY_RELEASE_MASK | Gdk::FOCUS_CHANGE_MASK |
-        Gdk::ENTER_NOTIFY_MASK | Gdk::LEAVE_NOTIFY_MASK |
-        Gdk::SCROLL_MASK
-    );
-    set_double_buffered(false);
+    // Empty body
 }
 
 /**
@@ -142,7 +104,8 @@ seqroll::seqroll
 
 seqroll::~seqroll ()
 {
-    delete m_clipboard;
+    if (not_nullptr(m_clipboard))
+        delete m_clipboard;
 }
 
 /**
@@ -153,10 +116,10 @@ seqroll::~seqroll ()
  */
 
 void
-seqroll::set_background_sequence (bool a_state, int a_seq)
+seqroll::set_background_sequence (bool state, int seq)
 {
-    m_drawing_background_seq = a_state;
-    m_background_sequence = a_seq;
+    m_drawing_background_seq = state;
+    m_background_sequence = seq;
     if (m_ignore_redraw)
         return;
 
@@ -166,9 +129,9 @@ seqroll::set_background_sequence (bool a_state, int a_seq)
 }
 
 /*
- *  use m_zoom and "i % m_seq->get_bpm() == 0"
+ *  use m_zoom and "i % m_seq.get_bpm() == 0"
  *
- *  int numberLines = 128 / m_seq->get_bw() / m_zoom;
+ *  int numberLines = 128 / m_seq.get_bw() / m_zoom;
  *  int distance = c_ppqn / 32;
  */
 
@@ -180,16 +143,16 @@ seqroll::set_background_sequence (bool a_state, int a_seq)
 void
 seqroll::update_sizes ()
 {
-    m_hadjust->set_lower(0);                            /* set default size */
-    m_hadjust->set_upper(m_seq->get_length());
-    m_hadjust->set_page_size(m_window_x * m_zoom);
+    m_hadjust.set_lower(0);                            /* set default size */
+    m_hadjust.set_upper(m_seq.get_length());
+    m_hadjust.set_page_size(m_window_x * m_zoom);
 
     /*
      * The horizontal step increment is 1 semiquaver (1/16) note per zoom
      * level.
      */
 
-    m_hadjust->set_step_increment((c_ppqn / 4) * m_zoom);
+    m_hadjust.set_step_increment((c_ppqn / 4) * m_zoom);
 
     /*
      * The page increment is always one bar.
@@ -197,24 +160,24 @@ seqroll::update_sizes ()
 
     int page_increment = int
     (
-        double(c_ppqn) * double(m_seq->get_bpm()) * (4.0 / double(m_seq->get_bw()))
+        double(c_ppqn) * double(m_seq.get_bpm()) * (4.0 / double(m_seq.get_bw()))
     );
-    m_hadjust->set_page_increment(page_increment);
+    m_hadjust.set_page_increment(page_increment);
 
-    int h_max_value = (m_seq->get_length() - (m_window_x * m_zoom));
-    if (m_hadjust->get_value() > h_max_value)
-        m_hadjust->set_value(h_max_value);
+    int h_max_value = (m_seq.get_length() - (m_window_x * m_zoom));
+    if (m_hadjust.get_value() > h_max_value)
+        m_hadjust.set_value(h_max_value);
 
-    m_vadjust->set_lower(0);
-    m_vadjust->set_upper(c_num_keys);
-    m_vadjust->set_page_size(m_window_y / c_key_y);
-    m_vadjust->set_step_increment(12);
-    m_vadjust->set_page_increment(12);
+    m_vadjust.set_lower(0);
+    m_vadjust.set_upper(c_num_keys);
+    m_vadjust.set_page_size(m_window_y / c_key_y);
+    m_vadjust.set_step_increment(12);
+    m_vadjust.set_page_increment(12);
 
     int v_max_value = c_num_keys - (m_window_y / c_key_y);
-    if (m_vadjust->get_value() > v_max_value)
+    if (m_vadjust.get_value() > v_max_value)
     {
-        m_vadjust->set_value(v_max_value);
+        m_vadjust.set_value(v_max_value);
     }
     if (is_realized())              /* create pixmaps with window dimentions */
     {
@@ -231,7 +194,7 @@ seqroll::update_sizes ()
 void
 seqroll::change_horz ()
 {
-    m_scroll_offset_ticks = (int) m_hadjust->get_value();
+    m_scroll_offset_ticks = (int) m_hadjust.get_value();
     m_scroll_offset_x = m_scroll_offset_ticks / m_zoom;
     if (m_ignore_redraw)
         return;
@@ -248,7 +211,7 @@ seqroll::change_horz ()
 void
 seqroll::change_vert ()
 {
-    m_scroll_offset_key = (int) m_vadjust->get_value();
+    m_scroll_offset_key = (int) m_vadjust.get_value();
     m_scroll_offset_y = m_scroll_offset_key * c_key_y;
     if (m_ignore_redraw)
         return;
@@ -266,7 +229,7 @@ seqroll::change_vert ()
 void
 seqroll::reset ()
 {
-    m_scroll_offset_ticks = (int) m_hadjust->get_value();
+    m_scroll_offset_ticks = (int) m_hadjust.get_value();
     m_scroll_offset_x = m_scroll_offset_ticks / m_zoom;
     if (m_ignore_redraw)
         return;
@@ -287,7 +250,7 @@ seqroll::redraw ()
     if (m_ignore_redraw)
         return;
 
-    m_scroll_offset_ticks = (int) m_hadjust->get_value();
+    m_scroll_offset_ticks = (int) m_hadjust.get_value();
     m_scroll_offset_x = m_scroll_offset_ticks / m_zoom;
     update_background();
     update_pixmap();
@@ -376,14 +339,14 @@ seqroll::update_background ()
     }
 
     /*
-     * int measure_length_64ths = m_seq->get_bpm() * 64 / m_seq->get_bw();
+     * int measure_length_64ths = m_seq.get_bpm() * 64 / m_seq.get_bw();
      * int measures_per_line = (256 / measure_length_64ths) / (32 / m_zoom);
      * if ( measures_per_line <= 0
      */
 
     int measures_per_line = 1;
-    int ticks_per_measure =  m_seq->get_bpm() * (4 * c_ppqn) / m_seq->get_bw();
-    int ticks_per_beat = (4 * c_ppqn) / m_seq->get_bw();
+    int ticks_per_measure =  m_seq.get_bpm() * (4 * c_ppqn) / m_seq.get_bw();
+    int ticks_per_beat = (4 * c_ppqn) / m_seq.get_bw();
     int ticks_per_step = 6 * m_zoom;
     int ticks_per_m_line =  ticks_per_measure * measures_per_line;
     int end_tick = (m_window_x * m_zoom) + m_scroll_offset_ticks;
@@ -443,11 +406,11 @@ seqroll::update_background ()
  */
 
 void
-seqroll::set_zoom (int a_zoom)
+seqroll::set_zoom (int zoom)
 {
-    if (m_zoom != a_zoom)
+    if (m_zoom != zoom)
     {
-        m_zoom = a_zoom;
+        m_zoom = zoom;
         reset();
     }
 }
@@ -457,11 +420,11 @@ seqroll::set_zoom (int a_zoom)
  */
 
 void
-seqroll::set_scale (int a_scale)
+seqroll::set_scale (int scale)
 {
-    if (m_scale != a_scale)
+    if (m_scale != scale)
     {
-        m_scale = a_scale;
+        m_scale = scale;
         reset();
     }
 }
@@ -471,11 +434,11 @@ seqroll::set_scale (int a_scale)
  */
 
 void
-seqroll::set_key (int a_key)
+seqroll::set_key (int key)
 {
-    if (m_key != a_key)
+    if (m_key != key)
     {
-        m_key = a_key;
+        m_key = key;
         reset();
     }
 }
@@ -504,7 +467,7 @@ seqroll::draw_progress_on_window ()
     (
         m_gc, m_pixmap, m_old_progress_x, 0, m_old_progress_x, 0, 1, m_window_y
     );
-    m_old_progress_x = (m_seq->get_last_tick() / m_zoom) - m_scroll_offset_x;
+    m_old_progress_x = (m_seq.get_last_tick() / m_zoom) - m_scroll_offset_x;
     if (m_old_progress_x != 0)
     {
         m_gc->set_foreground(m_black);
@@ -536,8 +499,8 @@ seqroll::draw_events_on (Glib::RefPtr<Gdk::Drawable> a_draw)
     {
         if (method == 0 && m_drawing_background_seq)
         {
-            if (m_mainperf->is_active(m_background_sequence))
-                seq = m_mainperf->get_sequence(m_background_sequence);
+            if (perf().is_active(m_background_sequence))
+                seq = perf().get_sequence(m_background_sequence);
             else
                 method++;
         }
@@ -545,7 +508,7 @@ seqroll::draw_events_on (Glib::RefPtr<Gdk::Drawable> a_draw)
             method++;
 
         if (method == 1)
-            seq = m_seq;
+            seq = &m_seq;
 
         m_gc->set_foreground(m_black);          /* draw boxes from sequence */
         seq->reset_draw_marker();
@@ -577,7 +540,7 @@ seqroll::draw_events_on (Glib::RefPtr<Gdk::Drawable> a_draw)
                         if (note_width < 1) note_width = 1;
                     }
                     else
-                        note_width = (m_seq->get_length() - tick_s) / m_zoom;
+                        note_width = (m_seq.get_length() - tick_s) / m_zoom;
                 }
                 else
                     note_width = 16 / m_zoom;
@@ -689,7 +652,6 @@ seqroll::draw_selection_on_window ()
         (
             1, Gdk::LINE_SOLID, Gdk::CAP_NOT_LAST, Gdk::JOIN_MITER
         );
-
         m_window->draw_drawable                         /* replace old */
         (
             m_gc, m_pixmap, m_old.x, m_old.y, m_old.x, m_old.y,
@@ -698,7 +660,7 @@ seqroll::draw_selection_on_window ()
     }
     if (m_selecting)
     {
-        xy_to_rect(m_drop_x, m_drop_y, m_current_x, m_current_y, &x, &y, &w, &h);
+        xy_to_rect(m_drop_x, m_drop_y, m_current_x, m_current_y, x, y, w, h);
         x -= m_scroll_offset_x;
         y -= m_scroll_offset_y;
 
@@ -767,10 +729,10 @@ seqroll::force_draw ()
  */
 
 void
-seqroll::convert_xy (int a_x, int a_y, long * a_tick, int * a_note)
+seqroll::convert_xy (int a_x, int a_y, long & a_tick, int & a_note)
 {
-    *a_tick = a_x * m_zoom;
-    *a_note = (c_rollarea_y - a_y - 2) / c_key_y;
+    a_tick = a_x * m_zoom;
+    a_note = (c_rollarea_y - a_y - 2) / c_key_y;
 }
 
 /**
@@ -780,10 +742,10 @@ seqroll::convert_xy (int a_x, int a_y, long * a_tick, int * a_note)
  */
 
 void
-seqroll::convert_tn (long a_ticks, int a_note, int * a_x, int * a_y)
+seqroll::convert_tn (long a_ticks, int a_note, int & a_x, int & a_y)
 {
-    *a_x = a_ticks /  m_zoom;
-    *a_y = c_rollarea_y - ((a_note + 1) * c_key_y) - 1;
+    a_x = a_ticks /  m_zoom;
+    a_y = c_rollarea_y - ((a_note + 1) * c_key_y) - 1;
 }
 
 /**
@@ -795,27 +757,27 @@ void
 seqroll::xy_to_rect
 (
     int a_x1, int a_y1, int a_x2, int a_y2,
-    int * a_x, int * a_y, int * a_w, int * a_h)
+    int & a_x, int & a_y, int & a_w, int & a_h)
 {
     if (a_x1 < a_x2)
     {
-        *a_x = a_x1;
-        *a_w = a_x2 - a_x1;
+        a_x = a_x1;
+        a_w = a_x2 - a_x1;
     }
     else
     {
-        *a_x = a_x2;
-        *a_w = a_x1 - a_x2;
+        a_x = a_x2;
+        a_w = a_x1 - a_x2;
     }
     if (a_y1 < a_y2)
     {
-        *a_y = a_y1;
-        *a_h = a_y2 - a_y1;
+        a_y = a_y1;
+        a_h = a_y2 - a_y1;
     }
     else
     {
-        *a_y = a_y2;
-        *a_h = a_y1 - a_y2;
+        a_y = a_y2;
+        a_h = a_y1 - a_y2;
     }
 }
 
@@ -827,14 +789,14 @@ void
 seqroll::convert_tn_box_to_rect
 (
     long a_tick_s, long a_tick_f, int a_note_h, int a_note_l,
-    int * a_x, int * a_y, int * a_w, int * a_h
+    int & a_x, int & a_y, int & a_w, int & a_h
 )
 {
     int x1, y1, x2, y2;
-    convert_tn(a_tick_s, a_note_h, &x1, &y1);   /* convert box to X,Y values */
-    convert_tn(a_tick_f, a_note_l, &x2, &y2);
+    convert_tn(a_tick_s, a_note_h, x1, y1);     /* convert box to X,Y values */
+    convert_tn(a_tick_f, a_note_l, x2, y2);
     xy_to_rect(x1, y1, x2, y2, a_x, a_y, a_w, a_h);
-    *a_h += c_key_y;
+    a_h += c_key_y;
 }
 
 /**
@@ -848,35 +810,25 @@ seqroll::start_paste()
     long tick_f;
     int note_h;
     int note_l;
-    snap_x(&m_current_x);
-    snap_y(&m_current_x);
+    snap_x(m_current_x);
+    snap_y(m_current_x);
     m_drop_x = m_current_x;
     m_drop_y = m_current_y;
     m_paste = true;
 
     /* get the box that selected elements are in */
 
-    m_seq->get_clipboard_box(&tick_s, &note_h, &tick_f, &note_l);
+    m_seq.get_clipboard_box(&tick_s, &note_h, &tick_f, &note_l);
     convert_tn_box_to_rect
     (
         tick_s, tick_f, note_h, note_l,
-        &m_selected.x, &m_selected.y, &m_selected.width, &m_selected.height
+        m_selected.x, m_selected.y, m_selected.width, m_selected.height
     );
 
     /* adjust for clipboard being shifted to tick 0 */
 
     m_selected.x += m_drop_x;
     m_selected.y += (m_drop_y - m_selected.y);
-}
-
-/**
- *  Performs a 'snap' operation on the y coordinate.
- */
-
-void
-seqroll::snap_y (int * a_y)
-{
-    *a_y = *a_y - (*a_y % c_key_y);
 }
 
 /**
@@ -891,13 +843,13 @@ seqroll::snap_y (int * a_y)
  */
 
 void
-seqroll::snap_x (int * a_x)
+seqroll::snap_x (int & x)
 {
     int mod = (m_snap / m_zoom);
     if (mod <= 0)
         mod = 1;
 
-    *a_x = *a_x - (*a_x % mod);
+    x -= (x % mod);
 }
 
 /**
@@ -907,10 +859,10 @@ seqroll::snap_x (int * a_x)
  */
 
 void
-seqroll::set_data_type (unsigned char a_status, unsigned char a_control = 0)
+seqroll::set_data_type (unsigned char status, unsigned char control)
 {
-    m_status = a_status;
-    m_cc = a_control;
+    m_status = status;
+    m_cc = control;
 }
 
 /**
@@ -920,16 +872,13 @@ seqroll::set_data_type (unsigned char a_status, unsigned char a_control = 0)
 void
 seqroll::on_realize ()
 {
-    Gtk::DrawingArea::on_realize();
+    gui_drawingarea_gtk2::on_realize();
     set_flags(Gtk::CAN_FOCUS);
-    m_window = get_window();
-    m_gc = Gdk::GC::create(m_window);
-    m_window->clear();
-    m_hadjust->signal_value_changed().connect
+    m_hadjust.signal_value_changed().connect
     (
         mem_fun(*this, &seqroll::change_horz)
     );
-    m_vadjust->signal_value_changed().connect
+    m_vadjust.signal_value_changed().connect
     (
         mem_fun(*this, &seqroll::change_vert)
     );
@@ -1034,7 +983,7 @@ seqroll::on_motion_notify_event (GdkEventMotion * a_ev)
 bool
 seqroll::on_enter_notify_event (GdkEventCrossing * a_p0)
 {
-    m_seqkeys_wid->set_hint_state(true);
+    m_seqkeys_wid.set_hint_state(true);
     return false;
 }
 
@@ -1045,7 +994,7 @@ seqroll::on_enter_notify_event (GdkEventCrossing * a_p0)
 bool
 seqroll::on_leave_notify_event (GdkEventCrossing * a_p0)
 {
-    m_seqkeys_wid->set_hint_state(false);
+    m_seqkeys_wid.set_hint_state(false);
     return false;
 }
 
@@ -1081,52 +1030,52 @@ bool
 seqroll::on_key_press_event (GdkEventKey * a_p0)
 {
     bool result = false;
-    bool dont_toggle = PERFKEY(start) != PERFKEY(stop);
+    bool dont_toggle = PREFKEY(start) != PREFKEY(stop);
     if
     (
-        a_p0->keyval ==  PERFKEY(start) &&
+        a_p0->keyval ==  PREFKEY(start) &&
         (dont_toggle || ! global_is_pattern_playing)
     )
     {
-        m_mainperf->position_jack(false);
-        m_mainperf->start(false);
-        m_mainperf->start_jack();
+        perf().position_jack(false);
+        perf().start(false);
+        perf().start_jack();
         global_is_pattern_playing = true;
     }
     else if
     (
-        a_p0->keyval ==  PERFKEY(stop) &&
+        a_p0->keyval ==  PREFKEY(stop) &&
         (dont_toggle || global_is_pattern_playing)
     )
     {
-        m_mainperf->stop_jack();
-        m_mainperf->stop();
+        perf().stop_jack();
+        perf().stop();
         global_is_pattern_playing = false;
     }
     if (a_p0->type == GDK_KEY_PRESS)
     {
         if (a_p0->keyval ==  GDK_Delete || a_p0->keyval == GDK_BackSpace)
         {
-            m_seq->push_undo();
-            m_seq->mark_selected();
-            m_seq->remove_marked();
+            m_seq.push_undo();
+            m_seq.mark_selected();
+            m_seq.remove_marked();
             result = true;
         }
         if (! global_is_pattern_playing)
         {
             if (a_p0->keyval == GDK_Home)
             {
-                m_seq->set_orig_tick(0);
+                m_seq.set_orig_tick(0);
                 result = true;
             }
             if (a_p0->keyval == GDK_Left)
             {
-                m_seq->set_orig_tick(m_seq->get_last_tick() - m_snap);
+                m_seq.set_orig_tick(m_seq.get_last_tick() - m_snap);
                 result = true;
             }
             if (a_p0->keyval == GDK_Right)
             {
-                m_seq->set_orig_tick(m_seq->get_last_tick() + m_snap);
+                m_seq.set_orig_tick(m_seq.get_last_tick() + m_snap);
                 result = true;
             }
         }
@@ -1134,15 +1083,15 @@ seqroll::on_key_press_event (GdkEventKey * a_p0)
         {
             if (a_p0->keyval == GDK_x || a_p0->keyval == GDK_X)     /* cut */
             {
-                m_seq->push_undo();
-                m_seq->copy_selected();
-                m_seq->mark_selected();
-                m_seq->remove_marked();
+                m_seq.push_undo();
+                m_seq.copy_selected();
+                m_seq.mark_selected();
+                m_seq.remove_marked();
                 result = true;
             }
             if (a_p0->keyval == GDK_c || a_p0->keyval == GDK_C)     /* copy */
             {
-                m_seq->copy_selected();
+                m_seq.copy_selected();
                 result = true;
             }
             if (a_p0->keyval == GDK_v || a_p0->keyval == GDK_V)     /* paste */
@@ -1152,18 +1101,18 @@ seqroll::on_key_press_event (GdkEventKey * a_p0)
             }
             if (a_p0->keyval == GDK_z || a_p0->keyval == GDK_Z)     /* Undo */
             {
-                m_seq->pop_undo();
+                m_seq.pop_undo();
                 result = true;
             }
             if (a_p0->keyval == GDK_a || a_p0->keyval == GDK_A) /* select all */
             {
-                m_seq->select_all();
+                m_seq.select_all();
                 result = true;
             }
         }
     }
     if (result)
-        m_seq->set_dirty();             // redraw_events();
+        m_seq.set_dirty();             // redraw_events();
 
     return result;
 }
@@ -1173,11 +1122,11 @@ seqroll::on_key_press_event (GdkEventKey * a_p0)
  */
 
 void
-seqroll::on_size_allocate (Gtk::Allocation & a_r)
+seqroll::on_size_allocate (Gtk::Allocation & a)
 {
-    Gtk::DrawingArea::on_size_allocate(a_r);
-    m_window_x = a_r.get_width();
-    m_window_y = a_r.get_height();
+    Gtk::DrawingArea::on_size_allocate(a);
+    m_window_x = a.get_width();
+    m_window_y = a.get_height();
     update_sizes();
 }
 
@@ -1195,15 +1144,15 @@ seqroll::on_scroll_event (GdkEventScroll * a_ev)
     if ((a_ev->state & modifiers) != 0)
         return false;
 
-    double val = m_vadjust->get_value();
+    double val = m_vadjust.get_value();
     if (a_ev->direction == GDK_SCROLL_UP)
-        val -= m_vadjust->get_step_increment() / 6;
+        val -= m_vadjust.get_step_increment() / 6;
     else if (a_ev->direction == GDK_SCROLL_DOWN)
-        val += m_vadjust->get_step_increment() / 6;
+        val += m_vadjust.get_step_increment() / 6;
     else
         return true;
 
-    m_vadjust->clamp_page(val, val + m_vadjust->get_page_size());
+    m_vadjust.clamp_page(val, val + m_vadjust.get_page_size());
     return true;
 }
 

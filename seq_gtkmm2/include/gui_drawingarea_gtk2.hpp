@@ -137,6 +137,60 @@ public:
     );
     ~gui_drawingarea_gtk2 ();
 
+    /**
+     * \getter m_window_x
+     */
+
+    int window_x () const
+    {
+        return m_window_x;
+    }
+
+    /**
+     * \getter m_window_y
+     */
+
+    int window_y () const
+    {
+        return m_window_y;
+    }
+
+    /**
+     * \getter m_current_x
+     */
+
+    int current_x () const
+    {
+        return m_current_x;
+    }
+
+    /**
+     * \getter m_current_y
+     */
+
+    int current_y () const
+    {
+        return m_current_y;
+    }
+
+    /**
+     * \getter m_drop_x
+     */
+
+    int drop_x () const
+    {
+        return m_drop_x;
+    }
+
+    /**
+     * \getter m_drop_y
+     */
+
+    int drop_y () const
+    {
+        return m_drop_y;
+    }
+
 protected:
 
     /**
@@ -159,17 +213,11 @@ protected:          // callbacks
 private:            // callbacks
 
 #if 0
-    bool on_expose_event (GdkEventExpose * a_ev);
     bool on_button_press_event (GdkEventButton * a_ev);
     bool on_button_release_event (GdkEventButton * a_ev);
-    bool on_motion_notify_event (GdkEventMotion * a_ev);
-    bool on_focus_in_event (GdkEventFocus *);
-    bool on_focus_out_event (GdkEventFocus *);
     bool on_key_press_event (GdkEventKey * a_p0);
-    bool on_scroll_event (GdkEventScroll * a_ev);
+    bool on_key_release_event (GdkEventKey * a_p0);
     void on_size_allocate (Gtk::Allocation &);
-    bool on_leave_notify_event (GdkEventCrossing * a_p0);
-    bool on_enter_notify_event (GdkEventCrossing * a_p0);
 #endif  // 0
 
 };

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-09-30
- * \updates       2015-09-30
+ * \updates       2015-10-03
  * \license       GNU GPLv2 or above
  *
  */
@@ -48,11 +48,11 @@ keystroke::keystroke ()
     // Empty body
 }
 
-keystroke::keystroke (unsigned int key, bool press, seq_modifier_t modkey)
+keystroke::keystroke (unsigned int key, bool press, int modkey)
  :
     m_is_press  (press),
     m_key       (key),
-    m_modifier  (modkey)
+    m_modifier  (seq_modifier_t(modkey))
 {
     // Empty body
 }

@@ -360,7 +360,8 @@ perfnames::on_scroll_event (GdkEventScroll * ev)
 void
 perfnames::on_size_allocate (Gtk::Allocation & a)
 {
-    Gtk::DrawingArea::on_size_allocate(a);
+    // Gtk::DrawingArea::on_size_allocate(a);
+    gui_drawingarea_gtk2::on_size_allocate(a);
     m_window_x = a.get_width();             /* side-effect  */
     m_window_y = a.get_height();            /* side-effect  */
 }

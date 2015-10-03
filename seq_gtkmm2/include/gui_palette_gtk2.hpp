@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-21
- * \updates       2015-09-29
+ * \updates       2015-10-03
  * \license       GNU GPLv2 or above
  *
  *  This module defines some Gdk::Color objects.  However, note that this
@@ -62,6 +62,7 @@ protected:
     const Color m_white;
     const Color m_grey;
     const Color m_dk_grey;
+    const Color m_lt_grey;
     const Color m_red;
     const Color m_orange;
     const Color m_yellow;
@@ -92,6 +93,10 @@ public:
     const Color & dark_grey () const
     {
         return m_dk_grey;
+    }
+    const Color & light_grey () const
+    {
+        return m_lt_grey;
     }
     const Color & red () const
     {

@@ -28,15 +28,18 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-09-13
+ * \updates       2015-10-03
  * \license       GNU GPLv2 or above
  *
  */
 
-#include <gtkmm/drawingarea.h>
-#include <gtkmm/adjustment.h>
-
 #include "globals.h"
+#include "gui_drawingarea_gtk2.hpp"
+
+namespace Gtk
+{
+    class Adjustment;
+}
 
 namespace seq64
 {
@@ -57,7 +60,7 @@ static const int c_perfroll_size_box_click_w = c_perfroll_size_box_w + 1 ;
  *  This class implements the performance roll user interface.
  */
 
-class perfroll : public Gtk::DrawingArea
+class perfroll : public gui_drawingarea_gtk2
 {
 
     friend class FruityPerfInput;
@@ -65,22 +68,12 @@ class perfroll : public Gtk::DrawingArea
 
 private:
 
-    Glib::RefPtr<Gdk::GC> m_gc;
-    Glib::RefPtr<Gdk::Window> m_window;
-    Gdk::Color m_black;
-    Gdk::Color m_white;
-    Gdk::Color m_grey;
-    Gdk::Color m_lt_grey;
-    Glib::RefPtr<Gdk::Pixmap> m_pixmap;
-    Glib::RefPtr<Gdk::Pixmap> m_background;
-    perform * m_mainperf;
-    int m_window_x;
-    int m_window_y;
-    int m_drop_x;
-    int m_drop_y;
-    Gtk::Adjustment * m_vadjust;
-    Gtk::Adjustment * m_hadjust;
     int m_snap;
+    int m_ppqn;
+    int m_perf_scale_x;
+    int m_names_y;
+    int m_perfroll_background_x;
+    int m_perfroll_size_box_w;
     int m_measure_length;
     int m_beat_length;
     long m_old_progress_ticks;
@@ -90,6 +83,7 @@ private:
     long m_drop_tick;
     long m_drop_tick_trigger_offset;
     int m_drop_sequence;
+    int m_sequence_max;
     bool m_sequence_active[c_max_sequence];
     AbstractPerfInput * m_interaction;
     bool m_moving;
@@ -100,9 +94,9 @@ public:
 
     perfroll
     (
-        perform * a_perf,
-        Gtk::Adjustment * a_hadjust,
-        Gtk::Adjustment * a_vadjust
+        perform & a_perf,
+        Gtk::Adjustment & a_hadjust,
+        Gtk::Adjustment & a_vadjust
     );
     ~perfroll();
 
@@ -113,12 +107,13 @@ public:
     void increment_size ();
     void draw_progress ();
     void redraw_dirty_sequences ();
+    void draw_all ();                       // used by perfroll_input
 
 private:
 
-    void convert_xy (int a_x, int a_y, long * a_ticks, int * a_seq);
-    void convert_x (int a_x, long * a_ticks);
-    void snap_x (int * a_x);
+    void convert_xy (int x, int y, long & ticks, int & seq);
+    void convert_x (int x, long & ticks);
+    void snap_x (int & x);
     void start_playing ();
     void stop_playing ();
     void draw_sequence_on (Glib::RefPtr<Gdk::Drawable> a_draw, int a_sequence);
@@ -143,9 +138,18 @@ private:        // callbacks
     bool on_scroll_event (GdkEventScroll * a_ev) ;
     bool on_focus_in_event (GdkEventFocus *);
     bool on_focus_out_event (GdkEventFocus *);
-    void on_size_request (GtkRequisition *);
     void on_size_allocate (Gtk::Allocation &);
     bool on_key_press_event (GdkEventKey * a_p0);
+
+    /**
+     *  This callback throws away a size request.
+     */
+
+    void on_size_request (GtkRequisition * /*a_r*/ )
+    {
+        // Empty body
+    }
+
 };
 
 }           // namespace seq64

@@ -46,7 +46,8 @@ gui_palette_gtk2::gui_palette_gtk2 ()
     m_black             (Color("black")),
     m_white             (Color("white")),
     m_grey              (Color("grey")),
-    m_dk_grey           (Color("gray50")),
+    m_dk_grey           (Color("grey50")),              // or "gray50" ?
+    m_lt_grey           (Color("light grey")),
     m_red               (Color("red")),
     m_orange            (Color("orange")),
     m_yellow            (Color("yellow")),
@@ -59,6 +60,7 @@ gui_palette_gtk2::gui_palette_gtk2 ()
     colormap->alloc_color(const_cast<Color &>(m_white));
     colormap->alloc_color(const_cast<Color &>(m_grey));
     colormap->alloc_color(const_cast<Color &>(m_dk_grey));
+    colormap->alloc_color(const_cast<Color &>(m_lt_grey));
     colormap->alloc_color(const_cast<Color &>(m_red));
     colormap->alloc_color(const_cast<Color &>(m_orange));
     colormap->alloc_color(const_cast<Color &>(m_yellow));

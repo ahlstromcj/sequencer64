@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-09-13
- * \updates       2015-09-28
+ * \updates       2015-10-03
  * \license       GNU GPLv2 or above
  *
  *  This file is provided as a convenience so that we have some reasonable
@@ -37,159 +37,159 @@
  *  used by Sequencer64; we've defined only the ones we need.
  */
 
-#ifndef GDK_KEY_Home
+#ifndef SEQ64_Home
 
-#define GDK_KEY_BackSpace           0xff08
-#define GDK_KEY_Tab                 0xff09
-#define GDK_KEY_Linefeed            0xff0a
-#define GDK_KEY_Clear               0xff0b
-#define GDK_KEY_Return              0xff0d
-#define GDK_KEY_Pause               0xff13
-#define GDK_KEY_Scroll_Lock         0xff14
-#define GDK_KEY_Sys_Req             0xff15
-#define GDK_KEY_Escape              0xff1b
-#define GDK_KEY_Delete              0xffff
-#define GDK_KEY_Home                0xff50
-#define GDK_KEY_Left                0xff51
-#define GDK_KEY_Up                  0xff52
-#define GDK_KEY_Right               0xff53
-#define GDK_KEY_Down                0xff54
-#define GDK_KEY_Prior               0xff55
-#define GDK_KEY_Page_Up             0xff55
-#define GDK_KEY_Next                0xff56
-#define GDK_KEY_Page_Down           0xff56
-#define GDK_KEY_End                 0xff57
-#define GDK_KEY_Begin               0xff58
-#define GDK_KEY_Select              0xff60
-#define GDK_KEY_Print               0xff61
-#define GDK_KEY_Execute             0xff62
-#define GDK_KEY_Insert              0xff63
-#define GDK_KEY_Undo                0xff65
-#define GDK_KEY_Redo                0xff66
-#define GDK_KEY_Menu                0xff67
-#define GDK_KEY_Find                0xff68
-#define GDK_KEY_Cancel              0xff69
-#define GDK_KEY_Help                0xff6a
-#define GDK_KEY_Break               0xff6b
-#define GDK_KEY_Mode_switch         0xff7e
-#define GDK_KEY_script_switch       0xff7e
-#define GDK_KEY_Num_Lock            0xff7f
-#define GDK_KEY_Shift_L             0xffe1
-#define GDK_KEY_Shift_R             0xffe2
-#define GDK_KEY_Control_L           0xffe3
-#define GDK_KEY_Control_R           0xffe4
-#define GDK_KEY_Caps_Lock           0xffe5
-#define GDK_KEY_Shift_Lock          0xffe6
-#define GDK_KEY_Meta_L              0xffe7
-#define GDK_KEY_Meta_R              0xffe8
-#define GDK_KEY_Alt_L               0xffe9
-#define GDK_KEY_Alt_R               0xffea
-#define GDK_KEY_Super_L             0xffeb
-#define GDK_KEY_Super_R             0xffec
-#define GDK_KEY_Hyper_L             0xffed
-#define GDK_KEY_Hyper_R             0xffee
-#define GDK_KEY_ISO_Lock            0xfe01
-#define GDK_KEY_space               0x020
-#define GDK_KEY_exclam              0x021
-#define GDK_KEY_quotedbl            0x022
-#define GDK_KEY_numbersign          0x023
-#define GDK_KEY_dollar              0x024
-#define GDK_KEY_percent             0x025
-#define GDK_KEY_ampersand           0x026
-#define GDK_KEY_apostrophe          0x027
-#define GDK_KEY_quoteright          0x027
-#define GDK_KEY_parenleft           0x028
-#define GDK_KEY_parenright          0x029
-#define GDK_KEY_asterisk            0x02a
-#define GDK_KEY_plus                0x02b
-#define GDK_KEY_comma               0x02c
-#define GDK_KEY_minus               0x02d
-#define GDK_KEY_period              0x02e
-#define GDK_KEY_slash               0x02f
-#define GDK_KEY_0                   0x030
-#define GDK_KEY_1                   0x031
-#define GDK_KEY_2                   0x032
-#define GDK_KEY_3                   0x033
-#define GDK_KEY_4                   0x034
-#define GDK_KEY_5                   0x035
-#define GDK_KEY_6                   0x036
-#define GDK_KEY_7                   0x037
-#define GDK_KEY_8                   0x038
-#define GDK_KEY_9                   0x039
-#define GDK_KEY_colon               0x03a
-#define GDK_KEY_semicolon           0x03b
-#define GDK_KEY_less                0x03c
-#define GDK_KEY_equal               0x03d
-#define GDK_KEY_greater             0x03e
-#define GDK_KEY_question            0x03f
-#define GDK_KEY_at                  0x040
-#define GDK_KEY_A                   0x041
-#define GDK_KEY_B                   0x042
-#define GDK_KEY_C                   0x043
-#define GDK_KEY_D                   0x044
-#define GDK_KEY_E                   0x045
-#define GDK_KEY_F                   0x046
-#define GDK_KEY_G                   0x047
-#define GDK_KEY_H                   0x048
-#define GDK_KEY_I                   0x049
-#define GDK_KEY_J                   0x04a
-#define GDK_KEY_K                   0x04b
-#define GDK_KEY_L                   0x04c
-#define GDK_KEY_M                   0x04d
-#define GDK_KEY_N                   0x04e
-#define GDK_KEY_O                   0x04f
-#define GDK_KEY_P                   0x050
-#define GDK_KEY_Q                   0x051
-#define GDK_KEY_R                   0x052
-#define GDK_KEY_S                   0x053
-#define GDK_KEY_T                   0x054
-#define GDK_KEY_U                   0x055
-#define GDK_KEY_V                   0x056
-#define GDK_KEY_W                   0x057
-#define GDK_KEY_X                   0x058
-#define GDK_KEY_Y                   0x059
-#define GDK_KEY_Z                   0x05a
-#define GDK_KEY_bracketleft         0x05b
-#define GDK_KEY_backslash           0x05c
-#define GDK_KEY_bracketright        0x05d
-#define GDK_KEY_asciicircum         0x05e
-#define GDK_KEY_underscore          0x05f
-#define GDK_KEY_grave               0x060
-#define GDK_KEY_quoteleft           0x060
-#define GDK_KEY_a                   0x061
-#define GDK_KEY_b                   0x062
-#define GDK_KEY_c                   0x063
-#define GDK_KEY_d                   0x064
-#define GDK_KEY_e                   0x065
-#define GDK_KEY_f                   0x066
-#define GDK_KEY_g                   0x067
-#define GDK_KEY_h                   0x068
-#define GDK_KEY_i                   0x069
-#define GDK_KEY_j                   0x06a
-#define GDK_KEY_k                   0x06b
-#define GDK_KEY_l                   0x06c
-#define GDK_KEY_m                   0x06d
-#define GDK_KEY_n                   0x06e
-#define GDK_KEY_o                   0x06f
-#define GDK_KEY_p                   0x070
-#define GDK_KEY_q                   0x071
-#define GDK_KEY_r                   0x072
-#define GDK_KEY_s                   0x073
-#define GDK_KEY_t                   0x074
-#define GDK_KEY_u                   0x075
-#define GDK_KEY_v                   0x076
-#define GDK_KEY_w                   0x077
-#define GDK_KEY_x                   0x078
-#define GDK_KEY_y                   0x079
-#define GDK_KEY_z                   0x07a
-#define GDK_KEY_braceleft           0x07b
-#define GDK_KEY_bar                 0x07c
-#define GDK_KEY_braceright          0x07d
-#define GDK_KEY_asciitilde          0x07e
+#define SEQ64_BackSpace           0xff08
+#define SEQ64_Tab                 0xff09
+#define SEQ64_Linefeed            0xff0a
+#define SEQ64_Clear               0xff0b
+#define SEQ64_Return              0xff0d
+#define SEQ64_Pause               0xff13
+#define SEQ64_Scroll_Lock         0xff14
+#define SEQ64_Sys_Req             0xff15
+#define SEQ64_Escape              0xff1b
+#define SEQ64_Delete              0xffff
+#define SEQ64_Home                0xff50
+#define SEQ64_Left                0xff51
+#define SEQ64_Up                  0xff52
+#define SEQ64_Right               0xff53
+#define SEQ64_Down                0xff54
+#define SEQ64_Prior               0xff55
+#define SEQ64_Page_Up             0xff55
+#define SEQ64_Next                0xff56
+#define SEQ64_Page_Down           0xff56
+#define SEQ64_End                 0xff57
+#define SEQ64_Begin               0xff58
+#define SEQ64_Select              0xff60
+#define SEQ64_Print               0xff61
+#define SEQ64_Execute             0xff62
+#define SEQ64_Insert              0xff63
+#define SEQ64_Undo                0xff65
+#define SEQ64_Redo                0xff66
+#define SEQ64_Menu                0xff67
+#define SEQ64_Find                0xff68
+#define SEQ64_Cancel              0xff69
+#define SEQ64_Help                0xff6a
+#define SEQ64_Break               0xff6b
+#define SEQ64_Mode_switch         0xff7e
+#define SEQ64_script_switch       0xff7e
+#define SEQ64_Num_Lock            0xff7f
+#define SEQ64_Shift_L             0xffe1
+#define SEQ64_Shift_R             0xffe2
+#define SEQ64_Control_L           0xffe3
+#define SEQ64_Control_R           0xffe4
+#define SEQ64_Caps_Lock           0xffe5
+#define SEQ64_Shift_Lock          0xffe6
+#define SEQ64_Meta_L              0xffe7
+#define SEQ64_Meta_R              0xffe8
+#define SEQ64_Alt_L               0xffe9
+#define SEQ64_Alt_R               0xffea
+#define SEQ64_Super_L             0xffeb
+#define SEQ64_Super_R             0xffec
+#define SEQ64_Hyper_L             0xffed
+#define SEQ64_Hyper_R             0xffee
+#define SEQ64_ISO_Lock            0xfe01
+#define SEQ64_space               0x020
+#define SEQ64_exclam              0x021
+#define SEQ64_quotedbl            0x022
+#define SEQ64_numbersign          0x023
+#define SEQ64_dollar              0x024
+#define SEQ64_percent             0x025
+#define SEQ64_ampersand           0x026
+#define SEQ64_apostrophe          0x027
+#define SEQ64_quoteright          0x027
+#define SEQ64_parenleft           0x028
+#define SEQ64_parenright          0x029
+#define SEQ64_asterisk            0x02a
+#define SEQ64_plus                0x02b
+#define SEQ64_comma               0x02c
+#define SEQ64_minus               0x02d
+#define SEQ64_period              0x02e
+#define SEQ64_slash               0x02f
+#define SEQ64_0                   0x030
+#define SEQ64_1                   0x031
+#define SEQ64_2                   0x032
+#define SEQ64_3                   0x033
+#define SEQ64_4                   0x034
+#define SEQ64_5                   0x035
+#define SEQ64_6                   0x036
+#define SEQ64_7                   0x037
+#define SEQ64_8                   0x038
+#define SEQ64_9                   0x039
+#define SEQ64_colon               0x03a
+#define SEQ64_semicolon           0x03b
+#define SEQ64_less                0x03c
+#define SEQ64_equal               0x03d
+#define SEQ64_greater             0x03e
+#define SEQ64_question            0x03f
+#define SEQ64_at                  0x040
+#define SEQ64_A                   0x041
+#define SEQ64_B                   0x042
+#define SEQ64_C                   0x043
+#define SEQ64_D                   0x044
+#define SEQ64_E                   0x045
+#define SEQ64_F                   0x046
+#define SEQ64_G                   0x047
+#define SEQ64_H                   0x048
+#define SEQ64_I                   0x049
+#define SEQ64_J                   0x04a
+#define SEQ64_K                   0x04b
+#define SEQ64_L                   0x04c
+#define SEQ64_M                   0x04d
+#define SEQ64_N                   0x04e
+#define SEQ64_O                   0x04f
+#define SEQ64_P                   0x050
+#define SEQ64_Q                   0x051
+#define SEQ64_R                   0x052
+#define SEQ64_S                   0x053
+#define SEQ64_T                   0x054
+#define SEQ64_U                   0x055
+#define SEQ64_V                   0x056
+#define SEQ64_W                   0x057
+#define SEQ64_X                   0x058
+#define SEQ64_Y                   0x059
+#define SEQ64_Z                   0x05a
+#define SEQ64_bracketleft         0x05b
+#define SEQ64_backslash           0x05c
+#define SEQ64_bracketright        0x05d
+#define SEQ64_asciicircum         0x05e
+#define SEQ64_underscore          0x05f
+#define SEQ64_grave               0x060
+#define SEQ64_quoteleft           0x060
+#define SEQ64_a                   0x061
+#define SEQ64_b                   0x062
+#define SEQ64_c                   0x063
+#define SEQ64_d                   0x064
+#define SEQ64_e                   0x065
+#define SEQ64_f                   0x066
+#define SEQ64_g                   0x067
+#define SEQ64_h                   0x068
+#define SEQ64_i                   0x069
+#define SEQ64_j                   0x06a
+#define SEQ64_k                   0x06b
+#define SEQ64_l                   0x06c
+#define SEQ64_m                   0x06d
+#define SEQ64_n                   0x06e
+#define SEQ64_o                   0x06f
+#define SEQ64_p                   0x070
+#define SEQ64_q                   0x071
+#define SEQ64_r                   0x072
+#define SEQ64_s                   0x073
+#define SEQ64_t                   0x074
+#define SEQ64_u                   0x075
+#define SEQ64_v                   0x076
+#define SEQ64_w                   0x077
+#define SEQ64_x                   0x078
+#define SEQ64_y                   0x079
+#define SEQ64_z                   0x07a
+#define SEQ64_braceleft           0x07b
+#define SEQ64_bar                 0x07c
+#define SEQ64_braceright          0x07d
+#define SEQ64_asciitilde          0x07e
 
-#define GDK_KEY_igrave              0x0ec
+#define SEQ64_igrave              0x0ec
 
-#endif      // GDK_KEY_Home
+#endif      // SEQ64_Home
 
 /**
  *  Types of modifiers, essentially copied from gtk-2.0/gdk/gdktypes.h.
@@ -225,6 +225,24 @@ typedef enum
     SEQ64_RELEASE_MASK      = 1 << 30   // GDK_MODIFIER_MASK = 0x5c001fff
 
 } seq_modifier_t;
+
+/**
+ *  Event types copped from gtk-2.0/gdk/gdkevents.h for use with this
+ *  application.  Only the values we need have been grabbed.
+ *  We have to tweak the names to avoid redeclaration errors and to
+ *  "personalize" the values.  We change "GDK" to "SEQ64".
+ *
+ *  Not yet used.
+ */
+
+typedef enum
+{
+    SEQ64_NOTHING           = -1,
+    SEQ64_KEY_PRESS         = 8,
+    SEQ64_KEY_RELEASE       = 9,
+    SEQ64_EVENT_LAST
+
+} seq_event_type_t;
 
 /**
  * Types of scroll events, essentially copied from gtk-2.0/gdk/gdkevents.h.

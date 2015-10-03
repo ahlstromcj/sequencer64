@@ -161,7 +161,7 @@ perftime::on_expose_event (GdkEventExpose * /* ev */ )
         m_window->draw_line(m_gc, x_pos, 0, x_pos, m_window_y);     /* beat */
 
         char bar[8];
-        snprintf(bar, sizeof(bar), "%d", i + 1);
+        snprintf(bar, sizeof(bar), "%ld", i + 1);
         m_gc->set_foreground(m_black);
         p_font_renderer->render_string_on_drawable
         (

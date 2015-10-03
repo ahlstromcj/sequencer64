@@ -998,7 +998,7 @@ mainwnd::on_delete_event (GdkEventAny * a_e)
 
 /**
  *  Handles a key release event.  Is this worth turning into a switch
- *  statement?  Or offloading to a perform member function?
+ *  statement?  Or offloading to a perform member function?  The latter.
  *
  * \todo
  *      Test this functionality in old and new application.
@@ -1011,7 +1011,7 @@ bool
 mainwnd::on_key_release_event (GdkEventKey * a_ev)
 {
     keystroke k(a_ev->keyval, KEYSTROKE_RELEASE);
-    (void) perf().do_key_event(k);
+    (void) perf().mainwnd_key_event(k);
     return false;
 }
 
@@ -1048,7 +1048,7 @@ mainwnd::on_key_press_event (GdkEventKey * a_ev)
         }
 
         keystroke k(a_ev->keyval, KEYSTROKE_PRESS);
-        (void) perf().do_key_event(k);                  // pass to perform
+        (void) perf().mainwnd_key_event(k);             // pass to perform
 
         if (a_ev->keyval == PREFKEY(screenset_dn))
         {
@@ -1057,7 +1057,7 @@ mainwnd::on_key_press_event (GdkEventKey * a_ev)
             m_adjust_ss->set_value(newss);
             m_entry_notes->set_text(perf().current_screen_set_notepad());
         }
-        if (a_ev->keyval == PREFKEY(screenset_up))
+        else if (a_ev->keyval == PREFKEY(screenset_up))
         {
             int newss = perf().increment_screenset();
             m_main_wid->set_screenset(newss);

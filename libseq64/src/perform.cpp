@@ -2443,7 +2443,7 @@ perform::set_input_bus (int bus, bool input_active)
  */
 
 bool
-perform::do_key_event (const keystroke & k)
+perform::mainwnd_key_event (const keystroke & k)
 {
     bool result = true;
     unsigned int key = k.key();
@@ -2478,6 +2478,54 @@ perform::do_key_event (const keystroke & k)
             unset_mode_group_learn();
         else
             result = false;
+    }
+    return result;
+}
+
+/**
+ *  Provided for perfroll::on_key_press_event() and
+ *  perfroll::on_key_release_event() to call.
+ *
+ * \return
+ *      Returns true if the key was handled.
+ */
+
+bool
+perform::perfroll_key_event (const keystroke & k, int drop_sequence)
+{
+    bool result = false;
+    if (k.is_press())                       // (a_p0->type == SEQ64_PRESS)
+    {
+        unsigned int key = k.key();
+        if (is_active(drop_sequence))
+        {
+            if (key == SEQ64_Delete || key == SEQ64_BackSpace)
+            {
+                push_trigger_undo();
+                get_sequence(drop_sequence)->del_selected_trigger();
+                result = true;
+            }
+            if (k.modifier() & SEQ64_CONTROL_MASK)
+            {
+                if (key == SEQ64_x || key == SEQ64_X)           /* cut */
+                {
+                    push_trigger_undo();
+                    get_sequence(drop_sequence)->cut_selected_trigger();
+                    result = true;
+                }
+                if (key == SEQ64_c || key == SEQ64_C)           /* copy */
+                {
+                    get_sequence(drop_sequence)->copy_selected_trigger();
+                    result = true;
+                }
+                if (key == SEQ64_v || key == SEQ64_V)           /* paste */
+                {
+                    push_trigger_undo();
+                    get_sequence(drop_sequence)->paste_trigger();
+                    result = true;
+                }
+            }
+        }
     }
     return result;
 }

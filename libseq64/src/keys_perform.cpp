@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-13
- * \updates       2015-09-13
+ * \updates       2015-10-03
  * \license       GNU GPLv2 or above
  *
  */
@@ -47,21 +47,21 @@ keys_perform::keys_perform ()
     m_key_groups                (),
     m_key_events_rev            (),
     m_key_groups_rev            (),
-    m_key_bpm_up                (GDK_KEY_apostrophe),
-    m_key_bpm_dn                (GDK_KEY_semicolon),
-    m_key_replace               (GDK_KEY_Control_L),
-    m_key_queue                 (GDK_KEY_Control_R),
-    m_key_keep_queue            (GDK_KEY_backslash),
-    m_key_snapshot_1            (GDK_KEY_Alt_L),
-    m_key_snapshot_2            (GDK_KEY_Alt_R),
-    m_key_screenset_up          (GDK_KEY_bracketright),
-    m_key_screenset_dn          (GDK_KEY_bracketleft),
-    m_key_set_playing_screenset (GDK_KEY_Home),
-    m_key_group_on              (GDK_KEY_igrave),
-    m_key_group_off             (GDK_KEY_apostrophe),       // a repeat
-    m_key_group_learn           (GDK_KEY_Insert),
-    m_key_start                 (GDK_KEY_space),
-    m_key_stop                  (GDK_KEY_Escape),
+    m_key_bpm_up                (SEQ64_apostrophe),
+    m_key_bpm_dn                (SEQ64_semicolon),
+    m_key_replace               (SEQ64_Control_L),
+    m_key_queue                 (SEQ64_Control_R),
+    m_key_keep_queue            (SEQ64_backslash),
+    m_key_snapshot_1            (SEQ64_Alt_L),
+    m_key_snapshot_2            (SEQ64_Alt_R),
+    m_key_screenset_up          (SEQ64_bracketright),
+    m_key_screenset_dn          (SEQ64_bracketleft),
+    m_key_set_playing_screenset (SEQ64_Home),
+    m_key_group_on              (SEQ64_igrave),
+    m_key_group_off             (SEQ64_apostrophe),       // a repeat
+    m_key_group_learn           (SEQ64_Insert),
+    m_key_start                 (SEQ64_space),
+    m_key_stop                  (SEQ64_Escape),
     m_key_show_ui_sequence_key  (false)
 {
     // set_all_key_events();

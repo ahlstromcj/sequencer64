@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-02
+ * \updates       2015-10-03
  * \license       GNU GPLv2 or above
  *
  *  This class has way too many members.
@@ -672,6 +672,9 @@ public:
 
     /**
      *  Encapsulates a series of calls used in mainwnd.
+     *  We've reversed the start() and start_jack() calls so that
+     *  JACK is started first, to match all of the other use-cases for playing
+     *  that we've found in the code.
      *
      * \todo
      *      Verify the usage and nature of this flag.
@@ -680,8 +683,8 @@ public:
     void start_playing (bool flag = false)
     {
         position_jack(flag);
-        start(flag);
         start_jack();
+        start(flag);
         g_rc_settings.is_pattern_playing(true);
     }
 
@@ -756,7 +759,8 @@ public:
 
     void sequence_key (int seq);                        // encapsulation
     void set_input_bus (int bus, bool input_active);    // used in options
-    bool do_key_event (const keystroke & k);
+    bool mainwnd_key_event (const keystroke & k);
+    bool perfroll_key_event (const keystroke & k, int drop_sequence);
 
 private:
 

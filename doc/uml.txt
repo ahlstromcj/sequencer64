@@ -1,6 +1,6 @@
 Compressed Pseudo UML for Sequencer64
 Chris Ahlstrom
-2015-10-01 to 2015-10-01
+2015-10-01 to 2015-10-03
 
 mainwnd--> gui_window_gtk2, performcallback
    |
@@ -24,7 +24,7 @@ mainwnd--> gui_window_gtk2, performcallback
    |         |          |
    |         |          |<*>-- perform
    |         |
-   |         |<*>-- perfroll  --> Gtk::DrawingArea
+   |         |<*>-- perfroll  --> gui_drawingarea_gtk2
    |         |          |
    |         |          |<*>-- perform
    |         |          |<*>-- AbstractPerfInput

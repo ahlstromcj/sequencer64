@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-02
+ * \updates       2015-10-03
  * \license       GNU GPLv2 or above
  *
  */
@@ -104,7 +104,7 @@ perfedit::perfedit (perform & p)
     m_vscroll           (manage(new Gtk::VScrollbar(*m_vadjust))),
     m_hscroll           (manage(new Gtk::HScrollbar(*m_hadjust))),
     m_perfnames         (manage(new perfnames(perf(), *m_vadjust))),
-    m_perfroll          (manage(new perfroll(&perf(), m_hadjust, m_vadjust))),
+    m_perfroll          (manage(new perfroll(perf(), *m_hadjust, *m_vadjust))),
     m_perftime          (manage(new perftime(perf(), *m_hadjust))),
     m_menu_snap         (manage(new Gtk::Menu())),
     m_button_snap       (manage(new Gtk::Button())),
@@ -134,7 +134,6 @@ perfedit::perfedit (perform & p)
 {
     set_icon(Gdk::Pixbuf::create_from_xpm_data(perfedit_xpm));
     set_title("Sequencer64 Song Editor");                   /* main window */
-//  set_size_request(700, 400);                             /* base class? */
     m_table->set_border_width(2);
     m_hlbox->set_border_width(2);
     m_button_grow->add
@@ -329,7 +328,6 @@ perfedit::perfedit (perform & p)
     set_snap(8);
     set_bpm(4);
     set_bw(4);
-    // add_events(Gdk::KEY_PRESS_MASK | Gdk::KEY_RELEASE_MASK);
 }
 
 /**
@@ -361,14 +359,10 @@ perfedit::undo ()
  * \todo
  *      This function should be a perform member, and forward to it.
  */
-\
+
 void
 perfedit::start_playing ()
 {
-    // perf().position_jack(true);
-    // perf().start_jack();
-    // perf().start(true);
-
     perf().start_playing(true);         // careful now, see perform!!!!
 }
 
@@ -615,13 +609,13 @@ perfedit::on_key_press_event (GdkEventKey * a_ev)
         if
         (
             a_ev->keyval == PREFKEY(start) &&
-            (dont_toggle || !perf().is_running())
+            (dont_toggle || ! perf().is_running())
         )
         {
             start_playing();
             return true;
         }
-        else if
+        if
         (
             a_ev->keyval == PREFKEY(stop) &&
             (dont_toggle || perf().is_running())

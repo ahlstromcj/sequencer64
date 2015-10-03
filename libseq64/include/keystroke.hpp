@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-09-21
- * \updates       2015-09-30
+ * \updates       2015-10-03
  * \license       GNU GPLv2 or above
  *
  *  Most of the GUI modules are publicly derived from Gtk::DrawingArea,
@@ -88,7 +88,7 @@ public:
     (
         unsigned int key,
         bool press = true,
-        seq_modifier_t modkey = SEQ64_NO_MASK
+        int modkey = int(SEQ64_NO_MASK)
     );
     keystroke (const keystroke & rhs);
     keystroke & operator = (const keystroke & rhs);

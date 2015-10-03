@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-21
- * \updates       2015-10-02
+ * \updates       2015-10-03
  * \license       GNU GPLv2 or above
  *
  */
@@ -94,8 +94,8 @@ Gtk::Adjustment gui_drawingarea_gtk2::sm_vadjust_dummy
 gui_drawingarea_gtk2::gui_drawingarea_gtk2
 (
     perform & perf,
-    int window_x,
-    int window_y
+    int windowx,
+    int windowy
 ) :
     gui_palette_gtk2        (),
     m_gc                    (),
@@ -106,8 +106,8 @@ gui_drawingarea_gtk2::gui_drawingarea_gtk2
     m_background            (),             // another pixmap
     m_foreground            (),             // another pixmap
     m_mainperf              (perf),
-    m_window_x              (window_x),
-    m_window_y              (window_y),
+    m_window_x              (windowx),
+    m_window_y              (windowy),
     m_current_x             (0),
     m_current_y             (0),
     m_drop_x                (0),
@@ -125,8 +125,8 @@ gui_drawingarea_gtk2::gui_drawingarea_gtk2
     perform & perf,
     Gtk::Adjustment & hadjust,
     Gtk::Adjustment & vadjust,
-    int window_x,
-    int window_y
+    int windowx,
+    int windowy
 ) :
     gui_palette_gtk2        (),
     m_gc                    (),
@@ -137,8 +137,8 @@ gui_drawingarea_gtk2::gui_drawingarea_gtk2
     m_background            (),             // another pixmap
     m_foreground            (),             // another pixmap
     m_mainperf              (perf),
-    m_window_x              (window_x),
-    m_window_y              (window_y),
+    m_window_x              (windowx),
+    m_window_y              (windowy),
     m_current_x             (0),
     m_current_y             (0),
     m_drop_x                (0),

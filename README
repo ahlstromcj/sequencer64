@@ -1,6 +1,6 @@
 README for Sequencer64 0.9.9.3 (current branch = "guibase")
 Chris Ahlstrom
-2015-09-10 to 2015-09-21
+2015-09-10 to 2015-10-03
 
 The sequencer64 project is a continuation of sequencer24 to refactor it to
 be tighter and easier to transition to to GTKmm 3, and much more.
@@ -15,12 +15,23 @@ std::list as an event-container.  It works well, and loads MIDI files a
 lot faster when compiled for debugging.  See the USE_EVENT_MAP macro
 in the libseq64/include/event_list.hpp module.
 
+Other major updates:
+
+    -   The "user" configuration file is now written, as well as being read.
+        It will also contain more extensive run-time configuration for the
+        user-interface.
+    -   The user-interface classes are being refactored to be derived from
+        base classes providing common code.
+    -   Constant variables are slowly being assigned to new members, in
+        preparation for support of altering the number of sequences and sets
+        supported.
+
 This package is currently oriented to developers.  Please see the
 INSTALL file for a brief description on installation.
 
 See the ROADMAP file for more information and a kind of TODO list.
 
-Note that sequencer24 is pretty well documented by the following
+Note that sequencer64 is pretty well documented by the following
 project, which provides a 60-page PDF file and its LaTeX source code:
 
    https://github.com/ahlstromcj/sequencer24-doc.git

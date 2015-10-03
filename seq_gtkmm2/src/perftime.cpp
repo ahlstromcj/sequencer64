@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-02
+ * \updates       2015-10-03
  * \license       GNU GPLv2 or above
  *
  *  The time bar shows markers and numbers for the measures of the song,
@@ -34,58 +34,46 @@
 
 #include <gtkmm/adjustment.h>
 
+#include "click.hpp"                    /* CLICK_IS_LEFT() etc. */
+#include "font.hpp"
 #include "perform.hpp"
 #include "perftime.hpp"
-#include "font.hpp"
 
 namespace seq64
 {
 
 /**
  *  Principal constructor.
- *
  *  In the constructor you can only allocate colors;
  *  get_window() returns 0 because we have not been realized.
+ *
+ * \note
+ *      Note that we still have to use a global constant in the base-class
+ *      constructor; we cannot assign it to the corresponding member
+ *      beforehand.
  */
 
-perftime::perftime (perform & a_perf, Gtk::Adjustment & a_hadjust)
+perftime::perftime (perform & p, Gtk::Adjustment & hadjust)
  :
-    gui_drawingarea_gtk2    (a_perf, a_hadjust, sm_vadjust_dummy),
+    gui_drawingarea_gtk2    (p, hadjust, sm_vadjust_dummy, 10, c_timearea_y),
     m_4bar_offset           (0),
+    m_ppqn                  (c_ppqn),
     m_snap                  (c_ppqn),
-    m_measure_length        (c_ppqn * 4)
+    m_measure_length        (c_ppqn * 4),
+    m_perf_scale_x          (c_perf_scale_x),   // 32 ticks per pixel
+    m_timearea_y            (c_timearea_y)      // pixel-height of time scale
 {
     /*
      * This adds many fewer events than the base class.  Any bad effects?
      *
      * add_events(Gdk::BUTTON_PRESS_MASK | Gdk::BUTTON_RELEASE_MASK);
+     * set_double_buffered(false);
      */
 
     m_hadjust.signal_value_changed().connect
     (
         mem_fun(*this, &perftime::change_horz)
     );
-    // set_double_buffered(false);         ///// ?????
-}
-
-/**
- *  This function does nothing.
- */
-
-void
-perftime::increment_size ()
-{
-    // Empty body
-}
-
-/**
- *  This function does nothing.
- */
-
-void
-perftime::update_sizes ()
-{
-    // Empty body
 }
 
 /**
@@ -95,9 +83,9 @@ perftime::update_sizes ()
 void
 perftime::change_horz ()
 {
-    if (m_4bar_offset != (int) m_hadjust.get_value())
+    if (m_4bar_offset != int(m_hadjust.get_value()))
     {
-        m_4bar_offset = (int) m_hadjust.get_value();
+        m_4bar_offset = int(m_hadjust.get_value());
         queue_draw();
     }
 }
@@ -107,72 +95,54 @@ perftime::change_horz ()
  */
 
 void
-perftime::set_guides (int a_snap, int a_measure)
+perftime::set_guides (int snap, int measure)
 {
-    m_snap = a_snap;
-    m_measure_length = a_measure;
+    m_snap = snap;
+    m_measure_length = measure;
     queue_draw();
 }
 
 /**
- *  This function just returns true.
- */
-
-int
-perftime::idle_progress ()
-{
-    return true;
-}
-
-/**
- *  This function does nothing.
- */
-
-void
-perftime::update_pixmap ()
-{
-    // Empty body
-}
-
-/**
- *  This function does nothing.
- */
-
-void
-perftime::draw_pixmap_on_window ()
-{
-    // Empty body
-}
-
-/**
  *  Implements the on-realization event, then allocates some resources the
- *  could not be allocated in the constructor.
+ *  could not be allocated in the constructor.  It is important to call the
+ *  base-class version of this function.
  */
 
 void
 perftime::on_realize ()
 {
-    Gtk::DrawingArea::on_realize();         // base-class version
-    m_window = get_window();
-    m_gc = Gdk::GC::create(m_window);
-    m_window->clear();
-    set_size_request(10, c_timearea_y);
+    gui_drawingarea_gtk2::on_realize();     // base-class version
+
+    /*
+     * Done in base-class's on_realize() and in its constructor now.
+     *
+     *  m_window = get_window();
+     *  m_gc = Gdk::GC::create(m_window);
+     *  m_window->clear();
+     *  set_size_request(10, m_timearea_y);
+     */
 }
 
 /**
  *  Implements the on-expose event.
+ *
+ * \note
+ *      The perfedit object is created early on.  When brought on-screen from
+ *      mainwnd (the main window), first, perftime::on_realize() is called,
+ *      then this event is called.
+ *
+ *      It crashes trying to set the foreground color.
  */
 
 bool
-perftime::on_expose_event (GdkEventExpose * a_e)
+perftime::on_expose_event (GdkEventExpose * /* ev */ )
 {
     m_gc->set_foreground(m_white);              /* clear the background */
     m_window->draw_rectangle(m_gc, true, 0, 0, m_window_x, m_window_y);
     m_gc->set_foreground(m_black);
     m_window->draw_line(m_gc, 0, m_window_y - 1, m_window_x, m_window_y - 1);
-
     m_gc->set_foreground(m_grey);               /* draw vertical lines */
-    long tick_offset = (m_4bar_offset * 16 * c_ppqn);
+    long tick_offset = (m_4bar_offset * 16 * m_ppqn);
     long first_measure = tick_offset / m_measure_length;
 
 #if 0
@@ -182,18 +152,15 @@ perftime::on_expose_event (GdkEventExpose * a_e)
     0    1    2    3    4    5
 #endif
 
-    for
-    (
-        int i = first_measure;
-        i < first_measure + (m_window_x*c_perf_scale_x/m_measure_length) + 1;
-        i++
-    )
-    {
-        int x_pos = ((i * m_measure_length) - tick_offset) / c_perf_scale_x;
+    long last_measure = first_measure +
+        (m_window_x * m_perf_scale_x / m_measure_length) + 1;
 
+    for (long i = first_measure; i < last_measure; ++i)
+    {
+        int x_pos = ((i * m_measure_length) - tick_offset) / m_perf_scale_x;
         m_window->draw_line(m_gc, x_pos, 0, x_pos, m_window_y);     /* beat */
 
-        char bar[5];
+        char bar[8];
         snprintf(bar, sizeof(bar), "%d", i + 1);
         m_gc->set_foreground(m_black);
         p_font_renderer->render_string_on_drawable
@@ -204,28 +171,24 @@ perftime::on_expose_event (GdkEventExpose * a_e)
 
     long left = perf().get_left_tick();
     long right = perf().get_right_tick();
-
-    left -= (m_4bar_offset * 16 * c_ppqn);
-    left /= c_perf_scale_x;
-    right -= (m_4bar_offset * 16 * c_ppqn);
-    right /= c_perf_scale_x;
+    left -= (m_4bar_offset * 16 * m_ppqn);          /* why 16?          */
+    left /= m_perf_scale_x;
+    right -= (m_4bar_offset * 16 * m_ppqn);
+    right /= m_perf_scale_x;
     if (left >= 0 && left <= m_window_x)            /* draw L marker    */
     {
         m_gc->set_foreground(m_black);
         m_window->draw_rectangle(m_gc, true, left, m_window_y - 9, 7, 10);
-
         m_gc->set_foreground(m_white);
         p_font_renderer->render_string_on_drawable
         (
             m_gc, left + 1, 9, m_window, "L", font::WHITE
         );
     }
-
     if (right >= 0 && right <= m_window_x)          /* draw R marker    */
     {
         m_gc->set_foreground(m_black);
         m_window->draw_rectangle(m_gc, true, right - 6, m_window_y - 9, 7, 10);
-
         m_gc->set_foreground(m_white);
         p_font_renderer->render_string_on_drawable
         (
@@ -242,34 +205,23 @@ perftime::on_expose_event (GdkEventExpose * a_e)
 bool
 perftime::on_button_press_event (GdkEventButton * p0)
 {
-    long tick = (long) p0->x;
-    tick *= c_perf_scale_x;         // tick = tick - (tick % (c_ppqn * 4));
-    tick += (m_4bar_offset * 16 * c_ppqn);
+    long tick = long(p0->x);
+    tick *= m_perf_scale_x;         // tick = tick - (tick % (m_ppqn * 4));
+    tick += (m_4bar_offset * 16 * m_ppqn);
     tick -= (tick % m_snap);
 
-    // if ( p0->button == 2 )                       // middle button
+    // Why is this disabled?
+    //
+    // if (CLICK_IS_MIDDLE(p0->button))
     //      perf().set_start_tick(tick);
 
-    if (p0->button == 1)                            // left button
-    {
+    if (CLICK_IS_LEFT(p0->button))
         perf().set_left_tick(tick);
-    }
-    if (p0->button == 3)                            // right button
-    {
+    else if (CLICK_IS_RIGHT(p0->button))
         perf().set_right_tick(tick + m_snap);
-    }
+
     queue_draw();
     return true;
-}
-
-/**
- *  This button-release handler does nothing.
- */
-
-bool
-perftime::on_button_release_event (GdkEventButton * /*p0*/)
-{
-    return false;
 }
 
 /**

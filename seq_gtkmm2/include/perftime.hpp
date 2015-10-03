@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-02
+ * \updates       2015-10-03
  * \license       GNU GPLv2 or above
  *
  */
@@ -47,7 +47,7 @@ class perform;
 
 /**
  *  This class implements drawing the piano time at the top of the
- *  "performance window", also known as the "song editor".
+ *  "performance window" (the "song editor").
  */
 
 class perftime : public gui_drawingarea_gtk2
@@ -56,8 +56,11 @@ class perftime : public gui_drawingarea_gtk2
 private:
 
     int m_4bar_offset;
+    int m_ppqn;
     int m_snap;
     int m_measure_length;
+    int m_perf_scale_x;                 /* no y version used, though */
+    int m_timearea_y;                   /* no x version used, though */
 
 public:
 
@@ -66,24 +69,73 @@ public:
     void reset ();
     void set_scale (int scale);
     void set_guides (int snap, int measure);
-    void increment_size ();
+
+    /**
+     *  This function does nothing.
+     */
+
+    void increment_size ()
+    {
+        // Empty body
+    }
 
 private:
 
-    void update_sizes ();
-    void draw_pixmap_on_window ();
     void draw_progress_on_window ();
-    void update_pixmap ();
-    int idle_progress ();
     void change_horz ();
+
+    /**
+     *  This function does nothing.
+     */
+
+    void update_sizes ()
+    {
+        // Empty body
+    }
+
+    /**
+     *  This function just returns true.
+     */
+
+    int idle_progress ()
+    {
+        return true;
+    }
+
+    /**
+     *  This function does nothing.
+     */
+
+    void update_pixmap ()
+    {
+        // Empty body
+    }
+
+    /**
+     *  This function does nothing.
+     */
+
+    void draw_pixmap_on_window ()
+    {
+        // Empty body
+    }
 
 private:        // callbacks
 
     void on_realize ();
     bool on_expose_event (GdkEventExpose * ev);
     bool on_button_press_event (GdkEventButton * ev);
-    bool on_button_release_event (GdkEventButton * ev);
     void on_size_allocate (Gtk::Allocation & r);
+
+    /**
+     *  This button-release handler does nothing.
+     */
+
+    bool on_button_release_event (GdkEventButton * /*ev*/)
+    {
+        return false;
+    }
+
 };
 
 }           // namespace seq64

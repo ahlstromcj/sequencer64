@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-02
+ * \updates       2015-10-03
  * \license       GNU GPLv2 or above
  *
  *  This module is almost exclusively user-interface code.  There are some
@@ -295,10 +295,10 @@ perfnames::on_button_press_event (GdkEventButton * a_e)
 void
 perfnames::on_realize ()
 {
-    Gtk::DrawingArea::on_realize();
-    m_window = get_window();
-    m_gc = Gdk::GC::create(m_window);
-    m_window->clear();
+    gui_drawingarea_gtk2::on_realize();
+//  m_window = get_window();
+//  m_gc = Gdk::GC::create(m_window);
+//  m_window->clear();
     m_pixmap = Gdk::Pixmap::create
     (
         m_window, m_names_x, m_names_y * m_sequence_max + 1, -1

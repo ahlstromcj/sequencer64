@@ -20,7 +20,7 @@ mainwnd--> gui_window_gtk2, performcallback
    |<*>-- maintime --> gui_drawingarea_gtk2
    |<*>-- perfedit --> gui_window_gtk2
    |         |
-   |         |<*>-- perfnames --> Gtk::DrawingArea
+   |         |<*>-- perfnames --> gui_drawingarea_gtk2
    |         |          |
    |         |          |<*>-- perform
    |         |
@@ -31,7 +31,7 @@ mainwnd--> gui_window_gtk2, performcallback
    |         |          | friend FruityPerfInput
    |         |          | friend Seq24PerfInput
    |         |
-   |         |<*>-- perftime  --> Gtk::DrawingArea
+   |         |<*>-- perftime  --> gui_drawingarea_gtk2
    |                    |
    |                    |<*>-- perform
    |
@@ -88,7 +88,18 @@ keybindentry --> Gtk::Entry
    |<*>-- perform (optional)
 
 gui_drawingarea_gtk2 --> gui_palette_gtk2 --> Gtk::DrawingArea
-gui_window_gtk2      --> Gtk::Window
-keys_perform_gtk2    --> keys_perform
+   ^
+   |--- mainwid
+   |--- maintime
+   |--- perfnames
+   |--- perftime
+
+gui_window_gtk2 --> Gtk::Window
+   ^
+   |--- mainwnd
+   |--- perfedit
+   |--- seqedit
+
+keys_perform_gtk2 --> keys_perform
 
 # vim: sw=4 ts=4 wm=4 et ft=sh

@@ -85,10 +85,14 @@ mastermidibus::mastermidibus ()
     }
 
 #ifdef SEQ64_HAVE_LIBASOUND
-    /* open the sequencer client */
 
-    int result  = snd_seq_open(&m_alsa_seq, "default",  SND_SEQ_OPEN_DUPLEX, 0);
-    if (result  < 0)
+    /*
+     * Open the sequencer client.  This line of code results in a loss of
+     * 4 bytes somewhere in snd_seq_open(), as discovered via valgrind.
+     */
+
+    int result = snd_seq_open(&m_alsa_seq, "default",  SND_SEQ_OPEN_DUPLEX, 0);
+    if (result < 0)
     {
         errprint("snd_seq_open() error");
         exit(1);
@@ -130,6 +134,11 @@ mastermidibus::~mastermidibus ()
     snd_seq_free_queue(m_alsa_seq, m_queue);
     snd_seq_close(m_alsa_seq);                      /* close client */
 #endif
+    if (not_nullptr(m_poll_descriptors))
+    {
+        delete [] m_poll_descriptors;
+        m_poll_descriptors = nullptr;
+    }
 }
 
 /**

@@ -97,20 +97,21 @@ perform::perform (gui_assistant & mygui)
     m_midiclockrunning          (false),
     m_midiclocktick             (0),
     m_midiclockpos              (-1),
-    m_screen_set_notepad        (),     // string array
+    m_screen_set_notepad        (),     // string array of size c_max_sets
     m_midi_cc_toggle            (),     // midi_control array
     m_midi_cc_on                (),     // midi_control array
     m_midi_cc_off               (),     // midi_control array
     m_offset                    (0),
     m_control_status            (0),
     m_screen_set                (0),
+    m_sequence_max              (c_max_sequence),
     m_condition_var             (),
 #ifdef SEQ64_JACK_SUPPORT
     m_jack_asst                 (*this),
 #endif
     m_notify                    ()          // vector of pointers, public!
 {
-    for (int i = 0; i < c_max_sequence; i++)
+    for (int i = 0; i < m_sequence_max; i++)
     {
         m_seqs[i] = nullptr;
         m_seqs_active[i] = false;
@@ -152,7 +153,7 @@ perform::~perform ()
     if (m_in_thread_launched)
         pthread_join(m_in_thread, NULL);
 
-    for (int i = 0; i < c_max_sequence; i++)
+    for (int i = 0; i < m_sequence_max; i++)
     {
         if (is_active(i))
             delete m_seqs[i];
@@ -205,7 +206,7 @@ void
 perform::clear_all ()
 {
     reset_sequences();
-    for (int i = 0; i < c_max_sequence; i++)
+    for (int i = 0; i < m_sequence_max; i++)
         if (is_active(i))
             delete_sequence(i);
 
@@ -397,7 +398,7 @@ perform::select_and_mute_group (int a_g_group)
 void
 perform::mute_all_tracks ()
 {
-    for (int i = 0; i < c_max_sequence; i++)
+    for (int i = 0; i < m_sequence_max; i++)
     {
         if (is_active(i))
             m_seqs[i]->set_song_mute(true);
@@ -440,10 +441,10 @@ perform::set_right_tick (long a_tick)
  *  No check is made for a null pointer.
  *
  *  Check for preferred.  This occurs if a_perf is in the valid range (0
- *  to c_max_sequence) and it is not active.  If preferred, then add it
+ *  to m_sequence_max) and it is not active.  If preferred, then add it
  *  and activate it.
  *
- *  Otherwise, iterate through all patterns from a_perf to c_max_sequence
+ *  Otherwise, iterate through all patterns from a_perf to m_sequence_max
  *  and add and activate the first one that is not active.
  *
  *  Is there a usefulness in setting the sequence's tag?
@@ -466,7 +467,7 @@ perform::set_right_tick (long a_tick)
 void
 perform::add_sequence (sequence * a_seq, int a_perf)
 {
-    bool safe = a_perf >= 0 && a_perf < c_max_sequence;
+    bool safe = a_perf >= 0 && a_perf < m_sequence_max;
     if (safe && ! is_active(a_perf))                /* check for preferred */
     {
         m_seqs[a_perf] = a_seq;
@@ -478,7 +479,7 @@ perform::add_sequence (sequence * a_seq, int a_perf)
 
         if (safe)                                   /* air-tight !         */
         {
-            for (int i = a_perf; i < c_max_sequence; i++)
+            for (int i = a_perf; i < m_sequence_max; i++)
             {
                 if (! is_active(i))
                 {
@@ -974,7 +975,7 @@ void
 perform::play (long a_tick)
 {
     m_tick = a_tick;
-    for (int i = 0; i < c_max_sequence; i++)
+    for (int i = 0; i < m_sequence_max; i++)
     {
         if (is_active(i))
         {
@@ -1018,7 +1019,7 @@ perform::play (long a_tick)
 void
 perform::set_orig_ticks (long a_tick)
 {
-    for (int i = 0; i < c_max_sequence; i++)
+    for (int i = 0; i < m_sequence_max; i++)
     {
         if (is_active(i))
         {
@@ -1061,7 +1062,7 @@ perform::move_triggers (bool a_direction)
     if (m_left_tick < m_right_tick)
     {
         long distance = m_right_tick - m_left_tick;
-        for (int i = 0; i < c_max_sequence; i++)
+        for (int i = 0; i < m_sequence_max; i++)
         {
             if (is_active(i))
             {
@@ -1080,7 +1081,7 @@ perform::move_triggers (bool a_direction)
 void
 perform::push_trigger_undo ()
 {
-    for (int i = 0; i < c_max_sequence; i++)
+    for (int i = 0; i < m_sequence_max; i++)
     {
         if (is_active(i))
         {
@@ -1098,7 +1099,7 @@ perform::push_trigger_undo ()
 void
 perform::pop_trigger_undo ()
 {
-    for (int i = 0; i < c_max_sequence; i++)
+    for (int i = 0; i < m_sequence_max; i++)
     {
         if (is_active(i))
         {
@@ -1123,7 +1124,7 @@ perform::copy_triggers ()
     if (m_left_tick < m_right_tick)
     {
         long distance = m_right_tick - m_left_tick;
-        for (int i = 0; i < c_max_sequence; i++)
+        for (int i = 0; i < m_sequence_max; i++)
         {
             if (is_active(i))
             {
@@ -1246,7 +1247,7 @@ perform::inner_stop ()
 void
 perform::off_sequences ()
 {
-    for (int i = 0; i < c_max_sequence; i++)
+    for (int i = 0; i < m_sequence_max; i++)
     {
         if (is_active(i))
         {
@@ -1264,7 +1265,7 @@ perform::off_sequences ()
 void
 perform::all_notes_off ()
 {
-    for (int i = 0; i < c_max_sequence; i++)
+    for (int i = 0; i < m_sequence_max; i++)
     {
         if (is_active(i))
         {
@@ -1286,7 +1287,7 @@ perform::all_notes_off ()
 void
 perform::reset_sequences ()
 {
-    for (int i = 0; i < c_max_sequence; i++)
+    for (int i = 0; i < m_sequence_max; i++)
     {
         if (is_active(i))
         {
@@ -1355,7 +1356,7 @@ long
 perform::get_max_trigger ()
 {
     long result = 0;
-    for (int i = 0; i < c_max_sequence; i++)
+    for (int i = 0; i < m_sequence_max; i++)
     {
         if (is_active(i))
         {
@@ -2058,7 +2059,7 @@ perform::input_func ()
 void
 perform::save_playing_state ()
 {
-    for (int i = 0; i < c_max_sequence; i++)
+    for (int i = 0; i < m_sequence_max; i++)
     {
         if (is_active(i))
         {
@@ -2078,7 +2079,7 @@ perform::save_playing_state ()
 void
 perform::restore_playing_state ()
 {
-    for (int i = 0; i < c_max_sequence; i++)
+    for (int i = 0; i < m_sequence_max; i++)
     {
         if (is_active(i))
         {
@@ -2410,6 +2411,27 @@ perform::sequence_key (int seq)
     int offset = get_screenset() * c_mainwnd_rows * c_mainwnd_cols;
     if (is_active(seq + offset))
         sequence_playing_toggle(seq + offset);
+}
+
+/**
+ *  Sets the input bus, and handles the special "key-labels-on-sequence"
+ *  functionality.  This function is called by options::input_callback().
+ */
+
+void
+perform::set_input_bus (int bus, bool input_active)
+{
+    if (bus == PERFORM_KEY_LABELS_ON_SEQUENCE)
+    {
+        show_ui_sequence_key(input_active);
+        for (int seq = 0; seq < m_sequence_max; seq++)
+        {
+            if (get_sequence(seq))
+                get_sequence(seq)->set_dirty();
+        }
+    }
+    else
+        master_bus().set_input(bus, input_active);
 }
 
 /**

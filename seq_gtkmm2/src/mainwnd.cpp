@@ -94,6 +94,9 @@ mainwnd::mainwnd (perform & p)
  :
     gui_window_gtk2         (p),
     performcallback         (),
+
+    // Valgrind flags m_tooltips as lost data.  Can we fix it?
+
     m_tooltips              (manage(new Gtk::Tooltips())),
     m_menubar               (manage(new Gtk::MenuBar())),
     m_menu_file             (manage(new Gtk::Menu())),

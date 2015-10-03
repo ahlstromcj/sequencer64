@@ -78,7 +78,7 @@ namespace seq64
 
 enum
 {
-    e_keylabelsonsequence = 9999
+    e_keylabelsonsequence = PERFORM_KEY_LABELS_ON_SEQUENCE
 };
 
 /**
@@ -424,7 +424,7 @@ options::add_keyboard_page ()
         int x = i % 8 * 2;
         int y = i / 8;
         int slot = x * 2 + y;           // count this way: 0, 4, 8, 16...
-        char buf[32];
+        char buf[8];
         snprintf(buf, sizeof(buf), "%d", slot);
         Gtk::Label * numlabel = manage(new Gtk::Label(buf, Gtk::ALIGN_RIGHT));
         entry = manage
@@ -448,11 +448,11 @@ options::add_keyboard_page ()
     mutegrouptable->set_border_width(4);
     mutegrouptable->set_spacings(4);
     mutegroupframe->add(*mutegrouptable);
-    for (int i = 0; i < 32; i++)        // c_seqs_in_set ?
+    for (int i = 0; i < 32; i++)        // 32 = c_seqs_in_set ?
     {
-        int x = i % 8 * 2;
+        int x = i % 8 * 2;              // 8 = c_mainwnd_cols ?
         int y = i / 8;
-        char buf[16];
+        char buf[8];
         snprintf(buf, sizeof(buf), "%d", i);
         Gtk::Label * numlabel = manage(new Gtk::Label(buf, Gtk::ALIGN_RIGHT));
         entry = manage
@@ -648,7 +648,10 @@ options::add_jack_sync_page ()
         "allow muting and unmuting of patterns (loops)."
     );
 
-    Gtk::RadioButton * rb_perform = manage(new Gtk::RadioButton("_Song Mode", true));
+    Gtk::RadioButton * rb_perform = manage
+    (
+        new Gtk::RadioButton("_Song Mode", true)
+    );
     add_tooltip(rb_perform, "Playback will use the Song Editor's data.");
 
     Gtk::RadioButton::Group group = rb_live->get_group();
@@ -750,21 +753,25 @@ options::clock_mod_callback (Gtk::Adjustment * adj)
  */
 
 void
-options::input_callback (int a_bus, Gtk::Button * i_button)
+options::input_callback (int bus, Gtk::Button * i_button)
 {
     Gtk::CheckButton * a_button = (Gtk::CheckButton *) i_button;
     bool input = a_button->get_active();
-    if (9999 == a_bus)                  // another manifest constant needed
+    perf().set_input_bus(bus, input);
+
+    /***
+    if (bus == PERFORM_KEY_LABELS_ON_SEQUENCE)
     {
         perf().show_ui_sequence_key(input);
-        for (int i = 0; i < c_max_sequence; i++)
+        for (int seq = 0; seq < c_max_sequence; seq++)
         {
-            if (perf().get_sequence(i))
-                perf().get_sequence(i)->set_dirty();
+            if (perf().get_sequence(seq))
+                perf().get_sequence(seq)->set_dirty();
         }
-        return;
     }
-    perf().master_bus().set_input(a_bus, input);
+    else
+        perf().master_bus().set_input(bus, input);
+     ***/
 }
 
 /**

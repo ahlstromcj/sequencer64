@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-19
- * \updates       2015-09-20
+ * \updates       2015-10-02
  * \license       GNU GPLv2 or above
  *
  */
@@ -159,7 +159,11 @@ event_list::add (const event & e, bool postsort)
 
 #ifdef USE_EVENT_MAP
     event_key key(e);
+#if __cplusplus >= 201103L
+    EventsPair p = std::make_pair(key, e);
+#else
     EventsPair p = std::make_pair<event_key, event>(key, e);
+#endif
     m_events.insert(p);
 #else
     m_events.push_front(e);

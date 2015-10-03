@@ -6,7 +6,7 @@ dnl \file          configure.ac
 dnl \library       sequencer64
 dnl \author        Chris Ahlstrom
 dnl \date          2015-09-11
-dnl \update        2015-09-20
+dnl \update        2015-10-02
 dnl \version       $Revision$
 dnl \license       $XPC_SUITE_GPL_LICENSE$
 dnl
@@ -454,9 +454,14 @@ WARNINGS_DISABLED="-Wno-unused-parameter -Wno-non-virtual-dtor"
 
 dnl We added -std=c++11 for g++ 4.8, and -Wno-deprecated-declarations to
 dnl stop g++ 5.2 from griping about usage of std::auto_ptr<>.
+dnl
+dnl 2015-10-02:  After a Debian Sid update, the configfile module wouldn't
+dnl compile because, we think, the sigc++ now required C++11 support.
+dnl So we put that requiremet back, and had to fix some issues with
+dnl conditional compilation.
 
 CFLAGS="$CFLAGS $COMMONFLAGS"
-CXXFLAGS="$CFLAGS -Wno-variadic-macros -Wno-deprecated-declarations"
+CXXFLAGS="$CFLAGS -std=c++11 -Wno-variadic-macros -Wno-deprecated-declarations"
 
 AC_CONFIG_FILES([
  Makefile

@@ -28,10 +28,9 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-09-13
- * \updates       2015-09-19
+ * \updates       2015-10-02
  * \license       GNU GPLv2 or above
  *
- *  This class has way too many members.
  */
 
 #include <map>                          // std::map
@@ -46,22 +45,22 @@ namespace seq64
 
 struct keys_perform_transfer
 {
-   unsigned int kpt_bpm_up;
-   unsigned int kpt_bpm_dn;
-   unsigned int kpt_screenset_up;
-   unsigned int kpt_screenset_dn;
-   unsigned int kpt_set_playing_screenset;
-   unsigned int kpt_group_on;
-   unsigned int kpt_group_off;
-   unsigned int kpt_group_learn;
-   unsigned int kpt_replace;
-   unsigned int kpt_queue;
-   unsigned int kpt_keep_queue;
-   unsigned int kpt_snapshot_1;
-   unsigned int kpt_snapshot_2;
-   bool kpt_show_ui_sequence_key;
-   unsigned int kpt_start;
-   unsigned int kpt_stop;
+    unsigned int kpt_bpm_up;
+    unsigned int kpt_bpm_dn;
+    unsigned int kpt_screenset_up;
+    unsigned int kpt_screenset_dn;
+    unsigned int kpt_set_playing_screenset;
+    unsigned int kpt_group_on;
+    unsigned int kpt_group_off;
+    unsigned int kpt_group_learn;
+    unsigned int kpt_replace;
+    unsigned int kpt_queue;
+    unsigned int kpt_keep_queue;
+    unsigned int kpt_snapshot_1;
+    unsigned int kpt_snapshot_2;
+    unsigned int kpt_start;
+    unsigned int kpt_stop;
+    bool kpt_show_ui_sequence_key;
 };
 
 /**
@@ -131,6 +130,7 @@ private:
     unsigned int m_key_group_learn;
     unsigned int m_key_start;
     unsigned int m_key_stop;
+    bool m_key_show_ui_sequence_key;
 
 public:
 
@@ -275,6 +275,21 @@ public:
         m_key_stop = x;
     }
 
+    /**
+     * \accessor m_key_show_ui_sequency_key
+     *
+     *  Used in mainwid, options, optionsfile, userfile, and perform.
+     */
+
+    bool show_ui_sequence_key () const
+    {
+        return m_key_show_ui_sequence_key;
+    }
+    void show_ui_sequence_key (bool flag)
+    {
+        m_key_show_ui_sequence_key = flag;
+    }
+
     SlotMap & get_key_events ()
     {
         return m_key_events;
@@ -291,21 +306,6 @@ public:
     RevSlotMap & get_key_groups_rev ()
     {
         return m_key_groups_rev;
-    }
-
-    /**
-     * \accessor m_show_ui_sequency_key
-     *
-     *  Used in mainwid, options, optionsfile, userfile, and perform.
-     */
-
-    bool show_ui_sequence_key () const
-    {
-        return m_show_ui_sequence_key;
-    }
-    void show_ui_sequence_key (bool flag)
-    {
-        m_show_ui_sequence_key = flag;
     }
 
     /*

@@ -65,6 +65,12 @@
 #define PREFKEY(x)              perf().keys().x()
 #define PREFKEY_ADDR(x)         perf().keys().at_##x()
 
+/**
+ *  Used in the options module to indicate a "key-labels-on-sequence" setting.
+ */
+
+#define PERFORM_KEY_LABELS_ON_SEQUENCE  9999
+
 namespace seq64
 {
 
@@ -96,8 +102,6 @@ public:
  *
  *  I think the reason for that value is to perhaps handle two sets or
  *  something like that.  Will figure it out later.
- *
- *  These values would be better off in an enumeration.
  */
 
 const int c_midi_track_ctrl           = c_seqs_in_set * 2;
@@ -257,6 +261,7 @@ private:
     int m_offset;
     int m_control_status;
     int m_screen_set;
+    int m_sequence_max;
 
     condition_var m_condition_var;
 
@@ -749,7 +754,8 @@ public:
         return result;
     }
 
-    void sequence_key (int seq);        // encapsulation
+    void sequence_key (int seq);                        // encapsulation
+    void set_input_bus (int bus, bool input_active);    // used in options
     bool do_key_event (const keystroke & k);
 
 private:

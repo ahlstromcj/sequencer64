@@ -61,7 +61,8 @@ keys_perform::keys_perform ()
     m_key_group_off             (GDK_KEY_apostrophe),       // a repeat
     m_key_group_learn           (GDK_KEY_Insert),
     m_key_start                 (GDK_KEY_space),
-    m_key_stop                  (GDK_KEY_Escape)
+    m_key_stop                  (GDK_KEY_Escape),
+    m_key_show_ui_sequence_key  (false)
 {
     // set_all_key_events();
     // set_all_key_groups();
@@ -100,6 +101,7 @@ keys_perform::set_keys (const keys_perform_transfer & kpt)
     m_key_group_learn           = kpt.kpt_group_learn;
     m_key_start                 = kpt.kpt_start;
     m_key_stop                  = kpt.kpt_stop;
+    m_key_show_ui_sequence_key  = kpt.kpt_show_ui_sequence_key;
 }
 
 /**
@@ -124,6 +126,7 @@ keys_perform::get_keys (keys_perform_transfer & kpt)
      kpt.kpt_group_learn             = m_key_group_learn;
      kpt.kpt_start                   = m_key_start;
      kpt.kpt_stop                    = m_key_stop;
+     kpt.kpt_show_ui_sequence_key    = m_key_show_ui_sequence_key;
 }
 
 /**

@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-03
+ * \updates       2015-10-04
  * \license       GNU GPLv2 or above
  *
  */
@@ -85,10 +85,10 @@ Seq24SeqRollInput::on_button_press_event (GdkEventButton * a_ev, seqroll & sroll
     sroll.snap_x(snapped_x);
     sroll.snap_y(snapped_y);
     sroll.set_current_drop_y(snapped_y);    /* y is always snapped */
-    sroll.m_old.x = 0;                      /* reset box for dirty redraw spot */
-    sroll.m_old.y = 0;
-    sroll.m_old.width = 0;
-    sroll.m_old.height = 0;
+
+    /* reset box for dirty redraw spot */
+
+    sroll.m_old.x = sroll.m_old.y = sroll.m_old.width = sroll.m_old.height = 0;
 
     bool needs_update = false;
     if (sroll.m_paste)
@@ -188,7 +188,7 @@ Seq24SeqRollInput::on_button_press_event (GdkEventButton * a_ev, seqroll & sroll
                         needs_update = true;
                         sroll.m_seq.get_selected_box
                         (
-                            &tick_s, &note_h, &tick_f, &note_l
+                            tick_s, note_h, tick_f, note_l
                         );
                         sroll.convert_tn_box_to_rect
                         (
@@ -226,9 +226,9 @@ Seq24SeqRollInput::on_button_press_event (GdkEventButton * a_ev, seqroll & sroll
                     )
                     {
                         sroll.m_growing = true;         /* moving, normal x */
-                        sroll.m_seq.get_selected_box   /* selected elements */
+                        sroll.m_seq.get_selected_box    /* selected elements */
                         (
-                            &tick_s, &note_h, &tick_f, &note_l
+                            tick_s, note_h, tick_f, note_l
                         );
                         sroll.convert_tn_box_to_rect
                         (

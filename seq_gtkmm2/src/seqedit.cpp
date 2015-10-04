@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-03
+ * \updates       2015-10-04
  * \license       GNU GPLv2 or above
  *
  */
@@ -363,7 +363,6 @@ seqedit::seqedit (sequence & seq, perform & p, int a_pos)
     set_scale(m_scale);
     set_key(m_key);
     m_seqroll_wid->set_ignore_redraw(false);
-    // add_events(Gdk::SCROLL_MASK);
 }
 
 /**
@@ -1272,24 +1271,24 @@ seqedit::popup_midich_menu ()
         std::string name = std::string(b);
 
         // TODO:
-        // int instrument = -1;                     // deliberately invalid
+        // int inst = -1;                     // deliberately invalid
         // const user_midi_bus & umb = g_user_settings.bus(midi_bus);
         // if (umb.is_valid())
         // {
-        //      instrument = umb.instrument(channnel)
+        //      inst = umb.instrument(channnel)
         // }
         //
         // or
         //
-        // int instrument = g_user_settings.bus(midi_bus).instrument(channel);
+        // int inst = g_user_settings.bus(midi_bus).instrument(channel);
 
-        int instrument = global_user_midi_bus_definitions[midi_bus].instrument[i];
-        if (instrument >= 0 && instrument < c_max_busses)
+        int inst = global_user_midi_bus_definitions[midi_bus].instrument[i];
+        if (inst >= 0 && inst < c_max_busses)
         {
             name = name +
             (
                 std::string(" (") +
-                    global_user_instrument_definitions[instrument].instrument +
+                    global_user_instrument_definitions[inst].instrument +
                     std::string(")")
             );
         }
@@ -1544,46 +1543,47 @@ seqedit::popup_event_menu ()
 
     /**
      *  Create the 8 sub-menus for the various ranges of controller
-     *  changes.
+     *  changes, shown 16 per sub-menu.
      */
 
-    for (int i = 0; i < 8; i++)                 /* create control change */
+    const int menucount = 8;
+    const int itemcount = 16;
+    for (int submenu = 0; submenu < menucount; submenu++)
     {
-        snprintf(b, sizeof(b), "Controls %d-%d", (i * 16), (i * 16) + 15);
-        Gtk::Menu * menu_cc = manage(new Gtk::Menu());
-        for (int j = 0; j < 16; j++)
+        int offset = submenu * itemcount;
+        snprintf(b, sizeof(b), "Controls %d-%d", offset, offset + itemcount - 1);
+        Gtk::Menu * menucc = manage(new Gtk::Menu());
+        for (int item = 0; item < itemcount; item++)
         {
-            std::string controller_name(c_controller_names[i * 16 + j]);
-            int instrument = global_user_midi_bus_definitions[midi_bus].
-                instrument[midi_ch];
+            /*
+             * Do we really want the default controller name to start?
+             * That's what the legacy Seq24 code does!  We need to document
+             * it in the seq24-doc and sequencer24-doc projects..
+             */
 
-            if (instrument > -1 && instrument < c_max_instruments)
+            std::string controller_name(c_controller_names[offset + item]);
+            const user_midi_bus & umb = g_user_settings.bus(midi_bus);
+            int inst = umb.instrument(midi_ch);
+            const user_instrument & uin = g_user_settings.instrument(inst);
+            if (uin.is_valid())         // kind of a redundant check
             {
-                if
-                (
-                    global_user_instrument_definitions[instrument].
-                        controllers_active[i * 16 + j]
-                )
-                {
-                    controller_name =
-                        global_user_instrument_definitions[instrument].
-                            controllers[i * 16 + j];
-                }
+                if (uin.controller_active(offset + item))
+                    controller_name = uin.controller_name(offset + item);
             }
-            menu_cc->items().push_back
+            menucc->items().push_back
             (
                 ImageMenuElem
                 (
-                    controller_name, *create_menu_image(ccs[i * 16 + j]),
+                    controller_name, *create_menu_image(ccs[offset + item]),
                     sigc::bind
                     (
                         mem_fun(*this, &seqedit::set_data_type),
-                        (unsigned char) EVENT_CONTROL_CHANGE, i * 16 + j
+                        (unsigned char) EVENT_CONTROL_CHANGE, offset + item
                     )
                 )
             );
         }
-        m_menu_data->items().push_back(MenuElem(std::string(b), *menu_cc));
+        m_menu_data->items().push_back(MenuElem(std::string(b), *menucc));
     }
     m_menu_data->popup(0, 0);
 }
@@ -1906,18 +1906,18 @@ seqedit::set_data_type (unsigned char a_status, unsigned char a_control)
         int midi_bus = m_seq.get_midi_bus();
         int midi_ch = m_seq.get_midi_channel();
         std::string controller_name(c_controller_names[a_control]);
-        int instrument =
+        int inst =
             global_user_midi_bus_definitions[midi_bus].instrument[midi_ch];
 
-        if (instrument > -1 && instrument < c_max_instruments)
+        if (inst > -1 && inst < c_max_instruments)
         {
             if
             (
-                global_user_instrument_definitions[instrument].
+                global_user_instrument_definitions[inst].
                     controllers_active[a_control]
             )
             {
-                controller_name = global_user_instrument_definitions[instrument].
+                controller_name = global_user_instrument_definitions[inst].
                     controllers[a_control];
             }
         }

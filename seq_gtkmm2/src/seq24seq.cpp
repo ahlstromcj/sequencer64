@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-08-02
- * \updates       2015-10-03
+ * \updates       2015-10-04
  * \license       GNU GPLv2 or above
  *
  *  This code was extracted from seqevent to make that module more
@@ -50,46 +50,31 @@ namespace seq64
  */
 
 void
-Seq24SeqEventInput::set_adding (bool a_adding, seqevent & seqev)
+Seq24SeqEventInput::set_adding (bool adding, seqevent & seqev)
 {
-    if (a_adding)
-    {
+    m_adding = adding;
+    if (adding)
         seqev.get_window()->set_cursor(Gdk::Cursor(Gdk::PENCIL));
-        m_adding = true;
-    }
     else
-    {
         seqev.get_window()->set_cursor(Gdk::Cursor(Gdk::LEFT_PTR));
-        m_adding = false;
-    }
 }
 
 /**
- *  Implements the on-button-press event callback.
+ *  Implements the on-button-press event callback.  Set values for dragging,
+ *  then reset box that holds dirty redraw spot.
  */
 
 bool
 Seq24SeqEventInput::on_button_press_event
 (
-    GdkEventButton * a_ev, seqevent & seqev
+    GdkEventButton * a_ev,
+    seqevent & seqev
 )
 {
-    int x, w, numsel;
-    long tick_s;
-    long tick_f;
-    long tick_w;
+    long tick_s, tick_w;
     seqev.convert_x(c_eventevent_x, tick_w);
-
-    /* set values for dragging */
-
-    seqev.m_drop_x = seqev.m_current_x = (int) a_ev->x + seqev.m_scroll_offset_x;
-
-    /* reset box that holds dirty redraw spot */
-
-    seqev.m_old.x = 0;
-    seqev.m_old.y = 0;
-    seqev.m_old.width = 0;
-    seqev.m_old.height = 0;
+    seqev.m_drop_x = seqev.m_current_x = int(a_ev->x + seqev.m_scroll_offset_x);
+    seqev.m_old.x = seqev.m_old.y = seqev.m_old.width = seqev.m_old.height = 0;
     if (seqev.m_paste)
     {
         seqev.snap_x(seqev.m_current_x);
@@ -100,24 +85,28 @@ Seq24SeqEventInput::on_button_press_event
     }
     else
     {
-        if (a_ev->button == 1)                      /* left mouse button     */
+        int x, w;
+        long tick_f;
+        if (CLICK_IS_LEFT(a_ev->button))
         {
             seqev.convert_x(seqev.m_drop_x, tick_s); /* x,y in to tick/note    */
-            tick_f = tick_s + (seqev.m_zoom);        /* shift back a few ticks */
-            tick_s -= (tick_w);
+            tick_f = tick_s + seqev.m_zoom;          /* shift back a few ticks */
+            tick_s -= tick_w;
             if (tick_s < 0)
                 tick_s = 0;
 
+            int eventcount = 0;
             if (m_adding)
             {
                 seqev.m_painting = true;
                 seqev.snap_x(seqev.m_drop_x);
                 seqev.convert_x(seqev.m_drop_x, tick_s); /* x,y to tick/note */
-                if              /* add note, length = little less than snap */
+                eventcount = seqev.m_seq.select_events
                 (
-                    ! seqev.m_seq.select_events(tick_s, tick_f,
-                       seqev.m_status, seqev.m_cc, sequence::e_would_select)
-                )
+                    tick_s, tick_f, seqev.m_status, seqev.m_cc,
+                    sequence::e_would_select
+                );
+                if (eventcount == 0)
                 {
                     seqev.m_seq.push_undo();
                     seqev.drop_event(tick_s);
@@ -125,67 +114,57 @@ Seq24SeqEventInput::on_button_press_event
             }
             else                                        /* selecting */
             {
-                if
+                eventcount = seqev.m_seq.select_events
                 (
-                    ! seqev.m_seq.select_events
-                    (
-                        tick_s, tick_f,
-                        seqev.m_status, seqev.m_cc, sequence::e_is_selected
-                    )
-                )
+                    tick_s, tick_f, seqev.m_status,
+                    seqev.m_cc, sequence::e_is_selected
+                );
+                if (eventcount == 0)
                 {
                     if (! (a_ev->state & GDK_CONTROL_MASK))
-                    {
                         seqev.m_seq.unselect();
-                    }
-                    numsel = seqev.m_seq.select_events
+
+                    eventcount = seqev.m_seq.select_events
                     (
-                        tick_s, tick_f,
-                        seqev.m_status, seqev.m_cc, sequence::e_select_one
+                        tick_s, tick_f, seqev.m_status,
+                        seqev.m_cc, sequence::e_select_one
                     );
 
                     /*
-                     * If we didn't select anything (the user clicked
-                     * empty space), then unselect all notes, and start
-                     * selecting with a new selection box.
+                     * If nothing selected (user clicked empty space),
+                     * unselect all notes, and start selecting with a new
+                     * selection box.
                      */
 
-                    if (numsel == 0)
+                    if (eventcount == 0)
                     {
                         seqev.m_selecting = true;
                     }
                     else
                     {
                         /**
-                         * \todo
-                         *      Needs update.
+                         *  Needs update.
+                         *
+                         * seqev.m_seq.unselect();  ???????
                          */
                     }
                 }
-                if
+                eventcount = seqev.m_seq.select_events
                 (
-                    seqev.m_seq.select_events
-                    (
-                        tick_s, tick_f,
-                        seqev.m_status, seqev.m_cc, sequence::e_is_selected
-                    )
-                )
+                    tick_s, tick_f, seqev.m_status,
+                    seqev.m_cc, sequence::e_is_selected
+                );
+                if (eventcount > 0)
                 {
                     seqev.m_moving_init = true;
                     int note;
-
-                    /* get the box that selected elements are in */
-
-                    seqev.m_seq.get_selected_box(&tick_s, &note, &tick_f, &note);
+                    seqev.m_seq.get_selected_box(tick_s, note, tick_f, note);
                     tick_f += tick_w;
                     seqev.convert_t(tick_s, x); /* convert box to X,Y values */
                     seqev.convert_t(tick_f, w);
                     w -= x;                     /* w is coordinate now       */
 
-                    /*
-                     * Set the m_selected rectangle to hold the
-                     * x,y,w,h of our selected events.
-                     */
+                    /* set the m_selected rectangle for x,y,w,h */
 
                     seqev.m_selected.x = x;
                     seqev.m_selected.width = w;
@@ -207,10 +186,8 @@ Seq24SeqEventInput::on_button_press_event
                 }
             }
         }
-        if (a_ev->button == 3)
-        {
+        if (CLICK_IS_RIGHT(a_ev->button))
             set_adding(true, seqev);
-        }
     }
     seqev.update_pixmap();          /* if they clicked, something changed */
     seqev.draw_pixmap_on_window();
@@ -224,19 +201,19 @@ Seq24SeqEventInput::on_button_press_event
 bool
 Seq24SeqEventInput::on_button_release_event
 (
-    GdkEventButton * a_ev, seqevent & seqev
+    GdkEventButton * a_ev,
+    seqevent & seqev
 )
 {
     long tick_s;
     long tick_f;
     seqev.grab_focus();
-    seqev.m_current_x = int(a_ev->x)  + seqev.m_scroll_offset_x;
+    seqev.m_current_x = int(a_ev->x) + seqev.m_scroll_offset_x;
     if (seqev.m_moving)
         seqev.snap_x(seqev.m_current_x);
 
     int delta_x = seqev.m_current_x - seqev.m_drop_x;
     long delta_tick;
-
     if (CLICK_IS_LEFT(a_ev->button))
     {
         if (seqev.m_selecting)

@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-21
- * \updates       2015-10-02
+ * \updates       2015-10-04
  * \license       GNU GPLv2 or above
  *
  */
@@ -44,6 +44,8 @@ namespace seq64
 {
 
 class perform;                          // forward reference
+
+extern Gtk::Adjustment & adjustment_dummy ();
 
 /**
  *  Implements the basic drawing areas of the application.  Note that this
@@ -68,11 +70,6 @@ public:
         public: int x, y, height, width;
     };
 
-protected:
-
-    static Gtk::Adjustment sm_hadjust_dummy;
-    static Gtk::Adjustment sm_vadjust_dummy;
-
 protected:              // private: should provide accessors
 
     Glib::RefPtr<Gdk::GC> m_gc;
@@ -85,7 +82,8 @@ protected:              // private: should provide accessors
 
     /**
      *  A frequent hook into the main perform object.  We could move this
-     *  into yet another base class.  Probably not worth the effort.
+     *  into yet another base class, since a number of classes don't need it.
+     *  Probably not worth the effort at this time.
      */
 
     perform & m_mainperf;

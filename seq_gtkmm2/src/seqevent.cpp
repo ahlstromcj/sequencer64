@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-03
+ * \updates       2015-10-04
  * \license       GNU GPLv2 or above
  *
  */
@@ -53,7 +53,7 @@ seqevent::seqevent
     seqdata & seqdata_wid,
     Gtk::Adjustment & hadjust
 ) :
-    gui_drawingarea_gtk2    (p, hadjust, sm_vadjust_dummy, 10, c_eventarea_y),
+    gui_drawingarea_gtk2    (p, hadjust, adjustment_dummy(), 10, c_eventarea_y),
     m_fruity_interaction    (),
     m_seq24_interaction     (),
     m_seq                   (seq),
@@ -160,7 +160,7 @@ seqevent::redraw ()
 void
 seqevent::draw_background ()
 {
-    m_gc->set_foreground(m_white);              /* clear background */
+    m_gc->set_foreground(white());              /* clear background */
     m_pixmap->draw_rectangle
     (
         m_gc, true, 0, 0, m_window_x, m_window_y
@@ -175,13 +175,13 @@ seqevent::draw_background ()
         (m_scroll_offset_ticks % ticks_per_step);
 
     int end_tick = (m_window_x * m_zoom) + m_scroll_offset_ticks;
-    m_gc->set_foreground(m_grey);
+    m_gc->set_foreground(grey());
     for (int i = start_tick; i < end_tick; i += ticks_per_step)
     {
         int base_line = i / m_zoom;
         if (i % ticks_per_m_line == 0)          /* a solid line on every beat */
         {
-            m_gc->set_foreground(m_black);
+            m_gc->set_foreground(black());
             m_gc->set_line_attributes
             (
                 1, Gdk::LINE_SOLID, Gdk::CAP_NOT_LAST, Gdk::JOIN_MITER
@@ -189,7 +189,7 @@ seqevent::draw_background ()
         }
         else if (i % ticks_per_beat == 0)
         {
-            m_gc->set_foreground(m_grey);
+            m_gc->set_foreground(grey());
             m_gc->set_line_attributes
             (
                 1, Gdk::LINE_SOLID, Gdk::CAP_NOT_LAST, Gdk::JOIN_MITER
@@ -197,7 +197,7 @@ seqevent::draw_background ()
         }
         else
         {
-            m_gc->set_foreground(m_grey);
+            m_gc->set_foreground(grey());
             m_gc->set_line_attributes
             (
                 1, Gdk::LINE_ON_OFF_DASH, Gdk::CAP_NOT_LAST, Gdk::JOIN_MITER
@@ -216,7 +216,7 @@ seqevent::draw_background ()
     (
         1, Gdk::LINE_SOLID, Gdk::CAP_NOT_LAST, Gdk::JOIN_MITER
     );
-    m_gc->set_foreground(m_black);
+    m_gc->set_foreground(black());
     m_pixmap->draw_rectangle
     (
         m_gc, false, -1, 0, m_window_x + 1, m_window_y - 1
@@ -275,7 +275,7 @@ seqevent::draw_events_on (Glib::RefPtr<Gdk::Drawable> a_draw)
     int x;
     unsigned char d0, d1;
     bool selected;
-    m_gc->set_foreground(m_black);          /* draw boxes from sequence */
+    m_gc->set_foreground(black());          /* draw boxes from sequence */
 
     int start_tick = m_scroll_offset_ticks ;
     int end_tick = (m_window_x * m_zoom) + m_scroll_offset_ticks;
@@ -288,7 +288,7 @@ seqevent::draw_events_on (Glib::RefPtr<Gdk::Drawable> a_draw)
         if ((tick >= start_tick && tick <= end_tick))
         {
             x = tick / m_zoom;              /* turn into screen coordinates */
-            m_gc->set_foreground(m_black);
+            m_gc->set_foreground(black());
             a_draw->draw_rectangle
             (
                 m_gc, true, x -  m_scroll_offset_x,
@@ -297,9 +297,9 @@ seqevent::draw_events_on (Glib::RefPtr<Gdk::Drawable> a_draw)
             );
 
             if (selected)
-                m_gc->set_foreground(m_orange);
+                m_gc->set_foreground(orange());
             else
-                m_gc->set_foreground(m_white);
+                m_gc->set_foreground(white());
 
             a_draw->draw_rectangle
             (
@@ -382,7 +382,7 @@ seqevent::draw_selection_on_window ()
         x -= m_scroll_offset_x;
         m_old.x = x;
         m_old.width = w;
-        m_gc->set_foreground(m_black);
+        m_gc->set_foreground(black());
         m_window->draw_rectangle(m_gc, false, x, y, w, h);
     }
     if (m_moving || m_paste)
@@ -390,7 +390,7 @@ seqevent::draw_selection_on_window ()
         int delta_x = m_current_x - m_drop_x;
         x = m_selected.x + delta_x;
         x -= m_scroll_offset_x;
-        m_gc->set_foreground(m_black);
+        m_gc->set_foreground(black());
         m_window->draw_rectangle(m_gc, false, x, y, m_selected.width, h);
         m_old.x = x;
         m_old.width = m_selected.width;
@@ -425,7 +425,7 @@ seqevent::start_paste ()
 
     long tick_s, tick_f;
     int note_h, note_l;
-    m_seq.get_clipboard_box(&tick_s, &note_h, &tick_f, &note_l);
+    m_seq.get_clipboard_box(tick_s, note_h, tick_f, note_l);
 
     int x, w;
     convert_t(tick_s, x);                   /* convert box to X,Y values */
@@ -508,8 +508,14 @@ seqevent::on_expose_event (GdkEventExpose * e)
  *  Implements the on-button-press event callback.  It distinguishes
  *  between the Seq24 and Fruity varieties of mouse interaction.
  *
- *  Odd.  The fruity case fell through to the Seq24 case.  We will assume
- *  for now that this is correct.
+ *  Odd.  In the legacy code, each case fell through to the next case to the
+ *  "default" case! We will assume for now that this is incorrect.
+ *
+ *  Note that returning "true" from a Gtkmm event-handler stops the
+ *  propagation of the event to higher-level widgets.  The Fruity and Seq24
+ *  event handlers return true, always.  In the legacy code, though, the
+ *  fall-through code caused false to be returned, always.  Not sure what
+ *  effect this had.
  */
 
 bool
@@ -520,14 +526,11 @@ seqevent::on_button_press_event (GdkEventButton * a_ev)
     {
     case e_fruity_interaction:
         result = m_fruity_interaction.on_button_press_event(a_ev, *this);
-
-        /*
-         * FALL THROUGH
-         */
+        break;              // removed the FALL THROUGH
 
     case e_seq24_interaction:
         result = m_seq24_interaction.on_button_press_event(a_ev, *this);
-        break;
+        break;              // removed the FALL THROUGH
 
     default:
         result = false;
@@ -551,9 +554,9 @@ seqevent::drop_event (long a_tick)
     if (m_status == EVENT_AFTERTOUCH)
         d0 = 0;
     else if (m_status == EVENT_PROGRAM_CHANGE)
-        d0 = 0;                             /* d0 == new patch */
+        d0 = 0;                                     /* d0 == new patch */
     else if (m_status == EVENT_CHANNEL_PRESSURE)
-        d0 = 0x40;                          /* d0 == pressure */
+        d0 = 0x40;                                  /* d0 == pressure */
     else if (m_status == EVENT_PITCH_WHEEL)
         d0 = 0;
 

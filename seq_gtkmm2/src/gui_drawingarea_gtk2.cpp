@@ -39,7 +39,11 @@ namespace seq64
 {
 
 /**
- *  These two objects are used so we have some Adjustments to assign to
+ *  Provides a way to provide a dummy Gtk::Adjustment object, but not
+ *  create one until it is actually needed, so that the Glib/Gtk
+ *  infrastructure is ready for it.
+ *
+ *  This static object is used so we have an Adjustment to assign to
  *  the Adjustment members for classes that don't use them.  Clumsy?  We
  *  shall see.
  *
@@ -47,15 +51,16 @@ namespace seq64
  *  step-increment, and two more values.
  */
 
-Gtk::Adjustment gui_drawingarea_gtk2::sm_hadjust_dummy
-(
-    0.0, 0.0, 1.0, 1.0, 1.0, 1.0
-);
+Gtk::Adjustment &
+adjustment_dummy ()
+{
+    static Gtk::Adjustment sm_adjustment_dummy
+    (
+        0.0, 0.0, 1.0, 1.0, 1.0, 1.0
+    );
+    return sm_adjustment_dummy;
+}
 
-Gtk::Adjustment gui_drawingarea_gtk2::sm_vadjust_dummy
-(
-    0.0, 0.0, 1.0, 1.0, 1.0, 1.0
-);
 
 /**
  *  Perform-only constructor.
@@ -70,8 +75,8 @@ gui_drawingarea_gtk2::gui_drawingarea_gtk2
     gui_palette_gtk2        (),
     m_gc                    (),
     m_window                (),
-    m_vadjust               (sm_vadjust_dummy),
-    m_hadjust               (sm_hadjust_dummy),
+    m_vadjust               (adjustment_dummy()),
+    m_hadjust               (adjustment_dummy()),
     m_pixmap                (),
     m_background            (),             // another pixmap
     m_foreground            (),             // another pixmap

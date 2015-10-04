@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-09-20
+ * \updates       2015-10-04
  * \license       GNU GPLv2 or above
  *
  */
@@ -657,14 +657,14 @@ sequence::unpaint_all ()
 void
 sequence::get_selected_box
 (
-    long * tick_s, int * note_h, long * tick_f, int * note_l
+    long & tick_s, int & note_h, long & tick_f, int & note_l
 )
 {
     automutex locker(m_mutex);
-    *tick_s = c_maxbeats * c_ppqn;
-    *tick_f = 0;
-    *note_h = 0;
-    *note_l = MIDI_COUNT_MAX;
+    tick_s = c_maxbeats * c_ppqn;
+    tick_f = 0;
+    note_h = 0;
+    note_l = MIDI_COUNT_MAX;
     event_list::iterator i;
     for (i = m_events.begin(); i != m_events.end(); i++)
     {
@@ -677,18 +677,18 @@ sequence::get_selected_box
              * selection, which has no "off".
              */
 
-            if (time < *tick_s)
-                *tick_s = time;
+            if (time < tick_s)
+                tick_s = time;
 
-            if (time > *tick_f)
-                *tick_f = time;
+            if (time > tick_f)
+                tick_f = time;
 
             int note = DREF(i).get_note();
-            if (note < *note_l)
-                *note_l = note;
+            if (note < note_l)
+                note_l = note;
 
-            if (note > *note_h)
-                *note_h = note;
+            if (note > note_h)
+                note_h = note;
         }
     }
 }
@@ -700,35 +700,33 @@ sequence::get_selected_box
 void
 sequence::get_clipboard_box
 (
-    long * tick_s, int * note_h, long * tick_f, int * note_l
+    long & tick_s, int & note_h, long & tick_f, int & note_l
 )
 {
     automutex locker(m_mutex);
-    *tick_s = c_maxbeats * c_ppqn;
-    *tick_f = 0;
-    *note_h = 0;
-    *note_l = MIDI_COUNT_MAX;
+    tick_s = c_maxbeats * c_ppqn;
+    tick_f = 0;
+    note_h = 0;
+    note_l = MIDI_COUNT_MAX;
     if (m_events_clipboard.count() == 0)
-    {
-        *tick_s = *tick_f = *note_h = *note_l = 0;
-    }
+        tick_s = tick_f = note_h = note_l = 0;
 
     event_list::iterator i;
     for (i = m_events_clipboard.begin(); i != m_events_clipboard.end(); i++)
     {
         long time = DREF(i).get_timestamp();
-        if (time < *tick_s)
-            *tick_s = time;
+        if (time < tick_s)
+            tick_s = time;
 
-        if (time > *tick_f)
-            *tick_f = time;
+        if (time > tick_f)
+            tick_f = time;
 
         int note = DREF(i).get_note();
-        if (note < *note_l)
-            *note_l = note;
+        if (note < note_l)
+            note_l = note;
 
-        if (note > *note_h)
-            *note_h = note;
+        if (note > note_h)
+            note_h = note;
     }
 }
 

@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-09-21
- * \updates       2015-10-03
+ * \updates       2015-10-04
  * \license       GNU GPLv2 or above
  *
  *  Most of the GUI modules are publicly derived from Gtk::DrawingArea,
@@ -102,6 +102,17 @@ public:
         return m_is_press;
     }
 
+    bool is_letter (int character = 0) const;
+
+    /**
+     * \better m_key to test for a delete-causing key.
+     */
+
+    bool is_delete () const
+    {
+        return m_key == SEQ64_Delete || m_key == SEQ64_BackSpace;
+    }
+
     /**
      * \getter m_key
      */
@@ -118,6 +129,37 @@ public:
     seq_modifier_t modifier () const
     {
         return m_modifier;
+    }
+
+    /**
+     * \getter m_modifier tested for Ctrl key.
+     */
+
+    bool mod_control () const
+    {
+        return bool(m_modifier & SEQ64_CONTROL_MASK);   // GDK_CONTROL_MASK
+    }
+
+    /**
+     * \getter m_modifier tested for Ctrl and Shift key.
+     */
+
+    bool mod_control_shift () const
+    {
+        return
+        (
+            bool(m_modifier & SEQ64_CONTROL_MASK) &&    // GDK_CONTROL_MASK
+            bool(m_modifier & SEQ64_SHIFT_MASK)         // GDK_SHIFT_MASK
+        );
+    }
+
+    /**
+     * \getter m_modifier tested for Mod4/Super/Windows key.
+     */
+
+    bool mod_super () const
+    {
+        return bool(m_modifier & SEQ64_MOD4_MASK);      // GDK_MOD4_MASK
     }
 
 };          // class keystroke

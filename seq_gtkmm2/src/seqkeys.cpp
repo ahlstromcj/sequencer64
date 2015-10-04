@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-03
+ * \updates       2015-10-04
  * \license       GNU GPLv2 or above
  *
  */
@@ -52,7 +52,7 @@ seqkeys::seqkeys
 ) :
     gui_drawingarea_gtk2
     (
-        p, sm_hadjust_dummy, vadjust, c_keyarea_x + 1, 10
+        p, adjustment_dummy(), vadjust, c_keyarea_x + 1, 10
     ),
     m_seq                   (seq),
     m_scroll_offset_key     (0),
@@ -114,13 +114,13 @@ seqkeys::reset ()
 void
 seqkeys::update_pixmap ()
 {
-    m_gc->set_foreground(m_black);
+    m_gc->set_foreground(black());
     m_pixmap->draw_rectangle(m_gc, true, 0, 0, c_keyarea_x, c_keyarea_y);
-    m_gc->set_foreground(m_white);
+    m_gc->set_foreground(white());
     m_pixmap->draw_rectangle(m_gc, true, 1, 1, c_keyoffset_x-1, c_keyarea_y-2);
     for (int i = 0; i < c_num_keys; i++)
     {
-        m_gc->set_foreground(m_white);
+        m_gc->set_foreground(white());
         m_pixmap->draw_rectangle
         (
             m_gc, true, c_keyoffset_x + 1,
@@ -130,7 +130,7 @@ seqkeys::update_pixmap ()
         int key = (c_num_keys - i - 1) % OCTAVE_SIZE;   /* key in the octave */
         if (key == 1 || key == 3 || key == 6 || key == 8 || key == 10)
         {
-            m_gc->set_foreground(m_black);
+            m_gc->set_foreground(black());
             m_pixmap->draw_rectangle
             (
                 m_gc, true, c_keyoffset_x + 1,
@@ -253,9 +253,9 @@ seqkeys::draw_key (int a_key, bool a_state)
     int key = a_key % OCTAVE_SIZE;               /* the key in the octave */
     a_key = c_num_keys - a_key - 1;
     if (key == 1 || key == 3 || key == 6 || key == 8 || key == 10)
-        m_gc->set_foreground(m_black);
+        m_gc->set_foreground(black());
     else
-        m_gc->set_foreground(m_white);
+        m_gc->set_foreground(white());
 
     m_window->draw_rectangle
     (
@@ -265,7 +265,7 @@ seqkeys::draw_key (int a_key, bool a_state)
     );
     if (a_state)
     {
-        m_gc->set_foreground(m_grey);
+        m_gc->set_foreground(grey());
         m_window->draw_rectangle
         (
             m_gc, true, c_keyoffset_x + 1,

@@ -143,9 +143,7 @@ perform::perform (gui_assistant & mygui)
 
 perform::~perform ()
 {
-    m_inputing = false;
-    m_outputing = false;
-    m_running = false;
+    m_inputing = m_outputing = m_running = false;
     m_condition_var.signal();                   // signal the end
     if (m_out_thread_launched)
         pthread_join(m_out_thread, NULL);
@@ -226,8 +224,7 @@ perform::clamp_track (int track) const
 {
     if (track < 0)
         track = 0;
-
-    if (track >= c_seqs_in_set)         // bug: was just ">" !!!
+    else if (track >= c_seqs_in_set)        /* bug: was just ">" !!! */
         track = c_seqs_in_set - 1;
 
     return track;
@@ -445,49 +442,45 @@ perform::set_right_tick (long a_tick)
  *  and activate it.
  *
  *  Otherwise, iterate through all patterns from a_perf to m_sequence_max
- *  and add and activate the first one that is not active.
- *
- *  Is there a usefulness in setting the sequence's tag?
+ *  and add and activate the first one that is not active, and then quit.
  *
  * \warning
- *  The logic of the if-statement in this function was such that \a a_perf
- *  could be out-of-bounds in the else-clause.  We reworked the logic to
- *  be airtight.  This bug was caught by gcc 4.8.3 on CentOS, but not
- *  on gcc 4.9.3 on Debian Sid!  However, this decision-making seems
- *  goofy, and we ought to revisit it!
+ *      The logic of the if-statement in this function was such that \a a_perf
+ *      could be out-of-bounds in the else-clause.  We reworked the logic to
+ *      be airtight.  This bug was caught by gcc 4.8.3 on CentOS, but not on
+ *      gcc 4.9.3 on Debian Sid!
  *
  * \param a_seq
- *      The number or index of the pattern/sequence to add.  If this value
- *      is out-of-range, then it is ignored.
+ *      The number or index of the pattern/sequence to add.
  *
  * \param a_perf
- *      The performance number of the pattern?
+ *      The performance number of the pattern?  If this value
+ *      is out-of-range, then it is ignored.
  */
 
 void
 perform::add_sequence (sequence * a_seq, int a_perf)
 {
-    bool safe = a_perf >= 0 && a_perf < m_sequence_max;
-    if (safe && ! is_active(a_perf))                /* check for preferred */
+    if (a_perf >= 0 && a_perf < m_sequence_max)
     {
-        m_seqs[a_perf] = a_seq;
-        set_active(a_perf, true);
-    }
-    else
-    {
-        /* If "safe", this clause will never get run! */
-
-        if (safe)                                   /* air-tight !         */
+        if (is_active(a_perf))              /* check for preferred      */
         {
             for (int i = a_perf; i < m_sequence_max; i++)
             {
                 if (! is_active(i))
                 {
                     m_seqs[i] = a_seq;
-                    set_active(i,true);
+                    if (not_nullptr(a_seq))
+                        set_active(i, true);
                     break;
                 }
             }
+        }
+        else
+        {
+            m_seqs[a_perf] = a_seq;         /* log the sequence         */
+            if (not_nullptr(a_seq))
+                set_active(a_perf, true);   /* make it active           */
         }
     }
 }
@@ -2494,35 +2487,42 @@ bool
 perform::perfroll_key_event (const keystroke & k, int drop_sequence)
 {
     bool result = false;
-    if (k.is_press())                       // (a_p0->type == SEQ64_PRESS)
+    if (k.is_press())                       // a_p0->type == SEQ64_PRESS
     {
-        unsigned int key = k.key();
         if (is_active(drop_sequence))
         {
-            if (key == SEQ64_Delete || key == SEQ64_BackSpace)
+            if (k.is_delete())
             {
                 push_trigger_undo();
                 get_sequence(drop_sequence)->del_selected_trigger();
                 result = true;
             }
-            if (k.modifier() & SEQ64_CONTROL_MASK)
+            else if (k.mod_control())            // SEQ64_CONTROL_MASK
             {
-                if (key == SEQ64_x || key == SEQ64_X)           /* cut */
+                if (k.is_letter('x'))                           /* cut  */
                 {
                     push_trigger_undo();
                     get_sequence(drop_sequence)->cut_selected_trigger();
                     result = true;
                 }
-                if (key == SEQ64_c || key == SEQ64_C)           /* copy */
+                else if (k.is_letter('c'))                      /* copy     */
                 {
                     get_sequence(drop_sequence)->copy_selected_trigger();
                     result = true;
                 }
-                if (key == SEQ64_v || key == SEQ64_V)           /* paste */
+                else if (k.is_letter('v'))                      /* paste    */
                 {
                     push_trigger_undo();
                     get_sequence(drop_sequence)->paste_trigger();
                     result = true;
+                }
+                else if (k.is_letter('z'))                      /* undo     */
+                {
+                    /*
+                     * Can we support undo here?
+                     *
+                     * result = true;
+                     */
                 }
             }
         }

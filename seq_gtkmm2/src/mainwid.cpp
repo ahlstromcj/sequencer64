@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-02
+ * \updates       2015-10-04
  * \license       GNU GPLv2 or above
  *
  */
@@ -199,7 +199,7 @@ mainwid::draw_sequence_on_pixmap (int a_seq)
     {
         int base_x, base_y;
         calculate_base_sizes(a_seq, base_x, base_y);    // side-effects
-        m_gc->set_foreground(m_black);
+        m_gc->set_foreground(black());
         m_pixmap->draw_rectangle                // outer border of box
         (
             m_gc, true, base_x, base_y, m_seqarea_x, m_seqarea_y
@@ -214,14 +214,14 @@ mainwid::draw_sequence_on_pixmap (int a_seq)
                 if (seq->get_playing())
                 {
                     m_last_playing[a_seq] = true;   // active and playing
-                    m_bg_color = m_black;
-                    m_fg_color = m_white;
+                    bg_color(black());
+                    fg_color(white());
                 }
                 else
                 {
                     m_last_playing[a_seq] = false;  // active and not playing
-                    m_bg_color = m_white;
-                    m_fg_color = m_black;
+                    bg_color(white());
+                    fg_color(black());
                 }
 #if SEQ64_HIGHLIGHT_EMPTY_SEQS
             }
@@ -231,48 +231,48 @@ mainwid::draw_sequence_on_pixmap (int a_seq)
                 if (seq->get_playing())
                 {
                     m_last_playing[a_seq] = false;  // active and playing
-                    m_bg_color = m_black;
-                    m_fg_color = m_yellow;
+                    bg_color(black());
+                    fg_color(yellow());
                 }
                 else
                 {
                     m_last_playing[a_seq] = false;  // active and not playing
-                    m_bg_color = m_yellow;
-                    m_fg_color = m_black;
+                    bg_color(yellow());
+                    fg_color(black());
                 }
             }
-#endif  // SEQ64_HIGHLIGHT_EMPTY_SEQS
+#endif          // SEQ64_HIGHLIGHT_EMPTY_SEQS
 
-            m_gc->set_foreground(m_bg_color);
+            m_gc->set_foreground(bg_color());
             m_pixmap->draw_rectangle
             (
                 m_gc, true, base_x+1, base_y+1, m_seqarea_x-2, m_seqarea_y-2
             );
-            m_gc->set_foreground(m_fg_color);
+            m_gc->set_foreground(fg_color());
 
-            char temp[20];                      // SEQ_NAME_SIZE !
+            char temp[64];                          // used a lot below
             snprintf(temp, sizeof temp, "%.13s", seq->get_name());
             font::Color col = font::BLACK;
 #if SEQ64_HIGHLIGHT_EMPTY_SEQS
             if (seq->event_count() > 0)
             {
 #endif
-                if (m_fg_color == m_black)
+                if (fg_color() == black())
                     col = font::BLACK;
 
-                if (m_fg_color == m_white)
+                if (fg_color() == white())
                     col = font::WHITE;
 #if SEQ64_HIGHLIGHT_EMPTY_SEQS
             }
             else
             {
-                if (m_fg_color == m_black)
+                if (fg_color() == black())
                     col = font::BLACK_ON_YELLOW;
 
-                if (m_fg_color == m_yellow)
+                if (fg_color() == yellow())
                     col = font::YELLOW_ON_BLACK;
             }
-#endif  // SEQ64_HIGHLIGHT_EMPTY_SEQS
+#endif
 
             p_font_renderer->render_string_on_drawable      // name of pattern
             (
@@ -315,20 +315,20 @@ mainwid::draw_sequence_on_pixmap (int a_seq)
             int rectangle_y = base_y + m_text_size_y + m_text_size_x - 1;
             if (seq->get_queued())
             {
-                m_gc->set_foreground(m_grey);
+                m_gc->set_foreground(grey());
                 m_pixmap->draw_rectangle
                 (
                     m_gc, true, rectangle_x - 2, rectangle_y - 1,
                     m_seqarea_seq_x + 3, m_seqarea_seq_y + 3
                 );
-                m_fg_color = m_black;
+                fg_color(black());
             }
 
             /*
              * Draws the inner rectangle for all sequences.
              */
 
-            m_gc->set_foreground(m_fg_color);
+            m_gc->set_foreground(fg_color());
             m_pixmap->draw_rectangle                        // ditto, unqueued
             (
                 m_gc, false, rectangle_x - 2, rectangle_y - 1,
@@ -365,7 +365,7 @@ mainwid::draw_sequence_on_pixmap (int a_seq)
                 if (tick_f_x <= tick_s_x)
                     tick_f_x = tick_s_x + 1;
 
-                m_gc->set_foreground(m_fg_color);
+                m_gc->set_foreground(fg_color());
                 m_pixmap->draw_line
                 (
                     m_gc, rectangle_x + tick_s_x,
@@ -391,7 +391,7 @@ mainwid::draw_sequence_on_pixmap (int a_seq)
              */
 
 #ifdef USE_GREY_GRID                        /* otherwise, leave it black    */
-            m_gc->set_foreground(m_grey);
+            m_gc->set_foreground(grey());
             m_pixmap->draw_rectangle
             (
                 get_style()->get_bg_gc(Gtk::STATE_NORMAL),        // this->
@@ -455,8 +455,8 @@ mainwid::calculate_base_sizes (int a_seq, int & basex, int & basey)
 {
     int i = (a_seq / m_mainwnd_rows) % m_mainwnd_cols;
     int j =  a_seq % m_mainwnd_rows;
-    basex = (m_mainwid_border + (m_seqarea_x + m_mainwid_spacing) * i);
-    basey = (m_mainwid_border + (m_seqarea_y + m_mainwid_spacing) * j);
+    basex = m_mainwid_border + (m_seqarea_x + m_mainwid_spacing) * i;
+    basey = m_mainwid_border + (m_seqarea_y + m_mainwid_spacing) * j;
 }
 
 /**
@@ -523,12 +523,12 @@ mainwid::draw_marker_on_sequence (int a_seq, int a_tick)
         );
         m_last_tick_x[a_seq] = tick_x;
         if (seq->get_playing())
-            m_gc->set_foreground(m_white);
+            m_gc->set_foreground(white());
         else
-            m_gc->set_foreground(m_black);
+            m_gc->set_foreground(black());
 
         if (seq->get_queued())
-            m_gc->set_foreground(m_black);
+            m_gc->set_foreground(black());
 
         m_window->draw_line
         (

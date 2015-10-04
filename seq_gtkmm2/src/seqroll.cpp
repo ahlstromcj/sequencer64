@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-03
+ * \updates       2015-10-04
  * \license       GNU GPLv2 or above
  *
  */
@@ -291,10 +291,10 @@ seqroll::draw_background_on_pixmap ()
 void
 seqroll::update_background ()
 {
-    m_gc->set_foreground(m_white);              /* clear background */
+    m_gc->set_foreground(white());              /* clear background */
     m_background->draw_rectangle(m_gc, true, 0, 0, m_window_x, m_window_y);
 
-    m_gc->set_foreground(m_grey);               /* draw horz grey lines */
+    m_gc->set_foreground(grey());               /* draw horz grey lines */
     m_gc->set_line_attributes
     (
         1, Gdk::LINE_ON_OFF_DASH, Gdk::CAP_NOT_LAST, Gdk::JOIN_MITER
@@ -310,7 +310,7 @@ seqroll::update_background ()
         {
             if ((modkey % OCTAVE_SIZE) == 0)
             {
-                m_gc->set_foreground(m_dk_grey);    /* draw horz lines at C */
+                m_gc->set_foreground(dark_grey());    /* draw horz lines at C */
                 m_gc->set_line_attributes
                 (
                     1, Gdk::LINE_SOLID, Gdk::CAP_NOT_LAST, Gdk::JOIN_MITER
@@ -318,7 +318,7 @@ seqroll::update_background ()
             }
             else if ((modkey % OCTAVE_SIZE) == (OCTAVE_SIZE-1))
             {
-                m_gc->set_foreground(m_grey); /* horz grey lines, other notes */
+                m_gc->set_foreground(grey()); /* horz grey lines, other notes */
                 m_gc->set_line_attributes
                 (
                     1, Gdk::LINE_ON_OFF_DASH, Gdk::CAP_NOT_LAST, Gdk::JOIN_MITER
@@ -353,13 +353,13 @@ seqroll::update_background ()
     int start_tick = m_scroll_offset_ticks -
          (m_scroll_offset_ticks % ticks_per_step);
 
-    m_gc->set_foreground(m_grey);
+    m_gc->set_foreground(grey());
     for (int i = start_tick; i < end_tick; i += ticks_per_step)
     {
         int base_line = i / m_zoom;
         if (i % ticks_per_m_line == 0)
         {
-            m_gc->set_foreground(m_black);      /* solid line on every beat */
+            m_gc->set_foreground(black());      /* solid line on every beat */
             m_gc->set_line_attributes
             (
                 1, Gdk::LINE_SOLID, Gdk::CAP_NOT_LAST, Gdk::JOIN_MITER
@@ -367,7 +367,7 @@ seqroll::update_background ()
         }
         else if (i % ticks_per_beat == 0)
         {
-            m_gc->set_foreground(m_dk_grey);
+            m_gc->set_foreground(dark_grey());
             m_gc->set_line_attributes
             (
                 1, Gdk::LINE_SOLID, Gdk::CAP_NOT_LAST, Gdk::JOIN_MITER
@@ -382,9 +382,9 @@ seqroll::update_background ()
 
             int i_snap = i - (i % m_snap);
             if (i == i_snap)
-                m_gc->set_foreground(m_dk_grey);
+                m_gc->set_foreground(dark_grey());
             else
-                m_gc->set_foreground(m_grey);
+                m_gc->set_foreground(grey());
 
             gint8 dash = 1;
             m_gc->set_dashes(0, &dash, 1);
@@ -470,7 +470,7 @@ seqroll::draw_progress_on_window ()
     m_old_progress_x = (m_seq.get_last_tick() / m_zoom) - m_scroll_offset_x;
     if (m_old_progress_x != 0)
     {
-        m_gc->set_foreground(m_black);
+        m_gc->set_foreground(black());
         m_window->draw_line
         (
             m_gc, m_old_progress_x, 0, m_old_progress_x, m_window_y
@@ -510,7 +510,7 @@ seqroll::draw_events_on (Glib::RefPtr<Gdk::Drawable> a_draw)
         if (method == 1)
             seq = &m_seq;
 
-        m_gc->set_foreground(m_black);          /* draw boxes from sequence */
+        m_gc->set_foreground(black());          /* draw boxes from sequence */
         seq->reset_draw_marker();
         while
         (
@@ -557,12 +557,12 @@ seqroll::draw_events_on (Glib::RefPtr<Gdk::Drawable> a_draw)
                 }
                 note_x -= m_scroll_offset_x;
                 note_y -= m_scroll_offset_y;
-                m_gc->set_foreground(m_black);
+                m_gc->set_foreground(black());
 
                 /* draw boxes from sequence */
 
                 if (method == 0)
-                    m_gc->set_foreground(m_dk_grey);
+                    m_gc->set_foreground(dark_grey());
 
                 a_draw->draw_rectangle
                 (
@@ -579,9 +579,9 @@ seqroll::draw_events_on (Glib::RefPtr<Gdk::Drawable> a_draw)
                 if (note_width > 3)     /* draw inside box if there is room */
                 {
                     if (selected)
-                        m_gc->set_foreground(m_orange);
+                        m_gc->set_foreground(orange());
                     else
-                        m_gc->set_foreground(m_white);
+                        m_gc->set_foreground(white());
 
                     if (method == 1)
                     {
@@ -669,7 +669,7 @@ seqroll::draw_selection_on_window ()
         m_old.width = w;
         m_old.height = h + c_key_y;
 
-        m_gc->set_foreground(m_black);
+        m_gc->set_foreground(black());
         m_window->draw_rectangle(m_gc, false, x, y, w, h + c_key_y);
     }
     if (m_moving || m_paste)
@@ -680,7 +680,7 @@ seqroll::draw_selection_on_window ()
         y = m_selected.y + delta_y;
         x -= m_scroll_offset_x;
         y -= m_scroll_offset_y;
-        m_gc->set_foreground(m_black);
+        m_gc->set_foreground(black());
         m_window->draw_rectangle
         (
             m_gc, false, x, y, m_selected.width, m_selected.height
@@ -701,7 +701,7 @@ seqroll::draw_selection_on_window ()
         y = m_selected.y;
         x -= m_scroll_offset_x;
         y -= m_scroll_offset_y;
-        m_gc->set_foreground(m_black);
+        m_gc->set_foreground(black());
         m_window->draw_rectangle(m_gc, false, x, y, width, m_selected.height);
 
         m_old.x = x;
@@ -818,7 +818,7 @@ seqroll::start_paste()
 
     /* get the box that selected elements are in */
 
-    m_seq.get_clipboard_box(&tick_s, &note_h, &tick_f, &note_l);
+    m_seq.get_clipboard_box(tick_s, note_h, tick_f, note_l);
     convert_tn_box_to_rect
     (
         tick_s, tick_f, note_h, note_l,

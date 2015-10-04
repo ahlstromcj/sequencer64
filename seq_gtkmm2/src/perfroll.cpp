@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-03
+ * \updates       2015-10-04
  * \license       GNU GPLv2 or above
  *
  */
@@ -56,10 +56,13 @@ perfroll::perfroll
     gui_drawingarea_gtk2    (p, hadjust, vadjust, 10, 10),
     m_snap                  (0),
     m_ppqn                  (c_ppqn),
+    m_page_factor           (PERFROLL_PAGE_FACTOR),
+    m_divs_per_bar          (PERFROLL_DIVS_PER_BEAT),   // 16 grid subdivisions
+    m_ticks_per_bar         (m_ppqn * m_divs_per_bar),
     m_perf_scale_x          (c_perf_scale_x),
     m_names_y               (c_names_y),
-    m_perfroll_background_x (c_perfroll_background_x),
-    m_perfroll_size_box_w   (c_perfroll_size_box_w),
+    m_background_x          (c_perfroll_background_x),
+    m_size_box_w            (c_perfroll_size_box_w),
     m_measure_length        (0),
     m_beat_length           (0),
     m_old_progress_ticks    (0),
@@ -123,7 +126,7 @@ perfroll::change_horz ()
  */
 
 void
-perfroll::change_vert()
+perfroll::change_vert ()
 {
     if (m_sequence_offset != int(m_vadjust.get_value()))
     {
@@ -133,30 +136,50 @@ perfroll::change_vert()
 }
 
 /**
- *  Sets the roll-lengths ticks member.
+ *  Sets the roll-lengths ticks member.  First, it gets the largest trigger
+ *  value among the active sequences.  Then it truncates this value to the
+ *  nearest PPQN * 16 ticks. Then it adds PPQN * 4096 ticks.
  */
 
 void
-perfroll::init_before_show()
+perfroll::init_before_show ()
 {
     m_roll_length_ticks = perf().get_max_trigger();
-    m_roll_length_ticks -= (m_roll_length_ticks % (m_ppqn * 16));
-    m_roll_length_ticks += m_ppqn * 4096;           // 4096????
+    m_roll_length_ticks -= (m_roll_length_ticks % (m_ticks_per_bar));
+    m_roll_length_ticks += m_ppqn * m_page_factor;
 }
 
 /**
  *  Updates the sizes of various items.
+ *
+ * \note
+ *      Trying to figure out what the 16 is.  So take the "bars-visible"
+ *      calculation, the c_perf_scale_x value, assume that "ticks" is
+ *      another name for "pulses", and assume that "beats" is a quarter note.
+ *      Ignoring the numbers, the units come out to:
+ *
+\verbatim
+                pixels * ticks / pixel
+        bars = --------------------------------
+                ticks / beat * beats / bar
+\endverbatim
+ *
+ *      Thus, the 16 is a "beats per bar" or "beats per measure" value.
+ *      This doesn't quite make sense, but there are 16 divisions per
+ *      beat on the perfroll user-interface.  So for now we'll call it
+ *      the latter, and make a variable called "m_divs_per_bar", see its
+ *      definition in the class initializer list.
  */
 
 void
-perfroll::update_sizes()
+perfroll::update_sizes ()
 {
-    int h_bars = m_roll_length_ticks / (m_ppqn * 16);
-    int h_bars_visable = (m_window_x * m_perf_scale_x) / (m_ppqn * 16);
-    int h_max_value = h_bars - h_bars_visable;
+    int h_bars = m_roll_length_ticks / (m_ticks_per_bar);
+    int h_bars_visible = (m_window_x * m_perf_scale_x) / (m_ticks_per_bar);
+    int h_max_value = h_bars - h_bars_visible;
     m_hadjust.set_lower(0);
     m_hadjust.set_upper(h_bars);
-    m_hadjust.set_page_size(h_bars_visable);
+    m_hadjust.set_page_size(h_bars_visible);
     m_hadjust.set_step_increment(1);
     m_hadjust.set_page_increment(1);
     if (m_hadjust.get_value() > h_max_value)
@@ -184,7 +207,7 @@ perfroll::update_sizes()
  */
 
 void
-perfroll::increment_size()
+perfroll::increment_size ()
 {
     m_roll_length_ticks += (m_ppqn * 512);
     update_sizes();
@@ -195,24 +218,18 @@ perfroll::increment_size()
  */
 
 void
-perfroll::fill_background_pixmap()
+perfroll::fill_background_pixmap ()
 {
-    m_gc->set_foreground(m_white);                  /* clear background */
-    m_background->draw_rectangle
-    (
-        m_gc, true, 0, 0, m_perfroll_background_x, m_names_y
-    );
-    m_gc->set_foreground(m_grey);                   /* draw horz grey lines */
+    m_gc->set_foreground(white());                  /* clear background */
+    m_background->draw_rectangle(m_gc, true, 0, 0, m_background_x, m_names_y);
+    m_gc->set_foreground(grey());                   /* draw horz grey lines */
     gint8 dash = 1;
     m_gc->set_dashes(0, &dash, 1);
     m_gc->set_line_attributes
     (
         1, Gdk::LINE_ON_OFF_DASH, Gdk::CAP_NOT_LAST, Gdk::JOIN_MITER
     );
-    m_background->draw_line
-    (
-        m_gc, 0, 0, m_perfroll_background_x, 0
-    );
+    m_background->draw_line(m_gc, 0, 0, m_background_x, 0);
     int beats = m_measure_length / m_beat_length;
     for (int i = 0; i < beats ;)                    /* draw vertical lines   */
     {
@@ -230,7 +247,7 @@ perfroll::fill_background_pixmap()
                 1, Gdk::LINE_ON_OFF_DASH, Gdk::CAP_NOT_LAST, Gdk::JOIN_MITER
             );
         }
-        m_gc->set_foreground(m_grey);
+        m_gc->set_foreground(grey());
         m_background->draw_line                     /* solid line, every beat */
         (
             m_gc, i * m_beat_length / m_perf_scale_x,
@@ -272,14 +289,14 @@ void
 perfroll::draw_progress ()
 {
     long tick = perf().get_tick();
-    long tick_offset = m_4bar_offset * m_ppqn * 16;
+    long tick_offset = m_4bar_offset * m_ticks_per_bar;
     int progress_x = (tick - tick_offset) / m_perf_scale_x;
     int old_progress_x = (m_old_progress_ticks - tick_offset) / m_perf_scale_x;
     m_window->draw_drawable                                 /* draw old */
     (
         m_gc, m_pixmap, old_progress_x, 0, old_progress_x, 0, 1, m_window_y
     );
-    m_gc->set_foreground(m_black);
+    m_gc->set_foreground(black());
     m_window->draw_line(m_gc, progress_x, 0, progress_x, m_window_y);
     m_old_progress_ticks = tick;
 }
@@ -294,7 +311,7 @@ perfroll::draw_sequence_on (Glib::RefPtr<Gdk::Drawable> a_draw, int a_sequence)
 {
     if ((a_sequence < m_sequence_max) && perf().is_active(a_sequence))
     {
-        long tick_offset = m_4bar_offset * m_ppqn * 16;
+        long tick_offset = m_4bar_offset * m_ticks_per_bar;
         long x_offset = tick_offset / m_perf_scale_x;
         m_sequence_active[a_sequence] = true;
         sequence * seq =  perf().get_sequence(a_sequence);
@@ -320,34 +337,34 @@ perfroll::draw_sequence_on (Glib::RefPtr<Gdk::Drawable> a_draw, int a_sequence)
                 int h = m_names_y - 2;                  // - 4
                 x -= x_offset;          /* adjust to screen coordinates */
                 if (selected)
-                    m_gc->set_foreground(m_grey);
+                    m_gc->set_foreground(grey());
                 else
-                    m_gc->set_foreground(m_white);
+                    m_gc->set_foreground(white());
 
                 a_draw->draw_rectangle
                 (
                     m_gc, true, x, y, w, h
                 );
-                m_gc->set_foreground(m_black);
+                m_gc->set_foreground(black());
                 a_draw->draw_rectangle
                 (
                     m_gc, false, x, y, w, h
                 );
 
-                m_gc->set_foreground(m_black);
+                m_gc->set_foreground(black());
                 a_draw->draw_rectangle
                 (
                     m_gc, false, x, y,
-                    m_perfroll_size_box_w, m_perfroll_size_box_w    // ?
+                    m_size_box_w, m_size_box_w    // ?
                 );
                 a_draw->draw_rectangle
                 (
                     m_gc, false,
-                    x + w - m_perfroll_size_box_w,
-                    y + h - m_perfroll_size_box_w,
-                    m_perfroll_size_box_w, m_perfroll_size_box_w    // ?
+                    x + w - m_size_box_w,
+                    y + h - m_size_box_w,
+                    m_size_box_w, m_size_box_w    // ?
                 );
-                m_gc->set_foreground(m_black);
+                m_gc->set_foreground(black());
 
                 long length_marker_first_tick =
                 (
@@ -362,7 +379,7 @@ perfroll::draw_sequence_on (Glib::RefPtr<Gdk::Drawable> a_draw, int a_sequence)
 
                     if (tick_marker > tick_on)
                     {
-                        m_gc->set_foreground(m_lt_grey);
+                        m_gc->set_foreground(light_grey());
                         a_draw->draw_rectangle
                         (
                             m_gc, true, tick_marker_x, y + 4, 1, h - 8
@@ -380,7 +397,7 @@ perfroll::draw_sequence_on (Glib::RefPtr<Gdk::Drawable> a_draw, int a_sequence)
                     int velocity;
                     draw_type dt;
                     seq->reset_draw_marker();
-                    m_gc->set_foreground(m_black);
+                    m_gc->set_foreground(black());
                     while
                     (
                         (
@@ -440,15 +457,15 @@ void perfroll::draw_background_on
     int a_sequence
 )
 {
-    long tick_offset = m_4bar_offset * m_ppqn * 16;
+    long tick_offset = m_4bar_offset * m_ticks_per_bar;
     long first_measure = tick_offset / m_measure_length;
     a_sequence -= m_sequence_offset;
 
     int y = m_names_y * a_sequence;
     int h = m_names_y;
-    m_gc->set_foreground(m_white);
+    m_gc->set_foreground(white());
     a_draw->draw_rectangle(m_gc, true, 0, y, m_window_x, h);
-    m_gc->set_foreground(m_black);
+    m_gc->set_foreground(black());
     for
     (
         int i = first_measure;
@@ -460,7 +477,7 @@ void perfroll::draw_background_on
         a_draw->draw_drawable
         (
             m_gc, m_background, 0, 0, x_pos, y,
-            m_perfroll_background_x, m_names_y
+            m_background_x, m_names_y
         );
     }
 }
@@ -573,7 +590,7 @@ perfroll::on_realize ()
     );
     m_background = Gdk::Pixmap::create
     (
-        m_window, m_perfroll_background_x, m_names_y, -1
+        m_window, m_background_x, m_names_y, -1
     );
     fill_background_pixmap(); /* fill the background (dotted lines n' such) */
 }
@@ -594,8 +611,8 @@ perfroll::on_expose_event (GdkEventExpose * ev)
          *  {
          *      m_pixmap->draw_drawable
          *      (
-         *          m_gc, m_background, 0, 0, x * m_perfroll_background_x,
-         *          m_names_y * y, m_perfroll_background_x, m_names_y
+         *          m_gc, m_background, 0, 0, x * m_background_x,
+         *          m_names_y * y, m_background_x, m_names_y
          *      );
          *  }
          */
@@ -725,7 +742,7 @@ perfroll::snap_x (int & x)
 void
 perfroll::convert_x (int x, long & tick)
 {
-    long tick_offset = m_4bar_offset * m_ppqn * 16;
+    long tick_offset = m_4bar_offset * m_ticks_per_bar;
     tick = x * m_perf_scale_x + tick_offset;
 }
 
@@ -738,7 +755,7 @@ perfroll::convert_x (int x, long & tick)
 void
 perfroll::convert_xy (int x, int y, long & a_tick, int & a_seq)
 {
-    long tick_offset = m_4bar_offset * m_ppqn * 16;
+    long tick_offset = m_4bar_offset * m_ticks_per_bar;
     long tick = x * m_perf_scale_x + tick_offset;
     int seq = y / m_names_y + m_sequence_offset;
     if (seq >= m_sequence_max)

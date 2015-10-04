@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-25
- * \updates       2015-10-02
+ * \updates       2015-10-04
  * \license       GNU GPLv2 or above
  *
  *  We're going to try to collect all the globals here in one module, and
@@ -46,9 +46,13 @@
  *  spreadsheet in <tt>contrib/sequence24-classes.ods</tt>.
  *
  * \note
- *    This set of variables would be better off placed in a object that the
- *    mainwnd class and its clients can access a little more safely and with
- *    a lot more clarity for the human reader.
+ *      This set of variables would be better off placed in a object that the
+ *      mainwnd class and its clients can access a little more safely and with
+ *      a lot more clarity for the human reader.
+ *
+ * \todo
+ *      There are additional user-interface and MIDI scaling variables in the
+ *      perfroll module that we need to move here.
  */
 
 #include <string>
@@ -60,6 +64,25 @@
 extern rc_settings g_rc_settings;
 extern user_settings g_user_settings;
 
+/*
+ * New stuff
+ */
+
+/**
+ *  Guessing that this has to do with the width of the performance piano roll.
+ *  See perfroll::init_before_show().
+ */
+
+#define PERFROLL_PAGE_FACTOR            4096
+
+/**
+ *  Guessing that this describes the number of subdivisions of the grid in a
+ *  beat on the perfroll user-interace.  Changing this doesn't change anything
+ *  obvious in the user-interface, though.
+ */
+
+#define PERFROLL_DIVS_PER_BEAT            16
+
 /**
  *  This constant indicates that a configuration file numeric value is
  *  the default value for specifying that an instrument is a GM
@@ -67,6 +90,7 @@ extern user_settings g_user_settings;
  */
 
 #define GM_INSTRUMENT_FLAG              (-1)
+
 /**
  *  A manifest constant for the normal number of semitones in an
  *  equally-tempered octave.  The name is short deliberately.

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-03
+ * \updates       2015-10-04
  * \license       GNU GPLv2 or above
  *
  *  The time bar shows markers and numbers for the measures of the song,
@@ -55,7 +55,7 @@ namespace seq64
 
 perftime::perftime (perform & p, Gtk::Adjustment & hadjust)
  :
-    gui_drawingarea_gtk2    (p, hadjust, sm_vadjust_dummy, 10, c_timearea_y),
+    gui_drawingarea_gtk2    (p, hadjust, adjustment_dummy(), 10, c_timearea_y),
     m_4bar_offset           (0),
     m_ppqn                  (c_ppqn),
     m_snap                  (c_ppqn),
@@ -137,11 +137,11 @@ perftime::on_realize ()
 bool
 perftime::on_expose_event (GdkEventExpose * /* ev */ )
 {
-    m_gc->set_foreground(m_white);              /* clear the background */
+    m_gc->set_foreground(white());                  /* clear the background */
     m_window->draw_rectangle(m_gc, true, 0, 0, m_window_x, m_window_y);
-    m_gc->set_foreground(m_black);
+    m_gc->set_foreground(black());
     m_window->draw_line(m_gc, 0, m_window_y - 1, m_window_x, m_window_y - 1);
-    m_gc->set_foreground(m_grey);               /* draw vertical lines */
+    m_gc->set_foreground(grey());                   /* draw vertical lines  */
     long tick_offset = (m_4bar_offset * 16 * m_ppqn);
     long first_measure = tick_offset / m_measure_length;
 
@@ -162,7 +162,7 @@ perftime::on_expose_event (GdkEventExpose * /* ev */ )
 
         char bar[8];
         snprintf(bar, sizeof(bar), "%ld", i + 1);
-        m_gc->set_foreground(m_black);
+        m_gc->set_foreground(black());
         p_font_renderer->render_string_on_drawable
         (
             m_gc, x_pos + 2, 0, m_window, bar, font::BLACK
@@ -177,9 +177,9 @@ perftime::on_expose_event (GdkEventExpose * /* ev */ )
     right /= m_perf_scale_x;
     if (left >= 0 && left <= m_window_x)            /* draw L marker    */
     {
-        m_gc->set_foreground(m_black);
+        m_gc->set_foreground(black());
         m_window->draw_rectangle(m_gc, true, left, m_window_y - 9, 7, 10);
-        m_gc->set_foreground(m_white);
+        m_gc->set_foreground(white());
         p_font_renderer->render_string_on_drawable
         (
             m_gc, left + 1, 9, m_window, "L", font::WHITE
@@ -187,9 +187,9 @@ perftime::on_expose_event (GdkEventExpose * /* ev */ )
     }
     if (right >= 0 && right <= m_window_x)          /* draw R marker    */
     {
-        m_gc->set_foreground(m_black);
+        m_gc->set_foreground(black());
         m_window->draw_rectangle(m_gc, true, right - 6, m_window_y - 9, 7, 10);
-        m_gc->set_foreground(m_white);
+        m_gc->set_foreground(white());
         p_font_renderer->render_string_on_drawable
         (
             m_gc, right - 6 + 1, 9, m_window, "R", font::WHITE

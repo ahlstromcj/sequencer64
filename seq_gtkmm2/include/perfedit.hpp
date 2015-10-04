@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-02
+ * \updates       2015-10-04
  * \license       GNU GPLv2 or above
  *
  */
@@ -39,6 +39,7 @@
 #include <gtkmm/window.h>       // somehow, can't forward-declare GdkEventAny
 
 #include "gui_window_gtk2.hpp"
+#include "perform.hpp"
 
 #define DEFAULT_PERFEDIT_SNAP   8
 
@@ -66,7 +67,6 @@ namespace seq64
 {
 
 class perfnames;
-class perform;
 class perfroll;
 class perftime;
 
@@ -133,6 +133,7 @@ private:
     int m_bpm;
     int m_bw;
     int m_ppqn;
+    int m_redraw_ms;
     bool m_modified;
 
 public:
@@ -167,8 +168,6 @@ private:
     void set_snap (int snap);
     void set_guides ();
     void grow ();
-    void start_playing ();
-    void stop_playing ();
     void set_looped ();
     void expand ();
     void collapse ();
@@ -177,9 +176,38 @@ private:
     void popup_menu (Gtk::Menu * menu);
     bool timeout ();
 
+    /**
+     *  Implement the playing.  JACK will be used if it is present and, in the
+     *  application, enabled.
+     */
+
+    void start_playing ()
+    {
+        perf().start_playing(true);         // careful now, see perform!!!!
+    }
+
+    /**
+     *  Stop the playing.
+     */
+
+    void stop_playing ()
+    {
+        perf().stop_playing();
+    }
+
+private:            // callbacks
+
     void on_realize ();
-    bool on_delete_event (GdkEventAny * event);
     bool on_key_press_event (GdkEventKey * ev);
+
+    /**
+     *  All this callback function does is return false.
+     */
+
+    bool on_delete_event (GdkEventAny * /*a_event*/ )
+    {
+        return false;
+    }
 
 };
 

@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-09-30
- * \updates       2015-10-02
+ * \updates       2015-10-04
  * \license       GNU GPLv2 or above
  *
  *  Most of the GUI modules are publicly derived from Gtk::DrawingArea,
@@ -40,7 +40,8 @@
 #include "gdk_basic_keys.h"
 
 /**
- *  Readability macros for testing button clicks.
+ *  Readability macros for testing (GDK) button clicks.  Meant for legacy
+ *  code; use the corresponding click mod_xxx() member functions for new code.
  */
 
 #define CLICK_IS_LEFT(x)            ((x) == 1)
@@ -116,6 +117,25 @@ public:
     }
 
     /**
+     * \getter m_butto to test for left, right, and middle buttons.
+     */
+
+    bool is_left () const
+    {
+        return m_button == 1;
+    }
+
+    bool is_middle () const
+    {
+        return m_button == 2;
+    }
+
+    bool is_right () const
+    {
+        return m_button == 3;
+    }
+
+    /**
      * \getter m_x
      */
 
@@ -149,6 +169,37 @@ public:
     seq_modifier_t modifier () const
     {
         return m_modifier;
+    }
+
+    /**
+     * \getter m_modifier tested for Ctrl key.
+     */
+
+    bool mod_control () const
+    {
+        return bool(m_modifier & SEQ64_CONTROL_MASK);   // GDK_CONTROL_MASK
+    }
+
+    /**
+     * \getter m_modifier tested for Ctrl and Shift key.
+     */
+
+    bool mod_control_shift () const
+    {
+        return
+        (
+            bool(m_modifier & SEQ64_CONTROL_MASK) &&    // GDK_CONTROL_MASK
+            bool(m_modifier & SEQ64_SHIFT_MASK)         // GDK_SHIFT_MASK
+        );
+    }
+
+    /**
+     * \getter m_modifier tested for Mod4/Super/Windows key.
+     */
+
+    bool mod_super () const
+    {
+        return bool(m_modifier & SEQ64_MOD4_MASK);      // GDK_MOD4_MASK
     }
 
 };          // class click

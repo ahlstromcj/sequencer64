@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-03
+ * \updates       2015-10-04
  * \license       GNU GPLv2 or above
  *
  *  The patterns/sequence editor is expandable in both directions, but the
@@ -54,7 +54,7 @@ seqtime::seqtime
     int zoom,
     Gtk::Adjustment & hadjust
 ) :
-    gui_drawingarea_gtk2    (p, hadjust, sm_vadjust_dummy, 10, c_timearea_y),
+    gui_drawingarea_gtk2    (p, hadjust, adjustment_dummy(), 10, c_timearea_y),
     m_seq                   (seq),
     m_scroll_offset_ticks   (0),
     m_scroll_offset_x       (0),
@@ -146,9 +146,9 @@ seqtime::redraw ()
 void
 seqtime::update_pixmap ()
 {
-    m_gc->set_foreground(m_white);                      /* clear background */
+    m_gc->set_foreground(white());                      /* clear background */
     m_pixmap->draw_rectangle(m_gc, true, 0, 0, m_window_x, m_window_y);
-    m_gc->set_foreground(m_black);
+    m_gc->set_foreground(black());
     m_pixmap->draw_line(m_gc, 0, m_window_y - 1, m_window_x, m_window_y - 1);
 
     /*
@@ -167,7 +167,7 @@ seqtime::update_pixmap ()
 
     int end_tick = (m_window_x * m_zoom) + m_scroll_offset_ticks;
 
-    m_gc->set_foreground(m_black);                      /* draw vert lines */
+    m_gc->set_foreground(black());                      /* draw vert lines */
     for (int i = start_tick; i < end_tick; i += ticks_per_step)
     {
         int base_line = i / m_zoom;
@@ -179,7 +179,7 @@ seqtime::update_pixmap ()
 
         char bar[5];
         snprintf(bar, sizeof(bar), "%d", (i / ticks_per_measure) + 1);
-        m_gc->set_foreground(m_black);
+        m_gc->set_foreground(black());
         p_font_renderer->render_string_on_drawable
         (
             m_gc, base_line + 2 - m_scroll_offset_x,
@@ -188,7 +188,7 @@ seqtime::update_pixmap ()
     }
 
     long end_x = m_seq.get_length() / m_zoom - m_scroll_offset_x;
-    m_gc->set_foreground(m_black);
+    m_gc->set_foreground(black());
     m_pixmap->draw_rectangle(m_gc, true, end_x, 9, 19, 8);
     p_font_renderer->render_string_on_drawable
     (

@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-09-13
- * \updates       2015-10-03
+ * \updates       2015-10-04
  * \license       GNU GPLv2 or above
  *
  *  This file is provided as a convenience so that we have some reasonable
@@ -200,14 +200,14 @@
 typedef enum
 {
     SEQ64_NO_MASK           = 0,
-    SEQ64_SHIFT_MASK        = 1,
-    SEQ64_LOCK_MASK	        = 1 << 1,
-    SEQ64_CONTROL_MASK      = 1 << 2,
-    SEQ64_MOD1_MASK	        = 1 << 3,
-    SEQ64_MOD2_MASK	        = 1 << 4,
-    SEQ64_MOD3_MASK	        = 1 << 5,
-    SEQ64_MOD4_MASK	        = 1 << 6,
-    SEQ64_MOD5_MASK	        = 1 << 7,
+    SEQ64_SHIFT_MASK        = 1,                // Shift modifier key
+    SEQ64_LOCK_MASK	        = 1 << 1,           // Lock (scroll)? modifier key
+    SEQ64_CONTROL_MASK      = 1 << 2,           // Ctrl modifier key
+    SEQ64_MOD1_MASK	        = 1 << 3,           // Alt modifier key
+    SEQ64_MOD2_MASK	        = 1 << 4,           // Num Lock modifier key
+    SEQ64_MOD3_MASK	        = 1 << 5,           // Hyper_L (?)
+    SEQ64_MOD4_MASK	        = 1 << 6,           // Super/Windoze modifier key
+    SEQ64_MOD5_MASK	        = 1 << 7,           // Mode_Switch (?)
     SEQ64_BUTTON1_MASK      = 1 << 8,
     SEQ64_BUTTON2_MASK      = 1 << 9,
     SEQ64_BUTTON3_MASK      = 1 << 10,

@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-03
+ * \updates       2015-10-04
  * \license       GNU GPLv2 or above
  *
  */
@@ -53,7 +53,7 @@ seqdata::seqdata
     int zoom,
     Gtk::Adjustment & hadjust
 ) :
-    gui_drawingarea_gtk2    (p, hadjust, sm_vadjust_dummy, 10, c_dataarea_y),
+    gui_drawingarea_gtk2    (p, hadjust, adjustment_dummy(), 10, c_dataarea_y),
     m_seq                   (seq),
     m_zoom                  (zoom),
     m_scroll_offset_ticks   (0),
@@ -151,11 +151,11 @@ seqdata::draw_events_on (Glib::RefPtr<Gdk::Drawable> a_draw)
     long tick;
     unsigned char d0, d1;
     bool selected;
-    int start_tick = m_scroll_offset_ticks ;
+    int start_tick = m_scroll_offset_ticks;
     int end_tick = (m_window_x * m_zoom) + m_scroll_offset_ticks;
-    m_gc->set_foreground(m_white);
+    m_gc->set_foreground(white());
     a_draw->draw_rectangle(m_gc, true, 0, 0, m_window_x, m_window_y);
-    m_gc->set_foreground(m_black);
+    m_gc->set_foreground(black());
     m_seq.reset_draw_marker();
     while (m_seq.get_next_event(m_status, m_cc, &tick, &d0, &d1, &selected))
     {
@@ -207,18 +207,6 @@ seqdata::idle_redraw ()
 }
 
 /**
- *  This function takes screen coordinates, and give us the horizontaol
- *  tick value based on the current zoom, returned via the second
- *  parameter.
- */
-
-void
-seqdata::convert_x (int x, long & tick)
-{
-    tick = x * m_zoom;
-}
-
-/**
  *  This function takes two points, and returns an Xwin rectangle, returned
  *  via the last four parameters.  It checks the mins/maxes, then fills in x,
  *  y, and width, height.
@@ -227,10 +215,10 @@ seqdata::convert_x (int x, long & tick)
 void
 seqdata::xy_to_rect
 (
-    int a_x1,  int a_y1,
-    int a_x2,  int a_y2,
-    int & r_x,  int & r_y,
-    int & r_w,  int & r_h
+    int a_x1, int a_y1,
+    int a_x2, int a_y2,
+    int & r_x, int & r_y,
+    int & r_w, int & r_h
 )
 {
     if (a_x1 < a_x2)
@@ -328,7 +316,7 @@ void
 seqdata::draw_line_on_window ()
 {
     int x, y, w, h;
-    m_gc->set_foreground(m_black);
+    m_gc->set_foreground(black());
     m_gc->set_line_attributes
     (
         1, Gdk::LINE_SOLID, Gdk::CAP_NOT_LAST, Gdk::JOIN_MITER
@@ -344,7 +332,7 @@ seqdata::draw_line_on_window ()
     m_old.y = y;
     m_old.width = w;
     m_old.height = h;
-    m_gc->set_foreground(m_black);
+    m_gc->set_foreground(black());
     m_window->draw_line
     (
         m_gc, m_current_x - m_scroll_offset_x, m_current_y,
@@ -392,7 +380,7 @@ seqdata::on_realize ()
     for (int i = 0; i < c_dataarea_y; ++i)
     {
         m_numbers[i] = Gdk::Pixmap::create(m_window, 6, 30, -1);
-        m_gc->set_foreground(m_white);
+        m_gc->set_foreground(white());
         m_numbers[i]->draw_rectangle(m_gc, true, 0, 0, 6, 30);
 
         char val[8];

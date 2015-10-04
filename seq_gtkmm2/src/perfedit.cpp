@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-03
+ * \updates       2015-10-04
  * \license       GNU GPLv2 or above
  *
  */
@@ -61,7 +61,6 @@
 
 #include "gtk_helpers.h"
 #include "perfedit.hpp"
-#include "perform.hpp"
 #include "perfnames.hpp"
 #include "perfroll.hpp"
 #include "perftime.hpp"
@@ -129,7 +128,8 @@ perfedit::perfedit (perform & p)
     m_snap              (DEFAULT_PERFEDIT_SNAP),
     m_bpm               (DEFAULT_BEATS_PER_MEASURE),
     m_bw                (DEFAULT_BEAT_WIDTH),
-    m_ppqn              (c_ppqn),   /* normally 192 pulses per quarter note */
+    m_ppqn              (c_ppqn),           /* 192 pulses per quarter note */
+    m_redraw_ms         (c_redraw_ms),
     m_modified          (false)
 {
     set_icon(Gdk::Pixbuf::create_from_xpm_data(perfedit_xpm));
@@ -353,34 +353,6 @@ perfedit::undo ()
 }
 
 /**
- *  Implement the playing.  JACK will be used if it is present and, in the
- *  application, enabled.
- *
- * \todo
- *      This function should be a perform member, and forward to it.
- */
-
-void
-perfedit::start_playing ()
-{
-    perf().start_playing(true);         // careful now, see perform!!!!
-}
-
-/**
- *  Stop the playing.
- *
- * \todo
- *      This function should be a perform member, and forward to it.
- */
-
-void
-perfedit::stop_playing ()
-{
-    perf().stop_jack();
-    perf().stop();
-}
-
-/**
  *  Implement the collapse action.  This action removes all events between
  *  the L and R (left and right) markers.  This action is preceded by
  *  pushing an Undo operation in the perform object, not moving its
@@ -452,17 +424,14 @@ perfedit::popup_menu (Gtk::Menu * a_menu)
 /**
  *  Sets the guides, which are the L and R user-interface elements.
  *  See the set_snap() function.
- *
- * \todo
- *      The c_ppqn variable should be copied into a perfedit member.
  */
 
 void
 perfedit::set_guides ()
 {
-    long measure_ticks = (c_ppqn * 4) * m_bpm / m_bw;
+    long measure_ticks = (m_ppqn * 4) * m_bpm / m_bw;
     long snap_ticks = measure_ticks / m_snap;
-    long beat_ticks = (c_ppqn * 4) / m_bw;
+    long beat_ticks = (m_ppqn * 4) / m_bw;
     m_perfroll->set_guides(snap_ticks, measure_ticks, beat_ticks);
     m_perftime->set_guides(snap_ticks, measure_ticks);
 }
@@ -556,28 +525,17 @@ perfedit::timeout ()
 /**
  *  This callback function calls the base-class on_realize() fucntion, and
  *  then connects the perfedit::timeout() function to the Glib
- *  signal-timeout, with a redraw timeout of c_redraw_ms.
+ *  signal-timeout, with a redraw timeout of m_redraw_ms.
  */
 
 void
 perfedit::on_realize ()
 {
-//  Gtk::Window::on_realize();
     gui_window_gtk2::on_realize();
     Glib::signal_timeout().connect
     (
-        mem_fun(*this, &perfedit::timeout), c_redraw_ms
+        mem_fun(*this, &perfedit::timeout), m_redraw_ms
     );
-}
-
-/**
- *  All this callback function does is return false.
- */
-
-bool
-perfedit::on_delete_event (GdkEventAny * a_event)
-{
-    return false;
 }
 
 /**

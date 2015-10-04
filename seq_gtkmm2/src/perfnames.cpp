@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-03
+ * \updates       2015-10-04
  * \license       GNU GPLv2 or above
  *
  *  This module is almost exclusively user-interface code.  There are some
@@ -60,7 +60,7 @@ namespace seq64
 
 perfnames::perfnames (perform & p, Gtk::Adjustment & vadjust)
  :
-    gui_drawingarea_gtk2    (p, sm_hadjust_dummy, vadjust, c_names_x, 100),
+    gui_drawingarea_gtk2    (p, adjustment_dummy(), vadjust, c_names_x, 100),
     seqmenu                 (p),
     m_names_x               (c_names_x),
     m_names_y               (c_names_y),
@@ -117,7 +117,7 @@ perfnames::draw_sequence (int seqnum)
 
         bool seqempty = false;
 #endif
-        m_gc->set_foreground(m_black);
+        m_gc->set_foreground(black());
         m_window->draw_rectangle
         (
             m_gc, true, 0, (m_names_y * i) , m_names_x, m_names_y + 1
@@ -126,7 +126,7 @@ perfnames::draw_sequence (int seqnum)
         {
             char ss[4];
             snprintf(ss, sizeof(ss), "%2d", seqnum / m_seqs_in_set);
-            m_gc->set_foreground(m_white);
+            m_gc->set_foreground(white());
             p_font_renderer->render_string_on_drawable
             (
                 m_gc, 2, m_names_y * i + 2, m_window, ss, font::WHITE
@@ -134,7 +134,7 @@ perfnames::draw_sequence (int seqnum)
         }
         else
         {
-            m_gc->set_foreground(m_white);
+            m_gc->set_foreground(white());
             m_window->draw_rectangle
             (
                 m_gc, true, 1, (m_names_y * (i)), (6 * 2) + 1, m_names_y
@@ -145,13 +145,13 @@ perfnames::draw_sequence (int seqnum)
 #if SEQ64_HIGHLIGHT_EMPTY_SEQS
             seqempty = seq->event_count() == 0;     // this works fine!
             if (seqempty)
-                m_gc->set_foreground(m_yellow);
+                m_gc->set_foreground(yellow());
             else
 #endif
-                m_gc->set_foreground(m_white);
+                m_gc->set_foreground(white());
         }
         else
-            m_gc->set_foreground(m_grey);
+            m_gc->set_foreground(grey());
 
         m_window->draw_rectangle
         (
@@ -191,7 +191,7 @@ perfnames::draw_sequence (int seqnum)
             );
 
             bool muted = seq->get_song_mute();
-            m_gc->set_foreground(m_black);
+            m_gc->set_foreground(black());
             m_window->draw_rectangle
             (
                 m_gc, muted, 6 * 2 + 6 * 20 + 2, (m_names_y * i), 10, m_names_y
@@ -223,7 +223,7 @@ perfnames::draw_sequence (int seqnum)
     }
     else
     {
-        m_gc->set_foreground(m_grey);
+        m_gc->set_foreground(grey());
         m_window->draw_rectangle
         (
             m_gc, true, 0, (m_names_y * i) + 1 , m_names_x, m_names_y
@@ -241,8 +241,7 @@ perfnames::convert_y (int y)
     int seq = y / m_names_y + m_sequence_offset;
     if (seq >= m_sequence_max)
         seq = m_sequence_max - 1;
-
-    if (seq < 0)
+    else if (seq < 0)
         seq = 0;
 
     return seq;
@@ -256,7 +255,7 @@ perfnames::convert_y (int y)
 bool
 perfnames::on_button_press_event (GdkEventButton * a_e)
 {
-    int y = int(a_e->y);                            /* int x = (int) a_e->x; */
+    int y = int(a_e->y);
     int seqnum = convert_y(y);
     current_sequence(seqnum);
     if (CLICK_IS_LEFT(a_e->button))
@@ -330,7 +329,7 @@ perfnames::on_scroll_event (GdkEventScroll * ev)
     double val = m_vadjust.get_value();
     if (ev->direction == GDK_SCROLL_UP)
         val -= m_vadjust.get_step_increment();
-    if (ev->direction == GDK_SCROLL_DOWN)
+    else if (ev->direction == GDK_SCROLL_DOWN)
         val += m_vadjust.get_step_increment();
 
     m_vadjust.clamp_page(val, val + m_vadjust.get_page_size());
@@ -346,8 +345,8 @@ void
 perfnames::on_size_allocate (Gtk::Allocation & a)
 {
     gui_drawingarea_gtk2::on_size_allocate(a);
-    m_window_x = a.get_width();             /* side-effect  */
-    m_window_y = a.get_height();            /* side-effect  */
+    m_window_x = a.get_width();                     /* side-effect  */
+    m_window_y = a.get_height();                    /* side-effect  */
 }
 
 /**

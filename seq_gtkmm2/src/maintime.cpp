@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-01
+ * \updates       2015-10-04
  * \license       GNU GPLv2 or above
  *
  *  The "time" window is the horizontal bar at the upper right of the main
@@ -99,7 +99,7 @@ maintime::idle_progress (long ticks)
 {
     m_tick = ticks;
     m_window->clear();
-    m_gc->set_foreground(m_black);
+    m_gc->set_foreground(black());
     m_window->draw_rectangle
     (
         m_gc, false, 0, 0, m_window_x - 1, m_window_y - 1
@@ -111,13 +111,13 @@ maintime::idle_progress (long ticks)
     int bar_x = (((m_tick / 16) % m_ppqn) * width) / m_ppqn ;
     if (tick_x <= (m_window_x / 4))
     {
-        m_gc->set_foreground(m_grey);
+        m_gc->set_foreground(grey());
         m_window->draw_rectangle
         (
             m_gc, true, 2, /*tick_x + 2,*/ 2, m_window_x - 4, m_window_y - 4
         );
     }
-    m_gc->set_foreground(m_black);
+    m_gc->set_foreground(black());
     m_window->draw_rectangle
     (
         m_gc, true, beat_x + 2, 2, m_pill_width, m_window_y - 4

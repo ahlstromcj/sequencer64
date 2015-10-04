@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-21
- * \updates       2015-10-03
+ * \updates       2015-10-04
  * \license       GNU GPLv2 or above
  *
  *  This module defines some Gdk::Color objects.  However, note that this
@@ -58,6 +58,7 @@ protected:
 
     typedef Gdk::Color Color;
 
+private:                                // use the accessor functions
     const Color m_black;
     const Color m_white;
     const Color m_grey;
@@ -70,8 +71,8 @@ protected:
     const Color m_blue;
     const Color m_cyan;
 
-    Color m_bg_color;               // m_background in some classes
-    Color m_fg_color;               // m_foreground in some classes
+    Color m_bg_color;                   // m_background in some classes
+    Color m_fg_color;                   // m_foreground in some classes
 
 public:
 
@@ -121,6 +122,24 @@ public:
     const Color & cyan () const
     {
         return m_cyan;
+    }
+
+    const Color & bg_color () const
+    {
+        return m_bg_color;
+    }
+    void bg_color (const Color & c)
+    {
+        m_bg_color = c;
+    }
+
+    const Color & fg_color () const
+    {
+        return m_fg_color;
+    }
+    void fg_color (const Color & c)
+    {
+        m_fg_color = c;
     }
 
 };

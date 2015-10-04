@@ -29,7 +29,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-03
+ * \updates       2015-10-04
  * \license       GNU GPLv2 or above
  *
  */
@@ -115,7 +115,6 @@ private:
     void update_sizes ();
     void update_pixmap ();
     void draw_line_on_window ();
-    void convert_x (int x, long & tick);
     void xy_to_rect
     (
       int a_x1, int a_y1,
@@ -126,6 +125,17 @@ private:
     void draw_events_on (Glib::RefPtr<Gdk::Drawable> a_draw);
     void change_horz ();
     void force_draw ();
+
+    /**
+     *  This function takes screen coordinates, and gives the horizontaol
+     *  tick value based on the current zoom, returned via the second
+     *  parameter.
+     */
+
+    void convert_x (int x, long & tick)
+    {
+        tick = x * m_zoom;
+    }
 
     /**
      *  Simply calls draw_events_on() for this object's built-in pixmap.

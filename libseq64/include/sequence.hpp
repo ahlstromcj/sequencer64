@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-09-20
+ * \updates       2015-10-04
  * \license       GNU GPLv2 or above
  *
  */
@@ -539,11 +539,11 @@ public:
     void paste_selected (long a_tick, int a_note);
     void get_selected_box
     (
-        long * a_tick_s, int * a_note_h, long * a_tick_f, int * a_note_l
+        long & a_tick_s, int & a_note_h, long & a_tick_f, int & a_note_l
     );
     void get_clipboard_box
     (
-        long * a_tick_s, int * a_note_h, long * a_tick_f, int * a_note_l
+        long & a_tick_s, int & a_note_h, long & a_tick_f, int & a_note_l
     );
     void move_selected_notes (long a_delta_tick, int a_delta_note);
     void add_note (long a_tick, long a_length, int a_note, bool a_paint = false);

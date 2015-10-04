@@ -1,0 +1,25 @@
+Functionality offloads possible:
+
+FruitySeqEventInput:
+   Most functions:   seqevent
+
+FruitySeqRollInput:
+   Most functions:   seqroll
+
+mainwid:
+   seq_from_xy()
+   on_button_release_event(), possibly:
+
+      perf().new_sequence(current_sequence());
+      *(perf().get_sequence(current_sequence())) = m_moving_seq;
+
+      perf().new_sequence(m_old_seq);
+      *(perf().get_sequence(m_old_seq)) = m_moving_seq;
+
+      There may be some other small perform formulas to encapsulate.
+
+mainwnd:
+   Perform functionality already mostly offloaded.
+   There may be some other small perform formulas to encapsulate.
+
+

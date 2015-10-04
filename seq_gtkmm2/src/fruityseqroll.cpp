@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-03
+ * \updates       2015-10-04
  * \license       GNU GPLv2 or above
  *
  *  This module handles "fruity" interactions only in the piano roll
@@ -313,7 +313,7 @@ FruitySeqRollInput::on_button_press_event
 
                         sroll.m_seq.get_selected_box
                         (
-                            &tick_s, &note_h, &tick_f, &note_l
+                            tick_s, note_h, tick_f, note_l
                         );
                         sroll.convert_tn_box_to_rect
                         (
@@ -364,7 +364,7 @@ FruitySeqRollInput::on_button_press_event
                         sroll.m_growing = true;
                         sroll.m_seq.get_selected_box
                         (
-                            &tick_s, &note_h, &tick_f, &note_l
+                            tick_s, note_h, tick_f, note_l
                         );
                         sroll.convert_tn_box_to_rect
                         (

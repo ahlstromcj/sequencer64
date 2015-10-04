@@ -25,10 +25,12 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-09-30
- * \updates       2015-10-03
+ * \updates       2015-10-04
  * \license       GNU GPLv2 or above
  *
  */
+
+#include <ctype.h>
 
 #include "keystroke.hpp"            // seq64::keystroke
 
@@ -76,6 +78,27 @@ keystroke::operator = (const keystroke & rhs)
         m_modifier  = rhs.m_modifier;
     }
     return *this;
+}
+
+/**
+ * \getter m_key to test letters, handles ASCII only.
+ *
+ * \param character
+ *      An optional character to test as an ASCII letter.
+ *
+ * \return
+ *      If a character is not provided, true is returned if it is an upper
+ *      or lower-case letter.  Otherwise, true is returned if the m_key
+ *      value matches the character case-insensitively.
+ */
+
+bool
+keystroke::is_letter (int character) const
+{
+    if (character == 0)
+        return bool(isalpha(m_key));
+    else
+        return tolower(m_key) == tolower(character);
 }
 
 }           // namespace seq64

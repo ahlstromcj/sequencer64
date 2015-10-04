@@ -503,14 +503,14 @@ Seq24PerfInput::on_button_release_event (GdkEventButton * a_ev, perfroll & roll)
     {
         /*
          * Minor new feature.  If the Super (Mod4, Windows) key is
-         * pressed when release, keep the adding state in force.  One
+         * pressed when release, keep the adding-state in force.  One
          * can then use the unadorned left-click key to add material.  Right
          * click to reset the adding mode.  This feature is enabled only
-         * if allowed by the settings (but is true by default).
+         * if allowed by Options / Mouse  (but is true by default).
          * See the same code in seq24seqroll.cpp.
          */
 
-        bool addmode_exit  = ! global_allow_mod4_mode;
+        bool addmode_exit = ! global_allow_mod4_mode;
         if (! addmode_exit)
             addmode_exit = ! (a_ev->state & GDK_MOD4_MASK); // Mod4 held?
 
@@ -522,9 +522,7 @@ Seq24PerfInput::on_button_release_event (GdkEventButton * a_ev, perfroll & roll)
     }
 
     perform & p = roll.perf();
-    roll.m_moving = false;
-    roll.m_growing = false;
-    m_adding_pressed = false;
+    roll.m_moving = roll.m_growing = m_adding_pressed = false;
     if (p.is_active(roll.m_drop_sequence))
         roll.draw_all();
 

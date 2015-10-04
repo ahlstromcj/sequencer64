@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-03
+ * \updates       2015-10-04
  * \license       GNU GPLv2 or above
  *
  */
@@ -70,10 +70,13 @@ private:
 
     int m_snap;
     int m_ppqn;
+    int m_page_factor;              // 4096, provisional name
+    int m_divs_per_bar;             // 16, provisional name
+    int m_ticks_per_bar;            // m_ppqn * m_divs_per_bar, provisional name
     int m_perf_scale_x;
     int m_names_y;
-    int m_perfroll_background_x;
-    int m_perfroll_size_box_w;
+    int m_background_x;
+    int m_size_box_w;
     int m_measure_length;
     int m_beat_length;
     long m_old_progress_ticks;

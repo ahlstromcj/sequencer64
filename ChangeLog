@@ -1,5 +1,9 @@
 2015-10-04  Chris Ahlstrom <ahlstromcj@gmail.com>
 
+   * *.*: Started the "testing" branch, and stamped it as 0.9.9.5.
+
+2015-10-04  Chris Ahlstrom <ahlstromcj@gmail.com>
+
    * *.*: Merged the "guibase" branch back.  Provides user-file writing,
    GUI bases classes, and a metric boatload of refactoring.
    Tagged as version 0.9.9.4.

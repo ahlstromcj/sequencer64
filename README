@@ -1,4 +1,4 @@
-README for Sequencer64 0.9.9.3 (current branch = "guibase")
+README for Sequencer64 0.9.9.4 (current branch = "testing")
 Chris Ahlstrom
 2015-09-10 to 2015-10-04
 
@@ -20,7 +20,7 @@ Other major updates:
     -   The "user" configuration file is now written, as well as being read.
         It will eventually contain more extensive run-time configuration for
         the user-interface.
-    -   The user-interface classes are being refactored to be derived from
+    -   The user-interface classes have refactored to be derived from
         base classes providing common code.
     -   Constant variables are slowly being assigned to new members, in
         preparation for support of altering the number of sequences and sets

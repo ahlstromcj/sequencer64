@@ -1,12 +1,12 @@
 Sequencer64 Roadmap
 Chris Ahlstrom
-2015-09-10 to 2015-09-21
+2015-09-10 to 2015-10-04
 
 The starting point for the Sequencer64 project is version 0.9.4 of
 Sequencer24.  Sequencer24 itself started with version 0.9.2 of Seq24.
 
-Latest version: 0.9.9.3
-Current branch: guibase
+Latest version: 0.9.9.4
+Current branch: testing
 
 The following changes are planned ('x' means it is done, 'y' means it is
 in progress, and 'z' means it will be moved to a later branch):
@@ -16,7 +16,7 @@ y  -  Branch off to various incremental branches:
       x  -  Branch "perform":  refactoring the perform class for
             configuration file access and Gtk/Gdk support.  Also
             separated out the JACK support.  Finish on 2015-09-19.
-      y  -  Branch "guibase":  Creating a base class for Gtk::Drawable
+      x  -  Branch "guibase":  Creating a base class for Gtk::Drawable
             and using that in one of the GUI modules.
    x  -  Branch "sequencer": Try to replace sequencer event container with
          something faster.   We found that using std::multimap instead
@@ -24,16 +24,17 @@ y  -  Branch off to various incremental branches:
          MIDI file is a *lot* faster.
       -  Unit test each element as appropriate using xpc-suite
          functionality.
-      -  Add some base classes and additional member functions for common
+   y  -  Add some base classes and additional member functions for common
          functionality:
-         -  Gtk::Drawable-derived base class
+      x  -  Gtk::Drawable-derived base class
          -  Handle Windows vs. Linux code more cleanly.
             -  Windows/Linux mastermidibus bases class
             -  Windows/Linux midibus bases class
-         -  An autolock object to simplify many of the locked functions.
+      x  -  An autolock object to simplify many of the locked functions.
       -  Enhance documentation and recreate it.
-      -  Rebuild application using library code.
-      -  Verify functionality.
+   x  -  Rebuild application using library code.
+   y  -  Verify functionality.
+y  -  Branch off to an "testing" branch to perform testing and tweaking.
    -  Branch off to an "Enhancements" branch (highly provisional):
       -  Convert to gtkmm-3.
       -  Add optional build using Qt 5.

@@ -2,7 +2,7 @@
 
    * *.*: Merged the "guibase" branch back.  Provides user-file writing,
    GUI bases classes, and a metric boatload of refactoring.
-   Tagged as version 0.9.9.3 still, due to a mistake not worth correcting.
+   Tagged as version 0.9.9.4.
 
 2015-09-20  Chris Ahlstrom <ahlstromcj@gmail.com>
 

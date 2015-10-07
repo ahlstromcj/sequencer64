@@ -6,7 +6,7 @@
 # \library    	sequencer64 application
 # \author     	Chris Ahlstrom
 # \date       	2015-09-11
-# \update      2015-09-11
+# \update      2015-10-07
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -23,6 +23,8 @@ EXTRA_DIST = \
 	expand.xpm \
 	font_b.xpm \
 	font_w.xpm \
+	font_y.xpm \
+	font_yb.xpm \
 	key.xpm \
 	learn2.xpm \
 	learn.xpm \
@@ -45,6 +47,8 @@ EXTRA_DIST = \
 	sequencer24.xpm \
 	sequencer24_legacy.xpm \
 	sequencer24_square.xpm \
+	sequencer64_legacy.xpm \
+	sequencer64_square.xpm \
 	seq-editor.xpm \
 	sequences.xpm \
 	snap.xpm \

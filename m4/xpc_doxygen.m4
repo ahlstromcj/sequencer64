@@ -5,7 +5,8 @@ dnl
 dnl \file       	xpc_doxygen.m4
 dnl \library    	xpc_suite subproject
 dnl \author     	Chris Ahlstrom
-dnl \date       	04/09/2009-04/11/2009
+dnl \date       	2009-04-03
+dnl \updates      2015-10-07
 dnl \version    	$Revision$
 dnl \license    	$XPC_SUITE_GPL_LICENSE$
 dnl
@@ -31,11 +32,6 @@ echo "         installed. You will not be able to create the documentation.";
       fi;
 ])
 
-dnl ***************************************************************************
 dnl xpc_doxygen.m4
-dnl ---------------------------------------------------------------------------
-dnl Local Variables:
-dnl End:
-dnl ---------------------------------------------------------------------------
+dnl
 dnl vim: ts=3 sw=3 et ft=config
-dnl ---------------------------------------------------------------------------

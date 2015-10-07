@@ -6,7 +6,7 @@ dnl \file          xpc_mingw32.m4
 dnl \library       XPC
 dnl \author        Chris Ahlstrom
 dnl \date          2008-03-04
-dnl \update        2012-01-08
+dnl \update        2015-10-07
 dnl \version       $Revision$
 dnl \license       $XPC_SUITE_GPL_LICENSE$
 dnl
@@ -107,11 +107,6 @@ AC_DEFUN([AC_XPC_MINGW32],
    fi
 ])
 
-dnl ***************************************************************************
 dnl xpc_mingw32.m4
-dnl ---------------------------------------------------------------------------
-dnl Local Variables:
-dnl End:
-dnl ---------------------------------------------------------------------------
+dnl
 dnl vim: ts=3 sw=3 et ft=config
-dnl ---------------------------------------------------------------------------

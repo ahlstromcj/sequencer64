@@ -5,7 +5,8 @@ dnl
 dnl \file       	xpc_debug.m4
 dnl \library    	xpc_suite subproject
 dnl \author     	Chris Ahlstrom
-dnl \date       	03/04/2008-07/24/2013
+dnl \date       	2008-03-04
+dnl \updates      2015-10-07
 dnl \version    	$Revision$
 dnl \license    	$XPC_SUITE_GPL_LICENSE$
 dnl
@@ -173,11 +174,6 @@ yes=gdb)],
 
 ])
 
-dnl ***************************************************************************
 dnl xpc_debug.m4
-dnl ---------------------------------------------------------------------------
-dnl Local Variables:
-dnl End:
-dnl ---------------------------------------------------------------------------
+dnl
 dnl vim: ts=3 sw=3 et ft=config
-dnl ---------------------------------------------------------------------------

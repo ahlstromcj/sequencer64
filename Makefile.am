@@ -6,7 +6,7 @@
 # \library     sequencer64
 # \author      Chris Ahlstrom
 # \date        2015-09-11
-# \updates     2015-09-12
+# \updates     2015-10-07
 # \version     $Revision$
 # \license     $XPC_SUITE_GPL_LICENSE$
 #
@@ -150,26 +150,26 @@ all-local:
 show:
 	@echo "Install directories:"
 	@echo
-	@echo "prefix           = $(prefix)"
-	@echo "datadir          = $(datadir)"
-	@echo "datarootdir      = $(datarootdir)"
-	@echo "libdir           = $(libdir)"
+	@echo "prefix                 = $(prefix)"
+	@echo "datadir                = $(datadir)"
+	@echo "datarootdir            = $(datarootdir)"
+	@echo "libdir                 = $(libdir)"
 	@echo "sequencer64libdir      = $(sequencer64libdir)"
 	@echo "sequencer64docdir      = $(sequencer64docdir)"
 	@echo "sequencer64doxygendir  = $(sequencer64doxygendir)"
 	@echo "sequencer64includedir  = $(sequencer64includedir)"
-	@echo "localedir        = $(localedir)"
+	@echo "localedir              = $(localedir)"
 	@echo
 	@echo "Local directories:"
 	@echo
-	@echo "top_srcdir       = $(top_srcdir) [project root directory]"
-	@echo "srcdir           = $(srcdir)"
-	@echo "top_builddir     = $(top_builddir)"
-	@echo "builddir         = $(builddir)"
+	@echo "top_srcdir             = $(top_srcdir) [project root directory]"
+	@echo "srcdir                 = $(srcdir)"
+	@echo "top_builddir           = $(top_builddir)"
+	@echo "builddir               = $(builddir)"
 
 showver:
-	@echo "PACKAGE            = $(PACKAGE)"
-	@echo "VERSION            = $(VERSION)"
+	@echo "PACKAGE                  = $(PACKAGE)"
+	@echo "VERSION                  = $(VERSION)"
 	@echo "SEQUENCER64_API_MAJOR    = $(SEQUENCER64_API_MAJOR)"
 	@echo "SEQUENCER64_API_MINOR    = $(SEQUENCER64_API_MINOR)"
 	@echo "SEQUENCER64_API_PATCH    = $(SEQUENCER64_API_PATCH)"

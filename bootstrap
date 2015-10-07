@@ -8,7 +8,7 @@
 # \library    	sequencer64
 # \author     	Chris Ahlstrom
 # \date       	2015-09-10
-# \update     	2015-10-04
+# \update     	2015-10-06
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -265,7 +265,7 @@ if [ $DOBOOTSTRAP == "yes" ] ; then
       cat << E_O_F
 
    The GNU autoconf application was not found.  This project requires GNU
-   autoconf (and automake, autopoint, and ac-autoconf-archive) in order to
+   autoconf (and automake, and ac-autoconf-archive) in order to
    bootstrap itself.
 
 E_O_F
@@ -347,11 +347,10 @@ E_O_F
    mkdir -p include
 
 #************************************************************************
-# Call a number of "auto" programs in the strict order shown below.  See
-# "info autopoint" for details.  Note:  Earlier versions of auto-tools
-# don't ignore duplicate definitions of macros.  (The system normally
-# provides m4 macros in /usr/share/aclocal, but the project also
-# provides them in the project's m4 directory.)
+# Call a number of "auto" programs in the strict order shown below.  Note:
+# Earlier versions of auto-tools don't ignore duplicate definitions of
+# macros.  (The system normally provides m4 macros in /usr/share/aclocal,
+# but the project also provides them in the project's m4 directory.)
 #------------------------------------------------------------------------
 
 # We still need to make aux-files/config.rpath and some other files
@@ -459,8 +458,5 @@ fi
 #******************************************************************************
 # bootstrap (sequencer64)
 #------------------------------------------------------------------------------
-# Local Variables:
-# End:
-#------------------------------------------------------------------------------
-# vim: ts=3 sw=3 et ft=sh
+# vim: ts=3 sw=3 wm=8et ft=sh
 #------------------------------------------------------------------------------

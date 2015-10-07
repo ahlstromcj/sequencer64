@@ -5,7 +5,8 @@ dnl
 dnl \file       	gcc-version.m4
 dnl \library    	xpc_suite
 dnl \author     	Chris Ahlstrom
-dnl \date       	03/04/2008-03/04/2008
+dnl \date       	2008-03-04
+dnl \updates      2015-10-07
 dnl \version    	$Revision$
 dnl \license    	$XPC_SUITE_GPL_LICENSE$
 dnl
@@ -71,11 +72,6 @@ AC_DEFUN([AC_GCC_VERSION],
    AC_SUBST(gcc_version)
 ])dnl
 
-dnl ***************************************************************************
 dnl gcc-version.m4
-dnl ---------------------------------------------------------------------------
-dnl Local Variables:
-dnl End:
-dnl ---------------------------------------------------------------------------
+dnl
 dnl vim: ts=3 sw=3 et ft=config
-dnl ---------------------------------------------------------------------------

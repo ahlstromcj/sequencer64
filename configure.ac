@@ -6,7 +6,7 @@ dnl \file          configure.ac
 dnl \library       sequencer64
 dnl \author        Chris Ahlstrom
 dnl \date          2015-09-11
-dnl \update        2015-10-04
+dnl \update        2015-10-06
 dnl \version       $Revision$
 dnl \license       $XPC_SUITE_GPL_LICENSE$
 dnl
@@ -482,8 +482,6 @@ AC_CONFIG_FILES([
 
 AC_OUTPUT
 
-dnl ***************************************************************************
 dnl configure.ac (sequencer64)
-dnl ---------------------------------------------------------------------------
+dnl
 dnl vim: ts=4 sw=4 et ft=config
-dnl ---------------------------------------------------------------------------

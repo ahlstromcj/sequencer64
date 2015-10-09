@@ -39,15 +39,16 @@ namespace seq64
 {
 
 /**
- *  The constructor for class click.  Sets all members to false or zero.
+ *  The constructor for class click.  Sets all members to false, zero, or the
+ *  lowest good value.
  */
 
 click::click ()
  :
     m_is_press  (false),
-    m_x         (0),
-    m_y         (0),
-    m_button    (0),
+    m_x         (CLICK_X_MIN),
+    m_y         (CLICK_Y_MIN),
+    m_button    (CLICK_BUTTON_LEFT),
     m_modifier  (SEQ64_NO_MASK)
 {
     // Empty body

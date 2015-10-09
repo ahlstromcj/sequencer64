@@ -51,6 +51,9 @@
 #define CLICK_Y_MAX                  1080       // just one pixel too high
 
 #define CLICK_BUTTON_MIN                1
+#define CLICK_BUTTON_LEFT               1
+#define CLICK_BUTTON_MIDDLE             2
+#define CLICK_BUTTON_RIGHT              3
 #define CLICK_BUTTON_MAX                3
 
 #define CLICK_BAD_VALUE               (-1)
@@ -58,6 +61,7 @@
 /**
  *  Readability macros for testing (GDK) button clicks.  Meant for legacy
  *  code; use the corresponding click mod_xxx() member functions for new code.
+ *  However, keep these macros, as they are used in the member functions now.
  */
 
 #define CLICK_IS_LEFT(x)            ((x) == 1)
@@ -116,7 +120,7 @@ public:
     (
         int x,
         int y,
-        int button,
+        int button = CLICK_BUTTON_LEFT,
         bool press = true,
         seq_modifier_t modkey = SEQ64_NO_MASK
     );
@@ -138,17 +142,17 @@ public:
 
     bool is_left () const
     {
-        return m_button == 1;
+        return CLICK_IS_LEFT(m_button);
     }
 
     bool is_middle () const
     {
-        return m_button == 2;
+        return CLICK_IS_MIDDLE(m_button);
     }
 
     bool is_right () const
     {
-        return m_button == 3;
+        return CLICK_IS_RIGHT(m_button);
     }
 
     /**

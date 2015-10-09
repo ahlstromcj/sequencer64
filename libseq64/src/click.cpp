@@ -25,12 +25,14 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-09-30
- * \updates       2015-09-30
+ * \updates       2015-10-08
  * \license       GNU GPLv2 or above
  *      -   seq64::click
  */
 
-#include "click.hpp"            // seq64::click
+#include "click.hpp"                    // seq64::click
+#include "gdk_basic_keys.h"             // seq64::SEQ64_MASK_MAX, etc.
+#include "easy_macros.h"                // errprint() macro
 
 namespace seq64
 {
@@ -58,7 +60,17 @@ click::click (int x, int y, int button, bool press, seq_modifier_t modkey)
     m_button    (button),
     m_modifier  (modkey)
 {
-    // Empty body
+    if (x < CLICK_X_MIN || x >= CLICK_X_MAX)
+        x = CLICK_BAD_VALUE;
+
+    if (y < CLICK_X_MIN || y >= CLICK_X_MAX)
+        y = CLICK_BAD_VALUE;
+
+    if (button < CLICK_BUTTON_MIN && button > CLICK_BUTTON_MAX)
+        button = CLICK_BAD_VALUE;
+
+    if (modkey < SEQ64_NO_MASK || modkey > SEQ64_MASK_MAX)
+        modkey = SEQ64_MASK_MAX;
 }
 
 click::click (const click & rhs)

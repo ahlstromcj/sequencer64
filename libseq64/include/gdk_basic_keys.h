@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-09-13
- * \updates       2015-10-04
+ * \updates       2015-10-08
  * \license       GNU GPLv2 or above
  *
  *  This file is provided as a convenience so that we have some reasonable
@@ -191,6 +191,9 @@
 
 #endif      // SEQ64_Home
 
+namespace seq64
+{
+
 /**
  *  Types of modifiers, essentially copied from gtk-2.0/gdk/gdktypes.h.
  *  We have to tweak the names to avoid redeclaration errors and to
@@ -222,7 +225,8 @@ typedef enum
     SEQ64_SUPER_MASK        = 1 << 26,
     SEQ64_HYPER_MASK        = 1 << 27,
     SEQ64_META_MASK         = 1 << 28,
-    SEQ64_RELEASE_MASK      = 1 << 30   // GDK_MODIFIER_MASK = 0x5c001fff
+    SEQ64_RELEASE_MASK      = 1 << 30,  // GDK_MODIFIER_MASK = 0x5c001fff
+    SEQ64_MASK_MAX          = 1 << 31
 
 } seq_modifier_t;
 
@@ -259,6 +263,7 @@ typedef enum
 
 } seq_scroll_direction_t;
 
+}           // namespace seq64
 
 #endif      // SEQ64_GDK_BASIC_KEYS_HPP
 

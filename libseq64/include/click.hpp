@@ -40,6 +40,22 @@
 #include "gdk_basic_keys.h"
 
 /**
+ *  Range limits for the various integer parameters.  Used for sanity-checking
+ *  and unit-testing.
+ */
+
+#define CLICK_X_MIN                     0
+#define CLICK_X_MAX                  1920
+
+#define CLICK_Y_MIN                     0
+#define CLICK_Y_MAX                  1080
+
+#define CLICK_BUTTON_MIN                1
+#define CLICK_BUTTON_MAX                3
+
+#define CLICK_BAD_VALUE               (-1)
+
+/**
  *  Readability macros for testing (GDK) button clicks.  Meant for legacy
  *  code; use the corresponding click mod_xxx() member functions for new code.
  */
@@ -117,7 +133,7 @@ public:
     }
 
     /**
-     * \getter m_butto to test for left, right, and middle buttons.
+     * \getter m_button to test for left, right, and middle buttons.
      */
 
     bool is_left () const

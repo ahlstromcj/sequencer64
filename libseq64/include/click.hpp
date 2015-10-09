@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-09-30
- * \updates       2015-10-04
+ * \updates       2015-10-09
  * \license       GNU GPLv2 or above
  *
  *  Most of the GUI modules are publicly derived from Gtk::DrawingArea,
@@ -45,10 +45,10 @@
  */
 
 #define CLICK_X_MIN                     0
-#define CLICK_X_MAX                  1920
+#define CLICK_X_MAX                  1920       // just one pixel too high
 
 #define CLICK_Y_MIN                     0
-#define CLICK_Y_MAX                  1080
+#define CLICK_Y_MAX                  1080       // just one pixel too high
 
 #define CLICK_BUTTON_MIN                1
 #define CLICK_BUTTON_MAX                3

@@ -25,9 +25,10 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-09-30
- * \updates       2015-10-08
+ * \updates       2015-10-09
  * \license       GNU GPLv2 or above
- *      -   seq64::click
+ *
+ *  Provides the implementation of the seq64::click class.
  */
 
 #include "click.hpp"                    // seq64::click
@@ -38,7 +39,7 @@ namespace seq64
 {
 
 /**
- *  The constructor for class click.
+ *  The constructor for class click.  Sets all members to false or zero.
  */
 
 click::click ()
@@ -52,6 +53,12 @@ click::click ()
     // Empty body
 }
 
+/**
+ *  Principal constructor for class click.  This function is the only way to
+ *  set value for the click members (other than the copy constructor and
+ *  principal assignment operator.
+ */
+
 click::click (int x, int y, int button, bool press, seq_modifier_t modkey)
  :
     m_is_press  (press),
@@ -61,16 +68,17 @@ click::click (int x, int y, int button, bool press, seq_modifier_t modkey)
     m_modifier  (modkey)
 {
     if (x < CLICK_X_MIN || x >= CLICK_X_MAX)
-        x = CLICK_BAD_VALUE;
+        m_x = CLICK_BAD_VALUE;
 
-    if (y < CLICK_X_MIN || y >= CLICK_X_MAX)
-        y = CLICK_BAD_VALUE;
+    if (y < CLICK_Y_MIN || y >= CLICK_Y_MAX)
+        m_y = CLICK_BAD_VALUE;
 
-    if (button < CLICK_BUTTON_MIN && button > CLICK_BUTTON_MAX)
-        button = CLICK_BAD_VALUE;
+    if (button < CLICK_BUTTON_MIN || button > CLICK_BUTTON_MAX)
+        m_button = CLICK_BAD_VALUE;
 
-    if (modkey < SEQ64_NO_MASK || modkey > SEQ64_MASK_MAX)
-        modkey = SEQ64_MASK_MAX;
+    unsigned int um = (unsigned int)(modkey);
+    if (um < (unsigned int)(SEQ64_NO_MASK) || um > (unsigned int)(SEQ64_MASK_MAX))
+        m_modifier = SEQ64_MASK_MAX;
 }
 
 click::click (const click & rhs)

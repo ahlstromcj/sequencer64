@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-09-13
- * \updates       2015-10-02
+ * \updates       2015-10-10
  * \license       GNU GPLv2 or above
  *
  */
@@ -342,6 +342,8 @@ public:
         else
             return 0;
     }
+
+    virtual std::string key_name (unsigned int key) const;
 
     /**
      *  Provides base class functionality.  Must be called by the

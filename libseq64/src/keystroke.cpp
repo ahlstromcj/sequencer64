@@ -20,12 +20,12 @@
  * \file          keystroke.cpp
  *
  *  This module declares/defines the base class for handling many facets
- *  of using a GUI.
+ *  of using a GUI representation of keystrokes.
  *
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-09-30
- * \updates       2015-10-04
+ * \updates       2015-10-10
  * \license       GNU GPLv2 or above
  *
  */
@@ -43,8 +43,8 @@ namespace seq64
 
 keystroke::keystroke ()
  :
-    m_is_press  (false),
-    m_key       (0),
+    m_is_press  (SEQ64_KEYSTROKE_RELEASE),          /* false */
+    m_key       (SEQ64_KEYSTROKE_MIN),
     m_modifier  (SEQ64_NO_MASK)
 {
     // Empty body
@@ -90,15 +90,16 @@ keystroke::operator = (const keystroke & rhs)
  *      If a character is not provided, true is returned if it is an upper
  *      or lower-case letter.  Otherwise, true is returned if the m_key
  *      value matches the character case-insensitively.
+ *      \tricky
  */
 
 bool
-keystroke::is_letter (int character) const
+keystroke::is_letter (int ch) const
 {
-    if (character == 0)
+    if (ch == SEQ64_KEYSTROKE_BAD_VALUE)
         return bool(isalpha(m_key));
     else
-        return tolower(m_key) == tolower(character);
+        return tolower(m_key) == tolower(ch);
 }
 
 }           // namespace seq64

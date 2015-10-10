@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-03
+ * \updates       2015-10-10
  * \license       GNU GPLv2 or above
  *
  *  This class has way too many members.
@@ -599,6 +599,16 @@ public:
 
     void save_playing_state ();
     void restore_playing_state ();
+
+    /*
+     * Here follows a few forwarding functions for the keys_perform-derived
+     * classes.
+     */
+
+    std::string key_name (unsigned int k) const
+    {
+        return keys().key_name(k);
+    }
 
     keys_perform::SlotMap & get_key_events ()
     {

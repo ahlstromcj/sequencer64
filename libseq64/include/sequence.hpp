@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-04
+ * \updates       2015-10-10
  * \license       GNU GPLv2 or above
  *
  */
@@ -604,8 +604,12 @@ public:
 
 private:
 
-    static void add_list_var (CharList * a_list, long a_var);
-    static void add_long_list (CharList * a_list, long a_x);
+    /*
+     * Used in fill_list().
+     */
+
+    /* static */ void add_list_var (CharList * a_list, long a_var);
+    /* static */ void add_long_list (CharList * a_list, long a_x);
 
     void put_event_on_bus (event * a_e);
     void remove_all ();

@@ -22,13 +22,13 @@
 /**
  * \file          keystroke.hpp
  *
- *  This module declares/defines the base class for GUI frameworks used in
- *  some of the window-support modules.
+ *  This module declares/defines the base class for handling many facets
+ *  of using a GUI representation of keystrokes.
  *
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-09-21
- * \updates       2015-10-09
+ * \updates       2015-10-10
  * \license       GNU GPLv2 or above
  *
  *  Most of the GUI modules are publicly derived from Gtk::DrawingArea,
@@ -52,7 +52,8 @@
  *  and unit-testing.
  */
 
-#define SEQ64_KEYSTROKE_MIN             0x0000
+#define SEQ64_KEYSTROKE_BAD_VALUE       0x0000      /* null   */
+#define SEQ64_KEYSTROKE_MIN             0x0001      /* Ctrl-A */
 #define SEQ64_KEYSTROKE_MAX             0xffff
 
 namespace seq64
@@ -98,7 +99,7 @@ public:
     keystroke
     (
         unsigned int key,
-        bool press = true,
+        bool press = SEQ64_KEYSTROKE_PRESS,         /* true */
         int modkey = int(SEQ64_NO_MASK)
     );
     keystroke (const keystroke & rhs);
@@ -113,7 +114,7 @@ public:
         return m_is_press;
     }
 
-    bool is_letter (int character = 0) const;
+    bool is_letter (int ch = SEQ64_KEYSTROKE_BAD_VALUE) const;
 
     /**
      * \better m_key to test for a delete-causing key.

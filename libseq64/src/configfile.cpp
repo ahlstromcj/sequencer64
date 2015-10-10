@@ -25,13 +25,14 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-09-13
+ * \updates       2015-10-10
  * \license       GNU GPLv2 or above
  *
  *  We found a couple of unused members in this module and removed them.
  */
 
 #include <iostream>
+#include <string.h>                     /* strncmp() function needed!   */
 
 #include "easy_macros.h"
 #include "configfile.hpp"

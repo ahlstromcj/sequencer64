@@ -1,5 +1,5 @@
-#ifndef SEQ64_CONFIGFILE_HPP
-#define SEQ64_CONFIGFILE_HPP
+#ifndef SEQ64_MIDI_CONTAINER_HPP
+#define SEQ64_MIDI_CONTAINER_HPP
 
 /*
  *  This file is part of seq24/sequencer64.
@@ -20,7 +20,7 @@
  */
 
 /**
- * \file          configfile.hpp
+ * \file          midi_container.hpp
  *
  *  This module declares the abstract base class for configuration and
  *  options files.
@@ -28,14 +28,11 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-10
+ * \updates       2015-09-27
  * \license       GNU GPLv2 or above
  *
  */
 
-#include <fstream>
-#include <string>
-#include <list>
 
 namespace seq64
 {
@@ -54,7 +51,7 @@ class perform;
  *    This class is the abstract base class for optionsfile and userfile.
  */
 
-class configfile
+class midi_container
 {
 
 protected:
@@ -86,13 +83,13 @@ protected:
 
 public:
 
-    configfile (const std::string & a_name);
+    midi_container (const std::string & a_name);
 
     /**
      *  A rote constructor needed for a base class.
      */
 
-    virtual ~configfile()
+    virtual ~midi_container()
     {
         // empty body
     }
@@ -104,10 +101,10 @@ public:
 
 }           // namespace seq64
 
-#endif      // SEQ64_CONFIGFILE_HPP
+#endif      // SEQ64_MIDI_CONTAINER_HPP
 
 /*
- * configfile.hpp
+ * midi_container.hpp
  *
  * vim: sw=4 ts=4 wm=4 et ft=cpp
  */

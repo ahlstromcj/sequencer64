@@ -241,7 +241,7 @@ midifile::parse (perform & a_perf, int a_screen_set)
         errprint("Memory allocation failed in midifile::parse()");
         return false;
     }
-    file.read((char *) &m_data[0], file_size);
+    file.read((char *) &m_data[0], file_size);      /* vector == array :-)  */
     file.close();
 
     unsigned long ID = read_long();                 /* read hdr chunk info  */
@@ -957,6 +957,11 @@ midifile::write (perform & a_perf)
         if (a_perf.is_active(curtrack))
         {
             sequence * seq = a_perf.get_sequence(curtrack);
+
+            /*
+             * This list is the same type as the sequence::CharList typedef.
+             */
+
             std::list<char> l;              /* should be unsigned char! */
             seq->fill_list(&l, curtrack);
             write_long(0x4D54726B);         /* magic number 'MTrk'      */

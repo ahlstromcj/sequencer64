@@ -24,10 +24,12 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-13
- * \updates       2015-10-03
+ * \updates       2015-10-10
  * \license       GNU GPLv2 or above
  *
  */
+
+#include <stdio.h>                      /* snprintf() */
 
 #include "gdk_basic_keys.h"
 #include "keys_perform.hpp"
@@ -77,6 +79,20 @@ keys_perform::keys_perform ()
 keys_perform::~keys_perform ()
 {
     // what to do?
+}
+
+/**
+ *  Obtains the name of the key.  In gtkmm, this is done via the
+ *  gdk_keyval_name() function.  Here, in the base class, we just provide an
+ *  easy-to-create string.
+ */
+
+std::string
+keys_perform::key_name (unsigned int key) const
+{
+    char temp[32];
+    snprintf(temp, sizeof(temp), "Key 0x%X", key);
+    return std::string(temp);
 }
 
 /**

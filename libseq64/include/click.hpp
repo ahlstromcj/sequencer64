@@ -22,8 +22,8 @@
 /**
  * \file          click.hpp
  *
- *  This module declares/defines the base class for GUI frameworks used in
- *  some of the window-support modules.
+ *  This module declares/defines the base class for handling many facets
+ *  of using a GUI representation of mouse clicks.
  *
  * \library       sequencer64 application
  * \author        Chris Ahlstrom

@@ -3305,8 +3305,8 @@ sequence::quantize_events
 
 /**
  *  This was a <i> global </i> internal function called addListVar().
- *  Let's at least make it a private static member now, and hew to the
- *  naming conventions of this class.
+ *  Let's at least make it a private member now, and hew to the naming
+ *  conventions of this class.
  */
 
 void
@@ -3337,8 +3337,8 @@ sequence::add_list_var (CharList * a_list, long a_var)
 
 /**
  *  This was a <i> global </i> internal function called addLongList().
- *  Let's at least make it a private static member now, and hew to the
- *  naming conventions of this class.
+ *  Let's at least make it a private member now, and hew to the naming
+ *  conventions of this class.
  */
 
 void
@@ -3356,6 +3356,15 @@ sequence::add_long_list (CharList * a_list, long a_x)
  *
  *  Note that some of the events might not come out in the same order they
  *  were stored in (we see that with program-change events.
+ *
+ * \param a_list
+ *      Provides the std::list object to push events to the front, which thus
+ *      inserts them in backwards order.  (These events are then popped back,
+ *      which restores the order, with some exceptions).
+ *
+ * \param a_pos
+ *      Provides the track number.  This number is masked into the track
+ *      information.
  */
 
 void

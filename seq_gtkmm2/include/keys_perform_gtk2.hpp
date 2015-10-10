@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-09-13
- * \updates       2015-09-13
+ * \updates       2015-10-10
  * \license       GNU GPLv2 or above
  *
  *  This class has way too many members.
@@ -54,6 +54,7 @@ public:
     keys_perform_gtk2 ();
     virtual ~keys_perform_gtk2 ();
 
+    virtual std::string key_name (unsigned int key) const;
     virtual void set_all_key_events ();
     virtual void set_all_key_groups ();
 

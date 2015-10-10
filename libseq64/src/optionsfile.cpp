@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-02
+ * \updates       2015-10-10
  * \license       GNU GPLv2 or above
  *
  *  The <tt> ~/.seq24rc </tt>
@@ -693,13 +693,13 @@ optionsfile::write (const perform & a_perf)
         snprintf
         (
             outs, sizeof(outs), "%u  %ld   # %s",
-            i->first, i->second, gdk_keyval_name(i->first)
+            i->first, i->second,
+            ucperf.key_name(i->first).c_str()   // gdk_keyval_name(i->first)
         );
         file << std::string(outs) << "\n";
     }
     size_t kegsize = ucperf.get_key_groups().size() < size_t(c_seqs_in_set) ?
-         ucperf.get_key_groups().size() :
-         (size_t)c_seqs_in_set
+         ucperf.get_key_groups().size() : size_t(c_seqs_in_set)
          ;
     file
         << "\n[keyboard-group]\n\n"
@@ -716,7 +716,8 @@ optionsfile::write (const perform & a_perf)
         snprintf
         (
             outs, sizeof(outs), "%u  %ld   # %s",
-            i->first, i->second, gdk_keyval_name(i->first)
+            i->first, i->second,
+            ucperf.key_name(i->first).c_str()   // gdk_keyval_name(i->first)
         );
         file << std::string(outs) << "\n";
     }
@@ -727,26 +728,26 @@ optionsfile::write (const perform & a_perf)
         << "# bpm up and bpm down:\n"
         << ktx.kpt_bpm_up << " "
         << ktx.kpt_bpm_dn << "   # "
-        << gdk_keyval_name(ktx.kpt_bpm_up) << " "
-        << gdk_keyval_name(ktx.kpt_bpm_dn) << "\n"
+        << ucperf.key_name(ktx.kpt_bpm_up) << " "
+        << ucperf.key_name(ktx.kpt_bpm_dn) << "\n"
         ;
     file
         << "# screen set up, screen set down, play:\n"
         << ktx.kpt_screenset_up << " "
         << ktx.kpt_screenset_dn << " "
         << ktx.kpt_set_playing_screenset << "   # "
-        << gdk_keyval_name(ktx.kpt_screenset_up) << " "
-        << gdk_keyval_name(ktx.kpt_screenset_dn) << " "
-        << gdk_keyval_name(ktx.kpt_set_playing_screenset) << "\n"
+        << ucperf.key_name(ktx.kpt_screenset_up) << " "
+        << ucperf.key_name(ktx.kpt_screenset_dn) << " "
+        << ucperf.key_name(ktx.kpt_set_playing_screenset) << "\n"
         ;
     file
         << "# group on, group off, group learn:\n"
         << ktx.kpt_group_on << " "
         << ktx.kpt_group_off << " "
         << ktx.kpt_group_learn << "   # "
-        << gdk_keyval_name(ktx.kpt_group_on) << " "
-        << gdk_keyval_name(ktx.kpt_group_off) << " "
-        << gdk_keyval_name(ktx.kpt_group_learn) << "\n"
+        << ucperf.key_name(ktx.kpt_group_on) << " "
+        << ucperf.key_name(ktx.kpt_group_off) << " "
+        << ucperf.key_name(ktx.kpt_group_learn) << "\n"
         ;
     file
         << "# replace, queue, snapshot_1, snapshot 2, keep queue:\n"
@@ -755,11 +756,11 @@ optionsfile::write (const perform & a_perf)
         << ktx.kpt_snapshot_1 << " "
         << ktx.kpt_snapshot_2 << " "
         << ktx.kpt_keep_queue << "   # "
-        << gdk_keyval_name(ktx.kpt_replace) << " "
-        << gdk_keyval_name(ktx.kpt_queue) << " "
-        << gdk_keyval_name(ktx.kpt_snapshot_1) << " "
-        << gdk_keyval_name(ktx.kpt_snapshot_2) << " "
-        << gdk_keyval_name(ktx.kpt_keep_queue) << "\n"
+        << ucperf.key_name(ktx.kpt_replace) << " "
+        << ucperf.key_name(ktx.kpt_queue) << " "
+        << ucperf.key_name(ktx.kpt_snapshot_1) << " "
+        << ucperf.key_name(ktx.kpt_snapshot_2) << " "
+        << ucperf.key_name(ktx.kpt_keep_queue) << "\n"
         ;
     file
         << (ktx.kpt_show_ui_sequence_key ? 1 : 0)
@@ -767,12 +768,12 @@ optionsfile::write (const perform & a_perf)
         ;
     file
         << ktx.kpt_start << " # "
-        << gdk_keyval_name(ktx.kpt_start)
+        << ucperf.key_name(ktx.kpt_start)
         << " start sequencer\n"
        ;
     file
         << ktx.kpt_stop << " # "
-        << gdk_keyval_name(ktx.kpt_stop)
+        << ucperf.key_name(ktx.kpt_stop)
         << " stop sequencer\n"
         ;
 

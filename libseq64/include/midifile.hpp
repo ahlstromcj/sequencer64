@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-09-29
+ * \updates       2015-10-10
  * \license       GNU GPLv2 or above
  *
  *  The Seq24 MIDI file is a standard, Format 1 MIDI file, with some extra
@@ -57,8 +57,10 @@ class midifile
 private:
 
     /**
-     *  Holds the position in the MIDI file.  This is at least a 32-bit
-     *  value in the recent architectures running Linux and Windows.
+     *  Holds the position in the MIDI file.  This is at least a 31-bit
+     *  value in the recent architectures running Linux and Windows, so it
+     *  will handle up to 2 Gb of data.  This member is used as the offset
+     *  into the m_data vector.
      */
 
     int m_pos;
@@ -71,13 +73,20 @@ private:
 
     /**
      *  This vector of characters holds our MIDI data.  We could also use
-     *  a string of characters, unsigned.
+     *  a string of characters, unsigned.  This member is resized to the
+     *  putative size of the MIDI file, in the parse() function.  Then the
+     *  whole file is read into it, as if it were an array.  This member is an
+     *  input buffer.
      */
 
     std::vector<unsigned char> m_data;
 
     /**
-     *  Provides a list of characters.
+     *  Provides a list of characters.  The class pushes each MIDI byte into
+     *  this list using the write_byte() function.  Also note that the write()
+     *  function calls sequence::fill_list() to fill a temporary
+     *  std::list<char> (!) buffer, tne writes that data <i> backwards </i> to
+     *  this member.  This member is an output buffer.
      */
 
     std::list<unsigned char> m_char_list;

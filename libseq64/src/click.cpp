@@ -20,12 +20,12 @@
  * \file          click.cpp
  *
  *  This module declares/defines the base class for handling many facets
- *  of using a GUI.
+ *  of using a GUI representation of mouse clicks.
  *
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-09-30
- * \updates       2015-10-09
+ * \updates       2015-10-10
  * \license       GNU GPLv2 or above
  *
  *  Provides the implementation of the seq64::click class.

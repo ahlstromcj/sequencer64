@@ -40,23 +40,31 @@
 #include "gdk_basic_keys.h"
 
 /**
+ *  Provides readability macros for true and false, to indicate if a
+ *  mouse button is pressed, or released.
+ */
+
+#define SEQ64_CLICK_RELEASE             false
+#define SEQ64_CLICK_PRESS               true
+
+/**
  *  Range limits for the various integer parameters.  Used for sanity-checking
  *  and unit-testing.
  */
 
-#define CLICK_X_MIN                     0
-#define CLICK_X_MAX                  1920       // just one pixel too high
+#define SEQ64_CLICK_X_MIN                   0
+#define SEQ64_CLICK_X_MAX                1920       // just one pixel too high
 
-#define CLICK_Y_MIN                     0
-#define CLICK_Y_MAX                  1080       // just one pixel too high
+#define SEQ64_CLICK_Y_MIN                   0
+#define SEQ64_CLICK_Y_MAX                1080       // just one pixel too high
 
-#define CLICK_BUTTON_MIN                1
-#define CLICK_BUTTON_LEFT               1
-#define CLICK_BUTTON_MIDDLE             2
-#define CLICK_BUTTON_RIGHT              3
-#define CLICK_BUTTON_MAX                3
+#define SEQ64_CLICK_BUTTON_MIN              1
+#define SEQ64_CLICK_BUTTON_LEFT             1
+#define SEQ64_CLICK_BUTTON_MIDDLE           2
+#define SEQ64_CLICK_BUTTON_RIGHT            3
+#define SEQ64_CLICK_BUTTON_MAX              3
 
-#define CLICK_BAD_VALUE               (-1)
+#define SEQ64_CLICK_BAD_VALUE             (-1)
 
 /**
  *  Readability macros for testing (GDK) button clicks.  Meant for legacy
@@ -64,9 +72,9 @@
  *  However, keep these macros, as they are used in the member functions now.
  */
 
-#define CLICK_IS_LEFT(x)            ((x) == 1)
-#define CLICK_IS_MIDDLE(x)          ((x) == 2)
-#define CLICK_IS_RIGHT(x)           ((x) == 3)
+#define SEQ64_CLICK_IS_LEFT(x)          ((x) == 1)
+#define SEQ64_CLICK_IS_MIDDLE(x)        ((x) == 2)
+#define SEQ64_CLICK_IS_RIGHT(x)         ((x) == 3)
 
 namespace seq64
 {
@@ -101,7 +109,8 @@ private:
 
     /**
      *  The button that was pressed or released.  Left is 1, mmiddle is 2,
-     *  and right is 3.
+     *  and right is 3.  These numbers are defined via macros, and a
+     *  Linux-specific and Gtk-specific.
      */
 
     int m_button;
@@ -120,7 +129,7 @@ public:
     (
         int x,
         int y,
-        int button = CLICK_BUTTON_LEFT,
+        int button = SEQ64_CLICK_BUTTON_LEFT,
         bool press = true,
         seq_modifier_t modkey = SEQ64_NO_MASK
     );
@@ -142,17 +151,17 @@ public:
 
     bool is_left () const
     {
-        return CLICK_IS_LEFT(m_button);
+        return SEQ64_CLICK_IS_LEFT(m_button);
     }
 
     bool is_middle () const
     {
-        return CLICK_IS_MIDDLE(m_button);
+        return SEQ64_CLICK_IS_MIDDLE(m_button);
     }
 
     bool is_right () const
     {
-        return CLICK_IS_RIGHT(m_button);
+        return SEQ64_CLICK_IS_RIGHT(m_button);
     }
 
     /**

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-08-02
- * \updates       2015-10-04
+ * \updates       2015-10-09
  * \license       GNU GPLv2 or above
  *
  *  This code was extracted from seqevent to make that module more
@@ -35,7 +35,7 @@
 #include <gdkmm/cursor.h>
 #include <gtkmm/button.h>
 
-#include "click.hpp"                    /* CLICK_IS_LEFT(), etc.        */
+#include "click.hpp"                    /* SEQ64_CLICK_IS_LEFT(), etc.  */
 #include "seq24seq.hpp"
 #include "seqevent.hpp"
 #include "sequence.hpp"                 /* for full usage of seqevent   */
@@ -87,7 +87,7 @@ Seq24SeqEventInput::on_button_press_event
     {
         int x, w;
         long tick_f;
-        if (CLICK_IS_LEFT(a_ev->button))
+        if (SEQ64_CLICK_IS_LEFT(a_ev->button))
         {
             seqev.convert_x(seqev.m_drop_x, tick_s); /* x,y in to tick/note    */
             tick_f = tick_s + seqev.m_zoom;          /* shift back a few ticks */
@@ -186,7 +186,7 @@ Seq24SeqEventInput::on_button_press_event
                 }
             }
         }
-        if (CLICK_IS_RIGHT(a_ev->button))
+        if (SEQ64_CLICK_IS_RIGHT(a_ev->button))
             set_adding(true, seqev);
     }
     seqev.update_pixmap();          /* if they clicked, something changed */
@@ -214,7 +214,7 @@ Seq24SeqEventInput::on_button_release_event
 
     int delta_x = seqev.m_current_x - seqev.m_drop_x;
     long delta_tick;
-    if (CLICK_IS_LEFT(a_ev->button))
+    if (SEQ64_CLICK_IS_LEFT(a_ev->button))
     {
         if (seqev.m_selecting)
         {
@@ -229,24 +229,24 @@ Seq24SeqEventInput::on_button_release_event
         }
         if (seqev.m_moving)
         {
-            delta_x -= seqev.m_move_snap_offset_x; /* adjust for snap       */
-            seqev.convert_x(delta_x, delta_tick);  /* to screen coordinates */
-            seqev.m_seq.push_undo();              /* still moves events    */
+            delta_x -= seqev.m_move_snap_offset_x;  /* adjust for snap       */
+            seqev.convert_x(delta_x, delta_tick);   /* to screen coordinates */
+            seqev.m_seq.push_undo();                /* still moves events    */
             seqev.m_seq.move_selected_notes(delta_tick, 0);
         }
         set_adding(m_adding, seqev);
     }
-    if (CLICK_IS_RIGHT(a_ev->button))
+    if (SEQ64_CLICK_IS_RIGHT(a_ev->button))
     {
         set_adding(false, seqev);
     }
-    seqev.m_selecting = false;                      /* turn off             */
+    seqev.m_selecting = false;                      /* turn off              */
     seqev.m_moving = false;
     seqev.m_growing = false;
     seqev.m_moving_init = false;
     seqev.m_painting = false;
     seqev.m_seq.unpaint_all();
-    seqev.update_pixmap();            /* if they clicked, something changed */
+    seqev.update_pixmap();                  /* if a click, something changed */
     seqev.draw_pixmap_on_window();
     return true;
 }

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-04
+ * \updates       2015-10-09
  * \license       GNU GPLv2 or above
  *
  */
@@ -703,7 +703,7 @@ perfroll::on_motion_notify_event (GdkEventMotion * ev)
 bool
 perfroll::on_key_press_event (GdkEventKey * ev)
 {
-    keystroke k(ev->keyval, KEYSTROKE_PRESS, ev->state);
+    keystroke k(ev->keyval, SEQ64_KEYSTROKE_PRESS, ev->state);
     bool result = perf().perfroll_key_event(k, m_drop_sequence);
     if (result)
     {

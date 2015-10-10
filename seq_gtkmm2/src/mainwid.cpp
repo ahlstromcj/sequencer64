@@ -25,15 +25,15 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-04
+ * \updates       2015-10-09
  * \license       GNU GPLv2 or above
  *
  */
 
-#include <gtkmm/combo.h>                // Gtk::Entry
+#include <gtkmm/combo.h>                /* Gtk::Entry                   */
 #include <gtkmm/menubar.h>
 
-#include "click.hpp"                    // CLICK_IS_LEFT(), etc.
+#include "click.hpp"                    /* SEQ64_CLICK_IS_LEFT(), etc.  */
 #include "font.hpp"
 #include "mainwid.hpp"
 #include "perform.hpp"
@@ -684,7 +684,7 @@ mainwid::on_button_press_event (GdkEventButton * a_p0)
 {
     grab_focus();
     current_sequence(seq_from_xy(int(a_p0->x), int(a_p0->y)));
-    if (current_sequence() >= 0 && CLICK_IS_LEFT(a_p0->button))
+    if (current_sequence() >= 0 && SEQ64_CLICK_IS_LEFT(a_p0->button))
         m_button_down = true;
 
     return true;
@@ -705,7 +705,10 @@ mainwid::on_button_release_event (GdkEventButton * a_p0)
      * Have we hit a sequence with the L button?  Toggle its play mode.
      */
 
-    if (current_sequence() >= 0 && CLICK_IS_LEFT(a_p0->button)  && ! m_moving)
+    if
+    (
+        current_sequence() >= 0 && SEQ64_CLICK_IS_LEFT(a_p0->button) && ! m_moving
+    )
     {
         if (perf().is_active(current_sequence()))
         {
@@ -714,7 +717,7 @@ mainwid::on_button_release_event (GdkEventButton * a_p0)
             draw_sequence_pixmap_on_window(current_sequence());  // effective?
         }
     }
-    if (CLICK_IS_LEFT(a_p0->button) && m_moving)
+    if (SEQ64_CLICK_IS_LEFT(a_p0->button) && m_moving)
     {
         m_moving = false;
         if          // if we're in a pattern, it is active, and in edit mode...
@@ -737,7 +740,7 @@ mainwid::on_button_release_event (GdkEventButton * a_p0)
             draw_sequence_pixmap_on_window(m_old_seq);          // effective?
         }
     }
-    if (current_sequence() != -1 && CLICK_IS_RIGHT(a_p0->button))
+    if (current_sequence() != -1 && SEQ64_CLICK_IS_RIGHT(a_p0->button))
         popup_menu();
 
     return true;

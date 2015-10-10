@@ -26,14 +26,14 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-04
+ * \updates       2015-10-09
  * \license       GNU GPLv2 or above
  *
  */
 
 #include <gdkmm/cursor.h>
 
-#include "click.hpp"                    /* CLICK_IS_LEFT(), etc.    */
+#include "click.hpp"                    /* SEQ64_CLICK_IS_LEFT(), etc.    */
 #include "event.hpp"
 #include "seqroll.hpp"
 #include "seqdata.hpp"
@@ -102,7 +102,11 @@ Seq24SeqRollInput::on_button_press_event (GdkEventButton * a_ev, seqroll & sroll
     else
     {
         int numsel;
-        if (CLICK_IS_LEFT(a_ev->button) || CLICK_IS_MIDDLE(a_ev->button))
+        if
+        (
+            SEQ64_CLICK_IS_LEFT(a_ev->button) ||
+            SEQ64_CLICK_IS_MIDDLE(a_ev->button)
+        )
         {
             /*
              * Set the selection for normal x, then turn x,y in to tick,note.
@@ -180,7 +184,7 @@ Seq24SeqRollInput::on_button_press_event (GdkEventButton * a_ev, seqroll & sroll
 
                     if
                     (
-                        CLICK_IS_LEFT(a_ev->button) &&
+                        SEQ64_CLICK_IS_LEFT(a_ev->button) &&
                         ! (a_ev->state & GDK_CONTROL_MASK)
                     )
                     {
@@ -218,9 +222,9 @@ Seq24SeqRollInput::on_button_press_event (GdkEventButton * a_ev, seqroll & sroll
 
                     if
                     (
-                        CLICK_IS_MIDDLE(a_ev->button) ||
+                        SEQ64_CLICK_IS_MIDDLE(a_ev->button) ||
                         (
-                            CLICK_IS_LEFT(a_ev->button) &&
+                            SEQ64_CLICK_IS_LEFT(a_ev->button) &&
                             (a_ev->state & GDK_CONTROL_MASK)
                         )
                     )
@@ -242,7 +246,7 @@ Seq24SeqRollInput::on_button_press_event (GdkEventButton * a_ev, seqroll & sroll
                 }
             }
         }
-        if (CLICK_IS_RIGHT(a_ev->button))
+        if (SEQ64_CLICK_IS_RIGHT(a_ev->button))
             set_adding(true, sroll);
     }
     if (needs_update)                   /* if they clicked, something changed */
@@ -277,7 +281,7 @@ Seq24SeqRollInput::on_button_release_event
     int delta_y = sroll.m_current_y - sroll.m_drop_y;
     long delta_tick;
     int delta_note;
-    if (CLICK_IS_LEFT(a_ev->button))
+    if (SEQ64_CLICK_IS_LEFT(a_ev->button))
     {
         if (sroll.m_selecting)
         {
@@ -315,7 +319,7 @@ Seq24SeqRollInput::on_button_release_event
             needs_update = true;
         }
     }
-    if (CLICK_IS_MIDDLE(a_ev->button) || CLICK_IS_LEFT(a_ev->button))
+    if (SEQ64_CLICK_IS_MIDDLE(a_ev->button) || SEQ64_CLICK_IS_LEFT(a_ev->button))
     {
         if (sroll.m_growing)
         {
@@ -331,7 +335,7 @@ Seq24SeqRollInput::on_button_release_event
             needs_update = true;
         }
     }
-    if (CLICK_IS_RIGHT(a_ev->button))
+    if (SEQ64_CLICK_IS_RIGHT(a_ev->button))
     {
         /*
          * Minor new feature.  If the Super (Mod4, Windows) key is

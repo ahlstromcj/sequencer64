@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-02
+ * \updates       2015-10-09
  * \license       GNU GPLv2 or above
  *
  */
@@ -1010,7 +1010,7 @@ mainwnd::on_delete_event (GdkEventAny * a_e)
 bool
 mainwnd::on_key_release_event (GdkEventKey * a_ev)
 {
-    keystroke k(a_ev->keyval, KEYSTROKE_RELEASE);
+    keystroke k(a_ev->keyval, SEQ64_KEYSTROKE_RELEASE);
     (void) perf().mainwnd_key_event(k);
     return false;
 }
@@ -1047,7 +1047,7 @@ mainwnd::on_key_press_event (GdkEventKey * a_ev)
             m_adjust_bpm->set_value(newbpm);
         }
 
-        keystroke k(a_ev->keyval, KEYSTROKE_PRESS);
+        keystroke k(a_ev->keyval, SEQ64_KEYSTROKE_PRESS);
         (void) perf().mainwnd_key_event(k);             // pass to perform
 
         if (a_ev->keyval == PREFKEY(screenset_dn))

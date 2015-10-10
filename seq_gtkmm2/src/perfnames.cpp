@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-04
+ * \updates       2015-10-09
  * \license       GNU GPLv2 or above
  *
  *  This module is almost exclusively user-interface code.  There are some
@@ -34,7 +34,7 @@
 
 #include <gtkmm/adjustment.h>
 
-#include "click.hpp"                    /* CLICK_IS_LEFT(), etc.    */
+#include "click.hpp"                    /* SEQ64_CLICK_IS_LEFT(), etc.    */
 #include "font.hpp"
 #include "perform.hpp"
 #include "perfnames.hpp"
@@ -258,7 +258,7 @@ perfnames::on_button_press_event (GdkEventButton * a_e)
     int y = int(a_e->y);
     int seqnum = convert_y(y);
     current_sequence(seqnum);
-    if (CLICK_IS_LEFT(a_e->button))
+    if (SEQ64_CLICK_IS_LEFT(a_e->button))
     {
         if (perf().is_active(seqnum))
         {
@@ -313,7 +313,7 @@ perfnames::on_expose_event (GdkEventExpose * a_e)
 bool
 perfnames::on_button_release_event (GdkEventButton * p0)
 {
-    if (CLICK_IS_RIGHT(p0->button))
+    if (SEQ64_CLICK_IS_RIGHT(p0->button))
         popup_menu();
 
     return false;

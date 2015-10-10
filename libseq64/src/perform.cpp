@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-09-30
+ * \updates       2015-10-09
  * \license       GNU GPLv2 or above
  *
  */
@@ -774,7 +774,7 @@ perform::get_midi_control_toggle (unsigned int a_seq)
      * (exclusive).
      */
 
-    if (a_seq >= (unsigned int) c_midi_controls)
+    if (a_seq >= static_cast<unsigned int>(c_midi_controls))
         return nullptr;
 
     return &m_midi_cc_toggle[a_seq];
@@ -795,7 +795,7 @@ perform::get_midi_control_on (unsigned int a_seq)
      * Common code
      */
 
-    if (a_seq >= (unsigned int) c_midi_controls)
+    if (a_seq >= static_cast<unsigned int>(c_midi_controls))
         return nullptr;
 
     return &m_midi_cc_on[a_seq];
@@ -816,7 +816,7 @@ perform::get_midi_control_off (unsigned int a_seq)
      * Common code
      */
 
-    if (a_seq >= (unsigned int) c_midi_controls)
+    if (a_seq >= static_cast<unsigned int>(c_midi_controls))
         return nullptr;
 
     return &m_midi_cc_off[a_seq];

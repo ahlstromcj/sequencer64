@@ -45,10 +45,10 @@ namespace seq64
 
 click::click ()
  :
-    m_is_press  (false),
-    m_x         (CLICK_X_MIN),
-    m_y         (CLICK_Y_MIN),
-    m_button    (CLICK_BUTTON_LEFT),
+    m_is_press  (SEQ64_CLICK_RELEASE),          /* false */
+    m_x         (SEQ64_CLICK_X_MIN),
+    m_y         (SEQ64_CLICK_Y_MIN),
+    m_button    (SEQ64_CLICK_BUTTON_LEFT),
     m_modifier  (SEQ64_NO_MASK)
 {
     // Empty body
@@ -68,17 +68,17 @@ click::click (int x, int y, int button, bool press, seq_modifier_t modkey)
     m_button    (button),
     m_modifier  (modkey)
 {
-    if (x < CLICK_X_MIN || x >= CLICK_X_MAX)
-        m_x = CLICK_BAD_VALUE;
+    if (x < SEQ64_CLICK_X_MIN || x >= SEQ64_CLICK_X_MAX)
+        m_x = SEQ64_CLICK_BAD_VALUE;
 
-    if (y < CLICK_Y_MIN || y >= CLICK_Y_MAX)
-        m_y = CLICK_BAD_VALUE;
+    if (y < SEQ64_CLICK_Y_MIN || y >= SEQ64_CLICK_Y_MAX)
+        m_y = SEQ64_CLICK_BAD_VALUE;
 
-    if (button < CLICK_BUTTON_MIN || button > CLICK_BUTTON_MAX)
-        m_button = CLICK_BAD_VALUE;
+    if (button < SEQ64_CLICK_BUTTON_MIN || button > SEQ64_CLICK_BUTTON_MAX)
+        m_button = SEQ64_CLICK_BAD_VALUE;
 
-    unsigned int um = (unsigned int)(modkey);
-    if (um < (unsigned int)(SEQ64_NO_MASK) || um > (unsigned int)(SEQ64_MASK_MAX))
+    unsigned int um = static_cast<unsigned int>(modkey);
+    if (um > static_cast<unsigned int>(SEQ64_MASK_MAX))
         m_modifier = SEQ64_MASK_MAX;
 }
 

@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-09-21
- * \updates       2015-10-04
+ * \updates       2015-10-09
  * \license       GNU GPLv2 or above
  *
  *  Most of the GUI modules are publicly derived from Gtk::DrawingArea,
@@ -44,8 +44,16 @@
  *  keystroke is pressed, or released.
  */
 
-#define KEYSTROKE_RELEASE       false
-#define KEYSTROKE_PRESS         true
+#define SEQ64_KEYSTROKE_RELEASE         false
+#define SEQ64_KEYSTROKE_PRESS           true
+
+/**
+ *  Range limits for the various integer parameters.  Used for sanity-checking
+ *  and unit-testing.
+ */
+
+#define SEQ64_KEYSTROKE_MIN             0x0000
+#define SEQ64_KEYSTROKE_MAX             0xffff
 
 namespace seq64
 {
@@ -62,14 +70,17 @@ private:
 
     /**
      *  Determines if the key was a press or a release.  See the
-     *  KEYSTROKE_PRESS and KEYSTROKE_RELEASE readability macros.
+     *  SEQ64_KEYSTROKE_PRESS and SEQ64_KEYSTROKE_RELEASE readability macros.
      */
 
     bool m_is_press;                    /* versus a release of the key */
 
     /**
-     *  The key that was pressed or released.  Left is 1, mmiddle is 2,
-     *  and right is 3.
+     *  The key that was pressed or released.  Generally, the extended ASCII
+     *  range (0 to 255) is supported.  However, Gtk-2.x/3.x will generally
+     *  support the full gamut of characters defined in the gdk_basic_keys.h
+     *  module.  We define minimum and maximum range macros for keystrokes that
+     *  are a bit generous.
      */
 
     unsigned int m_key;

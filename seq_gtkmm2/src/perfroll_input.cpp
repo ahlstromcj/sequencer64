@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-03
+ * \updates       2015-10-09
  * \license       GNU GPLv2 or above
  *
  */
@@ -33,7 +33,7 @@
 #include <gtkmm/button.h>
 #include <gdkmm/cursor.h>
 
-#include "click.hpp"                    /* CLICK_IS_LEFT(), etc.    */
+#include "click.hpp"                    /* SEQ64_CLICK_IS_LEFT(), etc.    */
 #include "perform.hpp"
 #include "perfroll_input.hpp"
 #include "perfroll.hpp"
@@ -111,15 +111,15 @@ FruityPerfInput::on_button_press_event (GdkEventButton * a_ev, perfroll & roll)
     (
         roll.m_drop_x, roll.m_drop_y, roll.m_drop_tick, dropseq
     );
-    if (CLICK_IS_LEFT(a_ev->button))            /* left mouse button        */
+    if (SEQ64_CLICK_IS_LEFT(a_ev->button))
     {
         on_left_button_pressed(a_ev, roll);
     }
-    else if (CLICK_IS_RIGHT(a_ev->button))      /* right mouse button       */
+    else if (SEQ64_CLICK_IS_RIGHT(a_ev->button))
     {
         on_right_button_pressed(a_ev, roll);
     }
-    else if (CLICK_IS_MIDDLE(a_ev->button))     /* left-ctrl, middle: split */
+    else if (SEQ64_CLICK_IS_MIDDLE(a_ev->button))   /* left-ctrl, middle    */
     {
         if (p.is_active(dropseq))
         {
@@ -277,7 +277,7 @@ FruityPerfInput::on_button_release_event (GdkEventButton * a_ev, perfroll & roll
 {
     m_current_x = (int) a_ev->x;
     m_current_y = (int) a_ev->y;
-    if (CLICK_IS_LEFT(a_ev->button) || CLICK_IS_RIGHT(a_ev->button))
+    if (SEQ64_CLICK_IS_LEFT(a_ev->button) || SEQ64_CLICK_IS_RIGHT(a_ev->button))
         m_adding_pressed = false;                   // done here...
 
     perform & p = roll.perf();
@@ -392,7 +392,7 @@ Seq24PerfInput::on_button_press_event (GdkEventButton * a_ev, perfroll & roll)
         roll.m_drop_x, roll.m_drop_y, roll.m_drop_tick, dropseq
     );
 
-    if (CLICK_IS_LEFT(a_ev->button))
+    if (SEQ64_CLICK_IS_LEFT(a_ev->button))
     {
         long tick = roll.m_drop_tick;
         if (m_adding)         /* add a new note if we didn't select anything */
@@ -467,11 +467,11 @@ Seq24PerfInput::on_button_press_event (GdkEventButton * a_ev, perfroll & roll)
             }
         }
     }
-    else if (CLICK_IS_RIGHT(a_ev->button))
+    else if (SEQ64_CLICK_IS_RIGHT(a_ev->button))
     {
         set_adding(true, roll);
     }
-    else if (CLICK_IS_MIDDLE(a_ev->button))                   /* split    */
+    else if (SEQ64_CLICK_IS_MIDDLE(a_ev->button))                   /* split    */
     {
         if (p.is_active(dropseq))
         {
@@ -494,12 +494,12 @@ Seq24PerfInput::on_button_press_event (GdkEventButton * a_ev, perfroll & roll)
 bool
 Seq24PerfInput::on_button_release_event (GdkEventButton * a_ev, perfroll & roll)
 {
-    if (CLICK_IS_LEFT(a_ev->button))
+    if (SEQ64_CLICK_IS_LEFT(a_ev->button))
     {
         if (m_adding)
             m_adding_pressed = false;
     }
-    else if (CLICK_IS_RIGHT(a_ev->button))
+    else if (SEQ64_CLICK_IS_RIGHT(a_ev->button))
     {
         /*
          * Minor new feature.  If the Super (Mod4, Windows) key is

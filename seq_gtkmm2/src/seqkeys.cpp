@@ -25,14 +25,14 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-04
+ * \updates       2015-10-09
  * \license       GNU GPLv2 or above
  *
  */
 
 #include <gtkmm/adjustment.h>
 
-#include "click.hpp"                    /* CLICK_IS_LEFT() etc.     */
+#include "click.hpp"                    /* SEQ64_CLICK_IS_LEFT() etc.     */
 #include "font.hpp"
 #include "seqkeys.hpp"
 #include "sequence.hpp"
@@ -332,7 +332,7 @@ seqkeys::on_button_press_event (GdkEventButton * ev)
 {
     if (ev->type == GDK_BUTTON_PRESS)
     {
-        if (CLICK_IS_LEFT(ev->button))
+        if (SEQ64_CLICK_IS_LEFT(ev->button))
         {
             int y = int(ev->y + m_scroll_offset_y);
             int note;
@@ -358,7 +358,7 @@ seqkeys::on_button_release_event (GdkEventButton * ev)
 {
     if (ev->type == GDK_BUTTON_RELEASE)
     {
-        if (CLICK_IS_LEFT(ev->button) && m_keying)
+        if (SEQ64_CLICK_IS_LEFT(ev->button) && m_keying)
         {
             m_keying = false;
             m_seq.play_note_off(m_keying_note);

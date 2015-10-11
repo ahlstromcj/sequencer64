@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-10
+ * \updates       2015-10-11
  * \license       GNU GPLv2 or above
  *
  *  For a quick guide to the MIDI format, see, for example:
@@ -41,12 +41,19 @@
  *  the proprietary track in Sequencer24.
  */
 
+#define USE_MIDI_VECTOR
+
 #include <fstream>
 
 #include "perform.hpp"                  /* must precede midifile.hpp !  */
 #include "midifile.hpp"                 /* seq64::midifile              */
-#include "midi_list.hpp"                /* seq64::midi_list container   */
 #include "sequence.hpp"                 /* seq64::sequence              */
+
+#if defined USE_MIDI_VECTOR
+#include "midi_vector.hpp"              /* seq64::midi_vector container */
+#else
+#include "midi_list.hpp"                /* seq64::midi_list container   */
+#endif
 
 /**
  *  A manifest constant for controlling the length of a line-reading
@@ -227,11 +234,11 @@ midifile::parse (perform & a_perf, int a_screen_set)
     );
     if (! file.is_open())
     {
-        errprintf("Error opening MIDI file '%s'", m_name.c_str());
+        errprintf("error opening MIDI file '%s'", m_name.c_str());
         return false;
     }
 
-    int file_size = file.tellg();                   /* get end offset ??  */
+    int file_size = file.tellg();                   /* get end offset     */
     file.seekg(0, std::ios::beg);                   /* seek to start      */
     try
     {
@@ -239,7 +246,7 @@ midifile::parse (perform & a_perf, int a_screen_set)
     }
     catch (const std::bad_alloc & ex)
     {
-        errprint("Memory allocation failed in midifile::parse()");
+        errprint("memory allocation failed in midifile::parse()");
         return false;
     }
     file.read((char *) &m_data[0], file_size);      /* vector == array :-)  */
@@ -252,12 +259,12 @@ midifile::parse (perform & a_perf, int a_screen_set)
     unsigned short ppqn = read_short();
     if (ID != 0x4D546864)                           /* magic number 'MThd' */
     {
-        errprintf("Invalid MIDI header detected: %8lX\n", ID);
+        errprintf("invalid MIDI header detected: %8lX\n", ID);
         return false;
     }
     if (Format != 1)                                /* only support format 1 */
     {
-        errprintf("Unsupported MIDI format detected: %d\n", Format);
+        errprintf("unsupported MIDI format detected: %d\n", Format);
         return false;
     }
 
@@ -290,7 +297,7 @@ midifile::parse (perform & a_perf, int a_screen_set)
             bool done = false;                      /* done for each track   */
             if (s == nullptr)
             {
-                errprint("Memory allocation failed, midifile::parse()");
+                errprint("memory allocation failed, midifile::parse()");
                 return false;
             }
             sequence & seq = *s;
@@ -331,12 +338,11 @@ midifile::parse (perform & a_perf, int a_screen_set)
                     /* some files have velocity == 0 as Note Off */
 
                     if ((status & 0xF0) == EVENT_NOTE_ON && data[1] == 0)
-                    {
                         e.set_status(EVENT_NOTE_OFF);
-                    }
+
                     e.set_data(data[0], data[1]);         /* set data and add */
                     seq.add_event(&e);
-                    seq.set_midi_channel(status & 0x0F); /* set midi channel */
+                    seq.set_midi_channel(status & 0x0F);  /* set midi channel */
                     break;
 
                 case EVENT_PROGRAM_CHANGE:                /* one data item    */
@@ -345,7 +351,7 @@ midifile::parse (perform & a_perf, int a_screen_set)
                     data[0] = read_byte();
                     e.set_data(data[0]);                  /* set data and add */
                     seq.add_event(&e);
-                    seq.set_midi_channel(status & 0x0F); /* set midi channel */
+                    seq.set_midi_channel(status & 0x0F);  /* set midi channel */
                     break;
 
                 case 0xF0:              /* Meta MIDI events, should be FF !!  */
@@ -448,18 +454,18 @@ midifile::parse (perform & a_perf, int a_screen_set)
                     {
                         len = read_varinum();                /* sysex           */
                         m_pos += len;                    /* skip it         */
-                        errprint("No support for SYSEX messages, skipping...");
+                        errprint("no support for SYSEX messages, skipping...");
                     }
                     else
                     {
-                        errprintf("Unexpected System event: 0x%.2X", status);
+                        errprintf("unexpected System event: 0x%.2X", status);
                         return false;
                     }
                     break;
 
                 default:
 
-                    errprintf("Unsupported MIDI event: %x\n", int(status));
+                    errprintf("unsupported MIDI event: %x\n", int(status));
                     return false;
                     break;
                 }
@@ -478,7 +484,7 @@ midifile::parse (perform & a_perf, int a_screen_set)
 
             if (curtrack > 0)                          /* MThd comes first */
             {
-                errprintf("Unsupported MIDI chunk, skipping: %8lX\n", ID);
+                errprintf("unsupported MIDI chunk, skipping: %8lX\n", ID);
             }
             m_pos += TrackLength;
         }
@@ -959,11 +965,15 @@ midifile::write (perform & a_perf)
         if (a_perf.is_active(curtrack))
         {
             sequence & seq = *a_perf.get_sequence(curtrack);
-            midi_list lst;
+#if defined USE_MIDI_VECTOR
+            midi_vector lst(seq);
+#else
+            midi_list lst(seq);
+#endif
             seq.fill_container(lst, curtrack);
-            write_long(0x4D54726B);         /* magic number 'MTrk'      */
+            write_long(0x4D54726B);         /* magic number 'MTrk'          */
             write_long(lst.size());
-            while (lst.size() > 0)            /* write the track data     */
+            while (! lst.done())            /* write the track data         */
             {
                 /*
                  * \warning
@@ -1117,6 +1127,11 @@ midifile::track_name_size (const std::string & trackname) const
  *  Writes out a sequence number.  The format is "FF 00 02 ss ss", where
  *  "02" is actually the constant length of the data.  We have to precede
  *  these values with a 0 delta time, of course.
+ *
+ *  Now, for sequence 0, an alternate format is "FF 00 00".  But that
+ *  format can only occur in the first track, and the rest of the tracks then
+ *  don't need a sequence number, since it is assume to increment.  This
+ *  application doesn't bother with that shortcut.
  */
 
 void

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-19
- * \updates       2015-10-02
+ * \updates       2015-10-11
  * \license       GNU GPLv2 or above
  *
  */
@@ -70,7 +70,7 @@ event_list::event_key::event_key (const event & e)
 }
 
 /**
- *  Provides the minimal operator needed to sort event using an event_key.
+ *  Provides the minimal operator needed to sort events using an event_key.
  */
 
 bool
@@ -158,13 +158,15 @@ event_list::add (const event & e, bool postsort)
 {
 
 #ifdef USE_EVENT_MAP
+
     event_key key(e);
-#if __cplusplus >= 201103L
+#if __cplusplus >= 201103L              /* C++11                    */
     EventsPair p = std::make_pair(key, e);
 #else
     EventsPair p = std::make_pair<event_key, event>(key, e);
 #endif
     m_events.insert(p);
+
 #else
     m_events.push_front(e);
 #endif
@@ -203,7 +205,8 @@ event_list::add (const event & e, bool postsort)
  *  is supported, merging will be less efficient than for the list
  *  version.  Also, we need a way to include duplicates of each event, so
  *  we need to use a multi-map.  Once all this setup, merging is really
- *  just insertion.
+ *  just insertion.  And, since sorting isn't needed, the multimap actually
+ *  turns out to be faster.
  */
 
 void

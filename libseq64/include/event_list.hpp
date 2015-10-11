@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-19
- * \updates       2015-09-20
+ * \updates       2015-10-11
  * \license       GNU GPLv2 or above
  *
  *  This module extracts the event-list functionality from the sequencer
@@ -40,6 +40,11 @@
  *  List versus Map:  #ifdef or derivation from an interface?  For our
  *  purposes, #ifdef might be simplest, and we only want to pick the
  *  fastest one, ultimately.
+ *
+ *  It turns out the the std::multimap implement is a little bit faster in
+ *  release mode, and a lot faster in debug mode.  Why?  Probably because
+ *  the std::list implementation calls std::list::sort() a lot, and the
+ *  std::multimap implementation is a lot faster at sorting.
  */
 
 #include <string>
@@ -84,6 +89,7 @@ namespace seq64
 class event_list
 {
 
+    friend class midi_container;        // access to event_list::iterator
     friend class sequence;              // access to event_list::iterator
 
 private:
@@ -198,7 +204,7 @@ public:
      *  Needed as a special case when std::list is used.
      */
 
-    void push_back(event & e)
+    void push_back (event & e)
     {
         m_events.push_back(e);
     }
@@ -248,6 +254,19 @@ public:
      */
 
     static event & dref (iterator ie)
+    {
+#ifdef USE_EVENT_MAP
+        return ie->second;
+#else
+        return *ie;
+#endif
+    }
+
+    /**
+     *  Dereference const access for list or map.
+     */
+
+    static const event & dref (const_iterator ie)
     {
 #ifdef USE_EVENT_MAP
         return ie->second;

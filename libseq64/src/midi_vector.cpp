@@ -17,20 +17,20 @@
  */
 
 /**
- * \file          midi_list.cpp
+ * \file          midi_vector.cpp
  *
  *  This module declares/defines the concrete class for a container of MIDI
  *  data.
  *
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
- * \date          2015-10-10
+ * \date          2015-10-11
  * \updates       2015-10-11
  * \license       GNU GPLv2 or above
  *
  */
 
-#include "midi_list.hpp"                /* seq64::midi_container ABC    */
+#include "midi_vector.hpp"                /* seq64::midi_container ABC    */
 
 namespace seq64
 {
@@ -39,10 +39,10 @@ namespace seq64
  *    This constructor fills in the members.
  */
 
-midi_list::midi_list (sequence & seq)
+midi_vector::midi_vector (sequence & seq)
  :
     midi_container  (seq),
-    m_char_list     ()
+    m_char_vector   ()
 {
     // Empty body
 }
@@ -50,7 +50,7 @@ midi_list::midi_list (sequence & seq)
 }           // namespace seq64
 
 /*
- * midi_list.cpp
+ * midi_vector.cpp
  *
  * vim: sw=4 ts=4 wm=4 et ft=cpp
  */

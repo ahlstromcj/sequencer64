@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-10
+ * \updates       2015-10-11
  * \license       GNU GPLv2 or above
  *
  */
@@ -3303,6 +3303,8 @@ sequence::quantize_events
     verify_and_link();
 }
 
+#if 0
+
 /**
  *  This function masks off the lower 8 bits of the long parameter, then
  *  shifts it right 7, and, if there are still set bits, it encodes it
@@ -3349,6 +3351,8 @@ sequence::add_long_list (midi_container & c, long a_x)
     c.put((a_x & 0x000000FF));
 }
 
+#endif  // 0
+
 /**
  *  This function fills the given character list with MIDI data from the
  *  current sequence, preparatory to writing it to a file.
@@ -3361,115 +3365,16 @@ sequence::add_long_list (midi_container & c, long a_x)
  *      inserts them in backwards order.  (These events are then popped back,
  *      which restores the order, with some exceptions).
  *
- * \param a_pos
+ * \param tracknumber
  *      Provides the track number.  This number is masked into the track
  *      information.
  */
 
 void
-sequence::fill_container (midi_container & c, int a_pos)
+sequence::fill_container (midi_container & c, int tracknumber)
 {
     automutex locker(m_mutex);
-    add_list_var(c, 0);                                 /* sequence number  */
-    c.put(0xFF);
-    c.put(0x00);
-    c.put(0x02);
-    c.put((a_pos & 0xFF00) >> 8);
-    c.put(a_pos & 0x00FF);
-    add_list_var(c, 0);                                 /* track name?      */
-    c.put(0xFF);
-    c.put(0x03);
-
-    int length =  m_name.length();
-    if (length > 0x7F)
-        length = 0x7f;
-
-    c.put(midibyte(length));
-    for (int i = 0; i < length; i++)
-        c.put(midibyte(m_name[i]));
-
-    long timestamp = 0;
-    long delta_time = 0;
-    long prev_timestamp = 0;
-    for (event_list::iterator i = m_events.begin(); i != m_events.end(); i++)
-    {
-        event & er = DREF(i);
-        const event & e = er;
-        timestamp = e.get_timestamp();
-        delta_time = timestamp - prev_timestamp;
-        prev_timestamp = timestamp;
-        add_list_var(c, delta_time);                /* encode delta_time    */
-
-        /* timestamp is encoded, now do the status and data */
-
-        unsigned char d0 = e.m_data[0];
-        unsigned char d1 = e.m_data[1];
-        c.put(e.m_status | m_midi_channel);         /* add channel          */
-        switch (e.m_status & 0xF0)
-        {
-        case 0x80:
-        case 0x90:
-        case 0xA0:
-        case 0xB0:
-        case 0xE0:
-
-            c.put(d0);
-            c.put(d1);
-            break;
-
-        case 0xC0:
-        case 0xD0:
-
-            c.put(d0);
-            break;
-
-        default:
-            break;
-        }
-    }
-
-    int num_triggers = m_triggers.size();
-    add_list_var(c, 0);
-    c.put(0xFF);
-    c.put(0x7F);
-    add_list_var(c, (num_triggers * 3 * 4) + 4);
-    add_long_list(c, c_triggers_new);
-
-    Triggers::iterator t = m_triggers.begin();
-    for (int i = 0; i < num_triggers; i++)
-    {
-        add_long_list(c, t->m_tick_start);
-        add_long_list(c, t->m_tick_end);
-        add_long_list(c, t->m_offset);
-        t++;
-    }
-    add_list_var(c, 0);                            /* bus              */
-    c.put(0xFF);
-    c.put(0x7F);
-    c.put(0x05);
-    add_long_list(c, c_midibus);
-    c.put(m_bus);
-
-    add_list_var(c, 0);                            /* timesig          */
-    c.put(0xFF);
-    c.put(0x7F);
-    c.put(0x06);
-    add_long_list(c, c_timesig);
-    c.put(m_time_beats_per_measure);
-    c.put(m_time_beat_width);
-
-    add_list_var(c, 0);                            /* channel          */
-    c.put(0xFF);
-    c.put(0x7F);
-    c.put(0x05);
-    add_long_list(c, c_midich);
-    c.put(m_midi_channel);
-
-    delta_time = m_length - prev_timestamp;        /* meta track end   */
-    add_list_var(c, delta_time);
-    c.put(0xFF);
-    c.put(0x2F);
-    c.put(0x00);
+    c.fill(tracknumber);
 }
 
 }           // namespace seq64

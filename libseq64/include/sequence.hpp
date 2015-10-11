@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-10
+ * \updates       2015-10-11
  * \license       GNU GPLv2 or above
  *
  */
@@ -124,6 +124,12 @@ class sequence
 public:
 
     /**
+     *  Exposes the triggers, currently needed for midi_container only.
+     */
+
+    typedef std::list<trigger> Triggers;
+
+    /**
      *  This enumeration is used in selecting events and note.  Se the
      *  select_note_events() and select_events() functions.
      *
@@ -159,9 +165,7 @@ public:
 private:
 
     typedef std::stack<event_list> EventStack;
-    typedef std::list<trigger> Triggers;
     typedef std::stack<Triggers> TriggerStack;
-//  typedef std::list<char> CharList;       /* try "unsigned char" or "byte" */
 
 private:
 
@@ -263,7 +267,25 @@ public:
     sequence ();
     ~sequence ();
 
-    sequence & operator = (const sequence & a_rhs);
+    sequence & operator = (const sequence & rhs);
+
+    /**
+     * \getter m_events
+     */
+
+    event_list & events ()
+    {
+        return m_events;
+    }
+
+    /**
+     * \getter m_triggers
+     */
+
+    Triggers & triggers ()
+    {
+        return m_triggers;
+    }
 
     int event_count () const;
     void push_undo ();
@@ -271,11 +293,11 @@ public:
     void pop_redo ();
     void push_trigger_undo ();
     void pop_trigger_undo ();
-    void set_name (const std::string & a_name);
-    void set_name (char * a_name);
-    void set_measures (long a_length_measures);
+    void set_name (const std::string & name);
+    void set_name (char * name);
+    void set_measures (long length_measures);
     long get_measures ();
-    void set_bpm (long a_beats_per_measure);
+    void set_bpm (long beats_per_measure);
 
     /**
      * \getter m_time_beats_per_measure
@@ -286,7 +308,7 @@ public:
         return m_time_beats_per_measure;
     }
 
-    void set_bw (long a_beat_width);
+    void set_bw (long beat_width);
 
     /**
      * \getter m_time_beat_width
@@ -299,15 +321,15 @@ public:
         return m_time_beat_width;
     }
 
-    void set_rec_vol (long a_rec_vol);
+    void set_rec_vol (long rec_vol);
 
     /**
      * \setter m_song_mute
      */
 
-    void set_song_mute (bool a_mute)
+    void set_song_mute (bool mute)
     {
-        m_song_mute = a_mute;
+        m_song_mute = mute;
     }
 
     /**
@@ -320,7 +342,7 @@ public:
     }
 
     /**
-     * \getter m_name
+     * \getter m_name pointer
      */
 
     const char * get_name () const
@@ -329,12 +351,21 @@ public:
     }
 
     /**
+     * \getter m_name
+     */
+
+    const std::string & name () const
+    {
+        return m_name;
+    }
+
+    /**
      * \setter m_editing
      */
 
-    void set_editing (bool a_edit)
+    void set_editing (bool edit)
     {
-        m_editing = a_edit;
+        m_editing = edit;
     }
 
     /**
@@ -350,9 +381,9 @@ public:
      * \setter m_raise
      */
 
-    void set_raise (bool a_edit)
+    void set_raise (bool edit)
     {
-        m_raise = a_edit;
+        m_raise = edit;
     }
 
     /**
@@ -364,7 +395,7 @@ public:
         return m_raise;
     }
 
-    void set_length (long a_len, bool a_adjust_triggers = true); /* in ticks */
+    void set_length (long len, bool adjust_triggers = true); /* in ticks */
 
     /**
      * \getter m_length
@@ -420,8 +451,8 @@ public:
         return m_recording;
     }
 
-    void set_snap_tick (int a_st);
-    void set_quantized_rec (bool a_qr);
+    void set_snap_tick (int st);
+    void set_quantized_rec (bool qr);
 
     /**
      * \getter m_quantized_rec
@@ -459,22 +490,22 @@ public:
         return m_midi_channel;
     }
 
-    void set_midi_channel (unsigned char a_ch);
+    void set_midi_channel (unsigned char ch);
     void print ();
     void print_triggers ();
-    void play (long a_tick, bool a_playback_mode);
-    void set_orig_tick (long a_tick);
-    void add_event (const event * a_e);
+    void play (long tick, bool playback_mode);
+    void set_orig_tick (long tick);
+    void add_event (const event * e);
     void add_trigger
     (
-        long a_tick, long a_length,
-        long a_offset = 0, bool a_adjust_offset = true
+        long tick, long length,
+        long offset = 0, bool adjust_offset = true
     );
-    void split_trigger (long a_tick);
-    void grow_trigger (long a_tick_from, long a_tick_to, long a_length);
-    void del_trigger (long a_tick);
-    bool get_trigger_state (long a_tick);
-    bool select_trigger (long a_tick);
+    void split_trigger (long tick);
+    void grow_trigger (long tick_from, long tick_to, long length);
+    void del_trigger (long tick);
+    bool get_trigger_state (long tick);
+    bool select_trigger (long tick);
     bool unselect_triggers ();
     bool intersectTriggers (long position, long & start, long & end);
     bool intersectNotes
@@ -489,13 +520,13 @@ public:
     void paste_trigger ();
     void move_selected_triggers_to
     (
-        long a_tick, bool a_adjust_offset, int a_which = 2
+        long tick, bool adjust_offset, int which = 2
     );
     long get_selected_trigger_start_tick ();
     long get_selected_trigger_end_tick ();
     long get_max_trigger ();
-    void move_triggers (long a_start_tick, long a_distance, bool a_direction);
-    void copy_triggers (long a_start_tick, long a_distance);
+    void move_triggers (long start_tick, long distance, bool direction);
+    void copy_triggers (long start_tick, long distance);
     void clear_triggers ();
 
     /**
@@ -507,7 +538,7 @@ public:
         return m_trigger_offset;
     }
 
-    void set_midi_bus (char a_mb);
+    void set_midi_bus (char mb);
 
     /**
      * \getter m_bus
@@ -518,52 +549,52 @@ public:
         return m_bus;
     }
 
-    void set_master_midi_bus (mastermidibus * a_mmb);
+    void set_master_midi_bus (mastermidibus * mmb);
     int select_note_events
     (
-        long a_tick_s, int a_note_h,
-        long a_tick_f, int a_note_l, select_action_e a_action
+        long tick_s, int note_h,
+        long tick_f, int note_l, select_action_e action
     );
     int select_events
     (
-        long a_tick_s, long a_tick_f,
-        unsigned char a_status, unsigned char a_cc, select_action_e a_action
+        long tick_s, long tick_f,
+        unsigned char status, unsigned char cc, select_action_e action
     );
     int select_events
     (
-        unsigned char a_status, unsigned char a_cc, bool a_inverse = false
+        unsigned char status, unsigned char cc, bool inverse = false
     );
     int get_num_selected_notes ();
-    int get_num_selected_events (unsigned char a_status, unsigned char a_cc);
+    int get_num_selected_events (unsigned char status, unsigned char cc);
     void select_all ();
     void copy_selected ();
-    void paste_selected (long a_tick, int a_note);
+    void paste_selected (long tick, int note);
     void get_selected_box
     (
-        long & a_tick_s, int & a_note_h, long & a_tick_f, int & a_note_l
+        long & tick_s, int & note_h, long & tick_f, int & note_l
     );
     void get_clipboard_box
     (
-        long & a_tick_s, int & a_note_h, long & a_tick_f, int & a_note_l
+        long & tick_s, int & note_h, long & tick_f, int & note_l
     );
-    void move_selected_notes (long a_delta_tick, int a_delta_note);
-    void add_note (long a_tick, long a_length, int a_note, bool a_paint = false);
+    void move_selected_notes (long delta_tick, int delta_note);
+    void add_note (long tick, long length, int note, bool paint = false);
     void add_event
     (
-        long a_tick, unsigned char a_status,
-        unsigned char a_d0, unsigned char a_d1, bool a_paint = false
+        long tick, unsigned char status,
+        unsigned char d0, unsigned char d1, bool paint = false
     );
-    void stream_event (event * a_ev);
+    void stream_event (event * ev);
     void change_event_data_range
     (
-        long a_tick_s, long a_tick_f,
-        unsigned char a_status, unsigned char a_cc,
-        int a_d_s, int a_d_f
+        long tick_s, long tick_f,
+        unsigned char status, unsigned char cc,
+        int d_s, int d_f
     );
-    void increment_selected (unsigned char a_status, unsigned char a_control);
-    void decrement_selected (unsigned char a_status, unsigned char a_control);
-    void grow_selected (long a_delta_tick);
-    void stretch_selected (long a_delta_tick);
+    void increment_selected (unsigned char status, unsigned char control);
+    void decrement_selected (unsigned char status, unsigned char control);
+    void grow_selected (long delta_tick);
+    void stretch_selected (long delta_tick);
     void remove_marked ();
     void mark_selected ();
     void unpaint_all ();
@@ -571,53 +602,55 @@ public:
     void verify_and_link ();
     void link_new ();
     void zero_markers ();
-    void play_note_on (int a_note);
-    void play_note_off (int a_note);
+    void play_note_on (int note);
+    void play_note_off (int note);
     void off_playing_notes ();
     void reset_draw_marker ();
     void reset_draw_trigger_marker ();
     draw_type get_next_note_event
     (
-        long * a_tick_s, long * a_tick_f, int * a_note,
-        bool * a_selected, int * a_velocity
+        long * tick_s, long * tick_f, int * note,
+        bool * selected, int * velocity
     );
     int get_lowest_note_event ();
     int get_highest_note_event ();
     bool get_next_event
     (
-        unsigned char a_status, unsigned char a_cc,
-        long * a_tick, unsigned char * a_D0, unsigned char * a_D1,
-        bool * a_selected
+        unsigned char status, unsigned char cc,
+        long * tick, unsigned char * d0, unsigned char * d1,
+        bool * selected
     );
-    bool get_next_event (unsigned char * a_status, unsigned char * a_cc);
+    bool get_next_event (unsigned char * status, unsigned char * cc);
     bool get_next_trigger
     (
-        long * a_tick_on, long * a_tick_off,
-        bool * a_selected, long * a_tick_offset
+        long * tick_on, long * tick_off,
+        bool * selected, long * tick_offset
     );
-    void fill_container (midi_container & c, int a_pos);
+    void fill_container (midi_container & c, int tracknumber);
     void quantize_events
     (
-        unsigned char a_status, unsigned char a_cc,
-        long a_snap_tick, int a_divide, bool a_linked = false
+        unsigned char status, unsigned char cc,
+        long snap_tick, int divide, bool linked = false
     );
-    void transpose_notes (int a_steps, int a_scale);
+    void transpose_notes (int steps, int scale);
 
 private:
 
+#if 0
     /*
      * Used in fill_list().
      */
 
-    void add_list_var (midi_container & c, long a_var);
-    void add_long_list (midi_container & c, long a_x);
+    void add_list_var (midi_container & c, long v);
+    void add_long_list (midi_container & c, long x);
+#endif  // 0
 
-    void put_event_on_bus (event * a_e);
+    void put_event_on_bus (event * ev);
     void remove_all ();
-    void set_trigger_offset (long a_trigger_offset);
-    void split_trigger (trigger & trig, long a_split_tick);
-    void adjust_trigger_offsets_to_length( long a_new_len);
-    long adjust_offset (long a_offset);
+    void set_trigger_offset (long trigger_offset);
+    void split_trigger (trigger & trig, long split_tick);
+    void adjust_trigger_offsets_to_length (long new_len);
+    long adjust_offset (long offset);
     void remove (event_list::iterator i);
     void remove (event * e);
 

@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-09-20
+ * \updates       2015-10-10
  * \license       GNU GPLv2 or above
  *
  *  This module also declares/defines the various constants, status-byte
@@ -204,6 +204,15 @@ public:
     long get_timestamp () const
     {
         return m_timestamp;
+    }
+
+    /**
+     * \getter m_status
+     */
+
+    unsigned char status () const
+    {
+        return m_status;
     }
 
     /**
@@ -389,6 +398,15 @@ public:
     }
 
     void make_clock ();                // set status to MIDI clock
+
+    /**
+     * \getter m_data[]
+     */
+
+    unsigned char data (int index) const    /* index not checked, for speed */
+    {
+        return m_data[index];
+    }
 
     /**
      *  Assuming m_data[] holds a note, get the note number, which is in the

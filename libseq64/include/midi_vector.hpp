@@ -1,5 +1,5 @@
-#ifndef SEQ64_MIDI_LIST_HPP
-#define SEQ64_MIDI_LIST_HPP
+#ifndef SEQ64_MIDI_VECTOR_HPP
+#define SEQ64_MIDI_VECTOR_HPP
 
 /*
  *  This file is part of seq24/sequencer64.
@@ -20,27 +20,22 @@
  */
 
 /**
- * \file          midi_list.hpp
+ * \file          midi_vector.hpp
  *
  *  This module declares/defines the concrete class for a container of MIDI
  *  data.
  *
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
- * \date          2015-10-10
+ * \date          2015-10-11
  * \updates       2015-10-11
  * \license       GNU GPLv2 or above
  *
- *  This implementation mirrors the original Seq24 handling of events that get
- *  added to a sequence.  In that implement, an std::list for MIDI bytes was
- *  created.  The events in the sequence, already sorted, are pushed to the
- *  front of the list.  Thus, they are inserted backwards.  Then, for writing
- *  to the MIDI file they are popped from the back, which restores the order
- *  of the events... except for events that have the same time-stamp and rank.
- *  Those end up getting reversed every time the MIDI file is written.
+ *  This implementation attempts to avoid the reversals that can occur using
+ *  the list implementation.
  */
 
-#include <list>                         /* std::list<>                  */
+#include <vector>                       /* std::vector<>                */
 
 #include "midi_container.hpp"           /* seq64::midi_container ABC    */
 
@@ -48,37 +43,35 @@ namespace seq64
 {
 
 /**
- *    This class is the std::list implementation of the midi_container.
+ *    This class is the std::vector implementation of the midi_container.
  */
 
-class midi_list : public midi_container
+class midi_vector : public midi_container
 {
 
 private:
 
     /**
-     *  Provides the type of this container.  This type is basically the same
-     *  as the container used in the midifile module, and almost identical to
-     *  the CharList type defined in the sequence module.
+     *  Provides the type of this container.
      */
 
-    typedef std::list<midibyte> CharList;
+    typedef std::vector<midibyte> CharVector;
 
     /**
      *  The container itself.
      */
 
-    CharList m_char_list;
+    CharVector m_char_vector;
 
 public:
 
-    midi_list (sequence & seq);
+    midi_vector (sequence & seq);
 
     /**
      *  A rote constructor needed for a base class.
      */
 
-    virtual ~midi_list()
+    virtual ~midi_vector()
     {
         // empty body
     }
@@ -89,17 +82,17 @@ public:
 
     virtual std::size_t size () const
     {
-        return m_char_list.size();
+        return m_char_vector.size();
     }
 
     /**
-     *  For popping data from the MIDI list, we are done when the container is
-     *  empty.
+     *  For iterating through the data in the MIDI vector, we are done when
+     *  we've gotten the last element of the container.
      */
 
     virtual bool done () const
     {
-        return size() == 0;
+        return position() >= size();
     }
 
     /**
@@ -110,7 +103,7 @@ public:
 
     virtual void put (midibyte b)
     {
-        m_char_list.push_front(b);
+        m_char_vector.push_back(b);
     }
 
     /**
@@ -121,8 +114,8 @@ public:
 
     virtual midibyte get ()
     {
-        midibyte result = m_char_list.back();
-        m_char_list.pop_back();
+        midibyte result = m_char_vector[position()];
+        position_increment();
         return result;
     }
 
@@ -130,10 +123,10 @@ public:
 
 }           // namespace seq64
 
-#endif      // SEQ64_MIDI_LIST_HPP
+#endif      // SEQ64_MIDI_VECTOR_HPP
 
 /*
- * midi_list.hpp
+ * midi_vector.hpp
  *
  * vim: sw=4 ts=4 wm=4 et ft=cpp
  */

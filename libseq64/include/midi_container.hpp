@@ -22,13 +22,13 @@
 /**
  * \file          midi_container.hpp
  *
- *  This module declares the abstract base class for configuration and
- *  options files.
+ *  This module declares the abstract base class for the management of some
+ *  MIDI events, using the sequence class.
  *
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-10-10
- * \updates       2015-10-10
+ * \updates       2015-10-11
  * \license       GNU GPLv2 or above
  *
  */
@@ -37,6 +37,8 @@
 
 namespace seq64
 {
+
+class sequence;
 
 /**
  *  Provides a fairly common type definition for a byte value.
@@ -55,15 +57,22 @@ class midi_container
 private:
 
     /**
+     *  Provide a hook into a sequence so that we can exchange data with a
+     *  sequence object.
+     */
+
+    sequence & m_sequence;
+
+    /**
      *  Provides the position in the container when making a series of get()
      *  calls on the container.
      */
 
-    unsigned int m_position_for_get;
+    mutable unsigned int m_position_for_get;
 
 public:
 
-    midi_container ();
+    midi_container (sequence & seq);
 
     /**
      *  A rote constructor needed for a base class.
@@ -74,6 +83,8 @@ public:
         // empty body
     }
 
+    void fill (int tracknumber);
+
     /**
      *  Returns the size of the container, in midibytes.
      */
@@ -81,6 +92,17 @@ public:
     virtual std::size_t size () const
     {
         return 0;
+    }
+
+    /**
+     *  Instead of checking for the size of the container when "emptying" it
+     *  [see the midifile::write() function], use this function, which is
+     *  overridden to match the type of container being used.
+     */
+
+    virtual bool done () const
+    {
+        return true;
     }
 
     /**
@@ -100,10 +122,38 @@ public:
 
 protected:
 
+/*
     unsigned int position_for_get () const
     {
         return m_position_for_get;
     }
+ */
+
+    unsigned int position_reset () const
+    {
+        m_position_for_get = 0;
+        return m_position_for_get;
+    }
+
+    /**
+     *  Returns the current position.  Before the return, the position counter
+     *  is incremented to the next position.
+     */
+
+    unsigned int position () const
+    {
+        return m_position_for_get;
+    }
+
+    void position_increment () const
+    {
+        ++m_position_for_get;
+    }
+
+private:
+
+    void add_variable (long v);
+    void add_long (long x);
 
 };
 

@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-09-29
+ * \updates       2015-10-10
  * \license       GNU GPLv2 or above
  *
  *  For a quick guide to the MIDI format, see, for example:
@@ -43,9 +43,10 @@
 
 #include <fstream>
 
-#include "perform.hpp"                  // must precede midifile.hpp !
-#include "midifile.hpp"
-#include "sequence.hpp"
+#include "perform.hpp"                  /* must precede midifile.hpp !  */
+#include "midifile.hpp"                 /* seq64::midifile              */
+#include "midi_list.hpp"                /* seq64::midi_list container   */
+#include "sequence.hpp"                 /* seq64::sequence              */
 
 /**
  *  A manifest constant for controlling the length of a line-reading
@@ -285,14 +286,15 @@ midifile::parse (perform & a_perf, int a_screen_set)
             unsigned char laststatus;
             unsigned long proprietary = 0;          /* sequencer-specifics   */
             long len;
-            sequence * seq = new sequence();
+            sequence * s = new sequence();
             bool done = false;                      /* done for each track   */
-            if (seq == nullptr)
+            if (s == nullptr)
             {
                 errprint("Memory allocation failed, midifile::parse()");
                 return false;
             }
-            seq->set_master_midi_bus(&a_perf.master_bus());     /* set buss  */
+            sequence & seq = *s;
+            seq.set_master_midi_bus(&a_perf.master_bus());     /* set buss  */
             RunningTime = 0;                    /* reset time                */
             while (! done)                      /* get each event in the Trk */
             {
@@ -333,8 +335,8 @@ midifile::parse (perform & a_perf, int a_screen_set)
                         e.set_status(EVENT_NOTE_OFF);
                     }
                     e.set_data(data[0], data[1]);         /* set data and add */
-                    seq->add_event(&e);
-                    seq->set_midi_channel(status & 0x0F); /* set midi channel */
+                    seq.add_event(&e);
+                    seq.set_midi_channel(status & 0x0F); /* set midi channel */
                     break;
 
                 case EVENT_PROGRAM_CHANGE:                /* one data item    */
@@ -342,8 +344,8 @@ midifile::parse (perform & a_perf, int a_screen_set)
 
                     data[0] = read_byte();
                     e.set_data(data[0]);                  /* set data and add */
-                    seq->add_event(&e);
-                    seq->set_midi_channel(status & 0x0F); /* set midi channel */
+                    seq.add_event(&e);
+                    seq.set_midi_channel(status & 0x0F); /* set midi channel */
                     break;
 
                 case 0xF0:              /* Meta MIDI events, should be FF !!  */
@@ -362,18 +364,18 @@ midifile::parse (perform & a_perf, int a_screen_set)
                             }
                             if (proprietary == c_midibus)
                             {
-                                seq->set_midi_bus(read_byte());
+                                seq.set_midi_bus(read_byte());
                                 len--;
                             }
                             else if (proprietary == c_midich)
                             {
-                                seq->set_midi_channel(read_byte());
+                                seq.set_midi_channel(read_byte());
                                 len--;
                             }
                             else if (proprietary == c_timesig)
                             {
-                                seq->set_bpm(read_byte());
-                                seq->set_bw(read_byte());
+                                seq.set_bpm(read_byte());
+                                seq.set_bw(read_byte());
                                 len -= 2;
                             }
                             else if (proprietary == c_triggers)
@@ -384,7 +386,7 @@ midifile::parse (perform & a_perf, int a_screen_set)
                                     unsigned long on = read_long();
                                     unsigned long length = (read_long() - on);
                                     len -= 8;
-                                    seq->add_trigger(on, length, 0, false);
+                                    seq.add_trigger(on, length, 0, false);
                                 }
                             }
                             else if (proprietary == c_triggers_new)
@@ -397,7 +399,7 @@ midifile::parse (perform & a_perf, int a_screen_set)
                                     unsigned long length = off - on + 1;
                                     unsigned long offset = read_long();
                                     len -= 12;
-                                    seq->add_trigger(on, length, offset, false);
+                                    seq.add_trigger(on, length, offset, false);
                                 }
                             }
                             m_pos += len;                /* eat the rest      */
@@ -416,8 +418,8 @@ midifile::parse (perform & a_perf, int a_screen_set)
                             if (Delta == 0)
                                 CurrentTime += 1;
 
-                            seq->set_length(CurrentTime, false);
-                            seq->zero_markers();
+                            seq.set_length(CurrentTime, false);
+                            seq.zero_markers();
                             done = true;
                             break;
 
@@ -429,7 +431,7 @@ midifile::parse (perform & a_perf, int a_screen_set)
                                 TrackName[i] = read_byte();
 
                             TrackName[len] = '\0';
-                            seq->set_name(TrackName);
+                            seq.set_name(TrackName);
                             break;
 
                         case 0x00:                        /* sequence number */
@@ -465,7 +467,7 @@ midifile::parse (perform & a_perf, int a_screen_set)
 
             /* Sequence has been filled, add it to the performance  */
 
-            a_perf.add_sequence(seq, perf + (a_screen_set * c_seqs_in_set));
+            a_perf.add_sequence(&seq, perf + (a_screen_set * c_seqs_in_set));
         }
         else
         {
@@ -956,17 +958,12 @@ midifile::write (perform & a_perf)
     {
         if (a_perf.is_active(curtrack))
         {
-            sequence * seq = a_perf.get_sequence(curtrack);
-
-            /*
-             * This list is the same type as the sequence::CharList typedef.
-             */
-
-            std::list<char> l;              /* should be unsigned char! */
-            seq->fill_list(&l, curtrack);
+            sequence & seq = *a_perf.get_sequence(curtrack);
+            midi_list lst;
+            seq.fill_container(lst, curtrack);
             write_long(0x4D54726B);         /* magic number 'MTrk'      */
-            write_long(l.size());
-            while (l.size() > 0)            /* write the track data     */
+            write_long(lst.size());
+            while (lst.size() > 0)            /* write the track data     */
             {
                 /*
                  * \warning
@@ -976,8 +973,7 @@ midifile::write (perform & a_perf)
                  *      many items are backward.
                  */
 
-                 write_byte(l.back());
-                 l.pop_back();
+                write_byte(lst.get());  // write_byte(l.back()), l.pop_back()
             }
         }
     }

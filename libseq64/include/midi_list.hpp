@@ -1,5 +1,5 @@
-#ifndef SEQ64_MIDI_CONTAINER_HPP
-#define SEQ64_MIDI_CONTAINER_HPP
+#ifndef SEQ64_MIDI_LIST_HPP
+#define SEQ64_MIDI_LIST_HPP
 
 /*
  *  This file is part of seq24/sequencer64.
@@ -20,10 +20,10 @@
  */
 
 /**
- * \file          midi_container.hpp
+ * \file          midi_list.hpp
  *
- *  This module declares the abstract base class for configuration and
- *  options files.
+ *  This module declares/defines the concrete class for a container of MIDI
+ *  data.
  *
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
@@ -33,43 +33,45 @@
  *
  */
 
-#include <cstddef>                      /* std::size_t  */
+#include <list>                         /* std::list<>                  */
+
+#include "midi_container.hpp"           /* seq64::midi_container ABC    */
 
 namespace seq64
 {
 
 /**
- *  Provides a fairly common type definition for a byte value.
+ *    This class is the abstract base class for optionsfile and userfile.
  */
 
-typedef unsigned char midibyte;
-
-/**
- *    This class is the abstract base class for a container of MIDI track
- *    information.
- */
-
-class midi_container
+class midi_list : public midi_container
 {
 
 private:
 
     /**
-     *  Provides the position in the container when making a series of get()
-     *  calls on the container.
+     *  Provides the type of this container.  This type is basically the same
+     *  as the container used in the midifile module, and almost identical to
+     *  the CharList type defined in the sequence module.
      */
 
-    unsigned int m_position_for_get;
+    typedef std::list<midibyte> CharList;
+
+    /**
+     *  The container itself.
+     */
+
+    CharList m_char_list;
 
 public:
 
-    midi_container ();
+    midi_list ();
 
     /**
      *  A rote constructor needed for a base class.
      */
 
-    virtual ~midi_container()
+    virtual ~midi_list()
     {
         // empty body
     }
@@ -80,39 +82,41 @@ public:
 
     virtual std::size_t size () const
     {
-        return 0;
+        return m_char_list.size();
     }
 
     /**
-     *  Provides a way to add a MIDI byte into the container.
-     *  The original seq24 container used an std::list and a push_front
+     *  Provides a way to add a MIDI byte into the list.
+     *  The original seq24 list used an std::list and a push_front
      *  operation.
      */
 
-    virtual void put (midibyte b) = 0;
+    virtual void put (midibyte b)
+    {
+        m_char_list.push_front(b);
+    }
 
     /**
      *  Provide a way to get the next byte from the container.
-     *  It also increments m_position_for_get.
+     *  In this implement, m_position_for_get is not used.  The elements of
+     *  the container are popped of backward!
      */
 
-    virtual midibyte get () = 0;
-
-protected:
-
-    unsigned int position_for_get () const
+    virtual midibyte get ()
     {
-        return m_position_for_get;
+        midibyte result = m_char_list.back();
+        m_char_list.pop_back();
+        return result;
     }
 
 };
 
 }           // namespace seq64
 
-#endif      // SEQ64_MIDI_CONTAINER_HPP
+#endif      // SEQ64_MIDI_LIST_HPP
 
 /*
- * midi_container.hpp
+ * midi_list.hpp
  *
  * vim: sw=4 ts=4 wm=4 et ft=cpp
  */

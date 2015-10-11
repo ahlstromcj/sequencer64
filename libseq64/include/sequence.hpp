@@ -46,6 +46,7 @@
 #include "midibus.hpp"
 #endif
 
+#include "midi_container.hpp"           /* seq64::midi_container    */
 #include "mutex.hpp"
 
 namespace seq64
@@ -160,7 +161,7 @@ private:
     typedef std::stack<event_list> EventStack;
     typedef std::list<trigger> Triggers;
     typedef std::stack<Triggers> TriggerStack;
-    typedef std::list<char> CharList;
+//  typedef std::list<char> CharList;       /* try "unsigned char" or "byte" */
 
 private:
 
@@ -594,7 +595,7 @@ public:
         long * a_tick_on, long * a_tick_off,
         bool * a_selected, long * a_tick_offset
     );
-    void fill_list (CharList * a_list, int a_pos);
+    void fill_container (midi_container & c, int a_pos);
     void quantize_events
     (
         unsigned char a_status, unsigned char a_cc,
@@ -608,8 +609,8 @@ private:
      * Used in fill_list().
      */
 
-    /* static */ void add_list_var (CharList * a_list, long a_var);
-    /* static */ void add_long_list (CharList * a_list, long a_x);
+    void add_list_var (midi_container & c, long a_var);
+    void add_long_list (midi_container & c, long a_x);
 
     void put_event_on_bus (event * a_e);
     void remove_all ();

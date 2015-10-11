@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-04
+ * \updates       2015-10-10
  * \license       GNU GPLv2 or above
  *
  */
@@ -3304,50 +3304,49 @@ sequence::quantize_events
 }
 
 /**
+ *  This function masks off the lower 8 bits of the long parameter, then
+ *  shifts it right 7, and, if there are still set bits, it encodes it
+ *  into the buffer in reverse order.
+ *
  *  This was a <i> global </i> internal function called addListVar().
  *  Let's at least make it a private member now, and hew to the naming
  *  conventions of this class.
  */
 
 void
-sequence::add_list_var (CharList * a_list, long a_var)
+sequence::add_list_var (midi_container & c, long a_var)
 {
-    long buffer;
-    buffer = a_var & 0x7F;
-
-    /*
-     * We shift it right 7, and, if there are still set bits, we encode
-     * into buffer in reverse order.
-     */
-
-    while ((a_var >>= 7))
+    long buffer = a_var & 0x7F;                 /* mask off a no-sign byte  */
+    while (a_var >>= 7)                         /* shift right 7 bits, test */
     {
-        buffer <<= 8;
-        buffer |= ((a_var & 0x7F) | 0x80);
+        buffer <<= 8;                           /* move LSB bits to MSB     */
+        buffer |= ((a_var & 0x7F) | 0x80);      /* add LSB and set bit 7    */
     }
     for (;;)
     {
-        a_list->push_front((char) buffer & 0xFF);
-        if (buffer & 0x80)
-            buffer >>= 8;
+        c.put(char(buffer & 0xFF));             /* add the LSB              */
+        if (buffer & 0x80)                      /* if bit 7 set             */
+            buffer >>= 8;                       /* get next MSB             */
         else
             break;
     }
 }
 
 /**
+ *  What is the difference between this function and add_list_var()?
+ *
  *  This was a <i> global </i> internal function called addLongList().
  *  Let's at least make it a private member now, and hew to the naming
  *  conventions of this class.
  */
 
 void
-sequence::add_long_list (CharList * a_list, long a_x)
+sequence::add_long_list (midi_container & c, long a_x)
 {
-    a_list->push_front((a_x & 0xFF000000) >> 24);
-    a_list->push_front((a_x & 0x00FF0000) >> 16);
-    a_list->push_front((a_x & 0x0000FF00) >> 8);
-    a_list->push_front((a_x & 0x000000FF));
+    c.put((a_x & 0xFF000000) >> 24);
+    c.put((a_x & 0x00FF0000) >> 16);
+    c.put((a_x & 0x0000FF00) >> 8);
+    c.put((a_x & 0x000000FF));
 }
 
 /**
@@ -3357,7 +3356,7 @@ sequence::add_long_list (CharList * a_list, long a_x)
  *  Note that some of the events might not come out in the same order they
  *  were stored in (we see that with program-change events.
  *
- * \param a_list
+ * \param c
  *      Provides the std::list object to push events to the front, which thus
  *      inserts them in backwards order.  (These events are then popped back,
  *      which restores the order, with some exceptions).
@@ -3368,27 +3367,26 @@ sequence::add_long_list (CharList * a_list, long a_x)
  */
 
 void
-sequence::fill_list (CharList * a_list, int a_pos)
+sequence::fill_container (midi_container & c, int a_pos)
 {
     automutex locker(m_mutex);
-    *a_list = CharList();                               /* copy empty list  */
-    add_list_var(a_list, 0);                            /* sequence number  */
-    a_list->push_front(char(0xFF));
-    a_list->push_front(0x00);
-    a_list->push_front(0x02);
-    a_list->push_front(char((a_pos & 0xFF00) >> 8));
-    a_list->push_front(char(a_pos & 0x00FF));
-    add_list_var(a_list, 0);                            /* track name       */
-    a_list->push_front(char(0xFF));
-    a_list->push_front(0x03);
+    add_list_var(c, 0);                                 /* sequence number  */
+    c.put(0xFF);
+    c.put(0x00);
+    c.put(0x02);
+    c.put((a_pos & 0xFF00) >> 8);
+    c.put(a_pos & 0x00FF);
+    add_list_var(c, 0);                                 /* track name?      */
+    c.put(0xFF);
+    c.put(0x03);
 
     int length =  m_name.length();
     if (length > 0x7F)
         length = 0x7f;
 
-    a_list->push_front(length);
+    c.put(midibyte(length));
     for (int i = 0; i < length; i++)
-        a_list->push_front(m_name.c_str()[i]);
+        c.put(midibyte(m_name[i]));
 
     long timestamp = 0;
     long delta_time = 0;
@@ -3400,13 +3398,13 @@ sequence::fill_list (CharList * a_list, int a_pos)
         timestamp = e.get_timestamp();
         delta_time = timestamp - prev_timestamp;
         prev_timestamp = timestamp;
-        add_list_var(a_list, delta_time);             /* encode delta_time  */
+        add_list_var(c, delta_time);                /* encode delta_time    */
 
         /* timestamp is encoded, now do the status and data */
 
         unsigned char d0 = e.m_data[0];
         unsigned char d1 = e.m_data[1];
-        a_list->push_front(e.m_status | m_midi_channel);    /* add channel */
+        c.put(e.m_status | m_midi_channel);         /* add channel          */
         switch (e.m_status & 0xF0)
         {
         case 0x80:
@@ -3415,14 +3413,14 @@ sequence::fill_list (CharList * a_list, int a_pos)
         case 0xB0:
         case 0xE0:
 
-            a_list->push_front(d0);
-            a_list->push_front(d1);
+            c.put(d0);
+            c.put(d1);
             break;
 
         case 0xC0:
         case 0xD0:
 
-            a_list->push_front(d0);
+            c.put(d0);
             break;
 
         default:
@@ -3431,47 +3429,47 @@ sequence::fill_list (CharList * a_list, int a_pos)
     }
 
     int num_triggers = m_triggers.size();
-    add_list_var(a_list, 0);
-    a_list->push_front(char(0xFF));
-    a_list->push_front(char(0x7F));
-    add_list_var(a_list, (num_triggers * 3 * 4) + 4);
-    add_long_list(a_list, c_triggers_new);
+    add_list_var(c, 0);
+    c.put(0xFF);
+    c.put(0x7F);
+    add_list_var(c, (num_triggers * 3 * 4) + 4);
+    add_long_list(c, c_triggers_new);
 
     Triggers::iterator t = m_triggers.begin();
     for (int i = 0; i < num_triggers; i++)
     {
-        add_long_list(a_list, t->m_tick_start);
-        add_long_list(a_list, t->m_tick_end);
-        add_long_list(a_list, t->m_offset);
+        add_long_list(c, t->m_tick_start);
+        add_long_list(c, t->m_tick_end);
+        add_long_list(c, t->m_offset);
         t++;
     }
-    add_list_var(a_list, 0);                              /* bus */
-    a_list->push_front(char(0xFF));
-    a_list->push_front(char(0x7F));
-    a_list->push_front(char(0x05));
-    add_long_list(a_list, c_midibus);
-    a_list->push_front(m_bus);
+    add_list_var(c, 0);                            /* bus              */
+    c.put(0xFF);
+    c.put(0x7F);
+    c.put(0x05);
+    add_long_list(c, c_midibus);
+    c.put(m_bus);
 
-    add_list_var(a_list, 0);                              /* timesig */
-    a_list->push_front(char(0xFF));
-    a_list->push_front(char(0x7F));
-    a_list->push_front(char(0x06));
-    add_long_list(a_list, c_timesig);
-    a_list->push_front(m_time_beats_per_measure);
-    a_list->push_front(m_time_beat_width);
+    add_list_var(c, 0);                            /* timesig          */
+    c.put(0xFF);
+    c.put(0x7F);
+    c.put(0x06);
+    add_long_list(c, c_timesig);
+    c.put(m_time_beats_per_measure);
+    c.put(m_time_beat_width);
 
-    add_list_var(a_list, 0);                              /* channel */
-    a_list->push_front(char(0xFF));
-    a_list->push_front(char(0x7F));
-    a_list->push_front(char(0x05));
-    add_long_list(a_list, c_midich);
-    a_list->push_front(m_midi_channel);
+    add_list_var(c, 0);                            /* channel          */
+    c.put(0xFF);
+    c.put(0x7F);
+    c.put(0x05);
+    add_long_list(c, c_midich);
+    c.put(m_midi_channel);
 
-    delta_time = m_length - prev_timestamp;             /* meta track end */
-    add_list_var(a_list, delta_time);
-    a_list->push_front(char(0xFF));
-    a_list->push_front(char(0x2F));
-    a_list->push_front(char(0x00));
+    delta_time = m_length - prev_timestamp;        /* meta track end   */
+    add_list_var(c, delta_time);
+    c.put(0xFF);
+    c.put(0x2F);
+    c.put(0x00);
 }
 
 }           // namespace seq64

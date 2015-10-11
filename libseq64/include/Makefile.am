@@ -6,7 +6,7 @@
 # \library    	libseq64 library
 # \author     	Chris Ahlstrom
 # \date       	2015-09-11
-# \update      2015-09-30
+# \update      2015-10-10
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -79,6 +79,8 @@ pkginclude_HEADERS = \
 	midibus_common.hpp \
 	midibus.hpp \
 	midifile.hpp \
+   midi_container.hpp \
+   midi_list.hpp \
 	mutex.hpp \
 	optionsfile.hpp \
 	perform.hpp \

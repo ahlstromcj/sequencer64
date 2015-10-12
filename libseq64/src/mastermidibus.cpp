@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-30
- * \updates       2015-09-20
+ * \updates       2015-10-11
  * \license       GNU GPLv2 or above
  *
  *  This file provides a Linux-only implementation of MIDI support.
@@ -147,7 +147,7 @@ mastermidibus::~mastermidibus ()
  */
 
 void
-mastermidibus::init()
+mastermidibus::init ()
 {
 #ifdef SEQ64_HAVE_LIBASOUND
     snd_seq_client_info_t * cinfo;          /* client info */
@@ -343,7 +343,7 @@ mastermidibus::init_clock (long a_tick)
  */
 
 void
-mastermidibus::stop()
+mastermidibus::stop ()
 {
     automutex locker(m_mutex);
     for (int i = 0; i < m_num_out_buses; i++)

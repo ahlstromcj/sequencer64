@@ -380,7 +380,7 @@ midibus::play (event * a_e24, unsigned char a_channel)
 
     buffer[0] = a_e24->get_status();
     buffer[0] += (a_channel & 0x0F);
-    a_e24->get_data(&buffer[1], &buffer[2]);
+    a_e24->get_data(buffer[1], buffer[2]);
     snd_midi_event_new(10, &midi_ev);
 
     /* clear event */

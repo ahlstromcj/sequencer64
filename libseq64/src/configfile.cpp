@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-10
+ * \updates       2015-10-11
  * \license       GNU GPLv2 or above
  *
  *  We found a couple of unused members in this module and removed them.
@@ -43,13 +43,13 @@ namespace seq64
 /**
  *  Provides the string constructor for a configuration file.
  *
- * @param a_name
+ * @param name
  *      The name of the configuration file.
  */
 
-configfile::configfile (const std::string & a_name)
+configfile::configfile (const std::string & name)
  :
-    m_name  (a_name),
+    m_name  (name),
     m_d     (nullptr),
     m_line  ()                  // array of characters
 {
@@ -74,44 +74,34 @@ configfile::configfile (const std::string & a_name)
  */
 
 void
-configfile::next_data_line (std::ifstream & a_file)
+configfile::next_data_line (std::ifstream & file)
 {
-    a_file.getline(m_line, sizeof(m_line));
-    while
-    (
-        (m_line[0] == '#' || m_line[0] == ' ' || m_line[0] == 0) &&
-            ! a_file.eof()
-    )
-    {
-        a_file.getline(m_line, sizeof(m_line));
-    }
+    file.getline(m_line, sizeof(m_line));
+    while ((m_line[0]=='#' || m_line[0]==' ' || m_line[0]==0) && ! file.eof())
+        file.getline(m_line, sizeof(m_line));
 }
 
 /**
  * This function gets a specific line of text, specified as a tag.
  *
- * @param a_file
+ * @param file
  *      Points to the input file stream.
  *
- * @param a_tag
+ * @param tag
  *      Provides a tag to be found.  Lines are read until a match occurs
  *      with this tag.
  */
 
 void
-configfile::line_after (std::ifstream & a_file, const std::string & a_tag)
+configfile::line_after (std::ifstream & file, const std::string & tag)
 {
-    a_file.clear();
-    a_file.seekg(0, std::ios::beg);
-    a_file.getline(m_line, sizeof(m_line));
-    while
-    (
-        strncmp(m_line, a_tag.c_str(), a_tag.length()) != 0  && ! a_file.eof()
-    )
-    {
-        a_file.getline(m_line, sizeof(m_line));
-    }
-    next_data_line(a_file);
+    file.clear();
+    file.seekg(0, std::ios::beg);
+    file.getline(m_line, sizeof(m_line));
+    while (strncmp(m_line, tag.c_str(), tag.length()) != 0  && ! file.eof())
+        file.getline(m_line, sizeof(m_line));
+
+    next_data_line(file);
 }
 
 }           // namespace seq64
@@ -121,3 +111,4 @@ configfile::line_after (std::ifstream & a_file, const std::string & a_tag)
  *
  * vim: sw=4 ts=4 wm=4 et ft=cpp
  */
+

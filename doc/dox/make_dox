@@ -8,7 +8,7 @@
 # \library    	generic
 # \author     	Chris Ahlstrom
 # \date       	2015-08-08
-# \update     	2015-10-07
+# \update     	2015-10-11
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -99,6 +99,7 @@ pushd $NEWDIR
 
 if [ "$TARGET" == "reference" ] ; then
 
+   echo "Running Doxygen on the reference target, in the make_dox script."
 	echo "$DOXYGEN doxy-reference.cfg > dox-progress.log 2> dox-errors.log ..."
 	$DOXYGEN doxy-reference.cfg > dox-progress.log 2> dox-errors.log
 	sed -e 's/letterpaper,/letterpaper,margin=2cm,/' -i latex/refman.tex

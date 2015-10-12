@@ -37,6 +37,10 @@ namespace seq64
 
 /**
  *  This constructor wires in some externally (for now) created objects.
+ *
+ * \param kp
+ *      Provides a set of key codes to be used by the perform object to
+ *      control patterns and their performance.
  */
 
 gui_assistant::gui_assistant (keys_perform & kp)

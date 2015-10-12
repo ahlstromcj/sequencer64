@@ -940,7 +940,7 @@ sequence::select_events
         )
         {
             unsigned char d0, d1;
-            er.get_data(&d0, &d1);
+            er.get_data(d0, d1);
             if
             (
                 (status == EVENT_CONTROL_CHANGE && d0 == cc) ||
@@ -1386,7 +1386,7 @@ sequence::change_event_data_range
         unsigned char d0, d1;
         bool set = false;
         event & er = DREF(i);
-        er.get_data(&d0, &d1);
+        er.get_data(d0, d1);
         if (status != EVENT_CONTROL_CHANGE && er.get_status() == status)
             set = true;                     /* correct status and not CC     */
 
@@ -2776,14 +2776,14 @@ sequence::get_next_note_event
 bool
 sequence::get_next_event (unsigned char * a_status, unsigned char * a_cc)
 {
-    unsigned char j;
     while (m_iterator_draw != m_events.end())
     {
+        unsigned char j;
         event & drawevent = DREF(m_iterator_draw);
         *a_status = drawevent.get_status();
-        drawevent.get_data(a_cc, &j);
-        m_iterator_draw++;      /* we have a good one; update and return */
-        return true;
+        drawevent.get_data(*a_cc, j);
+        m_iterator_draw++;
+        return true;                /* we have a good one; update and return */
     }
     return false;
 }
@@ -2797,19 +2797,19 @@ sequence::get_next_event (unsigned char * a_status, unsigned char * a_cc)
 bool
 sequence::get_next_event
 (
-    unsigned char a_status, unsigned char a_cc,
-    long * a_tick, unsigned char * a_D0, unsigned char * a_D1,
-    bool * a_selected
+    unsigned char status, unsigned char cc,
+    long * tick, unsigned char * d0, unsigned char * d1,
+    bool * selected
 )
 {
     while (m_iterator_draw != m_events.end())
     {
         event & drawevent = DREF(m_iterator_draw);
-        if (drawevent.get_status() == a_status)     /* note on, so linked */
+        if (drawevent.get_status() == status)     /* note on, so linked */
         {
-            drawevent.get_data(a_D0, a_D1);
-            *a_tick = drawevent.get_timestamp();
-            *a_selected = drawevent.is_selected();
+            drawevent.get_data(*d0, *d1);
+            *tick = drawevent.get_timestamp();
+            *selected = drawevent.is_selected();
 
             /*
              *  Either we have a control change with the right CC or it's a
@@ -2818,8 +2818,8 @@ sequence::get_next_event
 
             if
             (
-                (a_status == EVENT_CONTROL_CHANGE && *a_D0 == a_cc) ||
-                (a_status != EVENT_CONTROL_CHANGE)
+                (status == EVENT_CONTROL_CHANGE && *d0 == cc) ||
+                (status != EVENT_CONTROL_CHANGE)
             )
             {
                 m_iterator_draw++; /* we have a good one update and return */
@@ -2839,15 +2839,15 @@ sequence::get_next_event
 bool
 sequence::get_next_trigger
 (
-    long * a_tick_on, long * a_tick_off, bool * a_selected, long * a_offset
+    long * tick_on, long * tick_off, bool * selected, long * offset
 )
 {
     while (m_iterator_draw_trigger != m_triggers.end())
     {
-        *a_tick_on  = (*m_iterator_draw_trigger).m_tick_start;
-        *a_selected = (*m_iterator_draw_trigger).m_selected;
-        *a_offset = (*m_iterator_draw_trigger).m_offset;
-        *a_tick_off = (*m_iterator_draw_trigger).m_tick_end;
+        *tick_on  = (*m_iterator_draw_trigger).m_tick_start;
+        *selected = (*m_iterator_draw_trigger).m_selected;
+        *offset = (*m_iterator_draw_trigger).m_offset;
+        *tick_off = (*m_iterator_draw_trigger).m_tick_end;
         m_iterator_draw_trigger++;
         return true;
     }
@@ -2878,11 +2878,11 @@ sequence::get_last_tick ()
  */
 
 void
-sequence::set_midi_bus (char a_mb)
+sequence::set_midi_bus (char mb)
 {
     automutex locker(m_mutex);
     off_playing_notes();            /* off notes except initial         */
-    m_bus = a_mb;
+    m_bus = mb;
     set_dirty();
 }
 
@@ -2893,18 +2893,18 @@ sequence::set_midi_bus (char a_mb)
  */
 
 void
-sequence::set_length (long a_len, bool a_adjust_triggers)
+sequence::set_length (long len, bool adjust_triggers)
 {
     automutex locker(m_mutex);
     bool was_playing = get_playing();
     set_playing(false);             /* turn everything off */
-    if (a_len < (c_ppqn / 4))
-        a_len = (c_ppqn / 4);
+    if (len < (c_ppqn / 4))
+        len = (c_ppqn / 4);
 
-    if (a_adjust_triggers)
-        adjust_trigger_offsets_to_length(a_len);
+    if (adjust_triggers)
+        adjust_trigger_offsets_to_length(len);
 
-    m_length = a_len;
+    m_length = len;
     verify_and_link();
     reset_draw_marker();
     if (was_playing)                /* start up and refresh */
@@ -3143,16 +3143,11 @@ sequence::select_events
     {
         bool set = false;
         event & er = DREF(i);
-        er.get_data(&d0, &d1);
-
-        /* correct status and not CC */
-
+        er.get_data(d0, d1);
         if (status != EVENT_CONTROL_CHANGE && er.get_status() == status)
-            set = true;
+            set = true;                 /* correct status and not CC     */
 
-        /* correct status and correct cc */
-
-        if
+        if                              /* correct status and correct CC */
         (
             status == EVENT_CONTROL_CHANGE &&
             er.get_status() == status && d0 == cc
@@ -3251,7 +3246,7 @@ sequence::quantize_events
     {
         bool set = false;
         event & er = DREF(i);
-        er.get_data(&d0, &d1);
+        er.get_data(d0, d1);
 
         /* correct status and not CC */
 

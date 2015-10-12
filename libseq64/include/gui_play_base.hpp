@@ -22,8 +22,8 @@
 /**
  * \file          gui_play_base.hpp
  *
- *  This module declares/defines the base class for GUI frameworks used in
- *  some of the window-support modules.
+ *  This module declares/defines the base class for GUI callback functions
+ *  used in some of the window-support modules.
  *
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
@@ -35,11 +35,9 @@
  *  and some from Gtk::Window.  In gtkmm-3, the former will be merged into
  *  the latter, but for now Gtk::DrawingArea will be used.
  *
- *  This module declares three classes:
- *
- *      -   seq64::click
- *      -   seq64::keystroke
- *      -   seq64::gui_play_base
+ *  Many of those function can be implemented by offloading functionality to
+ *  existing objects (such as perform), and so the utility of this base class
+ *  is doubtful.
  *
  */
 

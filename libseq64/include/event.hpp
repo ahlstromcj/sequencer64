@@ -242,9 +242,9 @@ public:
         return m_status;
     }
 
-    void set_data (char D1);
-    void set_data (char D1, char D2);
-    void get_data (unsigned char * D0, unsigned char * D1);
+    void set_data (char d1);
+    void set_data (char d1, char d2);
+    void get_data (unsigned char & d0, unsigned char & d1);
     void increment_data1 ();
     void decrement_data1 ();
     void increment_data2 ();

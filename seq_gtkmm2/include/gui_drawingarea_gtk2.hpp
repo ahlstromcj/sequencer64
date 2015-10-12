@@ -20,7 +20,7 @@
  */
 
 /**
- * \file          gui_drawingarea.hpp
+ * \file          gui_drawingarea_gtk2.hpp
  *
  *  This module declares/defines the base class for drawing on the piano
  *  roll of the patterns editor.
@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-21
- * \updates       2015-10-04
+ * \updates       2015-10-11
  * \license       GNU GPLv2 or above
  *
  */

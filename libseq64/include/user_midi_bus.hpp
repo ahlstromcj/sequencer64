@@ -132,6 +132,7 @@ public:
 
     /**
      * \getter m_channel_count
+     * \return
      *      This function returns the number of channels.  Basically this
      *      value is always the same as that returned by channel_max(),
      *      but this pair of functions is consistent with the count
@@ -145,6 +146,8 @@ public:
 
     /**
      * \getter MIDI_BUS_CHANNEL_MAX
+     * \return
+     *      Returns the maximum number of MIDI buss channels.
      *      Remember that the instrument channels for each MIDI buss
      *      range from 0 to 15 (MIDI_BUS_CHANNEL_MAX-1).
      */

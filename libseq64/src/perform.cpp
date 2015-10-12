@@ -1925,8 +1925,8 @@ perform::input_func ()
                         // not tested (todo: test it!)
 
                         unsigned char a, b;
-                        ev.get_data(&a, &b);
-                        m_midiclockpos = ((int)a << 7) && (int)b;
+                        ev.get_data(a, b);
+                        m_midiclockpos = (int(a) << 7) && int(b);
                     }
 
                     /*
@@ -1951,9 +1951,9 @@ perform::input_func ()
 
                             for (int i = 0; i < c_midi_controls; i++)
                             {
-                                unsigned char data[2] = {0, 0};
+                                unsigned char data[2] = { 0, 0 };
                                 unsigned char status = ev.get_status();
-                                ev.get_data(&data[0], &data[1]);
+                                ev.get_data(data[0], data[1]);
                                 if
                                 (
                             get_midi_control_toggle(i)->m_active &&

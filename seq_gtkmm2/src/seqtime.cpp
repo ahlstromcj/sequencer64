@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-04
+ * \updates       2015-10-11
  * \license       GNU GPLv2 or above
  *
  *  The patterns/sequence editor is expandable in both directions, but the
@@ -268,3 +268,4 @@ seqtime::on_size_allocate (Gtk::Allocation & a)
  *
  * vim: sw=4 ts=4 wm=4 et ft=cpp
  */
+

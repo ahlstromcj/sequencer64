@@ -28,11 +28,13 @@
  * \updates       2015-09-30
  * \license       GNU GPLv2 or above
  *
- *  This module defines 3 classes:
+ *  This module was intended to provide a framework for implementing the
+ *  actual work of some of the Gtkmm-specific on_xxxx() callback functions.
  *
- *      -   seq64::click
- *      -   seq64::keystroke
- *      -   seq64::gui_play_base
+ *  However, many of those function can be implemented by offloading
+ *  functionality to existing objects (such as perform), and so the utility of
+ *  this base class is doubtful.  We will leave it around for awhile yet, just
+ *  in case.
  */
 
 #include "gui_play_base.hpp"            // seq64::gui_play_base
@@ -40,15 +42,7 @@
 namespace seq64
 {
 
-/**
- *  This constructor wires in some externally (for now) created objects.
-
-gui_play_base::gui_play_base ()
- :
-{
-    // no other code
-}
- */
+    // No code!
 
 }           // namespace seq64
 

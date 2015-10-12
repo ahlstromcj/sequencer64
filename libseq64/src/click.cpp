@@ -58,6 +58,23 @@ click::click ()
  *  Principal constructor for class click.  This function is the only way to
  *  set value for the click members (other than the copy constructor and
  *  principal assignment operator.
+ *
+ * \param x
+ *      The putative x value of the button click.
+ *
+ * \param y
+ *      The putative y value of the button click.
+ *
+ * \param button
+ *      The value of the button that was clicked, set to 1, 2, or 3.
+ *
+ * \param press
+ *      Set to true if the event was a button press, false if it was a button
+ *      release.
+ *
+ * \param modkey
+ *      Indicates which modifier key (such as Ctrl or Alt), if any, was
+ *      pressed at the same time as the click action.
  */
 
 click::click (int x, int y, int button, bool press, seq_modifier_t modkey)
@@ -82,6 +99,14 @@ click::click (int x, int y, int button, bool press, seq_modifier_t modkey)
         m_modifier = SEQ64_MASK_MAX;
 }
 
+/**
+ *  Provides a stock copy constructor.  It is nice to be explicit about these
+ *  kinds of functions, even if it gets tedious.
+ *
+ * \param rhs
+ *      Provies the source object to be copied.
+ */
+
 click::click (const click & rhs)
  :
     m_is_press  (rhs.m_is_press),
@@ -92,6 +117,15 @@ click::click (const click & rhs)
 {
     // Empty body
 }
+
+/**
+ *  Provides a stock principal assignment operator.  It is nice to be explicit
+ *  about these kinds of functions, even if it gets tedious.
+ *
+ * \param rhs
+ *      Provies the source object to be assigned from.  The assignment is not
+ *      made if "this" has the same address as this parameter.
+ */
 
 click &
 click::operator = (const click & rhs)

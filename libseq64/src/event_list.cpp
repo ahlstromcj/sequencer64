@@ -45,6 +45,15 @@ namespace seq64
 
 /**
  *  Principal event_key constructor.
+ *
+ * \param tstamp
+ *      The time-stamp is the primary part of the key.  It is the most
+ *      important key item.
+ *
+ * \param rank
+ *      Rank is an arbitrary number used to prioritize events that have the
+ *      same time-stamp.  See the event::get_rank() function for more
+ *      information.
  */
 
 event_list::event_key::event_key (unsigned long tstamp, int rank)
@@ -59,18 +68,24 @@ event_list::event_key::event_key (unsigned long tstamp, int rank)
  *  Event-based constructor.  This constructor makes it even easier to
  *  create an event_key.  Note that the call to event::get_rank() makes a
  *  simple calculation based on the status of the event.
+ *
+ * \param rhs
+ *      Provides the event key to be copied.
  */
 
-event_list::event_key::event_key (const event & e)
+event_list::event_key::event_key (const event & rhs)
  :
-    m_timestamp (e.get_timestamp()),
-    m_rank      (e.get_rank())
+    m_timestamp (rhs.get_timestamp()),
+    m_rank      (rhs.get_rank())
 {
     // Empty body
 }
 
 /**
  *  Provides the minimal operator needed to sort events using an event_key.
+ *
+ * \param e
+ *      Provides the event key to be compared against.
  */
 
 bool
@@ -101,6 +116,9 @@ event_list::event_list ()
 
 /**
  *  Copy constructor.
+ *
+ * \param rhs
+ *      Provides the event list to be copied.
  */
 
 event_list::event_list (const event_list & rhs)
@@ -113,6 +131,9 @@ event_list::event_list (const event_list & rhs)
 /**
  *  Principal assignment operator.  Follows the stock rules for such an
  *  operator, just assigning member values.
+ *
+ * \param rhs
+ *      Provides the event list to be assigned.
  */
 
 event_list &
@@ -151,6 +172,14 @@ event_list::~event_list ()
  *      reverse order.  Doesn't affect functionality, but it's puzzling
  *      until one understands what is happening.  That's why we're
  *      exploring using a multimap as the container.
+ *
+ * \param e
+ *      Provides the event to be added to the list.
+ *
+ * \param postsort
+ *      If true, and the std::list implementation has been built in, then the
+ *      event list is sorted after the addition.  This is a time-consuming
+ *      operation.
  */
 
 void
@@ -207,6 +236,13 @@ event_list::add (const event & e, bool postsort)
  *  we need to use a multi-map.  Once all this setup, merging is really
  *  just insertion.  And, since sorting isn't needed, the multimap actually
  *  turns out to be faster.
+ *
+ * \param el
+ *      Provides the event list to be merged into the current event list.
+ *
+ * \param presort
+ *      If true, the events are presorted.  This is a requirement for merging
+ *      an std::list, but is a no-op for the std::multimap implementation.
  */
 
 void
@@ -309,6 +345,9 @@ event_list::link_new ()
  *  note-offs with their note-ons.
  *
  * \threadsafe
+ *
+ * \param slength
+ *      Provides the length beyond which events will be pruned.
  */
 
 void
@@ -417,6 +456,9 @@ event_list::unmark_all ()
  *  Used for killing (pruning) those events not in range.  If the current
  *  time-stamp is greater than the length, then the event is marked for
  *  pruning.
+ *
+ * \param slength
+ *      Provides the length beyond which events will be pruned.
  */
 
 void
@@ -477,7 +519,7 @@ event_list::count_selected_events (unsigned char status, unsigned char cc)
         if (e.get_status() == status)
         {
             unsigned char d0, d1;
-            e.get_data(&d0, &d1);               /* get the two data bytes */
+            e.get_data(d0, d1);                 /* get the two data bytes */
             if
             (
                 (status == EVENT_CONTROL_CHANGE && d0 == cc) ||

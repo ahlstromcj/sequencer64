@@ -1,11 +1,14 @@
 Construction of "Where's Prince Brilliant" for ZynAddSubFx/Yoshimi
 Chris Ahlstrom
-2012-01-20 to 2015-09-09
+2012-01-20 to 2015-10-11
 
 This file describes the importing of one of my old Cakewalk transcriptions, a
 rendering of "Where's Prince Brilliant?" from (unreliable) memory.
 
-Here's the original:
+Also note the usage of another MIDI file in the "User Testing" section of the
+Doxygen-generated Developer's Reference Manual of this project.
+
+Here's the original song:
 
    http://www.youtube.com/watch?v=G52Pw6tpFUY
 

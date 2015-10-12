@@ -28,6 +28,9 @@
  * \updates       2015-09-27
  * \license       GNU GPLv2 or above
  *
+ *  This module was created from code that existed in the perform object.
+ *  Moving it into is own module makes it easier to maintain and makes the
+ *  perform object a little easier to grok.
  */
 
 #include <stdio.h>
@@ -40,8 +43,12 @@ namespace seq64
 {
 
 /**
- *  This construction initializes a vast number of member variables, some
+ *  This constructor initializes a number of member variables, some
  *  of them public!
+ *
+ * \param parent
+ *      Provides a reference to the main perform object that needs to
+ *      control JACK event.
  */
 
 jack_assistant::jack_assistant (perform & parent)
@@ -64,7 +71,7 @@ jack_assistant::jack_assistant (perform & parent)
 }
 
 /**
- *  The destructor ...
+ *  The destructor doesn't need to do anything yet.
  */
 
 jack_assistant::~jack_assistant ()
@@ -80,7 +87,7 @@ jack_assistant::~jack_assistant ()
  *
  * \return
  *      Returns true if JACK is now considered to be running (or if it was
- *      already running.).
+ *      already running.)
  */
 
 bool
@@ -223,10 +230,13 @@ jack_assistant::stop ()
  * \warning
  *      A lot of this code is effectively disabled by an early return
  *      statement.
+ *
+ * \param state
+ *      If true, the current tick is set to the leftmost tick.
  */
 
 void
-jack_assistant::position (bool a_state)
+jack_assistant::position (bool /* state */ )
 {
     if (m_jack_running)
     {
@@ -237,7 +247,7 @@ jack_assistant::position (bool a_state)
 #ifdef WHY_IS_THIS_CODE_EFFECTIVELY_DISABLED
     jack_nframes_t rate = jack_get_sample_rate(m_jack_client);
     long current_tick = 0;
-    if (a_state)
+    if (state)
         current_tick = m_left_tick;
 
     jack_position_t pos;
@@ -287,10 +297,16 @@ jack_assistant::position (bool a_state)
 /*
  *  Implemented second patch for JACK Transport from freddix/seq24 GitHub
  *  project.  Added the following function.
+ *
+ * \param nframes
+ *      Unused.
+ *
+ * \param arg
+ *      Unused.
  */
 
 int
-jack_process_callback (jack_nframes_t nframes, void * arg)
+jack_process_callback (jack_nframes_t /* nframes */, void * /* arg */ )
 {
     return 0;
 }
@@ -318,8 +334,7 @@ jack_sync_callback
     void * arg                          // unchecked, dynamic_cast?
 )
 {
-    jack_assistant * jack = (jack_assistant *) arg; // p = (perform *) arg
-
+    jack_assistant * jack = (jack_assistant *) arg;     // p = (perform *) arg
     jack->m_jack_frame_current =
         jack_get_current_transport_frame(jack->m_jack_client);
 
@@ -374,6 +389,9 @@ jack_sync_callback
  *
  *  PROVIDE a hook to a perform object or GUI item to perfom the quit!!!!!
  *  TRY to move midifile into this library!!!!!!!!
+ *
+ * \return
+ *      Always returns false.
  */
 
 bool
@@ -389,7 +407,6 @@ jack_assistant::session_event ()
 
     midifile f(fname, ! global_legacy_format);      /* MIDI file access     */
     f.write(m_jack_parent);
-
     m_jsession_ev->command_line = strdup(cmd.c_str());
     jack_session_reply(m_jack_client, m_jsession_ev);
 
@@ -410,16 +427,19 @@ jack_assistant::session_event ()
  *
  *  Glib is then used to connect in perform::jack_session_event().
  *
+ * \param ev
+ *      The JACK event to be set.
+ *
  * \param arg
  *      The pointer to the jack_assistant object.  Currently not checked
  *      for nullity.
  */
 
 void
-jack_session_callback (jack_session_event_t * event, void * arg)
+jack_session_callback (jack_session_event_t * ev, void * arg)
 {
     jack_assistant * jack = (jack_assistant *) arg;
-    jack->m_jsession_ev = event;
+    jack->m_jsession_ev = ev;
 
     /*
      * Glib::signal_idle().
@@ -434,6 +454,9 @@ jack_session_callback (jack_session_event_t * event, void * arg)
 /**
  *  Performance output function for JACK, called by the perform function
  *  of the same name.
+ *
+ * \param pad
+ *      Provide a JACK scratchpad, whatever that is.
  *
  * \return
  *      Returns true if JACK is running.
@@ -460,7 +483,6 @@ jack_assistant::output (jack_scratchpad & pad)
             m_jack_transport_state == JackTransportRolling
         )
         {
-
             m_jack_frame_last = m_jack_frame_current;
             pad.js_dumping = true;
             m_jack_tick =
@@ -473,7 +495,6 @@ jack_assistant::output (jack_scratchpad & pad)
                 double(c_ppqn) / (m_jack_pos.ticks_per_beat *
                 m_jack_pos.beat_type / 4.0)
             );
-
             m_jack_parent.set_orig_ticks(long(jack_ticks_converted));
             pad.js_current_tick = pad.js_clock_tick = pad.js_total_tick =
                 jack_ticks_converted_last = jack_ticks_converted;

@@ -1,0 +1,133 @@
+/******************************************************************************
+ * user_testing.dox
+ *-----------------------------------------------------------------------------
+ *
+ *    This module provides no code.  It provides only a Doxygen "Doxygen
+ *    k
+ *    information" page.
+ *
+ *------------------------------------------------------------------------*//**
+
+\file       user_testing.dox
+
+This document describes basic user testing of Sequencer 64 using the
+Yoshimi software synthesizer.
+
+\page       user_testing_page User Testing of Sequencer64 with Yoshimi
+\author     Chris Ahlstrom 2015-10-11
+
+\section user_testing_intro Introduction
+
+This section describes user testing of Sequencer64 using Yoshimi.
+It will expand as we work our way through all the many use-cases
+that can be achieved with Sequencer64 and Yoshimi.
+
+\section user_testing_smoke Smoke Test
+
+Every so often we run Sequencer64 with a software synthesizer to make sure we
+haven't broken any functionality via our major refactoring efforts.  We call it
+a "smoke test".  We fire up the two application, and see if anything smokes.
+
+This smoke test sets up Yoshimi with a very simple ALSA setup, and no
+instruments are loaded.  Instead, only the "Simple Sound" is used on all
+channels.  We've been doing this test with Yoshimi 1.3.6.  The current Debian
+Sid ("testing") version of Yoshimi is 1.3.6-2, pulled from SourceForge.  It
+seems to have issues, so we've been cloning and pulling the code from:
+
+\verbatim
+   https://github.com/Yoshimi/yoshimi.git
+\endverbatim
+
+After getting the application build and installed, the next step is to run
+it, using ALSA for MIDI and for audio:
+
+\verbatim
+   $ yoshimi -a -A &
+\endverbatim
+
+Next, fix up the configuration files for Sequencer64,
+<code>~/.config/sequencer64/sequencer64.rc</code> and
+<code>~/.config/sequencer64/sequencer64.usr</code>.
+
+First hide <code>sequencer64.usr</code> somewhere, or delete it,
+as it will determine what MIDI devices are available, and we don't want that
+(yet).  Second, make sure that <code>sequencer64.rc</code> makes the following
+setting:
+
+\verbatim
+   [manual-alsa-ports]
+
+   # Set to 1 if you want seq24 to create its own ALSA ports and
+   # not connect to other clients
+
+   0   # number of manual ALSA ports
+\endverbatim
+
+Next, run the newly-built version of Sequencer64:
+
+\verbatim
+   $ sequencer64/sequencer64 &
+\endverbatim
+
+In <i>File / Options / MIDI Clock</i>, observe the MIDI inputs made available
+by your system.  Our system shows:
+
+\verbatim
+   [0] 14:0 (Midi Through Port-0)
+   [1] 128:0 (TiMidity port 0)
+   [2] 128:0 (TiMidity port 1)
+   [3] 128:0 (TiMidity port 2)
+   [4] 128:0 (TiMidity port 3)
+   [5] 129:0 (input)
+\endverbatim
+
+For some reason (a bug?), input "[5]" doesn't indicate that it is Yoshimi, but
+it is.  Take note of that input number... that is the MIDI buss number that is
+needed to drive Yoshimi.
+
+Also make sure that of the clock settings for those busses are "Off".
+
+Now open the file <code>sequencer64/contrib/midi/b4uacuse-GM-format.midi</code>
+in Sequencer64.  For all of the patterns (slots) that have lots of data in
+them, right click on the pattern and select <i>Midi Bus / [5] 129:0 (input)</i>
+and the desired channel number.  (Doesn't matter much, just use up the lower
+channel numbers first).
+
+Back in Yoshimi, select each Part corresponding to the channels you selected.
+Make sure <i>Enabled</i> is checked for each desired channel.
+
+Back in Sequencer64, click on each pattern you want to hear, which highlights
+them in black.  Now click the play button (green triangle).  The song should
+play, with each part using the "Simple Sound".  Not too bad for a bunch of sine
+waves, eh?
+
+Now we can test the application more fully.
+Note that the instructions here are very light.
+Detailed instructions on the usage of Sequencer64 can be found in the
+following project, which contains a PDF file and the LaTeX code used to build
+it:
+
+\verbatim
+   https://github.com/ahlstromcj/sequencer24-doc.git
+\endverbatim
+
+Although it applies to an earlier version of the project, it still mostly holds
+true for Sequencer64. 
+
+\section user_testing_patterns Tests in the Patterns Window
+
+Empty tracks (i.e. title-only tracks) are highlighted in yellow.
+
+\subsection user_testing_patterns_shortcuts Patterns Window Key Shortcuts
+
+\subsection user_testing_patterns_usr The Sequencer64 User File
+
+
+
+ *//*-------------------------------------------------------------------------*/
+
+/******************************************************************************
+ * user_testing.dox
+ *----------------------------------------------------------------------------
+ * vim: ts=3 sw=3 et syntax=doxygen
+ *//*-------------------------------------------------------------------------*/

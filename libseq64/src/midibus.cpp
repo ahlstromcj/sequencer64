@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-09-13
+ * \updates       2015-10-12
  * \license       GNU GPLv2 or above
  *
  *  This file provides a Linux-only implementation of MIDI support.
@@ -49,28 +49,54 @@ int midibus::m_clock_mod = 16 * 4;
 /**
  *  Provides a constructor with client number, port number, ALSA sequencer
  *  support, name of client, name of port.
+ *
+ * \param localclient
+ *      Provides the local-client number.
+ *
+ * \param destclient
+ *      Provides the destination-client number.
+ *
+ * \param destport
+ *      Provides the destination-client port.
+ *
+ * \param seq
+ *      Provides the sequence that will work with this buss..
+ *
+ * \param client_name
+ *      Provides the client name, but this parameter is unused.
+ *
+ * \param port_name
+ *      Provides the port name.
+ *
+ * \param id
+ *      Provides the ID code for this bus.  It is an index into the midibus
+ *      definitions array, and is also used in the constructed human-readable
+ *      buss name.
+ *
+ * \param queue
+ *      Provides the queue ID.
  */
 
 midibus::midibus
 (
-    int a_localclient,
-    int a_destclient,
-    int a_destport,
-    snd_seq_t * a_seq,
-    const char * /* a_client_name */ ,      // unused parameter
-    const char * a_port_name,
-    int a_id,
-    int a_queue
+    int localclient,
+    int destclient,
+    int destport,
+    snd_seq_t * seq,
+    const char * /* client_name */ ,      // unused parameter
+    const char * port_name,
+    int id,
+    int queue
 ) :
-    m_id                (a_id),
+    m_id                (id),
     m_clock_type        (e_clock_off),
     m_inputing          (false),
-    m_seq               (a_seq),
-    m_dest_addr_client  (a_destclient),
-    m_dest_addr_port    (a_destport),
-    m_local_addr_client (a_localclient),
+    m_seq               (seq),
+    m_dest_addr_client  (destclient),
+    m_dest_addr_port    (destport),
+    m_local_addr_client (localclient),
     m_local_addr_port   (-1),
-    m_queue             (a_queue),
+    m_queue             (queue),
     m_name              (),
     m_lasttick          (0),
     m_mutex             ()
@@ -86,7 +112,7 @@ midibus::midibus
     }
     else
     {
-        snprintf(name, sizeof(name), "(%s)", a_port_name);
+        snprintf(name, sizeof(name), "(%s)", port_name);
     }
 
     /* copy the client names */
@@ -94,32 +120,47 @@ midibus::midibus
     char tmp[64];
     snprintf
     (
-        tmp, 59, "[%d] %d:%d %s",
+        tmp, sizeof(tmp), "[%d] %d:%d %s",
         m_id, m_dest_addr_client, m_dest_addr_port, name
     );
     m_name = tmp;
 }
 
 /**
- *  Secondary constructor.
+ *  Secondary constructor.  Similar to the principal constructor, but
+ *  labels the buss by number more than by name.
+ *
+ * \param localclient
+ *      Provides the local-client number.
+ *
+ * \param seq
+ *      Provides the sequence that will work with this buss..
+ *
+ * \param id
+ *      Provides the ID code for this bus.  It is an index into the midibus
+ *      definitions array, and is also used in the constructed human-readable
+ *      buss name.
+ *
+ * \param queue
+ *      Provides the queue ID.
  */
 
 midibus::midibus
 (
-    int a_localclient,
-    snd_seq_t * a_seq,
-    int a_id,
-    int a_queue
+    int localclient,
+    snd_seq_t * seq,
+    int id,
+    int queue
 ) :
-    m_id                (a_id),
+    m_id                (id),
     m_clock_type        (e_clock_off),
     m_inputing          (false),
-    m_seq               (a_seq),
+    m_seq               (seq),
     m_dest_addr_client  (-1),
     m_dest_addr_port    (-1),
-    m_local_addr_client (a_localclient),
+    m_local_addr_client (localclient),
     m_local_addr_port   (-1),
-    m_queue             (a_queue),
+    m_queue             (queue),
     m_name              (),
     m_lasttick          (0),
     m_mutex             ()
@@ -144,13 +185,15 @@ midibus::~midibus()
 
 /**
  *  Initialize the MIDI output port.
+ *
+ * \return
+ *      Returns true unless setting up ALSA MIDI failed in some way.
  */
 
-bool midibus::init_out ()
+bool
+midibus::init_out ()
 {
-
 #ifdef SEQ64_HAVE_LIBASOUND
-
     int result = snd_seq_create_simple_port         /* create ports */
     (
         m_seq,
@@ -159,7 +202,6 @@ bool midibus::init_out ()
         SND_SEQ_PORT_TYPE_MIDI_GENERIC | SND_SEQ_PORT_TYPE_APPLICATION
     );
     m_local_addr_port = result;
-
     if (result < 0)
     {
         errprint("snd_seq_create_simple_port(write) error");
@@ -179,21 +221,21 @@ bool midibus::init_out ()
         );
         return false;
     }
-
 #endif  // SEQ64_HAVE_LIBASOUND
-
     return true;
 }
 
 /**
  *  Initialize the MIDI input port.
+ *
+ * \return
+ *      Returns true unless setting up ALSA MIDI failed in some way.
  */
 
-bool midibus::init_in ()
+bool
+midibus::init_in ()
 {
-
 #ifdef SEQ64_HAVE_LIBASOUND
-
     int result = snd_seq_create_simple_port             /* create ports */
     (
         m_seq, "seq24 in",
@@ -209,28 +251,21 @@ bool midibus::init_in ()
 
     snd_seq_port_subscribe_t * subs;
     snd_seq_port_subscribe_alloca(&subs);
+
     snd_seq_addr_t sender;
-    snd_seq_addr_t dest;
-
-    /* the destination port is actually our local port */
-
     sender.client = m_dest_addr_client;
     sender.port = m_dest_addr_port;
+    snd_seq_port_subscribe_set_sender(subs, &sender);   /* destination        */
+
+    snd_seq_addr_t dest;
     dest.client = m_local_addr_client;
     dest.port = m_local_addr_port;
+    snd_seq_port_subscribe_set_dest(subs, &dest);       /* local              */
 
-    /* set in and out ports */
-
-    snd_seq_port_subscribe_set_sender(subs, &sender);
-    snd_seq_port_subscribe_set_dest(subs, &dest);
-
-    /* use the master queue, and get ticks */
+    /* use the master queue, and get ticks, then subscribe */
 
     snd_seq_port_subscribe_set_queue(subs, m_queue);
     snd_seq_port_subscribe_set_time_update(subs, 1);
-
-    /* subscribe */
-
     result = snd_seq_subscribe_port(m_seq, subs);
     if (result < 0)
     {
@@ -241,21 +276,21 @@ bool midibus::init_in ()
         );
         return false;
     }
-
 #endif  // SEQ64_HAVE_LIBASOUND
-
     return true;
 }
 
 /**
  *  Initialize the output in a different way?
+ *
+ * \return
+ *      Returns true unless setting up the ALSA port failed in some way.
  */
 
-bool midibus::init_out_sub ()
+bool
+midibus::init_out_sub ()
 {
-
 #ifdef SEQ64_HAVE_LIBASOUND
-
     int result = snd_seq_create_simple_port             /* create ports */
     (
         m_seq, m_name.c_str(),
@@ -268,21 +303,21 @@ bool midibus::init_out_sub ()
         errprint("snd_seq_create_simple_port(write) error");
         return false;
     }
-
-#endif  // SEQ64_HAVE_LIBASOUND
-
+#endif
     return true;
 }
 
 /**
  *  Initialize the output in a different way?
+ *
+ * \return
+ *      Returns true unless setting up the ALSA port failed in some way.
  */
 
-bool midibus::init_in_sub ()
+bool
+midibus::init_in_sub ()
 {
-
 #ifdef SEQ64_HAVE_LIBASOUND
-
     int result = snd_seq_create_simple_port             /* create ports */
     (
         m_seq, "seq24 in",
@@ -295,37 +330,32 @@ bool midibus::init_in_sub ()
         errprint("snd_seq_create_simple_port(write) error");
         return false;
     }
-
-#endif  // SEQ64_HAVE_LIBASOUND
-
+#endif
     return true;
 }
 
 /**
  *  Deinitialize the MIDI input?
+ *
+ * \return
+ *      Returns true, unless an error occurs.
  */
 
-bool midibus::deinit_in()
+bool
+midibus::deinit_in  ()
 {
-
 #ifdef SEQ64_HAVE_LIBASOUND
-
-    int result;
-
-    snd_seq_port_subscribe_t *subs;
+    snd_seq_port_subscribe_t * subs;
     snd_seq_port_subscribe_alloca(&subs);
-    snd_seq_addr_t sender, dest;
 
-    /* the destinatino port is actually our local port */
-
+    snd_seq_addr_t sender;
     sender.client = m_dest_addr_client;
     sender.port = m_dest_addr_port;
+    snd_seq_port_subscribe_set_sender(subs, &sender);
+
+    snd_seq_addr_t dest;
     dest.client = m_local_addr_client;
     dest.port = m_local_addr_port;
-
-    /* set in and out ports */
-
-    snd_seq_port_subscribe_set_sender(subs, &sender);
     snd_seq_port_subscribe_set_dest(subs, &dest);
 
     /* use the master queue, and get ticks */
@@ -333,9 +363,7 @@ bool midibus::deinit_in()
     snd_seq_port_subscribe_set_queue(subs, m_queue);
     snd_seq_port_subscribe_set_time_update(subs, 1);
 
-    /* subscribe */
-
-    result = snd_seq_unsubscribe_port(m_seq, subs);
+    int result = snd_seq_unsubscribe_port(m_seq, subs);     /* subscribe */
     if (result < 0)
     {
         fprintf
@@ -345,9 +373,7 @@ bool midibus::deinit_in()
         );
         return false;
     }
-
 #endif  // SEQ64_HAVE_LIBASOUND
-
     return true;
 }
 
@@ -365,44 +391,48 @@ midibus::print ()
 /**
  *  This play() function takes a native event, encodes it to ALSA event,
  *  and puts it in the queue.
+ *
+ * \threadsafe
+ *
+ * \param e24
+ *      The event to be played on this bus.
+ *
+ * \param channel
+ *      The channel of the playback.
  */
 
 void
-midibus::play (event * a_e24, unsigned char a_channel)
+midibus::play (event * e24, unsigned char channel)
 {
 #ifdef SEQ64_HAVE_LIBASOUND
     automutex locker(m_mutex);
-    snd_seq_event_t ev;
-    snd_midi_event_t *midi_ev;      /* ALSA MIDI parser   */
-    unsigned char buffer[3];        /* temp for MIDI data */
+    unsigned char buffer[4];            /* temp for MIDI data               */
+    buffer[0] = e24->get_status();      /* fill buffer & set MIDI channel   */
+    buffer[0] += (channel & 0x0F);
+    e24->get_data(buffer[1], buffer[2]);
 
-    /* fill buffer and set midi channel */
-
-    buffer[0] = a_e24->get_status();
-    buffer[0] += (a_channel & 0x0F);
-    a_e24->get_data(buffer[1], buffer[2]);
+    snd_midi_event_t * midi_ev;         /* ALSA MIDI parser                 */
     snd_midi_event_new(10, &midi_ev);
 
-    /* clear event */
-
-    snd_seq_ev_clear(&ev);
+    snd_seq_event_t ev;
+    snd_seq_ev_clear(&ev);                          /* clear event          */
     snd_midi_event_encode(midi_ev, buffer, 3, &ev);
     snd_midi_event_free(midi_ev);
-
-    /* set source */
-
-    snd_seq_ev_set_source(&ev, m_local_addr_port);
+    snd_seq_ev_set_source(&ev, m_local_addr_port);  /* set source           */
     snd_seq_ev_set_subs(&ev);
-    snd_seq_ev_set_direct(&ev);     // its immediate
-
-    /* pump it into the queue */
-
-    snd_seq_event_output(m_seq, &ev);
+    snd_seq_ev_set_direct(&ev);                     /* it is immediate      */
+    snd_seq_event_output(m_seq, &ev);               /* pump into the queue  */
 #endif  // SEQ64_HAVE_LIBASOUND
 }
 
 /**
  *  min() for long values.
+ *
+ * \param a
+ *      First operand.
+ *
+ * \param b
+ *      Second operand.
  */
 
 inline long
@@ -414,28 +444,25 @@ min (long a, long b)
 /**
  *  Takes a native SYSEX event, encodes it to an ALSA event, and then
  *  puts it in the queue.
+ *
+ * \param e24
+ *      The event to be handled.
  */
 
 void
-midibus::sysex (event * a_e24)
+midibus::sysex (event * e24)
 {
 #ifdef SEQ64_HAVE_LIBASOUND
     automutex locker(m_mutex);
     snd_seq_event_t ev;
-
-    /* clear event */
-
-    snd_seq_ev_clear(&ev);
+    snd_seq_ev_clear(&ev);                              /* clear event      */
     snd_seq_ev_set_priority(&ev, 1);
-
-    /* set source */
-
-    snd_seq_ev_set_source(&ev, m_local_addr_port);
+    snd_seq_ev_set_source(&ev, m_local_addr_port);      /* set source       */
     snd_seq_ev_set_subs(&ev);
-    snd_seq_ev_set_direct(&ev);         // its immediate
+    snd_seq_ev_set_direct(&ev);                         /* it's immediate   */
 
-    unsigned char * data = a_e24->get_sysex();
-    long data_size = a_e24->get_size();
+    unsigned char * data = e24->get_sysex();
+    long data_size = e24->get_size();
     for (long offset = 0; offset < data_size; offset += c_midibus_sysex_chunk)
     {
         long data_left = data_size - offset;
@@ -443,10 +470,7 @@ midibus::sysex (event * a_e24)
         (
             &ev, min(data_left, c_midibus_sysex_chunk), &data[offset]
         );
-
-        /* pump it into the queue */
-
-        snd_seq_event_output_direct(m_seq, &ev);
+        snd_seq_event_output_direct(m_seq, &ev);    /* pump into the queue */
         usleep(80000);
         flush();
     }
@@ -468,23 +492,26 @@ midibus::flush ()
 
 /**
  *  Initialize the clock, continuing from the given tick.
+ *
+ * \param tick
+ *      The starting tick.
  */
 
 void
-midibus::init_clock (long a_tick)
+midibus::init_clock (long tick)
 {
 #ifdef SEQ64_HAVE_LIBASOUND
-    if (m_clock_type == e_clock_pos && a_tick != 0)
+    if (m_clock_type == e_clock_pos && tick != 0)
     {
-        continue_from(a_tick);
+        continue_from(tick);
     }
-    else if (m_clock_type == e_clock_mod || a_tick == 0)
+    else if (m_clock_type == e_clock_mod || tick == 0)
     {
         start();
 
         long clock_mod_ticks = (c_ppqn / 4) * m_clock_mod;
-        long leftover = (a_tick % clock_mod_ticks);
-        long starting_tick = a_tick - leftover;
+        long leftover = (tick % clock_mod_ticks);
+        long starting_tick = tick - leftover;
 
         /*
          * Was there anything left? Then wait for next beat (16th note)
@@ -501,10 +528,13 @@ midibus::init_clock (long a_tick)
 
 /**
  *  Continue from the given tick.
+ *
+ * \param tick
+ *      The continuing tick.
  */
 
 void
-midibus::continue_from (long a_tick)
+midibus::continue_from (long tick)
 {
 #ifdef SEQ64_HAVE_LIBASOUND
 
@@ -513,9 +543,9 @@ midibus::continue_from (long a_tick)
      */
 
     long pp16th = (c_ppqn / 4);
-    long leftover = (a_tick % pp16th);
-    long beats = (a_tick / pp16th);
-    long starting_tick = a_tick - leftover;
+    long leftover = (tick % pp16th);
+    long beats = (tick / pp16th);
+    long starting_tick = tick - leftover;
 
     /*
      * Was there anything left? Then wait for next beat (16th note) to
@@ -528,9 +558,10 @@ midibus::continue_from (long a_tick)
     m_lasttick = starting_tick - 1;
     if (m_clock_type != e_clock_off)
     {
-        snd_seq_event_t evc;
         snd_seq_event_t ev;
         ev.type = SND_SEQ_EVENT_CONTINUE;
+
+        snd_seq_event_t evc;
         evc.type = SND_SEQ_EVENT_SONGPOS;
         evc.data.control.value = beats;
         snd_seq_ev_set_fixed(&ev);
@@ -577,14 +608,17 @@ midibus::start ()
 /**
  *  Set status to of "inputting" to the given value.  If the parameter is
  *  true, then init_in() is called; otherwise, deinit_in() is called.
+ *
+ * \param inputing
+ *      The inputing value to set.
  */
 
 void
-midibus::set_input (bool a_inputing)
+midibus::set_input (bool inputing)
 {
-    if (m_inputing != a_inputing)
+    if (m_inputing != inputing)
     {
-        m_inputing = a_inputing;
+        m_inputing = inputing;
         if (m_inputing)
             init_in();
         else
@@ -617,23 +651,26 @@ midibus::stop ()
 
 /**
  *  Generates the MIDI clock, starting at the given tick value.
+ *
+ * \param tick
+ *      Provides the starting tick.
  */
 
 void
-midibus::clock (long a_tick)
+midibus::clock (long tick)
 {
 #ifdef SEQ64_HAVE_LIBASOUND
     automutex locker(m_mutex);
     if (m_clock_type != e_clock_off)
     {
         bool done = false;
-        if (m_lasttick >= a_tick)
+        if (m_lasttick >= tick)
             done = true;
 
         while (!done)
         {
             m_lasttick++;
-            if (m_lasttick >= a_tick)
+            if (m_lasttick >= tick)
                 done = true;
 
             if (m_lasttick % (c_ppqn / 24) == 0)        /* tick time? */
@@ -665,7 +702,7 @@ midibus::clock (long a_tick)
  */
 
 void
-midibus::remove_queued_on_events (int a_tag)
+midibus::remove_queued_on_events (int tag)
 {
     automutex locker(m_mutex);
     snd_seq_remove_events_t * remove_events;
@@ -675,7 +712,7 @@ midibus::remove_queued_on_events (int a_tag)
         remove_events, SND_SEQ_REMOVE_OUTPUT | SND_SEQ_REMOVE_TAG_MATCH |
             SND_SEQ_REMOVE_IGNORE_OFF
     );
-    snd_seq_remove_events_set_tag(remove_events, a_tag);
+    snd_seq_remove_events_set_tag(remove_events, tag);
     snd_seq_remove_events(m_seq, remove_events);
     snd_seq_remove_events_free(remove_events);
 }
@@ -689,3 +726,4 @@ midibus::remove_queued_on_events (int a_tag)
  *
  * vim: sw=4 ts=4 wm=4 et ft=cpp
  */
+

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-30
- * \updates       2015-10-11
+ * \updates       2015-10-12
  * \license       GNU GPLv2 or above
  *
  *  This file provides a Linux-only implementation of MIDI support.
@@ -43,6 +43,27 @@
 
 #include "mastermidibus.hpp"
 #include "midibus.hpp"
+
+/**
+ *  Macros to make capabilities-checking more readable.
+ */
+
+#define CAP_READ(cap)       (((cap) & SND_SEQ_PORT_CAP_SUBS_READ) != 0)
+#define CAP_WRITE(cap)      (((cap) & SND_SEQ_PORT_CAP_SUBS_WRITE) != 0)
+
+/**
+ *  These checks need both bits to be set.  Intermediate macros used for
+ *  readability.
+ */
+
+#define CAP_R_BITS      (SND_SEQ_PORT_CAP_SUBS_READ | SND_SEQ_PORT_CAP_READ)
+#define CAP_W_BITS      (SND_SEQ_PORT_CAP_SUBS_WRITE | SND_SEQ_PORT_CAP_WRITE)
+
+#define CAP_FULL_READ(cap)  (((cap) & CAP_R_BITS) == CAP_R_BITS)
+#define CAP_FULL_WRITE(cap) (((cap) & CAP_W_BITS) == CAP_W_BITS)
+
+#define ALSA_CLIENT_CHECK(pinfo) \
+    (snd_seq_client_id(m_alsa_seq) != snd_seq_port_info_get_client(pinfo))
 
 namespace seq64
 {
@@ -193,17 +214,11 @@ mastermidibus::init ()
                 int cap =  snd_seq_port_info_get_capability(pinfo);
                 if
                 (
-                    snd_seq_client_id(m_alsa_seq) !=
-                        snd_seq_port_info_get_client(pinfo) &&
+                    ALSA_CLIENT_CHECK(pinfo) &&
                     snd_seq_port_info_get_client(pinfo) != SND_SEQ_CLIENT_SYSTEM
                 )
                 {
-                    if                              /* the outputs */
-                    (
-                        (cap & SND_SEQ_PORT_CAP_SUBS_WRITE) != 0 &&
-                        snd_seq_client_id(m_alsa_seq) !=
-                            snd_seq_port_info_get_client(pinfo)
-                    )
+                    if (CAP_WRITE(cap) && ALSA_CLIENT_CHECK(pinfo)) /* outputs */
                     {
                         m_buses_out[m_num_out_buses] = new midibus
                         (
@@ -226,12 +241,7 @@ mastermidibus::init ()
 
                         m_num_out_buses++;
                     }
-                    if                              /* the inputs */
-                    (
-                        (cap & SND_SEQ_PORT_CAP_SUBS_READ) != 0 &&
-                        snd_seq_client_id(m_alsa_seq) !=
-                            snd_seq_port_info_get_client(pinfo)
-                    )
+                    if (CAP_READ(cap) && ALSA_CLIENT_CHECK(pinfo)) /* inputs */
                     {
                         m_buses_in[m_num_in_buses] = new midibus
                         (
@@ -716,35 +726,29 @@ mastermidibus::is_more_input ()
  *  \threadsafe
  *      Quite a lot is done during the lock!
  *
- * \param a_client
+ * \param client
  *      Provides the ALSA client number.
  *
- * \param a_port
+ * \param port
  *      Provides the ALSA client port.
  */
 
 void
-mastermidibus::port_start (int a_client, int a_port)
+mastermidibus::port_start (int client, int port)
 {
 #ifdef SEQ64_HAVE_LIBASOUND
     automutex locker(m_mutex);
-    snd_seq_client_info_t * cinfo;                      /* client info */
+    snd_seq_client_info_t * cinfo;                      /* client info        */
     snd_seq_client_info_alloca(&cinfo);
-    snd_seq_get_any_client_info(m_alsa_seq, a_client, cinfo);
-
-    snd_seq_port_info_t * pinfo;                        /* port info */
+    snd_seq_get_any_client_info(m_alsa_seq, client, cinfo);
+    snd_seq_port_info_t * pinfo;                        /* port info          */
     snd_seq_port_info_alloca(&pinfo);
-    snd_seq_get_any_port_info(m_alsa_seq, a_client, a_port, pinfo);
+    snd_seq_get_any_port_info(m_alsa_seq, client, port, pinfo);
 
     int cap = snd_seq_port_info_get_capability(pinfo);  /* get its capability */
-    if (snd_seq_client_id(m_alsa_seq) != snd_seq_port_info_get_client(pinfo))
+    if (ALSA_CLIENT_CHECK(pinfo))
     {
-        if                                              /* the outputs */
-        (
-            (cap & (SND_SEQ_PORT_CAP_SUBS_WRITE | SND_SEQ_PORT_CAP_WRITE)) ==
-                (SND_SEQ_PORT_CAP_SUBS_WRITE | SND_SEQ_PORT_CAP_WRITE) &&
-            snd_seq_client_id(m_alsa_seq) != snd_seq_port_info_get_client(pinfo)
-        )
+        if (CAP_FULL_WRITE(cap) && ALSA_CLIENT_CHECK(pinfo)) /* outputs */
         {
             bool replacement = false;
             int bus_slot = m_num_out_buses;
@@ -752,9 +756,9 @@ mastermidibus::port_start (int a_client, int a_port)
             {
                 if
                 (
-                    m_buses_out[i]->get_client() == a_client  &&
-                    m_buses_out[i]->get_port() == a_port &&
-                    m_buses_out_active[i] == false
+                    m_buses_out[i]->get_client() == client  &&
+                    m_buses_out[i]->get_port() == port &&
+                    ! m_buses_out_active[i]
                 )
                 {
                     replacement = true;
@@ -778,12 +782,7 @@ mastermidibus::port_start (int a_client, int a_port)
             if (! replacement)
                 m_num_out_buses++;
         }
-        if                                          /* the inputs */
-        (
-            (cap & (SND_SEQ_PORT_CAP_SUBS_READ | SND_SEQ_PORT_CAP_READ)) ==
-                (SND_SEQ_PORT_CAP_SUBS_READ | SND_SEQ_PORT_CAP_READ) &&
-            snd_seq_client_id(m_alsa_seq) != snd_seq_port_info_get_client(pinfo)
-        )
+        if (CAP_FULL_READ(cap) && ALSA_CLIENT_CHECK(pinfo)) /* inputs */
         {
             bool replacement = false;
             int bus_slot = m_num_in_buses;
@@ -791,9 +790,9 @@ mastermidibus::port_start (int a_client, int a_port)
             {
                 if
                 (
-                    m_buses_in[i]->get_client() == a_client  &&
-                    m_buses_in[i]->get_port() == a_port &&
-                    m_buses_in_active[i] == false
+                    m_buses_in[i]->get_client() == client  &&
+                    m_buses_in[i]->get_port() == port &&
+                    ! m_buses_in_active[i]
                 )
                 {
                     replacement = true;
@@ -832,28 +831,36 @@ mastermidibus::port_start (int a_client, int a_port)
 }
 
 /**
- *  Turn off the given port for the given client.
+ *  Turn off the given port for the given client.  Both the input and output
+ *  busses for the given client are stopped, and set to inactive.
  *
  * \threadsafe
+ *
+ * \param client
+ *      The client to be matched and acted on.
+ *
+ * \param port
+ *      The port to be acted on.  Both parameter must be match before the buss
+ *      is made inactive.
  */
 
 void
-mastermidibus::port_exit (int a_client, int a_port)
+mastermidibus::port_exit (int client, int port)
 {
 #ifdef SEQ64_HAVE_LIBASOUND
     automutex locker(m_mutex);
     for (int i = 0; i < m_num_out_buses; i++)
     {
-        if (m_buses_out[i]->get_client() == a_client &&
-            m_buses_out[i]->get_port() == a_port)
+        if (m_buses_out[i]->get_client() == client &&
+            m_buses_out[i]->get_port() == port)
         {
             m_buses_out_active[i] = false;
         }
     }
     for (int i = 0; i < m_num_in_buses; i++)
     {
-        if (m_buses_in[i]->get_client() == a_client &&
-            m_buses_in[i]->get_port() == a_port)
+        if (m_buses_in[i]->get_client() == client &&
+            m_buses_in[i]->get_port() == port)
         {
             m_buses_in_active[i] = false;
         }
@@ -865,10 +872,13 @@ mastermidibus::port_exit (int a_client, int a_port)
  *  Grab a MIDI event.
  *
  * \threadsafe
+ *
+ * \param inev
+ *      The event to be set based on the found input event.
  */
 
 bool
-mastermidibus::get_midi_event (event * a_in)
+mastermidibus::get_midi_event (event * inev)
 {
 #ifdef SEQ64_HAVE_LIBASOUND
     automutex locker(m_mutex);
@@ -911,9 +921,9 @@ mastermidibus::get_midi_event (event * a_in)
     if (bytes <= 0)
         return false;
 
-    a_in->set_timestamp(ev->time.tick);
-    a_in->set_status(buffer[0]);
-    a_in->set_size(bytes);
+    inev->set_timestamp(ev->time.tick);
+    inev->set_status(buffer[0]);
+    inev->set_size(bytes);
 
     /*
      *  We will only get EVENT_SYSEX on the first packet of MIDI data;
@@ -923,17 +933,17 @@ mastermidibus::get_midi_event (event * a_in)
 #if 0
     if ( buffer[0] == EVENT_SYSEX )
     {
-        a_in->start_sysex();            /* set up for sysex if needed */
-        sysex = a_in->append_sysex(buffer, bytes);
+        inev->start_sysex();            /* set up for sysex if needed */
+        sysex = inev->append_sysex(buffer, bytes);
     }
     else
     {
 #endif
         /* some keyboards send Note On with velocity 0 for Note Off */
 
-        a_in->set_data(buffer[1], buffer[2]);
-        if (a_in->get_status() == EVENT_NOTE_ON && a_in->get_note_velocity() == 0)
-            a_in->set_status(EVENT_NOTE_OFF);
+        inev->set_data(buffer[1], buffer[2]);
+        if (inev->get_status() == EVENT_NOTE_ON && inev->get_note_velocity() == 0)
+            inev->set_status(EVENT_NOTE_OFF);
 
         sysex = false;
 #if 0
@@ -945,7 +955,7 @@ mastermidibus::get_midi_event (event * a_in)
         snd_seq_event_input(m_alsa_seq, &ev);
         long bytes = snd_midi_event_decode(midi_ev, buffer, sizeof(buffer), ev);
         if (bytes > 0)
-            sysex = a_in->append_sysex(buffer, bytes);
+            sysex = inev->append_sysex(buffer, bytes);
         else
             sysex = false;
     }
@@ -959,14 +969,21 @@ mastermidibus::get_midi_event (event * a_in)
  *  the given state.
  *
  * \threadsafe
+ *
+ * \param state
+ *      Provides the dumping-input state to be set.
+ *
+ * \parem seq
+ *      Provides the sequence object to be logged as the mastermidibus's
+ *      sequence.
  */
 
 void
-mastermidibus::set_sequence_input (bool a_state, sequence * a_seq)
+mastermidibus::set_sequence_input (bool state, sequence * seq)
 {
     automutex locker(m_mutex);
-    m_seq = a_seq;
-    m_dumping_input = a_state;
+    m_seq = seq;
+    m_dumping_input = state;
 }
 
 }           // namespace seq64

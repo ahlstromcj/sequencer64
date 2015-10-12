@@ -48,7 +48,7 @@ namespace seq64
 {
 
 /**
- *  The mastermidibus constructor fills the array with our busses.
+ *  The mastermidibus default constructor fills the array with our busses.
  */
 
 mastermidibus::mastermidibus ()
@@ -85,7 +85,6 @@ mastermidibus::mastermidibus ()
     }
 
 #ifdef SEQ64_HAVE_LIBASOUND
-
     /*
      * Open the sequencer client.  This line of code results in a loss of
      * 4 bytes somewhere in snd_seq_open(), as discovered via valgrind.
@@ -251,7 +250,7 @@ mastermidibus::init ()
                     }
                 }
             }
-        } /* end loop for clients */
+        }                                       /* end loop for clients */
     }
     set_bpm(c_bpm);
     set_ppqn(c_ppqn);
@@ -306,19 +305,22 @@ mastermidibus::start ()
 }
 
 /**
- *  Gets the output busses running again.
+ *  Gets the output busses running again, if ALSA support is enabled.
  *
  * \threadsafe
+ *
+ * \param tick
+ *      Provides the tick value to continue from.
  */
 
 void
-mastermidibus::continue_from (long a_tick)
+mastermidibus::continue_from (long tick)
 {
 #ifdef SEQ64_HAVE_LIBASOUND
     automutex locker(m_mutex);
     snd_seq_start_queue(m_alsa_seq, m_queue, NULL);     /* start timer */
     for (int i = 0; i < m_num_out_buses; i++)
-        m_buses_out[i]->continue_from(a_tick);
+        m_buses_out[i]->continue_from(tick);
 #endif
 }
 
@@ -326,18 +328,22 @@ mastermidibus::continue_from (long a_tick)
  *  Initializes the clock of each of the output busses.
  *
  * \threadsafe
+ *
+ * \param tick
+ *      Provides the tick value with which to initialize the buss clock.
  */
 
 void
-mastermidibus::init_clock (long a_tick)
+mastermidibus::init_clock (long tick)
 {
     automutex locker(m_mutex);
     for (int i = 0; i < m_num_out_buses; i++)
-        m_buses_out[i]->init_clock(a_tick);
+        m_buses_out[i]->init_clock(tick);
 }
 
 /**
- *  Stops each of the output busses.
+ *  Stops each of the output busses.  If ALSA support is enable, also drains
+ *  the output, synchronizes the output queue, and then stop the queue.
  *
  * \threadsafe
  */
@@ -360,39 +366,40 @@ mastermidibus::stop ()
  *  Generates the MIDI clock for each of the output busses.
  *
  * \threadsafe
+ *
+ * \param tick
+ *      Provides the tick value with which to set the buss clock.
  */
 
 void
-mastermidibus::clock (long a_tick)
+mastermidibus::clock (long tick)
 {
     automutex locker(m_mutex);
     for (int i = 0; i < m_num_out_buses; i++)
-        m_buses_out[i]->clock(a_tick);
+        m_buses_out[i]->clock(tick);
 }
 
 /**
- *  Set the PPQN value (parts per quarter note).  This is done by creating
- *  an ALSA tempo structure, adding tempo information to it, and then
- *  setting the ALSA sequencer object with this information.
+ *  Set the PPQN value (parts per quarter note).  This is done by creating an
+ *  ALSA tempo structure, adding tempo information to it, and then setting the
+ *  ALSA sequencer object with this information.  Fills the tempo structure
+ *  with the current tempo information.  Then sets the ppqn value.  Finally,
+ *  gives the tempo structure to the ALSA queue.
  *
  * \threadsafe
+ *
+ * \param ppqn
+ *      The PPQN value to be set.
  */
 
 void
-mastermidibus::set_ppqn (int a_ppqn)
+mastermidibus::set_ppqn (int ppqn)
 {
 #ifdef SEQ64_HAVE_LIBASOUND
     automutex locker(m_mutex);
+    m_ppqn = ppqn;
     snd_seq_queue_tempo_t * tempo;
-    snd_seq_queue_tempo_alloca(&tempo);         /* allocate tempo struct */
-
-    /*
-     * Fill the tempo structure with the current tempo information.  Then
-     * set the ppqn value.  Finally, give the tempo structure to the ALSA
-     * queue.
-     */
-
-    m_ppqn = a_ppqn;
+    snd_seq_queue_tempo_alloca(&tempo);             /* allocate tempo struct */
     snd_seq_get_queue_tempo(m_alsa_seq, m_queue, tempo);
     snd_seq_queue_tempo_set_ppq(tempo, m_ppqn);
     snd_seq_set_queue_tempo(m_alsa_seq, m_queue, tempo);
@@ -405,10 +412,13 @@ mastermidibus::set_ppqn (int a_ppqn)
  *  setting the ALSA sequencer object with this information.
  *
  * \threadsafe
+ *
+ * \param bpm
+ *      Provides the beats-per-minute value to set.
  */
 
 void
-mastermidibus::set_bpm (int a_bpm)
+mastermidibus::set_bpm (int bpm)
 {
 #ifdef SEQ64_HAVE_LIBASOUND
     automutex locker(m_mutex);
@@ -422,7 +432,7 @@ mastermidibus::set_bpm (int a_bpm)
      */
 
     snd_seq_get_queue_tempo(m_alsa_seq, m_queue, tempo);
-    m_bpm = a_bpm;
+    m_bpm = bpm;
     snd_seq_queue_tempo_set_tempo(tempo, 60000000 / m_bpm);
     snd_seq_set_queue_tempo(m_alsa_seq, m_queue, tempo);
 #endif
@@ -447,14 +457,17 @@ mastermidibus::flush ()
  *  Handle the sending of SYSEX events.
  *
  * \threadsafe
+ *
+ * \param ev
+ *      Provides the event pointer to be set.
  */
 
 void
-mastermidibus::sysex (event * a_ev)
+mastermidibus::sysex (event * ev)
 {
     automutex locker(m_mutex);
     for (int i = 0; i < m_num_out_buses; i++)
-        m_buses_out[i]->sysex(a_ev);
+        m_buses_out[i]->sysex(ev);
 
     flush();
 }
@@ -464,14 +477,23 @@ mastermidibus::sysex (event * a_ev)
  *  parameter, as long as it is a legal buss number.
  *
  * \threadsafe
+ *
+ * \param bus
+ *      The buss to start play on.
+ *
+ * \param e24
+ *      The seq24 event to play on the buss.
+ *
+ * \param channel
+ *      The channel on which to play the event.
  */
 
 void
-mastermidibus::play (unsigned char a_bus, event * a_e24, unsigned char a_channel)
+mastermidibus::play (unsigned char bus, event * e24, unsigned char channel)
 {
     automutex locker(m_mutex);
-    if (m_buses_out_active[a_bus] && a_bus < m_num_out_buses)
-        m_buses_out[a_bus]->play(a_e24, a_channel);
+    if (m_buses_out_active[bus] && bus < m_num_out_buses)
+        m_buses_out[bus]->play(e24, channel);
 }
 
 /**
@@ -479,28 +501,42 @@ mastermidibus::play (unsigned char a_bus, event * a_e24, unsigned char a_channel
  *  are a little loose, however.
  *
  * \threadsafe
+ *
+ * \param bus
+ *      The buss to start play on.
+ *
+ * \param clocktype
+ *      The type of clock to be set, either "off", "pos", or "mod", as noted
+ *      in the midibus_common module.
  */
 
 void
-mastermidibus::set_clock (unsigned char a_bus, clock_e a_clock_type)
+mastermidibus::set_clock (unsigned char bus, clock_e clocktype)
 {
     automutex locker(m_mutex);
-    if (a_bus < c_max_busses)
-        m_init_clock[a_bus] = a_clock_type;
+    if (bus < c_max_busses)
+        m_init_clock[bus] = clocktype;
 
-    if (m_buses_out_active[a_bus] && a_bus < m_num_out_buses)
-        m_buses_out[a_bus]->set_clock(a_clock_type);
+    if (m_buses_out_active[bus] && bus < m_num_out_buses)
+        m_buses_out[bus]->set_clock(clocktype);
 }
 
 /**
- *  Get the clock for the given (legal) buss number.
+ *  Gets the clock setting for the given (legal) buss number.
+ *
+ * \param bus
+ *      Provides the buss number to read.
+ *
+ * \return
+ *      If the buss number is legal, and the buss is active, then its clock
+ *      setting is returned.  Otherwise, e_clock_off is returned.
  */
 
 clock_e
-mastermidibus::get_clock (unsigned char a_bus)
+mastermidibus::get_clock (unsigned char bus)
 {
-    if (m_buses_out_active[a_bus] && a_bus < m_num_out_buses)
-        return m_buses_out[a_bus]->get_clock();
+    if (m_buses_out_active[bus] && bus < m_num_out_buses)
+        return m_buses_out[bus]->get_clock();
 
     return e_clock_off;
 }
@@ -512,57 +548,74 @@ mastermidibus::get_clock (unsigned char a_bus)
  *  used?  And I thought there was only one input buss anyway!
  *
  * \threadsafe
+ *
+ * \param bus
+ *      Provides the buss number.
  */
 
 void
-mastermidibus::set_input (unsigned char a_bus, bool a_inputing)
+mastermidibus::set_input (unsigned char bus, bool inputing)
 {
     automutex locker(m_mutex);
-    if (a_bus < c_max_busses)         // should be m_num_in_buses I believe!!!
-        m_init_input[a_bus] = a_inputing;
+    if (bus < c_max_busses)         // should be m_num_in_buses I believe!!!
+        m_init_input[bus] = inputing;
 
-    if (m_buses_in_active[a_bus] && a_bus < m_num_in_buses)
-        m_buses_in[a_bus]->set_input(a_inputing);
+    if (m_buses_in_active[bus] && bus < m_num_in_buses)
+        m_buses_in[bus]->set_input(inputing);
 }
 
 /**
  *  Get the input for the given (legal) buss number.
+ *
+ * \param bus
+ *      Provides the buss number.
+ *
+ * \return
+ *      Always returns false.
  */
 
 bool
-mastermidibus::get_input (unsigned char a_bus)
+mastermidibus::get_input (unsigned char bus)
 {
-    if (m_buses_in_active[a_bus] && a_bus < m_num_in_buses)
-        return m_buses_in[a_bus]->get_input();
+    if (m_buses_in_active[bus] && bus < m_num_in_buses)
+        return m_buses_in[bus]->get_input();
 
     return false;
 }
 
 /**
  *  Get the MIDI output buss name for the given (legal) buss number.
+ *
+ * \param bus
+ *      Provides the output buss number.
+ *
+ * \return
+ *      Returns the buss name as a standard C++ string, truncated to 80-1
+ *      characters.  Also contains an indication that the buss is disconnected
+ *      or unconnected.
  */
 
 std::string
-mastermidibus::get_midi_out_bus_name (int a_bus)
+mastermidibus::get_midi_out_bus_name (int bus)
 {
-    if (m_buses_out_active[a_bus] && a_bus < m_num_out_buses)
+    if (m_buses_out_active[bus] && bus < m_num_out_buses)
     {
-        return m_buses_out[a_bus]->get_name();
+        return m_buses_out[bus]->get_name();
     }
     else
     {
-        char tmp[64];                           /* copy names */
-        if (m_buses_out_init[a_bus])
+        char tmp[80];                           /* copy names */
+        if (m_buses_out_init[bus])
         {
             snprintf
             (
                 tmp, sizeof(tmp), "[%d] %d:%d (disconnected)",
-                a_bus, m_buses_out[a_bus]->get_client(),
-                m_buses_out[a_bus]->get_port()
+                bus, m_buses_out[bus]->get_client(),
+                m_buses_out[bus]->get_port()
             );
         }
         else
-            snprintf(tmp, sizeof(tmp), "[%d] (unconnected)", a_bus);
+            snprintf(tmp, sizeof(tmp), "[%d] (unconnected)", bus);
 
         return std::string(tmp);
     }
@@ -570,29 +623,37 @@ mastermidibus::get_midi_out_bus_name (int a_bus)
 
 /**
  *  Get the MIDI input buss name for the given (legal) buss number.
+ *
+ * \param bus
+ *      Provides the input buss number.
+ *
+ * \return
+ *      Returns the buss name as a standard C++ string, truncated to 80-1
+ *      characters.  Also contains an indication that the buss is disconnected
+ *      or unconnected.
  */
 
 std::string
-mastermidibus::get_midi_in_bus_name (int a_bus)
+mastermidibus::get_midi_in_bus_name (int bus)
 {
-    if (m_buses_in_active[a_bus] && a_bus < m_num_in_buses)
+    if (m_buses_in_active[bus] && bus < m_num_in_buses)
     {
-        return m_buses_in[a_bus]->get_name();
+        return m_buses_in[bus]->get_name();
     }
     else
     {
-        char tmp[64];                       /* copy names */
-        if (m_buses_in_init[a_bus])
+        char tmp[80];                       /* copy names */
+        if (m_buses_in_init[bus])
         {
             snprintf
             (
                 tmp, sizeof(tmp), "[%d] %d:%d (disconnected)",
-                a_bus, m_buses_in[a_bus]->get_client(),
-                m_buses_in[a_bus]->get_port()
+                bus, m_buses_in[bus]->get_client(),
+                m_buses_in[bus]->get_port()
             );
         }
         else
-            snprintf(tmp, sizeof(tmp), "[%d] (unconnected)", a_bus);
+            snprintf(tmp, sizeof(tmp), "[%d] (unconnected)", bus);
 
         return std::string(tmp);
     }
@@ -605,13 +666,16 @@ mastermidibus::get_midi_in_bus_name (int a_bus)
 void
 mastermidibus::print ()
 {
-    printf("Available Buses\n");
+    printf("Available busses:\n");
     for (int i = 0; i < m_num_out_buses; i++)
         printf("%s\n", m_buses_out[i]->m_name.c_str());
 }
 
 /**
  *  Initiate a poll() on the existing poll descriptors.
+ *
+ * \return
+ *      Returns the result of the poll, or 0 if ALSA is not supported.
  */
 
 int
@@ -630,7 +694,9 @@ mastermidibus::poll_for_midi ()
  *
  * \threadsafe
  *
- *  Does this function really need to be locked?
+ * \return
+ *      Returns true if ALSA is supported, and the returned size is greater
+ *      than 0, or false otherwise.
  */
 
 bool
@@ -638,11 +704,10 @@ mastermidibus::is_more_input ()
 {
 #ifdef SEQ64_HAVE_LIBASOUND
     automutex locker(m_mutex);
-    int size = snd_seq_event_input_pending(m_alsa_seq, 0);
+    return snd_seq_event_input_pending(m_alsa_seq, 0) > 0;
 #else
-    int size = 0;
+    return false;
 #endif
-    return size > 0;
 }
 
 /**
@@ -650,6 +715,12 @@ mastermidibus::is_more_input ()
  *
  *  \threadsafe
  *      Quite a lot is done during the lock!
+ *
+ * \param a_client
+ *      Provides the ALSA client number.
+ *
+ * \param a_port
+ *      Provides the ALSA client port.
  */
 
 void

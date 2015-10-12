@@ -51,6 +51,15 @@ lash * global_lash_driver = nullptr;
  *  This constructor calls lash_extract(), using the command-line
  *  arguments, if SEQ64_LASH_SUPPORT is enabled.  We fixed the crazy usage of
  *  argc and argv here and in the client code in the seq24 module.
+ *
+ * \param p
+ *      The perform object that needs to implement LASH support.
+ *
+ * \param argc
+ *      The number of command-line arguments.
+ *
+ * \param argv
+ *      The command-line arguments.
  */
 
 lash::lash (perform & p, int argc, char ** argv)
@@ -73,6 +82,10 @@ lash::lash (perform & p, int argc, char ** argv)
 
 /**
  *  Initializes LASH support, if enabled.
+ *
+ * \return
+ *      Returns true if the LASH subsystem was able to be initialized, and a
+ *      LASH client representative (m_client) was allocated.
  */
 
 bool
@@ -88,7 +101,9 @@ lash::init ()
         lash_event_t * event = lash_event_new_with_type(LASH_Client_Name);
         if (not_nullptr(event))
         {
-            lash_event_set_string(event, "Seq24");
+            // lash_event_set_string(event, "Seq24");
+
+            lash_event_set_string(event, "Sequencer64");
             lash_send_event(m_client, event);
             printf("[Connected to LASH]\n");
         }
@@ -105,6 +120,9 @@ lash::init ()
 
 /**
  *  Make ourselves a LASH ALSA client.
+ *
+ * /param id
+ *      The ALSA client ID to be set.
  */
 
 void
@@ -144,6 +162,9 @@ lash::start ()
 
 /**
  *  Process LASH events.
+ *
+ * \return
+ *      Always returns true.
  */
 
 bool
@@ -160,6 +181,9 @@ lash::process_events ()
 
 /**
  *  Handle a LASH event.
+ *
+ * \param ev
+ *      Provides the event to be handled.
  */
 
 void
@@ -201,6 +225,10 @@ lash::handle_event (lash_event_t * ev)
 
 /**
  *  Handle a LASH configuration item.
+ *  Currently incomplete.
+ *
+ * \param conf
+ *      Provides the configuration item to handle.
  */
 
 void
@@ -224,3 +252,4 @@ lash::handle_config (lash_config_t * conf)
  *
  * vim: sw=4 ts=4 wm=4 et ft=cpp
  */
+

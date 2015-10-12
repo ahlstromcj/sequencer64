@@ -66,8 +66,7 @@ keys_perform::keys_perform ()
     m_key_stop                  (SEQ64_Escape),
     m_key_show_ui_sequence_key  (false)
 {
-    // set_all_key_events();
-    // set_all_key_groups();
+    // Empty body
 }
 
 /**
@@ -78,13 +77,19 @@ keys_perform::keys_perform ()
 
 keys_perform::~keys_perform ()
 {
-    // what to do?
+    // Empty body
 }
 
 /**
  *  Obtains the name of the key.  In gtkmm, this is done via the
  *  gdk_keyval_name() function.  Here, in the base class, we just provide an
  *  easy-to-create string.
+ *
+ * \param key
+ *      Provides the numeric value of the keystroke.
+ *
+ * \return
+ *      Returns the name of the key, in the format "Key 0xkkkk".
  */
 
 std::string
@@ -96,7 +101,13 @@ keys_perform::key_name (unsigned int key) const
 }
 
 /**
- *  Copies fields from the transfer structure in this object.
+ *  Copies fields from the transfer structure in this object.  This structure
+ *  holds all of the key settings from the File / Options / Keyboard tab
+ *  dialog.
+ *
+ * \param kpt
+ *      The structure that holds the values of the keys to be used for various
+ *      purposes in controlling a performance live.
  */
 
 void
@@ -122,6 +133,10 @@ keys_perform::set_keys (const keys_perform_transfer & kpt)
 
 /**
  *  Copies fields from this object into the transfer structure.
+ *
+ * \param kpt
+ *      The structure that holds the values of the keys to be used for various
+ *      purposes in controlling a performance live.
  */
 
 void
@@ -151,6 +166,12 @@ keys_perform::get_keys (keys_perform_transfer & kpt)
  *
  *  It is called 32 times, corresponding the pattern/sequence slots in the
  *  Patterns window.
+ *
+ * \param keycode
+ *      The key to be assigned.
+ *
+ * \param sequence_slot
+ *      The perform event slot into which the keycode will be assigned.
  */
 
 void
@@ -184,6 +205,12 @@ keys_perform::set_key_event (unsigned int keycode, long sequence_slot)
  *
  *  It is called 32 times, corresponding the pattern/sequence slots in the
  *  Patterns window.
+ *
+ * \param keycode
+ *      The key to be assigned.
+ *
+ * \param group_slot
+ *      The perform group slot into which the keycode will be assigned.
  */
 
 void
@@ -218,3 +245,4 @@ keys_perform::set_key_group (unsigned int keycode, long group_slot)
  *
  * vim: sw=4 ts=4 wm=4 et ft=cpp
  */
+

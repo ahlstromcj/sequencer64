@@ -38,7 +38,7 @@ namespace seq64
 {
 
 /**
- *  The constructor for class key.
+ *  The default constructor for class keystroke.
  */
 
 keystroke::keystroke ()
@@ -50,6 +50,22 @@ keystroke::keystroke ()
     // Empty body
 }
 
+/**
+ *  The principal constructor.
+ *
+ * \param key
+ *      The keystroke number of the key that was pressed or released.
+ *
+ * \param press
+ *      If true, the keystroke action was a press, otherwise it was a release.
+ *
+ * \param modkey
+ *      The modifier key combination that was pressed, if any, in the form of
+ *      a bit-mask, as defined in the gdk_basic_keys module.  Common mask
+ *      values are SEQ64_SHIFT_MASK, SEQ64_CONTROL_MASK, SEQ64_MOD1_MASK, and
+ *      SEQ64_MOD4_MASK.  If no modifier, this value is SEQ64_NO_MASK.
+ */
+
 keystroke::keystroke (unsigned int key, bool press, int modkey)
  :
     m_is_press  (press),
@@ -59,6 +75,13 @@ keystroke::keystroke (unsigned int key, bool press, int modkey)
     // Empty body
 }
 
+/**
+ *  Provides the rote copy constructor.
+ *
+ * \param rhs
+ *      The object to be copied.
+ */
+
 keystroke::keystroke (const keystroke & rhs)
  :
     m_is_press  (rhs.m_is_press),
@@ -67,6 +90,17 @@ keystroke::keystroke (const keystroke & rhs)
 {
     // Empty body
 }
+
+/**
+ *  Provides the rote principal assignment operator.
+ *
+ * \param rhs
+ *      The object to be assigned.
+ *
+ * \return
+ *      Returns the reference to the current object, for use in assignment
+ *      chains.
+ */
 
 keystroke &
 keystroke::operator = (const keystroke & rhs)
@@ -83,7 +117,7 @@ keystroke::operator = (const keystroke & rhs)
 /**
  * \getter m_key to test letters, handles ASCII only.
  *
- * \param character
+ * \param ch
  *      An optional character to test as an ASCII letter.
  *
  * \return

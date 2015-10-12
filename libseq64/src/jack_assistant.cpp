@@ -80,8 +80,7 @@ jack_assistant::~jack_assistant ()
 }
 
 /**
- *  Initializes JACK support, if SEQ64_JACK_SUPPORT is defined.
- *  Then we become a new client of the JACK server.
+ *  Initializes JACK support.  Then we become a new client of the JACK server.
  *
  *  Who calls this routine?
  *
@@ -578,6 +577,10 @@ jack_assistant::output (jack_scratchpad & pad)
 
 #ifdef USE_DEBUGGING_OUTPUT
 
+/**
+ *  Debugging code for JACK.
+ */
+
 void
 jack_assistant::jack_debug_print
 (
@@ -618,10 +621,23 @@ jack_assistant::jack_debug_print
 
 #endif  // USE_DEBUGGING_OUTPUT
 
-// #ifdef SEQ64_JACK_SUPPORT
-
 /**
- *  This function...
+ *  This function sets the JACK position structure.
+ *
+ * \param state
+ *      Indicates the current state of JACK transport.
+ *
+ * \param nframes
+ *      The number of JACK frames.
+ *
+ * \param pos
+ *      Provides the position structure to be filled in.
+ *
+ * \param new_pos
+ *      The new positions to be set.
+ *
+ * \param arg
+ *      Provides the jack_assistant pointer, currently unchecked for nullity.
  */
 
 void
@@ -634,15 +650,14 @@ jack_timebase_callback
     void * arg
 )
 {
-    static double jack_tick;
-    static jack_nframes_t current_frame;
-    static jack_transport_state_t state_current;
-    static jack_transport_state_t state_last;
-
-    state_current = state;
+    static double s_jack_tick;
+    static jack_nframes_t s_current_frame;
+    static jack_transport_state_t s_state_current;
+    static jack_transport_state_t s_state_last;
+    s_state_current = state;
 
     jack_assistant * jack = (jack_assistant *) arg;
-    current_frame = jack_get_current_transport_frame(jack->m_jack_client);
+    s_current_frame = jack_get_current_transport_frame(jack->m_jack_client);
     pos->valid = JackPositionBBT;
     pos->beats_per_bar = 4;
     pos->beat_type = 4;
@@ -656,37 +671,39 @@ jack_timebase_callback
      * If we are in a new position....
      */
 
-    if (state_last == JackTransportStarting &&
-            state_current == JackTransportRolling)
+    if (s_state_last == JackTransportStarting &&
+            s_state_current == JackTransportRolling)
     {
-        double jack_delta_tick =
-            (current_frame) *
-            pos->ticks_per_beat *
+        double jack_delta_tick = (s_current_frame) * pos->ticks_per_beat *
             pos->beats_per_minute / (pos->frame_rate * 60.0);
 
-        jack_tick = (jack_delta_tick < 0) ? -jack_delta_tick : jack_delta_tick;
+        s_jack_tick = (jack_delta_tick < 0) ? -jack_delta_tick : jack_delta_tick;
 
         long ptick = 0, pbeat = 0, pbar = 0;
-        pbar  = (long)
+        pbar = long
         (
-            (long) jack_tick / (pos->ticks_per_beat * pos->beats_per_bar)
+            long(s_jack_tick) / (pos->ticks_per_beat * pos->beats_per_bar)
         );
-        pbeat = (long)
+        pbeat = long
         (
-            (long) jack_tick % (long)(pos->ticks_per_beat * pos->beats_per_bar)
+            long(s_jack_tick) % long(pos->ticks_per_beat * pos->beats_per_bar)
         );
-        pbeat /= (long) pos->ticks_per_beat;
-        ptick = (long) jack_tick % (long) pos->ticks_per_beat;
+        pbeat /= long(pos->ticks_per_beat);
+        ptick = long(s_jack_tick) % long(pos->ticks_per_beat);
         pos->bar = pbar + 1;
         pos->beat = pbeat + 1;
         pos->tick = ptick;
         pos->bar_start_tick = pos->bar * pos->beats_per_bar * pos->ticks_per_beat;
     }
-    state_last = state_current;
+    s_state_last = s_state_current;
 }
 
 /**
  *  Shutdown JACK by clearing the perform::m_jack_running flag.
+ *
+ * \param arg
+ *      Points to the jack_assistant in charge of JACK support for the perform
+ *      object.
  */
 
 void
@@ -699,23 +716,26 @@ jack_shutdown (void * arg)
 
 /**
  *  Print the JACK position.
+ *
+ * \param pos
+ *      The JACK position to print.
  */
 
 void
-print_jack_pos (jack_position_t * jack_pos)
+print_jack_pos (jack_position_t * pos)
 {
     return;                                              /* tricky! */
     printf("print_jack_pos()\n");
-    printf("    bar  [%d]\n", jack_pos->bar);
-    printf("    beat [%d]\n", jack_pos->beat);
-    printf("    tick [%d]\n", jack_pos->tick);
-    printf("    bar_start_tick   [%f]\n", jack_pos->bar_start_tick);
-    printf("    beats_per_bar    [%f]\n", jack_pos->beats_per_bar);
-    printf("    beat_type        [%f]\n", jack_pos->beat_type);
-    printf("    ticks_per_beat   [%f]\n", jack_pos->ticks_per_beat);
-    printf("    beats_per_minute [%f]\n", jack_pos->beats_per_minute);
-    printf("    frame_time       [%f]\n", jack_pos->frame_time);
-    printf("    next_time        [%f]\n", jack_pos->next_time);
+    printf("    bar  [%d]\n", pos->bar);
+    printf("    beat [%d]\n", pos->beat);
+    printf("    tick [%d]\n", pos->tick);
+    printf("    bar_start_tick   [%f]\n", pos->bar_start_tick);
+    printf("    beats_per_bar    [%f]\n", pos->beats_per_bar);
+    printf("    beat_type        [%f]\n", pos->beat_type);
+    printf("    ticks_per_beat   [%f]\n", pos->ticks_per_beat);
+    printf("    beats_per_minute [%f]\n", pos->beats_per_minute);
+    printf("    frame_time       [%f]\n", pos->frame_time);
+    printf("    next_time        [%f]\n", pos->next_time);
 }
 
 }           // namespace seq64
@@ -725,3 +745,4 @@ print_jack_pos (jack_position_t * jack_pos)
  *
  * vim: sw=4 ts=4 wm=4 et ft=cpp
  */
+

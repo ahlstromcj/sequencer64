@@ -1,5 +1,5 @@
-#ifndef SEQ64_GLOBALS_HPP
-#define SEQ64_GLOBALS_HPP
+#ifndef SEQ64_GLOBALS_H
+#define SEQ64_GLOBALS_H
 
 /*
  *  This file is part of seq24/sequencer64.
@@ -820,10 +820,11 @@ extern interaction_method_t global_interactionmethod;
 
 extern bool global_allow_mod4_mode;
 
-#endif  // SEQ64_GLOBALS_HPP
+#endif  // SEQ64_GLOBALS_H
 
 /*
  * globals.h
  *
  * vim: sw=4 ts=4 wm=4 et ft=cpp
  */
+

@@ -1,5 +1,5 @@
-#ifndef SEQ64_GDK_BASIC_KEYS_HPP
-#define SEQ64_GDK_BASIC_KEYS_HPP
+#ifndef SEQ64_GDK_BASIC_KEYS_H
+#define SEQ64_GDK_BASIC_KEYS_H
 
 /*
  *  This file is part of seq24/sequencer64.
@@ -186,7 +186,6 @@
 #define SEQ64_bar                 0x07c
 #define SEQ64_braceright          0x07d
 #define SEQ64_asciitilde          0x07e
-
 #define SEQ64_igrave              0x0ec
 
 #endif      // SEQ64_Home
@@ -218,9 +217,9 @@ typedef enum
     SEQ64_BUTTON5_MASK      = 1 << 12,
 
     /*
-    * Bits 13 and 14 are used by XKB, bits 15 to 25 are unused. Bit 29 is
-    * used internally.
-    */
+     * Bits 13 and 14 are used by XKB, bits 15 to 25 are unused. Bit 29 is
+     * used internally.
+     */
 
     SEQ64_SUPER_MASK        = 1 << 26,
     SEQ64_HYPER_MASK        = 1 << 27,
@@ -265,10 +264,11 @@ typedef enum
 
 }           // namespace seq64
 
-#endif      // SEQ64_GDK_BASIC_KEYS_HPP
+#endif      // SEQ64_GDK_BASIC_KEYS_H
 
 /*
  * gdk_basic_keys.h
  *
  * vim: sw=4 ts=4 wm=4 et ft=cpp
  */
+

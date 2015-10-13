@@ -28,6 +28,9 @@
  * \updates       2015-10-09
  * \license       GNU GPLv2 or above
  *
+ *  Note that this representation is, in a sense, inside the mainwnd
+ *  implementation.  While mainwid represents the pattern slots, mainwnd
+ *  represents the menu and surrounding elements.
  */
 
 #include <gtkmm/combo.h>                /* Gtk::Entry                   */
@@ -47,9 +50,7 @@ using namespace Gtk::Menu_Helpers;
  *  the --disable-highlight option.
  *
  *      #define HIGHLIGHT_EMPTY_SEQS    // undefine for normal empty seqs
- */
-
-/**
+ *
  *  The USE_GREY_GRID and USE_NORMAL_GRID can be undefined in combination
  *  to obtain different kinds of looks for the main (patterns) window at
  *  build time.  Try it and see for yourself!
@@ -58,7 +59,7 @@ using namespace Gtk::Menu_Helpers;
 #define USE_GREY_GRID                   // undefine for black boxes
 #define USE_NORMAL_GRID                 // undefine for black box, black outline
 
-/**
+/*
  *  Static array of characters for use in toggling patterns.
  *  These look like the "Sequence toggle keys" in the Options / Keyboard
  *  dialog, except that they are upper-case here, and lower-case in that
@@ -82,6 +83,9 @@ using namespace Gtk::Menu_Helpers;
     };
 \endverbatim
  *
+ * WARNING:  If you make this comment a Doxygen comment, one which precedes
+ *           the following namespace specification, it breaks the creation of
+ *           the reference-manual PDF file by Doxygen!!!
  */
 
 namespace seq64
@@ -92,12 +96,15 @@ namespace seq64
  *  for a size of c_mainwid_x by c_mainwid_y.  It adds GDK masks for
  *  button presses, releases, and motion, and key presses and focus
  *  changes.
+ *
+ * \param p
+ *      Provides the reference to the all-important perform object.
  */
 
-mainwid::mainwid (perform & a_p)
+mainwid::mainwid (perform & p)
  :
-    gui_drawingarea_gtk2    (a_p, c_mainwid_x, c_mainwid_y),
-    seqmenu                 (a_p),
+    gui_drawingarea_gtk2    (p, c_mainwid_x, c_mainwid_y),
+    seqmenu                 (p),
     m_moving_seq            (),
     m_button_down           (false),
     m_moving                (false),
@@ -128,7 +135,7 @@ mainwid::mainwid (perform & a_p)
 
 mainwid::~mainwid ()
 {
-    // empty body
+    // Empty body
 }
 
 /**
@@ -163,6 +170,9 @@ mainwid::fill_background_window ()
 
 /**
  *  Is this a nullified callback?
+ *
+ * \return
+ *      Always returns true.
  */
 
 int
@@ -189,37 +199,38 @@ mainwid::timeout ()
  *      the muting in the Song (performance) windows does seem to be in
  *      force.
  *
- *      Is the color actually backwards from what was intended?
+ * \param seqnum
+ *      Provides the number of the sequence slot that needs to be drawn.
  */
 
 void
-mainwid::draw_sequence_on_pixmap (int a_seq)
+mainwid::draw_sequence_on_pixmap (int seqnum)
 {
-    if (valid_sequence(a_seq))
+    if (valid_sequence(seqnum))
     {
         int base_x, base_y;
-        calculate_base_sizes(a_seq, base_x, base_y);    // side-effects
+        calculate_base_sizes(seqnum, base_x, base_y);    // side-effects
         m_gc->set_foreground(black());
         m_pixmap->draw_rectangle                // outer border of box
         (
             m_gc, true, base_x, base_y, m_seqarea_x, m_seqarea_y
         );
-        if (perf().is_active(a_seq))
+        if (perf().is_active(seqnum))
         {
-            sequence * seq = perf().get_sequence(a_seq);
+            sequence * seq = perf().get_sequence(seqnum);
 #if SEQ64_HIGHLIGHT_EMPTY_SEQS
             if (seq->event_count() > 0)
             {
 #endif
                 if (seq->get_playing())
                 {
-                    m_last_playing[a_seq] = true;   // active and playing
+                    m_last_playing[seqnum] = true;   // active and playing
                     bg_color(black());
                     fg_color(white());
                 }
                 else
                 {
-                    m_last_playing[a_seq] = false;  // active and not playing
+                    m_last_playing[seqnum] = false;  // active and not playing
                     bg_color(white());
                     fg_color(black());
                 }
@@ -227,16 +238,16 @@ mainwid::draw_sequence_on_pixmap (int a_seq)
             }
             else
             {
-                m_last_playing[a_seq] = false;      // active and not playing
+                m_last_playing[seqnum] = false;      // active and not playing
                 if (seq->get_playing())
                 {
-                    m_last_playing[a_seq] = false;  // active and playing
+                    m_last_playing[seqnum] = false;  // active and playing
                     bg_color(black());
                     fg_color(yellow());
                 }
                 else
                 {
-                    m_last_playing[a_seq] = false;  // active and not playing
+                    m_last_playing[seqnum] = false;  // active and not playing
                     bg_color(yellow());
                     fg_color(black());
                 }
@@ -289,7 +300,7 @@ mainwid::draw_sequence_on_pixmap (int a_seq)
                 snprintf
                 (
                     temp, sizeof temp, "%c",
-                    (char) perf().lookup_keyevent_key(a_seq)
+                    (char) perf().lookup_keyevent_key(seqnum)
                 );
                 p_font_renderer->render_string_on_drawable  // shortcut key
                 (
@@ -413,30 +424,39 @@ mainwid::draw_sequence_on_pixmap (int a_seq)
 
 /**
  *  Common-code helper function.
+ *
+ * \param seqnum
+ *      Provides the number of the sequence to validate.
+ *
+ * \return
+ *      Returns true if the sequence number is valid for the current
+ *      m_screenset value.
  */
 
 bool
-mainwid::valid_sequence (int a_seq)
+mainwid::valid_sequence (int seqnum)
 {
     int slots = m_mainwnd_rows * m_mainwnd_cols;
-    return a_seq >= (m_screenset * slots) && a_seq < ((m_screenset+1) * slots);
+    return seqnum >= (m_screenset * slots) && seqnum < ((m_screenset+1) * slots);
 }
-
 
 /**
  *  This function draws something in the Patterns Panel.  The sequence is
  *  drawn only if it is in the current screen set (indicated by
  *  m_screenset.  However, if we comment out this code, we can't see any
  *  difference in the Patterns Panel, even when playback is ongoing!
+ *
+ * \param seqnum
+ *      Provides the number of the sequence to draw.
  */
 
 void
-mainwid::draw_sequence_pixmap_on_window (int a_seq)         // effective?
+mainwid::draw_sequence_pixmap_on_window (int seqnum)         // effective?
 {
-    if (valid_sequence(a_seq))
+    if (valid_sequence(seqnum))
     {
         int base_x, base_y;
-        calculate_base_sizes(a_seq, base_x, base_y);    // side-effects
+        calculate_base_sizes(seqnum, base_x, base_y);    // side-effects
         m_window->draw_drawable
         (
             m_gc, m_pixmap, base_x, base_y, base_x, base_y,
@@ -448,40 +468,55 @@ mainwid::draw_sequence_pixmap_on_window (int a_seq)         // effective?
 /**
  *  Provides a way to calculate the base x and y size values for the
  *  pattern map.  The values are returned as side-effects.
+ *
+ * \param seqnum
+ *      Provides the number of the sequence to calculate.
+ *
+ * \param basex
+ *      A return parameter for the x coordinate of the base size.
+ *
+ * \param basey
+ *      A return parameter for the y coordinate of the base size.
  */
 
 void
-mainwid::calculate_base_sizes (int a_seq, int & basex, int & basey)
+mainwid::calculate_base_sizes (int seqnum, int & basex, int & basey)
 {
-    int i = (a_seq / m_mainwnd_rows) % m_mainwnd_cols;
-    int j =  a_seq % m_mainwnd_rows;
+    int i = (seqnum / m_mainwnd_rows) % m_mainwnd_cols;
+    int j =  seqnum % m_mainwnd_rows;
     basex = m_mainwid_border + (m_seqarea_x + m_mainwid_spacing) * i;
     basey = m_mainwid_border + (m_seqarea_y + m_mainwid_spacing) * j;
 }
 
 /**
  *  Draw the the given pattern/sequence again.
+ *
+ * \param seqnum
+ *      Provides the number of the sequence to draw.
  */
 
 void
-mainwid::redraw (int a_sequence)
+mainwid::redraw (int seqnum)
 {
-    draw_sequence_on_pixmap(a_sequence);
-    draw_sequence_pixmap_on_window(a_sequence);         // effective?
+    draw_sequence_on_pixmap(seqnum);
+    draw_sequence_pixmap_on_window(seqnum);         // effective?
 }
 
 /**
  *  Draw the cursors (long vertical bars) on each sequence, so that they
  *  follow the playing progress of each sequence in the mainwid (Patterns
  *  Panel.)
+ *
+ * \param ticks
+ *      Starting point for drawing the markers.
  */
 
 void
-mainwid::update_markers(int a_ticks)
+mainwid::update_markers (int ticks)
 {
     int slots = m_mainwnd_rows * m_mainwnd_cols;
     for (int s = 0; s < slots; s++)
-        draw_marker_on_sequence(s + (m_screenset * slots), a_ticks);
+        draw_marker_on_sequence(s + (m_screenset * slots), ticks);
 }
 
 /**
@@ -490,38 +525,44 @@ mainwid::update_markers(int a_ticks)
  *
  *  If the sequence has no events, this function doesn't bother even
  *  drawing a position marker.
+ *
+ * \param seqnum
+ *      Provides the number of the sequence to draw.
+ *
+ * \param tick
+ *      Provides the location to draw the marker.
  */
 
 void
-mainwid::draw_marker_on_sequence (int a_seq, int a_tick)
+mainwid::draw_marker_on_sequence (int seqnum, int tick)
 {
-    if (perf().is_dirty_main(a_seq))
-        update_sequence_on_window(a_seq);
+    if (perf().is_dirty_main(seqnum))
+        update_sequence_on_window(seqnum);
 
-    if (perf().is_active(a_seq))
+    if (perf().is_active(seqnum))
     {
-        sequence * seq = perf().get_sequence(a_seq);
+        sequence * seq = perf().get_sequence(seqnum);
         if (seq->event_count() ==  0)
             return;                         /* new 2015-08-23 don't update */
 
         int base_x, base_y;
-        calculate_base_sizes(a_seq, base_x, base_y);    // side-effects
+        calculate_base_sizes(seqnum, base_x, base_y);    // side-effects
 
         int rectangle_x = base_x + m_text_size_x - 1;
         int rectangle_y = base_y + m_text_size_y + m_text_size_x - 1;
         int length = seq->get_length();
-        a_tick += (length - seq->get_trigger_offset());
-        a_tick %= length;
+        tick += (length - seq->get_trigger_offset());
+        tick %= length;
 
-        long tick_x = a_tick * m_seqarea_seq_x / length;
+        long tick_x = tick * m_seqarea_seq_x / length;
         m_window->draw_drawable
         (
             m_gc, m_pixmap,
-            rectangle_x + m_last_tick_x[a_seq], rectangle_y + 1,
-            rectangle_x + m_last_tick_x[a_seq], rectangle_y + 1,
+            rectangle_x + m_last_tick_x[seqnum], rectangle_y + 1,
+            rectangle_x + m_last_tick_x[seqnum], rectangle_y + 1,
             1, m_seqarea_seq_y
         );
-        m_last_tick_x[a_seq] = tick_x;
+        m_last_tick_x[seqnum] = tick_x;
         if (seq->get_playing())
             m_gc->set_foreground(white());
         else
@@ -551,13 +592,16 @@ mainwid::update_sequences_on_window ()
 
 /**
  *  Updates the image of one sequencer.
+ *
+ * \param seqnum
+ *      Provides the number of the sequence to update.
  */
 
 void
-mainwid::update_sequence_on_window (int a_seq)
+mainwid::update_sequence_on_window (int seqnum)
 {
-    draw_sequence_on_pixmap(a_seq);
-    draw_sequence_pixmap_on_window(a_seq);          // effective?
+    draw_sequence_on_pixmap(seqnum);
+    draw_sequence_pixmap_on_window(seqnum);          // effective?
 }
 
 /**
@@ -571,7 +615,13 @@ mainwid::draw_pixmap_on_window ()
 }
 
 /**
- *  Translates XY corridinates in the Patterns Panel to a sequence number.
+ *  Translates XY coordiinates in the Patterns Panel to a sequence number.
+ *
+ * \param a_x
+ *      Provides the x coordinate.
+ *
+ * \param a_y
+ *      Provides the y coordinate.
  *
  * \return
  *      Returns -1 if the sequence number cannot be calculated.
@@ -611,14 +661,17 @@ mainwid::seq_from_xy (int a_x, int a_y)
  */
 
 void
-mainwid::reset()
+mainwid::reset ()
 {
     draw_sequences_on_pixmap();
     draw_pixmap_on_window();
 }
 
 /**
- *  Set the current screen set.
+ *  Set the current screen-set.
+ *
+ * \param a_ss
+ *      Provides the screen-set number to set.
  */
 
 void
@@ -658,6 +711,12 @@ mainwid::on_realize ()
 
 /**
  *  Implements the GTK expose event callback.
+ *
+ * \param a_e
+ *      The expose event.
+ *
+ * \return
+ *      Always returns true.
  */
 
 bool
@@ -677,14 +736,20 @@ mainwid::on_expose_event (GdkEventExpose * a_e)
  *  Handles a press of a mouse button.  It grabs the focus, calculates
  *  the pattern/sequence over which the button press occureed, and sets
  *  the m_button_down flag if it is over a pattern.
+ *
+ * \param p0
+ *      Provides the parameters of the button event.
+ *
+ * \return
+ *      Always returns true.
  */
 
 bool
-mainwid::on_button_press_event (GdkEventButton * a_p0)
+mainwid::on_button_press_event (GdkEventButton * p0)
 {
     grab_focus();
-    current_sequence(seq_from_xy(int(a_p0->x), int(a_p0->y)));
-    if (current_sequence() >= 0 && SEQ64_CLICK_IS_LEFT(a_p0->button))
+    current_sequence(seq_from_xy(int(p0->x), int(p0->y)));
+    if (current_sequence() >= 0 && SEQ64_CLICK_IS_LEFT(p0->button))
         m_button_down = true;
 
     return true;
@@ -693,12 +758,18 @@ mainwid::on_button_press_event (GdkEventButton * a_p0)
 /**
  *  Handles a release of a mouse button.  This event is a lot more complex
  *  than a press.
+ *
+ * \param p0
+ *      Provides the parameters of the button event.
+ *
+ * \return
+ *      Always returns true.
  */
 
 bool
-mainwid::on_button_release_event (GdkEventButton * a_p0)
+mainwid::on_button_release_event (GdkEventButton * p0)
 {
-    current_sequence(seq_from_xy(int(a_p0->x), int(a_p0->y)));
+    current_sequence(seq_from_xy(int(p0->x), int(p0->y)));
     m_button_down = false;
 
     /*
@@ -707,7 +778,7 @@ mainwid::on_button_release_event (GdkEventButton * a_p0)
 
     if
     (
-        current_sequence() >= 0 && SEQ64_CLICK_IS_LEFT(a_p0->button) && ! m_moving
+        current_sequence() >= 0 && SEQ64_CLICK_IS_LEFT(p0->button) && ! m_moving
     )
     {
         if (perf().is_active(current_sequence()))
@@ -717,7 +788,7 @@ mainwid::on_button_release_event (GdkEventButton * a_p0)
             draw_sequence_pixmap_on_window(current_sequence());  // effective?
         }
     }
-    if (SEQ64_CLICK_IS_LEFT(a_p0->button) && m_moving)
+    if (SEQ64_CLICK_IS_LEFT(p0->button) && m_moving)
     {
         m_moving = false;
         if          // if we're in a pattern, it is active, and in edit mode...
@@ -740,7 +811,7 @@ mainwid::on_button_release_event (GdkEventButton * a_p0)
             draw_sequence_pixmap_on_window(m_old_seq);          // effective?
         }
     }
-    if (current_sequence() != -1 && SEQ64_CLICK_IS_RIGHT(a_p0->button))
+    if (current_sequence() != -1 && SEQ64_CLICK_IS_RIGHT(p0->button))
         popup_menu();
 
     return true;
@@ -749,12 +820,18 @@ mainwid::on_button_release_event (GdkEventButton * a_p0)
 /**
  *  Handle the motion of the mouse if a mouse button is down and in
  *  another sequence and if the current sequence is not in edit mode.
+ *
+ * \param p0
+ *      Provides the parameters of the button event.
+ *
+ * \return
+ *      Always returns true.
  */
 
 bool
-mainwid::on_motion_notify_event (GdkEventMotion * a_p0)
+mainwid::on_motion_notify_event (GdkEventMotion * p0)
 {
-    int seq = seq_from_xy((int) a_p0->x, (int) a_p0->y);
+    int seq = seq_from_xy((int) p0->x, (int) p0->y);
     if (m_button_down)
     {
         if
@@ -779,6 +856,9 @@ mainwid::on_motion_notify_event (GdkEventMotion * a_p0)
 
 /**
  *  Handles an on-focus event.  Just sets the Gtk::HAS_FOCUS flag.
+ *
+ * \return
+ *      Always returns false.
  */
 
 bool
@@ -790,6 +870,9 @@ mainwid::on_focus_in_event (GdkEventFocus *)
 
 /**
  *  Handles an out-of-focus event.  Just unsets the Gtk::HAS_FOCUS flag.
+ *
+ * \return
+ *      Always returns false.
  */
 
 bool
@@ -806,3 +889,4 @@ mainwid::on_focus_out_event (GdkEventFocus *)
  *
  * vim: sw=4 ts=4 wm=4 et ft=cpp
  */
+

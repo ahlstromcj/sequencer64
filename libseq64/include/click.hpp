@@ -35,6 +35,8 @@
  *  and some from Gtk::Window.  In gtkmm-3, the former will be merged into
  *  the latter, but for now Gtk::DrawingArea will be used.
  *
+ *  Doxygen weirdness:  Adding a Doxygen comment in front of the namespace
+ *  declaration causes the creation of the PDF file to fail!
  */
 
 #include "gdk_basic_keys.h"
@@ -146,7 +148,7 @@ public:
     }
 
     /**
-     * \getter m_button to test for left, right, and middle buttons.
+     * \getter m_button to test for the left button.
      */
 
     bool is_left () const
@@ -154,10 +156,18 @@ public:
         return SEQ64_CLICK_IS_LEFT(m_button);
     }
 
+    /**
+     * \getter m_button to test for the middle button.
+     */
+
     bool is_middle () const
     {
         return SEQ64_CLICK_IS_MIDDLE(m_button);
     }
+
+    /**
+     * \getter m_button to test for the right button.
+     */
 
     bool is_right () const
     {
@@ -242,3 +252,4 @@ public:
  *
  * vim: sw=4 ts=4 wm=4 et ft=cpp
  */
+

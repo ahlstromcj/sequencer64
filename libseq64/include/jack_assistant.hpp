@@ -23,7 +23,7 @@
  * \file          jack_assistant.hpp
  *
  *  This module declares/defines the base class for handling many facets
- *  of performing (playing) a full MIDI song.
+ *  of performing (playing) a full MIDI song using JACK.
  *
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
@@ -31,9 +31,11 @@
  * \updates       2015-09-19
  * \license       GNU GPLv2 or above
  *
+ *  This class contains a number of functions that used to reside in the
+ *  still-large perform module.
  */
 
-#include "globals.h"                    // globals, nullptr, and config headers
+#include "globals.h"                    /* globals, nullptr, and more       */
 
 #include <jack/jack.h>
 #include <jack/transport.h>
@@ -45,7 +47,7 @@
 namespace seq64
 {
 
-class perform;                          // jack_assistant parent is a perform
+class perform;                          /* jack_assistant parent is perform */
 
 /**
  *  Provide a temporary structure for passing data and results between a

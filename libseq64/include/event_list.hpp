@@ -126,7 +126,7 @@ private:
     typedef std::multimap<event_key, event>::iterator iterator;
     typedef std::multimap<event_key, event>::const_iterator const_iterator;
 
-#else   // use std::list here
+#else   // use std::list here:
 
     typedef std::list<event> Events;
     typedef std::list<event>::iterator iterator;

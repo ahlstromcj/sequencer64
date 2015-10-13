@@ -122,13 +122,6 @@ public:
 
 protected:
 
-/*
-    unsigned int position_for_get () const
-    {
-        return m_position_for_get;
-    }
- */
-
     unsigned int position_reset () const
     {
         m_position_for_get = 0;
@@ -166,3 +159,4 @@ private:
  *
  * vim: sw=4 ts=4 wm=4 et ft=cpp
  */
+

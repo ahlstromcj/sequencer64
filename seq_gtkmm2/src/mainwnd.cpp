@@ -25,9 +25,12 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-09
+ * \updates       2015-10-12
  * \license       GNU GPLv2 or above
  *
+ *  The main window holds the menu and the main controls of the application,
+ *  and the mainwid that holds the patterns is nestled in the interior of the
+ *  main window.
  */
 
 #include <cctype>
@@ -896,9 +899,9 @@ mainwnd::about_dialog ()
     dialog.set_comments("Interactive MIDI Sequencer\n");
     dialog.set_copyright
     (
-        "(C) 2002 - 2006 Rob C. Buse (Seq24)\n"
-        "(C) 2008 - 2010 Seq24team (Seq24)\n"
-        "(C) 2015 Chris Ahlstrom (Sequencer64, Sequencer24)"
+        "(C) 2002 - 2006 Rob C. Buse (seq24)\n"
+        "(C) 2008 - 2010 Seq24team (seq24)\n"
+        "(C) 2015 Chris Ahlstrom (sequencer64, sequencer24)"
     );
     dialog.set_website
     (
@@ -1177,7 +1180,7 @@ mainwnd::on_key_press_event (GdkEventKey * a_ev)
 
 /**
  *  Updates the title shown in the title bar of the window.  Note that the
- *  name of the application is obtained by the "(SEQ64_PACKAGE)}
+ *  name of the application is obtained by the "(SEQ64_PACKAGE)"
  *  construction.  Never saw that thing before.  Perhaps it is a Glib
  *  thing.
  */

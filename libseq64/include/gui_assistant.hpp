@@ -63,9 +63,14 @@ private:
 public:
 
     gui_assistant (keys_perform & kp);
+
+    /**
+     *  Stock base-class implementation of a virtual destructor.
+     */
+
     virtual ~gui_assistant ()
     {
-        // stock base-class implementation
+        // Empty body
     }
 
     virtual void quit () = 0;

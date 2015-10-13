@@ -143,21 +143,21 @@ public:
 
     midibus
     (
-        int a_localclient,
-        int a_destclient,
-        int a_destport,
-        snd_seq_t * a_seq,
-        const char * a_client_name,
-        const char * a_port_name,
-        int a_id,
-        int a_queue
+        int localclient,
+        int destclient,
+        int destport,
+        snd_seq_t * seq,
+        const char * client_name,
+        const char * port_name,
+        int id,
+        int queue
     );
     midibus
     (
-        int a_localclient,
-        snd_seq_t * a_seq,
-        int a_id,
-        int a_queue
+        int localclient,
+        snd_seq_t * seq,
+        int id,
+        int queue
     );
 
     ~midibus ();
@@ -187,8 +187,8 @@ public:
         return m_id;
     }
 
-    void play (event * a_e24, unsigned char a_channel);
-    void sysex (event * a_e24);
+    void play (event * e24, unsigned char channel);
+    void sysex (event * e24);
 
     /*
      * Clock functions
@@ -196,17 +196,17 @@ public:
 
     void start ();
     void stop ();
-    void clock (long a_tick);
-    void continue_from (long a_tick);
-    void init_clock (long a_tick);
+    void clock (long tick);
+    void continue_from (long tick);
+    void init_clock (long tick);
 
     /**
      * \setter m_clock_type
      */
 
-    void set_clock (clock_e a_clock_type)
+    void set_clock (clock_e clocktype)
     {
-        m_clock_type = a_clock_type;
+        m_clock_type = clocktype;
     }
 
     /**
@@ -222,7 +222,7 @@ public:
      *  Input functions
      */
 
-    void set_input (bool a_inputing);   // too much to inline
+    void set_input (bool inputing);   // too much to inline
 
     /**
      * \getter m_inputing
@@ -257,10 +257,10 @@ public:
      *  Set the clock mod to the given value, if legal.
      */
 
-    static void set_clock_mod (int a_clock_mod)
+    static void set_clock_mod (int clockmod)
     {
-        if (a_clock_mod != 0)
-            m_clock_mod = a_clock_mod;
+        if (clockmod != 0)
+            m_clock_mod = clockmod;
     }
 
     /**
@@ -285,3 +285,4 @@ public:
  *
  * vim: sw=4 ts=4 wm=4 et ft=cpp
  */
+

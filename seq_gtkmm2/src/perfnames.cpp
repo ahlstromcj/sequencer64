@@ -39,13 +39,16 @@
 #include "perform.hpp"
 #include "perfnames.hpp"
 
-/**
+/*
  *  Adjustments to the performance window.  Sequences that don't have
  *  events show up as black-on-yellow.  This feature is enabled by
  *  default.  To disable this feature, configure the build with the
  *  "--disable-highlight" option.
  *
  *  #define SEQ64_HIGHLIGHT_EMPTY_SEQS  // undefine for normal empty seqs
+ *
+ * WARNING:  Don't make this a Doxygen comment, it will break the generation
+ *           of the PDF file!
  */
 
 namespace seq64

@@ -89,7 +89,7 @@ public:
     configfile (const std::string & a_name);
 
     /**
-     *  A rote constructor needed for a base class.
+     *  A rote destructor needed for a base class.
      */
 
     virtual ~configfile()

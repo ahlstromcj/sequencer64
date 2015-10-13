@@ -65,9 +65,14 @@ public:
     {
         // Empty body
     }
+
+    /**
+     *  Stock base-class implementation of a virtual destructor.
+     */
+
     virtual ~gui_play_base ()
     {
-        // stock base-class implementation
+        // Empty body
     }
 
     virtual void quit () = 0;

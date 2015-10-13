@@ -68,10 +68,13 @@ const int c_midibus_sysex_chunk = 0x100;        //     256
  *  into this common module to avoid duplication.
  *
  * \var e_clock_off
+ *      Corresponds to the "Off" selection in the MIDI Clock tab.
  *
  * \var e_clock_pos
+ *      Corresponds to the "Pos" selection in the MIDI Clock tab.
  *
  * \var e_clock_mod
+ *      Corresponds to the "Mod" selection in the MIDI Clock tab.
  */
 
 enum clock_e
@@ -90,3 +93,4 @@ enum clock_e
  *
  * vim: sw=4 ts=4 wm=4 et ft=cpp
  */
+

@@ -24,7 +24,6 @@
  *          than using a macro.
  *
  *  Generally, we'll try to hide this file in "globals.h".
- *
  */
 
 #include <stdio.h>
@@ -256,3 +255,4 @@ extern bool not_nullptr_assert (void * ptr, const std::string & context);
  *
  * vim: sw=4 ts=4 wm=4 et ft=cpp
  */
+

@@ -50,8 +50,8 @@
 #define SEQ64_CLICK_PRESS               true
 
 /**
- *  Range limits for the various integer parameters.  Used for sanity-checking
- *  and unit-testing.
+ *  Range limits for the various integer parameters of a button-click.  Used
+ *  for sanity-checking and unit-testing.
  */
 
 #define SEQ64_CLICK_X_MIN                   0
@@ -92,7 +92,7 @@ class click
 private:
 
     /**
-     *  Determines if the click was a press or a release.
+     *  Determines if the click was a press or a release event.
      */
 
     bool m_is_press;                    /* versus a release of the button */

@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-03
+ * \updates       2015-10-13
  * \license       GNU GPLv2 or above
  *
  */
@@ -81,6 +81,7 @@ private:
 
     int m_zoom;
     int m_snap;
+    const int m_ppqn;
 
     GdkRectangle m_old;
     GdkRectangle m_selected;

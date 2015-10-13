@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-04
+ * \updates       2015-10-13
  * \license       GNU GPLv2 or above
  *
  */
@@ -53,26 +53,27 @@ seqevent::seqevent
     seqdata & seqdata_wid,
     Gtk::Adjustment & hadjust
 ) :
-    gui_drawingarea_gtk2    (p, hadjust, adjustment_dummy(), 10, c_eventarea_y),
-    m_fruity_interaction    (),
-    m_seq24_interaction     (),
-    m_seq                   (seq),
-    m_zoom                  (zoom),
-    m_snap                  (snap),
-    m_old                   (),
-    m_selected              (),
-    m_scroll_offset_ticks   (0),
-    m_scroll_offset_x       (0),
-    m_seqdata_wid           (seqdata_wid),
-    m_selecting             (false),
-    m_moving_init           (false),
-    m_moving                (false),
-    m_growing               (false),
-    m_painting              (false),
-    m_paste                 (false),
-    m_move_snap_offset_x    (0),
-    m_status                (EVENT_NOTE_ON),
-    m_cc                    (0)
+    gui_drawingarea_gtk2     (p, hadjust, adjustment_dummy(), 10, c_eventarea_y),
+    m_fruity_interaction     (),
+    m_seq24_interaction      (),
+    m_seq                    (seq),
+    m_zoom                   (zoom),
+    m_snap                   (snap),
+    m_ppqn                   (c_ppqn),
+    m_old                    (),
+    m_selected               (),
+    m_scroll_offset_ticks    (0),
+    m_scroll_offset_x        (0),
+    m_seqdata_wid            (seqdata_wid),
+    m_selecting              (false),
+    m_moving_init            (false),
+    m_moving                 (false),
+    m_growing                (false),
+    m_painting               (false),
+    m_paste                  (false),
+    m_move_snap_offset_x     (0),
+    m_status                 (EVENT_NOTE_ON),
+    m_cc                     (0)
 {
     // Empty body
 }
@@ -167,16 +168,16 @@ seqevent::draw_background ()
     );
 
     int measures_per_line = 1;
-    int ticks_per_measure =  m_seq.get_bpm() * (4 * c_ppqn) / m_seq.get_bw();
-    int ticks_per_beat = (4 * c_ppqn) / m_seq.get_bw();
+    int ticks_per_measure =  m_seq.get_bpm() * (4 * m_ppqn) / m_seq.get_bw();
+    int ticks_per_beat = (4 * m_ppqn) / m_seq.get_bw();
     int ticks_per_step = 6 * m_zoom;
     int ticks_per_m_line =  ticks_per_measure * measures_per_line;
-    int start_tick = m_scroll_offset_ticks -
+    int starttick = m_scroll_offset_ticks -
         (m_scroll_offset_ticks % ticks_per_step);
 
-    int end_tick = (m_window_x * m_zoom) + m_scroll_offset_ticks;
+    int endtick = (m_window_x * m_zoom) + m_scroll_offset_ticks;
     m_gc->set_foreground(grey());
-    for (int i = start_tick; i < end_tick; i += ticks_per_step)
+    for (int i = starttick; i < endtick; i += ticks_per_step)
     {
         int base_line = i / m_zoom;
         if (i % ticks_per_m_line == 0)          /* a solid line on every beat */
@@ -211,7 +212,6 @@ seqevent::draw_background ()
             0, base_line - m_scroll_offset_x, m_window_y
         );
     }
-
     m_gc->set_line_attributes                       /* reset line style */
     (
         1, Gdk::LINE_SOLID, Gdk::CAP_NOT_LAST, Gdk::JOIN_MITER
@@ -275,17 +275,13 @@ seqevent::draw_events_on (Glib::RefPtr<Gdk::Drawable> a_draw)
     int x;
     unsigned char d0, d1;
     bool selected;
+    int starttick = m_scroll_offset_ticks;
+    int endtick = (m_window_x * m_zoom) + m_scroll_offset_ticks;
     m_gc->set_foreground(black());          /* draw boxes from sequence */
-
-    int start_tick = m_scroll_offset_ticks ;
-    int end_tick = (m_window_x * m_zoom) + m_scroll_offset_ticks;
     m_seq.reset_draw_marker();
-    while
-    (
-        m_seq.get_next_event(m_status, m_cc, &tick, &d0, &d1, &selected)
-    )
+    while (m_seq.get_next_event(m_status, m_cc, &tick, &d0, &d1, &selected))
     {
-        if ((tick >= start_tick && tick <= end_tick))
+        if ((tick >= starttick && tick <= endtick))
         {
             x = tick / m_zoom;              /* turn into screen coordinates */
             m_gc->set_foreground(black());
@@ -295,7 +291,6 @@ seqevent::draw_events_on (Glib::RefPtr<Gdk::Drawable> a_draw)
                 (c_eventarea_y - c_eventevent_y) / 2,
                 c_eventevent_x, c_eventevent_y
             );
-
             if (selected)
                 m_gc->set_foreground(orange());
             else

@@ -116,6 +116,7 @@ private:
     int m_key;
     int m_sequence;
     long m_measures;
+    const int m_ppqn;
 
     sequence & m_seq;
     Gtk::MenuBar * m_menubar;

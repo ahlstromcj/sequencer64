@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-11
+ * \updates       2015-10-13
  * \license       GNU GPLv2 or above
  *
  *  The patterns/sequence editor is expandable in both directions, but the
@@ -58,7 +58,8 @@ seqtime::seqtime
     m_seq                   (seq),
     m_scroll_offset_ticks   (0),
     m_scroll_offset_x       (0),
-    m_zoom                  (zoom)
+    m_zoom                  (zoom),
+    m_ppqn                  (c_ppqn)
 {
     // Empty body
 }
@@ -130,7 +131,7 @@ seqtime::redraw ()
  \verbatim
         zoom   32         16         8        4        1
         ml
-        c_ppqn
+        m_ppqn
         *
         1      128
         2      64
@@ -155,18 +156,17 @@ seqtime::update_pixmap ()
      * See the description in the banner.
      */
 
-    int measure_length_32nds =  m_seq.get_bpm() * 32 / m_seq.get_bw();
+    int measure_length_32nds = m_seq.get_bpm() * 32 / m_seq.get_bw();
     int measures_per_line = (128 / measure_length_32nds) / (32 / m_zoom);
     if (measures_per_line <= 0)
         measures_per_line = 1;
 
-    int ticks_per_measure =  m_seq.get_bpm() * (4 * c_ppqn) / m_seq.get_bw();
-    int ticks_per_step =  ticks_per_measure * measures_per_line;
+    int ticks_per_measure =  m_seq.get_bpm() * (4 * m_ppqn) / m_seq.get_bw();
+    int ticks_per_step = ticks_per_measure * measures_per_line;
     int start_tick = m_scroll_offset_ticks -
         (m_scroll_offset_ticks % ticks_per_step);
 
     int end_tick = (m_window_x * m_zoom) + m_scroll_offset_ticks;
-
     m_gc->set_foreground(black());                      /* draw vert lines */
     for (int i = start_tick; i < end_tick; i += ticks_per_step)
     {
@@ -177,7 +177,7 @@ seqtime::update_pixmap ()
             0, base_line - m_scroll_offset_x, m_window_y
         );
 
-        char bar[5];
+        char bar[8];
         snprintf(bar, sizeof(bar), "%d", (i / ticks_per_measure) + 1);
         m_gc->set_foreground(black());
         p_font_renderer->render_string_on_drawable

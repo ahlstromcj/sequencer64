@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-04
+ * \updates       2015-10-13
  * \license       GNU GPLv2 or above
  *
  */
@@ -40,7 +40,6 @@
 #include <gtkmm/separator.h>
 #include <gtkmm/table.h>
 #include <gtkmm/tooltips.h>
-
 #include <sigc++/bind.h>
 
 #include "globals.h"
@@ -139,6 +138,7 @@ seqedit::seqedit (sequence & seq, perform & p, int a_pos)
     m_key               (m_initial_key),
     m_sequence          (m_initial_sequence),
     m_measures          (0),
+    m_ppqn              (c_ppqn),
     m_seq               (seq),
     m_menubar           (manage(new Gtk::MenuBar())),
     m_menu_tools        (manage(new Gtk::Menu())),
@@ -409,64 +409,64 @@ seqedit::create_menus ()
 
     m_menu_snap->items().push_back                              /* note snap */
     (
-        MenuElem("1", sigc::bind(SET_SNAP, c_ppqn * 4))
+        MenuElem("1", sigc::bind(SET_SNAP, m_ppqn * 4))
     );
     m_menu_snap->items().push_back
     (
-        MenuElem("1/2", sigc::bind(SET_SNAP, c_ppqn * 2))
+        MenuElem("1/2", sigc::bind(SET_SNAP, m_ppqn * 2))
     );
     m_menu_snap->items().push_back
     (
-        MenuElem("1/4", sigc::bind(SET_SNAP, c_ppqn))
+        MenuElem("1/4", sigc::bind(SET_SNAP, m_ppqn))
     );
     m_menu_snap->items().push_back
     (
-        MenuElem("1/8", sigc::bind(SET_SNAP, c_ppqn / 2))
+        MenuElem("1/8", sigc::bind(SET_SNAP, m_ppqn / 2))
     );
     m_menu_snap->items().push_back
     (
-        MenuElem("1/16", sigc::bind(SET_SNAP, c_ppqn / 4))
+        MenuElem("1/16", sigc::bind(SET_SNAP, m_ppqn / 4))
     );
     m_menu_snap->items().push_back
     (
-        MenuElem("1/32", sigc::bind(SET_SNAP, c_ppqn / 8))
+        MenuElem("1/32", sigc::bind(SET_SNAP, m_ppqn / 8))
     );
     m_menu_snap->items().push_back
     (
-        MenuElem("1/64", sigc::bind(SET_SNAP, c_ppqn / 16))
+        MenuElem("1/64", sigc::bind(SET_SNAP, m_ppqn / 16))
     );
     m_menu_snap->items().push_back
     (
-        MenuElem("1/128", sigc::bind(SET_SNAP, c_ppqn / 32))
+        MenuElem("1/128", sigc::bind(SET_SNAP, m_ppqn / 32))
     );
     m_menu_snap->items().push_back(SeparatorElem());        /* separator */
     m_menu_snap->items().push_back
     (
-        MenuElem("1/3", sigc::bind(SET_SNAP, c_ppqn * 4  / 3))
+        MenuElem("1/3", sigc::bind(SET_SNAP, m_ppqn * 4  / 3))
     );
     m_menu_snap->items().push_back
     (
-        MenuElem("1/6", sigc::bind(SET_SNAP, c_ppqn * 2  / 3))
+        MenuElem("1/6", sigc::bind(SET_SNAP, m_ppqn * 2  / 3))
     );
     m_menu_snap->items().push_back
     (
-        MenuElem("1/12", sigc::bind(SET_SNAP, c_ppqn * 1  / 3))
+        MenuElem("1/12", sigc::bind(SET_SNAP, m_ppqn * 1  / 3))
     );
     m_menu_snap->items().push_back
     (
-        MenuElem("1/24", sigc::bind(SET_SNAP, c_ppqn / 2  / 3))
+        MenuElem("1/24", sigc::bind(SET_SNAP, m_ppqn / 2  / 3))
     );
     m_menu_snap->items().push_back
     (
-        MenuElem("1/48", sigc::bind(SET_SNAP, c_ppqn / 4  / 3))
+        MenuElem("1/48", sigc::bind(SET_SNAP, m_ppqn / 4  / 3))
     );
     m_menu_snap->items().push_back
     (
-        MenuElem("1/96", sigc::bind(SET_SNAP, c_ppqn / 8  / 3))
+        MenuElem("1/96", sigc::bind(SET_SNAP, m_ppqn / 8  / 3))
     );
     m_menu_snap->items().push_back
     (
-        MenuElem("1/192", sigc::bind(SET_SNAP, c_ppqn / 16 / 3))
+        MenuElem("1/192", sigc::bind(SET_SNAP, m_ppqn / 16 / 3))
     );
 
     /*
@@ -477,64 +477,64 @@ seqedit::create_menus ()
 
     m_menu_note_length->items().push_back                   /* note length */
     (
-        MenuElem("1", sigc::bind(SET_NOTE, c_ppqn * 4))
+        MenuElem("1", sigc::bind(SET_NOTE, m_ppqn * 4))
     );
     m_menu_note_length->items().push_back
     (
-        MenuElem("1/2", sigc::bind(SET_NOTE, c_ppqn * 2))
+        MenuElem("1/2", sigc::bind(SET_NOTE, m_ppqn * 2))
     );
     m_menu_note_length->items().push_back
     (
-        MenuElem("1/4", sigc::bind(SET_NOTE, c_ppqn * 1))
+        MenuElem("1/4", sigc::bind(SET_NOTE, m_ppqn * 1))
     );
     m_menu_note_length->items().push_back
     (
-        MenuElem("1/8", sigc::bind(SET_NOTE, c_ppqn / 2))
+        MenuElem("1/8", sigc::bind(SET_NOTE, m_ppqn / 2))
     );
     m_menu_note_length->items().push_back
     (
-        MenuElem("1/16", sigc::bind(SET_NOTE, c_ppqn / 4))
+        MenuElem("1/16", sigc::bind(SET_NOTE, m_ppqn / 4))
     );
     m_menu_note_length->items().push_back
     (
-        MenuElem("1/32", sigc::bind(SET_NOTE, c_ppqn / 8))
+        MenuElem("1/32", sigc::bind(SET_NOTE, m_ppqn / 8))
     );
     m_menu_note_length->items().push_back
     (
-        MenuElem("1/64", sigc::bind(SET_NOTE, c_ppqn / 16))
+        MenuElem("1/64", sigc::bind(SET_NOTE, m_ppqn / 16))
     );
     m_menu_note_length->items().push_back
     (
-        MenuElem("1/128", sigc::bind(SET_NOTE, c_ppqn / 32))
+        MenuElem("1/128", sigc::bind(SET_NOTE, m_ppqn / 32))
     );
     m_menu_note_length->items().push_back(SeparatorElem());
     m_menu_note_length->items().push_back
     (
-        MenuElem("1/3", sigc::bind(SET_NOTE, c_ppqn * 4  / 3))
+        MenuElem("1/3", sigc::bind(SET_NOTE, m_ppqn * 4  / 3))
     );
     m_menu_note_length->items().push_back
     (
-        MenuElem("1/6", sigc::bind(SET_NOTE, c_ppqn * 2  / 3))
+        MenuElem("1/6", sigc::bind(SET_NOTE, m_ppqn * 2  / 3))
     );
     m_menu_note_length->items().push_back
     (
-        MenuElem("1/12", sigc::bind(SET_NOTE, c_ppqn * 1  / 3))
+        MenuElem("1/12", sigc::bind(SET_NOTE, m_ppqn * 1  / 3))
     );
     m_menu_note_length->items().push_back
     (
-        MenuElem("1/24", sigc::bind(SET_NOTE, c_ppqn / 2  / 3))
+        MenuElem("1/24", sigc::bind(SET_NOTE, m_ppqn / 2  / 3))
     );
     m_menu_note_length->items().push_back
     (
-        MenuElem("1/48", sigc::bind(SET_NOTE, c_ppqn / 4  / 3))
+        MenuElem("1/48", sigc::bind(SET_NOTE, m_ppqn / 4  / 3))
     );
     m_menu_note_length->items().push_back
     (
-        MenuElem("1/96", sigc::bind(SET_NOTE, c_ppqn / 8  / 3))
+        MenuElem("1/96", sigc::bind(SET_NOTE, m_ppqn / 8  / 3))
     );
     m_menu_note_length->items().push_back
     (
-        MenuElem("1/192", sigc::bind(SET_NOTE, c_ppqn / 16 / 3))
+        MenuElem("1/192", sigc::bind(SET_NOTE, m_ppqn / 16 / 3))
     );
 
     /*
@@ -1643,7 +1643,7 @@ void
 seqedit::set_snap (int a_snap)
 {
     char b[10];
-    snprintf(b, sizeof(b), "1/%d",   c_ppqn * 4 / a_snap);
+    snprintf(b, sizeof(b), "1/%d", m_ppqn * 4 / a_snap);
     m_entry_snap->set_text(b);
     m_snap = a_snap;
     m_initial_snap = a_snap;
@@ -1661,7 +1661,7 @@ void
 seqedit::set_note_length (int a_note_length)
 {
     char b[10];
-    snprintf(b, sizeof(b), "1/%d",   c_ppqn * 4 / a_note_length);
+    snprintf(b, sizeof(b), "1/%d", m_ppqn * 4 / a_note_length);
     m_entry_note_length->set_text(b);
     m_note_length = a_note_length;
     m_initial_note_length = a_note_length;
@@ -1704,7 +1704,7 @@ seqedit::set_key (int a_note)
 void
 seqedit::apply_length (int a_bpm, int a_bw, int a_measures)
 {
-    m_seq.set_length(a_measures * a_bpm * ((c_ppqn * 4) / a_bw));
+    m_seq.set_length(a_measures * a_bpm * ((m_ppqn * 4) / a_bw));
     m_seqroll_wid->reset();
     m_seqtime_wid->reset();
     m_seqdata_wid->reset();
@@ -1724,7 +1724,7 @@ seqedit::apply_length (int a_bpm, int a_bw, int a_measures)
 long
 seqedit::get_measures ()
 {
-    long units = ((m_seq.get_bpm() * (c_ppqn * 4)) /  m_seq.get_bw());
+    long units = ((m_seq.get_bpm() * (m_ppqn * 4)) /  m_seq.get_bw());
     long measures = (m_seq.get_length() / units);
     if (m_seq.get_length() % units != 0)
         measures++;

@@ -77,6 +77,7 @@ private:
     int m_names_y;
     int m_background_x;
     int m_size_box_w;
+    int m_size_box_click_w;
     int m_measure_length;
     int m_beat_length;
     long m_old_progress_ticks;

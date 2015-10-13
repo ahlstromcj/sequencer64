@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-14
- * \updates       2015-09-27
+ * \updates       2015-10-13
  * \license       GNU GPLv2 or above
  *
  *  This module was created from code that existed in the perform object.
@@ -65,7 +65,8 @@ jack_assistant::jack_assistant (perform & parent)
     m_jsession_ev               (nullptr),
 #endif
     m_jack_running              (false),
-    m_jack_master               (false)
+    m_jack_master               (false),
+    m_ppqn                      (c_ppqn)
 {
     // no other code
 }
@@ -253,7 +254,7 @@ jack_assistant::position (bool /* state */ )
     pos.valid = JackPositionBBT;
     pos.beats_per_bar = 4;
     pos.beat_type = 4;
-    pos.ticks_per_beat = c_ppqn * 10;
+    pos.ticks_per_beat = m_ppqn * 10;
     pos.beats_per_minute =  m_master_bus.get_bpm();
 
     /*
@@ -269,7 +270,7 @@ jack_assistant::position (bool /* state */ )
     );
 
     pos.beat = int32_t(((current_tick / (long) pos.ticks_per_beat) % 4));
-    pos.tick = int32_t((current_tick % (c_ppqn * 10)));
+    pos.tick = int32_t((current_tick % (m_ppqn * 10)));
     pos.bar_start_tick = pos.bar * pos.beats_per_bar * pos.ticks_per_beat;
     pos.frame_rate = rate;
     pos.frame = (jack_nframes_t)
@@ -491,7 +492,7 @@ jack_assistant::output (jack_scratchpad & pad)
 
             jack_ticks_converted = m_jack_tick *        /* convert ticks */
             (
-                double(c_ppqn) / (m_jack_pos.ticks_per_beat *
+                double(m_ppqn) / (m_jack_pos.ticks_per_beat *
                 m_jack_pos.beat_type / 4.0)
             );
             m_jack_parent.set_orig_ticks(long(jack_ticks_converted));
@@ -555,7 +556,7 @@ jack_assistant::output (jack_scratchpad & pad)
             jack_ticks_converted =      // convert ticks
                 m_jack_tick *
                 (
-                    double(c_ppqn) /
+                    double(m_ppqn) /
                     (m_jack_pos.ticks_per_beat * m_jack_pos.beat_type / 4.0)
                 );
 
@@ -661,7 +662,7 @@ jack_timebase_callback
     pos->valid = JackPositionBBT;
     pos->beats_per_bar = 4;
     pos->beat_type = 4;
-    pos->ticks_per_beat = c_ppqn * 10;
+    pos->ticks_per_beat = jack->m_ppqn * 10;
     pos->beats_per_minute = jack->parent().get_bpm();
 
     /*

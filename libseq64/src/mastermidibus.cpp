@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-30
- * \updates       2015-10-12
+ * \updates       2015-10-13
  * \license       GNU GPLv2 or above
  *
  *  This file provides a Linux-only implementation of MIDI support.
@@ -87,8 +87,8 @@ mastermidibus::mastermidibus ()
     m_init_clock        (),         // array of c_max_busses clock_e values
     m_init_input        (),         // array of c_max_busses booleans
     m_queue             (0),
-    m_ppqn              (0),
-    m_bpm               (0),
+    m_ppqn              (c_ppqn),   // @change ca 2015-10-13 was  0
+    m_bpm               (c_bpm),    // DITTO
     m_num_poll_descriptors (0),
     m_poll_descriptors  (nullptr),
     m_dumping_input     (false),
@@ -262,8 +262,8 @@ mastermidibus::init ()
             }
         }                                       /* end loop for clients */
     }
-    set_bpm(c_bpm);
-    set_ppqn(c_ppqn);
+    set_bpm(m_bpm);                             /* @change was c_bpm    */
+    set_ppqn(m_ppqn);   /* CIRCULAR??? */       /* @change was c_ppqn   */
 
     /*
      * Get the number of MIDI input poll file descriptors.
@@ -407,7 +407,7 @@ mastermidibus::set_ppqn (int ppqn)
 {
 #ifdef SEQ64_HAVE_LIBASOUND
     automutex locker(m_mutex);
-    m_ppqn = ppqn;
+    m_ppqn = ppqn;                                  /* CIRCULAR???? */
     snd_seq_queue_tempo_t * tempo;
     snd_seq_queue_tempo_alloca(&tempo);             /* allocate tempo struct */
     snd_seq_get_queue_tempo(m_alsa_seq, m_queue, tempo);

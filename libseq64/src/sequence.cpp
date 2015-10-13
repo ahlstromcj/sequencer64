@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-11
+ * \updates       2015-10-13
  * \license       GNU GPLv2 or above
  *
  */
@@ -85,8 +85,10 @@ sequence::sequence ()
     m_last_tick                 (0),
     m_queued_tick               (0),
     m_trigger_offset            (0),
-    m_length                    (4*c_ppqn),
-    m_snap_tick                 (c_ppqn/4),
+    m_maxbeats                  (c_maxbeats),
+    m_ppqn                      (c_ppqn),
+    m_length                    (4 * m_ppqn),
+    m_snap_tick                 (m_ppqn / 4),
     m_time_beats_per_measure    (4),
     m_time_beat_width           (4),
     m_rec_vol                   (0),
@@ -661,7 +663,7 @@ sequence::get_selected_box
 )
 {
     automutex locker(m_mutex);
-    tick_s = c_maxbeats * c_ppqn;
+    tick_s = m_maxbeats * m_ppqn;
     tick_f = 0;
     note_h = 0;
     note_l = MIDI_COUNT_MAX;
@@ -704,7 +706,7 @@ sequence::get_clipboard_box
 )
 {
     automutex locker(m_mutex);
-    tick_s = c_maxbeats * c_ppqn;
+    tick_s = m_maxbeats * m_ppqn;
     tick_f = 0;
     note_h = 0;
     note_l = MIDI_COUNT_MAX;
@@ -2439,11 +2441,11 @@ sequence::move_selected_triggers_to
                 (
                     a_delta_tick < 0 &&
                     (
-                        a_delta_tick+s->m_tick_end <= (s->m_tick_start+c_ppqn/8)
+                        a_delta_tick+s->m_tick_end <= (s->m_tick_start+m_ppqn/8)
                     )
                 )
                 {
-                    a_delta_tick = (s->m_tick_start+c_ppqn/8) - s->m_tick_end;
+                    a_delta_tick = (s->m_tick_start+m_ppqn/8) - s->m_tick_end;
                 }
             }
             if (a_which == 0)
@@ -2463,10 +2465,10 @@ sequence::move_selected_triggers_to
                 if
                 (
                     a_delta_tick > 0 &&
-                    (a_delta_tick + s->m_tick_start >= (s->m_tick_end-c_ppqn/8))
+                    (a_delta_tick + s->m_tick_start >= (s->m_tick_end-m_ppqn/8))
                 )
                 {
-                    a_delta_tick = (s->m_tick_end-c_ppqn/8) - s->m_tick_start;
+                    a_delta_tick = (s->m_tick_end-m_ppqn/8) - s->m_tick_start;
                 }
             }
             if (a_which == 2)
@@ -2898,8 +2900,8 @@ sequence::set_length (long len, bool adjust_triggers)
     automutex locker(m_mutex);
     bool was_playing = get_playing();
     set_playing(false);             /* turn everything off */
-    if (len < (c_ppqn / 4))
-        len = (c_ppqn / 4);
+    if (len < (m_ppqn / 4))
+        len = (m_ppqn / 4);
 
     if (adjust_triggers)
         adjust_trigger_offsets_to_length(len);

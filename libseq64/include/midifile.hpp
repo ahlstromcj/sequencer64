@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-10
+ * \updates       2015-10-13
  * \license       GNU GPLv2 or above
  *
  *  The Seq24 MIDI file is a standard, Format 1 MIDI file, with some extra
@@ -104,6 +104,13 @@ private:
      */
 
     bool m_new_format;
+
+    /**
+     *  Provides the current value of the PPQN, which used to be the constant
+     *  c_ppqn.
+     */
+
+    const int m_ppqn;
 
 public:
 

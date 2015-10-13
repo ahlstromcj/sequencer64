@@ -137,7 +137,7 @@ private:
      *  Resolution in parts per quarter note.
      */
 
-    int m_ppqn;
+    int m_ppqn;                     /* CIRCULAR??? */
 
     /**
      *  BPM (beats per minute)

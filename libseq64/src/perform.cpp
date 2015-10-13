@@ -24,9 +24,11 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-09
+ * \updates       2015-10-13
  * \license       GNU GPLv2 or above
  *
+ *  This class is probably the most important single class in Sequencer64, as
+ *  it supports sequences, playback, JACK, and more.
  */
 
 #include <sched.h>
@@ -89,8 +91,9 @@ perform::perform (gui_assistant & mygui)
     m_outputing                 (true),
     m_looping                   (false),
     m_playback_mode             (false),
+    m_ppqn                      (c_ppqn),
     m_left_tick                 (0),
-    m_right_tick                (c_ppqn * 16),
+    m_right_tick                (m_ppqn * 16),
     m_starting_tick             (0),
     m_tick                      (0),
     m_usemidiclock              (false),
@@ -412,7 +415,7 @@ perform::set_left_tick (long a_tick)
     m_left_tick = a_tick;
     m_starting_tick = a_tick;
     if (m_left_tick >= m_right_tick)
-        m_right_tick = m_left_tick + c_ppqn * 4;
+        m_right_tick = m_left_tick + m_ppqn * 4;
 }
 
 /**
@@ -422,12 +425,12 @@ perform::set_left_tick (long a_tick)
 void
 perform::set_right_tick (long a_tick)
 {
-    if (a_tick >= c_ppqn * 4)
+    if (a_tick >= m_ppqn * 4)
     {
         m_right_tick = a_tick;
         if (m_right_tick <= m_left_tick)
         {
-            m_left_tick = m_right_tick - c_ppqn * 4;
+            m_left_tick = m_right_tick - m_ppqn * 4;
             m_starting_tick = m_left_tick;
         }
     }
@@ -1598,7 +1601,7 @@ perform::output_func ()
                     {
                         /* was there a tick ? */
 
-                        if (stats_total_tick % (c_ppqn / 24) == 0)
+                        if (stats_total_tick % (m_ppqn / 24) == 0)
                         {
 
 #ifndef PLATFORM_WINDOWS
@@ -1648,10 +1651,10 @@ perform::output_func ()
 
             /* check midi clock adjustment */
 
-            double next_total_tick = (pad.js_total_tick + (c_ppqn / 24.0));
+            double next_total_tick = (pad.js_total_tick + (m_ppqn / 24.0));
             double next_clock_delta = (next_total_tick - pad.js_total_tick - 1);
             double next_clock_delta_us =
-                ((next_clock_delta) * 60000000.0f / c_ppqn  / bpm);
+                ((next_clock_delta) * 60000000.0f / m_ppqn  / bpm);
 
             if (next_clock_delta_us < (c_thread_trigger_width_ms*1000.0f*2.0f))
             {
@@ -1738,7 +1741,7 @@ perform::output_func ()
             }
             printf("\n\n-- clock width --\n");
             int bpm  = m_master_bus.get_bpm();
-            printf("optimal: [%d]us\n", ((c_ppqn / 24) * 60000000 / c_ppqn / bpm));
+            printf("optimal: [%d]us\n", ((m_ppqn / 24) * 60000000 / m_ppqn / bpm));
             for (int i = 0; i < 100; i++)
             {
                 printf("[%3d][%8ld]\n", i * 300, stats_clock[i]);
@@ -2264,7 +2267,7 @@ jack_timebase_callback
     pos->valid = JackPositionBBT;
     pos->beats_per_bar = 4;
     pos->beat_type = 4;
-    pos->ticks_per_beat = c_ppqn * 10;
+    pos->ticks_per_beat = m_ppqn * 10;
     pos->beats_per_minute = p->get_bpm();
 
     /*

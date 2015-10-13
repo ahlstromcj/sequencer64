@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-09-13
+ * \updates       2015-10-13
  * \license       GNU GPLv2 or above
  *
  *  The midibus module is the Linux version of the midibus module.
@@ -84,6 +84,12 @@ private:
      */
 
     bool m_inputing;
+
+    /**
+     *  Provides the PPQN value in force, currently a constant.
+     */
+
+    const int m_ppqn;
 
     /**
      *  ALSA sequencer client handle.

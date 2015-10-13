@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-11
+ * \updates       2015-10-13
  * \license       GNU GPLv2 or above
  *
  */
@@ -241,8 +241,9 @@ private:
 
     long m_last_tick;
     long m_queued_tick;
-
     long m_trigger_offset;
+    const int m_maxbeats;
+    const int m_ppqn;
 
     /* length of sequence in pulses should be powers of two in bars */
 

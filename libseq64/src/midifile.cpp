@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-11
+ * \updates       2015-10-13
  * \license       GNU GPLv2 or above
  *
  *  For a quick guide to the MIDI format, see, for example:
@@ -116,7 +116,8 @@ midifile::midifile (const std::string & a_name, bool propformat)
     m_name          (a_name),
     m_data          (),
     m_char_list     (),
-    m_new_format    (propformat)
+    m_new_format    (propformat),
+    m_ppqn          (c_ppqn)
 {
     // empty body
 }
@@ -322,7 +323,7 @@ midifile::parse (perform & a_perf, int a_screen_set)
                  * ratio.
                  */
 
-                CurrentTime = (RunningTime * c_ppqn) / ppqn;
+                CurrentTime = (RunningTime * m_ppqn) / ppqn;
                 e.set_timestamp(CurrentTime);
                 switch (status & 0xF0)   /* switch on channel-less status    */
                 {
@@ -954,7 +955,7 @@ midifile::write (perform & a_perf)
     write_long(6);                          /* Length of the header         */
     write_short(1);                         /* MIDI Format 1                */
     write_short(numtracks);                 /* number of tracks             */
-    write_short(c_ppqn);                    /* parts per quarter note       */
+    write_short(m_ppqn);                    /* parts per quarter note       */
 
     /*
      * Write out the active tracks.  The value of c_max_sequence is 1024.

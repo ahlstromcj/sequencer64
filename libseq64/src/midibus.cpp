@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-12
+ * \updates       2015-10-13
  * \license       GNU GPLv2 or above
  *
  *  This file provides a Linux-only implementation of MIDI support.
@@ -91,6 +91,7 @@ midibus::midibus
     m_id                (id),
     m_clock_type        (e_clock_off),
     m_inputing          (false),
+    m_ppqn              (c_ppqn),
     m_seq               (seq),
     m_dest_addr_client  (destclient),
     m_dest_addr_port    (destport),
@@ -155,6 +156,7 @@ midibus::midibus
     m_id                (id),
     m_clock_type        (e_clock_off),
     m_inputing          (false),
+    m_ppqn              (c_ppqn),
     m_seq               (seq),
     m_dest_addr_client  (-1),
     m_dest_addr_port    (-1),
@@ -509,7 +511,7 @@ midibus::init_clock (long tick)
     {
         start();
 
-        long clock_mod_ticks = (c_ppqn / 4) * m_clock_mod;
+        long clock_mod_ticks = (m_ppqn / 4) * m_clock_mod;
         long leftover = (tick % clock_mod_ticks);
         long starting_tick = tick - leftover;
 
@@ -542,7 +544,7 @@ midibus::continue_from (long tick)
      * Tell the device that we are going to start at a certain position.
      */
 
-    long pp16th = (c_ppqn / 4);
+    long pp16th = (m_ppqn / 4);
     long leftover = (tick % pp16th);
     long beats = (tick / pp16th);
     long starting_tick = tick - leftover;
@@ -673,7 +675,7 @@ midibus::clock (long tick)
             if (m_lasttick >= tick)
                 done = true;
 
-            if (m_lasttick % (c_ppqn / 24) == 0)        /* tick time? */
+            if (m_lasttick % (m_ppqn / 24) == 0)        /* tick time? */
             {
                 /*
                  * Set the event tag to 127 so the sequences won't remove it.

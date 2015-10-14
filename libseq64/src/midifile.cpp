@@ -318,9 +318,10 @@ midifile::parse (perform & a_perf, int a_screen_set)
                 RunningTime += Delta;           /* add in the time           */
 
                 /*
-                 * current time is ppqn according to the file, we have to
+                 * Current time is ppqn according to the file, we have to
                  * adjust it to our own ppqn.  PPQN / ppqn gives us the
-                 * ratio.
+                 * ratio.  (This change is not enough; a song with a ppqn of
+                 * 120 plays too fast in Sequencer64, which has a ppqn of 192.
                  */
 
                 CurrentTime = (RunningTime * m_ppqn) / ppqn;

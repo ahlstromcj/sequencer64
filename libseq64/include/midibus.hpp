@@ -62,7 +62,7 @@ class midibus
 private:
 
     /**
-     *  TBD
+     *  This is another name for "16 * 4".
      */
 
     static int m_clock_mod;

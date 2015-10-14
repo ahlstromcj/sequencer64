@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-25
- * \updates       2015-10-04
+ * \updates       2015-10-13
  * \license       GNU GPLv2 or above
  *
  *  We're going to try to collect all the globals here in one module, and
@@ -99,7 +99,9 @@ extern user_settings g_user_settings;
 #define OCTAVE_SIZE                      12
 
 /**
- *  Default value for c_ppqn (global parts-per-quarter-note value).
+ *  Default value for c_ppqn (global parts-per-quarter-note value).  This is
+ *  the unit of time for delta timing.  It represents the units, ticks, or
+ *  pulses per beat.
  */
 
 #define DEFAULT_PPQN                    192
@@ -136,6 +138,23 @@ extern user_settings g_user_settings;
  */
 
 #define DEFAULT_TRIGLOOK_MS               2
+
+/**
+ *  The MIDI beat clock (also known as "MIDI timing clock" or "MIDI clock") is
+ *  a clock signal that is broadcast via MIDI to ensure that several
+ *  MIDI-enabled devices or sequencers stay in synchronization.  Do not
+ *  confuse it with "MIDI timecode".
+ *
+ *  Unlike MIDI timecode, the MIDI beat clock is tempo-dependent. Clock events
+ *  are sent at a rate of 24 ppqn (pulses per quarter note). Those pulses are
+ *  used to maintain a synchronized tempo for synthesizers that have
+ *  BPM-dependent voices and also for arpeggiator synchronization.
+ *
+ *  The following macro represents the MIDI clock rate in
+ *  pulses-per-quarter-note.
+ */
+
+#define MIDI_CLOCK_IN_PPQN               24
 
 /**
  *  Defines the maximum number of MIDI values, and one more than the
@@ -820,7 +839,134 @@ extern interaction_method_t global_interactionmethod;
 
 extern bool global_allow_mod4_mode;
 
-#endif  // SEQ64_GLOBALS_H
+/*
+ * Global functions for MIDI timing calculations.
+ */
+
+namespace seq64
+{
+
+/**
+ *  This function function calculates the effective beats-per-minute based on
+ *  the value of a Tempo meta-event.  The tempo event's numeric value is given
+ *  in 3 bytes, and is in units of microseconds-per-quarter-note (us/qn).
+ *
+ * \param tempo
+ *      The value of the Tempo meta-event, in units of us/qn.
+ *
+ * \return
+ *      Returns the beats per minute.  If the tempo value is too small,
+ *      then this function will crash.  :-D
+ */
+
+inline double bpm_from_tempo (double tempo)
+{
+    return 60000000.0 / tempo;
+}
+
+/**
+ *  Calculates pulse-length from the BPM (beats-per-minute) and PPQN
+ *  (pulses-per-quarter-note) values.  The formula for the pulse-length in
+ *  seconds is:
+ *
+\verbatim
+                 60
+        P = ------------
+             BPM * PPQN
+\endverbatim
+ *
+ * \param bpm
+ *      Provides the beats-per-minute value.  No sanity check is made.
+ *
+ * \param ppqn
+ *      Provides the pulses-per-quarter-note value.  No sanity check is
+ *      made.
+ *
+ * \return
+ *      Returns the pulse length in microseconds.  If either parameter is
+ *      invalid, then this function will crash. :-D
+ */
+
+inline double pulse_length_us (int bpm, int ppqn)
+{
+    return 60000000.0 / double(bpm * ppqn);
+}
+
+/**
+ *  Converts delta time in microseconds to ticks.
+ *
+ * \param delta_us
+ *      The number of microseconds in the delta time.
+ *
+ * \param bpm
+ *      Provides the beats-per-minute value.
+ *
+ * \param ppqn
+ *      Provides the pulses-per-quarter-note value.
+ *
+ * \return
+ *      Returns the tick value.
+ */
+
+inline double delta_time_to_ticks (long delta_us, int bpm, int ppqn)
+{
+    return double(bpm * ppqn * (delta_us / 60000000.0));
+}
+
+/**
+ *  Calculates the duration of a clock tick based on PPQN and BPM settings.
+ *
+ * \param bpm
+ *      Provides the beats-per-minute value.  No sanity check is made.
+ *
+ * \param ppqn
+ *      Provides the pulses-per-quarter-note value.  No sanity check is
+ *      made.
+ *
+ * \return
+ *      Returns the clock tick duration in microseconds.  If either parameter
+ *      is invalid, this will crash.  :-D
+ */
+
+inline double clock_tick_duration_us (int bpm, int ppqn)
+{
+    return (ppqn / MIDI_CLOCK_IN_PPQN) * 60000000.0 / (bpm * ppqn);
+}
+
+/**
+ *  A simple calculation to convert PPQN to MIDI clock ticks.
+ *
+ * \param ppqn
+ *      The number of pulses per quarter note.  For example, the default value
+ *      for Seq24 is 192.
+ *
+ * \return
+ *      The integer value of ppqn / 24 [MIDI_CLOCK_IN_PPQN]_is returned.
+ */
+
+inline int clock_ticks_from_ppqn (int ppqn)
+{
+    return ppqn / MIDI_CLOCK_IN_PPQN;
+}
+
+/**
+ *  A simple calculation to convert PPQN to MIDI clock ticks.
+ *
+ * \param ppqn
+ *      The number of pulses per quarter note.
+ *
+ * \return
+ *      The double value of ppqn / 24 [MIDI_CLOCK_IN_PPQN]_is returned.
+ */
+
+inline double double_ticks_from_ppqn (int ppqn)
+{
+    return ppqn / double(MIDI_CLOCK_IN_PPQN);
+}
+
+}           // namespace seq64
+
+#endif      // SEQ64_GLOBALS_H
 
 /*
  * globals.h

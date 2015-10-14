@@ -511,6 +511,11 @@ midibus::init_clock (long tick)
     {
         start();
 
+        /*
+         * The next equation is effectively (m_ppqn / 4) * 16 * 4,
+         * or m_ppqn * 16.  Note that later we have pp16th = (m_ppqn / 4).
+         */
+
         long clock_mod_ticks = (m_ppqn / 4) * m_clock_mod;
         long leftover = (tick % clock_mod_ticks);
         long starting_tick = tick - leftover;
@@ -675,7 +680,8 @@ midibus::clock (long tick)
             if (m_lasttick >= tick)
                 done = true;
 
-            if (m_lasttick % (m_ppqn / 24) == 0)        /* tick time? */
+            int ct = clock_ticks_from_ppqn(m_ppqn);
+            if (m_lasttick % ct == 0)        /* tick time? */
             {
                 /*
                  * Set the event tag to 127 so the sequences won't remove it.

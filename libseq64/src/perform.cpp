@@ -1523,11 +1523,12 @@ perform::output_func ()
             int bpm  = m_master_bus.get_bpm();
 
             /*
-             * Delta time to ticks; get delta ticks, delta_ticks_f is in
-             * 1000th of a tick.
+             * Delta time to ticks; get delta ticks.
              */
 
-            double delta_tick = (double)(bpm * ppqn * (delta_us / 60000000.0f));
+            // double delta_tick = double(bpm * ppqn * (delta_us / 60000000.0f));
+
+            double delta_tick = delta_time_to_ticks(bpm, ppqn, delta_us);
             if (m_usemidiclock)
             {
                 delta_tick = m_midiclocktick;
@@ -1599,9 +1600,8 @@ perform::output_func ()
                 {
                     while (stats_total_tick <= pad.js_total_tick)
                     {
-                        /* was there a tick ? */
-
-                        if (stats_total_tick % (m_ppqn / 24) == 0)
+                        int ct = clock_ticks_from_ppqn(m_ppqn);
+                        if (stats_total_tick % ct == 0) /* was there a tick ? */
                         {
 
 #ifndef PLATFORM_WINDOWS
@@ -1644,22 +1644,25 @@ perform::output_func ()
 
             /*
              * Now we want to trigger every c_thread_trigger_width_ms,
-               and it took us delta_us to play().
+             * and it took us delta_us to play().
              */
 
             delta_us = (c_thread_trigger_width_ms * 1000) - elapsed_us;
 
-            /* check midi clock adjustment */
+            /*
+             * Check MIDI clock adjustment.  Note that we replaced
+             * "60000000.0f / m_ppqn / bpm" with a call to a function.
+             * We also removed the "f" specification from the constants.
+             */
 
-            double next_total_tick = (pad.js_total_tick + (m_ppqn / 24.0));
-            double next_clock_delta = (next_total_tick - pad.js_total_tick - 1);
+            double dct = double_ticks_from_ppqn(m_ppqn);
+            double next_total_tick = pad.js_total_tick + dct;
+            double next_clock_delta = next_total_tick - pad.js_total_tick - 1;
             double next_clock_delta_us =
-                ((next_clock_delta) * 60000000.0f / m_ppqn  / bpm);
+                next_clock_delta * pulse_length_us(bpm, m_ppqn);
 
-            if (next_clock_delta_us < (c_thread_trigger_width_ms*1000.0f*2.0f))
-            {
+            if (next_clock_delta_us < (c_thread_trigger_width_ms * 1000.0 * 2.0))
                 delta_us = long(next_clock_delta_us);
-            }
 
 #ifndef PLATFORM_WINDOWS                    // nanosleep() is actually Linux
             if (delta_us > 0.0)
@@ -1741,7 +1744,7 @@ perform::output_func ()
             }
             printf("\n\n-- clock width --\n");
             int bpm  = m_master_bus.get_bpm();
-            printf("optimal: [%d]us\n", ((m_ppqn / 24) * 60000000 / m_ppqn / bpm));
+            printf("optimal: [%d]us\n", int(clock_tick_duration_us(bpm, m_ppqn)));
             for (int i = 0; i < 100; i++)
             {
                 printf("[%3d][%8ld]\n", i * 300, stats_clock[i]);

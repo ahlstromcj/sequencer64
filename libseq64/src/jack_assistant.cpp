@@ -246,16 +246,16 @@ jack_assistant::position (bool /* state */ )
 
 #ifdef WHY_IS_THIS_CODE_EFFECTIVELY_DISABLED
     jack_nframes_t rate = jack_get_sample_rate(m_jack_client);
-    long current_tick = 0;
+    long currenttick = 0;
     if (state)
-        current_tick = m_left_tick;
+        currenttick = m_left_tick;
 
     jack_position_t pos;
     pos.valid = JackPositionBBT;
     pos.beats_per_bar = 4;
     pos.beat_type = 4;
     pos.ticks_per_beat = m_ppqn * 10;
-    pos.beats_per_minute =  m_master_bus.get_bpm();
+    pos.beats_per_minute = m_master_bus.get_bpm();
 
     /*
      * Compute BBT info from frame number.  This is relatively simple
@@ -263,19 +263,19 @@ jack_assistant::position (bool /* state */ )
      * signature changes at specific locations in the transport timeline.
      */
 
-    current_tick *= 10;
+    currenttick *= 10;
     pos.bar = int32_t
     (
-        (current_tick / (long) pos.ticks_per_beat / pos.beats_per_bar);
+        (currenttick / long(pos.ticks_per_beat) / pos.beats_per_bar);
     );
 
-    pos.beat = int32_t(((current_tick / (long) pos.ticks_per_beat) % 4));
-    pos.tick = int32_t((current_tick % (m_ppqn * 10)));
+    pos.beat = int32_t(((currenttick / (long) pos.ticks_per_beat) % 4));
+    pos.tick = int32_t((currenttick % (m_ppqn * 10)));
     pos.bar_start_tick = pos.bar * pos.beats_per_bar * pos.ticks_per_beat;
     pos.frame_rate = rate;
     pos.frame = (jack_nframes_t)
     (
-        (current_tick * rate * 60.0) / (pos.ticks_per_beat * pos.beats_per_minute)
+        (currenttick * rate * 60.0) / (pos.ticks_per_beat * pos.beats_per_minute)
     );
 
     /*
@@ -493,7 +493,7 @@ jack_assistant::output (jack_scratchpad & pad)
             jack_ticks_converted = m_jack_tick *        /* convert ticks */
             (
                 double(m_ppqn) / (m_jack_pos.ticks_per_beat *
-                m_jack_pos.beat_type / 4.0)
+                    m_jack_pos.beat_type / 4.0)
             );
             m_jack_parent.set_orig_ticks(long(jack_ticks_converted));
             pad.js_current_tick = pad.js_clock_tick = pad.js_total_tick =
@@ -557,7 +557,7 @@ jack_assistant::output (jack_scratchpad & pad)
                 m_jack_tick *
                 (
                     double(m_ppqn) /
-                    (m_jack_pos.ticks_per_beat * m_jack_pos.beat_type / 4.0)
+                        (m_jack_pos.ticks_per_beat * m_jack_pos.beat_type / 4.0)
                 );
 
             jack_ticks_delta = jack_ticks_converted - jack_ticks_converted_last;

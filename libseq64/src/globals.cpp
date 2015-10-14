@@ -20,14 +20,36 @@
  * \file          globals.cpp
  *
  *  This module declares/defines just some of the global (gasp!) variables
- *  in this application.
+ *  and functions in this application.
  *
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-08-07
- * \updates       2015-09-26
+ * \updates       2015-10-13
  * \license       GNU GPLv2 or above
  *
+ *  The first part of this file defines a couple of global structure
+ *  instances, followed by the global variables that these structures will
+ *  eventually completely replace.
+ *
+ *  The second part of this file defines some functions needed by other
+ *  modules, such as MIDI timing calculations.  These items are in the seq64
+ *  namespace.
+ *
+ * \note
+ *      The MIDI time signature is specified by "FF 58 nn dd cc bb" where:
+ *
+ *      -   <i> nn </i> is the numerator, and counts the number of beats in a
+ *          measure (bar).
+ *      -   <i> dd </i> is the denominator, and specifies the unit of the beat
+ *          (e.g. 4 or 8), and is specified as 2 to the <i> dd </i> power.
+ *      -   <i> cc </i> is the MIDI ticks per metronome click.  The standard
+ *          MIDI clock ticks 24 times per quarter note, so a value of 6 would
+ *          mean the metronome clicks every 1/8th note.
+ *      -   <i> bb </i> is the number of 32nd notes per MIDI quarter note.
+ *          For example, a value of 16 means that the music plays two quarter
+ *          notes for each quarter note metered out by the MIDI clock, so that
+ *          the music plays at double speed.
  */
 
 #include "globals.h"
@@ -47,7 +69,7 @@ rc_settings g_rc_settings;
 
 user_settings g_user_settings;
 
-/*
+/**
  * Most of these variables were declared and used in other modules, but
  * are now consolidated here.
  */
@@ -70,20 +92,24 @@ std::string global_config_filename_alt = ".seq24rc";
 std::string global_user_filename_alt = ".seq24usr";
 bool global_print_keys = false;
 bool global_is_pattern_playing = false;
-
 bool global_with_jack_transport = false;
 bool global_with_jack_master = false;
 bool global_with_jack_master_cond = false;
 bool global_jack_start_mode = true;
 std::string global_jack_session_uuid = "";
-
 interaction_method_t global_interactionmethod = e_seq24_interaction;
 bool global_allow_mod4_mode = true;
 user_midi_bus_t global_user_midi_bus_definitions[c_max_busses];
 user_instrument_t global_user_instrument_definitions[c_max_instruments];
+
+namespace seq64
+{
+
+}       // namespace seq64
 
 /*
  * globals.cpp
  *
  * vim: sw=4 ts=4 wm=4 et ft=cpp
  */
+

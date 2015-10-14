@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-09-29
+ * \updates       2015-10-14
  * \license       GNU GPLv2 or above
  *
  */
@@ -65,6 +65,7 @@ static struct option long_options[] =
 #ifdef SEQ64_LASH_SUPPORT
     {"lash",                0, 0, 'L'},                 /* new 2015-08-27 */
 #endif
+    {"bus",                 required_argument, 0, 'b'}, /* new 2015-10-14 */
     {"legacy",              0, 0, 'l'},                 /* new 2015-08-16 */
     {"showmidi",            0, 0, 's'},
     {"show_keys",           0, 0, 'k'},
@@ -97,7 +98,8 @@ namespace seq64
 }           // namespace seq64
 
 const char * const g_help_1a =
-"Usage: sequencer64 [OPTIONS] [FILENAME]\n\n"
+"sequencer64 v 0.9.9.5  A fork/refactoring of the seq24 live sequencer\n\n"
+"Usage: sequencer64 [options] [MIDI filename]\n\n"
 "Options:\n"
 "   -h, --help               Show this message.\n"
 "   -v, --version            Show program version information.\n"
@@ -110,9 +112,10 @@ const char * const g_help_1a =
 
 const char * const g_help_1b =
 "   -m, --manual_alsa_ports  Don't attach ALSA ports.\n"
+"   -b, --bus b              Global override of bus number (for testing).\n"
 "   -s, --showmidi           Dump incoming MIDI events to the screen.\n"
 "   -p, --priority           Runs higher priority with FIFO scheduler\n"
-"                            (must be root)\n"
+"                            (must be root).\n"
 "   -P, --pass_sysex         Passes incoming SysEx messages to all outputs.\n"
 "   -i, --ignore n           Ignore ALSA device number.\n"
     ;
@@ -123,13 +126,12 @@ const char * const g_help_2 =
 "   -J, --jack_master        Try to be JACK master\n"
 "   -C, --jack_master_cond   JACK master will fail if there's already a master.\n"
 "   -M, --jack_start_mode m  When synced to JACK, the following play modes\n"
-"                            are available: 0 = live mode;\n"
-"                            1 = song mode (the default).\n"
+"                            are available: 0 = live mode; 1 = song mode (default).\n"
 "   -S, --stats              Show global statistics.\n"
-"   -x, --interaction_method n  See ~/.config/sequencer64/sequencer64.rc for "
+"   -x, --interaction_method n  See ~/.config/sequencer64/sequencer64.rc for\n"
 "                            methods to use.\n"
 "   -U, --jack_session_uuid u   Set UUID for JACK session\n"
-"\n\n\n"
+"\n"
     ;
 
 /**
@@ -152,6 +154,15 @@ main (int argc, char * argv [])
 {
     Gtk::Main kit(argc, argv);              /* strip GTK+ parameters        */
     int c;
+    bool is_help = false;
+    for (int a = 1; a < argc; a++)
+    {
+        if (strcmp(argv[a], "--help") == 0)
+        {
+            is_help = true;
+            break;
+        }
+    }
     g_rc_settings.set_defaults();           /* start out with normal values */
     g_user_settings.set_defaults();         /* start out with normal values */
 
@@ -184,7 +195,9 @@ main (int argc, char * argv [])
     std::string rcname = g_rc_settings.user_filespec();
     if (Glib::file_test(rcname, Glib::FILE_TEST_EXISTS))
     {
-        printf("[Reading user configuration %s]\n", rcname.c_str());
+        if (! is_help)
+            printf("[Reading user configuration %s]\n", rcname.c_str());
+
         seq64::userfile user(rcname);
         if (user.parse(p))
         {
@@ -195,7 +208,9 @@ main (int argc, char * argv [])
     rcname = g_rc_settings.config_filespec();
     if (Glib::file_test(rcname, Glib::FILE_TEST_EXISTS))
     {
-        printf("[Reading rc configuration %s]\n", rcname.c_str());
+        if (! is_help)
+            printf("[Reading rc configuration %s]\n", rcname.c_str());
+
         seq64::optionsfile options(rcname);
         if (options.parse(p))
         {
@@ -216,7 +231,7 @@ main (int argc, char * argv [])
         c = getopt_long
         (
             argc, argv,
-            "ChlLi:jJmM:pPsSU:Vx:",         /* wrong: "C:hi:jJmM:pPsSU:Vx:" */
+            "Chlb:Li:jJmM:pPsSU:Vx:",
             long_options, &option_index
         );
         if (c == -1)                        /* detect the end of options    */
@@ -304,10 +319,11 @@ main (int argc, char * argv [])
             break;
 
         case 'x':
-            g_rc_settings.interaction_method
-            (
-                interaction_method_t(atoi(optarg))
-            );
+            g_rc_settings.interaction_method(interaction_method_t(atoi(optarg)));
+            break;
+
+        case 'b':
+            global_buss_override = char(atoi(optarg));
             break;
 
         default:

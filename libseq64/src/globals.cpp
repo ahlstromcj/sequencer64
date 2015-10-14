@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-08-07
- * \updates       2015-10-13
+ * \updates       2015-10-14
  * \license       GNU GPLv2 or above
  *
  *  The first part of this file defines a couple of global structure
@@ -68,6 +68,19 @@ rc_settings g_rc_settings;
  */
 
 user_settings g_user_settings;
+
+/**
+ *  Provides a way to override the buss number for smallish MIDI files.
+ *  It replaces the buss-number read from the file.  This option is turned on
+ *  by the --bus option, and is merely a convenience feature for the
+ *  quick previewing of a tune.  (It's called "developer laziness".)
+ *
+ *  If -1, this feature is disabled.
+ *
+ *  Current not part of the global "rc" settings structure.
+ */
+
+char global_buss_override = char(-1);
 
 /**
  * Most of these variables were declared and used in other modules, but

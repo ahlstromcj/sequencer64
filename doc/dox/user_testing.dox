@@ -14,7 +14,7 @@ This document describes basic user testing of Sequencer 64 using the
 Yoshimi software synthesizer.
 
 \page       user_testing_page User Testing of Sequencer64 with Yoshimi
-\author     Chris Ahlstrom 2015-10-11
+\author     Chris Ahlstrom 2015-10-14
 
 \section user_testing_intro Introduction
 
@@ -63,10 +63,13 @@ setting:
    0   # number of manual ALSA ports
 \endverbatim
 
-Next, run the newly-built version of Sequencer64:
+Next, run the newly-built version of Sequencer64.  If desired, use the --bus
+option described below to force the buss number to the buss you need, as shown
+in the second version of the command:
 
 \verbatim
    $ sequencer64/sequencer64 &
+   $ sequencer64/sequencer64 --bus 5 &
 \endverbatim
 
 In <i>File / Options / MIDI Clock</i>, observe the MIDI inputs made available
@@ -86,6 +89,11 @@ it is.  Take note of that input number... that is the MIDI buss number that is
 needed to drive Yoshimi.
 
 Also make sure that of the clock settings for those busses are "Off".
+
+<b>
+The next instruction still works, but it is easier to simply pass the
+option <code>--bus 5</code> to Sequencer64 when starting it up.
+</b>
 
 Now open the file <code>sequencer64/contrib/midi/b4uacuse-GM-format.midi</code>
 in Sequencer64.  For all of the patterns (slots) that have lots of data in

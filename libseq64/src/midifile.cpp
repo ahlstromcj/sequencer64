@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-13
+ * \updates       2015-10-14
  * \license       GNU GPLv2 or above
  *
  *  For a quick guide to the MIDI format, see, for example:
@@ -373,6 +373,9 @@ midifile::parse (perform & a_perf, int a_screen_set)
                             if (proprietary == c_midibus)
                             {
                                 seq.set_midi_bus(read_byte());
+                                if (! BUSS_OVERRIDE_DISABLED)
+                                    seq.set_midi_bus(global_buss_override);
+
                                 len--;
                             }
                             else if (proprietary == c_midich)

@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-25
- * \updates       2015-10-13
+ * \updates       2015-10-14
  * \license       GNU GPLv2 or above
  *
  *  We're going to try to collect all the globals here in one module, and
@@ -67,6 +67,8 @@ extern user_settings g_user_settings;
 /*
  * New stuff
  */
+
+#define BUSS_OVERRIDE_DISABLED          (global_buss_override == char(-1))
 
 /**
  *  Guessing that this has to do with the width of the performance piano roll.
@@ -500,8 +502,9 @@ const int c_perf_scale_x = 32;  // units are ticks per pixel
  *  optionsfile, perform, seq24, and userfile modules.
  */
 
-extern bool global_legacy_format;      /* new 2015-08-16 */
-extern bool global_lash_support;       /* new 2015-08-27 */
+extern char global_buss_override;           /* new 2015-10-14   */
+extern bool global_legacy_format;           /* new 2015-08-16   */
+extern bool global_lash_support;            /* new 2015-08-27   */
 extern bool global_showmidi;
 extern bool global_priority;
 extern bool global_stats;
@@ -513,8 +516,8 @@ extern bool global_jack_start_mode;
 extern bool global_manual_alsa_ports;
 extern bool global_is_pattern_playing;
 extern bool global_print_keys;
-extern bool global_device_ignore;           // seq24 module
-extern int global_device_ignore_num;        // seq24 module
+extern bool global_device_ignore;            /* seq24 module    */
+extern int global_device_ignore_num;         /* seq24 module    */
 extern std::string global_filename;
 extern std::string global_jack_session_uuid;
 extern std::string global_last_used_dir;
@@ -847,7 +850,7 @@ namespace seq64
 {
 
 /**
- *  This function function calculates the effective beats-per-minute based on
+ *  This function calculates the effective beats-per-minute based on
  *  the value of a Tempo meta-event.  The tempo event's numeric value is given
  *  in 3 bytes, and is in units of microseconds-per-quarter-note (us/qn).
  *
@@ -862,6 +865,22 @@ namespace seq64
 inline double bpm_from_tempo (double tempo)
 {
     return 60000000.0 / tempo;
+}
+
+/**
+ *  This function is the inverse of bpm_from_tempo().
+ *
+ * \param bpm
+ *      The value of beats-per-minute.
+ *
+ * \return
+ *      Returns the tempo.  If the bpm value is too small,
+ *      then this function will crash.  :-D
+ */
+
+inline double tempo_from_bpm (double bpm)
+{
+    return 60000000.0 / bpm;
 }
 
 /**

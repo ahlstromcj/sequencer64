@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-30
- * \updates       2015-10-13
+ * \updates       2015-10-14
  * \license       GNU GPLv2 or above
  *
  *  This file provides a Linux-only implementation of MIDI support.
@@ -438,12 +438,15 @@ mastermidibus::set_bpm (int bpm)
     /*
      * Fill the tempo structure with the current tempo information, set
      * the BPM value, put it in the tempo structure, and give the tempo
-     * structure to the ALSA queue.
+     * value to the ALSA queue.
      */
 
     snd_seq_get_queue_tempo(m_alsa_seq, m_queue, tempo);
     m_bpm = bpm;
-    snd_seq_queue_tempo_set_tempo(tempo, 60000000 / m_bpm);
+
+    // snd_seq_queue_tempo_set_tempo(tempo, 60000000 / m_bpm);
+
+    snd_seq_queue_tempo_set_tempo(tempo, int(tempo_from_bpm(bpm)));
     snd_seq_set_queue_tempo(m_alsa_seq, m_queue, tempo);
 #endif
 }

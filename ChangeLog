@@ -1,3 +1,7 @@
+2015-10-14  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+   * *.*: Added --bus option for override of buss number, for testing.
+
 2015-10-04  Chris Ahlstrom <ahlstromcj@gmail.com>
 
    * *.*: Started the "testing" branch, and stamped it as 0.9.9.5.
@@ -26,5 +30,3 @@
 
    * *.*: Sequencer64 forked from sequencer24 v.0.9.4, tagged as version
    0.9.9.1
-			 
-

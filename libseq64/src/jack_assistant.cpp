@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-14
- * \updates       2015-10-13
+ * \updates       2015-10-14
  * \license       GNU GPLv2 or above
  *
  *  This module was created from code that existed in the perform object.
@@ -51,7 +51,7 @@ namespace seq64
  *      control JACK event.
  */
 
-jack_assistant::jack_assistant (perform & parent)
+jack_assistant::jack_assistant (perform & parent, int ppqn)
  :
     m_jack_parent               (parent),
     m_jack_client               (nullptr),
@@ -66,7 +66,7 @@ jack_assistant::jack_assistant (perform & parent)
 #endif
     m_jack_running              (false),
     m_jack_master               (false),
-    m_ppqn                      (c_ppqn)
+    m_ppqn                      (ppqn)
 {
     // no other code
 }

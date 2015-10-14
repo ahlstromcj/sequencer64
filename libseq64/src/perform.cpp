@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-13
+ * \updates       2015-10-14
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the most important single class in Sequencer64, as
@@ -65,7 +65,7 @@ static const int c_status_queue    = 0x04;
  *      accessor function.
  */
 
-perform::perform (gui_assistant & mygui)
+perform::perform (gui_assistant & mygui, int ppqn)
  :
     m_gui_support               (mygui),
     m_mute_group                (),         // boolean array
@@ -91,7 +91,7 @@ perform::perform (gui_assistant & mygui)
     m_outputing                 (true),
     m_looping                   (false),
     m_playback_mode             (false),
-    m_ppqn                      (c_ppqn),
+    m_ppqn                      (ppqn),
     m_left_tick                 (0),
     m_right_tick                (m_ppqn * 16),
     m_starting_tick             (0),

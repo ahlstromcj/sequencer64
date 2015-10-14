@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-09-17
- * \updates       2015-10-13
+ * \updates       2015-10-14
  * \license       GNU GPLv2 or above
  *
  *  This class contains a number of functions that used to reside in the
@@ -118,7 +118,7 @@ private:
 
 public:
 
-    jack_assistant (perform & parent);
+    jack_assistant (perform & parent, int ppqn = c_ppqn);
     ~jack_assistant ();
 
     /**

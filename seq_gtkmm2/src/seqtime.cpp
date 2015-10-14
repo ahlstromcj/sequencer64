@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-13
+ * \updates       2015-10-14
  * \license       GNU GPLv2 or above
  *
  *  The patterns/sequence editor is expandable in both directions, but the
@@ -52,14 +52,15 @@ seqtime::seqtime
     sequence & seq,
     perform & p,
     int zoom,
-    Gtk::Adjustment & hadjust
+    Gtk::Adjustment & hadjust,
+    int ppqn
 ) :
     gui_drawingarea_gtk2    (p, hadjust, adjustment_dummy(), 10, c_timearea_y),
     m_seq                   (seq),
     m_scroll_offset_ticks   (0),
     m_scroll_offset_x       (0),
     m_zoom                  (zoom),
-    m_ppqn                  (c_ppqn)
+    m_ppqn                  (ppqn)
 {
     // Empty body
 }

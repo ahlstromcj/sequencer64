@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-04
+ * \updates       2015-10-14
  * \license       GNU GPLv2 or above
  *
  *  The "time" window is the horizontal bar at the upper right of the main
@@ -41,26 +41,24 @@ namespace seq64
 {
 
 /**
- *  Static internal constants.
- */
-
-static const int c_maintime_x = 300;
-static const int c_maintime_y = 10;
-static const int c_pill_width = 8;
-
-/**
  *  This constructor sets up the colors black, white, and grey, and then
  *  allocates them.  In the constructor you can only allocate colors;
  *  get_window() would return 0 because the windows has not yet been
  *  realized.
  */
 
-maintime::maintime (perform & p)
- :
-    gui_drawingarea_gtk2    (p, c_maintime_x, c_maintime_y),
+maintime::maintime
+(
+    perform & p,
+    int ppqn,
+    int pillwidth,
+    int x,
+    int y
+) :
+    gui_drawingarea_gtk2    (p, x, y),
     m_tick                  (0),
-    m_pill_width            (c_pill_width),
-    m_ppqn                  (c_ppqn)
+    m_pill_width            (pillwidth),
+    m_ppqn                  (ppqn)
 {
     // Empty body
 }
@@ -157,3 +155,4 @@ maintime::on_expose_event (GdkEventExpose * a_e)
  *
  * vim: sw=4 ts=4 wm=4 et ft=cpp
  */
+

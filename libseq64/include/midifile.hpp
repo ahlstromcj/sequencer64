@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-13
+ * \updates       2015-10-14
  * \license       GNU GPLv2 or above
  *
  *  The Seq24 MIDI file is a standard, Format 1 MIDI file, with some extra
@@ -39,10 +39,12 @@
 #include <list>
 #include <vector>
 
+#include "globals.h"                    /* c_ppqn only, so far  */
+
 namespace seq64
 {
 
-class perform;                          // forward reference
+class perform;                          /* forward reference    */
 
 /**
  *  This class handles the parsing and writing of MIDI files.  In addition
@@ -114,7 +116,12 @@ private:
 
 public:
 
-    midifile (const std::string & name, bool propformat = true);
+    midifile
+    (
+        const std::string & name,
+        bool propformat = true,
+        int ppqn = c_ppqn
+    );
     ~midifile ();
 
     bool parse (perform & a_perf, int a_screen_set);

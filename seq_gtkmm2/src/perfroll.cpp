@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-13
+ * \updates       2015-10-14
  * \license       GNU GPLv2 or above
  *
  */
@@ -52,11 +52,12 @@ perfroll::perfroll
 (
     perform & p,
     Gtk::Adjustment & hadjust,
-    Gtk::Adjustment & vadjust
+    Gtk::Adjustment & vadjust,
+    int ppqn
 ) :
     gui_drawingarea_gtk2    (p, hadjust, vadjust, 10, 10),
     m_snap                  (0),
-    m_ppqn                  (c_ppqn),
+    m_ppqn                  (ppqn),
     m_page_factor           (PERFROLL_PAGE_FACTOR),
     m_divs_per_bar          (PERFROLL_DIVS_PER_BEAT),       // grid subdivisions
     m_ticks_per_bar         (m_ppqn * m_divs_per_bar),

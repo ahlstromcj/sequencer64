@@ -72,7 +72,7 @@ namespace seq64
  *  The mastermidibus default constructor fills the array with our busses.
  */
 
-mastermidibus::mastermidibus ()
+mastermidibus::mastermidibus (int ppqn, int bpm)
  :
     m_alsa_seq          (nullptr),  // one pointer
     m_num_out_buses     (0),        // or c_max_busses, or what?
@@ -87,8 +87,8 @@ mastermidibus::mastermidibus ()
     m_init_clock        (),         // array of c_max_busses clock_e values
     m_init_input        (),         // array of c_max_busses booleans
     m_queue             (0),
-    m_ppqn              (c_ppqn),   // @change ca 2015-10-13 was  0
-    m_bpm               (c_bpm),    // DITTO
+    m_ppqn              (ppqn),     // @change ca 2015-10-13 was  0
+    m_bpm               (bpm),      // DITTO
     m_num_poll_descriptors (0),
     m_poll_descriptors  (nullptr),
     m_dumping_input     (false),

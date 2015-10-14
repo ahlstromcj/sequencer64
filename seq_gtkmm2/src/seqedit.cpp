@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-13
+ * \updates       2015-10-14
  * \license       GNU GPLv2 or above
  *
  */
@@ -128,7 +128,7 @@ static const int c_transpose_h           = 12;
  *      options does; make the sequence and perform parameters references.
  */
 
-seqedit::seqedit (sequence & seq, perform & p, int a_pos)
+seqedit::seqedit (sequence & seq, perform & p, int pos, int ppqn)
  :
     gui_window_gtk2     (p, 700, 500),          /* set_size_request(700, 500) */
     m_zoom              (m_initial_zoom),
@@ -138,7 +138,7 @@ seqedit::seqedit (sequence & seq, perform & p, int a_pos)
     m_key               (m_initial_key),
     m_sequence          (m_initial_sequence),
     m_measures          (0),
-    m_ppqn              (c_ppqn),
+    m_ppqn              (ppqn),
     m_seq               (seq),
     m_menubar           (manage(new Gtk::MenuBar())),
     m_menu_tools        (manage(new Gtk::Menu())),
@@ -155,7 +155,7 @@ seqedit::seqedit (sequence & seq, perform & p, int a_pos)
     m_menu_bpm          (manage(new Gtk::Menu())),
     m_menu_bw           (manage(new Gtk::Menu())),
     m_menu_rec_vol      (manage(new Gtk::Menu())),
-    m_pos               (a_pos),
+    m_pos               (pos),
     m_vadjust
     (
         manage(new Gtk::Adjustment(55, 0, c_num_keys, 1, 1, 1))

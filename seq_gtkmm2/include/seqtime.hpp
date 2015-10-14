@@ -28,13 +28,14 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-13
+ * \updates       2015-10-14
  * \license       GNU GPLv2 or above
  *
  */
 
 #include <gtkmm/window.h>
 
+#include "globals.h"                    /* c_ppqn   */
 #include "gui_drawingarea_gtk2.hpp"
 
 namespace Gtk
@@ -75,7 +76,8 @@ public:
         sequence & seq,
         perform & p,
         int zoom,
-        Gtk::Adjustment & hadjust
+        Gtk::Adjustment & hadjust,
+        int ppqn = c_ppqn
     );
 
     void reset ();

@@ -86,12 +86,13 @@ midibus::midibus
     const char * /* client_name */ ,      // unused parameter
     const char * port_name,
     int id,
-    int queue
+    int queue,
+    int ppqn
 ) :
     m_id                (id),
     m_clock_type        (e_clock_off),
     m_inputing          (false),
-    m_ppqn              (c_ppqn),
+    m_ppqn              (ppqn),
     m_seq               (seq),
     m_dest_addr_client  (destclient),
     m_dest_addr_port    (destport),
@@ -151,12 +152,13 @@ midibus::midibus
     int localclient,
     snd_seq_t * seq,
     int id,
-    int queue
+    int queue,
+    int ppqn
 ) :
     m_id                (id),
     m_clock_type        (e_clock_off),
     m_inputing          (false),
-    m_ppqn              (c_ppqn),
+    m_ppqn              (ppqn),
     m_seq               (seq),
     m_dest_addr_client  (-1),
     m_dest_addr_port    (-1),

@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-13
+ * \updates       2015-10-14
  * \license       GNU GPLv2 or above
  *
  */
@@ -139,12 +139,11 @@ public:
         perform & perf,
         sequence & seq,
         int zoom, int snap,
-//      seqdata & seqdata_wid,
-//      seqevent & seqevent_wid,
         seqkeys & seqkeys_wid,
         int pos,
         Gtk::Adjustment & hadjust,
-        Gtk::Adjustment & vadjust
+        Gtk::Adjustment & vadjust,
+        int ppqn = c_ppqn
     );
     ~seqroll ();
 

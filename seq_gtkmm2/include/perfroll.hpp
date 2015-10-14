@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-04
+ * \updates       2015-10-14
  * \license       GNU GPLv2 or above
  *
  */
@@ -100,7 +100,8 @@ public:
     (
         perform & a_perf,
         Gtk::Adjustment & a_hadjust,
-        Gtk::Adjustment & a_vadjust
+        Gtk::Adjustment & a_vadjust,
+        int ppqn = c_ppqn
     );
     ~perfroll();
 

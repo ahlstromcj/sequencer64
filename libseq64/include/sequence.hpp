@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-13
+ * \updates       2015-10-14
  * \license       GNU GPLv2 or above
  *
  */
@@ -265,7 +265,7 @@ private:
 
 public:
 
-    sequence ();
+    sequence (int ppqn = c_ppqn, int maxbeats = c_maxbeats);
     ~sequence ();
 
     sequence & operator = (const sequence & rhs);

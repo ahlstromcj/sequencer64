@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-13
+ * \updates       2015-10-14
  * \license       GNU GPLv2 or above
  *
  */
@@ -58,7 +58,8 @@ seqroll::seqroll
     seqkeys & seqkeys_wid,
     int pos,
     Gtk::Adjustment & hadjust,
-    Gtk::Adjustment & vadjust
+    Gtk::Adjustment & vadjust,
+    int ppqn
 ) :
     gui_drawingarea_gtk2    (p, hadjust, vadjust, 10, 10),
     m_old                   (),
@@ -71,7 +72,7 @@ seqroll::seqroll
     m_pos                   (pos),
     m_zoom                  (zoom),
     m_snap                  (snap),
-    m_ppqn                  (c_ppqn),
+    m_ppqn                  (ppqn),
     m_note_length           (0),
     m_scale                 (0),
     m_key                   (0),

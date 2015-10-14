@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-04
+ * \updates       2015-10-14
  * \license       GNU GPLv2 or above
  *
  */
@@ -94,8 +94,13 @@ namespace seq64
  *      options does; make the perform parameter a reference.
  */
 
-perfedit::perfedit (perform & p)
- :
+perfedit::perfedit
+(
+    perform & p,
+    int ppqn,
+    int bpm,
+    int bw
+) :
     gui_window_gtk2     (p, 700, 400),      /* set_size_request(700, 400) */
     m_table             (manage(new Gtk::Table(6, 3, false))),
     m_vadjust           (manage(new Gtk::Adjustment(0, 0, 1, 1, 1, 1))),
@@ -126,9 +131,9 @@ perfedit::perfedit (perform & p)
     m_menu_bpm          (manage(new Gtk::Menu())),
     m_menu_bw           (manage(new Gtk::Menu())),
     m_snap              (DEFAULT_PERFEDIT_SNAP),
-    m_bpm               (DEFAULT_BEATS_PER_MEASURE),
-    m_bw                (DEFAULT_BEAT_WIDTH),
-    m_ppqn              (c_ppqn),           /* 192 pulses per quarter note */
+    m_bpm               (bpm),
+    m_bw                (bw),
+    m_ppqn              (ppqn),             /* 192 pulses per quarter note */
     m_redraw_ms         (c_redraw_ms),
     m_modified          (false)
 {

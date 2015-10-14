@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-13
+ * \updates       2015-10-14
  * \license       GNU GPLv2 or above
  *
  *  This class has way too many members.
@@ -280,7 +280,7 @@ public:
 
 public:
 
-    perform (gui_assistant & mygui);
+    perform (gui_assistant & mygui, int ppqn = c_ppqn);
     ~perform ();
 
     /**

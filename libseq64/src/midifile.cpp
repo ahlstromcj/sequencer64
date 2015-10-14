@@ -110,14 +110,18 @@ namespace seq64
  *      reading can handle either format transparently.
  */
 
-midifile::midifile (const std::string & a_name, bool propformat)
- :
+midifile::midifile
+(
+    const std::string & a_name,
+    bool propformat,
+    int ppqn
+) :
     m_pos           (0),
     m_name          (a_name),
     m_data          (),
     m_char_list     (),
     m_new_format    (propformat),
-    m_ppqn          (c_ppqn)
+    m_ppqn          (ppqn)
 {
     // empty body
 }

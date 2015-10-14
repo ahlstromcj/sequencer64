@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-13
+ * \updates       2015-10-14
  * \license       GNU GPLv2 or above
  *
  */
@@ -49,7 +49,7 @@ event_list sequence::m_events_clipboard;
  *  Principal constructor.
  */
 
-sequence::sequence ()
+sequence::sequence (int ppqn, int maxbeats)
  :
     m_events                    (),
     m_triggers                  (),
@@ -85,8 +85,8 @@ sequence::sequence ()
     m_last_tick                 (0),
     m_queued_tick               (0),
     m_trigger_offset            (0),
-    m_maxbeats                  (c_maxbeats),
-    m_ppqn                      (c_ppqn),
+    m_maxbeats                  (maxbeats),
+    m_ppqn                      (ppqn),
     m_length                    (4 * m_ppqn),
     m_snap_tick                 (m_ppqn / 4),
     m_time_beats_per_measure    (4),

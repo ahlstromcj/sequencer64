@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-01
+ * \updates       2015-10-14
  * \license       GNU GPLv2 or above
  *
  */
@@ -37,6 +37,14 @@
 
 namespace seq64
 {
+
+/**
+ *  Static internal constants.
+ */
+
+static const int c_maintime_x = 300;
+static const int c_maintime_y = 10;
+static const int c_pill_width = 8;
 
 /**
  *  This class provides the drawing of the progress bar at the top of the
@@ -55,7 +63,14 @@ private:
 
 public:
 
-    maintime (perform & p);
+    maintime
+    (
+        perform & p,
+        int ppqn = c_ppqn,
+        int pillwidth = c_pill_width,
+        int x = c_maintime_x,
+        int y = c_maintime_y
+    );
     int idle_progress (long ticks);
 
 private:        // callbacks
@@ -74,3 +89,4 @@ private:        // callbacks
  *
  * vim: sw=4 ts=4 wm=4 et ft=cpp
  */
+

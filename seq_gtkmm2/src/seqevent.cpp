@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-13
+ * \updates       2015-10-14
  * \license       GNU GPLv2 or above
  *
  */
@@ -51,7 +51,8 @@ seqevent::seqevent
     int zoom,
     int snap,
     seqdata & seqdata_wid,
-    Gtk::Adjustment & hadjust
+    Gtk::Adjustment & hadjust,
+    int ppqn
 ) :
     gui_drawingarea_gtk2     (p, hadjust, adjustment_dummy(), 10, c_eventarea_y),
     m_fruity_interaction     (),
@@ -59,7 +60,7 @@ seqevent::seqevent
     m_seq                    (seq),
     m_zoom                   (zoom),
     m_snap                   (snap),
-    m_ppqn                   (c_ppqn),
+    m_ppqn                   (ppqn),
     m_old                    (),
     m_selected               (),
     m_scroll_offset_ticks    (0),

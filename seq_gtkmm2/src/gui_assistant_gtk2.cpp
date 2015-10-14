@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-09-19
- * \updates       2015-09-30
+ * \updates       2015-10-14
  * \license       GNU GPLv2 or above
  *
  */
@@ -90,7 +90,14 @@ gui_assistant_gtk2::jack_idle_connect (jack_assistant & jack)
  */
 
 void
-gui_assistant_gtk2::lash_timeout_connect (lash & lashobject)
+gui_assistant_gtk2::lash_timeout_connect
+(
+#ifdef SEQ64_LASH_SUPPORT
+    lash & lashobject
+#else
+    lash &
+#endif
+)
 {
 #ifdef SEQ64_LASH_SUPPORT
     Glib::signal_timeout().connect

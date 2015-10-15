@@ -42,7 +42,6 @@
 #include "event.hpp"
 #include "keystroke.hpp"
 #include "midibus.hpp"
-#include "midifile.hpp"
 #include "sequence.hpp"
 
 namespace seq64

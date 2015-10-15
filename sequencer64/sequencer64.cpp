@@ -198,8 +198,8 @@ main (int argc, char * argv [])
         if (! is_help)
             printf("[Reading user configuration %s]\n", rcname.c_str());
 
-        seq64::userfile user(rcname);
-        if (user.parse(p))
+        seq64::userfile ufile(rcname);
+        if (ufile.parse(p))
         {
             // Nothing to do, and no exit needed here if it fails
         }
@@ -230,9 +230,7 @@ main (int argc, char * argv [])
         int option_index = 0;               /* getopt_long index storage    */
         c = getopt_long
         (
-            argc, argv,
-            "Chlb:Li:jJmM:pPsSU:Vx:",
-            long_options, &option_index
+            argc, argv, "Chlb:Li:jJmM:pPsSU:Vx:", long_options, &option_index
         );
         if (c == -1)                        /* detect the end of options    */
             break;
@@ -291,13 +289,9 @@ main (int argc, char * argv [])
 
         case 'M':
             if (atoi(optarg) > 0)
-            {
                 g_rc_settings.jack_start_mode(true);
-            }
             else
-            {
                 g_rc_settings.jack_start_mode(false);
-            }
             break;
 
         case 'm':
@@ -343,7 +337,6 @@ main (int argc, char * argv [])
     g_user_settings.set_globals();              /* copy to legacy globals   */
 
 #ifdef USE_THIS_INSTANCE_OF_CODE
-
     /*
      * Set up objects that are specific to the Gtk-2 GUI.  Pass them to
      * the perform constructor.  Create a font-render object.
@@ -352,7 +345,6 @@ main (int argc, char * argv [])
     seq64::gui_assistant_gtk2 gui;              /* GUI-specific objects     */
     seq64::perform p(gui);                      /* main performance object  */
     seq64::p_font_renderer = new seq64::font(); /* set the font renderer    */
-
 #endif  // USE_THIS_INSTANCE_OF_CODE
 
     p.init();
@@ -361,12 +353,12 @@ main (int argc, char * argv [])
     p.init_jack();
 
     seq64::mainwnd seq24_window(p);             /* push mainwnd onto stack  */
-    if (optind < argc)
+    if (optind < argc)                          /* MIDI filename provided?  */
     {
         if (Glib::file_test(argv[optind], Glib::FILE_TEST_EXISTS))
             seq24_window.open_file(argv[optind]);
         else
-            printf("? file not found: %s\n", argv[optind]);
+            printf("? MIDI file not found: %s\n", argv[optind]);
     }
 
 #ifdef SEQ64_LASH_SUPPORT
@@ -374,11 +366,10 @@ main (int argc, char * argv [])
     {
         /*
          *  Initialize the lash driver (strips lash-specific command line
-         *  arguments), then connect to LASH daemon and poll events.
+         *  arguments), then connect to the LASH daemon and poll events.
          */
 
         seq64::global_lash_driver = new seq64::lash(p, argc, argv);
-        // seq64::global_lash_driver->init();
         seq64::global_lash_driver->start();
     }
     else
@@ -395,7 +386,6 @@ main (int argc, char * argv [])
 
     g_rc_settings.get_globals();             /* copy from legacy globals */
     rcname = g_rc_settings.config_filespec();
-
     printf("[Writing rc configuration %s]\n", rcname.c_str());
     seq64::optionsfile options(rcname);
     if (options.write(p))

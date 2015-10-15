@@ -70,6 +70,13 @@ rc_settings g_rc_settings;
 user_settings g_user_settings;
 
 /**
+ *  Provides an experimental way to modify the global PPQN value to
+ *  match what a MIDI file includes.  Much to do to get it working.
+ */
+
+int global_ppqn = c_ppqn;
+
+/**
  *  Provides a way to override the buss number for smallish MIDI files.
  *  It replaces the buss-number read from the file.  This option is turned on
  *  by the --bus option, and is merely a convenience feature for the
@@ -77,7 +84,7 @@ user_settings g_user_settings;
  *
  *  If -1, this feature is disabled.
  *
- *  Current not part of the global "rc" settings structure.
+ *  Currently not part of the global "rc" settings structure.
  */
 
 char global_buss_override = char(-1);

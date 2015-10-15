@@ -25,18 +25,25 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-12
+ * \updates       2015-10-14
  * \license       GNU GPLv2 or above
  *
  *  The main window holds the menu and the main controls of the application,
  *  and the mainwid that holds the patterns is nestled in the interior of the
  *  main window.
+ *
+ * \todo
+ *      -   Figure out best way to select non-legacy PPQN behavior, probably,
+ *          for now, a command-line option.
+ *      -   Add a GUI element that shows the actual PPQN in force, maybe next
+ *          to the maintime object, or in the title caption.
  */
 
 #include <cctype>
 #include <csignal>
 #include <cerrno>
 #include <cstring>
+#include <stdio.h>                      /* snprintf()                   */
 #include <gdkmm/cursor.h>
 #include <gtk/gtkversion.h>
 #include <gtkmm/aboutdialog.h>
@@ -57,7 +64,6 @@
 #include "maintime.hpp"
 #include "mainwid.hpp"
 #include "mainwnd.hpp"
-#include "midifile.hpp"
 #include "options.hpp"
 #include "perfedit.hpp"
 #include "pixmaps/play2.xpm"
@@ -121,13 +127,15 @@ mainwnd::mainwnd (perform & p)
     m_spinbutton_load_offset(nullptr),
     m_adjust_load_offset    (nullptr),
     m_entry_notes           (nullptr),
-    m_timeout_connect       ()                      // handler
+    m_timeout_connect       (),                         // handler
+    m_ppqn                  (SEQ64_USE_DEFAULT_PPQN)
 {
     set_icon(Gdk::Pixbuf::create_from_xpm_data(seq24_32_xpm));
 
     /*
      * This request always leaves the bottom panel partly obscured.
-     * set_size_request(794, 350);
+     *
+     *      set_size_request(794, 350);
      */
 
     set_resizable(false);
@@ -610,7 +618,19 @@ mainwnd::file_save_as ()
 }
 
 /**
- *  Opens a MIDI file.
+ *  Opens and parses (reads) a MIDI file.
+ *
+ *  We leave the ppqn parameter set to the SEQ64_USE_DEFAULT for now, to
+ *  preserve the legacy behavior of using c_ppqn, and scaling the running time
+ *  against the PPQN read from the MIDI file.  Later, we can provide a value
+ *  like 0, that will certainly be changed by reading the MIDI file.
+ *
+ *  We don't need to specify the "propformat" parameter of the midifile
+ *  constructor when reading the MIDI file, since reading handles both the old
+ *  and new formats.
+ *
+ * \param fn
+ *      Provides the file-name for the MIDI file to be opened.
  */
 
 void
@@ -621,7 +641,11 @@ mainwnd::open_file (const std::string & fn)
     perf().clear_all();
     result = f.parse(perf(), 0);        /* parsing handles old & new format */
     is_modified(! result);
-    if (! result)
+    if (result)
+    {
+        ppqn(f.ppqn());                 /* get and save the actual PPQN     */
+    }
+    else
     {
         Gtk::MessageDialog errdialog
         (
@@ -690,6 +714,9 @@ mainwnd::choose_file ()
 
 /**
  *  Saves the current state in a MIDI file.
+ *
+ *  Here we specify the current value of m_ppqn, which was set when reading
+ *  the MIDI file.
  */
 
 bool
@@ -702,7 +729,7 @@ mainwnd::save_file ()
         return true;
     }
 
-    midifile f(g_rc_settings.filename(), ! g_rc_settings.legacy_format());
+    midifile f(g_rc_settings.filename(), ppqn(), ! g_rc_settings.legacy_format());
     result = f.write(perf());
     if (! result)
     {
@@ -1190,10 +1217,19 @@ mainwnd::update_window_title ()
 {
     std::string title = (SEQ64_PACKAGE) + std::string(" - [");
     std::string itemname = "unnamed";
+    int ppqn = m_ppqn == SEQ64_USE_DEFAULT_PPQN ? c_ppqn : m_ppqn ;
+    char temp[16];
+    snprintf(temp, sizeof(temp), " (%d ppqn) ", ppqn);
     if (! g_rc_settings.filename().empty())
-        itemname = Glib::filename_to_utf8(g_rc_settings.filename());
+    {
+        /*
+         * \todo
+         *      Strip of the pathname if too long.
+         */
 
-    title += itemname + std::string("]");
+        itemname = Glib::filename_to_utf8(g_rc_settings.filename());
+    }
+    title += itemname + std::string("]") + std::string(temp);
     set_title(title.c_str());
 }
 

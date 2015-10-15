@@ -41,6 +41,13 @@
 
 #include "globals.h"                    /* c_ppqn only, so far  */
 
+/**
+ *  This value indicates to use the default value of PPQN, c_ppqn, and
+ *  ignore (to some extent) what value is specified in the MIDI file.
+ */
+
+#define SEQ64_USE_DEFAULT_PPQN          (-1)
+
 namespace seq64
 {
 
@@ -112,20 +119,34 @@ private:
      *  c_ppqn.
      */
 
-    const int m_ppqn;
+    int m_ppqn;
 
 public:
 
     midifile
     (
         const std::string & name,
-        bool propformat = true,
-        int ppqn = c_ppqn
+        int ppqn = SEQ64_USE_DEFAULT_PPQN,
+        bool propformat = true
     );
     ~midifile ();
 
     bool parse (perform & a_perf, int a_screen_set);
     bool write (perform & a_perf);
+
+    /**
+     * \getter m_ppqn
+     *      Provides a way to get the actual value of PPQN used in processing
+     *      the sequences when parse() was called.  The PPQN will be either
+     *      c_ppqn (legacy behavior) or the value read from the file,
+     *      depending on the ppqn parameter passed to the midifile
+     *      constructor.
+     */
+
+    int ppqn () const
+    {
+        return m_ppqn;
+    }
 
 private:
 

@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-01
+ * \updates       2015-10-14
  * \license       GNU GPLv2 or above
  *
  *  The main windows is known as the "Patterns window" or "Patterns
@@ -39,6 +39,7 @@
 #include <gtkmm/window.h>
 
 #include "gui_window_gtk2.hpp"
+#include "midifile.hpp"
 #include "perform.hpp"                 // perform and performcallback
 
 namespace Gtk
@@ -180,12 +181,40 @@ private:
 
     sigc::connection m_timeout_connect;
 
+    /**
+     *  Saves the PPQN value obtained from the MIDI file (or the default
+     *  value, c_ppqn, if SEQ64_USE_DEFAULT_PPQN was specified in reading the
+     *  MIDI file.
+     */
+
+    int m_ppqn;
+
 public:
 
     mainwnd (perform & a_p);
     ~mainwnd ();
 
     void open_file (const std::string &);
+
+    /**
+     * \getter m_ppqn
+     */
+
+    int ppqn () const
+    {
+        return m_ppqn;
+    }
+
+    /**
+     * \setter m_ppqn
+     *      We can't set the PPQN value when the mainwnd is created, we have
+     *      to do it later, using this function.
+     */
+
+    void ppqn (int ppqn)
+    {
+        m_ppqn = ppqn;
+    }
 
 private:
 

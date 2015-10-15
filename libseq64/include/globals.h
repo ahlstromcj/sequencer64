@@ -225,7 +225,8 @@ const int c_max_sequence = c_seqs_in_set * c_max_sets;
 /**
  *  Provides the timing resolution of a MIDI sequencer, known as "pulses
  *  per quarter note.  For this application, 192 is the default, and it
- *  doesn't change.
+ *  doesn't change.  It will be changeable in a near-future release of
+ *  Sequencer64, though.  See the global_ppqn variable.
  */
 
 const int c_ppqn = DEFAULT_PPQN;
@@ -499,10 +500,13 @@ const int c_perf_scale_x = 32;  // units are ticks per pixel
 
 /**
  *  These global values seemed to be use mainly in the options,
- *  optionsfile, perform, seq24, and userfile modules.
+ *  optionsfile, perform, seq24, and userfile modules.  The new
+ *  ones will eventually be made official.
  */
 
+extern int global_ppqn;                     /* new 2015-10-14   */
 extern char global_buss_override;           /* new 2015-10-14   */
+
 extern bool global_legacy_format;           /* new 2015-08-16   */
 extern bool global_lash_support;            /* new 2015-08-27   */
 extern bool global_showmidi;

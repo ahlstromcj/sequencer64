@@ -41,15 +41,15 @@
  *  the proprietary track in Sequencer24.
  */
 
-#define USE_MIDI_VECTOR
-
 #include <fstream>
 
 #include "perform.hpp"                  /* must precede midifile.hpp !  */
 #include "midifile.hpp"                 /* seq64::midifile              */
 #include "sequence.hpp"                 /* seq64::sequence              */
 
-#if defined USE_MIDI_VECTOR
+#define SEQ64_USE_MIDI_VECTOR           /* as opposed to the MIDI list  */
+
+#if defined SEQ64_USE_MIDI_VECTOR
 #include "midi_vector.hpp"              /* seq64::midi_vector container */
 #else
 #include "midi_list.hpp"                /* seq64::midi_list container   */
@@ -99,25 +99,40 @@ namespace seq64
 /**
  *  Principal constructor.
  *
- * \param a_name
+ * \param name
  *      Provides the name of the MIDI file to be read or written.
  *
+ * \param ppqn
+ *      Provides the initial value of the PPQN setting.  It is handled
+ *      differently for parsing (reading) versus writing the MIDI file.
+ *      -   Reading.
+ *          -   If set to SEQ64_USE_DEFAULT_PPQN, the legacy application
+ *              behavior is used.  The m_ppqn member is set to the default
+ *              PPQN, c_ppqn.  The value read from the MIDI file, ppqn, is then
+ *              use to scale the running-time of the sequence relative to
+ *              c_ppqn.
+ *          -   Otherwise, m_ppqn is set to the value read from the MIDI file.
+ *              No scaling is done.  Since the value gets written, specify
+ *              ppqn as 0, an obviously bogus value.
+ *      -   Writing.  This value is written to the MIDI file in the header
+ *          chunk of the song.
+ *
  * \param propformat
- *      If true, write out the MIDI file using the MIDI-compliant
- *      sequencer-specific prefix in from of the seq24-specific
- *      SeqSpec tags defined in the globals module.  This option is true
- *      by default.  Note that this option is only used in writing;
- *      reading can handle either format transparently.
+ *      If true, write out the MIDI file using the new MIDI-compliant
+ *      sequencer-specific format for the seq24-specific SeqSpec tags defined
+ *      in the globals module.  This option is true by default.  Note that
+ *      this option is only used in writing; reading can handle either format
+ *      transparently.
  */
 
 midifile::midifile
 (
-    const std::string & a_name,
-    bool propformat,
-    int ppqn
+    const std::string & name,
+    int ppqn,
+    bool propformat
 ) :
     m_pos           (0),
-    m_name          (a_name),
+    m_name          (name),
     m_data          (),
     m_char_list     (),
     m_new_format    (propformat),
@@ -262,7 +277,10 @@ midifile::parse (perform & a_perf, int a_screen_set)
     unsigned short Format = read_short();           /* 0,1,2                */
     unsigned short NumTracks = read_short();
     unsigned short ppqn = read_short();
-    if (ID != 0x4D546864)                           /* magic number 'MThd' */
+    bool use_default_ppqn = (m_ppqn == SEQ64_USE_DEFAULT_PPQN);
+    m_ppqn = use_default_ppqn ? c_ppqn : ppqn ;     /* set the PPQN         */
+
+    if (ID != 0x4D546864)                           /* magic number 'MThd'  */
     {
         errprintf("invalid MIDI header detected: %8lX\n", ID);
         return false;
@@ -293,43 +311,51 @@ midifile::parse (perform & a_perf, int a_screen_set)
         {
             unsigned short perf = 0;
             unsigned char status = 0;
-            unsigned char type;
             unsigned char data[2];
             unsigned char laststatus;
             unsigned long proprietary = 0;          /* sequencer-specifics   */
-            long len;
-            sequence * s = new sequence();
             bool done = false;                      /* done for each track   */
+            long len;                               /* important counter!    */
+            sequence * s = new sequence(m_ppqn);    /* create new sequence   */
             if (s == nullptr)
             {
-                errprint("memory allocation failed, midifile::parse()");
+                errprint("midifile::parse(): sequence memory allocation failed");
                 return false;
             }
-            sequence & seq = *s;
+            sequence & seq = *s;                /* references are nicer     */
             seq.set_master_midi_bus(&a_perf.master_bus());     /* set buss  */
-            RunningTime = 0;                    /* reset time                */
-            while (! done)                      /* get each event in the Trk */
+            RunningTime = 0;                    /* reset time               */
+            while (! done)                      /* get each event in track  */
             {
-                Delta = read_varinum();         /* get time delta            */
+                Delta = read_varinum();         /* get time delta           */
                 laststatus = status;
-                status = m_data[m_pos];         /* get status                */
-                if ((status & 0x80) == 0x00)    /* is it a status bit ?      */
-                    status = laststatus;        /* no, it's a running status */
+                status = m_data[m_pos];         /* get status               */
+                if ((status & 0x80) == 0x00)    /* is it a status bit ?     */
+                    status = laststatus;        /* no, it's running status  */
                 else
-                    m_pos++;                    /* it's a status, increment  */
+                    m_pos++;                    /* it's a status, increment */
 
-                e.set_status(status);           /* set the members in event  */
-                RunningTime += Delta;           /* add in the time           */
+                e.set_status(status);           /* set the members in event */
+                RunningTime += Delta;           /* add in the time          */
 
                 /*
                  * Current time is ppqn according to the file, we have to
                  * adjust it to our own ppqn.  PPQN / ppqn gives us the
                  * ratio.  (This change is not enough; a song with a ppqn of
-                 * 120 plays too fast in Sequencer64, which has a ppqn of 192.
+                 * 120 plays too fast in Sequencer64, which has a ppqn of
+                 * 192.)
                  */
 
-                CurrentTime = (RunningTime * m_ppqn) / ppqn;
-                e.set_timestamp(CurrentTime);
+                if (use_default_ppqn)   /* i.e. use legacy handling of ppqn */
+                {
+                    CurrentTime = (RunningTime * m_ppqn) / ppqn;
+                    e.set_timestamp(CurrentTime);
+                }
+                else
+                {
+                    CurrentTime = RunningTime;
+                    e.set_timestamp(CurrentTime);
+                }
                 switch (status & 0xF0)   /* switch on channel-less status    */
                 {
                 case EVENT_NOTE_OFF:     /* case for those with 2 data bytes */
@@ -364,7 +390,7 @@ midifile::parse (perform & a_perf, int a_screen_set)
 
                     if (status == 0xFF)
                     {
-                        type = read_byte();              /* get meta type     */
+                        unsigned char type = read_byte(); /* get meta type    */
                         len = read_varinum();
                         switch (type)
                         {
@@ -423,11 +449,10 @@ midifile::parse (perform & a_perf, int a_screen_set)
                         case 0x2F:                       /* Trk Done          */
 
                             /*
-                             * If delta is 0, then another event happened
-                             * at the same time as the track-end.  The
-                             * sequence class discards the last note.
-                             * This fixes that.  A native Seq24 file will
-                             * always have a Delta >= 1.
+                             * If Delta is 0, then another event happened at
+                             * the same time as track-end.  Class sequence
+                             * discards the last note.  This fixes that.  A
+                             * native Seq24 file will always have a Delta >= 1.
                              */
 
                             if (Delta == 0)
@@ -461,7 +486,7 @@ midifile::parse (perform & a_perf, int a_screen_set)
                     }
                     else if (status == 0xF0)
                     {
-                        len = read_varinum();                /* sysex           */
+                        len = read_varinum();            /* sysex           */
                         m_pos += len;                    /* skip it         */
                         errprint("no support for SYSEX messages, skipping...");
                     }
@@ -974,7 +999,7 @@ midifile::write (perform & a_perf)
         if (a_perf.is_active(curtrack))
         {
             sequence & seq = *a_perf.get_sequence(curtrack);
-#if defined USE_MIDI_VECTOR
+#if defined SEQ64_USE_MIDI_VECTOR
             midi_vector lst(seq);
 #else
             midi_list lst(seq);

@@ -79,6 +79,7 @@ enum draw_type
 
 class trigger
 {
+
 public:
 
     long m_tick_start;
@@ -243,7 +244,7 @@ private:
     long m_queued_tick;
     long m_trigger_offset;
     const int m_maxbeats;
-    const int m_ppqn;
+    int m_ppqn;
 
     /* length of sequence in pulses should be powers of two in bars */
 
@@ -265,7 +266,7 @@ private:
 
 public:
 
-    sequence (int ppqn = c_ppqn, int maxbeats = c_maxbeats);
+    sequence (int ppqn = c_ppqn);
     ~sequence ();
 
     sequence & operator = (const sequence & rhs);

@@ -49,7 +49,7 @@ event_list sequence::m_events_clipboard;
  *  Principal constructor.
  */
 
-sequence::sequence (int ppqn, int maxbeats)
+sequence::sequence (int ppqn)
  :
     m_events                    (),
     m_triggers                  (),
@@ -85,7 +85,7 @@ sequence::sequence (int ppqn, int maxbeats)
     m_last_tick                 (0),
     m_queued_tick               (0),
     m_trigger_offset            (0),
-    m_maxbeats                  (maxbeats),
+    m_maxbeats                  (c_maxbeats),
     m_ppqn                      (ppqn),
     m_length                    (4 * m_ppqn),
     m_snap_tick                 (m_ppqn / 4),
@@ -321,10 +321,10 @@ sequence::set_rec_vol (long rec_vol)
  *  Adds an event to the internal event list in a sorted manner.  Then it
  *  reset the draw-marker and sets the dirty flag.
  *
- *  Currently, when reading a MIDI file (see the midifile module's parse
- *  function), only the main events (notes, after-touch, pitch, program
- *  changes, etc.) are added with this function.  So, we can rely on
- *  reading only playable events into a sequence.
+ *  Currently, when reading a MIDI file [see the midifile::parse() function],
+ *  only the main events (notes, after-touch, pitch, program changes, etc.)
+ *  are added with this function.  So, we can rely on reading only playable
+ *  events into a sequence.
  *
  *  This module (sequencer) adds all of those events as well, but it
  *  can surely add other events.  We should assume that any events

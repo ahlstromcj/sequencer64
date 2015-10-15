@@ -157,9 +157,32 @@ shorten_file_spec (const std::string & fpath, int leng)
     {
         std::string ellipse("...");
         std::size_t halflength = (std::size_t(leng) - ellipse.size()) / 2;
-        std::string result = fpath.substr(0, halflength);
+
+        /*
+         * Try to find "/home".  If found, strip off "/home/username" and
+         * replace it with "~".  We will assume that the "username" portion
+         * <i> must </i> exist, and that there's no goofy stuff like
+         * double-slashes in the path.
+         */
+
+        std::string result = fpath;
+        std::size_t foundpos = result.find("/home");
+        if (foundpos != std::string::npos)
+        {
+            foundpos = result.find_first_of('/', foundpos + 1);
+            if (foundpos != std::string::npos)
+            {
+                foundpos = result.find_first_of('/', foundpos + 1);
+                if (foundpos != std::string::npos)
+                {
+                    result.replace(0, foundpos /*length*/, "~");
+                }
+            }
+        }
+        result = result.substr(0, halflength);
         std::string lastpart = fpath.substr(fpathsize-halflength-1, halflength);
-        return result + ellipse + lastpart;
+        result = result + ellipse + lastpart;
+        return result;
     }
 }
 

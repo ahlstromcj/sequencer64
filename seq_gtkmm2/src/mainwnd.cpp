@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-14
+ * \updates       2015-10-15
  * \license       GNU GPLv2 or above
  *
  *  The main window holds the menu and the main controls of the application,
@@ -96,17 +96,15 @@ int mainwnd::m_sigpipe[2];
  *
  * \todo
  *      Offload most of the work into an initialization function like
- *      options does; make the perform parameter a reference.
+ *      options does; make the perform parameter a reference;
+ *       Valgrind flags m_tooltips as lost data.  Can we fix it?
  */
 
 mainwnd::mainwnd (perform & p)
  :
     gui_window_gtk2         (p),
     performcallback         (),
-
-    // Valgrind flags m_tooltips as lost data.  Can we fix it?
-
-    m_tooltips              (manage(new Gtk::Tooltips())),
+    m_tooltips              (manage(new Gtk::Tooltips())),  // valgrind!
     m_menubar               (manage(new Gtk::MenuBar())),
     m_menu_file             (manage(new Gtk::Menu())),
     m_menu_view             (manage(new Gtk::Menu())),
@@ -1208,8 +1206,12 @@ mainwnd::on_key_press_event (GdkEventKey * a_ev)
 /**
  *  Updates the title shown in the title bar of the window.  Note that the
  *  name of the application is obtained by the "(SEQ64_PACKAGE)"
- *  construction.  Never saw that thing before.  Perhaps it is a Glib
- *  thing.
+ *  construction.
+ *
+ *  The format of the caption bar is the name of the package/application,
+ *  followed by the file-specification (shortened if necessary so that the
+ *  name of the file itself can be seen), ending with the PPQN value in
+ *  parentheses.
  */
 
 void
@@ -1222,12 +1224,8 @@ mainwnd::update_window_title ()
     snprintf(temp, sizeof(temp), " (%d ppqn) ", ppqn);
     if (! g_rc_settings.filename().empty())
     {
-        /*
-         * \todo
-         *      Strip of the pathname if too long.
-         */
-
-        itemname = Glib::filename_to_utf8(g_rc_settings.filename());
+        std::string name = shorten_file_spec(g_rc_settings.filename(), 56);
+        itemname = Glib::filename_to_utf8(name);
     }
     title += itemname + std::string("]") + std::string(temp);
     set_title(title.c_str());

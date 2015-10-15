@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-14
+ * \updates       2015-10-15
  * \license       GNU GPLv2 or above
  *
  */
@@ -110,6 +110,8 @@ sequence::~sequence ()
 /**
  *  Principal assignment operator.  Follows the stock rules for such an
  *  operator, but does a little more then just assign member values.
+ *  Currently, it does not assign them all, so we should create a partial_copy()
+ *  function to do this work, and use it where it is needed.
  *
  * \threadsafe
  */
@@ -122,6 +124,7 @@ sequence::operator = (const sequence & rhs)
         automutex locker(m_mutex);
         m_events   = rhs.m_events;
         m_triggers = rhs.m_triggers;
+#if ENABLE_THESE_ASSIGNMENTS
         // m_trigger_clipboard
         // m_events_undo
         // m_events_redo
@@ -131,23 +134,43 @@ sequence::operator = (const sequence & rhs)
         // m_iterator_draw
         // m_iterator_play_trigger
         // m_iterator_draw_trigger
+#endif
         m_midi_channel = rhs.m_midi_channel;
         m_bus          = rhs.m_bus;
         // m_song_mute
-        // AND A FEW MORE!
-        m_masterbus    = rhs.m_masterbus;
-        m_name         = rhs.m_name;
-        m_length       = rhs.m_length;
+        // m_notes_on
+        m_masterbus    = rhs.m_masterbus;           /* a pointer, be aware! */
+        // m_playing_notes                          /* array, filled below  */
+        // m_was_playing
         m_playing      = false;
+        // m_recording
+        // m_quantized_rec
+        // m_thru
+        // m_queued
+        // m_trigger_copied
+        // m_dirty_main
+        // m_dirty_edit
+        // m_dirty_perf
+        // m_dirty_names
+        // m_editing
+        // m_raise
+        m_name         = rhs.m_name;
+        // m_last_tick
+        // m_queued_tick
+        //m_maxbeats   = rhs.m_maxbeats;            /* const */
+        m_ppqn         = rhs.m_ppqn;
+        m_length       = rhs.m_length;
+        // m_snap_tick
         m_time_beats_per_measure = rhs.m_time_beats_per_measure;
         m_time_beat_width = rhs.m_time_beat_width;
+        // m_rec_vol
+        // m_mutex
         for (int i = 0; i < c_midi_notes; i++)      /* no notes are playing */
             m_playing_notes[i] = 0;
 
         zero_markers();                             /* reset */
         verify_and_link();
     }
-    // verify_and_link();
     return *this;
 }
 

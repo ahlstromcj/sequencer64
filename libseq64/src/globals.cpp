@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-08-07
- * \updates       2015-10-14
+ * \updates       2015-10-15
  * \license       GNU GPLv2 or above
  *
  *  The first part of this file defines a couple of global structure
@@ -124,6 +124,44 @@ user_instrument_t global_user_instrument_definitions[c_max_instruments];
 
 namespace seq64
 {
+
+/**
+ *  Shortens a file-specification to make sure it is no longer than the
+ *  provided length value.  This is done by removing character in the middle,
+ *  if necessary, and replacing them with an ellipse.
+ *
+ * \todo
+ *      If "/home/username" is present in the path, shorten it to "~";
+ *      also make some attempt to calculate the space available based on the
+ *      window width and caption font-size.
+ *
+ * \param fpath
+ *      The file specification, including the full path to the file, and the
+ *      name of the file.
+ *
+ * \param leng
+ *      Provides the length to which to limit the string.
+ *
+ * \return
+ *      Returns the fpath parameter, possibly shortened to fit within the
+ *      desired length.
+ */
+
+std::string
+shorten_file_spec (const std::string & fpath, int leng)
+{
+    std::size_t fpathsize = fpath.size();
+    if (fpathsize <= std::size_t(leng))
+        return fpath;
+    else
+    {
+        std::string ellipse("...");
+        std::size_t halflength = (std::size_t(leng) - ellipse.size()) / 2;
+        std::string result = fpath.substr(0, halflength);
+        std::string lastpart = fpath.substr(fpathsize-halflength-1, halflength);
+        return result + ellipse + lastpart;
+    }
+}
 
 }       // namespace seq64
 

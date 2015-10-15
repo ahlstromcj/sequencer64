@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-25
- * \updates       2015-10-14
+ * \updates       2015-10-15
  * \license       GNU GPLv2 or above
  *
  *  We're going to try to collect all the globals here in one module, and
@@ -852,6 +852,8 @@ extern bool global_allow_mod4_mode;
 
 namespace seq64
 {
+
+extern std::string shorten_file_spec (const std::string & fpath, int leng);
 
 /**
  *  This function calculates the effective beats-per-minute based on

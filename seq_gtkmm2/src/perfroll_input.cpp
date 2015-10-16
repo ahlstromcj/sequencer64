@@ -117,13 +117,8 @@ Seq24PerfInput::on_button_press_event (GdkEventButton * a_ev, perfroll & roll)
                 p.push_trigger_undo();
                 p.get_sequence(dropseq)->select_trigger(tick);
 
-                long start_tick = p.get_sequence(dropseq)->
-                        get_selected_trigger_start_tick()
-                        ;
-                long end_tick = p.get_sequence(dropseq)->
-                        get_selected_trigger_end_tick()
-                        ;
-
+                long start_tick = p.get_sequence(dropseq)->selected_trigger_start();
+                long end_tick = p.get_sequence(dropseq)->selected_trigger_end();
                 int wscalex = c_perfroll_size_box_click_w * c_perf_scale_x;
                 int ydrop = roll.m_drop_y % c_names_y;
                 if
@@ -135,8 +130,7 @@ Seq24PerfInput::on_button_press_event (GdkEventButton * a_ev, perfroll & roll)
                     roll.m_growing = true;
                     roll.m_grow_direction = true;
                     roll.m_drop_tick_trigger_offset = roll.m_drop_tick -
-                         p.get_sequence(dropseq)->
-                             get_selected_trigger_start_tick() ;
+                         p.get_sequence(dropseq)->selected_trigger_start();
                 }
                 else if
                 (
@@ -147,15 +141,13 @@ Seq24PerfInput::on_button_press_event (GdkEventButton * a_ev, perfroll & roll)
                     roll.m_growing = true;
                     roll.m_grow_direction = false;
                     roll.m_drop_tick_trigger_offset = roll.m_drop_tick -
-                        p.get_sequence(dropseq)->
-                            get_selected_trigger_end_tick() ;
+                        p.get_sequence(dropseq)->selected_trigger_end();
                 }
                 else
                 {
                     roll.m_moving = true;
                     roll.m_drop_tick_trigger_offset = roll.m_drop_tick -
-                         p.get_sequence(dropseq)->
-                             get_selected_trigger_start_tick() ;
+                         p.get_sequence(dropseq)->selected_trigger_start();
                 }
                 roll.draw_all();
             }

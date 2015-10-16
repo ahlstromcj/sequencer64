@@ -86,7 +86,7 @@ sequence::sequence (int ppqn)
     m_queued_tick               (0),
     m_trigger_offset            (0),
     m_maxbeats                  (c_maxbeats),
-    m_ppqn                      (ppqn),
+    m_ppqn                      (0),
     m_length                    (4 * m_ppqn),
     m_snap_tick                 (m_ppqn / 4),
     m_time_beats_per_measure    (4),
@@ -94,6 +94,7 @@ sequence::sequence (int ppqn)
     m_rec_vol                   (0),
     m_mutex                     ()
 {
+    m_ppqn = (ppqn == SEQ64_USE_DEFAULT_PPQN) ? global_ppqn : ppqn ;
     for (int i = 0; i < c_midi_notes; i++)      /* no notes are playing */
         m_playing_notes[i] = 0;
 }
@@ -2381,20 +2382,22 @@ sequence::move_triggers (long a_start_tick, long a_distance, bool a_direction)
 }
 
 /**
- *  Gets the selected trigger's start tick.
+ *  Gets the selected trigger's start tick.  We guess this ends up selecting
+ *  only one trigger, otherwise only the last selected on would set the
+ *  result.
  *
  * \threadsafe
  */
 
 long
-sequence::get_selected_trigger_start_tick ()
+sequence::selected_trigger_start ()
 {
     long result = -1;
     automutex locker(m_mutex);
-    for (Triggers::iterator i = m_triggers.begin(); i != m_triggers.end(); i++)
+    for (Triggers::iterator t = m_triggers.begin(); t != m_triggers.end(); ++t)
     {
-        if (i->m_selected)
-            result = i->m_tick_start;
+        if (t->m_selected)
+            result = t->m_tick_start;
     }
     return result;
 }
@@ -2406,7 +2409,7 @@ sequence::get_selected_trigger_start_tick ()
  */
 
 long
-sequence::get_selected_trigger_end_tick ()
+sequence::selected_trigger_end ()
 {
     long result = -1;
     automutex locker(m_mutex);

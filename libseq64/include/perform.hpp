@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-14
+ * \updates       2015-10-15
  * \license       GNU GPLv2 or above
  *
  *  This class has way too many members.
@@ -235,7 +235,7 @@ private:
      */
 
     bool m_playback_mode;
-    const int m_ppqn;
+    int m_ppqn;
 
     long m_left_tick;
     long m_right_tick;
@@ -280,7 +280,7 @@ public:
 
 public:
 
-    perform (gui_assistant & mygui, int ppqn = c_ppqn);
+    perform (gui_assistant & mygui, int ppqn = SEQ64_USE_DEFAULT_PPQN);
     ~perform ();
 
     /**

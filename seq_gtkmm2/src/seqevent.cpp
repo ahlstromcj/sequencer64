@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-14
+ * \updates       2015-10-15
  * \license       GNU GPLv2 or above
  *
  */
@@ -60,7 +60,7 @@ seqevent::seqevent
     m_seq                    (seq),
     m_zoom                   (zoom),
     m_snap                   (snap),
-    m_ppqn                   (ppqn),
+    m_ppqn                   (0),
     m_old                    (),
     m_selected               (),
     m_scroll_offset_ticks    (0),
@@ -76,7 +76,7 @@ seqevent::seqevent
     m_status                 (EVENT_NOTE_ON),
     m_cc                     (0)
 {
-    // Empty body
+    m_ppqn = (ppqn == SEQ64_USE_DEFAULT_PPQN) ? global_ppqn : ppqn ;
 }
 
 /**

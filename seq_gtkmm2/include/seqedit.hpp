@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-14
+ * \updates       2015-10-15
  * \license       GNU GPLv2 or above
  *
  */
@@ -116,7 +116,7 @@ private:
     int m_key;
     int m_sequence;
     long m_measures;
-    const int m_ppqn;
+    int m_ppqn;
 
     sequence & m_seq;
     Gtk::MenuBar * m_menubar;
@@ -208,7 +208,13 @@ private:
 
 public:
 
-    seqedit (sequence & a_seq, perform & a_perf, int pos, int ppqn = c_ppqn);
+    seqedit
+    (
+        sequence & a_seq,
+        perform & a_perf,
+        int pos,
+        int ppqn = SEQ64_USE_DEFAULT_PPQN
+    );
     ~seqedit ();
 
 private:

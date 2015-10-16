@@ -108,9 +108,9 @@ namespace seq64
  *      -   Reading.
  *          -   If set to SEQ64_USE_DEFAULT_PPQN, the legacy application
  *              behavior is used.  The m_ppqn member is set to the default
- *              PPQN, c_ppqn.  The value read from the MIDI file, ppqn, is then
- *              use to scale the running-time of the sequence relative to
- *              c_ppqn.
+ *              PPQN, global_ppqn = c_ppqn.  The value read from the MIDI
+ *              file, ppqn, is then use to scale the running-time of the
+ *              sequence relative to global_ppqn.
  *          -   Otherwise, m_ppqn is set to the value read from the MIDI file.
  *              No scaling is done.  Since the value gets written, specify
  *              ppqn as 0, an obviously bogus value.
@@ -278,7 +278,7 @@ midifile::parse (perform & a_perf, int a_screen_set)
     unsigned short NumTracks = read_short();
     unsigned short ppqn = read_short();
     bool use_default_ppqn = (m_ppqn == SEQ64_USE_DEFAULT_PPQN);
-    m_ppqn = use_default_ppqn ? c_ppqn : ppqn ;     /* set the PPQN         */
+    m_ppqn = use_default_ppqn ? global_ppqn : ppqn; /* set the PPQN         */
 
     if (ID != 0x4D546864)                           /* magic number 'MThd'  */
     {
@@ -979,6 +979,7 @@ bool
 midifile::write (perform & a_perf)
 {
     int numtracks = 0;
+    printf("[Writing MIDI file, %d ppqn]\n", m_ppqn);
     for (int i = 0; i < c_max_sequence; i++) /* get number of active tracks */
     {
         if (a_perf.is_active(i))

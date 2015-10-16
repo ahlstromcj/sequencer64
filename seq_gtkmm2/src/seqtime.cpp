@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-14
+ * \updates       2015-10-15
  * \license       GNU GPLv2 or above
  *
  *  The patterns/sequence editor is expandable in both directions, but the
@@ -60,9 +60,9 @@ seqtime::seqtime
     m_scroll_offset_ticks   (0),
     m_scroll_offset_x       (0),
     m_zoom                  (zoom),
-    m_ppqn                  (ppqn)
+    m_ppqn                  (0)
 {
-    // Empty body
+    m_ppqn = (ppqn == SEQ64_USE_DEFAULT_PPQN) ? global_ppqn : ppqn ;
 }
 
 /**

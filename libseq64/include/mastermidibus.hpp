@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-30
- * \updates       2015-10-14
+ * \updates       2015-10-15
  * \license       GNU GPLv2 or above
  *
  *  The mastermidibus module is the Linux version of the mastermidibus module.
@@ -137,7 +137,7 @@ private:
      *  Resolution in parts per quarter note.
      */
 
-    int m_ppqn;                     /* CIRCULAR??? */
+    int m_ppqn;
 
     /**
      *  BPM (beats per minute)
@@ -177,7 +177,7 @@ private:
 
 public:
 
-    mastermidibus (int ppqn = c_ppqn, int bpm = c_bpm);
+    mastermidibus (int ppqn = SEQ64_USE_DEFAULT_PPQN, int bpm = c_bpm);
     ~mastermidibus ();
 
     void init ();

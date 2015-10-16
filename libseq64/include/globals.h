@@ -68,6 +68,21 @@ extern user_settings g_user_settings;
  * New stuff
  */
 
+/**
+ *  This value indicates to use the default value of PPQN and ignore (to some
+ *  extent) what value is specified in the MIDI file.  Note that the default
+ *  default PPQN is given by global_ppqn = c_ppqn (192) or, if the "--ppqn qn"
+ *  option is specified on the command-line, by global_ppqn = qn.
+ */
+
+#define SEQ64_USE_DEFAULT_PPQN          (-1)
+
+/**
+ *  This macro indicates that the command-line is not overriding the buss
+ *  settings specified in the MIDI file.  That is, no "--bus b" option was
+ *  specified.
+ */
+
 #define BUSS_OVERRIDE_DISABLED          (global_buss_override == char(-1))
 
 /**

@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-14
+ * \updates       2015-10-15
  * \license       GNU GPLv2 or above
  *
  *  The main windows is known as the "Patterns window" or "Patterns
@@ -209,6 +209,8 @@ public:
      * \setter m_ppqn
      *      We can't set the PPQN value when the mainwnd is created, we have
      *      to do it later, using this function.
+     *
+     *      m_ppqn = (ppqn == SEQ64_USE_DEFAULT_PPQN) ? global_ppqn : ppqn ;
      */
 
     void ppqn (int ppqn)

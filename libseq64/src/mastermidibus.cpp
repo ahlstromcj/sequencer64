@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-30
- * \updates       2015-10-14
+ * \updates       2015-10-15
  * \license       GNU GPLv2 or above
  *
  *  This file provides a Linux-only implementation of MIDI support.
@@ -87,7 +87,7 @@ mastermidibus::mastermidibus (int ppqn, int bpm)
     m_init_clock        (),         // array of c_max_busses clock_e values
     m_init_input        (),         // array of c_max_busses booleans
     m_queue             (0),
-    m_ppqn              (ppqn),     // @change ca 2015-10-13 was  0
+    m_ppqn              (0),
     m_bpm               (bpm),      // DITTO
     m_num_poll_descriptors (0),
     m_poll_descriptors  (nullptr),
@@ -95,7 +95,8 @@ mastermidibus::mastermidibus (int ppqn, int bpm)
     m_seq               (nullptr),
     m_mutex             ()
 {
-    for (int i = 0; i < c_max_busses; ++i)        // why the global?
+    m_ppqn = (ppqn == SEQ64_USE_DEFAULT_PPQN) ? global_ppqn : ppqn ;
+    for (int i = 0; i < c_max_busses; ++i)
     {
         m_buses_in_active[i] = false;
         m_buses_out_active[i] = false;
@@ -263,7 +264,7 @@ mastermidibus::init ()
         }                                       /* end loop for clients */
     }
     set_bpm(m_bpm);                             /* @change was c_bpm    */
-    set_ppqn(m_ppqn);   /* CIRCULAR??? */       /* @change was c_ppqn   */
+    set_ppqn(m_ppqn);                           /* @change was c_ppqn   */
 
     /*
      * Get the number of MIDI input poll file descriptors.

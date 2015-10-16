@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-14
+ * \updates       2015-10-15
  * \license       GNU GPLv2 or above
  *
  */
@@ -90,7 +90,7 @@ private:
     int m_zoom;
 
     int m_snap;
-    const int m_ppqn;
+    int m_ppqn;
     int m_note_length;
     int m_scale;
     int m_key;
@@ -143,7 +143,7 @@ public:
         int pos,
         Gtk::Adjustment & hadjust,
         Gtk::Adjustment & vadjust,
-        int ppqn = c_ppqn
+        int ppqn = SEQ64_USE_DEFAULT_PPQN
     );
     ~seqroll ();
 

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-14
+ * \updates       2015-10-15
  * \license       GNU GPLv2 or above
  *
  */
@@ -72,7 +72,7 @@ seqroll::seqroll
     m_pos                   (pos),
     m_zoom                  (zoom),
     m_snap                  (snap),
-    m_ppqn                  (ppqn),
+    m_ppqn                  (0),
     m_note_length           (0),
     m_scale                 (0),
     m_key                   (0),
@@ -97,7 +97,7 @@ seqroll::seqroll
     m_drawing_background_seq(false),
     m_ignore_redraw         (false)
 {
-    // Empty body
+    m_ppqn = (ppqn == SEQ64_USE_DEFAULT_PPQN) ? global_ppqn : ppqn ;
 }
 
 /**

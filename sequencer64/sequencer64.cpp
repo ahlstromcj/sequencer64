@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-14
+ * \updates       2015-10-15
  * \license       GNU GPLv2 or above
  *
  */
@@ -66,6 +66,7 @@ static struct option long_options[] =
     {"lash",                0, 0, 'L'},                 /* new 2015-08-27 */
 #endif
     {"bus",                 required_argument, 0, 'b'}, /* new 2015-10-14 */
+    {"ppqn",                required_argument, 0, 'q'}, /* new 2015-10-15 */
     {"legacy",              0, 0, 'l'},                 /* new 2015-08-16 */
     {"showmidi",            0, 0, 's'},
     {"show_keys",           0, 0, 'k'},
@@ -97,7 +98,7 @@ namespace seq64
 
 }           // namespace seq64
 
-const char * const g_help_1a =
+static const char * const s_help_1a =
 "sequencer64 v 0.9.9.5  A fork/refactoring of the seq24 live sequencer\n\n"
 "Usage: sequencer64 [options] [MIDI filename]\n\n"
 "Options:\n"
@@ -108,11 +109,13 @@ const char * const g_help_1a =
 #ifdef SEQ64_LASH_SUPPORT
 "   -L, --lash               Activate built-in LASH support.\n"
 #endif
+"   -m, --manual_alsa_ports  Don't attach ALSA ports.\n"
     ;
 
-const char * const g_help_1b =
-"   -m, --manual_alsa_ports  Don't attach ALSA ports.\n"
+static const char * const s_help_1b =
 "   -b, --bus b              Global override of bus number (for testing).\n"
+"   -q, --ppqn qn            Specify new default PPQN, or 'file'.  Note that\n"
+"                            the legacy default is 192.\n"
 "   -s, --showmidi           Dump incoming MIDI events to the screen.\n"
 "   -p, --priority           Runs higher priority with FIFO scheduler\n"
 "                            (must be root).\n"
@@ -120,7 +123,7 @@ const char * const g_help_1b =
 "   -i, --ignore n           Ignore ALSA device number.\n"
     ;
 
-const char * const g_help_2 =
+static const char * const s_help_2 =
 "   -k, --show_keys          Prints pressed key value.\n"
 "   -j, --jack_transport     Sync to JACK transport\n"
 "   -J, --jack_master        Try to be JACK master\n"
@@ -131,6 +134,14 @@ const char * const g_help_2 =
 "   -x, --interaction_method n  See ~/.config/sequencer64/sequencer64.rc for\n"
 "                            methods to use.\n"
 "   -U, --jack_session_uuid u   Set UUID for JACK session\n"
+"\n"
+    ;
+
+static const char * const s_help_3 =
+"Setting the --ppqn to double the default causes a MIDI file to play at half\n"
+"the speed.  If the file is re-saved with that setting, the double clock is\n"
+"saved, but it still plays slowly in Sequencer64, but at its original rate\n"
+"in Timidity.  We still have some work to do on PPQN support, obviously\n."
 "\n"
     ;
 
@@ -230,7 +241,8 @@ main (int argc, char * argv [])
         int option_index = 0;               /* getopt_long index storage    */
         c = getopt_long
         (
-            argc, argv, "Chlb:Li:jJmM:pPsSU:Vx:", long_options, &option_index
+            argc, argv, "Chlb:q:Li:jJmM:pPsSU:Vx:",
+            long_options, &option_index
         );
         if (c == -1)                        /* detect the end of options    */
             break;
@@ -239,9 +251,10 @@ main (int argc, char * argv [])
         {
         case '?':
         case 'h':
-            printf(g_help_1a);
-            printf(g_help_1b);
-            printf(g_help_2);
+            printf(s_help_1a);
+            printf(s_help_1b);
+            printf(s_help_2);
+            printf(s_help_3);
             return EXIT_SUCCESS;
             break;
 
@@ -320,6 +333,17 @@ main (int argc, char * argv [])
             global_buss_override = char(atoi(optarg));
             break;
 
+        case 'q':
+            if (std::string(optarg) == std::string("file"))
+            {
+                global_ppqn = 0;                // NOT READY !!!!!
+            }
+            else
+            {
+                global_ppqn = atoi(optarg);
+            }
+            break;
+
         default:
             break;
         }
@@ -336,7 +360,7 @@ main (int argc, char * argv [])
     g_rc_settings.set_globals();                /* copy to legacy globals   */
     g_user_settings.set_globals();              /* copy to legacy globals   */
 
-#ifdef USE_THIS_INSTANCE_OF_CODE
+#ifdef USE_THIS_INSTANCE_OF_CODE_INSTEAD_OF_THE_ONE_ABOVE
     /*
      * Set up objects that are specific to the Gtk-2 GUI.  Pass them to
      * the perform constructor.  Create a font-render object.
@@ -345,7 +369,7 @@ main (int argc, char * argv [])
     seq64::gui_assistant_gtk2 gui;              /* GUI-specific objects     */
     seq64::perform p(gui);                      /* main performance object  */
     seq64::p_font_renderer = new seq64::font(); /* set the font renderer    */
-#endif  // USE_THIS_INSTANCE_OF_CODE
+#endif  // USE_THIS_INSTANCE_OF_CODE_INSTEAD_OF_THE_ONE_ABOVE
 
     p.init();
     p.launch_input_thread();

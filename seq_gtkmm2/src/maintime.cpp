@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-14
+ * \updates       2015-10-15
  * \license       GNU GPLv2 or above
  *
  *  The "time" window is the horizontal bar at the upper right of the main
@@ -58,9 +58,9 @@ maintime::maintime
     gui_drawingarea_gtk2    (p, x, y),
     m_tick                  (0),
     m_pill_width            (pillwidth),
-    m_ppqn                  (ppqn)
+    m_ppqn                  (0)
 {
-    // Empty body
+    m_ppqn = (ppqn == SEQ64_USE_DEFAULT_PPQN) ? global_ppqn : ppqn ;
 }
 
 /**

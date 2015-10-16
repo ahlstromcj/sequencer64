@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-14
+ * \updates       2015-10-15
  * \license       GNU GPLv2 or above
  *
  */
@@ -59,14 +59,14 @@ private:
 
     long m_tick;
     const int m_pill_width;
-    const int m_ppqn;
+    int m_ppqn;
 
 public:
 
     maintime
     (
         perform & p,
-        int ppqn = c_ppqn,
+        int ppqn = SEQ64_USE_DEFAULT_PPQN,
         int pillwidth = c_pill_width,
         int x = c_maintime_x,
         int y = c_maintime_y

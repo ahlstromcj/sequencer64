@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-14
+ * \updates       2015-10-15
  * \license       GNU GPLv2 or above
  *
  */
@@ -133,10 +133,11 @@ perfedit::perfedit
     m_snap              (DEFAULT_PERFEDIT_SNAP),
     m_bpm               (bpm),
     m_bw                (bw),
-    m_ppqn              (ppqn),             /* 192 pulses per quarter note */
+    m_ppqn              (0),                /* 192 pulses per quarter note */
     m_redraw_ms         (c_redraw_ms),
     m_modified          (false)
 {
+    m_ppqn = (ppqn == SEQ64_USE_DEFAULT_PPQN) ? global_ppqn : ppqn ;
     set_icon(Gdk::Pixbuf::create_from_xpm_data(perfedit_xpm));
     set_title("Sequencer64 - Song Editor");                 /* main window */
     m_table->set_border_width(2);

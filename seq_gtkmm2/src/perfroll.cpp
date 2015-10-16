@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-14
+ * \updates       2015-10-15
  * \license       GNU GPLv2 or above
  *
  */
@@ -57,13 +57,13 @@ perfroll::perfroll
 ) :
     gui_drawingarea_gtk2    (p, hadjust, vadjust, 10, 10),
     m_snap                  (0),
-    m_ppqn                  (ppqn),
+    m_ppqn                  (0),
     m_page_factor           (PERFROLL_PAGE_FACTOR),
     m_divs_per_bar          (PERFROLL_DIVS_PER_BEAT),       // grid subdivisions
     m_ticks_per_bar         (m_ppqn * m_divs_per_bar),
     m_perf_scale_x          (c_perf_scale_x),
     m_names_y               (c_names_y),
-    m_background_x          (c_perfroll_background_x),
+    m_background_x          (c_perfroll_background_x),      // gets adjusted!
     m_size_box_w            (c_perfroll_size_box_w),
     m_size_box_click_w      (c_perfroll_size_box_click_w),  // not yet used
     m_measure_length        (0),
@@ -82,6 +82,9 @@ perfroll::perfroll
     m_growing               (false),
     m_grow_direction        (false)
 {
+    m_ppqn = (ppqn == SEQ64_USE_DEFAULT_PPQN) ? global_ppqn : ppqn ;
+    m_background_x = (m_ppqn * 4 * 16) / c_perf_scale_x;
+
     for (int i = 0; i < m_sequence_max; ++i)
         m_sequence_active[i] = false;
 

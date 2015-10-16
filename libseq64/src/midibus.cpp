@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-14
+ * \updates       2015-10-15
  * \license       GNU GPLv2 or above
  *
  *  This file provides a Linux-only implementation of MIDI support.
@@ -92,7 +92,7 @@ midibus::midibus
     m_id                (id),
     m_clock_type        (e_clock_off),
     m_inputing          (false),
-    m_ppqn              (ppqn),
+    m_ppqn              (0),
     m_seq               (seq),
     m_dest_addr_client  (destclient),
     m_dest_addr_port    (destport),
@@ -103,29 +103,26 @@ midibus::midibus
     m_lasttick          (0),
     m_mutex             ()
 {
-    char name[64];
+    char alias[64];
     if (global_user_midi_bus_definitions[m_id].alias.length() > 0)
     {
         snprintf
         (
-            name, sizeof(name), "(%s)",
+            alias, sizeof(alias), "(%s)",
             global_user_midi_bus_definitions[m_id].alias.c_str()
         );
     }
     else
-    {
-        snprintf(name, sizeof(name), "(%s)", port_name);
-    }
+        snprintf(alias, sizeof(alias), "(%s)", port_name);
 
-    /* copy the client names */
-
-    char tmp[64];
-    snprintf
+    char name[80];
+    snprintf                            /* copy the client name parts */
     (
-        tmp, sizeof(tmp), "[%d] %d:%d %s",
-        m_id, m_dest_addr_client, m_dest_addr_port, name
+        name, sizeof(name), "[%d] %d:%d %s",
+        m_id, m_dest_addr_client, m_dest_addr_port, alias
     );
-    m_name = tmp;
+    m_name = name;
+    m_ppqn = (ppqn == SEQ64_USE_DEFAULT_PPQN) ? global_ppqn : ppqn ;
 }
 
 /**
@@ -158,7 +155,7 @@ midibus::midibus
     m_id                (id),
     m_clock_type        (e_clock_off),
     m_inputing          (false),
-    m_ppqn              (ppqn),
+    m_ppqn              (0),
     m_seq               (seq),
     m_dest_addr_client  (-1),
     m_dest_addr_port    (-1),
@@ -171,9 +168,10 @@ midibus::midibus
 {
     /* copy the client name */
 
-    char tmp[64];
-    snprintf(tmp, sizeof(tmp), "[%d] seq24 %d", m_id, m_id);
-    m_name = tmp;
+    char name[64];
+    snprintf(name, sizeof(name), "[%d] seq24 %d", m_id, m_id);
+    m_name = name;
+    m_ppqn = (ppqn == SEQ64_USE_DEFAULT_PPQN) ? global_ppqn : ppqn ;
 }
 
 #endif   // SEQ64_HAVE_LIBASOUND

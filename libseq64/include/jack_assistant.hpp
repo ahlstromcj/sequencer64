@@ -114,11 +114,11 @@ private:
 
     bool m_jack_running;
     bool m_jack_master;
-    const int m_ppqn;
+    int m_ppqn;
 
 public:
 
-    jack_assistant (perform & parent, int ppqn = c_ppqn);
+    jack_assistant (perform & parent, int ppqn = SEQ64_USE_DEFAULT_PPQN);
     ~jack_assistant ();
 
     /**

@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-14
+ * \updates       2015-10-15
  * \license       GNU GPLv2 or above
  *
  */
@@ -67,7 +67,7 @@ private:
      */
 
     int m_zoom;
-    const int m_ppqn;
+    int m_ppqn;
 
 public:
 
@@ -77,7 +77,7 @@ public:
         perform & p,
         int zoom,
         Gtk::Adjustment & hadjust,
-        int ppqn = c_ppqn
+        int ppqn = SEQ64_USE_DEFAULT_PPQN
     );
 
     void reset ();

@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-14
+ * \updates       2015-10-15
  * \license       GNU GPLv2 or above
  *
  */
@@ -49,7 +49,10 @@ class perform;
 
 /**
  *  These should be private members.  Used by this module and the
- *  perfroll_input module.
+ *  perfroll_input module.  We need to be able to adjust
+ *  c_perfroll_background_x per the selected PPQN value.  This adjustment is
+ *  made in the constructor, and assigned to the perfroll::m_background_x
+ *  member.
  */
 
 static const int c_perfroll_background_x = (c_ppqn * 4 * 16) / c_perf_scale_x;
@@ -101,7 +104,7 @@ public:
         perform & a_perf,
         Gtk::Adjustment & a_hadjust,
         Gtk::Adjustment & a_vadjust,
-        int ppqn = c_ppqn
+        int ppqn = SEQ64_USE_DEFAULT_PPQN
     );
     ~perfroll();
 

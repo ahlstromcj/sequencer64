@@ -163,7 +163,7 @@ FruityPerfInput::on_left_button_pressed (GdkEventButton * a_ev, perfroll & roll)
                 roll.split_trigger(dropseq, roll.m_drop_tick);
         }
     }
-    else    /* add a new note */
+    else                /* add a new note */
     {
         long tick = roll.m_drop_tick;
         m_adding_pressed = true;
@@ -171,70 +171,48 @@ FruityPerfInput::on_left_button_pressed (GdkEventButton * a_ev, perfroll & roll)
         {
             long seqlength = p.get_sequence(dropseq)->get_length();
             bool state = p.get_sequence(dropseq)->get_trigger_state(tick);
-
-            /* resize the event, or move it, depending on where clicked */
-
-            if (state)
+            if (state)  /* resize event or move it based on where clicked */
             {
                 m_adding_pressed = false;
                 p.push_trigger_undo();
                 p.get_sequence(dropseq)->select_trigger(tick);
-                long start_tick = p.get_sequence(dropseq)->
-                    get_selected_trigger_start_tick()
-                    ;
-                long end_tick = p.get_sequence(dropseq)->
-                    get_selected_trigger_end_tick()
-                    ;
+                long starttick = p.get_sequence(dropseq)->selected_trigger_start();
+                long endtick = p.get_sequence(dropseq)->selected_trigger_end();
                 int wscalex = c_perfroll_size_box_click_w * c_perf_scale_x;
                 int ydrop = roll.m_drop_y % c_names_y;
                 if
                 (
-                    tick >= start_tick && tick <= (start_tick + wscalex) &&
+                    tick >= starttick && tick <= (starttick + wscalex) &&
                     ydrop <= (c_perfroll_size_box_click_w + 1)
                 )
-                {
-                    /*
-                     * Clicked left side: begin a grow/shrink for the left side.
-                     */
-
+                {           /* clicked left side: grow/shrink left side     */
                     roll.m_growing = true;
                     roll.m_grow_direction = true;
                     roll.m_drop_tick_trigger_offset = roll.m_drop_tick -
-                        p.get_sequence(dropseq)->
-                            get_selected_trigger_start_tick();
+                        p.get_sequence(dropseq)->selected_trigger_start();
                 }
                 else if
                 (
-                    tick >= (end_tick - wscalex) && tick <= end_tick &&
+                    tick >= (endtick - wscalex) && tick <= endtick &&
                     ydrop >= (c_names_y - c_perfroll_size_box_click_w - 1)
                 )
-                {
-                    /*
-                     * Clicked right side: grow/shrink the right side.
-                     */
-
+                {           /* clicked right side: grow/shrink right side   */
                     roll.m_growing = true;
                     roll.m_grow_direction = false;
                     roll.m_drop_tick_trigger_offset = roll.m_drop_tick -
-                        p.get_sequence(dropseq)->
-                            get_selected_trigger_end_tick() ;
+                        p.get_sequence(dropseq)->selected_trigger_end();
                 }
-                else
+                else        /* clicked in the middle - move it              */
                 {
-                    /*
-                     * Clicked in the middle - move it.
-                     */
-
                     roll.m_moving = true;
                     roll.m_drop_tick_trigger_offset = roll.m_drop_tick -
-                         p.get_sequence(dropseq)->
-                             get_selected_trigger_start_tick() ;
+                         p.get_sequence(dropseq)->selected_trigger_start();
                 }
                 roll.draw_all();
             }
-            else                                    // add an event
+            else                                    /* add a trigger        */
             {
-                tick -= (tick % seqlength);         // snap to sequence length
+                tick -= (tick % seqlength);         /* snap to sequlength   */
                 p.push_trigger_undo();
                 p.get_sequence(dropseq)->add_trigger(tick, seqlength);
                 roll.draw_all();
@@ -277,8 +255,12 @@ FruityPerfInput::on_button_release_event (GdkEventButton * a_ev, perfroll & roll
 {
     m_current_x = (int) a_ev->x;
     m_current_y = (int) a_ev->y;
-    if (SEQ64_CLICK_IS_LEFT(a_ev->button) || SEQ64_CLICK_IS_RIGHT(a_ev->button))
-        m_adding_pressed = false;                   // done here...
+
+    /*
+     * if (SEQ64_CLICK_IS_LEFT(a_ev->button) ||
+     *      SEQ64_CLICK_IS_RIGHT(a_ev->button))
+     *  m_adding_pressed = false;                   // done here...
+     */
 
     perform & p = roll.perf();
     roll.m_moving = false;
@@ -298,9 +280,9 @@ FruityPerfInput::on_button_release_event (GdkEventButton * a_ev, perfroll & roll
 bool
 FruityPerfInput::on_motion_notify_event (GdkEventMotion * a_ev, perfroll & roll)
 {
-    int x = (int) a_ev->x;
     perform & p = roll.perf();
     int dropseq = roll.m_drop_sequence;
+    int x = int(a_ev->x);
     m_current_x = int(a_ev->x);
     m_current_y = int(a_ev->y);
     if (m_adding_pressed)

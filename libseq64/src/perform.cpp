@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-14
+ * \updates       2015-10-15
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the most important single class in Sequencer64, as
@@ -90,7 +90,7 @@ perform::perform (gui_assistant & mygui, int ppqn)
     m_outputing                 (true),
     m_looping                   (false),
     m_playback_mode             (false),
-    m_ppqn                      (ppqn),
+    m_ppqn                      (0),
     m_left_tick                 (0),
     m_right_tick                (m_ppqn * 16),
     m_starting_tick             (0),
@@ -113,6 +113,7 @@ perform::perform (gui_assistant & mygui, int ppqn)
 #endif
     m_notify                    ()          // vector of pointers, public!
 {
+    m_ppqn = (ppqn == SEQ64_USE_DEFAULT_PPQN) ? global_ppqn : ppqn ;
     for (int i = 0; i < m_sequence_max; i++)
     {
         m_seqs[i] = nullptr;

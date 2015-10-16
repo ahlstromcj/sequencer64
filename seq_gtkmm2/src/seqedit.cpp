@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-14
+ * \updates       2015-10-15
  * \license       GNU GPLv2 or above
  *
  */
@@ -91,8 +91,8 @@ namespace seq64
 const int seqedit::mc_min_zoom      =  1;
 const int seqedit::mc_max_zoom      = 32;
 int seqedit::m_initial_zoom         =  2;
-int seqedit::m_initial_snap         = c_ppqn / 4;
-int seqedit::m_initial_note_length  = c_ppqn / 4;
+int seqedit::m_initial_snap         = c_ppqn / 4;   // to be adjusted
+int seqedit::m_initial_note_length  = c_ppqn / 4;   // to be adjusted
 int seqedit::m_initial_scale        =  0;
 int seqedit::m_initial_key          =  0;
 int seqedit::m_initial_sequence     = -1;
@@ -138,7 +138,7 @@ seqedit::seqedit (sequence & seq, perform & p, int pos, int ppqn)
     m_key               (m_initial_key),
     m_sequence          (m_initial_sequence),
     m_measures          (0),
-    m_ppqn              (ppqn),
+    m_ppqn              (0),
     m_seq               (seq),
     m_menubar           (manage(new Gtk::MenuBar())),
     m_menu_tools        (manage(new Gtk::Menu())),
@@ -228,6 +228,7 @@ seqedit::seqedit (sequence & seq, perform & p, int pos, int ppqn)
     m_editing_cc        (0)
 {
     std::string title = "Sequencer64 - ";                   /* main window */
+    m_ppqn = (ppqn == SEQ64_USE_DEFAULT_PPQN) ? global_ppqn : ppqn ;
     set_icon(Gdk::Pixbuf::create_from_xpm_data(seq_editor_xpm));
     title.append(m_seq.get_name());
     set_title(title);

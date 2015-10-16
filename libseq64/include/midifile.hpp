@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-14
+ * \updates       2015-10-15
  * \license       GNU GPLv2 or above
  *
  *  The Seq24 MIDI file is a standard, Format 1 MIDI file, with some extra
@@ -40,13 +40,6 @@
 #include <vector>
 
 #include "globals.h"                    /* c_ppqn only, so far  */
-
-/**
- *  This value indicates to use the default value of PPQN, c_ppqn, and
- *  ignore (to some extent) what value is specified in the MIDI file.
- */
-
-#define SEQ64_USE_DEFAULT_PPQN          (-1)
 
 namespace seq64
 {

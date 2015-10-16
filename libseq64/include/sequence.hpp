@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-14
+ * \updates       2015-10-15
  * \license       GNU GPLv2 or above
  *
  */
@@ -266,7 +266,7 @@ private:
 
 public:
 
-    sequence (int ppqn = c_ppqn);
+    sequence (int ppqn = SEQ64_USE_DEFAULT_PPQN);
     ~sequence ();
 
     sequence & operator = (const sequence & rhs);
@@ -524,8 +524,8 @@ public:
     (
         long tick, bool adjust_offset, int which = 2
     );
-    long get_selected_trigger_start_tick ();
-    long get_selected_trigger_end_tick ();
+    long selected_trigger_start ();
+    long selected_trigger_end ();
     long get_max_trigger ();
     void move_triggers (long start_tick, long distance, bool direction);
     void copy_triggers (long start_tick, long distance);

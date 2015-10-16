@@ -72,6 +72,7 @@ user_settings g_user_settings;
 /**
  *  Provides an experimental way to modify the global PPQN value to
  *  match what a MIDI file includes.  Much to do to get it working.
+ *  Note that this value can be changed by the experimental --ppqn option.
  */
 
 int global_ppqn = c_ppqn;

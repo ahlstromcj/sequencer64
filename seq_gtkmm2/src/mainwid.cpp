@@ -25,12 +25,17 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-09
+ * \updates       2015-10-16
  * \license       GNU GPLv2 or above
  *
  *  Note that this representation is, in a sense, inside the mainwnd
  *  implementation.  While mainwid represents the pattern slots, mainwnd
  *  represents the menu and surrounding elements.
+ *
+ * \todo
+ *      BUG!  During playing with the "Show keys" options, dragging and
+ *      dropping sequences, we got a segfault in the application! Not yet sure
+ *      what caused it.
  */
 
 #include <gtkmm/combo.h>                /* Gtk::Entry                   */
@@ -169,7 +174,12 @@ mainwid::fill_background_window ()
 }
 
 /**
- *  Is this a nullified callback?
+ *  Provides a stock callback, because some kind of callback is need.
+ *
+ *
+ * \todo
+ *      We should use this callback to display the current time in the
+ *      playback.
  *
  * \return
  *      Always returns true.
@@ -734,7 +744,7 @@ mainwid::on_expose_event (GdkEventExpose * a_e)
 
 /**
  *  Handles a press of a mouse button.  It grabs the focus, calculates
- *  the pattern/sequence over which the button press occureed, and sets
+ *  the pattern/sequence over which the button press occurred, and sets
  *  the m_button_down flag if it is over a pattern.
  *
  * \param p0
@@ -757,7 +767,9 @@ mainwid::on_button_press_event (GdkEventButton * p0)
 
 /**
  *  Handles a release of a mouse button.  This event is a lot more complex
- *  than a press.
+ *  than a press.  The left button toggles playback status. The right
+ *  button brings up a popup menu.  If the slot is empty, then a "New" popup
+ *  is presented, otherwise an "Edit" and selection popup is presented.
  *
  * \param p0
  *      Provides the parameters of the button event.
@@ -771,47 +783,44 @@ mainwid::on_button_release_event (GdkEventButton * p0)
 {
     current_sequence(seq_from_xy(int(p0->x), int(p0->y)));
     m_button_down = false;
+    if (current_sequence() < 0)
+        return true;
 
-    /*
-     * Have we hit a sequence with the L button?  Toggle its play mode.
-     */
-
-    if
-    (
-        current_sequence() >= 0 && SEQ64_CLICK_IS_LEFT(p0->button) && ! m_moving
-    )
+    if (SEQ64_CLICK_IS_LEFT(p0->button))
     {
-        if (perf().is_active(current_sequence()))
+        if (m_moving)
         {
-            perf().sequence_playing_toggle(current_sequence());
-            draw_sequence_on_pixmap(current_sequence());
-            draw_sequence_pixmap_on_window(current_sequence());  // effective?
-        }
-    }
-    if (SEQ64_CLICK_IS_LEFT(p0->button) && m_moving)
-    {
-        m_moving = false;
-        if          // if we're in a pattern, it is active, and in edit mode...
-        (
-            ! perf().is_active(current_sequence()) &&
-            current_sequence() != -1 &&
-            ! perf().is_sequence_in_edit(current_sequence())
-        )
-        {
-            perf().new_sequence(current_sequence());
-            *(perf().get_sequence(current_sequence())) = m_moving_seq;
-            draw_sequence_on_pixmap(current_sequence());
-            draw_sequence_pixmap_on_window(current_sequence());  // effective?
+            m_moving = false;
+            if              // in a pattern, it's active, not in edit mode...
+            (
+                ! perf().is_active(current_sequence()) &&
+                ! perf().is_sequence_in_edit(current_sequence())
+            )
+            {
+                perf().new_sequence(current_sequence());
+                *(perf().get_sequence(current_sequence())) = m_moving_seq;
+                draw_sequence_on_pixmap(current_sequence());
+                draw_sequence_pixmap_on_window(current_sequence());  // effective?
+            }
+            else
+            {
+                perf().new_sequence(m_old_seq);
+                *(perf().get_sequence(m_old_seq)) = m_moving_seq;
+                draw_sequence_on_pixmap(m_old_seq);
+                draw_sequence_pixmap_on_window(m_old_seq);          // effective?
+            }
         }
         else
         {
-            perf().new_sequence(m_old_seq);
-            *(perf().get_sequence(m_old_seq)) = m_moving_seq;
-            draw_sequence_on_pixmap(m_old_seq);
-            draw_sequence_pixmap_on_window(m_old_seq);          // effective?
+            if (perf().is_active(current_sequence()))
+            {
+                perf().sequence_playing_toggle(current_sequence());
+                draw_sequence_on_pixmap(current_sequence());
+                draw_sequence_pixmap_on_window(current_sequence());  // effective?
+            }
         }
     }
-    if (current_sequence() != -1 && SEQ64_CLICK_IS_RIGHT(p0->button))
+    else if (SEQ64_CLICK_IS_RIGHT(p0->button))
         popup_menu();
 
     return true;
@@ -820,6 +829,7 @@ mainwid::on_button_release_event (GdkEventButton * p0)
 /**
  *  Handle the motion of the mouse if a mouse button is down and in
  *  another sequence and if the current sequence is not in edit mode.
+ *  This function moves the selected pattern to another pattern slot.
  *
  * \param p0
  *      Provides the parameters of the button event.
@@ -847,7 +857,7 @@ mainwid::on_motion_notify_event (GdkEventMotion * p0)
                 m_moving_seq = *(perf().get_sequence(current_sequence()));
                 perf().delete_sequence(current_sequence());
                 draw_sequence_on_pixmap(current_sequence());
-                draw_sequence_pixmap_on_window(current_sequence());  // effective?
+                draw_sequence_pixmap_on_window(current_sequence());
             }
         }
     }

@@ -84,7 +84,8 @@ by your system.  Our system shows:
    [5] 129:0 (input)
 \endverbatim
 
-For some reason (a bug?), input "[5]" doesn't indicate that it is Yoshimi, but
+For some reason (a bug in Yoshimi?),
+input "[5]" doesn't indicate that it is Yoshimi, but
 it is.  Take note of that input number... that is the MIDI buss number that is
 needed to drive Yoshimi.
 
@@ -124,9 +125,40 @@ true for Sequencer64.
 
 \section user_testing_patterns Tests in the Patterns Window
 
-Empty tracks (i.e. title-only tracks) are highlighted in yellow.
+The Patterns window is the inside portion of the main window, supported by the
+<code> mainwid </code> class.  it contains a grid of boxes or slots, with each
+slot potentially containing a pattern, sequence, or track.  Empty tracks (i.e.
+tracks that contain no events, like title-only tracks) are highlighted in
+yellow.
+
+This window supports only a single variant of mouse-handling.
+
+\subsection user_testing_patterns_buttons Button Clicks on a Pattern
+
+A left-click on a pattern slot should cause the following to happen:
+
+   -# The pattern will be highlighted (white on a black background).
+      This won't occur until the button is released.
+   -# During playback, the pattern will emit MIDI events and play its sequence.
+   -# If the pattern is dragged to another slot, whether playing is in progress
+      or not, releasing the button in the destination slot will move the
+      pattern to that slot.
+
+A right-click on a pattern slot should cause the following to happen:
+
+   -# If the pattern is empty, then a pop-up menu to make a New pattern, paste
+      a pattern, or make other selections will appear.
+   -# If the pattern is active, then a pop-up menu to Edit the pattern or make
+      other selections will appear.
+   -# A second right-click, just off the menu, will dismiss the menu.
 
 \subsection user_testing_patterns_shortcuts Patterns Window Key Shortcuts
+
+First, note the selection of the File / Options / Keyboard / Show keys option.
+The tests here should work whether or not it is selected.  The only difference
+is if the keys are shown.
+
+We got a segfault during this test, when we weren't being systematic about it.
 
 \subsection user_testing_patterns_usr The Sequencer64 User File
 

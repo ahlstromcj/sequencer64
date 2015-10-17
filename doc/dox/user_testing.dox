@@ -14,7 +14,7 @@ This document describes basic user testing of Sequencer 64 using the
 Yoshimi software synthesizer.
 
 \page       user_testing_page User Testing of Sequencer64 with Yoshimi
-\author     Chris Ahlstrom 2015-10-14
+\author     Chris Ahlstrom 2015-10-17
 
 \section user_testing_intro Introduction
 
@@ -163,6 +163,50 @@ We got a segfault during this test, when we weren't being systematic about it.
 \subsection user_testing_patterns_usr The Sequencer64 User File
 
 
+
+\section user_testing_valgrind Tests Using Valgrind
+
+Valgrind is a very useful tool for unearthing memory issues and other issues in
+an application, especially when one has the source code and can build the code
+with debugging information.
+
+\subsection user_testing_valgrind_supp Valgrind Suppressions
+
+One problem with valgrind is that it also uncovers errors in system libraries
+that one has no control over.  These errors clutter the output, so we suppress
+them using a valgrind "suppressions" file.  Here's how to create one:
+
+\verbatim
+  $ valgrind --gen-suppressions=yes  ./Sequencer64/sequencer64
+\endverbatim
+
+As the program runs, one is asked to print a suppression.  If the error is due
+to a system or third-party library, answer "Y return", and then copy-and-paste
+the suppression to a file, giving it a name.  For example, we provide a file
+<code>contrib/seq64.supp</code> containing suppressions of errors that annoy
+us.
+
+Running valgrind like this then shows only the errors we care about:
+
+\verbatim
+  $ valgrind --suppressions=contrib/seq64.supp  ./Sequencer64/sequencer64
+\endverbatim
+
+\subsection user_testing_valgrind_full Full Valgrind Leak-Checking
+
+Here's how to capture errors, while suppressing the system errors and while
+generating a log file:
+
+\verbatim
+   $valgrind --suppressions=contrib/seq64.supp --leak-check=full \
+      --track-origins=yes --log-file=valgrind.log \
+      ./sequencer64/sequencer64 --ppqn 384
+\endverbatim
+
+The errors can be also be re-routed to a log-file via the
+"2> valgrind.log" shell redirection.
+
+   https://github.com/dtrebbien/GNOME.supp
 
  *//*-------------------------------------------------------------------------*/
 

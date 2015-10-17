@@ -12,6 +12,11 @@
  *    This file will be copied to or clean from each documentation
  *    subdirectory as needed.
  *
+ * NOTE:
+ *
+ *    EDIT OR TOUCH THIS FILE WHEN YOU WANT TO RECREATE THE
+ *    REFERENCE MANUAL
+ *
  *------------------------------------------------------------------------*//**
 
 \file       mainpage-reference.dox
@@ -20,11 +25,11 @@ This document describes the modules and functions of the Sequencer64
 application.
 
 \mainpage   Sequencer64
-\author     Chris Ahlstrom 2015-09-10
+\author     Chris Ahlstrom 2015-10-17
 
 \section seq64_reference_intro Introduction
 
-Sequencer64 is a minor cleanup, refactoring, and documentation of the
+Sequencer64 is a major cleanup, refactoring, and documentation of the
 Seq24 live-play MIDI sequencer.
 
 The current document describes the functions, classes, modules, and other
@@ -40,8 +45,7 @@ related to PDF and LaTeX, and running "make":
 
    -  https://github.com/ahlstromcj/sequencer24-doc.git
 
-
-In the present document, we've left out a fair amount of side-material to cut
+In the present document, we've left out a fair amount of side-code to cut
 down on the size of the document.  For example, the main module, redundant
 Windows support, utility headers like easy_macros.h, simple stuff like the
 mutex module, the fruity variants (at least the ones already refactored into

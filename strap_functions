@@ -1,14 +1,14 @@
 #!/bin/bash
 #
 #******************************************************************************
-# strap_functions (sequencer64)
+# strap_functions (project)
 #------------------------------------------------------------------------------
 ##
 # \file       	strap_functions
-# \library    	sequencer64
+# \library    	Any project
 # \author     	Chris Ahlstrom
 # \date       	2015-07-24
-# \update     	2015-10-07
+# \update     	2015-10-17
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -22,9 +22,10 @@
 #
 #     This module provides some bootstrap- and build-related functions the
 #     top-level bootstrap script can use.  It does a much more thorough job
-#     of cleaning out junk/derived files.  We will ultimate have files
+#     of cleaning out junk/derived files.  We will ultimately have files
 #     produced by gcov, gprof, valgrind, and maybe some other development
 #     applications, and we don't want to distribute them accidentally.
+#     We replace some GNU complexity with our complexity :-D.
 #
 # Functions defined:
 #
@@ -163,7 +164,7 @@ checkdir()
    if [ ! -d "$1" ] ; then
       warn $EXIT_ERROR_NO_SUBDIR "checkdir()" \
          "COULD NOT FIND THE '$1' DIRECTORY." "$\n" \
-         "Please run this script within the sequencer64 directory hierarchy"
+         "Please run this script within the project directory hierarchy"
       return $EXIT_ERROR_NO_SUBDIR
    else
       return 0
@@ -216,7 +217,7 @@ function checklog()
                die $EXIT_ERROR_LOG "LOG" \
                   "? Creating log-file $LOGFILENAME failed, aborting!"
             else
-               log "sequencer64 bootstrap script" "`date`"
+               log "project bootstrap script" "`date`"
             fi
          fi
       fi
@@ -230,7 +231,7 @@ function checklog()
 run_cmd()
 {
    if [ "$DOBOOTSTRAP" == "yes" ] ; then
-      echo "* Running sequencer64 library suite build command $*"
+      echo "* Running project build command $*"
       if [ -x /usr/bin/$1 ] ; then
          if ! $* ; then
             die $EXIT_ERROR_NO_SUCH_COMMAND "run_cmd" \
@@ -247,7 +248,7 @@ run_cmd()
 #  clean_tree
 #------------------------------------------------------------------------------
 #
-#     Cleans out the whole sequencer64 tree of garbage.
+#     Cleans out the whole project tree of garbage.
 #
 #------------------------------------------------------------------------------
 
@@ -320,7 +321,7 @@ function clean_m4()
 #  clean_by_ext $EXTLIST
 #------------------------------------------------------------------------------
 #
-#     Cleans out the whole sequencer64 tree of the obvious garbage,
+#     Cleans out the whole project tree of the obvious garbage,
 #     determined by file extension.
 #
 #------------------------------------------------------------------------------
@@ -337,7 +338,7 @@ function clean_by_ext()
 #  clean_tempfiles
 #------------------------------------------------------------------------------
 #
-#     Cleans out the whole sequencer64 tree of the obvious garbage,
+#     Cleans out the whole project tree of the obvious garbage,
 #     determined by file name.  This function covers temporary files not
 #     covered by other cleaning functions.
 #
@@ -372,7 +373,7 @@ function clean_tempfiles()
 #  clean_cfgfiles
 #------------------------------------------------------------------------------
 #
-#     Cleans out the sequencer64 tree of GNU configure files.  Used for a
+#     Cleans out the project tree of GNU configure files.  Used for a
 #     full cleaning.
 #
 #------------------------------------------------------------------------------
@@ -392,7 +393,7 @@ function clean_cfgfiles()
 #  clean_gnufiles
 #------------------------------------------------------------------------------
 #
-#     Cleans out the whole sequencer64 tree of GNU droppings.
+#     Cleans out the whole project tree of GNU droppings.
 #
 #     libtoolize files (these may be links).  But careful, though.  We need
 #     the following for "make dist":
@@ -436,7 +437,7 @@ function clean_gnufiles()
 # clean_debfiles
 #------------------------------------------------------------------------------
 #
-#     Cleans out the whole sequencer64 tree of Debian-related files.
+#     Cleans out the whole project tree of Debian-related files.
 #
 #     We could run "dh_clean" instead.
 #
@@ -460,7 +461,7 @@ function clean_debfiles()
 #  clean_doxfiles
 #------------------------------------------------------------------------------
 #
-#     Cleans out the whole sequencer64 tree of Doxygen-related files.  Be
+#     Cleans out the whole project tree of Doxygen-related files.  Be
 #     careful, as this function removes directories named "html" and
 #     "latex".  If you have actual need for such directories, rename them
 #     (e.g. "HTML" and "LaTeX").
@@ -484,7 +485,7 @@ function clean_doxfiles()
 #  clean_winfiles
 #------------------------------------------------------------------------------
 #
-#     Cleans out the whole sequencer64 tree of Microsoft droppings,
+#     Cleans out the whole project tree of Microsoft droppings,
 #     including those deucedly large SDF database (!) files.  "tds" files
 #     are Borland debugging symbol files.
 #
@@ -513,7 +514,7 @@ tds testsettings unloaded user"
 #  clean_testapps
 #------------------------------------------------------------------------------
 #
-#     Cleans out the whole sequencer64 tree of the known unit-test and
+#     Cleans out the whole project tree of the known unit-test and
 #     integration test applications.
 #
 #------------------------------------------------------------------------------
@@ -592,7 +593,7 @@ function save_config_make()
 }
 
 #******************************************************************************
-# strap_functions (sequencer64)
+# strap_functions (project)
 #------------------------------------------------------------------------------
 # vim: ts=3 sw=3 et ft=sh
 #------------------------------------------------------------------------------

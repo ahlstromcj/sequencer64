@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-15
+ * \updates       2015-10-16
  * \license       GNU GPLv2 or above
  *
  *  This class has way too many members.
@@ -368,41 +368,21 @@ public:
     void init_jack ();
     void deinit_jack ();
 
-    void add_sequence (sequence * a_seq, int a_perf);
-    void delete_sequence (int a_num);
-    bool is_sequence_in_edit (int a_num);
-    void clear_sequence_triggers (int a_seq);
+    void add_sequence (sequence * seq, int perf);
+    void delete_sequence (int seq);
+    bool is_sequence_in_edit (int seq);
+    void clear_sequence_triggers (int seq);
 
     /**
-     *  Provides common code to check for the bounds of a sequence number.
-     *
-     * \return
-     *      Returns true if the sequence number is valid.
+     * \getter m_tick
      */
-
-    bool is_sequence_valid (int a_sequence) const
-    {
-        return a_sequence >= 0 || a_sequence < c_max_sequence;
-    }
-
-    /**
-     *  Provides common code to check for the bounds of a sequence number.
-     *
-     * \return
-     *      Returns true if the sequence number is invalid.
-     */
-
-    bool is_sequence_invalid (int a_sequence) const
-    {
-        return ! is_sequence_valid(a_sequence);
-    }
 
     long get_tick () const
     {
         return m_tick;
     }
 
-    void set_left_tick (long a_tick);       // too long to inline
+    void set_left_tick (long tick);       // too long to inline
 
     /**
      * \getter m_left_tick
@@ -417,9 +397,9 @@ public:
      * \setter m_starting_tick
      */
 
-    void set_starting_tick (long a_tick)
+    void set_starting_tick (long tick)
     {
-        m_starting_tick = a_tick;
+        m_starting_tick = tick;
     }
 
     /**
@@ -431,7 +411,7 @@ public:
         return m_starting_tick;
     }
 
-    void set_right_tick (long a_tick);          // too long to inline
+    void set_right_tick (long tick);          // too long to inline
 
     /**
      * \getter m_right_tick
@@ -442,20 +422,18 @@ public:
         return m_right_tick;
     }
 
-    void move_triggers (bool a_direction);
+    void move_triggers (bool direction);
     void copy_triggers ();
     void push_trigger_undo ();
     void pop_trigger_undo ();
 
-    void print ();
+    midi_control * get_midi_control_toggle (unsigned int seq);
+    midi_control * get_midi_control_on (unsigned int seq);
+    midi_control * get_midi_control_off (unsigned int seq);
 
-    midi_control * get_midi_control_toggle (unsigned int a_seq);
-    midi_control * get_midi_control_on (unsigned int a_seq);
-    midi_control * get_midi_control_off (unsigned int a_seq);
+    void handle_midi_control (int control, bool state);
 
-    void handle_midi_control (int a_control, bool a_state);
-
-    const std::string & get_screen_set_notepad (int a_screen_set) const;
+    const std::string & get_screen_set_notepad (int screen_set) const;
 
     /**
      *  Returns the notepad text for the current screen-set.
@@ -477,7 +455,7 @@ public:
         set_screen_set_notepad(m_screen_set, note);
     }
 
-    void set_screenset (int a_ss);      // a little much to inline
+    void set_screenset (int ss);      // a little much to inline
 
     /**
      * \getter m_screen_set
@@ -500,7 +478,7 @@ public:
     }
 
     void mute_group_tracks ();
-    void select_and_mute_group (int a_g_group);
+    void select_and_mute_group (int g_group);
 
     /**
      * \setter m_mode_group
@@ -520,15 +498,15 @@ public:
     {
         m_mode_group = false;
     }
-    void select_group_mute (int a_g_mute);
+    void select_group_mute (int g_mute);
     void set_mode_group_learn ();
     void unset_mode_group_learn ();
     bool is_group_learning (void)
     {
         return m_mode_group_learn;
     }
-    void select_mute_group (int a_group);
-    void start (bool a_state);
+    void select_mute_group (int group);
+    void start (bool state);
     void stop ();
 
     /*
@@ -537,48 +515,47 @@ public:
 
     void start_jack ();
     void stop_jack ();
-    void position_jack (bool a_state);
+    void position_jack (bool state);
 
     void off_sequences ();
     void all_notes_off ();
 
-    void set_active (int a_sequence, bool a_active);
-    void set_was_active (int a_sequence);
-    bool is_active (int a_sequence);
-    bool is_dirty_main (int a_sequence);
-    bool is_dirty_edit (int a_sequence);
-    bool is_dirty_perf (int a_sequence);
-    bool is_dirty_names (int a_sequence);
-
-    void new_sequence (int a_sequence);
-    sequence * get_sequence (int a_sequence);
+    void set_active (int seq, bool active);
+    void set_was_active (int seq);
+    bool is_active (int seq);
+    bool is_dirty_main (int seq);
+    bool is_dirty_edit (int seq);
+    bool is_dirty_perf (int seq);
+    bool is_dirty_names (int seq);
+    void new_sequence (int seq);
+    sequence * get_sequence (int seq);
     void reset_sequences ();
 
     /**
      *  Plays all notes to the current tick.
      */
 
-    void play (long a_tick);
-    void set_orig_ticks (long a_tick);
-    void set_bpm (int a_bpm);           /* more than just a setter  */
+    void play (long tick);
+    void set_orig_ticks (long tick);
+    void set_bpm (int bpm);           /* more than just a setter  */
     int get_bpm ();                     /* get BPM from the buss    */
 
     /**
      * \setter m_looping
      */
 
-    void set_looping (bool a_looping)
+    void set_looping (bool looping)
     {
-        m_looping = a_looping;
+        m_looping = looping;
     }
 
-    void set_sequence_control_status (int a_status);
-    void unset_sequence_control_status (int a_status);
-    void sequence_playing_toggle (int a_sequence);
-    void sequence_playing_on (int a_sequence);
-    void sequence_playing_off (int a_sequence);
-    void set_group_mute_state (int a_g_track, bool a_mute_state);
-    bool get_group_mute_state (int a_g_track);
+    void set_sequence_control_status (int status);
+    void unset_sequence_control_status (int status);
+    void sequence_playing_toggle (int seq);
+    void sequence_playing_on (int seq);
+    void sequence_playing_off (int seq);
+    void set_group_mute_state (int g_track, bool mute_state);
+    bool get_group_mute_state (int g_track);
     void mute_all_tracks ();
     void output_func ();
     void input_func ();
@@ -587,15 +564,15 @@ public:
     /**
      *  Calculates the offset into the screen sets.
      *
-     *  Sets m_offset = a_offset * c_mainwnd_rows * c_mainwnd_cols;
+     *  Sets m_offset = offset * c_mainwnd_rows * c_mainwnd_cols;
      *
-     * \param a_offset
+     * \param offset
      *      The desired offset.
      */
 
-    void set_offset (int a_offset)
+    void set_offset (int offset)
     {
-        m_offset = a_offset * c_mainwnd_rows * c_mainwnd_cols;
+        m_offset = offset * c_mainwnd_rows * c_mainwnd_cols;
     }
 
     void save_playing_state ();
@@ -775,6 +752,41 @@ public:
 
 private:
 
+    bool is_seq_valid (int seq) const;
+    bool is_mseq_valid (int seq) const;
+
+    /**
+     *  Checks the parameter against c_midi_controls.
+     *
+     * \param seq
+     *      The value that should be in the c_midi_xxx range.
+     *
+     * \return
+     *      Returns true if the parameter is valid.  For this function, no
+     *      error print-out is generated.
+     */
+
+    bool is_midi_control_valid (unsigned int seq) const
+    {
+        return seq < static_cast<unsigned int>(c_midi_controls);
+    }
+
+    /**
+     *  Checks the screenset against c_max_sets.
+     *
+     * \param screenset
+     *      The prospective screenset value.
+     *
+     * \return
+     *      Returns true if the parameter is valid.  For this function, no
+     *      error print-out is generated.
+     */
+
+    bool is_screenset_valid (int screenset) const
+    {
+        return screenset >= 0 && screenset < c_max_sets;
+    }
+
     /**
      * \setter m_running
      */
@@ -793,7 +805,7 @@ private:
         m_playback_mode = playbackmode;
     }
 
-    void inner_start (bool a_state);
+    void inner_start (bool state);
     void inner_stop ();
     void set_all_key_events ();
     void set_all_key_groups ();
@@ -807,8 +819,8 @@ private:
  * Global functions defined in perform.cpp.
  */
 
-extern void * output_thread_func (void * a_p);
-extern void * input_thread_func (void * a_p);
+extern void * output_thread_func (void * p);
+extern void * input_thread_func (void * p);
 
 }           // namespace seq64
 

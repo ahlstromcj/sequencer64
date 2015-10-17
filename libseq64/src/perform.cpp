@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-15
+ * \updates       2015-10-16
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the most important single class in Sequencer64, as
@@ -453,7 +453,7 @@ perform::set_right_tick (long a_tick)
  *      be airtight.  This bug was caught by gcc 4.8.3 on CentOS, but not on
  *      gcc 4.9.3 on Debian Sid!
  *
- * \param a_seq
+ * \param seq
  *      The number or index of the pattern/sequence to add.
  *
  * \param a_perf
@@ -462,7 +462,7 @@ perform::set_right_tick (long a_tick)
  */
 
 void
-perform::add_sequence (sequence * a_seq, int a_perf)
+perform::add_sequence (sequence * seq, int a_perf)
 {
     if (a_perf >= 0 && a_perf < m_sequence_max)
     {
@@ -472,8 +472,8 @@ perform::add_sequence (sequence * a_seq, int a_perf)
             {
                 if (! is_active(i))
                 {
-                    m_seqs[i] = a_seq;
-                    if (not_nullptr(a_seq))
+                    m_seqs[i] = seq;
+                    if (not_nullptr(seq))
                         set_active(i, true);
                     break;
                 }
@@ -481,8 +481,8 @@ perform::add_sequence (sequence * a_seq, int a_perf)
         }
         else
         {
-            m_seqs[a_perf] = a_seq;         /* log the sequence         */
-            if (not_nullptr(a_seq))
+            m_seqs[a_perf] = seq;         /* log the sequence         */
+            if (not_nullptr(seq))
                 set_active(a_perf, true);   /* make it active           */
         }
     }
@@ -490,44 +490,51 @@ perform::add_sequence (sequence * a_seq, int a_perf)
 
 /**
  *  Sets or unsets the active state of the given pattern/sequence number.
+ *
+ * \param seq
+ *      Provides the prospective sequence number.
+ *
+ * \param active
+ *      True if the sequence is to be set to the active state.
  */
 
 void
-perform::set_active (int a_sequence, bool a_active)
+perform::set_active (int seq, bool active)
 {
-    if (is_sequence_valid(a_sequence))
+    if (is_seq_valid(seq))
     {
-        if (m_seqs_active[a_sequence] && ! a_active)
-            set_was_active(a_sequence);
+        if (m_seqs_active[seq] && ! active)
+            set_was_active(seq);
 
-        m_seqs_active[a_sequence] = a_active;
+        m_seqs_active[seq] = active;
     }
 }
 
 /**
  *  Sets was-active flags:  main, edit, perf, and names.
  *
- * \param a_sequence
+ * \param seq
  *      The pattern number.  It is checked for invalidity.
  */
 
 void
-perform::set_was_active (int a_sequence)
+perform::set_was_active (int seq)
 {
-    if (is_sequence_valid(a_sequence))
+    if (is_seq_valid(seq))
     {
-        m_was_active_main[a_sequence] = true;
-        m_was_active_edit[a_sequence] = true;
-        m_was_active_perf[a_sequence] = true;
-        m_was_active_names[a_sequence] = true;
+        m_was_active_main[seq] = true;
+        m_was_active_edit[seq] = true;
+        m_was_active_perf[seq] = true;
+        m_was_active_names[seq] = true;
     }
 }
 
 /**
  *  Checks the pattern/sequence for activity.
  *
- * \param a_sequence
- *      The pattern number.  It is checked for invalidity.
+ * \param seq
+ *      The pattern number.  It is checked for invalidity.  This sometimes
+ *      leads to "too many" checks.
  *
  * \return
  *      Returns the value of the active-flag, or false if the pattern was
@@ -535,15 +542,15 @@ perform::set_was_active (int a_sequence)
  */
 
 bool
-perform::is_active (int a_sequence)
+perform::is_active (int seq)
 {
-    return is_sequence_valid(a_sequence) ? m_seqs_active[a_sequence] : false ;
+    return is_seq_valid(seq) ? m_seqs_active[seq] : false ;
 }
 
 /**
  *  Checks the pattern/sequence for main-dirtiness.
  *
- * \param a_sequence
+ * \param seq
  *      The pattern number.  It is checked for invalidity.
  *
  * \return
@@ -552,28 +559,31 @@ perform::is_active (int a_sequence)
  */
 
 bool
-perform::is_dirty_main (int a_sequence)
+perform::is_dirty_main (int seq)
 {
     bool was_active = false;
-    if (is_sequence_valid(a_sequence))
-    {
-        if (is_active(a_sequence))
+
+// Leads to endless messages at startup.  Why?
+//
+//  if (is_mseq_valid(seq))
+//  {
+        if (is_active(seq))
         {
-            was_active = m_seqs[a_sequence]->is_dirty_main();
+            was_active = m_seqs[seq]->is_dirty_main();
         }
         else
         {
-            was_active = m_was_active_main[a_sequence];
-            m_was_active_main[a_sequence] = false;
+            was_active = m_was_active_main[seq];
+            m_was_active_main[seq] = false;
         }
-    }
+//  }
     return was_active;
 }
 
 /**
  *  Checks the pattern/sequence for edit-dirtiness.
  *
- * \param a_sequence
+ * \param seq
  *      The pattern number.  It is checked for invalidity.
  *
  * \return
@@ -582,19 +592,19 @@ perform::is_dirty_main (int a_sequence)
  */
 
 bool
-perform::is_dirty_edit (int a_sequence)
+perform::is_dirty_edit (int seq)
 {
     bool was_active = false;
-    if (is_sequence_valid(a_sequence))
+    if (is_mseq_valid(seq))
     {
-        if (is_active(a_sequence))
+        if (is_active(seq))
         {
-            was_active = m_seqs[a_sequence]->is_dirty_edit();
+            was_active = m_seqs[seq]->is_dirty_edit();
         }
         else
         {
-            was_active = m_was_active_edit[a_sequence];
-            m_was_active_edit[a_sequence] = false;
+            was_active = m_was_active_edit[seq];
+            m_was_active_edit[seq] = false;
         }
     }
     return was_active;
@@ -603,7 +613,7 @@ perform::is_dirty_edit (int a_sequence)
 /**
  *  Checks the pattern/sequence for perf-dirtiness.
  *
- * \param a_sequence
+ * \param seq
  *      The pattern number.  It is checked for invalidity.
  *
  * \return
@@ -612,19 +622,19 @@ perform::is_dirty_edit (int a_sequence)
  */
 
 bool
-perform::is_dirty_perf (int a_sequence)
+perform::is_dirty_perf (int seq)
 {
     bool was_active = false;
-    if (is_sequence_valid(a_sequence))
+    if (is_mseq_valid(seq))
     {
-        if (is_active(a_sequence))
+        if (is_active(seq))
         {
-            was_active = m_seqs[a_sequence]->is_dirty_perf();
+            was_active = m_seqs[seq]->is_dirty_perf();
         }
         else
         {
-            was_active = m_was_active_perf[ a_sequence ];
-            m_was_active_perf[ a_sequence ] = false;
+            was_active = m_was_active_perf[seq];
+            m_was_active_perf[seq] = false;
         }
     }
     return was_active;
@@ -633,7 +643,7 @@ perform::is_dirty_perf (int a_sequence)
 /**
  *  Checks the pattern/sequence for names-dirtiness.
  *
- * \param a_sequence
+ * \param seq
  *      The pattern number.  It is checked for invalidity.
  *
  * \return
@@ -642,19 +652,19 @@ perform::is_dirty_perf (int a_sequence)
  */
 
 bool
-perform::is_dirty_names (int a_sequence)
+perform::is_dirty_names (int seq)
 {
     bool was_active = false;
-    if (is_sequence_valid(a_sequence))
+    if (is_mseq_valid(seq))
     {
-        if (is_active(a_sequence))
+        if (is_active(seq))
         {
-            was_active = m_seqs[a_sequence]->is_dirty_names();
+            was_active = m_seqs[seq]->is_dirty_names();
         }
         else
         {
-            was_active = m_was_active_names[a_sequence];
-            m_was_active_names[a_sequence] = false;
+            was_active = m_was_active_names[seq];
+            m_was_active_names[seq] = false;
         }
     }
     return was_active;
@@ -662,16 +672,22 @@ perform::is_dirty_names (int a_sequence)
 
 /**
  *  Retrieves the actual sequence, based on the pattern/sequence number.
+ *
+ * \param seq
+ *      The prospective sequence number.  It is checked for validity.
+ *
+ * \return
+ *      Returns the value of m_seqs[seq] if seq is valid.  Otherwise, a null
+ *      pointer is returned.
  */
 
 sequence *
-perform::get_sequence (int a_sequence)
+perform::get_sequence (int seq)
 {
-    /*
-     * Needs a validity check.
-     */
-
-    return m_seqs[a_sequence];
+    if (is_mseq_valid(seq))
+        return m_seqs[seq];
+    else
+        return nullptr;
 }
 
 /**
@@ -719,17 +735,63 @@ perform::get_bpm ()
 }
 
 /**
+ *  Provides common code to check for the bounds of a sequence number.
+ *  Also see the function is_mseq_valid(), which also checks the pointer
+ *  stored in the m_seq[] array.
+ *
+ * \param seq
+ *      The sequencer number, in interval [0, c_max_sequence).
+ *
+ * \return
+ *      Returns true if the sequence number is valid.
+ */
+
+bool
+perform::is_seq_valid (int seq) const
+{
+    if (seq >= 0 || seq < c_max_sequence)
+        return true;
+    else
+    {
+        errprintf("is_seq_valid(): seq = %d out of range", seq);
+        return false;
+    }
+}
+
+/**
+ *  Validates the sequence number, which is important since they're currently
+ *  used as array indices.  It also evaluates the m_seq[seq] pointer value.
+ */
+
+bool
+perform::is_mseq_valid (int seq) const
+{
+    bool result = is_seq_valid(seq);
+    if (result)
+    {
+        result = not_nullptr(m_seqs[seq]);
+        if (! result)
+            errprintf("is_mseq_valid(): m_seqs[%d] is null", seq);
+    }
+    return result;
+}
+
+/**
  *  Deletes a pattern/sequence by number.
  */
 
 void
-perform::delete_sequence (int a_num)
+perform::delete_sequence (int seq)
 {
-    set_active(a_num, false);
-    if (m_seqs[a_num] != nullptr && ! m_seqs[a_num]->get_editing())
+    if (is_mseq_valid(seq))
     {
-        m_seqs[a_num]->set_playing(false);
-        delete m_seqs[a_num];
+        set_active(seq, false);
+        if (! m_seqs[seq]->get_editing())
+        {
+            m_seqs[seq]->set_playing(false);
+            delete m_seqs[seq];
+            m_seqs[seq] = nullptr;
+        }
     }
 }
 
@@ -739,9 +801,12 @@ perform::delete_sequence (int a_num)
  */
 
 bool
-perform::is_sequence_in_edit (int a_num)
+perform::is_sequence_in_edit (int seq)
 {
-    return m_seqs[a_num] != nullptr && m_seqs[a_num]->get_editing();
+    if (is_mseq_valid(seq))
+        return m_seqs[seq]->get_editing();
+    else
+        return false;
 }
 
 /**
@@ -752,17 +817,20 @@ perform::is_sequence_in_edit (int a_num)
  */
 
 void
-perform::new_sequence (int a_sequence)
+perform::new_sequence (int seq)
 {
-    m_seqs[a_sequence] = new sequence();
-    m_seqs[a_sequence]->set_master_midi_bus(&m_master_bus);
-    set_active(a_sequence, true);
+    if (is_seq_valid(seq))
+    {
+        m_seqs[seq] = new sequence();
+        m_seqs[seq]->set_master_midi_bus(&m_master_bus);
+        set_active(seq, true);
+    }
 }
 
 /**
  *  Retrieves a value from m_midi_cc_toggle[].
  *
- * \param a_seq
+ * \param seq
  *      Provides a control value (such as c_midi_control_bpm_up) to use to
  *      retrieve the desired midi_control object.  Note that this value is
  *      unsigned simply to make the legality check of the parameter
@@ -770,74 +838,37 @@ perform::new_sequence (int a_sequence)
  */
 
 midi_control *
-perform::get_midi_control_toggle (unsigned int a_seq)
+perform::get_midi_control_toggle (unsigned int seq)
 {
-    /*
-     * Common code.  c_midi_controls looks like a maximum value
-     * (exclusive).
-     */
-
-    if (a_seq >= static_cast<unsigned int>(c_midi_controls))
-        return nullptr;
-
-    return &m_midi_cc_toggle[a_seq];
+    return is_midi_control_valid(seq) ? &m_midi_cc_toggle[seq] : nullptr ;
 }
 
 /**
  *  Retrieves a value from m_midi_cc_on[].
  *
- * \param a_seq
+ * \param seq
  *      Provides a control value (such as c_midi_control_bpm_up) to use to
  *      retrieve the desired midi_control object.
  */
 
 midi_control *
-perform::get_midi_control_on (unsigned int a_seq)
+perform::get_midi_control_on (unsigned int seq)
 {
-    /*
-     * Common code
-     */
-
-    if (a_seq >= static_cast<unsigned int>(c_midi_controls))
-        return nullptr;
-
-    return &m_midi_cc_on[a_seq];
+    return is_midi_control_valid(seq) ? &m_midi_cc_on[seq] : nullptr ;
 }
 
 /**
  *  Retrieves a value from m_midi_cc_off[].
  *
- * \param a_seq
+ * \param seq
  *      Provides a control value (such as c_midi_control_bpm_up) to use to
  *      retrieve the desired midi_control object.
  */
 
 midi_control *
-perform::get_midi_control_off (unsigned int a_seq)
+perform::get_midi_control_off (unsigned int seq)
 {
-    /*
-     * Common code
-     */
-
-    if (a_seq >= static_cast<unsigned int>(c_midi_controls))
-        return nullptr;
-
-    return &m_midi_cc_off[a_seq];
-}
-
-/**
- *  An information printing function with its body commented out.
- */
-
-void
-perform::print ()
-{
-    // for( int i=0; i<m_numSeq; i++ )
-    // {
-    //  printf("Sequence %d\n", i);
-    //  m_seqs[i]->print();
-    // }
-    //  m_master_bus.print();
+    return is_midi_control_valid(seq) ? &m_midi_cc_off[seq] : nullptr ;
 }
 
 /**
@@ -856,7 +887,7 @@ perform::print ()
 void
 perform::set_screen_set_notepad (int screenset, const std::string & notepad)
 {
-    if (screenset >= 0 && screenset < c_max_sets)
+    if (is_screenset_valid(screenset))
         m_screen_set_notepad[screenset] = notepad;
 }
 
@@ -876,7 +907,7 @@ const std::string &
 perform::get_screen_set_notepad (int screenset) const
 {
     static std::string s_empty;
-    if ((screenset >= 0) && screenset < c_max_sets)
+    if (is_screenset_valid(screenset))
         return m_screen_set_notepad[screenset];
     else
         return s_empty;
@@ -886,21 +917,20 @@ perform::get_screen_set_notepad (int screenset) const
  *  Sets the m_screen_set value (the index or ID of the current screen
  *  set).
  *
- * \param a_ss
+ * \param ss
  *      The index of the desired string set.  It is forced to range from
  *      0 to c_max_sets - 1.
  */
 
 void
-perform::set_screenset (int a_ss)
+perform::set_screenset (int ss)
 {
-    if (a_ss < 0)
-        a_ss = c_max_sets - 1;
+    if (ss < 0)
+        ss = c_max_sets - 1;
+    else if (ss >= c_max_sets)
+        ss = 0;
 
-    if (a_ss >= c_max_sets)
-        a_ss = 0;
-
-    m_screen_set = a_ss;
+    m_screen_set = ss;
 }
 
 /**
@@ -963,14 +993,14 @@ perform::set_playing_screenset ()
  *  This function just runs down the list of sequences and has them dump
  *  their events.
  *
- * \param a_tick
+ * \param tick
  *      Provides the tick at which to start playing.
  */
 
 void
-perform::play (long a_tick)
+perform::play (long tick)
 {
-    m_tick = a_tick;
+    m_tick = tick;
     for (int i = 0; i < m_sequence_max; i++)
     {
         if (is_active(i))
@@ -989,7 +1019,7 @@ perform::play (long a_tick)
                 if
                 (
                     m_seqs[i]->get_queued() &&
-                    m_seqs[i]->get_queued_tick() <= a_tick
+                    m_seqs[i]->get_queued_tick() <= tick
                 )
                 {
                     m_seqs[i]->play
@@ -998,7 +1028,7 @@ perform::play (long a_tick)
                     );
                     m_seqs[i]->toggle_playing();
                 }
-                m_seqs[i]->play(a_tick, m_playback_mode);
+                m_seqs[i]->play(tick, m_playback_mode);
             }
         }
     }
@@ -1009,18 +1039,18 @@ perform::play (long a_tick)
  *  For every pattern/sequence that is active, sets the "original ticks"
  *  value for the pattern.
  *
- * \param a_tick
+ * \param tick
  */
 
 void
-perform::set_orig_ticks (long a_tick)
+perform::set_orig_ticks (long tick)
 {
     for (int i = 0; i < m_sequence_max; i++)
     {
         if (is_active(i))
         {
             if (not_nullptr_assert(m_seqs[i], "set_orig_ticks"))
-                m_seqs[i]->set_orig_tick(a_tick);
+                m_seqs[i]->set_orig_tick(tick);
         }
     }
 }
@@ -1028,18 +1058,18 @@ perform::set_orig_ticks (long a_tick)
 /**
  *  Clears the patterns/sequence for the given sequence, if it is active.
  *
- * \param a_seq
+ * \param seq
  *      Provides the desired sequence.  Hopefull, the is_active() function
  *      validates this value.
  */
 
 void
-perform::clear_sequence_triggers (int a_seq)
+perform::clear_sequence_triggers (int seq)
 {
-    if (is_active(a_seq))
+    if (is_active(seq))
     {
-        if (not_nullptr_assert(m_seqs[a_seq], "clear_sequence_triggers"))
-            m_seqs[a_seq]->clear_triggers();
+        if (not_nullptr_assert(m_seqs[seq], "clear_sequence_triggers"))
+            m_seqs[seq]->clear_triggers();
     }
 }
 
@@ -2125,15 +2155,15 @@ perform::unset_sequence_control_status (int a_status)
  */
 
 void
-perform::sequence_playing_toggle (int a_sequence)
+perform::sequence_playing_toggle (int sequence)
 {
-    if (is_active(a_sequence))
+    if (is_active(sequence))
     {
-        if (not_nullptr_assert(m_seqs[a_sequence], "sequence_playing_toggle"))
+        if (not_nullptr_assert(m_seqs[sequence], "sequence_playing_toggle"))
         {
             if (m_control_status & c_status_queue)
             {
-                m_seqs[a_sequence]->toggle_queued();
+                m_seqs[sequence]->toggle_queued();
             }
             else
             {
@@ -2142,7 +2172,7 @@ perform::sequence_playing_toggle (int a_sequence)
                     unset_sequence_control_status(c_status_replace);
                     off_sequences();
                 }
-                m_seqs[a_sequence]->toggle_playing();
+                m_seqs[sequence]->toggle_playing();
             }
         }
     }
@@ -2153,43 +2183,43 @@ perform::sequence_playing_toggle (int a_sequence)
  */
 
 void
-perform::sequence_playing_on (int a_sequence)
+perform::sequence_playing_on (int sequence)
 {
-    if (is_active(a_sequence))
+    if (is_active(sequence))
     {
         if
         (
             m_mode_group &&
             (m_playing_screen == m_screen_set) &&
-            (a_sequence >= (m_playing_screen * c_seqs_in_set)) &&
-            (a_sequence < ((m_playing_screen + 1) * c_seqs_in_set))
+            (sequence >= (m_playing_screen * c_seqs_in_set)) &&
+            (sequence < ((m_playing_screen + 1) * c_seqs_in_set))
         )
         {
             m_tracks_mute_state
             [
-                a_sequence - m_playing_screen * c_seqs_in_set
+                sequence - m_playing_screen * c_seqs_in_set
             ] = true;
         }
-        if (not_nullptr_assert(m_seqs[a_sequence], "sequence_playing_on"))
+        if (not_nullptr_assert(m_seqs[sequence], "sequence_playing_on"))
         {
-            if (! m_seqs[a_sequence]->get_playing())
+            if (! m_seqs[sequence]->get_playing())
             {
                 if (m_control_status & c_status_queue)
                 {
-                    if (! m_seqs[a_sequence]->get_queued())
-                        m_seqs[a_sequence]->toggle_queued();
+                    if (! m_seqs[sequence]->get_queued())
+                        m_seqs[sequence]->toggle_queued();
                 }
                 else
-                    m_seqs[a_sequence]->set_playing(true);
+                    m_seqs[sequence]->set_playing(true);
             }
             else
             {
                 if
-                (   m_seqs[a_sequence]->get_queued() &&
+                (   m_seqs[sequence]->get_queued() &&
                     (m_control_status & c_status_queue)
                 )
                 {
-                    m_seqs[a_sequence]->toggle_queued();
+                    m_seqs[sequence]->toggle_queued();
                 }
             }
         }
@@ -2201,41 +2231,41 @@ perform::sequence_playing_on (int a_sequence)
  */
 
 void
-perform::sequence_playing_off (int a_sequence)
+perform::sequence_playing_off (int sequence)
 {
-    if (is_active(a_sequence))
+    if (is_active(sequence))
     {
         if
         (
             m_mode_group &&
             (m_playing_screen == m_screen_set) &&
-            (a_sequence >= (m_playing_screen * c_seqs_in_set)) &&
-            (a_sequence < ((m_playing_screen + 1) * c_seqs_in_set))
+            (sequence >= (m_playing_screen * c_seqs_in_set)) &&
+            (sequence < ((m_playing_screen + 1) * c_seqs_in_set))
         )
         {
-            m_tracks_mute_state[a_sequence-m_playing_screen*c_seqs_in_set] =
+            m_tracks_mute_state[sequence-m_playing_screen*c_seqs_in_set] =
                false;
         }
-        if (not_nullptr_assert(m_seqs[a_sequence], "sequence_playing_off"))
+        if (not_nullptr_assert(m_seqs[sequence], "sequence_playing_off"))
         {
-            if (m_seqs[a_sequence]->get_playing())
+            if (m_seqs[sequence]->get_playing())
             {
                 if (m_control_status & c_status_queue)
                 {
-                    if (! m_seqs[a_sequence]->get_queued())
-                        m_seqs[a_sequence]->toggle_queued();
+                    if (! m_seqs[sequence]->get_queued())
+                        m_seqs[sequence]->toggle_queued();
                 }
                 else
-                    m_seqs[a_sequence]->set_playing(false);
+                    m_seqs[sequence]->set_playing(false);
             }
             else
             {
                 if
                 (
-                    m_seqs[a_sequence]->get_queued() &&
+                    m_seqs[sequence]->get_queued() &&
                     (m_control_status & c_status_queue)
                 )
-                    m_seqs[a_sequence]->toggle_queued();
+                    m_seqs[sequence]->toggle_queued();
             }
         }
     }

@@ -1,16 +1,16 @@
 dnl ***************************************************************************
-dnl configure.ac (sequencer64)
+dnl configure.ac (Sequencer64)
 dnl ---------------------------------------------------------------------------
 dnl
 dnl \file          configure.ac
-dnl \library       sequencer64
+dnl \library       Sequencer64
 dnl \author        Chris Ahlstrom
 dnl \date          2015-09-11
-dnl \update        2015-10-14
+dnl \update        2015-10-17
 dnl \version       $Revision$
 dnl \license       $XPC_SUITE_GPL_LICENSE$
 dnl
-dnl   This script is for the sequencer64 project, a repacking and fixing
+dnl   This script is for the Sequencer64 project, a repacking and fixing
 dnl   of seq24 v0.9.2 and a direct fork from sequencer24.
 dnl
 dnl   Process this file with autoconf to produce a configure script.
@@ -19,7 +19,7 @@ dnl ---------------------------------------------------------------------------
 
 AC_PREREQ(2.60)
 AC_REVISION($Revision: 0.9$)dnl
-AC_INIT(sequencer64, [0.9.9], [ahlstromcj@gmail.com])
+AC_INIT(Sequencer64, [0.9.9], [ahlstromcj@gmail.com])
 AC_CONFIG_AUX_DIR([aux-files])
 
 dnl Do we need the following?  No, but it cleans up a lot of warning messages.
@@ -38,12 +38,7 @@ dnl New for autoconf 2.60, prevents spurious datarootdir warnings.
 
 AC_DEFUN([AC_DATAROOTDIR_CHECKED])
 
-dnl 1. Package version information.  The first item is the name that covers
-dnl    a number of libraries, all of whose names start with "sequencer64".
-dnl    We have to set up a "suite" name; since PACKAGE is defined to be the
-dnl    name of the current project, we can't use that value in the package
-dnl    configuration files.  It is replaced by SEQUENCER64_SUITE_NAME,
-dnl    which covers all of the sub-projects.
+dnl 1. Package version information.
 
 PACKAGE=sequencer64
 AC_DEFINE_UNQUOTED(PACKAGE, "$PACKAGE")
@@ -279,8 +274,13 @@ AM_PATH_ALSA(0.9.0)
 dnl Check for the presence of Doxygen.  Not an error to be missing, but
 dnl we don't want to try to build documentation if it is not present.
 dnl See http://www.gnu.org/software/autoconf-archive/ax_prog_doxygen.html
+dnl
+dnl AC_PROG_DOXYGEN
 
-AC_PROG_DOXYGEN
+AC_CHECK_PROGS([DOXYGEN], [doxygen])
+if test -z "$DOXYGEN";
+   then AC_MSG_WARN([Doxygen not found - continuing without Doxygen support])
+fi
 
 dnl 5.b. gcc support.
 
@@ -423,7 +423,7 @@ dnl #define API_VERSION "0.9"             // already defined on command line
 
 AH_TOP(
 
-#define VERSION_DATE_SHORT "2015-10-14"
+#define VERSION_DATE_SHORT "2015-10-17"
 #define VERSION "0.9.9.5"
 
 )
@@ -463,6 +463,13 @@ dnl conditional compilation.
 CFLAGS="$CFLAGS $COMMONFLAGS"
 CXXFLAGS="$CFLAGS -std=c++11 -Wno-variadic-macros -Wno-deprecated-declarations"
 
+dnl Set up the Makefiles.  First, add Doxygen support conditionally, not using
+dnl doc/dox/Makefile.  Then do the rest.
+
+AM_CONDITIONAL([HAVE_DOXYGEN],
+    [test -n "$DOXYGEN"])AM_COND_IF([HAVE_DOXYGEN],
+    [AC_CONFIG_FILES([doc/dox/Makefile])])
+
 AC_CONFIG_FILES([
  Makefile
  libseq64/Makefile
@@ -475,9 +482,8 @@ AC_CONFIG_FILES([
  seq_portmidi/include/Makefile
  seq_portmidi/src/Makefile
  resources/pixmaps/Makefile
- sequencer64/Makefile
+ Sequencer64/Makefile
  man/Makefile
- doc/dox/Makefile
  ])
 
 AC_OUTPUT

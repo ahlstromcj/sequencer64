@@ -6,7 +6,7 @@
 # \library     sequencer64
 # \author      Chris Ahlstrom
 # \date        2015-09-11
-# \updates     2015-10-07
+# \updates     2015-10-17
 # \version     $Revision$
 # \license     $XPC_SUITE_GPL_LICENSE$
 #
@@ -124,10 +124,8 @@ libtool: $(LIBTOOL_DEPS)
 # SUBDIRS
 #-----------------------------------------------------------------------------
 
-SUBDIRS = resources/pixmaps \
- libseq64 seq_gtkmm2 seq_portmidi \
- sequencer64 \
- man doc/dox
+SUBDIRS = resources/pixmaps libseq64 seq_gtkmm2 seq_portmidi \
+ Sequencer64 man doc/dox
 
 #*****************************************************************************
 # DIST_SUBDIRS

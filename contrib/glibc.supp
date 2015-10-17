@@ -1,0 +1,25 @@
+# -*- tab-width: 3; indent-tabs-mode: nil -*-
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Cond
+   fun:__GI___strcasecmp_l
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Value8
+   fun:__GI___strcasecmp_l
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Addr8
+   fun:__strspn_sse42
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Cond
+   fun:__strspn_sse42
+}

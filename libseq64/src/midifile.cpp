@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-14
+ * \updates       2015-10-17
  * \license       GNU GPLv2 or above
  *
  *  For a quick guide to the MIDI format, see, for example:
@@ -242,10 +242,20 @@ midifile::read_varinum ()
 \endverbatim
  *
  *  What do other applications use for specifying port/channel?
+ *
+ * \param a_perf
+ *      Provides a reference to the perform object into which sequences/tracks
+ *      are to be added.
+ *
+ * \param screenset
+ *      The screen-set to be updated.
+ *
+ * \return
+ *      Returns true if the parsing succeeded.
  */
 
 bool
-midifile::parse (perform & a_perf, int a_screen_set)
+midifile::parse (perform & a_perf, int screenset)
 {
     bool result = true;
     std::ifstream file
@@ -309,7 +319,7 @@ midifile::parse (perform & a_perf, int a_screen_set)
         TrackLength = read_long();
         if (ID == 0x4D54726B)                       /* magic number 'MTrk'   */
         {
-            unsigned short perf = 0;
+            unsigned short seqnum = 0;
             unsigned char status = 0;
             unsigned char data[2];
             unsigned char laststatus;
@@ -363,14 +373,10 @@ midifile::parse (perform & a_perf, int a_screen_set)
                 case EVENT_AFTERTOUCH:
                 case EVENT_CONTROL_CHANGE:
                 case EVENT_PITCH_WHEEL:
-
                     data[0] = read_byte();
                     data[1] = read_byte();
-
-                    /* some files have velocity == 0 as Note Off */
-
                     if ((status & 0xF0) == EVENT_NOTE_ON && data[1] == 0)
-                        e.set_status(EVENT_NOTE_OFF);
+                        e.set_status(EVENT_NOTE_OFF);     /* vel 0==note off  */
 
                     e.set_data(data[0], data[1]);         /* set data and add */
                     seq.add_event(&e);
@@ -379,15 +385,13 @@ midifile::parse (perform & a_perf, int a_screen_set)
 
                 case EVENT_PROGRAM_CHANGE:                /* one data item    */
                 case EVENT_CHANNEL_PRESSURE:
-
                     data[0] = read_byte();
                     e.set_data(data[0]);                  /* set data and add */
                     seq.add_event(&e);
                     seq.set_midi_channel(status & 0x0F);  /* set midi channel */
                     break;
 
-                case 0xF0:              /* Meta MIDI events, should be FF !!  */
-
+                case 0xF0:                                /* Meta MIDI events */
                     if (status == 0xFF)
                     {
                         unsigned char type = read_byte(); /* get meta type    */
@@ -447,7 +451,6 @@ midifile::parse (perform & a_perf, int a_screen_set)
                             break;
 
                         case 0x2F:                       /* Trk Done          */
-
                             /*
                              * If Delta is 0, then another event happened at
                              * the same time as track-end.  Class sequence
@@ -475,7 +478,7 @@ midifile::parse (perform & a_perf, int a_screen_set)
                             break;
 
                         case 0x00:                        /* sequence number */
-                            perf = (len == 0x00) ? 0 : read_short();
+                            seqnum = (len == 0x00) ? 0 : read_short();
                             break;
 
                         default:
@@ -507,7 +510,7 @@ midifile::parse (perform & a_perf, int a_screen_set)
 
             /* Sequence has been filled, add it to the performance  */
 
-            a_perf.add_sequence(&seq, perf + (a_screen_set * c_seqs_in_set));
+            a_perf.add_sequence(&seq, seqnum + (screenset * c_seqs_in_set));
         }
         else
         {
@@ -517,9 +520,8 @@ midifile::parse (perform & a_perf, int a_screen_set)
              */
 
             if (curtrack > 0)                          /* MThd comes first */
-            {
                 errprintf("unsupported MIDI chunk, skipping: %8lX\n", ID);
-            }
+
             m_pos += TrackLength;
         }
     }                                                   /* for each track  */
@@ -973,11 +975,19 @@ midifile::prop_item_size (long data_length) const
 
 /**
  *  Write the whole MIDI data and Seq24 information out to the file.
+ *
+ * \param a_perf
+ *      Provides the object that will contain and manage the entire
+ *      performance.
+ *
+ * \return
+ *      Returns true if the write operations succeeded.
  */
 
 bool
 midifile::write (perform & a_perf)
 {
+    bool result = true;
     int numtracks = 0;
     printf("[Writing MIDI file, %d ppqn]\n", m_ppqn);
     for (int i = 0; i < c_max_sequence; i++) /* get number of active tracks */
@@ -999,51 +1009,65 @@ midifile::write (perform & a_perf)
     {
         if (a_perf.is_active(curtrack))
         {
-            sequence & seq = *a_perf.get_sequence(curtrack);
-#if defined SEQ64_USE_MIDI_VECTOR
-            midi_vector lst(seq);
-#else
-            midi_list lst(seq);
-#endif
-            seq.fill_container(lst, curtrack);
-            write_long(0x4D54726B);         /* magic number 'MTrk'          */
-            write_long(lst.size());
-            while (! lst.done())            /* write the track data         */
+            sequence * s = a_perf.get_sequence(curtrack);
+            if (not_nullptr(s))
             {
-                /*
-                 * \warning
-                 *      This writing backwards reverses the order of some
-                 *      events that are otherwise equivalent in time-stamp
-                 *      and rank.  But it must be done this way, otherwise
-                 *      many items are backward.
-                 */
+                sequence & seq = *s;
 
-                write_byte(lst.get());  // write_byte(l.back()), l.pop_back()
+#if defined SEQ64_USE_MIDI_VECTOR
+                midi_vector lst(seq);
+#else
+                midi_list lst(seq);
+#endif
+                seq.fill_container(lst, curtrack);
+                write_long(0x4D54726B);     /* magic number 'MTrk'          */
+                write_long(lst.size());
+                while (! lst.done())        /* write the track data         */
+                {
+                    /**
+                     * \warning
+                     *      This writing backwards reverses the order of some
+                     *      events that are otherwise equivalent in time-stamp
+                     *      and rank.  But it must be done this way, otherwise
+                     *      many items are backward.
+                     */
+
+                    write_byte(lst.get());  // write_byte(l.back()), l.pop_back()
+                }
+            }
+            else
+            {
+                result = false;
+                break;
             }
         }
     }
-    (void) write_proprietary_track(a_perf);
-
-    std::ofstream file
-    (
-        m_name.c_str(), std::ios::out | std::ios::binary | std::ios::trunc
-    );
-    if (! file.is_open())
-        return false;
-
-    char file_buffer[SEQ64_MIDI_LINE_MAX];  /* enable bufferization     */
-    file.rdbuf()->pubsetbuf(file_buffer, sizeof file_buffer);
-    for
-    (
-        std::list<unsigned char>::iterator i = m_char_list.begin();
-        i != m_char_list.end(); i++
-    )
+    if (result)
     {
-        char c = *i;
-        file.write(&c, 1);
+        (void) write_proprietary_track(a_perf);
+        std::ofstream file
+        (
+            m_name.c_str(), std::ios::out | std::ios::binary | std::ios::trunc
+        );
+        if (! file.is_open())
+            result = false;
+        else
+        {
+            char file_buffer[SEQ64_MIDI_LINE_MAX];      /* enable bufferization */
+            file.rdbuf()->pubsetbuf(file_buffer, sizeof file_buffer);
+            for
+            (
+                std::list<unsigned char>::iterator i = m_char_list.begin();
+                i != m_char_list.end(); i++
+            )
+            {
+                char c = *i;
+                file.write(&c, 1);
+            }
+            m_char_list.clear();
+        }
     }
-    m_char_list.clear();
-    return true;
+    return result;
 }
 
 /**

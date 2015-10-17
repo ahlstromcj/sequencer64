@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-16
+ * \updates       2015-10-17
  * \license       GNU GPLv2 or above
  *
  *  This class has way too many members.
@@ -262,6 +262,7 @@ private:
     int m_offset;
     int m_control_status;
     int m_screen_set;
+    int m_sequence_count;
     int m_sequence_max;
 
     condition_var m_condition_var;
@@ -282,6 +283,28 @@ public:
 
     perform (gui_assistant & mygui, int ppqn = SEQ64_USE_DEFAULT_PPQN);
     ~perform ();
+
+    /**
+     * \getter m_sequence_count
+     *      It is better to call this getter before bothering to even try to
+     *      use a sequence.  In many cases at startup, or when loading a file,
+     *      there are no sequences yet, and still the code calls functions
+     *      that try to access them.
+     */
+
+    int sequence_count () const
+    {
+        return m_sequence_count;
+    }
+
+    /**
+     * \getter m_sequence_max
+     */
+
+    int sequence_max () const
+    {
+        return m_sequence_max;
+    }
 
     /**
      * \getter m_gui_support

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-30
- * \updates       2015-10-15
+ * \updates       2015-10-17
  * \license       GNU GPLv2 or above
  *
  *  This file provides a Linux-only implementation of MIDI support.
@@ -118,8 +118,17 @@ mastermidibus::mastermidibus (int ppqn, int bpm)
         errprint("snd_seq_open() error");
         exit(1);
     }
-    snd_seq_set_client_name(m_alsa_seq, "seq24");   /* client's name  */
-    m_queue = snd_seq_alloc_queue(m_alsa_seq);      /* client's queue */
+    else
+    {
+        /*
+         * Tried to reduce apparent memory leaks from libasound, but this call
+         * changed nothing.
+         *
+         * (void) snd_config_update_free_global();
+         */
+    }
+    snd_seq_set_client_name(m_alsa_seq, "seq24");   /* client's name           */
+    m_queue = snd_seq_alloc_queue(m_alsa_seq);      /* client's queue          */
 #endif
 
 #ifdef SEQ64_LASH_SUPPORT
@@ -136,6 +145,13 @@ mastermidibus::mastermidibus (int ppqn, int bpm)
  *  The destructor deletes all of the output busses, clears out the ALSA
  *  events, stops and frees the queue, and closes ALSA for this
  *  application.
+ *
+ *  Valgrind indicates we might have issues caused by the following functions:
+ *
+ *      -   snd_config_hook_load()
+ *      -   snd_config_update_r() via snd_seq_open()
+ *      -   _dl_init() and other GNU function
+ *      -   init_gtkmm_internals() [version 2.4]
  */
 
 mastermidibus::~mastermidibus ()
@@ -148,17 +164,31 @@ mastermidibus::~mastermidibus ()
             m_buses_out[i] = nullptr;
         }
     }
+    for (int i = 0; i < m_num_in_buses; i++)
+    {
+        if (not_nullptr(m_buses_in[i]))
+        {
+            delete m_buses_in[i];
+            m_buses_in[i] = nullptr;
+        }
+    }
 #ifdef SEQ64_HAVE_LIBASOUND
     snd_seq_event_t ev;
     snd_seq_ev_clear(&ev);                          /* kill timer */
     snd_seq_stop_queue(m_alsa_seq, m_queue, &ev);
     snd_seq_free_queue(m_alsa_seq, m_queue);
     snd_seq_close(m_alsa_seq);                      /* close client */
+    (void) snd_config_update_free_global();
 #endif
     if (not_nullptr(m_poll_descriptors))
     {
         delete [] m_poll_descriptors;
         m_poll_descriptors = nullptr;
+    }
+    if (not_nullptr(m_bus_announce))
+    {
+        delete m_bus_announce;
+        m_bus_announce = nullptr;
     }
 }
 
@@ -180,6 +210,11 @@ mastermidibus::init ()
         int num_buses = 16;
         for (int i = 0; i < num_buses; ++i)
         {
+            if (not_nullptr(m_buses_out[i]))
+            {
+                delete m_buses_out[i];
+                errprintf("mmbus::init() manual: m_buses_out[%d] not null\n", i);
+            }
             m_buses_out[i] = new midibus
             (
                 snd_seq_client_id(m_alsa_seq), m_alsa_seq, i+1, m_queue
@@ -189,10 +224,16 @@ mastermidibus::init ()
             m_buses_out_init[i] = true;
         }
         m_num_out_buses = num_buses;
-        m_num_in_buses = 1;                 /* only one in, or 0? */
+        if (not_nullptr(m_buses_in[0]))
+        {
+            delete m_buses_in[0];
+            errprint("mmbus::init() manual: m_buses_[0] not null");
+        }
+        m_num_in_buses = 1;
         m_buses_in[0] = new midibus
         (
-            snd_seq_client_id(m_alsa_seq), m_alsa_seq, m_num_in_buses, m_queue
+            snd_seq_client_id(m_alsa_seq), m_alsa_seq,
+            m_num_in_buses, m_queue
         );
         m_buses_in[0]->init_in_sub();
         m_buses_in_active[0] = true;
@@ -221,6 +262,15 @@ mastermidibus::init ()
                 {
                     if (CAP_WRITE(cap) && ALSA_CLIENT_CHECK(pinfo)) /* outputs */
                     {
+                        if (not_nullptr(m_buses_out[m_num_out_buses]))
+                        {
+                            delete m_buses_out[m_num_out_buses];
+                            errprintf
+                            (
+                                "mmbus::init(): m_buses_out[%d] not null\n",
+                                m_num_out_buses
+                            );
+                        }
                         m_buses_out[m_num_out_buses] = new midibus
                         (
                             snd_seq_client_id(m_alsa_seq),
@@ -244,6 +294,15 @@ mastermidibus::init ()
                     }
                     if (CAP_READ(cap) && ALSA_CLIENT_CHECK(pinfo)) /* inputs */
                     {
+                        if (not_nullptr(m_buses_in[m_num_in_buses]))
+                        {
+                            delete m_buses_in[m_num_in_buses];
+                            errprintf
+                            (
+                                "mmbus::init(): m_buses_in[%d] not null\n",
+                                m_num_in_buses
+                            );
+                        }
                         m_buses_in[m_num_in_buses] = new midibus
                         (
                             snd_seq_client_id(m_alsa_seq),
@@ -769,6 +828,15 @@ mastermidibus::port_start (int client, int port)
                     bus_slot = i;
                 }
             }
+            if (not_nullptr(m_buses_out[bus_slot]))
+            {
+                delete m_buses_out[bus_slot];
+                errprintf
+                (
+                    "mastermidibus::port_start(): m_buses_out[%d] not null\n",
+                    bus_slot
+                );
+            }
             m_buses_out[bus_slot] = new midibus
             (
                 snd_seq_client_id(m_alsa_seq),
@@ -795,13 +863,20 @@ mastermidibus::port_start (int client, int port)
                 if
                 (
                     m_buses_in[i]->get_client() == client  &&
-                    m_buses_in[i]->get_port() == port &&
-                    ! m_buses_in_active[i]
+                    m_buses_in[i]->get_port() == port && ! m_buses_in_active[i]
                 )
                 {
                     replacement = true;
                     bus_slot = i;
                 }
+            }
+            if (not_nullptr(m_buses_in[bus_slot]))
+            {
+                delete m_buses_in[bus_slot];
+                errprintf
+                (
+                    "mmbus::port_start(): m_buses_in[%d] not null\n", bus_slot
+                );
             }
             m_buses_in[bus_slot] = new midibus
             (

@@ -127,7 +127,7 @@ perfedit::perfedit
     m_entry_bw          (manage(new Gtk::Entry())),
     m_hbox              (manage(new Gtk::HBox(false, 2))),
     m_hlbox             (manage(new Gtk::HBox(false, 2))),
-    m_tooltips          (manage(new Gtk::Tooltips())),  // Valgrind complains!
+    m_tooltips          (manage(new Gtk::Tooltips())),  // valgrind complains!
     m_menu_bpm          (manage(new Gtk::Menu())),
     m_menu_bw           (manage(new Gtk::Menu())),
     m_snap              (DEFAULT_PERFEDIT_SNAP),

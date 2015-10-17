@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-16
+ * \updates       2015-10-17
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the most important single class in Sequencer64, as
@@ -90,9 +90,9 @@ perform::perform (gui_assistant & mygui, int ppqn)
     m_outputing                 (true),
     m_looping                   (false),
     m_playback_mode             (false),
-    m_ppqn                      (0),
+    m_ppqn                      (0),    // set in constructor body
     m_left_tick                 (0),
-    m_right_tick                (m_ppqn * 16),
+    m_right_tick                (0),    // set in constructor body
     m_starting_tick             (0),
     m_tick                      (0),
     m_usemidiclock              (false),
@@ -106,6 +106,7 @@ perform::perform (gui_assistant & mygui, int ppqn)
     m_offset                    (0),
     m_control_status            (0),
     m_screen_set                (0),
+    m_sequence_count            (0),
     m_sequence_max              (c_max_sequence),
     m_condition_var             (),
 #ifdef SEQ64_JACK_SUPPORT
@@ -114,6 +115,7 @@ perform::perform (gui_assistant & mygui, int ppqn)
     m_notify                    ()          // vector of pointers, public!
 {
     m_ppqn = (ppqn == SEQ64_USE_DEFAULT_PPQN) ? global_ppqn : ppqn ;
+    m_right_tick = m_ppqn * 16;
     for (int i = 0; i < m_sequence_max; i++)
     {
         m_seqs[i] = nullptr;
@@ -154,17 +156,29 @@ perform::~perform ()
     if (m_in_thread_launched)
         pthread_join(m_in_thread, NULL);
 
-    for (int i = 0; i < m_sequence_max; i++)
+    for (int seq = 0; seq < m_sequence_max; seq++)
     {
-        if (is_active(i))
-            delete m_seqs[i];
+        /*
+         * This really isn't good enough.  How do we know there aren't some
+         * inactive sequences hanging around, due to a call to set_active()?
+         * Check all the slots for deletion, and also solidify the deletion by
+         * nullifying the pointer.
+         *
+         * if (is_active(seq))
+         *     delete m_seqs[seq];
+         */
+
+        if (not_nullptr(m_seqs[seq]))
+        {
+            delete m_seqs[seq];
+            m_seqs[seq] = nullptr;
+        }
     }
 }
 
 /**
- *  Initializes the master MIDI bus.
- *
- *  Who calls this routine?
+ *  Initializes the master MIDI bus.  Who calls this routine?  The main()
+ *  routine of the application.
  */
 
 void
@@ -174,9 +188,9 @@ perform::init ()
 }
 
 /**
- *  Initializes JACK support, if SEQ64_JACK_SUPPORT is defined.
- *
- *  Who calls this routine?
+ *  Initializes JACK support, if SEQ64_JACK_SUPPORT is defined.  Who calls
+ *  this routine?  The main() routine of the application, and the options
+ *  module.
  */
 
 void
@@ -200,7 +214,8 @@ perform::deinit_jack ()
 }
 
 /**
- *  Clears all of the patterns/sequences.
+ *  Clears all of the patterns/sequences.  The mainwnd module calls this
+ *  function.
  */
 
 void
@@ -273,7 +288,9 @@ perform::select_group_mute (int a_g_mute)
             if (is_active(i+k))
             {
                 if (not_nullptr_assert(m_seqs[i+k], "select_group_mute"))
+                {
                     m_mute_group[i+j] = m_seqs[i+k]->get_playing();
+                }
                 else
                 {
                     error = true;
@@ -398,7 +415,7 @@ perform::select_and_mute_group (int a_g_group)
 void
 perform::mute_all_tracks ()
 {
-    for (int i = 0; i < m_sequence_max; i++)
+    for (int i = 0; i < m_sequence_max; i++)    // TRY sequence_count()
     {
         if (is_active(i))
             m_seqs[i]->set_song_mute(true);
@@ -440,38 +457,43 @@ perform::set_right_tick (long a_tick)
  *  Adds a pattern/sequence pointer to the list of patterns.
  *  No check is made for a null pointer.
  *
- *  Check for preferred.  This occurs if a_perf is in the valid range (0
+ *  Check for preferred.  This occurs if perfnum is in the valid range (0
  *  to m_sequence_max) and it is not active.  If preferred, then add it
  *  and activate it.
  *
- *  Otherwise, iterate through all patterns from a_perf to m_sequence_max
+ *  Otherwise, iterate through all patterns from perfnum to m_sequence_max
  *  and add and activate the first one that is not active, and then quit.
  *
  * \warning
- *      The logic of the if-statement in this function was such that \a a_perf
- *      could be out-of-bounds in the else-clause.  We reworked the logic to
- *      be airtight.  This bug was caught by gcc 4.8.3 on CentOS, but not on
- *      gcc 4.9.3 on Debian Sid!
+ *      The logic of the if-statement in this function was such that \a
+ *      perfnum could be out-of-bounds in the else-clause.  We reworked the
+ *      logic to be airtight.  This bug was caught by gcc 4.8.3 on CentOS, but
+ *      not on gcc 4.9.3 on Debian Sid!
  *
  * \param seq
  *      The number or index of the pattern/sequence to add.
  *
- * \param a_perf
- *      The performance number of the pattern?  If this value
- *      is out-of-range, then it is ignored.
+ * \param perfnum
+ *      The performance number of the pattern?  If this value is out-of-range,
+ *      then it is ignored.  What is meant by "preferred"?
  */
 
 void
-perform::add_sequence (sequence * seq, int a_perf)
+perform::add_sequence (sequence * seq, int perfnum)
 {
-    if (a_perf >= 0 && a_perf < m_sequence_max)
+    if (is_seq_valid(perfnum))
     {
-        if (is_active(a_perf))              /* check for preferred      */
+        if (is_active(perfnum))             /* check for preferred      */
         {
-            for (int i = a_perf; i < m_sequence_max; i++)
+            for (int i = perfnum; i < m_sequence_max; i++)  // sequence_count()?
             {
                 if (! is_active(i))
                 {
+                    if (not_nullptr(m_seqs[i]))
+                    {
+                        errprintf("add_sequence(): m_seqs[%d] not null\n", i);
+                        delete m_seqs[i];
+                    }
                     m_seqs[i] = seq;
                     if (not_nullptr(seq))
                         set_active(i, true);
@@ -481,9 +503,18 @@ perform::add_sequence (sequence * seq, int a_perf)
         }
         else
         {
-            m_seqs[a_perf] = seq;         /* log the sequence         */
+            if (not_nullptr(m_seqs[perfnum]))
+            {
+                errprintf
+                (
+                    "add_sequence(): inactive m_seqs[%d] not null\n", perfnum
+                );
+                delete m_seqs[perfnum];
+            }
+            m_seqs[perfnum] = seq;          /* log the sequence         */
+            ++m_sequence_count;
             if (not_nullptr(seq))
-                set_active(a_perf, true);   /* make it active           */
+                set_active(perfnum, true);  /* make it active           */
         }
     }
 }
@@ -533,8 +564,8 @@ perform::set_was_active (int seq)
  *  Checks the pattern/sequence for activity.
  *
  * \param seq
- *      The pattern number.  It is checked for invalidity.  This sometimes
- *      leads to "too many" checks.
+ *      The pattern number.  It is checked for invalidity.  This can
+ *      lead to "too many" (i.e. redundant) checks.
  *
  * \return
  *      Returns the value of the active-flag, or false if the pattern was
@@ -562,21 +593,19 @@ bool
 perform::is_dirty_main (int seq)
 {
     bool was_active = false;
-
-// Leads to endless messages at startup.  Why?
-//
-//  if (is_mseq_valid(seq))
-//  {
+    if (sequence_count() > 0)
+    {
         if (is_active(seq))
         {
-            was_active = m_seqs[seq]->is_dirty_main();
+            if (not_nullptr(m_seqs[seq]))
+                was_active = m_seqs[seq]->is_dirty_main();
         }
         else
         {
             was_active = m_was_active_main[seq];
             m_was_active_main[seq] = false;
         }
-//  }
+    }
     return was_active;
 }
 
@@ -595,11 +624,12 @@ bool
 perform::is_dirty_edit (int seq)
 {
     bool was_active = false;
-    if (is_mseq_valid(seq))
+    if (sequence_count() > 0)
     {
         if (is_active(seq))
         {
-            was_active = m_seqs[seq]->is_dirty_edit();
+            if (not_nullptr(m_seqs[seq]))
+                was_active = m_seqs[seq]->is_dirty_edit();
         }
         else
         {
@@ -625,11 +655,12 @@ bool
 perform::is_dirty_perf (int seq)
 {
     bool was_active = false;
-    if (is_mseq_valid(seq))
+    if (sequence_count() > 0)
     {
         if (is_active(seq))
         {
-            was_active = m_seqs[seq]->is_dirty_perf();
+            if (not_nullptr(m_seqs[seq]))
+                was_active = m_seqs[seq]->is_dirty_perf();
         }
         else
         {
@@ -655,11 +686,12 @@ bool
 perform::is_dirty_names (int seq)
 {
     bool was_active = false;
-    if (is_mseq_valid(seq))
+    if (sequence_count() > 0)
     {
         if (is_active(seq))
         {
-            was_active = m_seqs[seq]->is_dirty_names();
+            if (not_nullptr(m_seqs[seq]))
+                was_active = m_seqs[seq]->is_dirty_names();
         }
         else
         {
@@ -684,10 +716,13 @@ perform::is_dirty_names (int seq)
 sequence *
 perform::get_sequence (int seq)
 {
-    if (is_mseq_valid(seq))
+    if (seq < sequence_count() && is_mseq_valid(seq))
         return m_seqs[seq];
     else
+    {
+        errprintf("get_sequence(): m_seqs[%d] not null\n", seq);
         return nullptr;
+    }
 }
 
 /**
@@ -740,7 +775,7 @@ perform::get_bpm ()
  *  stored in the m_seq[] array.
  *
  * \param seq
- *      The sequencer number, in interval [0, c_max_sequence).
+ *      The sequencer number, in interval [0, m_sequence_max).
  *
  * \return
  *      Returns true if the sequence number is valid.
@@ -749,11 +784,16 @@ perform::get_bpm ()
 bool
 perform::is_seq_valid (int seq) const
 {
-    if (seq >= 0 || seq < c_max_sequence)
+    //// if (seq >= 0 || seq < m_sequence_max)
+    ////
+    if (seq >= 0 || seq < sequence_count())     // m_sequence_max TESTING
         return true;
     else
     {
-        errprintf("is_seq_valid(): seq = %d out of range", seq);
+        fprintf
+        (
+            stderr, "is_seq_valid(): seq = %d > %d\n", seq, sequence_count()-1
+        );
         return false;
     }
 }
@@ -771,13 +811,14 @@ perform::is_mseq_valid (int seq) const
     {
         result = not_nullptr(m_seqs[seq]);
         if (! result)
-            errprintf("is_mseq_valid(): m_seqs[%d] is null", seq);
+            errprintf("is_mseq_valid(): m_seqs[%d] is null\n", seq);
     }
     return result;
 }
 
 /**
- *  Deletes a pattern/sequence by number.
+ *  Deletes a pattern/sequence by number.  We now also solidify the deletion
+ *  by setting the pointer to null after deletion.
  */
 
 void

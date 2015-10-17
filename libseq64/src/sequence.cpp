@@ -86,15 +86,17 @@ sequence::sequence (int ppqn)
     m_queued_tick               (0),
     m_trigger_offset            (0),
     m_maxbeats                  (c_maxbeats),
-    m_ppqn                      (0),
-    m_length                    (4 * m_ppqn),
-    m_snap_tick                 (m_ppqn / 4),
+    m_ppqn                      (0),            // set in constructor body
+    m_length                    (0),            // set in constructor body
+    m_snap_tick                 (0),            // set in constructor body
     m_time_beats_per_measure    (4),
     m_time_beat_width           (4),
     m_rec_vol                   (0),
     m_mutex                     ()
 {
     m_ppqn = (ppqn == SEQ64_USE_DEFAULT_PPQN) ? global_ppqn : ppqn ;
+    m_length = 4 * m_ppqn;
+    m_snap_tick = m_ppqn / 4;
     for (int i = 0; i < c_midi_notes; i++)      /* no notes are playing */
         m_playing_notes[i] = 0;
 }

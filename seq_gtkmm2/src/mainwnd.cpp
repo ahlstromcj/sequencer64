@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-15
+ * \updates       2015-10-17
  * \license       GNU GPLv2 or above
  *
  *  The main window holds the menu and the main controls of the application,
@@ -104,7 +104,7 @@ mainwnd::mainwnd (perform & p)
  :
     gui_window_gtk2         (p),
     performcallback         (),
-    m_tooltips              (manage(new Gtk::Tooltips())),  // valgrind!
+    m_tooltips              (manage(new Gtk::Tooltips())),  // valgrind complains!
     m_menubar               (manage(new Gtk::MenuBar())),
     m_menu_file             (manage(new Gtk::Menu())),
     m_menu_view             (manage(new Gtk::Menu())),
@@ -436,6 +436,11 @@ mainwnd::~mainwnd ()
 /**
  *  This function is the GTK timer callback, used to draw our current time
  *  and BPM on_events (the main window).
+ *
+ * \note
+ *      When Sequencer64 first starts up, and no MIDI tune is loaded, the call
+ *      to mainwid::update_markers() leads to trying to do some work on
+ *      sequences that don't yet exist.
  */
 
 bool
@@ -443,7 +448,7 @@ mainwnd::timer_callback ()
 {
     long ticks = perf().get_tick();
     m_main_time->idle_progress(ticks);
-    m_main_wid->update_markers(ticks);
+    m_main_wid->update_markers(ticks);          /* see note above */
 
     int bpm = perf().get_bpm();
     if (m_adjust_bpm->get_value() != bpm)
@@ -815,7 +820,20 @@ mainwnd::toLower (std::string & s)
 /**
  *  Presents a file dialog to import a MIDI file.  Note that every track of
  *  the MIDI file will be imported, even if the track is only a label
- *  track (without any MIDI events) or a very long track.
+ *  track (without any MIDI events), or a very long track.
+ *
+ *  The main difference between the Open operation and the Import operation
+ *  seems to be that the latter can read MIDI files into a screen-set greater
+ *  than screen-set 0.  No, that's not true, so far.  No matter what the
+ *  current screen-set setting, the import is appended after the current data
+ *  in screen-set 0.  Then, if it overflows that screen-set, the overflow goes
+ *  into the next screen-set.
+ *
+ *  It might be nice to have the option of importing a MIDI file into a
+ *  specific screen-set, for better organization.  Set versus append.
+ *
+ * \todo
+ *      We need to look into the Import process and document it better.
  */
 
 void
@@ -888,7 +906,6 @@ mainwnd::file_import_dialog ()
 
     default:
         break;
-
     }
 }
 

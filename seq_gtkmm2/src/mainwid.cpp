@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-16
+ * \updates       2015-10-17
  * \license       GNU GPLv2 or above
  *
  *  Note that this representation is, in a sense, inside the mainwnd
@@ -535,6 +535,9 @@ mainwid::update_markers (int ticks)
  *
  *  If the sequence has no events, this function doesn't bother even
  *  drawing a position marker.
+ *
+ *  Note that, when Sequencer64 first comes up, and perform::is_dirty_main()
+ *  is called, no sequences exist yet.
  *
  * \param seqnum
  *      Provides the number of the sequence to draw.

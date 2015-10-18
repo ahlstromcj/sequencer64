@@ -27,12 +27,17 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-15
+ * \updates       2015-10-17
  * \license       GNU GPLv2 or above
  *
  *  The Seq24 MIDI file is a standard, Format 1 MIDI file, with some extra
  *  "proprietary" tracks that hold information needed to set up the song
  *  in Seq24.
+ *
+ *  Sequencer64 can write out the Seq24 file with the "proprietary" tracks
+ *  written in a format more palatable for strict MIDI programs, such as
+ *  midicvt (a MIDI-to-ASCII conversion program available at the
+ *  https://github.com/ahlstromcj/midicvt.git repository.
  */
 
 #include <string>
@@ -87,7 +92,7 @@ private:
      *  Provides a list of characters.  The class pushes each MIDI byte into
      *  this list using the write_byte() function.  Also note that the write()
      *  function calls sequence::fill_list() to fill a temporary
-     *  std::list<char> (!) buffer, tne writes that data <i> backwards </i> to
+     *  std::list<char> (!) buffer, then writes that data <i> backwards </i> to
      *  this member.  This member is an output buffer.
      */
 
@@ -202,3 +207,4 @@ private:
  *
  * vim: sw=4 ts=4 wm=4 et ft=cpp
  */
+

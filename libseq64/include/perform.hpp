@@ -775,9 +775,6 @@ public:
 
 private:
 
-    bool is_seq_valid (int seq) const;
-    bool is_mseq_valid (int seq) const;
-
     /**
      *  Checks the parameter against c_midi_controls.
      *
@@ -828,6 +825,9 @@ private:
         m_playback_mode = playbackmode;
     }
 
+    bool is_seq_valid (int seq) const;
+    bool is_mseq_valid (int seq) const;
+    void install_sequence (sequence * seq, int seqnum); // add_sequence() helper
     void inner_start (bool state);
     void inner_stop ();
     void set_all_key_events ();

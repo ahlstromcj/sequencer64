@@ -14,7 +14,7 @@ This document describes basic user testing of Sequencer 64 using the
 Yoshimi software synthesizer.
 
 \page       user_testing_page User Testing of Sequencer64 with Yoshimi
-\author     Chris Ahlstrom 2015-10-17
+\author     Chris Ahlstrom 2015-10-18
 
 \section user_testing_intro Introduction
 
@@ -162,13 +162,16 @@ We got a segfault during this test, when we weren't being systematic about it.
 
 \subsection user_testing_patterns_usr The Sequencer64 User File
 
-
+To be discussed.
 
 \section user_testing_valgrind Tests Using Valgrind
 
 Valgrind is a very useful tool for unearthing memory issues and other issues in
 an application, especially when one has the source code and can build the code
 with debugging information.
+
+One runs the application from the command line, preceding its command line with
+valgrind and some of its options.
 
 \subsection user_testing_valgrind_supp Valgrind Suppressions
 
@@ -177,20 +180,38 @@ that one has no control over.  These errors clutter the output, so we suppress
 them using a valgrind "suppressions" file.  Here's how to create one:
 
 \verbatim
-  $ valgrind --gen-suppressions=yes  ./Sequencer64/sequencer64
+  $ valgrind --gen-suppressions=yes --log-file=val.supp ./Sequencer64/sequencer64
+  $ valgrind --gen-suppressions=all --log-file=val.supp ./Sequencer64/sequencer64
 \endverbatim
 
 As the program runs, one is asked to print a suppression.  If the error is due
 to a system or third-party library, answer "Y return", and then copy-and-paste
 the suppression to a file, giving it a name.  For example, we provide a file
 <code>contrib/seq64.supp</code> containing suppressions of errors that annoy
-us.
+us.  There are way too many "errors" in ALSA, GTK+, gtkmm, glibc, and more.
 
-Running valgrind like this then shows only the errors we care about:
+The second command collects all the suppressions.  Passing the val.supp
+file through sed makes it immediately usable:
 
 \verbatim
-  $ valgrind --suppressions=contrib/seq64.supp  ./Sequencer64/sequencer64
+   $ sed -i -e /^==/g val.supp
 \endverbatim
+
+Running valgrind like this then shows mostly the errors we care about:
+
+\verbatim
+  $ valgrind --suppressions=val.supp  ./Sequencer64/sequencer64
+\endverbatim
+
+We've added some other suppression files to the <code>contrib</code> directory.
+Too much!  For example:
+
+   https://github.com/dtrebbien/GNOME.supp
+
+However, overall this process is very painful, and we're going to eventually
+do all the valgrind work on the unit-test project for Sequencer64:
+
+   https://github.com/ahlstromcj/seq64-tests
 
 \subsection user_testing_valgrind_full Full Valgrind Leak-Checking
 
@@ -198,15 +219,161 @@ Here's how to capture errors, while suppressing the system errors and while
 generating a log file:
 
 \verbatim
-   $valgrind --suppressions=contrib/seq64.supp --leak-check=full \
-      --track-origins=yes --log-file=valgrind.log \
-      ./sequencer64/sequencer64 --ppqn 384
+   $ valgrind --suppressions=contrib/seq64.supp --leak-check=full \
+      --track-origins=yes --log-file=valgrind.log --show-leak-kinds=all \
+      ./Sequencer64/sequencer64
 \endverbatim
 
 The errors can be also be re-routed to a log-file via the
 "2> valgrind.log" shell redirection.
 
-   https://github.com/dtrebbien/GNOME.supp
+Another idea is to precede the valgrind command with the following construct:
+
+\verbatim
+   $ G_SLICE=debug-blocks valgrind ...
+\endverbatim
+
+G_SLICE=debug-blocks will turn off gtk's advanced memory management to allow
+valgrind to show correct results.  This results in an amazing plethora or
+invalid read and invalid write errors in GNOME-related libraries.
+Sheesh!
+
+And don't forget about Valgrind's "massif" memory-tracking tool!
+(More to come!)
+
+\subsubsection user_testing_valgrind_basic Leak-Checking Basic Operation
+
+For the first pass, just run Sequencer64, then immediately exit.
+Then scan the log file to see if any "errors" can be pinpointed to the
+application and library code.
+
+Don't forget to run the same scenario without valgrind, in a console window, to
+see if any of our own debug/problem output occurs.
+
+In any case, leakage tagged as "still reachable" isn't as bad as leakage tagged
+as "definitely lost" or "indirectly lost".
+
+But good luck finding a Sequencer64 bug buried in the chaff of 3rd-party
+valgrind reports, even with some suppressions enabled.  Apparently a lot of
+them have to do with data structures that are intended to last the full life of
+the application.
+
+One can make the search a little easier by searching for the "seq64" namespace
+in the valgrind log.
+
+\section user_testing_cases Specific Fault Debugging
+
+This section goes through specific debugging cases we encountered.
+They should be part of the regular testing of Sequencer64.
+
+\section user_testing_case_snipped Snipping of a MIDI file.
+
+In order to have a test file for the <i> seq64-tests </i> project, we
+loaded up the <code>b4uacuse-GM-format.midi</code> file, removed all but
+four of the tracks, and saved it as <code>b4uacuse-snipped.midi</code>.
+Loading this file into Sequencer64 caused the following:
+
+\verbatim
+   $ ./Sequencer64/sequencer64 
+[Reading user configuration /home/ahlstrom/.config/sequencer64/sequencer64.usr]
+[Reading rc configuration /home/ahlstrom/.config/sequencer64/sequencer64.rc]
+get_sequence(): m_seqs[4] not null
+Segmentation fault
+\endverbatim
+
+First step, fire up a debugger and see what happened.  We use <i> cgdb </i>, a
+text-based front-end for gdb with a "vi" feel.
+
+\verbatim
+   $ cgdb ./Sequencer64/sequencer64 
+\endverbatim
+
+Just hit "r", do <i> File / Open </i>, navigate to
+<code>b4uacuse-snipped.midi</code>, select it, and watch what happens.
+
+The "bt" (backtrace) command shows a pretty large stack, 52 items.
+Page up to the top of the stack, and select frame 1 ("fr 1").
+This shows a mutex at a very low address, 0x650!  Frame 2 shows we are in the
+automutex constructor, calling lock() on that same badly-located mutex.
+Frame 3 is in sequence::event_count(), same bad mutex, and the m_events member
+is at address 0x0.  Obviously, we're dealing with an unallocated sequence.
+
+Frame 4 is in mainwid::draw_sequence_on_pixmap(), just after we've
+retrieved the next sequence via perform::get_sequence(4).  But that
+would be the fifth sequence (the sequence numbers start at 0), and we snipped
+all but 4 from the file before we saved it.
+
+So, one thing we need to do is <i> check </i> the value returned by
+get_sequence() before we try to use it.  The other thing to do is figure out
+how we got to the fifth sequence, and fix that code as well.
+Using the command "p perf().sequence_count()", we verify that there are indeed
+only 4 sequences allocated.
+
+Frame 5 is in mainwid::draw_sequences_on_pixmap().  That function
+tries to load all sequences on the current screen-set, from 0 to 31,
+without checking to see how many their actually are.  Inefficient and
+dangerous.
+
+Frame 6 is in mainwid::reset().  We could pass perf().sequence_count() here
+for checking, or get it in mainwid::draw_sequences_on_pixmap().
+
+Before we fix this issue, we need to load a file that works, to see why it does
+not fail for most files.  We will put a breakpoint at the top
+mainwid::draw_sequences_on_pixmap().
+
+We hit the breakpoint before even loading a file, with a sequence_count() of 0.
+The call to valid_sequence(0) passes the test.  We may want to make
+valid_sequence() take the sequence_count() into account.  But the call to
+perf().is_active(0) prevents anything bad from happening at startup time.
+
+Once we load a good file, the sequence_count() is 14 in
+mainwid::draw_sequences_on_pixmap().  We turn on the display of "offset" using
+the command "display offset", and "c" (for "continue") until offset = 14, which
+means we are beyond that last sequence.  That bad access is prevented
+by perf().is_active(14).
+
+So the fundamental problem is that perf().is_active(4) is not protecting the
+access when we load the "bad file".  We need to find and fix that issue before
+papering over the problem with better access checks.
+
+Start again, putting a breakpoint in the call to "new sequence(m_ppqn)" in
+midifile.  This call sets up some members and clears the list of 256 playing
+notes.  Add another breakpoint at "a_perf.add_sequence()" to see what's
+happening there.
+
+What we find is that the first two tracks have proper sequence numbers as read
+from the MIDI file, 0 and 1.  But the third one preserves the number from the
+old file, 4.  We have a disjunction between the track number and the sequence
+number, a conceptual problem.  We can leave it as is, and beef up the
+error-checking, or replace the sequence number with the track number
+when loading the file.  What to do?
+
+   -  Make sure that the is-active flag for all sequences is "false",
+      that the pointers are always null, and make sure to test both of these
+      items (depending on context) before doing anything with the sequence.
+   -  Convert the sequence number to the track number upon saving the MIDI
+      file, or upon reading the MIDI file, and use that number when adding
+      the sequence to the perform object.  This might affect some
+      seq24/sequencer64 functionality, however.  It's big move.
+
+We need information on reading and importing.
+
+First, if we look at a file that we created long ago by importing
+<code>b4uacuse.mid</code>, <code>b4uacuse-GM-format.midi</code>, it
+has its fourteen sequence numbers identical to their track numbers.
+No problem.
+
+Second, if we just read <code>b4uacuse.mid</code>, a non-seq24-created
+MIDI file, we see that each of its tracks have no sequence number -- they are
+all zero.  The perform::add_sequence() simple iterates from the beginning of
+m_seqs[] until it finds an inactive m_seqs[i], and uses that element to hold
+the sequence pointer.
+
+But now it also segfaults!  Let's fix  all the non-checked get_sequence() calls
+right away, it is too big an issue to ignore.
+
+In the end, we have to be aware that a screen-set can have blank (null) slots
+interspersed amongst the active slots.
 
  *//*-------------------------------------------------------------------------*/
 

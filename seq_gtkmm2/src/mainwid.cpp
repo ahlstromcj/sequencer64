@@ -25,17 +25,16 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-17
+ * \updates       2015-10-18
  * \license       GNU GPLv2 or above
  *
  *  Note that this representation is, in a sense, inside the mainwnd
  *  implementation.  While mainwid represents the pattern slots, mainwnd
  *  represents the menu and surrounding elements.
  *
- * \todo
- *      BUG!  During playing with the "Show keys" options, dragging and
- *      dropping sequences, we got a segfault in the application! Not yet sure
- *      what caused it.
+ *  There are a number of issue where active, but non-existent (null
+ *  pointered) sequences are accessed, and we're fixing them, but need
+ *  to fix the root causes as well.
  */
 
 #include <gtkmm/combo.h>                /* Gtk::Entry                   */
@@ -144,16 +143,18 @@ mainwid::~mainwid ()
 }
 
 /**
- *  This function fills the pixmap with sequences.
+ *  This function fills the pixmap with sequences.  Please note that
+ *  draw_sequence_on_pixmap() also draws the empty boxes of inactive
+ *  sequences, so we cannot take shortcuts here.
  */
 
 void
 mainwid::draw_sequences_on_pixmap ()
 {
     int slots = m_mainwnd_rows * m_mainwnd_cols;
-    for (int s = 0; s < slots; s++)
+    int offset = (m_screenset * slots);
+    for (int s = 0; s < slots; ++s, ++offset)
     {
-        int offset = (m_screenset * slots) + s;
         draw_sequence_on_pixmap(offset);
         m_last_tick_x[offset] = 0;
     }
@@ -197,6 +198,8 @@ mainwid::timeout ()
  *  sequence is drawn only if it is in the current screen set (indicated
  *  by m_screenset).
  *
+ *  Also, we now ignore the sequence if it does not exist.  :-D
+ *
  * \note
  *      If only the main window is up, then the sequences just appear to
  *      play -- the progress bars move in each pattern.  Gaps in the song
@@ -219,28 +222,31 @@ mainwid::draw_sequence_on_pixmap (int seqnum)
     if (valid_sequence(seqnum))
     {
         int base_x, base_y;
-        calculate_base_sizes(seqnum, base_x, base_y);    // side-effects
+        calculate_base_sizes(seqnum, base_x, base_y);   /* side-effects     */
         m_gc->set_foreground(black());
-        m_pixmap->draw_rectangle                // outer border of box
+        m_pixmap->draw_rectangle                    /* outer border of box  */
         (
             m_gc, true, base_x, base_y, m_seqarea_x, m_seqarea_y
         );
         if (perf().is_active(seqnum))
         {
             sequence * seq = perf().get_sequence(seqnum);
+            if (is_nullptr(seq))                    /* non-existent?        */
+                return;                             /* yes, ignore it       */
+
 #if SEQ64_HIGHLIGHT_EMPTY_SEQS
             if (seq->event_count() > 0)
             {
 #endif
                 if (seq->get_playing())
                 {
-                    m_last_playing[seqnum] = true;   // active and playing
+                    m_last_playing[seqnum] = true;  /* active and playing   */
                     bg_color(black());
                     fg_color(white());
                 }
                 else
                 {
-                    m_last_playing[seqnum] = false;  // active and not playing
+                    m_last_playing[seqnum] = false; /* active, not playing */
                     bg_color(white());
                     fg_color(black());
                 }
@@ -359,7 +365,7 @@ mainwid::draw_sequence_on_pixmap (int seqnum)
             int lowest_note = seq->get_lowest_note_event();
             int highest_note = seq->get_highest_note_event();
             int height = highest_note - lowest_note + 2;
-            int length = seq->get_length();
+            int len  = seq->get_length();
             long tick_s;
             long tick_f;
             int note;
@@ -378,8 +384,8 @@ mainwid::draw_sequence_on_pixmap (int seqnum)
                 int note_y = m_seqarea_seq_y -
                      (m_seqarea_seq_y * (note + 1 - lowest_note)) / height;
 
-                int tick_s_x = (tick_s * m_seqarea_seq_x)  / length;
-                int tick_f_x = (tick_f * m_seqarea_seq_x)  / length;
+                int tick_s_x = (tick_s * m_seqarea_seq_x) / len;
+                int tick_f_x = (tick_f * m_seqarea_seq_x) / len;
                 if (dt == DRAW_NOTE_ON || dt == DRAW_NOTE_OFF)
                     tick_f_x = tick_s_x + 1;
 
@@ -389,9 +395,8 @@ mainwid::draw_sequence_on_pixmap (int seqnum)
                 m_gc->set_foreground(fg_color());
                 m_pixmap->draw_line
                 (
-                    m_gc, rectangle_x + tick_s_x,
-                    rectangle_y + note_y, rectangle_x + tick_f_x,
-                    rectangle_y + note_y
+                    m_gc, rectangle_x + tick_s_x, rectangle_y + note_y,
+                    rectangle_x + tick_f_x, rectangle_y + note_y
                 );
             }
         }
@@ -555,19 +560,22 @@ mainwid::draw_marker_on_sequence (int seqnum, int tick)
     if (perf().is_active(seqnum))
     {
         sequence * seq = perf().get_sequence(seqnum);
-        if (seq->event_count() ==  0)
-            return;                         /* new 2015-08-23 don't update */
+        if (is_nullptr(seq))
+            return;                         /* active but non-existent!     */
+
+        if (seq->event_count() ==  0)       /* an event-free track          */
+            return;                         /* new 2015-08-23 don't update  */
 
         int base_x, base_y;
         calculate_base_sizes(seqnum, base_x, base_y);    // side-effects
 
         int rectangle_x = base_x + m_text_size_x - 1;
         int rectangle_y = base_y + m_text_size_y + m_text_size_x - 1;
-        int length = seq->get_length();
-        tick += (length - seq->get_trigger_offset());
-        tick %= length;
+        int len  = seq->get_length();
+        tick += (len  - seq->get_trigger_offset());
+        tick %= len;
 
-        long tick_x = tick * m_seqarea_seq_x / length;
+        long tick_x = tick * m_seqarea_seq_x / len;
         m_window->draw_drawable
         (
             m_gc, m_pixmap,

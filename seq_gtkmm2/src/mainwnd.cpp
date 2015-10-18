@@ -97,7 +97,8 @@ int mainwnd::m_sigpipe[2];
  * \todo
  *      Offload most of the work into an initialization function like
  *      options does; make the perform parameter a reference;
- *       Valgrind flags m_tooltips as lost data.  Can we fix it?
+ *      valgrind flags m_tooltips as lost data, but if we try to manage it
+ *      ourselves, many more leaks occur.
  */
 
 mainwnd::mainwnd (perform & p)
@@ -289,7 +290,7 @@ mainwnd::mainwnd (perform & p)
     (
         mem_fun(*this, &mainwnd::stop_playing)
     );
-    add_tooltip(m_button_stop, "Stop playing MIDI sequence");
+    add_tooltip(m_button_stop, "Stop playing the MIDI sequence");
     startstophbox->pack_start(*m_button_stop, Gtk::PACK_SHRINK);
     m_button_play = manage(new Gtk::Button());                  // play button
     m_button_play->add
@@ -300,7 +301,7 @@ mainwnd::mainwnd (perform & p)
     (
         mem_fun(*this, &mainwnd::start_playing)
     );
-    add_tooltip(m_button_play, "Play MIDI sequence");
+    add_tooltip(m_button_play, "Play the MIDI sequence");
     startstophbox->pack_start(*m_button_play, Gtk::PACK_SHRINK);
 
     /*
@@ -334,7 +335,13 @@ mainwnd::mainwnd (perform & p)
         mem_fun(*this, &mainwnd::edit_callback_notepad)
     );
     m_entry_notes->set_text(perf().current_screen_set_notepad());
-    add_tooltip(m_entry_notes, "Enter screen set name");
+    add_tooltip
+    (
+        m_entry_notes,
+        "Enter screen-set name.  A screen-set is one page of "
+        "up to 32 patterns that can be see and manipulated in "
+        "the Patterns window."
+    );
 
     Gtk::Label * notelabel = manage(new Gtk::Label("_Name", true));
     notelabel->set_mnemonic_widget(*m_entry_notes);
@@ -342,7 +349,7 @@ mainwnd::mainwnd (perform & p)
     notebox->pack_start(*m_entry_notes, Gtk::PACK_EXPAND_WIDGET);
 
     /*
-     * Sequence screen set spin button.
+     * Sequence screen-set spin button.
      */
 
     Gtk::HBox * sethbox = manage(new Gtk::HBox(false, 4));
@@ -355,7 +362,7 @@ mainwnd::mainwnd (perform & p)
     (
         mem_fun(*this, &mainwnd::adj_callback_ss)
     );
-    add_tooltip(m_spinbutton_ss, "Select screen set");
+    add_tooltip(m_spinbutton_ss, "Select screen-set from one of 32 sets.");
     Gtk::Label * setlabel = manage(new Gtk::Label("_Set", true));
     setlabel->set_mnemonic_widget(*m_spinbutton_ss);
     sethbox->pack_start(*setlabel, Gtk::PACK_SHRINK);
@@ -378,7 +385,10 @@ mainwnd::mainwnd (perform & p)
     bottomhbox->pack_end(*m_button_perfedit, Gtk::PACK_SHRINK);
 
     /*
-     * Vertical layout container for window content.
+     * Vertical layout container for window content.  Letting Gtk manage it
+     * does not improve leaks:
+     *
+     * Gtk::VBox * contentvbox = manage(new Gtk::VBox());
      */
 
     Gtk::VBox * contentvbox = new Gtk::VBox();
@@ -985,7 +995,7 @@ mainwnd::about_dialog ()
 /**
  *  This function is the callback for adjusting the screen-set value.
  *
- *  Sets the screen set value in the Performance/Song window, the
+ *  Sets the screen-set value in the Performance/Song window, the
  *  Patterns, and something about setting the text based on a screen-set
  *  notepad from the Performance/Song window.
  *

@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-17
+ * \updates       2015-10-18
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the most important single class in Sequencer64, as
@@ -454,69 +454,81 @@ perform::set_right_tick (long a_tick)
 }
 
 /**
- *  Adds a pattern/sequence pointer to the list of patterns.
- *  No check is made for a null pointer.
- *
- *  Check for preferred.  This occurs if perfnum is in the valid range (0
- *  to m_sequence_max) and it is not active.  If preferred, then add it
- *  and activate it.
- *
- *  Otherwise, iterate through all patterns from perfnum to m_sequence_max
- *  and add and activate the first one that is not active, and then quit.
- *
- * \warning
- *      The logic of the if-statement in this function was such that \a
- *      perfnum could be out-of-bounds in the else-clause.  We reworked the
- *      logic to be airtight.  This bug was caught by gcc 4.8.3 on CentOS, but
- *      not on gcc 4.9.3 on Debian Sid!
+ *  A private helper function for add_sequence().  It is common code
+ *  and using it prevents inconsistences.  It assumes values have already been
+ *  checked.
  *
  * \param seq
- *      The number or index of the pattern/sequence to add.
+ *      The pointer to the pattern/sequence to add.
  *
- * \param perfnum
- *      The performance number of the pattern?  If this value is out-of-range,
- *      then it is ignored.  What is meant by "preferred"?
+ * \param seqnum
+ *      The sequence number of the pattern to be added.
+ *
  */
 
 void
-perform::add_sequence (sequence * seq, int perfnum)
+perform::install_sequence (sequence * seq, int seqnum)
 {
-    if (is_seq_valid(perfnum))
+    if (not_nullptr(m_seqs[seqnum]))
     {
-        if (is_active(perfnum))             /* check for preferred      */
+        errprintf("install_sequence(): m_seqs[%d] not null\n", seqnum);
+        delete m_seqs[seqnum];
+        m_seqs[seqnum] = nullptr;
+        --m_sequence_count;
+    }
+    m_seqs[seqnum] = seq;
+    if (not_nullptr(seq))
+    {
+        set_active(seqnum, true);
+        ++m_sequence_count;
+    }
+}
+
+/**
+ *  Adds a pattern/sequence pointer to the list of patterns.  No check is made
+ *  for a null pointer.
+ *
+ *  This function checks for the preferred sequence number.  This is the
+ *  number that was specified by the Sequence Number meta-event for the
+ *  current track.  If the preferred sequence number is in the valid range (0
+ *  to m_sequence_max) and it is not active, add it and activate it.
+ *
+ *  Otherwise, iterate through all patterns from prefnum to m_sequence_max and
+ *  add and activate the first one that is not active, and then quit.
+ *
+ * \warning
+ *      The logic of the if-statement in this function was such that \a
+ *      prefnum could be out-of-bounds in the else-clause.  We reworked
+ *      the logic to be airtight.  This bug was caught by gcc 4.8.3 on CentOS,
+ *      but not on gcc 4.9.3 on Debian Sid!
+ *
+ * \param seq
+ *      The pointer to the pattern/sequence to add.
+ *
+ * \param prefnum
+ *      The preferred sequence number of the pattern, as explained above.  If
+ *      this value is out-of-range, then it is basically ignored.
+ */
+
+void
+perform::add_sequence (sequence * seq, int prefnum)
+{
+    if (! is_seq_valid(prefnum))
+        prefnum = 0;
+
+    if (is_active(prefnum))                 /* look for next inactive one   */
+    {
+        for (int i = prefnum; i < m_sequence_max; i++)
         {
-            for (int i = perfnum; i < m_sequence_max; i++)  // sequence_count()?
+            if (! is_active(i))
             {
-                if (! is_active(i))
-                {
-                    if (not_nullptr(m_seqs[i]))
-                    {
-                        errprintf("add_sequence(): m_seqs[%d] not null\n", i);
-                        delete m_seqs[i];
-                    }
-                    m_seqs[i] = seq;
-                    if (not_nullptr(seq))
-                        set_active(i, true);
-                    break;
-                }
+                install_sequence(seq, i);
+                break;
             }
-        }
-        else
-        {
-            if (not_nullptr(m_seqs[perfnum]))
-            {
-                errprintf
-                (
-                    "add_sequence(): inactive m_seqs[%d] not null\n", perfnum
-                );
-                delete m_seqs[perfnum];
-            }
-            m_seqs[perfnum] = seq;          /* log the sequence         */
-            ++m_sequence_count;
-            if (not_nullptr(seq))
-                set_active(perfnum, true);  /* make it active           */
         }
     }
+    else
+        install_sequence(seq, prefnum);
 }
 
 /**
@@ -543,6 +555,8 @@ perform::set_active (int seq, bool active)
 
 /**
  *  Sets was-active flags:  main, edit, perf, and names.
+ *
+ *  Why do we need this routine?
  *
  * \param seq
  *      The pattern number.  It is checked for invalidity.
@@ -706,7 +720,10 @@ perform::is_dirty_names (int seq)
  *  Retrieves the actual sequence, based on the pattern/sequence number.
  *
  * \param seq
- *      The prospective sequence number.  It is checked for validity.
+ *      The prospective sequence number.  It is checked for validity.  We
+ *      cannot compare the sequence number versus the sequence_count(),
+ *      because the current implementation can have inactive holes (null
+ *      pointers) interspersed with active pointers.
  *
  * \return
  *      Returns the value of m_seqs[seq] if seq is valid.  Otherwise, a null
@@ -716,11 +733,11 @@ perform::is_dirty_names (int seq)
 sequence *
 perform::get_sequence (int seq)
 {
-    if (seq < sequence_count() && is_mseq_valid(seq))
+    if (is_mseq_valid(seq))
         return m_seqs[seq];
     else
     {
-        errprintf("get_sequence(): m_seqs[%d] not null\n", seq);
+        errprintf("get_sequence(): m_seqs[%d] is null\n", seq);
         return nullptr;
     }
 }
@@ -774,6 +791,10 @@ perform::get_bpm ()
  *  Also see the function is_mseq_valid(), which also checks the pointer
  *  stored in the m_seq[] array.
  *
+ *  We considered checking the \a seq param against sequence_count(), but
+ *  this function is called while creating sequences that add to that count,
+ *  so we continue checking against the "container" size.
+ *
  * \param seq
  *      The sequencer number, in interval [0, m_sequence_max).
  *
@@ -784,15 +805,13 @@ perform::get_bpm ()
 bool
 perform::is_seq_valid (int seq) const
 {
-    //// if (seq >= 0 || seq < m_sequence_max)
-    ////
-    if (seq >= 0 || seq < sequence_count())     // m_sequence_max TESTING
+    if (seq >= 0 && seq < m_sequence_max)
         return true;
     else
     {
         fprintf
         (
-            stderr, "is_seq_valid(): seq = %d > %d\n", seq, sequence_count()-1
+            stderr, "is_seq_valid(): seq = %d > %d\n", seq, m_sequence_max-1
         );
         return false;
     }
@@ -2496,8 +2515,9 @@ perform::set_input_bus (int bus, bool input_active)
         show_ui_sequence_key(input_active);
         for (int seq = 0; seq < m_sequence_max; seq++)
         {
-            if (get_sequence(seq))
-                get_sequence(seq)->set_dirty();
+            sequence * s = get_sequence(seq);
+            if (not_nullptr(s))
+                s->set_dirty();
         }
     }
     else

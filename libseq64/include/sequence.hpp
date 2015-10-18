@@ -28,9 +28,11 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-15
+ * \updates       2015-10-17
  * \license       GNU GPLv2 or above
  *
+ *  The functions add_list_var() and add_long_list() have been replaced by
+ *  functions in the new midi_container module.
  */
 
 #include <string>
@@ -111,7 +113,7 @@ public:
         return m_tick_start < rhs.m_tick_start;
     }
 
-};
+};          // class trigger
 
 /**
  *  The sequence class is firstly a receptable for a single track of MIDI
@@ -135,12 +137,16 @@ public:
      *  select_note_events() and select_events() functions.
      *
      * \var e_select
+     *      To select ...
      *
      * \var e_select_one
+     *      To select ...
      *
      * \var e_is_selected
+     *      The events are selected ...
      *
      * \var e_would_select
+     *      The events would be selected ...
      *
      * \var e_deselect
      *      To deselect the event under the cursor.
@@ -638,15 +644,6 @@ public:
 
 private:
 
-#if 0
-    /*
-     * Used in fill_list().
-     */
-
-    void add_list_var (midi_container & c, long v);
-    void add_long_list (midi_container & c, long x);
-#endif  // 0
-
     void put_event_on_bus (event * ev);
     void remove_all ();
     void set_trigger_offset (long trigger_offset);
@@ -656,7 +653,7 @@ private:
     void remove (event_list::iterator i);
     void remove (event * e);
 
-};
+};          // class sequence
 
 }           // namespace seq64
 
@@ -667,3 +664,4 @@ private:
  *
  * vim: sw=4 ts=4 wm=4 et ft=cpp
  */
+

@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-25
- * \updates       2015-10-15
+ * \updates       2015-10-17
  * \license       GNU GPLv2 or above
  *
  *  We're going to try to collect all the globals here in one module, and
@@ -63,10 +63,6 @@
 
 extern rc_settings g_rc_settings;
 extern user_settings g_user_settings;
-
-/*
- * New stuff
- */
 
 /**
  *  This value indicates to use the default value of PPQN and ignore (to some
@@ -278,6 +274,10 @@ const int c_thread_trigger_lookahead_ms = DEFAULT_TRIGLOOK_MS;
  *  are provided by two pixmaps in the <tt> src/pixmap </tt> directory:
  *  <tt> font_b.xpm </tt> (black lettering on a white background) and
  *  <tt> font_w.xpm </tt> (white lettering on a black background).
+ *
+ *  We've also added some pixmaps for black lettering on a yellow background,
+ *  and for yellow lettering on a black background, to handle "empty"
+ *  patterns, which have no events, just some meta information.
  */
 
 const int c_text_x =  6;
@@ -621,7 +621,7 @@ const bool c_scales_policy[c_scale_size][OCTAVE_SIZE] =
         true, false, true, true, false, true,
         false, true, false, true, false, true
     },
-    {                                                       /* C whole tone    */
+    {                                                       /* whole tone      */
         true, false, true, false, true, false,
         true, false, true, false, true, false
     },

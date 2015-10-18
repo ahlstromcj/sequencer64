@@ -1,0 +1,7 @@
+# -*- tab-width: 3; indent-tabs-mode: nil -*-
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Addr4
+   fun:FcConfigFileExists
+}

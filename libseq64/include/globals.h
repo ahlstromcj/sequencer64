@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-25
- * \updates       2015-10-17
+ * \updates       2015-10-19
  * \license       GNU GPLv2 or above
  *
  *  We're going to try to collect all the globals here in one module, and
@@ -128,14 +128,16 @@ extern user_settings g_user_settings;
 
 /**
  *  Default value for "beats-per-measure".  This is the "numerator" in a 4/4
- *  time signature.  True?
+ *  time signature.  True?  It also seems to be the value used for JACK's
+ *  jack_position_t.beats_per_bar field.
  */
 
 #define DEFAULT_BEATS_PER_MEASURE         4
 
 /**
  *  Default value for "beat-width".  This is the "denominator" in a 4/4 time
- *  signature.  True?
+ *  signature.  True?  It also seems to be the value used for JACK's
+ *  jack_position_t.beat_type field.
  */
 
 #define DEFAULT_BEAT_WIDTH                4
@@ -981,7 +983,7 @@ inline double clock_tick_duration_us (int bpm, int ppqn)
  *      for Seq24 is 192.
  *
  * \return
- *      The integer value of ppqn / 24 [MIDI_CLOCK_IN_PPQN]_is returned.
+ *      The integer value of ppqn / 24 [MIDI_CLOCK_IN_PPQN] is returned.
  */
 
 inline int clock_ticks_from_ppqn (int ppqn)

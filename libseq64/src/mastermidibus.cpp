@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-30
- * \updates       2015-10-17
+ * \updates       2015-10-19
  * \license       GNU GPLv2 or above
  *
  *  This file provides a Linux-only implementation of MIDI support.
@@ -467,7 +467,7 @@ mastermidibus::set_ppqn (int ppqn)
 {
 #ifdef SEQ64_HAVE_LIBASOUND
     automutex locker(m_mutex);
-    m_ppqn = ppqn;                                  /* CIRCULAR???? */
+    m_ppqn = ppqn;                                  /* circular change       */
     snd_seq_queue_tempo_t * tempo;
     snd_seq_queue_tempo_alloca(&tempo);             /* allocate tempo struct */
     snd_seq_get_queue_tempo(m_alsa_seq, m_queue, tempo);
@@ -481,6 +481,10 @@ mastermidibus::set_ppqn (int ppqn)
  *  an ALSA tempo structure, adding tempo information to it, and then
  *  setting the ALSA sequencer object with this information.
  *
+ *  We fill the ALSA tempo structure (snd_seq_queue_tempo_t) with the current
+ *  tempo information, set the BPM value, put it in the tempo structure, and
+ *  give the tempo value to the ALSA queue.
+ *
  * \threadsafe
  *
  * \param bpm
@@ -490,22 +494,13 @@ mastermidibus::set_ppqn (int ppqn)
 void
 mastermidibus::set_bpm (int bpm)
 {
+
 #ifdef SEQ64_HAVE_LIBASOUND
     automutex locker(m_mutex);
+    m_bpm = bpm;
     snd_seq_queue_tempo_t *tempo;
     snd_seq_queue_tempo_alloca(&tempo);          /* allocate tempo struct */
-
-    /*
-     * Fill the tempo structure with the current tempo information, set
-     * the BPM value, put it in the tempo structure, and give the tempo
-     * value to the ALSA queue.
-     */
-
     snd_seq_get_queue_tempo(m_alsa_seq, m_queue, tempo);
-    m_bpm = bpm;
-
-    // snd_seq_queue_tempo_set_tempo(tempo, 60000000 / m_bpm);
-
     snd_seq_queue_tempo_set_tempo(tempo, int(tempo_from_bpm(bpm)));
     snd_seq_set_queue_tempo(m_alsa_seq, m_queue, tempo);
 #endif

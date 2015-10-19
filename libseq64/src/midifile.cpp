@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-17
+ * \updates       2015-10-19
  * \license       GNU GPLv2 or above
  *
  *  For a quick guide to the MIDI format, see, for example:
@@ -113,9 +113,12 @@ namespace seq64
  *              sequence relative to global_ppqn.
  *          -   Otherwise, m_ppqn is set to the value read from the MIDI file.
  *              No scaling is done.  Since the value gets written, specify
- *              ppqn as 0, an obviously bogus value.
+ *              ppqn as 0, an obviously bogus value, to get this behavior.
  *      -   Writing.  This value is written to the MIDI file in the header
- *          chunk of the song.
+ *          chunk of the song.  Note that the caller must query for the
+ *          PPQN set during parsing, and pass it to the constructor when
+ *          preparing to write the file.  See how it is done in the mainwnd
+ *          class.
  *
  * \param propformat
  *      If true, write out the MIDI file using the new MIDI-compliant
@@ -131,14 +134,15 @@ midifile::midifile
     int ppqn,
     bool propformat
 ) :
-    m_pos           (0),
-    m_name          (name),
-    m_data          (),
-    m_char_list     (),
-    m_new_format    (propformat),
-    m_ppqn          (ppqn)
+    m_pos               (0),
+    m_name              (name),
+    m_data              (),
+    m_char_list         (),
+    m_new_format        (propformat),
+    m_ppqn              (0),
+    m_use_default_ppqn  (ppqn == SEQ64_USE_DEFAULT_PPQN)
 {
-    // empty body
+    m_ppqn = m_use_default_ppqn ? global_ppqn : ppqn;
 }
 
 /**
@@ -287,9 +291,6 @@ midifile::parse (perform & a_perf, int screenset)
     unsigned short Format = read_short();           /* 0,1,2                */
     unsigned short NumTracks = read_short();
     unsigned short ppqn = read_short();
-    bool use_default_ppqn = (m_ppqn == SEQ64_USE_DEFAULT_PPQN);
-    m_ppqn = use_default_ppqn ? global_ppqn : ppqn; /* set the PPQN         */
-
     if (ID != 0x4D546864)                           /* magic number 'MThd'  */
     {
         errprintf("invalid MIDI header detected: %8lX\n", ID);
@@ -356,7 +357,7 @@ midifile::parse (perform & a_perf, int screenset)
                  * 192.)
                  */
 
-                if (use_default_ppqn)   /* i.e. use legacy handling of ppqn */
+                if (m_use_default_ppqn)         /* legacy handling of ppqn  */
                 {
                     CurrentTime = (RunningTime * m_ppqn) / ppqn;
                     e.set_timestamp(CurrentTime);

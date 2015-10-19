@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-17
+ * \updates       2015-10-19
  * \license       GNU GPLv2 or above
  *
  *  The Seq24 MIDI file is a standard, Format 1 MIDI file, with some extra
@@ -44,12 +44,12 @@
 #include <list>
 #include <vector>
 
-#include "globals.h"                    /* c_ppqn only, so far  */
+#include "globals.h"                    /* SEQ64_USE_DEFAULT_PPQN   */
 
 namespace seq64
 {
 
-class perform;                          /* forward reference    */
+class perform;                          /* forward reference        */
 
 /**
  *  This class handles the parsing and writing of MIDI files.  In addition
@@ -114,10 +114,16 @@ private:
 
     /**
      *  Provides the current value of the PPQN, which used to be the constant
-     *  c_ppqn.
+     *  c_ppqn (which itself is now the variable global_ppqn).
      */
 
     int m_ppqn;
+
+    /**
+     *  Indicates that the default PPQN is in force.
+     */
+
+    bool m_use_default_ppqn;
 
 public:
 
@@ -136,8 +142,8 @@ public:
      * \getter m_ppqn
      *      Provides a way to get the actual value of PPQN used in processing
      *      the sequences when parse() was called.  The PPQN will be either
-     *      c_ppqn (legacy behavior) or the value read from the file,
-     *      depending on the ppqn parameter passed to the midifile
+     *      global_ppqn = c_ppqn (legacy behavior) or the value read from the
+     *      file, depending on the ppqn parameter passed to the midifile
      *      constructor.
      */
 

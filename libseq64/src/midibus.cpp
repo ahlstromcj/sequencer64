@@ -674,14 +674,14 @@ midibus::clock (long tick)
         if (m_lasttick >= tick)
             done = true;
 
-        while (!done)
+        while (! done)
         {
             m_lasttick++;
             if (m_lasttick >= tick)
                 done = true;
 
-            int ct = clock_ticks_from_ppqn(m_ppqn);
-            if (m_lasttick % ct == 0)        /* tick time? */
+            int ct = clock_ticks_from_ppqn(m_ppqn);     /* ppqn / 24    */
+            if (m_lasttick % ct == 0)                   /* tick time?   */
             {
                 /*
                  * Set the event tag to 127 so the sequences won't remove it.

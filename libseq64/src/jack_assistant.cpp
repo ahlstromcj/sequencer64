@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-14
- * \updates       2015-10-14
+ * \updates       2015-10-19
  * \license       GNU GPLv2 or above
  *
  *  This module was created from code that existed in the perform object.
@@ -227,6 +227,8 @@ jack_assistant::stop ()
 /**
  *  If JACK is supported and running, sets the position of the transport.
  *
+ *  http://jackaudio.org/files/docs/html/transport-design.html
+ *
  * \warning
  *      A lot of this code is effectively disabled by an early return
  *      statement.
@@ -245,6 +247,12 @@ jack_assistant::position (bool /* state */ )
     return;
 
 #ifdef WHY_IS_THIS_CODE_EFFECTIVELY_DISABLED
+
+    /*
+     * Probably because it is hardwired.  We probably should fix this up and
+     * somehow make Sequencer64 support JACK fully.
+     */
+
     jack_nframes_t rate = jack_get_sample_rate(m_jack_client);
     long currenttick = 0;
     if (state)
@@ -252,8 +260,8 @@ jack_assistant::position (bool /* state */ )
 
     jack_position_t pos;
     pos.valid = JackPositionBBT;
-    pos.beats_per_bar = 4;
-    pos.beat_type = 4;
+    pos.beats_per_bar = 4;              // DEFAULT_BEATS_PER_MEASURE
+    pos.beat_type = 4;                  // DEFAULT_BEAT_WIDTH
     pos.ticks_per_beat = m_ppqn * 10;
     pos.beats_per_minute = m_master_bus.get_bpm();
 

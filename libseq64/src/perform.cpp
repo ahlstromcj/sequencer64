@@ -1555,7 +1555,7 @@ perform::output_func ()
         }
 
         /*
-         * If we are in the performance view (song editor?), we care about
+         * If we are in the performance view (song editor), we care about
          * starting from the offset.
          */
 
@@ -1755,11 +1755,11 @@ perform::output_func ()
                 delta_us = long(next_clock_delta_us);
 
 #ifndef PLATFORM_WINDOWS                    // nanosleep() is actually Linux
-            if (delta_us > 0.0)
+            if (delta_us > 0)
             {
                 delta.tv_sec = (delta_us / 1000000);
                 delta.tv_nsec = (delta_us % 1000000) * 1000;
-                nanosleep(&delta, NULL);    // printf("sleeping() ");
+                nanosleep(&delta, NULL);
             }
 #else
             if (delta_us > 0)

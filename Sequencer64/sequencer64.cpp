@@ -359,18 +359,6 @@ main (int argc, char * argv [])
     }
     g_rc_settings.set_globals();                /* copy to legacy globals   */
     g_user_settings.set_globals();              /* copy to legacy globals   */
-
-#ifdef USE_THIS_INSTANCE_OF_CODE_INSTEAD_OF_THE_ONE_ABOVE
-    /*
-     * Set up objects that are specific to the Gtk-2 GUI.  Pass them to
-     * the perform constructor.  Create a font-render object.
-     */
-
-    seq64::gui_assistant_gtk2 gui;              /* GUI-specific objects     */
-    seq64::perform p(gui);                      /* main performance object  */
-    seq64::p_font_renderer = new seq64::font(); /* set the font renderer    */
-#endif  // USE_THIS_INSTANCE_OF_CODE_INSTEAD_OF_THE_ONE_ABOVE
-
     p.init();
     p.launch_input_thread();
     p.launch_output_thread();

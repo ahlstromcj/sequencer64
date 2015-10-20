@@ -25,12 +25,81 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-14
- * \updates       2015-10-19
+ * \updates       2015-10-20
  * \license       GNU GPLv2 or above
  *
  *  This module was created from code that existed in the perform object.
  *  Moving it into is own module makes it easier to maintain and makes the
  *  perform object a little easier to grok.
+ *
+ *  Here are summaries of the JACK functions used in this module:
+ *
+ *      -   jack_client_open().
+ *          Open an external client session with a JACK server. More complex
+ *          but more powerful than jack_client_new(). Clients may choose which
+ *          of several servers to connect, and control how to start the server
+ *          automatically, if not already running. There is also an option for
+ *          JACK to generate a unique client name.
+ *      -   jack_on_shutdown().
+ *          Registers a function to call when the JACK server shuts down the
+ *          client thread. The function must be written as an asynchonrous
+ *          POSIX signal handler: use only async-safe functions, and it is
+ *          executed from another thread. A typical function might set a flag
+ *          or write to a pipe so that the rest of the application knows that
+ *          the JACK client thread has shut down.  Clients do not need to call
+ *          this function. It only helps complex clients understand what is
+ *          going on. It should be called before jack_client_activate().
+ *      -   jack_set_sync_callback().
+ *          Register/unregister as a slow-sync client, who cannot respond
+ *          immediately to transport position changes.  The callback will be
+ *          run at the first opportunity after its registration is complete. If
+ *          the client is active, this will be the following process cycle,
+ *          otherwise it will be the first cycle after calling jack_activate().
+ *          After that, it runs according to the JackSyncCallback rules.
+ *          Clients that don't set a sync_callback are assumed to be ready
+ *          immediately any time the transport wants to start.
+ *      -   jack_set_process_callback().  Tell the JACK server to call the
+ *          callback whenever there is work to be done.  The function must be
+ *          suitable for real-time execution; it cannot call functions that
+ *          might block for a long time. This includes malloc(), free(),
+ *          printf(), pthread_mutex_lock(), sleep(), wait(), poll(), select(),
+ *          pthread_join(), pthread_cond_wait(), etc.  In the current class,
+ *          this function is a do-nothing function.
+ *      -   jack_set_session_callback().
+ *          Tells the JACK server to call the callback when a session event is
+ *          to be delivered.  Setting more than one session callback per
+ *          process is probably a design error.  For a multiclient application,
+ *          it's more sensible to create a JACK client with only one session
+ *          callback set.
+ *      -   jack_activate().
+ *          Tells the JACK server that the application is ready to start
+ *          processing.
+ *      -   jack_release_timebase().
+ *      -   jack_client_close().
+ *      -   jack_transport_start().
+ *          Starts the JACK transport rolling.  Any client can make this
+ *          request at any time. It takes effect no sooner than the next
+ *          process cycle, perhaps later if there are slow-sync clients. This
+ *          function is realtime-safe.  No return code.
+ *      -   jack_transport_stop().
+ *          Starts the JACK transport rolling.  Any client can make this
+ *          request at any time.  This function is realtime-safe.  No return
+ *          code.
+ *      -   jack_transport_locate().
+ *          Repositions the transport to a new frame number.  May be called at
+ *          any time by any client. The new position takes effect in two
+ *          process cycles. If there are slow-sync clients and the transport is
+ *          already rolling, it will enter the JackTransportStarting state and
+ *          begin invoking their sync_callbacks until ready. This function is
+ *          realtime-safe.
+ *      -   jack_transport_reposition().
+ *          Request a new transport position.  May be called at any time by any
+ *          client. The new position takes effect in two process cycles. If
+ *          there are slow-sync clients and the transport is already rolling,
+ *          it will enter the JackTransportStarting state and begin invoking
+ *          their sync_callbacks until ready. This function is realtime-safe.
+ *          This call, made in the position() function, is currently disabled.
+ *
  */
 
 #include <stdio.h>
@@ -81,6 +150,55 @@ jack_assistant::~jack_assistant ()
 }
 
 /**
+ *  Common-code for console messages.  Adds markers and a newline.
+ *
+ * \param msg
+ *      The message to print, sans the newline.
+ */
+
+void
+jack_assistant::info_message (const std::string & msg)
+{
+    std::string temp = "[";
+    temp += msg;
+    temp += "]\n";
+    printf(msg.c_str());
+}
+
+/**
+ *  Common-code for error messages.  Adds markers, and sets m_jack_running to
+ *  false.
+ *
+ * \param msg
+ *      The message to print, sans the newline.
+ */
+
+void
+jack_assistant::error_message (const std::string & msg)
+{
+    info_message(msg);
+    m_jack_running = false;
+}
+
+/**
+ *  Common-code for error-handling.  Adds markers, and sets m_jack_running to
+ *  false.
+ *
+ * \param msg
+ *      The message to print, sans the newline.
+ */
+
+void
+jack_assistant::error_message (const std::string & msg)
+{
+    std::string temp = "[";
+    temp += msg;
+    temp += "]\n";
+    printf(msg.c_str());
+    m_jack_running = false;
+}
+
+/**
  *  Initializes JACK support.  Then we become a new client of the JACK server.
  *
  *  Who calls this routine?
@@ -95,15 +213,12 @@ jack_assistant::init ()
 {
     if (global_with_jack_transport && ! m_jack_running)
     {
-        m_jack_running = true;
-        m_jack_master = true;
+        int jackcode;                       /* return value for JACK calls */
+        m_jack_running = true;              // THIS IS PREMATURE!!!!
+        m_jack_master = true;               // ?????????????????????
 
 #ifdef SEQ64_JACK_SESSION
-        if (global_jack_session_uuid.empty())
-        {
-            m_jack_client = jack_client_open(SEQ64_PACKAGE, JackNullOption, NULL);
-        }
-        else
+        if (! global_jack_session_uuid.empty())
         {
             m_jack_client = jack_client_open
             (
@@ -111,26 +226,29 @@ jack_assistant::init ()
                 global_jack_session_uuid.c_str()
             );
         }
-#else
-        m_jack_client = jack_client_open(SEQ64_PACKAGE, JackNullOption, NULL);
+        else
 #endif
-
-        if (m_jack_client == 0)
+        m_jack_client = jack_client_open(SEQ64_PACKAGE, JackNullOption, NULL);
+        if (m_jack_client == NULL)
         {
-            printf("JACK server is not running.\n[JACK sync disabled]\n");
-            m_jack_running = false;
+            error_message("JACK server not running, JACK sync disabled");
             return false;
         }
 
         /*
-         * "this" should be the parent perform object.
+         * "this" for JACK should be the parent perform object.
          */
 
         jack_on_shutdown(m_jack_client, jack_shutdown, (void *) &m_jack_parent);
-        jack_set_sync_callback
+        jackcode = jack_set_sync_callback
         (
             m_jack_client, jack_sync_callback, (void *) &m_jack_parent
         );
+        if (jackcode != 0)
+        {
+            error_message("jack_set_sync_callback() failed");
+            return false;
+        }
 
         /*
          * ca 2015-07-23
@@ -138,42 +256,49 @@ jack_assistant::init ()
          * JACK transport.  One line of code.
          */
 
-        jack_set_process_callback(m_jack_client, jack_process_callback, NULL);
+        jackcode = jack_set_process_callback
+        (
+            m_jack_client, jack_process_callback, NULL
+        );
+        if (jackcode != 0)
+        {
+            error_message("jack_set_process_callback() failed]");
+            return false;
+        }
 
 #ifdef SEQ64_JACK_SESSION
         if (jack_set_session_callback)
         {
-            jack_set_session_callback
+            jackcode = jack_set_session_callback
             (
                 m_jack_client, jack_session_callback, (void *) &m_jack_parent
             );
+            if (jackcode != 0)
+            {
+                error_message("jack_set_session_callback() failed]");
+                return false;
+            }
         }
 #endif
         /* true if we want to fail if there is already a master */
 
         bool cond = global_with_jack_master_cond;
-        if
+        jackcode = jack_set_timebase_callback
         (
-            global_with_jack_master &&
-            jack_set_timebase_callback
-            (
-                m_jack_client, cond, jack_timebase_callback, &m_jack_parent
-            ) == 0
-        )
+            m_jack_client, cond, jack_timebase_callback, &m_jack_parent
+        );
+        if (global_with_jack_master && jackcode == 0)
         {
-            printf("[JACK transport master]\n");
+            info_message("JACK transport master");
             m_jack_master = true;
         }
         else
         {
-            printf("[JACK transport slave]\n");
+            info_message("JACK transport slave");
             m_jack_master = false;
         }
-        if (jack_activate(m_jack_client))
-        {
-            printf("Cannot register as JACK client\n");
-            m_jack_running = false;
-        }
+        if (jack_activate(m_jack_client) != 0)
+            error_message("Cannot register as JACK client");
     }
     return m_jack_running;
 }
@@ -189,17 +314,17 @@ jack_assistant::deinit ()
     {
         m_jack_running = false;
         m_jack_master = false;
-        if (jack_release_timebase(m_jack_client))
+        if (jack_release_timebase(m_jack_client) != 0)
         {
-            errprint("Cannot release Timebase.");
+            error_message("Cannot release timebase");
         }
-        if (jack_client_close(m_jack_client))
+        if (jack_client_close(m_jack_client) != 0)
         {
-            errprint("Cannot close JACK client.");
+            error_message("Cannot close JACK client");
         }
     }
     if (! m_jack_running)
-        printf("[JACK sync disabled]\n");
+        info_message("JACK sync disabled");
 }
 
 /**
@@ -242,7 +367,8 @@ jack_assistant::position (bool /* state */ )
 {
     if (m_jack_running)
     {
-        jack_transport_locate(m_jack_client, 0);
+        if (jack_transport_locate(m_jack_client, 0) != 0)
+            info_message("jack_transport_locate() failed");
     }
     return;
 

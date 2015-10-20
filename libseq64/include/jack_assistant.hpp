@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-09-17
- * \updates       2015-10-14
+ * \updates       2015-10-20
  * \license       GNU GPLv2 or above
  *
  *  This class contains a number of functions that used to reside in the
@@ -162,6 +162,9 @@ public:
     bool output (jack_scratchpad & pad);
 
 private:
+
+    void info_message (const std::string & msg);
+    void error_message (const std::string & msg);
 
 #ifdef USE_DEBUGGING_OUTPUT
     void jack_debug_print

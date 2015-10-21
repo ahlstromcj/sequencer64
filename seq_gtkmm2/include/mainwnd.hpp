@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-15
+ * \updates       2015-10-20
  * \license       GNU GPLv2 or above
  *
  *  The main windows is known as the "Patterns window" or "Patterns
@@ -233,12 +233,12 @@ private:
 
     void start_playing ()               // Play!
     {
-        perf().start_playing();
+        perf().start_playing();         // also sets is_pattern_playing flag
     }
 
     void stop_playing ()                // Stop!
     {
-        perf().stop_playing();
+        perf().stop_playing();          // also resets is_pattern_playing flag
         m_main_wid->update_sequences_on_window();
     }
 

@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-15
+ * \updates       2015-10-20
  * \license       GNU GPLv2 or above
  *
  */
@@ -36,7 +36,7 @@
 #include <list>
 #include <string>
 #include <gtkmm/widget.h>       // somehow, can't forward-declare GdkEventAny
-#include <gtkmm/window.h>       // somehow, can't forward-declare GdkEventAny
+#include <gtkmm/window.h>       // ditto
 
 #include "gui_window_gtk2.hpp"
 #include "perform.hpp"
@@ -80,10 +80,9 @@ class perftime;
 
 /**
  *  This class supports a Performance Editor that is used to arrange the
- *  patterns/sequences defined in the patterns panel, I think.
- *
- *  It has a seqroll and piano roll?  No, it has a perform, a perfnames, a
- *  perfroll, and a perftime.
+ *  patterns/sequences defined in the patterns panel.  It has a seqroll and
+ *  piano roll?  No, it has a perform, a perfnames, a perfroll, and a
+ *  perftime.
  */
 
 class perfedit : public gui_window_gtk2
@@ -184,7 +183,8 @@ private:
 
     /**
      *  Implement the playing.  JACK will be used if it is present and, in the
-     *  application, enabled.
+     *  application, enabled.  This call also sets
+     *  g_rc_settings.is_pattern_playing(true).
      */
 
     void start_playing ()
@@ -193,7 +193,8 @@ private:
     }
 
     /**
-     *  Stop the playing.
+     *  Stop the playing.  This call also sets
+     *  g_rc_settings.is_pattern_playing(true).
      */
 
     void stop_playing ()

@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-25
- * \updates       2015-10-19
+ * \updates       2015-10-25
  * \license       GNU GPLv2 or above
  *
  *  We're going to try to collect all the globals here in one module, and
@@ -265,25 +265,21 @@ const int c_thread_trigger_width_ms = DEFAULT_TRIGWIDTH_MS;
 const int c_thread_trigger_lookahead_ms = DEFAULT_TRIGLOOK_MS;
 
 /**
- *  Constants for the mainwid class.  The c_text_x and c_text_y constants
+ *  Constants for the font class.  The c_text_x and c_text_y constants
  *  help define the "seqarea" size.  It looks like these two values are
  *  the character width (x) and height (y) in pixels.  Thus, these values
  *  would be dependent on the font chosen.  But that, currently, is
  *  hard-wired.  See the c_font_6_12[] array for the default font
  *  specification.
  *
- *  However, please not that font files are not used.  Instead, the fonts
- *  are provided by two pixmaps in the <tt> src/pixmap </tt> directory:
- *  <tt> font_b.xpm </tt> (black lettering on a white background) and
- *  <tt> font_w.xpm </tt> (white lettering on a black background).
- *
- *  We've also added some pixmaps for black lettering on a yellow background,
- *  and for yellow lettering on a black background, to handle "empty"
- *  patterns, which have no events, just some meta information.
+ *  However, please note that font files are not used.  Instead, the fonts
+ *  are provided by pixmaps in the <tt> src/pixmap </tt> directory.
+ *  These pixmaps lay out all the characters of the font in a grid.
+ *  See the font module for a full description of this grid.
  */
 
-const int c_text_x =  6;
-const int c_text_y = 12;
+const int c_text_x =  6;            /* does not include the inner padding   */
+const int c_text_y = 12;            /* does include the inner padding       */
 
 /**
  *  Constants for the mainwid class.  The c_seqchars_x and c_seqchars_y

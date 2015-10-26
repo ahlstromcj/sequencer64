@@ -1,6 +1,6 @@
 README for Sequencer64 0.9.9.5 (current branch = "testing")
 Chris Ahlstrom
-2015-09-10 to 2015-10-04
+2015-09-10 to 2015-10-26
 
 The sequencer64 project is a continuation of sequencer24 to refactor it to
 be tighter and easier to transition to to GTKmm 3, and much more.
@@ -25,13 +25,14 @@ Other major updates:
     -   Constant variables are slowly being assigned to new members, in
         preparation for support of altering the number of sequences and sets
         supported.
+    -   Added a more modern-looking font to the graphical user interface.
 
 This package is currently oriented to developers.  Please see the
 INSTALL file for a brief description of installation.
 
 See the ROADMAP file for more information and a kind of TODO list.
 
-Note that sequencer64 is reasonably well documented by the following
+Note that sequencer64 is still reasonably well documented by the following
 project, which provides a 60-page PDF file and its LaTeX source code:
 
    https://github.com/ahlstromcj/sequencer24-doc.git

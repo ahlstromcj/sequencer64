@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-09-13
+ * \updates       2015-10-25
  * \license       GNU GPLv2 or above
  *
  */
@@ -78,6 +78,20 @@ public:
     };
 
 private:
+
+    /**
+     *  Specifies the exact width of a character cell, in pixels.  Currently
+     *  defaults to cf_text_w = 6.
+     */
+
+    int m_font_w;
+
+    /**
+     *  Specifies the exact height of a character cell, in pixels.  Currently
+     *  defaults to cf_text_h = 10.
+     */
+
+    int m_font_h;
 
     /**
      *  Points to the current pixmap (m_black_pixmap or m_white_pixmap)

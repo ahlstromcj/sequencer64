@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-18
+ * \updates       2015-10-25
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the most important single class in Sequencer64, as
@@ -719,11 +719,16 @@ perform::is_dirty_names (int seq)
 /**
  *  Retrieves the actual sequence, based on the pattern/sequence number.
  *
+ * \note
+ *      Since we can have holes in the sequence array, where there are
+ *      inactive sequences, we check if the sequence is even active before
+ *      emitting a message about a null pointer for the sequence.  We only
+ *      want to see messages that indicate actual problems.  Actually, we
+ *      comment out the message-emitting code, as is_mseq_valid() already
+ *      emits a useful-enough message.
+ *
  * \param seq
- *      The prospective sequence number.  It is checked for validity.  We
- *      cannot compare the sequence number versus the sequence_count(),
- *      because the current implementation can have inactive holes (null
- *      pointers) interspersed with active pointers.
+ *      The prospective sequence number.
  *
  * \return
  *      Returns the value of m_seqs[seq] if seq is valid.  Otherwise, a null
@@ -737,7 +742,13 @@ perform::get_sequence (int seq)
         return m_seqs[seq];
     else
     {
-        errprintf("get_sequence(): m_seqs[%d] is null\n", seq);
+        /*
+         * Not helpful enough to waste code on:
+         *
+         *  if (m_seqs_active[seq])
+         *      errprintf("get_sequence(): m_seqs[%d] is null\n", seq);
+         */
+
         return nullptr;
     }
 }
@@ -793,7 +804,9 @@ perform::get_bpm ()
  *
  *  We considered checking the \a seq param against sequence_count(), but
  *  this function is called while creating sequences that add to that count,
- *  so we continue checking against the "container" size.
+ *  so we continue checking against the "container" size.  Also, it is
+ *  possible to have holes in the array representing inactive sequences,
+ *  so that sequencer_count() would be too limiting.
  *
  * \param seq
  *      The sequencer number, in interval [0, m_sequence_max).
@@ -820,6 +833,22 @@ perform::is_seq_valid (int seq) const
 /**
  *  Validates the sequence number, which is important since they're currently
  *  used as array indices.  It also evaluates the m_seq[seq] pointer value.
+ *
+ * \note
+ *      Since we can have holes in the sequence array, where there are
+ *      inactive sequences, we check if the sequence is even active before
+ *      emitting a message about a null pointer for the sequence.  We only
+ *      want to see messages that indicate actual problems.
+ *
+ * \param seq
+ *      Provides the sequence number to be checked.  It is checked for
+ *      validity.  We cannot compare the sequence number versus the
+ *      sequence_count(), because the current implementation can have inactive
+ *      holes (with null pointers) interspersed with active pointers.
+ *
+ * \return
+ *      Returns true if the sequence number is valid as per is_seq_valid(),
+ *      and the sequence pointer is not null.
  */
 
 bool
@@ -829,7 +858,7 @@ perform::is_mseq_valid (int seq) const
     if (result)
     {
         result = not_nullptr(m_seqs[seq]);
-        if (! result)
+        if (! result && m_seqs_active[seq])
             errprintf("is_mseq_valid(): m_seqs[%d] is null\n", seq);
     }
     return result;

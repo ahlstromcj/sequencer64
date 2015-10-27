@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-25
+ * \updates       2015-10-27
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the most important single class in Sequencer64, as
@@ -1643,11 +1643,11 @@ perform::output_func ()
 
             /*
              * Delta time to ticks; get delta ticks.
+             *
+             * double delta_tick = double(bpm * ppqn * (delta_us / 60000000.0f));
              */
 
-            // double delta_tick = double(bpm * ppqn * (delta_us / 60000000.0f));
-
-            double delta_tick = delta_time_to_ticks(bpm, ppqn, delta_us);
+            double delta_tick = delta_time_us_to_ticks(bpm, ppqn, delta_us);
             if (m_usemidiclock)
             {
                 delta_tick = m_midiclocktick;
@@ -1706,21 +1706,21 @@ perform::output_func ()
                         double leftover_tick =
                             pad.js_current_tick-(get_right_tick());
 
-                        play(get_right_tick() - 1);     // play!
-                        reset_sequences();              // reset!
+                        play(get_right_tick() - 1);             // play!
+                        reset_sequences();                      // reset!
                         set_orig_ticks(get_left_tick());
                         pad.js_current_tick =
                             double(get_left_tick() + leftover_tick);
                     }
                 }
-                play(long(pad.js_current_tick));              // play!
-                m_master_bus.clock(long(pad.js_clock_tick));   // MIDI clock
+                play(long(pad.js_current_tick));                // play!
+                m_master_bus.clock(long(pad.js_clock_tick));    // MIDI clock
                 if (global_stats)
                 {
                     while (stats_total_tick <= pad.js_total_tick)
                     {
                         int ct = clock_ticks_from_ppqn(m_ppqn);
-                        if (stats_total_tick % ct == 0) /* was there a tick ? */
+                        if ((stats_total_tick % ct) == 0)   /* there a tick ? */
                         {
 
 #ifndef PLATFORM_WINDOWS
@@ -1863,7 +1863,10 @@ perform::output_func ()
             }
             printf("\n\n-- clock width --\n");
             int bpm  = m_master_bus.get_bpm();
-            printf("optimal: [%d]us\n", int(clock_tick_duration_us(bpm, m_ppqn)));
+            printf
+            (
+                "optimal: [%d us]\n", int(clock_tick_duration_bogus(bpm, m_ppqn))
+            );
             for (int i = 0; i < 100; i++)
             {
                 printf("[%3d][%8ld]\n", i * 300, stats_clock[i]);

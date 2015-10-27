@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-26
+ * \updates       2015-10-27
  * \license       GNU GPLv2 or above
  *
  *  The interesting thing about this font class is that font files are not
@@ -110,6 +110,8 @@ font::font ()
  :
     m_font_w        (cf_text_w),
     m_font_h        (cf_text_h),
+    m_offset        (cf_offset),
+    m_padded_h      (12),               /* too tricky */
     m_pixmap        (nullptr),
     m_black_pixmap  (),
     m_white_pixmap  (),
@@ -230,9 +232,9 @@ font::render_string_on_drawable
         int pixbuf_index_x = c % cf_grid_w;
         int pixbuf_index_y = c / cf_grid_h;
         pixbuf_index_x *= cf_cell_w;    // width of grid (letter is 6 pixels)
-        pixbuf_index_x += cf_offset;    // add 2 for border?
+        pixbuf_index_x += m_offset;     // add around 2 for border?
         pixbuf_index_y *= cf_cell_h;    // height of grid (letter is 10 pixels)
-        pixbuf_index_y += cf_offset;    // add 2 for border?
+        pixbuf_index_y += m_offset;     // add around 2 for border?
         a_draw->draw_drawable
         (
             a_gc, *m_pixmap, pixbuf_index_x, pixbuf_index_y,

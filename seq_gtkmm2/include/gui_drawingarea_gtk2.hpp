@@ -28,11 +28,12 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-21
- * \updates       2015-10-11
+ * \updates       2015-10-27
  * \license       GNU GPLv2 or above
  *
  */
 
+#include "font.hpp"                     // p_font_renderer pointer
 #include "gui_palette_gtk2.hpp"         // #include <gtkmm/drawingarea.h>
 
 namespace Gtk
@@ -199,6 +200,80 @@ protected:
     {
         return m_mainperf;
     }
+
+    /**
+     *  A small wrapper function for readability in line-drawing.  Sets the
+     *  attributes of a line to be drawn.
+     *
+     * \param ls
+     *      Provides the Gtk-specific line style.
+     *
+     * \param width
+     *      Provides the width of the line to be drawn.  It defaults to the
+     *      most common value, 1.
+     */
+
+    void set_line (Gdk::LineStyle ls, int width = 1)
+    {
+        m_gc->set_line_attributes(width, ls, Gdk::CAP_NOT_LAST, Gdk::JOIN_MITER);
+    }
+
+    /**
+     *  A small wrapper function for readability in string-drawing.
+     *
+     * \param x
+     *      The x-coordinate of the origin.
+     *
+     * \param y
+     *      The y-coordinate of the origin.
+     *
+     * \param s
+     *      The string to be drawn.
+     *
+     * \param color
+     *      The color with which to draw the string.
+     */
+
+    void render_string
+    (
+        int x, int y, const std::string & s, font::Color color
+    )
+    {
+        p_font_renderer->render_string_on_drawable
+        (
+            m_gc, x, y, m_window, s.c_str(), color
+        );
+    }
+
+    /**
+     *  A small wrapper function for readability in box-drawing.
+     *
+     * \param x
+     *      The x-coordinate of the origin.
+     *
+     * \param y
+     *      The y-coordinate of the origin.
+     *
+     * \param lx
+     *      The width of the box.
+     *
+     * \param ly
+     *      The height of the box.
+     *
+     * \param fill
+     *      If true, fill the rectangle with the current foreground color, as
+     *      set by m_gc->set_foreground(color).  Defaults to true.
+     */
+
+    void draw_rectangle (int x, int y, int lx, int ly, bool fill = true)
+    {
+        m_window->draw_rectangle(m_gc, fill, x, y, lx, ly);
+    }
+
+    void draw_rectangle
+    (
+        const Color & c, int x, int y, int lx, int ly, bool fill = true
+    );
 
 private:
 

@@ -24,12 +24,24 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-09
+ * \updates       2015-10-27
  * \license       GNU GPLv2 or above
  *
  *  This module is almost exclusively user-interface code.  There are some
  *  pointers yet that could be replaced by references, and a number of minor
  *  issues that could be fixed.
+ *
+ *  Adjustments to the performance window can be made with the
+ *  SEQ64_HIGHLIGHT_EMPTY_SEQS macro.  Sequences that don't have
+ *  events show up as black-on-yellow.  This feature is enabled by
+ *  default.  To disable this feature, configure the build with the
+ *  "--disable-highlight" option.
+ *
+ * \todo
+ *      When bringing up this dialog, and starting play from it, some
+ *      extra horizontal lines are drawn for some of the sequences.  This
+ *      happens even in seq24, so this is long standing behavior.  Is it
+ *      useful, and how?  Where is it done?  In perfroll?
  */
 
 #include <gtkmm/adjustment.h>
@@ -39,18 +51,6 @@
 #include "perform.hpp"
 #include "perfnames.hpp"
 
-/*
- *  Adjustments to the performance window.  Sequences that don't have
- *  events show up as black-on-yellow.  This feature is enabled by
- *  default.  To disable this feature, configure the build with the
- *  "--disable-highlight" option.
- *
- *  #define SEQ64_HIGHLIGHT_EMPTY_SEQS  // undefine for normal empty seqs
- *
- * WARNING:  Don't make this a Doxygen comment, it will break the generation
- *           of the PDF file!
- */
-
 namespace seq64
 {
 
@@ -58,15 +58,20 @@ namespace seq64
  *  Principal constructor for this user-interface object.
  *
  *  Weird is that the window (x,y) are set to (c_names_x, 100), when c_names_y
- *  is 22 in globals.h.
+ *  is 22 (now 24) in globals.h.
  */
 
 perfnames::perfnames (perform & p, Gtk::Adjustment & vadjust)
  :
     gui_drawingarea_gtk2    (p, adjustment_dummy(), vadjust, c_names_x, 100),
     seqmenu                 (p),
-    m_names_x               (c_names_x),
+    m_names_chars           (24),
+    m_char_w                (p_font_renderer->char_width()),    /* 6         */
+    m_setbox_w              (m_char_w * 2),
+    m_namebox_w             (m_char_w * 22),                    /* 24?       */
+    m_names_x               (m_names_chars * m_char_w),         /* c_names_x */
     m_names_y               (c_names_y),
+    m_xy_offset             (2),
     m_seqs_in_set           (c_seqs_in_set),
     m_sequence_max          (c_max_sequence),
     m_sequence_offset       (0),
@@ -100,104 +105,93 @@ perfnames::change_vert ()
 }
 
 /**
- *  Draw the given sequence.
+ *  Draw the given sequence.  This function has to be prepared to handle an
+ *  almost endless list of sequences, including unused ones, to draw them all
+ *  with compatible styles.  The sequences are grouped by set-number.  The
+ *  set-number occurs every 32 sequences in the leftmost column of the window.
  */
 
 void
 perfnames::draw_sequence (int seqnum)
 {
     int i = seqnum - m_sequence_offset;
-    if (seqnum < m_sequence_max)
+    if (seqnum < m_sequence_max)                /* less than "infinity" */
     {
-        sequence * seq = perf().get_sequence(seqnum);
-
-#if SEQ64_HIGHLIGHT_EMPTY_SEQS
-
         /*
-         * Setting seqempty to seq->event_count() == 0 here causes a
-         * seqfault in pthread code!  Setting it further on does work.
+         * 1. Render the set number, or a blank box, in leftmost column.
          */
 
-        bool seqempty = false;
-#endif
-        m_gc->set_foreground(black());
-        m_window->draw_rectangle
-        (
-            m_gc, true, 0, (m_names_y * i) , m_names_x, m_names_y + 1
-        );
+        char sns[4];                            /* set-number buffer    */
+        draw_rectangle(black(), 0, m_names_y * i, m_names_x, m_names_y + 1);
+        snprintf(sns, sizeof(sns), "%2d", seqnum / m_seqs_in_set);
         if (seqnum % m_seqs_in_set == 0)
         {
-            char ss[4];
-            snprintf(ss, sizeof(ss), "%2d", seqnum / m_seqs_in_set);
-            m_gc->set_foreground(white());
-            p_font_renderer->render_string_on_drawable
+            render_string
             (
-                m_gc, 2, m_names_y * i + 2, m_window, ss, font::WHITE
+                m_xy_offset, m_names_y * i + m_xy_offset, sns, font::WHITE
             );
         }
         else
-        {
-            m_gc->set_foreground(white());
-            m_window->draw_rectangle
-            (
-                m_gc, true, 1, (m_names_y * (i)), (6 * 2) + 1, m_names_y
-            );
-        }
+            draw_rectangle(white(), 1, m_names_y * i, m_setbox_w + 1, m_names_y);
+
+#if SEQ64_HIGHLIGHT_EMPTY_SEQS
+        bool seqempty = false;
+#endif
+
+        sequence * seq = perf().get_sequence(seqnum);
+        Color fg = grey();
+        font::Color col = font::BLACK;
         if (perf().is_active(seqnum))
         {
 #if SEQ64_HIGHLIGHT_EMPTY_SEQS
             seqempty = seq->event_count() == 0;     // this works fine!
+
+            /*
+             * Make sure that the rectangle drawn with the proper background
+             * colors, otherwise just the name is properly colored.
+             */
+
             if (seqempty)
-                m_gc->set_foreground(yellow());
+            {
+                fg = yellow();          // m_gc->set_foreground(yellow());
+                col = font::BLACK_ON_YELLOW;
+            }
             else
 #endif
-                m_gc->set_foreground(white());
+                fg = white();           // m_gc->set_foreground(white());
         }
-        else
-            m_gc->set_foreground(grey());
 
-        m_window->draw_rectangle
+        /*
+         * 2. Render the column with the name of the sequence.
+         */
+
+        draw_rectangle
         (
-            m_gc, true, 6 * 2 + 3,
-            (m_names_y * i) + 1, m_names_x - 3 - (6 * 2), m_names_y - 1
+            fg, m_setbox_w + 3, (m_names_y * i) + 1,
+            m_names_x - 3 - m_setbox_w, m_names_y - 1
         );
         if (perf().is_active(seqnum))
         {
-            char temp[50];
+            char temp[32];
             m_sequence_active[seqnum] = true;
-            font::Color col;
-#if SEQ64_HIGHLIGHT_EMPTY_SEQS
-            if (seqempty)
-                col = font::BLACK_ON_YELLOW;
-            else
-#endif
-                col = font::BLACK;
-
             snprintf
             (
                 temp, sizeof(temp), "%-14.14s   %2d",
                 seq->get_name(), seq->get_midi_channel() + 1
             );
-            p_font_renderer->render_string_on_drawable
-            (
-                m_gc, 5 + 6 * 2, m_names_y * i + 2, m_window, temp, col
-            );
+            render_string(5 + m_setbox_w, m_names_y * i + 2, temp, col);
             snprintf
             (
                 temp, sizeof(temp), "%d-%d %ld/%ld",
                 seq->get_midi_bus(), seq->get_midi_channel() + 1,
                 seq->get_bpm(), seq->get_bw()
             );
-            p_font_renderer->render_string_on_drawable
-            (
-                m_gc, 5 + 6 * 2, m_names_y * i + 12, m_window, temp, col
-            );
+            render_string(5 + m_setbox_w, m_names_y * i + 12, temp, col);
 
             bool muted = seq->get_song_mute();
-            m_gc->set_foreground(black());
-            m_window->draw_rectangle
+            draw_rectangle
             (
-                m_gc, muted, 6 * 2 + 6 * 20 + 2, (m_names_y * i), 10, m_names_y
+                black(), m_namebox_w + 2, (m_names_y * i), 10, m_names_y, muted
             );
             if (muted)
             {
@@ -208,30 +202,14 @@ perfnames::draw_sequence (int seqnum)
 #endif
                     col = font::WHITE;
 
-                p_font_renderer->render_string_on_drawable
-                (
-                    m_gc, 5 + 6 * 2 + 6 * 20, m_names_y * i + 2,
-                    m_window, "M", col
-                );
+                render_string(m_namebox_w + 5, m_names_y * i + 2, "M", col);
             }
             else
-            {
-                p_font_renderer->render_string_on_drawable
-                (
-                    m_gc, 5 + 6 * 2 + 6 * 20, m_names_y * i + 2,
-                    m_window, "M", col
-                );
-            }
+                render_string(m_namebox_w + 5, m_names_y * i + 2, "M", col);
         }
     }
     else
-    {
-        m_gc->set_foreground(grey());
-        m_window->draw_rectangle
-        (
-            m_gc, true, 0, (m_names_y * i) + 1 , m_names_x, m_names_y
-        );
-    }
+        draw_rectangle(grey(), 0, (m_names_y * i) + 1, m_names_x, m_names_y);
 }
 
 /**

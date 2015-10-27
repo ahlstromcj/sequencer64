@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-15
+ * \updates       2015-10-27
  * \license       GNU GPLv2 or above
  *
  *  This file provides a Linux-only implementation of MIDI support.
@@ -670,18 +670,13 @@ midibus::clock (long tick)
     automutex locker(m_mutex);
     if (m_clock_type != e_clock_off)
     {
-        bool done = false;
-        if (m_lasttick >= tick)
-            done = true;
-
+        bool done = m_lasttick >= tick;
         while (! done)
         {
-            m_lasttick++;
-            if (m_lasttick >= tick)
-                done = true;
-
             int ct = clock_ticks_from_ppqn(m_ppqn);     /* ppqn / 24    */
-            if (m_lasttick % ct == 0)                   /* tick time?   */
+            m_lasttick++;
+            done = m_lasttick >= tick;
+            if ((m_lasttick % ct) == 0)                 /* tick time?   */
             {
                 /*
                  * Set the event tag to 127 so the sequences won't remove it.

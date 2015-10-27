@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-21
- * \updates       2015-10-03
+ * \updates       2015-10-27
  * \license       GNU GPLv2 or above
  *
  */
@@ -150,6 +150,41 @@ gui_drawingarea_gtk2::gtk_drawarea_init ()
     if (m_window_x > 0 && m_window_y > 0)
         set_size_request(m_window_x, m_window_y);
 }
+
+/**
+ *  A small wrapper function for readability in box-drawing.  It adds setting
+ *  the foreground color to the draw_rectangle() function.
+ *
+ * \param c
+ *      Provides the foreground color to set.
+ *
+ * \param x
+ *      The x-coordinate of the origin.
+ *
+ * \param y
+ *      The y-coordinate of the origin.
+ *
+ * \param lx
+ *      The width of the box.
+ *
+ * \param ly
+ *      The height of the box.
+ *
+ * \param fill
+ *      If true, fill the rectangle with the current foreground color, as
+ *      set by m_gc->set_foreground(color).  Defaults to true.
+ */
+
+void
+gui_drawingarea_gtk2::draw_rectangle
+(
+    const Color & c, int x, int y, int lx, int ly, bool fill
+)
+{
+    m_gc->set_foreground(c);
+    draw_rectangle(x, y, lx, ly, fill);
+}
+
 
 /**
  *  For this GTK callback, on realization of window, initialize the shiz.

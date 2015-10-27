@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-15
+ * \updates       2015-10-27
  * \license       GNU GPLv2 or above
  *
  */
@@ -293,14 +293,10 @@ seqroll::draw_background_on_pixmap ()
 void
 seqroll::update_background ()
 {
-    m_gc->set_foreground(white());              /* clear background */
+    m_gc->set_foreground(white());              /* clear background     */
     m_background->draw_rectangle(m_gc, true, 0, 0, m_window_x, m_window_y);
-
     m_gc->set_foreground(grey());               /* draw horz grey lines */
-    m_gc->set_line_attributes
-    (
-        1, Gdk::LINE_ON_OFF_DASH, Gdk::CAP_NOT_LAST, Gdk::JOIN_MITER
-    );
+    set_line(Gdk::LINE_ON_OFF_DASH);
     gint8 dash = 1;
     m_gc->set_dashes(0, &dash, 1);
     for (int i = 0; i < (m_window_y / c_key_y) + 1; i++)
@@ -313,18 +309,12 @@ seqroll::update_background ()
             if ((modkey % OCTAVE_SIZE) == 0)
             {
                 m_gc->set_foreground(dark_grey());    /* draw horz lines at C */
-                m_gc->set_line_attributes
-                (
-                    1, Gdk::LINE_SOLID, Gdk::CAP_NOT_LAST, Gdk::JOIN_MITER
-                );
+                set_line(Gdk::LINE_SOLID);
             }
             else if ((modkey % OCTAVE_SIZE) == (OCTAVE_SIZE-1))
             {
                 m_gc->set_foreground(grey()); /* horz grey lines, other notes */
-                m_gc->set_line_attributes
-                (
-                    1, Gdk::LINE_ON_OFF_DASH, Gdk::CAP_NOT_LAST, Gdk::JOIN_MITER
-                );
+                set_line(Gdk::LINE_ON_OFF_DASH);
             }
         }
         m_background->draw_line(m_gc, 0, i * c_key_y, m_window_x, i * c_key_y);
@@ -362,25 +352,16 @@ seqroll::update_background ()
         if (i % ticks_per_m_line == 0)
         {
             m_gc->set_foreground(black());      /* solid line on every beat */
-            m_gc->set_line_attributes
-            (
-                1, Gdk::LINE_SOLID, Gdk::CAP_NOT_LAST, Gdk::JOIN_MITER
-            );
+            set_line(Gdk::LINE_SOLID);
         }
         else if (i % ticks_per_beat == 0)
         {
             m_gc->set_foreground(dark_grey());
-            m_gc->set_line_attributes
-            (
-                1, Gdk::LINE_SOLID, Gdk::CAP_NOT_LAST, Gdk::JOIN_MITER
-            );
+            set_line(Gdk::LINE_SOLID);
         }
         else
         {
-            m_gc->set_line_attributes
-            (
-                1, Gdk::LINE_ON_OFF_DASH, Gdk::CAP_NOT_LAST, Gdk::JOIN_MITER
-            );
+            set_line(Gdk::LINE_ON_OFF_DASH);
 
             int i_snap = i - (i % m_snap);
             if (i == i_snap)
@@ -397,10 +378,7 @@ seqroll::update_background ()
             base_line - m_scroll_offset_x, m_window_y
         );
     }
-    m_gc->set_line_attributes                   /* reset line style */
-    (
-        1, Gdk::LINE_SOLID, Gdk::CAP_NOT_LAST, Gdk::JOIN_MITER
-    );
+    set_line(Gdk::LINE_SOLID);
 }
 
 /**
@@ -650,10 +628,7 @@ seqroll::draw_selection_on_window ()
     int x, y, w, h;
     if (m_selecting  ||  m_moving || m_paste ||  m_growing)
     {
-        m_gc->set_line_attributes
-        (
-            1, Gdk::LINE_SOLID, Gdk::CAP_NOT_LAST, Gdk::JOIN_MITER
-        );
+        set_line(Gdk::LINE_SOLID);
         m_window->draw_drawable                         /* replace old */
         (
             m_gc, m_pixmap, m_old.x, m_old.y, m_old.x, m_old.y,

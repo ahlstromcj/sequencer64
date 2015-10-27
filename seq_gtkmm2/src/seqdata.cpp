@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-04
+ * \updates       2015-10-27
  * \license       GNU GPLv2 or above
  *
  */
@@ -170,10 +170,7 @@ seqdata::draw_events_on (Glib::RefPtr<Gdk::Drawable> a_draw)
             {
                 event_height = d0;
             }
-            m_gc->set_line_attributes
-            (
-                2, Gdk::LINE_SOLID, Gdk::CAP_NOT_LAST, Gdk::JOIN_MITER
-            );
+            set_line(Gdk::LINE_SOLID, 2);
             a_draw->draw_line                       /* draw vert lines      */
             (
                 m_gc, event_x -  m_scroll_offset_x + 1,
@@ -309,7 +306,7 @@ seqdata::on_leave_notify_event (GdkEventCrossing * p0)
 }
 
 /**
- *  Draws on vertical line on...
+ *  Draws on vertical line on the data window.
  */
 
 void
@@ -317,10 +314,7 @@ seqdata::draw_line_on_window ()
 {
     int x, y, w, h;
     m_gc->set_foreground(black());
-    m_gc->set_line_attributes
-    (
-        1, Gdk::LINE_SOLID, Gdk::CAP_NOT_LAST, Gdk::JOIN_MITER
-    );
+    set_line(Gdk::LINE_SOLID);
     m_window->draw_drawable                         /* replace old */
     (
         m_gc, m_pixmap, m_old.x, m_old.y, m_old.x, m_old.y,

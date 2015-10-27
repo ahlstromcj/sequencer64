@@ -81,17 +81,35 @@ private:
 
     /**
      *  Specifies the exact width of a character cell, in pixels.  Currently
-     *  defaults to cf_text_w = 6.
+     *  defaults to cf_text_w = 6.  Note that a lot of stuff depends on this
+     *  being 6 at present, even with our new, slightly wider, font.
      */
 
     int m_font_w;
 
     /**
      *  Specifies the exact height of a character cell, in pixels.  Currently
-     *  defaults to cf_text_h = 10.
+     *  defaults to cf_text_h = 10.  Note that a lot of stuff depends on this
+     *  being 10 at present, even with our new, slightly wider, font.
+     *  But some of the drawing code doesn't use the character height, but the
+     *  padded character height.
      */
 
     int m_font_h;
+
+    /**
+     *  Provides an ad hoc small horizontal or vertical offset for printing
+     *  strings.
+     */
+
+    int m_offset;
+
+    /**
+     *  Provides a common constant used by much of the drawing code, but only
+     *  marginally related to the padded character height.
+     */
+
+    int m_padded_h;
 
     /**
      *  Points to the current pixmap (m_black_pixmap or m_white_pixmap)
@@ -151,6 +169,33 @@ public:
         const char * str,
         font::Color col
     );
+
+    /**
+     * \getter m_font_w
+     */
+
+    int char_width () const
+    {
+        return m_font_w;
+    }
+
+    /**
+     * \getter m_font_h
+     */
+
+    int char_height () const
+    {
+        return m_font_h;
+    }
+
+    /**
+     * \getter m_padded_h
+     */
+
+    int padded_height () const
+    {
+        return m_padded_h;
+    }
 
 };
 

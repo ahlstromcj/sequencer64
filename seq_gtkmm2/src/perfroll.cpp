@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-26
+ * \updates       2015-10-27
  * \license       GNU GPLv2 or above
  *
  */
@@ -117,8 +117,8 @@ perfroll::~perfroll ()
  *  sixteenth notes in a bar.  (We think...)
  *
  *  The m_perf_scale_x member starts out at c_perf_scale_x, which is 32 ticks
- *  per pixel at the default tick rate of 192 PPQN.  We will adjust this at
- *  some point.
+ *  per pixel at the default tick rate of 192 PPQN.  We adjust this now.
+ *  But note that this calculation still involves the c_perf_scale_x constant.
  */
 
 void
@@ -253,28 +253,16 @@ perfroll::fill_background_pixmap ()
     m_gc->set_foreground(grey());                   /* draw horz grey lines */
     gint8 dash = 1;
     m_gc->set_dashes(0, &dash, 1);
-    m_gc->set_line_attributes
-    (
-        1, Gdk::LINE_ON_OFF_DASH, Gdk::CAP_NOT_LAST, Gdk::JOIN_MITER
-    );
+    set_line(Gdk::LINE_ON_OFF_DASH);
     m_background->draw_line(m_gc, 0, 0, m_background_x, 0);
     int beats = m_measure_length / m_beat_length;
     for (int i = 0; i < beats ;)                    /* draw vertical lines   */
     {
         if (i == 0)
-        {
-            m_gc->set_line_attributes
-            (
-                1, Gdk::LINE_SOLID, Gdk::CAP_NOT_LAST, Gdk::JOIN_MITER
-            );
-        }
+            set_line(Gdk::LINE_SOLID);
         else
-        {
-            m_gc->set_line_attributes
-            (
-                1, Gdk::LINE_ON_OFF_DASH, Gdk::CAP_NOT_LAST, Gdk::JOIN_MITER
-            );
-        }
+            set_line(Gdk::LINE_ON_OFF_DASH);
+
         m_gc->set_foreground(grey());
         m_background->draw_line                     /* solid line, every beat */
         (
@@ -286,10 +274,7 @@ perfroll::fill_background_pixmap ()
         else
             ++i;
     }
-    m_gc->set_line_attributes                       /* reset line style       */
-    (
-        1, Gdk::LINE_SOLID, Gdk::CAP_NOT_LAST, Gdk::JOIN_MITER
-    );
+    set_line(Gdk::LINE_SOLID);
 }
 
 /**

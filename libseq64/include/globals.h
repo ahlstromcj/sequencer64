@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-25
- * \updates       2015-10-26
+ * \updates       2015-10-27
  * \license       GNU GPLv2 or above
  *
  *  We're going to try to collect all the globals here in one module, and
@@ -53,6 +53,40 @@
  * \todo
  *      There are additional user-interface and MIDI scaling variables in the
  *      perfroll module that we need to move here.
+ *
+ *  To convert the ticks for each MIDI note into a millisecond value to
+ *  display the notes visually along a timeline, one needs to use the division
+ *  and the tempo to determine the value of an individual tick.  That
+ *  conversion looks like:
+ *
+\verbatim
+        1 min    60 sec   1 beat     Z clocks
+       ------- * ------ * -------- * -------- = seconds
+       X beats   1 min    Y clocks       1
+\endverbatim
+ *
+ *  X is the tempo (beats per minute, or BPM), Y is the division (pulses per
+ *  quarter note, PPQN), and Z is the number of clocks from the incoming
+ *  event. All of the units cancel out, yielding a value in seconds. The
+ *  condensed version of that conversion is therefore:
+ *
+\verbatim
+        (60 * Z) / (X * Y) = seconds
+        seconds = 60 * clocks / (bpm * ppqn)
+\endverbatim
+ *
+ *  The value given here in seconds is the number of seconds since the
+ *  previous MIDI event, not from the sequence start.  One needs to keep a
+ *  running total of this value to construct a coherent sequence.  Especially
+ *  important if the MIDI file contains tempo changes.  Leaving the clocks (Z)
+ *  out of the equation yields the periodicity of the clock.
+ *
+ *  The inverse calculation is:
+ *
+\verbatim
+        clocks = seconds * bpm * ppqn / 60
+\endverbatim
+ *
  */
 
 #include <string>
@@ -143,6 +177,19 @@ extern user_settings g_user_settings;
 #define DEFAULT_BEAT_WIDTH                4
 
 /**
+ *  Default value for major divisions per bar.  A graphics version of
+ *  DEFAULT_BEATS_PER_MEASURE.
+ */
+
+#define DEFAULT_LINES_PER_MEASURE         4
+
+/**
+ *  Default value for perfedit snap.
+ */
+
+#define DEFAULT_PERFEDIT_SNAP             8
+
+/**
  *  Default value for c_thread_trigger_width_ms.
  */
 
@@ -159,6 +206,9 @@ extern user_settings g_user_settings;
  *  a clock signal that is broadcast via MIDI to ensure that several
  *  MIDI-enabled devices or sequencers stay in synchronization.  Do not
  *  confuse it with "MIDI timecode".
+ *
+ *  The standard MIDI beat clock ticks every 24 times every quarter note
+ *  (crotchet).
  *
  *  Unlike MIDI timecode, the MIDI beat clock is tempo-dependent. Clock events
  *  are sent at a rate of 24 ppqn (pulses per quarter note). Those pulses are
@@ -506,6 +556,7 @@ const int c_redraw_ms = 40;
 /**
  *  Provides constants for the perfroll object (performance editor).
  *  Note the current dependence on the width of a font pixmap's character!
+ *  So we will use the font's numeric accessors soon.
  */
 
 const int c_names_x = 6 * 24;           /* width of name box, 24 characters */
@@ -933,27 +984,65 @@ inline double pulse_length_us (int bpm, int ppqn)
 
 /**
  *  Converts delta time in microseconds to ticks.
+ *  The inverse of ticks_to_delta_time_us().
  *
  * \param delta_us
  *      The number of microseconds in the delta time.
  *
  * \param bpm
- *      Provides the beats-per-minute value.
+ *      Provides the beats-per-minute value, otherwise known as the "tempo".
  *
  * \param ppqn
- *      Provides the pulses-per-quarter-note value.
+ *      Provides the pulses-per-quarter-note value, otherwise known as the
+ *      "division".
  *
  * \return
  *      Returns the tick value.
  */
 
-inline double delta_time_to_ticks (long delta_us, int bpm, int ppqn)
+inline double delta_time_us_to_ticks (long delta_us, int bpm, int ppqn)
 {
-    return double(bpm * ppqn * (delta_us / 60000000.0));
+    return double(bpm) * double(ppqn) * (double(delta_us) / 60000000.0);
+}
+
+/**
+ *  Converts the time in ticks ("clocks") to delta time in microseconds.
+ *  The inverse of delta_time_us_to_ticks().
+ *
+ * \param delta_ticks
+ *      The number of ticks or "clocks".
+ *
+ * \param bpm
+ *      Provides the beats-per-minute value, otherwise known as the "tempo".
+ *
+ * \param ppqn
+ *      Provides the pulses-per-quarter-note value, otherwise known as the
+ *      "division".
+ *
+ * \return
+ *      Returns the time value in microseconds.
+ */
+
+inline double ticks_to_delta_time_us (long delta_ticks, int bpm, int ppqn)
+{
+    return 60000000.0 * double(delta_ticks) / (double(bpm) * double(ppqn));
 }
 
 /**
  *  Calculates the duration of a clock tick based on PPQN and BPM settings.
+ *
+ * \deprecated
+ *      This is a somewhat bogus calculation used only for "statistical"
+ *      output in the old perform module.  Name changed to reflect this
+ *      unfortunate fact.  Use pulse_length_us() instead.
+ *
+\verbatim
+        us =           60000000 ppqn
+             ---------------------------------
+              MIDI_CLOCK_IN_PPQN * bpm * ppqn
+\endverbatim
+ *
+ *  MIDI_CLOCK_IN_PPQN is 24.
  *
  * \param bpm
  *      Provides the beats-per-minute value.  No sanity check is made.
@@ -964,10 +1053,11 @@ inline double delta_time_to_ticks (long delta_us, int bpm, int ppqn)
  *
  * \return
  *      Returns the clock tick duration in microseconds.  If either parameter
- *      is invalid, this will crash.  :-D
+ *      is invalid, this will crash.  Who wants to waste time on value checks
+ *      here? :-D
  */
 
-inline double clock_tick_duration_us (int bpm, int ppqn)
+inline double clock_tick_duration_bogus (int bpm, int ppqn)
 {
     return (ppqn / MIDI_CLOCK_IN_PPQN) * 60000000.0 / (bpm * ppqn);
 }
@@ -989,7 +1079,8 @@ inline int clock_ticks_from_ppqn (int ppqn)
 }
 
 /**
- *  A simple calculation to convert PPQN to MIDI clock ticks.
+ *  A simple calculation to convert PPQN to MIDI clock ticks.  The same as
+ *  clock_ticks_from_ppqn(), but returned as a double float.
  *
  * \param ppqn
  *      The number of pulses per quarter note.
@@ -1000,7 +1091,7 @@ inline int clock_ticks_from_ppqn (int ppqn)
 
 inline double double_ticks_from_ppqn (int ppqn)
 {
-    return ppqn / double(MIDI_CLOCK_IN_PPQN);
+    return double(ppqn) / double(MIDI_CLOCK_IN_PPQN);
 }
 
 }           // namespace seq64

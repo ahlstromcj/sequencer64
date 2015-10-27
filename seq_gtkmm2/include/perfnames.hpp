@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-02
+ * \updates       2015-10-27
  * \license       GNU GPLv2 or above
  *
  *  This class supports the left side of the Performance window (also known
@@ -62,8 +62,57 @@ class perfnames : public gui_drawingarea_gtk2, public seqmenu
 
 private:
 
+    /**
+     *  Provides the number of the characters in the name box.  Pretty much
+     *  hardwired to 24 at present.
+     */
+
+    int m_names_chars;
+
+    /**
+     *  Provides the "real" width of a character.  This value is obtained from
+     *  a font-renderer accessor function.
+     */
+
+    int m_char_w;
+
+    /**
+     *  Provides the width of the "set number" box.  This used to be hardwired
+     *  to 6 * 2 (character-width times two).
+     */
+
+    int m_setbox_w;
+
+    /**
+     *  Provides the width of the "name" box.  This used to be a weird
+     *  calculation based on character width.
+     */
+
+    int m_namebox_w;
+
+    /**
+     *  Provides the width of the names box, which is the width of a character
+     *  for 24 characters.
+     */
+
     int m_names_x;
+
+    /**
+     *  Provides the height of the names box, which is hardwired to 24 pixels.
+     *  This value was once 22 pixels, but we need a little extra room for our
+     *  new font.  This extra room is compatible enough with the old font, as
+     *  well.
+     */
+
     int m_names_y;
+
+    /**
+     *  Provides the horizontal and vertical offsets of the text relative to
+     *  the names box.  Currently hardwired.
+     */
+
+    int m_xy_offset;
+
     int m_seqs_in_set;
     int m_sequence_max;                         // CONST
     int m_sequence_offset;

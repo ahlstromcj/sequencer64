@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-15
+ * \updates       2015-10-27
  * \license       GNU GPLv2 or above
  *
  */
@@ -184,26 +184,17 @@ seqevent::draw_background ()
         if (i % ticks_per_m_line == 0)          /* a solid line on every beat */
         {
             m_gc->set_foreground(black());
-            m_gc->set_line_attributes
-            (
-                1, Gdk::LINE_SOLID, Gdk::CAP_NOT_LAST, Gdk::JOIN_MITER
-            );
+            set_line(Gdk::LINE_SOLID);
         }
         else if (i % ticks_per_beat == 0)
         {
             m_gc->set_foreground(grey());
-            m_gc->set_line_attributes
-            (
-                1, Gdk::LINE_SOLID, Gdk::CAP_NOT_LAST, Gdk::JOIN_MITER
-            );
+            set_line(Gdk::LINE_SOLID);
         }
         else
         {
             m_gc->set_foreground(grey());
-            m_gc->set_line_attributes
-            (
-                1, Gdk::LINE_ON_OFF_DASH, Gdk::CAP_NOT_LAST, Gdk::JOIN_MITER
-            );
+            set_line(Gdk::LINE_ON_OFF_DASH);
             gint8 dash = 1;
             m_gc->set_dashes(0, &dash, 1);
         }
@@ -213,10 +204,7 @@ seqevent::draw_background ()
             0, base_line - m_scroll_offset_x, m_window_y
         );
     }
-    m_gc->set_line_attributes                       /* reset line style */
-    (
-        1, Gdk::LINE_SOLID, Gdk::CAP_NOT_LAST, Gdk::JOIN_MITER
-    );
+    set_line(Gdk::LINE_SOLID);
     m_gc->set_foreground(black());
     m_pixmap->draw_rectangle
     (
@@ -364,10 +352,7 @@ seqevent::draw_selection_on_window ()
     int x, w;
     int y = (c_eventarea_y - c_eventevent_y) / 2;
     int h =  c_eventevent_y;
-    m_gc->set_line_attributes
-    (
-        1, Gdk::LINE_SOLID, Gdk::CAP_NOT_LAST, Gdk::JOIN_MITER
-    );
+    set_line(Gdk::LINE_SOLID);
     m_window->draw_drawable                 /* replace old */
     (
         m_gc, m_pixmap, m_old.x, y, m_old.x, y, m_old.width + 1, h + 1

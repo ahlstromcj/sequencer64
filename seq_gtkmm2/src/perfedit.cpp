@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-15
+ * \updates       2015-10-27
  * \license       GNU GPLv2 or above
  *
  */
@@ -91,7 +91,7 @@ namespace seq64
  *
  * \todo
  *      Offload most of the work into an initialization function like
- *      options does; make the perform parameter a reference.
+ *      options does.
  */
 
 perfedit::perfedit
@@ -133,7 +133,8 @@ perfedit::perfedit
     m_snap              (DEFAULT_PERFEDIT_SNAP),
     m_bpm               (bpm),
     m_bw                (bw),
-    m_ppqn              (0),                /* 192 pulses per quarter note */
+    m_ppqn              (0),
+    m_beats_per_measure (DEFAULT_LINES_PER_MEASURE),        /* 4 */
     m_redraw_ms         (c_redraw_ms),
     m_modified          (false)
 {
@@ -330,10 +331,10 @@ perfedit::perfedit
     m_hlbox->pack_start(*(manage(new Gtk::Label("x"))), false, false, 4);
     m_hlbox->pack_start(*m_button_snap , false, false);
     m_hlbox->pack_start(*m_entry_snap , false, false);
-    add(*m_table);                                /* add table, this-> */
-    set_snap(8);
-    set_bpm(4);
-    set_bw(4);
+    add(*m_table);
+    set_snap(DEFAULT_PERFEDIT_SNAP);
+    set_bpm(DEFAULT_BEATS_PER_MEASURE);         /* time-signature numerator   */
+    set_bw(DEFAULT_BEAT_WIDTH);                 /* time-signature denominator */
 }
 
 /**
@@ -376,8 +377,8 @@ perfedit::collapse ()
 
 /**
  *  Implement the copy (actually, expand-and-copy) action.  This action
- *  opens up a space  events between the L and R (left and right) markers,
- *  and copies the information from the same amount of event that follow
+ *  opens up a space of events between the L and R (left and right) markers,
+ *  and copies the information from the same amount of events that follow
  *  the R marker.  This action is preceded by pushing an Undo operation in
  *  the perform object, copying its triggers, and telling the perfroll to
  *  redraw.
@@ -392,7 +393,7 @@ perfedit::copy ()
 }
 
 /**
- *  Implement the expand action.  This action opens up a space  events
+ *  Implement the expand action.  This action opens up a space of events
  *  between the L and R (left and right) markers.  This action is preceded
  *  by pushing an Undo operation in the perform object, moving its
  *  triggers, and telling the perfroll to redraw.
@@ -435,9 +436,9 @@ perfedit::popup_menu (Gtk::Menu * a_menu)
 void
 perfedit::set_guides ()
 {
-    long measure_ticks = (m_ppqn * 4) * m_bpm / m_bw;
+    long measure_ticks = (m_ppqn * m_beats_per_measure) * m_bpm / m_bw;
     long snap_ticks = measure_ticks / m_snap;
-    long beat_ticks = (m_ppqn * 4) / m_bw;
+    long beat_ticks = (m_ppqn * m_beats_per_measure) / m_bw;
     m_perfroll->set_guides(snap_ticks, measure_ticks, beat_ticks);
     m_perftime->set_guides(snap_ticks, measure_ticks);
 }
@@ -458,8 +459,8 @@ perfedit::set_snap (int snap)
 }
 
 /**
- *  Sets the BPM (beats per minute) text and values to the given value,
- *  and then calls set_guides().
+ *  Sets the beats-per-measure text and value to the given value, and then
+ *  calls set_guides().
  */
 
 void
@@ -468,9 +469,9 @@ perfedit::set_bpm (int beats_per_measure)
     char b[8];
     snprintf(b, sizeof(b), "%d", beats_per_measure);
     m_entry_bpm->set_text(b);
+    is_modified(m_bpm != beats_per_measure);
     m_bpm = beats_per_measure;
     set_guides();
-    // is_modified(true);
 }
 
 /**
@@ -484,9 +485,12 @@ perfedit::set_bw (int beat_width)
     char b[8];
     snprintf(b, sizeof(b), "%d", beat_width);
     m_entry_bw->set_text(b);
+    is_modified(m_bw != beat_width);
     m_bw = beat_width;
+
+    // m_beats_per_measure = beat_width;   // applicable now?
+
     set_guides();
-    // is_modified(true);
 }
 
 /**

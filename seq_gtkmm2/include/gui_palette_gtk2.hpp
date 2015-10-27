@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-21
- * \updates       2015-10-04
+ * \updates       2015-10-27
  * \license       GNU GPLv2 or above
  *
  *  This module defines some Gdk::Color objects.  However, note that this
@@ -59,6 +59,7 @@ protected:
     typedef Gdk::Color Color;
 
 private:                                // use the accessor functions
+
     const Color m_black;
     const Color m_white;
     const Color m_grey;
@@ -153,3 +154,4 @@ public:
  *
  * vim: sw=4 ts=4 wm=4 et ft=cpp
  */
+

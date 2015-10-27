@@ -352,7 +352,7 @@ midifile::parse (perform & a_perf, int screenset)
                  * Current time is ppqn according to the file, we have to
                  * adjust it to our own ppqn.  PPQN / ppqn gives us the
                  * ratio.  (This change is not enough; a song with a ppqn of
-                 * 120 plays too fast in Sequencer64, which has a ppqn of
+                 * 120 plays too fast in Seq24, which has a constant ppqn of
                  * 192.)
                  */
 

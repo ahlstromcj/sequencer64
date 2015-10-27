@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-15
+ * \updates       2015-10-26
  * \license       GNU GPLv2 or above
  *
  */
@@ -58,14 +58,14 @@ perfroll::perfroll
     gui_drawingarea_gtk2    (p, hadjust, vadjust, 10, 10),
     m_snap                  (0),
     m_ppqn                  (0),                            // set in the body
-    m_page_factor           (PERFROLL_PAGE_FACTOR),
-    m_divs_per_bar          (PERFROLL_DIVS_PER_BEAT),       // grid subdivisions
+    m_page_factor           (PERFROLL_PAGE_FACTOR),         // 4096
+    m_divs_per_beat         (PERFROLL_DIVS_PER_BEAT),       // 16
     m_ticks_per_bar         (0),                            // set in the body
-    m_perf_scale_x          (c_perf_scale_x),
+    m_perf_scale_x          (c_perf_scale_x),               // 32 ticks per pixel
     m_names_y               (c_names_y),
     m_background_x          (c_perfroll_background_x),      // gets adjusted!
-    m_size_box_w            (c_perfroll_size_box_w),
-    m_size_box_click_w      (c_perfroll_size_box_click_w),  // not yet used
+    m_size_box_w            (c_perfroll_size_box_w),        // 3
+    m_size_box_click_w      (c_perfroll_size_box_click_w),  // 3+1, not yet used
     m_measure_length        (0),
     m_beat_length           (0),
     m_old_progress_ticks    (0),
@@ -82,9 +82,7 @@ perfroll::perfroll
     m_growing               (false),
     m_grow_direction        (false)
 {
-    m_ppqn = (ppqn == SEQ64_USE_DEFAULT_PPQN) ? global_ppqn : ppqn ;
-    m_ticks_per_bar = m_ppqn * m_divs_per_bar;
-    m_background_x = (m_ppqn * 4 * 16) / c_perf_scale_x;
+    set_ppqn(ppqn);
     for (int i = 0; i < m_sequence_max; ++i)
         m_sequence_active[i] = false;
 
@@ -109,6 +107,30 @@ perfroll::~perfroll ()
 {
     if (not_nullptr(m_interaction))
         delete m_interaction;
+}
+
+/**
+ *  Handles changes to the PPQN value in one place.
+ *
+ *  The m_ticks_per_bar member replaces the construct "c_ppqn * 16".  This
+ *  construct is parts-per-quarter-note times 4 quarter notes times 4
+ *  sixteenth notes in a bar.  (We think...)
+ *
+ *  The m_perf_scale_x member starts out at c_perf_scale_x, which is 32 ticks
+ *  per pixel at the default tick rate of 192 PPQN.  We will adjust this at
+ *  some point.
+ */
+
+void
+perfroll::set_ppqn (int ppqn)
+{
+    if (ppqn > 0 || ppqn == SEQ64_USE_DEFAULT_PPQN)
+    {
+        m_ppqn = (ppqn == SEQ64_USE_DEFAULT_PPQN) ? global_ppqn : ppqn ;
+        m_ticks_per_bar = m_ppqn * m_divs_per_beat;
+        m_background_x = (m_ppqn * 4 * 16) / c_perf_scale_x;
+        m_perf_scale_x = c_perf_scale_x * m_ppqn / c_ppqn;
+    }
 }
 
 /**
@@ -151,7 +173,7 @@ void
 perfroll::init_before_show ()
 {
     m_roll_length_ticks = perf().get_max_trigger();
-    m_roll_length_ticks -= (m_roll_length_ticks % (m_ticks_per_bar));
+    m_roll_length_ticks -= (m_roll_length_ticks % m_ticks_per_bar);
     m_roll_length_ticks += m_ppqn * m_page_factor;
 }
 
@@ -173,15 +195,15 @@ perfroll::init_before_show ()
  *      Thus, the 16 is a "beats per bar" or "beats per measure" value.
  *      This doesn't quite make sense, but there are 16 divisions per
  *      beat on the perfroll user-interface.  So for now we'll call it
- *      the latter, and make a variable called "m_divs_per_bar", see its
+ *      the latter, and make a variable called "m_divs_per_beat", see its
  *      definition in the class initializer list.
  */
 
 void
 perfroll::update_sizes ()
 {
-    int h_bars = m_roll_length_ticks / (m_ticks_per_bar);
-    int h_bars_visible = (m_window_x * m_perf_scale_x) / (m_ticks_per_bar);
+    int h_bars = m_roll_length_ticks / m_ticks_per_bar;
+    int h_bars_visible = (m_window_x * m_perf_scale_x) / m_ticks_per_bar;
     int h_max_value = h_bars - h_bars_visible;
     m_hadjust.set_lower(0);
     m_hadjust.set_upper(h_bars);

@@ -549,9 +549,9 @@ midibus::continue_from (long tick)
      * Tell the device that we are going to start at a certain position.
      */
 
-    long pp16th = (m_ppqn / 4);
-    long leftover = (tick % pp16th);
-    long beats = (tick / pp16th);
+    long pp16th = m_ppqn / 4;
+    long leftover = tick % pp16th;
+    long beats = tick / pp16th;
     long starting_tick = tick - leftover;
 
     /*

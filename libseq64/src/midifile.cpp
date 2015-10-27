@@ -347,7 +347,6 @@ midifile::parse (perform & a_perf, int screenset)
                     m_pos++;                    /* it's a status, increment */
 
                 e.set_status(status);           /* set the members in event */
-                RunningTime += Delta;           /* add in the time          */
 
                 /*
                  * Current time is ppqn according to the file, we have to
@@ -357,6 +356,7 @@ midifile::parse (perform & a_perf, int screenset)
                  * 192.)
                  */
 
+                RunningTime += Delta;           /* add in the time          */
                 if (m_use_default_ppqn)         /* legacy handling of ppqn  */
                 {
                     CurrentTime = (RunningTime * m_ppqn) / ppqn;

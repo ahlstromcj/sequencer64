@@ -59,6 +59,10 @@
  *
  *  Also note we had to reduce the actual size of the characters slightly to
  *  render them properly in the cramped spaces of the GUI.
+ *
+ * \warning
+ *      Some global sizes, such as c_names_x, may depend on aspects of the
+ *      character size!
  */
 
 const int cf_grid_w = 16;               /* number of horizontal font cells  */

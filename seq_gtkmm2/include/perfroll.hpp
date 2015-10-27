@@ -74,8 +74,8 @@ private:
     int m_snap;
     int m_ppqn;
     int m_page_factor;              // 4096, provisional name
-    int m_divs_per_bar;             // 16, provisional name
-    int m_ticks_per_bar;            // m_ppqn * m_divs_per_bar, provisional name
+    int m_divs_per_beat;            // 16, provisional name
+    int m_ticks_per_bar;            // m_ppqn * m_divs_per_beat, provisional name
     int m_perf_scale_x;
     int m_names_y;
     int m_background_x;
@@ -119,6 +119,7 @@ public:
 
 private:
 
+    void set_ppqn (int ppqn);
     void convert_xy (int x, int y, long & ticks, int & seq);
     void convert_x (int x, long & ticks);
     void snap_x (int & x);

@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-25
- * \updates       2015-10-25
+ * \updates       2015-10-26
  * \license       GNU GPLv2 or above
  *
  *  We're going to try to collect all the globals here in one module, and
@@ -504,12 +504,13 @@ const int c_redraw_ms = 40;
 #endif
 
 /**
- *  Provides constants for the perform object (performance editor).
+ *  Provides constants for the perfroll object (performance editor).
+ *  Note the current dependence on the width of a font pixmap's character!
  */
 
-const int c_names_x = 6 * 24;
-const int c_names_y = 22;
-const int c_perf_scale_x = 32;  // units are ticks per pixel
+const int c_names_x = 6 * 24;           /* width of name box, 24 characters */
+const int c_names_y = 24;               /* height of name box, pixels, 22   */
+const int c_perf_scale_x = 32;          /* units are ticks per pixel        */
 
 /**
  *  These global values seemed to be use mainly in the options,
@@ -517,11 +518,11 @@ const int c_perf_scale_x = 32;  // units are ticks per pixel
  *  ones will eventually be made official.
  */
 
-extern int global_ppqn;                     /* new 2015-10-14   */
-extern char global_buss_override;           /* new 2015-10-14   */
+extern int global_ppqn;                 /* new 2015-10-14   */
+extern char global_buss_override;       /* new 2015-10-14   */
 
-extern bool global_legacy_format;           /* new 2015-08-16   */
-extern bool global_lash_support;            /* new 2015-08-27   */
+extern bool global_legacy_format;       /* new 2015-08-16   */
+extern bool global_lash_support;        /* new 2015-08-27   */
 extern bool global_showmidi;
 extern bool global_priority;
 extern bool global_stats;

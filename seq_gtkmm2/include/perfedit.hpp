@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-20
+ * \updates       2015-10-26
  * \license       GNU GPLv2 or above
  *
  */
@@ -140,9 +140,9 @@ public:
     perfedit
     (
         perform & p,
-        int ppqn = SEQ64_USE_DEFAULT_PPQN,
-        int bpm = DEFAULT_BEATS_PER_MEASURE,
-        int bw = DEFAULT_BEAT_WIDTH
+        int ppqn    = SEQ64_USE_DEFAULT_PPQN,
+        int bpm     = DEFAULT_BEATS_PER_MEASURE,
+        int bw      = DEFAULT_BEAT_WIDTH
     );
     ~perfedit ();
 

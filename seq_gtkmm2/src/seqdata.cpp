@@ -60,6 +60,9 @@ seqdata::seqdata
     m_scroll_offset_x       (0),
     m_background_tile_x     (0),
     m_background_tile_y     (0),
+    m_number_w              (p_font_renderer->char_width()+1),      // was 6
+    m_number_h              (3*(p_font_renderer->char_height()+1)), // was 3*10
+    m_number_offset_y       (p_font_renderer->char_height()-1),     // was 8
     m_status                (0),
     m_cc                    (0),
     m_numbers               (),             // an array
@@ -146,15 +149,14 @@ seqdata::update_pixmap ()
  */
 
 void
-seqdata::draw_events_on (Glib::RefPtr<Gdk::Drawable> a_draw)
+seqdata::draw_events_on (Glib::RefPtr<Gdk::Drawable> drawable)
 {
     long tick;
     unsigned char d0, d1;
     bool selected;
     int start_tick = m_scroll_offset_ticks;
     int end_tick = (m_window_x * m_zoom) + m_scroll_offset_ticks;
-    m_gc->set_foreground(white());
-    a_draw->draw_rectangle(m_gc, true, 0, 0, m_window_x, m_window_y);
+    draw_rectangle(drawable, white(), 0, 0, m_window_x, m_window_y);
     m_gc->set_foreground(black());
     m_seq.reset_draw_marker();
     while (m_seq.get_next_event(m_status, m_cc, &tick, &d0, &d1, &selected))
@@ -171,16 +173,21 @@ seqdata::draw_events_on (Glib::RefPtr<Gdk::Drawable> a_draw)
                 event_height = d0;
             }
             set_line(Gdk::LINE_SOLID, 2);
-            a_draw->draw_line                       /* draw vert lines      */
+            drawable->draw_line                       /* draw vert lines      */
             (
-                m_gc, event_x -  m_scroll_offset_x + 1,
-                c_dataarea_y - event_height, event_x -  m_scroll_offset_x + 1,
+                m_gc, event_x - m_scroll_offset_x + 1,
+                c_dataarea_y - event_height, event_x - m_scroll_offset_x + 1,
                 c_dataarea_y
             );
-            a_draw->draw_drawable
+
+            // event_x + 3 - m_scroll_offset_x, c_dataarea_y - 25, 6, 30
+
+            drawable->draw_drawable
             (
                 m_gc, m_numbers[event_height], 0, 0,
-                event_x + 3 - m_scroll_offset_x, c_dataarea_y - 25, 6, 30
+                event_x + 3 - m_scroll_offset_x,
+                c_dataarea_y - m_number_h + 3,
+                m_number_w, m_number_h
             );
         }
     }
@@ -326,10 +333,10 @@ seqdata::draw_line_on_window ()
     m_old.y = y;
     m_old.width = w;
     m_old.height = h;
-    m_gc->set_foreground(black());
-    m_window->draw_line
+    draw_line
     (
-        m_gc, m_current_x - m_scroll_offset_x, m_current_y,
+        black(),
+        m_current_x - m_scroll_offset_x, m_current_y,
         m_drop_x - m_scroll_offset_x, m_drop_y
     );
 }
@@ -361,6 +368,11 @@ seqdata::force_draw ()
  *  Implements the on-realization event, by calling the base-class version
  *  and then allocating the resources that could not be allocated in the
  *  constructor.  It also connects up the change_horz() function.
+ *
+ *  Note that this function creates a small pixmap for every possible
+ *  y-value, where y ranges from 0 to MIDI_COUNT_MAX-1 = 127.  It then fills
+ *  each pixmap with a numeric representation of that y value, up to three
+ *  digits (left-padded with spaces).
  */
 
 void
@@ -371,31 +383,29 @@ seqdata::on_realize ()
     (
         mem_fun(*this, &seqdata::change_horz)
     );
-    for (int i = 0; i < c_dataarea_y; ++i)
+    for (int i = 0; i < c_dataarea_y; ++i)          /* MIDI_COUNT_MAX; 128 */
     {
-        m_numbers[i] = Gdk::Pixmap::create(m_window, 6, 30, -1);
+        m_numbers[i] = Gdk::Pixmap::create(m_window, m_number_w, m_number_h, -1);
+
+        /*
+         * Doesn't work.  Why?
+         *
+         * draw_rectangle(m_numbers[i], white(), 0, 0, 6, 30);
+         */
+
         m_gc->set_foreground(white());
-        m_numbers[i]->draw_rectangle(m_gc, true, 0, 0, 6, 30);
+        m_numbers[i]->draw_rectangle(m_gc, true, 0, 0, m_number_w, m_number_h);
 
         char val[8];
         char num[8];
         snprintf(val, sizeof(val), "%3d\n", i);
-        memset(num, 0, 8);
+        memset(num, 0, sizeof(num));
         num[0] = val[0];                /* converting to unicode? */
         num[2] = val[1];
         num[4] = val[2];
-        p_font_renderer->render_string_on_drawable
-        (
-            m_gc, 0, 0, m_numbers[i], &num[0], font::BLACK
-        );
-        p_font_renderer->render_string_on_drawable
-        (
-            m_gc, 0, 8, m_numbers[i], &num[2], font::BLACK
-        );
-        p_font_renderer->render_string_on_drawable
-        (
-            m_gc, 0, 16, m_numbers[i], &num[4], font::BLACK
-        );
+        render_number(m_numbers[i], 0, 0, &num[0]);
+        render_number(m_numbers[i], 0, m_number_offset_y,     &num[2]);
+        render_number(m_numbers[i], 0, m_number_offset_y * 2, &num[4]);
     }
     update_sizes();
 }

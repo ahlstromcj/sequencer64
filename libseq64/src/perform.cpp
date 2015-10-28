@@ -822,10 +822,14 @@ perform::is_seq_valid (int seq) const
         return true;
     else
     {
-        fprintf
-        (
-            stderr, "is_seq_valid(): seq = %d > %d\n", seq, m_sequence_max-1
-        );
+        if (seq != (-1))
+        {
+            fprintf
+            (
+                stderr, "is_seq_valid(): seq = %d > %d\n",
+                seq, m_sequence_max-1
+            );
+        }
         return false;
     }
 }

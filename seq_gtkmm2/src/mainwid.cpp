@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-18
+ * \updates       2015-10-27
  * \license       GNU GPLv2 or above
  *
  *  Note that this representation is, in a sense, inside the mainwnd
@@ -152,7 +152,7 @@ void
 mainwid::draw_sequences_on_pixmap ()
 {
     int slots = m_mainwnd_rows * m_mainwnd_cols;
-    int offset = (m_screenset * slots);
+    int offset = m_screenset * slots;
     for (int s = 0; s < slots; ++s, ++offset)
     {
         draw_sequence_on_pixmap(offset);
@@ -223,10 +223,9 @@ mainwid::draw_sequence_on_pixmap (int seqnum)
     {
         int base_x, base_y;
         calculate_base_sizes(seqnum, base_x, base_y);   /* side-effects     */
-        m_gc->set_foreground(black());
-        m_pixmap->draw_rectangle                    /* outer border of box  */
+        draw_rectangle_on_pixmap                    /* outer border of box  */
         (
-            m_gc, true, base_x, base_y, m_seqarea_x, m_seqarea_y
+            black(), base_x, base_y, m_seqarea_x, m_seqarea_y
         );
         if (perf().is_active(seqnum))
         {
@@ -270,10 +269,9 @@ mainwid::draw_sequence_on_pixmap (int seqnum)
             }
 #endif          // SEQ64_HIGHLIGHT_EMPTY_SEQS
 
-            m_gc->set_foreground(bg_color());
-            m_pixmap->draw_rectangle
+            draw_rectangle_on_pixmap
             (
-                m_gc, true, base_x+1, base_y+1, m_seqarea_x-2, m_seqarea_y-2
+                bg_color(), base_x+1, base_y+1, m_seqarea_x-2, m_seqarea_y-2
             );
             m_gc->set_foreground(fg_color());
 
@@ -301,9 +299,9 @@ mainwid::draw_sequence_on_pixmap (int seqnum)
             }
 #endif
 
-            p_font_renderer->render_string_on_drawable      // name of pattern
+            render_string_on_pixmap                         // name of pattern
             (
-                m_gc, base_x+m_text_size_x, base_y+4, m_pixmap, temp, col
+                base_x + m_text_size_x, base_y + 4, temp, col
             );
 
             /*
@@ -318,10 +316,10 @@ mainwid::draw_sequence_on_pixmap (int seqnum)
                     temp, sizeof temp, "%c",
                     (char) perf().lookup_keyevent_key(seqnum)
                 );
-                p_font_renderer->render_string_on_drawable  // shortcut key
+                render_string_on_pixmap                     // shortcut key
                 (
-                    m_gc, base_x+m_seqarea_x-7, base_y + m_text_size_y*4 - 2,
-                    m_pixmap, temp, col
+                    base_x + m_seqarea_x - 7, base_y + m_text_size_y * 4 - 2,
+                    temp, col
                 );
             }
             snprintf
@@ -330,22 +328,19 @@ mainwid::draw_sequence_on_pixmap (int seqnum)
                 seq->get_midi_bus(), seq->get_midi_channel() + 1,
                 seq->get_bpm(), seq->get_bw()
             );
-            p_font_renderer->render_string_on_drawable      // bus, ch, etc.
+            render_string_on_pixmap                         // bus, ch, etc.
             (
-                m_gc,
-                base_x + m_text_size_x,
-                base_y + m_text_size_y * 4 - 2,
-                m_pixmap, temp, col
+                base_x + m_text_size_x, base_y + m_text_size_y * 4 - 2,
+                temp, col
             );
 
             int rectangle_x = base_x + m_text_size_x - 1;
             int rectangle_y = base_y + m_text_size_y + m_text_size_x - 1;
             if (seq->get_queued())
             {
-                m_gc->set_foreground(grey());
-                m_pixmap->draw_rectangle
+                draw_rectangle_on_pixmap
                 (
-                    m_gc, true, rectangle_x - 2, rectangle_y - 1,
+                    grey(), rectangle_x - 2, rectangle_y - 1,
                     m_seqarea_seq_x + 3, m_seqarea_seq_y + 3
                 );
                 fg_color(black());
@@ -355,11 +350,10 @@ mainwid::draw_sequence_on_pixmap (int seqnum)
              * Draws the inner rectangle for all sequences.
              */
 
-            m_gc->set_foreground(fg_color());
-            m_pixmap->draw_rectangle                        // ditto, unqueued
+            draw_rectangle_on_pixmap                        // ditto, unqueued
             (
-                m_gc, false, rectangle_x - 2, rectangle_y - 1,
-                m_seqarea_seq_x + 3, m_seqarea_seq_y + 3
+                fg_color(), rectangle_x - 2, rectangle_y - 1,
+                m_seqarea_seq_x + 3, m_seqarea_seq_y + 3, false
             );
 
             int lowest_note = seq->get_lowest_note_event();
@@ -392,10 +386,10 @@ mainwid::draw_sequence_on_pixmap (int seqnum)
                 if (tick_f_x <= tick_s_x)
                     tick_f_x = tick_s_x + 1;
 
-                m_gc->set_foreground(fg_color());
-                m_pixmap->draw_line
+                draw_line_on_pixmap
                 (
-                    m_gc, rectangle_x + tick_s_x, rectangle_y + note_y,
+                    fg_color(),
+                    rectangle_x + tick_s_x, rectangle_y + note_y,
                     rectangle_x + tick_f_x, rectangle_y + note_y
                 );
             }
@@ -417,7 +411,6 @@ mainwid::draw_sequence_on_pixmap (int seqnum)
              */
 
 #ifdef USE_GREY_GRID                        /* otherwise, leave it black    */
-            m_gc->set_foreground(grey());
             m_pixmap->draw_rectangle
             (
                 get_style()->get_bg_gc(Gtk::STATE_NORMAL),        // this->
@@ -592,9 +585,9 @@ mainwid::draw_marker_on_sequence (int seqnum, int tick)
         if (seq->get_queued())
             m_gc->set_foreground(black());
 
-        m_window->draw_line
+        draw_line
         (
-            m_gc, rectangle_x + tick_x, rectangle_y + 1,
+            rectangle_x + tick_x, rectangle_y + 1,
             rectangle_x + tick_x, rectangle_y + m_seqarea_seq_y
         );
     }

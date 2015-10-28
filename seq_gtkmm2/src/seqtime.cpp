@@ -181,20 +181,16 @@ seqtime::update_pixmap ()
         char bar[8];
         snprintf(bar, sizeof(bar), "%d", (i / ticks_per_measure) + 1);
         m_gc->set_foreground(black());
-        p_font_renderer->render_string_on_drawable
+        render_string_on_pixmap
         (
-            m_gc, base_line + 2 - m_scroll_offset_x,
-            0, m_pixmap, bar, font::BLACK
+            base_line + 2 - m_scroll_offset_x, 0, bar, font::BLACK
         );
     }
 
     long end_x = m_seq.get_length() / m_zoom - m_scroll_offset_x;
     m_gc->set_foreground(black());
     m_pixmap->draw_rectangle(m_gc, true, end_x, 9, 19, 8);
-    p_font_renderer->render_string_on_drawable
-    (
-        m_gc, end_x + 1, 9, m_pixmap, "END", font::WHITE
-    );
+    render_string_on_pixmap(end_x + 1, 9, "END", font::WHITE);
 }
 
 /**

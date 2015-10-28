@@ -122,8 +122,8 @@ perfnames::draw_sequence (int seqnum)
          */
 
         char sns[4];                            /* set-number buffer    */
-        draw_rectangle(black(), 0, m_names_y * i, m_names_x, m_names_y + 1);
         snprintf(sns, sizeof(sns), "%2d", seqnum / m_seqs_in_set);
+        draw_rectangle(black(), 0, m_names_y * i, m_names_x, m_names_y + 1);
         if (seqnum % m_seqs_in_set == 0)
         {
             render_string

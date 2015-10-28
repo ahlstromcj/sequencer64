@@ -219,7 +219,102 @@ protected:
     }
 
     /**
-     *  A small wrapper function for readability in string-drawing.
+     *  A small wrapper function to draw a line on the window.
+     *
+     * \param x1
+     *      The x coordinate of the starting point.
+     *
+     * \param y1
+     *      The y coordinate of the starting point.
+     *
+     * \param x2
+     *      The x coordinate of the ending point.
+     *
+     * \param y2
+     *      The y coordinate of the ending point.
+     */
+
+    void draw_line (int x1, int y1, int x2, int y2)
+    {
+        m_window->draw_line(m_gc, x1, y1, x2, y2);
+    }
+
+    /**
+     *  A small wrapper function to draw a line on the window after setting
+     *  the given foreground color.
+     *
+     * \param c
+     *      The foreground color in which to draw the line.
+     *
+     * \param x1
+     *      The x coordinate of the starting point.
+     *
+     * \param y1
+     *      The y coordinate of the starting point.
+     *
+     * \param x2
+     *      The x coordinate of the ending point.
+     *
+     * \param y2
+     *      The y coordinate of the ending point.
+     */
+
+    void draw_line (const Color & c, int x1, int y1, int x2, int y2)
+    {
+        m_gc->set_foreground(c);
+        m_window->draw_line(m_gc, x1, y1, x2, y2);
+    }
+
+    /**
+     *  A small wrapper function to draw a line on the pixmap.
+     *
+     * \param x1
+     *      The x coordinate of the starting point.
+     *
+     * \param y1
+     *      The y coordinate of the starting point.
+     *
+     * \param x2
+     *      The x coordinate of the ending point.
+     *
+     * \param y2
+     *      The y coordinate of the ending point.
+     */
+
+    void draw_line_on_pixmap (int x1, int y1, int x2, int y2)
+    {
+        m_pixmap->draw_line(m_gc, x1, y1, x2, y2);
+    }
+
+    /**
+     *  A small wrapper function to draw a line on the pixmap after setting
+     *  the given foreground color.
+     *
+     * \param c
+     *      The foreground color in which to draw the line.
+     *
+     * \param x1
+     *      The x coordinate of the starting point.
+     *
+     * \param y1
+     *      The y coordinate of the starting point.
+     *
+     * \param x2
+     *      The x coordinate of the ending point.
+     *
+     * \param y2
+     *      The y coordinate of the ending point.
+     */
+
+    void draw_line_on_pixmap (const Color & c, int x1, int y1, int x2, int y2)
+    {
+        m_gc->set_foreground(c);
+        m_pixmap->draw_line(m_gc, x1, y1, x2, y2);
+    }
+
+    /**
+     *  A small wrapper function for readability in string-drawing to the
+     *  window.
      *
      * \param x
      *      The x-coordinate of the origin.
@@ -246,7 +341,35 @@ protected:
     }
 
     /**
-     *  A small wrapper function for readability in box-drawing.
+     *  A small wrapper function for readability in string-drawing to the
+     *  pixmap.
+     *
+     * \param x
+     *      The x-coordinate of the origin.
+     *
+     * \param y
+     *      The y-coordinate of the origin.
+     *
+     * \param s
+     *      The string to be drawn.
+     *
+     * \param color
+     *      The color with which to draw the string.
+     */
+
+    void render_string_on_pixmap
+    (
+        int x, int y, const std::string & s, font::Color color
+    )
+    {
+        p_font_renderer->render_string_on_drawable
+        (
+            m_gc, x, y, m_pixmap, s.c_str(), color
+        );
+    }
+
+    /**
+     *  A small wrapper function for readability in box-drawing on the window.
      *
      * \param x
      *      The x-coordinate of the origin.
@@ -271,6 +394,46 @@ protected:
     }
 
     void draw_rectangle
+    (
+        const Color & c, int x, int y, int lx, int ly, bool fill = true
+    );
+
+    void draw_rectangle
+    (
+        Glib::RefPtr<Gdk::Drawable> & drawable,
+        const Color & c,
+        int x, int y, int lx, int ly, bool fill = true
+    );
+
+    /**
+     *  A small wrapper function for readability in box-drawing on the pixmap.
+     *
+     * \param x
+     *      The x-coordinate of the origin.
+     *
+     * \param y
+     *      The y-coordinate of the origin.
+     *
+     * \param lx
+     *      The width of the box.
+     *
+     * \param ly
+     *      The height of the box.
+     *
+     * \param fill
+     *      If true, fill the rectangle with the current foreground color, as
+     *      set by m_gc->set_foreground(color).  Defaults to true.
+     */
+
+    void draw_rectangle_on_pixmap
+    (
+        int x, int y, int lx, int ly, bool fill = true
+    )
+    {
+        m_pixmap->draw_rectangle(m_gc, fill, x, y, lx, ly);
+    }
+
+    void draw_rectangle_on_pixmap
     (
         const Color & c, int x, int y, int lx, int ly, bool fill = true
     );

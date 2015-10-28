@@ -29,7 +29,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-04
+ * \updates       2015-10-27
  * \license       GNU GPLv2 or above
  *
  */
@@ -72,6 +72,29 @@ private:
     int m_scroll_offset_x;
     int m_background_tile_x;
     int m_background_tile_y;
+
+    /**
+     *  The adjusted width of a digit in a data number.  By "adjusted", well
+     *  this is just a minor tweak for appearances.
+     */
+
+    int m_number_w;
+
+    /**
+     *  The adjusted height of all digits in a data number.  Basically, the
+     *  character height times 3.  By "adjusted", well this is just a minor
+     *  tweak for appearances.
+     */
+
+    int m_number_h;
+
+    /**
+     *  A new value to make it easier to adapt the vertical number drawing of
+     *  a data item's numeric value to a different font.  This value was
+     *  hardwired as 8, for a character height of 10.
+     */
+
+    int m_number_offset_y;
 
     /**
      *  What is the data window currently editing?
@@ -122,7 +145,7 @@ private:
       int & r_x, int & r_y,
       int & r_w, int & r_h
    );
-    void draw_events_on (Glib::RefPtr<Gdk::Drawable> a_draw);
+    void draw_events_on (Glib::RefPtr<Gdk::Drawable> drawable);
     void change_horz ();
     void force_draw ();
 
@@ -135,6 +158,23 @@ private:
     void convert_x (int x, long & tick)
     {
         tick = x * m_zoom;
+    }
+
+    /**
+     *  Convenience function for rendering numbers.
+     */
+
+    void render_number
+    (
+        Glib::RefPtr<Gdk::Pixmap> & pixmap,
+        int x, int y,
+        const char * const num
+    )
+    {
+        p_font_renderer->render_string_on_drawable
+        (
+            m_gc, x, y, pixmap, num, font::BLACK
+        );
     }
 
     /**

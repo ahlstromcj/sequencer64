@@ -146,10 +146,8 @@ seqkeys::update_pixmap ()
                 octave *= -1;
 
             snprintf(notes, sizeof(notes), "%2s%1d", c_key_text[key], octave);
-            p_font_renderer->render_string_on_drawable
-            (
-                m_gc, 2, c_key_y * i - 1, m_pixmap, notes, font::BLACK
-            );
+//          p_font_renderer->render_string_on_drawable
+            render_string_on_pixmap(2, c_key_y * i - 1, notes, font::BLACK);
         }
 
         /*
@@ -160,10 +158,9 @@ seqkeys::update_pixmap ()
          *      notes, sizeof(notes), "%c %d",
          *      c_scales_symbol[m_scale][key], m_scale
          *  );
-         *  p_font_renderer->render_string_on_drawable
+         *  render_string_on_pixmap
          *  (
-         *      m_gc, 2 + (c_text_x * 4), c_key_y * i - 1,
-         *      m_pixmap, notes, font::BLACK
+         *      2 + (c_text_x * 4), c_key_y * i - 1, notes, font::BLACK
          *  );
          */
     }

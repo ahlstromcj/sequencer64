@@ -185,6 +185,83 @@ gui_drawingarea_gtk2::draw_rectangle
     draw_rectangle(x, y, lx, ly, fill);
 }
 
+/**
+ *  A small wrapper function for readability in box-drawing on the pixmap.  It
+ *  adds setting the foreground color to the draw_rectangle() function.
+ *
+ * \param c
+ *      Provides the foreground color to set.
+ *
+ * \param x
+ *      The x-coordinate of the origin.
+ *
+ * \param y
+ *      The y-coordinate of the origin.
+ *
+ * \param lx
+ *      The width of the box.
+ *
+ * \param ly
+ *      The height of the box.
+ *
+ * \param fill
+ *      If true, fill the rectangle with the current foreground color, as
+ *      set by m_gc->set_foreground(color).  Defaults to true.
+ */
+
+void
+gui_drawingarea_gtk2::draw_rectangle_on_pixmap
+(
+    const Color & c, int x, int y, int lx, int ly, bool fill
+)
+{
+    m_gc->set_foreground(c);
+    draw_rectangle_on_pixmap(x, y, lx, ly, fill);
+}
+
+/**
+ *  A small wrapper function for readability in box-drawing on any drawable
+ *  context.  It also supports setting the foreground color to the
+ *  draw_rectangle() function.
+ *
+ *  We have a number of such functions:  for the main window, for the main
+ *  pixmap, and for any drawing surface.  Is the small bit of conciseness
+ *  worth it?
+ *
+ * \param drawable
+ *      The surface on which to draw the box.
+ *
+ * \param c
+ *      Provides the foreground color to set.
+ *
+ * \param x
+ *      The x-coordinate of the origin.
+ *
+ * \param y
+ *      The y-coordinate of the origin.
+ *
+ * \param lx
+ *      The width of the box.
+ *
+ * \param ly
+ *      The height of the box.
+ *
+ * \param fill
+ *      If true, fill the rectangle with the current foreground color, as
+ *      set by m_gc->set_foreground(color).  Defaults to true.
+ */
+
+void
+gui_drawingarea_gtk2::draw_rectangle
+(
+    Glib::RefPtr<Gdk::Drawable> & drawable,
+    const Color & c,
+    int x, int y, int lx, int ly, bool fill
+)
+{
+    m_gc->set_foreground(c);
+    drawable->draw_rectangle(m_gc, fill, x, y, lx, ly);
+}
 
 /**
  *  For this GTK callback, on realization of window, initialize the shiz.

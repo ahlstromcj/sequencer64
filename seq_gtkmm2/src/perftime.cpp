@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-09
+ * \updates       2015-10-27
  * \license       GNU GPLv2 or above
  *
  *  The time bar shows markers and numbers for the measures of the song,
@@ -137,36 +137,21 @@ perftime::on_realize ()
 bool
 perftime::on_expose_event (GdkEventExpose * /* ev */ )
 {
-    m_gc->set_foreground(white());                  /* clear the background */
-    m_window->draw_rectangle(m_gc, true, 0, 0, m_window_x, m_window_y);
-    m_gc->set_foreground(black());
-    m_window->draw_line(m_gc, 0, m_window_y - 1, m_window_x, m_window_y - 1);
-    m_gc->set_foreground(grey());                   /* draw vertical lines  */
+    draw_rectangle(white(), 0, 0, m_window_x, m_window_y);
+    draw_line(black(), 0, m_window_y - 1, m_window_x, m_window_y - 1);
     long tick_offset = (m_4bar_offset * 16 * m_ppqn);
     long first_measure = tick_offset / m_measure_length;
-
-#if 0
-    0   1   2   3   4   5   6
-    |   |   |   |   |   |   |
-    |    |    |    |    |    |
-    0    1    2    3    4    5
-#endif
-
     long last_measure = first_measure +
         (m_window_x * m_perf_scale_x / m_measure_length) + 1;
 
+    m_gc->set_foreground(grey());                   /* draw vertical lines  */
     for (long i = first_measure; i < last_measure; ++i)
     {
         int x_pos = ((i * m_measure_length) - tick_offset) / m_perf_scale_x;
-        m_window->draw_line(m_gc, x_pos, 0, x_pos, m_window_y);     /* beat */
-
         char bar[8];
         snprintf(bar, sizeof(bar), "%ld", i + 1);
-        m_gc->set_foreground(black());
-        p_font_renderer->render_string_on_drawable
-        (
-            m_gc, x_pos + 2, 0, m_window, bar, font::BLACK
-        );
+        draw_line(x_pos, 0, x_pos, m_window_y);                     /* beat */
+        render_string(x_pos + 2, 0, bar, font::BLACK);
     }
 
     long left = perf().get_left_tick();
@@ -177,23 +162,13 @@ perftime::on_expose_event (GdkEventExpose * /* ev */ )
     right /= m_perf_scale_x;
     if (left >= 0 && left <= m_window_x)            /* draw L marker    */
     {
-        m_gc->set_foreground(black());
-        m_window->draw_rectangle(m_gc, true, left, m_window_y - 9, 7, 10);
-        m_gc->set_foreground(white());
-        p_font_renderer->render_string_on_drawable
-        (
-            m_gc, left + 1, 9, m_window, "L", font::WHITE
-        );
+        draw_rectangle(black(), left, m_window_y - 9, 7, 10);
+        render_string(left + 1, 9, "L", font::WHITE);
     }
     if (right >= 0 && right <= m_window_x)          /* draw R marker    */
     {
-        m_gc->set_foreground(black());
-        m_window->draw_rectangle(m_gc, true, right - 6, m_window_y - 9, 7, 10);
-        m_gc->set_foreground(white());
-        p_font_renderer->render_string_on_drawable
-        (
-            m_gc, right - 6 + 1, 9, m_window, "R", font::WHITE
-        );
+        draw_rectangle(black(), right - 6, m_window_y - 9, 7, 10);
+        render_string(right - 6 + 1, 9, "R", font::WHITE);
     }
     return true;
 }

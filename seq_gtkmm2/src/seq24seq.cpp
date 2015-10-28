@@ -20,22 +20,27 @@
  * \file          seq24seq.cpp
  *
  *  This module declares/defines the mouse interactions for the "seq24"
- *  mode in the pattern/sequence editor.
+ *  mode in the pattern/sequence editor's event panel, the narrow string
+ *  between the piano roll and the data panel that's at the bottom.
  *
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-08-02
- * \updates       2015-10-09
+ * \updates       2015-10-28
  * \license       GNU GPLv2 or above
  *
  *  This code was extracted from seqevent to make that module more
  *  manageable.
+ *
+ *  One thing to note is that the seqevent user-interface isn't very high, so
+ *  that y values don't mean anything in it.  It's just high enough to be
+ *  visible and move the mouse horizontally in it.
  */
 
 #include <gdkmm/cursor.h>
 #include <gtkmm/button.h>
 
-#include "click.hpp"                    /* SEQ64_CLICK_IS_LEFT(), etc.  */
+#include "click.hpp"                    /* SEQ64_CLICK_LEFT(), etc.     */
 #include "seq24seq.hpp"
 #include "seqevent.hpp"
 #include "sequence.hpp"                 /* for full usage of seqevent   */
@@ -61,7 +66,7 @@ Seq24SeqEventInput::set_adding (bool adding, seqevent & seqev)
 
 /**
  *  Implements the on-button-press event callback.  Set values for dragging,
- *  then reset box that holds dirty redraw spot.
+ *  then reset the box that holds dirty redraw spot.  Then do the rest.
  */
 
 bool
@@ -72,8 +77,12 @@ Seq24SeqEventInput::on_button_press_event
 )
 {
     long tick_s, tick_w;
+    seqev.grab_focus();                 // NEW: I think this would be helpful
     seqev.convert_x(c_eventevent_x, tick_w);
-    seqev.m_drop_x = seqev.m_current_x = int(a_ev->x + seqev.m_scroll_offset_x);
+    seqev.set_current_drop_x(int(a_ev->x + seqev.m_scroll_offset_x));
+
+    /* reset box for dirty redraw spot */
+
     seqev.m_old.x = seqev.m_old.y = seqev.m_old.width = seqev.m_old.height = 0;
     if (seqev.m_paste)
     {
@@ -87,7 +96,7 @@ Seq24SeqEventInput::on_button_press_event
     {
         int x, w;
         long tick_f;
-        if (SEQ64_CLICK_IS_LEFT(a_ev->button))
+        if (SEQ64_CLICK_LEFT(a_ev->button))
         {
             seqev.convert_x(seqev.m_drop_x, tick_s); /* x,y in to tick/note    */
             tick_f = tick_s + seqev.m_zoom;          /* shift back a few ticks */
@@ -154,7 +163,7 @@ Seq24SeqEventInput::on_button_press_event
                     tick_s, tick_f, seqev.m_status,
                     seqev.m_cc, sequence::e_is_selected
                 );
-                if (eventcount > 0)
+                if (eventcount > 0)             /* get box selections are in */
                 {
                     seqev.m_moving_init = true;
                     int note;
@@ -186,7 +195,7 @@ Seq24SeqEventInput::on_button_press_event
                 }
             }
         }
-        if (SEQ64_CLICK_IS_RIGHT(a_ev->button))
+        if (SEQ64_CLICK_RIGHT(a_ev->button))
             set_adding(true, seqev);
     }
     seqev.update_pixmap();          /* if they clicked, something changed */
@@ -214,7 +223,7 @@ Seq24SeqEventInput::on_button_release_event
 
     int delta_x = seqev.m_current_x - seqev.m_drop_x;
     long delta_tick;
-    if (SEQ64_CLICK_IS_LEFT(a_ev->button))
+    if (SEQ64_CLICK_LEFT(a_ev->button))
     {
         if (seqev.m_selecting)
         {
@@ -236,7 +245,7 @@ Seq24SeqEventInput::on_button_release_event
         }
         set_adding(m_adding, seqev);
     }
-    if (SEQ64_CLICK_IS_RIGHT(a_ev->button))
+    if (SEQ64_CLICK_RIGHT(a_ev->button))
     {
         set_adding(false, seqev);
     }
@@ -292,3 +301,4 @@ Seq24SeqEventInput::on_motion_notify_event
  *
  * vim: sw=4 ts=4 wm=4 et ft=cpp
  */
+

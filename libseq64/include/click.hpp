@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-09-30
- * \updates       2015-10-09
+ * \updates       2015-10-28
  * \license       GNU GPLv2 or above
  *
  *  Most of the GUI modules are publicly derived from Gtk::DrawingArea,
@@ -72,11 +72,35 @@
  *  Readability macros for testing (GDK) button clicks.  Meant for legacy
  *  code; use the corresponding click mod_xxx() member functions for new code.
  *  However, keep these macros, as they are used in the member functions now.
+ *  Note the "b" parameter is the ev->button field.
  */
 
-#define SEQ64_CLICK_IS_LEFT(x)          ((x) == 1)
-#define SEQ64_CLICK_IS_MIDDLE(x)        ((x) == 2)
-#define SEQ64_CLICK_IS_RIGHT(x)         ((x) == 3)
+#define SEQ64_CLICK_LEFT(b)             ((b) == SEQ64_CLICK_BUTTON_LEFT)
+#define SEQ64_CLICK_MIDDLE(b)           ((b) == SEQ64_CLICK_BUTTON_MIDDLE)
+#define SEQ64_CLICK_RIGHT(b)            ((b) == SEQ64_CLICK_BUTTON_RIGHT)
+
+/**
+ *  Combination-test macros.  Note the "b" parameter is the ev->button field,
+ *  and the "s" parameter is the ev->state field.
+ *
+ *  SEQ64_CLICK_LEFT_MIDDLE() is used where either the left or middle button
+ *  is acceptable.
+ *
+ *  SEQ64_CLICK_LEFT_RIGHT() is used where either the left or middle button
+ *  is acceptable.
+ *
+ *  SEQ64_CLICK_CTRL_LEFT_MIDDLE() is used where the middle button or
+ *  Ctrl-left button can be used.
+ */
+
+#define SEQ64_CLICK_LEFT_MIDDLE(b) \
+ (SEQ64_CLICK_LEFT(b) || SEQ64_CLICK_MIDDLE(b))
+
+#define SEQ64_CLICK_LEFT_RIGHT(b) \
+ (SEQ64_CLICK_LEFT(b) || SEQ64_CLICK_RIGHT(b))
+
+#define SEQ64_CLICK_CTRL_LEFT_MIDDLE(b, s) \
+ (SEQ64_CLICK_MIDDLE(b) || (SEQ64_CLICK_LEFT(b) && ((s) & SEQ64_CONTROL_MASK)) )
 
 namespace seq64
 {
@@ -111,7 +135,7 @@ private:
 
     /**
      *  The button that was pressed or released.  Left is 1, mmiddle is 2,
-     *  and right is 3.  These numbers are defined via macros, and a
+     *  and right is 3.  These numbers are defined via macros, and are
      *  Linux-specific and Gtk-specific.
      */
 
@@ -153,7 +177,7 @@ public:
 
     bool is_left () const
     {
-        return SEQ64_CLICK_IS_LEFT(m_button);
+        return SEQ64_CLICK_LEFT(m_button);
     }
 
     /**
@@ -162,7 +186,7 @@ public:
 
     bool is_middle () const
     {
-        return SEQ64_CLICK_IS_MIDDLE(m_button);
+        return SEQ64_CLICK_MIDDLE(m_button);
     }
 
     /**
@@ -171,7 +195,7 @@ public:
 
     bool is_right () const
     {
-        return SEQ64_CLICK_IS_RIGHT(m_button);
+        return SEQ64_CLICK_RIGHT(m_button);
     }
 
     /**

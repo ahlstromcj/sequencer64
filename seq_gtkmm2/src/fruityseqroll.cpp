@@ -34,7 +34,7 @@
 
 #include <gdkmm/cursor.h>
 
-#include "click.hpp"                    /* SEQ64_CLICK_IS_LEFT(), etc.    */
+#include "click.hpp"                    /* SEQ64_CLICK_LEFT(), etc.    */
 #include "event.hpp"
 #include "seqroll.hpp"
 #include "sequence.hpp"
@@ -136,7 +136,7 @@ FruitySeqRollInput::on_button_press_event
     }
     else
     {
-        if (SEQ64_CLICK_IS_LEFT(a_ev->button))
+        if (SEQ64_CLICK_LEFT(a_ev->button))
         {
             sroll.set_current_drop_x(norm_x);       /* selection normal x   */
 
@@ -302,7 +302,7 @@ FruitySeqRollInput::on_button_press_event
                     if                              /* grab/move the note */
                     (
                         center_mouse_handle &&
-                        SEQ64_CLICK_IS_LEFT(a_ev->button) &&
+                        SEQ64_CLICK_LEFT(a_ev->button) &&
                         ! (a_ev->state & GDK_CONTROL_MASK)
                     )
                     {
@@ -336,7 +336,7 @@ FruitySeqRollInput::on_button_press_event
                     }
                     else if /* ctrl left click when stuff is already selected */
                     (
-                        SEQ64_CLICK_IS_LEFT(a_ev->button) &&
+                        SEQ64_CLICK_LEFT(a_ev->button) &&
                         (a_ev->state & GDK_CONTROL_MASK) &&
                         sroll.m_seq.select_note_events
                         (
@@ -351,10 +351,10 @@ FruitySeqRollInput::on_button_press_event
                     }
                     if /* left click on the right handle = grow/resize event  */
                     (
-                        SEQ64_CLICK_IS_MIDDLE(a_ev->button) ||
+                        SEQ64_CLICK_MIDDLE(a_ev->button) ||
                         (
                             right_mouse_handle &&
-                            SEQ64_CLICK_IS_LEFT(a_ev->button) &&
+                            SEQ64_CLICK_LEFT(a_ev->button) &&
                             ! (a_ev->state & GDK_CONTROL_MASK)
                         )
                     )
@@ -377,7 +377,7 @@ FruitySeqRollInput::on_button_press_event
             }
         }
 
-        if (SEQ64_CLICK_IS_RIGHT(a_ev->button))
+        if (SEQ64_CLICK_RIGHT(a_ev->button))
         {
             sroll.set_current_drop_x(norm_x);           /* selection normal x */
 
@@ -472,9 +472,9 @@ FruitySeqRollInput::on_button_release_event
     long delta_tick;
     int delta_note;
 
-    /* middle click, or ctrl-left click button up */
+    /* middle click, or ctrl- (???) left click button up */
 
-    if (SEQ64_CLICK_IS_LEFT(a_ev->button) || SEQ64_CLICK_IS_MIDDLE(a_ev->button))
+    if (SEQ64_CLICK_LEFT_MIDDLE(a_ev->button))
     {
         if (sroll.m_growing)
         {
@@ -503,7 +503,7 @@ FruitySeqRollInput::on_button_release_event
      * -    left click button up for ending a move of selected notes
      */
 
-    if (SEQ64_CLICK_IS_LEFT(a_ev->button))
+    if (SEQ64_CLICK_LEFT(a_ev->button))
     {
         m_adding = false;
         if (sroll.m_is_drag_pasting)
@@ -571,9 +571,9 @@ FruitySeqRollInput::on_button_release_event
         }
     }
 
-    /* right click or leftctrl click button up for selection box */
+    /* right click or left ctrl (???) click button up for selection box */
 
-    if (SEQ64_CLICK_IS_RIGHT(a_ev->button) || SEQ64_CLICK_IS_LEFT(a_ev->button))
+    if (SEQ64_CLICK_LEFT_RIGHT(a_ev->button))
     {
         if (sroll.m_selecting)
         {
@@ -592,7 +592,7 @@ FruitySeqRollInput::on_button_release_event
             needs_update = true;
         }
     }
-    if (SEQ64_CLICK_IS_RIGHT(a_ev->button))
+    if (SEQ64_CLICK_RIGHT(a_ev->button))
         m_erase_painting = false;
 
     sroll.m_selecting = false;          /* turn it all off */

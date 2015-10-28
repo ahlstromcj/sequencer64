@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-19
- * \updates       2015-10-11
+ * \updates       2015-10-28
  * \license       GNU GPLv2 or above
  *
  */
@@ -194,10 +194,10 @@ event_list::add (const event & e, bool postsort)
 #else
     EventsPair p = std::make_pair<event_key, event>(key, e);
 #endif
-    m_events.insert(p);
+    m_events.insert(p);                 /* std::multimap operation  */
 
 #else
-    m_events.push_front(e);
+    m_events.push_front(e);             /* std::list operation      */
 #endif
 
     if (postsort)
@@ -293,7 +293,7 @@ event_list::link_new ()
     for (Events::iterator on = m_events.begin(); on != m_events.end(); ++on)
     {
         event & eon = dref(on);
-        if (eon.is_note_on() && ! eon.is_linked())  /* note on, unlinked?i  */
+        if (eon.is_note_on() && ! eon.is_linked())  /* note on, unlinked?   */
         {
             Events::iterator off = on;              /* point to note on     */
             off++;                                  /* get next element     */
@@ -527,7 +527,7 @@ event_list::count_selected_events (unsigned char status, unsigned char cc)
             )
             {
                 if (e.is_selected())
-                    result++;
+                    ++result;
             }
         }
     }

@@ -125,17 +125,8 @@ seqroll::set_background_sequence (bool state, int seq)
     if (m_ignore_redraw)
         return;
 
-    update_background();
-    update_pixmap();
-    queue_draw();
+    update_and_draw();  // update_background(); update_pixmap(); queue_draw();
 }
-
-/*
- *  use m_zoom and "i % m_seq.get_bpm() == 0"
- *
- *  int numberLines = 128 / m_seq.get_bw() / m_zoom;
- *  int distance = m_ppqn / 32;
- */
 
 /**
  *  Update the sizes of items based on zoom, PPQN, BPM, BW (beat width) and
@@ -201,9 +192,7 @@ seqroll::change_horz ()
     if (m_ignore_redraw)
         return;
 
-    update_background();
-    update_pixmap();
-    force_draw();
+    update_and_draw(true);  // update_background(); update_pixmap(); force_draw();
 }
 
 /**
@@ -218,9 +207,7 @@ seqroll::change_vert ()
     if (m_ignore_redraw)
         return;
 
-    update_background();
-    update_pixmap();
-    force_draw();
+    update_and_draw(true);  // update_background(); update_pixmap(); force_draw();
 }
 
 /**
@@ -237,9 +224,7 @@ seqroll::reset ()
         return;
 
     update_sizes();
-    update_background();
-    update_pixmap();
-    queue_draw();
+    update_and_draw();  // update_background(); update_pixmap(); queue_draw();
 }
 
 /**
@@ -254,9 +239,7 @@ seqroll::redraw ()
 
     m_scroll_offset_ticks = (int) m_hadjust.get_value();
     m_scroll_offset_x = m_scroll_offset_ticks / m_zoom;
-    update_background();
-    update_pixmap();
-    force_draw();
+    update_and_draw(true);  // update_background(); update_pixmap(); force_draw();
 }
 
 /**
@@ -268,6 +251,9 @@ seqroll::redraw_events ()
 {
     if (m_ignore_redraw)
         return;
+
+// Almost:
+// update_and_draw(true); // update_background(); update_pixmap(); force_draw();
 
     update_pixmap();
     force_draw();
@@ -293,16 +279,17 @@ seqroll::draw_background_on_pixmap ()
 void
 seqroll::update_background ()
 {
-    m_gc->set_foreground(white());              /* clear background     */
-    m_background->draw_rectangle(m_gc, true, 0, 0, m_window_x, m_window_y);
-    m_gc->set_foreground(grey());               /* draw horz grey lines */
+//  m_gc->set_foreground(white());                  /* clear background     */
+//  m_background->draw_rectangle(m_gc, true, 0, 0, m_window_x, m_window_y);
+    draw_rectangle(m_background, white(), 0, 0, m_window_x, m_window_y);
+    m_gc->set_foreground(grey());                   /* draw horz grey lines */
     set_line(Gdk::LINE_ON_OFF_DASH);
     gint8 dash = 1;
     m_gc->set_dashes(0, &dash, 1);
-    for (int i = 0; i < (m_window_y / c_key_y) + 1; i++)
+    int octkey = OCTAVE_SIZE - m_key;               /* used three times     */
+    for (int i = 0; i < (m_window_y / c_key_y) + 1; ++i)
     {
         int remkeys = c_num_keys - i;               /* remaining keys?      */
-        int octkey = OCTAVE_SIZE - m_key;           /* used three times     */
         int modkey = (remkeys - m_scroll_offset_key + octkey);
         if (global_interactionmethod == e_fruity_interaction)
         {
@@ -331,16 +318,19 @@ seqroll::update_background ()
     }
 
     /*
+     * This could be applied here, and also to seqevent::draw_background().
+     *
      * int measure_length_64ths = m_seq.get_bpm() * 64 / m_seq.get_bw();
      * int measures_per_line = (256 / measure_length_64ths) / (32 / m_zoom);
-     * if ( measures_per_line <= 0
+     * if (measures_per_line <= 0)
+     *      int measures_per_line = 1;
      */
 
     int measures_per_line = 1;
-    int ticks_per_measure =  m_seq.get_bpm() * (4 * m_ppqn) / m_seq.get_bw();
     int ticks_per_beat = (4 * m_ppqn) / m_seq.get_bw();
+    int ticks_per_measure = m_seq.get_bpm() * ticks_per_beat;
     int ticks_per_step = 6 * m_zoom;
-    int ticks_per_m_line =  ticks_per_measure * measures_per_line;
+    int ticks_per_m_line = ticks_per_measure * measures_per_line;
     int end_tick = (m_window_x * m_zoom) + m_scroll_offset_ticks;
     int start_tick = m_scroll_offset_ticks -
          (m_scroll_offset_ticks % ticks_per_step);
@@ -372,13 +362,19 @@ seqroll::update_background ()
             gint8 dash = 1;
             m_gc->set_dashes(0, &dash, 1);
         }
-        m_background->draw_line
+//      m_background->draw_line
+//      (
+//          m_gc, base_line - m_scroll_offset_x, 0,
+//          base_line - m_scroll_offset_x, m_window_y
+//      );
+        draw_line
         (
-            m_gc, base_line - m_scroll_offset_x, 0,
+            m_background,
+            base_line - m_scroll_offset_x, 0,
             base_line - m_scroll_offset_x, m_window_y
         );
     }
-    set_line(Gdk::LINE_SOLID);
+    set_line(Gdk::LINE_SOLID);                  /* reset the line style     */
 }
 
 /**
@@ -450,16 +446,20 @@ seqroll::draw_progress_on_window ()
     m_old_progress_x = (m_seq.get_last_tick() / m_zoom) - m_scroll_offset_x;
     if (m_old_progress_x != 0)
     {
-        m_gc->set_foreground(black());
-        m_window->draw_line
-        (
-            m_gc, m_old_progress_x, 0, m_old_progress_x, m_window_y
-        );
+//      m_gc->set_foreground(black());
+//      m_window->draw_line
+//      (
+//          m_gc, m_old_progress_x, 0, m_old_progress_x, m_window_y
+//      );
+        draw_line(black(), m_old_progress_x, 0, m_old_progress_x, m_window_y);
     }
 }
 
 /**
  *  Draws events on the given drawable area.
+ *
+ *  "Method 0" seems be the one that draws the background sequence, if active.
+ *  "Method 1" draws the sequence itself.
  */
 
 void
@@ -475,7 +475,7 @@ seqroll::draw_events_on (Glib::RefPtr<Gdk::Drawable> a_draw)
     int start_tick = m_scroll_offset_ticks ;
     int end_tick = (m_window_x * m_zoom) + m_scroll_offset_ticks;
     sequence * seq = nullptr;
-    for (int method = 0; method < 2; ++method)
+    for (int method = 0; method < 2; ++method)  /* weird way to do it       */
     {
         if (method == 0 && m_drawing_background_seq)
         {
@@ -484,8 +484,8 @@ seqroll::draw_events_on (Glib::RefPtr<Gdk::Drawable> a_draw)
             else
                 method++;
         }
-        else if (method == 0)
-            method++;
+        else if (method == 0)                   /* done with background?    */
+            method++;                           /* now draw the sequence    */
 
         if (method == 1)
             seq = &m_seq;
@@ -517,7 +517,8 @@ seqroll::draw_events_on (Glib::RefPtr<Gdk::Drawable> a_draw)
                     if (tick_f >= tick_s)
                     {
                         note_width = (tick_f - tick_s) / m_zoom;
-                        if (note_width < 1) note_width = 1;
+                        if (note_width < 1)
+                            note_width = 1;
                     }
                     else
                         note_width = (m_seq.get_length() - tick_s) / m_zoom;
@@ -640,14 +641,13 @@ seqroll::draw_selection_on_window ()
         xy_to_rect(m_drop_x, m_drop_y, m_current_x, m_current_y, x, y, w, h);
         x -= m_scroll_offset_x;
         y -= m_scroll_offset_y;
-
         m_old.x = x;
         m_old.y = y;
         m_old.width = w;
         m_old.height = h + c_key_y;
-
-        m_gc->set_foreground(black());
-        m_window->draw_rectangle(m_gc, false, x, y, w, h + c_key_y);
+//      m_gc->set_foreground(black());
+//      m_window->draw_rectangle(m_gc, false, x, y, w, h + c_key_y);
+        draw_rectangle(black(), x, y, w, h + c_key_y, false);
     }
     if (m_moving || m_paste)
     {
@@ -657,11 +657,12 @@ seqroll::draw_selection_on_window ()
         y = m_selected.y + delta_y;
         x -= m_scroll_offset_x;
         y -= m_scroll_offset_y;
-        m_gc->set_foreground(black());
-        m_window->draw_rectangle
-        (
-            m_gc, false, x, y, m_selected.width, m_selected.height
-        );
+//      m_gc->set_foreground(black());
+//      m_window->draw_rectangle
+//      (
+//          m_gc, false, x, y, m_selected.width, m_selected.height
+//      );
+        draw_rectangle(black(), x, y, m_selected.width, m_selected.height, false);
         m_old.x = x;
         m_old.y = y;
         m_old.width = m_selected.width;
@@ -678,9 +679,9 @@ seqroll::draw_selection_on_window ()
         y = m_selected.y;
         x -= m_scroll_offset_x;
         y -= m_scroll_offset_y;
-        m_gc->set_foreground(black());
-        m_window->draw_rectangle(m_gc, false, x, y, width, m_selected.height);
-
+//      m_gc->set_foreground(black());
+//      m_window->draw_rectangle(m_gc, false, x, y, width, m_selected.height);
+        draw_rectangle(black(), x, y, width, m_selected.height, false);
         m_old.x = x;
         m_old.y = y;
         m_old.width = width;

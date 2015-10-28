@@ -34,7 +34,7 @@
 
 #include <gtkmm/adjustment.h>
 
-#include "click.hpp"                    /* SEQ64_CLICK_IS_LEFT() etc. */
+#include "click.hpp"                    /* SEQ64_CLICK_LEFT() etc. */
 #include "font.hpp"
 #include "perform.hpp"
 #include "perftime.hpp"
@@ -187,12 +187,12 @@ perftime::on_button_press_event (GdkEventButton * p0)
 
     // Why is this disabled?
     //
-    // if (SEQ64_CLICK_IS_MIDDLE(p0->button))
+    // if (SEQ64_CLICK_MIDDLE(p0->button))
     //      perf().set_start_tick(tick);
 
-    if (SEQ64_CLICK_IS_LEFT(p0->button))
+    if (SEQ64_CLICK_LEFT(p0->button))
         perf().set_left_tick(tick);
-    else if (SEQ64_CLICK_IS_RIGHT(p0->button))
+    else if (SEQ64_CLICK_RIGHT(p0->button))
         perf().set_right_tick(tick + m_snap);
 
     queue_draw();

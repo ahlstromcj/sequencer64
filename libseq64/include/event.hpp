@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-10
+ * \updates       2015-10-28
  * \license       GNU GPLv2 or above
  *
  *  This module also declares/defines the various constants, status-byte
@@ -52,16 +52,17 @@ namespace seq64
 const unsigned char  EVENT_STATUS_BIT       = 0x80;
 
 /**
- *  The following MIDI events are channel messages.
+ *  The following MIDI events are channel messages.  The comments represent
+ *  the one or two data-bytes.
  */
 
-const unsigned char  EVENT_NOTE_OFF         = 0x80;
-const unsigned char  EVENT_NOTE_ON          = 0x90;
-const unsigned char  EVENT_AFTERTOUCH       = 0xA0;
-const unsigned char  EVENT_CONTROL_CHANGE   = 0xB0;
-const unsigned char  EVENT_PROGRAM_CHANGE   = 0xC0;
-const unsigned char  EVENT_CHANNEL_PRESSURE = 0xD0;
-const unsigned char  EVENT_PITCH_WHEEL      = 0xE0;
+const unsigned char  EVENT_NOTE_OFF         = 0x80;     // 0kkkkkkk 0vvvvvvv
+const unsigned char  EVENT_NOTE_ON          = 0x90;     // 0kkkkkkk 0vvvvvvv
+const unsigned char  EVENT_AFTERTOUCH       = 0xA0;     // 0kkkkkkk 0vvvvvvv
+const unsigned char  EVENT_CONTROL_CHANGE   = 0xB0;     // 0ccccccc 0vvvvvvv
+const unsigned char  EVENT_PROGRAM_CHANGE   = 0xC0;     // 0ppppppp
+const unsigned char  EVENT_CHANNEL_PRESSURE = 0xD0;     // 0vvvvvvv
+const unsigned char  EVENT_PITCH_WHEEL      = 0xE0;     // 0lllllll 0mmmmmmm
 
 /**
  *  The following MIDI events have no channel.
@@ -213,6 +214,106 @@ public:
     unsigned char status () const
     {
         return m_status;
+    }
+
+    /**
+     *  Static test for channel messages/statuses.
+     *
+     * \param msg
+     *      The channel status or message byte to be tested.
+     *
+     * \return
+     *      Returns true if the byte represents a MIDI channel message.
+     */
+
+    static bool is_channel_msg (unsigned char msg)
+    {
+        return
+        (
+            msg == EVENT_NOTE_ON        || msg == EVENT_NOTE_OFF ||
+            msg == EVENT_AFTERTOUCH     || msg == EVENT_CONTROL_CHANGE ||
+            msg == EVENT_PROGRAM_CHANGE || msg == EVENT_CHANNEL_PRESSURE ||
+            msg == EVENT_PITCH_WHEEL
+        );
+    }
+
+    /**
+     *  Static test for channel messages that have only one data byte.
+     *  The rest have two.
+     *
+     * \param msg
+     *      The channel status or message byte to be tested.
+     *
+     * \return
+     *      Returns true if the byte represents a MIDI channel message that
+     *      has only one data byte.  However, if this function returns false,
+     *      it might not be a channel message at all, so be careful.
+     */
+
+    static bool is_one_byte_msg (unsigned char msg)
+    {
+        return msg == EVENT_PROGRAM_CHANGE || msg == EVENT_CHANNEL_PRESSURE;
+    }
+
+    /**
+     *  Static test for channel messages that have two data bytes.
+     *
+     * \param msg
+     *      The channel status or message byte to be tested.
+     *
+     * \return
+     *      Returns true if the byte represents a MIDI channel message that
+     *      has two data bytes.  However, if this function returns false,
+     *      it might not be a channel message at all, so be careful.
+     */
+
+    static bool is_two_byte_msg (unsigned char msg)
+    {
+        return
+        (
+            msg == EVENT_NOTE_ON        || msg == EVENT_NOTE_OFF ||
+            msg == EVENT_AFTERTOUCH     || msg == EVENT_CONTROL_CHANGE ||
+            msg == EVENT_PITCH_WHEEL
+        );
+    }
+
+    /**
+     *  Static test for channel messages that are either not control-change
+     *  messages, or are and match the given controller value.
+     *
+     * \note
+     *      The old logic was the first line, but can be simplified to the
+     *      second line; the third line shows the abstract representation.
+     *      Also made sure of this using a couple truth tables.
+     *
+     *  \verbatim
+            (m != EVENT_CONTROL_CHANGE) || (m == EVENT_CONTROL_CHANGE && d == cc)
+            (m != EVENT_CONTROL_CHANGE) || (d == cc)
+            a || (! a && b)  =>  a || b
+     *  \endverbatim
+     *
+     * \param msg
+     *      The channel status or message byte to be tested.
+     *
+     * \param cc
+     *      The desired cc value, which the datum must match, if the message is
+     *      a control-change message.
+     *
+     * \param datum
+     *      The current datum, to be compared to cc, if the message is a
+     *      control-change message.
+     *
+     * \return
+     *      Returns true if the message is not a control-change, or if it is
+     *      and the cc and datum parameters match.
+     */
+
+    static bool is_desired_cc_or_not_cc
+    (
+        unsigned char msg, unsigned char cc, unsigned char datum
+    )
+    {
+        return (msg != EVENT_CONTROL_CHANGE) || (datum == cc);
     }
 
     /**

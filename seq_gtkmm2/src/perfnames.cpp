@@ -46,7 +46,7 @@
 
 #include <gtkmm/adjustment.h>
 
-#include "click.hpp"                    /* SEQ64_CLICK_IS_LEFT(), etc.    */
+#include "click.hpp"                    /* SEQ64_CLICK_LEFT(), etc.    */
 #include "font.hpp"
 #include "perform.hpp"
 #include "perfnames.hpp"
@@ -239,7 +239,7 @@ perfnames::on_button_press_event (GdkEventButton * a_e)
     int y = int(a_e->y);
     int seqnum = convert_y(y);
     current_sequence(seqnum);
-    if (SEQ64_CLICK_IS_LEFT(a_e->button))
+    if (SEQ64_CLICK_LEFT(a_e->button))
     {
         if (perf().is_active(seqnum))
         {
@@ -294,7 +294,7 @@ perfnames::on_expose_event (GdkEventExpose * a_e)
 bool
 perfnames::on_button_release_event (GdkEventButton * p0)
 {
-    if (SEQ64_CLICK_IS_RIGHT(p0->button))
+    if (SEQ64_CLICK_RIGHT(p0->button))
         popup_menu();
 
     return false;

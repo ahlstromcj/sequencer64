@@ -124,6 +124,9 @@ seqdata::set_zoom (int zoom)
 /**
  *  Sets the status to the given value, and the control to the optional
  *  given value, which defaults to 0, then calls redraw().
+ *
+ *  Perhaps we should check that at least one of the parameters causes a
+ *  change.
  */
 
 void

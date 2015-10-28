@@ -26,14 +26,14 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-09
+ * \updates       2015-10-28
  * \license       GNU GPLv2 or above
  *
  */
 
 #include <gdkmm/cursor.h>
 
-#include "click.hpp"                    /* SEQ64_CLICK_IS_LEFT(), etc.    */
+#include "click.hpp"                    /* SEQ64_CLICK_LEFT(), etc.    */
 #include "event.hpp"
 #include "seqroll.hpp"
 #include "seqdata.hpp"
@@ -49,23 +49,17 @@ namespace seq64
  *  Changes the mouse cursor pixmap according to whether a note is being
  *  added or not.
  *
- *  (Which?) popup menu calls this.  It is actually a right click, I
- *  think.
+ *  What calls this?  It is actually a right click.
  */
 
 void
-Seq24SeqRollInput::set_adding (bool a_adding, seqroll & sroll)
+Seq24SeqRollInput::set_adding (bool adding, seqroll & sroll)
 {
-    if (a_adding)
-    {
+    m_adding = adding;
+    if (adding)
         sroll.get_window()->set_cursor(Gdk::Cursor(Gdk::PENCIL));
-        m_adding = true;
-    }
     else
-    {
         sroll.get_window()->set_cursor(Gdk::Cursor(Gdk::LEFT_PTR));
-        m_adding = false;
-    }
 }
 
 /**
@@ -74,10 +68,12 @@ Seq24SeqRollInput::set_adding (bool a_adding, seqroll & sroll)
  */
 
 bool
-Seq24SeqRollInput::on_button_press_event (GdkEventButton * a_ev, seqroll & sroll)
+Seq24SeqRollInput::on_button_press_event
+(
+    GdkEventButton * a_ev,
+    seqroll & sroll
+)
 {
-    long tick_s, tick_f;
-    int note_h, note_l;
     int norm_x, norm_y, snapped_x, snapped_y;
     sroll.grab_focus();
     snapped_x = norm_x = int(a_ev->x + sroll.m_scroll_offset_x);
@@ -91,6 +87,8 @@ Seq24SeqRollInput::on_button_press_event (GdkEventButton * a_ev, seqroll & sroll
     sroll.m_old.x = sroll.m_old.y = sroll.m_old.width = sroll.m_old.height = 0;
 
     bool needs_update = false;
+    long tick_s, tick_f;
+    int note_h, note_l;
     if (sroll.m_paste)
     {
         sroll.convert_xy(snapped_x, snapped_y, tick_s, note_h);
@@ -102,11 +100,7 @@ Seq24SeqRollInput::on_button_press_event (GdkEventButton * a_ev, seqroll & sroll
     else
     {
         int numsel;
-        if
-        (
-            SEQ64_CLICK_IS_LEFT(a_ev->button) ||
-            SEQ64_CLICK_IS_MIDDLE(a_ev->button)
-        )
+        if (SEQ64_CLICK_LEFT_MIDDLE(a_ev->button))      /* either button */
         {
             /*
              * Set the selection for normal x, then turn x,y in to tick,note.
@@ -162,7 +156,7 @@ Seq24SeqRollInput::on_button_press_event (GdkEventButton * a_ev, seqroll & sroll
                     );
                     if (numsel == 0) /* none selected, start selection box */
                     {
-                        if (a_ev->button == 1)
+                        if (SEQ64_CLICK_LEFT(a_ev->button))
                             sroll.m_selecting = true;
                     }
                     else
@@ -177,14 +171,14 @@ Seq24SeqRollInput::on_button_press_event (GdkEventButton * a_ev, seqroll & sroll
                 )
                 {
                     /*
-                     * Moving and selectiong, left-click (without Ctrl
+                     * Moving and selecting, left-click (without Ctrl
                      * key) only.  Get the box that selected elements are
                      * in.
                      */
 
                     if
                     (
-                        SEQ64_CLICK_IS_LEFT(a_ev->button) &&
+                        SEQ64_CLICK_LEFT(a_ev->button) &&
                         ! (a_ev->state & GDK_CONTROL_MASK)
                     )
                     {
@@ -220,14 +214,14 @@ Seq24SeqRollInput::on_button_press_event (GdkEventButton * a_ev, seqroll & sroll
                      * Middle mouse button, or left-ctrl-click (2-button mice)
                      */
 
-                    if
-                    (
-                        SEQ64_CLICK_IS_MIDDLE(a_ev->button) ||
-                        (
-                            SEQ64_CLICK_IS_LEFT(a_ev->button) &&
-                            (a_ev->state & GDK_CONTROL_MASK)
-                        )
-                    )
+//                  (
+//                      SEQ64_CLICK_MIDDLE(a_ev->button) ||
+//                      (
+//                          SEQ64_CLICK_LEFT(a_ev->button) &&
+//                          (a_ev->state & GDK_CONTROL_MASK)
+//                      )
+//                  )
+                    if (SEQ64_CLICK_CTRL_LEFT_MIDDLE(a_ev->button, a_ev->state))
                     {
                         sroll.m_growing = true;         /* moving, normal x */
                         sroll.m_seq.get_selected_box    /* selected elements */
@@ -246,7 +240,7 @@ Seq24SeqRollInput::on_button_press_event (GdkEventButton * a_ev, seqroll & sroll
                 }
             }
         }
-        if (SEQ64_CLICK_IS_RIGHT(a_ev->button))
+        if (SEQ64_CLICK_RIGHT(a_ev->button))
             set_adding(true, sroll);
     }
     if (needs_update)                   /* if they clicked, something changed */
@@ -281,7 +275,7 @@ Seq24SeqRollInput::on_button_release_event
     int delta_y = sroll.m_current_y - sroll.m_drop_y;
     long delta_tick;
     int delta_note;
-    if (SEQ64_CLICK_IS_LEFT(a_ev->button))
+    if (SEQ64_CLICK_LEFT(a_ev->button))
     {
         if (sroll.m_selecting)
         {
@@ -310,16 +304,16 @@ Seq24SeqRollInput::on_button_release_event
 
             /*
              * Since delta_note was from delta_y, it will be flipped
-             * ( delta_y[0] = note[127], etc.,so we have to adjust.
+             * (delta_y[0] = note[127], etc.), so we have to adjust.
              */
 
-            delta_note = delta_note - (c_num_keys - 1);
+            delta_note -= (c_num_keys - 1);
             sroll.m_seq.push_undo();
             sroll.m_seq.move_selected_notes(delta_tick, delta_note);
             needs_update = true;
         }
     }
-    if (SEQ64_CLICK_IS_MIDDLE(a_ev->button) || SEQ64_CLICK_IS_LEFT(a_ev->button))
+    if (SEQ64_CLICK_LEFT_MIDDLE(a_ev->button))
     {
         if (sroll.m_growing)
         {
@@ -335,7 +329,7 @@ Seq24SeqRollInput::on_button_release_event
             needs_update = true;
         }
     }
-    if (SEQ64_CLICK_IS_RIGHT(a_ev->button))
+    if (SEQ64_CLICK_RIGHT(a_ev->button))
     {
         /*
          * Minor new feature.  If the Super (Mod4, Windows) key is
@@ -346,7 +340,7 @@ Seq24SeqRollInput::on_button_release_event
          * See the same code in perfrollinput.cpp.
          */
 
-        bool addmode_exit  = ! global_allow_mod4_mode;
+        bool addmode_exit = ! global_allow_mod4_mode;
         if (! addmode_exit)
             addmode_exit = ! (a_ev->state & GDK_MOD4_MASK); // Mod4 held?
 

@@ -817,7 +817,7 @@ sequence::select_note_events
                     tick_s = ev->get_timestamp();
                     tick_f = er.get_timestamp();
                 }
-                if (er.is_note_on())
+                else if (er.is_note_on())
                 {
                     tick_f = ev->get_timestamp();
                     tick_s = er.get_timestamp();
@@ -858,20 +858,19 @@ sequence::select_note_events
                         er.unselect();
                         ev->unselect();
                     }
-                    if (a_action == e_toggle_selection &&
-                            er.is_note_on()) // don't toggle twice
+                    if (a_action == e_toggle_selection && er.is_note_on())
                     {
-                        if (er.is_selected())
+                        if (er.is_selected())       // don't toggle twice
                         {
                             er.unselect();
                             ev->unselect();
-                            result ++;
+                            ++result;
                         }
                         else
                         {
                             er.select();
                             ev->select();
-                            result ++;
+                            ++result;
                         }
                     }
                     if (a_action == e_remove_one)
@@ -879,7 +878,7 @@ sequence::select_note_events
                         remove(&er);
                         remove(ev);
                         reset_draw_marker();
-                        result++;
+                        ++result;
                         break;
                     }
                 }
@@ -892,7 +891,7 @@ sequence::select_note_events
                     if (a_action == e_select || a_action == e_select_one)
                     {
                         er.select();
-                        result++;
+                        ++result;
                         if (a_action == e_select_one)
                             break;
                     }
@@ -919,12 +918,12 @@ sequence::select_note_events
                         if (er.is_selected())
                         {
                             er.unselect();
-                            result ++;
+                            ++result;
                         }
                         else
                         {
                             er.select();
-                            result ++;
+                            ++result;
                         }
                     }
                     if (a_action == e_remove_one)
@@ -953,7 +952,8 @@ int
 sequence::select_events
 (
     long tick_s, long tick_f,
-    unsigned char status, unsigned char cc, select_action_e action
+    unsigned char status, unsigned char cc,
+    select_action_e action
 )
 {
     int result = 0;
@@ -969,11 +969,12 @@ sequence::select_events
         {
             unsigned char d0, d1;
             er.get_data(d0, d1);
-            if
-            (
-                (status == EVENT_CONTROL_CHANGE && d0 == cc) ||
-                (status != EVENT_CONTROL_CHANGE)
-            )
+//          if
+//          (
+//              (status == EVENT_CONTROL_CHANGE && d0 == cc) ||
+//              (status != EVENT_CONTROL_CHANGE)
+//          )
+            if (event::is_desired_cc_or_not_cc(status, cc, d0))
             {
                 if (action == e_select || action == e_select_one)
                 {
@@ -1213,22 +1214,10 @@ sequence::increment_selected (unsigned char astat, unsigned char /*a_control*/)
         event & er = DREF(i);
         if (er.is_selected() && er.get_status() == astat)
         {
-            if
-            (
-                astat == EVENT_NOTE_ON || astat == EVENT_NOTE_OFF ||
-                astat == EVENT_CONTROL_CHANGE || astat == EVENT_PITCH_WHEEL ||
-                astat == EVENT_AFTERTOUCH
-            )
-            {
+            if (event::is_two_byte_msg(astat))
                 er.increment_data2();
-            }
-            else if
-            (
-                astat == EVENT_PROGRAM_CHANGE || astat == EVENT_CHANNEL_PRESSURE
-            )
-            {
+            else if (event::is_one_byte_msg(astat))
                 er.increment_data1();
-            }
         }
     }
 }
@@ -1412,33 +1401,42 @@ sequence::change_event_data_range
     for (event_list::iterator i = m_events.begin(); i != m_events.end(); i++)
     {
         unsigned char d0, d1;
-        bool set = false;
         event & er = DREF(i);
         er.get_data(d0, d1);
-        if (status != EVENT_CONTROL_CHANGE && er.get_status() == status)
-            set = true;                     /* correct status and not CC     */
+        bool match = er.get_status() == status;
+
+#if 0       // let's use a more optimal and easier-to-grok check
+
+        bool good = false;
+        if (status != EVENT_CONTROL_CHANGE && match)
+            good = true;                     /* correct status and not CC     */
 
         if                                  /* correct status and correct cc */
         (
-            status == EVENT_CONTROL_CHANGE &&
-            er.get_status() == status &&
-            d0 == cc
+            status == EVENT_CONTROL_CHANGE && match && d0 == cc
         )
         {
-            set = true;
+            good = true;
         }
+#endif
+
+        bool good;
+        if (status == EVENT_CONTROL_CHANGE)
+            good = match && d0 == cc;        /* correct status and correct cc */
+        else
+            good = match;                    /* correct status and not a cc   */
 
         long tick = er.get_timestamp();
-        if (! (tick >= tick_s && tick <= tick_f))       /* in range? */
-            set = false;
+        if (! (tick >= tick_s && tick <= tick_f))       /* in range?         */
+            good = false;
 
-        if (have_selection && (!er.is_selected()))    /* in selection? */
-            set = false;
+        if (have_selection && (!er.is_selected()))      /* in selection?     */
+            good = false;
 
-        if (set)
+        if (good)
         {
             if (tick_f == tick_s)
-                tick_f = tick_s + 1;                /* avoid divide by 0 */
+                tick_f = tick_s + 1;                    /* avoid divide-by-0 */
 
             int newdata =
             (
@@ -1451,6 +1449,12 @@ sequence::change_event_data_range
             if (newdata >= MIDI_COUNT_MAX)
                 newdata = MIDI_COUNT_MAX - 1;
 
+            /*
+             * I think we can assume, at this point, that this is a good
+             * channel-message status byte.
+             */
+
+#if 0
             if (status == EVENT_NOTE_ON)
                 d1 = newdata;
             else if (status == EVENT_NOTE_OFF)
@@ -1460,10 +1464,16 @@ sequence::change_event_data_range
             else if (status == EVENT_CONTROL_CHANGE)
                 d1 = newdata;
             else if (status == EVENT_PROGRAM_CHANGE)
-                d0 = newdata;                           /* d0 == new patch */
+                d0 = newdata;                           /* d0 == new patch   */
             else if (status == EVENT_CHANNEL_PRESSURE)
-                d0 = newdata;                           /* d0 == pressure  */
+                d0 = newdata;                           /* d0 == pressure    */
             else if (status == EVENT_PITCH_WHEEL)
+                d1 = newdata;
+#endif
+
+            if (event::is_one_byte_msg(status))         /* patch or pressure */
+                d0 = newdata;
+            else
                 d1 = newdata;
 
             er.set_data(d0, d1);
@@ -2822,6 +2832,10 @@ sequence::get_next_event (unsigned char * a_status, unsigned char * a_cc)
  *  Get the next event in the event list that matches the given status and
  *  control character.  Then set the rest of the parameters parameters
  *  using that event.
+ *
+ *  Note the usage of event::is_desired_cc_or_not_cc(status, cc, *d0); Either
+ *  we have a control change with the right CC or it's a different type of
+ *  event.
  */
 
 bool
@@ -2840,17 +2854,7 @@ sequence::get_next_event
             drawevent.get_data(*d0, *d1);
             *tick = drawevent.get_timestamp();
             *selected = drawevent.is_selected();
-
-            /*
-             *  Either we have a control change with the right CC or it's a
-             *  different type of event.
-             */
-
-            if
-            (
-                (status == EVENT_CONTROL_CHANGE && *d0 == cc) ||
-                (status != EVENT_CONTROL_CHANGE)
-            )
+            if (event::is_desired_cc_or_not_cc(status, cc, *d0))
             {
                 m_iterator_draw++; /* we have a good one update and return */
                 return true;

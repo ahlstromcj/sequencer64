@@ -40,7 +40,7 @@
 #include <gtkmm/combo.h>                /* Gtk::Entry                   */
 #include <gtkmm/menubar.h>
 
-#include "click.hpp"                    /* SEQ64_CLICK_IS_LEFT(), etc.  */
+#include "click.hpp"                    /* SEQ64_CLICK_LEFT(), etc.  */
 #include "font.hpp"
 #include "mainwid.hpp"
 #include "perform.hpp"
@@ -763,7 +763,7 @@ mainwid::on_button_press_event (GdkEventButton * p0)
 {
     grab_focus();
     current_sequence(seq_from_xy(int(p0->x), int(p0->y)));
-    if (current_sequence() >= 0 && SEQ64_CLICK_IS_LEFT(p0->button))
+    if (current_sequence() >= 0 && SEQ64_CLICK_LEFT(p0->button))
         m_button_down = true;
 
     return true;
@@ -790,7 +790,7 @@ mainwid::on_button_release_event (GdkEventButton * p0)
     if (current_sequence() < 0)
         return true;
 
-    if (SEQ64_CLICK_IS_LEFT(p0->button))
+    if (SEQ64_CLICK_LEFT(p0->button))
     {
         if (m_moving)
         {
@@ -824,7 +824,7 @@ mainwid::on_button_release_event (GdkEventButton * p0)
             }
         }
     }
-    else if (SEQ64_CLICK_IS_RIGHT(p0->button))
+    else if (SEQ64_CLICK_RIGHT(p0->button))
         popup_menu();
 
     return true;

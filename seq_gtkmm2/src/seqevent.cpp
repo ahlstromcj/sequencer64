@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-27
+ * \updates       2015-10-28
  * \license       GNU GPLv2 or above
  *
  */
@@ -162,17 +162,24 @@ seqevent::redraw ()
 void
 seqevent::draw_background ()
 {
-    m_gc->set_foreground(white());              /* clear background */
-    m_pixmap->draw_rectangle
-    (
-        m_gc, true, 0, 0, m_window_x, m_window_y
-    );
+//  m_gc->set_foreground(white());              /* clear background */
+//  m_pixmap->draw_rectangle
+//  (
+//      m_gc, true, 0, 0, m_window_x, m_window_y
+//  );
+
+    draw_rectangle_on_pixmap(white(),  0, 0, m_window_x, m_window_y);
+
+    /*
+     * See the potential upgrade in seqroll::update_background, which could be
+     * applicable here, too.
+     */
 
     int measures_per_line = 1;
-    int ticks_per_measure =  m_seq.get_bpm() * (4 * m_ppqn) / m_seq.get_bw();
     int ticks_per_beat = (4 * m_ppqn) / m_seq.get_bw();
+    int ticks_per_measure = m_seq.get_bpm() * ticks_per_beat;
     int ticks_per_step = 6 * m_zoom;
-    int ticks_per_m_line =  ticks_per_measure * measures_per_line;
+    int ticks_per_m_line = ticks_per_measure * measures_per_line;
     int starttick = m_scroll_offset_ticks -
         (m_scroll_offset_ticks % ticks_per_step);
 
@@ -198,17 +205,27 @@ seqevent::draw_background ()
             gint8 dash = 1;
             m_gc->set_dashes(0, &dash, 1);
         }
-        m_pixmap->draw_line
+//      m_pixmap->draw_line
+//      (
+//          m_gc, base_line - m_scroll_offset_x,
+//          0, base_line - m_scroll_offset_x, m_window_y
+//      );
+        draw_line_on_pixmap
         (
-            m_gc, base_line - m_scroll_offset_x,
-            0, base_line - m_scroll_offset_x, m_window_y
+            base_line - m_scroll_offset_x, 0,
+            base_line - m_scroll_offset_x, m_window_y
         );
     }
     set_line(Gdk::LINE_SOLID);
-    m_gc->set_foreground(black());
-    m_pixmap->draw_rectangle
+//  m_gc->set_foreground(black());
+//  m_pixmap->draw_rectangle
+//  (
+//      m_gc, false, -1, 0, m_window_x + 1, m_window_y - 1
+//  );
+
+    draw_rectangle_on_pixmap
     (
-        m_gc, false, -1, 0, m_window_x + 1, m_window_y - 1
+        black(), -1, 0, m_window_x + 1, m_window_y - 1, false
     );
 }
 
@@ -273,21 +290,34 @@ seqevent::draw_events_on (Glib::RefPtr<Gdk::Drawable> a_draw)
         if ((tick >= starttick && tick <= endtick))
         {
             x = tick / m_zoom;              /* turn into screen coordinates */
-            m_gc->set_foreground(black());
-            a_draw->draw_rectangle
+//          m_gc->set_foreground(black());
+//          a_draw->draw_rectangle
+//          (
+//              m_gc, true, x -  m_scroll_offset_x,
+//              (c_eventarea_y - c_eventevent_y) / 2,
+//              c_eventevent_x, c_eventevent_y
+//          );
+            draw_rectangle
             (
-                m_gc, true, x -  m_scroll_offset_x,
-                (c_eventarea_y - c_eventevent_y) / 2,
+                a_draw, black(),
+                x -  m_scroll_offset_x, (c_eventarea_y - c_eventevent_y) / 2,
                 c_eventevent_x, c_eventevent_y
             );
-            if (selected)
-                m_gc->set_foreground(orange());
-            else
-                m_gc->set_foreground(white());
-
-            a_draw->draw_rectangle
+//          if (selected)
+//              m_gc->set_foreground(orange());
+//          else
+//              m_gc->set_foreground(white());
+//
+//          a_draw->draw_rectangle
+//          (
+//              m_gc, true, x -  m_scroll_offset_x + 1,
+//              (c_eventarea_y - c_eventevent_y) / 2 + 1,
+//              c_eventevent_x - 3, c_eventevent_y - 3
+//          );
+            draw_rectangle
             (
-                m_gc, true, x -  m_scroll_offset_x + 1,
+                a_draw, selected ? orange() : white(),
+                x -  m_scroll_offset_x + 1,
                 (c_eventarea_y - c_eventevent_y) / 2 + 1,
                 c_eventevent_x - 3, c_eventevent_y - 3
             );
@@ -363,16 +393,18 @@ seqevent::draw_selection_on_window ()
         x -= m_scroll_offset_x;
         m_old.x = x;
         m_old.width = w;
-        m_gc->set_foreground(black());
-        m_window->draw_rectangle(m_gc, false, x, y, w, h);
+//      m_gc->set_foreground(black());
+//      m_window->draw_rectangle(m_gc, false, x, y, w, h);
+        draw_rectangle(black(), x, y, w, h, false);
     }
     if (m_moving || m_paste)
     {
         int delta_x = m_current_x - m_drop_x;
         x = m_selected.x + delta_x;
         x -= m_scroll_offset_x;
-        m_gc->set_foreground(black());
-        m_window->draw_rectangle(m_gc, false, x, y, m_selected.width, h);
+//      m_gc->set_foreground(black());
+//      m_window->draw_rectangle(m_gc, false, x, y, m_selected.width, h);
+        draw_rectangle(black(), x, y, m_selected.width, h, false);
         m_old.x = x;
         m_old.width = m_selected.width;
     }

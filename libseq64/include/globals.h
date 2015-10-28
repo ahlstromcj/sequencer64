@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-25
- * \updates       2015-10-27
+ * \updates       2015-10-28
  * \license       GNU GPLv2 or above
  *
  *  We're going to try to collect all the globals here in one module, and
@@ -408,7 +408,7 @@ const int c_mainwid_y =
  *  be in pixels; one pixel per MIDI value.
  */
 
-const int c_dataarea_y = (MIDI_COUNT_MAX * 1);
+const int c_dataarea_y = MIDI_COUNT_MAX * 1;
 
 /**
  *  The width of the 'bar', presumably the line that ends a measure, in
@@ -423,7 +423,7 @@ const int c_data_x = 2;
  */
 
 const int c_key_x = 16;
-const int c_key_y = 8;
+const int c_key_y =  8;
 
 /**
  *  The number of MIDI keys, as well as keys in the virtual keyboard.
@@ -452,14 +452,14 @@ const int c_rollarea_y = c_keyarea_y;
 
 /**
  *  The dimensions of the little squares that represent the position of
- *  each event.
+ *  each event, in pixels.
  */
 
-const int c_eventevent_x = 5;
+const int c_eventevent_x =  5;
 const int c_eventevent_y = 10;
 
 /**
- *  A new constant that presents the padding above and below and event
+ *  A new constant that presents the padding above and below an event
  *  rectangle, in pixels.
  */
 

@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-15
+ * \updates       2015-10-28
  * \license       GNU GPLv2 or above
  *
  */
@@ -58,6 +58,7 @@ class seqkeys;
 
 class rect
 {
+
 public:
 
     int x, y, height, width;
@@ -195,6 +196,20 @@ public:
     int idle_redraw ();
     void start_paste ();
 
+    /**
+     *  Wraps up some common code.
+     */
+
+    void update_and_draw (int force = false)
+    {
+        update_background();
+        update_pixmap();
+        if (force)
+            force_draw();
+        else
+            queue_draw();
+    }
+
 private:
 
     void convert_xy (int x, int y, long & ticks, int & note);
@@ -220,19 +235,6 @@ private:
     void change_horz ();
     void change_vert ();
     void force_draw ();
-
-private:            // special dual setters for friends
-
-    void set_current_drop_x (int x)
-    {
-        m_current_x = m_drop_x = x;
-    }
-
-    void set_current_drop_y (int y)
-    {
-        m_current_y = m_drop_y = y;
-    }
-
 
 private:            // callbacks
 

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-21
- * \updates       2015-10-27
+ * \updates       2015-10-28
  * \license       GNU GPLv2 or above
  *
  */
@@ -261,6 +261,50 @@ gui_drawingarea_gtk2::draw_rectangle
 {
     m_gc->set_foreground(c);
     drawable->draw_rectangle(m_gc, fill, x, y, lx, ly);
+}
+
+/**
+ *  A small wrapper function for readability in box-drawing on any pixmap
+ *  context.  It also supports setting the foreground color to the
+ *  draw_rectangle() function.
+ *
+ *  We have a number of such functions:  for the main window, for the main
+ *  pixmap, and for any drawing surface.  Is the small bit of conciseness
+ *  worth it?
+ *
+ * \param pixmap
+ *      The surface on which to draw the box.
+ *
+ * \param c
+ *      Provides the foreground color to set.
+ *
+ * \param x
+ *      The x-coordinate of the origin.
+ *
+ * \param y
+ *      The y-coordinate of the origin.
+ *
+ * \param lx
+ *      The width of the box.
+ *
+ * \param ly
+ *      The height of the box.
+ *
+ * \param fill
+ *      If true, fill the rectangle with the current foreground color, as
+ *      set by m_gc->set_foreground(color).  Defaults to true.
+ */
+
+void
+gui_drawingarea_gtk2::draw_rectangle
+(
+    Glib::RefPtr<Gdk::Pixmap> & pixmap,
+    const Color & c,
+    int x, int y, int lx, int ly, bool fill
+)
+{
+    m_gc->set_foreground(c);
+    pixmap->draw_rectangle(m_gc, fill, x, y, lx, ly);
 }
 
 /**

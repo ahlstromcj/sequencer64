@@ -313,6 +313,69 @@ protected:
     }
 
     /**
+     *  A small wrapper function to draw a line on any pixmap (not a drawable,
+     *  though, cue to a compiler error after setting the given foreground
+     *  color.
+     *
+     * \param drawable
+     *      Provides the Gdk::Drawable pointer needed to draw the line.
+     *
+     * \param x1
+     *      The x coordinate of the starting point.
+     *
+     * \param y1
+     *      The y coordinate of the starting point.
+     *
+     * \param x2
+     *      The x coordinate of the ending point.
+     *
+     * \param y2
+     *      The y coordinate of the ending point.
+     */
+
+    void draw_line
+    (
+        Glib::RefPtr<Gdk::Pixmap> & drawable,
+        int x1, int y1, int x2, int y2
+    )
+    {
+        drawable->draw_line(m_gc, x1, y1, x2, y2);
+    }
+
+    /**
+     *  A small wrapper function to draw a line on the pixmap after setting
+     *  the given foreground color.
+     *
+     * \param drawable
+     *      Provides the Gdk::Drawable pointer needed to draw the line.
+     *
+     * \param c
+     *      The foreground color in which to draw the line.
+     *
+     * \param x1
+     *      The x coordinate of the starting point.
+     *
+     * \param y1
+     *      The y coordinate of the starting point.
+     *
+     * \param x2
+     *      The x coordinate of the ending point.
+     *
+     * \param y2
+     *      The y coordinate of the ending point.
+     */
+
+    void draw_line
+    (
+        Glib::RefPtr<Gdk::Drawable> & drawable,
+        const Color & c, int x1, int y1, int x2, int y2
+    )
+    {
+        m_gc->set_foreground(c);
+        drawable->draw_line(m_gc, x1, y1, x2, y2);
+    }
+
+    /**
      *  A small wrapper function for readability in string-drawing to the
      *  window.
      *
@@ -405,6 +468,13 @@ protected:
         int x, int y, int lx, int ly, bool fill = true
     );
 
+    void draw_rectangle
+    (
+        Glib::RefPtr<Gdk::Pixmap> & pixmap,
+        const Color & c,
+        int x, int y, int lx, int ly, bool fill = true
+    );
+
     /**
      *  A small wrapper function for readability in box-drawing on the pixmap.
      *
@@ -437,6 +507,18 @@ protected:
     (
         const Color & c, int x, int y, int lx, int ly, bool fill = true
     );
+
+protected:            // special dual setters for friend GUI classes
+
+    void set_current_drop_x (int x)
+    {
+        m_current_x = m_drop_x = x;
+    }
+
+    void set_current_drop_y (int y)
+    {
+        m_current_y = m_drop_y = y;
+    }
 
 private:
 

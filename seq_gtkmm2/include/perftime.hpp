@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-03
+ * \updates       2015-10-29
  * \license       GNU GPLv2 or above
  *
  */
@@ -55,16 +55,44 @@ class perftime : public gui_drawingarea_gtk2
 
 private:
 
+    /**
+     *  Not yet sure exactly what this member represents.
+     */
+
     int m_4bar_offset;
+
+    /**
+     *  This member is m_4bar_offset times 16 times the current PPQN,
+     *  to save some calculations and centralize this value.
+     */
+
+    int m_tick_offset;
+
+    /**
+     *  The current value of PPQN, which we are trying to get to work
+     *  everywhere, when PPQN is changed from global_ppqn = c_ppqn = 192.
+     */
+
     int m_ppqn;
+
+    /**
+     *  Snap value, starts out very small, equal to m_ppqn.
+     */
+
     int m_snap;
+
     int m_measure_length;
     int m_perf_scale_x;                 /* no y version used, though */
     int m_timearea_y;                   /* no x version used, though */
 
 public:
 
-    perftime (perform & perf, Gtk::Adjustment & hadjust);
+    perftime
+    (
+        perform & perf,
+        Gtk::Adjustment & hadjust,
+        int ppqn = SEQ64_USE_DEFAULT_PPQN
+    );
 
     void reset ();
     void set_scale (int scale);
@@ -83,6 +111,7 @@ private:
 
     void draw_progress_on_window ();
     void change_horz ();
+    void set_ppqn (int ppqn);
 
     /**
      *  This function does nothing.

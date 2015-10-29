@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-25
- * \updates       2015-10-28
+ * \updates       2015-10-29
  * \license       GNU GPLv2 or above
  *
  *  We're going to try to collect all the globals here in one module, and
@@ -766,25 +766,6 @@ const int c_scales_transpose_dn_neg[c_scale_size][OCTAVE_SIZE] =
     { 1, 0, 2, 1, 0, 2, 0, 2, 0, 2, 0, 2},                  /* melodic minor   */
     { 2, 0, 2, 0, 2, 0, 2, 0, 2, 0, 2, 0},                  /* C whole tone    */
 };
-
-/**
- * \internal
- *
- *  This array is currently commented out int seqkeys.cpp in the
- *  update_pixmap() function.
- *
-\verbatim
-const int c_scales_symbol[c_scale_size][OCTAVE_SIZE] =
-{
-    { 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32},      // off = chromatic
-    { 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32},      // major
-    { 32, 32, 32, 32, 32, 32, 32, 32, 129, 128, 129, 128},  // minor
-    { 32, 32, 32, 32, 32, 32, 32, 32, 129, 128, 129, 128},  // harmonic minor
-    { 32, 32, 32, 32, 32, 32, 32, 32, 129, 128, 129, 128},  // melodic minor
-    { 32, 32, 32, 32, 32, 32, 32, 32, 129, 128, 129, 128},  // C whole tone
-};
-\endverbatim
- */
 
 /**
  *  The names of the supported scales.

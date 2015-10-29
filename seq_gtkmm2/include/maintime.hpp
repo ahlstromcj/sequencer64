@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-15
+ * \updates       2015-10-29
  * \license       GNU GPLv2 or above
  *
  */
@@ -55,9 +55,10 @@ static const int c_pill_width = 8;
 class maintime : public gui_drawingarea_gtk2
 {
 
+    friend class mainwnd;               /* it calls idle_progress()     */
+
 private:
 
-    long m_tick;
     const int m_pill_width;
     int m_ppqn;
 
@@ -71,6 +72,9 @@ public:
         int x = c_maintime_x,
         int y = c_maintime_y
     );
+
+private:
+
     int idle_progress (long ticks);
 
 private:        // callbacks

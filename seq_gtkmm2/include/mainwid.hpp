@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-01
+ * \updates       2015-10-29
  * \license       GNU GPLv2 or above
  *
  */
@@ -100,7 +100,16 @@ private:
     bool valid_sequence (int seq);
     void draw_sequence_on_pixmap (int seq);
     void draw_sequences_on_pixmap ();
-    void fill_background_window ();
+
+    /**
+     *  This function updates the background window, clearing it.
+     */
+
+    void fill_background_window ()
+    {
+        draw_normal_rectangle_on_pixmap(0, 0, m_window_x, m_window_y);
+    }
+
     void draw_pixmap_on_window ();
     void draw_sequence_pixmap_on_window (int seq);
     int seq_from_xy (int x, int y);
@@ -129,3 +138,4 @@ private:        // callbacks
  *
  * vim: sw=4 ts=4 wm=4 et ft=cpp
  */
+

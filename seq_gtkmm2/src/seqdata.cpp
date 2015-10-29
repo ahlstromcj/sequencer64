@@ -176,9 +176,15 @@ seqdata::draw_events_on (Glib::RefPtr<Gdk::Drawable> drawable)
                 event_height = d0;
             }
             set_line(Gdk::LINE_SOLID, 2);
-            drawable->draw_line                       /* draw vert lines      */
+//          drawable->draw_line                     /* draw vert lines      */
+//          (
+//              m_gc, event_x - m_scroll_offset_x + 1,
+//              c_dataarea_y - event_height, event_x - m_scroll_offset_x + 1,
+//              c_dataarea_y
+//          );
+            draw_line                               /* draw vert lines      */
             (
-                m_gc, event_x - m_scroll_offset_x + 1,
+                drawable, event_x - m_scroll_offset_x + 1,
                 c_dataarea_y - event_height, event_x - m_scroll_offset_x + 1,
                 c_dataarea_y
             );
@@ -386,18 +392,13 @@ seqdata::on_realize ()
     (
         mem_fun(*this, &seqdata::change_horz)
     );
-    for (int i = 0; i < c_dataarea_y; ++i)          /* MIDI_COUNT_MAX; 128 */
+    m_gc->set_foreground(white());              /* works for all drawing    */
+    for (int i = 0; i < c_dataarea_y; ++i)      /* MIDI_COUNT_MAX; 128      */
     {
         m_numbers[i] = Gdk::Pixmap::create(m_window, m_number_w, m_number_h, -1);
-
-        /*
-         * Doesn't work.  Why?
-         *
-         * draw_rectangle(m_numbers[i], white(), 0, 0, 6, 30);
-         */
-
-        m_gc->set_foreground(white());
-        m_numbers[i]->draw_rectangle(m_gc, true, 0, 0, m_number_w, m_number_h);
+//      m_gc->set_foreground(white());
+//      m_numbers[i]->draw_rectangle(m_gc, true, 0, 0, m_number_w, m_number_h);
+        draw_rectangle(m_numbers[i], 0, 0, m_number_w, m_number_h);
 
         char val[8];
         char num[8];

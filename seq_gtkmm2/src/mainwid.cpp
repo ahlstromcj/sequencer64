@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-27
+ * \updates       2015-10-29
  * \license       GNU GPLv2 or above
  *
  *  Note that this representation is, in a sense, inside the mainwnd
@@ -161,20 +161,6 @@ mainwid::draw_sequences_on_pixmap ()
 }
 
 /**
- *  This function updates the background window, clearing it.
- */
-
-void
-mainwid::fill_background_window ()
-{
-    m_pixmap->draw_rectangle
-    (
-        get_style()->get_bg_gc(Gtk::STATE_NORMAL),      // this->
-        true, 0, 0, m_window_x, m_window_y
-    );
-}
-
-/**
  *  Provides a stock callback, because some kind of callback is need.
  *
  *
@@ -223,7 +209,7 @@ mainwid::draw_sequence_on_pixmap (int seqnum)
     {
         int base_x, base_y;
         calculate_base_sizes(seqnum, base_x, base_y);   /* side-effects     */
-        draw_rectangle_on_pixmap                    /* outer border of box  */
+        draw_rectangle_on_pixmap                        /* outer box border */
         (
             black(), base_x, base_y, m_seqarea_x, m_seqarea_y
         );
@@ -411,21 +397,28 @@ mainwid::draw_sequence_on_pixmap (int seqnum)
              */
 
 #ifdef USE_GREY_GRID                        /* otherwise, leave it black    */
-            m_pixmap->draw_rectangle
+//          m_pixmap->draw_rectangle
+//          (
+//              get_style()->get_bg_gc(Gtk::STATE_NORMAL),        // this->
+//              true, base_x + 4, base_y, m_seqarea_x - 8, m_seqarea_y
+//          );
+            draw_normal_rectangle_on_pixmap
             (
-                get_style()->get_bg_gc(Gtk::STATE_NORMAL),        // this->
-                true, base_x + 4, base_y, m_seqarea_x - 8, m_seqarea_y
+                base_x + 4, base_y, m_seqarea_x - 8, m_seqarea_y
             );
 #endif
 
 #ifdef USE_NORMAL_GRID                      /* change box to "brackets"     */
-            m_pixmap->draw_rectangle
+//          m_pixmap->draw_rectangle
+//          (
+//              get_style()->get_bg_gc(Gtk::STATE_NORMAL),       // this->
+//              true, base_x + 1, base_y + 1, m_seqarea_x - 2, m_seqarea_y - 2
+//          );
+            draw_normal_rectangle_on_pixmap
             (
-                get_style()->get_bg_gc(Gtk::STATE_NORMAL),       // this->
-                true, base_x + 1, base_y + 1, m_seqarea_x - 2, m_seqarea_y - 2
+                base_x + 1, base_y + 1, m_seqarea_x - 2, m_seqarea_y - 2
             );
 #endif
-
         }
     }
 }

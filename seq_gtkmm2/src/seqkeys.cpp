@@ -114,26 +114,38 @@ seqkeys::reset ()
 void
 seqkeys::update_pixmap ()
 {
-    m_gc->set_foreground(black());
-    m_pixmap->draw_rectangle(m_gc, true, 0, 0, c_keyarea_x, c_keyarea_y);
-    m_gc->set_foreground(white());
-    m_pixmap->draw_rectangle(m_gc, true, 1, 1, c_keyoffset_x-1, c_keyarea_y-2);
+//  m_gc->set_foreground(black());
+//  m_pixmap->draw_rectangle(m_gc, true, 0, 0, c_keyarea_x, c_keyarea_y);
+    draw_rectangle_on_pixmap(black(), 0, 0, c_keyarea_x, c_keyarea_y);
+//  m_gc->set_foreground(white());
+//  m_pixmap->draw_rectangle(m_gc, true, 1, 1, c_keyoffset_x-1, c_keyarea_y-2);
+    draw_rectangle_on_pixmap(white(), 1, 1, c_keyoffset_x-1, c_keyarea_y-2);
     for (int i = 0; i < c_num_keys; i++)
     {
-        m_gc->set_foreground(white());
-        m_pixmap->draw_rectangle
+//      m_gc->set_foreground(white());
+//      m_pixmap->draw_rectangle
+//      (
+//          m_gc, true, c_keyoffset_x + 1,
+//          (c_key_y * i) + 1, c_key_x - 2, c_key_y - 1
+//      );
+        draw_rectangle_on_pixmap
         (
-            m_gc, true, c_keyoffset_x + 1,
+            white(), c_keyoffset_x + 1,
             (c_key_y * i) + 1, c_key_x - 2, c_key_y - 1
         );
 
         int key = (c_num_keys - i - 1) % OCTAVE_SIZE;   /* key in the octave */
         if (key == 1 || key == 3 || key == 6 || key == 8 || key == 10)
         {
-            m_gc->set_foreground(black());
-            m_pixmap->draw_rectangle
+//          m_gc->set_foreground(black());
+//          m_pixmap->draw_rectangle
+//          (
+//              m_gc, true, c_keyoffset_x + 1,
+//              (c_key_y * i) + 2, c_key_x - 3, c_key_y - 3
+//          );
+            draw_rectangle_on_pixmap
             (
-                m_gc, true, c_keyoffset_x + 1,
+                black(), c_keyoffset_x + 1,
                 (c_key_y * i) + 2, c_key_x - 3, c_key_y - 3
             );
         }
@@ -148,20 +160,6 @@ seqkeys::update_pixmap ()
             snprintf(notes, sizeof(notes), "%2s%1d", c_key_text[key], octave);
             render_string_on_pixmap(2, c_key_y * i - 1, notes, font::BLACK);
         }
-
-        /*
-         * This commented code looks interesting.
-         *
-         *  snprintf
-         *  (
-         *      notes, sizeof(notes), "%c %d",
-         *      c_scales_symbol[m_scale][key], m_scale
-         *  );
-         *  render_string_on_pixmap
-         *  (
-         *      2 + (c_text_x * 4), c_key_y * i - 1, notes, font::BLACK
-         *  );
-         */
     }
 }
 
@@ -253,19 +251,30 @@ seqkeys::draw_key (int a_key, bool a_state)
     else
         m_gc->set_foreground(white());
 
-    m_window->draw_rectangle
+//  m_window->draw_rectangle
+//  (
+//      m_gc, true, c_keyoffset_x + 1,
+//      (c_key_y * a_key) + 2 - m_scroll_offset_y,
+//      c_key_x - 3, c_key_y - 3
+//  );
+    draw_rectangle
     (
-        m_gc, true, c_keyoffset_x + 1,
-        (c_key_y * a_key) + 2 -  m_scroll_offset_y,
+        c_keyoffset_x + 1, (c_key_y * a_key) + 2 - m_scroll_offset_y,
         c_key_x - 3, c_key_y - 3
     );
     if (a_state)
     {
-        m_gc->set_foreground(grey());
-        m_window->draw_rectangle
+//      m_gc->set_foreground(grey());
+//      m_window->draw_rectangle
+//      (
+//          m_gc, true, c_keyoffset_x + 1,
+//          (c_key_y * a_key) + 2 - m_scroll_offset_y,
+//          c_key_x - 3, c_key_y - 3
+//      );
+//      m_gc->set_foreground(grey());
+        draw_rectangle
         (
-            m_gc, true, c_keyoffset_x + 1,
-            (c_key_y * a_key) + 2 - m_scroll_offset_y,
+            grey(), c_keyoffset_x + 1, (c_key_y * a_key) + 2 - m_scroll_offset_y,
             c_key_x - 3, c_key_y - 3
         );
     }

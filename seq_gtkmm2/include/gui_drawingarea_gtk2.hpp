@@ -320,7 +320,43 @@ protected:
 
     /**
      *  A small wrapper function to draw a line on any pixmap (not a drawable,
-     *  though, cue to a compiler error after setting the given foreground
+     *  though, due to a compiler error after setting the given foreground
+     *  color.
+     *
+     * \param pixmap
+     *      Provides the Gdk::Pixmap pointer needed to draw the line.
+     *
+     * \param x1
+     *      The x coordinate of the starting point.
+     *
+     * \param y1
+     *      The y coordinate of the starting point.
+     *
+     * \param x2
+     *      The x coordinate of the ending point.
+     *
+     * \param y2
+     *      The y coordinate of the ending point.
+     */
+
+    void draw_line
+    (
+        Glib::RefPtr<Gdk::Pixmap> & pixmap,
+        int x1, int y1, int x2, int y2
+    )
+    {
+        pixmap->draw_line(m_gc, x1, y1, x2, y2);
+    }
+
+    void draw_line
+    (
+        Glib::RefPtr<Gdk::Pixmap> & pixmap,
+        const Color & c, int x1, int y1, int x2, int y2
+    );
+
+    /**
+     *  A small wrapper function to draw a line on any pixmap (not a drawable,
+     *  though, due to a compiler error after setting the given foreground
      *  color.
      *
      * \param drawable
@@ -341,7 +377,7 @@ protected:
 
     void draw_line
     (
-        Glib::RefPtr<Gdk::Pixmap> & drawable,
+        Glib::RefPtr<Gdk::Drawable> & drawable,
         int x1, int y1, int x2, int y2
     )
     {
@@ -553,6 +589,11 @@ protected:
     void draw_rectangle_on_pixmap
     (
         const Color & c, int x, int y, int lx, int ly, bool fill = true
+    );
+
+    void draw_normal_rectangle_on_pixmap
+    (
+        int x, int y, int lx, int ly, bool fill = true
     );
 
 protected:            // special dual setters for friend GUI classes

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-27
+ * \updates       2015-10-29
  * \license       GNU GPLv2 or above
  *
  *  The time bar shows markers and numbers for the measures of the song,
@@ -53,13 +53,18 @@ namespace seq64
  *      beforehand.
  */
 
-perftime::perftime (perform & p, Gtk::Adjustment & hadjust)
- :
+perftime::perftime
+(
+    perform & p,
+    Gtk::Adjustment & hadjust,
+    int ppqn
+) :
     gui_drawingarea_gtk2    (p, hadjust, adjustment_dummy(), 10, c_timearea_y),
     m_4bar_offset           (0),
-    m_ppqn                  (c_ppqn),
-    m_snap                  (c_ppqn),
-    m_measure_length        (c_ppqn * 4),
+    m_tick_offset           (0),
+    m_ppqn                  (0),                // set in the body
+    m_snap                  (0),                // ditto
+    m_measure_length        (0),                // tritto
     m_perf_scale_x          (c_perf_scale_x),   // 32 ticks per pixel
     m_timearea_y            (c_timearea_y)      // pixel-height of time scale
 {
@@ -74,6 +79,23 @@ perftime::perftime (perform & p, Gtk::Adjustment & hadjust)
     (
         mem_fun(*this, &perftime::change_horz)
     );
+    set_ppqn(ppqn);
+}
+
+/**
+ *  Handles changes to the PPQN value in one place.
+ */
+
+void
+perftime::set_ppqn (int ppqn)
+{
+    if (ppqn > 0 || ppqn == SEQ64_USE_DEFAULT_PPQN)
+    {
+        m_ppqn = (ppqn == SEQ64_USE_DEFAULT_PPQN) ? global_ppqn : ppqn ;
+        m_snap = m_ppqn;
+        m_measure_length = m_ppqn * 4;
+        m_tick_offset = m_4bar_offset * 16 * m_ppqn;
+    }
 }
 
 /**
@@ -86,6 +108,7 @@ perftime::change_horz ()
     if (m_4bar_offset != int(m_hadjust.get_value()))
     {
         m_4bar_offset = int(m_hadjust.get_value());
+        m_tick_offset = m_4bar_offset * 16 * m_ppqn;
         queue_draw();
     }
 }
@@ -106,21 +129,21 @@ perftime::set_guides (int snap, int measure)
  *  Implements the on-realization event, then allocates some resources the
  *  could not be allocated in the constructor.  It is important to call the
  *  base-class version of this function.
+ *
+ *  Done in base-class's on_realize() and in its constructor now.
+ *
+\verbatim
+        m_window = get_window();
+        m_gc = Gdk::GC::create(m_window);
+        m_window->clear();
+        set_size_request(10, m_timearea_y);
+\endverbatim
  */
 
 void
 perftime::on_realize ()
 {
     gui_drawingarea_gtk2::on_realize();     // base-class version
-
-    /*
-     * Done in base-class's on_realize() and in its constructor now.
-     *
-     *  m_window = get_window();
-     *  m_gc = Gdk::GC::create(m_window);
-     *  m_window->clear();
-     *  set_size_request(10, m_timearea_y);
-     */
 }
 
 /**
@@ -139,27 +162,26 @@ perftime::on_expose_event (GdkEventExpose * /* ev */ )
 {
     draw_rectangle(white(), 0, 0, m_window_x, m_window_y);
     draw_line(black(), 0, m_window_y - 1, m_window_x, m_window_y - 1);
-    long tick_offset = (m_4bar_offset * 16 * m_ppqn);
-    long first_measure = tick_offset / m_measure_length;
+    long first_measure = m_tick_offset / m_measure_length;
     long last_measure = first_measure +
         (m_window_x * m_perf_scale_x / m_measure_length) + 1;
 
     m_gc->set_foreground(grey());                   /* draw vertical lines  */
     for (long i = first_measure; i < last_measure; ++i)
     {
-        int x_pos = ((i * m_measure_length) - tick_offset) / m_perf_scale_x;
+        int x_pos = ((i * m_measure_length) - m_tick_offset) / m_perf_scale_x;
         char bar[8];
         snprintf(bar, sizeof(bar), "%ld", i + 1);
         draw_line(x_pos, 0, x_pos, m_window_y);                     /* beat */
         render_string(x_pos + 2, 0, bar, font::BLACK);
     }
 
-    long left = perf().get_left_tick();
-    long right = perf().get_right_tick();
-    left -= (m_4bar_offset * 16 * m_ppqn);          /* why 16?          */
-    left /= m_perf_scale_x;
-    right -= (m_4bar_offset * 16 * m_ppqn);
-    right /= m_perf_scale_x;
+    long left = (perf().get_left_tick() - m_tick_offset) / m_perf_scale_x;
+    long right = (perf().get_right_tick() - m_tick_offset) / m_perf_scale_x;
+//  left -= m_tick_offset;
+//  left /= m_perf_scale_x;
+//  right -= m_tick_offset;
+//  right /= m_perf_scale_x;
     if (left >= 0 && left <= m_window_x)            /* draw L marker    */
     {
         draw_rectangle(black(), left, m_window_y - 9, 7, 10);
@@ -180,12 +202,10 @@ perftime::on_expose_event (GdkEventExpose * /* ev */ )
 bool
 perftime::on_button_press_event (GdkEventButton * p0)
 {
-    long tick = long(p0->x);
-    tick *= m_perf_scale_x;         // tick = tick - (tick % (m_ppqn * 4));
-    tick += (m_4bar_offset * 16 * m_ppqn);
+    long tick = long(p0->x) * m_perf_scale_x + m_tick_offset;
     tick -= (tick % m_snap);
 
-    // Why is this disabled?
+    // Why is this disabled?  We should re-enable and see if it works.
     //
     // if (SEQ64_CLICK_MIDDLE(p0->button))
     //      perf().set_start_tick(tick);
@@ -218,3 +238,4 @@ perftime::on_size_allocate (Gtk::Allocation & a_r)
  *
  * vim: sw=4 ts=4 wm=4 et ft=cpp
  */
+

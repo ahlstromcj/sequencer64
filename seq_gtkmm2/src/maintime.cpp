@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-15
+ * \updates       2015-10-29
  * \license       GNU GPLv2 or above
  *
  *  The "time" window is the horizontal bar at the upper right of the main
@@ -56,7 +56,6 @@ maintime::maintime
     int y
 ) :
     gui_drawingarea_gtk2    (p, x, y),
-    m_tick                  (0),
     m_pill_width            (pillwidth),
     m_ppqn                  (0)
 {
@@ -90,40 +89,39 @@ maintime::on_realize ()
  *  Idle hands do the devil's work.  We should eventually support some generic
  *  coloring for "dark themes".  The default coloring is better for "light
  *  themes".
+ *
+ * \param ticks
+ *      Provides the main tick setting.  This setting is provided by
+ *      mainwnd(), in its timer callback.
+ *
+ * \return
+ *      Always returns 1 (it used to return "true"!).
  */
 
 int
 maintime::idle_progress (long ticks)
 {
-    m_tick = ticks;
     m_window->clear();
-    m_gc->set_foreground(black());
-    m_window->draw_rectangle
-    (
-        m_gc, false, 0, 0, m_window_x - 1, m_window_y - 1
-    );
+    draw_rectangle(black(), 0, 0, m_window_x - 1, m_window_y - 1, false);
 
     int width = m_window_x - m_pill_width - 1;
-    int tick_x = ((m_tick % m_ppqn) * (m_window_x - 1)) / m_ppqn ;
-    int beat_x = (((m_tick / 4) % m_ppqn) * width) / m_ppqn ;
-    int bar_x = (((m_tick / 16) % m_ppqn) * width) / m_ppqn ;
-    if (tick_x <= (m_window_x / 4))
+    int tick_x = ((ticks % m_ppqn) * (m_window_x - 1)) / m_ppqn ;
+    int beat_x = (((ticks / 4) % m_ppqn) * width) / m_ppqn ;
+    int bar_x = (((ticks / 16) % m_ppqn) * width) / m_ppqn ;
+    if (tick_x <= (m_window_x / 4))         /* 4 is number of beats, bw! */
     {
-        m_gc->set_foreground(grey());
-        m_window->draw_rectangle
+        /*
+         * This rectangle gives the maintime bar a flashing effect, four times
+         * per measure.
+         */
+
+        draw_rectangle
         (
-            m_gc, true, 2, /*tick_x + 2,*/ 2, m_window_x - 4, m_window_y - 4
+            grey(), 2, /*tick_x + 2,*/ 2, m_window_x - 4, m_window_y - 4
         );
     }
-    m_gc->set_foreground(black());
-    m_window->draw_rectangle
-    (
-        m_gc, true, beat_x + 2, 2, m_pill_width, m_window_y - 4
-    );
-    m_window->draw_rectangle
-    (
-        m_gc, true, bar_x + 2, 2, m_pill_width, m_window_y - 4
-    );
+    draw_rectangle(black(), beat_x + 2, 2, m_pill_width, m_window_y - 4);
+    draw_rectangle(bar_x + 2, 2, m_pill_width, m_window_y - 4);
     return true;
 }
 
@@ -138,13 +136,14 @@ maintime::idle_progress (long ticks)
 #endif
 
 /**
- *  This function merely idles.
+ *  This function merely idles.  We don't need the m_tick member, the function
+ *  works as well if 0 is passed in.  We've removed m_tick permanently.
  */
 
 bool
 maintime::on_expose_event (GdkEventExpose * a_e)
 {
-    idle_progress(m_tick);
+    idle_progress(0);               /* idle_progress(m_tick); */
     return true;
 }
 

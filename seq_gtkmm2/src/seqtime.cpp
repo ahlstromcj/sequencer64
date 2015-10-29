@@ -148,11 +148,7 @@ seqtime::redraw ()
 void
 seqtime::update_pixmap ()
 {
-//  m_gc->set_foreground(white());                      /* clear background */
-//  m_pixmap->draw_rectangle(m_gc, true, 0, 0, m_window_x, m_window_y);
     draw_rectangle_on_pixmap(white(), 0, 0, m_window_x, m_window_y);
-//  m_gc->set_foreground(black());
-//  m_pixmap->draw_line(m_gc, 0, m_window_y - 1, m_window_x, m_window_y - 1);
     draw_line_on_pixmap(black(), 0, m_window_y - 1, m_window_x, m_window_y - 1);
 
     /*
@@ -174,11 +170,6 @@ seqtime::update_pixmap ()
     for (int i = start_tick; i < end_tick; i += ticks_per_step)
     {
         int base_line = i / m_zoom;
-//      m_pixmap->draw_line                             /* draw the beat    */
-//      (
-//          m_gc, base_line - m_scroll_offset_x,
-//          0, base_line - m_scroll_offset_x, m_window_y
-//      );
         draw_line_on_pixmap                             /* draw the beat    */
         (
             base_line - m_scroll_offset_x,
@@ -187,7 +178,6 @@ seqtime::update_pixmap ()
 
         char bar[8];
         snprintf(bar, sizeof(bar), "%d", (i / ticks_per_measure) + 1);
-//      m_gc->set_foreground(black());                  // REDUNDANT
         render_string_on_pixmap
         (
             base_line + 2 - m_scroll_offset_x, 0, bar, font::BLACK
@@ -195,8 +185,6 @@ seqtime::update_pixmap ()
     }
 
     long end_x = m_seq.get_length() / m_zoom - m_scroll_offset_x;
-//  m_gc->set_foreground(black());
-//  m_pixmap->draw_rectangle(m_gc, true, end_x, 9, 19, 8);
     draw_rectangle_on_pixmap(black(), end_x, 9, 19, 8);
     render_string_on_pixmap(end_x + 1, 9, "END", font::WHITE);
 }
@@ -208,7 +196,8 @@ seqtime::update_pixmap ()
 void
 seqtime::draw_pixmap_on_window ()
 {
-    m_window->draw_drawable(m_gc, m_pixmap, 0, 0, 0, 0, m_window_x, m_window_y);
+//  m_window->draw_drawable(m_gc, m_pixmap, 0, 0, 0, 0, m_window_x, m_window_y);
+    draw_drawable(0, 0, 0, 0, m_window_x, m_window_y);
 }
 
 /**
@@ -218,7 +207,8 @@ seqtime::draw_pixmap_on_window ()
 void
 seqtime::force_draw ()
 {
-    m_window->draw_drawable(m_gc, m_pixmap, 0, 0, 0, 0, m_window_x, m_window_y);
+//  m_window->draw_drawable(m_gc, m_pixmap, 0, 0, 0, 0, m_window_x, m_window_y);
+    draw_drawable(0, 0, 0, 0, m_window_x, m_window_y);
 }
 
 /**
@@ -245,9 +235,14 @@ seqtime::on_realize()
 bool
 seqtime::on_expose_event (GdkEventExpose * a_e)
 {
-    m_window->draw_drawable
+//  m_window->draw_drawable
+//  (
+//      m_gc, m_pixmap, a_e->area.x, a_e->area.y, a_e->area.x, a_e->area.y,
+//      a_e->area.width, a_e->area.height
+//  );
+    draw_drawable
     (
-        m_gc, m_pixmap, a_e->area.x, a_e->area.y, a_e->area.x, a_e->area.y,
+        a_e->area.x, a_e->area.y, a_e->area.x, a_e->area.y,
         a_e->area.width, a_e->area.height
     );
     return true;

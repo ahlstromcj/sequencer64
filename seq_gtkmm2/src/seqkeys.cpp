@@ -114,20 +114,10 @@ seqkeys::reset ()
 void
 seqkeys::update_pixmap ()
 {
-//  m_gc->set_foreground(black());
-//  m_pixmap->draw_rectangle(m_gc, true, 0, 0, c_keyarea_x, c_keyarea_y);
     draw_rectangle_on_pixmap(black(), 0, 0, c_keyarea_x, c_keyarea_y);
-//  m_gc->set_foreground(white());
-//  m_pixmap->draw_rectangle(m_gc, true, 1, 1, c_keyoffset_x-1, c_keyarea_y-2);
     draw_rectangle_on_pixmap(white(), 1, 1, c_keyoffset_x-1, c_keyarea_y-2);
     for (int i = 0; i < c_num_keys; i++)
     {
-//      m_gc->set_foreground(white());
-//      m_pixmap->draw_rectangle
-//      (
-//          m_gc, true, c_keyoffset_x + 1,
-//          (c_key_y * i) + 1, c_key_x - 2, c_key_y - 1
-//      );
         draw_rectangle_on_pixmap
         (
             white(), c_keyoffset_x + 1,
@@ -137,12 +127,6 @@ seqkeys::update_pixmap ()
         int key = (c_num_keys - i - 1) % OCTAVE_SIZE;   /* key in the octave */
         if (key == 1 || key == 3 || key == 6 || key == 8 || key == 10)
         {
-//          m_gc->set_foreground(black());
-//          m_pixmap->draw_rectangle
-//          (
-//              m_gc, true, c_keyoffset_x + 1,
-//              (c_key_y * i) + 2, c_key_x - 3, c_key_y - 3
-//          );
             draw_rectangle_on_pixmap
             (
                 black(), c_keyoffset_x + 1,
@@ -172,10 +156,11 @@ void
 seqkeys::draw_area()
 {
     update_pixmap();
-    m_window->draw_drawable
-    (
-        m_gc, m_pixmap, 0, m_scroll_offset_y, 0, 0, c_keyarea_x, c_keyarea_y
-    );
+//  m_window->draw_drawable
+//  (
+//      m_gc, m_pixmap, 0, m_scroll_offset_y, 0, 0, c_keyarea_x, c_keyarea_y
+//  );
+    draw_drawable(0, m_scroll_offset_y, 0, 0, c_keyarea_x, c_keyarea_y);
 }
 
 /**
@@ -185,10 +170,11 @@ seqkeys::draw_area()
 void
 seqkeys::force_draw ()
 {
-    m_window->draw_drawable
-    (
-        m_gc, m_pixmap, 0, m_scroll_offset_y, 0, 0, m_window_x, m_window_y
-    );
+//  m_window->draw_drawable
+//  (
+//      m_gc, m_pixmap, 0, m_scroll_offset_y, 0, 0, m_window_x, m_window_y
+//  );
+    draw_drawable(0, m_scroll_offset_y, 0, 0, m_window_x, m_window_y);
 }
 
 /**
@@ -251,12 +237,6 @@ seqkeys::draw_key (int a_key, bool a_state)
     else
         m_gc->set_foreground(white());
 
-//  m_window->draw_rectangle
-//  (
-//      m_gc, true, c_keyoffset_x + 1,
-//      (c_key_y * a_key) + 2 - m_scroll_offset_y,
-//      c_key_x - 3, c_key_y - 3
-//  );
     draw_rectangle
     (
         c_keyoffset_x + 1, (c_key_y * a_key) + 2 - m_scroll_offset_y,
@@ -264,14 +244,6 @@ seqkeys::draw_key (int a_key, bool a_state)
     );
     if (a_state)
     {
-//      m_gc->set_foreground(grey());
-//      m_window->draw_rectangle
-//      (
-//          m_gc, true, c_keyoffset_x + 1,
-//          (c_key_y * a_key) + 2 - m_scroll_offset_y,
-//          c_key_x - 3, c_key_y - 3
-//      );
-//      m_gc->set_foreground(grey());
         draw_rectangle
         (
             grey(), c_keyoffset_x + 1, (c_key_y * a_key) + 2 - m_scroll_offset_y,
@@ -318,10 +290,16 @@ seqkeys::on_realize ()
 bool
 seqkeys::on_expose_event (GdkEventExpose * ev)
 {
-    m_window->draw_drawable
+//  m_window->draw_drawable
+//  (
+//      m_gc, m_pixmap, ev->area.x, ev->area.y + m_scroll_offset_y,
+//      ev->area.x, ev->area.y, ev->area.width, ev->area.height
+//  );
+    draw_drawable
     (
-        m_gc, m_pixmap, ev->area.x, ev->area.y + m_scroll_offset_y,
-        ev->area.x, ev->area.y, ev->area.width, ev->area.height
+        ev->area.x, ev->area.y + m_scroll_offset_y,
+        ev->area.x, ev->area.y,
+        ev->area.width, ev->area.height
     );
     return true;
 }

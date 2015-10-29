@@ -125,12 +125,12 @@ private:
     void snap_x (int & x);
     void start_playing ();
     void stop_playing ();
-    void draw_sequence_on (Glib::RefPtr<Gdk::Drawable> a_draw, int a_sequence);
-    void draw_background_on (Glib::RefPtr<Gdk::Drawable> a_draw, int a_sequence);
+    void draw_sequence_on (/*Glib::RefPtr<Gdk::Drawable> draw,*/ int seqnum);
+    void draw_background_on (/*Glib::RefPtr<Gdk::Drawable> draw,*/ int seqnum);
     void draw_drawable_row
     (
-        Glib::RefPtr<Gdk::Drawable> a_dest,
-        Glib::RefPtr<Gdk::Drawable> a_src,
+//      Glib::RefPtr<Gdk::Drawable> a_dest,
+//      Glib::RefPtr<Gdk::Drawable> a_src,
         long a_y
     );
     void change_horz ();

@@ -596,6 +596,23 @@ protected:
         int x, int y, int lx, int ly, bool fill = true
     );
 
+    /**
+     *  Provides the most common use case for redrawing.
+     */
+
+    void draw_drawable
+    (
+        int xsrc, int ysrc,
+        int xdest, int ydest,
+        int width, int height
+    )
+    {
+        m_window->draw_drawable
+        (
+            m_gc, m_pixmap, xsrc, ysrc, xdest, ydest, width, height
+        );
+    }
+
 protected:            // special dual setters for friend GUI classes
 
     void set_current_drop_x (int x)

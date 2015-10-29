@@ -231,7 +231,13 @@ private:
 
     /**
      *  Specifies the playback mode.  There are two, "live" and "song",
-     *  but we're not yet sure what "true" indicates.
+     *  but we're not yet sure what "true" indicates.  It is most likely:
+     *
+    \verbatim
+            m_playback_mode == false:       live mode
+            m_playback_mode == true:        playback/song  mode
+    \endverbatim
+     *
      */
 
     bool m_playback_mode;

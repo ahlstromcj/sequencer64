@@ -176,21 +176,12 @@ seqdata::draw_events_on (Glib::RefPtr<Gdk::Drawable> drawable)
                 event_height = d0;
             }
             set_line(Gdk::LINE_SOLID, 2);
-//          drawable->draw_line                     /* draw vert lines      */
-//          (
-//              m_gc, event_x - m_scroll_offset_x + 1,
-//              c_dataarea_y - event_height, event_x - m_scroll_offset_x + 1,
-//              c_dataarea_y
-//          );
             draw_line                               /* draw vert lines      */
             (
                 drawable, event_x - m_scroll_offset_x + 1,
                 c_dataarea_y - event_height, event_x - m_scroll_offset_x + 1,
                 c_dataarea_y
             );
-
-            // event_x + 3 - m_scroll_offset_x, c_dataarea_y - 25, 6, 30
-
             drawable->draw_drawable
             (
                 m_gc, m_numbers[event_height], 0, 0,
@@ -331,9 +322,14 @@ seqdata::draw_line_on_window ()
     int x, y, w, h;
     m_gc->set_foreground(black());
     set_line(Gdk::LINE_SOLID);
-    m_window->draw_drawable                         /* replace old */
+//  m_window->draw_drawable                         /* replace old */
+//  (
+//      m_gc, m_pixmap, m_old.x, m_old.y, m_old.x, m_old.y,
+//      m_old.width + 1, m_old.height + 1
+//  );
+    draw_drawable                                   /* replace old */
     (
-        m_gc, m_pixmap, m_old.x, m_old.y, m_old.x, m_old.y,
+        m_old.x, m_old.y, m_old.x, m_old.y,
         m_old.width + 1, m_old.height + 1
     );
     xy_to_rect(m_drop_x, m_drop_y, m_current_x, m_current_y, x, y, w, h);
@@ -370,7 +366,8 @@ seqdata::change_horz ()
 void
 seqdata::force_draw ()
 {
-    m_window->draw_drawable(m_gc, m_pixmap, 0, 0, 0, 0, m_window_x, m_window_y);
+//  m_window->draw_drawable(m_gc, m_pixmap, 0, 0, 0, 0, m_window_x, m_window_y);
+    draw_drawable(0, 0, 0, 0, m_window_x, m_window_y);
 }
 
 /**
@@ -396,8 +393,6 @@ seqdata::on_realize ()
     for (int i = 0; i < c_dataarea_y; ++i)      /* MIDI_COUNT_MAX; 128      */
     {
         m_numbers[i] = Gdk::Pixmap::create(m_window, m_number_w, m_number_h, -1);
-//      m_gc->set_foreground(white());
-//      m_numbers[i]->draw_rectangle(m_gc, true, 0, 0, m_number_w, m_number_h);
         draw_rectangle(m_numbers[i], 0, 0, m_number_w, m_number_h);
 
         char val[8];
@@ -421,10 +416,15 @@ seqdata::on_realize ()
 bool
 seqdata::on_expose_event (GdkEventExpose * a_e)
 {
-    m_window->draw_drawable
+//  m_window->draw_drawable
+//  (
+//      m_gc, m_pixmap, a_e->area.x, a_e->area.y,
+//      a_e->area.x, a_e->area.y, a_e->area.width, a_e->area.height
+//  );
+    draw_drawable
     (
-        m_gc, m_pixmap, a_e->area.x, a_e->area.y,
-        a_e->area.x, a_e->area.y, a_e->area.width, a_e->area.height
+        a_e->area.x, a_e->area.y, a_e->area.x, a_e->area.y,
+        a_e->area.width, a_e->area.height
     );
     return true;
 }

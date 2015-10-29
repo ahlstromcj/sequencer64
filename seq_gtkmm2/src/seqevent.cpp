@@ -348,9 +348,13 @@ seqevent::draw_selection_on_window ()
     int y = (c_eventarea_y - c_eventevent_y) / 2;
     int h =  c_eventevent_y;
     set_line(Gdk::LINE_SOLID);
-    m_window->draw_drawable                 /* replace old */
+//  m_window->draw_drawable                 /* replace old */
+//  (
+//      m_gc, m_pixmap, m_old.x, y, m_old.x, y, m_old.width + 1, h + 1
+//  );
+    draw_drawable                           /* replace old */
     (
-        m_gc, m_pixmap, m_old.x, y, m_old.x, y, m_old.width + 1, h + 1
+        m_old.x, y, m_old.x, y, m_old.width + 1, h + 1
     );
     if (m_selecting)
     {
@@ -378,7 +382,8 @@ seqevent::draw_selection_on_window ()
 void
 seqevent::force_draw ()
 {
-    m_window->draw_drawable(m_gc, m_pixmap, 0, 0, 0, 0, m_window_x, m_window_y);
+//  m_window->draw_drawable(m_gc, m_pixmap, 0, 0, 0, 0, m_window_x, m_window_y);
+    draw_drawable(0, 0, 0, 0, m_window_x, m_window_y);
     draw_selection_on_window();
 }
 
@@ -469,9 +474,14 @@ seqevent::on_size_allocate (Gtk::Allocation & a)
 bool
 seqevent::on_expose_event (GdkEventExpose * e)
 {
-    m_window->draw_drawable
+//  m_window->draw_drawable
+//  (
+//      m_gc, m_pixmap, e->area.x, e->area.y,
+//      e->area.x, e->area.y, e->area.width, e->area.height
+//  );
+    draw_drawable
     (
-        m_gc, m_pixmap, e->area.x, e->area.y,
+        e->area.x, e->area.y,
         e->area.x, e->area.y, e->area.width, e->area.height
     );
     draw_selection_on_window();

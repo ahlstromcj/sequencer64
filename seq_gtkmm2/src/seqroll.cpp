@@ -434,9 +434,13 @@ seqroll::update_pixmap ()
 void
 seqroll::draw_progress_on_window ()
 {
-    m_window->draw_drawable
+//  m_window->draw_drawable
+//  (
+//      m_gc, m_pixmap, m_old_progress_x, 0, m_old_progress_x, 0, 1, m_window_y
+//  );
+    draw_drawable
     (
-        m_gc, m_pixmap, m_old_progress_x, 0, m_old_progress_x, 0, 1, m_window_y
+        m_old_progress_x, 0, m_old_progress_x, 0, 1, m_window_y
     );
     m_old_progress_x = (m_seq.get_last_tick() / m_zoom) - m_scroll_offset_x;
     if (m_old_progress_x != 0)
@@ -627,10 +631,14 @@ seqroll::draw_selection_on_window ()
     if (m_selecting  ||  m_moving || m_paste ||  m_growing)
     {
         set_line(Gdk::LINE_SOLID);
-        m_window->draw_drawable                         /* replace old */
+//      m_window->draw_drawable                         /* replace old */
+//      (
+//          m_gc, m_pixmap, m_old.x, m_old.y, m_old.x, m_old.y,
+//          m_old.width + 1, m_old.height + 1
+//      );
+        draw_drawable                                   /* replace old */
         (
-            m_gc, m_pixmap, m_old.x, m_old.y, m_old.x, m_old.y,
-            m_old.width + 1, m_old.height + 1
+            m_old.x, m_old.y, m_old.x, m_old.y, m_old.width + 1, m_old.height + 1
         );
     }
     if (m_selecting)
@@ -684,7 +692,8 @@ seqroll::draw_selection_on_window ()
 void
 seqroll::force_draw ()
 {
-    m_window->draw_drawable(m_gc, m_pixmap, 0, 0, 0, 0, m_window_x, m_window_y);
+//  m_window->draw_drawable(m_gc, m_pixmap, 0, 0, 0, 0, m_window_x, m_window_y);
+    draw_drawable(0, 0, 0, 0, m_window_x, m_window_y);
     draw_selection_on_window();
 }
 
@@ -858,9 +867,14 @@ seqroll::on_realize ()
 bool
 seqroll::on_expose_event (GdkEventExpose * e)
 {
-    m_window->draw_drawable
+//  m_window->draw_drawable
+//  (
+//      m_gc, m_pixmap, e->area.x, e->area.y, e->area.x, e->area.y,
+//      e->area.width, e->area.height
+//  );
+    draw_drawable
     (
-        m_gc, m_pixmap, e->area.x, e->area.y, e->area.x, e->area.y,
+        e->area.x, e->area.y, e->area.x, e->area.y,
         e->area.width, e->area.height
     );
     draw_selection_on_window();

@@ -426,7 +426,15 @@ public:
         return m_playing;
     }
 
-    void toggle_playing ();
+    /**
+     *  Toggles the playing status of this sequence.
+     */
+
+    void toggle_playing ()
+    {
+        set_playing(! get_playing());
+    }
+
     void toggle_queued ();
     void off_queued ();
 

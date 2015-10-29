@@ -397,11 +397,6 @@ mainwid::draw_sequence_on_pixmap (int seqnum)
              */
 
 #ifdef USE_GREY_GRID                        /* otherwise, leave it black    */
-//          m_pixmap->draw_rectangle
-//          (
-//              get_style()->get_bg_gc(Gtk::STATE_NORMAL),        // this->
-//              true, base_x + 4, base_y, m_seqarea_x - 8, m_seqarea_y
-//          );
             draw_normal_rectangle_on_pixmap
             (
                 base_x + 4, base_y, m_seqarea_x - 8, m_seqarea_y
@@ -409,11 +404,6 @@ mainwid::draw_sequence_on_pixmap (int seqnum)
 #endif
 
 #ifdef USE_NORMAL_GRID                      /* change box to "brackets"     */
-//          m_pixmap->draw_rectangle
-//          (
-//              get_style()->get_bg_gc(Gtk::STATE_NORMAL),       // this->
-//              true, base_x + 1, base_y + 1, m_seqarea_x - 2, m_seqarea_y - 2
-//          );
             draw_normal_rectangle_on_pixmap
             (
                 base_x + 1, base_y + 1, m_seqarea_x - 2, m_seqarea_y - 2
@@ -458,11 +448,12 @@ mainwid::draw_sequence_pixmap_on_window (int seqnum)         // effective?
     {
         int base_x, base_y;
         calculate_base_sizes(seqnum, base_x, base_y);    // side-effects
-        m_window->draw_drawable
-        (
-            m_gc, m_pixmap, base_x, base_y, base_x, base_y,
-            m_seqarea_x, m_seqarea_y
-        );
+//      m_window->draw_drawable
+//      (
+//          m_gc, m_pixmap, base_x, base_y, base_x, base_y,
+//          m_seqarea_x, m_seqarea_y
+//      );
+        draw_drawable(base_x, base_y, base_x, base_y, m_seqarea_x, m_seqarea_y);
     }
 }
 
@@ -562,9 +553,15 @@ mainwid::draw_marker_on_sequence (int seqnum, int tick)
         tick %= len;
 
         long tick_x = tick * m_seqarea_seq_x / len;
-        m_window->draw_drawable
+//      m_window->draw_drawable
+//      (
+//          m_gc, m_pixmap,
+//          rectangle_x + m_last_tick_x[seqnum], rectangle_y + 1,
+//          rectangle_x + m_last_tick_x[seqnum], rectangle_y + 1,
+//          1, m_seqarea_seq_y
+//      );
+        draw_drawable
         (
-            m_gc, m_pixmap,
             rectangle_x + m_last_tick_x[seqnum], rectangle_y + 1,
             rectangle_x + m_last_tick_x[seqnum], rectangle_y + 1,
             1, m_seqarea_seq_y
@@ -729,9 +726,15 @@ mainwid::on_realize ()
 bool
 mainwid::on_expose_event (GdkEventExpose * a_e)
 {
-    m_window->draw_drawable
+//  m_window->draw_drawable
+//  (
+//      m_gc, m_pixmap,
+//      a_e->area.x, a_e->area.y,
+//      a_e->area.x, a_e->area.y,
+//      a_e->area.width, a_e->area.height
+//  );
+    draw_drawable
     (
-        m_gc, m_pixmap,
         a_e->area.x, a_e->area.y,
         a_e->area.x, a_e->area.y,
         a_e->area.width, a_e->area.height

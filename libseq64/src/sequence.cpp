@@ -1065,7 +1065,7 @@ sequence::move_selected_notes (long delta_tick, int delta_note)
                 bool noteon = e.is_note_on();
                 long timestamp = e.get_timestamp() + delta_tick;
                 if (timestamp > m_length)
-                    timestamp = timestamp - m_length;
+                    timestamp -= m_length;
 
                 if (timestamp < 0)
                     timestamp = m_length + timestamp;
@@ -1158,26 +1158,26 @@ sequence::grow_selected (long delta_tick)
         {
             event * on = &er;
             event * off = er.get_linked();
-            long length = off->get_timestamp() + delta_tick;
+            long len = off->get_timestamp() + delta_tick;
 
             /*
              * If timestamp + delta is greater that m_length, we do round
              * robin magic.
              */
 
-            if (length > m_length)
-                length = length - m_length;
+            if (len > m_length)
+                len -= m_length;
 
-            if (length < 0)
-                length = m_length + length;
+            if (len < 0)
+                len = m_length + len;
 
-            if (length == 0)
-                length = m_length - 2;
+            if (len == 0)
+                len = m_length - 2;
 
             on->unmark();
             event e = *off;                         /* copy event */
             e.unmark();
-            e.set_timestamp(length);
+            e.set_timestamp(len);
             add_event(&e);
         }
     }
@@ -1397,22 +1397,6 @@ sequence::change_event_data_range
         event & er = DREF(i);
         er.get_data(d0, d1);
         bool match = er.get_status() == status;
-
-#if 0       // let's use a more optimal and easier-to-grok check
-
-        bool good = false;
-        if (status != EVENT_CONTROL_CHANGE && match)
-            good = true;                     /* correct status and not CC     */
-
-        if                                  /* correct status and correct cc */
-        (
-            status == EVENT_CONTROL_CHANGE && match && d0 == cc
-        )
-        {
-            good = true;
-        }
-#endif
-
         bool good;
         if (status == EVENT_CONTROL_CHANGE)
             good = match && d0 == cc;        /* correct status and correct cc */
@@ -1423,7 +1407,7 @@ sequence::change_event_data_range
         if (! (tick >= tick_s && tick <= tick_f))       /* in range?         */
             good = false;
 
-        if (have_selection && (!er.is_selected()))      /* in selection?     */
+        if (have_selection && ! er.is_selected())       /* in selection?     */
             good = false;
 
         if (good)
@@ -1621,10 +1605,10 @@ sequence::stream_event (event * ev)
                     ev->get_note(), false
                 );
                 set_dirty();
-                m_notes_on++;
+                ++m_notes_on;
             }
             if (ev->is_note_off())
-                m_notes_on--;
+                --m_notes_on;
 
             if (m_notes_on <= 0)
                 m_last_tick += m_snap_tick;
@@ -1991,10 +1975,9 @@ sequence::intersectNotes
 /**
  *  This function examines each non-note event in the event list.
  *
- *  If the given
- *  position is between the current trigger's tick-start and tick-end
- *  values, the these values are copied to the start and end parameters,
- *  respectively, and then we exit.
+ *  If the given position is between the current trigger's tick-start and
+ *  tick-end values, the these values are copied to the start and end
+ *  parameters, respectively, and then we exit.
  *
  * \threadsafe
  *
@@ -2102,10 +2085,10 @@ sequence::del_trigger (long a_tick)
  */
 
 void
-sequence::set_trigger_offset (long a_trigger_offset)
+sequence::set_trigger_offset (long trigger_offset)
 {
     automutex locker(m_mutex);
-    m_trigger_offset = (a_trigger_offset % m_length);
+    m_trigger_offset = trigger_offset % m_length;
     m_trigger_offset += m_length;
     m_trigger_offset %= m_length;
 }
@@ -2564,24 +2547,24 @@ sequence::get_max_trigger ()
  */
 
 long
-sequence::adjust_offset (long a_offset)
+sequence::adjust_offset (long offset)
 {
-    a_offset %= m_length;
-    if (a_offset < 0)
-        a_offset += m_length;
+    offset %= m_length;
+    if (offset < 0)
+        offset += m_length;
 
-    return a_offset;
+    return offset;
 }
 
 bool
-sequence::get_trigger_state (long a_tick)
+sequence::get_trigger_state (long tick)
 {
     automutex locker(m_mutex);
     bool result = false;
     Triggers::iterator i;
-    for (i = m_triggers.begin(); i != m_triggers.end(); i++)
+    for (i = m_triggers.begin(); i != m_triggers.end(); ++i)
     {
-        if (i->m_tick_start <= a_tick && i->m_tick_end >= a_tick)
+        if (i->m_tick_start <= tick && i->m_tick_end >= tick)
         {
             result = true;
             break;
@@ -2591,14 +2574,14 @@ sequence::get_trigger_state (long a_tick)
 }
 
 bool
-sequence::select_trigger (long a_tick)
+sequence::select_trigger (long tick)
 {
     automutex locker(m_mutex);
     bool result = false;
     Triggers::iterator i;
-    for (i = m_triggers.begin(); i != m_triggers.end(); i++)
+    for (i = m_triggers.begin(); i != m_triggers.end(); ++i)
     {
-        if (i->m_tick_start <= a_tick && i->m_tick_end >= a_tick)
+        if (i->m_tick_start <= tick && i->m_tick_end >= tick)
         {
             i->m_selected = true;
             result = true;
@@ -2615,12 +2598,11 @@ bool
 sequence::unselect_triggers ()
 {
     automutex locker(m_mutex);
-    bool result = false;
     Triggers::iterator i;
     for (i = m_triggers.begin(); i != m_triggers.end(); i++)
         i->m_selected = false;
 
-    return result;
+    return false;
 }
 
 void
@@ -2915,6 +2897,22 @@ sequence::set_midi_bus (char mb)
 
 /**
  *  Sets the length (m_length) and adjusts triggers for it if desired.
+ *  This function is called in seqedit::apply_length(), when the user
+ *  selects a sequence length in measures.  That function calculates the
+ *  length in ticks:
+ *
+\verbatim
+    L = M x B x 4 x P / W
+        L == length (ticks or pulses)
+        M == number of measures
+        B == beats per measure
+        P == pulses per quarter-note
+        W == beat width in beats per measure
+\endverbatim
+ *
+ *  For our "b4uacuse" MIDI file, M can be about 100 measures, B is 4,
+ *  P can be 192 (but we want to support higher values), and W is 4.
+ *  So L = 100 * 4 * 4 * 192 / 4 = 76800 ticks.  Seems small.
  *
  * \threadsafe
  */
@@ -2924,7 +2922,7 @@ sequence::set_length (long len, bool adjust_triggers)
 {
     automutex locker(m_mutex);
     bool was_playing = get_playing();
-    set_playing(false);             /* turn everything off */
+    set_playing(false);                 /* turn everything off */
     if (len < (m_ppqn / 4))
         len = (m_ppqn / 4);
 
@@ -2934,7 +2932,7 @@ sequence::set_length (long len, bool adjust_triggers)
     m_length = len;
     verify_and_link();
     reset_draw_marker();
-    if (was_playing)                /* start up and refresh */
+    if (was_playing)                    /* start up and refresh */
         set_playing(true);
 }
 
@@ -2942,35 +2940,25 @@ sequence::set_length (long len, bool adjust_triggers)
  *  Sets the playing state of this sequence.  When playing, and the
  *  sequencer is running, notes get dumped to the ALSA buffers.
  *
- * \param a_p
+ * \param p
  *      Provides the playing status to set.  True means to turn on the
  *      playing, false means to turn it off, and turn off any notes still
  *      playing.
  */
 
 void
-sequence::set_playing (bool a_p)
+sequence::set_playing (bool p)
 {
     automutex locker(m_mutex);
-    if (a_p != get_playing())
+    if (p != get_playing())
     {
-        m_playing = a_p;
-        if (! a_p)
+        m_playing = p;
+        if (! p)
             off_playing_notes();
 
         set_dirty();
     }
     m_queued = false;
-}
-
-/**
- *  Toggles the playing status of this sequence.
- */
-
-void
-sequence::toggle_playing ()
-{
-    set_playing(! get_playing());
 }
 
 /**
@@ -2980,10 +2968,10 @@ sequence::toggle_playing ()
  */
 
 void
-sequence::set_recording (bool a_r)
+sequence::set_recording (bool r)
 {
     automutex locker(m_mutex);
-    m_recording = a_r;
+    m_recording = r;
     m_notes_on = 0;
 }
 
@@ -2994,10 +2982,10 @@ sequence::set_recording (bool a_r)
  */
 
 void
-sequence::set_snap_tick (int a_st)
+sequence::set_snap_tick (int st)
 {
     automutex locker(m_mutex);
-    m_snap_tick = a_st;
+    m_snap_tick = st;
 }
 
 /**
@@ -3007,10 +2995,10 @@ sequence::set_snap_tick (int a_st)
  */
 
 void
-sequence::set_quantized_rec (bool a_qr)
+sequence::set_quantized_rec (bool qr)
 {
     automutex locker(m_mutex);
-    m_quantized_rec = a_qr;
+    m_quantized_rec = qr;
 }
 
 /**
@@ -3020,10 +3008,10 @@ sequence::set_quantized_rec (bool a_qr)
  */
 
 void
-sequence::set_thru (bool a_r)
+sequence::set_thru (bool r)
 {
     automutex locker(m_mutex);
-    m_thru = a_r;
+    m_thru = r;
 }
 
 /**
@@ -3031,9 +3019,9 @@ sequence::set_thru (bool a_r)
  */
 
 void
-sequence::set_name (char * a_name)
+sequence::set_name (char * name)
 {
-    m_name = a_name;
+    m_name = name;
     set_dirty_mp();
 }
 
@@ -3042,9 +3030,9 @@ sequence::set_name (char * a_name)
  */
 
 void
-sequence::set_name (const std::string & a_name)
+sequence::set_name (const std::string & name)
 {
-    m_name = a_name;
+    m_name = name;
     set_dirty_mp();
 }
 
@@ -3055,11 +3043,11 @@ sequence::set_name (const std::string & a_name)
  */
 
 void
-sequence::set_midi_channel (unsigned char a_ch)
+sequence::set_midi_channel (unsigned char ch)
 {
     automutex locker(m_mutex);
     off_playing_notes();
-    m_midi_channel = a_ch;
+    m_midi_channel = ch;
     set_dirty();
 }
 
@@ -3102,15 +3090,15 @@ sequence::print_triggers()
  */
 
 void
-sequence::put_event_on_bus (event * a_e)
+sequence::put_event_on_bus (event * ev)
 {
     automutex locker(m_mutex);
-    unsigned char note = a_e->get_note();
+    unsigned char note = ev->get_note();
     bool skip = false;
-    if (a_e->is_note_on())
+    if (ev->is_note_on())
         m_playing_notes[note]++;
 
-    if (a_e->is_note_off())
+    if (ev->is_note_off())
     {
         if (m_playing_notes[note] <= 0)
             skip = true;
@@ -3118,7 +3106,7 @@ sequence::put_event_on_bus (event * a_e)
             m_playing_notes[note]--;
     }
     if (! skip)
-        m_masterbus->play(m_bus, a_e,  m_midi_channel);
+        m_masterbus->play(m_bus, ev,  m_midi_channel);
 
     m_masterbus->flush();
 }
@@ -3134,7 +3122,7 @@ sequence::off_playing_notes ()
 {
     automutex locker(m_mutex);
     event e;
-    for (int x = 0; x < c_midi_notes; x++)
+    for (int x = 0; x < c_midi_notes; ++x)
     {
         while (m_playing_notes[x] > 0)
         {
@@ -3168,21 +3156,16 @@ sequence::select_events
     unsigned char d0, d1;
     for (event_list::iterator i = m_events.begin(); i != m_events.end(); i++)
     {
-        bool set = false;
         event & er = DREF(i);
         er.get_data(d0, d1);
-        if (status != EVENT_CONTROL_CHANGE && er.get_status() == status)
-            set = true;                 /* correct status and not CC     */
+        bool match = er.get_status() == status;
+        bool canselect;
+        if (status == EVENT_CONTROL_CHANGE)
+            canselect = match && d0 == cc;  /* correct status and correct cc */
+        else
+            canselect = match;              /* correct status, cc irrelevant */
 
-        if                              /* correct status and correct CC */
-        (
-            status == EVENT_CONTROL_CHANGE &&
-            er.get_status() == status && d0 == cc
-        )
-        {
-            set = true;
-        }
-        if (set)
+        if (canselect)
         {
             if (inverse)
             {
@@ -3254,15 +3237,15 @@ sequence::transpose_notes (int steps, int scale)
     verify_and_link();
 }
 
-/*
+/**
  * Not deleting the ends, not selected.
  */
 
 void
 sequence::quantize_events
 (
-    unsigned char a_status, unsigned char a_cc,
-    long a_snap_tick,  int a_divide, bool a_linked
+    unsigned char status, unsigned char cc,
+    long snap_tick, int divide, bool linked
 )
 {
     automutex locker(m_mutex);
@@ -3271,46 +3254,38 @@ sequence::quantize_events
     mark_selected();
     for (event_list::iterator i = m_events.begin(); i != m_events.end(); i++)
     {
-        bool set = false;
         event & er = DREF(i);
         er.get_data(d0, d1);
+        bool match = er.get_status() == status;
+        bool canselect;
+        if (status == EVENT_CONTROL_CHANGE)
+            canselect = match && d0 == cc;  /* correct status and correct cc */
+        else
+            canselect = match;              /* correct status, cc irrelevant */
 
-        /* correct status and not CC */
-
-        if (a_status != EVENT_CONTROL_CHANGE && er.get_status() == a_status)
-            set = true;
-
-        /* correct status and correct cc */
-
-        if
-        (   a_status == EVENT_CONTROL_CHANGE &&
-            er.get_status() == a_status && d0 == a_cc
-        )
-        {
-            set = true;
-        }
         if (! er.is_marked())
-            set = false;
+            canselect = false;
 
-        if (set)
+        if (canselect)
         {
             event e = er;             /* copy event */
             er.select();
             e.unmark();
 
             long timestamp = e.get_timestamp();
-            long timestamp_remander = (timestamp % a_snap_tick);
+            long timestamp_remander = (timestamp % snap_tick);
             long timestamp_delta = 0;
-            if (timestamp_remander < a_snap_tick / 2)
-                timestamp_delta = - (timestamp_remander / a_divide);
+            if (timestamp_remander < snap_tick / 2)
+                timestamp_delta = - (timestamp_remander / divide);
             else
-                timestamp_delta = (a_snap_tick - timestamp_remander) / a_divide;
+                timestamp_delta = (snap_tick - timestamp_remander) / divide;
+
             if ((timestamp_delta + timestamp) >= m_length)
                 timestamp_delta = - e.get_timestamp() ;
 
             e.set_timestamp(e.get_timestamp() + timestamp_delta);
             quantized_events.add(e, false);         // will sort afterward
-            if (er.is_linked() && a_linked)
+            if (er.is_linked() && linked)
             {
                 event f = *er.get_linked();
                 f.unmark();
@@ -3324,56 +3299,6 @@ sequence::quantize_events
     m_events.merge(quantized_events);       // quantized events get presorted
     verify_and_link();
 }
-
-#if 0
-
-/**
- *  This function masks off the lower 8 bits of the long parameter, then
- *  shifts it right 7, and, if there are still set bits, it encodes it
- *  into the buffer in reverse order.
- *
- *  This was a <i> global </i> internal function called addListVar().
- *  Let's at least make it a private member now, and hew to the naming
- *  conventions of this class.
- */
-
-void
-sequence::add_list_var (midi_container & c, long a_var)
-{
-    long buffer = a_var & 0x7F;                 /* mask off a no-sign byte  */
-    while (a_var >>= 7)                         /* shift right 7 bits, test */
-    {
-        buffer <<= 8;                           /* move LSB bits to MSB     */
-        buffer |= ((a_var & 0x7F) | 0x80);      /* add LSB and set bit 7    */
-    }
-    for (;;)
-    {
-        c.put(char(buffer & 0xFF));             /* add the LSB              */
-        if (buffer & 0x80)                      /* if bit 7 set             */
-            buffer >>= 8;                       /* get next MSB             */
-        else
-            break;
-    }
-}
-
-/**
- *  What is the difference between this function and add_list_var()?
- *
- *  This was a <i> global </i> internal function called addLongList().
- *  Let's at least make it a private member now, and hew to the naming
- *  conventions of this class.
- */
-
-void
-sequence::add_long_list (midi_container & c, long a_x)
-{
-    c.put((a_x & 0xFF000000) >> 24);
-    c.put((a_x & 0x00FF0000) >> 16);
-    c.put((a_x & 0x0000FF00) >> 8);
-    c.put((a_x & 0x000000FF));
-}
-
-#endif  // 0
 
 /**
  *  This function fills the given character list with MIDI data from the

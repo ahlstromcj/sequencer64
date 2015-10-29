@@ -65,7 +65,7 @@
 #include "pixmaps/midi.xpm"
 #include "pixmaps/snap.xpm"
 #include "pixmaps/zoom.xpm"
-#include "pixmaps/length.xpm"
+#include "pixmaps/length_short.xpm"     /* pixmaps/length.xpm */
 #include "pixmaps/scale.xpm"
 #include "pixmaps/key.xpm"
 #include "pixmaps/down.xpm"
@@ -962,15 +962,15 @@ seqedit::fill_top_bar ()
     m_button_length = manage(new Gtk::Button());        /* length of pattern */
     m_button_length->add
     (
-        *manage(new Gtk::Image(Gdk::Pixbuf::create_from_xpm_data(length_xpm)))
+    *manage(new Gtk::Image(Gdk::Pixbuf::create_from_xpm_data(length_short_xpm)))
     );
     m_button_length->signal_clicked().connect
     (
-        sigc::bind<Gtk::Menu *>(mem_fun(*this, &seqedit::popup_menu), m_menu_length)
+    sigc::bind<Gtk::Menu *>(mem_fun(*this, &seqedit::popup_menu), m_menu_length)
     );
     add_tooltip(m_button_length, "Sequence length in bars");
     m_entry_length = manage(new Gtk::Entry());
-    m_entry_length->set_width_chars(2);
+    m_entry_length->set_width_chars(3);
     m_entry_length->set_editable(false);
     m_hbox->pack_start(*m_button_length , false, false);
     m_hbox->pack_start(*m_entry_length , false, false);
@@ -1696,14 +1696,17 @@ seqedit::set_key (int a_note)
 }
 
 /**
- *  Sets the length based on the three given parameters.  Then the
- *  seqroll, seqtime, seqdata, and seqevent objects are reset().
+ *  Sets the sequence length based on the three given parameters.  There's an
+ *  implicit "adjust-triggers = true" parameter used in
+ *  sequence::set_length().
+ *
+ *  Then the seqroll, seqtime, seqdata, and seqevent objects are reset().
  */
 
 void
-seqedit::apply_length (int a_bpm, int a_bw, int a_measures)
+seqedit::apply_length (int bpm, int bw, int measures)
 {
-    m_seq.set_length(a_measures * a_bpm * ((m_ppqn * 4) / a_bw));
+    m_seq.set_length(measures * bpm * ((m_ppqn * 4) / bw));
     m_seqroll_wid->reset();
     m_seqtime_wid->reset();
     m_seqdata_wid->reset();

@@ -306,9 +306,13 @@ perfroll::draw_progress ()
     long tick_offset = m_4bar_offset * m_ticks_per_bar;
     int progress_x = (tick - tick_offset) / m_perf_scale_x;
     int old_progress_x = (m_old_progress_ticks - tick_offset) / m_perf_scale_x;
-    m_window->draw_drawable                                 /* draw old */
+//  m_window->draw_drawable                                 /* draw old */
+//  (
+//      m_gc, m_pixmap, old_progress_x, 0, old_progress_x, 0, 1, m_window_y
+//  );
+    draw_drawable                                       /* erase old line */
     (
-        m_gc, m_pixmap, old_progress_x, 0, old_progress_x, 0, 1, m_window_y
+        old_progress_x, 0, old_progress_x, 0, 1, m_window_y
     );
     draw_line(black(), progress_x, 0, progress_x, m_window_y);
     m_old_progress_ticks = tick;
@@ -320,7 +324,7 @@ perfroll::draw_progress ()
  */
 
 void
-perfroll::draw_sequence_on (Glib::RefPtr<Gdk::Drawable> a_draw, int seqnum)
+perfroll::draw_sequence_on (/*Glib::RefPtr<Gdk::Drawable> a_draw,*/ int seqnum)
 {
     if ((seqnum < m_sequence_max) && perf().is_active(seqnum))
     {
@@ -350,15 +354,19 @@ perfroll::draw_sequence_on (Glib::RefPtr<Gdk::Drawable> a_draw, int seqnum)
                 int h = m_names_y - 2;                  // - 4
                 x -= x_offset;          /* adjust to screen coordinates */
 
-                draw_rectangle(a_draw, selected ? grey() : white(), x, y, w, h);
-                draw_rectangle(a_draw, black(), x, y, w, h, false);
-                draw_rectangle
+                /*
+                 * Change a_draw to m_pixmap; later use the right function.
+                 */
+
+                draw_rectangle_on_pixmap(selected ? grey() : white(), x, y, w, h);
+                draw_rectangle_on_pixmap(black(), x, y, w, h, false);
+                draw_rectangle_on_pixmap
                 (
-                    a_draw, black(), x, y, m_size_box_w, m_size_box_w, false
+                    black(), x, y, m_size_box_w, m_size_box_w, false
                 );
-                draw_rectangle
+                draw_rectangle_on_pixmap
                 (
-                    a_draw, // black(), [done in previous call, tricky]
+                    // m_pixmap, // black(), [done in previous call, tricky]
                     x + w - m_size_box_w, y + h - m_size_box_w,
                     m_size_box_w, m_size_box_w,
                     false
@@ -376,7 +384,7 @@ perfroll::draw_sequence_on (Glib::RefPtr<Gdk::Drawable> a_draw, int seqnum)
                     {
                         draw_rectangle
                         (
-                            a_draw, light_grey(), tickmarker_x, y + 4, 1, h - 8
+                            m_pixmap, light_grey(), tickmarker_x, y + 4, 1, h - 8
                         );
                     }
 
@@ -446,7 +454,7 @@ perfroll::draw_sequence_on (Glib::RefPtr<Gdk::Drawable> a_draw, int seqnum)
 
 void perfroll::draw_background_on
 (
-    Glib::RefPtr<Gdk::Drawable> a_draw,
+//  Glib::RefPtr<Gdk::Drawable> a_draw,
     int seqnum
 )
 {
@@ -459,12 +467,14 @@ void perfroll::draw_background_on
 
     int h = m_names_y;
     int y = h * seqnum;
-    draw_rectangle(a_draw, white(), 0, y, m_window_x, h);
+//  draw_rectangle(a_draw, white(), 0, y, m_window_x, h);
+    draw_rectangle_on_pixmap(white(), 0, y, m_window_x, h);
     m_gc->set_foreground(black());
     for (long i = first_measure; i < last_measure; ++i)
     {
         int x_pos = ((i * m_measure_length) - tick_offset) / m_perf_scale_x;
-        a_draw->draw_drawable
+//      a_draw->draw_drawable
+        m_pixmap->draw_drawable
         (
             m_gc, m_background, 0, 0, x_pos, y,
             m_background_x, m_names_y
@@ -487,17 +497,18 @@ perfroll::redraw_dirty_sequences ()
         int seq = y + m_sequence_offset;
         if (perf().is_dirty_perf(seq))
         {
-            draw_background_on(m_pixmap, seq);
-            draw_sequence_on(m_pixmap, seq);
+            draw_background_on(/*m_pixmap,*/ seq);
+            draw_sequence_on(/*m_pixmap,*/ seq);
             draw = true;
         }
     }
     if (draw)
     {
-        m_window->draw_drawable
-        (
-            m_gc, m_pixmap, 0, 0, 0, 0, m_window_x, m_window_y
-        );
+//      m_window->draw_drawable
+//      (
+//          m_gc, m_pixmap, 0, 0, 0, 0, m_window_x, m_window_y
+//      );
+        draw_drawable(0, 0, 0, 0, m_window_x, m_window_y);
     }
 }
 
@@ -508,16 +519,17 @@ perfroll::redraw_dirty_sequences ()
 void
 perfroll::draw_drawable_row
 (
-    Glib::RefPtr<Gdk::Drawable> a_dest,
-    Glib::RefPtr<Gdk::Drawable> a_src,
+//  Glib::RefPtr<Gdk::Drawable> a_dest,
+//  Glib::RefPtr<Gdk::Drawable> a_src,
     long a_y
 )
 {
     int s = a_y / m_names_y;
-    a_dest->draw_drawable
-    (
-        m_gc, a_src, 0, s * m_names_y, 0, s * m_names_y, m_window_x, m_names_y
-    );
+//  a_dest->draw_drawable
+//  (
+//      m_gc, a_src, 0, s * m_names_y, 0, s * m_names_y, m_window_x, m_names_y
+//  );
+    draw_drawable(0, s * m_names_y, 0, s * m_names_y, m_window_x, m_names_y);
 }
 
 /**
@@ -527,9 +539,14 @@ perfroll::draw_drawable_row
 void
 perfroll::draw_all ()
 {
-    draw_background_on(m_pixmap, m_drop_sequence);
-    draw_sequence_on(m_pixmap, m_drop_sequence);
-    draw_drawable_row(m_window, m_pixmap, m_drop_y);
+    draw_background_on(/*m_pixmap,*/ m_drop_sequence);
+    draw_sequence_on(/*m_pixmap,*/ m_drop_sequence);
+
+    /*
+     * We can replace this with stock code.
+     */
+
+    draw_drawable_row(/*m_window, m_pixmap,*/ m_drop_y);
 }
 
 /**
@@ -596,8 +613,8 @@ perfroll::on_expose_event (GdkEventExpose * ev)
     int y_f = (ev->area.y + ev->area.height) / m_names_y;
     for (int y = y_s; y <= y_f; ++y)
     {
-        draw_background_on(m_pixmap, y + m_sequence_offset);
-        draw_sequence_on(m_pixmap, y + m_sequence_offset);
+        draw_background_on(/*m_pixmap,*/ y + m_sequence_offset);
+        draw_sequence_on(/*m_pixmap,*/ y + m_sequence_offset);
     }
     m_window->draw_drawable
     (
@@ -794,9 +811,9 @@ perfroll::split_trigger (int seqnum, long a_tick)
 {
     perf().push_trigger_undo();
     perf().get_sequence(seqnum)->split_trigger(a_tick);
-    draw_background_on(m_pixmap, seqnum);
-    draw_sequence_on(m_pixmap, seqnum);
-    draw_drawable_row(m_window, m_pixmap, m_drop_y);
+    draw_background_on(/*m_pixmap,*/ seqnum);
+    draw_sequence_on(/*m_pixmap,*/ seqnum);
+    draw_drawable_row(/*m_window, m_pixmap,*/ m_drop_y);
 }
 
 }           // namespace seq64

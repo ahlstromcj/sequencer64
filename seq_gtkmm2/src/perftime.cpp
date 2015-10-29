@@ -178,10 +178,6 @@ perftime::on_expose_event (GdkEventExpose * /* ev */ )
 
     long left = (perf().get_left_tick() - m_tick_offset) / m_perf_scale_x;
     long right = (perf().get_right_tick() - m_tick_offset) / m_perf_scale_x;
-//  left -= m_tick_offset;
-//  left /= m_perf_scale_x;
-//  right -= m_tick_offset;
-//  right /= m_perf_scale_x;
     if (left >= 0 && left <= m_window_x)            /* draw L marker    */
     {
         draw_rectangle(black(), left, m_window_y - 9, 7, 10);

@@ -28,13 +28,26 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-21
- * \updates       2015-10-27
+ * \updates       2015-10-29
  * \license       GNU GPLv2 or above
  *
+ *  We've added a number of wrapper functions for the "draw-rectangle",
+ *  "draw-line", and "render-string" functions specific to Gtkmm-2.x so
+ *  that we can hide access to the seq64::gui_drawingarea_gtk2::m_pixmap
+ *  and seq64::gui_drawingarea_gtk2::m_window members.
+ *
+ *  Unfortunately, there are still bits of the code that access the Gtk/Gdk
+ *  Drawable and Pixmap constructions, so we added overloads for those.  And
+ *  we need both kinds of overloads, since there's something incompatible
+ *  that prevents Drawable being used for a Pixmap parameter. (Perhaps there's
+ *  a common base class for them that we can use instead?)  So, we have a lot
+ *  of similar functions defined here, which might annoy some people.
+ *
+ *  And there are still a number of other Gtk/Gdk functions we could wrap.
  */
 
-#include "font.hpp"                     // p_font_renderer pointer
-#include "gui_palette_gtk2.hpp"         // #include <gtkmm/drawingarea.h>
+#include "font.hpp"                     /* p_font_renderer pointer          */
+#include "gui_palette_gtk2.hpp"         /* #include <gtkmm/drawingarea.h>   */
 
 namespace Gtk
 {
@@ -44,7 +57,7 @@ namespace Gtk
 namespace seq64
 {
 
-class perform;                          // forward reference
+class perform;                          /* forward reference                */
 
 extern Gtk::Adjustment & adjustment_dummy ();
 
@@ -73,12 +86,53 @@ public:
 
 protected:              // private: should provide accessors
 
+    /**
+     *  The graphics context, which is required for ever drawing and rendering
+     *  operation.
+     */
+
     Glib::RefPtr<Gdk::GC> m_gc;
+
+    /**
+     *  Provides the default "window".  Wrapper functions with undecorated
+     *  wrapper names are used for accessing this item.  We hope to be able to
+     *  hide this items completely some day.
+     */
+
     Glib::RefPtr<Gdk::Window> m_window;
+
+    /**
+     *  Provides an object for vertical "adjustments".
+     */
+
     Gtk::Adjustment & m_vadjust;
+
+    /**
+     *  Provides an object for horizontal "adjustments".
+     */
+
     Gtk::Adjustment & m_hadjust;
+
+    /**
+     *  Provides the default "pixmap".  Wrapper functions with undecorated
+     *  wrapper names are used for accessing this item.  We hope to be able to
+     *  hide this items completely some day.
+     */
+
     Glib::RefPtr<Gdk::Pixmap> m_pixmap;
+
+    /**
+     *  Another pixmap, used for backgrounds.  Our wrappers still leave this
+     *  member exposed <giggle>.
+     */
+
     Glib::RefPtr<Gdk::Pixmap> m_background;
+
+    /**
+     *  Another pixmap, used for foregrounds.  Our wrappers still leave this
+     *  member exposed.
+     */
+
     Glib::RefPtr<Gdk::Pixmap> m_foreground;
 
     /**
@@ -239,31 +293,7 @@ protected:
         m_window->draw_line(m_gc, x1, y1, x2, y2);
     }
 
-    /**
-     *  A small wrapper function to draw a line on the window after setting
-     *  the given foreground color.
-     *
-     * \param c
-     *      The foreground color in which to draw the line.
-     *
-     * \param x1
-     *      The x coordinate of the starting point.
-     *
-     * \param y1
-     *      The y coordinate of the starting point.
-     *
-     * \param x2
-     *      The x coordinate of the ending point.
-     *
-     * \param y2
-     *      The y coordinate of the ending point.
-     */
-
-    void draw_line (const Color & c, int x1, int y1, int x2, int y2)
-    {
-        m_gc->set_foreground(c);
-        m_window->draw_line(m_gc, x1, y1, x2, y2);
-    }
+    void draw_line (const Color & c, int x1, int y1, int x2, int y2);
 
     /**
      *  A small wrapper function to draw a line on the pixmap.
@@ -286,31 +316,7 @@ protected:
         m_pixmap->draw_line(m_gc, x1, y1, x2, y2);
     }
 
-    /**
-     *  A small wrapper function to draw a line on the pixmap after setting
-     *  the given foreground color.
-     *
-     * \param c
-     *      The foreground color in which to draw the line.
-     *
-     * \param x1
-     *      The x coordinate of the starting point.
-     *
-     * \param y1
-     *      The y coordinate of the starting point.
-     *
-     * \param x2
-     *      The x coordinate of the ending point.
-     *
-     * \param y2
-     *      The y coordinate of the ending point.
-     */
-
-    void draw_line_on_pixmap (const Color & c, int x1, int y1, int x2, int y2)
-    {
-        m_gc->set_foreground(c);
-        m_pixmap->draw_line(m_gc, x1, y1, x2, y2);
-    }
+    void draw_line_on_pixmap (const Color & c, int x1, int y1, int x2, int y2);
 
     /**
      *  A small wrapper function to draw a line on any pixmap (not a drawable,
@@ -342,38 +348,11 @@ protected:
         drawable->draw_line(m_gc, x1, y1, x2, y2);
     }
 
-    /**
-     *  A small wrapper function to draw a line on the pixmap after setting
-     *  the given foreground color.
-     *
-     * \param drawable
-     *      Provides the Gdk::Drawable pointer needed to draw the line.
-     *
-     * \param c
-     *      The foreground color in which to draw the line.
-     *
-     * \param x1
-     *      The x coordinate of the starting point.
-     *
-     * \param y1
-     *      The y coordinate of the starting point.
-     *
-     * \param x2
-     *      The x coordinate of the ending point.
-     *
-     * \param y2
-     *      The y coordinate of the ending point.
-     */
-
     void draw_line
     (
         Glib::RefPtr<Gdk::Drawable> & drawable,
         const Color & c, int x1, int y1, int x2, int y2
-    )
-    {
-        m_gc->set_foreground(c);
-        drawable->draw_line(m_gc, x1, y1, x2, y2);
-    }
+    );
 
     /**
      *  A small wrapper function for readability in string-drawing to the
@@ -461,12 +440,80 @@ protected:
         const Color & c, int x, int y, int lx, int ly, bool fill = true
     );
 
+    /**
+     *  A small wrapper function for readability in box-drawing on a
+     *  "drawable" context, where the foreground color has already been
+     *  specified.
+     *
+     * \param drawable
+     *      The object on which to draw the rectangle.
+     *
+     * \param x
+     *      The x-coordinate of the origin.
+     *
+     * \param y
+     *      The y-coordinate of the origin.
+     *
+     * \param lx
+     *      The width of the box.
+     *
+     * \param ly
+     *      The height of the box.
+     *
+     * \param fill
+     *      If true, fill the rectangle with the current foreground color, as
+     *      set by m_gc->set_foreground(color).  Defaults to true.
+     */
+
+    void draw_rectangle
+    (
+        Glib::RefPtr<Gdk::Drawable> & drawable,
+        int x, int y, int lx, int ly, bool fill = true
+    )
+    {
+        drawable->draw_rectangle(m_gc, fill, x, y, lx, ly);
+    }
+
     void draw_rectangle
     (
         Glib::RefPtr<Gdk::Drawable> & drawable,
         const Color & c,
         int x, int y, int lx, int ly, bool fill = true
     );
+
+    /**
+     *  A small wrapper function for readability in box-drawing on a
+     *  "pixmap" context, where the foreground color has already been
+     *  specified.
+     *
+     * \param drawable
+     *      The object on which to draw the rectangle.
+     *
+     * \param x
+     *      The x-coordinate of the origin.
+     *
+     * \param y
+     *      The y-coordinate of the origin.
+     *
+     * \param lx
+     *      The width of the box.
+     *
+     * \param ly
+     *      The height of the box.
+     *
+     * \param fill
+     *      If true, fill the rectangle with the current foreground color, as
+     *      set by m_gc->set_foreground(color).  Defaults to true.
+     */
+
+    void draw_rectangle
+    (
+        Glib::RefPtr<Gdk::Pixmap> & pixmap,
+        int x, int y, int lx, int ly, bool fill = true
+    )
+    {
+        pixmap->draw_rectangle(m_gc, fill, x, y, lx, ly);
+    }
 
     void draw_rectangle
     (
@@ -549,3 +596,4 @@ private:            // callbacks
  *
  * vim: sw=4 ts=4 wm=4 et ft=cpp
  */
+

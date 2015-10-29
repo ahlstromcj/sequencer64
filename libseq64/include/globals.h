@@ -608,6 +608,9 @@ extern user_instrument_t global_user_instrument_definitions[c_max_instruments];
  *  can handle.  Scales can be shown in the piano roll as gray bars for
  *  reference purposes.
  *
+ *  We've added three more scales; there are still a number of them that could
+ *  be fruitfully added to the list of scales.
+ *
  *  It would be good to offload this stuff into a new "scale" class.
  */
 

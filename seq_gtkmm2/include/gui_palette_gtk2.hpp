@@ -27,12 +27,17 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-21
- * \updates       2015-10-27
+ * \updates       2015-10-29
  * \license       GNU GPLv2 or above
  *
  *  This module defines some Gdk::Color objects.  However, note that this
  *  object is <i> deprecated </i> in favor of Gdk::RGBA, defined by the
  *  gdkmm/rgba.h header file.
+ *
+ *  Anyway, we still need this stuff.  We might consider replacing the color
+ *  accessor names with names that reflect their usage [e.g. instead of
+ *  using light_grey(), we could provide a scale_color() function instead,
+ *  since light-grey is the color used to draw scales on the pattern editor.
  */
 
 #include <gtkmm/drawingarea.h>          // or #include <gtkmm/widget.h>
@@ -70,7 +75,7 @@ private:                                // use the accessor functions
     const Color m_yellow;
     const Color m_green;
     const Color m_blue;
-    const Color m_cyan;
+    const Color m_dk_cyan;
 
     Color m_bg_color;                   // m_background in some classes
     Color m_fg_color;                   // m_foreground in some classes
@@ -120,9 +125,9 @@ public:
     {
         return m_blue;
     }
-    const Color & cyan () const
+    const Color & dark_cyan () const
     {
-        return m_cyan;
+        return m_dk_cyan;
     }
 
     const Color & bg_color () const

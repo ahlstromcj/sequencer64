@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-21
- * \updates       2015-10-03
+ * \updates       2015-10-29
  * \license       GNU GPLv2 or above
  *
  */
@@ -53,7 +53,7 @@ gui_palette_gtk2::gui_palette_gtk2 ()
     m_yellow            (Color("yellow")),
     m_green             (Color("green")),
     m_blue              (Color("blue")),
-    m_cyan              (Color("cyan"))
+    m_dk_cyan           (Color("dark cyan"))
 {
     Glib::RefPtr<Gdk::Colormap> colormap = get_default_colormap();
     colormap->alloc_color(const_cast<Color &>(m_black));
@@ -66,7 +66,7 @@ gui_palette_gtk2::gui_palette_gtk2 ()
     colormap->alloc_color(const_cast<Color &>(m_yellow));
     colormap->alloc_color(const_cast<Color &>(m_green));
     colormap->alloc_color(const_cast<Color &>(m_blue));
-    colormap->alloc_color(const_cast<Color &>(m_cyan));
+    colormap->alloc_color(const_cast<Color &>(m_dk_cyan));
 }
 
 /**

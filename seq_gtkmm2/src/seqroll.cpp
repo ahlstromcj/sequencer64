@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-27
+ * \updates       2015-10-29
  * \license       GNU GPLv2 or above
  *
  */
@@ -244,6 +244,9 @@ seqroll::redraw ()
 
 /**
  *  Redraws events unless m_ignore_redraw is true.
+ *
+ *  Almost: update_and_draw(true) are almost replaceable by
+ *  update_background(); update_pixmap(); force_draw();
  */
 
 void
@@ -251,9 +254,6 @@ seqroll::redraw_events ()
 {
     if (m_ignore_redraw)
         return;
-
-// Almost:
-// update_and_draw(true); // update_background(); update_pixmap(); force_draw();
 
     update_pixmap();
     force_draw();
@@ -273,14 +273,13 @@ seqroll::draw_background_on_pixmap ()
 }
 
 /**
- *  Updates the background of this window.
+ *  Updates the background of this window.  The first thing done is to clear
+ *  the background, painting it white.
  */
 
 void
 seqroll::update_background ()
 {
-//  m_gc->set_foreground(white());                  /* clear background     */
-//  m_background->draw_rectangle(m_gc, true, 0, 0, m_window_x, m_window_y);
     draw_rectangle(m_background, white(), 0, 0, m_window_x, m_window_y);
     m_gc->set_foreground(grey());                   /* draw horz grey lines */
     set_line(Gdk::LINE_ON_OFF_DASH);
@@ -295,23 +294,24 @@ seqroll::update_background ()
         {
             if ((modkey % OCTAVE_SIZE) == 0)
             {
-                m_gc->set_foreground(dark_grey());    /* draw horz lines at C */
+                m_gc->set_foreground(dark_grey());  /* draw horz lines at C */
                 set_line(Gdk::LINE_SOLID);
             }
             else if ((modkey % OCTAVE_SIZE) == (OCTAVE_SIZE-1))
             {
-                m_gc->set_foreground(grey()); /* horz grey lines, other notes */
+                m_gc->set_foreground(grey());       /* lighter dashed lines */
                 set_line(Gdk::LINE_ON_OFF_DASH);
             }
         }
-        m_background->draw_line(m_gc, 0, i * c_key_y, m_window_x, i * c_key_y);
+        draw_line(m_background, 0, i * c_key_y, m_window_x, i * c_key_y);
         if (m_scale != c_scale_off)
         {
             if (! c_scales_policy[m_scale][(modkey - 1) % OCTAVE_SIZE])
             {
-                m_background->draw_rectangle
+                draw_rectangle
                 (
-                    m_gc, true, 0, i * c_key_y + 1, m_window_x, c_key_y - 1
+                    m_background, light_grey(),
+                    0, i * c_key_y + 1, m_window_x, c_key_y - 1
                 );
             }
         }
@@ -362,11 +362,6 @@ seqroll::update_background ()
             gint8 dash = 1;
             m_gc->set_dashes(0, &dash, 1);
         }
-//      m_background->draw_line
-//      (
-//          m_gc, base_line - m_scroll_offset_x, 0,
-//          base_line - m_scroll_offset_x, m_window_y
-//      );
         draw_line
         (
             m_background,
@@ -445,14 +440,7 @@ seqroll::draw_progress_on_window ()
     );
     m_old_progress_x = (m_seq.get_last_tick() / m_zoom) - m_scroll_offset_x;
     if (m_old_progress_x != 0)
-    {
-//      m_gc->set_foreground(black());
-//      m_window->draw_line
-//      (
-//          m_gc, m_old_progress_x, 0, m_old_progress_x, m_window_y
-//      );
         draw_line(black(), m_old_progress_x, 0, m_old_progress_x, m_window_y);
-    }
 }
 
 /**
@@ -538,25 +526,34 @@ seqroll::draw_events_on (Glib::RefPtr<Gdk::Drawable> a_draw)
                 }
                 note_x -= m_scroll_offset_x;
                 note_y -= m_scroll_offset_y;
-                m_gc->set_foreground(black());
 
-                /* draw boxes from sequence */
+                /* Draw note boxes for main or background sequence */
 
                 if (method == 0)
-                    m_gc->set_foreground(dark_grey());
+                {
+                    /*
+                     * Let's try a color more distinguishable from the
+                     * "scale" color.
+                     *
+                     * m_gc->set_foreground(dark_grey());
+                     */
 
-                a_draw->draw_rectangle
+                     m_gc->set_foreground(dark_cyan());
+                }
+                else
+                    m_gc->set_foreground(black());
+
+                draw_rectangle
                 (
-                    m_gc, true, note_x, note_y, note_width, note_height
+                    a_draw, note_x, note_y, note_width, note_height
                 );
                 if (tick_f < tick_s)
                 {
-                    a_draw->draw_rectangle
+                    draw_rectangle
                     (
-                        m_gc, true, 0, note_y, tick_f / m_zoom, note_height
+                        a_draw, 0, note_y, tick_f / m_zoom, note_height
                     );
                 }
-
                 if (note_width > 3)     /* draw inside box if there is room */
                 {
                     if (selected)
@@ -577,15 +574,15 @@ seqroll::draw_events_on (Glib::RefPtr<Gdk::Drawable> a_draw)
                         }
                         else
                         {
-                            a_draw->draw_rectangle
+                            draw_rectangle
                             (
-                                m_gc, true, note_x + 1 + in_shift,
+                                a_draw, note_x + 1 + in_shift,
                                 note_y + 1, note_width,
                                 note_height - 3
                             );
-                            a_draw->draw_rectangle
+                            draw_rectangle
                             (
-                                m_gc, true, 0,
+                                a_draw,  0,
                                 note_y + 1, (tick_f / m_zoom) - 3 + length_add,
                                 note_height - 3
                             );
@@ -645,8 +642,6 @@ seqroll::draw_selection_on_window ()
         m_old.y = y;
         m_old.width = w;
         m_old.height = h + c_key_y;
-//      m_gc->set_foreground(black());
-//      m_window->draw_rectangle(m_gc, false, x, y, w, h + c_key_y);
         draw_rectangle(black(), x, y, w, h + c_key_y, false);
     }
     if (m_moving || m_paste)
@@ -657,11 +652,6 @@ seqroll::draw_selection_on_window ()
         y = m_selected.y + delta_y;
         x -= m_scroll_offset_x;
         y -= m_scroll_offset_y;
-//      m_gc->set_foreground(black());
-//      m_window->draw_rectangle
-//      (
-//          m_gc, false, x, y, m_selected.width, m_selected.height
-//      );
         draw_rectangle(black(), x, y, m_selected.width, m_selected.height, false);
         m_old.x = x;
         m_old.y = y;
@@ -679,8 +669,6 @@ seqroll::draw_selection_on_window ()
         y = m_selected.y;
         x -= m_scroll_offset_x;
         y -= m_scroll_offset_y;
-//      m_gc->set_foreground(black());
-//      m_window->draw_rectangle(m_gc, false, x, y, width, m_selected.height);
         draw_rectangle(black(), x, y, width, m_selected.height, false);
         m_old.x = x;
         m_old.y = y;
@@ -1141,3 +1129,4 @@ seqroll::on_scroll_event (GdkEventScroll * a_ev)
  *
  * vim: sw=4 ts=4 wm=4 et ft=cpp
  */
+

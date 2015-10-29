@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-15
+ * \updates       2015-10-29
  * \license       GNU GPLv2 or above
  *
  */
@@ -969,11 +969,6 @@ sequence::select_events
         {
             unsigned char d0, d1;
             er.get_data(d0, d1);
-//          if
-//          (
-//              (status == EVENT_CONTROL_CHANGE && d0 == cc) ||
-//              (status != EVENT_CONTROL_CHANGE)
-//          )
             if (event::is_desired_cc_or_not_cc(status, cc, d0))
             {
                 if (action == e_select || action == e_select_one)
@@ -1287,8 +1282,6 @@ sequence::copy_selected ()
             m_events_clipboard.push_back(DREF(i));
 #endif
     }
-
-//  long first_tick = (*m_events_clipboard.begin()).get_timestamp();
 
     long first_tick = DREF(m_events_clipboard.begin()).get_timestamp();
     for
@@ -3413,3 +3406,4 @@ sequence::fill_container (midi_container & c, int tracknumber)
  *
  * vim: sw=4 ts=4 wm=4 et ft=cpp
  */
+

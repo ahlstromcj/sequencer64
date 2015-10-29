@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-28
+ * \updates       2015-10-29
  * \license       GNU GPLv2 or above
  *
  */
@@ -214,13 +214,6 @@ Seq24SeqRollInput::on_button_press_event
                      * Middle mouse button, or left-ctrl-click (2-button mice)
                      */
 
-//                  (
-//                      SEQ64_CLICK_MIDDLE(a_ev->button) ||
-//                      (
-//                          SEQ64_CLICK_LEFT(a_ev->button) &&
-//                          (a_ev->state & GDK_CONTROL_MASK)
-//                      )
-//                  )
                     if (SEQ64_CLICK_CTRL_LEFT_MIDDLE(a_ev->button, a_ev->state))
                     {
                         sroll.m_growing = true;         /* moving, normal x */
@@ -408,3 +401,4 @@ bool Seq24SeqRollInput::on_motion_notify_event
  *
  * vim: sw=4 ts=4 wm=4 et ft=cpp
  */
+

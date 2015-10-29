@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-21
- * \updates       2015-10-28
+ * \updates       2015-10-29
  * \license       GNU GPLv2 or above
  *
  */
@@ -305,6 +305,100 @@ gui_drawingarea_gtk2::draw_rectangle
 {
     m_gc->set_foreground(c);
     pixmap->draw_rectangle(m_gc, fill, x, y, lx, ly);
+}
+
+/**
+ *  A small wrapper function to draw a line on the window after setting
+ *  the given foreground color.
+ *
+ * \param c
+ *      The foreground color in which to draw the line.
+ *
+ * \param x1
+ *      The x coordinate of the starting point.
+ *
+ * \param y1
+ *      The y coordinate of the starting point.
+ *
+ * \param x2
+ *      The x coordinate of the ending point.
+ *
+ * \param y2
+ *      The y coordinate of the ending point.
+ */
+
+void
+gui_drawingarea_gtk2::draw_line
+(
+    const Color & c, int x1, int y1, int x2, int y2
+)
+{
+    m_gc->set_foreground(c);
+    m_window->draw_line(m_gc, x1, y1, x2, y2);
+}
+
+/**
+ *  A small wrapper function to draw a line on the pixmap after setting
+ *  the given foreground color.
+ *
+ * \param c
+ *      The foreground color in which to draw the line.
+ *
+ * \param x1
+ *      The x coordinate of the starting point.
+ *
+ * \param y1
+ *      The y coordinate of the starting point.
+ *
+ * \param x2
+ *      The x coordinate of the ending point.
+ *
+ * \param y2
+ *      The y coordinate of the ending point.
+ */
+
+void
+gui_drawingarea_gtk2::draw_line_on_pixmap
+(
+    const Color & c, int x1, int y1, int x2, int y2
+)
+{
+    m_gc->set_foreground(c);
+    m_pixmap->draw_line(m_gc, x1, y1, x2, y2);
+}
+
+/**
+ *  A small wrapper function to draw a line on the pixmap after setting
+ *  the given foreground color.
+ *
+ * \param drawable
+ *      Provides the Gdk::Drawable pointer needed to draw the line.
+ *
+ * \param c
+ *      The foreground color in which to draw the line.
+ *
+ * \param x1
+ *      The x coordinate of the starting point.
+ *
+ * \param y1
+ *      The y coordinate of the starting point.
+ *
+ * \param x2
+ *      The x coordinate of the ending point.
+ *
+ * \param y2
+ *      The y coordinate of the ending point.
+ */
+
+void
+gui_drawingarea_gtk2::draw_line
+(
+    Glib::RefPtr<Gdk::Drawable> & drawable,
+    const Color & c, int x1, int y1, int x2, int y2
+)
+{
+    m_gc->set_foreground(c);
+    drawable->draw_line(m_gc, x1, y1, x2, y2);
 }
 
 /**

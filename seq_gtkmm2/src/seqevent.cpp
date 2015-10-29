@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-28
+ * \updates       2015-10-29
  * \license       GNU GPLv2 or above
  *
  */
@@ -156,18 +156,12 @@ seqevent::redraw ()
 
 /**
  *  This function updates the background.  It sets the foreground to
- *  white, draws the rectangle.
+ *  white, draws the rectangle, in order to clear the pixmap.
  */
 
 void
 seqevent::draw_background ()
 {
-//  m_gc->set_foreground(white());              /* clear background */
-//  m_pixmap->draw_rectangle
-//  (
-//      m_gc, true, 0, 0, m_window_x, m_window_y
-//  );
-
     draw_rectangle_on_pixmap(white(),  0, 0, m_window_x, m_window_y);
 
     /*
@@ -205,11 +199,6 @@ seqevent::draw_background ()
             gint8 dash = 1;
             m_gc->set_dashes(0, &dash, 1);
         }
-//      m_pixmap->draw_line
-//      (
-//          m_gc, base_line - m_scroll_offset_x,
-//          0, base_line - m_scroll_offset_x, m_window_y
-//      );
         draw_line_on_pixmap
         (
             base_line - m_scroll_offset_x, 0,
@@ -217,12 +206,6 @@ seqevent::draw_background ()
         );
     }
     set_line(Gdk::LINE_SOLID);
-//  m_gc->set_foreground(black());
-//  m_pixmap->draw_rectangle
-//  (
-//      m_gc, false, -1, 0, m_window_x + 1, m_window_y - 1
-//  );
-
     draw_rectangle_on_pixmap
     (
         black(), -1, 0, m_window_x + 1, m_window_y - 1, false
@@ -290,30 +273,12 @@ seqevent::draw_events_on (Glib::RefPtr<Gdk::Drawable> a_draw)
         if ((tick >= starttick && tick <= endtick))
         {
             x = tick / m_zoom;              /* turn into screen coordinates */
-//          m_gc->set_foreground(black());
-//          a_draw->draw_rectangle
-//          (
-//              m_gc, true, x -  m_scroll_offset_x,
-//              (c_eventarea_y - c_eventevent_y) / 2,
-//              c_eventevent_x, c_eventevent_y
-//          );
             draw_rectangle
             (
                 a_draw, black(),
                 x -  m_scroll_offset_x, (c_eventarea_y - c_eventevent_y) / 2,
                 c_eventevent_x, c_eventevent_y
             );
-//          if (selected)
-//              m_gc->set_foreground(orange());
-//          else
-//              m_gc->set_foreground(white());
-//
-//          a_draw->draw_rectangle
-//          (
-//              m_gc, true, x -  m_scroll_offset_x + 1,
-//              (c_eventarea_y - c_eventevent_y) / 2 + 1,
-//              c_eventevent_x - 3, c_eventevent_y - 3
-//          );
             draw_rectangle
             (
                 a_draw, selected ? orange() : white(),
@@ -393,8 +358,6 @@ seqevent::draw_selection_on_window ()
         x -= m_scroll_offset_x;
         m_old.x = x;
         m_old.width = w;
-//      m_gc->set_foreground(black());
-//      m_window->draw_rectangle(m_gc, false, x, y, w, h);
         draw_rectangle(black(), x, y, w, h, false);
     }
     if (m_moving || m_paste)
@@ -402,8 +365,6 @@ seqevent::draw_selection_on_window ()
         int delta_x = m_current_x - m_drop_x;
         x = m_selected.x + delta_x;
         x -= m_scroll_offset_x;
-//      m_gc->set_foreground(black());
-//      m_window->draw_rectangle(m_gc, false, x, y, m_selected.width, h);
         draw_rectangle(black(), x, y, m_selected.width, h, false);
         m_old.x = x;
         m_old.width = m_selected.width;
@@ -726,3 +687,4 @@ seqevent::on_key_press_event (GdkEventKey * a_p0)
  *
  * vim: sw=4 ts=4 wm=4 et ft=cpp
  */
+

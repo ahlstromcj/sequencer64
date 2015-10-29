@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-15
+ * \updates       2015-10-29
  * \license       GNU GPLv2 or above
  *
  */
@@ -234,8 +234,6 @@ seqedit::seqedit (sequence & seq, perform & p, int pos, int ppqn)
     set_title(title);
     m_seq.set_editing(true);
     create_menus();
-
-//  m_tooltips = manage(new Gtk::Tooltips()); /* tooltips */
 
     Gtk::HBox * dhbox = manage(new Gtk::HBox(false, 2));
     m_vbox->set_border_width(2);
@@ -1972,7 +1970,6 @@ seqedit::timeout ()
 void
 seqedit::on_realize()
 {
-//  Gtk::Window::on_realize();
     gui_window_gtk2::on_realize();
     Glib::signal_timeout().connect
     (

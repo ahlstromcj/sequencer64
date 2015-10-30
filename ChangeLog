@@ -1,3 +1,12 @@
+2015-10-30  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+   * *.*: Added --ppqn option for override of the 192 setting, for testing.
+   Feature still not finished.  Added a new set of pixmap font files, using
+   a bold anti-aliased font for better readability.  To change back to the
+   default PC font requires undefining SEQ64_USE_NEW_FONT in the font.cpp
+   module.  See the new screenshot in the root directory.  Merged testing
+   into master.
+
 2015-10-14  Chris Ahlstrom <ahlstromcj@gmail.com>
 
    * *.*: Added --bus option for override of buss number, for testing.

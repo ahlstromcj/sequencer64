@@ -1,11 +1,12 @@
 README for Sequencer64 0.9.9.5 (current branch = "testing")
 Chris Ahlstrom
-2015-09-10 to 2015-10-26
+2015-09-10 to 2015-10-30
 
 The sequencer64 project is a continuation of sequencer24 to refactor it to
 be tighter and easier to transition to to GTKmm 3, and much more.
 Currently, it is basically equivalent to that project in functionality,
-but the code is already significantly refactored.
+but the code is already significantly refactored.  See the screenshot
+in the project root for some idea of what has changed.
 
 The code has been broken up into libraries, for better separation between
 GUI support and the files, MIDI, JACK, and LASH support.
@@ -25,7 +26,11 @@ Other major updates:
     -   Constant variables are slowly being assigned to new members, in
         preparation for support of altering the number of sequences and sets
         supported.
-    -   Added a more modern-looking font to the graphical user interface.
+    -   Added a more modern-looking, easier to read font to the graphical user
+        interface.
+    -   Tweaked the colors of some user-interface elements to make it
+        easier to see them when combined.  For example, the background
+        sequence is now colored, and the scale bars are now light grey.
 
 This package is currently oriented to developers.  Please see the
 INSTALL file for a brief description of installation.

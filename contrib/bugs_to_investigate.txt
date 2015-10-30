@@ -1,0 +1,51 @@
+Bugs and Upgrade Ideas
+Chris Ahlstrom
+2015-10-27 to 2015-10-30
+
+In no particular order...
+
+-  Provide an "infinite" pattern that will not repeat (unless specified
+   multiple times in the performance editor).
+-  Muting in mainwid or perfnames should be reflected in both views.
+-  Extra lines appearing in perfnames/perfroll when starting playback in
+   perfroll.
+-  Anyway to double-click a pattern to edit, without selecting it?
+-  Moving a pattern doesn't turn on any dirty bit, to allow an opportunity for
+   saving.  This is a legacy bug.
+-  Selecting note events is iffy, more so than in legacy.
+-  Would be nice to have the sequence editors and performance editor scroll to
+   keep the progress bar in view.
+-  Would be nice to show the current time/tick/measure/bar in the tune as
+   it plays.
+-  Would be nice to show the current note/time/tick/measure/bar in sequence
+   editor and performance editor windows.
+-  "Infinite" sequences
+-  Stop progress bar when pattern not playing in performance editor.
+-  New stuff to implement in all relevant modules:
+   -  Use of is_channel_msg(), is_one_byte_msg(), is_two_byte_msg()
+   -  The new variants of the SEQ64_CLICK_xxxxx macros.
+-  Get variable PPQN support fully working!
+-  Offload the scale functionality to a new "scale" class.
+-  Update maintime to support use of the the current beat-width, instead of
+   using 4 all the time.
+-  Investigate adding wrappers for draw_drawable().  (Done for the most common
+   use case).
+-  Selecting some notes of the same value, and trying to elongate or shrink
+   them can make a note of "infinite" length.
+-  When closing a file, either need to blank out or close any pattern-editor
+   windows and the performance editor; something like that.
+-  Add one or two digits to the size of the "Sequence length in bars" field, at
+   the expense of its pixmap button.  Add an "infinite" option to that value.
+
+draw_drawable:
+
+   Drawable->draw_drawable(GC, Pixmap, x, y, x0, y0, fontw, fonth)
+   Drawable->draw_drawable(m_gc, Drawable, x, y, x0, y0, fontw, fonth)
+   Drawable->draw_drawable(m_gc, Pixmap, x, y, x0, y0, fontw, fonth)
+   Drawable->draw_drawable(m_gc, m_background, x, y, x0, y0, fontw, fonth)
+
+   m_window->draw_drawable(m_gc, m_pixmap,  ...)
+
+
+
+   draw_drawable( gc , src , xsrc , ysrc , xdest , ydest , width , height )

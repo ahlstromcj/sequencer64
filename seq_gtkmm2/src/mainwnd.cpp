@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-17
+ * \updates       2015-10-30
  * \license       GNU GPLv2 or above
  *
  *  The main window holds the menu and the main controls of the application,
@@ -310,7 +310,13 @@ mainwnd::mainwnd (perform & p)
 
     Gtk::HBox * bpmhbox = manage(new Gtk::HBox(false, 4));
     bottomhbox->pack_start(*bpmhbox, Gtk::PACK_SHRINK);
-    m_adjust_bpm = manage(new Gtk::Adjustment(perf().get_bpm(), 20, 500, 1));
+    m_adjust_bpm = manage
+    (
+        new Gtk::Adjustment
+        (
+            perf().get_beats_per_minute(), MINIMUM_BPM, MAXIMUM_BPM, 1
+        )
+    );
     m_spinbutton_bpm = manage(new Gtk::SpinButton(*m_adjust_bpm));
     m_spinbutton_bpm->set_editable(false);
     m_adjust_bpm->signal_value_changed().connect
@@ -460,7 +466,7 @@ mainwnd::timer_callback ()
     m_main_time->idle_progress(ticks);
     m_main_wid->update_markers(ticks);          /* see note above */
 
-    int bpm = perf().get_bpm();
+    int bpm = perf().get_beats_per_minute();
     if (m_adjust_bpm->get_value() != bpm)
         m_adjust_bpm->set_value(bpm);
 
@@ -675,7 +681,7 @@ mainwnd::open_file (const std::string & fn)
     update_window_title();
     m_main_wid->reset();
     m_entry_notes->set_text(perf().current_screen_set_notepad());
-    m_adjust_bpm->set_value(perf().get_bpm());
+    m_adjust_bpm->set_value(perf().get_beats_per_minute());
 }
 
 /**
@@ -907,7 +913,7 @@ mainwnd::file_import_dialog ()
         is_modified(true);
         m_main_wid->reset();
         m_entry_notes->set_text(perf().current_screen_set_notepad());
-        m_adjust_bpm->set_value(perf().get_bpm());
+        m_adjust_bpm->set_value(perf().get_beats_per_minute());
         break;
     }
 
@@ -1018,7 +1024,7 @@ mainwnd::adj_callback_ss ()
 void
 mainwnd::adj_callback_bpm ()
 {
-    perf().set_bpm(int(m_adjust_bpm->get_value()));
+    perf().set_beats_per_minute(int(m_adjust_bpm->get_value()));
     is_modified(true);
 }
 
@@ -1093,12 +1099,12 @@ mainwnd::on_key_press_event (GdkEventKey * a_ev)
 
         if (a_ev->keyval == PREFKEY(bpm_dn))
         {
-            int newbpm = perf().decrement_bpm();
+            int newbpm = perf().decrement_beats_per_minute();
             m_adjust_bpm->set_value(newbpm);
         }
         else if (a_ev->keyval == PREFKEY(bpm_up))
         {
-            int newbpm = perf().increment_bpm();
+            int newbpm = perf().increment_beats_per_minute();
             m_adjust_bpm->set_value(newbpm);
         }
 

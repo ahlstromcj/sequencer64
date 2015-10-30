@@ -37,16 +37,30 @@ In no particular order...
    windows and the performance editor; something like that.
 -  Add one or two digits to the size of the "Sequence length in bars" field, at
    the expense of its pixmap button.  Add an "infinite" option to that value.
+-  Finish adding elements to the "user" configuration file.
 
-draw_drawable:
+draw_drawable( gc , src , xsrc , ysrc , xdest , ydest , width , height ):
 
-   Drawable->draw_drawable(GC, Pixmap, x, y, x0, y0, fontw, fonth)
-   Drawable->draw_drawable(m_gc, Drawable, x, y, x0, y0, fontw, fonth)
-   Drawable->draw_drawable(m_gc, Pixmap, x, y, x0, y0, fontw, fonth)
-   Drawable->draw_drawable(m_gc, m_background, x, y, x0, y0, fontw, fonth)
+-  Drawable->draw_drawable(GC, Pixmap, x, y, x0, y0, fontw, fonth)
+-  Drawable->draw_drawable(m_gc, Drawable, x, y, x0, y0, fontw, fonth)
+-  Drawable->draw_drawable(m_gc, Pixmap, x, y, x0, y0, fontw, fonth)
+-  Drawable->draw_drawable(m_gc, m_background, x, y, x0, y0, fontw, fonth)
+x  m_window->draw_drawable(m_gc, m_pixmap,  ...)
 
-   m_window->draw_drawable(m_gc, m_pixmap,  ...)
+-  Initiatives from other projects ("-" means "not done (yet)", "y" means
+   "partially done", "x" means done, "0" means "will not do"):
+   -  Porting to BSD:         https://github.com/vext01/seq24
+   y  AUR archive files:      https://github.com/aur-archive/seq24
+   x  freddix patches:        https://github.com/freddix/seq24
+   x  pld-linux patches:      https://github.com/pld-linux/seq24
+   x  OpenMandriva patches:   https://github.com/OpenMandrivaAssociation/seq24
+   0  Launchpad mapper:       https://github.com/Excds/seq24-launchpad-mapper
+   -  Fork of seq24:          https://github.com/orlammd/SC_seq24
+   0  git-ingore, license:    https://github.com/franticspider/seq24plus
+   0  Basic inspiration:      https://github.com/analoq/seq
+   0  In-browser seq24:       https://github.com/briandunn/seq25
+   0  One-up of seq25:        https://github.com/jgdavey/seq26
+   0  Ruby implementation:    https://github.com/chriserin/seq27
+   -  Song-editing emph:      https://github.com/sbrauer/seq42
 
 
-
-   draw_drawable( gc , src , xsrc , ysrc , xdest , ydest , width , height )

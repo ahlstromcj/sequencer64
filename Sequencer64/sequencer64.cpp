@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-19
+ * \updates       2015-10-30
  * \license       GNU GPLv2 or above
  *
  * \todo
@@ -106,7 +106,7 @@ namespace seq64
 }           // namespace seq64
 
 static const char * const s_help_1a =
-"sequencer64 v 0.9.9.5  A fork/refactoring of the seq24 live sequencer\n\n"
+"sequencer64 v 0.9.9.6  A fork/refactoring of the seq24 live sequencer\n\n"
 "Usage: sequencer64 [options] [MIDI filename]\n\n"
 "Options:\n"
 "   -h, --help               Show this message.\n"

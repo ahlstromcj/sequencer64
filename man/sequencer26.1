@@ -1,4 +1,4 @@
-.TH Sequencer64 "Sept 11 2015" "Version 0.9.9" "Sequencer64 Manual Page"
+.TH Sequencer64 "Oct 11 2015" "Version 0.9.9" "Sequencer64 Manual Page"
 
 .SH NAME
 Sequencer64 - Real time MIDI sequencer refactored from Seq24
@@ -29,6 +29,17 @@ The user-interface will indicate this mode.  This mode is also
 used if the application is invoked as the
 \fIseq24\fP
 command.
+.TP 8
+.B \-\-bus b
+Supports modifying the buss number on all tracks when a MIDI
+is read.  All tracks are loaded for this buss.  This feature is useful
+for testing, making it easy to map the MIDI file onto your current
+hardware/software synthesizer setup.
+.TP 8
+.B \-\-ppqn p
+Supports modifying the PPQN value of Sequencer64.  This should
+allow MIDI files to play back at the proper speed, and be written
+with the new PPQN value.  This feature is STILL IN PROGRESS.
 .TP 8
 .B \-\-lash
 If LASH support is compiled into the program, this option
@@ -82,11 +93,12 @@ Set uuid for jack session
 
 .SH FILES
 \fB$HOME\fP/sequencer64.rc stores the user-configuration settings for
-sequencer64.  If it does not exist, it will be generated with sequencer64
+sequencer64.  If it does not exist, it will be generated when sequencer64
 exits.
-\fB$HOME\fP/sequencer64.usr stores the MIDI-configuration settings for
-sequencer64, but is not present by default.  A sample is provided with
-the project.
+\fB$HOME\fP/sequencer64.usr stores the MIDI-configuration settings and (later)
+some more universal user-interface setting for
+sequencer64.  If it does not exist, it will be generated when sequencer64
+exits.
 
 .SH SUGGESTIONS AND BUG REPORTS
 Any bugs found should be reported to the upstream author and/or package 

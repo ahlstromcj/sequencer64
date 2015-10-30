@@ -75,7 +75,7 @@ class perftime;
  * Just a note:  The patches in the pld-linux/seq24 GitHub project had a
  * namespace sigc declaration here, which does not seem to be needed.
  * And a lot of the patches from that project were already applied to
- * seq24 v 0.9.2.
+ * seq24 v 0.9.2.  They are now all applied.
  */
 
 /**

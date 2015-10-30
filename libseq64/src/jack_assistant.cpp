@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-14
- * \updates       2015-10-20
+ * \updates       2015-10-30
  * \license       GNU GPLv2 or above
  *
  *  This module was created from code that existed in the perform object.
@@ -295,13 +295,9 @@ jack_assistant::deinit ()
         m_jack_running = false;
         m_jack_master = false;
         if (jack_release_timebase(m_jack_client) != 0)
-        {
             error_message("Cannot release timebase");
-        }
         if (jack_client_close(m_jack_client) != 0)
-        {
             error_message("Cannot close JACK client");
-        }
     }
     if (! m_jack_running)
         info_message("JACK sync disabled");
@@ -379,7 +375,7 @@ jack_assistant::position (bool /* state */ )
     pos.beats_per_bar = 4;              // DEFAULT_BEATS_PER_MEASURE
     pos.beat_type = 4;                  // DEFAULT_BEAT_WIDTH
     pos.ticks_per_beat = m_ppqn * 10;
-    pos.beats_per_minute = m_master_bus.get_bpm();
+    pos.beats_per_minute = m_master_bus.get_beats_per_minute();
 
     /*
      * Compute BBT info from frame number.  This is relatively simple
@@ -787,7 +783,7 @@ jack_timebase_callback
     pos->beats_per_bar = 4;
     pos->beat_type = 4;
     pos->ticks_per_beat = jack->m_ppqn * 10;
-    pos->beats_per_minute = jack->parent().get_bpm();
+    pos->beats_per_minute = jack->parent().get_beats_per_minute();
 
     /*
      * Compute BBT info from frame number.  This is relatively simple

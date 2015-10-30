@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-15
+ * \updates       2015-10-30
  * \license       GNU GPLv2 or above
  *
  */
@@ -38,6 +38,7 @@
 #include <gtkmm/window.h>
 
 #include "gui_window_gtk2.hpp"
+#include "sequence.hpp"
 
 namespace Gtk
 {
@@ -64,7 +65,6 @@ class seqkeys;
 class seqdata;
 class seqtime;
 class seqevent;
-class sequence;
 
 /**
  *  Implements the Pattern Editor, which has references to:
@@ -210,8 +210,8 @@ public:
 
     seqedit
     (
-        sequence & a_seq,
-        perform & a_perf,
+        sequence & seq,
+        perform & perf,
         int pos,
         int ppqn = SEQ64_USE_DEFAULT_PPQN
     );
@@ -219,20 +219,29 @@ public:
 
 private:
 
-    void set_zoom (int a_zoom);
-    void set_snap (int a_snap);
-    void set_note_length (int a_note_length);
-    void set_bpm (int a_beats_per_measure);
-    void set_bw (int a_beat_width);
-    void set_rec_vol (int a_rec_vol);
-    void set_measures (int a_length_measures);
-    void apply_length (int a_bpm, int a_bw, int a_measures);
+    void set_zoom (int zoom);
+    void set_snap (int snap);
+    void set_note_length (int note_length);
+    void set_bpm (int beats_per_measure);
+    void set_bw (int beat_width);
+
+    /**
+     *  Passes the given parameter to sequence::set_rec_vol().
+     */
+
+    void set_rec_vol (int recvol)
+    {
+        m_seq.set_rec_vol(recvol);
+    }
+
+    void set_measures (int length_measures);
+    void apply_length (int bpm, int bw, int measures);
     long get_measures ();
-    void set_midi_channel (int a_midichannel);
-    void set_midi_bus (int a_midibus);
-    void set_scale (int a_scale);
-    void set_key (int a_note);
-    void set_background_sequence (int a_seq);
+    void set_midi_channel (int midichannel);
+    void set_midi_bus (int midibus);
+    void set_scale (int scale);
+    void set_key (int note);
+    void set_background_sequence (int seq);
     void name_change_callback ();
     void play_change_callback ();
     void record_change_callback ();
@@ -240,7 +249,7 @@ private:
     void thru_change_callback ();
     void undo_callback ();
     void redo_callback ();
-    void set_data_type (unsigned char a_status, unsigned char a_control = 0);
+    void set_data_type (unsigned char status, unsigned char control = 0);
     void update_all_windows ();
     void fill_top_bar ();
     void create_menus ();
@@ -249,23 +258,23 @@ private:
      * An unsed, empty function:    void menu_action_quantise ();
      */
 
-    void popup_menu (Gtk::Menu * a_menu);
+    void popup_menu (Gtk::Menu * menu);
     void popup_event_menu ();
     void popup_midibus_menu ();
     void popup_sequence_menu ();
     void popup_tool_menu ();
     void popup_midich_menu ();
-    Gtk::Image * create_menu_image (bool a_state = false);
+    Gtk::Image * create_menu_image (bool state = false);
     bool timeout ();
-    void do_action (int a_action, int a_var);
-    void mouse_action (mouse_action_e a_action);
+    void do_action (int action, int var);
+    void mouse_action (mouse_action_e action);
 
 private:        // callbacks
 
     void on_realize ();
-    bool on_delete_event (GdkEventAny * a_event);
-    bool on_scroll_event (GdkEventScroll * a_ev);
-    bool on_key_press_event (GdkEventKey * a_ev);
+    bool on_delete_event (GdkEventAny * event);
+    bool on_scroll_event (GdkEventScroll * ev);
+    bool on_key_press_event (GdkEventKey * ev);
 };
 
 }           // namespace seq64

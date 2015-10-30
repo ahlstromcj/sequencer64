@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-30
- * \updates       2015-10-19
+ * \updates       2015-10-30
  * \license       GNU GPLv2 or above
  *
  *  This file provides a Linux-only implementation of MIDI support.
@@ -88,7 +88,7 @@ mastermidibus::mastermidibus (int ppqn, int bpm)
     m_init_input        (),         // array of c_max_busses booleans
     m_queue             (0),
     m_ppqn              (0),
-    m_bpm               (bpm),      // DITTO
+    m_beats_per_minute  (bpm),      // beats per minute
     m_num_poll_descriptors (0),
     m_poll_descriptors  (nullptr),
     m_dumping_input     (false),
@@ -322,7 +322,7 @@ mastermidibus::init ()
             }
         }                                       /* end loop for clients */
     }
-    set_bpm(m_bpm);                             /* @change was c_bpm    */
+    set_beats_per_minute(m_beats_per_minute);   /* @change was c_bpm    */
     set_ppqn(m_ppqn);                           /* @change was c_ppqn   */
 
     /*
@@ -492,16 +492,16 @@ mastermidibus::set_ppqn (int ppqn)
  */
 
 void
-mastermidibus::set_bpm (int bpm)
+mastermidibus::set_beats_per_minute (int bpm)
 {
 
 #ifdef SEQ64_HAVE_LIBASOUND
     automutex locker(m_mutex);
-    m_bpm = bpm;
+    m_beats_per_minute = bpm;
     snd_seq_queue_tempo_t *tempo;
     snd_seq_queue_tempo_alloca(&tempo);          /* allocate tempo struct */
     snd_seq_get_queue_tempo(m_alsa_seq, m_queue, tempo);
-    snd_seq_queue_tempo_set_tempo(tempo, int(tempo_from_bpm(bpm)));
+    snd_seq_queue_tempo_set_tempo(tempo, int(tempo_from_beats_per_minute(bpm)));
     snd_seq_set_queue_tempo(m_alsa_seq, m_queue, tempo);
 #endif
 }

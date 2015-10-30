@@ -23,12 +23,12 @@
  * \file          globals.h
  *
  *  This module declares/defines just some of the global (gasp!) variables
- *  in this application.
+ *  and some universal MIDI calculations used in this application.
  *
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-25
- * \updates       2015-10-29
+ * \updates       2015-10-30
  * \license       GNU GPLv2 or above
  *
  *  We're going to try to collect all the globals here in one module, and
@@ -91,9 +91,9 @@
 
 #include <string>
 
-#include "easy_macros.h"                // with platform_macros.h, too
-#include "rc_settings.hpp"              // seq64::rc_settings
-#include "user_settings.hpp"            // seq64::user_settings
+#include "easy_macros.h"                /* with platform_macros.h, too  */
+#include "rc_settings.hpp"              /* seq64::rc_settings           */
+#include "user_settings.hpp"            /* seq64::user_settings         */
 
 extern rc_settings g_rc_settings;
 extern user_settings g_user_settings;
@@ -154,11 +154,26 @@ extern user_settings g_user_settings;
 #define DEFAULT_PPQN                    192
 
 /**
- *  Default value for c_bpm (global beats-per-minute, also known as "BPM").
- *  Do not confuse this "bpm" with the other one, "beats per measure".
+ *  Default value for c_beats_per_minute (global beats-per-minute, also known
+ *  as "BPM").  Do not confuse this "bpm" with the other one, "beats per
+ *  measure".
  */
 
 #define DEFAULT_BPM                     120
+
+/**
+ *  Minimum value for c_beats_per_minute (global beats-per-minute, also known
+ *  as "BPM").  Mostly for sanity-checking.
+ */
+
+#define MINIMUM_BPM                      20
+
+/**
+ *  Maximum value for c_beats_per_minute (global beats-per-minute, also known
+ *  as "BPM").  Mostly for sanity-checking.
+ */
+
+#define MAXIMUM_BPM                     500
 
 /**
  *  Default value for "beats-per-measure".  This is the "numerator" in a 4/4
@@ -300,7 +315,7 @@ const int c_ppqn = DEFAULT_PPQN;
  *  default value is 120.
  */
 
-const int c_bpm = DEFAULT_BPM;
+const int c_beats_per_minute = DEFAULT_BPM;
 
 /**
  *  The trigger width in milliseconds.  This value is 4 ms.
@@ -905,9 +920,9 @@ namespace seq64
 extern std::string shorten_file_spec (const std::string & fpath, int leng);
 
 /**
- *  This function calculates the effective beats-per-minute based on
- *  the value of a Tempo meta-event.  The tempo event's numeric value is given
- *  in 3 bytes, and is in units of microseconds-per-quarter-note (us/qn).
+ *  This function calculates the effective beats-per-minute based on the value
+ *  of a Tempo meta-event.  The tempo event's numeric value is given in 3
+ *  bytes, and is in units of microseconds-per-quarter-note (us/qn).
  *
  * \param tempo
  *      The value of the Tempo meta-event, in units of us/qn.
@@ -917,23 +932,23 @@ extern std::string shorten_file_spec (const std::string & fpath, int leng);
  *      then this function will crash.  :-D
  */
 
-inline double bpm_from_tempo (double tempo)
+inline double beats_per_minute_from_tempo (double tempo)
 {
     return 60000000.0 / tempo;
 }
 
 /**
- *  This function is the inverse of bpm_from_tempo().
+ *  This function is the inverse of beats_per_minute_from_tempo().
  *
  * \param bpm
  *      The value of beats-per-minute.
  *
  * \return
- *      Returns the tempo.  If the bpm value is too small,
+ *      Returns the tempo in qn/us.  If the bpm value is too small,
  *      then this function will crash.  :-D
  */
 
-inline double tempo_from_bpm (double bpm)
+inline double tempo_from_beats_per_minute (double bpm)
 {
     return 60000000.0 / bpm;
 }
@@ -1076,6 +1091,54 @@ inline int clock_ticks_from_ppqn (int ppqn)
 inline double double_ticks_from_ppqn (int ppqn)
 {
     return double(ppqn) / double(MIDI_CLOCK_IN_PPQN);
+}
+
+/**
+ *  Calculates the length of a number of measures, in ticks.
+ *  This function is called in seqedit::apply_length(), when the user
+ *  selects a sequence length in measures.  That function calculates the
+ *  length in ticks:
+ *
+\verbatim
+    L = M x B x 4 x P / W
+        L == length (ticks or pulses)
+        M == number of measures
+        B == beats per measure
+        P == pulses per quarter-note
+        W == beat width in beats per measure
+\endverbatim
+ *
+ *  For our "b4uacuse" MIDI file, M can be about 100 measures, B is 4,
+ *  P can be 192 (but we want to support higher values), and W is 4.
+ *  So L = 100 * 4 * 4 * 192 / 4 = 76800 ticks.  Seems small.
+ *
+ * \param bpm
+ *      The B value in the equation.
+ *
+ * \param ppqn
+ *      The P value in the equation.
+ *
+ * \param bw
+ *      The W value in the equation.
+ *
+ * \param measures
+ *      The M value in the equation.  It defaults to 1, in case one desires a
+ *      simple "ticks per measure" number.
+ *
+ * \return
+ *      Returns the L value (ticks of pulses) as calculated via the given
+ *      equation.  If bw is 0, then 0 is returned.
+ */
+
+inline long measures_to_ticks
+(
+    int bpm,
+    int ppqn,
+    int bw,
+    int measures = 1
+)
+{
+    return (bw > 0) ? (4 * measures * bpm * ppqn / bw) : 0 ;
 }
 
 }           // namespace seq64

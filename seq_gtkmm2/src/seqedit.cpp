@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-29
+ * \updates       2015-10-30
  * \license       GNU GPLv2 or above
  *
  */
@@ -55,7 +55,6 @@
 #include "seqkeys.hpp"
 #include "seqroll.hpp"
 #include "seqtime.hpp"
-#include "sequence.hpp"
 
 #include "pixmaps/play.xpm"
 #include "pixmaps/q_rec.xpm"
@@ -125,7 +124,7 @@ static const int c_transpose_h           = 12;
  *
  * \todo
  *      Offload most of the work into an initialization function like
- *      options does; make the sequence and perform parameters references.
+ *      options does.
  */
 
 seqedit::seqedit (sequence & seq, perform & p, int pos, int ppqn)
@@ -389,7 +388,7 @@ seqedit::create_menus ()
      *  The values are "pixels to ticks".
      */
 
-    char b[20];
+    char b[16];
     for (int i = mc_min_zoom; i <= mc_max_zoom; i *= 2)           /* zoom */
     {
         snprintf(b, sizeof(b), "1:%d", i);
@@ -732,11 +731,11 @@ seqedit::popup_tool_menu ()
 
     holder->items().push_back
     (
-        MenuElem("All Notes", sigc::bind(DO_ACTION, c_select_all_notes, 0))
+        MenuElem("All notes", sigc::bind(DO_ACTION, c_select_all_notes, 0))
     );
     holder->items().push_back
     (
-        MenuElem("Inverse Notes", sigc::bind(DO_ACTION, c_select_inverse_notes, 0))
+        MenuElem("Inverse notes", sigc::bind(DO_ACTION, c_select_inverse_notes, 0))
     );
 
     /*
@@ -748,11 +747,11 @@ seqedit::popup_tool_menu ()
         holder->items().push_back(SeparatorElem());
         holder->items().push_back
         (
-            MenuElem("All Events", sigc::bind(DO_ACTION, c_select_all_events, 0))
+            MenuElem("All events", sigc::bind(DO_ACTION, c_select_all_events, 0))
         );
         holder->items().push_back
         (
-            MenuElem("Inverse Events",
+            MenuElem("Inverse events",
                 sigc::bind(DO_ACTION, c_select_inverse_events, 0))
         );
     }
@@ -761,12 +760,12 @@ seqedit::popup_tool_menu ()
     holder = manage(new Gtk::Menu());           /* another menu */
     holder->items().push_back
     (
-        MenuElem("Quantize Selected Notes",
+        MenuElem("Quantize selected notes",
             sigc::bind(DO_ACTION, c_quantize_notes, 0))
     );
     holder->items().push_back
     (
-        MenuElem("Tighten Selected Notes",
+        MenuElem("Tighten selected notes",
             sigc::bind(DO_ACTION, c_tighten_notes, 0))
     );
 
@@ -780,16 +779,16 @@ seqedit::popup_tool_menu ()
         holder->items().push_back(SeparatorElem());
         holder->items().push_back
         (
-            MenuElem("Quantize Selected Events",
+            MenuElem("Quantize selected events",
                 sigc::bind(DO_ACTION, c_quantize_events, 0))
         );
         holder->items().push_back
         (
-            MenuElem("Tighten Selected Events",
+            MenuElem("Tighten selected events",
                 sigc::bind(DO_ACTION, c_tighten_events, 0))
         );
     }
-    m_menu_tools->items().push_back(MenuElem("Modify Time", *holder));
+    m_menu_tools->items().push_back(MenuElem("Modify time", *holder));
     holder = manage(new Gtk::Menu());
 
     char num[16];
@@ -805,7 +804,7 @@ seqedit::popup_tool_menu ()
             );
         }
     }
-    holder->items().push_back(MenuElem("Transpose Selected", *holder2));
+    holder->items().push_back(MenuElem("Transpose selected", *holder2));
     holder2 = manage(new Gtk::Menu());
     for (int i = -7; i <= 7; ++i)
     {
@@ -826,7 +825,7 @@ seqedit::popup_tool_menu ()
     {
         holder->items().push_back
         (
-            MenuElem("Harmonic Transpose Selected", *holder2)
+            MenuElem("Harmonic-transpose selected", *holder2)
         );
     }
     m_menu_tools->items().push_back(MenuElem("Modify Pitch", *holder));
@@ -984,7 +983,7 @@ seqedit::fill_top_bar ()
     (
         mem_fun(*this, &seqedit::popup_midibus_menu)
     );
-    add_tooltip(m_button_bus, "Select output bus");
+    add_tooltip(m_button_bus, "Select MIDI output bus");
     m_entry_bus = manage(new Gtk::Entry());
     m_entry_bus->set_max_length(60);
     m_entry_bus->set_width_chars(60);
@@ -1092,7 +1091,7 @@ seqedit::fill_top_bar ()
         sigc::bind<Gtk::Menu *>(mem_fun(*this, &seqedit::popup_menu),
             m_menu_note_length)
     );
-    add_tooltip(m_button_note_length, "Note length");
+    add_tooltip(m_button_note_length, "Note length for click-to-insert");
     m_entry_note_length = manage(new Gtk::Entry());
     m_entry_note_length->set_width_chars(5);
     m_entry_note_length->set_editable(false);
@@ -1107,7 +1106,7 @@ seqedit::fill_top_bar ()
     (
         sigc::bind<Gtk::Menu *>(mem_fun(*this, &seqedit::popup_menu), m_menu_zoom)
     );
-    add_tooltip(m_button_zoom, "Zoom, pixels to ticks");
+    add_tooltip(m_button_zoom, "Zoom, units of pixels:ticks");
     m_entry_zoom = manage(new Gtk::Entry());
     m_entry_zoom->set_width_chars(4);
     m_entry_zoom->set_editable(false);
@@ -1123,7 +1122,7 @@ seqedit::fill_top_bar ()
     (
         sigc::bind<Gtk::Menu *>(mem_fun(*this, &seqedit::popup_menu), m_menu_key)
     );
-    add_tooltip(m_button_key, "Musical key of sequence");
+    add_tooltip(m_button_key, "Select musical key of sequence");
     m_entry_key = manage(new Gtk::Entry());
     m_entry_key->set_width_chars(5);
     m_entry_key->set_editable(false);
@@ -1138,7 +1137,7 @@ seqedit::fill_top_bar ()
     (
         sigc::bind<Gtk::Menu *>(mem_fun(*this, &seqedit::popup_menu), m_menu_scale)
     );
-    add_tooltip(m_button_scale, "Musical scale");
+    add_tooltip(m_button_scale, "Select musical scale for sequence");
     m_entry_scale = manage(new Gtk::Entry());
     m_entry_scale->set_width_chars(5);
     m_entry_scale->set_editable(false);
@@ -1706,7 +1705,9 @@ seqedit::set_key (int a_note)
 void
 seqedit::apply_length (int bpm, int bw, int measures)
 {
-    m_seq.set_length(measures * bpm * ((m_ppqn * 4) / bw));
+//  m_seq.set_length(measures * bpm * ((m_ppqn * 4) / bw));
+
+    m_seq.set_length(measures_to_ticks(bpm, m_ppqn, bw, measures));
     m_seqroll_wid->reset();
     m_seqtime_wid->reset();
     m_seqdata_wid->reset();
@@ -1726,8 +1727,10 @@ seqedit::apply_length (int bpm, int bw, int measures)
 long
 seqedit::get_measures ()
 {
-    long units = ((m_seq.get_bpm() * (m_ppqn * 4)) /  m_seq.get_bw());
-    long measures = (m_seq.get_length() / units);
+//  long units = (m_seq.get_bpm() * (m_ppqn * 4)) /  m_seq.get_bw();
+
+    long units = measures_to_ticks(m_seq.get_bpm(), m_ppqn, m_seq.get_bw());
+    long measures = m_seq.get_length() / units;
     if (m_seq.get_length() % units != 0)
         measures++;
 
@@ -1740,13 +1743,13 @@ seqedit::get_measures ()
  */
 
 void
-seqedit::set_measures (int a_length_measures)
+seqedit::set_measures (int length_measures)
 {
     char b[8];
-    snprintf(b, sizeof(b), "%d", a_length_measures);
+    snprintf(b, sizeof(b), "%d", length_measures);
     m_entry_length->set_text(b);
-    m_measures = a_length_measures;
-    apply_length(m_seq.get_bpm(), m_seq.get_bw(), a_length_measures);
+    m_measures = length_measures;
+    apply_length(m_seq.get_bpm(), m_seq.get_bw(), length_measures);
 }
 
 /**
@@ -1755,16 +1758,16 @@ seqedit::set_measures (int a_length_measures)
  */
 
 void
-seqedit::set_bpm (int a_beats_per_measure)
+seqedit::set_bpm (int beats_per_measure)
 {
     char b[8];
-    snprintf(b, sizeof(b), "%d", a_beats_per_measure);
+    snprintf(b, sizeof(b), "%d", beats_per_measure);
     m_entry_bpm->set_text(b);
-    if (a_beats_per_measure != m_seq.get_bpm())
+    if (beats_per_measure != m_seq.get_bpm())
     {
         long length = get_measures();
-        m_seq.set_bpm(a_beats_per_measure);
-        apply_length(a_beats_per_measure, m_seq.get_bw(), length);
+        m_seq.set_bpm(beats_per_measure);
+        apply_length(beats_per_measure, m_seq.get_bw(), length);
     }
 }
 
@@ -1774,27 +1777,17 @@ seqedit::set_bpm (int a_beats_per_measure)
  */
 
 void
-seqedit::set_bw (int a_beat_width)
+seqedit::set_bw (int beat_width)
 {
     char b[8];
-    snprintf(b, sizeof(b), "%d", a_beat_width);
+    snprintf(b, sizeof(b), "%d", beat_width);
     m_entry_bw->set_text(b);
-    if (a_beat_width != m_seq.get_bw())
+    if (beat_width != m_seq.get_bw())
     {
-        long length = get_measures();
-        m_seq.set_bw(a_beat_width);
-        apply_length(m_seq.get_bpm(), a_beat_width, length);
+        long len = get_measures();
+        m_seq.set_bw(beat_width);
+        apply_length(m_seq.get_bpm(), beat_width, len);
     }
-}
-
-/**
- *  Passes the given parameter to sequence::set_rec_vol().
- */
-
-void
-seqedit::set_rec_vol (int a_rec_vol)
-{
-    m_seq.set_rec_vol(a_rec_vol);
 }
 
 /**
@@ -1886,41 +1879,39 @@ seqedit::thru_change_callback ()
  */
 
 void
-seqedit::set_data_type (unsigned char a_status, unsigned char a_control)
+seqedit::set_data_type (unsigned char status, unsigned char control)
 {
-    m_editing_status = a_status;
-    m_editing_cc = a_control;
-    m_seqevent_wid->set_data_type(a_status, a_control);
-    m_seqdata_wid->set_data_type(a_status, a_control);
-    m_seqroll_wid->set_data_type(a_status, a_control);
+    m_editing_status = status;
+    m_editing_cc = control;
+    m_seqevent_wid->set_data_type(status, control);
+    m_seqdata_wid->set_data_type(status, control);
+    m_seqroll_wid->set_data_type(status, control);
 
-    char hex[24];
+    char hex[8];
     char type[80];
-    snprintf(hex, sizeof(hex), "[0x%02X]", a_status);
-    if (a_status == EVENT_NOTE_OFF)
+    snprintf(hex, sizeof(hex), "[0x%02X]", status);
+    if (status == EVENT_NOTE_OFF)
         snprintf(type, sizeof(type), "Note Off");
-    else if (a_status == EVENT_NOTE_ON)
+    else if (status == EVENT_NOTE_ON)
         snprintf(type, sizeof(type), "Note On");
-    else if (a_status == EVENT_AFTERTOUCH)
+    else if (status == EVENT_AFTERTOUCH)
         snprintf(type, sizeof(type), "Aftertouch");
-    else if (a_status == EVENT_CONTROL_CHANGE)
+    else if (status == EVENT_CONTROL_CHANGE)
     {
         int midi_bus = m_seq.get_midi_bus();
         int midi_ch = m_seq.get_midi_channel();
-        std::string controller_name(c_controller_names[a_control]);
-        int inst =
-            global_user_midi_bus_definitions[midi_bus].instrument[midi_ch];
-
-        if (inst > -1 && inst < c_max_instruments)
+        std::string controller_name(c_controller_names[control]);
+        int inst = global_user_midi_bus_definitions[midi_bus].instrument[midi_ch];
+        if (inst >= 0 && inst < c_max_instruments)
         {
             if
             (
                 global_user_instrument_definitions[inst].
-                    controllers_active[a_control]
+                    controllers_active[control]
             )
             {
                 controller_name = global_user_instrument_definitions[inst].
-                    controllers[a_control];
+                    controllers[control];
             }
         }
         snprintf
@@ -1928,16 +1919,16 @@ seqedit::set_data_type (unsigned char a_status, unsigned char a_control)
             type, sizeof(type), "Control Change - %s", controller_name.c_str()
         );
     }
-    else if (a_status == EVENT_PROGRAM_CHANGE)
+    else if (status == EVENT_PROGRAM_CHANGE)
         snprintf(type, sizeof(type), "Program Change");
-    else if (a_status == EVENT_CHANNEL_PRESSURE)
+    else if (status == EVENT_CHANNEL_PRESSURE)
         snprintf(type, sizeof(type), "Channel Pressure");
-    else if (a_status == EVENT_PITCH_WHEEL)
+    else if (status == EVENT_PITCH_WHEEL)
         snprintf(type, sizeof(type), "Pitch Wheel");
     else
         snprintf(type, sizeof(type), "Unknown MIDI Event");
 
-    char text[104];
+    char text[90];
     snprintf(text, sizeof(text), "%s %s", hex, type);
     m_entry_data->set_text(text);
 }
@@ -2068,3 +2059,4 @@ seqedit::on_key_press_event (GdkEventKey * a_ev)
  *
  * vim: sw=4 ts=4 wm=4 et ft=cpp
  */
+

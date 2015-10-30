@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-17
+ * \updates       2015-10-30
  * \license       GNU GPLv2 or above
  *
  *  This class has way too many members.
@@ -566,8 +566,8 @@ public:
 
     void play (long tick);
     void set_orig_ticks (long tick);
-    void set_bpm (int bpm);           /* more than just a setter  */
-    int get_bpm ();                     /* get BPM from the buss    */
+    void set_beats_per_minute (int bpm);        /* more than just a setter  */
+    int get_beats_per_minute ();                /* get BPM from the buss    */
 
     /**
      * \setter m_looping
@@ -733,10 +733,10 @@ public:
      *  work in those function calls.
      */
 
-    int decrement_bpm ()
+    int decrement_beats_per_minute ()
     {
-        int result = get_bpm() - 1;
-        set_bpm(result);
+        int result = get_beats_per_minute() - 1;
+        set_beats_per_minute(result);
         return result;
     }
 
@@ -745,10 +745,10 @@ public:
      *  work in those function calls.
      */
 
-    int increment_bpm ()
+    int increment_beats_per_minute ()
     {
-        int result = get_bpm() + 1;
-        set_bpm(result);
+        int result = get_beats_per_minute() + 1;
+        set_beats_per_minute(result);
         return result;
     }
 

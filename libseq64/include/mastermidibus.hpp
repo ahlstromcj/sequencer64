@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-30
- * \updates       2015-10-15
+ * \updates       2015-10-30
  * \license       GNU GPLv2 or above
  *
  *  The mastermidibus module is the Linux version of the mastermidibus module.
@@ -140,10 +140,11 @@ private:
     int m_ppqn;
 
     /**
-     *  BPM (beats per minute)
+     *  BPM (beats per minute).  We had to lengthen this name; way too easy to
+     *  confuse it with "bpm" for "beats per measure".
      */
 
-    int m_bpm;
+    int m_beats_per_minute;
 
     /**
      *  The number of descriptors for polling.
@@ -177,7 +178,11 @@ private:
 
 public:
 
-    mastermidibus (int ppqn = SEQ64_USE_DEFAULT_PPQN, int bpm = c_bpm);
+    mastermidibus
+    (
+        int ppqn = SEQ64_USE_DEFAULT_PPQN,
+        int bpm = c_beats_per_minute
+    );
     ~mastermidibus ();
 
     void init ();
@@ -209,16 +214,16 @@ public:
         return m_num_in_buses;
     }
 
-    void set_bpm (int a_bpm);
-    void set_ppqn (int a_ppqn);
+    void set_beats_per_minute (int bpm);
+    void set_ppqn (int ppqn);
 
     /**
-     * \getter m_bpm
+     * \getter m_beats_per_minute
      */
 
-    int get_bpm () const
+    int get_beats_per_minute () const
     {
-        return m_bpm;
+        return m_beats_per_minute;
     }
 
     /**

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-29
+ * \updates       2015-10-30
  * \license       GNU GPLv2 or above
  *
  */
@@ -2192,7 +2192,7 @@ sequence::split_trigger (long a_tick)
  */
 
 void
-sequence::adjust_trigger_offsets_to_length(long a_new_len)
+sequence::adjust_trigger_offsets_to_length (long a_new_len)
 {
     automutex locker(m_mutex);
     for (Triggers::iterator i = m_triggers.begin(); i != m_triggers.end(); i++)

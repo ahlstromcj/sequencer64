@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-19
+ * \updates       2015-10-30
  * \license       GNU GPLv2 or above
  *
  *  For a quick guide to the MIDI format, see, for example:
@@ -615,7 +615,7 @@ midifile::parse_prop_header (int file_size)
  *      -   c_midictrl
  *      -   c_midiclocks
  *      -   c_notes
- *      -   c_bpmtag
+ *      -   c_bpmtag (beats per minute)
  *      -   c_mutegroups
  *
  *  (There are more tags defined in the globals module, but they are not
@@ -699,10 +699,10 @@ midifile::parse_proprietary_track (perform & a_perf, int file_size)
         }
     }
     proprietary = parse_prop_header(file_size);
-    if (proprietary == c_bpmtag)
+    if (proprietary == c_bpmtag)                        /* beats per minute */
     {
         long bpm = read_long();
-        a_perf.set_bpm(bpm);
+        a_perf.set_beats_per_minute(bpm);
     }
 
     /* Read in the mute group information. */
@@ -1105,7 +1105,7 @@ midifile::write_proprietary_track (perform & a_perf)
         tracklength += prop_item_size(0);       /* c_midictrl               */
         tracklength += prop_item_size(0);       /* c_midiclocks             */
         tracklength += prop_item_size(cnotesz); /* c_notes                  */
-        tracklength += prop_item_size(4);       /* c_bpmtag                 */
+        tracklength += prop_item_size(4);       /* c_bpmtag, beats/minute   */
         tracklength += prop_item_size(gmutesz); /* c_mutegroups             */
         tracklength += track_end_size();        /* Meta TrkEnd              */
     }
@@ -1128,7 +1128,7 @@ midifile::write_proprietary_track (perform & a_perf)
             write_byte(note[n]);
     }
     write_prop_header(c_bpmtag, 4);             /* bpm tag + long data      */
-    write_long(a_perf.get_bpm());              /* 4 bytes                  */
+    write_long(a_perf.get_beats_per_minute());  /* 4 bytes                  */
     write_prop_header(c_mutegroups, gmutesz);   /* the mute groups tag etc. */
     write_long(c_gmute_tracks);                 /* data, not a tag          */
     for (int j = 0; j < c_seqs_in_set; ++j)     /* should be optional!      */
@@ -1139,9 +1139,8 @@ midifile::write_proprietary_track (perform & a_perf)
             write_long(a_perf.get_group_mute_state(i));
     }
     if (m_new_format)
-    {
         write_track_end();
-    }
+
     return true;
 }
 

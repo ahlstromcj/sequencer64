@@ -1,12 +1,13 @@
-README for Sequencer64 0.9.9.5 (current branch = "testing")
+README for Sequencer64 0.9.9.6 (current branch = "testing2")
 Chris Ahlstrom
 2015-09-10 to 2015-10-30
 
 The sequencer64 project is a continuation of sequencer24 to refactor it to
 be tighter and easier to transition to to GTKmm 3, and much more.
 Currently, it is basically equivalent to that project in functionality,
-but the code is already significantly refactored.  See the screenshot
-in the project root for some idea of what has changed.
+but the code is already significantly refactored.
+
+See the screenshot in the project root for some idea of what has changed.
 
 The code has been broken up into libraries, for better separation between
 GUI support and the files, MIDI, JACK, and LASH support.
@@ -31,6 +32,13 @@ Other major updates:
     -   Tweaked the colors of some user-interface elements to make it
         easier to see them when combined.  For example, the background
         sequence is now colored, and the scale bars are now light grey.
+    -   Added a --bus option for easier testing against a specific
+        hardware/software synthesizer.
+    -   Added a --ppqn option to try to play files at the right speed.  Still
+        in progressm the Seq24 PPQN value of 192 affects a lot of code!
+    -   Added support for using the Mod4/Super/Windows key to keep the
+        performance and sequence user-interfaces in editing mode, very helpful
+        for certain crappy laptop trackpads.
 
 This package is currently oriented to developers.  Please see the
 INSTALL file for a brief description of installation.

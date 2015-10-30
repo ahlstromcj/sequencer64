@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-27
+ * \updates       2015-10-30
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the most important single class in Sequencer64, as
@@ -762,17 +762,13 @@ perform::get_sequence (int seq)
  */
 
 void
-perform::set_bpm (int a_bpm)
+perform::set_beats_per_minute (int bpm)
 {
-    /*
-     * We need manifest constants here!
-     */
+    if (bpm < MINIMUM_BPM)              /*  20 */
+        bpm = MINIMUM_BPM;
 
-    if (a_bpm < 20)
-        a_bpm = 20;
-
-    if (a_bpm > 500)
-        a_bpm = 500;
+    if (bpm > MAXIMUM_BPM)              /* 500 */
+        bpm = MAXIMUM_BPM;
 
     /**
      * \todo
@@ -782,9 +778,7 @@ perform::set_bpm (int a_bpm)
      */
 
     if (! (m_jack_asst.is_running() && m_running))
-    {
-        m_master_bus.set_bpm(a_bpm);
-    }
+        m_master_bus.set_beats_per_minute(bpm);
 }
 
 /**
@@ -792,9 +786,9 @@ perform::set_bpm (int a_bpm)
  */
 
 int
-perform::get_bpm ()
+perform::get_beats_per_minute ()
 {
-    return m_master_bus.get_bpm();
+    return m_master_bus.get_beats_per_minute();
 }
 
 /**
@@ -1643,7 +1637,7 @@ perform::output_func ()
             delta = current - last;
             long delta_us = delta * 1000;
 #endif
-            int bpm  = m_master_bus.get_bpm();
+            int bpm  = m_master_bus.get_beats_per_minute();
 
             /*
              * Delta time to ticks; get delta ticks.
@@ -1866,7 +1860,7 @@ perform::output_func ()
                 printf("[%3d][%8ld]\n", i * 100, stats_all[i]);
             }
             printf("\n\n-- clock width --\n");
-            int bpm  = m_master_bus.get_bpm();
+            int bpm  = m_master_bus.get_beats_per_minute();
             printf
             (
                 "optimal: [%d us]\n", int(clock_tick_duration_bogus(bpm, m_ppqn))
@@ -1930,11 +1924,11 @@ perform::handle_midi_control (int a_control, bool a_state)
     switch (a_control)
     {
     case c_midi_control_bpm_up:                 // printf("bpm up\n");
-        set_bpm(get_bpm() + 1);
+        set_beats_per_minute(get_beats_per_minute() + 1);
         break;
 
     case c_midi_control_bpm_dn:                 // printf("bpm dn\n");
-        set_bpm(get_bpm() - 1);
+        set_beats_per_minute(get_beats_per_minute() - 1);
         break;
 
     case c_midi_control_ss_up:                  // printf("ss up\n");
@@ -2397,7 +2391,7 @@ jack_timebase_callback
     pos->beats_per_bar = 4;
     pos->beat_type = 4;
     pos->ticks_per_beat = m_ppqn * 10;
-    pos->beats_per_minute = p->get_bpm();
+    pos->beats_per_minute = p->get_beats_per_minute();
 
     /*
      * Compute BBT info from frame number.  This is relatively simple

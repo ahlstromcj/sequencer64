@@ -1,6 +1,6 @@
-INSTALL for Sequencer64 v 0.9.9.5
+INSTALL for Sequencer64 v 0.9.9.6
 Chris Ahlstrom
-2015-09-10 to 2015-10-11
+2015-09-10 to 2015-10-30
 
 The current packaging for Sequencer64 is primarily aimed at developers.
 There is currently no configure script... it must be bootstrapped.
@@ -62,7 +62,15 @@ CONFIGURE OPTIONS FOR APPLICATION FEATURES:
 MACROS IN CODE:
 
     The following items are not yet part of the configure script, but can
-    be edited manually to achieve the desired setting;
+    be edited manually to achieve the desired setting:
+
+    SEQ64_USE_NEW_FONT
+
+        Already defined in the font.cpp module.  If defined, a new,
+        anti-aliased, bold font is used in the user-interface.  This
+        new font is implement in new XPM files in resources/pixmaps:
+        wen*.xpm.  The font is slightly larger, but changes the
+        user-interface sizes only to an infinitesmal degree.
 
     USE_GREY_GRID
 

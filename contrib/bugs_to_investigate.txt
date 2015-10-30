@@ -11,7 +11,8 @@ In no particular order...
    perfroll.
 -  Anyway to double-click a pattern to edit, without selecting it?
 -  Moving a pattern doesn't turn on any dirty bit, to allow an opportunity for
-   saving.  This is a legacy bug.
+   saving.  This is a legacy bug.  Tighten up the is-dirty handling for all
+   dialogs.
 -  Selecting note events is iffy, more so than in legacy.
 -  Would be nice to have the sequence editors and performance editor scroll to
    keep the progress bar in view.

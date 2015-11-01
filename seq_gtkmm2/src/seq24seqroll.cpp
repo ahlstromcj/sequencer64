@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-29
+ * \updates       2015-10-31
  * \license       GNU GPLv2 or above
  *
  */
@@ -146,7 +146,7 @@ Seq24SeqRollInput::on_button_press_event
                     )
                 )
                 {
-                    if (! (a_ev->state & GDK_CONTROL_MASK))
+                    if (! (a_ev->state & SEQ64_CONTROL_MASK))
                         sroll.m_seq.unselect();
 
                     numsel = sroll.m_seq.select_note_events
@@ -179,7 +179,7 @@ Seq24SeqRollInput::on_button_press_event
                     if
                     (
                         SEQ64_CLICK_LEFT(a_ev->button) &&
-                        ! (a_ev->state & GDK_CONTROL_MASK)
+                        ! (a_ev->state & SEQ64_CONTROL_MASK)
                     )
                     {
                         sroll.m_moving_init = true;
@@ -216,7 +216,7 @@ Seq24SeqRollInput::on_button_press_event
 
                     if (SEQ64_CLICK_CTRL_LEFT_MIDDLE(a_ev->button, a_ev->state))
                     {
-                        sroll.m_growing = true;         /* moving, normal x */
+                        sroll.m_growing = true;         /* moving, normal x  */
                         sroll.m_seq.get_selected_box    /* selected elements */
                         (
                             tick_s, note_h, tick_f, note_l
@@ -236,8 +236,8 @@ Seq24SeqRollInput::on_button_press_event
         if (SEQ64_CLICK_RIGHT(a_ev->button))
             set_adding(true, sroll);
     }
-    if (needs_update)                   /* if they clicked, something changed */
-        sroll.m_seq.set_dirty();       /* redraw_events();                   */
+    if (needs_update)               /* if they clicked, something changed */
+        sroll.m_seq.set_dirty();    /* redraw_events();                   */
 
     return true;
 }
@@ -314,7 +314,7 @@ Seq24SeqRollInput::on_button_release_event
 
             sroll.convert_xy(delta_x, delta_y, delta_tick, delta_note);
             sroll.m_seq.push_undo();
-            if (a_ev->state & GDK_SHIFT_MASK)
+            if (a_ev->state & SEQ64_SHIFT_MASK)
                 sroll.m_seq.stretch_selected(delta_tick);
             else
                 sroll.m_seq.grow_selected(delta_tick);
@@ -335,20 +335,20 @@ Seq24SeqRollInput::on_button_release_event
 
         bool addmode_exit = ! global_allow_mod4_mode;
         if (! addmode_exit)
-            addmode_exit = ! (a_ev->state & GDK_MOD4_MASK); // Mod4 held?
+            addmode_exit = ! (a_ev->state & SEQ64_MOD4_MASK); /* Mod4 held? */
 
         if (addmode_exit)
             set_adding(false, sroll);
     }
-    sroll.m_selecting = false;      /* turn it all off */
+    sroll.m_selecting = false;      /* turn it all off                      */
     sroll.m_moving = false;
     sroll.m_growing = false;
     sroll.m_paste = false;
     sroll.m_moving_init = false;
     sroll.m_painting = false;
     sroll.m_seq.unpaint_all();
-    if (needs_update)               /* if they clicked, something changed */
-        sroll.m_seq.set_dirty();    /* redraw_events();                   */
+    if (needs_update)               /* if they clicked, something changed   */
+        sroll.m_seq.set_dirty();    /* redraw_events();                     */
 
     return true;
 }

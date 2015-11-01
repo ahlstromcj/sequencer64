@@ -24,12 +24,16 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-09-20
+ * \updates       2015-10-30
  * \license       GNU GPLv2 or above
  *
  */
 
-#include <string.h>                    // memcpy()
+#ifdef  USE_SEQ42_PATCHES
+#include <fstream>
+#endif
+
+#include <string.h>                    /* memcpy()  */
 
 #include "easy_macros.h"
 #include "event.hpp"
@@ -37,9 +41,25 @@
 namespace seq64
 {
 
-/*
- * Section: event
- */
+#ifdef  USE_SEQ42_PATCHES
+
+void
+event::save (std::ofstream & file)
+{
+    file.write((const char *) &m_timestamp, sizeof(long));
+    file.write((const char *) &m_status, sizeof(char));
+    file.write((const char *) &m_data, sizeof(char) * 2);
+}
+
+void
+event::load (std::ifstream & file)
+{
+    file.read((char *) &m_timestamp, sizeof(long));
+    file.read((char *) &m_status, sizeof(char));
+    file.read((char *) &m_data, sizeof(char) * 2);
+}
+
+#endif  // USE_SEQ42_PATCHES
 
 /**
  *  This constructor simply initializes all of the class members.
@@ -49,7 +69,7 @@ event::event ()
  :
     m_timestamp (0),
     m_status    (EVENT_NOTE_OFF),
-    m_data      (),                 // small array
+    m_data      (),                 /* a two-element array  */
     m_sysex     (nullptr),
     m_size      (0),
     m_linked    (nullptr),
@@ -64,14 +84,12 @@ event::event ()
 
 /**
  *  This destructor explicitly deletes m_sysex and sets it to null.
+ *  The start_sysex() function does what we need.
  */
 
 event::~event ()
 {
-    if (not_nullptr(m_sysex))
-        delete [] m_sysex;
-
-    m_sysex = nullptr;
+    start_sysex();                      /* tricky code */
 }
 
 /**
@@ -115,15 +133,25 @@ bool
 event::operator < (const event & rhs) const
 {
     if (m_timestamp == rhs.m_timestamp)
-        return (get_rank() < rhs.get_rank());
+        return get_rank() < rhs.get_rank();
     else
-        return (m_timestamp < rhs.m_timestamp);
+        return m_timestamp < rhs.m_timestamp;
 }
 
 /**
  *  Sets the m_status member to the value of a_status.  If a_status is a
  *  non-channel event, then the channel portion of the status is cleared using
- *  a bitwise AND against EVENT_CLEAR_CHAN_MASK..
+ *  a bitwise AND against EVENT_CLEAR_CHAN_MASK.
+ *
+ *  Is this a better way to do it?
+ *
+ *      m_status = (unsigned char)(status) & EVENT_CLEAR_CHAN_MASK;
+ *
+ *  Found in yet another fork of seq24:
+ *
+ *      // ORL fait de la merde
+ *
+ *  He also provided a very similar routine: set_status_midibus().
  */
 
 void
@@ -133,110 +161,6 @@ event::set_status (char status)
         m_status = status;
     else
         m_status = char(status & EVENT_CLEAR_CHAN_MASK);
-}
-
-/**
- *  Sets m_status to EVENT_MIDI_CLOCK;
- */
-
-void
-event::make_clock ()
-{
-    m_status = (unsigned char)(EVENT_MIDI_CLOCK);
-}
-
-/**
- *  Clears the most-significant-bit of the d1 parameter, and sets it
- *  into the first byte of m_data.
- *
- * \param d1
- *      The byte value to set.  We should make these all "midibytes".
- */
-
-void
-event::set_data (char d1)
-{
-    m_data[0] = d1 & 0x7F;
-}
-
-/**
- *  Clears the most-significant-bit of both parameters, and sets them
- *  into the first and second bytes of m_data.
- *
- * \param d1
- *      The first byte value to set.  We should make these all "midibytes".
- *
- * \param d2
- *      The second byte value to set.  We should make these all "midibytes".
- */
-
-void
-event::set_data (char d1, char d2)
-{
-    m_data[0] = d1 & 0x7F;
-    m_data[1] = d2 & 0x7F;
-}
-
-/**
- *  Increments the second data byte (m_data[1]) and clears the most
- *  significant bit.
- */
-
-void
-event::increment_data2 ()
-{
-    m_data[1] = (m_data[1] + 1) & 0x7F;
-}
-
-/**
- *  Decrements the second data byte (m_data[1]) and clears the most
- *  significant bit.
- */
-
-void
-event::decrement_data2 ()
-{
-    m_data[1] = (m_data[1] - 1) & 0x7F;
-}
-
-/**
- *  Increments the first data byte (m_data[1]) and clears the most
- *  significant bit.
- */
-
-void
-event::increment_data1 ()
-{
-    m_data[0] = (m_data[0] + 1) & 0x7F;
-}
-
-/**
- *  Decrements the first data byte (m_data[1]) and clears the most
- *  significant bit.
- */
-
-void
-event::decrement_data1 ()
-{
-    m_data[0] = (m_data[0] - 1) & 0x7F;
-}
-
-/**
- *  Retrieves the two data bytes from m_data[] and copies each into its
- *  respective parameter.
- *
- * \param d0 [out]
- *      The return reference for the first byte.
- *
- * \param d1 [out]
- *      The return reference for the first byte.
- */
-
-void
-event::get_data (unsigned char & d0, unsigned char & d1)
-{
-    d0 = m_data[0];
-    d1 = m_data[1];
 }
 
 /**
@@ -254,44 +178,61 @@ event::start_sysex ()
 }
 
 /**
- *  Appends SYSEX data to a new buffer.  First, a buffer of size
- *  m_size+a_size is created.  The existing SYSEX data (stored in m_sysex)
- *  is copied to this buffer.  Then the data represented by a_data and
- *  a_size is appended to that data buffer.  Then the original SYSEX
- *  buffer, m_sysex, is deleted, and m_sysex is assigned to the new
- *  buffer..
+ *  Appends SYSEX data to a new buffer.  First, a buffer of size m_size+dsize
+ *  is created.  The existing SYSEX data (stored in m_sysex) is copied to this
+ *  buffer.  Then the data represented by data and dsize is appended to that
+ *  data buffer.  Then the original SYSEX buffer, m_sysex, is deleted, and
+ *  m_sysex is assigned to the new buffer.
  *
- * \warning
- *      This function does not check any pointers.
+ * \param data
+ *      Provides the additional SYSEX data.  If not provided, nothing is done,
+ *      and false is returned.
  *
- * \param a_data
- *      Provides the additional SYSEX data.
- *
- * \param a_size
- *      Provides the size of the additional SYSEX data.
+ * \param dsize
+ *      Provides the size of the additional SYSEX data.  If not provided,
+ *      nothing is done.
  *
  * \return
  *      Returns false if there was an EVENT_SYSEX_END byte in the appended
- *      data.
+ *      data, or if an error occurred, and the caller needs to stop trying to
+ *      process the data.
  */
 
 bool
-event::append_sysex (unsigned char * a_data, long a_size)
+event::append_sysex (unsigned char * data, long dsize)
 {
-    bool result = true;
-    unsigned char * buffer = new unsigned char[m_size + a_size];
-    memcpy(buffer, m_sysex, m_size);                // copy old and append
-    memcpy(&buffer[m_size], a_data, a_size);
-    delete [] m_sysex;
-    m_size = m_size + a_size;
-    m_sysex = buffer;
-    for (int i = 0; i < a_size; i++)
+    bool result = false;
+    if (not_nullptr(data) && (dsize > 0))
     {
-        if (a_data[i] == EVENT_SYSEX_END)
+        unsigned char * buffer = new unsigned char[m_size + dsize];
+        if (not_nullptr(buffer))
         {
-            result = false;
-            break;                                  // done, already false now
+            if (not_nullptr(m_sysex))
+            {
+                memcpy(buffer, m_sysex, m_size);    /* copy original data   */
+                delete [] m_sysex;
+            }
+            memcpy(&buffer[m_size], data, dsize);   /* append the new data  */
+            m_size += dsize;
+            m_sysex = buffer;                       /* save the pointer     */
+            result = true;
         }
+        else
+        {
+            errprint("event::append_sysex(): bad allocation");
+        }
+        for (int i = 0; i < dsize; ++i)
+        {
+            if (data[i] == EVENT_SYSEX_END)
+            {
+                result = false;
+                break;                                  // done, already false now
+            }
+        }
+    }
+    else
+    {
+        errprint("event::append_sysex(): null parameters");
     }
     return result;
 }
@@ -365,3 +306,4 @@ event::get_rank () const
  *
  * vim: sw=4 ts=4 wm=4 et ft=cpp
  */
+

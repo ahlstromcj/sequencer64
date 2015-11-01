@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-27
+ * \updates       2015-10-31
  * \license       GNU GPLv2 or above
  *
  */
@@ -34,6 +34,7 @@
 #include <gtkmm/adjustment.h>
 
 #include "font.hpp"
+#include "gdk_basic_keys.h"
 #include "perform.hpp"
 #include "seqdata.hpp"
 #include "sequence.hpp"
@@ -322,11 +323,6 @@ seqdata::draw_line_on_window ()
     int x, y, w, h;
     m_gc->set_foreground(black());
     set_line(Gdk::LINE_SOLID);
-//  m_window->draw_drawable                         /* replace old */
-//  (
-//      m_gc, m_pixmap, m_old.x, m_old.y, m_old.x, m_old.y,
-//      m_old.width + 1, m_old.height + 1
-//  );
     draw_drawable                                   /* replace old */
     (
         m_old.x, m_old.y, m_old.x, m_old.y,
@@ -366,7 +362,6 @@ seqdata::change_horz ()
 void
 seqdata::force_draw ()
 {
-//  m_window->draw_drawable(m_gc, m_pixmap, 0, 0, 0, 0, m_window_x, m_window_y);
     draw_drawable(0, 0, 0, 0, m_window_x, m_window_y);
 }
 
@@ -416,11 +411,6 @@ seqdata::on_realize ()
 bool
 seqdata::on_expose_event (GdkEventExpose * a_e)
 {
-//  m_window->draw_drawable
-//  (
-//      m_gc, m_pixmap, a_e->area.x, a_e->area.y,
-//      a_e->area.x, a_e->area.y, a_e->area.width, a_e->area.height
-//  );
     draw_drawable
     (
         a_e->area.x, a_e->area.y, a_e->area.x, a_e->area.y,
@@ -431,8 +421,8 @@ seqdata::on_expose_event (GdkEventExpose * a_e)
 
 /**
  *  Implements the on-scroll event.  This scroll event only handles basic
- *  scrolling, without any modifier keys such as GDK_CONTROL_MASK or
- *  GDK_SHIFT_MASK.
+ *  scrolling, without any modifier keys such as SEQ64_CONTROL_MASK or
+ *  SEQ64K_SHIFT_MASK.
  */
 
 bool
@@ -443,10 +433,10 @@ seqdata::on_scroll_event (GdkEventScroll * a_ev)
     if ((a_ev->state & modifiers) != 0)
         return false;
 
-    if (a_ev->direction == GDK_SCROLL_UP)
+    if (CAST_EQUIVALENT(a_ev->direction, SEQ64_SCROLL_UP))
         m_seq.increment_selected(m_status, m_cc);
 
-    if (a_ev->direction == GDK_SCROLL_DOWN)
+    if (CAST_EQUIVALENT(a_ev->direction, SEQ64_SCROLL_DOWN))
         m_seq.decrement_selected(m_status, m_cc);
 
     update_pixmap();
@@ -461,7 +451,7 @@ seqdata::on_scroll_event (GdkEventScroll * a_ev)
 bool
 seqdata::on_button_press_event (GdkEventButton * a_p0)
 {
-    if (a_p0->type == GDK_BUTTON_PRESS)
+    if (CAST_EQUIVALENT(a_p0->type, SEQ64_BUTTON_PRESS))
     {
         m_seq.push_undo();
         m_drop_x = (int) a_p0->x + m_scroll_offset_x; /* set values for line  */
@@ -526,3 +516,4 @@ seqdata::on_size_allocate (Gtk::Allocation & a_r)
  *
  * vim: sw=4 ts=4 wm=4 et ft=cpp
  */
+

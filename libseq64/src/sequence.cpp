@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-30
+ * \updates       2015-10-31
  * \license       GNU GPLv2 or above
  *
  */
@@ -37,7 +37,6 @@
 
 namespace seq64
 {
-
 
 /**
  *  A static clipboard for holding pattern/sequence events.
@@ -52,16 +51,16 @@ event_list sequence::m_events_clipboard;
 sequence::sequence (int ppqn)
  :
     m_events                    (),
-    m_triggers                  (),
-    m_trigger_clipboard         (),
+    m_triggers                  (*this),
+//  m_trigger_clipboard         (),
     m_events_undo               (),
     m_events_redo               (),
-    m_triggers_undo             (),
-    m_triggers_redo             (),
+//  m_triggers_undo             (),
+//  m_triggers_redo             (),
     m_iterator_play             (),
     m_iterator_draw             (),
-    m_iterator_play_trigger     (),
-    m_iterator_draw_trigger     (),
+//  m_iterator_play_trigger     (),
+//  m_iterator_draw_trigger     (),
     m_midi_channel              (0),
     m_bus                       (0),
     m_song_mute                 (false),
@@ -74,7 +73,7 @@ sequence::sequence (int ppqn)
     m_quantized_rec             (false),
     m_thru                      (false),
     m_queued                    (false),
-    m_trigger_copied            (false),
+//  m_trigger_copied            (false),
     m_dirty_main                (true),
     m_dirty_edit                (true),
     m_dirty_perf                (true),
@@ -84,7 +83,7 @@ sequence::sequence (int ppqn)
     m_name                      (c_dummy),
     m_last_tick                 (0),
     m_queued_tick               (0),
-    m_trigger_offset            (0),
+    m_trigger_offset            (0),            // needed for record-keeping
     m_maxbeats                  (c_maxbeats),
     m_ppqn                      (0),            // set in constructor body
     m_length                    (0),            // set in constructor body
@@ -97,6 +96,8 @@ sequence::sequence (int ppqn)
     m_ppqn = (ppqn == SEQ64_USE_DEFAULT_PPQN) ? global_ppqn : ppqn ;
     m_length = 4 * m_ppqn;
     m_snap_tick = m_ppqn / 4;
+    m_triggers.set_ppqn(m_ppqn);
+    m_triggers.set_length(m_length);
     for (int i = 0; i < c_midi_notes; i++)      /* no notes are playing */
         m_playing_notes[i] = 0;
 }
@@ -250,8 +251,7 @@ sequence::pop_redo ()
 }
 
 /**
- *  Pushes the list-trigger into the trigger undo-list, then flags each
- *  item in the undo-list as unselected.
+ *  Calls triggers::push_undo() with locking.
  *
  * \threadsafe
  */
@@ -260,33 +260,18 @@ void
 sequence::push_trigger_undo ()
 {
     automutex locker(m_mutex);
-    m_triggers_undo.push(m_triggers);
-    for
-    (
-        Triggers::iterator i = m_triggers_undo.top().begin();
-        i != m_triggers_undo.top().end(); i++
-    )
-    {
-        i->m_selected = false;
-    }
+    m_triggers.push_undo();
 }
 
 /**
- *  If the trigger undo-list has any items, the list-trigger is pushed
- *  9nto the redo list, the top of the undo-list is coped into the
- *  list-trigger, and then pops from the undo-list.
+ *  Calls triggers::pop_undo() with locking.
  */
 
 void
 sequence::pop_trigger_undo ()
 {
     automutex locker(m_mutex);
-    if (m_triggers_undo.size() > 0)
-    {
-        m_triggers_redo.push(m_triggers);
-        m_triggers = m_triggers_undo.top();
-        m_triggers_undo.pop();
-    }
+    m_triggers.pop_undo();
 }
 
 /**
@@ -428,6 +413,17 @@ sequence::off_queued ()
  *
  *  It turns the sequence off after we play in this frame.
  *
+ * \param tick
+ *      Provides the current end-tick value.
+ *
+ * \param playback_mode
+ *      Provides how playback is managed.
+ *      We think it goes like this:
+ *      True indicates that it is live playback, controlled by the main windows
+ *      and its layout of patterns and triggers.
+ *      False indicate that the performance/song editor is in control of
+ *      playback.
+ *
  * \threadsafe
  */
 
@@ -435,12 +431,9 @@ void
 sequence::play (long tick, bool playback_mode)
 {
     automutex locker(m_mutex);
-    bool trigger_turning_off = false;       /* turns off after frame play */
-    long times_played = m_last_tick / m_length;
-    long offset_base = times_played * m_length;
-    long start_tick = m_last_tick;
-    long end_tick = tick;
-    long trigger_offset = 0;
+    bool trigger_turning_off = false;       /* turn off after frame play    */
+    long start_tick = m_last_tick;          /* modified in triggers::play() */
+    long end_tick = tick;                   /* ditto !!!                    */
     if (m_song_mute)
     {
         set_playing(false);
@@ -449,76 +442,44 @@ sequence::play (long tick, bool playback_mode)
     {
         if (playback_mode)          /* if using in-sequence on/off triggers */
         {
-            bool trigger_state = false;
-            long trigger_tick = 0;
-            for
-            (
-                Triggers::iterator i = m_triggers.begin();
-                i != m_triggers.end(); i++
-            )
-            {
-                if (i->m_tick_start <= end_tick)
-                {
-                    trigger_state = true;
-                    trigger_tick = i->m_tick_start;
-                    trigger_offset = i->m_offset;
-                }
-                if (i->m_tick_end <= end_tick)
-                {
-                    trigger_state = false;
-                    trigger_tick = i->m_tick_end;
-                    trigger_offset = i->m_offset;
-                }
-                if (i->m_tick_start > end_tick || i->m_tick_end > end_tick)
-                    break;
-            }
+            /*
+             * A return value and side-effects.
+             */
 
-            /* Had triggers in the slice, not equal to current state. */
-
-            if (trigger_state != m_playing)
-            {
-                if (trigger_state)                  /* we are turning on */
-                {
-                    if (trigger_tick < m_last_tick)
-                        start_tick = m_last_tick;
-                    else
-                        start_tick = trigger_tick;
-
-                    set_playing(true);
-                }
-                else
-                {
-                    end_tick = trigger_tick;        /* on, and turning off */
-                    trigger_turning_off = true;
-                }
-            }
-            if (m_triggers.size() == 0 && m_playing)
-                set_playing(false);
+            trigger_turning_off = m_triggers.play(start_tick, end_tick);
         }
     }
-    set_trigger_offset(trigger_offset);
+
+    /*
+     * triggers::play() can call this function on its parent's
+     * behalf.  It could also fill in the start_tick and end_tick values!
+     *
+     * set_trigger_offset(trigger_offset);      // set m_trigger_offset
+     */
 
     long start_tick_offset = (start_tick + m_length - m_trigger_offset);
     long end_tick_offset = (end_tick + m_length - m_trigger_offset);
     if (m_playing)                              /* play the notes in frame */
     {
+        long times_played = m_last_tick / m_length; /* weird, it ever non-zero?  */
+        long offset_base = times_played * m_length; /* ditto, m_length cancels   */
         event_list::iterator e = m_events.begin();
         while (e != m_events.end())
         {
             event & er = DREF(e);
-            if
-            (
-                (er.get_timestamp() + offset_base) >= (start_tick_offset) &&
-                (er.get_timestamp() + offset_base) <= (end_tick_offset)
-            )
-            {
-                put_event_on_bus(&er);
-            }
-            else if ((er.get_timestamp() + offset_base) >  end_tick_offset)
-            {
-                break;
-            }
-            e++;                                    /* advance              */
+
+            /*
+             * Hope we can do all this within one tick, so that one get of the
+             * timestamp is sufficient.
+             */
+
+            long stamp = er.get_timestamp() + offset_base;
+            if (stamp >= start_tick_offset && stamp <= end_tick_offset)
+                put_event_on_bus(&er);              /* frame still going    */
+            else if (stamp > end_tick_offset)
+                break;                              /* frame is done        */
+
+            ++e;                                    /* go to next event     */
             if (e == m_events.end())                /* did we hit the end ? */
             {
                 e = m_events.begin();
@@ -699,12 +660,6 @@ sequence::get_selected_box
         if (DREF(i).is_selected())
         {
             long time = DREF(i).get_timestamp();
-
-            /*
-             * Can't check on/off here, it screws up the seqevent
-             * selection, which has no "off".
-             */
-
             if (time < tick_s)
                 tick_s = time;
 
@@ -1068,9 +1023,9 @@ sequence::move_selected_notes (long delta_tick, int delta_note)
                     timestamp -= m_length;
 
                 if (timestamp < 0)
-                    timestamp = m_length + timestamp;
+                    timestamp += m_length;
 
-                if ((timestamp == 0) && !noteon)
+                if ((timestamp == 0) && ! noteon)
                     timestamp = m_length - 2;
 
                 if ((timestamp == m_length) && noteon)
@@ -1099,7 +1054,7 @@ void
 sequence::stretch_selected (long delta_tick)
 {
     automutex locker(m_mutex);
-    int first_ev = 0x7fffffff;                  /* timestamp lower limit */
+    int first_ev = 0x7fffffff;       // INT_MAX /* timestamp lower limit */
     int last_ev = 0x00000000;                   /* timestamp upper limit */
     for (event_list::iterator i = m_events.begin(); i != m_events.end(); i++)
     {
@@ -1129,7 +1084,7 @@ sequence::stretch_selected (long delta_tick)
                 event new_e = *e;
                 new_e.set_timestamp
                 (
-                    long((e->get_timestamp() - first_ev) * ratio) + first_ev
+                    long(ratio * (e->get_timestamp() - first_ev)) + first_ev
                 );
                 new_e.unmark();
                 add_event(&new_e);
@@ -1162,14 +1117,14 @@ sequence::grow_selected (long delta_tick)
 
             /*
              * If timestamp + delta is greater that m_length, we do round
-             * robin magic.
+             * robin magic.  See similar code in move_selected_notes().
              */
 
             if (len > m_length)
                 len -= m_length;
 
             if (len < 0)
-                len = m_length + len;
+                len += m_length;
 
             if (len == 0)
                 len = m_length - 2;
@@ -1462,7 +1417,7 @@ sequence::change_event_data_range
  *  Adds a note of a given length and  note value, at a given tick
  *  location.  It adds a single note-on / note-off pair.
  *
- *  The a_paint parameter indicates if we care about the painted event,
+ *  The paint parameter indicates if we care about the painted event,
  *  so then the function runs though the events and deletes the painted
  *  ones that overlap the ones we want to add.
  *
@@ -1540,20 +1495,20 @@ sequence::add_note (long tick, long length, int note, bool paint)
 void
 sequence::add_event
 (
-    long a_tick, unsigned char a_status,
-    unsigned char a_d0, unsigned char a_d1, bool a_paint
+    long tick, unsigned char status,
+    unsigned char d0, unsigned char d1, bool paint
 )
 {
     automutex locker(m_mutex);
-    if (a_tick >= 0)
+    if (tick >= 0)
     {
-        if (a_paint)
+        if (paint)
         {
             event_list::iterator i;
             for (i = m_events.begin(); i != m_events.end(); i++)
             {
                 event & er = DREF(i);
-                if (er.is_painted() && er.get_timestamp() == a_tick)
+                if (er.is_painted() && er.get_timestamp() == tick)
                 {
                     er.mark();
                     if (er.is_linked())
@@ -1565,12 +1520,12 @@ sequence::add_event
             remove_marked();
         }
         event e;
-        if (a_paint)
+        if (paint)
             e.paint();                              // ???
 
-        e.set_status(a_status);
-        e.set_data(a_d0, a_d1);
-        e.set_timestamp(a_tick);
+        e.set_status(status);
+        e.set_data(d0, d1);
+        e.set_timestamp(tick);
         add_event(&e);
     }
     verify_and_link();
@@ -1615,9 +1570,8 @@ sequence::stream_event (event * ev)
         }
     }
     if (m_thru)
-    {
         put_event_on_bus(ev);
-    }
+
     link_new();
     if (m_quantized_rec && global_is_pattern_playing)
     {
@@ -1776,80 +1730,16 @@ sequence::clear_triggers ()
 /**
  *  Adds a trigger.  If a_state = true, the range is on.
  *  If a_state = false, the range is off.
- *
- *  What is this?
- *
-\verbatim
-   is      ie
-   <      ><        ><        >
-   es             ee
-   <               >
-   XX
-
-   es ee
-   <   >
-   <>
-
-   es    ee
-   <      >
-   <    >
-
-   es     ee
-   <       >
-   <    >
-\endverbatim
 */
 
 void
 sequence::add_trigger
 (
-    long a_tick, long a_length, long a_offset, bool a_adjust_offset
+    long tick, long len, long offset, bool fixoffset
 )
 {
     automutex locker(m_mutex);
-    trigger e;
-    if (a_adjust_offset)
-        e.m_offset = adjust_offset(a_offset);
-    else
-        e.m_offset = a_offset;
-
-    e.m_selected = false;
-    e.m_tick_start = a_tick;
-    e.m_tick_end = a_tick + a_length - 1;
-
-    Triggers::iterator i = m_triggers.begin();
-    while (i != m_triggers.end())
-    {
-        if                              /* Is it inside the new one ? erase */
-        (
-            i->m_tick_start >= e.m_tick_start &&
-            i->m_tick_end <= e.m_tick_end
-        )
-        {
-            m_triggers.erase(i);
-            i = m_triggers.begin();
-            continue;
-        }
-        else if                         /* Is the event's end inside? */
-        (
-            i->m_tick_end >= e.m_tick_end &&
-            i->m_tick_start <= e.m_tick_end
-        )
-        {
-            i->m_tick_start = e.m_tick_end + 1;
-        }
-        else if                     /* is the last start inside the new end? */
-        (
-            i->m_tick_end   >= e.m_tick_start &&
-            i->m_tick_start <= e.m_tick_start
-        )
-        {
-            i->m_tick_end = e.m_tick_start - 1;
-        }
-        ++i;
-    }
-    m_triggers.push_front(e);
-    m_triggers.sort();
+    m_triggers.add(tick, len, offset, fixoffset);
 }
 
 /**
@@ -1864,12 +1754,10 @@ sequence::add_trigger
  *      The position to examine.
  *
  * \param start
- *      The destination for the starting tick (m_tick_start) of the
- *      matching trigger.
+ *      The destination for the starting tick of the matching trigger.
  *
- * \param end
- *      The destination for the ending tick (m_tick_end) of the
- *      matching trigger.
+ * \param ender
+ *      The destination for the ending tick of the matching trigger.
  *
  * \return
  *      Returns true if a trigger was found whose start/end ticks
@@ -1878,21 +1766,10 @@ sequence::add_trigger
  */
 
 bool
-sequence::intersectTriggers (long position, long & start, long & end)
+sequence::intersect_triggers (long position, long & start, long & ender)
 {
     automutex locker(m_mutex);
-    Triggers::iterator i = m_triggers.begin();
-    while (i != m_triggers.end())
-    {
-        if (i->m_tick_start <= position && position <= i->m_tick_end)
-        {
-            start = i->m_tick_start;
-            end = i->m_tick_end;
-            return true;
-        }
-        ++i;
-    }
-    return false;
+    return m_triggers.intersect(position, start, ender);
 }
 
 /**
@@ -1912,12 +1789,10 @@ sequence::intersectTriggers (long position, long & start, long & end)
  *      I think this is the note value we might be looking for ???
  *
  * \param start
- *      The destination for the starting tick (m_tick_start) of the
- *      matching trigger.
+ *      The destination for the starting timestamp of the matching note.
  *
- * \param end
- *      The destination for the ending tick (m_tick_end) of the
- *      matching trigger.
+ * \param ender
+ *      The destination for the ending timestamp of the matching note.
  *
  * \param note
  *      The destination for the note of the matching event.
@@ -1929,7 +1804,7 @@ sequence::intersectTriggers (long position, long & start, long & end)
  */
 
 bool
-sequence::intersectNotes
+sequence::intersect_notes
 (
     long position, long position_note, long & start, long & ender, long & note
 )
@@ -1975,8 +1850,8 @@ sequence::intersectNotes
 /**
  *  This function examines each non-note event in the event list.
  *
- *  If the given position is between the current trigger's tick-start and
- *  tick-end values, the these values are copied to the start and end
+ *  If the given position is between the current notes's timestamp-start and
+ *  timestamp-end values, the these values are copied to the posstart and posend
  *  parameters, respectively, and then we exit.
  *
  * \threadsafe
@@ -1991,34 +1866,31 @@ sequence::intersectNotes
  *      The desired status value.
  *
  * \param start
- *      The destination for the starting tick (m_tick_start) of the
- *      matching trigger.
+ *      The destination for the starting timestamp  of the matching trigger.
  *
  * \return
- *      Returns true if a event was found whose start/end ticks
+ *      Returns true if a event was found whose start/end timestamps
  *      contained the position.  Otherwise, false is returned, and the
  *      start and end return parameters should not be used.
  */
 
 bool
-sequence::intersectEvents
+sequence::intersect_events
 (
     long posstart, long posend, long status, long & start
 )
 {
     automutex locker(m_mutex);
-    for (event_list::iterator on = m_events.begin(); on != m_events.end(); on++)
+    long poslength = posend - posstart;
+    for (event_list::iterator on = m_events.begin(); on != m_events.end(); ++on)
     {
         event & eon = DREF(on);
         if (status == eon.get_status())
         {
-            if
-            (
-                eon.get_timestamp() <= posstart &&
-                posstart <= (eon.get_timestamp() + (posend - posstart))
-            )
+            long ts = eon.get_timestamp();
+            if (ts <= posstart && posstart <= (ts + poslength))
             {
-                start = eon.get_timestamp();
+                start = eon.get_timestamp();    /* side-effect return value */
                 return true;
             }
         }
@@ -2029,31 +1901,23 @@ sequence::intersectEvents
 /**
  *  Grows a trigger.
  *
+ * \param tickfrom
+ *      The desired from-value back which to expand the trigger, if necessary.
+ *
+ * \param tickto
+ *      The desired to-value towards which to expand the trigger, if necessary.
+ *
+ * \param len
+ *      The additional length to append to tickto for the check.
+ *
  * \threadsafe
  */
 
 void
-sequence::grow_trigger (long a_tick_from, long a_tick_to, long a_length)
+sequence::grow_trigger (long tickfrom, long tickto, long len)
 {
     automutex locker(m_mutex);
-    for (Triggers::iterator i = m_triggers.begin(); i != m_triggers.end(); i++)
-    {
-        /* Find our pair */
-
-        if (i->m_tick_start <= a_tick_from && i->m_tick_end >= a_tick_from)
-        {
-            long start = i->m_tick_start;
-            long end   = i->m_tick_end;
-            if (a_tick_to < start)
-                start = a_tick_to;
-
-            if ((a_tick_to + a_length - 1) > end)
-                end = (a_tick_to + a_length - 1);
-
-            add_trigger(start, end - start + 1, i->m_offset);
-            break;
-        }
-    }
+    m_triggers.grow(tickfrom, tickto, len);
 }
 
 /**
@@ -2063,19 +1927,10 @@ sequence::grow_trigger (long a_tick_from, long a_tick_to, long a_length)
  */
 
 void
-sequence::del_trigger (long a_tick)
+sequence::del_trigger (long tick)
 {
     automutex locker(m_mutex);
-    Triggers::iterator i = m_triggers.begin();
-    while (i != m_triggers.end())
-    {
-        if (i->m_tick_start <= a_tick && i->m_tick_end >= a_tick)
-        {
-            m_triggers.erase(i);
-            break;
-        }
-        ++i;
-    }
+    m_triggers.remove(tick);
 }
 
 /**
@@ -2094,10 +1949,7 @@ sequence::set_trigger_offset (long trigger_offset)
 }
 
 /**
- *  Splits the trigger given by the parameter into two triggers.  The
- *  original trigger ends 1 tick before the a_split_tick parameter,
- *  and the new trigger starts at a_split_tick and ends where the original
- *  trigger ended.
+ *  Splits the trigger given by the parameter into two triggers.
  *
  *  This is the private overload of split_trigger.
  *
@@ -2107,22 +1959,16 @@ sequence::set_trigger_offset (long trigger_offset)
  *      Provides the original trigger, and also holds the changes made to
  *      that trigger as it is shortened.
  *
- * \param a_split_tick
+ * \param splittick
  *      The position just after where the original trigger will be
  *      truncated, and the new trigger begins.
  */
 
 void
-sequence::split_trigger (trigger & trig, long a_split_tick)
+sequence::split_trigger (trigger & trig, long splittick)
 {
     automutex locker(m_mutex);
-    long new_tick_end   = trig.m_tick_end;
-    long new_tick_start = a_split_tick;
-    trig.m_tick_end = a_split_tick - 1;
-
-    long length = new_tick_end - new_tick_start;
-    if (length > 1)
-        add_trigger(new_tick_start, length + 1, trig.m_offset);
+    m_triggers.split(trig, splittick);
 }
 
 /**
@@ -2134,119 +1980,27 @@ sequence::split_trigger (trigger & trig, long a_split_tick)
  */
 
 void
-sequence::split_trigger (long a_tick)
+sequence::split_trigger (long splittick)
 {
     automutex locker(m_mutex);
-    Triggers::iterator i = m_triggers.begin();
-    while (i != m_triggers.end())
-    {
-        /* trigger greater than L and R */
-
-        if (i->m_tick_start <= a_tick && i->m_tick_end >= a_tick)
-        {
-            long tick = i->m_tick_end - i->m_tick_start;
-            tick += 1;
-            tick /= 2;
-            split_trigger(*i, i->m_tick_start + tick);
-            break;
-        }
-        ++i;
-    }
+    m_triggers.split(splittick);
 }
-
-/**
- *  Not sure what these diagrams are for yet.
- *
-\verbatim
-      |...|...|...|...|...|...|...
-
-      0123456789abcdef0123456789abcdef
-      [      ][      ][      ][      ][      ][
-
-      [  ][      ][  ][][][][][      ]  [  ][  ]
-      0   4       4   0 7 4 2 0         6   2
-      0   4       4   0 1 4 6 0         2   6 inverse offset
-
-      [              ][              ][              ]
-      [  ][      ][  ][][][][][      ]  [  ][  ]
-      0   c       4   0 f c a 8         e   a
-      0   4       c   0 1 4 6 8         2   6  inverse offset
-
-      [                              ][
-      [  ][      ][  ][][][][][      ]  [  ][  ]
-      k   g f c a 8
-      0   4       c   g h k m n       inverse offset
-
-      0123456789abcdefghijklmonpq
-      ponmlkjihgfedcba9876543210
-      0fedcba9876543210fedcba9876543210fedcba9876543210fedcba9876543210
-\endverbatim
- *
- */
 
 /**
  *  Adjusts trigger offsets to the length of ???,
  *  for all triggers, and undo triggers.
  *
  * \threadsafe
+ *
+ *  Might can get rid of this function?
  */
 
 void
-sequence::adjust_trigger_offsets_to_length (long a_new_len)
+sequence::adjust_trigger_offsets_to_length (long newlength)
 {
     automutex locker(m_mutex);
-    for (Triggers::iterator i = m_triggers.begin(); i != m_triggers.end(); i++)
-    {
-        i->m_offset = adjust_offset(i->m_offset);
-        i->m_offset = m_length - i->m_offset;           // flip
-
-        long inverse_offset = m_length - (i->m_tick_start % m_length);
-        long local_offset = (inverse_offset - i->m_offset);
-        local_offset %= m_length;
-
-        long inverse_offset_new = a_new_len - (i->m_tick_start % a_new_len);
-        long new_offset = inverse_offset_new - local_offset;
-        i->m_offset = (new_offset % a_new_len);
-        i->m_offset = a_new_len - i->m_offset;
-    }
+    m_triggers.adjust_offsets_to_length(newlength);
 }
-
-/**
- *  Not sure what these diagrams are for yet.
- *
-\verbatim
-
-... a
-[      ][      ]
-...
-... a
-...
-
-5   7    play
-3        offset
-8   10   play
-
-X...X...X...X...X...X...X...X...X...X...
-L       R
-[        ] [     ]  []  orig
-[                    ]
-
-        <<
-        [     ]    [  ][ ]  [] split on the R marker, shift first
-        [     ]        [     ]
-        delete middle
-        [     ][ ]  []         move ticks
-        [     ][     ]
-
-        L       R
-        [     ][ ] [     ]  [] split on L
-        [     ][             ]
-
-        [     ]        [ ] [     ]  [] increase all after L
-        [     ]        [             ]
-\endverbatim
- *
- */
 
 /**
  *  Copies triggers to...
@@ -2255,139 +2009,43 @@ L       R
  */
 
 void
-sequence::copy_triggers (long a_start_tick, long a_distance)
+sequence::copy_triggers (long starttick, long distance)
 {
-    long from_start_tick = a_start_tick + a_distance;
-    long from_end_tick = from_start_tick + a_distance - 1;
     automutex locker(m_mutex);
-    move_triggers(a_start_tick, a_distance, true);
-    for (Triggers::iterator i = m_triggers.begin(); i != m_triggers.end(); i++)
-    {
-        if
-        (
-            i->m_tick_start >= from_start_tick &&
-            i->m_tick_start <= from_end_tick
-        )
-        {
-            trigger e;
-            e.m_offset = i->m_offset;
-            e.m_selected = false;
-            e.m_tick_start  = i->m_tick_start - a_distance;
-            if (i->m_tick_end <= from_end_tick)
-                e.m_tick_end = i->m_tick_end - a_distance;
-
-            if (i->m_tick_end > from_end_tick)
-                e.m_tick_end = from_start_tick - 1;
-
-            e.m_offset += (m_length - (a_distance % m_length));
-            e.m_offset %= m_length;
-            if (e.m_offset < 0)
-                e.m_offset += m_length;
-
-            m_triggers.push_front(e);
-        }
-    }
-    m_triggers.sort();
+    m_triggers.copy(starttick, distance);
 }
 
 /**
  *  Moves triggers in the trigger-list.
  *
+ *  Note the dependence on the m_length member being kept in sync with the
+ *  parent's value of m_length.
+ *
  * \threadsafe
  */
 
 void
-sequence::move_triggers (long a_start_tick, long a_distance, bool a_direction)
+sequence::move_triggers (long starttick, long distance, bool direction)
 {
-    long a_end_tick = a_start_tick + a_distance;
     automutex locker(m_mutex);
-    for (Triggers::iterator i = m_triggers.begin(); i != m_triggers.end(); i++)
-    {
-        /* trigger greater than L and R */
-
-        if (i->m_tick_start < a_start_tick && i->m_tick_end > a_start_tick)
-        {
-            if (a_direction)                            /* forward */
-                split_trigger(*i, a_start_tick);
-            else                                        /* back    */
-                split_trigger(*i, a_end_tick);
-        }
-
-        /* triggers on L */
-
-        if (i->m_tick_start < a_start_tick && i->m_tick_end > a_start_tick)
-        {
-            if (a_direction)                            /* forward */
-                split_trigger(*i, a_start_tick);
-            else                                        /* back    */
-                i->m_tick_end = a_start_tick - 1;
-        }
-
-        /* In betweens */
-
-        if
-        (
-            i->m_tick_start >= a_start_tick &&
-            i->m_tick_end <= a_end_tick && ! a_direction
-        )
-        {
-            m_triggers.erase(i);
-            i = m_triggers.begin();
-        }
-
-        /* triggers on R */
-
-        if (i->m_tick_start < a_end_tick && i->m_tick_end > a_end_tick)
-        {
-            if (!a_direction)                           /* forward */
-                i->m_tick_start = a_end_tick;
-        }
-    }
-    for (Triggers::iterator i = m_triggers.begin(); i != m_triggers.end(); i++)
-    {
-        if (a_direction)                                /* forward */
-        {
-            if (i->m_tick_start >= a_start_tick)
-            {
-                i->m_tick_start += a_distance;
-                i->m_tick_end   += a_distance;
-                i->m_offset += a_distance;
-                i->m_offset %= m_length;
-            }
-        }
-        else                                            /* back    */
-        {
-            if (i->m_tick_start >= a_end_tick)
-            {
-                i->m_tick_start -= a_distance;
-                i->m_tick_end   -= a_distance;
-                i->m_offset += (m_length - (a_distance % m_length));
-                i->m_offset %= m_length;
-            }
-        }
-        i->m_offset = adjust_offset(i->m_offset);
-    }
+    m_triggers.move(starttick, distance, direction);    // , m_length);
 }
 
 /**
- *  Gets the selected trigger's start tick.  We guess this ends up selecting
- *  only one trigger, otherwise only the last selected on would set the
- *  result.
+ *  Gets the last-selected trigger's start tick.
  *
  * \threadsafe
+ *
+ * \return
+ *      Returns the tick_start() value of the last-selected trigger.  If no
+ *      triggers are selected, then -1 is returned.
  */
 
 long
 sequence::selected_trigger_start ()
 {
-    long result = -1;
     automutex locker(m_mutex);
-    for (Triggers::iterator t = m_triggers.begin(); t != m_triggers.end(); ++t)
-    {
-        if (t->m_selected)
-            result = t->m_tick_start;
-    }
-    return result;
+    return m_triggers.get_selected_start();
 }
 
 /**
@@ -2399,14 +2057,8 @@ sequence::selected_trigger_start ()
 long
 sequence::selected_trigger_end ()
 {
-    long result = -1;
     automutex locker(m_mutex);
-    for (Triggers::iterator i = m_triggers.begin(); i != m_triggers.end(); i++)
-    {
-        if (i->m_selected)
-            result = i->m_tick_end;
-    }
-    return result;
+    return m_triggers.get_selected_end();
 }
 
 /**
@@ -2427,101 +2079,11 @@ sequence::selected_trigger_end ()
 void
 sequence::move_selected_triggers_to
 (
-    long a_tick, bool a_adjust_offset, int a_which
+    long tick, bool adjustoffset, int which
 )
 {
     automutex locker(m_mutex);
-    long min_tick = 0;
-    long max_tick = 0x7ffffff;
-    Triggers::iterator s = m_triggers.begin();
-    for (Triggers::iterator i = m_triggers.begin(); i != m_triggers.end(); i++)
-    {
-        if (i->m_selected)
-        {
-            s = i;
-            if (i != m_triggers.end() && ++i != m_triggers.end())
-                max_tick = i->m_tick_start - 1;
-
-            /* See the list of options in the function banner. */
-
-            long a_delta_tick = 0;
-            if (a_which == 1)
-            {
-                a_delta_tick = a_tick - s->m_tick_end;
-                if (a_delta_tick > 0 && (a_delta_tick+s->m_tick_end) > max_tick)
-                    a_delta_tick = ((max_tick) - s->m_tick_end);
-
-                if                      /* not past the first */
-                (
-                    a_delta_tick < 0 &&
-                    (
-                        a_delta_tick+s->m_tick_end <= (s->m_tick_start+m_ppqn/8)
-                    )
-                )
-                {
-                    a_delta_tick = (s->m_tick_start+m_ppqn/8) - s->m_tick_end;
-                }
-            }
-            if (a_which == 0)
-            {
-                a_delta_tick = a_tick - s->m_tick_start;
-                if
-                (
-                    a_delta_tick < 0 &&
-                    (a_delta_tick + s->m_tick_start) < min_tick
-                )
-                {
-                    a_delta_tick = ((min_tick) - s->m_tick_start);
-                }
-
-                /* not past last */
-
-                if
-                (
-                    a_delta_tick > 0 &&
-                    (a_delta_tick + s->m_tick_start >= (s->m_tick_end-m_ppqn/8))
-                )
-                {
-                    a_delta_tick = (s->m_tick_end-m_ppqn/8) - s->m_tick_start;
-                }
-            }
-            if (a_which == 2)
-            {
-                a_delta_tick = a_tick - s->m_tick_start;
-                if
-                (
-                    a_delta_tick < 0 &&
-                    (a_delta_tick + s->m_tick_start) < min_tick
-                )
-                {
-                    a_delta_tick = ((min_tick) - s->m_tick_start);
-                }
-                if
-                (
-                    a_delta_tick > 0 &&
-                    (a_delta_tick + s->m_tick_end) > max_tick
-                )
-                {
-                    a_delta_tick = ((max_tick) - s->m_tick_end);
-                }
-            }
-
-            if (a_which == 0 || a_which == 2)
-                s->m_tick_start += a_delta_tick;
-
-            if (a_which == 1 || a_which == 2)
-                s->m_tick_end   += a_delta_tick;
-
-            if (a_adjust_offset)
-            {
-                s->m_offset += a_delta_tick;
-                s->m_offset = adjust_offset(s->m_offset);
-            }
-            break;
-        }
-        else
-            min_tick = i->m_tick_end + 1;
-    }
+    m_triggers.move_selected(tick, adjustoffset, which);
 }
 
 /**
@@ -2533,136 +2095,113 @@ sequence::move_selected_triggers_to
 long
 sequence::get_max_trigger ()
 {
-    long result = 0;
     automutex locker(m_mutex);
-    if (m_triggers.size() > 0)
-        result = m_triggers.back().m_tick_end;
-
-    return result;
+    return m_triggers.get_maximum();
 }
 
 /**
- *  Adjusts the given offset by mod'ing it with m_length and adding
- *  m_length if needed, and returning the result.
+ *  Checks the list of triggers against the given tick.  If any
+ *  trigger is found to bracket that tick, then true is returned.
+ *
+ *
+ * \param tick
+ *      Provides the tick of interest.
+ *
+ * \return
+ *      Returns true if a trigger is found that brackets the given tick.
  */
-
-long
-sequence::adjust_offset (long offset)
-{
-    offset %= m_length;
-    if (offset < 0)
-        offset += m_length;
-
-    return offset;
-}
 
 bool
 sequence::get_trigger_state (long tick)
 {
     automutex locker(m_mutex);
-    bool result = false;
-    Triggers::iterator i;
-    for (i = m_triggers.begin(); i != m_triggers.end(); ++i)
-    {
-        if (i->m_tick_start <= tick && i->m_tick_end >= tick)
-        {
-            result = true;
-            break;
-        }
-    }
-    return result;
+    return m_triggers.get_state(tick);
 }
+
+/**
+ *  Checks the list of triggers against the given tick.  If any
+ *  trigger is found to bracket that tick, then true is returned, and
+ *  the trigger is marked as selected.
+ *
+ * \param tick
+ *      Provides the tick of interest.
+ *
+ * \return
+ *      Returns true if a trigger is found that brackets the given tick.
+ */
 
 bool
 sequence::select_trigger (long tick)
 {
     automutex locker(m_mutex);
-    bool result = false;
-    Triggers::iterator i;
-    for (i = m_triggers.begin(); i != m_triggers.end(); ++i)
-    {
-        if (i->m_tick_start <= tick && i->m_tick_end >= tick)
-        {
-            i->m_selected = true;
-            result = true;
-        }
-    }
-    return result;
+    return m_triggers.select(tick);
 }
 
 /**
- *  Always returns false!
+ *      Unselects all triggers.
+ *
+ * \return
+ *      Always returns false.
  */
 
 bool
 sequence::unselect_triggers ()
 {
     automutex locker(m_mutex);
-    Triggers::iterator i;
-    for (i = m_triggers.begin(); i != m_triggers.end(); i++)
-        i->m_selected = false;
-
-    return false;
+    return m_triggers.unselect();
 }
+
+/**
+ *      Deletes the first selected trigger that is found.
+ */
 
 void
 sequence::del_selected_trigger ()
 {
     automutex locker(m_mutex);
-    Triggers::iterator i;
-    for (i = m_triggers.begin(); i != m_triggers.end(); i++)
-    {
-        if (i->m_selected)
-        {
-            m_triggers.erase(i);
-            break;
-        }
-    }
+    m_triggers.remove_selected();
 }
+
+/**
+ *      Copies and deletes the first selected trigger that is found.
+ */
 
 void
 sequence::cut_selected_trigger ()
 {
     copy_selected_trigger();
-    del_selected_trigger();
+
+    automutex locker(m_mutex);
+    m_triggers.remove_selected();
 }
+
+/**
+ *      Copies the first selected trigger that is found.
+ */
 
 void
 sequence::copy_selected_trigger ()
 {
     automutex locker(m_mutex);
-    for (Triggers::iterator i = m_triggers.begin(); i != m_triggers.end(); i++)
-    {
-        if (i->m_selected)
-        {
-            m_trigger_clipboard = *i;
-            m_trigger_copied = true;
-            break;
-        }
-    }
+    m_triggers.copy_selected();
 }
+
+/**
+ *  If there is a copied trigger, then this function grabs it from the trigger
+ *  clipboard and adds it.
+ *
+ *  Why isn't this protected by a mutex?  We will eventually enable this see if
+ *  anything bad happens, such as a deadlock, or corruption.
+ */
 
 void
 sequence::paste_trigger ()
 {
-    if (m_trigger_copied)
-    {
-        long length =
-            m_trigger_clipboard.m_tick_end - m_trigger_clipboard.m_tick_start + 1;
+    /*
+     * TODO: automutex locker(m_mutex);
+     */
 
-        add_trigger                     // paste at copy end
-        (
-            m_trigger_clipboard.m_tick_end + 1, length,
-            m_trigger_clipboard.m_offset + length
-        );
-        m_trigger_clipboard.m_tick_start = m_trigger_clipboard.m_tick_end + 1;
-        m_trigger_clipboard.m_tick_end =
-            m_trigger_clipboard.m_tick_start + length - 1;
-
-        m_trigger_clipboard.m_offset += length;
-        m_trigger_clipboard.m_offset =
-            adjust_offset(m_trigger_clipboard.m_offset);
-    }
+    m_triggers.paste();
 }
 
 /**
@@ -2680,6 +2219,8 @@ sequence::reset_draw_marker ()
 }
 
 /**
+ *  Sets the draw-trigger iterator to the beginning of the trigger list.
+ *
  * \threadsafe
  */
 
@@ -2687,11 +2228,18 @@ void
 sequence::reset_draw_trigger_marker ()
 {
     automutex locker(m_mutex);
-    m_iterator_draw_trigger = m_triggers.begin();
+    m_triggers.reset_draw_trigger_marker();
 }
 
 /**
+ *  Goes through the list of notes, and picks the one with the lowest value.
+ *
  * \threadsafe
+ *
+ * \return
+ *      Returns the note with the lowest value.  If there are no notes in the
+ *      list, then MIDI_COUNT_MAX-1 is returned, which of course doesn't tell
+ *      the caller much.
  */
 
 int
@@ -2710,7 +2258,13 @@ sequence::get_lowest_note_event ()
 }
 
 /**
+ *  Goes through the list of notes, and picks the one with the highest value.
+ *
  * \threadsafe
+ *
+ * \return
+ *      Returns the note with the highest value.  If there are no notes in the
+ *      list, then 0 is returned, which of course doesn't tell the caller much.
  */
 
 int
@@ -2851,17 +2405,12 @@ sequence::get_next_trigger
     long * tick_on, long * tick_off, bool * selected, long * offset
 )
 {
-    while (m_iterator_draw_trigger != m_triggers.end())
-    {
-        *tick_on  = (*m_iterator_draw_trigger).m_tick_start;
-        *selected = (*m_iterator_draw_trigger).m_selected;
-        *offset = (*m_iterator_draw_trigger).m_offset;
-        *tick_off = (*m_iterator_draw_trigger).m_tick_end;
-        m_iterator_draw_trigger++;
-        return true;
-    }
-    return false;
+    return m_triggers.next(tick_on, tick_off, selected, offset);
 }
+
+/**
+ *  Clears all events from the event container.
+ */
 
 void
 sequence::remove_all ()
@@ -2922,17 +2471,18 @@ sequence::set_length (long len, bool adjust_triggers)
 {
     automutex locker(m_mutex);
     bool was_playing = get_playing();
-    set_playing(false);                 /* turn everything off */
+    set_playing(false);                 /* turn everything off              */
     if (len < (m_ppqn / 4))
         len = (m_ppqn / 4);
 
+    m_triggers.set_length(len);         /* must precede adjust call         */
     if (adjust_triggers)
-        adjust_trigger_offsets_to_length(len);
+        m_triggers.adjust_offsets_to_length(len);
 
     m_length = len;
     verify_and_link();
     reset_draw_marker();
-    if (was_playing)                    /* start up and refresh */
+    if (was_playing)                    /* start up and refresh             */
         set_playing(true);
 }
 
@@ -3070,17 +2620,9 @@ sequence::print ()
  */
 
 void
-sequence::print_triggers()
+sequence::print_triggers ()
 {
-    printf("[%s]\n", m_name.c_str());
-    for (Triggers::iterator i = m_triggers.begin(); i != m_triggers.end(); i++)
-    {
-        printf
-        (
-            "  tick_start[%ld] tick_end[%ld] off[%ld]\n",
-            i->m_tick_start, i->m_tick_end, i->m_offset
-        );
-    }
+    m_triggers.print(m_name);
 }
 
 /**

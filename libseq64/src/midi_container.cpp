@@ -177,7 +177,7 @@ midi_container::fill (int tracknumber)
         }
     }
 
-    sequence::Triggers & triggerlist = m_sequence.triggers();
+    triggers::List & triggerlist = m_sequence.triggerlist();
     int triggercount = int(triggerlist.size());
     add_variable(0);
     put(0xFF);
@@ -186,13 +186,13 @@ midi_container::fill (int tracknumber)
     add_long(c_triggers_new);
     for
     (
-        sequence::Triggers::iterator ti = triggerlist.begin();
+        triggers::List::iterator ti = triggerlist.begin();
         ti != triggerlist.end(); ++ti
     )
     {
-        add_long(ti->m_tick_start);
-        add_long(ti->m_tick_end);
-        add_long(ti->m_offset);
+        add_long(ti->tick_start());
+        add_long(ti->tick_end());
+        add_long(ti->offset());
     }
     add_variable(0);                                /* bus              */
     put(0xFF);

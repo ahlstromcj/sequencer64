@@ -448,11 +448,6 @@ mainwid::draw_sequence_pixmap_on_window (int seqnum)         // effective?
     {
         int base_x, base_y;
         calculate_base_sizes(seqnum, base_x, base_y);    // side-effects
-//      m_window->draw_drawable
-//      (
-//          m_gc, m_pixmap, base_x, base_y, base_x, base_y,
-//          m_seqarea_x, m_seqarea_y
-//      );
         draw_drawable(base_x, base_y, base_x, base_y, m_seqarea_x, m_seqarea_y);
     }
 }
@@ -549,17 +544,10 @@ mainwid::draw_marker_on_sequence (int seqnum, int tick)
         int rectangle_x = base_x + m_text_size_x - 1;
         int rectangle_y = base_y + m_text_size_y + m_text_size_x - 1;
         int len  = seq->get_length();
-        tick += (len  - seq->get_trigger_offset());
+        tick += (len - seq->get_trigger_offset());
         tick %= len;
 
         long tick_x = tick * m_seqarea_seq_x / len;
-//      m_window->draw_drawable
-//      (
-//          m_gc, m_pixmap,
-//          rectangle_x + m_last_tick_x[seqnum], rectangle_y + 1,
-//          rectangle_x + m_last_tick_x[seqnum], rectangle_y + 1,
-//          1, m_seqarea_seq_y
-//      );
         draw_drawable
         (
             rectangle_x + m_last_tick_x[seqnum], rectangle_y + 1,
@@ -726,13 +714,6 @@ mainwid::on_realize ()
 bool
 mainwid::on_expose_event (GdkEventExpose * a_e)
 {
-//  m_window->draw_drawable
-//  (
-//      m_gc, m_pixmap,
-//      a_e->area.x, a_e->area.y,
-//      a_e->area.x, a_e->area.y,
-//      a_e->area.width, a_e->area.height
-//  );
     draw_drawable
     (
         a_e->area.x, a_e->area.y,

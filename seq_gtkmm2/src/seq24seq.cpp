@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-08-02
- * \updates       2015-10-28
+ * \updates       2015-10-31
  * \license       GNU GPLv2 or above
  *
  *  This code was extracted from seqevent to make that module more
@@ -130,7 +130,7 @@ Seq24SeqEventInput::on_button_press_event
                 );
                 if (eventcount == 0)
                 {
-                    if (! (a_ev->state & GDK_CONTROL_MASK))
+                    if (! (a_ev->state & SEQ64_CONTROL_MASK))
                         seqev.m_seq.unselect();
 
                     eventcount = seqev.m_seq.select_events

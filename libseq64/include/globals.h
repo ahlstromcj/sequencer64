@@ -95,6 +95,38 @@
 #include "rc_settings.hpp"              /* seq64::rc_settings           */
 #include "user_settings.hpp"            /* seq64::user_settings         */
 
+/*
+ * These additions aren't supported, but they do flag some potentially
+ * interesting upgrades.
+ */
+
+#ifdef  USE_SEQ42_PATCHES
+
+/**
+ *  Version of our save file format.  Increment
+ *  this whenever the format of the save file changes.
+ *
+ * Version history:
+ *
+ *      0 - initial seq42 file format
+ *      1 - added transposable to track
+ *      2 - added swing amount to perform and swing_mode to sequence
+ */
+
+const int c_file_version = 2;
+
+/**
+ *  Constants for sequence swing modes (the integer value is the amount to
+ *  divide c_ppqn by to obtain note length).
+ */
+
+const int c_max_swing_amount = 24;
+const int c_no_swing = 0;
+const int c_swing_eighths = 2;
+const int c_swing_sixteenths = 4;
+
+#endif
+
 extern rc_settings g_rc_settings;
 extern user_settings g_user_settings;
 
@@ -308,6 +340,12 @@ const int c_max_sequence = c_seqs_in_set * c_max_sets;
  */
 
 const int c_ppqn = DEFAULT_PPQN;
+
+#ifdef  USE_SEQ42_PATCHES
+const int c_ppwn = 4 * DEFAULT_PPQN;        /* whole note   */
+const int c_ppen = DEFAULT_PPQN / 2;        /* eighth note  */
+const int c_ppen = DEFAULT_PPQN / 4;        /* 16th note    */
+#endif
 
 /**
  *  Provides the default number BPM (beats per minute), which describes
@@ -574,8 +612,14 @@ const int c_redraw_ms = 40;
  *  So we will use the font's numeric accessors soon.
  */
 
+#ifdef  USE_SEQ42_PATCHES
+const int c_names_x = 114;              /* width of name box, 24 characters */
+const int c_names_y = 22;               /* height of name box, pixels, 22   */
+#else
 const int c_names_x = 6 * 24;           /* width of name box, 24 characters */
-const int c_names_y = 24;               /* height of name box, pixels, 22   */
+#endif
+
+const int c_names_y = 24;               /* max height of name box, pixels   */
 const int c_perf_scale_x = 32;          /* units are ticks per pixel        */
 
 /**

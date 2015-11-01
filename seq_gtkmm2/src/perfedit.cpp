@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-27
+ * \updates       2015-10-31
  * \license       GNU GPLv2 or above
  *
  */
@@ -59,6 +59,7 @@
 
 #include <sigc++/bind.h>
 
+#include "gdk_basic_keys.h"
 #include "gtk_helpers.h"
 #include "perfedit.hpp"
 #include "perfnames.hpp"
@@ -556,7 +557,7 @@ bool
 perfedit::on_key_press_event (GdkEventKey * a_ev)
 {
     bool event_was_handled = false;
-    if (a_ev->type == GDK_KEY_PRESS)
+    if (CAST_EQUIVALENT(a_ev->type, SEQ64_KEY_PRESS))
     {
         if (global_print_keys)
         {

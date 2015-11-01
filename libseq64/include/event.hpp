@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-28
+ * \updates       2015-10-30
  * \license       GNU GPLv2 or above
  *
  *  This module also declares/defines the various constants, status-byte
@@ -106,8 +106,6 @@ const unsigned char  EVENT_SYSEX_END        = 0xF7;
 
 class event
 {
-
-    friend class sequence;
 
 private:
 
@@ -286,11 +284,11 @@ public:
      *      second line; the third line shows the abstract representation.
      *      Also made sure of this using a couple truth tables.
      *
-     *  \verbatim
-            (m != EVENT_CONTROL_CHANGE) || (m == EVENT_CONTROL_CHANGE && d == cc)
-            (m != EVENT_CONTROL_CHANGE) || (d == cc)
-            a || (! a && b)  =>  a || b
-     *  \endverbatim
+\verbatim
+        (m != EVENT_CONTROL_CHANGE) || (m == EVENT_CONTROL_CHANGE && d == cc)
+        (m != EVENT_CONTROL_CHANGE) || (d == cc)
+        a || (! a && b)  =>  a || b
+\endverbatim
      *
      * \param msg
      *      The channel status or message byte to be tested.
@@ -343,13 +341,95 @@ public:
         return m_status;
     }
 
-    void set_data (char d1);
-    void set_data (char d1, char d2);
-    void get_data (unsigned char & d0, unsigned char & d1);
-    void increment_data1 ();
-    void decrement_data1 ();
-    void increment_data2 ();
-    void decrement_data2 ();
+    /**
+     *  Clears the most-significant-bit of the d1 parameter, and sets it into
+     *  the first byte of m_data.
+     *
+     * \param d1
+     *      The byte value to set.  We should make these all "midibytes".
+     */
+
+    void set_data (char d1)
+    {
+        m_data[0] = d1 & 0x7F;
+    }
+
+    /**
+     *  Clears the most-significant-bit of both parameters, and sets them into
+     *  the first and second bytes of m_data.
+     *
+     * \param d1
+     *      The first byte value to set.  We should make these all
+     *      "midibytes".
+     *
+     * \param d2
+     *      The second byte value to set.  We should make these all
+     *      "midibytes".
+     */
+
+    void set_data (char d1, char d2)
+    {
+        m_data[0] = d1 & 0x7F;
+        m_data[1] = d2 & 0x7F;
+    }
+
+    /**
+     *  Retrieves the two data bytes from m_data[] and copies each into its
+     *  respective parameter.
+     *
+     * \param d0 [out]
+     *      The return reference for the first byte.
+     *
+     * \param d1 [out]
+     *      The return reference for the first byte.
+     */
+
+    void get_data (unsigned char & d0, unsigned char & d1)
+    {
+        d0 = m_data[0];
+        d1 = m_data[1];
+    }
+
+    /**
+     *  Increments the first data byte (m_data[1]) and clears the most
+     *  significant bit.
+     */
+
+    void increment_data1 ()
+    {
+        m_data[0] = (m_data[0] + 1) & 0x7F;
+    }
+
+    /**
+     *  Decrements the first data byte (m_data[1]) and clears the most
+     *  significant bit.
+     */
+
+    void decrement_data1 ()
+    {
+        m_data[0] = (m_data[0] - 1) & 0x7F;
+    }
+
+    /**
+     *  Increments the second data byte (m_data[1]) and clears the most
+     *  significant bit.
+     */
+
+    void increment_data2 ()
+    {
+        m_data[1] = (m_data[1] + 1) & 0x7F;
+    }
+
+    /**
+     *  Decrements the second data byte (m_data[1]) and clears the most
+     *  significant bit.
+     */
+
+    void decrement_data2 ()
+    {
+        m_data[1] = (m_data[1] - 1) & 0x7F;
+    }
+
     void start_sysex ();
     bool append_sysex (unsigned char * data, long size);
 
@@ -498,7 +578,14 @@ public:
         return m_selected;
     }
 
-    void make_clock ();                // set status to MIDI clock
+    /**
+     *  Sets m_status to EVENT_MIDI_CLOCK;
+     */
+
+    void make_clock ()
+    {
+        m_status = (unsigned char)(EVENT_MIDI_CLOCK);
+    }
 
     /**
      * \getter m_data[]
@@ -575,6 +662,11 @@ public:
      */
 
     int get_rank () const;
+
+#ifdef  USE_SEQ42_PATCHES
+    void save (std::ofstream & file);
+    void load (std::ifstream & file);
+#endif
 
 };
 

@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-26
+ * \updates       2015-10-30
  * \license       GNU GPLv2 or above
  *
  *  The main windows is known as the "Patterns window" or "Patterns
@@ -265,9 +265,36 @@ private:
 
     void update_window_title ();
     void toLower (std::string &);       // isn't this part of std::string?
-    void file_new ();
-    void file_open ();
-    void file_save ();
+
+    /**
+     *  A callback function for the File / New menu entry.
+     */
+
+    void file_new ()
+    {
+        if (is_save())
+            new_file();
+    }
+
+    /**
+     *  A callback function for the File / Open menu entry.
+     */
+
+    void file_open ()
+    {
+        if (is_save())
+            choose_file();
+    }
+
+    /**
+     *  A callback function for the File / Save menu entry.
+     */
+
+    void file_save ()
+    {
+        save_file();
+    }
+
     void file_save_as ();
     void file_exit ();
     void new_file ();

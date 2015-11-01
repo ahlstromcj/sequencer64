@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-15
+ * \updates       2015-10-31
  * \license       GNU GPLv2 or above
  *
  *  The patterns/sequence editor is expandable in both directions, but the
@@ -196,7 +196,6 @@ seqtime::update_pixmap ()
 void
 seqtime::draw_pixmap_on_window ()
 {
-//  m_window->draw_drawable(m_gc, m_pixmap, 0, 0, 0, 0, m_window_x, m_window_y);
     draw_drawable(0, 0, 0, 0, m_window_x, m_window_y);
 }
 
@@ -207,7 +206,6 @@ seqtime::draw_pixmap_on_window ()
 void
 seqtime::force_draw ()
 {
-//  m_window->draw_drawable(m_gc, m_pixmap, 0, 0, 0, 0, m_window_x, m_window_y);
     draw_drawable(0, 0, 0, 0, m_window_x, m_window_y);
 }
 
@@ -235,11 +233,6 @@ seqtime::on_realize()
 bool
 seqtime::on_expose_event (GdkEventExpose * a_e)
 {
-//  m_window->draw_drawable
-//  (
-//      m_gc, m_pixmap, a_e->area.x, a_e->area.y, a_e->area.x, a_e->area.y,
-//      a_e->area.width, a_e->area.height
-//  );
     draw_drawable
     (
         a_e->area.x, a_e->area.y, a_e->area.x, a_e->area.y,

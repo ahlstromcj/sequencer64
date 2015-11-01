@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-08-02
- * \updates       2015-10-28
+ * \updates       2015-10-31
  * \license       GNU GPLv2 or above
  *
  *  This code was extracted from seqevent to make that module more
@@ -59,7 +59,7 @@ FruitySeqEventInput::updateMousePtr (seqevent & seqev)
 
     if (m_is_drag_pasting || seqev.m_selecting || seqev.m_moving || seqev.m_paste)
         seqev.get_window()->set_cursor(Gdk::Cursor(Gdk::LEFT_PTR));
-    else if (seqev.m_seq.intersectEvents(tick_s, tick_f, seqev.m_status, pos))
+    else if (seqev.m_seq.intersect_events(tick_s, tick_f, seqev.m_status, pos))
         seqev.get_window()->set_cursor(Gdk::Cursor(Gdk::CENTER_PTR));
     else
         seqev.get_window()->set_cursor(Gdk::Cursor(Gdk::PENCIL));
@@ -125,7 +125,7 @@ FruitySeqEventInput::on_button_press_event
                 tick_s, tick_f, seqev.m_status, seqev.m_cc,
                 sequence::e_would_select
             );
-            if (! (a_ev->state & GDK_CONTROL_MASK) && eventcount == 0)
+            if (! (a_ev->state & SEQ64_CONTROL_MASK) && eventcount == 0)
             {
                 seqev.m_painting = true;
                 seqev.snap_x(seqev.m_drop_x);
@@ -157,15 +157,15 @@ FruitySeqEventInput::on_button_press_event
                     );
                     if (eventcount > 0)             /* if clicking event */
                     {
-                        if (! (a_ev->state & GDK_CONTROL_MASK))
+                        if (! (a_ev->state & SEQ64_CONTROL_MASK))
                             seqev.m_seq.unselect();
                     }
                     else /* clicking empty space, unselect all if no Ctrl-Sh  */
                     {
                         if
                         (
-                            ! ((a_ev->state & GDK_CONTROL_MASK) &&
-                                (a_ev->state & GDK_SHIFT_MASK))
+                            ! ((a_ev->state & SEQ64_CONTROL_MASK) &&
+                                (a_ev->state & SEQ64_SHIFT_MASK))
                         )
                         {
                             seqev.m_seq.unselect();
@@ -184,7 +184,7 @@ FruitySeqEventInput::on_button_press_event
 
                     /* if nothing selected, start the selection box */
 
-                    if (eventcount == 0 && (a_ev->state & GDK_CONTROL_MASK))
+                    if (eventcount == 0 && (a_ev->state & SEQ64_CONTROL_MASK))
                         seqev.m_selecting = true;
                 }
                 eventcount = seqev.m_seq.select_events
@@ -194,7 +194,7 @@ FruitySeqEventInput::on_button_press_event
                 );
                 if (eventcount > 0)         /* if event under cursor selected */
                 {
-                    if (! (a_ev->state & GDK_CONTROL_MASK)) /* grab/move note */
+                    if (! (a_ev->state & SEQ64_CONTROL_MASK)) /* grab/move note */
                     {
                         seqev.m_moving_init = true;
                         int note;
@@ -226,7 +226,7 @@ FruitySeqEventInput::on_button_press_event
                     }
                     else if   /* Ctrl-Left-click when stuff already selected */
                     (
-                        (a_ev->state & GDK_CONTROL_MASK) &&
+                        (a_ev->state & SEQ64_CONTROL_MASK) &&
                         seqev.m_seq.select_events(tick_s, tick_f,
                            seqev. m_status, seqev.m_cc, sequence::e_is_selected)
                     )
@@ -265,7 +265,7 @@ FruitySeqEventInput::on_button_press_event
             }
             else                                        /* selecting          */
             {
-                if (! (a_ev->state & GDK_CONTROL_MASK))
+                if (! (a_ev->state & SEQ64_CONTROL_MASK))
                     seqev.m_seq.unselect();             /* nothing selected   */
 
                 seqev.m_selecting = true;               /* start select-box   */
@@ -342,7 +342,7 @@ FruitySeqEventInput::on_button_release_event
                     t_s, t_f,
                     seqev.m_status, seqev.m_cc, sequence::e_is_selected
                 ) &&
-                (a_ev->state & GDK_CONTROL_MASK)
+                (a_ev->state & SEQ64_CONTROL_MASK)
             )
             {
                 (void) seqev.m_seq.select_events

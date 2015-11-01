@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-17
+ * \updates       2015-10-31
  * \license       GNU GPLv2 or above
  *
  *  The functions add_list_var() and add_long_list() have been replaced by
@@ -50,6 +50,7 @@
 
 #include "midi_container.hpp"           /* seq64::midi_container    */
 #include "mutex.hpp"
+#include "triggers.hpp"                 /* seq64::triggers, etc.    */
 
 namespace seq64
 {
@@ -75,47 +76,6 @@ enum draw_type
 };
 
 /**
- *  This class is used in playback.  Making its members public makes it
- *  really "just" a structure.
- */
-
-class trigger
-{
-
-public:
-
-    long m_tick_start;
-    long m_tick_end;
-    long m_offset;
-    bool m_selected;
-
-public:
-
-    /**
-     *  Initializes the trigger structure.
-     */
-
-    trigger () :
-        m_tick_start    (0),
-        m_tick_end      (0),
-        m_offset        (0),
-        m_selected      (false)
-    {
-        // Empty body
-    }
-
-    /**
-     *  This operator compares only the m_tick_start members.
-     */
-
-    bool operator < (const trigger & rhs)
-    {
-        return m_tick_start < rhs.m_tick_start;
-    }
-
-};          // class trigger
-
-/**
  *  The sequence class is firstly a receptable for a single track of MIDI
  *  data read from a MIDI file or edited into a pattern.  More members than
  *  you can shake a stick at.
@@ -124,13 +84,9 @@ public:
 class sequence
 {
 
+    friend class triggers;              /* will unfriend later */
+
 public:
-
-    /**
-     *  Exposes the triggers, currently needed for midi_container only.
-     */
-
-    typedef std::list<trigger> Triggers;
 
     /**
      *  This enumeration is used in selecting events and note.  Se the
@@ -172,7 +128,6 @@ public:
 private:
 
     typedef std::stack<event_list> EventStack;
-    typedef std::stack<Triggers> TriggerStack;
 
 private:
 
@@ -183,19 +138,14 @@ private:
      */
 
     event_list m_events;
-    Triggers m_triggers;
-    trigger m_trigger_clipboard;
+    triggers m_triggers;
     EventStack m_events_undo;
     EventStack m_events_redo;
-    TriggerStack m_triggers_undo;
-    TriggerStack m_triggers_redo;
 
     /* markers */
 
     event_list::iterator m_iterator_play;
     event_list::iterator m_iterator_draw;
-    Triggers::iterator m_iterator_play_trigger;
-    Triggers::iterator m_iterator_draw_trigger;
 
     /* contains the proper MIDI channel */
 
@@ -221,12 +171,17 @@ private:
     /* states */
 
     bool m_was_playing;
+
+    /*
+     * True if the sequence playback is in progress.
+     */
+
     bool m_playing;
     bool m_recording;
     bool m_quantized_rec;
     bool m_thru;
     bool m_queued;
-    bool m_trigger_copied;
+//  bool m_trigger_copied;
 
     /* flag indicates that contents has changed from a recording */
 
@@ -290,9 +245,9 @@ public:
      * \getter m_triggers
      */
 
-    Triggers & triggers ()
+    triggers::List & triggerlist ()
     {
-        return m_triggers;
+        return m_triggers.triggerlist();
     }
 
     int event_count () const;
@@ -523,13 +478,13 @@ public:
     bool get_trigger_state (long tick);
     bool select_trigger (long tick);
     bool unselect_triggers ();
-    bool intersectTriggers (long position, long & start, long & end);
-    bool intersectNotes
+    bool intersect_triggers (long position, long & start, long & end);
+    bool intersect_notes
     (
         long position, long position_note,
         long & start, long & end, long & note
     );
-    bool intersectEvents (long posstart, long posend, long status, long & start);
+    bool intersect_events (long posstart, long posend, long status, long & start);
     void del_selected_trigger ();
     void cut_selected_trigger ();
     void copy_selected_trigger ();

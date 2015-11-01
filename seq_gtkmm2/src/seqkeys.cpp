@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-09
+ * \updates       2015-10-31
  * \license       GNU GPLv2 or above
  *
  */
@@ -156,10 +156,6 @@ void
 seqkeys::draw_area()
 {
     update_pixmap();
-//  m_window->draw_drawable
-//  (
-//      m_gc, m_pixmap, 0, m_scroll_offset_y, 0, 0, c_keyarea_x, c_keyarea_y
-//  );
     draw_drawable(0, m_scroll_offset_y, 0, 0, c_keyarea_x, c_keyarea_y);
 }
 
@@ -170,10 +166,6 @@ seqkeys::draw_area()
 void
 seqkeys::force_draw ()
 {
-//  m_window->draw_drawable
-//  (
-//      m_gc, m_pixmap, 0, m_scroll_offset_y, 0, 0, m_window_x, m_window_y
-//  );
     draw_drawable(0, m_scroll_offset_y, 0, 0, m_window_x, m_window_y);
 }
 
@@ -290,11 +282,6 @@ seqkeys::on_realize ()
 bool
 seqkeys::on_expose_event (GdkEventExpose * ev)
 {
-//  m_window->draw_drawable
-//  (
-//      m_gc, m_pixmap, ev->area.x, ev->area.y + m_scroll_offset_y,
-//      ev->area.x, ev->area.y, ev->area.width, ev->area.height
-//  );
     draw_drawable
     (
         ev->area.x, ev->area.y + m_scroll_offset_y,
@@ -313,7 +300,7 @@ seqkeys::on_expose_event (GdkEventExpose * ev)
 bool
 seqkeys::on_button_press_event (GdkEventButton * ev)
 {
-    if (ev->type == GDK_BUTTON_PRESS)
+    if (CAST_EQUIVALENT(ev->type, SEQ64_BUTTON_PRESS))
     {
         if (SEQ64_CLICK_LEFT(ev->button))
         {
@@ -339,7 +326,7 @@ seqkeys::on_button_press_event (GdkEventButton * ev)
 bool
 seqkeys::on_button_release_event (GdkEventButton * ev)
 {
-    if (ev->type == GDK_BUTTON_RELEASE)
+    if (CAST_EQUIVALENT(ev->type, SEQ64_BUTTON_RELEASE))
     {
         if (SEQ64_CLICK_LEFT(ev->button) && m_keying)
         {
@@ -435,9 +422,9 @@ bool
 seqkeys::on_scroll_event (GdkEventScroll * ev)
 {
     double val = m_vadjust.get_value();
-    if (ev->direction == GDK_SCROLL_UP)
+    if (CAST_EQUIVALENT(ev->direction, SEQ64_SCROLL_UP))
         val -= m_vadjust.get_step_increment() / 6;
-    else if (ev->direction == GDK_SCROLL_DOWN)
+    else if (CAST_EQUIVALENT(ev->direction, SEQ64_SCROLL_DOWN))
         val += m_vadjust.get_step_increment() / 6;
     else
         return true;

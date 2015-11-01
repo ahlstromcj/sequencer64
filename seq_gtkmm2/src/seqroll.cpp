@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-29
+ * \updates       2015-10-31
  * \license       GNU GPLv2 or above
  *
  */
@@ -35,6 +35,7 @@
 #include <gtkmm/menu.h>
 
 #include "event.hpp"
+#include "gdk_basic_keys.h"
 #include "seqroll.hpp"
 #include "seqdata.hpp"
 #include "seqevent.hpp"
@@ -187,7 +188,7 @@ seqroll::update_sizes ()
 void
 seqroll::change_horz ()
 {
-    m_scroll_offset_ticks = (int) m_hadjust.get_value();
+    m_scroll_offset_ticks = int(m_hadjust.get_value());
     m_scroll_offset_x = m_scroll_offset_ticks / m_zoom;
     if (m_ignore_redraw)
         return;
@@ -202,7 +203,7 @@ seqroll::change_horz ()
 void
 seqroll::change_vert ()
 {
-    m_scroll_offset_key = (int) m_vadjust.get_value();
+    m_scroll_offset_key = int(m_vadjust.get_value());
     m_scroll_offset_y = m_scroll_offset_key * c_key_y;
     if (m_ignore_redraw)
         return;
@@ -218,7 +219,7 @@ seqroll::change_vert ()
 void
 seqroll::reset ()
 {
-    m_scroll_offset_ticks = (int) m_hadjust.get_value();
+    m_scroll_offset_ticks = int(m_hadjust.get_value());
     m_scroll_offset_x = m_scroll_offset_ticks / m_zoom;
     if (m_ignore_redraw)
         return;
@@ -237,7 +238,7 @@ seqroll::redraw ()
     if (m_ignore_redraw)
         return;
 
-    m_scroll_offset_ticks = (int) m_hadjust.get_value();
+    m_scroll_offset_ticks = int(m_hadjust.get_value());
     m_scroll_offset_x = m_scroll_offset_ticks / m_zoom;
     update_and_draw(true);  // update_background(); update_pixmap(); force_draw();
 }
@@ -434,10 +435,6 @@ seqroll::update_pixmap ()
 void
 seqroll::draw_progress_on_window ()
 {
-//  m_window->draw_drawable
-//  (
-//      m_gc, m_pixmap, m_old_progress_x, 0, m_old_progress_x, 0, 1, m_window_y
-//  );
     draw_drawable
     (
         m_old_progress_x, 0, m_old_progress_x, 0, 1, m_window_y
@@ -631,11 +628,6 @@ seqroll::draw_selection_on_window ()
     if (m_selecting  ||  m_moving || m_paste ||  m_growing)
     {
         set_line(Gdk::LINE_SOLID);
-//      m_window->draw_drawable                         /* replace old */
-//      (
-//          m_gc, m_pixmap, m_old.x, m_old.y, m_old.x, m_old.y,
-//          m_old.width + 1, m_old.height + 1
-//      );
         draw_drawable                                   /* replace old */
         (
             m_old.x, m_old.y, m_old.x, m_old.y, m_old.width + 1, m_old.height + 1
@@ -692,7 +684,6 @@ seqroll::draw_selection_on_window ()
 void
 seqroll::force_draw ()
 {
-//  m_window->draw_drawable(m_gc, m_pixmap, 0, 0, 0, 0, m_window_x, m_window_y);
     draw_drawable(0, 0, 0, 0, m_window_x, m_window_y);
     draw_selection_on_window();
 }
@@ -867,11 +858,6 @@ seqroll::on_realize ()
 bool
 seqroll::on_expose_event (GdkEventExpose * e)
 {
-//  m_window->draw_drawable
-//  (
-//      m_gc, m_pixmap, e->area.x, e->area.y, e->area.x, e->area.y,
-//      e->area.width, e->area.height
-//  );
     draw_drawable
     (
         e->area.x, e->area.y, e->area.x, e->area.y,
@@ -1032,9 +1018,9 @@ seqroll::on_key_press_event (GdkEventKey * a_p0)
         perf().stop();
         global_is_pattern_playing = false;
     }
-    if (a_p0->type == GDK_KEY_PRESS)
+    if (CAST_EQUIVALENT(a_p0->type, SEQ64_KEY_PRESS))
     {
-        if (a_p0->keyval ==  GDK_Delete || a_p0->keyval == GDK_BackSpace)
+        if (OR_EQUIVALENT(a_p0->keyval, SEQ64_Delete, SEQ64_BackSpace))
         {
             m_seq.push_undo();
             m_seq.mark_selected();
@@ -1043,25 +1029,53 @@ seqroll::on_key_press_event (GdkEventKey * a_p0)
         }
         if (! global_is_pattern_playing)
         {
-            if (a_p0->keyval == GDK_Home)
+            /*
+             * This code is reached, but has no visible effect.  Why?
+             * I think they were meant to move the point for playback.
+             * We may HAVE A BUG with our new handling of triggers, or
+             * maybe these depend upon the proper playback mode.
+             * For now, I will comment out the old functionality and replace
+             * it with selection movement.  Later it can be decided by mode,
+             * perhaps.
+             */
+
+            if (a_p0->keyval == SEQ64_Home)
             {
                 m_seq.set_orig_tick(0);
                 result = true;
             }
-            if (a_p0->keyval == GDK_Left)
+            else if (a_p0->keyval == SEQ64_Left)
             {
-                m_seq.set_orig_tick(m_seq.get_last_tick() - m_snap);
+                /*
+                 * m_seq.set_orig_tick(m_seq.get_last_tick() - m_snap);
+                 */
+
+                m_seq.move_selected_notes(-48 /*m_snap?*/, 0);
                 result = true;
             }
-            if (a_p0->keyval == GDK_Right)
+            else if (a_p0->keyval == SEQ64_Right)
             {
-                m_seq.set_orig_tick(m_seq.get_last_tick() + m_snap);
+                /*
+                 * m_seq.set_orig_tick(m_seq.get_last_tick() + m_snap);
+                 */
+
+                m_seq.move_selected_notes(48 /*m_snap?*/, 0);
+                result = true;
+            }
+            else if (a_p0->keyval == SEQ64_Down)
+            {
+                m_seq.move_selected_notes(0, -1);
+                result = true;
+            }
+            else if (a_p0->keyval == SEQ64_Up)
+            {
+                m_seq.move_selected_notes(0, 1);
                 result = true;
             }
         }
-        if (a_p0->state & GDK_CONTROL_MASK)
+        if (a_p0->state & SEQ64_CONTROL_MASK)
         {
-            if (a_p0->keyval == GDK_x || a_p0->keyval == GDK_X)     /* cut */
+            if (OR_EQUIVALENT(a_p0->keyval, SEQ64_x, SEQ64_X))     /* cut */
             {
                 m_seq.push_undo();
                 m_seq.copy_selected();
@@ -1069,22 +1083,22 @@ seqroll::on_key_press_event (GdkEventKey * a_p0)
                 m_seq.remove_marked();
                 result = true;
             }
-            if (a_p0->keyval == GDK_c || a_p0->keyval == GDK_C)     /* copy */
+            if (OR_EQUIVALENT(a_p0->keyval, SEQ64_c, SEQ64_C))     /* copy */
             {
                 m_seq.copy_selected();
                 result = true;
             }
-            if (a_p0->keyval == GDK_v || a_p0->keyval == GDK_V)     /* paste */
+            if (OR_EQUIVALENT(a_p0->keyval, SEQ64_v, SEQ64_V))     /* paste */
             {
                 start_paste();
                 result = true;
             }
-            if (a_p0->keyval == GDK_z || a_p0->keyval == GDK_Z)     /* Undo */
+            if (OR_EQUIVALENT(a_p0->keyval, SEQ64_z, SEQ64_Z))     /* Undo */
             {
                 m_seq.pop_undo();
                 result = true;
             }
-            if (a_p0->keyval == GDK_a || a_p0->keyval == GDK_A) /* select all */
+            if (OR_EQUIVALENT(a_p0->keyval, SEQ64_a, SEQ64_A)) /* select all */
             {
                 m_seq.select_all();
                 result = true;
@@ -1113,7 +1127,7 @@ seqroll::on_size_allocate (Gtk::Allocation & a)
 /**
  *  Implements the on-scroll event handling.  This scroll event only
  *  handles basic scrolling without any modifier keys such as
- *  GDK_CONTROL_MASK or GDK_SHIFT_MASK.
+ *  SEQ64_CONTROL_MASK or SEQ64_SHIFT_MASK.
  */
 
 bool
@@ -1125,9 +1139,9 @@ seqroll::on_scroll_event (GdkEventScroll * a_ev)
         return false;
 
     double val = m_vadjust.get_value();
-    if (a_ev->direction == GDK_SCROLL_UP)
+    if (CAST_EQUIVALENT(a_ev->direction, SEQ64_SCROLL_UP))
         val -= m_vadjust.get_step_increment() / 6;
-    else if (a_ev->direction == GDK_SCROLL_DOWN)
+    else if (CAST_EQUIVALENT(a_ev->direction, SEQ64_SCROLL_DOWN))
         val += m_vadjust.get_step_increment() / 6;
     else
         return true;

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-10-13
- * \updates       2015-10-28
+ * \updates       2015-10-31
  * \license       GNU GPLv2 or above
  *
  */
@@ -58,7 +58,7 @@ FruityPerfInput::updateMousePtr (perfroll & roll)
     if (p.is_active(dropseq))
     {
         long start, end;
-        if (p.get_sequence(dropseq)->intersectTriggers(droptick, start, end))
+        if (p.get_sequence(dropseq)->intersect_triggers(droptick, start, end))
         {
             int wscalex = c_perfroll_size_box_click_w * c_perf_scale_x;
             int ymod = m_current_y % c_names_y;
@@ -152,7 +152,7 @@ FruityPerfInput::on_left_button_pressed (GdkEventButton * a_ev, perfroll & roll)
 {
     perform & p = roll.perf();
     int dropseq = roll.m_drop_sequence;
-    if (a_ev->state & GDK_CONTROL_MASK)
+    if (a_ev->state & SEQ64_CONTROL_MASK)
     {
         if (p.is_active(dropseq))
         {

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-30
+ * \updates       2015-10-31
  * \license       GNU GPLv2 or above
  *
  *  The main window holds the menu and the main controls of the application,
@@ -135,6 +135,7 @@ mainwnd::mainwnd (perform & p)
      * This request always leaves the bottom panel partly obscured.
      *
      *      set_size_request(794, 350);
+     *      set_size_request(850, 322);             // seq42
      */
 
     set_resizable(false);
@@ -345,7 +346,7 @@ mainwnd::mainwnd (perform & p)
     (
         m_entry_notes,
         "Enter screen-set name.  A screen-set is one page of "
-        "up to 32 patterns that can be see and manipulated in "
+        "up to 32 patterns that can be seen and manipulated in "
         "the Patterns window."
     );
 
@@ -530,17 +531,6 @@ mainwnd::on_grouplearnchange (bool state)
 }
 
 /**
- *  A callback function for the File / New menu entry.
- */
-
-void
-mainwnd::file_new ()
-{
-    if (is_save())
-        new_file();
-}
-
-/**
  *  Actually does the work of setting up for a new file.
  */
 
@@ -553,16 +543,6 @@ mainwnd::new_file ()
     g_rc_settings.filename("");
     update_window_title();
     is_modified(false);
-}
-
-/**
- *  A callback function for the File / Save menu entry.
- */
-
-void
-mainwnd::file_save ()
-{
-    save_file();
 }
 
 /**
@@ -682,17 +662,6 @@ mainwnd::open_file (const std::string & fn)
     m_main_wid->reset();
     m_entry_notes->set_text(perf().current_screen_set_notepad());
     m_adjust_bpm->set_value(perf().get_beats_per_minute());
-}
-
-/**
- *  A callback function for the File / Open menu entry.
- */
-
-void
-mainwnd::file_open ()
-{
-    if (is_save())
-        choose_file();
 }
 
 /**
@@ -1089,7 +1058,7 @@ bool
 mainwnd::on_key_press_event (GdkEventKey * a_ev)
 {
     Gtk::Window::on_key_press_event(a_ev);
-    if (a_ev->type == GDK_KEY_PRESS)
+    if (CAST_EQUIVALENT(a_ev->type, SEQ64_KEY_PRESS))
     {
         if (g_rc_settings.print_keys())
         {
@@ -1228,7 +1197,7 @@ mainwnd::on_key_press_event (GdkEventKey * a_ev)
         if (perf().get_key_events().count(a_ev->keyval) != 0)
         {
             guint modifiers = gtk_accelerator_get_default_mod_mask();
-            bool ok = (a_ev->state & modifiers) != GDK_CONTROL_MASK;
+            bool ok = (a_ev->state & modifiers) != SEQ64_CONTROL_MASK;
             if (ok)
                 sequence_key(perf().lookup_keyevent_seq(a_ev->keyval));
         }
@@ -1283,24 +1252,17 @@ mainwnd::handle_signal (int sig)
 bool
 mainwnd::install_signal_handlers ()
 {
-    // install pipe to forward received system signals
-
-    if (pipe(m_sigpipe) < 0)
+    if (pipe(m_sigpipe) < 0)    /* pipe to forward received system signals  */
     {
         printf("pipe() failed: %s\n", std::strerror(errno));
         return false;
     }
-
-    // install a notifier to handle pipe messages
-
-    Glib::signal_io().connect
+    Glib::signal_io().connect   /* notifier to handle pipe messages         */
     (
         sigc::mem_fun(*this, &mainwnd::signal_action), m_sigpipe[0], Glib::IO_IN
     );
 
-    // install signal handlers
-
-    struct sigaction action;
+    struct sigaction action;    /* install signal handlers                  */
     memset(&action, 0, sizeof(action));
     action.sa_handler = handle_signal;
     if (sigaction(SIGUSR1, &action, NULL) == -1)
@@ -1369,3 +1331,4 @@ mainwnd::signal_action (Glib::IOCondition condition)
  *
  * vim: sw=4 ts=4 wm=4 et ft=cpp
  */
+

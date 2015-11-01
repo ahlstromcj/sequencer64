@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-09-13
- * \updates       2015-10-08
+ * \updates       2015-10-31
  * \license       GNU GPLv2 or above
  *
  *  This file is provided as a convenience so that we have some reasonable
@@ -35,6 +35,31 @@
  *  defines keys, key modifiers, and other values universal between
  *  graphical user-interface frameworks.  Almost all of these values are
  *  used by Sequencer64; we've defined only the ones we need.
+ *
+ *  Shamelessly derived from the following files:
+ *
+ *      /usr/include/gtk-2.0/gdk/gdkkeysyms-compat.h
+ *      /usr/include/gtk-2.0/gdk/gdkevents.h
+ */
+
+/**
+ *  Provides a macro for comparing our types with GDK types, with absolutely no
+ *  safety at all.  Use at your own risk.  We do!
+ */
+
+#define CAST_EQUIVALENT(x, y)           ((int)(x) == (int)(y))
+
+#define CAST_AND_EQUIVALENT(x, y, z) \
+ ((int)(x) == (int)(y) && (int)(x) == (int)(z))
+
+#define CAST_OR_EQUIVALENT(x, y, z) \
+ ((int)(x) == (int)(y) || (int)(x) == (int)(z))
+
+#define AND_EQUIVALENT(x, y, z)         ((x) == (y) && (x) == (z))
+#define OR_EQUIVALENT(x, y, z)          ((x) == (y) || (x) == (z))
+
+/**
+ *
  */
 
 #ifndef SEQ64_Home
@@ -197,6 +222,11 @@ namespace seq64
  *  Types of modifiers, essentially copied from gtk-2.0/gdk/gdktypes.h.
  *  We have to tweak the names to avoid redeclaration errors and to
  * "personalize" the values.  We change "GDK" to "SEQ64".
+ *
+ *  Since we're getting events from, say Gtk-2.4, but using our (matching)
+ *  values for comparison, use the CAST_EQUIVALENT() macro to compare them.
+ *  Note that we might still end up having to a remapping (e.g. if trying to
+ *  get the code to work with the Qt framework).
  */
 
 typedef enum
@@ -233,16 +263,29 @@ typedef enum
  *  Event types copped from gtk-2.0/gdk/gdkevents.h for use with this
  *  application.  Only the values we need have been grabbed.
  *  We have to tweak the names to avoid redeclaration errors and to
- *  "personalize" the values.  We change "GDK" to "SEQ64".
+ *  "personalize" the values.  We change "GDK" to "SEQ64", but, for
+ *  convenience (to hide errors? :-D), we keep the number the same.
  *
- *  Not yet used.
+ *  Since we're getting events from, say Gtk-2.4, but using our (matching)
+ *  values for comparison, use the CAST_EQUIVALENT() macro to compare them.
+ *  Note that we might still end up having to a remapping (e.g. if trying to
+ *  get the code to work with the Qt framework).
  */
 
 typedef enum
 {
     SEQ64_NOTHING           = -1,
+    SEQ64_DELETE		    = 0,
+    SEQ64_DESTROY		    = 1,
+    SEQ64_EXPOSE		    = 2,
+    SEQ64_MOTION_NOTIFY	    = 3,
+    SEQ64_BUTTON_PRESS	    = 4,
+    SEQ64_2BUTTON_PRESS	    = 5,
+    SEQ64_3BUTTON_PRESS	    = 6,
+    SEQ64_BUTTON_RELEASE	= 7,
     SEQ64_KEY_PRESS         = 8,
     SEQ64_KEY_RELEASE       = 9,
+    SEQ64_SCROLL            = 31,
     SEQ64_EVENT_LAST
 
 } seq_event_type_t;
@@ -251,6 +294,11 @@ typedef enum
  * Types of scroll events, essentially copied from gtk-2.0/gdk/gdkevents.h.
  *  We have to tweak the names to avoid redeclaration errors and to
  * "personalize" the values.  We change "SEQ64" to "SEQ64".
+ *
+ *  Since we're getting events from, say Gtk-2.4, but using our (matching)
+ *  values for comparison, use the CAST_EQUIVALENT() macro to compare them.
+ *  Note that we might still end up having to a remapping (e.g. if trying to
+ *  get the code to work with the Qt framework).
  */
 
 typedef enum

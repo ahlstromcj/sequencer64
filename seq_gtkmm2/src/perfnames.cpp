@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-27
+ * \updates       2015-10-31
  * \license       GNU GPLv2 or above
  *
  *  This module is almost exclusively user-interface code.  There are some
@@ -308,9 +308,9 @@ bool
 perfnames::on_scroll_event (GdkEventScroll * ev)
 {
     double val = m_vadjust.get_value();
-    if (ev->direction == GDK_SCROLL_UP)
+    if (CAST_EQUIVALENT(ev->direction, SEQ64_SCROLL_UP))
         val -= m_vadjust.get_step_increment();
-    else if (ev->direction == GDK_SCROLL_DOWN)
+    else if (CAST_EQUIVALENT(ev->direction, SEQ64_SCROLL_DOWN))
         val += m_vadjust.get_step_increment();
 
     m_vadjust.clamp_page(val, val + m_vadjust.get_page_size());

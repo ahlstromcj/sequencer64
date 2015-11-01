@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-29
+ * \updates       2015-10-31
  * \license       GNU GPLv2 or above
  *
  */
@@ -33,6 +33,7 @@
 #include <gtkmm/adjustment.h>
 
 #include "event.hpp"
+#include "gdk_basic_keys.h"
 #include "seqevent.hpp"
 #include "seqdata.hpp"
 #include "sequence.hpp"
@@ -348,10 +349,6 @@ seqevent::draw_selection_on_window ()
     int y = (c_eventarea_y - c_eventevent_y) / 2;
     int h =  c_eventevent_y;
     set_line(Gdk::LINE_SOLID);
-//  m_window->draw_drawable                 /* replace old */
-//  (
-//      m_gc, m_pixmap, m_old.x, y, m_old.x, y, m_old.width + 1, h + 1
-//  );
     draw_drawable                           /* replace old */
     (
         m_old.x, y, m_old.x, y, m_old.width + 1, h + 1
@@ -382,7 +379,6 @@ seqevent::draw_selection_on_window ()
 void
 seqevent::force_draw ()
 {
-//  m_window->draw_drawable(m_gc, m_pixmap, 0, 0, 0, 0, m_window_x, m_window_y);
     draw_drawable(0, 0, 0, 0, m_window_x, m_window_y);
     draw_selection_on_window();
 }
@@ -474,11 +470,6 @@ seqevent::on_size_allocate (Gtk::Allocation & a)
 bool
 seqevent::on_expose_event (GdkEventExpose * e)
 {
-//  m_window->draw_drawable
-//  (
-//      m_gc, m_pixmap, e->area.x, e->area.y,
-//      e->area.x, e->area.y, e->area.width, e->area.height
-//  );
     draw_drawable
     (
         e->area.x, e->area.y,
@@ -568,6 +559,8 @@ seqevent::on_button_release_event (GdkEventButton * a_ev)
          * FALL THROUGH.  Is this correct behavior?
          */
 
+        break;              // removed the FALL THROUGH
+
     case e_seq24_interaction:
         result = m_seq24_interaction.on_button_release_event(a_ev, *this);
         break;
@@ -647,35 +640,35 @@ bool
 seqevent::on_key_press_event (GdkEventKey * a_p0)
 {
     bool result = false;
-    if (a_p0->type == GDK_KEY_PRESS)
+    if (CAST_EQUIVALENT(a_p0->type, SEQ64_KEY_PRESS))
     {
-        if (a_p0->keyval ==  GDK_Delete || a_p0->keyval == GDK_BackSpace)
+        if (a_p0->keyval ==  SEQ64_Delete || a_p0->keyval == SEQ64_BackSpace)
         {
             m_seq.push_undo();
             m_seq.mark_selected();
             m_seq.remove_marked();
             result = true;
         }
-        if (a_p0->state & GDK_CONTROL_MASK)
+        if (a_p0->state & SEQ64_CONTROL_MASK)
         {
-            if (a_p0->keyval == GDK_x || a_p0->keyval == GDK_X) /* cut */
+            if (a_p0->keyval == SEQ64_x || a_p0->keyval == SEQ64_X) /* cut */
             {
                 m_seq.copy_selected();
                 m_seq.mark_selected();
                 m_seq.remove_marked();
                 result = true;
             }
-            if (a_p0->keyval == GDK_c || a_p0->keyval == GDK_C) /* copy */
+            if (a_p0->keyval == SEQ64_c || a_p0->keyval == SEQ64_C) /* copy */
             {
                 m_seq.copy_selected();
                 result = true;
             }
-            if (a_p0->keyval == GDK_v || a_p0->keyval == GDK_V) /* paste */
+            if (a_p0->keyval == SEQ64_v || a_p0->keyval == SEQ64_V) /* paste */
             {
                 start_paste();
                 result = true;
             }
-            if (a_p0->keyval == GDK_z || a_p0->keyval == GDK_Z) /* Undo */
+            if (a_p0->keyval == SEQ64_z || a_p0->keyval == SEQ64_Z) /* Undo */
             {
                 m_seq.pop_undo();
                 result = true;

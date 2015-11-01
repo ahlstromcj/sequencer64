@@ -1,6 +1,6 @@
 Bugs and Upgrade Ideas
 Chris Ahlstrom
-2015-10-27 to 2015-10-30
+2015-10-27 to 2015-10-31
 
 In no particular order...
 
@@ -14,6 +14,9 @@ In no particular order...
    saving.  This is a legacy bug.  Tighten up the is-dirty handling for all
    dialogs.
 -  Selecting note events is iffy, more so than in legacy.
+-  Would be nice to be able move selected notes in the seqroll using
+   the arrow keys, in one key and snap resoltion increments.
+   See seq24seqroll.cpp, line 305.
 -  Would be nice to have the sequence editors and performance editor scroll to
    keep the progress bar in view.
 -  Would be nice to show the current time/tick/measure/bar in the tune as
@@ -38,6 +41,19 @@ In no particular order...
 -  Add one or two digits to the size of the "Sequence length in bars" field, at
    the expense of its pixmap button.  Add an "infinite" option to that value.
 -  Finish adding elements to the "user" configuration file.
+-  Using SEQ64_ key and event macros instead of GDK_ key and event macros.
+
+comparison between ‘enum GdkEventType’ and
+‘enum seq 64::seq_event_type_t’
+     if (a_p0->type == SEQ64_KEY_PRESS)
+
+comparison between ‘enum GdkScrollDirection’ and
+‘enum seq64::seq_scroll_direction_t’ [-Wenum-compare]
+     if (a_ev->direction == SEQ64_SCROLL_UP)
+
+comparison between ‘enum GdkScrollDirection’ and
+‘e$um seq64::seq_scroll_direction_t’
+     else if (a_ev->direction == SEQ64_SCROLL_DOWN)
 
 draw_drawable( gc , src , xsrc , ysrc , xdest , ydest , width , height ):
 
@@ -49,18 +65,22 @@ x  m_window->draw_drawable(m_gc, m_pixmap,  ...)
 
 -  Initiatives from other projects ("-" means "not done (yet)", "y" means
    "partially done", "x" means done, "0" means "will not do"):
-   -  Porting to BSD:         https://github.com/vext01/seq24
+   0  Porting to BSD:         https://github.com/vext01/seq24
+         Obviously a very old fork of seq24, with a lot of diffs from 0.9.2.
    y  AUR archive files:      https://github.com/aur-archive/seq24
    x  freddix patches:        https://github.com/freddix/seq24
    x  pld-linux patches:      https://github.com/pld-linux/seq24
    x  OpenMandriva patches:   https://github.com/OpenMandrivaAssociation/seq24
    0  Launchpad mapper:       https://github.com/Excds/seq24-launchpad-mapper
-   -  Fork of seq24:          https://github.com/orlammd/SC_seq24
+   0  Fork of seq24:          https://github.com/orlammd/SC_seq24
+         An apparent odd mix of versions, and some French cusses.
    0  git-ingore, license:    https://github.com/franticspider/seq24plus
    0  Basic inspiration:      https://github.com/analoq/seq
    0  In-browser seq24:       https://github.com/briandunn/seq25
    0  One-up of seq25:        https://github.com/jgdavey/seq26
    0  Ruby implementation:    https://github.com/chriserin/seq27
-   -  Song-editing emph:      https://github.com/sbrauer/seq42
+   0  Song-editing emph:      https://github.com/sbrauer/seq42
+         Another old fork, lacking mainwid and perfedit, but has a couple of
+         nice ideas to examine.
 
 

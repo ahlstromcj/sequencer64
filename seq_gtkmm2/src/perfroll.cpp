@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-29
+ * \updates       2015-10-31
  * \license       GNU GPLv2 or above
  *
  */
@@ -306,10 +306,6 @@ perfroll::draw_progress ()
     long tick_offset = m_4bar_offset * m_ticks_per_bar;
     int progress_x = (tick - tick_offset) / m_perf_scale_x;
     int old_progress_x = (m_old_progress_ticks - tick_offset) / m_perf_scale_x;
-//  m_window->draw_drawable                                 /* draw old */
-//  (
-//      m_gc, m_pixmap, old_progress_x, 0, old_progress_x, 0, 1, m_window_y
-//  );
     draw_drawable                                       /* erase old line */
     (
         old_progress_x, 0, old_progress_x, 0, 1, m_window_y
@@ -452,11 +448,7 @@ perfroll::draw_sequence_on (/*Glib::RefPtr<Gdk::Drawable> a_draw,*/ int seqnum)
  *  Draws the given pattern/sequence background on the given drawable area.
  */
 
-void perfroll::draw_background_on
-(
-//  Glib::RefPtr<Gdk::Drawable> a_draw,
-    int seqnum
-)
+void perfroll::draw_background_on (int seqnum)
 {
     long tick_offset = m_4bar_offset * m_ticks_per_bar;
     long first_measure = tick_offset / m_measure_length;
@@ -467,13 +459,11 @@ void perfroll::draw_background_on
 
     int h = m_names_y;
     int y = h * seqnum;
-//  draw_rectangle(a_draw, white(), 0, y, m_window_x, h);
     draw_rectangle_on_pixmap(white(), 0, y, m_window_x, h);
     m_gc->set_foreground(black());
     for (long i = first_measure; i < last_measure; ++i)
     {
         int x_pos = ((i * m_measure_length) - tick_offset) / m_perf_scale_x;
-//      a_draw->draw_drawable
         m_pixmap->draw_drawable
         (
             m_gc, m_background, 0, 0, x_pos, y,
@@ -497,19 +487,13 @@ perfroll::redraw_dirty_sequences ()
         int seq = y + m_sequence_offset;
         if (perf().is_dirty_perf(seq))
         {
-            draw_background_on(/*m_pixmap,*/ seq);
-            draw_sequence_on(/*m_pixmap,*/ seq);
+            draw_background_on(seq);
+            draw_sequence_on(seq);
             draw = true;
         }
     }
     if (draw)
-    {
-//      m_window->draw_drawable
-//      (
-//          m_gc, m_pixmap, 0, 0, 0, 0, m_window_x, m_window_y
-//      );
         draw_drawable(0, 0, 0, 0, m_window_x, m_window_y);
-    }
 }
 
 /**
@@ -519,16 +503,10 @@ perfroll::redraw_dirty_sequences ()
 void
 perfroll::draw_drawable_row
 (
-//  Glib::RefPtr<Gdk::Drawable> a_dest,
-//  Glib::RefPtr<Gdk::Drawable> a_src,
     long a_y
 )
 {
     int s = a_y / m_names_y;
-//  a_dest->draw_drawable
-//  (
-//      m_gc, a_src, 0, s * m_names_y, 0, s * m_names_y, m_window_x, m_names_y
-//  );
     draw_drawable(0, s * m_names_y, 0, s * m_names_y, m_window_x, m_names_y);
 }
 
@@ -539,14 +517,14 @@ perfroll::draw_drawable_row
 void
 perfroll::draw_all ()
 {
-    draw_background_on(/*m_pixmap,*/ m_drop_sequence);
-    draw_sequence_on(/*m_pixmap,*/ m_drop_sequence);
+    draw_background_on(m_drop_sequence);
+    draw_sequence_on(m_drop_sequence);
 
     /*
      * We can replace this with stock code.
      */
 
-    draw_drawable_row(/*m_window, m_pixmap,*/ m_drop_y);
+    draw_drawable_row(m_drop_y);
 }
 
 /**
@@ -613,8 +591,8 @@ perfroll::on_expose_event (GdkEventExpose * ev)
     int y_f = (ev->area.y + ev->area.height) / m_names_y;
     for (int y = y_s; y <= y_f; ++y)
     {
-        draw_background_on(/*m_pixmap,*/ y + m_sequence_offset);
-        draw_sequence_on(/*m_pixmap,*/ y + m_sequence_offset);
+        draw_background_on(y + m_sequence_offset);
+        draw_sequence_on(y + m_sequence_offset);
     }
     m_window->draw_drawable
     (
@@ -657,12 +635,12 @@ perfroll::on_scroll_event (GdkEventScroll * ev)
 {
     guint modifiers;                /* used to filter out caps/num lock etc. */
     modifiers = gtk_accelerator_get_default_mod_mask();
-    if ((ev->state & modifiers) == GDK_SHIFT_MASK)
+    if ((ev->state & modifiers) == SEQ64_SHIFT_MASK)
     {
         double val = m_hadjust.get_value();
-        if (ev->direction == GDK_SCROLL_UP)
+        if (CAST_EQUIVALENT(ev->direction, SEQ64_SCROLL_UP))
             val -= m_hadjust.get_step_increment();
-        else if (ev->direction == GDK_SCROLL_DOWN)
+        else if (CAST_EQUIVALENT(ev->direction, SEQ64_SCROLL_DOWN))
             val += m_hadjust.get_step_increment();
 
         m_hadjust.clamp_page(val, val + m_hadjust.get_page_size());
@@ -670,9 +648,9 @@ perfroll::on_scroll_event (GdkEventScroll * ev)
     else
     {
         double val = m_vadjust.get_value();
-        if (ev->direction == GDK_SCROLL_UP)
+        if (CAST_EQUIVALENT(ev->direction, SEQ64_SCROLL_UP))
             val -= m_vadjust.get_step_increment();
-        else if (ev->direction == GDK_SCROLL_DOWN)
+        else if (CAST_EQUIVALENT(ev->direction, SEQ64_SCROLL_DOWN))
             val += m_vadjust.get_step_increment();
 
         m_vadjust.clamp_page(val, val + m_vadjust.get_page_size());
@@ -811,9 +789,9 @@ perfroll::split_trigger (int seqnum, long a_tick)
 {
     perf().push_trigger_undo();
     perf().get_sequence(seqnum)->split_trigger(a_tick);
-    draw_background_on(/*m_pixmap,*/ seqnum);
-    draw_sequence_on(/*m_pixmap,*/ seqnum);
-    draw_drawable_row(/*m_window, m_pixmap,*/ m_drop_y);
+    draw_background_on(seqnum);
+    draw_sequence_on(seqnum);
+    draw_drawable_row(m_drop_y);
 }
 
 }           // namespace seq64
@@ -823,3 +801,4 @@ perfroll::split_trigger (int seqnum, long a_tick)
  *
  * vim: sw=4 ts=4 wm=4 et ft=cpp
  */
+

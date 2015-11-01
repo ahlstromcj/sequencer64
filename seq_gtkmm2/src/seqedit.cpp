@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-30
+ * \updates       2015-10-31
  * \license       GNU GPLv2 or above
  *
  */
@@ -42,9 +42,10 @@
 #include <gtkmm/tooltips.h>
 #include <sigc++/bind.h>
 
-#include "globals.h"
 #include "controllers.hpp"
 #include "event.hpp"
+#include "gdk_basic_keys.h"
+#include "globals.h"
 #include "gtk_helpers.h"
 #include "midibus.hpp"
 #include "options.hpp"
@@ -97,7 +98,8 @@ int seqedit::m_initial_key          =  0;
 int seqedit::m_initial_sequence     = -1;
 
 /**
- * Actions
+ * Actions.  These variables represent actions that can be applied to a
+ * selection of notes.
  */
 
 static const int c_select_all_notes      =  1;
@@ -1705,8 +1707,6 @@ seqedit::set_key (int a_note)
 void
 seqedit::apply_length (int bpm, int bw, int measures)
 {
-//  m_seq.set_length(measures * bpm * ((m_ppqn * 4) / bw));
-
     m_seq.set_length(measures_to_ticks(bpm, m_ppqn, bw, measures));
     m_seqroll_wid->reset();
     m_seqtime_wid->reset();
@@ -1727,8 +1727,6 @@ seqedit::apply_length (int bpm, int bw, int measures)
 long
 seqedit::get_measures ()
 {
-//  long units = (m_seq.get_bpm() * (m_ppqn * 4)) /  m_seq.get_bw();
-
     long units = measures_to_ticks(m_seq.get_bpm(), m_ppqn, m_seq.get_bw());
     long measures = m_seq.get_length() / units;
     if (m_seq.get_length() % units != 0)
@@ -2002,33 +2000,33 @@ seqedit::on_scroll_event (GdkEventScroll * a_ev)
 {
     guint modifiers;    // Used to filter out caps/num lock etc.
     modifiers = gtk_accelerator_get_default_mod_mask();
-    if ((a_ev->state & modifiers) == GDK_CONTROL_MASK)
+    if ((a_ev->state & modifiers) == SEQ64_CONTROL_MASK)
     {
-        if (a_ev->direction == GDK_SCROLL_DOWN)
+        if (CAST_EQUIVALENT(a_ev->direction, SEQ64_SCROLL_DOWN))
         {
             if (m_zoom * 2 <= mc_max_zoom)
                 set_zoom(m_zoom * 2);
         }
-        else if (a_ev->direction == GDK_SCROLL_UP)
+        else if (CAST_EQUIVALENT(a_ev->direction, SEQ64_SCROLL_UP))
         {
             if (m_zoom / 2 >= mc_min_zoom)
                 set_zoom(m_zoom / 2);
         }
         return true;
     }
-    else if ((a_ev->state & modifiers) == GDK_SHIFT_MASK)
+    else if ((a_ev->state & modifiers) == SEQ64_SHIFT_MASK)
     {
         double val = m_hadjust->get_value();
         double step = m_hadjust->get_step_increment();
         double upper = m_hadjust->get_upper();
-        if (a_ev->direction == GDK_SCROLL_DOWN)
+        if (CAST_EQUIVALENT(a_ev->direction, SEQ64_SCROLL_DOWN))
         {
             if (val + step < upper)
                 m_hadjust->set_value(val + step);
             else
                 m_hadjust->set_value(upper);
         }
-        else if (a_ev->direction == GDK_SCROLL_UP)
+        else if (CAST_EQUIVALENT(a_ev->direction, SEQ64_SCROLL_UP))
         {
             m_hadjust->set_value(val - step);
         }
@@ -2046,7 +2044,7 @@ seqedit::on_key_press_event (GdkEventKey * a_ev)
 {
     guint modifiers;    // Used to filter out caps/num lock etc.
     modifiers = gtk_accelerator_get_default_mod_mask();
-    if ((a_ev->state & modifiers) == GDK_CONTROL_MASK && a_ev->keyval == 'w')
+    if ((a_ev->state & modifiers) == SEQ64_CONTROL_MASK && a_ev->keyval == 'w')
         return on_delete_event((GdkEventAny*)a_ev);
     else
         return Gtk::Window::on_key_press_event(a_ev);

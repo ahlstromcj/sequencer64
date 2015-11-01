@@ -29,7 +29,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-09-13
+ * \updates       2015-11-01
  * \license       GNU GPLv2 or above
  *
  */
@@ -64,6 +64,7 @@ public:         // callbacks
     bool on_button_press_event (GdkEventButton * a_ev, seqroll & ths);
     bool on_button_release_event (GdkEventButton * a_ev, seqroll & ths);
     bool on_motion_notify_event (GdkEventMotion * a_ev, seqroll & ths);
+
 };
 
 }           // namespace seq64
@@ -75,3 +76,4 @@ public:         // callbacks
  *
  * vim: sw=4 ts=4 wm=4 et ft=cpp
  */
+

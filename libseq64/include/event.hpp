@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-30
+ * \updates       2015-11-01
  * \license       GNU GPLv2 or above
  *
  *  This module also declares/defines the various constants, status-byte
@@ -306,7 +306,7 @@ public:
      *      and the cc and datum parameters match.
      */
 
-    static bool is_desired_cc_or_not_cc
+    static inline bool is_desired_cc_or_not_cc
     (
         unsigned char msg, unsigned char cc, unsigned char datum
     )
@@ -384,7 +384,7 @@ public:
      *      The return reference for the first byte.
      */
 
-    void get_data (unsigned char & d0, unsigned char & d1)
+    void get_data (unsigned char & d0, unsigned char & d1) const
     {
         d0 = m_data[0];
         d1 = m_data[1];

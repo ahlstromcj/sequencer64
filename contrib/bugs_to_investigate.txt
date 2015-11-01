@@ -1,29 +1,34 @@
 Bugs and Upgrade Ideas
 Chris Ahlstrom
-2015-10-27 to 2015-10-31
+2015-10-27 to 2015-11-01
 
 In no particular order...
 
 -  Provide an "infinite" pattern that will not repeat (unless specified
    multiple times in the performance editor).
+   "Infinite" sequences, aka a "track" as opposed to a sequence.
+-  Support for the Non Session Manager.
 -  Muting in mainwid or perfnames should be reflected in both views.
 -  Extra lines appearing in perfnames/perfroll when starting playback in
    perfroll.
 -  Anyway to double-click a pattern to edit, without selecting it?
+   Or by holding the Shift key or Mod4 key with the letter?
 -  Moving a pattern doesn't turn on any dirty bit, to allow an opportunity for
    saving.  This is a legacy bug.  Tighten up the is-dirty handling for all
    dialogs.
 -  Selecting note events is iffy, more so than in legacy.
--  Would be nice to be able move selected notes in the seqroll using
-   the arrow keys, in one key and snap resoltion increments.
-   See seq24seqroll.cpp, line 305.
+x  Would be nice to be able move selected notes in the seqroll using
+   the arrow keys, in one-key and one-snap resoltion increments.
+   See seq24seqroll.cpp, line 305.  Done.  Added keys for
+   paint mode (p, Shift-P), left, right, down, and up, enabled if any notes
+   are selected.  Still need to figure out what left, right, and home do
+   otherwise, needs some graphical feedback.
 -  Would be nice to have the sequence editors and performance editor scroll to
    keep the progress bar in view.
 -  Would be nice to show the current time/tick/measure/bar in the tune as
    it plays.
 -  Would be nice to show the current note/time/tick/measure/bar in sequence
    editor and performance editor windows.
--  "Infinite" sequences
 -  Stop progress bar when pattern not playing in performance editor.
 -  New stuff to implement in all relevant modules:
    -  Use of is_channel_msg(), is_one_byte_msg(), is_two_byte_msg()
@@ -82,5 +87,30 @@ x  m_window->draw_drawable(m_gc, m_pixmap,  ...)
    0  Song-editing emph:      https://github.com/sbrauer/seq42
          Another old fork, lacking mainwid and perfedit, but has a couple of
          nice ideas to examine.
+
+Notes from around the Web:
+
+   I forgotten instructions of use. 'p' to activate paint, 'P' (shift p) to
+   deactivate.  Remember to "select" the piano roll instead of writing on other
+   controls, like the name edit. that's a little tricky but you will overcome
+   that.  ivan
+
+seqroll.cpp:
+
+>               m_seq->remove_marked();
+>               ret = true;
+>           }
+> +         if ( a_p0->keyval ==  GDK_p ){
+> +             set_adding( true );
+> +             ret = true;
+> +         }
+> +         if ( a_p0->keyval ==  GDK_P ){
+> +             set_adding( false );
+> +             ret = true;
+> +         }
+>   
+>           if ( a_p0->state & GDK_CONTROL_MASK ){
+
+   We've now incorporated this feature (2015-11-01).
 
 

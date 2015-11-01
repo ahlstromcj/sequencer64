@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-31
+ * \updates       2015-11-01
  * \license       GNU GPLv2 or above
  *
  *  The functions add_list_var() and add_long_list() have been replaced by
@@ -239,6 +239,15 @@ public:
     event_list & events ()
     {
         return m_events;
+    }
+
+    /**
+     * \getter m_events.any_selected_notes()
+     */
+
+    bool any_selected_notes () const
+    {
+        return m_events.any_selected_notes();
     }
 
     /**
@@ -535,8 +544,8 @@ public:
     (
         unsigned char status, unsigned char cc, bool inverse = false
     );
-    int get_num_selected_notes ();
-    int get_num_selected_events (unsigned char status, unsigned char cc);
+    int get_num_selected_notes () const;
+    int get_num_selected_events (unsigned char status, unsigned char cc) const;
     void select_all ();
     void copy_selected ();
     void paste_selected (long tick, int note);

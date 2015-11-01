@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-31
+ * \updates       2015-11-01
  * \license       GNU GPLv2 or above
  *
  */
@@ -990,6 +990,13 @@ seqroll::on_focus_out_event (GdkEventFocus *)
  *  Implements the on-key-press event handling.  The start/end key may be
  *  the same key (i.e. SPACEBAR).  Allow toggling when the same key is
  *  mapped to both triggers (i.e. SPACEBAR).
+ *
+ *  Concerning the usage of the arrow keys in this function: This code is
+ *  reached, but has no visible effect.  Why?  I think they were meant to move
+ *  the point for playback.  We may HAVE A BUG with our new handling of
+ *  triggers, or maybe these depend upon the proper playback mode.  In any
+ *  case, the old functionality is preserved.  However, if there are notes
+ *  selected, then these keys support selection movement.
  */
 
 bool
@@ -1030,13 +1037,7 @@ seqroll::on_key_press_event (GdkEventKey * a_p0)
         if (! global_is_pattern_playing)
         {
             /*
-             * This code is reached, but has no visible effect.  Why?
-             * I think they were meant to move the point for playback.
-             * We may HAVE A BUG with our new handling of triggers, or
-             * maybe these depend upon the proper playback mode.
-             * For now, I will comment out the old functionality and replace
-             * it with selection movement.  Later it can be decided by mode,
-             * perhaps.
+             * See the note about the arrow keys in the function banner.
              */
 
             if (a_p0->keyval == SEQ64_Home)
@@ -1046,32 +1047,91 @@ seqroll::on_key_press_event (GdkEventKey * a_p0)
             }
             else if (a_p0->keyval == SEQ64_Left)
             {
-                /*
-                 * m_seq.set_orig_tick(m_seq.get_last_tick() - m_snap);
-                 */
-
-                m_seq.move_selected_notes(-48 /*m_snap?*/, 0);
                 result = true;
+                if (m_seq.any_selected_notes())
+                    m_seq.move_selected_notes(-m_snap, /*-48,*/ 0);
+                else
+                    m_seq.set_orig_tick(m_seq.get_last_tick() - m_snap);
             }
             else if (a_p0->keyval == SEQ64_Right)
             {
-                /*
-                 * m_seq.set_orig_tick(m_seq.get_last_tick() + m_snap);
-                 */
-
-                m_seq.move_selected_notes(48 /*m_snap?*/, 0);
                 result = true;
+                if (m_seq.any_selected_notes())
+                    m_seq.move_selected_notes(m_snap, /*48,*/ 0);
+                else
+                    m_seq.set_orig_tick(m_seq.get_last_tick() + m_snap);
             }
             else if (a_p0->keyval == SEQ64_Down)
             {
-                m_seq.move_selected_notes(0, -1);
-                result = true;
+                if (m_seq.any_selected_notes())
+                {
+                    m_seq.move_selected_notes(0, -1);
+                    result = true;
+                }
             }
             else if (a_p0->keyval == SEQ64_Up)
             {
-                m_seq.move_selected_notes(0, 1);
+                if (m_seq.any_selected_notes())
+                {
+                    m_seq.move_selected_notes(0, 1);
+                    result = true;
+                }
+            }
+            else if (a_p0->keyval == SEQ64_p)   /* \new ca 2015-11-01 */
+            {
+                m_seq24_interaction.set_adding(true, *this);
                 result = true;
             }
+            else if (a_p0->keyval == SEQ64_P)   /* \new ca 2015-11-01 */
+            {
+                m_seq24_interaction.set_adding(false, *this);
+                result = true;
+            }
+#if USE_VI_SEQROLL_MODE     // currently disabled, for programmers only!  :-D
+            else if (a_p0->keyval == SEQ64_h)
+            {
+                if (m_seq.any_selected_notes())
+                {
+                    m_seq.move_selected_notes(-m_snap, /*-48,*/ 0);
+                    result = true;
+                }
+            }
+            else if (a_p0->keyval == SEQ64_l)
+            {
+                if (m_seq.any_selected_notes())
+                {
+                    m_seq.move_selected_notes(m_snap, /*48,*/ 0);
+                    result = true;
+                }
+            }
+            else if (a_p0->keyval == SEQ64_j)
+            {
+                if (m_seq.any_selected_notes())
+                {
+                    m_seq.move_selected_notes(0, -1);
+                    result = true;
+                }
+            }
+            else if (a_p0->keyval == SEQ64_k)
+            {
+                if (m_seq.any_selected_notes())
+                {
+                    m_seq.move_selected_notes(0, 1);
+                    result = true;
+                }
+            }
+            else if (a_p0->keyval == SEQ64_i)
+            {
+                m_seq24_interaction.set_adding(true, *this);
+                result = true;
+            }
+            else if (a_p0->keyval == SEQ64_I)   /* escape is for stop-play */
+            {
+                m_seq24_interaction.set_adding(false, *this);
+                result = true;
+            }
+#endif  // USE_VI_SEQROLL_MODE
+
         }
         if (a_p0->state & SEQ64_CONTROL_MASK)
         {

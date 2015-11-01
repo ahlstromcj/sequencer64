@@ -490,7 +490,8 @@ seqevent::on_expose_event (GdkEventExpose * e)
  *  propagation of the event to higher-level widgets.  The Fruity and Seq24
  *  event handlers return true, always.  In the legacy code, though, the
  *  fall-through code caused false to be returned, always.  Not sure what
- *  effect this had.
+ *  effect this had.  Added some fixes, but then commented them out until
+ *  better testing can be done.
  */
 
 bool
@@ -501,11 +502,11 @@ seqevent::on_button_press_event (GdkEventButton * a_ev)
     {
     case e_fruity_interaction:
         result = m_fruity_interaction.on_button_press_event(a_ev, *this);
-        break;              // removed the FALL THROUGH
+        // break;              // removed the FALL THROUGH
 
     case e_seq24_interaction:
         result = m_seq24_interaction.on_button_press_event(a_ev, *this);
-        break;              // removed the FALL THROUGH
+        // break;              // removed the FALL THROUGH
 
     default:
         result = false;
@@ -543,7 +544,8 @@ seqevent::drop_event (long a_tick)
  *  between the Seq24 and Fruity varieties of mouse interaction.
  *
  *  Odd.  The fruity case fell through to the Seq24 case.  We will assume
- *  for now that this is correct.
+ *  for now that this is correct.  Added some fixes, but then commented them
+ *  out until better testing can be done.
  */
 
 bool
@@ -557,9 +559,9 @@ seqevent::on_button_release_event (GdkEventButton * a_ev)
 
         /*
          * FALL THROUGH.  Is this correct behavior?
-         */
 
         break;              // removed the FALL THROUGH
+         */
 
     case e_seq24_interaction:
         result = m_seq24_interaction.on_button_release_event(a_ev, *this);
@@ -577,7 +579,8 @@ seqevent::on_button_release_event (GdkEventButton * a_ev)
  *  between the Seq24 and Fruity varieties of mouse interaction.
  *
  *  Odd.  The fruity case fell through to the Seq24 case.  We will assume
- *  for now that this is correct.
+ *  for now that this is correct.  Added some fixes, but then commented them
+ *  out until better testing can be done.
  */
 
 bool
@@ -592,6 +595,8 @@ seqevent::on_motion_notify_event (GdkEventMotion * a_ev)
         /*
          * FALL THROUGH.  Is this correct behavior?
          */
+
+        // break;              // removed the FALL THROUGH
 
     case e_seq24_interaction:
         result = m_seq24_interaction.on_motion_notify_event(a_ev, *this);

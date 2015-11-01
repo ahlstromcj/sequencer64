@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-19
- * \updates       2015-10-12
+ * \updates       2015-11-01
  * \license       GNU GPLv2 or above
  *
  *  This module extracts the event-list functionality from the sequencer
@@ -297,8 +297,9 @@ private:                                // functions for friend sequence
     void mark_out_of_range (long slength);
     void unmark_all ();
     void unpaint_all ();
-    int count_selected_notes ();
-    int count_selected_events (unsigned char status, unsigned char cc);
+    int count_selected_notes () const;
+    bool any_selected_notes () const;
+    int count_selected_events (unsigned char status, unsigned char cc) const;
     void select_all ();
     void unselect_all ();
     void print ();

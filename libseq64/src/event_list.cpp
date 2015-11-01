@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-19
- * \updates       2015-10-28
+ * \updates       2015-11-01
  * \license       GNU GPLv2 or above
  *
  */
@@ -492,13 +492,34 @@ event_list::unpaint_all ()
  */
 
 int
-event_list::count_selected_notes ()
+event_list::count_selected_notes () const
 {
     int result = 0;
-    for (Events::iterator i = m_events.begin(); i != m_events.end(); ++i)
+    for (Events::const_iterator i = m_events.begin(); i != m_events.end(); ++i)
     {
         if (dref(i).is_note_on() && dref(i).is_selected())
             ++result;
+    }
+    return result;
+}
+
+/**
+ *  Indicates that at least one note is selected.  Acts like
+ *  event_list::count_selected_notes(), but stops after finding a selected
+ *  note. We could add a flag to count_selected_notes() to break, I suppose.
+ */
+
+bool
+event_list::any_selected_notes () const
+{
+    bool result = false;
+    for (Events::const_iterator i = m_events.begin(); i != m_events.end(); ++i)
+    {
+        if (dref(i).is_note_on() && dref(i).is_selected())
+        {
+            result = true;
+            break;
+        }
     }
     return result;
 }
@@ -510,21 +531,22 @@ event_list::count_selected_notes ()
  */
 
 int
-event_list::count_selected_events (unsigned char status, unsigned char cc)
+event_list::count_selected_events (unsigned char status, unsigned char cc) const
 {
     int result = 0;
-    for (Events::iterator i = m_events.begin(); i != m_events.end(); ++i)
+    for (Events::const_iterator i = m_events.begin(); i != m_events.end(); ++i)
     {
-        event & e = dref(i);
+        const event & e = dref(i);
         if (e.get_status() == status)
         {
             unsigned char d0, d1;
             e.get_data(d0, d1);                 /* get the two data bytes */
-            if
-            (
-                (status == EVENT_CONTROL_CHANGE && d0 == cc) ||
-                (status != EVENT_CONTROL_CHANGE)
-            )
+//          if
+//          (
+//              (status == EVENT_CONTROL_CHANGE && d0 == cc) ||
+//              (status != EVENT_CONTROL_CHANGE)
+//          )
+            if (event::is_desired_cc_or_not_cc(status, cc, d0))
             {
                 if (e.is_selected())
                     ++result;

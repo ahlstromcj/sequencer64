@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-29
+ * \updates       2015-11-01
  * \license       GNU GPLv2 or above
  *
  *  Note that this representation is, in a sense, inside the mainwnd
@@ -302,9 +302,17 @@ mainwid::draw_sequence_on_pixmap (int seqnum)
                     temp, sizeof temp, "%c",
                     (char) perf().lookup_keyevent_key(seqnum)
                 );
+
+                /*
+                 * Should compensate for text-width using actual character
+                 * width.
+                 *
+                 * base_x + m_seqarea_x - 7, base_y + m_text_size_y * 4 - 2,
+                 */
+
                 render_string_on_pixmap                     // shortcut key
                 (
-                    base_x + m_seqarea_x - 7, base_y + m_text_size_y * 4 - 2,
+                    base_x + m_seqarea_x - 9, base_y + m_text_size_y * 4 - 2,
                     temp, col
                 );
             }

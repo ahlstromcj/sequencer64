@@ -720,7 +720,7 @@ sequence::get_clipboard_box
  */
 
 int
-sequence::get_num_selected_notes ()
+sequence::get_num_selected_notes () const
 {
     automutex locker(m_mutex);
     return m_events.count_selected_notes();
@@ -735,7 +735,7 @@ sequence::get_num_selected_notes ()
  */
 
 int
-sequence::get_num_selected_events (unsigned char status, unsigned char cc)
+sequence::get_num_selected_events (unsigned char status, unsigned char cc) const
 {
     automutex locker(m_mutex);
     return m_events.count_selected_events(status, cc);

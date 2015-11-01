@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-10-30
- * \updates       2015-10-31
+ * \updates       2015-11-01
  * \license       GNU GPLv2 or above
  *
  *  By segregating trigger support into its own module, the sequence class is a
@@ -384,10 +384,9 @@ public:
     bool unselect ();
     bool intersect (long position, long & start, long & end);
     void remove_selected ();
-//  void cut_selected_trigger ();
     void copy_selected ();
     void paste ();
-    void move_selected
+    bool move_selected
     (
         long tick, bool adjustoffset, int which = 2
     );

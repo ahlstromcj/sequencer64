@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-31
+ * \updates       2015-11-01
  * \license       GNU GPLv2 or above
  *
  */
@@ -2074,16 +2074,21 @@ sequence::selected_trigger_end ()
  *  -   If we are moving both (2), use first as offset.
  *
  * \threadsafe
+ *
+ * \return
+ *      Returns the value of triggers::move_selected(), which indicate
+ *      that the movement could be made.  Used in
+ *      Seq24PerfInput::handle_motion_key().
  */
 
-void
+bool
 sequence::move_selected_triggers_to
 (
     long tick, bool adjustoffset, int which
 )
 {
     automutex locker(m_mutex);
-    m_triggers.move_selected(tick, adjustoffset, which);
+    return m_triggers.move_selected(tick, adjustoffset, which);
 }
 
 /**

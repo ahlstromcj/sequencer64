@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-10-30
- * \updates       2015-10-31
+ * \updates       2015-11-01
  * \license       GNU GPLv2 or above
  *
  */
@@ -668,14 +668,24 @@ triggers::get_selected_end ()
  *          -   If we are moving the 0, use first as offset.
  *          -   If we are moving the 1, use the last as the offset.
  *          -   If we are moving both (2), use first as offset.
+ *
+ * \return
+ *      Returns true if there was room to move.  Otherwise, false is returned.
+ *      We need this feature to support keystoke movement of a selected
+ *      trigger in the perfroll window, and keep it from continually
+ *      incremented when there can be no more movement. This causes moving the
+ *      other direction to be delayed while the accumulating movement counter
+ *      is used up.  However, right now we can't rely on this result, and
+ *      ignore it.  There may be no way around this minor issue.
  */
 
-void
+bool
 triggers::move_selected
 (
     long tick, bool fixoffset, int which
 )
 {
+    bool result = true;
     long mintick = 0;
     long maxtick = 0x7ffffff;
     List::iterator s = m_triggers.begin();
@@ -683,14 +693,13 @@ triggers::move_selected
     {
         if (i->selected())
         {
-            s = i;
-
             /*
              * Too tricky.  Beware the side-effect of incrementing the
-             * iterator.
+             * i iterator.
              */
 
-            if (i != m_triggers.end() && ++i != m_triggers.end())
+            s = i;
+            if (++i != m_triggers.end())
                 maxtick = i->tick_start() - 1;
 
             long deltatick = 0;
@@ -724,6 +733,12 @@ triggers::move_selected
                     deltatick = maxtick - s->tick_end();
             }
 
+            /*
+             * This code must be executed, even if deltatick == 0!
+             * And setting result = deltatick == 0 causes some weirdness
+             * in selection movement with the arrow keys in the perfroll.
+             */
+
             if (which == 0 || which == 2)
                 s->increment_tick_start(deltatick);
 
@@ -740,6 +755,7 @@ triggers::move_selected
         else
             mintick = i->tick_end() + 1;
     }
+    return result;
 }
 
 /**
@@ -841,17 +857,6 @@ triggers::remove_selected ()
         }
     }
 }
-
-/**
- *      Copies and deletes the first selected trigger that is found.
-
-void
-triggers::cut_selected()
-{
-    copy_selected();
-    remove_selected();
-}
- */
 
 /**
  *      Copies the first selected trigger that is found.

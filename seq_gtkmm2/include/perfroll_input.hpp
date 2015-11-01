@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-13
+ * \updates       2015-11-01
  * \license       GNU GPLv2 or above
  *
  */
@@ -84,22 +84,26 @@ public:
 };
 
 /**
- *  Implements the default performance input characteristics of this
+ *  Implements the default (Seq24) performance input characteristics of this
  *  application.
  */
 
 class Seq24PerfInput : public AbstractPerfInput
 {
 
+    friend class perfroll;
+
 private:
 
     bool m_adding;
+    long m_effective_tick;
 
 public:
 
     Seq24PerfInput() :
         AbstractPerfInput   (),
-        m_adding            (false)
+        m_adding            (false),
+        m_effective_tick    (0)
     {
         // Empty body
     }
@@ -111,6 +115,8 @@ public:
 private:
 
     void set_adding (bool a_adding, perfroll & roll);
+    bool handle_motion_key (bool is_left, perfroll & roll);
+
 };
 
 }           // namespace seq64

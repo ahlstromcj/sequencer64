@@ -43,9 +43,14 @@ class seqroll;
  *  Implements the Seq24 mouse interaction paradigm for the seqroll.
  */
 
-struct Seq24SeqRollInput
+class Seq24SeqRollInput
 {
+
+private:
+
     bool m_adding;
+
+public:
 
     /**
      * Default constructor.

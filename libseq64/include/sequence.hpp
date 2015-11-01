@@ -33,6 +33,9 @@
  *
  *  The functions add_list_var() and add_long_list() have been replaced by
  *  functions in the new midi_container module.
+ *
+ *  We've offloaded most of the trigger code to the triggers class in its own
+ *  module, and now just call its member functions to do the actual work.
  */
 
 #include <string>
@@ -498,7 +501,7 @@ public:
     void cut_selected_trigger ();
     void copy_selected_trigger ();
     void paste_trigger ();
-    void move_selected_triggers_to
+    bool move_selected_triggers_to
     (
         long tick, bool adjust_offset, int which = 2
     );

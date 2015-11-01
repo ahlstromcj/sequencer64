@@ -22,15 +22,18 @@
 /**
  * \file          fruityperfroll_input.hpp
  *
- *  This module declares/defines the base class for the Performance window
- *  mouse input.
+ *  This module declares/defines the class for the "fruity" flavor of the
+ *  Performance window mouse input.
  *
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-13
+ * \updates       2015-11-01
  * \license       GNU GPLv2 or above
  *
+ *  Note that this class doesn't handle keystrokes (directly), so even if the
+ *  user chooses it, the Seq24 input object is also needed, to handle those
+ *  keystrokes.
  */
 
 #include "perfroll_input.hpp"           /* ABC and Seq24 input class    */
@@ -47,6 +50,8 @@ class perfroll;
 
 class FruityPerfInput : public AbstractPerfInput
 {
+
+    friend class perfroll;
 
 private:
 
@@ -83,3 +88,4 @@ private:
  *
  * vim: sw=4 ts=4 wm=4 et ft=cpp
  */
+

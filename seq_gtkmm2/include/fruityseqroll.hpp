@@ -42,12 +42,17 @@ class seqroll;
  *  Implements the fruity mouse interaction paradigm for the seqroll.
  */
 
-struct FruitySeqRollInput
+class FruitySeqRollInput
 {
+
+private:
+
     bool m_adding;
     bool m_canadd;
     bool m_erase_painting;
     long m_drag_paste_start_pos[2];
+
+public:
 
     /**
      * Default constructor.

@@ -4,6 +4,8 @@ Chris Ahlstrom
 
 In no particular order...
 
+-  Document that right-click on pattern editor's left and right scrollbar arrows
+   act like Home and End for the seqroll.
 -  Provide an "infinite" pattern that will not repeat (unless specified
    multiple times in the performance editor).
    "Infinite" sequences, aka a "track" as opposed to a sequence.

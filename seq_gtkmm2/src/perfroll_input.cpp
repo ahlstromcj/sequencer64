@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-31
+ * \updates       2015-11-01
  * \license       GNU GPLv2 or above
  *
  */
@@ -69,7 +69,7 @@ Seq24PerfInput::set_adding (bool adding, perfroll & roll)
  */
 
 bool
-Seq24PerfInput::on_button_press_event (GdkEventButton * a_ev, perfroll & roll)
+Seq24PerfInput::on_button_press_event (GdkEventButton * ev, perfroll & roll)
 {
     perform & p = roll.perf();
     int & dropseq = roll.m_drop_sequence;
@@ -79,14 +79,14 @@ Seq24PerfInput::on_button_press_event (GdkEventButton * a_ev, perfroll & roll)
         p.get_sequence(dropseq)->unselect_triggers();
         roll.draw_all();
     }
-    roll.m_drop_x = (int) a_ev->x;
-    roll.m_drop_y = (int) a_ev->y;
+    roll.m_drop_x = int(ev->x);
+    roll.m_drop_y = int(ev->y);
     roll.convert_xy                                 /* side-effects */
     (
         roll.m_drop_x, roll.m_drop_y, roll.m_drop_tick, dropseq
     );
 
-    if (SEQ64_CLICK_LEFT(a_ev->button))
+    if (SEQ64_CLICK_LEFT(ev->button))
     {
         long tick = roll.m_drop_tick;
         if (m_adding)         /* add a new note if we didn't select anything */
@@ -117,13 +117,13 @@ Seq24PerfInput::on_button_press_event (GdkEventButton * a_ev, perfroll & roll)
                 p.push_trigger_undo();
                 p.get_sequence(dropseq)->select_trigger(tick);
 
-                long start_tick = p.get_sequence(dropseq)->selected_trigger_start();
-                long end_tick = p.get_sequence(dropseq)->selected_trigger_end();
+                long tick0 = p.get_sequence(dropseq)->selected_trigger_start();
+                long tick1 = p.get_sequence(dropseq)->selected_trigger_end();
                 int wscalex = c_perfroll_size_box_click_w * c_perf_scale_x;
                 int ydrop = roll.m_drop_y % c_names_y;
                 if
                 (
-                    tick >= start_tick && tick <= (start_tick + wscalex) &&
+                    tick >= tick0 && tick <= (tick0 + wscalex) &&
                     ydrop <= c_perfroll_size_box_click_w + 1
                 )
                 {
@@ -134,7 +134,7 @@ Seq24PerfInput::on_button_press_event (GdkEventButton * a_ev, perfroll & roll)
                 }
                 else if
                 (
-                    tick >= (end_tick - wscalex) && tick <= end_tick &&
+                    tick >= (tick1 - wscalex) && tick <= tick1 &&
                     ydrop >= c_names_y - c_perfroll_size_box_click_w - 1
                 )
                 {
@@ -153,11 +153,11 @@ Seq24PerfInput::on_button_press_event (GdkEventButton * a_ev, perfroll & roll)
             }
         }
     }
-    else if (SEQ64_CLICK_RIGHT(a_ev->button))
+    else if (SEQ64_CLICK_RIGHT(ev->button))
     {
         set_adding(true, roll);
     }
-    else if (SEQ64_CLICK_MIDDLE(a_ev->button))                   /* split    */
+    else if (SEQ64_CLICK_MIDDLE(ev->button))                   /* split    */
     {
         if (p.is_active(dropseq))
         {
@@ -178,14 +178,14 @@ Seq24PerfInput::on_button_press_event (GdkEventButton * a_ev, perfroll & roll)
  */
 
 bool
-Seq24PerfInput::on_button_release_event (GdkEventButton * a_ev, perfroll & roll)
+Seq24PerfInput::on_button_release_event (GdkEventButton * ev, perfroll & roll)
 {
-    if (SEQ64_CLICK_LEFT(a_ev->button))
+    if (SEQ64_CLICK_LEFT(ev->button))
     {
         if (m_adding)
             m_adding_pressed = false;
     }
-    else if (SEQ64_CLICK_RIGHT(a_ev->button))
+    else if (SEQ64_CLICK_RIGHT(ev->button))
     {
         /*
          * Minor new feature.  If the Super (Mod4, Windows) key is
@@ -198,7 +198,7 @@ Seq24PerfInput::on_button_release_event (GdkEventButton * a_ev, perfroll & roll)
 
         bool addmode_exit = ! global_allow_mod4_mode;
         if (! addmode_exit)
-            addmode_exit = ! (a_ev->state & SEQ64_MOD4_MASK); // Mod4 held?
+            addmode_exit = ! (ev->state & SEQ64_MOD4_MASK); /* Mod4 held? */
 
         if (addmode_exit)
         {
@@ -209,6 +209,7 @@ Seq24PerfInput::on_button_release_event (GdkEventButton * a_ev, perfroll & roll)
 
     perform & p = roll.perf();
     roll.m_moving = roll.m_growing = m_adding_pressed = false;
+    m_effective_tick = 0;
     if (p.is_active(roll.m_drop_sequence))
         roll.draw_all();
 
@@ -220,9 +221,9 @@ Seq24PerfInput::on_button_release_event (GdkEventButton * a_ev, perfroll & roll)
  */
 
 bool
-Seq24PerfInput::on_motion_notify_event (GdkEventMotion * a_ev, perfroll & roll)
+Seq24PerfInput::on_motion_notify_event (GdkEventMotion * ev, perfroll & roll)
 {
-    int x = int(a_ev->x);
+    int x = int(ev->x);
     perform & p = roll.perf();
     int dropseq = roll.m_drop_sequence;
     if (m_adding && m_adding_pressed)
@@ -266,6 +267,87 @@ Seq24PerfInput::on_motion_notify_event (GdkEventMotion * a_ev, perfroll & roll)
     return true;
 }
 
+/**
+ *  Handles the keystroke motion-notify event for moving a pattern back and
+ *  forth in the performance.
+ *
+ *  What happens when the mouse is used to drag the pattern is that, first,
+ *  roll.m_drop_tick is set by left-clicking into the pattern to select it.
+ *  As the pattern is dragged, the drop-tick value does not change, but the
+ *  tick (converted from the moving x value) does.
+ *
+ *  Then the button-handler sets roll.m_moving = true, and calculates
+ *  roll.m_drop_tick_trigger_offset = roll.m_drop_tick -
+ *  p.get_sequence(dropseq)->selected_trigger_start();
+ *
+ *  The motion handler sees that roll.m_moving is true, gets the new tick
+ *  value from the new x value, offsets it, and calls
+ *  p.get_sequence(dropseq)->move_selected_triggers_to(tick, true).
+ *
+ *  When the user releases the left button, then roll.m_growing is turned of
+ *  and the roll draw_all()'s.
+ *
+ * \param is_left
+ *      False denotes the right arrow key, and true denotes the left arrow
+ *      key.
+ *
+ * \param roll
+ *      Provides a reference to the parent roll, which keeps track of most of
+ *      the information about the status of the window.
+ *
+ * \return
+ *      Returns true if there was some action able to happen that would
+ *      necessitate a window update.  We've updated triggers::move_selected()
+ *      [called indirectly near the end of this routine] to return false if no
+ *      more movement could be made.  This prevents this routine from moving
+ *      way ahead after movement of the selected (in the user-interface)
+ *      trigger stops.
+ */
+
+bool
+Seq24PerfInput::handle_motion_key (bool is_left, perfroll & roll)
+{
+    bool result = roll.m_drop_sequence > 0;
+    if (result)
+    {
+        perform & p = roll.perf();
+        int dropseq = roll.m_drop_sequence;
+        long droptick = roll.m_drop_tick;
+        if (m_effective_tick == 0)
+            m_effective_tick = droptick;
+
+        if (is_left)
+        {
+            /*
+             * This needlessly prevents a selection from moving leftward
+             * from its original position.  We'll just put up with the
+             * annoyance of absorbed decrements and document it in
+             * sequencer64-doc.
+             *
+             * if (m_effective_tick < droptick)
+             *     m_effective_tick = droptick;
+             */
+
+            m_effective_tick -= roll.m_snap;
+            if (m_effective_tick <= 0)
+                m_effective_tick += roll.m_snap;    /* retrench */
+        }
+        else
+        {
+            m_effective_tick += roll.m_snap;
+
+            /*
+             * What is the upper boundary here?
+             */
+        }
+
+        long tick = m_effective_tick - roll.m_drop_tick_trigger_offset;
+        tick -= tick % roll.m_snap;
+        result = p.get_sequence(dropseq)->move_selected_triggers_to(tick, true);
+    }
+    return result;
+}
+
 }           // namespace seq64
 
 /*
@@ -273,3 +355,4 @@ Seq24PerfInput::on_motion_notify_event (GdkEventMotion * a_ev, perfroll & roll)
  *
  * vim: sw=4 ts=4 wm=4 et ft=cpp
  */
+

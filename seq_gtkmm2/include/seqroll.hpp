@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-28
+ * \updates       2015-11-01
  * \license       GNU GPLv2 or above
  *
  */
@@ -70,8 +70,14 @@ public:
 
 class seqroll : public gui_drawingarea_gtk2
 {
-    friend struct FruitySeqRollInput;
-    friend struct Seq24SeqRollInput;
+
+    /**
+     *  These friend implement interaction-specific behavior, although only
+     *  the Seq24 interactions support keyboard processing.
+     */
+
+    friend class FruitySeqRollInput;
+    friend class Seq24SeqRollInput;
 
 private:
 
@@ -80,8 +86,20 @@ private:
     sequence & m_seq;
     sequence * m_clipboard;
     seqkeys & m_seqkeys_wid;
+
+    /**
+     *  Provides a fruity input object, whether it is needed or not.
+     */
+
     FruitySeqRollInput m_fruity_interaction;
+
+    /**
+     *  Provides a normal seq24 input object, which is always needed to
+     *  handle, for example, keystroke input.
+     */
+
     Seq24SeqRollInput m_seq24_interaction;
+
     int m_pos;
 
     /**

@@ -112,10 +112,9 @@ seqroll::~seqroll ()
 }
 
 /**
- *  This function sets the given sequence onto the piano roll of the
- *  pattern editor, so that the musician can have another pattern to play
- *  against.  The a_state parameter sets the boolean
- *  m_drawing_background_seq.
+ *  This function sets the given sequence onto the piano roll of the pattern
+ *  editor, so that the musician can have another pattern to play against.
+ *  The state parameter sets the boolean m_drawing_background_seq.
  */
 
 void
@@ -452,7 +451,7 @@ seqroll::draw_progress_on_window ()
  */
 
 void
-seqroll::draw_events_on (Glib::RefPtr<Gdk::Drawable> a_draw)
+seqroll::draw_events_on (Glib::RefPtr<Gdk::Drawable> draw)
 {
     long tick_s;
     long tick_f;
@@ -546,13 +545,13 @@ seqroll::draw_events_on (Glib::RefPtr<Gdk::Drawable> a_draw)
 
                 draw_rectangle
                 (
-                    a_draw, note_x, note_y, note_width, note_height
+                    draw, note_x, note_y, note_width, note_height
                 );
                 if (tick_f < tick_s)
                 {
                     draw_rectangle
                     (
-                        a_draw, 0, note_y, tick_f / m_zoom, note_height
+                        draw, 0, note_y, tick_f / m_zoom, note_height
                     );
                 }
                 if (note_width > 3)     /* draw inside box if there is room */
@@ -566,7 +565,7 @@ seqroll::draw_events_on (Glib::RefPtr<Gdk::Drawable> a_draw)
                     {
                         if (tick_f >= tick_s)
                         {
-                            a_draw->draw_rectangle
+                            draw->draw_rectangle
                             (
                                 m_gc, true, note_x + 1 + in_shift,
                                 note_y + 1, note_width - 3 + length_add,
@@ -577,14 +576,13 @@ seqroll::draw_events_on (Glib::RefPtr<Gdk::Drawable> a_draw)
                         {
                             draw_rectangle
                             (
-                                a_draw, note_x + 1 + in_shift,
-                                note_y + 1, note_width,
-                                note_height - 3
+                                draw, note_x + 1 + in_shift, note_y + 1,
+                                note_width, note_height - 3
                             );
                             draw_rectangle
                             (
-                                a_draw,  0,
-                                note_y + 1, (tick_f / m_zoom) - 3 + length_add,
+                                draw,  0, note_y + 1,
+                                (tick_f / m_zoom) - 3 + length_add,
                                 note_height - 3
                             );
                         }
@@ -872,17 +870,17 @@ seqroll::on_expose_event (GdkEventExpose * e)
  */
 
 bool
-seqroll::on_button_press_event (GdkEventButton * a_ev)
+seqroll::on_button_press_event (GdkEventButton * ev)
 {
     bool result;
     switch (global_interactionmethod)
     {
     case e_fruity_interaction:
-        result = m_fruity_interaction.on_button_press_event(a_ev, *this);
+        result = m_fruity_interaction.on_button_press_event(ev, *this);
         break;
 
     case e_seq24_interaction:
-        result = m_seq24_interaction.on_button_press_event(a_ev, *this);
+        result = m_seq24_interaction.on_button_press_event(ev, *this);
         break;
 
     default:
@@ -897,17 +895,17 @@ seqroll::on_button_press_event (GdkEventButton * a_ev)
  */
 
 bool
-seqroll::on_button_release_event (GdkEventButton * a_ev)
+seqroll::on_button_release_event (GdkEventButton * ev)
 {
     bool result;
     switch (global_interactionmethod)
     {
     case e_fruity_interaction:
-        result = m_fruity_interaction.on_button_release_event(a_ev, *this);
+        result = m_fruity_interaction.on_button_release_event(ev, *this);
         break;
 
     case e_seq24_interaction:
-        result = m_seq24_interaction.on_button_release_event(a_ev, *this);
+        result = m_seq24_interaction.on_button_release_event(ev, *this);
         break;
 
     default:
@@ -922,17 +920,17 @@ seqroll::on_button_release_event (GdkEventButton * a_ev)
  */
 
 bool
-seqroll::on_motion_notify_event (GdkEventMotion * a_ev)
+seqroll::on_motion_notify_event (GdkEventMotion * ev)
 {
     bool result;
     switch (global_interactionmethod)
     {
     case e_fruity_interaction:
-        result = m_fruity_interaction.on_motion_notify_event(a_ev, *this);
+        result = m_fruity_interaction.on_motion_notify_event(ev, *this);
         break;
 
     case e_seq24_interaction:
-        result = m_seq24_interaction.on_motion_notify_event(a_ev, *this);
+        result = m_seq24_interaction.on_motion_notify_event(ev, *this);
         break;
 
     default:
@@ -947,7 +945,7 @@ seqroll::on_motion_notify_event (GdkEventMotion * a_ev)
  */
 
 bool
-seqroll::on_enter_notify_event (GdkEventCrossing * a_p0)
+seqroll::on_enter_notify_event (GdkEventCrossing *)
 {
     m_seqkeys_wid.set_hint_state(true);
     return false;
@@ -958,7 +956,7 @@ seqroll::on_enter_notify_event (GdkEventCrossing * a_p0)
  */
 
 bool
-seqroll::on_leave_notify_event (GdkEventCrossing * a_p0)
+seqroll::on_leave_notify_event (GdkEventCrossing *)
 {
     m_seqkeys_wid.set_hint_state(false);
     return false;
@@ -1000,13 +998,13 @@ seqroll::on_focus_out_event (GdkEventFocus *)
  */
 
 bool
-seqroll::on_key_press_event (GdkEventKey * a_p0)
+seqroll::on_key_press_event (GdkEventKey * ev)
 {
     bool result = false;
     bool dont_toggle = PREFKEY(start) != PREFKEY(stop);
     if
     (
-        a_p0->keyval ==  PREFKEY(start) &&
+        ev->keyval ==  PREFKEY(start) &&
         (dont_toggle || ! global_is_pattern_playing)
     )
     {
@@ -1017,7 +1015,7 @@ seqroll::on_key_press_event (GdkEventKey * a_p0)
     }
     else if
     (
-        a_p0->keyval ==  PREFKEY(stop) &&
+        ev->keyval ==  PREFKEY(stop) &&
         (dont_toggle || global_is_pattern_playing)
     )
     {
@@ -1025,9 +1023,9 @@ seqroll::on_key_press_event (GdkEventKey * a_p0)
         perf().stop();
         global_is_pattern_playing = false;
     }
-    if (CAST_EQUIVALENT(a_p0->type, SEQ64_KEY_PRESS))
+    if (CAST_EQUIVALENT(ev->type, SEQ64_KEY_PRESS))
     {
-        if (OR_EQUIVALENT(a_p0->keyval, SEQ64_Delete, SEQ64_BackSpace))
+        if (OR_EQUIVALENT(ev->keyval, SEQ64_Delete, SEQ64_BackSpace))
         {
             m_seq.push_undo();
             m_seq.mark_selected();
@@ -1040,12 +1038,12 @@ seqroll::on_key_press_event (GdkEventKey * a_p0)
              * See the note about the arrow keys in the function banner.
              */
 
-            if (a_p0->keyval == SEQ64_Home)
+            if (ev->keyval == SEQ64_Home)
             {
                 m_seq.set_orig_tick(0);
                 result = true;
             }
-            else if (a_p0->keyval == SEQ64_Left)
+            else if (ev->keyval == SEQ64_Left)
             {
                 result = true;
                 if (m_seq.any_selected_notes())
@@ -1053,7 +1051,7 @@ seqroll::on_key_press_event (GdkEventKey * a_p0)
                 else
                     m_seq.set_orig_tick(m_seq.get_last_tick() - m_snap);
             }
-            else if (a_p0->keyval == SEQ64_Right)
+            else if (ev->keyval == SEQ64_Right)
             {
                 result = true;
                 if (m_seq.any_selected_notes())
@@ -1061,7 +1059,7 @@ seqroll::on_key_press_event (GdkEventKey * a_p0)
                 else
                     m_seq.set_orig_tick(m_seq.get_last_tick() + m_snap);
             }
-            else if (a_p0->keyval == SEQ64_Down)
+            else if (ev->keyval == SEQ64_Down)
             {
                 if (m_seq.any_selected_notes())
                 {
@@ -1069,7 +1067,7 @@ seqroll::on_key_press_event (GdkEventKey * a_p0)
                     result = true;
                 }
             }
-            else if (a_p0->keyval == SEQ64_Up)
+            else if (ev->keyval == SEQ64_Up)
             {
                 if (m_seq.any_selected_notes())
                 {
@@ -1077,18 +1075,18 @@ seqroll::on_key_press_event (GdkEventKey * a_p0)
                     result = true;
                 }
             }
-            else if (a_p0->keyval == SEQ64_p)   /* \new ca 2015-11-01 */
+            else if (ev->keyval == SEQ64_p)   /* \new ca 2015-11-01 */
             {
                 m_seq24_interaction.set_adding(true, *this);
                 result = true;
             }
-            else if (a_p0->keyval == SEQ64_P)   /* \new ca 2015-11-01 */
+            else if (ev->keyval == SEQ64_P)   /* \new ca 2015-11-01 */
             {
                 m_seq24_interaction.set_adding(false, *this);
                 result = true;
             }
 #if USE_VI_SEQROLL_MODE     // currently disabled, for programmers only!  :-D
-            else if (a_p0->keyval == SEQ64_h)
+            else if (ev->keyval == SEQ64_h)
             {
                 if (m_seq.any_selected_notes())
                 {
@@ -1096,7 +1094,7 @@ seqroll::on_key_press_event (GdkEventKey * a_p0)
                     result = true;
                 }
             }
-            else if (a_p0->keyval == SEQ64_l)
+            else if (ev->keyval == SEQ64_l)
             {
                 if (m_seq.any_selected_notes())
                 {
@@ -1104,7 +1102,7 @@ seqroll::on_key_press_event (GdkEventKey * a_p0)
                     result = true;
                 }
             }
-            else if (a_p0->keyval == SEQ64_j)
+            else if (ev->keyval == SEQ64_j)
             {
                 if (m_seq.any_selected_notes())
                 {
@@ -1112,7 +1110,7 @@ seqroll::on_key_press_event (GdkEventKey * a_p0)
                     result = true;
                 }
             }
-            else if (a_p0->keyval == SEQ64_k)
+            else if (ev->keyval == SEQ64_k)
             {
                 if (m_seq.any_selected_notes())
                 {
@@ -1120,12 +1118,12 @@ seqroll::on_key_press_event (GdkEventKey * a_p0)
                     result = true;
                 }
             }
-            else if (a_p0->keyval == SEQ64_i)
+            else if (ev->keyval == SEQ64_i)
             {
                 m_seq24_interaction.set_adding(true, *this);
                 result = true;
             }
-            else if (a_p0->keyval == SEQ64_I)   /* escape is for stop-play */
+            else if (ev->keyval == SEQ64_I)   /* escape is for stop-play */
             {
                 m_seq24_interaction.set_adding(false, *this);
                 result = true;
@@ -1133,9 +1131,9 @@ seqroll::on_key_press_event (GdkEventKey * a_p0)
 #endif  // USE_VI_SEQROLL_MODE
 
         }
-        if (a_p0->state & SEQ64_CONTROL_MASK)
+        if (ev->state & SEQ64_CONTROL_MASK)
         {
-            if (OR_EQUIVALENT(a_p0->keyval, SEQ64_x, SEQ64_X))     /* cut */
+            if (OR_EQUIVALENT(ev->keyval, SEQ64_x, SEQ64_X))     /* cut */
             {
                 m_seq.push_undo();
                 m_seq.copy_selected();
@@ -1143,22 +1141,22 @@ seqroll::on_key_press_event (GdkEventKey * a_p0)
                 m_seq.remove_marked();
                 result = true;
             }
-            if (OR_EQUIVALENT(a_p0->keyval, SEQ64_c, SEQ64_C))     /* copy */
+            if (OR_EQUIVALENT(ev->keyval, SEQ64_c, SEQ64_C))     /* copy */
             {
                 m_seq.copy_selected();
                 result = true;
             }
-            if (OR_EQUIVALENT(a_p0->keyval, SEQ64_v, SEQ64_V))     /* paste */
+            if (OR_EQUIVALENT(ev->keyval, SEQ64_v, SEQ64_V))     /* paste */
             {
                 start_paste();
                 result = true;
             }
-            if (OR_EQUIVALENT(a_p0->keyval, SEQ64_z, SEQ64_Z))     /* Undo */
+            if (OR_EQUIVALENT(ev->keyval, SEQ64_z, SEQ64_Z))     /* Undo */
             {
                 m_seq.pop_undo();
                 result = true;
             }
-            if (OR_EQUIVALENT(a_p0->keyval, SEQ64_a, SEQ64_A)) /* select all */
+            if (OR_EQUIVALENT(ev->keyval, SEQ64_a, SEQ64_A)) /* select all */
             {
                 m_seq.select_all();
                 result = true;
@@ -1191,17 +1189,17 @@ seqroll::on_size_allocate (Gtk::Allocation & a)
  */
 
 bool
-seqroll::on_scroll_event (GdkEventScroll * a_ev)
+seqroll::on_scroll_event (GdkEventScroll * ev)
 {
     guint modifiers;                /* used to filter out caps/num lock etc. */
     modifiers = gtk_accelerator_get_default_mod_mask();
-    if ((a_ev->state & modifiers) != 0)
+    if ((ev->state & modifiers) != 0)
         return false;
 
     double val = m_vadjust.get_value();
-    if (CAST_EQUIVALENT(a_ev->direction, SEQ64_SCROLL_UP))
+    if (CAST_EQUIVALENT(ev->direction, SEQ64_SCROLL_UP))
         val -= m_vadjust.get_step_increment() / 6;
-    else if (CAST_EQUIVALENT(a_ev->direction, SEQ64_SCROLL_DOWN))
+    else if (CAST_EQUIVALENT(ev->direction, SEQ64_SCROLL_DOWN))
         val += m_vadjust.get_step_increment() / 6;
     else
         return true;

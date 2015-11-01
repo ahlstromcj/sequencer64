@@ -28,13 +28,15 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-27
+ * \updates       2015-11-01
  * \license       GNU GPLv2 or above
  *
  */
 
 #include "globals.h"
 #include "gui_drawingarea_gtk2.hpp"
+#include "fruityperfroll_input.hpp"     /* FruityPerfInput      */
+#include "perfroll_input.hpp"           /* Seq24PerfInput       */
 
 namespace Gtk
 {
@@ -66,6 +68,12 @@ static const int c_perfroll_size_box_click_w = c_perfroll_size_box_w + 1 ;
 class perfroll : public gui_drawingarea_gtk2
 {
 
+    /**
+     *  These friend implement interaction-specific behavior, although only
+     *  the Seq24 interactions support keyboard processing, except for some
+     *  common functionality provided by perform::perfroll_key_event()..
+     */
+
     friend class FruityPerfInput;
     friend class Seq24PerfInput;
 
@@ -92,7 +100,27 @@ private:
     int m_drop_sequence;
     int m_sequence_max;
     bool m_sequence_active[c_max_sequence];
-    AbstractPerfInput * m_interaction;
+
+    /**
+     *  We need both styles of interaction object present.  Even if the user
+     *  specifies the fruity interaction, the Seq24 interaction is still
+     *  needed to handle our new keystroke support for the perfroll.  We need
+     *  both objects to exist all the time, similar to the Fruity/Seq24 roles
+     *  in the seqroll object.
+     *
+     * \obsolete
+     *      AbstractPerfInput * m_interaction
+     */
+
+    FruityPerfInput m_fruity_interaction;
+
+    /**
+     *  Provides support for standard Seq24 mouse handling, plus the keystroke
+     *  handlers.
+     */
+
+    Seq24PerfInput m_seq24_interaction;
+
     bool m_moving;
     bool m_growing;
     bool m_grow_direction;

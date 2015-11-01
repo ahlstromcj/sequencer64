@@ -77,7 +77,8 @@ perfroll::perfroll
     m_drop_sequence         (0),
     m_sequence_max          (c_max_sequence),
     m_sequence_active       (),                 // array, size c_max_sequence
-    m_interaction           (nullptr),
+    m_fruity_interaction    (),
+    m_seq24_interaction     (),
     m_moving                (false),
     m_growing               (false),
     m_grow_direction        (false)
@@ -86,27 +87,38 @@ perfroll::perfroll
     for (int i = 0; i < m_sequence_max; ++i)
         m_sequence_active[i] = false;
 
-    switch (global_interactionmethod)
-    {
-    case e_fruity_interaction:
-        m_interaction = new FruityPerfInput;
-        break;
+/*
+ * Obsolete:  We now have both objects present, for full support of keystroke
+ * functionality no matter which one the user specifies for ,ouse support.
+ *
+ *  switch (global_interactionmethod)
+ *  {
+ *  case e_fruity_interaction:
+ *      m_interaction = new FruityPerfInput;
+ *      break;
+ *
+ *  case e_seq24_interaction:
+ *  default:
+ *      m_interaction = new Seq24PerfInput;
+ *      break;
+ *  }
+ */
 
-    case e_seq24_interaction:
-    default:
-        m_interaction = new Seq24PerfInput;
-        break;
-    }
 }
 
 /**
- *  This destructor deletes the interaction object.
+ *  This destructor deletes the interaction object.  Well, now there are two
+ *  objects, so no explicit deletion necessary.
  */
 
 perfroll::~perfroll ()
 {
-    if (not_nullptr(m_interaction))
-        delete m_interaction;
+    /*
+     * Obsolete:
+     *
+     * if (not_nullptr(m_interaction))
+     *      delete m_interaction;
+     */
 }
 
 /**
@@ -284,11 +296,11 @@ perfroll::fill_background_pixmap ()
  */
 
 void
-perfroll::set_guides (int a_snap, int a_measure, int a_beat)
+perfroll::set_guides (int snap, int measure, int beat)
 {
-    m_snap = a_snap;
-    m_measure_length = a_measure;
-    m_beat_length = a_beat;
+    m_snap = snap;
+    m_measure_length = measure;
+    m_beat_length = beat;
     if (is_realized())
         fill_background_pixmap();
 
@@ -320,7 +332,7 @@ perfroll::draw_progress ()
  */
 
 void
-perfroll::draw_sequence_on (/*Glib::RefPtr<Gdk::Drawable> a_draw,*/ int seqnum)
+perfroll::draw_sequence_on (int seqnum)
 {
     if ((seqnum < m_sequence_max) && perf().is_active(seqnum))
     {
@@ -337,7 +349,6 @@ perfroll::draw_sequence_on (/*Glib::RefPtr<Gdk::Drawable> a_draw,*/ int seqnum)
         long tick_off;
         long offset;
         bool selected;
-
         while (seq->get_next_trigger(&tick_on, &tick_off, &selected, &offset))
         {
             if (tick_off > 0)
@@ -346,14 +357,9 @@ perfroll::draw_sequence_on (/*Glib::RefPtr<Gdk::Drawable> a_draw,*/ int seqnum)
                 long x_off = tick_off / m_perf_scale_x;
                 int w = x_off - x_on + 1;
                 int x = x_on;
-                int y = m_names_y * seqnum + 1;     // + 2
+                int y = m_names_y * seqnum + 1;         // + 2
                 int h = m_names_y - 2;                  // - 4
                 x -= x_offset;          /* adjust to screen coordinates */
-
-                /*
-                 * Change a_draw to m_pixmap; later use the right function.
-                 */
-
                 draw_rectangle_on_pixmap(selected ? grey() : white(), x, y, w, h);
                 draw_rectangle_on_pixmap(black(), x, y, w, h, false);
                 draw_rectangle_on_pixmap
@@ -362,7 +368,7 @@ perfroll::draw_sequence_on (/*Glib::RefPtr<Gdk::Drawable> a_draw,*/ int seqnum)
                 );
                 draw_rectangle_on_pixmap
                 (
-                    // m_pixmap, // black(), [done in previous call, tricky]
+                    // black(),             [done in previous call, tricky]
                     x + w - m_size_box_w, y + h - m_size_box_w,
                     m_size_box_w, m_size_box_w,
                     false
@@ -497,16 +503,19 @@ perfroll::redraw_dirty_sequences ()
 }
 
 /**
- *  Not quite sure what this draws yet.
+ *  Not quite sure what this draws yet.  It is involved in the drawing of a
+ *  greyed (selected) row.
+ *
+ *  What's weird is that we divide y by m_names_y, then multiply it by
+ *  m_names_y, before passing the result to draw_drawable().  However, if we
+ *  just as y casted to an int, then the drawing of the row is only partial,
+ *  vertically.
  */
 
 void
-perfroll::draw_drawable_row
-(
-    long a_y
-)
+perfroll::draw_drawable_row (long y)
 {
-    int s = a_y / m_names_y;
+    int s = y / m_names_y;
     draw_drawable(0, s * m_names_y, 0, s * m_names_y, m_window_x, m_names_y);
 }
 
@@ -606,12 +615,30 @@ perfroll::on_expose_event (GdkEventExpose * ev)
  *  This callback function handles a button press by forwarding it to the
  *  interaction object's button-press function.  This gives us Seq24
  *  versus Fruity behavior.
+ *
+ *  One minor issue:  Fruity behavior doesn't yet provide the keystroke
+ *  behavior we now handle for the Seq24 mode of operation.
  */
 
 bool
 perfroll::on_button_press_event (GdkEventButton * ev)
 {
-    return m_interaction->on_button_press_event(ev, *this);
+    bool result;
+    switch (global_interactionmethod)
+    {
+    case e_fruity_interaction:
+        result = m_fruity_interaction.on_button_press_event(ev, *this);
+        break;
+
+    case e_seq24_interaction:
+        result = m_seq24_interaction.on_button_press_event(ev, *this);
+        break;
+
+    default:
+        result = false;
+        break;
+    }
+    return result;
 }
 
 /**
@@ -623,7 +650,22 @@ perfroll::on_button_press_event (GdkEventButton * ev)
 bool
 perfroll::on_button_release_event (GdkEventButton * ev)
 {
-    return m_interaction->on_button_release_event(ev, *this);
+    bool result;
+    switch (global_interactionmethod)
+    {
+    case e_fruity_interaction:
+        result = m_fruity_interaction.on_button_release_event(ev, *this);
+        break;
+
+    case e_seq24_interaction:
+        result = m_seq24_interaction.on_button_release_event(ev, *this);
+        break;
+
+    default:
+        result = false;
+        break;
+    }
+    return result;
 }
 
 /**
@@ -666,12 +708,34 @@ perfroll::on_scroll_event (GdkEventScroll * ev)
 bool
 perfroll::on_motion_notify_event (GdkEventMotion * ev)
 {
-    return m_interaction->on_motion_notify_event(ev, *this);
+    bool result;
+    switch (global_interactionmethod)
+    {
+    case e_fruity_interaction:
+        result = m_fruity_interaction.on_motion_notify_event(ev, *this);
+        break;
+
+    case e_seq24_interaction:
+        result = m_seq24_interaction.on_motion_notify_event(ev, *this);
+        break;
+
+    default:
+        result = false;
+        break;
+    }
+    return result;
 }
 
 /**
  *  This callback function handles a key-press event.  If we don't check the
  *  event type first, then the ev->keyval value is something weird like 65507.
+ *  Note that we pass the functionality on to the
+ *  perform::perfroll_key_event() function for the handling of delete, cut,
+ *  copy, paste, and undo operations.  If the keystroke is not handled by that
+ *  function, then we handle it here.
+ *
+ *  Note that only the Seq24 input interaction object handles additional
+ *  keystrokes not handled by the perfroll_key_event() function.
  */
 
 bool
@@ -679,6 +743,34 @@ perfroll::on_key_press_event (GdkEventKey * ev)
 {
     keystroke k(ev->keyval, SEQ64_KEYSTROKE_PRESS, ev->state);
     bool result = perf().perfroll_key_event(k, m_drop_sequence);
+    if (result)
+    {
+        // Nothing to do here
+    }
+    else
+    {
+        if (! global_is_pattern_playing)
+        {
+            if (ev->keyval == SEQ64_p)
+            {
+                m_seq24_interaction.set_adding(true, *this);
+                result = true;
+            }
+            else if (ev->keyval == SEQ64_P)
+            {
+                m_seq24_interaction.set_adding(false, *this);
+                result = true;
+            }
+            else if (ev->keyval == SEQ64_Left)
+            {
+                result = m_seq24_interaction.handle_motion_key(true, *this);
+            }
+            else if (ev->keyval == SEQ64_Right)
+            {
+                result = m_seq24_interaction.handle_motion_key(false, *this);
+            }
+        }
+    }
     if (result)
     {
         fill_background_pixmap();
@@ -710,7 +802,7 @@ perfroll::snap_x (int & x)
 /**
  *  Converts a tick-offset on the x coordinate.
  *
- *  The result is returned via the a_tick parameter.
+ *  The result is returned via the tick parameter.
  */
 
 void
@@ -723,11 +815,11 @@ perfroll::convert_x (int x, long & tick)
 /**
  *  Converts a tick-offset....
  *
- *  The results are returned via the a_tick and a_seq parameters.
+ *  The results are returned via the d_tick and d_seq parameters.
  */
 
 void
-perfroll::convert_xy (int x, int y, long & a_tick, int & a_seq)
+perfroll::convert_xy (int x, int y, long & d_tick, int & d_seq)
 {
     long tick_offset = m_4bar_offset * m_ticks_per_bar;
     long tick = x * m_perf_scale_x + tick_offset;
@@ -737,8 +829,8 @@ perfroll::convert_xy (int x, int y, long & a_tick, int & a_seq)
     else if (seq < 0)
         seq = 0;
 
-    a_tick = tick;
-    a_seq = seq;
+    d_tick = tick;
+    d_seq = seq;
 }
 
 /**
@@ -785,10 +877,10 @@ perfroll::on_size_allocate (Gtk::Allocation & a)
  */
 
 void
-perfroll::split_trigger (int seqnum, long a_tick)
+perfroll::split_trigger (int seqnum, long tick)
 {
     perf().push_trigger_undo();
-    perf().get_sequence(seqnum)->split_trigger(a_tick);
+    perf().get_sequence(seqnum)->split_trigger(tick);
     draw_background_on(seqnum);
     draw_sequence_on(seqnum);
     draw_drawable_row(m_drop_y);

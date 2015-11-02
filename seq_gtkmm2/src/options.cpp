@@ -573,7 +573,7 @@ options::add_mouse_page ()
 void
 options::add_jack_sync_page ()
 {
-#ifdef JACK_SUPPORT
+#ifdef SEQ64_JACK_SUPPORT
     Gtk::VBox * vbox = manage(new Gtk::VBox());
     vbox->set_border_width(4);
     m_notebook->append_page(*vbox, "_JACK Sync", true);

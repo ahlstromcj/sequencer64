@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-30
+ * \updates       2015-11-02
  * \license       GNU GPLv2 or above
  *
  * \todo
@@ -81,11 +81,13 @@ static struct option long_options[] =
     {"priority",            0, 0, 'p'},
     {"ignore",              required_argument, 0, 'i'},
     {"interaction_method",  required_argument, 0, 'x'},
+#ifdef SEQ64_JACK_SUPPORT
     {"jack_transport",      0, 0, 'j'},
     {"jack_master",         0, 0, 'J'},
     {"jack_master_cond",    0, 0, 'C'},
     {"jack_start_mode",     required_argument, 0, 'M'},
     {"jack_session_uuid",   required_argument, 0, 'U'},
+#endif
     {"manual_alsa_ports",   0, 0, 'm'},
     {"pass_sysex",          0, 0, 'P'},
     {"version",             0, 0, 'V'},
@@ -132,15 +134,17 @@ static const char * const s_help_1b =
 
 static const char * const s_help_2 =
 "   -k, --show_keys          Prints pressed key value.\n"
+#ifdef SEQ64_JACK_SUPPORT
 "   -j, --jack_transport     Sync to JACK transport\n"
 "   -J, --jack_master        Try to be JACK master\n"
 "   -C, --jack_master_cond   JACK master will fail if there's already a master.\n"
-"   -M, --jack_start_mode m  When synced to JACK, the following play modes\n"
-"                            are available: 0 = live mode; 1 = song mode (default).\n"
+"   -M, --jack_start_mode m  When synced to JACK, the following play modes are\n"
+"                            available: 0 = live mode; 1 = song mode (default).\n"
+"  -U, --jack_session_uuid u Set UUID for JACK session\n"
+#endif
 "   -S, --stats              Show global statistics.\n"
-"   -x, --interaction_method n  See ~/.config/sequencer64/sequencer64.rc for\n"
-"                            methods to use.\n"
-"   -U, --jack_session_uuid u   Set UUID for JACK session\n"
+" -x, --interaction_method n Set mouse style: 0 = seq24; 1 = fruity. Note that\n"
+"                            fruity doesn't support arrow keys and paint key.\n"
 "\n"
     ;
 
@@ -267,7 +271,7 @@ main (int argc, char * argv [])
 
         case 'l':
             g_rc_settings.legacy_format(true);
-            printf("Setting legacy seq24 file format.\n");
+            printf("Setting legacy seq24 file format for writing.\n");
             break;
 
         case 'L':
@@ -369,7 +373,9 @@ main (int argc, char * argv [])
     p.init();
     p.launch_input_thread();
     p.launch_output_thread();
+#ifdef SEQ64_JACK_SUPPORT
     p.init_jack();
+#endif
 
     seq64::mainwnd seq24_window(p);             /* push mainwnd onto stack  */
     if (optind < argc)                          /* MIDI filename provided?  */

@@ -1,8 +1,32 @@
 Bugs and Upgrade Ideas
 Chris Ahlstrom
-2015-10-27 to 2015-11-01
+2015-10-27 to 2015-11-02
 
 In no particular order...
+
+-  WEIRD!  Opening the File / Options / MIDI Input tab with "manual alsa"
+   set to true, the port shown is "[1] seq24 1", not the  "[0] seq24 0"
+   that I expected.  However, check this out:
+
+   % arecordmidi -l
+    Port    Client name                      Port name
+    14:0    Midi Through                     Midi Through Port-0
+   129:0    seq24                            [1] seq24 1
+   129:1    seq24                            [2] seq24 2
+   129:2    seq24                            [3] seq24 3
+   129:3    seq24                            [4] seq24 4
+   129:4    seq24                            [5] seq24 5
+   129:5    seq24                            [6] seq24 6
+   129:6    seq24                            [7] seq24 7
+   129:7    seq24                            [8] seq24 8
+   129:8    seq24                            [9] seq24 9
+   129:9    seq24                            [10] seq24 10
+   129:10   seq24                            [11] seq24 11
+   129:11   seq24                            [12] seq24 12
+   129:12   seq24                            [13] seq24 13
+   129:13   seq24                            [14] seq24 14
+   129:14   seq24                            [15] seq24 15
+   129:15   seq24                            [16] seq24 16
 
 -  Document that right-click on pattern editor's left and right scrollbar arrows
    act like Home and End for the seqroll.

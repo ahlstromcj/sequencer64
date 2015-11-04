@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-25
- * \updates       2015-09-27
+ * \updates       2015-11-03
  * \license       GNU GPLv2 or above
  *
  *  Note that this module also sets the legacy global variables, so that
@@ -91,80 +91,6 @@ user_instrument::set_defaults ()
     {
         m_instrument_def.controllers_active[c] = false;
         m_instrument_def.controllers[c].clear();
-    }
-}
-
-/**
- *  Copies the current values of the member variables into the
- *  selected legacy global variable.  Should be called at initialization,
- *  and after settings are read from the "user" configuration file.
- *
- *  This function fills in all of the MIDI_CONTROLLER_MAX (128) values of the
- *  controllers and controllers_active fields.
- *
- *  Note that this is done only if the object is valid.
- *
- * \param instrum
- *      Provides the destination instrument number.  In order to support
- *      the legacy code, this index value must be less than
- *      c_max_instruments (64).
- */
-
-void
-user_instrument::set_global (int instrum) const
-{
-    if (m_is_valid && instrum >= 0 && instrum < c_max_instruments) // CONST GLOBAL
-    {
-        global_user_instrument_definitions[instrum].instrument =
-            m_instrument_def.instrument;
-
-        for (int c = 0; c < MIDI_CONTROLLER_MAX; c++)
-        {
-            global_user_instrument_definitions[instrum].controllers_active[c] =
-                m_instrument_def.controllers_active[c];
-
-            global_user_instrument_definitions[instrum].controllers[c] =
-                m_instrument_def.controllers[c];
-        }
-    }
-}
-
-/**
- *  Copies the current values of the selected legacy global variable into
- *  corresponding member variable.  Should be called before settings are
- *  written to the "user" configuration file.
- *
- *  This function fills in all of the MIDI_CONTROLLER_MAX (128) values of
- *  the controllers and controllers_active fields.
- *
- *  This function also sets the validity flag to true if the instrument
- *  name is not empty; the rest of the values are not checked.
- *
- * \param instrum
- *      Provides the source instrument number.  In order to support the
- *      legacy code, this index value must be less than c_max_instruments
- *      (64).
- */
-
-void
-user_instrument::get_global (int instrum)
-{
-    if (instrum >= 0 && instrum < c_max_instruments)  // CONST GLOBAL danger!
-    {
-        m_controller_count = 0;
-        set_name(global_user_instrument_definitions[instrum].instrument);
-        for (int c = 0; c < MIDI_CONTROLLER_MAX; c++)
-        {
-            bool active =
-                global_user_instrument_definitions[instrum].controllers_active[c];
-
-            m_instrument_def.controllers_active[c] = active;
-            m_instrument_def.controllers[c] =
-                global_user_instrument_definitions[instrum].controllers[c];
-
-            if (active)
-                ++m_controller_count;
-        }
     }
 }
 
@@ -283,3 +209,4 @@ user_instrument::copy_definitions (const user_instrument & rhs)
  *
  * vim: sw=4 ts=4 wm=4 et ft=cpp
  */
+

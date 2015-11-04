@@ -28,9 +28,11 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-25
- * \updates       2015-09-27
+ * \updates       2015-11-03
  * \license       GNU GPLv2 or above
  *
+ *  This class replaces an global_user_midi_bus_definitions[] array element
+ *  with a wrapper class for better safety.
  */
 
 #include <string>
@@ -59,12 +61,30 @@ const int c_max_busses = DEFAULT_BUSS_MAX;
 
 /**
  *  This structure corresponds to <tt> [user-midi-bus-0] </tt>
- *  definitions in the <tt> ~/.seq24usr </tt> ("user") file.
+ *  definitions in the <tt> ~/.seq24usr </tt> ("user") file
+ *  (<tt> ~/.config/sequencer64/sequencer64.usr </tt> in the latest version of
+ *  the application).
  */
 
 struct user_midi_bus_t
 {
+    /**
+     *  Provides the user's desired name for the MIDI bus.  For example,
+     *  "2x2 A" for some kind of MIDI card or USB MIDI cable.  If
+     *  manual-alsa-ports is enabled, this could be something like
+     *  "[0] seq24 0", and that is what should be shown in that case.
+     */
+
     std::string alias;
+
+    /**
+     *  Provides an implicit list of MIDI channels from 0 to 15 (1 to 16) and
+     *  the "instrument" number assigned to each channel.  Note that the
+     *  "instrument" is not a MIDI program number.  Instead, it is the number
+     *  associated with a "user-instrument" section in the "user"
+     *  configuration file.
+     */
+
     int instrument[MIDI_BUS_CHANNEL_MAX];
 };
 
@@ -100,7 +120,7 @@ class user_midi_bus
      *  The instance of the structure that this class wraps.
      */
 
-    user_midi_bus_t m_midi_bus_def;         // [c_max_busses];
+    user_midi_bus_t m_midi_bus_def;
 
 public:
 
@@ -118,8 +138,6 @@ public:
     }
 
     void set_defaults ();
-    void set_global (int buss) const;
-    void get_global (int buss);
 
     /**
      * \getter m_midi_bus_def.alias (name of alias)
@@ -185,3 +203,4 @@ private:
  *
  * vim: sw=4 ts=4 wm=4 et ft=cpp
  */
+

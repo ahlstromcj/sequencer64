@@ -1,9 +1,23 @@
 Bugs and Upgrade Ideas
 Chris Ahlstrom
-2015-10-27 to 2015-11-02
+2015-10-27 to 2015-11-03
 
 In no particular order...
 
+-  In midibus, make the buss name variable, instead of hard-wired to "seq24".
+   It should be an optional command-line option, and default to "Seq64".
+   And in the same module, function init_in() should use it as well.
+   Like legacy mode, using a link named "seq24" to run the app should
+   also change this name to seq24, as should --legacy itself!
+   Also init_in_sub().
+-  Can we provide a way to move a note a tiny amount without changing the beat
+   size.
+-  Would be nice to have a Pause button and pause feature.
+-  Ctrl-Z for data/event doesn't work unless the piano roll has the focus.
+   Worth worrying about?
+-  Catch up with all the new options by making sure they are available
+   from the "rc" or "user" configuration file, and even the Options menu,
+   if possible.
 -  WEIRD!  Opening the File / Options / MIDI Input tab with "manual alsa"
    set to true, the port shown is "[1] seq24 1", not the  "[0] seq24 0"
    that I expected.  However, check this out:
@@ -33,6 +47,9 @@ In no particular order...
 -  Provide an "infinite" pattern that will not repeat (unless specified
    multiple times in the performance editor).
    "Infinite" sequences, aka a "track" as opposed to a sequence.
+   Or, perhaps the track can be set to any length (add 128 and 256
+   to the list???), but be marked as a one-shot timer, set to inactive
+   once it is done, never to sound again until the next playback.
 -  Support for the Non Session Manager.
 -  Muting in mainwid or perfnames should be reflected in both views.
 -  Extra lines appearing in perfnames/perfroll when starting playback in
@@ -49,6 +66,10 @@ x  Would be nice to be able move selected notes in the seqroll using
    paint mode (p, Shift-P), left, right, down, and up, enabled if any notes
    are selected.  Still need to figure out what left, right, and home do
    otherwise, needs some graphical feedback.
+-  Would be nice if ctrl-arrow or some other key could shorten or lengthen the
+   note by very small increments.
+-  Would be nice if shift-left-click would deselect only the one note clicked
+   on.
 -  Would be nice to have the sequence editors and performance editor scroll to
    keep the progress bar in view.
 -  Would be nice to show the current time/tick/measure/bar in the tune as

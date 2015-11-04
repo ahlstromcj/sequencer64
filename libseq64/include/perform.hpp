@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-30
+ * \updates       2015-11-03
  * \license       GNU GPLv2 or above
  *
  *  This class has way too many members.
@@ -685,6 +685,17 @@ public:
             return get_key_groups()[keycode];
         else
             return 0;
+    }
+
+    /**
+     * \getter g_rc_settings.is_pattern_playing()
+     *      Provide a convenience function so that clients don't have to mess
+     *      with a global variable when they're dealing with a perform object.
+     */
+
+    bool is_playing () const
+    {
+        return g_rc_settings.is_pattern_playing();
     }
 
     /**

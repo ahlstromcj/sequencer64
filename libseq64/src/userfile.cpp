@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-09-27
+ * \updates       2015-11-03
  * \license       GNU GPLv2 or above
  *
  *  Note that the parse function has some code that is not yet enabled.
@@ -230,17 +230,17 @@ userfile::write (const perform & /* a_perf */ )
     if (g_rc_settings.legacy_format())
         file << "# Seq24 0.9.2 user configuration file (legacy format)\n";
     else
-        file << "# Sequencer26 0.9.9.4 (and above) user configuration file\n";
+        file << "# Sequencer26 0.9.9.6 (and above) user configuration file\n";
 
     file
         << "#\n"
         << "# Created by reading the following file and writing it out via\n"
-        << "# the sequencer64 application.\n"
+        << "# the sequencer64 application:\n"
         << "#\n"
         << "# https://raw.githubusercontent.com/vext01/"
                "seq24/master/seq24usr.example\n"
         << "#\n"
-        << "#  This is an example for a .seq24usr file. Edit and place in\n"
+        << "#  This is an example for a sequencer64.usr file. Edit and place in\n"
         << "#  your home directory. It allows you to give an alias to each\n"
         << "#  MIDI bus, MIDI channel, and MIDI control codes per channel.\n"
         << "#\n"
@@ -265,9 +265,7 @@ userfile::write (const perform & /* a_perf */ )
         ;
 
     if (g_user_settings.bus_count() == 0)
-    {
         file << "\n\n";
-    }
 
     for (int buss = 0; buss < g_user_settings.bus_count(); ++buss)
     {
@@ -276,11 +274,11 @@ userfile::write (const perform & /* a_perf */ )
         if (umb.is_valid())
         {
             file
-                << "# Device name for this buss:\n"
+                << "# Device name for this buss:\n\n"
                 << umb.name() << "\n\n"
-                << "# Number of channels:\n"
+                << "# Number of channels:\n\n"
                 << umb.channel_count() << "\n\n"
-                << "# channel and instrument (program) number\n\n"
+                << "# channel and instrument (or program) number\n\n"
                 ;
 
             for (int channel = 0; channel < umb.channel_max(); ++channel)
@@ -332,9 +330,9 @@ userfile::write (const perform & /* a_perf */ )
         if (uin.is_valid())
         {
             file
-                << "# Name of instrument:\n"
+                << "# Name of instrument:\n\n"
                 << uin.name() << "\n\n"
-                << "# Number of MIDI controller values:\n"
+                << "# Number of MIDI controller values:\n\n"
                 << uin.controller_count() << "\n\n"
                 << "# controller number and (optional) name:\n\n"
                 ;

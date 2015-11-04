@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-22
- * \updates       2015-09-27
+ * \updates       2015-11-03
  * \license       GNU GPLv2 or above
  *
  *  This collection of variables describes some facets of the
@@ -40,6 +40,9 @@
  *  called a "set" (in the musical sense) or a "screen set".
  *
  *  We want to be able to change these defaults.
+ *
+ *  Also, this module holds the user-midi-bus and use-instrument settings
+ *  defined in a <tt> sequencer64.usr </tt> file.
  */
 
 #include <string>
@@ -290,9 +293,6 @@ public:
 
     /**
      * \getter m_midi_buses[buss].instrument[channel]
-     * \todo
-     *      Do this for controllers values and for user_instrument
-     *      members.
      */
 
      int bus_instrument (int buss, int channel)
@@ -333,21 +333,57 @@ public:
     }
 
     /**
-     * \getter m_instruments[instrument].controllers_active[controller]
+     *  Gets the correct instrument number from the buss and channel, and then
+     *  looks up the name of the instrument.
      */
 
-    bool instrument_controller_active (int instrum, int c)
+    const std::string & instrument_name (int buss, int channel)
     {
-        return instrument(instrum).controller_active(c);
+        int instrum = bus_instrument(buss, channel);
+        return instrument(instrum).name();
     }
 
     /**
      * \getter m_instruments[instrument].controllers_active[controller]
      */
 
-    const std::string & instrument_controller_name (int instrum, int c)
+    bool instrument_controller_active (int instrum, int cc)
     {
-        return instrument(instrum).controller_name(c);
+        return instrument(instrum).controller_active(cc);
+    }
+
+    /**
+     *      A convenience function so that the caller doesn't have to get the
+     *      instrument number from the bus_instrument() member function.
+     *      It also has a shorter name.
+     */
+
+    bool controller_active (int buss, int channel, int cc)
+    {
+        int instrum = bus_instrument(buss, channel);
+        return instrument(instrum).controller_active(cc);
+    }
+
+    /**
+     * \getter m_instruments[instrument].controllers_active[controller]
+     */
+
+    const std::string & instrument_controller_name (int instrum, int cc)
+    {
+        return instrument(instrum).controller_name(cc);
+    }
+
+    /**
+     * \getter m_instruments[instrument].controllers_active[controller]
+     *      A convenience function so that the caller doesn't have to get the
+     *      instrument number from the bus_instrument() member function.
+     *      It also has a shorter name.
+     */
+
+    const std::string & controller_name (int buss, int channel, int cc)
+    {
+        int instrum = bus_instrument(buss, channel);
+        return instrument(instrum).controller_name(cc);
     }
 
 public:

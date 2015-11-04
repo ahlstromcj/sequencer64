@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-27
+ * \updates       2015-11-03
  * \license       GNU GPLv2 or above
  *
  *  This file provides a Linux-only implementation of MIDI support.
@@ -104,16 +104,11 @@ midibus::midibus
     m_mutex             ()
 {
     char alias[64];
-    if (global_user_midi_bus_definitions[m_id].alias.length() > 0)
-    {
-        snprintf
-        (
-            alias, sizeof(alias), "(%s)",
-            global_user_midi_bus_definitions[m_id].alias.c_str()
-        );
-    }
+    const std::string & bussname = g_user_settings.bus_name(m_id);
+    if (! bussname.empty())
+        snprintf(alias, sizeof(alias), "%s", bussname.c_str());
     else
-        snprintf(alias, sizeof(alias), "(%s)", port_name);
+        snprintf(alias, sizeof(alias), "%s", port_name);
 
     char name[80];
     snprintf                            /* copy the client name parts */
@@ -133,7 +128,7 @@ midibus::midibus
  *      Provides the local-client number.
  *
  * \param seq
- *      Provides the sequence that will work with this buss..
+ *      Provides the sequence that will work with this buss.
  *
  * \param id
  *      Provides the ID code for this bus.  It is an index into the midibus

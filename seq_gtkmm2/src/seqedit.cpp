@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-31
+ * \updates       2015-11-03
  * \license       GNU GPLv2 or above
  *
  */
@@ -384,7 +384,7 @@ seqedit::create_menus ()
 {
     using namespace Gtk::Menu_Helpers;
 
-    /*
+    /**
      *  This first menu is the Zoom menu, represented in the
      *  pattern/sequence editor by a button with a magnifying glass.
      *  The values are "pixels to ticks".
@@ -400,7 +400,7 @@ seqedit::create_menus ()
         );
     }
 
-    /*
+    /**
      *  The Snap menu is actually the Grid Snap button, which shows two
      *  arrows pointing to a central bar.
      */
@@ -469,7 +469,7 @@ seqedit::create_menus ()
         MenuElem("1/192", sigc::bind(SET_SNAP, m_ppqn / 16 / 3))
     );
 
-    /*
+    /**
      *  The note-length menu is on the button that shows four notes.
      */
 
@@ -537,7 +537,7 @@ seqedit::create_menus ()
         MenuElem("1/192", sigc::bind(SET_NOTE, m_ppqn / 16 / 3))
     );
 
-    /*
+    /**
      *  This menu lets one set the key of the sequence, and is brought up
      *  by the button with the "golden key" image on it.
      */
@@ -593,7 +593,7 @@ seqedit::create_menus ()
         MenuElem(c_key_text[11], sigc::bind(SET_KEY, 11))
     );
 
-    /*
+    /**
      *  This button shows a down around for the bottom half of the time
      *  signature.  It's tooltip is "Time signature.  Length of beat."
      *  But it is called bw, or beat width, in the code.
@@ -622,7 +622,7 @@ seqedit::create_menus ()
         MenuElem("16", sigc::bind(SET_BW, 16))
     );
 
-    /*
+    /**
      *  This menu is shown when pressing the button at the bottom of the
      *  window that has "Vol" as its label.  Let's show the numbers as
      *  well to help the user.  And we'll have to document this change.
@@ -667,7 +667,7 @@ seqedit::create_menus ()
         MenuElem("Fixed 1: 16", sigc::bind(SET_REC_VOL, 16))
     );
 
-    /*
+    /**
      *  This menu sets the scale to show on the panel, and the button
      *  shows a "staircase" image.  See the c_music_scales enumeration
      *  defined in the globals module.
@@ -683,7 +683,7 @@ seqedit::create_menus ()
         );
     }
 
-    /*
+    /**
      *  This section sets up two different menus.  The first is
      *  m_menu_length.  This menu lets on set the sequence length in bars
      *  (not the MIDI channel).  The second menu is the m_menu_bpm, or
@@ -1200,27 +1200,6 @@ seqedit::fill_top_bar ()
 #endif
 }
 
-    /*
-     * The following commented function seems to be legacy test code.
-     */
-
-#if 0
-
-void
-seqedit::mouse_action (mouse_action_e a_action)
-{
-    if (a_action == e_action_select && m_radio_select->get_active())
-        printf("mouse_action() select [%d]\n", a_action);
-
-    if (a_action == e_action_draw && m_radio_draw->get_active())
-        printf("mouse_action() draw [%d]\n", a_action);
-
-    if (a_action == e_action_grow && m_radio_grow->get_active())
-        printf("mouse_action() grow [%d]\n", a_action);
-}
-
-#endif
-
 /**
  *  Pops up the given pop-up menu.
  */
@@ -1263,39 +1242,22 @@ void
 seqedit::popup_midich_menu ()
 {
     m_menu_midich = manage(new Gtk::Menu());
-    int midi_bus = m_seq.get_midi_bus();
-    for (int i = 0; i < MIDI_BUS_CHANNEL_MAX; i++)  /* MIDI channel menu */
+    int bus = m_seq.get_midi_bus();
+    for (int channel = 0; channel < MIDI_BUS_CHANNEL_MAX; ++channel)
     {
         char b[4];                                  /* 2 digits or less  */
-        snprintf(b, sizeof(b), "%d", i + 1);
+        snprintf(b, sizeof(b), "%d", channel + 1);
         std::string name = std::string(b);
-
-        // TODO:
-        // int inst = -1;                     // deliberately invalid
-        // const user_midi_bus & umb = g_user_settings.bus(midi_bus);
-        // if (umb.is_valid())
-        // {
-        //      inst = umb.instrument(channnel)
-        // }
-        //
-        // or
-        //
-        // int inst = g_user_settings.bus(midi_bus).instrument(channel);
-
-        int inst = global_user_midi_bus_definitions[midi_bus].instrument[i];
-        if (inst >= 0 && inst < c_max_busses)
-        {
-            name = name +
-            (
-                std::string(" (") +
-                    global_user_instrument_definitions[inst].instrument +
-                    std::string(")")
-            );
-        }
+        std::string s = g_user_settings.instrument_name(bus, channel);
+        if (! s.empty())
+            name += (std::string(" ") + s);
 
 #define SET_CH         mem_fun(*this, &seqedit::set_midi_channel)
 
-        m_menu_midich->items().push_back(MenuElem(name, sigc::bind(SET_CH, i)));
+        m_menu_midich->items().push_back
+        (
+            MenuElem(name, sigc::bind(SET_CH, channel))
+        );
     }
     m_menu_midich->popup(0, 0);
 }
@@ -1322,7 +1284,7 @@ seqedit::popup_sequence_menu ()
     m_menu_sequences->items().push_back(SeparatorElem());
     for (int ss = 0; ss < c_max_sets; ++ss)
     {
-        Gtk::Menu * menu_ss = nullptr;
+        Gtk::Menu * menuss = nullptr;
         bool inserted = false;
         for (int seq = 0; seq <  c_seqs_in_set; seq++)
         {
@@ -1334,15 +1296,12 @@ seqedit::popup_sequence_menu ()
                 {
                     inserted = true;
                     snprintf(name, sizeof(name), "[%d]", ss);
-                    menu_ss = manage(new Gtk::Menu());
-                    m_menu_sequences->items().push_back
-                    (
-                        MenuElem(name, *menu_ss)
-                    );
+                    menuss = manage(new Gtk::Menu());
+                    m_menu_sequences->items().push_back(MenuElem(name, *menuss));
                 }
                 sequence * seq = perf().get_sequence(i);
                 snprintf(name, sizeof(name), "[%d] %.13s", i, seq->get_name());
-                menu_ss->items().push_back
+                menuss->items().push_back
                 (
                     MenuElem(name, sigc::bind(SET_BG_SEQ, i))
                 );
@@ -1358,26 +1317,26 @@ seqedit::popup_sequence_menu ()
  */
 
 void
-seqedit::set_background_sequence (int a_seq)
+seqedit::set_background_sequence (int seqnum)
 {
     char name[30];
-    m_initial_sequence = m_sequence = a_seq;
-    if (a_seq == -1 || ! perf().is_active(a_seq))
+    m_initial_sequence = m_sequence = seqnum;
+    if (seqnum == -1 || ! perf().is_active(seqnum))
     {
         m_entry_sequence->set_text("Off");
         m_seqroll_wid->set_background_sequence(false, 0);
     }
-    if (perf().is_active(a_seq))
+    if (perf().is_active(seqnum))
     {
         /**
          * \todo
          *      Make the sequence pointer a reference.
          */
 
-        sequence * seq = perf().get_sequence(a_seq);
-        snprintf(name, sizeof(name), "[%d] %.13s", a_seq, seq->get_name());
+        sequence * seq = perf().get_sequence(seqnum);
+        snprintf(name, sizeof(name), "[%d] %.13s", seqnum, seq->get_name());
         m_entry_sequence->set_text(name);
-        m_seqroll_wid->set_background_sequence(true, a_seq);
+        m_seqroll_wid->set_background_sequence(true, seqnum);
     }
 }
 
@@ -1387,9 +1346,9 @@ seqedit::set_background_sequence (int a_seq)
  */
 
 Gtk::Image *
-seqedit::create_menu_image (bool a_state)
+seqedit::create_menu_image (bool state)
 {
-    if (a_state)
+    if (state)
     {
         return manage
         (
@@ -1425,8 +1384,8 @@ seqedit::popup_event_menu ()
     bool channel_pressure = false;
     bool pitch_wheel = false;
     unsigned char status, cc;
-    int midi_bus = m_seq.get_midi_bus();
-    int midi_ch = m_seq.get_midi_channel();
+    int bus = m_seq.get_midi_bus();
+    int channel = m_seq.get_midi_channel();
     memset(ccs, false, sizeof(bool) * MIDI_COUNT_MAX);
     m_seq.reset_draw_marker();
     while (m_seq.get_next_event(&status, &cc))
@@ -1558,12 +1517,12 @@ seqedit::popup_event_menu ()
             /*
              * Do we really want the default controller name to start?
              * That's what the legacy Seq24 code does!  We need to document
-             * it in the seq24-doc and sequencer24-doc projects..
+             * it in the seq24-doc and sequencer24-doc projects.
              */
 
             std::string controller_name(c_controller_names[offset + item]);
-            const user_midi_bus & umb = g_user_settings.bus(midi_bus);
-            int inst = umb.instrument(midi_ch);
+            const user_midi_bus & umb = g_user_settings.bus(bus);
+            int inst = umb.instrument(channel);
             const user_instrument & uin = g_user_settings.instrument(inst);
             if (uin.is_valid())         // kind of a redundant check
             {
@@ -1594,12 +1553,12 @@ seqedit::popup_event_menu ()
  */
 
 void
-seqedit::set_midi_channel (int a_midichannel)
+seqedit::set_midi_channel (int midichannel)
 {
     char b[8];
-    snprintf(b, sizeof(b), "%d", a_midichannel + 1);
+    snprintf(b, sizeof(b), "%d", midichannel + 1);
     m_entry_channel->set_text(b);
-    m_seq.set_midi_channel(a_midichannel);
+    m_seq.set_midi_channel(midichannel);
 }
 
 /**
@@ -1608,11 +1567,11 @@ seqedit::set_midi_channel (int a_midichannel)
  */
 
 void
-seqedit::set_midi_bus (int a_midibus)
+seqedit::set_midi_bus (int bus)
 {
-    m_seq.set_midi_bus(a_midibus);
+    m_seq.set_midi_bus(bus);
     mastermidibus & mmb =  perf().master_bus();
-    m_entry_bus->set_text(mmb.get_midi_out_bus_name(a_midibus));
+    m_entry_bus->set_text(mmb.get_midi_out_bus_name(bus));
 }
 
 /**
@@ -1621,17 +1580,17 @@ seqedit::set_midi_bus (int a_midibus)
  */
 
 void
-seqedit::set_zoom (int a_zoom)
+seqedit::set_zoom (int zoom)
 {
-    char b[10];
-    snprintf(b, sizeof(b), "1:%d", a_zoom);
+    char b[8];
+    snprintf(b, sizeof(b), "1:%d", zoom);
     m_entry_zoom->set_text(b);
-    m_zoom = a_zoom;
-    m_initial_zoom = a_zoom;
-    m_seqroll_wid->set_zoom(m_zoom);
-    m_seqtime_wid->set_zoom(m_zoom);
-    m_seqdata_wid->set_zoom(m_zoom);
-    m_seqevent_wid->set_zoom(m_zoom);
+    m_zoom = zoom;
+    m_initial_zoom = zoom;
+    m_seqroll_wid->set_zoom(zoom);
+    m_seqtime_wid->set_zoom(zoom);
+    m_seqdata_wid->set_zoom(zoom);
+    m_seqevent_wid->set_zoom(zoom);
 }
 
 /**
@@ -1642,7 +1601,7 @@ seqedit::set_zoom (int a_zoom)
 void
 seqedit::set_snap (int a_snap)
 {
-    char b[10];
+    char b[8];
     snprintf(b, sizeof(b), "1/%d", m_ppqn * 4 / a_snap);
     m_entry_snap->set_text(b);
     m_snap = a_snap;
@@ -1660,7 +1619,7 @@ seqedit::set_snap (int a_snap)
 void
 seqedit::set_note_length (int a_note_length)
 {
-    char b[10];
+    char b[8];
     snprintf(b, sizeof(b), "1/%d", m_ppqn * 4 / a_note_length);
     m_entry_note_length->set_text(b);
     m_note_length = a_note_length;
@@ -1872,8 +1831,14 @@ seqedit::thru_change_callback ()
 }
 
 /**
- *  Sets the data type based on the given parameters.
- *  To be determined.
+ *      Sets the data type based on the given parameters.
+ *      This function uses the hardwired array c_controller_names.
+ *
+ * \param status
+ *      The current editing status.
+ *
+ * \param control
+ *      The control value.  However, we really need to validate it!
  */
 
 void
@@ -1896,25 +1861,15 @@ seqedit::set_data_type (unsigned char status, unsigned char control)
         snprintf(type, sizeof(type), "Aftertouch");
     else if (status == EVENT_CONTROL_CHANGE)
     {
-        int midi_bus = m_seq.get_midi_bus();
-        int midi_ch = m_seq.get_midi_channel();
-        std::string controller_name(c_controller_names[control]);
-        int inst = global_user_midi_bus_definitions[midi_bus].instrument[midi_ch];
-        if (inst >= 0 && inst < c_max_instruments)
-        {
-            if
-            (
-                global_user_instrument_definitions[inst].
-                    controllers_active[control]
-            )
-            {
-                controller_name = global_user_instrument_definitions[inst].
-                    controllers[control];
-            }
-        }
+        int bus = m_seq.get_midi_bus();
+        int channel = m_seq.get_midi_channel();
+        std::string ccname(c_controller_names[control]);
+        if (g_user_settings.controller_active(bus, channel, control))
+            ccname = g_user_settings.controller_name(bus, channel, control);
+
         snprintf
         (
-            type, sizeof(type), "Control Change - %s", controller_name.c_str()
+            type, sizeof(type), "Control Change - %s", ccname.c_str()
         );
     }
     else if (status == EVENT_PROGRAM_CHANGE)

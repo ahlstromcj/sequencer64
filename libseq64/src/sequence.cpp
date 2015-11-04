@@ -52,15 +52,10 @@ sequence::sequence (int ppqn)
  :
     m_events                    (),
     m_triggers                  (*this),
-//  m_trigger_clipboard         (),
     m_events_undo               (),
     m_events_redo               (),
-//  m_triggers_undo             (),
-//  m_triggers_redo             (),
     m_iterator_play             (),
     m_iterator_draw             (),
-//  m_iterator_play_trigger     (),
-//  m_iterator_draw_trigger     (),
     m_midi_channel              (0),
     m_bus                       (0),
     m_song_mute                 (false),
@@ -73,7 +68,6 @@ sequence::sequence (int ppqn)
     m_quantized_rec             (false),
     m_thru                      (false),
     m_queued                    (false),
-//  m_trigger_copied            (false),
     m_dirty_main                (true),
     m_dirty_edit                (true),
     m_dirty_perf                (true),
@@ -1544,7 +1538,7 @@ sequence::stream_event (event * ev)
     ev->mod_timestamp(m_length);              /* adjust the tick */
     if (m_recording)
     {
-        if (global_is_pattern_playing)
+        if (g_rc_settings.is_pattern_playing())
         {
             add_event(ev);
             set_dirty();
@@ -1573,7 +1567,7 @@ sequence::stream_event (event * ev)
         put_event_on_bus(ev);
 
     link_new();
-    if (m_quantized_rec && global_is_pattern_playing)
+    if (m_quantized_rec && g_rc_settings.is_pattern_playing())
     {
         if (ev->is_note_off())
         {

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-22
- * \updates       2015-09-28
+ * \updates       2015-11-03
  * \license       GNU GPLv2 or above
  *
  *  Note that this module also sets the legacy global variables, so that
@@ -216,7 +216,6 @@ rc_settings::set_globals ()
     global_with_jack_master_cond     = m_with_jack_master_cond;
     global_jack_start_mode           = m_jack_start_mode;
     global_manual_alsa_ports         = m_manual_alsa_ports;
-    global_is_pattern_playing        = m_is_pattern_playing;
     global_print_keys                = m_print_keys;
     global_device_ignore             = m_device_ignore;
     global_device_ignore_num         = m_device_ignore_num;
@@ -250,7 +249,6 @@ rc_settings::get_globals ()
     m_with_jack_master_cond     = global_with_jack_master_cond;
     m_jack_start_mode           = global_jack_start_mode;
     m_manual_alsa_ports         = global_manual_alsa_ports;
-    m_is_pattern_playing        = global_is_pattern_playing;
     m_print_keys                = global_print_keys;
     m_device_ignore             = global_device_ignore;
     m_device_ignore_num         = global_device_ignore_num;

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-25
- * \updates       2015-09-27
+ * \updates       2015-11-03
  * \license       GNU GPLv2 or above
  *
  *  Note that this module also sets the legacy global variables, so that
@@ -93,62 +93,6 @@ user_midi_bus::set_defaults ()
 }
 
 /**
- *  Copies the current values of the member variables into their
- *  corresponding global variables.  Should be called at initialization,
- *  and after settings are read from the "user" configuration file.
- *
- *  Note that this is done only if the object is valid.
- *
- * \param buss
- *      Provides the destination buss number.  In order to support the
- *      legacy code, this index value must be less than c_max_busses (32).
- */
-
-void
-user_midi_bus::set_global (int buss) const
-{
-    if (m_is_valid && buss >= 0 && buss < c_max_busses) // CONST GLOBAL
-    {
-        global_user_midi_bus_definitions[buss].alias = m_midi_bus_def.alias;
-        for (int channel = 0; channel < MIDI_BUS_CHANNEL_MAX; channel++)
-        {
-            global_user_midi_bus_definitions[buss].instrument[channel] =
-                m_midi_bus_def.instrument[channel];
-        }
-    }
-}
-
-/**
- *  Copies the current values of the global variables into their
- *  corresponding member variable.  Should be called before settings are
- *  written to the "user" configuration file.
- *
- *  This function also sets the validity flag to true if the instrument
- *  name is not empty; the rest of the values are not checked.
- *
- * \param buss
- *      Provides the destination buss number.  In order to support the
- *      legacy code, this index value must be less than c_max_busses (32).
- */
-
-void
-user_midi_bus::get_global (int buss)
-{
-    if (buss >= 0 && buss < c_max_busses)   // CONST GLOBAL and dangerous!
-    {
-        m_channel_count = 0;
-        set_name(global_user_midi_bus_definitions[buss].alias);
-        for (int channel = 0; channel < MIDI_BUS_CHANNEL_MAX; channel++)
-        {
-            int in = global_user_midi_bus_definitions[buss].instrument[channel];
-            m_midi_bus_def.instrument[channel] = in;
-            if (in != GM_INSTRUMENT_FLAG)
-                ++m_channel_count;
-        }
-    }
-}
-
-/**
  * \getter m_midi_bus_def.instrument[channel]
  *
  * \param channel
@@ -213,3 +157,4 @@ user_midi_bus::copy_definitions (const user_midi_bus & rhs)
  *
  * vim: sw=4 ts=4 wm=4 et ft=cpp
  */
+

@@ -1,4 +1,4 @@
-.TH Sequencer64 "Oct 11 2015" "Version 0.9.9" "Sequencer64 Manual Page"
+.TH Sequencer64 "Nov 03 2015" "Version 0.9.9.6" "Sequencer64 Manual Page"
 
 .SH NAME
 Sequencer64 - Real time MIDI sequencer refactored from Seq24
@@ -14,90 +14,104 @@ provide a simple interface for editing and playing MIDI 'loops'.
 It uses gtk-2 for the user interface.
 
 .SH OPTIONS
-Sequencer64 accepts the following options:
+Sequencer64 accepts the following options, plus an optional name of
+a MIDI file:
 .TP 8
-.B  \-\-help
-Display a list of all commandline options
+.B  \-h, \-\-help
+Display a list of all commandline options.
 .TP 8
-.B  \-\-version
-Display the program version
+.B  \-v, \-\-version
+Display the program version.
 .TP 8
-.B  \-\-legacy
+.B  \-l, \-\-legacy
 Save the MIDI file in the old Seq24 format, as unspecified
 binary data, instead of as a legal MIDI track with meta events.
-The user-interface will indicate this mode.  This mode is also
-used if the application is invoked as the
-\fIseq24\fP
-command.
+Also read the configuration, if provided, from the ~/.seq24rc and ~/.seq24usr
+files, instead of the new ~/.config/sequencer64/sequencer64.rc and
+~/.config/sequencer64/sequencer64.usr files.  The user-interface will indicate
+this mode.  This mode is also used if the application is invoked as the
+\fIseq24\fP command (one can create a soft link to the sequencer64 binary to
+make that happen).
 .TP 8
-.B \-\-bus b
-Supports modifying the buss number on all tracks when a MIDI
-is read.  All tracks are loaded for this buss.  This feature is useful
-for testing, making it easy to map the MIDI file onto your current
-hardware/software synthesizer setup.
+.B \-b b, \-\-bus b
+Supports modifying the buss number on all tracks when a MIDI file
+is read.  All tracks are loaded with this buss-number override.  This feature
+is useful for testing, making it easy to map the MIDI file onto the system's
+current hardware/software synthesizer setup.
 .TP 8
-.B \-\-ppqn p
-Supports modifying the PPQN value of Sequencer64.  This should
-allow MIDI files to play back at the proper speed, and be written
-with the new PPQN value.  This feature is STILL IN PROGRESS.
+.B \-q p, \-\-ppqn p
+Supports modifying the PPQN value of Sequencer64, which is currently hardwired
+to a value of 192.  This setting should allow MIDI files to play back at the
+proper speed, and be written with the new PPQN value.  This feature is STILL IN
+PROGRESS, and undependable.
 .TP 8
 .B \-\-lash
 If LASH support is compiled into the program, this option
 enables it.
+If LASH support is not compiled into the program, this option will note
+be shown in the output of the --help option.
 .TP 8
 .B \-\-file \fI<filename>\fP
-Load MIDI file on startup
+Load the specified MIDI file on startup.
+This option does not exist.
+Instead, specify the file itself as the last command-line argument.
 .TP 8
 .B \-\-manual_alsa_ports
-Sequencer64 won't attach alsa ports
+Sequencer64 won't attach ALSA ports.
+Instead, it will create is own set of input and output busses/ports.
 .TP 8
 .B \-\-showmidi
-Dumps incoming midi to screen
+Dumps incoming MIDI to screen.
 .TP 8
 .B \-\-priority
-Runs higher priority with FIFO scheduler
+Runs higher priority with a FIFO scheduler.
 .TP 8
 .B \-\-pass_sysex
-Passes any incoming sysex messages to all outputs
+Passes any incoming SYSEX messages to all outputs.
 .TP 8
 .B \-\-ignore \fI<number>\fP
 Ignore ALSA device <number>
 .TP 8
 .B \-\-show_keys
-Prints pressed key value
+Prints pressed key value.
 .TP 8
 .B \-\-interaction_method \fI<number>\fP
-Select mouse interaction method
-	(0 = sequencer64) (default)
-	(1 = fruity loops method)
+Select the mouse interaction method
+0 = seq24 (the default); and 1 = fruity loops method.
+The latter does not completely support all actions supported by the Seq24
+interaction method, at this time.
+
+The following options will not be shown by --help if the application is
+not compiled for JACK support.
+
 .TP 8
 .B \-\-jack_transport
-sequencer64 will sync to JACK transport
+Sequencer64 will sync to JACK transport.
 .TP 8
 .B \-\-jack_master
-sequencer64 will try to be JACK master
+Sequencer64 will try to be the JACK master.
 .TP 8
 .B \-\-jack_master_cond
-JACK master will fail if there is already a master
+JACK master will fail if there is already a JACK master.
 .TP 8
 .B \-\-jack_start_mode \fI<x>\fP
-When sequencer64 is synced to JACK, the following play modes are available:
+When Sequencer64 is synced to JACK, the following play modes are available:
 	(0 = live mode)
 	(1 = song mode) (default)
 .TP 8
 .B \-\-stats
-Print statistics on commandline while running
+Print statistics on the commandline while running.
 .TP 8
 .B \-\-jack_session_uuid \fI<uuid>\fP
-Set uuid for jack session
+Set the UUID for the JACK session.
 
 .SH FILES
 \fB$HOME\fP/sequencer64.rc stores the user-configuration settings for
-sequencer64.  If it does not exist, it will be generated when sequencer64
+Sequencer64.  If it does not exist, it will be generated when Sequencer64
 exits.
 \fB$HOME\fP/sequencer64.usr stores the MIDI-configuration settings and (later)
 some more universal user-interface setting for
-sequencer64.  If it does not exist, it will be generated when sequencer64
+Sequencer64.  If it does not exist, it will be generated when Sequencer64
 exits.
 
 .SH SUGGESTIONS AND BUG REPORTS
@@ -107,13 +121,22 @@ maintainer.
 .SH OTHER INFO
 The current Sequencer64 project homepage is a simple git repository at the
 https://github.com/ahlstromcj/sequencer64.git URL.
-Reasonably up-to-date instructions can be found in the project at the
-https://github.com/ahlstromcj/sequencer24-doc.git URL.
+Up-to-date instructions can be found in the project at the
+https://github.com/ahlstromcj/sequencer26-doc.git URL.
 
+The old Seq24 project homepage is at
+<http://www.filter24.org/seq24/> the new
+one is at <https://edge.launchpad.net/seq24/>.
 It is released under the GNU GPL license.
+
+Sequencer64 is also released under the GNU GPL license.
 
 .SH AUTHOR
 Sequencer64 was written by Chris Ahlstrom <ahlstromcj@gmail.com>.
 Seq24 was written by Rob C. Buse <seq24@filter24.org> and the Seq24team.
 
-This manual page was updated by Chris Ahlstrom <ahlstromcj@gmail.com>.
+This manual page was written by Dana Olson
+<seq24@ubuntustudio.com> with additions from Guido Scholz
+<guido.scholz@bayernline.de> and Chris Ahlstrom
+<ahlstromcj@gmail.com>.
+

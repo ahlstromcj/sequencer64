@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-08-07
- * \updates       2015-10-15
+ * \updates       2015-11-03
  * \license       GNU GPLv2 or above
  *
  *  The first part of this file defines a couple of global structure
@@ -112,7 +112,6 @@ std::string global_user_filename = "sequencer64.usr";
 std::string global_config_filename_alt = ".seq24rc";
 std::string global_user_filename_alt = ".seq24usr";
 bool global_print_keys = false;
-bool global_is_pattern_playing = false;
 bool global_with_jack_transport = false;
 bool global_with_jack_master = false;
 bool global_with_jack_master_cond = false;
@@ -120,8 +119,8 @@ bool global_jack_start_mode = true;
 std::string global_jack_session_uuid = "";
 interaction_method_t global_interactionmethod = e_seq24_interaction;
 bool global_allow_mod4_mode = true;
-user_midi_bus_t global_user_midi_bus_definitions[c_max_busses];
-user_instrument_t global_user_instrument_definitions[c_max_instruments];
+// user_midi_bus_t global_user_midi_bus_definitions[c_max_busses];
+// user_instrument_t global_user_instrument_definitions[c_max_instruments];
 
 namespace seq64
 {

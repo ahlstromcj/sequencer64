@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-23
- * \updates       2015-09-27
+ * \updates       2015-11-03
  * \license       GNU GPLv2 or above
  *
  *  Note that this module also sets the legacy global variables, so that
@@ -74,8 +74,8 @@ user_settings::user_settings ()
 
 user_settings::user_settings (const user_settings & rhs)
  :
-    m_midi_buses     (),         // vector
-    m_instruments   (),         // vector
+    m_midi_buses     (),            // vector
+    m_instruments   (),             // vector
     m_mainwnd_rows      (rhs.m_mainwnd_rows),
     m_mainwnd_cols      (rhs.m_mainwnd_cols),
     m_seqs_in_set       (rhs.m_seqs_in_set),
@@ -196,30 +196,7 @@ user_settings::normalize ()
 void
 user_settings::set_globals () const
 {
-    int buss = 0;
-    for
-    (
-        BussConstIterator umi = m_midi_buses.begin();
-        umi != m_midi_buses.end(); ++umi
-    )
-    {
-        if (buss < c_max_busses)
-            umi->set_global(buss++);
-        else
-            break;
-    }
-
-    int instrument = 0;
-    for
-    (
-        InstrumentConstIterator uii = m_instruments.begin();
-        uii != m_instruments.end(); ++uii)
-    {
-        if (instrument < c_max_instruments)
-            uii->set_global(instrument++);
-        else
-            break;
-    }
+    // Done with user-midi-bus and user-instrument values... more to come
 }
 
 /**
@@ -231,31 +208,7 @@ user_settings::set_globals () const
 void
 user_settings::get_globals ()
 {
-    int buss = 0;
-    for
-    (
-        BussIterator umi = m_midi_buses.begin();
-        umi != m_midi_buses.end(); ++umi
-    )
-    {
-        if (buss < c_max_busses)
-            umi->get_global(buss++);
-        else
-            break;
-    }
-
-    int instrument = 0;
-    for
-    (
-        InstrumentIterator uii = m_instruments.begin();
-        uii != m_instruments.end(); ++uii
-    )
-    {
-        if (instrument < c_max_instruments)
-            uii->get_global(instrument++);
-        else
-            break;
-    }
+    // Done with user-midi-bus and user-instrument values... more to come
 }
 
 /**
@@ -321,32 +274,6 @@ user_settings::private_bus (int index)
         return s_invalid;
 }
 
-#if 0
-
-/*
- * \setter m_midi_buses[index].name() [the alias field]
- *      Unfortunately, we cannot check the validity of the selected
- *      object, but we can only set the name if not empty.  This function
- *      cannot be used to invalidate an object.  It can make the object
- *      valid, however, and should be called before the other setter
- *      functions during normal processing.
- *
- * \note
- *      Now we use the user_midi_bus constructor to provide the alias,
- *      so bus_alias() is not so useful now.  And
- *      user_midi_bus::set_name() is private now.
- */
-
-void
-user_settings::bus_alias (int /*index*/, const std::string & /*alias*/)
-{
-    user_midi_bus & mb = private_bus(index);
-    if (! alias.empty())
-        mb.set_name(alias);
-}
-
-#endif      // 0
-
 /**
  * \getter m_midi_buses[index].instrument[channel]
  *      Currently this function is used, in the userfile::parse()
@@ -376,32 +303,6 @@ user_settings::private_instrument (int index)
     else
         return s_invalid;
 }
-
-#if 0
-
-/*
- * \setter m_midi_instrument_defs[index].instrument
- *      Unfortunately, we cannot check the validity of the selected
- *      object, but we can only set the name if not empty.  This function
- *      cannot be used to invalidate an object.  It can make the object
- *      valid, however, and should be called before the other setter
- *      functions during normal processing.
- *
- * \note
- *      Again, the constructor is more useful to set the name, so this
- *      function here is not so useful.  And user_instrument::set_name() is
- *      private now.
- */
-
-void
-user_settings::instrument_name (int /*index*/, const std::string & /*instname*/)
-{
-    user_instrument & mi = private_instrument(index);
-    if (! instname.empty())
-        mi.set_name(instname);
-}
-
-#endif      // 0
 
 /**
  * \setter m_midi_instrument_defs[index].controllers, controllers_active

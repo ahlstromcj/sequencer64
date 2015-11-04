@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-25
- * \updates       2015-10-30
+ * \updates       2015-11-03
  * \license       GNU GPLv2 or above
  *
  *  We're going to try to collect all the globals here in one module, and
@@ -96,6 +96,14 @@
 #include "user_settings.hpp"            /* seq64::user_settings         */
 
 /*
+ * Provides access to most of the global values through a nice choke
+ * point.
+ */
+
+extern rc_settings g_rc_settings;
+extern user_settings g_user_settings;
+
+/*
  * These additions aren't supported, but they do flag some potentially
  * interesting upgrades.
  */
@@ -126,9 +134,6 @@ const int c_swing_eighths = 2;
 const int c_swing_sixteenths = 4;
 
 #endif
-
-extern rc_settings g_rc_settings;
-extern user_settings g_user_settings;
 
 /**
  *  This value indicates to use the default value of PPQN and ignore (to some
@@ -642,7 +647,6 @@ extern bool global_with_jack_master;
 extern bool global_with_jack_master_cond;
 extern bool global_jack_start_mode;
 extern bool global_manual_alsa_ports;
-extern bool global_is_pattern_playing;
 extern bool global_print_keys;
 extern bool global_device_ignore;            /* seq24 module    */
 extern int global_device_ignore_num;         /* seq24 module    */
@@ -659,8 +663,8 @@ extern std::string global_user_filename_alt;
  *  Global arrays.  To be moved to user_settings SOON.
  */
 
-extern user_midi_bus_t global_user_midi_bus_definitions[c_max_busses];
-extern user_instrument_t global_user_instrument_definitions[c_max_instruments];
+// extern user_midi_bus_t global_user_midi_bus_definitions[c_max_busses];
+// extern user_instrument_t global_user_instrument_definitions[c_max_instruments];
 
 /**
  *  Corresponds to the small number of musical scales that the application

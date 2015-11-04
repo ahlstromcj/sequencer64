@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-30
+ * \updates       2015-11-03
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the most important single class in Sequencer64, as
@@ -1274,10 +1274,6 @@ perform::stop_jack ()
 
 /**
  *  If JACK is supported and running, sets the position of the transport.
- *
- * \warning
- *      A lot of this code is effectively disabled by an early return
- *      statement.
  */
 
 void

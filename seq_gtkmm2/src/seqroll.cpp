@@ -20,12 +20,12 @@
  * \file          seqroll.cpp
  *
  *  This module declares/defines the base class for drawing on the piano
- *  roll of the patterns editor.
+ *  roll of the sequence/pattern editor.
  *
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-01
+ * \updates       2015-11-03
  * \license       GNU GPLv2 or above
  *
  */
@@ -1001,30 +1001,39 @@ bool
 seqroll::on_key_press_event (GdkEventKey * ev)
 {
     bool result = false;
-    bool dont_toggle = PREFKEY(start) != PREFKEY(stop);
-    if
-    (
-        ev->keyval ==  PREFKEY(start) &&
-        (dont_toggle || ! global_is_pattern_playing)
-    )
+    bool startstop = OR_EQUIVALENT(ev->keyval, PREFKEY(start), PREFKEY(stop));
+    if (startstop)
     {
-        perf().position_jack(false);
-        perf().start(false);
-        perf().start_jack();
-        global_is_pattern_playing = true;
+        bool stop = PREFKEY(start) == PREFKEY(stop) ?
+            perf().is_playing() : ev->keyval == PREFKEY(stop) ;
+
+        if (stop)
+        {
+            // perf().stop_jack();
+            // perf().stop();
+            // lobal_is_pattern_playing.is_pattern_playing(false);
+
+            perf().stop_playing();
+        }
+        else
+        {
+            // perf().position_jack(false);
+            // perf().start(false);
+            // perf().start_jack();
+            // lobal_is_pattern_playing.is_pattern_playing(true);
+
+            perf().start_playing();
+        }
     }
-    else if
-    (
-        ev->keyval ==  PREFKEY(stop) &&
-        (dont_toggle || global_is_pattern_playing)
-    )
+    else if (CAST_EQUIVALENT(ev->type, SEQ64_KEY_PRESS)) // this really needed?
     {
-        perf().stop_jack();
-        perf().stop();
-        global_is_pattern_playing = false;
-    }
-    if (CAST_EQUIVALENT(ev->type, SEQ64_KEY_PRESS))
-    {
+        /*
+         * I think we should be able to move and remove notes while playing,
+         * which is already supported using the mouse.
+         *
+         * if (! perf().is_playing)
+         */
+
         if (OR_EQUIVALENT(ev->keyval, SEQ64_Delete, SEQ64_BackSpace))
         {
             m_seq.push_undo();
@@ -1032,108 +1041,100 @@ seqroll::on_key_press_event (GdkEventKey * ev)
             m_seq.remove_marked();
             result = true;
         }
-        if (! global_is_pattern_playing)
+        else if (ev->keyval == SEQ64_Home)
         {
-            /*
-             * See the note about the arrow keys in the function banner.
-             */
-
-            if (ev->keyval == SEQ64_Home)
+            m_seq.set_orig_tick(0);
+            result = true;
+        }
+        else if (ev->keyval == SEQ64_Left)
+        {
+            result = true;
+            if (m_seq.any_selected_notes())
+                m_seq.move_selected_notes(-m_snap, /*-48,*/ 0);
+            else
+                m_seq.set_orig_tick(m_seq.get_last_tick() - m_snap);
+        }
+        else if (ev->keyval == SEQ64_Right)
+        {
+            result = true;
+            if (m_seq.any_selected_notes())
+                m_seq.move_selected_notes(m_snap, /*48,*/ 0);
+            else
+                m_seq.set_orig_tick(m_seq.get_last_tick() + m_snap);
+        }
+        else if (ev->keyval == SEQ64_Down)
+        {
+            if (m_seq.any_selected_notes())
             {
-                m_seq.set_orig_tick(0);
+                m_seq.move_selected_notes(0, -1);
                 result = true;
             }
-            else if (ev->keyval == SEQ64_Left)
+        }
+        else if (ev->keyval == SEQ64_Up)
+        {
+            if (m_seq.any_selected_notes())
             {
-                result = true;
-                if (m_seq.any_selected_notes())
-                    m_seq.move_selected_notes(-m_snap, /*-48,*/ 0);
-                else
-                    m_seq.set_orig_tick(m_seq.get_last_tick() - m_snap);
-            }
-            else if (ev->keyval == SEQ64_Right)
-            {
-                result = true;
-                if (m_seq.any_selected_notes())
-                    m_seq.move_selected_notes(m_snap, /*48,*/ 0);
-                else
-                    m_seq.set_orig_tick(m_seq.get_last_tick() + m_snap);
-            }
-            else if (ev->keyval == SEQ64_Down)
-            {
-                if (m_seq.any_selected_notes())
-                {
-                    m_seq.move_selected_notes(0, -1);
-                    result = true;
-                }
-            }
-            else if (ev->keyval == SEQ64_Up)
-            {
-                if (m_seq.any_selected_notes())
-                {
-                    m_seq.move_selected_notes(0, 1);
-                    result = true;
-                }
-            }
-            else if (ev->keyval == SEQ64_p)   /* \new ca 2015-11-01 */
-            {
-                m_seq24_interaction.set_adding(true, *this);
+                m_seq.move_selected_notes(0, 1);
                 result = true;
             }
-            else if (ev->keyval == SEQ64_P)   /* \new ca 2015-11-01 */
-            {
-                m_seq24_interaction.set_adding(false, *this);
-                result = true;
-            }
+        }
 #if USE_VI_SEQROLL_MODE     // currently disabled, for programmers only!  :-D
-            else if (ev->keyval == SEQ64_h)
+        else if (ev->keyval == SEQ64_h)
+        {
+            if (m_seq.any_selected_notes())
             {
-                if (m_seq.any_selected_notes())
-                {
-                    m_seq.move_selected_notes(-m_snap, /*-48,*/ 0);
-                    result = true;
-                }
-            }
-            else if (ev->keyval == SEQ64_l)
-            {
-                if (m_seq.any_selected_notes())
-                {
-                    m_seq.move_selected_notes(m_snap, /*48,*/ 0);
-                    result = true;
-                }
-            }
-            else if (ev->keyval == SEQ64_j)
-            {
-                if (m_seq.any_selected_notes())
-                {
-                    m_seq.move_selected_notes(0, -1);
-                    result = true;
-                }
-            }
-            else if (ev->keyval == SEQ64_k)
-            {
-                if (m_seq.any_selected_notes())
-                {
-                    m_seq.move_selected_notes(0, 1);
-                    result = true;
-                }
-            }
-            else if (ev->keyval == SEQ64_i)
-            {
-                m_seq24_interaction.set_adding(true, *this);
+                m_seq.move_selected_notes(-m_snap, /*-48,*/ 0);
                 result = true;
             }
-            else if (ev->keyval == SEQ64_I)   /* escape is for stop-play */
+        }
+        else if (ev->keyval == SEQ64_l)
+        {
+            if (m_seq.any_selected_notes())
             {
-                m_seq24_interaction.set_adding(false, *this);
+                m_seq.move_selected_notes(m_snap, /*48,*/ 0);
                 result = true;
             }
+        }
+        else if (ev->keyval == SEQ64_j)
+        {
+            if (m_seq.any_selected_notes())
+            {
+                m_seq.move_selected_notes(0, -1);
+                result = true;
+            }
+        }
+        else if (ev->keyval == SEQ64_k)
+        {
+            if (m_seq.any_selected_notes())
+            {
+                m_seq.move_selected_notes(0, 1);
+                result = true;
+            }
+        }
+        else if (ev->keyval == SEQ64_i)
+        {
+            m_seq24_interaction.set_adding(true, *this);
+            result = true;
+        }
+        else if (ev->keyval == SEQ64_I)             /* escape is stop-play  */
+        {
+            m_seq24_interaction.set_adding(false, *this);
+            result = true;
+        }
 #endif  // USE_VI_SEQROLL_MODE
-
+        else if (ev->keyval == SEQ64_p)             /* \new ca 2015-11-01   */
+        {
+            m_seq24_interaction.set_adding(true, *this);
+            result = true;
+        }
+        else if (ev->keyval == SEQ64_P)             /* \new ca 2015-11-01   */
+        {
+            m_seq24_interaction.set_adding(false, *this);
+            result = true;
         }
         if (ev->state & SEQ64_CONTROL_MASK)
         {
-            if (OR_EQUIVALENT(ev->keyval, SEQ64_x, SEQ64_X))     /* cut */
+            if (OR_EQUIVALENT(ev->keyval, SEQ64_x, SEQ64_X))        /* cut */
             {
                 m_seq.push_undo();
                 m_seq.copy_selected();
@@ -1141,22 +1142,22 @@ seqroll::on_key_press_event (GdkEventKey * ev)
                 m_seq.remove_marked();
                 result = true;
             }
-            if (OR_EQUIVALENT(ev->keyval, SEQ64_c, SEQ64_C))     /* copy */
+            else if (OR_EQUIVALENT(ev->keyval, SEQ64_c, SEQ64_C))   /* copy */
             {
                 m_seq.copy_selected();
                 result = true;
             }
-            if (OR_EQUIVALENT(ev->keyval, SEQ64_v, SEQ64_V))     /* paste */
+            else if (OR_EQUIVALENT(ev->keyval, SEQ64_v, SEQ64_V))   /* paste */
             {
                 start_paste();
                 result = true;
             }
-            if (OR_EQUIVALENT(ev->keyval, SEQ64_z, SEQ64_Z))     /* Undo */
+            else if (OR_EQUIVALENT(ev->keyval, SEQ64_z, SEQ64_Z))   /* Undo */
             {
                 m_seq.pop_undo();
                 result = true;
             }
-            if (OR_EQUIVALENT(ev->keyval, SEQ64_a, SEQ64_A)) /* select all */
+            else if (OR_EQUIVALENT(ev->keyval, SEQ64_a, SEQ64_A))   /* sel all */
             {
                 m_seq.select_all();
                 result = true;

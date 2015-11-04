@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-25
- * \updates       2015-09-27
+ * \updates       2015-11-03
  * \license       GNU GPLv2 or above
  *
  */
@@ -63,13 +63,34 @@ const int c_max_instruments = DEFAULT_INSTRUMENT_MAX;
 /**
  *  This structure corresponds to <tt> [user-instrument-N] </tt>
  *  definitions in the <tt> ~/.seq24usr </tt> or
- *  <tt> ~/.config/sequencer64/sequencer64.rc </tt> file.
+ *  <tt> ~/.config/sequencer64/sequencer64.usr </tt> file.
  */
 
 struct user_instrument_t
 {
+    /**
+     *  Provides the name of the "instrument" being supported.  Do not confuse
+     *  "instrument" with "program" here.   An "instrument" is most likely
+     *  a hardware MIDI sound-box (though it could be a software synthesizer
+     *  as well.
+     */
+
     std::string instrument;
+
+    /**
+     *  Provides a list of up to 128 controllers (e.g. "Modulation").
+     *  If a controller isn't present, or if General MIDI is in force,
+     *  this name might be empty.
+     */
+
     std::string controllers[MIDI_CONTROLLER_MAX];
+
+    /**
+     *  Provides a flag that indicates if each of up to 128 controller is
+     *  active and supported.  If false, it might be an unsupported controller
+     *  or a General MIDI device.
+     */
+
     bool controllers_active[MIDI_CONTROLLER_MAX];
 };
 
@@ -105,7 +126,7 @@ class user_instrument
      *  The instance of the structure that this class wraps.
      */
 
-    user_instrument_t m_instrument_def;    // [c_max_instruments];
+    user_instrument_t m_instrument_def;
 
 public:
 
@@ -123,8 +144,6 @@ public:
     }
 
     void set_defaults ();
-    void set_global (int instrum) const;
-    void get_global (int instrum);
 
     /**
      * \getter m_instrument_def.instrument (name of instrument)
@@ -179,3 +198,4 @@ private:
  *
  * vim: sw=4 ts=4 wm=4 et ft=cpp
  */
+

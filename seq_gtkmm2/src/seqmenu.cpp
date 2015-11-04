@@ -79,6 +79,7 @@ seqmenu::~seqmenu ()
 
 /**
  *  This function sets up the File menu entries.
+ *  It also sets up the pattern popup menu entries!
  */
 
 void
@@ -135,44 +136,43 @@ seqmenu::popup_menu ()
     (
         MenuElem("Mute All Tracks", mem_fun(*this, &seqmenu::mute_all_tracks))
     );
+
+    /*
+     * This is the MIDI channel menu accessible from a non-empty pattern slot
+     * on the main window.
+     */
+
     if (m_mainperf.is_active(m_current_seq))
     {
         m_menu->items().push_back(SeparatorElem());
         Gtk::Menu * menu_buses = manage(new Gtk::Menu());
-        m_menu->items().push_back(MenuElem("Midi Bus", *menu_buses));
+        m_menu->items().push_back(MenuElem("MIDI Bus", *menu_buses));
 
         /* Get the MIDI buses */
 
         mastermidibus & masterbus = m_mainperf.master_bus();
-        for (int i = 0; i < masterbus.get_num_out_buses(); i++)
+        for (int bus = 0; bus < masterbus.get_num_out_buses(); ++bus)
         {
             Gtk::Menu * menu_channels = manage(new Gtk::Menu());
             menu_buses->items().push_back
             (
-                MenuElem(masterbus.get_midi_out_bus_name(i), *menu_channels)
+                MenuElem(masterbus.get_midi_out_bus_name(bus), *menu_channels)
             );
 
             char b[4];
-            for (int j = 0; j < 16; j++)                /* MIDI channel menu */
+            for (int channel = 0; channel < 16; channel++) /* channel menu */
             {
-                snprintf(b, sizeof(b), "%d", j + 1);
+                snprintf(b, sizeof(b), "%d", channel + 1);
                 std::string name = std::string(b);
-                int instrum = global_user_midi_bus_definitions[i].instrument[j] ;
-                if (instrum >= 0 && instrum < c_max_busses)
-                {
-                    name = name +
-                    (
-                        std::string(" (") +
-                        global_user_instrument_definitions[instrum].instrument +
-                        std::string(")")
-                    );
-                }
+                std::string s = g_user_settings.instrument_name(bus, channel);
+                if (! s.empty())
+                    name += (std::string(" ") + s);
 
 #define SET_BUS     mem_fun(*this, &seqmenu::set_bus_and_midi_channel)
 
                 menu_channels->items().push_back
                 (
-                    MenuElem(name, sigc::bind(SET_BUS, i, j))
+                    MenuElem(name, sigc::bind(SET_BUS, bus, channel))
                 );
             }
         }

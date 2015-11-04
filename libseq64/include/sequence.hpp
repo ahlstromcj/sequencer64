@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-01
+ * \updates       2015-11-04
  * \license       GNU GPLv2 or above
  *
  *  The functions add_list_var() and add_long_list() have been replaced by
@@ -270,20 +270,20 @@ public:
     void pop_trigger_undo ();
     void set_name (const std::string & name);
     void set_name (char * name);
-    void set_measures (long length_measures);
+    void set_measures (long lengthmeasures);
     long get_measures ();
-    void set_bpm (long beats_per_measure);
+    void set_beats_per_bar (long beatspermeasure);
 
     /**
      * \getter m_time_beats_per_measure
      */
 
-    long get_bpm () const
+    long get_beats_per_bar () const
     {
         return m_time_beats_per_measure;
     }
 
-    void set_bw (long beat_width);
+    void set_beat_width (long beatwidth);
 
     /**
      * \getter m_time_beat_width
@@ -291,7 +291,7 @@ public:
      * \threadsafe
      */
 
-    long get_bw () const
+    long get_beat_width () const
     {
         return m_time_beat_width;
     }

@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-25
- * \updates       2015-11-03
+ * \updates       2015-11-04
  * \license       GNU GPLv2 or above
  *
  *  This class replaces an global_user_midi_bus_definitions[] array element
@@ -44,6 +44,9 @@
  */
 
 #define DEFAULT_BUSS_MAX                 32
+
+namespace seq64
+{
 
 /**
  *  Provides the maximum number of MIDI buss definitions supported in the
@@ -196,7 +199,9 @@ private:
 
 };
 
-#endif  // SEQ64_USER_MIDI_BUS_HPP
+}           // namespace seq64
+
+#endif      // SEQ64_USER_MIDI_BUS_HPP
 
 /*
  * user_midi_bus.hpp

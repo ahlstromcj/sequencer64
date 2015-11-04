@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-10
+ * \updates       2015-11-04
  * \license       GNU GPLv2 or above
  *
  *  The <tt> ~/.seq24rc </tt>
@@ -291,6 +291,17 @@ optionsfile::parse (perform & a_perf)
         long key = 0, seq = 0;
         sscanf(m_line, "%ld %ld", &key, &seq);
         a_perf.set_key_event(key, seq);
+
+#if USE_DEBUG_CODE
+        int kcsize = int(a_perf.key_events.size());
+        int kcrsize = int(a_perf.key_events_rev.size());
+        printf
+        (
+            "Read key=%ld, seq=%ld, size=%d, rev=%d\n",
+            key, seq, kcsize, kcrsize
+        );
+#endif
+
         next_data_line(file);
     }
 
@@ -675,8 +686,8 @@ optionsfile::write (const perform & a_perf)
         << "\n"
         ;
 
-    size_t kevsize = ucperf.get_key_events().size() < (size_t) c_seqs_in_set ?
-         ucperf.get_key_events().size() : (size_t) c_seqs_in_set
+    size_t kevsize = ucperf.get_key_events().size() < size_t(c_seqs_in_set) ?
+         ucperf.get_key_events().size() : size_t(c_seqs_in_set)
          ;
     file
         << "\n[keyboard-control]\n\n"
@@ -698,6 +709,16 @@ optionsfile::write (const perform & a_perf)
         );
         file << std::string(outs) << "\n";
     }
+
+#if USE_DEBUG_CODE
+    int kcsize = int(a_perf.key_events.size());
+    int kcrsize = int(a_perf.key_events_rev.size());
+    printf
+    (
+        "Wrote size=%d, rev=%d [keyboard-control] items\n", kcsize, kcrsize
+    );
+#endif
+
     size_t kegsize = ucperf.get_key_groups().size() < size_t(c_seqs_in_set) ?
          ucperf.get_key_groups().size() : size_t(c_seqs_in_set)
          ;

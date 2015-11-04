@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-01
+ * \updates       2015-11-04
  * \license       GNU GPLv2 or above
  *
  *  Note that this representation is, in a sense, inside the mainwnd
@@ -320,7 +320,7 @@ mainwid::draw_sequence_on_pixmap (int seqnum)
             (
                 temp, sizeof temp, "%d-%d %ld/%ld",
                 seq->get_midi_bus(), seq->get_midi_channel() + 1,
-                seq->get_bpm(), seq->get_bw()
+                seq->get_beats_per_bar(), seq->get_beat_width()
             );
             render_string_on_pixmap                         // bus, ch, etc.
             (

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-010-30
+ * \updates       2015-11-04
  * \license       GNU GPLv2 or above
  *
  *  This file provides a Windows-only implementation of the mastermidibus class.
@@ -57,7 +57,7 @@ mastermidibus::mastermidibus ()
     m_init_clock        (),         // array of c_max_busses clock_e values
     m_init_input        (),         // array of c_max_busses booleans
     m_queue             (0),
-    m_ppqn              (0),
+    m_ppqn              (0),        // set in constructor body
     m_beats_per_minute  (0),
     m_num_poll_descriptors (0),
     m_poll_descriptors  (nullptr),
@@ -65,7 +65,8 @@ mastermidibus::mastermidibus ()
     m_seq               (nullptr),
     m_mutex             ()
 {
-    for (int i = 0; i < c_max_busses; ++i)        // why the global?
+    m_ppqn = (ppqn == SEQ64_USE_DEFAULT_PPQN) ? global_ppqn : ppqn ;
+    for (int i = 0; i < c_max_busses; ++i)
     {
         m_buses_in_active[i] = false;
         m_buses_out_active[i] = false;
@@ -255,7 +256,7 @@ void
 mastermidibus::set_ppqn (int ppqn)
 {
     automutex locker(m_mutex);
-    m_ppqn = ppqn;
+    m_ppqn = (ppqn == SEQ64_USE_DEFAULT_PPQN) ? global_ppqn : ppqn ;
 }
 
 /**

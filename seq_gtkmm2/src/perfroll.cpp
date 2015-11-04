@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-31
+ * \updates       2015-11-04
  * \license       GNU GPLv2 or above
  *
  */
@@ -40,6 +40,21 @@
 #include "perfroll.hpp"
 #include "perfroll_input.hpp"
 #include "sequence.hpp"
+
+/**
+ *  Static (private) convenience values.
+ *  We need to be able to adjust s_perfroll_background_x per the selected PPQN
+ *  value.  This adjustment is made in the constructor, and assigned to the
+ *  perfroll::m_background_x member.  We need named values for 4 and for 16
+ *  here.
+ */
+
+static int s_perfroll_background_x =
+(
+    (DEFAULT_PPQN * 4 * 16) / c_perf_scale_x
+);
+static int s_perfroll_size_box_w = 3;
+static int s_perfroll_size_box_click_w = 4; /* s_perfroll_size_box_w + 1 */
 
 namespace seq64
 {
@@ -63,9 +78,9 @@ perfroll::perfroll
     m_ticks_per_bar         (0),                            // set in the body
     m_perf_scale_x          (c_perf_scale_x),               // 32 ticks per pixel
     m_names_y               (c_names_y),
-    m_background_x          (c_perfroll_background_x),      // gets adjusted!
-    m_size_box_w            (c_perfroll_size_box_w),        // 3
-    m_size_box_click_w      (c_perfroll_size_box_click_w),  // 3+1, not yet used
+    m_background_x          (s_perfroll_background_x),      // gets adjusted!
+    m_size_box_w            (s_perfroll_size_box_w),        // 3
+    m_size_box_click_w      (s_perfroll_size_box_click_w),  // 3+1, not yet used
     m_measure_length        (0),
     m_beat_length           (0),
     m_old_progress_ticks    (0),
@@ -124,7 +139,7 @@ perfroll::~perfroll ()
 /**
  *  Handles changes to the PPQN value in one place.
  *
- *  The m_ticks_per_bar member replaces the construct "c_ppqn * 16".  This
+ *  The m_ticks_per_bar member replaces the construct "global_ppqn * 16".  This
  *  construct is parts-per-quarter-note times 4 quarter notes times 4
  *  sixteenth notes in a bar.  (We think...)
  *
@@ -141,7 +156,7 @@ perfroll::set_ppqn (int ppqn)
         m_ppqn = (ppqn == SEQ64_USE_DEFAULT_PPQN) ? global_ppqn : ppqn ;
         m_ticks_per_bar = m_ppqn * m_divs_per_beat;
         m_background_x = (m_ppqn * 4 * 16) / c_perf_scale_x;
-        m_perf_scale_x = c_perf_scale_x * m_ppqn / c_ppqn;
+        m_perf_scale_x = c_perf_scale_x * m_ppqn / global_ppqn;
     }
 }
 

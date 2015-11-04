@@ -1,4 +1,4 @@
-.TH Sequencer64 "Nov 03 2015" "Version 0.9.9.6" "Sequencer64 Manual Page"
+.TH Sequencer64 "Nov 04 2015" "Version 0.9.9.6" "Sequencer64 Manual Page"
 
 .SH NAME
 Sequencer64 - Real time MIDI sequencer refactored from Seq24
@@ -15,7 +15,8 @@ It uses gtk-2 for the user interface.
 
 .SH OPTIONS
 Sequencer64 accepts the following options, plus an optional name of
-a MIDI file:
+a MIDI file. Note that the legacy options, which use underscores or
+are missing the option hyphen, are still unofficially supported.
 .TP 8
 .B  \-h, \-\-help
 Display a list of all commandline options.
@@ -56,26 +57,30 @@ Load the specified MIDI file on startup.
 This option does not exist.
 Instead, specify the file itself as the last command-line argument.
 .TP 8
-.B \-\-manual_alsa_ports
+.B \-m, \-\-manual-alsa-ports
 Sequencer64 won't attach ALSA ports.
 Instead, it will create is own set of input and output busses/ports.
 .TP 8
-.B \-\-showmidi
+.B \-a, \-\-auto-alsa-ports
+Sequencer64 will attach ALSA ports.  Useful for overriding the
+sequencer64.rc configuration file.
+.TP 8
+.B \-\-show-midi
 Dumps incoming MIDI to screen.
 .TP 8
 .B \-\-priority
 Runs higher priority with a FIFO scheduler.
 .TP 8
-.B \-\-pass_sysex
+.B \-\-pass-sysex
 Passes any incoming SYSEX messages to all outputs.
 .TP 8
 .B \-\-ignore \fI<number>\fP
 Ignore ALSA device <number>
 .TP 8
-.B \-\-show_keys
+.B \-\-show-keys
 Prints pressed key value.
 .TP 8
-.B \-\-interaction_method \fI<number>\fP
+.B \-\-interaction-method \fI<number>\fP
 Select the mouse interaction method
 0 = seq24 (the default); and 1 = fruity loops method.
 The latter does not completely support all actions supported by the Seq24
@@ -85,16 +90,16 @@ The following options will not be shown by --help if the application is
 not compiled for JACK support.
 
 .TP 8
-.B \-\-jack_transport
+.B \-\-jack-transport
 Sequencer64 will sync to JACK transport.
 .TP 8
-.B \-\-jack_master
+.B \-\-jack-master
 Sequencer64 will try to be the JACK master.
 .TP 8
-.B \-\-jack_master_cond
+.B \-\-jack-master-cond
 JACK master will fail if there is already a JACK master.
 .TP 8
-.B \-\-jack_start_mode \fI<x>\fP
+.B \-\-jack-start-mode \fI<x>\fP
 When Sequencer64 is synced to JACK, the following play modes are available:
 	(0 = live mode)
 	(1 = song mode) (default)
@@ -102,7 +107,7 @@ When Sequencer64 is synced to JACK, the following play modes are available:
 .B \-\-stats
 Print statistics on the commandline while running.
 .TP 8
-.B \-\-jack_session_uuid \fI<uuid>\fP
+.B \-\-jack-session-uuid \fI<uuid>\fP
 Set the UUID for the JACK session.
 
 .SH FILES
@@ -113,6 +118,7 @@ exits.
 some more universal user-interface setting for
 Sequencer64.  If it does not exist, it will be generated when Sequencer64
 exits.
+Note that the --legacy option causes the old configuration-file names to be used.
 
 .SH SUGGESTIONS AND BUG REPORTS
 Any bugs found should be reported to the upstream author and/or package 

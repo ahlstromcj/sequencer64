@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-10-13
- * \updates       2015-10-31
+ * \updates       2015-11-04
  * \license       GNU GPLv2 or above
  *
  */
@@ -38,6 +38,12 @@
 #include "fruityperfroll_input.hpp"
 #include "perfroll.hpp"
 #include "sequence.hpp"
+
+/**
+ *  Duplicates what is at the top of the perfroll.cpp module.  FIX LATER.
+ */
+
+static int s_perfroll_size_box_click_w = 4; /* s_perfroll_size_box_w + 1 */
 
 namespace seq64
 {
@@ -60,12 +66,12 @@ FruityPerfInput::updateMousePtr (perfroll & roll)
         long start, end;
         if (p.get_sequence(dropseq)->intersect_triggers(droptick, start, end))
         {
-            int wscalex = c_perfroll_size_box_click_w * c_perf_scale_x;
+            int wscalex = s_perfroll_size_box_click_w * c_perf_scale_x;
             int ymod = m_current_y % c_names_y;
             if
             (
                 start <= droptick && droptick <= (start + wscalex) &&
-                (ymod <= c_perfroll_size_box_click_w + 1)
+                (ymod <= s_perfroll_size_box_click_w + 1)
             )
             {
                 roll.get_window()->set_cursor(Gdk::Cursor(Gdk::RIGHT_PTR));
@@ -73,7 +79,7 @@ FruityPerfInput::updateMousePtr (perfroll & roll)
             else if
             (
                 droptick <= end && (end - wscalex) <= droptick &&
-                ymod >= (c_names_y - c_perfroll_size_box_click_w - 1)
+                ymod >= (c_names_y - s_perfroll_size_box_click_w - 1)
             )
             {
                 roll.get_window()->set_cursor(Gdk::Cursor(Gdk::LEFT_PTR));
@@ -178,12 +184,12 @@ FruityPerfInput::on_left_button_pressed (GdkEventButton * a_ev, perfroll & roll)
                 p.get_sequence(dropseq)->select_trigger(tick);
                 long starttick = p.get_sequence(dropseq)->selected_trigger_start();
                 long endtick = p.get_sequence(dropseq)->selected_trigger_end();
-                int wscalex = c_perfroll_size_box_click_w * c_perf_scale_x;
+                int wscalex = s_perfroll_size_box_click_w * c_perf_scale_x;
                 int ydrop = roll.m_drop_y % c_names_y;
                 if
                 (
                     tick >= starttick && tick <= (starttick + wscalex) &&
-                    ydrop <= (c_perfroll_size_box_click_w + 1)
+                    ydrop <= (s_perfroll_size_box_click_w + 1)
                 )
                 {           /* clicked left side: grow/shrink left side     */
                     roll.m_growing = true;
@@ -194,7 +200,7 @@ FruityPerfInput::on_left_button_pressed (GdkEventButton * a_ev, perfroll & roll)
                 else if
                 (
                     tick >= (endtick - wscalex) && tick <= endtick &&
-                    ydrop >= (c_names_y - c_perfroll_size_box_click_w - 1)
+                    ydrop >= (c_names_y - s_perfroll_size_box_click_w - 1)
                 )
                 {           /* clicked right side: grow/shrink right side   */
                     roll.m_growing = true;

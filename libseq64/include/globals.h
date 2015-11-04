@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-25
- * \updates       2015-11-03
+ * \updates       2015-11-04
  * \license       GNU GPLv2 or above
  *
  *  We're going to try to collect all the globals here in one module, and
@@ -95,6 +95,9 @@
 #include "rc_settings.hpp"              /* seq64::rc_settings           */
 #include "user_settings.hpp"            /* seq64::user_settings         */
 
+namespace seq64
+{
+
 /*
  * Provides access to most of the global values through a nice choke
  * point.
@@ -102,6 +105,15 @@
 
 extern rc_settings g_rc_settings;
 extern user_settings g_user_settings;
+
+/**
+ *  Provides the value of the interaction method in use, either "seq24" or
+ *  "fruity".
+ */
+
+extern interaction_method_t global_interactionmethod;
+
+}       // namespace seq64
 
 /*
  * These additions aren't supported, but they do flag some potentially
@@ -138,7 +150,7 @@ const int c_swing_sixteenths = 4;
 /**
  *  This value indicates to use the default value of PPQN and ignore (to some
  *  extent) what value is specified in the MIDI file.  Note that the default
- *  default PPQN is given by global_ppqn = c_ppqn (192) or, if the "--ppqn qn"
+ *  default PPQN is given by global_ppqn (192) or, if the "--ppqn qn"
  *  option is specified on the command-line, by global_ppqn = qn.
  */
 
@@ -183,9 +195,10 @@ const int c_swing_sixteenths = 4;
 #define OCTAVE_SIZE                      12
 
 /**
- *  Default value for c_ppqn (global parts-per-quarter-note value).  This is
+ *  Default value for the global parts-per-quarter-note value.  This is
  *  the unit of time for delta timing.  It represents the units, ticks, or
- *  pulses per beat.
+ *  pulses per beat.  Note that we're migrating this global value into the
+ *  user_settings class.
  */
 
 #define DEFAULT_PPQN                    192
@@ -214,16 +227,19 @@ const int c_swing_sixteenths = 4;
 
 /**
  *  Default value for "beats-per-measure".  This is the "numerator" in a 4/4
- *  time signature.  True?  It also seems to be the value used for JACK's
- *  jack_position_t.beats_per_bar field.
+ *  time signature.  It also seems to be the value used for JACK's
+ *  jack_position_t.beats_per_bar field.  For abbreviation, we will call this
+ *  value "BPB", or "beats per bar", to distinguish it from "BPM", or "beats
+ *  per minute".
  */
 
 #define DEFAULT_BEATS_PER_MEASURE         4
 
 /**
  *  Default value for "beat-width".  This is the "denominator" in a 4/4 time
- *  signature.  True?  It also seems to be the value used for JACK's
- *  jack_position_t.beat_type field.
+ *  signature.  It also seems to be the value used for JACK's
+ *  jack_position_t.beat_type field. For abbreviation, we will call this value
+ *  "BW", or "beat width", not to be confused with "bandwidth".
  */
 
 #define DEFAULT_BEAT_WIDTH                4
@@ -338,21 +354,6 @@ const int c_max_sets = 32;
 const int c_max_sequence = c_seqs_in_set * c_max_sets;
 
 /**
- *  Provides the timing resolution of a MIDI sequencer, known as "pulses
- *  per quarter note.  For this application, 192 is the default, and it
- *  doesn't change.  It will be changeable in a near-future release of
- *  Sequencer64, though.  See the global_ppqn variable.
- */
-
-const int c_ppqn = DEFAULT_PPQN;
-
-#ifdef  USE_SEQ42_PATCHES
-const int c_ppwn = 4 * DEFAULT_PPQN;        /* whole note   */
-const int c_ppen = DEFAULT_PPQN / 2;        /* eighth note  */
-const int c_ppen = DEFAULT_PPQN / 4;        /* 16th note    */
-#endif
-
-/**
  *  Provides the default number BPM (beats per minute), which describes
  *  the overall speed at which the sequencer will play a tune.  The
  *  default value is 120.
@@ -426,7 +427,7 @@ const int c_seqarea_seq_y = c_text_y * 2;
  *  useful to make these values user-configurable.
  */
 
-const int c_mainwid_border = 0;             // try 2 or 3instead of 0
+const int c_mainwid_border = 0;             // try 2 or 3 instead of 0
 const int c_mainwid_spacing = 2;            // try 4 or 6 instead of 2
 
 /**
@@ -631,13 +632,41 @@ const int c_perf_scale_x = 32;          /* units are ticks per pixel        */
  *  These global values seemed to be use mainly in the options,
  *  optionsfile, perform, seq24, and userfile modules.  The new
  *  ones will eventually be made official.
+ *
+ *  The global_ppqn variable Provides the timing resolution of a MIDI
+ *  sequencer, known as "pulses per quarter note.  For this application, 192
+ *  is the default, and it doesn't change.  It will be changeable in a
+ *  near-future release of Sequencer64, though.  See the global_ppqn variable.
  */
 
-extern int global_ppqn;                 /* new 2015-10-14   */
-extern char global_buss_override;       /* new 2015-10-14   */
 
-extern bool global_legacy_format;       /* new 2015-08-16   */
-extern bool global_lash_support;        /* new 2015-08-27   */
+#ifdef  USE_SEQ42_PATCHES
+const int c_ppqn = DEFAULT_PPQN;
+const int c_ppwn = 4 * DEFAULT_PPQN;    /* whole note       */
+const int c_ppen = DEFAULT_PPQN / 2;    /* eighth note      */
+const int c_ppen = DEFAULT_PPQN / 4;    /* 16th note        */
+#endif
+
+/**
+ *  New variables starting from 2015-08-16 onward.  These variables
+ *  replace or augment the "c_" (constant global variables).  Using new names
+ *  makes it easier to find old usage, and some of these values will no
+ *  longer be hardwired constant values.  They will be replaced/augmented by
+ *  new members and accessors in the user_settings class.
+ *
+ *  There are a lot of places in the code where obscure manifest constants,
+ *  such as "4", are used, without comment.  Usage of named values is a lot
+ *  more informative.
+ */
+
+extern int global_ppqn;                     /* PPQN, parts per QN       */
+extern int global_beats_per_measure;        /* BPB, or beats per bar    */
+extern int global_beats_per_minute;         /* BPM, or beats per minute */
+extern int global_beat_width;               /* BW, or beat width        */
+extern char global_buss_override;
+extern bool global_legacy_format;
+extern bool global_lash_support;
+
 extern bool global_showmidi;
 extern bool global_priority;
 extern bool global_stats;
@@ -658,13 +687,6 @@ extern std::string global_config_filename;
 extern std::string global_user_filename;
 extern std::string global_config_filename_alt;
 extern std::string global_user_filename_alt;
-
-/**
- *  Global arrays.  To be moved to user_settings SOON.
- */
-
-// extern user_midi_bus_t global_user_midi_bus_definitions[c_max_busses];
-// extern user_instrument_t global_user_instrument_definitions[c_max_instruments];
 
 /**
  *  Corresponds to the small number of musical scales that the application
@@ -941,13 +963,6 @@ const char * const c_interaction_method_descs[3] =
     "similar to a certain fruity sequencer we like",
     NULL
 };
-
-/**
- *  Provides the value of the interaction method in use, either "seq24" or
- *  "fruity".
- */
-
-extern interaction_method_t global_interactionmethod;
 
 /**
  *  Provides the value of usage of the Mod4 (Super or Windows) key in

@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-31
+ * \updates       2015-11-04
  * \license       GNU GPLv2 or above
  *
  *  This module is almost exclusively user-interface code.  There are some
@@ -184,7 +184,7 @@ perfnames::draw_sequence (int seqnum)
             (
                 temp, sizeof(temp), "%d-%d %ld/%ld",
                 seq->get_midi_bus(), seq->get_midi_channel() + 1,
-                seq->get_bpm(), seq->get_bw()
+                seq->get_beats_per_bar(), seq->get_beat_width()
             );
             render_string(5 + m_setbox_w, m_names_y * i + 12, temp, col);
 

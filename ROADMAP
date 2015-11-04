@@ -1,6 +1,6 @@
 Sequencer64 Roadmap
 Chris Ahlstrom
-2015-09-10 to 2015-10-30
+2015-09-10 to 2015-11-04
 
 The starting point for the Sequencer64 project is version 0.9.4 of
 Sequencer24.  Sequencer24 itself started with version 0.9.2 of Seq24.
@@ -22,7 +22,7 @@ y  -  Branch off to various incremental branches:
          something faster.   We found that using std::multimap instead
          of std::list works well, and, in debug mode, the loading of a
          MIDI file is a *lot* faster.
-      -  Unit test each element as appropriate using xpc-suite
+      y  Unit test each element as appropriate using xpc-suite
          functionality.
    y  -  Add some base classes and additional member functions for common
          functionality:
@@ -34,15 +34,16 @@ y  -  Branch off to various incremental branches:
       -  Enhance documentation and recreate it.
    x  -  Rebuild application using library code.
    y  -  Verify functionality.
-y  -  Branch off to an "testing" branch to perform testing and tweaking.
-      -  Created a separate GitHub project, seq64-tests, to do some
+y  -  Branch off to an "testing", "testing2"  branch to perform testing
+         and tweaking.
+      y  Created a separate GitHub project, seq64-tests, to do some
          unit-testing of Sequencer64, and to provide a test bed to make
          more certain that new features do not break existing
          functionality.
-      -  Still more refactoring of the application.
+      y  Still more refactoring of the application.
       -  Created another set of font pixmaps for an anti-aliased font to
          replace the retro "PC" font used by Seq24.
-      -  Still working on making it possible to deal with files with
+      y  Still working on making it possible to deal with files with
          a PPQN other than 192.
       -  Did not quite finish testing, but it is time to merge back to
          "master"!
@@ -65,7 +66,7 @@ y  -  Branch off to an "testing" branch to perform testing and tweaking.
       -  While one is typing in the number of the set in the Set number field,
          the keystrokes will affect the panel window, causing playback to
          start and pattern boxes to be toggled!
-      -  Determine the feasibility of modifying selected sequences
+      x  Determine the feasibility of modifying selected sequences
          to change the output port (MIDI buss) number.  Perhaps offload or
          copy these specifications to the proprietary section.
 
@@ -80,4 +81,4 @@ Eventually, there will be a few features and fixes to try to add:
   -   Consider an option to override the proprietary section with data
       from a file.
 
-# vim: sw=4 ts=4 wm=8 et ft=sh
+# vim: sw=4 ts=4 wm=4 et ft=sh

@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-02
+ * \updates       2015-11-04
  * \license       GNU GPLv2 or above
  *
  * \todo
@@ -70,28 +70,49 @@ static struct option long_options[] =
 {
     {"help",                0, 0, 'h'},
 #ifdef SEQ64_LASH_SUPPORT
-    {"lash",                0, 0, 'L'},                 /* new 2015-08-27 */
+    {"lash",                0, 0, 'L'},                 /* new 2015-08-27   */
 #endif
-    {"bus",                 required_argument, 0, 'b'}, /* new 2015-10-14 */
-    {"ppqn",                required_argument, 0, 'q'}, /* new 2015-10-15 */
-    {"legacy",              0, 0, 'l'},                 /* new 2015-08-16 */
-    {"showmidi",            0, 0, 's'},
-    {"show_keys",           0, 0, 'k'},
+    {"bus",                 required_argument, 0, 'b'}, /* new 2015-10-14   */
+    {"ppqn",                required_argument, 0, 'q'}, /* new 2015-10-15   */
+    {"legacy",              0, 0, 'l'},                 /* new 2015-08-16   */
+    {"show-midi",           0, 0, 's'},
+    {"show-keys",           0, 0, 'k'},
     {"stats",               0, 0, 'S'},
     {"priority",            0, 0, 'p'},
     {"ignore",              required_argument, 0, 'i'},
-    {"interaction_method",  required_argument, 0, 'x'},
+    {"interaction-method",  required_argument, 0, 'x'},
 #ifdef SEQ64_JACK_SUPPORT
-    {"jack_transport",      0, 0, 'j'},
-    {"jack_master",         0, 0, 'J'},
-    {"jack_master_cond",    0, 0, 'C'},
-    {"jack_start_mode",     required_argument, 0, 'M'},
-    {"jack_session_uuid",   required_argument, 0, 'U'},
+    {"jack-transport",      0, 0, 'j'},
+    {"jack-master",         0, 0, 'J'},
+    {"jack-master_cond",    0, 0, 'C'},
+    {"jack-start_mode",     required_argument, 0, 'M'},
+    {"jack-session_uuid",   required_argument, 0, 'U'},
 #endif
-    {"manual_alsa_ports",   0, 0, 'm'},
-    {"pass_sysex",          0, 0, 'P'},
+    {"manual-alsa-ports",   0, 0, 'm'},
+    {"auto-alsa-ports",     0, 0, 'a'},
+    {"pass-sysex",          0, 0, 'P'},
     {"version",             0, 0, 'V'},
-    {0, 0, 0, 0}                                        /* terminator     */
+
+    /*
+     * Legacy options using underscores, which are confusing and not a
+     * GNU standard, as far as we know.
+     */
+
+#ifdef SEQ64_JACK_SUPPORT
+    {"jack_transport",      0, 0, '1'},                 /* underscores!     */
+    {"jack_master",         0, 0, '2'},                 /* underscores!     */
+    {"jack_master_cond",    0, 0, '3'},                 /* underscores!     */
+    {"jack_start_mode",     required_argument, 0, '4'}, /* underscores!     */
+    {"jack_session_uuid",   required_argument, 0, '5'}, /* underscores!     */
+#endif
+
+    {"show_keys",           0, 0, '6'},                 /* underscores!     */
+    {"interaction_method",  required_argument, 0, '7'}, /* underscores!     */
+    {"manual_alsa_ports",   0, 0, '8'},                 /* underscores!     */
+    {"pass_sysex",          0, 0, '9'},                 /* underscores!     */
+    {"showmidi",            0, 0, '@'},                 /* no separator!    */
+
+    {0, 0, 0, 0}                                        /* terminator       */
 };
 
 static const std::string versiontext = SEQ64_PACKAGE " " SEQ64_VERSION "\n";
@@ -108,7 +129,7 @@ namespace seq64
 }           // namespace seq64
 
 static const char * const s_help_1a =
-"sequencer64 v 0.9.9.6  A fork/refactoring of the seq24 live sequencer\n\n"
+"sequencer64 v 0.9.9.6  A refactoring of the seq24 live sequencer.\n\n"
 "Usage: sequencer64 [options] [MIDI filename]\n\n"
 "Options:\n"
 "   -h, --help               Show this message.\n"
@@ -118,41 +139,41 @@ static const char * const s_help_1a =
 #ifdef SEQ64_LASH_SUPPORT
 "   -L, --lash               Activate built-in LASH support.\n"
 #endif
-"   -m, --manual_alsa_ports  Don't attach ALSA ports.\n"
+"   -m, --manual-alsa-ports  Don't attach ALSA ports.\n"
+"   -a, --auto-alsa-ports    Attach ALSA ports (overrides the 'rc' file).\n"
     ;
 
 static const char * const s_help_1b =
 "   -b, --bus b              Global override of bus number (for testing).\n"
 "   -q, --ppqn qn            Specify new default PPQN, or 'file'.  Note that\n"
 "                            the legacy default is 192.\n"
-"   -s, --showmidi           Dump incoming MIDI events to the screen.\n"
-"   -p, --priority           Runs higher priority with FIFO scheduler\n"
-"                            (must be root).\n"
-"   -P, --pass_sysex         Passes incoming SysEx messages to all outputs.\n"
+"   -p, --priority           Run high priority, FIFO scheduler (needs root).\n"
+"   -P, --pass-sysex         Passes incoming SysEx messages to all outputs.\n"
 "   -i, --ignore n           Ignore ALSA device number.\n"
+"   -s, --show-midi          Dump incoming MIDI events to the screen.\n"
     ;
 
 static const char * const s_help_2 =
-"   -k, --show_keys          Prints pressed key value.\n"
-#ifdef SEQ64_JACK_SUPPORT
-"   -j, --jack_transport     Sync to JACK transport\n"
-"   -J, --jack_master        Try to be JACK master\n"
-"   -C, --jack_master_cond   JACK master will fail if there's already a master.\n"
-"   -M, --jack_start_mode m  When synced to JACK, the following play modes are\n"
-"                            available: 0 = live mode; 1 = song mode (default).\n"
-"  -U, --jack_session_uuid u Set UUID for JACK session\n"
-#endif
+"   -k, --show-keys          Prints pressed key value.\n"
 "   -S, --stats              Show global statistics.\n"
-" -x, --interaction_method n Set mouse style: 0 = seq24; 1 = fruity. Note that\n"
+#ifdef SEQ64_JACK_SUPPORT
+"   -j, --jack-transport     Synchronize to JACK transport.\n"
+"   -J, --jack-master        Try to be JACK master.\n"
+"   -C, --jack-master-cond   JACK master will fail if there's already a master.\n"
+"   -M, --jack-start-mode m  When synced to JACK, the following play modes are\n"
+"                            available: 0 = live mode; 1 = song mode (default).\n"
+" -U, --jack-session-uuid u  Set UUID for JACK session.\n"
+#endif
+" -x, --interaction-method n Set mouse style: 0 = seq24; 1 = fruity. Note that\n"
 "                            fruity doesn't support arrow keys and paint key.\n"
 "\n"
     ;
 
 static const char * const s_help_3 =
-"Setting the --ppqn to double the default causes a MIDI file to play at half\n"
+"Setting --ppqn to double the default causes a MIDI file to play at half\n"
 "the speed.  If the file is re-saved with that setting, the double clock is\n"
 "saved, but it still plays slowly in Sequencer64, but at its original rate\n"
-"in Timidity.  We still have some work to do on PPQN support, obviously\n."
+"in Timidity.  We still have some work to do on PPQN support, obviously.\n"
 "\n"
     ;
 
@@ -185,8 +206,8 @@ main (int argc, char * argv [])
             break;
         }
     }
-    g_rc_settings.set_defaults();           /* start out with normal values */
-    g_user_settings.set_defaults();         /* start out with normal values */
+    seq64::g_rc_settings.set_defaults();    /* start out with normal values */
+    seq64::g_user_settings.set_defaults();  /* start out with normal values */
 
     /*
      * Set up objects that are specific to the Gtk-2 GUI.  Pass them to
@@ -210,11 +231,11 @@ main (int argc, char * argv [])
      *  LINUX-SPECIFIC.  See the rc_settings class for how this works.
      */
 
-    std::string cfg_dir = g_rc_settings.home_config_directory();
+    std::string cfg_dir = seq64::g_rc_settings.home_config_directory();
     if (cfg_dir.empty())
         return EXIT_FAILURE;
 
-    std::string rcname = g_rc_settings.user_filespec();
+    std::string rcname = seq64::g_rc_settings.user_filespec();
     if (Glib::file_test(rcname, Glib::FILE_TEST_EXISTS))
     {
         if (! is_help)
@@ -227,7 +248,7 @@ main (int argc, char * argv [])
         }
     }
 
-    rcname = g_rc_settings.config_filespec();
+    rcname = seq64::g_rc_settings.config_filespec();
     if (Glib::file_test(rcname, Glib::FILE_TEST_EXISTS))
     {
         if (! is_help)
@@ -252,7 +273,7 @@ main (int argc, char * argv [])
         int option_index = 0;               /* getopt_long index storage    */
         c = getopt_long
         (
-            argc, argv, "Chlb:q:Li:jJmM:pPsSU:Vx:",
+            argc, argv, "Chlb:q:Li:jJmaM:pPsSU:Vx:",
             long_options, &option_index
         );
         if (c == -1)                        /* detect the end of options    */
@@ -270,61 +291,65 @@ main (int argc, char * argv [])
             break;
 
         case 'l':
-            g_rc_settings.legacy_format(true);
+            seq64::g_rc_settings.legacy_format(true);
             printf("Setting legacy seq24 file format for writing.\n");
             break;
 
         case 'L':
-            g_rc_settings.lash_support(true);
+            seq64::g_rc_settings.lash_support(true);
             printf("Activating LASH support.\n");
             break;
 
         case 'S':
-            g_rc_settings.stats(true);
+            seq64::g_rc_settings.stats(true);
             break;
 
         case 's':
-            g_rc_settings.show_midi(true);
+            seq64::g_rc_settings.show_midi(true);
             break;
 
         case 'p':
-            g_rc_settings.priority(true);
+            seq64::g_rc_settings.priority(true);
             break;
 
         case 'P':
-            g_rc_settings.pass_sysex(true);
+            seq64::g_rc_settings.pass_sysex(true);
             break;
 
         case 'k':
-            g_rc_settings.print_keys(true);
+            seq64::g_rc_settings.print_keys(true);
             break;
 
         case 'j':
-            g_rc_settings.with_jack_transport(true);
+            seq64::g_rc_settings.with_jack_transport(true);
             break;
 
         case 'J':
-            g_rc_settings.with_jack_master(true);
+            seq64::g_rc_settings.with_jack_master(true);
             break;
 
         case 'C':
-            g_rc_settings.with_jack_master_cond(true);
+            seq64::g_rc_settings.with_jack_master_cond(true);
             break;
 
         case 'M':
             if (atoi(optarg) > 0)
-                g_rc_settings.jack_start_mode(true);
+                seq64::g_rc_settings.jack_start_mode(true);
             else
-                g_rc_settings.jack_start_mode(false);
+                seq64::g_rc_settings.jack_start_mode(false);
             break;
 
         case 'm':
-            g_rc_settings.manual_alsa_ports(true);
+            seq64::g_rc_settings.manual_alsa_ports(true);
+            break;
+
+        case 'a':
+            seq64::g_rc_settings.manual_alsa_ports(false);
             break;
 
         case 'i':                           /* ignore ALSA device */
-            g_rc_settings.device_ignore(true);
-            g_rc_settings.device_ignore_num(atoi(optarg));
+            seq64::g_rc_settings.device_ignore(true);
+            seq64::g_rc_settings.device_ignore_num(atoi(optarg));
             break;
 
         case 'V':
@@ -333,11 +358,14 @@ main (int argc, char * argv [])
             break;
 
         case 'U':
-            g_rc_settings.jack_session_uuid(std::string(optarg));
+            seq64::g_rc_settings.jack_session_uuid(std::string(optarg));
             break;
 
         case 'x':
-            g_rc_settings.interaction_method(interaction_method_t(atoi(optarg)));
+            seq64::g_rc_settings.interaction_method
+            (
+                seq64::interaction_method_t(atoi(optarg))
+            );
             break;
 
         case 'b':
@@ -365,11 +393,11 @@ main (int argc, char * argv [])
     appname = appname.substr(appname.size()-applen, applen);
     if (appname == "seq24")
     {
-        g_rc_settings.legacy_format(true);
+        seq64::g_rc_settings.legacy_format(true);
         printf("Setting legacy seq24 file format.\n");
     }
-    g_rc_settings.set_globals();                /* copy to legacy globals   */
-    g_user_settings.set_globals();              /* copy to legacy globals   */
+    seq64::g_rc_settings.set_globals();         /* copy to legacy globals   */
+    seq64::g_user_settings.set_globals();       /* copy to legacy globals   */
     p.init();
     p.launch_input_thread();
     p.launch_output_thread();
@@ -409,8 +437,8 @@ main (int argc, char * argv [])
      * --legacy option is in force.
      */
 
-    g_rc_settings.get_globals();             /* copy from legacy globals */
-    rcname = g_rc_settings.config_filespec();
+    seq64::g_rc_settings.get_globals();         /* copy from legacy globals */
+    rcname = seq64::g_rc_settings.config_filespec();
     printf("[Writing rc configuration %s]\n", rcname.c_str());
     seq64::optionsfile options(rcname);
     if (options.write(p))
@@ -418,10 +446,8 @@ main (int argc, char * argv [])
         // Anything to do?
     }
 
-    g_user_settings.dump_summary();
-    g_user_settings.get_globals();           /* copy from legacy globals */
-    g_user_settings.dump_summary();
-    rcname = g_rc_settings.user_filespec();
+    seq64::g_user_settings.get_globals();       /* copy from legacy globals */
+    rcname = seq64::g_rc_settings.user_filespec();
     printf("[Writing user configuration %s]\n", rcname.c_str());
     seq64::userfile userstuff(rcname);
     if (userstuff.write(p))

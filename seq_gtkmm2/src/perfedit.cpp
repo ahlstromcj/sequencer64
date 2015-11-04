@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-31
+ * \updates       2015-11-04
  * \license       GNU GPLv2 or above
  *
  */
@@ -206,23 +206,23 @@ perfedit::perfedit
     m_entry_snap->set_editable(false);
     m_menu_bw->items().push_back
     (
-        MenuElem("1", sigc::bind(mem_fun(*this, &perfedit::set_bw), 1))
+        MenuElem("1", sigc::bind(mem_fun(*this, &perfedit::set_beat_width), 1))
     );
     m_menu_bw->items().push_back
     (
-        MenuElem("2", sigc::bind(mem_fun(*this, &perfedit::set_bw), 2))
+        MenuElem("2", sigc::bind(mem_fun(*this, &perfedit::set_beat_width), 2))
     );
     m_menu_bw->items().push_back
     (
-        MenuElem("4", sigc::bind(mem_fun(*this, &perfedit::set_bw), 4))
+        MenuElem("4", sigc::bind(mem_fun(*this, &perfedit::set_beat_width), 4))
     );
     m_menu_bw->items().push_back
     (
-        MenuElem("8", sigc::bind(mem_fun(*this, &perfedit::set_bw), 8))
+        MenuElem("8", sigc::bind(mem_fun(*this, &perfedit::set_beat_width), 8))
     );
     m_menu_bw->items().push_back
     (
-        MenuElem("16", sigc::bind(mem_fun(*this, &perfedit::set_bw), 16))
+        MenuElem("16", sigc::bind(mem_fun(*this, &perfedit::set_beat_width), 16))
     );
 
     char b[4];
@@ -231,7 +231,10 @@ perfedit::perfedit
         snprintf(b, sizeof(b), "%d", i + 1);
         m_menu_bpm->items().push_back
         (
-            MenuElem(b, sigc::bind(mem_fun(*this, &perfedit::set_bpm), i + 1))
+            MenuElem
+            (
+                b, sigc::bind(mem_fun(*this, &perfedit::set_beats_per_bar), i + 1)
+            )
         );
     }
     m_button_bpm->add                               /* beats per measure */
@@ -334,8 +337,8 @@ perfedit::perfedit
     m_hlbox->pack_start(*m_entry_snap , false, false);
     add(*m_table);
     set_snap(DEFAULT_PERFEDIT_SNAP);
-    set_bpm(DEFAULT_BEATS_PER_MEASURE);         /* time-signature numerator   */
-    set_bw(DEFAULT_BEAT_WIDTH);                 /* time-signature denominator */
+    set_beats_per_bar(DEFAULT_BEATS_PER_MEASURE); /* time-signature numerator   */
+    set_beat_width(DEFAULT_BEAT_WIDTH);           /* time-signature denominator */
 }
 
 /**
@@ -465,7 +468,7 @@ perfedit::set_snap (int snap)
  */
 
 void
-perfedit::set_bpm (int beats_per_measure)
+perfedit::set_beats_per_bar (int beats_per_measure)
 {
     char b[8];
     snprintf(b, sizeof(b), "%d", beats_per_measure);
@@ -481,7 +484,7 @@ perfedit::set_bpm (int beats_per_measure)
  */
 
 void
-perfedit::set_bw (int beat_width)
+perfedit::set_beat_width (int beat_width)
 {
     char b[8];
     snprintf(b, sizeof(b), "%d", beat_width);

@@ -28,14 +28,14 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-15
+ * \updates       2015-11-04
  * \license       GNU GPLv2 or above
  *
  */
 
 #include <gtkmm/window.h>
 
-#include "globals.h"                    /* c_ppqn   */
+#include "globals.h"                    /* SEQ64_USE_DEFAULT_PPQN   */
 #include "gui_drawingarea_gtk2.hpp"
 
 namespace Gtk

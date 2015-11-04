@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-01
+ * \updates       2015-11-04
  * \license       GNU GPLv2 or above
  *
  */
@@ -38,6 +38,12 @@
 #include "perfroll_input.hpp"
 #include "perfroll.hpp"
 #include "sequence.hpp"
+
+/**
+ *  Duplicates what is at the top of the perfroll.cpp module.  FIX LATER.
+ */
+
+static int s_perfroll_size_box_click_w = 4; /* s_perfroll_size_box_w + 1 */
 
 namespace seq64
 {
@@ -119,12 +125,12 @@ Seq24PerfInput::on_button_press_event (GdkEventButton * ev, perfroll & roll)
 
                 long tick0 = p.get_sequence(dropseq)->selected_trigger_start();
                 long tick1 = p.get_sequence(dropseq)->selected_trigger_end();
-                int wscalex = c_perfroll_size_box_click_w * c_perf_scale_x;
+                int wscalex = s_perfroll_size_box_click_w * c_perf_scale_x;
                 int ydrop = roll.m_drop_y % c_names_y;
                 if
                 (
                     tick >= tick0 && tick <= (tick0 + wscalex) &&
-                    ydrop <= c_perfroll_size_box_click_w + 1
+                    ydrop <= s_perfroll_size_box_click_w + 1
                 )
                 {
                     roll.m_growing = true;
@@ -135,7 +141,7 @@ Seq24PerfInput::on_button_press_event (GdkEventButton * ev, perfroll & roll)
                 else if
                 (
                     tick >= (tick1 - wscalex) && tick <= tick1 &&
-                    ydrop >= c_names_y - c_perfroll_size_box_click_w - 1
+                    ydrop >= c_names_y - s_perfroll_size_box_click_w - 1
                 )
                 {
                     roll.m_growing = true;

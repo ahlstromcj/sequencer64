@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-08-07
- * \updates       2015-11-03
+ * \updates       2015-11-04
  * \license       GNU GPLv2 or above
  *
  *  The first part of this file defines a couple of global structure
@@ -54,6 +54,9 @@
 
 #include "globals.h"
 
+namespace seq64
+{
+
 /**
  *  Provide the eventual replacement for all of the other "global_xxx"
  *  variables.
@@ -70,12 +73,56 @@ rc_settings g_rc_settings;
 user_settings g_user_settings;
 
 /**
+ *  Selects the default mouse interaction method.
+ */
+
+interaction_method_t global_interactionmethod = e_seq24_interaction;
+
+}           // namespace seq64
+
+/**
  *  Provides an experimental way to modify the global PPQN value to
  *  match what a MIDI file includes.  Much to do to get it working.
  *  Note that this value can be changed by the experimental --ppqn option.
  */
 
-int global_ppqn = c_ppqn;
+int global_ppqn = DEFAULT_PPQN;
+
+/**
+ *  Provides unambiguous access to the current beats-per-measure value, which
+ *  is normally 4.  Note that this value may be involved in drawing piano-roll
+ *  grids, and we might need to allocate another variable for that purpose
+ *  (e.g. "global_grid_beats_per_measure").
+ *
+ *  Also note that, for external access, we will call this value "beats per
+ *  bar", abbreviate it "BPB", and use "bpb" in any accessor function names.
+ */
+
+int global_beats_per_measure = DEFAULT_BEATS_PER_MEASURE;
+
+/**
+ *  Provides unambiguous access to the current beats-per-minute value, which
+ *  is normally 120.
+ *
+ *  Also note that, for external access, we will call this value "beats per
+ *  minute", abbreviate it "BPM", and use "bpm" in any accessor function
+ *  names.
+ */
+
+int global_beats_per_minute = DEFAULT_BPM;
+
+/**
+ *  Provides unambiguous access to the current beat-width value, which is
+ *  normally 4.  Note that this value may be involved in drawing piano-roll
+ *  grids, and we might need to allocate another variable for that purpose
+ *  (e.g. "global_grid_beat_width").
+ *
+ *  Also note that, for external access, we will call this value "beat
+ *  width", abbreviate it "BW", and use "bw" in any accessor function
+ *  names.
+ */
+
+int global_beat_width = DEFAULT_BEAT_WIDTH;
 
 /**
  *  Provides a way to override the buss number for smallish MIDI files.
@@ -117,7 +164,6 @@ bool global_with_jack_master = false;
 bool global_with_jack_master_cond = false;
 bool global_jack_start_mode = true;
 std::string global_jack_session_uuid = "";
-interaction_method_t global_interactionmethod = e_seq24_interaction;
 bool global_allow_mod4_mode = true;
 // user_midi_bus_t global_user_midi_bus_definitions[c_max_busses];
 // user_instrument_t global_user_instrument_definitions[c_max_instruments];

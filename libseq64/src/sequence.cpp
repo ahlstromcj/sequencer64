@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-01
+ * \updates       2015-11-04
  * \license       GNU GPLv2 or above
  *
  */
@@ -272,6 +272,10 @@ sequence::pop_trigger_undo ()
  * \setter m_masterbus
  *
  * \threadsafe
+ *
+ * \param mmb
+ *      Provides a pointer to the master MIDI buss for this sequence.  This
+ *      should be a reference.
  */
 
 void
@@ -285,13 +289,16 @@ sequence::set_master_midi_bus (mastermidibus * mmb)
  * \setter m_time_beats_per_measure
  *
  * \threadsafe
+ *
+ * \param beatspermeasure
+ *      The new setting of the beats-per-bar value.
  */
 
 void
-sequence::set_bpm (long beats_per_measure)
+sequence::set_beats_per_bar (long beatspermeasure)
 {
     automutex locker(m_mutex);
-    m_time_beats_per_measure = beats_per_measure;
+    m_time_beats_per_measure = beatspermeasure;
     set_dirty_mp();
 }
 
@@ -299,13 +306,16 @@ sequence::set_bpm (long beats_per_measure)
  * \setter m_time_beat_width
  *
  * \threadsafe
+ *
+ * \param beatwidth
+ *      The new setting of the beat width value.
  */
 
 void
-sequence::set_bw (long beat_width)
+sequence::set_beat_width (long beatwidth)
 {
     automutex locker(m_mutex);
-    m_time_beat_width = beat_width;
+    m_time_beat_width = beatwidth;
     set_dirty_mp();
 }
 
@@ -313,13 +323,16 @@ sequence::set_bw (long beat_width)
  * \setter m_rec_vol
  *
  * \threadsafe
+ *
+ * \param recvol
+ *      The new setting of the recording volume setting.
  */
 
 void
-sequence::set_rec_vol (long rec_vol)
+sequence::set_rec_vol (long recvol)
 {
     automutex locker(m_mutex);
-    m_rec_vol = rec_vol;
+    m_rec_vol = recvol;
 }
 
 /**

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-22
- * \updates       2015-11-03
+ * \updates       2015-11-04
  * \license       GNU GPLv2 or above
  *
  *  Note that this module also sets the legacy global variables, so that
@@ -55,6 +55,9 @@
 #define HOME "HOME"
 #define SLASH "/"
 #endif
+
+namespace seq64
+{
 
 /**
  *  Default constructor.
@@ -505,8 +508,11 @@ rc_settings::user_filename_alt (const std::string & value)
         m_user_filename_alt = value;
 }
 
+}           // namespace seq64
+
 /*
-* rc_settings.cpp
-*
-* vim: sw=4 ts=4 wm=4 et ft=cpp
-*/
+ * rc_settings.cpp
+ *
+ * vim: sw=4 ts=4 wm=4 et ft=cpp
+ */
+

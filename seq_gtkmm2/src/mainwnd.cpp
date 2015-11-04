@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-01
+ * \updates       2015-11-04
  * \license       GNU GPLv2 or above
  *
  *  The main window holds the menu and the main controls of the application,
@@ -71,7 +71,7 @@
 #include "pixmaps/learn.xpm"
 #include "pixmaps/learn2.xpm"
 #include "pixmaps/perfedit.xpm"
-#include "pixmaps/seq24_32.xpm"
+#include "pixmaps/seq64_32.xpm"
 #include "pixmaps/sequencer64_square.xpm"
 #include "pixmaps/sequencer64_legacy.xpm"
 
@@ -129,7 +129,7 @@ mainwnd::mainwnd (perform & p)
     m_timeout_connect       (),                         // handler
     m_ppqn                  (SEQ64_USE_DEFAULT_PPQN)
 {
-    set_icon(Gdk::Pixbuf::create_from_xpm_data(seq24_32_xpm));
+    set_icon(Gdk::Pixbuf::create_from_xpm_data(seq64_32_xpm));
 
     /*
      * This request always leaves the bottom panel partly obscured.

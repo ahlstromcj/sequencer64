@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-10-10
- * \updates       2015-10-11
+ * \updates       2015-11-04
  * \license       GNU GPLv2 or above
  *
  */
@@ -205,8 +205,8 @@ midi_container::fill (int tracknumber)
     put(0x7F);
     put(0x06);
     add_long(c_timesig);
-    put(m_sequence.get_bpm());
-    put(m_sequence.get_bw());
+    put(m_sequence.get_beats_per_bar());
+    put(m_sequence.get_beat_width());
     add_variable(0);                                /* channel          */
     put(0xFF);
     put(0x7F);

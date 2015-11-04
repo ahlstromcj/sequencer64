@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-31
+ * \updates       2015-11-04
  * \license       GNU GPLv2 or above
  *
  */
@@ -171,8 +171,8 @@ seqevent::draw_background ()
      */
 
     int measures_per_line = 1;
-    int ticks_per_beat = (4 * m_ppqn) / m_seq.get_bw();
-    int ticks_per_measure = m_seq.get_bpm() * ticks_per_beat;
+    int ticks_per_beat = (4 * m_ppqn) / m_seq.get_beat_width();
+    int ticks_per_measure = m_seq.get_beats_per_bar() * ticks_per_beat;
     int ticks_per_step = 6 * m_zoom;
     int ticks_per_m_line = ticks_per_measure * measures_per_line;
     int starttick = m_scroll_offset_ticks -

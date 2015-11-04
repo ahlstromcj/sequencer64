@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-22
- * \updates       2015-11-03
+ * \updates       2015-11-04
  * \license       GNU GPLv2 or above
  *
  *  This collection of variables describes some facets of the
@@ -59,6 +59,9 @@
 
 #define MIDI_BUS_CHANNEL_MAX             16
 
+namespace seq64
+{
+
 /**
  *  Holds the current values of sequence settings and settings that can
  *  modify the number of sequences and the configuration of the
@@ -68,6 +71,8 @@
 
 class user_settings
 {
+    friend class userfile;      /* allow protected access to file parser */
+
     /**
      *  Internal type for the container of user_midi_bus objects.
      *  Sorry about the "confusion" about "bus" versus "buss".
@@ -106,7 +111,10 @@ class user_settings
      *  Number of rows in the Patterns Panel.  The current value is 4, and
      *  if changed, many other values depend on it.  Together with
      *  m_mainwnd_cols, this value fixes the patterns grid into a 4 x 8
-     *  set of patterns known as a "screen set".
+     *  set of patterns known as a "screen set".  We would like to be able to
+     *  change this value from 4 to 8, and maybe allow the values of 5, 6, and 7
+     *  as well.  But if we could just get 8 working, then well would
+     *  Sequencer64 deserve the 64 in its name.
      */
 
     int m_mainwnd_rows;
@@ -125,13 +133,15 @@ class user_settings
      *  a "set" or "screen set".  This value is 4 x 8 = 32 by default.
      *
      * \warning
-     *      Currently part of the "rc" file and rc_settings!
+     *      Currently implicit/explicit in a number of the "rc" file and
+     *      rc_settings.  Would probably want the left 32 or the first 32
+     *      items in the main window only to be subject to keystroke control.
      */
 
     int m_seqs_in_set;
 
     /**
-     *  Number of group-mute tracks that can be support, which is
+     *  Number of group-mute tracks that can be supported, which is
      *  m_seqs_in_set squared, or 1024.
      */
 
@@ -150,6 +160,8 @@ class user_settings
      *  patterns supported in the panel (32) times the maximum number of
      *  sets (32), or 1024 patterns.  It is basically the same value as
      *  m_max_sequence by default.
+     *
+     *      m_total_seqs = m_seqs_in_set * m_max_sets;
      */
 
      int m_total_seqs;
@@ -158,6 +170,8 @@ class user_settings
      *  The maximum number of patterns supported is given by the number of
      *  patterns supported in the panel (32) times the maximum number of
      *  sets (32), or 1024 patterns.
+     *
+     *      m_max_sequence = m_seqs_in_set * m_max_sets;
      */
 
     int m_max_sequence;
@@ -175,10 +189,23 @@ class user_settings
      *  directory: <tt> font_b.xpm </tt> (black lettering on a white
      *  background) and <tt> font_w.xpm </tt> (white lettering on a black
      *  background).
+     *
+     *  We have added black-on-yellow and yellow-on-black versions of the fonts,
+     *  to support the highlighting of pattern boxes if they are empty of
+     *  actual MIDI events.
+     *
+     *  We have also added a set of four new font files that are roughly the
+     *  same size, and are treated as the same size, but look smooth and less
+     *  like a DOS-era font.
+     *
+     *  The font module does not use these values directly, but does define some
+     *  similar variables that differ slightly between the two styles of font.
+     *  There are a lot of tricks and hard-wired places to fix before further
+     *  work can be done with fonts in Sequencer64.
      */
 
-    int m_text_x;
-    int m_text_y;
+    int m_text_x;       /* c_text_x =  6, does not include inner padding    */
+    int m_text_y;       /* c_text_y = 12, does include inner padding        */
 
     /**
      *  Constants for the mainwid class.  The m_seqchars_x and
@@ -187,8 +214,8 @@ class user_settings
      *  characters, in a pattern/sequence box.
      */
 
-    int m_seqchars_x;
-    int m_seqchars_y;
+    int m_seqchars_x;   /* c_seqchars_x = 15    */
+    int m_seqchars_y;   /* c_seqchars_y =  5    */
 
     /**
      *  The m_seqarea_x and m_seqarea_y constants are derived from the
@@ -218,8 +245,8 @@ class user_settings
      *  like it would be useful to make these values user-configurable.
      */
 
-    int m_mainwid_border;             // try 2 or 3 instead of 0
-    int m_mainwid_spacing;            // try 4 or 6 instead of 2
+    int m_mainwid_border;   /* c_mainwid_border = 0;  try 2 or 3 instead    */
+    int m_mainwid_spacing;  /* c_mainwid_spacing = 2; try 4 or 6 instead    */
 
     /**
      *  This constants seems to be created for a future purpose, perhaps
@@ -228,11 +255,17 @@ class user_settings
      *  add anything to that value.
      */
 
-    int m_control_height;
+    int m_control_height;   /* c_control_height = 0     */
 
     /**
      * The width of the main pattern/sequence grid, in pixels.  Affected
      * by the m_mainwid_border and m_mainwid_spacing values.
+     *
+     *      c_mainwid_x =
+     *      (
+     *          (c_seqarea_x + c_mainwid_spacing) * c_mainwnd_cols -
+     *              c_mainwid_spacing + c_mainwid_border * 2
+     *      );
      */
 
     int m_mainwid_x;
@@ -240,6 +273,12 @@ class user_settings
     /*
      * The height  of the main pattern/sequence grid, in pixels.  Affected by
      * the m_mainwid_border and m_control_height values.
+     *
+     *      c_mainwid_y =
+     *      (
+     *          (c_seqarea_y + c_mainwid_spacing) * c_mainwnd_rows +
+     *               c_control_height + c_mainwid_border * 2
+     *      );
      */
 
     int m_mainwid_y;
@@ -407,7 +446,7 @@ public:
     }
 
     /**
-     * \getter m_seqs_in_set
+     * \getter m_seqs_in_set, dependent member
      */
 
     int seqs_in_set () const
@@ -416,7 +455,7 @@ public:
     }
 
     /**
-     * \getter m_gmute_tracks
+     * \getter m_gmute_tracks, dependent member
      */
 
     int gmute_tracks () const
@@ -434,7 +473,7 @@ public:
     }
 
     /**
-     * \getter m_max_sequence
+     * \getter m_max_sequence, dependent member
      */
 
     int max_sequence () const
@@ -443,7 +482,7 @@ public:
     }
 
     /**
-     * \getter m_text_x
+     * \getter m_text_x, not user modifiable, not saved
      */
 
     int text_x () const
@@ -452,7 +491,7 @@ public:
     }
 
     /**
-     * \getter m_text_y
+     * \getter m_text_y, not user modifiable, not saved
      */
 
     int text_y () const
@@ -461,7 +500,7 @@ public:
     }
 
     /**
-     * \getter m_seqchars_x
+     * \getter m_seqchars_x, not user modifiable, not saved
      */
 
     int seqchars_x () const
@@ -470,7 +509,7 @@ public:
     }
 
     /**
-     * \getter m_seqchars_y
+     * \getter m_seqchars_y, not user modifiable, not saved
      */
 
     int seqchars_y () const
@@ -479,7 +518,7 @@ public:
     }
 
     /**
-     * \getter m_seqarea_x
+     * \getter m_seqarea_x, not user modifiable, not saved
      */
 
     int seqarea_x () const
@@ -488,7 +527,7 @@ public:
     }
 
     /**
-     * \getter m_seqarea_y
+     * \getter m_seqarea_y, not user modifiable, not saved
      */
 
     int seqarea_y () const
@@ -497,7 +536,7 @@ public:
     }
 
     /**
-     * \getter m_seqarea_seq_x
+     * \getter m_seqarea_seq_x, not user modifiable, not saved
      */
 
     int seqarea_seq_x () const
@@ -506,7 +545,7 @@ public:
     }
 
     /**
-     * \getter m_seqarea_seq_y
+     * \getter m_seqarea_seq_y, not user modifiable, not saved
      */
 
     int seqarea_seq_y () const
@@ -533,16 +572,7 @@ public:
     }
 
     /**
-     * \getter m_control_height
-     */
-
-    int control_height () const
-    {
-        return m_control_height;
-    }
-
-    /**
-     * \getter m_mainwid_x
+     * \getter m_mainwid_x, dependent member
      */
 
     int mainwid_x () const
@@ -551,13 +581,24 @@ public:
     }
 
     /**
-     * \getter m_mainwid_y
+     * \getter m_mainwid_y, dependent member
      */
 
     int mainwid_y () const
     {
         return m_mainwid_y;
     }
+
+    /**
+     * \getter m_control_height
+     */
+
+    int control_height () const
+    {
+        return m_control_height;
+    }
+
+protected:
 
     void mainwnd_rows (int value);
     void mainwnd_cols (int value);
@@ -589,20 +630,18 @@ public:
 
 private:
 
-#if 0
-    void bus_alias (int index, const std::string & alias);
-    void instrument_name (int index, const std::string & instname);
-#endif
-
     user_midi_bus & private_bus (int buss);
     user_instrument & private_instrument (int instrum);
 
 };
 
-#endif  // SEQ64_USER_SETTINGS_HPP
+}           // namespace seq64
+
+#endif      // SEQ64_USER_SETTINGS_HPP
 
 /*
  * user_settings.hpp
  *
  * vim: sw=4 ts=4 wm=4 et ft=cpp
  */
+

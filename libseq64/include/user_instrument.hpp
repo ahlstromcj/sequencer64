@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-25
- * \updates       2015-11-03
+ * \updates       2015-11-04
  * \license       GNU GPLv2 or above
  *
  */
@@ -42,6 +42,9 @@
  */
 
 #define DEFAULT_INSTRUMENT_MAX           64
+
+namespace seq64
+{
 
 /**
  *  Provides the maximum number of instruments that can be defined in the
@@ -191,7 +194,9 @@ private:
 
 };
 
-#endif  // SEQ64_USER_INSTRUMENT_HPP
+}           // namespace seq64
+
+#endif      // SEQ64_USER_INSTRUMENT_HPP
 
 /*
  * user_instrument.hpp

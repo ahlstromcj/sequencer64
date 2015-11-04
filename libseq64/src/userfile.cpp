@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-03
+ * \updates       2015-11-04
  * \license       GNU GPLv2 or above
  *
  *  Note that the parse function has some code that is not yet enabled.
@@ -93,8 +93,8 @@ make_section_name (const std::string & label, int value)
  *  PLATFORM_DEBUG is defined; see the user_settings class..
  */
 
-static void
-dump_setting_summary ()
+void
+userfile::dump_setting_summary ()
 {
     g_user_settings.dump_summary();
 }
@@ -117,9 +117,23 @@ userfile::parse (perform & /* a_perf */)
         return false;
     }
     file.seekg(0, std::ios::beg);                       /* seek to start */
+
+    /*
+     * Header commentary.  Skipped during parsing.
+     */
+
+    /*
+     * [user-midi-bus-definitions]
+     */
+
     line_after(file, "[user-midi-bus-definitions]");    /* find the tag  */
     int buses = 0;
     sscanf(m_line, "%d", &buses);                       /* atavistic!    */
+
+    /*
+     * [user-midi-bus-x]
+     */
+
     for (int bus = 0; bus < buses; ++bus)
     {
         std::string label = make_section_name("user-midi-bus", bus);
@@ -148,9 +162,18 @@ userfile::parse (perform & /* a_perf */)
         }
     }
 
+    /*
+     * [user-instrument-definitions]
+     */
+
     line_after(file, "[user-instrument-definitions]");
     int instruments = 0;
     sscanf(m_line, "%d", &instruments);
+
+    /*
+     * [user-instrument-x]
+     */
+
     for (int i = 0; i < instruments; i++)
     {
         std::string label = make_section_name("user-instrument", i);
@@ -165,10 +188,6 @@ userfile::parse (perform & /* a_perf */)
             {
                 int c = 0;
                 next_data_line(file);
-
-                // sscanf(m_line, "%d", &c);
-                // sscanf(m_line, "%[^\n]", ccname);
-
                 ccname[0] = 0;                              // clear the buffer
                 sscanf(m_line, "%d %[^\n]", &c, ccname);
                 if (c >= 0 && c < MIDI_CONTROLLER_MAX)      // 128
@@ -199,11 +218,56 @@ userfile::parse (perform & /* a_perf */)
     }
 
     /*
-     * TODO: More (new) variables to follow!
+     * [user-interface-settings]
+     *
+     * These are new items stored in the user file.
+     *
+     * Only variables whose effects we can be completely sure of are read
+     * from this section, and used, at this time.
+     */
+
+    if (false) // ! g_rc_settings.legacy_format())
+    {
+        line_after(file, "[user-instrument-definitions]");
+        int scratch = 0;
+        sscanf(m_line, "%d", &scratch);
+        g_user_settings.mainwnd_rows(scratch);
+
+        next_data_line(file);
+        sscanf(m_line, "%d", &scratch);
+        g_user_settings.mainwnd_cols(scratch);
+
+        next_data_line(file);
+        sscanf(m_line, "%d", &scratch);
+        g_user_settings.max_sets(scratch);
+
+        next_data_line(file);
+        sscanf(m_line, "%d", &scratch);
+        g_user_settings.mainwid_border(scratch);
+
+        next_data_line(file);
+        sscanf(m_line, "%d", &scratch);
+        g_user_settings.mainwid_spacing(scratch);
+
+        next_data_line(file);
+        sscanf(m_line, "%d", &scratch);
+        g_user_settings.control_height(scratch);
+
+        g_user_settings.normalize();    /* calculate derived values */
+    }
+
+    /*
+     * We have all of the data, now distribute the values to any legacy global
+     * variables that are still being used.  Then close the file.
      */
 
     g_user_settings.set_globals();
     dump_setting_summary();
+
+    /*
+     * End of file.
+     */
+
     file.close();
     return true;
 }
@@ -225,8 +289,20 @@ userfile::write (const perform & /* a_perf */ )
         fprintf(stderr, "? error opening [%s] for writing\n", m_name.c_str());
         return false;
     }
+
+    /*
+     * Any legacy global variables still outstanding?  These might have been
+     * modified by older code, and we need to make sure we get those changes
+     * into the user-settings object before we write to the file.
+     */
+
     g_user_settings.get_globals();
     dump_setting_summary();
+
+    /*
+     * Header commentary.  Write out comments about the nature of this file.
+     */
+
     if (g_rc_settings.legacy_format())
         file << "# Seq24 0.9.2 user configuration file (legacy format)\n";
     else
@@ -257,28 +333,42 @@ userfile::write (const perform & /* a_perf */ )
         << "# -1 (GM_INSTRUMENT_FLAG) and are GM (General MIDI).\n"
         ;
 
+    /*
+     * [user-midi-bus-definitions]
+     */
+
     file
         << "\n"
-        << "[user-midi-bus-definitions]\n\n"
-        <<  g_user_settings.bus_count()
+        << "[user-midi-bus-definitions]\n"
+        << "\n"
+        << g_user_settings.bus_count()
         << "     # number of user-defined MIDI busses\n"
         ;
 
     if (g_user_settings.bus_count() == 0)
         file << "\n\n";
 
+    /*
+     * [user-midi-bus-x]
+     */
+
     for (int buss = 0; buss < g_user_settings.bus_count(); ++buss)
     {
-        file <<  "\n[user-midi-bus-" << buss << "]\n\n";
+        file << "\n[user-midi-bus-" << buss << "]\n\n";
         const user_midi_bus & umb = g_user_settings.bus(buss);
         if (umb.is_valid())
         {
             file
-                << "# Device name for this buss:\n\n"
-                << umb.name() << "\n\n"
-                << "# Number of channels:\n\n"
-                << umb.channel_count() << "\n\n"
-                << "# channel and instrument (or program) number\n\n"
+                << "# Device name for this buss:\n"
+                << "\n"
+                << umb.name() << "\n"
+                << "\n"
+                << "# Number of channels:\n"
+                << "\n"
+                << umb.channel_count() << "\n"
+                << "\n"
+                << "# channel and instrument (or program) number\n"
+                << "\n"
                 ;
 
             for (int channel = 0; channel < umb.channel_max(); ++channel)
@@ -311,30 +401,43 @@ userfile::write (const perform & /* a_perf */ )
         << "# the (optional) name of the controller supported.\n"
         ;
 
+    /*
+     * [user-instrument-definitions]
+     */
+
     file
         << "\n"
-        << "[user-instrument-definitions]\n\n"
-        <<  g_user_settings.instrument_count()
+        << "[user-instrument-definitions]\n"
+        << "\n"
+        << g_user_settings.instrument_count()
         << "     # instrument list count\n"
         ;
 
     if (g_user_settings.instrument_count() == 0)
-    {
         file << "\n\n";
-    }
+
+    /*
+     * [user-instrument-x]
+     */
 
     for (int inst = 0; inst < g_user_settings.instrument_count(); ++inst)
     {
-        file <<  "\n[user-instrument-" << inst << "]\n\n";
+        file << "\n[user-instrument-" << inst << "]\n"
+        << "\n";
         const user_instrument & uin = g_user_settings.instrument(inst);
         if (uin.is_valid())
         {
             file
-                << "# Name of instrument:\n\n"
-                << uin.name() << "\n\n"
-                << "# Number of MIDI controller values:\n\n"
-                << uin.controller_count() << "\n\n"
-                << "# controller number and (optional) name:\n\n"
+                << "# Name of instrument:\n"
+                << "\n"
+                << uin.name() << "\n"
+                << "\n"
+                << "# Number of MIDI controller values:\n"
+                << "\n"
+                << uin.controller_count() << "\n"
+                << "\n"
+                << "# controller number and (optional) name:\n"
+                << "\n"
                 ;
 
             for (int ctlr = 0; ctlr < uin.controller_max(); ++ctlr)
@@ -360,8 +463,87 @@ userfile::write (const perform & /* a_perf */ )
         file << "\n# End of instrument/controllers definition " << inst << "\n";
     }
 
+    /*
+     * [user-interface settings]
+     *
+     * These are new items stored in the user file.  The settings are obtained
+     * from member functions of the user_settings class.  Not all members are
+     * saved to the "user" configuration file.
+     */
+
+    if (! g_rc_settings.legacy_format())
+    {
+        file
+            << "\n"
+            << "#   ========================================================\n"
+            << "#   ======== Sequencer64-Specific Variables Section ========\n"
+            << "#   ========================================================\n"
+            << "\n"
+            ;
+
+        file
+            << "\n"
+            << "[user-interface-setting]\n"
+            << "\n"
+            << "# These settings specify the soon-to-be-modifiable sizes of\n"
+            << "# the Sequencer64 user-interface elements. They are currently\n"
+            << "# not read back in, for safety.n"
+            << "\n"
+            ;
+
+        file
+            << "\n"
+            << "# Specifies the number of rows in the main window.\n"
+            << "# At present, only a value of 4 is supportable.\n"
+            << "# In the future, we hope to support an alternate value of 8.\n"
+            << "\n"
+            << g_user_settings.mainwnd_rows() << "       # mainwnd_rows\n"
+            ;
+
+        file
+            << "\n"
+            << "# Specifies the number of columns in the main window.\n"
+            << "# At present, only a value of 8 is supportable.\n"
+            << "\n"
+            << g_user_settings.mainwnd_cols() << "       # mainwnd_cols\n"
+            ;
+
+        file
+            << "\n"
+            << "# Specifies the maximum number of sets, which defaults to 1024.\n"
+            << "# It is currently never necessary to change this value.\n"
+            << "\n"
+            << g_user_settings.max_sets() << "      # max_sets\n"
+            ;
+
+        file
+            << "\n"
+            << "# Specifies the border width in the main window.\n"
+            << "\n"
+            << g_user_settings.mainwid_border() << "      # mainwid_border\n"
+            ;
+
+        file
+            << "\n"
+            << "# Specifies the border spacing in the main window.\n"
+            << "\n"
+            << g_user_settings.mainwid_spacing() << "      # mainwid_spacing\n"
+            ;
+
+        file
+            << "\n"
+            << "# Specifies some quantity, it is not known what it means.\n"
+            << "\n"
+            << g_user_settings.control_height() << "      # control_height\n"
+            ;
+    }
+
+    /*
+     * End of file.
+     */
+
     file
-        << "#\n"
+        << "\n"
         << "# End of " << m_name
         << "\n#\n"
         << "# vim: sw=4 ts=4 wm=4 et ft=sh\n"

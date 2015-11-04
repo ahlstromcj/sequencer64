@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-27
+ * \updates       2015-11-04
  * \license       GNU GPLv2 or above
  *
  */
@@ -169,8 +169,8 @@ public:
 
 private:
 
-    void set_bpm (int beats_per_measure);
-    void set_bw (int beat_width);
+    void set_beats_per_bar (int beats_per_measure);
+    void set_beat_width (int beat_width);
     void set_snap (int snap);
     void set_guides ();
     void grow ();

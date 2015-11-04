@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-10-30
- * \updates       2015-11-01
+ * \updates       2015-11-04
  * \license       GNU GPLv2 or above
  *
  *  By segregating trigger support into its own module, the sequence class is a
@@ -38,8 +38,6 @@
 #include <string>
 #include <list>
 #include <stack>
-
-// #include "easy_macros.h"
 
 namespace seq64
 {

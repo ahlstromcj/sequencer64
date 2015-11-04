@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-30
+ * \updates       2015-11-04
  * \license       GNU GPLv2 or above
  *
  *  For a quick guide to the MIDI format, see, for example:
@@ -108,7 +108,7 @@ namespace seq64
  *      -   Reading.
  *          -   If set to SEQ64_USE_DEFAULT_PPQN, the legacy application
  *              behavior is used.  The m_ppqn member is set to the default
- *              PPQN, global_ppqn = c_ppqn.  The value read from the MIDI
+ *              PPQN, global_ppqn.  The value read from the MIDI
  *              file, ppqn, is then use to scale the running-time of the
  *              sequence relative to global_ppqn.
  *          -   Otherwise, m_ppqn is set to the value read from the MIDI file.
@@ -420,8 +420,8 @@ midifile::parse (perform & a_perf, int screenset)
                             }
                             else if (proprietary == c_timesig)
                             {
-                                seq.set_bpm(read_byte());
-                                seq.set_bw(read_byte());
+                                seq.set_beats_per_bar(read_byte());
+                                seq.set_beat_width(read_byte());
                                 len -= 2;
                             }
                             else if (proprietary == c_triggers)
@@ -1222,3 +1222,4 @@ midifile::write_track_end ()
  *
  * vim: sw=4 ts=4 wm=4 et ft=cpp
  */
+

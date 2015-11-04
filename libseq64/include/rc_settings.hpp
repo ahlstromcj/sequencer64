@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-22
- * \updates       2015-09-27
+ * \updates       2015-11-04
  * \license       GNU GPLv2 or above
  *
  *  This collection of variables describes the options of the application,
@@ -36,6 +36,9 @@
  */
 
 #include <string>
+
+namespace seq64
+{
 
 /**
  *  Provides codes for the mouse-handling used by the application.  Moved
@@ -425,10 +428,13 @@ private:
 
 };
 
-#endif  // SEQ64_RC_SETTINGS_HPP
+}           // namespace seq64
+
+#endif      // SEQ64_RC_SETTINGS_HPP
 
 /*
  * rc_settings.hpp
  *
  * vim: sw=4 ts=4 wm=4 et ft=cpp
  */
+

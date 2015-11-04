@@ -50,18 +50,6 @@ class AbstractPerfInput;
 class perform;
 
 /**
- *  These should be private members.  Used by this module and the
- *  perfroll_input module.  We need to be able to adjust
- *  c_perfroll_background_x per the selected PPQN value.  This adjustment is
- *  made in the constructor, and assigned to the perfroll::m_background_x
- *  member.
- */
-
-static const int c_perfroll_background_x = (c_ppqn * 4 * 16) / c_perf_scale_x;
-static const int c_perfroll_size_box_w = 3;
-static const int c_perfroll_size_box_click_w = c_perfroll_size_box_w + 1 ;
-
-/**
  *  This class implements the performance roll user interface.
  */
 

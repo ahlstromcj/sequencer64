@@ -1,20 +1,44 @@
 Bugs and Upgrade Ideas
 Chris Ahlstrom
-2015-10-27 to 2015-11-03
+2015-10-27 to 2015-11-04
 
 In no particular order...
 
+-  Sometimes the editing of event values in the event data section
+   will not work. The workaround is to do a Ctrl-A, and the click in
+   the roll to deselect the selection; that makes the event value
+   editing work again.
+-  The pattern right-click Cut menu entry does not seem to work.
+   The loop or pattern remains in place.  Is this actually meant to
+   cut selected events?
+-  While one is typing in the name of the set in this field, the
+   keystrokes will affect the panel window, causing playback to
+   start and pattern boxes to be toggled!
+-  While one is typing in the number of the set in the Set number field,
+   the keystrokes will affect the panel window, causing playback to
+   start and pattern boxes to be toggled!
 -  In midibus, make the buss name variable, instead of hard-wired to "seq24".
    It should be an optional command-line option, and default to "Seq64".
    And in the same module, function init_in() should use it as well.
    Like legacy mode, using a link named "seq24" to run the app should
    also change this name to seq24, as should --legacy itself!
    Also init_in_sub().
+-  --manual_alsa_ports on the command line does NOT override the "rc"
+   configuration file setting!
+-  --manual_alsa_ports, etc., should be --manual-alsa_ports.
 -  Can we provide a way to move a note a tiny amount without changing the beat
    size.
 -  Would be nice to have a Pause button and pause feature.
 -  Ctrl-Z for data/event doesn't work unless the piano roll has the focus.
    Worth worrying about?
+-  If POSSIBLE, avoid loading the "user" configuration file, or at least
+   parts of it, when "manual-alsa-ports" is set to "1".
+   -  ACTUALLY, THIS SEEMS TO BE WORKING PARTLY: the right busses are shown,
+      but the sequencer64.usr file controllers and channels are still shown.
+   -  Also what happens is that, if manual-alsa-ports is false, and the "user"
+      file has entries, but fewer entries than what the system provides by
+      default, then the additional system entries are visible.  NOT SURE IF
+      THIS IS A BUG, A FEATURE, or A WARNING TO THE USER.
 -  Catch up with all the new options by making sure they are available
    from the "rc" or "user" configuration file, and even the Options menu,
    if possible.

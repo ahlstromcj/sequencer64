@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-25
- * \updates       2015-11-03
+ * \updates       2015-11-04
  * \license       GNU GPLv2 or above
  *
  *  Note that this module also sets the legacy global variables, so that
@@ -33,6 +33,9 @@
  */
 
 #include "globals.h"                    /* to support legacy variables */
+
+namespace seq64
+{
 
 /**
  *  Default constructor.
@@ -151,6 +154,8 @@ user_midi_bus::copy_definitions (const user_midi_bus & rhs)
             rhs.m_midi_bus_def.instrument[channel];
     }
 }
+
+}           // namespace seq64
 
 /*
  * user_midi_bus.cpp

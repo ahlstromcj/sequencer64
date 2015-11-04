@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-03
+ * \updates       2015-11-04
  * \license       GNU GPLv2 or above
  *
  */
@@ -153,7 +153,8 @@ seqroll::update_sizes ()
 
     int page_increment = int
     (
-        double(m_ppqn) * double(m_seq.get_bpm()) * (4.0 / double(m_seq.get_bw()))
+        double(m_ppqn) * double(m_seq.get_beats_per_bar()) *
+            (4.0 / double(m_seq.get_beat_width()))
     );
     m_hadjust.set_page_increment(page_increment);
 
@@ -320,15 +321,16 @@ seqroll::update_background ()
     /*
      * This could be applied here, and also to seqevent::draw_background().
      *
-     * int measure_length_64ths = m_seq.get_bpm() * 64 / m_seq.get_bw();
+     * int measure_length_64ths = m_seq.get_beats_per_bar() *
+     *      64 / m_seq.get_beat_width();
      * int measures_per_line = (256 / measure_length_64ths) / (32 / m_zoom);
      * if (measures_per_line <= 0)
      *      int measures_per_line = 1;
      */
 
     int measures_per_line = 1;
-    int ticks_per_beat = (4 * m_ppqn) / m_seq.get_bw();
-    int ticks_per_measure = m_seq.get_bpm() * ticks_per_beat;
+    int ticks_per_beat = (4 * m_ppqn) / m_seq.get_beat_width();
+    int ticks_per_measure = m_seq.get_beats_per_bar() * ticks_per_beat;
     int ticks_per_step = 6 * m_zoom;
     int ticks_per_m_line = ticks_per_measure * measures_per_line;
     int end_tick = (m_window_x * m_zoom) + m_scroll_offset_ticks;

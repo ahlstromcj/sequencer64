@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-03
+ * \updates       2015-11-04
  * \license       GNU GPLv2 or above
  *
  */
@@ -35,7 +35,7 @@
 #include <gtkmm/menu.h>
 #include <gtkmm/menubar.h>
 #include <gtkmm/scrollbar.h>
-#include <gtkmm/combo.h>               // Gtk::Entry, ToggleButton, RadioButton
+#include <gtkmm/combo.h>
 #include <gtkmm/label.h>
 #include <gtkmm/separator.h>
 #include <gtkmm/table.h>
@@ -65,7 +65,7 @@
 #include "pixmaps/midi.xpm"
 #include "pixmaps/snap.xpm"
 #include "pixmaps/zoom.xpm"
-#include "pixmaps/length_short.xpm"     /* pixmaps/length.xpm */
+#include "pixmaps/length_short.xpm"
 #include "pixmaps/scale.xpm"
 #include "pixmaps/key.xpm"
 #include "pixmaps/down.xpm"
@@ -91,8 +91,8 @@ namespace seq64
 const int seqedit::mc_min_zoom      =  1;
 const int seqedit::mc_max_zoom      = 32;
 int seqedit::m_initial_zoom         =  2;
-int seqedit::m_initial_snap         = c_ppqn / 4;   // to be adjusted
-int seqedit::m_initial_note_length  = c_ppqn / 4;   // to be adjusted
+int seqedit::m_initial_snap         = global_ppqn / 4;   /* to be adjusted */
+int seqedit::m_initial_note_length  = global_ppqn / 4;   /* to be adjusted */
 int seqedit::m_initial_scale        =  0;
 int seqedit::m_initial_key          =  0;
 int seqedit::m_initial_sequence     = -1;
@@ -354,8 +354,8 @@ seqedit::seqedit (sequence & seq, perform & p, int pos, int ppqn)
     set_snap(m_snap);
     set_note_length(m_note_length);
     set_background_sequence(m_sequence);
-    set_bpm(m_seq.get_bpm());
-    set_bw(m_seq.get_bw());
+    set_beats_per_bar(m_seq.get_beats_per_bar());
+    set_beat_width(m_seq.get_beat_width());
     set_measures(get_measures());
     set_midi_channel(m_seq.get_midi_channel());
     set_midi_bus(m_seq.get_midi_bus());
@@ -599,7 +599,7 @@ seqedit::create_menus ()
      *  But it is called bw, or beat width, in the code.
      */
 
-#define SET_BW      mem_fun(*this, &seqedit::set_bw)
+#define SET_BW      mem_fun(*this, &seqedit::set_beat_width)
 
     m_menu_bw->items().push_back                        /* bw, beat width  */
     (
@@ -691,7 +691,7 @@ seqedit::create_menus ()
      *  minute").
      */
 
-#define SET_BPM         mem_fun(*this, &seqedit::set_bpm)
+#define SET_BPM         mem_fun(*this, &seqedit::set_beats_per_bar)
 #define SET_MEASURES    mem_fun(*this, &seqedit::set_measures)
 
     for (int i = 0; i < 16; i++)                        /* seq length menu   */
@@ -1686,7 +1686,10 @@ seqedit::apply_length (int bpm, int bw, int measures)
 long
 seqedit::get_measures ()
 {
-    long units = measures_to_ticks(m_seq.get_bpm(), m_ppqn, m_seq.get_bw());
+    long units = measures_to_ticks
+    (
+        m_seq.get_beats_per_bar(), m_ppqn, m_seq.get_beat_width()
+    );
     long measures = m_seq.get_length() / units;
     if (m_seq.get_length() % units != 0)
         measures++;
@@ -1706,7 +1709,10 @@ seqedit::set_measures (int length_measures)
     snprintf(b, sizeof(b), "%d", length_measures);
     m_entry_length->set_text(b);
     m_measures = length_measures;
-    apply_length(m_seq.get_bpm(), m_seq.get_bw(), length_measures);
+    apply_length
+    (
+        m_seq.get_beats_per_bar(), m_seq.get_beat_width(), length_measures
+    );
 }
 
 /**
@@ -1715,16 +1721,16 @@ seqedit::set_measures (int length_measures)
  */
 
 void
-seqedit::set_bpm (int beats_per_measure)
+seqedit::set_beats_per_bar (int beats_per_measure)
 {
     char b[8];
     snprintf(b, sizeof(b), "%d", beats_per_measure);
     m_entry_bpm->set_text(b);
-    if (beats_per_measure != m_seq.get_bpm())
+    if (beats_per_measure != m_seq.get_beats_per_bar())
     {
         long length = get_measures();
-        m_seq.set_bpm(beats_per_measure);
-        apply_length(beats_per_measure, m_seq.get_bw(), length);
+        m_seq.set_beats_per_bar(beats_per_measure);
+        apply_length(beats_per_measure, m_seq.get_beat_width(), length);
     }
 }
 
@@ -1734,16 +1740,16 @@ seqedit::set_bpm (int beats_per_measure)
  */
 
 void
-seqedit::set_bw (int beat_width)
+seqedit::set_beat_width (int beat_width)
 {
     char b[8];
     snprintf(b, sizeof(b), "%d", beat_width);
     m_entry_bw->set_text(b);
-    if (beat_width != m_seq.get_bw())
+    if (beat_width != m_seq.get_beat_width())
     {
         long len = get_measures();
-        m_seq.set_bw(beat_width);
-        apply_length(m_seq.get_bpm(), beat_width, len);
+        m_seq.set_beat_width(beat_width);
+        apply_length(m_seq.get_beats_per_bar(), beat_width, len);
     }
 }
 

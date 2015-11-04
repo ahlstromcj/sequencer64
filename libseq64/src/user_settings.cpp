@@ -16,8 +16,6 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include "globals.h"                    /* to support legacy variables */
-
 /**
  * \file          user_settings.cpp
  *
@@ -27,14 +25,20 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-23
- * \updates       2015-11-03
+ * \updates       2015-11-04
  * \license       GNU GPLv2 or above
  *
  *  Note that this module also sets the legacy global variables, so that
  *  they can be used by modules that have not yet been cleaned up.
  */
 
+#include "globals.h"                    /* to support legacy variables */
 #include "user_settings.hpp"
+
+#undef  USE_DUMP_SUMMARY
+
+namespace seq64
+{
 
 /**
  *  Default constructor.
@@ -74,8 +78,8 @@ user_settings::user_settings ()
 
 user_settings::user_settings (const user_settings & rhs)
  :
-    m_midi_buses     (),            // vector
-    m_instruments   (),             // vector
+    m_midi_buses        (),         // vector
+    m_instruments       (),         // vector
     m_mainwnd_rows      (rhs.m_mainwnd_rows),
     m_mainwnd_cols      (rhs.m_mainwnd_cols),
     m_seqs_in_set       (rhs.m_seqs_in_set),
@@ -109,8 +113,8 @@ user_settings::operator = (const user_settings & rhs)
 {
     if (this != &rhs)
     {
-        m_midi_buses     = rhs.m_midi_buses;
-        m_instruments   = rhs.m_instruments;
+        m_midi_buses        = rhs.m_midi_buses;
+        m_instruments       = rhs.m_instruments;
         m_mainwnd_rows      = rhs.m_mainwnd_rows;
         m_mainwnd_cols      = rhs.m_mainwnd_cols;
         m_seqs_in_set       = rhs.m_seqs_in_set;
@@ -191,6 +195,8 @@ user_settings::normalize ()
  *  Copies the current values of the member variables into their
  *  corresponding global variables.  Should be called at initialization,
  *  and after settings are read from the "user" configuration file.
+ *
+ *  DO NOT PUT ANY GLOBALS HERE UNTIL THEIR EFFECTS HAVE BEEN TESTED!!!!
  */
 
 void
@@ -356,36 +362,6 @@ user_settings::mainwnd_cols (int value)
 }
 
 /**
- * \setter m_seqs_in_set
- *
- * \warning
- *      This is a dependent value at present, and changing it is
- *      experimental.
- *
-void
-user_settings::seqs_in_set (int value)
-{
-    m_seqs_in_set = value;
-}
- *
- */
-
-/**
- * \setter m_gmute_tracks
- *
- * \warning
- *      This is a dependent value at present, and changing it is
- *      experimental.
- *
-void
-user_settings::gmute_tracks (int value)
-{
-    m_gmute_tracks = value;
-}
- *
- */
-
-/**
  * \setter m_max_sets
  *      This value is not modified unless the value parameter is
  *      between 32 and 64, inclusive.  The default value is 32.
@@ -401,21 +377,6 @@ user_settings::max_sets (int value)
         normalize();
     }
 }
-
-/**
- * \setter m_max_sequence
- *
- * \warning
- *      This is a dependent value at present, and changing it is
- *      experimental.
- *
-void
-user_settings::max_sequence (int value)
-{
-    m_max_sequence = value;
-}
- *
- */
 
 /**
  * \setter m_text_x
@@ -578,36 +539,6 @@ user_settings::control_height (int value)
     }
 }
 
-/*
- * \setter m_mainwid_x
- *
- * \warning
- *      This is a dependent value at present, and changing it is
- *      experimental.
- *
-void
-user_settings::mainwid_x (int value)
-{
-    m_mainwid_x = value;
-}
- *
- */
-
-/**
- * \setter m_mainwid_y
- *
- * \warning
- *      This is a dependent value at present, and changing it is
- *      experimental.
- *
-void
-user_settings::mainwid_y (int value)
-{
-    m_mainwid_y = value;
-}
- *
- */
-
 /**
  *  Provides a debug dump of basic information to help debug a
  *  surprisingly intractable problem with all busses having the name and
@@ -616,11 +547,11 @@ user_settings::mainwid_y (int value)
  *  emergencies :-D.
  */
 
-#if defined PLATFORM_DEBUG && defined USE_DUMP_SUMMARY
-
 void
 user_settings::dump_summary ()
 {
+#if defined PLATFORM_DEBUG && defined USE_DUMP_SUMMARY
+
     int buscount = bus_count();
     printf("[user-midi-bus-definitions] %d busses\n", buscount);
     for (int b = 0; b < buscount; ++b)
@@ -628,20 +559,61 @@ user_settings::dump_summary ()
         const user_midi_bus & umb = bus(b);
         printf("   [user-midi-bus-%d] '%s'\n", b, umb.name().c_str());
     }
+
+    int instcount = instrument_count();
+    printf("[user-instrument-definitions] %d instruments\n", instcount);
+    for (int i = 0; i < instcount; ++i)
+    {
+        const user_instrument & umi = instrument(i);
+        printf("   [user-instrument-%d] '%s'\n", i, umi.name().c_str());
+    }
+    printf("\n");
+    printf
+    (
+        "   mainwnd_rows() = %d\n"
+        "   mainwnd_cols() = %d\n"
+        "   seqs_in_set() = %d\n"
+        "   gmute_tracks() = %d\n"
+        "   max_sets() = %d\n"
+        "   max_sequence() = %d\n"
+        "   text_x(), _y() = %d, %d\n"
+        ,
+        mainwnd_rows(),
+        mainwnd_cols(),
+        seqs_in_set(),
+        gmute_tracks(),
+        max_sets(),
+        max_sequence(),
+        text_x(), text_y()
+    );
+
+    printf
+    (
+        "   seqchars_x(), _y() = %d, %d\n"
+        "   seqarea_x(), _y() = %d, %d\n"
+        "   seqarea_seq_x(), _y() = %d, %d\n"
+        "   mainwid_border() = %d\n"
+        "   mainwid_spacing() = %d\n"
+        "   mainwid_x(), _y() = %d, %d\n"
+        "   control_height() = %d\n"
+        ,
+        seqchars_x(), seqchars_y(),
+        seqarea_x(), seqarea_y(),
+        seqarea_seq_x(), seqarea_seq_y(),
+        mainwid_border(),
+        mainwid_spacing(),
+        mainwid_x(), mainwid_y(),
+        control_height()
+    );
+
+#endif      // PLATFORM_DEBUG
 }
 
-#else   // PLATFORM_DEBUG
-
-void
-user_settings::dump_summary ()
-{
-    // Empty body
-}
-
-#endif  //  PLATFORM_DEBUG
+}           // namespace seq64
 
 /*
  * user_settings.cpp
  *
  * vim: sw=4 ts=4 wm=4 et ft=cpp
  */
+

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-09-11
+ * \updates       2015-11-10
  * \license       GNU GPLv2 or above
  *
  *  This file provides a Windows-only implementation of the midibus class.
@@ -234,7 +234,12 @@ midibus::init_clock (long a_tick)
     {
         start();
 
-        long clock_mod_ticks = (c_ppqn / 4) * m_clock_mod;
+        /*
+         * \todo
+         *      Use an m_ppqn member variable and the usual adjustments.
+         */
+
+        long clock_mod_ticks = (global_ppqn / 4) * m_clock_mod;
         long leftover = (a_tick % clock_mod_ticks);
         long starting_tick = a_tick - leftover;
 
@@ -261,7 +266,7 @@ midibus::continue_from (long a_tick)
      * Tell the device that we are going to start at a certain position.
      */
 
-    long pp16th = (c_ppqn / 4);
+    long pp16th = (global_ppqn / 4);
     long leftover = (a_tick % pp16th);
     long beats = (a_tick / pp16th);
     long starting_tick = a_tick - leftover;
@@ -343,7 +348,7 @@ midibus::clock (long a_tick)
             if (m_lasttick >= a_tick)
                 done = true;
 
-            if (m_lasttick % (c_ppqn / 24) == 0)        /* tick time? */
+            if (m_lasttick % (global_ppqn / 24) == 0)        /* tick time? */
             {
                 PmEvent event;
                 event.timestamp = 0;

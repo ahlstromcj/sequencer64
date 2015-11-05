@@ -1180,44 +1180,14 @@ inline long measures_to_ticks
 }
 
 /**
- * Provides access to most of the global values through a nice choke
- * point.  Will be rendered obsolete, replaced by functions returning
- * references.
- */
-
-extern rc_settings g_rc_settings;
-extern user_settings g_user_settings;
-
-/**
  *  Returns a reference to the global rc_settings object.  Why a function
  *  instead of direct variable access?  Encapsulation.  We are then free to
  *  change the way "global" settings are accessed, without changing client
  *  code.
  */
 
-inline rc_settings &
-rc ()
-{
-    return g_rc_settings;
-}
-
-/**
- *  Returns a reference to the global user_settings object, for better
- *  encapsulation.
- */
-
-inline user_settings &
-usr ()
-{
-    return g_user_settings;
-}
-
-/**
- *  Provides the value of the interaction method in use, either "seq24" or
- *  "fruity".
- */
-
-extern interaction_method_t global_interactionmethod;
+extern rc_settings & rc ();
+extern user_settings & usr ();
 
 }           // namespace seq64
 

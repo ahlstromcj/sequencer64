@@ -4,6 +4,13 @@ Chris Ahlstrom
 
 In no particular order...
 
+-  Create a long note and a short note.  Select the shorter note so it is
+   orange.  Drag it over to the middle of the longer note.  Orange will
+   cover the length of the short note, plus bleed over to the right to the end
+   of the longer note.  Other minor issues with overlapping notes.
+   Can get notes chopped and resized!
+-  Could use a small view of a sequence, or at least the overall song,
+   to see where you are in it.
 -  Sometimes the editing of event values in the event data section
    will not work. The workaround is to do a Ctrl-A, and the click in
    the roll to deselect the selection; that makes the event value

@@ -448,14 +448,13 @@ optionsfile::write (const perform & a_perf)
     }
     else
     {
-        file
-            << "# Sequencer26 0.9.9.4 (and above) rc configuration file\n"
-            << "# (Also works with Sequencer24)\n"
+        file <<
+            "# Sequencer26 0.9.9.4 (and above) rc configuration file\n"
+            "# (Also works with Sequencer24)\n"
             ;
     }
-    file
-        << "\n"
-        << "[midi-control]\n\n"
+    file << "\n"
+        "[midi-control]\n\n"
         <<  c_midi_controls << "      # MIDI controls count\n" // constant count
         ;
 
@@ -676,10 +675,10 @@ optionsfile::write (const perform & a_perf)
     }
     file
         << "\n" << rc().interaction_method() << "\n\n"
-        << "# Set to 1 to allow Sequencer64 to stay in note-adding mode when\n"
-        << "# the right-click is released while holding the Mod4 (Super or\n"
-        << "# Windows) key.\n"
-        << "\n"
+        "# Set to 1 to allow Sequencer64 to stay in note-adding mode when\n"
+        "# the right-click is released while holding the Mod4 (Super or\n"
+        "# Windows) key.\n"
+        "\n"
         << (rc().allow_mod4_mode() ? "1" : "0")   // @new 2015-08-28
         << "\n"
         ;
@@ -789,15 +788,15 @@ optionsfile::write (const perform & a_perf)
 
     file
         << "\n[jack-transport]\n\n"
-        << "# jack_transport - Enable sync with JACK Transport.\n\n"
+        "# jack_transport - Enable sync with JACK Transport.\n\n"
         << rc().with_jack_transport() << "\n\n"
-        << "# jack_master - Sequencer64 attempts to serve as JACK Master.\n\n"
+        "# jack_master - Sequencer64 attempts to serve as JACK Master.\n\n"
         << rc().with_jack_master() << "\n\n"
-    << "# jack_master_cond - Sequencer64 is master if no other master exists.\n\n"
+    "# jack_master_cond - Sequencer64 is master if no other master exists.\n\n"
         << rc().with_jack_master_cond()  << "\n\n"
-        << "# jack_start_mode\n"
-        << "# 0 = Playback in live mode. Allows muting and unmuting of loops.\n"
-        << "# 1 = Playback uses the song editor's data.\n\n"
+        "# jack_start_mode\n"
+        "# 0 = Playback in live mode. Allows muting and unmuting of loops.\n"
+        "# 1 = Playback uses the song editor's data.\n\n"
         << rc().jack_start_mode() << "\n"
         ;
 
@@ -806,21 +805,21 @@ optionsfile::write (const perform & a_perf)
      */
 
     file << "\n"
-        << "[lash-session]\n\n"
-        << "# Set the following value to 0 to disable LASH session management.\n"
-        << "# Set the following value to 1 to enable LASH session management.\n"
-        << "# This value will have no effect is LASH support is not built into\n"
-        << "# the application.  Use the --help option to see if LASH is part of\n"
-        << "# the options list.\n"
-        << "\n"
+        "[lash-session]\n\n"
+        "# Set the following value to 0 to disable LASH session management.\n"
+        "# Set the following value to 1 to enable LASH session management.\n"
+        "# This value will have no effect is LASH support is not built into\n"
+        "# the application.  Use the --help option to see if LASH is part of\n"
+        "# the options list.\n"
+        "\n"
         << (rc().lash_support() ? "1" : "0")
         << "     # LASH session management support flag\n"
         ;
 
 
-    file
-        << "\n[last-used-dir]\n\n"
-        << "# Last used directory:\n\n"
+    file << "\n"
+        "[last-used-dir]\n\n"
+        "# Last used directory:\n\n"
         << rc().last_used_dir() << "\n\n"
         ;
     file
@@ -838,3 +837,4 @@ optionsfile::write (const perform & a_perf)
  *
  * vim: sw=4 ts=4 wm=4 et ft=cpp
  */
+

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-04
+ * \updates       2015-11-05
  * \license       GNU GPLv2 or above
  *
  */
@@ -1251,7 +1251,7 @@ seqedit::popup_midich_menu ()
         char b[4];                                  /* 2 digits or less  */
         snprintf(b, sizeof(b), "%d", channel + 1);
         std::string name = std::string(b);
-        std::string s = g_user_settings.instrument_name(bus, channel);
+        std::string s = usr().instrument_name(bus, channel);
         if (! s.empty())
             name += (std::string(" ") + s);
 
@@ -1524,9 +1524,9 @@ seqedit::popup_event_menu ()
              */
 
             std::string controller_name(c_controller_names[offset + item]);
-            const user_midi_bus & umb = g_user_settings.bus(bus);
+            const user_midi_bus & umb = usr().bus(bus);
             int inst = umb.instrument(channel);
-            const user_instrument & uin = g_user_settings.instrument(inst);
+            const user_instrument & uin = usr().instrument(inst);
             if (uin.is_valid())         // kind of a redundant check
             {
                 if (uin.controller_active(offset + item))
@@ -1873,8 +1873,8 @@ seqedit::set_data_type (unsigned char status, unsigned char control)
         int bus = m_seq.get_midi_bus();
         int channel = m_seq.get_midi_channel();
         std::string ccname(c_controller_names[control]);
-        if (g_user_settings.controller_active(bus, channel, control))
-            ccname = g_user_settings.controller_name(bus, channel, control);
+        if (usr().controller_active(bus, channel, control))
+            ccname = usr().controller_name(bus, channel, control);
 
         snprintf
         (

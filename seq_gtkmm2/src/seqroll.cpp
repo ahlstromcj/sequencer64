@@ -291,7 +291,7 @@ seqroll::update_background ()
     {
         int remkeys = c_num_keys - i;               /* remaining keys?      */
         int modkey = (remkeys - m_scroll_offset_key + octkey);
-        if (global_interactionmethod == e_fruity_interaction)
+        if (rc().interaction_method() == e_fruity_interaction)
         {
             if ((modkey % OCTAVE_SIZE) == 0)
             {
@@ -875,20 +875,11 @@ bool
 seqroll::on_button_press_event (GdkEventButton * ev)
 {
     bool result;
-    switch (global_interactionmethod)
-    {
-    case e_fruity_interaction:
-        result = m_fruity_interaction.on_button_press_event(ev, *this);
-        break;
-
-    case e_seq24_interaction:
+    if (rc().interaction_method() == e_seq24_interaction)
         result = m_seq24_interaction.on_button_press_event(ev, *this);
-        break;
+    else
+        result = m_fruity_interaction.on_button_press_event(ev, *this);
 
-    default:
-        result = false;
-        break;
-    }
     return result;
 }
 
@@ -900,20 +891,11 @@ bool
 seqroll::on_button_release_event (GdkEventButton * ev)
 {
     bool result;
-    switch (global_interactionmethod)
-    {
-    case e_fruity_interaction:
-        result = m_fruity_interaction.on_button_release_event(ev, *this);
-        break;
-
-    case e_seq24_interaction:
+    if (rc().interaction_method() == e_seq24_interaction)
         result = m_seq24_interaction.on_button_release_event(ev, *this);
-        break;
+    else
+        result = m_fruity_interaction.on_button_release_event(ev, *this);
 
-    default:
-        result = false;
-        break;
-    }
     return result;
 }
 
@@ -925,20 +907,11 @@ bool
 seqroll::on_motion_notify_event (GdkEventMotion * ev)
 {
     bool result;
-    switch (global_interactionmethod)
-    {
-    case e_fruity_interaction:
-        result = m_fruity_interaction.on_motion_notify_event(ev, *this);
-        break;
-
-    case e_seq24_interaction:
+    if (rc().interaction_method() == e_seq24_interaction)
         result = m_seq24_interaction.on_motion_notify_event(ev, *this);
-        break;
+    else
+        result = m_fruity_interaction.on_motion_notify_event(ev, *this);
 
-    default:
-        result = false;
-        break;
-    }
     return result;
 }
 

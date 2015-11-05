@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-02
+ * \updates       2015-11-05
  * \license       GNU GPLv2 or above
  *
  *  Here is a list of the global variables used/stored/modified by this
@@ -38,12 +38,10 @@
  *      -   e_jack_transport, e_jack_master,
  *          e_jack_master_cond, e_jack_master_connect,
  *          e_jack_master_disconnect, e_jack_master_song_mode,
- *      -   global_interactionmethod
  *      -   global_with_jack_transport);
  *      -   global_with_jack_master);
  *      -   global_with_jack_master_cond);
  *      -   global_jack_start_mode)
- *      -   global_interactionmethod = e_seq24_interaction;
  */
 
 #include <sstream>
@@ -511,17 +509,11 @@ options::add_mouse_page ()
 
     Gtk::RadioButton::Group group = rb_seq24->get_group();
     rb_fruity->set_group(group);
-    switch (global_interactionmethod)
-    {
-    case e_fruity_interaction:
+    if (rc().interaction_method() == e_fruity_interaction)
         rb_fruity->set_active();
-        break;
-
-    case e_seq24_interaction:
-    default:
+    else
         rb_seq24->set_active();
-        break;
-    }
+
     rb_seq24->signal_toggled().connect
     (
         sigc::bind(mem_fun(*this, &options::mouse_seq24_callback), rb_seq24)
@@ -782,7 +774,7 @@ void
 options::mouse_seq24_callback (Gtk::RadioButton * btn)
 {
     if (btn->get_active())
-        global_interactionmethod = e_seq24_interaction;
+        rc().interaction_method(e_seq24_interaction);
 }
 
 /**
@@ -793,7 +785,7 @@ void
 options::mouse_fruity_callback (Gtk::RadioButton * btn)
 {
     if (btn->get_active())
-        global_interactionmethod = e_fruity_interaction;
+        rc().interaction_method(e_fruity_interaction);
 }
 
 /**

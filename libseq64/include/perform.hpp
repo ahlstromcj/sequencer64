@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-03
+ * \updates       2015-11-05
  * \license       GNU GPLv2 or above
  *
  *  This class has way too many members.
@@ -688,14 +688,14 @@ public:
     }
 
     /**
-     * \getter g_rc_settings.is_pattern_playing()
+     * \getter rc().is_pattern_playing()
      *      Provide a convenience function so that clients don't have to mess
      *      with a global variable when they're dealing with a perform object.
      */
 
     bool is_playing () const
     {
-        return g_rc_settings.is_pattern_playing();
+        return rc().is_pattern_playing();
     }
 
     /**
@@ -713,7 +713,7 @@ public:
         position_jack(flag);
         start_jack();
         start(flag);
-        g_rc_settings.is_pattern_playing(true);
+        rc().is_pattern_playing(true);
     }
 
     /**
@@ -724,7 +724,7 @@ public:
     {
         stop_jack();
         stop();
-        g_rc_settings.is_pattern_playing(false);
+        rc().is_pattern_playing(false);
     }
 
     /**

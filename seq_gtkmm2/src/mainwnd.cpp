@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-04
+ * \updates       2015-11-05
  * \license       GNU GPLv2 or above
  *
  *  The main window holds the menu and the main controls of the application,
@@ -227,7 +227,7 @@ mainwnd::mainwnd (perform & p)
      */
 
     Gtk::HBox * tophbox = manage(new Gtk::HBox(false, 0));
-    const char ** bitmap = g_rc_settings.legacy_format() ?
+    const char ** bitmap = rc().legacy_format() ?
         sequencer64_legacy_xpm : sequencer64_square_xpm ;
 
     tophbox->pack_start
@@ -540,7 +540,7 @@ mainwnd::new_file ()
     perf().clear_all();
     m_main_wid->reset();
     m_entry_notes->set_text(perf().current_screen_set_notepad());
-    g_rc_settings.filename("");
+    rc().filename("");
     update_window_title();
     is_modified(false);
 }
@@ -567,7 +567,7 @@ mainwnd::file_save_as ()
     filter_any.set_name("Any files");
     filter_any.add_pattern("*");
     dialog.add_filter(filter_any);
-    dialog.set_current_folder(g_rc_settings.last_used_dir());
+    dialog.set_current_folder(rc().last_used_dir());
     int response = dialog.run();
     switch (response)
     {
@@ -606,7 +606,7 @@ mainwnd::file_save_as ()
                 if (response == Gtk::RESPONSE_NO)
                     return;
             }
-            g_rc_settings.filename(fname);
+            rc().filename(fname);
             update_window_title();
             save_file();
             break;
@@ -656,8 +656,8 @@ mainwnd::open_file (const std::string & fn)
         return;
     }
 
-    g_rc_settings.last_used_dir(fn.substr(0, fn.rfind("/") + 1));
-    g_rc_settings.filename(fn);
+    rc().last_used_dir(fn.substr(0, fn.rfind("/") + 1));
+    rc().filename(fn);
     update_window_title();
     m_main_wid->reset();
     m_entry_notes->set_text(perf().current_screen_set_notepad());
@@ -686,7 +686,7 @@ mainwnd::choose_file ()
     filter_any.set_name("Any files");
     filter_any.add_pattern("*");
     dlg.add_filter(filter_any);
-    dlg.set_current_folder(g_rc_settings.last_used_dir());
+    dlg.set_current_folder(rc().last_used_dir());
 
     int result = dlg.run();
     switch (result)
@@ -711,13 +711,13 @@ bool
 mainwnd::save_file ()
 {
     bool result = false;
-    if (g_rc_settings.filename().empty())
+    if (rc().filename().empty())
     {
         file_save_as();
         return true;
     }
 
-    midifile f(g_rc_settings.filename(), ppqn(), ! g_rc_settings.legacy_format());
+    midifile f(rc().filename(), ppqn(), ! rc().legacy_format());
     result = f.write(perf());
     if (! result)
     {
@@ -741,10 +741,10 @@ int
 mainwnd::query_save_changes ()
 {
     std::string query_str;
-    if (g_rc_settings.filename().empty())
+    if (rc().filename().empty())
         query_str = "Unnamed file was changed.\nSave changes?";
     else
-        query_str = "File '" + g_rc_settings.filename() +
+        query_str = "File '" + rc().filename() +
             "' was changed.\nSave changes?";
 
     Gtk::MessageDialog dialog
@@ -837,7 +837,7 @@ mainwnd::file_import_dialog ()
     filter_any.set_name("Any files");
     filter_any.add_pattern("*");
     dlg.add_filter(filter_any);
-    dlg.set_current_folder(g_rc_settings.last_used_dir());
+    dlg.set_current_folder(rc().last_used_dir());
 
     Gtk::ButtonBox * btnbox = dlg.get_action_area();
     Gtk::HBox hbox(false, 2);
@@ -877,7 +877,7 @@ mainwnd::file_import_dialog ()
             );
             errdialog.run();
         }
-        g_rc_settings.filename(std::string(dlg.get_filename()));
+        rc().filename(std::string(dlg.get_filename()));
         update_window_title();
         is_modified(true);
         m_main_wid->reset();
@@ -903,7 +903,7 @@ mainwnd::file_exit ()
 {
     if (is_save())
     {
-        if (g_rc_settings.is_pattern_playing())
+        if (rc().is_pattern_playing())
             stop_playing();
 
         hide();
@@ -1020,7 +1020,7 @@ bool
 mainwnd::on_delete_event (GdkEventAny * a_e)
 {
     bool result = is_save();
-    if (result && g_rc_settings.is_pattern_playing())
+    if (result && rc().is_pattern_playing())
         stop_playing();
 
     return ! result;
@@ -1060,7 +1060,7 @@ mainwnd::on_key_press_event (GdkEventKey * a_ev)
     Gtk::Window::on_key_press_event(a_ev);
     if (CAST_EQUIVALENT(a_ev->type, SEQ64_KEY_PRESS))
     {
-        if (g_rc_settings.print_keys())
+        if (rc().print_keys())
         {
             printf("key_press[%d]\n", a_ev->keyval);
             fflush(stdout);
@@ -1170,7 +1170,7 @@ mainwnd::on_key_press_event (GdkEventKey * a_ev)
         if
         (
             a_ev->keyval == PREFKEY(start) &&
-            (dont_toggle || ! g_rc_settings.is_pattern_playing())
+            (dont_toggle || ! rc().is_pattern_playing())
         )
         {
             start_playing();
@@ -1178,7 +1178,7 @@ mainwnd::on_key_press_event (GdkEventKey * a_ev)
         else if
         (
             a_ev->keyval == PREFKEY(stop) &&
-            (dont_toggle || g_rc_settings.is_pattern_playing())
+            (dont_toggle || rc().is_pattern_playing())
         )
         {
             stop_playing();
@@ -1224,9 +1224,9 @@ mainwnd::update_window_title ()
     int ppqn = m_ppqn == SEQ64_USE_DEFAULT_PPQN ? global_ppqn : m_ppqn ;
     char temp[16];
     snprintf(temp, sizeof(temp), " (%d ppqn) ", ppqn);
-    if (! g_rc_settings.filename().empty())
+    if (! rc().filename().empty())
     {
-        std::string name = shorten_file_spec(g_rc_settings.filename(), 56);
+        std::string name = shorten_file_spec(rc().filename(), 56);
         itemname = Glib::filename_to_utf8(name);
     }
     title += itemname + std::string("]") + std::string(temp);

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-22
- * \updates       2015-11-04
+ * \updates       2015-11-05
  * \license       GNU GPLv2 or above
  *
  *  Note that this module also sets the legacy global variables, so that
@@ -328,7 +328,7 @@ rc_settings::home_config_directory () const
     {
         std::string home(getenv(HOME));
         result = home + SLASH;                      /* e.g. /home/username/  */
-        if (! g_rc_settings.legacy_format())
+        if (! rc().legacy_format())
         {
             result += config_directory();           /* new, longer directory */
             bool ok = make_directory(result);
@@ -357,7 +357,7 @@ rc_settings::config_filespec () const
     if (! result.empty())
     {
         result += SLASH;
-        if (g_rc_settings.legacy_format())
+        if (rc().legacy_format())
             result += config_filename_alt();
         else
             result += config_filename();
@@ -377,7 +377,7 @@ rc_settings::user_filespec () const
     if (! result.empty())
     {
         result += SLASH;
-        if (g_rc_settings.legacy_format())
+        if (rc().legacy_format())
             result += user_filename_alt();
         else
             result += user_filename();

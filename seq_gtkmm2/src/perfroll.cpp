@@ -101,24 +101,6 @@ perfroll::perfroll
     set_ppqn(ppqn);
     for (int i = 0; i < m_sequence_max; ++i)
         m_sequence_active[i] = false;
-
-/*
- * Obsolete:  We now have both objects present, for full support of keystroke
- * functionality no matter which one the user specifies for ,ouse support.
- *
- *  switch (global_interactionmethod)
- *  {
- *  case e_fruity_interaction:
- *      m_interaction = new FruityPerfInput;
- *      break;
- *
- *  case e_seq24_interaction:
- *  default:
- *      m_interaction = new Seq24PerfInput;
- *      break;
- *  }
- */
-
 }
 
 /**
@@ -128,12 +110,7 @@ perfroll::perfroll
 
 perfroll::~perfroll ()
 {
-    /*
-     * Obsolete:
-     *
-     * if (not_nullptr(m_interaction))
-     *      delete m_interaction;
-     */
+    // Empty body
 }
 
 /**
@@ -639,20 +616,11 @@ bool
 perfroll::on_button_press_event (GdkEventButton * ev)
 {
     bool result;
-    switch (global_interactionmethod)
-    {
-    case e_fruity_interaction:
-        result = m_fruity_interaction.on_button_press_event(ev, *this);
-        break;
-
-    case e_seq24_interaction:
+    if (rc().interaction_method() == e_seq24_interaction)
         result = m_seq24_interaction.on_button_press_event(ev, *this);
-        break;
+    else
+        result = m_fruity_interaction.on_button_press_event(ev, *this);
 
-    default:
-        result = false;
-        break;
-    }
     return result;
 }
 
@@ -666,20 +634,11 @@ bool
 perfroll::on_button_release_event (GdkEventButton * ev)
 {
     bool result;
-    switch (global_interactionmethod)
-    {
-    case e_fruity_interaction:
-        result = m_fruity_interaction.on_button_release_event(ev, *this);
-        break;
-
-    case e_seq24_interaction:
+    if (rc().interaction_method() == e_seq24_interaction)
         result = m_seq24_interaction.on_button_release_event(ev, *this);
-        break;
+    else
+        result = m_fruity_interaction.on_button_release_event(ev, *this);
 
-    default:
-        result = false;
-        break;
-    }
     return result;
 }
 
@@ -724,20 +683,11 @@ bool
 perfroll::on_motion_notify_event (GdkEventMotion * ev)
 {
     bool result;
-    switch (global_interactionmethod)
-    {
-    case e_fruity_interaction:
-        result = m_fruity_interaction.on_motion_notify_event(ev, *this);
-        break;
-
-    case e_seq24_interaction:
+    if (rc().interaction_method() == e_seq24_interaction)
         result = m_seq24_interaction.on_motion_notify_event(ev, *this);
-        break;
+    else
+        result = m_fruity_interaction.on_motion_notify_event(ev, *this);
 
-    default:
-        result = false;
-        break;
-    }
     return result;
 }
 

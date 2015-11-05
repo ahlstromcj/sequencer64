@@ -498,7 +498,8 @@ bool
 seqevent::on_button_press_event (GdkEventButton * a_ev)
 {
     bool result;
-    switch (global_interactionmethod)
+    interaction_method_t interactionmethod = rc().interaction_method();
+    switch (interactionmethod)
     {
     case e_fruity_interaction:
         result = m_fruity_interaction.on_button_press_event(a_ev, *this);
@@ -552,15 +553,15 @@ bool
 seqevent::on_button_release_event (GdkEventButton * a_ev)
 {
     bool result;
-    switch (global_interactionmethod)
+    interaction_method_t interactionmethod = rc().interaction_method();
+    switch (interactionmethod)
     {
     case e_fruity_interaction:
         result = m_fruity_interaction.on_button_release_event(a_ev, *this);
 
         /*
          * FALL THROUGH.  Is this correct behavior?
-
-        break;              // removed the FALL THROUGH
+         * break;              // removed the FALL THROUGH
          */
 
     case e_seq24_interaction:
@@ -587,16 +588,16 @@ bool
 seqevent::on_motion_notify_event (GdkEventMotion * a_ev)
 {
     bool result;
-    switch (global_interactionmethod)
+    interaction_method_t interactionmethod = rc().interaction_method();
+    switch (interactionmethod)
     {
     case e_fruity_interaction:
         result = m_fruity_interaction.on_motion_notify_event(a_ev, *this);
 
         /*
          * FALL THROUGH.  Is this correct behavior?
+         * break;              // removed the FALL THROUGH
          */
-
-        // break;              // removed the FALL THROUGH
 
     case e_seq24_interaction:
         result = m_seq24_interaction.on_motion_notify_event(a_ev, *this);

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-09-29
+ * \updates       2015-11-05
  * \license       GNU GPLv2 or above
  *
  */
@@ -164,7 +164,7 @@ seqmenu::popup_menu ()
             {
                 snprintf(b, sizeof(b), "%d", channel + 1);
                 std::string name = std::string(b);
-                std::string s = g_user_settings.instrument_name(bus, channel);
+                std::string s = usr().instrument_name(bus, channel);
                 if (! s.empty())
                     name += (std::string(" ") + s);
 

@@ -1551,7 +1551,7 @@ sequence::stream_event (event * ev)
     ev->mod_timestamp(m_length);              /* adjust the tick */
     if (m_recording)
     {
-        if (g_rc_settings.is_pattern_playing())
+        if (rc().is_pattern_playing())
         {
             add_event(ev);
             set_dirty();
@@ -1580,7 +1580,7 @@ sequence::stream_event (event * ev)
         put_event_on_bus(ev);
 
     link_new();
-    if (m_quantized_rec && g_rc_settings.is_pattern_playing())
+    if (m_quantized_rec && rc().is_pattern_playing())
     {
         if (ev->is_note_off())
         {

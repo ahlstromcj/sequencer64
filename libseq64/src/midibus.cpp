@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-03
+ * \updates       2015-11-05
  * \license       GNU GPLv2 or above
  *
  *  This file provides a Linux-only implementation of MIDI support.
@@ -104,7 +104,7 @@ midibus::midibus
     m_mutex             ()
 {
     char alias[64];
-    const std::string & bussname = g_user_settings.bus_name(m_id);
+    const std::string & bussname = usr().bus_name(m_id);
     if (! bussname.empty())
         snprintf(alias, sizeof(alias), "%s", bussname.c_str());
     else

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-08-07
- * \updates       2015-11-04
+ * \updates       2015-11-05
  * \license       GNU GPLv2 or above
  *
  *  The first part of this file defines a couple of global structure
@@ -62,7 +62,20 @@ namespace seq64
  *  variables.
  */
 
-rc_settings g_rc_settings;
+static rc_settings g_rc_settings;
+
+/**
+ *  Returns a reference to the global rc_settings object.  Why a function
+ *  instead of direct variable access?  Encapsulation.  We are then free to
+ *  change the way "global" settings are accessed, without changing client
+ *  code.
+ */
+
+rc_settings &
+rc ()
+{
+    return g_rc_settings;
+}
 
 /**
  *  Provide the eventual replacement for all of the other settings in the
@@ -70,13 +83,18 @@ rc_settings g_rc_settings;
  *  module.
  */
 
-user_settings g_user_settings;
+static user_settings g_user_settings;
 
 /**
- *  Selects the default mouse interaction method.
+ *  Returns a reference to the global user_settings object, for better
+ *  encapsulation.
  */
 
-interaction_method_t global_interactionmethod = e_seq24_interaction;
+user_settings &
+usr ()
+{
+    return g_user_settings;
+}
 
 }           // namespace seq64
 

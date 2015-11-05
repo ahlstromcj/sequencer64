@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-04
+ * \updates       2015-11-05
  * \license       GNU GPLv2 or above
  *
  */
@@ -185,7 +185,7 @@ private:
     /**
      *  Implement the playing.  JACK will be used if it is present and, in the
      *  application, enabled.  This call also sets
-     *  g_rc_settings.is_pattern_playing(true).
+     *  rc().is_pattern_playing(true).
      */
 
     void start_playing ()
@@ -194,8 +194,7 @@ private:
     }
 
     /**
-     *  Stop the playing.  This call also sets
-     *  g_rc_settings.is_pattern_playing(true).
+     *  Stop the playing.  This call also sets rc().is_pattern_playing(true).
      */
 
     void stop_playing ()

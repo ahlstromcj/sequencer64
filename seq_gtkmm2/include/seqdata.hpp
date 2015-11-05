@@ -29,7 +29,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-27
+ * \updates       2015-11-05
  * \license       GNU GPLv2 or above
  *
  */
@@ -171,7 +171,7 @@ private:
         const char * const num
     )
     {
-        p_font_renderer->render_string_on_drawable
+        font_render().render_string_on_drawable
         (
             m_gc, x, y, pixmap, num, font::BLACK
         );

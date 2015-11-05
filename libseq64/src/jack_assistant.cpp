@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-14
- * \updates       2015-10-30
+ * \updates       2015-11-05
  * \license       GNU GPLv2 or above
  *
  *  This module was created from code that existed in the perform object.
@@ -687,16 +687,16 @@ jack_assistant::output (jack_scratchpad & pad)
             m_jack_transport_state_last = m_jack_transport_state;
             jack_ticks_converted_last = jack_ticks_converted;
 
-#ifdef USE_DEBUGGING_OUTPUT
+#ifdef SEQ64_USE_DEBUG_OUTPUT
             jack_debug_print(pad.js_current_tick, jack_ticks_delta);
-#endif  // USE_DEBUGGING_OUTPUT
+#endif
 
         }                               /* if dumping (sane state)  */
     }                                   /* if m_jack_running        */
     return m_jack_running;
 }
 
-#ifdef USE_DEBUGGING_OUTPUT
+#ifdef SEQ64_USE_DEBUG_OUTPUT
 
 /**
  *  Debugging code for JACK.
@@ -740,7 +740,7 @@ jack_assistant::jack_debug_print
     );
 }
 
-#endif  // USE_DEBUGGING_OUTPUT
+#endif  // SEQ64_USE_DEBUG_OUTPUT
 
 /**
  *  This function sets the JACK position structure.

@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-25
- * \updates       2015-11-04
+ * \updates       2015-11-05
  * \license       GNU GPLv2 or above
  *
  *  We're going to try to collect all the globals here in one module, and
@@ -95,32 +95,23 @@
 #include "rc_settings.hpp"              /* seq64::rc_settings           */
 #include "user_settings.hpp"            /* seq64::user_settings         */
 
-namespace seq64
-{
-
-/*
- * Provides access to most of the global values through a nice choke
- * point.
- */
-
-extern rc_settings g_rc_settings;
-extern user_settings g_user_settings;
-
 /**
- *  Provides the value of the interaction method in use, either "seq24" or
- *  "fruity".
+ *  Define this macro in order to enable some verbose console output from
+ *  various modules.  Undefine it (using "#undef") to disable this extra
+ *  output Note that this macro can be enabled only while a debug build is in
+ *  force.
  */
 
-extern interaction_method_t global_interactionmethod;
-
-}       // namespace seq64
+#ifdef PLATFORM_DEBUG
+#undef  SEQ64_USE_DEBUG_OUTPUT          /* off by default... TMI        */
+#endif
 
 /*
- * These additions aren't supported, but they do flag some potentially
+ * These Seq42 additions aren't supported, but they do flag some potentially
  * interesting upgrades.
  */
 
-#ifdef  USE_SEQ42_PATCHES
+#ifdef USE_SEQ42_PATCHES
 
 /**
  *  Version of our save file format.  Increment
@@ -145,7 +136,7 @@ const int c_no_swing = 0;
 const int c_swing_eighths = 2;
 const int c_swing_sixteenths = 4;
 
-#endif
+#endif      //  USE_SEQ42_PATCHES
 
 /**
  *  This value indicates to use the default value of PPQN and ignore (to some
@@ -155,14 +146,6 @@ const int c_swing_sixteenths = 4;
  */
 
 #define SEQ64_USE_DEFAULT_PPQN          (-1)
-
-/**
- *  This macro indicates that the command-line is not overriding the buss
- *  settings specified in the MIDI file.  That is, no "--bus b" option was
- *  specified.
- */
-
-#define BUSS_OVERRIDE_DISABLED          (global_buss_override == char(-1))
 
 /**
  *  Guessing that this has to do with the width of the performance piano roll.
@@ -335,15 +318,6 @@ const int c_gmute_tracks = c_seqs_in_set * c_seqs_in_set;
  */
 
 const int c_max_sets = 32;
-
-/*
- *  The maximum number of patterns supported is given by the number of
- *  patterns supported in the panel (32) times the maximum number of sets
- *  (32), or 1024 patterns.  It is basically the same value as
- *  c_max_sequence, so we're going to make it obsolete.
- *
- *      const int c_total_seqs = c_seqs_in_set * c_max_sets;
- */
 
 /**
  *  The maximum number of patterns supported is given by the number of
@@ -556,7 +530,8 @@ const std::string c_dummy = "Untitled";
 
 /**
  *  Provides the maximum size of sequence, and the default size.
- *  It is the maximum number of beats in a sequence.
+ *  It is the maximum number of beats in a sequence.  It's about 8190
+ *  measures or bars.  A short song (4 minutes) might be about a 100 bars.
  */
 
 const int c_maxbeats = 0xFFFF;
@@ -629,16 +604,15 @@ const int c_names_y = 24;               /* max height of name box, pixels   */
 const int c_perf_scale_x = 32;          /* units are ticks per pixel        */
 
 /**
- *  These global values seemed to be use mainly in the options,
- *  optionsfile, perform, seq24, and userfile modules.  The new
- *  ones will eventually be made official.
+ *  These global values seemed to be use mainly in the options, optionsfile,
+ *  perform, seq24, and userfile modules.  The new ones will eventually be
+ *  made official.
  *
  *  The global_ppqn variable Provides the timing resolution of a MIDI
  *  sequencer, known as "pulses per quarter note.  For this application, 192
  *  is the default, and it doesn't change.  It will be changeable in a
  *  near-future release of Sequencer64, though.  See the global_ppqn variable.
  */
-
 
 #ifdef  USE_SEQ42_PATCHES
 const int c_ppqn = DEFAULT_PPQN;
@@ -656,7 +630,7 @@ const int c_ppen = DEFAULT_PPQN / 4;    /* 16th note        */
  *
  *  There are a lot of places in the code where obscure manifest constants,
  *  such as "4", are used, without comment.  Usage of named values is a lot
- *  more informative.
+ *  more informative, but takes some time to reverse-engineer.
  */
 
 extern int global_ppqn;                     /* PPQN, parts per QN       */
@@ -664,6 +638,7 @@ extern int global_beats_per_measure;        /* BPB, or beats per bar    */
 extern int global_beats_per_minute;         /* BPM, or beats per minute */
 extern int global_beat_width;               /* BW, or beat width        */
 extern char global_buss_override;
+
 extern bool global_legacy_format;
 extern bool global_lash_support;
 
@@ -974,7 +949,7 @@ const char * const c_interaction_method_descs[3] =
 extern bool global_allow_mod4_mode;
 
 /*
- * Global functions for MIDI timing calculations.
+ * Global functions in the seq64 namespace for MIDI timing calculations.
  */
 
 namespace seq64
@@ -1203,6 +1178,46 @@ inline long measures_to_ticks
 {
     return (bw > 0) ? (4 * measures * bpm * ppqn / bw) : 0 ;
 }
+
+/**
+ * Provides access to most of the global values through a nice choke
+ * point.  Will be rendered obsolete, replaced by functions returning
+ * references.
+ */
+
+extern rc_settings g_rc_settings;
+extern user_settings g_user_settings;
+
+/**
+ *  Returns a reference to the global rc_settings object.  Why a function
+ *  instead of direct variable access?  Encapsulation.  We are then free to
+ *  change the way "global" settings are accessed, without changing client
+ *  code.
+ */
+
+inline rc_settings &
+rc ()
+{
+    return g_rc_settings;
+}
+
+/**
+ *  Returns a reference to the global user_settings object, for better
+ *  encapsulation.
+ */
+
+inline user_settings &
+usr ()
+{
+    return g_user_settings;
+}
+
+/**
+ *  Provides the value of the interaction method in use, either "seq24" or
+ *  "fruity".
+ */
+
+extern interaction_method_t global_interactionmethod;
 
 }           // namespace seq64
 

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-04
+ * \updates       2015-11-05
  * \license       GNU GPLv2 or above
  *
  */
@@ -1080,7 +1080,7 @@ seqroll::on_key_press_event (GdkEventKey * ev)
                 result = true;
             }
         }
-#if USE_VI_SEQROLL_MODE     // currently disabled, for programmers only!  :-D
+#if SEQ64_USE_VI_SEQROLL_MODE       /* disabled, for programmers only! :-D  */
         else if (ev->keyval == SEQ64_h)
         {
             if (m_seq.any_selected_notes())
@@ -1123,7 +1123,7 @@ seqroll::on_key_press_event (GdkEventKey * ev)
             m_seq24_interaction.set_adding(false, *this);
             result = true;
         }
-#endif  // USE_VI_SEQROLL_MODE
+#endif  // SEQ64_USE_VI_SEQROLL_MODE
         else if (ev->keyval == SEQ64_p)             /* \new ca 2015-11-01   */
         {
             m_seq24_interaction.set_adding(true, *this);

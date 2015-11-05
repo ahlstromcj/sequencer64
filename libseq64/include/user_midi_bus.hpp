@@ -40,6 +40,13 @@
 #include "easy_macros.h"               // with platform_macros.h, too
 
 /**
+ *  No buss override if the buss number is this value (-1).
+ */
+
+#define SEQ64_BAD_BUSS                  (char(-1))
+#define NO_BUSS_OVERRIDE(b)             (char(b) == SEQ64_BAD_BUSS)
+
+/**
  *  Default value for c_max_busses.
  */
 

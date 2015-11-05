@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-30
+ * \updates       2015-11-05
  * \license       GNU GPLv2 or above
  *
  */
@@ -118,8 +118,8 @@ event::~event ()
  *      Because of this mis-feature, and the very slow speed of loading a
  *      MIDI file when Sequencer64 is built for debugging, we are
  *      exploring using an std::map instead of an std::list.  Search for
- *      occurrences of the USE_EVENT_MAP macro. (This actually works better
- *      than a list, we have found).
+ *      occurrences of the SEQ64_USE_EVENT_MAP macro. (This actually works
+ *      better than a list, for loading MIDI event, we have found).
  *
  * \param rhs
  *      The object to be compared against.

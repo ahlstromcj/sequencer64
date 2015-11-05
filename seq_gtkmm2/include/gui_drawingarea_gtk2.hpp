@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-21
- * \updates       2015-10-29
+ * \updates       2015-11-05
  * \license       GNU GPLv2 or above
  *
  *  We've added a number of wrapper functions for the "draw-rectangle",
@@ -46,7 +46,7 @@
  *  And there are still a number of other Gtk/Gdk functions we could wrap.
  */
 
-#include "font.hpp"                     /* p_font_renderer pointer          */
+#include "font.hpp"                     /* font_render() function           */
 #include "gui_palette_gtk2.hpp"         /* #include <gtkmm/drawingarea.h>   */
 
 namespace Gtk
@@ -412,7 +412,7 @@ protected:
         int x, int y, const std::string & s, font::Color color
     )
     {
-        p_font_renderer->render_string_on_drawable
+        font_render().render_string_on_drawable
         (
             m_gc, x, y, m_window, s.c_str(), color
         );
@@ -440,7 +440,7 @@ protected:
         int x, int y, const std::string & s, font::Color color
     )
     {
-        p_font_renderer->render_string_on_drawable
+        font_render().render_string_on_drawable
         (
             m_gc, x, y, m_pixmap, s.c_str(), color
         );

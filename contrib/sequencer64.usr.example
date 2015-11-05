@@ -1,11 +1,11 @@
-# Sequencer26 0.9.9.4 (and above) user configuration file
+# Sequencer26 0.9.9.7 (and above) user configuration file
 #
-# Created by reading the following file and writing it back out via
-# the sequencer64 application.
+# Created by reading the following file and writing it out via the
+# sequencer64 application:
 #
 # https://raw.githubusercontent.com/vext01/seq24/master/seq24usr.example
 #
-#  This is an example for a .seq24usr file. Edit and place in
+#  This is an example for a sequencer64.usr file. Edit and place in
 #  your home directory. It allows you to give an alias to each
 #  MIDI bus, MIDI channel, and MIDI control codes per channel.
 #
@@ -14,8 +14,8 @@
 #  2. Define a MIDI bus, its name, and what instruments are
 #     on which channel.
 #
-# In the following MIDI buss definitions, the channels are counted
-# from 0 to 15, not 1 to 16.  Instruments not specified are set to
+# In the following MIDI buss definitions, channels are counted
+# from 0 to 15, not 1 to 16.  Instruments unspecified are set to
 # -1 (GM_INSTRUMENT_FLAG) and are GM (General MIDI).
 
 [user-midi-bus-definitions]
@@ -25,12 +25,14 @@
 [user-midi-bus-0]
 
 # Device name for this buss:
+
 2x2 A (SuperNova,Q,TX81Z,DrumStation)
 
 # Number of channels:
+
 16
 
-# channel and instrument (program) number
+# channel and instrument (or program) number
 
 0 1
 1 1
@@ -54,12 +56,14 @@
 [user-midi-bus-1]
 
 # Device name for this buss:
+
 2x2 B (WaveStation,ESI-2000,MV4,ES-1,ER-1)
 
 # Number of channels:
+
 16
 
-# channel and instrument (program) number
+# channel and instrument (or program) number
 
 0 4
 1 4
@@ -83,12 +87,14 @@
 [user-midi-bus-2]
 
 # Device name for this buss:
+
 PCR-30 (303)
 
 # Number of channels:
+
 1
 
-# channel and instrument (program) number
+# channel and instrument (or program) number
 
 0 8
 
@@ -105,9 +111,11 @@ PCR-30 (303)
 [user-instrument-0]
 
 # Name of instrument:
+
 Waldorf Micro Q
 
 # Number of MIDI controller values:
+
 128
 
 # controller number and (optional) name:
@@ -246,9 +254,11 @@ Waldorf Micro Q
 [user-instrument-1]
 
 # Name of instrument:
+
 SuperNova
 
 # Number of MIDI controller values:
+
 128
 
 # controller number and (optional) name:
@@ -387,9 +397,11 @@ SuperNova
 [user-instrument-2]
 
 # Name of instrument:
+
 DrumStation
 
 # Number of MIDI controller values:
+
 92
 
 # controller number and (optional) name:
@@ -492,9 +504,11 @@ DrumStation
 [user-instrument-3]
 
 # Name of instrument:
+
 TX81Z
 
 # Number of MIDI controller values:
+
 0
 
 # controller number and (optional) name:
@@ -505,9 +519,11 @@ TX81Z
 [user-instrument-4]
 
 # Name of instrument:
+
 WaveStation
 
 # Number of MIDI controller values:
+
 0
 
 # controller number and (optional) name:
@@ -518,9 +534,11 @@ WaveStation
 [user-instrument-5]
 
 # Name of instrument:
+
 ESI-2000
 
 # Number of MIDI controller values:
+
 0
 
 # controller number and (optional) name:
@@ -531,9 +549,11 @@ ESI-2000
 [user-instrument-6]
 
 # Name of instrument:
+
 ES-1
 
 # Number of MIDI controller values:
+
 0
 
 # controller number and (optional) name:
@@ -544,9 +564,11 @@ ES-1
 [user-instrument-7]
 
 # Name of instrument:
+
 ER-1
 
 # Number of MIDI controller values:
+
 0
 
 # controller number and (optional) name:
@@ -557,16 +579,94 @@ ER-1
 [user-instrument-8]
 
 # Name of instrument:
+
 TB-303
 
 # Number of MIDI controller values:
+
 0
 
 # controller number and (optional) name:
 
 
 # End of instrument/controllers definition 8
-#
+
+#   ========================================================
+#   ======== Sequencer64-Specific Variables Section ========
+#   ========================================================
+
+
+[user-interface-settings]
+
+# These settings specify the soon-to-be-modifiable sizes of
+# the Sequencer64 user-interface elements.
+
+
+# Specifies the number of rows in the main window.
+# At present, only a value of 4 is supportable.
+# In the future, we hope to support an alternate value of 8.
+
+4       # mainwnd_rows
+
+# Specifies the number of columns in the main window.
+# At present, only a value of 8 is supportable.
+
+8       # mainwnd_cols
+
+# Specifies the maximum number of sets, which defaults to 1024.
+# It is currently never necessary to change this value.
+
+32      # max_sets
+
+# Specifies the border width in the main window.
+
+0      # mainwid_border
+
+# Specifies the border spacing in the main window.
+
+2      # mainwid_spacing
+
+# Specifies some quantity, it is not known what it means.
+
+0      # control_height
+
+[user-midi-settings]
+
+# These settings specify MIDI-specific value that might be
+# better off as variables, rather than constants.
+
+
+# Specifies parts-per-quarter note to use, if the MIDI file.
+# does not override it.  Default is 192, but we'd like to go
+# higher than that.  BEWARE:  STILL GETTING IT TO WORK!
+
+384       # midi_ppqn
+
+# Specifies the default beats per measure, or beats per bar.
+# The default value is 4.
+
+4       # midi_beats_per_measure/bar
+
+# Specifies the default beats per minute.  The default value
+# is 120, and the legal range is 20 to 500.
+
+120       # midi_beats_per_minute
+
+# Specifies the default beat width. The default value is 4.
+
+4       # midi_beat_width
+
+# Specifies the buss-number override. The default value is -1,
+# which means that there is no buss override.  If a value
+# from 0 to 31 is given, then that buss value overrides all
+# buss values specified in all sequences/patterns.
+# Change this value from -1 only if you want to use a single
+# output buss, either for testing or convenience.  And don't
+# save the MIDI afterwards, unless you really want to change
+# all of its buss values.
+
+-1       # midi_buss_override
+
 # End of /home/ahlstrom/.config/sequencer64/sequencer64.usr
 #
-# vim: sw=4 ts=4 wm=8 et ft=sh
+# vim: sw=4 ts=4 wm=4 et ft=sh

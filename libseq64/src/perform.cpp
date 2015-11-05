@@ -1659,16 +1659,13 @@ perform::output_func ()
             }
 
 #ifdef SEQ64_JACK_SUPPORT
-
             bool jackrunning = m_jack_asst.output(pad);
             if (jackrunning)
             {
                 // code?
             }
             else
-
-#endif  // SEQ64_JACK_SUPPORT
-
+#endif
             {
                 /*
                  * The default if JACK is not compiled in, or is not running.
@@ -2313,158 +2310,62 @@ perform::sequence_playing_on (int sequence)
 }
 
 /**
+ *  Turn off the playing of a sequence, if it is active.
  *
+ * \param seq
+ *      The number of the seq to be turned off.
  */
 
 void
-perform::sequence_playing_off (int sequence)
+perform::sequence_playing_off (int seq)
 {
-    if (is_active(sequence))
+    if (is_active(seq))
     {
         if
         (
-            m_mode_group &&
-            (m_playing_screen == m_screen_set) &&
-            (sequence >= (m_playing_screen * c_seqs_in_set)) &&
-            (sequence < ((m_playing_screen + 1) * c_seqs_in_set))
+            m_mode_group && (m_playing_screen == m_screen_set) &&
+            (seq >= (m_playing_screen * c_seqs_in_set)) &&
+            (seq < ((m_playing_screen + 1) * c_seqs_in_set))
         )
         {
-            m_tracks_mute_state[sequence-m_playing_screen*c_seqs_in_set] =
+            m_tracks_mute_state[seq-m_playing_screen * c_seqs_in_set] =
                false;
         }
-        if (not_nullptr_assert(m_seqs[sequence], "sequence_playing_off"))
+        if (not_nullptr_assert(m_seqs[seq], "sequence_playing_off"))
         {
-            if (m_seqs[sequence]->get_playing())
+            bool queued = m_seqs[seq]->get_queued();
+            if (m_seqs[seq]->get_playing())
             {
                 if (m_control_status & c_status_queue)
                 {
-                    if (! m_seqs[sequence]->get_queued())
-                        m_seqs[sequence]->toggle_queued();
+                    if (! queued)
+                        m_seqs[seq]->toggle_queued();
                 }
                 else
-                    m_seqs[sequence]->set_playing(false);
+                    m_seqs[seq]->set_playing(false);
             }
             else
             {
-                if
-                (
-                    m_seqs[sequence]->get_queued() &&
-                    (m_control_status & c_status_queue)
-                )
-                    m_seqs[sequence]->toggle_queued();
+                if (queued && (m_control_status & c_status_queue))
+                    m_seqs[seq]->toggle_queued();
             }
         }
     }
 }
 
-#ifdef USE_THIS_SEQ64_JACK_SUPPORT
-
- FUNCTIONALITY MOVED TO jack_assistant module
-
 /**
- *  This function...
+ *  Pass-along function for keys().set_all_key_events.
  */
-
-void
-jack_timebase_callback
-(
-    jack_transport_state_t state,
-    jack_nframes_t nframes,
-    jack_position_t * pos,
-    int new_pos,
-    void * arg
-)
-{
-    static double jack_tick;
-    static jack_nframes_t current_frame;
-    static jack_transport_state_t state_current;
-    static jack_transport_state_t state_last;
-
-    state_current = state;
-    perform * p = (perform *) arg;
-    current_frame = jack_get_current_transport_frame(p->m_jack_client);
-    pos->valid = JackPositionBBT;
-    pos->beats_per_bar = 4;
-    pos->beat_type = 4;
-    pos->ticks_per_beat = m_ppqn * 10;
-    pos->beats_per_minute = p->get_beats_per_minute();
-
-    /*
-     * Compute BBT info from frame number.  This is relatively simple
-     * here, but would become complex if we supported tempo or time
-     * signature changes at specific locations in the transport timeline.
-     * If we are in a new position....
-     */
-
-    if (state_last == JackTransportStarting &&
-            state_current == JackTransportRolling)
-    {
-        double jack_delta_tick =
-            (current_frame) *
-            pos->ticks_per_beat *
-            pos->beats_per_minute / (pos->frame_rate * 60.0);
-
-        jack_tick = (jack_delta_tick < 0) ? -jack_delta_tick : jack_delta_tick;
-
-        long ptick = 0, pbeat = 0, pbar = 0;
-        long pbar = long
-        (
-            long(jack_tick / long(pos->ticks_per_beat * pos->beats_per_bar))
-        );
-        long pbeat = long
-        (
-            long(jack_tick % long(pos->ticks_per_beat * pos->beats_per_bar))
-        );
-        pbeat /= long(pos->ticks_per_beat);
-        long ptick = (long(jack_tick) % long(pos->ticks_per_beat);
-        pos->bar = pbar + 1;
-        pos->beat = pbeat + 1;
-        pos->tick = ptick;
-        pos->bar_start_tick = pos->bar * pos->beats_per_bar * pos->ticks_per_beat;
-    }
-    state_last = state_current;
-}
-
-/**
- *  Shutdown JACK by clearing the perform::m_jack_running flag.
- */
-
-void
-jack_shutdown (void * arg)
-{
-    perform * p = (perform *) arg;
-    p->m_jack_running = false;
-    printf("JACK shut down.\nJACK sync Disabled.\n");
-}
-
-/**
- *  Print the JACK position.
- */
-
-void
-print_jack_pos (jack_position_t * jack_pos)
-{
-    return;                                              /* tricky! */
-    printf("print_jack_pos()\n");
-    printf("    bar  [%d]\n", jack_pos->bar);
-    printf("    beat [%d]\n", jack_pos->beat);
-    printf("    tick [%d]\n", jack_pos->tick);
-    printf("    bar_start_tick   [%f]\n", jack_pos->bar_start_tick);
-    printf("    beats_per_bar    [%f]\n", jack_pos->beats_per_bar);
-    printf("    beat_type        [%f]\n", jack_pos->beat_type);
-    printf("    ticks_per_beat   [%f]\n", jack_pos->ticks_per_beat);
-    printf("    beats_per_minute [%f]\n", jack_pos->beats_per_minute);
-    printf("    frame_time       [%f]\n", jack_pos->frame_time);
-    printf("    next_time        [%f]\n", jack_pos->next_time);
-}
-
-#endif   // USE_THIS_SEQ64_JACK_SUPPORT
 
 void
 perform::set_all_key_events ()
 {
     keys().set_all_key_events();
 }
+
+/**
+ *  Pass-along function for keys().set_all_key_events.
+ */
 
 void
 perform::set_all_key_groups ()

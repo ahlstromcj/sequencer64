@@ -27,12 +27,14 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-25
+ * \updates       2015-11-05
  * \license       GNU GPLv2 or above
  *
  */
 
 #include <gtkmm/image.h>
+
+#include "easy_macros.h"                /* is_nullptr() */
 
 namespace seq64
 {
@@ -117,7 +119,7 @@ private:
      *  it's probably a bit faster to just use a pointer (or a reference).
      */
 
-    Glib::RefPtr<Gdk::Pixmap> * m_pixmap;
+    mutable const Glib::RefPtr<Gdk::Pixmap> * m_pixmap;
 
     /**
      *  The pixmap in the file <tt> src/pixmaps/font_b.xpm </tt> is loaded
@@ -159,16 +161,16 @@ public:
 
     font ();
 
-    void init (Glib::RefPtr<Gdk::Window> a_window);
+    void init (Glib::RefPtr<Gdk::Window> windo);
     void render_string_on_drawable
     (
         Glib::RefPtr<Gdk::GC> m_gc,
         int x,
         int y,
-        Glib::RefPtr<Gdk::Drawable> a_draw,
+        Glib::RefPtr<Gdk::Drawable> drawable,
         const char * str,
         font::Color col
-    );
+    ) const;
 
     /**
      * \getter m_font_w
@@ -199,12 +201,39 @@ public:
 
 };
 
-/*
- * Global symbols.  The p_font_renderer pointer is defined in the main
- * module, sequencer26.cpp.
+/**
+ *  The p_font_renderer pointer was once created in the main module,
+ *  sequencer64.cpp.  We've going to render this pointer obsolete, though, and
+ *  use a smart factory function to ensure the existence of this pointer, and
+ *  return a reference to the font object.
+ *
+ *  We wanted to make the font a const object, but mainwid::on_realize() calls
+ *  the font::init() function with its window object, and using const is
+ *  impractical.  We don't want to force every caller to deal with the
+ *  overhead of passing even a null window pointer, either.
+ *
+ *  However, at some point we need some quarantee that the init() function is
+ *  called before rendering a string.  Right now, we guarantee it only by
+ *  build order.
  */
 
-extern font * p_font_renderer;
+inline /* const */ font & font_render ()
+{
+    static font * sp_font_renderer = nullptr;
+    if (is_nullptr(sp_font_renderer))
+    {
+        sp_font_renderer = new font;
+        if (not_nullptr(sp_font_renderer))
+        {
+            // sp_font_renderer->init(m_window)
+        }
+        else
+        {
+            errprint("could not create the application font object");
+        }
+    }
+    return *sp_font_renderer;
+}
 
 }           // namespace seq64
 

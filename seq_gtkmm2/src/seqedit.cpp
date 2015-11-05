@@ -938,7 +938,10 @@ seqedit::fill_top_bar ()
     (
         sigc::bind<Gtk::Menu *>(mem_fun(*this, &seqedit::popup_menu), m_menu_bpm)
     );
-    add_tooltip(m_button_bpm, "Time signature, beats per measure");
+    add_tooltip
+    (
+        m_button_bpm, "Time signature, beats per measure, or beats per bar"
+    );
     m_entry_bpm = manage(new Gtk::Entry());
     m_entry_bpm->set_width_chars(2);
     m_entry_bpm->set_editable(false);

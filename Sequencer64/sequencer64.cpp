@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-04
+ * \updates       2015-11-05
  * \license       GNU GPLv2 or above
  *
  * \todo
@@ -50,15 +50,12 @@
 #include "globals.h"                    // full platform configuration
 #include "font.hpp"
 #include "gui_assistant_gtk2.hpp"
+#include "lash.hpp"                     // seq64::lash_driver functions
 #include "mainwid.hpp"                  // needed to fulfill mainwnd
 #include "mainwnd.hpp"
 #include "optionsfile.hpp"
 #include "perform.hpp"
 #include "userfile.hpp"
-
-#ifdef SEQ64_LASH_SUPPORT
-#include "lash.hpp"                     // seq64::lash & global_lash_driver
-#endif
 
 /**
  *  A structure for command parsing that provides the long forms of
@@ -66,15 +63,16 @@
  *  short form.  Note the terminating null structure..
  */
 
-static struct option long_options[] =
+static struct option long_options [] =
 {
     {"help",                0, 0, 'h'},
 #ifdef SEQ64_LASH_SUPPORT
-    {"lash",                0, 0, 'L'},                 /* new 2015-08-27   */
+    {"lash",                0, 0, 'L'},                 /* new */
+    {"no-lash",             0, 0, 'n'},                 /* new */
 #endif
-    {"bus",                 required_argument, 0, 'b'}, /* new 2015-10-14   */
-    {"ppqn",                required_argument, 0, 'q'}, /* new 2015-10-15   */
-    {"legacy",              0, 0, 'l'},                 /* new 2015-08-16   */
+    {"bus",                 required_argument, 0, 'b'}, /* new */
+    {"ppqn",                required_argument, 0, 'q'}, /* new */
+    {"legacy",              0, 0, 'l'},                 /* new */
     {"show-midi",           0, 0, 's'},
     {"show-keys",           0, 0, 'k'},
     {"stats",               0, 0, 'S'},
@@ -115,21 +113,16 @@ static struct option long_options[] =
     {0, 0, 0, 0}                                        /* terminator       */
 };
 
+static const std::string s_arg_list =
+    "Chlb:q:Lni:jJmaM:pPsSU:Vx:"                        /* good args        */
+    "1234:5:67:89@"                                     /* legacy args      */
+    ;
+
 static const std::string versiontext = SEQ64_PACKAGE " " SEQ64_VERSION "\n";
 
-namespace seq64
-{
-
-/*
- * Global pointer!  Declared in font.h.
- */
-
-    font * p_font_renderer = nullptr;
-
-}           // namespace seq64
-
 static const char * const s_help_1a =
-"sequencer64 v 0.9.9.6  A refactoring of the seq24 live sequencer.\n\n"
+"sequencer64 v 0.9.9.7  A significant refactoring of the seq24 live sequencer.\n"
+"\n"
 "Usage: sequencer64 [options] [MIDI filename]\n\n"
 "Options:\n"
 "   -h, --help               Show this message.\n"
@@ -138,6 +131,7 @@ static const char * const s_help_1a =
 "                            if Sequencer64 is called as 'seq24'.\n"
 #ifdef SEQ64_LASH_SUPPORT
 "   -L, --lash               Activate built-in LASH support.\n"
+"   -n, --no-lash            Do not activate built-in LASH support.\n"
 #endif
 "   -m, --manual-alsa-ports  Don't attach ALSA ports.\n"
 "   -a, --auto-alsa-ports    Attach ALSA ports (overrides the 'rc' file).\n"
@@ -206,12 +200,12 @@ main (int argc, char * argv [])
             break;
         }
     }
-    seq64::g_rc_settings.set_defaults();    /* start out with normal values */
-    seq64::g_user_settings.set_defaults();  /* start out with normal values */
+    seq64::rc().set_defaults();             /* start out with normal values */
+    seq64::usr().set_defaults();            /* start out with normal values */
 
     /*
      * Set up objects that are specific to the Gtk-2 GUI.  Pass them to
-     * the perform constructor.  Create a font-render object.
+     * the perform constructor.
      *
      * ISSUE:  We really need to create the perform object after reading
      * the configuration, but we also need to fill it in from the
@@ -220,7 +214,6 @@ main (int argc, char * argv [])
 
     seq64::gui_assistant_gtk2 gui;              /* GUI-specific objects     */
     seq64::perform p(gui);                      /* main performance object  */
-    seq64::p_font_renderer = new seq64::font(); /* set the font renderer    */
 
     /*
      *  Instead of the Seq24 names, use the new configuration file-names,
@@ -231,11 +224,11 @@ main (int argc, char * argv [])
      *  LINUX-SPECIFIC.  See the rc_settings class for how this works.
      */
 
-    std::string cfg_dir = seq64::g_rc_settings.home_config_directory();
+    std::string cfg_dir = seq64::rc().home_config_directory();
     if (cfg_dir.empty())
         return EXIT_FAILURE;
 
-    std::string rcname = seq64::g_rc_settings.user_filespec();
+    std::string rcname = seq64::rc().user_filespec();
     if (Glib::file_test(rcname, Glib::FILE_TEST_EXISTS))
     {
         if (! is_help)
@@ -248,7 +241,7 @@ main (int argc, char * argv [])
         }
     }
 
-    rcname = seq64::g_rc_settings.config_filespec();
+    rcname = seq64::rc().config_filespec();
     if (Glib::file_test(rcname, Glib::FILE_TEST_EXISTS))
     {
         if (! is_help)
@@ -261,7 +254,7 @@ main (int argc, char * argv [])
              * Not necessary, and it resets the last-used-directory
              * obtained from the "rc" configuration file.
              *
-             * g_rc_settings.last_used_dir(cfg_dir);
+             * rc().last_used_dir(cfg_dir);
              */
         }
         else
@@ -291,65 +284,70 @@ main (int argc, char * argv [])
             break;
 
         case 'l':
-            seq64::g_rc_settings.legacy_format(true);
+            seq64::rc().legacy_format(true);
             printf("Setting legacy seq24 file format for writing.\n");
             break;
 
         case 'L':
-            seq64::g_rc_settings.lash_support(true);
+            seq64::rc().lash_support(true);
             printf("Activating LASH support.\n");
             break;
 
+        case 'n':
+            seq64::rc().lash_support(false);
+            printf("Deactivating LASH support.\n");
+            break;
+
         case 'S':
-            seq64::g_rc_settings.stats(true);
+            seq64::rc().stats(true);
             break;
 
         case 's':
-            seq64::g_rc_settings.show_midi(true);
+            seq64::rc().show_midi(true);
             break;
 
         case 'p':
-            seq64::g_rc_settings.priority(true);
+            seq64::rc().priority(true);
             break;
 
         case 'P':
-            seq64::g_rc_settings.pass_sysex(true);
+            seq64::rc().pass_sysex(true);
             break;
 
         case 'k':
-            seq64::g_rc_settings.print_keys(true);
+            seq64::rc().print_keys(true);
             break;
 
         case 'j':
-            seq64::g_rc_settings.with_jack_transport(true);
+            seq64::rc().with_jack_transport(true);
             break;
 
         case 'J':
-            seq64::g_rc_settings.with_jack_master(true);
+            seq64::rc().with_jack_master(true);
             break;
 
         case 'C':
-            seq64::g_rc_settings.with_jack_master_cond(true);
+            seq64::rc().with_jack_master_cond(true);
             break;
 
         case 'M':
             if (atoi(optarg) > 0)
-                seq64::g_rc_settings.jack_start_mode(true);
+                seq64::rc().jack_start_mode(true);
             else
-                seq64::g_rc_settings.jack_start_mode(false);
+                seq64::rc().jack_start_mode(false);
             break;
 
         case 'm':
-            seq64::g_rc_settings.manual_alsa_ports(true);
+            seq64::rc().manual_alsa_ports(true);
             break;
 
         case 'a':
-            seq64::g_rc_settings.manual_alsa_ports(false);
+            seq64::rc().manual_alsa_ports(false);
             break;
 
         case 'i':                           /* ignore ALSA device */
-            seq64::g_rc_settings.device_ignore(true);
-            seq64::g_rc_settings.device_ignore_num(atoi(optarg));
+            seq64::rc().device_ignore(true);
+            seq64::rc().device_ignore_num(atoi(optarg));
             break;
 
         case 'V':
@@ -358,28 +356,28 @@ main (int argc, char * argv [])
             break;
 
         case 'U':
-            seq64::g_rc_settings.jack_session_uuid(std::string(optarg));
+            seq64::rc().jack_session_uuid(std::string(optarg));
             break;
 
         case 'x':
-            seq64::g_rc_settings.interaction_method
+            seq64::rc().interaction_method
             (
                 seq64::interaction_method_t(atoi(optarg))
             );
             break;
 
         case 'b':
-            global_buss_override = char(atoi(optarg));
+            seq64::usr().midi_buss_override(char(atoi(optarg)));
             break;
 
         case 'q':
             if (std::string(optarg) == std::string("file"))
             {
-                global_ppqn = 0;                // NOT READY !!!!!
+                seq64::usr().midi_ppqn(0);      /* NOT READY */
             }
             else
             {
-                global_ppqn = atoi(optarg);
+                seq64::usr().midi_ppqn(atoi(optarg));
             }
             break;
 
@@ -393,11 +391,11 @@ main (int argc, char * argv [])
     appname = appname.substr(appname.size()-applen, applen);
     if (appname == "seq24")
     {
-        seq64::g_rc_settings.legacy_format(true);
+        seq64::rc().legacy_format(true);
         printf("Setting legacy seq24 file format.\n");
     }
-    seq64::g_rc_settings.set_globals();         /* copy to legacy globals   */
-    seq64::g_user_settings.set_globals();       /* copy to legacy globals   */
+    seq64::rc().set_globals();                  /* copy to legacy globals   */
+    seq64::usr().set_globals();                 /* copy to legacy globals   */
     p.init();
     p.launch_input_thread();
     p.launch_output_thread();
@@ -414,20 +412,8 @@ main (int argc, char * argv [])
             printf("? MIDI file not found: %s\n", argv[optind]);
     }
 
-#ifdef SEQ64_LASH_SUPPORT
-    if (global_lash_support)
-    {
-        /*
-         *  Initialize the lash driver (strips lash-specific command line
-         *  arguments), then connect to the LASH daemon and poll events.
-         */
-
-        seq64::global_lash_driver = new seq64::lash(p, argc, argv);
-        seq64::global_lash_driver->start();
-    }
-    else
-        seq64::global_lash_driver = nullptr;
-#endif
+    if (seq64::rc().lash_support())
+        seq64::create_lash_driver(p, argc, argv);
 
     kit.run(seq24_window);
     p.deinit_jack();
@@ -437,8 +423,8 @@ main (int argc, char * argv [])
      * --legacy option is in force.
      */
 
-    seq64::g_rc_settings.get_globals();         /* copy from legacy globals */
-    rcname = seq64::g_rc_settings.config_filespec();
+    seq64::rc().get_globals();                  /* copy from legacy globals */
+    rcname = seq64::rc().config_filespec();
     printf("[Writing rc configuration %s]\n", rcname.c_str());
     seq64::optionsfile options(rcname);
     if (options.write(p))
@@ -446,20 +432,15 @@ main (int argc, char * argv [])
         // Anything to do?
     }
 
-    seq64::g_user_settings.get_globals();       /* copy from legacy globals */
-    rcname = seq64::g_rc_settings.user_filespec();
+    seq64::usr().get_globals();                 /* copy from legacy globals */
+    rcname = seq64::rc().user_filespec();
     printf("[Writing user configuration %s]\n", rcname.c_str());
     seq64::userfile userstuff(rcname);
     if (userstuff.write(p))
     {
         // Anything to do?
     }
-
-#ifdef SEQ64_LASH_SUPPORT
-    if (not_nullptr(seq64::global_lash_driver))
-        delete seq64::global_lash_driver;
-#endif
-
+    seq64::delete_lash_driver();                /* deletes only if exists   */
     return EXIT_SUCCESS;
 }
 

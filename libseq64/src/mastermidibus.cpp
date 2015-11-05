@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-30
- * \updates       2015-10-30
+ * \updates       2015-11-05
  * \license       GNU GPLv2 or above
  *
  *  This file provides a Linux-only implementation of MIDI support.
@@ -36,9 +36,9 @@
 
 #ifdef SEQ64_HAVE_LIBASOUND
 #include <sys/poll.h>
-#ifdef SEQ64_LASH_SUPPORT
+// #ifdef SEQ64_LASH_SUPPORT
 #include "lash.hpp"
-#endif
+// #endif
 #endif
 
 #include "mastermidibus.hpp"
@@ -131,14 +131,14 @@ mastermidibus::mastermidibus (int ppqn, int bpm)
     m_queue = snd_seq_alloc_queue(m_alsa_seq);      /* client's queue          */
 #endif
 
-#ifdef SEQ64_LASH_SUPPORT
+// #ifdef SEQ64_LASH_SUPPORT
     /*
      * Notify LASH of our client ID so that it can restore connections.
      */
 
-    if (not_nullptr(global_lash_driver))
-        global_lash_driver->set_alsa_client_id(snd_seq_client_id(m_alsa_seq));
-#endif
+    if (not_nullptr(lash_driver()))
+        lash_driver()->set_alsa_client_id(snd_seq_client_id(m_alsa_seq));
+// #endif
 }
 
 /**

@@ -161,7 +161,7 @@ private:
     void info_message (const std::string & msg);
     void error_message (const std::string & msg);
 
-#ifdef USE_DEBUGGING_OUTPUT
+#ifdef SEQ64_USE_DEBUG_OUTPUT
     void jack_debug_print
     (
         double current_tick,

@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-04
+ * \updates       2015-11-05
  * \license       GNU GPLv2 or above
  *
  *  This module is almost exclusively user-interface code.  There are some
@@ -66,16 +66,16 @@ perfnames::perfnames (perform & p, Gtk::Adjustment & vadjust)
     gui_drawingarea_gtk2    (p, adjustment_dummy(), vadjust, c_names_x, 100),
     seqmenu                 (p),
     m_names_chars           (24),
-    m_char_w                (p_font_renderer->char_width()),    /* 6         */
+    m_char_w                (font_render().char_width()),   /* 6            */
     m_setbox_w              (m_char_w * 2),
-    m_namebox_w             (m_char_w * 22),                    /* 24?       */
-    m_names_x               (m_names_chars * m_char_w),         /* c_names_x */
+    m_namebox_w             (m_char_w * 22),                /* 24?          */
+    m_names_x               (m_names_chars * m_char_w),     /* c_names_x    */
     m_names_y               (c_names_y),
     m_xy_offset             (2),
     m_seqs_in_set           (c_seqs_in_set),
     m_sequence_max          (c_max_sequence),
     m_sequence_offset       (0),
-    m_sequence_active       ()              // an array
+    m_sequence_active       ()                              /* an array     */
 {
     m_vadjust.signal_value_changed().connect
     (

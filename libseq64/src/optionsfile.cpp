@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-04
+ * \updates       2015-11-05
  * \license       GNU GPLv2 or above
  *
  *  The <tt> ~/.seq24rc </tt>
@@ -291,17 +291,6 @@ optionsfile::parse (perform & a_perf)
         long key = 0, seq = 0;
         sscanf(m_line, "%ld %ld", &key, &seq);
         a_perf.set_key_event(key, seq);
-
-#if USE_DEBUG_CODE
-        int kcsize = int(a_perf.key_events.size());
-        int kcrsize = int(a_perf.key_events_rev.size());
-        printf
-        (
-            "Read key=%ld, seq=%ld, size=%d, rev=%d\n",
-            key, seq, kcsize, kcrsize
-        );
-#endif
-
         next_data_line(file);
     }
 
@@ -361,19 +350,19 @@ optionsfile::parse (perform & a_perf)
     line_after(file, "[jack-transport]");
     long flag = 0;
     sscanf(m_line, "%ld", &flag);
-    g_rc_settings.with_jack_transport(bool(flag));
+    rc().with_jack_transport(bool(flag));
 
     next_data_line(file);
     sscanf(m_line, "%ld", &flag);
-    g_rc_settings.with_jack_master(bool(flag));
+    rc().with_jack_master(bool(flag));
 
     next_data_line(file);
     sscanf(m_line, "%ld", &flag);
-    g_rc_settings.with_jack_master_cond(bool(flag));
+    rc().with_jack_master_cond(bool(flag));
 
     next_data_line(file);
     sscanf(m_line, "%ld", &flag);
-    g_rc_settings.jack_start_mode(bool(flag));
+    rc().jack_start_mode(bool(flag));
 
     line_after(file, "[midi-input]");
     buses = 0;
@@ -394,23 +383,32 @@ optionsfile::parse (perform & a_perf)
 
     line_after(file, "[manual-alsa-ports]");
     sscanf(m_line, "%ld", &flag);
-    g_rc_settings.manual_alsa_ports(bool(flag));
+    rc().manual_alsa_ports(bool(flag));
 
     line_after(file, "[last-used-dir]");
     if (m_line[0] == '/')
     {
-        g_rc_settings.last_used_dir(m_line); // FIXME: check for valid path
+        rc().last_used_dir(m_line); // FIXME: check for valid path
     }
 
     long method = 0;
     line_after(file, "[interaction-method]");
     sscanf(m_line, "%ld", &method);
-    g_rc_settings.interaction_method(interaction_method_t(method));
+    rc().interaction_method(interaction_method_t(method));
 
     next_data_line(file);
     sscanf(m_line, "%ld", &method);
-    g_rc_settings.allow_mod4_mode(method != 0);
-    g_rc_settings.set_globals();                // finalize it all
+    rc().allow_mod4_mode(method != 0);
+
+    line_after(file, "[lash-session]");
+    sscanf(m_line, "%ld", &method);
+    rc().lash_support(method != 0);
+
+    /*
+     * Done parsing the "rc" file.
+     */
+
+    rc().set_globals();                // finalize it all
     file.close();
     return true;
 }
@@ -443,8 +441,8 @@ optionsfile::write (const perform & a_perf)
      * Initial comments and MIDI control section
      */
 
-    g_rc_settings.get_globals();
-    if (g_rc_settings.legacy_format())
+    rc().get_globals();
+    if (rc().legacy_format())
     {
         file << "# Seq24 0.9.2 rc configuration file (legacy format)\n";
     }
@@ -657,7 +655,7 @@ optionsfile::write (const perform & a_perf)
         << "# Set to 1 if you want seq24 to create its own ALSA ports and\n"
         << "# not connect to other clients\n"
         << "\n"
-        << g_rc_settings.manual_alsa_ports()
+        << rc().manual_alsa_ports()
         << "   # number of manual ALSA ports\n"
         ;
 
@@ -677,12 +675,12 @@ optionsfile::write (const perform & a_perf)
         ++x;
     }
     file
-        << "\n" << g_rc_settings.interaction_method() << "\n\n"
+        << "\n" << rc().interaction_method() << "\n\n"
         << "# Set to 1 to allow Sequencer64 to stay in note-adding mode when\n"
         << "# the right-click is released while holding the Mod4 (Super or\n"
         << "# Windows) key.\n"
         << "\n"
-        << (g_rc_settings.allow_mod4_mode() ? "1" : "0")   // @new 2015-08-28
+        << (rc().allow_mod4_mode() ? "1" : "0")   // @new 2015-08-28
         << "\n"
         ;
 
@@ -709,15 +707,6 @@ optionsfile::write (const perform & a_perf)
         );
         file << std::string(outs) << "\n";
     }
-
-#if USE_DEBUG_CODE
-    int kcsize = int(a_perf.key_events.size());
-    int kcrsize = int(a_perf.key_events_rev.size());
-    printf
-    (
-        "Wrote size=%d, rev=%d [keyboard-control] items\n", kcsize, kcrsize
-    );
-#endif
 
     size_t kegsize = ucperf.get_key_groups().size() < size_t(c_seqs_in_set) ?
          ucperf.get_key_groups().size() : size_t(c_seqs_in_set)
@@ -801,20 +790,38 @@ optionsfile::write (const perform & a_perf)
     file
         << "\n[jack-transport]\n\n"
         << "# jack_transport - Enable sync with JACK Transport.\n\n"
-        << g_rc_settings.with_jack_transport() << "\n\n"
+        << rc().with_jack_transport() << "\n\n"
         << "# jack_master - Sequencer64 attempts to serve as JACK Master.\n\n"
-        << g_rc_settings.with_jack_master() << "\n\n"
+        << rc().with_jack_master() << "\n\n"
     << "# jack_master_cond - Sequencer64 is master if no other master exists.\n\n"
-        << g_rc_settings.with_jack_master_cond()  << "\n\n"
+        << rc().with_jack_master_cond()  << "\n\n"
         << "# jack_start_mode\n"
         << "# 0 = Playback in live mode. Allows muting and unmuting of loops.\n"
         << "# 1 = Playback uses the song editor's data.\n\n"
-        << g_rc_settings.jack_start_mode() << "\n"
+        << rc().jack_start_mode() << "\n"
         ;
+
+    /*
+     * New for sequencer64:  provide configurable LASH session management.
+     */
+
+    file << "\n"
+        << "[lash-session]\n\n"
+        << "# Set the following value to 0 to disable LASH session management.\n"
+        << "# Set the following value to 1 to enable LASH session management.\n"
+        << "# This value will have no effect is LASH support is not built into\n"
+        << "# the application.  Use the --help option to see if LASH is part of\n"
+        << "# the options list.\n"
+        << "\n"
+        << (rc().lash_support() ? "1" : "0")
+        << "     # LASH session management support flag\n"
+        ;
+
+
     file
         << "\n[last-used-dir]\n\n"
         << "# Last used directory:\n\n"
-        << g_rc_settings.last_used_dir() << "\n\n"
+        << rc().last_used_dir() << "\n\n"
         ;
     file
         << "# End of " << m_name << "\n#\n"

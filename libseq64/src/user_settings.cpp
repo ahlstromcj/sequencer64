@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-23
- * \updates       2015-11-04
+ * \updates       2015-11-05
  * \license       GNU GPLv2 or above
  *
  *  Note that this module also sets the legacy global variables, so that
@@ -34,8 +34,6 @@
 
 #include "globals.h"                    /* to support legacy variables */
 #include "user_settings.hpp"
-
-#undef  USE_DUMP_SUMMARY
 
 namespace seq64
 {
@@ -161,6 +159,13 @@ user_settings::set_defaults ()
     m_mainwid_border = 0;               // range: 0 to 3, try 2 or 3
     m_mainwid_spacing = 2;              // range: 2 to 6, try 4 or 6
     m_control_height = 0;               // range: 0 to 4
+
+    m_midi_ppqn = DEFAULT_PPQN;         // range: 96 to 960, default 192
+    m_midi_beats_per_measure = DEFAULT_BEATS_PER_MEASURE;   // range: 1 to 16
+    m_midi_beats_per_minute = DEFAULT_BPM;                  // range: 20 to 500
+    m_midi_beat_width = DEFAULT_BEAT_WIDTH;     // range: 1 to 16, powers of 2
+    m_midi_buss_override = SEQ64_BAD_BUSS;      // range: 1 to 32
+
     normalize();                        // recalculate derived values
 }
 
@@ -202,7 +207,26 @@ user_settings::normalize ()
 void
 user_settings::set_globals () const
 {
-    // Done with user-midi-bus and user-instrument values... more to come
+    /*
+     * Done with the full conversion to [user-midi-bus] and [user-instrument]
+     * values, they don't need to be here anymore.
+     */
+
+    /*
+     *  [user-interface-settings]
+     *
+     *  We're ignoring these for now, don't want to mess up the GUI.
+     */
+
+    /*
+     *  [user-midi-settings]
+     */
+
+    global_ppqn = m_midi_ppqn;
+    global_beats_per_measure = m_midi_beats_per_measure;
+    global_beats_per_minute = m_midi_beats_per_minute;
+    global_beat_width = m_midi_beat_width;
+    global_buss_override= m_midi_buss_override;
 }
 
 /**
@@ -214,7 +238,26 @@ user_settings::set_globals () const
 void
 user_settings::get_globals ()
 {
-    // Done with user-midi-bus and user-instrument values... more to come
+    /*
+     * Done with the full conversion to [user-midi-bus] and [user-instrument]
+     * values, they don't need to be here anymore.
+     */
+
+    /*
+     *  [user-interface-settings]
+     *
+     *  We're ignoring these for now, don't want to mess up the GUI.
+     */
+
+    /*
+     *  [user-midi-settings]
+     */
+
+    m_midi_ppqn = global_ppqn;
+    m_midi_beats_per_measure = global_beats_per_measure;
+    m_midi_beats_per_minute = global_beats_per_minute;
+    m_midi_beat_width = global_beat_width;
+    m_midi_buss_override = global_buss_override;
 }
 
 /**
@@ -540,18 +583,88 @@ user_settings::control_height (int value)
 }
 
 /**
+ * \setter m_midi_ppqn
+ *      This value can be set from 96 to 960 (this upper limit will be
+ *      determined by what Sequencer64 can actually handle).
+ *      The default value is 192.
+ *      Dependent values may be recalculated after the assignment.
+ */
+
+void
+user_settings::midi_ppqn (int value)
+{
+    if (value >= 96 && value <= 960)
+    {
+        m_midi_ppqn = value;
+
+        /*
+         * Any need to normalize()?
+         */
+    }
+}
+
+/**
+ * \setter m_midi_beats_per_measure
+ *      This value can be set from 1 to 16.  The default value is 4.
+ */
+
+void
+user_settings::midi_beats_per_bar (int value)
+{
+    if (value >= 1 && value <= 16)
+        m_midi_beats_per_measure = value;
+}
+
+/**
+ * \setter m_midi_beats_minute
+ *      This value can be set from 20 to 500.  The default value is 120.
+ */
+
+void
+user_settings::midi_beats_per_minute (int value)
+{
+    if (value >= MINIMUM_BPM && value <= MAXIMUM_BPM)
+        m_midi_beats_per_minute = value;
+}
+
+/**
+ * \setter m_midi_beatwidth
+ *      This value can be set to any power of 2 in the range from 1 to 16.
+ *      The default value is 4.
+ */
+
+void
+user_settings::midi_beat_width (int bw)
+{
+    if (bw == 1 || bw == 2 || bw == 4 || bw == 8 ||bw == 16)
+        m_midi_beat_width = bw;
+}
+
+/**
+ * \setter m_midi_buss_override
+ *      This value can be set from 0 to 31.  The default value is -1, which
+ *      means that there is no buss override.
+ */
+
+void
+user_settings::midi_buss_override (char buss)
+{
+    if ((buss >= 0 && buss < DEFAULT_BUSS_MAX) || NO_BUSS_OVERRIDE(buss))
+        m_midi_buss_override = buss;
+}
+
+/**
  *  Provides a debug dump of basic information to help debug a
  *  surprisingly intractable problem with all busses having the name and
  *  values of the last buss in the configuration.  Does its work only if
- *  PLATFORM_DEBUG and USE_DUMP_SUMMARY are defined.  Only enabled in
+ *  PLATFORM_DEBUG and SEQ64_USE_DEBUG_OUTPUT are defined.  Only enabled in
  *  emergencies :-D.
  */
 
 void
 user_settings::dump_summary ()
 {
-#if defined PLATFORM_DEBUG && defined USE_DUMP_SUMMARY
-
+#if defined SEQ64_USE_DEBUG_OUTPUT
     int buscount = bus_count();
     printf("[user-midi-bus-definitions] %d busses\n", buscount);
     for (int b = 0; b < buscount; ++b)
@@ -586,7 +699,6 @@ user_settings::dump_summary ()
         max_sequence(),
         text_x(), text_y()
     );
-
     printf
     (
         "   seqchars_x(), _y() = %d, %d\n"
@@ -605,7 +717,21 @@ user_settings::dump_summary ()
         mainwid_x(), mainwid_y(),
         control_height()
     );
-
+    printf("\n");
+    printf
+    (
+        "   midi_ppqn() = %d\n"
+        "   midi_beats_per_bar() = %d\n"
+        "   midi_beats_per_minute() = %d\n"
+        "   midi_beat_width() = %d\n"
+        "   midi_buss_override() = %d\n"
+        ,
+        midi_ppqn(),
+        midi_beats_per_bar(),
+        midi_beats_per_minute(),
+        midi_beat_width(),
+        midi_buss_override()
+    );
 #endif      // PLATFORM_DEBUG
 }
 

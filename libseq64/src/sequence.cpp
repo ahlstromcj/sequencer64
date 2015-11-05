@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-04
+ * \updates       2015-11-05
  * \license       GNU GPLv2 or above
  *
  */
@@ -1236,7 +1236,7 @@ sequence::copy_selected ()
     m_events_clipboard.clear();
     for (event_list::iterator i = m_events.begin(); i != m_events.end(); ++i)
     {
-#ifdef USE_EVENT_MAP
+#ifdef SEQ64_USE_EVENT_MAP
         if (DREF(i).is_selected())
             m_events_clipboard.add(DREF(i), false);      /* no post-sort */
 #else

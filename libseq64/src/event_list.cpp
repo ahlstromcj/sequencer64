@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-19
- * \updates       2015-11-01
+ * \updates       2015-11-05
  * \license       GNU GPLv2 or above
  *
  */
@@ -41,7 +41,7 @@ namespace seq64
  * Section: event_key
  */
 
-#ifdef USE_EVENT_MAP
+#ifdef SEQ64_USE_EVENT_MAP
 
 /**
  *  Principal event_key constructor.
@@ -97,7 +97,7 @@ event_list::event_key::operator < (const event_key & rhs) const
         return (m_timestamp < rhs.m_timestamp);
 }
 
-#endif  // USE_EVENT_MAP
+#endif  // SEQ64_USE_EVENT_MAP
 
 /*
  * Section: event_key
@@ -186,7 +186,7 @@ void
 event_list::add (const event & e, bool postsort)
 {
 
-#ifdef USE_EVENT_MAP
+#ifdef SEQ64_USE_EVENT_MAP
 
     event_key key(e);
 #if __cplusplus >= 201103L              /* C++11                    */
@@ -204,7 +204,7 @@ event_list::add (const event & e, bool postsort)
         sort();                         /* by time-stamp and "rank" */
 }
 
-#ifdef USE_EVENT_MAP
+#ifdef SEQ64_USE_EVENT_MAP
 
 /**
  *  Provides a merge operation for the event multimap analogous to the merge
@@ -266,7 +266,7 @@ event_list::merge (event_list & el, bool presort)
     }
 }
 
-#else   // USE_EVENT_MAP
+#else   // SEQ64_USE_EVENT_MAP
 
 void
 event_list::merge (event_list & el, bool presort)
@@ -277,7 +277,7 @@ event_list::merge (event_list & el, bool presort)
     m_events.merge(el.m_events);
 }
 
-#endif  // USE_EVENT_MAP
+#endif  // SEQ64_USE_EVENT_MAP
 
 /**
  *  Links a new event.  This function checks for a note on, then look for

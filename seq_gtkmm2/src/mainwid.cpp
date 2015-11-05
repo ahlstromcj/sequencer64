@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-04
+ * \updates       2015-11-05
  * \license       GNU GPLv2 or above
  *
  *  Note that this representation is, in a sense, inside the mainwnd
@@ -37,10 +37,10 @@
  *  to fix the root causes as well.
  */
 
-#include <gtkmm/combo.h>                /* Gtk::Entry                   */
+#include <gtkmm/combo.h>                /* Gtk::Entry                       */
 #include <gtkmm/menubar.h>
 
-#include "click.hpp"                    /* SEQ64_CLICK_LEFT(), etc.  */
+#include "click.hpp"                    /* SEQ64_CLICK_LEFT(), etc.         */
 #include "font.hpp"
 #include "mainwid.hpp"
 #include "perform.hpp"
@@ -53,15 +53,15 @@ using namespace Gtk::Menu_Helpers;
  *  enabled by default.  To disable this feature, configure the build with
  *  the --disable-highlight option.
  *
- *      #define HIGHLIGHT_EMPTY_SEQS    // undefine for normal empty seqs
+ *      #define SEQ64_HIGHLIGHT_EMPTY_SEQS    // undefine for normal empty seqs
  *
- *  The USE_GREY_GRID and USE_NORMAL_GRID can be undefined in combination
- *  to obtain different kinds of looks for the main (patterns) window at
- *  build time.  Try it and see for yourself!
+ *  The SEQ64_USE_GREY_GRID and SEQ64_USE_NORMAL_GRID can be undefined in
+ *  combination to obtain different kinds of looks for the main (patterns)
+ *  window at build time.  Try it and see for yourself!
  */
 
-#define USE_GREY_GRID                   // undefine for black boxes
-#define USE_NORMAL_GRID                 // undefine for black box, black outline
+#define SEQ64_USE_GREY_GRID             /* undefine for black boxes         */
+#define SEQ64_USE_NORMAL_GRID           /* undefine for black box & outline */
 
 /*
  *  Static array of characters for use in toggling patterns.
@@ -388,7 +388,7 @@ mainwid::draw_sequence_on_pixmap (int seqnum)
                 );
             }
         }
-        else                            /* sequence not active */
+        else                                /* sequence not active          */
         {
             /*
              *  Draws the grid areas that do not contain a sequence.
@@ -404,14 +404,14 @@ mainwid::draw_sequence_on_pixmap (int seqnum)
              *  empty sequence box.
              */
 
-#ifdef USE_GREY_GRID                        /* otherwise, leave it black    */
+#ifdef SEQ64_USE_GREY_GRID                  /* otherwise, leave it black    */
             draw_normal_rectangle_on_pixmap
             (
                 base_x + 4, base_y, m_seqarea_x - 8, m_seqarea_y
             );
 #endif
 
-#ifdef USE_NORMAL_GRID                      /* change box to "brackets"     */
+#ifdef SEQ64_USE_NORMAL_GRID                /* change box to "brackets"     */
             draw_normal_rectangle_on_pixmap
             (
                 base_x + 1, base_y + 1, m_seqarea_x - 2, m_seqarea_y - 2
@@ -696,6 +696,10 @@ mainwid::set_screenset (int a_ss)
  *  For this GTK callback, on realization of window, initialize the shiz.
  *  It allocates any additional resources that weren't initialized in the
  *  constructor.
+ *
+ *  This function used to call font::init(), and was the only place where the
+ *  font::init() function was called.  The init() function gets a color-map
+ *  from the window.  We need a more fool-proof was to do this!
  */
 
 void
@@ -703,7 +707,13 @@ mainwid::on_realize ()
 {
     gui_drawingarea_gtk2::on_realize();
     set_flags(Gtk::CAN_FOCUS);
-    p_font_renderer->init(m_window);
+
+    /*
+     * See the discussion in the function banner.
+     */
+
+    font_render().init(m_window);
+
     m_pixmap = Gdk::Pixmap::create(m_window, m_mainwid_x, m_mainwid_y, -1);
     fill_background_window();
     draw_sequences_on_pixmap();

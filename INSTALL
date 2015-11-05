@@ -1,6 +1,6 @@
-INSTALL for Sequencer64 v 0.9.9.6
+INSTALL for Sequencer64 v 0.9.9.7
 Chris Ahlstrom
-2015-09-10 to 2015-10-30
+2015-09-10 to 2015-11-05
 
 The current packaging for Sequencer64 is primarily aimed at developers.
 There is currently no configure script... it must be bootstrapped.
@@ -38,6 +38,13 @@ Steps:
 
 CONFIGURE OPTIONS FOR APPLICATION FEATURES:
 
+    These options undefine the following build macros:
+
+        SEQ64_HIGHLIGHT_EMPTY_SEQS
+        SEQ64_LASH_SUPPORT
+        SEQ64_JACK_SUPPORT
+        SEQ64_JACK_SESSION
+
     --disable-highlight
 
         Undefines the SEQ64_HIGHLIGHT_EMPTY_SEQS  macro, which is
@@ -56,37 +63,76 @@ CONFIGURE OPTIONS FOR APPLICATION FEATURES:
 
     --disable-jack-session
 
-        Undefines the SEQ64_JACK_SUPPORT macro, which is defined if JACK
+        Undefines the SEQ64_JACK_SESSION macro, which is defined if JACK
         support is defined, and the jack/session.h file is found.
 
-MACROS IN CODE:
+MANUALLY-DEFINED MACROS IN CODE:
 
     The following items are not yet part of the configure script, but can
-    be edited manually to achieve the desired setting:
+    be edited manually to achieve the desired settings:
 
-    SEQ64_USE_NEW_FONT
+    SEQ64_USE_NEW_FONT:
 
-        Already defined in the font.cpp module.  If defined, a new,
-        anti-aliased, bold font is used in the user-interface.  This
-        new font is implement in new XPM files in resources/pixmaps:
-        wen*.xpm.  The font is slightly larger, but changes the
-        user-interface sizes only to an infinitesmal degree.
+        Already defined in the font module.  If defined, a new, anti-aliased,
+        bold font is used in the user-interface.  This new font is implement
+        in new XPM files in resources/pixmaps: wen*.xpm.  The font is slightly
+        larger, but changes the user-interface sizes only to an infinitesmal
+        degree.  Using this new font is the default.
 
-    USE_GREY_GRID
+    SEQ64_USE_EVENT_MAP:
+
+        Already defined in the event_list module.  It enables the usage of an
+        std::multimap, instead of an std::list, to store MIDI events.  Because
+        the code does a lot of sorting of events, using the std::multimap is
+        actually a lot faster (especially under debug mode, where it takes
+        many seconds for a medium-size MIDI file to load using the std::list
+        implementation).
+
+        There is still a chance that the std::multimap might prove the
+        limiting factor during playback.  If that is the case, then we would
+        probably implement dumping the multimap to a vector before playback.
+        We shall see!
+
+    SEQ64_USE_GREY_GRID:
 
         If defined, this item causes the pattern slots/boxes to be colored
         grey.  Otherwise, they are colored black.  By default, this value
         is defined (in the mainwid module).
 
-    USE_NORMAL_GRID:
+    SEQ64_USE_NORMAL_GRID:
 
         If defined, the box that outlines the pattern slots/boxes is
         painted over to convert the box to look like a pair of brackets.
         By default, this value is defined (in the mainwid module).
 
-    Defining both of the macros gives the normal Seq24 look for the
-    Pattern Window.  Eventually we might move these definitions into the
-    configure script, for easier modification.
+        Defining both of the macros (USE_GREY_GRID and USE_NORMAL_GRID) gives
+        the normal Seq24 look for the Pattern Window.  Eventually we might
+        move these definitions into the configure script, for easier
+        modification.
+
+    SEQ64_USE_VI_SEQROLL_MODE:
+
+        Definable in the seqroll module, this macro allows the vi hjkl keys to
+        be used as arrow keys for moving notes.  Not yet tested.  We will not
+        make this a default, because it could drive non-vi users nuts.
+
+    SEQ64_USE_DEBUG_OUTPUT:
+
+        Enable this macro in the globals.h header file, to see extra console
+        output if the application is compiled for debugging.  This macro
+        can be activated only if PLATFORM_DEBUG is defined, which is taken
+        care of by the build process.  If set, this macro turns on extra
+        console output for the following modules:
+
+            globals
+            jack_assistant
+            optionsfile
+            user_settings
+
+    USE_SEQ42_PATCHES:
+
+        This macro, in globals.h, currently merely marks a couple places where
+        we found potentially useful code in the seq42 fork of seq24.
 
 DEPENDENCIES:
 

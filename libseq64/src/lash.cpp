@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-09-30
+ * \updates       2015-11-05
  * \license       GNU GPLv2 or above
  *
  *  Not totally sure that the LASH support is completely finished, at this
@@ -42,10 +42,96 @@ namespace seq64
 {
 
 /**
- *  The global pointer to the LASH driver instance.
+ *  The global pointer to the LASH driver instance.  It is actually hidden in
+ *  this module now, so that a function can be used in its place.
+ *
+ *  Like the font renderer, This item was once created in the main module,
+ *  sequencer64.cpp.  Now we make it a safer, more fool-proof, function.
+ *  However, unlike the font-render, which always exists, the LASH driver is
+ *  conditional, and might not be wanted.  Therefore, we cannot return a
+ *  reference, because there's no such thing as a null reference in C++.  We
+ *  have to return a pointer.
  */
 
-lash * global_lash_driver = nullptr;
+static lash * s_global_lash_driver = nullptr;
+
+/**
+ *  Creates and starts a lash object.  Initializes the lash driver (strips
+ *  lash-specific command line arguments), then connects to the LASH daemon
+ *  and polls events.
+ *
+ *  This function will always be called from the main routine, and called only
+ *  once.  Note that we don't need that darn SEQ64_LASH_SUPPORT macro in
+ *  client code anymore.
+ *
+ * \param p
+ *      The perform object that needs to implement LASH support.
+ *
+ * \param argc
+ *      The number of command-line arguments.
+ *
+ * \param argv
+ *      The command-line arguments.
+ *
+ * \return
+ *      This function returns true if a lash object was created.  This
+ *      function will not create one in not configured to, if the command-line
+ *      options did not specify the creation of the LASH driver, or if the
+ *      LASH driver was already created.
+ */
+
+bool
+create_lash_driver (perform & p, int argc, char ** argv)
+{
+#ifdef SEQ64_LASH_SUPPORT
+    bool result = is_nullptr(s_global_lash_driver);
+    if (result)
+    {
+        result = rc().lash_support();
+        if (result)
+        {
+            s_global_lash_driver = new lash(p, argc, argv);
+            result = not_nullptr(s_global_lash_driver);
+            if (result)
+                s_global_lash_driver->start();
+        }
+    }
+    return result;
+#else
+    return false;
+#endif
+}
+
+/**
+ *  Provides access to the lash object.
+ *
+ * \return
+ *      Returns the pointer to the LASH driver if it exists.  Otherwise a null
+ *      pointer is returned.  The caller <i> must always check </i> the return
+ *      value.
+ */
+
+lash *
+lash_driver ()
+{
+    return s_global_lash_driver;
+}
+
+/**
+ *  Deletes the last object.  This function will always be called from the
+ *  main routine, once.  The other lash-pointer functions will know if the
+ *  pointer has been deleted.
+ */
+
+void
+delete_lash_driver ()
+{
+    if (not_nullptr(s_global_lash_driver))
+    {
+        delete s_global_lash_driver;
+        s_global_lash_driver = nullptr;
+    }
+}
 
 /**
  *  This constructor calls lash_extract(), using the command-line
@@ -153,7 +239,7 @@ lash::start ()
          *  );
          */
 
-        m_perform.gui().lash_timeout_connect(*this);
+        m_perform.gui().lash_timeout_connect(this);
     }
 #endif
 }

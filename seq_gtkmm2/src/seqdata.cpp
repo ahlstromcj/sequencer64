@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-31
+ * \updates       2015-11-05
  * \license       GNU GPLv2 or above
  *
  */
@@ -61,9 +61,9 @@ seqdata::seqdata
     m_scroll_offset_x       (0),
     m_background_tile_x     (0),
     m_background_tile_y     (0),
-    m_number_w              (p_font_renderer->char_width()+1),      // was 6
-    m_number_h              (3*(p_font_renderer->char_height()+1)), // was 3*10
-    m_number_offset_y       (p_font_renderer->char_height()-1),     // was 8
+    m_number_w              (font_render().char_width()+1),      // was 6
+    m_number_h              (3*(font_render().char_height()+1)), // was 3*10
+    m_number_offset_y       (font_render().char_height()-1),     // was 8
     m_status                (0),
     m_cc                    (0),
     m_numbers               (),             // an array

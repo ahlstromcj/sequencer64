@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-09-19
- * \updates       2015-09-30
+ * \updates       2015-11-05
  * \license       GNU GPLv2 or above
  *
  *  Note that this module automatically creates a Gtk-specific
@@ -67,7 +67,7 @@ public:
 
     virtual void quit ();
     virtual void jack_idle_connect (jack_assistant & jack);
-    virtual void lash_timeout_connect (lash & lashobject);
+    virtual void lash_timeout_connect (lash * lashobject);
 
 };
 

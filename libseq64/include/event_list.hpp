@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-19
- * \updates       2015-11-01
+ * \updates       2015-11-05
  * \license       GNU GPLv2 or above
  *
  *  This module extracts the event-list functionality from the sequencer
@@ -54,12 +54,14 @@
  * This macro indicates an experimental feature where we are tyring to see
  * if using std::multimap as an event-container has any benefits over
  * using std::list.  Define this macro to use the multimap.  So far, we
- * recommend using it.
+ * recommend using it.  In debug mode, the b4uacuse MIDI files take about 8
+ * seconds (!) to load using the list, but barely any time to load using the
+ * multimap.
  */
 
-#define USE_EVENT_MAP                   /* this seems to work well! */
+#define SEQ64_USE_EVENT_MAP                   /* this seems to work well! */
 
-#ifdef USE_EVENT_MAP
+#ifdef SEQ64_USE_EVENT_MAP
 #include <map>
 #else
 #include <list>
@@ -84,7 +86,7 @@ namespace seq64
  *  The event_list class is a receptable for MIDI events.  Two
  *  implementations, an std::multimap, and the original, an std::list, are
  *  provided for comparison, and are selected at build time, by manually
- *  defining the USE_EVENT_MAP macro near the top of this module.
+ *  defining the SEQ64_USE_EVENT_MAP macro near the top of this module.
  */
 
 class event_list
@@ -95,7 +97,7 @@ class event_list
 
 private:
 
-#ifdef USE_EVENT_MAP
+#ifdef SEQ64_USE_EVENT_MAP
 
     /**
      *  Provides a key value for an event map.  Its types match the
@@ -140,7 +142,7 @@ private:
     typedef std::list<event>::iterator iterator;
     typedef std::list<event>::const_iterator const_iterator;
 
-#endif  // USE_EVENT_MAP
+#endif  // SEQ64_USE_EVENT_MAP
 
 private:
 
@@ -206,7 +208,7 @@ public:
 
     void add (const event & e, bool postsort = true);
 
-#ifndef USE_EVENT_MAP
+#ifndef SEQ64_USE_EVENT_MAP
 
     /**
      *  Needed as a special case when std::list is used.
@@ -245,7 +247,7 @@ public:
      *  an empty function.
      */
 
-#ifdef USE_EVENT_MAP
+#ifdef SEQ64_USE_EVENT_MAP
     void sort ()
     {
         // Empty body
@@ -263,7 +265,7 @@ public:
 
     static event & dref (iterator ie)
     {
-#ifdef USE_EVENT_MAP
+#ifdef SEQ64_USE_EVENT_MAP
         return ie->second;
 #else
         return *ie;
@@ -276,7 +278,7 @@ public:
 
     static const event & dref (const_iterator ie)
     {
-#ifdef USE_EVENT_MAP
+#ifdef SEQ64_USE_EVENT_MAP
         return ie->second;
 #else
         return *ie;

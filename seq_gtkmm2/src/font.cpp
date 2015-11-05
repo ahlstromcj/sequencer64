@@ -209,7 +209,7 @@ font::render_string_on_drawable
     Glib::RefPtr<Gdk::Drawable> a_draw,
     const char * str,
     font::Color col
-)
+) const
 {
     int length = 0;
     if (not_nullptr(str))

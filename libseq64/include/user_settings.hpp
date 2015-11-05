@@ -74,6 +74,8 @@ class user_settings
     friend class userfile;      /* allow protected access to file parser */
 
     /**
+     *                  [user-midi-bus-definitions]
+     *
      *  Internal type for the container of user_midi_bus objects.
      *  Sorry about the "confusion" about "bus" versus "buss".
      *  See Google for arguments about it.
@@ -92,6 +94,8 @@ class user_settings
     Busses m_midi_buses;
 
     /**
+     *                  [user-instrument-definitions]
+     *
      *  Internal type for the container of user_instrument objects.
      */
 
@@ -106,6 +110,10 @@ class user_settings
      */
 
     Instruments m_instruments;
+
+    /*
+     *                  [user-interface-settings]
+     */
 
     /**
      *  Number of rows in the Patterns Panel.  The current value is 4, and
@@ -282,6 +290,65 @@ class user_settings
      */
 
     int m_mainwid_y;
+
+    /*
+     *                  [user-midi-settings]
+     */
+
+    /**
+     *  Provides the universal PPQN setting for the duration of this setting.
+     *  This variable will replace global_ppqn.  The default value of this
+     *  setting is 192 parts-per-quarter-note (PPQN).  There is still a lot of
+     *  work to get a different PPQN to work properly in speed of playback,
+     *  scaling of the user interface, and other issues.
+     */
+
+    int m_midi_ppqn;                     /* PPQN, parts per QN       */
+
+    /**
+     *  Provides the universal MIDI value for beats per measure, also called
+     *  "beats per bar" (BPB).  This variable will replace
+     *  global_beats_per_measure.  The default value of this variable is 4.
+     *  Now, although it applies to the whole session, we should be able to
+     *  continue seq24's tradition of allowing each sequence to have its own
+     *  time signature.  Also, there are a number of places where the number 4
+     *  appears and looks like it might be a hardwired BPB value, either for
+     *  MIDI purposes or for drawing the user-interface.  So we might need a
+     *  couple different versions of this variable.
+     */
+
+    int m_midi_beats_per_measure;        /* BPB, or beats per bar       */
+
+    /**
+     *  Provides the universal MIDI value for beats per minute (BPM).
+     *  This variable will replace global_beats_per_minute.  The default
+     *  value of this variable is 120.  This variable should apply to the whole
+     *  session; there's probably no way to support a diffent tempo for each
+     *  sequence.  But we shall see.
+     */
+
+    int m_midi_beats_per_minute;         /* BPM, or beats per minute    */
+
+    /**
+     *  Provides the universal MIDI value for beats width (BW).  This variable
+     *  will replace global_beat_width.  The default value of this variable is
+     *  4.  Now, although it applies to the whole session, we should be able to
+     *  continue seq24's tradition of allowing each sequence to have its own
+     *  time signature.  Also, there are a number of places where the number 4
+     *  appears and looks like it might be a hardwired BW value, either for
+     *  MIDI purposes or for drawing the user-interface.  So we might need a
+     *  couple different versions of this variable.
+     */
+
+    int m_midi_beat_width;              /* BW, or beat width            */
+
+    /**
+     *  Provides a universal override of the buss number for all sequences, for
+     *  the purpose of convenience of of testing.  This variable replaces the
+     *  global_buss_override, and is set via the command-line option --bus.
+     */
+
+    char m_midi_buss_override;          /* --bus n option               */
 
 public:
 
@@ -627,6 +694,64 @@ protected:
      */
 
     void dump_summary();
+
+public:
+
+    /**
+     * \getter m_midi_ppqn
+     */
+
+    int midi_ppqn () const
+    {
+        return m_midi_ppqn;
+    }
+
+    /**
+     * \getter m_midi_beats_per_measure
+     */
+
+    int midi_beats_per_bar () const
+    {
+        return m_midi_beats_per_measure;
+    }
+
+    /**
+     * \getter m_midi_beats_per_minute
+     */
+
+    int midi_beats_per_minute () const
+    {
+        return m_midi_beats_per_minute;
+    }
+
+    /**
+     * \getter m_midi_beat_width
+     */
+
+    int midi_beat_width () const
+    {
+        return m_midi_beat_width;
+    }
+
+    /**
+     * \getter m_midi_buss_override
+     */
+
+    char midi_buss_override () const
+    {
+        return m_midi_buss_override;
+    }
+
+public:         // used in main application module and the userfile class
+
+    void midi_ppqn (int ppqn);
+    void midi_buss_override (char buss);
+
+protected:
+
+    void midi_beats_per_bar (int beatsperbar);
+    void midi_beats_per_minute (int beatsperminute);
+    void midi_beat_width (int beatwidth);
 
 private:
 

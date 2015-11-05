@@ -129,15 +129,15 @@
 [midi-clock]
 
 5    # number of MIDI clocks/busses
-# Output buss name: [0] 14:0 (2x2 A (SuperNova,Q,TX81Z,DrumStation))
+# Output buss name: [0] 14:0 2x2 A (SuperNova,Q,TX81Z,DrumStation)
 0 0  # buss number, clock status
-# Output buss name: [1] 128:0 (2x2 B (WaveStation,ESI-2000,MV4,ES-1,ER-1))
+# Output buss name: [1] 128:0 2x2 B (WaveStation,ESI-2000,MV4,ES-1,ER-1)
 1 0  # buss number, clock status
-# Output buss name: [2] 128:1 (PCR-30 (303))
+# Output buss name: [2] 128:1 PCR-30 (303)
 2 0  # buss number, clock status
-# Output buss name: [3] 128:2 (TiMidity port 2)
+# Output buss name: [3] 128:2 TiMidity port 2
 3 0  # buss number, clock status
-# Output buss name: [4] 128:3 (TiMidity port 3)
+# Output buss name: [4] 128:3 TiMidity port 3
 4 0  # buss number, clock status
 
 
@@ -149,7 +149,7 @@
 
 1   # number of MIDI busses
 
-# [0] 14:0 (2x2 A (SuperNova,Q,TX81Z,DrumStation))
+# [0] 14:0 2x2 A (SuperNova,Q,TX81Z,DrumStation)
 0 0
 
 [manual-alsa-ports]
@@ -257,9 +257,9 @@
 236 39 65379   # igrave apostrophe Insert
 # replace, queue, snapshot_1, snapshot 2, keep queue:
 65507 65508 65513 65514 92   # Control_L Control_R Alt_L Alt_R backslash
-0    # show_ui_sequence_key (1 = true / 0 = false)
+1    # show_ui_sequence_key (1 = true / 0 = false)
 32 # space start sequencer
-65307 # Escape stop sequencer
+32 # space stop sequencer
 
 [jack-transport]
 
@@ -281,12 +281,22 @@
 
 1
 
+[lash-session]
+
+# Set the following value to 0 to disable LASH session management.
+# Set the following value to 1 to enable LASH session management.
+# This value will have no effect is LASH support is not built into
+# the application.  Use the --help option to see if LASH is part of
+# the options list.
+
+0     # LASH session management support flag
+
 [last-used-dir]
 
 # Last used directory:
 
-/home/ahlstrom/.config/sequencer64
+/home/ahlstrom/Home/ca/mls/git/sequencer64/contrib/midi/
 
 # End of /home/ahlstrom/.config/sequencer64/sequencer64.rc
 #
-# vim: sw=4 ts=4 wm=8 et ft=sh
+# vim: sw=4 ts=4 wm=4 et ft=sh

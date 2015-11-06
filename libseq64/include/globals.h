@@ -128,7 +128,7 @@ const int c_file_version = 2;
 
 /**
  *  Constants for sequence swing modes (the integer value is the amount to
- *  divide c_ppqn by to obtain note length).
+ *  divide the PPQN by to obtain note length).
  */
 
 const int c_max_swing_amount = 24;
@@ -185,6 +185,18 @@ const int c_swing_sixteenths = 4;
  */
 
 #define DEFAULT_PPQN                    192
+
+/**
+ *  Minimum value for PPQN.  Mostly for sanity checking.
+ */
+
+#define MINIMUM_PPQN                     96
+
+/**
+ *  Maximum value for PPQN.  Mostly for sanity checking.
+ */
+
+#define MAXIMUM_PPQN                    960
 
 /**
  *  Default value for c_beats_per_minute (global beats-per-minute, also known
@@ -615,10 +627,10 @@ const int c_perf_scale_x = 32;          /* units are ticks per pixel        */
  */
 
 #ifdef  USE_SEQ42_PATCHES
-const int c_ppqn = DEFAULT_PPQN;
-const int c_ppwn = 4 * DEFAULT_PPQN;    /* whole note       */
-const int c_ppen = DEFAULT_PPQN / 2;    /* eighth note      */
-const int c_ppen = DEFAULT_PPQN / 4;    /* 16th note        */
+const int cxppqn = DEFAULT_PPQN;
+const int cxppwn = 4 * DEFAULT_PPQN;    /* whole note       */
+const int cxppen = DEFAULT_PPQN / 2;    /* eighth note      */
+const int cxppen = DEFAULT_PPQN / 4;    /* 16th note        */
 #endif
 
 /**
@@ -956,6 +968,43 @@ namespace seq64
 {
 
 extern std::string shorten_file_spec (const std::string & fpath, int leng);
+
+/**
+ *  Common code for handling PPQN settings.  Putting it here means we can
+ *  reduce the reliance on global_ppqn.
+ *
+ * \param ppqn
+ *      Provides the PPQN value to be used.
+ *
+ * \return
+ *      Returns the ppqn parameter, unless that parameter is
+ *      SEQ64_USE_DEFAULT_PPQN (-1), then global_ppqn is returned.
+ */
+
+inline int choose_ppqn (int ppqn)
+{
+    return (ppqn == SEQ64_USE_DEFAULT_PPQN) ? global_ppqn : ppqn ;
+}
+
+/**
+ *  Common code for handling PPQN settings.  Validates a PPQN value.
+ *
+ * \param ppqn
+ *      Provides the PPQN value to be used.
+ *
+ * \return
+ *      Returns true if the ppqn parameter is between MINIMUM_PPQN and
+ *      MAXIMUM_PPQN, or is set to SEQ64_USE_DEFAULT_PPQN (-1).
+ */
+
+inline bool ppqn_is_valid (int ppqn)
+{
+    return
+    (
+        ppqn == SEQ64_USE_DEFAULT_PPQN ||
+        (ppqn >= MINIMUM_PPQN && ppqn <= MAXIMUM_PPQN)
+    );
+}
 
 /**
  *  This function calculates the effective beats-per-minute based on the value

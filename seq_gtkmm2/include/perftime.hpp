@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-29
+ * \updates       2015-11-05
  * \license       GNU GPLv2 or above
  *
  */
@@ -70,7 +70,7 @@ private:
 
     /**
      *  The current value of PPQN, which we are trying to get to work
-     *  everywhere, when PPQN is changed from global_ppqn = c_ppqn = 192.
+     *  everywhere, when PPQN is changed from global_ppqn = 192.
      */
 
     int m_ppqn;

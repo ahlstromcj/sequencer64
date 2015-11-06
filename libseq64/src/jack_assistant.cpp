@@ -135,7 +135,7 @@ jack_assistant::jack_assistant (perform & parent, int ppqn)
     m_jack_master               (false),
     m_ppqn                      (0)
 {
-    m_ppqn = (ppqn == SEQ64_USE_DEFAULT_PPQN) ? global_ppqn : ppqn ;
+    m_ppqn = choose_ppqn(ppqn);
 }
 
 /**

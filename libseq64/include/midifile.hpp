@@ -113,8 +113,8 @@ private:
     bool m_new_format;
 
     /**
-     *  Provides the current value of the PPQN, which used to be the constant
-     *  c_ppqn (which itself is now the variable global_ppqn).
+     *  Provides the current value of the PPQN, which used to be constant
+     *  and is now the variable global_ppqn).
      */
 
     int m_ppqn;
@@ -142,7 +142,7 @@ public:
      * \getter m_ppqn
      *      Provides a way to get the actual value of PPQN used in processing
      *      the sequences when parse() was called.  The PPQN will be either
-     *      global_ppqn = c_ppqn (legacy behavior) or the value read from the
+     *      global_ppqn (legacy behavior) or the value read from the
      *      file, depending on the ppqn parameter passed to the midifile
      *      constructor.
      */

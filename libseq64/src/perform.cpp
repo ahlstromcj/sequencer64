@@ -114,7 +114,7 @@ perform::perform (gui_assistant & mygui, int ppqn)
 #endif
     m_notify                    ()          // vector of pointers, public!
 {
-    m_ppqn = (ppqn == SEQ64_USE_DEFAULT_PPQN) ? global_ppqn : ppqn ;
+    m_ppqn = choose_ppqn(ppqn);
     m_right_tick = m_ppqn * 16;
     for (int i = 0; i < m_sequence_max; i++)
     {

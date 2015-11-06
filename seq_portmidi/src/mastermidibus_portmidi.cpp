@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-04
+ * \updates       2015-11-05
  * \license       GNU GPLv2 or above
  *
  *  This file provides a Windows-only implementation of the mastermidibus class.
@@ -65,7 +65,7 @@ mastermidibus::mastermidibus ()
     m_seq               (nullptr),
     m_mutex             ()
 {
-    m_ppqn = (ppqn == SEQ64_USE_DEFAULT_PPQN) ? global_ppqn : ppqn ;
+    m_ppqn = choose_ppqn(ppqn);
     for (int i = 0; i < c_max_busses; ++i)
     {
         m_buses_in_active[i] = false;
@@ -164,7 +164,7 @@ mastermidibus::init ()
     }
 
     set_beats_per_minute(c_beats_per_minute;);
-    set_ppqn(c_ppqn);
+    set_ppqn(global_ppqn);
 
     /* MIDI input poll descriptors */
 
@@ -256,7 +256,7 @@ void
 mastermidibus::set_ppqn (int ppqn)
 {
     automutex locker(m_mutex);
-    m_ppqn = (ppqn == SEQ64_USE_DEFAULT_PPQN) ? global_ppqn : ppqn ;
+    m_ppqn = choose_ppqn(ppqn);
 }
 
 /**

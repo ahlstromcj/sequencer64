@@ -620,9 +620,10 @@ mainwnd::file_save_as ()
  *  Opens and parses (reads) a MIDI file.
  *
  *  We leave the ppqn parameter set to the SEQ64_USE_DEFAULT for now, to
- *  preserve the legacy behavior of using c_ppqn, and scaling the running time
- *  against the PPQN read from the MIDI file.  Later, we can provide a value
- *  like 0, that will certainly be changed by reading the MIDI file.
+ *  preserve the legacy behavior of using the global ppqn, and scaling the
+ *  running time against the PPQN read from the MIDI file.  Later, we can
+ *  provide a value like 0, that will certainly be changed by reading the MIDI
+ *  file.
  *
  *  We don't need to specify the "propformat" parameter of the midifile
  *  constructor when reading the MIDI file, since reading handles both the old
@@ -1221,7 +1222,7 @@ mainwnd::update_window_title ()
 {
     std::string title = (SEQ64_PACKAGE) + std::string(" - [");
     std::string itemname = "unnamed";
-    int ppqn = m_ppqn == SEQ64_USE_DEFAULT_PPQN ? global_ppqn : m_ppqn ;
+    int ppqn = choose_ppqn(m_ppqn);
     char temp[16];
     snprintf(temp, sizeof(temp), " (%d ppqn) ", ppqn);
     if (! rc().filename().empty())

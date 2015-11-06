@@ -183,7 +183,7 @@ private:
 
     /**
      *  Saves the PPQN value obtained from the MIDI file (or the default
-     *  value, global_ppqn/c_ppqn, if SEQ64_USE_DEFAULT_PPQN was specified in
+     *  value, global_ppqn, if SEQ64_USE_DEFAULT_PPQN was specified in
      *  reading the MIDI file.
      */
 
@@ -210,7 +210,7 @@ public:
      *      We can't set the PPQN value when the mainwnd is created, we have
      *      to do it later, using this function.
      *
-     *      m_ppqn = (ppqn == SEQ64_USE_DEFAULT_PPQN) ? global_ppqn : ppqn ;
+     *      m_ppqn = choose_ppqn(ppqn);
      */
 
     void ppqn (int ppqn)

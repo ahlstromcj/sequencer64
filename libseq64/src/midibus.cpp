@@ -117,7 +117,7 @@ midibus::midibus
         m_id, m_dest_addr_client, m_dest_addr_port, alias
     );
     m_name = name;
-    m_ppqn = (ppqn == SEQ64_USE_DEFAULT_PPQN) ? global_ppqn : ppqn ;
+    m_ppqn = choose_ppqn(ppqn);
 }
 
 /**
@@ -166,7 +166,7 @@ midibus::midibus
     char name[64];
     snprintf(name, sizeof(name), "[%d] seq24 %d", m_id, m_id);
     m_name = name;
-    m_ppqn = (ppqn == SEQ64_USE_DEFAULT_PPQN) ? global_ppqn : ppqn ;
+    m_ppqn = choose_ppqn(ppqn);
 }
 
 #endif   // SEQ64_HAVE_LIBASOUND

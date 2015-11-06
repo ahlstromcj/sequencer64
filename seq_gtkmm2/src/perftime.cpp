@@ -89,9 +89,9 @@ perftime::perftime
 void
 perftime::set_ppqn (int ppqn)
 {
-    if (ppqn > 0 || ppqn == SEQ64_USE_DEFAULT_PPQN)
+    if (ppqn_is_valid(ppqn))
     {
-        m_ppqn = (ppqn == SEQ64_USE_DEFAULT_PPQN) ? global_ppqn : ppqn ;
+        m_ppqn = choose_ppqn(ppqn);
         m_snap = m_ppqn;
         m_measure_length = m_ppqn * 4;
         m_tick_offset = m_4bar_offset * 16 * m_ppqn;

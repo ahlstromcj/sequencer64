@@ -229,7 +229,7 @@ seqedit::seqedit (sequence & seq, perform & p, int pos, int ppqn)
     m_editing_cc        (0)
 {
     std::string title = "Sequencer64 - ";                   /* main window */
-    m_ppqn = (ppqn == SEQ64_USE_DEFAULT_PPQN) ? global_ppqn : ppqn ;
+    m_ppqn = choose_ppqn(ppqn);
     set_icon(Gdk::Pixbuf::create_from_xpm_data(seq_editor_xpm));
     title.append(m_seq.get_name());
     set_title(title);

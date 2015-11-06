@@ -77,7 +77,7 @@ seqevent::seqevent
     m_status                 (EVENT_NOTE_ON),
     m_cc                     (0)
 {
-    m_ppqn = (ppqn == SEQ64_USE_DEFAULT_PPQN) ? global_ppqn : ppqn ;
+    m_ppqn = choose_ppqn(ppqn);
 }
 
 /**

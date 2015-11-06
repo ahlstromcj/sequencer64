@@ -87,7 +87,7 @@ sequence::sequence (int ppqn)
     m_rec_vol                   (0),
     m_mutex                     ()
 {
-    m_ppqn = (ppqn == SEQ64_USE_DEFAULT_PPQN) ? global_ppqn : ppqn ;
+    m_ppqn = choose_ppqn(ppqn);
     m_length = 4 * m_ppqn;
     m_snap_tick = m_ppqn / 4;
     m_triggers.set_ppqn(m_ppqn);

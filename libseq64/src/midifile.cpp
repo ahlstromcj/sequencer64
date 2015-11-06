@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-04
+ * \updates       2015-11-05
  * \license       GNU GPLv2 or above
  *
  *  For a quick guide to the MIDI format, see, for example:
@@ -142,7 +142,7 @@ midifile::midifile
     m_ppqn              (0),
     m_use_default_ppqn  (ppqn == SEQ64_USE_DEFAULT_PPQN)
 {
-    m_ppqn = m_use_default_ppqn ? global_ppqn : ppqn;
+    m_ppqn = choose_ppqn(ppqn);
 }
 
 /**

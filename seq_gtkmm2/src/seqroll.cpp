@@ -98,7 +98,7 @@ seqroll::seqroll
     m_drawing_background_seq(false),
     m_ignore_redraw         (false)
 {
-    m_ppqn = (ppqn == SEQ64_USE_DEFAULT_PPQN) ? global_ppqn : ppqn ;
+    m_ppqn = choose_ppqn(ppqn);
 }
 
 /**

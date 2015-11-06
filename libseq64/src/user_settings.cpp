@@ -44,28 +44,34 @@ namespace seq64
 
 user_settings::user_settings ()
  :
-    m_midi_buses        (),         // vector
-    m_instruments       (),         // vector
-    m_mainwnd_rows      (0),
-    m_mainwnd_cols      (0),
-    m_seqs_in_set       (0),
-    m_gmute_tracks      (0),
-    m_max_sets          (0),
-    m_total_seqs        (0),
-    m_max_sequence      (0),
-    m_text_x            (0),
-    m_text_y            (0),
-    m_seqchars_x        (0),
-    m_seqchars_y        (0),
-    m_seqarea_x         (0),
-    m_seqarea_y         (0),
-    m_seqarea_seq_x     (0),
-    m_seqarea_seq_y     (0),
-    m_mainwid_border    (0),
-    m_mainwid_spacing   (0),
-    m_control_height    (0),
-    m_mainwid_x         (0),
-    m_mainwid_y         (0)
+    m_midi_buses                (),         // vector
+    m_instruments               (),         // vector
+    m_mainwnd_rows              (0),
+    m_mainwnd_cols              (0),
+    m_seqs_in_set               (0),
+    m_gmute_tracks              (0),
+    m_max_sets                  (0),
+    m_total_seqs                (0),
+    m_max_sequence              (0),
+    m_text_x                    (0),
+    m_text_y                    (0),
+    m_seqchars_x                (0),
+    m_seqchars_y                (0),
+    m_seqarea_x                 (0),
+    m_seqarea_y                 (0),
+    m_seqarea_seq_x             (0),
+    m_seqarea_seq_y             (0),
+    m_mainwid_border            (0),
+    m_mainwid_spacing           (0),
+    m_control_height            (0),
+    m_mainwid_x                 (0),
+    m_mainwid_y                 (0),
+    m_midi_ppqn                 (0),
+    m_midi_beats_per_measure    (0),
+    m_midi_beats_per_minute     (0),
+    m_midi_beat_width           (0),
+    m_midi_buss_override        (0),
+    mc_baseline_ppqn            (DEFAULT_PPQN)
 {
     // Empty body
 }
@@ -76,28 +82,34 @@ user_settings::user_settings ()
 
 user_settings::user_settings (const user_settings & rhs)
  :
-    m_midi_buses        (),         // vector
-    m_instruments       (),         // vector
-    m_mainwnd_rows      (rhs.m_mainwnd_rows),
-    m_mainwnd_cols      (rhs.m_mainwnd_cols),
-    m_seqs_in_set       (rhs.m_seqs_in_set),
-    m_gmute_tracks      (rhs.m_gmute_tracks),
-    m_max_sets          (rhs.m_max_sets),
-    m_total_seqs        (rhs.m_total_seqs),
-    m_max_sequence      (rhs.m_max_sequence),
-    m_text_x            (rhs.m_text_x),
-    m_text_y            (rhs.m_text_y),
-    m_seqchars_x        (rhs.m_seqchars_x),
-    m_seqchars_y        (rhs.m_seqchars_y),
-    m_seqarea_x         (rhs.m_seqarea_x),
-    m_seqarea_y         (rhs.m_seqarea_y),
-    m_seqarea_seq_x     (rhs.m_seqarea_seq_x),
-    m_seqarea_seq_y     (rhs.m_seqarea_seq_y),
-    m_mainwid_border    (rhs.m_mainwid_border),
-    m_mainwid_spacing   (rhs.m_mainwid_spacing),
-    m_control_height    (rhs.m_control_height),
-    m_mainwid_x         (rhs.m_mainwid_x),
-    m_mainwid_y         (rhs.m_mainwid_y)
+    m_midi_buses                (),         // vector
+    m_instruments               (),         // vector
+    m_mainwnd_rows              (rhs.m_mainwnd_rows),
+    m_mainwnd_cols              (rhs.m_mainwnd_cols),
+    m_seqs_in_set               (rhs.m_seqs_in_set),
+    m_gmute_tracks              (rhs.m_gmute_tracks),
+    m_max_sets                  (rhs.m_max_sets),
+    m_total_seqs                (rhs.m_total_seqs),
+    m_max_sequence              (rhs.m_max_sequence),
+    m_text_x                    (rhs.m_text_x),
+    m_text_y                    (rhs.m_text_y),
+    m_seqchars_x                (rhs.m_seqchars_x),
+    m_seqchars_y                (rhs.m_seqchars_y),
+    m_seqarea_x                 (rhs.m_seqarea_x),
+    m_seqarea_y                 (rhs.m_seqarea_y),
+    m_seqarea_seq_x             (rhs.m_seqarea_seq_x),
+    m_seqarea_seq_y             (rhs.m_seqarea_seq_y),
+    m_mainwid_border            (rhs.m_mainwid_border),
+    m_mainwid_spacing           (rhs.m_mainwid_spacing),
+    m_control_height            (rhs.m_control_height),
+    m_mainwid_x                 (rhs.m_mainwid_x),
+    m_mainwid_y                 (rhs.m_mainwid_y),
+    m_midi_ppqn                 (rhs.m_midi_ppqn),
+    m_midi_beats_per_measure    (rhs.m_midi_beats_per_measure),
+    m_midi_beats_per_minute     (rhs.m_midi_beats_per_minute),
+    m_midi_beat_width           (rhs.m_midi_beat_width),
+    m_midi_buss_override        (rhs.m_midi_buss_override),
+    mc_baseline_ppqn            (DEFAULT_PPQN)
 {
     // Empty body
 }
@@ -111,28 +123,36 @@ user_settings::operator = (const user_settings & rhs)
 {
     if (this != &rhs)
     {
-        m_midi_buses        = rhs.m_midi_buses;
-        m_instruments       = rhs.m_instruments;
-        m_mainwnd_rows      = rhs.m_mainwnd_rows;
-        m_mainwnd_cols      = rhs.m_mainwnd_cols;
-        m_seqs_in_set       = rhs.m_seqs_in_set;
-        m_gmute_tracks      = rhs.m_gmute_tracks;
-        m_max_sets          = rhs.m_max_sets;
-        m_total_seqs        = rhs.m_total_seqs;
-        m_max_sequence      = rhs.m_max_sequence;
-        m_text_x            = rhs.m_text_x;
-        m_text_y            = rhs.m_text_y;
-        m_seqchars_x        = rhs.m_seqchars_x;
-        m_seqchars_y        = rhs.m_seqchars_y;
-        m_seqarea_x         = rhs.m_seqarea_x;
-        m_seqarea_y         = rhs.m_seqarea_y;
-        m_seqarea_seq_x     = rhs.m_seqarea_seq_x;
-        m_seqarea_seq_y     = rhs.m_seqarea_seq_y;
-        m_mainwid_border    = rhs.m_mainwid_border;
-        m_mainwid_spacing   = rhs.m_mainwid_spacing;
-        m_control_height    = rhs.m_control_height;
-        m_mainwid_x         = rhs.m_mainwid_x;
-        m_mainwid_y         = rhs.m_mainwid_y;
+        m_midi_buses                = rhs.m_midi_buses;
+        m_instruments               = rhs.m_instruments;
+        m_mainwnd_rows              = rhs.m_mainwnd_rows;
+        m_mainwnd_cols              = rhs.m_mainwnd_cols;
+        m_seqs_in_set               = rhs.m_seqs_in_set;
+        m_gmute_tracks              = rhs.m_gmute_tracks;
+        m_max_sets                  = rhs.m_max_sets;
+        m_total_seqs                = rhs.m_total_seqs;
+        m_max_sequence              = rhs.m_max_sequence;
+        m_text_x                    = rhs.m_text_x;
+        m_text_y                    = rhs.m_text_y;
+        m_seqchars_x                = rhs.m_seqchars_x;
+        m_seqchars_y                = rhs.m_seqchars_y;
+        m_seqarea_x                 = rhs.m_seqarea_x;
+        m_seqarea_y                 = rhs.m_seqarea_y;
+        m_seqarea_seq_x             = rhs.m_seqarea_seq_x;
+        m_seqarea_seq_y             = rhs.m_seqarea_seq_y;
+        m_mainwid_border            = rhs.m_mainwid_border;
+        m_mainwid_spacing           = rhs.m_mainwid_spacing;
+        m_control_height            = rhs.m_control_height;
+        m_mainwid_x                 = rhs.m_mainwid_x;
+        m_mainwid_y                 = rhs.m_mainwid_y;
+        m_midi_ppqn                 = rhs.m_midi_ppqn;
+        m_midi_beats_per_measure    = rhs.m_midi_beats_per_measure;
+        m_midi_beats_per_minute     = rhs.m_midi_beats_per_minute;
+        m_midi_beat_width           = rhs.m_midi_beat_width;
+        m_midi_buss_override        = rhs.m_midi_buss_override;
+        /*
+         * mc_baseline_ppqn         = DEFAULT_PPQN;
+         */
     }
     return *this;
 }

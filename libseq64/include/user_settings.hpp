@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-22
- * \updates       2015-11-04
+ * \updates       2015-11-05
  * \license       GNU GPLv2 or above
  *
  *  This collection of variables describes some facets of the
@@ -349,6 +349,19 @@ class user_settings
      */
 
     char m_midi_buss_override;          /* --bus n option               */
+
+    /**
+     *  Permanent storage for the baseline, default PPQN used by Seq24.
+     *  This value is necessary in order to keep user-interface elements
+     *  stable when different PPQNs are used.  It is set to DEFAULT_PPQN.
+     */
+
+    const int mc_baseline_ppqn;
+
+    /**
+     *  Scale factor for PPQN.  Should this be a float (6 significant digits)
+     *  or two integers for scaling?
+     */
 
 public:
 
@@ -740,6 +753,15 @@ public:
     char midi_buss_override () const
     {
         return m_midi_buss_override;
+    }
+
+    /**
+     * \getter mc_baseline_ppqn
+     */
+
+    int baseline_ppqn () const
+    {
+        return mc_baseline_ppqn;
     }
 
 public:         // used in main application module and the userfile class

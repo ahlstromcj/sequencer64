@@ -36,9 +36,7 @@
 
 #ifdef SEQ64_HAVE_LIBASOUND
 #include <sys/poll.h>
-// #ifdef SEQ64_LASH_SUPPORT
 #include "lash.hpp"
-// #endif
 #endif
 
 #include "mastermidibus.hpp"
@@ -95,7 +93,7 @@ mastermidibus::mastermidibus (int ppqn, int bpm)
     m_seq               (nullptr),
     m_mutex             ()
 {
-    m_ppqn = (ppqn == SEQ64_USE_DEFAULT_PPQN) ? global_ppqn : ppqn ;
+    m_ppqn = choose_ppqn(ppqn);
     for (int i = 0; i < c_max_busses; ++i)
     {
         m_buses_in_active[i] = false;
@@ -131,14 +129,12 @@ mastermidibus::mastermidibus (int ppqn, int bpm)
     m_queue = snd_seq_alloc_queue(m_alsa_seq);      /* client's queue          */
 #endif
 
-// #ifdef SEQ64_LASH_SUPPORT
     /*
      * Notify LASH of our client ID so that it can restore connections.
      */
 
     if (not_nullptr(lash_driver()))
         lash_driver()->set_alsa_client_id(snd_seq_client_id(m_alsa_seq));
-// #endif
 }
 
 /**
@@ -322,8 +318,8 @@ mastermidibus::init ()
             }
         }                                       /* end loop for clients */
     }
-    set_beats_per_minute(m_beats_per_minute);   /* @change was c_bpm    */
-    set_ppqn(m_ppqn);                           /* @change was c_ppqn   */
+    set_beats_per_minute(m_beats_per_minute);
+    set_ppqn(m_ppqn);
 
     /*
      * Get the number of MIDI input poll file descriptors.

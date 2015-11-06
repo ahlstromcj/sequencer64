@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-27
+ * \updates       2015-11-06
  * \license       GNU GPLv2 or above
  *
  *  The interesting thing about this font class is that font files are not
@@ -111,7 +111,7 @@ font::font ()
     m_font_w        (cf_text_w),
     m_font_h        (cf_text_h),
     m_offset        (cf_offset),
-    m_padded_h      (12),               /* too tricky */
+    m_padded_h      (cf_text_h + 1),    /* too tricky */
     m_pixmap        (nullptr),
     m_black_pixmap  (),
     m_white_pixmap  (),

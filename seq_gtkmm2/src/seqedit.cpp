@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-05
+ * \updates       2015-11-06
  * \license       GNU GPLv2 or above
  *
  */
@@ -131,7 +131,7 @@ static const int c_transpose_h           = 12;
 
 seqedit::seqedit (sequence & seq, perform & p, int pos, int ppqn)
  :
-    gui_window_gtk2     (p, 700, 500),          /* set_size_request(700, 500) */
+    gui_window_gtk2     (p, 750, 500),          /* set_size_request(700, 500) */
     m_zoom              (m_initial_zoom),
     m_snap              (m_initial_snap),
     m_note_length       (m_initial_note_length),

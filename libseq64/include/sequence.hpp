@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-04
+ * \updates       2015-11-06
  * \license       GNU GPLv2 or above
  *
  *  The functions add_list_var() and add_long_list() have been replaced by
@@ -210,6 +210,14 @@ private:
     const int m_maxbeats;
     int m_ppqn;
 
+    /**
+     *  A new member so that the sequence number is carried along with the
+     *  sequence.  This number is set in the perform::install_sequence()
+     *  function.
+     */
+
+    int m_seq_number;
+
     /* length of sequence in pulses should be powers of two in bars */
 
     long m_length;
@@ -260,6 +268,25 @@ public:
     triggers::List & triggerlist ()
     {
         return m_triggers.triggerlist();
+    }
+
+    /**
+     * \getter m_seq_number
+     */
+
+    int number () const
+    {
+        return m_seq_number;
+    }
+
+    /**
+     * \setter m_seq_number
+     */
+
+    void number (int seqnum)
+    {
+        if (seqnum > 0 && m_seq_number == (-1))
+            m_seq_number = seqnum;
     }
 
     int event_count () const;

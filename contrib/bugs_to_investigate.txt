@@ -1,9 +1,22 @@
 Bugs and Upgrade Ideas
 Chris Ahlstrom
-2015-10-27 to 2015-11-04
+2015-10-27 to 2015-11-06
 
 In no particular order...
 
+-  Create a new sequence and add some notes.  It won't appear in the patterns
+   window until you click in the patterns window, in the same slot where
+   New was selected.
+-  It would be nice if it were highlighted somehow, maybe cyan or dark grey or
+   some color that contrasts a little with the default background color that it
+   uses.
+-  Add a number to the slot when empty, for clarity..
+-  You also have to dick around in the song editor to get a new pattern to
+   appear.
+-  The display of the END marker is missing in the seqroll for a time signature
+   of 7/4 and a length of 8 bars.
+-  That 7/8:8 sequence, when draw-clicked into the song editor, takes up 14
+   measures!!!  A 4/4 sequence takes up 1.
 -  Create a long note and a short note.  Select the shorter note so it is
    orange.  Drag it over to the middle of the longer note.  Orange will
    cover the length of the short note, plus bleed over to the right to the end

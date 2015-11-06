@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-05
+ * \updates       2015-11-06
  * \license       GNU GPLv2 or above
  *
  */
@@ -74,12 +74,13 @@ sequence::sequence (int ppqn)
     m_dirty_names               (true),
     m_editing                   (false),
     m_raise                     (false),
-    m_name                      (c_dummy),
+    m_name                      (),             // c_dummy:  leave it empty
     m_last_tick                 (0),
     m_queued_tick               (0),
     m_trigger_offset            (0),            // needed for record-keeping
     m_maxbeats                  (c_maxbeats),
     m_ppqn                      (0),            // set in constructor body
+    m_seq_number                (-1),           // may be set later
     m_length                    (0),            // set in constructor body
     m_snap_tick                 (0),            // set in constructor body
     m_time_beats_per_measure    (4),

@@ -722,7 +722,7 @@ midifile::parse_proprietary_track (perform & a_perf, int file_size)
             a_perf.select_group_mute(groupmute);
 #ifdef PLATFORM_DEBUG_XXX
             if (groupmute != 0)
-                fprintf(stderr, "group-mute[%d] = %ld\n", i, groupmute);
+                fprintf(stderr, "group-mute[%d]=%ld\n", i, groupmute);
 #endif
             for (int k = 0; k < c_seqs_in_set; ++k)
             {
@@ -731,11 +731,7 @@ midifile::parse_proprietary_track (perform & a_perf, int file_size)
 #ifdef PLATFORM_DEBUG_XXX
                 if (gmutestate != 0)
                 {
-                    fprintf
-                    (
-                        stderr, "group-mute-state[%d] = %ld\n",
-                        k, gmutestate
-                    );
+                    fprintf(stderr, "group-mute-state[%d]=%ld\n", k, gmutestate);
                 }
 #endif
             }

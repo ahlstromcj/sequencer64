@@ -1,13 +1,14 @@
 README for Sequencer64 0.9.9.7 (current branch = "testing2")
 Chris Ahlstrom
-2015-09-10 to 2015-11-05
+2015-09-10 to 2015-11-06
 
 The sequencer64 project is a continuation of sequencer24 to refactor it to
 be tighter and easier to transition to to GTKmm 3, and much more.
 Currently, it is basically equivalent to that project in functionality,
 but the code is already significantly refactored.
 
-See the screenshot in the project root for some idea of what has changed.
+See the screenshot in the project root for some idea of what has changed
+visually.  It is an old friend with some lipstick.
 
 The code has been broken up into libraries, for better separation between
 GUI support and the files, MIDI, JACK, and LASH support.
@@ -58,8 +59,14 @@ Other major updates:
         performance and sequence user-interfaces in editing mode, very helpful
         for certain crappy laptop trackpads.
 
-This package is currently oriented to developers.  Please see the
-INSTALL file for a brief description of installation.
+The list of minor issues we have found while exploring with Sequencer64 has
+gotten fairly long, so we will concentrate on tightening up the application
+behavior as much as possible.
+
+This package is currently oriented to developers.  It is fairly well
+organized, fairly well documented, and less mysterious (to us, anyway)
+than before.  Please see the INSTALL file for a brief description of
+installation.
 
 See the ROADMAP file for more information and a kind of TODO list.
 

@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-03
+ * \updates       2015-11-06
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the most important single class in Sequencer64, as
@@ -533,6 +533,9 @@ perform::add_sequence (sequence * seq, int prefnum)
 
 /**
  *  Sets or unsets the active state of the given pattern/sequence number.
+ *  If setting it active, the sequence::number() setter is called. It won't
+ *  modify the sequence's internal copy of the sequence number if it has
+ *  already been set.
  *
  * \param seq
  *      Provides the prospective sequence number.
@@ -550,6 +553,11 @@ perform::set_active (int seq, bool active)
             set_was_active(seq);
 
         m_seqs_active[seq] = active;
+        if (active && not_nullptr(m_seqs[seq]))
+        {
+            m_seqs[seq]->number(seq);
+            m_seqs[seq]->set_name(std::string("Untitled"));
+        }
     }
 }
 

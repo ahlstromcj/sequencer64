@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-05
+ * \updates       2015-11-06
  * \license       GNU GPLv2 or above
  *
  *  Note that this representation is, in a sense, inside the mainwnd
@@ -62,6 +62,19 @@ using namespace Gtk::Menu_Helpers;
 
 #define SEQ64_USE_GREY_GRID             /* undefine for black boxes         */
 #define SEQ64_USE_NORMAL_GRID           /* undefine for black box & outline */
+
+/**
+ *  Defining SEQ64_SEQNUMBER_ON_GRID causes the sequence number of the slot to
+ *  be drawn in empty boxes.  Unfortunately, the background color is going to
+ *  be different from the default theme background color.  Fortunately, though
+ *  ugly, this guarantees the sequence number to be visible.
+ *
+ *  This feature is also tied to the show-UI-keys setting, on the theory that
+ *  some people like to see the extra information, some don't, and we don't
+ *  want to add a separate option for it at this time.
+ */
+
+#define SEQ64_SEQNUMBER_ON_GRID
 
 /*
  *  Static array of characters for use in toggling patterns.
@@ -126,8 +139,8 @@ mainwid::mainwid (perform & p)
     m_mainwid_y             (c_mainwid_y),
     m_mainwid_border        (c_mainwid_border),
     m_mainwid_spacing       (c_mainwid_spacing),
-    m_text_size_x           (c_text_x),
-    m_text_size_y           (c_text_y),
+    m_text_size_x           (font_render().char_width()),       // c_text_x
+    m_text_size_y           (font_render().padded_height()),    // c_text_y
     m_max_sets              (c_max_sets)
 {
     // It's all done in the base classes and the initializer list.
@@ -219,6 +232,9 @@ mainwid::draw_sequence_on_pixmap (int seqnum)
             if (is_nullptr(seq))                    /* non-existent?        */
                 return;                             /* yes, ignore it       */
 
+            if (seqnum != seq->number() && seq->number() != (-1))
+                printf("seq# mismatch: %d-%d\n", seqnum, seq->number());
+
 #if SEQ64_HIGHLIGHT_EMPTY_SEQS
             if (seq->event_count() > 0)
             {
@@ -242,13 +258,11 @@ mainwid::draw_sequence_on_pixmap (int seqnum)
                 m_last_playing[seqnum] = false;      // active and not playing
                 if (seq->get_playing())
                 {
-                    m_last_playing[seqnum] = false;  // active and playing
                     bg_color(black());
                     fg_color(yellow());
                 }
                 else
                 {
-                    m_last_playing[seqnum] = false;  // active and not playing
                     bg_color(yellow());
                     fg_color(black());
                 }
@@ -261,9 +275,8 @@ mainwid::draw_sequence_on_pixmap (int seqnum)
             );
             m_gc->set_foreground(fg_color());
 
-            char temp[64];                          // used a lot below
-            snprintf(temp, sizeof temp, "%.13s", seq->get_name());
             font::Color col = font::BLACK;
+
 #if SEQ64_HIGHLIGHT_EMPTY_SEQS
             if (seq->event_count() > 0)
             {
@@ -285,46 +298,60 @@ mainwid::draw_sequence_on_pixmap (int seqnum)
             }
 #endif
 
-            render_string_on_pixmap                         // name of pattern
+            char temp[64];                          // used a lot below
+
+            /*
+             * snprintf(temp, sizeof temp, "%d:%.11s", seqnum, seq->get_name());
+             */
+
+            snprintf(temp, sizeof temp, "%.13s", seq->get_name());
+            render_string_on_pixmap                 // seqnum:name of pattern
             (
-                base_x + m_text_size_x, base_y + 4, temp, col
+                base_x + m_text_size_x - 3, base_y + 4, temp, col
             );
 
             /*
-             * midi channel + key + timesig
-             * char key =  m_seq_to_char[local_seq];        // obsolete
+             * MIDI buss + channel + timesig + seqnum + ui key
+             * Compensate for text-width using actual character width.
+             * base_x + m_seqarea_x - 7, base_y + m_text_size_y * 4 - 2,
+             * base_x + m_seqarea_x - 9, base_y + m_text_size_y * 4 - 2,
              */
 
+            bool showed_seqinfo = false;
+            int bus = seq->get_midi_bus();
+            int chan = seq->get_midi_channel() + 1;
+            int bpb = int(seq->get_beats_per_bar());
+            int bw = int(seq->get_beat_width());
             if (perf().show_ui_sequence_key())
             {
-                snprintf
-                (
-                    temp, sizeof temp, "%c",
-                    (char) perf().lookup_keyevent_key(seqnum)
-                );
+                char key = char(perf().lookup_keyevent_key(seqnum));
+                int charx = base_x + m_seqarea_x - 3;
+                int chary = base_y + m_text_size_y * 4 - 2;
 
                 /*
-                 * Should compensate for text-width using actual character
-                 * width.
-                 *
-                 * base_x + m_seqarea_x - 7, base_y + m_text_size_y * 4 - 2,
+                 * snprintf(temp, sizeof temp, "%c  %d", key, seqnum);
                  */
 
-                render_string_on_pixmap                     // shortcut key
+                snprintf(temp, sizeof temp, "%c", key);
+                charx -= strlen(temp) * font_render().char_width();
+                render_string_on_pixmap(charx, chary, temp, col);
+#ifdef SEQ64_SEQNUMBER_ON_GRID          // best look of all the alternatives
+                showed_seqinfo = true;
+                snprintf
                 (
-                    base_x + m_seqarea_x - 9, base_y + m_text_size_y * 4 - 2,
-                    temp, col
+                    temp, sizeof temp, "%-3d%d-%d %d/%d",
+                    seqnum, bus, chan, bpb, bw
                 );
+#else
+                showed_seqinfo = false;
+#endif                                  // SEQ64_SEQNUMBER_ON_GRID
             }
-            snprintf
-            (
-                temp, sizeof temp, "%d-%d %ld/%ld",
-                seq->get_midi_bus(), seq->get_midi_channel() + 1,
-                seq->get_beats_per_bar(), seq->get_beat_width()
-            );
+            if (! showed_seqinfo)
+                snprintf(temp, sizeof temp, "%d-%d  %d/%d", bus, chan, bpb, bw);
+
             render_string_on_pixmap                         // bus, ch, etc.
             (
-                base_x + m_text_size_x, base_y + m_text_size_y * 4 - 2,
+                base_x + m_text_size_x - 3, base_y + m_text_size_y * 4 - 2,
                 temp, col
             );
 
@@ -410,12 +437,30 @@ mainwid::draw_sequence_on_pixmap (int seqnum)
                 base_x + 4, base_y, m_seqarea_x - 8, m_seqarea_y
             );
 #endif
-
 #ifdef SEQ64_USE_NORMAL_GRID                /* change box to "brackets"     */
             draw_normal_rectangle_on_pixmap
             (
                 base_x + 1, base_y + 1, m_seqarea_x - 2, m_seqarea_y - 2
             );
+#endif
+#ifdef SEQ64_SEQNUMBER_ON_GRID
+            if (perf().show_ui_sequence_key())
+            {
+                char snum[8];
+                snprintf(snum, sizeof(snum), "%d", seqnum);
+                int charx = strlen(snum) * font_render().char_width() / 2;
+                int chary = font_render().char_height() / 2;
+                int centerx = base_x + m_seqarea_x / 2 - charx;
+                int centery = base_y + m_seqarea_y / 2 - chary;
+#ifdef SEQ64_USE_GREY_GRID
+                render_string_on_pixmap(centerx, centery, snum, font::BLACK);
+#else
+                render_string_on_pixmap
+                (
+                    centerx, centery, snum, font::YELLOW_ON_BLACK
+                );
+#endif
+            }
 #endif
         }
     }
@@ -570,6 +615,9 @@ mainwid::draw_marker_on_sequence (int seqnum, int tick)
 
         if (seq->get_queued())
             m_gc->set_foreground(black());
+
+        if (seqnum == current_sequence())
+            m_gc->set_foreground(red());
 
         draw_line
         (

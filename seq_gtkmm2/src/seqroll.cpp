@@ -99,6 +99,7 @@ seqroll::seqroll
     m_ignore_redraw         (false)
 {
     m_ppqn = choose_ppqn(ppqn);
+    grab_focus();
 }
 
 /**

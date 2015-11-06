@@ -25,11 +25,47 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-23
- * \updates       2015-11-05
+ * \updates       2015-11-06
  * \license       GNU GPLv2 or above
  *
  *  Note that this module also sets the legacy global variables, so that
  *  they can be used by modules that have not yet been cleaned up.
+ *
+ *  Now, we finally sat down and did some measurements of the user interface,
+ *  to try to figure out the relationships between the screen resolution and
+ *  MIDI time resolution, so that we can understand some of the magic numbers
+ *  in Seq24.
+ *
+ *  We start with one clue, a comment in perftime (IIRC) about units being 32
+ *  ticks per pixels.  Note that "ticks" is equivalent to MIDI "pulses", and
+ *  sometimes the word "division" is used for "pulses".  So let's solidy the
+ *  nomenclature and notation here:
+ *
+\verbatim
+    Symbol      Units           Value       Description
+
+     qn         quarter note    -----       The default unit for a MIDI beat
+     P0         pulses/qn       192         Seq24's PPQN value, a constant
+     P          pulses/qn       -----       Any other selected PPQN value
+     R          -----           -----       P / P0
+     Ws         pixels          1920        Width of the screen, pixels
+     Wqn        pixels          6           Seq24's quarter-note width, constant
+     T0         pulses/pixel    32          Seq24's "ticks per pixel", constant
+     T          pulses/pixel    -----       GUI-MIDI resolution from selected P
+     S          -----           16          seqroll-to-perfroll width ratio
+\endverbatim
+ *
+ *  The default value of S = 16 reflects that the sequence editor piano roll
+ *  has 16 times the width resolution of the performance/song editor piano roll.
+ *  This ratio will be preserved no matter what P (PPQN) is selected.
+ *
+ *
+ *  Changing the beats-per-measure of the seqroll to from the default 4 to 8 makes the measure have
+ *  8 major divisions, each with the standard 16 minor divisions. An added
+ *  note still covers only 4 minor division.
+ *
+ *  Changing the beat-width of the seqroll from the default 4 to 8 halves the
+ *  pixel-width of reach measure.
  */
 
 #include "globals.h"                    /* to support legacy variables */

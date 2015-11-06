@@ -1,6 +1,6 @@
 INSTALL for Sequencer64 v 0.9.9.7
 Chris Ahlstrom
-2015-09-10 to 2015-11-05
+2015-09-10 to 2015-11-06
 
 The current packaging for Sequencer64 is primarily aimed at developers.
 There is currently no configure script... it must be bootstrapped.
@@ -9,7 +9,7 @@ Steps:
 
    0.  Preload any DEPENDENCIES, as listed at the end of this document.
        However, if some are missing, the configure script will tell you,
-       or, at worst, a buld error will tell you.
+       or, at worst, a build error will tell you.
 
    1.  Check-out the branch you want.  Make a branch if you want to make
        changes.
@@ -74,10 +74,10 @@ MANUALLY-DEFINED MACROS IN CODE:
     SEQ64_USE_NEW_FONT:
 
         Already defined in the font module.  If defined, a new, anti-aliased,
-        bold font is used in the user-interface.  This new font is implement
-        in new XPM files in resources/pixmaps: wen*.xpm.  The font is slightly
-        larger, but changes the user-interface sizes only to an infinitesmal
-        degree.  Using this new font is the default.
+        bold font is used in the user-interface.  This new font is implemented
+        in new XPM files in resources/pixmaps directory: wen*.xpm.  The font
+        is slightly larger, but changes the user-interface sizes only to an
+        infinitesmal degree.  Using this new font is the default.
 
     SEQ64_USE_EVENT_MAP:
 
@@ -109,6 +109,19 @@ MANUALLY-DEFINED MACROS IN CODE:
         the normal Seq24 look for the Pattern Window.  Eventually we might
         move these definitions into the configure script, for easier
         modification.
+
+    SEQ64_SEQNUMBER_ON_GRID:
+
+        If defined, and if the "show UI keys" option is on, then each of the
+        blank pattern slots in the main window show the would-be sequence
+        number for that slot.  The background color of the numbers will not
+        match the background color of the grid (which matches the chosen GTK
+        theme).  But, no matter what the GTK background color, they will at
+        least be visible.
+
+        If SEQ64_USE_GREY_GRID is not defined, so that the grid slots are
+        black, then the numbering will be yellow on a black background, and
+        match perfectly.
 
     SEQ64_USE_VI_SEQROLL_MODE:
 

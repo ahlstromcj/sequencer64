@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-05
+ * \updates       2015-11-06
  * \license       GNU GPLv2 or above
  *
  */
@@ -56,7 +56,7 @@ seqmenu::seqmenu (perform & a_p)
     m_mainperf      (a_p),
     m_clipboard     (),
     m_seqedit       (nullptr),
-    m_current_seq   (0),
+    m_current_seq   (-1),           /* (0) is not really current yet    */
     m_modified      (false)
 {
     m_clipboard.set_master_midi_bus(&m_mainperf.master_bus());
@@ -73,13 +73,13 @@ seqmenu::~seqmenu ()
 {
     /*
      * if (not_nullptr(m_seqedit))
-     *  delete(m_seqedit);
+     *  delete(m_seqedit)
      */
 }
 
 /**
  *  This function sets up the File menu entries.
- *  It also sets up the pattern popup menu entries!
+ *  It also sets up the pattern popup menu entries that are used in mainwid.
  */
 
 void

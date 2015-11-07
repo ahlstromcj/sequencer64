@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-06
+ * \updates       2015-11-07
  * \license       GNU GPLv2 or above
  *
  */
@@ -149,7 +149,7 @@ perfedit::perfedit
         *manage(new Gtk::Arrow(Gtk::ARROW_RIGHT, Gtk::SHADOW_OUT))
     );
     m_button_grow->signal_clicked().connect(mem_fun(*this, &perfedit::grow));
-    add_tooltip(m_button_grow, "Increase size of grid");
+    add_tooltip(m_button_grow, "Increase size of grid.");
 
     /*
      * Fill the table
@@ -201,7 +201,7 @@ perfedit::perfedit
             mem_fun(*this, &perfedit::popup_menu), m_menu_snap
         )
     );
-    add_tooltip(m_button_snap, "Grid snap (fraction of measure length)");
+    add_tooltip(m_button_snap, "Grid snap (fraction of measure length).");
     m_entry_snap->set_size_request(40, -1);
     m_entry_snap->set_editable(false);
     m_menu_bw->items().push_back
@@ -247,7 +247,7 @@ perfedit::perfedit
     );
     add_tooltip
     (
-        m_button_bpm, "Time signature, beats per measure, or beats per bar"
+        m_button_bpm, "Time signature, beats per measure, or beats per bar."
     );
     m_entry_bpm->set_width_chars(2);
     m_entry_bpm->set_editable(false);
@@ -259,7 +259,7 @@ perfedit::perfedit
     (
         sigc::bind<Gtk::Menu *>(mem_fun(*this, &perfedit::popup_menu), m_menu_bw)
     );
-    add_tooltip(m_button_bw, "Time signature, length of beat");
+    add_tooltip(m_button_bw, "Time signature, length of beat.");
     m_entry_bw->set_width_chars(2);
     m_entry_bw->set_editable(false);
     m_button_undo->add
@@ -270,7 +270,7 @@ perfedit::perfedit
     (
         mem_fun(*this, &perfedit::undo)
     );
-    add_tooltip(m_button_undo, "Undo");
+    add_tooltip(m_button_undo, "Undo.");
     m_button_expand->add                            /* expand           */
     (
         *manage(new Gtk::Image(Gdk::Pixbuf::create_from_xpm_data(expand_xpm)))
@@ -279,7 +279,7 @@ perfedit::perfedit
     (
         mem_fun(*this, &perfedit::expand)
     );
-    add_tooltip(m_button_expand, "Expand between L and R markers");
+    add_tooltip(m_button_expand, "Expand between the L and R markers.");
     m_button_collapse->add                          /* collapse         */
     (
         *manage(new Gtk::Image(Gdk::Pixbuf::create_from_xpm_data(collapse_xpm)))
@@ -288,13 +288,13 @@ perfedit::perfedit
     (
         mem_fun(*this, &perfedit::collapse)
     );
-    add_tooltip(m_button_collapse, "Collapse between L and R markers");
+    add_tooltip(m_button_collapse, "Collapse between the L and R markers.");
     m_button_copy->add                              /* expand & copy    */
     (
         *manage(new Gtk::Image(Gdk::Pixbuf::create_from_xpm_data(copy_xpm)))
     );
     m_button_copy->signal_clicked().connect(mem_fun(*this, &perfedit::copy));
-    add_tooltip(m_button_copy, "Expand and copy between L and R markers");
+    add_tooltip(m_button_copy, "Expand and copy between the L and R markers.");
     m_button_loop->add
     (
         *manage(new Gtk::Image(Gdk::Pixbuf::create_from_xpm_data(loop_xpm)))
@@ -303,7 +303,7 @@ perfedit::perfedit
     (
         mem_fun(*this, &perfedit::set_looped)
     );
-    add_tooltip(m_button_loop, "Playback looped between L and R markers");
+    add_tooltip(m_button_loop, "Playback looped between the L and R markers.");
     m_button_stop->add
     (
         *manage(new Gtk::Image(Gdk::Pixbuf::create_from_xpm_data(stop_xpm)))
@@ -312,7 +312,7 @@ perfedit::perfedit
     (
         mem_fun(*this, &perfedit::stop_playing)
     );
-    add_tooltip(m_button_stop, "Stop playing");
+    add_tooltip(m_button_stop, "Stop playing.");
     m_button_play->add
     (
         *manage(new Gtk::Image(Gdk::Pixbuf::create_from_xpm_data(play2_xpm)))
@@ -321,7 +321,7 @@ perfedit::perfedit
     (
         mem_fun(*this, &perfedit::start_playing)
     );
-    add_tooltip(m_button_play, "Begin playing at L marker");
+    add_tooltip(m_button_play, "Begin playing at the L marker.");
     m_hlbox->pack_end(*m_button_copy , false, false);
     m_hlbox->pack_end(*m_button_expand , false, false);
     m_hlbox->pack_end(*m_button_collapse , false, false);

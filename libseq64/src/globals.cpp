@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-08-07
- * \updates       2015-11-05
+ * \updates       2015-11-07
  * \license       GNU GPLv2 or above
  *
  *  The first part of this file defines a couple of global structure
@@ -183,74 +183,6 @@ bool global_with_jack_master_cond = false;
 bool global_jack_start_mode = true;
 std::string global_jack_session_uuid = "";
 bool global_allow_mod4_mode = true;
-// user_midi_bus_t global_user_midi_bus_definitions[c_max_busses];
-// user_instrument_t global_user_instrument_definitions[c_max_instruments];
-
-namespace seq64
-{
-
-/**
- *  Shortens a file-specification to make sure it is no longer than the
- *  provided length value.  This is done by removing character in the middle,
- *  if necessary, and replacing them with an ellipse.
- *
- * \todo
- *      If "/home/username" is present in the path, shorten it to "~";
- *      also make some attempt to calculate the space available based on the
- *      window width and caption font-size.
- *
- * \param fpath
- *      The file specification, including the full path to the file, and the
- *      name of the file.
- *
- * \param leng
- *      Provides the length to which to limit the string.
- *
- * \return
- *      Returns the fpath parameter, possibly shortened to fit within the
- *      desired length.
- */
-
-std::string
-shorten_file_spec (const std::string & fpath, int leng)
-{
-    std::size_t fpathsize = fpath.size();
-    if (fpathsize <= std::size_t(leng))
-        return fpath;
-    else
-    {
-        std::string ellipse("...");
-        std::size_t halflength = (std::size_t(leng) - ellipse.size()) / 2;
-
-        /*
-         * Try to find "/home".  If found, strip off "/home/username" and
-         * replace it with "~".  We will assume that the "username" portion
-         * <i> must </i> exist, and that there's no goofy stuff like
-         * double-slashes in the path.
-         */
-
-        std::string result = fpath;
-        std::size_t foundpos = result.find("/home");
-        if (foundpos != std::string::npos)
-        {
-            foundpos = result.find_first_of('/', foundpos + 1);
-            if (foundpos != std::string::npos)
-            {
-                foundpos = result.find_first_of('/', foundpos + 1);
-                if (foundpos != std::string::npos)
-                {
-                    result.replace(0, foundpos /*length*/, "~");
-                }
-            }
-        }
-        result = result.substr(0, halflength);
-        std::string lastpart = fpath.substr(fpathsize-halflength-1, halflength);
-        result = result + ellipse + lastpart;
-        return result;
-    }
-}
-
-}       // namespace seq64
 
 /*
  * globals.cpp

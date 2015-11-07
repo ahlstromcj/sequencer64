@@ -4,6 +4,9 @@ Chris Ahlstrom
 
 In no particular order...
 
+-  How about a horizontal split for the perfroll?
+   Or a second song editor view for reference?
+   Or the ability to sort sequences in the song editor view?
 -  Should mark empty tracks in the background-sequence selector, or just not
    show them.
 -  Create a new sequence and add some notes.  It won't appear in the patterns
@@ -50,7 +53,7 @@ In no particular order...
 -  --manual_alsa_ports, etc., should be --manual-alsa_ports.
 -  Can we provide a way to move a note a tiny amount without changing the beat
    size.
--  Would be nice to have a Pause button and pause feature.
+-  Would be nice to have a PAUSE button and PAUSE feature.
 -  Ctrl-Z for data/event doesn't work unless the piano roll has the focus.
    Worth worrying about?
 -  If POSSIBLE, avoid loading the "user" configuration file, or at least

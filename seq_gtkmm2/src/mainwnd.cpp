@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-06
+ * \updates       2015-11-07
  * \license       GNU GPLv2 or above
  *
  *  The main window holds the menu and the main controls of the application,
@@ -264,7 +264,7 @@ mainwnd::mainwnd (perform & p)
     add_tooltip
     (
         m_button_learn,
-        "Mute Group Learn: "
+        "Mute Group Learn. "
         "Click the 'L' button, then press a mute-group key to store "
         "the mute state of the sequences in that key. "
         "See File/Options/Keyboard for available mute-group keys "
@@ -297,7 +297,7 @@ mainwnd::mainwnd (perform & p)
     (
         mem_fun(*this, &mainwnd::stop_playing)
     );
-    add_tooltip(m_button_stop, "Stop playing the MIDI sequence");
+    add_tooltip(m_button_stop, "Stop playing the MIDI sequence.");
     startstophbox->pack_start(*m_button_stop, Gtk::PACK_SHRINK);
     m_button_play = manage(new Gtk::Button());                  // play button
     m_button_play->add
@@ -308,7 +308,7 @@ mainwnd::mainwnd (perform & p)
     (
         mem_fun(*this, &mainwnd::start_playing)
     );
-    add_tooltip(m_button_play, "Play the MIDI sequence");
+    add_tooltip(m_button_play, "Play the MIDI sequence.");
     startstophbox->pack_start(*m_button_play, Gtk::PACK_SHRINK);
 
     /*
@@ -330,7 +330,7 @@ mainwnd::mainwnd (perform & p)
     (
         mem_fun(*this, &mainwnd::adj_callback_bpm)
     );
-    add_tooltip(m_spinbutton_bpm, "Adjust beats per minute (BPM) value");
+    add_tooltip(m_spinbutton_bpm, "Adjust beats per minute (BPM) value.");
     Gtk::Label * bpmlabel = manage(new Gtk::Label("_BPM", true));
     bpmlabel->set_mnemonic_widget(*m_spinbutton_bpm);
     bpmhbox->pack_start(*bpmlabel, Gtk::PACK_SHRINK);
@@ -394,7 +394,7 @@ mainwnd::mainwnd (perform & p)
     (
         mem_fun(*this, &mainwnd::open_performance_edit)
     );
-    add_tooltip(m_button_perfedit, "Show or hide song editor window");
+    add_tooltip(m_button_perfedit, "Show or hide song editor window.");
     bottomhbox->pack_end(*m_button_perfedit, Gtk::PACK_SHRINK);
 
     /*

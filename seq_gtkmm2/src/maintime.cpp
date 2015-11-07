@@ -25,17 +25,31 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-29
+ * \updates       2015-11-07
  * \license       GNU GPLv2 or above
  *
  *  The "time" window is the horizontal bar at the upper right of the main
  *  window, just to the left of the "L" button.  This bar shows one or
- *  more black "pills" that show that the tune, and the measures, are
- *  progressing as playback occurs.
+ *  more black "pills" that show that the tune is progressing, both for beats
+ *  and for measures. The beats are also shown as a flashing that occurs on
+ *  each beat as playback occurs.
+ *
+ *  We've also added some member variables that represent calculations
+ *  involving constants, which need be performed only once.  Save CPU time at
+ *  the expense of a little memory.
  */
 
 #include "globals.h"
 #include "maintime.hpp"
+
+/**
+ *  Static internal constants.  These will eventually be replaced by variables
+ *  in the user_settings module.
+ */
+
+static const int c_maintime_x = 300;
+static const int c_maintime_y = 10;
+static const int c_pill_width = 8;
 
 namespace seq64
 {
@@ -50,13 +64,18 @@ namespace seq64
 maintime::maintime
 (
     perform & p,
-    int ppqn,
-    int pillwidth,
-    int x,
-    int y
+    int ppqn
 ) :
-    gui_drawingarea_gtk2    (p, x, y),
-    m_pill_width            (pillwidth),
+    gui_drawingarea_gtk2    (p, c_maintime_x, c_maintime_y),
+    m_beat_width            (4),                                // TODO
+    m_bar_width             (16),                               // TODO
+    m_pill_width            (c_pill_width),
+    m_box_width             (m_window_x - 1),
+    m_box_height            (m_window_y - 1),
+    m_flash_width           (m_window_x - 4),
+    m_flash_height          (m_window_y - 4),
+    m_flash_x               (m_window_x / m_beat_width),
+    m_box_less_pill         (m_window_x - m_pill_width - 1),
     m_ppqn                  (0)
 {
     m_ppqn = choose_ppqn(ppqn);
@@ -73,12 +92,6 @@ void
 maintime::on_realize ()
 {
     gui_drawingarea_gtk2::on_realize();
-
-    /*
-     * Handled in the base-class constructor.
-     *
-     * set_size_request(c_maintime_x, c_maintime_y);
-     */
 }
 
 /**
@@ -101,27 +114,16 @@ maintime::on_realize ()
 int
 maintime::idle_progress (long ticks)
 {
-    m_window->clear();
-    draw_rectangle(black(), 0, 0, m_window_x - 1, m_window_y - 1, false);
+    int tick_x = ((ticks % m_ppqn) * m_box_width) / m_ppqn;
+    int beat_x = (((ticks / m_beat_width) % m_ppqn) * m_box_less_pill) / m_ppqn;
+    int bar_x  = (((ticks / m_bar_width) % m_ppqn) * m_box_less_pill) / m_ppqn;
+    clear_window();
+    draw_rectangle(black(), 0, 0, m_box_width, m_box_height, false);
+    if (tick_x <= m_flash_x)                                          // flash
+        draw_rectangle(grey(), 2, 2, m_flash_width, m_flash_height);
 
-    int width = m_window_x - m_pill_width - 1;
-    int tick_x = ((ticks % m_ppqn) * (m_window_x - 1)) / m_ppqn ;
-    int beat_x = (((ticks / 4) % m_ppqn) * width) / m_ppqn ;
-    int bar_x = (((ticks / 16) % m_ppqn) * width) / m_ppqn ;
-    if (tick_x <= (m_window_x / 4))         /* 4 is number of beats, bw! */
-    {
-        /*
-         * This rectangle gives the maintime bar a flashing effect, four times
-         * per measure.
-         */
-
-        draw_rectangle
-        (
-            grey(), 2, /*tick_x + 2,*/ 2, m_window_x - 4, m_window_y - 4
-        );
-    }
-    draw_rectangle(black(), beat_x + 2, 2, m_pill_width, m_window_y - 4);
-    draw_rectangle(bar_x + 2, 2, m_pill_width, m_window_y - 4);
+    draw_rectangle(black(), beat_x + 2, 2, m_pill_width, m_flash_height);
+    draw_rectangle(bar_x + 2, 2, m_pill_width, m_flash_height);
     return true;
 }
 

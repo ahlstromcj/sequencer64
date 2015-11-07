@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-05
+ * \updates       2015-11-07
  * \license       GNU GPLv2 or above
  *
  *  Here is a list of the global variables used/stored/modified by this
@@ -523,11 +523,6 @@ options::add_mouse_page ()
         sigc::bind(mem_fun(*this, &options::mouse_fruity_callback), rb_fruity)
     );
 
-    /**
-     * \todo
-     *      Add a "Mod4" checkbox section here.
-     */
-
     Gtk::Frame * mod4frame = manage(new Gtk::Frame("Sequencer64 Options"));
     mod4frame->set_border_width(4);
     vbox->pack_start(*mod4frame, Gtk::PACK_SHRINK);
@@ -548,8 +543,10 @@ options::add_mouse_page ()
     (
         chk_mod4,
         "If checked, note-add mode stays active after right-click release "
-        "if 'Windows' key is pressed in seq24 mode.  This works in the "
-        "pattern and song editor piano rolls."
+        "if the Super (Windows) key is pressed in seq24 mode.  This works in "
+        "the sequence/pattern and song editor piano rolls.  To get out of "
+        "note-add mode, right-click again. An alternative is to use the p and "
+        "P keys (paint mode)."
     );
     mod4box->pack_start(*chk_mod4, Gtk::PACK_SHRINK);
     chk_mod4->signal_toggled().connect
@@ -560,19 +557,36 @@ options::add_mouse_page ()
 
 /**
  *  Adds the JACK Sync page (tab) to the Options dialog.
+ *
+ *  We'll also stick a LASH option in this page, since there is plenty of room.
  */
 
 void
 options::add_jack_sync_page ()
 {
+    std::string page_title;
+
+#if defined SEQ64_JACK_SUPPORT && defined SEQ64_LASH_SUPPORT
+    page_title = "_JACK/LASH";
+#elif defined SEQ64_JACK_SUPPORT
+    page_title = "_JACK Sync";
+#elif defined SEQ64_LASH_SUPPORT
+    page_title = "_LASH";
+#endif
+
+    Gtk::VBox * vbox = nullptr;
+    if (! page_title.empty())
+    {
+        vbox = manage(new Gtk::VBox());
+        vbox->set_border_width(4);
+        m_notebook->append_page(*vbox, page_title, true);
+    }
+
 #ifdef SEQ64_JACK_SUPPORT
-    Gtk::VBox * vbox = manage(new Gtk::VBox());
-    vbox->set_border_width(4);
-    m_notebook->append_page(*vbox, "_JACK Sync", true);
 
     /* Frame for transport options */
 
-    Gtk::Frame * transportframe = manage(new Gtk::Frame("Transport"));
+    Gtk::Frame * transportframe = manage(new Gtk::Frame("JACK Transport mode"));
     transportframe->set_border_width(4);
     vbox->pack_start(*transportframe, Gtk::PACK_SHRINK);
 
@@ -637,14 +651,15 @@ options::add_jack_sync_page ()
     (
         rb_live,
         "Playback will be in Live mode.  Use this to "
-        "allow muting and unmuting of patterns (loops)."
+        "allow live muting and unmuting of patterns (loops) in the "
+        "sequence/pattern window (the main window)."
     );
 
     Gtk::RadioButton * rb_perform = manage
     (
         new Gtk::RadioButton("_Song Mode", true)
     );
-    add_tooltip(rb_perform, "Playback will use the Song Editor's data.");
+    add_tooltip(rb_perform, "Playback will use the Song Editor's layout data.");
 
     Gtk::RadioButton::Group group = rb_live->get_group();
     rb_perform->set_group(group);
@@ -668,10 +683,10 @@ options::add_jack_sync_page ()
 
     Gtk::HButtonBox * buttonbox = manage(new Gtk::HButtonBox());
     buttonbox->set_layout(Gtk::BUTTONBOX_START);
-    buttonbox->set_spacing(6);
+    buttonbox->set_spacing(12);                      // was 6
     vbox->pack_start(*buttonbox, false, false);
 
-    Gtk::Button * button = manage(new Gtk::Button("Co_nnect", true));
+    Gtk::Button * button = manage(new Gtk::Button("JACK Co_nnect", true));
     add_tooltip(button, "Connect to JACK.");
     button->signal_clicked().connect
     (
@@ -683,7 +698,7 @@ options::add_jack_sync_page ()
     );
     buttonbox->pack_start(*button, false, false);
 
-    button = manage(new Gtk::Button("_Disconnect", true));
+    button = manage(new Gtk::Button("JACK _Disconnect", true));
     add_tooltip(button, "Disconnect JACK.");
     button->signal_clicked().connect
     (
@@ -694,7 +709,44 @@ options::add_jack_sync_page ()
         )
     );
     buttonbox->pack_start(*button, false, false);
-#endif
+
+#endif          // SEQ64_JACK_SUPPORT
+
+#ifdef SEQ64_LASH_SUPPORT
+
+    Gtk::Frame * lashframe = manage(new Gtk::Frame("LASH Options"));
+    lashframe->set_border_width(4);
+    vbox->pack_start(*lashframe, Gtk::PACK_SHRINK);
+
+    Gtk::VBox * lashbox = manage(new Gtk::VBox());
+    lashbox->set_border_width(4);
+    lashframe->add(*lashbox);
+    Gtk::CheckButton * chk_lash = manage
+    (
+        new Gtk::CheckButton
+        (
+            "Enables the usage of LASH with Sequencer64. "
+            "Requires Sequencer64 to be restarted, to take effect."
+            ,
+            true
+        )
+    );
+    chk_lash->set_active(global_lash_support);
+    add_tooltip
+    (
+        chk_lash,
+        "If checked, LASH session support will be used. "
+        "This is the same as the [lash-session] option in the rc "
+        "configuration file."
+    );
+    lashbox->pack_start(*chk_lash, Gtk::PACK_SHRINK);
+    chk_lash->signal_toggled().connect
+    (
+        sigc::bind(mem_fun(*this, &options::lash_support_callback), chk_lash)
+    );
+
+#endif          // SEQ64_LASH_SUPPORT
+
 }
 
 /**
@@ -796,6 +848,16 @@ void
 options::mouse_mod4_callback (Gtk::CheckButton * btn)
 {
     global_allow_mod4_mode = btn->get_active();
+}
+
+/**
+ *  Mouse interaction, Mod4 option callback function.
+ */
+
+void
+options::lash_support_callback (Gtk::CheckButton * btn)
+{
+    global_lash_support = btn->get_active();
 }
 
 /**

@@ -28,21 +28,33 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-22
- * \updates       2015-11-05
+ * \updates       2015-11-07
  * \license       GNU GPLv2 or above
  *
- *  This collection of variables describes some facets of the
- *  "Patterns Panel" or "Sequences Window", which is visually presented by
- *  the Gtk::Window-derived class called mainwnd.
+ *  This module defines the following categories of "global" variables that
+ *  are good to collect in one place, especially for settings stored in the
+ *  "user" configuration file (<tt> sequencer64.usr </tt>):
+ *
+ *      -   The [user-midi-bus] settings, collected in the user_midi_bus
+ *          class.
+ *      -   The [use-instrument] settings, collected in the user_instrument
+ *          class.
+ *      -   The [user-interface-settings] settings, a small collection of
+ *          variables that describe some facets of the "Patterns Panel" or
+ *          "Sequences Window", which is visually presented by the
+ *          Gtk::Window-derived class called mainwnd.  These variables define
+ *          the limits and resolution of various MIDI-to-GUI and application
+ *          control parameters.
+ *      -   The [user-midi-settings] settings, a collection of variables that
+ *          will replaced hard-wired global MIDI parameters with modifiable
+ *          parameters better suited to a range of MIDI files.
  *
  *  The Patterns Panel contains an 8-by-4 grid of "pattern boxes" or
  *  "sequence boxes".  All of the patterns in this grid comprise what is
  *  called a "set" (in the musical sense) or a "screen set".
  *
- *  We want to be able to change these defaults.
- *
- *  Also, this module holds the user-midi-bus and use-instrument settings
- *  defined in a <tt> sequencer64.usr </tt> file.
+ *  We want to be able to change these defaults.  We will let you know when we
+ *  are finished, and what you can do with these variables.
  */
 
 #include <string>
@@ -113,6 +125,8 @@ class user_settings
 
     /*
      *                  [user-interface-settings]
+     *
+     * Used in: mainwid, ...
      */
 
     /**

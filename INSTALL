@@ -1,6 +1,6 @@
 INSTALL for Sequencer64 v 0.9.9.7
 Chris Ahlstrom
-2015-09-10 to 2015-11-06
+2015-09-10 to 2015-11-07
 
 The current packaging for Sequencer64 is primarily aimed at developers.
 There is currently no configure script... it must be bootstrapped.
@@ -96,16 +96,23 @@ MANUALLY-DEFINED MACROS IN CODE:
     SEQ64_USE_GREY_GRID:
 
         If defined, this item causes the pattern slots/boxes to be colored
-        grey.  Otherwise, they are colored black.  By default, this value
-        is defined (in the mainwid module).
+        grey (actually, they will be colored as per the current GTK them).
+        Otherwise, they are colored black.  By default, this value is defined
+        (in the mainwid module).
 
-    SEQ64_USE_NORMAL_GRID:
+    SEQ64_USE_WHITE_GRID:
+
+        If defined, this item causes the pattern slots/boxes to be colored
+        white, no matter what the GTK theme.  This makes showing the
+        sequence numbers (SEQ64_SEQNUMBER_ON_GRID).
+
+    SEQ64_USE_BRACKET_GRID:
 
         If defined, the box that outlines the pattern slots/boxes is
         painted over to convert the box to look like a pair of brackets.
         By default, this value is defined (in the mainwid module).
 
-        Defining both of the macros (USE_GREY_GRID and USE_NORMAL_GRID) gives
+        Defining both of the macros (USE_GREY_GRID and USE_BRACKET_GRID) gives
         the normal Seq24 look for the Pattern Window.  Eventually we might
         move these definitions into the configure script, for easier
         modification.
@@ -119,9 +126,9 @@ MANUALLY-DEFINED MACROS IN CODE:
         theme).  But, no matter what the GTK background color, they will at
         least be visible.
 
-        If SEQ64_USE_GREY_GRID is not defined, so that the grid slots are
-        black, then the numbering will be yellow on a black background, and
-        match perfectly.
+        If neither SEQ64_USE_GREY_GRID nor SEQ64_USE_WHITE_GRID are defined,
+        so that the grid slots are black, then the numbering will be yellow on
+        a black background, and match perfectly.
 
     SEQ64_USE_VI_SEQROLL_MODE:
 

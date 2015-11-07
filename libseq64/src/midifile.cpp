@@ -252,7 +252,11 @@ midifile::read_varinum ()
  *      are to be added.
  *
  * \param screenset
- *      The screen-set to be updated.
+ *      The screen-set offset to be used when loading a sequence (track) from
+ *      the file.  This value ranges from -31 to 0 to +31 (32 is the maximum
+ *      screen-set available in Seq24).  This offset is added to the sequence
+ *      number read in for the sequence, to place it elsewhere in the imported
+ *      tune, and locate it in a specific screen-set.
  *
  * \return
  *      Returns true if the parsing succeeded.

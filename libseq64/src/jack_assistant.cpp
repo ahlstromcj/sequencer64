@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-14
- * \updates       2015-11-05
+ * \updates       2015-11-07
  * \license       GNU GPLv2 or above
  *
  *  This module was created from code that existed in the perform object.
@@ -299,8 +299,14 @@ jack_assistant::deinit ()
         if (jack_client_close(m_jack_client) != 0)
             error_message("Cannot close JACK client");
     }
-    if (! m_jack_running)
-        info_message("JACK sync disabled");
+
+    /*
+     * No need for this message.  We are likely exiting the application,
+     * fer cripesake!
+     *
+     * if (! m_jack_running)
+     *     info_message("JACK sync disabled");
+     */
 }
 
 /**

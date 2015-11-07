@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-06
+ * \updates       2015-11-07
  * \license       GNU GPLv2 or above
  *
  *  Note that this representation is, in a sense, inside the mainwnd
@@ -40,6 +40,7 @@
 #include <gtkmm/combo.h>                /* Gtk::Entry                       */
 #include <gtkmm/menubar.h>
 
+#include "calculations.hpp"             /* seq64::shorten_file_spec()       */
 #include "click.hpp"                    /* SEQ64_CLICK_LEFT(), etc.         */
 #include "font.hpp"
 #include "mainwid.hpp"
@@ -55,13 +56,16 @@ using namespace Gtk::Menu_Helpers;
  *
  *      #define SEQ64_HIGHLIGHT_EMPTY_SEQS    // undefine for normal empty seqs
  *
- *  The SEQ64_USE_GREY_GRID and SEQ64_USE_NORMAL_GRID can be undefined in
- *  combination to obtain different kinds of looks for the main (patterns)
- *  window at build time.  Try it and see for yourself!
+ *  The SEQ64_USE_GREY_GRID, SEQ64_USE_WHITE_GRID, and SEQ64_USE_BRACKET_GRID
+ *  can be undefined in combination to obtain different kinds of looks for the
+ *  main (patterns) window at build time.  You can get black boxes, white
+ *  boxes, black bars, and normal (matching the GTK theme) boxes.  Try it and
+ *  see for yourself!
  */
 
-#define SEQ64_USE_GREY_GRID             /* undefine for black boxes         */
-#define SEQ64_USE_NORMAL_GRID           /* undefine for black box & outline */
+#undef  SEQ64_USE_GREY_GRID             /* undefine for black/white boxes  */
+#define SEQ64_USE_WHITE_GRID            /* use white background             */
+#define SEQ64_USE_BRACKET_GRID          /* undefine for black box & outline */
 
 /**
  *  Defining SEQ64_SEQNUMBER_ON_GRID causes the sequence number of the slot to
@@ -76,37 +80,21 @@ using namespace Gtk::Menu_Helpers;
 
 #define SEQ64_SEQNUMBER_ON_GRID
 
-/*
- *  Static array of characters for use in toggling patterns.
- *  These look like the "Sequence toggle keys" in the Options / Keyboard
- *  dialog, except that they are upper-case here, and lower-case in that
- *  configuration dialog.
- *
- * \obsolete
- *      Its only use was in this module, and is commented out below,
- *      replaced by another lookup method.
- *
-\verbatim
-    const char mainwid::m_seq_to_char[c_seqs_in_set] =
-    {
-        '1', 'Q', 'A', 'Z',
-        '2', 'W', 'S', 'X',
-        '3', 'E', 'D', 'C',
-        '4', 'R', 'F', 'V',
-        '5', 'T', 'G', 'B',
-        '6', 'Y', 'H', 'N',
-        '7', 'U', 'J', 'M',
-        '8', 'I', 'K', ','
-    };
-\endverbatim
- *
- * WARNING:  If you make this comment a Doxygen comment, one which precedes
- *           the following namespace specification, it breaks the creation of
- *           the reference-manual PDF file by Doxygen!!!
- */
-
 namespace seq64
 {
+
+/*
+ * Potential pre-calculations:
+ *
+ *  m_text_size_x - 3 (2 of them)
+ *  m_text_size_y * 4 - 2 (2 of them)
+ *  m_seqarea_seq_x + 3 (2 of them)
+ *  m_seqarea_seq_y + 3 (3 of them)
+ *  m_seqarea_x - 2 (2 of them)
+ *  m_seqarea_x - 3
+ *  m_seqarea_x - 8
+ *  font_render().char_height() / 2;
+ */
 
 /**
  *  This constructor sets a lot of the members, but not all.  And it asks
@@ -200,16 +188,14 @@ mainwid::timeout ()
  *  Also, we now ignore the sequence if it does not exist.  :-D
  *
  * \note
- *      If only the main window is up, then the sequences just appear to
- *      play -- the progress bars move in each pattern.  Gaps in the song
- *      don't change the appearance of the patterns.  But, if the Song
- *      (performance) Editor window is up, and the song is started using
- *      the controls in the Song (performance) Editor windows, then the
- *      active patterns are black (!) while playing, and white when gaps
- *      in the song are encountered.  Also, the muting status in the main
- *      window seems to be ignored (based on coloring, anyway).  However,
- *      the muting in the Song (performance) windows does seem to be in
- *      force.
+ *      If only the main window is up, then the sequences just play -- the
+ *      progress bars move in each pattern.  Gaps in the sequence in the Song
+ *      (performance) Editor.  don't change the appearance of the patterns.
+ *      But, if the Song Editor window is up, and the song is started using
+ *      the controls in the Song Editor, then the active patterns are black
+ *      while playing, and white when gaps in the sequence are encountered.
+ *      The muting status in the main window is ignored.  The muting in the
+ *      Song (performance) windows is in force.
  *
  * \param seqnum
  *      Provides the number of the sequence slot that needs to be drawn.
@@ -312,9 +298,7 @@ mainwid::draw_sequence_on_pixmap (int seqnum)
 
             /*
              * MIDI buss + channel + timesig + seqnum + ui key
-             * Compensate for text-width using actual character width.
-             * base_x + m_seqarea_x - 7, base_y + m_text_size_y * 4 - 2,
-             * base_x + m_seqarea_x - 9, base_y + m_text_size_y * 4 - 2,
+             * Compensates for text-width using actual character width.
              */
 
             bool showed_seqinfo = false;
@@ -333,7 +317,7 @@ mainwid::draw_sequence_on_pixmap (int seqnum)
                  */
 
                 snprintf(temp, sizeof temp, "%c", key);
-                charx -= strlen(temp) * font_render().char_width();
+                charx -= strlen(temp) * m_text_size_x;
                 render_string_on_pixmap(charx, chary, temp, col);
 #ifdef SEQ64_SEQNUMBER_ON_GRID          // best look of all the alternatives
                 showed_seqinfo = true;
@@ -431,28 +415,40 @@ mainwid::draw_sequence_on_pixmap (int seqnum)
              *  empty sequence box.
              */
 
-#ifdef SEQ64_USE_GREY_GRID                  /* otherwise, leave it black    */
+#if defined SEQ64_USE_GREY_GRID             /* otherwise, leave it black    */
+            draw_rectangle_on_pixmap
+            (
+                white(), base_x + 4, base_y, m_seqarea_x - 8, m_seqarea_y
+            );
+#elif defined SEQ64_USE_WHITE_GRID          /* use white background         */
             draw_normal_rectangle_on_pixmap
             (
                 base_x + 4, base_y, m_seqarea_x - 8, m_seqarea_y
             );
 #endif
-#ifdef SEQ64_USE_NORMAL_GRID                /* change box to "brackets"     */
+
+#if defined SEQ64_USE_BRACKET_GRID          /* change box to "brackets"     */
+            draw_rectangle_on_pixmap
+            (
+                white(), base_x + 1, base_y + 1, m_seqarea_x - 2, m_seqarea_y - 2
+            );
+#elif defined SEQ64_USE_WHITE_GRID          /* use white background         */
             draw_normal_rectangle_on_pixmap
             (
                 base_x + 1, base_y + 1, m_seqarea_x - 2, m_seqarea_y - 2
             );
 #endif
-#ifdef SEQ64_SEQNUMBER_ON_GRID
+
+#if defined SEQ64_SEQNUMBER_ON_GRID
             if (perf().show_ui_sequence_key())
             {
                 char snum[8];
                 snprintf(snum, sizeof(snum), "%d", seqnum);
-                int charx = strlen(snum) * font_render().char_width() / 2;
+                int charx = strlen(snum) * m_text_size_x / 2;
                 int chary = font_render().char_height() / 2;
                 int centerx = base_x + m_seqarea_x / 2 - charx;
                 int centery = base_y + m_seqarea_y / 2 - chary;
-#ifdef SEQ64_USE_GREY_GRID
+#if defined SEQ64_USE_GREY_GRID || defined SEQ64_USE_WHITE_GRID
                 render_string_on_pixmap(centerx, centery, snum, font::BLACK);
 #else
                 render_string_on_pixmap
@@ -597,7 +593,7 @@ mainwid::draw_marker_on_sequence (int seqnum, int tick)
         int rectangle_x = base_x + m_text_size_x - 1;
         int rectangle_y = base_y + m_text_size_y + m_text_size_x - 1;
         int len  = seq->get_length();
-        tick += (len - seq->get_trigger_offset());
+        tick += len - seq->get_trigger_offset();
         tick %= len;
 
         long tick_x = tick * m_seqarea_seq_x / len;
@@ -608,17 +604,25 @@ mainwid::draw_marker_on_sequence (int seqnum, int tick)
             1, m_seqarea_seq_y
         );
         m_last_tick_x[seqnum] = tick_x;
-        if (seq->get_playing())
-            m_gc->set_foreground(white());
-        else
-            m_gc->set_foreground(black());
-
-        if (seq->get_queued())
-            m_gc->set_foreground(black());
-
         if (seqnum == current_sequence())
-            m_gc->set_foreground(red());
+        {
+            /*
+             * Slow, and only gets partly erased: set_line(Gdk::LINE_SOLID, 2);
+             */
 
+            m_gc->set_foreground(red());
+        }
+        else
+        {
+            /*
+             * Slows things down slightly: set_line(Gdk::LINE_SOLID, 1);
+             */
+
+            if (seq->get_queued())
+                m_gc->set_foreground(black());
+            else
+                m_gc->set_foreground(seq->get_playing() ? white() : black());
+        }
         draw_line
         (
             rectangle_x + tick_x, rectangle_y + 1,

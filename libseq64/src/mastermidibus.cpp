@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-30
- * \updates       2015-11-05
+ * \updates       2015-11-07
  * \license       GNU GPLv2 or above
  *
  *  This file provides a Linux-only implementation of MIDI support.
@@ -39,6 +39,7 @@
 #include "lash.hpp"
 #endif
 
+#include "calculations.hpp"             /* tempo_from_beats_per_minute()    */
 #include "mastermidibus.hpp"
 #include "midibus.hpp"
 

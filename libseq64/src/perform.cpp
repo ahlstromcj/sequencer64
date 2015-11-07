@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-06
+ * \updates       2015-11-07
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the most important single class in Sequencer64, as
@@ -35,13 +35,14 @@
 #include <stdio.h>
 
 #ifndef PLATFORM_WINDOWS
-#include <time.h>                       // struct timespec
+#include <time.h>                       /* struct timespec                  */
 #endif
 
-#include "perform.hpp"
+#include "calculations.hpp"
 #include "event.hpp"
 #include "keystroke.hpp"
 #include "midibus.hpp"
+#include "perform.hpp"
 #include "sequence.hpp"
 
 namespace seq64

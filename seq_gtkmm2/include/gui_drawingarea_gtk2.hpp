@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-21
- * \updates       2015-11-05
+ * \updates       2015-11-07
  * \license       GNU GPLv2 or above
  *
  *  We've added a number of wrapper functions for the "draw-rectangle",
@@ -253,6 +253,15 @@ protected:
     perform & perf ()
     {
         return m_mainperf;
+    }
+
+    /**
+     *  Clears the main window.  One less need to access m_window directly.
+     */
+
+    void clear_window ()
+    {
+        m_window->clear();
     }
 
     /**

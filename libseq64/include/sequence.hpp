@@ -345,6 +345,7 @@ public:
 
     /**
      * \getter m_name pointer
+     * \deprecated
      */
 
     const char * get_name () const

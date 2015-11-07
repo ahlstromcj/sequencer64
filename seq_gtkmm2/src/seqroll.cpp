@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-05
+ * \updates       2015-11-06
  * \license       GNU GPLv2 or above
  *
  */
@@ -36,6 +36,7 @@
 
 #include "event.hpp"
 #include "gdk_basic_keys.h"
+#include "scales.h"
 #include "seqroll.hpp"
 #include "seqdata.hpp"
 #include "seqevent.hpp"

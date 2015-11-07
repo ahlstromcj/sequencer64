@@ -50,6 +50,7 @@
 #include "midibus.hpp"
 #include "options.hpp"
 #include "perform.hpp"
+#include "scales.h"
 #include "seqdata.hpp"
 #include "seqedit.hpp"
 #include "seqevent.hpp"
@@ -916,9 +917,9 @@ seqedit::fill_top_bar ()
      *  First row of top bar
      */
 
-    m_entry_name = manage(new Gtk::Entry());            /* name              */
-    m_entry_name->set_max_length(26);
-    m_entry_name->set_width_chars(26);
+    m_entry_name = manage(new Gtk::Entry());            /* name             */
+    m_entry_name->set_max_length(32);                   /* was 26           */
+    m_entry_name->set_width_chars(32);                  /* was 26           */
     m_entry_name->set_text(m_seq.get_name());
     m_entry_name->select_region(0, 0);
     m_entry_name->set_position(0);
@@ -991,7 +992,7 @@ seqedit::fill_top_bar ()
     add_tooltip(m_button_bus, "Select MIDI output bus");
     m_entry_bus = manage(new Gtk::Entry());
     m_entry_bus->set_max_length(60);
-    m_entry_bus->set_width_chars(60);
+    m_entry_bus->set_width_chars(50);                   /* was 60           */
     m_entry_bus->set_editable(false);
     m_hbox->pack_start(*m_button_bus , false, false);
     m_hbox->pack_start(*m_entry_bus , true, true);

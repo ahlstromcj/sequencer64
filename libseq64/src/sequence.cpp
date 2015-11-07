@@ -33,6 +33,7 @@
 #include <stdlib.h>
 
 #include "mastermidibus.hpp"
+#include "scales.h"
 #include "sequence.hpp"
 
 namespace seq64

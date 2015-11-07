@@ -49,20 +49,42 @@
      P          pulses/qn       -----       Any other selected PPQN value
      R          -----           -----       P / P0
      Ws         pixels          1920        Width of the screen, pixels
-     Wqn        pixels          6           Seq24's quarter-note width, constant
-     T0         pulses/pixel    32          Seq24's "ticks per pixel", constant
+     Wqn        pixels          6           Song editor q-note width, constant
+     T0         pulses/pixel    32          Song editor default zoom, constant
      T          pulses/pixel    -----       GUI-MIDI resolution from selected P
      S          -----           16          seqroll-to-perfroll width ratio
+     Zmin       pulses/pixel    1           Seq editor max zoom in
+     Z0         pulses/pixel    2           Seq editor default zoom
+     Zmax       pulses/pixel    32          Seq editor max zoom out
 \endverbatim
  *
- *  The default value of S = 16 reflects that the sequence editor piano roll
- *  has 16 times the width resolution of the performance/song editor piano roll.
- *  This ratio will be preserved no matter what P (PPQN) is selected.
+ * Sequence Editor (seqroll):
  *
+ *  Careful measuring on my laptop screen shows that the perfroll covers 80
+ *  measures over 1920 pixels.
  *
- *  Changing the beats-per-measure of the seqroll to from the default 4 to 8 makes the measure have
- *  8 major divisions, each with the standard 16 minor divisions. An added
- *  note still covers only 4 minor division.
+\verbatim
+    1920 pixels
+    ----------- = 24 pixels/measure = 6 pixels/qn
+    80 measures
+\endverbatim
+ *
+ * Song Editor (perfroll) Zoom:
+ *
+ *  The value of S = 16 reflects that the sequence editor piano roll,
+ *  at its default zoom (2 pulses/pixel), has 16 times the width resolution
+ *  of the performance/song editor piano roll (32 pulses/pixel).  This ratio
+ *  (at the default zoom) will be preserved no matter what P (PPQN) is
+ *  selected for the song.
+ *
+ *  The sequence editor supports zooms of 1 pulse/pixel, 2 pulses/pixel (it's
+ *  default), and 4, 8, 16, and 32 pulses/pixel (the song editor's only zoom).
+ *
+ * Time Signature:
+ *
+ *  Changing the beats-per-measure of the seqroll to from the default 4 to 8
+ *  makes the measure have 8 major divisions, each with the standard 16 minor
+ *  divisions. An added note still covers only 4 minor divisions.
  *
  *  Changing the beat-width of the seqroll from the default 4 to 8 halves the
  *  pixel-width of reach measure.

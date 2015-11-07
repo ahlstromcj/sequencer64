@@ -4,6 +4,8 @@ Chris Ahlstrom
 
 In no particular order...
 
+-  Should mark empty tracks in the background-sequence selector, or just not
+   show them.
 -  Create a new sequence and add some notes.  It won't appear in the patterns
    window until you click in the patterns window, in the same slot where
    New was selected.

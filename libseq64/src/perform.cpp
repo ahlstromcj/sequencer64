@@ -556,7 +556,8 @@ perform::set_active (int seq, bool active)
         if (active && not_nullptr(m_seqs[seq]))
         {
             m_seqs[seq]->number(seq);
-            m_seqs[seq]->set_name(std::string("Untitled"));
+            if (m_seqs[seq]->name().empty())
+                m_seqs[seq]->set_name(std::string("Untitled"));
         }
     }
 }

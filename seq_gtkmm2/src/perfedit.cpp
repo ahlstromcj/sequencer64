@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-04
+ * \updates       2015-11-06
  * \license       GNU GPLv2 or above
  *
  */
@@ -245,7 +245,10 @@ perfedit::perfedit
     (
         sigc::bind<Gtk::Menu *>(mem_fun(*this, &perfedit::popup_menu), m_menu_bpm)
     );
-    add_tooltip(m_button_bpm, "Time signature, beats per measure");
+    add_tooltip
+    (
+        m_button_bpm, "Time signature, beats per measure, or beats per bar"
+    );
     m_entry_bpm->set_width_chars(2);
     m_entry_bpm->set_editable(false);
     m_button_bw->add                                /* beat width */

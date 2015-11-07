@@ -171,13 +171,6 @@ const int c_swing_sixteenths = 4;
 #define GM_INSTRUMENT_FLAG              (-1)
 
 /**
- *  A manifest constant for the normal number of semitones in an
- *  equally-tempered octave.  The name is short deliberately.
- */
-
-#define OCTAVE_SIZE                      12
-
-/**
  *  Default value for the global parts-per-quarter-note value.  This is
  *  the unit of time for delta timing.  It represents the units, ticks, or
  *  pulses per beat.  Note that we're migrating this global value into the
@@ -675,6 +668,8 @@ extern std::string global_user_filename;
 extern std::string global_config_filename_alt;
 extern std::string global_user_filename_alt;
 
+#if 0 ///////////////////////////////////////////////////////////////////
+
 /**
  *  Corresponds to the small number of musical scales that the application
  *  can handle.  Scales can be shown in the piano roll as gray bars for
@@ -916,6 +911,8 @@ const char c_chord_text[8][5] =
     "VII",
     "VIII"
 };
+
+#endif
 
 /**
  *  Mouse actions, for the Pattern Editor.  Be sure to update seq24-doc

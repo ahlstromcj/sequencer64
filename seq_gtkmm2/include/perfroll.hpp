@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-01
+ * \updates       2015-11-07
  * \license       GNU GPLv2 or above
  *
  */
@@ -117,14 +117,14 @@ public:
 
     perfroll
     (
-        perform & a_perf,
-        Gtk::Adjustment & a_hadjust,
-        Gtk::Adjustment & a_vadjust,
+        perform & perf,
+        Gtk::Adjustment & hadjust,
+        Gtk::Adjustment & vadjust,
         int ppqn = SEQ64_USE_DEFAULT_PPQN
     );
     ~perfroll();
 
-    void set_guides (int a_snap, int a_measure, int a_beat);
+    void set_guides (int snap, int measure, int beat);
     void update_sizes ();
     void init_before_show ();
     void fill_background_pixmap ();
@@ -141,36 +141,31 @@ private:
     void snap_x (int & x);
     void start_playing ();
     void stop_playing ();
-    void draw_sequence_on (/*Glib::RefPtr<Gdk::Drawable> draw,*/ int seqnum);
-    void draw_background_on (/*Glib::RefPtr<Gdk::Drawable> draw,*/ int seqnum);
-    void draw_drawable_row
-    (
-//      Glib::RefPtr<Gdk::Drawable> a_dest,
-//      Glib::RefPtr<Gdk::Drawable> a_src,
-        long a_y
-    );
+    void draw_sequence_on (int seqnum);
+    void draw_background_on (int seqnum);
+    void draw_drawable_row (long y);
     void change_horz ();
     void change_vert ();
-    void split_trigger(int a_sequence, long a_tick);
+    void split_trigger(int sequence, long tick);
 
 private:        // callbacks
 
     void on_realize ();
-    bool on_expose_event (GdkEventExpose * a_ev);
-    bool on_button_press_event (GdkEventButton * a_ev);
-    bool on_button_release_event (GdkEventButton * a_ev);
-    bool on_motion_notify_event (GdkEventMotion * a_ev);
-    bool on_scroll_event (GdkEventScroll * a_ev) ;
-    bool on_focus_in_event (GdkEventFocus *);
-    bool on_focus_out_event (GdkEventFocus *);
-    void on_size_allocate (Gtk::Allocation &);
-    bool on_key_press_event (GdkEventKey * a_p0);
+    bool on_expose_event (GdkEventExpose * ev);
+    bool on_button_press_event (GdkEventButton * ev);
+    bool on_button_release_event (GdkEventButton * ev);
+    bool on_motion_notify_event (GdkEventMotion * ev);
+    bool on_scroll_event (GdkEventScroll * ev) ;
+    bool on_focus_in_event (GdkEventFocus * ev);
+    bool on_focus_out_event (GdkEventFocus * ev);
+    void on_size_allocate (Gtk::Allocation & al);
+    bool on_key_press_event (GdkEventKey * ev);
 
     /**
-     *  This callback throws away a size request.
+     *  This do-nothing callback effectively throws away a size request.
      */
 
-    void on_size_request (GtkRequisition * /*a_r*/ )
+    void on_size_request (GtkRequisition *)
     {
         // Empty body
     }

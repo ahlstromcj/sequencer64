@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-04
+ * \updates       2015-11-07
  * \license       GNU GPLv2 or above
  *
  */
@@ -222,8 +222,8 @@ private:
     void set_zoom (int zoom);
     void set_snap (int snap);
     void set_note_length (int note_length);
-    void set_beats_per_bar (int beats_per_measure);
-    void set_beat_width (int beat_width);
+    void set_beats_per_bar (int bpm);
+    void set_beat_width (int bw);
 
     /**
      *  Passes the given parameter to sequence::set_rec_vol().
@@ -234,7 +234,7 @@ private:
         m_seq.set_rec_vol(recvol);
     }
 
-    void set_measures (int length_measures);
+    void set_measures (int lim);
     void apply_length (int bpm, int bw, int measures);
     long get_measures ();
     void set_midi_channel (int midichannel);

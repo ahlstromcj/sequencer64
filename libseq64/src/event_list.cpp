@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-19
- * \updates       2015-11-05
+ * \updates       2015-11-07
  * \license       GNU GPLv2 or above
  *
  */
@@ -541,11 +541,6 @@ event_list::count_selected_events (unsigned char status, unsigned char cc) const
         {
             unsigned char d0, d1;
             e.get_data(d0, d1);                 /* get the two data bytes */
-//          if
-//          (
-//              (status == EVENT_CONTROL_CHANGE && d0 == cc) ||
-//              (status != EVENT_CONTROL_CHANGE)
-//          )
             if (event::is_desired_cc_or_not_cc(status, cc, d0))
             {
                 if (e.is_selected())

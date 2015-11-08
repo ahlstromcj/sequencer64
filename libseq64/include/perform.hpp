@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-05
+ * \updates       2015-11-07
  * \license       GNU GPLv2 or above
  *
  *  This class has way too many members.
@@ -271,6 +271,14 @@ private:
     int m_sequence_count;
     int m_sequence_max;
 
+    /**
+     *  It may be a good idea to eventually centralize all of the dirtiness of
+     *  a performance here.  All the GUIs seem to use a perform object.
+     *  IN PROGRESS.
+     */
+
+    bool m_is_modified;
+
     condition_var m_condition_var;
 
 #ifdef SEQ64_JACK_SUPPORT
@@ -289,6 +297,27 @@ public:
 
     perform (gui_assistant & mygui, int ppqn = SEQ64_USE_DEFAULT_PPQN);
     ~perform ();
+
+    /**
+     * \getter m_is_modfied
+     */
+
+    bool is_modified () const
+    {
+        return m_is_modified;
+    }
+
+    /**
+     * \setter m_is_modified
+     *      This setter only sets the modified-flag to true.
+     *      The setter that will, is_modified(), is private.  No one but
+     *      perfrom and its friends should falsify this flag.
+     */
+
+    void modify ()
+    {
+        m_is_modified = true;
+    }
 
     /**
      * \getter m_sequence_count
@@ -456,6 +485,38 @@ public:
     void push_trigger_undo ();
     void pop_trigger_undo ();
 
+    /**
+     *  Convenience function for perfedit's collapse functionality.
+     */
+
+    void collapse ()
+    {
+        push_trigger_undo();
+        move_triggers(false);
+        is_modified(true);
+    }
+
+    /**
+     *  Convenience function for perfedit's copy functionality.
+     */
+
+    void copy ()
+    {
+        push_trigger_undo();
+        copy_triggers();
+    }
+
+    /**
+     *  Convenience function for perfedit's expand functionality.
+     */
+
+    void expand ()
+    {
+        push_trigger_undo();
+        move_triggers(true);
+        is_modified(true);
+    }
+
     midi_control * get_midi_control_toggle (unsigned int seq);
     midi_control * get_midi_control_on (unsigned int seq);
     midi_control * get_midi_control_off (unsigned int seq);
@@ -479,7 +540,9 @@ public:
      *  Sets the notepad text for the current screen-set.
      */
 
-    void set_current_screen_set_notepad (const std::string & note)
+//  void set_current_screen_set_notepad (const std::string & note)
+
+    void set_screen_set_notepad (const std::string & note)
     {
         set_screen_set_notepad(m_screen_set, note);
     }
@@ -791,6 +854,15 @@ public:
     bool perfroll_key_event (const keystroke & k, int drop_sequence);
 
 private:
+
+    /**
+     * \setter m_is_modified
+     */
+
+    void is_modified (bool flag)
+    {
+        m_is_modified = flag;
+    }
 
     /**
      *  Checks the parameter against c_midi_controls.

@@ -25,9 +25,10 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-10-30
- * \updates       2015-11-01
+ * \updates       2015-11-07
  * \license       GNU GPLv2 or above
  *
+ *  Man, we need to learn a lot more about triggers.
  */
 
 #include <stdlib.h>
@@ -134,6 +135,7 @@ triggers::pop_undo ()       // was pop_trigger_undo ()
 /**
  *  If playback-mode (live mode?) is in force, that is, if using in-triggers
  *  and on/off triggers, this function handles that kind of playback.
+ *  This is a new function for sequence::play() to call.
  *
  * \param start_tick
  *      Provides the starting tick value, and returns the modified value as a
@@ -147,8 +149,6 @@ triggers::pop_undo ()       // was pop_trigger_undo ()
  *      Returns true if we're through playing the frame, and the caller should
  *      stop the playback.
  */
-
-// NEW FUNCTION for sequence::play() to call.
 
 bool
 triggers::play (long & start_tick, long & end_tick)

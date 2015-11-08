@@ -1,9 +1,15 @@
 Bugs and Upgrade Ideas
 Chris Ahlstrom
-2015-10-27 to 2015-11-06
+2015-10-27 to 2015-11-07
 
 In no particular order...
 
+-  Make the GUI box-drawing and number options for configure.ac.
+y  Can the perform object control all the is-dirty stuff?  All the GUIs use it!
+-  The 750 x 500 for sequence and song editor size should be configurable in
+   the "user" file.
+-  Right click to edit a new sequence automatically shows it in perfnames,
+   but not in mainwid.
 -  How about a horizontal split for the perfroll?
    Or a second song editor view for reference?
    Or the ability to sort sequences in the song editor view?

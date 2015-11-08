@@ -109,6 +109,7 @@ perform::perform (gui_assistant & mygui, int ppqn)
     m_screen_set                (0),
     m_sequence_count            (0),
     m_sequence_max              (c_max_sequence),
+    m_is_modified               (false),
     m_condition_var             (),
 #ifdef SEQ64_JACK_SUPPORT
     m_jack_asst                 (*this),
@@ -216,7 +217,7 @@ perform::deinit_jack ()
 
 /**
  *  Clears all of the patterns/sequences.  The mainwnd module calls this
- *  function.
+ *  function.  Note that perform now handles the "is-modified" flag.
  */
 
 void
@@ -227,9 +228,11 @@ perform::clear_all ()
         if (is_active(i))
             delete_sequence(i);
 
-    std::string e;                          /* an empty string */
+    std::string e;                          /* an empty string  */
     for (int i = 0; i < c_max_sets; i++)
         set_screen_set_notepad(i, e);
+
+    is_modified(false);                     /* new!             */
 }
 
 /**
@@ -769,6 +772,9 @@ perform::get_sequence (int seq)
  *
  *  The value is set only if neither JACK nor this performance object are
  *  running.
+ *
+ *  It's not clear that we need to set the is-modified flag just because we
+ *  changed the screen set.
  */
 
 void
@@ -789,6 +795,10 @@ perform::set_beats_per_minute (int bpm)
 
     if (! (m_jack_asst.is_running() && m_running))
         m_master_bus.set_beats_per_minute(bpm);
+
+    /*
+     * modify(true);                // iffy!
+     */
 }
 
 /**
@@ -985,7 +995,13 @@ void
 perform::set_screen_set_notepad (int screenset, const std::string & notepad)
 {
     if (is_screenset_valid(screenset))
-        m_screen_set_notepad[screenset] = notepad;
+    {
+        if (notepad != m_screen_set_notepad[screenset])
+        {
+            m_screen_set_notepad[screenset] = notepad;
+            modify();
+        }
+    }
 }
 
 /**
@@ -1014,6 +1030,9 @@ perform::get_screen_set_notepad (int screenset) const
  *  Sets the m_screen_set value (the index or ID of the current screen
  *  set).
  *
+ *  It's not clear that we need to set the is-modified flag just because we
+ *  changed the screen set.
+ *
  * \param ss
  *      The index of the desired string set.  It is forced to range from
  *      0 to c_max_sets - 1.
@@ -1027,7 +1046,14 @@ perform::set_screenset (int ss)
     else if (ss >= c_max_sets)
         ss = 0;
 
-    m_screen_set = ss;
+    if (ss != m_screen_set)
+    {
+        m_screen_set = ss;
+
+        /*
+         * modify(true);                // iffy!
+         */
+    }
 }
 
 /**
@@ -1198,7 +1224,7 @@ perform::move_triggers (bool a_direction)
 
 /**
  *  For every active sequence, call that sequence's push_trigger_undo()
- *  function.
+ *  function.  Too bad we cannot yet keep track of all the undoes.
  */
 
 void

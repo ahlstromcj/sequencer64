@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-06
+ * \updates       2015-11-07
  * \license       GNU GPLv2 or above
  *
  */
@@ -50,14 +50,13 @@ namespace seq64
  *  on a paste with no previous copy.
  */
 
-seqmenu::seqmenu (perform & a_p)
+seqmenu::seqmenu (perform & p)
  :
     m_menu          (nullptr),
-    m_mainperf      (a_p),
+    m_mainperf      (p),
     m_clipboard     (),
     m_seqedit       (nullptr),
-    m_current_seq   (-1),           /* (0) is not really current yet    */
-    m_modified      (false)
+    m_current_seq   (-1)            /* (0) is not really current yet    */
 {
     m_clipboard.set_master_midi_bus(&m_mainperf.master_bus());
 }
@@ -233,7 +232,7 @@ seqmenu::seq_edit ()
                 m_mainperf, m_current_seq
             );
             m_seqedit = sed;            /* prevents "unused" warning      */
-            is_modified(true);          /* could be deleted later, though */
+            m_mainperf.modify();
         }
         else
             m_mainperf.get_sequence(m_current_seq)->set_raise(true);
@@ -246,7 +245,7 @@ seqmenu::seq_edit ()
             *m_mainperf.get_sequence(m_current_seq), m_mainperf, m_current_seq
         );
         m_seqedit = sed;                /* prevents "unused" warning      */
-        is_modified(true);              /* could be deleted later, though */
+        m_mainperf.modify();
     }
 }
 
@@ -351,3 +350,4 @@ seqmenu::seq_clear_perf ()
  *
  * vim: sw=4 ts=4 wm=4 et ft=cpp
  */
+

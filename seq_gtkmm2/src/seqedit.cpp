@@ -844,9 +844,9 @@ seqedit::popup_tool_menu ()
  */
 
 void
-seqedit::do_action (int a_action, int a_var)
+seqedit::do_action (int action, int var)
 {
-    switch (a_action)
+    switch (action)
     {
     case c_select_all_notes:
         m_seq.select_events(EVENT_NOTE_ON, 0);
@@ -888,12 +888,12 @@ seqedit::do_action (int a_action, int a_var)
 
     case c_transpose:
         m_seq.push_undo();
-        m_seq.transpose_notes(a_var, 0);
+        m_seq.transpose_notes(var, 0);
         break;
 
     case c_transpose_h:
         m_seq.push_undo();
-        m_seq.transpose_notes(a_var, m_scale);
+        m_seq.transpose_notes(var, m_scale);
         break;
 
     default:
@@ -1210,9 +1210,9 @@ seqedit::fill_top_bar ()
  */
 
 void
-seqedit::popup_menu (Gtk::Menu * a_menu)
+seqedit::popup_menu (Gtk::Menu * menu)
 {
-    a_menu->popup(0, 0);
+    menu->popup(0, 0);
 }
 
 /**
@@ -1555,6 +1555,8 @@ seqedit::popup_event_menu ()
 /**
  *  Selects the given MIDI channel parameter in the main sequence object,
  *  so that it will use that channel.
+ *
+ *  Should this change raise the is-modified flag?
  */
 
 void
@@ -1569,6 +1571,8 @@ seqedit::set_midi_channel (int midichannel)
 /**
  *  Selects the given MIDI buss parameter in the main sequence object,
  *  so that it will use that buss.
+ *
+ *  Should this change raise the is-modified flag?
  */
 
 void
@@ -1582,6 +1586,9 @@ seqedit::set_midi_bus (int bus)
 /**
  *  Selects the given zoom value.  It is passed to the seqroll, seqtime,
  *  seqdata, and seqevent objects, as well.
+ *
+ *  The notation is in pixels:ticks, but I would prefer to use
+ *  pulses/pixel (pulses per pixel).  Oh well.
  */
 
 void
@@ -1604,16 +1611,16 @@ seqedit::set_zoom (int zoom)
  */
 
 void
-seqedit::set_snap (int a_snap)
+seqedit::set_snap (int snap)
 {
     char b[8];
-    snprintf(b, sizeof(b), "1/%d", m_ppqn * 4 / a_snap);
+    snprintf(b, sizeof(b), "1/%d", m_ppqn * 4 / snap);
     m_entry_snap->set_text(b);
-    m_snap = a_snap;
-    m_initial_snap = a_snap;
-    m_seqroll_wid->set_snap(m_snap);
-    m_seqevent_wid->set_snap(m_snap);
-    m_seq.set_snap_tick(a_snap);
+    m_snap = snap;
+    m_initial_snap = snap;
+    m_seqroll_wid->set_snap(snap);
+    m_seqevent_wid->set_snap(snap);
+    m_seq.set_snap_tick(snap);
 }
 
 /**
@@ -1622,14 +1629,14 @@ seqedit::set_snap (int a_snap)
  */
 
 void
-seqedit::set_note_length (int a_note_length)
+seqedit::set_note_length (int notelength)
 {
     char b[8];
-    snprintf(b, sizeof(b), "1/%d", m_ppqn * 4 / a_note_length);
+    snprintf(b, sizeof(b), "1/%d", m_ppqn * 4 / notelength);
     m_entry_note_length->set_text(b);
-    m_note_length = a_note_length;
-    m_initial_note_length = a_note_length;
-    m_seqroll_wid->set_note_length(m_note_length);
+    m_note_length = notelength;
+    m_initial_note_length = notelength;
+    m_seqroll_wid->set_note_length(notelength);
 }
 
 /**
@@ -1638,12 +1645,12 @@ seqedit::set_note_length (int a_note_length)
  */
 
 void
-seqedit::set_scale (int a_scale)
+seqedit::set_scale (int scale)
 {
-    m_entry_scale->set_text(c_scales_text[a_scale]);
-    m_scale = m_initial_scale = a_scale;
-    m_seqroll_wid->set_scale(m_scale);
-    m_seqkeys_wid->set_scale(m_scale);
+    m_entry_scale->set_text(c_scales_text[scale]);
+    m_scale = m_initial_scale = scale;
+    m_seqroll_wid->set_scale(scale);
+    m_seqkeys_wid->set_scale(scale);
 }
 
 /**
@@ -1652,12 +1659,12 @@ seqedit::set_scale (int a_scale)
  */
 
 void
-seqedit::set_key (int a_note)
+seqedit::set_key (int note)
 {
-    m_entry_key->set_text(c_key_text[a_note]);
-    m_key = m_initial_key = a_note;
-    m_seqroll_wid->set_key(m_key);
-    m_seqkeys_wid->set_key(m_key);
+    m_entry_key->set_text(c_key_text[note]);
+    m_key = m_initial_key = note;
+    m_seqroll_wid->set_key(note);
+    m_seqkeys_wid->set_key(note);
 }
 
 /**
@@ -1705,19 +1712,19 @@ seqedit::get_measures ()
 /**
  *  Set the measures value, using the given parameter, and some internal
  *  values passed to apply_length().
+ *
+ * \param lim
+ *      Provides the sequence length, in measures.
  */
 
 void
-seqedit::set_measures (int length_measures)
+seqedit::set_measures (int lim)
 {
     char b[8];
-    snprintf(b, sizeof(b), "%d", length_measures);
+    snprintf(b, sizeof(b), "%d", lim);
     m_entry_length->set_text(b);
-    m_measures = length_measures;
-    apply_length
-    (
-        m_seq.get_beats_per_bar(), m_seq.get_beat_width(), length_measures
-    );
+    m_measures = lim;
+    apply_length(m_seq.get_beats_per_bar(), m_seq.get_beat_width(), lim);
 }
 
 /**
@@ -1726,16 +1733,16 @@ seqedit::set_measures (int length_measures)
  */
 
 void
-seqedit::set_beats_per_bar (int beats_per_measure)
+seqedit::set_beats_per_bar (int bpm)
 {
     char b[8];
-    snprintf(b, sizeof(b), "%d", beats_per_measure);
+    snprintf(b, sizeof(b), "%d", bpm);
     m_entry_bpm->set_text(b);
-    if (beats_per_measure != m_seq.get_beats_per_bar())
+    if (bpm != m_seq.get_beats_per_bar())
     {
-        long length = get_measures();
-        m_seq.set_beats_per_bar(beats_per_measure);
-        apply_length(beats_per_measure, m_seq.get_beat_width(), length);
+        long len = get_measures();
+        m_seq.set_beats_per_bar(bpm);
+        apply_length(bpm, m_seq.get_beat_width(), len);
     }
 }
 
@@ -1745,16 +1752,16 @@ seqedit::set_beats_per_bar (int beats_per_measure)
  */
 
 void
-seqedit::set_beat_width (int beat_width)
+seqedit::set_beat_width (int bw)
 {
     char b[8];
-    snprintf(b, sizeof(b), "%d", beat_width);
+    snprintf(b, sizeof(b), "%d", bw);
     m_entry_bw->set_text(b);
-    if (beat_width != m_seq.get_beat_width())
+    if (bw != m_seq.get_beat_width())
     {
         long len = get_measures();
-        m_seq.set_beat_width(beat_width);
-        apply_length(m_seq.get_beats_per_bar(), beat_width, len);
+        m_seq.set_beat_width(bw);
+        apply_length(m_seq.get_beats_per_bar(), bw, len);
     }
 }
 
@@ -1948,7 +1955,7 @@ seqedit::on_realize()
  */
 
 bool
-seqedit::on_delete_event (GdkEventAny * a_event)
+seqedit::on_delete_event (GdkEventAny *)
 {
     m_seq.set_recording(false);
     perf().master_bus().set_sequence_input(false, NULL);
@@ -1962,37 +1969,37 @@ seqedit::on_delete_event (GdkEventAny * a_event)
  */
 
 bool
-seqedit::on_scroll_event (GdkEventScroll * a_ev)
+seqedit::on_scroll_event (GdkEventScroll * ev)
 {
-    guint modifiers;    // Used to filter out caps/num lock etc.
+    guint modifiers;                /* for filtering out caps/num lock etc. */
     modifiers = gtk_accelerator_get_default_mod_mask();
-    if ((a_ev->state & modifiers) == SEQ64_CONTROL_MASK)
+    if ((ev->state & modifiers) == SEQ64_CONTROL_MASK)
     {
-        if (CAST_EQUIVALENT(a_ev->direction, SEQ64_SCROLL_DOWN))
+        if (CAST_EQUIVALENT(ev->direction, SEQ64_SCROLL_DOWN))
         {
             if (m_zoom * 2 <= mc_max_zoom)
                 set_zoom(m_zoom * 2);
         }
-        else if (CAST_EQUIVALENT(a_ev->direction, SEQ64_SCROLL_UP))
+        else if (CAST_EQUIVALENT(ev->direction, SEQ64_SCROLL_UP))
         {
             if (m_zoom / 2 >= mc_min_zoom)
                 set_zoom(m_zoom / 2);
         }
         return true;
     }
-    else if ((a_ev->state & modifiers) == SEQ64_SHIFT_MASK)
+    else if ((ev->state & modifiers) == SEQ64_SHIFT_MASK)
     {
         double val = m_hadjust->get_value();
         double step = m_hadjust->get_step_increment();
         double upper = m_hadjust->get_upper();
-        if (CAST_EQUIVALENT(a_ev->direction, SEQ64_SCROLL_DOWN))
+        if (CAST_EQUIVALENT(ev->direction, SEQ64_SCROLL_DOWN))
         {
             if (val + step < upper)
                 m_hadjust->set_value(val + step);
             else
                 m_hadjust->set_value(upper);
         }
-        else if (CAST_EQUIVALENT(a_ev->direction, SEQ64_SCROLL_UP))
+        else if (CAST_EQUIVALENT(ev->direction, SEQ64_SCROLL_UP))
         {
             m_hadjust->set_value(val - step);
         }
@@ -2006,14 +2013,14 @@ seqedit::on_scroll_event (GdkEventScroll * a_ev)
  */
 
 bool
-seqedit::on_key_press_event (GdkEventKey * a_ev)
+seqedit::on_key_press_event (GdkEventKey * ev)
 {
-    guint modifiers;    // Used to filter out caps/num lock etc.
+    guint modifiers;            /* for filtering out caps/num-lock etc.     */
     modifiers = gtk_accelerator_get_default_mod_mask();
-    if ((a_ev->state & modifiers) == SEQ64_CONTROL_MASK && a_ev->keyval == 'w')
-        return on_delete_event((GdkEventAny*)a_ev);
+    if ((ev->state & modifiers) == SEQ64_CONTROL_MASK && ev->keyval == 'w')
+        return on_delete_event((GdkEventAny *)(ev));
     else
-        return Gtk::Window::on_key_press_event(a_ev);
+        return Gtk::Window::on_key_press_event(ev);
 }
 
 }           // namespace seq64

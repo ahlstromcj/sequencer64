@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-22
- * \updates       2015-10-02
+ * \updates       2015-11-07
  * \license       GNU GPLv2 or above
  *
  */
@@ -60,6 +60,10 @@ class gui_window_gtk2 : public Gtk::Window
 
 private:
 
+    /**
+     *  The master object, sort of a sequence buss.
+     */
+
     perform & m_mainperf;
 
     /**
@@ -69,8 +73,6 @@ private:
 
     int m_window_x;
     int m_window_y;
-
-    bool m_modified;
 
 public:
 
@@ -82,15 +84,6 @@ public:
     );
     ~gui_window_gtk2 ();
 
-    /**
-     * \getter m_modified
-     */
-
-    bool is_modified () const
-    {
-        return m_modified;
-    }
-
 protected:
 
     /**
@@ -100,15 +93,6 @@ protected:
     perform & perf ()
     {
         return m_mainperf;
-    }
-
-    /**
-     * \setter m_modified
-     */
-
-    void is_modified (bool flag)
-    {
-        m_modified = flag;
     }
 
     virtual void quit ()
@@ -127,3 +111,4 @@ protected:
  *
  * vim: sw=4 ts=4 wm=4 et ft=cpp
  */
+

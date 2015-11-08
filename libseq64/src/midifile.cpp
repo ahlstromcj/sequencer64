@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-05
+ * \updates       2015-11-07
  * \license       GNU GPLv2 or above
  *
  *  For a quick guide to the MIDI format, see, for example:
@@ -247,6 +247,16 @@ midifile::read_varinum ()
  *
  *  What do other applications use for specifying port/channel?
  *
+ *  Note on the is-modified flag.  We now assume that the perform object is
+ *  starting from scratch when parsing.  But we let mainwnd tell the perform
+ *  object when to clear everything with perform::clear_all().  The mainwnd
+ *  does this for a new file, opening a file, but not for a file import, which
+ *  might be done simply to add more MIDI tracks to the current composition.
+ *  So, if parsing succeeds, all we want to do is make sure the flag is set.
+ *
+ *  Parsing a file successfully is not always a modification of the setup.
+ *  For instance, the first read of a MIDI file should start clean, not dirty.
+ *
  * \param a_perf
  *      Provides a reference to the perform object into which sequences/tracks
  *      are to be added.
@@ -256,7 +266,8 @@ midifile::read_varinum ()
  *      the file.  This value ranges from -31 to 0 to +31 (32 is the maximum
  *      screen-set available in Seq24).  This offset is added to the sequence
  *      number read in for the sequence, to place it elsewhere in the imported
- *      tune, and locate it in a specific screen-set.
+ *      tune, and locate it in a specific screen-set.  If this parameter is
+ *      non-zero, the we will assume that the perform data is dirty.
  *
  * \return
  *      Returns true if the parsing succeeded.
@@ -532,6 +543,9 @@ midifile::parse (perform & a_perf, int screenset)
     }                                                   /* for each track  */
     if (result)
         result = parse_proprietary_track(a_perf, file_size);
+
+     if (result && screenset != 0)
+         a_perf.modify();
 
     return result;
 }
@@ -1068,6 +1082,9 @@ midifile::write (perform & a_perf)
             m_char_list.clear();
         }
     }
+    if (result)
+        a_perf.is_modified(false);      /* it worked, tell perform about it */
+
     return result;
 }
 

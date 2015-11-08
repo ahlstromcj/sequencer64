@@ -87,13 +87,13 @@ enum
 options::options
 (
     Gtk::Window & parent,
-    perform & a_p
+    perform & p
 ) :
     Gtk::Dialog                     ("Options", parent, true, true),
 #if GTK_MINOR_VERSION < 12
     m_tooltips                      (manage(new Gtk::Tooltips()),
 #endif
-    m_mainperf                      (a_p),
+    m_mainperf                      (p),
     m_button_ok                     (manage(new Gtk::Button(Gtk::Stock::OK))),
     m_notebook                      (manage(new Gtk::Notebook()))
 {
@@ -754,10 +754,10 @@ options::add_jack_sync_page ()
  */
 
 void
-options::clock_callback_off (int a_bus, Gtk::RadioButton * a_button)
+options::clock_callback_off (int bus, Gtk::RadioButton * button)
 {
-    if (a_button->get_active())
-        perf().master_bus().set_clock(a_bus, e_clock_off);
+    if (button->get_active())
+        perf().master_bus().set_clock(bus, e_clock_off);
 }
 
 /**
@@ -765,10 +765,10 @@ options::clock_callback_off (int a_bus, Gtk::RadioButton * a_button)
  */
 
 void
-options::clock_callback_on (int a_bus, Gtk::RadioButton * a_button)
+options::clock_callback_on (int bus, Gtk::RadioButton * button)
 {
-    if (a_button->get_active())
-        perf().master_bus().set_clock(a_bus, e_clock_pos);
+    if (button->get_active())
+        perf().master_bus().set_clock(bus, e_clock_pos);
 }
 
 /**
@@ -776,10 +776,10 @@ options::clock_callback_on (int a_bus, Gtk::RadioButton * a_button)
  */
 
 void
-options::clock_callback_mod (int a_bus, Gtk::RadioButton * a_button)
+options::clock_callback_mod (int bus, Gtk::RadioButton * button)
 {
-    if (a_button->get_active())
-        perf().master_bus().set_clock(a_bus, e_clock_mod);
+    if (button->get_active())
+        perf().master_bus().set_clock(bus, e_clock_mod);
 }
 
 /**
@@ -799,11 +799,12 @@ options::clock_mod_callback (Gtk::Adjustment * adj)
 void
 options::input_callback (int bus, Gtk::Button * i_button)
 {
-    Gtk::CheckButton * a_button = (Gtk::CheckButton *) i_button;
-    bool input = a_button->get_active();
+    Gtk::CheckButton * button = (Gtk::CheckButton *) i_button;
+    bool input = button->get_active();
     perf().set_input_bus(bus, input);
 
     /***
+     *
     if (bus == PERFORM_KEY_LABELS_ON_SEQUENCE)
     {
         perf().show_ui_sequence_key(input);
@@ -815,6 +816,7 @@ options::input_callback (int bus, Gtk::Button * i_button)
     }
     else
         perf().master_bus().set_input(bus, input);
+     *
      ***/
 }
 
@@ -865,10 +867,10 @@ options::lash_support_callback (Gtk::CheckButton * btn)
  */
 
 void
-options::transport_callback (button a_type, Gtk::Button * a_check)
+options::transport_callback (button type, Gtk::Button * acheck)
 {
-    Gtk::CheckButton * check = (Gtk::CheckButton *) a_check;
-    switch (a_type)
+    Gtk::CheckButton * check = (Gtk::CheckButton *) acheck;
+    switch (type)
     {
     case e_jack_transport:
         global_with_jack_transport = check->get_active();
@@ -906,3 +908,4 @@ options::transport_callback (button a_type, Gtk::Button * a_check)
  *
  * vim: sw=4 ts=4 wm=4 et ft=cpp
  */
+

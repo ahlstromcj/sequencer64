@@ -428,13 +428,6 @@ mainwnd::mainwnd (perform & p)
     m_sigpipe[0] = -1;                      // initialize static array
     m_sigpipe[1] = -1;
     install_signal_handlers();
-
-    /*
-     * Have to be careful here, otherwise changes are lost or we get
-     * prompted even when nothing is done.
-     *
-     * m_perf_edit->is_modified(false);     // is it even set at this point?
-     */
 }
 
 /**
@@ -490,9 +483,13 @@ mainwnd::timer_callback ()
 /**
  *  Opens the Performance Editor (Song Editor).
  *
+ *  We will let perform keep track of modifications, and not just set an
+ *  is-modified flag just because we opened the song editor.  We're going to
+ *  centralize the modification flag in the perform object, and see if it can
+ *  work.
+ *
  * \todo
- *      Try to find a way to set m_modified only if the song editor
- *      actually changes something, instead of just because it was opened.
+ *      Can we offload all this work to perfedit?  Is it worthwhile?
  */
 
 void
@@ -504,7 +501,6 @@ mainwnd::open_performance_edit ()
     {
         m_perf_edit->init_before_show();
         m_perf_edit->show_all();
-        is_modified(true);              // STILL ENABLED
     }
 }
 
@@ -537,7 +533,9 @@ mainwnd::on_grouplearnchange (bool state)
 }
 
 /**
- *  Actually does the work of setting up for a new file.
+ *  Actually does the work of setting up for a new file.  Not sure that we
+ *  need to clear the modified flag here, especially since it is now
+ *  centralizeed in the perform object.  Let perf().clear_all() handle it now.
  */
 
 void
@@ -548,7 +546,6 @@ mainwnd::new_file ()
     m_entry_notes->set_text(perf().current_screen_set_notepad());
     rc().filename("");
     update_window_title();
-    is_modified(false);
 }
 
 /**
@@ -645,8 +642,7 @@ mainwnd::open_file (const std::string & fn)
     bool result;
     midifile f(fn);                     /* create object to represent file  */
     perf().clear_all();
-    result = f.parse(perf(), 0);        /* parsing handles old & new format */
-    is_modified(! result);
+    result = f.parse(perf());           /* parsing handles old & new format */
     if (result)
     {
         ppqn(f.ppqn());                 /* get and save the actual PPQN     */
@@ -655,8 +651,7 @@ mainwnd::open_file (const std::string & fn)
     {
         Gtk::MessageDialog errdialog
         (
-            *this,
-            "Error reading file: " + fn, false,
+            *this, "Error reading file: " + fn, false,
             Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK, true
         );
         errdialog.run();
@@ -696,22 +691,15 @@ mainwnd::choose_file ()
     dlg.set_current_folder(rc().last_used_dir());
 
     int result = dlg.run();
-    switch (result)
-    {
-    case (Gtk::RESPONSE_OK):
+    if (result == Gtk::RESPONSE_OK)
         open_file(dlg.get_filename());
-        break;
-
-    default:
-        break;
-    }
 }
 
 /**
- *  Saves the current state in a MIDI file.
- *
- *  Here we specify the current value of m_ppqn, which was set when reading
- *  the MIDI file.
+ *  Saves the current state in a MIDI file.  Here we specify the current value
+ *  of m_ppqn, which was set when reading the MIDI file.  We also let midifile
+ *  tell the perform that saving worked, so that the "is modified" flag can be
+ *  cleared.  The midifile class is already a friend of perform.
  */
 
 bool
@@ -735,7 +723,6 @@ mainwnd::save_file ()
         );
         errdialog.run();
     }
-    is_modified(! result);
     return result;
 }
 
@@ -751,8 +738,7 @@ mainwnd::query_save_changes ()
     if (rc().filename().empty())
         query_str = "Unnamed file was changed.\nSave changes?";
     else
-        query_str = "File '" + rc().filename() +
-            "' was changed.\nSave changes?";
+        query_str = "File '" + rc().filename() + "' was changed.\nSave changes?";
 
     Gtk::MessageDialog dialog
     (
@@ -773,7 +759,7 @@ bool
 mainwnd::is_save ()
 {
     bool result = false;
-    if (is_modified() || m_perf_edit->is_modified() || m_main_wid->is_modified())
+    if (perf().is_modified())
     {
         int choice = query_save_changes();
         switch (choice)
@@ -822,10 +808,11 @@ mainwnd::toLower (std::string & s)
  *  into the next screen-set.
  *
  *  It might be nice to have the option of importing a MIDI file into a
- *  specific screen-set, for better organization.  Set versus append.
+ *  specific screen-set, for better organization, as well as being able to
+ *  offset the sequence number.
  *
- * \todo
- *      We need to look into the Import process and document it better.
+ *  Also, it is important to note that perf().clear_all() is not called by
+ *  this routine, as we are merely adding to what might already be there.
  */
 
 void
@@ -886,7 +873,6 @@ mainwnd::file_import_dialog ()
         }
         rc().filename(std::string(dlg.get_filename()));
         update_window_title();
-        is_modified(true);
         m_main_wid->reset();
         m_entry_notes->set_text(perf().current_screen_set_notepad());
         m_adjust_bpm->set_value(perf().get_beats_per_minute());
@@ -981,6 +967,8 @@ mainwnd::about_dialog ()
  *  Patterns, and something about setting the text based on a screen-set
  *  notepad from the Performance/Song window.
  *
+ *  Let the perform object keep track of modifications.
+ *
  *  Screen-set notepad?
  */
 
@@ -990,30 +978,29 @@ mainwnd::adj_callback_ss ()
     perf().set_screenset(int(m_adjust_ss->get_value()));
     m_main_wid->set_screenset(perf().get_screenset());
     m_entry_notes->set_text(perf().current_screen_set_notepad());
-    is_modified(true);
 }
 
 /**
  *  This function is the callback for adjusting the BPM value.
+ *  Let the perform object keep track of modifications.
  */
 
 void
 mainwnd::adj_callback_bpm ()
 {
     perf().set_beats_per_minute(int(m_adjust_bpm->get_value()));
-    is_modified(true);
 }
 
 /**
  *  A callback function for handling an edit to the screen-set notepad.
+ *  Let the perform object keep track of modifications.
  */
 
 void
 mainwnd::edit_callback_notepad ()
 {
     const std::string & text = m_entry_notes->get_text();
-    perf().set_current_screen_set_notepad(text);
-    is_modified(true);
+    perf().set_screen_set_notepad(text);
 }
 
 /**

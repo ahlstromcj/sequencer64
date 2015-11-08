@@ -49,6 +49,19 @@
 #include "font.hpp"                     /* font_render() function           */
 #include "gui_palette_gtk2.hpp"         /* #include <gtkmm/drawingarea.h>   */
 
+/**
+ *  Defining SEQ64_SEQNUMBER_ON_GRID causes the sequence number of the slot to
+ *  be drawn in empty boxes.  Unfortunately, the background color is going to
+ *  be different from the default theme background color.  Fortunately, though
+ *  ugly, this guarantees the sequence number to be visible.
+ *
+ *  This feature is also tied to the show-UI-keys setting, on the theory that
+ *  some people like to see the extra information, some don't, and we don't
+ *  want to add a separate option for it at this time.
+ */
+
+#define SEQ64_SEQNUMBER_ON_GRID
+
 namespace Gtk
 {
     class Adjustment;
@@ -645,10 +658,10 @@ protected:          // callbacks
 private:            // callbacks
 
 #if 0
-    bool on_button_press_event (GdkEventButton * a_ev);
-    bool on_button_release_event (GdkEventButton * a_ev);
-    bool on_key_press_event (GdkEventKey * a_p0);
-    bool on_key_release_event (GdkEventKey * a_p0);
+    bool on_button_press_event (GdkEventButton *);
+    bool on_button_release_event (GdkEventButton *);
+    bool on_key_press_event (GdkEventKey *);
+    bool on_key_release_event (GdkEventKey *);
     void on_size_allocate (Gtk::Allocation &);
 #endif  // 0
 

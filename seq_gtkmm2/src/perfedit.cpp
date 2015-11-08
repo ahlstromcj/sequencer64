@@ -98,11 +98,9 @@ namespace seq64
 perfedit::perfedit
 (
     perform & p,
-    int ppqn,
-    int bpm,
-    int bw
+    int ppqn
 ) :
-    gui_window_gtk2     (p, 700, 400),      /* set_size_request(700, 400) */
+    gui_window_gtk2     (p, 750, 500),      /* set_size_request(700, 400) */
     m_table             (manage(new Gtk::Table(6, 3, false))),
     m_vadjust           (manage(new Gtk::Adjustment(0, 0, 1, 1, 1, 1))),
     m_hadjust           (manage(new Gtk::Adjustment(0, 0, 1, 1, 1, 1))),
@@ -132,12 +130,11 @@ perfedit::perfedit
     m_menu_bpm          (manage(new Gtk::Menu())),
     m_menu_bw           (manage(new Gtk::Menu())),
     m_snap              (DEFAULT_PERFEDIT_SNAP),
-    m_bpm               (bpm),
-    m_bw                (bw),
+    m_bpm               (0),
+    m_bw                (0),
     m_ppqn              (0),
-    m_beats_per_measure (DEFAULT_LINES_PER_MEASURE),        /* 4 */
-    m_redraw_ms         (c_redraw_ms),
-    m_modified          (false)
+    m_standard_bpm      (DEFAULT_LINES_PER_MEASURE),        /* 4        */
+    m_redraw_ms         (c_redraw_ms)                       /* 40 ms    */
 {
     m_ppqn = choose_ppqn(ppqn);
     set_icon(Gdk::Pixbuf::create_from_xpm_data(perfedit_xpm));
@@ -339,9 +336,14 @@ perfedit::perfedit
     m_hlbox->pack_start(*m_button_snap , false, false);
     m_hlbox->pack_start(*m_entry_snap , false, false);
     add(*m_table);
-    set_snap(DEFAULT_PERFEDIT_SNAP);
+
+    /*
+     * Here, the set_snap call depends on the others being done first.
+     */
+
     set_beats_per_bar(DEFAULT_BEATS_PER_MEASURE); /* time-signature numerator   */
     set_beat_width(DEFAULT_BEAT_WIDTH);           /* time-signature denominator */
+    set_snap(DEFAULT_PERFEDIT_SNAP);
 }
 
 /**
@@ -376,10 +378,8 @@ perfedit::undo ()
 void
 perfedit::collapse ()
 {
-    perf().push_trigger_undo();
-    perf().move_triggers(false);
+    perf().collapse();
     m_perfroll->queue_draw();
-    is_modified(true);
 }
 
 /**
@@ -394,8 +394,7 @@ perfedit::collapse ()
 void
 perfedit::copy ()
 {
-    perf().push_trigger_undo();
-    perf().copy_triggers();
+    perf().copy();
     m_perfroll->queue_draw();
 }
 
@@ -409,10 +408,8 @@ perfedit::copy ()
 void
 perfedit::expand ()
 {
-    perf().push_trigger_undo();
-    perf().move_triggers(true);
+    perf().expand();
     m_perfroll->queue_draw();
-    is_modified(true);
 }
 
 /**
@@ -443,11 +440,14 @@ perfedit::popup_menu (Gtk::Menu * a_menu)
 void
 perfedit::set_guides ()
 {
-    long measure_ticks = (m_ppqn * m_beats_per_measure) * m_bpm / m_bw;
-    long snap_ticks = measure_ticks / m_snap;
-    long beat_ticks = (m_ppqn * m_beats_per_measure) / m_bw;
-    m_perfroll->set_guides(snap_ticks, measure_ticks, beat_ticks);
-    m_perftime->set_guides(snap_ticks, measure_ticks);
+    if (m_bw > 0 && m_snap > 0)
+    {
+        long measure_ticks = (m_ppqn * m_standard_bpm) * m_bpm / m_bw;
+        long snap_ticks = measure_ticks / m_snap;
+        long beat_ticks = (m_ppqn * m_standard_bpm) / m_bw;
+        m_perfroll->set_guides(snap_ticks, measure_ticks, beat_ticks);
+        m_perftime->set_guides(snap_ticks, measure_ticks);
+    }
 }
 
 /**
@@ -468,48 +468,62 @@ perfedit::set_snap (int snap)
 /**
  *  Sets the beats-per-measure text and value to the given value, and then
  *  calls set_guides().
+ *
+ *  The usage of is modified was faulty.  Offloaded it to the perform object
+ *  to make it more foolproof.  See the perform::modify() function.
  */
 
 void
-perfedit::set_beats_per_bar (int beats_per_measure)
+perfedit::set_beats_per_bar (int bpm)
 {
-    char b[8];
-    snprintf(b, sizeof(b), "%d", beats_per_measure);
-    m_entry_bpm->set_text(b);
-    is_modified(m_bpm != beats_per_measure);
-    m_bpm = beats_per_measure;
-    set_guides();
+    if (bpm != m_bpm)
+    {
+        char b[8];
+        snprintf(b, sizeof(b), "%d", bpm);
+        m_entry_bpm->set_text(b);
+        if (m_bpm != 0)                     /* are we in construction?      */
+            perf().modify();                /* no, it's a modification now  */
+
+        m_bpm = bpm;
+        set_guides();
+    }
 }
 
 /**
  *  Sets the BW (beat width, or the denominator in the time signature)
  *  text and values to the given value, and then calls set_guides().
+ *
+ *  The usage of is modified was faulty.  Offloaded it to the perform object
+ *  to make it more foolproof.  See the perform::modify() function.
  */
 
 void
-perfedit::set_beat_width (int beat_width)
+perfedit::set_beat_width (int bw)
 {
-    char b[8];
-    snprintf(b, sizeof(b), "%d", beat_width);
-    m_entry_bw->set_text(b);
-    is_modified(m_bw != beat_width);
-    m_bw = beat_width;
+    if (bw != m_bw)
+    {
+        char b[8];
+        snprintf(b, sizeof(b), "%d", bw);
+        m_entry_bw->set_text(b);
+        if (m_bw != 0)                      /* are we in construction?      */
+            perf().modify();                /* no, it's a modification now  */
 
-    // m_beats_per_measure = beat_width;   // applicable now?
-
-    set_guides();
+        m_bw = bw;
+        set_guides();
+    }
 }
 
 /**
  *  Increments the size of the perfroll and perftime objects.
+ *  Make sure that setting the modified flag makes sense for this operation.
+ *  It doesn't seem to modify members.
  */
 
 void
 perfedit::grow ()
 {
     m_perfroll->increment_size();
-    m_perftime->increment_size();
-    is_modified(true);
+    m_perftime->increment_size();           /* a do-nothing function    */
 }
 
 /**

@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-05
+ * \updates       2015-11-07
  * \license       GNU GPLv2 or above
  *
  *  This module is almost exclusively user-interface code.  There are some
@@ -114,25 +114,20 @@ perfnames::change_vert ()
 void
 perfnames::draw_sequence (int seqnum)
 {
-    int i = seqnum - m_sequence_offset;
+    int yloc = m_names_y * (seqnum - m_sequence_offset);
     if (seqnum < m_sequence_max)                /* less than "infinity" */
     {
         /*
          * 1. Render the set number, or a blank box, in leftmost column.
          */
 
-        char sns[4];                            /* set-number buffer    */
-        snprintf(sns, sizeof(sns), "%2d", seqnum / m_seqs_in_set);
-        draw_rectangle(black(), 0, m_names_y * i, m_names_x, m_names_y + 1);
+        char snb[4];                            /* set-number buffer    */
+        snprintf(snb, sizeof(snb), "%2d", seqnum / m_seqs_in_set);
+        draw_rectangle(black(), 0, yloc, m_names_x, m_names_y + 1);
         if (seqnum % m_seqs_in_set == 0)
-        {
-            render_string
-            (
-                m_xy_offset, m_names_y * i + m_xy_offset, sns, font::WHITE
-            );
-        }
+            render_string(m_xy_offset, yloc + m_xy_offset, snb, font::WHITE);
         else
-            draw_rectangle(white(), 1, m_names_y * i, m_setbox_w + 1, m_names_y);
+            draw_rectangle(white(), 1, yloc, m_setbox_w + 1, m_names_y);
 
 #if SEQ64_HIGHLIGHT_EMPTY_SEQS
         bool seqempty = false;
@@ -167,7 +162,7 @@ perfnames::draw_sequence (int seqnum)
 
         draw_rectangle
         (
-            fg, m_setbox_w + 3, (m_names_y * i) + 1,
+            fg, m_setbox_w + 3, yloc + 1,
             m_names_x - 3 - m_setbox_w, m_names_y - 1
         );
         if (perf().is_active(seqnum))
@@ -179,20 +174,39 @@ perfnames::draw_sequence (int seqnum)
                 temp, sizeof(temp), "%-14.14s   %2d",
                 seq->get_name(), seq->get_midi_channel() + 1
             );
-            render_string(5 + m_setbox_w, m_names_y * i + 2, temp, col);
-            snprintf
-            (
-                temp, sizeof(temp), "%d-%d %ld/%ld",
-                seq->get_midi_bus(), seq->get_midi_channel() + 1,
-                seq->get_beats_per_bar(), seq->get_beat_width()
-            );
-            render_string(5 + m_setbox_w, m_names_y * i + 12, temp, col);
+            render_string(5 + m_setbox_w, yloc + 2, temp, col);
+
+            /*
+             * Note:  These snprintf() calls are used in mainwid() and
+             * perfnames(), and could be made common code (in the sequence
+             * module?) to return the string.
+             */
+
+            int bus = seq->get_midi_bus();
+            int chan = seq->get_midi_channel() + 1;
+            int bpb = int(seq->get_beats_per_bar());
+            int bw = int(seq->get_beat_width());
+            bool showed_seqinfo = false;
+#ifdef SEQ64_SEQNUMBER_ON_GRID
+            if (perf().show_ui_sequence_key())
+            {
+                showed_seqinfo = true;
+                snprintf
+                (
+                    temp, sizeof temp, "%-3d%d-%d %d/%d",
+                    seqnum, bus, chan, bpb, bw
+                );
+            }
+#else
+            showed_seqinfo = false;
+#endif                                  // SEQ64_SEQNUMBER_ON_GRID
+            if (! showed_seqinfo)
+                snprintf(temp, sizeof temp, "%d-%d %d/%d", bus, chan, bpb, bw);
+
+            render_string(m_setbox_w + 5, yloc + 12, temp, col);
 
             bool muted = seq->get_song_mute();
-            draw_rectangle
-            (
-                black(), m_namebox_w + 2, (m_names_y * i), 10, m_names_y, muted
-            );
+            draw_rectangle(black(), m_namebox_w + 2, yloc, 10, m_names_y, muted);
             if (muted)
             {
 #if SEQ64_HIGHLIGHT_EMPTY_SEQS
@@ -201,15 +215,18 @@ perfnames::draw_sequence (int seqnum)
                 else
 #endif
                     col = font::WHITE;
-
-                render_string(m_namebox_w + 5, m_names_y * i + 2, "M", col);
             }
-            else
-                render_string(m_namebox_w + 5, m_names_y * i + 2, "M", col);
+            render_string(m_namebox_w + 5, yloc + 2, "M", col);
         }
     }
     else
-        draw_rectangle(grey(), 0, (m_names_y * i) + 1, m_names_x, m_names_y);
+    {
+        /*
+         * This "else" shouldn't legally be possible!
+         */
+
+        draw_rectangle(grey(), 0, yloc + 1, m_names_x, m_names_y);
+    }
 }
 
 /**
@@ -234,12 +251,12 @@ perfnames::convert_y (int y)
  */
 
 bool
-perfnames::on_button_press_event (GdkEventButton * a_e)
+perfnames::on_button_press_event (GdkEventButton * ev)
 {
-    int y = int(a_e->y);
+    int y = int(ev->y);
     int seqnum = convert_y(y);
     current_sequence(seqnum);
-    if (SEQ64_CLICK_LEFT(a_e->button))
+    if (SEQ64_CLICK_LEFT(ev->button))
     {
         if (perf().is_active(seqnum))
         {
@@ -275,7 +292,7 @@ perfnames::on_realize ()
  */
 
 bool
-perfnames::on_expose_event (GdkEventExpose * a_e)
+perfnames::on_expose_event (GdkEventExpose *)
 {
     int seqs = (m_window_y / m_names_y) + 1;
     for (int i = 0; i < seqs; i++)
@@ -357,3 +374,4 @@ perfnames::redraw_dirty_sequences ()
  *
  * vim: sw=4 ts=4 wm=4 et ft=cpp
  */
+

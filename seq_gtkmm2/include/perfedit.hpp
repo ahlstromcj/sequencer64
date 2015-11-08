@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-05
+ * \updates       2015-11-07
  * \license       GNU GPLv2 or above
  *
  */
@@ -129,48 +129,57 @@ private:
      */
 
     int m_snap;
+
+    /**
+     *  The current "beats per measure" value.  Do not confuse it with BPM
+     *  (beats per minute). The numerator of the time signature.
+     */
+
     int m_bpm;
+
+    /**
+     *  The current "beat width" value.  The denominator of the time
+     *  signature.
+     */
+
     int m_bw;
+
+    /**
+     *  The current "parts per quarter note" value.
+     */
+
     int m_ppqn;
-    int m_beats_per_measure;
+
+    /**
+     *  The standard "beats per measure" of Sequencer64, which here matches
+     *  the beats-per-measure displayed in the perfroll (piano roll).
+     */
+
+    int m_standard_bpm;
+
+    /**
+     *  Provides the timer period for the perfedit timer, used to determine
+     *  the rate of redrawing.  This is hardwired to 40 ms in Linux, and 20 ms
+     *  in Windows.
+     */
+
     int m_redraw_ms;
-    bool m_modified;
 
 public:
 
     perfedit
     (
         perform & p,
-        int ppqn    = SEQ64_USE_DEFAULT_PPQN,
-        int bpm     = DEFAULT_BEATS_PER_MEASURE,
-        int bw      = DEFAULT_BEAT_WIDTH
+        int ppqn    = SEQ64_USE_DEFAULT_PPQN
     );
     ~perfedit ();
 
     void init_before_show ();
 
-    /**
-     * \setter m_modified
-     */
-
-    void is_modified (bool flag)
-    {
-        m_modified = flag;
-    }
-
-    /**
-     * \getter m_modified
-     */
-
-    bool is_modified () const
-    {
-        return m_modified;
-    }
-
 private:
 
-    void set_beats_per_bar (int beats_per_measure);
-    void set_beat_width (int beat_width);
+    void set_beats_per_bar (int bpm);
+    void set_beat_width (int bw);
     void set_snap (int snap);
     void set_guides ();
     void grow ();

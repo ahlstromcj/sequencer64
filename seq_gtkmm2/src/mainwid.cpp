@@ -64,21 +64,8 @@ using namespace Gtk::Menu_Helpers;
  */
 
 #undef  SEQ64_USE_GREY_GRID             /* undefine for black/white boxes  */
-#define SEQ64_USE_WHITE_GRID            /* use white background             */
-#define SEQ64_USE_BRACKET_GRID          /* undefine for black box & outline */
-
-/**
- *  Defining SEQ64_SEQNUMBER_ON_GRID causes the sequence number of the slot to
- *  be drawn in empty boxes.  Unfortunately, the background color is going to
- *  be different from the default theme background color.  Fortunately, though
- *  ugly, this guarantees the sequence number to be visible.
- *
- *  This feature is also tied to the show-UI-keys setting, on the theory that
- *  some people like to see the extra information, some don't, and we don't
- *  want to add a separate option for it at this time.
- */
-
-#define SEQ64_SEQNUMBER_ON_GRID
+#undef  SEQ64_USE_WHITE_GRID            /* use white background             */
+#undef  SEQ64_USE_BRACKET_GRID          /* undefine for black box & outline */
 
 namespace seq64
 {
@@ -284,7 +271,7 @@ mainwid::draw_sequence_on_pixmap (int seqnum)
             }
 #endif
 
-            char temp[64];                          // used a lot below
+            char temp[32];                          // used a lot below
 
             /*
              * snprintf(temp, sizeof temp, "%d:%.11s", seqnum, seq->get_name());
@@ -319,6 +306,13 @@ mainwid::draw_sequence_on_pixmap (int seqnum)
                 snprintf(temp, sizeof temp, "%c", key);
                 charx -= strlen(temp) * m_text_size_x;
                 render_string_on_pixmap(charx, chary, temp, col);
+
+                /*
+                 * Note:  These snprintf() calls are used in mainwid() and
+                 * perfnames(), and could be made common code (in the sequence
+                 * module?) to return the string.
+                 */
+
 #ifdef SEQ64_SEQNUMBER_ON_GRID          // best look of all the alternatives
                 showed_seqinfo = true;
                 snprintf
@@ -425,6 +419,15 @@ mainwid::draw_sequence_on_pixmap (int seqnum)
             (
                 base_x + 4, base_y, m_seqarea_x - 8, m_seqarea_y
             );
+#else
+            /*
+             * Too ugly.  Let the box stay black.
+             *
+             *  draw_rectangle_on_pixmap
+             *  (
+             *      dark_grey(), base_x + 4, base_y, m_seqarea_x - 8, m_seqarea_y
+             *  );
+             */
 #endif
 
 #if defined SEQ64_USE_BRACKET_GRID          /* change box to "brackets"     */
@@ -774,7 +777,7 @@ mainwid::on_realize ()
 /**
  *  Implements the GTK expose event callback.
  *
- * \param a_e
+ * \param ev
  *      The expose event.
  *
  * \return
@@ -782,13 +785,13 @@ mainwid::on_realize ()
  */
 
 bool
-mainwid::on_expose_event (GdkEventExpose * a_e)
+mainwid::on_expose_event (GdkEventExpose * ev)
 {
     draw_drawable
     (
-        a_e->area.x, a_e->area.y,
-        a_e->area.x, a_e->area.y,
-        a_e->area.width, a_e->area.height
+        ev->area.x, ev->area.y,
+        ev->area.x, ev->area.y,
+        ev->area.width, ev->area.height
     );
     return true;
 }

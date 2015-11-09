@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-25
- * \updates       2015-11-04
+ * \updates       2015-11-08
  * \license       GNU GPLv2 or above
  *
  *  This class replaces an global_user_midi_bus_definitions[] array element
@@ -37,20 +37,8 @@
 
 #include <string>
 
-#include "easy_macros.h"               // with platform_macros.h, too
-
-/**
- *  No buss override if the buss number is this value (-1).
- */
-
-#define SEQ64_BAD_BUSS                  (char(-1))
-#define NO_BUSS_OVERRIDE(b)             (char(b) == SEQ64_BAD_BUSS)
-
-/**
- *  Default value for c_max_busses.
- */
-
-#define DEFAULT_BUSS_MAX                 32
+#include "app_limits.h"                 /* application-specific constants   */
+#include "globals.h"                    /* constants and "easy macros"      */
 
 namespace seq64
 {

@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-22
- * \updates       2015-11-07
+ * \updates       2015-11-08
  * \license       GNU GPLv2 or above
  *
  *  This module defines the following categories of "global" variables that
@@ -86,6 +86,35 @@ class user_settings
     friend class userfile;      /* allow protected access to file parser */
 
     /**
+     *  Provides a setting to control the overall style of grid-drawing for
+     *  the pattern slots in mainwid.  These values can be specified in the
+     *  [user-interface-settings] section of the "user" configuration file.
+     *
+     * \var grid_style_normal
+     *      The grid background color is the normal background color for the
+     *      current GTK theme.  The box is drawn with brackets on either side.
+     *
+     * \var grid_style_white
+     *      The grid background color is white.  This style better fits
+     *      displaying the white-on-black sequence numbers.  The box is drawn
+     *      with brackets on either side.
+     *
+     * \var grid_style_black
+     *      The grid background color is black.
+     *
+     * \var grid_style_max
+     *      Marks the end of the list, and is an illegal value.
+     */
+
+    enum mainwid_grid_style_t
+    {
+        grid_style_normal,
+        grid_style_white,
+        grid_style_black,
+        grid_style_max
+    };
+
+    /**
      *                  [user-midi-bus-definitions]
      *
      *  Internal type for the container of user_midi_bus objects.
@@ -128,6 +157,19 @@ class user_settings
      *
      * Used in: mainwid, ...
      */
+
+    /**
+     *  Specifies the current grid style.
+     */
+
+    mainwid_grid_style_t m_grid_style;
+
+    /**
+     *  Specify drawing brackets (like the old Seq24) or a solid box.
+     *  0 = no brackets, 1 and above is the thickness of the brakcets.
+     */
+
+    int m_grid_brackets;
 
     /**
      *  Number of rows in the Patterns Panel.  The current value is 4, and
@@ -522,6 +564,55 @@ public:
 public:
 
     /**
+     * \getter m_grid_style
+     *      Checks for normal style.
+     */
+
+    int grid_style () const
+    {
+        return int(m_grid_style);
+    }
+
+    /**
+     * \getter m_grid_style
+     *      Checks for normal style.
+     */
+
+    bool grid_is_normal () const
+    {
+        return m_grid_style == grid_style_normal;
+    }
+
+    /**
+     * \getter m_grid_style
+     *      Checks for the white style.
+     */
+
+    bool grid_is_white () const
+    {
+        return m_grid_style == grid_style_white;
+    }
+
+    /**
+     * \getter m_grid_style
+     *      Checks for the black style.
+     */
+
+    bool grid_is_black () const
+    {
+        return m_grid_style == grid_style_black;
+    }
+
+    /**
+     * \getter m_grid_brackets
+     */
+
+    int grid_brackets () const
+    {
+        return m_grid_brackets;
+    }
+
+    /**
      * \getter m_mainwnd_rows
      */
 
@@ -694,6 +785,17 @@ public:
 
 protected:
 
+    /**
+     * \getter m_grid_brackets
+     */
+
+    void grid_brackets (int thickness)
+    {
+        if (thickness >= (-30) && thickness <= 30)
+            m_grid_brackets = thickness;
+    }
+
+    void grid_style (int gridstyle);
     void mainwnd_rows (int value);
     void mainwnd_cols (int value);
     void max_sets (int value);

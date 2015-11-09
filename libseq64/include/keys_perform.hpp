@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-09-13
- * \updates       2015-10-10
+ * \updates       2015-11-08
  * \license       GNU GPLv2 or above
  *
  */
@@ -61,6 +61,7 @@ struct keys_perform_transfer
     unsigned int kpt_start;
     unsigned int kpt_stop;
     bool kpt_show_ui_sequence_key;
+    bool kpt_show_ui_sequence_number;
 };
 
 /**
@@ -96,7 +97,20 @@ protected:
 
 private:
 
-    bool m_show_ui_sequence_key;
+    /**
+     *  If set, shows the shortcut-keys on each filled pattern slot in the
+     *  main window.
+     */
+
+    bool m_key_show_ui_sequence_key;
+
+    /**
+     *  If set, shows the sequence number  on each filled pattern and empty
+     *  pattern slot in the main window.  Also show the sequence number as
+     *  part of the sequence name in the performance window (song editor).
+     */
+
+    bool m_key_show_ui_sequence_number;
 
     /*
      *  Do not access these directly, use set/lookup functions declared
@@ -130,7 +144,6 @@ private:
     unsigned int m_key_group_learn;
     unsigned int m_key_start;
     unsigned int m_key_stop;
-    bool m_key_show_ui_sequence_key;
 
 public:
 
@@ -290,6 +303,21 @@ public:
         m_key_show_ui_sequence_key = flag;
     }
 
+    /**
+     * \accessor m_key_show_ui_sequency_number
+     *
+     *  Used in mainwid, options, optionsfile, userfile, and perform.
+     */
+
+    bool show_ui_sequence_number () const
+    {
+        return m_key_show_ui_sequence_number;
+    }
+    void show_ui_sequence_number (bool flag)
+    {
+        m_key_show_ui_sequence_number = flag;
+    }
+
     SlotMap & get_key_events ()
     {
         return m_key_events;
@@ -434,7 +462,11 @@ protected:
     }
     bool * at_show_ui_sequence_key ()
     {
-        return &m_show_ui_sequence_key;
+        return &m_key_show_ui_sequence_key;
+    }
+    bool * at_show_ui_sequence_number ()
+    {
+        return &m_key_show_ui_sequence_number;
     }
 
 };

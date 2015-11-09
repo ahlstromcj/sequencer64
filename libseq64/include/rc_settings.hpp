@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-22
- * \updates       2015-11-04
+ * \updates       2015-11-08
  * \license       GNU GPLv2 or above
  *
  *  This collection of variables describes the options of the application,

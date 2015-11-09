@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-06
+ * \updates       2015-11-08
  * \license       GNU GPLv2 or above
  *
  *  The functions add_list_var() and add_long_list() have been replaced by
@@ -184,7 +184,6 @@ private:
     bool m_quantized_rec;
     bool m_thru;
     bool m_queued;
-//  bool m_trigger_copied;
 
     /* flag indicates that contents has changed from a recording */
 

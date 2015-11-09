@@ -24,18 +24,17 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-07
+ * \updates       2015-11-08
  * \license       GNU GPLv2 or above
  *
  *  This module is almost exclusively user-interface code.  There are some
  *  pointers yet that could be replaced by references, and a number of minor
  *  issues that could be fixed.
  *
- *  Adjustments to the performance window can be made with the
- *  SEQ64_HIGHLIGHT_EMPTY_SEQS macro.  Sequences that don't have
- *  events show up as black-on-yellow.  This feature is enabled by
- *  default.  To disable this feature, configure the build with the
- *  "--disable-highlight" option.
+ *  Adjustments to the performance window can be made with the highlighting
+ *  option.  Sequences that don't have events show up as black-on-yellow.
+ *  This feature is enabled by default.  To disable this feature, configure
+ *  the build with the "--disable-highlight" option.
  *
  * \todo
  *      When bringing up this dialog, and starting play from it, some
@@ -129,31 +128,25 @@ perfnames::draw_sequence (int seqnum)
         else
             draw_rectangle(white(), 1, yloc, m_setbox_w + 1, m_names_y);
 
-#if SEQ64_HIGHLIGHT_EMPTY_SEQS
-        bool seqempty = false;
-#endif
-
         sequence * seq = perf().get_sequence(seqnum);
         Color fg = grey();
         font::Color col = font::BLACK;
         if (perf().is_active(seqnum))
         {
-#if SEQ64_HIGHLIGHT_EMPTY_SEQS
-            seqempty = seq->event_count() == 0;     // this works fine!
-
             /*
              * Make sure that the rectangle drawn with the proper background
-             * colors, otherwise just the name is properly colored.
+             * colors, otherwise just the name is properly colored.  Weird,
+             * the highlight() call crashes if put just after the call to
+             * get_sequence() above!
              */
 
-            if (seqempty)
+            if (perf().highlight(*seq))
             {
-                fg = yellow();          // m_gc->set_foreground(yellow());
+                fg = yellow();
                 col = font::BLACK_ON_YELLOW;
             }
             else
-#endif
-                fg = white();           // m_gc->set_foreground(white());
+                fg = white();
         }
 
         /*
@@ -176,44 +169,16 @@ perfnames::draw_sequence (int seqnum)
             );
             render_string(5 + m_setbox_w, yloc + 2, temp, col);
 
-            /*
-             * Note:  These snprintf() calls are used in mainwid() and
-             * perfnames(), and could be made common code (in the sequence
-             * module?) to return the string.
-             */
-
-            int bus = seq->get_midi_bus();
-            int chan = seq->get_midi_channel() + 1;
-            int bpb = int(seq->get_beats_per_bar());
-            int bw = int(seq->get_beat_width());
-            bool showed_seqinfo = false;
-#ifdef SEQ64_SEQNUMBER_ON_GRID
-            if (perf().show_ui_sequence_key())
-            {
-                showed_seqinfo = true;
-                snprintf
-                (
-                    temp, sizeof temp, "%-3d%d-%d %d/%d",
-                    seqnum, bus, chan, bpb, bw
-                );
-            }
-#else
-            showed_seqinfo = false;
-#endif                                  // SEQ64_SEQNUMBER_ON_GRID
-            if (! showed_seqinfo)
-                snprintf(temp, sizeof temp, "%d-%d %d/%d", bus, chan, bpb, bw);
-
-            render_string(m_setbox_w + 5, yloc + 12, temp, col);
+            std::string label = perf().sequence_label(*seq);
+            render_string(m_setbox_w + 5, yloc + 12, label, col);
 
             bool muted = seq->get_song_mute();
             draw_rectangle(black(), m_namebox_w + 2, yloc, 10, m_names_y, muted);
             if (muted)
             {
-#if SEQ64_HIGHLIGHT_EMPTY_SEQS
-                if (seqempty)
+                if (perf().highlight(*seq))
                     col = font::YELLOW_ON_BLACK;
                 else
-#endif
                     col = font::WHITE;
             }
             render_string(m_namebox_w + 5, yloc + 2, "M", col);

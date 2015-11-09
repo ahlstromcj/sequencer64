@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-07
+ * \updates       2015-11-08
  * \license       GNU GPLv2 or above
  *
  *  Note that this representation is, in a sense, inside the mainwnd
@@ -48,27 +48,30 @@
 
 using namespace Gtk::Menu_Helpers;
 
-/**
- *  Adjustments to the main window.  Trying to get sequences that don't
- *  have events to show up as black-on-yellow.  This works now, and is
- *  enabled by default.  To disable this feature, configure the build with
- *  the --disable-highlight option.
- *
- *      #define SEQ64_HIGHLIGHT_EMPTY_SEQS    // undefine for normal empty seqs
- *
- *  The SEQ64_USE_GREY_GRID, SEQ64_USE_WHITE_GRID, and SEQ64_USE_BRACKET_GRID
- *  can be undefined in combination to obtain different kinds of looks for the
- *  main (patterns) window at build time.  You can get black boxes, white
- *  boxes, black bars, and normal (matching the GTK theme) boxes.  Try it and
- *  see for yourself!
- */
-
-#undef  SEQ64_USE_GREY_GRID             /* undefine for black/white boxes  */
-#undef  SEQ64_USE_WHITE_GRID            /* use white background             */
-#undef  SEQ64_USE_BRACKET_GRID          /* undefine for black box & outline */
-
 namespace seq64
 {
+
+/**
+ * The width of the main pattern/sequence grid, in pixels.  Affected by
+ * the c_mainwid_border and c_mainwid_spacing values.
+ */
+
+const int c_mainwid_x =
+(
+    2 + (c_seqarea_x + c_mainwid_spacing) * c_mainwnd_cols -
+        c_mainwid_spacing + c_mainwid_border * 2
+);
+
+/*
+ * The height  of the main pattern/sequence grid, in pixels.  Affected by
+ * the c_mainwid_border and c_control_height values.
+ */
+
+const int c_mainwid_y =
+(
+    (c_seqarea_y + c_mainwid_spacing) * c_mainwnd_rows +
+         c_control_height + c_mainwid_border * 2
+);
 
 /*
  * Potential pre-calculations:
@@ -195,40 +198,25 @@ mainwid::draw_sequence_on_pixmap (int seqnum)
     {
         int base_x, base_y;
         calculate_base_sizes(seqnum, base_x, base_y);   /* side-effects     */
-        draw_rectangle_on_pixmap                        /* outer box border */
+        ++base_x;                                       /* overall fix-up   */
+        ++base_y;                                       /* overall fix-up   */
+        draw_rectangle_on_pixmap                        /* filled black box */
         (
             black(), base_x, base_y, m_seqarea_x, m_seqarea_y
         );
         if (perf().is_active(seqnum))
         {
             sequence * seq = perf().get_sequence(seqnum);
-            if (is_nullptr(seq))                    /* non-existent?        */
-                return;                             /* yes, ignore it       */
+            if (is_nullptr(seq))                        /* non-existent?    */
+                return;                                 /* yes, ignore it   */
 
             if (seqnum != seq->number() && seq->number() != (-1))
                 printf("seq# mismatch: %d-%d\n", seqnum, seq->number());
 
-#if SEQ64_HIGHLIGHT_EMPTY_SEQS
-            if (seq->event_count() > 0)
+            bool high_light = perf().highlight(*seq);
+            if (high_light)
             {
-#endif
-                if (seq->get_playing())
-                {
-                    m_last_playing[seqnum] = true;  /* active and playing   */
-                    bg_color(black());
-                    fg_color(white());
-                }
-                else
-                {
-                    m_last_playing[seqnum] = false; /* active, not playing */
-                    bg_color(white());
-                    fg_color(black());
-                }
-#if SEQ64_HIGHLIGHT_EMPTY_SEQS
-            }
-            else
-            {
-                m_last_playing[seqnum] = false;      // active and not playing
+                m_last_playing[seqnum] = false;         /* active, no play  */
                 if (seq->get_playing())
                 {
                     bg_color(black());
@@ -240,7 +228,21 @@ mainwid::draw_sequence_on_pixmap (int seqnum)
                     fg_color(black());
                 }
             }
-#endif          // SEQ64_HIGHLIGHT_EMPTY_SEQS
+            else
+            {
+                if (seq->get_playing())
+                {
+                    m_last_playing[seqnum] = true;      /* active & playing */
+                    bg_color(black());
+                    fg_color(white());
+                }
+                else
+                {
+                    m_last_playing[seqnum] = false;     /* active, no play  */
+                    bg_color(white());
+                    fg_color(black());
+                }
+            }
 
             draw_rectangle_on_pixmap
             (
@@ -249,19 +251,7 @@ mainwid::draw_sequence_on_pixmap (int seqnum)
             m_gc->set_foreground(fg_color());
 
             font::Color col = font::BLACK;
-
-#if SEQ64_HIGHLIGHT_EMPTY_SEQS
-            if (seq->event_count() > 0)
-            {
-#endif
-                if (fg_color() == black())
-                    col = font::BLACK;
-
-                if (fg_color() == white())
-                    col = font::WHITE;
-#if SEQ64_HIGHLIGHT_EMPTY_SEQS
-            }
-            else
+            if (high_light)
             {
                 if (fg_color() == black())
                     col = font::BLACK_ON_YELLOW;
@@ -269,14 +259,16 @@ mainwid::draw_sequence_on_pixmap (int seqnum)
                 if (fg_color() == yellow())
                     col = font::YELLOW_ON_BLACK;
             }
-#endif
+            else
+            {
+                if (fg_color() == black())
+                    col = font::BLACK;
+
+                if (fg_color() == white())
+                    col = font::WHITE;
+            }
 
             char temp[32];                          // used a lot below
-
-            /*
-             * snprintf(temp, sizeof temp, "%d:%.11s", seqnum, seq->get_name());
-             */
-
             snprintf(temp, sizeof temp, "%.13s", seq->get_name());
             render_string_on_pixmap                 // seqnum:name of pattern
             (
@@ -288,49 +280,26 @@ mainwid::draw_sequence_on_pixmap (int seqnum)
              * Compensates for text-width using actual character width.
              */
 
-            bool showed_seqinfo = false;
-            int bus = seq->get_midi_bus();
-            int chan = seq->get_midi_channel() + 1;
-            int bpb = int(seq->get_beats_per_bar());
-            int bw = int(seq->get_beat_width());
             if (perf().show_ui_sequence_key())
             {
                 char key = char(perf().lookup_keyevent_key(seqnum));
                 int charx = base_x + m_seqarea_x - 3;
                 int chary = base_y + m_text_size_y * 4 - 2;
-
-                /*
-                 * snprintf(temp, sizeof temp, "%c  %d", key, seqnum);
-                 */
-
                 snprintf(temp, sizeof temp, "%c", key);
                 charx -= strlen(temp) * m_text_size_x;
                 render_string_on_pixmap(charx, chary, temp, col);
-
-                /*
-                 * Note:  These snprintf() calls are used in mainwid() and
-                 * perfnames(), and could be made common code (in the sequence
-                 * module?) to return the string.
-                 */
-
-#ifdef SEQ64_SEQNUMBER_ON_GRID          // best look of all the alternatives
-                showed_seqinfo = true;
-                snprintf
-                (
-                    temp, sizeof temp, "%-3d%d-%d %d/%d",
-                    seqnum, bus, chan, bpb, bw
-                );
-#else
-                showed_seqinfo = false;
-#endif                                  // SEQ64_SEQNUMBER_ON_GRID
             }
-            if (! showed_seqinfo)
-                snprintf(temp, sizeof temp, "%d-%d  %d/%d", bus, chan, bpb, bw);
 
+            /*
+             * Get the format of the bottom-left line from the perform module,
+             * and display it in the active pattern slots.
+             */
+
+            std::string label = perf().sequence_label(*seq);
             render_string_on_pixmap                         // bus, ch, etc.
             (
                 base_x + m_text_size_x - 3, base_y + m_text_size_y * 4 - 2,
-                temp, col
+                label, col
             );
 
             int rectangle_x = base_x + m_text_size_x - 1;
@@ -349,7 +318,7 @@ mainwid::draw_sequence_on_pixmap (int seqnum)
              * Draws the inner rectangle for all sequences.
              */
 
-            draw_rectangle_on_pixmap                        // ditto, unqueued
+            draw_rectangle_on_pixmap
             (
                 fg_color(), rectangle_x - 2, rectangle_y - 1,
                 m_seqarea_seq_x + 3, m_seqarea_seq_y + 3, false
@@ -366,7 +335,7 @@ mainwid::draw_sequence_on_pixmap (int seqnum)
             int velocity;
             draw_type dt;
             seq->reset_draw_marker();
-            while                           // draws the note marks in inner box
+            while                       /* draws note marks in inner box    */
             (
                 (
                     dt = seq->get_next_note_event(
@@ -396,54 +365,48 @@ mainwid::draw_sequence_on_pixmap (int seqnum)
         else                                /* sequence not active          */
         {
             /*
-             *  Draws the grid areas that do not contain a sequence.
-             *  The first section colors the whole grid area grey,
-             *  surrounded by a thin black outline.  The second section
-             *  draws a slightly narrower, but taller grey box, that
-             *  yields the outlining "brackets" on each side of the grid
-             *  area.  Without either of these sections, an empty grid is
-             *  all black.
+             *  Draws grids that contain no sequence.  The first section
+             *  colors the whole grid area grey, surrounded by a black
+             *  outline.  The second section draws a narrower, but taller grey
+             *  box, that yields the outlining "brackets" on each side of the
+             *  grid area.  Without either of this drawing, an empty grid is
+             *  all black boxes.  We now offer a drawing option for
+             *  "black-grid", "boxed-grid", or "normal-grid" for the empty
+             *  sequence box.  Now we draw a box, thicker if we're adding
+             *  thickness to the grid bracket.
              *
-             *  It might be cool to offer a drawing option for
-             *  "black-grid", "boxed-grid", or "normal-grid" for the
-             *  empty sequence box.
+             *  Old:  base_x + 4, base_y, m_seqarea_x - 8, m_seqarea_y
              */
 
-#if defined SEQ64_USE_GREY_GRID             /* otherwise, leave it black    */
-            draw_rectangle_on_pixmap
-            (
-                white(), base_x + 4, base_y, m_seqarea_x - 8, m_seqarea_y
-            );
-#elif defined SEQ64_USE_WHITE_GRID          /* use white background         */
-            draw_normal_rectangle_on_pixmap
-            (
-                base_x + 4, base_y, m_seqarea_x - 8, m_seqarea_y
-            );
-#else
-            /*
-             * Too ugly.  Let the box stay black.
-             *
-             *  draw_rectangle_on_pixmap
-             *  (
-             *      dark_grey(), base_x + 4, base_y, m_seqarea_x - 8, m_seqarea_y
-             *  );
-             */
-#endif
+            int gbt = usr().grid_brackets();            /* gb thickness     */
+            bool do_brackets = gbt > 0;
+            if (! do_brackets)
+                gbt = -gbt;
 
-#if defined SEQ64_USE_BRACKET_GRID          /* change box to "brackets"     */
-            draw_rectangle_on_pixmap
-            (
-                white(), base_x + 1, base_y + 1, m_seqarea_x - 2, m_seqarea_y - 2
-            );
-#elif defined SEQ64_USE_WHITE_GRID          /* use white background         */
-            draw_normal_rectangle_on_pixmap
-            (
-                base_x + 1, base_y + 1, m_seqarea_x - 2, m_seqarea_y - 2
-            );
-#endif
+            int offset = gbt > 1 ?  gbt - 1 : 0 ;       /* x, y offset      */
+            int reduction = 2 * offset;                 /* size reduction   */
+            int x = base_x + 1 + offset;
+            int y = base_y + 1 + offset;
+            int lx = m_seqarea_x - 2 - reduction;
+            int ly = m_seqarea_y - 2 - reduction;
+            if (usr().grid_is_normal())
+                draw_normal_rectangle_on_pixmap(x, y, lx, ly);
+            else if (usr().grid_is_white())
+                draw_rectangle_on_pixmap(white(), x, y, lx, ly);
 
-#if defined SEQ64_SEQNUMBER_ON_GRID
-            if (perf().show_ui_sequence_key())
+            if (do_brackets)
+            {
+                int offset = 2 * gbt + 1;
+                x = base_x + offset;
+                y = base_y;
+                lx = m_seqarea_x - 2 * offset;
+                ly = m_seqarea_y;
+                if (usr().grid_is_normal())
+                    draw_normal_rectangle_on_pixmap(x, y, lx, ly);
+                else if (usr().grid_is_white())
+                    draw_rectangle_on_pixmap(white(), x, y, lx, ly);
+            }
+            if (perf().show_ui_sequence_number())
             {
                 char snum[8];
                 snprintf(snum, sizeof(snum), "%d", seqnum);
@@ -451,16 +414,18 @@ mainwid::draw_sequence_on_pixmap (int seqnum)
                 int chary = font_render().char_height() / 2;
                 int centerx = base_x + m_seqarea_x / 2 - charx;
                 int centery = base_y + m_seqarea_y / 2 - chary;
-#if defined SEQ64_USE_GREY_GRID || defined SEQ64_USE_WHITE_GRID
-                render_string_on_pixmap(centerx, centery, snum, font::BLACK);
-#else
-                render_string_on_pixmap
-                (
-                    centerx, centery, snum, font::YELLOW_ON_BLACK
-                );
-#endif
+                if (usr().grid_is_normal() || usr().grid_is_white())
+                {
+                    render_string_on_pixmap(centerx, centery, snum, font::BLACK);
+                }
+                else
+                {
+                    render_string_on_pixmap
+                    (
+                        centerx, centery, snum, font::YELLOW_ON_BLACK
+                    );
+                }
             }
-#endif
         }
     }
 }

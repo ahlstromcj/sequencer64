@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-07
+ * \updates       2015-11-08
  * \license       GNU GPLv2 or above
  *
  *  Here is a list of the global variables used/stored/modified by this
@@ -34,7 +34,7 @@
  *      -   c_max_sequence
  *      -   e_fruity_interaction and e_seq24_interation
  *      -   e_clock_off, e_clock_pos, e_clock_mod
- *      -   e_keylabelsonsequence
+ *      -   e_keylabelsonsequence and e_keylabelsonsequence
  *      -   e_jack_transport, e_jack_master,
  *          e_jack_master_cond, e_jack_master_connect,
  *          e_jack_master_disconnect, e_jack_master_song_mode,
@@ -69,15 +69,6 @@
 
 namespace seq64
 {
-
-/**
- *  Yet another way to define a constant.
- */
-
-enum
-{
-    e_keylabelsonsequence = PERFORM_KEY_LABELS_ON_SEQUENCE
-};
 
 /**
  *  The principal constructor for the options class creates a number of
@@ -234,20 +225,20 @@ options::add_midi_input_page ()
     Gtk::VBox * vbox = manage(new Gtk::VBox());
     vbox->set_border_width(6);
     m_notebook->append_page(*vbox, "MIDI _Input", true);
-    for (int i = 0; i < buses; i++)
+    for (int bus = 0; bus < buses; ++bus)
     {
         Gtk::CheckButton * check = manage
         (
             new Gtk::CheckButton
             (
-                perf().master_bus().get_midi_in_bus_name(i), 0
+                perf().master_bus().get_midi_in_bus_name(bus), 0
             )
         );
         check->signal_toggled().connect
         (
-            bind(mem_fun(*this, &options::input_callback), i, check)
+            bind(mem_fun(*this, &options::input_callback), bus, check)
         );
-        check->set_active(perf().master_bus().get_input(i));
+        check->set_active(perf().master_bus().get_input(bus));
         vbox->pack_start(*check, false, false);
     }
 }
@@ -276,20 +267,35 @@ options::add_keyboard_page ()
     m_notebook->append_page(*mainbox, "_Keyboard", true);
 
     Gtk::HBox * hbox = manage(new Gtk::HBox());
-    Gtk::CheckButton * check = manage
+    Gtk::CheckButton * keycheck = manage
     (
-        new Gtk::CheckButton("_Show key labels on sequences", true)
+        new Gtk::CheckButton("_Show sequence hot-key labels on sequences", true)
     );
-    check->signal_toggled().connect
+    keycheck->signal_toggled().connect
     (
         bind
         (
             mem_fun(*this, &options::input_callback),
-            int(e_keylabelsonsequence), check
+            PERFORM_KEY_LABELS_ON_SEQUENCE, keycheck
         )
     );
-    check->set_active(perf().show_ui_sequence_key());
-    mainbox->pack_start(*check, false, false);
+    keycheck->set_active(perf().show_ui_sequence_key());
+    mainbox->pack_start(*keycheck, false, false);
+
+    Gtk::CheckButton * numcheck = manage
+    (
+        new Gtk::CheckButton("Show se_quence numbers on sequences", true)
+    );
+    numcheck->signal_toggled().connect
+    (
+        bind
+        (
+            mem_fun(*this, &options::input_callback),
+            PERFORM_NUM_LABELS_ON_SEQUENCE, numcheck
+        )
+    );
+    numcheck->set_active(perf().show_ui_sequence_number());
+    mainbox->pack_start(*numcheck, false, false);
 
     /* Frame for sequence toggle keys */
 
@@ -793,7 +799,23 @@ options::clock_mod_callback (Gtk::Adjustment * adj)
 }
 
 /**
- *  Input callback function.
+ *  Input callback function.  This is kind of a weird function, but it allows
+ *  immediate redrawing of the mainwid and perfnames user-interfaces when this
+ *  item is modified in the File / Options /Keyboard tab.
+ *
+ * \tricky
+ *      See the description of the bus parameter.
+ *
+ * \param bus
+ *      If in the normal buss-number range, this serves as a buss setting for
+ *      the perform perform object.  If it is a large number (9900 and above),
+ *      it serves to modify the "show sequence hot-key" or "show sequence
+ *      number" settings (which leads to the set-dirty flag of each sequence
+ *      being set, and hence a redraw of each sequence).
+ *
+ * \param i_button
+ *      Provides the check-box object that was changed by a click.  It's
+ *      get_active() function provides the current state of the boolean value.
  */
 
 void
@@ -802,22 +824,6 @@ options::input_callback (int bus, Gtk::Button * i_button)
     Gtk::CheckButton * button = (Gtk::CheckButton *) i_button;
     bool input = button->get_active();
     perf().set_input_bus(bus, input);
-
-    /***
-     *
-    if (bus == PERFORM_KEY_LABELS_ON_SEQUENCE)
-    {
-        perf().show_ui_sequence_key(input);
-        for (int seq = 0; seq < c_max_sequence; seq++)
-        {
-            if (perf().get_sequence(seq))
-                perf().get_sequence(seq)->set_dirty();
-        }
-    }
-    else
-        perf().master_bus().set_input(bus, input);
-     *
-     ***/
 }
 
 /**

@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-13
- * \updates       2015-10-10
+ * \updates       2015-11-08
  * \license       GNU GPLv2 or above
  *
  */
@@ -44,27 +44,27 @@ namespace seq64
 
 keys_perform::keys_perform ()
  :
-    m_show_ui_sequence_key      (true),
-    m_key_events                (),
-    m_key_groups                (),
-    m_key_events_rev            (),
-    m_key_groups_rev            (),
-    m_key_bpm_up                (SEQ64_apostrophe),
-    m_key_bpm_dn                (SEQ64_semicolon),
-    m_key_replace               (SEQ64_Control_L),
-    m_key_queue                 (SEQ64_Control_R),
-    m_key_keep_queue            (SEQ64_backslash),
-    m_key_snapshot_1            (SEQ64_Alt_L),
-    m_key_snapshot_2            (SEQ64_Alt_R),
-    m_key_screenset_up          (SEQ64_bracketright),
-    m_key_screenset_dn          (SEQ64_bracketleft),
-    m_key_set_playing_screenset (SEQ64_Home),
-    m_key_group_on              (SEQ64_igrave),
-    m_key_group_off             (SEQ64_apostrophe),       // a repeat
-    m_key_group_learn           (SEQ64_Insert),
-    m_key_start                 (SEQ64_space),
-    m_key_stop                  (SEQ64_Escape),
-    m_key_show_ui_sequence_key  (false)
+    m_key_show_ui_sequence_key      (true),
+    m_key_show_ui_sequence_number   (false),
+    m_key_events                    (),
+    m_key_groups                    (),
+    m_key_events_rev                (),
+    m_key_groups_rev                (),
+    m_key_bpm_up                    (SEQ64_apostrophe),
+    m_key_bpm_dn                    (SEQ64_semicolon),
+    m_key_replace                   (SEQ64_Control_L),
+    m_key_queue                     (SEQ64_Control_R),
+    m_key_keep_queue                (SEQ64_backslash),
+    m_key_snapshot_1                (SEQ64_Alt_L),
+    m_key_snapshot_2                (SEQ64_Alt_R),
+    m_key_screenset_up              (SEQ64_bracketright),
+    m_key_screenset_dn              (SEQ64_bracketleft),
+    m_key_set_playing_screenset     (SEQ64_Home),
+    m_key_group_on                  (SEQ64_igrave),
+    m_key_group_off                 (SEQ64_apostrophe),       // a repeat
+    m_key_group_learn               (SEQ64_Insert),
+    m_key_start                     (SEQ64_space),
+    m_key_stop                      (SEQ64_Escape)
 {
     // Empty body
 }
@@ -113,22 +113,23 @@ keys_perform::key_name (unsigned int key) const
 void
 keys_perform::set_keys (const keys_perform_transfer & kpt)
 {
-    m_key_bpm_up                = kpt.kpt_bpm_up;
-    m_key_bpm_dn                = kpt.kpt_bpm_dn;
-    m_key_replace               = kpt.kpt_replace;
-    m_key_queue                 = kpt.kpt_queue;
-    m_key_keep_queue            = kpt.kpt_keep_queue;
-    m_key_snapshot_1            = kpt.kpt_snapshot_1;
-    m_key_snapshot_2            = kpt.kpt_snapshot_2;
-    m_key_screenset_up          = kpt.kpt_screenset_up;
-    m_key_screenset_dn          = kpt.kpt_screenset_dn;
-    m_key_set_playing_screenset = kpt.kpt_set_playing_screenset;
-    m_key_group_on              = kpt.kpt_group_on;
-    m_key_group_off             = kpt.kpt_group_off;
-    m_key_group_learn           = kpt.kpt_group_learn;
-    m_key_start                 = kpt.kpt_start;
-    m_key_stop                  = kpt.kpt_stop;
-    m_key_show_ui_sequence_key  = kpt.kpt_show_ui_sequence_key;
+    m_key_bpm_up                    = kpt.kpt_bpm_up;
+    m_key_bpm_dn                    = kpt.kpt_bpm_dn;
+    m_key_replace                   = kpt.kpt_replace;
+    m_key_queue                     = kpt.kpt_queue;
+    m_key_keep_queue                = kpt.kpt_keep_queue;
+    m_key_snapshot_1                = kpt.kpt_snapshot_1;
+    m_key_snapshot_2                = kpt.kpt_snapshot_2;
+    m_key_screenset_up              = kpt.kpt_screenset_up;
+    m_key_screenset_dn              = kpt.kpt_screenset_dn;
+    m_key_set_playing_screenset     = kpt.kpt_set_playing_screenset;
+    m_key_group_on                  = kpt.kpt_group_on;
+    m_key_group_off                 = kpt.kpt_group_off;
+    m_key_group_learn               = kpt.kpt_group_learn;
+    m_key_start                     = kpt.kpt_start;
+    m_key_stop                      = kpt.kpt_stop;
+    m_key_show_ui_sequence_key      = kpt.kpt_show_ui_sequence_key;
+    m_key_show_ui_sequence_number   = kpt.kpt_show_ui_sequence_number;
 }
 
 /**
@@ -158,6 +159,7 @@ keys_perform::get_keys (keys_perform_transfer & kpt)
      kpt.kpt_start                   = m_key_start;
      kpt.kpt_stop                    = m_key_stop;
      kpt.kpt_show_ui_sequence_key    = m_key_show_ui_sequence_key;
+     kpt.kpt_show_ui_sequence_number = m_key_show_ui_sequence_number;
 }
 
 /**

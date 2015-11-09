@@ -1,9 +1,11 @@
 Bugs and Upgrade Ideas
 Chris Ahlstrom
-2015-10-27 to 2015-11-07
+2015-10-27 to 2015-11-08
 
 In no particular order...
 
+-  Why is the very first, empty sequence, missing its bottom row of numbers
+   (except for the ui hot-key).
 -  Make the GUI box-drawing and number options for configure.ac.
 y  Can the perform object control all the is-dirty stuff?  All the GUIs use it!
 -  The 750 x 500 for sequence and song editor size should be configurable in

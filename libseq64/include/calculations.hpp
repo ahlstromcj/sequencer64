@@ -1,5 +1,5 @@
-#ifndef SEQ64_CALCULATIONS_H
-#define SEQ64_CALCULATIONS_H
+#ifndef SEQ64_CALCULATIONS_HPP
+#define SEQ64_CALCULATIONS_HPP
 
 /*
  *  This file is part of seq24/sequencer64.
@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-07
- * \updates       2015-11-07
+ * \updates       2015-11-08
  * \license       GNU GPLv2 or above
  *
  *  These items were moved from the globals.h module so that only the modules
@@ -301,7 +301,7 @@ inline long measures_to_ticks
 
 }           // namespace seq64
 
-#endif      // SEQ64_CALCULATIONS_H
+#endif      // SEQ64_CALCULATIONS_HPP
 
 /*
  * calculations.h

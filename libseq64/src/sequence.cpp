@@ -1605,7 +1605,7 @@ sequence::stream_event (event * ev)
 void
 sequence::set_dirty_mp ()
 {
-    m_dirty_names =  m_dirty_main =  m_dirty_perf = true;
+    m_dirty_names =  m_dirty_main = m_dirty_perf = true;
 }
 
 /**

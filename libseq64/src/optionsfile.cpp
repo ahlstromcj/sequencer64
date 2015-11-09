@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-05
+ * \updates       2015-11-08
  * \license       GNU GPLv2 or above
  *
  *  The <tt> ~/.seq24rc </tt>
@@ -345,6 +345,15 @@ optionsfile::parse (perform & a_perf)
     sscanf(m_line, "%u", &ktx.kpt_start);
     next_data_line(file);
     sscanf(m_line, "%u", &ktx.kpt_stop);
+
+    /*
+     * New feature for showing sequence number in the GUI.
+     */
+
+    next_data_line(file);
+    sscanf(m_line, "%d", &show_key);
+    ktx.kpt_show_ui_sequence_number = bool(show_key);
+
     a_perf.keys().set_keys(ktx);                /* copy into perform keys   */
 
     line_after(file, "[jack-transport]");
@@ -771,20 +780,36 @@ optionsfile::write (const perform & a_perf)
         << ucperf.key_name(ktx.kpt_snapshot_2) << " "
         << ucperf.key_name(ktx.kpt_keep_queue) << "\n"
         ;
+
     file
         << (ktx.kpt_show_ui_sequence_key ? 1 : 0)
         << "    # show_ui_sequence_key (1 = true / 0 = false)\n"
         ;
+
     file
         << ktx.kpt_start << " # "
         << ucperf.key_name(ktx.kpt_start)
         << " start sequencer\n"
        ;
+
     file
         << ktx.kpt_stop << " # "
         << ucperf.key_name(ktx.kpt_stop)
         << " stop sequencer\n"
         ;
+
+    /**
+     *  New boolean to show sequence numbers; ignored in legacy mode.
+     */
+
+    if (! rc().legacy_format())
+    {
+        file
+            << ktx.kpt_show_ui_sequence_number << " # "
+            << " show sequence numbers (1 = true / 0 = false); "
+               " ignored in legacy mode\n"
+            ;
+    }
 
     file
         << "\n[jack-transport]\n\n"
@@ -808,7 +833,7 @@ optionsfile::write (const perform & a_perf)
         "[lash-session]\n\n"
         "# Set the following value to 0 to disable LASH session management.\n"
         "# Set the following value to 1 to enable LASH session management.\n"
-        "# This value will have no effect is LASH support is not built into\n"
+        "# This value will have no effect if LASH support is not built into\n"
         "# the application.  Use the --help option to see if LASH is part of\n"
         "# the options list.\n"
         "\n"

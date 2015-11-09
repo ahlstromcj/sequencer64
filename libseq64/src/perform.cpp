@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-07
+ * \updates       2015-11-08
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the most important single class in Sequencer64, as
@@ -458,6 +458,28 @@ perform::set_right_tick (long a_tick)
 }
 
 /**
+ *  True if a sequence is empty and should be highlighted.
+ */
+
+#if SEQ64_HIGHLIGHT_EMPTY_SEQS
+
+bool
+perform::highlight (const sequence & seq) const
+{
+    return seq.event_count() == 0;
+}
+
+#else
+
+bool
+perform::highlight (const sequence & /*seq*/) const
+{
+    return false;
+}
+
+#endif
+
+/**
  *  A private helper function for add_sequence().  It is common code
  *  and using it prevents inconsistences.  It assumes values have already been
  *  checked.
@@ -588,24 +610,6 @@ perform::set_was_active (int seq)
 }
 
 /**
- *  Checks the pattern/sequence for activity.
- *
- * \param seq
- *      The pattern number.  It is checked for invalidity.  This can
- *      lead to "too many" (i.e. redundant) checks.
- *
- * \return
- *      Returns the value of the active-flag, or false if the pattern was
- *      invalid.
- */
-
-bool
-perform::is_active (int seq)
-{
-    return is_seq_valid(seq) ? m_seqs_active[seq] : false ;
-}
-
-/**
  *  Checks the pattern/sequence for main-dirtiness.
  *
  * \param seq
@@ -727,43 +731,6 @@ perform::is_dirty_names (int seq)
         }
     }
     return was_active;
-}
-
-/**
- *  Retrieves the actual sequence, based on the pattern/sequence number.
- *
- * \note
- *      Since we can have holes in the sequence array, where there are
- *      inactive sequences, we check if the sequence is even active before
- *      emitting a message about a null pointer for the sequence.  We only
- *      want to see messages that indicate actual problems.  Actually, we
- *      comment out the message-emitting code, as is_mseq_valid() already
- *      emits a useful-enough message.
- *
- * \param seq
- *      The prospective sequence number.
- *
- * \return
- *      Returns the value of m_seqs[seq] if seq is valid.  Otherwise, a null
- *      pointer is returned.
- */
-
-sequence *
-perform::get_sequence (int seq)
-{
-    if (is_mseq_valid(seq))
-        return m_seqs[seq];
-    else
-    {
-        /*
-         * Not helpful enough to waste code on:
-         *
-         *  if (m_seqs_active[seq])
-         *      errprintf("get_sequence(): m_seqs[%d] is null\n", seq);
-         */
-
-        return nullptr;
-    }
 }
 
 /**
@@ -2466,16 +2433,90 @@ perform::sequence_key (int seq)
 }
 
 /**
- *  Sets the input bus, and handles the special "key-labels-on-sequence"
- *  functionality.  This function is called by options::input_callback().
+ *  Provides a way to format the sequence parameters string for display in the
+ *  mainwid or perfnames modules.  This string goes on the bottom-left of
+ *  those user-interface elements.
+ *
+ *  The format of this string is something like the following example,
+ *  depending on the "show sequence numbers" option.  The values shown are, in
+ *  this order, sequence number (if allowed), buss number, channel number,
+ *  beats per bar, and beat width.
+ *
+\verbatim
+        No sequence number:     31-16 4/4
+        Sequence number:        9  31-16 4/4
+\endverbatim
+ *
+ *  The sequence number and buss number are re 0, while the channel number is
+ *  displayed re 1.
+ *
+ * \note
+ *      Later, we could add the sequence hot-key to this string, though
+ *      showing that is not much use in perfnames.  Also, this function is a
+ *      stilted mix of direct access and access through sequence number.
+ *
+ * \param seq
+ *      Provides the reference to the sequence, use for getting the sequence
+ *      parameters to be written to the label string.
+ *
+ * \return
+ *      Returns the filled in label if the sequence is active.
+ *      Otherwise, an empty string is returned.
+ */
+
+std::string
+perform::sequence_label (const sequence & seq)
+{
+    std::string result;
+    int sn = seq.number();
+    if (is_active(sn))
+    {
+        char tmp[32];
+        int bus = seq.get_midi_bus();
+        int chan = seq.get_midi_channel() + 1;
+        int bpb = int(seq.get_beats_per_bar());
+        int bw = int(seq.get_beat_width());
+        if (show_ui_sequence_number())                  /* new feature! */
+            snprintf(tmp, sizeof tmp, "%-3d%d-%d %d/%d", sn, bus, chan, bpb, bw);
+        else
+            snprintf(tmp, sizeof tmp, "%d-%d %d/%d", bus, chan, bpb, bw);
+
+        result = std::string(tmp);
+    }
+    return result;
+}
+
+/**
+ *  Sets the input bus, and handles the special "key labels on sequence" and
+ *  "sequence numbers on sequence" functionality.  This function is called by
+ *  options::input_callback().
+ *
+ * \tricky
+ *      See the bus parameter.  We should provide two separate functions for
+ *      this feature, but it is already combined into one input-callback
+ *      function with a lot of other functionality in the options module.
+ *
+ * \param bus
+ *      If this value is greater than DEFAULT_BUSS_MAX (32), then it is
+ *      treated as a user-interface flag (PERFORM_KEY_LABELS_ON_SEQUENCE or
+ *      PERFORM_NUM_LABELS_ON_SEQUENCE) that causes all the sequences to be
+ *      dirtied, and thus get redrawn iwht the new user-interface setting.
+ *
+ * \param active
+ *      Indicates whether the buss or the user-interface feature is active or
+ *      inactive.
  */
 
 void
-perform::set_input_bus (int bus, bool input_active)
+perform::set_input_bus (int bus, bool active)
 {
-    if (bus == PERFORM_KEY_LABELS_ON_SEQUENCE)
+    if (bus >= DEFAULT_BUSS_MAX)                        /* 32 busses    */
     {
-        show_ui_sequence_key(input_active);
+        if (bus == PERFORM_KEY_LABELS_ON_SEQUENCE)
+            show_ui_sequence_key(active);
+        else if (bus == PERFORM_NUM_LABELS_ON_SEQUENCE)
+            show_ui_sequence_number(active);
+
         for (int seq = 0; seq < m_sequence_max; seq++)
         {
             sequence * s = get_sequence(seq);
@@ -2483,8 +2524,8 @@ perform::set_input_bus (int bus, bool input_active)
                 s->set_dirty();
         }
     }
-    else
-        master_bus().set_input(bus, input_active);
+    else if (bus >= 0)
+        master_bus().set_input(bus, active);
 }
 
 /**

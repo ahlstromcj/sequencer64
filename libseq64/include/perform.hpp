@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-07
+ * \updates       2015-11-08
  * \license       GNU GPLv2 or above
  *
  *  This class has way too many members.
@@ -67,9 +67,14 @@
 
 /**
  *  Used in the options module to indicate a "key-labels-on-sequence" setting.
+ *  Kind of weird, but we'll follow it blindly in adding the new
+ *  "num-labels-on-sequence" setting, since it allows for immediate updating
+ *  of the user-interface when the File / Options / Keyboard / Show Keys or
+ *  Show Sequence Number settings change.
  */
 
-#define PERFORM_KEY_LABELS_ON_SEQUENCE  9999
+#define PERFORM_KEY_LABELS_ON_SEQUENCE  9998
+#define PERFORM_NUM_LABELS_ON_SEQUENCE  9999
 
 namespace seq64
 {
@@ -614,13 +619,49 @@ public:
 
     void set_active (int seq, bool active);
     void set_was_active (int seq);
-    bool is_active (int seq);
     bool is_dirty_main (int seq);
     bool is_dirty_edit (int seq);
     bool is_dirty_perf (int seq);
     bool is_dirty_names (int seq);
     void new_sequence (int seq);
-    sequence * get_sequence (int seq);
+
+    /**
+     *  Checks the pattern/sequence for activity.
+     *
+     * \todo
+     *      We should have the sequence object keep track of its own activity
+     *      and access that via a reference or pointer.
+     *
+     * \param seq
+     *      The pattern number.  It is checked for invalidity.  This can
+     *      lead to "too many" (i.e. redundant) checks.
+     *
+     * \return
+     *      Returns the value of the active-flag, or false if the pattern was
+     *      invalid.
+     */
+
+    bool is_active (int seq)
+    {
+        return is_seq_valid(seq) ? m_seqs_active[seq] : false ;
+    }
+
+    /**
+     *  Retrieves the actual sequence, based on the pattern/sequence number.
+     *
+     * \param seq
+     *      The prospective sequence number.
+     *
+     * \return
+     *      Returns the value of m_seqs[seq] if seq is valid.  Otherwise, a
+     *      null pointer is returned.
+     */
+
+    sequence * get_sequence (int seq)
+    {
+        return is_mseq_valid(seq) ? m_seqs[seq] : nullptr ;
+    }
+
     void reset_sequences ();
 
     /**
@@ -702,8 +743,8 @@ public:
 
     /**
      * \accessor m_show_ui_sequency_key
-     *
-     *  Used in mainwid, options, optionsfile, userfile, and perform.
+     *      Provides access to keys().show_ui_sequence_key().
+     *      Used in mainwid, options, optionsfile, userfile, and perform.
      */
 
     bool show_ui_sequence_key () const
@@ -713,6 +754,21 @@ public:
     void show_ui_sequence_key (bool flag)
     {
         keys().show_ui_sequence_key(flag);
+    }
+
+    /**
+     * \accessor m_show_ui_sequency_number
+     *      Provides access to keys().show_ui_sequence_number().
+     *      Used in mainwid, optionsfile, and perform.
+     */
+
+    bool show_ui_sequence_number () const
+    {
+        return keys().show_ui_sequence_number();
+    }
+    void show_ui_sequence_number (bool flag)
+    {
+        keys().show_ui_sequence_number(flag);
     }
 
     /*
@@ -848,7 +904,10 @@ public:
         return result;
     }
 
+    bool highlight (const sequence & seq) const;
+
     void sequence_key (int seq);                        // encapsulation
+    std::string sequence_label(const sequence & seq);
     void set_input_bus (int bus, bool input_active);    // used in options
     bool mainwnd_key_event (const keystroke & k);
     bool perfroll_key_event (const keystroke & k, int drop_sequence);

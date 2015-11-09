@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-10-30
- * \updates       2015-11-04
+ * \updates       2015-11-08
  * \license       GNU GPLv2 or above
  *
  *  By segregating trigger support into its own module, the sequence class is a
@@ -430,7 +430,6 @@ public:
 
 private:
 
-//  void set_trigger_offset (long trigger_offset);
     long adjust_offset (long offset);
 
 };          // class triggers

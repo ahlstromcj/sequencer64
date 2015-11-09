@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-05
+ * \updates       2015-11-08
  * \license       GNU GPLv2 or above
  *
  *  Note that the parse function has some code that is not yet enabled.
@@ -228,8 +228,16 @@ userfile::parse (perform & /* a_perf */)
 
     if (! rc().legacy_format())
     {
-        line_after(file, "[user-interface-settings]");
         int scratch = 0;
+        line_after(file, "[user-interface-settings]");
+        sscanf(m_line, "%d", &scratch);
+        usr().grid_style(scratch);
+
+        next_data_line(file);
+        sscanf(m_line, "%d", &scratch);
+        usr().grid_brackets(scratch);
+
+        next_data_line(file);
         sscanf(m_line, "%d", &scratch);
         usr().mainwnd_rows(scratch);
 
@@ -512,6 +520,26 @@ userfile::write (const perform & /* a_perf */ )
             "# These settings specify the soon-to-be-modifiable sizes of\n"
             "# the Sequencer64 user-interface elements.\n"
             "\n"
+            ;
+
+        file << "\n"
+            "# Specifies the style of the main-window grid of patterns.\n"
+            "# 0 = normal style, matches the GTK theme, has brackets.\n"
+            "# 1 = white grid boxes that have brackets.\n"
+            "# 2 = black grid boxes.\n"
+            "\n"
+            << usr().grid_style() << "       # grid_style\n"
+            ;
+
+        file << "\n"
+            "# Specifies box style box around a main-window grid of patterns.\n"
+            "# 0  = Draw a whole box around the pattern slot.\n"
+            "# 1  = Draw brackets on the sides of the pattern slot.\n"
+            "# 2 and up = make the brackets thicker and thicker.\n"
+            "# -1 = same as 0, draw a box one-pixel thick.\n"
+            "# -2 and lower = draw a box, thicker and thicker.\n"
+            "\n"
+            << usr().grid_brackets() << "       # grid_brackets\n"
             ;
 
         file << "\n"

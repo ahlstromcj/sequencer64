@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-23
- * \updates       2015-11-06
+ * \updates       2015-11-08
  * \license       GNU GPLv2 or above
  *
  *  Note that this module also sets the legacy global variables, so that
@@ -104,6 +104,8 @@ user_settings::user_settings ()
  :
     m_midi_buses                (),         // vector
     m_instruments               (),         // vector
+    m_grid_style                (grid_style_normal),
+    m_grid_brackets             (2),
     m_mainwnd_rows              (0),
     m_mainwnd_cols              (0),
     m_seqs_in_set               (0),
@@ -140,8 +142,10 @@ user_settings::user_settings ()
 
 user_settings::user_settings (const user_settings & rhs)
  :
-    m_midi_buses                (),         // vector
-    m_instruments               (),         // vector
+    m_midi_buses                (),                     // vector
+    m_instruments               (),                     // vector
+    m_grid_style                (rhs.m_grid_style),
+    m_grid_brackets             (rhs.m_grid_brackets),
     m_mainwnd_rows              (rhs.m_mainwnd_rows),
     m_mainwnd_cols              (rhs.m_mainwnd_cols),
     m_seqs_in_set               (rhs.m_seqs_in_set),
@@ -183,6 +187,8 @@ user_settings::operator = (const user_settings & rhs)
     {
         m_midi_buses                = rhs.m_midi_buses;
         m_instruments               = rhs.m_instruments;
+        m_grid_style                = rhs.m_grid_style;
+        m_grid_brackets             = rhs.m_grid_brackets;
         m_mainwnd_rows              = rhs.m_mainwnd_rows;
         m_mainwnd_cols              = rhs.m_mainwnd_cols;
         m_seqs_in_set               = rhs.m_seqs_in_set;
@@ -227,6 +233,8 @@ user_settings::set_defaults ()
     m_midi_buses.clear();
     m_instruments.clear();
 
+    m_grid_style = grid_style_normal;   // range: 0 to 2
+    m_grid_brackets = 2;                // range: -30 to 0 to 30
     m_mainwnd_rows = 4;                 // range: 4 to 8
     m_mainwnd_cols = 8;                 // range: 8 to 10
     m_max_sets = 32;                    // range: 32 to 64
@@ -446,6 +454,17 @@ user_settings::set_instrument_controllers
 {
     user_instrument & mi = private_instrument(index);
     mi.set_controller(cc, ccname, isactive);
+}
+
+/**
+ * \setter m_grid_style
+ */
+
+void
+user_settings::grid_style (int gridstyle)
+{
+    if (gridstyle >= int(grid_style_normal) && gridstyle < int(grid_style_max))
+        m_grid_style = mainwid_grid_style_t(gridstyle);
 }
 
 /**

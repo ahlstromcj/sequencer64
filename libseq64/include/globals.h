@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-25
- * \updates       2015-11-07
+ * \updates       2015-11-08
  * \license       GNU GPLv2 or above
  *
  *  We're going to try to collect all the globals here in one module, and
@@ -75,38 +75,6 @@
 #undef  SEQ64_USE_DEBUG_OUTPUT          /* off by default... TMI        */
 #endif
 
-/*
- * These Seq42 additions aren't supported, but they do flag some potentially
- * interesting upgrades.
- */
-
-#ifdef USE_SEQ42_PATCHES
-
-/**
- *  Version of our save file format.  Increment
- *  this whenever the format of the save file changes.
- *
- * Version history:
- *
- *      0 - initial seq42 file format
- *      1 - added transposable to track
- *      2 - added swing amount to perform and swing_mode to sequence
- */
-
-const int c_file_version = 2;
-
-/**
- *  Constants for sequence swing modes (the integer value is the amount to
- *  divide the PPQN by to obtain note length).
- */
-
-const int c_max_swing_amount = 24;
-const int c_no_swing = 0;
-const int c_swing_eighths = 2;
-const int c_swing_sixteenths = 4;
-
-#endif      //  USE_SEQ42_PATCHES
-
 /**
  *  This value indicates to use the default value of PPQN and ignore (to some
  *  extent) what value is specified in the MIDI file.  Note that the default
@@ -115,123 +83,6 @@ const int c_swing_sixteenths = 4;
  */
 
 #define SEQ64_USE_DEFAULT_PPQN          (-1)
-
-/**
- *  Guessing that this has to do with the width of the performance piano roll.
- *  See perfroll::init_before_show().
- */
-
-#define PERFROLL_PAGE_FACTOR            4096
-
-/**
- *  Guessing that this describes the number of subdivisions of the grid in a
- *  beat on the perfroll user-interace.  Changing this doesn't change anything
- *  obvious in the user-interface, though.
- */
-
-#define PERFROLL_DIVS_PER_BEAT            16
-
-/**
- *  This constant indicates that a configuration file numeric value is
- *  the default value for specifying that an instrument is a GM
- *  instrument.  Used in the "user" configuration-file processing.
- */
-
-#define GM_INSTRUMENT_FLAG              (-1)
-
-/**
- *  Default value for the global parts-per-quarter-note value.  This is
- *  the unit of time for delta timing.  It represents the units, ticks, or
- *  pulses per beat.  Note that we're migrating this global value into the
- *  user_settings class.
- */
-
-#define DEFAULT_PPQN                    192
-
-/**
- *  Minimum value for PPQN.  Mostly for sanity checking.
- */
-
-#define MINIMUM_PPQN                     96
-
-/**
- *  Maximum value for PPQN.  Mostly for sanity checking.
- */
-
-#define MAXIMUM_PPQN                    960
-
-/**
- *  Default value for c_beats_per_minute (global beats-per-minute, also known
- *  as "BPM").  Do not confuse this "bpm" with the other one, "beats per
- *  measure".
- */
-
-#define DEFAULT_BPM                     120
-
-/**
- *  Minimum value for c_beats_per_minute (global beats-per-minute, also known
- *  as "BPM").  Mostly for sanity-checking.
- */
-
-#define MINIMUM_BPM                      20
-
-/**
- *  Maximum value for c_beats_per_minute (global beats-per-minute, also known
- *  as "BPM").  Mostly for sanity-checking.
- */
-
-#define MAXIMUM_BPM                     500
-
-/**
- *  Default value for "beats-per-measure".  This is the "numerator" in a 4/4
- *  time signature.  It also seems to be the value used for JACK's
- *  jack_position_t.beats_per_bar field.  For abbreviation, we will call this
- *  value "BPB", or "beats per bar", to distinguish it from "BPM", or "beats
- *  per minute".
- */
-
-#define DEFAULT_BEATS_PER_MEASURE         4
-
-/**
- *  Default value for "beat-width".  This is the "denominator" in a 4/4 time
- *  signature.  It also seems to be the value used for JACK's
- *  jack_position_t.beat_type field. For abbreviation, we will call this value
- *  "BW", or "beat width", not to be confused with "bandwidth".
- */
-
-#define DEFAULT_BEAT_WIDTH                4
-
-/**
- *  Default value for major divisions per bar.  A graphics version of
- *  DEFAULT_BEATS_PER_MEASURE.
- */
-
-#define DEFAULT_LINES_PER_MEASURE         4
-
-/**
- *  Default value for perfedit snap.
- */
-
-#define DEFAULT_PERFEDIT_SNAP             8
-
-/**
- *  Default value for c_thread_trigger_width_ms.
- */
-
-#define DEFAULT_TRIGWIDTH_MS              4
-
-/**
- *  Default value for c_thread_trigger_width_ms.
- */
-
-#define DEFAULT_TRIGLOOK_MS               2
-
-/**
- *  Defines the maximum number of MIDI values, and one more than the
- *  highest MIDI value, which is 127.
- */
-
-#define MIDI_COUNT_MAX                  128
 
 /**
  *  Number of rows in the Patterns Panel.  The current value is 4, and
@@ -368,34 +219,14 @@ const int c_mainwid_spacing = 2;            // try 4 or 6 instead of 2
 const int c_control_height = 0;
 
 /**
- * The width of the main pattern/sequence grid, in pixels.  Affected by
- * the c_mainwid_border and c_mainwid_spacing values.
- */
-
-const int c_mainwid_x =
-(
-    (c_seqarea_x + c_mainwid_spacing) * c_mainwnd_cols -
-        c_mainwid_spacing + c_mainwid_border * 2
-);
-
-/*
- * The height  of the main pattern/sequence grid, in pixels.  Affected by
- * the c_mainwid_border and c_control_height values.
- */
-
-const int c_mainwid_y =
-(
-    (c_seqarea_y + c_mainwid_spacing) * c_mainwnd_rows +
-         c_control_height + c_mainwid_border * 2
-);
-
-/**
  *  The height of the data-entry area for velocity, aftertouch, and other
  *  controllers, as well as note on and off velocity.  This value looks to
- *  be in pixels; one pixel per MIDI value.
+ *  be in pixels; one pixel per MIDI value, which ranges from 0 to 127.
+ *  We're trying to avoid header clutter, and are using a hardwired constant
+ *  for this variable, which will eventually go away..
  */
 
-const int c_dataarea_y = MIDI_COUNT_MAX * 1;
+const int c_dataarea_y = 128;
 
 /**
  *  The width of the 'bar', presumably the line that ends a measure, in

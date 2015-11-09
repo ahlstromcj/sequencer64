@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-05
+ * \updates       2015-11-08
  * \license       GNU GPLv2 or above
  *
  *  This file provides a Windows-only implementation of the mastermidibus class.
@@ -482,7 +482,9 @@ mastermidibus::is_more_input ()
     return size > 0;
 }
 
-// No mastermidibus::port_start(), port_exit() in Windows version.
+/*
+ * No mastermidibus::port_start(), port_exit() in Windows version.
+ */
 
 /**
  *  Grab a MIDI event.

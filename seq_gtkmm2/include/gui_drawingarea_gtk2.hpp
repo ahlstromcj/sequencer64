@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-21
- * \updates       2015-11-07
+ * \updates       2015-11-08
  * \license       GNU GPLv2 or above
  *
  *  We've added a number of wrapper functions for the "draw-rectangle",
@@ -48,19 +48,6 @@
 
 #include "font.hpp"                     /* font_render() function           */
 #include "gui_palette_gtk2.hpp"         /* #include <gtkmm/drawingarea.h>   */
-
-/**
- *  Defining SEQ64_SEQNUMBER_ON_GRID causes the sequence number of the slot to
- *  be drawn in empty boxes.  Unfortunately, the background color is going to
- *  be different from the default theme background color.  Fortunately, though
- *  ugly, this guarantees the sequence number to be visible.
- *
- *  This feature is also tied to the show-UI-keys setting, on the theory that
- *  some people like to see the extra information, some don't, and we don't
- *  want to add a separate option for it at this time.
- */
-
-#define SEQ64_SEQNUMBER_ON_GRID
 
 namespace Gtk
 {

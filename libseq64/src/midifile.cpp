@@ -423,8 +423,8 @@ midifile::parse (perform & a_perf, int screenset)
                             if (proprietary == c_midibus)
                             {
                                 seq.set_midi_bus(read_byte());
-                                if (global_buss_override != char(-1))
-                                    seq.set_midi_bus(global_buss_override);
+                                if (usr().midi_buss_override() != char(-1))
+                                    seq.set_midi_bus(usr().midi_buss_override());
 
                                 len--;
                             }

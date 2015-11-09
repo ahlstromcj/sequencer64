@@ -801,7 +801,14 @@ options::clock_mod_callback (Gtk::Adjustment * adj)
 /**
  *  Input callback function.  This is kind of a weird function, but it allows
  *  immediate redrawing of the mainwid and perfnames user-interfaces when this
- *  item is modified in the File / Options /Keyboard tab.
+ *  item is modified in the File / Options /Keyboard tab.  This drawing is
+ *  indirect, and triggered by the perform object setting the dirty-flag on
+ *  all of the sequences in the bus.
+ *
+ *  However, this does not affect the empty pattern slots of the mainwid, and
+ *  we don't see a way to get mainwid::reset() called, so the mainwid
+ *  currently cannot update the empty slots; a restart of the application is
+ *  the only way to see the change.
  *
  * \tricky
  *      See the description of the bus parameter.

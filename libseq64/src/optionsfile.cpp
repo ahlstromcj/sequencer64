@@ -395,10 +395,8 @@ optionsfile::parse (perform & a_perf)
     rc().manual_alsa_ports(bool(flag));
 
     line_after(file, "[last-used-dir]");
-    if (m_line[0] == '/')
-    {
+    if (strlen(m_line) > 0)
         rc().last_used_dir(m_line); // FIXME: check for valid path
-    }
 
     long method = 0;
     line_after(file, "[interaction-method]");

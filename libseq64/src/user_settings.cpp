@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-23
- * \updates       2015-11-08
+ * \updates       2015-11-09
  * \license       GNU GPLv2 or above
  *
  *  Note that this module also sets the legacy global variables, so that
@@ -312,7 +312,6 @@ user_settings::set_globals () const
     global_beats_per_measure = m_midi_beats_per_measure;
     global_beats_per_minute = m_midi_beats_per_minute;
     global_beat_width = m_midi_beat_width;
-    global_buss_override= m_midi_buss_override;
 }
 
 /**
@@ -343,7 +342,6 @@ user_settings::get_globals ()
     m_midi_beats_per_measure = global_beats_per_measure;
     m_midi_beats_per_minute = global_beats_per_minute;
     m_midi_beat_width = global_beat_width;
-    m_midi_buss_override = global_buss_override;
 }
 
 /**
@@ -740,7 +738,11 @@ user_settings::midi_beat_width (int bw)
 /**
  * \setter m_midi_buss_override
  *      This value can be set from 0 to 31.  The default value is -1, which
- *      means that there is no buss override.
+ *      means that there is no buss override.  It provides a way to override
+ *      the buss number for smallish MIDI files.  It replaces the buss-number
+ *      read from the file.  This option is turned on by the --bus option, and
+ *      is merely a convenience feature for the quick previewing of a tune.
+ *      (It's called "developer laziness".)
  */
 
 void

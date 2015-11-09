@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-08
+ * \updates       2015-11-09
  * \license       GNU GPLv2 or above
  *
  *  Note that the parse function has some code that is not yet enabled.
@@ -517,27 +517,26 @@ userfile::write (const perform & /* a_perf */ )
         file << "\n"
             "[user-interface-settings]\n"
             "\n"
-            "# These settings specify the soon-to-be-modifiable sizes of\n"
-            "# the Sequencer64 user-interface elements.\n"
-            "\n"
+            "# These settings specify the soon-to-be-modifiable configuration\n"
+            "# of some of the Sequencer64 user-interface elements.\n"
             ;
 
         file << "\n"
             "# Specifies the style of the main-window grid of patterns.\n"
             "# 0 = normal style, matches the GTK theme, has brackets.\n"
             "# 1 = white grid boxes that have brackets.\n"
-            "# 2 = black grid boxes.\n"
+            "# 2 = black grid boxes (no brackets).\n"
             "\n"
             << usr().grid_style() << "       # grid_style\n"
             ;
 
         file << "\n"
-            "# Specifies box style box around a main-window grid of patterns.\n"
-            "# 0  = Draw a whole box around the pattern slot.\n"
+            "# Specifies box style of an empty slot in the main-window grid.\n"
+            "# 0  = Draw a one-pixel box outline around the pattern slot.\n"
             "# 1  = Draw brackets on the sides of the pattern slot.\n"
-            "# 2 and up = make the brackets thicker and thicker.\n"
-            "# -1 = same as 0, draw a box one-pixel thick.\n"
-            "# -2 and lower = draw a box, thicker and thicker.\n"
+            "# 2 to 30 = make the brackets thicker and thicker.\n"
+            "# -1 = same as 0, draw a box outline one-pixel thick.\n"
+            "# -2 to -30 = draw a box outline, thicker and thicker.\n"
             "\n"
             << usr().grid_brackets() << "       # grid_brackets\n"
             ;

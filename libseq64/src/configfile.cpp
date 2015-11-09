@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-11
+ * \updates       2015-11-10
  * \license       GNU GPLv2 or above
  *
  *  We found a couple of unused members in this module and removed them.
@@ -51,9 +51,9 @@ configfile::configfile (const std::string & name)
  :
     m_name  (name),
     m_d     (nullptr),
-    m_line  ()                  // array of characters
+    m_line  ()                  /* array of characters              */
 {
-   // empty body
+   m_line[0] = 0;               /* guarantee a legal empty string   */
 }
 
 /**
@@ -77,8 +77,13 @@ void
 configfile::next_data_line (std::ifstream & file)
 {
     file.getline(m_line, sizeof(m_line));
-    while ((m_line[0]=='#' || m_line[0]==' ' || m_line[0]==0) && ! file.eof())
+    while
+    (
+        (m_line[0] == '#' || m_line[0] == ' ' || m_line[0] == 0) && ! file.eof()
+    )
+    {
         file.getline(m_line, sizeof(m_line));
+    }
 }
 
 /**

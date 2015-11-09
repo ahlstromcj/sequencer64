@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-25
- * \updates       2015-11-08
+ * \updates       2015-11-09
  * \license       GNU GPLv2 or above
  *
  *  We're going to try to collect all the globals here in one module, and
@@ -422,7 +422,6 @@ extern int global_ppqn;                     /* PPQN, parts per QN       */
 extern int global_beats_per_measure;        /* BPB, or beats per bar    */
 extern int global_beats_per_minute;         /* BPM, or beats per minute */
 extern int global_beat_width;               /* BW, or beat width        */
-extern char global_buss_override;
 
 extern bool global_legacy_format;
 extern bool global_lash_support;
@@ -441,7 +440,6 @@ extern bool global_device_ignore;            /* seq24 module    */
 extern int global_device_ignore_num;         /* seq24 module    */
 extern std::string global_filename;
 extern std::string global_jack_session_uuid;
-extern std::string global_last_used_dir;
 extern std::string global_config_directory;
 extern std::string global_config_filename;
 extern std::string global_user_filename;

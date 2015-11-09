@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-29
+ * \updates       2015-11-09
  * \license       GNU GPLv2 or above
  *
  */
@@ -82,6 +82,20 @@ private:
     int m_text_size_x;
     int m_text_size_y;
     int m_max_sets;
+
+    /**
+     *  Provides a convenience variable for avoiding multiplications.
+     *  It is equally to m_mainwnd_rows * m_mainwnd_cols.
+     */
+
+    int m_screenset_slots;
+
+    /**
+     *  Provides a convenience variable for avoiding multiplications.
+     *  It is equally to m_screenset_slots * m_screenset.
+     */
+
+    int m_screenset_offset;
 
 public:
 

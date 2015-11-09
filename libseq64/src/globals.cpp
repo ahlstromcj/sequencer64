@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-08-07
- * \updates       2015-11-08
+ * \updates       2015-11-09
  * \license       GNU GPLv2 or above
  *
  *  The first part of this file defines a couple of global structure
@@ -144,19 +144,6 @@ int global_beats_per_minute = DEFAULT_BPM;
 int global_beat_width = DEFAULT_BEAT_WIDTH;
 
 /**
- *  Provides a way to override the buss number for smallish MIDI files.
- *  It replaces the buss-number read from the file.  This option is turned on
- *  by the --bus option, and is merely a convenience feature for the
- *  quick previewing of a tune.  (It's called "developer laziness".)
- *
- *  If -1, this feature is disabled.
- *
- *  Currently not part of the global "rc" settings structure.
- */
-
-char global_buss_override = char(-1);
-
-/**
  * Most of these variables were declared and used in other modules, but
  * are now consolidated here.
  */
@@ -171,7 +158,6 @@ int global_device_ignore_num = 0;
 bool global_stats = false;
 bool global_pass_sysex = false;
 std::string global_filename = "";
-std::string global_last_used_dir = "/";
 std::string global_config_directory = ".config/sequencer64";
 std::string global_config_filename = "sequencer64.rc";
 std::string global_user_filename = "sequencer64.usr";

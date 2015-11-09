@@ -4,6 +4,11 @@ Chris Ahlstrom
 
 In no particular order...
 
+-  Would be nice to be able to Ctrl-Home, Ctrl-End, Page Up, and Page Down
+   in the Song Editor.
+-  We now have the same file imported twice, into screen-set 1 and screen-set
+   2.  Now can we have --bus n do n and n+1 (each next screen-set goes to the
+   next buss?
 -  Sometimes the editing of event values in the event data section
    will not work. The workaround is to do a Ctrl-A, and the click in
    the roll to deselect the selection; that makes the event value

@@ -610,7 +610,8 @@ perform::set_was_active (int seq)
 }
 
 /**
- *  Checks the pattern/sequence for main-dirtiness.
+ *  Checks the pattern/sequence for main-dirtiness.  See the
+ *  sequence::is_dirty_main() function.
  *
  * \param seq
  *      The pattern number.  It is checked for invalidity.

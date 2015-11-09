@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-08
+ * \updates       2015-11-09
  * \license       GNU GPLv2 or above
  *
  *  Note that this representation is, in a sense, inside the mainwnd
@@ -73,19 +73,6 @@ const int c_mainwid_y =
          c_control_height + c_mainwid_border * 2
 );
 
-/*
- * Potential pre-calculations:
- *
- *  m_text_size_x - 3 (2 of them)
- *  m_text_size_y * 4 - 2 (2 of them)
- *  m_seqarea_seq_x + 3 (2 of them)
- *  m_seqarea_seq_y + 3 (3 of them)
- *  m_seqarea_x - 2 (2 of them)
- *  m_seqarea_x - 3
- *  m_seqarea_x - 8
- *  font_render().char_height() / 2;
- */
-
 /**
  *  This constructor sets a lot of the members, but not all.  And it asks
  *  for a size of c_mainwid_x by c_mainwid_y.  It adds GDK masks for
@@ -119,7 +106,9 @@ mainwid::mainwid (perform & p)
     m_mainwid_spacing       (c_mainwid_spacing),
     m_text_size_x           (font_render().char_width()),       // c_text_x
     m_text_size_y           (font_render().padded_height()),    // c_text_y
-    m_max_sets              (c_max_sets)
+    m_max_sets              (c_max_sets),
+    m_screenset_slots       (m_mainwnd_rows * m_mainwnd_cols),
+    m_screenset_offset      (m_screenset * m_screenset_slots)
 {
     // It's all done in the base classes and the initializer list.
 }
@@ -135,16 +124,15 @@ mainwid::~mainwid ()
 
 /**
  *  This function fills the pixmap with sequences.  Please note that
- *  draw_sequence_on_pixmap() also draws the empty boxes of inactive
+ *  draw_sequence_on_pixmap() also draws the empty slots of inactive
  *  sequences, so we cannot take shortcuts here.
  */
 
 void
 mainwid::draw_sequences_on_pixmap ()
 {
-    int slots = m_mainwnd_rows * m_mainwnd_cols;
-    int offset = m_screenset * slots;
-    for (int s = 0; s < slots; ++s, ++offset)
+    int offset = m_screenset_offset;                // m_screenset * slots
+    for (int s = 0; s < m_screenset_slots; ++s, ++offset)
     {
         draw_sequence_on_pixmap(offset);
         m_last_tick_x[offset] = 0;
@@ -268,7 +256,7 @@ mainwid::draw_sequence_on_pixmap (int seqnum)
                     col = font::WHITE;
             }
 
-            char temp[32];                          // used a lot below
+            char temp[32];
             snprintf(temp, sizeof temp, "%.13s", seq->get_name());
             render_string_on_pixmap                 // seqnum:name of pattern
             (
@@ -410,21 +398,14 @@ mainwid::draw_sequence_on_pixmap (int seqnum)
             {
                 char snum[8];
                 snprintf(snum, sizeof(snum), "%d", seqnum);
-                int charx = strlen(snum) * m_text_size_x / 2;
-                int chary = font_render().char_height() / 2;
-                int centerx = base_x + m_seqarea_x / 2 - charx;
-                int centery = base_y + m_seqarea_y / 2 - chary;
-                if (usr().grid_is_normal() || usr().grid_is_white())
-                {
-                    render_string_on_pixmap(centerx, centery, snum, font::BLACK);
-                }
+                x = strlen(snum) * m_text_size_x / 2;
+                y = font_render().char_height() / 2;
+                lx = base_x + m_seqarea_x / 2 - x;              /* center x */
+                ly = base_y + m_seqarea_y / 2 - y;              /* center y */
+                if (usr().grid_is_black())
+                    render_string_on_pixmap(lx, ly, snum, font::YELLOW_ON_BLACK);
                 else
-                {
-                    render_string_on_pixmap
-                    (
-                        centerx, centery, snum, font::YELLOW_ON_BLACK
-                    );
-                }
+                    render_string_on_pixmap(lx, ly, snum, font::BLACK);
             }
         }
     }
@@ -444,8 +425,11 @@ mainwid::draw_sequence_on_pixmap (int seqnum)
 bool
 mainwid::valid_sequence (int seqnum)
 {
-    int slots = m_mainwnd_rows * m_mainwnd_cols;
-    return seqnum >= (m_screenset * slots) && seqnum < ((m_screenset+1) * slots);
+    return
+    (
+        seqnum >= m_screenset_offset &&
+        seqnum < (m_screenset_offset + m_screenset_slots)
+    );
 }
 
 /**
@@ -518,9 +502,8 @@ mainwid::redraw (int seqnum)
 void
 mainwid::update_markers (int ticks)
 {
-    int slots = m_mainwnd_rows * m_mainwnd_cols;
-    for (int s = 0; s < slots; s++)
-        draw_marker_on_sequence(s + (m_screenset * slots), ticks);
+    for (int s = 0; s < m_screenset_slots; ++s)
+        draw_marker_on_sequence(m_screenset_offset + s, ticks);
 }
 
 /**
@@ -574,18 +557,10 @@ mainwid::draw_marker_on_sequence (int seqnum, int tick)
         m_last_tick_x[seqnum] = tick_x;
         if (seqnum == current_sequence())
         {
-            /*
-             * Slow, and only gets partly erased: set_line(Gdk::LINE_SOLID, 2);
-             */
-
             m_gc->set_foreground(red());
         }
         else
         {
-            /*
-             * Slows things down slightly: set_line(Gdk::LINE_SOLID, 1);
-             */
-
             if (seq->get_queued())
                 m_gc->set_foreground(black());
             else
@@ -648,31 +623,28 @@ mainwid::draw_pixmap_on_window ()
  */
 
 int
-mainwid::seq_from_xy (int a_x, int a_y)
+mainwid::seq_from_xy (int x, int y)
 {
-    int x = a_x - m_mainwid_border;         // adjust for border
-    int y = a_y - m_mainwid_border;
-    if                                      // is it in the box?
+    int sequence = -1;
+    int slot_x = m_seqarea_x + m_mainwid_spacing;
+    int slot_y = m_seqarea_y + m_mainwid_spacing;
+    x -= m_mainwid_border;                      // adjust for border
+    y -= m_mainwid_border;
+    if                                          // is it in the box?
     (
-        x < 0 || x >= ((m_seqarea_x + m_mainwid_spacing) * m_mainwnd_cols) ||
-        y < 0 || y >= ((m_seqarea_y + m_mainwid_spacing) * m_mainwnd_rows)
+        x >= 0 && x < (slot_x * m_mainwnd_cols) &&
+        y >= 0 && y < (slot_y * m_mainwnd_rows)
     )
     {
-        return -1;                          // no
+        int box_x = x % slot_x;                 // box coordinate
+        int box_y = y % slot_y;                 // box coordinate
+        if (box_x <= m_seqarea_x && box_y <= m_seqarea_y)
+        {
+            x /= slot_x;
+            y /= slot_y;
+            sequence = m_screenset_offset + (x * m_mainwnd_rows + y);
+        }
     }
-
-    int box_test_x = x % (m_seqarea_x + m_mainwid_spacing); // box coordinate
-    int box_test_y = y % (m_seqarea_y + m_mainwid_spacing); // box coordinate
-    if (box_test_x > m_seqarea_x || box_test_y > m_seqarea_y)
-        return -1;                          // right inactive side of area
-
-    x /= (m_seqarea_x + m_mainwid_spacing);
-    y /= (m_seqarea_y + m_mainwid_spacing);
-    int sequence =
-    (
-        (x * m_mainwnd_rows + y) +
-            (m_screenset * m_mainwnd_rows * m_mainwnd_cols)
-    );
     return sequence;
 }
 
@@ -695,15 +667,16 @@ mainwid::reset ()
  */
 
 void
-mainwid::set_screenset (int a_ss)
+mainwid::set_screenset (int ss)
 {
-    m_screenset = a_ss;
+    m_screenset = ss;
     if (m_screenset < 0)
         m_screenset = m_max_sets - 1;
 
     if (m_screenset >= m_max_sets)
         m_screenset = 0;
 
+    m_screenset_offset = m_screenset * m_mainwnd_rows * m_mainwnd_cols;
     perf().set_offset(m_screenset);
     reset();
 }
@@ -766,7 +739,7 @@ mainwid::on_expose_event (GdkEventExpose * ev)
  *  the pattern/sequence over which the button press occurred, and sets
  *  the m_button_down flag if it is over a pattern.
  *
- * \param p0
+ * \param p
  *      Provides the parameters of the button event.
  *
  * \return
@@ -774,11 +747,11 @@ mainwid::on_expose_event (GdkEventExpose * ev)
  */
 
 bool
-mainwid::on_button_press_event (GdkEventButton * p0)
+mainwid::on_button_press_event (GdkEventButton * p)
 {
     grab_focus();
-    current_sequence(seq_from_xy(int(p0->x), int(p0->y)));
-    if (current_sequence() >= 0 && SEQ64_CLICK_LEFT(p0->button))
+    current_sequence(seq_from_xy(int(p->x), int(p->y)));
+    if (current_sequence() >= 0 && SEQ64_CLICK_LEFT(p->button))
         m_button_down = true;
 
     return true;
@@ -790,7 +763,7 @@ mainwid::on_button_press_event (GdkEventButton * p0)
  *  button brings up a popup menu.  If the slot is empty, then a "New" popup
  *  is presented, otherwise an "Edit" and selection popup is presented.
  *
- * \param p0
+ * \param p
  *      Provides the parameters of the button event.
  *
  * \return
@@ -798,14 +771,14 @@ mainwid::on_button_press_event (GdkEventButton * p0)
  */
 
 bool
-mainwid::on_button_release_event (GdkEventButton * p0)
+mainwid::on_button_release_event (GdkEventButton * p)
 {
-    current_sequence(seq_from_xy(int(p0->x), int(p0->y)));
+    current_sequence(seq_from_xy(int(p->x), int(p->y)));
     m_button_down = false;
     if (current_sequence() < 0)
         return true;
 
-    if (SEQ64_CLICK_LEFT(p0->button))
+    if (SEQ64_CLICK_LEFT(p->button))
     {
         if (m_moving)
         {
@@ -839,7 +812,7 @@ mainwid::on_button_release_event (GdkEventButton * p0)
             }
         }
     }
-    else if (SEQ64_CLICK_RIGHT(p0->button))
+    else if (SEQ64_CLICK_RIGHT(p->button))
         popup_menu();
 
     return true;
@@ -850,7 +823,7 @@ mainwid::on_button_release_event (GdkEventButton * p0)
  *  another sequence and if the current sequence is not in edit mode.
  *  This function moves the selected pattern to another pattern slot.
  *
- * \param p0
+ * \param p
  *      Provides the parameters of the button event.
  *
  * \return
@@ -858,9 +831,9 @@ mainwid::on_button_release_event (GdkEventButton * p0)
  */
 
 bool
-mainwid::on_motion_notify_event (GdkEventMotion * p0)
+mainwid::on_motion_notify_event (GdkEventMotion * p)
 {
-    int seq = seq_from_xy((int) p0->x, (int) p0->y);
+    int seq = seq_from_xy(int(p->x), int(p->y));
     if (m_button_down)
     {
         if

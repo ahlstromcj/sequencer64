@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-10
+ * \updates       2015-11-09
  * \license       GNU GPLv2 or above
  *
  * \todo
@@ -118,7 +118,8 @@ static const std::string s_arg_list =
     "1234:5:67:89@"                                     /* legacy args      */
     ;
 
-static const std::string versiontext = SEQ64_PACKAGE " " SEQ64_VERSION "\n";
+static const std::string versiontext =
+    SEQ64_PACKAGE " " SEQ64_VERSION " " __DATE__ "\n";
 
 static const char * const s_help_1a =
 "sequencer64 v 0.9.9.8  A significant refactoring of the seq24 live sequencer.\n"
@@ -126,7 +127,7 @@ static const char * const s_help_1a =
 "Usage: sequencer64 [options] [MIDI filename]\n\n"
 "Options:\n"
 "   -h, --help               Show this message.\n"
-"   -v, --version            Show program version information.\n"
+"   -V, --version            Show program version information.\n"
 "   -l, --legacy             Write MIDI file in old Seq24 format.  Also set\n"
 "                            if Sequencer64 is called as 'seq24'.\n"
 #ifdef SEQ64_LASH_SUPPORT
@@ -172,6 +173,43 @@ static const char * const s_help_3 =
     ;
 
 /**
+ *  Checks to see if the first option is a help or version argument, just so
+ *  we can skip the "Reading configuration ..." messages.
+ *
+ * \return
+ *      Returns true if -V, --version, -h, or --help were encountered.
+ */
+
+bool
+check_for_help (int argc, char * argv [])
+{
+    bool result = false;
+    for ( ; argc > 1; --argc)
+    {
+        std::string arg = argv[argc - 1];
+        if
+        (
+            (arg == "-h") || (arg == "--help") ||
+            (arg == "-V") || (arg == "--version")
+        )
+        {
+            result = true;
+            break;
+        }
+        if (arg == "?")
+        {
+            printf(s_help_1a);
+            printf(s_help_1b);
+            printf(s_help_2);
+            printf(s_help_3);
+            result = true;
+            break;
+        }
+    }
+    return result;
+}
+
+/**
  *  The standard C/C++ entry point to this application.  This first thing
  *  this function does is scan the argument vector and strip off all
  *  parameters known to GTK+.
@@ -190,16 +228,6 @@ int
 main (int argc, char * argv [])
 {
     Gtk::Main kit(argc, argv);              /* strip GTK+ parameters        */
-    int c;
-    bool is_help = false;
-    for (int a = 1; a < argc; a++)
-    {
-        if (strcmp(argv[a], "--help") == 0)
-        {
-            is_help = true;
-            break;
-        }
-    }
     seq64::rc().set_defaults();             /* start out with normal values */
     seq64::usr().set_defaults();            /* start out with normal values */
 
@@ -217,11 +245,12 @@ main (int argc, char * argv [])
 
     /*
      *  Instead of the Seq24 names, use the new configuration file-names,
-     *  located in ~/.config/sequencer64. However, if they aren't found,
-     *  we no longer fall back to the legacy configuration file-names.  If
-     *  the --legacy option is in force, use only the legacy configuration
-     *  file-name.  The code also ensures the directory exists.  CURRENTLY
-     *  LINUX-SPECIFIC.  See the rc_settings class for how this works.
+     *  located in the ~/.config/sequencer64 directory. However, if they
+     *  aren't found, we no longer fall back to the legacy configuration
+     *  file-names.  If the --legacy option is in force, use only the legacy
+     *  configuration file-name.  The code also ensures the directory exists.
+     *  CURRENTLY LINUX-SPECIFIC.  See the rc_settings class for how this
+     *  works.
      */
 
     std::string cfg_dir = seq64::rc().home_config_directory();
@@ -229,44 +258,39 @@ main (int argc, char * argv [])
         return EXIT_FAILURE;
 
     std::string rcname = seq64::rc().user_filespec();
-    if (Glib::file_test(rcname, Glib::FILE_TEST_EXISTS))
+    bool is_help = check_for_help(argc, argv);
+    if (! is_help)
     {
-        if (! is_help)
+        if (Glib::file_test(rcname, Glib::FILE_TEST_EXISTS))
+        {
             printf("[Reading user configuration %s]\n", rcname.c_str());
-
-        seq64::userfile ufile(rcname);
-        if (ufile.parse(p))
-        {
-            // Nothing to do, and no exit needed here if it fails
+            seq64::userfile ufile(rcname);
+            if (ufile.parse(p))
+            {
+                // Nothing to do, and no exit needed here if it fails
+            }
         }
-    }
-
-    rcname = seq64::rc().config_filespec();
-    if (Glib::file_test(rcname, Glib::FILE_TEST_EXISTS))
-    {
-        if (! is_help)
+        rcname = seq64::rc().config_filespec();
+        if (Glib::file_test(rcname, Glib::FILE_TEST_EXISTS))
+        {
             printf("[Reading rc configuration %s]\n", rcname.c_str());
-
-        seq64::optionsfile options(rcname);
-        if (options.parse(p))
-        {
-            /*
-             * Not necessary, and it resets the last-used-directory
-             * obtained from the "rc" configuration file.
-             *
-             * rc().last_used_dir(cfg_dir);
-             */
+            seq64::optionsfile options(rcname);
+            if (options.parse(p))
+            {
+                // Nothing to do
+            }
+            else
+                return EXIT_FAILURE;
         }
-        else
-            return EXIT_FAILURE;
     }
 
     for (;;)                                /* parse all command parameters */
     {
         int option_index = 0;               /* getopt_long index storage    */
-        c = getopt_long
+        int c = getopt_long
         (
-            argc, argv, "Chlb:q:Li:jJmaM:pPsSU:Vx:",
+            argc, argv,
+            s_arg_list.c_str(),             // "Chlb:q:Li:jJmaM:pPsSU:Vx:",
             long_options, &option_index
         );
         if (c == -1)                        /* detect the end of options    */
@@ -274,7 +298,6 @@ main (int argc, char * argv [])
 
         switch (c)
         {
-        case '?':
         case 'h':
             printf(s_help_1a);
             printf(s_help_1b);
@@ -385,6 +408,8 @@ main (int argc, char * argv [])
             break;
         }
     }
+    if (is_help)
+        return EXIT_SUCCESS;
 
     std::size_t applen = strlen("seq24");
     std::string appname(argv[0]);               /* "seq24", "./seq24", etc. */

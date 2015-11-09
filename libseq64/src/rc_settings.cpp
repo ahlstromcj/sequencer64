@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-22
- * \updates       2015-11-05
+ * \updates       2015-11-09
  * \license       GNU GPLv2 or above
  *
  *  Note that this module also sets the legacy global variables, so that
@@ -192,7 +192,7 @@ rc_settings::set_defaults ()
     m_device_ignore_num         = e_seq24_interaction;
     m_filename.clear();
     m_jack_session_uuid.clear();
-    m_last_used_dir             = "/";
+    m_last_used_dir             = "~/";
     m_config_directory          = ".config/sequencer64";
     m_config_filename           = "sequencer64.rc";
     m_user_filename             = "sequencer64.usr";
@@ -225,7 +225,6 @@ rc_settings::set_globals ()
     global_device_ignore_num         = m_device_ignore_num;
     global_filename                  = m_filename;
     global_jack_session_uuid         = m_jack_session_uuid;
-    global_last_used_dir             = m_last_used_dir;
     global_config_directory          = m_config_directory;
     global_config_filename           = m_config_filename;
     global_user_filename             = m_user_filename;
@@ -258,7 +257,6 @@ rc_settings::get_globals ()
     m_device_ignore_num         = global_device_ignore_num;
     m_filename                  = global_filename;
     m_jack_session_uuid         = global_jack_session_uuid;
-    m_last_used_dir             = global_last_used_dir;
     m_config_directory          = global_config_directory;
     m_config_filename           = global_config_filename;
     m_user_filename             = global_user_filename;

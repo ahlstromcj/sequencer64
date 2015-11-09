@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-22
- * \updates       2015-11-08
+ * \updates       2015-11-09
  * \license       GNU GPLv2 or above
  *
  *  This module defines the following categories of "global" variables that
@@ -401,7 +401,8 @@ class user_settings
     /**
      *  Provides a universal override of the buss number for all sequences, for
      *  the purpose of convenience of of testing.  This variable replaces the
-     *  global_buss_override, and is set via the command-line option --bus.
+     *  global buss-override variable, and is set via the command-line option
+     *  --bus.
      */
 
     char m_midi_buss_override;          /* --bus n option               */

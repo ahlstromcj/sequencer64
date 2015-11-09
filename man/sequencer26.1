@@ -1,4 +1,4 @@
-.TH Sequencer64 "Nov 04 2015" "Version 0.9.9.6" "Sequencer64 Manual Page"
+.TH Sequencer64 "Nov 10 2015" "Version 0.9.9.8" "Sequencer64 Manual Page"
 
 .SH NAME
 Sequencer64 - Real time MIDI sequencer refactored from Seq24
@@ -105,20 +105,23 @@ When Sequencer64 is synced to JACK, the following play modes are available:
 	(1 = song mode) (default)
 .TP 8
 .B \-\-stats
-Print statistics on the commandline while running.
+Print statistics on the command-line while running.
 .TP 8
 .B \-\-jack-session-uuid \fI<uuid>\fP
 Set the UUID for the JACK session.
 
 .SH FILES
-\fB$HOME\fP/sequencer64.rc stores the user-configuration settings for
+\fB$HOME\fP/sequencer64.rc stores the main configuration settings for
 Sequencer64.  If it does not exist, it will be generated when Sequencer64
-exits.
-\fB$HOME\fP/sequencer64.usr stores the MIDI-configuration settings and (later)
-some more universal user-interface setting for
-Sequencer64.  If it does not exist, it will be generated when Sequencer64
-exits.
-Note that the --legacy option causes the old configuration-file names to be used.
+exits.  If it does exist, it will be rewritten with the current configuration
+of Sequencer64.
+
+\fB$HOME\fP/sequencer64.usr stores the MIDI-configuration settings and
+some of the user-interface settings for Sequencer64.  If it does not
+exist, it will be generated with a minimal configuration when Sequencer64
+exits.  If it does exist, it will be rewritten with the current configuration
+of Sequencer64.  Note that the --legacy option causes the old
+configuration-file names to be used.
 
 .SH SUGGESTIONS AND BUG REPORTS
 Any bugs found should be reported to the upstream author and/or package 
@@ -127,22 +130,21 @@ maintainer.
 .SH OTHER INFO
 The current Sequencer64 project homepage is a simple git repository at the
 https://github.com/ahlstromcj/sequencer64.git URL.
-Up-to-date instructions can be found in the project at the
-https://github.com/ahlstromcj/sequencer26-doc.git URL.
+Up-to-date and more comprehensive instructions can be found in the project at
+the https://github.com/ahlstromcj/sequencer26-doc.git URL.
 
-The old Seq24 project homepage is at
-<http://www.filter24.org/seq24/> the new
-one is at <https://edge.launchpad.net/seq24/>.
-It is released under the GNU GPL license.
-
-Sequencer64 is also released under the GNU GPL license.
+The old Seq24 project homepage is at <http://www.filter24.org/seq24/>, and the
+new one is at <https://edge.launchpad.net/seq24/>.  It is released under the
+GNU GPL license.  Sequencer64 is also released under the GNU GPL license.
 
 .SH AUTHOR
 Sequencer64 was written by Chris Ahlstrom <ahlstromcj@gmail.com>.
 Seq24 was written by Rob C. Buse <seq24@filter24.org> and the Seq24team.
 
-This manual page was written by Dana Olson
-<seq24@ubuntustudio.com> with additions from Guido Scholz
-<guido.scholz@bayernline.de> and Chris Ahlstrom
-<ahlstromcj@gmail.com>.
+This manual page was written by
+Dana Olson <seq24@ubuntustudio.com>
+with additions from
+Guido Scholz <guido.scholz@bayernline.de>
+and
+Chris Ahlstrom <ahlstromcj@gmail.com>.
 

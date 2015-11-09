@@ -1,60 +1,1480 @@
+2015-11-10  Chris Ahlstrom <ahlstromcj@gmail.com>
+	* *.*: Refactoring more globals, more upgrades to user-interface
+	configurability.  Work on testing3, version 0.9.9.8.
+
+2015-11-09  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* README, ROADMAP, contrib/bugs_to_investigate.txt,
+	libseq64/src/lash.cpp, libseq64/src/midifile.cpp,
+	libseq64/src/perform.cpp: Merged testing2 to master and fixed
+	warnings.
+
+2015-11-08  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* INSTALL, contrib/bugs_to_investigate.txt,
+	libseq64/include/app_limits.h, libseq64/include/calculations.hpp,
+	libseq64/include/globals.h, libseq64/include/keys_perform.hpp,
+	libseq64/include/perform.hpp, libseq64/include/rc_settings.hpp,
+	libseq64/include/sequence.hpp, libseq64/include/triggers.hpp,
+	libseq64/include/user_midi_bus.hpp,
+	libseq64/include/user_settings.hpp, libseq64/src/globals.cpp,
+	libseq64/src/keys_perform.cpp, libseq64/src/optionsfile.cpp,
+	libseq64/src/perform.cpp, libseq64/src/sequence.cpp,
+	libseq64/src/user_settings.cpp, libseq64/src/userfile.cpp,
+	seq_gtkmm2/include/gui_drawingarea_gtk2.hpp,
+	seq_gtkmm2/src/mainwid.cpp, seq_gtkmm2/src/options.cpp,
+	seq_gtkmm2/src/perfnames.cpp,
+	seq_portmidi/src/mastermidibus_portmidi.cpp: Add user-configuration
+	options for grid and showing sequence numbers, instead of build-time
+	macros.
+
+2015-11-07  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* contrib/bugs_to_investigate.txt, libseq64/include/midifile.hpp,
+	libseq64/include/perform.hpp, libseq64/src/event_list.cpp,
+	libseq64/src/midifile.cpp, libseq64/src/perform.cpp,
+	libseq64/src/triggers.cpp,
+	seq_gtkmm2/include/gui_drawingarea_gtk2.hpp,
+	seq_gtkmm2/include/gui_window_gtk2.hpp,
+	seq_gtkmm2/include/options.hpp, seq_gtkmm2/include/perfedit.hpp,
+	seq_gtkmm2/include/perfroll.hpp, seq_gtkmm2/include/seqedit.hpp,
+	seq_gtkmm2/src/gui_window_gtk2.cpp, seq_gtkmm2/src/mainwid.cpp,
+	seq_gtkmm2/src/mainwnd.cpp, seq_gtkmm2/src/options.cpp,
+	seq_gtkmm2/src/perfedit.cpp, seq_gtkmm2/src/perfnames.cpp,
+	seq_gtkmm2/src/seqedit.cpp, seq_gtkmm2/src/seqmenu.cpp: Refactored
+	the is-modified handling into perform, still testing.
+
+2015-11-07  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* INSTALL, configure.ac, contrib/bugs_to_investigate.txt,
+	libseq64/include/Makefile.am, libseq64/include/calculations.hpp,
+	libseq64/include/globals.h, libseq64/include/user_settings.hpp,
+	libseq64/src/Makefile.am, libseq64/src/calculations.cpp,
+	libseq64/src/globals.cpp, libseq64/src/jack_assistant.cpp,
+	libseq64/src/mastermidibus.cpp, libseq64/src/midibus.cpp,
+	libseq64/src/midifile.cpp, libseq64/src/perform.cpp,
+	seq_gtkmm2/include/gui_drawingarea_gtk2.hpp,
+	seq_gtkmm2/include/maintime.hpp, seq_gtkmm2/include/options.hpp,
+	seq_gtkmm2/src/maintime.cpp, seq_gtkmm2/src/mainwid.cpp,
+	seq_gtkmm2/src/mainwnd.cpp, seq_gtkmm2/src/options.cpp,
+	seq_gtkmm2/src/perfedit.cpp, seq_gtkmm2/src/seqedit.cpp: Moved
+	calculations to own module, added LASH options GUI, white-box
+	support.
+
+2015-11-06  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* contrib/bugs_to_investigate.txt, libseq64/include/Makefile.am,
+	libseq64/include/globals.h, libseq64/include/scales.h,
+	libseq64/include/sequence.hpp, libseq64/src/perform.cpp,
+	libseq64/src/sequence.cpp, libseq64/src/user_settings.cpp,
+	resources/pixmaps/seq64.xpm, seq_gtkmm2/src/mainwnd.cpp,
+	seq_gtkmm2/src/perfedit.cpp, seq_gtkmm2/src/seqedit.cpp,
+	seq_gtkmm2/src/seqkeys.cpp, seq_gtkmm2/src/seqroll.cpp: Minor
+	commenting, moved scales definitions into new module.
+
+2015-11-06  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* INSTALL, README, contrib/bugs_to_investigate.txt,
+	libseq64/include/sequence.hpp, libseq64/src/midifile.cpp,
+	libseq64/src/perform.cpp, libseq64/src/sequence.cpp,
+	libseq64/src/user_settings.cpp, seq_gtkmm2/src/font.cpp,
+	seq_gtkmm2/src/mainwid.cpp, seq_gtkmm2/src/seqedit.cpp,
+	seq_gtkmm2/src/seqmenu.cpp, seq_gtkmm2/src/seqroll.cpp: Added
+	seq-number slot option, interface tweaks.
+
 2015-11-05  Chris Ahlstrom <ahlstromcj@gmail.com>
 
-   * *.*: Started refactoring more globals, done with user-bus and
-   user-instrument settings.  The testing2 branch was merged early to
-   fix a major bug with SEQ64_JACK_SUPPORT, but more work is being done.
-   That merge was stamped as 0.9.9.6, will end up as 0.9.9.7.
-   Other work: better versions of command-line arguments; clean up of
-   long-commented-out code; clean up macro usage.
+	* *.*: Started refactoring more globals, done with user-bus and
+	user-instrument settings.  The testing2 branch was merged early to
+	fix a major bug with SEQ64_JACK_SUPPORT, but more work is being done.
+	That merge was stamped as 0.9.9.6, will end up as 0.9.9.7.
+	Other work: better versions of command-line arguments; clean up of
+	long-commented-out code; clean up macro usage.
+
+2015-11-05  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/include/globals.h, libseq64/include/midifile.hpp,
+	libseq64/include/user_settings.hpp,
+	libseq64/src/jack_assistant.cpp, libseq64/src/mastermidibus.cpp,
+	libseq64/src/midibus.cpp, libseq64/src/midifile.cpp,
+	libseq64/src/perform.cpp, libseq64/src/sequence.cpp,
+	libseq64/src/user_settings.cpp, seq_gtkmm2/include/mainwnd.hpp,
+	seq_gtkmm2/include/perftime.hpp, seq_gtkmm2/src/maintime.cpp,
+	seq_gtkmm2/src/mainwnd.cpp, seq_gtkmm2/src/perfedit.cpp,
+	seq_gtkmm2/src/perfroll.cpp, seq_gtkmm2/src/perftime.cpp,
+	seq_gtkmm2/src/seqedit.cpp, seq_gtkmm2/src/seqevent.cpp,
+	seq_gtkmm2/src/seqroll.cpp, seq_gtkmm2/src/seqtime.cpp,
+	seq_portmidi/src/mastermidibus_portmidi.cpp: Refactored global_ppqn
+	access, preparing for scaling.
+
+2015-11-05  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* contrib/bugs_to_investigate.txt, libseq64/include/globals.h,
+	libseq64/include/perform.hpp, libseq64/src/globals.cpp,
+	libseq64/src/midibus.cpp, libseq64/src/optionsfile.cpp,
+	libseq64/src/rc_settings.cpp, libseq64/src/sequence.cpp,
+	seq_gtkmm2/include/perfedit.hpp, seq_gtkmm2/src/mainwnd.cpp,
+	seq_gtkmm2/src/options.cpp, seq_gtkmm2/src/perfroll.cpp,
+	seq_gtkmm2/src/seqedit.cpp, seq_gtkmm2/src/seqevent.cpp,
+	seq_gtkmm2/src/seqmenu.cpp, seq_gtkmm2/src/seqroll.cpp: Got rid of
+	global_interactionmethod.
+
+2015-11-05  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* ChangeLog, INSTALL, README, Sequencer64/sequencer64.cpp, VERSION,
+	configure.ac, contrib/sequencer64.rc.example,
+	contrib/sequencer64.usr.example, doc/dox/doxy-reference.cfg,
+	libseq64/include/event_list.hpp, libseq64/include/globals.h,
+	libseq64/include/gui_assistant.hpp,
+	libseq64/include/jack_assistant.hpp, libseq64/include/lash.hpp,
+	libseq64/include/user_midi_bus.hpp,
+	libseq64/include/user_settings.hpp, libseq64/src/event.cpp,
+	libseq64/src/event_list.cpp, libseq64/src/jack_assistant.cpp,
+	libseq64/src/lash.cpp, libseq64/src/mastermidibus.cpp,
+	libseq64/src/midifile.cpp, libseq64/src/optionsfile.cpp,
+	libseq64/src/perform.cpp, libseq64/src/sequence.cpp,
+	libseq64/src/user_settings.cpp, libseq64/src/userfile.cpp,
+	seq_gtkmm2/include/font.hpp,
+	seq_gtkmm2/include/gui_assistant_gtk2.hpp,
+	seq_gtkmm2/include/gui_drawingarea_gtk2.hpp,
+	seq_gtkmm2/include/seqdata.hpp, seq_gtkmm2/src/font.cpp,
+	seq_gtkmm2/src/gui_assistant_gtk2.cpp, seq_gtkmm2/src/mainwid.cpp,
+	seq_gtkmm2/src/perfnames.cpp, seq_gtkmm2/src/seqdata.cpp,
+	seq_gtkmm2/src/seqedit.cpp, seq_gtkmm2/src/seqroll.cpp: Cleaned
+	main() of stand-alone globals, extended rc and usr, cleaned up macro
+	support.
+
+2015-11-04  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* INSTALL, ROADMAP, Sequencer64/sequencer64.cpp, bootstrap,
+	contrib/bugs_to_investigate.txt, libseq64/include/globals.h,
+	libseq64/include/rc_settings.hpp, libseq64/include/sequence.hpp,
+	libseq64/include/triggers.hpp,
+	libseq64/include/user_instrument.hpp,
+	libseq64/include/user_midi_bus.hpp,
+	libseq64/include/user_settings.hpp, libseq64/include/userfile.hpp,
+	libseq64/src/globals.cpp, libseq64/src/midi_container.cpp,
+	libseq64/src/midifile.cpp, libseq64/src/optionsfile.cpp,
+	libseq64/src/rc_settings.cpp, libseq64/src/sequence.cpp,
+	libseq64/src/user_instrument.cpp, libseq64/src/user_midi_bus.cpp,
+	libseq64/src/user_settings.cpp, libseq64/src/userfile.cpp,
+	man/sequencer26.1, resources/pixmaps/seq64_32.xpm,
+	seq_gtkmm2/include/perfedit.hpp, seq_gtkmm2/include/perfroll.hpp,
+	seq_gtkmm2/include/seqedit.hpp, seq_gtkmm2/include/seqtime.hpp,
+	seq_gtkmm2/src/fruityperfroll_input.cpp,
+	seq_gtkmm2/src/mainwid.cpp, seq_gtkmm2/src/mainwnd.cpp,
+	seq_gtkmm2/src/perfedit.cpp, seq_gtkmm2/src/perfnames.cpp,
+	seq_gtkmm2/src/perfroll.cpp, seq_gtkmm2/src/perfroll_input.cpp,
+	seq_gtkmm2/src/seqedit.cpp, seq_gtkmm2/src/seqevent.cpp,
+	seq_gtkmm2/src/seqroll.cpp, seq_gtkmm2/src/seqtime.cpp,
+	seq_portmidi/src/mastermidibus_portmidi.cpp,
+	seq_portmidi/src/midibus_portmidi.cpp: Fixes to globals, namespace,
+	userfile, more.
+
+2015-11-03  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* configure.ac, contrib/bugs_to_investigate.txt,
+	libseq64/include/globals.h, libseq64/include/perform.hpp,
+	libseq64/include/user_instrument.hpp,
+	libseq64/include/user_midi_bus.hpp,
+	libseq64/include/user_settings.hpp, libseq64/include/userfile.hpp,
+	libseq64/src/globals.cpp, libseq64/src/midibus.cpp,
+	libseq64/src/perform.cpp, libseq64/src/rc_settings.cpp,
+	libseq64/src/sequence.cpp, libseq64/src/user_instrument.cpp,
+	libseq64/src/user_midi_bus.cpp, libseq64/src/user_settings.cpp,
+	libseq64/src/userfile.cpp, man/sequencer26.1,
+	seq_gtkmm2/src/perfroll.cpp, seq_gtkmm2/src/seqedit.cpp,
+	seq_gtkmm2/src/seqmenu.cpp, seq_gtkmm2/src/seqroll.cpp: Removed
+	legacy globals from buss/channel support.
+
+2015-11-02  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* Sequencer64/sequencer64.cpp, configure.ac,
+	contrib/bugs_to_investigate.txt, seq_gtkmm2/src/options.cpp: 
+	Accidentally disabled the JACK Options tab.
+
+2015-11-01  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* contrib/bugs_to_investigate.txt, libseq64/include/sequence.hpp,
+	libseq64/include/triggers.hpp, libseq64/src/sequence.cpp,
+	libseq64/src/triggers.cpp,
+	seq_gtkmm2/include/fruityperfroll_input.hpp,
+	seq_gtkmm2/include/fruityseqroll.hpp,
+	seq_gtkmm2/include/perfroll.hpp,
+	seq_gtkmm2/include/perfroll_input.hpp,
+	seq_gtkmm2/include/seq24seqroll.hpp,
+	seq_gtkmm2/include/seqroll.hpp, seq_gtkmm2/src/mainwnd.cpp,
+	seq_gtkmm2/src/perfroll.cpp, seq_gtkmm2/src/perfroll_input.cpp,
+	seq_gtkmm2/src/seqroll.cpp: Add arrow-selection-movement to
+	perfroll.
+
+2015-11-01  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* configure.ac, contrib/bugs_to_investigate.txt,
+	libseq64/include/event.hpp, libseq64/include/event_list.hpp,
+	libseq64/include/sequence.hpp, libseq64/src/event_list.cpp,
+	libseq64/src/sequence.cpp, seq_gtkmm2/include/seq24seqroll.hpp,
+	seq_gtkmm2/src/mainwid.cpp, seq_gtkmm2/src/seqevent.cpp,
+	seq_gtkmm2/src/seqroll.cpp: Added selection-detection support, arrow
+	key support formoving selection, and keystroke paint support.
+
+2015-10-31  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* contrib/bugs_to_investigate.txt, doc/dox/doxy-reference.cfg,
+	libseq64/include/Makefile.am, libseq64/include/event.hpp,
+	libseq64/include/gdk_basic_keys.h, libseq64/include/globals.h,
+	libseq64/include/sequence.hpp, libseq64/include/triggers.hpp,
+	libseq64/src/Makefile.am, libseq64/src/event.cpp,
+	libseq64/src/midi_container.cpp, libseq64/src/sequence.cpp,
+	libseq64/src/triggers.cpp, seq_gtkmm2/include/mainwnd.hpp,
+	seq_gtkmm2/src/fruityperfroll_input.cpp,
+	seq_gtkmm2/src/fruityseq.cpp, seq_gtkmm2/src/fruityseqroll.cpp,
+	seq_gtkmm2/src/mainwid.cpp, seq_gtkmm2/src/mainwnd.cpp,
+	seq_gtkmm2/src/perfedit.cpp, seq_gtkmm2/src/perfnames.cpp,
+	seq_gtkmm2/src/perfroll.cpp, seq_gtkmm2/src/perfroll_input.cpp,
+	seq_gtkmm2/src/seq24seq.cpp, seq_gtkmm2/src/seq24seqroll.cpp,
+	seq_gtkmm2/src/seqdata.cpp, seq_gtkmm2/src/seqedit.cpp,
+	seq_gtkmm2/src/seqevent.cpp, seq_gtkmm2/src/seqkeys.cpp,
+	seq_gtkmm2/src/seqroll.cpp, seq_gtkmm2/src/seqtime.cpp: Refactored
+	trigger into own module, preliminary support for keystroke note
+	editing.
+
+2015-11-05  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* *.*: Started refactoring more globals, done with user-bus and
+	user-instrument settings.  The testing2 branch was merged early to
+	fix a major bug with SEQ64_JACK_SUPPORT, but more work is being done.
+	That merge was stamped as 0.9.9.6, will end up as 0.9.9.7.
+	Other work: better versions of command-line arguments; clean up of
+	long-commented-out code; clean up macro usage.
 
 2015-10-30  Chris Ahlstrom <ahlstromcj@gmail.com>
 
-   * *.*: Added --ppqn option for override of the 192 setting, for testing.
-   Feature still not finished.  Added a new set of pixmap font files, using
-   a bold anti-aliased font for better readability.  To change back to the
-   default PC font requires undefining SEQ64_USE_NEW_FONT in the font.cpp
-   module.  See the new screenshot in the root directory.  Merged testing
-   into master.
+	* INSTALL, README, Sequencer64/sequencer64.cpp, VERSION,
+	configure.ac, contrib/bugs_to_investigate.txt,
+	libseq64/include/globals.h, libseq64/include/mastermidibus.hpp,
+	libseq64/include/perform.hpp, libseq64/src/jack_assistant.cpp,
+	libseq64/src/mastermidibus.cpp, libseq64/src/midifile.cpp,
+	libseq64/src/perform.cpp, libseq64/src/sequence.cpp,
+	man/sequencer26.1, seq_gtkmm2/include/perfedit.hpp,
+	seq_gtkmm2/include/seqedit.hpp, seq_gtkmm2/src/mainwnd.cpp,
+	seq_gtkmm2/src/seqedit.cpp,
+	seq_portmidi/include/mastermidibus_portmidi.hpp,
+	seq_portmidi/src/mastermidibus_portmidi.cpp: Changed bpm to beats
+	per minute to avoid code confusion.
+
+2015-10-30  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* contrib/bugs_to_investigate.txt: Testing 0.9.9.5 merged back into
+	master, have fun.
+
+2015-10-30  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* ChangeLog, README, ROADMAP, configure.ac,
+	contrib/bugs_to_investigate.txt, doc/dox/doxy-reference.cfg: In
+	preparation to merge to master, 0.9.9.5.
+
+2015-10-29  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/include/perform.hpp, libseq64/include/sequence.hpp,
+	libseq64/src/midi_container.cpp, libseq64/src/sequence.cpp,
+	resources/pixmaps/length_short.xpm,
+	seq_gtkmm2/include/gui_drawingarea_gtk2.hpp,
+	seq_gtkmm2/include/perfroll.hpp, seq_gtkmm2/src/mainwid.cpp,
+	seq_gtkmm2/src/perfroll.cpp, seq_gtkmm2/src/perftime.cpp,
+	seq_gtkmm2/src/seqdata.cpp, seq_gtkmm2/src/seqedit.cpp,
+	seq_gtkmm2/src/seqevent.cpp, seq_gtkmm2/src/seqkeys.cpp,
+	seq_gtkmm2/src/seqroll.cpp, seq_gtkmm2/src/seqtime.cpp: Added
+	initiali draw_drawable support.
+
+2015-10-29  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/include/globals.h,
+	seq_gtkmm2/include/gui_drawingarea_gtk2.hpp,
+	seq_gtkmm2/include/maintime.hpp, seq_gtkmm2/include/mainwid.hpp,
+	seq_gtkmm2/include/perftime.hpp,
+	seq_gtkmm2/src/common_code_snippets.cpp,
+	seq_gtkmm2/src/gui_drawingarea_gtk2.cpp,
+	seq_gtkmm2/src/maintime.cpp, seq_gtkmm2/src/mainwid.cpp,
+	seq_gtkmm2/src/perfroll.cpp, seq_gtkmm2/src/perftime.cpp,
+	seq_gtkmm2/src/seqdata.cpp, seq_gtkmm2/src/seqkeys.cpp,
+	seq_gtkmm2/src/seqtime.cpp: Interim testing check-in.
+
+2015-10-29  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/include/globals.h, libseq64/src/event_list.cpp,
+	libseq64/src/sequence.cpp, seq_gtkmm2/include/font.hpp,
+	seq_gtkmm2/include/gui_drawingarea_gtk2.hpp,
+	seq_gtkmm2/include/gui_palette_gtk2.hpp,
+	seq_gtkmm2/include/perfedit.hpp, seq_gtkmm2/include/perfroll.hpp,
+	seq_gtkmm2/include/seqdata.hpp, seq_gtkmm2/include/seqroll.hpp,
+	seq_gtkmm2/src/gui_drawingarea_gtk2.cpp,
+	seq_gtkmm2/src/gui_palette_gtk2.cpp,
+	seq_gtkmm2/src/seq24seqroll.cpp, seq_gtkmm2/src/seqedit.cpp,
+	seq_gtkmm2/src/seqevent.cpp, seq_gtkmm2/src/seqkeys.cpp,
+	seq_gtkmm2/src/seqroll.cpp: More draw-rectangle and draw-line
+	overloads, changed color of background sequences.
+
+2015-10-28  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/include/click.hpp, libseq64/include/event.hpp,
+	libseq64/include/globals.h, libseq64/src/event_list.cpp,
+	libseq64/src/sequence.cpp,
+	seq_gtkmm2/include/gui_drawingarea_gtk2.hpp,
+	seq_gtkmm2/include/seqevent.hpp, seq_gtkmm2/include/seqroll.hpp,
+	seq_gtkmm2/src/fruityperfroll_input.cpp,
+	seq_gtkmm2/src/fruityseq.cpp, seq_gtkmm2/src/fruityseqroll.cpp,
+	seq_gtkmm2/src/gui_drawingarea_gtk2.cpp,
+	seq_gtkmm2/src/mainwid.cpp, seq_gtkmm2/src/perfnames.cpp,
+	seq_gtkmm2/src/perfroll_input.cpp, seq_gtkmm2/src/perftime.cpp,
+	seq_gtkmm2/src/seq24seq.cpp, seq_gtkmm2/src/seq24seqroll.cpp,
+	seq_gtkmm2/src/seqdata.cpp, seq_gtkmm2/src/seqevent.cpp,
+	seq_gtkmm2/src/seqkeys.cpp, seq_gtkmm2/src/seqroll.cpp: More support
+	for shorter drawing function calls, in progress.
+
+2015-10-27  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/src/perform.cpp,
+	seq_gtkmm2/include/gui_drawingarea_gtk2.hpp,
+	seq_gtkmm2/include/seqdata.hpp,
+	seq_gtkmm2/src/gui_drawingarea_gtk2.cpp,
+	seq_gtkmm2/src/mainwid.cpp, seq_gtkmm2/src/perfnames.cpp,
+	seq_gtkmm2/src/perftime.cpp, seq_gtkmm2/src/seqdata.cpp,
+	seq_gtkmm2/src/seqkeys.cpp, seq_gtkmm2/src/seqtime.cpp: More usage
+	of drawing wrappers, figured out seqdata.
+
+2015-10-27  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/include/globals.h, libseq64/src/midibus.cpp,
+	libseq64/src/midifile.cpp, libseq64/src/perform.cpp,
+	seq_gtkmm2/include/font.hpp,
+	seq_gtkmm2/include/gui_drawingarea_gtk2.hpp,
+	seq_gtkmm2/include/gui_palette_gtk2.hpp,
+	seq_gtkmm2/include/perfedit.hpp, seq_gtkmm2/include/perfnames.hpp,
+	seq_gtkmm2/include/perfroll.hpp, seq_gtkmm2/src/font.cpp,
+	seq_gtkmm2/src/gui_drawingarea_gtk2.cpp,
+	seq_gtkmm2/src/perfedit.cpp, seq_gtkmm2/src/perfnames.cpp,
+	seq_gtkmm2/src/perfroll.cpp, seq_gtkmm2/src/seqdata.cpp,
+	seq_gtkmm2/src/seqevent.cpp, seq_gtkmm2/src/seqroll.cpp: Added and
+	used rectangle and string drawing wrappers, in progress.
+
+2015-10-26  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/include/globals.h, libseq64/src/midibus.cpp,
+	libseq64/src/midifile.cpp, seq_gtkmm2/include/mainwnd.hpp,
+	seq_gtkmm2/include/perfedit.hpp, seq_gtkmm2/include/perfroll.hpp,
+	seq_gtkmm2/src/font.cpp, seq_gtkmm2/src/perfroll.cpp: Minor upgrades
+	to PPQN support, in progress.
+
+2015-10-26  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* README, ROADMAP, configure.ac, contrib/ascii-matrix-sizes.txt,
+	contrib/ascii-matrix.c, contrib/ascii-matrix.txt,
+	libseq64/include/globals.h, libseq64/src/perform.cpp,
+	resources/pixmaps/wenfont_b.xpm, resources/pixmaps/wenfont_w.xpm,
+	resources/pixmaps/wenfont_y.xpm, resources/pixmaps/wenfont_yb.xpm,
+	seq_gtkmm2/include/font.hpp, seq_gtkmm2/src/font.cpp: Added new
+	anti-aliased font, as a break from testing.
+
+2015-10-20  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* : commit b84a83e00de68e54c43945dc42fda565d3031c30 Author: Chris
+	Ahlstrom <ahlstromcj@gmail.com> Date:   Tue Oct 20 20:56:31 2015
+	-0400
+
+2015-10-20  Chris Ahlstrom <ahlstrom@centiped>
+
+	* : commit e6bb26a784291fcd973ea8ea0aade6217185d85f Author: Chris
+	Ahlstrom <ahlstrom@centiped> Date:   Tue Oct 20 07:48:02 2015 -0400
+
+2015-10-20  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/include/jack_assistant.hpp,
+	libseq64/src/jack_assistant.cpp: Adding comments to jack_assistant.
+
+2015-10-19  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* Sequencer64/sequencer64.cpp, libseq64/include/globals.h,
+	libseq64/include/midifile.hpp, libseq64/src/jack_assistant.cpp,
+	libseq64/src/mastermidibus.cpp, libseq64/src/midibus.cpp,
+	libseq64/src/midifile.cpp, libseq64/src/perform.cpp: More comments
+	about PPQN.
+
+2015-10-18  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* Sequencer64/sequencer64.cpp: Removed a little dead code from
+	main().
+
+2015-10-18  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* .gitignore, contrib/fontconfig.supp, contrib/glibc.supp,
+	contrib/gtk.supp, contrib/seq64.supp,
+	contrib/valgrind/fontconfig.supp, contrib/valgrind/glibc.supp,
+	contrib/valgrind/gtk.supp, contrib/valgrind/seq64.supp,
+	contrib/valgrind/valgrind.supp, doc/dox/user_testing.dox,
+	libseq64/include/globals.h, libseq64/include/midifile.hpp,
+	libseq64/include/perform.hpp, libseq64/include/sequence.hpp,
+	libseq64/src/perform.cpp, seq_gtkmm2/src/mainwid.cpp,
+	seq_gtkmm2/src/mainwnd.cpp: Segfault fixes for sparse sequence
+	access.
+
+2015-10-17  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/include/perform.hpp, libseq64/src/mastermidibus.cpp,
+	libseq64/src/midifile.cpp, libseq64/src/perform.cpp,
+	libseq64/src/sequence.cpp, seq_gtkmm2/src/mainwid.cpp,
+	seq_gtkmm2/src/mainwnd.cpp, seq_gtkmm2/src/perfedit.cpp,
+	seq_gtkmm2/src/perfroll.cpp: Initial code improvements based on
+	valgrind testing.
+
+2015-10-17  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* doc/dox/Makefile.am, doc/dox/mainpage-reference.dox,
+	doc/dox/user_testing.dox: Got Doxygen make to work correctly.
+
+2015-10-17  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* strap_functions: Improved strap functions as well.
+
+2015-10-17  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* Makefile.am, Sequencer64/Makefile.am,
+	Sequencer64/sequencer64.cpp, bootstrap, configure.ac,
+	contrib/fontconfig.supp, contrib/glibc.supp, contrib/gtk.supp,
+	contrib/seq64.supp, sequencer64/Makefile.am,
+	sequencer64/sequencer64.cpp: Valgrind suppressions, bootstrap
+	improvements, renamed app directory.
+
+2015-10-16  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/include/perform.hpp, libseq64/src/perform.cpp: Fixed some
+	valgrind discoveries in perform, more to come.
+
+2015-10-16  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* doc/dox/user_testing.dox, seq_gtkmm2/src/mainwid.cpp: Cleanup in
+	mainwid while adding test documentation, got aseqfault as well.
+
+2015-10-15  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/include/globals.h, libseq64/include/jack_assistant.hpp,
+	libseq64/include/mastermidibus.hpp, libseq64/include/midibus.hpp,
+	libseq64/include/midifile.hpp, libseq64/include/perform.hpp,
+	libseq64/include/sequence.hpp, libseq64/src/globals.cpp,
+	libseq64/src/jack_assistant.cpp, libseq64/src/mastermidibus.cpp,
+	libseq64/src/midibus.cpp, libseq64/src/midifile.cpp,
+	libseq64/src/perform.cpp, libseq64/src/sequence.cpp,
+	seq_gtkmm2/include/maintime.hpp, seq_gtkmm2/include/mainwnd.hpp,
+	seq_gtkmm2/include/perfedit.hpp, seq_gtkmm2/include/perfroll.hpp,
+	seq_gtkmm2/include/seqedit.hpp, seq_gtkmm2/include/seqevent.hpp,
+	seq_gtkmm2/include/seqroll.hpp, seq_gtkmm2/include/seqtime.hpp,
+	seq_gtkmm2/src/common_code_snippets.cpp,
+	seq_gtkmm2/src/fruityperfroll_input.cpp,
+	seq_gtkmm2/src/maintime.cpp, seq_gtkmm2/src/mainwnd.cpp,
+	seq_gtkmm2/src/perfedit.cpp, seq_gtkmm2/src/perfroll.cpp,
+	seq_gtkmm2/src/perfroll_input.cpp, seq_gtkmm2/src/seqedit.cpp,
+	seq_gtkmm2/src/seqevent.cpp, seq_gtkmm2/src/seqroll.cpp,
+	seq_gtkmm2/src/seqtime.cpp, sequencer64/sequencer64.cpp: Further
+	support for modifying PPQN, still has issues, but defaults still
+	work.
+
+2015-10-15  Chris Ahlstrom <ahlstrom@centiped>
+
+	* libseq64/src/globals.cpp: Replaces /home/username with circumflex.
+
+2015-10-15  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/include/globals.h, libseq64/src/globals.cpp,
+	libseq64/src/sequence.cpp, seq_gtkmm2/src/mainwnd.cpp: Fixed mainwnd
+	title-bar for readability.
 
 2015-10-14  Chris Ahlstrom <ahlstromcj@gmail.com>
 
-   * *.*: Added --bus option for override of buss number, for testing.
+	* *.*: Added --bus option for override of buss number, for testing.
+
+2015-10-14  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/include/globals.h, libseq64/include/midifile.hpp,
+	libseq64/include/sequence.hpp, libseq64/src/globals.cpp,
+	libseq64/src/midifile.cpp, libseq64/src/perform.cpp,
+	libseq64/src/sequence.cpp, seq_gtkmm2/include/mainwnd.hpp,
+	seq_gtkmm2/src/mainwnd.cpp, sequencer64/sequencer64.cpp: Add PPQN
+	support to midifile and partly to mainwnd.
+
+2015-10-14  Chris Ahlstrom <ahlstrom@centiped>
+
+	* libseq64/include/jack_assistant.hpp,
+	libseq64/include/mastermidibus.hpp, libseq64/include/midibus.hpp,
+	libseq64/include/midifile.hpp, libseq64/include/perform.hpp,
+	libseq64/include/sequence.hpp, libseq64/src/jack_assistant.cpp,
+	libseq64/src/mastermidibus.cpp, libseq64/src/midibus.cpp,
+	libseq64/src/midifile.cpp, libseq64/src/perform.cpp,
+	libseq64/src/sequence.cpp, seq_gtkmm2/include/maintime.hpp,
+	seq_gtkmm2/include/perfedit.hpp, seq_gtkmm2/include/perfroll.hpp,
+	seq_gtkmm2/include/seqedit.hpp, seq_gtkmm2/include/seqevent.hpp,
+	seq_gtkmm2/include/seqroll.hpp, seq_gtkmm2/include/seqtime.hpp,
+	seq_gtkmm2/src/gui_assistant_gtk2.cpp, seq_gtkmm2/src/maintime.cpp,
+	seq_gtkmm2/src/perfedit.cpp, seq_gtkmm2/src/perfroll.cpp,
+	seq_gtkmm2/src/seqedit.cpp, seq_gtkmm2/src/seqevent.cpp,
+	seq_gtkmm2/src/seqroll.cpp, seq_gtkmm2/src/seqtime.cpp: Added more
+	default arguments for future refactoring.
+
+2015-10-14  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* ChangeLog, configure.ac, doc/dox/user_testing.dox,
+	libseq64/include/globals.h, libseq64/src/globals.cpp,
+	libseq64/src/mastermidibus.cpp, libseq64/src/midibus.cpp,
+	libseq64/src/midifile.cpp, sequencer64/sequencer64.cpp: Add --bus
+	override option for testing convenience.
+
+2015-10-13  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/include/globals.h, libseq64/include/midibus.hpp,
+	libseq64/src/globals.cpp, libseq64/src/jack_assistant.cpp,
+	libseq64/src/midibus.cpp, libseq64/src/midifile.cpp,
+	libseq64/src/perform.cpp: Created MIDI timing calculation inline
+	functions.
+
+2015-10-13  Chris Ahlstrom <ahlstrom@centiped>
+
+	* libseq64/include/jack_assistant.hpp,
+	libseq64/include/mastermidibus.hpp, libseq64/include/midibus.hpp,
+	libseq64/include/midifile.hpp, libseq64/include/perform.hpp,
+	libseq64/include/sequence.hpp, libseq64/src/jack_assistant.cpp,
+	libseq64/src/mastermidibus.cpp, libseq64/src/midibus.cpp,
+	libseq64/src/midifile.cpp, libseq64/src/perform.cpp,
+	libseq64/src/sequence.cpp: Add m_ppqn members to remaining modules.
+
+2015-10-13  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* doc/dox/doxy-reference.cfg, libseq64/include/click.hpp,
+	libseq64/include/event_list.hpp,
+	libseq64/include/mastermidibus.hpp, seq_gtkmm2/include/Makefile.am,
+	seq_gtkmm2/include/fruityperfroll_input.hpp,
+	seq_gtkmm2/include/perfroll.hpp,
+	seq_gtkmm2/include/perfroll_input.hpp,
+	seq_gtkmm2/include/seqedit.hpp, seq_gtkmm2/include/seqevent.hpp,
+	seq_gtkmm2/include/seqroll.hpp, seq_gtkmm2/include/seqtime.hpp,
+	seq_gtkmm2/src/Makefile.am,
+	seq_gtkmm2/src/fruityperfroll_input.cpp,
+	seq_gtkmm2/src/perfroll.cpp, seq_gtkmm2/src/perfroll_input.cpp,
+	seq_gtkmm2/src/seqedit.cpp, seq_gtkmm2/src/seqevent.cpp,
+	seq_gtkmm2/src/seqroll.cpp, seq_gtkmm2/src/seqtime.cpp: Refactored
+	seq_gtkmm2 c_ppqn and fruity perfroll input.
+
+2015-10-12  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* configure.ac, doc/dox/doxy-reference.cfg,
+	libseq64/include/click.hpp, libseq64/include/configfile.hpp,
+	libseq64/include/controllers.hpp, libseq64/include/easy_macros.h,
+	libseq64/include/event.hpp, libseq64/include/event_list.hpp,
+	libseq64/include/gdk_basic_keys.h, libseq64/include/globals.h,
+	libseq64/include/gui_assistant.hpp,
+	libseq64/include/gui_play_base.hpp,
+	libseq64/include/jack_assistant.hpp, libseq64/include/lash.hpp,
+	libseq64/include/mastermidibus.hpp,
+	libseq64/include/midi_container.hpp, libseq64/include/midibus.hpp,
+	libseq64/include/midibus_common.hpp, seq_gtkmm2/src/mainwid.cpp,
+	seq_gtkmm2/src/mainwnd.cpp, seq_gtkmm2/src/perfnames.cpp: Fixed
+	weird issue with Doxygen and PDF generation.
+
+2015-10-12  Chris Ahlstrom <ahlstrom@centiped>
+
+	* doc/dox/doxy-reference.cfg, libseq64/src/mastermidibus.cpp,
+	libseq64/src/midibus.cpp: Documented midibus.
+
+2015-10-12  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* doc/dox/doxy-reference.cfg, libseq64/src/jack_assistant.cpp,
+	libseq64/src/keys_perform.cpp, libseq64/src/keystroke.cpp,
+	libseq64/src/lash.cpp, libseq64/src/mastermidibus.cpp: More
+	documentation, currently in mastermidibus.
+
+2015-10-11  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* INSTALL, contrib/midi/wpb_yoshimi.txt,
+	doc/dox/doxy-reference.cfg, doc/dox/make_dox,
+	doc/dox/user_testing.dox, libseq64/include/event.hpp,
+	libseq64/include/gui_play_base.hpp,
+	libseq64/include/user_midi_bus.hpp, libseq64/src/click.cpp,
+	libseq64/src/configfile.cpp, libseq64/src/easy_macros.cpp,
+	libseq64/src/event.cpp, libseq64/src/event_list.cpp,
+	libseq64/src/gui_assistant.cpp, libseq64/src/gui_play_base.cpp,
+	libseq64/src/jack_assistant.cpp, libseq64/src/mastermidibus.cpp,
+	libseq64/src/midibus.cpp, libseq64/src/perform.cpp,
+	libseq64/src/sequence.cpp,
+	seq_gtkmm2/include/gui_drawingarea_gtk2.hpp,
+	seq_gtkmm2/src/seqtime.cpp: Documentation upgrades, but PDF will not
+	generate.
+
+2015-10-11  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* contrib/midi/b4uacuse-GM-alternate.hex,
+	contrib/midi/b4uacuse-GM-format.hex, contrib/midi/b4uacuse.hex,
+	libseq64/include/Makefile.am, libseq64/include/event.hpp,
+	libseq64/include/event_list.hpp,
+	libseq64/include/midi_container.hpp,
+	libseq64/include/midi_list.hpp, libseq64/include/midi_vector.hpp,
+	libseq64/include/sequence.hpp, libseq64/src/Makefile.am,
+	libseq64/src/event_list.cpp, libseq64/src/midi_container.cpp,
+	libseq64/src/midi_list.cpp, libseq64/src/midi_vector.cpp,
+	libseq64/src/midifile.cpp, libseq64/src/sequence.cpp: Added and
+	provisionally tested midi_vector.
+
+2015-10-10  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* .gitignore, libseq64/include/Makefile.am,
+	libseq64/include/midi_container.hpp,
+	libseq64/include/midi_list.hpp, libseq64/include/sequence.hpp,
+	libseq64/src/Makefile.am, libseq64/src/midi_container.cpp,
+	libseq64/src/midi_list.cpp, libseq64/src/midifile.cpp,
+	libseq64/src/sequence.cpp: Replaced CharList with midi_container,
+	midi_list.
+
+2015-10-10  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/include/click.hpp, libseq64/include/configfile.hpp,
+	libseq64/include/keys_perform.hpp, libseq64/include/keystroke.hpp,
+	libseq64/include/midi_container.hpp, libseq64/include/midifile.hpp,
+	libseq64/include/perform.hpp, libseq64/include/sequence.hpp,
+	libseq64/src/click.cpp, libseq64/src/configfile.cpp,
+	libseq64/src/keys_perform.cpp, libseq64/src/keystroke.cpp,
+	libseq64/src/midifile.cpp, libseq64/src/optionsfile.cpp,
+	libseq64/src/sequence.cpp,
+	seq_gtkmm2/include/keys_perform_gtk2.hpp,
+	seq_gtkmm2/src/keys_perform_gtk2.cpp: Fixes from unit-testing, added
+	key_name() function.
+
+2015-10-09  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/include/click.hpp, libseq64/include/keystroke.hpp,
+	libseq64/src/click.cpp, libseq64/src/perform.cpp,
+	seq_gtkmm2/src/fruityseq.cpp, seq_gtkmm2/src/fruityseqroll.cpp,
+	seq_gtkmm2/src/mainwid.cpp, seq_gtkmm2/src/mainwnd.cpp,
+	seq_gtkmm2/src/perfnames.cpp, seq_gtkmm2/src/perfroll.cpp,
+	seq_gtkmm2/src/perfroll_input.cpp, seq_gtkmm2/src/perftime.cpp,
+	seq_gtkmm2/src/seq24seq.cpp, seq_gtkmm2/src/seq24seqroll.cpp,
+	seq_gtkmm2/src/seqkeys.cpp: Improved the CLICK and KEYSTROKE macros
+	by prepending SEQ64_.
+
+2015-10-09  Chris Ahlstrom <ahlstrom@centiped>
+
+	* libseq64/include/click.hpp, libseq64/src/click.cpp: Added button
+	macros to click.
+
+2015-10-09  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/include/click.hpp, libseq64/src/click.cpp: Fixed click
+	principal constructor based on unit-testing.
+
+2015-10-08  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/include/click.hpp, libseq64/include/gdk_basic_keys.h,
+	libseq64/src/click.cpp: Add symbols and check for the click
+	unit-test.
+
+2015-10-07  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* Makefile.am, bootstrap, configure.ac, doc/dox/make_dox,
+	m4/gcc-version.m4, m4/xpc_debug.m4, m4/xpc_doxygen.m4,
+	m4/xpc_errorlog.m4, m4/xpc_mingw32.m4, m4/xpc_nullptr.m4,
+	m4/xpc_thisptr.m4, pack, resources/pixmaps/Makefile.am,
+	seq_portmidi/include/Makefile.am, strap_functions: Minor script
+	cleanups and fixes.
 
 2015-10-04  Chris Ahlstrom <ahlstromcj@gmail.com>
 
-   * *.*: Started the "testing" branch, and stamped it as 0.9.9.5.
+	* *.*: Started the "testing" branch, and stamped it as 0.9.9.5.
 
 2015-10-04  Chris Ahlstrom <ahlstromcj@gmail.com>
 
-   * *.*: Merged the "guibase" branch back.  Provides user-file writing,
-   GUI bases classes, and a metric boatload of refactoring.
-   Tagged as version 0.9.9.4.
+	* *.*: Merged the "guibase" branch back.  Provides user-file writing,
+	GUI bases classes, and a metric boatload of refactoring.
+	Tagged as version 0.9.9.4.
+
+2015-10-04  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* ChangeLog, INSTALL, README, ROADMAP, VERSION, bootstrap,
+	configure.ac, doc/dox/doxy-reference.cfg: Restamped testing branch
+	as 0.9.9.5.
+
+2015-10-04  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* ChangeLog: Updated change log.
+
+2015-10-04  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* ChangeLog, INSTALL, README, ROADMAP, VERSION, bootstrap,
+	configure.ac, doc/dox/doxy-reference.cfg: Initial stamping for the
+	testing branch.
+
+2015-10-04  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* README, doc/gui_offload.txt, libseq64/include/click.hpp,
+	libseq64/include/gdk_basic_keys.h, libseq64/include/globals.h,
+	libseq64/include/keystroke.hpp, libseq64/include/sequence.hpp,
+	libseq64/src/keystroke.cpp, libseq64/src/perform.cpp,
+	libseq64/src/sequence.cpp,
+	seq_gtkmm2/include/gui_drawingarea_gtk2.hpp,
+	seq_gtkmm2/include/gui_palette_gtk2.hpp,
+	seq_gtkmm2/include/perfedit.hpp, seq_gtkmm2/include/perfroll.hpp,
+	seq_gtkmm2/include/seqdata.hpp, seq_gtkmm2/src/fruityseq.cpp,
+	seq_gtkmm2/src/fruityseqroll.cpp,
+	seq_gtkmm2/src/gui_drawingarea_gtk2.cpp,
+	seq_gtkmm2/src/maintime.cpp, seq_gtkmm2/src/mainwid.cpp,
+	seq_gtkmm2/src/mainwnd.cpp, seq_gtkmm2/src/perfedit.cpp,
+	seq_gtkmm2/src/perfnames.cpp, seq_gtkmm2/src/perfroll.cpp,
+	seq_gtkmm2/src/perfroll_input.cpp, seq_gtkmm2/src/perftime.cpp,
+	seq_gtkmm2/src/seq24seq.cpp, seq_gtkmm2/src/seq24seqroll.cpp,
+	seq_gtkmm2/src/seqdata.cpp, seq_gtkmm2/src/seqedit.cpp,
+	seq_gtkmm2/src/seqevent.cpp, seq_gtkmm2/src/seqkeys.cpp,
+	seq_gtkmm2/src/seqroll.cpp, seq_gtkmm2/src/seqtime.cpp: Color
+	accessors, globals, and more.
+
+2015-10-03  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* doc/uml.txt, seq_gtkmm2/include/gui_drawingarea_gtk2.hpp,
+	seq_gtkmm2/include/gui_window_gtk2.hpp,
+	seq_gtkmm2/include/seqdata.hpp, seq_gtkmm2/include/seqevent.hpp,
+	seq_gtkmm2/include/seqkeys.hpp, seq_gtkmm2/include/seqroll.hpp,
+	seq_gtkmm2/include/seqtime.hpp, seq_gtkmm2/src/fruityseq.cpp,
+	seq_gtkmm2/src/fruityseqroll.cpp,
+	seq_gtkmm2/src/gui_drawingarea_gtk2.cpp,
+	seq_gtkmm2/src/perfedit.cpp, seq_gtkmm2/src/perfnames.cpp,
+	seq_gtkmm2/src/seq24seq.cpp, seq_gtkmm2/src/seq24seqroll.cpp,
+	seq_gtkmm2/src/seqdata.cpp, seq_gtkmm2/src/seqedit.cpp,
+	seq_gtkmm2/src/seqevent.cpp, seq_gtkmm2/src/seqkeys.cpp,
+	seq_gtkmm2/src/seqmenu.cpp, seq_gtkmm2/src/seqroll.cpp,
+	seq_gtkmm2/src/seqtime.cpp: Basics of guibase refactoring finished.
+
+2015-10-03  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* doc/uml.txt, libseq64/include/gdk_basic_keys.h,
+	libseq64/include/keystroke.hpp, libseq64/include/perform.hpp,
+	libseq64/src/keys_perform.cpp, libseq64/src/keystroke.cpp,
+	libseq64/src/perform.cpp, seq_gtkmm2/include/gui_palette_gtk2.hpp,
+	seq_gtkmm2/include/perfroll.hpp,
+	seq_gtkmm2/include/perfroll_input.hpp,
+	seq_gtkmm2/src/gui_palette_gtk2.cpp, seq_gtkmm2/src/mainwnd.cpp,
+	seq_gtkmm2/src/perfedit.cpp, seq_gtkmm2/src/perfnames.cpp,
+	seq_gtkmm2/src/perfroll.cpp, seq_gtkmm2/src/perfroll_input.cpp,
+	seq_gtkmm2/src/perftime.cpp: Finished refactoring perfroll and
+	perfroll_input.
+
+2015-10-03  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* README, doc/uml.txt, seq_gtkmm2/include/perftime.hpp,
+	seq_gtkmm2/src/gui_drawingarea_gtk2.cpp,
+	seq_gtkmm2/src/gui_palette_gtk2.cpp, seq_gtkmm2/src/perfnames.cpp,
+	seq_gtkmm2/src/perftime.cpp: Perfnames and perftime fixed, basically
+	complete.
+
+2015-10-02  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* configure.ac, libseq64/include/keys_perform.hpp,
+	libseq64/include/perform.hpp, libseq64/src/event_list.cpp,
+	libseq64/src/keys_perform.cpp, libseq64/src/mastermidibus.cpp,
+	libseq64/src/optionsfile.cpp, libseq64/src/perform.cpp,
+	seq_gtkmm2/src/mainwnd.cpp, seq_gtkmm2/src/options.cpp,
+	seq_gtkmm2/src/perfedit.cpp: libsigc++ forces C++11 support, fixed
+	some valgrind issues.
+
+2015-10-02  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/include/globals.h, libseq64/include/perform.hpp,
+	libseq64/src/perform.cpp,
+	seq_gtkmm2/include/gui_drawingarea_gtk2.hpp,
+	seq_gtkmm2/include/gui_window_gtk2.hpp,
+	seq_gtkmm2/include/perfedit.hpp, seq_gtkmm2/include/perfnames.hpp,
+	seq_gtkmm2/include/seqedit.hpp,
+	seq_gtkmm2/src/gui_drawingarea_gtk2.cpp,
+	seq_gtkmm2/src/gui_palette_gtk2.cpp,
+	seq_gtkmm2/src/gui_window_gtk2.cpp, seq_gtkmm2/src/mainwnd.cpp,
+	seq_gtkmm2/src/options.cpp, seq_gtkmm2/src/perfedit.cpp,
+	seq_gtkmm2/src/perfnames.cpp, seq_gtkmm2/src/perftime.cpp,
+	seq_gtkmm2/src/seqedit.cpp, seq_gtkmm2/src/seqevent.cpp: Interim
+	check-in perfedit/perfnames.
+
+2015-10-02  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/include/click.hpp,
+	seq_gtkmm2/include/gui_drawingarea_gtk2.hpp,
+	seq_gtkmm2/include/perfedit.hpp, seq_gtkmm2/include/perftime.hpp,
+	seq_gtkmm2/src/gui_drawingarea_gtk2.cpp,
+	seq_gtkmm2/src/mainwid.cpp, seq_gtkmm2/src/mainwnd.cpp,
+	seq_gtkmm2/src/perfedit.cpp, seq_gtkmm2/src/perftime.cpp: Perfedit
+	and perftime updates.
+
+2015-10-01  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* INSTALL, doc/uml.txt,
+	seq_gtkmm2/include/gui_drawingarea_gtk2.hpp,
+	seq_gtkmm2/include/maintime.hpp, seq_gtkmm2/include/mainwid.hpp,
+	seq_gtkmm2/include/mainwnd.hpp, seq_gtkmm2/include/options.hpp,
+	seq_gtkmm2/include/perfedit.hpp,
+	seq_gtkmm2/src/gui_drawingarea_gtk2.cpp,
+	seq_gtkmm2/src/maintime.cpp, seq_gtkmm2/src/mainwid.cpp,
+	seq_gtkmm2/src/mainwnd.cpp: Added textual UML, refactored maintime.
+
+2015-10-01  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* README, doc/uml.txt, libseq64/include/click.hpp,
+	libseq64/include/configfile.hpp, libseq64/include/controllers.hpp,
+	libseq64/include/easy_macros.h, libseq64/include/event.hpp,
+	libseq64/include/event_list.hpp, libseq64/include/gdk_basic_keys.h,
+	libseq64/include/globals.h, libseq64/include/gui_assistant.hpp,
+	libseq64/include/gui_play_base.hpp,
+	libseq64/include/jack_assistant.hpp,
+	libseq64/include/keys_perform.hpp, libseq64/include/keystroke.hpp,
+	libseq64/include/lash.hpp, libseq64/include/mastermidibus.hpp,
+	libseq64/include/midibus.hpp, libseq64/include/midibus_common.hpp,
+	libseq64/include/midifile.hpp, libseq64/include/mutex.hpp,
+	libseq64/include/optionsfile.hpp, libseq64/include/perform.hpp,
+	libseq64/include/platform_macros.h,
+	libseq64/include/rc_settings.hpp, libseq64/include/sequence.hpp,
+	libseq64/include/user_instrument.hpp,
+	libseq64/include/user_midi_bus.hpp,
+	libseq64/include/user_settings.hpp, libseq64/include/userfile.hpp,
+	libseq64/src/click.cpp, libseq64/src/configfile.cpp,
+	libseq64/src/easy_macros.cpp, libseq64/src/event.cpp,
+	libseq64/src/event_list.cpp, libseq64/src/globals.cpp,
+	libseq64/src/gui_assistant.cpp, libseq64/src/gui_play_base.cpp,
+	libseq64/src/jack_assistant.cpp, libseq64/src/keys_perform.cpp,
+	libseq64/src/keystroke.cpp, libseq64/src/lash.cpp,
+	libseq64/src/mastermidibus.cpp, libseq64/src/midibus.cpp,
+	libseq64/src/midifile.cpp, libseq64/src/mutex.cpp,
+	libseq64/src/optionsfile.cpp, libseq64/src/perform.cpp,
+	libseq64/src/rc_settings.cpp, libseq64/src/sequence.cpp,
+	libseq64/src/user_instrument.cpp, libseq64/src/user_midi_bus.cpp,
+	libseq64/src/user_settings.cpp, libseq64/src/userfile.cpp,
+	seq_gtkmm2/include/font.hpp, seq_gtkmm2/include/fruityseq.hpp,
+	seq_gtkmm2/include/fruityseqroll.hpp,
+	seq_gtkmm2/include/gtk_helpers.h,
+	seq_gtkmm2/include/gui_assistant_gtk2.hpp,
+	seq_gtkmm2/include/gui_drawingarea_gtk2.hpp,
+	seq_gtkmm2/include/gui_palette_gtk2.hpp,
+	seq_gtkmm2/include/gui_window_gtk2.hpp,
+	seq_gtkmm2/include/keybindentry.hpp,
+	seq_gtkmm2/include/keys_perform_gtk2.hpp,
+	seq_gtkmm2/include/maintime.hpp, seq_gtkmm2/include/mainwid.hpp,
+	seq_gtkmm2/include/mainwnd.hpp, seq_gtkmm2/include/options.hpp,
+	seq_gtkmm2/include/perfedit.hpp, seq_gtkmm2/include/perfnames.hpp,
+	seq_gtkmm2/include/perfroll.hpp,
+	seq_gtkmm2/include/perfroll_input.hpp,
+	seq_gtkmm2/include/perftime.hpp, seq_gtkmm2/include/seq24seq.hpp,
+	seq_gtkmm2/include/seq24seqroll.hpp,
+	seq_gtkmm2/include/seqdata.hpp, seq_gtkmm2/include/seqedit.hpp,
+	seq_gtkmm2/include/seqevent.hpp, seq_gtkmm2/include/seqkeys.hpp,
+	seq_gtkmm2/include/seqmenu.hpp, seq_gtkmm2/include/seqroll.hpp,
+	seq_gtkmm2/include/seqtime.hpp, seq_gtkmm2/src/font.cpp,
+	seq_gtkmm2/src/fruityseq.cpp, seq_gtkmm2/src/fruityseqroll.cpp,
+	seq_gtkmm2/src/gui_assistant_gtk2.cpp,
+	seq_gtkmm2/src/gui_drawingarea_gtk2.cpp,
+	seq_gtkmm2/src/gui_palette_gtk2.cpp,
+	seq_gtkmm2/src/gui_window_gtk2.cpp,
+	seq_gtkmm2/src/keybindentry.cpp,
+	seq_gtkmm2/src/keys_perform_gtk2.cpp, seq_gtkmm2/src/maintime.cpp,
+	seq_gtkmm2/src/mainwid.cpp, seq_gtkmm2/src/mainwnd.cpp,
+	seq_gtkmm2/src/options.cpp, seq_gtkmm2/src/perfedit.cpp,
+	seq_gtkmm2/src/perfnames.cpp, seq_gtkmm2/src/perfroll.cpp,
+	seq_gtkmm2/src/perfroll_input.cpp, seq_gtkmm2/src/perftime.cpp,
+	seq_gtkmm2/src/seq24seq.cpp, seq_gtkmm2/src/seq24seqroll.cpp,
+	seq_gtkmm2/src/seqdata.cpp, seq_gtkmm2/src/seqedit.cpp,
+	seq_gtkmm2/src/seqevent.cpp, seq_gtkmm2/src/seqkeys.cpp,
+	seq_gtkmm2/src/seqmenu.cpp, seq_gtkmm2/src/seqroll.cpp,
+	seq_gtkmm2/src/seqtime.cpp,
+	seq_portmidi/include/mastermidibus_portmidi.hpp,
+	seq_portmidi/include/midibus_portmidi.hpp,
+	seq_portmidi/src/mastermidibus_portmidi.cpp,
+	seq_portmidi/src/midibus_portmidi.cpp, sequencer64/sequencer64.cpp: 
+	Reduced the vim wrap-margin specification.
+
+2015-09-30  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/include/keystroke.hpp, libseq64/include/perform.hpp,
+	libseq64/src/gui_play_base.cpp, libseq64/src/keystroke.cpp,
+	libseq64/src/perform.cpp, seq_gtkmm2/src/mainwnd.cpp: Offloaded some
+	mainwnd key-handling to perform.
+
+2015-09-30  Chris Ahlstrom <ahlstrom@centiped>
+
+	* libseq64/include/Makefile.am, libseq64/include/click.hpp,
+	libseq64/include/gui_play_base.hpp, libseq64/include/keystroke.hpp,
+	libseq64/src/Makefile.am, libseq64/src/click.cpp,
+	libseq64/src/keystroke.cpp, seq_gtkmm2/src/mainwnd.cpp: Separated
+	click and keystroke into modules.
+
+2015-09-30  Chris Ahlstrom <ahlstrom@centiped>
+
+	* libseq64/include/lash.hpp, libseq64/src/lash.cpp,
+	seq_gtkmm2/src/gui_assistant_gtk2.cpp, seq_gtkmm2/src/mainwnd.cpp: 
+	Fixed issues with non-LASH build.
+
+2015-09-30  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/include/Makefile.am, libseq64/include/gui_assistant.hpp,
+	libseq64/include/lash.hpp, libseq64/src/Makefile.am,
+	libseq64/src/lash.cpp, seq_gtkmm2/include/Makefile.am,
+	seq_gtkmm2/include/gui_assistant_gtk2.hpp,
+	seq_gtkmm2/include/lash.hpp, seq_gtkmm2/include/mainwnd-orig.hpp,
+	seq_gtkmm2/src/Makefile.am, seq_gtkmm2/src/gui_assistant_gtk2.cpp,
+	seq_gtkmm2/src/lash.cpp, seq_gtkmm2/src/mainwnd-orig.cpp,
+	sequencer64/sequencer64.cpp: Un-gui-ized lash and moved it to
+	libseq64.
+
+2015-09-29  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* seq_gtkmm2/include/gui_drawingarea_gtk2.hpp,
+	seq_gtkmm2/include/gui_palette_gtk2.hpp,
+	seq_gtkmm2/include/gui_window_gtk2.hpp,
+	seq_gtkmm2/include/mainwid.hpp, seq_gtkmm2/include/seqedit.hpp,
+	seq_gtkmm2/src/gui_drawingarea_gtk2.cpp,
+	seq_gtkmm2/src/gui_palette_gtk2.cpp, seq_gtkmm2/src/lash.cpp,
+	seq_gtkmm2/src/maintime.cpp, seq_gtkmm2/src/mainwid.cpp,
+	seq_gtkmm2/src/mainwnd.cpp, seq_gtkmm2/src/perfedit.cpp,
+	seq_gtkmm2/src/seqedit.cpp, seq_gtkmm2/src/seqmenu.cpp: Deep
+	refactoring of mainwid, seems to work, amazingly.
+
+2015-09-29  Chris Ahlstrom <ahlstrom@centiped>
+
+	* libseq64/include/midifile.hpp, libseq64/src/jack_assistant.cpp,
+	libseq64/src/midifile.cpp, seq_gtkmm2/include/mainwid.hpp,
+	seq_gtkmm2/include/mainwnd.hpp, seq_gtkmm2/include/options.hpp,
+	seq_gtkmm2/include/perfedit.hpp, seq_gtkmm2/include/seqmenu.hpp,
+	seq_gtkmm2/src/mainwid.cpp, seq_gtkmm2/src/mainwnd.cpp,
+	seq_gtkmm2/src/options.cpp, seq_gtkmm2/src/perfedit.cpp,
+	seq_gtkmm2/src/perfnames.cpp, seq_gtkmm2/src/seqmenu.cpp,
+	sequencer64/sequencer64.cpp: Converting some pointer args to
+	references.
+
+2015-09-29  Chris Ahlstrom <ahlstrom@centiped>
+
+	* libseq64/include/Makefile.am, libseq64/include/gui_base.hpp,
+	libseq64/include/gui_play_base.hpp, libseq64/include/perform.hpp,
+	libseq64/src/Makefile.am, libseq64/src/gui_base.cpp,
+	libseq64/src/gui_play_base.cpp, libseq64/src/perform.cpp,
+	seq_gtkmm2/include/mainwnd.hpp, seq_gtkmm2/src/mainwnd.cpp: Renamed
+	gui_base to gui_play_base, perform/mainwnd updates.
+
+2015-09-29  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/include/perform.hpp, libseq64/src/midifile.cpp,
+	libseq64/src/perform.cpp, seq_gtkmm2/include/gui_window_gtk2.hpp,
+	seq_gtkmm2/include/mainwnd.hpp, seq_gtkmm2/src/gui_window_gtk2.cpp,
+	seq_gtkmm2/src/mainwnd.cpp, sequencer64/sequencer64.cpp: Refactoring
+	of mainwnd, perform in progress.
+
+2015-09-28  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/include/gdk_basic_keys.h, libseq64/include/gui_base.hpp,
+	libseq64/include/perform.hpp, libseq64/src/Makefile.am,
+	libseq64/src/gui_base.cpp, seq_gtkmm2/include/gui_window_gtk2.hpp,
+	seq_gtkmm2/include/mainwnd-orig.hpp,
+	seq_gtkmm2/include/mainwnd.hpp, seq_gtkmm2/src/fruityseq.cpp,
+	seq_gtkmm2/src/gui_window_gtk2.cpp,
+	seq_gtkmm2/src/mainwnd-orig.cpp, seq_gtkmm2/src/mainwnd.cpp: 
+	Deriving mainwnd from gui_window_gtk2 in progress.
+
+2015-09-28  Chris Ahlstrom <ahlstrom@centiped>
+
+	* libseq64/include/gdk_basic_keys.h, libseq64/include/gui_base.hpp,
+	seq_gtkmm2/include/mainwnd.hpp, seq_gtkmm2/src/mainwid.cpp,
+	seq_gtkmm2/src/mainwnd.cpp: Added gdk helpers.
+
+2015-09-28  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/src/rc_settings.cpp: Removed debug code from rc_settings.
+
+2015-09-28  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/src/optionsfile.cpp, libseq64/src/rc_settings.cpp,
+	libseq64/src/userfile.cpp, sequencer64/sequencer64.cpp: Fixed
+	last-used-dir bug in optionsfile.
+
+2015-09-27  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/include/rc_settings.hpp, libseq64/src/rc_settings.cpp,
+	seq_gtkmm2/src/mainwnd.cpp: Starting upgrades for optionsfile and
+	mainwnd.
+
+2015-09-27  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* contrib/gdbinit, contrib/seq24usr.example,
+	contrib/sequencer64.rc.example, contrib/sequencer64.usr.example,
+	libseq64/include/user_instrument.hpp,
+	libseq64/include/user_midi_bus.hpp,
+	libseq64/src/user_instrument.cpp, libseq64/src/userfile.cpp,
+	sequencer64/sequencer64.cpp: Finally got the userfile code debugged,
+	stick a fork in it.
+
+2015-09-27  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/include/user_instrument.hpp,
+	libseq64/include/user_midi_bus.hpp,
+	libseq64/include/user_settings.hpp,
+	libseq64/src/user_instrument.cpp, libseq64/src/user_midi_bus.cpp,
+	libseq64/src/user_settings.cpp, libseq64/src/userfile.cpp: Fixed
+	more issues with userfile, close to done.
+
+2015-09-27  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/include/configfile.hpp, libseq64/include/globals.h,
+	libseq64/include/user_midi_bus.hpp,
+	libseq64/include/user_settings.hpp, libseq64/src/configfile.cpp,
+	libseq64/src/jack_assistant.cpp, libseq64/src/optionsfile.cpp,
+	libseq64/src/user_instrument.cpp, libseq64/src/user_midi_bus.cpp,
+	libseq64/src/user_settings.cpp, libseq64/src/userfile.cpp,
+	seq_gtkmm2/src/seqedit.cpp, sequencer64/sequencer64.cpp: Got
+	userfile working for writing, more testing needed.
+
+2015-09-26  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/include/optionsfile.hpp,
+	libseq64/include/user_instrument.hpp,
+	libseq64/include/user_midi_bus.hpp,
+	libseq64/include/user_settings.hpp, libseq64/src/globals.cpp,
+	libseq64/src/optionsfile.cpp, libseq64/src/rc_settings.cpp,
+	libseq64/src/user_settings.cpp, libseq64/src/userfile.cpp,
+	man/sequencer26.1, seq_gtkmm2/src/options.cpp,
+	sequencer64/sequencer64.cpp: Finished userfile, but has bugs reading
+	sample file.
+
+2015-09-26  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/include/rc_settings.hpp,
+	libseq64/include/user_instrument.hpp,
+	libseq64/include/user_midi_bus.hpp,
+	libseq64/include/user_settings.hpp, libseq64/src/optionsfile.cpp,
+	libseq64/src/rc_settings.cpp, libseq64/src/user_instrument.cpp,
+	libseq64/src/user_midi_bus.cpp, libseq64/src/user_settings.cpp,
+	libseq64/src/userfile.cpp, sequencer64/sequencer64.cpp: More
+	progress with userfile, some refactoring.
+
+2015-09-25  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/include/Makefile.am, libseq64/include/globals.h,
+	libseq64/include/user_instrument.hpp,
+	libseq64/include/user_midi_bus.hpp,
+	libseq64/include/user_settings.hpp, libseq64/src/Makefile.am,
+	libseq64/src/user_instrument.cpp, libseq64/src/user_midi_bus.cpp,
+	libseq64/src/user_settings.cpp, libseq64/src/userfile.cpp: 
+	Refactored user structures into real classes to hide array accesses.
+
+2015-09-25  Chris Ahlstrom <ahlstrom@centiped>
+
+	* libseq64/include/globals.h, libseq64/src/globals.cpp,
+	libseq64/src/optionsfile.cpp, libseq64/src/rc_settings.cpp,
+	libseq64/src/userfile.cpp, sequencer64/sequencer64.cpp: Fixes to
+	userfile.
+
+2015-09-25  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/src/optionsfile.cpp: Fixed bug in new optionsfile
+	support.
+
+2015-09-24  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* contrib/dot-seq24rc, libseq64/include/rc_settings.hpp,
+	libseq64/include/user_settings.hpp, libseq64/src/optionsfile.cpp,
+	libseq64/src/rc_settings.cpp, libseq64/src/user_settings.cpp,
+	libseq64/src/userfile.cpp: More progress with user_settings,
+	rc_settings may have issues.
+
+2015-09-24  Chris Ahlstrom <ahlstrom@centiped>
+
+	* libseq64/include/Makefile.am, libseq64/include/globals.h,
+	libseq64/include/optionsfile.hpp, libseq64/include/rc_settings.hpp,
+	libseq64/include/user_settings.hpp, libseq64/src/Makefile.am,
+	libseq64/src/optionsfile.cpp, libseq64/src/rc_settings.cpp,
+	libseq64/src/user_settings.cpp, seq_gtkmm2/include/Makefile.am,
+	seq_gtkmm2/include/optionsfile.hpp, seq_gtkmm2/src/Makefile.am,
+	seq_gtkmm2/src/optionsfile.cpp, sequencer64/sequencer64.cpp: Moved
+	optionsfile to libseq64.
+
+2015-09-24  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/include/globals.h, libseq64/include/user_settings.hpp,
+	libseq64/src/globals.cpp, libseq64/src/rc_settings.cpp,
+	libseq64/src/user_settings.cpp, sequencer64/sequencer64.cpp: Started
+	moving user-definition arrays.
+
+2015-09-23  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/include/globals.h, libseq64/include/rc_settings.hpp,
+	libseq64/include/user_settings.hpp, libseq64/src/globals.cpp,
+	libseq64/src/rc_settings.cpp, libseq64/src/user_settings.cpp,
+	libseq64/src/userfile.cpp, seq_gtkmm2/src/optionsfile.cpp,
+	sequencer64/sequencer64.cpp: Basic rc/user settings support in
+	place.
+
+2015-09-23  Chris Ahlstrom <ahlstrom@centiped>
+
+	* libseq64/include/Makefile.am,
+	libseq64/include/options_settings.hpp,
+	libseq64/include/rc_settings.hpp,
+	libseq64/include/user_settings.hpp, libseq64/src/Makefile.am,
+	libseq64/src/options_settings.cpp, libseq64/src/rc_settings.cpp,
+	libseq64/src/user_settings.cpp: Added provisional user_settings,
+	normalization.
+
+2015-09-23  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/include/globals.h,
+	libseq64/include/options_settings.hpp, libseq64/src/globals.cpp,
+	libseq64/src/options_settings.cpp, seq_gtkmm2/src/optionsfile.cpp,
+	sequencer64/sequencer64.cpp: Added interaction-method member to
+	options_settings.
+
+2015-09-22  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/include/options_settings.hpp,
+	libseq64/include/user_settings.hpp,
+	libseq64/src/options_settings.cpp: Added initial options and user
+	settings modules.
+
+2015-09-22  Chris Ahlstrom <ahlstrom@centiped>
+
+	* : Updated symbols spreadsheet.
+
+2015-09-22  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* seq_gtkmm2/include/Makefile.am,
+	seq_gtkmm2/include/gui_drawingarea_gtk2.hpp,
+	seq_gtkmm2/include/gui_palette_gtk2.hpp,
+	seq_gtkmm2/include/gui_window_gtk2.hpp, seq_gtkmm2/src/Makefile.am,
+	seq_gtkmm2/src/gui_drawingarea_gtk2.cpp,
+	seq_gtkmm2/src/gui_window_gtk2.cpp: Added provisional
+	gui_window_gtk2 class.
+
+2015-09-21  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/include/gui_base.hpp, seq_gtkmm2/include/Makefile.am,
+	seq_gtkmm2/include/gui_drawingarea.hpp,
+	seq_gtkmm2/include/gui_drawingarea_gtk2.hpp,
+	seq_gtkmm2/include/gui_palette_gtk2.hpp,
+	seq_gtkmm2/include/maintime.hpp, seq_gtkmm2/include/seqevent.hpp,
+	seq_gtkmm2/include/seqroll.hpp, seq_gtkmm2/src/Makefile.am,
+	seq_gtkmm2/src/gui_drawingarea.cpp,
+	seq_gtkmm2/src/gui_drawingarea_gtk2.cpp,
+	seq_gtkmm2/src/gui_palette_gtk2.cpp, seq_gtkmm2/src/seqevent.cpp,
+	seq_gtkmm2/src/seqroll.cpp: Added initial drawing-area and palette
+	classes.
+
+2015-09-21  Chris Ahlstrom <ahlstrom@centiped>
+
+	* seq_gtkmm2/include/gui_drawingarea.hpp,
+	seq_gtkmm2/src/gui_drawingarea.cpp: Added gui_drawingarea module.
+
+2015-09-21  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* README, ROADMAP, libseq64/include/Makefile.am,
+	libseq64/include/gui_base.hpp,
+	seq_gtkmm2/include/gui_drawingarea.hpp: Initial check-in for guibase
+	branch.
+
+2015-09-21  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* ChangeLog, README, ROADMAP, VERSION, configure.ac,
+	contrib/git.txt, doc/dox/doxy-reference.cfg: Stamped sequencer merge
+	as version 0.9.9.3.
 
 2015-09-20  Chris Ahlstrom <ahlstromcj@gmail.com>
 
-   * *.*: Merged the "sequencer" branch back.  Provides new event_list that
-   can be built using either a map (the new default) or the original list as
-   an event container. Tagged as version 0.9.9.3.
+	* *.*: Merged the "sequencer" branch back.  Provides new event_list that
+	can be built using either a map (the new default) or the original list as
+	an event container. Tagged as version 0.9.9.3.
+
+2015-09-20  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/include/event_list.hpp, libseq64/src/event_list.cpp,
+	libseq64/src/mastermidibus.cpp, libseq64/src/sequence.cpp,
+	seq_gtkmm2/src/seqedit.cpp: Finished event_list merge() for
+	multimap.
+
+2015-09-20  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* README, ROADMAP, libseq64/include/Makefile.am,
+	libseq64/include/event.hpp, libseq64/include/event_list.hpp,
+	libseq64/include/sequence.hpp, libseq64/src/Makefile.am,
+	libseq64/src/event.cpp, libseq64/src/event_list.cpp,
+	libseq64/src/sequence.cpp: Finish sequence event-multimap, except
+	for merge().
 
 2015-09-19  Chris Ahlstrom <ahlstromcj@gmail.com>
 
-   * *.*: Merged the "perform" branch back.  Separated JACK support into a
-   jack_assistant module.  Separated Gtk-related functionality from perform
-   into keys_perform and gui_assistant, with Gtk-2 versions added.  Moved
-   midifile and perform from seq_gtkmm2 to libseq24 library.  Many other
-   smaller changes.  Tagged as version 0.9.9.2.
+	* *.*: Merged the "perform" branch back.  Separated JACK support into a
+	jack_assistant module.  Separated Gtk-related functionality from perform
+	into keys_perform and gui_assistant, with Gtk-2 versions added.  Moved
+	midifile and perform from seq_gtkmm2 to libseq24 library.  Many other
+	smaller changes.  Tagged as version 0.9.9.2.
+
+2015-09-19  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* ChangeLog, INSTALL, README, ROADMAP, VERSION, configure.ac,
+	doc/dox/doxy-reference.cfg: Stamped perform merge as version
+	0.9.9.2.
+
+2015-09-19  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* .gitignore, contrib/gtk.txt, libseq64/include/Makefile.am,
+	libseq64/include/gui_assistant.hpp,
+	libseq64/include/jack_assistant.hpp,
+	libseq64/include/keys_perform.hpp, libseq64/include/perform.hpp,
+	libseq64/src/Makefile.am, libseq64/src/gui_assistant.cpp,
+	libseq64/src/jack_assistant.cpp, libseq64/src/perform.cpp,
+	seq_gtkmm2/include/Makefile.am,
+	seq_gtkmm2/include/gui_assistant_gtk2.hpp,
+	seq_gtkmm2/include/midifile-old.hpp,
+	seq_gtkmm2/include/perform-old.hpp, seq_gtkmm2/src/Makefile.am,
+	seq_gtkmm2/src/gui_assistant_gtk2.cpp,
+	seq_gtkmm2/src/midifile-old.cpp, seq_gtkmm2/src/perform-old.cpp,
+	seq_gtkmm2/src/seqtime.cpp, sequencer64/sequencer64.cpp: Finished
+	JACK and GUI assistants for perform module, JACK needs testing.
+
+2015-09-18  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* contrib/gtk.txt, libseq64/include/jack_assistant.hpp,
+	libseq64/include/perform.hpp, libseq64/src/jack_assistant.cpp,
+	libseq64/src/perform.cpp, seq_gtkmm2/src/keybindentry.cpp,
+	seq_gtkmm2/src/optionsfile.cpp: Cleaned out much kruft in
+	perform/jack refactoring.
+
+2015-09-18  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/include/jack_assistant.hpp,
+	libseq64/src/jack_assistant.cpp, libseq64/src/perform.cpp: Got
+	perform/jack refactoring provisionally working.
+
+2015-09-18  Chris Ahlstrom <ahlstrom@centiped>
+
+	* libseq64/include/jack_assistant.hpp,
+	libseq64/src/jack_assistant.cpp, libseq64/src/perform.cpp,
+	libseq64/src/userfile.cpp: More arrangement of perform/jack
+	functionality.
+
+2015-09-18  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/include/Makefile.am, libseq64/include/gdk_basic_keys.h,
+	libseq64/include/jack_assistant.hpp, libseq64/include/midifile.hpp,
+	libseq64/include/perform.hpp, libseq64/src/Makefile.am,
+	libseq64/src/jack_assistant.cpp, libseq64/src/midifile.cpp,
+	libseq64/src/perform.cpp, seq_gtkmm2/include/Makefile.am,
+	seq_gtkmm2/include/gdk_basic_keys.h,
+	seq_gtkmm2/include/midifile-old.hpp,
+	seq_gtkmm2/include/midifile.hpp,
+	seq_gtkmm2/include/perform-old.hpp, seq_gtkmm2/include/perform.hpp,
+	seq_gtkmm2/src/Makefile.am, seq_gtkmm2/src/midifile-old.cpp,
+	seq_gtkmm2/src/midifile.cpp, seq_gtkmm2/src/perform-old.cpp,
+	seq_gtkmm2/src/perform.cpp: Movement of perform, midifile to
+	libseq64 in progress.
+
+2015-09-17  Chris Ahlstrom <ahlstrom@centiped>
+
+	* libseq64/include/jack_assistant.hpp,
+	libseq64/include/perform.hpp, libseq64/src/jack_assistant.cpp,
+	libseq64/src/perform.cpp: Started moving perform to libseq64.
+
+2015-09-17  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/include/jack_assistant.hpp,
+	libseq64/src/jack_assistant.cpp, seq_gtkmm2/src/perform.cpp: Added
+	jack_assistant header file.
 
 2015-09-16  Chris Ahlstrom <ahlstromcj@gmail.com>
 
 	* src/perform.cpp, src/optionsfile.cpp: Fixed a long-standing bug
 	in handling keyboard-control changes, setting version to 0.9.4.3 (in
-   Sequencer24).
+	Sequencer24).
+
+2015-09-16  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* seq_gtkmm2/include/perform.hpp, seq_gtkmm2/src/mainwnd.cpp,
+	seq_gtkmm2/src/optionsfile.cpp, seq_gtkmm2/src/perform.cpp: Made the
+	perform new-keys-code official.
+
+2015-09-16  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* seq_gtkmm2/include/perform.hpp, seq_gtkmm2/src/keybindentry.cpp,
+	seq_gtkmm2/src/perfedit.cpp, seq_gtkmm2/src/seqroll.cpp: 
+	Keybindentry fixes, prep to make new-keys-code permanent.
+
+2015-09-16  Chris Ahlstrom <ahlstrom@centiped>
+
+	* libseq64/include/keys_perform.hpp,
+	seq_gtkmm2/src/keys_perform_gtk2.cpp, seq_gtkmm2/src/options.cpp,
+	seq_gtkmm2/src/optionsfile.cpp, seq_gtkmm2/src/perform.cpp: Fixed
+	keyboard-control bug, existing since Seq24 0.9.2.
+
+2015-09-16  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* seq_gtkmm2/src/keybindentry.cpp, seq_gtkmm2/src/options.cpp,
+	seq_gtkmm2/src/optionsfile.cpp, seq_gtkmm2/src/perform.cpp: Tracking
+	down old bug in keyboard-control rc section.
+
+2015-09-15  Chris Ahlstrom <ahlstrom@centiped>
+
+	* seq_gtkmm2/src/keybindentry.cpp, seq_gtkmm2/src/options.cpp,
+	seq_gtkmm2/src/optionsfile.cpp: Minor fixes to options.
+
+2015-09-15  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* seq_gtkmm2/src/keybindentry.cpp, seq_gtkmm2/src/options.cpp: 
+	Restored weird kbd sprintf(), added to options labels.
+
+2015-09-14  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/src/jack_assistant.cpp, seq_gtkmm2/include/lash.hpp,
+	seq_gtkmm2/include/perform.hpp, seq_gtkmm2/src/options.cpp,
+	seq_gtkmm2/src/perform.cpp, sequencer64/sequencer64.cpp: Debugging
+	lash setup and keyboard options issues, in progress.
+
+2015-09-14  Chris Ahlstrom <ahlstrom@centiped>
+
+	* libseq64/include/keys_perform.hpp, libseq64/src/userfile.cpp,
+	seq_gtkmm2/include/perform.hpp, seq_gtkmm2/src/mainwnd.cpp,
+	seq_gtkmm2/src/options.cpp, seq_gtkmm2/src/perfedit.cpp,
+	seq_gtkmm2/src/perform.cpp, seq_gtkmm2/src/seqroll.cpp: Perform
+	new-keys feature in place, seems to work.
+
+2015-09-14  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/include/keys_perform.hpp,
+	seq_gtkmm2/include/perform.hpp, seq_gtkmm2/src/keybindentry.cpp,
+	seq_gtkmm2/src/mainwnd.cpp, seq_gtkmm2/src/options.cpp,
+	seq_gtkmm2/src/optionsfile.cpp, seq_gtkmm2/src/seqroll.cpp: 
+	Continued NEW_KEYS_CODE transition for perform.
+
+2015-09-13  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/include/keys_perform.hpp,
+	seq_gtkmm2/include/keybindentry.hpp,
+	seq_gtkmm2/src/keybindentry.cpp, seq_gtkmm2/src/options.cpp,
+	seq_gtkmm2/src/optionsfile.cpp: Adding tentative keybinding change,
+	in progress.
+
+2015-09-13  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/include/Makefile.am, libseq64/include/keys_perform.hpp,
+	libseq64/src/Makefile.am, libseq64/src/keys_perform.cpp,
+	seq_gtkmm2/include/Makefile.am,
+	seq_gtkmm2/include/gdk_basic_keys.h,
+	seq_gtkmm2/include/keys_perform_gtk2.hpp,
+	seq_gtkmm2/include/perform.hpp, seq_gtkmm2/src/Makefile.am,
+	seq_gtkmm2/src/keys_perform_gtk2.cpp, seq_gtkmm2/src/mainwnd.cpp,
+	seq_gtkmm2/src/perform.cpp, sequencer64/sequencer64.cpp,
+	tests/perform_jack_test.cpp: Added support for special key class in
+	perform, in progress.
+
+2015-09-13  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* ROADMAP, libseq64/include/configfile.hpp,
+	libseq64/include/controllers.hpp, libseq64/include/event.hpp,
+	libseq64/include/mastermidibus.hpp, libseq64/include/midibus.hpp,
+	libseq64/include/midibus_common.hpp, libseq64/include/mutex.hpp,
+	libseq64/include/sequence.hpp, libseq64/include/userfile.hpp,
+	libseq64/src/configfile.cpp, libseq64/src/event.cpp,
+	libseq64/src/mastermidibus.cpp, libseq64/src/midibus.cpp,
+	libseq64/src/mutex.cpp, libseq64/src/sequence.cpp,
+	libseq64/src/userfile.cpp, seq_gtkmm2/include/font.hpp,
+	seq_gtkmm2/include/fruityseq.hpp,
+	seq_gtkmm2/include/fruityseqroll.hpp,
+	seq_gtkmm2/include/keybindentry.hpp, seq_gtkmm2/include/lash.hpp,
+	seq_gtkmm2/include/maintime.hpp, seq_gtkmm2/include/mainwid.hpp,
+	seq_gtkmm2/include/mainwnd.hpp, seq_gtkmm2/include/midifile.hpp,
+	seq_gtkmm2/include/options.hpp, seq_gtkmm2/include/optionsfile.hpp,
+	seq_gtkmm2/include/perfedit.hpp, seq_gtkmm2/include/perfnames.hpp,
+	seq_gtkmm2/include/perform.hpp, seq_gtkmm2/include/perfroll.hpp,
+	seq_gtkmm2/include/perfroll_input.hpp,
+	seq_gtkmm2/include/perftime.hpp, seq_gtkmm2/include/seq24seq.hpp,
+	seq_gtkmm2/include/seq24seqroll.hpp,
+	seq_gtkmm2/include/seqdata.hpp, seq_gtkmm2/include/seqedit.hpp,
+	seq_gtkmm2/include/seqevent.hpp, seq_gtkmm2/include/seqkeys.hpp,
+	seq_gtkmm2/include/seqmenu.hpp, seq_gtkmm2/include/seqroll.hpp,
+	seq_gtkmm2/include/seqtime.hpp, seq_gtkmm2/src/font.cpp,
+	seq_gtkmm2/src/fruityseq.cpp, seq_gtkmm2/src/fruityseqroll.cpp,
+	seq_gtkmm2/src/keybindentry.cpp, seq_gtkmm2/src/lash.cpp,
+	seq_gtkmm2/src/maintime.cpp, seq_gtkmm2/src/mainwid.cpp,
+	seq_gtkmm2/src/mainwnd.cpp, seq_gtkmm2/src/midifile.cpp,
+	seq_gtkmm2/src/options.cpp, seq_gtkmm2/src/optionsfile.cpp,
+	seq_gtkmm2/src/perfedit.cpp, seq_gtkmm2/src/perfnames.cpp,
+	seq_gtkmm2/src/perform.cpp, seq_gtkmm2/src/perfroll.cpp,
+	seq_gtkmm2/src/perfroll_input.cpp, seq_gtkmm2/src/perftime.cpp,
+	seq_gtkmm2/src/seq24seq.cpp, seq_gtkmm2/src/seq24seqroll.cpp,
+	seq_gtkmm2/src/seqdata.cpp, seq_gtkmm2/src/seqedit.cpp,
+	seq_gtkmm2/src/seqevent.cpp, seq_gtkmm2/src/seqkeys.cpp,
+	seq_gtkmm2/src/seqmenu.cpp, seq_gtkmm2/src/seqroll.cpp,
+	seq_gtkmm2/src/seqtime.cpp,
+	seq_portmidi/include/mastermidibus_portmidi.hpp,
+	seq_portmidi/include/midibus_portmidi.hpp,
+	sequencer64/sequencer64.cpp: perform - Wrapped all in seq64
+	namespace.
+
+2015-09-13  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/include/configfile.hpp, libseq64/include/userfile.hpp,
+	libseq64/src/userfile.cpp, seq_gtkmm2/include/optionsfile.hpp,
+	seq_gtkmm2/include/perform.hpp, seq_gtkmm2/src/optionsfile.cpp,
+	sequencer64/sequencer64.cpp: Minor internal API change in trunk,
+	oops.
+
+2015-09-12  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* contrib/git.txt: Added a note about git.
+
+2015-09-12  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* README, bootstrap, configure.ac, doc/dox/doxy-reference.cfg,
+	libseq64/include/configfile.hpp, libseq64/include/controllers.hpp,
+	libseq64/include/easy_macros.h, libseq64/include/event.hpp,
+	libseq64/include/globals.h, libseq64/include/mastermidibus.hpp,
+	libseq64/include/midibus.hpp, libseq64/include/midibus_common.hpp,
+	libseq64/include/mutex.hpp, libseq64/include/platform_macros.h,
+	libseq64/include/sequence.hpp, libseq64/include/userfile.hpp,
+	libseq64/src/mastermidibus.cpp, libseq64/src/midibus.cpp,
+	libseq64/src/userfile.cpp, seq_gtkmm2/include/font.hpp,
+	seq_gtkmm2/include/fruityseq.hpp,
+	seq_gtkmm2/include/fruityseqroll.hpp,
+	seq_gtkmm2/include/keybindentry.hpp, seq_gtkmm2/include/lash.hpp,
+	seq_gtkmm2/include/maintime.hpp, seq_gtkmm2/include/mainwid.hpp,
+	seq_gtkmm2/include/mainwnd.hpp, seq_gtkmm2/include/midifile.hpp,
+	seq_gtkmm2/include/options.hpp, seq_gtkmm2/include/optionsfile.hpp,
+	seq_gtkmm2/include/perfedit.hpp, seq_gtkmm2/include/perfnames.hpp,
+	seq_gtkmm2/include/perform.hpp, seq_gtkmm2/include/perfroll.hpp,
+	seq_gtkmm2/include/perfroll_input.hpp,
+	seq_gtkmm2/include/perftime.hpp, seq_gtkmm2/include/seq24seq.hpp,
+	seq_gtkmm2/include/seq24seqroll.hpp,
+	seq_gtkmm2/include/seqdata.hpp, seq_gtkmm2/include/seqedit.hpp,
+	seq_gtkmm2/include/seqevent.hpp, seq_gtkmm2/include/seqkeys.hpp,
+	seq_gtkmm2/include/seqmenu.hpp, seq_gtkmm2/include/seqroll.hpp,
+	seq_gtkmm2/include/seqtime.hpp, seq_gtkmm2/src/lash.cpp,
+	seq_gtkmm2/src/mainwid.cpp, seq_gtkmm2/src/mainwnd.cpp,
+	seq_gtkmm2/src/midifile.cpp, seq_gtkmm2/src/optionsfile.cpp,
+	seq_gtkmm2/src/perfnames.cpp, seq_gtkmm2/src/perform.cpp,
+	seq_portmidi/include/mastermidibus_portmidi.hpp,
+	seq_portmidi/include/midibus_portmidi.hpp,
+	sequencer64/sequencer64.cpp, strap_functions: Fixed configure.ac and
+	refined all feature macros.
+
+2015-09-12  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* .gitignore, configure.ac, libseq64/src/Makefile.am,
+	libseq64/src/midibus.cpp: Found empty-pattern coloring depends on
+	building with LASH, weird.
+
+2015-09-12  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* .gitignore: Added a git-ignore file.
+
+2015-09-12  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* Initial check-in for Sequencer64, essentially equivalent to
+	Sequencer24.
 
 2015-09-10  Chris Ahlstrom <ahlstromcj@gmail.com>
 
-   * *.*: Sequencer64 forked from Sequencer24 v.0.9.4, tagged as version
-   0.9.9.1.  Note that Sequencer24 work started on 2015-07-24.  So let's
-   include those changes as well.
+	* *.*: Sequencer64 forked from Sequencer24 v.0.9.4, tagged as version
+	0.9.9.1.  Note that Sequencer24 work started on 2015-07-24.  So let's
+	include those changes as well.
 
 2015-09-05  Chris Ahlstrom <ahlstromcj@gmail.com>
 

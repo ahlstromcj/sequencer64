@@ -1,6 +1,6 @@
-README for Sequencer64 0.9.9.7 (current branch = "testing2")
+README for Sequencer64 0.9.9.8 (current branch = "testing3")
 Chris Ahlstrom
-2015-09-10 to 2015-11-09
+2015-09-10 to 2015-11-10
 
 The sequencer64 project is a continuation of sequencer24 to refactor it to
 be tighter and easier to transition to to GTKmm 3, and much more.

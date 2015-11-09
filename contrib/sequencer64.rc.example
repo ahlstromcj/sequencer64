@@ -260,6 +260,7 @@
 1    # show_ui_sequence_key (1 = true / 0 = false)
 32 # space start sequencer
 32 # space stop sequencer
+1 #  show sequence numbers (1 = true / 0 = false);  ignored in legacy mode
 
 [jack-transport]
 
@@ -285,7 +286,7 @@
 
 # Set the following value to 0 to disable LASH session management.
 # Set the following value to 1 to enable LASH session management.
-# This value will have no effect is LASH support is not built into
+# This value will have no effect if LASH support is not built into
 # the application.  Use the --help option to see if LASH is part of
 # the options list.
 

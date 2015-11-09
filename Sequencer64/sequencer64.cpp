@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-05
+ * \updates       2015-11-10
  * \license       GNU GPLv2 or above
  *
  * \todo
@@ -121,7 +121,7 @@ static const std::string s_arg_list =
 static const std::string versiontext = SEQ64_PACKAGE " " SEQ64_VERSION "\n";
 
 static const char * const s_help_1a =
-"sequencer64 v 0.9.9.7  A significant refactoring of the seq24 live sequencer.\n"
+"sequencer64 v 0.9.9.8  A significant refactoring of the seq24 live sequencer.\n"
 "\n"
 "Usage: sequencer64 [options] [MIDI filename]\n\n"
 "Options:\n"

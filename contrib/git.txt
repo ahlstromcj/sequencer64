@@ -1,6 +1,6 @@
 Quick Reference for Git Processes
 Chris Ahlstrom
-2015-09-09 to 2015-09-12
+2015-09-09 to 2015-11-10
 
    https://github.com/Kunena/Kunena-Forum/wiki/
       Create-a-new-branch-with-git-and-manage-branches and others
@@ -27,6 +27,11 @@ Better, to make sure git pull will work, set an upstream branch:
 
 When you want to commit something in your branch, be sure to first
 checkout the branch.
+
+If git claims you cannot check out a branch, just do the following command
+to tell your local git about any new branches:
+
+    $ git fetch
 
 Update your branch when the original branch from official repository has been
 updated:

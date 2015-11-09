@@ -602,6 +602,22 @@ TB-303
 # the Sequencer64 user-interface elements.
 
 
+# Specifies the style of the main-window grid of patterns.
+# 0 = normal style, matches the GTK theme, has brackets.
+# 1 = white grid boxes that have brackets.
+# 2 = black grid boxes.
+
+0       # grid_style
+
+# Specifies box style box around a main-window grid of patterns.
+# 0  = Draw a whole box around the pattern slot.
+# 1  = Draw brackets on the sides of the pattern slot.
+# 2 and up = make the brackets thicker and thicker.
+# -1 = same as 0, draw a box one-pixel thick.
+# -2 and lower = draw a box, thicker and thicker.
+
+2       # grid_brackets
+
 # Specifies the number of rows in the main window.
 # At present, only a value of 4 is supportable.
 # In the future, we hope to support an alternate value of 8.
@@ -640,7 +656,7 @@ TB-303
 # does not override it.  Default is 192, but we'd like to go
 # higher than that.  BEWARE:  STILL GETTING IT TO WORK!
 
-384       # midi_ppqn
+192       # midi_ppqn
 
 # Specifies the default beats per measure, or beats per bar.
 # The default value is 4.

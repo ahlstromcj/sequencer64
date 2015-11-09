@@ -1,14 +1,15 @@
 README for Sequencer64 0.9.9.7 (current branch = "testing2")
 Chris Ahlstrom
-2015-09-10 to 2015-11-06
+2015-09-10 to 2015-11-09
 
 The sequencer64 project is a continuation of sequencer24 to refactor it to
 be tighter and easier to transition to to GTKmm 3, and much more.
 Currently, it is basically equivalent to that project in functionality,
-but the code is already significantly refactored.
+but the code is already *significantly* refactored.
 
 See the screenshot in the project root for some idea of what has changed
-visually.  It is an old friend with some lipstick.
+visually.  It is an old friend with some user-interface and configuration
+lipstick.
 
 The code has been broken up into libraries, for better separation between
 GUI support and the files, MIDI, JACK, and LASH support.
@@ -23,6 +24,7 @@ Other major updates:
         though they are not yet dispersed to all areas of the application
         and do not yet affect the appearance of the GUI:
         -   [user-interface-setting]
+            -   Style of the main-window grid is now modifiable.
             -   Main window rows
             -   Main window columns
             -   Main window border thickness
@@ -54,10 +56,14 @@ Other major updates:
     -   Added a --bus option for easier testing against a specific
         hardware/software synthesizer.
     -   Added a --ppqn option to try to play files at the right speed.  Still
-        in progressm the Seq24 PPQN value of 192 affects a lot of code!
+        in progress, as the Seq24 PPQN value of 192 affects a lot of code!
     -   Added support for using the Mod4/Super/Windows key to keep the
         performance and sequence user-interfaces in editing mode, very helpful
         for certain crappy laptop trackpads.
+    -   Added arrow key support. Also supplemented the mouse with "p" to start
+        paint/draw mode, and "P" to end it, in the sequence and song editors.
+    -   Centralized dirtiness-handling to the perform module, and improving
+        its accuracy and comprehensiveness, still in progress.
 
 The list of minor issues we have found while exploring with Sequencer64 has
 gotten fairly long, so we will concentrate on tightening up the application
@@ -71,7 +77,7 @@ installation.
 See the ROADMAP file for more information and a kind of TODO list.
 
 Note that sequencer64 is reasonably well documented by the following
-project, which provides an 80-page PDF file and its LaTeX source code:
+project, which provides a 90+-page PDF file and its LaTeX source code:
 
    https://github.com/ahlstromcj/sequencer64-doc.git
 

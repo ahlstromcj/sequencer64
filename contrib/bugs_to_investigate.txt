@@ -1,9 +1,22 @@
 Bugs and Upgrade Ideas
 Chris Ahlstrom
-2015-10-27 to 2015-11-08
+2015-10-27 to 2015-11-09
 
 In no particular order...
 
+-  Sometimes the editing of event values in the event data section
+   will not work. The workaround is to do a Ctrl-A, and the click in
+   the roll to deselect the selection; that makes the event value
+   editing work again.
+-  The pattern right-click Cut menu entry does not seem to work.
+   The loop or pattern remains in place.  Is this actually meant to
+   cut selected events?
+-  While one is typing in the name of the set in this field, the
+   keystrokes will affect the panel window, causing playback to
+   start and pattern boxes to be toggled!
+-  While one is typing in the number of the set in the Set number field,
+   the keystrokes will affect the panel window, causing playback to
+   start and pattern boxes to be toggled!
 -  Why is the very first, empty sequence, missing its bottom row of numbers
    (except for the ui hot-key).
 -  Make the GUI box-drawing and number options for configure.ac.

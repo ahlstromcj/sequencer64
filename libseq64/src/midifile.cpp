@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-07
+ * \updates       2015-11-09
  * \license       GNU GPLv2 or above
  *
  *  For a quick guide to the MIDI format, see, for example:
@@ -536,8 +536,9 @@ midifile::parse (perform & a_perf, int screenset)
              */
 
             if (curtrack > 0)                          /* MThd comes first */
+            {
                 errprintf("unsupported MIDI chunk, skipping: %8lX\n", ID);
-
+            }
             m_pos += TrackLength;
         }
     }                                                   /* for each track  */

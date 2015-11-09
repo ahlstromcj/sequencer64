@@ -5,8 +5,8 @@ Chris Ahlstrom
 The starting point for the Sequencer64 project is version 0.9.4 of
 Sequencer24.  Sequencer24 itself started with version 0.9.2 of Seq24.
 
-Latest version: 0.9.9.5
-Current branch: testing-->master
+Latest version: 0.9.9.7
+Current branch: testing3-->master
 
 The following changes are planned ('x' means it is done, 'y' means it is
 in progress, and 'z' means it will be moved to a later branch):
@@ -45,6 +45,9 @@ y  -  Branch off to an "testing", "testing2"  branch to perform testing
          replace the retro "PC" font used by Seq24.
       y  Still working on making it possible to deal with files with
          a PPQN other than 192.
+      y  Added arrow-key and "p/P" paint support.
+      y  Added grid and sequence display configuration options to the "user"
+         configuration file.
       -  Did not quite finish testing, but it is time to merge back to
          "master"!
    -  Branch off to an "Enhancements" branch (highly provisional):
@@ -52,23 +55,7 @@ y  -  Branch off to an "testing", "testing2"  branch to perform testing
       -  Add optional build using Qt 5.
       -  Flesh out the support for PortMidi.
       -  Support MingW builds in Windows a la the Subatomic Glue port.
-   -  To fix:
-      -  Sometimes the editing of event values in the event data section
-         will not work. The workaround is to do a Ctrl-A, and the click in
-         the roll to deselect the selection; that makes the event value
-         editing work again.
-      -  The pattern right-click Cut menu entry does not seem to work.
-         The loop or pattern remains in place.  Is this actually meant to
-         cut selected events?
-      -  While one is typing in the name of the set in this field, the
-         keystrokes will affect the panel window, causing playback to
-         start and pattern boxes to be toggled!
-      -  While one is typing in the number of the set in the Set number field,
-         the keystrokes will affect the panel window, causing playback to
-         start and pattern boxes to be toggled!
-      x  Determine the feasibility of modifying selected sequences
-         to change the output port (MIDI buss) number.  Perhaps offload or
-         copy these specifications to the proprietary section.
+   -  To fix:  See the contrib/bugs_to_investigate.txt
 
 Eventually, there will be a few features and fixes to try to add:
 

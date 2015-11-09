@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-05
+ * \updates       2015-11-09
  * \license       GNU GPLv2 or above
  *
  *  Not totally sure that the LASH support is completely finished, at this
@@ -296,7 +296,9 @@ lash::handle_event (lash_event_t * ev)
         m_perform.gui().quit();         // Gtk::Main::quit();
     }
     else
+    {
         errprint("Warning:  Unhandled LASH event.");
+    }
 }
 
 /*

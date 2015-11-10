@@ -108,9 +108,9 @@ namespace seq64
  *      -   Reading.
  *          -   If set to SEQ64_USE_DEFAULT_PPQN, the legacy application
  *              behavior is used.  The m_ppqn member is set to the default
- *              PPQN, global_ppqn.  The value read from the MIDI
+ *              PPQN, DEFAULT_PPQN.  The value read from the MIDI
  *              file, ppqn, is then use to scale the running-time of the
- *              sequence relative to global_ppqn.
+ *              sequence relative to DEFAULT_PPQN.
  *          -   Otherwise, m_ppqn is set to the value read from the MIDI file.
  *              No scaling is done.  Since the value gets written, specify
  *              ppqn as 0, an obviously bogus value, to get this behavior.

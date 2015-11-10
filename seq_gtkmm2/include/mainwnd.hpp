@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-30
+ * \updates       2015-11-09
  * \license       GNU GPLv2 or above
  *
  *  The main windows is known as the "Patterns window" or "Patterns
@@ -183,7 +183,7 @@ private:
 
     /**
      *  Saves the PPQN value obtained from the MIDI file (or the default
-     *  value, global_ppqn, if SEQ64_USE_DEFAULT_PPQN was specified in
+     *  value, the global ppqn, if SEQ64_USE_DEFAULT_PPQN was specified in
      *  reading the MIDI file.
      */
 

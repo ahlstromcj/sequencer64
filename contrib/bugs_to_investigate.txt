@@ -4,6 +4,7 @@ Chris Ahlstrom
 
 In no particular order...
 
+-  Cutting out sequences doesn't cause a query for saving!!!
 -  Would be nice to be able to Ctrl-Home, Ctrl-End, Page Up, and Page Down
    in the Song Editor.
 -  We now have the same file imported twice, into screen-set 1 and screen-set

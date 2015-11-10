@@ -244,7 +244,7 @@ perfedit::perfedit
     );
     add_tooltip
     (
-        m_button_bpm, "Time signature, beats per measure, or beats per bar."
+        m_button_bpm, "Time signature: beats per measure, beats per bar."
     );
     m_entry_bpm->set_width_chars(2);
     m_entry_bpm->set_editable(false);
@@ -256,7 +256,7 @@ perfedit::perfedit
     (
         sigc::bind<Gtk::Menu *>(mem_fun(*this, &perfedit::popup_menu), m_menu_bw)
     );
-    add_tooltip(m_button_bw, "Time signature, length of beat.");
+    add_tooltip(m_button_bw, "Time signature: length of beat.");
     m_entry_bw->set_width_chars(2);
     m_entry_bw->set_editable(false);
     m_button_undo->add
@@ -309,7 +309,7 @@ perfedit::perfedit
     (
         mem_fun(*this, &perfedit::stop_playing)
     );
-    add_tooltip(m_button_stop, "Stop playing.");
+    add_tooltip(m_button_stop, "Stop playback.");
     m_button_play->add
     (
         *manage(new Gtk::Image(Gdk::Pixbuf::create_from_xpm_data(play2_xpm)))
@@ -318,7 +318,7 @@ perfedit::perfedit
     (
         mem_fun(*this, &perfedit::start_playing)
     );
-    add_tooltip(m_button_play, "Begin playing at the L marker.");
+    add_tooltip(m_button_play, "Begin playback at the L marker.");
     m_hlbox->pack_end(*m_button_copy , false, false);
     m_hlbox->pack_end(*m_button_expand , false, false);
     m_hlbox->pack_end(*m_button_collapse , false, false);
@@ -427,9 +427,9 @@ perfedit::set_looped ()
  */
 
 void
-perfedit::popup_menu (Gtk::Menu * a_menu)
+perfedit::popup_menu (Gtk::Menu * menu)
 {
-    a_menu->popup(0, 0);
+    menu->popup(0, 0);
 }
 
 /**
@@ -442,7 +442,7 @@ perfedit::set_guides ()
 {
     if (m_bw > 0 && m_snap > 0)
     {
-        long measure_ticks = (m_ppqn * m_standard_bpm) * m_bpm / m_bw;
+        long measure_ticks = m_ppqn * m_standard_bpm * m_bpm / m_bw;
         long snap_ticks = measure_ticks / m_snap;
         long beat_ticks = (m_ppqn * m_standard_bpm) / m_bw;
         m_perfroll->set_guides(snap_ticks, measure_ticks, beat_ticks);

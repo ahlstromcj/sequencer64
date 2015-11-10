@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-07
+ * \updates       2015-11-09
  * \license       GNU GPLv2 or above
  *
  */
@@ -93,8 +93,8 @@ namespace seq64
 const int seqedit::mc_min_zoom      =  1;
 const int seqedit::mc_max_zoom      = 32;
 int seqedit::m_initial_zoom         =  2;
-int seqedit::m_initial_snap         = global_ppqn / 4;   /* to be adjusted */
-int seqedit::m_initial_note_length  = global_ppqn / 4;   /* to be adjusted */
+int seqedit::m_initial_snap         = DEFAULT_PPQN / 4;   /* to be adjusted */
+int seqedit::m_initial_note_length  = DEFAULT_PPQN / 4;   /* to be adjusted */
 int seqedit::m_initial_scale        =  0;
 int seqedit::m_initial_key          =  0;
 int seqedit::m_initial_sequence     = -1;

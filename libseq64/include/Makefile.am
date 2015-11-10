@@ -62,7 +62,7 @@ sequencer64libdir = @sequencer64libdir@
 #----------------------------------------------------------------------------
 
 pkginclude_HEADERS = \
-	app_limits.hpp \
+	app_limits.h \
 	calculations.hpp \
 	configfile.hpp \
 	click.hpp \

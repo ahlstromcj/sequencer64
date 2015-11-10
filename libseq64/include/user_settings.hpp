@@ -353,47 +353,57 @@ class user_settings
 
     /**
      *  Provides the universal PPQN setting for the duration of this setting.
-     *  This variable will replace global_ppqn.  The default value of this
+     *  This variable replaces the global ppqn.  The default value of this
      *  setting is 192 parts-per-quarter-note (PPQN).  There is still a lot of
      *  work to get a different PPQN to work properly in speed of playback,
-     *  scaling of the user interface, and other issues.
+     *  scaling of the user interface, and other issues.  Note that this value
+     *  can be changed by the still-experimental --ppqn option.  There is one
+     *  remaining trace of the global, though:  DEFAULT_PPQN.
      */
 
     int m_midi_ppqn;                     /* PPQN, parts per QN       */
 
     /**
-     *  Provides the universal MIDI value for beats per measure, also called
-     *  "beats per bar" (BPB).  This variable will replace
-     *  global_beats_per_measure.  The default value of this variable is 4.
-     *  Now, although it applies to the whole session, we should be able to
-     *  continue seq24's tradition of allowing each sequence to have its own
-     *  time signature.  Also, there are a number of places where the number 4
-     *  appears and looks like it might be a hardwired BPB value, either for
-     *  MIDI purposes or for drawing the user-interface.  So we might need a
-     *  couple different versions of this variable.
+     *  Provides the universal and unambiguous MIDI value for beats per
+     *  measure, also called "beats per bar" (BPB).  This variable will
+     *  replace the global beats per measure.  The default value of this
+     *  variable is DEFAULT_BEATS_PER_MEASURE (4).  For external access, we
+     *  will call this value "beats per bar", abbreviate it "BPB", and use
+     *  "bpb" in any accessor function names.  Now, although it applies to the
+     *  whole session, we should be able to continue seq24's tradition of
+     *  allowing each sequence to have its own time signature.  Also, there
+     *  are a number of places where the number 4 appears and looks like it
+     *  might be a hardwired BPB value, either for MIDI purposes or for
+     *  drawing the piano-roll grids.  So we might need a couple different
+     *  versions of this variable.
      */
 
     int m_midi_beats_per_measure;        /* BPB, or beats per bar       */
 
     /**
-     *  Provides the universal MIDI value for beats per minute (BPM).
-     *  This variable will replace global_beats_per_minute.  The default
-     *  value of this variable is 120.  This variable should apply to the whole
-     *  session; there's probably no way to support a diffent tempo for each
-     *  sequence.  But we shall see.
+     *  Provides the universal and unambiguous MIDI value for beats per minute
+     *  (BPM).  This variable will replace the global beats per minute.  The
+     *  default value of this variable is DEFAULT_BPM (120).  This variable
+     *  should apply to the whole session; there's probably no way to support
+     *  a diffent tempo for each sequence.  But we shall see.  For external
+     *  access, we will call this value "beats per minute", abbreviate it
+     *  "BPM", and use "bpm" in any accessor function names.
      */
 
     int m_midi_beats_per_minute;         /* BPM, or beats per minute    */
 
     /**
      *  Provides the universal MIDI value for beats width (BW).  This variable
-     *  will replace global_beat_width.  The default value of this variable is
-     *  4.  Now, although it applies to the whole session, we should be able to
-     *  continue seq24's tradition of allowing each sequence to have its own
-     *  time signature.  Also, there are a number of places where the number 4
-     *  appears and looks like it might be a hardwired BW value, either for
-     *  MIDI purposes or for drawing the user-interface.  So we might need a
-     *  couple different versions of this variable.
+     *  will replace the global beat_width.  The default value of this
+     *  variable is DEFAULT_BEAT_WIDTH (4).  Now, although it applies to the
+     *  whole session, we should be able to continue seq24's tradition of
+     *  allowing each sequence to have its own time signature.  Also, there
+     *  are a number of places where the number 4 appears and looks like it
+     *  might be a hardwired BW value, either for MIDI purposes or for drawing
+     *  the user-interface.  So we might need a couple different versions of
+     *  this variable.  For external access, we will call this value "beat
+     *  width", abbreviate it "BW", and use "bw" in any accessor function
+     *  names.
      */
 
     int m_midi_beat_width;              /* BW, or beat width            */

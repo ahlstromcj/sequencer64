@@ -164,7 +164,7 @@ mastermidibus::init ()
     }
 
     set_beats_per_minute(c_beats_per_minute;);
-    set_ppqn(global_ppqn);
+    set_ppqn(DEFAULT_PPQN);
 
     /* MIDI input poll descriptors */
 

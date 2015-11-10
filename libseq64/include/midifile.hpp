@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-19
+ * \updates       2015-11-09
  * \license       GNU GPLv2 or above
  *
  *  The Seq24 MIDI file is a standard, Format 1 MIDI file, with some extra
@@ -114,7 +114,7 @@ private:
 
     /**
      *  Provides the current value of the PPQN, which used to be constant
-     *  and is now the variable global_ppqn).
+     *  and is now only the macro DEFAULT_PPQN.
      */
 
     int m_ppqn;
@@ -142,7 +142,7 @@ public:
      * \getter m_ppqn
      *      Provides a way to get the actual value of PPQN used in processing
      *      the sequences when parse() was called.  The PPQN will be either
-     *      global_ppqn (legacy behavior) or the value read from the
+     *      the global ppqn (legacy behavior) or the value read from the
      *      file, depending on the ppqn parameter passed to the midifile
      *      constructor.
      */

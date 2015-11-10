@@ -28,8 +28,8 @@
  * \updates       2015-11-09
  * \license       GNU GPLv2 or above
  *
- *  Note that this module also sets the legacy global variables, so that
- *  they can be used by modules that have not yet been cleaned up.
+ *  Note that this module also sets the remaining legacy global variables, so
+ *  that they can be used by modules that have not yet been cleaned up.
  *
  *  Now, we finally sat down and did some measurements of the user interface,
  *  to try to figure out the relationships between the screen resolution and
@@ -48,14 +48,15 @@
      P0         pulses/qn       192         Seq24's PPQN value, a constant
      P          pulses/qn       -----       Any other selected PPQN value
      R          -----           -----       P / P0
-     Ws         pixels          1920        Width of the screen, pixels
-     Wqn        pixels          6           Song editor q-note width, constant
-     T0         pulses/pixel    32          Song editor default zoom, constant
-     T          pulses/pixel    -----       GUI-MIDI resolution from selected P
+     Wscreen    pixels          1920        Width of the screen, pixels
+     Wperfqn    pixels          6           Song editor q-note width, constant
+     Zperf      pulses/pixel    32          Song editor default zoom, constant
+     Dperf      minor/major     4           Song editor beats shown per measure
+     ?          pulses/pixel    -----       GUI-MIDI resolution from selected P
      S          -----           16          seqroll-to-perfroll width ratio
-     Zmin       pulses/pixel    1           Seq editor max zoom in
-     Z0         pulses/pixel    2           Seq editor default zoom
-     Zmax       pulses/pixel    32          Seq editor max zoom out
+     Zseqmin    pulses/pixel    1           Seq editor max zoom in
+     Zseq0      pulses/pixel    2           Seq editor default zoom
+     Zseqmax    pulses/pixel    32          Seq editor max zoom out
 \endverbatim
  *
  * Sequence Editor (seqroll):
@@ -65,7 +66,7 @@
  *
 \verbatim
     1920 pixels
-    ----------- = 24 pixels/measure = 6 pixels/qn
+    ----------- = 24 pixels/measure = 6 pixels/qn = Wperfqn
     80 measures
 \endverbatim
  *
@@ -79,6 +80,14 @@
  *
  *  The sequence editor supports zooms of 1 pulse/pixel, 2 pulses/pixel (it's
  *  default), and 4, 8, 16, and 32 pulses/pixel (the song editor's only zoom).
+ *
+ * Song Editor (perfedit, perfroll, pertime) Guides:
+ *
+ *                    pulses        major
+ *  measureticks = P0 ------  Dperf -----
+ *                     qn           minor
+ *
+ *     perfedit:  m_ppqn    m_standard_bpm
  *
  * Time Signature:
  *
@@ -294,8 +303,8 @@ void
 user_settings::set_globals () const
 {
     /*
-     * Done with the full conversion to [user-midi-bus] and [user-instrument]
-     * values, they don't need to be here anymore.
+     * Done with the full conversion to [user-midi-bus] and
+     * [user-instrument] values, they don't need to be here anymore.
      */
 
     /*
@@ -305,13 +314,8 @@ user_settings::set_globals () const
      */
 
     /*
-     *  [user-midi-settings]
+     *  [user-midi-settings]:  No more globals to set, hurrah!
      */
-
-    global_ppqn = m_midi_ppqn;
-    global_beats_per_measure = m_midi_beats_per_measure;
-    global_beats_per_minute = m_midi_beats_per_minute;
-    global_beat_width = m_midi_beat_width;
 }
 
 /**
@@ -324,8 +328,8 @@ void
 user_settings::get_globals ()
 {
     /*
-     * Done with the full conversion to [user-midi-bus] and [user-instrument]
-     * values, they don't need to be here anymore.
+     * Done with the full conversion to [user-midi-bus] and
+     * [user-instrument] values, they don't need to be here anymore.
      */
 
     /*
@@ -335,13 +339,8 @@ user_settings::get_globals ()
      */
 
     /*
-     *  [user-midi-settings]
+     *  [user-midi-settings]: No more globals to set, hurrah!
      */
-
-    m_midi_ppqn = global_ppqn;
-    m_midi_beats_per_measure = global_beats_per_measure;
-    m_midi_beats_per_minute = global_beats_per_minute;
-    m_midi_beat_width = global_beat_width;
 }
 
 /**

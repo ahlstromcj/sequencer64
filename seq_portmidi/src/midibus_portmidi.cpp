@@ -239,7 +239,7 @@ midibus::init_clock (long a_tick)
          *      Use an m_ppqn member variable and the usual adjustments.
          */
 
-        long clock_mod_ticks = (global_ppqn / 4) * m_clock_mod;
+        long clock_mod_ticks = (usr().midi_ppqn() / 4) * m_clock_mod;
         long leftover = (a_tick % clock_mod_ticks);
         long starting_tick = a_tick - leftover;
 
@@ -266,7 +266,7 @@ midibus::continue_from (long a_tick)
      * Tell the device that we are going to start at a certain position.
      */
 
-    long pp16th = (global_ppqn / 4);
+    long pp16th = (usr().midi_ppqn() / 4);
     long leftover = (a_tick % pp16th);
     long beats = (a_tick / pp16th);
     long starting_tick = a_tick - leftover;
@@ -348,7 +348,7 @@ midibus::clock (long a_tick)
             if (m_lasttick >= a_tick)
                 done = true;
 
-            if (m_lasttick % (global_ppqn / 24) == 0)        /* tick time? */
+            if (m_lasttick % (usr().midi_ppqn() / 24) == 0) /* tick time? */
             {
                 PmEvent event;
                 event.timestamp = 0;

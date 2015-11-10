@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-04
+ * \updates       2015-11-09
  * \license       GNU GPLv2 or above
  *
  */
@@ -116,7 +116,7 @@ perfroll::~perfroll ()
 /**
  *  Handles changes to the PPQN value in one place.
  *
- *  The m_ticks_per_bar member replaces the construct "global_ppqn * 16".  This
+ *  The m_ticks_per_bar member replaces the global ppqn times 16.  This
  *  construct is parts-per-quarter-note times 4 quarter notes times 4
  *  sixteenth notes in a bar.  (We think...)
  *
@@ -133,7 +133,7 @@ perfroll::set_ppqn (int ppqn)
         m_ppqn = choose_ppqn(ppqn);
         m_ticks_per_bar = m_ppqn * m_divs_per_beat;
         m_background_x = (m_ppqn * 4 * 16) / c_perf_scale_x;
-        m_perf_scale_x = c_perf_scale_x * m_ppqn / global_ppqn;
+        m_perf_scale_x = c_perf_scale_x * m_ppqn / DEFAULT_PPQN;
     }
 }
 

@@ -70,7 +70,7 @@ private:
 
     /**
      *  The current value of PPQN, which we are trying to get to work
-     *  everywhere, when PPQN is changed from global_ppqn = 192.
+     *  everywhere, when PPQN is changed from the global ppqn = 192.
      */
 
     int m_ppqn;

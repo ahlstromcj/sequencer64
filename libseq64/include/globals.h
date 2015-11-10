@@ -64,6 +64,21 @@
 #include "rc_settings.hpp"              /* seq64::rc_settings           */
 #include "user_settings.hpp"            /* seq64::user_settings         */
 
+namespace seq64
+{
+
+/**
+ *  Returns a reference to the global rc_settings and user_settings objects.
+ *  Why a function instead of direct variable access?  Encapsulation.  We are
+ *  then free to change the way "global" settings are accessed, without
+ *  changing client code.
+ */
+
+extern rc_settings & rc ();
+extern user_settings & usr ();
+
+}           // namespace seq64
+
 /**
  *  Define this macro in order to enable some verbose console output from
  *  various modules.  Undefine it (using "#undef") to disable this extra
@@ -78,8 +93,8 @@
 /**
  *  This value indicates to use the default value of PPQN and ignore (to some
  *  extent) what value is specified in the MIDI file.  Note that the default
- *  default PPQN is given by global_ppqn (192) or, if the "--ppqn qn"
- *  option is specified on the command-line, by global_ppqn = qn.
+ *  default PPQN is given by the global ppqn (192) or, if the "--ppqn qn"
+ *  option is specified on the command-line, by the global ppqn = qn.
  */
 
 #define SEQ64_USE_DEFAULT_PPQN          (-1)
@@ -393,10 +408,11 @@ const int c_perf_scale_x = 32;          /* units are ticks per pixel        */
  *  perform, seq24, and userfile modules.  The new ones will eventually be
  *  made official.
  *
- *  The global_ppqn variable Provides the timing resolution of a MIDI
+ *  The global ppqn variable provides the timing resolution of a MIDI
  *  sequencer, known as "pulses per quarter note.  For this application, 192
  *  is the default, and it doesn't change.  It will be changeable in a
- *  near-future release of Sequencer64, though.  See the global_ppqn variable.
+ *  near-future release of Sequencer64, though.  See the
+ *  user_settings::midi_ppqn() accessors.
  */
 
 #ifdef  USE_SEQ42_PATCHES
@@ -417,11 +433,6 @@ const int cxppen = DEFAULT_PPQN / 4;    /* 16th note        */
  *  such as "4", are used, without comment.  Usage of named values is a lot
  *  more informative, but takes some time to reverse-engineer.
  */
-
-extern int global_ppqn;                     /* PPQN, parts per QN       */
-extern int global_beats_per_measure;        /* BPB, or beats per bar    */
-extern int global_beats_per_minute;         /* BPM, or beats per minute */
-extern int global_beat_width;               /* BW, or beat width        */
 
 extern bool global_legacy_format;
 extern bool global_lash_support;
@@ -500,19 +511,19 @@ extern std::string shorten_file_spec (const std::string & fpath, int leng);
 
 /**
  *  Common code for handling PPQN settings.  Putting it here means we can
- *  reduce the reliance on global_ppqn.
+ *  reduce the reliance on the global ppqn.
  *
  * \param ppqn
  *      Provides the PPQN value to be used.
  *
  * \return
  *      Returns the ppqn parameter, unless that parameter is
- *      SEQ64_USE_DEFAULT_PPQN (-1), then global_ppqn is returned.
+ *      SEQ64_USE_DEFAULT_PPQN (-1), then usr().midi_ppqn is returned.
  */
 
 inline int choose_ppqn (int ppqn)
 {
-    return (ppqn == SEQ64_USE_DEFAULT_PPQN) ? global_ppqn : ppqn ;
+    return (ppqn == SEQ64_USE_DEFAULT_PPQN) ? usr().midi_ppqn() : ppqn ;
 }
 
 /**
@@ -534,16 +545,6 @@ inline bool ppqn_is_valid (int ppqn)
         (ppqn >= MINIMUM_PPQN && ppqn <= MAXIMUM_PPQN)
     );
 }
-
-/**
- *  Returns a reference to the global rc_settings object.  Why a function
- *  instead of direct variable access?  Encapsulation.  We are then free to
- *  change the way "global" settings are accessed, without changing client
- *  code.
- */
-
-extern rc_settings & rc ();
-extern user_settings & usr ();
 
 }           // namespace seq64
 

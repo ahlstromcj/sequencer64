@@ -100,50 +100,6 @@ usr ()
 }           // namespace seq64
 
 /**
- *  Provides an experimental way to modify the global PPQN value to
- *  match what a MIDI file includes.  Much to do to get it working.
- *  Note that this value can be changed by the experimental --ppqn option.
- */
-
-int global_ppqn = DEFAULT_PPQN;
-
-/**
- *  Provides unambiguous access to the current beats-per-measure value, which
- *  is normally 4.  Note that this value may be involved in drawing piano-roll
- *  grids, and we might need to allocate another variable for that purpose
- *  (e.g. "global_grid_beats_per_measure").
- *
- *  Also note that, for external access, we will call this value "beats per
- *  bar", abbreviate it "BPB", and use "bpb" in any accessor function names.
- */
-
-int global_beats_per_measure = DEFAULT_BEATS_PER_MEASURE;
-
-/**
- *  Provides unambiguous access to the current beats-per-minute value, which
- *  is normally 120.
- *
- *  Also note that, for external access, we will call this value "beats per
- *  minute", abbreviate it "BPM", and use "bpm" in any accessor function
- *  names.
- */
-
-int global_beats_per_minute = DEFAULT_BPM;
-
-/**
- *  Provides unambiguous access to the current beat-width value, which is
- *  normally 4.  Note that this value may be involved in drawing piano-roll
- *  grids, and we might need to allocate another variable for that purpose
- *  (e.g. "global_grid_beat_width").
- *
- *  Also note that, for external access, we will call this value "beat
- *  width", abbreviate it "BW", and use "bw" in any accessor function
- *  names.
- */
-
-int global_beat_width = DEFAULT_BEAT_WIDTH;
-
-/**
  * Most of these variables were declared and used in other modules, but
  * are now consolidated here.
  */

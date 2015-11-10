@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-04
+ * \updates       2015-11-10
  * \license       GNU GPLv2 or above
  *
  */
@@ -32,6 +32,7 @@
 #include <gtkmm/accelkey.h>
 #include <gtkmm/adjustment.h>
 
+#include "app_limits.h"                 /* SEQ64_SOLID_PIANOROLL_GRID   */
 #include "event.hpp"
 #include "gdk_basic_keys.h"
 #include "seqevent.hpp"
@@ -166,8 +167,8 @@ seqevent::draw_background ()
     draw_rectangle_on_pixmap(white(),  0, 0, m_window_x, m_window_y);
 
     /*
-     * See the potential upgrade in seqroll::update_background, which could be
-     * applicable here, too.
+     * See the upgrades in seqroll::update_background(), which could be
+     * applicable here, too.  Very similar code!
      */
 
     int measures_per_line = 1;
@@ -180,33 +181,59 @@ seqevent::draw_background ()
 
     int endtick = (m_window_x * m_zoom) + m_scroll_offset_ticks;
     m_gc->set_foreground(grey());
-    for (int i = starttick; i < endtick; i += ticks_per_step)
+    for (int tick = starttick; tick < endtick; tick += ticks_per_step)
     {
-        int base_line = i / m_zoom;
-        if (i % ticks_per_m_line == 0)          /* a solid line on every beat */
+        int base_line = tick / m_zoom;
+        if (tick % ticks_per_m_line == 0)       /* solid line on every beat */
         {
+#ifdef SEQ64_SOLID_PIANOROLL_GRID
+            set_line(Gdk::LINE_SOLID, 2);
+#else
+            set_line(Gdk::LINE_SOLID);
+#endif
             m_gc->set_foreground(black());
-            set_line(Gdk::LINE_SOLID);
         }
-        else if (i % ticks_per_beat == 0)
+        else if (tick % ticks_per_beat == 0)
         {
-            m_gc->set_foreground(grey());
             set_line(Gdk::LINE_SOLID);
+            m_gc->set_foreground(grey());
         }
         else
         {
+#ifdef SEQ64_SOLID_PIANOROLL_GRID
+
+            /*
+             * This better matches what the seqroll draws for vertical lines.
+             */
+
+            int tick_snap = tick - (tick % m_snap);
+            if (tick == tick_snap)
+            {
+                set_line(Gdk::LINE_SOLID);
+                m_gc->set_foreground(light_grey());
+            }
+            else
+            {
+                set_line(Gdk::LINE_ON_OFF_DASH);
+                m_gc->set_foreground(light_grey());
+                gint8 dash = 1;
+                m_gc->set_dashes(0, &dash, 1);
+            }
+#else
             m_gc->set_foreground(grey());
             set_line(Gdk::LINE_ON_OFF_DASH);
             gint8 dash = 1;
             m_gc->set_dashes(0, &dash, 1);
+#endif
         }
-        draw_line_on_pixmap
-        (
-            base_line - m_scroll_offset_x, 0,
-            base_line - m_scroll_offset_x, m_window_y
-        );
+        int x = base_line - m_scroll_offset_x;
+        draw_line_on_pixmap(x, 0, x, m_window_y);
     }
+#ifdef SEQ64_SOLID_PIANOROLL_GRID
+    set_line(Gdk::LINE_SOLID, 2);
+#else
     set_line(Gdk::LINE_SOLID);
+#endif
     draw_rectangle_on_pixmap
     (
         black(), -1, 0, m_window_x + 1, m_window_y - 1, false

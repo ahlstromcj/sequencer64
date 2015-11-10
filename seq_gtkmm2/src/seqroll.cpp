@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-06
+ * \updates       2015-11-10
  * \license       GNU GPLv2 or above
  *
  */
@@ -34,6 +34,7 @@
 #include <gtkmm/adjustment.h>
 #include <gtkmm/menu.h>
 
+#include "app_limits.h"                 /* SEQ64_SOLID_PIANOROLL_GRID   */
 #include "event.hpp"
 #include "gdk_basic_keys.h"
 #include "scales.h"
@@ -284,16 +285,25 @@ void
 seqroll::update_background ()
 {
     draw_rectangle(m_background, white(), 0, 0, m_window_x, m_window_y);
+
+#ifdef SEQ64_SOLID_PIANOROLL_GRID
+    bool fruity_lines = true;
+    m_gc->set_foreground(light_grey());             /* draw horz grey lines */
+    set_line(Gdk::LINE_SOLID);
+#else
+    bool fruity_lines = rc().interaction_method() == e_fruity_interaction;
     m_gc->set_foreground(grey());                   /* draw horz grey lines */
     set_line(Gdk::LINE_ON_OFF_DASH);
     gint8 dash = 1;
     m_gc->set_dashes(0, &dash, 1);
+#endif
+
     int octkey = OCTAVE_SIZE - m_key;               /* used three times     */
-    for (int i = 0; i < (m_window_y / c_key_y) + 1; ++i)
+    for (int key = 0; key < (m_window_y / c_key_y) + 1; ++key)
     {
-        int remkeys = c_num_keys - i;               /* remaining keys?      */
-        int modkey = (remkeys - m_scroll_offset_key + octkey);
-        if (rc().interaction_method() == e_fruity_interaction)
+        int remkeys = c_num_keys - key;             /* remaining keys?      */
+        int modkey = remkeys - m_scroll_offset_key + octkey;
+        if (fruity_lines)
         {
             if ((modkey % OCTAVE_SIZE) == 0)
             {
@@ -302,19 +312,24 @@ seqroll::update_background ()
             }
             else if ((modkey % OCTAVE_SIZE) == (OCTAVE_SIZE-1))
             {
+#ifdef SEQ64_SOLID_PIANOROLL_GRID
+                m_gc->set_foreground(light_grey()); /* lighter solid line   */
+                set_line(Gdk::LINE_SOLID);
+#else
                 m_gc->set_foreground(grey());       /* lighter dashed lines */
                 set_line(Gdk::LINE_ON_OFF_DASH);
+#endif
             }
         }
-        draw_line(m_background, 0, i * c_key_y, m_window_x, i * c_key_y);
+        int y = key * c_key_y;
+        draw_line(m_background, 0, y, m_window_x, y);
         if (m_scale != c_scale_off)
         {
             if (! c_scales_policy[m_scale][(modkey - 1) % OCTAVE_SIZE])
             {
                 draw_rectangle
                 (
-                    m_background, light_grey(),
-                    0, i * c_key_y + 1, m_window_x, c_key_y - 1
+                    m_background, light_grey(), 0, y + 1, m_window_x, c_key_y - 1
                 );
             }
         }
@@ -335,45 +350,62 @@ seqroll::update_background ()
     int ticks_per_measure = m_seq.get_beats_per_bar() * ticks_per_beat;
     int ticks_per_step = 6 * m_zoom;
     int ticks_per_m_line = ticks_per_measure * measures_per_line;
-    int end_tick = (m_window_x * m_zoom) + m_scroll_offset_ticks;
-    int start_tick = m_scroll_offset_ticks -
+    int endtick = (m_window_x * m_zoom) + m_scroll_offset_ticks;
+    int starttick = m_scroll_offset_ticks -
          (m_scroll_offset_ticks % ticks_per_step);
 
     m_gc->set_foreground(grey());
-    for (int i = start_tick; i < end_tick; i += ticks_per_step)
+    for (int tick = starttick; tick < endtick; tick += ticks_per_step)
     {
-        int base_line = i / m_zoom;
-        if (i % ticks_per_m_line == 0)
+        int base_line = tick / m_zoom;
+        if (tick % ticks_per_m_line == 0)
         {
+#ifdef SEQ64_SOLID_PIANOROLL_GRID
+            set_line(Gdk::LINE_SOLID, 2);
+#else
+            set_line(Gdk::LINE_SOLID);
+#endif
             m_gc->set_foreground(black());      /* solid line on every beat */
-            set_line(Gdk::LINE_SOLID);
         }
-        else if (i % ticks_per_beat == 0)
+        else if (tick % ticks_per_beat == 0)
         {
-            m_gc->set_foreground(dark_grey());
             set_line(Gdk::LINE_SOLID);
+            m_gc->set_foreground(dark_grey());
         }
         else
         {
-            set_line(Gdk::LINE_ON_OFF_DASH);
+            int tick_snap = tick - (tick % m_snap);
 
-            int i_snap = i - (i % m_snap);
-            if (i == i_snap)
+#ifdef SEQ64_SOLID_PIANOROLL_GRID
+            if (tick == tick_snap)
+            {
+                set_line(Gdk::LINE_SOLID);
+                m_gc->set_foreground(light_grey());           // dark_grey());
+            }
+            else
+            {
+                set_line(Gdk::LINE_ON_OFF_DASH);
+                m_gc->set_foreground(light_grey());
+                gint8 dash = 1;
+                m_gc->set_dashes(0, &dash, 1);
+            }
+#else
+            set_line(Gdk::LINE_ON_OFF_DASH);
+            if (tick == tick_snap)
                 m_gc->set_foreground(dark_grey());
             else
                 m_gc->set_foreground(grey());
 
             gint8 dash = 1;
             m_gc->set_dashes(0, &dash, 1);
+#endif
         }
-        draw_line
-        (
-            m_background,
-            base_line - m_scroll_offset_x, 0,
-            base_line - m_scroll_offset_x, m_window_y
-        );
+        int x = base_line - m_scroll_offset_x;
+        draw_line(m_background, x, 0, x, m_window_y);
     }
+#ifndef SEQ64_SOLID_PIANOROLL_GRID
     set_line(Gdk::LINE_SOLID);                  /* reset the line style     */
+#endif
 }
 
 /**
@@ -464,8 +496,8 @@ seqroll::draw_events_on (Glib::RefPtr<Gdk::Drawable> draw)
     bool selected;
     int velocity;
     draw_type dt;
-    int start_tick = m_scroll_offset_ticks ;
-    int end_tick = (m_window_x * m_zoom) + m_scroll_offset_ticks;
+    int starttick = m_scroll_offset_ticks ;
+    int endtick = (m_window_x * m_zoom) + m_scroll_offset_ticks;
     sequence * seq = nullptr;
     for (int method = 0; method < 2; ++method)  /* weird way to do it       */
     {
@@ -494,9 +526,9 @@ seqroll::draw_events_on (Glib::RefPtr<Gdk::Drawable> draw)
         {
             if
             (
-                (tick_s >= start_tick && tick_s <= end_tick) ||
+                (tick_s >= starttick && tick_s <= endtick) ||
                 ((dt == DRAW_NORMAL_LINKED) &&
-                    (tick_f >= start_tick && tick_f <= end_tick))
+                    (tick_f >= starttick && tick_f <= endtick))
             )
             {
                 note_x = tick_s / m_zoom;       /* turn into screen coords */

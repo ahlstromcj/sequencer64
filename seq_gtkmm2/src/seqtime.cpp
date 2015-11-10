@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-04
+ * \updates       2015-11-10
  * \license       GNU GPLv2 or above
  *
  *  The patterns/sequence editor is expandable in both directions, but the
@@ -34,6 +34,7 @@
 
 #include <gtkmm/adjustment.h>
 
+#include "app_limits.h"                 /* SEQ64_SOLID_PIANOROLL_GRID   */
 #include "event.hpp"
 #include "font.hpp"
 #include "seqtime.hpp"
@@ -149,6 +150,11 @@ void
 seqtime::update_pixmap ()
 {
     draw_rectangle_on_pixmap(white(), 0, 0, m_window_x, m_window_y);
+#ifdef SEQ64_SOLID_PIANOROLL_GRID
+    set_line(Gdk::LINE_SOLID, 2);
+#else
+    set_line(Gdk::LINE_SOLID);
+#endif
     draw_line_on_pixmap(black(), 0, m_window_y - 1, m_window_x, m_window_y - 1);
 
     /*
@@ -166,31 +172,50 @@ seqtime::update_pixmap ()
         m_seq.get_beat_width();
 
     int ticks_per_step = ticks_per_measure * measures_per_line;
-    int start_tick = m_scroll_offset_ticks -
+    int starttick = m_scroll_offset_ticks -
         (m_scroll_offset_ticks % ticks_per_step);
 
-    int end_tick = (m_window_x * m_zoom) + m_scroll_offset_ticks;
+    int endtick = (m_window_x * m_zoom) + m_scroll_offset_ticks;
     m_gc->set_foreground(black());                      /* draw vert lines  */
-    for (int i = start_tick; i < end_tick; i += ticks_per_step)
+    for (int tick = starttick; tick < endtick; tick += ticks_per_step)
     {
-        int base_line = i / m_zoom;
-        draw_line_on_pixmap                             /* draw the beat    */
-        (
-            base_line - m_scroll_offset_x,
-            0, base_line - m_scroll_offset_x, m_window_y
-        );
+        int base_line = tick / m_zoom;
+        int x_offset = base_line - m_scroll_offset_x;   /* to draw the beat */
+        draw_line_on_pixmap(x_offset, 0, x_offset, m_window_y);
 
         char bar[8];
-        snprintf(bar, sizeof(bar), "%d", (i / ticks_per_measure) + 1);
-        render_string_on_pixmap
-        (
-            base_line + 2 - m_scroll_offset_x, 0, bar, font::BLACK
-        );
+        snprintf(bar, sizeof(bar), "%d", (tick / ticks_per_measure) + 1);
+        render_string_on_pixmap(x_offset + 2, 1, bar, font::BLACK);
     }
 
+
+    /*
+     * \todo
+     *      Sizing needs to be controlled by font parameters. Instead of 19 or
+     *      20, estimate the width of 3 letters. Instead of 9 pixels down, use
+     *      the height of the seqtime and the height of a character.
+     */
+
+#ifdef SEQ64_SOLID_PIANOROLL_GRID
+    /*
+     *  Puts number after the number of the next measure.
+     *
+     *  long end_x = m_seq.get_length() / m_zoom - m_scroll_offset_x + 15;
+     *  draw_rectangle_on_pixmap(black(), end_x, 2, 20, 10);
+     *  render_string_on_pixmap(end_x + 1, 2, "END", font::WHITE);
+     *
+     *  This puts the number just before the end of the next measure, and
+     *  is less cramped.  Some might not like it.
+     */
+
+    long end_x = m_seq.get_length() / m_zoom - m_scroll_offset_x - 21;
+    draw_rectangle_on_pixmap(black(), end_x, 7, 20, 10);
+    render_string_on_pixmap(end_x + 1, 7, "END", font::WHITE);
+#else
     long end_x = m_seq.get_length() / m_zoom - m_scroll_offset_x;
     draw_rectangle_on_pixmap(black(), end_x, 9, 19, 8);
     render_string_on_pixmap(end_x + 1, 9, "END", font::WHITE);
+#endif
 }
 
 /**

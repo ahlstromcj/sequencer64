@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-05
+ * \updates       2015-11-10
  * \license       GNU GPLv2 or above
  *
  */
@@ -167,27 +167,15 @@ seqdata::draw_events_on (Glib::RefPtr<Gdk::Drawable> drawable)
     {
         if (tick >= start_tick && tick <= end_tick)
         {
-            /* Turn into screen coordinates */
-
-            int event_x = tick / m_zoom;            /* event_width=c_data_x */
-            int event_height = d1;                  /* generate the value   */
-            if (m_status == EVENT_PROGRAM_CHANGE ||
-                    m_status == EVENT_CHANNEL_PRESSURE)
-            {
-                event_height = d0;
-            }
-            set_line(Gdk::LINE_SOLID, 2);
-            draw_line                               /* draw vert lines      */
-            (
-                drawable, event_x - m_scroll_offset_x + 1,
-                c_dataarea_y - event_height, event_x - m_scroll_offset_x + 1,
-                c_dataarea_y
-            );
+            int event_x = tick / m_zoom;
+            int event_height = event::is_one_byte_msg(m_status) ? d0 : d1 ;
+            int x = event_x - m_scroll_offset_x + 1;
+            set_line(Gdk::LINE_SOLID, 2);           /* vertical event line  */
+            draw_line(drawable, x, c_dataarea_y - event_height, x, c_dataarea_y);
             drawable->draw_drawable
             (
                 m_gc, m_numbers[event_height], 0, 0,
-                event_x + 3 - m_scroll_offset_x,
-                c_dataarea_y - m_number_h + 3,
+                x + 2, c_dataarea_y - m_number_h + 3,
                 m_number_w, m_number_h
             );
         }
@@ -255,13 +243,13 @@ seqdata::xy_to_rect
  */
 
 bool
-seqdata::on_motion_notify_event (GdkEventMotion * a_p0)
+seqdata::on_motion_notify_event (GdkEventMotion * ev)
 {
     if (m_dragging)
     {
         int adj_x_min, adj_x_max, adj_y_min, adj_y_max;
-        m_current_x = (int) a_p0->x + m_scroll_offset_x;
-        m_current_y = (int) a_p0->y;
+        m_current_x = int(ev->x) + m_scroll_offset_x;
+        m_current_y = int(ev->y);
         if (m_current_x < m_drop_x)
         {
             adj_x_min = m_current_x;
@@ -320,7 +308,6 @@ seqdata::on_leave_notify_event (GdkEventCrossing * p0)
 void
 seqdata::draw_line_on_window ()
 {
-    int x, y, w, h;
     m_gc->set_foreground(black());
     set_line(Gdk::LINE_SOLID);
     draw_drawable                                   /* replace old */
@@ -328,6 +315,8 @@ seqdata::draw_line_on_window ()
         m_old.x, m_old.y, m_old.x, m_old.y,
         m_old.width + 1, m_old.height + 1
     );
+
+    int x, y, w, h;
     xy_to_rect(m_drop_x, m_drop_y, m_current_x, m_current_y, x, y, w, h);
     x -= m_scroll_offset_x;
     m_old.x = x;
@@ -449,13 +438,13 @@ seqdata::on_scroll_event (GdkEventScroll * a_ev)
  */
 
 bool
-seqdata::on_button_press_event (GdkEventButton * a_p0)
+seqdata::on_button_press_event (GdkEventButton * ev)
 {
-    if (CAST_EQUIVALENT(a_p0->type, SEQ64_BUTTON_PRESS))
+    if (CAST_EQUIVALENT(ev->type, SEQ64_BUTTON_PRESS))
     {
         m_seq.push_undo();
-        m_drop_x = (int) a_p0->x + m_scroll_offset_x; /* set values for line  */
-        m_drop_y = (int) a_p0->y;
+        m_drop_x = (int) ev->x + m_scroll_offset_x; /* set values for line  */
+        m_drop_y = (int) ev->y;
         m_old.x = 0;                /* reset box that holds dirty redraw spot */
         m_old.y = 0;
         m_old.width = 0;
@@ -470,10 +459,10 @@ seqdata::on_button_press_event (GdkEventButton * a_p0)
  */
 
 bool
-seqdata::on_button_release_event (GdkEventButton * a_p0)
+seqdata::on_button_release_event (GdkEventButton * ev)
 {
-    m_current_x = (int) a_p0->x + m_scroll_offset_x;
-    m_current_y = (int) a_p0->y;
+    m_current_x = int(ev->x) + m_scroll_offset_x;
+    m_current_y = int(ev->y);
     if (m_dragging)
     {
         long tick_s, tick_f;

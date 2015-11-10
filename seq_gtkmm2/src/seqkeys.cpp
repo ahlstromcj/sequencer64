@@ -25,13 +25,14 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-06
+ * \updates       2015-11-10
  * \license       GNU GPLv2 or above
  *
  */
 
 #include <gtkmm/adjustment.h>
 
+#include "app_limits.h"                 /* SEQ64_SOLID_PIANOROLL_GRID   */
 #include "click.hpp"                    /* SEQ64_CLICK_LEFT() etc.     */
 #include "font.hpp"
 #include "scales.h"
@@ -53,7 +54,9 @@ seqkeys::seqkeys
 ) :
     gui_drawingarea_gtk2
     (
-        p, adjustment_dummy(), vadjust, c_keyarea_x + 1, 10
+        p, adjustment_dummy(), vadjust,
+        c_keyarea_x + 1,                        // 36 + 1
+        10                                      // bogus y window height
     ),
     m_seq                   (seq),
     m_scroll_offset_key     (0),
@@ -115,35 +118,35 @@ seqkeys::reset ()
 void
 seqkeys::update_pixmap ()
 {
+    int kx = c_keyoffset_x + 1;
     draw_rectangle_on_pixmap(black(), 0, 0, c_keyarea_x, c_keyarea_y);
     draw_rectangle_on_pixmap(white(), 1, 1, c_keyoffset_x-1, c_keyarea_y-2);
-    for (int i = 0; i < c_num_keys; i++)
+
+    for (int key = 0; key < c_num_keys; ++key)
     {
         draw_rectangle_on_pixmap
         (
-            white(), c_keyoffset_x + 1,
-            (c_key_y * i) + 1, c_key_x - 2, c_key_y - 1
+            white(), kx, (c_key_y * key) + 1, c_key_x - 2, c_key_y - 1
         );
 
-        int key = (c_num_keys - i - 1) % OCTAVE_SIZE;   /* key in the octave */
-        if (key == 1 || key == 3 || key == 6 || key == 8 || key == 10)
+        int okey = (c_num_keys - key - 1) % OCTAVE_SIZE; /* key in the octave */
+        if (is_black_key(okey))
         {
             draw_rectangle_on_pixmap
             (
-                black(), c_keyoffset_x + 1,
-                (c_key_y * i) + 2, c_key_x - 3, c_key_y - 3
+                black(), kx, (c_key_y * key) + 2, c_key_x - 3, c_key_y - 3
             );
         }
 
-        char notes[20];
-        if (key == m_key)                       /* notes */
+        char notes[8];
+        if (okey == m_key)                       /* notes */
         {
-            int octave = ((c_num_keys - i - 1) / OCTAVE_SIZE) - 1;
+            int octave = ((c_num_keys - key - 1) / OCTAVE_SIZE) - 1;
             if (octave < 0)
                 octave *= -1;
 
-            snprintf(notes, sizeof(notes), "%2s%1d", c_key_text[key], octave);
-            render_string_on_pixmap(2, c_key_y * i - 1, notes, font::BLACK);
+            snprintf(notes, sizeof notes, "%2s%1d", c_key_text[okey], octave);
+            render_string_on_pixmap(2, c_key_y * key - 1, notes, font::BLACK);
         }
     }
 }
@@ -210,39 +213,33 @@ seqkeys::set_hint_state (bool state)
 }
 
 /**
- *  Draws the given key according to the given state.
- *  It accounts for the black keys and the white keys.
+ *  Draws the given key according to the given state.  It accounts for the
+ *  black keys and the white keys, and for the highlighting of the active key.
  *
- * \param a_key
+ * \param key
  *      The key to be drawn.
  *
- * \param a_state
- *      How the key is to be drawn, where false == normal, true == grayed.
+ * \param state
+ *      How the key is to be drawn, where false == normal, true == grayed.  A
+ *      key is greyed when the mouse cursor is at the same vertical location
+ *      on the piano as the key.
  */
 
 void
-seqkeys::draw_key (int a_key, bool a_state)
+seqkeys::draw_key (int key, bool state)
 {
-    int key = a_key % OCTAVE_SIZE;               /* the key in the octave */
-    a_key = c_num_keys - a_key - 1;
-    if (key == 1 || key == 3 || key == 6 || key == 8 || key == 10)
-        m_gc->set_foreground(black());
-    else
-        m_gc->set_foreground(white());
+    int k = key % OCTAVE_SIZE;                      /* key in the octave    */
+    key = c_num_keys - key - 1;
 
-    draw_rectangle
-    (
-        c_keyoffset_x + 1, (c_key_y * a_key) + 2 - m_scroll_offset_y,
-        c_key_x - 3, c_key_y - 3
-    );
-    if (a_state)
-    {
-        draw_rectangle
-        (
-            grey(), c_keyoffset_x + 1, (c_key_y * a_key) + 2 - m_scroll_offset_y,
-            c_key_x - 3, c_key_y - 3
-        );
-    }
+    int x = c_keyoffset_x + 1;
+    int y = (c_key_y * key) + 2 - m_scroll_offset_y;
+    int w = c_key_x - 3;                            /* x length of key      */
+    int h = c_key_y - 3;                            /* y height of key      */
+    m_gc->set_foreground(is_black_key(k) ? black() : white());
+    if (state)
+        draw_rectangle(grey(), x, y, w, h);
+    else
+        draw_rectangle(x, y, w, h);
 }
 
 /**

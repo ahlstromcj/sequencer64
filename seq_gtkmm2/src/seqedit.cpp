@@ -341,7 +341,7 @@ seqedit::seqedit (sequence & seq, perform & p, int pos, int ppqn)
     dhbox->pack_end(*m_toggle_play, false, false, 4);
     dhbox->pack_end(*(manage(new Gtk::VSeparator())), false, false, 4);
     fill_top_bar();
-    add(*m_vbox);       // this->add(*m_vbox); /* add table */
+    add(*m_vbox);                              /* add table */
     show_all();
 
     /*
@@ -377,7 +377,11 @@ seqedit::~seqedit()
 }
 
 /**
- *  Creates the various menus by pushing menu elements into the menus.
+ *  Creates the various menus by pushing menu elements into the menus.  The
+ *  first menu is the Zoom menu, represented in the pattern/sequence editor by
+ *  a button with a magnifying glass.  The values are "pixels to ticks", where
+ *  "ticks" are actually the "pulses" of "pulses per quarter note".  We would
+ *  prefer the notation "n" instead of "1:n", as in "n pulses per pixel".
  *
  */
 
@@ -386,14 +390,8 @@ seqedit::create_menus ()
 {
     using namespace Gtk::Menu_Helpers;
 
-    /**
-     *  This first menu is the Zoom menu, represented in the
-     *  pattern/sequence editor by a button with a magnifying glass.
-     *  The values are "pixels to ticks".
-     */
-
-    char b[16];
-    for (int i = mc_min_zoom; i <= mc_max_zoom; i *= 2)           /* zoom */
+    char b[8];
+    for (int i = mc_min_zoom; i <= mc_max_zoom; i *= 2)     /* zoom menu    */
     {
         snprintf(b, sizeof(b), "1:%d", i);
         m_menu_zoom->items().push_back
@@ -409,7 +407,7 @@ seqedit::create_menus ()
 
 #define SET_SNAP    mem_fun(*this, &seqedit::set_snap)
 
-    m_menu_snap->items().push_back                              /* note snap */
+    m_menu_snap->items().push_back                          /* note snap    */
     (
         MenuElem("1", sigc::bind(SET_SNAP, m_ppqn * 4))
     );
@@ -679,7 +677,7 @@ seqedit::create_menus ()
 
     for (int i = int(c_scale_off); i < int(c_scale_size); i++)
     {
-        m_menu_scale->items().push_back                     /* music scale */
+        m_menu_scale->items().push_back                 /* music scale      */
         (
             MenuElem(c_scales_text[i], sigc::bind(SET_SCALE, i))
         );

@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-08
- * \updates       2015-11-08
+ * \updates       2015-11-10
  * \license       GNU GPLv2 or above
  *
  *  This collection of global variables describes some facets of the
@@ -40,6 +40,13 @@
  *  called a "set" (in the musical sense) or a "screen set".
  *
  */
+
+/**
+ *  Let's try using lighter solid lines in the piano rolls and see how it
+ *  looks.  It looks a little better.
+ */
+
+#define SEQ64_SOLID_PIANOROLL_GRID
 
 /**
  *  No global buss override is in force if the global buss override number is

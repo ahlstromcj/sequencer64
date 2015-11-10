@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-03
+ * \updates       2015-11-10
  * \license       GNU GPLv2 or above
  *
  */
@@ -97,6 +97,15 @@ private:
     void force_draw ();
     void update_sizes ();
     void reset ();
+
+    /**
+     *  Detects a black key.
+     */
+
+    bool is_black_key (int key) const
+    {
+        return key == 1 || key == 3 || key == 6 || key == 8 || key == 10;
+    }
 
 private:        // callbacks
 

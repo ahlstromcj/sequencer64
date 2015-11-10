@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-09
+ * \updates       2015-11-10
  * \license       GNU GPLv2 or above
  *
  */
@@ -33,6 +33,7 @@
 #include <gtkmm/accelkey.h>
 #include <gtkmm/adjustment.h>
 
+#include "app_limits.h"
 #include "event.hpp"
 #include "keystroke.hpp"
 #include "fruityperfroll_input.hpp"     /* alternate mouse-input class  */
@@ -254,20 +255,33 @@ perfroll::increment_size ()
 void
 perfroll::fill_background_pixmap ()
 {
-    gint8 dash = 1;
     draw_rectangle(m_background, white(), 0, 0, m_background_x, m_names_y);
+
+#ifdef SEQ64_SOLID_PIANOROLL_GRID
+    set_line(Gdk::LINE_SOLID);
+    draw_line(m_background, light_grey(), 0, 0, m_background_x, 0);
+#else
+    gint8 dash = 1;
     m_gc->set_dashes(0, &dash, 1);
     set_line(Gdk::LINE_ON_OFF_DASH);
     draw_line(m_background, grey(), 0, 0, m_background_x, 0);
+#endif
 
     int beats = m_measure_length / m_beat_length;
     m_gc->set_foreground(grey());
     for (int i = 0; i < beats; /* inc'd in body */) /* draw vertical lines   */
     {
+#ifdef SEQ64_SOLID_PIANOROLL_GRID
+        if (i == 0)
+            m_gc->set_foreground(dark_grey());  // black()
+        else
+            m_gc->set_foreground(light_grey());
+#else
         if (i == 0)
             set_line(Gdk::LINE_SOLID);
         else
             set_line(Gdk::LINE_ON_OFF_DASH);
+#endif
 
         int beat_x = i * m_beat_length / m_perf_scale_x;
         draw_line                                   /* solid line, every beat */

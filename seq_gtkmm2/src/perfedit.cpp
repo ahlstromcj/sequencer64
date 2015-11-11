@@ -435,6 +435,11 @@ perfedit::popup_menu (Gtk::Menu * menu)
 /**
  *  Sets the guides, which are the L and R user-interface elements.
  *  See the set_snap() function.
+ *
+ *  It's a little confusing; I assigned the label "m_standard_bpm" to the
+ *  value 4 in "measure_pulse = 192 * 4 * m_bpm / m_bw", but I am not sure I
+ *  understand this equation... why the extra factor of 4?  That 4 appears
+ *  in "c_ppqn * 4" a lot in the original code.
  */
 
 void
@@ -442,11 +447,16 @@ perfedit::set_guides ()
 {
     if (m_bw > 0 && m_snap > 0)
     {
-        long measure_ticks = m_ppqn * m_standard_bpm * m_bpm / m_bw;
-        long snap_ticks = measure_ticks / m_snap;
-        long beat_ticks = (m_ppqn * m_standard_bpm) / m_bw;
-        m_perfroll->set_guides(snap_ticks, measure_ticks, beat_ticks);
-        m_perftime->set_guides(snap_ticks, measure_ticks);
+        long measure_pulses = m_ppqn * m_standard_bpm * m_bpm / m_bw;
+        long snap_pulses = measure_pulses / m_snap;
+
+        /*
+         * long beat_pulses = m_ppqn * m_standard_bpm / m_bw;
+         */
+
+        long beat_pulses = measure_pulses / m_bpm;
+        m_perfroll->set_guides(snap_pulses, measure_pulses, beat_pulses);
+        m_perftime->set_guides(snap_pulses, measure_pulses);
     }
 }
 

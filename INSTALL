@@ -1,6 +1,6 @@
 INSTALL for Sequencer64 v 0.9.9.7
 Chris Ahlstrom
-2015-09-10 to 2015-11-08
+2015-09-10 to 2015-11-10
 
 The current packaging for Sequencer64 is primarily aimed at developers.
 There is currently no configure script... it must be bootstrapped.
@@ -93,11 +93,14 @@ MANUALLY-DEFINED MACROS IN CODE:
         probably implement dumping the multimap to a vector before playback.
         We shall see!
 
-    SEQ64_USE_VI_SEQROLL_MODE:
+    SEQ64_SOLID_PIANOROLL_GRID:
 
-        Definable in the seqroll module, this macro allows the vi hjkl keys to
-        be used as arrow keys for moving notes.  Not yet tested.  We will not
-        make this a default, because it could drive non-vi users nuts.
+        Enabling this macro makes the grid lines for the piano rolls
+        more solid, with about the same perception of lightness.
+        It also calls in some other tweaks, such as the positioning of
+        markers.  We currently like this look a little better, and so it is
+        the default.  See the app_limits.h header file for the definition of
+        this variable.
 
     SEQ64_USE_DEBUG_OUTPUT:
 
@@ -111,6 +114,12 @@ MANUALLY-DEFINED MACROS IN CODE:
             jack_assistant
             optionsfile
             user_settings
+
+    SEQ64_USE_VI_SEQROLL_MODE:
+
+        Definable in the seqroll module, this macro allows the vi hjkl keys to
+        be used as arrow keys for moving notes.  Not yet tested.  We will not
+        make this a default, because it could drive non-vi users nuts.
 
     USE_SEQ42_PATCHES:
 

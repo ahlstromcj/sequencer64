@@ -297,8 +297,25 @@ perfroll::fill_background_pixmap ()
 }
 
 /**
- *  This function sets the snap, measure, and beats members, fills in
- *  the background, and queues up a draw operation.
+ *  This function sets the m_snap, m_measure_length, and m_beat_length
+ *  members directly from the function parameters, which are in units of
+ *  pulses (sometimes misleadingly called "ticks".)
+ *
+ *  This function then fills in the background, and queues up a draw operation.
+ *
+ * \param snap
+ *      Provides the number of snap-pulses (pulses per snap interval) as
+ *      calculated in perfedit::set_guides().  This is actually equal to the
+ *      measure-pulses divided by the snap value in perfedit; the snap value
+ *      defaults to 8.
+ *
+ * \param measure
+ *      Provides the number of measure-pulses (pulses per measure) as
+ *      calculated in perfedit::set_guides().
+ *
+ * \param beat
+ *      Provides the number of beat-pulses (pulses per beat) as calculated in
+ *      perfedit::set_guides().
  */
 
 void

@@ -1,9 +1,13 @@
 Bugs and Upgrade Ideas
 Chris Ahlstrom
-2015-10-27 to 2015-11-09
+2015-10-27 to 2015-11-11
 
 In no particular order...
 
+-  Add swing-quantization to the seqedit menu.
+-  Store new values c_musickey = 0x24240011 and c_musicscale = 0x24240012 in
+   the proprietary header of the MIDI song, when legacy mode is not in force.
+   Also the number of the background sequence, c_backsequence = 0x24240013.
 -  In pattern editor, show the sequence number somewhere.
 -  Cutting out sequences doesn't cause a query for saving!!!
 -  Would be nice to be able to Ctrl-Home, Ctrl-End, Page Up, and Page Down

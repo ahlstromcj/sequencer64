@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-09
+ * \updates       2015-11-11
  * \license       GNU GPLv2 or above
  *
  *  For a quick guide to the MIDI format, see, for example:
@@ -91,7 +91,7 @@
  *  format.  (There is no track-name for the legacy format.)
  */
 
-#define PROPRIETARY_TRACK_NAME         "Sequencer24-S"
+#define PROPRIETARY_TRACK_NAME         "Sequencer64-S"
 
 namespace seq64
 {

@@ -85,7 +85,7 @@ seqdata::update_sizes ()
     if (is_realized())
     {
         m_pixmap = Gdk::Pixmap::create(m_window, m_window_x, m_window_y, -1);
-        redraw();           // instead of update_pixmap(); queue_draw();
+        redraw();               // instead of update_pixmap(); queue_draw();
     }
 }
 
@@ -102,7 +102,7 @@ void
 seqdata::reset ()
 {
     update_sizes();
-    redraw();       // use common code instead of update_pixmap(); queue_draw();
+    redraw();                   // instead of update_pixmap(); queue_draw();
 }
 
 /**
@@ -208,31 +208,31 @@ seqdata::idle_redraw ()
 void
 seqdata::xy_to_rect
 (
-    int a_x1, int a_y1,
-    int a_x2, int a_y2,
-    int & r_x, int & r_y,
-    int & r_w, int & r_h
+    int x1, int y1,
+    int x2, int y2,
+    int & rx, int & ry,
+    int & rw, int & rh
 )
 {
-    if (a_x1 < a_x2)
+    if (x1 < x2)
     {
-        r_x = a_x1;
-        r_w = a_x2 - a_x1;
+        rx = x1;
+        rw = x2 - x1;
     }
     else
     {
-        r_x = a_x2;
-        r_w = a_x1 - a_x2;
+        rx = x2;
+        rw = x1 - x2;
     }
-    if (a_y1 < a_y2)
+    if (y1 < y2)
     {
-        r_y = a_y1;
-        r_h = a_y2 - a_y1;
+        ry = y1;
+        rh = y2 - y1;
     }
     else
     {
-        r_y = a_y2;
-        r_h = a_y1 - a_y2;
+        ry = y2;
+        rh = y1 - y2;
     }
 }
 

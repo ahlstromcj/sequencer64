@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-09
+ * \updates       2015-11-11
  * \license       GNU GPLv2 or above
  *
  */
@@ -87,12 +87,21 @@ namespace seq64
 {
 
 /**
- * Static data members.  These items apply to all of the instances of seqedit.
+ *  Static data members.  These items apply to all of the instances of seqedit,
+ *  and are passed on to the following constructors:
+ *
+ *  -   seqdata
+ *  -   seqevent
+ *  -   seqroll
+ *  -   seqtime
+ *
+ *  The snap and note-length defaults would be good to write to the "user"
+ *  configuration file.  The scale and key would be nice to write to the
+ *  proprietary section of the MIDI song.  Or, even more flexibly, to each
+ *  sequence, if that makes sense to do, since all tracks would generally be
+ *  in the same key.  Right, Charles Ives?
  */
 
-const int seqedit::mc_min_zoom      =  1;
-const int seqedit::mc_max_zoom      = 32;
-int seqedit::m_initial_zoom         =  2;
 int seqedit::m_initial_snap         = DEFAULT_PPQN / 4;   /* to be adjusted */
 int seqedit::m_initial_note_length  = DEFAULT_PPQN / 4;   /* to be adjusted */
 int seqedit::m_initial_scale        =  0;
@@ -101,7 +110,8 @@ int seqedit::m_initial_sequence     = -1;
 
 /**
  * Actions.  These variables represent actions that can be applied to a
- * selection of notes.
+ * selection of notes.  One idea would be to add a swing-quantize action.
+ * We will reserve the value here, for notes only.
  */
 
 static const int c_select_all_notes      =  1;
@@ -115,6 +125,7 @@ static const int c_tighten_notes         =  9;
 static const int c_transpose             = 10;
 static const int c_reserved              = 11;
 static const int c_transpose_h           = 12;
+static const int c_swing_notes           = 13;      /* swing quantize   */
 
 /**
  *  Connects to a menu item, tells the performance to launch the timer
@@ -134,7 +145,7 @@ static const int c_transpose_h           = 12;
 seqedit::seqedit (sequence & seq, perform & p, int pos, int ppqn)
  :
     gui_window_gtk2     (p, 750, 500),          /* set_size_request(700, 500) */
-    m_zoom              (m_initial_zoom),
+    m_zoom              (usr().zoom()),
     m_snap              (m_initial_snap),
     m_note_length       (m_initial_note_length),
     m_scale             (m_initial_scale),
@@ -391,12 +402,12 @@ seqedit::create_menus ()
     using namespace Gtk::Menu_Helpers;
 
     char b[8];
-    for (int i = mc_min_zoom; i <= mc_max_zoom; i *= 2)     /* zoom menu    */
+    for (int z = usr().min_zoom(); z <= usr().max_zoom(); z *= 2)
     {
-        snprintf(b, sizeof(b), "1:%d", i);
-        m_menu_zoom->items().push_back
+        snprintf(b, sizeof(b), "1:%d", z);
+        m_menu_zoom->items().push_back      /* add an entry to zoom menu    */
         (
-            MenuElem(b, sigc::bind(mem_fun(*this, &seqedit::set_zoom), i))
+            MenuElem(b, sigc::bind(mem_fun(*this, &seqedit::set_zoom), z))
         );
     }
 
@@ -1587,20 +1598,23 @@ seqedit::set_midi_bus (int bus)
  *
  *  The notation is in pixels:ticks, but I would prefer to use
  *  pulses/pixel (pulses per pixel).  Oh well.
+ *
+ *  Finally, note that this value of zoom is saved to the "user" configuration
+ *  file when Sequencer64 exit.
  */
 
 void
-seqedit::set_zoom (int zoom)
+seqedit::set_zoom (int z)
 {
     char b[8];
-    snprintf(b, sizeof(b), "1:%d", zoom);
+    snprintf(b, sizeof(b), "1:%d", z);
     m_entry_zoom->set_text(b);
-    m_zoom = zoom;
-    m_initial_zoom = zoom;
-    m_seqroll_wid->set_zoom(zoom);
-    m_seqtime_wid->set_zoom(zoom);
-    m_seqdata_wid->set_zoom(zoom);
-    m_seqevent_wid->set_zoom(zoom);
+    m_zoom = z;
+    usr().zoom(z);
+    m_seqroll_wid->set_zoom(z);
+    m_seqtime_wid->set_zoom(z);
+    m_seqdata_wid->set_zoom(z);
+    m_seqevent_wid->set_zoom(z);
 }
 
 /**
@@ -1624,6 +1638,21 @@ seqedit::set_snap (int snap)
 /**
  *  Selects the given note-length value.  It is passed to the seqroll
  *  object, as well.
+ *
+ * \warning
+ *      Currently, we don't handle changes in the global PPQN after the
+ *      creation of the menu.  The creation of the menu hard-wires the values
+ *      of note-length.  To adjust for a new global PQN, we will need to store
+ *      the original PPQN (m_original_ppqn = m_ppqn), and then adjust the
+ *      notelength based on the new PPQN.  For example if the new PPQN is
+ *      twice as high as 192, then the notelength should double, though the
+ *      text displayed in the "Note length" field should remain the same.
+ *      A double value would be needed to handle the setting of a smaller
+ *      m_ppqn.  Not needed until we support a set_ppqn() function in this
+ *      class.  Another option is to rebuild the menu.
+ *
+ * \param notelength
+ *      Provides the note length in units of MIDI pulses.  For example
  */
 
 void
@@ -1632,6 +1661,15 @@ seqedit::set_note_length (int notelength)
     char b[8];
     snprintf(b, sizeof(b), "1/%d", m_ppqn * 4 / notelength);
     m_entry_note_length->set_text(b);
+
+#ifdef CAN_MODIFY_GLOBAL_PPQN
+    if (m_ppqn != m_original_ppqn)
+    {
+        double factor = double(m_ppqn) / double(m_original);
+        notelength = int(notelength * factor + 0.5);
+    }
+#endif
+
     m_note_length = notelength;
     m_initial_note_length = notelength;
     m_seqroll_wid->set_note_length(notelength);
@@ -1975,12 +2013,12 @@ seqedit::on_scroll_event (GdkEventScroll * ev)
     {
         if (CAST_EQUIVALENT(ev->direction, SEQ64_SCROLL_DOWN))
         {
-            if (m_zoom * 2 <= mc_max_zoom)
+            if (m_zoom * 2 <= usr().max_zoom())
                 set_zoom(m_zoom * 2);
         }
         else if (CAST_EQUIVALENT(ev->direction, SEQ64_SCROLL_UP))
         {
-            if (m_zoom / 2 >= mc_min_zoom)
+            if (m_zoom / 2 >= usr().min_zoom())
                 set_zoom(m_zoom / 2);
         }
         return true;

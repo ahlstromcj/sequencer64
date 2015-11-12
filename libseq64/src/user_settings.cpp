@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-23
- * \updates       2015-11-09
+ * \updates       2015-11-11
  * \license       GNU GPLv2 or above
  *
  *  Note that this module also sets the remaining legacy global variables, so
@@ -111,38 +111,75 @@ namespace seq64
 
 user_settings::user_settings ()
  :
+    /*
+     * [user-midi-bus-definitions]
+     */
+
     m_midi_buses                (),         // vector
+
+    /*
+     * [user-instrument-definitions]
+     */
+
     m_instruments               (),         // vector
+
+    /*
+     * [user-interface-settings]
+     */
+
     m_grid_style                (grid_style_normal),
     m_grid_brackets             (2),
     m_mainwnd_rows              (0),
     m_mainwnd_cols              (0),
-    m_seqs_in_set               (0),
-    m_gmute_tracks              (0),
     m_max_sets                  (0),
-    m_total_seqs                (0),
-    m_max_sequence              (0),
+    m_mainwid_border            (0),
+    m_mainwid_spacing           (0),
+    m_control_height            (0),
+    m_current_zoom              (0),
+
+    /*
+     * The members that follow are not yet part of the .usr file.
+     */
+
     m_text_x                    (0),
     m_text_y                    (0),
     m_seqchars_x                (0),
     m_seqchars_y                (0),
-    m_seqarea_x                 (0),
-    m_seqarea_y                 (0),
-    m_seqarea_seq_x             (0),
-    m_seqarea_seq_y             (0),
-    m_mainwid_border            (0),
-    m_mainwid_spacing           (0),
-    m_control_height            (0),
-    m_mainwid_x                 (0),
-    m_mainwid_y                 (0),
+
+    /*
+     * [user-midi-settings]
+     */
+
     m_midi_ppqn                 (0),
     m_midi_beats_per_measure    (0),
     m_midi_beats_per_minute     (0),
     m_midi_beat_width           (0),
     m_midi_buss_override        (0),
+
+    /*
+     * Calculated from other member values in the normalize() function.
+     */
+
+    m_total_seqs                (0),
+    m_seqs_in_set               (0),
+    m_gmute_tracks              (0),
+    m_max_sequence              (0),
+    m_seqarea_x                 (0),
+    m_seqarea_y                 (0),
+    m_seqarea_seq_x             (0),
+    m_seqarea_seq_y             (0),
+    m_mainwid_x                 (0),
+    m_mainwid_y                 (0),
+
+    /*
+     * Constant values.
+     */
+
+    mc_min_zoom                 (1),
+    mc_max_zoom                 (32),
     mc_baseline_ppqn            (DEFAULT_PPQN)
 {
-    // Empty body
+    // Empty body; it's no use to call normalize() here, see set_defaults().
 }
 
 /**
@@ -151,38 +188,75 @@ user_settings::user_settings ()
 
 user_settings::user_settings (const user_settings & rhs)
  :
+    /*
+     * [user-midi-bus-definitions]
+     */
+
     m_midi_buses                (),                     // vector
+
+    /*
+     * [user-instrument-definitions]
+     */
+
     m_instruments               (),                     // vector
+
+    /*
+     * [user-interface-settings]
+     */
+
     m_grid_style                (rhs.m_grid_style),
     m_grid_brackets             (rhs.m_grid_brackets),
     m_mainwnd_rows              (rhs.m_mainwnd_rows),
     m_mainwnd_cols              (rhs.m_mainwnd_cols),
-    m_seqs_in_set               (rhs.m_seqs_in_set),
-    m_gmute_tracks              (rhs.m_gmute_tracks),
     m_max_sets                  (rhs.m_max_sets),
-    m_total_seqs                (rhs.m_total_seqs),
-    m_max_sequence              (rhs.m_max_sequence),
+    m_mainwid_border            (rhs.m_mainwid_border),
+    m_mainwid_spacing           (rhs.m_mainwid_spacing),
+    m_control_height            (rhs.m_control_height),
+    m_current_zoom              (rhs.m_current_zoom),
+
+    /*
+     * The members that follow are not yet part of the .usr file.
+     */
+
     m_text_x                    (rhs.m_text_x),
     m_text_y                    (rhs.m_text_y),
     m_seqchars_x                (rhs.m_seqchars_x),
     m_seqchars_y                (rhs.m_seqchars_y),
-    m_seqarea_x                 (rhs.m_seqarea_x),
-    m_seqarea_y                 (rhs.m_seqarea_y),
-    m_seqarea_seq_x             (rhs.m_seqarea_seq_x),
-    m_seqarea_seq_y             (rhs.m_seqarea_seq_y),
-    m_mainwid_border            (rhs.m_mainwid_border),
-    m_mainwid_spacing           (rhs.m_mainwid_spacing),
-    m_control_height            (rhs.m_control_height),
-    m_mainwid_x                 (rhs.m_mainwid_x),
-    m_mainwid_y                 (rhs.m_mainwid_y),
+
+    /*
+     * [user-midi-settings]
+     */
+
     m_midi_ppqn                 (rhs.m_midi_ppqn),
     m_midi_beats_per_measure    (rhs.m_midi_beats_per_measure),
     m_midi_beats_per_minute     (rhs.m_midi_beats_per_minute),
     m_midi_beat_width           (rhs.m_midi_beat_width),
     m_midi_buss_override        (rhs.m_midi_buss_override),
+
+    /*
+     * Calculated from other member values in the normalize() function.
+     */
+
+    m_total_seqs                (rhs.m_total_seqs),
+    m_seqs_in_set               (rhs.m_seqs_in_set),
+    m_gmute_tracks              (rhs.m_gmute_tracks),
+    m_max_sequence              (rhs.m_max_sequence),
+    m_seqarea_x                 (rhs.m_seqarea_x),
+    m_seqarea_y                 (rhs.m_seqarea_y),
+    m_seqarea_seq_x             (rhs.m_seqarea_seq_x),
+    m_seqarea_seq_y             (rhs.m_seqarea_seq_y),
+    m_mainwid_x                 (rhs.m_mainwid_x),
+    m_mainwid_y                 (rhs.m_mainwid_y),
+
+    /*
+     * Constant values.
+     */
+
+    mc_min_zoom                 (rhs.mc_min_zoom),
+    mc_max_zoom                 (rhs.mc_max_zoom),
     mc_baseline_ppqn            (DEFAULT_PPQN)
 {
-    // Empty body
+    // Empty body; no need to call normalize() here.
 }
 
 /**
@@ -194,37 +268,74 @@ user_settings::operator = (const user_settings & rhs)
 {
     if (this != &rhs)
     {
+        /*
+         * [user-midi-bus-definitions]
+         */
+
         m_midi_buses                = rhs.m_midi_buses;
+
+        /*
+         * [user-instrument-definitions]
+         */
+
         m_instruments               = rhs.m_instruments;
+
+        /*
+         * [user-interface-settings]
+         */
+
         m_grid_style                = rhs.m_grid_style;
         m_grid_brackets             = rhs.m_grid_brackets;
         m_mainwnd_rows              = rhs.m_mainwnd_rows;
         m_mainwnd_cols              = rhs.m_mainwnd_cols;
-        m_seqs_in_set               = rhs.m_seqs_in_set;
-        m_gmute_tracks              = rhs.m_gmute_tracks;
         m_max_sets                  = rhs.m_max_sets;
-        m_total_seqs                = rhs.m_total_seqs;
-        m_max_sequence              = rhs.m_max_sequence;
+        m_mainwid_border            = rhs.m_mainwid_border;
+        m_mainwid_spacing           = rhs.m_mainwid_spacing;
+        m_control_height            = rhs.m_control_height;
+        m_current_zoom              = rhs.m_current_zoom;
+
+        /*
+         * The members that follow are not yet part of the .usr file.
+         */
+
         m_text_x                    = rhs.m_text_x;
         m_text_y                    = rhs.m_text_y;
         m_seqchars_x                = rhs.m_seqchars_x;
         m_seqchars_y                = rhs.m_seqchars_y;
-        m_seqarea_x                 = rhs.m_seqarea_x;
-        m_seqarea_y                 = rhs.m_seqarea_y;
-        m_seqarea_seq_x             = rhs.m_seqarea_seq_x;
-        m_seqarea_seq_y             = rhs.m_seqarea_seq_y;
-        m_mainwid_border            = rhs.m_mainwid_border;
-        m_mainwid_spacing           = rhs.m_mainwid_spacing;
-        m_control_height            = rhs.m_control_height;
-        m_mainwid_x                 = rhs.m_mainwid_x;
-        m_mainwid_y                 = rhs.m_mainwid_y;
+
+        /*
+         * [user-midi-settings]
+         */
+
         m_midi_ppqn                 = rhs.m_midi_ppqn;
         m_midi_beats_per_measure    = rhs.m_midi_beats_per_measure;
         m_midi_beats_per_minute     = rhs.m_midi_beats_per_minute;
         m_midi_beat_width           = rhs.m_midi_beat_width;
         m_midi_buss_override        = rhs.m_midi_buss_override;
+
         /*
-         * mc_baseline_ppqn         = DEFAULT_PPQN;
+         * Calculated from other member values in the normalize() function.
+         *
+         *  m_total_seqs                = rhs.m_total_seqs;
+         *  m_seqs_in_set               = rhs.m_seqs_in_set;
+         *  m_gmute_tracks              = rhs.m_gmute_tracks;
+         *  m_max_sequence              = rhs.m_max_sequence;
+         *  m_seqarea_x                 = rhs.m_seqarea_x;
+         *  m_seqarea_y                 = rhs.m_seqarea_y;
+         *  m_seqarea_seq_x             = rhs.m_seqarea_seq_x;
+         *  m_seqarea_seq_y             = rhs.m_seqarea_seq_y;
+         *  m_mainwid_x                 = rhs.m_mainwid_x;
+         *  m_mainwid_y                 = rhs.m_mainwid_y;
+         */
+
+        normalize();
+
+        /*
+         * Constant values.  These values cannot be modified.
+         *
+         * mc_min_zoom              = rhs.mc_min_zoom;
+         * mc_max_zoom              = rhs.mc_max_zoom;
+         * mc_baseline_ppqn         = rhs.mc_baseline_ppqn;
          */
     }
     return *this;
@@ -247,19 +358,27 @@ user_settings::set_defaults ()
     m_mainwnd_rows = 4;                 // range: 4 to 8
     m_mainwnd_cols = 8;                 // range: 8 to 10
     m_max_sets = 32;                    // range: 32 to 64
+    m_mainwid_border = 0;               // range: 0 to 3, try 2 or 3
+    m_mainwid_spacing = 2;              // range: 2 to 6, try 4 or 6
+    m_control_height = 0;               // range: 0 to 4?
+    m_current_zoom = 2;                 // range: 1 to 32
+
     m_text_x =  6;                      // range: 6 to 6
     m_text_y = 12;                      // range: 12 to 12
     m_seqchars_x = 15;                  // range: 15 to 15
     m_seqchars_y =  5;                  // range: 5 to 5
-    m_mainwid_border = 0;               // range: 0 to 3, try 2 or 3
-    m_mainwid_spacing = 2;              // range: 2 to 6, try 4 or 6
-    m_control_height = 0;               // range: 0 to 4
 
     m_midi_ppqn = DEFAULT_PPQN;         // range: 96 to 960, default 192
     m_midi_beats_per_measure = DEFAULT_BEATS_PER_MEASURE;   // range: 1 to 16
     m_midi_beats_per_minute = DEFAULT_BPM;                  // range: 20 to 500
     m_midi_beat_width = DEFAULT_BEAT_WIDTH;     // range: 1 to 16, powers of 2
     m_midi_buss_override = SEQ64_BAD_BUSS;      // range: 1 to 32
+
+    /*
+     * mc_min_zoom
+     * mc_max_zoom
+     * mc_baseline_ppqn
+     */
 
     normalize();                        // recalculate derived values
 }
@@ -673,6 +792,21 @@ user_settings::control_height (int value)
     {
         m_control_height = value;
         normalize();
+    }
+}
+
+/**
+ * \setter m_current_zoom
+ *      This value is not modified unless the value parameter is
+ *      between 1 and 32, inclusive.  The default value is 2.
+ */
+
+void
+user_settings::zoom (int value)
+{
+    if (value >= mc_min_zoom && value <= mc_max_zoom)
+    {
+        m_current_zoom = value;
     }
 }
 

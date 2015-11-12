@@ -261,6 +261,10 @@ userfile::parse (perform & /* a_perf */)
         sscanf(m_line, "%d", &scratch);
         usr().control_height(scratch);
 
+        next_data_line(file);
+        sscanf(m_line, "%d", &scratch);
+        usr().zoom(scratch);
+
         usr().normalize();    /* calculate derived values */
     }
 
@@ -579,6 +583,13 @@ userfile::write (const perform & /* a_perf */ )
             "# Specifies some quantity, it is not known what it means.\n"
             "\n"
             << usr().control_height() << "      # control_height\n"
+            ;
+
+        file << "\n"
+            "# Specifies the initial zoom for the piano rolls.  Ranges from 1.\n"
+            "# to 32, and defaults to 2 unless changed here.\n"
+            "\n"
+            << usr().zoom() << "      # zoom\n"
             ;
     }
 

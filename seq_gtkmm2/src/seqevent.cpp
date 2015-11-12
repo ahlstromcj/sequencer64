@@ -169,6 +169,14 @@ seqevent::draw_background ()
     /*
      * See the upgrades in seqroll::update_background(), which could be
      * applicable here, too.  Very similar code!
+     *
+     * Code commented out in the original module:
+     *
+     *    int measure_length_64ths =
+     *          m_seq->get_bpm() * 64 / m_seq->get_bw();
+     *    int measures_per_line = (256 / measure_length_64ths) / (32 / m_zoom);
+     *    if (measures_per_line <= 0)
+     *      measures_per_line = 1;
      */
 
     int measures_per_line = 1;
@@ -444,9 +452,8 @@ seqevent::start_paste ()
  *  This function performs a 'snap' on x.
  *
  *      -   snap = number pulses to snap to
- *      -   m_zoom = number of pulses per pixel,
- *
- *  Therefore snap / m_zoom  = number pixels to snap to.
+ *      -   m_zoom = number of pulses per pixel
+ *      -   Therefore snap / m_zoom = number of pixels to snap to.
  */
 
 void

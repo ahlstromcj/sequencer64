@@ -115,7 +115,7 @@ class user_settings
     };
 
     /**
-     *                  [user-midi-bus-definitions]
+     *  [user-midi-bus-definitions]
      *
      *  Internal type for the container of user_midi_bus objects.
      *  Sorry about the "confusion" about "bus" versus "buss".
@@ -135,7 +135,7 @@ class user_settings
     Busses m_midi_buses;
 
     /**
-     *                  [user-instrument-definitions]
+     *  [user-instrument-definitions]
      *
      *  Internal type for the container of user_instrument objects.
      */
@@ -152,10 +152,8 @@ class user_settings
 
     Instruments m_instruments;
 
-    /*
-     *                  [user-interface-settings]
-     *
-     * Used in: mainwid, ...
+    /**
+     *  [user-interface-settings]
      */
 
     /**
@@ -193,52 +191,39 @@ class user_settings
     int m_mainwnd_cols;
 
     /**
-     *  Number of patterns/sequences in the Patterns Panel, also known as
-     *  a "set" or "screen set".  This value is 4 x 8 = 32 by default.
-     *
-     * \warning
-     *      Currently implicit/explicit in a number of the "rc" file and
-     *      rc_settings.  Would probably want the left 32 or the first 32
-     *      items in the main window only to be subject to keystroke control.
-     */
-
-    int m_seqs_in_set;
-
-    /**
-     *  Number of group-mute tracks that can be supported, which is
-     *  m_seqs_in_set squared, or 1024.
-     */
-
-    int m_gmute_tracks;
-
-    /**
      *  Maximum number of screen sets that can be supported.  Basically,
      *  that the number of times the Patterns Panel can be filled.  32
-     *  sets can be created.
+     *  sets can be created.  Although this value is part of the "user"
+     *  configuration file, it is likely that it will never change.  Rather,
+     *  the number of sequences per set would change.  We'll see.
      */
 
     int m_max_sets;
 
-    /*
-     *  The maximum number of patterns supported is given by the number of
-     *  patterns supported in the panel (32) times the maximum number of
-     *  sets (32), or 1024 patterns.  It is basically the same value as
-     *  m_max_sequence by default.
-     *
-     *      m_total_seqs = m_seqs_in_set * m_max_sets;
+    /**
+     *  These control sizes.  We'll try changing them and see what
+     *  happens.  Increasing these value spreads out the pattern grids a
+     *  little bit and makes the Patterns panel slightly bigger.  Seems
+     *  like it would be useful to make these values user-configurable.
      */
 
-     int m_total_seqs;
+    int m_mainwid_border;   /* c_mainwid_border = 0;  try 2 or 3 instead    */
+    int m_mainwid_spacing;  /* c_mainwid_spacing = 2; try 4 or 6 instead    */
 
     /**
-     *  The maximum number of patterns supported is given by the number of
-     *  patterns supported in the panel (32) times the maximum number of
-     *  sets (32), or 1024 patterns.
-     *
-     *      m_max_sequence = m_seqs_in_set * m_max_sets;
+     *  This constants seems to be created for a future purpose, perhaps
+     *  to reserve space for a new bar on the mainwid pane.  But it is
+     *  used only in this header file, to define m_mainwid_y, but doesn't
+     *  add anything to that value.
      */
 
-    int m_max_sequence;
+    int m_control_height;   /* c_control_height = 0;                        */
+
+    /**
+     *  Provides the initial zoom value, in units of
+     */
+
+    int m_current_zoom;
 
     /**
      *  Constants for the mainwid class.  The m_text_x and m_text_y
@@ -280,72 +265,6 @@ class user_settings
 
     int m_seqchars_x;   /* c_seqchars_x = 15    */
     int m_seqchars_y;   /* c_seqchars_y =  5    */
-
-    /**
-     *  The m_seqarea_x and m_seqarea_y constants are derived from the
-     *  width and heights of the default character set, and the number of
-     *  characters in width, and the number of lines, in a
-     *  pattern/sequence box.
-     *
-     *  Compare these two constants to m_seqarea_seq_x(y), which was in
-     *  mainwid.h, but is now in this file.
-     */
-
-    int m_seqarea_x;
-    int m_seqarea_y;
-
-    /**
-     * Area of what?  Doesn't look at all like it is based on the size of
-     * characters.  These are used only in the mainwid module.
-     */
-
-    int m_seqarea_seq_x;
-    int m_seqarea_seq_y;
-
-    /**
-     *  These control sizes.  We'll try changing them and see what
-     *  happens.  Increasing these value spreads out the pattern grids a
-     *  little bit and makes the Patterns panel slightly bigger.  Seems
-     *  like it would be useful to make these values user-configurable.
-     */
-
-    int m_mainwid_border;   /* c_mainwid_border = 0;  try 2 or 3 instead    */
-    int m_mainwid_spacing;  /* c_mainwid_spacing = 2; try 4 or 6 instead    */
-
-    /**
-     *  This constants seems to be created for a future purpose, perhaps
-     *  to reserve space for a new bar on the mainwid pane.  But it is
-     *  used only in this header file, to define m_mainwid_y, but doesn't
-     *  add anything to that value.
-     */
-
-    int m_control_height;   /* c_control_height = 0     */
-
-    /**
-     * The width of the main pattern/sequence grid, in pixels.  Affected
-     * by the m_mainwid_border and m_mainwid_spacing values.
-     *
-     *      c_mainwid_x =
-     *      (
-     *          (c_seqarea_x + c_mainwid_spacing) * c_mainwnd_cols -
-     *              c_mainwid_spacing + c_mainwid_border * 2
-     *      );
-     */
-
-    int m_mainwid_x;
-
-    /*
-     * The height  of the main pattern/sequence grid, in pixels.  Affected by
-     * the m_mainwid_border and m_control_height values.
-     *
-     *      c_mainwid_y =
-     *      (
-     *          (c_seqarea_y + c_mainwid_spacing) * c_mainwnd_rows +
-     *               c_control_height + c_mainwid_border * 2
-     *      );
-     */
-
-    int m_mainwid_y;
 
     /*
      *                  [user-midi-settings]
@@ -417,6 +336,122 @@ class user_settings
 
     char m_midi_buss_override;          /* --bus n option               */
 
+    /*
+     *  Values calculated from other member values in the normalize() function.
+     */
+
+    /*
+     *  The maximum number of patterns supported is given by the number of
+     *  patterns supported in the panel (32) times the maximum number of
+     *  sets (32), or 1024 patterns.  It is basically the same value as
+     *  m_max_sequence by default.  It is a derived value, and not stored in
+     *  the "user" file.  We might make it equal to the maximum number of
+     *  sequences the currently-loaded MIDI file.
+     *
+     *      m_total_seqs = m_seqs_in_set * m_max_sets;
+     */
+
+    int m_total_seqs;                   /* not included in .usr file    */
+
+    /**
+     *  Number of patterns/sequences in the Patterns Panel, also known as
+     *  a "set" or "screen set".  This value is 4 x 8 = 32 by default.
+     *
+     * \warning
+     *      Currently implicit/explicit in a number of the "rc" file and
+     *      rc_settings.  Would probably want the left 32 or the first 32
+     *      items in the main window only to be subject to keystroke control.
+     *      This value is calculated by the normalize() function, and is <i>
+     *      not </i> part of the "user" configuration file.
+     */
+
+    int m_seqs_in_set;                  /* not include in .usr file     */
+
+    /**
+     *  Number of group-mute tracks that can be supported, which is
+     *  m_seqs_in_set squared, or 1024.  This value is <i> not </i>
+     *  part of the "user" configuration file; it is calculated by the
+     *  normalize() function.
+     */
+
+    int m_gmute_tracks;                 /* not included in .usr file    */
+
+    /**
+     *  The maximum number of patterns supported is given by the number of
+     *  patterns supported in the panel (32) times the maximum number of
+     *  sets (32), or 1024 patterns.  It is a derived value, and not stored in
+     *  the "user" file.
+     *
+     *      m_max_sequence = m_seqs_in_set * m_max_sets;
+     */
+
+    int m_max_sequence;
+
+    /**
+     *  The m_seqarea_x and m_seqarea_y constants are derived from the
+     *  width and heights of the default character set, and the number of
+     *  characters in width, and the number of lines, in a
+     *  pattern/sequence box.
+     *
+     *  Compare these two constants to m_seqarea_seq_x(y), which was in
+     *  mainwid.h, but is now in this file.
+     */
+
+    int m_seqarea_x;
+    int m_seqarea_y;
+
+    /**
+     * Area of what?  Doesn't look at all like it is based on the size of
+     * characters.  These are used only in the mainwid module.
+     */
+
+    int m_seqarea_seq_x;
+    int m_seqarea_seq_y;
+
+    /**
+     * The width of the main pattern/sequence grid, in pixels.  Affected
+     * by the m_mainwid_border and m_mainwid_spacing values.
+     *
+     *      c_mainwid_x =
+     *      (
+     *          (c_seqarea_x + c_mainwid_spacing) * c_mainwnd_cols -
+     *              c_mainwid_spacing + c_mainwid_border * 2
+     *      );
+     */
+
+    int m_mainwid_x;
+
+    /*
+     * The height of the main pattern/sequence grid, in pixels.  Affected by
+     * the m_mainwid_border and m_control_height values.
+     *
+     *      c_mainwid_y =
+     *      (
+     *          (c_seqarea_y + c_mainwid_spacing) * c_mainwnd_rows +
+     *               c_control_height + c_mainwid_border * 2
+     *      );
+     */
+
+    int m_mainwid_y;
+
+    /*
+     *  All constant (unchanging) values go here.  They are not saved or read.
+     */
+
+    /**
+     *  Provides the minimum zoom value, currently a constant.  It's value is
+     *  1.
+     */
+
+    const int mc_min_zoom;
+
+    /**
+     *  Provides the maximum zoom value, currently a constant.  It's value is
+     *  32.
+     */
+
+    const int mc_max_zoom;
+
     /**
      *  Permanent storage for the baseline, default PPQN used by Seq24.
      *  This value is necessary in order to keep user-interface elements
@@ -429,6 +464,8 @@ class user_settings
      *  Scale factor for PPQN.  Should this be a float (6 significant digits)
      *  or two integers for scaling?
      */
+
+    // TODO
 
 public:
 
@@ -794,6 +831,17 @@ public:
         return m_control_height;
     }
 
+    /**
+     * \getter m_current_zoom
+     */
+
+    int zoom () const
+    {
+        return m_current_zoom;
+    }
+
+    void zoom (int value);      /* seqedit can change this one */
+
 protected:
 
     /**
@@ -880,6 +928,24 @@ public:
     char midi_buss_override () const
     {
         return m_midi_buss_override;
+    }
+
+    /**
+     * \getter mc_min_zoom
+     */
+
+    int min_zoom () const
+    {
+        return mc_min_zoom;
+    }
+
+    /**
+     * \getter mc_max_zoom
+     */
+
+    int max_zoom () const
+    {
+        return mc_max_zoom;
     }
 
     /**

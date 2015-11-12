@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-10-10
- * \updates       2015-10-11
+ * \updates       2015-11-11
  * \license       GNU GPLv2 or above
  *
  */
@@ -39,6 +39,39 @@ namespace seq64
 {
 
 class sequence;
+
+/**
+ *  Provides tags used by the midifile class to control the reading and
+ *  writing of the extra "proprietary" information stored in a Seq24 MIDI
+ *  file.
+ *
+ *  As an extension, we will eventually grab the last key, scale, and
+ *  background sequence value selected in a sequence and write them to the
+ *  proprietary header, where they can be read in and applied to all
+ *  sequences, when the seqedit object is created.  These values would not be
+ *  stored in the legacy format.
+ *
+ *  Something like this could be done in the "user" configuration file, but
+ *  then the key and scale would apply to all songs.  We don't want that.
+ *
+ *  We could also add snap and note-length to the per-song defaults, but
+ *  the "user" configuration file seems like a better place to store these
+ *  preferences.
+ */
+
+const unsigned long c_midibus =         0x24240001;
+const unsigned long c_midich =          0x24240002;
+const unsigned long c_midiclocks =      0x24240003;
+const unsigned long c_triggers =        0x24240004;
+const unsigned long c_notes =           0x24240005;
+const unsigned long c_timesig =         0x24240006;
+const unsigned long c_bpmtag =          0x24240007;
+const unsigned long c_triggers_new =    0x24240008;
+const unsigned long c_mutegroups =      0x24240009;
+const unsigned long c_midictrl =        0x24240010;
+const unsigned long c_musickey =        0x24240011; /* key                  */
+const unsigned long c_musicscale =      0x24240012; /* scale                */
+const unsigned long c_backsequence =    0x24240013; /* background sequence  */
 
 /**
  *  Provides a fairly common type definition for a byte value.

@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-25
- * \updates       2015-11-09
+ * \updates       2015-11-11
  * \license       GNU GPLv2 or above
  *
  *  We're going to try to collect all the globals here in one module, and
@@ -335,23 +335,6 @@ const std::string c_dummy = "Untitled";
  */
 
 const int c_maxbeats = 0xFFFF;
-
-/**
- *  Provides tags used by the midifile class to control the reading and
- *  writing of the extra "proprietary" information stored in a Seq24 MIDI
- *  file.
- */
-
-const unsigned long c_midibus =         0x24240001;
-const unsigned long c_midich =          0x24240002;
-const unsigned long c_midiclocks =      0x24240003;
-const unsigned long c_triggers =        0x24240004;
-const unsigned long c_notes =           0x24240005;
-const unsigned long c_timesig =         0x24240006;
-const unsigned long c_bpmtag =          0x24240007;
-const unsigned long c_triggers_new =    0x24240008;
-const unsigned long c_mutegroups =      0x24240009;
-const unsigned long c_midictrl =        0x24240010;
 
 #if USE_TRADITIONAL_FONT_HANDLING
 

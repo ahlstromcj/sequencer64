@@ -157,7 +157,8 @@ public:
     (
         perform & perf,
         sequence & seq,
-        int zoom, int snap,
+        int zoom,
+        int snap,
         seqkeys & seqkeys_wid,
         int pos,
         Gtk::Adjustment & hadjust,

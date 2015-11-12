@@ -1011,7 +1011,7 @@ mainwnd::edit_callback_notepad ()
  */
 
 bool
-mainwnd::on_delete_event (GdkEventAny * a_e)
+mainwnd::on_delete_event (GdkEventAny * /*ev*/)
 {
     bool result = is_save();
     if (result && rc().is_pattern_playing())
@@ -1032,9 +1032,9 @@ mainwnd::on_delete_event (GdkEventAny * a_e)
  */
 
 bool
-mainwnd::on_key_release_event (GdkEventKey * a_ev)
+mainwnd::on_key_release_event (GdkEventKey * ev)
 {
-    keystroke k(a_ev->keyval, SEQ64_KEYSTROKE_RELEASE);
+    keystroke k(ev->keyval, SEQ64_KEYSTROKE_RELEASE);
     (void) perf().mainwnd_key_event(k);
     return false;
 }
@@ -1049,39 +1049,39 @@ mainwnd::on_key_release_event (GdkEventKey * a_ev)
  */
 
 bool
-mainwnd::on_key_press_event (GdkEventKey * a_ev)
+mainwnd::on_key_press_event (GdkEventKey * ev)
 {
-    Gtk::Window::on_key_press_event(a_ev);
-    if (CAST_EQUIVALENT(a_ev->type, SEQ64_KEY_PRESS))
+    Gtk::Window::on_key_press_event(ev);
+    if (CAST_EQUIVALENT(ev->type, SEQ64_KEY_PRESS))
     {
         if (rc().print_keys())
         {
-            printf("key_press[%d]\n", a_ev->keyval);
+            printf("key_press[%d]\n", ev->keyval);
             fflush(stdout);
         }
 
-        if (a_ev->keyval == PREFKEY(bpm_dn))
+        if (ev->keyval == PREFKEY(bpm_dn))
         {
             int newbpm = perf().decrement_beats_per_minute();
             m_adjust_bpm->set_value(newbpm);
         }
-        else if (a_ev->keyval == PREFKEY(bpm_up))
+        else if (ev->keyval == PREFKEY(bpm_up))
         {
             int newbpm = perf().increment_beats_per_minute();
             m_adjust_bpm->set_value(newbpm);
         }
 
-        keystroke k(a_ev->keyval, SEQ64_KEYSTROKE_PRESS);
+        keystroke k(ev->keyval, SEQ64_KEYSTROKE_PRESS);
         (void) perf().mainwnd_key_event(k);             // pass to perform
 
-        if (a_ev->keyval == PREFKEY(screenset_dn))
+        if (ev->keyval == PREFKEY(screenset_dn))
         {
             int newss = perf().decrement_screenset();
             m_main_wid->set_screenset(newss);
             m_adjust_ss->set_value(newss);
             m_entry_notes->set_text(perf().current_screen_set_notepad());
         }
-        else if (a_ev->keyval == PREFKEY(screenset_up))
+        else if (ev->keyval == PREFKEY(screenset_up))
         {
             int newss = perf().increment_screenset();
             m_main_wid->set_screenset(newss);
@@ -1089,26 +1089,25 @@ mainwnd::on_key_press_event (GdkEventKey * a_ev)
             m_entry_notes->set_text(perf().current_screen_set_notepad());
         }
 
-        if (perf().get_key_groups().count(a_ev->keyval) != 0)
+        if (perf().get_key_groups().count(ev->keyval) != 0)
         {
             perf().select_and_mute_group        /* activate mute group key  */
             (
-                perf().lookup_keygroup_group(a_ev->keyval)
+                perf().lookup_keygroup_group(ev->keyval)
             );
         }
         if                                      /* mute group learn         */
         (
-            perf().is_learn_mode() && a_ev->keyval != PREFKEY(group_learn)
+            perf().is_learn_mode() && ev->keyval != PREFKEY(group_learn)
         )
         {
-            if (perf().get_key_groups().count(a_ev->keyval) != 0)
+            if (perf().get_key_groups().count(ev->keyval) != 0)
             {
                 std::ostringstream os;
-                os << "Key \""
-                   << gdk_keyval_name(a_ev->keyval)
-                   << "\" (code = "
-                   << a_ev->keyval
-                   << ") successfully mapped."
+                os
+                    << "Key '" << gdk_keyval_name(ev->keyval)
+                    << "' (code = " << ev->keyval
+                    << ") successfully mapped."
                    ;
 
                 Gtk::MessageDialog dialog
@@ -1129,12 +1128,11 @@ mainwnd::on_key_press_event (GdkEventKey * a_ev)
             else
             {
                 std::ostringstream os;
-                os << "Key \""
-                   << gdk_keyval_name(a_ev->keyval)
-                   << "\" (code = "
-                   << a_ev->keyval
-                   << ") is not one of the configured mute-group keys.\n"
-                   << "To change this see File/Options menu or the rc file."
+                os
+                    << "Key '" << gdk_keyval_name(ev->keyval)
+                    << "' (code = " << ev->keyval
+                    << ") is not one of the configured mute-group keys.\n"
+                    << "To change this see File/Options menu or the rc file."
                    ;
 
                 Gtk::MessageDialog dialog
@@ -1163,7 +1161,7 @@ mainwnd::on_key_press_event (GdkEventKey * a_ev)
         bool dont_toggle = PREFKEY(start) != PREFKEY(stop);
         if
         (
-            a_ev->keyval == PREFKEY(start) &&
+            ev->keyval == PREFKEY(start) &&
             (dont_toggle || ! rc().is_pattern_playing())
         )
         {
@@ -1171,7 +1169,7 @@ mainwnd::on_key_press_event (GdkEventKey * a_ev)
         }
         else if
         (
-            a_ev->keyval == PREFKEY(stop) &&
+            ev->keyval == PREFKEY(stop) &&
             (dont_toggle || rc().is_pattern_playing())
         )
         {
@@ -1188,12 +1186,12 @@ mainwnd::on_key_press_event (GdkEventKey * a_ev)
          *      also see if the Alt key could/should be intercepted.
          */
 
-        if (perf().get_key_events().count(a_ev->keyval) != 0)
+        if (perf().get_key_events().count(ev->keyval) != 0)
         {
             guint modifiers = gtk_accelerator_get_default_mod_mask();
-            bool ok = (a_ev->state & modifiers) != SEQ64_CONTROL_MASK;
+            bool ok = (ev->state & modifiers) != SEQ64_CONTROL_MASK;
             if (ok)
-                sequence_key(perf().lookup_keyevent_seq(a_ev->keyval));
+                sequence_key(perf().lookup_keyevent_seq(ev->keyval));
         }
     }
     return false;

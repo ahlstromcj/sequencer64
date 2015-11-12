@@ -134,6 +134,12 @@ seqroll::set_background_sequence (bool state, int seq)
 /**
  *  Update the sizes of items based on zoom, PPQN, BPM, BW (beat width) and
  *  more.
+ *
+ *  Old comments:
+ *
+ *      Use m_zoom and i % m_seq->get_bpm() == 0,
+ *      int numberLines = 128 / m_seq->get_bw() / m_zoom;
+ *      int distance = c_ppqn / 32;
  */
 
 void

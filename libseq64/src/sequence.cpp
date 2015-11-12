@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-06
+ * \updates       2015-11-12
  * \license       GNU GPLv2 or above
  *
  */
@@ -87,6 +87,9 @@ sequence::sequence (int ppqn)
     m_time_beats_per_measure    (4),
     m_time_beat_width           (4),
     m_rec_vol                   (0),
+    m_musical_key               (SEQ64_NULL_NEWPROP_VALUE),
+    m_musical_scale             (SEQ64_NULL_NEWPROP_VALUE),
+    m_background_sequence       (SEQ64_NULL_NEWPROP_VALUE),
     m_mutex                     ()
 {
     m_ppqn = choose_ppqn(ppqn);
@@ -1737,8 +1740,7 @@ sequence::clear_triggers ()
 }
 
 /**
- *  Adds a trigger.  If a_state = true, the range is on.
- *  If a_state = false, the range is off.
+ *  Adds a trigger.  A pass-through function that calls triggers::add().
 */
 
 void
@@ -2183,7 +2185,7 @@ sequence::del_selected_trigger ()
 void
 sequence::cut_selected_trigger ()
 {
-    copy_selected_trigger();
+    copy_selected_trigger();            /* locks itself */
 
     automutex locker(m_mutex);
     m_triggers.remove_selected();

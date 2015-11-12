@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-09
+ * \updates       2015-11-12
  * \license       GNU GPLv2 or above
  *
  *  The functions add_list_var() and add_long_list() have been replaced by
@@ -54,6 +54,15 @@
 #include "midi_container.hpp"           /* seq64::midi_container    */
 #include "mutex.hpp"
 #include "triggers.hpp"                 /* seq64::triggers, etc.    */
+
+/**
+ *  Defines a constant to be used for the new musical key, musical scale, and
+ *  background sequence values.  This are all meant to be a byte value, less
+ *  than 0x80 (128), even the background sequence number, which should be
+ *  limited to the first set, for sanity's sake.
+ */
+
+#define SEQ64_NULL_NEWPROP_VALUE        0x80
 
 namespace seq64
 {
@@ -227,6 +236,31 @@ private:
     long m_time_beats_per_measure;
     long m_time_beat_width;
     long m_rec_vol;
+
+    /**
+     *  Holds a copy of the musical key for this sequence, which we now
+     *  support writing to this sequence.  If the value is
+     *  SEQ64_NULL_NEWPROP_VALUE, then there is no musical key to be set.
+     */
+
+    midibyte m_musical_key;
+
+    /**
+     *  Holds a copy of the musical scale for this sequence, which we now
+     *  support writing to this sequence.  If the value is
+     *  SEQ64_NULL_NEWPROP_VALUE, then there is no musical scale to be set.
+     */
+
+    midibyte m_musical_scale;
+
+    /**
+     *  Holds a copy of the background sequence number for this sequence,
+     *  which we now support writing to this sequence.  If the value is
+     *  SEQ64_NULL_NEWPROP_VALUE, then there is no background sequence to be
+     *  set.
+     */
+
+    midibyte m_background_sequence;
 
     /**
      *  Provides locking for the sequence.  Made mutable for use in
@@ -510,11 +544,11 @@ public:
     void add_event (const event * e);
     void add_trigger
     (
-        long tick, long length,
+        long tick, long len,
         long offset = 0, bool adjust_offset = true
     );
     void split_trigger (long tick);
-    void grow_trigger (long tick_from, long tick_to, long length);
+    void grow_trigger (long tick_from, long tick_to, long len);
     void del_trigger (long tick);
     bool get_trigger_state (long tick);
     bool select_trigger (long tick);
@@ -589,8 +623,8 @@ public:
     (
         long & tick_s, int & note_h, long & tick_f, int & note_l
     );
-    void move_selected_notes (long delta_tick, int delta_note);
-    void add_note (long tick, long length, int note, bool paint = false);
+    void move_selected_notes (long deltatick, int deltanote);
+    void add_note (long tick, long len, int note, bool paint = false);
     void add_event
     (
         long tick, unsigned char status,
@@ -605,8 +639,8 @@ public:
     );
     void increment_selected (unsigned char status, unsigned char control);
     void decrement_selected (unsigned char status, unsigned char control);
-    void grow_selected (long delta_tick);
-    void stretch_selected (long delta_tick);
+    void grow_selected (long deltatick);
+    void stretch_selected (long deltatick);
     void remove_marked ();
     void mark_selected ();
     void unpaint_all ();
@@ -646,13 +680,70 @@ public:
     );
     void transpose_notes (int steps, int scale);
 
+    /**
+     * \getter m_musical_key
+     */
+
+    midibyte musical_key () const
+    {
+        return m_musical_key;
+    }
+
+    /**
+     * \setter m_musical_key
+     *      Will add validation later.
+     */
+
+    void musical_key (int key)
+    {
+        m_musical_key = midibyte (key);
+    }
+
+    /**
+     * \getter m_musical_scale
+     */
+
+    midibyte musical_scale () const
+    {
+        return m_musical_scale;
+    }
+
+    /**
+     * \setter m_musical_scale
+     *      Will add validation later.
+     */
+
+    void musical_scale (int scale)
+    {
+        m_musical_scale = midibyte (scale);
+    }
+
+    /**
+     * \getter m_background_sequence
+     */
+
+    midibyte background_sequence () const
+    {
+        return m_background_sequence;
+    }
+
+    /**
+     * \setter m_background_sequence
+     *      Will add validation later.
+     */
+
+    void background_sequence (int bs)
+    {
+        m_background_sequence = midibyte (bs);
+    }
+
 private:
 
     void put_event_on_bus (event * ev);
     void remove_all ();
     void set_trigger_offset (long trigger_offset);
-    void split_trigger (trigger & trig, long split_tick);
-    void adjust_trigger_offsets_to_length (long new_len);
+    void split_trigger (trigger & trig, long splittick);
+    void adjust_trigger_offsets_to_length (long newlen);
     long adjust_offset (long offset);
     void remove (event_list::iterator i);
     void remove (event * e);

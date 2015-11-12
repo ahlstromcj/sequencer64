@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-10-10
- * \updates       2015-11-04
+ * \updates       2015-11-12
  * \license       GNU GPLv2 or above
  *
  */
@@ -96,7 +96,7 @@ midi_container::add_long (long x)
 }
 
 /**
- *  This function fills the given character list with MIDI data from the
+ *  This function fills the given track (sequence) with MIDI data from the
  *  current sequence, preparatory to writing it to a file.
  *
  *  Note that some of the events might not come out in the same order they
@@ -108,6 +108,15 @@ midi_container::add_long (long x)
  *  chunk is "FF 00 00".  But that format can only occur in the first track,
  *  and the rest of the tracks then don't need a sequence number, since it is
  *  assume to increment.  This application doesn't bother with that shortcut.
+ *
+ * Triggers:
+ *
+ *      Triggers are added by first calling add_variable(0), which is needed
+ *      because why?
+ *
+ *      Then 0xFF 0x7F is written, followed by the length value, which is the
+ *      number of triggers at 3 long integers per trigger, plus the 4-byte
+ *      code for triggers, c_triggers_new = 0x24240008.
  *
  * \threadunsafe
  *      The sequence object bound to this container needs to provide the
@@ -132,7 +141,7 @@ midi_container::fill (int tracknumber)
     put(0x03);
 
     const std::string & trackname = m_sequence.name();
-    int len =  trackname.length();
+    int len = trackname.length();
     if (len > 0x7F)
         len = 0x7f;
 
@@ -182,8 +191,8 @@ midi_container::fill (int tracknumber)
     add_variable(0);
     put(0xFF);
     put(0x7F);
-    add_variable((triggercount * 3 * 4) + 4);       // ???????
-    add_long(c_triggers_new);
+    add_variable((triggercount * 3 * 4) + 4);       /* 3 long ints plus...  */
+    add_long(c_triggers_new);                       /* ...the triggers code */
     for
     (
         triggers::List::iterator ti = triggerlist.begin();
@@ -213,6 +222,39 @@ midi_container::fill (int tracknumber)
     put(0x05);
     add_long(c_midich);
     put(m_sequence.get_midi_channel());
+    if (! rc().legacy_format())
+    {
+        /*
+         * \change ca 2015-11-12 New feature, save more sequence values.
+         * We use a single byte for all these.  The only one that could
+         * get as large as 127 is the background sequence, but we're not going
+         * to allow a popup-menu with that many entries!
+         */
+
+        add_variable(0);                            /* key selection    */
+        put(0xFF);
+        put(0x7F);
+        put(0x05);
+        add_long(c_musickey);
+        put(m_sequence.musical_key());
+        add_variable(0);                            /* scale selection  */
+        put(0xFF);
+        put(0x7F);
+        put(0x05);
+        add_long(c_musicscale);
+        put(m_sequence.musical_scale());
+        add_variable(0);                            /* b'ground seq.    */
+        put(0xFF);
+        put(0x7F);
+        put(0x05);
+        add_long(c_backsequence);
+        put(m_sequence.background_sequence());
+    }
+
+    /*
+     * end-of-track event
+     */
+
     deltatime = m_sequence.get_length() - prevtimestamp; /* meta track end */
     add_variable(deltatime);
     put(0xFF);

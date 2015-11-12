@@ -1,6 +1,6 @@
 INSTALL for Sequencer64 v 0.9.9.7
 Chris Ahlstrom
-2015-09-10 to 2015-11-10
+2015-09-10 to 2015-11-12
 
 The current packaging for Sequencer64 is primarily aimed at developers.
 There is currently no configure script... it must be bootstrapped.
@@ -92,6 +92,15 @@ MANUALLY-DEFINED MACROS IN CODE:
         limiting factor during playback.  If that is the case, then we would
         probably implement dumping the multimap to a vector before playback.
         We shall see!
+
+    SEQ64_USE_MIDI_VECTOR:
+
+        Defined and used in the midifile module.  It provides the preferred
+        alternative to the list for storing and counting the bytes of MIDI
+        data.  It is an attempt to stop reversing certain events due to the
+        peculiarities of using std::list to store MIDI bytes from a sequence.
+        This new implementation uses std::vector and does not use pop_back()
+        to retrieve the bytes for writing to a file.
 
     SEQ64_SOLID_PIANOROLL_GRID:
 

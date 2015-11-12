@@ -1281,7 +1281,14 @@ seqedit::popup_midich_menu ()
  *  that has some note-bars on it at the right of the second row of the
  *  top bar).  It is populated with an "Off" menu entry, and a second
  *  "[0]" menu entry that pulls up a drop-down menu of all of the
- *  patterns/sequences that are present in the MIDI file.
+ *  patterns/sequences that are present in the MIDI file for screen-set 0.  If
+ *  more screensets have active sequences, then their screen-set number
+ *  appears in the screen-set section of the menu.
+ *
+ *  Now, at present, we can only save background sequence numbers that are
+ *  less than 128, which means the sequences from 0 to 127, or the first four
+ *  screen sets.  Higher sequences can be selected, but, right now, they
+ *  cannot be saved.  We'll probably fix that at some point, low priority.
  */
 
 void
@@ -1300,7 +1307,7 @@ seqedit::popup_sequence_menu ()
     {
         Gtk::Menu * menuss = nullptr;
         bool inserted = false;
-        for (int seq = 0; seq <  c_seqs_in_set; seq++)
+        for (int seq = 0; seq < c_seqs_in_set; ++seq)
         {
             char name[30];
             int i = ss * c_seqs_in_set + seq;
@@ -1327,7 +1334,10 @@ seqedit::popup_sequence_menu ()
 
 /**
  *  Draws the given background sequence on the Pattern editor so that the
- *  musician has something to see that can be played against.
+ *  musician has something to see that can be played against.  As a new
+ *  feature, it is also passed to the sequence, so that it can be saved as
+ *  part of the sequence data, but only if less or equal to the maximum
+ *  single-byte MIDI value, 127.
  */
 
 void
@@ -1351,6 +1361,8 @@ seqedit::set_background_sequence (int seqnum)
         snprintf(name, sizeof(name), "[%d] %.13s", seqnum, seq->get_name());
         m_entry_sequence->set_text(name);
         m_seqroll_wid->set_background_sequence(true, seqnum);
+        if (unsigned(seqnum) < unsigned(SEQ64_NULL_NEWPROP_VALUE))
+            m_seq.background_sequence(seqnum);
     }
 }
 
@@ -1677,7 +1689,8 @@ seqedit::set_note_length (int notelength)
 
 /**
  *  Selects the given scale value.  It is passed to the seqroll and
- *  seqkeys objects, as well.
+ *  seqkeys objects, as well.  As a new feature, it is also passed to the
+ *  sequence, so that it can be saved as part of the sequence data.
  */
 
 void
@@ -1687,11 +1700,13 @@ seqedit::set_scale (int scale)
     m_scale = m_initial_scale = scale;
     m_seqroll_wid->set_scale(scale);
     m_seqkeys_wid->set_scale(scale);
+    m_seq.musical_scale(scale);
 }
 
 /**
  *  Selects the given key (signature) value.  It is passed to the seqroll
- *  and seqkeys objects, as well.
+ *  and seqkeys objects, as well.  As a new feature, it is also passed to the
+ *  sequence, so that it can be saved as part of the sequence data.
  */
 
 void

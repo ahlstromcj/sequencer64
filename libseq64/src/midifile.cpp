@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-11
+ * \updates       2015-11-12
  * \license       GNU GPLv2 or above
  *
  *  For a quick guide to the MIDI format, see, for example:
@@ -88,7 +88,8 @@
 
 /**
  *  Provides the track name for the proprietary data when using the new
- *  format.  (There is no track-name for the legacy format.)
+ *  format.  (There is no track-name for the proprietary footer track when
+ *  the legacy format is in force.)
  */
 
 #define PROPRIETARY_TRACK_NAME         "Sequencer64-S"
@@ -463,6 +464,33 @@ midifile::parse (perform & a_perf, int screenset)
                                     seq.add_trigger(on, length, offset, false);
                                 }
                             }
+                            else if (proprietary == c_musickey)
+                            {
+                                seq.musical_key(read_byte());
+                                len--;
+                            }
+                            else if (proprietary == c_musicscale)
+                            {
+                                seq.musical_scale(read_byte());
+                                len--;
+                            }
+                            else if (proprietary == c_backsequence)
+                            {
+                                seq.background_sequence(read_byte());
+                                len--;
+                            }
+                            else if
+                            (
+                                (proprietary & SEQ64_PROPTAG_HIGHWORD) ==
+                                SEQ64_PROPTAG_HIGHWORD
+                            )
+                            {
+                                errprintf
+                                (
+                                    "unsupported SeqSpec 0x%lx, skipping\n",
+                                    proprietary
+                                );
+                            }
                             m_pos += len;                /* eat the rest      */
                             break;
 
@@ -640,7 +668,10 @@ midifile::parse_prop_header (int file_size)
  *  (There are more tags defined in the globals module, but they are not
  *  used in this function.  This doesn't quite make sense, as there are
  *  also some "triggers" values, and we're pretty sure the application
- *  uses them.)
+ *  uses them.  Oh, it turns out that they are set up by actions performed on
+ *  each sequence, and are stored as sequencer-specific ("SeqSpec") data with
+ *  each track's data as held in the MIDI container for the track.  See the
+ *  midi_container module for more information.)
  *
  *  The format is (1) tag ID; (2) length of data; (3) the data.
  *
@@ -1048,7 +1079,7 @@ midifile::write (perform & a_perf)
                      *      many items are backward.
                      */
 
-                    write_byte(lst.get());  // write_byte(l.back()), l.pop_back()
+                    write_byte(lst.get());
                 }
             }
             else

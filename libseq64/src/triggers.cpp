@@ -25,10 +25,12 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-10-30
- * \updates       2015-11-07
+ * \updates       2015-11-11
  * \license       GNU GPLv2 or above
  *
- *  Man, we need to learn a lot more about triggers.
+ *  Man, we need to learn a lot more about triggers.  One important thing to
+ *  note is that the triggers are written to a MIDI file using the
+ *  sequencer-specific code c_triggers_new.
  */
 
 #include <stdlib.h>
@@ -84,7 +86,10 @@ triggers::operator = (const triggers & rhs)
 {
     if (this != &rhs)
     {
-        // m_parent = rhs.m_parent;
+        /*
+         * Reference member: m_parent = rhs.m_parent;
+         */
+
         m_triggers = rhs.m_triggers;
         m_clipboard = rhs.m_clipboard;
         m_undo_stack = rhs.m_undo_stack;
@@ -227,13 +232,12 @@ triggers::adjust_offset (long offset)
 }
 
 /**
- *  Adds a trigger.  If a_state = true, the range is on.
- *  If a_state = false, the range is off.
+ *  Adds a trigger.
  *
  *  What is this?
  *
 \verbatim
-   is      ie
+   is    ie
    <      ><        ><        >
    es             ee
    <               >
@@ -261,7 +265,6 @@ triggers::add
 {
     trigger t;
     t.offset(fixoffset ? adjust_offset(offset) : offset);
-
     t.selected(false);
     t.tick_start(tick);
     t.tick_end(tick + len - 1);
@@ -319,8 +322,8 @@ triggers::intersect (long position, long & start, long & ender)
     {
         if (i->tick_start() <= position && position <= i->tick_end())
         {
-            start = i->tick_start();
-            ender = i->tick_end();
+            start = i->tick_start();    /* return by reference */
+            ender = i->tick_end();      /* ditto               */
             return true;
         }
     }
@@ -968,16 +971,6 @@ triggers::next_trigger ()
     }
     return result;
 }
-
-/**
- *  Returns the last tick played, and is used by the editor's idle function.
-
-long
-triggers::get_last_tick ()
-{
-    return (m_last_tick + (m_length - m_trigger_offset)) % m_length;
-}
- */
 
 /**
  *  Prints a list of the currently-held triggers.

@@ -34,8 +34,9 @@ y  -  Branch off to various incremental branches:
       -  Enhance documentation and recreate it.
    x  -  Rebuild application using library code.
    y  -  Verify functionality.
-y  -  Branch off to an "testing", "testing2"  branch to perform testing
-         and tweaking.
+y  -  Branch off to an "testing", "testing2", "testing3"  branch to perform
+      testing, tweaking, and, quite frankly, some fairly significant
+      enhancements along the way.
       y  Created a separate GitHub project, seq64-tests, to do some
          unit-testing of Sequencer64, and to provide a test bed to make
          more certain that new features do not break existing
@@ -48,8 +49,11 @@ y  -  Branch off to an "testing", "testing2"  branch to perform testing
       y  Added arrow-key and "p/P" paint support.
       y  Added grid and sequence display configuration options to the "user"
          configuration file.
+      y  Added compile-time option to smooth out the lines on the piano rolls.
+      y  Added ability to store the musical key, musical scale, and the
+         background sequence number with each sequence, in the MIDI file.
       -  Did not quite finish testing, but it is time to merge back to
-         "master"!
+         "master", and do some more "testing" branches!
    -  Branch off to an "Enhancements" branch (highly provisional):
       -  Convert to gtkmm-3.
       -  Add optional build using Qt 5.

@@ -28,11 +28,14 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-10-11
- * \updates       2015-10-11
+ * \updates       2015-11-12
  * \license       GNU GPLv2 or above
  *
  *  This implementation attempts to avoid the reversals that can occur using
  *  the list implementation.
+ *
+ *  However, there is still another source of reversal that is not taken care
+ *  of?  There's still a note about it at line #1049 of midifile.cpp.
  */
 
 #include <vector>                       /* std::vector<>                */
@@ -108,8 +111,7 @@ public:
 
     /**
      *  Provide a way to get the next byte from the container.
-     *  In this implement, m_position_for_get is not used.  The elements of
-     *  the container are popped of backward!
+     *  In this implementation, m_position_for_get is used.
      */
 
     virtual midibyte get ()

@@ -28,15 +28,15 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-10-10
- * \updates       2015-10-11
+ * \updates       2015-11-12
  * \license       GNU GPLv2 or above
  *
  *  This implementation mirrors the original Seq24 handling of events that get
- *  added to a sequence.  In that implement, an std::list for MIDI bytes was
- *  created.  The events in the sequence, already sorted, are pushed to the
+ *  added to a sequence.  In that implementation, an std::list for MIDI bytes
+ *  was created.  The events in the sequence, already sorted, are pushed to the
  *  front of the list.  Thus, they are inserted backwards.  Then, for writing
- *  to the MIDI file they are popped from the back, which restores the order
- *  of the events... except for events that have the same time-stamp and rank.
+ *  to the MIDI file they are popped from the back, which restores the order of
+ *  the events... except for events that have the same time-stamp and rank.
  *  Those end up getting reversed every time the MIDI file is written.
  */
 
@@ -115,8 +115,8 @@ public:
 
     /**
      *  Provide a way to get the next byte from the container.
-     *  In this implement, m_position_for_get is not used.  The elements of
-     *  the container are popped of backward!
+     *  In this implementation, m_position_for_get is not used.  The elements
+     *  of the container are popped off backward!
      */
 
     virtual midibyte get ()

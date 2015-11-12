@@ -28,12 +28,21 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-10-10
- * \updates       2015-11-11
+ * \updates       2015-11-12
  * \license       GNU GPLv2 or above
  *
  */
 
 #include <cstddef>                      /* std::size_t  */
+
+/**
+ *  This macro is used for detecting SeqSpec data that Sequencer64 does not
+ *  handle.  If this word is found, then we simply extract the expected number
+ *  of characters specified by that construct, and skip them when parsing a
+ *  MIDI file.
+ */
+
+#define SEQ64_PROPTAG_HIGHWORD          0x24240000
 
 namespace seq64
 {
@@ -43,13 +52,45 @@ class sequence;
 /**
  *  Provides tags used by the midifile class to control the reading and
  *  writing of the extra "proprietary" information stored in a Seq24 MIDI
- *  file.
+ *  file.  Some of the information is stored with each track (and in the
+ *  midi_container-derived classes), and some is stored in the proprietary
+ *  header.
+ *
+ *  Track (sequencer-specific) data:
+ *
+ *      -   c_midibus
+ *      -   c_midich
+ *      -   c_timesig
+ *      -   c_triggers
+ *      -   c_triggers_new
+ *      -   c_musickey
+ *      -   c_musicscale
+ *
+ * Footer ("proprietary") data:
+ *
+ *      -   c_midictrl
+ *      -   c_midiclocks
+ *      -   c_notes
+ *      -   c_bpmtag (beats per minute)
+ *      -   c_mutegroups
+ *      -   c_backsequence
+ *
+ *  Also see the PDF file in the following project for more information about
+ *  the "proprietary" data:
+ *
+ *      https://github.com/ahlstromcj/sequencer64-doc.git
+ *
+ *  Note that the track data is read from the MIDI file, but not written
+ *  directly to the MIDI file.  Instead, it is stored in the MIDI container as
+ *  sequences are edited to used these "sequencer-specific" features.
+ *  Also note that c_triggers has been replaced by c_triggers_new as the code
+ *  that marks the triggers stored with a sequence.
  *
  *  As an extension, we will eventually grab the last key, scale, and
- *  background sequence value selected in a sequence and write them to the
- *  proprietary header, where they can be read in and applied to all
- *  sequences, when the seqedit object is created.  These values would not be
- *  stored in the legacy format.
+ *  background sequence value selected in a sequence and write them as track
+ *  data, where they can be read in and applied to a specific sequence, when
+ *  the seqedit object is created.  These values would not be stored in the
+ *  legacy format.
  *
  *  Something like this could be done in the "user" configuration file, but
  *  then the key and scale would apply to all songs.  We don't want that.
@@ -59,19 +100,19 @@ class sequence;
  *  preferences.
  */
 
-const unsigned long c_midibus =         0x24240001;
-const unsigned long c_midich =          0x24240002;
-const unsigned long c_midiclocks =      0x24240003;
-const unsigned long c_triggers =        0x24240004;
-const unsigned long c_notes =           0x24240005;
-const unsigned long c_timesig =         0x24240006;
-const unsigned long c_bpmtag =          0x24240007;
-const unsigned long c_triggers_new =    0x24240008;
-const unsigned long c_mutegroups =      0x24240009;
-const unsigned long c_midictrl =        0x24240010;
-const unsigned long c_musickey =        0x24240011; /* key                  */
-const unsigned long c_musicscale =      0x24240012; /* scale                */
-const unsigned long c_backsequence =    0x24240013; /* background sequence  */
+const unsigned long c_midibus =         0x24240001; /* track buss number    */
+const unsigned long c_midich =          0x24240002; /* track channel number */
+const unsigned long c_midiclocks =      0x24240003; /* track clocking       */
+const unsigned long c_triggers =        0x24240004; /* see c_triggers_new   */
+const unsigned long c_notes =           0x24240005; /* song ??? data        */
+const unsigned long c_timesig =         0x24240006; /* track time signature */
+const unsigned long c_bpmtag =          0x24240007; /* song beats/minute    */
+const unsigned long c_triggers_new =    0x24240008; /* track trigger data   */
+const unsigned long c_mutegroups =      0x24240009; /* song mute group data */
+const unsigned long c_midictrl =        0x24240010; /* song MIDI control    */
+const unsigned long c_musickey =        0x24240011; /* track key            */
+const unsigned long c_musicscale =      0x24240012; /* track scale          */
+const unsigned long c_backsequence =    0x24240013; /* track b'ground seq   */
 
 /**
  *  Provides a fairly common type definition for a byte value.

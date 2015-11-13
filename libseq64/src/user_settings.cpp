@@ -136,6 +136,7 @@ user_settings::user_settings ()
     m_mainwid_spacing           (0),
     m_control_height            (0),
     m_current_zoom              (0),
+    m_global_seq_feature_save   (false),  // will be true once supported
 
     /*
      * The members that follow are not yet part of the .usr file.
@@ -213,6 +214,7 @@ user_settings::user_settings (const user_settings & rhs)
     m_mainwid_spacing           (rhs.m_mainwid_spacing),
     m_control_height            (rhs.m_control_height),
     m_current_zoom              (rhs.m_current_zoom),
+    m_global_seq_feature_save   (rhs.m_global_seq_feature_save),
 
     /*
      * The members that follow are not yet part of the .usr file.
@@ -293,6 +295,7 @@ user_settings::operator = (const user_settings & rhs)
         m_mainwid_spacing           = rhs.m_mainwid_spacing;
         m_control_height            = rhs.m_control_height;
         m_current_zoom              = rhs.m_current_zoom;
+        m_global_seq_feature_save   = rhs.m_global_seq_feature_save;
 
         /*
          * The members that follow are not yet part of the .usr file.
@@ -362,6 +365,7 @@ user_settings::set_defaults ()
     m_mainwid_spacing = 2;              // range: 2 to 6, try 4 or 6
     m_control_height = 0;               // range: 0 to 4?
     m_current_zoom = 2;                 // range: 1 to 32
+    m_global_seq_feature_save = false;  // will be true once supported
 
     m_text_x =  6;                      // range: 6 to 6
     m_text_y = 12;                      // range: 12 to 12

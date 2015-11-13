@@ -107,6 +107,10 @@ public:
  *
  *  I think the reason for that value is to perhaps handle two sets or
  *  something like that.  Will figure it out later.
+ *
+ *  The controls are read in from the "rc" configuration files, and are
+ *  written to the c_midictrl section of the "proprietary" final track in a
+ *  Seq24/Sequencer64 MIDI file.
  */
 
 const int c_midi_track_ctrl           = c_seqs_in_set * 2;
@@ -925,7 +929,7 @@ private:
      *  Checks the parameter against c_midi_controls.
      *
      * \param seq
-     *      The value that should be in the c_midi_xxx range.
+     *      The value that should be in the c_midi_controls range.
      *
      * \return
      *      Returns true if the parameter is valid.  For this function, no

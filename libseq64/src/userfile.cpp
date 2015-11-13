@@ -265,6 +265,10 @@ userfile::parse (perform & /* a_perf */)
         sscanf(m_line, "%d", &scratch);
         usr().zoom(scratch);
 
+        next_data_line(file);
+        sscanf(m_line, "%d", &scratch);
+        usr().global_seq_feature(scratch != 0);
+
         usr().normalize();    /* calculate derived values */
     }
 
@@ -590,6 +594,19 @@ userfile::write (const perform & /* a_perf */ )
             "# to 32, and defaults to 2 unless changed here.\n"
             "\n"
             << usr().zoom() << "      # zoom\n"
+            ;
+
+        file << "\n"
+            "# Specifies if the key, scale, and background sequence are to be\n"
+            "# applied to all sequences, or to individual sequences.  The\n"
+            "# behavior of Seq24 was to apply them to all sequences.  But\n"
+            "# Sequencer64 takes it further by applying it immediately, and\n"
+            "# by saving to the end of the MIDI file.\n"
+            "\n"
+            "# 0 = allow each sequence to have its own key/scale/background.\n"
+            "# 1 = apply these settings globally (similar to seq24).\n"
+            "\n"
+            << usr().global_seq_feature() << "      # global_seq_feature\n"
             ;
     }
 

@@ -1,6 +1,6 @@
 Contributed MIDI Files
 Chris Ahlstrom
-2015-09-11 to 2015-09-11
+2015-09-11 to 2015-11-13
 
 This directory contains contributed MIDI files for examples and testing.
 
@@ -12,8 +12,46 @@ This directory contains contributed MIDI files for examples and testing.
    
         A file that resets all MIDI channels.
 
+   b4uacuse.mid:
+
+        The original MIDI file, created many long years ago.
+
+   b4uacuse-seq24.midi:
+
+        The "b4uacuse.mid" file after opening or importing into Seq24
+        0.9.2, and then saving it.
+
+   b4uacuse-legacy:
+
+        The "b4uacuse.mid" file after opening or importing into
+        Sequencer64 0.9.9.8 in "--legacy" mode and then saving it.
+        b4uacuse-seq24.midi and b4uacuse-legacy are the same size.
+        They should be identical, but Seq24 reverses some events every
+        time it saves, due to the way it pops certain MIDI events from its
+        container.  Found a few of our own mistakes in getting the file
+        sizes to match!
+
    b4uacuse-GM-format.midi:
    
-        Hopefully, a good General MIDI file; created by Sequencer24.
+        Hopefully, a good General MIDI file; created by using the midicvt
+        application on the imported MIDI file.
+
+   b4uacuse-GM-alternate.midi:
+
+        Forgot what process created this, but we use it for testing a lot.
+
+   b4uacuse-GM-doubled.midi:
+
+         The tune with set 1 copied to set 2, for experimentation with sets.
+
+   signature-samples.midi:
+
+         A file useful for getting the scaling of the user-interface right.
+
+   wpb_yoshimi-buss-0.midi:
+
+         Another song from long ago, configured for the Yoshimi software
+         synthesizer, mapped onto bus 0.
 
 # vim: sw=4 ts=4 wm=8 et ft=sh
+

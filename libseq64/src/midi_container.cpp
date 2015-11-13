@@ -100,14 +100,14 @@ midi_container::add_long (long x)
  *  current sequence, preparatory to writing it to a file.
  *
  *  Note that some of the events might not come out in the same order they
- *  were stored in (we see that with program-change events.
+ *  were stored in (we see that with program-change events).
  *
  *  This function replaces sequence::fill_container().
  *
  *  Now, for sequence 0, an alternate format for writing the sequencer number
  *  chunk is "FF 00 00".  But that format can only occur in the first track,
  *  and the rest of the tracks then don't need a sequence number, since it is
- *  assume to increment.  This application doesn't bother with that shortcut.
+ *  assume to increment.  This application doesn't use with that shortcut.
  *
  * Triggers:
  *
@@ -130,13 +130,13 @@ midi_container::add_long (long x)
 void
 midi_container::fill (int tracknumber)
 {
-    add_variable(0);                                 /* sequence number  */
+    add_variable(0);                                /* sequence number  */
     put(0xFF);
-    put(0x00);
+    put(0x00);                                      /* 0 delta time     */
     put(0x02);
     put((tracknumber & 0xFF00) >> 8);
     put(tracknumber & 0x00FF);
-    add_variable(0);                                 /* track name       */
+    add_variable(0);                                /* track name       */
     put(0xFF);
     put(0x03);
 
@@ -203,26 +203,26 @@ midi_container::fill (int tracknumber)
         add_long(ti->tick_end());
         add_long(ti->offset());
     }
-    add_variable(0);                                /* bus              */
+    add_variable(0);                                /* bus delta time   */
     put(0xFF);
     put(0x7F);
     put(0x05);
     add_long(c_midibus);
     put(m_sequence.get_midi_bus());
-    add_variable(0);                                /* timesig          */
+    add_variable(0);                                /* timesig delta t  */
     put(0xFF);
     put(0x7F);
     put(0x06);
     add_long(c_timesig);
     put(m_sequence.get_beats_per_bar());
     put(m_sequence.get_beat_width());
-    add_variable(0);                                /* channel          */
+    add_variable(0);                                /* channel delta t  */
     put(0xFF);
     put(0x7F);
     put(0x05);
     add_long(c_midich);
     put(m_sequence.get_midi_channel());
-    if (! rc().legacy_format())
+    if (! usr().global_seq_feature() && ! rc().legacy_format())
     {
         /*
          * \change ca 2015-11-12 New feature, save more sequence values.
@@ -234,7 +234,7 @@ midi_container::fill (int tracknumber)
 
         if (m_sequence.musical_key() != SEQ64_KEY_OF_C)
         {
-            add_variable(0);                        /* key selection    */
+            add_variable(0);                        /* key selection dt */
             put(0xFF);
             put(0x7F);
             put(0x05);                              /* long + midibyte  */

@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-22
- * \updates       2015-11-09
+ * \updates       2015-11-13
  * \license       GNU GPLv2 or above
  *
  *  This module defines the following categories of "global" variables that
@@ -224,6 +224,23 @@ class user_settings
      */
 
     int m_current_zoom;
+
+    /**
+     *  If true, this value provide a bit of backward-compatibility with the
+     *  global key/scale/background-sequence persistence feature.  In this
+     *  feature, applying one of these three changes to a sequence causes them
+     *  to also be applied to sequences that are subsequently opened for
+     *  editing.  However, we improve on this feature by allowing the changes
+     *  to be saved in the global, proprietary part of the saved MIDI file.
+     *
+     *  If false, the user can still save the key/scale/background-sequence
+     *  values with each individual sequence, so they can be different.
+     *
+     *  This value will be true by default, unless changed in the "user"
+     *  configuration file.
+     */
+
+    bool m_global_seq_feature_save;
 
     /**
      *  Constants for the mainwid class.  The m_text_x and m_text_y
@@ -841,6 +858,24 @@ public:
     }
 
     void zoom (int value);      /* seqedit can change this one */
+
+    /**
+     * \getter m_global_seq_feature_save
+     */
+
+    bool global_seq_feature () const
+    {
+        return m_global_seq_feature_save;
+    }
+
+    /**
+     * \setter m_global_seq_feature_save
+     */
+
+    void global_seq_feature (bool flag)
+    {
+        m_global_seq_feature_save = flag;
+    }
 
 protected:
 

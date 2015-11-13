@@ -44,6 +44,14 @@
 
 #define SEQ64_PROPTAG_HIGHWORD          0x24240000
 
+/**
+ *  An easier, shorter test for the SEQ64_PROPTAG_HIGHWORD part of a long
+ *  value, that clients can use.
+ */
+
+#define SEQ64_IS_PROPTAG(p) \
+    (((p) & SEQ64_PROPTAG_HIGHWORD) == SEQ64_PROPTAG_HIGHWORD)
+
 namespace seq64
 {
 

@@ -226,9 +226,8 @@ midi_container::fill (int tracknumber)
     {
         /*
          * \change ca 2015-11-12 New feature, save more sequence values.
-         * We use a single byte for all these.  The only one that could
-         * get as large as 127 is the background sequence, but we're not going
-         * to allow a popup-menu with that many entries!
+         * We use a single byte for the key and scale, and a long for the
+         * background sequence.
          */
 
         add_variable(0);                            /* key selection    */
@@ -246,9 +245,12 @@ midi_container::fill (int tracknumber)
         add_variable(0);                            /* b'ground seq.    */
         put(0xFF);
         put(0x7F);
-        put(0x05);
+//      put(0x05);
+//      add_long(c_backsequence);
+//      put(m_sequence.background_sequence());
+        put(0x08);                                  /* two long values  */
         add_long(c_backsequence);
-        put(m_sequence.background_sequence());
+        add_long(m_sequence.background_sequence());
     }
 
     /*

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-11
+ * \updates       2015-11-12
  * \license       GNU GPLv2 or above
  *
  */
@@ -247,6 +247,7 @@ seqedit::seqedit (sequence & seq, perform & p, int pos, int ppqn)
     title.append(m_seq.get_name());
     set_title(title);
     m_seq.set_editing(true);
+
     create_menus();
 
     Gtk::HBox * dhbox = manage(new Gtk::HBox(false, 2));
@@ -326,7 +327,10 @@ seqedit::seqedit (sequence & seq, perform & p, int pos, int ppqn)
     m_button_rec_vol->add(*manage(new Gtk::Label("Vol")));
     m_button_rec_vol->signal_clicked().connect
     (
-        sigc::bind<Gtk::Menu *>(mem_fun(*this, &seqedit::popup_menu), m_menu_rec_vol)
+        sigc::bind<Gtk::Menu *>
+        (
+            mem_fun(*this, &seqedit::popup_menu), m_menu_rec_vol
+        )
     );
     add_tooltip(m_button_rec_vol, "Select recording volume.");
     m_toggle_thru->add
@@ -362,19 +366,42 @@ seqedit::seqedit (sequence & seq, perform & p, int pos, int ppqn)
      * m_vscroll->get_adjustment()->set_value(middle);
      */
 
-    m_seqroll_wid->set_ignore_redraw(true);
+    /*
+     * Let's try this user-interface without calling this function:
+     *
+     * m_seqroll_wid->set_ignore_redraw(true);
+     */
+
     set_zoom(m_zoom);
     set_snap(m_snap);
     set_note_length(m_note_length);
-    set_background_sequence(m_sequence);
     set_beats_per_bar(m_seq.get_beats_per_bar());
     set_beat_width(m_seq.get_beat_width());
     set_measures(get_measures());
     set_midi_channel(m_seq.get_midi_channel());
     set_midi_bus(m_seq.get_midi_bus());
     set_data_type(EVENT_NOTE_ON);
-    set_scale(m_scale);
-    set_key(m_key);
+
+    /*
+     * \new ca 2015-11-12.
+     *      If provided, override the scale, key, and background-sequence with
+     *      the values stored in the file with the sequence.
+     */
+
+    if (SEQ64_IS_GOOD_NEWPROP(m_seq.musical_scale()))
+        set_scale(m_seq.musical_scale());
+    else
+        set_scale(m_scale);
+
+    if (SEQ64_IS_GOOD_NEWPROP(m_seq.musical_key()))
+        set_key(m_seq.musical_key());
+    else
+        set_key(m_key);
+
+    if (m_seq.background_sequence() < usr().max_sequence())
+        m_sequence = m_seq.background_sequence();
+
+    set_background_sequence(m_sequence);
     m_seqroll_wid->set_ignore_redraw(false);
 }
 
@@ -1343,7 +1370,7 @@ seqedit::popup_sequence_menu ()
 void
 seqedit::set_background_sequence (int seqnum)
 {
-    char name[30];
+    char name[24];
     m_initial_sequence = m_sequence = seqnum;
     if (seqnum == -1 || ! perf().is_active(seqnum))
     {
@@ -1361,8 +1388,8 @@ seqedit::set_background_sequence (int seqnum)
         snprintf(name, sizeof(name), "[%d] %.13s", seqnum, seq->get_name());
         m_entry_sequence->set_text(name);
         m_seqroll_wid->set_background_sequence(true, seqnum);
-        if (unsigned(seqnum) < unsigned(SEQ64_NULL_NEWPROP_VALUE))
-            m_seq.background_sequence(seqnum);
+        if (seqnum < usr().max_sequence())
+            m_seq.background_sequence(long(seqnum));
     }
 }
 
@@ -1710,12 +1737,13 @@ seqedit::set_scale (int scale)
  */
 
 void
-seqedit::set_key (int note)
+seqedit::set_key (int key)
 {
-    m_entry_key->set_text(c_key_text[note]);
-    m_key = m_initial_key = note;
-    m_seqroll_wid->set_key(note);
-    m_seqkeys_wid->set_key(note);
+    m_entry_key->set_text(c_key_text[key]);
+    m_key = m_initial_key = key;
+    m_seqroll_wid->set_key(key);
+    m_seqkeys_wid->set_key(key);
+    m_seq.musical_key(key);
 }
 
 /**

@@ -476,14 +476,10 @@ midifile::parse (perform & a_perf, int screenset)
                             }
                             else if (proprietary == c_backsequence)
                             {
-                                seq.background_sequence(read_byte());
-                                len--;
+                                seq.background_sequence(int(read_long()));
+                                len -= 4;
                             }
-                            else if
-                            (
-                                (proprietary & SEQ64_PROPTAG_HIGHWORD) ==
-                                SEQ64_PROPTAG_HIGHWORD
-                            )
+                            else if (SEQ64_IS_PROPTAG(proprietary))
                             {
                                 errprintf
                                 (

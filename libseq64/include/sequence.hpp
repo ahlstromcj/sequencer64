@@ -62,7 +62,14 @@
  *  limited to the first set, for sanity's sake.
  */
 
-#define SEQ64_NULL_NEWPROP_VALUE        0x80
+#define SEQ64_NULL_NEWPROP_VALUE        (midibyte(0x80))
+
+/**
+ *  Provides a macro functionthat is easier to use than
+ * SEQ64_NULL_NEWPROP_VALUE.
+ */
+
+#define SEQ64_IS_GOOD_NEWPROP(v)        (midibyte(v) < SEQ64_NULL_NEWPROP_VALUE)
 
 namespace seq64
 {
@@ -256,11 +263,11 @@ private:
     /**
      *  Holds a copy of the background sequence number for this sequence,
      *  which we now support writing to this sequence.  If the value is
-     *  SEQ64_NULL_NEWPROP_VALUE, then there is no background sequence to be
-     *  set.
+     *  greater than max_sequence(), then there is no background sequence to
+     *  be set.
      */
 
-    midibyte m_background_sequence;
+    long m_background_sequence;
 
     /**
      *  Provides locking for the sequence.  Made mutable for use in
@@ -696,7 +703,7 @@ public:
 
     void musical_key (int key)
     {
-        m_musical_key = midibyte (key);
+        m_musical_key = midibyte(key);
     }
 
     /**
@@ -715,14 +722,14 @@ public:
 
     void musical_scale (int scale)
     {
-        m_musical_scale = midibyte (scale);
+        m_musical_scale = midibyte(scale);
     }
 
     /**
      * \getter m_background_sequence
      */
 
-    midibyte background_sequence () const
+    long background_sequence () const
     {
         return m_background_sequence;
     }
@@ -734,7 +741,7 @@ public:
 
     void background_sequence (int bs)
     {
-        m_background_sequence = midibyte (bs);
+        m_background_sequence = long(bs);
     }
 
 private:

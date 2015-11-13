@@ -1,6 +1,6 @@
 Bugs and Upgrade Ideas
 Chris Ahlstrom
-2015-10-27 to 2015-11-11
+2015-10-27 to 2015-11-13
 
 In no particular order...
 
@@ -8,6 +8,11 @@ In no particular order...
 -  Store new values c_musickey = 0x24240011 and c_musicscale = 0x24240012 in
    the proprietary header of the MIDI song, when legacy mode is not in force.
    Also the number of the background sequence, c_backsequence = 0x24240013.
+   These are stored only if different from the defaults, so as not to waste
+   space.  One minor issue, actually a long-standing feature, is that
+   opening a key/scale/background-modified sequence causes any sequence opened
+   thereafter to take on those values.  Perhaps too surprising or tricky a
+   feature.  We might make this a GLOBAL setting, but more tricks abound.
 -  In pattern editor, show the sequence number somewhere.
 -  Cutting out sequences doesn't cause a query for saving!!!
 -  Would be nice to be able to Ctrl-Home, Ctrl-End, Page Up, and Page Down

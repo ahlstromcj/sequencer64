@@ -112,8 +112,8 @@ public:
 
     seqevent
     (
-        sequence & seq,
         perform & p,
+        sequence & seq,
         int zoom,
         int snap,
         seqdata & seqdata_wid,

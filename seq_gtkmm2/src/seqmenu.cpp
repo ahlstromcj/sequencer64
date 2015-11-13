@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-07
+ * \updates       2015-11-13
  * \license       GNU GPLv2 or above
  *
  */
@@ -228,8 +228,9 @@ seqmenu::seq_edit ()
         {
             sed = new seqedit
             (
+                m_mainperf,
                 *m_mainperf.get_sequence(m_current_seq),
-                m_mainperf, m_current_seq
+                m_current_seq
             );
             m_seqedit = sed;            /* prevents "unused" warning      */
             m_mainperf.modify();
@@ -242,7 +243,9 @@ seqmenu::seq_edit ()
         seq_new();
         sed = new seqedit
         (
-            *m_mainperf.get_sequence(m_current_seq), m_mainperf, m_current_seq
+            m_mainperf,
+            *m_mainperf.get_sequence(m_current_seq),
+            m_current_seq
         );
         m_seqedit = sed;                /* prevents "unused" warning      */
         m_mainperf.modify();

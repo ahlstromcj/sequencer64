@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-10-10
- * \updates       2015-11-12
+ * \updates       2015-11-13
  * \license       GNU GPLv2 or above
  *
  */
@@ -227,30 +227,38 @@ midi_container::fill (int tracknumber)
         /*
          * \change ca 2015-11-12 New feature, save more sequence values.
          * We use a single byte for the key and scale, and a long for the
-         * background sequence.
+         * background sequence.  We save these values only if they are
+         * different from the defaults; in most cases they will have been left
+         * alone by the user..
          */
 
-        add_variable(0);                            /* key selection    */
-        put(0xFF);
-        put(0x7F);
-        put(0x05);
-        add_long(c_musickey);
-        put(m_sequence.musical_key());
-        add_variable(0);                            /* scale selection  */
-        put(0xFF);
-        put(0x7F);
-        put(0x05);
-        add_long(c_musicscale);
-        put(m_sequence.musical_scale());
-        add_variable(0);                            /* b'ground seq.    */
-        put(0xFF);
-        put(0x7F);
-//      put(0x05);
-//      add_long(c_backsequence);
-//      put(m_sequence.background_sequence());
-        put(0x08);                                  /* two long values  */
-        add_long(c_backsequence);
-        add_long(m_sequence.background_sequence());
+        if (m_sequence.musical_key() != SEQ64_KEY_OF_C)
+        {
+            add_variable(0);                        /* key selection    */
+            put(0xFF);
+            put(0x7F);
+            put(0x05);                              /* long + midibyte  */
+            add_long(c_musickey);
+            put(m_sequence.musical_key());
+        }
+        if (m_sequence.musical_scale() != int(c_scale_off))
+        {
+            add_variable(0);                        /* scale selection  */
+            put(0xFF);
+            put(0x7F);
+            put(0x05);                              /* long + midibyte  */
+            add_long(c_musicscale);
+            put(m_sequence.musical_scale());
+        }
+        if (SEQ64_IS_VALID_SEQUENCE(m_sequence.background_sequence()))
+        {
+            add_variable(0);                        /* b'ground seq.    */
+            put(0xFF);
+            put(0x7F);
+            put(0x08);                              /* two long values  */
+            add_long(c_backsequence);
+            add_long(m_sequence.background_sequence());
+        }
     }
 
     /*

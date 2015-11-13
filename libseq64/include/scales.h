@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-06
- * \updates       2015-11-06
+ * \updates       2015-11-13
  * \license       GNU GPLv2 or above
  *
  *  These values were moved from the globals module.
@@ -39,10 +39,17 @@
 
 /**
  *  A manifest constant for the normal number of semitones in an
- *  equally-tempered octave.  The name is short deliberately.
+ *  equally-tempered octave.
  */
 
-#define OCTAVE_SIZE                      12
+#define SEQ64_OCTAVE_SIZE               12
+
+/**
+ *  A constant for clarification of the value of zero, which, in the context
+ *  of a musical key, is the default key of C.
+ */
+
+#define SEQ64_KEY_OF_C                  0
 
 namespace seq64
 {
@@ -96,7 +103,7 @@ enum c_music_scales
 \endverbatim
  */
 
-const bool c_scales_policy[c_scale_size][OCTAVE_SIZE] =
+const bool c_scales_policy[c_scale_size][SEQ64_OCTAVE_SIZE] =
 {
     {                                                       /* off = chromatic */
         true, true, true, true, true, true,
@@ -154,7 +161,7 @@ const bool c_scales_policy[c_scale_size][OCTAVE_SIZE] =
 \endverbatim
  */
 
-const int c_scales_transpose_up[c_scale_size][OCTAVE_SIZE] =
+const int c_scales_transpose_up[c_scale_size][SEQ64_OCTAVE_SIZE] =
 {
     { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},              /* off = chromatic */
     { 2, 0, 2, 0, 1, 2, 0, 2, 0, 2, 0, 1},              /* major           */
@@ -164,7 +171,7 @@ const int c_scales_transpose_up[c_scale_size][OCTAVE_SIZE] =
     { 2, 0, 2, 0, 2, 0, 2, 0, 2, 0, 2, 0},              /* C whole tone    */
 };
 
-const int c_scales_transpose_dn[c_scale_size][OCTAVE_SIZE] =
+const int c_scales_transpose_dn[c_scale_size][SEQ64_OCTAVE_SIZE] =
 {
     { -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},  /* off = chromatic */
     { -1, 0, -2, 0, -2, -1, 0, -2, 0, -2, 0, -2},       /* major           */
@@ -201,7 +208,7 @@ const int c_scales_transpose_dn[c_scale_size][OCTAVE_SIZE] =
 \endverbatim
  */
 
-const int c_scales_transpose_dn_neg[c_scale_size][OCTAVE_SIZE] =
+const int c_scales_transpose_dn_neg[c_scale_size][SEQ64_OCTAVE_SIZE] =
 {
     { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},                  /* off = chromatic */
     { 1, 0, 2, 0, 2, 1, 0, 2, 0, 2, 0, 2},                  /* major           */
@@ -230,7 +237,7 @@ const char c_scales_text[c_scale_size][32] =                /* careful!        *
  *  window.
  */
 
-const char c_key_text[OCTAVE_SIZE][3] =
+const char c_key_text[SEQ64_OCTAVE_SIZE][3] =
 {
     "C",
     "C#",

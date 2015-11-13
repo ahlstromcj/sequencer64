@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-10
+ * \updates       2015-11-13
  * \license       GNU GPLv2 or above
  *
  */
@@ -304,19 +304,19 @@ seqroll::update_background ()
     m_gc->set_dashes(0, &dash, 1);
 #endif
 
-    int octkey = OCTAVE_SIZE - m_key;               /* used three times     */
+    int octkey = SEQ64_OCTAVE_SIZE - m_key;         /* used three times     */
     for (int key = 0; key < (m_window_y / c_key_y) + 1; ++key)
     {
         int remkeys = c_num_keys - key;             /* remaining keys?      */
         int modkey = remkeys - m_scroll_offset_key + octkey;
         if (fruity_lines)
         {
-            if ((modkey % OCTAVE_SIZE) == 0)
+            if ((modkey % SEQ64_OCTAVE_SIZE) == 0)
             {
                 m_gc->set_foreground(dark_grey());  /* draw horz lines at C */
                 set_line(Gdk::LINE_SOLID);
             }
-            else if ((modkey % OCTAVE_SIZE) == (OCTAVE_SIZE-1))
+            else if ((modkey % SEQ64_OCTAVE_SIZE) == (SEQ64_OCTAVE_SIZE-1))
             {
 #ifdef SEQ64_SOLID_PIANOROLL_GRID
                 m_gc->set_foreground(light_grey()); /* lighter solid line   */
@@ -331,7 +331,7 @@ seqroll::update_background ()
         draw_line(m_background, 0, y, m_window_x, y);
         if (m_scale != c_scale_off)
         {
-            if (! c_scales_policy[m_scale][(modkey - 1) % OCTAVE_SIZE])
+            if (! c_scales_policy[m_scale][(modkey - 1) % SEQ64_OCTAVE_SIZE])
             {
                 draw_rectangle
                 (

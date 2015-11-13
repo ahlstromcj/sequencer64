@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-07
+ * \updates       2015-11-13
  * \license       GNU GPLv2 or above
  *
  */
@@ -210,8 +210,8 @@ public:
 
     seqedit
     (
-        sequence & seq,
         perform & perf,
+        sequence & seq,
         int pos,
         int ppqn = SEQ64_USE_DEFAULT_PPQN
     );
@@ -253,11 +253,6 @@ private:
     void update_all_windows ();
     void fill_top_bar ();
     void create_menus ();
-
-    /*
-     * An unsed, empty function:    void menu_action_quantise ();
-     */
-
     void popup_menu (Gtk::Menu * menu);
     void popup_event_menu ();
     void popup_midibus_menu ();

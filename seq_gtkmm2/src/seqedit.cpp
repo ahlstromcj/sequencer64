@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-12
+ * \updates       2015-11-13
  * \license       GNU GPLv2 or above
  *
  */
@@ -100,49 +100,52 @@ namespace seq64
  *  proprietary section of the MIDI song.  Or, even more flexibly, to each
  *  sequence, if that makes sense to do, since all tracks would generally be
  *  in the same key.  Right, Charles Ives?
+ *
+ *  Note that, currently, that some of these "initial values" are modified, so
+ *  that they are "contagious".  That is, the next sequence to be opened in
+ *  the sequence editor will adopt these values.  This is a long-standing
+ *  feature of Seq24, but strikes us as a bit too surprising and tricky.
  */
 
-int seqedit::m_initial_snap         = DEFAULT_PPQN / 4;   /* to be adjusted */
-int seqedit::m_initial_note_length  = DEFAULT_PPQN / 4;   /* to be adjusted */
-int seqedit::m_initial_scale        =  0;
-int seqedit::m_initial_key          =  0;
-int seqedit::m_initial_sequence     = -1;
+int seqedit::m_initial_snap                 = DEFAULT_PPQN / 4;
+int seqedit::m_initial_note_length          = DEFAULT_PPQN / 4;
+int seqedit::m_initial_scale                = int(c_scale_off);
+int seqedit::m_initial_key                  = SEQ64_KEY_OF_C;
+int seqedit::m_initial_sequence             = SEQ64_NULL_SEQUENCE;
 
 /**
  * Actions.  These variables represent actions that can be applied to a
  * selection of notes.  One idea would be to add a swing-quantize action.
- * We will reserve the value here, for notes only.
+ * We will reserve the value here, for notes only; not yet used or part of the
+ * action menu.
  */
 
-static const int c_select_all_notes      =  1;
-static const int c_select_all_events     =  2;
-static const int c_select_inverse_notes  =  3;
-static const int c_select_inverse_events =  4;
-static const int c_quantize_notes        =  5;
-static const int c_quantize_events       =  6;
-static const int c_tighten_events        =  8;
-static const int c_tighten_notes         =  9;
-static const int c_transpose             = 10;
-static const int c_reserved              = 11;
-static const int c_transpose_h           = 12;
-static const int c_swing_notes           = 13;      /* swing quantize   */
-
-/**
- *  Connects to a menu item, tells the performance to launch the timer
- *  thread.  But this is an unused, empty function.
- *
- *      void seqedit::menu_action_quantise () { }
- */
+static const int c_select_all_notes         =  1;
+static const int c_select_all_events        =  2;
+static const int c_select_inverse_notes     =  3;
+static const int c_select_inverse_events    =  4;
+static const int c_quantize_notes           =  5;
+static const int c_quantize_events          =  6;
+static const int c_tighten_events           =  8;
+static const int c_tighten_notes            =  9;
+static const int c_transpose                = 10;
+static const int c_reserved                 = 11;
+static const int c_transpose_h              = 12;
+static const int c_swing_notes              = 13;   /* swing quantize   */
 
 /**
  *  Principal constructor.
+ *
+ *  If provided, override the scale, key, and background-sequence with the
+ *  values stored in the file with the sequence, if they are set to
+ *  non-default values.  This is a new feature.
  *
  * \todo
  *      Offload most of the work into an initialization function like
  *      options does.
  */
 
-seqedit::seqedit (sequence & seq, perform & p, int pos, int ppqn)
+seqedit::seqedit (perform & p, sequence & seq, int pos, int ppqn)
  :
     gui_window_gtk2     (p, 750, 500),          /* set_size_request(700, 500) */
     m_zoom              (usr().zoom()),
@@ -170,10 +173,7 @@ seqedit::seqedit (sequence & seq, perform & p, int pos, int ppqn)
     m_menu_bw           (manage(new Gtk::Menu())),
     m_menu_rec_vol      (manage(new Gtk::Menu())),
     m_pos               (pos),
-    m_vadjust
-    (
-        manage(new Gtk::Adjustment(55, 0, c_num_keys, 1, 1, 1))
-    ),
+    m_vadjust           (manage(new Gtk::Adjustment(55, 0, c_num_keys, 1, 1, 1))),
     m_hadjust           (manage(new Gtk::Adjustment(0, 0, 1, 1, 1, 1))),
     m_vscroll_new       (manage(new Gtk::VScrollbar(*m_vadjust))),
     m_hscroll_new       (manage(new Gtk::HScrollbar(*m_hadjust))),
@@ -182,7 +182,7 @@ seqedit::seqedit (sequence & seq, perform & p, int pos, int ppqn)
     m_seqdata_wid       (manage(new seqdata(m_seq, p, m_zoom, *m_hadjust))),
     m_seqevent_wid
     (
-        manage(new seqevent(m_seq, p, m_zoom, m_snap, *m_seqdata_wid, *m_hadjust))
+        manage(new seqevent(p, m_seq, m_zoom, m_snap, *m_seqdata_wid, *m_hadjust))
     ),
     m_seqroll_wid
     (
@@ -382,23 +382,17 @@ seqedit::seqedit (sequence & seq, perform & p, int pos, int ppqn)
     set_midi_bus(m_seq.get_midi_bus());
     set_data_type(EVENT_NOTE_ON);
 
-    /*
-     * \new ca 2015-11-12.
-     *      If provided, override the scale, key, and background-sequence with
-     *      the values stored in the file with the sequence.
-     */
-
-    if (SEQ64_IS_GOOD_NEWPROP(m_seq.musical_scale()))
+    if (m_seq.musical_scale() != int(c_scale_off))
         set_scale(m_seq.musical_scale());
     else
         set_scale(m_scale);
 
-    if (SEQ64_IS_GOOD_NEWPROP(m_seq.musical_key()))
+    if (m_seq.musical_key() != SEQ64_KEY_OF_C)
         set_key(m_seq.musical_key());
     else
         set_key(m_key);
 
-    if (m_seq.background_sequence() < usr().max_sequence())
+    if (SEQ64_IS_VALID_SEQUENCE(m_seq.background_sequence()))
         m_sequence = m_seq.background_sequence();
 
     set_background_sequence(m_sequence);
@@ -582,9 +576,9 @@ seqedit::create_menus ()
 
 #define SET_KEY     mem_fun(*this, &seqedit::set_key)
 
-    m_menu_key->items().push_back                                   /* Key */
+    m_menu_key->items().push_back                                   /* Key  */
     (
-        MenuElem(c_key_text[0], sigc::bind(SET_KEY, 0))
+        MenuElem(c_key_text[0], sigc::bind(SET_KEY, 0))             /* C    */
     );
     m_menu_key->items().push_back
     (
@@ -833,7 +827,7 @@ seqedit::popup_tool_menu ()
 
     char num[16];
     Gtk::Menu * holder2 = manage(new Gtk::Menu());
-    for (int i = -OCTAVE_SIZE; i <= OCTAVE_SIZE; ++i)
+    for (int i = -SEQ64_OCTAVE_SIZE; i <= SEQ64_OCTAVE_SIZE; ++i)
     {
         if (i != 0)
         {
@@ -1365,6 +1359,11 @@ seqedit::popup_sequence_menu ()
  *  feature, it is also passed to the sequence, so that it can be saved as
  *  part of the sequence data, but only if less or equal to the maximum
  *  single-byte MIDI value, 127.
+ *
+ *  Note that the "initial value" for this parameter is a static variable that
+ *  gets set to the new value, so that opening up another sequence causes the
+ *  sequence to take on the new "initial value" as well.  A feature, but
+ *  should it be optional?
  */
 
 void
@@ -1718,6 +1717,11 @@ seqedit::set_note_length (int notelength)
  *  Selects the given scale value.  It is passed to the seqroll and
  *  seqkeys objects, as well.  As a new feature, it is also passed to the
  *  sequence, so that it can be saved as part of the sequence data.
+ *
+ *  Note that the "initial value" for this parameter is a static variable that
+ *  gets set to the new value, so that opening up another sequence causes the
+ *  sequence to take on the new "initial value" as well.  A feature, but
+ *  should it be optional?
  */
 
 void
@@ -1734,6 +1738,11 @@ seqedit::set_scale (int scale)
  *  Selects the given key (signature) value.  It is passed to the seqroll
  *  and seqkeys objects, as well.  As a new feature, it is also passed to the
  *  sequence, so that it can be saved as part of the sequence data.
+ *
+ *  Note that the "initial value" for this parameter is a static variable that
+ *  gets set to the new value, so that opening up another sequence causes the
+ *  sequence to take on the new "initial value" as well.  A feature, but
+ *  should it be optional?
  */
 
 void

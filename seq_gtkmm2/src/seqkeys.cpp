@@ -129,7 +129,7 @@ seqkeys::update_pixmap ()
             white(), kx, (c_key_y * key) + 1, c_key_x - 2, c_key_y - 1
         );
 
-        int okey = (c_num_keys - key - 1) % OCTAVE_SIZE; /* key in the octave */
+        int okey = (c_num_keys - key - 1) % SEQ64_OCTAVE_SIZE;
         if (is_black_key(okey))
         {
             draw_rectangle_on_pixmap
@@ -141,7 +141,7 @@ seqkeys::update_pixmap ()
         char notes[8];
         if (okey == m_key)                       /* notes */
         {
-            int octave = ((c_num_keys - key - 1) / OCTAVE_SIZE) - 1;
+            int octave = ((c_num_keys - key - 1) / SEQ64_OCTAVE_SIZE) - 1;
             if (octave < 0)
                 octave *= -1;
 
@@ -228,7 +228,7 @@ seqkeys::set_hint_state (bool state)
 void
 seqkeys::draw_key (int key, bool state)
 {
-    int k = key % OCTAVE_SIZE;                      /* key in the octave    */
+    int k = key % SEQ64_OCTAVE_SIZE;                /* key in the octave    */
     key = c_num_keys - key - 1;
 
     int x = c_keyoffset_x + 1;

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-12
+ * \updates       2015-11-13
  * \license       GNU GPLv2 or above
  *
  */
@@ -87,9 +87,9 @@ sequence::sequence (int ppqn)
     m_time_beats_per_measure    (4),
     m_time_beat_width           (4),
     m_rec_vol                   (0),
-    m_musical_key               (SEQ64_NULL_NEWPROP_VALUE),
-    m_musical_scale             (SEQ64_NULL_NEWPROP_VALUE),
-    m_background_sequence       (SEQ64_NULL_NEWPROP_VALUE),
+    m_musical_key               (SEQ64_KEY_OF_C),
+    m_musical_scale             (int(c_scale_off)),
+    m_background_sequence       (SEQ64_NULL_SEQUENCE),
     m_mutex                     ()
 {
     m_ppqn = choose_ppqn(ppqn);
@@ -2775,13 +2775,13 @@ sequence::transpose_notes (int steps, int scale)
             e.unmark();
             int  note = e.get_note();
             bool off_scale = false;
-            if (transpose_table[note % OCTAVE_SIZE] == 0)
+            if (transpose_table[note % SEQ64_OCTAVE_SIZE] == 0)
             {
                 off_scale = true;
                 note -= 1;
             }
             for (int x = 0; x < steps; ++x)
-                note += transpose_table[note % OCTAVE_SIZE];
+                note += transpose_table[note % SEQ64_OCTAVE_SIZE];
 
             if (off_scale)
                 note += 1;

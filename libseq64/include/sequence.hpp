@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-12
+ * \updates       2015-11-13
  * \license       GNU GPLv2 or above
  *
  *  The functions add_list_var() and add_long_list() have been replaced by
@@ -53,23 +53,8 @@
 
 #include "midi_container.hpp"           /* seq64::midi_container    */
 #include "mutex.hpp"
+#include "scales.h"                     /* key and scale constants  */
 #include "triggers.hpp"                 /* seq64::triggers, etc.    */
-
-/**
- *  Defines a constant to be used for the new musical key, musical scale, and
- *  background sequence values.  This are all meant to be a byte value, less
- *  than 0x80 (128), even the background sequence number, which should be
- *  limited to the first set, for sanity's sake.
- */
-
-#define SEQ64_NULL_NEWPROP_VALUE        (midibyte(0x80))
-
-/**
- *  Provides a macro functionthat is easier to use than
- * SEQ64_NULL_NEWPROP_VALUE.
- */
-
-#define SEQ64_IS_GOOD_NEWPROP(v)        (midibyte(v) < SEQ64_NULL_NEWPROP_VALUE)
 
 namespace seq64
 {
@@ -247,15 +232,15 @@ private:
     /**
      *  Holds a copy of the musical key for this sequence, which we now
      *  support writing to this sequence.  If the value is
-     *  SEQ64_NULL_NEWPROP_VALUE, then there is no musical key to be set.
+     *  SEQ64_KEY_OF_C, then there is no musical key to be set.
      */
 
     midibyte m_musical_key;
 
     /**
      *  Holds a copy of the musical scale for this sequence, which we now
-     *  support writing to this sequence.  If the value is
-     *  SEQ64_NULL_NEWPROP_VALUE, then there is no musical scale to be set.
+     *  support writing to this sequence.  If the value is the enumeration
+     *  value c_scale_off, then there is no musical scale to be set.
      */
 
     midibyte m_musical_scale;
@@ -698,12 +683,12 @@ public:
 
     /**
      * \setter m_musical_key
-     *      Will add validation later.
      */
 
     void musical_key (int key)
     {
-        m_musical_key = midibyte(key);
+        if (key >= SEQ64_KEY_OF_C && key < SEQ64_OCTAVE_SIZE)
+            m_musical_key = midibyte(key);
     }
 
     /**
@@ -717,12 +702,12 @@ public:
 
     /**
      * \setter m_musical_scale
-     *      Will add validation later.
      */
 
     void musical_scale (int scale)
     {
-        m_musical_scale = midibyte(scale);
+        if (scale >= int(c_scale_off) && scale < int(c_scale_size))
+            m_musical_scale = midibyte(scale);
     }
 
     /**
@@ -736,12 +721,15 @@ public:
 
     /**
      * \setter m_background_sequence
-     *      Will add validation later.
+     *      Only partial validation at present, we do not want the upper
+     *      limit to be hard-wired at this time.  Disabling the sequence
+     *      number (setting it to SEQ64_NULL_SEQUENCE) is valid.
      */
 
     void background_sequence (int bs)
     {
-        m_background_sequence = long(bs);
+        if (bs >= SEQ64_NULL_SEQUENCE)
+            m_background_sequence = long(bs);
     }
 
 private:

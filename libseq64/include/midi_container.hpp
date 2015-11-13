@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-10-10
- * \updates       2015-11-12
+ * \updates       2015-11-13
  * \license       GNU GPLv2 or above
  *
  */
@@ -51,6 +51,19 @@
 
 #define SEQ64_IS_PROPTAG(p) \
     (((p) & SEQ64_PROPTAG_HIGHWORD) == SEQ64_PROPTAG_HIGHWORD)
+
+/**
+ *  Inidcates that no sequence value has been assigned yet.  See the value
+ *  seqedit::m_initial_sequence, which was originally set to -1 directly.
+ */
+
+#define SEQ64_NULL_SEQUENCE             (-1)
+
+/**
+ *  A convenient macro function to test against SEQ64_NULL_SEQUENCE.
+ */
+
+#define SEQ64_IS_VALID_SEQUENCE(s)      ((s) > SEQ64_NULL_SEQUENCE)
 
 namespace seq64
 {

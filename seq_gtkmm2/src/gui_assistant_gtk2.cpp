@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-09-19
- * \updates       2015-11-05
+ * \updates       2015-11-13
  * \license       GNU GPLv2 or above
  *
  */
@@ -95,10 +95,14 @@ gui_assistant_gtk2::lash_timeout_connect
 {
     if (not_nullptr(lashobject))
     {
+#ifdef SEQ64_LASH_SUPPORT
         Glib::signal_timeout().connect
         (
             sigc::mem_fun(lashobject, &lash::process_events), 250   // timeout
         );
+#else
+        infoprint("[No LASH support]");
+#endif
     }
 }
 

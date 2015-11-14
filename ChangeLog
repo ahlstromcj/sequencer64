@@ -1,3 +1,81 @@
+2015-11-13  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* contrib/bugs_to_investigate.txt, contrib/midi/README,
+	libseq64/include/user_settings.hpp, libseq64/src/midifile.cpp,
+	libseq64/src/user_settings.cpp: Added key, scale, and background
+	sequence support to user_settings.  Also, have started using the
+	git2cl tool to help create a more thorough ChangeLog file.
+
+2015-11-13  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* contrib/midi/README, libseq64/include/perform.hpp,
+	libseq64/include/user_settings.hpp,
+	libseq64/src/midi_container.cpp, libseq64/src/midifile.cpp,
+	libseq64/src/user_settings.cpp, libseq64/src/userfile.cpp: Fixed
+	errors in legacy file writing, started refining key/scale/background
+	writing to save space.
+
+2015-11-13  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* INSTALL, configure.ac, libseq64/src/userfile.cpp,
+	seq_gtkmm2/src/gui_assistant_gtk2.cpp: Fixed non-LASH error and
+	versioning.
+
+2015-11-13  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* contrib/bugs_to_investigate.txt,
+	libseq64/include/midi_container.hpp, libseq64/include/scales.h,
+	libseq64/include/sequence.hpp, libseq64/src/midi_container.cpp,
+	libseq64/src/sequence.cpp, seq_gtkmm2/include/seqedit.hpp,
+	seq_gtkmm2/include/seqevent.hpp, seq_gtkmm2/src/seqedit.cpp,
+	seq_gtkmm2/src/seqevent.cpp, seq_gtkmm2/src/seqkeys.cpp,
+	seq_gtkmm2/src/seqmenu.cpp, seq_gtkmm2/src/seqroll.cpp: Refined the
+	key/scale/background option.
+
+2015-11-12  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/include/midi_container.hpp,
+	libseq64/include/sequence.hpp, libseq64/src/midi_container.cpp,
+	libseq64/src/midifile.cpp, seq_gtkmm2/src/seqedit.cpp: Scale, key,
+	and background sequence now stored in MIDI file.
+
+2015-11-12  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* INSTALL, ROADMAP, libseq64/include/midi_container.hpp,
+	libseq64/include/midi_list.hpp, libseq64/include/midi_vector.hpp,
+	libseq64/include/sequence.hpp, libseq64/src/midi_container.cpp,
+	libseq64/src/midifile.cpp, libseq64/src/sequence.cpp,
+	libseq64/src/triggers.cpp, seq_gtkmm2/src/seqedit.cpp: Initial
+	implementation of saving and restoring sequence key, scale, and
+	background sequence.
+
+2015-11-11  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* contrib/bugs_to_investigate.txt, libseq64/include/globals.h,
+	libseq64/include/midi_container.hpp,
+	libseq64/include/user_settings.hpp, libseq64/src/midifile.cpp,
+	libseq64/src/user_settings.cpp, libseq64/src/userfile.cpp,
+	seq_gtkmm2/include/seqroll.hpp, seq_gtkmm2/src/mainwnd.cpp,
+	seq_gtkmm2/src/seqdata.cpp, seq_gtkmm2/src/seqedit.cpp,
+	seq_gtkmm2/src/seqevent.cpp, seq_gtkmm2/src/seqroll.cpp: Add zoom to
+	user configuration, started new prop-header additions for key,
+	scale, background sequence.
+
+2015-11-11  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* INSTALL, seq_gtkmm2/src/perfedit.cpp,
+	seq_gtkmm2/src/perfroll.cpp, seq_gtkmm2/src/perftime.cpp: More solid
+	piano-roll support.
+
+2015-11-10  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* contrib/bugs_to_investigate.txt, libseq64/include/app_limits.h,
+	seq_gtkmm2/include/seqkeys.hpp, seq_gtkmm2/src/perfroll.cpp,
+	seq_gtkmm2/src/seqdata.cpp, seq_gtkmm2/src/seqedit.cpp,
+	seq_gtkmm2/src/seqevent.cpp, seq_gtkmm2/src/seqkeys.cpp,
+	seq_gtkmm2/src/seqroll.cpp, seq_gtkmm2/src/seqtime.cpp: Tweaks to
+	sequence editor user-interface.
+
 2015-11-10  Chris Ahlstrom <ahlstromcj@gmail.com>
 	* *.*: Refactoring more globals, more upgrades to user-interface
 	configurability.  Work on testing3, version 0.9.9.8.
@@ -382,10 +460,10 @@
 	Ahlstrom <ahlstromcj@gmail.com> Date:   Tue Oct 20 20:56:31 2015
 	-0400
 
-2015-10-20  Chris Ahlstrom <ahlstrom@centiped>
+2015-10-20  Chris Ahlstrom <ahlstromcj@gmail.com>
 
 	* : commit e6bb26a784291fcd973ea8ea0aade6217185d85f Author: Chris
-	Ahlstrom <ahlstrom@centiped> Date:   Tue Oct 20 07:48:02 2015 -0400
+	Ahlstrom <ahlstromcj@gmail.com> Date:   Tue Oct 20 07:48:02 2015 -0400
 
 2015-10-20  Chris Ahlstrom <ahlstromcj@gmail.com>
 
@@ -478,7 +556,7 @@
 	support for modifying PPQN, still has issues, but defaults still
 	work.
 
-2015-10-15  Chris Ahlstrom <ahlstrom@centiped>
+2015-10-15  Chris Ahlstrom <ahlstromcj@gmail.com>
 
 	* libseq64/src/globals.cpp: Replaces /home/username with circumflex.
 
@@ -501,7 +579,7 @@
 	seq_gtkmm2/src/mainwnd.cpp, sequencer64/sequencer64.cpp: Add PPQN
 	support to midifile and partly to mainwnd.
 
-2015-10-14  Chris Ahlstrom <ahlstrom@centiped>
+2015-10-14  Chris Ahlstrom <ahlstromcj@gmail.com>
 
 	* libseq64/include/jack_assistant.hpp,
 	libseq64/include/mastermidibus.hpp, libseq64/include/midibus.hpp,
@@ -535,7 +613,7 @@
 	libseq64/src/perform.cpp: Created MIDI timing calculation inline
 	functions.
 
-2015-10-13  Chris Ahlstrom <ahlstrom@centiped>
+2015-10-13  Chris Ahlstrom <ahlstromcj@gmail.com>
 
 	* libseq64/include/jack_assistant.hpp,
 	libseq64/include/mastermidibus.hpp, libseq64/include/midibus.hpp,
@@ -578,7 +656,7 @@
 	seq_gtkmm2/src/mainwnd.cpp, seq_gtkmm2/src/perfnames.cpp: Fixed
 	weird issue with Doxygen and PDF generation.
 
-2015-10-12  Chris Ahlstrom <ahlstrom@centiped>
+2015-10-12  Chris Ahlstrom <ahlstromcj@gmail.com>
 
 	* doc/dox/doxy-reference.cfg, libseq64/src/mastermidibus.cpp,
 	libseq64/src/midibus.cpp: Documented midibus.
@@ -657,7 +735,7 @@
 	seq_gtkmm2/src/seqkeys.cpp: Improved the CLICK and KEYSTROKE macros
 	by prepending SEQ64_.
 
-2015-10-09  Chris Ahlstrom <ahlstrom@centiped>
+2015-10-09  Chris Ahlstrom <ahlstromcj@gmail.com>
 
 	* libseq64/include/click.hpp, libseq64/src/click.cpp: Added button
 	macros to click.
@@ -896,7 +974,7 @@
 	libseq64/src/perform.cpp, seq_gtkmm2/src/mainwnd.cpp: Offloaded some
 	mainwnd key-handling to perform.
 
-2015-09-30  Chris Ahlstrom <ahlstrom@centiped>
+2015-09-30  Chris Ahlstrom <ahlstromcj@gmail.com>
 
 	* libseq64/include/Makefile.am, libseq64/include/click.hpp,
 	libseq64/include/gui_play_base.hpp, libseq64/include/keystroke.hpp,
@@ -904,7 +982,7 @@
 	libseq64/src/keystroke.cpp, seq_gtkmm2/src/mainwnd.cpp: Separated
 	click and keystroke into modules.
 
-2015-09-30  Chris Ahlstrom <ahlstrom@centiped>
+2015-09-30  Chris Ahlstrom <ahlstromcj@gmail.com>
 
 	* libseq64/include/lash.hpp, libseq64/src/lash.cpp,
 	seq_gtkmm2/src/gui_assistant_gtk2.cpp, seq_gtkmm2/src/mainwnd.cpp: 
@@ -935,7 +1013,7 @@
 	seq_gtkmm2/src/seqedit.cpp, seq_gtkmm2/src/seqmenu.cpp: Deep
 	refactoring of mainwid, seems to work, amazingly.
 
-2015-09-29  Chris Ahlstrom <ahlstrom@centiped>
+2015-09-29  Chris Ahlstrom <ahlstromcj@gmail.com>
 
 	* libseq64/include/midifile.hpp, libseq64/src/jack_assistant.cpp,
 	libseq64/src/midifile.cpp, seq_gtkmm2/include/mainwid.hpp,
@@ -947,7 +1025,7 @@
 	sequencer64/sequencer64.cpp: Converting some pointer args to
 	references.
 
-2015-09-29  Chris Ahlstrom <ahlstrom@centiped>
+2015-09-29  Chris Ahlstrom <ahlstromcj@gmail.com>
 
 	* libseq64/include/Makefile.am, libseq64/include/gui_base.hpp,
 	libseq64/include/gui_play_base.hpp, libseq64/include/perform.hpp,
@@ -975,7 +1053,7 @@
 	seq_gtkmm2/src/mainwnd-orig.cpp, seq_gtkmm2/src/mainwnd.cpp: 
 	Deriving mainwnd from gui_window_gtk2 in progress.
 
-2015-09-28  Chris Ahlstrom <ahlstrom@centiped>
+2015-09-28  Chris Ahlstrom <ahlstromcj@gmail.com>
 
 	* libseq64/include/gdk_basic_keys.h, libseq64/include/gui_base.hpp,
 	seq_gtkmm2/include/mainwnd.hpp, seq_gtkmm2/src/mainwid.cpp,
@@ -1060,7 +1138,7 @@
 	libseq64/src/user_settings.cpp, libseq64/src/userfile.cpp: 
 	Refactored user structures into real classes to hide array accesses.
 
-2015-09-25  Chris Ahlstrom <ahlstrom@centiped>
+2015-09-25  Chris Ahlstrom <ahlstromcj@gmail.com>
 
 	* libseq64/include/globals.h, libseq64/src/globals.cpp,
 	libseq64/src/optionsfile.cpp, libseq64/src/rc_settings.cpp,
@@ -1080,7 +1158,7 @@
 	libseq64/src/userfile.cpp: More progress with user_settings,
 	rc_settings may have issues.
 
-2015-09-24  Chris Ahlstrom <ahlstrom@centiped>
+2015-09-24  Chris Ahlstrom <ahlstromcj@gmail.com>
 
 	* libseq64/include/Makefile.am, libseq64/include/globals.h,
 	libseq64/include/optionsfile.hpp, libseq64/include/rc_settings.hpp,
@@ -1107,7 +1185,7 @@
 	sequencer64/sequencer64.cpp: Basic rc/user settings support in
 	place.
 
-2015-09-23  Chris Ahlstrom <ahlstrom@centiped>
+2015-09-23  Chris Ahlstrom <ahlstromcj@gmail.com>
 
 	* libseq64/include/Makefile.am,
 	libseq64/include/options_settings.hpp,
@@ -1132,7 +1210,7 @@
 	libseq64/src/options_settings.cpp: Added initial options and user
 	settings modules.
 
-2015-09-22  Chris Ahlstrom <ahlstrom@centiped>
+2015-09-22  Chris Ahlstrom <ahlstromcj@gmail.com>
 
 	* : Updated symbols spreadsheet.
 
@@ -1160,7 +1238,7 @@
 	seq_gtkmm2/src/seqroll.cpp: Added initial drawing-area and palette
 	classes.
 
-2015-09-21  Chris Ahlstrom <ahlstrom@centiped>
+2015-09-21  Chris Ahlstrom <ahlstromcj@gmail.com>
 
 	* seq_gtkmm2/include/gui_drawingarea.hpp,
 	seq_gtkmm2/src/gui_drawingarea.cpp: Added gui_drawingarea module.
@@ -1245,7 +1323,7 @@
 	libseq64/src/jack_assistant.cpp, libseq64/src/perform.cpp: Got
 	perform/jack refactoring provisionally working.
 
-2015-09-18  Chris Ahlstrom <ahlstrom@centiped>
+2015-09-18  Chris Ahlstrom <ahlstromcj@gmail.com>
 
 	* libseq64/include/jack_assistant.hpp,
 	libseq64/src/jack_assistant.cpp, libseq64/src/perform.cpp,
@@ -1268,7 +1346,7 @@
 	seq_gtkmm2/src/perform.cpp: Movement of perform, midifile to
 	libseq64 in progress.
 
-2015-09-17  Chris Ahlstrom <ahlstrom@centiped>
+2015-09-17  Chris Ahlstrom <ahlstromcj@gmail.com>
 
 	* libseq64/include/jack_assistant.hpp,
 	libseq64/include/perform.hpp, libseq64/src/jack_assistant.cpp,
@@ -1298,7 +1376,7 @@
 	seq_gtkmm2/src/perfedit.cpp, seq_gtkmm2/src/seqroll.cpp: 
 	Keybindentry fixes, prep to make new-keys-code permanent.
 
-2015-09-16  Chris Ahlstrom <ahlstrom@centiped>
+2015-09-16  Chris Ahlstrom <ahlstromcj@gmail.com>
 
 	* libseq64/include/keys_perform.hpp,
 	seq_gtkmm2/src/keys_perform_gtk2.cpp, seq_gtkmm2/src/options.cpp,
@@ -1311,7 +1389,7 @@
 	seq_gtkmm2/src/optionsfile.cpp, seq_gtkmm2/src/perform.cpp: Tracking
 	down old bug in keyboard-control rc section.
 
-2015-09-15  Chris Ahlstrom <ahlstrom@centiped>
+2015-09-15  Chris Ahlstrom <ahlstromcj@gmail.com>
 
 	* seq_gtkmm2/src/keybindentry.cpp, seq_gtkmm2/src/options.cpp,
 	seq_gtkmm2/src/optionsfile.cpp: Minor fixes to options.
@@ -1328,7 +1406,7 @@
 	seq_gtkmm2/src/perform.cpp, sequencer64/sequencer64.cpp: Debugging
 	lash setup and keyboard options issues, in progress.
 
-2015-09-14  Chris Ahlstrom <ahlstrom@centiped>
+2015-09-14  Chris Ahlstrom <ahlstromcj@gmail.com>
 
 	* libseq64/include/keys_perform.hpp, libseq64/src/userfile.cpp,
 	seq_gtkmm2/include/perform.hpp, seq_gtkmm2/src/mainwnd.cpp,

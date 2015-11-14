@@ -6,11 +6,11 @@
 # \library    	libseq64 library
 # \author     	Chris Ahlstrom
 # \date       	2015-09-11
-# \update      2015-11-09
+# \update      2015-11-14
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
-# 		This module provides an Automake makefile for the sequencer26 C/C++
+# 		This module provides an Automake makefile for the sequencer64 C/C++
 # 		library.
 #
 #------------------------------------------------------------------------------

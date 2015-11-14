@@ -3,14 +3,14 @@
 #-------------------------------------------------------------------------------
 ##
 # \file       	Makefile.am
-# \library    	sequencer26
+# \library    	sequencer64
 # \author     	Chris Ahlstrom
 # \date       	2015-09-10
-# \update      2015-09-11
+# \update      2015-11-14
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
-#     This module provides an Automake makefile for sequencer26's main 'man'
+#     This module provides an Automake makefile for sequencer64's main 'man'
 #     directory.
 #
 #-------------------------------------------------------------------------------
@@ -31,7 +31,7 @@ EXTRA_DIST =
 # dist
 #-------------------------------------------------------------------------------
 
-dist_man_MANS = sequencer26.1
+dist_man_MANS = sequencer64.1
 
 #******************************************************************************
 # Makefile.am (man)

@@ -1,9 +1,10 @@
 Bugs and Upgrade Ideas
 Chris Ahlstrom
-2015-10-27 to 2015-11-13
+2015-10-27 to 2015-11-14
 
 In no particular order...
 
+-  Be sure to add the legacy-format option to the "rc" configuration file.
 -  Seq24/Sequencer64 don't write out the c_midictrl data for any sequences.
    Something to learn more about and fix.
 -  Add optimization to write out minimal qmute etc. to the MIDI file when it is

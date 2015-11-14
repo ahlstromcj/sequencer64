@@ -1,6 +1,6 @@
 INSTALL for Sequencer64 v 0.9.9.8
 Chris Ahlstrom
-2015-09-10 to 2015-11-13
+2015-09-10 to 2015-11-14
 
 The current packaging for Sequencer64 is primarily aimed at developers.
 There is currently no configure script... it must be bootstrapped.
@@ -72,6 +72,8 @@ MANUALLY-DEFINED MACROS IN CODE:
     be edited manually to achieve the desired settings:
 
     SEQ64_USE_NEW_FONT:
+
+        Obsolete:  now a user-settings option.
 
         Already defined in the font module.  If defined, a new, anti-aliased,
         bold font is used in the user-interface.  This new font is implemented

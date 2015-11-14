@@ -4,6 +4,10 @@ Chris Ahlstrom
 
 In no particular order...
 
+-  Seq24/Sequencer64 don't write out the c_midictrl data for any sequences.
+   Something to learn more about and fix.
+-  Add optimization to write out minimal qmute etc. to the MIDI file when it is
+   not being used.
 -  Add swing-quantization to the seqedit menu.
 -  Store new values c_musickey = 0x24240011 and c_musicscale = 0x24240012 in
    the proprietary header of the MIDI song, when legacy mode is not in force.

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-23
- * \updates       2015-11-11
+ * \updates       2015-11-13
  * \license       GNU GPLv2 or above
  *
  *  Note that this module also sets the remaining legacy global variables, so
@@ -137,6 +137,9 @@ user_settings::user_settings ()
     m_control_height            (0),
     m_current_zoom              (0),
     m_global_seq_feature_save   (false),  // will be true once supported
+    m_seqedit_scale             (0),
+    m_seqedit_key               (0),
+    m_seqedit_bgsequence        (0),
 
     /*
      * The members that follow are not yet part of the .usr file.
@@ -215,6 +218,9 @@ user_settings::user_settings (const user_settings & rhs)
     m_control_height            (rhs.m_control_height),
     m_current_zoom              (rhs.m_current_zoom),
     m_global_seq_feature_save   (rhs.m_global_seq_feature_save),
+    m_seqedit_scale             (rhs.m_seqedit_scale),
+    m_seqedit_key               (rhs.m_seqedit_key),
+    m_seqedit_bgsequence        (rhs.m_seqedit_bgsequence),
 
     /*
      * The members that follow are not yet part of the .usr file.
@@ -296,6 +302,9 @@ user_settings::operator = (const user_settings & rhs)
         m_control_height            = rhs.m_control_height;
         m_current_zoom              = rhs.m_current_zoom;
         m_global_seq_feature_save   = rhs.m_global_seq_feature_save;
+        m_seqedit_scale             = rhs.m_seqedit_scale;
+        m_seqedit_key               = rhs.m_seqedit_key;
+        m_seqedit_bgsequence        = rhs.m_seqedit_bgsequence;
 
         /*
          * The members that follow are not yet part of the .usr file.
@@ -366,6 +375,9 @@ user_settings::set_defaults ()
     m_control_height = 0;               // range: 0 to 4?
     m_current_zoom = 2;                 // range: 1 to 32
     m_global_seq_feature_save = false;  // will be true once supported
+    m_seqedit_scale = int(c_scale_off);
+    m_seqedit_key = SEQ64_KEY_OF_C;
+    m_seqedit_bgsequence = SEQ64_NULL_SEQUENCE;
 
     m_text_x =  6;                      // range: 6 to 6
     m_text_y = 12;                      // range: 12 to 12

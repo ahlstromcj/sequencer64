@@ -783,8 +783,24 @@ midifile::parse_proprietary_track (perform & p, int file_size)
             }
         }
     }
-    if (usr().global_seq_feature())
+    bool parse_keyscale_stuff = usr().global_seq_feature();
+    if (parse_keyscale_stuff)
     {
+        proprietary = parse_prop_header(file_size);
+        if (proprietary == c_musickey)
+        {
+            // TODO
+        }
+        proprietary = parse_prop_header(file_size);
+        if (proprietary == c_musicscale)
+        {
+            // TODO
+        }
+        proprietary = parse_prop_header(file_size);
+        if (proprietary == c_backsequence)
+        {
+            // TODO
+        }
     }
 
     /*
@@ -1064,18 +1080,15 @@ midifile::write (perform & p)
                 seq.fill_container(lst, curtrack);
                 write_long(0x4D54726B);     /* magic number 'MTrk'          */
                 write_long(lst.size());
-                while (! lst.done())        /* write the track data         */
-                {
-                    /**
-                     * \warning
-                     *      This writing backwards reverses the order of some
-                     *      events that are otherwise equivalent in time-stamp
-                     *      and rank.  But it must be done this way, otherwise
-                     *      many items are backward.
-                     */
 
+                /**
+                 * \note
+                 *      Seq24 reverses the order of some events, due to
+                 *      popping from its container.  Not an issue here.
+                 */
+
+                while (! lst.done())        /* write the track data         */
                     write_byte(lst.get());
-                }
             }
             else
             {

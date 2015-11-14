@@ -60,7 +60,9 @@
 #include <string>
 #include <vector>
 
-#include "easy_macros.h"               // with platform_macros.h, too
+#include "easy_macros.h"                /* with platform_macros.h, too  */
+#include "scales.h"                     /* SEQ64_KEY_OF_C etc.          */
+#include "midi_container.hpp"           /* SEQ64_IS_VALID_SEQUENCE etc. */
 #include "user_instrument.hpp"
 #include "user_midi_bus.hpp"
 
@@ -241,6 +243,52 @@ class user_settings
      */
 
     bool m_global_seq_feature_save;
+
+    /**
+     *  Replaces seqedit::m_initial_scale as the repository for the scale to
+     *  apply when a sequence is loaded into the sequence editor.  Its default
+     *  value is c_scale_off.  Although this value is now stored in the
+     *  user_settings class, it always comes from the currently loaded MIDI
+     *  file, if present.  If m_global_seq_feature_save is true, this variable
+     *  is stored in the "proprietary" track at the end of the file, under the
+     *  control tag c_musicscale, and will be applied to any sequence that is
+     *  edited.  If m_global_seq_feature_save is false, this variable is
+     *  stored, if used, in the meta-data for the sequence to which it applies,
+     *  and, again, is tagged with the control tag c_musicscale.
+     */
+
+    int m_seqedit_scale;
+
+    /**
+     *  Replaces seqedit::m_initial_key as the repository for the key to
+     *  apply when a sequence is loaded into the sequence editor.  Its default
+     *  value is SEQ64_KEY_OF_C.  Although this value is now stored in the
+     *  user_settings class, it always comes from the currently loaded MIDI
+     *  file, if present.  If m_global_seq_feature_save is true, this variable
+     *  is stored in the "proprietary" track at the end of the file, under the
+     *  control tag c_musickey, and will be applied to any sequence that is
+     *  edited.  If m_global_seq_feature_save is false, this variable is
+     *  stored, if used, in the meta-data for the sequence to which it applies,
+     *  and, again, is tagged with the control tag c_musickey.
+     */
+
+    int m_seqedit_key;
+
+    /**
+     *  Replaces seqedit::m_initial_sequence as the repository for the
+     *  background sequence to
+     *  apply when a sequence is loaded into the sequence editor.  Its default
+     *  value is SEQ64_NULL_SEQUENCE.  Although this value is now stored in the
+     *  user_settings class, it always comes from the currently loaded MIDI
+     *  file, if present.  If m_global_seq_feature_save is true, this variable
+     *  is stored in the "proprietary" track at the end of the file, under the
+     *  control tag c_backsequence, and will be applied to any sequence that is
+     *  edited.  If m_global_seq_feature_save is false, this variable is
+     *  stored, if used, in the meta-data for the sequence to which it applies,
+     *  and, again, is tagged with the control tag c_backsequence.
+     */
+
+    int m_seqedit_bgsequence;
 
     /**
      *  Constants for the mainwid class.  The m_text_x and m_text_y
@@ -875,6 +923,63 @@ public:
     void global_seq_feature (bool flag)
     {
         m_global_seq_feature_save = flag;
+    }
+
+    /**
+     * \getter m_seqedit_scale
+     */
+
+    int seqedit_scale () const
+    {
+        return m_seqedit_scale;
+    }
+
+    /**
+     * \setter m_seqedit_scale
+     */
+
+    void seqedit_scale (int scale)
+    {
+        if (scale >= int(c_scale_off) && scale < int(c_scale_size))
+            m_seqedit_scale = scale;
+    }
+
+    /**
+     * \getter m_seqedit_key
+     */
+
+    int seqedit_key () const
+    {
+        return m_seqedit_key;
+    }
+
+    /**
+     * \setter m_seqedit_key
+     */
+
+    void seqedit_key (int key)
+    {
+        if (key >= SEQ64_KEY_OF_C && key < SEQ64_OCTAVE_SIZE)
+            m_seqedit_key = key;
+    }
+
+    /**
+     * \getter m_seqedit_bgsequence
+     */
+
+    int seqedit_bgsequence () const
+    {
+        return m_seqedit_bgsequence;
+    }
+
+    /**
+     * \setter m_seqedit_bgsequence
+     */
+
+    void seqedit_bgsequence (int seqnum)
+    {
+        if (SEQ64_IS_VALID_SEQUENCE(seqnum))
+            m_seqedit_bgsequence = seqnum;
     }
 
 protected:

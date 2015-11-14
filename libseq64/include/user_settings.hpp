@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-22
- * \updates       2015-11-13
+ * \updates       2015-11-14
  * \license       GNU GPLv2 or above
  *
  *  This module defines the following categories of "global" variables that
@@ -62,7 +62,7 @@
 
 #include "easy_macros.h"                /* with platform_macros.h, too  */
 #include "scales.h"                     /* SEQ64_KEY_OF_C etc.          */
-#include "midi_container.hpp"           /* SEQ64_IS_VALID_SEQUENCE etc. */
+#include "midi_container.hpp"           /* SEQ64_IS_LEGAL_SEQUENCE etc. */
 #include "user_instrument.hpp"
 #include "user_midi_bus.hpp"
 
@@ -167,6 +167,8 @@ class user_settings
     /**
      *  Specify drawing brackets (like the old Seq24) or a solid box.
      *  0 = no brackets, 1 and above is the thickness of the brakcets.
+     *  1 is the normal thickness of the brackets, 2 is a two-pixel thickness,
+     *  and so on.
      */
 
     int m_grid_brackets;
@@ -289,6 +291,13 @@ class user_settings
      */
 
     int m_seqedit_bgsequence;
+
+    /**
+     *  Sets the usage of the font.  By default, in normal mode, the new font
+     *  is used.  In legacy mode, the old font is used.
+     */
+
+    bool m_use_new_font;
 
     /**
      *  Constants for the mainwid class.  The m_text_x and m_text_y
@@ -974,12 +983,33 @@ public:
 
     /**
      * \setter m_seqedit_bgsequence
+     *      Note that SEQ64_IS_LEGAL_SEQUENCE() allows the
+     *      SEQ64_IS_NULL_SEQUENCE (-1) value, to turn off the use of a
+     *      background sequence.
      */
 
     void seqedit_bgsequence (int seqnum)
     {
-        if (SEQ64_IS_VALID_SEQUENCE(seqnum))
+        if (SEQ64_IS_LEGAL_SEQUENCE(seqnum))
             m_seqedit_bgsequence = seqnum;
+    }
+
+    /**
+     * \getter m_use_new_font
+     */
+
+    bool use_new_font () const
+    {
+        return m_use_new_font;
+    }
+
+    /**
+     * \setter m_use_new_font
+     */
+
+    void use_new_font (bool flag)
+    {
+        m_use_new_font = flag;
     }
 
 protected:

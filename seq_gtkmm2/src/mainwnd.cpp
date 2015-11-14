@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-07
+ * \updates       2015-11-14
  * \license       GNU GPLv2 or above
  *
  *  The main window holds the menu and the main controls of the application,
@@ -64,6 +64,7 @@
 #include "maintime.hpp"
 #include "mainwid.hpp"
 #include "mainwnd.hpp"
+#include "midifile.hpp"
 #include "options.hpp"
 #include "perfedit.hpp"
 #include "pixmaps/play2.xpm"
@@ -628,9 +629,10 @@ mainwnd::file_save_as ()
  *  provide a value like 0, that will certainly be changed by reading the MIDI
  *  file.
  *
- *  We don't need to specify the "propformat" parameter of the midifile
- *  constructor when reading the MIDI file, since reading handles both the old
- *  and new formats.
+ *  We don't need to specify the "oldformat" or "global sequence" parameters
+ *  of the midifile constructor when reading the MIDI file, since reading
+ *  handles both the old and new formats, dealing with new constructs only if
+ *  they are present in the file..
  *
  * \param fn
  *      Provides the file-name for the MIDI file to be opened.
@@ -712,7 +714,11 @@ mainwnd::save_file ()
         return true;
     }
 
-    midifile f(rc().filename(), ppqn(), ! rc().legacy_format());
+    midifile f
+    (
+        rc().filename(), ppqn(),
+        rc().legacy_format(), usr().global_seq_feature()
+    );
     result = f.write(perf());
     if (! result)
     {
@@ -916,7 +922,11 @@ mainwnd::about_dialog ()
     dialog.set_transient_for(*this);
     dialog.set_name(SEQ64_PACKAGE_NAME);
     dialog.set_version(SEQ64_VERSION " " SEQ64_VERSION_DATE_SHORT);
-    dialog.set_comments("Interactive MIDI Sequencer\n");
+    std::string comment("Interactive MIDI Sequencer\n");
+    if (rc().legacy_format())
+        comment += "(using original seq24 format)\n";
+
+    dialog.set_comments(comment);
     dialog.set_copyright
     (
         "(C) 2002 - 2006 Rob C. Buse (seq24)\n"
@@ -953,7 +963,7 @@ mainwnd::about_dialog ()
     );
     list_documenters.push_back
     (
-        "<https://github.com/ahlstromcj/sequencer26-doc.git>"
+        "<https://github.com/ahlstromcj/sequencer64-doc.git>"
     );
     dialog.set_documenters(list_documenters);
     dialog.show_all_children();

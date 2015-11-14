@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-07
+ * \updates       2015-11-14
  * \license       GNU GPLv2 or above
  *
  *  This file provides a Linux-only implementation of MIDI support.
@@ -162,10 +162,16 @@ midibus::midibus
     m_lasttick          (0),
     m_mutex             ()
 {
-    /* copy the client name */
+    /*
+     * Copy the client name.  It used to be "seq24", but this is now a new
+     * application.
+     *
+     * \todo
+     *      We need to make a single macro for this name at some point.
+     */
 
     char name[64];
-    snprintf(name, sizeof(name), "[%d] seq24 %d", m_id, m_id);
+    snprintf(name, sizeof(name), "[%d] sequencer64 %d", m_id, m_id);
     m_name = name;
     m_ppqn = choose_ppqn(ppqn);
 }
@@ -236,7 +242,7 @@ midibus::init_in ()
 #ifdef SEQ64_HAVE_LIBASOUND
     int result = snd_seq_create_simple_port             /* create ports */
     (
-        m_seq, "seq24 in",
+        m_seq, "sequencer64 in",                        /* "seq24 in"   */
         SND_SEQ_PORT_CAP_NO_EXPORT | SND_SEQ_PORT_CAP_WRITE,
         SND_SEQ_PORT_TYPE_MIDI_GENERIC | SND_SEQ_PORT_TYPE_APPLICATION
     );
@@ -318,7 +324,7 @@ midibus::init_in_sub ()
 #ifdef SEQ64_HAVE_LIBASOUND
     int result = snd_seq_create_simple_port             /* create ports */
     (
-        m_seq, "seq24 in",
+        m_seq, "sequencer64 in",                        /* "seq24 in"   */
         SND_SEQ_PORT_CAP_WRITE | SND_SEQ_PORT_CAP_SUBS_WRITE,
         SND_SEQ_PORT_TYPE_MIDI_GENERIC | SND_SEQ_PORT_TYPE_APPLICATION
     );

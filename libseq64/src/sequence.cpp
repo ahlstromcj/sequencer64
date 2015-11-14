@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-13
+ * \updates       2015-11-14
  * \license       GNU GPLv2 or above
  *
  */
@@ -347,11 +347,14 @@ sequence::set_rec_vol (long recvol)
  *  Currently, when reading a MIDI file [see the midifile::parse() function],
  *  only the main events (notes, after-touch, pitch, program changes, etc.)
  *  are added with this function.  So, we can rely on reading only playable
- *  events into a sequence.
+ *  events into a sequence.  Well, actually, certain meta-events are also
+ *  read, to obtain channel, buss, and more settings.  Also read for a
+ *  sequence, if the global-sequence flag is not set, are the new key, scale,
+ *  and background sequence parameters.
  *
  *  This module (sequencer) adds all of those events as well, but it
  *  can surely add other events.  We should assume that any events
- *  added by sequencer are playable.
+ *  added by sequencer are playable/usable.
  *
  * \threadsafe
  *
@@ -359,7 +362,8 @@ sequence::set_rec_vol (long recvol)
  *      This pushing (and, in writing the MIDI file, the popping),
  *      causes events with identical timestamps to be written in
  *      reverse order.  Doesn't affect functionality, but it's puzzling
- *      until one understands what is happening.
+ *      until one understands what is happening.  Actually, this is true only
+ *      in Seq24, we've fixed that behavior for Sequencer64.
  */
 
 void

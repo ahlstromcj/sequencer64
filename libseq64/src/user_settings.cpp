@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-23
- * \updates       2015-11-13
+ * \updates       2015-11-14
  * \license       GNU GPLv2 or above
  *
  *  Note that this module also sets the remaining legacy global variables, so
@@ -128,7 +128,7 @@ user_settings::user_settings ()
      */
 
     m_grid_style                (grid_style_normal),
-    m_grid_brackets             (2),
+    m_grid_brackets             (1),
     m_mainwnd_rows              (0),
     m_mainwnd_cols              (0),
     m_max_sets                  (0),
@@ -140,6 +140,7 @@ user_settings::user_settings ()
     m_seqedit_scale             (0),
     m_seqedit_key               (0),
     m_seqedit_bgsequence        (0),
+    m_use_new_font              (false),
 
     /*
      * The members that follow are not yet part of the .usr file.
@@ -221,6 +222,7 @@ user_settings::user_settings (const user_settings & rhs)
     m_seqedit_scale             (rhs.m_seqedit_scale),
     m_seqedit_key               (rhs.m_seqedit_key),
     m_seqedit_bgsequence        (rhs.m_seqedit_bgsequence),
+    m_use_new_font              (rhs.m_use_new_font),
 
     /*
      * The members that follow are not yet part of the .usr file.
@@ -305,6 +307,7 @@ user_settings::operator = (const user_settings & rhs)
         m_seqedit_scale             = rhs.m_seqedit_scale;
         m_seqedit_key               = rhs.m_seqedit_key;
         m_seqedit_bgsequence        = rhs.m_seqedit_bgsequence;
+        m_use_new_font              = rhs.m_use_new_font;
 
         /*
          * The members that follow are not yet part of the .usr file.
@@ -366,7 +369,7 @@ user_settings::set_defaults ()
     m_instruments.clear();
 
     m_grid_style = grid_style_normal;   // range: 0 to 2
-    m_grid_brackets = 2;                // range: -30 to 0 to 30
+    m_grid_brackets = 1;                // range: -30 to 0 to 30
     m_mainwnd_rows = 4;                 // range: 4 to 8
     m_mainwnd_cols = 8;                 // range: 8 to 10
     m_max_sets = 32;                    // range: 32 to 64
@@ -374,10 +377,11 @@ user_settings::set_defaults ()
     m_mainwid_spacing = 2;              // range: 2 to 6, try 4 or 6
     m_control_height = 0;               // range: 0 to 4?
     m_current_zoom = 2;                 // range: 1 to 32
-    m_global_seq_feature_save = false;  // will be true once supported
-    m_seqedit_scale = int(c_scale_off);
-    m_seqedit_key = SEQ64_KEY_OF_C;
-    m_seqedit_bgsequence = SEQ64_NULL_SEQUENCE;
+    m_global_seq_feature_save = true;
+    m_seqedit_scale = int(c_scale_off); // range: c_scale_off to < c_scale_size
+    m_seqedit_key = SEQ64_KEY_OF_C;     // range: 0 to 11
+    m_seqedit_bgsequence = SEQ64_NULL_SEQUENCE; // range -1, 0, 1, 2, ...
+    m_use_new_font = ! rc().legacy_format();
 
     m_text_x =  6;                      // range: 6 to 6
     m_text_y = 12;                      // range: 12 to 12

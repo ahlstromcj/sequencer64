@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-13
+ * \updates       2015-11-14
  * \license       GNU GPLv2 or above
  *
  *  Note that the parse function has some code that is not yet enabled.
@@ -265,15 +265,35 @@ userfile::parse (perform & /* a_perf */)
         sscanf(m_line, "%d", &scratch);
         usr().zoom(scratch);
 
+        /*
+         * This boolean affects the behavior of the scale, key, and background
+         * sequence features, but their actual values are stored in the MIDI
+         * file, not in the "user" configuration file.
+         */
+
         next_data_line(file);
         sscanf(m_line, "%d", &scratch);
         usr().global_seq_feature(scratch != 0);
 
+        /*
+         * The user-interface font is now selectable at run time.  Old versus
+         * new font.
+         */
+
+        next_data_line(file);
+        sscanf(m_line, "%d", &scratch);
+        usr().use_new_font(scratch != 0);
+
         usr().normalize();    /* calculate derived values */
+    }
+    else
+    {
+        usr().global_seq_feature(false);
+        usr().use_new_font(false);
     }
 
     /*
-     *                  [user-midi-settings]
+     * [user-midi-settings]
      */
 
     if (! rc().legacy_format())
@@ -307,12 +327,7 @@ userfile::parse (perform & /* a_perf */)
 
     usr().set_globals();
     dump_setting_summary();
-
-    /*
-     * End of file.
-     */
-
-    file.close();
+    file.close();                       /* End Of File, EOF, done! */
     return true;
 }
 
@@ -348,9 +363,12 @@ userfile::write (const perform & /* a_perf */ )
      */
 
     if (rc().legacy_format())
-        file << "# Seq24 0.9.2 user configuration file (legacy format)\n";
+    {
+        file <<
+           "# Sequencer64 user configuration file (legacy Seq24 0.9.2 format)\n";
+    }
     else
-        file << "# Sequencer26 0.9.9.8 (and above) user configuration file\n";
+        file << "# Sequencer64 0.9.9.8 (and above) user configuration file\n";
 
     file << "#\n"
         "# Created by reading the following file and writing it out via the\n"
@@ -596,22 +614,45 @@ userfile::write (const perform & /* a_perf */ )
             << usr().zoom() << "      # zoom\n"
             ;
 
+        /*
+         * This boolean affects the behavior of the scale, key, and background
+         * sequence features.
+         */
+
         file << "\n"
             "# Specifies if the key, scale, and background sequence are to be\n"
             "# applied to all sequences, or to individual sequences.  The\n"
             "# behavior of Seq24 was to apply them to all sequences.  But\n"
             "# Sequencer64 takes it further by applying it immediately, and\n"
-            "# by saving to the end of the MIDI file.\n"
+            "# by saving to the end of the MIDI file.  Note that these three\n"
+            "# values are stored in the MIDI file, not this configuration file.\n"
             "\n"
             "# 0 = allow each sequence to have its own key/scale/background.\n"
             "# 1 = apply these settings globally (similar to seq24).\n"
             "\n"
-            << usr().global_seq_feature() << "      # global_seq_feature\n"
+            << (usr().global_seq_feature() ? "1" : "0")
+            << "      # global_seq_feature\n"
+            ;
+
+        /*
+         * The usage of the old versus new font is now a run-time option.
+         */
+
+        file << "\n"
+            "# Specifies if the old, console-style font, or the new anti-\n"
+            "# alias font, is to be used as the font throughout the GUI.\n"
+            "# In legacy mode, the old font is the default.\n"
+            "\n"
+            "# 0 = use the old-style font.\n"
+            "# 1 = use the new-style font.\n"
+            "\n"
+            << (usr().use_new_font() ? "1" : "0")
+            << "      # use_new_font\n"
             ;
     }
 
     /*
-     *                  [user-midi-settings]
+     * [user-midi-settings]
      */
 
     if (! rc().legacy_format())
@@ -679,7 +720,7 @@ userfile::write (const perform & /* a_perf */ )
     file << "\n"
         << "# End of " << m_name
         << "\n#\n"
-        << "# vim: sw=4 ts=4 wm=4 et ft=sh\n"
+        << "# vim: sw=4 ts=4 wm=4 et ft=sh\n"   /* ft=sh for nice colors */
         ;
     file.close();
     return true;
@@ -692,3 +733,4 @@ userfile::write (const perform & /* a_perf */ )
  *
  * vim: sw=4 ts=4 wm=4 et ft=cpp
  */
+

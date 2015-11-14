@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-04
+ * \updates       2015-11-14
  * \license       GNU GPLv2 or above
  *
  */
@@ -202,7 +202,7 @@ Seq24PerfInput::on_button_release_event (GdkEventButton * ev, perfroll & roll)
          * See the same code in seq24seqroll.cpp.
          */
 
-        bool addmode_exit = ! global_allow_mod4_mode;
+        bool addmode_exit = ! rc().allow_mod4_mode();
         if (! addmode_exit)
             addmode_exit = ! (ev->state & SEQ64_MOD4_MASK); /* Mod4 held? */
 

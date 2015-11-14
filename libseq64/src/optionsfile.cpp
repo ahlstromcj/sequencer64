@@ -19,27 +19,24 @@
 /**
  * \file          optionsfile.cpp
  *
- *  This module declares/defines the base class for managing the
- *  <tt> ~/.seq24rc </tt>
- *  or <tt> ~/.config/sequencer64/sequencer64.rc </tt>
- *  ("rc") configuration files.
+ *  This module declares/defines the base class for managing the <tt>
+ *  ~/.seq24rc </tt> or <tt> ~/.config/sequencer64/sequencer64.rc </tt> ("rc")
+ *  configuration files.
  *
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-08
+ * \updates       2015-11-14
  * \license       GNU GPLv2 or above
  *
- *  The <tt> ~/.seq24rc </tt>
- *  or <tt> ~/.config/sequencer64/sequencer64.rc </tt>
- *  configuration file is fairly simple in
- *  layout.  The documentation for this module is supplemented by the
- *  following GitHub projects:
+ *  The <tt> ~/.seq24rc </tt> or <tt> ~/.config/sequencer64/sequencer64.rc
+ *  </tt> configuration file is fairly simple in layout.  The documentation
+ *  for this module is supplemented by the following GitHub projects:
  *
- *      https://github.com/ahlstromcj/seq24-doc.git
- *      https://github.com/ahlstromcj/sequencer24-doc.git
+ *      -   https://github.com/ahlstromcj/seq24-doc.git (legacy support)
+ *      -   https://github.com/ahlstromcj/sequencer64-doc.git
  *
- *  Those documents also relate these file setting to the application's
+ *  Those documents also relate these file settings to the application's
  *  command-line options.
  *
  *  Note that these options are primarily read/written from/to the perform
@@ -170,7 +167,7 @@ optionsfile::~optionsfile ()
  */
 
 bool
-optionsfile::parse (perform & a_perf)
+optionsfile::parse (perform & p)
 {
     std::ifstream file(m_name.c_str(), std::ios::in | std::ios::ate);
     if (! file.is_open())
@@ -202,24 +199,24 @@ optionsfile::parse (perform & a_perf)
                 " [ %d %d %ld %ld %ld %ld ]"
                 " [ %d %d %ld %ld %ld %ld ]",
             &sequence,
-            (int *) &a_perf.get_midi_control_toggle(i)->m_active,
-                (int *) &a_perf.get_midi_control_toggle(i)->m_inverse_active,
-                &a_perf.get_midi_control_toggle(i)->m_status,
-                &a_perf.get_midi_control_toggle(i)->m_data,
-                &a_perf.get_midi_control_toggle(i)->m_min_value,
-                &a_perf.get_midi_control_toggle(i)->m_max_value,
-            (int *) &a_perf.get_midi_control_on(i)->m_active,
-                (int *) &a_perf.get_midi_control_on(i)->m_inverse_active,
-                &a_perf.get_midi_control_on(i)->m_status,
-                &a_perf.get_midi_control_on(i)->m_data,
-                &a_perf.get_midi_control_on(i)->m_min_value,
-                &a_perf.get_midi_control_on(i)->m_max_value,
-            (int *) &a_perf.get_midi_control_off(i)->m_active,
-                (int *) &a_perf.get_midi_control_off(i)->m_inverse_active,
-                &a_perf.get_midi_control_off(i)->m_status,
-                &a_perf.get_midi_control_off(i)->m_data,
-                &a_perf.get_midi_control_off(i)->m_min_value,
-                &a_perf.get_midi_control_off(i)->m_max_value
+            (int *) &p.get_midi_control_toggle(i)->m_active,
+                (int *) &p.get_midi_control_toggle(i)->m_inverse_active,
+                &p.get_midi_control_toggle(i)->m_status,
+                &p.get_midi_control_toggle(i)->m_data,
+                &p.get_midi_control_toggle(i)->m_min_value,
+                &p.get_midi_control_toggle(i)->m_max_value,
+            (int *) &p.get_midi_control_on(i)->m_active,
+                (int *) &p.get_midi_control_on(i)->m_inverse_active,
+                &p.get_midi_control_on(i)->m_status,
+                &p.get_midi_control_on(i)->m_data,
+                &p.get_midi_control_on(i)->m_min_value,
+                &p.get_midi_control_on(i)->m_max_value,
+            (int *) &p.get_midi_control_off(i)->m_active,
+                (int *) &p.get_midi_control_off(i)->m_inverse_active,
+                &p.get_midi_control_off(i)->m_status,
+                &p.get_midi_control_off(i)->m_data,
+                &p.get_midi_control_off(i)->m_min_value,
+                &p.get_midi_control_off(i)->m_max_value
         );
         next_data_line(file);
     }
@@ -232,7 +229,7 @@ optionsfile::parse (perform & a_perf)
     int j = 0;
     for (int i = 0; i < c_seqs_in_set; i++)
     {
-        a_perf.select_group_mute(j);
+        p.select_group_mute(j);
         sscanf
         (
             m_line,
@@ -251,7 +248,7 @@ optionsfile::parse (perform & a_perf)
                 &mtx[28], &mtx[29], &mtx[30], &mtx[31]
         );
         for (int k = 0; k < c_seqs_in_set; k++)
-            a_perf.set_group_mute_state(k, mtx[k]);
+            p.set_group_mute_state(k, mtx[k]);
 
         j++;
         next_data_line(file);
@@ -265,7 +262,7 @@ optionsfile::parse (perform & a_perf)
     {
         long bus_on, bus;
         sscanf(m_line, "%ld %ld", &bus, &bus_on);
-        a_perf.master_bus().set_clock(bus, (clock_e) bus_on);
+        p.master_bus().set_clock(bus, (clock_e) bus_on);
         next_data_line(file);
     }
 
@@ -284,13 +281,13 @@ optionsfile::parse (perform & a_perf)
      * as well appears to fix both bugs.
      */
 
-    a_perf.get_key_events().clear();
-    a_perf.get_key_events_rev().clear();       // \new ca 2015-09-16
+    p.get_key_events().clear();
+    p.get_key_events_rev().clear();       // \new ca 2015-09-16
     for (int i = 0; i < keys; ++i)
     {
         long key = 0, seq = 0;
         sscanf(m_line, "%ld %ld", &key, &seq);
-        a_perf.set_key_event(key, seq);
+        p.set_key_event(key, seq);
         next_data_line(file);
     }
 
@@ -298,13 +295,13 @@ optionsfile::parse (perform & a_perf)
     long groups = 0;
     sscanf(m_line, "%ld", &groups);
     next_data_line(file);
-    a_perf.get_key_groups().clear();
-    a_perf.get_key_groups_rev().clear();       // \new ca 2015-09-16
+    p.get_key_groups().clear();
+    p.get_key_groups_rev().clear();       // \new ca 2015-09-16
     for (int i = 0; i < groups; ++i)
     {
         long key = 0, group = 0;
         sscanf(m_line, "%ld %ld", &key, &group);
-        a_perf.set_key_group(key, group);
+        p.set_key_group(key, group);
         next_data_line(file);
     }
 
@@ -346,15 +343,18 @@ optionsfile::parse (perform & a_perf)
     next_data_line(file);
     sscanf(m_line, "%u", &ktx.kpt_stop);
 
-    /*
-     * New feature for showing sequence number in the GUI.
-     */
+    if (! rc().legacy_format())
+    {
+        /*
+         * New feature for showing sequence number in the GUI.
+         */
 
-    next_data_line(file);
-    sscanf(m_line, "%d", &show_key);
-    ktx.kpt_show_ui_sequence_number = bool(show_key);
+        next_data_line(file);
+        sscanf(m_line, "%d", &show_key);
+        ktx.kpt_show_ui_sequence_number = bool(show_key);
+    }
 
-    a_perf.keys().set_keys(ktx);                /* copy into perform keys   */
+    p.keys().set_keys(ktx);                /* copy into perform keys   */
 
     line_after(file, "[jack-transport]");
     long flag = 0;
@@ -381,7 +381,7 @@ optionsfile::parse (perform & a_perf)
     {
         long bus_on, bus;
         sscanf(m_line, "%ld %ld", &bus, &bus_on);
-        a_perf.master_bus().set_input(bus, bool(bus_on));
+        p.master_bus().set_input(bus, bool(bus_on));
         next_data_line(file);
     }
 
@@ -403,19 +403,24 @@ optionsfile::parse (perform & a_perf)
     sscanf(m_line, "%ld", &method);
     rc().interaction_method(interaction_method_t(method));
 
-    next_data_line(file);
-    sscanf(m_line, "%ld", &method);
-    rc().allow_mod4_mode(method != 0);
+    if (! rc().legacy_format())
+    {
+        next_data_line(file);
+        sscanf(m_line, "%ld", &method);
+        rc().allow_mod4_mode(method != 0);
 
-    line_after(file, "[lash-session]");
-    sscanf(m_line, "%ld", &method);
-    rc().lash_support(method != 0);
+        line_after(file, "[lash-session]");
+        sscanf(m_line, "%ld", &method);
+        rc().lash_support(method != 0);
+    }
 
     /*
-     * Done parsing the "rc" file.
+     * Done parsing the "rc" configuration file.  Copy the newly-read values
+     * into any global variables that are still in use, and then close the
+     * file.
      */
 
-    rc().set_globals();                // finalize it all
+    rc().set_globals();
     file.close();
     return true;
 }
@@ -424,7 +429,7 @@ optionsfile::parse (perform & a_perf)
  *  This options-writing function is just about as complex as the
  *  options-reading function.
  *
- * \param a_perf
+ * \param p
  *      Provides a const reference to the main perform object.  However,
  *      we have to cast away the constness, because too many of the
  *      perform getter functions are used in non-const contexts.
@@ -434,10 +439,10 @@ optionsfile::parse (perform & a_perf)
  */
 
 bool
-optionsfile::write (const perform & a_perf)
+optionsfile::write (const perform & p)
 {
     std::ofstream file(m_name.c_str(), std::ios::out | std::ios::trunc);
-    perform & ucperf = const_cast<perform &>(a_perf);
+    perform & ucperf = const_cast<perform &>(p);
     if (! file.is_open())
     {
         printf("? error opening [%s] for writing\n", m_name.c_str());
@@ -445,18 +450,22 @@ optionsfile::write (const perform & a_perf)
     }
 
     /*
-     * Initial comments and MIDI control section
+     * Initial comments and MIDI control section.  The
+     * rc_settings::get_globals() call grabs any legacy global variables that
+     * are still being used, and copies them to the global rc_settings object,
+     * before writing them to the "rc" configuration file.
      */
 
     rc().get_globals();
     if (rc().legacy_format())
     {
-        file << "# Seq24 0.9.2 rc configuration file (legacy format)\n";
+        file <<
+           "# Sequencer64 user configuration file (legacy Seq24 0.9.2 format)\n";
     }
     else
     {
         file <<
-            "# Sequencer26 0.9.9.4 (and above) rc configuration file\n"
+            "# Sequencer64 0.9.9.4 (and above) rc configuration file\n"
             "# (Also works with Sequencer24)\n"
             ;
     }
@@ -658,7 +667,7 @@ optionsfile::write (const perform & a_perf)
 
     file
         << "\n[manual-alsa-ports]\n\n"
-        << "# Set to 1 if you want seq24 to create its own ALSA ports and\n"
+        << "# Set to 1 if you want sequencer64 to create its own ALSA ports and\n"
         << "# not connect to other clients\n"
         << "\n"
         << rc().manual_alsa_ports()
@@ -825,20 +834,22 @@ optionsfile::write (const perform & a_perf)
 
     /*
      * New for sequencer64:  provide configurable LASH session management.
+     * Ignored in legacy mode, for now.
      */
-
-    file << "\n"
-        "[lash-session]\n\n"
-        "# Set the following value to 0 to disable LASH session management.\n"
-        "# Set the following value to 1 to enable LASH session management.\n"
-        "# This value will have no effect if LASH support is not built into\n"
-        "# the application.  Use the --help option to see if LASH is part of\n"
-        "# the options list.\n"
-        "\n"
-        << (rc().lash_support() ? "1" : "0")
-        << "     # LASH session management support flag\n"
-        ;
-
+    if (! rc().legacy_format())
+    {
+        file << "\n"
+            "[lash-session]\n\n"
+            "# Set the following value to 0 to disable LASH session management.\n"
+            "# Set the following value to 1 to enable LASH session management.\n"
+            "# This value will have no effect if LASH support is not built into\n"
+            "# the application.  Use --help option to see if LASH is part of\n"
+            "# the options list.\n"
+            "\n"
+            << (rc().lash_support() ? "1" : "0")
+            << "     # LASH session management support flag\n"
+            ;
+    }
 
     file << "\n"
         "[last-used-dir]\n\n"
@@ -847,7 +858,7 @@ optionsfile::write (const perform & a_perf)
         ;
     file
         << "# End of " << m_name << "\n#\n"
-        << "# vim: sw=4 ts=4 wm=4 et ft=sh\n"
+        << "# vim: sw=4 ts=4 wm=4 et ft=sh\n"   /* ft=sh for nice colors */
         ;
     file.close();
     return true;

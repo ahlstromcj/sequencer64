@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-09
+ * \updates       2015-11-14
  * \license       GNU GPLv2 or above
  *
  * \todo
@@ -174,14 +174,18 @@ static const char * const s_help_3 =
 
 /**
  *  Checks to see if the first option is a help or version argument, just so
- *  we can skip the "Reading configuration ..." messages.
+ *  we can skip the "Reading configuration ..." messages.  Also check for the
+ *  --legacy option.  Finally, it also checks for the "?" option that people
+ *  sometimes use as a guess to get help.
  *
  * \return
- *      Returns true if -V, --version, -h, or --help were encountered.
+ *      Returns true only if -V, --version, -h, --help, or "?" were
+ *      encountered.  If the legacy options occurred, then
+ *      rc().legacy_format(true) is called, as a side effect.
  */
 
-bool
-check_for_help (int argc, char * argv [])
+static bool
+argument_check (int argc, char * argv [])
 {
     bool result = false;
     for ( ; argc > 1; --argc)
@@ -194,9 +198,12 @@ check_for_help (int argc, char * argv [])
         )
         {
             result = true;
-            break;
         }
-        if (arg == "?")
+        else if (arg == "-l" || arg == "--legacy")
+        {
+            seq64::rc().legacy_format(true);
+        }
+        else if (arg == "?")
         {
             printf(s_help_1a);
             printf(s_help_1b);
@@ -251,14 +258,14 @@ main (int argc, char * argv [])
      *  configuration file-name.  The code also ensures the directory exists.
      *  CURRENTLY LINUX-SPECIFIC.  See the rc_settings class for how this
      *  works.
+     *
+     * std::string cfg_dir = seq64::rc().home_config_directory();
+     *  if (cfg_dir.empty())
+     *      return EXIT_FAILURE;
      */
 
-    std::string cfg_dir = seq64::rc().home_config_directory();
-    if (cfg_dir.empty())
-        return EXIT_FAILURE;
-
-    std::string rcname = seq64::rc().user_filespec();
-    bool is_help = check_for_help(argc, argv);
+    bool is_help = argument_check(argc, argv);          /* has side-effects */
+    std::string rcname = seq64::rc().user_filespec();   /* uses the "       */
     if (! is_help)
     {
         if (Glib::file_test(rcname, Glib::FILE_TEST_EXISTS))

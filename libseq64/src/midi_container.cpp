@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-10-10
- * \updates       2015-11-13
+ * \updates       2015-11-14
  * \license       GNU GPLv2 or above
  *
  */
@@ -225,11 +225,13 @@ midi_container::fill (int tracknumber)
     if (! usr().global_seq_feature() && ! rc().legacy_format())
     {
         /*
-         * \change ca 2015-11-12 New feature, save more sequence values.
-         * We use a single byte for the key and scale, and a long for the
-         * background sequence.  We save these values only if they are
-         * different from the defaults; in most cases they will have been left
-         * alone by the user..
+         * New feature, save more sequence-specific values, if not legacy
+         * format and not saved globally.  We use a single byte for the key
+         * and scale, and a long for the background sequence.  We save these
+         * values only if they are different from the defaults; in most cases
+         * they will have been left alone by the user.  We save per-sequence
+         * values here only if the global-background-sequence feature is not
+         * in force.
          */
 
         if (m_sequence.musical_key() != SEQ64_KEY_OF_C)
@@ -262,7 +264,7 @@ midi_container::fill (int tracknumber)
     }
 
     /*
-     * end-of-track event
+     * Last, but certainly not least, write the end-of-track meta-event.
      */
 
     deltatime = m_sequence.get_length() - prevtimestamp; /* meta track end */

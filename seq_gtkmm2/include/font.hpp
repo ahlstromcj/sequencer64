@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-05
+ * \updates       2015-11-14
  * \license       GNU GPLv2 or above
  *
  */
@@ -80,6 +80,24 @@ public:
     };
 
 private:
+
+    /**
+     *  If true, use the new font, which is a little bit more modern looking.
+     */
+
+    bool m_use_new_font;
+
+    /**
+     *  Specifies the cell width of the whole cell.
+     */
+
+    int m_cell_w;
+
+    /**
+     *  Specfies the cell height of the whole cell.
+     */
+
+    int m_cell_h;
 
     /**
      *  Specifies the exact width of a character cell, in pixels.  Currently

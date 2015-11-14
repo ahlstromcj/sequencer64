@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-13
+ * \updates       2015-11-14
  * \license       GNU GPLv2 or above
  *
  *  For a quick guide to the MIDI format, see, for example:
@@ -79,16 +79,16 @@
 
 /**
  *  Provides the sequence number for the proprietary data when using the new
- *  format.  (There is no track-name for the legacy format.)  Can't use
+ *  format.  (There is no sequence number for the legacy format.)  Can't use
  *  numbers, such as 0xFFFF, that have MIDI meta tags in them, confuses
- *  our proprietary track parser.
+ *  our "proprietary" track parser.
  */
 
 #define PROPRIETARY_SEQ_NUMBER         0x7777           /* high enough?     */
 
 /**
- *  Provides the track name for the proprietary data when using the new
- *  format.  (There is no track-name for the proprietary footer track when
+ *  Provides the track name for the "proprietary" data when using the new
+ *  format.  (There is no track-name for the "proprietary" footer track when
  *  the legacy format is in force.)
  */
 
@@ -121,25 +121,33 @@ namespace seq64
  *          preparing to write the file.  See how it is done in the mainwnd
  *          class.
  *
- * \param propformat
- *      If true, write out the MIDI file using the new MIDI-compliant
- *      sequencer-specific format for the seq24-specific SeqSpec tags defined
- *      in the globals module.  This option is true by default.  Note that
- *      this option is only used in writing; reading can handle either format
- *      transparently.
+ * \param oldformat
+ *      If true, write out the MIDI file using the old Seq24 format, instead
+ *      of the new MIDI-compliant sequencer-specific format, for the
+ *      seq24-specific SeqSpec tags defined in the globals module.  This
+ *      option is false by default.  Note that this option is only used in
+ *      writing; reading can handle either format transparently.
+ *
+ * \param globalbgs
+ *      If true, write any non-default values of the key, scale, and
+ *      background sequence to the global "proprietary" section of the MIDI
+ *      file, instead of to each sequence.  Note that this option is only used
+ *      in writing; reading can handle either format transparently.
  */
 
 midifile::midifile
 (
     const std::string & name,
     int ppqn,
-    bool propformat
+    bool oldformat,
+    bool globalbgs
 ) :
     m_pos               (0),
     m_name              (name),
     m_data              (),
     m_char_list         (),
-    m_new_format        (propformat),
+    m_new_format        (! oldformat),
+    m_global_bgsequence (globalbgs),
     m_ppqn              (0),
     m_use_default_ppqn  (ppqn == SEQ64_USE_DEFAULT_PPQN)
 {
@@ -320,7 +328,7 @@ midifile::parse (perform & p, int screenset)
 
     /*
      * We should be good to load now, for each Track in the MIDI file.
-     * Note that NumTracks doesn't count the Seq24 proprietary footer
+     * Note that NumTracks doesn't count the Seq24 "proprietary" footer
      * section, even if it uses the new format, so that section will still
      * be read properly after all normal tracks have been processed.
      */
@@ -415,7 +423,7 @@ midifile::parse (perform & p, int screenset)
                         len = read_varinum();
                         switch (type)
                         {
-                        case 0x7F:                       /* proprietary       */
+                        case 0x7F:                       /* "proprietary"     */
                             if (len > 4)                 /* FF 7F len data    */
                             {
                                 proprietary = read_long();
@@ -623,7 +631,7 @@ unsigned long
 midifile::parse_prop_header (int file_size)
 {
     unsigned long result = 0;
-    if ((file_size - m_pos) > (int) sizeof(unsigned long))
+    if ((file_size - m_pos) > int(sizeof(unsigned long)))
     {
         result = read_long();                   /* status (new), or tag     */
         unsigned char status = (result & 0xFF000000) >> 24;
@@ -783,24 +791,30 @@ midifile::parse_proprietary_track (perform & p, int file_size)
             }
         }
     }
-    bool parse_keyscale_stuff = usr().global_seq_feature();
-    if (parse_keyscale_stuff)
+
+    /*
+     * We will let Sequencer64 try to read this new stuff even if legacy mode
+     * is in force, and the global-background sequence is in force.  These two
+     * flags should affect only the writing of the MIDI file, not the reading.
+     */
+
+    proprietary = parse_prop_header(file_size);
+    if (proprietary == c_musickey)
     {
-        proprietary = parse_prop_header(file_size);
-        if (proprietary == c_musickey)
-        {
-            // TODO
-        }
-        proprietary = parse_prop_header(file_size);
-        if (proprietary == c_musicscale)
-        {
-            // TODO
-        }
-        proprietary = parse_prop_header(file_size);
-        if (proprietary == c_backsequence)
-        {
-            // TODO
-        }
+        int key = int(read_byte());
+        usr().seqedit_key(key);
+    }
+    proprietary = parse_prop_header(file_size);
+    if (proprietary == c_musicscale)
+    {
+        int scale = int(read_byte());
+        usr().seqedit_scale(scale);
+    }
+    proprietary = parse_prop_header(file_size);
+    if (proprietary == c_backsequence)
+    {
+        int seqnum = int(read_long());
+        usr().seqedit_bgsequence(seqnum);
     }
 
     /*
@@ -1144,7 +1158,11 @@ midifile::write (perform & p)
  *          no one wrote any code to write this data.  And yet, the parsing
  *          code can handles a non-zero value, which is the number of sequences
  *          as a long value, not a byte.  So shouldn't we write 4 bytes, not
- *          one?  Yes, indeed, we made a mistake.  
+ *          one?  Yes, indeed, we made a mistake.  However, we should be
+ *          writing out the full data set as well.  But not even Seq24 does
+ *          that!  Perhaps they decided it was best kept in the "rc"
+ *          configuration file.
+ *      -#  MORE TO COME.
  */
 
 bool
@@ -1173,8 +1191,11 @@ midifile::write_proprietary_track (perform & p)
         tracklength += prop_item_size(cnotesz); /* c_notes                  */
         tracklength += prop_item_size(4);       /* c_bpmtag, beats/minute   */
         tracklength += prop_item_size(gmutesz); /* c_mutegroups             */
-        if (usr().global_seq_feature())
+        if (m_global_bgsequence)
         {
+            tracklength += prop_item_size(1);   /* c_musickey               */
+            tracklength += prop_item_size(1);   /* c_musicscale             */
+            tracklength += prop_item_size(4);   /* c_backsequence           */
         }
         tracklength += track_end_size();        /* Meta TrkEnd              */
     }
@@ -1182,8 +1203,8 @@ midifile::write_proprietary_track (perform & p)
     {
         write_long(PROPRIETARY_CHUNK_TAG);      /* "MTrk" or something else */
         write_long(tracklength);
-        write_seq_number(PROPRIETARY_SEQ_NUMBER); /* bogus sequence number   */
-        write_track_name(PROPRIETARY_TRACK_NAME);
+        write_seq_number(PROPRIETARY_SEQ_NUMBER); /* bogus sequence number  */
+        write_track_name(PROPRIETARY_TRACK_NAME); /* bogus track name       */
     }
     write_prop_header(c_midictrl, 4);           /* midi control tag + 4     */
     write_long(0);                              /* SEQ24 WRITES ZERO ONLY!  */
@@ -1209,12 +1230,19 @@ midifile::write_proprietary_track (perform & p)
         for (int i = 0; i < c_seqs_in_set; ++i)
             write_long(p.get_group_mute_state(i));
     }
-    if (usr().global_seq_feature())
+    if (m_new_format)                           /* write beginning of track */
     {
-    }
-    if (m_new_format)
+        if (m_global_bgsequence)
+        {
+            write_prop_header(c_musickey, 1);               /* control tag+1 */
+            write_byte(midibyte(usr().seqedit_key()));      /* key change    */
+            write_prop_header(c_musicscale, 1);             /* control tag+1 */
+            write_byte(midibyte(usr().seqedit_scale()));    /* scale change  */
+            write_prop_header(c_backsequence, 4);           /* control tag+4 */
+            write_long(long(usr().seqedit_scale()));        /* bg sequence   */
+        }
         write_track_end();
-
+    }
     return true;
 }
 

@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-10-10
- * \updates       2015-11-13
+ * \updates       2015-11-14
  * \license       GNU GPLv2 or above
  *
  */
@@ -61,6 +61,14 @@
 
 /**
  *  A convenient macro function to test against SEQ64_NULL_SEQUENCE.
+ *  This macro allows SEQ64_NULL_SEQUENCE as a legal value to use.
+ */
+
+#define SEQ64_IS_LEGAL_SEQUENCE(s)      ((s) >= SEQ64_NULL_SEQUENCE)
+
+/**
+ *  A convenient macro function to test against SEQ64_NULL_SEQUENCE.
+ *  This macro does not all SEQ64_NULL_SEQUENCE as a valid value to use.
  */
 
 #define SEQ64_IS_VALID_SEQUENCE(s)      ((s) > SEQ64_NULL_SEQUENCE)
@@ -201,16 +209,15 @@ public:
     }
 
     /**
-     *  Provides a way to add a MIDI byte into the container.
-     *  The original seq24 container used an std::list and a push_front
-     *  operation.
+     *  Provides a way to add a MIDI byte into the container.  The original
+     *  seq24 container used an std::list and a push_front operation.
      */
 
     virtual void put (midibyte b) = 0;
 
     /**
-     *  Provide a way to get the next byte from the container.
-     *  It also increments m_position_for_get.
+     *  Provide a way to get the next byte from the container.  It also
+     *  increments m_position_for_get.
      */
 
     virtual midibyte get () = 0;

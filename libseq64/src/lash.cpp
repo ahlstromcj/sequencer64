@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-09
+ * \updates       2015-11-14
  * \license       GNU GPLv2 or above
  *
  *  Not totally sure that the LASH support is completely finished, at this
@@ -257,7 +257,7 @@ bool
 lash::process_events ()
 {
     lash_event_t * ev = nullptr;
-    while ((ev = lash_get_event(m_client)) != nullptr)  // process events
+    while (not_nullptr(ev = lash_get_event(m_client)))  /* process events */
     {
         handle_event(ev);
         lash_event_destroy(ev);
@@ -278,27 +278,33 @@ lash::handle_event (lash_event_t * ev)
     LASH_Event_Type type = lash_event_get_type(ev);
     const char * cstring = lash_event_get_string(ev);
     std::string str = (cstring == nullptr) ? "" : cstring;
+    if (not_nullptr(cstring))
+    {
+        str = cstring;
+        str += "sequencer64.midi";
+    }
+    else
+        str = "~/sequencer64.midi";
+
     if (type == LASH_Save_File)
     {
-        midifile f(str + "/seq24.mid", ! global_legacy_format);
+        midifile f(str, rc().legacy_format(), usr().global_seq_feature());
         f.write(m_perform);
         lash_send_event(m_client, lash_event_new_with_type(LASH_Save_File));
     }
     else if (type == LASH_Restore_File)
     {
-        midifile f(str + "/seq24.mid");
+        midifile f(str);                /* flags don't apply to reading */
         f.parse(m_perform, 0);
         lash_send_event(m_client, lash_event_new_with_type(LASH_Restore_File));
     }
     else if (type == LASH_Quit)
     {
         m_client = NULL;
-        m_perform.gui().quit();         // Gtk::Main::quit();
+        m_perform.gui().quit();         /* Gtk::Main::quit();           */
     }
     else
-    {
-        errprint("Warning:  Unhandled LASH event.");
-    }
+        errprint("Warning: Unhandled LASH event.");
 }
 
 /*

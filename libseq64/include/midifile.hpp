@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-09
+ * \updates       2015-11-14
  * \license       GNU GPLv2 or above
  *
  *  The Seq24 MIDI file is a standard, Format 1 MIDI file, with some extra
@@ -52,10 +52,9 @@ namespace seq64
 class perform;                          /* forward reference        */
 
 /**
- *  This class handles the parsing and writing of MIDI files.  In addition
- *  to the standard MIDI tracks, it also handles some "private" or
- *  "proprietary" tracks specific to Seq24.  It does not, however,
- *  handle SYSEX events.
+ *  This class handles the parsing and writing of MIDI files.  In addition to
+ *  the standard MIDI tracks, it also handles some "private" or "proprietary"
+ *  tracks specific to Seq24.  It does not, however, handle SYSEX events.
  */
 
 class midifile
@@ -100,17 +99,26 @@ private:
 
     /**
      *  Use the new format for the proprietary footer section of the Seq24
-     *  MIDI file.  In this new format, each sequencer-specfic value
-     *  (0x242400xx, as defined in the globals module) is preceded by the
-     *  sequencer-specific prefix, 0xFF 0x7F len id/date). By default,
-     *  this value is true, but the user can specify the --legacy (-l)
-     *  option, or make a soft link to the sequence24 binary called
-     *  "seq24",  to write the data in the old format. [We will eventually
-     *  add the --legacy option to the <tt> ~/.seq24rc </tt> configuration
-     *  file.]  Note that reading can handle either format transparently.
+     *  MIDI file.
+     *
+     *  In the new format, each sequencer-specfic value (0x242400xx, as
+     *  defined in the globals module) is preceded by the sequencer-specific
+     *  prefix, 0xFF 0x7F len id/date). By default, the new format is used,
+     *  but the user can specify the --legacy (-l) option, or make a soft link
+     *  to the sequence24 binary called "seq24",  to write the data in the old
+     *  format. [We will eventually add the --legacy option to the "rc"
+     *  configuration file.]  Note that reading can handle either format
+     *  transparently.
      */
 
     bool m_new_format;
+
+    /**
+     *  Indicates to store the new key, scale, and background
+     *  sequence in the global, "proprietary" section of the MIDI song.
+     */
+
+    bool m_global_bgsequence;
 
     /**
      *  Provides the current value of the PPQN, which used to be constant
@@ -131,7 +139,8 @@ public:
     (
         const std::string & name,
         int ppqn = SEQ64_USE_DEFAULT_PPQN,
-        bool propformat = true
+        bool oldformat = false,
+        bool globalbgs = true
     );
     ~midifile ();
 

@@ -210,11 +210,11 @@ seqtime::update_pixmap ()
 
     long end_x = m_seq.get_length() / m_zoom - m_scroll_offset_x - 21;
     draw_rectangle_on_pixmap(black(), end_x, 7, 20, 10);
-    render_string_on_pixmap(end_x + 1, 7, "END", font::WHITE);
+    render_string_on_pixmap(end_x + 1, 6, "END", font::WHITE);
 #else
     long end_x = m_seq.get_length() / m_zoom - m_scroll_offset_x;
     draw_rectangle_on_pixmap(black(), end_x, 9, 19, 8);
-    render_string_on_pixmap(end_x + 1, 9, "END", font::WHITE);
+    render_string_on_pixmap(end_x + 1, 7, "END", font::WHITE);
 #endif
 }
 

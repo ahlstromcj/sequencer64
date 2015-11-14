@@ -27,11 +27,11 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-09
+ * \updates       2015-11-14
  * \license       GNU GPLv2 or above
  *
  *  The main windows is known as the "Patterns window" or "Patterns
- *  panel".
+ *  panel".  It holds the "Pattern Editor" or "Sequence Editor".
  */
 
 #include <map>
@@ -39,7 +39,6 @@
 #include <gtkmm/window.h>
 
 #include "gui_window_gtk2.hpp"
-#include "midifile.hpp"
 #include "perform.hpp"                 // perform and performcallback
 
 namespace Gtk

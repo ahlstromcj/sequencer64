@@ -1,4 +1,4 @@
-# Sequencer26 0.9.9.7 (and above) user configuration file
+# Sequencer64 0.9.9.8 (and above) user configuration file
 #
 # Created by reading the following file and writing it out via the
 # sequencer64 application:
@@ -598,23 +598,22 @@ TB-303
 
 [user-interface-settings]
 
-# These settings specify the soon-to-be-modifiable sizes of
-# the Sequencer64 user-interface elements.
-
+# These settings specify the soon-to-be-modifiable configuration
+# of some of the Sequencer64 user-interface elements.
 
 # Specifies the style of the main-window grid of patterns.
 # 0 = normal style, matches the GTK theme, has brackets.
 # 1 = white grid boxes that have brackets.
-# 2 = black grid boxes.
+# 2 = black grid boxes (no brackets).
 
 0       # grid_style
 
-# Specifies box style box around a main-window grid of patterns.
-# 0  = Draw a whole box around the pattern slot.
+# Specifies box style of an empty slot in the main-window grid.
+# 0  = Draw a one-pixel box outline around the pattern slot.
 # 1  = Draw brackets on the sides of the pattern slot.
-# 2 and up = make the brackets thicker and thicker.
-# -1 = same as 0, draw a box one-pixel thick.
-# -2 and lower = draw a box, thicker and thicker.
+# 2 to 30 = make the brackets thicker and thicker.
+# -1 = same as 0, draw a box outline one-pixel thick.
+# -2 to -30 = draw a box outline, thicker and thicker.
 
 2       # grid_brackets
 
@@ -645,6 +644,32 @@ TB-303
 # Specifies some quantity, it is not known what it means.
 
 0      # control_height
+
+# Specifies the initial zoom for the piano rolls.  Ranges from 1.
+# to 32, and defaults to 2 unless changed here.
+
+2      # zoom
+
+# Specifies if the key, scale, and background sequence are to be
+# applied to all sequences, or to individual sequences.  The
+# behavior of Seq24 was to apply them to all sequences.  But
+# Sequencer64 takes it further by applying it immediately, and
+# by saving to the end of the MIDI file.  Note that these three
+# values are stored in the MIDI file, not this configuration file.
+
+# 0 = allow each sequence to have its own key/scale/background.
+# 1 = apply these settings globally (similar to seq24).
+
+1      # global_seq_feature
+
+# Specifies if the old, console-style font, or the new anti-
+# alias font, is to be used as the font throughout the GUI.
+# In legacy mode, the old font is the default.
+
+# 0 = use the old-style font.
+# 1 = use the new-style font.
+
+1      # use_new_font
 
 [user-midi-settings]
 

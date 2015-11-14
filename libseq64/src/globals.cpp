@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-08-07
- * \updates       2015-11-09
+ * \updates       2015-11-14
  * \license       GNU GPLv2 or above
  *
  *  The first part of this file defines a couple of global structure
@@ -101,11 +101,10 @@ usr ()
 
 /**
  * Most of these variables were declared and used in other modules, but
- * are now consolidated here.
+ * are now consolidated here.  We've moved most of them into rc_settings
+ * by now.
  */
 
-bool global_legacy_format = false;
-bool global_lash_support = false;
 bool global_manual_alsa_ports = false;
 bool global_showmidi = false;
 bool global_priority = false;
@@ -113,19 +112,7 @@ bool global_device_ignore = false;
 int global_device_ignore_num = 0;
 bool global_stats = false;
 bool global_pass_sysex = false;
-std::string global_filename = "";
-std::string global_config_directory = ".config/sequencer64";
-std::string global_config_filename = "sequencer64.rc";
-std::string global_user_filename = "sequencer64.usr";
-std::string global_config_filename_alt = ".seq24rc";
-std::string global_user_filename_alt = ".seq24usr";
 bool global_print_keys = false;
-bool global_with_jack_transport = false;
-bool global_with_jack_master = false;
-bool global_with_jack_master_cond = false;
-bool global_jack_start_mode = true;
-std::string global_jack_session_uuid = "";
-bool global_allow_mod4_mode = true;
 
 /*
  * globals.cpp

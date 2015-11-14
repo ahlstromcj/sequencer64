@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-08
+ * \updates       2015-11-14
  * \license       GNU GPLv2 or above
  *
  *  Here is a list of the global variables used/stored/modified by this
@@ -38,10 +38,6 @@
  *      -   e_jack_transport, e_jack_master,
  *          e_jack_master_cond, e_jack_master_connect,
  *          e_jack_master_disconnect, e_jack_master_song_mode,
- *      -   global_with_jack_transport);
- *      -   global_with_jack_master);
- *      -   global_with_jack_master_cond);
- *      -   global_jack_start_mode)
  */
 
 #include <sstream>
@@ -282,20 +278,23 @@ options::add_keyboard_page ()
     keycheck->set_active(perf().show_ui_sequence_key());
     mainbox->pack_start(*keycheck, false, false);
 
-    Gtk::CheckButton * numcheck = manage
-    (
-        new Gtk::CheckButton("Show se_quence numbers on sequences", true)
-    );
-    numcheck->signal_toggled().connect
-    (
-        bind
+    if (! rc().legacy_format())
+    {
+        Gtk::CheckButton * numcheck = manage
         (
-            mem_fun(*this, &options::input_callback),
-            PERFORM_NUM_LABELS_ON_SEQUENCE, numcheck
-        )
-    );
-    numcheck->set_active(perf().show_ui_sequence_number());
-    mainbox->pack_start(*numcheck, false, false);
+            new Gtk::CheckButton("Show se_quence numbers on sequences", true)
+        );
+        numcheck->signal_toggled().connect
+        (
+            bind
+            (
+                mem_fun(*this, &options::input_callback),
+                PERFORM_NUM_LABELS_ON_SEQUENCE, numcheck
+            )
+        );
+        numcheck->set_active(perf().show_ui_sequence_number());
+        mainbox->pack_start(*numcheck, false, false);
+    }
 
     /* Frame for sequence toggle keys */
 
@@ -544,7 +543,7 @@ options::add_mouse_page ()
             true
         )
     );
-    chk_mod4->set_active(global_allow_mod4_mode);
+    chk_mod4->set_active(rc().allow_mod4_mode());
     add_tooltip
     (
         chk_mod4,
@@ -604,7 +603,7 @@ options::add_jack_sync_page ()
     (
         new Gtk::CheckButton("JACK _Transport", true)
     );
-    check->set_active(global_with_jack_transport);
+    check->set_active(rc().with_jack_transport());
     add_tooltip(check, "Enable sync with JACK Transport.");
     check->signal_toggled().connect
     (
@@ -617,7 +616,7 @@ options::add_jack_sync_page ()
     transportbox->pack_start(*check, false, false);
 
     check = manage(new Gtk::CheckButton("Trans_port Master", true));
-    check->set_active(global_with_jack_master);
+    check->set_active(rc().with_jack_master());
     add_tooltip(check, "Sequencer64 will attempt to serve as JACK Master.");
     check->signal_toggled().connect
     (
@@ -626,7 +625,7 @@ options::add_jack_sync_page ()
     transportbox->pack_start(*check, false, false);
 
     check = manage(new Gtk::CheckButton("Master C_onditional", true));
-    check->set_active(global_with_jack_master_cond);
+    check->set_active(rc().with_jack_master_cond());
     add_tooltip
     (
         check,
@@ -669,7 +668,7 @@ options::add_jack_sync_page ()
 
     Gtk::RadioButton::Group group = rb_live->get_group();
     rb_perform->set_group(group);
-    if (global_jack_start_mode)
+    if (rc().jack_start_mode())
         rb_perform->set_active(true);
     else
         rb_live->set_active(true);
@@ -737,7 +736,7 @@ options::add_jack_sync_page ()
             true
         )
     );
-    chk_lash->set_active(global_lash_support);
+    chk_lash->set_active(rc().lash_support());
     add_tooltip
     (
         chk_lash,
@@ -862,7 +861,7 @@ options::mouse_fruity_callback (Gtk::RadioButton * btn)
 void
 options::mouse_mod4_callback (Gtk::CheckButton * btn)
 {
-    global_allow_mod4_mode = btn->get_active();
+    rc().allow_mod4_mode(btn->get_active());
 }
 
 /**
@@ -872,7 +871,7 @@ options::mouse_mod4_callback (Gtk::CheckButton * btn)
 void
 options::lash_support_callback (Gtk::CheckButton * btn)
 {
-    global_lash_support = btn->get_active();
+    rc().lash_support(btn->get_active());
 }
 
 /**
@@ -886,19 +885,19 @@ options::transport_callback (button type, Gtk::Button * acheck)
     switch (type)
     {
     case e_jack_transport:
-        global_with_jack_transport = check->get_active();
+        rc().with_jack_transport(check->get_active());
         break;
 
     case e_jack_master:
-        global_with_jack_master = check->get_active();
+        rc().with_jack_master(check->get_active());
         break;
 
     case e_jack_master_cond:
-        global_with_jack_master_cond = check->get_active();
+        rc().with_jack_master_cond(check->get_active());
         break;
 
     case e_jack_start_mode_song:
-        global_jack_start_mode = check->get_active();
+        rc().jack_start_mode(check->get_active());
         break;
 
     case e_jack_connect:

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-22
- * \updates       2015-11-09
+ * \updates       2015-11-14
  * \license       GNU GPLv2 or above
  *
  *  Note that this module also sets the legacy global variables, so that
@@ -176,6 +176,7 @@ rc_settings::set_defaults ()
 {
     m_legacy_format             = false;
     m_lash_support              = false;
+    m_allow_mod4_mode           = false;
     m_show_midi                 = false;
     m_priority                  = false;
     m_stats                     = false;
@@ -208,28 +209,15 @@ rc_settings::set_defaults ()
 void
 rc_settings::set_globals ()
 {
-    global_legacy_format             = m_legacy_format;
-    global_lash_support              = m_lash_support;
     global_showmidi                  = m_show_midi;
     global_priority                  = m_priority;
     global_stats                     = m_stats;
     global_pass_sysex                = m_pass_sysex;
-    global_with_jack_transport       = m_with_jack_transport;
-    global_with_jack_master          = m_with_jack_master;
-    global_with_jack_master_cond     = m_with_jack_master_cond;
-    global_jack_start_mode           = m_jack_start_mode;
     global_manual_alsa_ports         = m_manual_alsa_ports;
     global_print_keys                = m_print_keys;
     global_device_ignore             = m_device_ignore;
     global_device_ignore_num         = m_device_ignore_num;
     global_device_ignore_num         = m_device_ignore_num;
-    global_filename                  = m_filename;
-    global_jack_session_uuid         = m_jack_session_uuid;
-    global_config_directory          = m_config_directory;
-    global_config_filename           = m_config_filename;
-    global_user_filename             = m_user_filename;
-    global_config_filename_alt       = m_config_filename_alt;
-    global_user_filename_alt         = m_user_filename_alt;
 }
 
 /**
@@ -240,28 +228,15 @@ rc_settings::set_globals ()
 void
 rc_settings::get_globals ()
 {
-    m_legacy_format             = global_legacy_format;
-    m_lash_support              = global_lash_support;
     m_show_midi                 = global_showmidi;
     m_priority                  = global_priority;
     m_stats                     = global_stats;
     m_pass_sysex                = global_pass_sysex;
-    m_with_jack_transport       = global_with_jack_transport;
-    m_with_jack_master          = global_with_jack_master;
-    m_with_jack_master_cond     = global_with_jack_master_cond;
-    m_jack_start_mode           = global_jack_start_mode;
     m_manual_alsa_ports         = global_manual_alsa_ports;
     m_print_keys                = global_print_keys;
     m_device_ignore             = global_device_ignore;
     m_device_ignore_num         = global_device_ignore_num;
     m_device_ignore_num         = global_device_ignore_num;
-    m_filename                  = global_filename;
-    m_jack_session_uuid         = global_jack_session_uuid;
-    m_config_directory          = global_config_directory;
-    m_config_filename           = global_config_filename;
-    m_user_filename             = global_user_filename;
-    m_config_filename_alt       = global_config_filename_alt;
-    m_user_filename_alt         = global_user_filename_alt;
 }
 
 /**
@@ -329,6 +304,7 @@ rc_settings::home_config_directory () const
         if (! rc().legacy_format())
         {
             result += config_directory();           /* new, longer directory */
+            result += SLASH;
             bool ok = make_directory(result);
             if (! ok)
             {
@@ -354,7 +330,6 @@ rc_settings::config_filespec () const
     std::string result = home_config_directory();
     if (! result.empty())
     {
-        result += SLASH;
         if (rc().legacy_format())
             result += config_filename_alt();
         else
@@ -374,7 +349,6 @@ rc_settings::user_filespec () const
     std::string result = home_config_directory();
     if (! result.empty())
     {
-        result += SLASH;
         if (rc().legacy_format())
             result += user_filename_alt();
         else

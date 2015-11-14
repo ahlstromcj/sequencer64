@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-30
- * \updates       2015-11-07
+ * \updates       2015-11-15
  * \license       GNU GPLv2 or above
  *
  *  This file provides a Linux-only implementation of MIDI support.
@@ -126,7 +126,12 @@ mastermidibus::mastermidibus (int ppqn, int bpm)
          * (void) snd_config_update_free_global();
          */
     }
-    snd_seq_set_client_name(m_alsa_seq, "seq24");   /* client's name           */
+
+    /*
+     * Set the client's name for ALSA.  It used to be "seq24".
+     */
+
+    snd_seq_set_client_name(m_alsa_seq, "sequencer64");
     m_queue = snd_seq_alloc_queue(m_alsa_seq);      /* client's queue          */
 #endif
 

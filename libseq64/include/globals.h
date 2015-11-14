@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-25
- * \updates       2015-11-11
+ * \updates       2015-11-15
  * \license       GNU GPLv2 or above
  *
  *  We're going to try to collect all the globals here in one module, and
@@ -376,34 +376,9 @@ const int c_redraw_ms = 40;
  *  So we will use the font's numeric accessors soon.
  */
 
-#ifdef  USE_SEQ42_PATCHES
-const int c_names_x = 114;              /* width of name box, 24 characters */
-const int c_names_y = 22;               /* height of name box, pixels, 22   */
-#else
 const int c_names_x = 6 * 24;           /* width of name box, 24 characters */
-#endif
-
 const int c_names_y = 24;               /* max height of name box, pixels   */
 const int c_perf_scale_x = 32;          /* units are ticks per pixel        */
-
-/**
- *  These global values seemed to be use mainly in the options, optionsfile,
- *  perform, seq24, and userfile modules.  The new ones will eventually be
- *  made official.
- *
- *  The global ppqn variable provides the timing resolution of a MIDI
- *  sequencer, known as "pulses per quarter note.  For this application, 192
- *  is the default, and it doesn't change.  It will be changeable in a
- *  near-future release of Sequencer64, though.  See the
- *  user_settings::midi_ppqn() accessors.
- */
-
-#ifdef  USE_SEQ42_PATCHES
-const int cxppqn = DEFAULT_PPQN;
-const int cxppwn = 4 * DEFAULT_PPQN;    /* whole note       */
-const int cxppen = DEFAULT_PPQN / 2;    /* eighth note      */
-const int cxppen = DEFAULT_PPQN / 4;    /* 16th note        */
-#endif
 
 /**
  *  New variables starting from 2015-08-16 onward.  These variables
@@ -417,28 +392,14 @@ const int cxppen = DEFAULT_PPQN / 4;    /* 16th note        */
  *  more informative, but takes some time to reverse-engineer.
  */
 
-extern bool global_legacy_format;
-extern bool global_lash_support;
-
 extern bool global_showmidi;
 extern bool global_priority;
 extern bool global_stats;
 extern bool global_pass_sysex;
-extern bool global_with_jack_transport;
-extern bool global_with_jack_master;
-extern bool global_with_jack_master_cond;
-extern bool global_jack_start_mode;
 extern bool global_manual_alsa_ports;
 extern bool global_print_keys;
 extern bool global_device_ignore;            /* seq24 module    */
 extern int global_device_ignore_num;         /* seq24 module    */
-extern std::string global_filename;
-extern std::string global_jack_session_uuid;
-extern std::string global_config_directory;
-extern std::string global_config_filename;
-extern std::string global_user_filename;
-extern std::string global_config_filename_alt;
-extern std::string global_user_filename_alt;
 
 /**
  *  Mouse actions, for the Pattern Editor.  Be sure to update seq24-doc
@@ -473,15 +434,6 @@ const char * const c_interaction_method_descs[3] =
     "similar to a certain fruity sequencer we like",
     NULL
 };
-
-/**
- *  Provides the value of usage of the Mod4 (Super or Windows) key in
- *  disabling the exiting of the note-add mode of the seqroll module.
- *  Currently applies only the the "seq24" interaction method, not the
- *  "fruity" method.  Defaults to true.
- */
-
-extern bool global_allow_mod4_mode;
 
 /*
  * Global functions in the seq64 namespace for MIDI timing calculations.

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-13
+ * \updates       2015-11-14
  * \license       GNU GPLv2 or above
  *
  */
@@ -328,7 +328,7 @@ seqmenu::seq_paste ()
 /**
  *  If the current sequence is active, this function pushes a trigger
  *  undo in the main perform object, clears its sequence triggers for the
- *  current seqeuence, and sets the dirty flag of the sequence.
+ *  current sequence, and sets the dirty flag of the sequence.
  *
  * \todo
  *      All of seq_paste() can be offloaded to a (new) perform member

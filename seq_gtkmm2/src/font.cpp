@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-06
+ * \updates       2015-11-14
  * \license       GNU GPLv2 or above
  *
  *  The interesting thing about this font class is that font files are not
@@ -43,10 +43,9 @@
  *  patterns, which have no events, just some meta information.
  *
  *  Finally, we created another whole set of font pixmaps for an anti-aliased
- *  font.  This new font is selected by defining SEQ64_USE_NEW_FONT.  The new
- *  pixmaps aren't quite the same size, and the lettering is marginally
- *  larger, so alternative sizing variables are defined if the new font is in
- *  force.
+ *  font.  This new font is selected by default.  The new pixmaps aren't quite
+ *  the same size, and the lettering is marginally larger, so alternative
+ *  sizing variables are defined if the new font is in force.
  *
  *  The new font was created by using a short C program to create a 16x16 text
  *  file, importing it into a LibreOffice spreadsheet, setting the text to the
@@ -57,47 +56,54 @@
  *  text using gtkmm.  See the contrib/ascii-matrix.* files for the source
  *  material.
  *
- *  Also note we had to reduce the actual size of the characters slightly to
- *  render them properly in the cramped spaces of the GUI.
+ *  Also note we had to reduce the specified size of the characters slightly
+ *  to render them properly in the cramped spaces of the GUI.
  *
  * \warning
  *      Some global sizes, such as c_names_x, may depend on aspects of the
  *      character size!
  */
 
+#include "easy_macros.h"
+#include "globals.h"                    /* user configuration settings      */
+#include "font.hpp"
+
+/*
+ * Font grid size
+ */
+
 const int cf_grid_w = 16;               /* number of horizontal font cells  */
 const int cf_grid_h = 16;               /* number of vertical font cells    */
 
-#define SEQ64_USE_NEW_FONT              /* currently for testing only       */
+/*
+ * New values for the font
+ */
 
-#ifdef SEQ64_USE_NEW_FONT
+#include "pixmaps/wenfont_w.xpm"        /* white on black (inverse video)   */
+#include "pixmaps/wenfont_b.xpm"        /* black on white                   */
+#include "pixmaps/wenfont_yb.xpm"       /* yellow on black (inverse video)  */
+#include "pixmaps/wenfont_y.xpm"        /* black on yellow                  */
+
 const int cf_cell_w = 11;               /* full width of character cell     */
 const int cf_cell_h = 15;               /* full height of character cell    */
 const int cf_offset =  3;               /* x, y offsets of top left pixel   */
 const int cf_text_w =  6; // actual:  8 /* doesn't include inner padding    */
 const int cf_text_h = 11; // actual: 12 /* ditto                            */
-#else
-const int cf_cell_w =  9;               /* full width of character cell     */
-const int cf_cell_h = 13;               /* full height of character cell    */
-const int cf_offset =  2;               /* x, y offsets of top left pixel   */
-const int cf_text_w =  6;               /* doesn't include inner padding    */
-const int cf_text_h = 10;               /* ditto                            */
-#endif
 
-#include "easy_macros.h"
-#include "font.hpp"
+/*
+ * Old values for the font
+ */
 
-#ifdef SEQ64_USE_NEW_FONT
-#include "pixmaps/wenfont_w.xpm"        /* white on black (inverse video)   */
-#include "pixmaps/wenfont_b.xpm"        /* black on white                   */
-#include "pixmaps/wenfont_yb.xpm"       /* yellow on black (inverse video)  */
-#include "pixmaps/wenfont_y.xpm"        /* black on yellow                  */
-#else
 #include "pixmaps/font_w.xpm"           /* white on black (inverse video)   */
 #include "pixmaps/font_b.xpm"           /* black on white                   */
 #include "pixmaps/font_yb.xpm"          /* yellow on black (inverse video)  */
 #include "pixmaps/font_y.xpm"           /* black on yellow                  */
-#endif
+
+const int co_cell_w =  9;               /* full width of character cell     */
+const int co_cell_h = 13;               /* full height of character cell    */
+const int co_offset =  2;               /* x, y offsets of top left pixel   */
+const int co_text_w =  6;               /* doesn't include inner padding    */
+const int co_text_h = 10;               /* ditto                            */
 
 namespace seq64
 {
@@ -108,6 +114,9 @@ namespace seq64
 
 font::font ()
  :
+    m_use_new_font  (usr().use_new_font()),
+    m_cell_w        (cf_cell_w),
+    m_cell_h        (cf_cell_h),
     m_font_w        (cf_text_w),
     m_font_h        (cf_text_h),
     m_offset        (cf_offset),
@@ -119,7 +128,15 @@ font::font ()
     m_y_on_b_pixmap (),
     m_clip_mask     ()
 {
-   // empty body
+    if (! m_use_new_font)
+    {
+        m_cell_w    = co_cell_w;
+        m_cell_h    = co_cell_h;
+        m_font_w    = co_text_w;
+        m_font_h    = co_text_h;
+        m_offset    = co_offset;
+        m_padded_h  = co_text_h + 1;
+    }
 }
 
 /**
@@ -135,41 +152,44 @@ font::font ()
 void
 font::init (Glib::RefPtr<Gdk::Window> wp)
 {
-#ifdef SEQ64_USE_NEW_FONT
-    m_black_pixmap = Gdk::Pixmap::create_from_xpm
-    (
-        wp->get_colormap(), m_clip_mask, wenfont_b_xpm
-    );
-    m_white_pixmap = Gdk::Pixmap::create_from_xpm
-    (
-        wp->get_colormap(), m_clip_mask, wenfont_w_xpm
-    );
-    m_b_on_y_pixmap = Gdk::Pixmap::create_from_xpm
-    (
-        wp->get_colormap(), m_clip_mask, wenfont_y_xpm
-    );
-    m_y_on_b_pixmap = Gdk::Pixmap::create_from_xpm
-    (
-        wp->get_colormap(), m_clip_mask, wenfont_yb_xpm
-    );
-#else
-    m_black_pixmap = Gdk::Pixmap::create_from_xpm
-    (
-        wp->get_colormap(), m_clip_mask, font_b_xpm
-    );
-    m_white_pixmap = Gdk::Pixmap::create_from_xpm
-    (
-        wp->get_colormap(), m_clip_mask, font_w_xpm
-    );
-    m_b_on_y_pixmap = Gdk::Pixmap::create_from_xpm
-    (
-        wp->get_colormap(), m_clip_mask, font_y_xpm
-    );
-    m_y_on_b_pixmap = Gdk::Pixmap::create_from_xpm
-    (
-        wp->get_colormap(), m_clip_mask, font_yb_xpm
-    );
-#endif
+    if (m_use_new_font)
+    {
+        m_black_pixmap = Gdk::Pixmap::create_from_xpm
+        (
+            wp->get_colormap(), m_clip_mask, wenfont_b_xpm
+        );
+        m_white_pixmap = Gdk::Pixmap::create_from_xpm
+        (
+            wp->get_colormap(), m_clip_mask, wenfont_w_xpm
+        );
+        m_b_on_y_pixmap = Gdk::Pixmap::create_from_xpm
+        (
+            wp->get_colormap(), m_clip_mask, wenfont_y_xpm
+        );
+        m_y_on_b_pixmap = Gdk::Pixmap::create_from_xpm
+        (
+            wp->get_colormap(), m_clip_mask, wenfont_yb_xpm
+        );
+    }
+    else
+    {
+        m_black_pixmap = Gdk::Pixmap::create_from_xpm
+        (
+            wp->get_colormap(), m_clip_mask, font_b_xpm
+        );
+        m_white_pixmap = Gdk::Pixmap::create_from_xpm
+        (
+            wp->get_colormap(), m_clip_mask, font_w_xpm
+        );
+        m_b_on_y_pixmap = Gdk::Pixmap::create_from_xpm
+        (
+            wp->get_colormap(), m_clip_mask, font_y_xpm
+        );
+        m_y_on_b_pixmap = Gdk::Pixmap::create_from_xpm
+        (
+            wp->get_colormap(), m_clip_mask, font_yb_xpm
+        );
+    }
 }
 
 /**
@@ -215,6 +235,11 @@ font::render_string_on_drawable
     if (not_nullptr(str))
         length = strlen(str);
 
+    if (m_use_new_font)
+        y += 1;                         /* make minor correction */
+    else
+        y += 2;                         /* make minor correction */
+
     if (col == font::BLACK)
         m_pixmap = &m_black_pixmap;
     else if (col == font::WHITE)
@@ -224,21 +249,21 @@ font::render_string_on_drawable
     else if (col == font::YELLOW_ON_BLACK)
         m_pixmap = &m_y_on_b_pixmap;
     else
-        m_pixmap = &m_black_pixmap;     // user lied, provide a legal pointer
+        m_pixmap = &m_black_pixmap;     /* user lied, provide a legal pointer */
 
-    for (int i = 0; i < length; ++i)
+    for (int k = 0; k < length; ++k)
     {
-        unsigned char c = (unsigned char)(str[i]);
+        unsigned char c = (unsigned char)(str[k]);
         int pixbuf_index_x = c % cf_grid_w;
         int pixbuf_index_y = c / cf_grid_h;
-        pixbuf_index_x *= cf_cell_w;    // width of grid (letter is 6 pixels)
-        pixbuf_index_x += m_offset;     // add around 2 for border?
-        pixbuf_index_y *= cf_cell_h;    // height of grid (letter is 10 pixels)
-        pixbuf_index_y += m_offset;     // add around 2 for border?
+        pixbuf_index_x *= m_cell_w;     /* width of grid (letter = 6 pixels)   */
+        pixbuf_index_x += m_offset;     /* add around 2 for border?            */
+        pixbuf_index_y *= m_cell_h;     /* height of grid (letter = 10 pixels) */
+        pixbuf_index_y += m_offset;     /* add around 2 for border?            */
         a_draw->draw_drawable
         (
             a_gc, *m_pixmap, pixbuf_index_x, pixbuf_index_y,
-            x + (i * m_font_w), y, m_font_w, m_font_h
+            x + (k * m_font_w), y, m_font_w, m_font_h
         );
     }
 }

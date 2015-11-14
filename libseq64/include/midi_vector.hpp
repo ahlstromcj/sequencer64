@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-10-11
- * \updates       2015-11-12
+ * \updates       2015-11-14
  * \license       GNU GPLv2 or above
  *
  *  This implementation attempts to avoid the reversals that can occur using
@@ -99,9 +99,8 @@ public:
     }
 
     /**
-     *  Provides a way to add a MIDI byte into the list.
-     *  The original seq24 list used an std::list and a push_front
-     *  operation.
+     *  Provides a way to add a MIDI byte into the list.  The original seq24
+     *  list used an std::list and a push_front operation.
      */
 
     virtual void put (midibyte b)
@@ -110,8 +109,8 @@ public:
     }
 
     /**
-     *  Provide a way to get the next byte from the container.
-     *  In this implementation, m_position_for_get is used.
+     *  Provide a way to get the next byte from the container.  In this
+     *  implementation, m_position_for_get is used.
      */
 
     virtual midibyte get ()
@@ -132,3 +131,4 @@ public:
  *
  * vim: sw=4 ts=4 wm=4 et ft=cpp
  */
+

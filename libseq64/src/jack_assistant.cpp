@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-14
- * \updates       2015-11-07
+ * \updates       2015-11-14
  * \license       GNU GPLv2 or above
  *
  *  This module was created from code that existed in the perform object.
@@ -185,11 +185,6 @@ jack_assistant::error_message (const std::string & msg)
  *
  *  Who calls this routine?
  *
- * \todo
- *      Make sure that global_with_jack_transport, and better yet, its new
- *      g_rc_settings member, gets set properly; what option do we need to
- *      provide, if any?
- *
  * \return
  *      Returns true if JACK is now considered to be running (or if it was
  *      already running.)
@@ -198,18 +193,18 @@ jack_assistant::error_message (const std::string & msg)
 bool
 jack_assistant::init ()
 {
-    if (global_with_jack_transport && ! m_jack_running)
+    if (rc().with_jack_transport() && ! m_jack_running)
     {
         m_jack_running = true;              /* determined surely below      */
         m_jack_master = true;               /* ???                          */
 
 #ifdef SEQ64_JACK_SESSION
-        if (! global_jack_session_uuid.empty())
+        if (! rc().jack_session_uuid().empty())
         {
             m_jack_client = jack_client_open
             (
                 SEQ64_PACKAGE, JackSessionID, NULL,
-                global_jack_session_uuid.c_str()
+                rc().jack_session_uuid().c_str()
             );
         }
         else
@@ -262,12 +257,12 @@ jack_assistant::init ()
 #endif
         /* true if we want to fail if there is already a master */
 
-        bool cond = global_with_jack_master_cond;
+        bool cond = rc().with_jack_master_cond();
         jackcode = jack_set_timebase_callback
         (
             m_jack_client, cond, jack_timebase_callback, &m_jack_parent
         );
-        if (global_with_jack_master && jackcode == 0)
+        if (rc().with_jack_master() && jackcode == 0)
         {
             info_message("JACK transport master");
             m_jack_master = true;
@@ -483,7 +478,7 @@ jack_sync_callback
 
     case JackTransportStarting:
         infoprint("[JackTransportStarting]");
-        jack->parent().inner_start(global_jack_start_mode);
+        jack->parent().inner_start(rc().jack_start_mode());
         break;
 
     case JackTransportLooping:
@@ -507,14 +502,15 @@ jack_sync_callback
  *  ca 2015-07-24
  *  Just a note:  The OMA (OpenMandrivaAssociation) patch was already
  *  applied to seq24 v.0.9.2.  It put quotes around the --file argument.
+ *  However, the --file option doesn't work, so let's change that line.
+ *
+ *      sequencer64 --file \"${SESSION_DIR}file.mid\" --jack_session_uuid 
  *
  *  Why are we using a Glib::ustring here?  Convenience.  But with
  *  C++11, we could use a lexical_cast<>.  No more ustring, baby!
  *
- *  It doesn't really matter; this function can call Gtk::Main::quit().
- *
- *  PROVIDE a hook to a perform object or GUI item to perfom the quit!!!!!
- *  TRY to move midifile into this library!!!!!!!!
+ *  It doesn't really matter; this function can call Gtk::Main::quit(), via
+ *  the parent's gui().quit() function.
  *
  * \return
  *      Always returns false.
@@ -525,22 +521,14 @@ jack_assistant::session_event ()
 {
     std::string fname(m_jsession_ev->session_dir);
     fname += "file.mid";
-    std::string cmd
-    (
-        "sequencer64 --file \"${SESSION_DIR}file.mid\" --jack_session_uuid "
-    );
+    std::string cmd("sequencer64 --jack_session_uuid ");
     cmd += m_jsession_ev->client_uuid;
+    cmd += " \"${SESSION_DIR}file.mid\"";
 
-    midifile f(fname, ! global_legacy_format);      /* MIDI file access     */
+    midifile f(fname, rc().legacy_format(), usr().global_seq_feature());
     f.write(m_jack_parent);
     m_jsession_ev->command_line = strdup(cmd.c_str());
     jack_session_reply(m_jack_client, m_jsession_ev);
-
-    /*
-     *  if (m_jsession_ev->type == JackSessionSaveAndQuit)
-     *      Gtk::Main::quit();
-     */
-
      if (m_jsession_ev->type == JackSessionSaveAndQuit)
         m_jack_parent.gui().quit();
 

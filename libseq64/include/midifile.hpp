@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-14
+ * \updates       2015-11-15
  * \license       GNU GPLv2 or above
  *
  *  The Seq24 MIDI file is a standard, Format 1 MIDI file, with some extra
@@ -184,7 +184,9 @@ private:
 
     void write_varinum (unsigned long);
     void write_track_name (const std::string & trackname);
+    std::string read_track_name();
     void write_seq_number (unsigned short seqnum);
+    int read_seq_number ();
     void write_track_end ();
     void write_prop_header (unsigned long tag, long len);
     bool write_proprietary_track (perform & a_perf);

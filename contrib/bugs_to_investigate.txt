@@ -4,6 +4,12 @@ Chris Ahlstrom
 
 In no particular order...
 
+-  Try to add usage of left/right arrows to perftime to permit fine
+   adjustments, if this cannot work by hold the ctrl or ctrl-shift keys.
+   Need a more detail view to get it accurate.  Or a number showing the
+   position of each marker.
+-  Modifications in the performance editor don't cause a prompt to save when
+   exiting Sequencer64.
 -  Be sure to add the legacy-format option to the "rc" configuration file.
 -  Seq24/Sequencer64 don't write out the c_midictrl data for any sequences.
    Something to learn more about and fix.

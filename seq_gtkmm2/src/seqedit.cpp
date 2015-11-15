@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-13
+ * \updates       2015-11-15
  * \license       GNU GPLv2 or above
  *
  */
@@ -109,9 +109,6 @@ namespace seq64
 
 int seqedit::m_initial_snap                 = DEFAULT_PPQN / 4;
 int seqedit::m_initial_note_length          = DEFAULT_PPQN / 4;
-int seqedit::m_initial_scale                = int(c_scale_off);
-int seqedit::m_initial_key                  = SEQ64_KEY_OF_C;
-int seqedit::m_initial_sequence             = SEQ64_NULL_SEQUENCE;
 
 /**
  * Actions.  These variables represent actions that can be applied to a
@@ -151,9 +148,9 @@ seqedit::seqedit (perform & p, sequence & seq, int pos, int ppqn)
     m_zoom              (usr().zoom()),
     m_snap              (m_initial_snap),
     m_note_length       (m_initial_note_length),
-    m_scale             (m_initial_scale),
-    m_key               (m_initial_key),
-    m_sequence          (m_initial_sequence),
+    m_scale             (usr().seqedit_scale()),        // (m_initial_scale),
+    m_key               (usr().seqedit_key()),          // (m_initial_key),
+    m_sequence          (usr().seqedit_bgsequence()),   // (m_initial_sequence),
     m_measures          (0),
     m_ppqn              (0),
     m_seq               (seq),
@@ -1363,14 +1360,18 @@ seqedit::popup_sequence_menu ()
  *  Note that the "initial value" for this parameter is a static variable that
  *  gets set to the new value, so that opening up another sequence causes the
  *  sequence to take on the new "initial value" as well.  A feature, but
- *  should it be optional?
+ *  should it be optional?  Now it is, based on the setting of
+ *  usr().global_seq_feature().
  */
 
 void
 seqedit::set_background_sequence (int seqnum)
 {
     char name[24];
-    m_initial_sequence = m_sequence = seqnum;
+    m_sequence = seqnum;
+    if (usr().global_seq_feature())
+        usr().seqedit_bgsequence(seqnum);
+
     if (seqnum == -1 || ! perf().is_active(seqnum))
     {
         m_entry_sequence->set_text("Off");
@@ -1721,17 +1722,20 @@ seqedit::set_note_length (int notelength)
  *  Note that the "initial value" for this parameter is a static variable that
  *  gets set to the new value, so that opening up another sequence causes the
  *  sequence to take on the new "initial value" as well.  A feature, but
- *  should it be optional?
+ *  should it be optional?  Now it is, based on the setting of
+ *  usr().global_seq_feature().
  */
 
 void
 seqedit::set_scale (int scale)
 {
     m_entry_scale->set_text(c_scales_text[scale]);
-    m_scale = m_initial_scale = scale;
     m_seqroll_wid->set_scale(scale);
     m_seqkeys_wid->set_scale(scale);
     m_seq.musical_scale(scale);
+    m_scale = scale;
+    if (usr().global_seq_feature())
+        usr().seqedit_scale(scale);
 }
 
 /**
@@ -1742,17 +1746,20 @@ seqedit::set_scale (int scale)
  *  Note that the "initial value" for this parameter is a static variable that
  *  gets set to the new value, so that opening up another sequence causes the
  *  sequence to take on the new "initial value" as well.  A feature, but
- *  should it be optional?
+ *  should it be optional?  Now it is, based on the setting of
+ *  usr().global_seq_feature().
  */
 
 void
 seqedit::set_key (int key)
 {
     m_entry_key->set_text(c_key_text[key]);
-    m_key = m_initial_key = key;
     m_seqroll_wid->set_key(key);
     m_seqkeys_wid->set_key(key);
     m_seq.musical_key(key);
+    m_key = key;
+    if (usr().global_seq_feature())
+        usr().seqedit_key(key);
 }
 
 /**

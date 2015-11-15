@@ -1,6 +1,6 @@
 Construction of "Where's Prince Brilliant" for ZynAddSubFx/Yoshimi
 Chris Ahlstrom
-2012-01-20 to 2015-10-11
+2012-01-20 to 2015-11-14
 
 This file describes the importing of one of my old Cakewalk transcriptions, a
 rendering of "Where's Prince Brilliant?" from (unreliable) memory.
@@ -19,8 +19,6 @@ skills and not-so-good musical memory.  But I was able to use it to learn
 how to work with the Seq24 MIDI editor and the Yoshimi/ZynAddSubFx software
 synthesizer.  Although Seq24 is geared towards creating patterns, it works
 pretty well for full tracks as well.
-
-All source files are located in the Seq24/WPB directory.
 
 Imported the original (created for Sound Blaster Wave and FM,
 plus MT-32) *.mid file into Seq24.  Reduced it to 8 voices:

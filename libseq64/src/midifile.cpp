@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-14
+ * \updates       2015-11-15
  * \license       GNU GPLv2 or above
  *
  *  For a quick guide to the MIDI format, see, for example:
@@ -69,13 +69,25 @@
 #define TRACKNAME_MAX                   256
 
 /**
- *  The chunk header value for the Sequencer24 proprietary section.
- *  We will try other chunks, as well, since, as per the MIDI
- *  specification, unknown chunks should not cause an error in a sequencer
- *  (or our midicvt program).
+ *  Highlights the MIDI file header value, "MThd".
  */
 
-#define PROPRIETARY_CHUNK_TAG          0x4D54726B       /* "MTrk"           */
+#define SEQ64_HEADER_TAG    0x4D546864              /* magic number 'MThd'  */
+
+/**
+ *  Highlights the MIDI file track-marker (chunk) value, "MTrk".
+ */
+
+#define SEQ64_TRACK_TAG     0x4D54726B              /* magic number 'MTrk'  */
+
+/**
+ *  The chunk header value for the Sequencer64 proprietary section.
+ *  We might try other chunks, as well, since, as per the MIDI
+ *  specification, unknown chunks should not cause an error in a sequencer
+ *  (or our midicvt program).  For now, we stick with "MTrk".
+ */
+
+#define PROPRIETARY_CHUNK_TAG   SEQ64_TRACK_TAG
 
 /**
  *  Provides the sequence number for the proprietary data when using the new
@@ -183,9 +195,6 @@ midifile::read_long ()
 
 /**
  *  Reads 2 bytes of data using read_byte().
- *
- * \warning
- *      This code looks endian-dependent.
  */
 
 unsigned short
@@ -315,7 +324,7 @@ midifile::parse (perform & p, int screenset)
     unsigned short Format = read_short();           /* 0,1,2                */
     unsigned short NumTracks = read_short();
     unsigned short ppqn = read_short();
-    if (ID != 0x4D546864)                           /* magic number 'MThd'  */
+    if (ID != SEQ64_HEADER_TAG)                     /* magic number 'MThd'  */
     {
         errprintf("invalid MIDI header detected: %8lX\n", ID);
         return false;
@@ -342,7 +351,7 @@ midifile::parse (perform & p, int screenset)
         char TrackName[TRACKNAME_MAX];              /* track name from file  */
         ID = read_long();                           /* Get ID + Length       */
         TrackLength = read_long();
-        if (ID == 0x4D54726B)                       /* magic number 'MTrk'   */
+        if (ID == SEQ64_TRACK_TAG)                  /* magic number 'MTrk'   */
         {
             unsigned short seqnum = 0;
             unsigned char status = 0;
@@ -596,12 +605,13 @@ midifile::parse (perform & p, int screenset)
  *  follows:
  *
 \verbatim
-        0xFF 0x7F 0x02 length data
+        0x00 0xFF 0x7F length data
 \endverbatim
  *
- *  For convenience, this function first checks the amount of file data
- *  left.  Then it reads a long value.  If the value starts with FF, then
- *  that signals the new format.  Otherwise, it is probably the old
+ *  For convenience, this function first checks the amount of file data left.
+ *  If enough, then it reads a long value.  If the value starts with 0x00 0xFF
+ *  0x7F, then that is a SeqSpec event, which signals usage of the new
+ *  Sequencer64 "proprietary" format.  Otherwise, it is probably the old
  *  format, and the long value is a control tag (0x242400nn), which can be
  *  returned immedidately.
  *
@@ -633,13 +643,13 @@ midifile::parse_prop_header (int file_size)
     unsigned long result = 0;
     if ((file_size - m_pos) > int(sizeof(unsigned long)))
     {
-        result = read_long();                   /* status (new), or tag     */
-        unsigned char status = (result & 0xFF000000) >> 24;
+        result = read_long();                   /* status (new), or C_tag   */
+        unsigned char status = (result & 0x00FF0000) >> 16; /* 2-byte shift */
         if (status == 0xFF)
         {
-            m_pos -= 3;                         /* back up to retrench      */
+            m_pos -= 2;                         /* back up to meta type     */
             unsigned char type = read_byte();   /* get meta type            */
-            if (type == 0x7F)
+            if (type == 0x7F)                   /* SeqSpec event marker     */
             {
                 (void) read_varinum();          /* prop section length      */
                 result = read_long();           /* control tag              */
@@ -648,8 +658,7 @@ midifile::parse_prop_header (int file_size)
             {
                 fprintf
                 (
-                    stderr,
-                    "Bad status '%x' in proprietary section near offset %x",
+                    stderr, "Bad meta type '%x' in prop section near offset %x",
                     int(type), m_pos
                 );
             }
@@ -683,10 +692,11 @@ midifile::parse_prop_header (int file_size)
  *  The format is (1) tag ID; (2) length of data; (3) the data.
  *
  *  First, we separate out this function for a little more clarity.  Then we
- *  add code to handle reading both the legacy Seq24 format and the new,
+ *  added code to handle reading both the legacy Seq24 format and the new,
  *  MIDI-compliant format.  Note that even the new format is not quite
  *  correct, since it doesn't handle a MIDI manufacturer's ID, making it a
- *  single byte that is part of the data.
+ *  single byte that is part of the data.  But it does have the "MTrk" marker
+ *  and track name, so that must be processed for the new format.
  *
  * \param p
  *      The performance object that is being set via the incoming MIDI file.
@@ -702,125 +712,147 @@ bool
 midifile::parse_proprietary_track (perform & p, int file_size)
 {
     bool result = true;
-    unsigned long proprietary = parse_prop_header(file_size);
-    if (proprietary == c_midictrl)
+    unsigned long ID = read_long();                 /* Get ID + Length      */
+    if (ID == PROPRIETARY_CHUNK_TAG)                /* magic number 'MTrk'  */
     {
-        unsigned long seqs = read_long();
-        for (unsigned int i = 0; i < seqs; i++)
+        unsigned long tracklength = read_long();
+        if (tracklength > 0)
         {
-            p.get_midi_control_toggle(i)->m_active = read_byte();
-            p.get_midi_control_toggle(i)->m_inverse_active = read_byte();
-            p.get_midi_control_toggle(i)->m_status = read_byte();
-            p.get_midi_control_toggle(i)->m_data = read_byte();
-            p.get_midi_control_toggle(i)->m_min_value = read_byte();
-            p.get_midi_control_toggle(i)->m_max_value = read_byte();
-            p.get_midi_control_on(i)->m_active = read_byte();
-            p.get_midi_control_on(i)->m_inverse_active = read_byte();
-            p.get_midi_control_on(i)->m_status = read_byte();
-            p.get_midi_control_on(i)->m_data = read_byte();
-            p.get_midi_control_on(i)->m_min_value = read_byte();
-            p.get_midi_control_on(i)->m_max_value = read_byte();
-            p.get_midi_control_off(i)->m_active = read_byte();
-            p.get_midi_control_off(i)->m_inverse_active = read_byte();
-            p.get_midi_control_off(i)->m_status = read_byte();
-            p.get_midi_control_off(i)->m_data = read_byte();
-            p.get_midi_control_off(i)->m_min_value = read_byte();
-            p.get_midi_control_off(i)->m_max_value = read_byte();
-        }
-    }
-    proprietary = parse_prop_header(file_size);
-    if (proprietary == c_midiclocks)
-    {
-        unsigned long busscount = read_long();
-        for (unsigned int buss = 0; buss < busscount; buss++)
-        {
-            int clocktype = read_byte();
-            p.master_bus().set_clock(buss, (clock_e) clocktype);
-        }
-    }
-    proprietary = parse_prop_header(file_size);
-    if (proprietary == c_notes)
-    {
-        unsigned int screen_sets = read_short();
-        for (unsigned int x = 0; x < screen_sets; x++)
-        {
-            unsigned int len = read_short();            /* length of string */
-            std::string notess;
-            for (unsigned int i = 0; i < len; i++)
-                notess += read_byte();                  /* unsigned!        */
-
-            p.set_screen_set_notepad(x, notess);
-        }
-    }
-    proprietary = parse_prop_header(file_size);
-    if (proprietary == c_bpmtag)                        /* beats per minute */
-    {
-        long bpm = read_long();
-        p.set_beats_per_minute(bpm);
-    }
-
-    /* Read in the mute group information. */
-
-    proprietary = parse_prop_header(file_size);
-    if (proprietary == c_mutegroups)
-    {
-        long length = read_long();
-        if (c_gmute_tracks != length)
-        {
-            errprint("corrupt data in mute-group section");
-            result = false;                         /* but keep going */
-        }
-        for (int i = 0; i < c_seqs_in_set; i++)
-        {
-            long groupmute = read_long();
-            p.select_group_mute(groupmute);
-#ifdef PLATFORM_DEBUG_XXX
-            if (groupmute != 0)
-                fprintf(stderr, "group-mute[%d]=%ld\n", i, groupmute);
-#endif
-            for (int k = 0; k < c_seqs_in_set; ++k)
+            int seqnum = read_seq_number();
+            if (seqnum == PROPRIETARY_SEQ_NUMBER)
             {
-                long gmutestate = read_long();
-                p.set_group_mute_state(k, gmutestate);
-#ifdef PLATFORM_DEBUG_XXX
-                if (gmutestate != 0)
-                {
-                    fprintf(stderr, "group-mute-state[%d]=%ld\n", k, gmutestate);
-                }
-#endif
+                std::string trackname = read_track_name();
+                if (trackname != PROPRIETARY_TRACK_NAME)
+                    result = false;
+            }
+            else
+                result = false;
+        }
+    }
+    else
+        m_pos -= 4;                                 /* unread the "ID code" */
+
+    if (result)
+    {
+        unsigned long proprietary = parse_prop_header(file_size);
+        if (proprietary == c_midictrl)
+        {
+            unsigned long seqs = read_long();
+            for (unsigned int i = 0; i < seqs; i++)
+            {
+                p.get_midi_control_toggle(i)->m_active = read_byte();
+                p.get_midi_control_toggle(i)->m_inverse_active = read_byte();
+                p.get_midi_control_toggle(i)->m_status = read_byte();
+                p.get_midi_control_toggle(i)->m_data = read_byte();
+                p.get_midi_control_toggle(i)->m_min_value = read_byte();
+                p.get_midi_control_toggle(i)->m_max_value = read_byte();
+                p.get_midi_control_on(i)->m_active = read_byte();
+                p.get_midi_control_on(i)->m_inverse_active = read_byte();
+                p.get_midi_control_on(i)->m_status = read_byte();
+                p.get_midi_control_on(i)->m_data = read_byte();
+                p.get_midi_control_on(i)->m_min_value = read_byte();
+                p.get_midi_control_on(i)->m_max_value = read_byte();
+                p.get_midi_control_off(i)->m_active = read_byte();
+                p.get_midi_control_off(i)->m_inverse_active = read_byte();
+                p.get_midi_control_off(i)->m_status = read_byte();
+                p.get_midi_control_off(i)->m_data = read_byte();
+                p.get_midi_control_off(i)->m_min_value = read_byte();
+                p.get_midi_control_off(i)->m_max_value = read_byte();
             }
         }
-    }
+        proprietary = parse_prop_header(file_size);
+        if (proprietary == c_midiclocks)
+        {
+            unsigned long busscount = read_long();
+            for (unsigned int buss = 0; buss < busscount; buss++)
+            {
+                int clocktype = read_byte();
+                p.master_bus().set_clock(buss, (clock_e) clocktype);
+            }
+        }
+        proprietary = parse_prop_header(file_size);
+        if (proprietary == c_notes)
+        {
+            unsigned int screen_sets = read_short();
+            for (unsigned int x = 0; x < screen_sets; x++)
+            {
+                unsigned int len = read_short();        /* length of string */
+                std::string notess;
+                for (unsigned int i = 0; i < len; i++)
+                    notess += read_byte();              /* unsigned!        */
 
-    /*
-     * We will let Sequencer64 try to read this new stuff even if legacy mode
-     * is in force, and the global-background sequence is in force.  These two
-     * flags should affect only the writing of the MIDI file, not the reading.
-     */
+                p.set_screen_set_notepad(x, notess);
+            }
+        }
+        proprietary = parse_prop_header(file_size);
+        if (proprietary == c_bpmtag)                    /* beats per minute */
+        {
+            long bpm = read_long();
+            p.set_beats_per_minute(bpm);
+        }
 
-    proprietary = parse_prop_header(file_size);
-    if (proprietary == c_musickey)
-    {
-        int key = int(read_byte());
-        usr().seqedit_key(key);
-    }
-    proprietary = parse_prop_header(file_size);
-    if (proprietary == c_musicscale)
-    {
-        int scale = int(read_byte());
-        usr().seqedit_scale(scale);
-    }
-    proprietary = parse_prop_header(file_size);
-    if (proprietary == c_backsequence)
-    {
-        int seqnum = int(read_long());
-        usr().seqedit_bgsequence(seqnum);
-    }
+        /* Read in the mute group information. */
 
-    /*
-     * ADD NEW CONTROL TAGS AT THE END OF THE LIST HERE.
-     */
+        proprietary = parse_prop_header(file_size);
+        if (proprietary == c_mutegroups)
+        {
+            long length = read_long();
+            if (c_gmute_tracks != length)
+            {
+                errprint("corrupt data in mute-group section");
+                result = false;                         /* but keep going   */
+            }
+            for (int i = 0; i < c_seqs_in_set; i++)
+            {
+                long groupmute = read_long();
+                p.select_group_mute(groupmute);
+#ifdef SEQ64_USE_DEBUG_OUTPUT
+                if (groupmute != 0)
+                    fprintf(stderr, "group-mute[%d]=%ld\n", i, groupmute);
+#endif
+                for (int k = 0; k < c_seqs_in_set; ++k)
+                {
+                    long gmutestate = read_long();
+                    p.set_group_mute_state(k, gmutestate);
+#ifdef SEQ64_USE_DEBUG_OUTPUT
+                    if (gmutestate != 0)
+                    {
+                        fprintf(stderr, "group-mute-state[%d]=%ld\n", k, gmutestate);
+                    }
+#endif
+                }
+            }
+        }
 
+        /*
+         * We will let Sequencer64 try to read this new stuff even if legacy mode
+         * is in force, and the global-background sequence is in force.  These two
+         * flags should affect only the writing of the MIDI file, not the reading.
+         */
+
+        proprietary = parse_prop_header(file_size);
+        if (proprietary == c_musickey)
+        {
+            int key = int(read_byte());
+            usr().seqedit_key(key);
+        }
+        proprietary = parse_prop_header(file_size);
+        if (proprietary == c_musicscale)
+        {
+            int scale = int(read_byte());
+            usr().seqedit_scale(scale);
+        }
+        proprietary = parse_prop_header(file_size);
+        if (proprietary == c_backsequence)
+        {
+            int seqnum = int(read_long());
+            usr().seqedit_bgsequence(seqnum);
+        }
+
+        /*
+         * ADD NEW CONTROL TAGS AT THE END OF THE LIST HERE.
+         */
+    }
     return result;
 }
 
@@ -1267,6 +1299,38 @@ midifile::write_track_name (const std::string & trackname)
 }
 
 /**
+ *  Reads the track name.  Meant only for usage in the proprietary footer
+ *  track, in the new file format.
+ *
+ * \return
+ *      Returns the track name, or an empty string if there was a problem.
+ */
+
+std::string
+midifile::read_track_name ()
+{
+    std::string result;
+    (void) read_byte();                         /* throw-away delta time    */
+    unsigned char status = read_byte();         /* get the seq-spec marker  */
+    if (status == 0xFF)
+    {
+        if (read_byte() == 0x03)
+        {
+            unsigned long tl = int(read_varinum());     /* track length     */
+            if (tl > 0)
+            {
+                for (unsigned long i = 0; i < tl; i++)
+                {
+                    char c = char(read_byte());
+                    result += c;
+                }
+            }
+        }
+    }
+    return result;
+}
+
+/**
  *  Calculates the size of a trackname and the meta event that specifies
  *  it.
  */
@@ -1291,7 +1355,7 @@ midifile::track_name_size (const std::string & trackname) const
  *
  *  Now, for sequence 0, an alternate format is "FF 00 00".  But that
  *  format can only occur in the first track, and the rest of the tracks then
- *  don't need a sequence number, since it is assume to increment.  This
+ *  don't need a sequence number, since it is assumed to increment.  Our
  *  application doesn't bother with that shortcut.
  */
 
@@ -1303,6 +1367,28 @@ midifile::write_seq_number (unsigned short seqnum)
     write_byte(0x00);                           /* second byte              */
     write_byte(0x02);                           /* finish sequence tag      */
     write_short(seqnum);                        /* write sequence number    */
+}
+
+/**
+ *  Reads the sequence number.  Meant only for usage in the proprietary
+ *  footer track, in the new file format.
+ *
+ * \return
+ *      Returns the sequence number found, or -1 if it was not found.
+ */
+
+int
+midifile::read_seq_number ()
+{
+    int result = -1;
+    (void) read_byte();                         /* throw-away delta time    */
+    unsigned char status = read_byte();         /* get the seq-spec marker  */
+    if (status == 0xFF)
+    {
+        if (read_byte() == 0x00 && read_byte() == 0x02)
+            result = int(read_short());
+    }
+    return result;
 }
 
 /**

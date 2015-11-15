@@ -1,0 +1,154 @@
+How do Seq24 Triggers Work?
+Chris Ahlstrom
+2015-11-14 to 2015-11-15
+
+Trying to figure out triggers.  Remember that sequence and pattern, ticks
+and MIDI pulses are used interchangeably.
+
+First, we take the relatively simple file midi/signature-samples.midi,
+which consists of some short sequences with various time signatures and a
+one-measure length.  It also contains a performance setup where each
+sequence is dragged into the performance for about four measures (not all
+of them fit exactly into 4 measures).  Turning on console output
+temporarily, we see that the triggers that get written to the file are:
+
+   Trk  0: trigger  0: start = 0, end = 3071, offset = 0
+   Trk  1: trigger  0: start = 0, end = 3455, offset = 0
+   Trk  2: trigger  0: start = 0, end = 3071, offset = 0
+   Trk  3: trigger  0: start = 0, end = 2879, offset = 0
+   Trk  4: trigger  0: start = 0, end = 3167, offset = 0
+   Trk  5: trigger  0: start = 0, end = 3071, offset = 0
+   Trk  6: trigger  0: start = 0, end = 3359, offset = 0
+   Trk  7: trigger  0: start = 0, end = 3071, offset = 0
+
+End 3071 is exactly four measures, which happens to be 96 pixels, at the
+default zoom of 32 pulses/pixel, or 3072 pixels, which is 768
+pixels/measure.
+
+Now let us try a more complex example, midi/b4uacuse-GM-alternate.midi:
+
+   Trk  1: trigger  0: start = 240, end = 287, offset = 0
+   Trk  1: trigger  1: start = 768, end = 2255, offset = 0
+   Trk  2: trigger  0: start = 0, end = 5375, offset = 0
+   Trk  2: trigger  1: start = 8448, end = 80112, offset = 3072
+   Trk  3: trigger  0: start = 0, end = 5375, offset = 0
+   Trk  3: trigger  1: start = 8448, end = 80240, offset = 3072
+   Trk  4: trigger  0: start = 0, end = 5375, offset = 0
+   Trk  4: trigger  1: start = 8448, end = 69264, offset = 3072
+   Trk  5: trigger  0: start = 0, end = 5375, offset = 0
+   Trk  5: trigger  1: start = 8448, end = 80384, offset = 3072
+   Trk  6: trigger  0: start = 0, end = 5375, offset = 0
+   Trk  6: trigger  1: start = 8448, end = 79856, offset = 3072
+   Trk  7: trigger  0: start = 0, end = 5375, offset = 0
+   Trk  7: trigger  1: start = 8448, end = 80235, offset = 3072
+
+Tracks 0, and 8 and above were not included in the performance, so they
+do not appear in this list.
+
+Let us look at the numbers for track 2, which is active from measures 1 through
+7 (7 measures), inactive from measures 8 to 11 (4 measures), and finishes off
+in measures 12 through 104, plus a little more (about 104.3 measures):
+
+    Measures  1 to   7  == 0 to 5375 (5076) pulses.
+    Measures  8 to  11  == 5376 to 8447 (3072) pulses.
+    Measures 12 to 104+ == 8448 to 80112 (104.31 measures)
+
+So what does the offset value mean?
+
+We highlight the second section of track 2 (third row in the performance
+editor) by left-clicking in and use the arrow key (a new feature in
+Sequencer64) to move the second part rightward by one measure.  We then
+see the first section is the same, and the second section is
+
+   Trk  2: trigger  1: start = 9216, end = 80880, offset = 3840
+
+All pulses in the second section have moved up the 768 pulses (1 measure).
+
+Now move the second section leftward until it abuts the first section (it
+will go no further).  We see:
+
+   Trk  2: trigger  1: start = 5376, end = 77040, offset = 0
+
+One more trial with the smaller file midi/signature-samples.midi.  Take the 7th
+track ("8 / 8").  Click the 'p' key to enter paint mode (same as using
+right-click plus left-click) and click in row 8 measure 7 to add a
+measure.  Then click in row 8 measure 9 to add another measure.  We end up
+with three sections.  Highlight the measure-9 section and move it leftward
+two snaps; now it starts halfway through measure 8.  The result:
+
+    Trk  7: trigger  1: start = 3072, end = 3839, offset = 0
+    Trk  7: trigger  2: start = 4608, end = 5375, offset = 0
+    Trk  7: trigger  3: start = 5760, end = 6527, offset = 384
+
+Why is the offset of trigger 2 == 0, while the offset of trigger 3 is 384?
+
+Hold that thought.  Reload the file, and, then left-click on the time bar
+to move the left marker ("L") to the beginning of measure 2, and
+right-click on the time bar to move the right marker ("R") to the end of
+measure 2.  Then click middle L/R button ("Expand") to open up the space
+for all tracks.  The result
+
+    Trk  0: trigger  0: start = 0, end = 767, offset = 0
+    Trk  0: trigger  1: start = 1536, end = 3839, offset = 0
+    Trk  1: trigger  0: start = 0, end = 767, offset = 0
+    Trk  1: trigger  1: start = 1536, end = 4223, offset = 192
+    Trk  2: trigger  0: start = 0, end = 767, offset = 0
+    Trk  2: trigger  1: start = 1536, end = 3839, offset = 0
+    Trk  3: trigger  0: start = 0, end = 767, offset = 0
+    Trk  3: trigger  1: start = 1536, end = 3647, offset = 768
+    Trk  4: trigger  0: start = 0, end = 767, offset = 0
+    Trk  4: trigger  1: start = 1536, end = 3935, offset = 192
+    Trk  5: trigger  0: start = 0, end = 767, offset = 0
+    Trk  5: trigger  1: start = 1536, end = 3839, offset = 0
+    Trk  6: trigger  0: start = 0, end = 767, offset = 0
+    Trk  6: trigger  1: start = 1536, end = 4127, offset = 96
+    Trk  7: trigger  0: start = 0, end = 767, offset = 0
+    Trk  7: trigger  1: start = 1536, end = 3839, offset = 0
+
+Why are some of the trigger 1 offsets == 0, while others are non-zero?
+The tracks that have a trigger 1 offset of zero:  
+
+    Track 0: "1 / 2"
+    Track 2: "4 / 4"
+    Track 5: "4 / 8"
+    Track 7: "8 / 8"
+
+These are the 4 tracks where drawing an integral number of copies yielded
+a length of exactly 4 measures, instead of something a little bit less or
+greater.
+
+Looking at an expanded view of this performance layout, one sees that
+the offset looks like how far into the track the beginning of the second
+section is.
+
+Let us reload the file again and carefully set the L and R markers to
+expand it by 1.5 measures instead of just one.  Now we get:
+
+    Trk  0: trigger  0: start = 0, end = 767, offset = 0
+    Trk  0: trigger  1: start = 1920, end = 4223, offset = 0
+    Trk  1: trigger  0: start = 0, end = 767, offset = 0
+    Trk  1: trigger  1: start = 1920, end = 4607, offset = 0
+    Trk  2: trigger  0: start = 0, end = 767, offset = 0
+    Trk  2: trigger  1: start = 1920, end = 4223, offset = 384
+    Trk  3: trigger  0: start = 0, end = 767, offset = 0
+    Trk  3: trigger  1: start = 1920, end = 4031, offset = 192
+    Trk  4: trigger  0: start = 0, end = 767, offset = 0
+    Trk  4: trigger  1: start = 1920, end = 4319, offset = 0
+    Trk  5: trigger  0: start = 0, end = 767, offset = 0
+    Trk  5: trigger  1: start = 1920, end = 4223, offset = 0
+    Trk  6: trigger  0: start = 0, end = 767, offset = 0
+    Trk  6: trigger  1: start = 1920, end = 4511, offset = 480
+    Trk  7: trigger  0: start = 0, end = 767, offset = 0
+    Trk  7: trigger  1: start = 1920, end = 4223, offset = 384
+
+We believe that the offset indicates how far into the sequence the
+section has to go to place copies at the given location, and
+that the offset can depend how long the track is compared to the gap.
+For very long tracks, the offset is basically the size of the gap.
+
+For short tracks, that might repeat during the duration of the gap, the
+offset is also affected by repeats of the pattern, and so would oscillate
+between 0 the the pattern length as the gap continuously increased, we
+surmise.
+
+# vim: sw=4 ts=4 wm=8 et ft=rc

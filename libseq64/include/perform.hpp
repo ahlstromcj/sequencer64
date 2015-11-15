@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-09
+ * \updates       2015-11-15
  * \license       GNU GPLv2 or above
  *
  *  This class has way too many members.
@@ -201,6 +201,15 @@ private:
     int m_playing_screen;
 
     /**
+     *  Playing screen sequence number offset.  Saves some multiplications,
+     *  should make the code easier to grok, and centralizes the use of
+     *  c_seqs_in_set, which we want to be able to change at run-time, as a
+     *  future enhancement.
+     */
+
+    int m_playscreen_offset;
+
+    /**
      *  Provides a vector of patterns/sequences.
      */
 
@@ -250,10 +259,43 @@ private:
      */
 
     bool m_playback_mode;
+
+    /**
+     *  Holds the current PPQN for usage in various actions.
+     */
+
     int m_ppqn;
 
+    /**
+     *  Holds the "one measure's worth" of pulses (ticks), which is
+     *  normally m_ppqn * 4.  We can save some multiplications, and, more
+     *  importantly, later define a more flexible definition of "one measure's
+     *  worth" than simply four quarter notes.
+     */
+
+    int m_one_measure;
+
+    /**
+     *  Holds the position of the left (L) marker, and it is first defined as
+     *  0.  Note that "tick" is actually "pulses".
+     */
+
     long m_left_tick;
+
+    /**
+     *  Holds the position of the right (R) marker, and it is first defined as
+     *  the end of the fourth measure.  Note that "tick" is actually "pulses".
+     */
+
     long m_right_tick;
+
+    /**
+     *  Holds the starting tick for playing.  By default, this value is always
+     *  reset to the value of the "left tick".  We want to eventually be able
+     *  to leave it at the last playing tick, to support a "pause"
+     *  functionality. Note that "tick" is actually "pulses".
+     */
+
     long m_starting_tick;
 
     /**
@@ -276,7 +318,7 @@ private:
 
     int m_offset;
     int m_control_status;
-    int m_screen_set;
+    int m_screenset;
     int m_sequence_count;
     int m_sequence_max;
 
@@ -449,7 +491,7 @@ public:
         return m_tick;
     }
 
-    void set_left_tick (long tick);       // too long to inline
+    void set_left_tick (long tick, bool setstart = true);   // too long to inline
 
     /**
      * \getter m_left_tick
@@ -464,7 +506,7 @@ public:
      * \setter m_starting_tick
      */
 
-    void set_starting_tick (long tick)
+    void set_start_tick (long tick)
     {
         m_starting_tick = tick;
     }
@@ -478,7 +520,7 @@ public:
         return m_starting_tick;
     }
 
-    void set_right_tick (long tick);          // too long to inline
+    void set_right_tick (long tick, bool setstart = true);  // too long to inline
 
     /**
      * \getter m_right_tick
@@ -540,7 +582,7 @@ public:
 
     const std::string & current_screen_set_notepad () const
     {
-        return get_screen_set_notepad(m_screen_set);
+        return get_screen_set_notepad(m_screenset);
     }
 
     void set_screen_set_notepad (int screenset, const std::string & note);
@@ -551,18 +593,18 @@ public:
 
     void set_screen_set_notepad (const std::string & note)
     {
-        set_screen_set_notepad(m_screen_set, note);
+        set_screen_set_notepad(m_screenset, note);
     }
 
-    void set_screenset (int ss);      // a little much to inline
+    void set_screenset (int ss);        // a little much to inline
 
     /**
-     * \getter m_screen_set
+     * \getter m_screenset
      */
 
     int get_screenset () const
     {
-        return m_screen_set;
+        return m_screenset;
     }
 
     void set_playing_screenset ();      // a little much to inline

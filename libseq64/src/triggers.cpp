@@ -242,20 +242,33 @@ triggers::adjust_offset (long offset)
    es             ee
    <               >
    XX
-
    es ee
    <   >
    <>
-
    es    ee
    <      >
    <    >
-
    es     ee
    <       >
    <    >
 \endverbatim
-*/
+ *
+ * \param tick
+ *      Provides the tick (pulse) time at which the trigger goes on.
+ *
+ * \param len
+ *      Provides the length of the trigger.  This value is actually calculated
+ *      from the "on" value minus the "off" value read from the MIDI file.
+ *
+ * \param offset
+ *      This value specifies the offset of the trigger.  It is a feature of
+ *      the c_triggers_new that c_triggers doesn't have.  It is the third
+ *      value in the trigger specification of the Sequencer64 MIDI file.
+ *
+ * \param fixoffset
+ *      If true, the offset parameter is modified by adjust_offset() first.
+ *      We think that basically makes sure it is positive.
+ */
 
 void
 triggers::add

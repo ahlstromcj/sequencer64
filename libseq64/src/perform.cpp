@@ -24,10 +24,10 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-09
+ * \updates       2015-11-15
  * \license       GNU GPLv2 or above
  *
- *  This class is probably the most important single class in Sequencer64, as
+ *  This class is probably the single most important class in Sequencer64, as
  *  it supports sequences, playback, JACK, and more.
  */
 
@@ -74,6 +74,7 @@ perform::perform (gui_assistant & mygui, int ppqn)
     m_mode_group_learn          (false),
     m_mute_group_selected       (0),
     m_playing_screen            (0),
+    m_playscreen_offset         (0),
     m_seqs                      (),         // pointer array
     m_seqs_active               (),         // boolean array
     m_was_active_main           (),         // boolean array
@@ -91,9 +92,10 @@ perform::perform (gui_assistant & mygui, int ppqn)
     m_outputing                 (true),
     m_looping                   (false),
     m_playback_mode             (false),
-    m_ppqn                      (0),    // set in constructor body
+    m_ppqn                      (choose_ppqn(ppqn)),
+    m_one_measure               (m_ppqn * 4),
     m_left_tick                 (0),
-    m_right_tick                (0),    // set in constructor body
+    m_right_tick                (m_one_measure * 4),        // m_ppqn * 16
     m_starting_tick             (0),
     m_tick                      (0),
     m_usemidiclock              (false),
@@ -106,7 +108,7 @@ perform::perform (gui_assistant & mygui, int ppqn)
     m_midi_cc_off               (),     // midi_control array
     m_offset                    (0),
     m_control_status            (0),
-    m_screen_set                (0),
+    m_screenset                 (0),
     m_sequence_count            (0),
     m_sequence_max              (c_max_sequence),
     m_is_modified               (false),
@@ -116,8 +118,6 @@ perform::perform (gui_assistant & mygui, int ppqn)
 #endif
     m_notify                    ()          // vector of pointers, public!
 {
-    m_ppqn = choose_ppqn(ppqn);
-    m_right_tick = m_ppqn * 16;
     for (int i = 0; i < m_sequence_max; i++)
     {
         m_seqs[i] = nullptr;
@@ -283,7 +283,7 @@ perform::select_group_mute (int a_g_mute)
 {
     int gmute = clamp_track(a_g_mute);
     int j = gmute * c_seqs_in_set;
-    int k = m_playing_screen * c_seqs_in_set;
+    int k = m_playscreen_offset;
     bool error = false;
     if (m_mode_group_learn)
     {
@@ -348,7 +348,7 @@ perform::select_mute_group (int a_group)
 {
     int group = clamp_track(a_group);
     int j = group * c_seqs_in_set;
-    int k = m_playing_screen * c_seqs_in_set;
+    int k = m_playscreen_offset;
 
     /*
      * Should make this assignment contingent upon error.
@@ -428,31 +428,55 @@ perform::mute_all_tracks ()
 
 /**
  *  Set the left marker at the given tick.
+ *
+ * \param tick
+ *      The tick (MIDI pulse) at which to place the left tick.  If the left
+ *      tick is greater than or equal to the right tick, then the right ticked
+ *      is moved forward by one "measure's length" (m_ppqn * 4) past the left
+ *      tick.
+ *
+ * \param setstart
+ *      If true (the default, and longstanding implicit setting), then the
+ *      starting tick is also set to the left tick.
  */
 
 void
-perform::set_left_tick (long a_tick)
+perform::set_left_tick (long tick, bool setstart)
 {
-    m_left_tick = a_tick;
-    m_starting_tick = a_tick;
+    m_left_tick = tick;
+    if (setstart)
+        set_start_tick(tick);
+
     if (m_left_tick >= m_right_tick)
-        m_right_tick = m_left_tick + m_ppqn * 4;
+        m_right_tick = m_left_tick + m_one_measure;
 }
 
 /**
- *  Set the right marker at the given tick.
+ *  Set the right marker at the given tick.  This setting is made only if the
+ *  tick parameter is at or beyond the first measure.
+ *
+ * \param tick
+ *      The tick (MIDI pulse) at which to place the right tick.  If less than
+ *      or equal to the left tick setting, then the left tick is backed up by
+ *      one "measure's worth" (m_ppqn * 4) worth of ticks from the new right
+ *      tick.
+ *
+ * \param setstart
+ *      If true (the default, and longstanding implicit setting), then the
+ *      starting tick is also set to the left tick, if that got changed.
  */
 
 void
-perform::set_right_tick (long a_tick)
+perform::set_right_tick (long tick, bool setstart)
 {
-    if (a_tick >= m_ppqn * 4)
+    if (tick >= m_one_measure)
     {
-        m_right_tick = a_tick;
+        m_right_tick = tick;
         if (m_right_tick <= m_left_tick)
         {
-            m_left_tick = m_right_tick - m_ppqn * 4;
-            m_starting_tick = m_left_tick;
+            m_left_tick = m_right_tick - m_one_measure;
+            if (setstart)
+                set_start_tick(m_left_tick);
         }
     }
 }
@@ -997,7 +1021,7 @@ perform::get_screen_set_notepad (int screenset) const
 }
 
 /**
- *  Sets the m_screen_set value (the index or ID of the current screen
+ *  Sets the m_screenset value (the index or ID of the current screen
  *  set).
  *
  *  It's not clear that we need to set the is-modified flag just because we
@@ -1016,12 +1040,12 @@ perform::set_screenset (int ss)
     else if (ss >= c_max_sets)
         ss = 0;
 
-    if (ss != m_screen_set)
+    if (ss != m_screenset)
     {
-        m_screen_set = ss;
+        m_screenset = ss;
 
         /*
-         * modify(true);                // iffy!
+         * modify(true);                // iffy, so we comment it out
          */
     }
 }
@@ -1047,7 +1071,7 @@ perform::set_playing_screenset ()
     bool error = false;
     for (int j, i = 0; i < c_seqs_in_set; i++)
     {
-        j = i + m_playing_screen * c_seqs_in_set;
+        j = i + m_playscreen_offset;    /* m_playing_screen * c_seqs_in_set */
         if (is_active(j))
         {
             /*
@@ -1056,7 +1080,8 @@ perform::set_playing_screenset ()
              * pointers in production code, and keep going.  So we wrote
              * a function in the easy_macros module to do it.  Please note
              * that enabling debug mode with these asserts really slows
-             * down the loading of a MIDI file.
+             * down the loading of a MIDI file, well, at least when using
+             * std::list and sorting.
              */
 
             if (not_nullptr_assert(m_seqs[j], "set_playing_screenset"))
@@ -1075,7 +1100,8 @@ perform::set_playing_screenset ()
 
     if (! error)
     {
-        m_playing_screen = m_screen_set;
+        m_playing_screen = m_screenset;
+        m_playscreen_offset = m_playing_screen * c_seqs_in_set;
         mute_group_tracks();
     }
 }
@@ -1101,9 +1127,8 @@ perform::play (long tick)
             if (not_nullptr_assert(m_seqs[i], "play"))
             {
                 /*
-                 * New condition, not sure yet if this is workable.  It
-                 * doesn't stop the progress bar update for an empty
-                 * sequence.
+                 * Check the number of events.  This doesn't stop the progress
+                 * bar update for an empty sequence, though.
                  */
 
                 if (m_seqs[i]->event_count() == 0)      /* new 2015-08-23 */
@@ -1125,7 +1150,7 @@ perform::play (long tick)
             }
         }
     }
-    m_master_bus.flush();              // flush the MIDI buss
+    m_master_bus.flush();               /* flush the MIDI buss  */
 }
 
 /**
@@ -1283,25 +1308,25 @@ perform::stop_jack ()
  */
 
 void
-perform::position_jack (bool a_state)
+perform::position_jack (bool state)
 {
 #ifdef SEQ64_JACK_SUPPORT
-    m_jack_asst.position(a_state);
+    m_jack_asst.position(state);
 #endif
 }
 
 /**
  *  If JACK is not running, call inner_start() with the given state.
  *
- * \param a_state
+ * \param state
  *      What does this state mean?
  */
 
 void
-perform::start (bool a_state)
+perform::start (bool state)
 {
     if (! m_jack_asst.is_running())
-        inner_start(a_state);
+        inner_start(state);
 }
 
 /**
@@ -1327,13 +1352,13 @@ perform::stop ()
  */
 
 void
-perform::inner_start (bool a_state)
+perform::inner_start (bool state)
 {
     m_condition_var.lock();
     if (! is_running())
     {
-        set_playback_mode(a_state);
-        if (a_state)
+        set_playback_mode(state);
+        if (state)
             off_sequences();
 
         set_running(true);
@@ -1918,7 +1943,7 @@ input_thread_func (void * a_pef)
  */
 
 void
-perform::handle_midi_control (int a_control, bool a_state)
+perform::handle_midi_control (int a_control, bool state)
 {
     switch (a_control)
     {
@@ -1939,35 +1964,34 @@ perform::handle_midi_control (int a_control, bool a_state)
         break;
 
     case c_midi_control_mod_replace:            // printf("replace\n");
-        if (a_state)
+        if (state)
             set_sequence_control_status(c_status_replace);
         else
             unset_sequence_control_status(c_status_replace);
         break;
 
     case c_midi_control_mod_snapshot:           // printf("snapshot\n");
-        if (a_state)
+        if (state)
             set_sequence_control_status(c_status_snapshot);
         else
             unset_sequence_control_status(c_status_snapshot);
         break;
 
     case c_midi_control_mod_queue:              // printf("queue\n");
-        if (a_state)
+        if (state)
             set_sequence_control_status(c_status_queue);
         else
             unset_sequence_control_status(c_status_queue);
 
-    case c_midi_control_mod_gmute:              // Andy case
-        printf("gmute\n");
-        if (a_state)
+    case c_midi_control_mod_gmute:              // Andy case; printf("gmute\n");
+        if (state)
             set_mode_group_mute();
         else
             unset_mode_group_mute();
         break;
 
     case c_midi_control_mod_glearn:             // Andy case; printf("glearn\n");
-        if (a_state)
+        if (state)
             set_mode_group_learn();
         else
             unset_mode_group_learn();
@@ -2272,43 +2296,39 @@ perform::sequence_playing_toggle (int sequence)
  */
 
 void
-perform::sequence_playing_on (int sequence)
+perform::sequence_playing_on (int seq)
 {
-    if (is_active(sequence))
+    if (is_active(seq))
     {
+        int next_offset = m_playscreen_offset + c_seqs_in_set;
         if
         (
-            m_mode_group &&
-            (m_playing_screen == m_screen_set) &&
-            (sequence >= (m_playing_screen * c_seqs_in_set)) &&
-            (sequence < ((m_playing_screen + 1) * c_seqs_in_set))
+            m_mode_group && (m_playing_screen == m_screenset) &&
+            (seq >= m_playscreen_offset) && (seq < next_offset)
         )
         {
-            m_tracks_mute_state
-            [
-                sequence - m_playing_screen * c_seqs_in_set
-            ] = true;
+            m_tracks_mute_state[seq - m_playscreen_offset] = true;
         }
-        if (not_nullptr_assert(m_seqs[sequence], "sequence_playing_on"))
+        if (not_nullptr_assert(m_seqs[seq], "sequence_playing_on"))
         {
-            if (! m_seqs[sequence]->get_playing())
+            if (! m_seqs[seq]->get_playing())
             {
                 if (m_control_status & c_status_queue)
                 {
-                    if (! m_seqs[sequence]->get_queued())
-                        m_seqs[sequence]->toggle_queued();
+                    if (! m_seqs[seq]->get_queued())
+                        m_seqs[seq]->toggle_queued();
                 }
                 else
-                    m_seqs[sequence]->set_playing(true);
+                    m_seqs[seq]->set_playing(true);
             }
             else
             {
                 if
-                (   m_seqs[sequence]->get_queued() &&
+                (   m_seqs[seq]->get_queued() &&
                     (m_control_status & c_status_queue)
                 )
                 {
-                    m_seqs[sequence]->toggle_queued();
+                    m_seqs[seq]->toggle_queued();
                 }
             }
         }
@@ -2327,11 +2347,11 @@ perform::sequence_playing_off (int seq)
 {
     if (is_active(seq))
     {
+        int next_offset = m_playscreen_offset + c_seqs_in_set;
         if
         (
-            m_mode_group && (m_playing_screen == m_screen_set) &&
-            (seq >= (m_playing_screen * c_seqs_in_set)) &&
-            (seq < ((m_playing_screen + 1) * c_seqs_in_set))
+            m_mode_group && (m_playing_screen == m_screenset) &&
+            (seq >= m_playscreen_offset) && (seq < next_offset)
         )
         {
             m_tracks_mute_state[seq-m_playing_screen * c_seqs_in_set] =

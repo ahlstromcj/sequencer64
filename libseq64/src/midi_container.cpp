@@ -193,6 +193,9 @@ midi_container::fill (int tracknumber)
     put(0x7F);
     add_variable((triggercount * 3 * 4) + 4);       /* 3 long ints plus...  */
     add_long(c_triggers_new);                       /* ...the triggers code */
+#ifdef SEQ64_USE_DEBUG_OUTPUT
+    int counter = 0;
+#endif
     for
     (
         triggers::List::iterator ti = triggerlist.begin();
@@ -202,6 +205,14 @@ midi_container::fill (int tracknumber)
         add_long(ti->tick_start());
         add_long(ti->tick_end());
         add_long(ti->offset());
+#ifdef SEQ64_USE_DEBUG_OUTPUT
+        printf
+        (
+            "Trk %2d: trigger %2d: start = %ld, end = %ld, offset = %ld\n",
+            tracknumber, counter, ti->tick_start(), ti->tick_end(), ti->offset()
+        );
+        counter++;
+#endif
     }
     add_variable(0);                                /* bus delta time   */
     put(0xFF);

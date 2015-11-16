@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-13
+ * \updates       2015-11-16
  * \license       GNU GPLv2 or above
  *
  *  The functions add_list_var() and add_long_list() have been replaced by
@@ -725,12 +725,12 @@ public:
      * \setter m_background_sequence
      *      Only partial validation at present, we do not want the upper
      *      limit to be hard-wired at this time.  Disabling the sequence
-     *      number (setting it to SEQ64_NULL_SEQUENCE) is valid.
+     *      number (setting it to SEQ64_SEQUENCE_LIMIT) is valid.
      */
 
     void background_sequence (int bs)
     {
-        if (bs >= SEQ64_NULL_SEQUENCE)
+        if (SEQ64_IS_LEGAL_SEQUENCE(bs))
             m_background_sequence = long(bs);
     }
 

@@ -61,24 +61,34 @@
  *  seqedit::m_initial_sequence, which was originally set to -1 directly.
  *  However, we have issues saving a negative number, so we will use the
  *  "proprietary" track's bogus sequence number, which double the 1024
- *  sequences we can support.
+ *  sequences we can support.  Values between 0 (inclusive) and
+ *  SEQ64_SEQUENCE_LIMIT (exclusive) are valid.  But SEQ64_SEQUENCE_LIMIT is a
+ *  <i> legal</i> value, used only for disabling the selection of a background
+ *  sequence.
  */
 
-#define SEQ64_NULL_SEQUENCE             0x0800          /* 2048 */
+#define SEQ64_SEQUENCE_LIMIT        0x0800          /* 2048 */
 
 /**
- *  A convenient macro function to test against SEQ64_NULL_SEQUENCE.
- *  This macro allows SEQ64_NULL_SEQUENCE as a legal value to use.
+ *  A convenient macro function to test against SEQ64_SEQUENCE_LIMIT.
+ *  This macro allows SEQ64_SEQUENCE_LIMIT as a legal value to use.
  */
 
-#define SEQ64_IS_LEGAL_SEQUENCE(s)      ((s) <= SEQ64_NULL_SEQUENCE)
+#define SEQ64_IS_LEGAL_SEQUENCE(s)  ((s) >= 0 && (s) <= SEQ64_SEQUENCE_LIMIT)
 
 /**
- *  A convenient macro function to test against SEQ64_NULL_SEQUENCE.
- *  This macro does not all SEQ64_NULL_SEQUENCE as a valid value to use.
+ *  A convenient macro function to test against SEQ64_SEQUENCE_LIMIT.
+ *  This macro does not allow SEQ64_SEQUENCE_LIMIT as a valid value to use.
  */
 
-#define SEQ64_IS_VALID_SEQUENCE(s)      ((s) < SEQ64_NULL_SEQUENCE)
+#define SEQ64_IS_VALID_SEQUENCE(s)  ((s) >= 0 && (s) < SEQ64_SEQUENCE_LIMIT)
+
+/**
+ *  A convenient macro function to test against SEQ64_SEQUENCE_LIMIT.
+ *  This macro does not allow SEQ64_SEQUENCE_LIMIT as a valid value to use.
+ */
+
+#define SEQ64_IS_DISABLED_SEQUENCE(s)       ((s) == SEQ64_SEQUENCE_LIMIT)
 
 namespace seq64
 {

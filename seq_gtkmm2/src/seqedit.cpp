@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-15
+ * \updates       2015-11-16
  * \license       GNU GPLv2 or above
  *
  */
@@ -1318,7 +1318,7 @@ seqedit::popup_sequence_menu ()
 
     m_menu_sequences->items().push_back
     (
-        MenuElem("Off", sigc::bind(SET_BG_SEQ, -1))
+        MenuElem("Off", sigc::bind(SET_BG_SEQ, SEQ64_SEQUENCE_LIMIT))
     );
     m_menu_sequences->items().push_back(SeparatorElem());
     for (int ss = 0; ss < c_max_sets; ++ss)
@@ -1367,15 +1367,14 @@ seqedit::popup_sequence_menu ()
 void
 seqedit::set_background_sequence (int seqnum)
 {
-    char name[24];
-    m_sequence = seqnum;
+    m_sequence = seqnum;                /* we should check this value!  */
     if (usr().global_seq_feature())
         usr().seqedit_bgsequence(seqnum);
 
-    if (seqnum == -1 || ! perf().is_active(seqnum))
+    if (SEQ64_IS_DISABLED_SEQUENCE(seqnum) || ! perf().is_active(seqnum))
     {
         m_entry_sequence->set_text("Off");
-        m_seqroll_wid->set_background_sequence(false, 0);
+        m_seqroll_wid->set_background_sequence(false, SEQ64_SEQUENCE_LIMIT);
     }
     if (perf().is_active(seqnum))
     {
@@ -1384,11 +1383,12 @@ seqedit::set_background_sequence (int seqnum)
          *      Make the sequence pointer a reference.
          */
 
+        char name[24];
         sequence * seq = perf().get_sequence(seqnum);
         snprintf(name, sizeof(name), "[%d] %.13s", seqnum, seq->get_name());
         m_entry_sequence->set_text(name);
         m_seqroll_wid->set_background_sequence(true, seqnum);
-        if (seqnum < usr().max_sequence())
+        if (seqnum < usr().max_sequence())      /* even more restrictive */
             m_seq.background_sequence(long(seqnum));
     }
 }

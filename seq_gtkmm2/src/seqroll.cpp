@@ -118,13 +118,24 @@ seqroll::~seqroll ()
  *  This function sets the given sequence onto the piano roll of the pattern
  *  editor, so that the musician can have another pattern to play against.
  *  The state parameter sets the boolean m_drawing_background_seq.
+ *
+ * \param state
+ *      If true, the background sequence will be drawn.
+ *
+ * \pararm seq
+ *      Provides the sequence number, which is checked against the
+ *      SEQ64_IS_LEGAL_SEQUENCE() macro before being used.  This macro allows 
+ *      the value SEQ64_SEQUENCE_LIMIT, which disables the background
+ *      sequence.
  */
 
 void
 seqroll::set_background_sequence (bool state, int seq)
 {
     m_drawing_background_seq = state;
-    m_background_sequence = seq;
+    if (SEQ64_IS_LEGAL_SEQUENCE(seq))
+        m_background_sequence = seq;
+
     if (m_ignore_redraw)
         return;
 

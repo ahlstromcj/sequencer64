@@ -196,7 +196,7 @@ private:
 
     /**
      *  Returns the size of a sequence-number event, which is always 5
-     *  bytes, plus one byte for the delta time that precedes it..
+     *  bytes, plus one byte for the delta time that precedes it.
      */
 
     long seq_number_size () const

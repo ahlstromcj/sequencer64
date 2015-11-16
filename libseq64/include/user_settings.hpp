@@ -278,16 +278,17 @@ class user_settings
 
     /**
      *  Replaces seqedit::m_initial_sequence as the repository for the
-     *  background sequence to
-     *  apply when a sequence is loaded into the sequence editor.  Its default
-     *  value is SEQ64_NULL_SEQUENCE.  Although this value is now stored in the
-     *  user_settings class, it always comes from the currently loaded MIDI
-     *  file, if present.  If m_global_seq_feature_save is true, this variable
-     *  is stored in the "proprietary" track at the end of the file, under the
-     *  control tag c_backsequence, and will be applied to any sequence that is
-     *  edited.  If m_global_seq_feature_save is false, this variable is
-     *  stored, if used, in the meta-data for the sequence to which it applies,
-     *  and, again, is tagged with the control tag c_backsequence.
+     *  background sequence to apply when a sequence is loaded into the
+     *  sequence editor.  Its default value is SEQ64_SEQUENCE_LIMIT.  Although
+     *  this value is now stored in the user_settings class, it always comes
+     *  from the currently loaded MIDI file, if present.  If
+     *  m_global_seq_feature_save is true, this variable is stored, if it has
+     *  a valid (but not "legal") value, in the "proprietary" track at the end
+     *  of the file, under the control tag c_backsequence, and will be applied
+     *  to any sequence that is edited.  If m_global_seq_feature_save is
+     *  false, this variable is stored, if used, in the meta-data for the
+     *  sequence to which it applies, and, again, is tagged with the control
+     *  tag c_backsequence.
      */
 
     int m_seqedit_bgsequence;
@@ -984,8 +985,8 @@ public:
     /**
      * \setter m_seqedit_bgsequence
      *      Note that SEQ64_IS_LEGAL_SEQUENCE() allows the
-     *      SEQ64_IS_NULL_SEQUENCE (-1) value, to turn off the use of a
-     *      background sequence.
+     *      SEQ64_SEQUENCE_LIMIT (0x800 = 2048) value, to turn off the use of
+     *      a background sequence.
      */
 
     void seqedit_bgsequence (int seqnum)

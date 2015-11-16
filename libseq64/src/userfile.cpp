@@ -90,7 +90,7 @@ make_section_name (const std::string & label, int value)
  *  Provides a debug dump of basic information to help debug a
  *  surprisingly intractable problem with all busses having the name and
  *  values of the last buss in the configuration.  Does work only if
- *  PLATFORM_DEBUG is defined; see the user_settings class..
+ *  PLATFORM_DEBUG is defined; see the user_settings class.
  */
 
 void

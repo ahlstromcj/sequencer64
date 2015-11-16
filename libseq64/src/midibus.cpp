@@ -63,7 +63,7 @@ int midibus::m_clock_mod = 16 * 4;
  *      Provides the destination-client port.
  *
  * \param seq
- *      Provides the sequence that will work with this buss..
+ *      Provides the sequence that will work with this buss.
  *
  * \param client_name
  *      Provides the client name, but this parameter is unused.

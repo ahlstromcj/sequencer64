@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-14
+ * \updates       2015-11-16
  * \license       GNU GPLv2 or above
  *
  *  The main window holds the menu and the main controls of the application,
@@ -633,7 +633,7 @@ mainwnd::file_save_as ()
  *  We don't need to specify the "oldformat" or "global sequence" parameters
  *  of the midifile constructor when reading the MIDI file, since reading
  *  handles both the old and new formats, dealing with new constructs only if
- *  they are present in the file..
+ *  they are present in the file.
  *
  * \param fn
  *      Provides the file-name for the MIDI file to be opened.

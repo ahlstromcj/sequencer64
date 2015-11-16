@@ -19,15 +19,17 @@
 /**
  * \file          sequence.cpp
  *
- *  This module declares/defines the base class for handling
- *  patterns/sequences.
+ *  This module declares/defines the base class for handling the data and
+ *  management of patterns/sequences.
  *
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-14
+ * \updates       2015-11-16
  * \license       GNU GPLv2 or above
  *
+ *  The functionality of this class also includes handling some of the
+ *  operations of pattern triggers.
  */
 
 #include <stdlib.h>
@@ -89,7 +91,7 @@ sequence::sequence (int ppqn)
     m_rec_vol                   (0),
     m_musical_key               (SEQ64_KEY_OF_C),
     m_musical_scale             (int(c_scale_off)),
-    m_background_sequence       (SEQ64_NULL_SEQUENCE),
+    m_background_sequence       (SEQ64_SEQUENCE_LIMIT),
     m_mutex                     ()
 {
     m_ppqn = choose_ppqn(ppqn);

@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-15
+ * \updates       2015-11-16
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -323,7 +323,7 @@ perform::set_mode_group_learn ()
 
 /**
  *  Notifies all of the notification subscribers that group-learn
- *  is being turned off.  Then unsets the group-learn mode flag..
+ *  is being turned off.  Then unsets the group-learn mode flag.
  */
 
 void
@@ -828,7 +828,7 @@ perform::is_seq_valid (int seq) const
         return true;
     else
     {
-        if (seq != (-1))
+        if (! SEQ64_IS_DISABLED_SEQUENCE(seq))  /* legal value, don't bitch */
         {
             fprintf
             (

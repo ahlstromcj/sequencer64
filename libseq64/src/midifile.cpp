@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-15
+ * \updates       2015-11-16
  * \license       GNU GPLv2 or above
  *
  *  For a quick guide to the MIDI format, see, for example:
@@ -60,25 +60,25 @@
  *  array in a configuration file.
  */
 
-#define SEQ64_MIDI_LINE_MAX            1024
+#define SEQ64_MIDI_LINE_MAX         1024
 
 /**
  *  The maximum length of a Seq24 track name.  This is a bit excessive.
  */
 
-#define TRACKNAME_MAX                   256
+#define TRACKNAME_MAX                256
 
 /**
  *  Highlights the MIDI file header value, "MThd".
  */
 
-#define SEQ64_HEADER_TAG    0x4D546864              /* magic number 'MThd'  */
+#define SEQ64_HEADER_TAG            0x4D546864      /* magic number 'MThd'  */
 
 /**
  *  Highlights the MIDI file track-marker (chunk) value, "MTrk".
  */
 
-#define SEQ64_TRACK_TAG     0x4D54726B              /* magic number 'MTrk'  */
+#define SEQ64_TRACK_TAG             0x4D54726B      /* magic number 'MTrk'  */
 
 /**
  *  The chunk header value for the Sequencer64 proprietary section.
@@ -87,16 +87,18 @@
  *  (or our midicvt program).  For now, we stick with "MTrk".
  */
 
-#define PROPRIETARY_CHUNK_TAG   SEQ64_TRACK_TAG
+#define PROPRIETARY_CHUNK_TAG       SEQ64_TRACK_TAG
 
 /**
  *  Provides the sequence number for the proprietary data when using the new
  *  format.  (There is no sequence number for the legacy format.)  Can't use
  *  numbers, such as 0xFFFF, that have MIDI meta tags in them, confuses
- *  our "proprietary" track parser.
+ *  our "proprietary" track parser.  This sequence number, 0x7777, is neither
+ *  a valid nor legal sequence number.  No real sequence will ever have this
+ *  number in Sequencer64.
  */
 
-#define PROPRIETARY_SEQ_NUMBER  SEQ64_NULL_SEQUENCE
+#define PROPRIETARY_SEQ_NUMBER      0x7777
 
 /**
  *  Provides the track name for the "proprietary" data when using the new
@@ -104,7 +106,7 @@
  *  the legacy format is in force.)
  */
 
-#define PROPRIETARY_TRACK_NAME         "Sequencer64-S"
+#define PROPRIETARY_TRACK_NAME      "Sequencer64-S"
 
 namespace seq64
 {
@@ -719,10 +721,10 @@ midifile::parse_proprietary_track (perform & p, int file_size)
         if (tracklength > 0)
         {
             int seqnum = read_seq_number();
-            if (seqnum == PROPRIETARY_SEQ_NUMBER)
+            if (seqnum == PROPRIETARY_SEQ_NUMBER)   /* sanity check         */
             {
                 std::string trackname = read_track_name();
-                if (trackname != PROPRIETARY_TRACK_NAME)
+                if (trackname != PROPRIETARY_TRACK_NAME)    /* sanity check */
                     result = false;
             }
             else
@@ -1295,7 +1297,7 @@ midifile::write_proprietary_track (perform & p)
             write_prop_header(c_musicscale, 1);             /* control tag+1 */
             write_byte(midibyte(usr().seqedit_scale()));    /* scale change  */
             write_prop_header(c_backsequence, 4);           /* control tag+4 */
-            write_long(long(usr().seqedit_scale()));        /* bg sequence   */
+            write_long(long(usr().seqedit_bgsequence()));   /* background    */
         }
         write_track_end();
     }
@@ -1373,7 +1375,7 @@ midifile::track_name_size (const std::string & trackname) const
 }
 
 /**
- *  Writes out a sequence number.  The format is "FF 00 02 ss ss", where
+ *  Writes out a sequence number.  The format is "00 FF 00 02 ss ss", where
  *  "02" is actually the constant length of the data.  We have to precede
  *  these values with a 0 delta time, of course.
  *

@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-07
+ * \updates       2015-11-16
  * \license       GNU GPLv2 or above
  *
  */
@@ -59,7 +59,7 @@ class perfroll : public gui_drawingarea_gtk2
     /**
      *  These friend implement interaction-specific behavior, although only
      *  the Seq24 interactions support keyboard processing, except for some
-     *  common functionality provided by perform::perfroll_key_event()..
+     *  common functionality provided by perform::perfroll_key_event().
      */
 
     friend class FruityPerfInput;

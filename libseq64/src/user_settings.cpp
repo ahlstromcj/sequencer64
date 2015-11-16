@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-23
- * \updates       2015-11-15
+ * \updates       2015-11-16
  * \license       GNU GPLv2 or above
  *
  *  Note that this module also sets the remaining legacy global variables, so
@@ -380,7 +380,7 @@ user_settings::set_defaults ()
     m_global_seq_feature_save = true;
     m_seqedit_scale = int(c_scale_off); // range: c_scale_off to < c_scale_size
     m_seqedit_key = SEQ64_KEY_OF_C;     // range: 0-11
-    m_seqedit_bgsequence = SEQ64_NULL_SEQUENCE; // range -1, 0, 1, 2, ...
+    m_seqedit_bgsequence = SEQ64_SEQUENCE_LIMIT; // range -1, 0, 1, 2, ...
     m_use_new_font = ! rc().legacy_format();
 
     m_text_x =  6;                      // range: 6-6

@@ -255,7 +255,17 @@ perftime::on_size_allocate (Gtk::Allocation & a_r)
  */
 
 /**
- *  This callback function handles a key-press event.
+ *  This callback function handles a key-press event.  However, we cannot get
+ *  it to work directly, so the perfedit class, which does get keystrokes,
+ *  calls this function to do the work
+ *
+ *  This function uses the "l" key to activate the movement of the "L" marker with
+ *  the arrow keys, by the interval of on snap value for each press.  It also
+ *  uses the "r" key to activate the movement of the "R" marker, and the "x"
+ *  to deactivate either movement move.
+ *
+ *  Be aware that there is no visual feedback, as yet, that one is in the
+ *  movement mode.
  */
 
 bool
@@ -279,7 +289,7 @@ perftime::on_key_press_event (GdkEventKey * ev)
                 m_right_marker_tick = perf().get_right_tick();
             }
         }
-        else if (ev->keyval == SEQ64_x)
+        else if (ev->keyval == SEQ64_x)             /* "x-scape" the modes  */
         {
             m_left_marker_tick = m_right_marker_tick = (-1);
         }

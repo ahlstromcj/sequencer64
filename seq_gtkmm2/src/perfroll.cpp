@@ -820,12 +820,12 @@ perfroll::on_key_press_event (GdkEventKey * ev)
                 m_seq24_interaction.set_adding(true, *this);
                 result = true;
             }
-            else if (ev->keyval == SEQ64_x)
+            else if (ev->keyval == SEQ64_x)         /* "x-scape" the mode   */
             {
                 m_seq24_interaction.set_adding(false, *this);
                 result = true;
             }
-            else if (ev->keyval == SEQ64_P)     /* deprecated */
+            else if (ev->keyval == SEQ64_P)         /* deprecated           */
             {
                 m_seq24_interaction.set_adding(false, *this);
                 result = true;

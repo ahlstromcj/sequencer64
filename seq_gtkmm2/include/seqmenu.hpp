@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-09-29
+ * \updates       2015-11-16
  * \license       GNU GPLv2 or above
  *
  */
@@ -127,9 +127,12 @@ protected:
 
     void popup_menu ();
 
-private:
+protected:
 
     void seq_edit ();
+
+private:
+
     void seq_new ();
     void seq_copy ();
     void seq_cut ();

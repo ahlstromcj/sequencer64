@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-09
+ * \updates       2015-11-16
  * \license       GNU GPLv2 or above
  *
  *  Note that this representation is, in a sense, inside the mainwnd
@@ -735,9 +735,22 @@ mainwid::on_expose_event (GdkEventExpose * ev)
 }
 
 /**
- *  Handles a press of a mouse button.  It grabs the focus, calculates
- *  the pattern/sequence over which the button press occurred, and sets
- *  the m_button_down flag if it is over a pattern.
+ *  Handles a press of a mouse button.
+ *
+ *  If the press is a single left-click, and no Ctrl key is pressed, then this
+ *  function grabs the focus, calculates the pattern/sequence over which the
+ *  button press occurred, and sets the m_button_down flag if it is over a
+ *  pattern.  In the release event callback, this then causes the sequence
+ *  arming/muting to be toggled.
+ *
+ *  If the press is a single Ctrl-left-click, this function brings up the New
+ *  or Edit menu.  The New menu is brought up if the grid slot is empty, adn
+ *  the Edit menu otherwise.
+ *
+ *  If the press is a double-click, it first acts just like two single-clicks
+ *  (which might confuse the user at first).  Then it brings up the Edit menu
+ *  for the sequence.  This new behavior is closer to what users have come to
+ *  expect from a double-click.
  *
  * \param p
  *      Provides the parameters of the button event.
@@ -750,10 +763,23 @@ bool
 mainwid::on_button_press_event (GdkEventButton * p)
 {
     grab_focus();
-    current_sequence(seq_from_xy(int(p->x), int(p->y)));
-    if (current_sequence() >= 0 && SEQ64_CLICK_LEFT(p->button))
-        m_button_down = true;
-
+    if (CAST_EQUIVALENT(p->type, SEQ64_2BUTTON_PRESS))  /* double-click?    */
+    {
+        seq_edit();
+    }
+    else
+    {
+        current_sequence(seq_from_xy(int(p->x), int(p->y)));
+        if (p->state & SEQ64_CONTROL_MASK)
+        {
+            seq_edit();
+        }
+        else
+        {
+            if (current_sequence() >= 0 && SEQ64_CLICK_LEFT(p->button))
+                m_button_down = true;
+        }
+    }
     return true;
 }
 

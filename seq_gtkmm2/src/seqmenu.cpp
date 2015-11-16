@@ -72,7 +72,7 @@ seqmenu::~seqmenu ()
 {
     /*
      * if (not_nullptr(m_seqedit))
-     *  delete(m_seqedit)
+     *      delete(m_seqedit)
      */
 }
 

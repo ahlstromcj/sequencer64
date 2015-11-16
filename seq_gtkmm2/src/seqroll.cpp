@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-15
+ * \updates       2015-11-16
  * \license       GNU GPLv2 or above
  *
  */
@@ -1153,12 +1153,12 @@ seqroll::on_key_press_event (GdkEventKey * ev)
             m_seq24_interaction.set_adding(true, *this);
             result = true;
         }
-        else if (ev->keyval == SEQ64_x)
+        else if (ev->keyval == SEQ64_x)             /* "x-scape" the mode   */
         {
             m_seq24_interaction.set_adding(false, *this);
             result = true;
         }
-        else if (ev->keyval == SEQ64_P)         /* dperecated */
+        else if (ev->keyval == SEQ64_P)             /* deprecated           */
         {
             m_seq24_interaction.set_adding(false, *this);
             result = true;

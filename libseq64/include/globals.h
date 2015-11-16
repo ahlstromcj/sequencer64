@@ -60,6 +60,7 @@
 
 #include <string>
 
+#include "app_limits.h"                 /* basic hardwired app limits   */
 #include "easy_macros.h"                /* with platform_macros.h, too  */
 #include "rc_settings.hpp"              /* seq64::rc_settings           */
 #include "user_settings.hpp"            /* seq64::user_settings         */
@@ -91,22 +92,13 @@ extern user_settings & usr ();
 #endif
 
 /**
- *  This value indicates to use the default value of PPQN and ignore (to some
- *  extent) what value is specified in the MIDI file.  Note that the default
- *  default PPQN is given by the global ppqn (192) or, if the "--ppqn qn"
- *  option is specified on the command-line, by the global ppqn = qn.
- */
-
-#define SEQ64_USE_DEFAULT_PPQN          (-1)
-
-/**
  *  Number of rows in the Patterns Panel.  The current value is 4, and
  *  probably won't change, since other values depend on it.  Together with
  *  c_mainwnd_cols, this value fixes the patterns grid into a 4 x 8 set of
  *  patterns known as a "screen set".
  */
 
-const int c_mainwnd_rows = 4;
+const int c_mainwnd_rows = SEQ64_DEFAULT_MAINWND_ROWS;
 
 /**
  *  Number of columns in the Patterns Panel.  The current value is 4, and
@@ -115,7 +107,7 @@ const int c_mainwnd_rows = 4;
  *  patterns known as a "screen set".
  */
 
-const int c_mainwnd_cols = 8;
+const int c_mainwnd_cols = SEQ64_DEFAULT_MAINWND_COLUMNS;
 
 /**
  *  Number of patterns/sequences in the Patterns Panel, also known as a
@@ -137,7 +129,7 @@ const int c_gmute_tracks = c_seqs_in_set * c_seqs_in_set;
  *  created.
  */
 
-const int c_max_sets = 32;
+const int c_max_sets = SEQ64_DEFAULT_SET_MAX;
 
 /**
  *  The maximum number of patterns supported is given by the number of
@@ -153,19 +145,19 @@ const int c_max_sequence = c_seqs_in_set * c_max_sets;
  *  default value is 120.
  */
 
-const int c_beats_per_minute = DEFAULT_BPM;
+const int c_beats_per_minute = SEQ64_DEFAULT_BPM;
 
 /**
  *  The trigger width in milliseconds.  This value is 4 ms.
  */
 
-const int c_thread_trigger_width_ms = DEFAULT_TRIGWIDTH_MS;
+const int c_thread_trigger_width_ms = SEQ64_DEFAULT_TRIGWIDTH_MS;
 
 /**
  *  The trigger lookahead in milliseconds.  This value is 2 ms.
  */
 
-const int c_thread_trigger_lookahead_ms = DEFAULT_TRIGLOOK_MS;
+const int c_thread_trigger_lookahead_ms = SEQ64_DEFAULT_TRIGLOOK_MS;
 
 /**
  *  Constants for the font class.  The c_text_x and c_text_y constants
@@ -264,7 +256,7 @@ const int c_key_y =  8;
  *  scroll to see them all.
  */
 
-const int c_num_keys = MIDI_COUNT_MAX;      // 128
+const int c_num_keys = SEQ64_MIDI_COUNT_MAX;      // 128
 
 /**
  *  The dimensions and offset of the virtual keyboard at the left of the
@@ -320,7 +312,7 @@ const int c_timearea_y = 18;
  *  "only" 256 simultaneously-playing notes can be managed.
  */
 
-const int c_midi_notes = 256;
+const int c_midi_notes = SEQ64_MIDI_NOTES_MAX;
 
 /**
  *  Provides the default string for the name of a pattern or sequence.
@@ -477,7 +469,7 @@ inline bool ppqn_is_valid (int ppqn)
     return
     (
         ppqn == SEQ64_USE_DEFAULT_PPQN ||
-        (ppqn >= MINIMUM_PPQN && ppqn <= MAXIMUM_PPQN)
+        (ppqn >= SEQ64_MINIMUM_PPQN && ppqn <= SEQ64_MAXIMUM_PPQN)
     );
 }
 

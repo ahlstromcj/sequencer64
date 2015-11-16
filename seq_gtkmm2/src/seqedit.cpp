@@ -107,8 +107,8 @@ namespace seq64
  *  feature of Seq24, but strikes us as a bit too surprising and tricky.
  */
 
-int seqedit::m_initial_snap                 = DEFAULT_PPQN / 4;
-int seqedit::m_initial_note_length          = DEFAULT_PPQN / 4;
+int seqedit::m_initial_snap                 = SEQ64_DEFAULT_PPQN / 4;
+int seqedit::m_initial_note_length          = SEQ64_DEFAULT_PPQN / 4;
 
 /**
  * Actions.  These variables represent actions that can be applied to a
@@ -1275,7 +1275,7 @@ seqedit::popup_midich_menu ()
 {
     m_menu_midich = manage(new Gtk::Menu());
     int bus = m_seq.get_midi_bus();
-    for (int channel = 0; channel < MIDI_BUS_CHANNEL_MAX; ++channel)
+    for (int channel = 0; channel < SEQ64_MIDI_BUS_CHANNEL_MAX; ++channel)
     {
         char b[4];                                  /* 2 digits or less  */
         snprintf(b, sizeof(b), "%d", channel + 1);
@@ -1428,7 +1428,7 @@ seqedit::create_menu_image (bool state)
 void
 seqedit::popup_event_menu ()
 {
-    bool ccs[MIDI_COUNT_MAX];
+    bool ccs[SEQ64_MIDI_COUNT_MAX];
     char b[20];
     bool note_on = false;
     bool note_off = false;
@@ -1439,7 +1439,7 @@ seqedit::popup_event_menu ()
     unsigned char status, cc;
     int bus = m_seq.get_midi_bus();
     int channel = m_seq.get_midi_channel();
-    memset(ccs, false, sizeof(bool) * MIDI_COUNT_MAX);
+    memset(ccs, false, sizeof(bool) * SEQ64_MIDI_COUNT_MAX);
     m_seq.reset_draw_marker();
     while (m_seq.get_next_event(&status, &cc))
     {

@@ -59,6 +59,8 @@
 namespace seq64
 {
 
+class mastermidibus;
+
 /**
  *  Provides a set of methods for drawing certain items.
  *
@@ -170,7 +172,7 @@ private:
 
     /* map for noteon, used when muting, to shut off current messages */
 
-    int m_playing_notes[c_midi_notes];
+    int m_playing_notes[SEQ64_MIDI_NOTES_MAX];
 
     /* states */
 

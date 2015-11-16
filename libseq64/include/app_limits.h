@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-08
- * \updates       2015-11-10
+ * \updates       2015-11-15
  * \license       GNU GPLv2 or above
  *
  *  This collection of global variables describes some facets of the
@@ -54,20 +54,31 @@
  */
 
 #define SEQ64_BAD_BUSS                  (char(-1))
-#define NO_BUSS_OVERRIDE(b)             (char(b) == SEQ64_BAD_BUSS)
+
+/**
+ *  An easier macro for testing SEQ64_BAD_BUSS.
+ */
+
+#define SEQ64_NO_BUSS_OVERRIDE(b)       (char(b) == SEQ64_BAD_BUSS)
+
+/**
+ *  Default value for c_max_sets.
+ */
+
+#define SEQ64_DEFAULT_SET_MAX            32
 
 /**
  *  Default value for c_max_busses.
  */
 
-#define DEFAULT_BUSS_MAX                 32
+#define SEQ64_DEFAULT_BUSS_MAX           32
 
 /**
  *  Guessing that this has to do with the width of the performance piano roll.
  *  See perfroll::init_before_show().
  */
 
-#define PERFROLL_PAGE_FACTOR            4096
+#define SEQ64_PERFROLL_PAGE_FACTOR      4096
 
 /**
  *  Guessing that this describes the number of subdivisions of the grid in a
@@ -75,7 +86,27 @@
  *  obvious in the user-interface, though.
  */
 
-#define PERFROLL_DIVS_PER_BEAT            16
+#define SEQ64_PERFROLL_DIVS_PER_BEAT      16
+
+/**
+ *  Default number of rows in the main-window's grid.
+ */
+
+#define SEQ64_DEFAULT_MAINWND_ROWS         4
+
+/**
+ *  Default number of columns in the main-window's grid.
+ */
+
+#define SEQ64_DEFAULT_MAINWND_COLUMNS      8
+
+/**
+ *  Default number of sequences in a set, controlled by the number of rows and
+ *  columns in the main window.
+ */
+
+#define SQ64_DEFAULT_SEQS_IN_SET \
+   (SEQ64_DEFAULT_MAINWND_ROWS * SEQ64_DEFAULT_MAINWND_COLUMNS)
 
 /**
  *  This constant indicates that a configuration file numeric value is
@@ -83,7 +114,16 @@
  *  instrument.  Used in the "user" configuration-file processing.
  */
 
-#define GM_INSTRUMENT_FLAG              (-1)
+#define SEQ64_GM_INSTRUMENT_FLAG        (-1)
+
+/**
+ *  This value indicates to use the default value of PPQN and ignore (to some
+ *  extent) what value is specified in the MIDI file.  Note that the default
+ *  default PPQN is given by the global ppqn (192) or, if the "--ppqn qn"
+ *  option is specified on the command-line, by the global ppqn = qn.
+ */
+
+#define SEQ64_USE_DEFAULT_PPQN          (-1)
 
 /**
  *  Default value for the global parts-per-quarter-note value.  This is
@@ -92,19 +132,19 @@
  *  user_settings class.
  */
 
-#define DEFAULT_PPQN                    192
+#define SEQ64_DEFAULT_PPQN              192
 
 /**
  *  Minimum value for PPQN.  Mostly for sanity checking.
  */
 
-#define MINIMUM_PPQN                     96
+#define SEQ64_MINIMUM_PPQN               96
 
 /**
  *  Maximum value for PPQN.  Mostly for sanity checking.
  */
 
-#define MAXIMUM_PPQN                    960
+#define SEQ64_MAXIMUM_PPQN              960
 
 /**
  *  Default value for c_beats_per_minute (global beats-per-minute, also known
@@ -112,21 +152,21 @@
  *  measure".
  */
 
-#define DEFAULT_BPM                     120
+#define SEQ64_DEFAULT_BPM               120
 
 /**
  *  Minimum value for c_beats_per_minute (global beats-per-minute, also known
  *  as "BPM").  Mostly for sanity-checking.
  */
 
-#define MINIMUM_BPM                      20
+#define SEQ64_MINIMUM_BPM                20
 
 /**
  *  Maximum value for c_beats_per_minute (global beats-per-minute, also known
  *  as "BPM").  Mostly for sanity-checking.
  */
 
-#define MAXIMUM_BPM                     500
+#define SEQ64_MAXIMUM_BPM               500
 
 /**
  *  Default value for "beats-per-measure".  This is the "numerator" in a 4/4
@@ -136,7 +176,7 @@
  *  per minute".
  */
 
-#define DEFAULT_BEATS_PER_MEASURE         4
+#define SEQ64_DEFAULT_BEATS_PER_MEASURE   4
 
 /**
  *  Default value for "beat-width".  This is the "denominator" in a 4/4 time
@@ -145,39 +185,46 @@
  *  "BW", or "beat width", not to be confused with "bandwidth".
  */
 
-#define DEFAULT_BEAT_WIDTH                4
+#define SEQ64_DEFAULT_BEAT_WIDTH          4
 
 /**
  *  Default value for major divisions per bar.  A graphics version of
  *  DEFAULT_BEATS_PER_MEASURE.
  */
 
-#define DEFAULT_LINES_PER_MEASURE         4
+#define SEQ64_DEFAULT_LINES_PER_MEASURE   4
 
 /**
  *  Default value for perfedit snap.
  */
 
-#define DEFAULT_PERFEDIT_SNAP             8
+#define SEQ64_DEFAULT_PERFEDIT_SNAP       8
 
 /**
  *  Default value for c_thread_trigger_width_ms.
  */
 
-#define DEFAULT_TRIGWIDTH_MS              4
+#define SEQ64_DEFAULT_TRIGWIDTH_MS        4
 
 /**
  *  Default value for c_thread_trigger_width_ms.
  */
 
-#define DEFAULT_TRIGLOOK_MS               2
+#define SEQ64_DEFAULT_TRIGLOOK_MS         2
 
 /**
  *  Defines the maximum number of MIDI values, and one more than the
  *  highest MIDI value, which is 127.
  */
 
-#define MIDI_COUNT_MAX                  128
+#define SEQ64_MIDI_COUNT_MAX            128
+
+/**
+ *  Defines the maximum number of notes playing at one time that the
+ *  application will support.
+ */
+
+#define SEQ64_MIDI_NOTES_MAX            256
 
 #endif      // SEQ64_APP_LIMITS_H
 

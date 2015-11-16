@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-25
- * \updates       2015-11-04
+ * \updates       2015-11-15
  * \license       GNU GPLv2 or above
  *
  *  Note that this module also sets the legacy global variables, so that
@@ -82,7 +82,7 @@ user_midi_bus::operator = (const user_midi_bus & rhs)
 
 /**
  *  Sets the default values.  Also invalidates the object.  All 16 of the
- *  channels are set to GM_INSTRUMENT_FLAG (-1).
+ *  channels are set to SEQ64_GM_INSTRUMENT_FLAG (-1).
  */
 
 void
@@ -91,8 +91,8 @@ user_midi_bus::set_defaults ()
     m_is_valid = false;
     m_channel_count = 0;
     m_midi_bus_def.alias.clear();
-    for (int channel = 0; channel < MIDI_BUS_CHANNEL_MAX; channel++)    // 16
-        m_midi_bus_def.instrument[channel] = GM_INSTRUMENT_FLAG;
+    for (int channel = 0; channel < SEQ64_MIDI_BUS_CHANNEL_MAX; channel++)
+        m_midi_bus_def.instrument[channel] = SEQ64_GM_INSTRUMENT_FLAG;
 }
 
 /**
@@ -104,16 +104,16 @@ user_midi_bus::set_defaults ()
  * \return
  *      The instrument number of the desired buss channel is returned.  If
  *      the channel number is out of range, or the object is not valid,
- *      then GM_INSTRUMENT_FLAG (-1) is returned.
+ *      then SEQ64_GM_INSTRUMENT_FLAG (-1) is returned.
  */
 
 int
 user_midi_bus::instrument (int channel) const
 {
-    if (m_is_valid && channel >= 0 && channel < MIDI_BUS_CHANNEL_MAX)
+    if (m_is_valid && channel >= 0 && channel < SEQ64_MIDI_BUS_CHANNEL_MAX)
         return m_midi_bus_def.instrument[channel];
     else
-        return GM_INSTRUMENT_FLAG;
+        return SEQ64_GM_INSTRUMENT_FLAG;
 }
 
 /**
@@ -131,10 +131,10 @@ user_midi_bus::instrument (int channel) const
 void
 user_midi_bus::set_instrument (int channel, int instrum)
 {
-    if (m_is_valid && channel >= 0 && channel < MIDI_BUS_CHANNEL_MAX)
+    if (m_is_valid && channel >= 0 && channel < SEQ64_MIDI_BUS_CHANNEL_MAX)
     {
         m_midi_bus_def.instrument[channel] = instrum;
-        if (instrum != GM_INSTRUMENT_FLAG)
+        if (instrum != SEQ64_GM_INSTRUMENT_FLAG)
             ++m_channel_count;
     }
 }
@@ -148,7 +148,7 @@ void
 user_midi_bus::copy_definitions (const user_midi_bus & rhs)
 {
     m_midi_bus_def.alias = rhs.m_midi_bus_def.alias;
-    for (int channel = 0; channel < MIDI_BUS_CHANNEL_MAX; channel++)
+    for (int channel = 0; channel < SEQ64_MIDI_BUS_CHANNEL_MAX; channel++)
     {
         m_midi_bus_def.instrument[channel] =
             rhs.m_midi_bus_def.instrument[channel];

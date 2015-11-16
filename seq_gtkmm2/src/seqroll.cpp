@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-13
+ * \updates       2015-11-15
  * \license       GNU GPLv2 or above
  *
  */
@@ -1137,12 +1137,17 @@ seqroll::on_key_press_event (GdkEventKey * ev)
             result = true;
         }
 #endif  // SEQ64_USE_VI_SEQROLL_MODE
-        else if (ev->keyval == SEQ64_p)             /* \new ca 2015-11-01   */
+        else if (ev->keyval == SEQ64_p)
         {
             m_seq24_interaction.set_adding(true, *this);
             result = true;
         }
-        else if (ev->keyval == SEQ64_P)             /* \new ca 2015-11-01   */
+        else if (ev->keyval == SEQ64_x)
+        {
+            m_seq24_interaction.set_adding(false, *this);
+            result = true;
+        }
+        else if (ev->keyval == SEQ64_P)         /* dperecated */
         {
             m_seq24_interaction.set_adding(false, *this);
             result = true;

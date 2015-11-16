@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-10
+ * \updates       2015-11-15
  * \license       GNU GPLv2 or above
  *
  */
@@ -33,8 +33,9 @@
 #include <gtkmm/adjustment.h>
 
 #include "app_limits.h"                 /* SEQ64_SOLID_PIANOROLL_GRID   */
-#include "click.hpp"                    /* SEQ64_CLICK_LEFT() etc.     */
+#include "click.hpp"                    /* SEQ64_CLICK_LEFT() etc.      */
 #include "font.hpp"
+#include "globals.h"                    /* c_keyarea_y and more         */
 #include "scales.h"
 #include "seqkeys.hpp"
 #include "sequence.hpp"

@@ -322,7 +322,8 @@ mainwnd::mainwnd (perform & p)
     (
         new Gtk::Adjustment
         (
-            perf().get_beats_per_minute(), MINIMUM_BPM, MAXIMUM_BPM, 1
+            perf().get_beats_per_minute(),
+            SEQ64_MINIMUM_BPM, SEQ64_MAXIMUM_BPM, 1
         )
     );
     m_spinbutton_bpm = manage(new Gtk::SpinButton(*m_adjust_bpm));

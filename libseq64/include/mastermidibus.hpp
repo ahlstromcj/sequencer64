@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-30
- * \updates       2015-10-30
+ * \updates       2015-11-15
  * \license       GNU GPLv2 or above
  *
  *  The mastermidibus module is the Linux version of the mastermidibus module.
@@ -36,7 +36,9 @@
  *  classes into their own modules.  This module is the latter.
  */
 
+#include "globals.h"
 #include "midibus_common.hpp"
+#include "mutex.hpp"
 
 #if SEQ64_HAVE_LIBASOUND                // covers this whole module
 
@@ -45,6 +47,9 @@
 
 namespace seq64
 {
+
+class event;
+class midibus;
 
 /**
  *  The class that "supervises" all of the midibus objects?

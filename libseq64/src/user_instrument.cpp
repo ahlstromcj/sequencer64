@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-25
- * \updates       2015-11-04
+ * \updates       2015-11-15
  * \license       GNU GPLv2 or above
  *
  *  Note that this module also sets the legacy global variables, so that
@@ -90,7 +90,7 @@ user_instrument::set_defaults ()
     m_is_valid = false;
     m_controller_count = 0;
     m_instrument_def.instrument.clear();
-    for (int c = 0; c < MIDI_CONTROLLER_MAX; c++)
+    for (int c = 0; c < SEQ64_MIDI_CONTROLLER_MAX; c++)
     {
         m_instrument_def.controllers_active[c] = false;
         m_instrument_def.controllers[c].clear();
@@ -133,7 +133,7 @@ user_instrument::set_controller
     bool isactive
 )
 {
-    if (m_is_valid && c >= 0 && c < MIDI_CONTROLLER_MAX)
+    if (m_is_valid && c >= 0 && c < SEQ64_MIDI_CONTROLLER_MAX)
     {
         m_instrument_def.controllers[c] = cname;
         m_instrument_def.controllers_active[c] = isactive;
@@ -162,7 +162,7 @@ const std::string &
 user_instrument::controller_name (int c) const
 {
     static std::string s_empty;
-    if (m_is_valid && c >= 0 && c < MIDI_CONTROLLER_MAX)
+    if (m_is_valid && c >= 0 && c < SEQ64_MIDI_CONTROLLER_MAX)
         return m_instrument_def.controllers[c];
     else
         return s_empty;
@@ -183,7 +183,7 @@ user_instrument::controller_name (int c) const
 bool
 user_instrument::controller_active (int c) const
 {
-    if (m_is_valid && c >= 0 && c < MIDI_CONTROLLER_MAX)
+    if (m_is_valid && c >= 0 && c < SEQ64_MIDI_CONTROLLER_MAX)
         return m_instrument_def.controllers_active[c];
     else
         return false;
@@ -198,7 +198,7 @@ void
 user_instrument::copy_definitions (const user_instrument & rhs)
 {
     m_instrument_def.instrument = rhs.m_instrument_def.instrument;
-    for (int c = 0; c < MIDI_CONTROLLER_MAX; c++)
+    for (int c = 0; c < SEQ64_MIDI_CONTROLLER_MAX; c++)
     {
         m_instrument_def.controllers_active[c] =
             rhs.m_instrument_def.controllers_active[c];

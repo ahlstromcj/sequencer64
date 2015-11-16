@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-29
+ * \updates       2015-11-15
  * \license       GNU GPLv2 or above
  *
  *  The time bar shows markers and numbers for the measures of the song,
@@ -34,8 +34,9 @@
 
 #include <gtkmm/adjustment.h>
 
-#include "click.hpp"                    /* SEQ64_CLICK_LEFT() etc. */
+#include "click.hpp"                    /* SEQ64_CLICK_LEFT() etc.      */
 #include "font.hpp"
+#include "keystroke.hpp"                /* for new keystroke actions    */
 #include "perform.hpp"
 #include "perftime.hpp"
 
@@ -65,6 +66,10 @@ perftime::perftime
     m_ppqn                  (0),                // set in the body
     m_snap                  (0),                // ditto
     m_measure_length        (0),                // tritto
+#ifdef USE_PERFTIME_KEYSTROKE_PROCESSING
+    m_left_marker_tick      (-1),
+    m_right_marker_tick     (-1),
+#endif
     m_perf_scale_x          (c_perf_scale_x),   // 32 ticks per pixel
     m_timearea_y            (c_timearea_y)      // pixel-height of time scale
 {
@@ -183,15 +188,15 @@ perftime::on_expose_event (GdkEventExpose * /* ev */ )
     m_gc->set_foreground(grey());                   /* draw vertical lines  */
     for (long i = first_measure; i < last_measure; ++i)
     {
-        int x_pos = ((i * m_measure_length) - m_tick_offset) / m_perf_scale_x;
+        int x_pos = tick_to_pixel(i * m_measure_length);
         char bar[8];
         snprintf(bar, sizeof(bar), "%ld", i + 1);
         draw_line(x_pos, 0, x_pos, m_window_y);                     /* beat */
         render_string(x_pos + 2, 0, bar, font::BLACK);
     }
 
-    long left = (perf().get_left_tick() - m_tick_offset) / m_perf_scale_x;
-    long right = (perf().get_right_tick() - m_tick_offset) / m_perf_scale_x;
+    long left = tick_to_pixel(perf().get_left_tick());
+    long right = tick_to_pixel(perf().get_right_tick());
     if (left >= 0 && left <= m_window_x)            /* draw L marker    */
     {
         draw_rectangle(black(), left, m_window_y - 9, 7, 10);
@@ -212,7 +217,7 @@ perftime::on_expose_event (GdkEventExpose * /* ev */ )
 bool
 perftime::on_button_press_event (GdkEventButton * p0)
 {
-    long tick = long(p0->x) * m_perf_scale_x + m_tick_offset;
+    long tick = pixel_to_tick(long(p0->x));
     tick -= (tick % m_snap);
 
     // Why is this disabled?  We should re-enable and see if it works.
@@ -240,6 +245,82 @@ perftime::on_size_allocate (Gtk::Allocation & a_r)
     m_window_x = a_r.get_width();
     m_window_y = a_r.get_height();
 }
+
+#ifdef USE_PERFTIME_KEYSTROKE_PROCESSING
+
+/*
+ * Can't get the keystroke events to be seen, and not sure why.  Code
+ * is currently enable because the perfedit object can call this function, and
+ * it works.
+ */
+
+/**
+ *  This callback function handles a key-press event.
+ */
+
+bool
+perftime::on_key_press_event (GdkEventKey * ev)
+{
+    bool result = false;
+    {
+        if (ev->keyval == SEQ64_l)
+        {
+            if (m_left_marker_tick == (-1))
+            {
+                m_right_marker_tick = (-1);
+                m_left_marker_tick = perf().get_left_tick();
+            }
+        }
+        else if (ev->keyval == SEQ64_r)
+        {
+            if (m_right_marker_tick == (-1))
+            {
+                m_left_marker_tick = (-1);
+                m_right_marker_tick = perf().get_right_tick();
+            }
+        }
+        else if (ev->keyval == SEQ64_x)
+        {
+            m_left_marker_tick = m_right_marker_tick = (-1);
+        }
+        else if (ev->keyval == SEQ64_Left)
+        {
+            if (m_left_marker_tick != (-1))
+            {
+                m_left_marker_tick -= m_snap;
+                perf().set_left_tick(m_left_marker_tick);
+                result = true;
+            }
+            else if (m_right_marker_tick != (-1))
+            {
+                m_right_marker_tick -= m_snap;
+                perf().set_right_tick(m_right_marker_tick);
+                result = true;
+            }
+        }
+        else if (ev->keyval == SEQ64_Right)
+        {
+            if (m_left_marker_tick != (-1))
+            {
+                m_left_marker_tick += m_snap;
+                perf().set_left_tick(m_left_marker_tick);
+                result = true;
+            }
+            else if (m_right_marker_tick != (-1))
+            {
+                m_right_marker_tick += m_snap;
+                perf().set_right_tick(m_right_marker_tick);
+                result = true;
+            }
+        }
+    }
+    if (result)
+        queue_draw();
+
+    return true;
+}
+
+#endif      // USE_PERFTIME_KEYSTROKE_PROCESSING
 
 }           // namespace seq64
 

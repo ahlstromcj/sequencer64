@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-10
+ * \updates       2015-11-15
  * \license       GNU GPLv2 or above
  *
  */
@@ -48,7 +48,7 @@ class perform;
  *  realistically, 128 is more than enough.  We provide safety anyway.
  */
 
-#define SEQ64_LINE_MAX                  128
+#define SEQ64_LINE_MAX          132
 
 /**
  *    This class is the abstract base class for optionsfile and userfile.
@@ -111,3 +111,4 @@ public:
  *
  * vim: sw=4 ts=4 wm=4 et ft=cpp
  */
+

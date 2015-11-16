@@ -96,7 +96,7 @@
  *  our "proprietary" track parser.
  */
 
-#define PROPRIETARY_SEQ_NUMBER         0x7777           /* high enough?     */
+#define PROPRIETARY_SEQ_NUMBER  SEQ64_NULL_SEQUENCE
 
 /**
  *  Provides the track name for the "proprietary" data when using the new
@@ -738,6 +738,18 @@ midifile::parse_proprietary_track (perform & p, int file_size)
         if (proprietary == c_midictrl)
         {
             unsigned long seqs = read_long();
+
+            /*
+             * Some old code wrote some bad files, we need to work around that
+             * and fix it.
+             */
+
+            if (seqs > c_max_sequence)
+            {
+                errprint("bad sequence count, fixing; please re-save file");
+                m_pos -= 4;
+                seqs = (unsigned long)(read_byte());
+            }
             for (unsigned int i = 0; i < seqs; i++)
             {
                 p.get_midi_control_toggle(i)->m_active = read_byte();
@@ -764,6 +776,18 @@ midifile::parse_proprietary_track (perform & p, int file_size)
         if (proprietary == c_midiclocks)
         {
             unsigned long busscount = read_long();
+
+            /*
+             * Some old code wrote some bad files, we need to work around that
+             * and fix it.
+             */
+
+            if (busscount > SEQ64_DEFAULT_BUSS_MAX)
+            {
+                errprint("bad buss count, fixing; please re-save file");
+                m_pos -= 4;
+                busscount = (unsigned long)(read_byte());
+            }
             for (unsigned int buss = 0; buss < busscount; buss++)
             {
                 int clocktype = read_byte();

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-10
+ * \updates       2015-11-15
  * \license       GNU GPLv2 or above
  *
  */
@@ -52,7 +52,7 @@
 
 static int s_perfroll_background_x =
 (
-    (DEFAULT_PPQN * 4 * 16) / c_perf_scale_x
+    (SEQ64_DEFAULT_PPQN * 4 * 16) / c_perf_scale_x
 );
 static int s_perfroll_size_box_w = 3;
 static int s_perfroll_size_box_click_w = 4; /* s_perfroll_size_box_w + 1 */
@@ -74,8 +74,8 @@ perfroll::perfroll
     gui_drawingarea_gtk2    (p, hadjust, vadjust, 10, 10),
     m_snap                  (0),
     m_ppqn                  (0),                            // set in the body
-    m_page_factor           (PERFROLL_PAGE_FACTOR),         // 4096
-    m_divs_per_beat         (PERFROLL_DIVS_PER_BEAT),       // 16
+    m_page_factor           (SEQ64_PERFROLL_PAGE_FACTOR),   // 4096
+    m_divs_per_beat         (SEQ64_PERFROLL_DIVS_PER_BEAT), // 16
     m_ticks_per_bar         (0),                            // set in the body
     m_perf_scale_x          (c_perf_scale_x),               // 32 ticks per pixel
     m_names_y               (c_names_y),
@@ -134,7 +134,7 @@ perfroll::set_ppqn (int ppqn)
         m_ppqn = choose_ppqn(ppqn);
         m_ticks_per_bar = m_ppqn * m_divs_per_beat;
         m_background_x = (m_ppqn * 4 * 16) / c_perf_scale_x;
-        m_perf_scale_x = c_perf_scale_x * m_ppqn / DEFAULT_PPQN;
+        m_perf_scale_x = c_perf_scale_x * m_ppqn / SEQ64_DEFAULT_PPQN;
     }
 }
 
@@ -584,6 +584,74 @@ perfroll::stop_playing ()
 }
 
 /**
+ *  Splits a trigger, whatever than means.
+ */
+
+void
+perfroll::split_trigger (int seqnum, long tick)
+{
+    perf().push_trigger_undo();
+    perf().get_sequence(seqnum)->split_trigger(tick);
+    draw_background_on(seqnum);
+    draw_sequence_on(seqnum);
+    draw_drawable_row(m_drop_y);
+}
+
+/**
+ *  This function performs a 'snap' action on x.
+ *
+ *      -   m_snap = number pulses to snap to
+ *      -   m_perf_scale_x = number of pulses per pixel
+ *
+ *  Therefore mod = m_snap/m_perf_scale_x equals the number pixels to snap
+ *  to.
+ */
+
+void
+perfroll::snap_x (int & x)
+{
+    int mod = m_snap / m_perf_scale_x;
+    if (mod <= 0)
+        mod = 1;
+
+    x -= (x % mod);
+}
+
+/**
+ *  Converts a tick-offset on the x coordinate.
+ *
+ *  The result is returned via the tick parameter.
+ */
+
+void
+perfroll::convert_x (int x, long & tick)
+{
+    long tick_offset = m_4bar_offset * m_ticks_per_bar;
+    tick = x * m_perf_scale_x + tick_offset;
+}
+
+/**
+ *  Converts a tick-offset....
+ *
+ *  The results are returned via the d_tick and d_seq parameters.
+ */
+
+void
+perfroll::convert_xy (int x, int y, long & d_tick, int & d_seq)
+{
+    long tick_offset = m_4bar_offset * m_ticks_per_bar;
+    long tick = x * m_perf_scale_x + tick_offset;
+    int seq = y / m_names_y + m_sequence_offset;
+    if (seq >= m_sequence_max)
+        seq = m_sequence_max - 1;
+    else if (seq < 0)
+        seq = 0;
+
+    d_tick = tick;
+    d_seq = seq;
+}
+
+/**
  *  Provides the on-realization callback.  Calls the base-class version
  *  first.
  *
@@ -752,18 +820,25 @@ perfroll::on_key_press_event (GdkEventKey * ev)
                 m_seq24_interaction.set_adding(true, *this);
                 result = true;
             }
-            else if (ev->keyval == SEQ64_P)
+            else if (ev->keyval == SEQ64_x)
+            {
+                m_seq24_interaction.set_adding(false, *this);
+                result = true;
+            }
+            else if (ev->keyval == SEQ64_P)     /* deprecated */
             {
                 m_seq24_interaction.set_adding(false, *this);
                 result = true;
             }
             else if (ev->keyval == SEQ64_Left)
             {
-                result = m_seq24_interaction.handle_motion_key(true, *this);
+                if (m_seq24_interaction.is_adding())
+                    result = m_seq24_interaction.handle_motion_key(true, *this);
             }
             else if (ev->keyval == SEQ64_Right)
             {
-                result = m_seq24_interaction.handle_motion_key(false, *this);
+                if (m_seq24_interaction.is_adding())
+                    result = m_seq24_interaction.handle_motion_key(false, *this);
             }
         }
     }
@@ -772,61 +847,10 @@ perfroll::on_key_press_event (GdkEventKey * ev)
         fill_background_pixmap();
         queue_draw();
     }
+    else
+        return Gtk::DrawingArea::on_key_press_event(ev);
+
     return result;
-}
-
-/**
- *  This function performs a 'snap' action on x.
- *
- *      -   m_snap = number pulses to snap to
- *      -   m_perf_scale_x = number of pulses per pixel
- *
- *  Therefore mod = m_snap/m_perf_scale_x equals the number pixels to snap
- *  to.
- */
-
-void
-perfroll::snap_x (int & x)
-{
-    int mod = m_snap / m_perf_scale_x;
-    if (mod <= 0)
-        mod = 1;
-
-    x -= (x % mod);
-}
-
-/**
- *  Converts a tick-offset on the x coordinate.
- *
- *  The result is returned via the tick parameter.
- */
-
-void
-perfroll::convert_x (int x, long & tick)
-{
-    long tick_offset = m_4bar_offset * m_ticks_per_bar;
-    tick = x * m_perf_scale_x + tick_offset;
-}
-
-/**
- *  Converts a tick-offset....
- *
- *  The results are returned via the d_tick and d_seq parameters.
- */
-
-void
-perfroll::convert_xy (int x, int y, long & d_tick, int & d_seq)
-{
-    long tick_offset = m_4bar_offset * m_ticks_per_bar;
-    long tick = x * m_perf_scale_x + tick_offset;
-    int seq = y / m_names_y + m_sequence_offset;
-    if (seq >= m_sequence_max)
-        seq = m_sequence_max - 1;
-    else if (seq < 0)
-        seq = 0;
-
-    d_tick = tick;
-    d_seq = seq;
 }
 
 /**
@@ -866,20 +890,6 @@ perfroll::on_size_allocate (Gtk::Allocation & a)
     m_window_x = a.get_width();             /* side-effect  */
     m_window_y = a.get_height();            /* side-effect  */
     update_sizes();
-}
-
-/**
- *  Splits a trigger, whatever than means.
- */
-
-void
-perfroll::split_trigger (int seqnum, long tick)
-{
-    perf().push_trigger_undo();
-    perf().get_sequence(seqnum)->split_trigger(tick);
-    draw_background_on(seqnum);
-    draw_sequence_on(seqnum);
-    draw_drawable_row(m_drop_y);
 }
 
 }           // namespace seq64

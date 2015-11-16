@@ -772,11 +772,11 @@ perform::is_dirty_names (int seq)
 void
 perform::set_beats_per_minute (int bpm)
 {
-    if (bpm < MINIMUM_BPM)              /*  20 */
-        bpm = MINIMUM_BPM;
+    if (bpm < SEQ64_MINIMUM_BPM)        /*  20 */
+        bpm = SEQ64_MINIMUM_BPM;
 
-    if (bpm > MAXIMUM_BPM)              /* 500 */
-        bpm = MAXIMUM_BPM;
+    if (bpm > SEQ64_MAXIMUM_BPM)        /* 500 */
+        bpm = SEQ64_MAXIMUM_BPM;
 
     /**
      * \todo
@@ -2520,7 +2520,7 @@ perform::sequence_label (const sequence & seq)
  *      function with a lot of other functionality in the options module.
  *
  * \param bus
- *      If this value is greater than DEFAULT_BUSS_MAX (32), then it is
+ *      If this value is greater than SEQ64_DEFAULT_BUSS_MAX (32), then it is
  *      treated as a user-interface flag (PERFORM_KEY_LABELS_ON_SEQUENCE or
  *      PERFORM_NUM_LABELS_ON_SEQUENCE) that causes all the sequences to be
  *      dirtied, and thus get redrawn iwht the new user-interface setting.
@@ -2533,7 +2533,7 @@ perform::sequence_label (const sequence & seq)
 void
 perform::set_input_bus (int bus, bool active)
 {
-    if (bus >= DEFAULT_BUSS_MAX)                        /* 32 busses    */
+    if (bus >= SEQ64_DEFAULT_BUSS_MAX)                  /* 32 busses    */
     {
         if (bus == PERFORM_KEY_LABELS_ON_SEQUENCE)
             show_ui_sequence_key(active);

@@ -41,26 +41,6 @@
 namespace seq64
 {
 
-#ifdef  USE_SEQ42_PATCHES
-
-void
-event::save (std::ofstream & file)
-{
-    file.write((const char *) &m_timestamp, sizeof(long));
-    file.write((const char *) &m_status, sizeof(char));
-    file.write((const char *) &m_data, sizeof(char) * 2);
-}
-
-void
-event::load (std::ifstream & file)
-{
-    file.read((char *) &m_timestamp, sizeof(long));
-    file.read((char *) &m_status, sizeof(char));
-    file.read((char *) &m_data, sizeof(char) * 2);
-}
-
-#endif  // USE_SEQ42_PATCHES
-
 /**
  *  This constructor simply initializes all of the class members.
  */

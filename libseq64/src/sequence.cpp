@@ -669,7 +669,7 @@ sequence::get_selected_box
     tick_s = m_maxbeats * m_ppqn;
     tick_f = 0;
     note_h = 0;
-    note_l = MIDI_COUNT_MAX;
+    note_l = SEQ64_MIDI_COUNT_MAX;
     event_list::iterator i;
     for (i = m_events.begin(); i != m_events.end(); i++)
     {
@@ -706,7 +706,7 @@ sequence::get_clipboard_box
     tick_s = m_maxbeats * m_ppqn;
     tick_f = 0;
     note_h = 0;
-    note_l = MIDI_COUNT_MAX;
+    note_l = SEQ64_MIDI_COUNT_MAX;
     if (m_events_clipboard.count() == 0)
         tick_s = tick_f = note_h = note_l = 0;
 
@@ -1394,8 +1394,8 @@ sequence::change_event_data_range
             if (newdata < 0)
                 newdata = 0;
 
-            if (newdata >= MIDI_COUNT_MAX)
-                newdata = MIDI_COUNT_MAX - 1;
+            if (newdata >= SEQ64_MIDI_COUNT_MAX)
+                newdata = SEQ64_MIDI_COUNT_MAX - 1;
 
             /*
              * I think we can assume, at this point, that this is a good
@@ -1707,7 +1707,7 @@ sequence::play_note_on (int a_note)
     automutex locker(m_mutex);
     event e;
     e.set_status(EVENT_NOTE_ON);
-    e.set_data(a_note, MIDI_COUNT_MAX-1);
+    e.set_data(a_note, SEQ64_MIDI_COUNT_MAX-1);
     m_masterbus->play(m_bus, &e, m_midi_channel);
     m_masterbus->flush();
 }
@@ -1725,7 +1725,7 @@ sequence::play_note_off (int a_note)
     automutex locker(m_mutex);
     event e;
     e.set_status(EVENT_NOTE_OFF);
-    e.set_data(a_note, MIDI_COUNT_MAX-1);
+    e.set_data(a_note, SEQ64_MIDI_COUNT_MAX-1);
     m_masterbus->play(m_bus, &e, m_midi_channel);
     m_masterbus->flush();
 }
@@ -2258,15 +2258,15 @@ sequence::reset_draw_trigger_marker ()
  *
  * \return
  *      Returns the note with the lowest value.  If there are no notes in the
- *      list, then MIDI_COUNT_MAX-1 is returned, which of course doesn't tell
- *      the caller much.
+ *      list, then SEQ64_MIDI_COUNT_MAX-1 is returned, which of course doesn't
+ *      tell the caller much.
  */
 
 int
 sequence::get_lowest_note_event ()
 {
     automutex locker(m_mutex);
-    int result = MIDI_COUNT_MAX-1;
+    int result = SEQ64_MIDI_COUNT_MAX-1;
     for (event_list::iterator i = m_events.begin(); i != m_events.end(); i++)
     {
         event & er = DREF(i);

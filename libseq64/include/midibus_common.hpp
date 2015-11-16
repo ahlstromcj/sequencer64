@@ -28,27 +28,15 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-09-13
+ * \updates       2015-11-15
  * \license       GNU GPLv2 or above
  *
  */
 
 #include <string>
 
-#include "globals.h"
-#include "event.hpp"
-#include "mutex.hpp"
-
 namespace seq64
 {
-
-/*
- * Multiple forward references
- */
-
-class mastermidibus;
-class midibus;
-class sequence;
 
 /**
  *  Manifest global constants.

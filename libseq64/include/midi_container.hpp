@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-10-10
- * \updates       2015-11-14
+ * \updates       2015-11-15
  * \license       GNU GPLv2 or above
  *
  */
@@ -53,25 +53,32 @@
     (((p) & SEQ64_PROPTAG_HIGHWORD) == SEQ64_PROPTAG_HIGHWORD)
 
 /**
- *  Inidcates that no sequence value has been assigned yet.  See the value
- *  seqedit::m_initial_sequence, which was originally set to -1 directly.
+ *  The maximum sequence number, in macro form.
  */
 
-#define SEQ64_NULL_SEQUENCE             (-1)
+/**
+ *  Inidcates that no sequence value has been assigned yet.  See the value
+ *  seqedit::m_initial_sequence, which was originally set to -1 directly.
+ *  However, we have issues saving a negative number, so we will use the
+ *  "proprietary" track's bogus sequence number, which double the 1024
+ *  sequences we can support.
+ */
+
+#define SEQ64_NULL_SEQUENCE             0x0800          /* 2048 */
 
 /**
  *  A convenient macro function to test against SEQ64_NULL_SEQUENCE.
  *  This macro allows SEQ64_NULL_SEQUENCE as a legal value to use.
  */
 
-#define SEQ64_IS_LEGAL_SEQUENCE(s)      ((s) >= SEQ64_NULL_SEQUENCE)
+#define SEQ64_IS_LEGAL_SEQUENCE(s)      ((s) <= SEQ64_NULL_SEQUENCE)
 
 /**
  *  A convenient macro function to test against SEQ64_NULL_SEQUENCE.
  *  This macro does not all SEQ64_NULL_SEQUENCE as a valid value to use.
  */
 
-#define SEQ64_IS_VALID_SEQUENCE(s)      ((s) > SEQ64_NULL_SEQUENCE)
+#define SEQ64_IS_VALID_SEQUENCE(s)      ((s) < SEQ64_NULL_SEQUENCE)
 
 namespace seq64
 {

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-07
+ * \updates       2015-11-15
  * \license       GNU GPLv2 or above
  *
  */
@@ -129,11 +129,11 @@ perfedit::perfedit
     m_tooltips          (manage(new Gtk::Tooltips())),  // valgrind complains!
     m_menu_bpm          (manage(new Gtk::Menu())),
     m_menu_bw           (manage(new Gtk::Menu())),
-    m_snap              (DEFAULT_PERFEDIT_SNAP),
+    m_snap              (SEQ64_DEFAULT_PERFEDIT_SNAP),
     m_bpm               (0),
     m_bw                (0),
     m_ppqn              (0),
-    m_standard_bpm      (DEFAULT_LINES_PER_MEASURE),        /* 4        */
+    m_standard_bpm      (SEQ64_DEFAULT_LINES_PER_MEASURE),  /* 4        */
     m_redraw_ms         (c_redraw_ms)                       /* 40 ms    */
 {
     m_ppqn = choose_ppqn(ppqn);
@@ -341,9 +341,9 @@ perfedit::perfedit
      * Here, the set_snap call depends on the others being done first.
      */
 
-    set_beats_per_bar(DEFAULT_BEATS_PER_MEASURE); /* time-signature numerator   */
-    set_beat_width(DEFAULT_BEAT_WIDTH);           /* time-signature denominator */
-    set_snap(DEFAULT_PERFEDIT_SNAP);
+    set_beats_per_bar(SEQ64_DEFAULT_BEATS_PER_MEASURE); /* time-sig numerator   */
+    set_beat_width(SEQ64_DEFAULT_BEAT_WIDTH);           /* time-sig denominator */
+    set_snap(SEQ64_DEFAULT_PERFEDIT_SNAP);
 }
 
 /**
@@ -584,17 +584,17 @@ perfedit::on_realize ()
  */
 
 bool
-perfedit::on_key_press_event (GdkEventKey * a_ev)
+perfedit::on_key_press_event (GdkEventKey * ev)
 {
     bool event_was_handled = false;
-    if (CAST_EQUIVALENT(a_ev->type, SEQ64_KEY_PRESS))
+    if (CAST_EQUIVALENT(ev->type, SEQ64_KEY_PRESS))
     {
         if (global_print_keys)
         {
             printf
             (
                 "key_press[%d] == %s\n",
-                a_ev->keyval, gdk_keyval_name(a_ev->keyval)
+                ev->keyval, gdk_keyval_name(ev->keyval)
             );
         }
 
@@ -608,7 +608,7 @@ perfedit::on_key_press_event (GdkEventKey * a_ev)
         bool dont_toggle = PREFKEY(start) != PREFKEY(stop);
         if
         (
-            a_ev->keyval == PREFKEY(start) &&
+            ev->keyval == PREFKEY(start) &&
             (dont_toggle || ! perf().is_running())
         )
         {
@@ -617,7 +617,7 @@ perfedit::on_key_press_event (GdkEventKey * a_ev)
         }
         if
         (
-            a_ev->keyval == PREFKEY(stop) &&
+            ev->keyval == PREFKEY(stop) &&
             (dont_toggle || perf().is_running())
         )
         {
@@ -627,15 +627,18 @@ perfedit::on_key_press_event (GdkEventKey * a_ev)
 
         if
         (
-            a_ev->keyval == PREFKEY(start) ||
-            a_ev->keyval == PREFKEY(stop)
+            ev->keyval == PREFKEY(start) ||
+            ev->keyval == PREFKEY(stop)
         )
         {
             event_was_handled = true;
         }
     }
     if (! event_was_handled)
-        return Gtk::Window::on_key_press_event(a_ev);
+        event_was_handled = m_perftime->on_key_press_event(ev);
+
+    if (! event_was_handled)
+        return Gtk::Window::on_key_press_event(ev);
 
     return false;
 }

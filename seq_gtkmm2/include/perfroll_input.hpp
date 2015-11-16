@@ -117,6 +117,15 @@ private:
     void set_adding (bool a_adding, perfroll & roll);
     bool handle_motion_key (bool is_left, perfroll & roll);
 
+    /**
+     * \getter m_adding
+     */
+
+    bool is_adding () const
+    {
+        return m_adding;
+    }
+
 };
 
 }           // namespace seq64

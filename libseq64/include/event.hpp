@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-01
+ * \updates       2015-11-15
  * \license       GNU GPLv2 or above
  *
  *  This module also declares/defines the various constants, status-byte
@@ -40,7 +40,7 @@
  *  Defines the number of data bytes in MIDI status data.
  */
 
-#define MIDI_DATA_BYTE_COUNT           2
+#define SEQ64_MIDI_DATA_BYTE_COUNT           2
 
 namespace seq64
 {
@@ -49,20 +49,20 @@ namespace seq64
  *  This highest bit of the status byte is always 1.
  */
 
-const unsigned char  EVENT_STATUS_BIT       = 0x80;
+const unsigned char EVENT_STATUS_BIT        = 0x80;
 
 /**
  *  The following MIDI events are channel messages.  The comments represent
  *  the one or two data-bytes.
  */
 
-const unsigned char  EVENT_NOTE_OFF         = 0x80;     // 0kkkkkkk 0vvvvvvv
-const unsigned char  EVENT_NOTE_ON          = 0x90;     // 0kkkkkkk 0vvvvvvv
-const unsigned char  EVENT_AFTERTOUCH       = 0xA0;     // 0kkkkkkk 0vvvvvvv
-const unsigned char  EVENT_CONTROL_CHANGE   = 0xB0;     // 0ccccccc 0vvvvvvv
-const unsigned char  EVENT_PROGRAM_CHANGE   = 0xC0;     // 0ppppppp
-const unsigned char  EVENT_CHANNEL_PRESSURE = 0xD0;     // 0vvvvvvv
-const unsigned char  EVENT_PITCH_WHEEL      = 0xE0;     // 0lllllll 0mmmmmmm
+const unsigned char EVENT_NOTE_OFF          = 0x80;     // 0kkkkkkk 0vvvvvvv
+const unsigned char EVENT_NOTE_ON           = 0x90;     // 0kkkkkkk 0vvvvvvv
+const unsigned char EVENT_AFTERTOUCH        = 0xA0;     // 0kkkkkkk 0vvvvvvv
+const unsigned char EVENT_CONTROL_CHANGE    = 0xB0;     // 0ccccccc 0vvvvvvv
+const unsigned char EVENT_PROGRAM_CHANGE    = 0xC0;     // 0ppppppp
+const unsigned char EVENT_CHANNEL_PRESSURE  = 0xD0;     // 0vvvvvvv
+const unsigned char EVENT_PITCH_WHEEL       = 0xE0;     // 0lllllll 0mmmmmmm
 
 /**
  *  The following MIDI events have no channel.
@@ -128,7 +128,7 @@ private:
      *  most-significant bit of a data byte is always 0.
      */
 
-    unsigned char m_data[MIDI_DATA_BYTE_COUNT];
+    unsigned char m_data[SEQ64_MIDI_DATA_BYTE_COUNT];
 
     /**
      *  Points to the data buffer for SYSEX messages.

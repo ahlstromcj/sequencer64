@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-14
+ * \updates       2015-11-15
  * \license       GNU GPLv2 or above
  *
  *  Note that the parse function has some code that is not yet enabled.
@@ -190,7 +190,7 @@ userfile::parse (perform & /* a_perf */)
                 next_data_line(file);
                 ccname[0] = 0;                              // clear the buffer
                 sscanf(m_line, "%d %[^\n]", &c, ccname);
-                if (c >= 0 && c < MIDI_CONTROLLER_MAX)      // 128
+                if (c >= 0 && c < SEQ64_MIDI_CONTROLLER_MAX)      // 128
                 {
                     usr().set_instrument_controllers
                     (
@@ -394,7 +394,7 @@ userfile::write (const perform & /* a_perf */ )
     file << "#\n"
         "# In the following MIDI buss definitions, channels are counted\n"
         "# from 0 to 15, not 1 to 16.  Instruments unspecified are set to\n"
-        "# -1 (GM_INSTRUMENT_FLAG) and are GM (General MIDI).\n"
+        "# -1 (SEQ64_GM_INSTRUMENT_FLAG) and are GM (General MIDI).\n"
         ;
 
     /*
@@ -436,7 +436,7 @@ userfile::write (const perform & /* a_perf */ )
 
             for (int channel = 0; channel < umb.channel_max(); ++channel)
             {
-                if (umb.instrument(channel) != GM_INSTRUMENT_FLAG)
+                if (umb.instrument(channel) != SEQ64_GM_INSTRUMENT_FLAG)
                     file << channel << " " << umb.instrument(channel) << "\n";
 #if defined PLATFORM_DEBUG && defined SHOW_IGNORED_ITEMS
                 else
@@ -707,7 +707,7 @@ userfile::write (const perform & /* a_perf */ )
             ;
 
         int bo = int(usr().midi_buss_override());   /* writing char no good */
-        if (NO_BUSS_OVERRIDE(bo))
+        if (SEQ64_NO_BUSS_OVERRIDE(bo))
             file << "-1" << "       # midi_buss_override\n";
         else
             file << bo   << "       # midi_buss_override\n";

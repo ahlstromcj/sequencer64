@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-25
- * \updates       2015-11-08
+ * \updates       2015-11-15
  * \license       GNU GPLv2 or above
  *
  *  This class replaces an global_user_midi_bus_definitions[] array element
@@ -48,14 +48,14 @@ namespace seq64
  *  "user" file.
  */
 
-const int c_max_busses = DEFAULT_BUSS_MAX;
+const int c_max_busses = SEQ64_DEFAULT_BUSS_MAX;
 
 /**
  *  Manifest constant for the maximum number of "instrument" values in a
  *  user_midi_bus_t structure.
  */
 
-#define MIDI_BUS_CHANNEL_MAX             16
+#define SEQ64_MIDI_BUS_CHANNEL_MAX       16
 
 /**
  *  This structure corresponds to <tt> [user-midi-bus-0] </tt>
@@ -83,7 +83,7 @@ struct user_midi_bus_t
      *  configuration file.
      */
 
-    int instrument[MIDI_BUS_CHANNEL_MAX];
+    int instrument[SEQ64_MIDI_BUS_CHANNEL_MAX];
 };
 
 /**
@@ -161,7 +161,7 @@ public:
     }
 
     /**
-     * \getter MIDI_BUS_CHANNEL_MAX
+     * \getter SEQ64_MIDI_BUS_CHANNEL_MAX
      * \return
      *      Returns the maximum number of MIDI buss channels.
      *      Remember that the instrument channels for each MIDI buss
@@ -170,7 +170,7 @@ public:
 
     int channel_max () const
     {
-        return MIDI_BUS_CHANNEL_MAX;
+        return SEQ64_MIDI_BUS_CHANNEL_MAX;
     }
 
     int instrument (int channel) const;                     // getter

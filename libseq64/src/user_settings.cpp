@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-23
- * \updates       2015-11-14
+ * \updates       2015-11-15
  * \license       GNU GPLv2 or above
  *
  *  Note that this module also sets the remaining legacy global variables, so
@@ -182,7 +182,7 @@ user_settings::user_settings ()
 
     mc_min_zoom                 (1),
     mc_max_zoom                 (32),
-    mc_baseline_ppqn            (DEFAULT_PPQN)
+    mc_baseline_ppqn            (SEQ64_DEFAULT_PPQN)
 {
     // Empty body; it's no use to call normalize() here, see set_defaults().
 }
@@ -264,7 +264,7 @@ user_settings::user_settings (const user_settings & rhs)
 
     mc_min_zoom                 (rhs.mc_min_zoom),
     mc_max_zoom                 (rhs.mc_max_zoom),
-    mc_baseline_ppqn            (DEFAULT_PPQN)
+    mc_baseline_ppqn            (SEQ64_DEFAULT_PPQN)
 {
     // Empty body; no need to call normalize() here.
 }
@@ -368,31 +368,31 @@ user_settings::set_defaults ()
     m_midi_buses.clear();
     m_instruments.clear();
 
-    m_grid_style = grid_style_normal;   // range: 0 to 2
+    m_grid_style = grid_style_normal;   // range: 0-2
     m_grid_brackets = 1;                // range: -30 to 0 to 30
-    m_mainwnd_rows = 4;                 // range: 4 to 8
-    m_mainwnd_cols = 8;                 // range: 8 to 10
-    m_max_sets = 32;                    // range: 32 to 64
-    m_mainwid_border = 0;               // range: 0 to 3, try 2 or 3
-    m_mainwid_spacing = 2;              // range: 2 to 6, try 4 or 6
-    m_control_height = 0;               // range: 0 to 4?
-    m_current_zoom = 2;                 // range: 1 to 32
+    m_mainwnd_rows = 4;                 // range: 4-8
+    m_mainwnd_cols = 8;                 // range: 8-10
+    m_max_sets = 32;                    // range: 32-64
+    m_mainwid_border = 0;               // range: 0-3, try 2 or 3
+    m_mainwid_spacing = 2;              // range: 2-6, try 4 or 6
+    m_control_height = 0;               // range: 0-4?
+    m_current_zoom = 2;                 // range: 1-32
     m_global_seq_feature_save = true;
     m_seqedit_scale = int(c_scale_off); // range: c_scale_off to < c_scale_size
-    m_seqedit_key = SEQ64_KEY_OF_C;     // range: 0 to 11
+    m_seqedit_key = SEQ64_KEY_OF_C;     // range: 0-11
     m_seqedit_bgsequence = SEQ64_NULL_SEQUENCE; // range -1, 0, 1, 2, ...
     m_use_new_font = ! rc().legacy_format();
 
-    m_text_x =  6;                      // range: 6 to 6
-    m_text_y = 12;                      // range: 12 to 12
-    m_seqchars_x = 15;                  // range: 15 to 15
-    m_seqchars_y =  5;                  // range: 5 to 5
+    m_text_x =  6;                      // range: 6-6
+    m_text_y = 12;                      // range: 12-12
+    m_seqchars_x = 15;                  // range: 15-15
+    m_seqchars_y =  5;                  // range: 5-5
 
-    m_midi_ppqn = DEFAULT_PPQN;         // range: 96 to 960, default 192
-    m_midi_beats_per_measure = DEFAULT_BEATS_PER_MEASURE;   // range: 1 to 16
-    m_midi_beats_per_minute = DEFAULT_BPM;                  // range: 20 to 500
-    m_midi_beat_width = DEFAULT_BEAT_WIDTH;     // range: 1 to 16, powers of 2
-    m_midi_buss_override = SEQ64_BAD_BUSS;      // range: 1 to 32
+    m_midi_ppqn = SEQ64_DEFAULT_PPQN;   // range: 96 to 960, default 192
+    m_midi_beats_per_measure = SEQ64_DEFAULT_BEATS_PER_MEASURE; // range: 1-16
+    m_midi_beats_per_minute = SEQ64_DEFAULT_BPM;                // range: 20-500
+    m_midi_beat_width = SEQ64_DEFAULT_BEAT_WIDTH;     // range: 1-16, powers of 2
+    m_midi_buss_override = SEQ64_BAD_BUSS;            // range: 1 to 32
 
     /*
      * mc_min_zoom
@@ -871,7 +871,7 @@ user_settings::midi_beats_per_bar (int value)
 void
 user_settings::midi_beats_per_minute (int value)
 {
-    if (value >= MINIMUM_BPM && value <= MAXIMUM_BPM)
+    if (value >= SEQ64_MINIMUM_BPM && value <= SEQ64_MAXIMUM_BPM)
         m_midi_beats_per_minute = value;
 }
 
@@ -901,8 +901,14 @@ user_settings::midi_beat_width (int bw)
 void
 user_settings::midi_buss_override (char buss)
 {
-    if ((buss >= 0 && buss < DEFAULT_BUSS_MAX) || NO_BUSS_OVERRIDE(buss))
+    if
+    (
+        (buss >= 0 && buss < SEQ64_DEFAULT_BUSS_MAX) ||
+        SEQ64_NO_BUSS_OVERRIDE(buss)
+    )
+    {
         m_midi_buss_override = buss;
+    }
 }
 
 /**

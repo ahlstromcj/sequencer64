@@ -40,6 +40,7 @@
 #endif
 
 #include "calculations.hpp"             /* tempo_from_beats_per_minute()    */
+#include "event.hpp"
 #include "mastermidibus.hpp"
 #include "midibus.hpp"
 

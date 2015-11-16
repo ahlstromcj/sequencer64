@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-07
- * \updates       2015-11-08
+ * \updates       2015-11-15
  * \license       GNU GPLv2 or above
  *
  *  These items were moved from the globals.h module so that only the modules
@@ -60,7 +60,7 @@
  *  pulses-per-quarter-note.
  */
 
-#define MIDI_CLOCK_IN_PPQN               24
+#define SEQ64_MIDI_CLOCK_IN_PPQN               24
 
 /*
  * Global functions in the seq64 namespace for MIDI timing calculations.
@@ -216,7 +216,7 @@ inline double ticks_to_delta_time_us (long delta_ticks, int bpm, int ppqn)
 
 inline double clock_tick_duration_bogus (int bpm, int ppqn)
 {
-    return (ppqn / MIDI_CLOCK_IN_PPQN) * 60000000.0 / (bpm * ppqn);
+    return (ppqn / SEQ64_MIDI_CLOCK_IN_PPQN) * 60000000.0 / (bpm * ppqn);
 }
 
 /**
@@ -232,7 +232,7 @@ inline double clock_tick_duration_bogus (int bpm, int ppqn)
 
 inline int clock_ticks_from_ppqn (int ppqn)
 {
-    return ppqn / MIDI_CLOCK_IN_PPQN;
+    return ppqn / SEQ64_MIDI_CLOCK_IN_PPQN;
 }
 
 /**
@@ -243,12 +243,12 @@ inline int clock_ticks_from_ppqn (int ppqn)
  *      The number of pulses per quarter note.
  *
  * \return
- *      The double value of ppqn / 24 [MIDI_CLOCK_IN_PPQN]_is returned.
+ *      The double value of ppqn / 24 [SEQ64_MIDI_CLOCK_IN_PPQN]_is returned.
  */
 
 inline double double_ticks_from_ppqn (int ppqn)
 {
-    return double(ppqn) / double(MIDI_CLOCK_IN_PPQN);
+    return double(ppqn) / double(SEQ64_MIDI_CLOCK_IN_PPQN);
 }
 
 /**

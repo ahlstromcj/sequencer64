@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-15
+ * \updates       2015-11-15
  * \license       GNU GPLv2 or above
  *
  *  The midibus module is the Linux version of the midibus module.
@@ -37,15 +37,20 @@
  *  We moved the mastermidibus class into its own module.
  */
 
+#include "app_limits.h"                 /* SEQ64_USE_DEFAULT_PPQN       */
+#include "easy_macros.h"                /* for autoconf header files    */
+#include "mutex.hpp"
 #include "midibus_common.hpp"
 
-#if SEQ64_HAVE_LIBASOUND                // covers this whole module
-
+#if SEQ64_HAVE_LIBASOUND
 #include <alsa/asoundlib.h>
 #include <alsa/seq_midi_event.h>
+#endif
 
 namespace seq64
 {
+
+class event;
 
 /**
  *  Provides a class for handling the MIDI buss on Linux.
@@ -91,11 +96,15 @@ private:
 
     int m_ppqn;
 
+#if SEQ64_HAVE_LIBASOUND
+
     /**
      *  ALSA sequencer client handle.
      */
 
     snd_seq_t * const m_seq;
+
+#endif
 
     /**
      *  Destination address of client.
@@ -281,8 +290,6 @@ public:
     }
 
 };
-
-#endif      // SEQ64_HAVE_LIBASOUND
 
 }           // namespace seq64
 

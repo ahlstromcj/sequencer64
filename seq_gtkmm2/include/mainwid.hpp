@@ -36,6 +36,7 @@
 #include <gtkmm/button.h>
 #include <gtkmm/window.h>
 
+#include "globals.h"                    /* c_max_sequence, etc.     */
 #include "gui_drawingarea_gtk2.hpp"
 #include "seqmenu.hpp"
 

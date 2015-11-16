@@ -28,14 +28,14 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-09-13
+ * \updates       2015-11-15
  * \license       GNU GPLv2 or above
  *
  */
 
 #include <string>
 
-#include "globals.h"                   // MIDI_COUNT_MAX constant
+#include "app_limits.h"                 /* SEQ64_MIDI_COUNT_MAX constant */
 
 namespace seq64
 {
@@ -45,7 +45,7 @@ namespace seq64
  *  only by the seqedit class.
  */
 
-std::string c_controller_names[MIDI_COUNT_MAX] =
+std::string c_controller_names[SEQ64_MIDI_COUNT_MAX] =
 {
     "0 Bank Select",
     "1 Modulation Wheel ",

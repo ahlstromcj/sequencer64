@@ -71,7 +71,7 @@
  *  user_midi_bus_t structure.
  */
 
-#define MIDI_BUS_CHANNEL_MAX             16
+#define SEQ64_MIDI_BUS_CHANNEL_MAX             16
 
 namespace seq64
 {

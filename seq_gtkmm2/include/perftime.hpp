@@ -28,12 +28,18 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-05
+ * \updates       2015-11-15
  * \license       GNU GPLv2 or above
  *
  */
 
 #include "gui_drawingarea_gtk2.hpp"
+
+/*
+ * A feature that we cannot get to work.
+ */
+
+#define  USE_PERFTIME_KEYSTROKE_PROCESSING
 
 namespace Gtk
 {
@@ -52,6 +58,8 @@ class perform;
 
 class perftime : public gui_drawingarea_gtk2
 {
+
+    friend class perfedit;
 
 private:
 
@@ -81,8 +89,42 @@ private:
 
     int m_snap;
 
+    /**
+     *  Provides the length of a measure in pulses or ticks.  This value is
+     *  m_ppqn * 4, though eventually we want to employ a more flexible
+     *  representation of measure length.
+     */
+
     int m_measure_length;
+
+#ifdef USE_PERFTIME_KEYSTROKE_PROCESSING
+
+    /**
+     *  Holds the current location of the left (L) marker when arrow movement
+     *  is in force.  Otherwise it is -1.
+     */
+
+    int m_left_marker_tick;
+
+    /**
+     *  Holds the current location of the right (R) marker when arrow movement
+     *  is in force.  Otherwise it is -1.
+     */
+
+    int m_right_marker_tick;
+
+#endif      // USE_PERFTIME_KEYSTROKE_PROCESSING
+
+    /**
+     *  A class version of the global c_perf_scale_x factor.
+     */
+
     int m_perf_scale_x;                 /* no y version used, though */
+
+    /**
+     *  A class version of the global c_timerarea_y factor.
+     */
+
     int m_timearea_y;                   /* no x version used, though */
 
 public:
@@ -112,6 +154,24 @@ private:
     void draw_progress_on_window ();
     void change_horz ();
     void set_ppqn (int ppqn);
+
+    /**
+     *  Common calculation to convert a pulse/tick value to a perftime x value.
+     */
+
+    long tick_to_pixel (long tick)
+    {
+        return (tick - m_tick_offset) / m_perf_scale_x;
+    }
+
+    /**
+     *  The inverse of tick_to_pixel().
+     */
+
+    long pixel_to_tick (long pixel)
+    {
+        return pixel * m_perf_scale_x + m_tick_offset;
+    }
 
     /**
      *  This function does nothing.
@@ -164,6 +224,10 @@ private:        // callbacks
     {
         return false;
     }
+
+#ifdef USE_PERFTIME_KEYSTROKE_PROCESSING
+    bool on_key_press_event (GdkEventKey * ev);
+#endif
 
 };
 

@@ -1,20 +1,22 @@
 README for Sequencer64 0.9.9.8 (current branch = "testing3")
 Chris Ahlstrom
-2015-09-10 to 2015-11-10
+2015-09-10 to 2015-11-17
 
 The sequencer64 project is a continuation of sequencer24 to refactor it to
-be tighter and easier to transition to to GTKmm 3, and much more.
-Currently, it is basically equivalent to that project in functionality,
-but the code is already *significantly* refactored.
+be tighter and easier to transition to GTKmm 3, and much more.
+By now, it is well beyond the sequencer24 project (and seq24), in functionality,
+and the code is already *significantly* refactored.
 
 See the screenshot in the project root for some idea of what has changed
-visually.  It is an old friend with some user-interface and configuration
-lipstick.
+visually.  It is an old friend with some user-interface lipstick and a lot of
+internal fixups.  And it still maintains backward-compatibility with seq24.
 
-The code has been broken up into libraries, for better separation between
-GUI support and the files, MIDI, JACK, and LASH support.
-Other major updates:
+Major updates:
 
+    -   The code has been broken up into libraries, for better separation
+        between GUI support and the files, MIDI, JACK, and LASH support.
+    -   A wide range of MIDI files have been tested, to find bugs that
+        can crash the application.  A nice increase in robustness.
     -   The "rc" configuration file has been upgraded to support a couple
         more options, including the enabling/disabling of LASH session
         support.
@@ -37,7 +39,7 @@ Other major updates:
             -   Global beats per minute
             -   Global beat width
             -   Global MIDI buss override
-    -   The user-interface classes have refactored to be derived from
+    -   The user-interface classes have refactored to derive from
         base classes providing common code.
     -   Sequencer64 now uses std::multimap instead of std::list as an
         event-container.  It works well, and loads MIDI files a lot faster,
@@ -46,10 +48,10 @@ Other major updates:
         macro in the libseq64/include/event_list.hpp module for selection of
         the container, and try it for yourself!
     -   Constant variables are slowly being assigned to new members, in
-        preparation for support of altering the number of sequences and sets
-        supported.
+        preparation for support of altering the number of sequences and screen
+        sets supported.
     -   Added a more modern-looking, easier to read font to the graphical user
-        interface.
+        interface.  It is selectable at run-time
     -   Tweaked the colors of some user-interface elements to make it
         easier to see them when combined.  For example, the background
         sequence is now colored, and the scale bars are now light grey.
@@ -61,7 +63,9 @@ Other major updates:
         performance and sequence user-interfaces in editing mode, very helpful
         for certain crappy laptop trackpads.
     -   Added arrow key support. Also supplemented the mouse with "p" to start
-        paint/draw mode, and "P" to end it, in the sequence and song editors.
+        paint/draw mode, and "x" to escape it, in the sequence and song editors.
+        The "l" and "r" keys allow arrow movement of the performance markers,
+        with "x" to escape this mode.
     -   Centralized dirtiness-handling to the perform module, and improving
         its accuracy and comprehensiveness, still in progress.
 
@@ -75,6 +79,7 @@ than before.  Please see the INSTALL file for a brief description of
 installation.
 
 See the ROADMAP file for more information and a kind of TODO list.
+Also see contrib/bugs_to_investigate.
 
 Note that sequencer64 is reasonably well documented by the following
 project, which provides a 90+-page PDF file and its LaTeX source code:

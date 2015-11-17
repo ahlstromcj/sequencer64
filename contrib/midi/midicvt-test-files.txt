@@ -1,6 +1,6 @@
 Interesting Test Files from the "midicvt" Project
 Chris Ahlstrom
-2015-11-16 to 2015-11-16
+2015-11-16 to 2015-11-17
 
 While loading the test MIDI files from our "midicvt" project into Sequencer64,
 we found some interesting cases.
@@ -8,7 +8,7 @@ we found some interesting cases.
    b4uacuse-non-mtrk.midi:
    
       This file has a "MUnk" tag marking the proprietary data track.
-      Sequencer64 correctly bypasses this chunk, but perhaps there's a way to
+      Sequencer64 correctly bypasses this chunk, but perhaps there is a way to
       persist a little more to see if the rest of the chunk is well-formed
       enough to load.
 
@@ -49,7 +49,7 @@ we found some interesting cases.
 
       Well, first thing, we add better error reporting to the midifile and
       mainwnd modules.  Then we add a test against the MIDI file size so that
-      we don't try to get data past that file size.  Once the data counter is
+      we do not try to get data past that file size.  Once the data counter is
       too big, we disable using it.
 
       This leads to about 8 of the following message:
@@ -65,4 +65,149 @@ we found some interesting cases.
       Yet we get a "no support" message for every byte in every Sysex message,
       it seems.
 
+      The actual format of the SysEx message in this file appear to be bad,
+      though we are finding conflicting information about SysEx format.  The
+      format of the SysEx messages in this file are:
 
+         F0 len data-bytes ... F7
+
+      where the len include the data-bytes and F7.  The true format is supposed
+      to be
+
+         F0 id data-bytes ... F7
+
+Dixie04.mid sysex:
+
+ 1. 13 bytes
+ 2.  8
+ 3. 17
+ 4. 17
+ 5.  5
+ 6.  8
+ 7.  8
+ 8.  9
+ 9.  8
+10.  8
+11.  8
+
+That is all the midicvt finds, but there are more.
+
+    F0 7F times 6
+    F0 8 times 8
+    F0 7F times 6
+    F0 8 times 8
+    F0 7F times 6
+    F0 8 times 8
+
+and on and on and on
+
+
+00000a60: 6b 00 00 05 fc 00 ff 03 10 44 69 78 69 65 50 69  k........DixiePi
+00000a70: 61 6e 69 73 74 2e 53 54 59 00 b8 00 00 00 20 70  anist.STY..... p
+00000a80: 00 c8 20 00 b1 00 00 00 20 70 00 c1 03<00 f0 0d  13 bytes
+00000a90: 43 76 1a 10 01 01 01 01 01 01 01 01 f7<00 f0 08   8 bytes
+00000aa0: 43 73 39 11 00 46 00 f7<00 f0 11 43 73 01 51 05  17 bytes
+00000ab0: 00 01 08 00 00 00 00 00 00 00 00 f7<00 f0 11 43  17 bytes
+00000ac0: 73 01 51 05 00 02 08 00 00 00 00 00 00 00 00 f7  
+00000ad0:<00 f0 05 7e 7f 09 01 f7<00 f0 08 43 10 4c 02 01   5 bytes, 8 bytes
+00000ae0: 0b 00 f7<00 f0 08 43 10 4c 02 01 2b 00 f7<00 f0   8 bytes, 9 bytes
+00000af0: 09 43 10 4c 02 01 40 16 00 f7<00 f0 08 43 10 4c   8 bytes
+00000b00: 02 01 5a 01 f7<00 f0 08 43 10 4c 08 08 07 03 f7   8 bytes
+
+00000b10:<00 f0 08 43 10 4c 08 09 07 02 f7>9d 7d?f0 7f<00   8 bytes
+
+Note also the 9d 7d, followed by f0 7f, then a number of
+00 f0 7f patterns.  What is up with that?
+
+00000b20: f0 7f<00 f0 7f<00 f0 7f<00 f0 7f<00 f0 7f 03 f0  
+00000b30: 08 43 10 4c 08 0f 11 7f f7 00 f0 08 43 10 4c 08  
+00000b40: 0e 11 7f f7 00 f0 08 43 10 4c 08 0d 11 7f f7 00  
+00000b50: f0 08 43 10 4c 08 0c 11 7f f7 00 f0 08 43 10 4c  
+00000b60: 08 0b 11 7f f7 00 f0 08 43 10 4c 08 0a 11 7f f7  
+00000b70: 00 f0 08 43 10 4c 08 09 11 7f f7 00 f0 08 43 10  
+00000b80: 4c 08 08 11 7f f7 9d 7d f0 7f 00 f0 7f 00 f0 7f  
+00000b90: 00 f0 7f 00 f0 7f 00 f0 7f da 03 f0 08 43 10 4c  
+00000ba0: 08 0f 11 7f f7 00 f0 08 43 10 4c 08 0e 11 7f f7  
+00000bb0: 00 f0 08 43 10 4c 08 0d 11 7f f7 00 f0 08 43 10  
+00000bc0: 4c 08 0c 11 7f f7 00 f0 08 43 10 4c 08 0b 11 7f  
+00000bd0: f7 00 f0 08 43 10 4c 08 0a 11 7f f7 00 f0 08 43  
+00000be0: 10 4c 08 09 11 7f f7 00 f0 08 43 10 4c 08 08 11  
+00000bf0: 7f f7 9d 7d f0 7f 00 f0 7f 00 f0 7f 00 f0 7f 00  
+00000c00: f0 7f 00 f0 7f da 03 f0 08 43 10 4c 08 0f 11 7f  
+00000c10: f7 00 f0 08 43 10 4c 08 0e 11 7f f7 00 f0 08 43  
+00000c20: 10 4c 08 0d 11 7f f7 00 f0 08 43 10 4c 08 0c 11  
+00000c30: 7f f7 00 f0 08 43 10 4c 08 0b 11 7f f7 00 f0 08  
+00000c40: 43 10 4c 08 0a 11 7f f7 00 f0 08 43 10 4c 08 09  
+00000c50: 11 7f f7 00 f0 08 43 10 4c 08 08 11 7f f7 9d 7d  
+00000c60: f0 7f 00 f0 7f 00 f0 7f 00 f0 7f 00 f0 7f 00 f0  
+00000c70: 7f da 03 f0 08 43 10 4c 08 0f 11 7f f7 00 f0 08  
+00000c80: 43 10 4c 08 0e 11 7f f7 00 f0 08 43 10 4c 08 0d  
+00000c90: 11 7f f7 00 f0 08 43 10 4c 08 0c 11 7f f7 00 f0  
+00000ca0: 08 43 10 4c 08 0b 11 7f f7 00 f0 08 43 10 4c 08  
+00000cb0: 0a 11 7f f7 00 f0 08 43 10 4c 08 09 11 7f f7 00  
+00000cc0: f0 08 43 10 4c 08 08 11 7f f7 9d 7d f0 7f 00 f0  
+00000cd0: 7f 00 f0 7f 00 f0 7f 00 f0 7f 00 f0 7f da 03 f0  
+00000ce0: 08 43 10 4c 08 0f 11 7f f7 00 f0 08 43 10 4c 08  
+00000cf0: 0e 11 7f f7 00 f0 08 43 10 4c 08 0d 11 7f f7 00  
+00000d00: f0 08 43 10 4c 08 0c 11 7f f7 00 f0 08 43 10 4c  
+00000d10: 08 0b 11 7f f7 00 f0 08 43 10 4c 08 0a 11 7f f7  
+00000d20: 00 f0 08 43 10 4c 08 09 11 7f f7 00 f0 08 43 10  
+00000d30: 4c 08 08 11 7f f7 9e 00 f0 08 43 10 4c 08 0f 11  
+00000d40: 7f f7 00 f0 08 43 10 4c 08 0e 11 7f f7 00 f0 08  
+00000d50: 43 10 4c 08 0d 11 7f f7 00 f0 08 43 10 4c 08 0c  
+00000d60: 11 7f f7 00 f0 08 43 10 4c 08 0b 11 7f f7 00 f0  
+00000d70: 08 43 10 4c 08 0a 11 7f f7 00 f0 08 43 10 4c 08  
+00000d80: 09 11 7f f7 00 f0 08 43 10 4c 08 08 11 7f f7 9e  
+00000d90: 00 f0 08 43 10 4c 08 0f 11 7f f7 00 f0 08 43 10  
+00000da0: 4c 08 0e 11 7f f7 00 f0 08 43 10 4c 08 0d 11 7f  
+00000db0: f7 00 f0 08 43 10 4c 08 0c 11 7f f7 00 f0 08 43  
+00000dc0: 10 4c 08 0b 11 7f f7 00 f0 08 43 10 4c 08 0a 11  
+00000dd0: 7f f7 00 f0 08 43 10 4c 08 09 11 7f f7 00 f0 08  
+00000de0: 43 10 4c 08 08 11 7f f7 9e 00 f0 08 43 10 4c 08  
+00000df0: 0f 11 7f f7 00 f0 08 43 10 4c 08 0e 11 7f f7 00  
+00000e00: f0 08 43 10 4c 08 0d 11 7f f7 00 f0 08 43 10 4c  
+00000e10: 08 0c 11 7f f7 00 f0 08 43 10 4c 08 0b 11 7f f7  
+00000e20: 00 f0 08 43 10 4c 08 0a 11 7f f7 00 f0 08 43 10  
+00000e30: 4c 08 09 11 7f f7 00 f0 08 43 10 4c 08 08 11 7f  
+00000e40: f7 9e 00 f0 08 43 10 4c 08 0f 11 7f f7 00 f0 08  
+00000e50: 43 10 4c 08 0e 11 7f f7 00 f0 08 43 10 4c 08 0d  
+00000e60: 11 7f f7 00 f0 08 43 10 4c 08 0c 11 7f f7 00 f0  
+00000e70: 08 43 10 4c 08 0b 11 7f f7 00 f0 08 43 10 4c 08  
+00000e80: 0a 11 7f f7 00 f0 08 43 10 4c 08 09 11 7f f7 00  
+00000e90: f0 08 43 10 4c 08 08 11 7f f7 9d 7d f0 7f 00 f0  
+00000ea0: 7f 00 f0 7f 00 f0 7f 00 f0 7f 00 f0 7f da 03 f0  
+00000eb0: 08 43 10 4c 08 0f 11 7f f7 00 f0 08 43 10 4c 08  
+00000ec0: 0e 11 7f f7 00 f0 08 43 10 4c 08 0d 11 7f f7 00  
+00000ed0: f0 08 43 10 4c 08 0c 11 7f f7 00 f0 08 43 10 4c  
+00000ee0: 08 0b 11 7f f7 00 f0 08 43 10 4c 08 0a 11 7f f7  
+00000ef0: 00 f0 08 43 10 4c 08 09 11 7f f7 00 f0 08 43 10  
+00000f00: 4c 08 08 11 7f f7 9d 7d f0 7f 00 f0 7f 00 f0 7f  
+00000f10: 00 f0 7f 00 f0 7f 00 f0 7f da 03 f0 08 43 10 4c  
+00000f20: 08 0f 11 7f f7 00 f0 08 43 10 4c 08 0e 11 7f f7  
+00000f30: 00 f0 08 43 10 4c 08 0d 11 7f f7 00 f0 08 43 10  
+00000f40: 4c 08 0c 11 7f f7 00 f0 08 43 10 4c 08 0b 11 7f  
+00000f50: f7 00 f0 08 43 10 4c 08 0a 11 7f f7 00 f0 08 43  
+00000f60: 10 4c 08 09 11 7f f7 00 f0 08 43 10 4c 08 08 11  
+00000f70: 7f f7 9d 7d f0 7f 00 f0 7f 00 f0 7f 00 f0 7f 00  
+00000f80: f0 7f 00 f0 7f da 03 f0 08 43 10 4c 08 0f 11 7f  
+00000f90: f7 00 f0 08 43 10 4c 08 0e 11 7f f7 00 f0 08 43  
+00000fa0: 10 4c 08 0d 11 7f f7 00 f0 08 43 10 4c 08 0c 11  
+00000fb0: 7f f7 00 f0 08 43 10 4c 08 0b 11 7f f7 00 f0 08  
+00000fc0: 43 10 4c 08 0a 11 7f f7 00 f0 08 43 10 4c 08 09  
+00000fd0: 11 7f f7 00 f0 08 43 10 4c 08 08 11 7f f7 9d 7d  
+00000fe0: f0 7f 00 f0 7f 00 f0 7f 00 f0 7f 00 f0 7f 00 f0  
+00000ff0: 7f da 03 f0 08 43 10 4c 08 0f 11 7f f7 00 f0 08  
+00001000: 43 10 4c 08 0e 11 7f f7 00 f0 08 43 10 4c 08 0d  
+00001010: 11 7f f7 00 f0 08 43 10 4c 08 0c 11 7f f7 00 f0  
+00001020: 08 43 10 4c 08 0b 11 7f f7 00 f0 08 43 10 4c 08  
+00001030: 0a 11 7f f7 00 f0 08 43 10 4c 08 09 11 7f f7 00  
+00001040: f0 08 43 10 4c 08 08 11 7f f7 9d 7d f0 7f 00 f0  
+00001050: 7f 00 f0 7f 00 f0 7f 00 f0 7f 00 f0 7f 00 ff 2f  
+00001060: 00 4d 54 72 6b 00 00 08 a6 00 ff 03 10 44 69 78  .MTrk........Dix
+00001070: 69 65 50 69 61 6e 69 73 74 2e 53 54 59 00 b8 00  iePianist.STY...
+
+Following is 9 tracks of song data (MTrk), not shown.
+
+
+
+# vim: sw=4 ts=4 wm=8 et ft=sh

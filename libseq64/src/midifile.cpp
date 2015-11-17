@@ -156,6 +156,8 @@ midifile::midifile
     bool oldformat,
     bool globalbgs
 ) :
+    m_file_size         (0),
+    m_error_message     (),
     m_pos               (0),
     m_name              (name),
     m_data              (),
@@ -209,14 +211,20 @@ midifile::read_short ()
 }
 
 /**
- *  Reads 1 byte of data directly into the m_data vector, incrementing
+ *  Reads 1 byte of data directly from the m_data vector, incrementing
  *  m_pos after doing so.
  */
 
 unsigned char
 midifile::read_byte ()
 {
-    return m_data[m_pos++];
+    if (m_pos < m_file_size)
+        return m_data[m_pos++];
+    else
+    {
+        errprint("Buffer overflow reading MIDI data, further reading disabled");
+        return 0;
+    }
 }
 
 /**
@@ -297,28 +305,34 @@ bool
 midifile::parse (perform & p, int screenset)
 {
     bool result = true;
+    m_error_message.clear();
     std::ifstream file
     (
         m_name.c_str(), std::ios::in | std::ios::binary | std::ios::ate
     );
     if (! file.is_open())
     {
-        errprintf("error opening MIDI file '%s'", m_name.c_str());
+        m_error_message = "Error opening MIDI file '";
+        m_error_message += m_name;
+        m_error_message += "'";
+        errprint(m_error_message.c_str());
         return false;
     }
 
-    int file_size = file.tellg();                   /* get end offset     */
-    file.seekg(0, std::ios::beg);                   /* seek to start      */
+    int file_size = file.tellg();                   /* get end offset       */
+    file.seekg(0, std::ios::beg);                   /* seek to start        */
     try
     {
-        m_data.resize(file_size);                   /* allocate more data */
+        m_data.resize(file_size);                   /* allocate more data   */
+        m_file_size = file_size;                    /* save for checking    */
     }
     catch (const std::bad_alloc & ex)
     {
-        errprint("memory allocation failed in midifile::parse()");
+        m_error_message = "Memory allocation failed in midifile::parse()";
+        errprint(m_error_message.c_str());
         return false;
     }
-    file.read((char *) &m_data[0], file_size);      /* vector == array :-)  */
+    file.read((char *)(&m_data[0]), file_size);     /* vector == array :-)  */
     file.close();
 
     unsigned long ID = read_long();                 /* read hdr chunk info  */
@@ -328,12 +342,21 @@ midifile::parse (perform & p, int screenset)
     unsigned short ppqn = read_short();
     if (ID != SEQ64_HEADER_TAG)                     /* magic number 'MThd'  */
     {
-        errprintf("invalid MIDI header detected: %8lX\n", ID);
+        char temp[64];
+        snprintf(temp, sizeof temp, "Invalid MIDI header detected: %8lX", ID);
+        errprintf("%s\n", temp);
+        m_error_message = temp;
         return false;
     }
     if (Format != 1)                                /* only support format 1 */
     {
-        errprintf("unsupported MIDI format detected: %d\n", Format);
+        char temp[64];
+        snprintf
+        (
+            temp, sizeof temp, "Unsupported MIDI format detected: %d", int(ID)
+        );
+        errprintf("%s\n", temp);
+        m_error_message = temp;
         return false;
     }
 
@@ -365,7 +388,7 @@ midifile::parse (perform & p, int screenset)
             sequence * s = new sequence(m_ppqn);    /* create new sequence   */
             if (s == nullptr)
             {
-                errprint("midifile::parse(): sequence memory allocation failed");
+                errprint("MIDI file parsing: sequence allocation failed");
                 return false;
             }
             sequence & seq = *s;                /* references are nicer     */
@@ -502,7 +525,7 @@ midifile::parse (perform & p, int screenset)
                             {
                                 errprintf
                                 (
-                                    "unsupported SeqSpec 0x%lx, skipping\n",
+                                    "Unsupported SeqSpec 0x%lx, skipping\n",
                                     proprietary
                                 );
                             }
@@ -550,20 +573,33 @@ midifile::parse (perform & p, int screenset)
                     {
                         len = read_varinum();            /* sysex           */
                         m_pos += len;                    /* skip it         */
-                        errprint("no support for SYSEX messages, skipping...");
+                        errprint("No support for SYSEX messages, skipping...");
                     }
                     else
                     {
-                        errprintf("unexpected System event: 0x%.2X", status);
+                        char temp[64];
+                        snprintf
+                        (
+                            temp, sizeof temp,
+                            "unexpected System event: 0x%.2X", int(status)
+                        );
+                        errprintf("%s\n", temp);
                         return false;
                     }
                     break;
 
                 default:
-
-                    errprintf("unsupported MIDI event: %x\n", int(status));
-                    return false;
-                    break;
+                    {
+                        char temp[64];
+                        snprintf
+                        (
+                            temp, sizeof temp,
+                            "Unsupported MIDI event: 0x%X", int(status)
+                        );
+                        errprintf("%s\n", temp);
+                        return false;
+                        break;
+                    }
                 }
             }                          /* while not done loading Trk chunk */
 
@@ -580,7 +616,7 @@ midifile::parse (perform & p, int screenset)
 
             if (curtrack > 0)                          /* MThd comes first */
             {
-                errprintf("unsupported MIDI chunk, skipping: %8lX\n", ID);
+                errprintf("Unsupported MIDI chunk, skipping: %8lX\n", ID);
             }
             m_pos += TrackLength;
         }
@@ -700,6 +736,12 @@ midifile::parse_prop_header (int file_size)
  *  single byte that is part of the data.  But it does have the "MTrk" marker
  *  and track name, so that must be processed for the new format.
  *
+ *  Now, in our "midicvt" project, we have a test MIDI file,
+ *  b4uacuse-non-mtrk.midi that is good, except for having a tag "MUnk"
+ *  instead of "MTrk".  We should consider being more permissive, if possible.
+ *  Otherwise, though, the only penality is that the "proprietary" chunk is
+ *  completely skipped.
+ *
  * \param p
  *      The performance object that is being set via the incoming MIDI file.
  *
@@ -724,11 +766,23 @@ midifile::parse_proprietary_track (perform & p, int file_size)
             if (seqnum == PROPRIETARY_SEQ_NUMBER)   /* sanity check         */
             {
                 std::string trackname = read_track_name();
-                if (trackname != PROPRIETARY_TRACK_NAME)    /* sanity check */
-                    result = false;
+                result = ! trackname.empty();
+
+                /*
+                 * This "sanity check" is probably a bit much.  It causes
+                 * errors in Sequencer24 tracks, which are otherwise fine
+                 * to scan in the new format.  Let the "MTrk" and 0x7777
+                 * markers be enough.
+                 *
+                 * if (trackname != PROPRIETARY_TRACK_NAME)
+                 *     result = false;
+                 */
             }
             else
+            {
+                m_error_message = "Unexpected chunk number reading file";
                 result = false;
+            }
         }
     }
     else
@@ -748,9 +802,14 @@ midifile::parse_proprietary_track (perform & p, int file_size)
 
             if (seqs > c_max_sequence)
             {
-                errprint("bad sequence count, fixing; please re-save file");
                 m_pos -= 4;
                 seqs = (unsigned long)(read_byte());
+                errprintf
+                (
+                    "Bad MIDI-control sequence count format, fixed to %d; "
+                    "please save the file now!\n",
+                    int(seqs)
+                );
             }
             for (unsigned int i = 0; i < seqs; i++)
             {
@@ -825,7 +884,8 @@ midifile::parse_proprietary_track (perform & p, int file_size)
             long length = read_long();
             if (c_gmute_tracks != length)
             {
-                errprint("corrupt data in mute-group section");
+                m_error_message = "Corrupt data in mute-group section";
+                errprint(m_error_message.c_str());
                 result = false;                         /* but keep going   */
             }
             for (int i = 0; i < c_seqs_in_set; i++)
@@ -1119,6 +1179,7 @@ midifile::write (perform & p)
 {
     bool result = true;
     int numtracks = 0;
+    m_error_message.clear();
     printf("[Writing MIDI file, %d ppqn]\n", m_ppqn);
     for (int i = 0; i < c_max_sequence; i++) /* get number of active tracks */
     {
@@ -1164,6 +1225,7 @@ midifile::write (perform & p)
             }
             else
             {
+                m_error_message = "Error in MIDI buffer, failed to get sequence";
                 result = false;
                 break;
             }
@@ -1176,22 +1238,22 @@ midifile::write (perform & p)
         (
             m_name.c_str(), std::ios::out | std::ios::binary | std::ios::trunc
         );
-        if (! file.is_open())
-            result = false;
-        else
+        if (file.is_open())
         {
-            char file_buffer[SEQ64_MIDI_LINE_MAX];      /* enable bufferization */
+            char file_buffer[SEQ64_MIDI_LINE_MAX];  /* enable bufferization */
             file.rdbuf()->pubsetbuf(file_buffer, sizeof file_buffer);
-            for
-            (
-                std::list<unsigned char>::iterator i = m_char_list.begin();
-                i != m_char_list.end(); i++
-            )
+            std::list<unsigned char>::iterator it;
+            for (it = m_char_list.begin(); it != m_char_list.end(); it++)
             {
-                char c = *i;
+                char c = *it;
                 file.write(&c, 1);
             }
             m_char_list.clear();
+        }
+        else
+        {
+            m_error_message = "Error opening MIDI file for writing";
+            result = false;
         }
     }
     if (result)

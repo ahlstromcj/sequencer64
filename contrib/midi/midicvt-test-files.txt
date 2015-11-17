@@ -1,0 +1,68 @@
+Interesting Test Files from the "midicvt" Project
+Chris Ahlstrom
+2015-11-16 to 2015-11-16
+
+While loading the test MIDI files from our "midicvt" project into Sequencer64,
+we found some interesting cases.
+
+   b4uacuse-non-mtrk.midi:
+   
+      This file has a "MUnk" tag marking the proprietary data track.
+      Sequencer64 correctly bypasses this chunk, but perhaps there's a way to
+      persist a little more to see if the rest of the chunk is well-formed
+      enough to load.
+
+   choo2xg.mid:
+
+      This file yields "? no support for SYSEX messages, skipping...", and
+      loads 31 tracks, 15 of them being empty title tracks.
+
+   CountryStrum.mid:
+
+      This file yields a load error and a warning:
+
+      ? no support for SYSEX messages, skipping...
+      unsupported MIDI format detected: 0
+
+      We ought to see if we can import SMF 0, at least, into Sequencer64.
+
+   dixie03.mid:
+
+      ? no support for SYSEX messages, skipping...
+      unsupported MIDI format detected: 0
+      unsupported MIDI format detected: 0
+
+   Dixie04.mid:
+
+      ? no support for SYSEX messages, skipping...
+      unsupported MIDI format detected: 0
+      unsupported MIDI format detected: 0
+      ? no support for SYSEX messages, skipping...
+      ? no support for SYSEX messages, skipping...
+      ? no support for SYSEX messages, skipping...
+         .  .  .
+      ? no support for SYSEX messages, skipping...
+      unsupported MIDI chunk, skipping: 35000000
+      Segmentation fault
+
+      Oh goody, a potential bug to fix!!!!
+
+      Well, first thing, we add better error reporting to the midifile and
+      mainwnd modules.  Then we add a test against the MIDI file size so that
+      we don't try to get data past that file size.  Once the data counter is
+      too big, we disable using it.
+
+      This leads to about 8 of the following message:
+
+      ? Buffer overflow reading MIDI data, further reading disabled
+
+      Followed by "Unsupported MIDI chunk, skipping:        0",
+      and four more of the buffer-overflow messages... and then...
+      the file is loaded!
+
+      Some of the tracks have really short notes, like 1/64th notes or less!
+      The file ends, according to midicvt, with 11 Sysex messages.
+      Yet we get a "no support" message for every byte in every Sysex message,
+      it seems.
+
+

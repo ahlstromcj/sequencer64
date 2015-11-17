@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-14
+ * \updates       2015-11-16
  * \license       GNU GPLv2 or above
  *
  *  The <tt> ~/.seq24rc </tt> or <tt> ~/.config/sequencer64/sequencer64.rc
@@ -671,7 +671,7 @@ optionsfile::write (const perform & p)
         << "# not connect to other clients\n"
         << "\n"
         << rc().manual_alsa_ports()
-        << "   # number of manual ALSA ports\n"
+        << "   # flag for manual ALSA ports\n"
         ;
 
     /*

@@ -63,6 +63,22 @@ class midifile
 private:
 
     /**
+     *  Holds the size of the MIDI file.  This variable was added when loading
+     *  a file that caused an attempt to load data well beyond the file-size
+     *  of the midicvt test file Dixie04.mid.
+     */
+
+    int m_file_size;
+
+    /**
+     *  Holds the last error message, useful for trouble-shooting without
+     *  having Sequencer64 running in a console window.  If empty, there's no
+     *  pending error.  Currently most useful in the parse() function.
+     */
+
+    std::string m_error_message;
+
+    /**
      *  Holds the position in the MIDI file.  This is at least a 31-bit
      *  value in the recent architectures running Linux and Windows, so it
      *  will handle up to 2 Gb of data.  This member is used as the offset
@@ -146,6 +162,15 @@ public:
 
     bool parse (perform & a_perf, int a_screen_set = 0);
     bool write (perform & a_perf);
+
+    /**
+     * \getter m_error_message
+     */
+
+    const std::string & error_message () const
+    {
+        return m_error_message;
+    }
 
     /**
      * \getter m_ppqn

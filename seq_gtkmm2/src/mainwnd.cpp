@@ -504,6 +504,15 @@ mainwnd::open_performance_edit ()
         m_perf_edit->init_before_show();
         m_perf_edit->show_all();
     }
+
+    /*
+     * Experiment: open a second one and see what happens.  It works, but
+     * one needs to tell the other to redraw if a change is made.
+     *
+     *  perfedit * temp = new perfedit(perf());
+     *  temp->init_before_show();
+     *  temp->show_all();
+     */
 }
 
 /**
@@ -652,10 +661,10 @@ mainwnd::open_file (const std::string & fn)
     }
     else
     {
+        std::string errmsg = f.error_message();
         Gtk::MessageDialog errdialog
         (
-            *this, "Error reading file: " + fn, false,
-            Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK, true
+            *this, errmsg, false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK, true
         );
         errdialog.run();
         return;
@@ -723,10 +732,10 @@ mainwnd::save_file ()
     result = f.write(perf());
     if (! result)
     {
+        std::string errmsg = f.error_message();
         Gtk::MessageDialog errdialog
         (
-            *this, "Error writing file.", false,
-            Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK, true
+            *this, errmsg, false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK, true
         );
         errdialog.run();
     }
@@ -864,16 +873,17 @@ mainwnd::file_import_dialog ()
     {
     case (Gtk::RESPONSE_OK):
     {
+        std::string fn = dlg.get_filename();
         try
         {
-            midifile f(dlg.get_filename());
+            midifile f(fn);
             f.parse(perf(), int(m_adjust_load_offset->get_value()));
         }
         catch (...)
         {
             Gtk::MessageDialog errdialog
             (
-                *this, "Error reading file.", false,
+                *this, "Error importing file: " + fn, false,
                 Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK, true
             );
             errdialog.run();

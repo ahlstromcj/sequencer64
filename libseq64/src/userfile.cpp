@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-15
+ * \updates       2015-11-16
  * \license       GNU GPLv2 or above
  *
  *  Note that the parse function has some code that is not yet enabled.
@@ -409,7 +409,7 @@ userfile::write (const perform & /* a_perf */ )
         ;
 
     if (usr().bus_count() == 0)
-        file << "\n\n";
+        file << "\n";
 
     /*
      * [user-midi-bus-x]
@@ -456,7 +456,7 @@ userfile::write (const perform & /* a_perf */ )
         file << "\n# End of buss definition " << buss << "\n";
     }
 
-    file << "#\n"
+    file <<
         "# In the following MIDI instrument definitions, active controller\n"
         "# numbers (i.e. supported by the instrument) are paired with\n"
         "# the (optional) name of the controller supported.\n"
@@ -474,7 +474,7 @@ userfile::write (const perform & /* a_perf */ )
         ;
 
     if (usr().instrument_count() == 0)
-        file << "\n\n";
+        file << "\n";
 
     /*
      * [user-instrument-x]
@@ -483,7 +483,9 @@ userfile::write (const perform & /* a_perf */ )
     for (int inst = 0; inst < usr().instrument_count(); ++inst)
     {
         file << "\n[user-instrument-" << inst << "]\n"
-        << "\n";
+            << "\n"
+            ;
+
         const user_instrument & uin = usr().instrument(inst);
         if (uin.is_valid())
         {
@@ -533,14 +535,9 @@ userfile::write (const perform & /* a_perf */ )
 
     if (! rc().legacy_format())
     {
-        file << "\n"
-            "#   ========================================================\n"
+        file <<
             "#   ======== Sequencer64-Specific Variables Section ========\n"
-            "#   ========================================================\n"
             "\n"
-            ;
-
-        file << "\n"
             "[user-interface-settings]\n"
             "\n"
             "# These settings specify the soon-to-be-modifiable configuration\n"
@@ -549,20 +546,22 @@ userfile::write (const perform & /* a_perf */ )
 
         file << "\n"
             "# Specifies the style of the main-window grid of patterns.\n"
-            "# 0 = normal style, matches the GTK theme, has brackets.\n"
-            "# 1 = white grid boxes that have brackets.\n"
-            "# 2 = black grid boxes (no brackets).\n"
+            "#\n"
+            "# 0 = Normal style, matches the GTK theme, has brackets.\n"
+            "# 1 = White grid boxes that have brackets.\n"
+            "# 2 = Black grid boxes (no brackets).\n"
             "\n"
             << usr().grid_style() << "       # grid_style\n"
             ;
 
         file << "\n"
             "# Specifies box style of an empty slot in the main-window grid.\n"
+            "#\n"
             "# 0  = Draw a one-pixel box outline around the pattern slot.\n"
             "# 1  = Draw brackets on the sides of the pattern slot.\n"
-            "# 2 to 30 = make the brackets thicker and thicker.\n"
-            "# -1 = same as 0, draw a box outline one-pixel thick.\n"
-            "# -2 to -30 = draw a box outline, thicker and thicker.\n"
+            "# 2 to 30 = Make the brackets thicker and thicker.\n"
+            "# -1 = Same as 0, draw a box outline one-pixel thick.\n"
+            "# -2 to -30 = Draw a box outline, thicker and thicker.\n"
             "\n"
             << usr().grid_brackets() << "       # grid_brackets\n"
             ;
@@ -626,9 +625,16 @@ userfile::write (const perform & /* a_perf */ )
             "# Sequencer64 takes it further by applying it immediately, and\n"
             "# by saving to the end of the MIDI file.  Note that these three\n"
             "# values are stored in the MIDI file, not this configuration file.\n"
-            "\n"
-            "# 0 = allow each sequence to have its own key/scale/background.\n"
-            "# 1 = apply these settings globally (similar to seq24).\n"
+            "# Also note that reading MIDI files not created with this feature\n"
+            "# will pick up this feature if active, and the file gets saved.\n"
+            "# It is contagious.\n"
+            ;
+
+        file << "#\n"
+            "# 0 = Allow each sequence to have its own key/scale/background.\n"
+            "#     Settings are saved with each sequence.\n"
+            "# 1 = Apply these settings globally (similar to seq24).\n"
+            "#     Settings are saved in the global final section of the file..\n"
             "\n"
             << (usr().global_seq_feature() ? "1" : "0")
             << "      # global_seq_feature\n"
@@ -640,11 +646,11 @@ userfile::write (const perform & /* a_perf */ )
 
         file << "\n"
             "# Specifies if the old, console-style font, or the new anti-\n"
-            "# alias font, is to be used as the font throughout the GUI.\n"
+            "# aliased font, is to be used as the font throughout the GUI.\n"
             "# In legacy mode, the old font is the default.\n"
-            "\n"
-            "# 0 = use the old-style font.\n"
-            "# 1 = use the new-style font.\n"
+            "#\n"
+            "# 0 = Use the old-style font.\n"
+            "# 1 = Use the new-style font.\n"
             "\n"
             << (usr().use_new_font() ? "1" : "0")
             << "      # use_new_font\n"
@@ -663,9 +669,6 @@ userfile::write (const perform & /* a_perf */ )
             "# These settings specify MIDI-specific value that might be\n"
             "# better off as variables, rather than constants.\n"
             "\n"
-            ;
-
-        file << "\n"
             "# Specifies parts-per-quarter note to use, if the MIDI file.\n"
             "# does not override it.  Default is 192, but we'd like to go\n"
             "# higher than that.  BEWARE:  STILL GETTING IT TO WORK!\n"

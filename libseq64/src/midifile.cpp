@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-19
+ * \updates       2015-11-20
  * \license       GNU GPLv2 or above
  *
  *  For a quick guide to the MIDI format, see, for example:
@@ -351,20 +351,91 @@ midifile::parse (perform & p, int screenset)
     file.close();
 
     unsigned long ID = read_long();                 /* read hdr chunk info  */
-    unsigned long TrackLength = read_long();
+    (void) read_long();                             /* stock MThd length    */
     if (ID != SEQ64_HEADER_TAG)                     /* magic number 'MThd'  */
     {
         errdump("Invalid MIDI header detected", ID);
         return false;
     }
 
-    unsigned short Format = read_short();           /* 0,1,2                */
-    if (Format != 1)                                /* only support format 1 */
+    unsigned short Format = read_short();           /* 0, 1, or 2           */
+    if (Format == 0)
     {
-        errdump("Unsupported MIDI format detected", (unsigned long)(Format));
-        return false;
+        errprint("SMF 0 detected, will parse it like SMF 1 for now...");
+        result = parse_smf_0(p, screenset);
     }
+    else if (Format == 1)
+    {
+        result = parse_smf_1(p, screenset);
+    }
+    else
+    {
+        errdump( "Unsupported MIDI format detected", (unsigned long)(Format));
+        result = false;
+    }
+    if (result)
+    {
+        if (file_size > m_pos)                          /* any more left?   */
+            result = parse_proprietary_track(p, file_size);
 
+        if (result && screenset != 0)
+             p.modify();
+    }
+    return result;
+}
+
+/**
+ *  This function parses an SMF 0 binary MIDI file as if it were an SMF 1
+ *  file, then splits all of the channels in the sequence out separate
+ *  sequences, and deletes the original sequence.
+ *
+ * WARNING:  CURRENTLY just does the parsing.
+ *
+ * \param p
+ *      Provides a reference to the perform object into which sequences/tracks
+ *      are to be added.
+ *
+ * \param screenset
+ *      The screen-set offset to be used when loading a sequence (track) from
+ *      the file.
+ *
+ * \return
+ *      Returns true if the parsing succeeded.
+ */
+
+bool
+midifile::parse_smf_0 (perform & p, int screenset)
+{
+    bool result = parse_smf_1(p, screenset);
+    if (result)
+    {
+        // Do the conversion
+    }
+    return result;
+}
+
+/**
+ *  This function parses an SMF 1 binary MIDI file; it is basically the
+ *  original seq25 midifile::parse() function.  It assumes the file-data has
+ *  already been read into memory.  It also assumes that the ID, track-length,
+ *  and format have already been read.
+ *
+ * \param p
+ *      Provides a reference to the perform object into which sequences/tracks
+ *      are to be added.
+ *
+ * \param screenset
+ *      The screen-set offset to be used when loading a sequence (track) from
+ *      the file.
+ *
+ * \return
+ *      Returns true if the parsing succeeded.
+ */
+
+bool
+midifile::parse_smf_1 (perform & p, int screenset)
+{
+    bool result = true;
     unsigned short NumTracks = read_short();
     unsigned short ppqn = read_short();
 
@@ -383,8 +454,8 @@ midifile::parse (perform & p, int screenset)
         unsigned long RunningTime;
         unsigned long CurrentTime;
         char TrackName[TRACKNAME_MAX];              /* track name from file */
-        ID = read_long();                           /* Get ID + Length      */
-        TrackLength = read_long();
+        unsigned long ID = read_long();             /* get track marker     */
+        unsigned long TrackLength = read_long();    /* get track length     */
         if (ID == SEQ64_TRACK_TAG)                  /* magic number 'MTrk'  */
         {
             unsigned short seqnum = 0;
@@ -641,14 +712,6 @@ midifile::parse (perform & p, int screenset)
             m_pos += TrackLength;
         }
     }                                                   /* for each track   */
-    if (result)
-    {
-        if (file_size > m_pos)                          /* any more left?   */
-            result = parse_proprietary_track(p, file_size);
-    }
-    if (result && screenset != 0)
-         p.modify();
-
     return result;
 }
 
@@ -718,7 +781,8 @@ midifile::parse_prop_header (int file_size)
             {
                 fprintf
                 (
-                    stderr, "Bad meta type '%x' in prop section near offset %x",
+                    stderr,
+                    "? Bad meta type '%x' in prop section near offset %x\n",
                     int(type), m_pos
                 );
             }

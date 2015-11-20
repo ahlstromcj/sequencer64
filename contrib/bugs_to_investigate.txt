@@ -1,6 +1,6 @@
 Bugs and Upgrade Ideas
 Chris Ahlstrom
-2015-10-27 to 2015-11-19
+2015-10-27 to 2015-11-20
 
 In no particular order...  "y" means "in progress", and "x" means it is
 basically done.
@@ -15,9 +15,13 @@ basically done.
    -  Cutting out sequences should cause a query for saving.
    -  Moving a pattern to another slot should dirty the song.
    -  Modifications in the performance editor should dirty the song.
+-  Just noticed that snap is saved.  Where?  Is this a bug or a feature?
 -  How about a horizontal split for the perfroll?
    BETTER: A second song editor view for reference?  This idea seems like it can
    work, with communicate through the perform object, perhaps.
+-  Add an option that prevents the automatic saving of the "rc" and "usr"
+   variables on exit.  Currently, command-line settings like --bus get saved in
+   the file, a bit of a surpise/annoyance.
 -  When closing a file, either need to blank out or close any pattern-editor
    windows and the performance editor; something like that.
 -  Document that right-click on pattern editor's left and right scrollbar

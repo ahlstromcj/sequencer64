@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-19
+ * \updates       2015-11-20
  * \license       GNU GPLv2 or above
  *
  *  The Seq24 MIDI file is a standard, Format 1 MIDI file, with some extra
@@ -195,6 +195,8 @@ public:
 
 private:
 
+    bool parse_smf_0 (perform & p, int screenset);
+    bool parse_smf_1 (perform & p, int screenset);
     unsigned long parse_prop_header (int file_size);
     bool parse_proprietary_track (perform & a_perf, int file_size);
     unsigned long read_long ();

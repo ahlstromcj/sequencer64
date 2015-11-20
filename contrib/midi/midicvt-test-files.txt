@@ -1,6 +1,6 @@
 Interesting Test Files from the "midicvt" Project
 Chris Ahlstrom
-2015-11-16 to 2015-11-19
+2015-11-16 to 2015-11-20
 
 While loading the test MIDI files from our "midicvt" project into Sequencer64,
 we found some interesting cases.
@@ -11,6 +11,13 @@ we found some interesting cases.
       Sequencer64 correctly bypasses this chunk, but perhaps there is a way to
       persist a little more to see if the rest of the chunk is well-formed
       enough to load.
+
+    b4uacuse-GM-alternate-bad.midi:
+
+      This version of our main test MIDI file was written incorrectly by
+      an earlier version of Sequencer64, so it is a good test file.
+      If Sequencer64 is run from the console, one will see a message
+      about this, and a plea to re-save the file.
 
    choo2xg.mid:
 
@@ -25,12 +32,16 @@ we found some interesting cases.
       unsupported MIDI format detected: 0
 
       We ought to see if we can import SMF 0, at least, into Sequencer64.
+      Well, now we go ahead and load SMF 0, with a console warning.  But we
+      still want to split the track into one sequence per channel, for
+      saving in Sequence64 format.  Soon!
 
    dixie03.mid:
 
       ? no support for SYSEX messages, skipping...
       unsupported MIDI format detected: 0
-      unsupported MIDI format detected: 0
+
+      Partially fixed, loads, but not split into multiple tracks.
 
    Dixie04.mid:
 
@@ -73,9 +84,32 @@ we found some interesting cases.
       Yet we get a "no support" message for every byte in every Sysex
       message, it seems.
 
-Dixie04.mid sysex:
+      This file contains some weird SysEx messages.  We go into detail about
+      this file and its weird SysEx in the midicvt project.
 
-    This file contains some weird SysEx messages.  We go into detail about
-    this file and its weird SysEx in the midicvt project.
+     example1.mid:
+
+        An SMF 0 file.  Will not bother listing any more SMF 0 files,
+        since we now at least let them load.
+
+     mrroboto_with_lyrics.mid:
+
+        An SMF 0 file with lyrics, should be a good test of the track-split
+        feature once we write it.
+
+    wpb_yoshimi-buss-0.midi:
+
+        A file we wrote using Cakewalk for Windows, and imported into
+        seq24.  Currently a Yoshimi killer (makes it seqfault on playback
+        from Sequencer64).
+
+    Brand3.mid:
+
+        This relatively large MIDI file of the third Brandenberg concerto
+        really shows how much faster the std::map code loads over the
+        std::list code.  Just an instant for the map, and about 8 seconds
+        for the list!
+
+        Currently also a Yoshimi killer.
 
 # vim: sw=4 ts=4 wm=8 et ft=sh

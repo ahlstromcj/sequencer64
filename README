@@ -1,6 +1,6 @@
 README for Sequencer64 0.9.9.8 (current branch = "testing3")
 Chris Ahlstrom
-2015-09-10 to 2015-11-17
+2015-09-10 to 2015-11-20
 
 The sequencer64 project is a continuation of sequencer24 to refactor it to
 be tighter and easier to transition to GTKmm 3, and much more.
@@ -17,6 +17,9 @@ Major updates:
         between GUI support and the files, MIDI, JACK, and LASH support.
     -   A wide range of MIDI files have been tested, to find bugs that
         can crash the application.  A nice increase in robustness.
+        Also, although we do not yet split the channels into separate
+        tracks/sequences, we do now load SMF 0 files.  The split feature
+        will be added soon.
     -   The "rc" configuration file has been upgraded to support a couple
         more options, including the enabling/disabling of LASH session
         support.
@@ -65,7 +68,10 @@ Major updates:
     -   Added arrow key support. Also supplemented the mouse with "p" to start
         paint/draw mode, and "x" to escape it, in the sequence and song editors.
         The "l" and "r" keys allow arrow movement of the performance markers,
-        with "x" to escape this mode.
+        with "x" to escape this mode.  If notes are selected in the sequence
+        editor, the arrow keys can be used to move the notes in time and in
+        pitch.  In the performance editor, a pattern can be selected with the
+        mouse and moved right/left with the arrow keys.
     -   Centralized dirtiness-handling to the perform module, and improving
         its accuracy and comprehensiveness, still in progress.
 

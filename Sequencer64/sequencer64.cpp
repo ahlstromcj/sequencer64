@@ -294,10 +294,14 @@ main (int argc, char * argv [])
     /*
      * TRIAL FEATURE.  Back up the data read from the two configuration files.
      *                 THIS NEEDS MORE THOUGHT!
-
-    seq64::rc_settings rc_backup = seq64::rc();
-    seq64::user_settings usr_backup = seq64::usr();
      *
+     *  The issue is that Sequencer64 saves all changes to parameters in the
+     *  "rc" and "user" configuration files, even ones that originate as
+     *  supposedly temporary overrides on the command line.  The most
+     *  notorious for me is the buss-override features.
+     *
+     * seq64::rc_settings rc_backup = seq64::rc();
+     * seq64::user_settings usr_backup = seq64::usr();
      */
 
     for (;;)                                /* parse all command parameters */
@@ -465,12 +469,11 @@ main (int argc, char * argv [])
      *                 dialog, though.
      *
      *                 THIS NEEDS MORE THOUGHT!
-
-    seq64::rc_settings & rc_ref = seq64::rc();
-    seq64::user_settings & usr_ref = seq64::usr();
-    rc_ref = rc_backup;
-    usr_ref = usr_backup;
      *
+     * seq64::rc_settings & rc_ref = seq64::rc();
+     * seq64::user_settings & usr_ref = seq64::usr();
+     * rc_ref = rc_backup;
+     * usr_ref = usr_backup;
      */
 
     /*

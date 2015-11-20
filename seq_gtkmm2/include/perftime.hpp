@@ -226,7 +226,7 @@ private:        // callbacks
     }
 
 #ifdef USE_PERFTIME_KEYSTROKE_PROCESSING
-    bool on_key_press_event (GdkEventKey * ev);
+    bool key_press_event (GdkEventKey * ev);
 #endif
 
 };

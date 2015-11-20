@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-15
+ * \updates       2015-11-19
  * \license       GNU GPLv2 or above
  *
  *  The Seq24 MIDI file is a standard, Format 1 MIDI file, with some extra
@@ -77,6 +77,13 @@ private:
      */
 
     std::string m_error_message;
+
+    /**
+     *  Indicates that file reading has already been disabled (due to serious
+     *  errors), so don't complain about it anymore.  Once is enough.
+     */
+
+    bool m_disable_reported;
 
     /**
      *  Holds the position in the MIDI file.  This is at least a 31-bit
@@ -218,6 +225,8 @@ private:
     long varinum_size (long len) const;
     long prop_item_size (long datalen) const;
     long track_name_size (const std::string & trackname) const;
+    void errdump (const std::string & msg);
+    void errdump (const std::string & msg, unsigned long p);
 
     /**
      *  Returns the size of a sequence-number event, which is always 5
@@ -238,7 +247,22 @@ private:
         return 3;
     }
 
-};
+    /**
+     *  Check for special SysEx ID byte.
+     *
+     * \param ch
+     *      Provides the byte to be checked against 0x7D through 0x7F.
+     *
+     * \return
+     *      Returns true if the byte is SysEx special ID.
+     */
+
+    bool is_sysex_special_id (midibyte ch)
+    {
+        return ch >= 0x7D && ch <= 0x7F;
+    }
+
+};          // class midifile
 
 }           // namespace seq64
 

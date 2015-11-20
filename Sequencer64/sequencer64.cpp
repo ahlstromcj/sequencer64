@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-14
+ * \updates       2015-11-19
  * \license       GNU GPLv2 or above
  *
  * \todo
@@ -291,6 +291,15 @@ main (int argc, char * argv [])
         }
     }
 
+    /*
+     * TRIAL FEATURE.  Back up the data read from the two configuration files.
+     *                 THIS NEEDS MORE THOUGHT!
+
+    seq64::rc_settings rc_backup = seq64::rc();
+    seq64::user_settings usr_backup = seq64::usr();
+     *
+     */
+
     for (;;)                                /* parse all command parameters */
     {
         int option_index = 0;               /* getopt_long index storage    */
@@ -449,6 +458,20 @@ main (int argc, char * argv [])
 
     kit.run(seq24_window);
     p.deinit_jack();
+
+    /*
+     * TRIAL FEATURE.  Restore the data read from the two configuration files.
+     *                 This will remove any "rc" edits made in the Options
+     *                 dialog, though.
+     *
+     *                 THIS NEEDS MORE THOUGHT!
+
+    seq64::rc_settings & rc_ref = seq64::rc();
+    seq64::user_settings & usr_ref = seq64::usr();
+    rc_ref = rc_backup;
+    usr_ref = usr_backup;
+     *
+     */
 
     /*
      * Write the configuration file to the new name, unless the

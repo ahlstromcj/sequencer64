@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-16
+ * \updates       2015-11-19
  * \license       GNU GPLv2 or above
  *
  *  For a quick guide to the MIDI format, see, for example:
@@ -158,6 +158,7 @@ midifile::midifile
 ) :
     m_file_size         (0),
     m_error_message     (),
+    m_disable_reported  (false),
     m_pos               (0),
     m_name              (name),
     m_data              (),
@@ -219,12 +220,15 @@ unsigned char
 midifile::read_byte ()
 {
     if (m_pos < m_file_size)
-        return m_data[m_pos++];
-    else
     {
-        errprint("Buffer overflow reading MIDI data, further reading disabled");
-        return 0;
+        return m_data[m_pos++];
     }
+    else if (! m_disable_reported)
+    {
+        errdump("'End-of-file', further MIDI reading disabled");
+        m_disable_reported = true;
+    }
+    return 0;
 }
 
 /**
@@ -285,6 +289,16 @@ midifile::read_varinum ()
  *  Parsing a file successfully is not always a modification of the setup.
  *  For instance, the first read of a MIDI file should start clean, not dirty.
  *
+ * SysEx notes:
+ *
+ *      Some files (e.g. Dixie04.mid) do not always encode System Exclusive
+ *      messages properly for a MIDI file.  Instead of a varinum length value,
+ *      they are followed by extended IDs (0x7D, 0x7E, or 0x7F).
+ *
+ *      We've covered some of those cases by disabling access to m_data if the
+ *      position passes the size of the file, but we want try to bypass these
+ *      odd cases properly.  So we look ahead for one of these special values.
+ *
  * \param p
  *      Provides a reference to the perform object into which sequences/tracks
  *      are to be added.
@@ -305,7 +319,6 @@ bool
 midifile::parse (perform & p, int screenset)
 {
     bool result = true;
-    m_error_message.clear();
     std::ifstream file
     (
         m_name.c_str(), std::ios::in | std::ios::binary | std::ios::ate
@@ -319,6 +332,8 @@ midifile::parse (perform & p, int screenset)
         return false;
     }
 
+    m_error_message.clear();
+    m_disable_reported = false;
     int file_size = file.tellg();                   /* get end offset       */
     file.seekg(0, std::ios::beg);                   /* seek to start        */
     try
@@ -337,28 +352,21 @@ midifile::parse (perform & p, int screenset)
 
     unsigned long ID = read_long();                 /* read hdr chunk info  */
     unsigned long TrackLength = read_long();
-    unsigned short Format = read_short();           /* 0,1,2                */
-    unsigned short NumTracks = read_short();
-    unsigned short ppqn = read_short();
     if (ID != SEQ64_HEADER_TAG)                     /* magic number 'MThd'  */
     {
-        char temp[64];
-        snprintf(temp, sizeof temp, "Invalid MIDI header detected: %8lX", ID);
-        errprintf("%s\n", temp);
-        m_error_message = temp;
+        errdump("Invalid MIDI header detected", ID);
         return false;
     }
+
+    unsigned short Format = read_short();           /* 0,1,2                */
     if (Format != 1)                                /* only support format 1 */
     {
-        char temp[64];
-        snprintf
-        (
-            temp, sizeof temp, "Unsupported MIDI format detected: %d", int(ID)
-        );
-        errprintf("%s\n", temp);
-        m_error_message = temp;
+        errdump("Unsupported MIDI format detected", (unsigned long)(Format));
         return false;
     }
+
+    unsigned short NumTracks = read_short();
+    unsigned short ppqn = read_short();
 
     /*
      * We should be good to load now, for each Track in the MIDI file.
@@ -368,27 +376,28 @@ midifile::parse (perform & p, int screenset)
      */
 
     event e;
+    char buss_override = usr().midi_buss_override();
     for (int curtrack = 0; curtrack < NumTracks; curtrack++)
     {
-        unsigned long Delta;                        /* time                  */
+        unsigned long Delta;                        /* time                 */
         unsigned long RunningTime;
         unsigned long CurrentTime;
-        char TrackName[TRACKNAME_MAX];              /* track name from file  */
-        ID = read_long();                           /* Get ID + Length       */
+        char TrackName[TRACKNAME_MAX];              /* track name from file */
+        ID = read_long();                           /* Get ID + Length      */
         TrackLength = read_long();
-        if (ID == SEQ64_TRACK_TAG)                  /* magic number 'MTrk'   */
+        if (ID == SEQ64_TRACK_TAG)                  /* magic number 'MTrk'  */
         {
             unsigned short seqnum = 0;
             unsigned char status = 0;
             unsigned char data[2];
             unsigned char laststatus;
-            unsigned long proprietary = 0;          /* sequencer-specifics   */
-            bool done = false;                      /* done for each track   */
-            long len;                               /* important counter!    */
-            sequence * s = new sequence(m_ppqn);    /* create new sequence   */
+            unsigned long proprietary = 0;          /* sequencer-specifics  */
+            bool done = false;                      /* done for each track  */
+            long len;                               /* important counter!   */
+            sequence * s = new sequence(m_ppqn);    /* create new sequence  */
             if (s == nullptr)
             {
-                errprint("MIDI file parsing: sequence allocation failed");
+                errdump("MIDI file parsing: sequence allocation failed");
                 return false;
             }
             sequence & seq = *s;                /* references are nicer     */
@@ -457,8 +466,8 @@ midifile::parse (perform & p, int screenset)
                         len = read_varinum();
                         switch (type)
                         {
-                        case 0x7F:                       /* "proprietary"     */
-                            if (len > 4)                 /* FF 7F len data    */
+                        case 0x7F:                        /* "proprietary"    */
+                            if (len > 4)                  /* FF 7F len data   */
                             {
                                 proprietary = read_long();
                                 len -= 4;
@@ -466,9 +475,6 @@ midifile::parse (perform & p, int screenset)
                             if (proprietary == c_midibus)
                             {
                                 seq.set_midi_bus(read_byte());
-                                if (usr().midi_buss_override() != char(-1))
-                                    seq.set_midi_bus(usr().midi_buss_override());
-
                                 len--;
                             }
                             else if (proprietary == c_midich)
@@ -523,9 +529,9 @@ midifile::parse (perform & p, int screenset)
                             }
                             else if (SEQ64_IS_PROPTAG(proprietary))
                             {
-                                errprintf
+                                errdump
                                 (
-                                    "Unsupported SeqSpec 0x%lx, skipping\n",
+                                    "Unsupported SeqSpec, skipping...",
                                     proprietary
                                 );
                             }
@@ -533,6 +539,7 @@ midifile::parse (perform & p, int screenset)
                             break;
 
                         case 0x2F:                       /* Trk Done          */
+
                             /*
                              * If Delta is 0, then another event happened at
                              * the same time as track-end.  Class sequence
@@ -548,9 +555,9 @@ midifile::parse (perform & p, int screenset)
                             done = true;
                             break;
 
-                        case 0x03:                        /* Track name      */
+                        case 0x03:                      /* Track name       */
                             if (len > TRACKNAME_MAX)
-                                len = TRACKNAME_MAX;      /* avoid a vuln    */
+                                len = TRACKNAME_MAX;    /* avoid a vuln     */
 
                             for (int i = 0; i < len; i++)
                                 TrackName[i] = read_byte();
@@ -559,44 +566,55 @@ midifile::parse (perform & p, int screenset)
                             seq.set_name(TrackName);
                             break;
 
-                        case 0x00:                        /* sequence number */
+                        case 0x00:                      /* sequence number  */
                             seqnum = (len == 0x00) ? 0 : read_short();
                             break;
 
                         default:
                             for (int i = 0; i < len; i++)
-                                (void) read_byte();      /* ignore the rest */
+                                (void) read_byte();     /* ignore the rest  */
                             break;
                         }
                     }
                     else if (status == 0xF0)
                     {
-                        len = read_varinum();            /* sysex           */
-                        m_pos += len;                    /* skip it         */
-                        errprint("No support for SYSEX messages, skipping...");
+                        /*
+                         * Some files do not properly encode SysEx messages;
+                         * see the function banner for notes.
+                         */
+
+                        midibyte check = read_byte();
+                        if (is_sysex_special_id(check))
+                        {
+                            /*
+                             * TMI: errdump("SysEx ID byte = 7D to 7F");
+                             */
+                        }
+                        else                            /* handle normally  */
+                        {
+                            --m_pos;                    /* put byte back    */
+                            len = read_varinum();       /* sysex            */
+                            m_pos += len;               /* skip it          */
+                            if (m_data[m_pos-1] != 0xF7)
+                                errdump("SysEx terminator byte F7 not found");
+                        }
                     }
                     else
                     {
-                        char temp[64];
-                        snprintf
+                        errdump
                         (
-                            temp, sizeof temp,
-                            "unexpected System event: 0x%.2X", int(status)
+                            "Unexpected System event", (unsigned long)(status)
                         );
-                        errprintf("%s\n", temp);
                         return false;
                     }
                     break;
 
                 default:
                     {
-                        char temp[64];
-                        snprintf
+                        errdump
                         (
-                            temp, sizeof temp,
-                            "Unsupported MIDI event: 0x%X", int(status)
+                            "Unsupported MIDI event", (unsigned long)(status)
                         );
-                        errprintf("%s\n", temp);
                         return false;
                         break;
                     }
@@ -604,6 +622,9 @@ midifile::parse (perform & p, int screenset)
             }                          /* while not done loading Trk chunk */
 
             /* Sequence has been filled, add it to the performance  */
+
+            if (buss_override != SEQ64_BAD_BUSS)
+                seq.set_midi_bus(buss_override);
 
             p.add_sequence(&seq, seqnum + (screenset * c_seqs_in_set));
         }
@@ -614,17 +635,18 @@ midifile::parse (perform & p, int screenset)
              * don't know how to deal with it, so we just eat it.
              */
 
-            if (curtrack > 0)                          /* MThd comes first */
-            {
-                errprintf("Unsupported MIDI chunk, skipping: %8lX\n", ID);
-            }
+            if (curtrack > 0)                           /* MThd comes first */
+                errdump("Unsupported MIDI chunk, skipping...", ID);
+
             m_pos += TrackLength;
         }
-    }                                                   /* for each track  */
+    }                                                   /* for each track   */
     if (result)
-        result = parse_proprietary_track(p, file_size);
-
-     if (result && screenset != 0)
+    {
+        if (file_size > m_pos)                          /* any more left?   */
+            result = parse_proprietary_track(p, file_size);
+    }
+    if (result && screenset != 0)
          p.modify();
 
     return result;
@@ -786,7 +808,9 @@ midifile::parse_proprietary_track (perform & p, int file_size)
         }
     }
     else
+    {
         m_pos -= 4;                                 /* unread the "ID code" */
+    }
 
     if (result)
     {
@@ -803,13 +827,13 @@ midifile::parse_proprietary_track (perform & p, int file_size)
             if (seqs > c_max_sequence)
             {
                 m_pos -= 4;
-                seqs = (unsigned long)(read_byte());
-                errprintf
+                errdump
                 (
-                    "Bad MIDI-control sequence count format, fixed to %d; "
-                    "please save the file now!\n",
-                    int(seqs)
+                    "Bad MIDI-control sequence count, fixing.\n"
+                    "Please save the file now!",
+                    (unsigned long)(seqs)
                 );
+                seqs = (unsigned long)(read_byte());
             }
             for (unsigned int i = 0; i < seqs; i++)
             {
@@ -845,7 +869,7 @@ midifile::parse_proprietary_track (perform & p, int file_size)
 
             if (busscount > SEQ64_DEFAULT_BUSS_MAX)
             {
-                errprint("bad buss count, fixing; please re-save file");
+                errdump("bad buss count, fixing; please re-save file");
                 m_pos -= 4;
                 busscount = (unsigned long)(read_byte());
             }
@@ -885,7 +909,7 @@ midifile::parse_proprietary_track (perform & p, int file_size)
             if (c_gmute_tracks != length)
             {
                 m_error_message = "Corrupt data in mute-group section";
-                errprint(m_error_message.c_str());
+                errdump(m_error_message.c_str());
                 result = false;                         /* but keep going   */
             }
             for (int i = 0; i < c_seqs_in_set; i++)
@@ -1489,6 +1513,61 @@ midifile::write_track_end ()
     write_byte(0xFF);                       /* meta tag                     */
     write_byte(0x2F);
     write_byte(0x00);
+}
+
+/**
+ *  Helper function to emit more useful error messages.  It adds the file
+ *  offset to the message.
+ *
+ * \param msg
+ *      The main error message string, without an ending newline character.
+ *
+ * \return
+ *      The constructed string is returned as a side-effect, in case we want
+ *      to pass it along to the externally-accessible error-message buffer.
+ */
+
+void
+midifile::errdump (const std::string & msg)
+{
+    char temp[32];
+    snprintf(temp, sizeof temp, "? Near offset 0x%x:  ", m_pos);
+    std::string result = temp;
+    result += msg;
+    result += "\n";
+    fprintf(stderr, result.c_str());
+    m_error_message = result;
+}
+
+/**
+ *  Helper function to emit more useful error messages for erroneous long
+ *  values.  It adds the file offset to the message.
+ *
+ * \param msg
+ *      The main error message string, without an ending newline character.
+ *
+ * \param value
+ *      The long value to show as part of the message.
+ *
+ * \return
+ *      The constructed string is returned as a side-effect, in case we want
+ *      to pass it along to the externally-accessible error-message buffer.
+ */
+
+void
+midifile::errdump (const std::string & msg, unsigned long value)
+{
+    char temp[64];
+    snprintf
+    (
+        temp, sizeof temp, "? Near offset 0x%x, bad value 0x%lx:  ",
+        m_pos, value
+    );
+    std::string result = temp;
+    result += msg;
+    result += "\n";
+    fprintf(stderr, result.c_str());
+    m_error_message = result;
 }
 
 }           // namespace seq64

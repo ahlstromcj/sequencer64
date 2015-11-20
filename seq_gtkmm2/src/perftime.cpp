@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-15
+ * \updates       2015-11-19
  * \license       GNU GPLv2 or above
  *
  *  The time bar shows markers and numbers for the measures of the song,
@@ -249,9 +249,10 @@ perftime::on_size_allocate (Gtk::Allocation & a_r)
 #ifdef USE_PERFTIME_KEYSTROKE_PROCESSING
 
 /*
- * Can't get the keystroke events to be seen, and not sure why.  Code
- * is currently enable because the perfedit object can call this function, and
- * it works.
+ * Can't get the keystroke events to be seen by perfroll or perftime here
+ * using the normal callback function for keystrokes, and not sure why.  This
+ * code is currently enabled because the perfedit object can call this
+ * function, and that call works.
  */
 
 /**
@@ -259,17 +260,21 @@ perftime::on_size_allocate (Gtk::Allocation & a_r)
  *  it to work directly, so the perfedit class, which does get keystrokes,
  *  calls this function to do the work
  *
- *  This function uses the "l" key to activate the movement of the "L" marker with
- *  the arrow keys, by the interval of on snap value for each press.  It also
- *  uses the "r" key to activate the movement of the "R" marker, and the "x"
- *  to deactivate either movement move.
+ *  This function uses the "l" key to activate the movement of the "L" marker
+ *  with the arrow keys, by the interval of on snap value for each press.  It
+ *  also uses the "r" key to activate the movement of the "R" marker, and the
+ *  "x" to deactivate either movement move.
  *
  *  Be aware that there is no visual feedback, as yet, that one is in the
  *  movement mode.
+ *
+ *  Also be aware the changing the name of this function from
+ *  "key_press_event()" to "on_key_press_event()" will disrupt the process,
+ *  causing keystrokes not get here.  Too tricky.
  */
 
 bool
-perftime::on_key_press_event (GdkEventKey * ev)
+perftime::key_press_event (GdkEventKey * ev)
 {
     bool result = false;
     {
@@ -327,7 +332,7 @@ perftime::on_key_press_event (GdkEventKey * ev)
     if (result)
         queue_draw();
 
-    return true;
+    return result;
 }
 
 #endif      // USE_PERFTIME_KEYSTROKE_PROCESSING

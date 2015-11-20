@@ -1,3 +1,6 @@
+2015-11-20  Chris Ahlstrom <ahlstromcj@gmail.com>
+	* *.*: Merged testing3 into master to create version 0.9.9.8.
+
 2015-11-19  Chris Ahlstrom <ahlstromcj@gmail.com>
 
 	* Sequencer64/sequencer64.cpp, contrib/bugs_to_investigate.txt,

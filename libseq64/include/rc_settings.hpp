@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-22
- * \updates       2015-11-20
+ * \updates       2015-11-21
  * \license       GNU GPLv2 or above
  *
  *  This collection of variables describes the options of the application,
@@ -102,8 +102,6 @@ public:
     std::string config_filespec () const;
     std::string user_filespec () const;
     void set_defaults ();
-    void set_globals ();
-    void get_globals ();
 
     /**
      * \accessor m_legacy_format

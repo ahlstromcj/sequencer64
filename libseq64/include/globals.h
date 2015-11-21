@@ -373,25 +373,6 @@ const int c_names_y = 24;               /* max height of name box, pixels   */
 const int c_perf_scale_x = 32;          /* units are ticks per pixel        */
 
 /**
- *  New variables starting from 2015-08-16 onward.  These variables
- *  replace or augment the "c_" (constant global variables).  Using new names
- *  makes it easier to find old usage, and some of these values will no
- *  longer be hardwired constant values.  They will be replaced/augmented by
- *  new members and accessors in the user_settings class.
- *
- *  There are a lot of places in the code where obscure manifest constants,
- *  such as "4", are used, without comment.  Usage of named values is a lot
- *  more informative, but takes some time to reverse-engineer.
- */
-
-extern bool global_priority;
-extern bool global_stats;
-extern bool global_manual_alsa_ports;
-extern bool global_print_keys;
-extern bool global_device_ignore;            /* seq24 module    */
-extern int global_device_ignore_num;         /* seq24 module    */
-
-/**
  *  Mouse actions, for the Pattern Editor.  Be sure to update seq24-doc
  *  to use this nomenclature.
  */

@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-16
+ * \updates       2015-11-21
  * \license       GNU GPLv2 or above
  *
  *  The <tt> ~/.seq24rc </tt> or <tt> ~/.config/sequencer64/sequencer64.rc
@@ -413,15 +413,7 @@ optionsfile::parse (perform & p)
         sscanf(m_line, "%ld", &method);
         rc().lash_support(method != 0);
     }
-
-    /*
-     * Done parsing the "rc" configuration file.  Copy the newly-read values
-     * into any global variables that are still in use, and then close the
-     * file.
-     */
-
-    rc().set_globals();
-    file.close();
+    file.close();           /* done parsing the "rc" configuration file */
     return true;
 }
 
@@ -450,13 +442,9 @@ optionsfile::write (const perform & p)
     }
 
     /*
-     * Initial comments and MIDI control section.  The
-     * rc_settings::get_globals() call grabs any legacy global variables that
-     * are still being used, and copies them to the global rc_settings object,
-     * before writing them to the "rc" configuration file.
+     * Initial comments and MIDI control section.  No more "global_xxx", yay!
      */
 
-    rc().get_globals();
     if (rc().legacy_format())
     {
         file <<

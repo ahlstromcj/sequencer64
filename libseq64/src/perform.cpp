@@ -1521,7 +1521,7 @@ output_thread_func (void * a_pef)
     perform * p = (perform *) a_pef;
     if (not_nullptr_assert(p, "output_thread_func"))
     {
-        if (global_priority)
+        if (rc().priority())
         {
             struct sched_param schp;
             memset(&schp, 0, sizeof(sched_param));
@@ -1623,11 +1623,11 @@ perform::output_func ()
         int ppqn = m_master_bus.get_ppqn();
 #ifndef PLATFORM_WINDOWS
         clock_gettime(CLOCK_REALTIME, &last);   // get start time position
-        if (global_stats)
+        if (rc().stats())
             stats_last_clock_us = (last.tv_sec*1000000) + (last.tv_nsec/1000);
 #else
         last = timeGetTime();                   // get start time position
-        if (global_stats)
+        if (rc().stats())
             stats_last_clock_us = last * 1000;
 #endif
 
@@ -1641,7 +1641,7 @@ perform::output_func ()
              * -# Play from current tick to prebuffer.
              */
 
-            if (global_stats)
+            if (rc().stats())
             {
 #ifndef PLATFORM_WINDOWS
                 clock_gettime(CLOCK_REALTIME, &stats_loop_start);
@@ -1737,7 +1737,7 @@ perform::output_func ()
                 }
                 play(long(pad.js_current_tick));                // play!
                 m_master_bus.clock(long(pad.js_clock_tick));    // MIDI clock
-                if (global_stats)
+                if (rc().stats())
                 {
                     while (stats_total_tick <= pad.js_total_tick)
                     {
@@ -1821,11 +1821,11 @@ perform::output_func ()
 #endif
             else
             {
-                if (global_stats)
+                if (rc().stats())
                     printf("underrun\n");
             }
 
-            if (global_stats)
+            if (rc().stats())
             {
 #ifndef PLATFORM_WINDOWS
                 clock_gettime(CLOCK_REALTIME, &stats_loop_finish);
@@ -1834,7 +1834,7 @@ perform::output_func ()
 #endif
             }
 
-            if (global_stats)
+            if (rc().stats())
             {
 
 #ifndef PLATFORM_WINDOWS
@@ -1876,7 +1876,7 @@ perform::output_func ()
                 inner_stop();
         }
 
-        if (global_stats)
+        if (rc().stats())
         {
             printf("\n\n-- trigger width --\n");
             for (int i = 0; i < 100; i++)
@@ -1911,7 +1911,7 @@ input_thread_func (void * a_pef)
     perform * p = (perform *) a_pef;
     if (not_nullptr_assert(p, "input_thread_func"))
     {
-        if (global_priority)
+        if (rc().priority())
         {
             struct sched_param schp;
             memset(&schp, 0, sizeof(sched_param));

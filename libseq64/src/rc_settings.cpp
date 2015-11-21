@@ -203,40 +203,6 @@ rc_settings::set_defaults ()
 }
 
 /**
- *  Copies the current values of the member variables into their
- *  corresponding global variables.
- */
-
-void
-rc_settings::set_globals ()
-{
-    global_priority                  = m_priority;
-    global_stats                     = m_stats;
-    global_manual_alsa_ports         = m_manual_alsa_ports;
-    global_print_keys                = m_print_keys;
-    global_device_ignore             = m_device_ignore;
-    global_device_ignore_num         = m_device_ignore_num;
-    global_device_ignore_num         = m_device_ignore_num;
-}
-
-/**
- *  Copies the current values of the global variables into their
- *  corresponding member variables.
- */
-
-void
-rc_settings::get_globals ()
-{
-    m_priority                  = global_priority;
-    m_stats                     = global_stats;
-    m_manual_alsa_ports         = global_manual_alsa_ports;
-    m_print_keys                = global_print_keys;
-    m_device_ignore             = global_device_ignore;
-    m_device_ignore_num         = global_device_ignore_num;
-    m_device_ignore_num         = global_device_ignore_num;
-}
-
-/**
  *  Provides the directory for the configuration file, and also creates the
  *  directory if necessary.
  *

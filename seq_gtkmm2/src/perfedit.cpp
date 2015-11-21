@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-19
+ * \updates       2015-11-21
  * \license       GNU GPLv2 or above
  *
  */
@@ -589,7 +589,7 @@ perfedit::on_key_press_event (GdkEventKey * ev)
     bool event_was_handled = false;
     if (CAST_EQUIVALENT(ev->type, SEQ64_KEY_PRESS))
     {
-        if (global_print_keys)
+        if (rc().print_keys())
         {
             printf
             (

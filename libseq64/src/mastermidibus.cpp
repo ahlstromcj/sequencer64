@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-30
- * \updates       2015-11-15
+ * \updates       2015-11-21
  * \license       GNU GPLv2 or above
  *
  *  This file provides a Linux-only implementation of MIDI support.
@@ -208,7 +208,7 @@ mastermidibus::init ()
     snd_seq_port_info_t * pinfo;            /* port info   */
     snd_seq_client_info_alloca(&cinfo);
     snd_seq_client_info_set_client(cinfo, -1);
-    if (global_manual_alsa_ports)
+    if (rc().manual_alsa_ports())
     {
         int num_buses = 16;
         for (int i = 0; i < num_buses; ++i)
@@ -964,7 +964,7 @@ mastermidibus::get_midi_event (event * inev)
     bool result = false;
     unsigned char buffer[0x1000];       /* temporary buffer for midi data */
     snd_seq_event_input(m_alsa_seq, &ev);
-    if (! global_manual_alsa_ports)
+    if (! rc().manual_alsa_ports())
     {
         switch (ev->type)
         {

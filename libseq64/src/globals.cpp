@@ -99,19 +99,6 @@ usr ()
 
 }           // namespace seq64
 
-/**
- * Most of these variables were declared and used in other modules, but
- * are now consolidated here.  We've moved most of them into rc_settings
- * by now.
- */
-
-bool global_manual_alsa_ports = false;
-bool global_priority = false;
-bool global_device_ignore = false;
-int global_device_ignore_num = 0;
-bool global_stats = false;
-bool global_print_keys = false;
-
 /*
  * globals.cpp
  *

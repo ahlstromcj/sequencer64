@@ -483,7 +483,6 @@ parse_command_line_options (int argc, char * argv [])
             seq64::rc().legacy_format(true);
             printf("Setting legacy seq24 file format.\n");
         }
-        seq64::rc().set_globals();              /* copy to legacy globals   */
         seq64::usr().set_globals();             /* copy to legacy globals   */
         result = optind;
     }
@@ -524,7 +523,6 @@ write_options_files (const perform & p)
      * --legacy option is in force.
      */
 
-    seq64::rc().get_globals();                  /* copy from legacy globals */
     std::string rcname = seq64::rc().config_filespec();
     printf("[Writing rc configuration %s]\n", rcname.c_str());
     seq64::optionsfile options(rcname);

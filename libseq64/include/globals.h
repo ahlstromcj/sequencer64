@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-25
- * \updates       2015-11-15
+ * \updates       2015-11-21
  * \license       GNU GPLv2 or above
  *
  *  We're going to try to collect all the globals here in one module, and
@@ -384,10 +384,8 @@ const int c_perf_scale_x = 32;          /* units are ticks per pixel        */
  *  more informative, but takes some time to reverse-engineer.
  */
 
-extern bool global_showmidi;
 extern bool global_priority;
 extern bool global_stats;
-extern bool global_pass_sysex;
 extern bool global_manual_alsa_ports;
 extern bool global_print_keys;
 extern bool global_device_ignore;            /* seq24 module    */

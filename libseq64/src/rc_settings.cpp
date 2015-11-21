@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-22
- * \updates       2015-11-20
+ * \updates       2015-11-21
  * \license       GNU GPLv2 or above
  *
  *  Note that this module also sets the legacy global variables, so that
@@ -210,10 +210,8 @@ rc_settings::set_defaults ()
 void
 rc_settings::set_globals ()
 {
-    global_showmidi                  = m_show_midi;
     global_priority                  = m_priority;
     global_stats                     = m_stats;
-    global_pass_sysex                = m_pass_sysex;
     global_manual_alsa_ports         = m_manual_alsa_ports;
     global_print_keys                = m_print_keys;
     global_device_ignore             = m_device_ignore;
@@ -229,10 +227,8 @@ rc_settings::set_globals ()
 void
 rc_settings::get_globals ()
 {
-    m_show_midi                 = global_showmidi;
     m_priority                  = global_priority;
     m_stats                     = global_stats;
-    m_pass_sysex                = global_pass_sysex;
     m_manual_alsa_ports         = global_manual_alsa_ports;
     m_print_keys                = global_print_keys;
     m_device_ignore             = global_device_ignore;

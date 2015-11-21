@@ -1,10 +1,11 @@
 Bugs and Upgrade Ideas
 Chris Ahlstrom
-2015-10-27 to 2015-11-20
+2015-10-27 to 2015-11-21
 
 In no particular order...  "y" means "in progress", and "x" means it is
 basically done.
 
+-  Is the --pass-sysex command actually supported?  Seq24 threw SysEx away.
 -  Add support for SMF (MIDI format) 0.
 -  Moving a pattern doesn't turn on any dirty bit, to allow an opportunity for
    saving.  This is a legacy bug.  Tighten up the is-dirty handling for all

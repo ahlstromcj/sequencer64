@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-08-07
- * \updates       2015-11-14
+ * \updates       2015-11-21
  * \license       GNU GPLv2 or above
  *
  *  The first part of this file defines a couple of global structure
@@ -106,12 +106,10 @@ usr ()
  */
 
 bool global_manual_alsa_ports = false;
-bool global_showmidi = false;
 bool global_priority = false;
 bool global_device_ignore = false;
 int global_device_ignore_num = 0;
 bool global_stats = false;
-bool global_pass_sysex = false;
 bool global_print_keys = false;
 
 /*

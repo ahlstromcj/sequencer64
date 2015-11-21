@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-16
+ * \updates       2015-11-21
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -2084,7 +2084,7 @@ perform::input_func ()
 
                     if (ev.get_status() <= EVENT_SYSEX)
                     {
-                        if (global_showmidi)
+                        if (rc().show_midi())
                             ev.print();
 
                         if (m_master_bus.is_dumping())
@@ -2176,18 +2176,16 @@ perform::input_func ()
                             }
                         }
                     }
-
                     if (ev.get_status() == EVENT_SYSEX)
                     {
-                        if (global_showmidi)
+                        if (rc().show_midi())
                             ev.print();
 
-                        if (global_pass_sysex)
+                        if (rc().pass_sysex())
                             m_master_bus.sysex(&ev);
                     }
                 }
-            }
-            while (m_master_bus.is_more_input());
+            } while (m_master_bus.is_more_input());
         }
     }
     pthread_exit(0);

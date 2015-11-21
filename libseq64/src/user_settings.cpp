@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-23
- * \updates       2015-11-16
+ * \updates       2015-11-21
  * \license       GNU GPLv2 or above
  *
  *  Note that this module also sets the remaining legacy global variables, so
@@ -175,6 +175,7 @@ user_settings::user_settings ()
     m_seqarea_seq_y             (0),
     m_mainwid_x                 (0),
     m_mainwid_y                 (0),
+    m_save_user_config          (false),
 
     /*
      * Constant values.
@@ -257,6 +258,7 @@ user_settings::user_settings (const user_settings & rhs)
     m_seqarea_seq_y             (rhs.m_seqarea_seq_y),
     m_mainwid_x                 (rhs.m_mainwid_x),
     m_mainwid_y                 (rhs.m_mainwid_y),
+    m_save_user_config          (rhs.m_save_user_config),
 
     /*
      * Constant values.
@@ -342,6 +344,8 @@ user_settings::operator = (const user_settings & rhs)
          *  m_mainwid_x                 = rhs.m_mainwid_x;
          *  m_mainwid_y                 = rhs.m_mainwid_y;
          */
+
+        m_save_user_config = rhs.m_save_user_config;
 
         normalize();
 

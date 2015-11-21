@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-22
- * \updates       2015-11-14
+ * \updates       2015-11-21
  * \license       GNU GPLv2 or above
  *
  *  This module defines the following categories of "global" variables that
@@ -508,6 +508,27 @@ class user_settings
      */
 
     int m_mainwid_y;
+
+    /**
+     *  Provides a temporary variable that can be set from the command line to
+     *  cause the "user" state to be saved into the "user" configuration file.
+     *
+     *  Normally, this state is not saved.  It is not saved because there is
+     *  currently no user-interface for editing it, and because it can pick up
+     *  some command-line options, and it is not right to have them written
+     *  to the "user" configuration file.
+     *
+     *  (The "rc" configuration file is a different case, having historically
+     *  always been saved, and having a number of command-line options, such
+     *  as JACK settings that should generally be permanent on a given
+     *  system.)
+     *
+     *  Anyway, this flag can be set by the --user-save option.  This setting
+     *  is never saved.  But note that, if no "user" configuration file is
+     *  found, it is then saved anyway.
+     */
+
+    bool m_save_user_config;
 
     /*
      *  All constant (unchanging) values go here.  They are not saved or read.
@@ -1011,6 +1032,25 @@ public:
     void use_new_font (bool flag)
     {
         m_use_new_font = flag;
+    }
+
+
+    /**
+     * \getter m_save_user_config
+     */
+
+    bool save_user_config () const
+    {
+        return m_save_user_config;
+    }
+
+    /**
+     * \setter m_save_user_config
+     */
+
+    void save_user_config (bool flag)
+    {
+        m_save_user_config = flag;
     }
 
 protected:

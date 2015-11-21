@@ -25,9 +25,26 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-20
- * \updates       2015-11-20
+ * \updates       2015-11-21
  * \license       GNU GPLv2 or above
  *
+ *  The "rc" command-line options override setting that are first read from
+ *  the "rc" configuration file.  These modified settings are always saved
+ *  when Sequencer64 exits, on the theory that somebody may have modified
+ *  these settings in the user-interface (there is currently no "dirty flag"
+ *  for this operation), and that command-line modifications to
+ *  system-dependent settings such as the JACK setup should be saved for
+ *  convenience.
+ *
+ *  The "user" settings are mostly not available from the command-line
+ *  (--bus being one exception).  They, too, are partly system-dependent, but
+ *  there is no user-interface for changing the "user" options at this time.
+ *  So the "user" configuration file is not saved unless it doesn't exist in
+ *  the first place, or the "--user-save" option isprovided on the ommand
+ *  line.
+ *
+ *  We should backup the old versions of any saved configuration files
+ *  at some point.
  */
 
 #include "platform_macros.h"
@@ -58,6 +75,7 @@ static const std::string versiontext =
 static struct option long_options [] =
 {
     {"help",                0, 0, 'h'},
+    {"version",             0, 0, 'V'},
 #ifdef SEQ64_LASH_SUPPORT
     {"lash",                0, 0, 'L'},                 /* new */
     {"no-lash",             0, 0, 'n'},                 /* new */
@@ -81,11 +99,12 @@ static struct option long_options [] =
     {"manual-alsa-ports",   0, 0, 'm'},
     {"auto-alsa-ports",     0, 0, 'a'},
     {"pass-sysex",          0, 0, 'P'},
-    {"version",             0, 0, 'V'},
+    {"user-save",           0, 0, 'u'},
 
-    /*
-     * Legacy options using underscores, which are confusing and not a
-     * GNU standard, as far as we know.
+    /**
+     * Legacy command-line options are using underscores, which are confusing
+     * and not a GNU standard, as far as we know.  Ugh, prefer the hyphen!
+     * But we continue to support them for "backwards compatibility".
      */
 
 #ifdef SEQ64_JACK_SUPPORT
@@ -111,7 +130,7 @@ static struct option long_options [] =
  */
 
 static const std::string s_arg_list =
-    "Chlb:q:Lni:jJmaM:pPsSU:Vx:"                        /* good args        */
+    "Chlb:q:Lni:jJmaM:pPusSU:Vx:"                        /* good args        */
     "1234:5:67:89@"                                     /* legacy args      */
     ;
 
@@ -138,6 +157,7 @@ static const char * const s_help_1b =
 "                            the legacy default is 192.\n"
 "   -p, --priority           Run high priority, FIFO scheduler (needs root).\n"
 "   -P, --pass-sysex         Passes incoming SysEx messages to all outputs.\n"
+"                            IS THIS SUPPORTED?\n"
 "   -i, --ignore n           Ignore ALSA device number.\n"
 "   -s, --show-midi          Dump incoming MIDI events to the screen.\n"
     ;
@@ -155,10 +175,17 @@ static const char * const s_help_2 =
 #endif
 " -x, --interaction-method n Set mouse style: 0 = seq24; 1 = fruity. Note that\n"
 "                            fruity doesn't support arrow keys and paint key.\n"
-"\n"
     ;
 
 static const char * const s_help_3 =
+"   -u, --user-save          Save the 'user' configuration settings.  Normally,\n"
+"                            they are saved only if the file does not exist, so\n"
+"                            that certain 'user' command-line options, such as\n"
+"                            --bus, do not become permanent.\n"
+"\n"
+    ;
+
+static const char * const s_help_4 =
 "Setting --ppqn to double the default causes a MIDI file to play at half\n"
 "the speed.  If the file is re-saved with that setting, the double clock is\n"
 "saved, but it still plays slowly in Sequencer64, but at its original rate\n"
@@ -210,6 +237,7 @@ help_check (int argc, char * argv [])
             printf(s_help_1b);
             printf(s_help_2);
             printf(s_help_3);
+            printf(s_help_4);
             result = true;
             break;
         }
@@ -335,6 +363,7 @@ parse_command_line_options (int argc, char * argv [])
             printf(s_help_1b);
             printf(s_help_2);
             printf(s_help_3);
+            printf(s_help_4);
             result = SEQ64_NULL_OPTION_INDEX;
             break;
 
@@ -367,6 +396,10 @@ parse_command_line_options (int argc, char * argv [])
 
         case 'P':
             seq64::rc().pass_sysex(true);
+            break;
+
+        case 'u':
+            seq64::usr().save_user_config(true);    /* usr(), not rc()! */
             break;
 
         case 'k':
@@ -502,16 +535,23 @@ write_options_files (const perform & p)
     else
         result = false;
 
-    seq64::usr().get_globals();                 /* copy from legacy globals */
+    bool cansave = usr().save_user_config();
     rcname = seq64::rc().user_filespec();
-    printf("[Writing user configuration %s]\n", rcname.c_str());
-    seq64::userfile userstuff(rcname);
-    if (userstuff.write(p))
+    if (! cansave)
+        cansave = ! file_exists(rcname);
+
+    if (cansave)
     {
-        // Anything to do?
+        seq64::usr().get_globals();             /* copy from legacy globals */
+        printf("[Writing user configuration %s]\n", rcname.c_str());
+        seq64::userfile userstuff(rcname);
+        if (userstuff.write(p))
+        {
+            // Anything to do?
+        }
+        else
+            result = false;
     }
-    else
-        result = false;
 
     return result;
 }

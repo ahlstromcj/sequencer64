@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-22
- * \updates       2015-11-15
+ * \updates       2015-11-20
  * \license       GNU GPLv2 or above
  *
  *  This collection of variables describes the options of the application,
@@ -424,7 +424,6 @@ public:
 private:
 
     std::string home_config_directory () const;
-    bool make_directory (const std::string & pathname) const;
 
 };
 

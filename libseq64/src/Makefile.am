@@ -6,7 +6,7 @@
 # \library    	libseq64 library
 # \author     	Chris Ahlstrom
 # \date       	2015-09-11
-# \update      2015-11-07
+# \update      2015-11-20
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -110,11 +110,13 @@ lib_LTLIBRARIES = libseq64.la
 
 libseq64_la_SOURCES = \
 	calculations.cpp \
+	cmdlineopts.cpp \
 	configfile.cpp \
 	click.cpp \
 	easy_macros.cpp \
 	event.cpp \
 	event_list.cpp \
+	file_functions.cpp \
 	globals.cpp \
    gui_assistant.cpp \
    gui_play_base.cpp \

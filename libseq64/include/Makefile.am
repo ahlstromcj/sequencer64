@@ -6,7 +6,7 @@
 # \library    	libseq64 library
 # \author     	Chris Ahlstrom
 # \date       	2015-09-11
-# \update      2015-11-14
+# \update      2015-11-20
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -64,12 +64,14 @@ sequencer64libdir = @sequencer64libdir@
 pkginclude_HEADERS = \
 	app_limits.h \
 	calculations.hpp \
+	cmdlineopts.hpp \
 	configfile.hpp \
 	click.hpp \
 	controllers.hpp \
 	easy_macros.h \
 	event.hpp \
 	event_list.hpp \
+	file_functions.hpp \
 	globals.h \
    gui_assistant.hpp \
    gui_play_base.hpp \

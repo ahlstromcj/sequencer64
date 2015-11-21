@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-22
- * \updates       2015-11-14
+ * \updates       2015-11-20
  * \license       GNU GPLv2 or above
  *
  *  Note that this module also sets the legacy global variables, so that
@@ -40,6 +40,7 @@
 #include <sys/stat.h>
 #endif
 
+#include "file_functions.hpp"           /* make_directory()             */
 #include "rc_settings.hpp"
 
 /**
@@ -237,42 +238,6 @@ rc_settings::get_globals ()
     m_device_ignore             = global_device_ignore;
     m_device_ignore_num         = global_device_ignore_num;
     m_device_ignore_num         = global_device_ignore_num;
-}
-
-/**
- *  An internal function to ensure that the ~/.config/sequencer64
- *  directory exists.  This function is actually a little more general
- *  than that, but it is not sufficiently general, in general.
- *
- * \param pathname
- *      Provides the name of the path to create.  The parent directory of
- *      the final directory must already exist.
- *
- * \return
- *      Returns true if the path-name exists.
- */
-
-#ifdef PLATFORM_GNU
-#pragma GCC diagnostic ignored "-Wmissing-field-initializers"
-#endif
-
-bool
-rc_settings::make_directory (const std::string & pathname) const
-{
-    bool result = ! pathname.empty();
-    if (result)
-    {
-        static struct stat st =
-        {
-            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 /* and more for Linux! */
-        };
-        if (stat(pathname.c_str(), &st) == -1)
-        {
-            int rcode = mkdir(pathname.c_str(), 0700);
-            result = rcode == 0;
-        }
-    }
-    return result;
 }
 
 /**

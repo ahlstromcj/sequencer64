@@ -3,16 +3,17 @@
 # 2015-11-21: STILL IN PROGRESS!!!!
 #
 # Created by reading taking the basic "user" configuration file example
-# and editing as per the following settings on my system:
+# and editing as per the following settings on my system, as shown by
+# "aconnect -o":
 #
-#    Port    Client name                      Port name
+#    Port    Client name    Client type       Port name
 #
-#    14:0    Midi Through                     Midi Through Port-0
-#   128:0    TiMidity                         TiMidity port 0
-#   128:1    TiMidity                         TiMidity port 1
-#   128:2    TiMidity                         TiMidity port 2
-#   128:3    TiMidity                         TiMidity port 3
-#   129:0    (yoshimi) input                  Yoshimi port 0
+#    14:0    'Midi Through' kernel             'Midi Through Port-0'
+#   128:0    'TiMidity'     user               'TiMidity port 0 '
+#   128:1    'TiMidity'     user               'TiMidity port 1 '
+#   128:2    'TiMidity'     user               'TiMidity port 2 '
+#   128:3    'TiMidity'     user               'TiMidity port 3 '
+#   129:0    'yoshimi'      user               'input           '
 #
 # Not sure if it is useful to include the thru port, but okay.
 # Also, I am assuming the default timidity setup is GM-compliant.
@@ -149,7 +150,8 @@ Midi Thru 0
 
 TiMidity
 
-# Number of MIDI controller values:
+# Number of MIDI controller values.  We really need a MIDI implementation
+# chart for TiMidity++.  Can't find one!
 
 0
 
@@ -160,6 +162,7 @@ TiMidity
 Yoshimi
 
 # Number of MIDI controller values:
+# This list also needs to be created, with a nice MIDI implementation chart.
 
 0
 

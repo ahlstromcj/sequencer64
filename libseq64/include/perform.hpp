@@ -28,17 +28,18 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-15
+ * \updates       2015-11-21
  * \license       GNU GPLv2 or above
  *
  *  This class has way too many members.
  */
 
-#include <vector>                       // std::vector
+#include <vector>
 #include <pthread.h>
-#include "globals.h"                    // globals, nullptr, & config headers
 
-#ifndef PLATFORM_WINDOWS                // see globals.h, platform_macros.h
+#include "globals.h"                    /* globals, nullptr, & more         */
+
+#ifndef PLATFORM_WINDOWS                /* see globals.h, platform_macros.h */
 #include <unistd.h>
 #endif
 
@@ -46,9 +47,10 @@
 #include "jack_assistant.hpp"
 #endif
 
-#include "gui_assistant.hpp"            // seq64::gui_assistant
-#include "keys_perform.hpp"             // seq64::keys_perform
-#include "mastermidibus.hpp"            // seq64::mastermidibus
+#include "gui_assistant.hpp"            /* seq64::gui_assistant             */
+#include "keys_perform.hpp"             /* seq64::keys_perform              */
+#include "mastermidibus.hpp"            /* seq64::mastermidibus             */
+#include "midi_control.hpp"             /* seq64::midi_control "struct"     */
 
 /**
  *  We have offloaded the keybinding support to another class, derived
@@ -82,50 +84,6 @@ namespace seq64
 class keystroke;
 class sequence;
 
-/*
- * This class (actually a struct) contains sequences that make up a live
- * set.
- */
-
-class midi_control
-{
-
-public:
-
-    bool m_active;
-    bool m_inverse_active;
-    long m_status;
-    long m_data;
-    long m_min_value;
-    long m_max_value;
-};
-
-/*
- *  Pseudo control value for associating MIDI events (I think)
- *  with automation of some of the controls in seq24.  The lowest value is
- *  c_seqs_in_set * 2 = 64.
- *
- *  I think the reason for that value is to perhaps handle two sets or
- *  something like that.  Will figure it out later.
- *
- *  The controls are read in from the "rc" configuration files, and are
- *  written to the c_midictrl section of the "proprietary" final track in a
- *  Seq24/Sequencer64 MIDI file.
- */
-
-const int c_midi_track_ctrl           = c_seqs_in_set * 2;
-const int c_midi_control_bpm_up       = c_midi_track_ctrl;
-const int c_midi_control_bpm_dn       = c_midi_track_ctrl + 1;
-const int c_midi_control_ss_up        = c_midi_track_ctrl + 2;
-const int c_midi_control_ss_dn        = c_midi_track_ctrl + 3;
-const int c_midi_control_mod_replace  = c_midi_track_ctrl + 4;
-const int c_midi_control_mod_snapshot = c_midi_track_ctrl + 5;
-const int c_midi_control_mod_queue    = c_midi_track_ctrl + 6;
-const int c_midi_control_mod_gmute    = c_midi_track_ctrl + 7;
-const int c_midi_control_mod_glearn   = c_midi_track_ctrl + 8;
-const int c_midi_control_play_ss      = c_midi_track_ctrl + 9;
-const int c_midi_controls             = c_midi_track_ctrl + 10;
-
 /**
  *      Provides for notification of events.  Provide a response to a
  *      group-learn change event.
@@ -148,6 +106,7 @@ struct performcallback
     {
         // Empty body
     }
+
 };
 
 /**
@@ -177,6 +136,13 @@ class perform
 #endif
 
 private:
+
+    /**
+     *  Provides a dummy, inactive midi_control object to handle
+     *  out-of-range midi_control indicies.
+     */
+
+    static midi_control sm_mc_dummy;
 
     /**
      *  Support for a wide range of GUI-related operations.
@@ -319,7 +285,30 @@ private:
     int m_offset;
     int m_control_status;
     int m_screenset;
+
+    /**
+     *  We will eventually replace c_seqs_in_set with this member, which
+     *  defaults to the value of c_seqs_in_set.  This change will require some
+     *  arrays to be dynamically allocated (vectors).
+     */
+
+    int m_seqs_in_set;                  /* replaces global c_seqs_in_set    */
+
+    /**
+     *  A replacement for the c_max_sets constant.  Again, currently set to
+     *  the old value, which is used in hard-wired array sizes.
+     */
+
+    int m_max_sets;
+
     int m_sequence_count;
+
+    /**
+     *  A replacement for the c_max_sequence constant.  However, this value is
+     *  already 32 * 32 = 1024, and is probably enough for any usage.  Famous
+     *  last words?
+     */
+
     int m_sequence_max;
 
     /**
@@ -568,9 +557,9 @@ public:
         is_modified(true);
     }
 
-    midi_control * get_midi_control_toggle (unsigned int seq);
-    midi_control * get_midi_control_on (unsigned int seq);
-    midi_control * get_midi_control_off (unsigned int seq);
+    midi_control & midi_control_toggle (int seq);
+    midi_control & midi_control_on (int seq);
+    midi_control & midi_control_off (int seq);
 
     void handle_midi_control (int control, bool state);
 
@@ -978,9 +967,9 @@ private:
      *      error print-out is generated.
      */
 
-    bool is_midi_control_valid (unsigned int seq) const
+    bool is_midi_control_valid (int seq) const
     {
-        return seq < static_cast<unsigned int>(c_midi_controls);
+        return seq < c_midi_controls;
     }
 
     /**
@@ -1015,6 +1004,16 @@ private:
     void set_playback_mode (bool playbackmode)
     {
         m_playback_mode = playbackmode;
+    }
+
+    /**
+     *  A helper function to calculate the index into the mute-group array,
+     *  based on the desired track.
+     */
+
+    int mute_group_offset (int track)
+    {
+        return clamp_track(track) + m_mute_group_selected * c_seqs_in_set;
     }
 
     bool is_seq_valid (int seq) const;

@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-20
+ * \updates       2015-11-21
  * \license       GNU GPLv2 or above
  *
  *  For a quick guide to the MIDI format, see, for example:
@@ -899,26 +899,17 @@ midifile::parse_proprietary_track (perform & p, int file_size)
                 );
                 seqs = (unsigned long)(read_byte());
             }
+            unsigned char a[6];
             for (unsigned int i = 0; i < seqs; i++)
             {
-                p.get_midi_control_toggle(i)->m_active = read_byte();
-                p.get_midi_control_toggle(i)->m_inverse_active = read_byte();
-                p.get_midi_control_toggle(i)->m_status = read_byte();
-                p.get_midi_control_toggle(i)->m_data = read_byte();
-                p.get_midi_control_toggle(i)->m_min_value = read_byte();
-                p.get_midi_control_toggle(i)->m_max_value = read_byte();
-                p.get_midi_control_on(i)->m_active = read_byte();
-                p.get_midi_control_on(i)->m_inverse_active = read_byte();
-                p.get_midi_control_on(i)->m_status = read_byte();
-                p.get_midi_control_on(i)->m_data = read_byte();
-                p.get_midi_control_on(i)->m_min_value = read_byte();
-                p.get_midi_control_on(i)->m_max_value = read_byte();
-                p.get_midi_control_off(i)->m_active = read_byte();
-                p.get_midi_control_off(i)->m_inverse_active = read_byte();
-                p.get_midi_control_off(i)->m_status = read_byte();
-                p.get_midi_control_off(i)->m_data = read_byte();
-                p.get_midi_control_off(i)->m_min_value = read_byte();
-                p.get_midi_control_off(i)->m_max_value = read_byte();
+                read_byte_array(a, 6);
+                p.midi_control_toggle(i).set(a);
+
+                read_byte_array(a, 6);
+                p.midi_control_on(i).set(a);
+
+                read_byte_array(a, 6);
+                p.midi_control_off(i).set(a);
             }
         }
         proprietary = parse_prop_header(file_size);
@@ -933,7 +924,7 @@ midifile::parse_proprietary_track (perform & p, int file_size)
 
             if (busscount > SEQ64_DEFAULT_BUSS_MAX)
             {
-                errdump("bad buss count, fixing; please re-save file");
+                errdump("bad buss count, fixing; please save the file now");
                 m_pos -= 4;
                 busscount = (unsigned long)(read_byte());
             }

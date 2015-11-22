@@ -207,6 +207,23 @@ private:
     void write_short (unsigned short);
 
     /**
+     *  A helper function to simplify reading midi_control data from the MIDI
+     *  file.
+     *
+     * \param b
+     *      The byte array to receive the data.
+     *
+     * \param len
+     *      The number of bytes in the array, and to be read.
+     */
+
+    void read_byte_array (unsigned char * b, int len)
+    {
+        for (int i = 0; i < len; ++i)
+            *b++ = read_byte();
+    }
+
+    /**
      *  Writes 1 byte.  The byte is written to the m_char_list member, using a
      *  call to push_back().
      */

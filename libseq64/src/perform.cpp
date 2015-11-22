@@ -48,9 +48,24 @@
 namespace seq64
 {
 
+/**
+ *  Purely internal constants used with the functions that implement MIDI
+ *  control for the application.
+ */
+
 static const int c_status_replace  = 0x01;
 static const int c_status_snapshot = 0x02;
 static const int c_status_queue    = 0x04;
+
+/**
+ *  Instantiate the dummy midi_control object, which is used in lieu
+ *  of a null pointer.  We're taking code that basically works already, in the
+ *  sense that it never seems to access a null pointer.  So we're not even
+ *  risking data transfers between this dummy object and the ones we really
+ *  want to use.
+ */
+
+midi_control perform::sm_mc_dummy;
 
 /**
  *  This construction initializes a vast number of member variables, some
@@ -109,6 +124,8 @@ perform::perform (gui_assistant & mygui, int ppqn)
     m_offset                    (0),
     m_control_status            (0),
     m_screenset                 (0),
+    m_seqs_in_set               (c_seqs_in_set),
+    m_max_sets                  (c_max_sets),
     m_sequence_count            (0),
     m_sequence_max              (c_max_sequence),
     m_is_modified               (false),
@@ -116,22 +133,14 @@ perform::perform (gui_assistant & mygui, int ppqn)
 #ifdef SEQ64_JACK_SUPPORT
     m_jack_asst                 (*this),
 #endif
-    m_notify                    ()          // vector of pointers, public!
+    m_notify                    ()      // vector of pointers, public!
 {
     for (int i = 0; i < m_sequence_max; i++)
     {
         m_seqs[i] = nullptr;
         m_seqs_active[i] = false;
     }
-    midi_control zero =
-    {
-        false,          // m_active;
-        false,          // m_inverse_active;
-        0,              // m_status;
-        0,              // m_data;
-        0,              // m_min_value;
-        0               // m_max_value;
-    };
+    midi_control zero;                          /* all members false or 0   */
     for (int i = 0; i < c_midi_controls; i++)
     {
         m_midi_cc_toggle[i] = zero;
@@ -145,7 +154,8 @@ perform::perform (gui_assistant & mygui, int ppqn)
 /**
  *  The destructor sets some running flags to false, signals this
  *  condition, then joins the input and output threads if the were
- *  launched. Finally, any active patterns/sequences are deleted.
+ *  launched. Finally, any active or inactive (but allocated)
+ *  patterns/sequences are deleted, and their pointer nullified..
  */
 
 perform::~perform ()
@@ -160,16 +170,6 @@ perform::~perform ()
 
     for (int seq = 0; seq < m_sequence_max; seq++)
     {
-        /*
-         * This really isn't good enough.  How do we know there aren't some
-         * inactive sequences hanging around, due to a call to set_active()?
-         * Check all the slots for deletion, and also solidify the deletion by
-         * nullifying the pointer.
-         *
-         * if (is_active(seq))
-         *     delete m_seqs[seq];
-         */
-
         if (not_nullptr(m_seqs[seq]))
         {
             delete m_seqs[seq];
@@ -229,7 +229,7 @@ perform::clear_all ()
             delete_sequence(i);
 
     std::string e;                          /* an empty string  */
-    for (int i = 0; i < c_max_sets; i++)
+    for (int i = 0; i < m_max_sets; i++)
         set_screen_set_notepad(i, e);
 
     is_modified(false);                     /* new!             */
@@ -237,8 +237,8 @@ perform::clear_all ()
 
 /**
  *  Provides common code to keep the track value valid.  Note the bug we
- *  found, where we checked for track > c_seqs_in_set, but set it to
- *  c_seqs_in_set - 1 in that case!
+ *  found, where we checked for track > m_seqs_in_set, but set it to
+ *  m_seqs_in_set - 1 in that case!
  */
 
 inline int
@@ -246,48 +246,72 @@ perform::clamp_track (int track) const
 {
     if (track < 0)
         track = 0;
-    else if (track >= c_seqs_in_set)        /* bug: was just ">" !!! */
-        track = c_seqs_in_set - 1;
+    else if (track >= m_seqs_in_set)        /* bug: was just ">" !!! */
+        track = m_seqs_in_set - 1;
 
     return track;
 }
 
 /**
- * \setter m_mute_group
+ * This function sets the mute state of an element in the m_mute_group array.
+ * The index value is the track number offset by the number of the selected
+ * mute group (which seems equivalent to a set number) times the number of
+ * sequences in a set.
+ *
+ * \param gtrack
+ *      The number of the track to be muted/unmuted.
+ *
+ * \param muted
+ *      This boolean indicates the state to which the track should be set.
  */
 
 void
-perform::set_group_mute_state (int a_g_track, bool a_mute_state)
+perform::set_group_mute_state (int gtrack, bool muted)
 {
-    int index = clamp_track(a_g_track) + m_mute_group_selected * c_seqs_in_set;
-    m_mute_group[index] = a_mute_state;
+    int index = mute_group_offset(gtrack);
+    m_mute_group[index] = muted;
 }
 
 /**
- * \getter m_mute_group
+ *  The "inverse" of set_group_mute_state(), it gets the value of the desired
+ *  track.
+ *
+ * \param gtrack
+ *      The number of the track for which the state is to be obtained.
+ *      Like set_group_mute_state(), this value is offset by adding
+ *      m_mute_group_selected * m_seqs_in_set.
+ *
+ * \return
+ *      Returns the value of m_mute_group[gtrack + set offset]
  */
 
 bool
-perform::get_group_mute_state (int a_g_track)
+perform::get_group_mute_state (int gtrack)
 {
-    int index = clamp_track(a_g_track) + m_mute_group_selected * c_seqs_in_set;
+    int index = mute_group_offset(gtrack);
     return m_mute_group[index];
 }
 
 /**
- *  Makes some checks and sets the group mute flag.
+ *  Makes some checks and sets the group mute flag, m_mute_group_selected, to
+ *  the clamped g-mute value, if all goes well (no null sequences are
+ *  encountered).
+ *
+ * \param a_g_mute
+ *      The number of the mute group, clamped to be between 0 and
+ *      m_seqs_in_set-1.
  */
 
 void
 perform::select_group_mute (int a_g_mute)
 {
     int gmute = clamp_track(a_g_mute);
-    int j = gmute * c_seqs_in_set;
+    int j = gmute * m_seqs_in_set;
     int k = m_playscreen_offset;
     bool error = false;
     if (m_mode_group_learn)
     {
-        for (int i = 0; i < c_seqs_in_set; i++)
+        for (int i = 0; i < m_seqs_in_set; i++)
         {
             if (is_active(i+k))
             {
@@ -336,6 +360,10 @@ perform::unset_mode_group_learn ()
 }
 
 /**
+ *  Makes some checks and sets the group mute flag, m_mute_group_selected, to
+ *  the clamped g-mute value, if all goes well (no null sequences are
+ *  encountered).
+ *
  *  Will need to study this one more closely.
  *
  * \param a_group
@@ -347,7 +375,7 @@ void
 perform::select_mute_group (int a_group)
 {
     int group = clamp_track(a_group);
-    int j = group * c_seqs_in_set;
+    int j = group * m_seqs_in_set;
     int k = m_playscreen_offset;
 
     /*
@@ -356,7 +384,7 @@ perform::select_mute_group (int a_group)
 
     m_mute_group_selected = group;
     bool error = false;
-    for (int i = 0; i < c_seqs_in_set; i++)
+    for (int i = 0; i < m_seqs_in_set; i++)
     {
         if ((m_mode_group_learn) && (is_active(i + k)))
         {
@@ -370,7 +398,7 @@ perform::select_mute_group (int a_group)
         }
         if (! error)
         {
-            int index = i + m_mute_group_selected * c_seqs_in_set;
+            int index = mute_group_offset(i);
             m_tracks_mute_state[i] = m_mute_group[index];
         }
     }
@@ -385,16 +413,16 @@ perform::mute_group_tracks ()
 {
     if (m_mode_group)
     {
-        for (int i = 0; i < c_seqs_in_set; i++)
+        for (int i = 0; i < m_seqs_in_set; i++)
         {
-            for (int j = 0; j < c_seqs_in_set; j++)
+            for (int j = 0; j < m_seqs_in_set; j++)
             {
-                if (is_active(i * c_seqs_in_set + j))
+                if (is_active(i * m_seqs_in_set + j))
                 {
                     if ((i == m_playing_screen) && m_tracks_mute_state[j])
-                        sequence_playing_on(i * c_seqs_in_set + j);
+                        sequence_playing_on(i * m_seqs_in_set + j);
                     else
-                        sequence_playing_off(i * c_seqs_in_set + j);
+                        sequence_playing_off(i * m_seqs_in_set + j);
                 }
             }
         }
@@ -878,7 +906,8 @@ perform::is_mseq_valid (int seq) const
 
 /**
  *  Deletes a pattern/sequence by number.  We now also solidify the deletion
- *  by setting the pointer to null after deletion.
+ *  by setting the pointer to null after deletion, so it will blow up if
+ *  accidentally accessed.
  */
 
 void
@@ -929,7 +958,7 @@ perform::new_sequence (int seq)
 }
 
 /**
- *  Retrieves a value from m_midi_cc_toggle[].
+ *  Retrieves a reference to a value from m_midi_cc_toggle[].
  *
  * \param seq
  *      Provides a control value (such as c_midi_control_bpm_up) to use to
@@ -938,38 +967,38 @@ perform::new_sequence (int seq)
  *      easier.
  */
 
-midi_control *
-perform::get_midi_control_toggle (unsigned int seq)
+midi_control &
+perform::midi_control_toggle (int seq)
 {
-    return is_midi_control_valid(seq) ? &m_midi_cc_toggle[seq] : nullptr ;
+    return is_midi_control_valid(seq) ? m_midi_cc_toggle[seq] : sm_mc_dummy ;
 }
 
 /**
- *  Retrieves a value from m_midi_cc_on[].
+ *  Retrieves a reference to a value from m_midi_cc_on[].
  *
  * \param seq
  *      Provides a control value (such as c_midi_control_bpm_up) to use to
  *      retrieve the desired midi_control object.
  */
 
-midi_control *
-perform::get_midi_control_on (unsigned int seq)
+midi_control &
+perform::midi_control_on (int seq)
 {
-    return is_midi_control_valid(seq) ? &m_midi_cc_on[seq] : nullptr ;
+    return is_midi_control_valid(seq) ? m_midi_cc_on[seq] : sm_mc_dummy ;
 }
 
 /**
- *  Retrieves a value from m_midi_cc_off[].
+ *  Retrieves a reference to a value from m_midi_cc_off[].
  *
  * \param seq
  *      Provides a control value (such as c_midi_control_bpm_up) to use to
  *      retrieve the desired midi_control object.
  */
 
-midi_control *
-perform::get_midi_control_off (unsigned int seq)
+midi_control &
+perform::midi_control_off (int seq)
 {
-    return is_midi_control_valid(seq) ? &m_midi_cc_off[seq] : nullptr ;
+    return is_midi_control_valid(seq) ? m_midi_cc_off[seq] : sm_mc_dummy ;
 }
 
 /**
@@ -1029,15 +1058,15 @@ perform::get_screen_set_notepad (int screenset) const
  *
  * \param ss
  *      The index of the desired string set.  It is forced to range from
- *      0 to c_max_sets - 1.
+ *      0 to m_max_sets - 1.
  */
 
 void
 perform::set_screenset (int ss)
 {
     if (ss < 0)
-        ss = c_max_sets - 1;
-    else if (ss >= c_max_sets)
+        ss = m_max_sets - 1;
+    else if (ss >= m_max_sets)
         ss = 0;
 
     if (ss != m_screenset)
@@ -1054,7 +1083,7 @@ perform::set_screenset (int ss)
  *  Sets the screen set that is active, based on the value of
  *  m_playing_screen.
  *
- *  For each value up to c_seqs_in_set (32), the index of the current
+ *  For each value up to m_seqs_in_set (32), the index of the current
  *  sequence in the currently screen set (m_playing_screen) is obtained.
  *  If it is active and the sequence actually exists
  *
@@ -1069,9 +1098,9 @@ perform::set_playing_screenset ()
      */
 
     bool error = false;
-    for (int j, i = 0; i < c_seqs_in_set; i++)
+    for (int j, i = 0; i < m_seqs_in_set; i++)
     {
-        j = i + m_playscreen_offset;    /* m_playing_screen * c_seqs_in_set */
+        j = i + m_playscreen_offset;    /* m_playing_screen * m_seqs_in_set */
         if (is_active(j))
         {
             /*
@@ -1101,7 +1130,7 @@ perform::set_playing_screenset ()
     if (! error)
     {
         m_playing_screen = m_screenset;
-        m_playscreen_offset = m_playing_screen * c_seqs_in_set;
+        m_playscreen_offset = m_playing_screen * m_seqs_in_set;
         mute_group_tracks();
     }
 }
@@ -1940,12 +1969,24 @@ input_thread_func (void * a_pef)
 /**
  *  Handle the MIDI Control values that provide some automation for the
  *  application.
+ *
+ * \param ctrl
+ *      The MIDI control value to use to perform an operation.
+ *
+ * \param state
+ *      The state of the control, used with:
+ *
+ *          -   c_midi_control_mod_replace
+ *          -   c_midi_control_mod_snapshot
+ *          -   c_midi_control_mod_queue
+ *          -   c_midi_control_mod_gmute
+ *          -   c_midi_control_mod_glearn
  */
 
 void
-perform::handle_midi_control (int a_control, bool state)
+perform::handle_midi_control (int ctrl, bool state)
 {
-    switch (a_control)
+    switch (ctrl)
     {
     case c_midi_control_bpm_up:                 // printf("bpm up\n");
         set_beats_per_minute(get_beats_per_minute() + 1);
@@ -2005,12 +2046,12 @@ perform::handle_midi_control (int a_control, bool state)
 
         /*
          * Based on the value of c_midi_track_crl (32 *2) versus
-         * c_seqs_in_set (32), maybe the first comparison should be
-         * "a_control >= 2 * c_seqs_in_set".
+         * m_seqs_in_set (32), maybe the first comparison should be
+         * "ctrl >= 2 * m_seqs_in_set".
          */
 
-        if ((a_control >= c_seqs_in_set) && (a_control < c_midi_track_ctrl))
-            select_and_mute_group(a_control - c_seqs_in_set);
+        if ((ctrl >= m_seqs_in_set) && (ctrl < c_midi_track_ctrl))
+            select_and_mute_group(ctrl - m_seqs_in_set);
 
         break;
     }
@@ -2054,11 +2095,11 @@ perform::input_func ()
                     else if (ev.get_status() == EVENT_MIDI_STOP)
                     {
                         /*
-                         * Do nothing, just let the system pause.  Since
-                         * we're not getting ticks after the stop, the
-                         * song won't advance when start is received,
-                         * we'll reset the position, or. when continue is
-                         * received, we won't reset the position.
+                         * Do nothing, just let the system pause.  Since we're
+                         * not getting ticks after the stop, the song won't
+                         * advance when start is received, we'll reset the
+                         * position, or when continue is received, we won't
+                         * reset the position.
                          */
 
                         m_midiclockrunning = false;
@@ -2071,15 +2112,16 @@ perform::input_func ()
                     }
                     else if (ev.get_status() == EVENT_MIDI_SONG_POS)
                     {
-                        // not tested (todo: test it!)
-
-                        unsigned char a, b;
+                        unsigned char a, b;     // not tested (todo: test it!)
                         ev.get_data(a, b);
                         m_midiclockpos = (int(a) << 7) && int(b);
                     }
 
                     /*
-                     * Filter system-wide messages.
+                     *  Filter system-wide messages.  If the master MIDI buss
+                     *  is dumping, set the timestamp of the event and stream
+                     *  it on the sequence.  Otherwise, use the event data to
+                     *  control the sequencer, if it is valid for that action.
                      */
 
                     if (ev.get_status() <= EVENT_SYSEX)
@@ -2089,85 +2131,53 @@ perform::input_func ()
 
                         if (m_master_bus.is_dumping())
                         {
-                            // If a sequence is set, dump to it
-
                             ev.set_timestamp(m_tick);
                             m_master_bus.get_sequence()->stream_event(&ev);
                         }
                         else
                         {
-                            // use it to control our sequencer
-
                             for (int i = 0; i < c_midi_controls; i++)
                             {
                                 unsigned char data[2] = { 0, 0 };
                                 unsigned char status = ev.get_status();
                                 ev.get_data(data[0], data[1]);
-                                if
-                                (
-                            get_midi_control_toggle(i)->m_active &&
-                            status  == get_midi_control_toggle(i)->m_status &&
-                            data[0] == get_midi_control_toggle(i)->m_data
-                                )
+                                if (midi_control_toggle(i).match(status, data[0]))
                                 {
-                                    if
-                                    (
-                            data[1] >= get_midi_control_toggle(i)->m_min_value &&
-                            data[1] <= get_midi_control_toggle(i)->m_max_value
-                                    )
+                                    if (midi_control_toggle(i).in_range(data[1]))
                                     {
-                                        if (i <  c_seqs_in_set)
+                                        if (i <  m_seqs_in_set)
                                             sequence_playing_toggle(i+m_offset);
                                     }
                                 }
-                                if
-                                (
-                            get_midi_control_on(i)->m_active &&
-                            status  == get_midi_control_on(i)->m_status &&
-                            data[0] == get_midi_control_on(i)->m_data
-                                )
+                                if (midi_control_on(i).match(status, data[0]))
                                 {
-                                    if
-                                    (
-                            data[1] >= get_midi_control_on(i)->m_min_value &&
-                            data[1] <= get_midi_control_on(i)->m_max_value
-                                    )
+                                    if (midi_control_on(i).in_range(data[1]))
                                     {
-                                        if (i <  c_seqs_in_set)
+                                        if (i <  m_seqs_in_set)
                                             sequence_playing_on(i + m_offset);
                                         else
                                             handle_midi_control(i, true);
                                     }
-                                    else if (get_midi_control_on(i)->m_inverse_active)
+                                    else if (midi_control_on(i).inverse_active())
                                     {
-                                        if (i <  c_seqs_in_set)
+                                        if (i <  m_seqs_in_set)
                                             sequence_playing_off(i + m_offset);
                                         else
                                             handle_midi_control(i, false);
                                     }
                                 }
-
-                                if
-                                (
-                            get_midi_control_off(i)->m_active &&
-                            status  == get_midi_control_off(i)->m_status &&
-                            data[0] == get_midi_control_off(i)->m_data
-                                )
+                                if (midi_control_off(i).match(status, data[0]))
                                 {
-                                    if
-                                    (
-                            data[1] >= get_midi_control_off(i)->m_min_value &&
-                            data[1] <= get_midi_control_off(i)->m_max_value
-                                    )
+                                    if (midi_control_on(i).in_range(data[1]))
                                     {
-                                        if (i <  c_seqs_in_set)
+                                        if (i <  m_seqs_in_set)
                                             sequence_playing_off(i + m_offset);
                                         else
                                             handle_midi_control(i, false);
                                     }
-                                    else if (get_midi_control_off(i)->m_inverse_active)
+                                    else if (midi_control_off(i).inverse_active())
                                     {
-                                        if (i <  c_seqs_in_set)
+                                        if (i <  m_seqs_in_set)
                                             sequence_playing_on(i + m_offset);
                                         else
                                             handle_midi_control(i, true);
@@ -2298,7 +2308,7 @@ perform::sequence_playing_on (int seq)
 {
     if (is_active(seq))
     {
-        int next_offset = m_playscreen_offset + c_seqs_in_set;
+        int next_offset = m_playscreen_offset + m_seqs_in_set;
         if
         (
             m_mode_group && (m_playing_screen == m_screenset) &&
@@ -2345,14 +2355,14 @@ perform::sequence_playing_off (int seq)
 {
     if (is_active(seq))
     {
-        int next_offset = m_playscreen_offset + c_seqs_in_set;
+        int next_offset = m_playscreen_offset + m_seqs_in_set;
         if
         (
             m_mode_group && (m_playing_screen == m_screenset) &&
             (seq >= m_playscreen_offset) && (seq < next_offset)
         )
         {
-            m_tracks_mute_state[seq-m_playing_screen * c_seqs_in_set] =
+            m_tracks_mute_state[seq-m_playing_screen * m_seqs_in_set] =
                false;
         }
         if (not_nullptr_assert(m_seqs[seq], "sequence_playing_off"))

@@ -24,8 +24,11 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-19
+ * \updates       2015-11-21
  * \license       GNU GPLv2 or above
+ *
+ *  Note that there are a number of header files that we don't need to add
+ *  here, since other header files include them.
  *
  * \todo
  *      "I don't like seq24's pianoroll editor, the way you do CC envelopes
@@ -37,17 +40,9 @@
  */
 
 #include <stdio.h>
-
-#include "platform_macros.h"
-
-#ifdef PLATFORM_UNIX
-#include <getopt.h>
-#endif
-
 #include <gdkmm/cursor.h>
 #include <gtkmm/main.h>
 
-#include "globals.h"                    /* full platform configuration      */
 #include "cmdlineopts.hpp"              /* command-line functions           */
 #include "file_functions.hpp"           /* seq64::file_accessible()         */
 #include "font.hpp"
@@ -55,9 +50,6 @@
 #include "lash.hpp"                     /* seq64::lash_driver functions     */
 #include "mainwid.hpp"                  /* needed to fulfill mainwnd        */
 #include "mainwnd.hpp"
-#include "optionsfile.hpp"
-#include "perform.hpp"
-#include "userfile.hpp"
 
 /**
  *  The standard C/C++ entry point to this application.  This first thing
@@ -101,34 +93,34 @@ main (int argc, char * argv [])
     if (ok)
         optionindex = seq64::parse_command_line_options(argc, argv);
 
-    if (is_help)
-        return EXIT_SUCCESS;                    /* do not start the GUI     */
-
-    p.init();
-    p.launch_input_thread();
-    p.launch_output_thread();
+    if (! is_help)
+    {
+        p.init();
+        p.launch_input_thread();
+        p.launch_output_thread();
 #ifdef SEQ64_JACK_SUPPORT
-    p.init_jack();
+        p.init_jack();
 #endif
 
-    seq64::mainwnd seq24_window(p);             /* push mainwnd onto stack  */
-    if (optionindex < argc)                     /* MIDI filename provided?  */
-    {
-        std::string midifilename = argv[optionindex];
-        if (seq64::file_accessible(midifilename))
-            seq24_window.open_file(midifilename);
-        else
-            printf("? MIDI file not found: %s\n", midifilename.c_str());
+        seq64::mainwnd seq24_window(p);         /* push mainwnd onto stack  */
+        if (optionindex < argc)                 /* MIDI filename provided?  */
+        {
+            std::string midifilename = argv[optionindex];
+            if (seq64::file_accessible(midifilename))
+                seq24_window.open_file(midifilename);
+            else
+                printf("? MIDI file not found: %s\n", midifilename.c_str());
+        }
+
+        if (seq64::rc().lash_support())
+            seq64::create_lash_driver(p, argc, argv);
+
+        kit.run(seq24_window);
+        p.deinit_jack();
+        ok = seq64::write_options_files(p);
+        seq64::delete_lash_driver();            /* deletes only if exists   */
     }
-
-    if (seq64::rc().lash_support())
-        seq64::create_lash_driver(p, argc, argv);
-
-    kit.run(seq24_window);
-    p.deinit_jack();
-    (void) seq64::write_options_files(p);
-    seq64::delete_lash_driver();                /* deletes only if exists   */
-    return EXIT_SUCCESS;
+    return ok ? EXIT_SUCCESS : EXIT_FAILURE ;
 }
 
 /*

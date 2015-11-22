@@ -177,7 +177,7 @@ optionsfile::parse (perform & p)
     }
     file.seekg(0, std::ios::beg);                           /* seek to start */
     line_after(file, "[midi-control]");                     /* find section  */
-    unsigned int sequences = 0;
+    unsigned sequences = 0;
     sscanf(m_line, "%u", &sequences);
 
     /*
@@ -189,35 +189,24 @@ optionsfile::parse (perform & p)
      */
 
     next_data_line(file);
-    for (unsigned int i = 0; i < sequences; ++i)    /* 0 to c_midi_controls-1 */
+    for (unsigned i = 0; i < sequences; ++i)    /* 0 to c_midi_controls-1 */
     {
         int sequence = 0;
+        int a[6], b[6], c[6];
         sscanf
         (
             m_line,
-            "%d [ %d %d %ld %ld %ld %ld ]"
-                " [ %d %d %ld %ld %ld %ld ]"
-                " [ %d %d %ld %ld %ld %ld ]",
+            "%d [ %d %d %d %d %d %d ]"          /* [ %d %d %ld %ld %ld %ld ] */
+              " [ %d %d %d %d %d %d ]"
+              " [ %d %d %d %d %d %d ]",
             &sequence,
-            (int *) &p.get_midi_control_toggle(i)->m_active,
-                (int *) &p.get_midi_control_toggle(i)->m_inverse_active,
-                &p.get_midi_control_toggle(i)->m_status,
-                &p.get_midi_control_toggle(i)->m_data,
-                &p.get_midi_control_toggle(i)->m_min_value,
-                &p.get_midi_control_toggle(i)->m_max_value,
-            (int *) &p.get_midi_control_on(i)->m_active,
-                (int *) &p.get_midi_control_on(i)->m_inverse_active,
-                &p.get_midi_control_on(i)->m_status,
-                &p.get_midi_control_on(i)->m_data,
-                &p.get_midi_control_on(i)->m_min_value,
-                &p.get_midi_control_on(i)->m_max_value,
-            (int *) &p.get_midi_control_off(i)->m_active,
-                (int *) &p.get_midi_control_off(i)->m_inverse_active,
-                &p.get_midi_control_off(i)->m_status,
-                &p.get_midi_control_off(i)->m_data,
-                &p.get_midi_control_off(i)->m_min_value,
-                &p.get_midi_control_off(i)->m_max_value
+            &a[0], &a[1], &a[2], &a[3], &a[4], &a[5],
+            &b[0], &b[1], &b[2], &b[3], &b[4], &b[5],
+            &c[0], &c[1], &c[2], &c[3], &c[4], &c[5]
         );
+        p.midi_control_toggle(i).set(a);
+        p.midi_control_on(i).set(b);
+        p.midi_control_off(i).set(c);
         next_data_line(file);
     }
 
@@ -531,31 +520,22 @@ optionsfile::write (const perform & p)
         default:
             break;
         }
+        const midi_control & toggle = ucperf.midi_control_toggle(mcontrol);
+        const midi_control & off = ucperf.midi_control_off(mcontrol);
+        const midi_control & on = ucperf.midi_control_on(mcontrol);
         snprintf
         (
             outs, sizeof(outs),
-            "%d [%1d %1d %3ld %3ld %3ld %3ld]"
-                " [%1d %1d %3ld %3ld %3ld %3ld]"
-                " [%1d %1d %3ld %3ld %3ld %3ld]",
+            "%d [%1d %1d %3d %3d %3d %3d]"  /* [%1d %1d %3ld %3ld %3ld %3ld] */
+              " [%1d %1d %3d %3d %3d %3d]"
+              " [%1d %1d %3d %3d %3d %3d]",
              mcontrol,
-             ucperf.get_midi_control_toggle(mcontrol)->m_active,
-                 ucperf.get_midi_control_toggle(mcontrol)->m_inverse_active,
-                 ucperf.get_midi_control_toggle(mcontrol)->m_status,
-                 ucperf.get_midi_control_toggle(mcontrol)->m_data,
-                 ucperf.get_midi_control_toggle(mcontrol)->m_min_value,
-                 ucperf.get_midi_control_toggle(mcontrol)->m_max_value,
-             ucperf.get_midi_control_on(mcontrol)->m_active,
-                 ucperf.get_midi_control_on(mcontrol)->m_inverse_active,
-                 ucperf.get_midi_control_on(mcontrol)->m_status,
-                 ucperf.get_midi_control_on(mcontrol)->m_data,
-                 ucperf.get_midi_control_on(mcontrol)->m_min_value,
-                 ucperf.get_midi_control_on(mcontrol)->m_max_value,
-             ucperf.get_midi_control_off(mcontrol)->m_active,
-                 ucperf.get_midi_control_off(mcontrol)->m_inverse_active,
-                 ucperf.get_midi_control_off(mcontrol)->m_status,
-                 ucperf.get_midi_control_off(mcontrol)->m_data,
-                 ucperf.get_midi_control_off(mcontrol)->m_min_value,
-                 ucperf.get_midi_control_off(mcontrol)->m_max_value
+             toggle.active(), toggle.inverse_active(), toggle.status(),
+                 toggle.data(), toggle.min_value(), toggle.max_value(),
+             on.active(), on.inverse_active(), on.status(),
+                 on.data(), on.min_value(), on.max_value(),
+             off.active(), off.inverse_active(), off.status(),
+                 off.data(), off.min_value(), off.max_value()
         );
         file << std::string(outs) << "\n";
     }

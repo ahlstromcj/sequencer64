@@ -1163,11 +1163,6 @@ seqroll::on_key_press_event (GdkEventKey * ev)
             m_seq24_interaction.set_adding(false, *this);
             result = true;
         }
-        else if (ev->keyval == SEQ64_P)             /* deprecated           */
-        {
-            m_seq24_interaction.set_adding(false, *this);
-            result = true;
-        }
         if (ev->state & SEQ64_CONTROL_MASK)
         {
             if (OR_EQUIVALENT(ev->keyval, SEQ64_x, SEQ64_X))        /* cut */

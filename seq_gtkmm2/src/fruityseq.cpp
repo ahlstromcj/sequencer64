@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-08-02
- * \updates       2015-10-31
+ * \updates       2015-11-22
  * \license       GNU GPLv2 or above
  *
  *  This code was extracted from seqevent to make that module more
@@ -37,6 +37,7 @@
 
 #include "click.hpp"                    /* SEQ64_CLICK_LEFT() etc.       */
 #include "fruityseq.hpp"
+#include "perform.hpp"
 #include "seqevent.hpp"
 #include "sequence.hpp"                 /* for full usage of seqevent       */
 
@@ -48,7 +49,7 @@ namespace seq64
  */
 
 void
-FruitySeqEventInput::updateMousePtr (seqevent & seqev)
+FruitySeqEventInput::update_mouse_pointer (seqevent & seqev)
 {
     long tick_s, tick_w, tick_f, pos;
     seqev.convert_x(seqev.m_current_x, tick_s);
@@ -87,6 +88,10 @@ FruitySeqEventInput::updateMousePtr (seqevent & seqev)
  *          -#  Otherwise, select the notes and events.
  *          -#  If no events selected in the end, undo the selection.
  *  -   Ctrl-left button:
+ *
+ * \return
+ *      Returns true if a modification was made.  It used to return true all
+ *      the time.
  */
 
 bool
@@ -96,7 +101,9 @@ FruitySeqEventInput::on_button_press_event
     seqevent & seqev
 )
 {
+    bool result = false;
     long tick_s, tick_w;
+    seqev.grab_focus();                 // NEW: I think this would be helpful
     seqev.convert_x(c_eventevent_x, tick_w);
     seqev.m_drop_x = seqev.m_current_x = int(a_ev->x) + seqev.m_scroll_offset_x;
     seqev.m_old.x = seqev.m_old.y = seqev.m_old.width = seqev.m_old.height = 0;
@@ -107,6 +114,7 @@ FruitySeqEventInput::on_button_press_event
         seqev.m_paste = false;
         seqev.m_seq.push_undo();
         seqev.m_seq.paste_selected(tick_s, 0);
+        result = true;
     }
     else
     {
@@ -139,6 +147,7 @@ FruitySeqEventInput::on_button_press_event
                 {
                     seqev.m_seq.push_undo();
                     seqev.drop_event(tick_s);
+                    result = true;
                 }
             }
             else                                    /* selecting */
@@ -261,9 +270,10 @@ FruitySeqEventInput::on_button_press_event
                     seqev.m_status, seqev.m_cc, sequence::e_remove_one
                 );
                 seqev.redraw();
-                seqev.m_seq.set_dirty();
+                seqev.m_seq.set_dirty();                /* take note!       */
+                result = true;
             }
-            else                                        /* selecting          */
+            else                                        /* selecting        */
             {
                 if (! (a_ev->state & SEQ64_CONTROL_MASK))
                     seqev.m_seq.unselect();             /* nothing selected   */
@@ -274,12 +284,16 @@ FruitySeqEventInput::on_button_press_event
     }
     seqev.update_pixmap();              /* if they clicked, something changed */
     seqev.draw_pixmap_on_window();
-    updateMousePtr(seqev);
-    return true;
+    update_mouse_pointer(seqev);
+    return result;                      // true;
 }
 
 /**
  *  Implements the on-button-release callback.
+ *
+ * \return
+ *      Returns true if a modification was made.  It used to return true all
+ *      the time.
  */
 
 bool
@@ -289,6 +303,7 @@ FruitySeqEventInput::on_button_release_event
     seqevent & seqev
 )
 {
+    bool result = false;
     long tick_s;
     long tick_f;
     seqev.grab_focus();
@@ -320,6 +335,7 @@ FruitySeqEventInput::on_button_release_event
             seqev.m_paste = false; /* convert deltas into screen coordinates */
             seqev.m_seq.push_undo();
             seqev.m_seq.paste_selected(t_s, 0);
+            result = true;
         }
 
         /* ctrl-left click but without movement - select a note */
@@ -358,6 +374,7 @@ FruitySeqEventInput::on_button_release_event
             seqev.convert_x(delta_x, delta_tick);  /* deltas to screen coords */
             seqev.m_seq.push_undo();               /* still moves events      */
             seqev.m_seq.move_selected_notes(delta_tick, 0);
+            result = true;
         }
     }
     if (SEQ64_CLICK_LEFT_RIGHT(a_ev->button))
@@ -383,20 +400,26 @@ FruitySeqEventInput::on_button_release_event
     seqev.m_seq.unpaint_all();
     seqev.update_pixmap();              /* if they clicked, something changed */
     seqev.draw_pixmap_on_window();
-    updateMousePtr(seqev);
-    return true;
+    update_mouse_pointer(seqev);
+    return result;                      // true;
 }
 
 /**
  *  Implements the on-motion-notify callback.
+ *
+ * \return
+ *      Returns true if a modification occurred, and sets the perform modified
+ *      flag based on that result.
  */
 
 bool
 FruitySeqEventInput::on_motion_notify_event
 (
-    GdkEventMotion * a_ev, seqevent & seqev
+    GdkEventMotion * a_ev,
+    seqevent & seqev
 )
 {
+    bool result = false;
     long tick = 0;
     seqev.m_current_x = (int) a_ev->x  + seqev.m_scroll_offset_x;
     if (seqev.m_moving_init)
@@ -404,9 +427,11 @@ FruitySeqEventInput::on_motion_notify_event
         seqev.m_moving_init = false;
         seqev.m_moving = true;
     }
-    updateMousePtr(seqev);      /* context sensitive mouse pointer... */
+    update_mouse_pointer(seqev);      /* context sensitive mouse pointer... */
 
-    /* ctrl-left click drag on selected note(s) starts a copy/unselect/paste */
+    /*
+     * Ctrl-left click drag on selected note(s) starts a copy/unselect/paste.
+     */
 
     if (m_is_drag_pasting_start)
     {
@@ -422,6 +447,7 @@ FruitySeqEventInput::on_motion_notify_event
             seqev.snap_x(seqev.m_current_x);
 
         seqev.draw_selection_on_window();
+        // result = true;
     }
     if (seqev.m_painting)
     {
@@ -429,8 +455,9 @@ FruitySeqEventInput::on_motion_notify_event
         seqev.snap_x(seqev.m_current_x);
         seqev.convert_x(seqev.m_current_x, tick);
         seqev.drop_event(tick);
+        result = true;
     }
-    return true;
+    return result;
 }
 
 }           // namespace seq64

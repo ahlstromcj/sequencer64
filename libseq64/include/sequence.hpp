@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-16
+ * \updates       2015-11-22
  * \license       GNU GPLv2 or above
  *
  *  The functions add_list_var() and add_long_list() have been replaced by
@@ -147,69 +147,114 @@ private:
     triggers m_triggers;
     EventStack m_events_undo;
     EventStack m_events_redo;
-
-    /* markers */
-
     event_list::iterator m_iterator_play;
     event_list::iterator m_iterator_draw;
 
-    /* contains the proper MIDI channel */
+    /**
+     *  Contains the proper MIDI channel for this sequence.
+     */
 
     char m_midi_channel;
+
+    /**
+     *  Contains the proper MIDI bus number for this sequence.
+     */
+
     char m_bus;
 
-    /* song playback mode mute */
+    /**
+     *  Provides a flag for the song playback mode muting.
+     */
 
     bool m_song_mute;
 
-    /* polyphonic step edit note counter */
+    /**
+     *  Provides a member to hold the polyphonic step-edit note counter.
+     */
 
     int m_notes_on;
 
-    /* outputs to sequence to this Bus on midichannel */
+    /**
+     *  Provides the master MIDI buss which handles the output of the sequence
+     *  to the proper buss and MIDI channel.
+     */
 
     mastermidibus * m_masterbus;
 
-    /* map for noteon, used when muting, to shut off current messages */
+    /**
+     *  Provides a "map" for Note On events.  It is used when muting, to shut
+     *  off the notes that are playing.
+     */
 
     int m_playing_notes[SEQ64_MIDI_NOTES_MAX];
 
-    /* states */
+    /**
+     *  Indicates if the sequence was playing.
+     */
 
     bool m_was_playing;
 
-    /*
-     * True if the sequence playback is in progress.
+    /**
+     *  True if sequence playback currently is in progress for this sequence.
      */
 
     bool m_playing;
+
+    /**
+     *  True if sequence recording currently is in progress for this sequence.
+     */
+
     bool m_recording;
+
     bool m_quantized_rec;
     bool m_thru;
     bool m_queued;
 
-    /* flag indicates that contents has changed from a recording */
+    /**
+     *  These flags indicate that the content of the sequence has changed due
+     *  to recording, editing, performance management, or even (?) a
+     *  name change.
+     */
 
     bool m_dirty_main;
     bool m_dirty_edit;
     bool m_dirty_perf;
     bool m_dirty_names;
 
-    /* anything editing currently ? */
+    /**
+     *  Indicates that the sequence is currently being edited.
+     */
 
     bool m_editing;
+
     bool m_raise;
 
-    /* named sequence */
+    /**
+     *  Provides the name/title for the sequence.
+     */
 
     std::string m_name;
 
-    /* where were we */
+    /**
+     *  These members manage where we are in the playing of this sequence,
+     *  including triggering.
+     */
 
     long m_last_tick;
     long m_queued_tick;
     long m_trigger_offset;
+
+    /**
+     *  This constant provides ...?
+     */
+
     const int m_maxbeats;
+
+    /**
+     *  Holds the PPQN value for this sequence, so that we don't have to rely
+     *  on a global constant value.
+     */
+
     int m_ppqn;
 
     /**
@@ -220,12 +265,19 @@ private:
 
     int m_seq_number;
 
-    /* length of sequence in pulses should be powers of two in bars */
+    /**
+     *  Holds the length of the sequence in pulse.
+     *  This value should be a power of two when used as a bar unit.
+     */
 
     long m_length;
+
     long m_snap_tick;
 
-    /* these are just for the editor to mark things in correct time */
+    /**
+     *  These members are used by the sequence editor to mark things in
+     *  correct time on the user-interface.
+     */
 
     long m_time_beats_per_measure;
     long m_time_beat_width;
@@ -480,6 +532,15 @@ public:
         return m_queued_tick;
     }
 
+    /**
+     *  Helper function for perform.
+     */
+
+    bool check_queued_tick (long tick) const
+    {
+        return get_queued() && (get_queued_tick() <= tick);
+    }
+
     void set_recording (bool);
 
     /**
@@ -625,7 +686,7 @@ public:
         unsigned char d0, unsigned char d1, bool paint = false
     );
     void stream_event (event * ev);
-    void change_event_data_range
+    bool change_event_data_range
     (
         long tick_s, long tick_f,
         unsigned char status, unsigned char cc,

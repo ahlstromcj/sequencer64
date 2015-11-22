@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-14
+ * \updates       2015-11-22
  * \license       GNU GPLv2 or above
  *
  */
@@ -65,25 +65,28 @@ Seq24SeqRollInput::set_adding (bool adding, seqroll & sroll)
 /**
  *  Implements the on-button-press event handling for the Seq24 style of
  *  mouse interaction.
+ *
+ *  This function now uses the needs_update flag to determine if the perform
+ *  object should modify().
+ *
+ * \return
+ *      Returns the value of needs_update.  It used to return only true.
  */
 
 bool
 Seq24SeqRollInput::on_button_press_event
 (
-    GdkEventButton * a_ev,
+    GdkEventButton * ev,
     seqroll & sroll
 )
 {
     int norm_x, norm_y, snapped_x, snapped_y;
     sroll.grab_focus();
-    snapped_x = norm_x = int(a_ev->x + sroll.m_scroll_offset_x);
-    snapped_y = norm_y = int(a_ev->y + sroll.m_scroll_offset_y);
+    snapped_x = norm_x = int(ev->x + sroll.m_scroll_offset_x);
+    snapped_y = norm_y = int(ev->y + sroll.m_scroll_offset_y);
     sroll.snap_x(snapped_x);
     sroll.snap_y(snapped_y);
-    sroll.set_current_drop_y(snapped_y);    /* y is always snapped */
-
-    /* reset box for dirty redraw spot */
-
+    sroll.set_current_drop_y(snapped_y);            /* y is always snapped */
     sroll.m_old.x = sroll.m_old.y = sroll.m_old.width = sroll.m_old.height = 0;
 
     bool needs_update = false;
@@ -100,7 +103,7 @@ Seq24SeqRollInput::on_button_press_event
     else
     {
         int numsel;
-        if (SEQ64_CLICK_LEFT_MIDDLE(a_ev->button))      /* either button */
+        if (SEQ64_CLICK_LEFT_MIDDLE(ev->button))      /* either button */
         {
             /*
              * Set the selection for normal x, then turn x,y in to tick,note.
@@ -146,7 +149,7 @@ Seq24SeqRollInput::on_button_press_event
                     )
                 )
                 {
-                    if (! (a_ev->state & SEQ64_CONTROL_MASK))
+                    if (! (ev->state & SEQ64_CONTROL_MASK))
                         sroll.m_seq.unselect();
 
                     numsel = sroll.m_seq.select_note_events
@@ -156,7 +159,7 @@ Seq24SeqRollInput::on_button_press_event
                     );
                     if (numsel == 0) /* none selected, start selection box */
                     {
-                        if (SEQ64_CLICK_LEFT(a_ev->button))
+                        if (SEQ64_CLICK_LEFT(ev->button))
                             sroll.m_selecting = true;
                     }
                     else
@@ -178,8 +181,8 @@ Seq24SeqRollInput::on_button_press_event
 
                     if
                     (
-                        SEQ64_CLICK_LEFT(a_ev->button) &&
-                        ! (a_ev->state & SEQ64_CONTROL_MASK)
+                        SEQ64_CLICK_LEFT(ev->button) &&
+                        ! (ev->state & SEQ64_CONTROL_MASK)
                     )
                     {
                         sroll.m_moving_init = true;
@@ -214,7 +217,7 @@ Seq24SeqRollInput::on_button_press_event
                      * Middle mouse button, or left-ctrl-click (2-button mice)
                      */
 
-                    if (SEQ64_CLICK_CTRL_LEFT_MIDDLE(a_ev->button, a_ev->state))
+                    if (SEQ64_CLICK_CTRL_LEFT_MIDDLE(ev->button, ev->state))
                     {
                         sroll.m_growing = true;         /* moving, normal x  */
                         sroll.m_seq.get_selected_box    /* selected elements */
@@ -233,24 +236,31 @@ Seq24SeqRollInput::on_button_press_event
                 }
             }
         }
-        if (SEQ64_CLICK_RIGHT(a_ev->button))
+        if (SEQ64_CLICK_RIGHT(ev->button))
             set_adding(true, sroll);
     }
     if (needs_update)               /* if they clicked, something changed */
         sroll.m_seq.set_dirty();    /* redraw_events();                   */
 
-    return true;
+    return needs_update;
 }
 
 /**
  *  Implements the on-button-release event handling for the Seq24 style of
  *  mouse interaction.
+ *
+ *  This function now uses the needs_update flag to determine if the perform
+ *  object should modify().
+ *
+ * \return
+ *      Returns the value of needs_update.  It used to return only true.
  */
 
 bool
 Seq24SeqRollInput::on_button_release_event
 (
-    GdkEventButton * a_ev, seqroll & sroll
+    GdkEventButton * ev,
+    seqroll & sroll
 )
 {
     long tick_s;
@@ -258,8 +268,8 @@ Seq24SeqRollInput::on_button_release_event
     int note_h;
     int note_l;
     bool needs_update = false;
-    sroll.m_current_x = int(a_ev->x + sroll.m_scroll_offset_x);
-    sroll.m_current_y = int(a_ev->y + sroll.m_scroll_offset_y);
+    sroll.m_current_x = int(ev->x + sroll.m_scroll_offset_x);
+    sroll.m_current_y = int(ev->y + sroll.m_scroll_offset_y);
     sroll.snap_y(sroll.m_current_y);
     if (sroll.m_moving)
         sroll.snap_x(sroll.m_current_x);
@@ -268,7 +278,7 @@ Seq24SeqRollInput::on_button_release_event
     int delta_y = sroll.m_current_y - sroll.m_drop_y;
     long delta_tick;
     int delta_note;
-    if (SEQ64_CLICK_LEFT(a_ev->button))
+    if (SEQ64_CLICK_LEFT(ev->button))
     {
         if (sroll.m_selecting)
         {
@@ -306,7 +316,7 @@ Seq24SeqRollInput::on_button_release_event
             needs_update = true;
         }
     }
-    if (SEQ64_CLICK_LEFT_MIDDLE(a_ev->button))
+    if (SEQ64_CLICK_LEFT_MIDDLE(ev->button))
     {
         if (sroll.m_growing)
         {
@@ -314,7 +324,7 @@ Seq24SeqRollInput::on_button_release_event
 
             sroll.convert_xy(delta_x, delta_y, delta_tick, delta_note);
             sroll.m_seq.push_undo();
-            if (a_ev->state & SEQ64_SHIFT_MASK)
+            if (ev->state & SEQ64_SHIFT_MASK)
                 sroll.m_seq.stretch_selected(delta_tick);
             else
                 sroll.m_seq.grow_selected(delta_tick);
@@ -322,7 +332,7 @@ Seq24SeqRollInput::on_button_release_event
             needs_update = true;
         }
     }
-    if (SEQ64_CLICK_RIGHT(a_ev->button))
+    if (SEQ64_CLICK_RIGHT(ev->button))
     {
         /*
          * Minor new feature.  If the Super (Mod4, Windows) key is
@@ -335,7 +345,7 @@ Seq24SeqRollInput::on_button_release_event
 
         bool addmode_exit = ! rc().allow_mod4_mode();
         if (! addmode_exit)
-            addmode_exit = ! (a_ev->state & SEQ64_MOD4_MASK); /* Mod4 held? */
+            addmode_exit = ! (ev->state & SEQ64_MOD4_MASK); /* Mod4 held? */
 
         if (addmode_exit)
             set_adding(false, sroll);
@@ -350,21 +360,22 @@ Seq24SeqRollInput::on_button_release_event
     if (needs_update)               /* if they clicked, something changed   */
         sroll.m_seq.set_dirty();    /* redraw_events();                     */
 
-    return true;
+    return needs_update;
 }
 
 /**
- *  Implements the on-motion-notify event handling for the Seq24 style of
- *  mouse interaction.
+ *      Seq24-style on-motion mouse interaction.
  */
 
 bool Seq24SeqRollInput::on_motion_notify_event
 (
-    GdkEventMotion * a_ev, seqroll & sroll
+    GdkEventMotion * ev,
+    seqroll & sroll
 )
 {
-    sroll.m_current_x = int(a_ev->x + sroll.m_scroll_offset_x);
-    sroll.m_current_y = int(a_ev->y + sroll.m_scroll_offset_y);
+    bool result = false;
+    sroll.m_current_x = int(ev->x + sroll.m_scroll_offset_x);
+    sroll.m_current_y = int(ev->y + sroll.m_scroll_offset_y);
     if (sroll.m_moving_init)
     {
         sroll.m_moving_init = false;
@@ -382,16 +393,16 @@ bool Seq24SeqRollInput::on_motion_notify_event
             sroll.snap_x(sroll.m_current_x);
 
         sroll.draw_selection_on_window();
-        return true;
+        result = true;
     }
-    if (sroll.m_painting)
+    else if (sroll.m_painting)
     {
         sroll.snap_x(sroll.m_current_x);
         sroll.convert_xy(sroll.m_current_x, sroll.m_current_y, tick, note);
         sroll.m_seq.add_note(tick, sroll.m_note_length - 2, note, true);
-        return true;
+        result = true;
     }
-    return false;
+    return result;
 }
 
 }           // namespace seq64

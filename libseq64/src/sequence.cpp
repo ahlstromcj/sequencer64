@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-16
+ * \updates       2015-11-22
  * \license       GNU GPLv2 or above
  *
  *  The functionality of this class also includes handling some of the
@@ -1332,26 +1332,29 @@ sequence::paste_selected (long tick, int note)
  *
  *  Something is not quite right; to be investigated.
  *
- *  \param tick_s
+ * \param tick_s
  *      Provides the starting tick value.
  *
- *  \param tick_f
+ * \param tick_f
  *      Provides the ending tick value.
  *
- *  \param status
+ * \param status
  *      Provides the event status that is to be changed.
  *
- *  \param cc
+ * \param cc
  *      Provides the event control value.
  *
- *  \param data_s
+ * \param data_s
  *      Provides the starting data value.
  *
- *  \param data_f
+ * \param data_f
  *      Provides the finishing data value.
+ *
+ * \return
+ *      Returns true if the data was changed.
  */
 
-void
+bool
 sequence::change_event_data_range
 (
     long tick_s, long tick_f,
@@ -1360,6 +1363,7 @@ sequence::change_event_data_range
 )
 {
     automutex locker(m_mutex);
+    bool result = false;
     bool have_selection = false;
     if (get_num_selected_events(status, cc))
         have_selection = true;
@@ -1404,31 +1408,16 @@ sequence::change_event_data_range
              * channel-message status byte.
              */
 
-#if 0
-            if (status == EVENT_NOTE_ON)
-                d1 = newdata;
-            else if (status == EVENT_NOTE_OFF)
-                d1 = newdata;
-            else if (status == EVENT_AFTERTOUCH)
-                d1 = newdata;
-            else if (status == EVENT_CONTROL_CHANGE)
-                d1 = newdata;
-            else if (status == EVENT_PROGRAM_CHANGE)
-                d0 = newdata;                           /* d0 == new patch   */
-            else if (status == EVENT_CHANNEL_PRESSURE)
-                d0 = newdata;                           /* d0 == pressure    */
-            else if (status == EVENT_PITCH_WHEEL)
-                d1 = newdata;
-#endif
-
             if (event::is_one_byte_msg(status))         /* patch or pressure */
                 d0 = newdata;
             else
                 d1 = newdata;
 
             er.set_data(d0, d1);
+            result = true;
         }
     }
+    return result;
 }
 
 /**
@@ -1967,7 +1956,6 @@ sequence::set_trigger_offset (long trigger_offset)
 
 /**
  *  Splits the trigger given by the parameter into two triggers.
- *
  *  This is the private overload of split_trigger.
  *
  * \threadsafe

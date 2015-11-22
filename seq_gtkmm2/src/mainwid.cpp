@@ -849,6 +849,9 @@ mainwid::on_button_release_event (GdkEventButton * p)
  *  another sequence and if the current sequence is not in edit mode.
  *  This function moves the selected pattern to another pattern slot.
  *
+ *  The perform::delete_sequence() function sets the perform modification
+ *  flag.
+ *
  * \param p
  *      Provides the parameters of the button event.
  *

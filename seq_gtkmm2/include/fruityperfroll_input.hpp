@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-01
+ * \updates       2015-11-22
  * \license       GNU GPLv2 or above
  *
  *  Note that this class doesn't handle keystrokes (directly), so even if the
@@ -74,9 +74,9 @@ public:
 
 private:
 
-    void updateMousePtr (perfroll & roll);
-    void on_left_button_pressed (GdkEventButton * a_ev, perfroll & roll);
-    void on_right_button_pressed (GdkEventButton * a_ev, perfroll & roll);
+    void update_mouse_pointer (perfroll & roll);
+    bool on_left_button_pressed (GdkEventButton * a_ev, perfroll & roll);
+    bool on_right_button_pressed (GdkEventButton * a_ev, perfroll & roll);
 };
 
 }           // namespace seq64

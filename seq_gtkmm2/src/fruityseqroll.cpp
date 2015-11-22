@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-31
+ * \updates       2015-11-22
  * \license       GNU GPLv2 or above
  *
  *  This module handles "fruity" interactions only in the piano roll
@@ -36,6 +36,7 @@
 
 #include "click.hpp"                    /* SEQ64_CLICK_LEFT(), etc.    */
 #include "event.hpp"
+#include "perform.hpp"
 #include "seqroll.hpp"
 #include "sequence.hpp"
 #include "seqkeys.hpp"
@@ -64,7 +65,7 @@ clamp (long val, long low, long hi)
  */
 
 void
-FruitySeqRollInput::updateMousePtr (seqroll & sroll)
+FruitySeqRollInput::update_mouse_pointer (seqroll & sroll)
 {
     long drop_tick;
     int drop_note;
@@ -102,13 +103,16 @@ FruitySeqRollInput::updateMousePtr (seqroll & sroll)
 
 /**
  *  Implements the fruity on-button-press callback.
+ *
+ *  This function now uses the needs_update flag to determine if the perform
+ *  object should modify().
+ *
+ * \return
+ *      Returns the value of needs_update.  It used to return only true.
  */
 
 bool
-FruitySeqRollInput::on_button_press_event
-(
-    GdkEventButton * a_ev, seqroll & sroll
-)
+FruitySeqRollInput::on_button_press_event (GdkEventButton * a_ev, seqroll & sroll)
 {
     long tick_s;
     long tick_f;
@@ -435,18 +439,18 @@ FruitySeqRollInput::on_button_press_event
             }
         }
     }
-
-    updateMousePtr(sroll);          /* context sensative mouse pointer... */
-
+    update_mouse_pointer(sroll);    /* context sensative mouse pointer... */
     if (needs_update)               /* if they clicked, something changed */
-    {
-        sroll.m_seq.set_dirty(); // redraw_events();
-    }
-    return true;
+        sroll.m_seq.set_dirty();    /* redraw_events();                   */
+
+    return needs_update;
 }
 
 /**
  *  Implements the fruity handling for the on-button-release event.
+ *
+ * \return
+ *      Returns the value of needs_update.  It used to return only true.
  */
 
 bool
@@ -602,15 +606,18 @@ FruitySeqRollInput::on_button_release_event
     sroll.m_moving_init = false;
     sroll.m_painting = false;
     sroll.m_seq.unpaint_all();
-    updateMousePtr(sroll);              /* context sensitive mouse pointer... */
+    update_mouse_pointer(sroll);        /* context sensitive mouse pointer... */
     if (needs_update)                   /* if they clicked, something changed */
         sroll.m_seq.set_dirty();        /* redraw_events();                   */
 
-    return true;
+    return needs_update;
 }
 
 /**
  *  Implements the fruity handling for the on-motion-notify event.
+ *
+ * \return
+ *      Returns the value of needs_update.
  */
 
 bool
@@ -619,6 +626,7 @@ FruitySeqRollInput::on_motion_notify_event
     GdkEventMotion * a_ev, seqroll & sroll
 )
 {
+    bool result = false;
     sroll.m_current_x = int(a_ev->x  + sroll.m_scroll_offset_x);
     sroll.m_current_y = int(a_ev->y  + sroll.m_scroll_offset_y);
     if (sroll.m_moving_init)
@@ -626,7 +634,7 @@ FruitySeqRollInput::on_motion_notify_event
         sroll.m_moving_init = false;
         sroll.m_moving = true;
     }
-    updateMousePtr(sroll);              /* context sensitive mouse pointer... */
+    update_mouse_pointer(sroll);    /* context sensitive mouse pointer... */
 
     /*
      * Ctrl-left click drag on selected note(s) starts a copy/unselect/paste.
@@ -638,8 +646,8 @@ FruitySeqRollInput::on_motion_notify_event
     (
         sroll.m_is_drag_pasting_start &&
         (
-            6 <= abs(m_drag_paste_start_pos[0] - (long) a_ev->x) ||
-            6 <= abs(m_drag_paste_start_pos[1] - (long) a_ev->y)
+            6 <= abs(m_drag_paste_start_pos[0] - long(a_ev->x)) ||
+            6 <= abs(m_drag_paste_start_pos[1] - long(a_ev->y))
         )
     )
     {
@@ -661,16 +669,16 @@ FruitySeqRollInput::on_motion_notify_event
             sroll.snap_x(sroll.m_current_x);
 
         sroll.draw_selection_on_window();
-        return true;
+        result = true;
     }
-    if (sroll.m_painting)
+    else if (sroll.m_painting)
     {
         sroll.snap_x(sroll.m_current_x);
         sroll.convert_xy(sroll.current_x(), sroll.current_y(), tick, note);
         sroll.m_seq.add_note(tick, sroll.m_note_length - 2, note, true);
-        return true;
+        result = true;
     }
-    if (m_erase_painting)
+    else if (m_erase_painting)
     {
         sroll.convert_xy(sroll.current_x(), sroll.current_y(), tick, note);
         if
@@ -691,7 +699,7 @@ FruitySeqRollInput::on_motion_notify_event
             sroll.m_seq.set_dirty();
         }
     }
-    return false;
+    return result;
 }
 
 }           // namespace seq64

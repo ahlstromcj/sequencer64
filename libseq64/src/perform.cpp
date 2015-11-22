@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-21
+ * \updates       2015-11-22
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -217,7 +217,12 @@ perform::deinit_jack ()
 
 /**
  *  Clears all of the patterns/sequences.  The mainwnd module calls this
- *  function.  Note that perform now handles the "is-modified" flag.
+ *  function.  Note that perform now handles the "is modified" flag on behalf
+ *  of all external objects, to centralize and simplify the dirtying of a MIDI
+ *  tune.
+ *
+ *  Anything else to clear?  What about all the other sequence flags?  We can
+ *  beef up delete_sequence() for them, at some point.
  */
 
 void
@@ -226,13 +231,13 @@ perform::clear_all ()
     reset_sequences();
     for (int i = 0; i < m_sequence_max; i++)
         if (is_active(i))
-            delete_sequence(i);
+            delete_sequence(i);             /* can set "is modified"    */
 
-    std::string e;                          /* an empty string  */
+    std::string e;                          /* an empty string          */
     for (int i = 0; i < m_max_sets; i++)
         set_screen_set_notepad(i, e);
 
-    is_modified(false);                     /* new!             */
+    is_modified(false);                     /* new, we start afresh     */
 }
 
 /**
@@ -293,9 +298,9 @@ perform::get_group_mute_state (int gtrack)
 }
 
 /**
- *  Makes some checks and sets the group mute flag, m_mute_group_selected, to
- *  the clamped g-mute value, if all goes well (no null sequences are
- *  encountered).
+ *  Makes some checks on all of the active sequences, and sets the group mute
+ *  flag, m_mute_group_selected, to the clamped g-mute value.  Null sequences
+ *  are no longer flagged as an error, they are just ignored.
  *
  * \param a_g_mute
  *      The number of the mute group, clamped to be between 0 and
@@ -308,27 +313,15 @@ perform::select_group_mute (int a_g_mute)
     int gmute = clamp_track(a_g_mute);
     int j = gmute * m_seqs_in_set;
     int k = m_playscreen_offset;
-    bool error = false;
     if (m_mode_group_learn)
     {
         for (int i = 0; i < m_seqs_in_set; i++)
         {
             if (is_active(i+k))
-            {
-                if (not_nullptr_assert(m_seqs[i+k], "select_group_mute"))
-                {
-                    m_mute_group[i+j] = m_seqs[i+k]->get_playing();
-                }
-                else
-                {
-                    error = true;
-                    break;
-                }
-            }
+                m_mute_group[i+j] = m_seqs[i+k]->get_playing();
         }
     }
-    if (! error)
-        m_mute_group_selected = gmute;
+    m_mute_group_selected = gmute;
 }
 
 /**
@@ -362,7 +355,8 @@ perform::unset_mode_group_learn ()
 /**
  *  Makes some checks and sets the group mute flag, m_mute_group_selected, to
  *  the clamped g-mute value, if all goes well (no null sequences are
- *  encountered).
+ *  encountered).  Null sequences are no longer flagged as an error, they are
+ *  just ignored.
  *
  *  Will need to study this one more closely.
  *
@@ -383,24 +377,13 @@ perform::select_mute_group (int a_group)
      */
 
     m_mute_group_selected = group;
-    bool error = false;
     for (int i = 0; i < m_seqs_in_set; i++)
     {
         if ((m_mode_group_learn) && (is_active(i + k)))
-        {
-            if (not_nullptr_assert(m_seqs[i+k], "select_mute_group"))
-                m_mute_group[i+j] = m_seqs[i+k]->get_playing();
-            else
-            {
-                error = true;
-                break;
-            }
-        }
-        if (! error)
-        {
-            int index = mute_group_offset(i);
-            m_tracks_mute_state[i] = m_mute_group[index];
-        }
+            m_mute_group[i+j] = m_seqs[i+k]->get_playing();
+
+        int index = mute_group_offset(i);
+        m_tracks_mute_state[i] = m_mute_group[index];
     }
 }
 
@@ -434,9 +417,9 @@ perform::mute_group_tracks ()
  */
 
 void
-perform::select_and_mute_group (int a_g_group)
+perform::select_and_mute_group (int group)
 {
-    select_mute_group(a_g_group);
+    select_mute_group(group);
     mute_group_tracks();
 }
 
@@ -455,7 +438,8 @@ perform::mute_all_tracks ()
 }
 
 /**
- *  Set the left marker at the given tick.
+ *  Set the left marker at the given tick.  We let the caller determine is
+ *  this setting is a modification.
  *
  * \param tick
  *      The tick (MIDI pulse) at which to place the left tick.  If the left
@@ -481,7 +465,8 @@ perform::set_left_tick (long tick, bool setstart)
 
 /**
  *  Set the right marker at the given tick.  This setting is made only if the
- *  tick parameter is at or beyond the first measure.
+ *  tick parameter is at or beyond the first measure.  We let the caller
+ *  determine is this setting is a modification.
  *
  * \param tick
  *      The tick (MIDI pulse) at which to place the right tick.  If less than
@@ -510,7 +495,8 @@ perform::set_right_tick (long tick, bool setstart)
 }
 
 /**
- *  True if a sequence is empty and should be highlighted.
+ *  True if a sequence is empty and should be highlighted.  This setting is
+ *  currently a build-time option, but could be made a run-time option later.
  */
 
 #if SEQ64_HIGHLIGHT_EMPTY_SEQS
@@ -532,9 +518,12 @@ perform::highlight (const sequence & /*seq*/) const
 #endif
 
 /**
- *  A private helper function for add_sequence().  It is common code
- *  and using it prevents inconsistences.  It assumes values have already been
- *  checked.
+ *  A private helper function for add_sequence() and new_sequence().  It is
+ *  common code and using it prevents inconsistences.  It assumes values have
+ *  already been checked.  It does not set the "is modified" flag, since
+ *  adding a sequence by loading a MIDI file should not set it.  Compare
+ *  new_sequence(), used by mainwid and seqmenu, with add_sequence(), used by
+ *  midifile.
  *
  * \param seq
  *      The pointer to the pattern/sequence to add.
@@ -542,37 +531,59 @@ perform::highlight (const sequence & /*seq*/) const
  * \param seqnum
  *      The sequence number of the pattern to be added.
  *
+ * \return
+ *      Returns true if a sequence was removed, or the sequence was
+ *      successfully add.  In other words, if a real change in sequence
+ *      pointers occurred.  It is up to the caller to decide if the change
+ *      warrants setting the "is modified" flag.
  */
 
-void
+bool
 perform::install_sequence (sequence * seq, int seqnum)
 {
+    bool result = false;
     if (not_nullptr(m_seqs[seqnum]))
     {
         errprintf("install_sequence(): m_seqs[%d] not null\n", seqnum);
         delete m_seqs[seqnum];
         m_seqs[seqnum] = nullptr;
-        --m_sequence_count;
+        if (m_sequence_count > 0)
+            --m_sequence_count;
+        else
+            errprint("install_sequence(): sequence counter already 0");
+
+        result = true;                  /* a modification occurred  */
     }
     m_seqs[seqnum] = seq;
     if (not_nullptr(seq))
     {
         set_active(seqnum, true);
         ++m_sequence_count;
+        result = true;                  /* a modification occurred  */
     }
+    return result;
 }
 
 /**
  *  Adds a pattern/sequence pointer to the list of patterns.  No check is made
- *  for a null pointer.
+ *  for a null pointer, but the install_sequence() call will make sure such a
+ *  pointer is officially logged.
  *
  *  This function checks for the preferred sequence number.  This is the
  *  number that was specified by the Sequence Number meta-event for the
  *  current track.  If the preferred sequence number is in the valid range (0
  *  to m_sequence_max) and it is not active, add it and activate it.
- *
  *  Otherwise, iterate through all patterns from prefnum to m_sequence_max and
- *  add and activate the first one that is not active, and then quit.
+ *  add and activate the first one that is not active, and then finish.
+ *
+ *  Finally, note that this function is used only by midifile, when reading in
+ *  a MIDI song.  Therefore, the "is modified" flag is <i> not </i> set by
+ *  this function; loading a sequence from a file is not a modification that
+ *  should lead to a prompt for saving the file later.
+ *
+ * \todo
+ *      Shouldn't we wrap around the sequence list if we can't find an empty
+ *      sequence slot after prefnum?
  *
  * \warning
  *      The logic of the if-statement in this function was such that \a
@@ -600,13 +611,76 @@ perform::add_sequence (sequence * seq, int prefnum)
         {
             if (! is_active(i))
             {
-                install_sequence(seq, i);
+                (void) install_sequence(seq, i);
                 break;
             }
         }
     }
     else
-        install_sequence(seq, prefnum);
+        (void) install_sequence(seq, prefnum);
+}
+
+/**
+ *  Creates a new pattern/sequence for the given slot, and sets the new
+ *  pattern's master MIDI bus address.  Then it activates the pattern [this is
+ *  done in the install_sequence() function].  It doesn't deal with thrown
+ *  exceptions.
+ *
+ *  This function is called by the seqmenu and mainwid objects to create a new
+ *  sequence.  We now pass this sequence to install_sequence() to better
+ *  handle potential memory leakage, and to make sure the sequence gets
+ *  counted.  Also, adding a new sequence from the user-interface is a
+ *  significant modification, so the "is modified" flag gtes set.
+ *
+ * \param seq
+ *      The prospective sequence number of the new sequence.
+ */
+
+void
+perform::new_sequence (int seq)
+{
+    if (is_seq_valid(seq))
+    {
+        sequence * seqptr = new sequence();     /* std::nothrow */
+        if (not_nullptr(seqptr))
+        {
+            if (install_sequence(seqptr, seq))
+            {
+                if (is_mseq_valid(seq))
+                {
+                    m_seqs[seq]->set_master_midi_bus(&m_master_bus);
+                    modify();
+                }
+            }
+        }
+    }
+}
+
+/**
+ *  Deletes a pattern/sequence by number.  We now also solidify the deletion
+ *  by setting the pointer to null after deletion, so it will blow up if
+ *  accidentally accessed.  The final act is to raise the "is modified" flag,
+ *  since deleting an existing sequence is always a significant modification.
+ *
+ *  Now, this function obviously sets the "active" flag for the sequence to
+ *  false.  But there are a few other flags that are not modified; shouldn't
+ *  we also falsify them here?
+ */
+
+void
+perform::delete_sequence (int seq)
+{
+    if (is_mseq_valid(seq))                         /* check for null, etc. */
+    {
+        set_active(seq, false);
+        if (! m_seqs[seq]->get_editing())           /* clarify this!        */
+        {
+            m_seqs[seq]->set_playing(false);
+            delete m_seqs[seq];
+            m_seqs[seq] = nullptr;
+            modify();                               /* it is dirty, man     */
+        }
+    }
 }
 
 /**
@@ -625,13 +699,13 @@ perform::add_sequence (sequence * seq, int prefnum)
 void
 perform::set_active (int seq, bool active)
 {
-    if (is_seq_valid(seq))
+    if (is_mseq_valid(seq))                     // is_seq_valid(seq)
     {
         if (m_seqs_active[seq] && ! active)
             set_was_active(seq);
 
         m_seqs_active[seq] = active;
-        if (active && not_nullptr(m_seqs[seq]))
+        if (active)                             // && not_nullptr(m_seqs[seq]))
         {
             m_seqs[seq]->number(seq);
             if (m_seqs[seq]->name().empty())
@@ -642,7 +716,6 @@ perform::set_active (int seq, bool active)
 
 /**
  *  Sets was-active flags:  main, edit, perf, and names.
- *
  *  Why do we need this routine?
  *
  * \param seq
@@ -793,17 +866,17 @@ perform::is_dirty_names (int seq)
  *  The value is set only if neither JACK nor this performance object are
  *  running.
  *
- *  It's not clear that we need to set the is-modified flag just because we
- *  changed the screen set.
+ *  It's not clear that we need to set the "is modified" flag just because we
+ *  changed the beats per minute.  Does this setting get saved to the MIDI
+ *  file?
  */
 
 void
 perform::set_beats_per_minute (int bpm)
 {
-    if (bpm < SEQ64_MINIMUM_BPM)        /*  20 */
+    if (bpm < SEQ64_MINIMUM_BPM)            /*  20 */
         bpm = SEQ64_MINIMUM_BPM;
-
-    if (bpm > SEQ64_MAXIMUM_BPM)        /* 500 */
+    else if (bpm > SEQ64_MAXIMUM_BPM)       /* 500 */
         bpm = SEQ64_MAXIMUM_BPM;
 
     /**
@@ -860,8 +933,7 @@ perform::is_seq_valid (int seq) const
         {
             fprintf
             (
-                stderr, "is_seq_valid(): seq = %d > %d\n",
-                seq, m_sequence_max-1
+                stderr, "is_seq_valid(): seq = %d > %d\n", seq, m_sequence_max-1
             );
         }
         return false;
@@ -897,32 +969,9 @@ perform::is_mseq_valid (int seq) const
     {
         result = not_nullptr(m_seqs[seq]);
         if (! result && m_seqs_active[seq])
-        {
             errprintf("is_mseq_valid(): m_seqs[%d] is null\n", seq);
-        }
     }
     return result;
-}
-
-/**
- *  Deletes a pattern/sequence by number.  We now also solidify the deletion
- *  by setting the pointer to null after deletion, so it will blow up if
- *  accidentally accessed.
- */
-
-void
-perform::delete_sequence (int seq)
-{
-    if (is_mseq_valid(seq))
-    {
-        set_active(seq, false);
-        if (! m_seqs[seq]->get_editing())
-        {
-            m_seqs[seq]->set_playing(false);
-            delete m_seqs[seq];
-            m_seqs[seq] = nullptr;
-        }
-    }
 }
 
 /**
@@ -937,24 +986,6 @@ perform::is_sequence_in_edit (int seq)
         return m_seqs[seq]->get_editing();
     else
         return false;
-}
-
-/**
- *  Creates a new pattern/sequence for the given slot, and sets the new
- *  pattern's master MIDI bus address.  Then it activates the pattern.
- *
- *  It doesn't deal with thrown exceptions.
- */
-
-void
-perform::new_sequence (int seq)
-{
-    if (is_seq_valid(seq))
-    {
-        m_seqs[seq] = new sequence();
-        m_seqs[seq]->set_master_midi_bus(&m_master_bus);
-        set_active(seq, true);
-    }
 }
 
 /**
@@ -1053,7 +1084,7 @@ perform::get_screen_set_notepad (int screenset) const
  *  Sets the m_screenset value (the index or ID of the current screen
  *  set).
  *
- *  It's not clear that we need to set the is-modified flag just because we
+ *  It's not clear that we need to set the "is modified" flag just because we
  *  changed the screen set.
  *
  * \param ss
@@ -1085,7 +1116,8 @@ perform::set_screenset (int ss)
  *
  *  For each value up to m_seqs_in_set (32), the index of the current
  *  sequence in the currently screen set (m_playing_screen) is obtained.
- *  If it is active and the sequence actually exists
+ *  If it is active and the sequence actually exists.  Null sequences are no
+ *  longer flagged as an error, they are just ignored.
  *
  *  Modifies m_playing_screen, and mutes the group tracks.
  */
@@ -1097,42 +1129,15 @@ perform::set_playing_screenset ()
      * This loop could be changed to avoid the multiplication.
      */
 
-    bool error = false;
     for (int j, i = 0; i < m_seqs_in_set; i++)
     {
         j = i + m_playscreen_offset;    /* m_playing_screen * m_seqs_in_set */
         if (is_active(j))
-        {
-            /*
-             * Not a big fan of asserts in production code, since they do
-             * nothing; we still want to have a way to report null
-             * pointers in production code, and keep going.  So we wrote
-             * a function in the easy_macros module to do it.  Please note
-             * that enabling debug mode with these asserts really slows
-             * down the loading of a MIDI file, well, at least when using
-             * std::list and sorting.
-             */
-
-            if (not_nullptr_assert(m_seqs[j], "set_playing_screenset"))
-                m_tracks_mute_state[i] = m_seqs[j]->get_playing();
-            else
-            {
-                error = true;
-                break;
-            }
-        }
+            m_tracks_mute_state[i] = m_seqs[j]->get_playing();
     }
-
-    /*
-     * Do we need to avoid doing this if the pointer is null? No.
-     */
-
-    if (! error)
-    {
-        m_playing_screen = m_screenset;
-        m_playscreen_offset = m_playing_screen * m_seqs_in_set;
-        mute_group_tracks();
-    }
+    m_playing_screen = m_screenset;
+    m_playscreen_offset = m_playing_screen * m_seqs_in_set;
+    mute_group_tracks();
 }
 
 /**
@@ -1153,30 +1158,22 @@ perform::play (long tick)
     {
         if (is_active(i))
         {
-            if (not_nullptr_assert(m_seqs[i], "play"))
+            /*
+             * Skip sequences that have no real MIDI events.
+             */
+
+            if (m_seqs[i]->event_count() == 0)
+                continue;
+
+            if (m_seqs[i]->check_queued_tick(tick))
             {
-                /*
-                 * Check the number of events.  This doesn't stop the progress
-                 * bar update for an empty sequence, though.
-                 */
-
-                if (m_seqs[i]->event_count() == 0)      /* new 2015-08-23 */
-                    continue;
-
-                if
+                m_seqs[i]->play
                 (
-                    m_seqs[i]->get_queued() &&
-                    m_seqs[i]->get_queued_tick() <= tick
-                )
-                {
-                    m_seqs[i]->play
-                    (
-                        m_seqs[i]->get_queued_tick() - 1, m_playback_mode
-                    );
-                    m_seqs[i]->toggle_playing();
-                }
-                m_seqs[i]->play(tick, m_playback_mode);
+                    m_seqs[i]->get_queued_tick() - 1, m_playback_mode
+                );
+                m_seqs[i]->toggle_playing();
             }
+            m_seqs[i]->play(tick, m_playback_mode);
         }
     }
     m_master_bus.flush();               /* flush the MIDI buss  */
@@ -1195,10 +1192,7 @@ perform::set_orig_ticks (long tick)
     for (int i = 0; i < m_sequence_max; i++)
     {
         if (is_active(i))
-        {
-            if (not_nullptr_assert(m_seqs[i], "set_orig_ticks"))
-                m_seqs[i]->set_orig_tick(tick);
-        }
+            m_seqs[i]->set_orig_tick(tick);
     }
 }
 
@@ -1214,10 +1208,7 @@ void
 perform::clear_sequence_triggers (int seq)
 {
     if (is_active(seq))
-    {
-        if (not_nullptr_assert(m_seqs[seq], "clear_sequence_triggers"))
-            m_seqs[seq]->clear_triggers();
-    }
+        m_seqs[seq]->clear_triggers();
 }
 
 /**
@@ -1230,7 +1221,7 @@ perform::clear_sequence_triggers (int seq)
  */
 
 void
-perform::move_triggers (bool a_direction)
+perform::move_triggers (bool direction)
 {
     if (m_left_tick < m_right_tick)
     {
@@ -1238,17 +1229,15 @@ perform::move_triggers (bool a_direction)
         for (int i = 0; i < m_sequence_max; i++)
         {
             if (is_active(i))
-            {
-                if (not_nullptr_assert(m_seqs[i], "move_triggers"))
-                    m_seqs[i]->move_triggers(m_left_tick, distance, a_direction);
-            }
+                m_seqs[i]->move_triggers(m_left_tick, distance, direction);
         }
     }
 }
 
 /**
  *  For every active sequence, call that sequence's push_trigger_undo()
- *  function.  Too bad we cannot yet keep track of all the undoes.
+ *  function.  Too bad we cannot yet keep track of all the undoes for the sake
+ *  of properly handling the "is modified" flag.
  */
 
 void
@@ -1257,10 +1246,7 @@ perform::push_trigger_undo ()
     for (int i = 0; i < m_sequence_max; i++)
     {
         if (is_active(i))
-        {
-            if (not_nullptr_assert(m_seqs[i], "push_trigger_undo"))
-                m_seqs[i]->push_trigger_undo();
-        }
+            m_seqs[i]->push_trigger_undo();
     }
 }
 
@@ -1275,10 +1261,7 @@ perform::pop_trigger_undo ()
     for (int i = 0; i < m_sequence_max; i++)
     {
         if (is_active(i))
-        {
-            if (not_nullptr_assert(m_seqs[i], "pop_trigger_undo"))
-                m_seqs[i]->pop_trigger_undo();
-        }
+            m_seqs[i]->pop_trigger_undo();
     }
 }
 
@@ -1300,10 +1283,7 @@ perform::copy_triggers ()
         for (int i = 0; i < m_sequence_max; i++)
         {
             if (is_active(i))
-            {
-                if (not_nullptr_assert(m_seqs[i], "copy_triggers"))
-                    m_seqs[i]->copy_triggers(m_left_tick, distance);
-            }
+                m_seqs[i]->copy_triggers(m_left_tick, distance);
         }
     }
 }
@@ -1419,10 +1399,7 @@ perform::off_sequences ()
     for (int i = 0; i < m_sequence_max; i++)
     {
         if (is_active(i))
-        {
-            if (not_nullptr_assert(m_seqs[i], "off_sequences"))
-                m_seqs[i]->set_playing(false);
-        }
+            m_seqs[i]->set_playing(false);
     }
 }
 
@@ -1437,10 +1414,7 @@ perform::all_notes_off ()
     for (int i = 0; i < m_sequence_max; i++)
     {
         if (is_active(i))
-        {
-            if (not_nullptr_assert(m_seqs[i], "all_notes_off"))
-                m_seqs[i]->off_playing_notes();
-        }
+            m_seqs[i]->off_playing_notes();
     }
     m_master_bus.flush();              // flush the MIDI buss
 }
@@ -1460,15 +1434,12 @@ perform::reset_sequences ()
     {
         if (is_active(i))
         {
-            if (not_nullptr_assert(m_seqs[i], "reset_sequences"))
-            {
-                bool state = m_seqs[i]->get_playing();
-                m_seqs[i]->off_playing_notes();
-                m_seqs[i]->set_playing(false);
-                m_seqs[i]->zero_markers();
-                if (! m_playback_mode)
-                    m_seqs[i]->set_playing(state);
-            }
+            bool state = m_seqs[i]->get_playing();
+            m_seqs[i]->off_playing_notes();
+            m_seqs[i]->set_playing(false);
+            m_seqs[i]->zero_markers();
+            if (! m_playback_mode)
+                m_seqs[i]->set_playing(state);
         }
     }
     m_master_bus.flush();              // flush the MIDI bus
@@ -1513,6 +1484,18 @@ perform::launch_input_thread ()
 }
 
 /**
+ *  Convenience function for perfroll's split-trigger functionality.
+ */
+
+void
+perform::split_trigger (int seqnum, long tick)
+{
+    push_trigger_undo();
+    get_sequence(seqnum)->split_trigger(tick);
+    modify();
+}
+
+/**
  *  Locates the largest trigger value among the active sequences.
  *
  * \return
@@ -1529,12 +1512,9 @@ perform::get_max_trigger ()
     {
         if (is_active(i))
         {
-            if (not_nullptr_assert(m_seqs[i], "get_max_trigger"))
-            {
-                long t = m_seqs[i]->get_max_trigger();
-                if (t > result)
-                    result = t;
-            }
+            long t = m_seqs[i]->get_max_trigger();
+            if (t > result)
+                result = t;
         }
     }
     return result;
@@ -1545,38 +1525,35 @@ perform::get_max_trigger ()
  */
 
 void *
-output_thread_func (void * a_pef)
+output_thread_func (void * myperf)
 {
-    perform * p = (perform *) a_pef;
-    if (not_nullptr_assert(p, "output_thread_func"))
+    perform * p = (perform *) myperf;
+    if (rc().priority())
     {
-        if (rc().priority())
-        {
-            struct sched_param schp;
-            memset(&schp, 0, sizeof(sched_param));
-            schp.sched_priority = 1;
+        struct sched_param schp;
+        memset(&schp, 0, sizeof(sched_param));
+        schp.sched_priority = 1;
 
 #ifndef PLATFORM_WINDOWS            // Not in MinGW RCB
-            if (sched_setscheduler(0, SCHED_FIFO, &schp) != 0)
-            {
-                errprint
-                (
-                    "output_thread_func: couldn't sched_setscheduler"
-                    " (FIFO), need to be root."
-                );
-                pthread_exit(0);
-            }
-#endif
+        if (sched_setscheduler(0, SCHED_FIFO, &schp) != 0)
+        {
+            errprint
+            (
+                "output_thread_func: couldn't sched_setscheduler"
+                " (FIFO), need to be root."
+            );
+            pthread_exit(0);
         }
-
-#ifdef PLATFORM_WINDOWS
-        timeBeginPeriod(1);
-        p->output_func();
-        timeEndPeriod(1);
-#else
-        p->output_func();
 #endif
     }
+
+#ifdef PLATFORM_WINDOWS
+    timeBeginPeriod(1);
+    p->output_func();
+    timeEndPeriod(1);
+#else
+    p->output_func();
+#endif
     return 0;
 }
 
@@ -1935,34 +1912,31 @@ perform::output_func ()
  */
 
 void *
-input_thread_func (void * a_pef)
+input_thread_func (void * myperf)
 {
-    perform * p = (perform *) a_pef;
-    if (not_nullptr_assert(p, "input_thread_func"))
+    perform * p = (perform *) myperf;
+    if (rc().priority())
     {
-        if (rc().priority())
-        {
-            struct sched_param schp;
-            memset(&schp, 0, sizeof(sched_param));
-            schp.sched_priority = 1;
+        struct sched_param schp;
+        memset(&schp, 0, sizeof(sched_param));
+        schp.sched_priority = 1;
 
 #ifndef PLATFORM_WINDOWS                // MinGW RCB
-            if (sched_setscheduler(0, SCHED_FIFO, &schp) != 0)
-            {
-                printf("input_thread_func: couldnt sched_setscheduler"
-                       " (FIFO), you need to be root.\n");
-                pthread_exit(0);
-            }
-#endif
+        if (sched_setscheduler(0, SCHED_FIFO, &schp) != 0)
+        {
+            printf("input_thread_func: couldnt sched_setscheduler"
+                   " (FIFO), you need to be root.\n");
+            pthread_exit(0);
         }
-#ifdef PLATFORM_WINDOWS
-        timeBeginPeriod(1);
-        p->input_func();
-        timeEndPeriod(1);
-#else
-        p->input_func();
 #endif
     }
+#ifdef PLATFORM_WINDOWS
+    timeBeginPeriod(1);
+    p->input_func();
+    timeEndPeriod(1);
+#else
+    p->input_func();
+#endif
     return 0;
 }
 
@@ -2203,7 +2177,8 @@ perform::input_func ()
 
 /**
  *  For all active patterns/sequences, this function gets the playing
- *  status and saves it in m_sequence_state[i].
+ *  status and saves it in m_sequence_state[i].  Inactive patterns get the
+ *  value set to false.
  */
 
 void
@@ -2212,10 +2187,7 @@ perform::save_playing_state ()
     for (int i = 0; i < m_sequence_max; i++)
     {
         if (is_active(i))
-        {
-            if (not_nullptr_assert(m_seqs[i], "save_playing_state"))
-                m_sequence_state[i] = m_seqs[i]->get_playing();
-        }
+            m_sequence_state[i] = m_seqs[i]->get_playing();
         else
             m_sequence_state[i] = false;
     }
@@ -2232,10 +2204,7 @@ perform::restore_playing_state ()
     for (int i = 0; i < m_sequence_max; i++)
     {
         if (is_active(i))
-        {
-            if (not_nullptr_assert(m_seqs[i], "restore_playing_state"))
-                m_seqs[i]->set_playing(m_sequence_state[i]);
-        }
+            m_seqs[i]->set_playing(m_sequence_state[i]);
     }
 }
 
@@ -2246,13 +2215,12 @@ perform::restore_playing_state ()
  */
 
 void
-perform::set_sequence_control_status (int a_status)
+perform::set_sequence_control_status (int status)
 {
-    if (a_status & c_status_snapshot)
-    {
+    if (status & c_status_snapshot)
         save_playing_state();
-    }
-    m_control_status |= a_status;
+
+    m_control_status |= status;
 }
 
 /**
@@ -2262,13 +2230,12 @@ perform::set_sequence_control_status (int a_status)
  */
 
 void
-perform::unset_sequence_control_status (int a_status)
+perform::unset_sequence_control_status (int status)
 {
-    if (a_status & c_status_snapshot)
-    {
+    if (status & c_status_snapshot)
         restore_playing_state();
-    }
-    m_control_status &= (~a_status);
+
+    m_control_status &= (~status);
 }
 
 /**
@@ -2280,26 +2247,50 @@ perform::sequence_playing_toggle (int sequence)
 {
     if (is_active(sequence))
     {
-        if (not_nullptr_assert(m_seqs[sequence], "sequence_playing_toggle"))
+        if (m_control_status & c_status_queue)
         {
-            if (m_control_status & c_status_queue)
+            m_seqs[sequence]->toggle_queued();
+        }
+        else
+        {
+            if (m_control_status & c_status_replace)
             {
-                m_seqs[sequence]->toggle_queued();
+                unset_sequence_control_status(c_status_replace);
+                off_sequences();
             }
-            else
-            {
-                if (m_control_status & c_status_replace)
-                {
-                    unset_sequence_control_status(c_status_replace);
-                    off_sequences();
-                }
-                m_seqs[sequence]->toggle_playing();
-            }
+            m_seqs[sequence]->toggle_playing();
         }
     }
 }
 
 /**
+ *  A helper function for determining if the mode group is in force,
+ *  the playing screenset is the same as the current screenset, and the sequence
+ *  is in the range of the playing screenset.
+ *
+ * \param seq
+ *      Provides the index of the desired sequence.
+ *
+ * \return
+ *      Returns true if the sequence adheres to the conditions noted above.
+ */
+
+bool
+perform::seq_in_playing_screen (int seq)
+{
+    int next_offset = m_playscreen_offset + m_seqs_in_set;
+    return
+    (
+        m_mode_group && (m_playing_screen == m_screenset) &&
+        (seq >= m_playscreen_offset) && (seq < next_offset)
+    );
+}
+
+/**
+ *  Turn off the playing of a sequence, if it is active.
+ *
+ * \param seq
+ *      The number of the sequence to be turned on.
  *
  */
 
@@ -2308,37 +2299,24 @@ perform::sequence_playing_on (int seq)
 {
     if (is_active(seq))
     {
-        int next_offset = m_playscreen_offset + m_seqs_in_set;
-        if
-        (
-            m_mode_group && (m_playing_screen == m_screenset) &&
-            (seq >= m_playscreen_offset) && (seq < next_offset)
-        )
-        {
+        if (seq_in_playing_screen(seq))
             m_tracks_mute_state[seq - m_playscreen_offset] = true;
-        }
-        if (not_nullptr_assert(m_seqs[seq], "sequence_playing_on"))
+
+        bool queued = m_seqs[seq]->get_queued();
+        if (! m_seqs[seq]->get_playing())
         {
-            if (! m_seqs[seq]->get_playing())
+            if (m_control_status & c_status_queue)
             {
-                if (m_control_status & c_status_queue)
-                {
-                    if (! m_seqs[seq]->get_queued())
-                        m_seqs[seq]->toggle_queued();
-                }
-                else
-                    m_seqs[seq]->set_playing(true);
+                if (! queued)
+                    m_seqs[seq]->toggle_queued();
             }
             else
-            {
-                if
-                (   m_seqs[seq]->get_queued() &&
-                    (m_control_status & c_status_queue)
-                )
-                {
-                    m_seqs[seq]->toggle_queued();
-                }
-            }
+                m_seqs[seq]->set_playing(true);
+        }
+        else
+        {
+            if (queued && (m_control_status & c_status_queue))
+                m_seqs[seq]->toggle_queued();
         }
     }
 }
@@ -2347,7 +2325,7 @@ perform::sequence_playing_on (int seq)
  *  Turn off the playing of a sequence, if it is active.
  *
  * \param seq
- *      The number of the seq to be turned off.
+ *      The number of the sequence to be turned off.
  */
 
 void
@@ -2355,95 +2333,26 @@ perform::sequence_playing_off (int seq)
 {
     if (is_active(seq))
     {
-        int next_offset = m_playscreen_offset + m_seqs_in_set;
-        if
-        (
-            m_mode_group && (m_playing_screen == m_screenset) &&
-            (seq >= m_playscreen_offset) && (seq < next_offset)
-        )
+        if (seq_in_playing_screen(seq))
+            m_tracks_mute_state[seq - m_playscreen_offset] = false;
+
+        bool queued = m_seqs[seq]->get_queued();
+        if (m_seqs[seq]->get_playing())
         {
-            m_tracks_mute_state[seq-m_playing_screen * m_seqs_in_set] =
-               false;
-        }
-        if (not_nullptr_assert(m_seqs[seq], "sequence_playing_off"))
-        {
-            bool queued = m_seqs[seq]->get_queued();
-            if (m_seqs[seq]->get_playing())
+            if (m_control_status & c_status_queue)
             {
-                if (m_control_status & c_status_queue)
-                {
-                    if (! queued)
-                        m_seqs[seq]->toggle_queued();
-                }
-                else
-                    m_seqs[seq]->set_playing(false);
-            }
-            else
-            {
-                if (queued && (m_control_status & c_status_queue))
+                if (! queued)
                     m_seqs[seq]->toggle_queued();
             }
+            else
+                m_seqs[seq]->set_playing(false);
+        }
+        else
+        {
+            if (queued && (m_control_status & c_status_queue))
+                m_seqs[seq]->toggle_queued();
         }
     }
-}
-
-/**
- *  Pass-along function for keys().set_all_key_events.
- */
-
-void
-perform::set_all_key_events ()
-{
-    keys().set_all_key_events();
-}
-
-/**
- *  Pass-along function for keys().set_all_key_events.
- */
-
-void
-perform::set_all_key_groups ()
-{
-    keys().set_all_key_groups();
-}
-
-/**
- *  At construction time, this function sets up one keycode and one event
- *  slot.
- *
- *  It is called 32 times, corresponding to the pattern/sequence slots in
- *  the Patterns window.
- *
- *  It first removes the given key-code from the regular and reverse
- *  slot-maps.  Then it removes the sequence-slot from the regular and
- *  reverse slot-maps.
- *
- *  Finally, it adds the sequence-slot with a key value of key-code, and
- *  adds the key-code with a value of sequence-slot.
- *
- *  Why are we erasing four items instead of just two?
- */
-
-void
-perform::set_key_event (unsigned int keycode, long sequence_slot)
-{
-    keys().set_key_event(keycode, sequence_slot);
-}
-
-/**
- *  At construction time, this function sets up one keycode and one group
- *  slot.
- *
- *  It is called 32 times, corresponding the pattern/sequence slots in the
- *  Patterns window.
- *
- *  Compare it to the set_key_events() function.
- */
-
-void
-perform::set_key_group (unsigned int keycode, long group_slot)
-{
-    keys().set_key_group(keycode, group_slot);
 }
 
 /*
@@ -2611,6 +2520,11 @@ perform::mainwnd_key_event (const keystroke & k)
  *  Provided for perfroll::on_key_press_event() and
  *  perfroll::on_key_release_event() to call.
  *
+ *  The "is modified" flag is raised if something is deleted, but we cannot
+ *  yet handle the case where we undo all the changes.  So, for now,
+ *  we play it safe with the user, even if the user gets annoyed because he
+ *  knows that he undid all the changes.
+ *
  * \return
  *      Returns true if the key was handled.
  */
@@ -2627,6 +2541,7 @@ perform::perfroll_key_event (const keystroke & k, int drop_sequence)
             {
                 push_trigger_undo();
                 get_sequence(drop_sequence)->del_selected_trigger();
+                modify();
                 result = true;
             }
             else if (k.mod_control())            // SEQ64_CONTROL_MASK
@@ -2635,6 +2550,7 @@ perform::perfroll_key_event (const keystroke & k, int drop_sequence)
                 {
                     push_trigger_undo();
                     get_sequence(drop_sequence)->cut_selected_trigger();
+                    modify();
                     result = true;
                 }
                 else if (k.is_letter('c'))                      /* copy     */
@@ -2646,6 +2562,7 @@ perform::perfroll_key_event (const keystroke & k, int drop_sequence)
                 {
                     push_trigger_undo();
                     get_sequence(drop_sequence)->paste_trigger();
+                    modify();
                     result = true;
                 }
                 else if (k.is_letter('z'))                      /* undo     */
@@ -2669,3 +2586,4 @@ perform::perfroll_key_event (const keystroke & k, int drop_sequence)
  *
  * vim: sw=4 ts=4 wm=4 et ft=cpp
  */
+

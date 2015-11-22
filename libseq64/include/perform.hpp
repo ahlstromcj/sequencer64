@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-21
+ * \updates       2015-11-22
  * \license       GNU GPLv2 or above
  *
  *  This class has way too many members.
@@ -176,10 +176,15 @@ private:
     int m_playscreen_offset;
 
     /**
-     *  Provides a vector of patterns/sequences.
+     *  Provides a "vector" of patterns/sequences.
+     *
+     * \todo
+     *      First, make the sequence array a vector, and second, put allof
+     *      these flags into a structure and access those members indirectly.
      */
 
     sequence * m_seqs[c_max_sequence];
+
     bool m_seqs_active[c_max_sequence];
     bool m_was_active_main[c_max_sequence];
     bool m_was_active_edit[c_max_sequence];
@@ -296,10 +301,16 @@ private:
 
     /**
      *  A replacement for the c_max_sets constant.  Again, currently set to
-     *  the old value, which is used in hard-wired array sizes.
+     *  the old value, which is used in hard-wired array sizes.  To make it
+     *  variable will require a move from arrays to vectors.
      */
 
     int m_max_sets;
+
+    /**
+     *  Keeps track of created sequences, whether or not they are active.
+     *  Used by the install_sequence() function.
+     */
 
     int m_sequence_count;
 
@@ -319,7 +330,15 @@ private:
 
     bool m_is_modified;
 
+    /**
+     *  A condition variable to protect...
+     */
+
     condition_var m_condition_var;
+
+    /**
+     *  A wrapper object for the JACK support of this application.
+     */
 
 #ifdef SEQ64_JACK_SUPPORT
     jack_assistant m_jack_asst;         // implements most of the JACK stuff
@@ -466,8 +485,10 @@ public:
     void init_jack ();
     void deinit_jack ();
 
-    void add_sequence (sequence * seq, int perf);
-    void delete_sequence (int seq);
+    void new_sequence (int seq);                    /* seqmenu & mainwid    */
+    void add_sequence (sequence * seq, int perf);   /* midifile             */
+    void delete_sequence (int seq);                 /* seqmenu & mainwid    */
+
     bool is_sequence_in_edit (int seq);
     void clear_sequence_triggers (int seq);
 
@@ -524,6 +545,8 @@ public:
     void copy_triggers ();
     void push_trigger_undo ();
     void pop_trigger_undo ();
+    void split_trigger (int seqnum, long tick);
+    long get_max_trigger ();
 
     /**
      *  Convenience function for perfedit's collapse functionality.
@@ -656,7 +679,6 @@ public:
     bool is_dirty_edit (int seq);
     bool is_dirty_perf (int seq);
     bool is_dirty_names (int seq);
-    void new_sequence (int seq);
 
     /**
      *  Checks the pattern/sequence for activity.
@@ -667,16 +689,17 @@ public:
      *
      * \param seq
      *      The pattern number.  It is checked for invalidity.  This can
-     *      lead to "too many" (i.e. redundant) checks.
+     *      lead to "too many" (i.e. redundant) checks, but we're trying to
+     *      centralize such checks in this function.
      *
      * \return
-     *      Returns the value of the active-flag, or false if the pattern was
-     *      invalid.
+     *      Returns the value of the active-flag, or false if the sequence was
+     *      invalid or null.
      */
 
     bool is_active (int seq)
     {
-        return is_seq_valid(seq) ? m_seqs_active[seq] : false ;
+        return is_mseq_valid(seq) ? m_seqs_active[seq] : false ;
     }
 
     /**
@@ -725,7 +748,6 @@ public:
     void mute_all_tracks ();
     void output_func ();
     void input_func ();
-    long get_max_trigger ();
 
     /**
      *  Calculates the offset into the screen sets.
@@ -947,8 +969,12 @@ public:
 
 private:
 
+    bool seq_in_playing_screen (int seq);
+
     /**
      * \setter m_is_modified
+     *      This setter is private.  The modify() setter, which is public, can
+     *      only set m_is_motified to true.
      */
 
     void is_modified (bool flag)
@@ -973,7 +999,7 @@ private:
     }
 
     /**
-     *  Checks the screenset against c_max_sets.
+     *  Checks the screenset against m_max_sets.
      *
      * \param screenset
      *      The prospective screenset value.
@@ -985,7 +1011,7 @@ private:
 
     bool is_screenset_valid (int screenset) const
     {
-        return screenset >= 0 && screenset < c_max_sets;
+        return screenset >= 0 && screenset < m_max_sets;
     }
 
     /**
@@ -1018,14 +1044,54 @@ private:
 
     bool is_seq_valid (int seq) const;
     bool is_mseq_valid (int seq) const;
-    void install_sequence (sequence * seq, int seqnum); // add_sequence() helper
+    bool install_sequence (sequence * seq, int seqnum);
     void inner_start (bool state);
     void inner_stop ();
-    void set_all_key_events ();
-    void set_all_key_groups ();
-    void set_key_event (unsigned int keycode, long sequence_slot);
-    void set_key_group (unsigned int keycode, long group_slot);
     int clamp_track (int track) const;
+
+    /**
+     *  Pass-along function for keys().set_all_key_events.
+     */
+
+    void set_all_key_events ()
+    {
+        keys().set_all_key_events();
+    }
+
+    /**
+     *  Pass-along function for keys().set_all_key_events.
+     */
+
+    void set_all_key_groups ()
+    {
+        keys().set_all_key_groups();
+    }
+
+    /**
+     *  At construction time, this function sets up one keycode and one event
+     *  slot.  It is called 32 times, corresponding to the pattern/sequence
+     *  slots in the Patterns window.  It first removes the given key-code
+     *  from the regular and reverse slot-maps.  Then it removes the
+     *  sequence-slot from the regular and reverse slot-maps.  Finally, it
+     *  adds the sequence-slot with a key value of key-code, and adds the
+     *  key-code with a value of sequence-slot.
+     */
+
+    void set_key_event (unsigned int keycode, long sequence_slot)
+    {
+        keys().set_key_event(keycode, sequence_slot);
+    }
+
+    /**
+     *  At construction time, this function sets up one keycode and one group
+     *  slot.  It is called 32 times, corresponding the pattern/sequence slots
+     *  in the Patterns window.  Compare it to the set_key_events() function.
+     */
+
+    void set_key_group (unsigned int keycode, long group_slot)
+    {
+        keys().set_key_group(keycode, group_slot);
+    }
 
 };
 

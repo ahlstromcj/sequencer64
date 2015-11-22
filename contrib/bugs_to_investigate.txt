@@ -1,21 +1,29 @@
 Bugs and Upgrade Ideas
 Chris Ahlstrom
-2015-10-27 to 2015-11-21
+2015-10-27 to 2015-11-22
 
 In no particular order...  "y" means "in progress", and "x" means it is
 basically done.
 
 -  Is the --pass-sysex command actually supported?  Seq24 threw SysEx away.
 -  Add support for SMF (MIDI format) 0.
--  Moving a pattern doesn't turn on any dirty bit, to allow an opportunity for
-   saving.  This is a legacy bug.  Tighten up the is-dirty handling for all
-   dialogs:
+y  Tighten up the is-dirty handling for all dialogs:
+   x  Moving a pattern doesn't turn on any dirty bit, to allow an opportunity
+      for saving.  This is a legacy bug.
    y  Can the perform object control all the is-dirty stuff?  All the GUIs use
       it!
-   -  Just opening a sequence should not dirty the song.
-   -  Cutting out sequences should cause a query for saving.
-   -  Moving a pattern to another slot should dirty the song.
+   x  Just opening a sequence should not dirty the song.
+   -  Just selecting some notes should not dirty the song.
+   x  Cutting out sequences should cause a query for saving.
+   x  Moving a pattern to another slot should dirty the song.
+   x  Opening the performance editor should not dirty the song.
+   -  Just entering draw mode in the performance editor should not
+      dirty the song.
    -  Modifications in the performance editor should dirty the song.
+      x  Moving a segment, whether by arrows or mouse.
+      x  Adding a segment, whether by keys or mouse.
+      x  Deleting a segment, whether by keys or mouse.
+-  Implement, if possible, the "p/x" keys in the seqevent area.
 -  Just noticed that snap is saved.  Where?  Is this a bug or a feature?
 -  How about a horizontal split for the perfroll?
    BETTER: A second song editor view for reference?  This idea seems like it can

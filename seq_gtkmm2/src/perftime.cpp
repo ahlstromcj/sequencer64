@@ -330,8 +330,10 @@ perftime::key_press_event (GdkEventKey * ev)
         }
     }
     if (result)
+    {
         queue_draw();
-
+        perf().modify();                                    /* flag it */
+    }
     return result;
 }
 

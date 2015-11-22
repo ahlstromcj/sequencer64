@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-13
+ * \updates       2015-11-22
  * \license       GNU GPLv2 or above
  *
  */
@@ -35,6 +35,7 @@
 #include "app_limits.h"                 /* SEQ64_SOLID_PIANOROLL_GRID   */
 #include "event.hpp"
 #include "gdk_basic_keys.h"
+#include "perform.hpp"
 #include "seqevent.hpp"
 #include "seqdata.hpp"
 #include "sequence.hpp"
@@ -291,10 +292,13 @@ seqevent::update_pixmap ()
 
 /**
  *  Draws events on the given drawable object.
+ *
+ * \param draw
+ *      The given drawable object.
  */
 
 void
-seqevent::draw_events_on (Glib::RefPtr<Gdk::Drawable> a_draw)
+seqevent::draw_events_on (Glib::RefPtr<Gdk::Drawable> draw)
 {
     long tick;
     int x;
@@ -311,13 +315,13 @@ seqevent::draw_events_on (Glib::RefPtr<Gdk::Drawable> a_draw)
             x = tick / m_zoom;              /* turn into screen coordinates */
             draw_rectangle
             (
-                a_draw, black(),
+                draw, black(),
                 x -  m_scroll_offset_x, (c_eventarea_y - c_eventevent_y) / 2,
                 c_eventevent_x, c_eventevent_y
             );
             draw_rectangle
             (
-                a_draw, selected ? orange() : white(),
+                draw, selected ? orange() : white(),
                 x -  m_scroll_offset_x + 1,
                 (c_eventarea_y - c_eventevent_y) / 2 + 1,
                 c_eventevent_x - 3, c_eventevent_y - 3
@@ -467,6 +471,30 @@ seqevent::snap_x (int & x)
 }
 
 /**
+ *  Drops (adds) an event at the given tick. It sets the first byte
+ *  properly for after-touch, program-change, channel-pressure, and
+ *  pitch-wheel.  The type of event is determined by m_status.
+ */
+
+void
+seqevent::drop_event (long a_tick)
+{
+    unsigned char status = m_status;
+    unsigned char d0 = m_cc;
+    unsigned char d1 = 0x40;
+    if (m_status == EVENT_AFTERTOUCH)
+        d0 = 0;
+    else if (m_status == EVENT_PROGRAM_CHANGE)
+        d0 = 0;                                     /* d0 == new patch */
+    else if (m_status == EVENT_CHANNEL_PRESSURE)
+        d0 = 0x40;                                  /* d0 == pressure */
+    else if (m_status == EVENT_PITCH_WHEEL)
+        d0 = 0;
+
+    m_seq.add_event(a_tick, status, d0, d1, true);
+}
+
+/**
  *  Implements the on-realize callback.  It calls the base-class version,
  *  and then allocates additional resource not allocated in the
  *  constructor.  Finally, it connects up the change_horz function.
@@ -531,7 +559,7 @@ seqevent::on_expose_event (GdkEventExpose * e)
 bool
 seqevent::on_button_press_event (GdkEventButton * a_ev)
 {
-    bool result;
+    bool result = false;
     interaction_method_t interactionmethod = rc().interaction_method();
     switch (interactionmethod)
     {
@@ -540,38 +568,17 @@ seqevent::on_button_press_event (GdkEventButton * a_ev)
         // break;              // removed the FALL THROUGH
 
     case e_seq24_interaction:
-        result = m_seq24_interaction.on_button_press_event(a_ev, *this);
-        // break;              // removed the FALL THROUGH
+        if (m_seq24_interaction.on_button_press_event(a_ev, *this))
+            result = true;
+        break;
 
     default:
-        result = false;
         break;
     }
+    if (result)
+        perf().modify();
+
     return result;
-}
-
-/**
- *  Drops (adds) an event at the given tick. It sets the first byte
- *  properly for after-touch, program-change, channel-pressure, and
- *  pitch-wheel.  The type of event is determined by m_status.
- */
-
-void
-seqevent::drop_event (long a_tick)
-{
-    unsigned char status = m_status;
-    unsigned char d0 = m_cc;
-    unsigned char d1 = 0x40;
-    if (m_status == EVENT_AFTERTOUCH)
-        d0 = 0;
-    else if (m_status == EVENT_PROGRAM_CHANGE)
-        d0 = 0;                                     /* d0 == new patch */
-    else if (m_status == EVENT_CHANNEL_PRESSURE)
-        d0 = 0x40;                                  /* d0 == pressure */
-    else if (m_status == EVENT_PITCH_WHEEL)
-        d0 = 0;
-
-    m_seq.add_event(a_tick, status, d0, d1, true);
 }
 
 /**
@@ -586,7 +593,7 @@ seqevent::drop_event (long a_tick)
 bool
 seqevent::on_button_release_event (GdkEventButton * a_ev)
 {
-    bool result;
+    bool result = false;
     interaction_method_t interactionmethod = rc().interaction_method();
     switch (interactionmethod)
     {
@@ -599,13 +606,16 @@ seqevent::on_button_release_event (GdkEventButton * a_ev)
          */
 
     case e_seq24_interaction:
-        result = m_seq24_interaction.on_button_release_event(a_ev, *this);
+        if (m_seq24_interaction.on_button_release_event(a_ev, *this))
+            result = true;
         break;
 
     default:
-        result = false;
         break;
     }
+    if (result)
+        perf().modify();
+
     return result;
 }
 
@@ -621,7 +631,7 @@ seqevent::on_button_release_event (GdkEventButton * a_ev)
 bool
 seqevent::on_motion_notify_event (GdkEventMotion * a_ev)
 {
-    bool result;
+    bool result = false;
     interaction_method_t interactionmethod = rc().interaction_method();
     switch (interactionmethod)
     {
@@ -634,13 +644,16 @@ seqevent::on_motion_notify_event (GdkEventMotion * a_ev)
          */
 
     case e_seq24_interaction:
-        result = m_seq24_interaction.on_motion_notify_event(a_ev, *this);
+        if (m_seq24_interaction.on_motion_notify_event(a_ev, *this))
+            result = true;
         break;
 
     default:
-        result = false;
         break;
     }
+    if (result)
+        perf().modify();
+
     return result;
 }
 
@@ -674,48 +687,72 @@ seqevent::on_focus_out_event (GdkEventFocus *)
  *  Ctrl-Z.
  *
  *  Would be nice to provide redo functionality via Ctrl-Y.  :-)
+ *
+ * \return
+ *      Returns true if an event was handled.  Only some of the handled events
+ *      also cause the perform modification flag to be set as a side-effect.
  */
 
 bool
-seqevent::on_key_press_event (GdkEventKey * a_p0)
+seqevent::on_key_press_event (GdkEventKey * ev)
 {
     bool result = false;
-    if (CAST_EQUIVALENT(a_p0->type, SEQ64_KEY_PRESS))
+    if (CAST_EQUIVALENT(ev->type, SEQ64_KEY_PRESS))
     {
-        if (a_p0->keyval ==  SEQ64_Delete || a_p0->keyval == SEQ64_BackSpace)
+        if (ev->keyval == SEQ64_Delete || ev->keyval == SEQ64_BackSpace)
         {
             m_seq.push_undo();
             m_seq.mark_selected();
             m_seq.remove_marked();
+            perf().modify();
             result = true;
         }
-        if (a_p0->state & SEQ64_CONTROL_MASK)
+        if (ev->state & SEQ64_CONTROL_MASK)
         {
-            if (a_p0->keyval == SEQ64_x || a_p0->keyval == SEQ64_X) /* cut */
+            if (ev->keyval == SEQ64_x || ev->keyval == SEQ64_X) /* cut */
             {
                 m_seq.copy_selected();
                 m_seq.mark_selected();
                 m_seq.remove_marked();
+                perf().modify();
                 result = true;
             }
-            if (a_p0->keyval == SEQ64_c || a_p0->keyval == SEQ64_C) /* copy */
+            if (ev->keyval == SEQ64_c || ev->keyval == SEQ64_C) /* copy */
             {
                 m_seq.copy_selected();
                 result = true;
             }
-            if (a_p0->keyval == SEQ64_v || a_p0->keyval == SEQ64_V) /* paste */
+            if (ev->keyval == SEQ64_v || ev->keyval == SEQ64_V) /* paste */
             {
                 start_paste();
+                perf().modify();
                 result = true;
             }
-            if (a_p0->keyval == SEQ64_z || a_p0->keyval == SEQ64_Z) /* Undo */
+            if (ev->keyval == SEQ64_z || ev->keyval == SEQ64_Z) /* Undo */
             {
+                /*
+                 * How to detect when all modifications are undone?
+                 */
+
                 m_seq.pop_undo();
                 result = true;
             }
         }
+        if (! result)
+        {
+            if (ev->keyval == SEQ64_p)
+            {
+                m_seq24_interaction.set_adding(true, *this);
+                result = true;
+            }
+            else if (ev->keyval == SEQ64_x)         /* "x-scape" the mode   */
+            {
+                m_seq24_interaction.set_adding(false, *this);
+                result = true;
+            }
+        }
     }
-    if (result)
+    if (result)                 
     {
         redraw();
         m_seq.set_dirty();

@@ -61,7 +61,7 @@ struct FruitySeqEventInput
         // Empty body
     }
 
-    void updateMousePtr (seqevent & ths);
+    void update_mouse_pointer (seqevent & ths);
     bool on_button_press_event (GdkEventButton * a_ev, seqevent & ths);
     bool on_button_release_event (GdkEventButton * a_ev, seqevent & ths);
     bool on_motion_notify_event (GdkEventMotion * a_ev, seqevent & ths);

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-21
+ * \updates       2015-11-22
  * \license       GNU GPLv2 or above
  *
  */
@@ -605,34 +605,19 @@ perfedit::on_key_press_event (GdkEventKey * ev)
          *  to both triggers.
          */
 
-        bool dont_toggle = PREFKEY(start) != PREFKEY(stop);
-        if
-        (
-            ev->keyval == PREFKEY(start) &&
-            (dont_toggle || ! perf().is_running())
-        )
+        bool notoggle = PREFKEY(start) != PREFKEY(stop);
+        if (ev->keyval == PREFKEY(start) && (notoggle || ! perf().is_running()))
         {
             start_playing();
             return true;
         }
-        if
-        (
-            ev->keyval == PREFKEY(stop) &&
-            (dont_toggle || perf().is_running())
-        )
+        if (ev->keyval == PREFKEY(stop) && (notoggle || perf().is_running()))
         {
             stop_playing();
             return true;
         }
-
-        if
-        (
-            ev->keyval == PREFKEY(start) ||
-            ev->keyval == PREFKEY(stop)
-        )
-        {
+        if (ev->keyval == PREFKEY(start) || ev->keyval == PREFKEY(stop))
             event_was_handled = true;
-        }
     }
 
 #ifdef USE_PERFTIME_KEYSTROKE_PROCESSING
@@ -650,3 +635,4 @@ perfedit::on_key_press_event (GdkEventKey * ev)
  *
  * vim: sw=4 ts=4 wm=4 et ft=cpp
  */
+

@@ -66,7 +66,7 @@ public:
         // Empty body
     }
 
-    void updateMousePtr (seqroll & ths);
+    void update_mouse_pointer (seqroll & ths);
 
 public:         // callbacks
 

@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-08-02
- * \updates       2015-10-31
+ * \updates       2015-11-22
  * \license       GNU GPLv2 or above
  *
  *  This code was extracted from seqevent to make that module more
@@ -67,6 +67,10 @@ Seq24SeqEventInput::set_adding (bool adding, seqevent & seqev)
 /**
  *  Implements the on-button-press event callback.  Set values for dragging,
  *  then reset the box that holds dirty redraw spot.  Then do the rest.
+ *
+ * \return
+ *      Returns true if a likely modification was made.  This function used to
+ *      return true all the time.
  */
 
 bool
@@ -76,13 +80,11 @@ Seq24SeqEventInput::on_button_press_event
     seqevent & seqev
 )
 {
+    bool result = false;
     long tick_s, tick_w;
     seqev.grab_focus();                 // NEW: I think this would be helpful
     seqev.convert_x(c_eventevent_x, tick_w);
     seqev.set_current_drop_x(int(a_ev->x + seqev.m_scroll_offset_x));
-
-    /* reset box for dirty redraw spot */
-
     seqev.m_old.x = seqev.m_old.y = seqev.m_old.width = seqev.m_old.height = 0;
     if (seqev.m_paste)
     {
@@ -91,6 +93,7 @@ Seq24SeqEventInput::on_button_press_event
         seqev.m_paste = false;
         seqev.m_seq.push_undo();
         seqev.m_seq.paste_selected(tick_s, 0);
+        result = true;
     }
     else
     {
@@ -119,6 +122,7 @@ Seq24SeqEventInput::on_button_press_event
                 {
                     seqev.m_seq.push_undo();
                     seqev.drop_event(tick_s);
+                    result = true;
                 }
             }
             else                                        /* selecting */
@@ -152,8 +156,7 @@ Seq24SeqEventInput::on_button_press_event
                     else
                     {
                         /**
-                         *  Needs update.
-                         *
+                         * Needs update.
                          * seqev.m_seq.unselect();  ???????
                          */
                     }
@@ -198,13 +201,17 @@ Seq24SeqEventInput::on_button_press_event
         if (SEQ64_CLICK_RIGHT(a_ev->button))
             set_adding(true, seqev);
     }
-    seqev.update_pixmap();          /* if they clicked, something changed */
+    seqev.update_pixmap();              /* if they clicked, something changed */
     seqev.draw_pixmap_on_window();
-    return true;
+    return result;                      // true;
 }
 
 /**
  *  Implements the on-button-release callback.
+ *
+ * \return
+ *      Returns true if a likely modification was made.  This function used to
+ *      return true all the time.
  */
 
 bool
@@ -214,6 +221,7 @@ Seq24SeqEventInput::on_button_release_event
     seqevent & seqev
 )
 {
+    bool result = false;
     long tick_s;
     long tick_f;
     seqev.grab_focus();
@@ -242,6 +250,7 @@ Seq24SeqEventInput::on_button_release_event
             seqev.convert_x(delta_x, delta_tick);   /* to screen coordinates */
             seqev.m_seq.push_undo();                /* still moves events    */
             seqev.m_seq.move_selected_notes(delta_tick, 0);
+            result = true;
         }
         set_adding(m_adding, seqev);
     }
@@ -257,19 +266,25 @@ Seq24SeqEventInput::on_button_release_event
     seqev.m_seq.unpaint_all();
     seqev.update_pixmap();                  /* if a click, something changed */
     seqev.draw_pixmap_on_window();
-    return true;
+    return result;                          // true;
 }
 
 /**
  *  Implements the on-motion-notify event.
+ *
+ * \return
+ *      Returns true if a likely modification was made.  This function used to
+ *      return true all the time.
  */
 
 bool
 Seq24SeqEventInput::on_motion_notify_event
 (
-   GdkEventMotion * a_ev, seqevent & seqev
+   GdkEventMotion * a_ev,
+   seqevent & seqev
 )
 {
+    bool result = false;
     long tick = 0;
     if (seqev.m_moving_init)
     {
@@ -290,8 +305,9 @@ Seq24SeqEventInput::on_motion_notify_event
         seqev.snap_x(seqev.m_current_x);
         seqev.convert_x(seqev.m_current_x, tick);
         seqev.drop_event(tick);
+        result = true;
     }
-    return true;
+    return result;
 }
 
 }           // namespace seq64

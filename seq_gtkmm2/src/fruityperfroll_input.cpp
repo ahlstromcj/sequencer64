@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-10-13
- * \updates       2015-11-04
+ * \updates       2015-11-22
  * \license       GNU GPLv2 or above
  *
  */
@@ -55,7 +55,7 @@ namespace seq64
  */
 
 void
-FruityPerfInput::updateMousePtr (perfroll & roll)
+FruityPerfInput::update_mouse_pointer (perfroll & roll)
 {
     perform & p = roll.perf();
     long droptick;
@@ -96,11 +96,15 @@ FruityPerfInput::updateMousePtr (perfroll & roll)
 
 /**
  *  Handles a button-press event in the Fruity manner.
+ *
+ * \return
+ *      Returns true if a modification occurred.
  */
 
 bool
 FruityPerfInput::on_button_press_event (GdkEventButton * a_ev, perfroll & roll)
 {
+    bool result = false;
     perform & p = roll.perf();
     roll.grab_focus();
     int & dropseq = roll.m_drop_sequence;       /* reference needed         */
@@ -119,11 +123,11 @@ FruityPerfInput::on_button_press_event (GdkEventButton * a_ev, perfroll & roll)
     );
     if (SEQ64_CLICK_LEFT(a_ev->button))
     {
-        on_left_button_pressed(a_ev, roll);
+        result = on_left_button_pressed(a_ev, roll);
     }
     else if (SEQ64_CLICK_RIGHT(a_ev->button))
     {
-        on_right_button_pressed(a_ev, roll);
+        result = on_right_button_pressed(a_ev, roll);
     }
     else if (SEQ64_CLICK_MIDDLE(a_ev->button))   /* left-ctrl???, middle    */
     {
@@ -132,11 +136,14 @@ FruityPerfInput::on_button_press_event (GdkEventButton * a_ev, perfroll & roll)
             long droptick = roll.m_drop_tick;
             bool state = p.get_sequence(dropseq)->get_trigger_state(droptick);
             if (state)
+            {
                 roll.split_trigger(dropseq, droptick);
+                result = true;
+            }
         }
     }
-    updateMousePtr(roll);
-    return true;
+    update_mouse_pointer(roll);
+    return result;
 }
 
 /**
@@ -150,12 +157,16 @@ FruityPerfInput::on_button_press_event (GdkEventButton * a_ev, perfroll & roll)
  *      -   clicked in the middle - move it
  *
  *  I don't get it, though... all three buttons are handled in the generic
- *  button-press callback.
+ *  button-press callback.  Oh, this is just a helper function.
+ *
+ * \return
+ *      Now returns true if a modification occurred.
  */
 
-void
+bool
 FruityPerfInput::on_left_button_pressed (GdkEventButton * a_ev, perfroll & roll)
 {
+    bool result = false;
     perform & p = roll.perf();
     int dropseq = roll.m_drop_sequence;
     if (a_ev->state & SEQ64_CONTROL_MASK)
@@ -166,7 +177,10 @@ FruityPerfInput::on_left_button_pressed (GdkEventButton * a_ev, perfroll & roll)
                 get_trigger_state(roll.m_drop_tick);
 
             if (state)
+            {
                 roll.split_trigger(dropseq, roll.m_drop_tick);
+                result = true;
+            }
         }
     }
     else                /* add a new note */
@@ -218,25 +232,31 @@ FruityPerfInput::on_left_button_pressed (GdkEventButton * a_ev, perfroll & roll)
             }
             else                                    /* add a trigger        */
             {
-                tick -= (tick % seqlength);         /* snap to sequlength   */
+                tick -= (tick % seqlength);         /* snap to seqlength    */
                 p.push_trigger_undo();
                 p.get_sequence(dropseq)->add_trigger(tick, seqlength);
+                result = true;
                 roll.draw_all();
             }
         }
     }
+    return result;
 }
 
 /**
  *  Handles the right button of the mouse.
  *
  *  I don't get it, though... all three buttons are handled in the generic
- *  button-press callback.
+ *  button-press callback.  Oh, this is a helper function.
+ *
+ * \return
+ *      Returns true if a modification occurred.
  */
 
-void
+bool
 FruityPerfInput::on_right_button_pressed (GdkEventButton * a_ev, perfroll & roll)
 {
+    bool result = false;
     perform & p = roll.perf();
     long tick = roll.m_drop_tick;
     int dropseq = roll.m_drop_sequence;
@@ -247,18 +267,24 @@ FruityPerfInput::on_right_button_pressed (GdkEventButton * a_ev, perfroll & roll
         {
             p.push_trigger_undo();
             p.get_sequence(dropseq)->del_trigger(tick);
+            result = true;
         }
     }
+    return result;
 }
 
 /**
  *  Handles a button-release event.  Why is m_adding_pressed modified
  *  conditionally when the same modification is then made unconditionally?
+ *
+ * \return
+ *      Returns true if a modification occurred.
  */
 
 bool
 FruityPerfInput::on_button_release_event (GdkEventButton * a_ev, perfroll & roll)
 {
+    bool result = false;
     m_current_x = (int) a_ev->x;
     m_current_y = (int) a_ev->y;
 
@@ -273,19 +299,26 @@ FruityPerfInput::on_button_release_event (GdkEventButton * a_ev, perfroll & roll
     roll.m_growing = false;
     m_adding_pressed = false;                       // and here...???
     if (p.is_active(roll.m_drop_sequence))
+    {
         roll.draw_all();
-
-    updateMousePtr(roll);
-    return true;
+        // result = true;
+    }
+    update_mouse_pointer(roll);
+    return result;
 }
 
 /**
  *  Handles a Fruity motion-notify event.
+ *
+ * \return
+ *      Returns true if a modification occurred, and sets the perform modified
+ *      flag based on that result.
  */
 
 bool
 FruityPerfInput::on_motion_notify_event (GdkEventMotion * a_ev, perfroll & roll)
 {
+    bool result = false;
     perform & p = roll.perf();
     int dropseq = roll.m_drop_sequence;
     int x = int(a_ev->x);
@@ -303,6 +336,7 @@ FruityPerfInput::on_motion_notify_event (GdkEventMotion * a_ev, perfroll & roll)
             long length = seqlength;
             p.get_sequence(dropseq)->grow_trigger(roll.m_drop_tick, tick, length);
             roll.draw_all();
+            result = true;
         }
     }
     else if (roll.m_moving || roll.m_growing)
@@ -314,10 +348,13 @@ FruityPerfInput::on_motion_notify_event (GdkEventMotion * a_ev, perfroll & roll)
             tick -= roll.m_drop_tick_trigger_offset;
             tick -= tick % roll.m_snap;
             if (roll.m_moving)
+            {
                 p.get_sequence(dropseq)->move_selected_triggers_to(tick, true);
-
+                result = true;
+            }
             if (roll.m_growing)
             {
+                result = true;
                 if (roll.m_grow_direction)
                     p.get_sequence(dropseq)->
                         move_selected_triggers_to(tick, false, 0);
@@ -328,8 +365,8 @@ FruityPerfInput::on_motion_notify_event (GdkEventMotion * a_ev, perfroll & roll)
             roll.draw_all();
         }
     }
-    updateMousePtr(roll);
-    return true;
+    update_mouse_pointer(roll);
+    return result;
 }
 
 }           // namespace seq64

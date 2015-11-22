@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-15
+ * \updates       2015-11-22
  * \license       GNU GPLv2 or above
  *
  */
@@ -584,14 +584,16 @@ perfroll::stop_playing ()
 }
 
 /**
- *  Splits a trigger, whatever than means.
+ *  Splits a trigger, whatever that means.
  */
 
 void
 perfroll::split_trigger (int seqnum, long tick)
 {
-    perf().push_trigger_undo();
-    perf().get_sequence(seqnum)->split_trigger(tick);
+//  perf().push_trigger_undo();
+//  perf().get_sequence(seqnum)->split_trigger(tick);
+
+    perf().split_trigger(seqnum, tick);     /* consolidates perform actions */
     draw_background_on(seqnum);
     draw_sequence_on(seqnum);
     draw_drawable_row(m_drop_y);
@@ -682,6 +684,9 @@ perfroll::on_realize ()
 
 /**
  *  Handles the on-expose event.
+ *
+ * \return
+ *      Always returns true.
  */
 
 bool
@@ -720,6 +725,9 @@ perfroll::on_button_press_event (GdkEventButton * ev)
     else
         result = m_fruity_interaction.on_button_press_event(ev, *this);
 
+    if (result)
+        perf().modify();            // NEW
+
     return result;
 }
 
@@ -737,6 +745,9 @@ perfroll::on_button_release_event (GdkEventButton * ev)
         result = m_seq24_interaction.on_button_release_event(ev, *this);
     else
         result = m_fruity_interaction.on_button_release_event(ev, *this);
+
+    if (result)
+        perf().modify();            // NEW
 
     return result;
 }
@@ -786,6 +797,9 @@ perfroll::on_motion_notify_event (GdkEventMotion * ev)
         result = m_seq24_interaction.on_motion_notify_event(ev, *this);
     else
         result = m_fruity_interaction.on_motion_notify_event(ev, *this);
+
+    if (result)
+        perf().modify();            // NEW
 
     return result;
 }
@@ -846,6 +860,7 @@ perfroll::on_key_press_event (GdkEventKey * ev)
     {
         fill_background_pixmap();
         queue_draw();
+        perf().modify();            // NEW
     }
     else
         return Gtk::DrawingArea::on_key_press_event(ev);

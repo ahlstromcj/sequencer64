@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-01
+ * \updates       2015-11-22
  * \license       GNU GPLv2 or above
  *
  */
@@ -95,7 +95,17 @@ class Seq24PerfInput : public AbstractPerfInput
 
 private:
 
+    /**
+     *  Indicates we are in the middle of adding a sequence segment to the
+     *  performance.
+     */
+
     bool m_adding;
+
+    /**
+     *  The current tick for the current segment?
+     */
+
     long m_effective_tick;
 
 public:
@@ -137,3 +147,4 @@ private:
  *
  * vim: sw=4 ts=4 wm=4 et ft=cpp
  */
+

@@ -200,108 +200,6 @@ seqdata::idle_redraw ()
 }
 
 /**
- *  This function takes two points, and returns an Xwin rectangle, returned
- *  via the last four parameters.  It checks the mins/maxes, then fills in x,
- *  y, and width, height.
- */
-
-void
-seqdata::xy_to_rect
-(
-    int x1, int y1,
-    int x2, int y2,
-    int & rx, int & ry,
-    int & rw, int & rh
-)
-{
-    if (x1 < x2)
-    {
-        rx = x1;
-        rw = x2 - x1;
-    }
-    else
-    {
-        rx = x2;
-        rw = x1 - x2;
-    }
-    if (y1 < y2)
-    {
-        ry = y1;
-        rh = y2 - y1;
-    }
-    else
-    {
-        ry = y2;
-        rh = y1 - y2;
-    }
-}
-
-/**
- *  Handles a motion-notify event.  It converts the x,y of the mouse to
- *  ticks, then sets the events in the event-data-range, updates the
- *  pixmap, draws events in the window, and draws a line on the window.
- */
-
-bool
-seqdata::on_motion_notify_event (GdkEventMotion * ev)
-{
-    if (m_dragging)
-    {
-        int adj_x_min, adj_x_max, adj_y_min, adj_y_max;
-        m_current_x = int(ev->x) + m_scroll_offset_x;
-        m_current_y = int(ev->y);
-        if (m_current_x < m_drop_x)
-        {
-            adj_x_min = m_current_x;
-            adj_y_min = m_current_y;
-            adj_x_max = m_drop_x;
-            adj_y_max = m_drop_y;
-        }
-        else
-        {
-            adj_x_max = m_current_x;
-            adj_y_max = m_current_y;
-            adj_x_min = m_drop_x;
-            adj_y_min = m_drop_y;
-        }
-
-        long tick_s, tick_f;
-        convert_x(adj_x_min, tick_s);
-        convert_x(adj_x_max, tick_f);
-        m_seq.change_event_data_range
-        (
-            tick_s, tick_f, m_status, m_cc,
-            c_dataarea_y - adj_y_min - 1, c_dataarea_y - adj_y_max - 1
-        );
-        update_pixmap();
-        draw_events_on(m_window);
-        draw_line_on_window();
-    }
-    return true;
-}
-
-/*
- * ca 2015-07-24
- * Eliminate this annoying warning.  Will do it for Microsoft's bloddy
- * compiler later.
- */
-
-#ifdef PLATFORM_GNU
-#pragma GCC diagnostic ignored "-Wunused-parameter"
-#endif
-
-/**
- *  Handles an on-leave notification event.
- */
-
-bool
-seqdata::on_leave_notify_event (GdkEventCrossing * p0)
-{
-    redraw();           // instead of update_pixmap(); queue_draw();
-    return true;
-}
-
-/**
  *  Draws on vertical line on the data window.
  */
 
@@ -355,6 +253,115 @@ seqdata::force_draw ()
 }
 
 /**
+ *  This function takes two points, and returns an Xwin rectangle, returned
+ *  via the last four parameters.  It checks the mins/maxes, then fills in x,
+ *  y, and width, height.
+ */
+
+void
+seqdata::xy_to_rect
+(
+    int x1, int y1,
+    int x2, int y2,
+    int & rx, int & ry,
+    int & rw, int & rh
+)
+{
+    if (x1 < x2)
+    {
+        rx = x1;
+        rw = x2 - x1;
+    }
+    else
+    {
+        rx = x2;
+        rw = x1 - x2;
+    }
+    if (y1 < y2)
+    {
+        ry = y1;
+        rh = y2 - y1;
+    }
+    else
+    {
+        ry = y2;
+        rh = y1 - y2;
+    }
+}
+
+/**
+ *  Handles a motion-notify event.  It converts the x,y of the mouse to
+ *  ticks, then sets the events in the event-data-range, updates the
+ *  pixmap, draws events in the window, and draws a line on the window.
+ *
+ * \return
+ *      Returns true if a change in event data occurred.  If true, then
+ *      the perform modification flag is set.
+ */
+
+bool
+seqdata::on_motion_notify_event (GdkEventMotion * ev)
+{
+    bool result = false;
+    if (m_dragging)
+    {
+        int adj_x_min, adj_x_max, adj_y_min, adj_y_max;
+        m_current_x = int(ev->x) + m_scroll_offset_x;
+        m_current_y = int(ev->y);
+        if (m_current_x < m_drop_x)
+        {
+            adj_x_min = m_current_x;
+            adj_y_min = m_current_y;
+            adj_x_max = m_drop_x;
+            adj_y_max = m_drop_y;
+        }
+        else
+        {
+            adj_x_max = m_current_x;
+            adj_y_max = m_current_y;
+            adj_x_min = m_drop_x;
+            adj_y_min = m_drop_y;
+        }
+
+        long tick_s, tick_f;
+        convert_x(adj_x_min, tick_s);
+        convert_x(adj_x_max, tick_f);
+        result = m_seq.change_event_data_range
+        (
+            tick_s, tick_f, m_status, m_cc,
+            c_dataarea_y - adj_y_min - 1, c_dataarea_y - adj_y_max - 1
+        );
+        update_pixmap();
+        draw_events_on(m_window);
+        draw_line_on_window();
+        if (result)
+            perf().modify();
+    }
+    return result;
+}
+
+/*
+ * ca 2015-07-24
+ * Eliminate this annoying warning.  Will do it for Microsoft's bloddy
+ * compiler later.
+ */
+
+#ifdef PLATFORM_GNU
+#pragma GCC diagnostic ignored "-Wunused-parameter"
+#endif
+
+/**
+ *  Handles an on-leave notification event.
+ */
+
+bool
+seqdata::on_leave_notify_event (GdkEventCrossing * p0)
+{
+    redraw();           // instead of update_pixmap(); queue_draw();
+    return true;
+}
+
+/**
  *  Implements the on-realization event, by calling the base-class version
  *  and then allocating the resources that could not be allocated in the
  *  constructor.  It also connects up the change_horz() function.
@@ -383,7 +390,7 @@ seqdata::on_realize ()
         char num[8];
         snprintf(val, sizeof(val), "%3d\n", i);
         memset(num, 0, sizeof(num));
-        num[0] = val[0];                /* converting to unicode? */
+        num[0] = val[0];                        /* converting to unicode?   */
         num[2] = val[1];
         num[4] = val[2];
         render_number(m_numbers[i], 0, 0, &num[0]);
@@ -412,6 +419,9 @@ seqdata::on_expose_event (GdkEventExpose * a_e)
  *  Implements the on-scroll event.  This scroll event only handles basic
  *  scrolling, without any modifier keys such as SEQ64_CONTROL_MASK or
  *  SEQ64K_SHIFT_MASK.
+ *
+ * \return
+ *      Always returns true.
  */
 
 bool
@@ -435,6 +445,9 @@ seqdata::on_scroll_event (GdkEventScroll * a_ev)
 
 /**
  *  Implement a button-press event.
+ *
+ * \return
+ *      Always returns true.
  */
 
 bool
@@ -456,11 +469,16 @@ seqdata::on_button_press_event (GdkEventButton * ev)
 
 /**
  *  Implement a button-release event.
+ *
+ * \return
+ *      Returns true if a modification occurred, and in that case also sets
+ *      the perform modification flag.
  */
 
 bool
 seqdata::on_button_release_event (GdkEventButton * ev)
 {
+    bool result = false;
     m_current_x = int(ev->x) + m_scroll_offset_x;
     m_current_y = int(ev->y);
     if (m_dragging)
@@ -473,16 +491,18 @@ seqdata::on_button_release_event (GdkEventButton * ev)
         }
         convert_x(m_drop_x, tick_s);
         convert_x(m_current_x, tick_f);
-        m_seq.change_event_data_range
+        result = m_seq.change_event_data_range
         (
             tick_s, tick_f, m_status, m_cc,
             c_dataarea_y - m_drop_y - 1, c_dataarea_y - m_current_y - 1
         );
         m_dragging = false;     /* convert x,y to ticks, set events in range */
+        if (result)
+            perf().modify();
     }
     update_pixmap();
     queue_draw();
-    return true;
+    return result;
 }
 
 /**

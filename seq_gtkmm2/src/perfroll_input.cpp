@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-14
+ * \updates       2015-11-22
  * \license       GNU GPLv2 or above
  *
  */
@@ -69,14 +69,17 @@ Seq24PerfInput::set_adding (bool adding, perfroll & roll)
 
 /**
  *  Handles the normal variety of button-press event.
- *
  *  Is there any easy way to use ctrl-left-click as the middle button
  *  here?
+ *
+ * \return
+ *      Returns true if a modification occurred.
  */
 
 bool
 Seq24PerfInput::on_button_press_event (GdkEventButton * ev, perfroll & roll)
 {
+    bool result = false;
     perform & p = roll.perf();
     int & dropseq = roll.m_drop_sequence;
     roll.grab_focus();
@@ -91,7 +94,6 @@ Seq24PerfInput::on_button_press_event (GdkEventButton * ev, perfroll & roll)
     (
         roll.m_drop_x, roll.m_drop_y, roll.m_drop_tick, dropseq
     );
-
     if (SEQ64_CLICK_LEFT(ev->button))
     {
         long tick = roll.m_drop_tick;
@@ -106,12 +108,14 @@ Seq24PerfInput::on_button_press_event (GdkEventButton * ev, perfroll & roll)
                 {
                     p.push_trigger_undo();
                     p.get_sequence(dropseq)->del_trigger(tick);
+                    result = true;
                 }
                 else
                 {
                     tick -= (tick % seqlength);    // snap to sequence length
                     p.push_trigger_undo();
                     p.get_sequence(dropseq)->add_trigger(tick, seqlength);
+                    result = true;
                     roll.draw_all();
                 }
             }
@@ -171,21 +175,27 @@ Seq24PerfInput::on_button_press_event (GdkEventButton * ev, perfroll & roll)
                 get_trigger_state(roll.m_drop_tick);
 
             if (state)
+            {
                 roll.split_trigger(dropseq, roll.m_drop_tick);
+                result = true;
+            }
         }
     }
-    return true;
+    return result;
 }
 
 /**
  *  Handles various button-release events.
- *
  *  Any use for the middle-button or ctrl-left-click we can add?
+ *
+ * \return
+ *      Returns true if any modification occurred.
  */
 
 bool
 Seq24PerfInput::on_button_release_event (GdkEventButton * ev, perfroll & roll)
 {
+    bool result = false;
     if (SEQ64_CLICK_LEFT(ev->button))
     {
         if (m_adding)
@@ -217,18 +227,25 @@ Seq24PerfInput::on_button_release_event (GdkEventButton * ev, perfroll & roll)
     roll.m_moving = roll.m_growing = m_adding_pressed = false;
     m_effective_tick = 0;
     if (p.is_active(roll.m_drop_sequence))
+    {
         roll.draw_all();
-
-    return true;
+        // result = true;
+    }
+    return result;
 }
 
 /**
  *  Handles the normal motion-notify event.
+ *
+ * \return
+ *      Returns true if a modification occurs.  This function used to always
+ *      return true.
  */
 
 bool
 Seq24PerfInput::on_motion_notify_event (GdkEventMotion * ev, perfroll & roll)
 {
+    bool result = false;
     int x = int(ev->x);
     perform & p = roll.perf();
     int dropseq = roll.m_drop_sequence;
@@ -244,6 +261,7 @@ Seq24PerfInput::on_motion_notify_event (GdkEventMotion * ev, perfroll & roll)
             long length = seqlength;
             p.get_sequence(dropseq)->grow_trigger(roll.m_drop_tick, tick, length);
             roll.draw_all();
+            result = true;
         }
     }
     else if (roll.m_moving || roll.m_growing)
@@ -257,6 +275,7 @@ Seq24PerfInput::on_motion_notify_event (GdkEventMotion * ev, perfroll & roll)
             if (roll.m_moving)
             {
                 p.get_sequence(dropseq)->move_selected_triggers_to(tick, true);
+                result = true;
             }
             if (roll.m_growing)
             {
@@ -266,11 +285,13 @@ Seq24PerfInput::on_motion_notify_event (GdkEventMotion * ev, perfroll & roll)
                 else
                     p.get_sequence(dropseq)->
                         move_selected_triggers_to(tick - 1, false, 1);
+
+                result = true;
             }
             roll.draw_all();
         }
     }
-    return true;
+    return result;
 }
 
 /**
@@ -313,8 +334,9 @@ Seq24PerfInput::on_motion_notify_event (GdkEventMotion * ev, perfroll & roll)
 bool
 Seq24PerfInput::handle_motion_key (bool is_left, perfroll & roll)
 {
-    bool result = roll.m_drop_sequence > 0;
-    if (result)
+    bool result = false;
+    bool ok = roll.m_drop_sequence > 0;
+    if (ok)
     {
         perform & p = roll.perf();
         int dropseq = roll.m_drop_sequence;
@@ -334,13 +356,18 @@ Seq24PerfInput::handle_motion_key (bool is_left, perfroll & roll)
              *     m_effective_tick = droptick;
              */
 
+            long tick = m_effective_tick;
             m_effective_tick -= roll.m_snap;
             if (m_effective_tick <= 0)
                 m_effective_tick += roll.m_snap;    /* retrench */
+
+            if (m_effective_tick != tick)
+                result = true;
         }
         else
         {
             m_effective_tick += roll.m_snap;
+            result = true;
 
             /*
              * What is the upper boundary here?
@@ -349,7 +376,14 @@ Seq24PerfInput::handle_motion_key (bool is_left, perfroll & roll)
 
         long tick = m_effective_tick - roll.m_drop_tick_trigger_offset;
         tick -= tick % roll.m_snap;
-        result = p.get_sequence(dropseq)->move_selected_triggers_to(tick, true);
+
+        /*
+         * Hmmmm, this overrides any result setting above.  Due to issues with
+         * triggers::move_selected(), this always returns true.  Let's ignore
+         * the return value for now.
+         */
+
+        (void) p.get_sequence(dropseq)->move_selected_triggers_to(tick, true);
     }
     return result;
 }

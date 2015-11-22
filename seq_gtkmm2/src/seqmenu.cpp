@@ -233,7 +233,7 @@ seqmenu::seq_edit ()
                 m_current_seq
             );
             m_seqedit = sed;            /* prevents "unused" warning      */
-            m_mainperf.modify();
+//          m_mainperf.modify();
         }
         else
             m_mainperf.get_sequence(m_current_seq)->set_raise(true);
@@ -248,7 +248,7 @@ seqmenu::seq_edit ()
             m_current_seq
         );
         m_seqedit = sed;                /* prevents "unused" warning      */
-        m_mainperf.modify();
+//      m_mainperf.modify();
     }
 }
 

@@ -1,6 +1,6 @@
-README for Sequencer64 0.9.9.8 (current branch = "testing3")
+README for Sequencer64 0.9.9.9 (current branch = "cmdlineopts")
 Chris Ahlstrom
-2015-09-10 to 2015-11-20
+2015-09-10 to 2015-11-22
 
 The sequencer64 project is a continuation of sequencer24 to refactor it to
 be tighter and easier to transition to GTKmm 3, and much more.
@@ -73,7 +73,8 @@ Major updates:
         pitch.  In the performance editor, a pattern can be selected with the
         mouse and moved right/left with the arrow keys.
     -   Centralized dirtiness-handling to the perform module, and improving
-        its accuracy and comprehensiveness, still in progress.
+        its accuracy and comprehensiveness, still in progress, but much
+        progress made.
 
 The list of minor issues we have found while exploring with Sequencer64 has
 gotten fairly long, so we will concentrate on tightening up the application

@@ -294,6 +294,9 @@ seqkeys::on_expose_event (GdkEventExpose * ev)
  *  Implements the on-button-press event callback.  It currently handles
  *  only the left button.  This button, pressed on the piano keyboard,
  *  causes m_keying to be set to true, and the given note to play.
+ *
+ * \return
+ *      Always returns true.
  */
 
 bool
@@ -319,7 +322,13 @@ seqkeys::on_button_press_event (GdkEventButton * ev)
  *  only the left button, and only if m_keying is true.
  *
  *  This function is used after pressing on one of the keys on the left-side
+ *
+ * \return
+ *      Always returns true.
  *  piano keyboard, to make it play, and turns off the playing of the note.
+ *
+ * \return
+ *      Always returns true.
  */
 
 bool
@@ -337,7 +346,11 @@ seqkeys::on_button_release_event (GdkEventButton * ev)
 }
 
 /**
- *  Implements the on-motion-notify event handler.
+ *  Implements the on-motion-notify event handler.  This allows
+ *  rolling down the keyboard, playing the notes one-by-one.
+ *
+ * \return
+ *      Always returns false.
  */
 
 bool
@@ -371,10 +384,11 @@ seqkeys::on_motion_notify_event (GdkEventMotion * a_p0)
 
 /**
  *  Implements the on-enter notification event handler.
+ *  I think this greys the current key.
  */
 
 bool
-seqkeys::on_enter_notify_event (GdkEventCrossing * a_p0)
+seqkeys::on_enter_notify_event (GdkEventCrossing *)
 {
     set_hint_state(true);
     return false;
@@ -386,10 +400,11 @@ seqkeys::on_enter_notify_event (GdkEventCrossing * a_p0)
 
 /**
  *  Implements the on-leave notification event handler.
+ *  I think this un-greys the current key.
  */
 
 bool
-seqkeys::on_leave_notify_event (GdkEventCrossing * p0)
+seqkeys::on_leave_notify_event (GdkEventCrossing *)
 {
     if (m_keying)
     {

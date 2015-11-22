@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-16
+ * \updates       2015-11-22
  * \license       GNU GPLv2 or above
  *
  */
@@ -931,6 +931,9 @@ seqroll::on_button_press_event (GdkEventButton * ev)
     else
         result = m_fruity_interaction.on_button_press_event(ev, *this);
 
+    if (result)
+        perf().modify();
+
     return result;
 }
 
@@ -947,6 +950,9 @@ seqroll::on_button_release_event (GdkEventButton * ev)
     else
         result = m_fruity_interaction.on_button_release_event(ev, *this);
 
+    if (result)
+        perf().modify();
+
     return result;
 }
 
@@ -962,6 +968,9 @@ seqroll::on_motion_notify_event (GdkEventMotion * ev)
         result = m_seq24_interaction.on_motion_notify_event(ev, *this);
     else
         result = m_fruity_interaction.on_motion_notify_event(ev, *this);
+
+    if (result)
+        perf().modify();
 
     return result;
 }
@@ -1034,22 +1043,9 @@ seqroll::on_key_press_event (GdkEventKey * ev)
             perf().is_playing() : ev->keyval == PREFKEY(stop) ;
 
         if (stop)
-        {
-            // perf().stop_jack();
-            // perf().stop();
-            // lobal_is_pattern_playing.is_pattern_playing(false);
-
             perf().stop_playing();
-        }
         else
-        {
-            // perf().position_jack(false);
-            // perf().start(false);
-            // perf().start_jack();
-            // lobal_is_pattern_playing.is_pattern_playing(true);
-
             perf().start_playing();
-        }
     }
     else if (CAST_EQUIVALENT(ev->type, SEQ64_KEY_PRESS)) // this really needed?
     {
@@ -1065,6 +1061,7 @@ seqroll::on_key_press_event (GdkEventKey * ev)
             m_seq.push_undo();
             m_seq.mark_selected();
             m_seq.remove_marked();
+            perf().modify();
             result = true;
         }
         else if (ev->keyval == SEQ64_Home)
@@ -1074,6 +1071,7 @@ seqroll::on_key_press_event (GdkEventKey * ev)
         }
         else if (ev->keyval == SEQ64_Left)
         {
+            perf().modify();
             result = true;
             if (m_seq.any_selected_notes())
                 m_seq.move_selected_notes(-m_snap, /*-48,*/ 0);
@@ -1082,6 +1080,7 @@ seqroll::on_key_press_event (GdkEventKey * ev)
         }
         else if (ev->keyval == SEQ64_Right)
         {
+            perf().modify();
             result = true;
             if (m_seq.any_selected_notes())
                 m_seq.move_selected_notes(m_snap, /*48,*/ 0);
@@ -1090,6 +1089,7 @@ seqroll::on_key_press_event (GdkEventKey * ev)
         }
         else if (ev->keyval == SEQ64_Down)
         {
+            perf().modify();
             if (m_seq.any_selected_notes())
             {
                 m_seq.move_selected_notes(0, -1);
@@ -1098,6 +1098,7 @@ seqroll::on_key_press_event (GdkEventKey * ev)
         }
         else if (ev->keyval == SEQ64_Up)
         {
+            perf().modify();
             if (m_seq.any_selected_notes())
             {
                 m_seq.move_selected_notes(0, 1);
@@ -1110,6 +1111,7 @@ seqroll::on_key_press_event (GdkEventKey * ev)
             if (m_seq.any_selected_notes())
             {
                 m_seq.move_selected_notes(-m_snap, /*-48,*/ 0);
+                perf().modify();
                 result = true;
             }
         }
@@ -1118,6 +1120,7 @@ seqroll::on_key_press_event (GdkEventKey * ev)
             if (m_seq.any_selected_notes())
             {
                 m_seq.move_selected_notes(m_snap, /*48,*/ 0);
+                perf().modify();
                 result = true;
             }
         }
@@ -1126,6 +1129,7 @@ seqroll::on_key_press_event (GdkEventKey * ev)
             if (m_seq.any_selected_notes())
             {
                 m_seq.move_selected_notes(0, -1);
+                perf().modify();
                 result = true;
             }
         }
@@ -1134,6 +1138,7 @@ seqroll::on_key_press_event (GdkEventKey * ev)
             if (m_seq.any_selected_notes())
             {
                 m_seq.move_selected_notes(0, 1);
+                perf().modify();
                 result = true;
             }
         }
@@ -1171,6 +1176,7 @@ seqroll::on_key_press_event (GdkEventKey * ev)
                 m_seq.copy_selected();
                 m_seq.mark_selected();
                 m_seq.remove_marked();
+                perf().modify();
                 result = true;
             }
             else if (OR_EQUIVALENT(ev->keyval, SEQ64_c, SEQ64_C))   /* copy */
@@ -1181,6 +1187,7 @@ seqroll::on_key_press_event (GdkEventKey * ev)
             else if (OR_EQUIVALENT(ev->keyval, SEQ64_v, SEQ64_V))   /* paste */
             {
                 start_paste();
+                perf().modify();
                 result = true;
             }
             else if (OR_EQUIVALENT(ev->keyval, SEQ64_z, SEQ64_Z))   /* Undo */

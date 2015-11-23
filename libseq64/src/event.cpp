@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-05
+ * \updates       2015-11-23
  * \license       GNU GPLv2 or above
  *
  */
@@ -123,10 +123,6 @@ event::operator < (const event & rhs) const
  *  non-channel event, then the channel portion of the status is cleared using
  *  a bitwise AND against EVENT_CLEAR_CHAN_MASK.
  *
- *  Is this a better way to do it?
- *
- *      m_status = (unsigned char)(status) & EVENT_CLEAR_CHAN_MASK;
- *
  *  Found in yet another fork of seq24:
  *
  *      // ORL fait de la merde
@@ -135,12 +131,12 @@ event::operator < (const event & rhs) const
  */
 
 void
-event::set_status (char status)
+event::set_status (midibyte status)
 {
-    if ((unsigned char)(status) >= 0xF0)
+    if (status >= 0xF0)
         m_status = status;
     else
-        m_status = char(status & EVENT_CLEAR_CHAN_MASK);
+        m_status = status & EVENT_CLEAR_CHAN_MASK;
 }
 
 /**
@@ -179,12 +175,12 @@ event::start_sysex ()
  */
 
 bool
-event::append_sysex (unsigned char * data, long dsize)
+event::append_sysex (midibyte * data, long dsize)
 {
     bool result = false;
     if (not_nullptr(data) && (dsize > 0))
     {
-        unsigned char * buffer = new unsigned char[m_size + dsize];
+        midibyte * buffer = new midibyte[m_size + dsize];
         if (not_nullptr(buffer))
         {
             if (not_nullptr(m_sysex))

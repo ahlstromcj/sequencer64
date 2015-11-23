@@ -28,12 +28,14 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-10-10
- * \updates       2015-11-15
+ * \updates       2015-11-23
  * \license       GNU GPLv2 or above
  *
  */
 
-#include <cstddef>                      /* std::size_t  */
+#include <cstddef>                      /* std::size_t      */
+
+#include "midibyte.hpp"                 /* seq64::midibyte  */
 
 /**
  *  This macro is used for detecting SeqSpec data that Sequencer64 does not
@@ -159,12 +161,6 @@ const unsigned long c_midictrl =        0x24240010; /* song MIDI control    */
 const unsigned long c_musickey =        0x24240011; /* track key            */
 const unsigned long c_musicscale =      0x24240012; /* track scale          */
 const unsigned long c_backsequence =    0x24240013; /* track b'ground seq   */
-
-/**
- *  Provides a fairly common type definition for a byte value.
- */
-
-typedef unsigned char midibyte;
 
 /**
  *    This class is the abstract base class for a container of MIDI track

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-15
+ * \updates       2015-11-23
  * \license       GNU GPLv2 or above
  *
  *  This file provides a Linux-only implementation of MIDI support.
@@ -408,11 +408,11 @@ midibus::print ()
  */
 
 void
-midibus::play (event * e24, unsigned char channel)
+midibus::play (event * e24, midibyte channel)
 {
 #ifdef SEQ64_HAVE_LIBASOUND
     automutex locker(m_mutex);
-    unsigned char buffer[4];            /* temp for MIDI data               */
+    midibyte buffer[4];                 /* temp for MIDI data               */
     buffer[0] = e24->get_status();      /* fill buffer & set MIDI channel   */
     buffer[0] += (channel & 0x0F);
     e24->get_data(buffer[1], buffer[2]);
@@ -467,7 +467,7 @@ midibus::sysex (event * e24)
     snd_seq_ev_set_subs(&ev);
     snd_seq_ev_set_direct(&ev);                         /* it's immediate   */
 
-    unsigned char * data = e24->get_sysex();
+    midibyte * data = e24->get_sysex();
     long data_size = e24->get_size();
     for (long offset = 0; offset < data_size; offset += c_midibus_sysex_chunk)
     {

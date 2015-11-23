@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-22
+ * \updates       2015-11-23
  * \license       GNU GPLv2 or above
  *
  */
@@ -876,7 +876,7 @@ seqroll::snap_x (int & x)
  */
 
 void
-seqroll::set_data_type (unsigned char status, unsigned char control)
+seqroll::set_data_type (midibyte status, midibyte control)
 {
     m_status = status;
     m_cc = control;

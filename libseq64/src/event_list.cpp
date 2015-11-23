@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-19
- * \updates       2015-11-07
+ * \updates       2015-11-23
  * \license       GNU GPLv2 or above
  *
  */
@@ -531,7 +531,7 @@ event_list::any_selected_notes () const
  */
 
 int
-event_list::count_selected_events (unsigned char status, unsigned char cc) const
+event_list::count_selected_events (midibyte status, midibyte cc) const
 {
     int result = 0;
     for (Events::const_iterator i = m_events.begin(); i != m_events.end(); ++i)
@@ -539,7 +539,7 @@ event_list::count_selected_events (unsigned char status, unsigned char cc) const
         const event & e = dref(i);
         if (e.get_status() == status)
         {
-            unsigned char d0, d1;
+            midibyte d0, d1;
             e.get_data(d0, d1);                 /* get the two data bytes */
             if (event::is_desired_cc_or_not_cc(status, cc, d0))
             {

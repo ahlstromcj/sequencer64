@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-10
+ * \updates       2015-11-23
  * \license       GNU GPLv2 or above
  *
  */
@@ -131,7 +131,7 @@ seqdata::set_zoom (int zoom)
  */
 
 void
-seqdata::set_data_type (unsigned char status, unsigned char control)
+seqdata::set_data_type (midibyte status, midibyte control)
 {
     m_status = status;
     m_cc = control;
@@ -156,7 +156,7 @@ void
 seqdata::draw_events_on (Glib::RefPtr<Gdk::Drawable> drawable)
 {
     long tick;
-    unsigned char d0, d1;
+    midibyte d0, d1;
     bool selected;
     int start_tick = m_scroll_offset_ticks;
     int end_tick = (m_window_x * m_zoom) + m_scroll_offset_ticks;

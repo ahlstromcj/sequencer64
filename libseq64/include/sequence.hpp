@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-22
+ * \updates       2015-11-23
  * \license       GNU GPLv2 or above
  *
  *  The functions add_list_var() and add_long_list() have been replaced by
@@ -154,13 +154,13 @@ private:
      *  Contains the proper MIDI channel for this sequence.
      */
 
-    char m_midi_channel;
+    midibyte m_midi_channel;
 
     /**
      *  Contains the proper MIDI bus number for this sequence.
      */
 
-    char m_bus;
+    midibyte m_bus;
 
     /**
      *  Provides a flag for the song playback mode muting.
@@ -586,12 +586,12 @@ public:
      * \getter m_midi_channel
      */
 
-    unsigned char get_midi_channel () const
+    midibyte get_midi_channel () const
     {
         return m_midi_channel;
     }
 
-    void set_midi_channel (unsigned char ch);
+    void set_midi_channel (midibyte ch);
     void print ();
     void print_triggers ();
     void play (long tick, bool playback_mode);
@@ -659,14 +659,14 @@ public:
     int select_events
     (
         long tick_s, long tick_f,
-        unsigned char status, unsigned char cc, select_action_e action
+        midibyte status, midibyte cc, select_action_e action
     );
     int select_events
     (
-        unsigned char status, unsigned char cc, bool inverse = false
+        midibyte status, midibyte cc, bool inverse = false
     );
     int get_num_selected_notes () const;
-    int get_num_selected_events (unsigned char status, unsigned char cc) const;
+    int get_num_selected_events (midibyte status, midibyte cc) const;
     void select_all ();
     void copy_selected ();
     void paste_selected (long tick, int note);
@@ -682,18 +682,18 @@ public:
     void add_note (long tick, long len, int note, bool paint = false);
     void add_event
     (
-        long tick, unsigned char status,
-        unsigned char d0, unsigned char d1, bool paint = false
+        long tick, midibyte status,
+        midibyte d0, midibyte d1, bool paint = false
     );
     void stream_event (event * ev);
     bool change_event_data_range
     (
         long tick_s, long tick_f,
-        unsigned char status, unsigned char cc,
+        midibyte status, midibyte cc,
         int d_s, int d_f
     );
-    void increment_selected (unsigned char status, unsigned char control);
-    void decrement_selected (unsigned char status, unsigned char control);
+    void increment_selected (midibyte status, midibyte control);
+    void decrement_selected (midibyte status, midibyte control);
     void grow_selected (long deltatick);
     void stretch_selected (long deltatick);
     void remove_marked ();
@@ -717,11 +717,11 @@ public:
     int get_highest_note_event ();
     bool get_next_event
     (
-        unsigned char status, unsigned char cc,
-        long * tick, unsigned char * d0, unsigned char * d1,
+        midibyte status, midibyte cc,
+        long * tick, midibyte * d0, midibyte * d1,
         bool * selected
     );
-    bool get_next_event (unsigned char * status, unsigned char * cc);
+    bool get_next_event (midibyte * status, midibyte * cc);
     bool get_next_trigger
     (
         long * tick_on, long * tick_off,
@@ -730,7 +730,7 @@ public:
     void fill_container (midi_container & c, int tracknumber);
     void quantize_events
     (
-        unsigned char status, unsigned char cc,
+        midibyte status, midibyte cc,
         long snap_tick, int divide, bool linked = false
     );
     void transpose_notes (int steps, int scale);

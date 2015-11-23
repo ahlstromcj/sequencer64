@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-22
+ * \updates       2015-11-23
  * \license       GNU GPLv2 or above
  *
  *  The functionality of this class also includes handling some of the
@@ -753,7 +753,7 @@ sequence::get_num_selected_notes () const
  */
 
 int
-sequence::get_num_selected_events (unsigned char status, unsigned char cc) const
+sequence::get_num_selected_events (midibyte status, midibyte cc) const
 {
     automutex locker(m_mutex);
     return m_events.count_selected_events(status, cc);
@@ -925,7 +925,7 @@ int
 sequence::select_events
 (
     long tick_s, long tick_f,
-    unsigned char status, unsigned char cc,
+    midibyte status, midibyte cc,
     select_action_e action
 )
 {
@@ -940,7 +940,7 @@ sequence::select_events
             er.get_timestamp() >= tick_s && er.get_timestamp() <= tick_f
         )
         {
-            unsigned char d0, d1;
+            midibyte d0, d1;
             er.get_data(d0, d1);
             if (event::is_desired_cc_or_not_cc(status, cc, d0))
             {
@@ -1174,7 +1174,7 @@ sequence::grow_selected (long delta_tick)
  */
 
 void
-sequence::increment_selected (unsigned char astat, unsigned char /*a_control*/)
+sequence::increment_selected (midibyte astat, midibyte /*a_control*/)
 {
     automutex locker(m_mutex);
     for (event_list::iterator i = m_events.begin(); i != m_events.end(); i++)
@@ -1206,7 +1206,7 @@ sequence::increment_selected (unsigned char astat, unsigned char /*a_control*/)
  */
 
 void
-sequence::decrement_selected (unsigned char astat, unsigned char /*a_control*/)
+sequence::decrement_selected (midibyte astat, midibyte /*a_control*/)
 {
     automutex locker(m_mutex);
     for (event_list::iterator i = m_events.begin(); i != m_events.end(); i++)
@@ -1358,7 +1358,7 @@ bool
 sequence::change_event_data_range
 (
     long tick_s, long tick_f,
-    unsigned char status, unsigned char cc,
+    midibyte status, midibyte cc,
     int data_s, int data_f
 )
 {
@@ -1370,7 +1370,7 @@ sequence::change_event_data_range
 
     for (event_list::iterator i = m_events.begin(); i != m_events.end(); i++)
     {
-        unsigned char d0, d1;
+        midibyte d0, d1;
         event & er = DREF(i);
         er.get_data(d0, d1);
         bool match = er.get_status() == status;
@@ -1502,8 +1502,8 @@ sequence::add_note (long tick, long length, int note, bool paint)
 void
 sequence::add_event
 (
-    long tick, unsigned char status,
-    unsigned char d0, unsigned char d1, bool paint
+    long tick, midibyte status,
+    midibyte d0, midibyte d1, bool paint
 )
 {
     automutex locker(m_mutex);
@@ -2353,11 +2353,11 @@ sequence::get_next_note_event
  */
 
 bool
-sequence::get_next_event (unsigned char * a_status, unsigned char * a_cc)
+sequence::get_next_event (midibyte * a_status, midibyte * a_cc)
 {
     while (m_iterator_draw != m_events.end())
     {
-        unsigned char j;
+        midibyte j;
         event & drawevent = DREF(m_iterator_draw);
         *a_status = drawevent.get_status();
         drawevent.get_data(*a_cc, j);
@@ -2380,8 +2380,8 @@ sequence::get_next_event (unsigned char * a_status, unsigned char * a_cc)
 bool
 sequence::get_next_event
 (
-    unsigned char status, unsigned char cc,
-    long * tick, unsigned char * d0, unsigned char * d1,
+    midibyte status, midibyte cc,
+    long * tick, midibyte * d0, midibyte * d1,
     bool * selected
 )
 {
@@ -2603,7 +2603,7 @@ sequence::set_name (const std::string & name)
  */
 
 void
-sequence::set_midi_channel (unsigned char ch)
+sequence::set_midi_channel (midibyte ch)
 {
     automutex locker(m_mutex);
     off_playing_notes();
@@ -2645,7 +2645,7 @@ void
 sequence::put_event_on_bus (event * ev)
 {
     automutex locker(m_mutex);
-    unsigned char note = ev->get_note();
+    midibyte note = ev->get_note();
     bool skip = false;
     if (ev->is_note_on())
         m_playing_notes[note]++;
@@ -2701,11 +2701,11 @@ sequence::off_playing_notes ()
 int
 sequence::select_events
 (
-    unsigned char status, unsigned char cc, bool inverse
+    midibyte status, midibyte cc, bool inverse
 )
 {
     automutex locker(m_mutex);
-    unsigned char d0, d1;
+    midibyte d0, d1;
     for (event_list::iterator i = m_events.begin(); i != m_events.end(); i++)
     {
         event & er = DREF(i);
@@ -2796,12 +2796,12 @@ sequence::transpose_notes (int steps, int scale)
 void
 sequence::quantize_events
 (
-    unsigned char status, unsigned char cc,
+    midibyte status, midibyte cc,
     long snap_tick, int divide, bool linked
 )
 {
     automutex locker(m_mutex);
-    unsigned char d0, d1;
+    midibyte d0, d1;
     event_list quantized_events;
     mark_selected();
     for (event_list::iterator i = m_events.begin(); i != m_events.end(); i++)

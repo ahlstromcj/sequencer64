@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-15
+ * \updates       2015-11-23
  * \license       GNU GPLv2 or above
  *
  */
@@ -70,7 +70,7 @@ protected:
      *   configuration file.
      */
 
-    unsigned char * m_d;
+    char * m_d;
 
     /**
      *  The current line of text being processed.  This member receives

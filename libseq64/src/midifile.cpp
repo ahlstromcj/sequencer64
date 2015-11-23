@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-21
+ * \updates       2015-11-23
  * \license       GNU GPLv2 or above
  *
  *  For a quick guide to the MIDI format, see, for example:
@@ -216,7 +216,7 @@ midifile::read_short ()
  *  m_pos after doing so.
  */
 
-unsigned char
+midibyte
 midifile::read_byte ()
 {
     if (m_pos < m_file_size)
@@ -242,7 +242,7 @@ unsigned long
 midifile::read_varinum ()
 {
     unsigned long result = 0;
-    unsigned char c;
+    midibyte c;
     while (((c = read_byte()) & 0x80) != 0x00)      /* while bit 7 is set  */
     {
         result <<= 7;                               /* shift result 7 bits */
@@ -459,9 +459,9 @@ midifile::parse_smf_1 (perform & p, int screenset)
         if (ID == SEQ64_TRACK_TAG)                  /* magic number 'MTrk'  */
         {
             unsigned short seqnum = 0;
-            unsigned char status = 0;
-            unsigned char data[2];
-            unsigned char laststatus;
+            midibyte status = 0;
+            midibyte data[2];
+            midibyte laststatus;
             unsigned long proprietary = 0;          /* sequencer-specifics  */
             bool done = false;                      /* done for each track  */
             long len;                               /* important counter!   */
@@ -533,7 +533,7 @@ midifile::parse_smf_1 (perform & p, int screenset)
                 case 0xF0:                                /* Meta MIDI events */
                     if (status == 0xFF)
                     {
-                        unsigned char type = read_byte(); /* get meta type    */
+                        midibyte type = read_byte();      /* get meta type    */
                         len = read_varinum();
                         switch (type)
                         {
@@ -767,11 +767,11 @@ midifile::parse_prop_header (int file_size)
     if ((file_size - m_pos) > int(sizeof(unsigned long)))
     {
         result = read_long();                   /* status (new), or C_tag   */
-        unsigned char status = (result & 0x00FF0000) >> 16; /* 2-byte shift */
+        midibyte status = (result & 0x00FF0000) >> 16;      /* 2-byte shift */
         if (status == 0xFF)
         {
             m_pos -= 2;                         /* back up to meta type     */
-            unsigned char type = read_byte();   /* get meta type            */
+            midibyte type = read_byte();        /* get meta type            */
             if (type == 0x7F)                   /* SeqSpec event marker     */
             {
                 (void) read_varinum();          /* prop section length      */
@@ -899,7 +899,7 @@ midifile::parse_proprietary_track (perform & p, int file_size)
                 );
                 seqs = (unsigned long)(read_byte());
             }
-            unsigned char a[6];
+            midibyte a[6];
             for (unsigned int i = 0; i < seqs; i++)
             {
                 read_byte_array(a, 6);
@@ -1096,7 +1096,7 @@ midifile::write_varinum (unsigned long value)
    }
    for (;;)
    {
-      write_byte((unsigned char) (buffer & 0xff));
+      write_byte(midibyte(buffer & 0xff));
       if (buffer & 0x80)                            /* continuation bit?    */
          buffer >>= 8;                              /* yes                  */
       else
@@ -1321,7 +1321,7 @@ midifile::write (perform & p)
         {
             char file_buffer[SEQ64_MIDI_LINE_MAX];  /* enable bufferization */
             file.rdbuf()->pubsetbuf(file_buffer, sizeof file_buffer);
-            std::list<unsigned char>::iterator it;
+            std::list<midibyte>::iterator it;
             for (it = m_char_list.begin(); it != m_char_list.end(); it++)
             {
                 char c = *it;
@@ -1478,7 +1478,7 @@ midifile::read_track_name ()
 {
     std::string result;
     (void) read_byte();                         /* throw-away delta time    */
-    unsigned char status = read_byte();         /* get the seq-spec marker  */
+    midibyte status = read_byte();              /* get the seq-spec marker  */
     if (status == 0xFF)
     {
         if (read_byte() == 0x03)
@@ -1488,7 +1488,7 @@ midifile::read_track_name ()
             {
                 for (unsigned long i = 0; i < tl; i++)
                 {
-                    char c = char(read_byte());
+                    midibyte c = read_byte();
                     result += c;
                 }
             }
@@ -1549,7 +1549,7 @@ midifile::read_seq_number ()
 {
     int result = -1;
     (void) read_byte();                         /* throw-away delta time    */
-    unsigned char status = read_byte();         /* get the seq-spec marker  */
+    midibyte status = read_byte();              /* get the seq-spec marker  */
     if (status == 0xFF)
     {
         if (read_byte() == 0x00 && read_byte() == 0x02)

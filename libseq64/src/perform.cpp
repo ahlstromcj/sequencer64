@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-22
+ * \updates       2015-11-23
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -2086,7 +2086,7 @@ perform::input_func ()
                     }
                     else if (ev.get_status() == EVENT_MIDI_SONG_POS)
                     {
-                        unsigned char a, b;     // not tested (todo: test it!)
+                        midibyte a, b;     // not tested (todo: test it!)
                         ev.get_data(a, b);
                         m_midiclockpos = (int(a) << 7) && int(b);
                     }
@@ -2112,8 +2112,8 @@ perform::input_func ()
                         {
                             for (int i = 0; i < c_midi_controls; i++)
                             {
-                                unsigned char data[2] = { 0, 0 };
-                                unsigned char status = ev.get_status();
+                                midibyte data[2] = { 0, 0 };
+                                midibyte status = ev.get_status();
                                 ev.get_data(data[0], data[1]);
                                 if (midi_control_toggle(i).match(status, data[0]))
                                 {

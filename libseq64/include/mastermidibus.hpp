@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-30
- * \updates       2015-11-15
+ * \updates       2015-11-23
  * \license       GNU GPLv2 or above
  *
  *  The mastermidibus module is the Linux version of the mastermidibus module.
@@ -275,11 +275,11 @@ public:
     void sysex (event * a_event);
     void port_start (int a_client, int a_port);
     void port_exit (int a_client, int a_port);
-    void play (unsigned char a_bus, event * a_e24, unsigned char a_channel);
-    void set_clock (unsigned char a_bus, clock_e a_clock_type);
-    clock_e get_clock (unsigned char a_bus);
-    void set_input (unsigned char a_bus, bool a_inputing);
-    bool get_input (unsigned char a_bus);
+    void play (bussbyte bus, event * a_e24, midibyte a_channel);
+    void set_clock (bussbyte bus, clock_e a_clock_type);
+    clock_e get_clock (bussbyte bus);
+    void set_input (bussbyte bus, bool a_inputing);
+    bool get_input (bussbyte bus);
 
 };
 

@@ -3,14 +3,13 @@
  *-----------------------------------------------------------------------------
  *
  *    This module provides no code.  It provides only a Doxygen "Doxygen
- *    k
  *    information" page.
  *
  *------------------------------------------------------------------------*//**
 
 \file       user_testing.dox
 
-This document describes basic user testing of Sequencer 64 using the
+This document describes basic user testing of Sequencer64 using the
 Yoshimi software synthesizer.
 
 \page       user_testing_page User Testing of Sequencer64 with Yoshimi

@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-01
+ * \updates       2015-11-23
  * \license       GNU GPLv2 or above
  *
  */
@@ -118,8 +118,8 @@ private:
      *  Indicates what is the data window currently editing.
      */
 
-    unsigned char m_status;
-    unsigned char m_cc;
+    midibyte m_status;
+    midibyte m_cc;
 
     /**
      *  When highlighting a bunch of events.
@@ -203,7 +203,7 @@ public:
         m_ignore_redraw = ignore;
     }
 
-    void set_data_type (unsigned char status, unsigned char control);
+    void set_data_type (midibyte status, midibyte control);
     void set_background_sequence (bool state, int seq);
     void update_pixmap ();
     void update_sizes ();

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-16
+ * \updates       2015-11-23
  * \license       GNU GPLv2 or above
  *
  */
@@ -1436,7 +1436,7 @@ seqedit::popup_event_menu ()
     bool program_change = false;
     bool channel_pressure = false;
     bool pitch_wheel = false;
-    unsigned char status, cc;
+    midibyte status, cc;
     int bus = m_seq.get_midi_bus();
     int channel = m_seq.get_midi_channel();
     memset(ccs, false, sizeof(bool) * SEQ64_MIDI_COUNT_MAX);
@@ -1486,7 +1486,7 @@ seqedit::popup_event_menu ()
             sigc::bind
             (
                 mem_fun(*this, &seqedit::set_data_type),
-               (unsigned char) EVENT_NOTE_ON, 0
+                EVENT_NOTE_ON, 0
             )
         )
     );
@@ -1499,7 +1499,7 @@ seqedit::popup_event_menu ()
            sigc::bind
            (
                 mem_fun(*this, &seqedit::set_data_type),
-               (unsigned char) EVENT_NOTE_OFF, 0
+                EVENT_NOTE_OFF, 0
             )
         )
     );
@@ -1511,7 +1511,7 @@ seqedit::popup_event_menu ()
             sigc::bind
             (
                 mem_fun(*this, &seqedit::set_data_type),
-                (unsigned char) EVENT_AFTERTOUCH, 0
+                EVENT_AFTERTOUCH, 0
             )
         )
     );
@@ -1523,7 +1523,7 @@ seqedit::popup_event_menu ()
             sigc::bind
             (
                 mem_fun(*this, &seqedit::set_data_type),
-                (unsigned char) EVENT_PROGRAM_CHANGE, 0
+                EVENT_PROGRAM_CHANGE, 0
             )
         )
     );
@@ -1535,7 +1535,7 @@ seqedit::popup_event_menu ()
             sigc::bind
             (
                 mem_fun(*this, &seqedit::set_data_type),
-               (unsigned char) EVENT_CHANNEL_PRESSURE, 0
+               EVENT_CHANNEL_PRESSURE, 0
             )
         )
     );
@@ -1547,7 +1547,7 @@ seqedit::popup_event_menu ()
             sigc::bind
             (
                 mem_fun(*this, &seqedit::set_data_type),
-               (unsigned char) EVENT_PITCH_WHEEL , 0
+               EVENT_PITCH_WHEEL , 0
             )
         )
     );
@@ -1590,7 +1590,7 @@ seqedit::popup_event_menu ()
                     sigc::bind
                     (
                         mem_fun(*this, &seqedit::set_data_type),
-                        (unsigned char) EVENT_CONTROL_CHANGE, offset + item
+                        EVENT_CONTROL_CHANGE, offset + item
                     )
                 )
             );
@@ -1955,7 +1955,7 @@ seqedit::thru_change_callback ()
  */
 
 void
-seqedit::set_data_type (unsigned char status, unsigned char control)
+seqedit::set_data_type (midibyte status, midibyte control)
 {
     m_editing_status = status;
     m_editing_cc = control;

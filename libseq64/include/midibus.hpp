@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-15
+ * \updates       2015-11-23
  * \license       GNU GPLv2 or above
  *
  *  The midibus module is the Linux version of the midibus module.
@@ -204,7 +204,7 @@ public:
         return m_id;
     }
 
-    void play (event * e24, unsigned char channel);
+    void play (event * e24, midibyte channel);
     void sysex (event * e24);
 
     /*

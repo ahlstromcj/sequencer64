@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-20
+ * \updates       2015-11-23
  * \license       GNU GPLv2 or above
  *
  *  The Seq24 MIDI file is a standard, Format 1 MIDI file, with some extra
@@ -108,7 +108,7 @@ private:
      *  input buffer.
      */
 
-    std::vector<unsigned char> m_data;
+    std::vector<midibyte> m_data;
 
     /**
      *  Provides a list of characters.  The class pushes each MIDI byte into
@@ -118,7 +118,7 @@ private:
      *  this member.  This member is an output buffer.
      */
 
-    std::list<unsigned char> m_char_list;
+    std::list<midibyte> m_char_list;
 
     /**
      *  Use the new format for the proprietary footer section of the Seq24
@@ -201,7 +201,7 @@ private:
     bool parse_proprietary_track (perform & a_perf, int file_size);
     unsigned long read_long ();
     unsigned short read_short ();
-    unsigned char read_byte ();
+    midibyte read_byte ();
     unsigned long read_varinum ();
     void write_long (unsigned long);
     void write_short (unsigned short);
@@ -217,7 +217,7 @@ private:
      *      The number of bytes in the array, and to be read.
      */
 
-    void read_byte_array (unsigned char * b, int len)
+    void read_byte_array (midibyte * b, int len)
     {
         for (int i = 0; i < len; ++i)
             *b++ = read_byte();
@@ -228,7 +228,7 @@ private:
      *  call to push_back().
      */
 
-    void write_byte (unsigned char c)
+    void write_byte (midibyte c)
     {
         m_char_list.push_back(c);
     }

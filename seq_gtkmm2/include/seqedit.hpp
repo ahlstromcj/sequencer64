@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-15
+ * \updates       2015-11-23
  * \license       GNU GPLv2 or above
  *
  */
@@ -197,8 +197,8 @@ private:
      *  Indicates what is the data window currently editing?
      */
 
-    unsigned char m_editing_status;
-    unsigned char m_editing_cc;
+    midibyte m_editing_status;
+    midibyte m_editing_cc;
 
 public:
 
@@ -243,7 +243,7 @@ private:
     void thru_change_callback ();
     void undo_callback ();
     void redo_callback ();
-    void set_data_type (unsigned char status, unsigned char control = 0);
+    void set_data_type (midibyte status, midibyte control = 0);
     void update_all_windows ();
     void fill_top_bar ();
     void create_menus ();

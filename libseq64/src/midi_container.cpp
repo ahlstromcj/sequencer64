@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-10-10
- * \updates       2015-11-14
+ * \updates       2015-11-23
  * \license       GNU GPLv2 or above
  *
  */
@@ -162,8 +162,8 @@ midi_container::fill (int tracknumber)
         prevtimestamp = timestamp;
         add_variable(deltatime);                    /* encode delta_time    */
 
-        unsigned char d0 = e.data(0);               /* encode status & data */
-        unsigned char d1 = e.data(1);
+        midibyte d0 = e.data(0);                    /* encode status & data */
+        midibyte d1 = e.data(1);
         put(e.status() | m_sequence.get_midi_channel());    /* add channel  */
         switch (e.status() & 0xF0)
         {

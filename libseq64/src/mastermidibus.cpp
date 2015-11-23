@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-30
- * \updates       2015-11-21
+ * \updates       2015-11-23
  * \license       GNU GPLv2 or above
  *
  *  This file provides a Linux-only implementation of MIDI support.
@@ -560,7 +560,7 @@ mastermidibus::sysex (event * ev)
  */
 
 void
-mastermidibus::play (unsigned char bus, event * e24, unsigned char channel)
+mastermidibus::play (bussbyte bus, event * e24, midibyte channel)
 {
     automutex locker(m_mutex);
     if (m_buses_out_active[bus] && bus < m_num_out_buses)
@@ -582,7 +582,7 @@ mastermidibus::play (unsigned char bus, event * e24, unsigned char channel)
  */
 
 void
-mastermidibus::set_clock (unsigned char bus, clock_e clocktype)
+mastermidibus::set_clock (bussbyte bus, clock_e clocktype)
 {
     automutex locker(m_mutex);
     if (bus < c_max_busses)
@@ -604,7 +604,7 @@ mastermidibus::set_clock (unsigned char bus, clock_e clocktype)
  */
 
 clock_e
-mastermidibus::get_clock (unsigned char bus)
+mastermidibus::get_clock (bussbyte bus)
 {
     if (m_buses_out_active[bus] && bus < m_num_out_buses)
         return m_buses_out[bus]->get_clock();
@@ -625,7 +625,7 @@ mastermidibus::get_clock (unsigned char bus)
  */
 
 void
-mastermidibus::set_input (unsigned char bus, bool inputing)
+mastermidibus::set_input (bussbyte bus, bool inputing)
 {
     automutex locker(m_mutex);
     if (bus < c_max_busses)         // should be m_num_in_buses I believe!!!
@@ -646,7 +646,7 @@ mastermidibus::set_input (unsigned char bus, bool inputing)
  */
 
 bool
-mastermidibus::get_input (unsigned char bus)
+mastermidibus::get_input (bussbyte bus)
 {
     if (m_buses_in_active[bus] && bus < m_num_in_buses)
         return m_buses_in[bus]->get_input();
@@ -962,7 +962,7 @@ mastermidibus::get_midi_event (event * inev)
     snd_seq_event_t * ev;
     bool sysex = false;
     bool result = false;
-    unsigned char buffer[0x1000];       /* temporary buffer for midi data */
+    midibyte buffer[0x1000];       /* temporary buffer for midi data */
     snd_seq_event_input(m_alsa_seq, &ev);
     if (! rc().manual_alsa_ports())
     {

@@ -1,0 +1,51 @@
+/******************************************************************************
+ * midi_parsing.dox
+ *-----------------------------------------------------------------------------
+ *
+ *    This module provides no code.  It provides only a Doxygen "Doxygen
+ *    information" page.
+ *
+ *------------------------------------------------------------------------*//**
+
+\file       midi_parsing.dox
+
+This document describes how Sequencer64 parses a MIDI file.
+
+\page       midi_parsing_page MIDI File Parsing in Sequencer64
+\author     Chris Ahlstrom 2015-11-23
+
+\section midi_parsing_intro Introduction
+
+This section describes the parsing of a MIDI file.  We start with
+the main format that is supported, SMF 1.  Once we understand that
+completely, we will figure out how to split an SMF 0 track correctly.
+
+We've already split the midifile::parse() function into two sections.
+The first section analyzes the header of the MIDI.  Then, based on whether the
+file is SMF 1 (the normal case) or SMF 0, either the parse_smf_1() function of
+or the parse_smf_0() function is called.
+
+The parse_smf_0() function  currently just calls parse_smf_1().
+But our current thinking on parse_smf_0() is that it will create 17
+sequence objects.  The first one will contain the original track data, and the
+rest will contain common data and then channel data for each channel.  After
+the parsing is done, all the non-empty tracks (including the original track)
+will be added to the performance.  The user then has the option of deleting the
+original track, which will be the last track.
+
+\section midi_parsing_smf_1 SMF 1 Parsing
+
+This section describes the parsing of the header chunk, MThd, and the track
+chunk, MTrk.
+
+\subsection midi_parsing_smf_1_mthd MIDI File Header, MThd
+
+Every ...
+
+ *//*-------------------------------------------------------------------------*/
+
+/******************************************************************************
+ * midi_parsing.dox
+ *----------------------------------------------------------------------------
+ * vim: ts=3 sw=3 et syntax=doxygen
+ *//*-------------------------------------------------------------------------*/

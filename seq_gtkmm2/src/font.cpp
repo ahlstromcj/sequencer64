@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-14
+ * \updates       2015-11-23
  * \license       GNU GPLv2 or above
  *
  *  The interesting thing about this font class is that font files are not
@@ -253,7 +253,7 @@ font::render_string_on_drawable
 
     for (int k = 0; k < length; ++k)
     {
-        unsigned char c = (unsigned char)(str[k]);
+        int c = int(str[k]);
         int pixbuf_index_x = c % cf_grid_w;
         int pixbuf_index_y = c / cf_grid_h;
         pixbuf_index_x *= m_cell_w;     /* width of grid (letter = 6 pixels)   */

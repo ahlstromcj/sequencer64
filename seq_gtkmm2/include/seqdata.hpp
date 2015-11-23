@@ -29,7 +29,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-05
+ * \updates       2015-11-23
  * \license       GNU GPLv2 or above
  *
  */
@@ -100,8 +100,8 @@ private:
      *  What is the data window currently editing?
      */
 
-    unsigned char m_status;
-    unsigned char m_cc;
+    midibyte m_status;
+    midibyte m_cc;
     Glib::RefPtr<Gdk::Pixmap> m_numbers[c_dataarea_y];
     GdkRectangle m_old;
     bool m_dragging;
@@ -130,7 +130,7 @@ public:
     }
 
     void set_zoom (int a_zoom);
-    void set_data_type (unsigned char a_status, unsigned char a_control);
+    void set_data_type (midibyte status, midibyte control);
     int idle_redraw ();
 
 private:
@@ -140,10 +140,10 @@ private:
     void draw_line_on_window ();
     void xy_to_rect
     (
-      int a_x1, int a_y1,
-      int a_x2, int a_y2,
-      int & r_x, int & r_y,
-      int & r_w, int & r_h
+      int x1, int y1,
+      int x2, int y2,
+      int & rx, int & ry,
+      int & rw, int & rh
    );
     void draw_events_on (Glib::RefPtr<Gdk::Drawable> drawable);
     void change_horz ();
@@ -198,12 +198,12 @@ private:
 private:       // callbacks
 
     void on_realize ();
-    bool on_expose_event (GdkEventExpose * a_ev);
-    bool on_button_press_event (GdkEventButton * a_ev);
-    bool on_button_release_event (GdkEventButton * a_ev);
-    bool on_motion_notify_event (GdkEventMotion * a_p0);
-    bool on_leave_notify_event (GdkEventCrossing * p0);
-    bool on_scroll_event (GdkEventScroll * a_ev);
+    bool on_expose_event (GdkEventExpose * ev);
+    bool on_button_press_event (GdkEventButton * ev);
+    bool on_button_release_event (GdkEventButton * ev);
+    bool on_motion_notify_event (GdkEventMotion * ev);
+    bool on_leave_notify_event (GdkEventCrossing * ev);
+    bool on_scroll_event (GdkEventScroll * ev);
     void on_size_allocate (Gtk::Allocation &);
 
 };

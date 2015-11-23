@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-28
+ * \updates       2015-11-23
  * \license       GNU GPLv2 or above
  *
  */
@@ -105,8 +105,8 @@ private:
      *  Indicates what is the data window currently editing?
      */
 
-    unsigned char m_status;
-    unsigned char m_cc;
+    midibyte m_status;
+    midibyte m_cc;
 
 public:
 
@@ -136,7 +136,7 @@ public:
         m_snap = a_snap;
     }
 
-    void set_data_type (unsigned char a_status, unsigned char a_control);
+    void set_data_type (midibyte a_status, midibyte a_control);
     void update_sizes ();
     void draw_background ();
     void draw_events_on_pixmap ();

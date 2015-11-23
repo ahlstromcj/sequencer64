@@ -28,12 +28,13 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-21
- * \updates       2015-11-21
+ * \updates       2015-11-23
  * \license       GNU GPLv2 or above
  *
  */
 
-#include "globals.h"                    // globals, nullptr, & config headers
+#include "globals.h"                    /* globals, nullptr, config headers */
+#include "midibyte.hpp"                 /* seq64::midibyte                  */
 
 namespace seq64
 {
@@ -172,10 +173,10 @@ public:
     {
         m_active = bool(values[0]);
         m_inverse_active = bool(values[1]);
-        m_status = long(values[2]);
-        m_data = long(values[3]);
-        m_min_value = long(values[4]);
-        m_max_value = long(values[5]);
+        m_status = values[2];
+        m_data = values[3];
+        m_min_value = values[4];
+        m_max_value = values[5];
     }
 
     /**
@@ -183,21 +184,21 @@ public:
      *  with the usage in midifile.
      */
     
-    void set (unsigned char values[6])
+    void set (midibyte values[6])
     {
         m_active = bool(values[0]);
         m_inverse_active = bool(values[1]);
-        m_status = long(values[2]);
-        m_data = long(values[3]);
-        m_min_value = long(values[4]);
-        m_max_value = long(values[5]);
+        m_status = int(values[2]);
+        m_data = int(values[3]);
+        m_min_value = int(values[4]);
+        m_max_value = int(values[5]);
     }
 
     /**
      *  Handles a common check in the perform module.
      */
 
-    bool match (unsigned char status, unsigned char data) const
+    bool match (midibyte status, midibyte data) const
     {
         return
         (
@@ -209,9 +210,9 @@ public:
      *  Handles a common check in the perform module.
      */
 
-    bool in_range (unsigned char data) const
+    bool in_range (midibyte data) const
     {
-        return (data >= m_min_value) && (data <= m_max_value);
+        return data >= midibyte(m_min_value) && data <= midibyte(m_max_value);
     }
 
 };          // class midi_control

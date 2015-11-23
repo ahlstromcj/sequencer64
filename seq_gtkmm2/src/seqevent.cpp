@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-22
+ * \updates       2015-11-23
  * \license       GNU GPLv2 or above
  *
  */
@@ -270,7 +270,7 @@ seqevent::set_zoom (int zoom)
  */
 
 void
-seqevent::set_data_type (unsigned char status, unsigned char control = 0)
+seqevent::set_data_type (midibyte status, midibyte control = 0)
 {
     m_status = status;
     m_cc = control;
@@ -302,7 +302,7 @@ seqevent::draw_events_on (Glib::RefPtr<Gdk::Drawable> draw)
 {
     long tick;
     int x;
-    unsigned char d0, d1;
+    midibyte d0, d1;
     bool selected;
     int starttick = m_scroll_offset_ticks;
     int endtick = (m_window_x * m_zoom) + m_scroll_offset_ticks;
@@ -479,9 +479,9 @@ seqevent::snap_x (int & x)
 void
 seqevent::drop_event (long a_tick)
 {
-    unsigned char status = m_status;
-    unsigned char d0 = m_cc;
-    unsigned char d1 = 0x40;
+    midibyte status = m_status;
+    midibyte d0 = m_cc;
+    midibyte d1 = 0x40;
     if (m_status == EVENT_AFTERTOUCH)
         d0 = 0;
     else if (m_status == EVENT_PROGRAM_CHANGE)

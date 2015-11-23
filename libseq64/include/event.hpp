@@ -28,13 +28,15 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-15
+ * \updates       2015-11-23
  * \license       GNU GPLv2 or above
  *
  *  This module also declares/defines the various constants, status-byte
  *  values, or data values for MIDI events.
  *
  */
+
+#include "midibyte.hpp"                 /* seq64::midibyte typedef      */
 
 /**
  *  Defines the number of data bytes in MIDI status data.
@@ -49,36 +51,36 @@ namespace seq64
  *  This highest bit of the status byte is always 1.
  */
 
-const unsigned char EVENT_STATUS_BIT        = 0x80;
+const midibyte EVENT_STATUS_BIT        = 0x80;
 
 /**
  *  The following MIDI events are channel messages.  The comments represent
  *  the one or two data-bytes.
  */
 
-const unsigned char EVENT_NOTE_OFF          = 0x80;     // 0kkkkkkk 0vvvvvvv
-const unsigned char EVENT_NOTE_ON           = 0x90;     // 0kkkkkkk 0vvvvvvv
-const unsigned char EVENT_AFTERTOUCH        = 0xA0;     // 0kkkkkkk 0vvvvvvv
-const unsigned char EVENT_CONTROL_CHANGE    = 0xB0;     // 0ccccccc 0vvvvvvv
-const unsigned char EVENT_PROGRAM_CHANGE    = 0xC0;     // 0ppppppp
-const unsigned char EVENT_CHANNEL_PRESSURE  = 0xD0;     // 0vvvvvvv
-const unsigned char EVENT_PITCH_WHEEL       = 0xE0;     // 0lllllll 0mmmmmmm
+const midibyte EVENT_NOTE_OFF          = 0x80;     // 0kkkkkkk 0vvvvvvv
+const midibyte EVENT_NOTE_ON           = 0x90;     // 0kkkkkkk 0vvvvvvv
+const midibyte EVENT_AFTERTOUCH        = 0xA0;     // 0kkkkkkk 0vvvvvvv
+const midibyte EVENT_CONTROL_CHANGE    = 0xB0;     // 0ccccccc 0vvvvvvv
+const midibyte EVENT_PROGRAM_CHANGE    = 0xC0;     // 0ppppppp
+const midibyte EVENT_CHANNEL_PRESSURE  = 0xD0;     // 0vvvvvvv
+const midibyte EVENT_PITCH_WHEEL       = 0xE0;     // 0lllllll 0mmmmmmm
 
 /**
  *  The following MIDI events have no channel.
  */
 
-const unsigned char  EVENT_CLEAR_CHAN_MASK  = 0xF0;
-const unsigned char  EVENT_MIDI_QUAR_FRAME  = 0xF1;     // not used
-const unsigned char  EVENT_MIDI_SONG_POS    = 0xF2;
-const unsigned char  EVENT_MIDI_SONG_SELECT = 0xF3;     // not used
-const unsigned char  EVENT_MIDI_TUNE_SELECT = 0xF6;     // not used
-const unsigned char  EVENT_MIDI_CLOCK       = 0xF8;
-const unsigned char  EVENT_MIDI_START       = 0xFA;
-const unsigned char  EVENT_MIDI_CONTINUE    = 0xFB;
-const unsigned char  EVENT_MIDI_STOP        = 0xFC;
-const unsigned char  EVENT_MIDI_ACTIVE_SENS = 0xFE;     // not used
-const unsigned char  EVENT_MIDI_RESET       = 0xFF;     // not used
+const midibyte EVENT_CLEAR_CHAN_MASK   = 0xF0;
+const midibyte EVENT_MIDI_QUAR_FRAME   = 0xF1;     // not used
+const midibyte EVENT_MIDI_SONG_POS     = 0xF2;
+const midibyte EVENT_MIDI_SONG_SELECT  = 0xF3;     // not used
+const midibyte EVENT_MIDI_TUNE_SELECT  = 0xF6;     // not used
+const midibyte EVENT_MIDI_CLOCK        = 0xF8;
+const midibyte EVENT_MIDI_START        = 0xFA;
+const midibyte EVENT_MIDI_CONTINUE     = 0xFB;
+const midibyte EVENT_MIDI_STOP         = 0xFC;
+const midibyte EVENT_MIDI_ACTIVE_SENS  = 0xFE;     // not used
+const midibyte EVENT_MIDI_RESET        = 0xFF;     // not used
 
 /**
  *  A MIDI System Exclusive (SYSEX) message starts with F0, followed
@@ -86,8 +88,8 @@ const unsigned char  EVENT_MIDI_RESET       = 0xFF;     // not used
  *  ended by an F7.
  */
 
-const unsigned char  EVENT_SYSEX            = 0xF0;
-const unsigned char  EVENT_SYSEX_END        = 0xF7;
+const midibyte EVENT_SYSEX             = 0xF0;
+const midibyte EVENT_SYSEX_END         = 0xF7;
 
 /**
  *  Provides events for management of MIDI events.
@@ -121,14 +123,14 @@ private:
      *  low nibble = channel.  Bit 7 is present in all status bytes.
      */
 
-    unsigned char m_status;
+    midibyte m_status;
 
     /**
      *  The two bytes of data for the MIDI event.  Remember that the
      *  most-significant bit of a data byte is always 0.
      */
 
-    unsigned char m_data[SEQ64_MIDI_DATA_BYTE_COUNT];
+    midibyte m_data[SEQ64_MIDI_DATA_BYTE_COUNT];
 
     /**
      *  Points to the data buffer for SYSEX messages.
@@ -136,7 +138,7 @@ private:
      *  This really ought to be a Boost or STD scoped pointer.
      */
 
-    unsigned char * m_sysex;
+    midibyte * m_sysex;
 
     /**
      *  Gives the size of the SYSEX message.
@@ -209,7 +211,7 @@ public:
      * \getter m_status
      */
 
-    unsigned char status () const
+    midibyte status () const
     {
         return m_status;
     }
@@ -224,7 +226,7 @@ public:
      *      Returns true if the byte represents a MIDI channel message.
      */
 
-    static bool is_channel_msg (unsigned char msg)
+    static bool is_channel_msg (midibyte msg)
     {
         return
         (
@@ -248,7 +250,7 @@ public:
      *      it might not be a channel message at all, so be careful.
      */
 
-    static bool is_one_byte_msg (unsigned char msg)
+    static bool is_one_byte_msg (midibyte msg)
     {
         return msg == EVENT_PROGRAM_CHANGE || msg == EVENT_CHANNEL_PRESSURE;
     }
@@ -265,7 +267,7 @@ public:
      *      it might not be a channel message at all, so be careful.
      */
 
-    static bool is_two_byte_msg (unsigned char msg)
+    static bool is_two_byte_msg (midibyte msg)
     {
         return
         (
@@ -308,7 +310,7 @@ public:
 
     static inline bool is_desired_cc_or_not_cc
     (
-        unsigned char msg, unsigned char cc, unsigned char datum
+        midibyte msg, midibyte cc, midibyte datum
     )
     {
         return (msg != EVENT_CONTROL_CHANGE) || (datum == cc);
@@ -330,13 +332,13 @@ public:
         m_timestamp %= a_mod;
     }
 
-    void set_status (char status);      // a bit long to inline
+    void set_status (midibyte status);  /* a bit long to inline */
 
     /**
      * \getter m_status
      */
 
-    unsigned char get_status () const
+    midibyte get_status () const
     {
         return m_status;
     }
@@ -384,7 +386,7 @@ public:
      *      The return reference for the first byte.
      */
 
-    void get_data (unsigned char & d0, unsigned char & d1) const
+    void get_data (midibyte & d0, midibyte & d1) const
     {
         d0 = m_data[0];
         d1 = m_data[1];
@@ -431,13 +433,13 @@ public:
     }
 
     void start_sysex ();
-    bool append_sysex (unsigned char * data, long size);
+    bool append_sysex (midibyte * data, long size);
 
     /**
      * \getter m_sysex
      */
 
-    unsigned char * get_sysex () const
+    midibyte * get_sysex () const
     {
         return m_sysex;
     }
@@ -584,14 +586,14 @@ public:
 
     void make_clock ()
     {
-        m_status = (unsigned char)(EVENT_MIDI_CLOCK);
+        m_status = midibyte(EVENT_MIDI_CLOCK);
     }
 
     /**
      * \getter m_data[]
      */
 
-    unsigned char data (int index) const    /* index not checked, for speed */
+    midibyte data (int index) const    /* index not checked, for speed */
     {
         return m_data[index];
     }
@@ -601,7 +603,7 @@ public:
      *  first data byte, m_data[0].
      */
 
-    unsigned char get_note () const
+    midibyte get_note () const
     {
         return m_data[0];
     }
@@ -620,7 +622,7 @@ public:
      * \getter m_data[1], the note velocity.
      */
 
-    unsigned char get_note_velocity () const
+    midibyte get_note_velocity () const
     {
         return m_data[1];
     }

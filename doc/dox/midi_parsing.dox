@@ -31,16 +31,214 @@ sequence objects.  The first one will contain the original track data, and the
 rest will contain common data and then channel data for each channel.  After
 the parsing is done, all the non-empty tracks (including the original track)
 will be added to the performance.  The user then has the option of deleting the
-original track, which will be the last track.
+original track, which will be the last track.  That's the current idea, anyway.
 
 \section midi_parsing_smf_1 SMF 1 Parsing
 
 This section describes the parsing of the header chunk, MThd, and the track
 chunk, MTrk.
 
+The midifile::parse() function starts by opening the MIDI file, getting its
+file-size, pre-allocating the data vector to that size, reading all of the
+characters into that vector, and then closing the file.
+
 \subsection midi_parsing_smf_1_mthd MIDI File Header, MThd
 
-Every ...
+The data of the header is read:
+
+\verbatim
+   Header ID:     "MThd"         read_long()       4 bytes
+   MThd length:     6            read_long()       4 bytes
+   Format:        0, 1, 2        read_short()      2 bytes
+   No. of track:  1 or more      read_short()      2 bytes
+   PPQN:           192           read_short()      2 bytes
+\endverbatim
+
+The header ID and it's length are always the same values.  The formats that
+Sequencer64 supports are 0 or 1.  SMF 0 has only one track, while SMF 1 can
+support an arbitary number of tracks.  The last value in the header is the PPQN
+value, which specifies the "pulses per quarter note", which is the basic
+time-resolution of events in the MIDI file.  Common values are 96 or 192, but
+higher values are also common.  Sequencer64 and its precursor, Seq24, default
+to 192.
+
+\subsection midi_parsing_smf_1_mtrk MIDI Track, MTrk
+
+Sequencer64 next reads the tracks specified in the file.  Each track is assumed
+to cover a different MIDI channel, but always the same MIDI buss.  (The MIDI
+buss is not a data item in standard MIDI files, but it is a special data item
+in Seq24/Sequencer64 MIDI files.)  Each track is tagged by a standard chunk
+marker, "MTrk".  Other markers are possible, and are to be ignored, if nothing
+else.  Here are the values read at the beginning of a track:
+
+\verbatim
+   Track ID:      "MTrk"         read_long()       4 bytes
+   Track length:  varies         read_long()       4 bytes
+\endverbatim
+
+The track length is the number of bytes that need to be read in order to get
+all of the data in the track.
+
+Next, a new sequence object is created, with the PPQN value passed to its
+constructor.  The sequence then is hooked to the master MIDI buss object.
+The "RunningTime" accumulator is set to 0 for that track.
+
+Next, the parse() function loops through the rest of the track, reading data
+and logging it to the sequence.  Let's go through the loop, which is the meat
+of the processing.
+
+TODO:  An empty event is created before track processing, and re-used for every
+track and event.  This seems dangerous.  We moved the event constructor two
+levels of nesting deeper, and it seems to work fine.
+
+<b>Delta time</b>.
+The amount time that passes from one event to the next is the <i>delta
+time</i>.  For some events, the time doesn't matter, and is set to 0.
+This values is a <i>variable length value</i>, also known as a "VLV" or
+a "varinum".   It provides a way of encoding arbitrarily large values, a byte
+at a time.  For now, just note that a varinum is 1 or more bytes, and MIDI
+provides a way to tell when the varinum is complete.
+
+\verbatim
+   Delta time:    varies         read_varinum()    1 or more bytes
+\endverbatim
+
+\subsubsection midi_parsing_smf_1_channel  Channel Events
+
+<b>Status</b>.
+The byte after the delta time is examined by masking it against 0x80 to check
+the high bit.  If not set, it is a "running status", it is replaced with the
+"last status", which is 0 at first.
+
+\verbatim
+   Status byte:   varies         read_byte()       1 byte
+\endverbatim
+
+If the high bit is set, it is a status, and is passed to the setter
+<code>event::set_status()</code>.
+
+The "RunningTime" accumulator is incremented by the delta-time.  The current
+time is adjusted as per the PPQN ratio, if needed, and passed to the setter
+<code>event::set_timestamp()</code>.
+
+Now what does the status mean?  First, the channel part of the status is masked
+out using the 0xF0 mask.
+
+If it is a 2-data-byte event (note on, note off, aftertouch, control-change, or
+pitch-wheel), then the two data bytes are read:
+
+\verbatim
+   Data byte 0:   varies         read_byte()       1 byte
+   Data byte 1:   varies         read_byte()       1 byte
+\endverbatim
+
+If the status is a note-on event, with data[1] = 0, then it is converted to a
+note-off event, a fix for the output quirks of some MIDI devices, and the
+status of the event is amended to EVENT_NOTE_OFF.
+
+If it is a 1-data-btye event (program change or channel pressure), then only
+data byte 0 is read.
+
+Then the one or two data bytes are added to the event by overloads of
+<code>event::set_data()</code>, the event is added to the current sequence by
+<code>sequence::add_event()</code>, and the MIDI channel of the sequence is set
+by <code>sequence::set_midi_channel()</code>.
+
+Note that this is the point where parsing could detect a change in channel, and
+select a new sequence to support that channel, and add the events to that
+sequence, if the file were SMF 0.
+
+Also note that the channel of the sequence is set every a new channel
+event/status is read.  This should be done once, and then simply warned about
+if a non-matching channel occurs.
+
+Lastly, note that it might be better to do the sequence function calls at the
+end of processing the event.
+
+\subsubsection midi_parsing_smf_1_meta  Meta Events
+
+If the event status masks off to 0xF0 (0xF0 to 0xFF), then it is a meta event.
+If the status is 0xFF, it is called a "Sequencer-specific", or "SeqSpec" event.
+For this kind of event, then a type byte and the length of the event are
+read.
+
+\verbatim
+   Meta type:     varies         read_byte()       1 byte
+   Meta length:   varies         read_varinum()    1 or more bytes
+\endverbatim
+
+If the type of the SeqSpec (0xFF) meta event is 0x7F, parsing checks to see if
+it is one of the Seq24 "proprietary" events.  These events are tagged with
+various values that mask off to 0x24240000.  The parser reads the tag:
+
+\verbatim
+   Prop tag:     0x242400nn      read_long()       4 bytes
+\endverbatim
+
+These tags provide a way to save and recover Seq24/Sequencer64 properties from
+the MIDI file: MIDI buss, MIDI channel, time signature, sequence triggers, and
+(new), the key, scale, and background sequence to use with the track/sequence.
+Any leftover data for the tagged event is let go.  Unknown tags ate skipped.
+
+If the type of the SeqSpec (0xFF) meta event is 0x2f, then it is the
+End-of-Track marker.  The current time is set using
+<code>sequence::set_length()</code> and then
+<code>sequence::zero_markers()</code> is called, and parsing is done for
+that track.
+
+If the type of the SeqSpec (0xFF) meta event is 0x03, then it is the sequence
+name.  The "length" number of bytes are read, and loaded by
+<code>sequence::set_name()</code>.
+
+If the type of the SeqSpec (0xFF) meta event is 0x00, then it is the sequence
+number, which is read:
+
+\verbatim
+   Seq number:    varies         read_short()      2 bytes
+\endverbatim
+
+Note that the sequence number might be modified latter to account for the
+current screenset in force for a file import operation.
+
+Anything other SeqSpec type is simply skipped by reading the "length" number of
+bytes.
+
+\subsubsection midi_parsing_smf_1_sysex  SysEx Events
+
+If the meta event status value is 0xF0, it is called a "System-exclusive", or
+"SysEx" event.
+
+Although there is some infrastructure to support storing the SysEx event within
+a sequence, the SysEx information is simply skipped.  Sequencer64 warns if the
+terminating 0xF7 SysEx terminator is not found at the expected length.
+Also, some malformed SysEx messages have been encounter, and those are detected
+and skipped as well.
+
+\subsubsection midi_parsing_smf_1_end  End of Sequence
+
+Any other statuses are deemed unsupportable, and abort parsing with an error.
+
+If the --bus option is in force, <code>sequence::set_midi_bus()</code> is
+called to override the buss number (if any) stored with the sequence.
+
+Finally, <code>perform::add_sequence()</code> adds the sequence to the
+encoded tune.
+
+\section midi_parsing_smf_0 SMF 0 Parsing
+
+After parsing SMF 1 track data, we end up with a number of sequences, each on a
+different MIDI channel.  With SMF 0, data for all channels is present in a
+single track.  Sequencer64 will read SMF 0 data, but we really need to be able
+to have one MIDI channel per track.  So we need to take the data from the
+sequence and use it to make more sequences.
+
+TODO: 
+
+<code>sequence::add_event()</code>
+<code>sequence::set_midi_channel()</code>.
+<code>sequence::set_length()</code>
+<code>sequence::set_midi_bus()</code>
+<code>perform::add_sequence()</code>
 
  *//*-------------------------------------------------------------------------*/
 

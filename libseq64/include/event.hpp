@@ -351,7 +351,7 @@ public:
      *      The byte value to set.  We should make these all "midibytes".
      */
 
-    void set_data (char d1)
+    void set_data (midibyte d1)
     {
         m_data[0] = d1 & 0x7F;
     }
@@ -369,7 +369,7 @@ public:
      *      "midibytes".
      */
 
-    void set_data (char d1, char d2)
+    void set_data (midibyte d1, midibyte d2)
     {
         m_data[0] = d1 & 0x7F;
         m_data[1] = d2 & 0x7F;
@@ -613,9 +613,9 @@ public:
      *  assigning it to the first data byte, m_data[0].
      */
 
-    void set_note (char a_note)
+    void set_note (midibyte note)
     {
-        m_data[0] = a_note & 0x7F;
+        m_data[0] = note & 0x7F;
     }
 
     /**

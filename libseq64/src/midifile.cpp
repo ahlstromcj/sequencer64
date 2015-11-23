@@ -446,7 +446,6 @@ midifile::parse_smf_1 (perform & p, int screenset)
      * be read properly after all normal tracks have been processed.
      */
 
-    event e;
     char buss_override = usr().midi_buss_override();
     for (int curtrack = 0; curtrack < NumTracks; curtrack++)
     {
@@ -472,10 +471,11 @@ midifile::parse_smf_1 (perform & p, int screenset)
                 return false;
             }
             sequence & seq = *s;                /* references are nicer     */
-            seq.set_master_midi_bus(&p.master_bus());     /* set buss  */
+            seq.set_master_midi_bus(&p.master_bus());   /* set master buss  */
             RunningTime = 0;                    /* reset time               */
             while (! done)                      /* get each event in track  */
             {
+                event e;                        /* safer here, if "slower"  */
                 Delta = read_varinum();         /* get time delta           */
                 laststatus = status;
                 status = m_data[m_pos];         /* get status               */

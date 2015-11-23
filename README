@@ -1,6 +1,6 @@
 README for Sequencer64 0.9.9.9 (current branch = "cmdlineopts")
 Chris Ahlstrom
-2015-09-10 to 2015-11-22
+2015-09-10 to 2015-11-23
 
 The sequencer64 project is a continuation of sequencer24 to refactor it to
 be tighter and easier to transition to GTKmm 3, and much more.

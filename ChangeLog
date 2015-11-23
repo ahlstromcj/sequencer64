@@ -1,3 +1,92 @@
+2015-11-23  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* doc/dox/doxy-reference.cfg, doc/dox/midi_parsing.dox,
+	doc/dox/user_testing.dox, libseq64/include/configfile.hpp,
+	libseq64/include/event.hpp, libseq64/include/event_list.hpp,
+	libseq64/include/mastermidibus.hpp,
+	libseq64/include/midi_container.hpp,
+	libseq64/include/midi_control.hpp, libseq64/include/midibus.hpp,
+	libseq64/include/midibus_common.hpp, libseq64/include/midibyte.hpp,
+	libseq64/include/midifile.hpp, libseq64/include/sequence.hpp,
+	libseq64/src/event.cpp, libseq64/src/event_list.cpp,
+	libseq64/src/mastermidibus.cpp, libseq64/src/midi_container.cpp,
+	libseq64/src/midibus.cpp, libseq64/src/midifile.cpp,
+	libseq64/src/perform.cpp, libseq64/src/sequence.cpp,
+	seq_gtkmm2/include/seqdata.hpp, seq_gtkmm2/include/seqedit.hpp,
+	seq_gtkmm2/include/seqevent.hpp, seq_gtkmm2/include/seqroll.hpp,
+	seq_gtkmm2/src/font.cpp, seq_gtkmm2/src/seqdata.cpp,
+	seq_gtkmm2/src/seqedit.cpp, seq_gtkmm2/src/seqevent.cpp,
+	seq_gtkmm2/src/seqroll.cpp: Changed unsigned char to midibyte and
+	bussbyte, added MIDI parsing section to documentation.
+
+2015-11-22  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* doc/dox/doxy-reference.cfg, seq_gtkmm2/src/perfroll.cpp,
+	seq_gtkmm2/src/seqroll.cpp: Removed the deprecated shift-P
+	functionality from seqroll and perfroll.
+
+2015-11-22  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* README, contrib/bugs_to_investigate.txt,
+	libseq64/include/perform.hpp, libseq64/include/sequence.hpp,
+	libseq64/src/perform.cpp, libseq64/src/sequence.cpp,
+	seq_gtkmm2/include/fruityperfroll_input.hpp,
+	seq_gtkmm2/include/fruityseq.hpp,
+	seq_gtkmm2/include/fruityseqroll.hpp,
+	seq_gtkmm2/include/perfroll_input.hpp,
+	seq_gtkmm2/src/fruityperfroll_input.cpp,
+	seq_gtkmm2/src/fruityseq.cpp, seq_gtkmm2/src/fruityseqroll.cpp,
+	seq_gtkmm2/src/mainwid.cpp, seq_gtkmm2/src/perfedit.cpp,
+	seq_gtkmm2/src/perfroll.cpp, seq_gtkmm2/src/perfroll_input.cpp,
+	seq_gtkmm2/src/perftime.cpp, seq_gtkmm2/src/seq24seq.cpp,
+	seq_gtkmm2/src/seq24seqroll.cpp, seq_gtkmm2/src/seqdata.cpp,
+	seq_gtkmm2/src/seqevent.cpp, seq_gtkmm2/src/seqkeys.cpp,
+	seq_gtkmm2/src/seqmenu.cpp, seq_gtkmm2/src/seqroll.cpp: Performed a
+	massive amount of cleanup of modification-flag handling, still some
+	things to fix.
+
+2015-11-21  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* Sequencer64/sequencer64.cpp,
+	contrib/sequencer64-timidity-yoshimi.usr.example,
+	libseq64/include/Makefile.am, libseq64/include/midi_control.hpp,
+	libseq64/include/midifile.hpp, libseq64/include/perform.hpp,
+	libseq64/src/midifile.cpp, libseq64/src/optionsfile.cpp,
+	libseq64/src/perform.cpp: Tightened up the midi_control class and
+	some globals used in perform.
+
+2015-11-21  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/include/globals.h, libseq64/include/rc_settings.hpp,
+	libseq64/src/cmdlineopts.cpp, libseq64/src/globals.cpp,
+	libseq64/src/mastermidibus.cpp, libseq64/src/optionsfile.cpp,
+	libseq64/src/perform.cpp, libseq64/src/rc_settings.cpp,
+	seq_gtkmm2/src/perfedit.cpp: Finally got rid of all the global_xxxx
+	variable from globals and rc_settings modules.
+
+2015-11-21  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* contrib/bugs_to_investigate.txt,
+	contrib/sequencer64-basic.rc.example,
+	contrib/sequencer64-basic.usr.example,
+	contrib/sequencer64-timidity-yoshimi.usr.example,
+	libseq64/include/globals.h, libseq64/include/user_settings.hpp,
+	libseq64/src/cmdlineopts.cpp, libseq64/src/globals.cpp,
+	libseq64/src/perform.cpp, libseq64/src/rc_settings.cpp,
+	libseq64/src/user_settings.cpp: Added user-save option and removed
+	show-midi and pass-sysex globals.
+
+2015-11-20  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* Sequencer64/sequencer64.cpp, configure.ac,
+	doc/dox/doxy-reference.cfg, libseq64/include/Makefile.am,
+	libseq64/include/cmdlineopts.hpp,
+	libseq64/include/file_functions.hpp,
+	libseq64/include/rc_settings.hpp, libseq64/src/Makefile.am,
+	libseq64/src/cmdlineopts.cpp, libseq64/src/file_functions.cpp,
+	libseq64/src/rc_settings.cpp: Initial check-in of new command-line
+	processing module, and it seems to work, just a few tweaks needed.
+
 2015-11-20  Chris Ahlstrom <ahlstromcj@gmail.com>
 	* *.*: Merged testing3 into master to create version 0.9.9.8.
 

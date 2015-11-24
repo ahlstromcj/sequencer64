@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-21
+ * \updates       2015-11-23
  * \license       GNU GPLv2 or above
  *
  *  The <tt> ~/.seq24rc </tt> or <tt> ~/.config/sequencer64/sequencer64.rc
@@ -442,7 +442,7 @@ optionsfile::write (const perform & p)
     else
     {
         file <<
-            "# Sequencer64 0.9.9.4 (and above) rc configuration file\n"
+            "# Sequencer64 0.9.9.10 (and above) rc configuration file\n"
             "# (Also works with Sequencer24)\n"
             ;
     }

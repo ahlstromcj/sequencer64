@@ -1,8 +1,11 @@
 Contributed MIDI Files
 Chris Ahlstrom
-2015-09-11 to 2015-11-13
+2015-09-11 to 2015-11-23
 
 This directory contains contributed MIDI files for examples and testing.
+Also see the test files from the midicvt as described in
+midicvt-test-files.txt; we found a few bugs and potential features to add
+by loading them into Sequencer64.
 
    click_4_4.midi:
    

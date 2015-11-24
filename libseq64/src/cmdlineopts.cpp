@@ -135,7 +135,7 @@ static const std::string s_arg_list =
     ;
 
 static const char * const s_help_1a =
-"sequencer64 v 0.9.9.9  A significant refactoring of the seq24 live sequencer.\n"
+"sequencer64 v 0.9.9.10 A significant refactoring of the seq24 live sequencer.\n"
 "\n"
 "Usage: sequencer64 [options] [MIDI filename]\n\n"
 "Options:\n"

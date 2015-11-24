@@ -1,4 +1,4 @@
-README for Sequencer64 0.9.9.9 (current branch = "cmdlineopts")
+README for Sequencer64 0.9.9.10 (current branch = "smf0")
 Chris Ahlstrom
 2015-09-10 to 2015-11-23
 
@@ -17,9 +17,8 @@ Major updates:
         between GUI support and the files, MIDI, JACK, and LASH support.
     -   A wide range of MIDI files have been tested, to find bugs that
         can crash the application.  A nice increase in robustness.
-        Also, although we do not yet split the channels into separate
-        tracks/sequences, we do now load SMF 0 files.  The split feature
-        will be added soon.
+        Also, we load SMF 0 files, and split the channels into separate
+        tracks/sequences.
     -   The "rc" configuration file has been upgraded to support a couple
         more options, including the enabling/disabling of LASH session
         support.

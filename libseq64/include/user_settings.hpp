@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-22
- * \updates       2015-11-21
+ * \updates       2015-11-23
  * \license       GNU GPLv2 or above
  *
  *  This module defines the following categories of "global" variables that
@@ -66,12 +66,12 @@
 #include "user_instrument.hpp"
 #include "user_midi_bus.hpp"
 
-/**
+/*
  *  Manifest constant for the maximum number of "instrument" values in a
  *  user_midi_bus_t structure.
- */
 
 #define SEQ64_MIDI_BUS_CHANNEL_MAX             16
+ */
 
 namespace seq64
 {

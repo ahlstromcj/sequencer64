@@ -44,7 +44,7 @@ PACKAGE=sequencer64
 AC_DEFINE_UNQUOTED(PACKAGE, "$PACKAGE")
 AC_SUBST(PACKAGE)
 
-VERSION="0.9.9.9"
+VERSION="0.9.9.10"
 AC_DEFINE_UNQUOTED(VERSION, "$VERSION")
 AC_SUBST(VERSION)
 
@@ -423,8 +423,8 @@ dnl #define API_VERSION "0.9"             // already defined on command line
 
 AH_TOP(
 
-#define VERSION_DATE_SHORT "2015-11-23"
-#define VERSION "0.9.9.9"
+#define VERSION_DATE_SHORT "2015-11-24"
+#define VERSION "0.9.9.10"
 
 )
 

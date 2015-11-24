@@ -164,8 +164,8 @@ midi_container::fill (int tracknumber)
 
         midibyte d0 = e.data(0);                    /* encode status & data */
         midibyte d1 = e.data(1);
-        put(e.status() | m_sequence.get_midi_channel());    /* add channel  */
-        switch (e.status() & 0xF0)
+        put(e.get_status() | m_sequence.get_midi_channel()); /* add channel */
+        switch (e.get_status() & 0xF0)
         {
         case 0x80:
         case 0x90:

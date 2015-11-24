@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-23
+ * \updates       2015-11-24
  * \license       GNU GPLv2 or above
  *
  *  The functions add_list_var() and add_long_list() have been replaced by
@@ -266,21 +266,40 @@ private:
     int m_seq_number;
 
     /**
-     *  Holds the length of the sequence in pulse.
+     *  Holds the length of the sequence in pulses.
      *  This value should be a power of two when used as a bar unit.
      */
 
     long m_length;
 
+    /**
+     *  The size of snap in units of pulses (ticks).  It starts out as the
+     *  value m_ppqn / 4.
+     */
+
     long m_snap_tick;
 
     /**
-     *  These members are used by the sequence editor to mark things in
-     *  correct time on the user-interface.
+     *  Provides the number of beats per bar used in this sequence.  Defaults
+     *  to 4.  Used by the sequence editor to mark things in correct time on
+     *  the user-interface.
      */
 
     long m_time_beats_per_measure;
+
+    /**
+     *  Provides with width of a beat.  Defaults to 4, which means the beat is
+     *  a quarter note.  A value of 8 would mean it is an eighth note.  Used
+     *  by the sequence editor to mark things in correct time on the
+     *  user-interface.
+     */
+
     long m_time_beat_width;
+
+    /**
+     *  The volume to be used when recording.
+     */
+
     long m_rec_vol;
 
     /**
@@ -327,6 +346,15 @@ public:
      */
 
     event_list & events ()
+    {
+        return m_events;
+    }
+
+    /**
+     * \getter m_events
+     */
+
+    const event_list & events () const
     {
         return m_events;
     }
@@ -596,7 +624,7 @@ public:
     void print_triggers ();
     void play (long tick, bool playback_mode);
     void set_orig_tick (long tick);
-    void add_event (const event * e);
+    void add_event (const event & er);
     void add_trigger
     (
         long tick, long len,
@@ -685,7 +713,7 @@ public:
         long tick, midibyte status,
         midibyte d0, midibyte d1, bool paint = false
     );
-    void stream_event (event * ev);
+    void stream_event (event & ev);
     bool change_event_data_range
     (
         long tick_s, long tick_f,
@@ -797,14 +825,14 @@ public:
 
 private:
 
-    void put_event_on_bus (event * ev);
+    void put_event_on_bus (event & ev);
     void remove_all ();
     void set_trigger_offset (long trigger_offset);
     void split_trigger (trigger & trig, long splittick);
     void adjust_trigger_offsets_to_length (long newlen);
     long adjust_offset (long offset);
     void remove (event_list::iterator i);
-    void remove (event * e);
+    void remove (event & e);
 
 };          // class sequence
 

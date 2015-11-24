@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-23
+ * \updates       2015-11-24
  * \license       GNU GPLv2 or above
  *
  */
@@ -119,8 +119,8 @@ event::operator < (const event & rhs) const
 }
 
 /**
- *  Sets the m_status member to the value of a_status.  If a_status is a
- *  non-channel event, then the channel portion of the status is cleared using
+ *  Sets the m_status member to the value of status.  If a_status is a
+ *  channel event, then the channel portion of the status is cleared using
  *  a bitwise AND against EVENT_CLEAR_CHAN_MASK.
  *
  *  Found in yet another fork of seq24:
@@ -128,15 +128,25 @@ event::operator < (const event & rhs) const
  *      // ORL fait de la merde
  *
  *  He also provided a very similar routine: set_status_midibus().
+ *
+ * \param status
+ *      The status byte, perhaps read from a MIDI file or edited in the
+ *      sequencer's event editor.
  */
 
 void
 event::set_status (midibyte status)
 {
     if (status >= 0xF0)
+    {
         m_status = status;
+        m_channel = EVENT_NULL_CHANNEL;     /* i.e. "not applicable"    */
+    }
     else
+    {
         m_status = status & EVENT_CLEAR_CHAN_MASK;
+        m_channel = status & EVENT_GET_CHAN_MASK;
+    }
 }
 
 /**

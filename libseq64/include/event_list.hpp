@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-19
- * \updates       2015-11-23
+ * \updates       2015-11-24
  * \license       GNU GPLv2 or above
  *
  *  This module extracts the event-list functionality from the sequencer
@@ -93,7 +93,8 @@ class event_list
 {
 
     friend class midi_container;        // access to event_list::iterator
-    friend class sequence;              // access to event_list::iterator
+    friend class midi_splitter;         // ditto
+    friend class sequence;              // tritto
 
 private:
 

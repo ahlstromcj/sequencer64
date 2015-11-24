@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-23
+ * \updates       2015-11-24
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -548,10 +548,13 @@ perform::install_sequence (sequence * seq, int seqnum)
         delete m_seqs[seqnum];
         m_seqs[seqnum] = nullptr;
         if (m_sequence_count > 0)
+        {
             --m_sequence_count;
+        }
         else
+        {
             errprint("install_sequence(): sequence counter already 0");
-
+        }
         result = true;                  /* a modification occurred  */
     }
     m_seqs[seqnum] = seq;
@@ -969,7 +972,9 @@ perform::is_mseq_valid (int seq) const
     {
         result = not_nullptr(m_seqs[seq]);
         if (! result && m_seqs_active[seq])
+        {
             errprintf("is_mseq_valid(): m_seqs[%d] is null\n", seq);
+        }
     }
     return result;
 }
@@ -2106,7 +2111,7 @@ perform::input_func ()
                         if (m_master_bus.is_dumping())
                         {
                             ev.set_timestamp(m_tick);
-                            m_master_bus.get_sequence()->stream_event(&ev);
+                            m_master_bus.get_sequence()->stream_event(ev);
                         }
                         else
                         {

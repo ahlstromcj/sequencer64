@@ -32,8 +32,9 @@
 
 #include <fstream>
 
-#include "perform.hpp"                  /* must precede midi_splitter.hpp !  */
-#include "midi_splitter.hpp"            /* seq64::midi_splitter              */
+#include "event_list.hpp"               /* seq64::event_list            */
+#include "perform.hpp"                  /* seq64::perform               */
+#include "midi_splitter.hpp"            /* seq64::midi_splitter         */
 #include "sequence.hpp"                 /* seq64::sequence              */
 
 namespace seq64
@@ -136,7 +137,7 @@ midi_splitter::increment (int channel)
  */
 
 bool
-midi_splitter::log (sequence & seq, int seqnum)
+midi_splitter::log_main_sequence (sequence & seq, int seqnum)
 {
     bool result;
     if (is_nullptr(m_smf0_main_sequence))
@@ -155,10 +156,10 @@ midi_splitter::log (sequence & seq, int seqnum)
 }
 
 /**
- *  This function parses an SMF 0 binary MIDI file as if it were an SMF 1
- *  file, then, if more than one MIDI channel was encountered in the sequence,
- *  splits all of the channels in the sequence out separate sequences, and
- *  deletes the original sequence.
+ *  This function splits an SMF 0, splitting all of the channels in the
+ *  sequence out into separate sequences, and adding each to the perform
+ *  object.  Lastly, it adds the SMF 0 track as the last track; the user can
+ *  then examine it before removing it.  Is this worth the effort?
  *
  * \param p
  *      Provides a reference to the perform object into which sequences/tracks
@@ -180,41 +181,24 @@ midi_splitter::split (perform & p, int screenset)
     {
         if (m_smf0_channels_count > 1)
         {
-            for (int channel = 0; channel < 16; channel++)
+            int seqnum = screenset * c_seqs_in_set;
+            for (int channel = 0; channel < 16; channel++, seqnum++)
             {
                 if (m_smf0_channels[channel])
                 {
                     sequence * s = new sequence(m_ppqn);
                     sequence & seq = *s;                /* references nicer */
                     seq.set_master_midi_bus(&p.master_bus());
-                    seq.set_midi_channel(channel);
-
-                    /*
-                     * Need a reference to the original sequence
-                     *
-                    split_channel(*m_smf0_main_sequence, seq, channel);
-                    p.add_sequence(&seq, seqnum + (screenset * c_seqs_in_set));
-                     *
-                     */
+                    if (split_channel(*m_smf0_main_sequence, seq, channel))
+                        p.add_sequence(s, seqnum);
                 }
             }
-
-            /**
-             * Lastly, add the SMF 0 track as the last track; the user can
-             * then examine it before removing it.  Is this worth the extra
-             * members?
-             */
-
-            p.add_sequence
-            (
-                m_smf0_main_sequence,
-                m_smf0_seq_number + (screenset * c_seqs_in_set)
-            );
+            p.add_sequence(m_smf0_main_sequence, seqnum);
         }
     }
     else
     {
-        errprint("No SMF 0 main sequence logged.");
+        errprint("split(): No SMF 0 main sequence logged.");
     }
     return result;
 }
@@ -222,6 +206,9 @@ midi_splitter::split (perform & p, int screenset)
 /**
  *  This function splits the given sequence into new sequences, one for each
  *  channel found in the SMF 0 track.
+ *
+ *  It doesn't set the sequence number of the sequence; that is set when the
+ *  sequence is added to the perform object.
  */
 
 bool
@@ -233,6 +220,26 @@ midi_splitter::split_channel
 )
 {
     bool result = false;
+    char temp[24];
+    snprintf(temp, sizeof temp, "%d: %.13s", channel, main_seq.name().c_str());
+    seq.set_name(std::string(temp));
+    seq.set_midi_channel(channel);
+    seq.set_midi_bus(main_seq.get_midi_bus());
+    seq.zero_markers();
+
+    long length_in_ticks = 0;                       // HOW TO OBTAIN?
+    const event_list & evl = main_seq.events();
+    for (event_list::const_iterator i = evl.begin(); i != evl.end(); i++)
+    {
+        const event & er = DREF(i);
+        if (er.check_channel(channel))
+        {
+            seq.add_event(er);
+        }
+    }
+
+
+    seq.set_length(length_in_ticks);
 
     return result;
 }

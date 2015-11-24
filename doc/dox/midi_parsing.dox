@@ -203,6 +203,24 @@ current screenset in force for a file import operation.
 Anything other SeqSpec type is simply skipped by reading the "length" number of
 bytes.
 
+To summarize the process, here are the relevant event and sequence setter
+calls typically made while parsing a MIDI track:
+
+   -# <code>perform::add_sequence()</code>
+      -# <code>sequence::sequence()</code>
+      -# <code>sequence::set_master_midi_bus())</code>
+      -# <code>sequence::add_event()</code>
+         -# <code>event::event()</code>
+         -# <code>event::set_status()</code>
+         -# <code>event::set_timestamp()</code>
+         -# <code>event::set_data()</code>
+      -# <code>sequence::set_midi_channel()</code>
+      -# <code>sequence::set_length()</code>
+      -# <code>sequence::zero_markers()</code>
+      -# <code>sequence::set_name()</code>
+      -# <code>sequence::set_midi_bus()</code>
+   -# <code>xxxxx::yyyy()</code>
+
 \subsubsection midi_parsing_smf_1_sysex  SysEx Events
 
 If the meta event status value is 0xF0, it is called a "System-exclusive", or

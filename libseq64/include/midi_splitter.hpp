@@ -122,7 +122,7 @@ public:
     midi_splitter (int ppqn = SEQ64_USE_DEFAULT_PPQN);
     ~midi_splitter ();
 
-    bool log (sequence & seq, int seqnum);
+    bool log_main_sequence (sequence & seq, int seqnum);
     void initialize ();
     void increment (int channel);
     bool split (perform & p, int screenset);

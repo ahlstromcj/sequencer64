@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-23
+ * \updates       2015-11-24
  * \license       GNU GPLv2 or above
  *
  *  This module also declares/defines the various constants, status-byte
@@ -70,6 +70,7 @@ const midibyte EVENT_PITCH_WHEEL       = 0xE0;     // 0lllllll 0mmmmmmm
  *  The following MIDI events have no channel.
  */
 
+const midibyte EVENT_GET_CHAN_MASK     = 0x0F;
 const midibyte EVENT_CLEAR_CHAN_MASK   = 0xF0;
 const midibyte EVENT_MIDI_QUAR_FRAME   = 0xF1;     // not used
 const midibyte EVENT_MIDI_SONG_POS     = 0xF2;
@@ -81,6 +82,7 @@ const midibyte EVENT_MIDI_CONTINUE     = 0xFB;
 const midibyte EVENT_MIDI_STOP         = 0xFC;
 const midibyte EVENT_MIDI_ACTIVE_SENS  = 0xFE;     // not used
 const midibyte EVENT_MIDI_RESET        = 0xFF;     // not used
+const midibyte EVENT_NULL_CHANNEL      = 0xFF;
 
 /**
  *  A MIDI System Exclusive (SYSEX) message starts with F0, followed
@@ -118,12 +120,20 @@ private:
     unsigned long m_timestamp;
 
     /**
-     *  This is status byte without the channel.  The channel will be
+     *  This is the status byte without the channel.  The channel will be
      *  appended on the MIDI bus.  The high nibble = type of event; The
      *  low nibble = channel.  Bit 7 is present in all status bytes.
      */
 
     midibyte m_status;
+
+    /**
+     *  In order to be able to handle MIDI channel-splitting of an SMF 0 file,
+     *  we need to store the channel, even if we override it when playing the
+     *  MIDI data.
+     */
+
+    midibyte m_channel;
 
     /**
      *  The two bytes of data for the MIDI event.  Remember that the
@@ -208,12 +218,13 @@ public:
     }
 
     /**
-     * \getter m_status
+     *  Checks the channel number to see if the event's channel matches it, or
+     *  if the event has no channel.  Used in the SMF 0 track-splitting code.
      */
 
-    midibyte status () const
+    bool check_channel (int channel) const
     {
-        return m_status;
+        return m_channel == EVENT_NULL_CHANNEL || midibyte(channel) == m_channel;
     }
 
     /**

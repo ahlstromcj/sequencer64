@@ -413,7 +413,6 @@ midifile::parse_smf_0 (perform & p, int screenset)
     return result;
 }
 
-
 /**
  *  This function parses an SMF 1 binary MIDI file; it is basically the
  *  original seq25 midifile::parse() function.  It assumes the file-data has
@@ -518,7 +517,7 @@ midifile::parse_smf_1 (perform & p, int screenset, bool is_smf0)
                         e.set_status(EVENT_NOTE_OFF);     /* vel 0==note off  */
 
                     e.set_data(data[0], data[1]);         /* set data and add */
-                    seq.add_event(&e);
+                    seq.add_event(e);
                     seq.set_midi_channel(status & 0x0F);  /* set midi channel */
                     if (is_smf0)
                         m_smf0_splitter.increment(status & 0x0F);
@@ -528,7 +527,7 @@ midifile::parse_smf_1 (perform & p, int screenset, bool is_smf0)
                 case EVENT_CHANNEL_PRESSURE:
                     data[0] = read_byte();
                     e.set_data(data[0]);                  /* set data and add */
-                    seq.add_event(&e);
+                    seq.add_event(e);
                     seq.set_midi_channel(status & 0x0F);  /* set midi channel */
                     if (is_smf0)
                         m_smf0_splitter.increment(status & 0x0F);
@@ -700,13 +699,13 @@ midifile::parse_smf_1 (perform & p, int screenset, bool is_smf0)
                 }
             }                          /* while not done loading Trk chunk */
 
-            /* Sequence has been filled, add it to the performance  */
-
             if (buss_override != SEQ64_BAD_BUSS)
                 seq.set_midi_bus(buss_override);
 
+            /* Sequence has been filled, add it to the performance  */
+
             if (is_smf0)
-                (void) m_smf0_splitter.log(seq, seqnum);
+                (void) m_smf0_splitter.log_main_sequence(seq, seqnum);
             else
                 p.add_sequence(&seq, seqnum + (screenset * c_seqs_in_set));
         }

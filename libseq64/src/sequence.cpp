@@ -366,13 +366,17 @@ sequence::set_rec_vol (long recvol)
  *      reverse order.  Doesn't affect functionality, but it's puzzling
  *      until one understands what is happening.  Actually, this is true only
  *      in Seq24, we've fixed that behavior for Sequencer64.
+ *
+ * \param ep
+ *      Provide a reference to the event to be added; the event is copied into
+ *      the events container.
  */
 
 void
-sequence::add_event (const event * ep)     // TODO: use reference
+sequence::add_event (const event & er)
 {
     automutex locker(m_mutex);
-    m_events.add(*ep);                  /* post-sorts by time & rank    */
+    m_events.add(er);                   /* post/auto-sorts by time & rank   */
     reset_draw_marker();
     set_dirty();
 }
@@ -477,10 +481,10 @@ sequence::play (long tick, bool playback_mode)
 
     long start_tick_offset = (start_tick + m_length - m_trigger_offset);
     long end_tick_offset = (end_tick + m_length - m_trigger_offset);
-    if (m_playing)                              /* play the notes in frame */
+    if (m_playing)                              /* play the notes in frame  */
     {
-        long times_played = m_last_tick / m_length; /* weird, it ever non-zero?  */
-        long offset_base = times_played * m_length; /* ditto, m_length cancels   */
+        long times_played = m_last_tick / m_length; /* weird, ever non-zero?  */
+        long offset_base = times_played * m_length; /* same, m_length cancels */
         event_list::iterator e = m_events.begin();
         while (e != m_events.end())
         {
@@ -493,7 +497,7 @@ sequence::play (long tick, bool playback_mode)
 
             long stamp = er.get_timestamp() + offset_base;
             if (stamp >= start_tick_offset && stamp <= end_tick_offset)
-                put_event_on_bus(&er);              /* frame still going    */
+                put_event_on_bus(er);               /* frame still going    */
             else if (stamp > end_tick_offset)
                 break;                              /* frame is done        */
 
@@ -513,7 +517,8 @@ sequence::play (long tick, bool playback_mode)
 }
 
 /**
- *  Resets everything to zero.  This function is used when the sequencer stops.
+ *  Resets everything to zero.  This function is used when the sequencer
+ *  stops.
  *
  * \threadsafe
  */
@@ -586,7 +591,7 @@ sequence::remove (event_list::iterator i)
  */
 
 void
-sequence::remove (event * e)
+sequence::remove (event & e)
 {
     /**
      * \todo Use find instead in sequence::remove()!
@@ -595,7 +600,7 @@ sequence::remove (event * e)
     for (event_list::iterator i = m_events.begin(); i != m_events.end(); i++)
     {
         event & er = DREF(i);
-        if (e == &er)                   /* comparing pointers, not values */
+        if (&e == &er)                  /* comparing pointers, not values */
         {
             m_events.remove(i);
             return;
@@ -784,7 +789,7 @@ sequence::select_note_events
             long tick_f = 0;            // must be initialized
             if (er.is_linked())
             {
-                event * ev = er.get_linked();
+                event * ev = er.get_linked();       // pointer
                 if (er.is_note_off())
                 {
                     tick_s = ev->get_timestamp();
@@ -848,8 +853,8 @@ sequence::select_note_events
                     }
                     if (a_action == e_remove_one)
                     {
-                        remove(&er);
-                        remove(ev);
+                        remove(er);
+                        remove(*ev);
                         reset_draw_marker();
                         ++result;
                         break;
@@ -901,7 +906,7 @@ sequence::select_note_events
                     }
                     if (a_action == e_remove_one)
                     {
-                        remove(&er);
+                        remove(er);
                         reset_draw_marker();
                         result++;
                         break;
@@ -976,7 +981,7 @@ sequence::select_events
 
                 if (action == e_remove_one)
                 {
-                    remove(&er);
+                    remove(er);
                     reset_draw_marker();
                     result++;
                     break;
@@ -1052,7 +1057,7 @@ sequence::move_selected_notes (long delta_tick, int delta_note)
                 e.set_timestamp(timestamp);
                 e.set_note(e.get_note() + delta_note);
                 e.select();
-                add_event(&e);
+                add_event(e);
             }
         }
     }
@@ -1105,7 +1110,7 @@ sequence::stretch_selected (long delta_tick)
                     long(ratio * (e->get_timestamp() - first_ev)) + first_ev
                 );
                 new_e.unmark();
-                add_event(&new_e);
+                add_event(new_e);
             }
         }
         remove_marked();
@@ -1151,7 +1156,7 @@ sequence::grow_selected (long delta_tick)
             event e = *off;                         /* copy event */
             e.unmark();
             e.set_timestamp(len);
-            add_event(&e);
+            add_event(e);
         }
     }
     remove_marked();
@@ -1477,12 +1482,12 @@ sequence::add_note (long tick, long length, int note, bool paint)
             e.set_status(EVENT_NOTE_ON);
             e.set_data(note, 100);
             e.set_timestamp(tick);
-            add_event(&e);
+            add_event(e);
 
             e.set_status(EVENT_NOTE_OFF);
             e.set_data(note, 100);
             e.set_timestamp(tick + length);
-            add_event(&e);
+            add_event(e);
         }
     }
     verify_and_link();
@@ -1533,7 +1538,7 @@ sequence::add_event
         e.set_status(status);
         e.set_data(d0, d1);
         e.set_timestamp(tick);
-        add_event(&e);
+        add_event(e);
     }
     verify_and_link();
 }
@@ -1545,10 +1550,10 @@ sequence::add_event
  */
 
 void
-sequence::stream_event (event * ev)
+sequence::stream_event (event & ev)
 {
     automutex locker(m_mutex);
-    ev->mod_timestamp(m_length);              /* adjust the tick */
+    ev.mod_timestamp(m_length);                 /* adjust the tick */
     if (m_recording)
     {
         if (rc().is_pattern_playing())
@@ -1558,18 +1563,18 @@ sequence::stream_event (event * ev)
         }
         else
         {
-            if (ev->is_note_on())
+            if (ev.is_note_on())
             {
                 push_undo();
                 add_note
                 (
                     m_last_tick % m_length, m_snap_tick - 2,
-                    ev->get_note(), false
+                    ev.get_note(), false
                 );
                 set_dirty();
                 ++m_notes_on;
             }
-            if (ev->is_note_off())
+            if (ev.is_note_off())
                 --m_notes_on;
 
             if (m_notes_on <= 0)
@@ -1582,12 +1587,12 @@ sequence::stream_event (event * ev)
     link_new();
     if (m_quantized_rec && rc().is_pattern_playing())
     {
-        if (ev->is_note_off())
+        if (ev.is_note_off())
         {
             select_note_events
             (
-                ev->get_timestamp(), ev->get_note(),
-                ev->get_timestamp(), ev->get_note(), e_select
+                ev.get_timestamp(), ev.get_note(),
+                ev.get_timestamp(), ev.get_note(), e_select
             );
             quantize_events(EVENT_NOTE_ON, 0, m_snap_tick, 1 , true);
         }
@@ -2642,15 +2647,15 @@ sequence::print_triggers ()
  */
 
 void
-sequence::put_event_on_bus (event * ev)
+sequence::put_event_on_bus (event & ev)
 {
     automutex locker(m_mutex);
-    midibyte note = ev->get_note();
+    midibyte note = ev.get_note();
     bool skip = false;
-    if (ev->is_note_on())
+    if (ev.is_note_on())
         m_playing_notes[note]++;
 
-    if (ev->is_note_off())
+    if (ev.is_note_off())
     {
         if (m_playing_notes[note] <= 0)
             skip = true;
@@ -2658,7 +2663,7 @@ sequence::put_event_on_bus (event * ev)
             m_playing_notes[note]--;
     }
     if (! skip)
-        m_masterbus->play(m_bus, ev,  m_midi_channel);
+        m_masterbus->play(m_bus, &ev, m_midi_channel);  // pointer!
 
     m_masterbus->flush();
 }

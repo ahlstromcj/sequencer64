@@ -6,7 +6,7 @@
  *
  * \author  Chris Ahlstrom
  * \date    2015-11-20
- * \updates 2015-11-20
+ * \updates 2015-11-23
  * \version $Revision$
  *
  *    We basically include only the functions we need for Sequencer64, not
@@ -18,16 +18,17 @@
 #include <sys/stat.h>
 
 #include "easy_macros.h"
+#include "file_functions.hpp"           /* free functions in seq64 n'space  */
 
-#if defined _MSC_VER                   /* Microsoft compiler               */
+#if defined _MSC_VER                    /* Microsoft compiler               */
 
-#include <io.h>                        /* _access_s()                       */
-#include <share.h>                     /* _SH_DENYNO                        */
+#include <io.h>                         /* _access_s()                      */
+#include <share.h>                      /* _SH_DENYNO                       */
 
-#define F_OK         0x00              /* existence                         */
-#define X_OK         0x01              /* executable, not useful on Windows */
-#define W_OK         0x02              /* writability                       */
-#define R_OK         0x04              /* readability                       */
+#define F_OK         0x00               /* existence                        */
+#define X_OK         0x01               /* executable, not useful w/Windows */
+#define W_OK         0x02               /* writability                      */
+#define R_OK         0x04               /* readability                      */
 
 #define S_ACCESS     _access_s
 #define S_STAT       _stat

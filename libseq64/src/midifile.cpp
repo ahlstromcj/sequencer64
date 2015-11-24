@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-23
+ * \updates       2015-11-24
  * \license       GNU GPLv2 or above
  *
  *  For a quick guide to the MIDI format, see, for example:
@@ -167,9 +167,7 @@ midifile::midifile
     m_global_bgsequence     (globalbgs),
     m_ppqn                  (0),
     m_use_default_ppqn      (ppqn == SEQ64_USE_DEFAULT_PPQN),
-    m_smf0_channels_count   (0),
-    m_smf0_channels         (),         /* array, initialized in parse()    */
-    m_smf0_map              ()          /* map, filled in parse_smf_0()     */
+    m_smf0_splitter         (ppqn)
 {
     m_ppqn = choose_ppqn(ppqn);
 }
@@ -254,36 +252,6 @@ midifile::read_varinum ()
     result <<= 7;                                   /* bit was clear       */
     result += (c & 0x7F);
     return result;
-}
-
-/**
- *  Resets the SMF 0 support variables in preparation for parsing a new MIDI
- *  file.
- */
-
-void
-midifile::init_smf0_support ()
-{
-    m_smf0_channels_count = 0;
-    for (int i = 0; i < 16; i++)
-        m_smf0_channels[i] = false;
-}
-
-/**
- *  Processes a channel number by raising its flag in the m_smf0_channels[]
- *  array.  If it is the first entry for that channel, m_smf0_channels_count
- *  is incremented.  We won't check the channel number, to save time,
- *  until someday we segfault :-D
- */
-
-void
-midifile::smf0_increment (int channel)
-{
-    if (! m_smf0_channels[channel])  /* channel not yet logged?      */
-    {
-        m_smf0_channels[channel] = true;
-        ++m_smf0_channels_count;
-    }
 }
 
 /**
@@ -382,7 +350,7 @@ midifile::parse (perform & p, int screenset)
     file.close();
     m_error_message.clear();
     m_disable_reported = false;
-    init_smf0_support();
+    m_smf0_splitter.initialize();
 
     unsigned long ID = read_long();                 /* read hdr chunk info  */
     (void) read_long();                             /* stock MThd length    */
@@ -438,33 +406,13 @@ midifile::parse (perform & p, int screenset)
 bool
 midifile::parse_smf_0 (perform & p, int screenset)
 {
-    bool result = parse_smf_1(p, screenset);
+    bool result = parse_smf_1(p, screenset, true);  /* format 0 is flagged  */
     if (result)
-    {
-        if (m_smf0_channels_count > 1)
-        {
-            for (int channel = 0; channel < 16; channel++)
-            {
-                if (m_smf0_channels[channel])
-                {
-                    sequence * s = new sequence(m_ppqn);
-                    sequence & seq = *s;                /* references nicer */
-                    seq.set_master_midi_bus(&p.master_bus());
-                    seq.set_midi_channel(channel);
+        result = m_smf0_splitter.split(p, screenset);
 
-                    /*
-                     * Need a reference to the original sequence
-                     *
-                    split_channel(m_main_sequence, seq, channel, ...);
-                    p.add_sequence(&seq, seqnum + (screenset * c_seqs_in_set));
-                     *
-                     */
-                }
-            }
-        }
-    }
     return result;
 }
+
 
 /**
  *  This function parses an SMF 1 binary MIDI file; it is basically the
@@ -485,7 +433,7 @@ midifile::parse_smf_0 (perform & p, int screenset)
  */
 
 bool
-midifile::parse_smf_1 (perform & p, int screenset)
+midifile::parse_smf_1 (perform & p, int screenset, bool is_smf0)
 {
     bool result = true;
     unsigned short NumTracks = read_short();
@@ -572,7 +520,8 @@ midifile::parse_smf_1 (perform & p, int screenset)
                     e.set_data(data[0], data[1]);         /* set data and add */
                     seq.add_event(&e);
                     seq.set_midi_channel(status & 0x0F);  /* set midi channel */
-                    smf0_increment(status & 0x0F);
+                    if (is_smf0)
+                        m_smf0_splitter.increment(status & 0x0F);
                     break;
 
                 case EVENT_PROGRAM_CHANGE:                /* one data item    */
@@ -581,7 +530,8 @@ midifile::parse_smf_1 (perform & p, int screenset)
                     e.set_data(data[0]);                  /* set data and add */
                     seq.add_event(&e);
                     seq.set_midi_channel(status & 0x0F);  /* set midi channel */
-                    smf0_increment(status & 0x0F);
+                    if (is_smf0)
+                        m_smf0_splitter.increment(status & 0x0F);
                     break;
 
                 case 0xF0:                                /* Meta MIDI events */
@@ -604,8 +554,11 @@ midifile::parse_smf_1 (perform & p, int screenset)
                             }
                             else if (proprietary == c_midich)
                             {
-                                seq.set_midi_channel(read_byte());
-                                smf0_increment(status & 0x0F);
+                                midibyte channel = read_byte();
+                                seq.set_midi_channel(channel);
+                                if (is_smf0)
+                                    m_smf0_splitter.increment(channel);
+
                                 len--;
                             }
                             else if (proprietary == c_timesig)
@@ -752,7 +705,10 @@ midifile::parse_smf_1 (perform & p, int screenset)
             if (buss_override != SEQ64_BAD_BUSS)
                 seq.set_midi_bus(buss_override);
 
-            p.add_sequence(&seq, seqnum + (screenset * c_seqs_in_set));
+            if (is_smf0)
+                (void) m_smf0_splitter.log(seq, seqnum);
+            else
+                p.add_sequence(&seq, seqnum + (screenset * c_seqs_in_set));
         }
         else
         {

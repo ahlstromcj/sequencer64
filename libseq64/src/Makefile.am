@@ -6,7 +6,7 @@
 # \library    	libseq64 library
 # \author     	Chris Ahlstrom
 # \date       	2015-09-11
-# \update      2015-11-20
+# \update      2015-11-24
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -129,6 +129,7 @@ libseq64_la_SOURCES = \
    midifile.cpp \
    midi_container.cpp \
    midi_list.cpp \
+   midi_splitter.cpp \
    midi_vector.cpp \
 	mutex.cpp \
 	optionsfile.cpp \

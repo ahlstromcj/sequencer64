@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-23
+ * \updates       2015-11-24
  * \license       GNU GPLv2 or above
  *
  *  The Seq24 MIDI file is a standard, Format 1 MIDI file, with some extra
@@ -45,16 +45,17 @@
 
 #include <string>
 #include <list>
-#include <map>
+// #include <map>
 #include <vector>
 
 #include "globals.h"                    /* SEQ64_USE_DEFAULT_PPQN   */
+#include "midi_splitter.hpp"            /* seq64::midi_splitter     */
 
 namespace seq64
 {
 
 class perform;                          /* forward reference        */
-class sequence;                         /* forward reference        */
+// class sequence;                         /* forward reference        */
 
 /**
  *  This class handles the parsing and writing of MIDI files.  In addition to
@@ -64,15 +65,6 @@ class sequence;                         /* forward reference        */
 
 class midifile
 {
-
-private:
-
-    /**
-     *  Provides SMF 0 support for breaking a multi-channel SMF 0 file into a
-     *  number of sequences
-     */
-
-    typedef std::map<int, sequence *> ChannelMap;
 
 private:
 
@@ -171,27 +163,11 @@ private:
     bool m_use_default_ppqn;
 
     /**
-     *  Provides support for SMF 0, indicates how many channels were found in
-     *  the file in a single sequence.  SMF 1 file parsing will only warn
-     *  about more than one channel found in a given sequence.
+     *  Provides support for SMF 0. This object holds all of the information
+     *  needed to split a multi-channel sequence.
      */
 
-    int m_smf0_channels_count;
-
-    /**
-     *  Provides support for SMF 0, holds a bool value that indicates the
-     *  occurrence of a given channel.  Obviously, we don't have to worry
-     *  about multiple MIDI busses.
-     */
-
-    bool m_smf0_channels[16];
-
-    /**
-     *  Provides support for SMF 0, holds a map of sequences keyed by channel
-     *  number.
-     */
-
-    ChannelMap m_smf0_map;
+    midi_splitter m_smf0_splitter;
 
 public:
 
@@ -232,10 +208,8 @@ public:
 
 private:
 
-    void init_smf0_support ();
-    void smf0_increment (int channel);
     bool parse_smf_0 (perform & p, int screenset);
-    bool parse_smf_1 (perform & p, int screenset);
+    bool parse_smf_1 (perform & p, int screenset, bool is_smf0 = false);
     unsigned long parse_prop_header (int file_size);
     bool parse_proprietary_track (perform & a_perf, int file_size);
     unsigned long read_long ();

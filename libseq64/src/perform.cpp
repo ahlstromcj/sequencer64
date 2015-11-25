@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-24
+ * \updates       2015-11-25
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -43,7 +43,6 @@
 #include "keystroke.hpp"
 #include "midibus.hpp"
 #include "perform.hpp"
-#include "sequence.hpp"
 
 namespace seq64
 {
@@ -493,29 +492,6 @@ perform::set_right_tick (long tick, bool setstart)
         }
     }
 }
-
-/**
- *  True if a sequence is empty and should be highlighted.  This setting is
- *  currently a build-time option, but could be made a run-time option later.
- */
-
-#if SEQ64_HIGHLIGHT_EMPTY_SEQS
-
-bool
-perform::highlight (const sequence & seq) const
-{
-    return seq.event_count() == 0;
-}
-
-#else
-
-bool
-perform::highlight (const sequence & /*seq*/) const
-{
-    return false;
-}
-
-#endif
 
 /**
  *  A private helper function for add_sequence() and new_sequence().  It is

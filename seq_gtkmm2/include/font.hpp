@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-14
+ * \updates       2015-11-25
  * \license       GNU GPLv2 or above
  *
  */
@@ -69,14 +69,22 @@ public:
      *
      * \var YELLOW_ON_BLACK
      *      A new color, for drawing yellow text on a black background.
+     *
+     * \var BLACK_ON_CYAN
+     *      A new color, for drawing black text on a cyan background.
+     *
+     * \var CYAN_ON_BLACK
+     *      A new color, for drawing cyan text on a black background.
      */
 
     enum Color
     {
-        BLACK,              /* font_b.xpm  */
-        WHITE,              /* font_w.xpm  */
-        BLACK_ON_YELLOW,    /* font_y.xpm  */
-        YELLOW_ON_BLACK     /* font_yb.xpm */
+        BLACK,              /* font_b.xpm or wenfont_b.xpm  */
+        WHITE,              /* font_w.xpm or wenfont_w.xpm  */
+        BLACK_ON_YELLOW,    /* font_y.xpm or wenfont_y.xpm  */
+        YELLOW_ON_BLACK,    /* font_yb.xpm or wenfont_y.xpm */
+        BLACK_ON_CYAN,      /* cyan_wenfont_y.xpm           */
+        CYAN_ON_BLACK       /* cyan_wenfont_y.xpm           */
     };
 
 private:
@@ -142,13 +150,17 @@ private:
     /**
      *  The pixmap in the file <tt> src/pixmaps/font_b.xpm </tt> is loaded
      *  into this object.  It contains a black font on a white background.
+     *  The new-style font, if selected, is <tt>
+     *  resources/pixmaps/wenfont_b.xmp </tt> pixmap.
      */
 
     Glib::RefPtr<Gdk::Pixmap> m_black_pixmap;
 
     /**
-     *  The pixmap in the file <tt> src/pixmaps/font_b.xpm </tt> is loaded
+     *  The pixmap in the file <tt> src/pixmaps/font_w.xpm </tt> is loaded
      *  into this object.  It contains a black font on a white background.
+     *  The new-style font, if selected, is <tt>
+     *  resources/pixmaps/wenfont_w.xmp </tt> pixmap.
      */
 
     Glib::RefPtr<Gdk::Pixmap> m_white_pixmap;
@@ -156,6 +168,8 @@ private:
     /**
      *  The pixmap in the file <tt> src/pixmaps/font_y.xpm </tt> is loaded
      *  into this object.  It contains a black font on a yellow background.
+     *  The new-style font, if selected, is <tt>
+     *  resources/pixmaps/wenfont_y.xmp </tt> pixmap.
      */
 
     Glib::RefPtr<Gdk::Pixmap> m_b_on_y_pixmap;
@@ -163,9 +177,27 @@ private:
     /**
      *  The pixmap in the file <tt> src/pixmaps/font_yb.xpm </tt> is loaded
      *  into this object.  It contains a yellow font on a black background.
+     *  The new-style font, if selected, is <tt>
+     *  resources/pixmaps/wenfont_yb.xmp </tt> pixmap.
      */
 
     Glib::RefPtr<Gdk::Pixmap> m_y_on_b_pixmap;
+
+    /**
+     *  The pixmap in the file <tt> src/pixmaps/cyan_wenfont_y.xpm </tt> is
+     *  loaded into this object.  It contains a black font on a cyan
+     *  background.  It is available only for the new font-style.
+     */
+
+    Glib::RefPtr<Gdk::Pixmap> m_b_on_c_pixmap;
+
+    /**
+     *  The pixmap in the file <tt> src/pixmaps/cyan_wenfont_yb.xpm </tt> is
+     *  loaded into this object.  It contains a cyan font on a black
+     *  background.  It is available only for the new font-style.
+     */
+
+    Glib::RefPtr<Gdk::Pixmap> m_c_on_b_pixmap;
 
     /**
      *  This object is instantiated as a default object.  All we know is

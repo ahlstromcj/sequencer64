@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-22
+ * \updates       2015-11-25
  * \license       GNU GPLv2 or above
  *
  *  This class has way too many members.
@@ -38,6 +38,7 @@
 #include <pthread.h>
 
 #include "globals.h"                    /* globals, nullptr, & more         */
+#include "sequence.hpp"
 
 #ifndef PLATFORM_WINDOWS                /* see globals.h, platform_macros.h */
 #include <unistd.h>
@@ -82,7 +83,6 @@ namespace seq64
 {
 
 class keystroke;
-class sequence;
 
 /**
  *      Provides for notification of events.  Provide a response to a
@@ -959,7 +959,32 @@ public:
         return result;
     }
 
-    bool highlight (const sequence & seq) const;
+    /**
+     *  True if a sequence is empty and should be highlighted.  This setting
+     *  is currently a build-time option, but could be made a run-time option
+     *  later.
+     */
+
+#if SEQ64_HIGHLIGHT_EMPTY_SEQS
+    bool highlight (const sequence & seq) const
+    {
+        return seq.event_count() == 0;
+    }
+#else
+    bool highlight (const sequence & /*seq*/) const
+    {
+        return false;
+    }
+#endif
+
+    /**
+     *  True if the sequence is an SMF 0 sequence.
+     */
+
+    bool is_smf_0 (const sequence & seq) const
+    {
+        return seq.is_smf_0();
+    }
 
     void sequence_key (int seq);                        // encapsulation
     std::string sequence_label(const sequence & seq);

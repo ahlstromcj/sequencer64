@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-16
+ * \updates       2015-11-25
  * \license       GNU GPLv2 or above
  *
  *  Note that this representation is, in a sense, inside the mainwnd
@@ -166,14 +166,15 @@ mainwid::timeout ()
  *  Also, we now ignore the sequence if it does not exist.  :-D
  *
  * \note
- *      If only the main window is up, then the sequences just play -- the
- *      progress bars move in each pattern.  Gaps in the sequence in the Song
- *      (performance) Editor.  don't change the appearance of the patterns.
- *      But, if the Song Editor window is up, and the song is started using
- *      the controls in the Song Editor, then the active patterns are black
- *      while playing, and white when gaps in the sequence are encountered.
- *      The muting status in the main window is ignored.  The muting in the
- *      Song (performance) windows is in force.
+ *      If only the main window is up, then the sequences just play (muted by
+ *      default) -- the progress bars move in each pattern.  Gaps in the
+ *      sequence in the Song (performance) Editor don't change the appearance
+ *      of the patterns if only the main window is up.  But, if the Song
+ *      Editor window is up, and the song is started using the controls in the
+ *      Song Editor, then the active patterns are black while playing, and
+ *      white when gaps in the sequence are encountered.  The muting status in
+ *      the main window is ignored.  The muting in the Song (performance)
+ *      windows is in force.
  *
  * \param seqnum
  *      Provides the number of the sequence slot that needs to be drawn.
@@ -202,6 +203,7 @@ mainwid::draw_sequence_on_pixmap (int seqnum)
                 printf("seq# mismatch: %d-%d\n", seqnum, seq->number());
 
             bool high_light = perf().highlight(*seq);
+            bool smf_0 = perf().is_smf_0(*seq);
             if (high_light)
             {
                 m_last_playing[seqnum] = false;         /* active, no play  */
@@ -215,6 +217,11 @@ mainwid::draw_sequence_on_pixmap (int seqnum)
                     bg_color(yellow());
                     fg_color(black());
                 }
+            }
+            else if (smf_0)
+            {
+                bg_color(dark_cyan());
+                fg_color(black());
             }
             else
             {
@@ -243,16 +250,18 @@ mainwid::draw_sequence_on_pixmap (int seqnum)
             {
                 if (fg_color() == black())
                     col = font::BLACK_ON_YELLOW;
-
-                if (fg_color() == yellow())
+                else if (fg_color() == yellow())
                     col = font::YELLOW_ON_BLACK;
+            }
+            else if (smf_0)
+            {
+                col = font::BLACK_ON_CYAN;
             }
             else
             {
                 if (fg_color() == black())
                     col = font::BLACK;
-
-                if (fg_color() == white())
+                else if (fg_color() == white())
                     col = font::WHITE;
             }
 

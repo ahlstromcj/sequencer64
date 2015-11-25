@@ -196,6 +196,7 @@ midi_splitter::split (perform & p, int screenset)
                     }
                 }
             }
+            m_smf0_main_sequence->set_midi_channel(EVENT_NULL_CHANNEL);
             p.add_sequence(m_smf0_main_sequence, seqnum);
         }
     }

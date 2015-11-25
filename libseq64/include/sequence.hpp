@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-24
+ * \updates       2015-11-25
  * \license       GNU GPLv2 or above
  *
  *  The functions add_list_var() and add_long_list() have been replaced by
@@ -151,7 +151,9 @@ private:
     event_list::iterator m_iterator_draw;
 
     /**
-     *  Contains the proper MIDI channel for this sequence.
+     *  Contains the proper MIDI channel for this sequence.  However, if this
+     *  value is EVENT_NULL_CHANNEL (0xFF), then this sequence is an SMF 0
+     *  track, and has no single channel.
      */
 
     midibyte m_midi_channel;
@@ -617,6 +619,15 @@ public:
     midibyte get_midi_channel () const
     {
         return m_midi_channel;
+    }
+
+    /**
+     *  Returns true if this sequence is an SMF 0 sequence.
+     */
+
+    bool is_smf_0 () const
+    {
+        return m_midi_channel == EVENT_NULL_CHANNEL;
     }
 
     void set_midi_channel (midibyte ch);

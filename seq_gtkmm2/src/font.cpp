@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-23
+ * \updates       2015-11-25
  * \license       GNU GPLv2 or above
  *
  *  The interesting thing about this font class is that font files are not
@@ -76,13 +76,16 @@ const int cf_grid_w = 16;               /* number of horizontal font cells  */
 const int cf_grid_h = 16;               /* number of vertical font cells    */
 
 /*
- * New values for the font
+ * New values for the font, and additional font files for cyan coloring,
+ * available only with the new font.
  */
 
 #include "pixmaps/wenfont_w.xpm"        /* white on black (inverse video)   */
 #include "pixmaps/wenfont_b.xpm"        /* black on white                   */
 #include "pixmaps/wenfont_yb.xpm"       /* yellow on black (inverse video)  */
 #include "pixmaps/wenfont_y.xpm"        /* black on yellow                  */
+#include "pixmaps/cyan_wenfont_yb.xpm"  /* cyan on black (inverse video)    */
+#include "pixmaps/cyan_wenfont_y.xpm"   /* black on cyan                    */
 
 const int cf_cell_w = 11;               /* full width of character cell     */
 const int cf_cell_h = 15;               /* full height of character cell    */
@@ -170,6 +173,14 @@ font::init (Glib::RefPtr<Gdk::Window> wp)
         (
             wp->get_colormap(), m_clip_mask, wenfont_yb_xpm
         );
+        m_b_on_c_pixmap = Gdk::Pixmap::create_from_xpm
+        (
+            wp->get_colormap(), m_clip_mask, cyan_wenfont_y_xpm
+        );
+        m_c_on_b_pixmap = Gdk::Pixmap::create_from_xpm
+        (
+            wp->get_colormap(), m_clip_mask, cyan_wenfont_yb_xpm
+        );
     }
     else
     {
@@ -186,6 +197,14 @@ font::init (Glib::RefPtr<Gdk::Window> wp)
             wp->get_colormap(), m_clip_mask, font_y_xpm
         );
         m_y_on_b_pixmap = Gdk::Pixmap::create_from_xpm
+        (
+            wp->get_colormap(), m_clip_mask, font_yb_xpm
+        );
+        m_b_on_c_pixmap = Gdk::Pixmap::create_from_xpm
+        (
+            wp->get_colormap(), m_clip_mask, font_y_xpm
+        );
+        m_c_on_b_pixmap = Gdk::Pixmap::create_from_xpm
         (
             wp->get_colormap(), m_clip_mask, font_yb_xpm
         );
@@ -248,6 +267,10 @@ font::render_string_on_drawable
         m_pixmap = &m_b_on_y_pixmap;
     else if (col == font::YELLOW_ON_BLACK)
         m_pixmap = &m_y_on_b_pixmap;
+    else if (col == font::BLACK_ON_CYAN)
+        m_pixmap = &m_b_on_c_pixmap;
+    else if (col == font::CYAN_ON_BLACK)
+        m_pixmap = &m_c_on_b_pixmap;
     else
         m_pixmap = &m_black_pixmap;     /* user lied, provide a legal pointer */
 

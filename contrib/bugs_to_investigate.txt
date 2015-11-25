@@ -1,11 +1,14 @@
 Bugs and Upgrade Ideas
 Chris Ahlstrom
-2015-10-27 to 2015-11-24
+2015-10-27 to 2015-11-25
 
 In no particular order...  "y" means "in progress", and "x" means it is
 basically done.
 
 -  Is the --pass-sysex command actually supported?  Seq24 threw SysEx away.
+-  Consider adding support for reading normal MIDI TimeSig and Tempo data from
+   normal MIDI files, as found in example1.mid; also get some other files to
+   test.
 x  Add support for SMF (MIDI format) 0.
 y  Tighten up the is-dirty handling for all dialogs:
    x  Moving a pattern doesn't turn on any dirty bit, to allow an opportunity

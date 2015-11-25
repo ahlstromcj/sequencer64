@@ -50,8 +50,8 @@ In the present document, we've left out a fair amount of side-code to cut
 down on the size of the document.  For example, the main module, redundant
 Windows support, utility headers like easy_macros.h, simple stuff like the
 mutex module, the fruity variants (at least the ones already refactored into
-their own modules), etc., are all left out.  Still, the resulting PDF is over
-200 pages long.
+their own modules), etc., are all left out.  Still, the resulting PDF is almost
+300 pages long.
 
 Some useful references:
 

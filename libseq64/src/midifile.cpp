@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-24
+ * \updates       2015-11-25
  * \license       GNU GPLv2 or above
  *
  *  For a quick guide to the MIDI format, see, for example:
@@ -334,6 +334,14 @@ midifile::parse (perform & p, int screenset)
     }
 
     int file_size = file.tellg();                   /* get end offset       */
+    if (file_size <= 0)
+    {
+        m_error_message =
+            "Invalid file size... are you trying to read a directory?";
+
+        errprint(m_error_message.c_str());
+        return false;
+    }
     file.seekg(0, std::ios::beg);                   /* seek to start        */
     try
     {
@@ -409,6 +417,9 @@ midifile::parse_smf_0 (perform & p, int screenset)
     bool result = parse_smf_1(p, screenset, true);  /* format 0 is flagged  */
     if (result)
         result = m_smf0_splitter.split(p, screenset);
+
+    if (result)
+        p.modify();                     /* will prompt user for saving      */
 
     return result;
 }

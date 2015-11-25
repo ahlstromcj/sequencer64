@@ -1,6 +1,6 @@
 Interesting Test Files from the "midicvt" Project
 Chris Ahlstrom
-2015-11-16 to 2015-11-20
+2015-11-16 to 2015-11-25
 
 While loading the test MIDI files from our "midicvt" project into Sequencer64,
 we found some interesting cases.
@@ -31,17 +31,17 @@ we found some interesting cases.
       ? no support for SYSEX messages, skipping...
       unsupported MIDI format detected: 0
 
-      We ought to see if we can import SMF 0, at least, into Sequencer64.
-      Well, now we go ahead and load SMF 0, with a console warning.  But we
-      still want to split the track into one sequence per channel, for
-      saving in Sequence64 format.  Soon!
+      Sequencer64 imports it and splits it, but, interestingly, it starts
+      with a sequence number of 8.
 
    dixie03.mid:
 
       ? no support for SYSEX messages, skipping...
       unsupported MIDI format detected: 0
 
-      Partially fixed, loads, but not split into multiple tracks.
+      Sequencer64 loads this file; it loads with sequence numbers of
+      0 to 2, 8 to 15, and, of course, the original track stored as
+      sequence 16.
 
    Dixie04.mid:
 
@@ -89,12 +89,13 @@ we found some interesting cases.
 
      example1.mid:
 
-        An SMF 0 file.
+        An SMF 0 file.  See example1.asc for more detailed discussion of
+        this very useful, small, test file.
 
      mrroboto_with_lyrics.mid:
 
-        An SMF 0 file with lyrics, should be a good test of the track-split
-        feature once we write it.
+        An SMF 0 file with lyrics, it is a good test of the track-split
+        feature and the handling (skipping) of lyrics tracks.
 
     wpb_yoshimi-buss-0.midi:
 

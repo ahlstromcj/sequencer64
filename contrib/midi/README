@@ -1,6 +1,6 @@
 Contributed MIDI Files
 Chris Ahlstrom
-2015-09-11 to 2015-11-23
+2015-09-11 to 2015-11-24
 
 This directory contains contributed MIDI files for examples and testing.
 Also see the test files from the midicvt as described in
@@ -51,6 +51,12 @@ by loading them into Sequencer64.
    b4uacuse-GM-doubled.midi:
 
          The tune with set 1 copied to set 2, for experimentation with sets.
+
+   example1.mid:
+
+        A simple SMF 0 MIDI file from the midicvt project.  Useful in
+        testing the channel-split feature, small enough to step through
+        under the debugger :-D
 
    signature-samples.midi:
 

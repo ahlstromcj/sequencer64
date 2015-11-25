@@ -164,20 +164,20 @@ midi_container::fill (int tracknumber)
 
         midibyte d0 = e.data(0);                    /* encode status & data */
         midibyte d1 = e.data(1);
-        put(e.get_status() | m_sequence.get_midi_channel()); /* add channel */
-        switch (e.get_status() & 0xF0)
+        put(e.get_status() | m_sequence.get_midi_channel());    /* add chan */
+        switch (e.get_status() & EVENT_CLEAR_CHAN_MASK)         /* 0xF0     */
         {
-        case 0x80:
-        case 0x90:
-        case 0xA0:
-        case 0xB0:
-        case 0xE0:
+        case EVENT_NOTE_OFF:                                    /* 0x80:    */
+        case EVENT_NOTE_ON:                                     /* 0x90:    */
+        case EVENT_AFTERTOUCH:                                  /* 0xA0:    */
+        case EVENT_CONTROL_CHANGE:                              /* 0xB0:    */
+        case EVENT_PITCH_WHEEL:                                 /* 0xE0:    */
             put(d0);
             put(d1);
             break;
 
-        case 0xC0:
-        case 0xD0:
+        case EVENT_PROGRAM_CHANGE:                              /* 0xC0:    */
+        case EVENT_CHANNEL_PRESSURE:                            /* 0xD0:    */
             put(d0);
             break;
 

@@ -89,8 +89,7 @@ we found some interesting cases.
 
      example1.mid:
 
-        An SMF 0 file.  Will not bother listing any more SMF 0 files,
-        since we now at least let them load.
+        An SMF 0 file.
 
      mrroboto_with_lyrics.mid:
 

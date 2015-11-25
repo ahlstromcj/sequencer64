@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-19
- * \updates       2015-11-23
+ * \updates       2015-11-24
  * \license       GNU GPLv2 or above
  *
  */
@@ -180,14 +180,18 @@ event_list::~event_list ()
  *      If true, and the std::list implementation has been built in, then the
  *      event list is sorted after the addition.  This is a time-consuming
  *      operation.
+ *
+ * \return
+ *      Returns true if the insertion succeeded, as evidenced by an increment
+ *      in container size.
  */
 
-void
+bool
 event_list::add (const event & e, bool postsort)
 {
+    size_t count = m_events.size();
 
 #ifdef SEQ64_USE_EVENT_MAP
-
     event_key key(e);
 #if __cplusplus >= 201103L              /* C++11                    */
     EventsPair p = std::make_pair(key, e);
@@ -195,13 +199,15 @@ event_list::add (const event & e, bool postsort)
     EventsPair p = std::make_pair<event_key, event>(key, e);
 #endif
     m_events.insert(p);                 /* std::multimap operation  */
-
 #else
     m_events.push_front(e);             /* std::list operation      */
 #endif
 
+    bool result = m_events.size() == (count + 1);
     if (postsort)
         sort();                         /* by time-stamp and "rank" */
+
+    return result;
 }
 
 #ifdef SEQ64_USE_EVENT_MAP
@@ -457,6 +463,12 @@ event_list::unmark_all ()
  *  time-stamp is greater than the length, then the event is marked for
  *  pruning.
  *
+ * \note
+ *      This code was comparing the timestamp as greater than or equal to the
+ *      sequence length.  However, being equal is fine.  This may explain why
+ *      the midifile code would add one tick to the length of the last note
+ *      when processing the end-of-track.
+ *
  * \param slength
  *      Provides the length beyond which events will be pruned.
  */
@@ -467,7 +479,11 @@ event_list::mark_out_of_range (long slength)
     for (Events::iterator i = m_events.begin(); i != m_events.end(); ++i)
     {
         event & e = dref(i);
+#ifdef USE_EQUALS_IN_COMPARISON
         if (e.get_timestamp() >= slength || e.get_timestamp() < 0)
+#else
+        if (e.get_timestamp() > slength || e.get_timestamp() < 0)
+#endif
         {
             e.mark();                            /* we have to prune it */
             if (e.is_linked())

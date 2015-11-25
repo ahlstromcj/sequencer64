@@ -207,7 +207,7 @@ public:
         return int(m_events.size());
     }
 
-    void add (const event & e, bool postsort = true);
+    bool add (const event & e, bool postsort = true);
 
 #ifndef SEQ64_USE_EVENT_MAP
 

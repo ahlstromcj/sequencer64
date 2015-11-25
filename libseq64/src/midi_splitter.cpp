@@ -85,8 +85,7 @@ midi_splitter::midi_splitter (int ppqn)
     m_smf0_channels_count   (0),
     m_smf0_channels         (),         /* array, initialized in parse()    */
     m_smf0_main_sequence    (nullptr),
-    m_smf0_seq_number       (-1),
-    m_smf0_map              ()          /* map, filled in parse_smf_0()     */
+    m_smf0_seq_number       (-1)
 {
     m_ppqn = choose_ppqn(ppqn);
     initialize();
@@ -187,10 +186,14 @@ midi_splitter::split (perform & p, int screenset)
                 if (m_smf0_channels[channel])
                 {
                     sequence * s = new sequence(m_ppqn);
-                    sequence & seq = *s;                /* references nicer */
-                    seq.set_master_midi_bus(&p.master_bus());
-                    if (split_channel(*m_smf0_main_sequence, seq, channel))
+                    s->set_master_midi_bus(&p.master_bus());
+                    if (split_channel(*m_smf0_main_sequence, s, channel))
+                    {
                         p.add_sequence(s, seqnum);
+#ifdef SEQ64_USE_DEBUG_OUTPUT
+                        s->show_events();
+#endif
+                    }
                 }
             }
             p.add_sequence(m_smf0_main_sequence, seqnum);
@@ -207,6 +210,19 @@ midi_splitter::split (perform & p, int screenset)
  *  This function splits the given sequence into new sequences, one for each
  *  channel found in the SMF 0 track.
  *
+ *  Note that the events that are read from the MIDI file have delta times.
+ *  Sequencer64 converts these delta times to cumulative times.    We
+ *  need to preserve that here.  Conversion back to delta times is needed only
+ *  when saving the sequences to a file.  This is done in
+ *  midi_container::fill().
+ *
+ *  We may
+ *  have to accumulate the delta times in order to be able to set the length
+ *  of the sequence in pulses.
+ *
+ *  Luckily, we don't have to worry about copying triggers, since the imported
+ *  SMF 0 track won't have any Seq24/Sequencer24 triggers.
+ *
  *  It doesn't set the sequence number of the sequence; that is set when the
  *  sequence is added to the perform object.
  */
@@ -215,32 +231,36 @@ bool
 midi_splitter::split_channel
 (
     const sequence & main_seq,
-    sequence & seq,
+    sequence * s,
     int channel
 )
 {
     bool result = false;
     char temp[24];
     snprintf(temp, sizeof temp, "%d: %.13s", channel, main_seq.name().c_str());
-    seq.set_name(std::string(temp));
-    seq.set_midi_channel(channel);
-    seq.set_midi_bus(main_seq.get_midi_bus());
-    seq.zero_markers();
+    s->set_name(std::string(temp));
+    s->set_midi_channel(channel);
+    s->set_midi_bus(main_seq.get_midi_bus());
+    s->zero_markers();
 
-    long length_in_ticks = 0;                       // HOW TO OBTAIN?
+    long length_in_ticks = 0;           /* an accumulator of delta times    */
     const event_list & evl = main_seq.events();
     for (event_list::const_iterator i = evl.begin(); i != evl.end(); i++)
     {
         const event & er = DREF(i);
         if (er.check_channel(channel))
         {
-            seq.add_event(er);
+            length_in_ticks = er.get_timestamp();
+            if (s->add_event(er))
+                result = true;          /* an event got added               */
         }
     }
 
+    /*
+     * No triggers to add.  Whew!  And setting the length is now a no-brainer.
+     */
 
-    seq.set_length(length_in_ticks);
-
+    s->set_length(length_in_ticks);
     return result;
 }
 

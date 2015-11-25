@@ -58,15 +58,6 @@ class midi_splitter
 private:
 
     /**
-     *  Provides SMF 0 support for breaking a multi-channel SMF 0 file into a
-     *  number of sequences
-     */
-
-    typedef std::map<int, sequence *> ChannelMap;
-
-private:
-
-    /**
      *  Provides the current value of the PPQN, which used to be constant
      *  and is now only the macro DEFAULT_PPQN.
      */
@@ -97,7 +88,7 @@ private:
 
     /**
      *  Provides support for SMF 0, points to the initial SMF 0 sequence, from
-     *  which the single-channel sequences in the ChannelMap will be created.
+     *  which the single-channel sequences will be created.
      */
 
     sequence * m_smf0_main_sequence;
@@ -109,13 +100,6 @@ private:
      */
 
     int m_smf0_seq_number;
-
-    /**
-     *  Provides support for SMF 0, holds a map of sequences keyed by channel
-     *  number.
-     */
-
-    ChannelMap m_smf0_map;
 
 public:
 
@@ -155,7 +139,7 @@ private:
     bool split_channel
     (
         const sequence & main_seq,
-        sequence & seq,
+        sequence * seq,
         int channel
     );
 

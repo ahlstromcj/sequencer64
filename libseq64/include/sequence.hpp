@@ -266,8 +266,8 @@ private:
     int m_seq_number;
 
     /**
-     *  Holds the length of the sequence in pulses.
-     *  This value should be a power of two when used as a bar unit.
+     *  Holds the length of the sequence in pulses (ticks).  This value should
+     *  be a power of two when used as a bar unit.
      */
 
     long m_length;
@@ -624,7 +624,7 @@ public:
     void print_triggers ();
     void play (long tick, bool playback_mode);
     void set_orig_tick (long tick);
-    void add_event (const event & er);
+    bool add_event (const event & er);
     void add_trigger
     (
         long tick, long len,
@@ -822,6 +822,8 @@ public:
         if (SEQ64_IS_LEGAL_SEQUENCE(bs))
             m_background_sequence = long(bs);
     }
+
+    void show_events () const;
 
 private:
 

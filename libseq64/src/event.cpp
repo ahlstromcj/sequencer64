@@ -49,7 +49,8 @@ event::event ()
  :
     m_timestamp (0),
     m_status    (EVENT_NOTE_OFF),
-    m_data      (),                 /* a two-element array  */
+    m_channel   (EVENT_NULL_CHANNEL),
+    m_data      (),                     /* a two-element array  */
     m_sysex     (nullptr),
     m_size      (0),
     m_linked    (nullptr),
@@ -60,6 +61,81 @@ event::event ()
 {
     m_data[0] = 0;
     m_data[1] = 0;
+}
+
+/**
+ *  This copy constructor initializes most of the class members.
+ *  This function is currently geared only toward support of the SMF 0
+ *  channel-splitting feature.  Many of the member are not set to useful value
+ *  when the MIDI file is read, so we don't handle them for now.
+ *
+ * \warning
+ *      This function does not yet copy the SysEx data.  The inclusion
+ *      of SysEx events was not complete in Seq24, and it is still not
+ *      complete in Sequencer64.  Nor does it currently bother with the
+ *      links.
+ *
+ * \param rhs
+ *      Provides the event object to be copied.
+ */
+
+event::event (const event & rhs)
+ :
+    m_timestamp (rhs.m_timestamp),
+    m_status    (rhs.m_status),
+    m_channel   (rhs.m_channel),
+    m_data      (),                     /* a two-element array      */
+    m_sysex     (nullptr),              /* pointer, not yet handled */
+    m_size      (rhs.m_size),
+    m_linked    (nullptr),              /* pointer, not yet handled */
+    m_has_link  (rhs.m_has_link),
+    m_selected  (rhs.m_selected),
+    m_marked    (rhs.m_marked),
+    m_painted   (rhs.m_painted)
+{
+    m_data[0] = rhs.m_data[0];
+    m_data[1] = rhs.m_data[1];
+}
+
+/**
+ *  This principal assignment operator sets most of the class members.  This
+ *  function is currently geared only toward support of the SMF 0
+ *  channel-splitting feature.  Many of the member are not set to useful value
+ *  when the MIDI file is read, so we don't handle them for now.
+ *
+ * \warning
+ *      This function does not yet copy the SysEx data.  The inclusion
+ *      of SysEx events was not complete in Seq24, and it is still not
+ *      complete in Sequencer64.  Nor does it currently bother with the
+ *      links.
+ *
+ * \param rhs
+ *      Provides the event object to be assigned.
+ *
+ * \return
+ *      Returns a reference to "this" object, to support the serial assignment
+ *      of events.
+ */
+
+event &
+event::operator = (const event & rhs)
+{
+    if (this != &rhs)
+    {
+        m_timestamp = rhs.m_timestamp;
+        m_status    = rhs.m_status;
+        m_channel   = rhs.m_channel;
+        m_data[0]   = rhs.m_data[0];
+        m_data[1]   = rhs.m_data[1];
+        m_sysex     = nullptr;
+        m_size      = rhs.m_size;
+        m_linked    = nullptr;
+        m_has_link  = rhs.m_has_link;
+        m_selected  = rhs.m_selected;
+        m_marked    = rhs.m_marked;
+        m_painted   = rhs.m_painted;
+    }
+    return *this;
 }
 
 /**
@@ -283,6 +359,29 @@ event::get_rank () const
     default:
         return 0;
     }
+}
+
+/**
+ *  A free function to convert an event into an informative string, just
+ *  enough to save some debugging time.  Nothing fancy.  If you want that, use
+ *  the midicvt project.
+ */
+
+std::string
+to_string (const event & ev)
+{
+    std::string result("event: ");
+    midibyte d0, d1;
+    ev.get_data(d0, d1);
+    char temp[128];
+    snprintf
+    (
+        temp, sizeof temp,
+        "[%04lu] status = 0x%02X; channel = 0x%02X; data = [0x%02X, 0x%02X]\n",
+        ev.get_timestamp(), ev.get_status(), ev.get_channel(), d0, d1
+    );
+    result += std::string(temp);
+    return result;
 }
 
 }           // namespace seq64

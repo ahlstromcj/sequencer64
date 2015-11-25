@@ -190,6 +190,8 @@ private:
 public:
 
     event ();
+    event (const event & rhs);
+    event & operator = (const event & rhs);
     ~event ();
 
     /*
@@ -215,6 +217,15 @@ public:
     long get_timestamp () const
     {
         return m_timestamp;
+    }
+
+    /**
+     * \getter m_channel
+     */
+
+    midibyte get_channel () const
+    {
+        return m_channel;
     }
 
     /**
@@ -365,6 +376,7 @@ public:
     void set_data (midibyte d1)
     {
         m_data[0] = d1 & 0x7F;
+        m_data[1] = 0;                  /* not strictly necessary   */
     }
 
     /**
@@ -682,6 +694,12 @@ public:
 #endif
 
 };
+
+/*
+ * Global functions in the seq64 namespace.
+ */
+
+extern std::string to_string (const event & ev);
 
 }           // namespace seq64
 

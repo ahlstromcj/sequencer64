@@ -372,13 +372,21 @@ sequence::set_rec_vol (long recvol)
  *      the events container.
  */
 
-void
+bool
 sequence::add_event (const event & er)
 {
     automutex locker(m_mutex);
-    m_events.add(er);                   /* post/auto-sorts by time & rank   */
-    reset_draw_marker();
-    set_dirty();
+    bool result = m_events.add(er);     /* post/auto-sorts by time & rank   */
+    if (result)
+    {
+        reset_draw_marker();
+        set_dirty();
+    }
+    else
+    {
+        errprint("sequence::add_event(): failed");
+    }
+    return result;
 }
 
 /**
@@ -2879,6 +2887,28 @@ sequence::fill_container (midi_container & c, int tracknumber)
 {
     automutex locker(m_mutex);
     c.fill(tracknumber);
+}
+
+/**
+ *  A member function to dump a summary of events stored in the event-list of
+ *  a sequence.
+ */
+
+void
+sequence::show_events () const
+{
+    printf
+    (
+        "sequence #%d '%s': channel %d, events %d\n",
+        number(), name().c_str(), get_midi_channel(), event_count()
+    );
+    const event_list & evl = events();
+    for (event_list::const_iterator i = evl.begin(); i != evl.end(); i++)
+    {
+        const event & er = DREF(i);
+        std::string evdump = to_string(er);
+        printf(evdump.c_str());
+    }
 }
 
 }           // namespace seq64

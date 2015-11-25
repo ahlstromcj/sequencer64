@@ -504,7 +504,7 @@ midifile::parse_smf_1 (perform & p, int screenset, bool is_smf0)
                     CurrentTime = RunningTime;
                     e.set_timestamp(CurrentTime);
                 }
-                switch (status & 0xF0)   /* switch on channel-less status    */
+                switch (status & EVENT_CLEAR_CHAN_MASK)     /* 0xF0 */
                 {
                 case EVENT_NOTE_OFF:     /* case for those with 2 data bytes */
                 case EVENT_NOTE_ON:
@@ -623,10 +623,18 @@ midifile::parse_smf_1 (perform & p, int screenset, bool is_smf0)
                              * the same time as track-end.  Class sequence
                              * discards the last note.  This fixes that.  A
                              * native Seq24 file will always have a Delta >= 1.
+                             *
+                             * We've fix the real issue, we think, which
+                             * happens because of code marked by the same
+                             * #ifdef as here in the event_list class.
+                             *
+                             * RETEST NEEDED!!!
                              */
 
+#ifdef USE_EQUALS_IN_COMPARISON
                             if (Delta == 0)
                                 CurrentTime += 1;
+#endif
 
                             seq.set_length(CurrentTime, false);
                             seq.zero_markers();

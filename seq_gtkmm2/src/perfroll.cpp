@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-22
+ * \updates       2015-11-25
  * \license       GNU GPLv2 or above
  *
  */
@@ -362,7 +362,7 @@ perfroll::draw_sequence_on (int seqnum)
         long tick_offset = m_4bar_offset * m_ticks_per_bar;
         long x_offset = tick_offset / m_perf_scale_x;
         m_sequence_active[seqnum] = true;
-        sequence * seq =  perf().get_sequence(seqnum);
+        sequence * seq = perf().get_sequence(seqnum);
         seq->reset_draw_trigger_marker();
         seqnum -= m_sequence_offset;
 
@@ -590,9 +590,6 @@ perfroll::stop_playing ()
 void
 perfroll::split_trigger (int seqnum, long tick)
 {
-//  perf().push_trigger_undo();
-//  perf().get_sequence(seqnum)->split_trigger(tick);
-
     perf().split_trigger(seqnum, tick);     /* consolidates perform actions */
     draw_background_on(seqnum);
     draw_sequence_on(seqnum);

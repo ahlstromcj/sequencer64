@@ -168,7 +168,7 @@ seqtime::update_pixmap ()
     if (measures_per_line <= 0)
         measures_per_line = 1;
 
-    int ticks_per_measure =  m_seq.get_beats_per_bar() * (4 * m_ppqn) /
+    int ticks_per_measure = m_seq.get_beats_per_bar() * (4 * m_ppqn) /
         m_seq.get_beat_width();
 
     int ticks_per_step = ticks_per_measure * measures_per_line;

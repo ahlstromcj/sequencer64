@@ -489,7 +489,6 @@ triggers::adjust_offsets_to_length (long newlength)
  *  Not sure what these diagrams are for yet.
  *
 \verbatim
-
 ... a
 [      ][      ]
 ...

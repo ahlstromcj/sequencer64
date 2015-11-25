@@ -535,7 +535,7 @@ mainwid::draw_marker_on_sequence (int seqnum, int tick)
         if (is_nullptr(seq))
             return;                         /* active but non-existent!     */
 
-        if (seq->event_count() ==  0)       /* an event-free track          */
+        if (seq->event_count() == 0)        /* an event-free track          */
             return;                         /* new 2015-08-23 don't update  */
 
         int base_x, base_y;

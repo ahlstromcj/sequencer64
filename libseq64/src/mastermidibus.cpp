@@ -256,7 +256,7 @@ mastermidibus::init ()
             {
                 /* While the next port is available, get its capability */
 
-                int cap =  snd_seq_port_info_get_capability(pinfo);
+                int cap = snd_seq_port_info_get_capability(pinfo);
                 if
                 (
                     ALSA_CLIENT_CHECK(pinfo) &&

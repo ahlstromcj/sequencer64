@@ -48,7 +48,7 @@ namespace seq64
  */
 
 const int c_midibus_output_size = 0x100000;     // 1048576
-const int c_midibus_input_size =  0x100000;     // 1048576
+const int c_midibus_input_size  = 0x100000;     // 1048576
 const int c_midibus_sysex_chunk = 0x100;        //     256
 
 /**

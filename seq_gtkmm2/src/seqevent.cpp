@@ -386,7 +386,7 @@ seqevent::draw_selection_on_window ()
 {
     int x, w;
     int y = (c_eventarea_y - c_eventevent_y) / 2;
-    int h =  c_eventevent_y;
+    int h = c_eventevent_y;
     set_line(Gdk::LINE_SOLID);
     draw_drawable                           /* replace old */
     (

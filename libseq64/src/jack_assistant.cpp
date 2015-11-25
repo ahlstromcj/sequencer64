@@ -667,7 +667,7 @@ jack_assistant::output (jack_scratchpad & pad)
 
                 m_jack_frame_last = m_jack_frame_current;
             }
-            jack_ticks_converted =      // convert ticks
+            jack_ticks_converted =      /* convert ticks            */
                 m_jack_tick *
                 (
                     double(m_ppqn) /

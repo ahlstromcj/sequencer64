@@ -1616,7 +1616,7 @@ sequence::stream_event (event & ev)
 void
 sequence::set_dirty_mp ()
 {
-    m_dirty_names =  m_dirty_main = m_dirty_perf = true;
+    m_dirty_names = m_dirty_main = m_dirty_perf = true;
 }
 
 /**
@@ -2774,8 +2774,8 @@ sequence::transpose_notes (int steps, int scale)
         event & er = DREF(i);
         if                                          /* is it being moved ?  */
         (
-            (er.get_status() ==  EVENT_NOTE_ON ||
-                er.get_status() ==  EVENT_NOTE_OFF) && er.is_marked()
+            (er.get_status() == EVENT_NOTE_ON ||
+                er.get_status() == EVENT_NOTE_OFF) && er.is_marked()
         )
         {
             e = er;

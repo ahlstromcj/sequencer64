@@ -53,7 +53,7 @@
 # -1 = Same as 0, draw a box outline one-pixel thick.
 # -2 to -30 = Draw a box outline, thicker and thicker.
 
-2       # grid_brackets
+1       # grid_brackets
 
 # Specifies the number of rows in the main window.
 # At present, only a value of 4 is supportable.
@@ -101,7 +101,7 @@
 # 0 = Allow each sequence to have its own key/scale/background.
 #     Settings are saved with each sequence.
 # 1 = Apply these settings globally (similar to seq24).
-#     Settings are saved in the global final section of the file..
+#     Settings are saved in the global final section of the file.
 
 1      # global_seq_feature
 
@@ -113,6 +113,29 @@
 # 1 = Use the new-style font.
 
 1      # use_new_font
+
+# Specifies if the user-interface will support two song editor
+# windows being shown at the same time.  This makes it easier to
+# edit songs with a large number of sequences.
+#
+# 0 = Allow only one song editor (performance editor).
+# 1 = Allow two song editors.
+
+1      # allow_two_perfedits
+
+# Specifies the number of 4-measure blocks for horizontal page
+# scrolling in the song editor.  The old default, 1, is a bit
+# small.  The new default is 4.  The legal range is 1 to 6, where
+# 6 is the width of the whole performance piano roll view.
+
+4      # perf_h_page_increment
+
+# Specifies the number of 1-track blocks for vertical page
+# scrolling in the song editor.  The old default, 1, is a bit
+# small.  The new default is 8.  The legal range is 1 to 18, where
+# 18 is about the height of the whole performance piano roll view.
+
+8      # perf_v_page_increment
 
 [user-midi-settings]
 
@@ -148,7 +171,7 @@
 # save the MIDI afterwards, unless you really want to change
 # all of its buss values.
 
-0       # midi_buss_override
+-1       # midi_buss_override
 
 # End of /home/ahlstrom/.config/sequencer64/sequencer64.usr
 #

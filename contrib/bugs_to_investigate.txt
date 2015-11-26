@@ -1,10 +1,11 @@
 Bugs and Upgrade Ideas
 Chris Ahlstrom
-2015-10-27 to 2015-11-25
+2015-10-27 to 2015-11-26
 
 In no particular order...  "y" means "in progress", and "x" means it is
 basically done.
 
+-  The "increase size of grid" button on the perfedit doesn't work.
 -  In the perfedit window, make the vertical scroll go by 8 tracks instead of
    just 1.
 -  In the standard seq24 view, when a pattern is moved, it leaves a black

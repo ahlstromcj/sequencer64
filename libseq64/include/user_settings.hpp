@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-22
- * \updates       2015-11-23
+ * \updates       2015-11-26
  * \license       GNU GPLv2 or above
  *
  *  This module defines the following categories of "global" variables that
@@ -65,13 +65,6 @@
 #include "midi_container.hpp"           /* SEQ64_IS_LEGAL_SEQUENCE etc. */
 #include "user_instrument.hpp"
 #include "user_midi_bus.hpp"
-
-/*
- *  Manifest constant for the maximum number of "instrument" values in a
- *  user_midi_bus_t structure.
-
-#define SEQ64_MIDI_BUS_CHANNEL_MAX             16
- */
 
 namespace seq64
 {
@@ -299,6 +292,31 @@ class user_settings
      */
 
     bool m_use_new_font;
+
+    /**
+     *  Enables the usage of two perfedit windows, for added convenience in
+     *  editing multi-set songs.  Defaults to true.
+     */
+
+    bool m_allow_two_perfedits;
+
+    /**
+     *  Allows a changed to the page size for the horizontal scroll bar.
+     *  The value used to be hardwired to 1 (in four-measure units), now it
+     *  defaults to 4 (16 measures at a time).  The value of 1 is already
+     *  covered by the scrollbar arrows.
+     */
+
+    int m_h_perf_page_increment;
+
+    /**
+     *  Allows a changed to the page size for the vertical scroll bar.
+     *  The value used to be hardwired to 1 (in single-track units), now it
+     *  defaults to 8.  The value of 1 is already covered by the scrollbar
+     *  arrows.
+     */
+
+    int m_v_perf_page_increment;
 
     /**
      *  Constants for the mainwid class.  The m_text_x and m_text_y
@@ -1026,14 +1044,31 @@ public:
     }
 
     /**
-     * \setter m_use_new_font
+     * \getter m_allow_two_perfedits
      */
 
-    void use_new_font (bool flag)
+    bool allow_two_perfedits () const
     {
-        m_use_new_font = flag;
+        return m_allow_two_perfedits;
     }
 
+    /**
+     * \getter m_h_perf_page_increment
+     */
+
+    int perf_h_page_increment () const
+    {
+        return m_h_perf_page_increment;
+    }
+
+    /**
+     * \getter m_v_perf_page_increment
+     */
+
+    int perf_v_page_increment () const
+    {
+        return m_v_perf_page_increment;
+    }
 
     /**
      * \getter m_save_user_config
@@ -1169,6 +1204,28 @@ public:
     }
 
 public:         // used in main application module and the userfile class
+
+    /**
+     * \setter m_use_new_font
+     */
+
+    void use_new_font (bool flag)
+    {
+        m_use_new_font = flag;
+    }
+
+    /**
+     *  Sets the value of allowing two perfedits to be created and shown to the
+     *  user.
+     */
+
+    void allow_two_perfedits (bool flag)
+    {
+        m_allow_two_perfedits = flag;
+    }
+
+    void perf_h_page_increment (int inc);
+    void perf_v_page_increment (int inc);
 
     void midi_ppqn (int ppqn);
     void midi_buss_override (char buss);

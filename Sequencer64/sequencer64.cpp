@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-21
+ * \updates       2015-11-26
  * \license       GNU GPLv2 or above
  *
  *  Note that there are a number of header files that we don't need to add
@@ -102,7 +102,12 @@ main (int argc, char * argv [])
         p.init_jack();
 #endif
 
-        seq64::mainwnd seq24_window(p);         /* push mainwnd onto stack  */
+        /*
+         * Push the mainwnd window onto the stack, with an option for allowing
+         * a second perfedit to be created.
+         */
+
+        seq64::mainwnd seq24_window(p, seq64::usr().allow_two_perfedits());
         if (optionindex < argc)                 /* MIDI filename provided?  */
         {
             std::string midifilename = argv[optionindex];

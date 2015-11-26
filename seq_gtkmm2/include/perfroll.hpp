@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-25
+ * \updates       2015-11-26
  * \license       GNU GPLv2 or above
  *
  */
@@ -48,6 +48,7 @@ namespace seq64
 
 class AbstractPerfInput;
 class perform;
+class perfedit;
 
 /**
  *  This class implements the performance roll user interface.
@@ -60,12 +61,41 @@ class perfroll : public gui_drawingarea_gtk2
      *  These friend implement interaction-specific behavior, although only
      *  the Seq24 interactions support keyboard processing, except for some
      *  common functionality provided by perform::perfroll_key_event().
+     *  The perfedit class needs access to the private enqueue_draw()
+     *  function.
      */
 
     friend class FruityPerfInput;
     friend class Seq24PerfInput;
+    friend class perfedit;
 
 private:
+
+    /**
+     *  Provides a link to the perfedit that created this object.  We want to
+     *  support two perfedit windows, but the children of perfedit will have
+     *  to communicate changes requiring a redraw through the parent.
+     */
+
+    perfedit & m_parent;
+
+    /**
+     *  Provides the horizontal page increment for the horizontal scrollbar.  It
+     *  was set to 1, the same as the step increment.  That is too little.
+     *  This value will be set to 4, for now.  Might be a useful "user"
+     *  configuration option.
+     */
+
+    int m_h_page_increment;
+
+    /**
+     *  Provides the vertical page increment for the vertical scrollbar.  It
+     *  was set to 1, the same as the step increment.  That is too little.
+     *  This value will be set to 8, for now.  Might be a useful "user"
+     *  configuration option.
+     */
+
+    int m_v_page_increment;
 
     int m_snap;
     int m_ppqn;
@@ -118,6 +148,7 @@ public:
     perfroll
     (
         perform & perf,
+        perfedit & parent,
         Gtk::Adjustment & hadjust,
         Gtk::Adjustment & vadjust,
         int ppqn = SEQ64_USE_DEFAULT_PPQN
@@ -157,6 +188,7 @@ private:
     void change_horz ();
     void change_vert ();
     void split_trigger(int sequence, long tick);
+    void enqueue_draw ();
 
 private:        // callbacks
 
@@ -180,7 +212,7 @@ private:        // callbacks
         // Empty body
     }
 
-};
+};          // class perfroll
 
 }           // namespace seq64
 

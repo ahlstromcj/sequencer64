@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-25
+ * \updates       2015-11-26
  * \license       GNU GPLv2 or above
  *
  */
@@ -108,9 +108,9 @@ perfedit::perfedit
     m_hadjust           (manage(new Gtk::Adjustment(0, 0, 1, 1, 1, 1))),
     m_vscroll           (manage(new Gtk::VScrollbar(*m_vadjust))),
     m_hscroll           (manage(new Gtk::HScrollbar(*m_hadjust))),
-    m_perfnames         (manage(new perfnames(perf(), *m_vadjust))),
-    m_perfroll          (manage(new perfroll(perf(), *m_hadjust, *m_vadjust))),
-    m_perftime          (manage(new perftime(perf(), *m_hadjust))),
+    m_perfnames         (manage(new perfnames(perf(), *this, *m_vadjust))),
+    m_perfroll     (manage(new perfroll(perf(), *this, *m_hadjust, *m_vadjust))),
+    m_perftime          (manage(new perftime(perf(), *this, *m_hadjust))),
     m_menu_snap         (manage(new Gtk::Menu())),
     m_button_snap       (manage(new Gtk::Button())),
     m_entry_snap        (manage(new Gtk::Entry())),
@@ -365,14 +365,21 @@ perfedit::~perfedit ()
 /**
  *  Helper wrapper for calling perfroll::queue_draw() for one or both
  *  perfedits.
+ *
+ * \param forward
+ *      If true (the default), pass the call to the peer.  When passing this
+ *      call to the peer, this parameter is set to false to prevent an
+ *      infinite loop and the resultant stack overflow.
  */
 
 void
-perfedit::enqueue_draw ()
+perfedit::enqueue_draw (bool forward)
 {
     m_perfroll->queue_draw();
-    if (not_nullptr(m_peer_perfedit))
-        m_peer_perfedit->m_perfroll->queue_draw();
+    m_perfnames->queue_draw();
+    m_perftime->queue_draw();
+    if (forward && not_nullptr(m_peer_perfedit))
+        m_peer_perfedit->enqueue_draw(false);
 }
 
 /**
@@ -384,7 +391,6 @@ void
 perfedit::undo ()
 {
     perf().pop_trigger_undo();
-//  m_perfroll->queue_draw();
     enqueue_draw();
 }
 
@@ -399,7 +405,6 @@ void
 perfedit::collapse ()
 {
     perf().collapse();
-//  m_perfroll->queue_draw();
     enqueue_draw();
 }
 
@@ -416,7 +421,6 @@ void
 perfedit::copy ()
 {
     perf().copy();
-//  m_perfroll->queue_draw();
     enqueue_draw();
 }
 
@@ -431,7 +435,6 @@ void
 perfedit::expand ()
 {
     perf().expand();
-//  m_perfroll->queue_draw();
     enqueue_draw();
 }
 

@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-23
+ * \updates       2015-11-26
  * \license       GNU GPLv2 or above
  *
  *  Note that the parse function has some code that is not yet enabled.
@@ -284,12 +284,40 @@ userfile::parse (perform & /* a_perf */)
         sscanf(m_line, "%d", &scratch);
         usr().use_new_font(scratch != 0);
 
+        next_data_line(file);
+        sscanf(m_line, "%d", &scratch);
+        usr().allow_two_perfedits(scratch != 0);
+
+        next_data_line(file);
+        sscanf(m_line, "%d", &scratch);
+        usr().perf_h_page_increment(scratch);
+
+        next_data_line(file);
+        sscanf(m_line, "%d", &scratch);
+        usr().perf_v_page_increment(scratch);
+
         usr().normalize();    /* calculate derived values */
     }
     else
     {
+        /*
+         * Legacy values.  Compare to user_settings::set_defaults().
+         */
+
+        usr().grid_style(0);
+        usr().grid_brackets(1);
+        usr().mainwnd_rows(4);
+        usr().mainwnd_cols(8);
+        usr().max_sets(32);
+        usr().mainwid_border(0);
+        usr().mainwid_spacing(2);
+        usr().control_height(0);
+        usr().zoom(2);
         usr().global_seq_feature(false);
         usr().use_new_font(false);
+        usr().allow_two_perfedits(false);
+        usr().perf_h_page_increment(1);
+        usr().perf_v_page_increment(1);
     }
 
     /*
@@ -522,7 +550,9 @@ userfile::write (const perform & /* a_perf */ )
         {
             file << "? This instrument specification is invalid\n";
         }
-        file << "\n# End of instrument/controllers definition " << inst << "\n";
+        file << "\n# End of instrument/controllers definition "
+            << inst << "\n\n"
+            ;
     }
 
     /*
@@ -634,7 +664,7 @@ userfile::write (const perform & /* a_perf */ )
             "# 0 = Allow each sequence to have its own key/scale/background.\n"
             "#     Settings are saved with each sequence.\n"
             "# 1 = Apply these settings globally (similar to seq24).\n"
-            "#     Settings are saved in the global final section of the file..\n"
+            "#     Settings are saved in the global final section of the file.\n"
             "\n"
             << (usr().global_seq_feature() ? "1" : "0")
             << "      # global_seq_feature\n"
@@ -654,6 +684,38 @@ userfile::write (const perform & /* a_perf */ )
             "\n"
             << (usr().use_new_font() ? "1" : "0")
             << "      # use_new_font\n"
+            ;
+
+        file << "\n"
+            "# Specifies if the user-interface will support two song editor\n"
+            "# windows being shown at the same time.  This makes it easier to\n"
+            "# edit songs with a large number of sequences.\n"
+            "#\n"
+            "# 0 = Allow only one song editor (performance editor).\n"
+            "# 1 = Allow two song editors.\n"
+            "\n"
+            << (usr().allow_two_perfedits() ? "1" : "0")
+            << "      # allow_two_perfedits\n"
+            ;
+
+        file << "\n"
+            "# Specifies the number of 4-measure blocks for horizontal page\n"
+            "# scrolling in the song editor.  The old default, 1, is a bit\n"
+            "# small.  The new default is 4.  The legal range is 1 to 6, where\n"
+            "# 6 is the width of the whole performance piano roll view.\n"
+            "\n"
+            << usr().perf_h_page_increment()
+            << "      # perf_h_page_increment\n"
+            ;
+
+        file << "\n"
+            "# Specifies the number of 1-track blocks for vertical page\n"
+            "# scrolling in the song editor.  The old default, 1, is a bit\n"
+            "# small.  The new default is 8.  The legal range is 1 to 18, where\n"
+            "# 18 is about the height of the whole performance piano roll view.\n"
+            "\n"
+            << usr().perf_v_page_increment()
+            << "      # perf_v_page_increment\n"
             ;
     }
 

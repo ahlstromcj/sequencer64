@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-25
+ * \updates       2015-11-26
  * \license       GNU GPLv2 or above
  *
  */
@@ -37,6 +37,7 @@
 #include "event.hpp"
 #include "keystroke.hpp"
 #include "fruityperfroll_input.hpp"     /* alternate mouse-input class  */
+#include "perfedit.hpp"
 #include "perform.hpp"
 #include "perfroll.hpp"
 #include "perfroll_input.hpp"
@@ -67,11 +68,15 @@ namespace seq64
 perfroll::perfroll
 (
     perform & p,
+    perfedit & parent,
     Gtk::Adjustment & hadjust,
     Gtk::Adjustment & vadjust,
     int ppqn
 ) :
     gui_drawingarea_gtk2    (p, hadjust, vadjust, 10, 10),
+    m_parent                (parent),
+    m_h_page_increment      (usr().perf_h_page_increment()),
+    m_v_page_increment      (usr().perf_v_page_increment()),
     m_snap                  (0),
     m_ppqn                  (0),                            // set in the body
     m_page_factor           (SEQ64_PERFROLL_PAGE_FACTOR),   // 4096
@@ -149,7 +154,7 @@ perfroll::change_horz ()
     if (m_4bar_offset != int(m_hadjust.get_value()))
     {
         m_4bar_offset = int(m_hadjust.get_value());
-        queue_draw();
+        enqueue_draw();
     }
 }
 
@@ -164,7 +169,7 @@ perfroll::change_vert ()
     if (m_sequence_offset != int(m_vadjust.get_value()))
     {
         m_sequence_offset = int(m_vadjust.get_value());
-        queue_draw();
+        enqueue_draw();
     }
 }
 
@@ -214,7 +219,7 @@ perfroll::update_sizes ()
     m_hadjust.set_upper(h_bars);
     m_hadjust.set_page_size(h_bars_visible);
     m_hadjust.set_step_increment(1);
-    m_hadjust.set_page_increment(1);
+    m_hadjust.set_page_increment(m_h_page_increment);
     if (m_hadjust.get_value() > h_max_value)
         m_hadjust.set_value(h_max_value);
 
@@ -222,7 +227,7 @@ perfroll::update_sizes ()
     m_vadjust.set_upper(m_sequence_max);
     m_vadjust.set_page_size(m_window_y / m_names_y);
     m_vadjust.set_step_increment(1);
-    m_vadjust.set_page_increment(1);
+    m_vadjust.set_page_increment(m_v_page_increment);
 
     int v_max_value = m_sequence_max - (m_window_y / m_names_y);
     if (m_vadjust.get_value() > v_max_value)
@@ -231,7 +236,7 @@ perfroll::update_sizes ()
     if (is_realized())
         m_pixmap = Gdk::Pixmap::create(m_window, m_window_x, m_window_y, -1);
 
-    queue_draw();
+    enqueue_draw();
 }
 
 /**
@@ -327,7 +332,22 @@ perfroll::set_guides (int snap, int measure, int beat)
     if (is_realized())
         fill_background_pixmap();
 
-    queue_draw();
+    enqueue_draw();
+}
+
+/**
+ *  Wraps queue_draw() and forwards the call to the parent perfedit, so
+ *  that it can forward it to any other perfedit that exists.
+ *
+ *  The parent perfedit will call perfroll::queue_draw() on behalf of this
+ *  object, and it will pass a perfroll::enqueue_draw() to the peer perfedit's
+ *  perfroll, if the peer exists.
+ */
+
+void
+perfroll::enqueue_draw ()
+{
+    m_parent.enqueue_draw();
 }
 
 /**
@@ -723,8 +743,9 @@ perfroll::on_button_press_event (GdkEventButton * ev)
         result = m_fruity_interaction.on_button_press_event(ev, *this);
 
     if (result)
-        perf().modify();            // NEW
+        perf().modify();
 
+    enqueue_draw();
     return result;
 }
 
@@ -744,8 +765,9 @@ perfroll::on_button_release_event (GdkEventButton * ev)
         result = m_fruity_interaction.on_button_release_event(ev, *this);
 
     if (result)
-        perf().modify();            // NEW
+        perf().modify();
 
+    enqueue_draw();
     return result;
 }
 
@@ -796,8 +818,10 @@ perfroll::on_motion_notify_event (GdkEventMotion * ev)
         result = m_fruity_interaction.on_motion_notify_event(ev, *this);
 
     if (result)
-        perf().modify();            // NEW
-
+    {
+        perf().modify();
+        enqueue_draw();     /* put in if() to reduce flickering */
+    }
     return result;
 }
 
@@ -851,12 +875,12 @@ perfroll::on_key_press_event (GdkEventKey * ev)
     if (result)
     {
         fill_background_pixmap();
-        queue_draw();
-        perf().modify();            // NEW
+        perf().modify();
     }
     else
         return Gtk::DrawingArea::on_key_press_event(ev);
 
+    enqueue_draw();
     return result;
 }
 

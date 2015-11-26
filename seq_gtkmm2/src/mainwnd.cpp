@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-25
+ * \updates       2015-11-26
  * \license       GNU GPLv2 or above
  *
  *  The main window holds the menu and the main controls of the application,
@@ -95,6 +95,11 @@ int mainwnd::m_sigpipe[2];
  * \param p
  *      Refers to the main performance object.
  *
+ * \param allowperf2
+ *      Indicates if a second perfedit window should be created.
+ *      We're thinking this will be a build-time option.
+ *      For now, it defaults to true.
+ *
  * \todo
  *      Offload most of the work into an initialization function like
  *      options does; make the perform parameter a reference;
@@ -102,7 +107,7 @@ int mainwnd::m_sigpipe[2];
  *      ourselves, many more leaks occur.
  */
 
-mainwnd::mainwnd (perform & p)
+mainwnd::mainwnd (perform & p, bool allowperf2)
  :
     gui_window_gtk2         (p),
     performcallback         (),
@@ -111,10 +116,10 @@ mainwnd::mainwnd (perform & p)
     m_menu_file             (manage(new Gtk::Menu())),
     m_menu_view             (manage(new Gtk::Menu())),
     m_menu_help             (manage(new Gtk::Menu())),
-    m_main_wid              (manage(new mainwid(perf()))),  // p
-    m_main_time             (manage(new maintime(perf()))), // p
-    m_perf_edit             (new perfedit(perf())),         // p
-    m_perf_edit_2           (nullptr), // new perfedit(perf())),         // p
+    m_main_wid              (manage(new mainwid(p))),  // perf()
+    m_main_time             (manage(new maintime(p))),
+    m_perf_edit             (new perfedit(p)),
+    m_perf_edit_2           (allowperf2 ? new perfedit(p, true) : nullptr),
     m_options               (nullptr),
     m_main_cursor           (),
     m_button_learn          (nullptr),
@@ -215,7 +220,7 @@ mainwnd::mainwnd (perform & p)
     (
         MenuElem
         (
-            "Song _Editor toggle...", Gtk::AccelKey("<control>E"),
+            "_Song Editor toggle...", Gtk::AccelKey("<control>E"),
             mem_fun(*this, &mainwnd::open_performance_edit)
         )
     );
@@ -224,14 +229,18 @@ mainwnd::mainwnd (perform & p)
      * View menu items and their hot keys.
      */
 
-    m_menu_view->items().push_back
-    (
-        MenuElem
+    if (not_nullptr(m_perf_edit_2))
+    {
+        m_menu_view->items().push_back
         (
-            "_Song Editor 2 toggle...", Gtk::AccelKey("<control>F"),
-            mem_fun(*this, &mainwnd::open_performance_edit_2)
-        )
-    );
+            MenuElem
+            (
+                "Song Editor _2 toggle...", // Gtk::AccelKey("<control>F"),
+                mem_fun(*this, &mainwnd::open_performance_edit_2)
+            )
+        );
+        enregister_perfedits();
+    }
 
     /**
      * Help menu items
@@ -535,11 +544,6 @@ mainwnd::open_performance_edit ()
 void
 mainwnd::open_performance_edit_2 ()
 {
-    if (is_nullptr(m_perf_edit_2))
-    {
-        m_perf_edit_2 = new perfedit(perf(), true); /* true --> second one  */
-        enregister_perfedits();
-    }
     if (not_nullptr(m_perf_edit_2))
     {
         if (m_perf_edit_2->is_visible())

@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-15
+ * \updates       2015-11-26
  * \license       GNU GPLv2 or above
  *
  */
@@ -50,6 +50,7 @@ namespace seq64
 {
 
 class perform;
+class perfedit;
 
 /**
  *  This class implements drawing the piano time at the top of the
@@ -62,6 +63,14 @@ class perftime : public gui_drawingarea_gtk2
     friend class perfedit;
 
 private:
+
+    /**
+     *  Provides a link to the perfedit that created this object.  We want to
+     *  support two perfedit windows, but the children of perfedit will have
+     *  to communicate changes requiring a redraw through the parent.
+     */
+
+    perfedit & m_parent;
 
     /**
      *  Not yet sure exactly what this member represents.
@@ -132,6 +141,7 @@ public:
     perftime
     (
         perform & perf,
+        perfedit & parent,
         Gtk::Adjustment & hadjust,
         int ppqn = SEQ64_USE_DEFAULT_PPQN
     );
@@ -151,6 +161,7 @@ public:
 
 private:
 
+    void enqueue_draw ();
     void draw_progress_on_window ();
     void change_horz ();
     void set_ppqn (int ppqn);

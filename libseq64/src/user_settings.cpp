@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-23
- * \updates       2015-11-21
+ * \updates       2015-11-26
  * \license       GNU GPLv2 or above
  *
  *  Note that this module also sets the remaining legacy global variables, so
@@ -141,6 +141,9 @@ user_settings::user_settings ()
     m_seqedit_key               (0),
     m_seqedit_bgsequence        (0),
     m_use_new_font              (false),
+    m_allow_two_perfedits       (false),
+    m_h_perf_page_increment     (1),
+    m_v_perf_page_increment     (1),
 
     /*
      * The members that follow are not yet part of the .usr file.
@@ -224,6 +227,9 @@ user_settings::user_settings (const user_settings & rhs)
     m_seqedit_key               (rhs.m_seqedit_key),
     m_seqedit_bgsequence        (rhs.m_seqedit_bgsequence),
     m_use_new_font              (rhs.m_use_new_font),
+    m_allow_two_perfedits       (rhs.m_allow_two_perfedits),
+    m_h_perf_page_increment     (rhs.m_h_perf_page_increment),
+    m_v_perf_page_increment     (rhs.m_v_perf_page_increment),
 
     /*
      * The members that follow are not yet part of the .usr file.
@@ -310,6 +316,9 @@ user_settings::operator = (const user_settings & rhs)
         m_seqedit_key               = rhs.m_seqedit_key;
         m_seqedit_bgsequence        = rhs.m_seqedit_bgsequence;
         m_use_new_font              = rhs.m_use_new_font;
+        m_allow_two_perfedits       = rhs.m_allow_two_perfedits;
+        m_h_perf_page_increment     = rhs.m_h_perf_page_increment;
+        m_v_perf_page_increment     = rhs.m_v_perf_page_increment;
 
         /*
          * The members that follow are not yet part of the .usr file.
@@ -386,6 +395,9 @@ user_settings::set_defaults ()
     m_seqedit_key = SEQ64_KEY_OF_C;     // range: 0-11
     m_seqedit_bgsequence = SEQ64_SEQUENCE_LIMIT; // range -1, 0, 1, 2, ...
     m_use_new_font = ! rc().legacy_format();
+    m_allow_two_perfedits = true;
+    m_h_perf_page_increment = 4;
+    m_v_perf_page_increment = 8;
 
     m_text_x =  6;                      // range: 6-6
     m_text_y = 12;                      // range: 12-12
@@ -913,6 +925,34 @@ user_settings::midi_buss_override (char buss)
     {
         m_midi_buss_override = buss;
     }
+}
+
+/**
+ *  Sets the horizontal page increment size for the horizontal scrollbar of a
+ *  perfedit window.  This value ranges from 1 (the original value, really too
+ *  small for a "page" operation) to 6 (which is 24 measures, the same as
+ *  the typical width of the perfroll)
+ */
+
+void
+user_settings::perf_h_page_increment (int inc)
+{
+    if (inc >= 1 && inc <= 6)
+        m_h_perf_page_increment = inc;
+}
+
+/**
+ *  Sets the vertical page increment size for the vertical scrollbar of a
+ *  perfedit window.  This value ranges from 1 (the original value, really too
+ *  small for a "page" operation) to 18 (which is 18 tracks, slightly more
+ *  than the typical height of the perfroll)
+ */
+
+void
+user_settings::perf_v_page_increment (int inc)
+{
+    if (inc >= 1 && inc <= 18)
+        m_v_perf_page_increment = inc;
 }
 
 /**

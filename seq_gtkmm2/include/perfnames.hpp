@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-27
+ * \updates       2015-11-26
  * \license       GNU GPLv2 or above
  *
  *  This class supports the left side of the Performance window (also known
@@ -47,6 +47,7 @@ namespace seq64
 {
 
 class perform;
+class perfedit;
 
 /**
  *  This class implements the left-side keyboard in the patterns window.
@@ -61,6 +62,14 @@ class perfnames : public gui_drawingarea_gtk2, public seqmenu
 {
 
 private:
+
+    /**
+     *  Provides a link to the perfedit that created this object.  We want to
+     *  support two perfedit windows, but the children of perfedit will have
+     *  to communicate changes requiring a redraw through the parent.
+     */
+
+    perfedit & m_parent;
 
     /**
      *  Provides the number of the characters in the name box.  Pretty much
@@ -120,12 +129,18 @@ private:
 
 public:
 
-    perfnames (perform & p, Gtk::Adjustment & vadjust);
+    perfnames
+    (
+        perform & p,
+        perfedit & parent,
+        Gtk::Adjustment & vadjust
+    );
 
     void redraw_dirty_sequences ();
 
 private:
 
+    void enqueue_draw ();
     int convert_y (int y);
     void draw_sequence (int sequence);
     void change_vert ();

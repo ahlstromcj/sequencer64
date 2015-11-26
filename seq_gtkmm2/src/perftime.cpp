@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-19
+ * \updates       2015-11-26
  * \license       GNU GPLv2 or above
  *
  *  The time bar shows markers and numbers for the measures of the song,
@@ -37,6 +37,7 @@
 #include "click.hpp"                    /* SEQ64_CLICK_LEFT() etc.      */
 #include "font.hpp"
 #include "keystroke.hpp"                /* for new keystroke actions    */
+#include "perfedit.hpp"
 #include "perform.hpp"
 #include "perftime.hpp"
 
@@ -57,10 +58,12 @@ namespace seq64
 perftime::perftime
 (
     perform & p,
+    perfedit & parent,
     Gtk::Adjustment & hadjust,
     int ppqn
 ) :
     gui_drawingarea_gtk2    (p, hadjust, adjustment_dummy(), 10, c_timearea_y),
+    m_parent                (parent),
     m_4bar_offset           (0),
     m_tick_offset           (0),
     m_ppqn                  (0),                // set in the body
@@ -114,7 +117,7 @@ perftime::change_horz ()
     {
         m_4bar_offset = int(m_hadjust.get_value());
         m_tick_offset = m_4bar_offset * 16 * m_ppqn;
-        queue_draw();
+        enqueue_draw();
     }
 }
 
@@ -141,7 +144,22 @@ perftime::set_guides (int snap, int measure)
 {
     m_snap = snap;
     m_measure_length = measure;
-    queue_draw();
+    enqueue_draw();
+}
+
+/**
+ *  Wraps queue_draw() and forwards the call to the parent perfedit, so
+ *  that it can forward it to any other perfedit that exists.
+ *
+ *  The parent perfedit will call perftime::queue_draw() on behalf of this
+ *  object, and it will pass a perftime::enqueue_draw() to the peer perfedit's
+ *  perftime, if the peer exists.
+ */
+
+void
+perftime::enqueue_draw ()
+{
+    m_parent.enqueue_draw();
 }
 
 /**
@@ -230,7 +248,7 @@ perftime::on_button_press_event (GdkEventButton * p0)
     else if (SEQ64_CLICK_RIGHT(p0->button))
         perf().set_right_tick(tick + m_snap);
 
-    queue_draw();
+    enqueue_draw();
     return true;
 }
 
@@ -330,10 +348,9 @@ perftime::key_press_event (GdkEventKey * ev)
         }
     }
     if (result)
-    {
-        queue_draw();
         perf().modify();                                    /* flag it */
-    }
+
+    enqueue_draw();
     return result;
 }
 

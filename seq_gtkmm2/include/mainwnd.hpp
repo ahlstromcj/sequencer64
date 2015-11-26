@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-25
+ * \updates       2015-11-26
  * \license       GNU GPLv2 or above
  *
  *  The main windows is known as the "Patterns window" or "Patterns
@@ -196,7 +196,7 @@ private:
 
 public:
 
-    mainwnd (perform & a_p);
+    mainwnd (perform & a_p, bool allowperf2 = true);
     ~mainwnd ();
 
     void open_file (const std::string &);

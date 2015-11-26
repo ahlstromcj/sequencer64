@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-25
+ * \updates       2015-11-26
  * \license       GNU GPLv2 or above
  *
  *  This module is almost exclusively user-interface code.  There are some
@@ -47,6 +47,7 @@
 
 #include "click.hpp"                    /* SEQ64_CLICK_LEFT(), etc.    */
 #include "font.hpp"
+#include "perfedit.hpp"
 #include "perform.hpp"
 #include "perfnames.hpp"
 
@@ -60,10 +61,15 @@ namespace seq64
  *  is 22 (now 24) in globals.h.
  */
 
-perfnames::perfnames (perform & p, Gtk::Adjustment & vadjust)
- :
+perfnames::perfnames
+(
+    perform & p,
+    perfedit & parent,
+    Gtk::Adjustment & vadjust
+) :
     gui_drawingarea_gtk2    (p, adjustment_dummy(), vadjust, c_names_x, 100),
     seqmenu                 (p),
+    m_parent                (parent),
     m_names_chars           (24),
     m_char_w                (font_render().char_width()),   /* 6            */
     m_setbox_w              (m_char_w * 2),
@@ -99,8 +105,23 @@ perfnames::change_vert ()
     if (m_sequence_offset != int(m_vadjust.get_value()))
     {
         m_sequence_offset = int(m_vadjust.get_value());
-        queue_draw();
+        enqueue_draw();
     }
+}
+
+/**
+ *  Wraps queue_draw() and forwards the call to the parent perfedit, so
+ *  that it can forward it to any other perfedit that exists.
+ *
+ *  The parent perfedit will call perfnames::queue_draw() on behalf of this
+ *  object, and it will pass a perfnames::enqueue_draw() to the peer perfedit's
+ *  perfnames, if the peer exists.
+ */
+
+void
+perfnames::enqueue_draw ()
+{
+    m_parent.enqueue_draw();
 }
 
 /**
@@ -242,7 +263,7 @@ perfnames::on_button_press_event (GdkEventButton * ev)
             sequence * seq = perf().get_sequence(seqnum);
             bool muted = seq->get_song_mute();
             seq->set_song_mute(! muted);
-            queue_draw();
+            enqueue_draw();
         }
     }
     return true;

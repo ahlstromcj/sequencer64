@@ -186,7 +186,7 @@ public:
     ~perfedit ();
 
     void init_before_show ();
-    void enqueue_draw ();
+    void enqueue_draw (bool forward = true);
 
     /**
      *  Register the peer perfedit object.  This function is meant to be

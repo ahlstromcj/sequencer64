@@ -269,11 +269,11 @@ perfroll::fill_background_pixmap ()
 
     int beats = m_measure_length / m_beat_length;
     m_gc->set_foreground(grey());
-    for (int i = 0; i < beats; /* inc'd in body */) /* draw vertical lines   */
+    for (int i = 0; i < beats; /* inc'd in body */) /* draw vertical lines  */
     {
 #ifdef SEQ64_SOLID_PIANOROLL_GRID
         if (i == 0)
-            m_gc->set_foreground(dark_grey());  // black()
+            m_gc->set_foreground(dark_grey());      /* was black()          */
         else
             m_gc->set_foreground(light_grey());
 #else

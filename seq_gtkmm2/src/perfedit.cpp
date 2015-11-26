@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-22
+ * \updates       2015-11-25
  * \license       GNU GPLv2 or above
  *
  */
@@ -98,9 +98,11 @@ namespace seq64
 perfedit::perfedit
 (
     perform & p,
+    bool second_perfedit,
     int ppqn
 ) :
     gui_window_gtk2     (p, 750, 500),      /* set_size_request(700, 400) */
+    m_peer_perfedit     (nullptr),
     m_table             (manage(new Gtk::Table(6, 3, false))),
     m_vadjust           (manage(new Gtk::Adjustment(0, 0, 1, 1, 1, 1))),
     m_hadjust           (manage(new Gtk::Adjustment(0, 0, 1, 1, 1, 1))),
@@ -133,12 +135,16 @@ perfedit::perfedit
     m_bpm               (0),
     m_bw                (0),
     m_ppqn              (0),
-    m_standard_bpm      (SEQ64_DEFAULT_LINES_PER_MEASURE),  /* 4        */
-    m_redraw_ms         (c_redraw_ms)                       /* 40 ms    */
+    m_standard_bpm      (SEQ64_DEFAULT_LINES_PER_MEASURE),  /* 4            */
+    m_redraw_ms         (c_redraw_ms)                       /* 40 ms        */
 {
+    std::string title = "Sequencer64 - Song Editor";
+    if (second_perfedit)
+        title += " 2";
+
     m_ppqn = choose_ppqn(ppqn);
     set_icon(Gdk::Pixbuf::create_from_xpm_data(perfedit_xpm));
-    set_title("Sequencer64 - Song Editor");                 /* main window */
+    set_title(title);                                       /* caption bar  */
     m_table->set_border_width(2);
     m_hlbox->set_border_width(2);
     m_button_grow->add
@@ -357,6 +363,19 @@ perfedit::~perfedit ()
 }
 
 /**
+ *  Helper wrapper for calling perfroll::queue_draw() for one or both
+ *  perfedits.
+ */
+
+void
+perfedit::enqueue_draw ()
+{
+    m_perfroll->queue_draw();
+    if (not_nullptr(m_peer_perfedit))
+        m_peer_perfedit->m_perfroll->queue_draw();
+}
+
+/**
  *  Implement the undo feature (Ctrl-Z).  We pop an Undo trigger, and then
  *  ask the perfroll to queue up a (re)drawing action.
  */
@@ -365,7 +384,8 @@ void
 perfedit::undo ()
 {
     perf().pop_trigger_undo();
-    m_perfroll->queue_draw();
+//  m_perfroll->queue_draw();
+    enqueue_draw();
 }
 
 /**
@@ -379,7 +399,8 @@ void
 perfedit::collapse ()
 {
     perf().collapse();
-    m_perfroll->queue_draw();
+//  m_perfroll->queue_draw();
+    enqueue_draw();
 }
 
 /**
@@ -395,7 +416,8 @@ void
 perfedit::copy ()
 {
     perf().copy();
-    m_perfroll->queue_draw();
+//  m_perfroll->queue_draw();
+    enqueue_draw();
 }
 
 /**
@@ -409,7 +431,8 @@ void
 perfedit::expand ()
 {
     perf().expand();
-    m_perfroll->queue_draw();
+//  m_perfroll->queue_draw();
+    enqueue_draw();
 }
 
 /**
@@ -551,15 +574,25 @@ perfedit::init_before_show ()
 /**
  *  Handles a drawing timeout.  It redraws "dirty" sequences in the
  *  perfroll and the perfnames objects, and shows draw progress on the
- *  perfroll.
+ *  perfroll.  This function is called frequently and continuously.
  */
 
 bool
 perfedit::timeout ()
 {
-    m_perfroll->redraw_dirty_sequences();
-    m_perfroll->draw_progress();
+    m_perfroll->redraw_progress();
     m_perfnames->redraw_dirty_sequences();
+
+    /*
+     * COULD CAUSE PROBLEMS, BUT DOESN"T SEEM TO HAVE ANY EFFECT
+     *
+    if (not_nullptr(m_peer_perfedit))
+    {
+        m_peer_perfedit->m_perfroll->redraw_progress();
+        m_peer_perfedit->m_perfnames->redraw_dirty_sequences();
+    }
+     */
+
     return true;
 }
 

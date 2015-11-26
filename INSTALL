@@ -1,6 +1,6 @@
 INSTALL for Sequencer64 v 0.9.9.10
 Chris Ahlstrom
-2015-09-10 to 2015-11-23
+2015-09-10 to 2015-11-25
 
 The current packaging for Sequencer64 is primarily aimed at developers.
 There is currently no configure script... it must be bootstrapped.
@@ -132,10 +132,10 @@ MANUALLY-DEFINED MACROS IN CODE:
         be used as arrow keys for moving notes.  Not yet tested.  We will not
         make this a default, because it could drive non-vi users nuts.
 
-    USE_SEQ42_PATCHES:
+    USE_xxxxxx:
 
-        This macro, in globals.h, currently merely marks a couple places where
-        we found potentially useful code in the seq42 fork of seq24.
+        This category of macro are usually undefined values that let us keep
+        old code around in case we decide it was the better code after all.
 
 DEPENDENCIES:
 

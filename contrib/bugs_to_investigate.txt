@@ -5,6 +5,10 @@ Chris Ahlstrom
 In no particular order...  "y" means "in progress", and "x" means it is
 basically done.
 
+-  In the perfedit window, make the vertical scroll go by 8 tracks instead of
+   just 1.
+-  In the standard seq24 view, when a pattern is moved, it leaves a black
+   line at the bottom of the pattern slot it just left.
 -  Is the --pass-sysex command actually supported?  Seq24 threw SysEx away.
 -  Consider adding support for reading normal MIDI TimeSig and Tempo data from
    normal MIDI files, as found in example1.mid; also get some other files to

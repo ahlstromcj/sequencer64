@@ -29,7 +29,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-23
+ * \updates       2015-11-25
  * \license       GNU GPLv2 or above
  *
  */
@@ -119,8 +119,7 @@ public:
     void reset ();
 
     /**
-     *  Updates the pixmap and queues up a redraw operation.  We need to
-     *  make this an inline function and use it as common code.
+     *  Updates the pixmap and queues up a redraw operation.
      */
 
     void redraw ()
@@ -131,10 +130,10 @@ public:
 
     void set_zoom (int a_zoom);
     void set_data_type (midibyte status, midibyte control);
-    int idle_redraw ();
 
 private:
 
+    int idle_redraw ();
     void update_sizes ();
     void update_pixmap ();
     void draw_line_on_window ();

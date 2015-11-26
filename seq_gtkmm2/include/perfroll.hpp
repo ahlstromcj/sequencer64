@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-16
+ * \updates       2015-11-25
  * \license       GNU GPLv2 or above
  *
  */
@@ -129,12 +129,22 @@ public:
     void init_before_show ();
     void fill_background_pixmap ();
     void increment_size ();
-    void draw_progress ();
-    void redraw_dirty_sequences ();
-    void draw_all ();                       // used by perfroll_input
+    void draw_all ();                       /* used by perfroll_input   */
+
+    /**
+     *  Helper function to simplify the client call.
+     */
+
+    void redraw_progress ()
+    {
+        redraw_dirty_sequences ();
+        draw_progress();
+    }
 
 private:
 
+    void draw_progress ();                  /* called by perfedit       */
+    void redraw_dirty_sequences ();         /* called by perfedit       */
     void set_ppqn (int ppqn);
     void convert_xy (int x, int y, long & ticks, int & seq);
     void convert_x (int x, long & ticks);

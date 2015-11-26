@@ -1,6 +1,6 @@
 Contributed MIDI Files
 Chris Ahlstrom
-2015-09-11 to 2015-11-24
+2015-09-11 to 2015-11-25
 
 This directory contains contributed MIDI files for examples and testing.
 Also see the test files from the midicvt as described in
@@ -50,7 +50,13 @@ by loading them into Sequencer64.
 
    b4uacuse-GM-doubled.midi:
 
-         The tune with set 1 copied to set 2, for experimentation with sets.
+        The tune with set 1 copied to set 2, for experimentation with sets.
+
+   CountryStrum.midi:
+
+        This file is the CountryStrum.mid SMF 0 file imported into
+        Sequencer64, with the SMF 0 track removed, and all the sequences
+        moved over to the leftmost position in the main window.
 
    example1.mid:
 

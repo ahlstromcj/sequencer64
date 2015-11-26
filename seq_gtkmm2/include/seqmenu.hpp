@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-16
+ * \updates       2015-11-25
  * \license       GNU GPLv2 or above
  *
  */
@@ -112,7 +112,7 @@ protected:
 
     void current_sequence (int seq)
     {
-        if (seq >= 0)                   // shall we validate the upper end?
+        if (seq >= 0)                   /* shall we validate the upper end? */
             m_current_seq = seq;
     }
 
@@ -141,20 +141,21 @@ private:
     void set_bus_and_midi_channel (int a_bus, int a_ch);
     void mute_all_tracks ();
 
-    virtual void redraw (int a_sequence) = 0;   // pure virtual function
+    virtual void redraw (int a_sequence) = 0;   /* pure virtual function    */
 
-private:            // callback
+private:        // callback
 
     void on_realize ();
 
-};
+};              // class seqmenu
 
-}           // namespace seq64
+}               // namespace seq64
 
-#endif      // SEQ64_SEQMENU_HPP
+#endif          // SEQ64_SEQMENU_HPP
 
 /*
  * seqmenu.hpp
  *
  * vim: sw=4 ts=4 wm=4 et ft=cpp
  */
+

@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-14
+ * \updates       2015-11-25
  * \license       GNU GPLv2 or above
  *
  *  The main windows is known as the "Patterns window" or "Patterns
@@ -107,6 +107,12 @@ private:
      */
 
     perfedit * m_perf_edit;
+
+    /**
+     *  A pointer to an optional second song/performance editor.
+     */
+
+    perfedit * m_perf_edit_2;
 
     /**
      *  A pointer to the program options.
@@ -251,6 +257,8 @@ private:
     }
 
     void open_performance_edit ();
+    void open_performance_edit_2 ();
+    void enregister_perfedits ();
 
     /**
      *  Use the sequence key to toggle the playing of an active pattern in

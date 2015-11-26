@@ -2369,7 +2369,8 @@ perform::sequence_key (int seq)
 \endverbatim
  *
  *  The sequence number and buss number are re 0, while the channel number is
- *  displayed re 1.
+ *  displayed re 1, unless it is an SMF 0 null channel (0xFF), in which case
+ *  it is 0..
  *
  * \note
  *      Later, we could add the sequence hot-key to this string, though
@@ -2394,7 +2395,7 @@ perform::sequence_label (const sequence & seq)
     {
         char tmp[32];
         int bus = seq.get_midi_bus();
-        int chan = seq.get_midi_channel() + 1;
+        int chan = seq.is_smf_0() ? 0 : seq.get_midi_channel() + 1;
         int bpb = int(seq.get_beats_per_bar());
         int bw = int(seq.get_beat_width());
         if (show_ui_sequence_number())                  /* new feature! */

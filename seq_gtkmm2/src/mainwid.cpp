@@ -37,16 +37,11 @@
  *  to fix the root causes as well.
  */
 
-#include <gtkmm/combo.h>                /* Gtk::Entry                       */
-#include <gtkmm/menubar.h>
-
 #include "calculations.hpp"             /* seq64::shorten_file_spec()       */
 #include "click.hpp"                    /* SEQ64_CLICK_LEFT(), etc.         */
 #include "font.hpp"
 #include "mainwid.hpp"
 #include "perform.hpp"
-
-using namespace Gtk::Menu_Helpers;
 
 namespace seq64
 {
@@ -189,6 +184,13 @@ mainwid::draw_sequence_on_pixmap (int seqnum)
         calculate_base_sizes(seqnum, base_x, base_y);   /* side-effects     */
         ++base_x;                                       /* overall fix-up   */
         ++base_y;                                       /* overall fix-up   */
+
+        /*
+         * If we contract this one pixel on every side, the brackets
+         * disappear.  This box is one pixel bigger on each side than
+         * the pixmap showing the sequence information.
+         */
+
         draw_rectangle_on_pixmap                        /* filled black box */
         (
             black(), base_x, base_y, m_seqarea_x, m_seqarea_y
@@ -199,8 +201,10 @@ mainwid::draw_sequence_on_pixmap (int seqnum)
             if (is_nullptr(seq))                        /* non-existent?    */
                 return;                                 /* yes, ignore it   */
 
+#ifdef SEQ64_USE_DEBUG_OUTPUT
             if (seqnum != seq->number() && seq->number() != (-1))
                 printf("seq# mismatch: %d-%d\n", seqnum, seq->number());
+#endif
 
             bool high_light = perf().highlight(*seq);
             bool smf_0 = perf().is_smf_0(*seq);
@@ -238,6 +242,13 @@ mainwid::draw_sequence_on_pixmap (int seqnum)
                     fg_color(black());
                 }
             }
+
+            /*
+             * Draw a normal background box that is one pixel less on all
+             * sides than the black box that was drawn initially.  If not
+             * drawn, then the sequence shows as a black box with only the
+             * text showing.
+             */
 
             draw_rectangle_on_pixmap
             (
@@ -301,25 +312,22 @@ mainwid::draw_sequence_on_pixmap (int seqnum)
 
             int rectangle_x = base_x + m_text_size_x - 1;
             int rectangle_y = base_y + m_text_size_y + m_text_size_x - 1;
-            if (seq->get_queued())
-            {
-                draw_rectangle_on_pixmap
-                (
-                    grey(), rectangle_x - 2, rectangle_y - 1,
-                    m_seqarea_seq_x + 3, m_seqarea_seq_y + 3
-                );
-                fg_color(black());
-            }
+            int x = rectangle_x - 2;
+            int y = rectangle_y - 1;
+            int lx = m_seqarea_seq_x + 3;
+            int ly = m_seqarea_seq_y + 3;
 
             /*
-             * Draws the inner rectangle for all sequences.
+             * Draw the inner rectangle containing the notes of a sequence.
+             * If queued, color the rectangle grey.
              */
 
-            draw_rectangle_on_pixmap
-            (
-                fg_color(), rectangle_x - 2, rectangle_y - 1,
-                m_seqarea_seq_x + 3, m_seqarea_seq_y + 3, false
-            );
+            if (seq->get_queued())
+            {
+                draw_rectangle_on_pixmap(grey(), x, y, lx, ly);
+                fg_color(black());
+            }
+            draw_rectangle_on_pixmap(fg_color(), x, y, lx, ly, false);
 
             int lowest_note = seq->get_lowest_note_event();
             int highest_note = seq->get_highest_note_event();
@@ -382,8 +390,8 @@ mainwid::draw_sequence_on_pixmap (int seqnum)
 
             int offset = gbt > 1 ?  gbt - 1 : 0 ;       /* x, y offset      */
             int reduction = 2 * offset;                 /* size reduction   */
-            int x = base_x + 1 + offset;
-            int y = base_y + 1 + offset;
+            int x = base_x + offset + 1;
+            int y = base_y + offset + 1;
             int lx = m_seqarea_x - 2 - reduction;
             int ly = m_seqarea_y - 2 - reduction;
             if (usr().grid_is_normal())
@@ -393,15 +401,17 @@ mainwid::draw_sequence_on_pixmap (int seqnum)
 
             if (do_brackets)
             {
-                int offset = 2 * gbt + 1;
-                x = base_x + offset;
-                y = base_y;
-                lx = m_seqarea_x - 2 * offset;
-                ly = m_seqarea_y;
-                if (usr().grid_is_normal())
-                    draw_normal_rectangle_on_pixmap(x, y, lx, ly);
-                else if (usr().grid_is_white())
+                int offset = 2 * gbt + 1;               /* 2*thickness + 1  */
+                x = base_x + offset;                    /* L bracket hook   */
+                y = base_y;                             /* top of box       */
+                lx = m_seqarea_x - 2 * offset;          /* minus 2 brackets */
+                ly = m_seqarea_y;                       /* to bottom of box */
+                if (usr().grid_is_white())
                     draw_rectangle_on_pixmap(white(), x, y, lx, ly);
+                else if (usr().grid_is_normal())
+                    draw_normal_rectangle_on_pixmap(x, y, lx, ly);
+                else
+                    draw_rectangle_on_pixmap(black(), x, y, lx, ly);
             }
             if (perf().show_ui_sequence_number())
             {
@@ -442,23 +452,29 @@ mainwid::valid_sequence (int seqnum)
 }
 
 /**
- *  This function draws something in the Patterns Panel.  The sequence is
- *  drawn only if it is in the current screen set (indicated by
- *  m_screenset.  However, if we comment out this code, we can't see any
- *  difference in the Patterns Panel, even when playback is ongoing!
+ *  This function draws a sequence pixmap in the Patterns Panel.  The sequence
+ *  is drawn only if it is in the current screen set (indicated by
+ *  m_screenset.  This function is used when dragging a pattern from one
+ *  pattern-slot to another pattern-slot.
+ *
+ *  We have to add 1 pixel to the y height in order to avoid leaving behind
+ *  a line at the bottom of an empty pattern-slot.
  *
  * \param seqnum
  *      Provides the number of the sequence to draw.
  */
 
 void
-mainwid::draw_sequence_pixmap_on_window (int seqnum)         // effective?
+mainwid::draw_sequence_pixmap_on_window (int seqnum)
 {
     if (valid_sequence(seqnum))
     {
         int base_x, base_y;
-        calculate_base_sizes(seqnum, base_x, base_y);    // side-effects
-        draw_drawable(base_x, base_y, base_x, base_y, m_seqarea_x, m_seqarea_y);
+        calculate_base_sizes(seqnum, base_x, base_y);   /* side-effects */
+        draw_drawable
+        (
+            base_x, base_y, base_x, base_y, m_seqarea_x, m_seqarea_y + 1
+        );
     }
 }
 
@@ -486,7 +502,8 @@ mainwid::calculate_base_sizes (int seqnum, int & basex, int & basey)
 }
 
 /**
- *  Draw the the given pattern/sequence again.
+ *  This virtual function, overridden from the seqmenu base class, draws the
+ *  the given pattern/sequence again.
  *
  * \param seqnum
  *      Provides the number of the sequence to draw.
@@ -536,7 +553,7 @@ void
 mainwid::draw_marker_on_sequence (int seqnum, int tick)
 {
     if (perf().is_dirty_main(seqnum))
-        update_sequence_on_window(seqnum);
+        redraw(seqnum);
 
     if (perf().is_active(seqnum))
     {
@@ -592,20 +609,6 @@ mainwid::update_sequences_on_window ()
 {
     draw_sequences_on_pixmap();
     draw_pixmap_on_window();
-}
-
-/**
- *  Updates the image of one sequencer.
- *
- * \param seqnum
- *      Provides the number of the sequence to update.
- */
-
-void
-mainwid::update_sequence_on_window (int seqnum)
-{
-    draw_sequence_on_pixmap(seqnum);
-    draw_sequence_pixmap_on_window(seqnum);          // effective?
 }
 
 /**
@@ -709,13 +712,7 @@ mainwid::on_realize ()
 {
     gui_drawingarea_gtk2::on_realize();
     set_flags(Gtk::CAN_FOCUS);
-
-    /*
-     * See the discussion in the function banner.
-     */
-
-    font_render().init(m_window);
-
+    font_render().init(m_window);       /* see complaint in function banner */
     m_pixmap = Gdk::Pixmap::create(m_window, m_mainwid_x, m_mainwid_y, -1);
     fill_background_window();
     draw_sequences_on_pixmap();
@@ -826,15 +823,13 @@ mainwid::on_button_release_event (GdkEventButton * p)
             {
                 perf().new_sequence(current_sequence());
                 *(perf().get_sequence(current_sequence())) = m_moving_seq;
-                draw_sequence_on_pixmap(current_sequence());
-                draw_sequence_pixmap_on_window(current_sequence());  // effective?
+                redraw(current_sequence());
             }
             else
             {
                 perf().new_sequence(m_old_seq);
                 *(perf().get_sequence(m_old_seq)) = m_moving_seq;
-                draw_sequence_on_pixmap(m_old_seq);
-                draw_sequence_pixmap_on_window(m_old_seq);          // effective?
+                redraw(m_old_seq);
             }
         }
         else
@@ -842,8 +837,7 @@ mainwid::on_button_release_event (GdkEventButton * p)
             if (perf().is_active(current_sequence()))
             {
                 perf().sequence_playing_toggle(current_sequence());
-                draw_sequence_on_pixmap(current_sequence());
-                draw_sequence_pixmap_on_window(current_sequence());  // effective?
+                redraw(current_sequence());
             }
         }
     }

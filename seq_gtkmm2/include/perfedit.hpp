@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-07
+ * \updates       2015-11-25
  * \license       GNU GPLv2 or above
  *
  */
@@ -89,6 +89,16 @@ class perfedit : public gui_window_gtk2
 {
 
 private:
+
+    /**
+     *  The partner instance of perfedit.
+     */
+
+    perfedit * m_peer_perfedit;
+
+    /**
+     *  A whole horde of GUI elements.
+     */
 
     Gtk::Table * m_table;
     Gtk::Adjustment * m_vadjust;
@@ -170,11 +180,25 @@ public:
     perfedit
     (
         perform & p,
-        int ppqn    = SEQ64_USE_DEFAULT_PPQN
+        bool second_perfedit    = false,
+        int ppqn                = SEQ64_USE_DEFAULT_PPQN
     );
     ~perfedit ();
 
     void init_before_show ();
+    void enqueue_draw ();
+
+    /**
+     *  Register the peer perfedit object.  This function is meant to be
+     *  called by mainwnd, which creates the perfedits and then makes sure
+     *  they get along.
+     */
+
+    void enregister_peer (perfedit * peer)
+    {
+        if (not_nullptr(peer) && is_nullptr(m_peer_perfedit))
+            m_peer_perfedit = peer;
+    }
 
 private:
 

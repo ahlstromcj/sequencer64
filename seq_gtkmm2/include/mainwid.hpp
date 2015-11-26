@@ -28,17 +28,14 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-09
+ * \updates       2015-11-25
  * \license       GNU GPLv2 or above
  *
  */
 
-#include <gtkmm/button.h>
-#include <gtkmm/window.h>
-
 #include "globals.h"                    /* c_max_sequence, etc.     */
-#include "gui_drawingarea_gtk2.hpp"
-#include "seqmenu.hpp"
+#include "gui_drawingarea_gtk2.hpp"     /* one base class           */
+#include "seqmenu.hpp"                  /* the other base class     */
 
 namespace seq64
 {
@@ -51,6 +48,8 @@ class perform;
 
 class mainwid : public gui_drawingarea_gtk2, public seqmenu
 {
+
+    friend class mainwnd;
 
 private:
 
@@ -103,15 +102,16 @@ public:
     mainwid (perform & p);
     ~mainwid ();
 
-    void reset ();
-    void set_screenset (int ss);      // undefined: int get_screenset ();
-    void update_sequence_on_window (int seq);
-    void update_sequences_on_window ();
-    void update_markers (int ticks);
-    void draw_marker_on_sequence (int seq, int tick);
+    void set_screenset (int ss);                /* int get_screenset() ?    */
 
 private:
 
+    virtual void redraw (int seq);              /* override seqmenu's       */
+
+    void reset ();
+    void draw_marker_on_sequence (int seq, int tick);
+    void update_sequences_on_window ();         /* for friend mainwnd       */
+    void update_markers (int ticks);            /* ditto                    */
     bool valid_sequence (int seq);
     void draw_sequence_on_pixmap (int seq);
     void draw_sequences_on_pixmap ();
@@ -129,7 +129,6 @@ private:
     void draw_sequence_pixmap_on_window (int seq);
     int seq_from_xy (int x, int y);
     int timeout ();
-    void redraw (int seq);
     void calculate_base_sizes (int seq, int & basex, int & basey);
 
 private:        // callbacks

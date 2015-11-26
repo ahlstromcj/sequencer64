@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-24
- * \updates       2015-11-24
+ * \updates       2015-11-25
  * \license       GNU GPLv2 or above
  *
  */
@@ -237,9 +237,13 @@ midi_splitter::split_channel
 )
 {
     bool result = false;
-    char temp[24];
-    snprintf(temp, sizeof temp, "%d: %.13s", channel, main_seq.name().c_str());
-    s->set_name(std::string(temp));
+    char tmp[24];
+    if (main_seq.name().empty())
+        snprintf(tmp, sizeof tmp, "Track %d", channel);
+    else
+        snprintf(tmp, sizeof tmp, "%d: %.13s", channel, main_seq.name().c_str());
+
+    s->set_name(std::string(tmp));
     s->set_midi_channel(channel);
     s->set_midi_bus(main_seq.get_midi_bus());
     s->zero_markers();

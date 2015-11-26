@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-23
+ * \updates       2015-11-25
  * \license       GNU GPLv2 or above
  *
  */
@@ -212,7 +212,6 @@ public:
     void draw_events_on_pixmap ();
     void draw_selection_on_window ();
     void draw_progress_on_window ();
-    int idle_redraw ();
     void start_paste ();
 
     /**
@@ -231,6 +230,7 @@ public:
 
 private:
 
+    int idle_redraw ();
     void convert_xy (int x, int y, long & ticks, int & note);
     void convert_tn (long ticks, int note, int & x, int & y);
     void snap_y (int & y)

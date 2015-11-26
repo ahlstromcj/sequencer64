@@ -25,18 +25,18 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-16
+ * \updates       2015-11-25
  * \license       GNU GPLv2 or above
  *
  *  The main window holds the menu and the main controls of the application,
  *  and the mainwid that holds the patterns is nestled in the interior of the
  *  main window.
  *
- * \todo
- *      -   Figure out best way to select non-legacy PPQN behavior, probably,
- *          for now, a command-line option.
- *      -   Add a GUI element that shows the actual PPQN in force, maybe next
- *          to the maintime object, or in the title caption.
+ *  This object now has a GUI element that shows the actual PPQN in force,
+ *  in the title caption.
+ *
+ *  It can also create and bring up a second perfedit object, as a way
+ *  to deal better with large sets of sequences.
  */
 
 #include <cctype>
@@ -114,6 +114,7 @@ mainwnd::mainwnd (perform & p)
     m_main_wid              (manage(new mainwid(perf()))),  // p
     m_main_time             (manage(new maintime(perf()))), // p
     m_perf_edit             (new perfedit(perf())),         // p
+    m_perf_edit_2           (nullptr), // new perfedit(perf())),         // p
     m_options               (nullptr),
     m_main_cursor           (),
     m_button_learn          (nullptr),
@@ -214,8 +215,21 @@ mainwnd::mainwnd (perform & p)
     (
         MenuElem
         (
-            "_Song Editor...", Gtk::AccelKey("<control>E"),
+            "Song _Editor toggle...", Gtk::AccelKey("<control>E"),
             mem_fun(*this, &mainwnd::open_performance_edit)
+        )
+    );
+
+    /**
+     * View menu items and their hot keys.
+     */
+
+    m_menu_view->items().push_back
+    (
+        MenuElem
+        (
+            "_Song Editor 2 toggle...", Gtk::AccelKey("<control>F"),
+            mem_fun(*this, &mainwnd::open_performance_edit_2)
         )
     );
 
@@ -384,7 +398,8 @@ mainwnd::mainwnd (perform & p)
     sethbox->pack_start(*m_spinbutton_ss, Gtk::PACK_SHRINK);
 
     /*
-     * Song editor button.
+     * Song editor button.  Although there can be two of them brought
+     * on-screen, only one has a button devoted to it.
      */
 
     m_button_perfedit = manage(new Gtk::Button());
@@ -396,7 +411,7 @@ mainwnd::mainwnd (perform & p)
     (
         mem_fun(*this, &mainwnd::open_performance_edit)
     );
-    add_tooltip(m_button_perfedit, "Show or hide song editor window.");
+    add_tooltip(m_button_perfedit, "Show or hide the main song editor window.");
     bottomhbox->pack_end(*m_button_perfedit, Gtk::PACK_SHRINK);
 
     /*
@@ -438,6 +453,9 @@ mainwnd::mainwnd (perform & p)
 
 mainwnd::~mainwnd ()
 {
+    if (not_nullptr(m_perf_edit_2))
+        delete m_perf_edit_2;
+
     if (not_nullptr(m_perf_edit))
         delete m_perf_edit;
 
@@ -489,30 +507,66 @@ mainwnd::timer_callback ()
  *  is-modified flag just because we opened the song editor.  We're going to
  *  centralize the modification flag in the perform object, and see if it can
  *  work.
- *
- * \todo
- *      Can we offload all this work to perfedit?  Is it worthwhile?
  */
 
 void
 mainwnd::open_performance_edit ()
 {
-    if (m_perf_edit->is_visible())
-        m_perf_edit->hide();
-    else
+    if (not_nullptr(m_perf_edit))
     {
-        m_perf_edit->init_before_show();
-        m_perf_edit->show_all();
+        if (m_perf_edit->is_visible())
+        {
+            m_perf_edit->hide();
+        }
+        else
+        {
+            m_perf_edit->init_before_show();
+            m_perf_edit->show_all();
+        }
     }
+}
 
-    /*
-     * Experiment: open a second one and see what happens.  It works, but
-     * one needs to tell the other to redraw if a change is made.
-     *
-     *  perfedit * temp = new perfedit(perf());
-     *  temp->init_before_show();
-     *  temp->show_all();
-     */
+/**
+ *  Opens the second Performance Editor (Song Editor).  Experiment: open a
+ *  second one and see what happens.  It works, but one needs to tell the
+ *  other to redraw if a change is made.
+ */
+
+void
+mainwnd::open_performance_edit_2 ()
+{
+    if (is_nullptr(m_perf_edit_2))
+    {
+        m_perf_edit_2 = new perfedit(perf(), true); /* true --> second one  */
+        enregister_perfedits();
+    }
+    if (not_nullptr(m_perf_edit_2))
+    {
+        if (m_perf_edit_2->is_visible())
+        {
+            m_perf_edit_2->hide();
+        }
+        else
+        {
+            m_perf_edit_2->init_before_show();
+            m_perf_edit_2->show_all();
+        }
+    }
+}
+
+/**
+ *  This function brings together the two perfedit objects, so that they
+ *  can tell each other when to queue up a draw operation.
+ */
+
+void
+mainwnd::enregister_perfedits ()
+{
+    if (not_nullptr(m_perf_edit) && not_nullptr(m_perf_edit_2))
+    {
+        m_perf_edit->enregister_peer(m_perf_edit_2);
+        m_perf_edit_2->enregister_peer(m_perf_edit);
+    }
 }
 
 /**

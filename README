@@ -1,11 +1,11 @@
 README for Sequencer64 0.9.9.10 (current branch = "smf0")
 Chris Ahlstrom
-2015-09-10 to 2015-11-23
+2015-09-10 to 2015-11-25
 
-The sequencer64 project is a continuation of sequencer24 to refactor it to
-be tighter and easier to transition to GTKmm 3, and much more.
-By now, it is well beyond the sequencer24 project (and seq24), in functionality,
-and the code is already *significantly* refactored.
+The sequencer64 project is a continuation of sequencer24 to refactor it to be
+tighter and easier to transition to GTKmm 3, and much more.  By now, it is
+well beyond the sequencer24 project (and seq24), in functionality, and the
+code is already *significantly* refactored.
 
 See the screenshot in the project root for some idea of what has changed
 visually.  It is an old friend with some user-interface lipstick and a lot of
@@ -13,12 +13,12 @@ internal fixups.  And it still maintains backward-compatibility with seq24.
 
 Major updates:
 
+    -   We now load SMF 0 files, and split the channels into separate
+        tracks/sequences.
     -   The code has been broken up into libraries, for better separation
         between GUI support and the files, MIDI, JACK, and LASH support.
     -   A wide range of MIDI files have been tested, to find bugs that
         can crash the application.  A nice increase in robustness.
-        Also, we load SMF 0 files, and split the channels into separate
-        tracks/sequences.
     -   The "rc" configuration file has been upgraded to support a couple
         more options, including the enabling/disabling of LASH session
         support.
@@ -88,7 +88,7 @@ See the ROADMAP file for more information and a kind of TODO list.
 Also see contrib/bugs_to_investigate.
 
 Note that sequencer64 is reasonably well documented by the following
-project, which provides a 90+-page PDF file and its LaTeX source code:
+project, which provides a 100+-page PDF file and its LaTeX source code:
 
    https://github.com/ahlstromcj/sequencer64-doc.git
 

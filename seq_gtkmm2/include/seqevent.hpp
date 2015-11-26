@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-23
+ * \updates       2015-11-25
  * \license       GNU GPLv2 or above
  *
  */
@@ -143,10 +143,10 @@ public:
     void draw_pixmap_on_window ();
     void draw_selection_on_window ();
     void update_pixmap ();
-    int idle_redraw ();
 
 private:
 
+    int idle_redraw ();
     void x_to_w (int a_x1, int a_x2, int & a_x, int & a_w);
     void drop_event (long a_tick);
     void draw_events_on (Glib::RefPtr<Gdk::Drawable> a_draw);

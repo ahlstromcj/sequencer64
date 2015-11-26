@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-08
+ * \updates       2015-11-25
  * \license       GNU GPLv2 or above
  *
  *  This module is almost exclusively user-interface code.  There are some
@@ -114,15 +114,17 @@ void
 perfnames::draw_sequence (int seqnum)
 {
     int yloc = m_names_y * (seqnum - m_sequence_offset);
-    if (seqnum < m_sequence_max)                /* less than "infinity" */
+    if (seqnum < m_sequence_max)                    /* less than "infinity" */
     {
         /*
-         * 1. Render the set number, or a blank box, in leftmost column.
+         * 1. Render the set number, or a blank box, in leftmost column. If
+         *    the y height of the first draw_rectangle is m_names_y + 1, then
+         *    we get a black line for the blank tracks, looks ugly.
          */
 
-        char snb[4];                            /* set-number buffer    */
+        char snb[8];                                /* set-number buffer    */
         snprintf(snb, sizeof(snb), "%2d", seqnum / m_seqs_in_set);
-        draw_rectangle(black(), 0, yloc, m_names_x, m_names_y + 1);
+        draw_rectangle(black(), 0, yloc, m_names_x, m_names_y);     /* + 1  */
         if (seqnum % m_seqs_in_set == 0)
             render_string(m_xy_offset, yloc + m_xy_offset, snb, font::WHITE);
         else
@@ -145,12 +147,19 @@ perfnames::draw_sequence (int seqnum)
                 fg = yellow();
                 col = font::BLACK_ON_YELLOW;
             }
+            else if (perf().is_smf_0(*seq))
+            {
+                fg = dark_cyan();
+                col = font::BLACK_ON_CYAN;
+            }
             else
                 fg = white();
         }
 
         /*
-         * 2. Render the column with the name of the sequence.
+         * 2. Render the column with the name of the sequence.  The channel
+         *    number ranges from 1 to 16, but SMF 0 is indicated on-screen by
+         *    a channel number of 0.
          */
 
         draw_rectangle
@@ -161,13 +170,14 @@ perfnames::draw_sequence (int seqnum)
         if (perf().is_active(seqnum))
         {
             char temp[32];
+            int chan = seq->is_smf_0() ? 0 : seq->get_midi_channel() + 1 ;
             m_sequence_active[seqnum] = true;
-            snprintf
-            (
-                temp, sizeof(temp), "%-14.14s   %2d",
-                seq->get_name(), seq->get_midi_channel() + 1
-            );
+            snprintf(temp, sizeof(temp), "%-14.14s   %2d", seq->get_name(), chan);
             render_string(5 + m_setbox_w, yloc + 2, temp, col);
+
+            /*
+             * Get the label format from the perform object, for consistency.
+             */
 
             std::string label = perf().sequence_label(*seq);
             render_string(m_setbox_w + 5, yloc + 12, label, col);
@@ -178,6 +188,8 @@ perfnames::draw_sequence (int seqnum)
             {
                 if (perf().highlight(*seq))
                     col = font::YELLOW_ON_BLACK;
+                else if (perf().is_smf_0(*seq))
+                    col = font::CYAN_ON_BLACK;
                 else
                     col = font::WHITE;
             }

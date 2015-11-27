@@ -587,6 +587,16 @@ midifile::parse_smf_1 (perform & p, int screenset, bool is_smf0)
                     {
                         midibyte type = read_byte();      /* get meta type    */
                         len = read_varinum();
+
+                        /*
+                         * Corrupt files can yield this error:
+                         *
+                         *  if (len == 0)
+                         *  {
+                         *  }
+                         *
+                         */
+
                         switch (type)
                         {
                         case 0x7F:                        /* "proprietary"    */
@@ -745,7 +755,13 @@ midifile::parse_smf_1 (perform & p, int screenset, bool is_smf0)
 
                         case 0x00:                      /* sequence number  */
 
-                            seqnum = (len == 0x00) ? 0 : read_short();
+                            if (len == 0)
+                            {
+                                errdump("Premature end-of-sequence, EOF likely");
+                                done = true;
+                            }
+                            else
+                                seqnum = read_short();
                             break;
 
                         default:
@@ -1734,8 +1750,8 @@ midifile::errdump (const std::string & msg, unsigned long value)
     char temp[64];
     snprintf
     (
-        temp, sizeof temp, "? Near offset 0x%x, bad value 0x%lx:  ",
-        m_pos, value
+        temp, sizeof temp, "? Near offset 0x%x, bad value %lu (0x%lx):  ",
+        m_pos, value, value
     );
     std::string result = temp;
     result += msg;

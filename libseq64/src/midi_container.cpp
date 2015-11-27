@@ -164,7 +164,21 @@ midi_container::fill (int tracknumber)
 
         midibyte d0 = e.data(0);                    /* encode status & data */
         midibyte d1 = e.data(1);
-        put(e.get_status() | m_sequence.get_midi_channel());    /* add chan */
+
+        /*
+         * If the sequence's MIDI channel is EVENT_NULL_CHANNEL == 0xFF, then
+         * it is the copy of an SMF 0 sequence that the midi_splitter created.
+         * We want to be able to save it along with the other tracks, but
+         * won't be able to read it back if all the channels's are bad.
+         * So we just use the channel from the event.
+         */
+
+        midibyte channel = m_sequence.get_midi_channel();
+        if (channel == EVENT_NULL_CHANNEL)
+            put(e.get_status() | e.get_channel());  /* channel from event   */
+        else
+            put(e.get_status() | channel);          /* the sequence channel */
+
         switch (e.get_status() & EVENT_CLEAR_CHAN_MASK)         /* 0xF0     */
         {
         case EVENT_NOTE_OFF:                                    /* 0x80:    */

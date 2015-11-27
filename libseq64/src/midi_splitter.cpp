@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-24
- * \updates       2015-11-25
+ * \updates       2015-11-27
  * \license       GNU GPLv2 or above
  *
  */
@@ -143,12 +143,12 @@ midi_splitter::log_main_sequence (sequence & seq, int seqnum)
     {
         m_smf0_main_sequence = &seq;
         m_smf0_seq_number = seqnum;
-        infoprint("SMF 0 sequence logged");
+        infoprint("SMF 0 main sequence logged");
         result = true;
     }
     else
     {
-        errprint("SMF 0 sequence already logged");
+        errprint("SMF 0 main sequence already logged");
         result = false;
     }
     return result;
@@ -169,7 +169,8 @@ midi_splitter::log_main_sequence (sequence & seq, int seqnum)
  *      the file.
  *
  * \return
- *      Returns true if the parsing succeeded.
+ *      Returns true if the parsing succeeded.  Returns false if no SMF 0 main
+ *      sequence was logged.
  */
 
 bool
@@ -199,10 +200,6 @@ midi_splitter::split (perform & p, int screenset)
             m_smf0_main_sequence->set_midi_channel(EVENT_NULL_CHANNEL);
             p.add_sequence(m_smf0_main_sequence, seqnum);
         }
-    }
-    else
-    {
-        errprint("split(): No SMF 0 main sequence logged.");
     }
     return result;
 }

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-19
- * \updates       2015-11-24
+ * \updates       2015-11-27
  * \license       GNU GPLv2 or above
  *
  */
@@ -479,13 +479,13 @@ event_list::mark_out_of_range (long slength)
     for (Events::iterator i = m_events.begin(); i != m_events.end(); ++i)
     {
         event & e = dref(i);
-#ifdef USE_EQUALS_IN_COMPARISON
+#ifdef USE_EQUALS_IN_COMPARISON                 /* not defined          */
         if (e.get_timestamp() >= slength || e.get_timestamp() < 0)
 #else
         if (e.get_timestamp() > slength || e.get_timestamp() < 0)
 #endif
         {
-            e.mark();                            /* we have to prune it */
+            e.mark();                           /* we have to prune it  */
             if (e.is_linked())
                 e.get_linked()->mark();
         }

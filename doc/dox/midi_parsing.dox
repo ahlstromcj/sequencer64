@@ -12,26 +12,24 @@
 This document describes how Sequencer64 parses a MIDI file.
 
 \page       midi_parsing_page MIDI File Parsing in Sequencer64
-\author     Chris Ahlstrom 2015-11-26
+\author     Chris Ahlstrom 2015-11-27
 
 \section midi_parsing_intro Introduction
 
 This section describes the parsing of a MIDI file.  We start with
-the main format that is supported, SMF 1.  Once we understand that
-completely, we will figure out how to split an SMF 0 track correctly.
+the main format that is supported, SMF 1.  Once we understood that
+we, we figured out how to split a SMF 0 tracks correctly.
 
-We've already split the midifile::parse() function into two sections.
-The first section analyzes the header of the MIDI.  Then, based on whether the
-file is SMF 1 (the normal case) or SMF 0, either the parse_smf_1() function of
-or the parse_smf_0() function is called.
-
-The parse_smf_0() function  currently just calls parse_smf_1().
-But our current thinking on parse_smf_0() is that it will create 17
-sequence objects.  The first one will contain the original track data, and the
-rest will contain common data and then channel data for each channel.  After
-the parsing is done, all the non-empty tracks (including the original track)
-will be added to the performance.  The user then has the option of deleting the
-original track, which will be the last track.  That's the current idea, anyway.
+We split the midifile::parse() function into two sections.  The first section
+analyzes the header of the MIDI.  Then, based on whether the file is SMF 1 (the
+normal case) or SMF 0, either the parse_smf_1() function of or the
+parse_smf_0() function is called.  The parse_smf_0() function creates one
+sequence object per channel present in the SMF 0 file, plus the original track.
+The last pattern slot (sequence 16) will contain the original track data, and
+the rest will contain common data and then channel data for each channel.
+After the parsing is done, all the tracks (including the original track) will
+be added to the performance.  The user then has the option of deleting the
+original track, which will be the last track.
 
 \section midi_parsing_smf_1 SMF 1 Parsing
 
@@ -225,22 +223,22 @@ calls typically made while parsing a MIDI track:
 
 Here, we summarize the MIDI meta events.
 
-   -# <code>FF 00 02 ssss</code> Sequence Number.
-   -# <code>FF 01 len text</code> Text Event.
-   -# <code>FF 02 len text</code> Copyright Notice.
-   -# <code>FF 03 len text</code> Sequence/Track Name.
-   -# <code>FF 04 len text</code> Instrument Name.
-   -# <code>FF 05 len text</code> Lyric.
-   -# <code>FF 06 len text</code> Marker.
-   -# <code>FF 07 len text</code> Cue Point.
-   -# <code>FF 08 through 0F len text</code> More text events.
-   -# <code>FF 2F 00</code> End of Track.
-   -# <code>FF 51 03 tttttt</code> Set Tempo, us/qn.
-   -# <code>FF 54 05 hr mn se fr ff</code> SMPTE Offset.
-   -# <code>FF 58 04 nn dd cc bb</code> Time Signature.
-   -# <code>FF 59 02 sf mi</code> Key Signature.
-   -# <code>FF 7F len data</code> Sequencer-Specific.
-   -# <code>FF F0 len data F7</code> System-Exclusive
+   -# <code>FF 00 02 ssss</code>: Sequence Number.
+   -# <code>FF 01 len text</code>: Text Event.
+   -# <code>FF 02 len text</code>: Copyright Notice.
+   -# <code>FF 03 len text</code>: Sequence/Track Name.
+   -# <code>FF 04 len text</code>: Instrument Name.
+   -# <code>FF 05 len text</code>: Lyric.
+   -# <code>FF 06 len text</code>: Marker.
+   -# <code>FF 07 len text</code>: Cue Point.
+   -# <code>FF 08 through 0F len text</code>: Other kinds of  text events.
+   -# <code>FF 2F 00</code>: End of Track.
+   -# <code>FF 51 03 tttttt</code>: Set Tempo, us/qn.
+   -# <code>FF 54 05 hr mn se fr ff</code>: SMPTE Offset.
+   -# <code>FF 58 04 nn dd cc bb</code>: Time Signature.
+   -# <code>FF 59 02 sf mi</code>: Key Signature.
+   -# <code>FF 7F len data</code>: Sequencer-Specific.
+   -# <code>FF F0 len data F7</code>: System-Exclusive
 
 The next sections describe the events that <i>Sequencer</i> tries to handle.
 These are 
@@ -248,10 +246,10 @@ These are
    -  Sequence Number (0x00)
    -  Track Name (0x03)
    -  End-of-Track (0x2F)
-   -  Set Tempo (0x51) New!
-   -  Time Signature (0x58) New!
+   -  Set Tempo (0x51) (Sequencer64 only)
+   -  Time Signature (0x58) (Sequencer64 only)
    -  Sequencer-Specific (0x7F)
-   -  System Exclusive (0xF0) Sort of.
+   -  System Exclusive (0xF0) Sort of handled, functionality incomplete..
 
 \subsubsection midi_parsing_smf_1_number  Sequence Number (0x00)
 

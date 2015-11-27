@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-24
+ * \updates       2015-11-27
  * \license       GNU GPLv2 or above
  *
  *  This module also declares/defines the various constants, status-byte
@@ -354,7 +354,8 @@ public:
         m_timestamp %= a_mod;
     }
 
-    void set_status (midibyte status);  /* a bit long to inline */
+    void set_status (midibyte status);
+    void set_status (midibyte eventcode, midibyte channel);
 
     /**
      * \getter m_status

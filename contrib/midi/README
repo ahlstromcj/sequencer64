@@ -1,6 +1,6 @@
 Contributed MIDI Files
 Chris Ahlstrom
-2015-09-11 to 2015-11-25
+2015-09-11 to 2015-11-27
 
 This directory contains contributed MIDI files for examples and testing.
 Also see the test files from the midicvt as described in
@@ -64,13 +64,17 @@ by loading them into Sequencer64.
         testing the channel-split feature, small enough to step through
         under the debugger :-D
 
+   MIDIBadTrackHdr.mid:
+
+        This bad file has 'mTrk' (not "MTrk") marking its first track.
+
    signature-samples.midi:
 
-         A file useful for getting the scaling of the user-interface right.
+        A file useful for getting the scaling of the user-interface right.
 
    wpb_yoshimi-buss-0.midi:
 
-         Another song from long ago, configured for the Yoshimi software
-         synthesizer, mapped onto bus 0.
+        Another song from long ago, configured for the Yoshimi software
+        synthesizer, mapped onto bus 0.
 
 # vim: sw=4 ts=4 wm=8 et ft=sh

@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-26
+ * \updates       2015-11-27
  * \license       GNU GPLv2 or above
  *
  *  For a quick guide to the MIDI format, see, for example:
@@ -362,10 +362,10 @@ midifile::parse (perform & p, int screenset)
     m_smf0_splitter.initialize();
 
     unsigned long ID = read_long();                 /* read hdr chunk info  */
-    (void) read_long();                             /* stock MThd length    */
-    if (ID != SEQ64_HEADER_TAG)                     /* magic number 'MThd'  */
+    unsigned long hdrlength = read_long();          /* stock MThd length    */
+    if (ID != SEQ64_HEADER_TAG && hdrlength != 6)   /* magic number 'MThd'  */
     {
-        errdump("Invalid MIDI header detected", ID);
+        errdump("Invalid MIDI header chunk detected", ID);
         return false;
     }
 
@@ -380,7 +380,7 @@ midifile::parse (perform & p, int screenset)
     }
     else
     {
-        errdump("Unsupported MIDI format detected", (unsigned long)(Format));
+        errdump("Unsupported MIDI format number", (unsigned long)(Format));
         result = false;
     }
     if (result)
@@ -417,17 +417,27 @@ midifile::parse_smf_0 (perform & p, int screenset)
 {
     bool result = parse_smf_1(p, screenset, true);  /* format 0 is flagged  */
     if (result)
+    {
         result = m_smf0_splitter.split(p, screenset);
-
-    if (result)
-        p.modify();                     /* will prompt user for saving      */
-
+        if (result)
+            p.modify();                     /* will prompt user for save    */
+        else
+            errdump("No SMF 0 main sequence found, corrupt file?");
+    }
     return result;
 }
 
 /**
  *  Internal function for simple calculation of a power of 2 without a lot of
- *  math.
+ *  math.  Use for calculating the denominator of a time signature.
+ *
+ * \param logbase2
+ *      Provides the power to which 2 is to be raised.  This integer is
+ *      probably only rarely greater than 4 (which represents a denominator of
+ *      16).
+ *
+ * \return
+ *      Returns 2 raised to the logbase2 power.
  */
 
 static int
@@ -491,7 +501,7 @@ midifile::parse_smf_1 (perform & p, int screenset, bool is_smf0)
             bool timesig_set = false;               /* seq24 style wins     */
             unsigned short seqnum = 0;
             midibyte status = 0;
-            midibyte data[2];
+            midibyte d0, d1;                        /* was data[2];         */
             midibyte laststatus;
             unsigned long proprietary = 0;          /* sequencer-specifics  */
             bool done = false;                      /* done for each track  */
@@ -537,36 +547,42 @@ midifile::parse_smf_1 (perform & p, int screenset, bool is_smf0)
                     CurrentTime = RunningTime;
                     e.set_timestamp(CurrentTime);
                 }
-                switch (status & EVENT_CLEAR_CHAN_MASK)     /* 0xF0 */
+
+                midibyte eventcode = status & EVENT_CLEAR_CHAN_MASK;   /* F0 */
+                midibyte channel = status & EVENT_GET_CHAN_MASK;       /* 0F */
+                switch (eventcode)
                 {
-                case EVENT_NOTE_OFF:     /* case for those with 2 data bytes */
+                case EVENT_NOTE_OFF:          /* cases for 2-data-byte events */
                 case EVENT_NOTE_ON:
                 case EVENT_AFTERTOUCH:
                 case EVENT_CONTROL_CHANGE:
                 case EVENT_PITCH_WHEEL:
-                    data[0] = read_byte();
-                    data[1] = read_byte();
-                    if ((status & 0xF0) == EVENT_NOTE_ON && data[1] == 0)
-                        e.set_status(EVENT_NOTE_OFF);     /* vel 0==note off  */
 
-                    e.set_data(data[0], data[1]);         /* set data and add */
+                    d0 = read_byte();                     /* was data[0]      */
+                    d1 = read_byte();                     /* was data[1]      */
+                    if (eventcode == EVENT_NOTE_ON && d1 == 0)
+                        e.set_status(EVENT_NOTE_OFF, channel); /* vel 0==off  */
+
+                    e.set_data(d0, d1);                   /* set data and add */
                     seq.add_event(e);
-                    seq.set_midi_channel(status & 0x0F);  /* set midi channel */
+                    seq.set_midi_channel(channel);        /* set midi channel */
                     if (is_smf0)
-                        m_smf0_splitter.increment(status & 0x0F);
+                        m_smf0_splitter.increment(channel);
                     break;
 
-                case EVENT_PROGRAM_CHANGE:                /* one data item    */
+                case EVENT_PROGRAM_CHANGE:    /* cases for 1-data-byte events */
                 case EVENT_CHANNEL_PRESSURE:
-                    data[0] = read_byte();
-                    e.set_data(data[0]);                  /* set data and add */
+
+                    d0 = read_byte();                     /* was data[0]      */
+                    e.set_data(d0);                       /* set data and add */
                     seq.add_event(e);
-                    seq.set_midi_channel(status & 0x0F);  /* set midi channel */
+                    seq.set_midi_channel(channel);        /* set midi channel */
                     if (is_smf0)
-                        m_smf0_splitter.increment(status & 0x0F);
+                        m_smf0_splitter.increment(channel);
                     break;
 
                 case 0xF0:                                /* Meta MIDI events */
+
                     if (status == 0xFF)
                     {
                         midibyte type = read_byte();      /* get meta type    */
@@ -574,6 +590,7 @@ midifile::parse_smf_1 (perform & p, int screenset, bool is_smf0)
                         switch (type)
                         {
                         case 0x7F:                        /* "proprietary"    */
+
                             if (len > 4)                  /* FF 7F len data   */
                             {
                                 proprietary = read_long();
@@ -651,6 +668,7 @@ midifile::parse_smf_1 (perform & p, int screenset, bool is_smf0)
                             break;
 
                         case 0x58:                      /* Time Signature   */
+
                             if ((len == 4) && ! timesig_set)
                             {
                                 seq.set_beats_per_bar(read_byte()); // nn
@@ -672,6 +690,7 @@ midifile::parse_smf_1 (perform & p, int screenset, bool is_smf0)
                             break;
 
                         case 0x51:                      /* Set Tempo        */
+
                             if (len == 3)
                             {
                                 unsigned tt = unsigned(read_byte());
@@ -702,9 +721,9 @@ midifile::parse_smf_1 (perform & p, int screenset, bool is_smf0)
                              * the same #ifdef as here in event_list.
                              */
 
-#ifdef USE_EQUALS_IN_COMPARISON
+#ifdef USE_EQUALS_IN_COMPARISON                         /* not defined      */
                             if (Delta == 0)
-                                CurrentTime += 1;
+                                ++CurrentTime;
 #endif
 
                             seq.set_length(CurrentTime, false);
@@ -713,6 +732,7 @@ midifile::parse_smf_1 (perform & p, int screenset, bool is_smf0)
                             break;
 
                         case 0x03:                      /* Track name       */
+
                             if (len > TRACKNAME_MAX)
                                 len = TRACKNAME_MAX;    /* avoid a vuln     */
 
@@ -724,10 +744,12 @@ midifile::parse_smf_1 (perform & p, int screenset, bool is_smf0)
                             break;
 
                         case 0x00:                      /* sequence number  */
+
                             seqnum = (len == 0x00) ? 0 : read_short();
                             break;
 
                         default:
+
                             for (int i = 0; i < len; i++)
                                 (void) read_byte();     /* ignore the rest  */
                             break;
@@ -792,12 +814,20 @@ midifile::parse_smf_1 (perform & p, int screenset, bool is_smf0)
         {
             /*
              * We don't know what kind of chunk it is.  It's not a MTrk, we
-             * don't know how to deal with it, so we just eat it.
+             * don't know how to deal with it, so we just eat it.  If this
+             * happened on the first track, it is a fatal error.
              */
 
-            if (curtrack > 0)                           /* MThd comes first */
-                errdump("Unsupported MIDI chunk, skipping...", ID);
-
+            if (curtrack > 0)                           /* non-fatal later  */
+            {
+                errdump("Unsupported MIDI track ID, skipping...", ID);
+            }
+            else                                        /* fatal in 1st one */
+            {
+                errdump("Unsupported MIDI track ID on first track.", ID);
+                result = false;
+                break;
+            }
             m_pos += TrackLength;
         }
     }                                                   /* for each track   */

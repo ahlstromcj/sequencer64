@@ -1,6 +1,6 @@
 README for Sequencer64 0.9.9.10 (current branch = "smf0")
 Chris Ahlstrom
-2015-09-10 to 2015-11-25
+2015-09-10 to 2015-11-27
 
 The sequencer64 project is a continuation of sequencer24 to refactor it to be
 tighter and easier to transition to GTKmm 3, and much more.  By now, it is
@@ -13,12 +13,29 @@ internal fixups.  And it still maintains backward-compatibility with seq24.
 
 Major updates:
 
-    -   We now load SMF 0 files, and split the channels into separate
+    -   Sequencer64 loads SMF 0 files and splits the channels into separate
         tracks/sequences.
-    -   The code has been broken up into libraries, for better separation
-        between GUI support and the files, MIDI, JACK, and LASH support.
-    -   A wide range of MIDI files have been tested, to find bugs that
-        can crash the application.  A nice increase in robustness.
+    -   Two synchronized song-editor windows can now be shown on screen, to
+        better arrange songs with a large number of tracks.
+    -   Added a more modern-looking, bolder font to the graphical user
+        interface, selectable at run-time.
+    -   Added a --bus option for easier testing against a specific
+        hardware/software synthesizer.
+    -   Added a --ppqn option to try to play files at the right speed.  Still
+        in progress, as the Seq24 PPQN value of 192 affects a lot of code!
+    -   Added support for using the Mod4/Super/Windows key to keep the
+        performance and sequence user-interfaces in editing mode, very helpful
+        for certain crappy laptop trackpads.
+    -   Added arrow key support. Also supplemented the mouse with "p" to start
+        paint/draw mode, and "x" to escape it, in the sequence and song editors.
+        The "l" and "r" keys allow arrow movement of the performance markers,
+        with "x" to escape this mode.  If notes are selected in the sequence
+        editor, the arrow keys can be used to move the notes in time and in
+        pitch.  In the performance editor, a pattern can be selected with the
+        mouse and moved right/left with the arrow keys.
+    -   Tweaked the colors of some user-interface elements to make it
+        easier to see them when combined.  For example, the background
+        sequence is now colored, and the scale bars are now light grey.
     -   The "rc" configuration file has been upgraded to support a couple
         more options, including the enabling/disabling of LASH session
         support.
@@ -35,45 +52,36 @@ Major updates:
             -   Main window spacing
             -   Maximum sets
             -   Control height
+            -   Allowing two performance editors onscreen
+            -   The page settings of scrollbar to increase the amount of
+                scrolling from the too-short defaults.
         -   [user-midi-settings]
             -   Global PPQN value
             -   Global beats per bar
             -   Global beats per minute
             -   Global beat width
             -   Global MIDI buss override
-    -   The user-interface classes have refactored to derive from
-        base classes providing common code.
-    -   Sequencer64 now uses std::multimap instead of std::list as an
-        event-container.  It works well, and loads MIDI files a lot faster,
-        especially when compiled for debugging.  The reason seems to be that
-        sorting is a lot faster in the multimap. See the SEQ64_USE_EVENT_MAP
-        macro in the libseq64/include/event_list.hpp module for selection of
-        the container, and try it for yourself!
-    -   Constant variables are slowly being assigned to new members, in
-        preparation for support of altering the number of sequences and screen
-        sets supported.
-    -   Added a more modern-looking, easier to read font to the graphical user
-        interface.  It is selectable at run-time
-    -   Tweaked the colors of some user-interface elements to make it
-        easier to see them when combined.  For example, the background
-        sequence is now colored, and the scale bars are now light grey.
-    -   Added a --bus option for easier testing against a specific
-        hardware/software synthesizer.
-    -   Added a --ppqn option to try to play files at the right speed.  Still
-        in progress, as the Seq24 PPQN value of 192 affects a lot of code!
-    -   Added support for using the Mod4/Super/Windows key to keep the
-        performance and sequence user-interfaces in editing mode, very helpful
-        for certain crappy laptop trackpads.
-    -   Added arrow key support. Also supplemented the mouse with "p" to start
-        paint/draw mode, and "x" to escape it, in the sequence and song editors.
-        The "l" and "r" keys allow arrow movement of the performance markers,
-        with "x" to escape this mode.  If notes are selected in the sequence
-        editor, the arrow keys can be used to move the notes in time and in
-        pitch.  In the performance editor, a pattern can be selected with the
-        mouse and moved right/left with the arrow keys.
-    -   Centralized dirtiness-handling to the perform module, and improving
-        its accuracy and comprehensiveness, still in progress, but much
-        progress made.
+    -   Internal (invisible) work:
+        -   The code has been broken up into libraries, for better separation
+            between GUI support and the files, MIDI, JACK, and LASH support.
+        -   A wide range of MIDI files have been tested, to find bugs that
+            can crash the application.  A nice increase in robustness.
+        -   Centralized dirtiness-handling to the perform module, and
+            improving its accuracy and comprehensiveness, still in progress,
+            but much progress made.
+        -   Set Tempo and Time Signature events are now read from
+            non-Sequencer64 MIDI files.
+        -   The user-interface classes have refactored to derive from
+            base classes providing common code.
+        -   Sequencer64 now uses std::multimap instead of std::list as an
+            event-container.  It works well, and loads MIDI files a lot
+            faster, especially when compiled for debugging.  The reason seems
+            to be that sorting is a lot faster in the multimap. See the
+            SEQ64_USE_EVENT_MAP macro in the libseq64/include/event_list.hpp
+            module for selection of the container, and try it for yourself!
+        -   Constant variables are slowly being assigned to new members, in
+            preparation for support of altering the number of sequences and
+            screen sets supported.
 
 The list of minor issues we have found while exploring with Sequencer64 has
 gotten fairly long, so we will concentrate on tightening up the application

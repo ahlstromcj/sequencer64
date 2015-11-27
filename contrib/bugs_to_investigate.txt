@@ -1,17 +1,21 @@
 Bugs and Upgrade Ideas
 Chris Ahlstrom
-2015-10-27 to 2015-11-26
+2015-10-27 to 2015-11-27
 
 In no particular order...  "y" means "in progress", and "x" means it is
 basically done.
 
--  The "increase size of grid" button on the perfedit doesn't work.
--  In the perfedit window, make the vertical scroll go by 8 tracks instead of
-   just 1.
--  In the standard seq24 view, when a pattern is moved, it leaves a black
+-  In the pattern editor piano roll, implement Undo for the arrow keys in the
+   same way as for the mouse.
+-  The "increase size of grid" button on the perfedit doesn't work, or at least
+   doesn't show any visual feedback.
+x  In the perfedit window, make the vertical scroll go by 8 tracks instead of
+   just 1.  This is now a configuration feature for both horizontal and
+   vertical scrolling.
+x  In the standard seq24 view, when a pattern is moved, it leaves a black
    line at the bottom of the pattern slot it just left.
 -  Is the --pass-sysex command actually supported?  Seq24 threw SysEx away.
--  Consider adding support for reading normal MIDI TimeSig and Tempo data from
+x  Consider adding support for reading normal MIDI TimeSig and Tempo data from
    normal MIDI files, as found in example1.mid; also get some other files to
    test.
 x  Add support for SMF (MIDI format) 0.
@@ -33,11 +37,10 @@ y  Tighten up the is-dirty handling for all dialogs:
       x  Deleting a segment, whether by keys or mouse.
 -  Implement, if possible, the "p/x" keys in the seqevent area.
 -  Just noticed that snap is saved.  Where?  Is this a bug or a feature?
--  How about a horizontal split for the perfroll?
-   BETTER: A second song editor view for reference?  This idea seems like it can
+x  A second song editor view for reference?  This idea seems like it can
    work, with communicate through the perform object, perhaps.
--  Add an option that prevents the automatic saving of the "rc" and "usr"
-   variables on exit.  Currently, command-line settings like --bus get saved in
+x  Add an option that prevents the automatic saving of the "usr" configuration
+   file on exit.  Currently, command-line settings like --bus get saved in
    the file, a bit of a surpise/annoyance.
 -  When closing a file, either need to blank out or close any pattern-editor
    windows and the performance editor; something like that.

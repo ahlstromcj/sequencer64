@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-24
+ * \updates       2015-11-27
  * \license       GNU GPLv2 or above
  *
  */
@@ -207,7 +207,9 @@ event::operator < (const event & rhs) const
  *
  * \param status
  *      The status byte, perhaps read from a MIDI file or edited in the
- *      sequencer's event editor.
+ *      sequencer's event editor.  Sometime, this byte will have the channel
+ *      nybble masked off.  If that is the case, the eventcode/channel
+ *      overload of this function is more appropriate.
  */
 
 void
@@ -216,13 +218,35 @@ event::set_status (midibyte status)
     if (status >= 0xF0)
     {
         m_status = status;
-        m_channel = EVENT_NULL_CHANNEL;     /* i.e. "not applicable"    */
+        m_channel = EVENT_NULL_CHANNEL;         /* i.e. "not applicable"    */
     }
     else
     {
         m_status = status & EVENT_CLEAR_CHAN_MASK;
         m_channel = status & EVENT_GET_CHAN_MASK;
     }
+}
+
+/**
+ *  This overload is useful when synthesizing events, such as converting a
+ *  Note On event with a velocity of zero to a Note Off event.
+ *
+ * \param eventcode
+ *      The status byte, perhaps read from a MIDI file.  This byte is
+ *      assumed to have already had its low nybble cleared by masking against
+ *      EVENT_CLEAR_CHAN_MASK.
+ *
+ * \param channel
+ *      The channel byte.  Combined with the event-code, this makes a valid
+ *      MIDI "status" byte.  This byte is assume to have already had its high
+ *      nybble cleared by masking against EVENT_GET_CHAN_MASK.
+ */
+
+void
+event::set_status (midibyte eventcode, midibyte channel)
+{
+    m_status = eventcode;               /* already masked against 0xF0      */
+    m_channel = channel;                /* already masked against 0x0F      */
 }
 
 /**

@@ -12,7 +12,7 @@
 This document describes how Sequencer64 parses a MIDI file.
 
 \page       midi_parsing_page MIDI File Parsing in Sequencer64
-\author     Chris Ahlstrom 2015-11-23
+\author     Chris Ahlstrom 2015-11-26
 
 \section midi_parsing_intro Introduction
 
@@ -180,7 +180,7 @@ the MIDI file: MIDI buss, MIDI channel, time signature, sequence triggers, and
 (new), the key, scale, and background sequence to use with the track/sequence.
 Any leftover data for the tagged event is let go.  Unknown tags ate skipped.
 
-If the type of the SeqSpec (0xFF) meta event is 0x2f, then it is the
+If the type of the SeqSpec (0xFF) meta event is 0x2F, then it is the
 End-of-Track marker.  The current time is set using
 <code>sequence::set_length()</code> and then
 <code>sequence::zero_markers()</code> is called, and parsing is done for
@@ -221,20 +221,215 @@ calls typically made while parsing a MIDI track:
       -# <code>sequence::set_midi_bus()</code>
    -# <code>xxxxx::yyyy()</code>
 
-\subsubsection midi_parsing_smf_1_sysex  SysEx Events
+\subsection midi_parsing_smf_1_meta  Meta Events
+
+Here, we summarize the MIDI meta events.
+
+   -# <code>FF 00 02 ssss</code> Sequence Number.
+   -# <code>FF 01 len text</code> Text Event.
+   -# <code>FF 02 len text</code> Copyright Notice.
+   -# <code>FF 03 len text</code> Sequence/Track Name.
+   -# <code>FF 04 len text</code> Instrument Name.
+   -# <code>FF 05 len text</code> Lyric.
+   -# <code>FF 06 len text</code> Marker.
+   -# <code>FF 07 len text</code> Cue Point.
+   -# <code>FF 08 through 0F len text</code> More text events.
+   -# <code>FF 2F 00</code> End of Track.
+   -# <code>FF 51 03 tttttt</code> Set Tempo, us/qn.
+   -# <code>FF 54 05 hr mn se fr ff</code> SMPTE Offset.
+   -# <code>FF 58 04 nn dd cc bb</code> Time Signature.
+   -# <code>FF 59 02 sf mi</code> Key Signature.
+   -# <code>FF 7F len data</code> Sequencer-Specific.
+   -# <code>FF F0 len data F7</code> System-Exclusive
+
+The next sections describe the events that <i>Sequencer</i> tries to handle.
+These are 
+
+   -  Sequence Number (0x00)
+   -  Track Name (0x03)
+   -  End-of-Track (0x2F)
+   -  Set Tempo (0x51) New!
+   -  Time Signature (0x58) New!
+   -  Sequencer-Specific (0x7F)
+   -  System Exclusive (0xF0) Sort of.
+
+\subsubsection midi_parsing_smf_1_number  Sequence Number (0x00)
+
+\verbatim
+   FF 00 02 ss ss
+\endverbatim
+
+This optional event must occur at the beginning of a track,
+before any non-zero delta-times, and before any transmittable MIDI
+events.  It specifies the number of a sequence.
+
+\subsubsection midi_parsing_smf_1_name  Track/Sequence Name (0x03)
+
+\verbatim
+   FF 03 len text
+\endverbatim
+
+If in a format 0 track, or the first track in a format 1 file, the name
+of the sequence.  Otherwise, the name of the track.
+
+\subsubsection midi_parsing_smf_1_eot  End of Track (0x2F)
+
+\verbatim
+   FF 2F 00
+\endverbatim
+
+This event is not optional.  It is included so that an exact ending
+point may be specified for the track, so that it has an exact length,
+which is necessary for tracks which are looped or concatenated.
+
+\subsubsection midi_parsing_smf_1_tempo  Set Tempo Event (0x51)
+
+The MIDI Set Tempo meta event sets the tempo of a MIDI sequence in terms of
+the microseconds per quarter note.  This is a meta message, so this event is
+never sent over MIDI ports to a MIDI device.
+
+After the delta time, this event consists of six bytes of data:
+
+\verbatim
+   FF 51 03 tt tt tt
+\endverbatim
+
+Example:
+
+\verbatim
+   FF 51 03 07 A1 20
+\endverbatim
+
+   -# 0xFF is the status byte that indicates this is a Meta event.
+   -# 0x51 the meta event type that signifies this is a Set Tempo event.
+   -# 0x03 is the length of the event, always 3 bytes.
+   -# The remaining three bytes carry the number of microseconds per quarter
+      note.  For example, the three bytes above form the hexadecimal value
+      0x07A120 (500000 decimal), which means that there are 500,000
+      microseconds per quarter note.
+
+Since there are 60,000,000 microseconds per minute, the event above
+translates to: set the tempo to 60,000,000 / 500,000 = 120 quarter notes per
+minute (120 beats per minute).
+
+This event normally appears in the first track. If not, the default tempo is
+120 beats per minute.  This event is important if the MIDI time division is
+specified in "pulses per quarter note", which does not itself define the length
+of the quarter note. The length of the quarter note is then determined by the
+Set Tempo meta event.
+
+Representing tempos as time per beat instead of beat per time
+allows absolutely exact DWORD-term synchronization with a time-based sync
+protocol such as SMPTE time code or MIDI time code.  This amount of
+accuracy provided by this tempo resolution allows a four-minute piece at
+120 beats per minute to be accurate within 500 usec at the end of the
+piece.
+
+\subsubsection midi_parsing_smf_1_timesig  Time Signature Event (0x58)
+
+After the delta time, this event consists of seven bytes of data:
+
+\verbatim
+   FF 58 04 nn dd cc bb
+\endverbatim
+
+The time signature is expressed as four numbers.  nn and dd represent
+the numerator and denominator of the time signature as it would be
+notated.  The denominator is a negative power of two:  2 represents a
+quarter-note, 3 represents an eighth-note, etc.  The cc parameter
+expresses the number of MIDI clocks in a metronome click.  The bb
+parameter expresses the number of notated 32nd-notes in a MIDI quarter-
+note (24 MIDI Clocks).
+
+Example:
+
+\verbatim
+   FF 58 04 04 02 18 08
+\endverbatim
+
+   -# 0xFF is the status byte that indicates this is a Meta event.
+   -# 0x58 the meta event type that signifies this is a Time Signature event.
+   -# 0x04 is the length of the event, always 4 bytes.
+   -# 0x04 is the numerator of the time signature, and ranges from 0x00 to
+      0xFF.
+   -# 0x02 is the log base 2 of the denominator, and is the power to which 2
+      must be raised to get the denominator.  Here, the denominator is 2 to
+      0x02, or 4, so the time signature is 4/4.
+   -# 0x18 is the metronome pulse in terms of the number of
+      MIDI clock ticks per click.  Assuming 24 MIDI clocks per quarter note,
+      the value here (0x18 = 24) indidicates that the metronome will tick every
+      24/24 quarter note.  If the value of the sixth byte were 0x30 = 48, the
+      metronome clicks every two quarter notes, i.e. every half-note.
+   -# 0x08 defines the number of 32nd notes per beat. This byte is usually 8
+      as there is usually one quarter note per beat, and one quarter note
+      contains eight 32nd notes.
+
+If a time signature event is not present in a MIDI sequence, 4/4 signature is
+assumed.
+
+In <i>Sequencer64</i>, the c_timesig SeqSpec event is given priority.  The
+conventional time signature is used only if the c_timesig SeqSpec is not
+present in the file.
+
+\subsubsection midi_parsing_smf_1_sysex  SysEx Event (0xF0)
 
 If the meta event status value is 0xF0, it is called a "System-exclusive", or
 "SysEx" event.
 
+<i>Sequencer64</i> has some code in place to store these messages, but the data
+is currently not actually stored or used.
 Although there is some infrastructure to support storing the SysEx event within
-a sequence, the SysEx information is simply skipped.  Sequencer64 warns if the
+a sequence, the SysEx information is simply skipped.
+<i>Sequencer64</i>  warns if the
 terminating 0xF7 SysEx terminator is not found at the expected length.
-Also, some malformed SysEx messages have been encounter, and those are detected
-and skipped as well.
+Also, some malformed SysEx events have been encountered, and those are
+detected and skipped as well.
 
-\subsubsection midi_parsing_smf_1_end  End of Sequence
+\subsubsection midi_parsing_smf_1_seqspec  Sequencer Specific (0x7F)
 
-Any other statuses are deemed unsupportable, and abort parsing with an error.
+This data, also known as SeqSpec data, provides a way to encode information
+that a specific sequencer application needs, while marking it so that other
+sequences can safely ignore the information.
+
+\verbatim
+   FF 7F len data
+\endverbatim
+
+In <i>Seq24</i> and <i>Sequencer64</i>, the data portion starts with four bytes
+that indicate the kind of data for a particular SeqSpec event:
+
+\verbatim
+   c_midibus        ^  0x24240001  Track buss number
+   c_midich         ^  0x24240002  Track channel number
+   c_midiclocks     *  0x24240003  Track clocking
+   c_triggers       ^  0x24240004  See c_triggers_new
+   c_notes          *  0x24240005  Song data, notes
+   c_timesig        ^  0x24240006  Track time signature
+   c_bpmtag         *  0x24240007  Song beats/minute
+   c_triggers_new   ^  0x24240008  Track trigger data
+   c_mutegroups     *  0x24240009  Song mute group data
+   c_midictrl       *  0x24240010  Song MIDI control
+   c_musickey       +  0x24240011  Track key (Sequencer64 only)
+   c_musicscale     +  0x24240012  Track scale (Sequencer64 only)
+   c_backsequence   +  0x24240013  Track background sequence (Sequencer64 only)
+
+   * = global only; ^ = track only; + = both
+\endverbatim
+
+In <i>Seq24</i>, these events are placed at the end of the song, but are
+not marked as SeqSpec data.  Most MIDI applications handle this situation fine,
+but some (e.g. midicvt) do not.  Therefore, <i>Sequencer64</i> makes sure to
+wrap each data item in the 0xFF 0x7F wrapper.
+
+Also, the last three items above (key, scale, and background sequence)
+can also be stored (by <i>Sequencer64</i>) with a particular sequence/track, as
+well as at the end of the song.  Not sure if this bit of extra flexibility is
+useful, but it is there.
+
+\subsubsection midi_parsing_smf_1_end  Non-Specific End of Sequence
+
+Any other statuses are deemed unsupportable in <i>Sequencer64</i>, and abort
+parsing with an error.
 
 If the --bus option is in force, <code>sequence::set_midi_bus()</code> is
 called to override the buss number (if any) stored with the sequence.

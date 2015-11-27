@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-25
+ * \updates       2015-11-26
  * \license       GNU GPLv2 or above
  *
  *  For a quick guide to the MIDI format, see, for example:
@@ -43,16 +43,17 @@
 
 #include <fstream>
 
-#include "perform.hpp"                  /* must precede midifile.hpp !  */
-#include "midifile.hpp"                 /* seq64::midifile              */
-#include "sequence.hpp"                 /* seq64::sequence              */
+#include "calculations.hpp"             /* beats_per_minute_from_tempo()    */
+#include "perform.hpp"                  /* must precede midifile.hpp !      */
+#include "midifile.hpp"                 /* seq64::midifile                  */
+#include "sequence.hpp"                 /* seq64::sequence                  */
 
-#define SEQ64_USE_MIDI_VECTOR           /* as opposed to the MIDI list  */
+#define SEQ64_USE_MIDI_VECTOR           /* as opposed to the MIDI list      */
 
 #if defined SEQ64_USE_MIDI_VECTOR
-#include "midi_vector.hpp"              /* seq64::midi_vector container */
+#include "midi_vector.hpp"              /* seq64::midi_vector container     */
 #else
-#include "midi_list.hpp"                /* seq64::midi_list container   */
+#include "midi_list.hpp"                /* seq64::midi_list container       */
 #endif
 
 /**
@@ -425,6 +426,26 @@ midifile::parse_smf_0 (perform & p, int screenset)
 }
 
 /**
+ *  Internal function for simple calculation of a power of 2 without a lot of
+ *  math.
+ */
+
+static int
+pow2 (int logbase2)
+{
+    int result;
+    if (logbase2 == 0)
+        result = 1;
+    else
+    {
+        result = 2;
+        for (int c = 1; c < logbase2; c++) 
+            result *= 2;
+    }
+    return result;
+}
+
+/**
  *  This function parses an SMF 1 binary MIDI file; it is basically the
  *  original seq25 midifile::parse() function.  It assumes the file-data has
  *  already been read into memory.  It also assumes that the ID, track-length,
@@ -467,6 +488,7 @@ midifile::parse_smf_1 (perform & p, int screenset, bool is_smf0)
         unsigned long TrackLength = read_long();    /* get track length     */
         if (ID == SEQ64_TRACK_TAG)                  /* magic number 'MTrk'  */
         {
+            bool timesig_set = false;               /* seq24 style wins     */
             unsigned short seqnum = 0;
             midibyte status = 0;
             midibyte data[2];
@@ -560,7 +582,7 @@ midifile::parse_smf_1 (perform & p, int screenset, bool is_smf0)
                             if (proprietary == c_midibus)
                             {
                                 seq.set_midi_bus(read_byte());
-                                len--;
+                                --len;
                             }
                             else if (proprietary == c_midich)
                             {
@@ -569,10 +591,11 @@ midifile::parse_smf_1 (perform & p, int screenset, bool is_smf0)
                                 if (is_smf0)
                                     m_smf0_splitter.increment(channel);
 
-                                len--;
+                                --len;
                             }
                             else if (proprietary == c_timesig)
                             {
+                                timesig_set = true;
                                 seq.set_beats_per_bar(read_byte());
                                 seq.set_beat_width(read_byte());
                                 len -= 2;
@@ -583,7 +606,7 @@ midifile::parse_smf_1 (perform & p, int screenset, bool is_smf0)
                                 for (int i = 0; i < num_triggers; i += 2)
                                 {
                                     unsigned long on = read_long();
-                                    unsigned long length = (read_long() - on);
+                                    unsigned long length = read_long() - on;
                                     len -= 8;
                                     seq.add_trigger(on, length, 0, false);
                                 }
@@ -604,12 +627,12 @@ midifile::parse_smf_1 (perform & p, int screenset, bool is_smf0)
                             else if (proprietary == c_musickey)
                             {
                                 seq.musical_key(read_byte());
-                                len--;
+                                --len;
                             }
                             else if (proprietary == c_musicscale)
                             {
                                 seq.musical_scale(read_byte());
-                                len--;
+                                --len;
                             }
                             else if (proprietary == c_backsequence)
                             {
@@ -620,26 +643,63 @@ midifile::parse_smf_1 (perform & p, int screenset, bool is_smf0)
                             {
                                 errdump
                                 (
-                                    "Unsupported SeqSpec, skipping...",
+                                    "Unsupported track SeqSpec, skipping...",
                                     proprietary
                                 );
                             }
-                            m_pos += len;                /* eat the rest      */
+                            m_pos += len;               /* eat the rest     */
                             break;
 
-                        case 0x2F:                       /* Trk Done          */
+                        case 0x58:                      /* Time Signature   */
+                            if ((len == 4) && ! timesig_set)
+                            {
+                                seq.set_beats_per_bar(read_byte()); // nn
+                                int logbase2 = int(read_byte());    // dd
+                                (void) read_byte();                 // cc
+                                (void) read_byte();                 // bb
+                                seq.set_beat_width(long(pow2(logbase2)));
+#ifdef SEQ64_USE_DEBUG_OUTPUT
+                                printf
+                                (
+                                    "Time Signature set to %d/%d\n",
+                                    int(seq.get_beats_per_bar()),
+                                    int(seq.get_beat_width())
+                                );
+#endif
+                            }
+                            else
+                                m_pos += len;           /* eat it           */
+                            break;
+
+                        case 0x51:                      /* Set Tempo        */
+                            if (len == 3)
+                            {
+                                unsigned tt = unsigned(read_byte());
+                                tt = (tt * 256) + unsigned(read_byte());
+                                tt = (tt * 256) + unsigned(read_byte());
+                                int bpm = int
+                                (
+                                    beats_per_minute_from_tempo(double(tt))
+                                );
+                                p.set_beats_per_minute(bpm);
+#ifdef SEQ64_USE_DEBUG_OUTPUT
+                                printf("BPM set to %d\n", bpm);
+#endif
+                            }
+                            else
+                                m_pos += len;           /* eat it           */
+                            break;
+
+                        case 0x2F:                      /* End of Track     */
 
                             /*
-                             * If Delta is 0, then another event happened at
+                             * "If Delta is 0, then another event happened at
                              * the same time as track-end.  Class sequence
                              * discards the last note.  This fixes that.  A
-                             * native Seq24 file will always have a Delta >= 1.
-                             *
-                             * We've fix the real issue, we think, which
-                             * happens because of code marked by the same
-                             * #ifdef as here in the event_list class.
-                             *
-                             * RETEST NEEDED!!!
+                             * native Seq24 file will always have a Delta >= 1."
+                             * Not true!  We've fixed the real issue, we
+                             * think, which happens because of code marked by
+                             * the same #ifdef as here in event_list.
                              */
 
 #ifdef USE_EQUALS_IN_COMPARISON

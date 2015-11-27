@@ -416,12 +416,12 @@ public:
      * \getter m_time_beats_per_measure
      */
 
-    long get_beats_per_bar () const
+    long get_beats_per_bar () const         /* why long?    */
     {
         return m_time_beats_per_measure;
     }
 
-    void set_beat_width (long beatwidth);
+    void set_beat_width (long beatwidth);   /* why long?    */
 
     /**
      * \getter m_time_beat_width
@@ -429,7 +429,7 @@ public:
      * \threadsafe
      */
 
-    long get_beat_width () const
+    long get_beat_width () const            /* why long?    */
     {
         return m_time_beat_width;
     }

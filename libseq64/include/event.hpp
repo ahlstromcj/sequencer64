@@ -28,13 +28,15 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-27
+ * \updates       2015-11-28
  * \license       GNU GPLv2 or above
  *
  *  This module also declares/defines the various constants, status-byte
  *  values, or data values for MIDI events.
  *
  */
+
+#include <string>                       /* used in to_string()          */
 
 #include "midibyte.hpp"                 /* seq64::midibyte typedef      */
 

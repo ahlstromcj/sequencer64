@@ -1,3 +1,11 @@
+2015-11-28  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* ChangeLog, contrib/midi/README, doc/dox/midi_parsing.dox,
+	libseq64/include/perform.hpp, libseq64/src/calculations.cpp,
+	libseq64/include/event.hpp,libseq64/src/midifile.cpp: More tweaks
+	and fixes based on more MIDI test files.  Fixed compilation error
+	in event.hpp, and merged smf0 branch into master.
+
 2015-11-27  Chris Ahlstrom <ahlstromcj@gmail.com>
 
 	* libseq64/include/midifile.hpp, libseq64/src/midi_splitter.cpp,

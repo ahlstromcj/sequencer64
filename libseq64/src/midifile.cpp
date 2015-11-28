@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-27
+ * \updates       2015-11-28
  * \license       GNU GPLv2 or above
  *
  *  For a quick guide to the MIDI format, see, for example:
@@ -1016,9 +1016,14 @@ midifile::parse_proprietary_track (perform & p, int file_size)
                  *     result = false;
                  */
             }
+            else if (seqnum == (-1))
+            {
+                errdump("No sequence number in proprietary track, extra data");
+                result = false;
+            }
             else
             {
-                m_error_message = "Unexpected chunk number reading file";
+                m_error_message = "Unexpected sequence number, proprietary track";
                 result = false;
             }
         }

@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-25
+ * \updates       2015-11-28
  * \license       GNU GPLv2 or above
  *
  *  This class has way too many members.
@@ -837,7 +837,7 @@ public:
         if (get_key_events_rev().count(seqnum) > 0)
             return get_key_events_rev()[seqnum];
         else
-            return '?';
+            return '.';                 /* '?' */
     }
     long lookup_keyevent_seq (unsigned int keycode)
     {
@@ -851,7 +851,7 @@ public:
         if (get_key_groups_rev().count(groupnum))
             return get_key_groups_rev()[groupnum];
         else
-            return '?';
+            return '.';                 /* '?' */
     }
     long lookup_keygroup_group (unsigned int keycode)
     {

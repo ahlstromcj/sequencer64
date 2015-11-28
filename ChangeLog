@@ -1,3 +1,145 @@
+2015-11-27  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/include/midifile.hpp, libseq64/src/midi_splitter.cpp,
+	libseq64/src/midifile.cpp, libseq64/src/sequence.cpp: Cleaning up
+	the handling of bad files and SMF 0 files, still more files to test.
+
+2015-11-27  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/src/midi_container.cpp, libseq64/src/midifile.cpp: Write
+	SMF 0 track using event channels, not the whole-sequence channel.
+
+2015-11-27  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* README, contrib/bugs_to_investigate.txt, contrib/midi/README,
+	contrib/midi/kq6gm.asc, doc/dox/mainpage-reference.dox,
+	doc/dox/midi_parsing.dox, libseq64/include/event.hpp,
+	libseq64/src/event.cpp, libseq64/src/event_list.cpp,
+	libseq64/src/midi_splitter.cpp, libseq64/src/midifile.cpp: Fixed bug
+	setting status and channel for simulated note-off event in the
+	midifile module.
+
+2015-11-26  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* doc/dox/midi_parsing.dox, libseq64/include/sequence.hpp,
+	libseq64/src/midifile.cpp: Added Set Tempo and Time Signature
+	support to the midifile module, for non-seq24 MIDI files.
+
+2015-11-26  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* Sequencer64/sequencer64.cpp, configure.ac,
+	contrib/bugs_to_investigate.txt,
+	contrib/sequencer64-basic.usr.example,
+	libseq64/include/user_settings.hpp, libseq64/src/user_settings.cpp,
+	libseq64/src/userfile.cpp, seq_gtkmm2/include/mainwnd.hpp,
+	seq_gtkmm2/include/perfedit.hpp, seq_gtkmm2/include/perfnames.hpp,
+	seq_gtkmm2/include/perfroll.hpp, seq_gtkmm2/include/perftime.hpp,
+	seq_gtkmm2/src/mainwnd.cpp, seq_gtkmm2/src/perfedit.cpp,
+	seq_gtkmm2/src/perfnames.cpp, seq_gtkmm2/src/perfroll.cpp,
+	seq_gtkmm2/src/perftime.cpp: Added pretty good support for optional
+	dual song-editors.
+
+2015-11-25  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* INSTALL, README, contrib/bugs_to_investigate.txt,
+	contrib/midi/README, libseq64/src/midi_splitter.cpp,
+	libseq64/src/perform.cpp, resources/pixmaps/cyan_wenfont_y.xpm,
+	seq_gtkmm2/include/mainwid.hpp, seq_gtkmm2/include/mainwnd.hpp,
+	seq_gtkmm2/include/perfedit.hpp, seq_gtkmm2/include/perfroll.hpp,
+	seq_gtkmm2/include/seqdata.hpp, seq_gtkmm2/include/seqevent.hpp,
+	seq_gtkmm2/include/seqmenu.hpp, seq_gtkmm2/include/seqroll.hpp,
+	seq_gtkmm2/src/mainwid.cpp, seq_gtkmm2/src/mainwnd.cpp,
+	seq_gtkmm2/src/perfedit.cpp, seq_gtkmm2/src/perfnames.cpp,
+	seq_gtkmm2/src/perfroll.cpp: Added ability to spawn a second
+	perfedit, but having trouble getting the guis to stay in synch with
+	edits, while progress bar is fine.
+
+2015-11-25  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* resources/pixmaps/cyan_wenfont_y.xpm: Fixed black on cyan font
+	pixmap.
+
+2015-11-25  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/include/perform.hpp, libseq64/include/sequence.hpp,
+	libseq64/src/midi_splitter.cpp, libseq64/src/perform.cpp,
+	resources/pixmaps/cyan_wenfont_y.xpm,
+	resources/pixmaps/cyan_wenfont_yb.xpm, seq_gtkmm2/include/font.hpp,
+	seq_gtkmm2/src/font.cpp, seq_gtkmm2/src/mainwid.cpp: Now highlight
+	SMF 0 tracks in cyan color.
+
+2015-11-25  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* contrib/bugs_to_investigate.txt, contrib/midi/example1.asc,
+	contrib/midi/midicvt-test-files.txt,
+	doc/dox/mainpage-reference.dox, libseq64/src/midifile.cpp,
+	resources/pixmaps/cyan_wenfont_y.xpm,
+	resources/pixmaps/cyan_wenfont_yb.xpm: More testing, documentation,
+	and font work.
+
+2015-11-25  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* configure.ac, contrib/bugs_to_investigate.txt,
+	contrib/midi/kq6gm.asc, doc/dox/mainpage-reference.dox,
+	libseq64/include/midibus_common.hpp, libseq64/include/midifile.hpp,
+	libseq64/src/jack_assistant.cpp, libseq64/src/mastermidibus.cpp,
+	libseq64/src/sequence.cpp, libseq64/src/triggers.cpp,
+	resources/pixmaps/cyan_wenfont_y.xpm,
+	resources/pixmaps/cyan_wenfont_yb.xpm, seq_gtkmm2/src/mainwid.cpp,
+	seq_gtkmm2/src/perfroll.cpp, seq_gtkmm2/src/seqevent.cpp,
+	seq_gtkmm2/src/seqmenu.cpp, seq_gtkmm2/src/seqtime.cpp: Minor tweaks
+	and documentation, adding cyan font files.
+
+2015-11-24  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* contrib/midi/README, contrib/midi/example1.asc,
+	contrib/midi/midicvt-test-files.txt, libseq64/include/event.hpp,
+	libseq64/include/event_list.hpp,
+	libseq64/include/midi_splitter.hpp, libseq64/include/sequence.hpp,
+	libseq64/src/event.cpp, libseq64/src/event_list.cpp,
+	libseq64/src/midi_container.cpp, libseq64/src/midi_splitter.cpp,
+	libseq64/src/midifile.cpp, libseq64/src/sequence.cpp: Fixed
+	long-standing bug in verifying event timestamps, and got splitting
+	of example1.mid to work, must retest all files.
+
+2015-11-24  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* doc/dox/midi_parsing.dox, libseq64/include/event.hpp,
+	libseq64/include/event_list.hpp,
+	libseq64/include/midi_splitter.hpp, libseq64/include/sequence.hpp,
+	libseq64/src/event.cpp, libseq64/src/midi_container.cpp,
+	libseq64/src/midi_splitter.cpp, libseq64/src/midifile.cpp,
+	libseq64/src/perform.cpp, libseq64/src/sequence.cpp: Interim
+	check-in of MIDI SMF 0 channel-split function.
+
+2015-11-24  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/include/Makefile.am, libseq64/include/midi_splitter.hpp,
+	libseq64/include/midifile.hpp, libseq64/src/Makefile.am,
+	libseq64/src/midi_splitter.cpp, libseq64/src/midifile.cpp: Factored
+	out the MIDI splitting into a midi_splitter module.
+
+2015-11-23  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* INSTALL, README, ROADMAP, VERSION, configure.ac,
+	contrib/midi/README, doc/dox/doxy-reference.cfg,
+	libseq64/include/midifile.hpp, libseq64/include/user_settings.hpp,
+	libseq64/src/cmdlineopts.cpp, libseq64/src/midifile.cpp,
+	libseq64/src/optionsfile.cpp, libseq64/src/userfile.cpp,
+	man/sequencer64.1: Initiating SMF 0 channel-splitting feature, in
+	progress.
+
+2015-11-23  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/src/file_functions.cpp, libseq64/src/lash.cpp: Fixed
+	compiler error and warning, doh.
+
+2015-11-23  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* ChangeLog, README, configure.ac, doc/dox/midi_parsing.dox,
+	libseq64/include/event.hpp, libseq64/src/midifile.cpp: Documentation
+	and tweaks prior to cmdlineopts merge.
+
 2015-11-23  Chris Ahlstrom <ahlstromcj@gmail.com>
 
 	* doc/dox/doxy-reference.cfg, doc/dox/midi_parsing.dox,

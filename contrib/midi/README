@@ -1,11 +1,37 @@
 Contributed MIDI Files
 Chris Ahlstrom
-2015-09-11 to 2015-11-27
+2015-09-11 to 2015-11-28
 
 This directory contains contributed MIDI files for examples and testing.
 Also see the test files from the midicvt as described in
 midicvt-test-files.txt; we found a few bugs and potential features to add
 by loading them into Sequencer64.
+
+   allofarow.mid:
+
+        A file having a lot of empty tracks and one filled track.
+
+   ameeting.mid:
+
+        This file yields an error "Unexpected chunk number reading file"
+        (with no offset or value information in the error message).
+        The header of this file claims the file contains two tracks, but 
+        there is a third track at the end that holds an end-of-sequence
+        message.  Sequencer64 tries to parse this extra data as its
+        "proprietary" track.  We have modified the error message to be
+        more accurate.
+
+   buffalo.mid
+
+        A tune with over four sets of tracks, many with minimal numbers of
+        notes.  Some of the tracks are just labels. A few consist of
+        21 bytes of data:
+
+        00 FF 21 01 00 (obsolete MIDI message setting port number to 0)
+        00 B3 07 64 00 B3 0A 40 00 B3 79 00 (3 control changes, channel 3)
+
+        and ending with the 00 FF 2F 00 end-of-track marker, and similar
+        for B4, B5, B6, B7, plus some more stuff.
 
    click_4_4.midi:
    
@@ -63,6 +89,27 @@ by loading them into Sequencer64.
         A simple SMF 0 MIDI file from the midicvt project.  Useful in
         testing the channel-split feature, small enough to step through
         under the debugger :-D
+
+   Hapwandr.mid
+
+        A transcription of "The Happy Wanderer", having a BPM of 250.
+
+   hymne.mid
+
+        A Vangelis tune with a BPM of 80.
+
+   Itis.mid
+
+        A file with 27 tracks (2 empty), we want to see if it includes
+        MIDI buss numbers.
+
+   k_seq.mid
+
+        A "tune" I "wrote", having a BPM of 103 (!).
+
+   longhair.mid
+
+        "Memories of Professor Longhair", BPM = 115.
 
    MIDIBadTrackHdr.mid:
 

@@ -231,14 +231,17 @@ Here, we summarize the MIDI meta events.
    -# <code>FF 05 len text</code>: Lyric.
    -# <code>FF 06 len text</code>: Marker.
    -# <code>FF 07 len text</code>: Cue Point.
-   -# <code>FF 08 through 0F len text</code>: Other kinds of  text events.
+   -# <code>FF 08 len text</code>: Patch/program Name.
+   -# <code>FF 09 len text</code>: Device Name.
+   -# <code>FF 0A through 0F len text</code>: Other kinds of text events.
+   -# <code>FF 20 01 cc</code>: MIDI channel (obsolete, used by Cakewalk)
+   -# <code>FF 21 01 pp</code>: MIDI port (obsolete, used by Cakewalk)
    -# <code>FF 2F 00</code>: End of Track.
    -# <code>FF 51 03 tttttt</code>: Set Tempo, us/qn.
    -# <code>FF 54 05 hr mn se fr ff</code>: SMPTE Offset.
    -# <code>FF 58 04 nn dd cc bb</code>: Time Signature.
    -# <code>FF 59 02 sf mi</code>: Key Signature.
    -# <code>FF 7F len data</code>: Sequencer-Specific.
-   -# <code>FF F0 len data F7</code>: System-Exclusive
 
 The next sections describe the events that <i>Sequencer</i> tries to handle.
 These are 
@@ -373,6 +376,10 @@ present in the file.
 
 If the meta event status value is 0xF0, it is called a "System-exclusive", or
 "SysEx" event.
+
+\verbatim
+   F0 len data F7
+\endverbatim
 
 <i>Sequencer64</i> has some code in place to store these messages, but the data
 is currently not actually stored or used.

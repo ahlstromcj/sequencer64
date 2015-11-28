@@ -160,6 +160,12 @@ midi_splitter::log_main_sequence (sequence & seq, int seqnum)
  *  object.  Lastly, it adds the SMF 0 track as the last track; the user can
  *  then examine it before removing it.  Is this worth the effort?
  *
+ *  There is a little oddity, in that, if the SMF 0 track has events for only
+ *  one channel, this code will still create a new sequence, as well as the
+ *  main sequence.  Not sure if this is worth extra code to just change the
+ *  channels on the main sequence and put it into the correct track for the
+ *  one channel it contains.
+ *
  * \param p
  *      Provides a reference to the perform object into which sequences/tracks
  *      are to be added.
@@ -179,7 +185,7 @@ midi_splitter::split (perform & p, int screenset)
     bool result = not_nullptr(m_smf0_main_sequence);
     if (result)
     {
-        if (m_smf0_channels_count > 1)
+        if (m_smf0_channels_count > 0)
         {
             int seqnum = screenset * c_seqs_in_set;
             for (int channel = 0; channel < 16; channel++, seqnum++)
@@ -187,6 +193,12 @@ midi_splitter::split (perform & p, int screenset)
                 if (m_smf0_channels[channel])
                 {
                     sequence * s = new sequence(m_ppqn);
+
+                    /*
+                     * The master MIDI buss must be set before the split,
+                     * otherwise the null pointer causes a segfault.
+                     */
+
                     s->set_master_midi_bus(&p.master_bus());
                     if (split_channel(*m_smf0_main_sequence, s, channel))
                     {
@@ -195,6 +207,8 @@ midi_splitter::split (perform & p, int screenset)
                         s->show_events();
 #endif
                     }
+                    else
+                        delete s;   /* empty sequence, not even meta events */
                 }
             }
             m_smf0_main_sequence->set_midi_channel(EVENT_NULL_CHANNEL);
@@ -214,15 +228,32 @@ midi_splitter::split (perform & p, int screenset)
  *  when saving the sequences to a file.  This is done in
  *  midi_container::fill().
  *
- *  We may
- *  have to accumulate the delta times in order to be able to set the length
- *  of the sequence in pulses.
+ *  We have to accumulate the delta times in order to be able to set the
+ *  length of the sequence in pulses.
  *
  *  Luckily, we don't have to worry about copying triggers, since the imported
  *  SMF 0 track won't have any Seq24/Sequencer24 triggers.
  *
  *  It doesn't set the sequence number of the sequence; that is set when the
  *  sequence is added to the perform object.
+ *
+ * \param main_seq
+ *      This parameter is the whole SMF 0 track that was read from the MIDI
+ *      file.  It contains all of the channel data that needs to be split into
+ *      separate sequences.
+ *
+ * \param s
+ *      Provides the new sequence that needs to have its settings made, and
+ *      all of the selected channel events added to it.
+ *
+ * \param channel
+ *      Provides the MIDI channel number (re 0) that marks the channel data
+ *      the needs to be extracted and added to the new sequence.
+ *
+ * \return
+ *      Returns true if at least one event got added.   If none were added,
+ *      the caller should delete the sequence object represented by parameter
+ *      \a s.
  */
 
 bool
@@ -236,9 +267,16 @@ midi_splitter::split_channel
     bool result = false;
     char tmp[24];
     if (main_seq.name().empty())
-        snprintf(tmp, sizeof tmp, "Track %d", channel);
+    {
+        snprintf(tmp, sizeof tmp, "Track %d", channel+1);
+    }
     else
-        snprintf(tmp, sizeof tmp, "%d: %.13s", channel, main_seq.name().c_str());
+    {
+        snprintf
+        (
+            tmp, sizeof tmp, "%d: %.13s", channel+1, main_seq.name().c_str()
+        );
+    }
 
     s->set_name(std::string(tmp));
     s->set_midi_channel(channel);

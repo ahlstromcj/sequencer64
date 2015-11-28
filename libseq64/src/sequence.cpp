@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-23
+ * \updates       2015-11-27
  * \license       GNU GPLv2 or above
  *
  *  The functionality of this class also includes handling some of the
@@ -535,7 +535,7 @@ void
 sequence::zero_markers ()
 {
     automutex locker(m_mutex);
-    m_last_tick = 0;            // m_masterbus->flush( );
+    m_last_tick = 0;                    /* m_masterbus->flush()         */
 }
 
 /**
@@ -550,7 +550,7 @@ sequence::verify_and_link ()
 {
     automutex locker(m_mutex);
     m_events.verify_and_link(m_length);
-    remove_marked();                    // prune out-of-range events
+    remove_marked();                    /* prune out-of-range events    */
 }
 
 /**
@@ -582,7 +582,9 @@ sequence::remove (event_list::iterator i)
     event & er = DREF(i);
     if (er.is_note_off() && m_playing_notes[er.get_note()] > 0)
     {
-        m_masterbus->play(m_bus, &er, m_midi_channel);
+        if (not_nullptr(m_masterbus))
+            m_masterbus->play(m_bus, &er, m_midi_channel);
+
         m_playing_notes[er.get_note()]--;                   // ugh
     }
     m_events.remove(i);                                     // erase(i)
@@ -1712,8 +1714,11 @@ sequence::play_note_on (int a_note)
     event e;
     e.set_status(EVENT_NOTE_ON);
     e.set_data(a_note, SEQ64_MIDI_COUNT_MAX-1);
-    m_masterbus->play(m_bus, &e, m_midi_channel);
-    m_masterbus->flush();
+    if (not_nullptr(m_masterbus))
+    {
+        m_masterbus->play(m_bus, &e, m_midi_channel);
+        m_masterbus->flush();
+    }
 }
 
 /**
@@ -1730,8 +1735,11 @@ sequence::play_note_off (int a_note)
     event e;
     e.set_status(EVENT_NOTE_OFF);
     e.set_data(a_note, SEQ64_MIDI_COUNT_MAX-1);
-    m_masterbus->play(m_bus, &e, m_midi_channel);
-    m_masterbus->flush();
+    if (not_nullptr(m_masterbus))
+    {
+        m_masterbus->play(m_bus, &e, m_midi_channel);
+        m_masterbus->flush();
+    }
 }
 
 /**
@@ -2673,7 +2681,8 @@ sequence::put_event_on_bus (event & ev)
     if (! skip)
         m_masterbus->play(m_bus, &ev, m_midi_channel);  // pointer!
 
-    m_masterbus->flush();
+    if (not_nullptr(m_masterbus))
+        m_masterbus->flush();
 }
 
 /**
@@ -2697,7 +2706,8 @@ sequence::off_playing_notes ()
             m_playing_notes[x]--;
         }
     }
-    m_masterbus->flush();
+    if (not_nullptr(m_masterbus))
+        m_masterbus->flush();
 }
 
 /**

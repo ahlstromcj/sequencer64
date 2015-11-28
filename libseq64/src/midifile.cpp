@@ -422,7 +422,7 @@ midifile::parse_smf_0 (perform & p, int screenset)
         if (result)
             p.modify();                     /* will prompt user for save    */
         else
-            errdump("No SMF 0 main sequence found, corrupt file?");
+            errdump("No SMF 0 main sequence found, bad file");
     }
     return result;
 }
@@ -440,8 +440,8 @@ midifile::parse_smf_0 (perform & p, int screenset)
  *      Returns 2 raised to the logbase2 power.
  */
 
-static int
-pow2 (int logbase2)
+int
+midifile::pow2 (int logbase2)
 {
     int result;
     if (logbase2 == 0)
@@ -451,6 +451,27 @@ pow2 (int logbase2)
         result = 2;
         for (int c = 1; c < logbase2; c++) 
             result *= 2;
+    }
+    return result;
+}
+
+/**
+ *  Internal function to check for and report a bad length value.
+ */
+
+bool
+midifile::checklen (long len, midibyte type)
+{
+    bool result = len > 0;
+    if (! result)
+    {
+        char tmp[64];
+        snprintf
+        (
+            tmp, sizeof tmp,
+            "0 data length for meta type 0x%02X, bad MIDI data", type
+        );
+        errdump(tmp);
     }
     return result;
 }
@@ -586,17 +607,7 @@ midifile::parse_smf_1 (perform & p, int screenset, bool is_smf0)
                     if (status == 0xFF)
                     {
                         midibyte type = read_byte();      /* get meta type    */
-                        len = read_varinum();
-
-                        /*
-                         * Corrupt files can yield this error:
-                         *
-                         *  if (len == 0)
-                         *  {
-                         *  }
-                         *
-                         */
-
+                        len = read_varinum();             /* if 0 catch later */
                         switch (type)
                         {
                         case 0x7F:                        /* "proprietary"    */
@@ -606,6 +617,9 @@ midifile::parse_smf_1 (perform & p, int screenset, bool is_smf0)
                                 proprietary = read_long();
                                 len -= 4;
                             }
+                            else if (! checklen(len, type))
+                                return false;
+
                             if (proprietary == c_midibus)
                             {
                                 seq.set_midi_bus(read_byte());
@@ -629,7 +643,8 @@ midifile::parse_smf_1 (perform & p, int screenset, bool is_smf0)
                             }
                             else if (proprietary == c_triggers)
                             {
-                                int num_triggers = len / 4;
+                                printf("Old-style triggers event encountered\n");
+                                int num_triggers = len / 4; /* why not 8??? */
                                 for (int i = 0; i < num_triggers; i += 2)
                                 {
                                     unsigned long on = read_long();
@@ -679,6 +694,9 @@ midifile::parse_smf_1 (perform & p, int screenset, bool is_smf0)
 
                         case 0x58:                      /* Time Signature   */
 
+                            if (! checklen(len, type))
+                                return false;
+
                             if ((len == 4) && ! timesig_set)
                             {
                                 seq.set_beats_per_bar(read_byte()); // nn
@@ -700,6 +718,9 @@ midifile::parse_smf_1 (perform & p, int screenset, bool is_smf0)
                             break;
 
                         case 0x51:                      /* Set Tempo        */
+
+                            if (! checklen(len, type))
+                                return false;
 
                             if (len == 3)
                             {
@@ -743,6 +764,9 @@ midifile::parse_smf_1 (perform & p, int screenset, bool is_smf0)
 
                         case 0x03:                      /* Track name       */
 
+                            if (! checklen(len, type))
+                                return false;
+
                             if (len > TRACKNAME_MAX)
                                 len = TRACKNAME_MAX;    /* avoid a vuln     */
 
@@ -755,16 +779,16 @@ midifile::parse_smf_1 (perform & p, int screenset, bool is_smf0)
 
                         case 0x00:                      /* sequence number  */
 
-                            if (len == 0)
-                            {
-                                errdump("Premature end-of-sequence, EOF likely");
-                                done = true;
-                            }
-                            else
-                                seqnum = read_short();
+                            if (! checklen(len, type))
+                                return false;
+
+                            seqnum = read_short();
                             break;
 
                         default:
+
+                            if (! checklen(len, type))
+                                return false;
 
                             for (int i = 0; i < len; i++)
                                 (void) read_byte();     /* ignore the rest  */
@@ -796,23 +820,16 @@ midifile::parse_smf_1 (perform & p, int screenset, bool is_smf0)
                     }
                     else
                     {
-                        errdump
-                        (
-                            "Unexpected System event", (unsigned long)(status)
-                        );
+                        errdump("Unexpected meta code", (unsigned long)(status));
                         return false;
                     }
                     break;
 
                 default:
-                    {
-                        errdump
-                        (
-                            "Unsupported MIDI event", (unsigned long)(status)
-                        );
-                        return false;
-                        break;
-                    }
+
+                    errdump("Unknown MIDI event", (unsigned long)(status));
+                    return false;
+                    break;
                 }
             }                          /* while not done loading Trk chunk */
 
@@ -917,7 +934,7 @@ midifile::parse_prop_header (int file_size)
                 fprintf
                 (
                     stderr,
-                    "? Bad meta type '%x' in prop section near offset %x\n",
+                    "Bad meta type '%x' in prop section near offset %x\n",
                     int(type), m_pos
                 );
             }
@@ -1721,7 +1738,7 @@ void
 midifile::errdump (const std::string & msg)
 {
     char temp[32];
-    snprintf(temp, sizeof temp, "? Near offset 0x%x:  ", m_pos);
+    snprintf(temp, sizeof temp, "Near offset 0x%x:  ", m_pos);
     std::string result = temp;
     result += msg;
     result += "\n";
@@ -1750,7 +1767,7 @@ midifile::errdump (const std::string & msg, unsigned long value)
     char temp[64];
     snprintf
     (
-        temp, sizeof temp, "? Near offset 0x%x, bad value %lu (0x%lx):  ",
+        temp, sizeof temp, "Near offset 0x%x, bad value %lu (0x%lx):  ",
         m_pos, value, value
     );
     std::string result = temp;

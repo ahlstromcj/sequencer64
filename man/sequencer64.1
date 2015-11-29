@@ -1,4 +1,4 @@
-.TH Sequencer64 "Nov 24 2015" "Version 0.9.9.10" "Sequencer64 Manual Page"
+.TH Sequencer64 "Nov 30 2015" "Version 0.9.9.11" "Sequencer64 Manual Page"
 
 .SH NAME
 Sequencer64 - Real time MIDI sequencer refactored from Seq24
@@ -110,9 +110,10 @@ Print statistics on the command-line while running.
 .B \-\-jack-session-uuid \fI<uuid>\fP
 Set the UUID for the JACK session.
 .TP 8
-.B \-\-save
+.B \-\-user-save
 Save the "user" configuration file after exiting.  Normally, it is saved
-only if it does not exist.
+only if it does not exist, so as not to make certain command-line "user"
+options (such as --bus) permanent.
 
 .SH FILES
 \fB$HOME\fP/sequencer64.rc stores the main configuration settings for

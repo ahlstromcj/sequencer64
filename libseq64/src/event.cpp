@@ -24,14 +24,55 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-27
+ * \updates       2015-11-28
  * \license       GNU GPLv2 or above
  *
+ *  A MIDI event (i.e. "track event") is encapsulated by the seq64::event
+ *  object.
+ *
+ *      -   Varinum delta time stamp.
+ *      -   Event byte:
+ *          -   MIDI event.
+ *              -   Channel event (0x80 to 0xE0, channel in low nybble).
+ *                  -   Data byte 1.
+ *                  -   Data byte 2 (for all but patch and channel pressure).
+ *              -   Non-channel event (0xF0 to 0xFF).
+ *                  -   SysEx (0xF0), discussed below, includes data bytes.
+ *                  -   Song Position (0xF2) includes data bytes.
+ *                  -   Song Select (0xF3) includes data bytes.
+ *                  -   The rest of the non-channel events don't include data
+ *                      byte.
+ *          -   Meta event (0xFF).
+ *              -   Meta type byte.
+ *              -   Varinum length.
+ *              -   Data bytes.
+ *          -   SysEx event.
+ *              -   Start byte (0xF0) or continuation/escape byte (0xF7).
+ *              -   Varinum length???
+ *              -   Data bytes (not yet fully supported in event class).
+ *              -   End byte (0xF7).
+ *
+ *  Running status is used, where status bytes of MIDI channel messages can be
+ *  omitted if the preceding event is a MIDI channel message with the same
+ *  status.  Running status continues across delta-times.
+ *
+ *  In Seq24/Sequencer64, none of the non-channel events are stored in an
+ *  event object.  There is some provisional support for storing SysEx, but
+ *  none of the support functions are yet called.  In mastermidibus, there is
+ *  support for recording SysEx data, but it is macro'ed out.  In rc_settings,
+ *  there is an option for SysEx.  The midibus and perform objects also deal
+ *  with Sysex.  But the midifile module does not read it -- it skips SysEx.
+ *  Apparently, it does serve as a Thru for incoming SysEx, though.
+ *  See this message thread:
+ *
+ *     http://sourceforge.net/p/seq24/mailman/message/1049609/
+ *
+ *  In Seq24/Sequencer64, the Meta events are handled directly, and they
+ *  set up sequence parameters.  None of a meta event is stored in an event
+ *  object.  If we want to add the ability to insert meta events, we will
+ *  have to provide a metaevent class that can be stored in the event
+ *  container.
  */
-
-#ifdef  USE_SEQ42_PATCHES
-#include <fstream>
-#endif
 
 #include <string.h>                    /* memcpy()  */
 
@@ -47,27 +88,27 @@ namespace seq64
 
 event::event ()
  :
-    m_timestamp (0),
-    m_status    (EVENT_NOTE_OFF),
-    m_channel   (EVENT_NULL_CHANNEL),
-    m_data      (),                     /* a two-element array  */
-    m_sysex     (nullptr),
-    m_size      (0),
-    m_linked    (nullptr),
-    m_has_link  (false),
-    m_selected  (false),
-    m_marked    (false),
-    m_painted   (false)
+    m_timestamp     (0),
+    m_status        (EVENT_NOTE_OFF),
+    m_channel       (EVENT_NULL_CHANNEL),
+    m_data          (),                     /* a two-element array  */
+    m_sysex         (nullptr),
+    m_sysex_size    (0),
+    m_linked        (nullptr),
+    m_has_link      (false),
+    m_selected      (false),
+    m_marked        (false),
+    m_painted       (false)
 {
     m_data[0] = 0;
     m_data[1] = 0;
 }
 
 /**
- *  This copy constructor initializes most of the class members.
- *  This function is currently geared only toward support of the SMF 0
- *  channel-splitting feature.  Many of the member are not set to useful value
- *  when the MIDI file is read, so we don't handle them for now.
+ *  This copy constructor initializes most of the class members.  This
+ *  function is currently geared only toward support of the SMF 0
+ *  channel-splitting feature.  Many of the members are not set to useful
+ *  values when the MIDI file is read, so we don't handle them for now.
  *
  * \warning
  *      This function does not yet copy the SysEx data.  The inclusion
@@ -81,17 +122,17 @@ event::event ()
 
 event::event (const event & rhs)
  :
-    m_timestamp (rhs.m_timestamp),
-    m_status    (rhs.m_status),
-    m_channel   (rhs.m_channel),
-    m_data      (),                     /* a two-element array      */
-    m_sysex     (nullptr),              /* pointer, not yet handled */
-    m_size      (rhs.m_size),
-    m_linked    (nullptr),              /* pointer, not yet handled */
-    m_has_link  (rhs.m_has_link),
-    m_selected  (rhs.m_selected),
-    m_marked    (rhs.m_marked),
-    m_painted   (rhs.m_painted)
+    m_timestamp     (rhs.m_timestamp),
+    m_status        (rhs.m_status),
+    m_channel       (rhs.m_channel),
+    m_data          (),                     /* a two-element array      */
+    m_sysex         (nullptr),              /* pointer, not yet handled */
+    m_sysex_size    (rhs.m_sysex_size),
+    m_linked        (nullptr),              /* pointer, not yet handled */
+    m_has_link      (rhs.m_has_link),
+    m_selected      (rhs.m_selected),
+    m_marked        (rhs.m_marked),
+    m_painted       (rhs.m_painted)
 {
     m_data[0] = rhs.m_data[0];
     m_data[1] = rhs.m_data[1];
@@ -122,30 +163,30 @@ event::operator = (const event & rhs)
 {
     if (this != &rhs)
     {
-        m_timestamp = rhs.m_timestamp;
-        m_status    = rhs.m_status;
-        m_channel   = rhs.m_channel;
-        m_data[0]   = rhs.m_data[0];
-        m_data[1]   = rhs.m_data[1];
-        m_sysex     = nullptr;
-        m_size      = rhs.m_size;
-        m_linked    = nullptr;
-        m_has_link  = rhs.m_has_link;
-        m_selected  = rhs.m_selected;
-        m_marked    = rhs.m_marked;
-        m_painted   = rhs.m_painted;
+        m_timestamp     = rhs.m_timestamp;
+        m_status        = rhs.m_status;
+        m_channel       = rhs.m_channel;
+        m_data[0]       = rhs.m_data[0];
+        m_data[1]       = rhs.m_data[1];
+        m_sysex         = nullptr;
+        m_sysex_size    = rhs.m_sysex_size;
+        m_linked        = nullptr;
+        m_has_link      = rhs.m_has_link;
+        m_selected      = rhs.m_selected;
+        m_marked        = rhs.m_marked;
+        m_painted       = rhs.m_painted;
     }
     return *this;
 }
 
 /**
  *  This destructor explicitly deletes m_sysex and sets it to null.
- *  The start_sysex() function does what we need.
+ *  The restart_sysex() function does what we need.
  */
 
 event::~event ()
 {
-    start_sysex();                      /* tricky code */
+    restart_sysex();                    /* tricky code */
 }
 
 /**
@@ -254,21 +295,21 @@ event::set_status (midibyte eventcode, midibyte channel)
  */
 
 void
-event::start_sysex ()
+event::restart_sysex ()
 {
     if (not_nullptr(m_sysex))
         delete [] m_sysex;
 
     m_sysex = nullptr;
-    m_size = 0;
+    m_sysex_size = 0;
 }
 
 /**
- *  Appends SYSEX data to a new buffer.  First, a buffer of size m_size+dsize
- *  is created.  The existing SYSEX data (stored in m_sysex) is copied to this
- *  buffer.  Then the data represented by data and dsize is appended to that
- *  data buffer.  Then the original SYSEX buffer, m_sysex, is deleted, and
- *  m_sysex is assigned to the new buffer.
+ *  Appends SYSEX data to a new buffer.  First, a buffer of size
+ *  m_sysex_size+dsize is created.  The existing SYSEX data (stored in
+ *  m_sysex) is copied to this buffer.  Then the data represented by data and
+ *  dsize is appended to that data buffer.  Then the original SYSEX buffer,
+ *  m_sysex, is deleted, and m_sysex is assigned to the new buffer.
  *
  * \param data
  *      Provides the additional SYSEX data.  If not provided, nothing is done,
@@ -290,17 +331,17 @@ event::append_sysex (midibyte * data, long dsize)
     bool result = false;
     if (not_nullptr(data) && (dsize > 0))
     {
-        midibyte * buffer = new midibyte[m_size + dsize];
+        midibyte * buffer = new midibyte[m_sysex_size + dsize];
         if (not_nullptr(buffer))
         {
             if (not_nullptr(m_sysex))
             {
-                memcpy(buffer, m_sysex, m_size);    /* copy original data   */
+                memcpy(buffer, m_sysex, m_sysex_size);  /* copy original data */
                 delete [] m_sysex;
             }
-            memcpy(&buffer[m_size], data, dsize);   /* append the new data  */
-            m_size += dsize;
-            m_sysex = buffer;                       /* save the pointer     */
+            memcpy(&buffer[m_sysex_size], data, dsize); /* append new data    */
+            m_sysex_size += dsize;
+            m_sysex = buffer;                           /* save the pointer   */
             result = true;
         }
         else
@@ -331,10 +372,10 @@ event::append_sysex (midibyte * data, long dsize)
 void
 event::print ()
 {
-    printf("[%06ld] [%04lX] %02X ", m_timestamp, m_size, m_status);
+    printf("[%06ld] [%04lX] %02X ", m_timestamp, m_sysex_size, m_status);
     if (m_status == EVENT_SYSEX)
     {
-        for (int i = 0; i < m_size; i++)
+        for (int i = 0; i < m_sysex_size; i++)
         {
             if (i % 16 == 0)
                 printf("\n    ");

@@ -442,7 +442,7 @@ optionsfile::write (const perform & p)
     else
     {
         file <<
-            "# Sequencer64 0.9.9.10 (and above) rc configuration file\n"
+            "# Sequencer64 0.9.9.11 (and above) rc configuration file\n"
             "# (Also works with Sequencer24)\n"
             ;
     }

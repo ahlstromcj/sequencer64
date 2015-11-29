@@ -8,7 +8,7 @@
 # \library    	Sequencer64
 # \author     	Chris Ahlstrom
 # \date       	2015-09-10
-# \update     	2015-10-17
+# \update     	2015-11-28
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -33,9 +33,9 @@ export LANG
 CYGWIN=binmode
 export CYGWIN
 
-export SEQUENCER64_SCRIPT_EDIT_DATE="2015-10-17"
+export SEQUENCER64_SCRIPT_EDIT_DATE="2015-11-28"
 export SEQUENCER64_LIBRARY_API_VERSION="0.9"
-export SEQUENCER64_LIBRARY_VERSION="$SEQUENCER64_LIBRARY_API_VERSION.9.5"
+export SEQUENCER64_LIBRARY_VERSION="$SEQUENCER64_LIBRARY_API_VERSION.9.11"
 
 #******************************************************************************
 #  Version info
@@ -67,6 +67,7 @@ DOBOOTSTRAP="yes"
 DOCLEAN="no"
 DOFULLCLEAN="no"
 DODEBUG="no"
+DORELEASE="no"
 DOTESTONLY="no"
 DOVERSION="no"
 LOGFILENAME=""
@@ -79,7 +80,7 @@ M4DIR="m4"
 if [ "$1" == "--help" ] ; then
 
    cat << E_O_F
-Usage: ./bootstrap [options]                                 (0.9-2015-10-17)
+Usage: ./bootstrap [options]                                 (0.9-2015-11-28)
 
    'bootstrap' sets up GNU automake support and libtool support for the
    Sequencer64 project.  It can also super-clean the project.
@@ -90,12 +91,14 @@ Usage: ./bootstrap [options]                                 (0.9-2015-10-17)
  --prefix dest       Change the destination for installation.
  --debug, -ed,       Also configure for debugging, which also disables
    --enable-debug    shared libraries/libtool for easier debugging.
+ --release, -er,     Also configure for release, to save a little time.
+   --enable-release
  --help              Show this help text.
 
    The default bootstraps the projects.  Then one should run 'configure',
    which sets up for a normal release build.  A common option for
-   'configure' is --enable-debug, which adds --disable-shared and sets
-   --configure.
+   'bootstrap' is --enable-debug, which adds --disable-shared and sets
+   --configure, to configure for debugging without using libtool.
 E_O_F
 
    exit 1
@@ -134,6 +137,10 @@ if [ $# -ge 1 ] ; then
 
          --debug | -ed | --enable-debug)
             DODEBUG="yes"
+            ;;
+
+         --release | -er | --enable-release)
+            DORELEASE="yes"
             ;;
 
          --version)
@@ -433,6 +440,11 @@ E_O_F
 
          echo "Running './configure --enable-debug --disable-shared'..."
          ./configure --enable-debug --disable-shared
+
+      elif [ "$DORELEASE" == "yes" ] ; then
+
+         echo "Running './configure ..."
+         ./configure
 
       else
 

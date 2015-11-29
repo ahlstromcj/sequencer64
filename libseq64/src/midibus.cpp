@@ -468,7 +468,7 @@ midibus::sysex (event * e24)
     snd_seq_ev_set_direct(&ev);                         /* it's immediate   */
 
     midibyte * data = e24->get_sysex();
-    long data_size = e24->get_size();
+    long data_size = e24->get_sysex_size();
     for (long offset = 0; offset < data_size; offset += c_midibus_sysex_chunk)
     {
         long data_left = data_size - offset;
@@ -702,7 +702,7 @@ midibus::clock (long tick)
 #endif  // SEQ64_HAVE_LIBASOUND
 }
 
-#if 0
+#if USE_REMOVE_QUEUED_ON_EVENTS_CODE
 
 /**
  *  Deletes events in the queue.
@@ -724,7 +724,7 @@ midibus::remove_queued_on_events (int tag)
     snd_seq_remove_events_free(remove_events);
 }
 
-#endif  // 0
+#endif      // USE_REMOVE_QUEUED_ON_EVENTS_CODE
 
 }           // namespace seq64
 

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-30
- * \updates       2015-11-23
+ * \updates       2015-11-28
  * \license       GNU GPLv2 or above
  *
  *  This file provides a Linux-only implementation of MIDI support.
@@ -992,7 +992,7 @@ mastermidibus::get_midi_event (event * inev)
     if (result)
         return false;
 
-    snd_midi_event_t * midi_ev;                         /* alsa midi parser */
+    snd_midi_event_t * midi_ev;                         /* ALSA midi parser */
     snd_midi_event_new(sizeof(buffer), &midi_ev);
     long bytes = snd_midi_event_decode(midi_ev, buffer, sizeof(buffer), ev);
     if (bytes <= 0)
@@ -1000,17 +1000,17 @@ mastermidibus::get_midi_event (event * inev)
 
     inev->set_timestamp(ev->time.tick);
     inev->set_status(buffer[0]);
-    inev->set_size(bytes);
+    inev->set_sysex_size(bytes);
 
     /*
      *  We will only get EVENT_SYSEX on the first packet of MIDI data;
      *  the rest we have to poll for.
      */
 
-#if 0
-    if ( buffer[0] == EVENT_SYSEX )
+#if USE_SYSEX_PROCESSING
+    if (buffer[0] == EVENT_SYSEX 
     {
-        inev->start_sysex();            /* set up for sysex if needed */
+        inev->restart_sysex();          /* set up for sysex if needed */
         sysex = inev->append_sysex(buffer, bytes);
     }
     else
@@ -1023,7 +1023,7 @@ mastermidibus::get_midi_event (event * inev)
             inev->set_status(EVENT_NOTE_OFF);
 
         sysex = false;
-#if 0
+#if USE_SYSEX_PROCESSING
     }
 #endif
 
@@ -1070,3 +1070,4 @@ mastermidibus::set_sequence_input (bool state, sequence * seq)
  *
  * vim: sw=4 ts=4 wm=4 et ft=cpp
  */
+

@@ -1,15 +1,17 @@
 Sequencer64 Roadmap
 Chris Ahlstrom
-2015-09-10 to 2015-11-23
+2015-09-10 to 2015-11-30
 
 The starting point for the Sequencer64 project is version 0.9.4 of
 Sequencer24.  Sequencer24 itself started with version 0.9.2 of Seq24.
 
-Latest version: 0.9.9.10
-Current branch: testing3-->master
+Latest version: 0.9.9.11
+Current branch: events-->master
 
 The following changes are planned ('x' means it is done, 'y' means it is
-in progress, and 'z' means it will be moved to a later branch):
+in progress, and 'z' means it will be moved to a later branch).  But also
+note that there is a lot of work to do that is listed in the
+contrib/bugs-to-investigate.txt file!
 
 y  -  Branch off to various incremental branches:
    y  -  Break out non-GUI functionality into libsequencer64.

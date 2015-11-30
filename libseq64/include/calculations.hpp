@@ -202,6 +202,8 @@ inline double delta_time_us_to_ticks (unsigned long delta_us, int bpm, int ppqn)
  *  Please note that terms "ticks" and "pulses" are equivalent, and refer to
  *  the "pulses" in "pulses per quarter note".
  *
+ *  Old:  60000000.0 * double(delta_ticks) / (double(bpm) * double(ppqn));
+ *
  * \param delta_ticks
  *      The number of ticks or "clocks".
  *
@@ -223,7 +225,7 @@ inline double ticks_to_delta_time_us
     int ppqn
 )
 {
-    return 60000000.0 * double(delta_ticks) / (double(bpm) * double(ppqn));
+    return double(delta_ticks) * pulse_length_us(bpm, ppqn);
 }
 
 /**
@@ -293,23 +295,27 @@ inline double double_ticks_from_ppqn (int ppqn)
 }
 
 /**
- *  Calculates the length of a number of measures, in ticks.
+ *  Calculates the length of an integral number of measures, in ticks.
  *  This function is called in seqedit::apply_length(), when the user
  *  selects a sequence length in measures.  That function calculates the
- *  length in ticks:
+ *  length in ticks.  The number of pulses is given by the number of quarter
+ *  notes times the pulses per quarter note.  The number of quarter notes is
+ *  given by the measures times the quarter notes per measure.  The quarter
+ *  notes per measure is given by the beats per measure times 4 divided by
+ *  beat_width beats.  So:
  *
 \verbatim
-    L = M x B x 4 x P / W
-        L == length (ticks or pulses)
-        M == number of measures
-        B == beats per measure
-        P == pulses per quarter-note
-        W == beat width in beats per measure
+    p = 4 * P * m * B / W
+        p == pulse count (ticks or pulses)
+        m == number of measures
+        B == beats per measure (constant)
+        P == pulses per quarter-note (constant)
+        W == beat width in beats per measure (constant)
 \endverbatim
  *
  *  For our "b4uacuse" MIDI file, M can be about 100 measures, B is 4,
  *  P can be 192 (but we want to support higher values), and W is 4.
- *  So L = 100 * 4 * 4 * 192 / 4 = 76800 ticks.  Seems small.
+ *  So p = 100 * 4 * 4 * 192 / 4 = 76800 ticks.  Seems small.
  *
  * \param bpm
  *      The B value in the equation.
@@ -325,7 +331,7 @@ inline double double_ticks_from_ppqn (int ppqn)
  *      simple "ticks per measure" number.
  *
  * \return
- *      Returns the L value (ticks of pulses) as calculated via the given
+ *      Returns the L value (ticks or pulses) as calculated via the given
  *      equation.  If bw is 0, then 0 is returned.
  */
 

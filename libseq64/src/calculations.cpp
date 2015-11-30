@@ -88,11 +88,15 @@ namespace seq64
  *          -   "2:04:12.14"
  *          -   "0:1:2"
  *
+ * \warning
+ *      This is not the most efficient implementation you'll ever see.
+ *      At some point we will tighten it up.  This function is tested in the
+ *      seq64-tests project, in the "calculations_unit_test" module.
+ *
  * \return
  *      Returns true if a reasonable portion (3 numbers) was good for
  *      extraction.  The fraction part will start with a period for easier
- *      conversion to
- *      seconds.
+ *      conversion to fractional seconds.
  */
 
 bool
@@ -185,29 +189,88 @@ pulses_to_time (midipulse pulses, int bpm, int ppqn)
 }
 
 /**
- *  Converts a string that represents "measures:beats:ticks" to a MIDI
+ *  Converts a string that represents "measures:beats:division" to a MIDI
  *  pulse/ticks/clock value.
  *
- *  24 seconds in a 120 bpm, 4/4 project:
+ * \param measures
+ *      Provides the current MIDI song time in "measures:beats:divisions"
+ *      format, where divisions are the MIDI pulses in
+ *      "pulses-per-quarter-note".
  *
- *  beats_per_measure = ts_num;                 // = 4
- *  position = 24 / 60 * 120;                   // = 48
- *  meas_num = floor(position /4) +1;           // = 13
- *  beat_num = floor(position - (meas_num-1) * 4) +1;              // =1
- *  tick_num = (position - (meas_num-1) * 4 - (beat_num-1)) * 960; // = 0
+ * \param seqparms
+ *      This small structure provides the beats/measure, beat-width, and PPQN
+ *      that hold for the sequence involved in this calculation.
  *
+ * \return
+ *      Returns the absolute pulses that mark this duration.
  */
 
 midipulse
-measures_to_pulses_4_4 (const std::string & measures, int /*ppqn*/)
+measures_to_pulses
+(
+    const std::string & measures,
+    const midi_timing_t & seqparms
+)
 {
     midipulse result = 0;
     if (! measures.empty())
     {
-        // todo
+        std::string m, b, d, dummy;
+        if (extract_timing_numbers(measures, m, b, d, dummy))
+        {
+            midi_measures_t meas_values;
+            meas_values.mm_measures = atoi(m.c_str());
+            meas_values.mm_beats = atoi(b.c_str());
+            meas_values.mm_divisions = atoi(d.c_str());
+            result = midi_measures_to_pulse(meas_values, seqparms);
+        }
     }
     return result;
 }
+
+/**
+ *  Converts a string that represents "measures:beats:division" to a MIDI
+ *  pulse/ticks/clock value.
+ *
+ *  p = 4 * P * m * B / W
+ *      p == pulse count (ticks or pulses)
+ *      m == number of measures
+ *      B == beats per measure (constant)
+ *      P == pulses per quarter-note (constant)
+ *      W == beat width in beats per measure (constant)
+ *
+ * \param measures
+ *      Provides the current MIDI song time structure holding the
+ *      measures, beats, and divisions values for the time of interest.
+ *
+ * \param seqparms
+ *      This small structure provides the beats/measure, beat-width, and PPQN
+ *      that hold for the sequence involved in this calculation.
+ *
+ * \return
+ *      Returns the absolute pulses that mark this duration.
+ */
+
+midipulse
+midi_measures_to_pulses
+(
+    const midi_measures_t & measures,
+    const midi_timing_t & seqparms
+)
+{
+    midipulse result = measures.mm_measures * seqparms.m_ppqn;
+    result += measures.mm_beats * seqparms.mt_ppqn;
+    result += measures.mm_divisions;
+    result = 4 * result * seqparms.mt_beats_per_measure / seqparms.mt_beat_width;
+    return result;
+}
+
+/*
+double
+measures_to_time (...)
+{
+}
+*/
 
 /**
  *  Converts a string that represents "hours:minutes:seconds.fraction" into a

@@ -55,7 +55,7 @@
 #define IS_SEQ64_MIDIPULSE_WRAPAROUND(x)  ((x) > (ULONG_MAX / 2))
  *
  */
- 
+
 namespace seq64
 {
 
@@ -89,40 +89,68 @@ typedef unsigned long midilong;
 typedef long midipulse;
 
 /**
+ *  Provides a data structure to hold the numeric equivalent of the measures
+ *  string "measures:beats:divisions" ("m:b:d").
+ *
+ * \var mm_measures
+ *      The integral number of measures in the measures-based time.
+ *
+ * \var mm_beats
+ *      The integral number of beats in the measures-based time.
+ *
+ * \var mm_divisions
+ *      The integral number of divisions/pulses in the measures-based time.
+ *      There are two possible translations of the two bytes of a division. If
+ *      the top bit of the 16 bits is 0, then the time division is in "ticks
+ *      per beat" (or “pulses per quarter note”). If the top bit is 1, then
+ *      the time division is in "frames per second".  This function deals only
+ *      with the ticks/beat definition.
+ */
+
+typdef struct
+{
+    int mm_measures;
+    int mm_beats;
+    int mm_divisions;
+
+} midi_measures_t;
+
+/**
  *  We anticipate the need to have a small structure holding the parameters
  *  needed to calculate MIDI times within an arbitrary song.  Although
  *  Seq24/Sequencer64 currently are heavily dependent on hard-wired values,
  *  that will be rectified eventually, so let us get ready for it.
+ *
+ * \var mt_beats_per_minute
+ *      This value should match the BPM value selected when editing the song.
+ *      This value is most commonly set to 120, but is also read from the MIDI
+ *      file.  This value is needed if one want to calculate durations in true
+ *      time units such as seconds, but is not needed to calculate the number
+ *      of pulses/ticks/divisions.
  *
  * \var mt_beats_per_measure
  *      This value should match the numerator value selected when editing the
  *      sequence.  This value is most commonly set to 4.
  *
  * \var mt_beat_width
- *      This value should match the denominator value selected when editing the
- *      sequence.  This value is most commonly set to 4, meaning that the
+ *      This value should match the denominator value selected when editing
+ *      the sequence.  This value is most commonly set to 4, meaning that the
  *      fundamental beat unit is the quarter note.
  *
- * \var mt_beats_per_mintue
- *      This value should match the BPM value selected when editing the
- *      song.  This value is most commonly set to 120, but is also read from
- *      the MIDI file.
- *
  * \var mt_ppqn
- *      This value provides the precision of the MIDI song.  
- *      This value is most commonly set to 192, but is also read from the MIDI
- *      file.  We are still working getting "non-standard" values to work.
+ *      This value provides the precision of the MIDI song.  This value is
+ *      most commonly set to 192, but is also read from the MIDI file.  We are
+ *      still working getting "non-standard" values to work.
  */
 
 typedef struct
 {
-    int mt_beats_per_measure;
-    int mt_beat_width;
-    int mt_beats_per_minute;
-    int mt_ppqn;
+    int mt_beats_per_minute;        // T (tempo, BPM in upper-case)
+    int mt_beats_per_measure;       // B (bpm in lower-case)
+    int mt_beat_width;              // W (bw in lower-case)
+    int mt_ppqn;                    // P (PPQN or ppqn)
 
 } midi_timing_t;
-
 
 }           // namespace seq64
 

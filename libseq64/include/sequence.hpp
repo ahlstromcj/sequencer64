@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-29
+ * \updates       2015-11-30
  * \license       GNU GPLv2 or above
  *
  *  The functions add_list_var() and add_long_list() have been replaced by
@@ -287,7 +287,7 @@ private:
      *  the user-interface.
      */
 
-    long m_time_beats_per_measure;
+    int m_time_beats_per_measure;
 
     /**
      *  Provides with width of a beat.  Defaults to 4, which means the beat is
@@ -296,13 +296,13 @@ private:
      *  user-interface.
      */
 
-    long m_time_beat_width;
+    int m_time_beat_width;
 
     /**
      *  The volume to be used when recording.
      */
 
-    long m_rec_vol;
+    int m_rec_vol;
 
     /**
      *  Holds a copy of the musical key for this sequence, which we now
@@ -327,7 +327,7 @@ private:
      *  be set.
      */
 
-    long m_background_sequence;
+    int m_background_sequence;
 
     /**
      *  Provides locking for the sequence.  Made mutable for use in
@@ -408,20 +408,20 @@ public:
     void pop_trigger_undo ();
     void set_name (const std::string & name);
     void set_name (char * name);
-    void set_measures (long lengthmeasures);
-    long get_measures ();
-    void set_beats_per_bar (long beatspermeasure);
+    void set_measures (int lengthmeasures);
+    int get_measures ();
+    void set_beats_per_bar (int beatspermeasure);
 
     /**
      * \getter m_time_beats_per_measure
      */
 
-    long get_beats_per_bar () const         /* why long?    */
+    int get_beats_per_bar () const
     {
         return m_time_beats_per_measure;
     }
 
-    void set_beat_width (long beatwidth);   /* why long?    */
+    void set_beat_width (int beatwidth);
 
     /**
      * \getter m_time_beat_width
@@ -429,12 +429,12 @@ public:
      * \threadsafe
      */
 
-    long get_beat_width () const            /* why long?    */
+    int get_beat_width () const
     {
         return m_time_beat_width;
     }
 
-    void set_rec_vol (long rec_vol);
+    void set_rec_vol (int rec_vol);
 
     /**
      * \setter m_song_mute
@@ -826,7 +826,7 @@ public:
      * \getter m_background_sequence
      */
 
-    long background_sequence () const
+    int background_sequence () const
     {
         return m_background_sequence;
     }
@@ -841,7 +841,7 @@ public:
     void background_sequence (int bs)
     {
         if (SEQ64_IS_LEGAL_SEQUENCE(bs))
-            m_background_sequence = long(bs);
+            m_background_sequence = bs;
     }
 
     void show_events () const;

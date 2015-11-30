@@ -1,3 +1,54 @@
+2015-11-29  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* doc/dox/midi_parsing.dox, libseq64/include/Makefile.am,
+	libseq64/include/calculations.hpp,
+	libseq64/include/editable_event.hpp, libseq64/include/event.hpp,
+	libseq64/include/event_list.hpp,
+	libseq64/include/mastermidibus.hpp,
+	libseq64/include/midi_container.hpp,
+	libseq64/include/midi_control.hpp, libseq64/include/midibus.hpp,
+	libseq64/include/midibyte.hpp, libseq64/include/midifile.hpp,
+	libseq64/include/perform.hpp, libseq64/include/sequence.hpp,
+	libseq64/include/triggers.hpp, libseq64/src/Makefile.am,
+	libseq64/src/calculations.cpp, libseq64/src/editable_event.cpp,
+	libseq64/src/event_list.cpp, libseq64/src/globals.cpp,
+	libseq64/src/jack_assistant.cpp, libseq64/src/mastermidibus.cpp,
+	libseq64/src/midi_container.cpp, libseq64/src/midi_splitter.cpp,
+	libseq64/src/midibus.cpp, libseq64/src/midifile.cpp,
+	libseq64/src/perform.cpp, libseq64/src/sequence.cpp,
+	libseq64/src/triggers.cpp, seq_gtkmm2/include/maintime.hpp,
+	seq_gtkmm2/include/perfroll.hpp,
+	seq_gtkmm2/include/perfroll_input.hpp,
+	seq_gtkmm2/include/perftime.hpp, seq_gtkmm2/include/seqdata.hpp,
+	seq_gtkmm2/include/seqevent.hpp, seq_gtkmm2/include/seqroll.hpp,
+	seq_gtkmm2/src/fruityperfroll_input.cpp,
+	seq_gtkmm2/src/fruityseq.cpp, seq_gtkmm2/src/fruityseqroll.cpp,
+	seq_gtkmm2/src/maintime.cpp, seq_gtkmm2/src/mainwid.cpp,
+	seq_gtkmm2/src/mainwnd.cpp, seq_gtkmm2/src/perfedit.cpp,
+	seq_gtkmm2/src/perfroll.cpp, seq_gtkmm2/src/perfroll_input.cpp,
+	seq_gtkmm2/src/perftime.cpp, seq_gtkmm2/src/seq24seq.cpp,
+	seq_gtkmm2/src/seq24seqroll.cpp, seq_gtkmm2/src/seqdata.cpp,
+	seq_gtkmm2/src/seqedit.cpp, seq_gtkmm2/src/seqevent.cpp,
+	seq_gtkmm2/src/seqroll.cpp: Replace most longs with midilong,
+	midipulse, and added calculations for editable_events.
+
+2015-11-28  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* INSTALL, README, ROADMAP, VERSION, bootstrap, configure.ac,
+	doc/dox/doxy-reference.cfg, libseq64/include/editable_event.hpp,
+	libseq64/include/event.hpp, libseq64/src/cmdlineopts.cpp,
+	libseq64/src/editable_event.cpp, libseq64/src/event.cpp,
+	libseq64/src/mastermidibus.cpp, libseq64/src/midibus.cpp,
+	libseq64/src/optionsfile.cpp, libseq64/src/userfile.cpp,
+	man/sequencer64.1: Readied for next version, adding editable event
+	module started.
+
+2015-11-28  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* ChangeLog, libseq64/include/event.hpp: Merged smf0, fully support
+	for SMF 0 files, dual song editors, and more robust handling of MIDI
+	files.
+
 2015-11-28  Chris Ahlstrom <ahlstromcj@gmail.com>
 
 	* ChangeLog, contrib/midi/README, doc/dox/midi_parsing.dox,

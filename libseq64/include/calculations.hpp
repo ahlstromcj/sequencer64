@@ -57,7 +57,7 @@
  *  used to maintain a synchronized tempo for synthesizers that have
  *  BPM-dependent voices and also for arpeggiator synchronization.
  *
- *  The following macro represents the MIDI clock rate in
+ *  The following macro represents the standard MIDI clock rate in
  *  pulses-per-quarter-note.
  */
 
@@ -163,6 +163,18 @@ inline double pulse_length_us (int bpm, int ppqn)
  *
  *  Please note that terms "ticks" and "pulses" are equivalent, and refer to
  *  the "pulses" in "pulses per quarter note".
+ *
+\verbatim
+             beats       pulses           1 minute       1 sec
+    P = 120 ------ * 192 ------ * T us *  ---------  * ---------
+            minute       beats            60 sec       1,000,000 us
+\endverbatim
+ *
+ *  Note that this formula assumes that a beat is a quarter note.  If a beat
+ *  is an eighth note, then the P value would be halved, because there would
+ *  be only 96 pulses per beat.  We will implement an additional function to
+ *  account for the beat; the current function merely blesses some
+ *  calculations made in the application.
  *
  * \param delta_us
  *      The number of microseconds in the delta time.

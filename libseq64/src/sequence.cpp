@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-29
+ * \updates       2015-11-30
  * \license       GNU GPLv2 or above
  *
  *  The functionality of this class also includes handling some of the
@@ -302,7 +302,7 @@ sequence::set_master_midi_bus (mastermidibus * mmb)
  */
 
 void
-sequence::set_beats_per_bar (long beatspermeasure)
+sequence::set_beats_per_bar (int beatspermeasure)
 {
     automutex locker(m_mutex);
     m_time_beats_per_measure = beatspermeasure;
@@ -319,7 +319,7 @@ sequence::set_beats_per_bar (long beatspermeasure)
  */
 
 void
-sequence::set_beat_width (long beatwidth)
+sequence::set_beat_width (int beatwidth)
 {
     automutex locker(m_mutex);
     m_time_beat_width = beatwidth;
@@ -336,7 +336,7 @@ sequence::set_beat_width (long beatwidth)
  */
 
 void
-sequence::set_rec_vol (long recvol)
+sequence::set_rec_vol (int recvol)
 {
     automutex locker(m_mutex);
     m_rec_vol = recvol;
@@ -1123,7 +1123,7 @@ sequence::stretch_selected (midipulse delta_tick)
                 event new_e = *e;
                 new_e.set_timestamp
                 (
-                    long(ratio * (e->get_timestamp() - first_ev)) + first_ev
+                    midipulse(ratio * (e->get_timestamp() - first_ev)) + first_ev
                 );
                 new_e.unmark();
                 add_event(new_e);
@@ -1842,7 +1842,7 @@ sequence::intersect_triggers
  *
  * \param note
  *      The destination for the note of the matching event.
- *      Why is this a long value???
+ *      Why is this an int value???
  *
  * \return
  *      Returns true if a event was found whose start/end ticks

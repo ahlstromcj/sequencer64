@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-07
- * \updates       2015-11-29
+ * \updates       2015-11-30
  * \license       GNU GPLv2 or above
  *
  *  This code was moved from the globals module so that other modules
@@ -149,7 +149,7 @@ extract_timing_numbers
 
 /**
  *  Converts a MIDI pulse/ticks/clock value into a string that represents
- *  "measures:beats:ticks" ("measures:beats:division")..
+ *  "measures:beats:ticks" ("measures:beats:division").
  */
 
 std::string
@@ -212,6 +212,21 @@ measures_to_pulses_4_4 (const std::string & measures, int /*ppqn*/)
 /**
  *  Converts a string that represents "hours:minutes:seconds.fraction" into a
  *  MIDI pulse/ticks/clock value.
+ *
+ * \param timestring
+ *      The time value to be converted, which must be of the form
+ *      "hh:mm:ss" or "hh:mm:ss.fraction".
+ *
+ * \param bpm
+ *      The beats-per-minute tempo (e.g. 120) of the current MIDI song.
+ *
+ * \param ppqn
+ *      The parts-per-quarter note precision (e.g. 192) of the current MIDI
+ *      song.
+ *
+ * \return
+ *      Returns 0 if an error occurred or if the number actually translated to
+ *      0.
  */
 
 midipulse
@@ -220,14 +235,18 @@ time_to_pulses (const std::string & timestring, int bpm, int ppqn)
     midipulse result = 0;
     if (! timestring.empty())
     {
-        int hours = atoi(timestring.c_str());
-        int minutes = atoi(timestring.c_str() + 3);
-        int seconds = atoi(timestring.c_str() + 6);
-        int us = atoi(timestring.c_str() + 9);
-        long sec = ((hours * 60) + minutes) * 60 + seconds;
-        long microseconds = 1000000 * sec + us;
-        double pulses = delta_time_us_to_ticks(microseconds, bpm, ppqn);
-        result = midipulse(pulses);
+        std::string sh, sm, ss, us;
+        if (extract_timing_numbers(timestring, sh, sm, ss, us))
+        {
+            int hours = atoi(sh.c_str());
+            int minutes = atoi(sm.c_str());
+            int seconds = atoi(ss.c_str());
+            double secfraction = atof(us.c_str());
+            long sec = ((hours * 60) + minutes) * 60 + seconds;
+            long microseconds = 1000000 * sec + long(1000000.0 * secfraction);
+            double pulses = delta_time_us_to_ticks(microseconds, bpm, ppqn);
+            result = midipulse(pulses);
+        }
     }
     return result;
 }

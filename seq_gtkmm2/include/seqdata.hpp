@@ -154,7 +154,7 @@ private:
      *  parameter.
      */
 
-    void convert_x (int x, long & tick)
+    void convert_x (int x, midipulse & tick)
     {
         tick = x * m_zoom;
     }

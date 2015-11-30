@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-25
+ * \updates       2015-11-29
  * \license       GNU GPLv2 or above
  *
  *  The functions add_list_var() and add_long_list() have been replaced by
@@ -242,9 +242,9 @@ private:
      *  including triggering.
      */
 
-    long m_last_tick;
-    long m_queued_tick;
-    long m_trigger_offset;
+    midipulse m_last_tick;
+    midipulse m_queued_tick;
+    midipulse m_trigger_offset;
 
     /**
      *  This constant provides ...?
@@ -272,14 +272,14 @@ private:
      *  be a power of two when used as a bar unit.
      */
 
-    long m_length;
+    midipulse m_length;
 
     /**
      *  The size of snap in units of pulses (ticks).  It starts out as the
      *  value m_ppqn / 4.
      */
 
-    long m_snap_tick;
+    midipulse m_snap_tick;
 
     /**
      *  Provides the number of beats per bar used in this sequence.  Defaults
@@ -509,18 +509,18 @@ public:
         return m_raise;
     }
 
-    void set_length (long len, bool adjust_triggers = true); /* in ticks */
+    void set_length (midipulse len, bool adjust_triggers = true); /* in ticks */
 
     /**
      * \getter m_length
      */
 
-    long get_length () const
+    midipulse get_length () const
     {
         return m_length;
     }
 
-    long get_last_tick ();
+    midipulse get_last_tick ();
     void set_playing (bool);
 
     /**
@@ -557,7 +557,7 @@ public:
      * \getter m_queued_tick
      */
 
-    long get_queued_tick () const
+    midipulse get_queued_tick () const
     {
         return m_queued_tick;
     }
@@ -566,7 +566,7 @@ public:
      *  Helper function for perform.
      */
 
-    bool check_queued_tick (long tick) const
+    bool check_queued_tick (midipulse tick) const
     {
         return get_queued() && (get_queued_tick() <= tick);
     }
@@ -633,47 +633,54 @@ public:
     void set_midi_channel (midibyte ch);
     void print ();
     void print_triggers ();
-    void play (long tick, bool playback_mode);
-    void set_orig_tick (long tick);
+    void play (midipulse tick, bool playback_mode);
+    void set_orig_tick (midipulse tick);
     bool add_event (const event & er);
     void add_trigger
     (
-        long tick, long len,
-        long offset = 0, bool adjust_offset = true
+        midipulse tick, midipulse len,
+        midipulse offset = 0, bool adjust_offset = true
     );
-    void split_trigger (long tick);
-    void grow_trigger (long tick_from, long tick_to, long len);
-    void del_trigger (long tick);
-    bool get_trigger_state (long tick);
-    bool select_trigger (long tick);
+    void split_trigger (midipulse tick);
+    void grow_trigger (midipulse tick_from, midipulse tick_to, midipulse len);
+    void del_trigger (midipulse tick);
+    bool get_trigger_state (midipulse tick);
+    bool select_trigger (midipulse tick);
     bool unselect_triggers ();
-    bool intersect_triggers (long position, long & start, long & end);
+    bool intersect_triggers
+    (
+        midipulse position, midipulse & start, midipulse & ender
+    );
     bool intersect_notes
     (
-        long position, long position_note,
-        long & start, long & end, long & note
+        midipulse position, midipulse position_note,
+        midipulse & start, midipulse & ender, int & note
     );
-    bool intersect_events (long posstart, long posend, long status, long & start);
+    bool intersect_events
+    (
+        midipulse posstart, midipulse posend,
+        midibyte status, midipulse & start
+    );
     void del_selected_trigger ();
     void cut_selected_trigger ();
     void copy_selected_trigger ();
     void paste_trigger ();
     bool move_selected_triggers_to
     (
-        long tick, bool adjust_offset, int which = 2
+        midipulse tick, bool adjust_offset, int which = 2
     );
-    long selected_trigger_start ();
-    long selected_trigger_end ();
-    long get_max_trigger ();
-    void move_triggers (long start_tick, long distance, bool direction);
-    void copy_triggers (long start_tick, long distance);
+    midipulse selected_trigger_start ();
+    midipulse selected_trigger_end ();
+    midipulse get_max_trigger ();
+    void move_triggers (midipulse start_tick, midipulse distance, bool direction);
+    void copy_triggers (midipulse start_tick, midipulse distance);
     void clear_triggers ();
 
     /**
      * \getter m_trigger_offset
      */
 
-    long get_trigger_offset () const
+    midipulse get_trigger_offset () const
     {
         return m_trigger_offset;
     }
@@ -692,12 +699,12 @@ public:
     void set_master_midi_bus (mastermidibus * mmb);
     int select_note_events
     (
-        long tick_s, int note_h,
-        long tick_f, int note_l, select_action_e action
+        midipulse tick_s, int note_h,
+        midipulse tick_f, int note_l, select_action_e action
     );
     int select_events
     (
-        long tick_s, long tick_f,
+        midipulse tick_s, midipulse tick_f,
         midibyte status, midibyte cc, select_action_e action
     );
     int select_events
@@ -708,33 +715,36 @@ public:
     int get_num_selected_events (midibyte status, midibyte cc) const;
     void select_all ();
     void copy_selected ();
-    void paste_selected (long tick, int note);
+    void paste_selected (midipulse tick, int note);
     void get_selected_box
     (
-        long & tick_s, int & note_h, long & tick_f, int & note_l
+        midipulse & tick_s, int & note_h, midipulse & tick_f, int & note_l
     );
     void get_clipboard_box
     (
-        long & tick_s, int & note_h, long & tick_f, int & note_l
+        midipulse & tick_s, int & note_h, midipulse & tick_f, int & note_l
     );
-    void move_selected_notes (long deltatick, int deltanote);
-    void add_note (long tick, long len, int note, bool paint = false);
+    void move_selected_notes (midipulse deltatick, int deltanote);
+    void add_note
+    (
+        midipulse tick, midipulse len, int note, bool paint = false
+    );
     void add_event
     (
-        long tick, midibyte status,
+        midipulse tick, midibyte status,
         midibyte d0, midibyte d1, bool paint = false
     );
     void stream_event (event & ev);
     bool change_event_data_range
     (
-        long tick_s, long tick_f,
+        midipulse tick_s, midipulse tick_f,
         midibyte status, midibyte cc,
         int d_s, int d_f
     );
     void increment_selected (midibyte status, midibyte control);
     void decrement_selected (midibyte status, midibyte control);
-    void grow_selected (long deltatick);
-    void stretch_selected (long deltatick);
+    void grow_selected (midipulse deltatick);
+    void stretch_selected (midipulse deltatick);
     void remove_marked ();
     void mark_selected ();
     void unpaint_all ();
@@ -749,7 +759,7 @@ public:
     void reset_draw_trigger_marker ();
     draw_type get_next_note_event
     (
-        long * tick_s, long * tick_f, int * note,
+        midipulse * tick_s, midipulse * tick_f, int * note,
         bool * selected, int * velocity
     );
     int get_lowest_note_event ();
@@ -757,20 +767,20 @@ public:
     bool get_next_event
     (
         midibyte status, midibyte cc,
-        long * tick, midibyte * d0, midibyte * d1,
+        midipulse * tick, midibyte * d0, midibyte * d1,
         bool * selected
     );
     bool get_next_event (midibyte * status, midibyte * cc);
     bool get_next_trigger
     (
-        long * tick_on, long * tick_off,
-        bool * selected, long * tick_offset
+        midipulse * tick_on, midipulse * tick_off,
+        bool * selected, midipulse * tick_offset
     );
     void fill_container (midi_container & c, int tracknumber);
     void quantize_events
     (
         midibyte status, midibyte cc,
-        long snap_tick, int divide, bool linked = false
+        midipulse snap_tick, int divide, bool linked = false
     );
     void transpose_notes (int steps, int scale);
 
@@ -840,10 +850,10 @@ private:
 
     void put_event_on_bus (event & ev);
     void remove_all ();
-    void set_trigger_offset (long trigger_offset);
-    void split_trigger (trigger & trig, long splittick);
-    void adjust_trigger_offsets_to_length (long newlen);
-    long adjust_offset (long offset);
+    void set_trigger_offset (midipulse trigger_offset);
+    void split_trigger (trigger & trig, midipulse splittick);
+    void adjust_trigger_offsets_to_length (midipulse newlen);
+    midipulse adjust_offset (midipulse offset);
     void remove (event_list::iterator i);
     void remove (event & e);
 

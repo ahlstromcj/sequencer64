@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-07
- * \updates       2015-11-28
+ * \updates       2015-11-29
  * \license       GNU GPLv2 or above
  *
  *  This code was moved from the globals module so that other modules
@@ -69,10 +69,168 @@
  *      perfroll module that we need to move here.
  */
 
+#include <cctype>                       /* std::isspace(), etc.             */
+#include <stdlib.h>                     /* C::atoi()                        */
+#include <time.h>                       /* C::strftime()                    */
+
 #include "calculations.hpp"
 
 namespace seq64
 {
+
+/**
+ *  Extracts up to 4 numbers from a colon-delimited string.
+ *
+ *      -   measures : beats : divisions
+ *          -   "213:4:920"
+ *          -   "0:1:0"
+ *      -   hours : minutes : seconds . fraction
+ *          -   "2:04:12.14"
+ *          -   "0:1:2"
+ *
+ * \return
+ *      Returns true if a reasonable portion (3 numbers) was good for
+ *      extraction.  The fraction part will start with a period for easier
+ *      conversion to
+ *      seconds.
+ */
+
+bool
+extract_timing_numbers
+(
+    const std::string & s,
+    std::string & part_1,
+    std::string & part_2,
+    std::string & part_3,
+    std::string & fraction
+)
+{
+    bool result = false;
+    std::size_t colon_1_pos = s.find_first_of(":");
+    part_1.clear();
+    part_2.clear();
+    part_3.clear();
+    fraction.clear();
+    if (colon_1_pos != std::string::npos)
+    {
+        std::size_t colon_2_pos = s.find_first_of(":", colon_1_pos + 1);
+        if (colon_2_pos != std::string::npos)
+        {
+            std::size_t period_pos = s.find_first_of(".", colon_2_pos + 1);
+            if (period_pos != std::string::npos)
+            {
+                fraction = s.substr(period_pos);
+                std::size_t len = period_pos - colon_2_pos - 1;
+                if (len > 0)
+                {
+                    part_3 = s.substr(colon_2_pos + 1, len);
+                    result = true;
+                }
+            }
+            else
+            {
+                part_3 = s.substr(colon_2_pos + 1);
+                result = true;
+            }
+            std::size_t len = colon_2_pos - colon_1_pos - 1;
+            if (len > 0)
+                part_2 = s.substr(colon_1_pos + 1, len);
+        }
+        std::size_t number_pos = s.find_first_of("0123456789");
+        if (number_pos != std::string::npos)
+        {
+            std::size_t len = colon_1_pos - number_pos;
+            if (len > 0)
+                part_1 = s.substr(number_pos, len);
+        }
+    }
+    return result;
+}
+
+/**
+ *  Converts a MIDI pulse/ticks/clock value into a string that represents
+ *  "measures:beats:ticks" ("measures:beats:division")..
+ */
+
+std::string
+pulses_to_measures (midipulse /*pulses*/, int /*ppqn*/)
+{
+    std::string result;
+
+    return result;
+}
+
+/**
+ *  Converts a MIDI pulse/ticks/clock value into a string that represents
+ *  "hours:minutes:seconds.fraction".
+ */
+
+std::string
+pulses_to_time (midipulse pulses, int bpm, int ppqn)
+{
+    unsigned long microseconds = ticks_to_delta_time_us(pulses, bpm, ppqn);
+    int seconds = long(microseconds * (1.0 / 1000000.0));
+    int minutes = seconds / 60;
+    int hours = minutes / 60;
+    minutes -= hours * 60;
+    seconds -= minutes * 60;
+    microseconds -= seconds * 1000000.0;
+    char tmp[32];
+    snprintf
+    (
+        tmp, sizeof tmp, "%d:%d:%d.%06lu",
+        hours, minutes, seconds, microseconds
+    );
+    return std::string(tmp);
+}
+
+/**
+ *  Converts a string that represents "measures:beats:ticks" to a MIDI
+ *  pulse/ticks/clock value.
+ *
+ *  24 seconds in a 120 bpm, 4/4 project:
+ *
+ *  beats_per_measure = ts_num;                 // = 4
+ *  position = 24 / 60 * 120;                   // = 48
+ *  meas_num = floor(position /4) +1;           // = 13
+ *  beat_num = floor(position - (meas_num-1) * 4) +1;              // =1
+ *  tick_num = (position - (meas_num-1) * 4 - (beat_num-1)) * 960; // = 0
+ *
+ */
+
+midipulse
+measures_to_pulses_4_4 (const std::string & measures, int /*ppqn*/)
+{
+    midipulse result = 0;
+    if (! measures.empty())
+    {
+        // todo
+    }
+    return result;
+}
+
+/**
+ *  Converts a string that represents "hours:minutes:seconds.fraction" into a
+ *  MIDI pulse/ticks/clock value.
+ */
+
+midipulse
+time_to_pulses (const std::string & timestring, int bpm, int ppqn)
+{
+    midipulse result = 0;
+    if (! timestring.empty())
+    {
+        int hours = atoi(timestring.c_str());
+        int minutes = atoi(timestring.c_str() + 3);
+        int seconds = atoi(timestring.c_str() + 6);
+        int us = atoi(timestring.c_str() + 9);
+        long sec = ((hours * 60) + minutes) * 60 + seconds;
+        long microseconds = 1000000 * sec + us;
+        double pulses = delta_time_us_to_ticks(microseconds, bpm, ppqn);
+        result = midipulse(pulses);
+    }
+    return result;
+}
 
 /**
  *  Shortens a file-specification to make sure it is no longer than the
@@ -127,6 +285,113 @@ shorten_file_spec (const std::string & fpath, int leng)
         result = result + ellipse + lastpart;
         return result;
     }
+}
+
+/**
+ *    Tests that a string is not empty and has non-space characters.
+ *    Provides essentially the opposite test that string_is_void()
+ *    provides.
+ *
+ * \param s
+ *      The string pointer to check for emptiness.
+ *
+ * \return
+ *    Returns 'true' if the pointer is valid, the string has a non-zero
+ *    length, and is not just white-space.
+ *
+ *    The definition of white-space is provided by the isspace()
+ *    function/macro.
+ */
+
+bool
+string_not_void (const std::string & s)
+{
+   bool result = false;
+   if (! s.empty())
+   {
+      for (int i = 0; i < int(s.length()); i++)
+      {
+         if (! std::isspace(s[i]))
+         {
+            result = true;
+            break;
+         }
+      }
+   }
+   return result;
+}
+
+/**
+ *    Tests that a string is empty or has only white-space characters.  Meant
+ *    to have essentially the opposite result of string_not_void().  The
+ *    meaning of empty is special here, as it refers to a string being useless
+ *    as a token:
+ *
+ *      -  The string is of zero length.
+ *      -  The string has only white-space characters in it, where the
+ *         isspace() macro provides the definition of white-space.
+ *
+ * \param s
+ *      The string pointer to check for emptiness.
+ *
+ * \return
+ *    Returns 'true' if the string has a zero length, or is only white-space.
+ */
+
+bool
+string_is_void (const std::string & s)
+{
+   bool result = s.empty();
+   if (! result)
+      result = ! string_not_void(s);
+
+   return result;
+}
+
+/**
+ *    Compares two strings for a form of semantic equality, for the purposes
+ *    of editable_event(), for example.  The strings_match() function returns
+ *    true if the comparison items are identical, without case-sensitivity
+ *    in character content up to the length of the secondary string.
+ *    This allows abbreviations to match. (And, in scanning routines, the
+ *    first match is immediately accepted.)
+ *
+ * \param target
+ *      The primary string in the comparison.  This is the target string, the
+ *      one we hope to match.  It is <i> assumed </i> to be non-empty, and the
+ *      result is false if it is empty..
+ *
+ * \param x
+ *      The secondary string in the comparison.  It must be no longer than the
+ *      target string, or the match is false.
+ *
+ * \return
+ *    Returns true if both strings are are identical in characters, up to the
+ *    length of the secondary string, with the case of the characters being
+ *    insignificant.  Otherwise, false is returned.
+ *
+ *//*-------------------------------------------------------------------------*/
+
+bool
+strings_match (const std::string & target, const std::string & x)
+{
+    bool result = ! target.empty();
+    if (result)
+    {
+        result = x.length() <= target.length();
+        if (result)
+        {
+            for (int i = 0; i < int(x.length()); i++)
+            {
+                if (std::tolower(x[i]) != std::tolower(target[i]))
+                {
+                    result = false;
+                    break;
+                }
+            }
+        }
+    }
+    return result;
 }
 
 }       // namespace seq64

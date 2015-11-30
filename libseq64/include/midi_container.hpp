@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-10-10
- * \updates       2015-11-23
+ * \updates       2015-11-29
  * \license       GNU GPLv2 or above
  *
  */
@@ -148,19 +148,19 @@ class sequence;
  *  preferences.
  */
 
-const unsigned long c_midibus =         0x24240001; /* track buss number    */
-const unsigned long c_midich =          0x24240002; /* track channel number */
-const unsigned long c_midiclocks =      0x24240003; /* track clocking       */
-const unsigned long c_triggers =        0x24240004; /* see c_triggers_new   */
-const unsigned long c_notes =           0x24240005; /* song ??? data        */
-const unsigned long c_timesig =         0x24240006; /* track time signature */
-const unsigned long c_bpmtag =          0x24240007; /* song beats/minute    */
-const unsigned long c_triggers_new =    0x24240008; /* track trigger data   */
-const unsigned long c_mutegroups =      0x24240009; /* song mute group data */
-const unsigned long c_midictrl =        0x24240010; /* song MIDI control    */
-const unsigned long c_musickey =        0x24240011; /* track key            */
-const unsigned long c_musicscale =      0x24240012; /* track scale          */
-const unsigned long c_backsequence =    0x24240013; /* track b'ground seq   */
+const midilong c_midibus =          0x24240001;     /* track buss number    */
+const midilong c_midich =           0x24240002;     /* track channel number */
+const midilong c_midiclocks =       0x24240003;     /* track clocking       */
+const midilong c_triggers =         0x24240004;     /* see c_triggers_new   */
+const midilong c_notes =            0x24240005;     /* song ??? data        */
+const midilong c_timesig =          0x24240006;     /* track time signature */
+const midilong c_bpmtag =           0x24240007;     /* song beats/minute    */
+const midilong c_triggers_new =     0x24240008;     /* track trigger data   */
+const midilong c_mutegroups =       0x24240009;     /* song mute group data */
+const midilong c_midictrl =         0x24240010;     /* song MIDI control    */
+const midilong c_musickey =         0x24240011;     /* track key            */
+const midilong c_musicscale =       0x24240012;     /* track scale          */
+const midilong c_backsequence =     0x24240013;     /* track b'ground seq   */
 
 /**
  *    This class is the abstract base class for a container of MIDI track
@@ -260,8 +260,8 @@ protected:
 
 private:
 
-    void add_variable (long v);
-    void add_long (long x);
+    void add_variable (midipulse v);
+    void add_long (midipulse x);
 
 };
 

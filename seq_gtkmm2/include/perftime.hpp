@@ -170,7 +170,7 @@ private:
      *  Common calculation to convert a pulse/tick value to a perftime x value.
      */
 
-    long tick_to_pixel (long tick)
+    long tick_to_pixel (midipulse tick)
     {
         return (tick - m_tick_offset) / m_perf_scale_x;
     }
@@ -179,7 +179,7 @@ private:
      *  The inverse of tick_to_pixel().
      */
 
-    long pixel_to_tick (long pixel)
+    midipulse pixel_to_tick (long pixel)
     {
         return pixel * m_perf_scale_x + m_tick_offset;
     }

@@ -246,9 +246,9 @@ public:
     void flush ();
     void start ();
     void stop ();
-    void clock (long a_tick);
-    void continue_from (long a_tick);
-    void init_clock (long a_tick);
+    void clock (midipulse a_tick);
+    void continue_from (midipulse a_tick);
+    void init_clock (midipulse a_tick);
     int poll_for_midi ();
     bool is_more_input ();
     bool get_midi_event (event * a_in);

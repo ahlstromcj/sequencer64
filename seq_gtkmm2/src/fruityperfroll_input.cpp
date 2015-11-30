@@ -58,12 +58,13 @@ void
 FruityPerfInput::update_mouse_pointer (perfroll & roll)
 {
     perform & p = roll.perf();
-    long droptick;
+    midipulse droptick;
     int dropseq;
     roll.convert_xy(m_current_x, m_current_y, droptick, dropseq);
     if (p.is_active(dropseq))
     {
-        long start, end;
+        midipulse start;
+        midipulse end;
         if (p.get_sequence(dropseq)->intersect_triggers(droptick, start, end))
         {
             int wscalex = s_perfroll_size_box_click_w * c_perf_scale_x;
@@ -133,7 +134,7 @@ FruityPerfInput::on_button_press_event (GdkEventButton * a_ev, perfroll & roll)
     {
         if (p.is_active(dropseq))
         {
-            long droptick = roll.m_drop_tick;
+            midipulse droptick = roll.m_drop_tick;
             bool state = p.get_sequence(dropseq)->get_trigger_state(droptick);
             if (state)
             {
@@ -185,19 +186,19 @@ FruityPerfInput::on_left_button_pressed (GdkEventButton * a_ev, perfroll & roll)
     }
     else                /* add a new note */
     {
-        long tick = roll.m_drop_tick;
+        midipulse tick = roll.m_drop_tick;
         m_adding_pressed = true;
         if (p.is_active(dropseq))
         {
-            long seqlength = p.get_sequence(dropseq)->get_length();
+            midipulse seqlength = p.get_sequence(dropseq)->get_length();
             bool state = p.get_sequence(dropseq)->get_trigger_state(tick);
             if (state)  /* resize event or move it based on where clicked */
             {
                 m_adding_pressed = false;
                 p.push_trigger_undo();
                 p.get_sequence(dropseq)->select_trigger(tick);
-                long starttick = p.get_sequence(dropseq)->selected_trigger_start();
-                long endtick = p.get_sequence(dropseq)->selected_trigger_end();
+                midipulse starttick = p.get_sequence(dropseq)->selected_trigger_start();
+                midipulse endtick = p.get_sequence(dropseq)->selected_trigger_end();
                 int wscalex = s_perfroll_size_box_click_w * c_perf_scale_x;
                 int ydrop = roll.m_drop_y % c_names_y;
                 if
@@ -258,7 +259,7 @@ FruityPerfInput::on_right_button_pressed (GdkEventButton * a_ev, perfroll & roll
 {
     bool result = false;
     perform & p = roll.perf();
-    long tick = roll.m_drop_tick;
+    midipulse tick = roll.m_drop_tick;
     int dropseq = roll.m_drop_sequence;
     if (p.is_active(dropseq))
     {
@@ -326,14 +327,14 @@ FruityPerfInput::on_motion_notify_event (GdkEventMotion * a_ev, perfroll & roll)
     m_current_y = int(a_ev->y);
     if (m_adding_pressed)
     {
-        long tick;
+        midipulse tick;
         roll.convert_x(x, tick);
         if (p.is_active(dropseq))
         {
-            long seqlength = p.get_sequence(dropseq)->get_length();
+            midipulse seqlength = p.get_sequence(dropseq)->get_length();
             tick -= (tick % seqlength);
 
-            long length = seqlength;
+            midipulse length = seqlength;
             p.get_sequence(dropseq)->grow_trigger(roll.m_drop_tick, tick, length);
             roll.draw_all();
             result = true;
@@ -343,7 +344,7 @@ FruityPerfInput::on_motion_notify_event (GdkEventMotion * a_ev, perfroll & roll)
     {
         if (p.is_active(dropseq))
         {
-            long tick;
+            midipulse tick;
             roll.convert_x(x, tick);
             tick -= roll.m_drop_tick_trigger_offset;
             tick -= tick % roll.m_snap;

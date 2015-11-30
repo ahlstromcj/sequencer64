@@ -491,7 +491,7 @@ mainwnd::~mainwnd ()
 bool
 mainwnd::timer_callback ()
 {
-    long ticks = perf().get_tick();
+    midipulse ticks = perf().get_tick();
     m_main_time->idle_progress(ticks);
     m_main_wid->update_markers(ticks);          /* see note above */
 

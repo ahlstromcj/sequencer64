@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-28
+ * \updates       2015-11-29
  * \license       GNU GPLv2 or above
  *
  *  This module also declares/defines the various constants, status-byte
@@ -170,7 +170,7 @@ private:
      *  in "pulses per quarter note" (PPQN).
      */
 
-    unsigned long m_timestamp;
+    midipulse m_timestamp;
 
     /**
      *  This is the status byte without the channel.  The channel will be
@@ -259,7 +259,7 @@ public:
      * \setter m_timestamp
      */
 
-    void set_timestamp (unsigned long time)
+    void set_timestamp (midipulse time)
     {
         m_timestamp = time;
     }
@@ -268,7 +268,7 @@ public:
      * \getter m_timestamp
      */
 
-    long get_timestamp () const
+    midipulse get_timestamp () const
     {
         return m_timestamp;
     }
@@ -403,7 +403,7 @@ public:
      *      Returns a value ranging from 0 to a_mod-1.
      */
 
-    void mod_timestamp (unsigned long a_mod)
+    void mod_timestamp (midipulse a_mod)
     {
         m_timestamp %= a_mod;
     }
@@ -664,7 +664,7 @@ public:
 
     void make_clock ()
     {
-        m_status = midibyte(EVENT_MIDI_CLOCK);
+        m_status = EVENT_MIDI_CLOCK;
     }
 
     /**
@@ -748,7 +748,7 @@ public:
     void load (std::ifstream & file);
 #endif
 
-};
+};          // class event
 
 /*
  * Global functions in the seq64 namespace.

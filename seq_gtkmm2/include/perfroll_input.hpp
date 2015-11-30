@@ -106,7 +106,7 @@ private:
      *  The current tick for the current segment?
      */
 
-    long m_effective_tick;
+    midipulse m_effective_tick;
 
 public:
 

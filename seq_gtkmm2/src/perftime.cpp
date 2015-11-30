@@ -235,7 +235,7 @@ perftime::on_expose_event (GdkEventExpose * /* ev */ )
 bool
 perftime::on_button_press_event (GdkEventButton * p0)
 {
-    long tick = pixel_to_tick(long(p0->x));
+    midipulse tick = pixel_to_tick(long(p0->x));
     tick -= (tick % m_snap);
 
     // Why is this disabled?  We should re-enable and see if it works.

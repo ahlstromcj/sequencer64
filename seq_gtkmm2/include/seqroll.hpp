@@ -231,8 +231,8 @@ public:
 private:
 
     int idle_redraw ();
-    void convert_xy (int x, int y, long & ticks, int & note);
-    void convert_tn (long ticks, int note, int & x, int & y);
+    void convert_xy (int x, int y, midipulse & ticks, int & note);
+    void convert_tn (midipulse ticks, int note, int & x, int & y);
     void snap_y (int & y)
     {
         y -= (y % c_key_y);
@@ -246,7 +246,7 @@ private:
     );
     void convert_tn_box_to_rect
     (
-        long tick_s, long tick_f, int note_h, int note_l,
+        midipulse tick_s, midipulse tick_f, int note_h, int note_l,
         int & x, int & y, int & w, int & h
     );
     void draw_events_on (Glib::RefPtr<Gdk::Drawable> draw);

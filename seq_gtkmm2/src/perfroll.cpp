@@ -357,8 +357,8 @@ perfroll::enqueue_draw ()
 void
 perfroll::draw_progress ()
 {
-    long tick = perf().get_tick();
-    long tick_offset = m_4bar_offset * m_ticks_per_bar;
+    midipulse tick = perf().get_tick();
+    midipulse tick_offset = m_4bar_offset * m_ticks_per_bar;
     int progress_x = (tick - tick_offset) / m_perf_scale_x;
     int old_progress_x = (m_old_progress_ticks - tick_offset) / m_perf_scale_x;
     draw_drawable                                       /* erase old line */
@@ -379,18 +379,18 @@ perfroll::draw_sequence_on (int seqnum)
 {
     if ((seqnum < m_sequence_max) && perf().is_active(seqnum))
     {
-        long tick_offset = m_4bar_offset * m_ticks_per_bar;
+        midipulse tick_offset = m_4bar_offset * m_ticks_per_bar;
         long x_offset = tick_offset / m_perf_scale_x;
         m_sequence_active[seqnum] = true;
         sequence * seq = perf().get_sequence(seqnum);
         seq->reset_draw_trigger_marker();
         seqnum -= m_sequence_offset;
 
-        long sequence_length = seq->get_length();
+        midipulse sequence_length = seq->get_length();
         int length_w = sequence_length / m_perf_scale_x;
-        long tick_on;
-        long tick_off;
-        long offset;
+        midipulse tick_on;
+        midipulse tick_off;
+        midipulse offset;
         bool selected;
         while (seq->get_next_trigger(&tick_on, &tick_off, &selected, &offset))
         {
@@ -417,7 +417,7 @@ perfroll::draw_sequence_on (int seqnum)
                     false
                 );
 
-                long tickmarker =           /* length marker first tick */
+                midipulse tickmarker =           /* length marker first tick */
                 (
                     tick_on - (tick_on % sequence_length) +
                     (offset % sequence_length) - sequence_length
@@ -437,8 +437,8 @@ perfroll::draw_sequence_on (int seqnum)
                     int highest_note = seq->get_highest_note_event();
                     int height = highest_note - lowest_note + 2;
                     int length = seq->get_length();
-                    long tick_s;
-                    long tick_f;
+                    midipulse tick_s;
+                    midipulse tick_f;
                     int note;
                     bool selected;
                     int velocity;
@@ -499,7 +499,7 @@ perfroll::draw_sequence_on (int seqnum)
 
 void perfroll::draw_background_on (int seqnum)
 {
-    long tick_offset = m_4bar_offset * m_ticks_per_bar;
+    midipulse tick_offset = m_4bar_offset * m_ticks_per_bar;
     long first_measure = tick_offset / m_measure_length;
     long last_measure = first_measure +
         (m_window_x * m_perf_scale_x / m_measure_length) + 1;
@@ -608,7 +608,7 @@ perfroll::stop_playing ()
  */
 
 void
-perfroll::split_trigger (int seqnum, long tick)
+perfroll::split_trigger (int seqnum, midipulse tick)
 {
     perf().split_trigger(seqnum, tick);     /* consolidates perform actions */
     draw_background_on(seqnum);
@@ -643,9 +643,9 @@ perfroll::snap_x (int & x)
  */
 
 void
-perfroll::convert_x (int x, long & tick)
+perfroll::convert_x (int x, midipulse & tick)
 {
-    long tick_offset = m_4bar_offset * m_ticks_per_bar;
+    midipulse tick_offset = m_4bar_offset * m_ticks_per_bar;
     tick = x * m_perf_scale_x + tick_offset;
 }
 
@@ -656,10 +656,10 @@ perfroll::convert_x (int x, long & tick)
  */
 
 void
-perfroll::convert_xy (int x, int y, long & d_tick, int & d_seq)
+perfroll::convert_xy (int x, int y, midipulse & d_tick, int & d_seq)
 {
-    long tick_offset = m_4bar_offset * m_ticks_per_bar;
-    long tick = x * m_perf_scale_x + tick_offset;
+    midipulse tick_offset = m_4bar_offset * m_ticks_per_bar;
+    midipulse tick = x * m_perf_scale_x + tick_offset;
     int seq = y / m_names_y + m_sequence_offset;
     if (seq >= m_sequence_max)
         seq = m_sequence_max - 1;

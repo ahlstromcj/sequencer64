@@ -504,7 +504,7 @@ midibus::flush ()
  */
 
 void
-midibus::init_clock (long tick)
+midibus::init_clock (midipulse tick)
 {
 #ifdef SEQ64_HAVE_LIBASOUND
     if (m_clock_type == e_clock_pos && tick != 0)
@@ -520,9 +520,9 @@ midibus::init_clock (long tick)
          * or m_ppqn * 16.  Note that later we have pp16th = (m_ppqn / 4).
          */
 
-        long clock_mod_ticks = (m_ppqn / 4) * m_clock_mod;
-        long leftover = (tick % clock_mod_ticks);
-        long starting_tick = tick - leftover;
+        midipulse clock_mod_ticks = (m_ppqn / 4) * m_clock_mod;
+        midipulse leftover = (tick % clock_mod_ticks);
+        midipulse starting_tick = tick - leftover;
 
         /*
          * Was there anything left? Then wait for next beat (16th note)
@@ -545,7 +545,7 @@ midibus::init_clock (long tick)
  */
 
 void
-midibus::continue_from (long tick)
+midibus::continue_from (midipulse tick)
 {
 #ifdef SEQ64_HAVE_LIBASOUND
 
@@ -553,10 +553,10 @@ midibus::continue_from (long tick)
      * Tell the device that we are going to start at a certain position.
      */
 
-    long pp16th = m_ppqn / 4;
-    long leftover = tick % pp16th;
+    midipulse pp16th = m_ppqn / 4;
+    midipulse leftover = tick % pp16th;
     long beats = tick / pp16th;
-    long starting_tick = tick - leftover;
+    midipulse starting_tick = tick - leftover;
 
     /*
      * Was there anything left? Then wait for next beat (16th note) to
@@ -668,7 +668,7 @@ midibus::stop ()
  */
 
 void
-midibus::clock (long tick)
+midibus::clock (midipulse tick)
 {
 #ifdef SEQ64_HAVE_LIBASOUND
     automutex locker(m_mutex);

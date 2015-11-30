@@ -90,7 +90,7 @@ Seq24SeqRollInput::on_button_press_event
     sroll.m_old.x = sroll.m_old.y = sroll.m_old.width = sroll.m_old.height = 0;
 
     bool needs_update = false;
-    long tick_s, tick_f;
+    midipulse tick_s, tick_f;
     int note_h, note_l;
     if (sroll.m_paste)
     {
@@ -263,8 +263,8 @@ Seq24SeqRollInput::on_button_release_event
     seqroll & sroll
 )
 {
-    long tick_s;
-    long tick_f;
+    midipulse tick_s;
+    midipulse tick_f;
     int note_h;
     int note_l;
     bool needs_update = false;
@@ -276,7 +276,7 @@ Seq24SeqRollInput::on_button_release_event
 
     int delta_x = sroll.m_current_x - sroll.m_drop_x;
     int delta_y = sroll.m_current_y - sroll.m_drop_y;
-    long delta_tick;
+    midipulse delta_tick;
     int delta_note;
     if (SEQ64_CLICK_LEFT(ev->button))
     {
@@ -383,7 +383,7 @@ bool Seq24SeqRollInput::on_motion_notify_event
     }
 
     int note;
-    long tick;
+    midipulse tick;
     sroll.snap_y(sroll.m_current_y);
     sroll.convert_xy(0, sroll.m_current_y, tick, note);
     sroll.m_seqkeys_wid.set_hint_key(note);

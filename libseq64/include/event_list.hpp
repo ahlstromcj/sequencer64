@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-19
- * \updates       2015-11-24
+ * \updates       2015-11-29
  * \license       GNU GPLv2 or above
  *
  *  This module extracts the event-list functionality from the sequencer
@@ -110,12 +110,12 @@ private:
 
     private:
 
-        unsigned long m_timestamp;  /**< The primary key-value for the key. */
+        midipulse m_timestamp;  /**< The primary key-value for the key. */
         int m_rank;                 /**< The sub-key-value for the key.     */
 
     public:
 
-        event_key (unsigned long tstamp, int rank);
+        event_key (midipulse tstamp, int rank);
         event_key (const event & e);
         bool operator < (const event_key & rhs) const;
 
@@ -295,9 +295,9 @@ private:                                // functions for friend sequence
 
     void link_new ();
     void clear_links ();
-    void verify_and_link (long slength);
+    void verify_and_link (midipulse slength);
     void mark_selected ();
-    void mark_out_of_range (long slength);
+    void mark_out_of_range (midipulse slength);
     void unmark_all ();
     void unpaint_all ();
     int count_selected_notes () const;

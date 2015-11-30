@@ -300,7 +300,7 @@ seqevent::update_pixmap ()
 void
 seqevent::draw_events_on (Glib::RefPtr<Gdk::Drawable> draw)
 {
-    long tick;
+    midipulse tick;
     int x;
     midibyte d0, d1;
     bool selected;
@@ -437,7 +437,7 @@ seqevent::start_paste ()
     m_drop_y = m_current_y;
     m_paste = true;
 
-    long tick_s, tick_f;
+    midipulse tick_s, tick_f;
     int note_h, note_l;
     m_seq.get_clipboard_box(tick_s, note_h, tick_f, note_l);
 
@@ -477,7 +477,7 @@ seqevent::snap_x (int & x)
  */
 
 void
-seqevent::drop_event (long a_tick)
+seqevent::drop_event (midipulse a_tick)
 {
     midibyte status = m_status;
     midibyte d0 = m_cc;

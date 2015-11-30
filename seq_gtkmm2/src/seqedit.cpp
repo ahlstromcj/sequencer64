@@ -1793,7 +1793,7 @@ seqedit::apply_length (int bpm, int bw, int measures)
 long
 seqedit::get_measures ()
 {
-    long units = measures_to_ticks
+    midipulse units = measures_to_ticks
     (
         m_seq.get_beats_per_bar(), m_ppqn, m_seq.get_beat_width()
     );

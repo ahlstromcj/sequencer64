@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-08-07
- * \updates       2015-11-21
+ * \updates       2015-11-29
  * \license       GNU GPLv2 or above
  *
  *  The first part of this file defines a couple of global structure
@@ -35,21 +35,6 @@
  *  The second part of this file defines some functions needed by other
  *  modules, such as MIDI timing calculations.  These items are in the seq64
  *  namespace.
- *
- * \note
- *      The MIDI time signature is specified by "FF 58 nn dd cc bb" where:
- *
- *      -   <i> nn </i> is the numerator, and counts the number of beats in a
- *          measure (bar).
- *      -   <i> dd </i> is the denominator, and specifies the unit of the beat
- *          (e.g. 4 or 8), and is specified as 2 to the <i> dd </i> power.
- *      -   <i> cc </i> is the MIDI ticks per metronome click.  The standard
- *          MIDI clock ticks 24 times per quarter note, so a value of 6 would
- *          mean the metronome clicks every 1/8th note.
- *      -   <i> bb </i> is the number of 32nd notes per MIDI quarter note.
- *          For example, a value of 16 means that the music plays two quarter
- *          notes for each quarter note metered out by the MIDI clock, so that
- *          the music plays at double speed.
  */
 
 #include "app_limits.h"

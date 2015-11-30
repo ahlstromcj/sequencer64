@@ -283,7 +283,7 @@ midi_splitter::split_channel
     s->set_midi_bus(main_seq.get_midi_bus());
     s->zero_markers();
 
-    long length_in_ticks = 0;           /* an accumulator of delta times    */
+    midipulse length_in_ticks = 0;      /* an accumulator of delta times    */
     const event_list & evl = main_seq.events();
     for (event_list::const_iterator i = evl.begin(); i != evl.end(); i++)
     {

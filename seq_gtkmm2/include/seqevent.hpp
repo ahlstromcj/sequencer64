@@ -148,7 +148,7 @@ private:
 
     int idle_redraw ();
     void x_to_w (int a_x1, int a_x2, int & a_x, int & a_w);
-    void drop_event (long a_tick);
+    void drop_event (midipulse a_tick);
     void draw_events_on (Glib::RefPtr<Gdk::Drawable> a_draw);
     void start_paste ();
     void change_horz ();
@@ -160,7 +160,7 @@ private:
      *  normally?
      */
 
-    void convert_x (int x, long & tick)
+    void convert_x (int x, midipulse & tick)
     {
         tick = x * m_zoom;
     }
@@ -171,7 +171,7 @@ private:
      *  normally?
      */
 
-    void convert_t (long ticks, int & x)
+    void convert_t (midipulse ticks, int & x)
     {
         x = ticks / m_zoom;
     }

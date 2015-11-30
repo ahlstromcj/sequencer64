@@ -20,7 +20,7 @@
  */
 
 /**
- * \file          calculations.h
+ * \file          calculations.hpp
  *
  *  This module declares/defines some common calculations needed by the
  *  application.
@@ -28,19 +28,20 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-07
- * \updates       2015-11-15
+ * \updates       2015-11-29
  * \license       GNU GPLv2 or above
  *
  *  These items were moved from the globals.h module so that only the modules
  *  that need them need to include them.  Also included are some minor
- *  "utility" functions.
+ *  "utility" functions dealing with strings.
  *
- *  Many of the functions are defined in this module, as inline code.
+ *  Many of the functions are defined in this header file, as inline code.
  */
 
 #include <string>
 
 #include "easy_macros.h"                /* with platform_macros.h, too  */
+#include "midibyte.hpp"
 
 /**
  *  The MIDI beat clock (also known as "MIDI timing clock" or "MIDI clock") is
@@ -69,7 +70,30 @@
 namespace seq64
 {
 
+/*
+ * Free functions in the seq64 namespace.
+ */
+
+extern bool extract_timing_numbers
+(
+    const std::string & s,
+    std::string & part_1,
+    std::string & part_2,
+    std::string & part_3,
+    std::string & fraction
+);
+extern std::string pulses_to_measures (midipulse pulses, int ppqn);
+extern std::string pulses_to_time (midipulse pulses, int bpm, int ppqn);
+extern midipulse measures_to_pulses_4_4 (const std::string & measures, int ppqn);
+extern midipulse time_to_pulses
+(
+    const std::string & timestring, int bpm, int ppqn
+);
+
 extern std::string shorten_file_spec (const std::string & fpath, int leng);
+extern bool string_not_void (const std::string & s);
+extern bool string_is_void (const std::string & s);
+extern bool strings_match (const std::string & target, const std::string & x);
 
 /**
  *  This function calculates the effective beats-per-minute based on the value
@@ -154,7 +178,7 @@ inline double pulse_length_us (int bpm, int ppqn)
  *      Returns the tick value.
  */
 
-inline double delta_time_us_to_ticks (long delta_us, int bpm, int ppqn)
+inline double delta_time_us_to_ticks (unsigned long delta_us, int bpm, int ppqn)
 {
     return double(bpm) * double(ppqn) * (double(delta_us) / 60000000.0);
 }
@@ -180,7 +204,12 @@ inline double delta_time_us_to_ticks (long delta_us, int bpm, int ppqn)
  *      Returns the time value in microseconds.
  */
 
-inline double ticks_to_delta_time_us (long delta_ticks, int bpm, int ppqn)
+inline double ticks_to_delta_time_us
+(
+    midipulse delta_ticks,
+    int bpm,
+    int ppqn
+)
 {
     return 60000000.0 * double(delta_ticks) / (double(bpm) * double(ppqn));
 }
@@ -288,7 +317,7 @@ inline double double_ticks_from_ppqn (int ppqn)
  *      equation.  If bw is 0, then 0 is returned.
  */
 
-inline long measures_to_ticks
+inline midipulse measures_to_ticks
 (
     int bpm,
     int ppqn,
@@ -304,7 +333,7 @@ inline long measures_to_ticks
 #endif      // SEQ64_CALCULATIONS_HPP
 
 /*
- * calculations.h
+ * calculations.hpp
  *
  * vim: sw=4 ts=4 wm=4 et ft=cpp
  */

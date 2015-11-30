@@ -387,7 +387,7 @@ mastermidibus::start ()
  */
 
 void
-mastermidibus::continue_from (long tick)
+mastermidibus::continue_from (midipulse tick)
 {
 #ifdef SEQ64_HAVE_LIBASOUND
     automutex locker(m_mutex);
@@ -407,7 +407,7 @@ mastermidibus::continue_from (long tick)
  */
 
 void
-mastermidibus::init_clock (long tick)
+mastermidibus::init_clock (midipulse tick)
 {
     automutex locker(m_mutex);
     for (int i = 0; i < m_num_out_buses; i++)
@@ -445,7 +445,7 @@ mastermidibus::stop ()
  */
 
 void
-mastermidibus::clock (long tick)
+mastermidibus::clock (midipulse tick)
 {
     automutex locker(m_mutex);
     for (int i = 0; i < m_num_out_buses; i++)

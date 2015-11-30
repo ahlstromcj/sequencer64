@@ -27,10 +27,26 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-23
- * \updates       2015-11-23
+ * \updates       2015-11-29
  * \license       GNU GPLv2 or above
  *
+ *  These typedef are intended to remove the ambiguity we have seen between
+ *  signed and unsigned values.  MIDI bytes and pulses, ticks, or clocks are,
+ *  by their nature, unsigned, and we should enforce that.
  */
+
+#include <limits.h>                     /* ULONG_MAX and other limits   */
+
+/**
+ *  Since we're using unsigned variables for counting pulses, we can't do the
+ *  occasional test for negativity, we have to use wraparound.  One way is to
+ *  use this macro.  However, we will probably just ignore the issue of
+ *  wraparound.  With 32-bit longs, we have a maximum of 4,294,967,295.
+ *  Even at an insame PPQN of 9600, that's almost 450,000 quarter notes.
+ *  And for 64-bit code?  Forgeddaboudid!
+ */
+ 
+#define IS_SEQ64_MIDIPULSE_WRAPAROUND(x)  ((x) > (ULONG_MAX / 2))
 
 namespace seq64
 {
@@ -46,6 +62,23 @@ typedef unsigned char midibyte;
  */
 
 typedef unsigned char bussbyte;
+
+/**
+ *  Distinguishes a long value from the unsigned long values implicit in
+ *  long-valued MIDI numbers.
+ */
+
+typedef unsigned long midilong;
+
+/**
+ *  Distinguishes a long value from the unsigned long values implicit in MIDI
+ *  time measurements.
+ *
+ *  HOWEVER, CURRENTLY, if you make this value unsigned, then perfroll won't
+ *  show any notes in the sequence bars!!!
+ */
+
+typedef long midipulse;
 
 }           // namespace seq64
 

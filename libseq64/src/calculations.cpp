@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-07
- * \updates       2015-11-30
+ * \updates       2015-12-01
  * \license       GNU GPLv2 or above
  *
  *  This code was moved from the globals module so that other modules
@@ -165,7 +165,7 @@ extract_timing_numbers
  */
 
 std::string
-pulses_to_measures (midipulse p, const midi_timing_t & seqparms)
+pulses_to_measurestring (midipulse p, const midi_timing_t & seqparms)
 {
     midi_measures_t measures;
     char tmp[32];
@@ -221,25 +221,41 @@ pulses_to_midi_measures
 
 /**
  *  Converts a MIDI pulse/ticks/clock value into a string that represents
- *  "hours:minutes:seconds.fraction".
+ *  "hours:minutes:seconds.fraction".  If the fraction part is 0, then it is
+ *  not shown.  Examples:
+ *
+ *      -   "0:0:0"
+ *      -   "0:0:0.102333"
+ *      -   "12:3:1"
+ *      -   "12:3:1.000001"
  */
 
 std::string
-pulses_to_time (midipulse pulses, int bpm, int ppqn)
+pulses_to_timestring (midipulse pulses, int bpm, int ppqn)
 {
     unsigned long microseconds = ticks_to_delta_time_us(pulses, bpm, ppqn);
-    int seconds = long(microseconds * (1.0 / 1000000.0));
+    int seconds = int(microseconds / 1000000UL);
     int minutes = seconds / 60;
-    int hours = minutes / 60;
+    int hours = seconds / (60 * 60);
     minutes -= hours * 60;
+    seconds -= hours * 60 * 60;
     seconds -= minutes * 60;
-    microseconds -= seconds * 1000000.0;
+    microseconds -= hours * 60 * 60 * 1000000UL;
+    microseconds -= minutes * 60 * 1000000UL;
+    microseconds -= seconds * 1000000UL;
     char tmp[32];
-    snprintf
-    (
-        tmp, sizeof tmp, "%d:%d:%d.%06lu",
-        hours, minutes, seconds, microseconds
-    );
+    if (microseconds == 0)
+    {
+        snprintf(tmp, sizeof tmp, "%d:%d:%d", hours, minutes, seconds);
+    }
+    else
+    {
+        snprintf
+        (
+            tmp, sizeof tmp, "%d:%d:%d.%06lu",
+            hours, minutes, seconds, microseconds
+        );
+    }
     return std::string(tmp);
 }
 
@@ -261,7 +277,7 @@ pulses_to_time (midipulse pulses, int bpm, int ppqn)
  */
 
 midipulse
-measures_to_pulses
+measurestring_to_pulses
 (
     const std::string & measures,
     const midi_timing_t & seqparms
@@ -341,7 +357,7 @@ midi_measures_to_pulses
  */
 
 midipulse
-time_to_pulses (const std::string & timestring, int bpm, int ppqn)
+timestring_to_pulses (const std::string & timestring, int bpm, int ppqn)
 {
     midipulse result = 0;
     if (! timestring.empty())
@@ -352,6 +368,12 @@ time_to_pulses (const std::string & timestring, int bpm, int ppqn)
             int hours = atoi(sh.c_str());
             int minutes = atoi(sm.c_str());
             int seconds = atoi(ss.c_str());
+
+            /*
+             * This conversion assumes that the fractional parts of the seconds
+             * is padded with zeroes on the left or right to 6 digits.
+             */
+
             double secfraction = atof(us.c_str());
             long sec = ((hours * 60) + minutes) * 60 + seconds;
             long microseconds = 1000000 * sec + long(1000000.0 * secfraction);

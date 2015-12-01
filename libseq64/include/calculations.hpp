@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-07
- * \updates       2015-11-30
+ * \updates       2015-12-01
  * \license       GNU GPLv2 or above
  *
  *  These items were moved from the globals.h module so that only the modules
@@ -82,7 +82,7 @@ extern bool extract_timing_numbers
     std::string & part_3,
     std::string & fraction
 );
-extern std::string pulses_to_measures
+extern std::string pulses_to_measurestring
 (
     midipulse p,
     const midi_timing_t & seqparms
@@ -93,8 +93,8 @@ extern void pulses_to_midi_measures
     const midi_timing_t & seqparms,
     midi_measures_t measures            // mm_measures, beats, divisions
 );
-extern std::string pulses_to_time (midipulse pulses, int bpm, int ppqn);
-extern midipulse measures_to_pulses
+extern std::string pulses_to_timestring (midipulse pulses, int bpm, int ppqn);
+extern midipulse measurestring_to_pulses
 (
     const std::string & measures,
     const midi_timing_t & seqparms
@@ -104,7 +104,7 @@ extern midipulse midi_measures_to_pulses
     const midi_measures_t & measures,
     const midi_timing_t & seqparms
 );
-extern midipulse time_to_pulses
+extern midipulse timestring_to_pulses
 (
     const std::string & timestring, int bpm, int ppqn
 );

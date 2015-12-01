@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-07
- * \updates       2015-11-29
+ * \updates       2015-11-30
  * \license       GNU GPLv2 or above
  *
  *  These items were moved from the globals.h module so that only the modules
@@ -82,14 +82,32 @@ extern bool extract_timing_numbers
     std::string & part_3,
     std::string & fraction
 );
-extern std::string pulses_to_measures (midipulse pulses, int ppqn);
+extern std::string pulses_to_measures
+(
+    midipulse p,
+    const midi_timing_t & seqparms
+);
+extern void pulses_to_midi_measures
+(
+    midipulse p,
+    const midi_timing_t & seqparms,
+    midi_measures_t measures            // mm_measures, beats, divisions
+);
 extern std::string pulses_to_time (midipulse pulses, int bpm, int ppqn);
-extern midipulse measures_to_pulses_4_4 (const std::string & measures, int ppqn);
+extern midipulse measures_to_pulses
+(
+    const std::string & measures,
+    const midi_timing_t & seqparms
+);
+extern midipulse midi_measures_to_pulses
+(
+    const midi_measures_t & measures,
+    const midi_timing_t & seqparms
+);
 extern midipulse time_to_pulses
 (
     const std::string & timestring, int bpm, int ppqn
 );
-
 extern std::string shorten_file_spec (const std::string & fpath, int leng);
 extern bool string_not_void (const std::string & s);
 extern bool string_is_void (const std::string & s);
@@ -176,7 +194,7 @@ inline double pulse_length_us (int bpm, int ppqn)
  *  account for the beat; the current function merely blesses some
  *  calculations made in the application.
  *
- * \param delta_us
+ * \param us
  *      The number of microseconds in the delta time.
  *
  * \param bpm
@@ -190,9 +208,9 @@ inline double pulse_length_us (int bpm, int ppqn)
  *      Returns the tick value.
  */
 
-inline double delta_time_us_to_ticks (unsigned long delta_us, int bpm, int ppqn)
+inline double delta_time_us_to_ticks (unsigned long us, int bpm, int ppqn)
 {
-    return double(bpm) * double(ppqn) * (double(delta_us) / 60000000.0);
+    return double(bpm) * double(ppqn) * (double(us) / 60000000.0);
 }
 
 /**

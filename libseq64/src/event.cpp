@@ -326,7 +326,7 @@ event::restart_sysex ()
  */
 
 bool
-event::append_sysex (midibyte * data, long dsize)
+event::append_sysex (midibyte * data, int dsize)
 {
     bool result = false;
     if (not_nullptr(data) && (dsize > 0))
@@ -372,7 +372,7 @@ event::append_sysex (midibyte * data, long dsize)
 void
 event::print ()
 {
-    printf("[%06ld] [%04lX] %02X ", m_timestamp, m_sysex_size, m_status);
+    printf("[%06ld] [%04ld] %02X ", m_timestamp, m_sysex_size, m_status);
     if (m_status == EVENT_SYSEX)
     {
         for (int i = 0; i < m_sysex_size; i++)

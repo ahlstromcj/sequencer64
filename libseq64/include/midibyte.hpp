@@ -72,6 +72,13 @@ typedef unsigned char midibyte;
 typedef unsigned char bussbyte;
 
 /**
+ *  Distinguishes a short value from the unsigned short values implicit in
+ *  short-valued MIDI numbers.
+ */
+
+typedef unsigned short midishort;
+
+/**
  *  Distinguishes a long value from the unsigned long values implicit in
  *  long-valued MIDI numbers.
  */
@@ -107,7 +114,7 @@ typedef long midipulse;
  *      with the ticks/beat definition.
  */
 
-typdef struct
+typedef struct
 {
     int mm_measures;
     int mm_beats;

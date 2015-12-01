@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-29
+ * \updates       2015-11-30
  * \license       GNU GPLv2 or above
  *
  *  The Seq24 MIDI file is a standard, Format 1 MIDI file, with some extra
@@ -211,13 +211,13 @@ private:
     midilong parse_prop_header (int file_size);
     bool parse_proprietary_track (perform & a_perf, int file_size);
     int pow2 (int logbase2);
-    bool checklen (long len, midibyte type);
+    bool checklen (midilong len, midibyte type);
     midilong read_long ();
-    unsigned short read_short ();
+    midishort read_short ();
     midibyte read_byte ();
     midilong read_varinum ();
     void write_long (midilong);
-    void write_short (unsigned short);
+    void write_short (midishort);
 
     /**
      *  A helper function to simplify reading midi_control data from the MIDI
@@ -249,7 +249,7 @@ private:
     void write_varinum (midilong);
     void write_track_name (const std::string & trackname);
     std::string read_track_name();
-    void write_seq_number (unsigned short seqnum);
+    void write_seq_number (midishort seqnum);
     int read_seq_number ();
     void write_track_end ();
     void write_prop_header (midilong tag, long len);

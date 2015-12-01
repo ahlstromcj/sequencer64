@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-29
+ * \updates       2015-11-30
  * \license       GNU GPLv2 or above
  *
  *  For a quick guide to the MIDI format, see, for example:
@@ -204,10 +204,10 @@ midifile::read_long ()
  *  Reads 2 bytes of data using read_byte().
  */
 
-unsigned short
+midishort
 midifile::read_short ()
 {
-    unsigned short result = 0;
+    midishort result = 0;
     result += (read_byte() << 8);
     result += (read_byte());
     return result;
@@ -361,15 +361,15 @@ midifile::parse (perform & p, int screenset)
     m_disable_reported = false;
     m_smf0_splitter.initialize();
 
-    midilong ID = read_long();                 /* read hdr chunk info  */
-    midilong hdrlength = read_long();          /* stock MThd length    */
+    midilong ID = read_long();                      /* read hdr chunk info  */
+    midilong hdrlength = read_long();               /* stock MThd length    */
     if (ID != SEQ64_HEADER_TAG && hdrlength != 6)   /* magic number 'MThd'  */
     {
         errdump("Invalid MIDI header chunk detected", ID);
         return false;
     }
 
-    unsigned short Format = read_short();           /* 0, 1, or 2           */
+    midishort Format = read_short();                /* 0, 1, or 2           */
     if (Format == 0)
     {
         result = parse_smf_0(p, screenset);
@@ -460,7 +460,7 @@ midifile::pow2 (int logbase2)
  */
 
 bool
-midifile::checklen (long len, midibyte type)
+midifile::checklen (midilong len, midibyte type)
 {
     bool result = len > 0;
     if (! result)
@@ -498,8 +498,8 @@ bool
 midifile::parse_smf_1 (perform & p, int screenset, bool is_smf0)
 {
     bool result = true;
-    unsigned short NumTracks = read_short();
-    unsigned short ppqn = read_short();
+    midishort NumTracks = read_short();
+    midishort ppqn = read_short();
 
     /*
      * We should be good to load now, for each Track in the MIDI file.
@@ -520,13 +520,13 @@ midifile::parse_smf_1 (perform & p, int screenset, bool is_smf0)
         if (ID == SEQ64_TRACK_TAG)                  /* magic number 'MTrk'  */
         {
             bool timesig_set = false;               /* seq24 style wins     */
-            unsigned short seqnum = 0;
+            midishort seqnum = 0;
             midibyte status = 0;
             midibyte d0, d1;                        /* was data[2];         */
             midibyte laststatus;
-            midilong proprietary = 0;          /* sequencer-specifics  */
+            midilong proprietary = 0;               /* sequencer-specifics  */
             bool done = false;                      /* done for each track  */
-            long len;                               /* important counter!   */
+            midilong len;                           /* important counter!   */
             sequence * s = new sequence(m_ppqn);    /* create new sequence  */
             if (s == nullptr)
             {
@@ -770,8 +770,8 @@ midifile::parse_smf_1 (perform & p, int screenset, bool is_smf0)
                             if (len > TRACKNAME_MAX)
                                 len = TRACKNAME_MAX;    /* avoid a vuln     */
 
-                            for (int i = 0; i < len; i++)
-                                TrackName[i] = read_byte();
+                            for (int i = 0; i < int(len); i++)
+                                TrackName[i] = char(read_byte());
 
                             TrackName[len] = '\0';
                             seq.set_name(TrackName);
@@ -790,7 +790,7 @@ midifile::parse_smf_1 (perform & p, int screenset, bool is_smf0)
                             if (! checklen(len, type))
                                 return false;
 
-                            for (int i = 0; i < len; i++)
+                            for (int i = 0; i < int(len); i++)
                                 (void) read_byte();     /* ignore the rest  */
                             break;
                         }
@@ -1038,7 +1038,7 @@ midifile::parse_proprietary_track (perform & p, int file_size)
         midilong proprietary = parse_prop_header(file_size);
         if (proprietary == c_midictrl)
         {
-            midilong seqs = read_long();
+            int seqs = int(read_long());
 
             /*
              * Some old code wrote some bad files, we need to work around that
@@ -1057,7 +1057,7 @@ midifile::parse_proprietary_track (perform & p, int file_size)
                 seqs = midilong(read_byte());
             }
             midibyte a[6];
-            for (unsigned int i = 0; i < seqs; i++)
+            for (int i = 0; i < seqs; i++)
             {
                 read_byte_array(a, 6);
                 p.midi_control_toggle(i).set(a);
@@ -1072,7 +1072,7 @@ midifile::parse_proprietary_track (perform & p, int file_size)
         proprietary = parse_prop_header(file_size);
         if (proprietary == c_midiclocks)
         {
-            midilong busscount = read_long();
+            int busscount = int(read_long());
 
             /*
              * Some old code wrote some bad files, we need to work around that
@@ -1083,23 +1083,23 @@ midifile::parse_proprietary_track (perform & p, int file_size)
             {
                 errdump("bad buss count, fixing; please save the file now");
                 m_pos -= 4;
-                busscount = midilong(read_byte());
+                busscount = int(read_byte());
             }
-            for (unsigned int buss = 0; buss < busscount; buss++)
+            for (int buss = 0; buss < busscount; ++buss)
             {
-                int clocktype = read_byte();
-                p.master_bus().set_clock(buss, (clock_e) clocktype);
+                bussbyte clocktype = read_byte();
+                p.master_bus().set_clock(bussbyte(buss), (clock_e)(clocktype));
             }
         }
         proprietary = parse_prop_header(file_size);
         if (proprietary == c_notes)
         {
-            unsigned int screen_sets = read_short();
-            for (unsigned int x = 0; x < screen_sets; x++)
+            midishort screen_sets = read_short();
+            for (midishort x = 0; x < screen_sets; x++)
             {
-                unsigned int len = read_short();        /* length of string */
+                midishort len = read_short();           /* length of string */
                 std::string notess;
-                for (unsigned int i = 0; i < len; i++)
+                for (midishort i = 0; i < len; i++)
                     notess += read_byte();              /* unsigned!        */
 
                 p.set_screen_set_notepad(x, notess);
@@ -1126,20 +1126,24 @@ midifile::parse_proprietary_track (perform & p, int file_size)
             }
             for (int i = 0; i < c_seqs_in_set; i++)
             {
-                long groupmute = read_long();
-                p.select_group_mute(groupmute);
+                midilong groupmute = read_long();
+                p.select_group_mute(int(groupmute));
 #ifdef SEQ64_USE_DEBUG_OUTPUT
                 if (groupmute != 0)
-                    fprintf(stderr, "group-mute[%d]=%ld\n", i, groupmute);
+                    fprintf(stderr, "group-mute[%d] = %ld\n", i, groupmute);
 #endif
                 for (int k = 0; k < c_seqs_in_set; ++k)
                 {
-                    long gmutestate = read_long();
-                    p.set_group_mute_state(k, gmutestate);
+                    midilong gmutestate = read_long();
+                    p.set_group_mute_state(k, gmutestate != 0);
 #ifdef SEQ64_USE_DEBUG_OUTPUT
                     if (gmutestate != 0)
                     {
-                        fprintf(stderr, "group-mute-state[%d]=%ld\n", k, gmutestate);
+                        fprintf
+                        (
+                            stderr, "group-mute-state[%d] = %ld\n",
+                            k, gmutestate
+                        );
                     }
 #endif
                 }
@@ -1202,7 +1206,7 @@ midifile::write_long (midilong a_x)
  */
 
 void
-midifile::write_short (unsigned short a_x)
+midifile::write_short (midishort a_x)
 {
     write_byte((a_x & 0xFF00) >> 8);
     write_byte((a_x & 0x00FF));
@@ -1572,7 +1576,7 @@ midifile::write_proprietary_track (perform & p)
     {
         const std::string & note = p.get_screen_set_notepad(s);
         write_short(note.length());
-        for (unsigned int n = 0; n < note.length(); n++)
+        for (unsigned n = 0; n < unsigned(note.length()); n++)
             write_byte(note[n]);
     }
     write_prop_header(c_bpmtag, 4);             /* bpm tag + long data      */
@@ -1684,7 +1688,7 @@ midifile::track_name_size (const std::string & trackname) const
  */
 
 void
-midifile::write_seq_number (unsigned short seqnum)
+midifile::write_seq_number (midishort seqnum)
 {
     write_byte(0x00);                           /* delta time               */
     write_byte(0xFF);                           /* meta tag                 */

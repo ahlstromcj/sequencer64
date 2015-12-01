@@ -70,6 +70,7 @@
  */
 
 #include <cctype>                       /* std::isspace(), etc.             */
+#include <math.h>                       /* C::floor()                       */
 #include <stdlib.h>                     /* C::atoi()                        */
 #include <time.h>                       /* C::strftime()                    */
 
@@ -154,14 +155,68 @@ extract_timing_numbers
 /**
  *  Converts a MIDI pulse/ticks/clock value into a string that represents
  *  "measures:beats:ticks" ("measures:beats:division").
+ *
+ * \param seqparms
+ *      This small structure provides the beats/measure, beat-width, and PPQN
+ *      that hold for the sequence involved in this calculation.
+ *
+ * \return
+ *      Returns the absolute pulses that mark this duration.
  */
 
 std::string
-pulses_to_measures (midipulse /*pulses*/, int /*ppqn*/)
+pulses_to_measures (midipulse p, const midi_timing_t & seqparms)
 {
-    std::string result;
+    midi_measures_t measures;
+    char tmp[32];
+    pulses_to_midi_measures(p, seqparms, measures); /* fill measures struct */
+    snprintf
+    (
+        tmp, sizeof tmp, "%d:%d:%d",
+        measures.mm_measures, measures.mm_beats, measures.mm_divisions
+    );
+    return std::string(tmp);
+}
 
-    return result;
+/**
+ *  Converts a MIDI pulse/ticks/clock value into a string that represents
+ *  "measures:beats:ticks" ("measures:beats:division").
+ *
+ *      m = p * W / (4 * P * B)
+ *
+ * \param measures
+ *      Provides the current MIDI song time structure holding the
+ *      measures, beats, and divisions values for the time of interest.
+ *
+ * \param seqparms
+ *      This small structure provides the beats/measure, beat-width, and PPQN
+ *      that hold for the sequence involved in this calculation.
+ *
+ * \return
+ *      Returns the absolute pulses that mark this duration.
+ */
+
+void
+pulses_to_midi_measures
+(
+    midipulse p,
+    const midi_timing_t & seqparms,
+    midi_measures_t measures            // mm_measures, beats, divisions
+)
+{
+    double W = double(seqparms.mt_beat_width);
+    double P = double(seqparms.mt_ppqn);
+    double B = double(seqparms.mt_beats_per_measure);
+    double m = p * W / (4.0 * P * B);           /* measures, whole.frac     */
+    double m_whole = floor(m);                  /* get integral measures    */
+    m -= m_whole;                               /* get fractional measure   */
+    double b = m * B;                           /* beats, whole.frac        */
+    double b_whole = floor(b);                  /* get integral beats       */
+    b -= b_whole;                               /* get fractional beat      */
+    double pulses_per_beat = 4 * P / W;         /* pulses/qn * qn/beat      */
+    measures.mm_measures = int(m_whole);
+    measures.mm_beats = int(b_whole);
+    measures.mm_divisions = int(pulses_per_beat);
 }
 
 /**
@@ -222,7 +277,7 @@ measures_to_pulses
             meas_values.mm_measures = atoi(m.c_str());
             meas_values.mm_beats = atoi(b.c_str());
             meas_values.mm_divisions = atoi(d.c_str());
-            result = midi_measures_to_pulse(meas_values, seqparms);
+            result = midi_measures_to_pulses(meas_values, seqparms);
         }
     }
     return result;
@@ -258,19 +313,12 @@ midi_measures_to_pulses
     const midi_timing_t & seqparms
 )
 {
-    midipulse result = measures.mm_measures * seqparms.m_ppqn;
+    midipulse result = measures.mm_measures * seqparms.mt_ppqn;
     result += measures.mm_beats * seqparms.mt_ppqn;
     result += measures.mm_divisions;
     result = 4 * result * seqparms.mt_beats_per_measure / seqparms.mt_beat_width;
     return result;
 }
-
-/*
-double
-measures_to_time (...)
-{
-}
-*/
 
 /**
  *  Converts a string that represents "hours:minutes:seconds.fraction" into a

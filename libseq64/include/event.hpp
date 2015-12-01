@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-29
+ * \updates       2015-11-30
  * \license       GNU GPLv2 or above
  *
  *  This module also declares/defines the various constants, status-byte
@@ -208,7 +208,7 @@ private:
      *  Gives the size of the SYSEX message.
      */
 
-    long m_sysex_size;
+    int m_sysex_size;
 
     /**
      *  This event is used to link Note Ons and Offs together.
@@ -511,7 +511,7 @@ public:
     }
 
     void restart_sysex ();
-    bool append_sysex (midibyte * data, long a_size);
+    bool append_sysex (midibyte * data, int len);
 
     /**
      * \getter m_sysex
@@ -526,16 +526,16 @@ public:
      * \setter m_sysex_size
      */
 
-    void set_sysex_size (long a_size)
+    void set_sysex_size (int len)
     {
-        m_sysex_size = a_size;
+        m_sysex_size = len;
     }
 
     /**
      * \getter m_sysex_size
      */
 
-    long get_sysex_size () const
+    int get_sysex_size () const
     {
         return m_sysex_size;
     }

@@ -184,39 +184,53 @@ pulses_to_measurestring (midipulse p, const midi_timing_t & seqparms)
  *
  *      m = p * W / (4 * P * B)
  *
- * \param measures
- *      Provides the current MIDI song time structure holding the
- *      measures, beats, and divisions values for the time of interest.
+ * \param p
+ *      Provides the MIDI pulses (as in "pulses per quarter note") that are to
+ *      be converted to MIDI measures format.
  *
  * \param seqparms
- *      This small structure provides the beats/measure, beat-width, and PPQN
- *      that hold for the sequence involved in this calculation.
+ *      This small structure provides the beats/measure (B), beat-width (W),
+ *      and PPQN (P) that hold for the sequence involved in this calculation.
+ *      The beats/minute (T for tempo) value is not needed.
+ *
+ * \param measures
+ *      Provides the current MIDI song time structure holding the results,
+ *      which are the measures, beats, and divisions values for the time of
+ *      interest.  Note that the measures and beats are corrected to be re 1,
+ *      not 0.
  *
  * \return
- *      Returns the absolute pulses that mark this duration.
+ *      Returns true if the calculations were able to be made.  The P, B, and
+ *      W values all need to be greater than 0.
  */
 
-void
+bool
 pulses_to_midi_measures
 (
     midipulse p,
     const midi_timing_t & seqparms,
-    midi_measures_t measures            // mm_measures, beats, divisions
+    midi_measures_t & measures
 )
 {
-    double W = double(seqparms.mt_beat_width);
-    double P = double(seqparms.mt_ppqn);
-    double B = double(seqparms.mt_beats_per_measure);
-    double m = p * W / (4.0 * P * B);           /* measures, whole.frac     */
-    double m_whole = floor(m);                  /* get integral measures    */
-    m -= m_whole;                               /* get fractional measure   */
-    double b = m * B;                           /* beats, whole.frac        */
-    double b_whole = floor(b);                  /* get integral beats       */
-    b -= b_whole;                               /* get fractional beat      */
-    double pulses_per_beat = 4 * P / W;         /* pulses/qn * qn/beat      */
-    measures.mm_measures = int(m_whole);
-    measures.mm_beats = int(b_whole);
-    measures.mm_divisions = int(pulses_per_beat);
+    static const double s_epsilon = 0.000001;   /* HMMMMMMMMMMMMMMMMMMMMMMM */
+    int W = seqparms.mt_beat_width;
+    int P = seqparms.mt_ppqn;
+    int B = seqparms.mt_beats_per_measure;
+    bool result = (W > 0) && (P > 0) && (B > 0);
+    if (result)
+    {
+        double m = p * W / (4.0 * P * B);       /* measures, whole.frac     */
+        double m_whole = floor(m);              /* holds integral measures  */
+        m -= m_whole;                           /* get fractional measure   */
+        double b = m * B;                       /* beats, whole.frac        */
+        double b_whole = floor(b);              /* get integral beats       */
+        b -= b_whole;                           /* get fractional beat      */
+        double pulses_per_beat = 4 * P / W;     /* pulses/qn * qn/beat      */
+        measures.mm_measures = int(m_whole + s_epsilon) + 1;
+        measures.mm_beats = int(b_whole + s_epsilon) + 1;
+        measures.mm_divisions = int(b * pulses_per_beat + s_epsilon);
+    }
+    return result;
 }
 
 /**
@@ -238,11 +252,12 @@ pulses_to_timestring (midipulse pulses, int bpm, int ppqn)
     int minutes = seconds / 60;
     int hours = seconds / (60 * 60);
     minutes -= hours * 60;
-    seconds -= hours * 60 * 60;
-    seconds -= minutes * 60;
-    microseconds -= hours * 60 * 60 * 1000000UL;
-    microseconds -= minutes * 60 * 1000000UL;
-    microseconds -= seconds * 1000000UL;
+    seconds -= (hours * 60 * 60) + (minutes * 60);
+//  microseconds -= hours * 60 * 60 * 1000000UL;
+//  microseconds -= minutes * 60 * 1000000UL;
+//  microseconds -= seconds * 1000000UL;
+    microseconds -= (hours * 60 * 60 + minutes * 60 + seconds) * 1000000UL;
+
     char tmp[32];
     if (microseconds == 0)
     {

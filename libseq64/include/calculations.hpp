@@ -87,11 +87,11 @@ extern std::string pulses_to_measurestring
     midipulse p,
     const midi_timing_t & seqparms
 );
-extern void pulses_to_midi_measures
+extern bool pulses_to_midi_measures
 (
     midipulse p,
     const midi_timing_t & seqparms,
-    midi_measures_t measures            // mm_measures, beats, divisions
+    midi_measures_t & measures
 );
 extern std::string pulses_to_timestring (midipulse pulses, int bpm, int ppqn);
 extern midipulse measurestring_to_pulses

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-07
- * \updates       2015-12-01
+ * \updates       2015-12-02
  * \license       GNU GPLv2 or above
  *
  *  This code was moved from the globals module so that other modules
@@ -253,9 +253,6 @@ pulses_to_timestring (midipulse pulses, int bpm, int ppqn)
     int hours = seconds / (60 * 60);
     minutes -= hours * 60;
     seconds -= (hours * 60 * 60) + (minutes * 60);
-//  microseconds -= hours * 60 * 60 * 1000000UL;
-//  microseconds -= minutes * 60 * 1000000UL;
-//  microseconds -= seconds * 1000000UL;
     microseconds -= (hours * 60 * 60 + minutes * 60 + seconds) * 1000000UL;
 
     char tmp[32];

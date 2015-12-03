@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-25
+ * \updates       2015-12-02
  * \license       GNU GPLv2 or above
  *
  */
@@ -276,8 +276,15 @@ seqmenu::seq_new ()
 void
 seqmenu::seq_copy ()
 {
+    /*
+     * Use a more appropriate function than operator =() here.
+     *
+     * if (m_mainperf.is_active(m_current_seq))
+     *     m_clipboard = *(m_mainperf.get_sequence(m_current_seq));
+     */
+
     if (m_mainperf.is_active(m_current_seq))
-        m_clipboard = *(m_mainperf.get_sequence(m_current_seq));
+        m_clipboard.partial_assign(*(m_mainperf.get_sequence(m_current_seq)));
 }
 
 /**
@@ -296,7 +303,11 @@ seqmenu::seq_cut ()
     if (m_mainperf.is_active(m_current_seq) &&
             ! m_mainperf.is_sequence_in_edit(m_current_seq))
     {
-        m_clipboard = *(m_mainperf.get_sequence(m_current_seq));
+        /*
+         * m_clipboard = *(m_mainperf.get_sequence(m_current_seq));
+         */
+
+        m_clipboard.partial_assign(*(m_mainperf.get_sequence(m_current_seq)));
         m_mainperf.delete_sequence(m_current_seq);
         redraw(m_current_seq);
     }
@@ -318,7 +329,12 @@ seqmenu::seq_paste ()
     if (! m_mainperf.is_active(m_current_seq))
     {
         m_mainperf.new_sequence(m_current_seq);
-        *(m_mainperf.get_sequence(m_current_seq)) = m_clipboard;
+
+        /*
+         * *(m_mainperf.get_sequence(m_current_seq)) = m_clipboard;
+         */
+
+        m_mainperf.get_sequence(m_current_seq)->partial_assign(m_clipboard);
         m_mainperf.get_sequence(m_current_seq)->set_dirty();
     }
 }

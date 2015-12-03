@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-30
+ * \updates       2015-12-02
  * \license       GNU GPLv2 or above
  *
  *  The functions add_list_var() and add_long_list() have been replaced by
@@ -336,12 +336,21 @@ private:
 
     mutable mutex m_mutex;
 
+private:
+
+    /*
+     * We're going to replace this operator with the more specific
+     * partial_assign() function.
+     */
+
+    sequence & operator = (const sequence & rhs);
+
 public:
 
     sequence (int ppqn = SEQ64_USE_DEFAULT_PPQN);
     ~sequence ();
 
-    sequence & operator = (const sequence & rhs);
+    void partial_assign (const sequence & rhs);
 
     /**
      * \getter m_events

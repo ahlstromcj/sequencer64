@@ -822,13 +822,27 @@ mainwid::on_button_release_event (GdkEventButton * p)
             )
             {
                 perf().new_sequence(current_sequence());
-                *(perf().get_sequence(current_sequence())) = m_moving_seq;
+
+                /*
+                 * Instead of using operator equal, use a better function.
+                 *
+                 * *(perf().get_sequence(current_sequence())) = m_moving_seq;
+                 */
+
+                perf().get_sequence(current_sequence())->
+                    partial_assign(m_moving_seq);
+
                 redraw(current_sequence());
             }
             else
             {
                 perf().new_sequence(m_old_seq);
-                *(perf().get_sequence(m_old_seq)) = m_moving_seq;
+
+                /*
+                 * *(perf().get_sequence(m_old_seq)) = m_moving_seq;
+                 */
+
+                perf().get_sequence(m_old_seq)->partial_assign(m_moving_seq);
                 redraw(m_old_seq);
             }
         }
@@ -878,7 +892,15 @@ mainwid::on_motion_notify_event (GdkEventMotion * p)
             {
                 m_old_seq = current_sequence();
                 m_moving = true;
-                m_moving_seq = *(perf().get_sequence(current_sequence()));
+
+                /*
+                 * m_moving_seq = *(perf().get_sequence(current_sequence()));
+                 */
+
+                m_moving_seq.partial_assign
+                (
+                    *(perf().get_sequence(current_sequence()))
+                );
                 perf().delete_sequence(current_sequence());
                 draw_sequence_on_pixmap(current_sequence());
                 draw_sequence_pixmap_on_window(current_sequence());

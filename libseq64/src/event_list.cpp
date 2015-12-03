@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-19
- * \updates       2015-11-29
+ * \updates       2015-12-02
  * \license       GNU GPLv2 or above
  *
  */
@@ -192,6 +192,7 @@ event_list::add (const event & e, bool postsort)
     size_t count = m_events.size();
 
 #ifdef SEQ64_USE_EVENT_MAP
+
     event_key key(e);
 #if __cplusplus >= 201103L              /* C++11                    */
     EventsPair p = std::make_pair(key, e);
@@ -199,8 +200,11 @@ event_list::add (const event & e, bool postsort)
     EventsPair p = std::make_pair<event_key, event>(key, e);
 #endif
     m_events.insert(p);                 /* std::multimap operation  */
+
 #else
+
     m_events.push_front(e);             /* std::list operation      */
+
 #endif
 
     bool result = m_events.size() == (count + 1);
@@ -602,7 +606,7 @@ event_list::print ()
 }           // namespace seq64
 
 /*
- * sequence.cpp
+ * event_list.cpp
  *
  * vim: sw=4 ts=4 wm=4 et ft=cpp
  */

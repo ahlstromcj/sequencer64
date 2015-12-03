@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-30
+ * \updates       2015-12-02
  * \license       GNU GPLv2 or above
  *
  *  The functionality of this class also includes handling some of the
@@ -112,7 +112,12 @@ sequence::~sequence ()
     // Empty body
 }
 
-/**
+#if 0
+
+/*
+ *  We're replacing this incomplete function (many members are not assigned)
+ *  with the more accurately-named partial_assign() function.
+ *
  *  Principal assignment operator.  Follows the stock rules for such an
  *  operator, but does a little more then just assign member values.
  *  Currently, it does not assign them all, so we should create a partial_copy()
@@ -177,6 +182,42 @@ sequence::operator = (const sequence & rhs)
         verify_and_link();
     }
     return *this;
+}
+
+#endif  // 0
+
+/**
+ *  Principal assignment operator.  Follows the stock rules for such an
+ *  operator, but does a little more then just assign member values.
+ *  Currently, it does not assign them all, so we should create a partial_copy()
+ *  function to do this work, and use it where it is needed.
+ *
+ * \threadsafe
+ */
+
+void
+sequence::partial_assign (const sequence & rhs)
+{
+    if (this != &rhs)
+    {
+        automutex locker(m_mutex);
+        m_events   = rhs.m_events;
+        m_triggers = rhs.m_triggers;
+        m_midi_channel = rhs.m_midi_channel;
+        m_bus          = rhs.m_bus;
+        m_masterbus    = rhs.m_masterbus;           /* a pointer, be aware! */
+        m_playing      = false;
+        m_name         = rhs.m_name;
+        m_ppqn         = rhs.m_ppqn;
+        m_length       = rhs.m_length;
+        m_time_beats_per_measure = rhs.m_time_beats_per_measure;
+        m_time_beat_width = rhs.m_time_beat_width;
+        for (int i = 0; i < c_midi_notes; i++)      /* no notes are playing */
+            m_playing_notes[i] = 0;
+
+        zero_markers();                             /* reset */
+        verify_and_link();
+    }
 }
 
 /**

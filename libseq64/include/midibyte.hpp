@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-23
- * \updates       2015-11-30
+ * \updates       2015-12-02
  * \license       GNU GPLv2 or above
  *
  *  These typedefiare intended to remove the ambiguity we have seen between
@@ -41,10 +41,9 @@
  *  code.
  */
 
-/*
- *
 #include <limits.h>                     // ULONG_MAX and other limits   //
- *
+
+/*
  *  Since we're using unsigned variables for counting pulses, we can't do the
  *  occasional test for negativity, we have to use wraparound.  One way is to
  *  use this macro.  However, we will probably just ignore the issue of
@@ -55,6 +54,15 @@
 #define IS_SEQ64_MIDIPULSE_WRAPAROUND(x)  ((x) > (ULONG_MAX / 2))
  *
  */
+
+/**
+ *  We need an unlike midipulse value that can be used to be indicate a bad,
+ *  unusable pulse value.  This value should be modified in the typedef of
+ *  midipulse is changed.  For a signed long value, -1 can be used.  For an
+ *  unsigned long value, ULONG_MAX is probably best.
+ */
+
+#define SEQ64_ILLEGAL_PULSE     (-1)
 
 namespace seq64
 {

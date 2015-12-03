@@ -322,6 +322,10 @@ measurestring_to_pulses
  *      P == pulses per quarter-note (constant)
  *      W == beat width in beats per measure (constant)
  *
+ *  Note that the 0-pulse MIDI measure is "1:1:0", which means "at the
+ *  beginning of the first beat of the first measure, no pulses'.  It is not
+ *  "0:0:0" as one might expect.
+ *
  * \param measures
  *      Provides the current MIDI song time structure holding the
  *      measures, beats, and divisions values for the time of interest.
@@ -331,7 +335,9 @@ measurestring_to_pulses
  *      that hold for the sequence involved in this calculation.
  *
  * \return
- *      Returns the absolute pulses that mark this duration.
+ *      Returns the absolute pulses that mark this duration.  If the
+ *      pulse-value cannot be calculated, then SEQ64_ILLEGAL_PULSE is
+ *      returned.
  */
 
 midipulse
@@ -341,10 +347,23 @@ midi_measures_to_pulses
     const midi_timing_t & seqparms
 )
 {
-    midipulse result = measures.mm_measures * seqparms.mt_ppqn;
-    result += measures.mm_beats * seqparms.mt_ppqn;
-    result += measures.mm_divisions;
-    result = 4 * result * seqparms.mt_beats_per_measure / seqparms.mt_beat_width;
+    midipulse result = SEQ64_ILLEGAL_PULSE;
+    int m = measures.mm_measures - 1;               /* true measure count   */
+    int b = measures.mm_beats - 1;
+    if (m >= 0 && b >= 0)
+    {
+        double qn_per_beat = 4.0 / seqparms.mt_beat_width;
+        result = 0;
+        if (m > 0)
+            result += int(m * seqparms.mt_beats_per_measure * qn_per_beat);
+
+        if (b > 0)
+            result += int(b * qn_per_beat);
+
+        result *= seqparms.mt_ppqn;
+        result += measures.mm_divisions;
+
+    }
     return result;
 }
 
@@ -533,8 +552,7 @@ string_is_void (const std::string & s)
  *    Returns true if both strings are are identical in characters, up to the
  *    length of the secondary string, with the case of the characters being
  *    insignificant.  Otherwise, false is returned.
- *
- *//*-------------------------------------------------------------------------*/
+ */
 
 bool
 strings_match (const std::string & target, const std::string & x)

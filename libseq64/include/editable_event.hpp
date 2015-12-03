@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-28
- * \updates       2015-11-29
+ * \updates       2015-12-03
  * \license       GNU GPLv2 or above
  *
  *  This module extends the event class to support conversions between events
@@ -110,6 +110,36 @@ public:
         category_prop_event         /* sm_prop_event_names[]        */
 
     } category_t;
+
+    /**
+     *  Provides a code to indicate the desired timestamp format.  Three are
+     *  supported.  All editable events will share the same timestamp format,
+     *  but it seems good to make this a event class member, rather than
+     *  something imposed from an outside static value.  We shall see.
+     *
+     * \var timestamp_measures
+     *      This format displays the time in "measures:beats:divisions"
+     *      format, where measures and beats start at 1.  Thus, "1:1:0" is
+     *      equivalent to 0 pulses or to "0:0:0.0" in normal time values.
+     *
+     * \var timestamp_time
+     *      This format displays the time in "hh:mm:second.fraction" format.
+     *      The value displayed should not depend upon the internal timing
+     *      parameters of the event.
+     *
+     * \var timestamp_pulses
+     *      This format specifies a bare pulse format for the timestamp -- a
+     *      long integer ranging from 0 on up.  Obviously, this representation
+     *      depends on the PPQN value for the sequence holding this event.
+     */
+
+    typedef enum
+    {
+        timestamp_measures,
+        timestamp_time,
+        timestamp_pulses
+
+    } timestamp_format_t;
 
     /**
      *  Provides a type that contains the pair of values needed for the
@@ -201,6 +231,13 @@ private:
      */
 
     std::string m_name_category;
+
+    /**
+     *  Indicates the format to display the time-stamp.  The default is to
+     *  display in timestamp_measures format.
+     */
+
+    timestamp_format_t m_format_timestamp;
 
     /**
      *  Holds the string version of the MIDI pulses time-stamp.
@@ -297,6 +334,10 @@ public:
         return event::get_timestamp();
     }
     void timestamp (midipulse ts);
+
+private:
+
+    void format_timestamp ();
 
 };          // class editable_event
 

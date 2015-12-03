@@ -24,13 +24,12 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-29
+ * \updates       2015-12-03
  * \license       GNU GPLv2 or above
  *
  *  A MIDI editable event is encapsulated by the seq64::editable_event
  *  object.
  */
-
 
 #include "easy_macros.h"
 #include "calculations.hpp"             /* string-matching functions    */
@@ -282,6 +281,7 @@ editable_event::editable_event ()
     event               (),
     m_category          (category_name),
     m_name_category     (),
+    m_format_timestamp  (timestamp_measures),
     m_name_timestamp    (),
     m_name_status       (),
     m_name_meta         (),
@@ -311,6 +311,7 @@ editable_event::editable_event (const editable_event & rhs)
     event               (rhs),
     m_category          (rhs.m_category),
     m_name_category     (rhs.m_name_category),
+    m_format_timestamp  (rhs.m_format_timestamp),
     m_name_timestamp    (rhs.m_name_timestamp),
     m_name_status       (rhs.m_name_status),
     m_name_meta         (rhs.m_name_meta),
@@ -347,6 +348,7 @@ editable_event::operator = (const editable_event & rhs)
         event::operator =(rhs);
         m_category          = rhs.m_category;
         m_name_category     = rhs.m_name_category;
+        m_format_timestamp  = rhs.m_format_timestamp;
         m_name_timestamp    = rhs.m_name_timestamp;
         m_name_status       = rhs.m_name_status;
         m_name_meta         = rhs.m_name_meta;
@@ -398,16 +400,48 @@ editable_event::category (const std::string & name)
  *      slavish to the get/set crowd [this ain't Java].  Plus, we also
  *      have to set the string version at the same time.
  *
- *  The format of the string representation is of the form
- *  "measure:beat:tick" ???
+ * \param ts
+ *      Provides the timestamp in units of MIDI pulses.
  *
- *  We need to use the PPQN value for the file.
+ *  The format of the string representation is of the format selected by the
+ *  m_format_timestamp member and is set by the format_timestamp() function.
  */
 
 void
 editable_event::timestamp (midipulse ts)
 {
     event::set_timestamp(ts);
+    format_timestamp();
+}
+
+/**
+ *  Formats the current timestamp member as a string.  The format of the
+ *  string representation is of the format selected by the m_format_timestamp
+ *  member.
+ *
+ *      std::string pulses_to_measurestring (midipulse, const midi_timing_t &)
+ *
+ *      bool pulses_to_midi_measures
+ *      (
+ *          midipulse, const midi_timing_t &, midi_measures_t &
+ *      );
+ */
+
+void
+editable_event::format_timestamp ()
+{
+    if (m_format_timestamp == timestamp_measures)
+    {
+    }
+    else if (m_format_timestamp == timestamp_time)
+    {
+    }
+    else if (m_format_timestamp == timestamp_pulses)
+    {
+        char tmp[32];
+        snprintf(tmp, sizeof tmp, "%lu", (unsigned long)(get_timestamp()));
+        m_name_timestamp = std::string(tmp);
+    }
 }
 
 }           // namespace seq64

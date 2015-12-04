@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-19
- * \updates       2015-11-29
+ * \updates       2015-12-04
  * \license       GNU GPLv2 or above
  *
  *  This module extracts the event-list functionality from the sequencer
@@ -59,10 +59,10 @@
  * multimap.
  */
 
-#define SEQ64_USE_EVENT_MAP                   /* this seems to work well! */
+#define SEQ64_USE_EVENT_MAP             /* this seems to work well! */
 
 #ifdef SEQ64_USE_EVENT_MAP
-#include <map>
+#include <map>                          /* std::multimap            */
 #else
 #include <list>
 #endif

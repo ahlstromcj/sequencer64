@@ -82,6 +82,7 @@ extern bool extract_timing_numbers
     std::string & part_3,
     std::string & fraction
 );
+extern std::string pulses_to_string (midipulse p);
 extern std::string pulses_to_measurestring
 (
     midipulse p,
@@ -94,6 +95,11 @@ extern bool pulses_to_midi_measures
     midi_measures & measures
 );
 extern std::string pulses_to_timestring (midipulse pulses, int bpm, int ppqn);
+extern std::string pulses_to_timestring
+(
+    midipulse p,
+    const midi_timing & timinginfo
+);
 extern midipulse measurestring_to_pulses
 (
     const std::string & measures,

@@ -32,10 +32,9 @@
  */
 
 #include "easy_macros.h"
-#include "calculations.hpp"             /* string-matching functions    */
-#include "controllers.hpp"              /* seq64::c_controller_names[]  */
-#include "editable_event.hpp"           /* seq64::editable_event        */
-#include "editable_events.hpp"          /* seq64::editable_events       */
+#include "controllers.hpp"              /* seq64::c_controller_names[]      */
+#include "editable_event.hpp"           /* seq64::editable_event            */
+#include "editable_events.hpp"          /* seq64::editable_events multimap  */
 
 namespace seq64
 {
@@ -312,6 +311,31 @@ editable_event::editable_event (const editable_events & parent)
 }
 
 /**
+ *  Event constructor.  This function basically adds all of the extra
+ *  editable_event stuff to a standard event, so that the resulting
+ *  editable_event is container-ready.
+ */
+
+editable_event::editable_event
+(
+    const editable_events & parent,
+    const event & ev
+) :
+    event               (ev),
+    m_parent            (parent),
+    m_category          (category_name),
+    m_name_category     (),
+    m_format_timestamp  (timestamp_measures),
+    m_name_timestamp    (),
+    m_name_status       (),
+    m_name_meta         (),
+    m_name_seqspec      ()
+{
+     // Empty body
+}
+
+
+/**
  *  This copy constructor initializes most of the class members.  This
  *  function is currently geared only toward support of the SMF 0
  *  channel-splitting feature.  Many of the members are not set to useful
@@ -330,6 +354,7 @@ editable_event::editable_event (const editable_events & parent)
 editable_event::editable_event (const editable_event & rhs)
  :
     event               (rhs),
+    m_parent            (rhs.m_parent),
     m_category          (rhs.m_category),
     m_name_category     (rhs.m_name_category),
     m_format_timestamp  (rhs.m_format_timestamp),
@@ -359,8 +384,7 @@ editable_event::editable_event (const editable_event & rhs)
  * \return
  *      Returns a reference to "this" object, to support the serial assignment
  *      of editable_events.
- */
-
+ *
 editable_event &
 editable_event::operator = (const editable_event & rhs)
 {
@@ -368,6 +392,7 @@ editable_event::operator = (const editable_event & rhs)
     {
         event::operator =(rhs);
         m_category          = rhs.m_category;
+    //  m_parent            = rhs.m_parent;
         m_name_category     = rhs.m_name_category;
         m_format_timestamp  = rhs.m_format_timestamp;
         m_name_timestamp    = rhs.m_name_timestamp;
@@ -377,6 +402,8 @@ editable_event::operator = (const editable_event & rhs)
     }
     return *this;
 }
+ *
+ */
 
 /**
  * \setter m_category by value
@@ -439,34 +466,44 @@ editable_event::timestamp (midipulse ts)
  *  Formats the current timestamp member as a string.  The format of the
  *  string representation is of the format selected by the m_format_timestamp
  *  member.
- *
- *      std::string pulses_to_measurestring (midipulse, const midi_timing &)
- *
- *      bool pulses_to_midi_measures
- *      (
- *          midipulse, const midi_timing &, midi_measures &
- *      );
  */
 
 void
 editable_event::format_timestamp ()
 {
-    unsigned long pulses = (unsigned long)(get_timestamp());
     if (m_format_timestamp == timestamp_measures)
-    {
-    }
+        m_name_timestamp = time_as_measures();
     else if (m_format_timestamp == timestamp_time)
-    {
-    }
+        m_name_timestamp = time_as_minutes();
     else if (m_format_timestamp == timestamp_pulses)
-    {
-        char tmp[32];
-        snprintf(tmp, sizeof tmp, "%lu", pulses);
-        m_name_timestamp = std::string(tmp);
-    }
+        m_name_timestamp = time_as_pulses();
     else
-    {
-    }
+        m_name_timestamp = "unsupported category in editable event";
+}
+
+/**
+ *  Converts the current time-stamp to a string representation in units of
+ *  measures, beats, and divisions.  Cannot be inlined because of a circular
+ *  dependency between the editable_event and editable_events classes.
+ */
+
+std::string
+editable_event::time_as_measures ()
+{
+    return pulses_to_measurestring(get_timestamp(), parent().timing());
+}
+
+/**
+ *  Converts the current time-stamp to a string representation in units of
+ *  hours, minutes, seconds, and fraction.  Cannot be inlined because of a
+ *  circular dependency between the editable_event and editable_events
+ *  classes.
+ */
+
+std::string
+editable_event::time_as_minutes ()
+{
+    return pulses_to_timestring(get_timestamp(), parent().timing());
 }
 
 }           // namespace seq64

@@ -35,6 +35,7 @@
  *  and human-readable (and editable) strings.
  */
 
+#include "calculations.hpp"             /* string functions                 */
 #include "event.hpp"                    /* seq64::event                     */
 
 /**
@@ -278,15 +279,20 @@ private:
 
     std::string m_name_seqspec;
 
-private:
+private:        // hidden functions
 
     editable_event ();
+    editable_event & operator = (const editable_event & rhs);
 
 public:
 
     editable_event (const editable_events & parent);
+    editable_event
+    (
+        const editable_events & parent,
+        const event & ev
+    );
     editable_event (const editable_event & rhs);
-    editable_event & operator = (const editable_event & rhs);
 
     /**
      *  This destructor current is a rote virtual function override.
@@ -297,14 +303,16 @@ public:
         // Empty body
     }
 
-    /*
-     * Operator overload, the only one needed for sorting editable_events in a
-     * list or a map.
+public:
 
-    bool operator < (const editable_event & rhseditable_event) const;
+    /**
+     * \getter m_parent
      */
 
-public:
+    const editable_events & parent () const
+    {
+        return m_parent;
+    }
 
     /**
      * \getter m_category
@@ -348,6 +356,19 @@ public:
         return event::get_timestamp();
     }
     void timestamp (midipulse ts);
+
+    /**
+     *  Converts the current time-stamp to a string representation in units of
+     *  pulses.
+     */
+
+    std::string time_as_pulses ()
+    {
+        return pulses_to_string(get_timestamp());
+    }
+
+    std::string time_as_measures ();
+    std::string time_as_minutes ();
 
 private:
 

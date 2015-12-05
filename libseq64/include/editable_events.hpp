@@ -122,27 +122,31 @@ public:
 
 public:
 
+    const midi_timing & timing () const
+    {
+        return m_midi_parameters;
+    }
+
+public:
+
+    bool load_events ();
+    bool save_events ();
+
     /*
-
-    bool load_events
-    (
-        const sequence & seq
-    );
-
-    bool save_events
-    (
-        const sequence & seq
-    );
-
      * Other operations:
      *
-     *      insert event
-     *      remove event
      *      replace event
      *      get or format event data (for use in GUI)
      */
 
-public:
+    /**
+     * \getter m_events
+     */
+
+    Events & events ()
+    {
+        return m_events;
+    }
 
     /**
      * \getter m_events.begin(), non-constant version.
@@ -191,7 +195,19 @@ public:
         return int(m_events.size());
     }
 
-    bool add (const event & e, bool postsort = true);
+    bool add (const event & e);
+    bool add (const editable_event & e);
+
+    /**
+     *  Provides a wrapper for the iterator form of erase(), which is the
+     *  only one that the editable_events container uses.
+     */
+
+    bool replace (iterator ie, const editable_event & e)
+    {
+        m_events.erase(ie);
+        return add(e);
+    }
 
     /**
      *  Provides a wrapper for the iterator form of erase(), which is the

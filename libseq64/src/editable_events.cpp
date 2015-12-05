@@ -111,34 +111,115 @@ editable_events::operator = (const editable_events & rhs)
 }
 
 /**
- *  Formats the current timestamp member as a string.  The format of the
- *  string representation is of the format selected by the m_format_timestamp
- *  member.
+ *  Adds an event, converted to an editable_event, to the internal event list.
  *
- *      std::string pulses_to_measurestring (midipulse, const midi_timing &)
+ * \param e
+ *      Provides the regular event to be added to the list of editable events.
  *
- *      bool pulses_to_midi_measures
- *      (
- *          midipulse, const midi_timing &, midi_measures &
- *      );
-
-void
-editable_events::format_timestamp ()
-{
-    if (m_format_timestamp == timestamp_measures)
-    {
-    }
-    else if (m_format_timestamp == timestamp_time)
-    {
-    }
-    else if (m_format_timestamp == timestamp_pulses)
-    {
-        char tmp[32];
-        snprintf(tmp, sizeof tmp, "%lu", (unsigned long)(get_timestamp()));
-        m_name_timestamp = std::string(tmp);
-    }
-}
+ * \return
+ *      Returns true if the insertion succeeded, as evidenced by an increment
+ *      in container size.
  */
+
+bool
+editable_events::add (const event & e)
+{
+    editable_event ed(*this, e);        /* make the event "editable"    */
+    return add(ed);
+}
+
+/**
+ *  Adds an editable event to the internal event list.
+ *
+ *  For the std::multimap implementation, This is an option if we want to make
+ *  sure the insertion succeed.
+ *
+ *      std::pair<Events::iterator, bool> result = m_events.insert(p);
+ *      return result.second;
+ *
+ * \param e
+ *      Provides the regular event to be added to the list of editable events.
+ *
+ * \return
+ *      Returns true if the insertion succeeded, as evidenced by an increment
+ *      in container size.
+ */
+
+bool
+editable_events::add (const editable_event & e)
+{
+    size_t count = m_events.size();         /* save initial size            */
+    event_list::event_key key(e);            /* create the key value         */
+
+#if __cplusplus >= 201103L                  /* C++11                        */
+    EventsPair p = std::make_pair(key, e);
+#else
+    EventsPair p = std::make_pair<event_key, event>(key, e);
+#endif
+    m_events.insert(p);                     /* std::multimap operation      */
+
+    bool result = m_events.size() == (count + 1);
+    return result;
+}
+
+/**
+ *  Accesses the sequence's event-list, iterating through it from beginning to
+ *  end, wrapping each event in the list in an editable event and inserting it
+ *  into the editable-event container.
+ *
+ * \return
+ *      Returns true if the size of the final editable_event container matches
+ *      the size of the original events container.
+ */
+
+bool
+editable_events::load_events ()
+{
+    bool result;
+    int original_count = m_sequence.events().count();
+    for
+    (
+        event_list::const_iterator ei = m_sequence.events().begin();
+        ei != m_sequence.events().end(); ++ei
+    )
+    {
+        if (! add(ei->second))
+            break;
+    }
+    result = count () == original_count;
+    return result;
+}
+
+/**
+ *  Erases the sequence's event container and recreates it using the edited
+ *  container of editable events.
+ *
+ *  Note that the old events are replaced only if the container of editable
+ *  events is not empty.  There are safer ways for the user to erase all the
+ *  events.
+ *
+ * \return
+ *      Returns true if the size of the final event container matches
+ *      the size of the original editable_events container.
+ */
+
+bool
+editable_events::save_events ()
+{
+    bool result = count() > 0;
+    if (result)
+    {
+        m_sequence.events().clear();
+        for (const_iterator ei = events().begin(); ei != events().end(); ++ei)
+        {
+            event ev = ei->second;
+            if (! m_sequence.add_event(ev))
+                break;
+        }
+        result = m_sequence.events().count () == count();
+    }
+    return result;
+}
 
 }           // namespace seq64
 

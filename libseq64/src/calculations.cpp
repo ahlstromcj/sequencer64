@@ -153,6 +153,22 @@ extract_timing_numbers
 }
 
 /**
+ *  Converts MIDI pulses (also known as ticks, clocks, or divisions) into a
+ *  string.
+ *
+ * \todo
+ *      Still needs to be unit tested.
+ */
+
+std::string
+pulses_to_string (midipulse p)
+{
+    char tmp[32];
+    snprintf(tmp, sizeof tmp, "%lu", (unsigned long)(p));
+    return std::string(tmp);
+}
+
+/**
  *  Converts a MIDI pulse/ticks/clock value into a string that represents
  *  "measures:beats:ticks" ("measures:beats:division").
  *
@@ -235,6 +251,32 @@ pulses_to_midi_measures
 
 /**
  *  Converts a MIDI pulse/ticks/clock value into a string that represents
+ *  "hours:minutes:seconds.fraction".  See the pulses_to_timestring()
+ *  overload.
+ *
+ * \todo
+ *      Still needs to be unit tested.
+ *
+ * \param p
+ *      Provides the number of ticks, pulses, or divisions in the MIDI
+ *      event time.
+ *
+ * \param timinginfo
+ *      Provides the tempo of the song, in beats/minute, and the
+ *      pulse-per-quarter-note of the song.
+ */
+
+std::string
+pulses_to_timestring (midipulse p, const midi_timing & timinginfo)
+{
+    return pulses_to_timestring
+    (
+        p, timinginfo.beats_per_minute(), timinginfo.ppqn()
+    );
+}
+
+/**
+ *  Converts a MIDI pulse/ticks/clock value into a string that represents
  *  "hours:minutes:seconds.fraction".  If the fraction part is 0, then it is
  *  not shown.  Examples:
  *
@@ -242,12 +284,22 @@ pulses_to_midi_measures
  *      -   "0:0:0.102333"
  *      -   "12:3:1"
  *      -   "12:3:1.000001"
+ *
+ * \param p
+ *      Provides the number of ticks, pulses, or divisions in the MIDI
+ *      event time.
+ *
+ * \param bpm
+ *      Provides the tempo of the song, in beats/minute.
+ *
+ * \param ppqn
+ *      Provides the pulse-per-quarter-note of the song.
  */
 
 std::string
-pulses_to_timestring (midipulse pulses, int bpm, int ppqn)
+pulses_to_timestring (midipulse p, int bpm, int ppqn)
 {
-    unsigned long microseconds = ticks_to_delta_time_us(pulses, bpm, ppqn);
+    unsigned long microseconds = ticks_to_delta_time_us(p, bpm, ppqn);
     int seconds = int(microseconds / 1000000UL);
     int minutes = seconds / 60;
     int hours = seconds / (60 * 60);

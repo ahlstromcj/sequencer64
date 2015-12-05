@@ -25,16 +25,15 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-12-04
- * \updates       2015-12-04
+ * \updates       2015-12-05
  * \license       GNU GPLv2 or above
  *
  *  A MIDI editable event is encapsulated by the seq64::editable_events
  *  object.
  */
 
-// #include "easy_macros.h"
-
-#include "editable_events.hpp"          /* seq64::editable_events        */
+#include "editable_events.hpp"          /* seq64::editable_events       */
+#include "sequence.hpp"                 /* seq64::sequence              */
 
 namespace seq64
 {
@@ -46,12 +45,27 @@ namespace seq64
  */
 
 /**
- *  This constructor simply initializes all of the class members.
+ *  This constructor hooks into the sequence object.
+ *
+ * \param seq
+ *      Provides a reference to the sequence object, which provides the events
+ *      and some of the MIDI timing parameters.
+ *
+ * \param bpm
+ *      Provides the beats/minute value, which the caller figures out how to
+ *      get and provides in this parameter.
  */
 
-editable_events::editable_events ()
+editable_events::editable_events (sequence & seq, int bpm)
  :
     m_events            (),
+    m_current_event     (m_events.end()),
+    m_sequence          (seq),
+    m_midi_parameters
+    (
+        bpm, seq.get_beats_per_bar(), seq.get_beat_width(), seq.get_ppqn()
+    )
+{
     // Empty body
 }
 
@@ -65,6 +79,9 @@ editable_events::editable_events ()
 editable_events::editable_events (const editable_events & rhs)
  :
     m_events            (rhs.m_events),
+    m_current_event     (rhs.m_current_event),
+    m_sequence          (rhs.m_sequence),
+    m_midi_parameters   (rhs.m_midi_parameters)
 {
     // Empty body
 }
@@ -86,6 +103,9 @@ editable_events::operator = (const editable_events & rhs)
     if (this != &rhs)
     {
         m_events            = rhs.m_events;
+        m_current_event     = rhs.m_current_event;
+        m_midi_parameters   = rhs.m_midi_parameters;
+        m_sequence.partial_assign(rhs.m_sequence);
     }
     return *this;
 }
@@ -95,13 +115,12 @@ editable_events::operator = (const editable_events & rhs)
  *  string representation is of the format selected by the m_format_timestamp
  *  member.
  *
- *      std::string pulses_to_measurestring (midipulse, const midi_timing_t &)
+ *      std::string pulses_to_measurestring (midipulse, const midi_timing &)
  *
  *      bool pulses_to_midi_measures
  *      (
- *          midipulse, const midi_timing_t &, midi_measures_t &
+ *          midipulse, const midi_timing &, midi_measures &
  *      );
- */
 
 void
 editable_events::format_timestamp ()
@@ -119,6 +138,7 @@ editable_events::format_timestamp ()
         m_name_timestamp = std::string(tmp);
     }
 }
+ */
 
 }           // namespace seq64
 

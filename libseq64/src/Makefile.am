@@ -6,7 +6,7 @@
 # \library    	libseq64 library
 # \author     	Chris Ahlstrom
 # \date       	2015-09-11
-# \update      2015-11-29
+# \update      2015-12-05
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -115,6 +115,7 @@ libseq64_la_SOURCES = \
 	click.cpp \
 	easy_macros.cpp \
 	editable_event.cpp \
+	editable_events.cpp \
 	event.cpp \
 	event_list.cpp \
 	file_functions.cpp \
@@ -127,6 +128,7 @@ libseq64_la_SOURCES = \
 	lash.cpp \
 	mastermidibus.cpp \
    midibus.cpp \
+   midibyte.cpp \
    midifile.cpp \
    midi_container.cpp \
    midi_list.cpp \

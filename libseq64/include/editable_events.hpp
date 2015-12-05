@@ -29,19 +29,22 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-12-04
- * \updates       2015-12-04
+ * \updates       2015-12-05
  * \license       GNU GPLv2 or above
  *
  *  This module extends the event class to support conversions between events
  *  and human-readable (and editable) strings.
  */
 
-#include <map>                          /* std::multimap            */
+#include <map>                          /* std::multimap                */
 
-#include "editable_event.hpp"           /* seq64::editable_event    */
+#include "event_list.hpp"               /* seq64::event_list::event_key */
+#include "editable_event.hpp"           /* seq64::editable_event        */
 
 namespace seq64
 {
+
+class sequence;
 
 /**
  *  Provides for the management of an ordered collection MIDI editable events.
@@ -58,10 +61,11 @@ private:
      *  editable_events scope instead.
      */
 
-    typedef std::multimap<event_key, editable_event> Events;
-    typedef std::pair<event_key, editable_event> EventsPair;
-    typedef std::multimap<event_key, editable_event>::iterator iterator;
-    typedef std::multimap<event_key, editable_event>::const_iterator const_iterator;
+    typedef event_list::event_key Key;
+    typedef std::multimap<Key, editable_event> Events;
+    typedef std::pair<Key, editable_event> EventsPair;
+    typedef std::multimap<Key, editable_event>::iterator iterator;
+    typedef std::multimap<Key, editable_event>::const_iterator const_iterator;
 
     /**
      *  Holds the editable_events.
@@ -79,21 +83,31 @@ private:
     iterator m_current_event;
 
     /**
+     *  Provides a reference to the sequence containing the events to be
+     *  edited.  Besides the events, this object also holds the beats/measure,
+     *  beat-width, and the PPQN value.  The beats/minute have to be obtained
+     *  from the application's perform object, and passed to the
+     *  editable_events constructor by the caller.
+     */
+
+    sequence & m_sequence;
+
+    /**
      *  Holds the current settings for the sequence (and usually for the whole
      *  MIDI tune as well).  It holds the beats/minute, beats/measure,
      *  beat-width, and PPQN values needed to properly convert MIDI pulse
      *  timestamps to time and measure values.
      */
 
-    midi_timing_t m_midi_parameters;
+    midi_timing m_midi_parameters;
+
+private:
+
+    editable_events ();                 /* unimplemented    */
 
 public:
 
-    editable_events ();
-    editable_events
-    (
-        const midi_timing_t & seqparams
-    );
+    editable_events (sequence & seq, int bpm);
     editable_events (const editable_events & rhs);
     editable_events & operator = (const editable_events & rhs);
 
@@ -108,21 +122,18 @@ public:
 
 public:
 
+    /*
+
     bool load_events
     (
-        const event_list & events
-        // OR
         const sequence & seq
     );
 
     bool save_events
     (
-        const event_list & events
-        // OR
         const sequence & seq
     );
 
-    /*
      * Other operations:
      *
      *      insert event
@@ -218,7 +229,7 @@ public:
 
 private:
 
-    void format_timestamp ();
+    // void format_timestamp ();
 
 };          // class editable_events
 

@@ -28,14 +28,14 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-28
- * \updates       2015-12-03
+ * \updates       2015-12-05
  * \license       GNU GPLv2 or above
  *
  *  This module extends the event class to support conversions between events
  *  and human-readable (and editable) strings.
  */
 
-#include "event.hpp"                    /* seq64::event */
+#include "event.hpp"                    /* seq64::event                     */
 
 /**
  *  Provides an integer value that is larger than any midibyte value, to be
@@ -46,6 +46,8 @@
 
 namespace seq64
 {
+
+class editable_events;                  /* forward reference to container   */
 
 /**
  *  Provides for the management of MIDI editable events.  It makes the
@@ -217,6 +219,14 @@ public:
 private:
 
     /**
+     *  Provides a reference to the container that holds this event.  The
+     *  container's "children" need to go to their "parent" to get certain
+     *  items of information.
+     */
+
+    const editable_events & m_parent;
+
+    /**
      *  Indicates the overall category of this event, which will be
      *  category_channel_message, category_system_message,
      *  category_meta_event, and category_prop_event.  The category_name value
@@ -268,9 +278,13 @@ private:
 
     std::string m_name_seqspec;
 
-public:
+private:
 
     editable_event ();
+
+public:
+
+    editable_event (const editable_events & parent);
     editable_event (const editable_event & rhs);
     editable_event & operator = (const editable_event & rhs);
 

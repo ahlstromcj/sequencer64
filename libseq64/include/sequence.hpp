@@ -419,6 +419,17 @@ public:
     void set_name (char * name);
     void set_measures (int lengthmeasures);
     int get_measures ();
+
+    /**
+     * \getter m_ppqn
+     *      Provided as a convenience for the editable_events class.
+     */
+
+    int get_ppqn () const
+    {
+        return m_ppqn;
+    }
+
     void set_beats_per_bar (int beatspermeasure);
 
     /**

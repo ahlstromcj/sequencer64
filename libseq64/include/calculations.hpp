@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-07
- * \updates       2015-12-01
+ * \updates       2015-12-05
  * \license       GNU GPLv2 or above
  *
  *  These items were moved from the globals.h module so that only the modules
@@ -85,24 +85,24 @@ extern bool extract_timing_numbers
 extern std::string pulses_to_measurestring
 (
     midipulse p,
-    const midi_timing_t & seqparms
+    const midi_timing & seqparms
 );
 extern bool pulses_to_midi_measures
 (
     midipulse p,
-    const midi_timing_t & seqparms,
-    midi_measures_t & measures
+    const midi_timing & seqparms,
+    midi_measures & measures
 );
 extern std::string pulses_to_timestring (midipulse pulses, int bpm, int ppqn);
 extern midipulse measurestring_to_pulses
 (
     const std::string & measures,
-    const midi_timing_t & seqparms
+    const midi_timing & seqparms
 );
 extern midipulse midi_measures_to_pulses
 (
-    const midi_measures_t & measures,
-    const midi_timing_t & seqparms
+    const midi_measures & measures,
+    const midi_timing & seqparms
 );
 extern midipulse timestring_to_pulses
 (

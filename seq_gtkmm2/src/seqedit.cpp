@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-23
+ * \updates       2015-12-04
  * \license       GNU GPLv2 or above
  *
  */
@@ -1327,7 +1327,7 @@ seqedit::popup_sequence_menu ()
         bool inserted = false;
         for (int seq = 0; seq < c_seqs_in_set; ++seq)
         {
-            char name[30];
+            char name[32];
             int i = ss * c_seqs_in_set + seq;
             if (perf().is_active(i))
             {

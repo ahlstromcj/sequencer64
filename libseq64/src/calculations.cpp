@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-07
- * \updates       2015-12-02
+ * \updates       2015-12-05
  * \license       GNU GPLv2 or above
  *
  *  This code was moved from the globals module so that other modules
@@ -165,15 +165,15 @@ extract_timing_numbers
  */
 
 std::string
-pulses_to_measurestring (midipulse p, const midi_timing_t & seqparms)
+pulses_to_measurestring (midipulse p, const midi_timing & seqparms)
 {
-    midi_measures_t measures;
+    midi_measures measures;
     char tmp[32];
     pulses_to_midi_measures(p, seqparms, measures); /* fill measures struct */
     snprintf
     (
         tmp, sizeof tmp, "%d:%d:%d",
-        measures.mm_measures, measures.mm_beats, measures.mm_divisions
+        measures.measures(), measures.beats(), measures.divisions()
     );
     return std::string(tmp);
 }
@@ -208,14 +208,14 @@ bool
 pulses_to_midi_measures
 (
     midipulse p,
-    const midi_timing_t & seqparms,
-    midi_measures_t & measures
+    const midi_timing & seqparms,
+    midi_measures & measures
 )
 {
     static const double s_epsilon = 0.000001;   /* HMMMMMMMMMMMMMMMMMMMMMMM */
-    int W = seqparms.mt_beat_width;
-    int P = seqparms.mt_ppqn;
-    int B = seqparms.mt_beats_per_measure;
+    int W = seqparms.beat_width();
+    int P = seqparms.ppqn();
+    int B = seqparms.beats_per_measure();
     bool result = (W > 0) && (P > 0) && (B > 0);
     if (result)
     {
@@ -226,9 +226,9 @@ pulses_to_midi_measures
         double b_whole = floor(b);              /* get integral beats       */
         b -= b_whole;                           /* get fractional beat      */
         double pulses_per_beat = 4 * P / W;     /* pulses/qn * qn/beat      */
-        measures.mm_measures = int(m_whole + s_epsilon) + 1;
-        measures.mm_beats = int(b_whole + s_epsilon) + 1;
-        measures.mm_divisions = int(b * pulses_per_beat + s_epsilon);
+        measures.measures(int(m_whole + s_epsilon) + 1);
+        measures.beats(int(b_whole + s_epsilon) + 1);
+        measures.divisions(int(b * pulses_per_beat + s_epsilon));
     }
     return result;
 }
@@ -292,7 +292,7 @@ midipulse
 measurestring_to_pulses
 (
     const std::string & measures,
-    const midi_timing_t & seqparms
+    const midi_timing & seqparms
 )
 {
     midipulse result = 0;
@@ -301,10 +301,10 @@ measurestring_to_pulses
         std::string m, b, d, dummy;
         if (extract_timing_numbers(measures, m, b, d, dummy))
         {
-            midi_measures_t meas_values;
-            meas_values.mm_measures = atoi(m.c_str());
-            meas_values.mm_beats = atoi(b.c_str());
-            meas_values.mm_divisions = atoi(d.c_str());
+            midi_measures meas_values;
+            meas_values.measures(atoi(m.c_str()));
+            meas_values.beats(atoi(b.c_str()));
+            meas_values.divisions(atoi(d.c_str()));
             result = midi_measures_to_pulses(meas_values, seqparms);
         }
     }
@@ -343,25 +343,25 @@ measurestring_to_pulses
 midipulse
 midi_measures_to_pulses
 (
-    const midi_measures_t & measures,
-    const midi_timing_t & seqparms
+    const midi_measures & measures,
+    const midi_timing & seqparms
 )
 {
     midipulse result = SEQ64_ILLEGAL_PULSE;
-    int m = measures.mm_measures - 1;               /* true measure count   */
-    int b = measures.mm_beats - 1;
+    int m = measures.measures() - 1;                /* true measure count   */
+    int b = measures.beats() - 1;
     if (m >= 0 && b >= 0)
     {
-        double qn_per_beat = 4.0 / seqparms.mt_beat_width;
+        double qn_per_beat = 4.0 / seqparms.beat_width();
         result = 0;
         if (m > 0)
-            result += int(m * seqparms.mt_beats_per_measure * qn_per_beat);
+            result += int(m * seqparms.beats_per_measure() * qn_per_beat);
 
         if (b > 0)
             result += int(b * qn_per_beat);
 
-        result *= seqparms.mt_ppqn;
-        result += measures.mm_divisions;
+        result *= seqparms.ppqn();
+        result += measures.divisions();
 
     }
     return result;

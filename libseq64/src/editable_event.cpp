@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-12-03
+ * \updates       2015-12-05
  * \license       GNU GPLv2 or above
  *
  *  A MIDI editable event is encapsulated by the seq64::editable_event
@@ -35,6 +35,7 @@
 #include "calculations.hpp"             /* string-matching functions    */
 #include "controllers.hpp"              /* seq64::c_controller_names[]  */
 #include "editable_event.hpp"           /* seq64::editable_event        */
+#include "editable_events.hpp"          /* seq64::editable_events       */
 
 namespace seq64
 {
@@ -274,11 +275,31 @@ editable_event::name_to_value
 
 /**
  *  This constructor simply initializes all of the class members.
+ *
+ *  editable_event::editable_event ()
+ *   :
+ *      event               (),
+ *      m_category          (category_name),
+ *      m_name_category     (),
+ *      m_format_timestamp  (timestamp_measures),
+ *      m_name_timestamp    (),
+ *      m_name_status       (),
+ *      m_name_meta         (),
+ *      m_name_seqspec      ()
+ *  {
+ *      // Empty body
+ *  }
+ *
  */
 
-editable_event::editable_event ()
+/**
+ *  Principal constructor.
+ */
+
+editable_event::editable_event (const editable_events & parent)
  :
     event               (),
+    m_parent            (parent),
     m_category          (category_name),
     m_name_category     (),
     m_format_timestamp  (timestamp_measures),
@@ -287,7 +308,7 @@ editable_event::editable_event ()
     m_name_meta         (),
     m_name_seqspec      ()
 {
-    // Empty body
+     // Empty body
 }
 
 /**
@@ -419,17 +440,18 @@ editable_event::timestamp (midipulse ts)
  *  string representation is of the format selected by the m_format_timestamp
  *  member.
  *
- *      std::string pulses_to_measurestring (midipulse, const midi_timing_t &)
+ *      std::string pulses_to_measurestring (midipulse, const midi_timing &)
  *
  *      bool pulses_to_midi_measures
  *      (
- *          midipulse, const midi_timing_t &, midi_measures_t &
+ *          midipulse, const midi_timing &, midi_measures &
  *      );
  */
 
 void
 editable_event::format_timestamp ()
 {
+    unsigned long pulses = (unsigned long)(get_timestamp());
     if (m_format_timestamp == timestamp_measures)
     {
     }
@@ -439,8 +461,11 @@ editable_event::format_timestamp ()
     else if (m_format_timestamp == timestamp_pulses)
     {
         char tmp[32];
-        snprintf(tmp, sizeof tmp, "%lu", (unsigned long)(get_timestamp()));
+        snprintf(tmp, sizeof tmp, "%lu", pulses);
         m_name_timestamp = std::string(tmp);
+    }
+    else
+    {
     }
 }
 

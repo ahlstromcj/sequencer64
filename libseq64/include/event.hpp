@@ -293,23 +293,24 @@ public:
     }
 
     /**
-     *  Static test for channel messages/statuses.
+     *  Static test for channel messages/statuses.  This function requires that
+     *  the channel data have already been masked off.
      *
-     * \param msg
+     * \param m
      *      The channel status or message byte to be tested.
      *
      * \return
      *      Returns true if the byte represents a MIDI channel message.
      */
 
-    static bool is_channel_msg (midibyte msg)
+    static bool is_channel_msg (midibyte m)
     {
         return
         (
-            msg == EVENT_NOTE_ON        || msg == EVENT_NOTE_OFF ||
-            msg == EVENT_AFTERTOUCH     || msg == EVENT_CONTROL_CHANGE ||
-            msg == EVENT_PROGRAM_CHANGE || msg == EVENT_CHANNEL_PRESSURE ||
-            msg == EVENT_PITCH_WHEEL
+            m == EVENT_NOTE_ON        || m == EVENT_NOTE_OFF ||
+            m == EVENT_AFTERTOUCH     || m == EVENT_CONTROL_CHANGE ||
+            m == EVENT_PROGRAM_CHANGE || m == EVENT_CHANNEL_PRESSURE ||
+            m == EVENT_PITCH_WHEEL
         );
     }
 
@@ -317,7 +318,7 @@ public:
      *  Static test for channel messages that have only one data byte.
      *  The rest have two.
      *
-     * \param msg
+     * \param m
      *      The channel status or message byte to be tested.
      *
      * \return
@@ -326,15 +327,15 @@ public:
      *      it might not be a channel message at all, so be careful.
      */
 
-    static bool is_one_byte_msg (midibyte msg)
+    static bool is_one_byte_msg (midibyte m)
     {
-        return msg == EVENT_PROGRAM_CHANGE || msg == EVENT_CHANNEL_PRESSURE;
+        return m == EVENT_PROGRAM_CHANGE || m == EVENT_CHANNEL_PRESSURE;
     }
 
     /**
      *  Static test for channel messages that have two data bytes.
      *
-     * \param msg
+     * \param m
      *      The channel status or message byte to be tested.
      *
      * \return
@@ -343,13 +344,31 @@ public:
      *      it might not be a channel message at all, so be careful.
      */
 
-    static bool is_two_byte_msg (midibyte msg)
+    static bool is_two_byte_msg (midibyte m)
     {
         return
         (
-            msg == EVENT_NOTE_ON        || msg == EVENT_NOTE_OFF ||
-            msg == EVENT_AFTERTOUCH     || msg == EVENT_CONTROL_CHANGE ||
-            msg == EVENT_PITCH_WHEEL
+            m == EVENT_NOTE_ON        || m == EVENT_NOTE_OFF ||
+            m == EVENT_AFTERTOUCH     || m == EVENT_CONTROL_CHANGE ||
+            m == EVENT_PITCH_WHEEL
+        );
+    }
+
+    /**
+     *  Static test for messages that involve notes and velocity.
+     *
+     * \param m
+     *      The channel status or message byte to be tested.
+     *
+     * \return
+     *      Returns true if the byte represents a MIDI note message.
+     */
+
+    static bool is_note_msg (midibyte m)
+    {
+        return
+        (
+            m == EVENT_NOTE_ON || m == EVENT_NOTE_OFF || m == EVENT_AFTERTOUCH
         );
     }
 
@@ -368,7 +387,7 @@ public:
         a || (! a && b)  =>  a || b
 \endverbatim
      *
-     * \param msg
+     * \param m
      *      The channel status or message byte to be tested.
      *
      * \param cc
@@ -386,10 +405,10 @@ public:
 
     static inline bool is_desired_cc_or_not_cc
     (
-        midibyte msg, midibyte cc, midibyte datum
+        midibyte m, midibyte cc, midibyte datum
     )
     {
-        return (msg != EVENT_CONTROL_CHANGE) || (datum == cc);
+        return (m != EVENT_CONTROL_CHANGE) || (datum == cc);
     }
 
     /**

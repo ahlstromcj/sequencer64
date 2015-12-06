@@ -279,6 +279,18 @@ private:
 
     std::string m_name_seqspec;
 
+    /**
+     *  Holds the channel description, if applicable.
+     */
+
+    std::string m_name_channel;
+
+    /**
+     *  Holds the data description, if applicable.
+     */
+
+    std::string m_name_data;
+
 private:        // hidden functions
 
     editable_event ();
@@ -369,10 +381,57 @@ public:
 
     std::string time_as_measures ();
     std::string time_as_minutes ();
+    std::string format_timestamp ();
+    std::string stock_event_string ();
+
+    /**
+     * \getter m_name_status
+     */
+
+    std::string status_string () const
+    {
+        return m_name_status;
+    }
+
+    /**
+     * \getter m_name_meta
+     */
+
+    std::string meta_string () const
+    {
+        return m_name_meta;
+    }
+
+    /**
+     * \getter m_name_seqspec
+     */
+
+    std::string seqspec_string () const
+    {
+        return m_name_seqspec;
+    }
+
+    /**
+     * \getter m_name_channel
+     */
+
+    std::string channel_string () const
+    {
+        return m_name_channel;
+    }
+
+    /**
+     * \getter m_name_data
+     */
+
+    std::string data_string () const
+    {
+        return m_name_data;
+    }
 
 private:
 
-    void format_timestamp ();
+    void analyze ();
 
 };          // class editable_event
 

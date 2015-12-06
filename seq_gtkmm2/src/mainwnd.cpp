@@ -44,7 +44,6 @@
 #include <cerrno>
 #include <cstring>
 #include <stdio.h>                      /* snprintf()                   */
-#include <gdkmm/cursor.h>
 #include <gtk/gtkversion.h>
 #include <gtkmm/aboutdialog.h>
 #include <gtkmm/adjustment.h>

@@ -1,5 +1,5 @@
-#ifndef SEQ64_PERFNAMES_HPP
-#define SEQ64_PERFNAMES_HPP
+#ifndef SEQ64_EVENTSLOTS_HPP
+#define SEQ64_EVENTSLOTS_HPP
 
 /*
  *  This file is part of seq24/sequencer64.
@@ -20,14 +20,14 @@
  */
 
 /**
- * \file          perfnames.hpp
+ * \file          eventslots.hpp
  *
  *  This module declares/defines the base class for performance names.
  *
  * \library       sequencer64 application
- * \author        Seq24 team; modifications by Chris Ahlstrom
- * \date          2015-07-24
- * \updates       2015-11-26
+ * \author        Chris Ahlstrom
+ * \date          2015-12-05
+ * \updates       2015-12-05
  * \license       GNU GPLv2 or above
  *
  *  This class supports the left side of the Performance window (also known
@@ -36,7 +36,7 @@
 
 #include "globals.h"
 #include "gui_drawingarea_gtk2.hpp"
-#include "seqmenu.hpp"
+// #include "seqmenu.hpp"
 
 namespace Gtk
 {
@@ -47,36 +47,29 @@ namespace seq64
 {
 
 class perform;
-class perfedit;
+class eventedit;
 
 /**
  *  This class implements the left-side keyboard in the patterns window.
- *
- * \obsolete
- *      Note the usage of virtual base classes.  Since these can add some
- *      extra overhead, we should determine if we can do without the
- *      virtuality (and indeed it doesn't seem to be needed).
  */
 
-class perfnames : public gui_drawingarea_gtk2, public seqmenu
+class eventslots : public gui_drawingarea_gtk2 // , public seqmenu
 {
 
 private:
 
     /**
-     *  Provides a link to the perfedit that created this object.  We want to
-     *  support two perfedit windows, but the children of perfedit will have
-     *  to communicate changes requiring a redraw through the parent.
+     *  Provides a link to the eventedit that created this object.
      */
 
-    perfedit & m_parent;
+    eventedit & m_parent;
 
     /**
      *  Provides the number of the characters in the name box.  Pretty much
      *  hardwired to 24 at present.
      */
 
-    int m_names_chars;
+    int m_slots_chars;
 
     /**
      *  Provides the "real" width of a character.  This value is obtained from
@@ -93,18 +86,17 @@ private:
     int m_setbox_w;
 
     /**
-     *  Provides the width of the "name" box.  This used to be a weird
-     *  calculation based on character width.
+     *  Provides the width of the "slot" box.
      */
 
-    int m_namebox_w;
+    int m_slots_box_w;
 
     /**
      *  Provides the width of the names box, which is the width of a character
      *  for 24 characters.
      */
 
-    int m_names_x;
+    int m_slots_x;
 
     /**
      *  Provides the height of the names box, which is hardwired to 24 pixels.
@@ -113,7 +105,7 @@ private:
      *  well.
      */
 
-    int m_names_y;
+    int m_slots_y;
 
     /**
      *  Provides the horizontal and vertical offsets of the text relative to
@@ -122,27 +114,26 @@ private:
 
     int m_xy_offset;
 
-    int m_seqs_in_set;
-    int m_sequence_max;                         // CONST
-    int m_sequence_offset;
-    bool m_sequence_active[c_max_sequence];     // CONST
+    int m_event_count;
+
+    int m_event_offset;
 
 public:
 
-    perfnames
+    eventslots
     (
         perform & p,
-        perfedit & parent,
+        eventedit & parent,
         Gtk::Adjustment & vadjust
     );
 
-    void redraw_dirty_sequences ();
+    void redraw_dirty_events ();
 
 private:
 
     void enqueue_draw ();
     int convert_y (int y);
-    void draw_sequence (int sequence);
+    void draw_event (int eventindex);
     void change_vert ();
 
     /**
@@ -167,9 +158,9 @@ private:
      *  Redraw the given sequence.
      */
 
-    void redraw (int sequence)
+    void redraw (int eventindex)
     {
-        draw_sequence(sequence);
+        draw_event(eventindex);
     }
 
 private:    // Gtk callbacks
@@ -185,10 +176,10 @@ private:    // Gtk callbacks
 
 }           // namespace seq64
 
-#endif      // SEQ64_PERFNAMES_HPP
+#endif      // SEQ64_EVENTSLOTS_HPP
 
 /*
- * perfnames.hpp
+ * eventslots.hpp
  *
  * vim: sw=4 ts=4 wm=4 et ft=cpp
  */

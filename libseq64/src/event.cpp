@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-28
+ * \updates       2015-12-05
  * \license       GNU GPLv2 or above
  *
  *  A MIDI event (i.e. "track event") is encapsulated by the seq64::event
@@ -372,7 +372,11 @@ event::append_sysex (midibyte * data, int dsize)
 void
 event::print ()
 {
-    printf("[%06ld] [%04ld] %02X ", m_timestamp, m_sysex_size, m_status);
+    printf
+    (
+        "[%06ld] [%04ld] %02X ",
+        m_timestamp, m_sysex_size, unsigned(m_status)
+    );
     if (m_status == EVENT_SYSEX)
     {
         for (int i = 0; i < m_sysex_size; i++)

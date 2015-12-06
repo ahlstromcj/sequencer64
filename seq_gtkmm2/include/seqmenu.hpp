@@ -28,9 +28,10 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-25
+ * \updates       2015-12-05
  * \license       GNU GPLv2 or above
  *
+ *  This module is the base class for the perfnames and mainwid classes.
  */
 
 #include "sequence.hpp"

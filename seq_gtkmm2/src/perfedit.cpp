@@ -25,38 +25,25 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-26
+ * \updates       2015-12-05
  * \license       GNU GPLv2 or above
  *
  */
 
 #include <gtkmm/adjustment.h>
 #include <gtkmm/button.h>
-#include <gtkmm/window.h>
-#include <gtkmm/accelgroup.h>
 #include <gtkmm/box.h>
-#include <gtkmm/main.h>
 #include <gtkmm/menu.h>
 #include <gtkmm/menubar.h>
-#include <gtkmm/eventbox.h>
-#include <gtkmm/window.h>
 #include <gtkmm/table.h>
-#include <gtkmm/drawingarea.h>
-#include <gtkmm/widget.h>
 #include <gtkmm/scrollbar.h>
-#include <gtkmm/viewport.h>
 #include <gtkmm/combo.h>
 #include <gtkmm/label.h>
-#include <gtkmm/toolbar.h>
-#include <gtkmm/optionmenu.h>
 #include <gtkmm/togglebutton.h>
-#include <gtkmm/invisible.h>
 #include <gtkmm/separator.h>
 #include <gtkmm/tooltips.h>             // #include <gtkmm/tooltip.h>
-#include <gtkmm/invisible.h>
 #include <gtkmm/arrow.h>
 #include <gtkmm/image.h>
-
 #include <sigc++/bind.h>
 
 #include "gdk_basic_keys.h"

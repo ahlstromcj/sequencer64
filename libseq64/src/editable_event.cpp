@@ -284,7 +284,9 @@ editable_event::name_to_value
  *      m_name_timestamp    (),
  *      m_name_status       (),
  *      m_name_meta         (),
- *      m_name_seqspec      ()
+ *      m_name_seqspec      (),
+ *      m_name_channel      (),
+ *      m_name_data         ()
  *  {
  *      // Empty body
  *  }
@@ -305,9 +307,11 @@ editable_event::editable_event (const editable_events & parent)
     m_name_timestamp    (),
     m_name_status       (),
     m_name_meta         (),
-    m_name_seqspec      ()
+    m_name_seqspec      (),
+    m_name_channel      (),
+    m_name_data         ()
 {
-     // Empty body
+    // Empty body
 }
 
 /**
@@ -329,9 +333,11 @@ editable_event::editable_event
     m_name_timestamp    (),
     m_name_status       (),
     m_name_meta         (),
-    m_name_seqspec      ()
+    m_name_seqspec      (),
+    m_name_channel      (),
+    m_name_data         ()
 {
-     // Empty body
+    // analyze();               // DO IT NOW OR LATER?
 }
 
 
@@ -361,7 +367,9 @@ editable_event::editable_event (const editable_event & rhs)
     m_name_timestamp    (rhs.m_name_timestamp),
     m_name_status       (rhs.m_name_status),
     m_name_meta         (rhs.m_name_meta),
-    m_name_seqspec      (rhs.m_name_seqspec)
+    m_name_seqspec      (rhs.m_name_seqspec),
+    m_name_channel      (rhs.m_name_channel),
+    m_name_data         (rhs.m_name_data)
 {
     // Empty body
 }
@@ -399,6 +407,8 @@ editable_event::operator = (const editable_event & rhs)
         m_name_status       = rhs.m_name_status;
         m_name_meta         = rhs.m_name_meta;
         m_name_seqspec      = rhs.m_name_seqspec;
+        m_name_channel      = rhs.m_name_channel;
+        m_name_data         = rhs.m_name_data;
     }
     return *this;
 }
@@ -468,7 +478,7 @@ editable_event::timestamp (midipulse ts)
  *  member.
  */
 
-void
+std::string
 editable_event::format_timestamp ()
 {
     if (m_format_timestamp == timestamp_measures)
@@ -479,6 +489,8 @@ editable_event::format_timestamp ()
         m_name_timestamp = time_as_pulses();
     else
         m_name_timestamp = "unsupported category in editable event";
+
+    return m_name_timestamp;
 }
 
 /**
@@ -504,6 +516,108 @@ std::string
 editable_event::time_as_minutes ()
 {
     return pulses_to_timestring(get_timestamp(), parent().timing());
+}
+
+/**
+ *  Converts the event into a string desribing the full event.
+ *  We get the time-stamp as a string, make sure the event is fully analyzed so
+ *  that all items and strings are set correctly.
+ */
+
+std::string
+editable_event::stock_event_string ()
+{
+    std::string result = format_timestamp();
+    analyze();
+#ifdef USE_CATEGORY_IN_EVENT_STRING
+    result += " ";
+    result += m_name_category;
+#endif
+    result += " ";
+    result += m_name_status;
+    if (category() == category_channel_message)
+    {
+        result += " ";
+        result += m_name_channel;
+    }
+    if (! m_name_data.empty())
+    {
+        result += " ";
+        result += m_name_data;
+    }
+    return result;
+}
+
+/**
+ *  Analyzes an editable-event to make all the settings it needs.  Used in the
+ *  constructors.  Some of the setters indirectly set the appropriate string
+ *  representation, as well.
+ *
+ * Category:
+ *
+ *      This function can figure out if the status byte implies a channel
+ *      message or a system message, and set the category string as well.
+ *      However, at this time, detection of Meta events (0xFF) or
+ *      Proprietary/SeqSpec events (0xFF with 0x2424) aren't able to be
+ *      detected due to lack of context here (and due to the fact that
+ *      currently such events are not yet stored in a sequence, and the
+ *      least-significant-byte gets masked off anyway.)
+ *
+ * Status:
+ *
+ *      We distinguish between channel and system messages, and then one- and
+ *      two-byte messages, but don't yet distinguish the data values fully.
+ */
+
+void
+editable_event::analyze ()
+{
+    midibyte status = get_status();
+    if (status >= EVENT_NOTE_OFF && status <= EVENT_PITCH_WHEEL)
+    {
+        char tmp[32];
+        midibyte channel = get_channel();
+        midibyte d0, d1;
+        get_data(d0, d1);
+        category(category_channel_message);
+        status = get_status() & EVENT_CLEAR_CHAN_MASK;
+
+        /*
+         * Get channel message name (e.g. "Program change");
+         */
+
+        m_name_status = value_to_name(status, category_channel_message);
+        snprintf(tmp, sizeof tmp, "Channel %d", int(channel));
+        m_name_channel = std::string(tmp);
+        if (is_one_byte_msg(status))
+            snprintf(tmp, sizeof tmp, "Data = { %d }", int(d0));
+        else
+        {
+            if (is_note_msg(status))
+                snprintf(tmp, sizeof tmp, "Key %d Velocity %d", int(d0), int(d1));
+            else
+                snprintf(tmp, sizeof tmp, "Data = { %d, %d }", int(d0), int(d1));
+        }
+        m_name_data = std::string(tmp);
+    }
+    else if (status >= EVENT_MIDI_SYSEX)    //  && status <= EVENT_MIDI_RESET
+    {
+        category(category_system_message);
+
+        /*
+         * Get system message name (e.g. "SysEx start");
+         */
+
+        m_name_status = value_to_name(status, category_system_message);
+        m_name_channel.clear();
+        m_name_data.clear();
+    }
+    else
+    {
+        // Would try to detect SysEx versus Meta message versus SeqSpec here.
+        // Then set either m_name_meta and/or m_name_seqspec
+    }
+
 }
 
 }           // namespace seq64

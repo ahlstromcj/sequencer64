@@ -98,12 +98,40 @@ namespace seq64
  *      xpadding        padding on L and R of widget added to table
  *      ypadding        amount of padding above and below the child widget
  *
+ * Layout:
+ *
+ *      We're going to change the layout.
+ *
+\verbatim
+ *          0    1           2                3   4                         5
+ *           ---------------------------------------------------------------  0
+ * Top bar  |    :           :                    :                         |
+ *          |---------------------------------------------------------------| 1
+ *          |  1 | 120:0:192 | Program Change | ^ | "Sequence name"         |
+ *          |---------------------------------|   | 4/4 PPQN 192            |
+ *          |  2 | 120:1:0   | Program Change | s | 9999 events             |
+ *          |---------------------------------| c |-------------------------| 2
+ *          | ...    ...          ...         | r | Channel Event: Ch. 5    |
+ *          | ...    ...          ...         | o |- - - - - - - - - - - - -|
+ *          | ...    ...          ...         | l | [Edit field: Note On  ] |
+ *          | ...    ...          ...         | l |- - - - - - - - - - - - -|
+ *          | ...    ...          ...         |   | [Edit field: Key #    ] |
+ *          | ...    ...          ...         | b |- - - - - - - - - - - - -|
+ *          | ...    ...          ...         | a | [Edit field: Vel #    ] |
+ *          | ...    ...          ...         | r |- - - - - - - - - - - - -|
+ *          | ...    ...          ...         |   | [Optional more data?  ] |
+ *          | ...    ...          ...         |   |-------------------------| 3
+ *          | ...    ...          ...         | v |  o Pulses               |
+ *          |-------------------------------------|  o Measures             |
+ *          | 56 | 136:3:133 | Program Change ... |  o Time                 |
+ *           ------------------------------------- - - - - - - - - - - - - -  4
+\endverbatim
+ *
  * \param p
  *      Refers to the main performance object.
  *
- * \todo
- *      Offload most of the work into an initialization function like
- *      options does.
+ * \param seq
+ *      Refers to the sequence holding the event data to be edited.
  */
 
 eventedit::eventedit

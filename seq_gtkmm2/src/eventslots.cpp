@@ -25,11 +25,17 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-12-05
- * \updates       2015-12-06
+ * \updates       2015-12-07
  * \license       GNU GPLv2 or above
  *
  *  This module is user-interface code.  It is loosely based on the workings
  *  of the perfnames class.
+ *
+ *  Now, we have an issue when loading one of the larger sequences in our main
+ *  test tune, where X stops the application and Gtk says it got a bad memory
+ *  allocation.  So we need to page through the sequence.
+ *
+ *
  */
 
 #include <gtkmm/adjustment.h>
@@ -50,21 +56,20 @@ namespace seq64
 eventslots::eventslots
 (
     perform & p,
-    eventedit & parent,         // truly necessary???
+    eventedit & parent,
     sequence & seq,
     Gtk::Adjustment & vadjust
 ) :
     gui_drawingarea_gtk2    (p, adjustment_dummy(), vadjust, c_names_x, 100),
-//  seqmenu                 (p),
     m_parent                (parent),
     m_seq                   (seq),
     m_event_container       (seq, p.get_beats_per_minute()),
-    m_slots_chars           (64),                           // 24
+    m_slots_chars           (64),                               // 24
     m_char_w                (font_render().char_width()),
     m_setbox_w              (m_char_w * 2),
-    m_slots_box_w           (m_char_w * 62),                // 22
+    m_slots_box_w           (m_char_w * 62),                    // 22
     m_slots_x               (m_slots_chars * m_char_w),
-    m_slots_y               (c_names_y),
+    m_slots_y               (font_render().char_height() + 4),  // c_names_y
     m_xy_offset             (2),
     m_event_count           (0),
     m_event_offset          (0)
@@ -144,7 +149,7 @@ void
 eventslots::draw_event (int eventindex)
 {
     int yloc = m_slots_y * (eventindex - m_event_offset);
-    if (eventindex < m_event_count)
+    if (eventindex < 75)    // m_event_count
     {
 
 #ifdef DRAW_EVENT_INDEX
@@ -227,7 +232,7 @@ eventslots::convert_y (int y)
 bool
 eventslots::on_button_press_event (GdkEventButton * ev)
 {
-    int y = int(ev->y);
+    // int y = int(ev->y);
     // int eventnum = convert_y(y);
 //  current_event(seqnum);
     if (SEQ64_CLICK_LEFT(ev->button))

@@ -908,7 +908,11 @@ perform::is_seq_valid (int seq) const
         return true;
     else
     {
-        if (! SEQ64_IS_DISABLED_SEQUENCE(seq))  /* legal value, don't bitch */
+        if (SEQ64_IS_NULL_SEQUENCE(seq))
+        {
+            errprint("is_seq_valid(): unassigned sequence number");
+        }
+        else if (! SEQ64_IS_DISABLED_SEQUENCE(seq))
         {
             fprintf
             (

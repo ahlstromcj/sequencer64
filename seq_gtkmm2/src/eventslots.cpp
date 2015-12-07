@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-12-05
- * \updates       2015-12-05
+ * \updates       2015-12-06
  * \license       GNU GPLv2 or above
  *
  *  This module is user-interface code.  It is loosely based on the workings
@@ -50,16 +50,19 @@ namespace seq64
 eventslots::eventslots
 (
     perform & p,
-    eventedit & parent,
+    eventedit & parent,         // truly necessary???
+    sequence & seq,
     Gtk::Adjustment & vadjust
 ) :
     gui_drawingarea_gtk2    (p, adjustment_dummy(), vadjust, c_names_x, 100),
 //  seqmenu                 (p),
     m_parent                (parent),
-    m_slots_chars           (24),
+    m_seq                   (seq),
+    m_event_container       (seq, p.get_beats_per_minute()),
+    m_slots_chars           (64),                           // 24
     m_char_w                (font_render().char_width()),
     m_setbox_w              (m_char_w * 2),
-    m_slots_box_w           (m_char_w * 22),
+    m_slots_box_w           (m_char_w * 62),                // 22
     m_slots_x               (m_slots_chars * m_char_w),
     m_slots_y               (c_names_y),
     m_xy_offset             (2),
@@ -70,6 +73,8 @@ eventslots::eventslots
     (
         mem_fun(*(this), &eventslots::change_vert)
     );
+    if (m_event_container.load_events())
+        m_event_count = m_event_container.count();
 }
 
 /**
@@ -87,18 +92,13 @@ eventslots::change_vert ()
 }
 
 /**
- *  Wraps queue_draw() and forwards the call to the parent perfedit, so
- *  that it can forward it to any other perfedit that exists.
- *
- *  The parent perfedit will call eventslots::queue_draw() on behalf of this
- *  object, and it will pass a eventslots::enqueue_draw() to the peer perfedit's
- *  eventslots, if the peer exists.
+ *  Wraps queue_draw().
  */
 
 void
 eventslots::enqueue_draw ()
 {
-    m_parent.enqueue_draw();
+    queue_draw();
 }
 
 /**
@@ -194,30 +194,11 @@ eventslots::draw_event (int eventindex)
             m_slots_x - 3 - m_setbox_w, m_slots_y - 1
         );
 #ifdef THIS_IS_READY
-        char temp[32];
-        int chan = seq->is_smf_0() ? 0 : seq->get_midi_channel() + 1 ;
-        m_sequence_active[seqnum] = true;
-        snprintf(temp, sizeof(temp), "%-14.14s   %2d", seq->get_name(), chan);
+        editable_event & evp = m_event_container.begin().second;
+        std::string temp = evp.stock_event_string();
+#endif
+        std::string temp = "12345 Note On Channel 10 Key 127 Velocity 127";
         render_string(5 + m_setbox_w, yloc + 2, temp, col);
-
-        /*
-         * Get the label format from the perform object, for consistency.
-         */
-
-        std::string label = perf().sequence_label(*seq);
-        render_string(m_setbox_w + 5, yloc + 12, label, col);
-
-        bool muted = seq->get_song_mute();
-        draw_rectangle(black(), m_slots_box_w + 2, yloc, 10, m_slots_y, muted);
-        if (muted)
-        {
-            if (true)
-                col = font::YELLOW_ON_BLACK;
-            else if (false)
-                col = font::CYAN_ON_BLACK;
-            else
-                col = font::WHITE;
-        }
         render_string(m_slots_box_w + 5, yloc + 2, "X", col);
     }
 }
@@ -229,13 +210,13 @@ eventslots::draw_event (int eventindex)
 int
 eventslots::convert_y (int y)
 {
-    int seq = y / m_slots_y + m_event_offset;
-    if (seq >= m_event_count)
-        seq = m_event_count - 1;
-    else if (seq < 0)
-        seq = 0;
+    int edev = y / m_slots_y + m_event_offset;
+    if (edev >= m_event_count)
+        edev = m_event_count - 1;
+    else if (edev < 0)
+        edev = 0;
 
-    return seq;
+    return edev;
 }
 
 /**
@@ -247,17 +228,11 @@ bool
 eventslots::on_button_press_event (GdkEventButton * ev)
 {
     int y = int(ev->y);
-    int eventnum = convert_y(y);
-//  current_sequence(seqnum);
+    // int eventnum = convert_y(y);
+//  current_event(seqnum);
     if (SEQ64_CLICK_LEFT(ev->button))
     {
-//      if (perf().is_active(seqnum))
-//      {
-//          sequence * seq = perf().get_sequence(seqnum);
-//          bool muted = seq->get_song_mute();
-//          seq->set_song_mute(! muted);
-            enqueue_draw();
-//      }
+        enqueue_draw();
     }
     return true;
 }
@@ -302,8 +277,8 @@ eventslots::on_expose_event (GdkEventExpose *)
 bool
 eventslots::on_button_release_event (GdkEventButton * p0)
 {
-    if (SEQ64_CLICK_RIGHT(p0->button))
-        popup_menu();
+//  if (SEQ64_CLICK_RIGHT(p0->button))
+//      popup_menu();
 
     return false;
 }

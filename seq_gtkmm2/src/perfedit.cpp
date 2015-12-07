@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-12-05
+ * \updates       2015-12-06
  * \license       GNU GPLv2 or above
  *
  */
@@ -41,7 +41,7 @@
 #include <gtkmm/label.h>
 #include <gtkmm/togglebutton.h>
 #include <gtkmm/separator.h>
-#include <gtkmm/tooltips.h>             // #include <gtkmm/tooltip.h>
+#include <gtkmm/tooltips.h>
 #include <gtkmm/arrow.h>
 #include <gtkmm/image.h>
 #include <sigc++/bind.h>
@@ -88,15 +88,18 @@ perfedit::perfedit
     bool second_perfedit,
     int ppqn
 ) :
-    gui_window_gtk2     (p, 750, 500),      /* set_size_request(700, 400) */
+    gui_window_gtk2     (p, 750, 500),
     m_peer_perfedit     (nullptr),
-    m_table             (manage(new Gtk::Table(6, 3, false))),
+    m_table             (manage(new Gtk::Table(6, 3, false))),  /* no matter */
     m_vadjust           (manage(new Gtk::Adjustment(0, 0, 1, 1, 1, 1))),
     m_hadjust           (manage(new Gtk::Adjustment(0, 0, 1, 1, 1, 1))),
     m_vscroll           (manage(new Gtk::VScrollbar(*m_vadjust))),
     m_hscroll           (manage(new Gtk::HScrollbar(*m_hadjust))),
     m_perfnames         (manage(new perfnames(perf(), *this, *m_vadjust))),
-    m_perfroll     (manage(new perfroll(perf(), *this, *m_hadjust, *m_vadjust))),
+    m_perfroll
+    (
+        manage(new perfroll(perf(), *this, *m_hadjust, *m_vadjust))
+    ),
     m_perftime          (manage(new perftime(perf(), *this, *m_hadjust))),
     m_menu_snap         (manage(new Gtk::Menu())),
     m_button_snap       (manage(new Gtk::Button())),
@@ -587,7 +590,7 @@ perfedit::timeout ()
 }
 
 /**
- *  This callback function calls the base-class on_realize() fucntion, and
+ *  This callback function calls the base-class on_realize() function, and
  *  then connects the perfedit::timeout() function to the Glib
  *  signal-timeout, with a redraw timeout of m_redraw_ms.
  */

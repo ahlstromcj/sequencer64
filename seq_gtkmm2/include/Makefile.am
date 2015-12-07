@@ -6,7 +6,7 @@
 # \library    	libseq_gtkmm2 library
 # \author     	Chris Ahlstrom
 # \date       	2015-09-11
-# \update      2015-12-05
+# \update      2015-12-06
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -72,6 +72,7 @@ sequencer64libdir = @sequencer64libdir@
 #----------------------------------------------------------------------------
 
 pkginclude_HEADERS = \
+   eventedit.hpp \
    eventslots.hpp \
 	font.hpp \
 	fruityperfroll_input.hpp \

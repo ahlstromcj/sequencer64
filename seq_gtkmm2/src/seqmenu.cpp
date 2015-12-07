@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-12-02
+ * \updates       2015-12-06
  * \license       GNU GPLv2 or above
  *
  */
@@ -38,6 +38,10 @@
 #include "perform.hpp"
 #include "seqedit.hpp"
 #include "seqmenu.hpp"
+
+#ifdef USE_EVENTEDIT
+#include "eventedit.hpp"
+#endif
 
 using namespace Gtk::Menu_Helpers;
 
@@ -56,6 +60,9 @@ seqmenu::seqmenu (perform & p)
     m_mainperf      (p),
     m_clipboard     (),
     m_seqedit       (nullptr),
+#ifdef USE_EVENTEDIT
+    m_eventedit     (nullptr),
+#endif
     m_current_seq   (-1)            /* (0) is not really current yet    */
 {
     m_clipboard.set_master_midi_bus(&m_mainperf.master_bus());
@@ -73,7 +80,21 @@ seqmenu::~seqmenu ()
     /*
      * if (not_nullptr(m_seqedit))
      *      delete(m_seqedit)
+     *
+     * if (not_nullptr(m_eventqedit))
+     *      delete(m_eventqedit)
      */
+}
+
+/**
+ * \getter m_mainperf.get_sequence(current_sequence())
+ *      This call is used many, many times.
+ */
+
+sequence *
+seqmenu::get_current_sequence () const
+{
+    return m_mainperf.get_sequence(m_current_seq);
 }
 
 /**
@@ -88,12 +109,18 @@ seqmenu::popup_menu ()
         delete m_menu;
 
     m_menu = manage(new Gtk::Menu());
-    if (m_mainperf.is_active(m_current_seq))
+    if (m_mainperf.is_active(current_sequence()))
     {
         m_menu->items().push_back
         (
             MenuElem("Edit...", mem_fun(*this, &seqmenu::seq_edit))
         );
+#ifdef USE_EVENTEDIT
+        m_menu->items().push_back
+        (
+            MenuElem("Event Edit...", mem_fun(*this, &seqmenu::seq_event_edit))
+        );
+#endif
     }
     else
     {
@@ -103,7 +130,7 @@ seqmenu::popup_menu ()
         );
     }
     m_menu->items().push_back(SeparatorElem());
-    if (m_mainperf.is_active(m_current_seq))
+    if (m_mainperf.is_active(current_sequence()))
     {
         m_menu->items().push_back
         (
@@ -124,7 +151,7 @@ seqmenu::popup_menu ()
     m_menu->items().push_back(SeparatorElem());
     Gtk::Menu * menu_song = manage(new Gtk::Menu());
     m_menu->items().push_back(MenuElem("Song", *menu_song));
-    if (m_mainperf.is_active(m_current_seq))
+    if (m_mainperf.is_active(current_sequence()))
     {
         menu_song->items().push_back
         (
@@ -141,7 +168,7 @@ seqmenu::popup_menu ()
      * on the main window.
      */
 
-    if (m_mainperf.is_active(m_current_seq))
+    if (m_mainperf.is_active(current_sequence()))
     {
         m_menu->items().push_back(SeparatorElem());
         Gtk::Menu * menu_buses = manage(new Gtk::Menu());
@@ -187,11 +214,15 @@ seqmenu::popup_menu ()
 void
 seqmenu::set_bus_and_midi_channel (int a_bus, int a_ch)
 {
-    if (m_mainperf.is_active(m_current_seq))
+    if (m_mainperf.is_active(current_sequence()))
     {
-        m_mainperf.get_sequence(m_current_seq)->set_midi_bus(a_bus);
-        m_mainperf.get_sequence(m_current_seq)->set_midi_channel(a_ch);
-        m_mainperf.get_sequence(m_current_seq)->set_dirty();
+        sequence * s = get_current_sequence();
+        if (not_nullptr(s))
+        {
+            s->set_midi_bus(a_bus);
+            s->set_midi_channel(a_ch);
+            s->set_dirty();
+        }
     }
 }
 
@@ -216,52 +247,102 @@ seqmenu::mute_all_tracks ()
  *  Also, if a new sequences is created, we set the m_modified flag to
  *  true, even though the sequence might later be deleted.  Too much
  *  modification to keep track of!
+ *
+ *  An oddity is that calling show_all() here does not work unless the
+ *  seqedit() constructor makes its show_all() call.
  */
 
 void
 seqmenu::seq_edit ()
 {
-    seqedit * sed;
-    if (m_mainperf.is_active(m_current_seq))
+    sequence * s = get_current_sequence();
+    if (not_nullptr(s))
     {
-        if (! m_mainperf.get_sequence(m_current_seq)->get_editing())
+        if (m_mainperf.is_active(current_sequence()))
         {
-            sed = new seqedit
-            (
-                m_mainperf,
-                *m_mainperf.get_sequence(m_current_seq),
-                m_current_seq
-            );
-            m_seqedit = sed;            /* prevents "unused" warning      */
+            if (! s->get_editing())
+            {
+                m_seqedit = new seqedit(m_mainperf, *s, current_sequence());
+
+                /*
+                 * m_seqedit->show_all();
+                 */
+            }
+            else
+                s->set_raise(true);
         }
         else
-            m_mainperf.get_sequence(m_current_seq)->set_raise(true);
-    }
-    else
-    {
-        seq_new();
-        sed = new seqedit
-        (
-            m_mainperf,
-            *m_mainperf.get_sequence(m_current_seq),
-            m_current_seq
-        );
-        m_seqedit = sed;                /* prevents "unused" warning      */
+        {
+            seq_new();
+            m_seqedit = new seqedit(m_mainperf, *s, current_sequence());
+
+            /*
+             * m_seqedit->show_all();
+             */
+        }
     }
 }
 
+#ifdef USE_EVENTEDIT
+
+/**
+ *  This menu callback launches the new event editor window.  If it is already
+ *  open for that sequence, this function just raises it.
+ *
+ *  Note that the m_eventedit member to which we save the new pointer is
+ *  currently there just to avoid a compiler warning.
+ *
+ *  This menu entry is available only if the selected sequence is active.
+ *  That is, if the sequence has already been created.
+ *
+ *  An oddity is that we need the show_all() call here in order to see the
+ *  dialog.  A situation different from that for seqedit!
+ */
+
+void
+seqmenu::seq_event_edit ()
+{
+    sequence * s = get_current_sequence();
+    if (not_nullptr(s))
+    {
+        if (m_mainperf.is_active(current_sequence()))
+        {
+            if (! s->get_editing())
+            {
+                m_eventedit = new eventedit(m_mainperf, *s);
+                m_eventedit->show_all();
+            }
+            else
+                s->set_raise(true);
+        }
+        else
+        {
+            m_eventedit = new eventedit( m_mainperf, *s);
+            m_eventedit->show_all();
+        }
+    }
+}
+
+#endif  // USE_EVENTEDIT
+
 /**
  *  This function sets the new sequence into the perform object, a bit
- *  prematurely, though.
+ *  prematurely, though.  For one thing, if current_sequence() is either a -1
+ *  or is greater than the maximum allowed sequence number,
+ *  perform::is_active() will return false, and we have no idea whether the
+ *  sequence is not active or the sequence number is just invalid.  So we need
+ *  to check the pointer we got before trying to use it.
  */
 
 void
 seqmenu::seq_new ()
 {
-    if (! m_mainperf.is_active(m_current_seq))
+    if (! m_mainperf.is_active(current_sequence()))
     {
-        m_mainperf.new_sequence(m_current_seq);
-        m_mainperf.get_sequence(m_current_seq)->set_dirty();
+        m_mainperf.new_sequence(current_sequence());
+        sequence * s = get_current_sequence();
+        if (not_nullptr(s))
+            s->set_dirty();
     }
 }
 
@@ -279,12 +360,12 @@ seqmenu::seq_copy ()
     /*
      * Use a more appropriate function than operator =() here.
      *
-     * if (m_mainperf.is_active(m_current_seq))
-     *     m_clipboard = *(m_mainperf.get_sequence(m_current_seq));
+     * if (m_mainperf.is_active(current_sequence()))
+     *     m_clipboard = *(m_mainperf.get_sequence(current_sequence()));
      */
 
-    if (m_mainperf.is_active(m_current_seq))
-        m_clipboard.partial_assign(*(m_mainperf.get_sequence(m_current_seq)));
+    if (m_mainperf.is_active(current_sequence()))
+        m_clipboard.partial_assign(*get_current_sequence());
 }
 
 /**
@@ -300,16 +381,12 @@ seqmenu::seq_copy ()
 void
 seqmenu::seq_cut ()
 {
-    if (m_mainperf.is_active(m_current_seq) &&
-            ! m_mainperf.is_sequence_in_edit(m_current_seq))
+    if (m_mainperf.is_active(current_sequence()) &&
+            ! m_mainperf.is_sequence_in_edit(current_sequence()))
     {
-        /*
-         * m_clipboard = *(m_mainperf.get_sequence(m_current_seq));
-         */
-
-        m_clipboard.partial_assign(*(m_mainperf.get_sequence(m_current_seq)));
-        m_mainperf.delete_sequence(m_current_seq);
-        redraw(m_current_seq);
+        m_clipboard.partial_assign(*get_current_sequence());
+        m_mainperf.delete_sequence(current_sequence());
+        redraw(current_sequence());
     }
 }
 
@@ -326,16 +403,15 @@ seqmenu::seq_cut ()
 void
 seqmenu::seq_paste ()
 {
-    if (! m_mainperf.is_active(m_current_seq))
+    if (! m_mainperf.is_active(current_sequence()))
     {
-        m_mainperf.new_sequence(m_current_seq);
-
-        /*
-         * *(m_mainperf.get_sequence(m_current_seq)) = m_clipboard;
-         */
-
-        m_mainperf.get_sequence(m_current_seq)->partial_assign(m_clipboard);
-        m_mainperf.get_sequence(m_current_seq)->set_dirty();
+        m_mainperf.new_sequence(current_sequence());
+        sequence * s = get_current_sequence();
+        if (not_nullptr(s))
+        {
+            s->partial_assign(m_clipboard);
+            s->set_dirty();
+        }
     }
 }
 
@@ -352,11 +428,13 @@ seqmenu::seq_paste ()
 void
 seqmenu::seq_clear_perf ()
 {
-    if (m_mainperf.is_active(m_current_seq))
+    if (m_mainperf.is_active(current_sequence()))
     {
         m_mainperf.push_trigger_undo();
-        m_mainperf.clear_sequence_triggers(m_current_seq);
-        m_mainperf.get_sequence(m_current_seq)->set_dirty();
+        m_mainperf.clear_sequence_triggers(current_sequence());
+        sequence * s = get_current_sequence();
+        if (not_nullptr(s))
+            s->set_dirty();
     }
 }
 

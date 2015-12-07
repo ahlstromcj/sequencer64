@@ -28,18 +28,15 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-12-05
- * \updates       2015-12-05
+ * \updates       2015-12-06
  * \license       GNU GPLv2 or above
  *
  */
 
-#include <list>
-#include <string>
-#include <gtkmm/widget.h>       // somehow, can't forward-declare GdkEventAny
-#include <gtkmm/window.h>       // ditto
+#include <gtkmm/widget.h>               /* can't forward-declare GdkEventAny */
+#include <gtkmm/window.h>               /* ditto for Window                  */
 
 #include "gui_window_gtk2.hpp"
-#include "perform.hpp"
 
 /*
  *  Since these items are pointers, we were able to move (most) of the
@@ -54,10 +51,12 @@ namespace Gtk
     class Entry;
     class HBox;
     class HScrollbar;
+    class Label;
     class Menu;
     class Table;
     class ToggleButton;
     class Tooltips;
+    class VBox;
     class VScrollbar;
 }
 
@@ -65,6 +64,7 @@ namespace seq64
 {
 
 class eventslots;
+class sequence;
 
 /**
  *  This class supports an Event Editor that is used to tweak the details of
@@ -84,56 +84,26 @@ private:
     Gtk::Adjustment * m_vadjust;
     Gtk::VScrollbar * m_vscroll;
     eventslots * m_eventslots;
-#ifdef USE_PLAY_FUNCTION
-    Gtk::Button * m_button_stop;
-    Gtk::Button * m_button_play;
-    Gtk::ToggleButton * m_button_loop;
-#endif
-#ifdef USE_COPY_FUNCTION
-    Gtk::Button * m_button_copy;
-#endif
-    Gtk::Entry * m_entry_bpm;
-    Gtk::Entry * m_entry_bw;
-    Gtk::HBox * m_hbox;
-    Gtk::HBox * m_hlbox;
-    Gtk::Tooltips * m_tooltips;        // why not conditional on Gtk version?
+    Gtk::HBox * m_htopbox;
+    Gtk::VBox * m_editbox;
+    Gtk::HBox * m_bottbox;
 
     /**
-     * Menus for time signature, beats per measure, beat width.
+     * Items for the inside of the m_htopbox member.
      */
+
+    Gtk::Label * m_label_seq_name;
+    Gtk::Label * m_label_time_sig;
+    Gtk::Label * m_label_ppqn;
+    Gtk::Label * m_label_ev_count;
 
     /**
-     * Set snap-to in "pulses".
+     * Items for the inside of the m_editbox member.
      */
 
-    int m_snap;
-
-    /**
-     *  The current "beats per measure" value.  Do not confuse it with BPM
-     *  (beats per minute). The numerator of the time signature.
-     */
-
-    int m_bpm;
-
-    /**
-     *  The current "beat width" value.  The denominator of the time
-     *  signature.
-     */
-
-    int m_bw;
-
-    /**
-     *  The current "parts per quarter note" value.
-     */
-
-    int m_ppqn;
-
-    /**
-     *  The standard "beats per measure" of Sequencer64, which here matches
-     *  the beats-per-measure displayed in the perfroll (piano roll).
-     */
-
-    int m_standard_bpm;
+    Gtk::Label * m_label_category;
+    Gtk::Label * m_label_ev_name;
+    Gtk::Entry * m_entry_ev_name;
 
     /**
      *  Provides the timer period for the eventedit timer, used to determine
@@ -148,57 +118,23 @@ public:
     eventedit
     (
         perform & p,
-        bool second_eventedit    = false,
-        int ppqn                = SEQ64_USE_DEFAULT_PPQN
+        sequence & seq
     );
     ~eventedit ();
 
-    void enqueue_draw (bool forward = true);
+    void enqueue_draw ();
 
 private:
 
-    void expand ();
-    void collapse ();
-    void copy ();
-    void undo ();
     void popup_menu (Gtk::Menu * menu);
     bool timeout ();
-
-    /**
-     *  Implement the playing.  JACK will be used if it is present and, in the
-     *  application, enabled.  This call also sets
-     *  rc().is_pattern_playing(true).
-     */
-
-    void start_playing ()
-    {
-        perf().start_playing(true);         // careful now, see perform!!!!
-    }
-
-    /**
-     *  Stop the playing.  This call also sets rc().is_pattern_playing(true).
-     */
-
-    void stop_playing ()
-    {
-        perf().stop_playing();
-    }
 
 private:            // callbacks
 
     void on_realize ();
     bool on_key_press_event (GdkEventKey * ev);
 
-    /**
-     *  All this callback function does is return false.
-     */
-
-    bool on_delete_event (GdkEventAny * /*a_event*/ )
-    {
-        return false;
-    }
-
-};
+};          // class eventedit
 
 }           // namespace seq64
 

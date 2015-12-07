@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-12-05
- * \updates       2015-12-05
+ * \updates       2015-12-06
  * \license       GNU GPLv2 or above
  *
  *
@@ -36,26 +36,17 @@
  *      -   Undo
  */
 
+#include <string>
 #include <gtkmm/adjustment.h>
 #include <gtkmm/button.h>
-// #include <gtkmm/window.h>
-// #include <gtkmm/accelgroup.h>
 #include <gtkmm/box.h>
-// #include <gtkmm/main.h>
 #include <gtkmm/menu.h>
 #include <gtkmm/menubar.h>
-// #include <gtkmm/eventbox.h>
 #include <gtkmm/table.h>
-// #include <gtkmm/drawingarea.h>
-// #include <gtkmm/widget.h>
 #include <gtkmm/scrollbar.h>
-// #include <gtkmm/viewport.h>
 #include <gtkmm/combo.h>
 #include <gtkmm/label.h>
-// #include <gtkmm/toolbar.h>
-// #include <gtkmm/optionmenu.h>
 #include <gtkmm/togglebutton.h>
-// #include <gtkmm/invisible.h>
 #include <gtkmm/separator.h>
 #include <gtkmm/tooltips.h>
 #include <gtkmm/arrow.h>
@@ -66,16 +57,8 @@
 #include "gtk_helpers.h"
 #include "eventedit.hpp"
 #include "eventslots.hpp"
-#include "perfroll.hpp"
-#include "perftime.hpp"
+#include "perform.hpp"
 
-#ifdef USE_PLAY_FUNCTION
-#include "pixmaps/play2.xpm"
-#include "pixmaps/stop.xpm"
-#endif
-#ifdef USE_COPY_FUNCTION
-#include "pixmaps/copy.xpm"
-#endif
 #include "pixmaps/perfedit.xpm"
 
 using namespace Gtk::Menu_Helpers;
@@ -88,6 +71,33 @@ namespace seq64
  *  We've reordered the pointer members and put them in the initializer
  *  list to make the constructor a bit cleaner.
  *
+ *  Adjustment parameters:
+ *
+ *      value            initial value
+ *      lower            minimum value
+ *      upper            maximum value
+ *      step_increment   step increment
+ *      page_increment   page increment
+ *      page_size        page size
+ *
+ *  Table constructor parameters:
+ *
+ *      rows
+ *      columns
+ *      homogenous
+ *
+ *  Table attach() parameters:
+ *
+ *      child           widget to add.
+ *      left_attach     column number to attach left side of a child widget
+ *      right_attach    column number to attach right side of a child widget
+ *      top_attach      row number to attach the top of a child widget
+ *      bottom_attach   row number to attach the bottom of a child widget
+ *      xoptions        properties of the child widget when table resized
+ *      yoptions        same as xoptions, except vertical.
+ *      xpadding        padding on L and R of widget added to table
+ *      ypadding        amount of padding above and below the child widget
+ *
  * \param p
  *      Refers to the main performance object.
  *
@@ -99,93 +109,79 @@ namespace seq64
 eventedit::eventedit
 (
     perform & p,
-    int ppqn
+    sequence & seq
 ) :
-    gui_window_gtk2     (p, 750, 500),      /* set_size_request(700, 400) */
-    m_table             (manage(new Gtk::Table(6, 3, false))),
+    gui_window_gtk2     (p, 500, 700),
+    m_table             (manage(new Gtk::Table(3, 3, false))),
     m_vadjust           (manage(new Gtk::Adjustment(0, 0, 1, 1, 1, 1))),
     m_vscroll           (manage(new Gtk::VScrollbar(*m_vadjust))),
-    m_eventslots        (manage(new eventslots(perf(), *this, *m_vadjust))),
-    m_button_stop       (manage(new Gtk::Button())),
-    m_button_play       (manage(new Gtk::Button())),
-    m_button_loop       (manage(new Gtk::ToggleButton())),
-    m_button_copy       (manage(new Gtk::Button())),
-    m_hbox              (manage(new Gtk::HBox(false, 2))),
-    m_hlbox             (manage(new Gtk::HBox(false, 2))),
-    m_tooltips          (manage(new Gtk::Tooltips())),  // valgrind complains!
-    m_snap              (SEQ64_DEFAULT_PERFEDIT_SNAP),
-    m_bpm               (0),
-    m_bw                (0),
-    m_ppqn              (0),
-    m_standard_bpm      (SEQ64_DEFAULT_LINES_PER_MEASURE),  /* 4            */
+    m_eventslots
+    (
+        manage(new eventslots(perf(), *this, seq, *m_vadjust))
+    ),
+    m_htopbox           (manage(new Gtk::HBox(false, 2))),
+    m_editbox           (manage(new Gtk::VBox(false, 2))),
+    m_bottbox           (manage(new Gtk::HBox(false, 2))),
+    m_label_seq_name    (manage(new Gtk::Label())),
+    m_label_time_sig    (manage(new Gtk::Label())),
+    m_label_ppqn        (manage(new Gtk::Label())),
+    m_label_ev_count    (manage(new Gtk::Label())),
+    m_label_category    (manage(new Gtk::Label())),
+    m_label_ev_name     (manage(new Gtk::Label())),
+    m_entry_ev_name     (manage(new Gtk::Entry())),
     m_redraw_ms         (c_redraw_ms)                       /* 40 ms        */
 {
     std::string title = "Sequencer64 - Event Editor";
-    m_ppqn = choose_ppqn(ppqn);
-    set_icon(Gdk::Pixbuf::create_from_xpm_data(perfedit_xpm));
     set_title(title);                                       /* caption bar  */
+    set_icon(Gdk::Pixbuf::create_from_xpm_data(perfedit_xpm));
     m_table->set_border_width(2);
-    m_hlbox->set_border_width(2);
+    m_bottbox->set_border_width(2);
+    m_table->attach(*m_htopbox, 0, 3, 0, 1,  Gtk::FILL, Gtk::SHRINK, 0, 2);
+    m_table->attach(*m_eventslots, 0, 1, 1, 3, Gtk::FILL, Gtk::FILL);
+    m_table->attach(*m_vscroll, 1, 2, 1, 3, Gtk::SHRINK, Gtk::FILL | Gtk::EXPAND);
+    m_table->attach(*m_editbox, 2, 3, 1, 2,  Gtk::FILL, Gtk::SHRINK, 0, 2);
+    m_table->attach(*m_bottbox, 2, 3, 2, 3,  Gtk::FILL, Gtk::SHRINK, 2, 0);
+    add(*m_table);
+
+//  m_label_seq_name->set_max_length(32);
+//  m_label_seq_name->set_editable(false);
+
+    m_label_seq_name->set_width_chars(32);
+    m_label_seq_name->set_text("Untitled/Empty sequence");
+    m_htopbox->pack_start(*m_label_seq_name, false, false); /* expand and fill */
+
+    m_label_time_sig->set_width_chars(5);
+    m_label_time_sig->set_text("4/4");
+    m_htopbox->pack_start(*m_label_time_sig, false, false); /* expand and fill */
+
+    m_label_ppqn->set_width_chars(5);
+    m_label_ppqn->set_text("192");
+    m_htopbox->pack_start(*m_label_ppqn, false, false); /* expand and fill */
+
+    m_label_ev_count->set_width_chars(12);
+    m_label_ev_count->set_text("9999 events");
+    m_htopbox->pack_start(*m_label_ev_count, false, false); /* expand and fill */
+
+    m_label_category->set_width_chars(24);
+    m_label_category->set_text("Category:  Channel Event");
+    m_editbox->pack_start(*m_label_category, false, false);
+
+    m_label_ev_name->set_width_chars(24);
+    m_label_ev_name->set_text("Event Type");
+    m_editbox->pack_start(*m_label_ev_name, false, false);
+
+    m_entry_ev_name->set_max_length(32);
+    m_entry_ev_name->set_editable(true);
+    m_entry_ev_name->set_width_chars(18);
+    m_entry_ev_name->set_text("Unknown MIDI event");
+    m_editbox->pack_start(*m_entry_ev_name, false, false);
 
     /*
-     * Fill the table
+     * Doesn't do anything:
+     *
+     * m_table->show();
+     * show_all();
      */
-
-    m_table->attach(*m_hlbox, 0, 3, 0, 1,  Gtk::FILL, Gtk::SHRINK, 2, 0);
-    m_table->attach(*m_eventslots, 0, 1, 2, 3, Gtk::SHRINK, Gtk::FILL);
-    m_table->attach(*m_vscroll, 2, 3, 2, 3, Gtk::SHRINK, Gtk::FILL | Gtk::EXPAND);
-    m_table->attach(*m_hbox,  0, 1, 3, 4,  Gtk::FILL, Gtk::SHRINK, 0, 2);
-
-#ifdef USE_COPY_FUNCTION
-    m_button_copy->add                              /* expand & copy    */
-    (
-        *manage(new Gtk::Image(Gdk::Pixbuf::create_from_xpm_data(copy_xpm)))
-    );
-    m_button_copy->signal_clicked().connect(mem_fun(*this, &eventedit::copy));
-    add_tooltip(m_button_copy, "Expand and copy between the L and R markers.");
-#endif
-#ifdef USE_PLAY_FUNCTION
-    m_button_loop->add
-    (
-        *manage(new Gtk::Image(Gdk::Pixbuf::create_from_xpm_data(loop_xpm)))
-    );
-    m_button_loop->signal_toggled().connect
-    (
-        mem_fun(*this, &eventedit::set_looped)
-    );
-    add_tooltip(m_button_loop, "Playback looped between the L and R markers.");
-    m_button_stop->add
-    (
-        *manage(new Gtk::Image(Gdk::Pixbuf::create_from_xpm_data(stop_xpm)))
-    );
-    m_button_stop->signal_clicked().connect
-    (
-        mem_fun(*this, &eventedit::stop_playing)
-    );
-    add_tooltip(m_button_stop, "Stop playback.");
-    m_button_play->add
-    (
-        *manage(new Gtk::Image(Gdk::Pixbuf::create_from_xpm_data(play2_xpm)))
-    );
-    m_button_play->signal_clicked().connect
-    (
-        mem_fun(*this, &eventedit::start_playing)
-    );
-    add_tooltip(m_button_play, "Begin playback at the L marker.");
-#endif  // USE_PLAY_FUNCTION
-    m_hlbox->pack_end(*m_button_copy , false, false);
-#ifdef USE_PLAY_FUNCTION
-    m_hlbox->pack_start(*m_button_stop , false, false);
-    m_hlbox->pack_start(*m_button_play , false, false);
-    m_hlbox->pack_start(*m_button_loop , false, false);
-    m_hlbox->pack_start(*(manage(new Gtk::VSeparator())), false, false, 4);
-#endif
-    m_hlbox->pack_start(*m_entry_bpm , false, false);
-    m_hlbox->pack_start(*(manage(new Gtk::Label("/"))), false, false, 4);
-    m_hlbox->pack_start(*m_entry_bw , false, false);
-    m_hlbox->pack_start(*(manage(new Gtk::Label("x"))), false, false, 4);
-    m_hlbox->pack_start(*m_entry_snap , false, false);
-    add(*m_table);
 }
 
 /**
@@ -209,46 +205,9 @@ eventedit::~eventedit ()
  */
 
 void
-eventedit::enqueue_draw (bool forward)
+eventedit::enqueue_draw ()
 {
     m_eventslots->queue_draw();
-}
-
-/**
- *  Implement the undo feature (Ctrl-Z).  We pop an Undo trigger, and then
- *  ask the perfroll to queue up a (re)drawing action.
- */
-
-void
-eventedit::undo ()
-{
-    perf().pop_trigger_undo();
-    enqueue_draw();
-}
-
-/**
- *  Implement the collapse action.  This action removes all events between
- *  the L and R (left and right) markers.  This action is preceded by
- *  pushing an Undo operation in the perform object, not moving its
- *  triggers (they go away), and telling the perfroll to redraw.
- */
-
-void
-eventedit::collapse ()
-{
-    perf().collapse();
-    enqueue_draw();
-}
-
-/**
- *  Implement the copy of an event (or range of events????)
- */
-
-void
-eventedit::copy ()
-{
-    // perf().copy();
-    enqueue_draw();
 }
 
 /**
@@ -275,7 +234,7 @@ eventedit::timeout ()
 }
 
 /**
- *  This callback function calls the base-class on_realize() fucntion, and
+ *  This callback function calls the base-class on_realize() function, and
  *  then connects the eventedit::timeout() function to the Glib
  *  signal-timeout, with a redraw timeout of m_redraw_ms.
  */
@@ -297,7 +256,7 @@ eventedit::on_realize ()
 bool
 eventedit::on_key_press_event (GdkEventKey * ev)
 {
-    bool event_was_handled = false;
+    // bool event_was_handled = false;
     if (CAST_EQUIVALENT(ev->type, SEQ64_KEY_PRESS))
     {
         if (rc().print_keys())
@@ -308,27 +267,6 @@ eventedit::on_key_press_event (GdkEventKey * ev)
                 ev->keyval, gdk_keyval_name(ev->keyval)
             );
         }
-
-        /*
-         *  By default, the space-bar starts the playing, and the Escape
-         *  key stops the playing.  The start/end key may be the same key
-         *  (i.e. space-bar), allow toggling when the same key is mapped
-         *  to both triggers.
-         */
-
-        bool notoggle = PREFKEY(start) != PREFKEY(stop);
-        if (ev->keyval == PREFKEY(start) && (notoggle || ! perf().is_running()))
-        {
-            start_playing();
-            return true;
-        }
-        if (ev->keyval == PREFKEY(stop) && (notoggle || perf().is_running()))
-        {
-            stop_playing();
-            return true;
-        }
-        if (ev->keyval == PREFKEY(start) || ev->keyval == PREFKEY(stop))
-            event_was_handled = true;
     }
     return Gtk::Window::on_key_press_event(ev);
 }

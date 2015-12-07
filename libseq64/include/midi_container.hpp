@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-10-10
- * \updates       2015-11-29
+ * \updates       2015-12-06
  * \license       GNU GPLv2 or above
  *
  */
@@ -76,21 +76,27 @@
  *  This macro allows SEQ64_SEQUENCE_LIMIT as a legal value to use.
  */
 
-#define SEQ64_IS_LEGAL_SEQUENCE(s)  ((s) >= 0 && (s) <= SEQ64_SEQUENCE_LIMIT)
+#define SEQ64_IS_LEGAL_SEQUENCE(s)      ((s) >= 0 && (s) <= SEQ64_SEQUENCE_LIMIT)
 
 /**
  *  A convenient macro function to test against SEQ64_SEQUENCE_LIMIT.
  *  This macro does not allow SEQ64_SEQUENCE_LIMIT as a valid value to use.
  */
 
-#define SEQ64_IS_VALID_SEQUENCE(s)  ((s) >= 0 && (s) < SEQ64_SEQUENCE_LIMIT)
+#define SEQ64_IS_VALID_SEQUENCE(s)      ((s) >= 0 && (s) < SEQ64_SEQUENCE_LIMIT)
 
 /**
  *  A convenient macro function to test against SEQ64_SEQUENCE_LIMIT.
  *  This macro does not allow SEQ64_SEQUENCE_LIMIT as a valid value to use.
  */
 
-#define SEQ64_IS_DISABLED_SEQUENCE(s)       ((s) == SEQ64_SEQUENCE_LIMIT)
+#define SEQ64_IS_DISABLED_SEQUENCE(s)   ((s) == SEQ64_SEQUENCE_LIMIT)
+
+/**
+ *  Provides a way to detect a sequence number that has not yet been assigned.
+ */
+
+#define SEQ64_IS_NULL_SEQUENCE(s)       ((s) == (-1))
 
 namespace seq64
 {

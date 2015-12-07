@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-12-05
- * \updates       2015-12-05
+ * \updates       2015-12-06
  * \license       GNU GPLv2 or above
  *
  *  This class supports the left side of the Performance window (also known
@@ -35,6 +35,7 @@
  */
 
 #include "globals.h"
+#include "editable_events.hpp"          /* seq64::editable_events container  */
 #include "gui_drawingarea_gtk2.hpp"
 // #include "seqmenu.hpp"
 
@@ -46,8 +47,9 @@ namespace Gtk
 namespace seq64
 {
 
-class perform;
 class eventedit;
+class perform;
+class sequence;
 
 /**
  *  This class implements the left-side keyboard in the patterns window.
@@ -56,6 +58,8 @@ class eventedit;
 class eventslots : public gui_drawingarea_gtk2 // , public seqmenu
 {
 
+    friend class eventedit;
+
 private:
 
     /**
@@ -63,6 +67,19 @@ private:
      */
 
     eventedit & m_parent;
+
+    /**
+     *  Provides a reference to the sequence that this dialog is meant to view
+     *  or modify.
+     */
+
+    sequence & m_seq;
+
+    /**
+     *  Holds the editable events for this sequence.
+     */
+
+    editable_events m_event_container;
 
     /**
      *  Provides the number of the characters in the name box.  Pretty much
@@ -124,6 +141,7 @@ public:
     (
         perform & p,
         eventedit & parent,
+        sequence & seq,
         Gtk::Adjustment & vadjust
     );
 
@@ -158,9 +176,9 @@ private:
      *  Redraw the given sequence.
      */
 
-    void redraw (int eventindex)
+    void redraw ()
     {
-        draw_event(eventindex);
+        // draw_event(eventindex);
     }
 
 private:    // Gtk callbacks

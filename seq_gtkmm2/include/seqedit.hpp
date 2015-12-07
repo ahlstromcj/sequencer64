@@ -108,7 +108,7 @@ private:
 
     int m_scale;
     int m_key;
-    int m_sequence;
+    int m_bgsequence;
     long m_measures;
     int m_ppqn;
 
@@ -139,7 +139,13 @@ private:
     Gtk::Menu * m_menu_bpm;
     Gtk::Menu * m_menu_bw;
     Gtk::Menu * m_menu_rec_vol;
+
+    /**
+     * Basically the sequence number.
+     */
+
     int m_pos;
+
     Gtk::Adjustment * m_vadjust;
     Gtk::Adjustment * m_hadjust;
     Gtk::VScrollbar * m_vscroll_new;

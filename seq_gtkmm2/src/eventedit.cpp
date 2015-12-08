@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-12-05
- * \updates       2015-12-06
+ * \updates       2015-12-08
  * \license       GNU GPLv2 or above
  *
  *
@@ -103,28 +103,30 @@ namespace seq64
  *      We're going to change the layout.
  *
 \verbatim
- *          0    1           2                3   4                         5
- *           ---------------------------------------------------------------  0
- * Top bar  |    :           :                    :                         |
- *          |---------------------------------------------------------------| 1
- *          |  1 | 120:0:192 | Program Change | ^ | "Sequence name"         |
- *          |---------------------------------|   | 4/4 PPQN 192            |
- *          |  2 | 120:1:0   | Program Change | s | 9999 events             |
- *          |---------------------------------| c |-------------------------| 2
- *          | ...    ...          ...         | r | Channel Event: Ch. 5    |
- *          | ...    ...          ...         | o |- - - - - - - - - - - - -|
- *          | ...    ...          ...         | l | [Edit field: Note On  ] |
- *          | ...    ...          ...         | l |- - - - - - - - - - - - -|
- *          | ...    ...          ...         |   | [Edit field: Key #    ] |
- *          | ...    ...          ...         | b |- - - - - - - - - - - - -|
- *          | ...    ...          ...         | a | [Edit field: Vel #    ] |
- *          | ...    ...          ...         | r |- - - - - - - - - - - - -|
- *          | ...    ...          ...         |   | [Optional more data?  ] |
- *          | ...    ...          ...         |   |-------------------------| 3
- *          | ...    ...          ...         | v |  o Pulses               |
- *          |-------------------------------------|  o Measures             |
- *          | 56 | 136:3:133 | Program Change ... |  o Time                 |
- *           ------------------------------------- - - - - - - - - - - - - -  4
+            0    1           2                3   4                         5
+             ---------------------------------------------------------------  0
+   htopbox  |    :           :                    :                         |
+            |---------------------------------------------------------------| 1
+   e'slots  |  1 | 120:0:192 | Program Change | ^ | "Sequence name"         |
+            |---------------------------------|   | 4/4 PPQN 192            |
+            |  2 | 120:1:0   | Program Change | s | 9999 events             |
+            |---------------------------------| c |-------------------------| 2
+            | ...    ...          ...         | r | Channel Event: Ch. 5    |
+            | ...    ...          ...         | o |- - - - - - - - - - - - -|
+            | ...    ...          ...         | l | [Edit field: Note On  ] |
+            | ...    ...          ...         | l |- - - - - - - - - - - - -|
+            | ...    ...          ...         |   | [Edit field: Key #    ] |
+            | ...    ...          ...         | b |- - - - - - - - - - - - -|
+            | ...    ...          ...         | a | [Edit field: Vel #    ] |
+            | ...    ...          ...         | r |- - - - - - - - - - - - -|
+            | ...    ...          ...         |   | [Optional more data?  ] |
+            | ...    ...          ...         |   |-------------------------| 3
+            | ...    ...          ...         |   |  o Pulses               |
+            |---------------------------------|   |  o Measures             |
+            | 56 | 136:3:133 | Program Change | v |  o Time                 |
+            |---------------------------------------------------------------| 4
+   bottbox  |    :           :                    :                         |
+             ---------------------------------------------------------------  5
 \endverbatim
  *
  * \param p
@@ -148,15 +150,20 @@ eventedit::eventedit
         manage(new eventslots(perf(), *this, seq, *m_vadjust))
     ),
     m_htopbox           (manage(new Gtk::HBox(false, 2))),
+    m_showbox           (manage(new Gtk::VBox(false, 2))),
     m_editbox           (manage(new Gtk::VBox(false, 2))),
+    m_optsbox           (manage(new Gtk::VBox(false, 2))),
     m_bottbox           (manage(new Gtk::HBox(false, 2))),
     m_label_seq_name    (manage(new Gtk::Label())),
     m_label_time_sig    (manage(new Gtk::Label())),
     m_label_ppqn        (manage(new Gtk::Label())),
     m_label_ev_count    (manage(new Gtk::Label())),
     m_label_category    (manage(new Gtk::Label())),
-    m_label_ev_name     (manage(new Gtk::Label())),
+//  m_label_ev_name     (manage(new Gtk::Label())),
     m_entry_ev_name     (manage(new Gtk::Entry())),
+    m_entry_data_0      (manage(new Gtk::Entry())),
+    m_entry_data_1      (manage(new Gtk::Entry())),
+    m_label_time_fmt    (manage(new Gtk::Label())),
     m_redraw_ms         (c_redraw_ms)                       /* 40 ms        */
 {
     std::string title = "Sequencer64 - Event Editor";
@@ -164,45 +171,71 @@ eventedit::eventedit
     set_icon(Gdk::Pixbuf::create_from_xpm_data(perfedit_xpm));
     m_table->set_border_width(2);
     m_bottbox->set_border_width(2);
-    m_table->attach(*m_htopbox, 0, 3, 0, 1,  Gtk::FILL, Gtk::SHRINK, 0, 2);
-    m_table->attach(*m_eventslots, 0, 1, 1, 3, Gtk::FILL, Gtk::FILL);
-    m_table->attach(*m_vscroll, 1, 2, 1, 3, Gtk::SHRINK, Gtk::FILL | Gtk::EXPAND);
-    m_table->attach(*m_editbox, 2, 3, 1, 2,  Gtk::FILL, Gtk::SHRINK, 0, 2);
-    m_table->attach(*m_bottbox, 2, 3, 2, 3,  Gtk::FILL, Gtk::SHRINK, 2, 0);
+    m_table->attach(*m_htopbox, 0, 5, 0, 1,  Gtk::FILL, Gtk::SHRINK, 0, 2);
+    m_table->attach(*m_showbox, 4, 5, 1, 2,  Gtk::FILL, Gtk::SHRINK, 2, 2);
+    m_table->attach(*m_eventslots, 0, 3, 1, 4, Gtk::FILL, Gtk::FILL, 2, 2);
+    m_table->attach
+    (
+        *m_vscroll, 3, 4, 1, 4, Gtk::SHRINK, Gtk::FILL | Gtk::EXPAND, 2, 2
+    );
+    m_table->attach(*m_editbox, 4, 5, 1, 4,  Gtk::FILL, Gtk::SHRINK, 8, 8);
+    m_table->attach(*m_optsbox, 4, 5, 3, 4,  Gtk::FILL, Gtk::SHRINK, 8, 8);
+    m_table->attach(*m_bottbox, 4, 5, 3, 4,  Gtk::FILL, Gtk::SHRINK, 8, 8);
+
     add(*m_table);
 
 //  m_label_seq_name->set_max_length(32);
 //  m_label_seq_name->set_editable(false);
 
     m_label_seq_name->set_width_chars(32);
-    m_label_seq_name->set_text("Untitled/Empty sequence");
+    m_label_seq_name->set_text("Event Viewer and Editor");
     m_htopbox->pack_start(*m_label_seq_name, false, false); /* expand and fill */
+
+    m_label_seq_name->set_width_chars(32);
+    m_label_seq_name->set_text("\"Untitled/Empty sequence\"");
+    m_showbox->pack_start(*m_label_seq_name, false, false); /* expand and fill */
 
     m_label_time_sig->set_width_chars(5);
     m_label_time_sig->set_text("4/4");
-    m_htopbox->pack_start(*m_label_time_sig, false, false); /* expand and fill */
+    m_showbox->pack_start(*m_label_time_sig, false, false); /* expand and fill */
 
     m_label_ppqn->set_width_chars(5);
     m_label_ppqn->set_text("192");
-    m_htopbox->pack_start(*m_label_ppqn, false, false); /* expand and fill */
+    m_showbox->pack_start(*m_label_ppqn, false, false); /* expand and fill */
 
     m_label_ev_count->set_width_chars(12);
     m_label_ev_count->set_text("9999 events");
-    m_htopbox->pack_start(*m_label_ev_count, false, false); /* expand and fill */
+    m_showbox->pack_start(*m_label_ev_count, false, false); /* expand and fill */
 
     m_label_category->set_width_chars(24);
-    m_label_category->set_text("Category:  Channel Event");
+    m_label_category->set_text("Channel Event: Ch. 5");
     m_editbox->pack_start(*m_label_category, false, false);
 
-    m_label_ev_name->set_width_chars(24);
-    m_label_ev_name->set_text("Event Type");
-    m_editbox->pack_start(*m_label_ev_name, false, false);
+//  m_label_ev_name->set_width_chars(24);
+//  m_label_ev_name->set_text("Note On");
+//  m_editbox->pack_start(*m_label_ev_name, false, false);
 
     m_entry_ev_name->set_max_length(32);
     m_entry_ev_name->set_editable(true);
     m_entry_ev_name->set_width_chars(18);
-    m_entry_ev_name->set_text("Unknown MIDI event");
+    m_entry_ev_name->set_text("Note On");
     m_editbox->pack_start(*m_entry_ev_name, false, false);
+
+    m_entry_data_0->set_max_length(32);
+    m_entry_data_0->set_editable(true);
+    m_entry_data_0->set_width_chars(18);
+    m_entry_data_0->set_text("Key 101");
+    m_editbox->pack_start(*m_entry_data_0, false, false);
+
+    m_entry_data_1->set_max_length(32);
+    m_entry_data_1->set_editable(true);
+    m_entry_data_1->set_width_chars(18);
+    m_entry_data_1->set_text("Vel 64");
+    m_editbox->pack_start(*m_entry_data_1, false, false);
+
+    m_label_time_fmt->set_width_chars(24);
+    m_label_time_fmt->set_text("Time Format (radio buttons)");
+    m_editbox->pack_start(*m_label_time_fmt, false, false);
 
     /*
      * Doesn't do anything:

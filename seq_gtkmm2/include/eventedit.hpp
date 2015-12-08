@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-12-05
- * \updates       2015-12-06
+ * \updates       2015-12-08
  * \license       GNU GPLv2 or above
  *
  */
@@ -85,7 +85,9 @@ private:
     Gtk::VScrollbar * m_vscroll;
     eventslots * m_eventslots;
     Gtk::HBox * m_htopbox;
+    Gtk::VBox * m_showbox;
     Gtk::VBox * m_editbox;
+    Gtk::VBox * m_optsbox;
     Gtk::HBox * m_bottbox;
 
     /**
@@ -102,8 +104,10 @@ private:
      */
 
     Gtk::Label * m_label_category;
-    Gtk::Label * m_label_ev_name;
     Gtk::Entry * m_entry_ev_name;
+    Gtk::Entry * m_entry_data_0;
+    Gtk::Entry * m_entry_data_1;
+    Gtk::Label * m_label_time_fmt;
 
     /**
      *  Provides the timer period for the eventedit timer, used to determine

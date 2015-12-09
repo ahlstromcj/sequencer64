@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-12-05
- * \updates       2015-12-06
+ * \updates       2015-12-09
  * \license       GNU GPLv2 or above
  *
  *  This class supports the left side of the Performance window (also known
@@ -37,7 +37,6 @@
 #include "globals.h"
 #include "editable_events.hpp"          /* seq64::editable_events container  */
 #include "gui_drawingarea_gtk2.hpp"
-// #include "seqmenu.hpp"
 
 namespace Gtk
 {
@@ -55,7 +54,7 @@ class sequence;
  *  This class implements the left-side keyboard in the patterns window.
  */
 
-class eventslots : public gui_drawingarea_gtk2 // , public seqmenu
+class eventslots : public gui_drawingarea_gtk2
 {
 
     friend class eventedit;
@@ -131,9 +130,38 @@ private:
 
     int m_xy_offset;
 
+    /**
+     *  The current number of events in the edited container.
+     */
+
     int m_event_count;
 
-    int m_event_offset;
+    /**
+     *  The index of the event that is 0th in the visible list of events.
+     */
+
+    int m_top_event_index;
+
+    /**
+     *  Indicates the number of events visible based on the current size of
+     *  the visible editable event list.  Starts out around 55.
+     */
+
+    int m_bottom_event_index;
+
+    /**
+     *  Provides the top "pointer" to the start of the editable-events section
+     *  that is being shown in the user-interface.
+     */
+
+    editable_events::iterator m_top_iterator;
+
+    /**
+     *  Provides the bottom "pointer" to the end of the editable-events section
+     *  that is being shown in the user-interface.
+     */
+
+    editable_events::iterator m_bottom_iterator;
 
 public:
 
@@ -148,6 +176,8 @@ public:
     void redraw_dirty_events ();
 
 private:
+
+    void load_events ();
 
     void enqueue_draw ();
     int convert_y (int y);

@@ -29,7 +29,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-12-04
- * \updates       2015-12-05
+ * \updates       2015-12-09
  * \license       GNU GPLv2 or above
  *
  *  This module extends the event class to support conversions between events
@@ -52,6 +52,8 @@ class sequence;
 
 class editable_events
 {
+
+    friend class eventslots;            /* part of ed-event user-interface */
 
 private:
 

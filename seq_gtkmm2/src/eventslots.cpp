@@ -73,14 +73,49 @@ eventslots::eventslots
     m_slots_y               (font_render().char_height() + 4),  // c_names_y
     m_xy_offset             (2),
     m_event_count           (0),
-    m_event_offset          (0)
+    m_top_event_index       (0),
+    m_bottom_event_index    (55),   // ?
+    m_top_iterator          (),
+    m_bottom_iterator       ()
 {
     m_vadjust.signal_value_changed().connect
     (
         mem_fun(*(this), &eventslots::change_vert)
     );
+    load_events();
+}
+
+/**
+ *  Grabs the event list from the sequence and uses it to fill the
+ *  editable-event list.  Determines how many events can be shown in the
+ *  GUI [later] and adjusts the top and bottom editable-event iterators to
+ *  shows the first page of events.
+ */
+
+void
+eventslots::load_events ()
+{
     if (m_event_container.load_events())
+    {
         m_event_count = m_event_container.count();
+        if (m_event_count > 0)
+        {
+            int count = m_bottom_event_index + 1;
+            if (m_event_count < count)
+                count = m_event_count;
+
+            editable_events::iterator ei;
+            ei = m_bottom_iterator = m_top_iterator = m_event_container.begin();
+            for ( ; count > 0; --count)
+            {
+                ei++;
+                if (ei != m_event_container.end())
+                    m_bottom_iterator = ei;
+                else
+                    break;
+            }
+        }
+    }
 }
 
 /**
@@ -90,9 +125,9 @@ eventslots::eventslots
 void
 eventslots::change_vert ()
 {
-    if (m_event_offset != int(m_vadjust.get_value()))
+    if (m_top_event_index != int(m_vadjust.get_value()))
     {
-        m_event_offset = int(m_vadjust.get_value());
+        m_top_event_index = int(m_vadjust.get_value());
         enqueue_draw();
     }
 }
@@ -149,7 +184,7 @@ eventslots::enqueue_draw ()
 void
 eventslots::draw_event (int eventindex)
 {
-    int yloc = m_slots_y * (eventindex - m_event_offset);
+    int yloc = m_slots_y * (eventindex - m_top_event_index);
     if (eventindex < 75)    // m_event_count
     {
 
@@ -216,7 +251,7 @@ eventslots::draw_event (int eventindex)
 int
 eventslots::convert_y (int y)
 {
-    int edev = y / m_slots_y + m_event_offset;
+    int edev = y / m_slots_y + m_top_event_index;
     if (edev >= m_event_count)
         edev = m_event_count - 1;
     else if (edev < 0)
@@ -269,7 +304,7 @@ eventslots::on_expose_event (GdkEventExpose *)
     int seqs = (m_window_y / m_slots_y) + 1;
     for (int i = 0; i < seqs; i++)
     {
-        int sequence = i + m_event_offset;
+        int sequence = i + m_top_event_index;
         draw_event(sequence);
     }
     return true;
@@ -329,7 +364,7 @@ eventslots::redraw_dirty_events ()
     int y_f = m_window_y / m_slots_y;
     for (int y = 0; y <= y_f; y++)
     {
-        int seq = y + m_event_offset;
+        int seq = y + m_top_event_index;
         if (seq < m_event_count)
         {
             bool dirty = (perf().is_dirty_names(seq));

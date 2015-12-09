@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-12-05
- * \updates       2015-12-08
+ * \updates       2015-12-09
  * \license       GNU GPLv2 or above
  *
  */
@@ -89,6 +89,14 @@ private:
     Gtk::VBox * m_editbox;
     Gtk::VBox * m_optsbox;
     Gtk::HBox * m_bottbox;
+
+    /**
+     *  Items to size the m_indexslots member.
+     */
+
+    Gtk::Label * m_label_index;
+    Gtk::Label * m_label_time;
+    Gtk::Label * m_label_event;
 
     /**
      * Items for the inside of the m_htopbox member.

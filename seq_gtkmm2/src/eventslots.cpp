@@ -60,7 +60,8 @@ eventslots::eventslots
     sequence & seq,
     Gtk::Adjustment & vadjust
 ) :
-    gui_drawingarea_gtk2    (p, adjustment_dummy(), vadjust, c_names_x, 100),
+//  gui_drawingarea_gtk2    (p, adjustment_dummy(), vadjust, c_names_x, 100),
+    gui_drawingarea_gtk2    (p, adjustment_dummy(), vadjust, 300, 10),
     m_parent                (parent),
     m_seq                   (seq),
     m_event_container       (seq, p.get_beats_per_minute()),

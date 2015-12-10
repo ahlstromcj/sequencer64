@@ -89,6 +89,7 @@ private:
     Gtk::VBox * m_editbox;
     Gtk::VBox * m_optsbox;
     Gtk::HBox * m_bottbox;
+    Gtk::VBox * m_rightbox;
 
     /**
      *  Items to size the m_indexslots member.
@@ -108,7 +109,7 @@ private:
     Gtk::Label * m_label_ev_count;
 
     /**
-     * Items for the inside of the m_editbox member.
+     *  Items for the inside of the m_editbox member.
      */
 
     Gtk::Label * m_label_category;
@@ -116,6 +117,12 @@ private:
     Gtk::Entry * m_entry_data_0;
     Gtk::Entry * m_entry_data_1;
     Gtk::Label * m_label_time_fmt;
+
+    /**
+     *  Padding for the right side of the user-interface.
+     */
+
+    Gtk::Label * m_label_right;
 
     /**
      *  Provides the timer period for the eventedit timer, used to determine
@@ -135,6 +142,15 @@ public:
     ~eventedit ();
 
     void enqueue_draw ();
+
+    void set_seq_title (const std::string & title);
+    void set_seq_time_sig (const std::string & sig);
+    void set_seq_ppqn (const std::string & p);
+    void set_seq_count (const std::string & c);
+    void set_event_category (const std::string & c);
+    void set_event_name (const std::string & n);
+    void set_event_data_0 (const std::string & d);
+    void set_event_data_1 (const std::string & d);
 
 private:
 

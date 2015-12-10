@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-12-05
- * \updates       2015-12-07
+ * \updates       2015-12-09
  * \license       GNU GPLv2 or above
  *
  *  This module is user-interface code.  It is loosely based on the workings
@@ -60,8 +60,7 @@ eventslots::eventslots
     sequence & seq,
     Gtk::Adjustment & vadjust
 ) :
-//  gui_drawingarea_gtk2    (p, adjustment_dummy(), vadjust, c_names_x, 100),
-    gui_drawingarea_gtk2    (p, adjustment_dummy(), vadjust, 300, 10),
+    gui_drawingarea_gtk2    (p, adjustment_dummy(), vadjust, 360, 10),
     m_parent                (parent),
     m_seq                   (seq),
     m_event_container       (seq, p.get_beats_per_minute()),
@@ -73,8 +72,10 @@ eventslots::eventslots
     m_slots_y               (font_render().char_height() + 4),  // c_names_y
     m_xy_offset             (2),
     m_event_count           (0),
+    m_display_count         (0),
     m_top_event_index       (0),
-    m_bottom_event_index    (55),   // ?
+    m_bottom_event_index    (43),   // depends on dialog height
+    m_current_event_index   (0),
     m_top_iterator          (),
     m_bottom_iterator       ()
 {
@@ -104,6 +105,8 @@ eventslots::load_events ()
             if (m_event_count < count)
                 count = m_event_count;
 
+            m_display_count = count;
+
             editable_events::iterator ei;
             ei = m_bottom_iterator = m_top_iterator = m_event_container.begin();
             for ( ; count > 0; --count)
@@ -117,6 +120,48 @@ eventslots::load_events ()
         }
     }
 }
+
+/**
+ *  Set the current event.
+ */
+
+void
+eventslots::set_current_event (const editable_events::iterator ei, int index)
+{
+    m_current_event_index = index;
+}
+
+/**
+ *  Sets the text in the parent dialog, eventedit.
+ *
+ * \todo
+ *      Actually, the sequence items are available in the parent, not here
+ *      from the event.
+ */
+
+void
+eventslots::set_text
+(
+    const std::string & title,
+    const std::string & timesig,
+    const std::string & ppqn,
+    const std::string & evcount,
+    const std::string & evcategory,
+    const std::string & evname,
+    const std::string & evdata0,
+    const std::string & evdata1
+)
+{
+    m_parent.set_seq_title(title);
+    m_parent.set_seq_time_sig(timesig);
+    m_parent.set_seq_ppqn(ppqn);
+    m_parent.set_seq_count(evcount);
+    m_parent.set_event_category(evcategory);
+    m_parent.set_event_name(evname);
+    m_parent.set_event_data_0(evdata0);
+    m_parent.set_event_data_1(evdata1);
+}
+
 
 /**
  *  Change the vertial offset of a sequence/pattern.
@@ -182,11 +227,11 @@ eventslots::enqueue_draw ()
  */
 
 void
-eventslots::draw_event (int eventindex)
+eventslots::draw_event (editable_events::iterator ei, int index)
 {
-    int yloc = m_slots_y * (eventindex - m_top_event_index);
-    if (eventindex < 75)    // m_event_count
+    if (index < m_display_count)
     {
+        int yloc = m_slots_y * (index - m_top_event_index);
 
 #ifdef DRAW_EVENT_INDEX
 
@@ -210,7 +255,7 @@ eventslots::draw_event (int eventindex)
          * colors, otherwise just the name is properly colored.
          */
 
-        if (true)           // if (eventindex == currentindex)
+        if (index == m_current_event_index)
         {
             fg = yellow();
             col = font::BLACK_ON_YELLOW;
@@ -234,11 +279,12 @@ eventslots::draw_event (int eventindex)
             fg, m_setbox_w + 3, yloc + 1,
             m_slots_x - 3 - m_setbox_w, m_slots_y - 1
         );
-#ifdef THIS_IS_READY
-        editable_event & evp = m_event_container.begin().second;
-        std::string temp = evp.stock_event_string();
-#endif
-        std::string temp = "12345 Note On Channel 10 Key 127 Velocity 127";
+        editable_event & evp = ei->second;
+        char tmp[4];
+        snprintf(tmp, sizeof tmp, "%2d", index);
+        std::string temp = tmp;
+        temp += "-";
+        temp += evp.stock_event_string();
         render_string(5 + m_setbox_w, yloc + 2, temp, col);
         render_string(m_slots_box_w + 5, yloc + 2, "X", col);
     }
@@ -301,11 +347,27 @@ eventslots::on_realize ()
 bool
 eventslots::on_expose_event (GdkEventExpose *)
 {
-    int seqs = (m_window_y / m_slots_y) + 1;
-    for (int i = 0; i < seqs; i++)
+    /*
+     * Need to change this to calculate the number of displayable events.
+     *
+     * int seqs = (m_window_y / m_slots_y) + 1;
+     */
+
+    if (m_display_count > 0)
     {
-        int sequence = i + m_top_event_index;
-        draw_event(sequence);
+        editable_events::iterator ei = m_top_iterator;
+        for (int event = 0; event < m_display_count; ++event)
+        {
+            // int sequence = i + m_top_event_index;
+
+            if (ei != m_event_container.end())
+            {
+                draw_event(ei, event);
+                ++ei;
+            }
+            else
+                break;
+        }
     }
     return true;
 }
@@ -361,6 +423,7 @@ eventslots::on_size_allocate (Gtk::Allocation & a)
 void
 eventslots::redraw_dirty_events ()
 {
+#if 0
     int y_f = m_window_y / m_slots_y;
     for (int y = 0; y <= y_f; y++)
     {
@@ -372,6 +435,7 @@ eventslots::redraw_dirty_events ()
                 draw_event(seq);
         }
     }
+#endif
 }
 
 }           // namespace seq64

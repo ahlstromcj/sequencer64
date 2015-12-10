@@ -103,30 +103,30 @@ namespace seq64
  *      We're going to change the layout.
  *
 \verbatim
-            0                                 1   2                         3
-0            ---------------------------------------------------------------  0
-   htopbox  |                                 :   :                         |
-1           |---------------------------------------------------------------| 1
-   e'slots  |  1 120:0:192 Program Change     | ^ | "Sequence name"         |
-            |---------------------------------|   | 4/4 PPQN 192            |
-            |  2 120:1:0   Program Change     | s | 9999 events             |
-4           |---------------------------------| c |-------------------------| 2
-            | ...    ...          ...         | r | Channel Event: Ch. 5    |
-6           | ...    ...          ...         | o |- - - - - - - - - - - - -|
-            | ...    ...          ...         | l | [Edit field: Note On  ] |
-7           | ...    ...          ...         | l |- - - - - - - - - - - - -|
-            | ...    ...          ...         |   | [Edit field: Key #    ] |
-8           | ...    ...          ...         | b |- - - - - - - - - - - - -|
-            | ...    ...          ...         | a | [Edit field: Vel #    ] |
-9           | ...    ...          ...         | r |- - - - - - - - - - - - -|
-            | ...    ...          ...         |   | [Optional more data?  ] |
-10          | ...    ...          ...         |   |-------------------------| 3
-12          | ...    ...          ...         |   |  o Pulses               |
-            |---------------------------------|   |  o Measures             |
-13          | 56   136:3:133   Program Change | v |  o Time                 |
-            |---------------------------------------------------------------| 4
-   bottbox  |                                 :   :                         |
-14           ---------------------------------------------------------------  5
+          0                             1   2                         3   4
+           ---------------------------------------------------------------   0
+     htop |                             :   :                             |
+          |---------------------------------------- showbox --------------|  1
+  e'slots |  1-120:0:192 Program Change | ^ | "Sequence name"         |   |
+          |-----------------------------|   | 4/4 PPQN 192            | r |  2
+          |  2-120:1:0   Program Change | s | 9999 events             | i |  3
+          |-----------------------------| c |------ editbox ----------| g |  4
+          | ...    ...          ...     | r | Channel Event: Ch. 5    | h |
+          | ...    ...          ...     | o |- - - - - - - - - - - - -| t |  6
+          | ...    ...          ...     | l | [Edit field: Note On  ] |   |
+          | ...    ...          ...     | l |- - - - - - - - - - - - -| b |  7
+          | ...    ...          ...     |   | [Edit field: Key #    ] | o |
+          | ...    ...          ...     | b |- - - - - - - - - - - - -| x |  8
+          | ...    ...          ...     | a | [Edit field: Vel #    ] |   |
+          | ...    ...          ...     | r |- - - - - - - - - - - - -|   |  9
+          | ...    ...          ...     |   | [Optional more data?  ] |   |
+          | ...    ...          ...     |   |------ optsbox ----------|   |  10
+          | ...    ...          ...     |   |  o Pulses               |   |
+          |-----------------------------|   |  o Measures             |   |
+          | 56-136:3:133 Program Change | v |  o Time                 |   |
+          |---------------------------------------------------------------| 13
+     bott |                             :   :                             |
+           ---------------------------------------------------------------  14
 \endverbatim
  *
  * \param p
@@ -141,7 +141,7 @@ eventedit::eventedit
     perform & p,
     sequence & seq
 ) :
-    gui_window_gtk2     (p, 520, 700),
+    gui_window_gtk2     (p, 620, 700),
     m_table             (manage(new Gtk::Table(3, 3, false))),
     m_vadjust           (manage(new Gtk::Adjustment(0, 0, 1, 1, 1, 1))),
     m_vscroll           (manage(new Gtk::VScrollbar(*m_vadjust))),
@@ -154,6 +154,7 @@ eventedit::eventedit
     m_editbox           (manage(new Gtk::VBox(false, 2))),
     m_optsbox           (manage(new Gtk::VBox(false, 2))),
     m_bottbox           (manage(new Gtk::HBox(false, 2))),
+    m_rightbox          (manage(new Gtk::VBox(false, 2))),
     m_label_index       (manage(new Gtk::Label())),
     m_label_time        (manage(new Gtk::Label())),
     m_label_event       (manage(new Gtk::Label())),
@@ -166,59 +167,48 @@ eventedit::eventedit
     m_entry_data_0      (manage(new Gtk::Entry())),
     m_entry_data_1      (manage(new Gtk::Entry())),
     m_label_time_fmt    (manage(new Gtk::Label())),
+    m_label_right       (manage(new Gtk::Label())),
     m_redraw_ms         (c_redraw_ms)                       /* 40 ms        */
 {
     std::string title = "Sequencer64 - Event Editor";
     set_title(title);                                       /* caption bar  */
     set_icon(Gdk::Pixbuf::create_from_xpm_data(perfedit_xpm));
     m_table->set_border_width(2);
-    m_bottbox->set_border_width(2);
-#ifdef USE_OLD_VERSION
-    m_table->attach(*m_htopbox, 0, 3, 0, 1,  Gtk::FILL, Gtk::SHRINK, 0, 2);
-    m_table->attach(*m_eventslots, 0, 1, 1, 4, Gtk::FILL, Gtk::FILL, 2, 2);
+    m_htopbox->set_border_width(2);
+    m_showbox->set_border_width(2);
+    m_editbox->set_border_width(2);
+    m_optsbox->set_border_width(2);
+    m_rightbox->set_border_width(2);
+    m_table->attach(*m_htopbox, 0, 4, 0, 1,  Gtk::FILL, Gtk::SHRINK, 8, 8);
+    m_table->attach(*m_eventslots, 0, 1, 1, 13, Gtk::FILL, Gtk::FILL, 8, 8);
     m_table->attach
     (
-        *m_vscroll, 1, 2, 1, 4, Gtk::SHRINK, Gtk::FILL | Gtk::EXPAND, 2, 2
-    );
-    m_table->attach(*m_showbox, 2, 3, 1, 2,  Gtk::FILL, Gtk::SHRINK, 2, 2);
-    m_table->attach(*m_editbox, 2, 3, 2, 3,  Gtk::FILL, Gtk::SHRINK, 8, 8);
-    m_table->attach(*m_optsbox, 2, 3, 3, 4,  Gtk::FILL, Gtk::SHRINK, 8, 8);
-    m_table->attach(*m_bottbox, 0, 3, 4, 5,  Gtk::FILL, Gtk::SHRINK, 8, 8);
-#else
-    m_table->attach(*m_htopbox, 0, 3, 0, 1,  Gtk::FILL, Gtk::SHRINK, 8, 8);
-    m_table->attach(*m_eventslots, 0, 1, 1, 14, Gtk::FILL, Gtk::FILL, 8, 8);
-    m_table->attach
-    (
-        *m_vscroll, 1, 2, 1, 14, Gtk::SHRINK, Gtk::FILL | Gtk::EXPAND, 4, 4
+        *m_vscroll, 1, 2, 1, 13, Gtk::SHRINK, Gtk::FILL | Gtk::EXPAND, 4, 4
     );
     m_table->attach(*m_showbox, 2, 3, 1, 4,  Gtk::FILL, Gtk::SHRINK, 8, 8);
-    m_table->attach(*m_editbox, 2, 3, 2, 10,  Gtk::FILL, Gtk::SHRINK, 8, 8);
-    m_table->attach(*m_optsbox, 2, 3, 3, 13,  Gtk::FILL, Gtk::SHRINK, 8, 8);
-    m_table->attach(*m_bottbox, 0, 3, 4, 15,  Gtk::FILL, Gtk::SHRINK, 8, 8);
-#endif
+    m_table->attach(*m_editbox, 2, 3, 4, 10,  Gtk::FILL, Gtk::SHRINK, 8, 8);
+    m_table->attach(*m_optsbox, 2, 3, 10, 13,  Gtk::FILL, Gtk::SHRINK, 8, 8);
+    m_table->attach(*m_bottbox, 0, 4, 13, 14,  Gtk::FILL, Gtk::SHRINK, 8, 8);
+    m_table->attach(*m_rightbox, 3, 4, 1, 13,  Gtk::FILL, Gtk::SHRINK, 2, 2);
 
     add(*m_table);
-
-//  m_label_seq_name->set_width_chars(32);
-//  m_label_seq_name->set_text("Event Viewer and Editor");
-//  m_htopbox->pack_start(*m_label_seq_name, false, false); /* expand and fill */
 
     m_label_seq_name->set_width_chars(32);
     m_label_seq_name->set_text("\"Untitled/Empty sequence\"");
     m_showbox->pack_start(*m_label_seq_name, false, false); /* expand and fill */
 
-//  m_label_time_sig->set_width_chars(5);
+    //  m_label_time_sig->set_width_chars(5);
     m_label_time_sig->set_justify(Gtk::JUSTIFY_LEFT);
     m_label_time_sig->set_text("Time Signature: 4/4");
-    m_showbox->pack_start(*m_label_time_sig, false, false); /* expand and fill */
+    m_showbox->pack_start(*m_label_time_sig, false, false);
 
-//  m_label_ppqn->set_width_chars(5);
+    //  m_label_ppqn->set_width_chars(5);
     m_label_ppqn->set_text("PPQN (Divisions): 192");
-    m_showbox->pack_start(*m_label_ppqn, false, false); /* expand and fill */
+    m_showbox->pack_start(*m_label_ppqn, false, false);
 
     m_label_ev_count->set_width_chars(12);
     m_label_ev_count->set_text("Sequence Count: 9999 events");
-    m_showbox->pack_start(*m_label_ev_count, false, false); /* expand and fill */
+    m_showbox->pack_start(*m_label_ev_count, false, false);
 
     m_label_category->set_width_chars(24);
     m_label_category->set_text("Channel Event: Ch. 5");
@@ -246,6 +236,10 @@ eventedit::eventedit
     m_label_time_fmt->set_text("\n\nTime Format (radio buttons)");
     m_editbox->pack_end(*m_label_time_fmt, false, false);
 
+    m_label_right->set_width_chars(2);
+    m_label_right->set_text("--");
+    m_rightbox->pack_start(*m_label_right, true, true);
+
     /*
      * Doesn't do anything:
      *
@@ -262,6 +256,54 @@ eventedit::eventedit
 eventedit::~eventedit ()
 {
     // Empty body
+}
+
+void
+eventedit::set_seq_title (const std::string & title)
+{
+    m_label_seq_name->set_text(title);
+}
+
+void
+eventedit::set_seq_time_sig (const std::string & sig)
+{
+    m_label_time_sig->set_text(sig);
+}
+
+void
+eventedit::set_seq_ppqn (const std::string & p)
+{
+    m_label_ppqn->set_text(p);
+}
+
+void
+eventedit::set_seq_count (const std::string & c)
+{
+    m_label_ev_count->set_text(c);
+}
+
+void
+eventedit::set_event_category (const std::string & c)
+{
+    m_label_category->set_text(c);
+}
+
+void
+eventedit::set_event_name (const std::string & n)
+{
+    m_entry_ev_name->set_text(n);
+}
+
+void
+eventedit::set_event_data_0 (const std::string & d)
+{
+    m_entry_data_0->set_text(d);
+}
+
+void
+eventedit::set_event_data_1 (const std::string & d)
+{
+    m_entry_data_1->set_text(d);
 }
 
 /**

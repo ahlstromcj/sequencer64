@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-07
- * \updates       2015-12-05
+ * \updates       2015-12-09
  * \license       GNU GPLv2 or above
  *
  *  This code was moved from the globals module so that other modules
@@ -188,7 +188,7 @@ pulses_to_measurestring (midipulse p, const midi_timing & seqparms)
     pulses_to_midi_measures(p, seqparms, measures); /* fill measures struct */
     snprintf
     (
-        tmp, sizeof tmp, "%d:%d:%d",
+        tmp, sizeof tmp, "%03d:%d:%03d",
         measures.measures(), measures.beats(), measures.divisions()
     );
     return std::string(tmp);
@@ -310,13 +310,13 @@ pulses_to_timestring (midipulse p, int bpm, int ppqn)
     char tmp[32];
     if (microseconds == 0)
     {
-        snprintf(tmp, sizeof tmp, "%d:%d:%d", hours, minutes, seconds);
+        snprintf(tmp, sizeof tmp, "%03d:%d:%02d   ", hours, minutes, seconds);
     }
     else
     {
         snprintf
         (
-            tmp, sizeof tmp, "%d:%d:%d.%06lu",
+            tmp, sizeof tmp, "%03d:%d:%02d.%02lu",
             hours, minutes, seconds, microseconds
         );
     }

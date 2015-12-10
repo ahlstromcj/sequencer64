@@ -137,6 +137,13 @@ private:
     int m_event_count;
 
     /**
+     *  Counts the number of displayed events, which depends on how many
+     *  events there are and the size of the event list.
+     */
+
+    int m_display_count;
+
+    /**
      *  The index of the event that is 0th in the visible list of events.
      */
 
@@ -148,6 +155,12 @@ private:
      */
 
     int m_bottom_event_index;
+
+    /**
+     *  Indicates the index of the current event.
+     */
+
+    int m_current_event_index;
 
     /**
      *  Provides the top "pointer" to the start of the editable-events section
@@ -178,10 +191,22 @@ public:
 private:
 
     void load_events ();
+    void set_current_event (const editable_events::iterator ei, int index);
+    void set_text
+    (
+        const std::string & title,
+        const std::string & timesig,
+        const std::string & ppqn,
+        const std::string & evcount,
+        const std::string & evcategory,
+        const std::string & evname,
+        const std::string & evdata0,
+        const std::string & evdata1
+    );
 
     void enqueue_draw ();
     int convert_y (int y);
-    void draw_event (int eventindex);
+    void draw_event (editable_events::iterator ei, int index);
     void change_vert ();
 
     /**

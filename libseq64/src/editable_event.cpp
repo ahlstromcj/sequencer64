@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-12-05
+ * \updates       2015-12-09
  * \license       GNU GPLv2 or above
  *
  *  A MIDI editable event is encapsulated by the seq64::editable_event
@@ -49,10 +49,10 @@ namespace seq64
 const editable_event::name_value_t
 editable_event::sm_category_names [] =
 {
-    { (unsigned short)(category_channel_message),   "Channel message"   },
-    { (unsigned short)(category_system_message),    "System message"    },
-    { (unsigned short)(category_meta_event),        "Meta event"        },
-    { (unsigned short)(category_prop_event),        "Prop event"        },
+    { (unsigned short)(category_channel_message),   "Channel Message"   },
+    { (unsigned short)(category_system_message),    "System Message"    },
+    { (unsigned short)(category_meta_event),        "Meta Event"        },
+    { (unsigned short)(category_prop_event),        "Proprietary Event" },
     { SEQ64_END_OF_MIDIBYTE_TABLE,                  ""                  }
 };
 
@@ -64,13 +64,13 @@ editable_event::sm_category_names [] =
 const editable_event::name_value_t
 editable_event::sm_channel_event_names [] =
 {
-    { (unsigned short)(EVENT_NOTE_OFF),         "Note off"          },  // 0x80
-    { (unsigned short)(EVENT_NOTE_ON),          "Note on"           },  // 0x90
+    { (unsigned short)(EVENT_NOTE_OFF),         "Note Off"          },  // 0x80
+    { (unsigned short)(EVENT_NOTE_ON),          "Note On"           },  // 0x90
     { (unsigned short)(EVENT_AFTERTOUCH),       "Aftertouch"        },  // 0xA0
-    { (unsigned short)(EVENT_CONTROL_CHANGE),   "Control change"    },  // 0xB0
-    { (unsigned short)(EVENT_PROGRAM_CHANGE),   "Program change"    },  // 0xC0
-    { (unsigned short)(EVENT_CHANNEL_PRESSURE), "Channel pressure"  },  // 0xD0
-    { (unsigned short)(EVENT_PITCH_WHEEL),      "Pitch wheel"       },  // 0xE0
+    { (unsigned short)(EVENT_CONTROL_CHANGE),   "Control Change"    },  // 0xB0
+    { (unsigned short)(EVENT_PROGRAM_CHANGE),   "Program Change"    },  // 0xC0
+    { (unsigned short)(EVENT_CHANNEL_PRESSURE), "Channel Pressure"  },  // 0xD0
+    { (unsigned short)(EVENT_PITCH_WHEEL),      "Pitch Wheel"       },  // 0xE0
     { SEQ64_END_OF_MIDIBYTE_TABLE,              ""                  }   // end
 };
 
@@ -82,14 +82,14 @@ editable_event::sm_channel_event_names [] =
 const editable_event::name_value_t
 editable_event::sm_system_event_names [] =
 {
-    { (unsigned short)(EVENT_MIDI_SYSEX),         "SysEx start"     },  // 0xF0
-    { (unsigned short)(EVENT_MIDI_QUARTER_FRAME), "Quarter frame"   },  //   .
-    { (unsigned short)(EVENT_MIDI_SONG_POS),      "Song position"   },  //   .
-    { (unsigned short)(EVENT_MIDI_SONG_SELECT),   "Song select"     },  //   .
+    { (unsigned short)(EVENT_MIDI_SYSEX),         "SysEx Start"     },  // 0xF0
+    { (unsigned short)(EVENT_MIDI_QUARTER_FRAME), "Quarter Frame"   },  //   .
+    { (unsigned short)(EVENT_MIDI_SONG_POS),      "Song Position"   },  //   .
+    { (unsigned short)(EVENT_MIDI_SONG_SELECT),   "Song Select"     },  //   .
     { (unsigned short)(EVENT_MIDI_SONG_F4),       "F4"              },
     { (unsigned short)(EVENT_MIDI_SONG_F5),       "F5"              },
-    { (unsigned short)(EVENT_MIDI_TUNE_SELECT),   "Tune request"    },
-    { (unsigned short)(EVENT_MIDI_SYSEX_END),     "SysEx end"       },
+    { (unsigned short)(EVENT_MIDI_TUNE_SELECT),   "Tune Request"    },
+    { (unsigned short)(EVENT_MIDI_SYSEX_END),     "SysEx End"       },
     { (unsigned short)(EVENT_MIDI_CLOCK),         "Clock"           },
     { (unsigned short)(EVENT_MIDI_SONG_F9),       "F9"              },
     { (unsigned short)(EVENT_MIDI_START),         "Start"           },
@@ -527,25 +527,16 @@ editable_event::time_as_minutes ()
 std::string
 editable_event::stock_event_string ()
 {
-    std::string result = format_timestamp();
+    char temp[80];
+    std::string ts = format_timestamp();
     analyze();
-#ifdef USE_CATEGORY_IN_EVENT_STRING
-    result += " ";
-    result += m_name_category;
-#endif
-    result += " ";
-    result += m_name_status;
-    if (category() == category_channel_message)
-    {
-        result += " ";
-        result += m_name_channel;
-    }
-    if (! m_name_data.empty())
-    {
-        result += " ";
-        result += m_name_data;
-    }
-    return result;
+    snprintf
+    (
+        temp, sizeof temp, "%9s %-11s %-10s %-20s",
+        ts.c_str(), m_name_status.c_str(),
+        m_name_channel.c_str(), m_name_data.c_str()
+    );
+    return std::string(temp);
 }
 
 /**

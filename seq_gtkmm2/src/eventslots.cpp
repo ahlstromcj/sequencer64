@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-12-05
- * \updates       2015-12-09
+ * \updates       2015-12-10
  * \license       GNU GPLv2 or above
  *
  *  This module is user-interface code.  It is loosely based on the workings
@@ -74,10 +74,11 @@ eventslots::eventslots
     m_event_count           (0),
     m_display_count         (0),
     m_top_event_index       (0),
-    m_bottom_event_index    (43),   // depends on dialog height
+    m_bottom_event_index    (42),   // depends on dialog height
     m_current_event_index   (0),
     m_top_iterator          (),
-    m_bottom_iterator       ()
+    m_bottom_iterator       (),
+    m_current_iterator      ()
 {
     m_vadjust.signal_value_changed().connect
     (
@@ -91,12 +92,16 @@ eventslots::eventslots
  *  editable-event list.  Determines how many events can be shown in the
  *  GUI [later] and adjusts the top and bottom editable-event iterators to
  *  shows the first page of events.
+ *
+ * \return
+ *      Returns true if the event iterators were able to be set up as valid.
  */
 
-void
+bool
 eventslots::load_events ()
 {
-    if (m_event_container.load_events())
+    bool result = m_event_container.load_events();
+    if (result)
     {
         m_event_count = m_event_container.count();
         if (m_event_count > 0)
@@ -108,7 +113,12 @@ eventslots::load_events ()
             m_display_count = count;
 
             editable_events::iterator ei;
-            ei = m_bottom_iterator = m_top_iterator = m_event_container.begin();
+            ei = 
+                m_current_iterator =
+                m_bottom_iterator =
+                m_top_iterator =
+                m_event_container.begin();
+
             for ( ; count > 0; --count)
             {
                 ei++;
@@ -118,7 +128,16 @@ eventslots::load_events ()
                     break;
             }
         }
+        else
+        {
+            result = false;
+            m_current_iterator =
+                m_bottom_iterator =
+                m_top_iterator =
+                m_event_container.end();
+        }
     }
+    return result;
 }
 
 /**
@@ -128,7 +147,17 @@ eventslots::load_events ()
 void
 eventslots::set_current_event (const editable_events::iterator ei, int index)
 {
+    char tmp[16];
+    midibyte d0, d1;
+    const editable_event & ev = ei->second;
+    ev.get_data(d0, d1);
+    snprintf(tmp, sizeof tmp, "data[0] = 0x%02x", int(d0));
+    std::string data_0(tmp);
+    snprintf(tmp, sizeof tmp, "data[1] = 0x%02x", int(d1));
+    std::string data_1(tmp);
+    set_text(ev.category_string(), ev.status_string(), data_0, data_1);
     m_current_event_index = index;
+    m_current_iterator = ei;
 }
 
 /**
@@ -142,26 +171,17 @@ eventslots::set_current_event (const editable_events::iterator ei, int index)
 void
 eventslots::set_text
 (
-    const std::string & title,
-    const std::string & timesig,
-    const std::string & ppqn,
-    const std::string & evcount,
     const std::string & evcategory,
     const std::string & evname,
     const std::string & evdata0,
     const std::string & evdata1
 )
 {
-    m_parent.set_seq_title(title);
-    m_parent.set_seq_time_sig(timesig);
-    m_parent.set_seq_ppqn(ppqn);
-    m_parent.set_seq_count(evcount);
     m_parent.set_event_category(evcategory);
     m_parent.set_event_name(evname);
     m_parent.set_event_data_0(evdata0);
     m_parent.set_event_data_1(evdata1);
 }
-
 
 /**
  *  Change the vertial offset of a sequence/pattern.
@@ -232,21 +252,6 @@ eventslots::draw_event (editable_events::iterator ei, int index)
     if (index < m_display_count)
     {
         int yloc = m_slots_y * (index - m_top_event_index);
-
-#ifdef DRAW_EVENT_INDEX
-
-        /*
-         * 1. Render the event index in the leftmost column.
-         */
-
-        char snb[8];
-        snprintf(snb, sizeof(snb), "%2d", eventindex / m_seqs_in_set);
-        draw_rectangle(black(), 0, yloc, m_slots_x, m_slots_y);     /* + 1  */
-        render_string(m_xy_offset, yloc + m_xy_offset, snb, font::WHITE);
-//          draw_rectangle(white(), 1, yloc, m_setbox_w + 1, m_slots_y);
-
-#endif  // DRAW_EVENT_INDEX
-
         Color fg = grey();
         font::Color col = font::BLACK;
 
@@ -260,11 +265,13 @@ eventslots::draw_event (editable_events::iterator ei, int index)
             fg = yellow();
             col = font::BLACK_ON_YELLOW;
         }
+#ifdef USE_FUTURE_CODE
         else if (false)     // if (a sysex event or selected event range)
         {
             fg = dark_cyan();
             col = font::BLACK_ON_CYAN;
         }
+#endif
         else
             fg = white();
 
@@ -291,19 +298,28 @@ eventslots::draw_event (editable_events::iterator ei, int index)
 }
 
 /**
- *  Converts a y-value into a sequence number and returns it.
+ *  Converts a y-value into an event index relative to 0 (the top of the
+ *  eventslots window/pixmap) and returns it.
+ *
+ * \param y
+ *      The y coordinate of the position of the mouse click in the eventslot
+ *      window/pixmap.
+ *
+ * \return
+ *      Returns the index of the event position in the user-interface, which
+ *      should range from 0 to m_bottom_event_index.
  */
 
 int
 eventslots::convert_y (int y)
 {
-    int edev = y / m_slots_y + m_top_event_index;
-    if (edev >= m_event_count)
-        edev = m_event_count - 1;
-    else if (edev < 0)
-        edev = 0;
+    int event_index = y / m_slots_y + m_top_event_index;
+    if (event_index >= m_bottom_event_index)
+        event_index = m_bottom_event_index;
+    else if (event_index < 0)
+        event_index = 0;
 
-    return edev;
+    return event_index;
 }
 
 /**
@@ -314,12 +330,28 @@ eventslots::convert_y (int y)
 bool
 eventslots::on_button_press_event (GdkEventButton * ev)
 {
-    // int y = int(ev->y);
-    // int eventnum = convert_y(y);
-//  current_event(seqnum);
+    int y = int(ev->y);
+    int event_index = convert_y(y);
     if (SEQ64_CLICK_LEFT(ev->button))
     {
-        enqueue_draw();
+        bool ok = true;
+        int i = m_top_event_index;
+        editable_events::iterator ei = m_top_iterator;
+        while (i <= event_index)
+        {
+            if (ei != m_event_container.end())
+            {
+                ++ei;
+                ok = ei != m_event_container.end();
+                if (! ok)
+                    break;
+            }
+        }
+        if (ok)
+        {
+            set_current_event(ei, i);
+            enqueue_draw();
+        }
     }
     return true;
 }

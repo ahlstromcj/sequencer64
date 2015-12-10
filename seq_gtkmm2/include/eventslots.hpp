@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-12-05
- * \updates       2015-12-09
+ * \updates       2015-12-10
  * \license       GNU GPLv2 or above
  *
  *  This class supports the left side of the Performance window (also known
@@ -176,6 +176,12 @@ private:
 
     editable_events::iterator m_bottom_iterator;
 
+    /**
+     *  Provides the "pointer" to the event currently in focus.
+     */
+
+    editable_events::iterator m_current_iterator;
+
 public:
 
     eventslots
@@ -190,14 +196,10 @@ public:
 
 private:
 
-    void load_events ();
+    bool load_events ();
     void set_current_event (const editable_events::iterator ei, int index);
     void set_text
     (
-        const std::string & title,
-        const std::string & timesig,
-        const std::string & ppqn,
-        const std::string & evcount,
         const std::string & evcategory,
         const std::string & evname,
         const std::string & evdata0,

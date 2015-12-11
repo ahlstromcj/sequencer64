@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-12-05
- * \updates       2015-12-09
+ * \updates       2015-12-10
  * \license       GNU GPLv2 or above
  *
  *
@@ -59,6 +59,8 @@
 #include "eventslots.hpp"
 #include "perform.hpp"
 
+#include "pixmaps/del.xpm"
+#include "pixmaps/ins.xpm"
 #include "pixmaps/perfedit.xpm"
 
 using namespace Gtk::Menu_Helpers;
@@ -155,6 +157,8 @@ eventedit::eventedit
     m_optsbox           (manage(new Gtk::VBox(false, 2))),
     m_bottbox           (manage(new Gtk::HBox(false, 2))),
     m_rightbox          (manage(new Gtk::VBox(false, 2))),
+    m_button_del        (manage(new Gtk::Button())),
+    m_button_ins        (manage(new Gtk::Button())),
     m_label_index       (manage(new Gtk::Label())),
     m_label_time        (manage(new Gtk::Label())),
     m_label_event       (manage(new Gtk::Label())),
@@ -192,6 +196,26 @@ eventedit::eventedit
     m_table->attach(*m_rightbox, 3, 4, 1, 13,  Gtk::FILL, Gtk::SHRINK, 2, 2);
 
     add(*m_table);
+
+    m_button_del->add
+    (
+        *manage(new Gtk::Image(Gdk::Pixbuf::create_from_xpm_data(del_xpm)))
+    );
+    m_button_del->signal_clicked().connect
+    (
+        sigc::mem_fun(*this, &eventedit::set_delete)
+    );
+    add_tooltip(m_button_del, "Delete the currently-selected event.");
+
+    m_button_ins->add
+    (
+        *manage(new Gtk::Image(Gdk::Pixbuf::create_from_xpm_data(ins_xpm)))
+    );
+    m_button_ins->signal_clicked().connect
+    (
+        sigc::mem_fun(*this, &eventedit::set_insert)
+    );
+    add_tooltip(m_button_ins, "Insert event after currently-selected event.");
 
     m_label_seq_name->set_width_chars(32);
     m_label_seq_name->set_text("\"Untitled/Empty sequence\"");
@@ -232,9 +256,12 @@ eventedit::eventedit
     m_entry_data_1->set_text("Vel 64");
     m_editbox->pack_start(*m_entry_data_1, false, false);
 
+    m_editbox->pack_start(*m_button_del, false, false);
+    m_editbox->pack_start(*m_button_ins, false, false);
+
     m_label_time_fmt->set_width_chars(24);
     m_label_time_fmt->set_text("\n\nTime Format (radio buttons)");
-    m_editbox->pack_end(*m_label_time_fmt, false, false);
+    m_optsbox->pack_end(*m_label_time_fmt, false, false);
 
     m_label_right->set_width_chars(2);
     m_label_right->set_text("--");
@@ -324,13 +351,13 @@ eventedit::enqueue_draw ()
 
 /**
  *  Opens the given popup menu.
- */
 
 void
 eventedit::popup_menu (Gtk::Menu * menu)
 {
     menu->popup(0, 0);
 }
+ */
 
 /**
  *  Handles a drawing timeout.  It redraws "dirty" sequences in the

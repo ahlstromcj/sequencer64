@@ -34,8 +34,6 @@
  *  Now, we have an issue when loading one of the larger sequences in our main
  *  test tune, where X stops the application and Gtk says it got a bad memory
  *  allocation.  So we need to page through the sequence.
- *
- *
  */
 
 #include <gtkmm/adjustment.h>
@@ -337,7 +335,7 @@ eventslots::on_button_press_event (GdkEventButton * ev)
         bool ok = true;
         int i = m_top_event_index;
         editable_events::iterator ei = m_top_iterator;
-        while (i <= event_index)
+        while (i++ < event_index)
         {
             if (ei != m_event_container.end())
             {
@@ -349,7 +347,7 @@ eventslots::on_button_press_event (GdkEventButton * ev)
         }
         if (ok)
         {
-            set_current_event(ei, i);
+            set_current_event(ei, i - 1);
             enqueue_draw();
         }
     }
@@ -368,8 +366,15 @@ eventslots::on_realize ()
     gui_drawingarea_gtk2::on_realize();
     m_pixmap = Gdk::Pixmap::create
     (
-        m_window, m_slots_x, m_slots_y * m_event_count + 1, -1
+        m_window, m_slots_x, m_slots_y * m_display_count + 1, -1
     );
+
+    /*
+     * Hmmmm, leaves the event name field empty, not sure why!
+     */
+
+    set_current_event(m_top_iterator, 0);
+    grab_focus();
 }
 
 /**

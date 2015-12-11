@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-12-05
- * \updates       2015-12-09
+ * \updates       2015-12-10
  * \license       GNU GPLv2 or above
  *
  */
@@ -90,6 +90,9 @@ private:
     Gtk::VBox * m_optsbox;
     Gtk::HBox * m_bottbox;
     Gtk::VBox * m_rightbox;
+
+    Gtk::Button * m_button_del;
+    Gtk::Button * m_button_ins;
 
     /**
      *  Items to size the m_indexslots member.
@@ -154,8 +157,19 @@ public:
 
 private:
 
-    void popup_menu (Gtk::Menu * menu);
+    // void popup_menu (Gtk::Menu * menu);
     bool timeout ();
+
+    void set_delete ()
+    {
+        // TODO
+    }
+
+    void set_insert ()
+    {
+        // TODO
+    }
+
 
 private:            // callbacks
 

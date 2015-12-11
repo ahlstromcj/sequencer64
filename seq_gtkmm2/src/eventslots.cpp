@@ -153,7 +153,10 @@ eventslots::set_current_event (const editable_events::iterator ei, int index)
     std::string data_0(tmp);
     snprintf(tmp, sizeof tmp, "data[1] = 0x%02x", int(d1));
     std::string data_1(tmp);
-    set_text(ev.category_string(), ev.status_string(), data_0, data_1);
+    set_text
+    (
+        "TIMESTAMP", ev.category_string(), ev.status_string(), data_0, data_1
+    );
     m_current_event_index = index;
     m_current_iterator = ei;
 }
@@ -169,16 +172,41 @@ eventslots::set_current_event (const editable_events::iterator ei, int index)
 void
 eventslots::set_text
 (
+    const std::string & evtimestamp,
     const std::string & evcategory,
     const std::string & evname,
     const std::string & evdata0,
     const std::string & evdata1
 )
 {
+    //
+    // TODO:
+    //
+    // m_parent.set_event_timestamp(evtimestamp);
+
     m_parent.set_event_category(evcategory);
     m_parent.set_event_name(evname);
     m_parent.set_event_data_0(evdata0);
     m_parent.set_event_data_1(evdata1);
+}
+
+/**
+ *  Modifies the data in the currently-selected event.
+ *
+ * \todo
+ *      Also allow modifying the time-stamp!
+ */
+
+void
+eventslots::modify_current_event
+(
+    const std::string & /*evtimestamp*/,
+    const std::string & /*evname*/,
+    const std::string & /*evdata0*/,
+    const std::string & /*evdata1*/
+)
+{
+    // TODO
 }
 
 /**

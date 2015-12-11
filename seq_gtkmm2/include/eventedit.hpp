@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-12-05
- * \updates       2015-12-10
+ * \updates       2015-12-11
  * \license       GNU GPLv2 or above
  *
  */
@@ -93,6 +93,7 @@ private:
 
     Gtk::Button * m_button_del;
     Gtk::Button * m_button_ins;
+    Gtk::Button * m_button_apply;
 
     /**
      *  Items to size the m_indexslots member.
@@ -116,6 +117,7 @@ private:
      */
 
     Gtk::Label * m_label_category;
+    Gtk::Entry * m_entry_ev_timestamp;
     Gtk::Entry * m_entry_ev_name;
     Gtk::Entry * m_entry_data_0;
     Gtk::Entry * m_entry_data_1;
@@ -157,7 +159,6 @@ public:
 
 private:
 
-    // void popup_menu (Gtk::Menu * menu);
     bool timeout ();
 
     void set_delete ()
@@ -170,6 +171,7 @@ private:
         // TODO
     }
 
+    void set_apply ();
 
 private:            // callbacks
 

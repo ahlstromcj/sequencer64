@@ -198,8 +198,16 @@ private:
 
     bool load_events ();
     void set_current_event (const editable_events::iterator ei, int index);
+    void modify_current_event
+    (
+        const std::string & evtimestamp,
+        const std::string & evname,
+        const std::string & evdata0,
+        const std::string & evdata1
+    );
     void set_text
     (
+        const std::string & evtimestamp,
         const std::string & evcategory,
         const std::string & evname,
         const std::string & evdata0,

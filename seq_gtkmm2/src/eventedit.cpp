@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-12-05
- * \updates       2015-12-10
+ * \updates       2015-12-11
  * \license       GNU GPLv2 or above
  *
  *
@@ -59,8 +59,11 @@
 #include "eventslots.hpp"
 #include "perform.hpp"
 
+#if USE_BUTTON_PIXMAP
 #include "pixmaps/del.xpm"
 #include "pixmaps/ins.xpm"
+#endif
+
 #include "pixmaps/perfedit.xpm"
 
 using namespace Gtk::Menu_Helpers;
@@ -159,6 +162,7 @@ eventedit::eventedit
     m_rightbox          (manage(new Gtk::VBox(false, 2))),
     m_button_del        (manage(new Gtk::Button())),
     m_button_ins        (manage(new Gtk::Button())),
+    m_button_apply      (manage(new Gtk::Button())),
     m_label_index       (manage(new Gtk::Label())),
     m_label_time        (manage(new Gtk::Label())),
     m_label_event       (manage(new Gtk::Label())),
@@ -167,6 +171,7 @@ eventedit::eventedit
     m_label_ppqn        (manage(new Gtk::Label())),
     m_label_ev_count    (manage(new Gtk::Label())),
     m_label_category    (manage(new Gtk::Label())),
+    m_entry_ev_timestamp(manage(new Gtk::Entry())),
     m_entry_ev_name     (manage(new Gtk::Entry())),
     m_entry_data_0      (manage(new Gtk::Entry())),
     m_entry_data_1      (manage(new Gtk::Entry())),
@@ -183,39 +188,56 @@ eventedit::eventedit
     m_editbox->set_border_width(2);
     m_optsbox->set_border_width(2);
     m_rightbox->set_border_width(2);
-    m_table->attach(*m_htopbox, 0, 4, 0, 1,  Gtk::FILL, Gtk::SHRINK, 8, 8);
-    m_table->attach(*m_eventslots, 0, 1, 1, 13, Gtk::FILL, Gtk::FILL, 8, 8);
+    m_table->attach(*m_htopbox,    0, 4, 0, 1,   Gtk::FILL, Gtk::SHRINK, 8, 8);
+    m_table->attach(*m_eventslots, 0, 1, 1, 13,  Gtk::FILL, Gtk::FILL, 8, 8);
     m_table->attach
     (
         *m_vscroll, 1, 2, 1, 13, Gtk::SHRINK, Gtk::FILL | Gtk::EXPAND, 4, 4
     );
-    m_table->attach(*m_showbox, 2, 3, 1, 4,  Gtk::FILL, Gtk::SHRINK, 8, 8);
-    m_table->attach(*m_editbox, 2, 3, 4, 10,  Gtk::FILL, Gtk::SHRINK, 8, 8);
-    m_table->attach(*m_optsbox, 2, 3, 10, 13,  Gtk::FILL, Gtk::SHRINK, 8, 8);
-    m_table->attach(*m_bottbox, 0, 4, 13, 14,  Gtk::FILL, Gtk::SHRINK, 8, 8);
-    m_table->attach(*m_rightbox, 3, 4, 1, 13,  Gtk::FILL, Gtk::SHRINK, 2, 2);
+    m_table->attach(*m_showbox,    2, 3, 1, 4,   Gtk::FILL, Gtk::SHRINK, 8, 8);
+    m_table->attach(*m_editbox,    2, 3, 4, 10,  Gtk::FILL, Gtk::SHRINK, 8, 8);
+    m_table->attach(*m_optsbox,    2, 3, 10, 13, Gtk::FILL, Gtk::SHRINK, 8, 8);
+    m_table->attach(*m_bottbox,    0, 4, 13, 14, Gtk::FILL, Gtk::SHRINK, 8, 8);
+    m_table->attach(*m_rightbox,   3, 4, 1, 13,  Gtk::FILL, Gtk::SHRINK, 2, 2);
 
     add(*m_table);
 
+#if USE_BUTTON_PIXMAP
     m_button_del->add
     (
         *manage(new Gtk::Image(Gdk::Pixbuf::create_from_xpm_data(del_xpm)))
     );
+#else
+    m_button_del->set_label("Delete");
+#endif
+
     m_button_del->signal_clicked().connect
     (
         sigc::mem_fun(*this, &eventedit::set_delete)
     );
     add_tooltip(m_button_del, "Delete the currently-selected event.");
 
+#if USE_BUTTON_PIXMAP
     m_button_ins->add
     (
         *manage(new Gtk::Image(Gdk::Pixbuf::create_from_xpm_data(ins_xpm)))
     );
+#else
+    m_button_ins->set_label("Insert After");
+#endif
+
     m_button_ins->signal_clicked().connect
     (
         sigc::mem_fun(*this, &eventedit::set_insert)
     );
     add_tooltip(m_button_ins, "Insert event after currently-selected event.");
+
+    m_button_apply->set_label("Apply");
+    m_button_apply->signal_clicked().connect
+    (
+        sigc::mem_fun(*this, &eventedit::set_apply)
+    );
+    add_tooltip(m_button_apply, "Apply changes to currently-selected event.");
 
     m_label_seq_name->set_width_chars(32);
     m_label_seq_name->set_text("\"Untitled/Empty sequence\"");
@@ -238,6 +260,12 @@ eventedit::eventedit
     m_label_category->set_text("Channel Event: Ch. 5");
     m_editbox->pack_start(*m_label_category, false, false);
 
+    m_entry_ev_timestamp->set_max_length(12);
+    m_entry_ev_timestamp->set_editable(true);
+    m_entry_ev_timestamp->set_width_chars(12);
+    m_entry_ev_timestamp->set_text("000:0:000");
+    m_editbox->pack_start(*m_entry_ev_timestamp, false, false);
+
     m_entry_ev_name->set_max_length(32);
     m_entry_ev_name->set_editable(true);
     m_entry_ev_name->set_width_chars(18);
@@ -258,6 +286,7 @@ eventedit::eventedit
 
     m_editbox->pack_start(*m_button_del, false, false);
     m_editbox->pack_start(*m_button_ins, false, false);
+    m_editbox->pack_start(*m_button_apply, false, false);
 
     m_label_time_fmt->set_width_chars(24);
     m_label_time_fmt->set_text("\n\nTime Format (radio buttons)");
@@ -350,14 +379,24 @@ eventedit::enqueue_draw ()
 }
 
 /**
- *  Opens the given popup menu.
+ *  Passes the edited fields to the current editable event in the eventslot.
+ *
+ * \todo
+ *      Also allow modifying the timestamp!
+ */
 
 void
-eventedit::popup_menu (Gtk::Menu * menu)
+eventedit::set_apply ()
 {
-    menu->popup(0, 0);
+    if (not_nullptr(m_eventslots))
+    {
+        std::string ts = "0:0:0";
+        std::string name = "TO DO";
+        std::string data0 = "TO DO";
+        std::string data1 = "TO DO";
+        m_eventslots->modify_current_event(ts, name, data0, data1);
+    }
 }
- */
 
 /**
  *  Handles a drawing timeout.  It redraws "dirty" sequences in the

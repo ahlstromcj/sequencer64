@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-12-05
- * \updates       2015-12-10
+ * \updates       2015-12-11
  * \license       GNU GPLv2 or above
  *
  *  This class supports the left side of the Performance window (also known
@@ -145,13 +145,17 @@ private:
 
     /**
      *  The index of the event that is 0th in the visible list of events.
+     *  It is used in numbering the events that are shown in the event-slot
+     *  frame.
      */
 
     int m_top_event_index;
 
     /**
      *  Indicates the number of events visible based on the current size of
-     *  the visible editable event list.  Starts out around 55.
+     *  the visible editable event list.  Starts out around 42, and should
+     *  stay at m_top_event_index + 42 as long as the eventedit window is not
+     *  resized vertically.
      */
 
     int m_bottom_event_index;
@@ -192,7 +196,56 @@ public:
         Gtk::Adjustment & vadjust
     );
 
-    void redraw_dirty_events ();
+    /**
+     * \getter m_event_count
+     *      Returns the number of total events in the sequence represented by
+     *      the eventslots object.
+     */
+
+    int event_count () const
+    {
+        return m_event_count;
+    }
+
+    /**
+     * \getter m_display_count
+     *      Returns the number of rows (events) in the eventslots's display.
+     */
+
+    int display_count () const
+    {
+        return m_display_count;
+    }
+
+    /**
+     * \getter m_top_event_index
+     *      This value will almost certainly be 0.
+     */
+
+    int top_index () const
+    {
+        return m_top_event_index;
+    }
+
+    /**
+     * \getter m_bottom_event_index
+     *      This value will be around 40 to 50, but will stay constant unless
+     *      we allow resizing of the eventedit window.
+     */
+
+    int bottom_index () const
+    {
+        return m_bottom_event_index;
+    }
+
+    /**
+     * \getter m_current_event_index
+     */
+
+    int current_index () const
+    {
+        return m_current_event_index;
+    }
 
 private:
 
@@ -207,16 +260,18 @@ private:
     );
     void set_text
     (
-        const std::string & evtimestamp,
         const std::string & evcategory,
+        const std::string & evtimestamp,
         const std::string & evname,
         const std::string & evdata0,
         const std::string & evdata1
     );
 
+    void redraw_dirty_events ();
     void enqueue_draw ();
     int convert_y (int y);
     void draw_event (editable_events::iterator ei, int index);
+    void draw_events ();
     void change_vert ();
 
     /**

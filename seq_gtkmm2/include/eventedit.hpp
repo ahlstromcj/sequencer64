@@ -153,9 +153,12 @@ public:
     void set_seq_ppqn (const std::string & p);
     void set_seq_count (const std::string & c);
     void set_event_category (const std::string & c);
+    void set_event_timestamp (const std::string & ts);
     void set_event_name (const std::string & n);
     void set_event_data_0 (const std::string & d);
     void set_event_data_1 (const std::string & d);
+
+    void v_adjustment (int value, int lower, int upper);
 
 private:
 

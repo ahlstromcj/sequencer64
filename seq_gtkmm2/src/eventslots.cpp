@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-12-05
- * \updates       2015-12-10
+ * \updates       2015-12-12
  * \license       GNU GPLv2 or above
  *
  *  This module is user-interface code.  It is loosely based on the workings
@@ -78,10 +78,6 @@ eventslots::eventslots
     m_bottom_iterator       (),
     m_current_iterator      ()
 {
-    m_vadjust.signal_value_changed().connect
-    (
-        mem_fun(*(this), &eventslots::change_vert)
-    );
     load_events();
 }
 
@@ -155,7 +151,8 @@ eventslots::set_current_event (const editable_events::iterator ei, int index)
     std::string data_1(tmp);
     set_text
     (
-        "TIMESTAMP", ev.category_string(), ev.status_string(), data_0, data_1
+        ev.category_string(), ev.timestamp_string(), ev.status_string(),
+        data_0, data_1
     );
     m_current_event_index = index;
     m_current_iterator = ei;
@@ -172,18 +169,14 @@ eventslots::set_current_event (const editable_events::iterator ei, int index)
 void
 eventslots::set_text
 (
-    const std::string & evtimestamp,
     const std::string & evcategory,
+    const std::string & evtimestamp,
     const std::string & evname,
     const std::string & evdata0,
     const std::string & evdata1
 )
 {
-    //
-    // TODO:
-    //
-    // m_parent.set_event_timestamp(evtimestamp);
-
+    m_parent.set_event_timestamp(evtimestamp);
     m_parent.set_event_category(evcategory);
     m_parent.set_event_name(evname);
     m_parent.set_event_data_0(evdata0);
@@ -192,9 +185,6 @@ eventslots::set_text
 
 /**
  *  Modifies the data in the currently-selected event.
- *
- * \todo
- *      Also allow modifying the time-stamp!
  */
 
 void
@@ -210,16 +200,61 @@ eventslots::modify_current_event
 }
 
 /**
- *  Change the vertial offset of a sequence/pattern.
+ *  Change the vertical offset of events.  Note that m_vadjust is
+ *  the Gtk::Adjustment object that the eventedit parent passes to the
+ *  gui_drawingarea_gtk2 constructor.
+ *
+ *  The top-event and bottom-event indices (and their corresponding
+ *  editable-event iterators) delimit the part of the event container that is
+ *  displayed in the eventslots user-interface.  The top-event index starts at
+ *  0, and the bottom-event is larger (initially, by 42 slots).
+ *
+ *  When the scroll-bar thumb moves up or down, we need to change both event
+ *  indices and both event iterators by the corresponding amount.  Luckily,
+ *  the std::multimap iterator is bidirectional.
  */
 
 void
 eventslots::change_vert ()
 {
-    if (m_top_event_index != int(m_vadjust.get_value()))
+    int new_value = m_vadjust.get_value();
+    if (m_top_event_index != new_value)
     {
-        m_top_event_index = int(m_vadjust.get_value());
-        enqueue_draw();
+        int movement = new_value - m_top_event_index;
+        m_top_event_index += movement;
+        m_bottom_event_index += movement;
+        if (m_top_event_index < 0)              /* moved too far upward     */
+        {
+            movement += m_top_event_index;      /* restrict upward movement */
+            m_bottom_event_index += m_top_event_index;
+            m_top_event_index = 0;
+        }
+        else if (m_bottom_event_index >= m_event_count) /* too far down     */
+        {
+            int deduction = m_bottom_event_index - m_event_count + 1;
+            movement -= deduction;
+            m_top_event_index -= deduction;
+            m_bottom_event_index -= deduction;
+        }
+        if (movement > 0)
+        {
+            for (int i = 0; i < movement; ++i)
+            {
+                ++m_top_iterator;
+                ++m_bottom_iterator;
+            }
+        }
+        else if (movement < 0)
+        {
+            movement = -movement;
+            for (int i = 0; i < movement; ++i)
+            {
+                --m_top_iterator;
+                --m_bottom_iterator;
+            }
+        }
+        if (movement != 0)
+            enqueue_draw();
     }
 }
 
@@ -230,6 +265,7 @@ eventslots::change_vert ()
 void
 eventslots::enqueue_draw ()
 {
+    draw_events();
     queue_draw();
 }
 
@@ -275,52 +311,36 @@ eventslots::enqueue_draw ()
 void
 eventslots::draw_event (editable_events::iterator ei, int index)
 {
-    if (index < m_display_count)
+    int yloc = m_slots_y * (index - m_top_event_index);
+    Color fg = grey();
+    font::Color col = font::BLACK;
+    if (index == m_current_event_index)
     {
-        int yloc = m_slots_y * (index - m_top_event_index);
-        Color fg = grey();
-        font::Color col = font::BLACK;
-
-        /*
-         * Make sure that the rectangle drawn with the proper background
-         * colors, otherwise just the name is properly colored.
-         */
-
-        if (index == m_current_event_index)
-        {
-            fg = yellow();
-            col = font::BLACK_ON_YELLOW;
-        }
-#ifdef USE_FUTURE_CODE
-        else if (false)     // if (a sysex event or selected event range)
-        {
-            fg = dark_cyan();
-            col = font::BLACK_ON_CYAN;
-        }
-#endif
-        else
-            fg = white();
-
-        /*
-         * 2. Render the column with the name of the sequence.  The channel
-         *    number ranges from 1 to 16, but SMF 0 is indicated on-screen by
-         *    a channel number of 0.
-         */
-
-        draw_rectangle
-        (
-            fg, m_setbox_w + 3, yloc + 1,
-            m_slots_x - 3 - m_setbox_w, m_slots_y - 1
-        );
-        editable_event & evp = ei->second;
-        char tmp[4];
-        snprintf(tmp, sizeof tmp, "%2d", index);
-        std::string temp = tmp;
-        temp += "-";
-        temp += evp.stock_event_string();
-        render_string(5 + m_setbox_w, yloc + 2, temp, col);
-        render_string(m_slots_box_w + 5, yloc + 2, "X", col);
+        fg = yellow();
+        col = font::BLACK_ON_YELLOW;
     }
+#ifdef USE_FUTURE_CODE
+    else if (false)     // if (a sysex event or selected event range)
+    {
+        fg = dark_cyan();
+        col = font::BLACK_ON_CYAN;
+    }
+#endif
+    else
+        fg = white();
+
+    draw_rectangle
+    (
+        fg, m_setbox_w + 3, yloc + 1, m_slots_x - 3 - m_setbox_w, m_slots_y - 1
+    );
+    editable_event & evp = ei->second;
+    char tmp[8];
+    snprintf(tmp, sizeof tmp, "%3d", index);
+    std::string temp = tmp;
+    temp += "-";
+    temp += evp.stock_event_string();
+    render_string(5 + m_setbox_w, yloc + 2, temp, col);
+//  render_string(m_slots_box_w + 5, yloc + 2, "X", col);
 }
 
 /**
@@ -396,8 +416,17 @@ eventslots::on_realize ()
     (
         m_window, m_slots_x, m_slots_y * m_display_count + 1, -1
     );
+    m_vadjust.signal_value_changed().connect        /* moved from ctor */
+    (
+        mem_fun(*(this), &eventslots::change_vert)
+    );
 
     /*
+     * This is set properly in via a call to v_adjustment(), and should
+     * have been set to 0 anyway.
+     *
+     *      m_vadjust.set_value(m_event_count);
+     *
      * Hmmmm, leaves the event name field empty, not sure why!
      */
 
@@ -412,29 +441,35 @@ eventslots::on_realize ()
 bool
 eventslots::on_expose_event (GdkEventExpose *)
 {
-    /*
-     * Need to change this to calculate the number of displayable events.
-     *
-     * int seqs = (m_window_y / m_slots_y) + 1;
-     */
+    draw_events();
+    return true;
+}
 
+/**
+ *  Draws all of the events in the current eventslots frame.
+ *
+ *  Need to figure out how to calculate the number of displayable events.
+ *
+ *      m_display_count = ???
+ */
+
+void
+eventslots::draw_events ()
+{
     if (m_display_count > 0)
     {
         editable_events::iterator ei = m_top_iterator;
-        for (int event = 0; event < m_display_count; ++event)
+        for (int ev = m_top_event_index; ev <= m_bottom_event_index; ++ev)
         {
-            // int sequence = i + m_top_event_index;
-
             if (ei != m_event_container.end())
             {
-                draw_event(ei, event);
+                draw_event(ei, ev);
                 ++ei;
             }
             else
                 break;
         }
     }
-    return true;
 }
 
 /**
@@ -482,7 +517,7 @@ eventslots::on_size_allocate (Gtk::Allocation & a)
 }
 
 /**
- *  Redraws sequences that have been modified.
+ *  Redraws events that have been modified.
  */
 
 void

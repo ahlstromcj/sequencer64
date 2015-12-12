@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-12-05
- * \updates       2015-12-11
+ * \updates       2015-12-12
  * \license       GNU GPLv2 or above
  *
  *
@@ -59,7 +59,7 @@
 #include "eventslots.hpp"
 #include "perform.hpp"
 
-#if USE_BUTTON_PIXMAP
+#if USE_BUTTON_PIXMAP                   /* not good enough to enable */
 #include "pixmaps/del.xpm"
 #include "pixmaps/ins.xpm"
 #endif
@@ -223,14 +223,14 @@ eventedit::eventedit
         *manage(new Gtk::Image(Gdk::Pixbuf::create_from_xpm_data(ins_xpm)))
     );
 #else
-    m_button_ins->set_label("Insert After");
+    m_button_ins->set_label("Insert Before");
 #endif
 
     m_button_ins->signal_clicked().connect
     (
         sigc::mem_fun(*this, &eventedit::set_insert)
     );
-    add_tooltip(m_button_ins, "Insert event after currently-selected event.");
+    add_tooltip(m_button_ins, "Insert event before currently-selected event.");
 
     m_button_apply->set_label("Apply");
     m_button_apply->signal_clicked().connect
@@ -239,21 +239,31 @@ eventedit::eventedit
     );
     add_tooltip(m_button_apply, "Apply changes to currently-selected event.");
 
+    char temptext[36];
+
+    snprintf(temptext, sizeof temptext, "\"%s\"", seq.get_name());
     m_label_seq_name->set_width_chars(32);
-    m_label_seq_name->set_text("\"Untitled/Empty sequence\"");
+    m_label_seq_name->set_text(temptext);
     m_showbox->pack_start(*m_label_seq_name, false, false); /* expand and fill */
 
-    //  m_label_time_sig->set_width_chars(5);
-    m_label_time_sig->set_justify(Gtk::JUSTIFY_LEFT);
-    m_label_time_sig->set_text("Time Signature: 4/4");
+    snprintf
+    (
+        temptext, sizeof temptext, "Time Signature: %d/%d",
+        seq.get_beats_per_bar(), seq.get_beat_width()
+    );
+    m_label_time_sig->set_text(temptext);
     m_showbox->pack_start(*m_label_time_sig, false, false);
 
-    //  m_label_ppqn->set_width_chars(5);
-    m_label_ppqn->set_text("PPQN (Divisions): 192");
+    snprintf(temptext, sizeof temptext, "PPQN (Divisions): %d", seq.get_ppqn());
+    m_label_ppqn->set_text(temptext);
     m_showbox->pack_start(*m_label_ppqn, false, false);
 
+    snprintf
+    (
+        temptext, sizeof temptext, "Sequence Count: %d events", seq.event_count()
+    );
     m_label_ev_count->set_width_chars(12);
-    m_label_ev_count->set_text("Sequence Count: 9999 events");
+    m_label_ev_count->set_text(temptext);
     m_showbox->pack_start(*m_label_ev_count, false, false);
 
     m_label_category->set_width_chars(24);
@@ -288,9 +298,11 @@ eventedit::eventedit
     m_editbox->pack_start(*m_button_ins, false, false);
     m_editbox->pack_start(*m_button_apply, false, false);
 
+#ifdef USE_TIME_FORMAT_RADIOBUTTONS
     m_label_time_fmt->set_width_chars(24);
     m_label_time_fmt->set_text("\n\nTime Format (radio buttons)");
     m_optsbox->pack_end(*m_label_time_fmt, false, false);
+#endif
 
     m_label_right->set_width_chars(2);
     m_label_right->set_text("--");
@@ -314,11 +326,25 @@ eventedit::~eventedit ()
     // Empty body
 }
 
+/**
+ *  Sets m_label_seq_name to the title.
+ *
+ * \param title
+ *      The name of the sequence.
+ */
+
 void
 eventedit::set_seq_title (const std::string & title)
 {
     m_label_seq_name->set_text(title);
 }
+
+/**
+ *  Sets m_label_time_sig to the time-signature string.
+ *
+ * \param sig
+ *      The time signature of the sequence.
+ */
 
 void
 eventedit::set_seq_time_sig (const std::string & sig)
@@ -326,11 +352,25 @@ eventedit::set_seq_time_sig (const std::string & sig)
     m_label_time_sig->set_text(sig);
 }
 
+/**
+ *  Sets m_label_ppqn to the parts-per-quarter-note string.
+ *
+ * \param p
+ *      The parts-per-quarter-note string for the sequence.
+ */
+
 void
 eventedit::set_seq_ppqn (const std::string & p)
 {
     m_label_ppqn->set_text(p);
 }
+
+/**
+ *  Sets m_label_ev_count to the number-of-events string.
+ *
+ * \param c
+ *      The number-of-events string for the sequence.
+ */
 
 void
 eventedit::set_seq_count (const std::string & c)
@@ -338,11 +378,38 @@ eventedit::set_seq_count (const std::string & c)
     m_label_ev_count->set_text(c);
 }
 
+/**
+ *  Sets m_label_category to the category string.
+ *
+ * \param c
+ *      The category string for the current event.
+ */
+
 void
 eventedit::set_event_category (const std::string & c)
 {
     m_label_category->set_text(c);
 }
+
+/**
+ *  Sets m_entry_ev_timestamp to the time-stamp string.
+ *
+ * \param ts
+ *      The time-stamp string for the current event.
+ */
+
+void
+eventedit::set_event_timestamp (const std::string & ts)
+{
+    m_entry_ev_timestamp->set_text(ts);
+}
+
+/**
+ *  Sets m_entry_ev_name to the name-of-event string.
+ *
+ * \param n
+ *      The name-of-event string for the current event.
+ */
 
 void
 eventedit::set_event_name (const std::string & n)
@@ -350,16 +417,61 @@ eventedit::set_event_name (const std::string & n)
     m_entry_ev_name->set_text(n);
 }
 
+/**
+ *  Sets m_entry_data_0 to the first data byte string.
+ *
+ * \param d
+ *      The first data byte string for the current event.
+ */
+
 void
 eventedit::set_event_data_0 (const std::string & d)
 {
     m_entry_data_0->set_text(d);
 }
 
+/**
+ *  Sets m_entry_data_1 to the second data byte string.
+ *
+ * \param d
+ *      The second data byte string for the current event.
+ */
+
 void
 eventedit::set_event_data_1 (const std::string & d)
 {
     m_entry_data_1->set_text(d);
+}
+
+/**
+ *  Sets the parameters for the vertical scroll-bar that is associated with
+ *  the eventslots event-list user-interface.  Some of the parameters are
+ *  obtained from the eventslots object:
+ *
+ *      -   Page size comes from eventslots::display_count().
+ *      -   Page increment is a little less than the page-size value.
+ *
+ * \param value
+ *      The current value to be indicated by the scroll-bar.  It will lie
+ *      between the lower and upper parameter.
+ *
+ * \param lower
+ *      The lowest value to be indicated by the scroll-bar.
+ *
+ * \param upper
+ *      The highest value to be indicated by the scroll-bar.
+ */
+
+void
+eventedit::v_adjustment (int value, int lower, int upper)
+{
+    m_vadjust->set_lower(lower);
+    m_vadjust->set_upper(upper);
+    m_vadjust->set_page_size(m_eventslots->display_count());
+    m_vadjust->set_step_increment(1);
+    m_vadjust->set_page_increment(m_eventslots->display_count() - 8);
+    if (value >= lower && value <= upper)
+        m_vadjust->set_value(value);
 }
 
 /**
@@ -425,6 +537,7 @@ eventedit::on_realize ()
     (
         mem_fun(*this, &eventedit::timeout), m_redraw_ms
     );
+    v_adjustment(0, 0, m_eventslots->event_count());
 }
 
 /**

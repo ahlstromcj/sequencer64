@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-12-05
- * \updates       2015-12-12
+ * \updates       2015-12-13
  * \license       GNU GPLv2 or above
  *
  *  This module is user-interface code.  It is loosely based on the workings
@@ -79,6 +79,7 @@ eventslots::eventslots
     m_current_iterator      ()
 {
     load_events();
+    grab_focus();
 }
 
 /**
@@ -141,13 +142,13 @@ eventslots::load_events ()
 void
 eventslots::set_current_event (const editable_events::iterator ei, int index)
 {
-    char tmp[16];
+    char tmp[32];
     midibyte d0, d1;
     const editable_event & ev = ei->second;
     ev.get_data(d0, d1);
-    snprintf(tmp, sizeof tmp, "data[0] = 0x%02x", int(d0));
+    snprintf(tmp, sizeof tmp, "data[0]: %d (0x%02x)", int(d0), int(d0));
     std::string data_0(tmp);
-    snprintf(tmp, sizeof tmp, "data[1] = 0x%02x", int(d1));
+    snprintf(tmp, sizeof tmp, "data[1]: %d (0x%02x)", int(d1), int(d1));
     std::string data_1(tmp);
     set_text
     (
@@ -184,19 +185,115 @@ eventslots::set_text
 }
 
 /**
- *  Modifies the data in the currently-selected event.
+ *  Deletes the current event, and makes adjustments due to that deletion.
+ *
+ *  To delete the current event, this function moves the current iterator to
+ *  the next event, deletes the previously-current iterator, adjusts the event
+ *  count and the bottom iterator, and redraws the pixmap.
+ */
+
+bool
+eventslots::delete_current_event ()
+{
+    bool result = m_current_iterator != m_event_container.end();
+    if (m_current_iterator != m_event_container.end())
+    {
+        editable_events::iterator oldcurrent = m_current_iterator;
+        int oldcount = m_event_container.count();
+
+        /**
+        if (m_top_iterator == m_current_iterator)
+            ++m_top_iterator;
+
+        if (m_bottom_iterator == m_current_iterator)
+            ++m_bottom_iterator;
+         **/
+
+        if (m_top_event_index == m_current_event_index)
+        {
+            // ++m_top_event_index;
+            ++m_top_iterator;
+        }
+
+        if (m_bottom_event_index == m_current_event_index)
+        {
+            // ++m_bottom_event_index;
+            ++m_bottom_iterator;
+        }
+
+        ++m_current_iterator;
+        m_event_container.remove(oldcurrent);   /* wrapper for erase() */
+
+        int newcount = m_event_container.count();
+        if (newcount > 0)
+        {
+            if (m_current_iterator == m_event_container.end())
+            {
+                --m_current_iterator;
+                m_bottom_iterator = m_current_iterator;
+            }
+            else
+                --m_bottom_iterator;
+        }
+        else
+        {
+            m_top_iterator = m_event_container.end();
+            m_current_iterator = m_event_container.end();
+            m_bottom_iterator = m_event_container.end();
+        }
+        result = newcount == (oldcount - 1);
+        m_event_count = newcount;
+        if (result)
+            enqueue_draw();
+    }
+    return result;
+}
+
+/**
+ *  Modifies the data in the currently-selected event.  If the timestamp has
+ *  changed, however, we can't just modify the event in place.  Instead, we
+ *  finish modifying the event, but tell the caller to delete and reinsert the
+ *  new event (in its proper new location based on timestamp).
+ *
+ * \param evtimestamp
+ *      Provides the new event time-stamp as edited by the user.
+ *
+ * \param evname
+ *      Provides the event name as edited by the user.
+ *
+ * \param evdata0
+ *      Provides the time-stamp as edited by the user.
+ *
+ * \param evtimestamp
+ *      Provides the time-stamp as edited by the user.
+ *
+ * \return
+ *      Returns true if the modification could be make in place.  Otherwise,
+ *      false is returned and the caller should then perform a
+ *      delete-and-insert operation.
  */
 
 void
 eventslots::modify_current_event
 (
-    const std::string & /*evtimestamp*/,
-    const std::string & /*evname*/,
-    const std::string & /*evdata0*/,
-    const std::string & /*evdata1*/
+    const std::string & evtimestamp,
+    const std::string & evname,
+    const std::string & evdata0,
+    const std::string & evdata1
 )
 {
-    // TODO
+    editable_event & ev = m_current_iterator->second;
+    midipulse oldtimestamp = ev.get_timestamp();
+    ev.timestamp(evtimestamp);                          /* set from string  */
+    bool same_time = ev.get_timestamp() == oldtimestamp;
+    ev.set_status_from_string(evname, evdata0, evdata1);
+    if (! same_time)
+    {
+        // ////////////////////////////////////////////////////////
+        // TODO
+        // delete the original and insert the modified one
+        // ////////////////////////////////////////////////////////
+    }
 }
 
 /**
@@ -340,7 +437,6 @@ eventslots::draw_event (editable_events::iterator ei, int index)
     temp += "-";
     temp += evp.stock_event_string();
     render_string(5 + m_setbox_w, yloc + 2, temp, col);
-//  render_string(m_slots_box_w + 5, yloc + 2, "X", col);
 }
 
 /**
@@ -362,10 +458,105 @@ eventslots::convert_y (int y)
     int event_index = y / m_slots_y + m_top_event_index;
     if (event_index >= m_bottom_event_index)
         event_index = m_bottom_event_index;
-    else if (event_index < 0)
-        event_index = 0;
+    else if (event_index < m_top_event_index)
+        event_index = m_top_event_index;
+
+//  else if (event_index < 0)
+//      event_index = 0;
 
     return event_index;
+}
+
+/**
+ *  Draws all of the events in the current eventslots frame.
+ *
+ *  Need to figure out how to calculate the number of displayable events.
+ *
+ *      m_display_count = ???
+ */
+
+void
+eventslots::draw_events ()
+{
+    if (m_display_count > 0)
+    {
+        editable_events::iterator ei = m_top_iterator;
+        for (int ev = m_top_event_index; ev <= m_bottom_event_index; ++ev)
+        {
+            if (ei != m_event_container.end())
+            {
+                draw_event(ei, ev);
+                ++ei;
+            }
+            else
+                break;
+        }
+    }
+}
+
+/**
+ *  Redraws events that have been modified.
+ */
+
+void
+eventslots::redraw_dirty_events ()
+{
+#if 0
+    int y_f = m_window_y / m_slots_y;
+    for (int y = 0; y <= y_f; y++)
+    {
+        int seq = y + m_top_event_index;
+        if (seq < m_event_count)
+        {
+            bool dirty = (perf().is_dirty_names(seq));
+            if (dirty)
+                draw_event(seq);
+        }
+    }
+#endif
+}
+
+/**
+ *  Handles the callback when the window is realized.  It first calls the
+ *  base-class version of on_realize().  Then it allocates any additional
+ *  resources needed.
+ */
+
+void
+eventslots::on_realize ()
+{
+    gui_drawingarea_gtk2::on_realize();
+    m_pixmap = Gdk::Pixmap::create
+    (
+        m_window, m_slots_x, m_slots_y * m_display_count + 1, -1
+    );
+    m_vadjust.signal_value_changed().connect        /* moved from ctor */
+    (
+        mem_fun(*(this), &eventslots::change_vert)
+    );
+
+    /*
+     * This is set properly in via a call to v_adjustment(), and should
+     * have been set to 0 anyway.
+     *
+     *      m_vadjust.set_value(m_event_count);
+     *
+     * Hmmmm, leaves the event name field empty, not sure why!
+     */
+
+    set_current_event(m_top_iterator, 0);
+    enqueue_draw();             // DOES THIS WORK???
+}
+
+/**
+ *  Handles an on-expose event.  It draws all of the sequences.
+ */
+
+bool
+eventslots::on_expose_event (GdkEventExpose *)
+{
+    draw_events();
+    return true;
 }
 
 /**
@@ -403,76 +594,6 @@ eventslots::on_button_press_event (GdkEventButton * ev)
 }
 
 /**
- *  Handles the callback when the window is realized.  It first calls the
- *  base-class version of on_realize().  Then it allocates any additional
- *  resources needed.
- */
-
-void
-eventslots::on_realize ()
-{
-    gui_drawingarea_gtk2::on_realize();
-    m_pixmap = Gdk::Pixmap::create
-    (
-        m_window, m_slots_x, m_slots_y * m_display_count + 1, -1
-    );
-    m_vadjust.signal_value_changed().connect        /* moved from ctor */
-    (
-        mem_fun(*(this), &eventslots::change_vert)
-    );
-
-    /*
-     * This is set properly in via a call to v_adjustment(), and should
-     * have been set to 0 anyway.
-     *
-     *      m_vadjust.set_value(m_event_count);
-     *
-     * Hmmmm, leaves the event name field empty, not sure why!
-     */
-
-    set_current_event(m_top_iterator, 0);
-    grab_focus();
-}
-
-/**
- *  Handles an on-expose event.  It draws all of the sequences.
- */
-
-bool
-eventslots::on_expose_event (GdkEventExpose *)
-{
-    draw_events();
-    return true;
-}
-
-/**
- *  Draws all of the events in the current eventslots frame.
- *
- *  Need to figure out how to calculate the number of displayable events.
- *
- *      m_display_count = ???
- */
-
-void
-eventslots::draw_events ()
-{
-    if (m_display_count > 0)
-    {
-        editable_events::iterator ei = m_top_iterator;
-        for (int ev = m_top_event_index; ev <= m_bottom_event_index; ++ev)
-        {
-            if (ei != m_event_container.end())
-            {
-                draw_event(ei, ev);
-                ++ei;
-            }
-            else
-                break;
-        }
-    }
-}
-
-/**
  *  Handles a button-release for the right button, bringing up a popup
  *  menu.
  */
@@ -484,6 +605,42 @@ eventslots::on_button_release_event (GdkEventButton * p0)
 //      popup_menu();
 
     return false;
+}
+
+/**
+ *  This callback is an attempt to get keyboard focus into the eventslots
+ *  pixmap area.  See the same function in the perfroll module.
+ */
+
+bool
+eventslots::on_focus_in_event (GdkEventFocus *)
+{
+    set_flags(Gtk::HAS_FOCUS);
+    return false;
+}
+
+/**
+ *  This callback handles an out-of-focus event by resetting the flag
+ *  HAS_FOCUS.
+ */
+
+bool
+eventslots::on_focus_out_event (GdkEventFocus *)
+{
+    unset_flags(Gtk::HAS_FOCUS);
+    return false;
+}
+
+
+/**
+ *  Trial balloon for keystroke actions.
+ */
+
+bool
+eventslots::on_key_press_event (GdkEventKey * ev)
+{
+    infoprint("KEYSTROKE!");
+    return true;
 }
 
 /**
@@ -514,28 +671,6 @@ eventslots::on_size_allocate (Gtk::Allocation & a)
     gui_drawingarea_gtk2::on_size_allocate(a);
     m_window_x = a.get_width();                     /* side-effect  */
     m_window_y = a.get_height();                    /* side-effect  */
-}
-
-/**
- *  Redraws events that have been modified.
- */
-
-void
-eventslots::redraw_dirty_events ()
-{
-#if 0
-    int y_f = m_window_y / m_slots_y;
-    for (int y = 0; y <= y_f; y++)
-    {
-        int seq = y + m_top_event_index;
-        if (seq < m_event_count)
-        {
-            bool dirty = (perf().is_dirty_names(seq));
-            if (dirty)
-                draw_event(seq);
-        }
-    }
-#endif
 }
 
 }           // namespace seq64

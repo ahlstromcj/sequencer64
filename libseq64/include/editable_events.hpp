@@ -29,7 +29,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-12-04
- * \updates       2015-12-09
+ * \updates       2015-12-12
  * \license       GNU GPLv2 or above
  *
  *  This module extends the event class to support conversions between events
@@ -124,12 +124,24 @@ public:
 
 public:
 
+    /**
+     * \getter m_midi_parameters
+     */
+
     const midi_timing & timing () const
     {
         return m_midi_parameters;
     }
 
-public:
+    /**
+     *  Calculates the MIDI pulses (divisions) from a string using one of the
+     *  free functions of the calculations module.
+     */
+
+    midipulse string_to_pulses (const std::string & ts_string) const
+    {
+        return seq64::string_to_pulses(ts_string, timing());
+    }
 
     bool load_events ();
     bool save_events ();
@@ -244,10 +256,6 @@ public:
     {
         m_current_event = cei;
     }
-
-private:
-
-    // void format_timestamp ();
 
 };          // class editable_events
 

@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-28
- * \updates       2015-12-05
+ * \updates       2015-12-12
  * \license       GNU GPLv2 or above
  *
  *  This module extends the event class to support conversions between events
@@ -368,6 +368,7 @@ public:
         return event::get_timestamp();
     }
     void timestamp (midipulse ts);
+    void timestamp (const std::string & ts_string);
 
     /**
      *  Converts the current time-stamp to a string representation in units of
@@ -381,6 +382,12 @@ public:
 
     std::string time_as_measures ();
     std::string time_as_minutes ();
+    void set_status_from_string
+    (
+        const std::string & s,
+        const std::string & sd0,
+        const std::string & sd1
+    );
     std::string format_timestamp ();
     std::string stock_event_string ();
 

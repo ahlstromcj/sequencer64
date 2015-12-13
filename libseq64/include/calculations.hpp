@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-07
- * \updates       2015-12-05
+ * \updates       2015-12-12
  * \license       GNU GPLv2 or above
  *
  *  These items were moved from the globals.h module so that only the modules
@@ -112,8 +112,15 @@ extern midipulse midi_measures_to_pulses
 );
 extern midipulse timestring_to_pulses
 (
-    const std::string & timestring, int bpm, int ppqn
+    const std::string & timestring,
+    int bpm, int ppqn
 );
+extern midipulse string_to_pulses
+(
+    const std::string & s,
+    const midi_timing & mt
+);
+extern midibyte string_to_midibyte (const std::string & s);
 extern std::string shorten_file_spec (const std::string & fpath, int leng);
 extern bool string_not_void (const std::string & s);
 extern bool string_is_void (const std::string & s);

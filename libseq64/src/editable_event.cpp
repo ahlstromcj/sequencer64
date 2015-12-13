@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-12-09
+ * \updates       2015-12-12
  * \license       GNU GPLv2 or above
  *
  *  A MIDI editable event is encapsulated by the seq64::editable_event
@@ -375,16 +375,7 @@ editable_event::editable_event (const editable_event & rhs)
 }
 
 /**
- *  This principal assignment operator sets most of the class members.  This
- *  function is currently geared only toward support of the SMF 0
- *  channel-splitting feature.  Many of the member are not set to useful value
- *  when the MIDI file is read, so we don't handle them for now.
- *
- * \warning
- *      This function does not yet copy the SysEx data.  The inclusion
- *      of SysEx editable_events was not complete in Seq24, and it is still not
- *      complete in Sequencer64.  Nor does it currently bother with the
- *      links.
+ *  This principal assignment operator sets the class members.
  *
  * \param rhs
  *      Provides the editable_event object to be assigned.
@@ -473,6 +464,24 @@ editable_event::timestamp (midipulse ts)
 }
 
 /**
+ * \setter event::set_timestamp() [string version]
+ *
+ * \param ts
+ *      Provides the timestamp in units of MIDI pulses.
+ *
+ *  The format of the string representation is of the format selected by the
+ *  m_format_timestamp member and is set by the format_timestamp() function.
+ */
+
+void
+editable_event::timestamp (const std::string & ts_string)
+{
+    midipulse ts = m_parent.string_to_pulses(ts_string);
+    event::set_timestamp(ts);
+    format_timestamp();
+}
+
+/**
  *  Formats the current timestamp member as a string.  The format of the
  *  string representation is of the format selected by the m_format_timestamp
  *  member.
@@ -516,6 +525,49 @@ std::string
 editable_event::time_as_minutes ()
 {
     return pulses_to_timestring(get_timestamp(), parent().timing());
+}
+
+/**
+ *  Converts a string into a status byte.
+ *
+ *      -   category_channel_message
+ *      -   category_system_message
+ *
+ */
+
+void
+editable_event::set_status_from_string
+(
+    const std::string & s,
+    const std::string & sd0,
+    const std::string & sd1
+)
+{
+    unsigned short value = name_to_value(s, category_channel_message);
+    if (value != SEQ64_END_OF_MIDIBYTE_TABLE)
+    {
+        midibyte newstatus = midibyte(value);
+        midibyte d0 = string_to_midibyte(sd0);
+        set_status(newstatus);
+        if (is_one_byte_msg(newstatus))
+        {
+            set_data(d0);
+        }
+        else if (is_two_byte_msg(newstatus))
+        {
+            midibyte d1 = string_to_midibyte(sd1);
+            set_data(d0, d1);
+        }
+    }
+    else
+    {
+        value = name_to_value(s, category_channel_message);
+        if (value != SEQ64_END_OF_MIDIBYTE_TABLE)
+        {
+            midibyte newstatus = midibyte(value);
+            set_status(newstatus);
+        }
+    }
 }
 
 /**
@@ -578,16 +630,23 @@ editable_event::analyze ()
          */
 
         m_name_status = value_to_name(status, category_channel_message);
-        snprintf(tmp, sizeof tmp, "Channel %d", int(channel));
+        snprintf(tmp, sizeof tmp, "Chan %d", int(channel));
         m_name_channel = std::string(tmp);
         if (is_one_byte_msg(status))
             snprintf(tmp, sizeof tmp, "Data = { %d }", int(d0));
         else
         {
             if (is_note_msg(status))
-                snprintf(tmp, sizeof tmp, "Key %d Velocity %d", int(d0), int(d1));
+            {
+                snprintf(tmp, sizeof tmp, "Key %d Vel %d", int(d0), int(d1));
+            }
             else
-                snprintf(tmp, sizeof tmp, "Data = { %d, %d }", int(d0), int(d1));
+            {
+                snprintf
+                (
+                    tmp, sizeof tmp, "Data[] = { %d %d }", int(d0), int(d1)
+                );
+            }
         }
         m_name_data = std::string(tmp);
     }
@@ -606,7 +665,7 @@ editable_event::analyze ()
     else
     {
         // Would try to detect SysEx versus Meta message versus SeqSpec here.
-        // Then set either m_name_meta and/or m_name_seqspec
+        // Then set either m_name_meta and/or m_name_seqspec.
     }
 
 }

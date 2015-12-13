@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-12-05
- * \updates       2015-12-11
+ * \updates       2015-12-12
  * \license       GNU GPLv2 or above
  *
  */
@@ -119,8 +119,8 @@ private:
     Gtk::Label * m_label_category;
     Gtk::Entry * m_entry_ev_timestamp;
     Gtk::Entry * m_entry_ev_name;
-    Gtk::Entry * m_entry_data_0;
-    Gtk::Entry * m_entry_data_1;
+    Gtk::Entry * m_entry_ev_data_0;
+    Gtk::Entry * m_entry_ev_data_1;
     Gtk::Label * m_label_time_fmt;
 
     /**
@@ -151,7 +151,7 @@ public:
     void set_seq_title (const std::string & title);
     void set_seq_time_sig (const std::string & sig);
     void set_seq_ppqn (const std::string & p);
-    void set_seq_count (const std::string & c);
+    void set_seq_count ();
     void set_event_category (const std::string & c);
     void set_event_timestamp (const std::string & ts);
     void set_event_name (const std::string & n);
@@ -164,17 +164,9 @@ private:
 
     bool timeout ();
 
-    void set_delete ()
-    {
-        // TODO
-    }
-
-    void set_insert ()
-    {
-        // TODO
-    }
-
-    void set_apply ();
+    void handle_delete ();
+    void handle_insert ();
+    void handle_apply ();
 
 private:            // callbacks
 

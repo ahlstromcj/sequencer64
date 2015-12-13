@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-12-05
- * \updates       2015-12-11
+ * \updates       2015-12-13
  * \license       GNU GPLv2 or above
  *
  *  This class supports the left side of the Performance window (also known
@@ -258,6 +258,7 @@ private:
         const std::string & evdata0,
         const std::string & evdata1
     );
+    bool delete_current_event ();
     void set_text
     (
         const std::string & evcategory,
@@ -307,8 +308,11 @@ private:    // Gtk callbacks
     bool on_expose_event (GdkEventExpose * ev);
     bool on_button_press_event (GdkEventButton * ev);
     bool on_button_release_event (GdkEventButton * ev);
-    void on_size_allocate (Gtk::Allocation &);
+    bool on_focus_in_event (GdkEventFocus * ev);
+    bool on_focus_out_event (GdkEventFocus * ev);
+    bool on_key_press_event (GdkEventKey * ev);
     bool on_scroll_event (GdkEventScroll * ev);
+    void on_size_allocate (Gtk::Allocation &);
 
 };
 

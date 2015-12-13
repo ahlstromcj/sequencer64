@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-12-05
- * \updates       2015-12-12
+ * \updates       2015-12-13
  * \license       GNU GPLv2 or above
  *
  *
@@ -125,7 +125,7 @@ namespace seq64
           | ...    ...          ...     | a | [Edit field: Vel #    ] |   |
           | ...    ...          ...     | r |- - - - - - - - - - - - -|   |  9
           | ...    ...          ...     |   | [Optional more data?  ] |   |
-          | ...    ...          ...     |   |------ optsbox ----------|   |  10
+          | ...    ...          ...     |   |------ optsbox ----------|   | 10
           | ...    ...          ...     |   |  o Pulses               |   |
           |-----------------------------|   |  o Measures             |   |
           | 56-136:3:133 Program Change | v |  o Time                 |   |
@@ -173,8 +173,8 @@ eventedit::eventedit
     m_label_category    (manage(new Gtk::Label())),
     m_entry_ev_timestamp(manage(new Gtk::Entry())),
     m_entry_ev_name     (manage(new Gtk::Entry())),
-    m_entry_data_0      (manage(new Gtk::Entry())),
-    m_entry_data_1      (manage(new Gtk::Entry())),
+    m_entry_ev_data_0   (manage(new Gtk::Entry())),
+    m_entry_ev_data_1   (manage(new Gtk::Entry())),
     m_label_time_fmt    (manage(new Gtk::Label())),
     m_label_right       (manage(new Gtk::Label())),
     m_redraw_ms         (c_redraw_ms)                       /* 40 ms        */
@@ -213,7 +213,7 @@ eventedit::eventedit
 
     m_button_del->signal_clicked().connect
     (
-        sigc::mem_fun(*this, &eventedit::set_delete)
+        sigc::mem_fun(*this, &eventedit::handle_delete)
     );
     add_tooltip(m_button_del, "Delete the currently-selected event.");
 
@@ -223,19 +223,23 @@ eventedit::eventedit
         *manage(new Gtk::Image(Gdk::Pixbuf::create_from_xpm_data(ins_xpm)))
     );
 #else
-    m_button_ins->set_label("Insert Before");
+    m_button_ins->set_label("Insert");
 #endif
 
     m_button_ins->signal_clicked().connect
     (
-        sigc::mem_fun(*this, &eventedit::set_insert)
+        sigc::mem_fun(*this, &eventedit::handle_insert)
     );
-    add_tooltip(m_button_ins, "Insert event before currently-selected event.");
+    add_tooltip
+    (
+        m_button_ins,
+        "Insert event. Its location is determined by the timestamp."
+    );
 
     m_button_apply->set_label("Apply");
     m_button_apply->signal_clicked().connect
     (
-        sigc::mem_fun(*this, &eventedit::set_apply)
+        sigc::mem_fun(*this, &eventedit::handle_apply)
     );
     add_tooltip(m_button_apply, "Apply changes to currently-selected event.");
 
@@ -258,21 +262,17 @@ eventedit::eventedit
     m_label_ppqn->set_text(temptext);
     m_showbox->pack_start(*m_label_ppqn, false, false);
 
-    snprintf
-    (
-        temptext, sizeof temptext, "Sequence Count: %d events", seq.event_count()
-    );
-    m_label_ev_count->set_width_chars(12);
-    m_label_ev_count->set_text(temptext);
+    m_label_ev_count->set_width_chars(32);
+    set_seq_count();
     m_showbox->pack_start(*m_label_ev_count, false, false);
 
     m_label_category->set_width_chars(24);
     m_label_category->set_text("Channel Event: Ch. 5");
     m_editbox->pack_start(*m_label_category, false, false);
 
-    m_entry_ev_timestamp->set_max_length(12);
+    m_entry_ev_timestamp->set_max_length(16);
     m_entry_ev_timestamp->set_editable(true);
-    m_entry_ev_timestamp->set_width_chars(12);
+    m_entry_ev_timestamp->set_width_chars(16);
     m_entry_ev_timestamp->set_text("000:0:000");
     m_editbox->pack_start(*m_entry_ev_timestamp, false, false);
 
@@ -282,17 +282,17 @@ eventedit::eventedit
     m_entry_ev_name->set_text("Note On");
     m_editbox->pack_start(*m_entry_ev_name, false, false);
 
-    m_entry_data_0->set_max_length(32);
-    m_entry_data_0->set_editable(true);
-    m_entry_data_0->set_width_chars(18);
-    m_entry_data_0->set_text("Key 101");
-    m_editbox->pack_start(*m_entry_data_0, false, false);
+    m_entry_ev_data_0->set_max_length(32);
+    m_entry_ev_data_0->set_editable(true);
+    m_entry_ev_data_0->set_width_chars(32);
+    m_entry_ev_data_0->set_text("Key 101");
+    m_editbox->pack_start(*m_entry_ev_data_0, false, false);
 
-    m_entry_data_1->set_max_length(32);
-    m_entry_data_1->set_editable(true);
-    m_entry_data_1->set_width_chars(18);
-    m_entry_data_1->set_text("Vel 64");
-    m_editbox->pack_start(*m_entry_data_1, false, false);
+    m_entry_ev_data_1->set_max_length(32);
+    m_entry_ev_data_1->set_editable(true);
+    m_entry_ev_data_1->set_width_chars(32);
+    m_entry_ev_data_1->set_text("Vel 64");
+    m_editbox->pack_start(*m_entry_ev_data_1, false, false);
 
     m_editbox->pack_start(*m_button_del, false, false);
     m_editbox->pack_start(*m_button_ins, false, false);
@@ -373,9 +373,15 @@ eventedit::set_seq_ppqn (const std::string & p)
  */
 
 void
-eventedit::set_seq_count (const std::string & c)
+eventedit::set_seq_count ()
 {
-    m_label_ev_count->set_text(c);
+    char temptext[36];
+    snprintf
+    (
+        temptext, sizeof temptext, "Sequence Count: %d events",
+        m_eventslots->event_count()
+    );
+    m_label_ev_count->set_text(temptext);
 }
 
 /**
@@ -418,7 +424,7 @@ eventedit::set_event_name (const std::string & n)
 }
 
 /**
- *  Sets m_entry_data_0 to the first data byte string.
+ *  Sets m_entry_ev_data_0 to the first data byte string.
  *
  * \param d
  *      The first data byte string for the current event.
@@ -427,7 +433,7 @@ eventedit::set_event_name (const std::string & n)
 void
 eventedit::set_event_data_0 (const std::string & d)
 {
-    m_entry_data_0->set_text(d);
+    m_entry_ev_data_0->set_text(d);
 }
 
 /**
@@ -440,7 +446,7 @@ eventedit::set_event_data_0 (const std::string & d)
 void
 eventedit::set_event_data_1 (const std::string & d)
 {
-    m_entry_data_1->set_text(d);
+    m_entry_ev_data_1->set_text(d);
 }
 
 /**
@@ -491,21 +497,44 @@ eventedit::enqueue_draw ()
 }
 
 /**
- *  Passes the edited fields to the current editable event in the eventslot.
- *
- * \todo
- *      Also allow modifying the timestamp!
+ *  Initiates the deletion of the current editable event.
  */
 
 void
-eventedit::set_apply ()
+eventedit::handle_delete ()
+{
+    (void) m_eventslots->delete_current_event();
+    set_seq_count();
+}
+
+/**
+ *  Initiates the insertion of a new editable event.  The event's location
+ *  will be determined by the timestamp and existing events.
+ */
+
+void
+eventedit::handle_insert ()
+{
+    // TODO
+}
+
+/**
+ *  Passes the edited fields to the current editable event in the eventslot.
+ *  Note that there are two cases to worry about.  If the timestamp has not
+ *  changed, then we can simply modify the existing current event in place.
+ *  Otherwise, we need to delete the old event and insert the new one.
+ *  But that is done for us by eventslots::modify_current_event().
+ */
+
+void
+eventedit::handle_apply ()
 {
     if (not_nullptr(m_eventslots))
     {
-        std::string ts = "0:0:0";
-        std::string name = "TO DO";
-        std::string data0 = "TO DO";
-        std::string data1 = "TO DO";
+        std::string ts = m_entry_ev_timestamp->get_text();
+        std::string name = m_entry_ev_name->get_text();
+        std::string data0 = m_entry_ev_data_0->get_text();
+        std::string data1 = m_entry_ev_data_1->get_text();
         m_eventslots->modify_current_event(ts, name, data0, data1);
     }
 }

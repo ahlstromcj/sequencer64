@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-07
- * \updates       2015-12-09
+ * \updates       2015-12-12
  * \license       GNU GPLv2 or above
  *
  *  This code was moved from the globals module so that other modules
@@ -69,9 +69,9 @@
  *      perfroll module that we need to move here.
  */
 
-#include <cctype>                       /* std::isspace(), etc.             */
+#include <cctype>                       /* std::isspace(), std::isdigit()   */
 #include <math.h>                       /* C::floor()                       */
-#include <stdlib.h>                     /* C::atoi()                        */
+#include <stdlib.h>                     /* C::atoi(), C::strtol()           */
 #include <time.h>                       /* C::strftime()                    */
 
 #include "calculations.hpp"
@@ -468,6 +468,78 @@ timestring_to_pulses (const std::string & timestring, int bpm, int ppqn)
 }
 
 /**
+ *  Converts a time string to pulses.  First, the type of string is deduced by
+ *  the characters in the string.  If the string contains two colons and a
+ *  decimal point, it is assumed to be a time-string ("hh:mm:ss.frac"); in
+ *  addition ss will have to be less than 60.
+ *
+ *  If the string just contains two colons, then it is assumed to be a
+ *  measure-string ("measures:beats:divisions").
+ *
+ *  If it has none of the above, it is assumed to be pulses.  Testing is not
+ *  rigorous.
+ *
+ * \param s
+ *      Provides the string to convert to pulses.
+ *
+ * \param mt
+ *      Provides the structures needed to provide BPM and other values needed
+ *      for some of the conversions.
+ *
+ * \return
+ *      Returns the string as converted to MIDI pulses (divisions, clocks,
+ *      ticks, whatever you call it).
+ */
+
+midipulse
+string_to_pulses
+(
+    const std::string & s,
+    const midi_timing & mt
+)
+{
+    midipulse result = 0;
+    std::string s1;
+    std::string s2;
+    std::string s3;
+    std::string fraction;
+    bool three_numbers = extract_timing_numbers(s, s1, s2, s3, fraction);
+    if (three_numbers)
+    {
+        if (fraction.empty() || atoi(s3.c_str()) >= 60)
+            result = measurestring_to_pulses(s, mt);
+        else
+            result = timestring_to_pulses(s, mt.beats_per_minute(), mt.ppqn());
+    }
+    else
+        result = atol(s.c_str());
+
+    return result;
+}
+
+/**
+ *  Converts a string to a MIDI byte.  This function bypasses characters until
+ *  it finds a digit (whether part of the number or a "0x" construct), and
+ *  then converts it.
+ */
+
+midibyte
+string_to_midibyte (const std::string & s)
+{
+    midibyte result = 0;
+    if (! s.empty())
+    {
+        const char * numptr = s.c_str();
+        while (! std::isdigit(*numptr))
+            ++numptr;
+
+        long value = strtol(numptr, nullptr, 0);    /* decimal/hex/octal */
+        result = midibyte(value);
+    }
+    return result;
+}
+
+/**
  *  Shortens a file-specification to make sure it is no longer than the
  *  provided length value.  This is done by removing character in the middle,
  *  if necessary, and replacing them with an ellipse.
@@ -534,7 +606,7 @@ shorten_file_spec (const std::string & fpath, int leng)
  *    Returns 'true' if the pointer is valid, the string has a non-zero
  *    length, and is not just white-space.
  *
- *    The definition of white-space is provided by the isspace()
+ *    The definition of white-space is provided by the std::isspace()
  *    function/macro.
  */
 

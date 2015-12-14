@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-12-05
- * \updates       2015-12-13
+ * \updates       2015-12-14
  * \license       GNU GPLv2 or above
  *
  *
@@ -169,6 +169,7 @@ eventedit::eventedit
     m_label_seq_name    (manage(new Gtk::Label())),
     m_label_time_sig    (manage(new Gtk::Label())),
     m_label_ppqn        (manage(new Gtk::Label())),
+    m_label_channel     (manage(new Gtk::Label())),
     m_label_ev_count    (manage(new Gtk::Label())),
     m_label_category    (manage(new Gtk::Label())),
     m_entry_ev_timestamp(manage(new Gtk::Entry())),
@@ -261,6 +262,14 @@ eventedit::eventedit
     snprintf(temptext, sizeof temptext, "PPQN (Divisions): %d", seq.get_ppqn());
     m_label_ppqn->set_text(temptext);
     m_showbox->pack_start(*m_label_ppqn, false, false);
+
+    snprintf
+    (
+        temptext, sizeof temptext, "Sequence Channel: %d",
+        seq.get_midi_channel()
+    );
+    m_label_channel->set_text(temptext);
+    m_showbox->pack_start(*m_label_channel, false, false);
 
     m_label_ev_count->set_width_chars(32);
     set_seq_count();
@@ -524,7 +533,8 @@ eventedit::handle_insert ()
     std::string name = m_entry_ev_name->get_text();
     std::string data0 = m_entry_ev_data_0->get_text();
     std::string data1 = m_entry_ev_data_1->get_text();
-    bool has_events = m_eventslots->insert_current_event(ts, name, data0, data1);
+    bool has_events = m_eventslots->insert_event(ts, name, data0, data1);
+    set_seq_count();
     if (has_events)
     {
         m_button_del->set_sensitive(true);
@@ -550,6 +560,7 @@ eventedit::handle_apply ()
         std::string data0 = m_entry_ev_data_0->get_text();
         std::string data1 = m_entry_ev_data_1->get_text();
         (void) m_eventslots->modify_current_event(ts, name, data0, data1);
+        set_seq_count();
     }
 }
 

@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-28
- * \updates       2015-12-12
+ * \updates       2015-12-14
  * \license       GNU GPLv2 or above
  *
  *  This module extends the event class to support conversions between events
@@ -384,6 +384,7 @@ public:
     std::string time_as_minutes ();
     void set_status_from_string
     (
+        const std::string & ts,
         const std::string & s,
         const std::string & sd0,
         const std::string & sd1

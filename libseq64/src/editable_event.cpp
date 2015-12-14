@@ -528,22 +528,40 @@ editable_event::time_as_minutes ()
 }
 
 /**
- *  Converts a string into a status byte.
+ *  Converts a string into an event status, along with timestamp and data
+ *  bytes.  Currently, this function handles only the following two messages:
  *
  *      -   category_channel_message
  *      -   category_system_message
  *
+ *  After all of the numbering member items have been set, they are converted
+ *  and assigned to the string versions via a call to the analyze() function.
+ *
+ * \param ts
+ *      Provides the time-stamp string of the event.
+ *
+ * \param s
+ *      Provides the name  of the event, such as "Program Change".
+ *
+ * \param sd0
+ *      Provides the string defining the first data byte of the event.
+ *
+ * \param sd1
+ *      Provides the string defining the second data byte of the event, if
+ *      applicable to the event.
  */
 
 void
 editable_event::set_status_from_string
 (
+    const std::string & ts,
     const std::string & s,
     const std::string & sd0,
     const std::string & sd1
 )
 {
     unsigned short value = name_to_value(s, category_channel_message);
+    timestamp(ts);
     if (value != SEQ64_END_OF_MIDIBYTE_TABLE)
     {
         midibyte newstatus = midibyte(value);
@@ -568,6 +586,7 @@ editable_event::set_status_from_string
             set_status(newstatus);
         }
     }
+    analyze();                          /* create the strings   */
 }
 
 /**

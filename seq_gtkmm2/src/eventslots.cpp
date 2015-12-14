@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-12-05
- * \updates       2015-12-13
+ * \updates       2015-12-14
  * \license       GNU GPLv2 or above
  *
  *  This module is user-interface code.  It is loosely based on the workings
@@ -139,9 +139,9 @@ eventslots::set_current_event (const editable_events::iterator ei, int index)
     midibyte d0, d1;
     const editable_event & ev = ei->second;
     ev.get_data(d0, d1);
-    snprintf(tmp, sizeof tmp, "data[0]: %d (0x%02x)", int(d0), int(d0));
+    snprintf(tmp, sizeof tmp, "Data[0]: %d (0x%02x)", int(d0), int(d0));
     std::string data_0(tmp);
-    snprintf(tmp, sizeof tmp, "data[1]: %d (0x%02x)", int(d1), int(d1));
+    snprintf(tmp, sizeof tmp, "Data[1]: %d (0x%02x)", int(d1), int(d1));
     std::string data_1(tmp);
     set_text
     (
@@ -219,7 +219,7 @@ eventslots::set_text
  */
 
 bool
-eventslots::insert_current_event
+eventslots::insert_event
 (
     const std::string & evtimestamp,
     const std::string & evname,
@@ -229,8 +229,8 @@ eventslots::insert_current_event
 {
     seq64::event e;                                 /* new default event    */
     editable_event edev(m_event_container, e);
-    edev.timestamp(evtimestamp);                    /* set from string      */
-    edev.set_status_from_string(evname, evdata0, evdata1);
+    edev.set_status_from_string(evtimestamp, evname, evdata0, evdata1);
+    edev.set_channel(m_seq.get_midi_channel());
     bool result = m_event_container.add(edev);
     if (result)
     {
@@ -249,7 +249,6 @@ eventslots::insert_current_event
              * TO DO!!!
              *
              *      ++m_bottom_iterator;
-             *
              */
         }
         enqueue_draw();
@@ -327,13 +326,14 @@ eventslots::delete_current_event ()
             m_bottom_iterator = m_event_container.end();
             m_top_event_index = m_current_event_index = m_bottom_event_index = 0;
         }
-        result = newcount == (oldcount - 1);
-        if (result)
+        bool ok = newcount == (oldcount - 1);
+        if (ok)
         {
             m_event_count = newcount;
             result = newcount > 0;
-            enqueue_draw();
         }
+        if (ok)
+            enqueue_draw();
     }
     return result;
 }
@@ -374,15 +374,20 @@ eventslots::modify_current_event
     {
         editable_event & ev = m_current_iterator->second;
         midipulse oldtimestamp = ev.get_timestamp();
-        ev.timestamp(evtimestamp);                      /* set from string  */
         bool same_time = ev.get_timestamp() == oldtimestamp;
-        ev.set_status_from_string(evname, evdata0, evdata1);
+        ev.set_status_from_string(evtimestamp, evname, evdata0, evdata1);
+        ev.set_channel(m_seq.get_midi_channel());
         if (! same_time)
         {
-            // ////////////////////////////////////////////////////////
-            // TODO
-            // delete the original and insert the modified one
-            // ////////////////////////////////////////////////////////
+            /*
+             * Copy the modified event, delete the original, and insert the
+             * modified event into the editable-event container.
+             */
+
+            editable_event ev_copy = ev;
+            result = delete_current_event();
+            if (result)
+                result = m_event_container.add(ev);
         }
         if (result)
             enqueue_draw();

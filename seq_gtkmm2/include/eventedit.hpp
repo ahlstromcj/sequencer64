@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-12-05
- * \updates       2015-12-12
+ * \updates       2015-12-14
  * \license       GNU GPLv2 or above
  *
  */
@@ -104,12 +104,13 @@ private:
     Gtk::Label * m_label_event;
 
     /**
-     * Items for the inside of the m_htopbox member.
+     * Items for the inside of the m_showbox member.
      */
 
     Gtk::Label * m_label_seq_name;
     Gtk::Label * m_label_time_sig;
     Gtk::Label * m_label_ppqn;
+    Gtk::Label * m_label_channel;
     Gtk::Label * m_label_ev_count;
 
     /**

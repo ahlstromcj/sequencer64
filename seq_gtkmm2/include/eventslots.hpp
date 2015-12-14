@@ -251,7 +251,7 @@ private:
 
     bool load_events ();
     void set_current_event (const editable_events::iterator ei, int index);
-    bool insert_current_event
+    bool insert_event
     (
         const std::string & evtimestamp,
         const std::string & evname,

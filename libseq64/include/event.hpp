@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-30
+ * \updates       2015-12-14
  * \license       GNU GPLv2 or above
  *
  *  This module also declares/defines the various constants, status-byte
@@ -429,6 +429,19 @@ public:
 
     void set_status (midibyte status);
     void set_status (midibyte eventcode, midibyte channel);
+
+    /**
+     *  Sets the channel "nybble", without modifying the status "nybble".
+     *  Note that the sequence channel generally overrides this value.
+     *
+     * \param channel
+     *      The channel byte.
+     */
+
+    void set_channel (midibyte channel)
+    {
+        m_channel = channel;
+    }
 
     /**
      * \getter m_status

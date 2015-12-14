@@ -503,8 +503,13 @@ eventedit::enqueue_draw ()
 void
 eventedit::handle_delete ()
 {
-    (void) m_eventslots->delete_current_event();
+    bool isempty = ! m_eventslots->delete_current_event();
     set_seq_count();
+    if (isempty)
+    {
+        m_button_del->set_sensitive(false);
+        m_button_apply->set_sensitive(false);
+    }
 }
 
 /**
@@ -515,7 +520,16 @@ eventedit::handle_delete ()
 void
 eventedit::handle_insert ()
 {
-    // TODO
+    std::string ts = m_entry_ev_timestamp->get_text();
+    std::string name = m_entry_ev_name->get_text();
+    std::string data0 = m_entry_ev_data_0->get_text();
+    std::string data1 = m_entry_ev_data_1->get_text();
+    bool has_events = m_eventslots->insert_current_event(ts, name, data0, data1);
+    if (has_events)
+    {
+        m_button_del->set_sensitive(true);
+        m_button_apply->set_sensitive(true);
+    }
 }
 
 /**
@@ -535,7 +549,7 @@ eventedit::handle_apply ()
         std::string name = m_entry_ev_name->get_text();
         std::string data0 = m_entry_ev_data_0->get_text();
         std::string data1 = m_entry_ev_data_1->get_text();
-        m_eventslots->modify_current_event(ts, name, data0, data1);
+        (void) m_eventslots->modify_current_event(ts, name, data0, data1);
     }
 }
 

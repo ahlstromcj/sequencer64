@@ -64,7 +64,7 @@ eventslots::eventslots
     m_event_container       (seq, p.get_beats_per_minute()),
     m_slots_chars           (64),                               // 24
     m_char_w                (font_render().char_width()),
-    m_setbox_w              (m_char_w * 2),
+    m_setbox_w              (m_char_w),                         // * 2
     m_slots_box_w           (m_char_w * 62),                    // 22
     m_slots_x               (m_slots_chars * m_char_w),
     m_slots_y               (font_render().char_height() + 4),  // c_names_y
@@ -72,7 +72,7 @@ eventslots::eventslots
     m_event_count           (0),
     m_display_count         (0),
     m_top_event_index       (0),
-    m_bottom_event_index    (42),   // depends on dialog height
+    m_bottom_event_index    (42),   /* 41: need way to calculate this one */
     m_current_event_index   (0),
     m_top_iterator          (),
     m_bottom_iterator       (),
@@ -105,15 +105,10 @@ eventslots::load_events ()
             if (m_event_count < count)
                 count = m_event_count;
 
+            editable_events::iterator ei = m_current_iterator =
+                m_bottom_iterator = m_top_iterator = m_event_container.begin();
+
             m_display_count = count;
-
-            editable_events::iterator ei;
-            ei = 
-                m_current_iterator =
-                m_bottom_iterator =
-                m_top_iterator =
-                m_event_container.begin();
-
             for ( ; count > 0; --count)
             {
                 ei++;
@@ -126,10 +121,8 @@ eventslots::load_events ()
         else
         {
             result = false;
-            m_current_iterator =
-                m_bottom_iterator =
-                m_top_iterator =
-                m_event_container.end();
+            m_current_iterator = m_bottom_iterator =
+                m_top_iterator = m_event_container.end();
         }
     }
     return result;
@@ -162,9 +155,17 @@ eventslots::set_current_event (const editable_events::iterator ei, int index)
 /**
  *  Sets the text in the parent dialog, eventedit.
  *
- * \todo
- *      Actually, the sequence items are available in the parent, not here
- *      from the event.
+ * \param evtimestamp
+ *      The event time-stamp to be set in the parent.
+ *
+ * \param evname
+ *      The event name to be set in the parent.
+ *
+ * \param evdata0
+ *      The first event data byte to be set in the parent.
+ *
+ * \param evdata1
+ *      The second event data byte to be set in the parent.
  */
 
 void
@@ -185,52 +186,136 @@ eventslots::set_text
 }
 
 /**
+ *  Inserts an event based on the setting provided, which the eventedit object
+ *  gets from its Entry fields.
+ *
+ *  Note that we need to qualify the temporary event class object we create
+ *  below, with the seq64 namespace, otherwise the compiler thinks we're
+ *  trying to access some Gtkmm thing.
+ *
+ *  If the container was empty when the event was inserted, then we have to
+ *  fix all of the iterator and index members.
+ *
+ *  If the container was not empty, ...
+ *
+ * \param evtimestamp
+ *      The time-stamp of the new event, as obtained from the event-edit
+ *      timestamp field.
+ *
+ * \param evname
+ *      The type name (status name)  of the new event, as obtained from the
+ *      event-edit event-name field.
+ *
+ * \param evdata0
+ *      The first data byte of the new event, as obtained from the event-edit
+ *      data-1 field.
+ *
+ * \param evdata1
+ *      The second data byte of the new event, as obtained from the event-edit
+ *      data-2 field.  Used only for two-parameter events.
+ *
+ * \return
+ *      Returns true if the event was inserted.
+ */
+
+bool
+eventslots::insert_current_event
+(
+    const std::string & evtimestamp,
+    const std::string & evname,
+    const std::string & evdata0,
+    const std::string & evdata1
+)
+{
+    seq64::event e;                                 /* new default event    */
+    editable_event edev(m_event_container, e);
+    edev.timestamp(evtimestamp);                    /* set from string      */
+    edev.set_status_from_string(evname, evdata0, evdata1);
+    bool result = m_event_container.add(edev);
+    if (result)
+    {
+        if (m_event_container.count() == 1)
+        {
+            m_top_iterator = m_event_container.begin();
+            m_current_iterator = m_event_container.begin();
+            m_bottom_iterator = m_event_container.begin();
+            m_top_event_index = m_current_event_index = m_bottom_event_index = 0;
+        }
+        else
+        {
+            /*
+             * What actually happens here depends if the new event is before
+             * the frame, within the frame, or after the frame.  WE HAVE WORK
+             * TO DO!!!
+             *
+             *      ++m_bottom_iterator;
+             *
+             */
+        }
+        enqueue_draw();
+    }
+    return result;
+}
+
+/**
  *  Deletes the current event, and makes adjustments due to that deletion.
  *
  *  To delete the current event, this function moves the current iterator to
  *  the next event, deletes the previously-current iterator, adjusts the event
  *  count and the bottom iterator, and redraws the pixmap.
+ *
+ *  If the current iterator is the top (of the frame) iterator, then the top
+ *  iterator needs to be incremented as well.  The index of both stay the
+ *  same, since the event they were on is now replaced by the event that
+ *  follows.  The bottom iterator moves to the next event, which is now at the
+ *  bottom of the frame, but has the same index.
+ *
+ *  If the current iterator is in the middle of the frame, the top iterator
+ *  and index remain unchanged.  The current iterator is incremented, but its
+ *  index stays the same.  The bottom iterator is incremented, but its index
+ *  stays the same.
+ *
+ *  If the current iterator (and bottom iterator) point to the last event,
+ *  then both of them, and their indices, need to be decremented.  The frame
+ *  needs to be moved up by one event, so that the current event remains at
+ *  the bottom (it's just simpler to manage that way).
+ *
+ *  If the container becomes empty, then everything is invalidated.
+ *
+ * \return
+ *      Returns true if the delete was possible.  If the container was empty
+ *      or became empty, then false is returned.
  */
 
 bool
 eventslots::delete_current_event ()
 {
-    bool result = m_current_iterator != m_event_container.end();
-    if (m_current_iterator != m_event_container.end())
+    bool result = m_event_count > 0;
+    if (result)
+        result = m_current_iterator != m_event_container.end();
+
+    if (result)
     {
         editable_events::iterator oldcurrent = m_current_iterator;
         int oldcount = m_event_container.count();
-
-        /**
-        if (m_top_iterator == m_current_iterator)
-            ++m_top_iterator;
-
-        if (m_bottom_iterator == m_current_iterator)
-            ++m_bottom_iterator;
-         **/
-
+        int newcount;
         if (m_top_event_index == m_current_event_index)
-        {
-            // ++m_top_event_index;
-            ++m_top_iterator;
-        }
+            ++m_top_iterator;                   /* top index unchanged      */
 
-        if (m_bottom_event_index == m_current_event_index)
-        {
-            // ++m_bottom_event_index;
-            ++m_bottom_iterator;
-        }
-
-        ++m_current_iterator;
-        m_event_container.remove(oldcurrent);   /* wrapper for erase() */
-
-        int newcount = m_event_container.count();
+        ++m_bottom_iterator;                    /* bottom index unchanged   */
+        ++m_current_iterator;                   /* current index unchanged  */
+        m_event_container.remove(oldcurrent);   /* wrapper for erase()      */
+        newcount = m_event_container.count();
         if (newcount > 0)
         {
             if (m_current_iterator == m_event_container.end())
             {
                 --m_current_iterator;
+                --m_current_event_index;
                 m_bottom_iterator = m_current_iterator;
+                m_bottom_event_index = m_current_event_index;
+                --m_top_iterator;
+                --m_top_event_index;
             }
             else
                 --m_bottom_iterator;
@@ -240,11 +325,15 @@ eventslots::delete_current_event ()
             m_top_iterator = m_event_container.end();
             m_current_iterator = m_event_container.end();
             m_bottom_iterator = m_event_container.end();
+            m_top_event_index = m_current_event_index = m_bottom_event_index = 0;
         }
         result = newcount == (oldcount - 1);
-        m_event_count = newcount;
         if (result)
+        {
+            m_event_count = newcount;
+            result = newcount > 0;
             enqueue_draw();
+        }
     }
     return result;
 }
@@ -268,12 +357,10 @@ eventslots::delete_current_event ()
  *      Provides the time-stamp as edited by the user.
  *
  * \return
- *      Returns true if the modification could be make in place.  Otherwise,
- *      false is returned and the caller should then perform a
- *      delete-and-insert operation.
+ *      Returns true simply if the event-count is greater than 0.
  */
 
-void
+bool
 eventslots::modify_current_event
 (
     const std::string & evtimestamp,
@@ -282,18 +369,25 @@ eventslots::modify_current_event
     const std::string & evdata1
 )
 {
-    editable_event & ev = m_current_iterator->second;
-    midipulse oldtimestamp = ev.get_timestamp();
-    ev.timestamp(evtimestamp);                          /* set from string  */
-    bool same_time = ev.get_timestamp() == oldtimestamp;
-    ev.set_status_from_string(evname, evdata0, evdata1);
-    if (! same_time)
+    bool result = m_event_count > 0;
+    if (m_event_count > 0)
     {
-        // ////////////////////////////////////////////////////////
-        // TODO
-        // delete the original and insert the modified one
-        // ////////////////////////////////////////////////////////
+        editable_event & ev = m_current_iterator->second;
+        midipulse oldtimestamp = ev.get_timestamp();
+        ev.timestamp(evtimestamp);                      /* set from string  */
+        bool same_time = ev.get_timestamp() == oldtimestamp;
+        ev.set_status_from_string(evname, evdata0, evdata1);
+        if (! same_time)
+        {
+            // ////////////////////////////////////////////////////////
+            // TODO
+            // delete the original and insert the modified one
+            // ////////////////////////////////////////////////////////
+        }
+        if (result)
+            enqueue_draw();
     }
+    return result;
 }
 
 /**
@@ -318,21 +412,13 @@ eventslots::change_vert ()
     if (m_top_event_index != new_value)
     {
         int movement = new_value - m_top_event_index;
+        if ((m_top_event_index + movement) < 0)
+            movement = -m_top_event_index;
+        else if ((m_bottom_event_index + movement) >= m_event_count)
+            movement = m_event_count - m_bottom_event_index - 1;
+
         m_top_event_index += movement;
         m_bottom_event_index += movement;
-        if (m_top_event_index < 0)              /* moved too far upward     */
-        {
-            movement += m_top_event_index;      /* restrict upward movement */
-            m_bottom_event_index += m_top_event_index;
-            m_top_event_index = 0;
-        }
-        else if (m_bottom_event_index >= m_event_count) /* too far down     */
-        {
-            int deduction = m_bottom_event_index - m_event_count + 1;
-            movement -= deduction;
-            m_top_event_index -= deduction;
-            m_bottom_event_index -= deduction;
-        }
         if (movement > 0)
         {
             for (int i = 0; i < movement; ++i)
@@ -426,17 +512,14 @@ eventslots::draw_event (editable_events::iterator ei, int index)
     else
         fg = white();
 
-    draw_rectangle
-    (
-        fg, m_setbox_w + 3, yloc + 1, m_slots_x - 3 - m_setbox_w, m_slots_y - 1
-    );
     editable_event & evp = ei->second;
-    char tmp[8];
-    snprintf(tmp, sizeof tmp, "%3d", index);
+    char tmp[16];
+    snprintf(tmp, sizeof tmp, "%4d-", index);
     std::string temp = tmp;
-    temp += "-";
     temp += evp.stock_event_string();
-    render_string(5 + m_setbox_w, yloc + 2, temp, col);
+    temp += "   ";                                          /* coloring */
+    draw_rectangle(light_grey(), 0, yloc, m_slots_x, 1);
+    render_string(0, yloc+2, temp, col);
 }
 
 /**
@@ -458,17 +541,16 @@ eventslots::convert_y (int y)
     int event_index = y / m_slots_y + m_top_event_index;
     if (event_index >= m_bottom_event_index)
         event_index = m_bottom_event_index;
-    else if (event_index < m_top_event_index)
-        event_index = m_top_event_index;
-
-//  else if (event_index < 0)
-//      event_index = 0;
+    else if (event_index < m_top_event_index)       /* not 0 */
+        event_index = m_top_event_index;            /* ditto */
 
     return event_index;
 }
 
 /**
  *  Draws all of the events in the current eventslots frame.
+ *  It first clears the whole bitmap to white, so that no artifacts from the
+ *  previous state of the frame are left behind.
  *
  *  Need to figure out how to calculate the number of displayable events.
  *
@@ -481,6 +563,11 @@ eventslots::draw_events ()
     if (m_display_count > 0)
     {
         editable_events::iterator ei = m_top_iterator;
+        int x = 0;
+        int y = 1;                                      // tweakage
+        int lx = m_slots_x;                             //  - 3 - m_setbox_w;
+        int ly = m_slots_y * (m_display_count - 0);     // 42
+        draw_rectangle(white(), x, y, lx, ly);
         for (int ev = m_top_event_index; ev <= m_bottom_event_index; ++ev)
         {
             if (ei != m_event_container.end())

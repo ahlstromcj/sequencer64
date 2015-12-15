@@ -251,7 +251,8 @@ eventslots::insert_event
              *      ++m_bottom_iterator;
              */
         }
-        enqueue_draw();
+        if (result)
+            select_event(m_current_event_index);
     }
     return result;
 }

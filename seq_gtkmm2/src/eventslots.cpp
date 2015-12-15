@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-12-05
- * \updates       2015-12-14
+ * \updates       2015-12-15
  * \license       GNU GPLv2 or above
  *
  *  This module is user-interface code.  It is loosely based on the workings
@@ -331,9 +331,9 @@ eventslots::delete_current_event ()
         {
             m_event_count = newcount;
             result = newcount > 0;
+            if (result)
+                select_event(m_current_event_index);
         }
-        if (ok)
-            enqueue_draw();
     }
     return result;
 }
@@ -387,7 +387,11 @@ eventslots::modify_current_event
             editable_event ev_copy = ev;
             result = delete_current_event();
             if (result)
+            {
                 result = m_event_container.add(ev);
+//              if (result)
+//                  select_event(???);
+            }
         }
         if (result)
             enqueue_draw();
@@ -587,6 +591,39 @@ eventslots::draw_events ()
 }
 
 /**
+ *  Selects and highlight the event that is located in the frame at the given
+ *  event index.  The event index is provided by converting the y-coordinate
+ *  of the mouse pointer into a slot number, and then an event index (actually
+ *  the slot-distance from the m_top_iterator.  Confusing, yes no?
+ *
+ * \param event_index
+ *      Provides the slot-distance from the top slot.
+ */
+
+void
+eventslots::select_event (int event_index)
+{
+    bool ok = true;
+    int i = m_top_event_index;
+    editable_events::iterator ei = m_top_iterator;
+    while (i++ < event_index)
+    {
+        if (ei != m_event_container.end())
+        {
+            ++ei;
+            ok = ei != m_event_container.end();
+            if (! ok)
+                break;
+        }
+    }
+    if (ok)
+    {
+        set_current_event(ei, i - 1);
+        enqueue_draw();
+    }
+}
+
+/**
  *  Redraws events that have been modified.
  */
 
@@ -628,16 +665,13 @@ eventslots::on_realize ()
     );
 
     /*
-     * This is set properly in via a call to v_adjustment(), and should
-     * have been set to 0 anyway.
-     *
-     *      m_vadjust.set_value(m_event_count);
-     *
-     * Hmmmm, leaves the event name field empty, not sure why!
+     *  Weird, we have to do this dance to get the all of the edit slots to be
+     *  filled when the dialog first appears on-screen.
      */
 
-    set_current_event(m_top_iterator, 0);
-    enqueue_draw();             // DOES THIS WORK???
+    select_event(0);
+    select_event(1);
+    select_event(0);
 }
 
 /**
@@ -663,24 +697,7 @@ eventslots::on_button_press_event (GdkEventButton * ev)
     int event_index = convert_y(y);
     if (SEQ64_CLICK_LEFT(ev->button))
     {
-        bool ok = true;
-        int i = m_top_event_index;
-        editable_events::iterator ei = m_top_iterator;
-        while (i++ < event_index)
-        {
-            if (ei != m_event_container.end())
-            {
-                ++ei;
-                ok = ei != m_event_container.end();
-                if (! ok)
-                    break;
-            }
-        }
-        if (ok)
-        {
-            set_current_event(ei, i - 1);
-            enqueue_draw();
-        }
+        select_event(event_index);
     }
     return true;
 }

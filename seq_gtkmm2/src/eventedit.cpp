@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-12-05
- * \updates       2015-12-14
+ * \updates       2015-12-15
  * \license       GNU GPLv2 or above
  *
  *
@@ -157,9 +157,9 @@ eventedit::eventedit
     m_htopbox           (manage(new Gtk::HBox(false, 2))),
     m_showbox           (manage(new Gtk::VBox(false, 2))),
     m_editbox           (manage(new Gtk::VBox(false, 2))),
-    m_optsbox           (manage(new Gtk::VBox(false, 2))),
+    m_optsbox           (manage(new Gtk::VBox(true, 2))),
     m_bottbox           (manage(new Gtk::HBox(false, 2))),
-    m_rightbox          (manage(new Gtk::VBox(false, 2))),
+    m_rightbox          (manage(new Gtk::VBox(true, 2))),
     m_button_del        (manage(new Gtk::Button())),
     m_button_ins        (manage(new Gtk::Button())),
     m_button_apply      (manage(new Gtk::Button())),
@@ -181,27 +181,28 @@ eventedit::eventedit
     m_redraw_ms         (c_redraw_ms)                       /* 40 ms        */
 {
     std::string title = "Sequencer64 - Event Editor";
+    title += ": \"";
+    title += seq.get_name();
+    title += "\"";
     set_title(title);                                       /* caption bar  */
     set_icon(Gdk::Pixbuf::create_from_xpm_data(perfedit_xpm));
     m_table->set_border_width(2);
-    m_htopbox->set_border_width(2);
-    m_showbox->set_border_width(2);
-    m_editbox->set_border_width(2);
-    m_optsbox->set_border_width(2);
-    m_rightbox->set_border_width(2);
-    m_table->attach(*m_htopbox,    0, 4, 0, 1,   Gtk::FILL, Gtk::SHRINK, 8, 8);
-    m_table->attach(*m_eventslots, 0, 1, 1, 13,  Gtk::FILL, Gtk::FILL, 8, 8);
+    m_htopbox->set_border_width(4);
+    m_showbox->set_border_width(4);
+    m_editbox->set_border_width(4);
+    m_optsbox->set_border_width(4);
+    m_rightbox->set_border_width(4);
+    m_table->attach(*m_htopbox,    0, 4,  0,  1,   Gtk::FILL, Gtk::SHRINK, 8, 8);
+    m_table->attach(*m_eventslots, 0, 1,  1, 13,  Gtk::FILL, Gtk::FILL, 8, 8);
     m_table->attach
     (
         *m_vscroll, 1, 2, 1, 13, Gtk::SHRINK, Gtk::FILL | Gtk::EXPAND, 4, 4
     );
-    m_table->attach(*m_showbox,    2, 3, 1, 4,   Gtk::FILL, Gtk::SHRINK, 8, 8);
-    m_table->attach(*m_editbox,    2, 3, 4, 10,  Gtk::FILL, Gtk::SHRINK, 8, 8);
+    m_table->attach(*m_showbox,    2, 3,  1,  4,   Gtk::FILL, Gtk::SHRINK, 8, 8);
+    m_table->attach(*m_editbox,    2, 3,  4, 10,  Gtk::FILL, Gtk::SHRINK, 8, 8);
     m_table->attach(*m_optsbox,    2, 3, 10, 13, Gtk::FILL, Gtk::SHRINK, 8, 8);
+    m_table->attach(*m_rightbox,   3, 4,  1, 13,  Gtk::FILL, Gtk::SHRINK, 8, 8);
     m_table->attach(*m_bottbox,    0, 4, 13, 14, Gtk::FILL, Gtk::SHRINK, 8, 8);
-    m_table->attach(*m_rightbox,   3, 4, 1, 13,  Gtk::FILL, Gtk::SHRINK, 2, 2);
-
-    add(*m_table);
 
 #if USE_BUTTON_PIXMAP
     m_button_del->add
@@ -307,15 +308,16 @@ eventedit::eventedit
     m_editbox->pack_start(*m_button_ins, false, false);
     m_editbox->pack_start(*m_button_apply, false, false);
 
-#ifdef USE_TIME_FORMAT_RADIOBUTTONS
-    m_label_time_fmt->set_width_chars(24);
-    m_label_time_fmt->set_text("\n\nTime Format (radio buttons)");
+    m_label_time_fmt->set_width_chars(32);
+//  m_label_time_fmt->set_text("\n\nTime Format (radio buttons)");
+    m_label_time_fmt->set_text("Sequencer64");
     m_optsbox->pack_end(*m_label_time_fmt, false, false);
-#endif
 
-    m_label_right->set_width_chars(2);
-    m_label_right->set_text("--");
-    m_rightbox->pack_start(*m_label_right, true, true);
+//  m_label_right->set_width_chars(2);
+//  m_label_right->set_text("XX");
+//  m_rightbox->pack_start(*m_label_right, false, false);
+
+    add(*m_table);
 
     /*
      * Doesn't do anything:

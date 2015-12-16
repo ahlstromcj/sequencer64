@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-12-05
+ * \updates       2015-12-16
  * \license       GNU GPLv2 or above
  *
  *  A MIDI event (i.e. "track event") is encapsulated by the seq64::event
@@ -212,11 +212,13 @@ event::~event ()
  *      The 0070 is the offset within the versions of the
  *      b4uacuse-seq24.midi file.
  *
- *      Because of this mis-feature, and the very slow speed of loading a
- *      MIDI file when Sequencer64 is built for debugging, we are
- *      exploring using an std::map instead of an std::list.  Search for
- *      occurrences of the SEQ64_USE_EVENT_MAP macro. (This actually works
- *      better than a list, for loading MIDI event, we have found).
+ *      Because of this mis-feature, and the very slow speed of loading a MIDI
+ *      file when Sequencer64 is built for debugging, we are exploring using
+ *      an std::mulitmap instead of an std::list.  Search for occurrences of
+ *      the SEQ64_USE_EVENT_MAP macro. (This actually works better than a
+ *      list, for loading MIDI event, we have found, but may cause the upper
+ *      limit of the number of playing sequences to drop a little, due to the
+ *      overhead of incrementing multimap iterators versus list iterators).
  *
  * \param rhs
  *      The object to be compared against.

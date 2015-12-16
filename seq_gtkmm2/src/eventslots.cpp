@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-12-05
- * \updates       2015-12-15
+ * \updates       2015-12-16
  * \license       GNU GPLv2 or above
  *
  *  This module is user-interface code.  It is loosely based on the workings
@@ -254,11 +254,28 @@ eventslots::insert_event
         {
             /*
              * What actually happens here depends if the new event is before
-             * the frame, within the frame, or after the frame.  WE HAVE WORK
-             * TO DO!!!
-             *
-             *      ++m_bottom_iterator;
+             * the frame, within the frame, or after the frame.
              */
+
+            midipulse top_ts = m_top_iterator->second.get_timestamp();
+            midipulse bot_ts = m_bottom_iterator->second.get_timestamp();
+            midipulse new_ts = edev.get_timestamp();
+            if (new_ts < top_ts)                    /* before the frame     */
+            {
+                ++m_top_event_index;
+                ++m_bottom_event_index;
+                ++m_current_event_index;
+            }
+            else if (new_ts > bot_ts)               /* after the frame      */
+            {
+                // No action needed
+            }
+            else                                    /* within the frame     */
+            {
+                ++m_bottom_event_index;
+                if (new_ts < m_current_iterator->second.get_timestamp())
+                    ++m_current_event_index;
+            }
         }
         if (result)
             select_event(m_current_event_index);
@@ -306,17 +323,60 @@ eventslots::delete_current_event ()
     if (result)
     {
         editable_events::iterator oldcurrent = m_current_iterator;
+        midipulse old_ts = oldcurrent->second.get_timestamp();
         int oldcount = m_event_container.count();
         int newcount;
-        if (m_top_event_index == m_current_event_index)
-            ++m_top_iterator;                   /* top index unchanged      */
+        bool was_top = false;
+        bool was_bottom = false;
+        if (m_current_event_index == m_top_event_index)
+        {
+            was_top = true;
+            ++m_top_iterator;                   /* top index won't change   */
+            if (m_top_iterator == m_event_container.end())
+            {
+                // container will end up empty
+            }
+        }
+        if (m_current_event_index == m_bottom_event_index)
+        {
+            was_bottom = true;
+            --m_bottom_iterator;
+            --m_bottom_event_index;
+            --m_current_iterator;
+            --m_current_event_index;
+        }
+        else
+        {
+            ++m_bottom_iterator;               /* bottom event into frame  */
+            if (m_bottom_iterator == m_event_container.end())
+            {
+                --m_bottom_iterator;
+                --m_bottom_event_index;
+            }
+        }
 
-        ++m_bottom_iterator;                    /* bottom index unchanged   */
-        ++m_current_iterator;                   /* current index unchanged  */
+        if (! was_top && ! was_bottom)
+        {
+            ++m_current_iterator;                   /* current index unchanged  */
+            if (m_current_iterator == m_event_container.end())
+            {
+                // m_current_iterator -= 2; ??????
+            }
+        }
+
         m_event_container.remove(oldcurrent);   /* wrapper for erase()      */
+
         newcount = m_event_container.count();
         if (newcount > 0)
         {
+            /*
+             * IMPORTANT TODO:  We have to guard against getting event indices
+             * less than 0!  And we cannot arbitrarily decrement the iterators
+             * MUST FIX!
+             * MUST FIX!
+             * MUST FIX!
+             */
+
             if (m_current_iterator == m_event_container.end())
             {
                 --m_current_iterator;

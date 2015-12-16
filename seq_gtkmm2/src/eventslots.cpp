@@ -70,7 +70,7 @@ eventslots::eventslots
     m_slots_y               (font_render().char_height() + 4),  // c_names_y
     m_xy_offset             (2),
     m_event_count           (0),
-    m_display_count         (0),
+    m_display_count         (43),
     m_top_event_index       (0),
     m_bottom_event_index    (42),   /* 41: need way to calculate this one */
     m_current_event_index   (0),
@@ -108,7 +108,14 @@ eventslots::load_events ()
             editable_events::iterator ei = m_current_iterator =
                 m_bottom_iterator = m_top_iterator = m_event_container.begin();
 
-            m_display_count = count;
+            /*
+             * We can't reduce this without reducing the size of the white
+             * frame that could potentially eventually hold more events than
+             * the initial count of events.
+             *
+             * m_display_count = count;
+             */
+
             for ( ; count > 0; --count)
             {
                 ei++;
@@ -129,7 +136,8 @@ eventslots::load_events ()
 }
 
 /**
- *  Set the current event.
+ *  Set the current event.  Note in the snprintf() calls that the first digit
+ *  is part of the data byte, so that translation is easier.
  */
 
 void
@@ -139,9 +147,9 @@ eventslots::set_current_event (const editable_events::iterator ei, int index)
     midibyte d0, d1;
     const editable_event & ev = ei->second;
     ev.get_data(d0, d1);
-    snprintf(tmp, sizeof tmp, "Data[0]: %d (0x%02x)", int(d0), int(d0));
+    snprintf(tmp, sizeof tmp, "%d (0x%02x)", int(d0), int(d0));
     std::string data_0(tmp);
-    snprintf(tmp, sizeof tmp, "Data[1]: %d (0x%02x)", int(d1), int(d1));
+    snprintf(tmp, sizeof tmp, "%d (0x%02x)", int(d1), int(d1));
     std::string data_1(tmp);
     set_text
     (
@@ -234,7 +242,8 @@ eventslots::insert_event
     bool result = m_event_container.add(edev);
     if (result)
     {
-        if (m_event_container.count() == 1)
+        m_event_count = m_event_container.count();
+        if (m_event_count == 1)
         {
             m_top_iterator = m_event_container.begin();
             m_current_iterator = m_event_container.begin();
@@ -334,6 +343,8 @@ eventslots::delete_current_event ()
             result = newcount > 0;
             if (result)
                 select_event(m_current_event_index);
+            else
+                select_event(-1);
         }
     }
     return result;
@@ -371,7 +382,7 @@ eventslots::modify_current_event
 )
 {
     bool result = m_event_count > 0;
-    if (m_event_count > 0)
+    if (result)
     {
         editable_event & ev = m_current_iterator->second;
         midipulse oldtimestamp = ev.get_timestamp();
@@ -388,14 +399,16 @@ eventslots::modify_current_event
             editable_event ev_copy = ev;
             result = delete_current_event();
             if (result)
-            {
                 result = m_event_container.add(ev);
-//              if (result)
-//                  select_event(???);
-            }
         }
         if (result)
-            enqueue_draw();
+        {
+            /*
+             * Does this work?
+             */
+
+            select_event(m_current_event_index);
+        }
     }
     return result;
 }
@@ -570,14 +583,14 @@ eventslots::convert_y (int y)
 void
 eventslots::draw_events ()
 {
-    if (m_display_count > 0)
+    int x = 0;
+    int y = 1;                                      // tweakage
+    int lx = m_slots_x;                             //  - 3 - m_setbox_w;
+    int ly = m_slots_y * m_display_count;           // 42
+    draw_rectangle(white(), x, y, lx, ly);          // clear the frame
+    if (m_event_count > 0)                          // m_display_count > 0
     {
         editable_events::iterator ei = m_top_iterator;
-        int x = 0;
-        int y = 1;                                      // tweakage
-        int lx = m_slots_x;                             //  - 3 - m_setbox_w;
-        int ly = m_slots_y * (m_display_count - 0);     // 42
-        draw_rectangle(white(), x, y, lx, ly);
         for (int ev = m_top_event_index; ev <= m_bottom_event_index; ++ev)
         {
             if (ei != m_event_container.end())
@@ -604,46 +617,29 @@ eventslots::draw_events ()
 void
 eventslots::select_event (int event_index)
 {
-    bool ok = true;
-    int i = m_top_event_index;
-    editable_events::iterator ei = m_top_iterator;
-    while (i++ < event_index)
+    if (event_index >= 0)
     {
-        if (ei != m_event_container.end())
+        bool ok = true;
+        int i = m_top_event_index;
+        editable_events::iterator ei = m_top_iterator;
+        while (i++ < event_index)
         {
-            ++ei;
-            ok = ei != m_event_container.end();
-            if (! ok)
-                break;
+            if (ei != m_event_container.end())
+            {
+                ++ei;
+                ok = ei != m_event_container.end();
+                if (! ok)
+                    break;
+            }
+        }
+        if (ok)
+        {
+            set_current_event(ei, i - 1);
+            enqueue_draw();
         }
     }
-    if (ok)
-    {
-        set_current_event(ei, i - 1);
+    else
         enqueue_draw();
-    }
-}
-
-/**
- *  Redraws events that have been modified.
- */
-
-void
-eventslots::redraw_dirty_events ()
-{
-#if 0
-    int y_f = m_window_y / m_slots_y;
-    for (int y = 0; y <= y_f; y++)
-    {
-        int seq = y + m_top_event_index;
-        if (seq < m_event_count)
-        {
-            bool dirty = (perf().is_dirty_names(seq));
-            if (dirty)
-                draw_event(seq);
-        }
-    }
-#endif
 }
 
 /**
@@ -670,9 +666,15 @@ eventslots::on_realize ()
      *  filled when the dialog first appears on-screen.
      */
 
-    select_event(0);
-    select_event(1);
-    select_event(0);
+    if (m_event_count > 0)
+    {
+        select_event(0);
+        if (m_event_count > 1)
+        {
+            select_event(1);
+            select_event(0);
+        }
+    }
 }
 
 /**

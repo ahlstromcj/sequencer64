@@ -276,7 +276,6 @@ private:
     );
     void select_event (int event_index);
 
-    void redraw_dirty_events ();
     void enqueue_draw ();
     int convert_y (int y);
     void draw_event (editable_events::iterator ei, int index);

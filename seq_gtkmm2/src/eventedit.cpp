@@ -146,7 +146,8 @@ eventedit::eventedit
     perform & p,
     sequence & seq
 ) :
-    gui_window_gtk2     (p, 660, 700),      /* make sure it is wide enough! */
+//  gui_window_gtk2     (p, 660, 700),      /* make sure it is wide enough! */
+    gui_window_gtk2     (p, 660, 710),      /* make sure it is wide enough! */
     m_table             (manage(new Gtk::Table(14, 4, false))),
     m_vadjust           (manage(new Gtk::Adjustment(0, 0, 1, 1, 1, 1))),
     m_vscroll           (manage(new Gtk::VScrollbar(*m_vadjust))),
@@ -312,8 +313,8 @@ eventedit::eventedit
     m_label_time_fmt->set_text("Sequencer64");  //" Time Format (radio buttons)"
     m_optsbox->pack_end(*m_label_time_fmt, false, false);
 
-    m_label_right->set_width_chars(2);
-    m_label_right->set_text("XX");
+    m_label_right->set_width_chars(1);
+    m_label_right->set_text(" ");
     m_rightbox->pack_start(*m_label_right, false, false);
 
     add(*m_table);
@@ -566,15 +567,14 @@ eventedit::handle_apply ()
 }
 
 /**
- *  Handles a drawing timeout.  It redraws "dirty" sequences in the
- *  perfroll and the eventslots objects, and shows draw progress on the
- *  perfroll.  This function is called frequently and continuously.
+ *  Handles a drawing timeout.  It redraws events in the the eventslots
+ *  objects.  This function is called frequently and continuously.
  */
 
 bool
 eventedit::timeout ()
 {
-    m_eventslots->redraw_dirty_events();
+    // m_eventslots->redraw_dirty_events();
     return true;
 }
 

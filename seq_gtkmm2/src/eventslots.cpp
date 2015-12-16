@@ -288,10 +288,13 @@ eventslots::insert_event
  *
  *  To delete the current event, this function moves the current iterator to
  *  the next event, deletes the previously-current iterator, adjusts the event
- *  count and the bottom iterator, and redraws the pixmap.
+ *  count and the bottom iterator, and redraws the pixmap.  The exact changes
+ *  depend upon whether the deleted event was at the top of the visible frame,
+ *  within the visible frame, or at the bottom the visible frame.  Note that
+ *  only visible events can be the current event, and thus get deleted.
  *
  *  If the current iterator is the top (of the frame) iterator, then the top
- *  iterator needs to be incremented as well.  The index of both stay the
+ *  iterator needs to be incremented.  The index of both stay the
  *  same, since the event they were on is now replaced by the event that
  *  follows.  The bottom iterator moves to the next event, which is now at the
  *  bottom of the frame, but has the same index.
@@ -325,55 +328,60 @@ eventslots::delete_current_event ()
         editable_events::iterator oldcurrent = m_current_iterator;
         midipulse old_ts = oldcurrent->second.get_timestamp();
         int oldcount = m_event_container.count();
-        int newcount;
-        bool was_top = false;
-        bool was_bottom = false;
-        if (m_current_event_index == m_top_event_index)
+        if (oldcount > 1)
         {
-            was_top = true;
-            ++m_top_iterator;                   /* top index won't change   */
-            if (m_top_iterator == m_event_container.end())
+            if (m_current_event_index == m_top_event_index)
             {
-                // container will end up empty
+                ++m_top_iterator;                   /* top index won't change   */
+                if (m_top_iterator == m_event_container.end())
+                {
+                    // container will end up empty
+                }
+                ++m_bottom_iterator;               /* next event up to bottom   */
             }
-        }
-        if (m_current_event_index == m_bottom_event_index)
-        {
-            was_bottom = true;
-            --m_bottom_iterator;
-            --m_bottom_event_index;
-            --m_current_iterator;
-            --m_current_event_index;
-        }
-        else
-        {
-            ++m_bottom_iterator;               /* bottom event into frame  */
-            if (m_bottom_iterator == m_event_container.end())
+            else if (m_current_event_index == m_bottom_event_index)
             {
                 --m_bottom_iterator;
                 --m_bottom_event_index;
+                --m_current_iterator;
+                --m_current_event_index;
+            }
+            else  // ???
+            {
+                ++m_bottom_iterator;               /* bottom event into frame  */
+                if (m_bottom_iterator == m_event_container.end())
+                {
+                    --m_bottom_iterator;
+                    --m_bottom_event_index;
+                }
+                ++m_current_iterator;              /* current index unchanged  */
+                if (m_current_iterator == m_event_container.end())
+                {
+                    // m_current_iterator -= 2; ??????
+                }
             }
         }
 
-        if (! was_top && ! was_bottom)
-        {
-            ++m_current_iterator;                   /* current index unchanged  */
-            if (m_current_iterator == m_event_container.end())
-            {
-                // m_current_iterator -= 2; ??????
-            }
-        }
+        /*
+         * Has to be done after the adjustment, otherwise iterators are
+         * invalid and cannot be adjusted.
+         */
 
         m_event_container.remove(oldcurrent);   /* wrapper for erase()      */
 
-        newcount = m_event_container.count();
-        if (newcount > 0)
+        int newcount = m_event_container.count();
+        if (newcount == 0)
+        {
+            m_top_iterator = m_event_container.end();
+            m_current_iterator = m_event_container.end();
+            m_bottom_iterator = m_event_container.end();
+            m_top_event_index = m_current_event_index = m_bottom_event_index = 0;
+        }
+        else
         {
             /*
              * IMPORTANT TODO:  We have to guard against getting event indices
              * less than 0!  And we cannot arbitrarily decrement the iterators
-             * MUST FIX!
-             * MUST FIX!
              * MUST FIX!
              */
 
@@ -389,13 +397,7 @@ eventslots::delete_current_event ()
             else
                 --m_bottom_iterator;
         }
-        else
-        {
-            m_top_iterator = m_event_container.end();
-            m_current_iterator = m_event_container.end();
-            m_bottom_iterator = m_event_container.end();
-            m_top_event_index = m_current_event_index = m_bottom_event_index = 0;
-        }
+
         bool ok = newcount == (oldcount - 1);
         if (ok)
         {

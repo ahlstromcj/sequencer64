@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-12-05
- * \updates       2015-12-16
+ * \updates       2015-12-17
  * \license       GNU GPLv2 or above
  *
  *  This module is user-interface code.  It is loosely based on the workings
@@ -293,23 +293,47 @@ eventslots::insert_event
  *  within the visible frame, or at the bottom the visible frame.  Note that
  *  only visible events can be the current event, and thus get deleted.
  *
- *  If the current iterator is the top (of the frame) iterator, then the top
- *  iterator needs to be incremented.  The index of both stay the
- *  same, since the event they were on is now replaced by the event that
- *  follows.  The bottom iterator moves to the next event, which is now at the
- *  bottom of the frame, but has the same index.
+\verbatim
+         Event Index
+          0
+          1
+          2         Top
+          3  <--------- Top case: The new top iterator, index becomes 2
+          4
+          .
+          .         Inside of Visible Frame
+          .
+         43
+         44         Bottom
+         45  <--------- Top case: The new bottom iterator, index becomes 44
+         46             Bottom case: Same result
+\endverbatim
  *
- *  If the current iterator is in the middle of the frame, the top iterator
- *  and index remain unchanged.  The current iterator is incremented, but its
- *  index stays the same.  The bottom iterator is incremented, but its index
- *  stays the same.
+ *  Basically, when an event is deleted, the frame (delimited by the
+ *  event-index members) stays in place, while the frame iterators move to the
+ *  previous event.  If the top of the frame would move to before the first
+ *  event, then the frame must shrink.  TODO IN THE CODE!!!!!!
  *
- *  If the current iterator (and bottom iterator) point to the last event,
- *  then both of them, and their indices, need to be decremented.  The frame
- *  needs to be moved up by one event, so that the current event remains at
- *  the bottom (it's just simpler to manage that way).
+ *  Top case: If the current iterator is the top (of the frame) iterator, then
+ *  the top iterator needs to be incremented.  The new top event has the same
+ *  index as the now-gone top event. The index of the bottom event is
+ *  decremented, since an event before it is now gone.  The bottom iterator
+ *  moves to the next event, which is now at the bottom of the frame.  The
+ *  current event is treated like the top event.
  *
- *  If the container becomes empty, then everything is invalidated.
+ *  Inside case: If the current iterator is in the middle of the frame, the top
+ *  iterator and index remain unchanged.  The current iterator is incremented,
+ *  but its index is now the same as the old bottom index.  Same for the bottom
+ *  iterator.
+ *
+ *  Bottom case: If the current iterator (and bottom iterator) point to the
+ *  last event in the frame, then both of them need to be
+ *  decremented.  The frame needs to be moved up by one event, so that the
+ *  current event remains at the bottom (it's just simpler to manage that way).
+ *
+ *  If there is no event after the bottom of the frame, the iterators that now
+ *  point to end() must backtrack one event.  If the container becomes empty,
+ *  then everything is invalidated.
  *
  * \return
  *      Returns true if the delete was possible.  If the container was empty
@@ -332,33 +356,36 @@ eventslots::delete_current_event ()
         {
             if (m_current_event_index == m_top_event_index)
             {
-                ++m_top_iterator;                   /* top index won't change   */
-                if (m_top_iterator == m_event_container.end())
-                {
-                    // container will end up empty
-                }
-                ++m_bottom_iterator;               /* next event up to bottom   */
+                ++m_top_iterator;                   /* bypass to-delete event   */
+//              --m_top_event_index;                /* it is now "earlier"      */
+                ++m_current_iterator;               /* ditto                    */
+//              --m_current_event_index;            /* ditto                    */
+                ++m_bottom_iterator;                /* next event up to bottom  */
+                --m_bottom_event_index;             /* it is now "earlier"      */
             }
             else if (m_current_event_index == m_bottom_event_index)
             {
-                --m_bottom_iterator;
-                --m_bottom_event_index;
+                ++m_bottom_iterator;
+//              --m_bottom_event_index;
+                ++m_current_iterator;
+//              --m_current_event_index;
+            }
+            else
+            {
+                ++m_bottom_iterator;                /* bottom event into frame  */
+//              --m_bottom_event_index;             /* one less event           */
+                ++m_current_iterator;
+//              --m_current_event_index;
+            }
+            if (m_current_iterator == m_event_container.end())
+            {
                 --m_current_iterator;
                 --m_current_event_index;
             }
-            else  // ???
+            if (m_bottom_iterator == m_event_container.end())
             {
-                ++m_bottom_iterator;               /* bottom event into frame  */
-                if (m_bottom_iterator == m_event_container.end())
-                {
-                    --m_bottom_iterator;
-                    --m_bottom_event_index;
-                }
-                ++m_current_iterator;              /* current index unchanged  */
-                if (m_current_iterator == m_event_container.end())
-                {
-                    // m_current_iterator -= 2; ??????
-                }
+                --m_bottom_iterator;
+                --m_bottom_event_index;
             }
         }
 

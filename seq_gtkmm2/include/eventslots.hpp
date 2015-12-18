@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-12-05
- * \updates       2015-12-17
+ * \updates       2015-12-18
  * \license       GNU GPLv2 or above
  *
  *  This class supports the left side of the Performance window (also known
@@ -267,6 +267,8 @@ private:
         const std::string & evdata0,
         const std::string & evdata1
     );
+    bool save_events ();
+    void select_event (int event_index);
     void set_text
     (
         const std::string & evcategory,
@@ -275,7 +277,6 @@ private:
         const std::string & evdata0,
         const std::string & evdata1
     );
-    void select_event (int event_index);
 
     void enqueue_draw ();
     int convert_y (int y);

@@ -494,6 +494,37 @@ eventslots::modify_current_event
 }
 
 /**
+ *  Writes the events back to the sequence.  Also sets the dirty flag for the
+ *  sequence, via the sequence::add_event() function.
+ *
+ * \return
+ *      Returns true if the operations succeeded.
+ */
+
+bool
+eventslots::save_events ()
+{
+    bool result = m_event_count > 0 && m_event_count == m_event_container.count();
+    if (result)
+    {
+        event_list & seqevents = m_seq.events();
+        seqevents.clear();
+        for
+        (
+            editable_events::iterator ei = m_event_container.begin();
+            ei != m_event_container.end();
+            ++ei
+        )
+        {
+            seq64::event e = ei->second;
+            m_seq.add_event(e);
+        }
+        result = m_seq.event_count() == m_event_count;
+    }
+    return result;
+}
+
+/**
  *  Change the vertical offset of events.  Note that m_vadjust is
  *  the Gtk::Adjustment object that the eventedit parent passes to the
  *  gui_drawingarea_gtk2 constructor.

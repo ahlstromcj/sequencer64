@@ -619,7 +619,11 @@ eventedit::handle_save ()
 {
     if (not_nullptr(m_eventslots))
     {
-        // TODO
+        bool ok = m_eventslots->save_events();
+        if (! ok)
+        {
+            // Maybe show dirty status and errors in top box
+        }
     }
 }
 
@@ -630,7 +634,12 @@ eventedit::handle_save ()
 void
 eventedit::handle_cancel ()
 {
-    // TODO
+#if GTK_MAJOR_VERSION >= 3
+    Gtk::Window::close();
+#else
+    Gtk::Widget::hide();
+    delete this;
+#endif
 }
 
 /**

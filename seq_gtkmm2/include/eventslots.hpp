@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-12-05
- * \updates       2015-12-15
+ * \updates       2015-12-17
  * \license       GNU GPLv2 or above
  *
  *  This class supports the left side of the Performance window (also known
@@ -251,6 +251,7 @@ private:
 
     bool load_events ();
     void set_current_event (const editable_events::iterator ei, int index);
+    bool insert_event (const editable_event & edev);
     bool insert_event
     (
         const std::string & evtimestamp,

@@ -194,6 +194,66 @@ eventslots::set_text
 }
 
 /**
+ *  Inserts an event.
+ *
+ *  If the container was not empty, ...
+ *
+ * \param ev
+ *      The event to insert, prebuilt.
+ *
+ * \return
+ *      Returns true if the event was inserted.
+ */
+
+bool
+eventslots::insert_event (const editable_event & edev)
+{
+    bool result = m_event_container.add(edev);
+    if (result)
+    {
+        m_event_count = m_event_container.count();
+        if (m_event_count == 1)
+        {
+            m_top_iterator = m_event_container.begin();
+            m_current_iterator = m_event_container.begin();
+            m_bottom_iterator = m_event_container.begin();
+            m_top_event_index = m_current_event_index = m_bottom_event_index = 0;
+        }
+        else
+        {
+            /*
+             * What actually happens here depends if the new event is before
+             * the frame, within the frame, or after the frame, based on the
+             * timestamp.
+             */
+
+            midipulse top_ts = m_top_iterator->second.get_timestamp();
+            midipulse bot_ts = m_bottom_iterator->second.get_timestamp();
+            midipulse new_ts = edev.get_timestamp();
+            if (new_ts < top_ts)                    /* before the frame     */
+            {
+                ++m_top_event_index;
+                ++m_bottom_event_index;
+                ++m_current_event_index;
+            }
+            else if (new_ts > bot_ts)               /* after the frame      */
+            {
+                // No action needed
+            }
+            else                                    /* within the frame     */
+            {
+                ++m_bottom_event_index;
+                if (new_ts < m_current_iterator->second.get_timestamp())
+                    ++m_current_event_index;
+            }
+        }
+        if (result)
+            select_event(m_current_event_index);
+    }
+    return result;
+}
+
+/**
  *  Inserts an event based on the setting provided, which the eventedit object
  *  gets from its Entry fields.
  *
@@ -239,48 +299,7 @@ eventslots::insert_event
     editable_event edev(m_event_container, e);
     edev.set_status_from_string(evtimestamp, evname, evdata0, evdata1);
     edev.set_channel(m_seq.get_midi_channel());
-    bool result = m_event_container.add(edev);
-    if (result)
-    {
-        m_event_count = m_event_container.count();
-        if (m_event_count == 1)
-        {
-            m_top_iterator = m_event_container.begin();
-            m_current_iterator = m_event_container.begin();
-            m_bottom_iterator = m_event_container.begin();
-            m_top_event_index = m_current_event_index = m_bottom_event_index = 0;
-        }
-        else
-        {
-            /*
-             * What actually happens here depends if the new event is before
-             * the frame, within the frame, or after the frame.
-             */
-
-            midipulse top_ts = m_top_iterator->second.get_timestamp();
-            midipulse bot_ts = m_bottom_iterator->second.get_timestamp();
-            midipulse new_ts = edev.get_timestamp();
-            if (new_ts < top_ts)                    /* before the frame     */
-            {
-                ++m_top_event_index;
-                ++m_bottom_event_index;
-                ++m_current_event_index;
-            }
-            else if (new_ts > bot_ts)               /* after the frame      */
-            {
-                // No action needed
-            }
-            else                                    /* within the frame     */
-            {
-                ++m_bottom_event_index;
-                if (new_ts < m_current_iterator->second.get_timestamp())
-                    ++m_current_event_index;
-            }
-        }
-        if (result)
-            select_event(m_current_event_index);
-    }
-    return result;
+    return insert_event(edev);
 }
 
 /**
@@ -312,7 +331,7 @@ eventslots::insert_event
  *  Basically, when an event is deleted, the frame (delimited by the
  *  event-index members) stays in place, while the frame iterators move to the
  *  previous event.  If the top of the frame would move to before the first
- *  event, then the frame must shrink.  TODO IN THE CODE!!!!!!
+ *  event, then the frame must shrink.
  *
  *  Top case: If the current iterator is the top (of the frame) iterator, then
  *  the top iterator needs to be incremented.  The new top event has the same
@@ -350,42 +369,34 @@ eventslots::delete_current_event ()
     if (result)
     {
         editable_events::iterator oldcurrent = m_current_iterator;
-        midipulse old_ts = oldcurrent->second.get_timestamp();
         int oldcount = m_event_container.count();
         if (oldcount > 1)
         {
             if (m_current_event_index == m_top_event_index)
             {
-                ++m_top_iterator;                   /* bypass to-delete event   */
-//              --m_top_event_index;                /* it is now "earlier"      */
-                ++m_current_iterator;               /* ditto                    */
-//              --m_current_event_index;            /* ditto                    */
-                ++m_bottom_iterator;                /* next event up to bottom  */
-                --m_bottom_event_index;             /* it is now "earlier"      */
+                ++m_top_iterator;               /* bypass to-delete event   */
+                ++m_current_iterator;           /* ditto                    */
+                ++m_bottom_iterator;            /* next event up to bottom  */
             }
             else if (m_current_event_index == m_bottom_event_index)
             {
-                ++m_bottom_iterator;
-//              --m_bottom_event_index;
                 ++m_current_iterator;
-//              --m_current_event_index;
+                ++m_bottom_iterator;
             }
             else
             {
-                ++m_bottom_iterator;                /* bottom event into frame  */
-//              --m_bottom_event_index;             /* one less event           */
                 ++m_current_iterator;
-//              --m_current_event_index;
+                ++m_bottom_iterator;            /* bottom event into frame  */
             }
             if (m_current_iterator == m_event_container.end())
             {
                 --m_current_iterator;
-                --m_current_event_index;
+                --m_current_event_index;        /* the frame must shrink    */
             }
             if (m_bottom_iterator == m_event_container.end())
             {
                 --m_bottom_iterator;
-                --m_bottom_event_index;
+                --m_bottom_event_index;         /* the frame must shrink    */
             }
         }
 
@@ -403,26 +414,6 @@ eventslots::delete_current_event ()
             m_current_iterator = m_event_container.end();
             m_bottom_iterator = m_event_container.end();
             m_top_event_index = m_current_event_index = m_bottom_event_index = 0;
-        }
-        else
-        {
-            /*
-             * IMPORTANT TODO:  We have to guard against getting event indices
-             * less than 0!  And we cannot arbitrarily decrement the iterators
-             * MUST FIX!
-             */
-
-            if (m_current_iterator == m_event_container.end())
-            {
-                --m_current_iterator;
-                --m_current_event_index;
-                m_bottom_iterator = m_current_iterator;
-                m_bottom_event_index = m_current_event_index;
-                --m_top_iterator;
-                --m_top_event_index;
-            }
-            else
-                --m_bottom_iterator;
         }
 
         bool ok = newcount == (oldcount - 1);

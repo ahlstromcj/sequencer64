@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-12-05
- * \updates       2015-12-14
+ * \updates       2015-12-18
  * \license       GNU GPLv2 or above
  *
  */
@@ -93,7 +93,9 @@ private:
 
     Gtk::Button * m_button_del;
     Gtk::Button * m_button_ins;
-    Gtk::Button * m_button_apply;
+    Gtk::Button * m_button_modify;
+    Gtk::Button * m_button_save;
+    Gtk::Button * m_button_cancel;
 
     /**
      *  Items to size the m_indexslots member.
@@ -167,7 +169,9 @@ private:
 
     void handle_delete ();
     void handle_insert ();
-    void handle_apply ();
+    void handle_modify ();
+    void handle_save ();
+    void handle_cancel ();
 
 private:            // callbacks
 

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-12-05
- * \updates       2015-12-15
+ * \updates       2015-12-18
  * \license       GNU GPLv2 or above
  *
  *
@@ -127,10 +127,10 @@ namespace seq64
           | ...    ...          ...     |   | [Optional more data?  ] |   |
           | ...    ...          ...     |   |------ optsbox ----------|   | 10
           | ...    ...          ...     |   |  o Pulses               |   |
-          |-----------------------------|   |  o Measures             |   |
-          | 56-136:3:133 Program Change | v |  o Time                 |   |
-          |---------------------------------------------------------------| 13
-     bott |                             :   :                             |
+          | ...    ...          ...     |   |  o Measures             |   |
+          | ...    ...          ...     | v |  o Time                 |   |
+          |-----------------------------|   |------ bottbox ----------|   | 13
+          | 56-136:3:133 Program Change | v |  | Save |    | Cancel | |   |
            ---------------------------------------------------------------  14
 \endverbatim
  *
@@ -146,8 +146,7 @@ eventedit::eventedit
     perform & p,
     sequence & seq
 ) :
-//  gui_window_gtk2     (p, 660, 700),      /* make sure it is wide enough! */
-    gui_window_gtk2     (p, 660, 710),      /* make sure it is wide enough! */
+    gui_window_gtk2     (p, 660, 690),      /* make sure it is wide enough! */
     m_table             (manage(new Gtk::Table(14, 4, false))),
     m_vadjust           (manage(new Gtk::Adjustment(0, 0, 1, 1, 1, 1))),
     m_vscroll           (manage(new Gtk::VScrollbar(*m_vadjust))),
@@ -163,7 +162,9 @@ eventedit::eventedit
     m_rightbox          (manage(new Gtk::VBox(true, 2))),
     m_button_del        (manage(new Gtk::Button())),
     m_button_ins        (manage(new Gtk::Button())),
-    m_button_apply      (manage(new Gtk::Button())),
+    m_button_modify     (manage(new Gtk::Button())),
+    m_button_save       (manage(new Gtk::Button())),
+    m_button_cancel     (manage(new Gtk::Button())),
     m_label_index       (manage(new Gtk::Label())),
     m_label_time        (manage(new Gtk::Label())),
     m_label_event       (manage(new Gtk::Label())),
@@ -192,18 +193,18 @@ eventedit::eventedit
     m_showbox->set_border_width(4);
     m_editbox->set_border_width(4);
     m_optsbox->set_border_width(4);
-    m_rightbox->set_border_width(4);
+    m_rightbox->set_border_width(1);
     m_table->attach(*m_htopbox,    0, 4,  0,  1,   Gtk::FILL, Gtk::SHRINK, 8, 8);
-    m_table->attach(*m_eventslots, 0, 1,  1, 13,  Gtk::FILL, Gtk::FILL, 8, 8);
+    m_table->attach(*m_eventslots, 0, 1,  1, 14,  Gtk::FILL, Gtk::FILL, 8, 8);
     m_table->attach
     (
-        *m_vscroll, 1, 2, 1, 13, Gtk::SHRINK, Gtk::FILL | Gtk::EXPAND, 4, 4
+        *m_vscroll, 1, 2, 1, 14, Gtk::SHRINK, Gtk::FILL | Gtk::EXPAND, 4, 4
     );
     m_table->attach(*m_showbox,    2, 3,  1,  4,   Gtk::FILL, Gtk::SHRINK, 8, 8);
     m_table->attach(*m_editbox,    2, 3,  4, 10,  Gtk::FILL, Gtk::SHRINK, 8, 8);
     m_table->attach(*m_optsbox,    2, 3, 10, 13, Gtk::FILL, Gtk::SHRINK, 8, 8);
-    m_table->attach(*m_rightbox,   3, 4,  1, 13,  Gtk::FILL, Gtk::SHRINK, 8, 8);
-    m_table->attach(*m_bottbox,    0, 4, 13, 14, Gtk::FILL, Gtk::SHRINK, 8, 8);
+    m_table->attach(*m_bottbox,    2, 3, 13, 14, Gtk::FILL, Gtk::SHRINK, 8, 8);
+    m_table->attach(*m_rightbox,   3, 4,  1, 14,  Gtk::SHRINK, Gtk::SHRINK, 2, 2);
 
 #if USE_BUTTON_PIXMAP
     m_button_del->add
@@ -211,14 +212,18 @@ eventedit::eventedit
         *manage(new Gtk::Image(Gdk::Pixbuf::create_from_xpm_data(del_xpm)))
     );
 #else
-    m_button_del->set_label("Delete");
+    m_button_del->set_label("Delete Current Event");
 #endif
 
     m_button_del->signal_clicked().connect
     (
         sigc::mem_fun(*this, &eventedit::handle_delete)
     );
-    add_tooltip(m_button_del, "Delete the currently-selected event.");
+    add_tooltip
+    (
+        m_button_del,
+        "Deletes the currently-selected event, even if event is not visible."
+    );
 
 #if USE_BUTTON_PIXMAP
     m_button_ins->add
@@ -226,7 +231,7 @@ eventedit::eventedit
         *manage(new Gtk::Image(Gdk::Pixbuf::create_from_xpm_data(ins_xpm)))
     );
 #else
-    m_button_ins->set_label("Insert");
+    m_button_ins->set_label("Insert New Event");
 #endif
 
     m_button_ins->signal_clicked().connect
@@ -236,15 +241,46 @@ eventedit::eventedit
     add_tooltip
     (
         m_button_ins,
-        "Insert event. Its location is determined by the timestamp."
+        "Insert a new event using the data in the edit fields. "
+        "Its actual location is determined by the timestamp, not the current "
+        "event."
     );
 
-    m_button_apply->set_label("Apply");
-    m_button_apply->signal_clicked().connect
+    m_button_modify->set_label("Modify Current Event");
+    m_button_modify->signal_clicked().connect
     (
-        sigc::mem_fun(*this, &eventedit::handle_apply)
+        sigc::mem_fun(*this, &eventedit::handle_modify)
     );
-    add_tooltip(m_button_apply, "Apply changes to currently-selected event.");
+    add_tooltip
+    (
+        m_button_modify,
+        "Apply the changes in the edit fields to the currently-selected event, "
+        "even if the event is not visible."
+    );
+
+    m_button_save->set_label("Save to Sequence");
+    m_button_save->signal_clicked().connect
+    (
+        sigc::mem_fun(*this, &eventedit::handle_save)
+    );
+    add_tooltip
+    (
+        m_button_save,
+        "Save the edit.  Copies the events back to the sequence, "
+        "making them permanent, then closes the dialog."
+    );
+
+    m_button_cancel->set_label("Cancel");
+    m_button_cancel->signal_clicked().connect
+    (
+        sigc::mem_fun(*this, &eventedit::handle_cancel)
+    );
+    add_tooltip
+    (
+        m_button_cancel,
+        "Abort the edit and close the dialog.  Any changes made in this "
+        "dialog are thrown away."
+    );
 
     char temptext[36];
 
@@ -307,14 +343,15 @@ eventedit::eventedit
 
     m_editbox->pack_start(*m_button_del, false, false);
     m_editbox->pack_start(*m_button_ins, false, false);
-    m_editbox->pack_start(*m_button_apply, false, false);
+    m_editbox->pack_start(*m_button_modify, false, false);
+
+    m_bottbox->pack_start(*m_button_save, true, false);     /* expand          */
+    m_bottbox->pack_start(*m_button_cancel, true, true, 8); /* expand/fill/pad */
 
     m_label_time_fmt->set_width_chars(32);
     m_label_time_fmt->set_text("Sequencer64");  //" Time Format (radio buttons)"
     m_optsbox->pack_end(*m_label_time_fmt, false, false);
 
-    m_label_right->set_width_chars(1);
-    m_label_right->set_text(" ");
     m_rightbox->pack_start(*m_label_right, false, false);
 
     add(*m_table);
@@ -519,7 +556,7 @@ eventedit::handle_delete ()
     if (isempty)
     {
         m_button_del->set_sensitive(false);
-        m_button_apply->set_sensitive(false);
+        m_button_modify->set_sensitive(false);
     }
 }
 
@@ -540,7 +577,7 @@ eventedit::handle_insert ()
     if (has_events)
     {
         m_button_del->set_sensitive(true);
-        m_button_apply->set_sensitive(true);
+        m_button_modify->set_sensitive(true);
     }
 }
 
@@ -553,7 +590,7 @@ eventedit::handle_insert ()
  */
 
 void
-eventedit::handle_apply ()
+eventedit::handle_modify ()
 {
     if (not_nullptr(m_eventslots))
     {
@@ -564,6 +601,36 @@ eventedit::handle_apply ()
         (void) m_eventslots->modify_current_event(ts, name, data0, data1);
         set_seq_count();
     }
+}
+
+/**
+ *  Handles saving the edited data back to the original sequence.
+ *  The event list in the original sequence is cleared, and the editable
+ *  events are converted to plain events, and added to the container, one by
+ *  one.
+ *
+ * \todo
+ *      Could also support writing the events to a new sequence, for added
+ *      flexibility.
+ */
+
+void
+eventedit::handle_save ()
+{
+    if (not_nullptr(m_eventslots))
+    {
+        // TODO
+    }
+}
+
+/**
+ *  Cancels the edits and closes the dialog box.
+ */
+
+void
+eventedit::handle_cancel ()
+{
+    // TODO
 }
 
 /**

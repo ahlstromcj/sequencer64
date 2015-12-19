@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-12-05
- * \updates       2015-12-18
+ * \updates       2015-12-19
  * \license       GNU GPLv2 or above
  *
  *  This class supports the left side of the Performance window (also known
@@ -37,6 +37,12 @@
 #include "globals.h"
 #include "editable_events.hpp"          /* seq64::editable_events container  */
 #include "gui_drawingarea_gtk2.hpp"
+
+/**
+ *  Indicates that an event index is not useful.
+ */
+
+#define SEQ64_NULL_EVENT_INDEX          (-1)
 
 namespace Gtk
 {
@@ -283,6 +289,12 @@ private:
     void draw_event (editable_events::iterator ei, int index);
     void draw_events ();
     void change_vert ();
+    int decrement_top ();
+    int increment_top ();
+    int decrement_current ();
+    int increment_current ();
+    int decrement_bottom ();
+    int increment_bottom ();
 
     /**
      *  This function does nothing.

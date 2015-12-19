@@ -156,6 +156,7 @@ editable_events::add (const editable_event & e)
 #else
     EventsPair p = std::make_pair<event_key, event>(key, e);
 #endif
+
     m_events.insert(p);                     /* std::multimap operation      */
 
     bool result = m_events.size() == (count + 1);

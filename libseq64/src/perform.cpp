@@ -401,7 +401,7 @@ perform::mute_group_tracks ()
             {
                 if (is_active(i * m_seqs_in_set + j))
                 {
-                    if ((i == m_playing_screen) && m_tracks_mute_state[j])
+                    if ((i == m_screenset) && m_tracks_mute_state[j])
                         sequence_playing_on(i * m_seqs_in_set + j);
                     else
                         sequence_playing_off(i * m_seqs_in_set + j);

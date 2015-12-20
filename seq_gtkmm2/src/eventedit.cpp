@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-12-05
- * \updates       2015-12-18
+ * \updates       2015-12-19
  * \license       GNU GPLv2 or above
  *
  *
@@ -130,7 +130,7 @@ namespace seq64
           | ...    ...          ...     |   |  o Measures             |   |
           | ...    ...          ...     | v |  o Time                 |   |
           |-----------------------------|   |------ bottbox ----------|   | 13
-          | 56-136:3:133 Program Change | v |  | Save |    | Cancel | |   |
+          | 56-136:3:133 Program Change | v |  | Save |    |  Close | |   |
            ---------------------------------------------------------------  14
 \endverbatim
  *
@@ -266,11 +266,11 @@ eventedit::eventedit
     add_tooltip
     (
         m_button_save,
-        "Save the edit.  Copies the events back to the sequence, "
-        "making them permanent, then closes the dialog."
+        "Save the edit.  Copies the edited events back to the sequence, "
+        "making them permanent, but does not close the dialog."
     );
 
-    m_button_cancel->set_label("Cancel");
+    m_button_cancel->set_label("Close");
     m_button_cancel->signal_clicked().connect
     (
         sigc::mem_fun(*this, &eventedit::handle_cancel)
@@ -279,7 +279,8 @@ eventedit::eventedit
     (
         m_button_cancel,
         "Abort the edit and close the dialog.  Any changes made in this "
-        "dialog are thrown away."
+        "dialog are thrown away (without prompting), unless the Save button "
+        "was pressed earlier."
     );
 
     char temptext[36];
@@ -320,7 +321,7 @@ eventedit::eventedit
     m_entry_ev_timestamp->set_max_length(16);
     m_entry_ev_timestamp->set_editable(true);
     m_entry_ev_timestamp->set_width_chars(16);
-    m_entry_ev_timestamp->set_text("000:0:000");
+    m_entry_ev_timestamp->set_text("001:1:000");
     m_editbox->pack_start(*m_entry_ev_timestamp, false, false);
 
     m_entry_ev_name->set_max_length(32);
@@ -542,6 +543,17 @@ void
 eventedit::enqueue_draw ()
 {
     m_eventslots->queue_draw();
+}
+
+/**
+ *  Provides a way to mark the performance as modified, when the sequence
+ *  is modified.
+ */
+
+void
+eventedit::modify ()
+{
+    perf().modify();
 }
 
 /**

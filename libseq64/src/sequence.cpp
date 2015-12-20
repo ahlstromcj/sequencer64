@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-12-02
+ * \updates       2015-12-19
  * \license       GNU GPLv2 or above
  *
  *  The functionality of this class also includes handling some of the
@@ -381,53 +381,6 @@ sequence::set_rec_vol (int recvol)
 {
     automutex locker(m_mutex);
     m_rec_vol = recvol;
-}
-
-/**
- *  Adds an event to the internal event list in a sorted manner.  Then it
- *  reset the draw-marker and sets the dirty flag.
- *
- *  Currently, when reading a MIDI file [see the midifile::parse() function],
- *  only the main events (notes, after-touch, pitch, program changes, etc.)
- *  are added with this function.  So, we can rely on reading only playable
- *  events into a sequence.  Well, actually, certain meta-events are also
- *  read, to obtain channel, buss, and more settings.  Also read for a
- *  sequence, if the global-sequence flag is not set, are the new key, scale,
- *  and background sequence parameters.
- *
- *  This module (sequencer) adds all of those events as well, but it
- *  can surely add other events.  We should assume that any events
- *  added by sequencer are playable/usable.
- *
- * \threadsafe
- *
- * \warning
- *      This pushing (and, in writing the MIDI file, the popping),
- *      causes events with identical timestamps to be written in
- *      reverse order.  Doesn't affect functionality, but it's puzzling
- *      until one understands what is happening.  Actually, this is true only
- *      in Seq24, we've fixed that behavior for Sequencer64.
- *
- * \param ep
- *      Provide a reference to the event to be added; the event is copied into
- *      the events container.
- */
-
-bool
-sequence::add_event (const event & er)
-{
-    automutex locker(m_mutex);
-    bool result = m_events.add(er);     /* post/auto-sorts by time & rank   */
-    if (result)
-    {
-        reset_draw_marker();
-        set_dirty();
-    }
-    else
-    {
-        errprint("sequence::add_event(): failed");
-    }
-    return result;
 }
 
 /**
@@ -1558,6 +1511,53 @@ sequence::add_note
         }
     }
     verify_and_link();
+}
+
+/**
+ *  Adds an event to the internal event list in a sorted manner.  Then it
+ *  reset the draw-marker and sets the dirty flag.
+ *
+ *  Currently, when reading a MIDI file [see the midifile::parse() function],
+ *  only the main events (notes, after-touch, pitch, program changes, etc.)
+ *  are added with this function.  So, we can rely on reading only playable
+ *  events into a sequence.  Well, actually, certain meta-events are also
+ *  read, to obtain channel, buss, and more settings.  Also read for a
+ *  sequence, if the global-sequence flag is not set, are the new key, scale,
+ *  and background sequence parameters.
+ *
+ *  This module (sequencer) adds all of those events as well, but it
+ *  can surely add other events.  We should assume that any events
+ *  added by sequencer are playable/usable.
+ *
+ * \threadsafe
+ *
+ * \warning
+ *      This pushing (and, in writing the MIDI file, the popping),
+ *      causes events with identical timestamps to be written in
+ *      reverse order.  Doesn't affect functionality, but it's puzzling
+ *      until one understands what is happening.  Actually, this is true only
+ *      in Seq24, we've fixed that behavior for Sequencer64.
+ *
+ * \param ep
+ *      Provide a reference to the event to be added; the event is copied into
+ *      the events container.
+ */
+
+bool
+sequence::add_event (const event & er)
+{
+    automutex locker(m_mutex);
+    bool result = m_events.add(er);     /* post/auto-sorts by time & rank   */
+    if (result)
+    {
+        reset_draw_marker();
+        set_dirty();
+    }
+    else
+    {
+        errprint("sequence::add_event(): failed");
+    }
+    return result;
 }
 
 /**

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-07
- * \updates       2015-12-12
+ * \updates       2015-12-19
  * \license       GNU GPLv2 or above
  *
  *  This code was moved from the globals module so that other modules
@@ -172,6 +172,13 @@ pulses_to_string (midipulse p)
  *  Converts a MIDI pulse/ticks/clock value into a string that represents
  *  "measures:beats:ticks" ("measures:beats:division").
  *
+ * \param p
+ *      The number of MIDI pulses (clocks, divisions, ticks, you name it) to
+ *      be converted.  If the value is SEQ64_ILLEGAL_PULSE, it is converted to
+ *      0, because callers don't generally worry about such niceties, and the
+ *      least we can do is convert illegal measure-strings (like "000:0:000")
+ *      to a legal value.
+ *
  * \param seqparms
  *      This small structure provides the beats/measure, beat-width, and PPQN
  *      that hold for the sequence involved in this calculation.
@@ -185,6 +192,9 @@ pulses_to_measurestring (midipulse p, const midi_timing & seqparms)
 {
     midi_measures measures;
     char tmp[32];
+    if (p == SEQ64_ILLEGAL_PULSE)
+        p = 0;                                      /* punt!                */
+
     pulses_to_midi_measures(p, seqparms, measures); /* fill measures struct */
     snprintf
     (

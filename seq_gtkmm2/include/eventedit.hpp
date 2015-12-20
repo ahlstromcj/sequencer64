@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-12-05
- * \updates       2015-12-18
+ * \updates       2015-12-19
  * \license       GNU GPLv2 or above
  *
  */
@@ -150,7 +150,6 @@ public:
     ~eventedit ();
 
     void enqueue_draw ();
-
     void set_seq_title (const std::string & title);
     void set_seq_time_sig (const std::string & sig);
     void set_seq_ppqn (const std::string & p);
@@ -160,13 +159,12 @@ public:
     void set_event_name (const std::string & n);
     void set_event_data_0 (const std::string & d);
     void set_event_data_1 (const std::string & d);
-
     void v_adjustment (int value, int lower, int upper);
+    void modify ();
 
 private:
 
     bool timeout ();
-
     void handle_delete ();
     void handle_insert ();
     void handle_modify ();

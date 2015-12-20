@@ -546,7 +546,9 @@ eventslots::modify_current_event
 
 /**
  *  Writes the events back to the sequence.  Also sets the dirty flag for the
- *  sequence, via the sequence::add_event() function.
+ *  sequence, via the sequence::add_event() function, but this doesn't seem to
+ *  set the perform dirty flag.  So now we pass the modification buck to the
+ *  parent, who passes it to the perform object.
  *
  * \return
  *      Returns true if the operations succeeded.
@@ -571,6 +573,8 @@ eventslots::save_events ()
             m_seq.add_event(e);
         }
         result = m_seq.event_count() == m_event_count;
+        if (result)
+            m_parent.modify();
     }
     return result;
 }

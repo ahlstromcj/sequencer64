@@ -1,3 +1,226 @@
+2015-12-22  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* contrib/git.txt: Added pulling and merging to git instructions.
+
+2015-12-20  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* contrib/bugs_to_investigate.txt: Added a bug report from Tim.
+
+2015-12-19  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/src/calculations.cpp, libseq64/src/sequence.cpp,
+	seq_gtkmm2/include/eventedit.hpp, seq_gtkmm2/src/eventedit.cpp,
+	seq_gtkmm2/src/eventslots.cpp: Enhanced pulse conversion and
+	modification flagging.  More refinements to insertion/deletion,
+	amazingly slow progress, much trickier than one would think.
+
+2015-12-18  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* seq_gtkmm2/include/eventslots.hpp, seq_gtkmm2/src/eventedit.cpp,
+	seq_gtkmm2/src/eventslots.cpp: Saving of events seems to work, but
+	sequence not dirtied, and multiple event-edits can be opened for a
+	sequence.
+
+2015-12-18  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* seq_gtkmm2/include/eventedit.hpp, seq_gtkmm2/src/eventedit.cpp: 
+	Added Save/Cancel buttons, not yet functional.  Actually are
+	Save and Close buttons now.
+
+2015-12-17  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* seq_gtkmm2/include/eventslots.hpp, seq_gtkmm2/src/eventslots.cpp: 
+	Still more work on event insertion, added an insert_event()
+	overload.  Interim check-in of eventslots for further refinement of delete
+	handling.
+
+2015-12-16  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/src/event.cpp, seq_gtkmm2/src/eventslots.cpp: Still
+	tweaking deletion, can segfault due to negative event index.
+
+2015-12-15  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* seq_gtkmm2/include/eventslots.hpp, seq_gtkmm2/src/eventedit.cpp,
+	seq_gtkmm2/src/eventslots.cpp: Event editor event insertion
+	improved, more to do yet.  Increased width of event editor.
+	Interim, got startup of event editor to show event values, same
+	for deleting events.
+
+2015-12-14  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/include/editable_event.hpp, libseq64/include/event.hpp,
+	libseq64/src/editable_event.cpp, seq_gtkmm2/include/eventedit.hpp,
+	seq_gtkmm2/include/eventslots.hpp, seq_gtkmm2/src/eventedit.cpp,
+	seq_gtkmm2/src/eventslots.cpp: Interim check-in, more work on event
+	deletion and insertions, tough stuff.
+
+2015-12-13  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/include/calculations.hpp,
+	libseq64/include/editable_event.hpp,
+	libseq64/include/editable_events.hpp,
+	libseq64/src/calculations.cpp, libseq64/src/editable_event.cpp,
+	seq_gtkmm2/include/eventedit.hpp,
+	seq_gtkmm2/include/eventslots.hpp, seq_gtkmm2/src/eventedit.cpp,
+	seq_gtkmm2/src/eventslots.cpp: Working on proper eventslot paging
+	and event deletion.  Interim check-in, working through
+	manual event insertion.
+
+2015-12-12  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* seq_gtkmm2/include/eventedit.hpp,
+	seq_gtkmm2/include/eventslots.hpp, seq_gtkmm2/src/eventedit.cpp,
+	seq_gtkmm2/src/eventslots.cpp: Interim check-in, good progress with
+	event editor.
+
+2015-12-11  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* seq_gtkmm2/include/eventedit.hpp,
+	seq_gtkmm2/include/eventslots.hpp, seq_gtkmm2/src/eventedit.cpp,
+	seq_gtkmm2/src/eventslots.cpp: Adding code to support editing the
+	timestamp and applying changes to an editable event, still in
+	progress.
+
+2015-12-10  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* resources/pixmaps/del.xpm, resources/pixmaps/ins.xpm,
+	seq_gtkmm2/include/eventedit.hpp, seq_gtkmm2/src/eventedit.cpp,
+	seq_gtkmm2/src/eventslots.cpp, seq_gtkmm2/include/eventslots.hpp,
+	seq_gtkmm2/src/eventslots.cpp: 
+	Interim check-in, getting event-selection code to work.
+	More work on loading editable events.
+
+2015-12-09  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/src/calculations.cpp, libseq64/src/editable_event.cpp,
+	seq_gtkmm2/include/eventedit.hpp,
+	seq_gtkmm2/include/eventslots.hpp, seq_gtkmm2/src/eventedit.cpp,
+	seq_gtkmm2/src/eventslots.cpp: Interim check-in, ever more event
+	editing functionality, current work is calling parent setters when
+	next event is selected.  Still wrestling with table packing.
+
+2015-12-08  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* seq_gtkmm2/include/eventedit.hpp, seq_gtkmm2/src/eventedit.cpp: 
+	Interim check-in, much to do.
+
+2015-12-07  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* seq_gtkmm2/src/eventedit.cpp, seq_gtkmm2/src/eventslots.cpp: 
+	Planning a new layout for event viewer/editor.
+
+2015-12-06  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/include/controllers.hpp,
+	libseq64/include/midi_container.hpp, libseq64/src/Makefile.am,
+	libseq64/src/controllers.cpp, libseq64/src/perform.cpp,
+	seq_gtkmm2/include/Makefile.am, seq_gtkmm2/include/eventedit.hpp,
+	seq_gtkmm2/include/eventslots.hpp, seq_gtkmm2/include/seqedit.hpp,
+	seq_gtkmm2/include/seqmenu.hpp, seq_gtkmm2/src/Makefile.am,
+	seq_gtkmm2/src/eventedit.cpp, seq_gtkmm2/src/eventslots.cpp,
+	seq_gtkmm2/src/mainwnd.cpp, seq_gtkmm2/src/perfedit.cpp,
+	seq_gtkmm2/src/seqedit.cpp, seq_gtkmm2/src/seqmenu.cpp: Starting to
+	get a handle on the event editor dialog and its fields, but there's
+	a memory issue with some sequences.
+
+2015-12-05  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/include/editable_event.hpp, libseq64/include/event.hpp,
+	libseq64/src/editable_event.cpp, libseq64/src/event.cpp,
+	seq_gtkmm2/include/Makefile.am, seq_gtkmm2/include/eventedit.hpp,
+	seq_gtkmm2/include/eventslots.hpp, seq_gtkmm2/include/mainwnd.hpp,
+	seq_gtkmm2/include/perfnames.hpp, seq_gtkmm2/include/seqmenu.hpp,
+	seq_gtkmm2/src/Makefile.am, seq_gtkmm2/src/eventedit.cpp,
+	seq_gtkmm2/src/eventslots.cpp, seq_gtkmm2/src/mainwnd.cpp,
+	seq_gtkmm2/src/perfedit.cpp: More string functions for
+	editable_events, started eventslots and eventedit modules for an
+	added user-interface.
+
+2015-12-05  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/include/calculations.hpp,
+	libseq64/include/editable_event.hpp,
+	libseq64/include/editable_events.hpp,
+	libseq64/src/calculations.cpp, libseq64/src/editable_event.cpp,
+	libseq64/src/editable_events.cpp: Interim check-in, basics of
+	editable-events container finished, still need unit-testing.
+
+2015-12-05  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/include/Makefile.am, libseq64/include/calculations.hpp,
+	libseq64/include/editable_event.hpp,
+	libseq64/include/editable_events.hpp,
+	libseq64/include/event_list.hpp, libseq64/include/midibyte.hpp,
+	libseq64/include/sequence.hpp, libseq64/src/Makefile.am,
+	libseq64/src/calculations.cpp, libseq64/src/editable_event.cpp,
+	libseq64/src/editable_events.cpp, libseq64/src/midibyte.cpp,
+	seq_gtkmm2/src/seqedit.cpp: Interim check-in of refactor midibytes
+	module.
+
+2015-12-04  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/include/editable_events.hpp,
+	libseq64/include/event_list.hpp, libseq64/src/editable_events.cpp: 
+	Added incomplete implementation of editable-event container.
+
+2015-12-03  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/include/editable_event.hpp,
+	libseq64/src/editable_event.cpp: Started adding timestamp conversion
+	to editable events.
+
+2015-12-02  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/include/sequence.hpp, libseq64/src/event_list.cpp,
+	libseq64/src/sequence.cpp, seq_gtkmm2/src/mainwid.cpp,
+	seq_gtkmm2/src/seqmenu.cpp: Replaced incomplete sequence::operator
+	=() with the new partial_assign() function.
+
+2015-12-02  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/include/midibyte.hpp, libseq64/src/calculations.cpp: 
+	Fixed the last of the basic bugs in the calculations modules, as
+	found by the unit-tests of the seq64-tests project.
+
+2015-12-02  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/src/calculations.cpp: Removed commented code from
+	calculations module.
+
+2015-12-01  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/include/calculations.hpp, libseq64/src/calculations.cpp: 
+	More fixes to calculations module based on unit-testing, added
+	epsilon value for better round-off of pulses.
+
+2015-12-01  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/include/calculations.hpp, libseq64/src/calculations.cpp: 
+	Fixes to pulses_to_timestring().
+
+2015-11-30  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/include/calculations.hpp, libseq64/include/event.hpp,
+	libseq64/include/midibyte.hpp, libseq64/include/midifile.hpp,
+	libseq64/src/calculations.cpp, libseq64/src/event.cpp,
+	libseq64/src/midifile.cpp: Finished provisional implementations of
+	converting between string and time or measure representations of
+	MIDI pulses, must now test.
+
+2015-11-30  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/include/calculations.hpp, libseq64/include/midibyte.hpp,
+	libseq64/src/calculations.cpp: Interim check-in of events branch.
+
+2015-11-30  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* ChangeLog, libseq64/include/calculations.hpp,
+	libseq64/include/midibyte.hpp, libseq64/include/sequence.hpp,
+	libseq64/src/calculations.cpp, libseq64/src/sequence.cpp: Added
+	midi_timing_t structure for easier parameter passing for MIDI timing
+	calculations.
+
 2015-11-29  Chris Ahlstrom <ahlstromcj@gmail.com>
 
 	* doc/dox/midi_parsing.dox, libseq64/include/Makefile.am,

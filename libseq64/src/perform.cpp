@@ -369,6 +369,14 @@ perform::select_mute_group (int a_group)
 {
     int group = clamp_track(a_group);
     int j = group * m_seqs_in_set;
+
+    /*
+     * \change tdeagan 2015-12-22 via git pull:
+     *
+     * git checkout -b TDeagan-mute_groups master
+     * git pull https://github.com/TDeagan/sequencer64.git mute_groups
+     */
+
     int k = m_screenset * m_seqs_in_set; // replaces m_playscreen_offset
 
     /*
@@ -401,6 +409,10 @@ perform::mute_group_tracks ()
             {
                 if (is_active(i * m_seqs_in_set + j))
                 {
+    /*
+     * \change tdeagan 2015-12-22 via git pull.  Replaced m_playing_screen
+     *      with m_screenset.
+     */
                     if ((i == m_screenset) && m_tracks_mute_state[j])
                         sequence_playing_on(i * m_seqs_in_set + j);
                     else

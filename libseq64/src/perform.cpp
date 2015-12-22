@@ -369,7 +369,7 @@ perform::select_mute_group (int a_group)
 {
     int group = clamp_track(a_group);
     int j = group * m_seqs_in_set;
-    int k = m_playscreen_offset;
+    int k = m_screenset * m_seqs_in_set; // replaces m_playscreen_offset
 
     /*
      * Should make this assignment contingent upon error.

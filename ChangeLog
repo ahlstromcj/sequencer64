@@ -1,6 +1,21 @@
 2015-12-22  Chris Ahlstrom <ahlstromcj@gmail.com>
 
-	* contrib/git.txt: Added pulling and merging to git instructions.
+	* contrib/git.txt, configure.ac: Added pulling and merging to
+	git instructions.  Stamping as 0.9.9.11, merging in the current'
+	status of the events branch, which is mostly working, still in
+	progress, but good enough for event viewing.
+
+2015-12-21  Tim Deagan <tim@deagan.net>
+
+	* libseq64/src/perform.cpp: Change to select_mute_group to set k,
+	which represents the playing screen offset, from m_playscreen_offset
+	to m_screenset * m_seqs_in_set m_playscreen_offset was not picking
+	hte change to the active screen.
+
+2015-12-20  tdeagan <tdeagan@debianvdi>
+
+	* libseq64/src/perform.cpp: Modify perform::mute_group_tracks to
+	used m_screenset for active screen determination
 
 2015-12-20  Chris Ahlstrom <ahlstromcj@gmail.com>
 

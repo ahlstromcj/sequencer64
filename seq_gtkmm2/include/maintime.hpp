@@ -141,7 +141,7 @@ public:
 
 private:
 
-    int idle_progress (long ticks);
+    int idle_progress (midipulse ticks);
 
 private:        // callbacks
 

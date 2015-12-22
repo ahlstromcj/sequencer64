@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-07
+ * \updates       2015-11-29
  * \license       GNU GPLv2 or above
  *
  *  The "time" window is the horizontal bar at the upper right of the main
@@ -112,7 +112,7 @@ maintime::on_realize ()
  */
 
 int
-maintime::idle_progress (long ticks)
+maintime::idle_progress (midipulse ticks)
 {
     int tick_x = ((ticks % m_ppqn) * m_box_width) / m_ppqn;
     int beat_x = (((ticks / m_beat_width) % m_ppqn) * m_box_less_pill) / m_ppqn;

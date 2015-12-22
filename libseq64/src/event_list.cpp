@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-19
- * \updates       2015-11-27
+ * \updates       2015-12-02
  * \license       GNU GPLv2 or above
  *
  */
@@ -56,7 +56,7 @@ namespace seq64
  *      information.
  */
 
-event_list::event_key::event_key (unsigned long tstamp, int rank)
+event_list::event_key::event_key (midipulse tstamp, int rank)
  :
     m_timestamp (tstamp),
     m_rank      (rank)
@@ -192,6 +192,7 @@ event_list::add (const event & e, bool postsort)
     size_t count = m_events.size();
 
 #ifdef SEQ64_USE_EVENT_MAP
+
     event_key key(e);
 #if __cplusplus >= 201103L              /* C++11                    */
     EventsPair p = std::make_pair(key, e);
@@ -199,8 +200,11 @@ event_list::add (const event & e, bool postsort)
     EventsPair p = std::make_pair<event_key, event>(key, e);
 #endif
     m_events.insert(p);                 /* std::multimap operation  */
+
 #else
+
     m_events.push_front(e);             /* std::list operation      */
+
 #endif
 
     bool result = m_events.size() == (count + 1);
@@ -357,7 +361,7 @@ event_list::link_new ()
  */
 
 void
-event_list::verify_and_link (long slength)
+event_list::verify_and_link (midipulse slength)
 {
     clear_links();
     for (event_list::iterator on = m_events.begin(); on != m_events.end(); on++)
@@ -474,16 +478,12 @@ event_list::unmark_all ()
  */
 
 void
-event_list::mark_out_of_range (long slength)
+event_list::mark_out_of_range (midipulse slength)
 {
     for (Events::iterator i = m_events.begin(); i != m_events.end(); ++i)
     {
         event & e = dref(i);
-#ifdef USE_EQUALS_IN_COMPARISON                 /* not defined          */
-        if (e.get_timestamp() >= slength || e.get_timestamp() < 0)
-#else
-        if (e.get_timestamp() > slength || e.get_timestamp() < 0)
-#endif
+        if (e.get_timestamp() > slength)
         {
             e.mark();                           /* we have to prune it  */
             if (e.is_linked())
@@ -606,7 +606,7 @@ event_list::print ()
 }           // namespace seq64
 
 /*
- * sequence.cpp
+ * event_list.cpp
  *
  * vim: sw=4 ts=4 wm=4 et ft=cpp
  */

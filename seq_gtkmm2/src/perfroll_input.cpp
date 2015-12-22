@@ -96,13 +96,13 @@ Seq24PerfInput::on_button_press_event (GdkEventButton * ev, perfroll & roll)
     );
     if (SEQ64_CLICK_LEFT(ev->button))
     {
-        long tick = roll.m_drop_tick;
+        midipulse tick = roll.m_drop_tick;
         if (m_adding)         /* add a new note if we didn't select anything */
         {
             m_adding_pressed = true;
             if (p.is_active(dropseq))
             {
-                long seqlength = p.get_sequence(dropseq)->get_length();
+                midipulse seqlength = p.get_sequence(dropseq)->get_length();
                 bool state = p.get_sequence(dropseq)->get_trigger_state(tick);
                 if (state)
                 {
@@ -127,8 +127,8 @@ Seq24PerfInput::on_button_press_event (GdkEventButton * ev, perfroll & roll)
                 p.push_trigger_undo();
                 p.get_sequence(dropseq)->select_trigger(tick);
 
-                long tick0 = p.get_sequence(dropseq)->selected_trigger_start();
-                long tick1 = p.get_sequence(dropseq)->selected_trigger_end();
+                midipulse tick0 = p.get_sequence(dropseq)->selected_trigger_start();
+                midipulse tick1 = p.get_sequence(dropseq)->selected_trigger_end();
                 int wscalex = s_perfroll_size_box_click_w * c_perf_scale_x;
                 int ydrop = roll.m_drop_y % c_names_y;
                 if
@@ -251,14 +251,14 @@ Seq24PerfInput::on_motion_notify_event (GdkEventMotion * ev, perfroll & roll)
     int dropseq = roll.m_drop_sequence;
     if (m_adding && m_adding_pressed)
     {
-        long tick;
+        midipulse tick;
         roll.convert_x(x, tick);
         if (p.is_active(dropseq))
         {
-            long seqlength = p.get_sequence(dropseq)->get_length();
+            midipulse seqlength = p.get_sequence(dropseq)->get_length();
             tick -= (tick % seqlength);
 
-            long length = seqlength;
+            midipulse length = seqlength;
             p.get_sequence(dropseq)->grow_trigger(roll.m_drop_tick, tick, length);
             roll.draw_all();
             result = true;
@@ -268,7 +268,7 @@ Seq24PerfInput::on_motion_notify_event (GdkEventMotion * ev, perfroll & roll)
     {
         if (p.is_active(dropseq))
         {
-            long tick;
+            midipulse tick;
             roll.convert_x(x, tick);
             tick -= roll.m_drop_tick_trigger_offset;
             tick -= tick % roll.m_snap;
@@ -340,7 +340,7 @@ Seq24PerfInput::handle_motion_key (bool is_left, perfroll & roll)
     {
         perform & p = roll.perf();
         int dropseq = roll.m_drop_sequence;
-        long droptick = roll.m_drop_tick;
+        midipulse droptick = roll.m_drop_tick;
         if (m_effective_tick == 0)
             m_effective_tick = droptick;
 
@@ -356,7 +356,7 @@ Seq24PerfInput::handle_motion_key (bool is_left, perfroll & roll)
              *     m_effective_tick = droptick;
              */
 
-            long tick = m_effective_tick;
+            midipulse tick = m_effective_tick;
             m_effective_tick -= roll.m_snap;
             if (m_effective_tick <= 0)
                 m_effective_tick += roll.m_snap;    /* retrench */
@@ -374,7 +374,7 @@ Seq24PerfInput::handle_motion_key (bool is_left, perfroll & roll)
              */
         }
 
-        long tick = m_effective_tick - roll.m_drop_tick_trigger_offset;
+        midipulse tick = m_effective_tick - roll.m_drop_tick_trigger_offset;
         tick -= tick % roll.m_snap;
 
         /*

@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-25
+ * \updates       2015-11-29
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -464,7 +464,7 @@ perform::mute_all_tracks ()
  */
 
 void
-perform::set_left_tick (long tick, bool setstart)
+perform::set_left_tick (midipulse tick, bool setstart)
 {
     m_left_tick = tick;
     if (setstart)
@@ -491,7 +491,7 @@ perform::set_left_tick (long tick, bool setstart)
  */
 
 void
-perform::set_right_tick (long tick, bool setstart)
+perform::set_right_tick (midipulse tick, bool setstart)
 {
     if (tick >= m_one_measure)
     {
@@ -920,7 +920,11 @@ perform::is_seq_valid (int seq) const
         return true;
     else
     {
-        if (! SEQ64_IS_DISABLED_SEQUENCE(seq))  /* legal value, don't bitch */
+        if (SEQ64_IS_NULL_SEQUENCE(seq))
+        {
+            errprint("is_seq_valid(): unassigned sequence number");
+        }
+        else if (! SEQ64_IS_DISABLED_SEQUENCE(seq))
         {
             fprintf
             (
@@ -1144,7 +1148,7 @@ perform::set_playing_screenset ()
  */
 
 void
-perform::play (long tick)
+perform::play (midipulse tick)
 {
     m_tick = tick;
     for (int i = 0; i < m_sequence_max; i++)
@@ -1180,7 +1184,7 @@ perform::play (long tick)
  */
 
 void
-perform::set_orig_ticks (long tick)
+perform::set_orig_ticks (midipulse tick)
 {
     for (int i = 0; i < m_sequence_max; i++)
     {
@@ -1218,7 +1222,7 @@ perform::move_triggers (bool direction)
 {
     if (m_left_tick < m_right_tick)
     {
-        long distance = m_right_tick - m_left_tick;
+        midipulse distance = m_right_tick - m_left_tick;
         for (int i = 0; i < m_sequence_max; i++)
         {
             if (is_active(i))
@@ -1272,7 +1276,7 @@ perform::copy_triggers ()
 {
     if (m_left_tick < m_right_tick)
     {
-        long distance = m_right_tick - m_left_tick;
+        midipulse distance = m_right_tick - m_left_tick;
         for (int i = 0; i < m_sequence_max; i++)
         {
             if (is_active(i))
@@ -1481,7 +1485,7 @@ perform::launch_input_thread ()
  */
 
 void
-perform::split_trigger (int seqnum, long tick)
+perform::split_trigger (int seqnum, midipulse tick)
 {
     push_trigger_undo();
     get_sequence(seqnum)->split_trigger(tick);
@@ -1497,15 +1501,15 @@ perform::split_trigger (int seqnum, long tick)
  *      always at least one trigger, at 0?
  */
 
-long
+midipulse
 perform::get_max_trigger ()
 {
-    long result = 0;
+    midipulse result = 0;
     for (int i = 0; i < m_sequence_max; i++)
     {
         if (is_active(i))
         {
-            long t = m_seqs[i]->get_max_trigger();
+            midipulse t = m_seqs[i]->get_max_trigger();
             if (t > result)
                 result = t;
         }
@@ -1592,7 +1596,7 @@ perform::output_func ()
         long delta;                         // difference between last & current
 #endif
 
-        long stats_total_tick = 0;
+        midipulse stats_total_tick = 0;
         long stats_loop_index = 0;
         long stats_min = 0x7FFFFFFF;
         long stats_max = 0;

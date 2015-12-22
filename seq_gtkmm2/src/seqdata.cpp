@@ -155,7 +155,7 @@ seqdata::update_pixmap ()
 void
 seqdata::draw_events_on (Glib::RefPtr<Gdk::Drawable> drawable)
 {
-    long tick;
+    midipulse tick;
     midibyte d0, d1;
     bool selected;
     int start_tick = m_scroll_offset_ticks;
@@ -323,7 +323,7 @@ seqdata::on_motion_notify_event (GdkEventMotion * ev)
             adj_y_min = m_drop_y;
         }
 
-        long tick_s, tick_f;
+        midipulse tick_s, tick_f;
         convert_x(adj_x_min, tick_s);
         convert_x(adj_x_max, tick_f);
         result = m_seq.change_event_data_range
@@ -483,7 +483,7 @@ seqdata::on_button_release_event (GdkEventButton * ev)
     m_current_y = int(ev->y);
     if (m_dragging)
     {
-        long tick_s, tick_f;
+        midipulse tick_s, tick_f;
         if (m_current_x < m_drop_x)
         {
             std::swap(m_current_x, m_drop_x);

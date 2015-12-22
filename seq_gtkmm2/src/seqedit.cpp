@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-23
+ * \updates       2015-12-04
  * \license       GNU GPLv2 or above
  *
  */
@@ -142,15 +142,20 @@ static const int c_swing_notes              = 13;   /* swing quantize   */
  *      options does.
  */
 
-seqedit::seqedit (perform & p, sequence & seq, int pos, int ppqn)
- :
+seqedit::seqedit
+(
+    perform & p,
+    sequence & seq,
+    int pos,
+    int ppqn
+) :
     gui_window_gtk2     (p, 750, 500),          /* set_size_request(700, 500) */
     m_zoom              (usr().zoom()),
     m_snap              (m_initial_snap),
     m_note_length       (m_initial_note_length),
     m_scale             (usr().seqedit_scale()),        // (m_initial_scale),
     m_key               (usr().seqedit_key()),          // (m_initial_key),
-    m_sequence          (usr().seqedit_bgsequence()),   // (m_initial_sequence),
+    m_bgsequence        (usr().seqedit_bgsequence()),   // (m_initial_sequence),
     m_measures          (0),
     m_ppqn              (0),
     m_seq               (seq),
@@ -354,6 +359,12 @@ seqedit::seqedit (perform & p, sequence & seq, int pos, int ppqn)
     dhbox->pack_end(*(manage(new Gtk::VSeparator())), false, false, 4);
     fill_top_bar();
     add(*m_vbox);                              /* add table */
+
+    /*
+     * If this is not present, even if we call it after creating in seqmenu,
+     * we get a segfault.
+     */
+
     show_all();
 
     /*
@@ -390,9 +401,9 @@ seqedit::seqedit (perform & p, sequence & seq, int pos, int ppqn)
         set_key(m_key);
 
     if (SEQ64_IS_VALID_SEQUENCE(m_seq.background_sequence()))
-        m_sequence = m_seq.background_sequence();
+        m_bgsequence = m_seq.background_sequence();
 
-    set_background_sequence(m_sequence);
+    set_background_sequence(m_bgsequence);
     m_seqroll_wid->set_ignore_redraw(false);
 }
 
@@ -1327,7 +1338,7 @@ seqedit::popup_sequence_menu ()
         bool inserted = false;
         for (int seq = 0; seq < c_seqs_in_set; ++seq)
         {
-            char name[30];
+            char name[32];
             int i = ss * c_seqs_in_set + seq;
             if (perf().is_active(i))
             {
@@ -1367,7 +1378,7 @@ seqedit::popup_sequence_menu ()
 void
 seqedit::set_background_sequence (int seqnum)
 {
-    m_sequence = seqnum;                /* we should check this value!  */
+    m_bgsequence = seqnum;              /* we should check this value!  */
     if (usr().global_seq_feature())
         usr().seqedit_bgsequence(seqnum);
 
@@ -1793,7 +1804,7 @@ seqedit::apply_length (int bpm, int bw, int measures)
 long
 seqedit::get_measures ()
 {
-    long units = measures_to_ticks
+    midipulse units = measures_to_ticks
     (
         m_seq.get_beats_per_bar(), m_ppqn, m_seq.get_beat_width()
     );

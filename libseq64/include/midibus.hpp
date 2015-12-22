@@ -146,7 +146,7 @@ private:
      *  The last (most recent?  final?) tick.
      */
 
-    long m_lasttick;
+    midipulse m_lasttick;
 
     /**
      *  Locking mutex.
@@ -213,9 +213,9 @@ public:
 
     void start ();
     void stop ();
-    void clock (long tick);
-    void continue_from (long tick);
-    void init_clock (long tick);
+    void clock (midipulse tick);
+    void continue_from (midipulse tick);
+    void init_clock (midipulse tick);
 
     /**
      * \setter m_clock_type

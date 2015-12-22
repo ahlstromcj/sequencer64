@@ -1,11 +1,12 @@
-README for Sequencer64 0.9.9.10 (current branch = "smf0")
+README for Sequencer64 0.9.9.11 (current branch = "events")
 Chris Ahlstrom
-2015-09-10 to 2015-11-27
+2015-09-10 to 2015-11-30
 
 The sequencer64 project is a continuation of sequencer24 to refactor it to be
 tighter and easier to transition to GTKmm 3, and much more.  By now, it is
 well beyond the sequencer24 project (and seq24), in functionality, and the
-code is already *significantly* refactored.
+code is already *significantly* refactored, although the heart of it remains
+intact.
 
 See the screenshot in the project root for some idea of what has changed
 visually.  It is an old friend with some user-interface lipstick and a lot of

@@ -36,6 +36,7 @@
 
 #include <map>
 #include <string>
+#include <gdkmm/cursor.h>
 #include <gtkmm/window.h>
 
 #include "gui_window_gtk2.hpp"

@@ -81,7 +81,7 @@ Seq24SeqEventInput::on_button_press_event
 )
 {
     bool result = false;
-    long tick_s, tick_w;
+    midipulse tick_s, tick_w;
     seqev.grab_focus();                 // NEW: I think this would be helpful
     seqev.convert_x(c_eventevent_x, tick_w);
     seqev.set_current_drop_x(int(a_ev->x + seqev.m_scroll_offset_x));
@@ -98,7 +98,7 @@ Seq24SeqEventInput::on_button_press_event
     else
     {
         int x, w;
-        long tick_f;
+        midipulse tick_f;
         if (SEQ64_CLICK_LEFT(a_ev->button))
         {
             seqev.convert_x(seqev.m_drop_x, tick_s); /* x,y in to tick/note    */
@@ -222,15 +222,15 @@ Seq24SeqEventInput::on_button_release_event
 )
 {
     bool result = false;
-    long tick_s;
-    long tick_f;
+    midipulse tick_s;
+    midipulse tick_f;
     seqev.grab_focus();
     seqev.m_current_x = int(a_ev->x) + seqev.m_scroll_offset_x;
     if (seqev.m_moving)
         seqev.snap_x(seqev.m_current_x);
 
     int delta_x = seqev.m_current_x - seqev.m_drop_x;
-    long delta_tick;
+    midipulse delta_tick;
     if (SEQ64_CLICK_LEFT(a_ev->button))
     {
         if (seqev.m_selecting)
@@ -285,7 +285,7 @@ Seq24SeqEventInput::on_motion_notify_event
 )
 {
     bool result = false;
-    long tick = 0;
+    midipulse tick = 0;
     if (seqev.m_moving_init)
     {
         seqev.m_moving_init = false;

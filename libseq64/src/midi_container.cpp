@@ -58,9 +58,9 @@ midi_container::midi_container (sequence & seq)
  */
 
 void
-midi_container::add_variable (long v)
+midi_container::add_variable (midipulse v)
 {
-    long buffer = v & 0x7F;                     /* mask off a no-sign byte  */
+    midipulse buffer = v & 0x7F;                     /* mask off a no-sign byte  */
     while (v >>= 7)                             /* shift right 7 bits, test */
     {
         buffer <<= 8;                           /* move LSB bits to MSB     */
@@ -87,7 +87,7 @@ midi_container::add_variable (long v)
  */
 
 void
-midi_container::add_long (long x)
+midi_container::add_long (midipulse x)
 {
     put((x & 0xFF000000) >> 24);
     put((x & 0x00FF0000) >> 16);
@@ -149,9 +149,9 @@ midi_container::fill (int tracknumber)
     for (int i = 0; i < len; i++)
         put(midibyte(trackname[i]));
 
-    long timestamp = 0;
-    long deltatime = 0;
-    long prevtimestamp = 0;
+    midipulse timestamp = 0;
+    midipulse deltatime = 0;
+    midipulse prevtimestamp = 0;
     event_list evl = m_sequence.events();
     for (event_list::iterator i = evl.begin(); i != evl.end(); i++)
     {

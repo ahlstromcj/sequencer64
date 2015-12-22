@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-28
+ * \updates       2015-11-29
  * \license       GNU GPLv2 or above
  *
  *  This class has way too many members.
@@ -244,21 +244,21 @@ private:
      *  worth" than simply four quarter notes.
      */
 
-    int m_one_measure;
+    midipulse m_one_measure;
 
     /**
      *  Holds the position of the left (L) marker, and it is first defined as
      *  0.  Note that "tick" is actually "pulses".
      */
 
-    long m_left_tick;
+    midipulse m_left_tick;
 
     /**
      *  Holds the position of the right (R) marker, and it is first defined as
      *  the end of the fourth measure.  Note that "tick" is actually "pulses".
      */
 
-    long m_right_tick;
+    midipulse m_right_tick;
 
     /**
      *  Holds the starting tick for playing.  By default, this value is always
@@ -267,13 +267,13 @@ private:
      *  functionality. Note that "tick" is actually "pulses".
      */
 
-    long m_starting_tick;
+    midipulse m_starting_tick;
 
     /**
      *  MIDI Clock support.
      */
 
-    long m_tick;
+    midipulse m_tick;
     bool m_usemidiclock;
     bool m_midiclockrunning;            // stopped or started
     int m_midiclocktick;
@@ -496,18 +496,18 @@ public:
      * \getter m_tick
      */
 
-    long get_tick () const
+    midipulse get_tick () const
     {
         return m_tick;
     }
 
-    void set_left_tick (long tick, bool setstart = true);   // too long to inline
+    void set_left_tick (midipulse tick, bool setstart = true);
 
     /**
      * \getter m_left_tick
      */
 
-    long get_left_tick () const
+    midipulse get_left_tick () const
     {
         return m_left_tick;
     }
@@ -516,7 +516,7 @@ public:
      * \setter m_starting_tick
      */
 
-    void set_start_tick (long tick)
+    void set_start_tick (midipulse tick)
     {
         m_starting_tick = tick;
     }
@@ -525,18 +525,18 @@ public:
      * \getter m_starting_tick
      */
 
-    long get_starting_tick () const
+    midipulse get_starting_tick () const
     {
         return m_starting_tick;
     }
 
-    void set_right_tick (long tick, bool setstart = true);  // too long to inline
+    void set_right_tick (midipulse tick, bool setstart = true);
 
     /**
      * \getter m_right_tick
      */
 
-    long get_right_tick () const
+    midipulse get_right_tick () const
     {
         return m_right_tick;
     }
@@ -545,8 +545,8 @@ public:
     void copy_triggers ();
     void push_trigger_undo ();
     void pop_trigger_undo ();
-    void split_trigger (int seqnum, long tick);
-    long get_max_trigger ();
+    void split_trigger (int seqnum, midipulse tick);
+    midipulse get_max_trigger ();
 
     /**
      *  Convenience function for perfedit's collapse functionality.
@@ -724,8 +724,8 @@ public:
      *  Plays all notes to the current tick.
      */
 
-    void play (long tick);
-    void set_orig_ticks (long tick);
+    void play (midipulse tick);
+    void set_orig_ticks (midipulse tick);
     void set_beats_per_minute (int bpm);        /* more than just a setter  */
     int get_beats_per_minute ();                /* get BPM from the buss    */
 

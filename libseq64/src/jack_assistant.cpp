@@ -367,7 +367,7 @@ jack_assistant::position (bool /* state */ )
      */
 
     jack_nframes_t rate = jack_get_sample_rate(m_jack_client);
-    long currenttick = 0;
+    midipulse currenttick = 0;
     if (state)
         currenttick = m_left_tick;
 

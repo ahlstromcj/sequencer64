@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-26
+ * \updates       2015-12-06
  * \license       GNU GPLv2 or above
  *
  *  The main window holds the menu and the main controls of the application,
@@ -44,7 +44,6 @@
 #include <cerrno>
 #include <cstring>
 #include <stdio.h>                      /* snprintf()                   */
-#include <gdkmm/cursor.h>
 #include <gtk/gtkversion.h>
 #include <gtkmm/aboutdialog.h>
 #include <gtkmm/adjustment.h>
@@ -97,8 +96,8 @@ int mainwnd::m_sigpipe[2];
  *
  * \param allowperf2
  *      Indicates if a second perfedit window should be created.
- *      We're thinking this will be a build-time option.
- *      For now, it defaults to true.
+ *      This is currently a run-time option, selectable in the "user"
+ *      configuration file.
  *
  * \todo
  *      Offload most of the work into an initialization function like
@@ -111,12 +110,12 @@ mainwnd::mainwnd (perform & p, bool allowperf2)
  :
     gui_window_gtk2         (p),
     performcallback         (),
-    m_tooltips              (manage(new Gtk::Tooltips())),  // valgrind complains!
+    m_tooltips              (manage(new Gtk::Tooltips())),  // valgrind bitches
     m_menubar               (manage(new Gtk::MenuBar())),
     m_menu_file             (manage(new Gtk::Menu())),
     m_menu_view             (manage(new Gtk::Menu())),
     m_menu_help             (manage(new Gtk::Menu())),
-    m_main_wid              (manage(new mainwid(p))),  // perf()
+    m_main_wid              (manage(new mainwid(p))),
     m_main_time             (manage(new maintime(p))),
     m_perf_edit             (new perfedit(p)),
     m_perf_edit_2           (allowperf2 ? new perfedit(p, true) : nullptr),
@@ -143,14 +142,6 @@ mainwnd::mainwnd (perform & p, bool allowperf2)
      */
 
     set_icon(Gdk::Pixbuf::create_from_xpm_data(seq64_xpm));
-
-    /*
-     * This request always leaves the bottom panel partly obscured.
-     *
-     *      set_size_request(794, 350);
-     *      set_size_request(850, 322);             // seq42
-     */
-
     set_resizable(false);
     perf().enregister(this);                        // register for notification
     update_window_title();                          // main window
@@ -158,7 +149,7 @@ mainwnd::mainwnd (perform & p, bool allowperf2)
     m_menubar->items().push_back(MenuElem("_View", *m_menu_view));
     m_menubar->items().push_back(MenuElem("_Help", *m_menu_help));
 
-    /**
+    /*
      * File menu items, their accelerator keys, and their hot keys.
      */
 
@@ -491,7 +482,7 @@ mainwnd::~mainwnd ()
 bool
 mainwnd::timer_callback ()
 {
-    long ticks = perf().get_tick();
+    midipulse ticks = perf().get_tick();
     m_main_time->idle_progress(ticks);
     m_main_wid->update_markers(ticks);          /* see note above */
 

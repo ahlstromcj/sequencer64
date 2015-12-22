@@ -87,8 +87,8 @@ private:
 
     bool m_active;
     bool m_inverse_active;
-    int m_status;
-    int m_data;
+    int m_status;               // midibyte
+    int m_data;                 // midibyte
     int m_min_value;
     int m_max_value;
 

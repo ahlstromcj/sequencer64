@@ -6,7 +6,7 @@
 # \library    	libseq_gtkmm2 library
 # \author     	Chris Ahlstrom
 # \date       	2015-09-11
-# \update      2015-10-13
+# \update      2015-12-06
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -115,6 +115,8 @@ lib_LTLIBRARIES = libseq_gtkmm2.la
 #----------------------------------------------------------------------------
 
 libseq_gtkmm2_la_SOURCES = \
+   eventedit.cpp \
+   eventslots.cpp \
 	font.cpp \
 	fruityperfroll_input.cpp \
    fruityseq.cpp \

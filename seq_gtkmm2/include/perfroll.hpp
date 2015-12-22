@@ -109,12 +109,12 @@ private:
     int m_size_box_click_w;
     int m_measure_length;
     int m_beat_length;
-    long m_old_progress_ticks;
+    midipulse m_old_progress_ticks;
     int m_4bar_offset;
     int m_sequence_offset;
     int m_roll_length_ticks;
-    long m_drop_tick;
-    long m_drop_tick_trigger_offset;
+    midipulse m_drop_tick;
+    midipulse m_drop_tick_trigger_offset;
     int m_drop_sequence;
     int m_sequence_max;
     bool m_sequence_active[c_max_sequence];
@@ -177,8 +177,8 @@ private:
     void draw_progress ();                  /* called by perfedit       */
     void redraw_dirty_sequences ();         /* called by perfedit       */
     void set_ppqn (int ppqn);
-    void convert_xy (int x, int y, long & ticks, int & seq);
-    void convert_x (int x, long & ticks);
+    void convert_xy (int x, int y, midipulse & ticks, int & seq);
+    void convert_x (int x, midipulse & ticks);
     void snap_x (int & x);
     void start_playing ();
     void stop_playing ();
@@ -187,7 +187,7 @@ private:
     void draw_drawable_row (long y);
     void change_horz ();
     void change_vert ();
-    void split_trigger(int sequence, long tick);
+    void split_trigger(int sequence, midipulse tick);
     void enqueue_draw ();
 
 private:        // callbacks

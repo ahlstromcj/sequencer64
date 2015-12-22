@@ -58,19 +58,19 @@ private:
      *  Provides the starting tick for this trigger.
      */
 
-    long m_tick_start;
+    midipulse m_tick_start;
 
     /**
      *  Provides the ending tick for this trigger.
      */
 
-    long m_tick_end;
+    midipulse m_tick_end;
 
     /**
      *  Provides the offset for this trigger.
      */
 
-    long m_offset;
+    midipulse m_offset;
 
     /**
      *  Indicates that the trigger is part of a selection.
@@ -106,7 +106,7 @@ public:
      * \getter m_tick_start
      */
 
-    long tick_start () const
+    midipulse tick_start () const
     {
         return m_tick_start;
     }
@@ -115,7 +115,7 @@ public:
      * \setter m_tick_start
      */
 
-    void tick_start (long s)
+    void tick_start (midipulse s)
     {
         m_tick_start = s;
     }
@@ -124,7 +124,7 @@ public:
      * \setter m_tick_start
      */
 
-    void increment_tick_start (long s)
+    void increment_tick_start (midipulse s)
     {
         m_tick_start += s;
     }
@@ -133,7 +133,7 @@ public:
      * \setter m_tick_start
      */
 
-    void decrement_tick_start (long s)
+    void decrement_tick_start (midipulse s)
     {
         m_tick_start -= s;
     }
@@ -142,7 +142,7 @@ public:
      * \getter m_tick_end
      */
 
-    long tick_end () const
+    midipulse tick_end () const
     {
         return m_tick_end;
     }
@@ -151,7 +151,7 @@ public:
      * \setter m_tick_end
      */
 
-    void tick_end (long e)
+    void tick_end (midipulse e)
     {
         m_tick_end = e;
     }
@@ -160,7 +160,7 @@ public:
      * \setter m_tick_end
      */
 
-    void increment_tick_end (long s)
+    void increment_tick_end (midipulse s)
     {
         m_tick_end += s;
     }
@@ -169,7 +169,7 @@ public:
      * \setter m_tick_end
      */
 
-    void decrement_tick_end (long s)
+    void decrement_tick_end (midipulse s)
     {
         m_tick_end -= s;
     }
@@ -178,7 +178,7 @@ public:
      * \getter m_offset
      */
 
-    long offset () const
+    midipulse offset () const
     {
         return m_offset;
     }
@@ -187,7 +187,7 @@ public:
      * \setter m_offset
      */
 
-    void offset (long o)
+    void offset (midipulse o)
     {
         m_offset = o;
     }
@@ -196,7 +196,7 @@ public:
      * \setter m_offset
      */
 
-    void increment_offset (long s)
+    void increment_offset (midipulse s)
     {
         m_offset += s;
     }
@@ -205,7 +205,7 @@ public:
      * \setter m_offset
      */
 
-    void decrement_offset (long s)
+    void decrement_offset (midipulse s)
     {
         m_offset -= s;
     }
@@ -305,7 +305,7 @@ private:
      *  Offset.
      */
 
-    long m_trigger_offset;
+    midipulse m_trigger_offset;
 
     /**
      *  Holds the value of the PPQN from the parent sequence, for easy access.
@@ -366,33 +366,33 @@ public:
     void push_undo ();
     void pop_undo ();
     void print (const std::string & seqname);
-    bool play (long & start_tick, long & end_tick);
+    bool play (midipulse & start_tick, midipulse & end_tick);
 
     void add
     (
-        long tick, long len, long offset = 0, bool adjustoffset = true
+        midipulse tick, midipulse len, midipulse offset = 0, bool adjustoffset = true
     );
-    void adjust_offsets_to_length (long newlen);
-    void split (long tick);
-    void split (trigger & trig, long split_tick);
-    void grow (long tick_from, long tick_to, long length);
-    void remove (long tick);
-    bool get_state (long tick);
-    bool select (long tick);
+    void adjust_offsets_to_length (midipulse newlen);
+    void split (midipulse tick);
+    void split (trigger & trig, midipulse split_tick);
+    void grow (midipulse tick_from, midipulse tick_to, midipulse length);
+    void remove (midipulse tick);
+    bool get_state (midipulse tick);
+    bool select (midipulse tick);
     bool unselect ();
-    bool intersect (long position, long & start, long & end);
+    bool intersect (midipulse position, midipulse & start, midipulse & end);
     void remove_selected ();
     void copy_selected ();
     void paste ();
     bool move_selected
     (
-        long tick, bool adjustoffset, int which = 2
+        midipulse tick, bool adjustoffset, int which = 2
     );
-    long get_selected_start ();
-    long get_selected_end ();
-    long get_maximum ();
-    void move (long start_tick, long distance, bool direction);
-    void copy (long start_tick, long distance);
+    midipulse get_selected_start ();
+    midipulse get_selected_end ();
+    midipulse get_maximum ();
+    void move (midipulse start_tick, midipulse distance, bool direction);
+    void copy (midipulse start_tick, midipulse distance);
 
     /**
      *  Clears the whole list of triggers.
@@ -406,7 +406,7 @@ public:
     /**
      * \getter m_trigger_offset
 
-    long get_trigger_offset () const
+    midipulse get_trigger_offset () const
     {
         return m_trigger_offset;
     }
@@ -414,8 +414,8 @@ public:
 
     bool next
     (
-        long * tick_on, long * tick_off,
-        bool * selected, long * tick_offset
+        midipulse * tick_on, midipulse * tick_off,
+        bool * selected, midipulse * tick_offset
     );
     trigger next_trigger ();
 
@@ -430,7 +430,7 @@ public:
 
 private:
 
-    long adjust_offset (long offset);
+    midipulse adjust_offset (midipulse offset);
 
 };          // class triggers
 

@@ -396,7 +396,7 @@ userfile::write (const perform & /* a_perf */ )
            "# Sequencer64 user configuration file (legacy Seq24 0.9.2 format)\n";
     }
     else
-        file << "# Sequencer64 0.9.9.10 (and above) user configuration file\n";
+        file << "# Sequencer64 0.9.9.11 (and above) user configuration file\n";
 
     file << "#\n"
         "# Created by reading the following file and writing it out via the\n"

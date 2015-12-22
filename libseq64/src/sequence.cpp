@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-27
+ * \updates       2015-12-19
  * \license       GNU GPLv2 or above
  *
  *  The functionality of this class also includes handling some of the
@@ -112,7 +112,12 @@ sequence::~sequence ()
     // Empty body
 }
 
-/**
+#if 0
+
+/*
+ *  We're replacing this incomplete function (many members are not assigned)
+ *  with the more accurately-named partial_assign() function.
+ *
  *  Principal assignment operator.  Follows the stock rules for such an
  *  operator, but does a little more then just assign member values.
  *  Currently, it does not assign them all, so we should create a partial_copy()
@@ -177,6 +182,42 @@ sequence::operator = (const sequence & rhs)
         verify_and_link();
     }
     return *this;
+}
+
+#endif  // 0
+
+/**
+ *  Principal assignment operator.  Follows the stock rules for such an
+ *  operator, but does a little more then just assign member values.
+ *  Currently, it does not assign them all, so we should create a partial_copy()
+ *  function to do this work, and use it where it is needed.
+ *
+ * \threadsafe
+ */
+
+void
+sequence::partial_assign (const sequence & rhs)
+{
+    if (this != &rhs)
+    {
+        automutex locker(m_mutex);
+        m_events   = rhs.m_events;
+        m_triggers = rhs.m_triggers;
+        m_midi_channel = rhs.m_midi_channel;
+        m_bus          = rhs.m_bus;
+        m_masterbus    = rhs.m_masterbus;           /* a pointer, be aware! */
+        m_playing      = false;
+        m_name         = rhs.m_name;
+        m_ppqn         = rhs.m_ppqn;
+        m_length       = rhs.m_length;
+        m_time_beats_per_measure = rhs.m_time_beats_per_measure;
+        m_time_beat_width = rhs.m_time_beat_width;
+        for (int i = 0; i < c_midi_notes; i++)      /* no notes are playing */
+            m_playing_notes[i] = 0;
+
+        zero_markers();                             /* reset */
+        verify_and_link();
+    }
 }
 
 /**
@@ -302,7 +343,7 @@ sequence::set_master_midi_bus (mastermidibus * mmb)
  */
 
 void
-sequence::set_beats_per_bar (long beatspermeasure)
+sequence::set_beats_per_bar (int beatspermeasure)
 {
     automutex locker(m_mutex);
     m_time_beats_per_measure = beatspermeasure;
@@ -319,7 +360,7 @@ sequence::set_beats_per_bar (long beatspermeasure)
  */
 
 void
-sequence::set_beat_width (long beatwidth)
+sequence::set_beat_width (int beatwidth)
 {
     automutex locker(m_mutex);
     m_time_beat_width = beatwidth;
@@ -336,57 +377,10 @@ sequence::set_beat_width (long beatwidth)
  */
 
 void
-sequence::set_rec_vol (long recvol)
+sequence::set_rec_vol (int recvol)
 {
     automutex locker(m_mutex);
     m_rec_vol = recvol;
-}
-
-/**
- *  Adds an event to the internal event list in a sorted manner.  Then it
- *  reset the draw-marker and sets the dirty flag.
- *
- *  Currently, when reading a MIDI file [see the midifile::parse() function],
- *  only the main events (notes, after-touch, pitch, program changes, etc.)
- *  are added with this function.  So, we can rely on reading only playable
- *  events into a sequence.  Well, actually, certain meta-events are also
- *  read, to obtain channel, buss, and more settings.  Also read for a
- *  sequence, if the global-sequence flag is not set, are the new key, scale,
- *  and background sequence parameters.
- *
- *  This module (sequencer) adds all of those events as well, but it
- *  can surely add other events.  We should assume that any events
- *  added by sequencer are playable/usable.
- *
- * \threadsafe
- *
- * \warning
- *      This pushing (and, in writing the MIDI file, the popping),
- *      causes events with identical timestamps to be written in
- *      reverse order.  Doesn't affect functionality, but it's puzzling
- *      until one understands what is happening.  Actually, this is true only
- *      in Seq24, we've fixed that behavior for Sequencer64.
- *
- * \param ep
- *      Provide a reference to the event to be added; the event is copied into
- *      the events container.
- */
-
-bool
-sequence::add_event (const event & er)
-{
-    automutex locker(m_mutex);
-    bool result = m_events.add(er);     /* post/auto-sorts by time & rank   */
-    if (result)
-    {
-        reset_draw_marker();
-        set_dirty();
-    }
-    else
-    {
-        errprint("sequence::add_event(): failed");
-    }
-    return result;
 }
 
 /**
@@ -396,7 +390,7 @@ sequence::add_event (const event & er)
  */
 
 void
-sequence::set_orig_tick (long tick)
+sequence::set_orig_tick (midipulse tick)
 {
     automutex locker(m_mutex);
     m_last_tick = tick;
@@ -458,12 +452,12 @@ sequence::off_queued ()
  */
 
 void
-sequence::play (long tick, bool playback_mode)
+sequence::play (midipulse tick, bool playback_mode)
 {
     automutex locker(m_mutex);
     bool trigger_turning_off = false;       /* turn off after frame play    */
-    long start_tick = m_last_tick;          /* modified in triggers::play() */
-    long end_tick = tick;                   /* ditto !!!                    */
+    midipulse start_tick = m_last_tick;     /* modified in triggers::play() */
+    midipulse end_tick = tick;              /* ditto !!!                    */
     if (m_song_mute)
     {
         set_playing(false);
@@ -487,12 +481,12 @@ sequence::play (long tick, bool playback_mode)
      * set_trigger_offset(trigger_offset);      // set m_trigger_offset
      */
 
-    long start_tick_offset = (start_tick + m_length - m_trigger_offset);
-    long end_tick_offset = (end_tick + m_length - m_trigger_offset);
+    midipulse start_tick_offset = (start_tick + m_length - m_trigger_offset);
+    midipulse end_tick_offset = (end_tick + m_length - m_trigger_offset);
     if (m_playing)                              /* play the notes in frame  */
     {
-        long times_played = m_last_tick / m_length; /* weird, ever non-zero?  */
-        long offset_base = times_played * m_length; /* same, m_length cancels */
+        midipulse times_played = m_last_tick / m_length;
+        midipulse offset_base = times_played * m_length;
         event_list::iterator e = m_events.begin();
         while (e != m_events.end())
         {
@@ -503,7 +497,7 @@ sequence::play (long tick, bool playback_mode)
              * timestamp is sufficient.
              */
 
-            long stamp = er.get_timestamp() + offset_base;
+            midipulse stamp = er.get_timestamp() + offset_base;
             if (stamp >= start_tick_offset && stamp <= end_tick_offset)
                 put_event_on_bus(er);               /* frame still going    */
             else if (stamp > end_tick_offset)
@@ -679,7 +673,7 @@ sequence::unpaint_all ()
 void
 sequence::get_selected_box
 (
-    long & tick_s, int & note_h, long & tick_f, int & note_l
+    midipulse & tick_s, int & note_h, midipulse & tick_f, int & note_l
 )
 {
     automutex locker(m_mutex);
@@ -692,7 +686,7 @@ sequence::get_selected_box
     {
         if (DREF(i).is_selected())
         {
-            long time = DREF(i).get_timestamp();
+            midipulse time = DREF(i).get_timestamp();
             if (time < tick_s)
                 tick_s = time;
 
@@ -716,7 +710,7 @@ sequence::get_selected_box
 void
 sequence::get_clipboard_box
 (
-    long & tick_s, int & note_h, long & tick_f, int & note_l
+    midipulse & tick_s, int & note_h, midipulse & tick_f, int & note_l
 )
 {
     automutex locker(m_mutex);
@@ -730,7 +724,7 @@ sequence::get_clipboard_box
     event_list::iterator i;
     for (i = m_events_clipboard.begin(); i != m_events_clipboard.end(); i++)
     {
-        long time = DREF(i).get_timestamp();
+        midipulse time = DREF(i).get_timestamp();
         if (time < tick_s)
             tick_s = time;
 
@@ -784,8 +778,8 @@ sequence::get_num_selected_events (midibyte status, midibyte cc) const
 int
 sequence::select_note_events
 (
-    long a_tick_s, int a_note_h,
-    long a_tick_f, int a_note_l, select_action_e a_action
+    midipulse a_tick_s, int a_note_h,
+    midipulse a_tick_f, int a_note_l, select_action_e a_action
 )
 {
     int result = 0;
@@ -795,8 +789,8 @@ sequence::select_note_events
         event & er = DREF(i);
         if (er.get_note() <= a_note_h && er.get_note() >= a_note_l)
         {
-            long tick_s = 0;            // must be initialized
-            long tick_f = 0;            // must be initialized
+            midipulse tick_s = 0;            // must be initialized
+            midipulse tick_f = 0;            // must be initialized
             if (er.is_linked())
             {
                 event * ev = er.get_linked();       // pointer
@@ -874,7 +868,7 @@ sequence::select_note_events
             else
             {
                 tick_s = tick_f = er.get_timestamp();
-                if (tick_s  >= a_tick_s - 16 && tick_f <= a_tick_f)
+                if (tick_s >= a_tick_s - 16 && tick_f <= a_tick_f)
                 {
                     if (a_action == e_select || a_action == e_select_one)
                     {
@@ -939,7 +933,7 @@ sequence::select_note_events
 int
 sequence::select_events
 (
-    long tick_s, long tick_f,
+    midipulse tick_s, midipulse tick_f,
     midibyte status, midibyte cc,
     select_action_e action
 )
@@ -1033,7 +1027,7 @@ sequence::unselect ()
  */
 
 void
-sequence::move_selected_notes (long delta_tick, int delta_note)
+sequence::move_selected_notes (midipulse delta_tick, int delta_note)
 {
     automutex locker(m_mutex);
     mark_selected();
@@ -1051,11 +1045,17 @@ sequence::move_selected_notes (long delta_tick, int delta_note)
             )
             {
                 bool noteon = e.is_note_on();
-                long timestamp = e.get_timestamp() + delta_tick;
+                midipulse timestamp = e.get_timestamp() + delta_tick;
                 if (timestamp > m_length)
                     timestamp -= m_length;
 
-                if (timestamp < 0)
+                /*
+                 * We will not even worry about this issue unless it bites us.
+                 * Really unlikely in 64-bit code, and even in 32-bit code.
+                 * See midibyte.hpp for more discussion.
+                 */
+
+                 if (timestamp < 0)
                     timestamp += m_length;
 
                 if ((timestamp == 0) && ! noteon)
@@ -1084,11 +1084,11 @@ sequence::move_selected_notes (long delta_tick, int delta_note)
  */
 
 void
-sequence::stretch_selected (long delta_tick)
+sequence::stretch_selected (midipulse delta_tick)
 {
     automutex locker(m_mutex);
-    int first_ev = 0x7fffffff;       // INT_MAX /* timestamp lower limit */
-    int last_ev = 0x00000000;                   /* timestamp upper limit */
+    unsigned first_ev = 0x7fffffff;       // INT_MAX /* timestamp lower limit */
+    unsigned last_ev = 0x00000000;                   /* timestamp upper limit */
     for (event_list::iterator i = m_events.begin(); i != m_events.end(); i++)
     {
         event & er = DREF(i);
@@ -1102,8 +1102,8 @@ sequence::stretch_selected (long delta_tick)
                 last_ev = e->get_timestamp();
         }
     }
-    int old_len = last_ev - first_ev;
-    int new_len = old_len + delta_tick;
+    unsigned old_len = last_ev - first_ev;
+    unsigned new_len = old_len + delta_tick;
     if (new_len > 1)
     {
         float ratio = float(new_len) / float(old_len);
@@ -1117,7 +1117,7 @@ sequence::stretch_selected (long delta_tick)
                 event new_e = *e;
                 new_e.set_timestamp
                 (
-                    long(ratio * (e->get_timestamp() - first_ev)) + first_ev
+                    midipulse(ratio * (e->get_timestamp() - first_ev)) + first_ev
                 );
                 new_e.unmark();
                 add_event(new_e);
@@ -1135,7 +1135,7 @@ sequence::stretch_selected (long delta_tick)
  */
 
 void
-sequence::grow_selected (long delta_tick)
+sequence::grow_selected (midipulse delta_tick)
 {
     mark_selected();                    /* already locked */
     automutex locker(m_mutex);
@@ -1146,7 +1146,7 @@ sequence::grow_selected (long delta_tick)
         {
             event * on = &er;
             event * off = er.get_linked();
-            long len = off->get_timestamp() + delta_tick;
+            midipulse len = off->get_timestamp() + delta_tick;
 
             /*
              * If timestamp + delta is greater that m_length, we do round
@@ -1155,6 +1155,10 @@ sequence::grow_selected (long delta_tick)
 
             if (len > m_length)
                 len -= m_length;
+
+            /*
+             * Can this ever happen?
+             */
 
             if (len < 0)
                 len += m_length;
@@ -1271,7 +1275,7 @@ sequence::copy_selected ()
 #endif
     }
 
-    long first_tick = DREF(m_events_clipboard.begin()).get_timestamp();
+    midipulse first_tick = DREF(m_events_clipboard.begin()).get_timestamp();
     for
     (
         event_list::iterator i = m_events_clipboard.begin();
@@ -1293,7 +1297,7 @@ sequence::copy_selected ()
  */
 
 void
-sequence::paste_selected (long tick, int note)
+sequence::paste_selected (midipulse tick, int note)
 {
     automutex locker(m_mutex);
     event_list clipbd = m_events_clipboard;     /* copy clipboard           */
@@ -1372,7 +1376,7 @@ sequence::paste_selected (long tick, int note)
 bool
 sequence::change_event_data_range
 (
-    long tick_s, long tick_f,
+    midipulse tick_s, midipulse tick_f,
     midibyte status, midibyte cc,
     int data_s, int data_f
 )
@@ -1395,7 +1399,7 @@ sequence::change_event_data_range
         else
             good = match;                    /* correct status and not a cc   */
 
-        long tick = er.get_timestamp();
+        midipulse tick = er.get_timestamp();
         if (! (tick >= tick_s && tick <= tick_f))       /* in range?         */
             good = false;
 
@@ -1447,7 +1451,13 @@ sequence::change_event_data_range
  */
 
 void
-sequence::add_note (long tick, long length, int note, bool paint)
+sequence::add_note
+(
+    midipulse tick,
+    midipulse length,
+    int note,
+    bool paint
+)
 {
     automutex locker(m_mutex);
     if (tick >= 0 && note >= 0 && note < c_num_keys)
@@ -1504,6 +1514,53 @@ sequence::add_note (long tick, long length, int note, bool paint)
 }
 
 /**
+ *  Adds an event to the internal event list in a sorted manner.  Then it
+ *  reset the draw-marker and sets the dirty flag.
+ *
+ *  Currently, when reading a MIDI file [see the midifile::parse() function],
+ *  only the main events (notes, after-touch, pitch, program changes, etc.)
+ *  are added with this function.  So, we can rely on reading only playable
+ *  events into a sequence.  Well, actually, certain meta-events are also
+ *  read, to obtain channel, buss, and more settings.  Also read for a
+ *  sequence, if the global-sequence flag is not set, are the new key, scale,
+ *  and background sequence parameters.
+ *
+ *  This module (sequencer) adds all of those events as well, but it
+ *  can surely add other events.  We should assume that any events
+ *  added by sequencer are playable/usable.
+ *
+ * \threadsafe
+ *
+ * \warning
+ *      This pushing (and, in writing the MIDI file, the popping),
+ *      causes events with identical timestamps to be written in
+ *      reverse order.  Doesn't affect functionality, but it's puzzling
+ *      until one understands what is happening.  Actually, this is true only
+ *      in Seq24, we've fixed that behavior for Sequencer64.
+ *
+ * \param ep
+ *      Provide a reference to the event to be added; the event is copied into
+ *      the events container.
+ */
+
+bool
+sequence::add_event (const event & er)
+{
+    automutex locker(m_mutex);
+    bool result = m_events.add(er);     /* post/auto-sorts by time & rank   */
+    if (result)
+    {
+        reset_draw_marker();
+        set_dirty();
+    }
+    else
+    {
+        errprint("sequence::add_event(): failed");
+    }
+    return result;
+}
+
+/**
  *  Adds a event of a given status value and data values, at a given tick
  *  location.
  *
@@ -1517,7 +1574,7 @@ sequence::add_note (long tick, long length, int note, bool paint)
 void
 sequence::add_event
 (
-    long tick, midibyte status,
+    midipulse tick, midibyte status,
     midibyte d0, midibyte d1, bool paint
 )
 {
@@ -1762,7 +1819,7 @@ sequence::clear_triggers ()
 void
 sequence::add_trigger
 (
-    long tick, long len, long offset, bool fixoffset
+    midipulse tick, midipulse len, midipulse offset, bool fixoffset
 )
 {
     automutex locker(m_mutex);
@@ -1793,7 +1850,10 @@ sequence::add_trigger
  */
 
 bool
-sequence::intersect_triggers (long position, long & start, long & ender)
+sequence::intersect_triggers
+(
+    midipulse position, midipulse & start, midipulse & ender
+)
 {
     automutex locker(m_mutex);
     return m_triggers.intersect(position, start, ender);
@@ -1823,6 +1883,7 @@ sequence::intersect_triggers (long position, long & start, long & ender)
  *
  * \param note
  *      The destination for the note of the matching event.
+ *      Why is this an int value???
  *
  * \return
  *      Returns true if a event was found whose start/end ticks
@@ -1833,7 +1894,8 @@ sequence::intersect_triggers (long position, long & start, long & ender)
 bool
 sequence::intersect_notes
 (
-    long position, long position_note, long & start, long & ender, long & note
+    midipulse position, midipulse position_note,
+    midipulse & start, midipulse & ender, int & note
 )
 {
     automutex locker(m_mutex);
@@ -1904,17 +1966,18 @@ sequence::intersect_notes
 bool
 sequence::intersect_events
 (
-    long posstart, long posend, long status, long & start
+    midipulse posstart, midipulse posend,
+    midibyte status, midipulse & start
 )
 {
     automutex locker(m_mutex);
-    long poslength = posend - posstart;
+    midipulse poslength = posend - posstart;
     for (event_list::iterator on = m_events.begin(); on != m_events.end(); ++on)
     {
         event & eon = DREF(on);
         if (status == eon.get_status())
         {
-            long ts = eon.get_timestamp();
+            midipulse ts = eon.get_timestamp();
             if (ts <= posstart && posstart <= (ts + poslength))
             {
                 start = eon.get_timestamp();    /* side-effect return value */
@@ -1941,7 +2004,7 @@ sequence::intersect_events
  */
 
 void
-sequence::grow_trigger (long tickfrom, long tickto, long len)
+sequence::grow_trigger (midipulse tickfrom, midipulse tickto, midipulse len)
 {
     automutex locker(m_mutex);
     m_triggers.grow(tickfrom, tickto, len);
@@ -1954,7 +2017,7 @@ sequence::grow_trigger (long tickfrom, long tickto, long len)
  */
 
 void
-sequence::del_trigger (long tick)
+sequence::del_trigger (midipulse tick)
 {
     automutex locker(m_mutex);
     m_triggers.remove(tick);
@@ -1967,7 +2030,7 @@ sequence::del_trigger (long tick)
  */
 
 void
-sequence::set_trigger_offset (long trigger_offset)
+sequence::set_trigger_offset (midipulse trigger_offset)
 {
     automutex locker(m_mutex);
     m_trigger_offset = trigger_offset % m_length;
@@ -1991,7 +2054,7 @@ sequence::set_trigger_offset (long trigger_offset)
  */
 
 void
-sequence::split_trigger (trigger & trig, long splittick)
+sequence::split_trigger (trigger & trig, midipulse splittick)
 {
     automutex locker(m_mutex);
     m_triggers.split(trig, splittick);
@@ -2006,7 +2069,7 @@ sequence::split_trigger (trigger & trig, long splittick)
  */
 
 void
-sequence::split_trigger (long splittick)
+sequence::split_trigger (midipulse splittick)
 {
     automutex locker(m_mutex);
     m_triggers.split(splittick);
@@ -2022,7 +2085,7 @@ sequence::split_trigger (long splittick)
  */
 
 void
-sequence::adjust_trigger_offsets_to_length (long newlength)
+sequence::adjust_trigger_offsets_to_length (midipulse newlength)
 {
     automutex locker(m_mutex);
     m_triggers.adjust_offsets_to_length(newlength);
@@ -2035,7 +2098,7 @@ sequence::adjust_trigger_offsets_to_length (long newlength)
  */
 
 void
-sequence::copy_triggers (long starttick, long distance)
+sequence::copy_triggers (midipulse starttick, midipulse distance)
 {
     automutex locker(m_mutex);
     m_triggers.copy(starttick, distance);
@@ -2051,7 +2114,7 @@ sequence::copy_triggers (long starttick, long distance)
  */
 
 void
-sequence::move_triggers (long starttick, long distance, bool direction)
+sequence::move_triggers (midipulse starttick, midipulse distance, bool direction)
 {
     automutex locker(m_mutex);
     m_triggers.move(starttick, distance, direction);    // , m_length);
@@ -2067,7 +2130,7 @@ sequence::move_triggers (long starttick, long distance, bool direction)
  *      triggers are selected, then -1 is returned.
  */
 
-long
+midipulse
 sequence::selected_trigger_start ()
 {
     automutex locker(m_mutex);
@@ -2080,7 +2143,7 @@ sequence::selected_trigger_start ()
  * \threadsafe
  */
 
-long
+midipulse
 sequence::selected_trigger_end ()
 {
     automutex locker(m_mutex);
@@ -2110,7 +2173,7 @@ sequence::selected_trigger_end ()
 bool
 sequence::move_selected_triggers_to
 (
-    long tick, bool adjustoffset, int which
+    midipulse tick, bool adjustoffset, int which
 )
 {
     automutex locker(m_mutex);
@@ -2123,7 +2186,7 @@ sequence::move_selected_triggers_to
  * \threadsafe
  */
 
-long
+midipulse
 sequence::get_max_trigger ()
 {
     automutex locker(m_mutex);
@@ -2143,7 +2206,7 @@ sequence::get_max_trigger ()
  */
 
 bool
-sequence::get_trigger_state (long tick)
+sequence::get_trigger_state (midipulse tick)
 {
     automutex locker(m_mutex);
     return m_triggers.get_state(tick);
@@ -2162,7 +2225,7 @@ sequence::get_trigger_state (long tick)
  */
 
 bool
-sequence::select_trigger (long tick)
+sequence::select_trigger (midipulse tick)
 {
     automutex locker(m_mutex);
     return m_triggers.select(tick);
@@ -2322,7 +2385,7 @@ sequence::get_highest_note_event ()
 draw_type
 sequence::get_next_note_event
 (
-    long * a_tick_s, long * a_tick_f,
+    midipulse * a_tick_s, midipulse * a_tick_f,
     int * a_note, bool * a_selected, int * a_velocity
 )
 {
@@ -2402,7 +2465,7 @@ bool
 sequence::get_next_event
 (
     midibyte status, midibyte cc,
-    long * tick, midibyte * d0, midibyte * d1,
+    midipulse * tick, midibyte * d0, midibyte * d1,
     bool * selected
 )
 {
@@ -2433,7 +2496,7 @@ sequence::get_next_event
 bool
 sequence::get_next_trigger
 (
-    long * tick_on, long * tick_off, bool * selected, long * offset
+    midipulse * tick_on, midipulse * tick_off, bool * selected, midipulse * offset
 )
 {
     return m_triggers.next(tick_on, tick_off, selected, offset);
@@ -2454,7 +2517,7 @@ sequence::remove_all ()
  *  Returns the last tick played, and is used by the editor's idle function.
  */
 
-long
+midipulse
 sequence::get_last_tick ()
 {
     return (m_last_tick + (m_length - m_trigger_offset)) % m_length;
@@ -2498,13 +2561,13 @@ sequence::set_midi_bus (char mb)
  */
 
 void
-sequence::set_length (long len, bool adjust_triggers)
+sequence::set_length (midipulse len, bool adjust_triggers)
 {
     automutex locker(m_mutex);
     bool was_playing = get_playing();
     set_playing(false);                 /* turn everything off              */
-    if (len < (m_ppqn / 4))
-        len = (m_ppqn / 4);
+    if (len < midipulse(m_ppqn / 4))
+        len = midipulse(m_ppqn / 4);
 
     m_triggers.set_length(len);         /* must precede adjust call         */
     if (adjust_triggers)
@@ -2820,7 +2883,7 @@ void
 sequence::quantize_events
 (
     midibyte status, midibyte cc,
-    long snap_tick, int divide, bool linked
+    midipulse snap_tick, int divide, bool linked
 )
 {
     automutex locker(m_mutex);
@@ -2847,9 +2910,9 @@ sequence::quantize_events
             er.select();
             e.unmark();
 
-            long timestamp = e.get_timestamp();
-            long timestamp_remander = (timestamp % snap_tick);
-            long timestamp_delta = 0;
+            midipulse timestamp = e.get_timestamp();
+            midipulse timestamp_remander = (timestamp % snap_tick);
+            midipulse timestamp_delta = 0;
             if (timestamp_remander < snap_tick / 2)
                 timestamp_delta = - (timestamp_remander / divide);
             else

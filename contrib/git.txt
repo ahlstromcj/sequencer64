@@ -1,6 +1,6 @@
 Quick Reference for Git Processes
 Chris Ahlstrom
-2015-09-09 to 2015-11-10
+2015-09-09 to 2015-12-22
 
    https://github.com/Kunena/Kunena-Forum/wiki/
       Create-a-new-branch-with-git-and-manage-branches and others
@@ -67,5 +67,19 @@ Delete the branch on github:
 Caching your credentials (be careful!):
 
     $ git config credential.helper store
+
+Pulls and merges:
+
+    Step 1: From your project repository, check out a new branch and test
+            the changes.
+
+    $ git checkout -b TDeagan-mute_groups master
+    $ git pull https://github.com/TDeagan/sequencer64.git mute_groups
+
+    Step 2: Merge the changes and update on GitHub.
+
+    $ git checkout master
+    $ git merge --no-ff TDeagan-mute_groups
+    $ git push origin master
 
 # vim: sw=4 ts=4 wm=8 et ft=sh

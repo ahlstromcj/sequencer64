@@ -12,7 +12,7 @@
 This document describes how Sequencer64 parses a MIDI file.
 
 \page       midi_parsing_page MIDI File Parsing in Sequencer64
-\author     Chris Ahlstrom 2015-11-27
+\author     Chris Ahlstrom 2015-11-29
 
 \section midi_parsing_intro Introduction
 
@@ -334,13 +334,22 @@ After the delta time, this event consists of seven bytes of data:
    FF 58 04 nn dd cc bb
 \endverbatim
 
-The time signature is expressed as four numbers.  nn and dd represent
-the numerator and denominator of the time signature as it would be
-notated.  The denominator is a negative power of two:  2 represents a
-quarter-note, 3 represents an eighth-note, etc.  The cc parameter
-expresses the number of MIDI clocks in a metronome click.  The bb
-parameter expresses the number of notated 32nd-notes in a MIDI quarter-
-note (24 MIDI Clocks).
+The time signature is expressed as four numbers.  <code>nn</code> and
+<code>dd</code> represent the numerator and denominator of the time signature
+as it would be notated.  The numerator counts the number of beats in a measure
+(beats per measure or beats per bar).  The denominator is a negative power of
+two:  2 represents a quarter-note, 3 represents an eighth-note, etc.  The
+denominator specifies the unit of the beat (e.g. 4 or 8).  In
+Seq24/Sequencer64, this value is also called the "beat width".
+
+The <code>cc</code> parameter expresses the number of MIDI clocks (or "ticks",
+or "pulses") in a metronome click.  The standard MIDI clock ticks 24 times per
+quarter note, so a value of 6 would mean the metronome clicks every 1/8th note.
+
+The <code>bb</code> parameter expresses the number of notated 32nd-notes in a
+MIDI quarter- note (24 MIDI Clocks).  For example, a value of 16 means that the
+music plays two quarter notes for each quarter note metered out by the MIDI
+clock, so that the music plays at double speed.
 
 Example:
 

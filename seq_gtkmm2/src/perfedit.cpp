@@ -25,38 +25,25 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-26
+ * \updates       2015-12-06
  * \license       GNU GPLv2 or above
  *
  */
 
 #include <gtkmm/adjustment.h>
 #include <gtkmm/button.h>
-#include <gtkmm/window.h>
-#include <gtkmm/accelgroup.h>
 #include <gtkmm/box.h>
-#include <gtkmm/main.h>
 #include <gtkmm/menu.h>
 #include <gtkmm/menubar.h>
-#include <gtkmm/eventbox.h>
-#include <gtkmm/window.h>
 #include <gtkmm/table.h>
-#include <gtkmm/drawingarea.h>
-#include <gtkmm/widget.h>
 #include <gtkmm/scrollbar.h>
-#include <gtkmm/viewport.h>
 #include <gtkmm/combo.h>
 #include <gtkmm/label.h>
-#include <gtkmm/toolbar.h>
-#include <gtkmm/optionmenu.h>
 #include <gtkmm/togglebutton.h>
-#include <gtkmm/invisible.h>
 #include <gtkmm/separator.h>
-#include <gtkmm/tooltips.h>             // #include <gtkmm/tooltip.h>
-#include <gtkmm/invisible.h>
+#include <gtkmm/tooltips.h>
 #include <gtkmm/arrow.h>
 #include <gtkmm/image.h>
-
 #include <sigc++/bind.h>
 
 #include "gdk_basic_keys.h"
@@ -101,15 +88,18 @@ perfedit::perfedit
     bool second_perfedit,
     int ppqn
 ) :
-    gui_window_gtk2     (p, 750, 500),      /* set_size_request(700, 400) */
+    gui_window_gtk2     (p, 750, 500),
     m_peer_perfedit     (nullptr),
-    m_table             (manage(new Gtk::Table(6, 3, false))),
+    m_table             (manage(new Gtk::Table(6, 3, false))),  /* no matter */
     m_vadjust           (manage(new Gtk::Adjustment(0, 0, 1, 1, 1, 1))),
     m_hadjust           (manage(new Gtk::Adjustment(0, 0, 1, 1, 1, 1))),
     m_vscroll           (manage(new Gtk::VScrollbar(*m_vadjust))),
     m_hscroll           (manage(new Gtk::HScrollbar(*m_hadjust))),
     m_perfnames         (manage(new perfnames(perf(), *this, *m_vadjust))),
-    m_perfroll     (manage(new perfroll(perf(), *this, *m_hadjust, *m_vadjust))),
+    m_perfroll
+    (
+        manage(new perfroll(perf(), *this, *m_hadjust, *m_vadjust))
+    ),
     m_perftime          (manage(new perftime(perf(), *this, *m_hadjust))),
     m_menu_snap         (manage(new Gtk::Menu())),
     m_button_snap       (manage(new Gtk::Button())),
@@ -473,14 +463,14 @@ perfedit::set_guides ()
 {
     if (m_bw > 0 && m_snap > 0)
     {
-        long measure_pulses = m_ppqn * m_standard_bpm * m_bpm / m_bw;
-        long snap_pulses = measure_pulses / m_snap;
+        midipulse measure_pulses = m_ppqn * m_standard_bpm * m_bpm / m_bw;
+        midipulse snap_pulses = measure_pulses / m_snap;
 
         /*
          * long beat_pulses = m_ppqn * m_standard_bpm / m_bw;
          */
 
-        long beat_pulses = measure_pulses / m_bpm;
+        midipulse beat_pulses = measure_pulses / m_bpm;
         m_perfroll->set_guides(snap_pulses, measure_pulses, beat_pulses);
         m_perftime->set_guides(snap_pulses, measure_pulses);
     }
@@ -600,7 +590,7 @@ perfedit::timeout ()
 }
 
 /**
- *  This callback function calls the base-class on_realize() fucntion, and
+ *  This callback function calls the base-class on_realize() function, and
  *  then connects the perfedit::timeout() function to the Glib
  *  signal-timeout, with a redraw timeout of m_redraw_ms.
  */

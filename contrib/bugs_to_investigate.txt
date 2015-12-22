@@ -1,10 +1,11 @@
 Bugs and Upgrade Ideas
 Chris Ahlstrom
-2015-10-27 to 2015-11-27
+2015-10-27 to 2015-12-20
 
 In no particular order...  "y" means "in progress", and "x" means it is
 basically done.
 
+-  See BUG REPORTS below.
 -  In the pattern editor piano roll, implement Undo for the arrow keys in the
    same way as for the mouse.
 -  The "increase size of grid" button on the perfedit doesn't work, or at least
@@ -265,5 +266,35 @@ x  I forgotten instructions of use. 'p' to activate paint, 'P' (shift p) to
    >   
    >           if ( a_p0->state & GDK_CONTROL_MASK ){
       We've now incorporated this feature (2015-11-01).
+
+
+BUG REPORTS:
+
+Date: Sat, 19 Dec 2015 20:48:34 -0800                                             
+From: Tim Deagan <notifications@github.com>                                       
+To: ahlstromcj/sequencer64 <sequencer64@noreply.github.com>                       
+Cc: "C. Ahlstrom" <ahlstromcj@gmail.com>                                          
+Subject: Re: [sequencer64] Install-recursive and .seq24rc equivalent (#2)         
+
+Sorry to be so slow, all my free time is spent trying to get my upcoming          
+book across its jan15 finish line.  But (for deeply nerdy reasons,) I             
+always spend a bunch of my christmas vacation time learning new source            
+code, so I 've set up a Netbeans environment for sequencer64 (I have to           
+confess I'm a Windows developer for a living and really gravitate towards         
+IDEs.  I've worked in linux for decades, but linux as an IDE breaks my            
+heart.)                                                                           
+
+In any event, after some code surfing and debugging, it looks like a lot of
+the odd behavior I experience with mute groups is possibly because of the
+line: if ((i == m_playing_screen) && m_tracks_mute_state[j])
+in perform::mute_group_tracks () isn't working as I imagined it should.
+
+Gdb tells me that m_playing_screen never changes from 0 regardless of the
+m_screenset value.  I believe this is why, no matter what screen you're on
+when you hit a mute group key, it ignores that screen and applies the mute
+group to the first screen.
+
+I'll try i == m_screenset as an alternative sometime in the next few days.
+I just wanted to let you know I was still thinking about this.
 
 

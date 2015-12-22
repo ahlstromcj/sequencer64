@@ -28,12 +28,13 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-28
+ * \updates       2015-12-14
  * \license       GNU GPLv2 or above
  *
  *  This module also declares/defines the various constants, status-byte
  *  values, or data values for MIDI events.
  *
+ *  This class is now a base class, so that we can manage "editable events".
  */
 
 #include <string>                       /* used in to_string()          */
@@ -53,38 +54,65 @@ namespace seq64
  *  This highest bit of the status byte is always 1.
  */
 
-const midibyte EVENT_STATUS_BIT        = 0x80;
+const midibyte EVENT_STATUS_BIT         = 0x80;
 
 /**
+ *  Channel Voice Messages.
+ *
  *  The following MIDI events are channel messages.  The comments represent
- *  the one or two data-bytes.
+ *  the one or two data-bytes of the message.
+ *
+ *  Note that Channel Mode Messages use the same code as the Control Change,
+ *  but uses reserved controller numbers ranging from 122 to 127.
  */
 
-const midibyte EVENT_NOTE_OFF          = 0x80;     // 0kkkkkkk 0vvvvvvv
-const midibyte EVENT_NOTE_ON           = 0x90;     // 0kkkkkkk 0vvvvvvv
-const midibyte EVENT_AFTERTOUCH        = 0xA0;     // 0kkkkkkk 0vvvvvvv
-const midibyte EVENT_CONTROL_CHANGE    = 0xB0;     // 0ccccccc 0vvvvvvv
-const midibyte EVENT_PROGRAM_CHANGE    = 0xC0;     // 0ppppppp
-const midibyte EVENT_CHANNEL_PRESSURE  = 0xD0;     // 0vvvvvvv
-const midibyte EVENT_PITCH_WHEEL       = 0xE0;     // 0lllllll 0mmmmmmm
+const midibyte EVENT_NOTE_OFF           = 0x80;      // 0kkkkkkk 0vvvvvvv
+const midibyte EVENT_NOTE_ON            = 0x90;      // 0kkkkkkk 0vvvvvvv
+const midibyte EVENT_AFTERTOUCH         = 0xA0;      // 0kkkkkkk 0vvvvvvv
+const midibyte EVENT_CONTROL_CHANGE     = 0xB0;      // 0ccccccc 0vvvvvvv
+const midibyte EVENT_PROGRAM_CHANGE     = 0xC0;      // 0ppppppp
+const midibyte EVENT_CHANNEL_PRESSURE   = 0xD0;      // 0vvvvvvv
+const midibyte EVENT_PITCH_WHEEL        = 0xE0;      // 0lllllll 0mmmmmmm
 
 /**
- *  The following MIDI events have no channel.
+ *  System Messages.
+ *
+ *  The following MIDI events have no channel.  We have included redundant
+ *  constant variables for the SysEx Start and End bytes just to make it
+ *  clear that they are part of this sequence of values, though usually
+ *  treated separately.
+ *
+ *  Only the following constants are followed by some data bytes:
+ *
+ *      -   EVENT_MIDI_SYSEX            = 0xF0
+ *      -   EVENT_MIDI_QUARTER_FRAME    = 0xF1      // undefined?
+ *      -   EVENT_MIDI_SONG_POS         = 0xF2
+ *      -   EVENT_MIDI_SONG_SELECT      = 0xF3
  */
 
-const midibyte EVENT_GET_CHAN_MASK     = 0x0F;
-const midibyte EVENT_CLEAR_CHAN_MASK   = 0xF0;
-const midibyte EVENT_MIDI_QUAR_FRAME   = 0xF1;     // not used
-const midibyte EVENT_MIDI_SONG_POS     = 0xF2;
-const midibyte EVENT_MIDI_SONG_SELECT  = 0xF3;     // not used
-const midibyte EVENT_MIDI_TUNE_SELECT  = 0xF6;     // not used
-const midibyte EVENT_MIDI_CLOCK        = 0xF8;
-const midibyte EVENT_MIDI_START        = 0xFA;
-const midibyte EVENT_MIDI_CONTINUE     = 0xFB;
-const midibyte EVENT_MIDI_STOP         = 0xFC;
-const midibyte EVENT_MIDI_ACTIVE_SENS  = 0xFE;     // not used
-const midibyte EVENT_MIDI_RESET        = 0xFF;     // not used
-const midibyte EVENT_NULL_CHANNEL      = 0xFF;
+const midibyte EVENT_MIDI_SYSEX         = 0xF0;      // redundant, see below
+const midibyte EVENT_MIDI_QUARTER_FRAME = 0xF1;      // undefined?
+const midibyte EVENT_MIDI_SONG_POS      = 0xF2;
+const midibyte EVENT_MIDI_SONG_SELECT   = 0xF3;      // not used
+const midibyte EVENT_MIDI_SONG_F4       = 0xF4;      // undefined
+const midibyte EVENT_MIDI_SONG_F5       = 0xF5;      // undefined
+const midibyte EVENT_MIDI_TUNE_SELECT   = 0xF6;      // not used in seq24
+const midibyte EVENT_MIDI_SYSEX_END     = 0xF7;      // redundant, see below
+const midibyte EVENT_MIDI_CLOCK         = 0xF8;
+const midibyte EVENT_MIDI_SONG_F9       = 0xF9;      // undefined
+const midibyte EVENT_MIDI_START         = 0xFA;
+const midibyte EVENT_MIDI_CONTINUE      = 0xFB;
+const midibyte EVENT_MIDI_STOP          = 0xFC;
+const midibyte EVENT_MIDI_SONG_FD       = 0xFD;      // undefined
+const midibyte EVENT_MIDI_ACTIVE_SENS   = 0xFE;      // not used in seq24
+const midibyte EVENT_MIDI_RESET         = 0xFF;      // not used in seq24
+
+/**
+ *  0xFF is a MIDI "escape code" used in MIDI files to introduce a MIDI meta
+ *  event.
+ */
+
+const midibyte EVENT_MIDI_META         = 0xFF;      // an escape code
 
 /**
  *  A MIDI System Exclusive (SYSEX) message starts with F0, followed
@@ -94,6 +122,28 @@ const midibyte EVENT_NULL_CHANNEL      = 0xFF;
 
 const midibyte EVENT_SYSEX             = 0xF0;
 const midibyte EVENT_SYSEX_END         = 0xF7;
+const midibyte EVENT_SYSEX_CONTINUE    = 0xF7;
+
+/**
+ *  This value of 0xFF is Sequencer64's channel value that indicates that
+ *  the event's m_channel value is bogus.  However, it also means that the
+ *  channel is encoded in the m_status byte itself.  This is our work around
+ *  to be able to hold a multi-channel SMF 0 track in a sequence.  In a
+ *  Sequencer64 SMF 0 track, every event has a channel.  In a Sequencer64 SMF
+ *  1 track, the events do not have a channel.  Instead, the channel is a
+ *  global value of the sequence, and is stuffed into each event when the
+ *  event is played or is written to a MIDI file.
+ */
+
+const midibyte EVENT_NULL_CHANNEL      = 0xFF;
+
+/**
+ *  These file masks are used to obtain or to mask off the channel data from a
+ *  status byte.
+ */
+
+const midibyte EVENT_GET_CHAN_MASK     = 0x0F;
+const midibyte EVENT_CLEAR_CHAN_MASK   = 0xF0;
 
 /**
  *  Provides events for management of MIDI events.
@@ -115,11 +165,12 @@ class event
 
 private:
 
-    /*
-     *  Provides the MIDI timestamp in ticks.
+    /**
+     *  Provides the MIDI timestamp in ticks, otherwise known as the "pulses"
+     *  in "pulses per quarter note" (PPQN).
      */
 
-    unsigned long m_timestamp;
+    midipulse m_timestamp;
 
     /**
      *  This is the status byte without the channel.  The channel will be
@@ -132,7 +183,8 @@ private:
     /**
      *  In order to be able to handle MIDI channel-splitting of an SMF 0 file,
      *  we need to store the channel, even if we override it when playing the
-     *  MIDI data.
+     *  MIDI data.  This member adds another 4 bytes to the event object, most
+     *  likely.
      */
 
     midibyte m_channel;
@@ -146,8 +198,8 @@ private:
 
     /**
      *  Points to the data buffer for SYSEX messages.
-     *
-     *  This really ought to be a Boost or STD scoped pointer.
+     *  This really ought to be a Boost or STD scoped pointer.  Currently, it
+     *  doesn't seem to be used.
      */
 
     midibyte * m_sysex;
@@ -156,7 +208,7 @@ private:
      *  Gives the size of the SYSEX message.
      */
 
-    long m_size;
+    int m_sysex_size;
 
     /**
      *  This event is used to link Note Ons and Offs together.
@@ -194,7 +246,7 @@ public:
     event ();
     event (const event & rhs);
     event & operator = (const event & rhs);
-    ~event ();
+    virtual ~event ();
 
     /*
      * Operator overload, the only one needed for sorting events in a list
@@ -207,7 +259,7 @@ public:
      * \setter m_timestamp
      */
 
-    void set_timestamp (unsigned long time)
+    void set_timestamp (midipulse time)
     {
         m_timestamp = time;
     }
@@ -216,7 +268,7 @@ public:
      * \getter m_timestamp
      */
 
-    long get_timestamp () const
+    midipulse get_timestamp () const
     {
         return m_timestamp;
     }
@@ -241,23 +293,24 @@ public:
     }
 
     /**
-     *  Static test for channel messages/statuses.
+     *  Static test for channel messages/statuses.  This function requires that
+     *  the channel data have already been masked off.
      *
-     * \param msg
+     * \param m
      *      The channel status or message byte to be tested.
      *
      * \return
      *      Returns true if the byte represents a MIDI channel message.
      */
 
-    static bool is_channel_msg (midibyte msg)
+    static bool is_channel_msg (midibyte m)
     {
         return
         (
-            msg == EVENT_NOTE_ON        || msg == EVENT_NOTE_OFF ||
-            msg == EVENT_AFTERTOUCH     || msg == EVENT_CONTROL_CHANGE ||
-            msg == EVENT_PROGRAM_CHANGE || msg == EVENT_CHANNEL_PRESSURE ||
-            msg == EVENT_PITCH_WHEEL
+            m == EVENT_NOTE_ON        || m == EVENT_NOTE_OFF ||
+            m == EVENT_AFTERTOUCH     || m == EVENT_CONTROL_CHANGE ||
+            m == EVENT_PROGRAM_CHANGE || m == EVENT_CHANNEL_PRESSURE ||
+            m == EVENT_PITCH_WHEEL
         );
     }
 
@@ -265,7 +318,7 @@ public:
      *  Static test for channel messages that have only one data byte.
      *  The rest have two.
      *
-     * \param msg
+     * \param m
      *      The channel status or message byte to be tested.
      *
      * \return
@@ -274,15 +327,15 @@ public:
      *      it might not be a channel message at all, so be careful.
      */
 
-    static bool is_one_byte_msg (midibyte msg)
+    static bool is_one_byte_msg (midibyte m)
     {
-        return msg == EVENT_PROGRAM_CHANGE || msg == EVENT_CHANNEL_PRESSURE;
+        return m == EVENT_PROGRAM_CHANGE || m == EVENT_CHANNEL_PRESSURE;
     }
 
     /**
      *  Static test for channel messages that have two data bytes.
      *
-     * \param msg
+     * \param m
      *      The channel status or message byte to be tested.
      *
      * \return
@@ -291,13 +344,31 @@ public:
      *      it might not be a channel message at all, so be careful.
      */
 
-    static bool is_two_byte_msg (midibyte msg)
+    static bool is_two_byte_msg (midibyte m)
     {
         return
         (
-            msg == EVENT_NOTE_ON        || msg == EVENT_NOTE_OFF ||
-            msg == EVENT_AFTERTOUCH     || msg == EVENT_CONTROL_CHANGE ||
-            msg == EVENT_PITCH_WHEEL
+            m == EVENT_NOTE_ON        || m == EVENT_NOTE_OFF ||
+            m == EVENT_AFTERTOUCH     || m == EVENT_CONTROL_CHANGE ||
+            m == EVENT_PITCH_WHEEL
+        );
+    }
+
+    /**
+     *  Static test for messages that involve notes and velocity.
+     *
+     * \param m
+     *      The channel status or message byte to be tested.
+     *
+     * \return
+     *      Returns true if the byte represents a MIDI note message.
+     */
+
+    static bool is_note_msg (midibyte m)
+    {
+        return
+        (
+            m == EVENT_NOTE_ON || m == EVENT_NOTE_OFF || m == EVENT_AFTERTOUCH
         );
     }
 
@@ -316,7 +387,7 @@ public:
         a || (! a && b)  =>  a || b
 \endverbatim
      *
-     * \param msg
+     * \param m
      *      The channel status or message byte to be tested.
      *
      * \param cc
@@ -334,10 +405,10 @@ public:
 
     static inline bool is_desired_cc_or_not_cc
     (
-        midibyte msg, midibyte cc, midibyte datum
+        midibyte m, midibyte cc, midibyte datum
     )
     {
-        return (msg != EVENT_CONTROL_CHANGE) || (datum == cc);
+        return (m != EVENT_CONTROL_CHANGE) || (datum == cc);
     }
 
     /**
@@ -351,13 +422,26 @@ public:
      *      Returns a value ranging from 0 to a_mod-1.
      */
 
-    void mod_timestamp (unsigned long a_mod)
+    void mod_timestamp (midipulse a_mod)
     {
         m_timestamp %= a_mod;
     }
 
     void set_status (midibyte status);
     void set_status (midibyte eventcode, midibyte channel);
+
+    /**
+     *  Sets the channel "nybble", without modifying the status "nybble".
+     *  Note that the sequence channel generally overrides this value.
+     *
+     * \param channel
+     *      The channel byte.
+     */
+
+    void set_channel (midibyte channel)
+    {
+        m_channel = channel;
+    }
 
     /**
      * \getter m_status
@@ -458,8 +542,8 @@ public:
         m_data[1] = (m_data[1] - 1) & 0x7F;
     }
 
-    void start_sysex ();
-    bool append_sysex (midibyte * data, long size);
+    void restart_sysex ();
+    bool append_sysex (midibyte * data, int len);
 
     /**
      * \getter m_sysex
@@ -471,21 +555,21 @@ public:
     }
 
     /**
-     * \setter m_size
+     * \setter m_sysex_size
      */
 
-    void set_size (long a_size)
+    void set_sysex_size (int len)
     {
-        m_size = a_size;
+        m_sysex_size = len;
     }
 
     /**
-     * \getter m_size
+     * \getter m_sysex_size
      */
 
-    long get_size () const
+    int get_sysex_size () const
     {
-        return m_size;
+        return m_sysex_size;
     }
 
     /**
@@ -612,7 +696,7 @@ public:
 
     void make_clock ()
     {
-        m_status = midibyte(EVENT_MIDI_CLOCK);
+        m_status = EVENT_MIDI_CLOCK;
     }
 
     /**
@@ -696,7 +780,7 @@ public:
     void load (std::ifstream & file);
 #endif
 
-};
+};          // class event
 
 /*
  * Global functions in the seq64 namespace.

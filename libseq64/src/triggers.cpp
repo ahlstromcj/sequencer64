@@ -156,12 +156,12 @@ triggers::pop_undo ()       // was pop_trigger_undo ()
  */
 
 bool
-triggers::play (long & start_tick, long & end_tick)
+triggers::play (midipulse & start_tick, midipulse & end_tick)
 {
     bool result = false;       /* turns off after frame play */
-    long trigger_offset = 0;
+    midipulse trigger_offset = 0;
     bool trigger_state = false;
-    long trigger_tick = 0;
+    midipulse trigger_tick = 0;
     for (List::iterator i = m_triggers.begin(); i != m_triggers.end(); ++i)
     {
         if (i->tick_start() <= end_tick)
@@ -219,8 +219,8 @@ triggers::play (long & start_tick, long & end_tick)
  *      and the original offset is returned.
  */
 
-long
-triggers::adjust_offset (long offset)
+midipulse
+triggers::adjust_offset (midipulse offset)
 {
     if (m_length > 0)
     {
@@ -273,7 +273,7 @@ triggers::adjust_offset (long offset)
 void
 triggers::add
 (
-    long tick, long len, long offset, bool fixoffset
+    midipulse tick, midipulse len, midipulse offset, bool fixoffset
 )
 {
     trigger t;
@@ -329,7 +329,7 @@ triggers::add
  */
 
 bool
-triggers::intersect (long position, long & start, long & ender)
+triggers::intersect (midipulse position, midipulse & start, midipulse & ender)
 {
     for (List::iterator i = m_triggers.begin(); i != m_triggers.end(); ++i)
     {
@@ -364,14 +364,14 @@ triggers::intersect (long position, long & start, long & ender)
  */
 
 void
-triggers::grow (long tickfrom, long tickto, long len)
+triggers::grow (midipulse tickfrom, midipulse tickto, midipulse len)
 {
     for (List::iterator i = m_triggers.begin(); i != m_triggers.end(); ++i)
     {
         if (i->tick_start() <= tickfrom && tickfrom <= i->tick_end())
         {
-            long start = i->tick_start();
-            long ender = i->tick_end();
+            midipulse start = i->tick_start();
+            midipulse ender = i->tick_end();
             if (tickto < start)
                 start = tickto;
 
@@ -393,7 +393,7 @@ triggers::grow (long tickfrom, long tickto, long len)
  */
 
 void
-triggers::remove (long tick)
+triggers::remove (midipulse tick)
 {
     for (List::iterator i = m_triggers.begin(); i != m_triggers.end(); ++i)
     {
@@ -421,13 +421,13 @@ triggers::remove (long tick)
  */
 
 void
-triggers::split (trigger & trig, long splittick)
+triggers::split (trigger & trig, midipulse splittick)
 {
-    long new_tick_end = trig.tick_end();
-    long new_tick_start = splittick;
+    midipulse new_tick_end = trig.tick_end();
+    midipulse new_tick_start = splittick;
     trig.tick_end(splittick - 1);
 
-    long len = new_tick_end - new_tick_start;
+    midipulse len = new_tick_end - new_tick_start;
     if (len > 1)
         add(new_tick_start, len + 1, trig.offset());
 }
@@ -441,13 +441,13 @@ triggers::split (trigger & trig, long splittick)
  */
 
 void
-triggers::split (long splittick)
+triggers::split (midipulse splittick)
 {
     for (List::iterator i = m_triggers.begin(); i != m_triggers.end(); ++i)
     {
         if (i->tick_start() <= splittick && splittick <= i->tick_end())
         {
-            long tick = (i->tick_end() - i->tick_start() + 1) / 2;
+            midipulse tick = (i->tick_end() - i->tick_start() + 1) / 2;
             split(*i, i->tick_start() + tick);
             break;
         }
@@ -462,7 +462,7 @@ triggers::split (long splittick)
  */
 
 void
-triggers::adjust_offsets_to_length (long newlength)
+triggers::adjust_offsets_to_length (midipulse newlength)
 {
     for (List::iterator i = m_triggers.begin(); i != m_triggers.end(); ++i)
     {
@@ -471,12 +471,12 @@ triggers::adjust_offsets_to_length (long newlength)
         i->offset(adjust_offset(i->offset()));
         i->offset(m_length - i->offset());               /* flip */
 
-        long inverse_offset = m_length - (i->tick_start() % m_length);
-        long local_offset = (inverse_offset - i->offset());
+        midipulse inverse_offset = m_length - (i->tick_start() % m_length);
+        midipulse local_offset = (inverse_offset - i->offset());
         local_offset %= m_length;
 
-        long inverse_offset_new = newlength - (i->tick_start() % newlength);
-        long new_offset = inverse_offset_new - local_offset;
+        midipulse inverse_offset_new = newlength - (i->tick_start() % newlength);
+        midipulse new_offset = inverse_offset_new - local_offset;
 
         /** COMMON CODE? **/
 
@@ -527,10 +527,10 @@ L       R
  */
 
 void
-triggers::copy (long starttick, long distance)
+triggers::copy (midipulse starttick, midipulse distance)
 {
-    long from_start_tick = starttick + distance;
-    long from_end_tick = from_start_tick + distance - 1;
+    midipulse from_start_tick = starttick + distance;
+    midipulse from_end_tick = from_start_tick + distance - 1;
     move(starttick, distance, true);
     for (List::iterator i = m_triggers.begin(); i != m_triggers.end(); ++i)
     {
@@ -563,10 +563,10 @@ triggers::copy (long starttick, long distance)
 void
 triggers::move
 (
-    long starttick, long distance, bool direction
+    midipulse starttick, midipulse distance, bool direction
 )
 {
-    long endtick = starttick + distance;
+    midipulse endtick = starttick + distance;
     for (List::iterator i = m_triggers.begin(); i != m_triggers.end(); ++i)
     {
         if (i->tick_start() < starttick && starttick < i->tick_end())
@@ -603,7 +603,7 @@ triggers::move
         {
             if (i->tick_start() >= starttick)
             {
-                long added = i->tick_start() + distance;
+                midipulse added = i->tick_start() + distance;
                 i->tick_start(added);
                 added = i->tick_end() + distance;
                 i->tick_end(added);
@@ -615,7 +615,7 @@ triggers::move
         {
             if (i->tick_start() >= endtick)
             {
-                long deducted = i->tick_start() - distance;
+                midipulse deducted = i->tick_start() - distance;
                 i->tick_start(deducted);
                 deducted = i->tick_end() - distance;
                 i->tick_end(deducted);
@@ -634,13 +634,13 @@ triggers::move
  *
  * \return
  *      Returns the tick_start() value of the last-selected trigger.  If no
- *      triggers are selected, then -1 is returned.
+ *      triggers are selected, then midipulse(-1) is returned.
  */
 
-long
+midipulse
 triggers::get_selected_start ()
 {
-    long result = -1;
+    midipulse result = midipulse(-1);
     for (List::iterator t = m_triggers.begin(); t != m_triggers.end(); ++t)
     {
         if (t->selected())
@@ -654,13 +654,13 @@ triggers::get_selected_start ()
  *
  * \return
  *      Returns the tick_end() value of the last-selected trigger.  If no
- *      triggers are selected, then -1 is returned.
+ *      triggers are selected, then midipulse(-1) is returned.
  */
 
-long
+midipulse
 triggers::get_selected_end ()
 {
-    long result = -1;
+    midipulse result = midipulse(-1);
     for (List::iterator t = m_triggers.begin(); t != m_triggers.end(); ++t)
     {
         if (t->selected())
@@ -697,12 +697,12 @@ triggers::get_selected_end ()
 bool
 triggers::move_selected
 (
-    long tick, bool fixoffset, int which
+    midipulse tick, bool fixoffset, int which
 )
 {
     bool result = true;
-    long mintick = 0;
-    long maxtick = 0x7ffffff;
+    midipulse mintick = 0;
+    midipulse maxtick = 0x7ffffff;
     List::iterator s = m_triggers.begin();
     for (List::iterator i = m_triggers.begin(); i != m_triggers.end(); i++)
     {
@@ -717,10 +717,10 @@ triggers::move_selected
             if (++i != m_triggers.end())
                 maxtick = i->tick_start() - 1;
 
-            long deltatick = 0;
+            midipulse deltatick = 0;
             if (which == 1)
             {
-                long ppqn_start = s->tick_start() + (m_ppqn / 8);
+                midipulse ppqn_start = s->tick_start() + (m_ppqn / 8);
                 deltatick = tick - s->tick_end();
                 if (deltatick > 0 && tick > maxtick)
                     deltatick = maxtick - s->tick_end();
@@ -730,7 +730,7 @@ triggers::move_selected
             }
             else if (which == 0)
             {
-                long ppqn_end = s->tick_end() - (m_ppqn / 8);
+                midipulse ppqn_end = s->tick_end() - (m_ppqn / 8);
                 deltatick = tick - s->tick_start();
                 if (deltatick < 0 && tick < mintick)
                     deltatick = mintick - s->tick_start();
@@ -777,10 +777,10 @@ triggers::move_selected
  *  Get the ending value of the last trigger in the trigger-list.
  */
 
-long
+midipulse
 triggers::get_maximum ()
 {
-    long result = 0;
+    midipulse result = 0;
     if (m_triggers.size() > 0)
         result = m_triggers.back().tick_end();
 
@@ -799,7 +799,7 @@ triggers::get_maximum ()
  */
 
 bool
-triggers::get_state (long tick)
+triggers::get_state (midipulse tick)
 {
     bool result = false;
     for (List::iterator i = m_triggers.begin(); i != m_triggers.end(); ++i)
@@ -826,7 +826,7 @@ triggers::get_state (long tick)
  */
 
 bool
-triggers::select (long tick)
+triggers::select (midipulse tick)
 {
     bool result = false;
     for (List::iterator i = m_triggers.begin(); i != m_triggers.end(); ++i)
@@ -901,11 +901,12 @@ triggers::paste ()
 {
     if (m_trigger_copied)
     {
-        long len = m_clipboard.tick_end() - m_clipboard.tick_start() + 1;
+        midipulse len = m_clipboard.tick_end() - m_clipboard.tick_start() + 1;
         add(m_clipboard.tick_end() + 1, len, m_clipboard.offset() + len);
         m_clipboard.tick_start(m_clipboard.tick_end() + 1);
         m_clipboard.tick_end(m_clipboard.tick_start() + len - 1);
-        long offset = m_clipboard.offset() + len;
+
+        midipulse offset = m_clipboard.offset() + len;
         m_clipboard.offset(adjust_offset(offset));
     }
 }
@@ -943,7 +944,7 @@ triggers::paste ()
 bool
 triggers::next
 (
-    long * tick_on, long * tick_off, bool * selected, long * offset
+    midipulse * tick_on, midipulse * tick_off, bool * selected, midipulse * offset
 )
 {
     while (m_iterator_draw_trigger != m_triggers.end())

@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-27
+ * \updates       2015-11-30
  * \license       GNU GPLv2 or above
  *
  *  The Seq24 MIDI file is a standard, Format 1 MIDI file, with some extra
@@ -208,16 +208,16 @@ private:
 
     bool parse_smf_0 (perform & p, int screenset);
     bool parse_smf_1 (perform & p, int screenset, bool is_smf0 = false);
-    unsigned long parse_prop_header (int file_size);
+    midilong parse_prop_header (int file_size);
     bool parse_proprietary_track (perform & a_perf, int file_size);
     int pow2 (int logbase2);
-    bool checklen (long len, midibyte type);
-    unsigned long read_long ();
-    unsigned short read_short ();
+    bool checklen (midilong len, midibyte type);
+    midilong read_long ();
+    midishort read_short ();
     midibyte read_byte ();
-    unsigned long read_varinum ();
-    void write_long (unsigned long);
-    void write_short (unsigned short);
+    midilong read_varinum ();
+    void write_long (midilong);
+    void write_short (midishort);
 
     /**
      *  A helper function to simplify reading midi_control data from the MIDI
@@ -246,13 +246,13 @@ private:
         m_char_list.push_back(c);
     }
 
-    void write_varinum (unsigned long);
+    void write_varinum (midilong);
     void write_track_name (const std::string & trackname);
     std::string read_track_name();
-    void write_seq_number (unsigned short seqnum);
+    void write_seq_number (midishort seqnum);
     int read_seq_number ();
     void write_track_end ();
-    void write_prop_header (unsigned long tag, long len);
+    void write_prop_header (midilong tag, long len);
     bool write_proprietary_track (perform & a_perf);
     long varinum_size (long len) const;
     long prop_item_size (long datalen) const;

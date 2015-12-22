@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-25
+ * \updates       2015-11-29
  * \license       GNU GPLv2 or above
  *
  *  Note that this representation is, in a sense, inside the mainwnd
@@ -333,8 +333,8 @@ mainwid::draw_sequence_on_pixmap (int seqnum)
             int highest_note = seq->get_highest_note_event();
             int height = highest_note - lowest_note + 2;
             int len  = seq->get_length();
-            long tick_s;
-            long tick_f;
+            midipulse tick_s;
+            midipulse tick_f;
             int note;
             bool selected;
             int velocity;
@@ -573,7 +573,7 @@ mainwid::draw_marker_on_sequence (int seqnum, int tick)
         tick += len - seq->get_trigger_offset();
         tick %= len;
 
-        long tick_x = tick * m_seqarea_seq_x / len;
+        midipulse tick_x = tick * m_seqarea_seq_x / len;
         draw_drawable
         (
             rectangle_x + m_last_tick_x[seqnum], rectangle_y + 1,
@@ -822,13 +822,27 @@ mainwid::on_button_release_event (GdkEventButton * p)
             )
             {
                 perf().new_sequence(current_sequence());
-                *(perf().get_sequence(current_sequence())) = m_moving_seq;
+
+                /*
+                 * Instead of using operator equal, use a better function.
+                 *
+                 * *(perf().get_sequence(current_sequence())) = m_moving_seq;
+                 */
+
+                perf().get_sequence(current_sequence())->
+                    partial_assign(m_moving_seq);
+
                 redraw(current_sequence());
             }
             else
             {
                 perf().new_sequence(m_old_seq);
-                *(perf().get_sequence(m_old_seq)) = m_moving_seq;
+
+                /*
+                 * *(perf().get_sequence(m_old_seq)) = m_moving_seq;
+                 */
+
+                perf().get_sequence(m_old_seq)->partial_assign(m_moving_seq);
                 redraw(m_old_seq);
             }
         }
@@ -878,7 +892,15 @@ mainwid::on_motion_notify_event (GdkEventMotion * p)
             {
                 m_old_seq = current_sequence();
                 m_moving = true;
-                m_moving_seq = *(perf().get_sequence(current_sequence()));
+
+                /*
+                 * m_moving_seq = *(perf().get_sequence(current_sequence()));
+                 */
+
+                m_moving_seq.partial_assign
+                (
+                    *(perf().get_sequence(current_sequence()))
+                );
                 perf().delete_sequence(current_sequence());
                 draw_sequence_on_pixmap(current_sequence());
                 draw_sequence_pixmap_on_window(current_sequence());

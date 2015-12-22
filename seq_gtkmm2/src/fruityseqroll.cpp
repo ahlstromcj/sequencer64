@@ -67,13 +67,14 @@ clamp (long val, long low, long hi)
 void
 FruitySeqRollInput::update_mouse_pointer (seqroll & sroll)
 {
-    long drop_tick;
+    midipulse drop_tick;
     int drop_note;
     sroll.convert_xy
     (
         sroll.current_x(), sroll.current_y(), drop_tick, drop_note
     );
-    long start, end, note;
+    midipulse start, end;
+    int note;                           // midibyte
     if
     (
         sroll.m_is_drag_pasting || sroll.m_selecting || sroll.m_moving ||
@@ -114,8 +115,8 @@ FruitySeqRollInput::update_mouse_pointer (seqroll & sroll)
 bool
 FruitySeqRollInput::on_button_press_event (GdkEventButton * a_ev, seqroll & sroll)
 {
-    long tick_s;
-    long tick_f;
+    midipulse tick_s;
+    midipulse tick_f;
     int note_h;
     int note_l;
     int norm_x, norm_y, snapped_x, snapped_y;
@@ -260,14 +261,15 @@ FruitySeqRollInput::on_button_press_event (GdkEventButton * a_ev, seqroll & srol
                     bool right_mouse_handle = false;
                     bool center_mouse_handle = false;
                     {
-                        long drop_tick;
-                        int drop_note;
+                        midipulse drop_tick;
+                        int drop_note;              // midibyte
                         sroll.convert_xy
                         (
                             sroll.m_drop_x, sroll.m_drop_y,
                             drop_tick, drop_note
                         );
-                        long start, end, note;
+                        midipulse start, end;
+                        int note;                   // midibyte
                         if
                         (
                             sroll.m_seq.intersect_notes
@@ -459,8 +461,8 @@ FruitySeqRollInput::on_button_release_event
     GdkEventButton * a_ev, seqroll & sroll
 )
 {
-    long tick_s;
-    long tick_f;
+    midipulse tick_s;
+    midipulse tick_f;
     int note_h;
     int note_l;
     int x, y, w, h;
@@ -473,7 +475,7 @@ FruitySeqRollInput::on_button_release_event
 
     int delta_x = sroll.current_x() - sroll.drop_x();
     int delta_y = sroll.current_y() - sroll.drop_y();
-    long delta_tick;
+    midipulse delta_tick;
     int delta_note;
 
     /* middle click, or ctrl- (???) left click button up */
@@ -495,7 +497,7 @@ FruitySeqRollInput::on_button_release_event
         }
     }
 
-    long int current_tick;
+    midipulse current_tick;
     int current_note;
     sroll.convert_xy
     (
@@ -659,7 +661,7 @@ FruitySeqRollInput::on_motion_notify_event
     }
 
     int note;
-    long tick;
+    midipulse tick;
     sroll.snap_y(sroll.m_current_y);
     sroll.convert_xy(0, sroll.m_current_y, tick, note);
     sroll.m_seqkeys_wid.set_hint_key(note);

@@ -506,8 +506,8 @@ seqroll::draw_progress_on_window ()
 void
 seqroll::draw_events_on (Glib::RefPtr<Gdk::Drawable> draw)
 {
-    long tick_s;
-    long tick_f;
+    midipulse tick_s;
+    midipulse tick_f;
     int note;
     int note_x, note_y, note_width, note_height;
     bool selected;
@@ -746,7 +746,7 @@ seqroll::force_draw ()
  */
 
 void
-seqroll::convert_xy (int a_x, int a_y, long & a_tick, int & a_note)
+seqroll::convert_xy (int a_x, int a_y, midipulse & a_tick, int & a_note)
 {
     a_tick = a_x * m_zoom;
     a_note = (c_rollarea_y - a_y - 2) / c_key_y;
@@ -759,7 +759,7 @@ seqroll::convert_xy (int a_x, int a_y, long & a_tick, int & a_note)
  */
 
 void
-seqroll::convert_tn (long a_ticks, int a_note, int & a_x, int & a_y)
+seqroll::convert_tn (midipulse a_ticks, int a_note, int & a_x, int & a_y)
 {
     a_x = a_ticks /  m_zoom;
     a_y = c_rollarea_y - ((a_note + 1) * c_key_y) - 1;
@@ -805,7 +805,7 @@ seqroll::xy_to_rect
 void
 seqroll::convert_tn_box_to_rect
 (
-    long a_tick_s, long a_tick_f, int a_note_h, int a_note_l,
+    midipulse a_tick_s, midipulse a_tick_f, int a_note_h, int a_note_l,
     int & a_x, int & a_y, int & a_w, int & a_h
 )
 {
@@ -823,8 +823,8 @@ seqroll::convert_tn_box_to_rect
 void
 seqroll::start_paste()
 {
-    long tick_s;
-    long tick_f;
+    midipulse tick_s;
+    midipulse tick_f;
     int note_h;
     int note_l;
     snap_x(m_current_x);

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-08-02
- * \updates       2015-11-22
+ * \updates       2015-11-29
  * \license       GNU GPLv2 or above
  *
  *  This code was extracted from seqevent to make that module more
@@ -51,7 +51,7 @@ namespace seq64
 void
 FruitySeqEventInput::update_mouse_pointer (seqevent & seqev)
 {
-    long tick_s, tick_w, tick_f, pos;
+    midipulse tick_s, tick_w, tick_f, pos;
     seqev.convert_x(seqev.m_current_x, tick_s);
     seqev.convert_x(c_eventevent_x, tick_w);
     tick_f = tick_s + tick_w;
@@ -102,7 +102,7 @@ FruitySeqEventInput::on_button_press_event
 )
 {
     bool result = false;
-    long tick_s, tick_w;
+    midipulse tick_s, tick_w;
     seqev.grab_focus();                 // NEW: I think this would be helpful
     seqev.convert_x(c_eventevent_x, tick_w);
     seqev.m_drop_x = seqev.m_current_x = int(a_ev->x) + seqev.m_scroll_offset_x;
@@ -119,7 +119,7 @@ FruitySeqEventInput::on_button_press_event
     else
     {
         int x, w;
-        long tick_f;
+        midipulse tick_f;
         if (SEQ64_CLICK_LEFT(a_ev->button))       /* Note 1   */
         {
             seqev.convert_x(seqev.m_drop_x, tick_s); /* x,y into tick/note    */
@@ -304,19 +304,19 @@ FruitySeqEventInput::on_button_release_event
 )
 {
     bool result = false;
-    long tick_s;
-    long tick_f;
+    midipulse tick_s;
+    midipulse tick_f;
     seqev.grab_focus();
     seqev.m_current_x = int(a_ev->x) + seqev.m_scroll_offset_x;;
     if (seqev.m_moving || m_is_drag_pasting)
         seqev.snap_x(seqev.m_current_x);
 
     int delta_x = seqev.m_current_x - seqev.m_drop_x;
-    long delta_tick;
+    midipulse delta_tick;
     if (SEQ64_CLICK_LEFT(a_ev->button))
     {
         int current_x = seqev.m_current_x;
-        long t_s, t_f;
+        midipulse t_s, t_f;
         seqev.snap_x(current_x);
         seqev.convert_x(current_x, t_s);
         t_f = t_s + (seqev.m_zoom);                 /* shift back a few ticks */
@@ -420,7 +420,7 @@ FruitySeqEventInput::on_motion_notify_event
 )
 {
     bool result = false;
-    long tick = 0;
+    midipulse tick = 0;
     seqev.m_current_x = (int) a_ev->x  + seqev.m_scroll_offset_x;
     if (seqev.m_moving_init)
     {

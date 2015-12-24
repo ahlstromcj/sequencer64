@@ -6,7 +6,7 @@ dnl \file          configure.ac
 dnl \library       Sequencer64
 dnl \author        Chris Ahlstrom
 dnl \date          2015-09-11
-dnl \update        2015-11-28
+dnl \update        2015-12-23
 dnl \version       $Revision$
 dnl \license       $XPC_SUITE_GPL_LICENSE$
 dnl
@@ -44,7 +44,7 @@ PACKAGE=sequencer64
 AC_DEFINE_UNQUOTED(PACKAGE, "$PACKAGE")
 AC_SUBST(PACKAGE)
 
-VERSION="0.9.9.11"
+VERSION="0.9.9.12"
 AC_DEFINE_UNQUOTED(VERSION, "$VERSION")
 AC_SUBST(VERSION)
 
@@ -423,8 +423,8 @@ dnl #define API_VERSION "0.9"             // already defined on command line
 
 AH_TOP(
 
-#define VERSION_DATE_SHORT "2015-12-22"
-#define VERSION "0.9.9.11"
+#define VERSION_DATE_SHORT "2015-12-23"
+#define VERSION "0.9.9.12"
 
 )
 

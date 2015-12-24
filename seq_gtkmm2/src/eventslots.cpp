@@ -263,15 +263,32 @@ eventslots::insert_event (const editable_event & edev)
             }
             else if (new_ts > bot_ts)               /* after the frame      */
             {
-                if (m_bottom_event_index < (m_display_count - 1))
+                /*
+                 * It's not the bottom index itself, but the difference
+                 * between the bottom and top index, that matters.
+                 *
+                 * if (m_bottom_event_index < (m_display_count - 1))
+                 */
+
+                int count_in_frame =
+                    m_bottom_event_index - m_top_event_index + 1;
+
+                if (count_in_frame < m_display_count)
                     m_bottom_event_index = increment_bottom();
             }
             else                                    /* within the frame     */
             {
-                if (m_bottom_event_index < (m_display_count - 1))
+                /*
+                 * if (m_bottom_event_index < (m_display_count - 1))
+                 */
+
+                int count_in_frame =
+                    m_bottom_event_index - m_top_event_index + 1;
+
+                if (count_in_frame < m_display_count)
                     m_bottom_event_index = increment_bottom();
                 else
-                    (void) increment_bottom();
+                    (void) increment_bottom();      // decrement instead?
 
                 if (new_ts < m_current_iterator->second.get_timestamp())
                     (void) increment_current();

@@ -25,9 +25,8 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-12-05
- * \updates       2015-12-19
+ * \updates       2015-12-25
  * \license       GNU GPLv2 or above
- *
  *
  * To consider:
  *
@@ -194,17 +193,17 @@ eventedit::eventedit
     m_editbox->set_border_width(4);
     m_optsbox->set_border_width(4);
     m_rightbox->set_border_width(1);
-    m_table->attach(*m_htopbox,    0, 4,  0,  1,   Gtk::FILL, Gtk::SHRINK, 8, 8);
+    m_table->attach(*m_htopbox,    0, 4,  0,  1,  Gtk::FILL, Gtk::SHRINK, 8, 8);
     m_table->attach(*m_eventslots, 0, 1,  1, 14,  Gtk::FILL, Gtk::FILL, 8, 8);
     m_table->attach
     (
         *m_vscroll, 1, 2, 1, 14, Gtk::SHRINK, Gtk::FILL | Gtk::EXPAND, 4, 4
     );
-    m_table->attach(*m_showbox,    2, 3,  1,  4,   Gtk::FILL, Gtk::SHRINK, 8, 8);
-    m_table->attach(*m_editbox,    2, 3,  4, 10,  Gtk::FILL, Gtk::SHRINK, 8, 8);
-    m_table->attach(*m_optsbox,    2, 3, 10, 13, Gtk::FILL, Gtk::SHRINK, 8, 8);
-    m_table->attach(*m_bottbox,    2, 3, 13, 14, Gtk::FILL, Gtk::SHRINK, 8, 8);
-    m_table->attach(*m_rightbox,   3, 4,  1, 14,  Gtk::SHRINK, Gtk::SHRINK, 2, 2);
+    m_table->attach(*m_showbox,  2, 3,  1,  4, Gtk::FILL, Gtk::SHRINK, 8, 8);
+    m_table->attach(*m_editbox,  2, 3,  4, 10, Gtk::FILL, Gtk::SHRINK, 8, 8);
+    m_table->attach(*m_optsbox,  2, 3, 10, 13, Gtk::FILL, Gtk::SHRINK, 8, 8);
+    m_table->attach(*m_bottbox,  2, 3, 13, 14, Gtk::FILL, Gtk::SHRINK, 8, 8);
+    m_table->attach(*m_rightbox, 3, 4,  1, 14, Gtk::SHRINK, Gtk::SHRINK, 2, 2);
 
 #if USE_BUTTON_PIXMAP
     m_button_del->add
@@ -590,6 +589,16 @@ eventedit::handle_insert ()
     {
         m_button_del->set_sensitive(true);
         m_button_modify->set_sensitive(true);
+
+        /*
+         * Somehow we have to recalibrate the scroll-bar when we insert
+         * and delete events.  TEST CODE.
+         */
+
+         v_adjustment
+         (
+            m_eventslots->pager_index(), 0, m_eventslots->event_count()
+         );
     }
 }
 

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-12-05
- * \updates       2015-12-19
+ * \updates       2015-12-25
  * \license       GNU GPLv2 or above
  *
  *  This module is user-interface code.  It is loosely based on the workings
@@ -76,7 +76,8 @@ eventslots::eventslots
     m_current_event_index   (0),
     m_top_iterator          (),
     m_bottom_iterator       (),
-    m_current_iterator      ()
+    m_current_iterator      (),
+    m_pager_index           (0)
 {
     load_events();
     grab_focus();
@@ -86,7 +87,7 @@ eventslots::eventslots
  *  Grabs the event list from the sequence and uses it to fill the
  *  editable-event list.  Determines how many events can be shown in the
  *  GUI [later] and adjusts the top and bottom editable-event iterators to
- *  shows the first page of events.
+ *  show the first page of events.
  *
  * \return
  *      Returns true if the event iterators were able to be set up as valid.
@@ -107,7 +108,6 @@ eventslots::load_events ()
                 count = m_event_count;
                 m_bottom_event_index = count - 1;   /* @change ca 2015-12-19 */
             }
-
             m_current_iterator = m_bottom_iterator =
                 m_top_iterator = m_event_container.begin();
 
@@ -119,15 +119,8 @@ eventslots::load_events ()
              *      m_display_count = count;
              */
 
-//          for ( ; count > 0; --count)
             for (int i = 0; i < count - 1; ++i)
             {
-//              ei++;
-//              if (ei != m_event_container.end())
-//                  m_bottom_iterator = ei;
-//              else
-//                  break;
-
                 if (increment_bottom() == SEQ64_NULL_EVENT_INDEX)
                     break;
             }
@@ -143,8 +136,15 @@ eventslots::load_events ()
 }
 
 /**
- *  Set the current event.  Note in the snprintf() calls that the first digit
- *  is part of the data byte, so that translation is easier.
+ *  Set the current event, which is the event highlighted in yellow.  Note in
+ *  the snprintf() calls that the first digit is part of the data byte, so
+ *  that translation is easier.
+ *
+ * \param ei
+ *      The iterator that points to the event.
+ *
+ * \param
+ *      The index (re 0) of the event, starting at m_event_container.begin().
  */
 
 void
@@ -204,7 +204,23 @@ eventslots::set_text
 /**
  *  Inserts an event.
  *
- *  If the container was not empty, ...
+ *  What actually happens here depends if the new event is before the frame,
+ *  within the frame, or after the frame, based on the timestamp.
+ *
+ *  If before the frame: To keep the previous events visible, we do not need
+ *  to increment the iterators (insertion does not affect multimap iterators),
+ *  but we do need to increment their indices.  The contents shown in the frame
+ *  should not change.
+ *
+ *  If at the frame top:  The new timestamp equals the top timestamp. We don't
+ *  know exactly where the new event goes in the multimap, but we do have an
+ *  new event.  TODO
+ *
+ *  If at the frame bottom:  TODO
+ *
+ *  If after the frame: No action needed if the bottom event is actually at
+ *  the bottom of the frame.  But if the frame is not yet filled, we need to
+ *  increment the bottom iterator, and its index.
  *
  * \param ev
  *      The event to insert, prebuilt.
@@ -222,7 +238,7 @@ eventslots::insert_event (const editable_event & edev)
         m_event_count = m_event_container.count();
         if (m_event_count == 1)
         {
-            m_top_iterator = m_current_iterator = 
+            m_top_iterator = m_current_iterator =
                 m_bottom_iterator = m_event_container.begin();
 
             m_top_event_index = m_current_event_index =
@@ -230,36 +246,21 @@ eventslots::insert_event (const editable_event & edev)
         }
         else
         {
-            /*
-             * What actually happens here depends if the new event is before
-             * the frame, within the frame, or after the frame, based on the
-             * timestamp.  If before the frame: To keep the previous events
-             * visible, we do not need to increment the iterators (insertion
-             * does not affect multimap iterators), but we do need to
-             * increment their indices.  If after the frame: No action needed
-             * if the bottom event is actually at the bottom of the frame.
-             * But if the frame is not yet filled, we need to increment the
-             * bottom iterator, and its index.
-             */
-
             midipulse top_ts = m_top_iterator->second.get_timestamp();
             midipulse bot_ts = m_bottom_iterator->second.get_timestamp();
             midipulse new_ts = edev.get_timestamp();
             if (new_ts < top_ts)                    /* before the frame     */
             {
-                /*
-                 * (void) increment_top();
-                 * (void) increment_current();
-                 * (void) increment_bottom();
-                 */
-
-                ++m_top_event_index;
-                ++m_current_event_index;
-                ++m_bottom_event_index;
+                ++m_top_event_index;                // (void) increment_top()
+                ++m_current_event_index;            // (void) increment_current()
+                ++m_bottom_event_index;             // (void) increment_bottom()
             }
-            if (new_ts == top_ts)                   /* at the frame         */
+            if (new_ts == top_ts)                   /* at the frame top     */
             {
                 ++m_bottom_event_index;
+            }
+            else if (new_ts == bot_ts)              /* at the frame bottom  */
+            {
             }
             else if (new_ts > bot_ts)               /* after the frame      */
             {
@@ -627,6 +628,7 @@ eventslots::change_vert ()
         else if ((m_bottom_event_index + movement) > (m_event_count - 1))
             movement = m_event_count - 1 - m_bottom_event_index;
 
+        m_pager_index = new_value;
         if (movement != 0)
         {
             m_top_event_index += movement;
@@ -648,7 +650,16 @@ eventslots::change_vert ()
                     (void) decrement_bottom();
                 }
             }
-            set_current_event(m_top_iterator, m_top_event_index);
+
+            /*
+             * Don't change the current event (highlighted in yellow) unless
+             * we move more than one event.  Annoying to the user.
+             */
+
+            if (movement > 1)
+                set_current_event(m_top_iterator, m_top_event_index);
+            else
+                set_current_event(m_current_iterator, m_current_event_index);
         }
     }
 }
@@ -811,23 +822,32 @@ eventslots::draw_events ()
 void
 eventslots::select_event (int event_index)
 {
-    if ((event_index >= 0) && (m_top_event_index != SEQ64_NULL_EVENT_INDEX))
+    bool ok = (m_top_event_index != SEQ64_NULL_EVENT_INDEX);
+    if (ok)
+        ok = event_index != SEQ64_NULL_EVENT_INDEX;
+
+    if (ok)
     {
-        bool ok = true;
-        int i = m_top_event_index;
         editable_events::iterator ei = m_top_iterator;
-        while (i++ < event_index)
+        if (event_index > m_top_event_index)
         {
-            if (ei != m_event_container.end())
+            int i = m_top_event_index;
+            while (i++ < event_index)
             {
-                ++ei;
                 ok = ei != m_event_container.end();
+                if (ok)
+                {
+                    ++ei;
+                    ok = ei != m_event_container.end();
+                }
                 if (! ok)
                     break;
             }
+            if (ok)
+                set_current_event(ei, i - 1);
         }
-        if (ok)
-            set_current_event(ei, i - 1);
+        else if (event_index == m_top_event_index)
+            set_current_event(ei, event_index);
     }
     else
         enqueue_draw();                 /* for drawing an empty frame */
@@ -837,7 +857,7 @@ eventslots::select_event (int event_index)
  *  Decrements the top iterator, if possible.
  *
  * \return
- *      Returns the decremented index, or SEQ64_NULL_EVENT_INDEX  if the
+ *      Returns the decremented index, or SEQ64_NULL_EVENT_INDEX if the
  *      iterator could not be decremented.
  */
 
@@ -857,7 +877,7 @@ eventslots::decrement_top ()
  *  Increments the top iterator, if possible.
  *
  * \return
- *      Returns the incremented index, or SEQ64_NULL_EVENT_INDEX  if the
+ *      Returns the incremented index, or SEQ64_NULL_EVENT_INDEX if the
  *      iterator could not be incremented.
  */
 
@@ -877,7 +897,7 @@ eventslots::increment_top ()
  *  Decrements the current iterator, if possible.
  *
  * \return
- *      Returns the decremented index, or SEQ64_NULL_EVENT_INDEX  if the
+ *      Returns the decremented index, or SEQ64_NULL_EVENT_INDEX if the
  *      iterator could not be decremented.
  */
 
@@ -897,7 +917,7 @@ eventslots::decrement_current ()
  *  Increments the current iterator, if possible.
  *
  * \return
- *      Returns the incremented index, or SEQ64_NULL_EVENT_INDEX  if the
+ *      Returns the incremented index, or SEQ64_NULL_EVENT_INDEX if the
  *      iterator could not be incremented.
  */
 
@@ -917,7 +937,7 @@ eventslots::increment_current ()
  *  Decrements the bottom iterator, if possible.
  *
  * \return
- *      Returns the decremented index, or SEQ64_NULL_EVENT_INDEX  if the
+ *      Returns the decremented index, or SEQ64_NULL_EVENT_INDEX if the
  *      iterator could not be decremented.
  */
 
@@ -940,7 +960,7 @@ eventslots::decrement_bottom ()
  *  backtrack one event if this happens.
  *
  * \return
- *      Returns the incremented index, or SEQ64_NULL_EVENT_INDEX  if the
+ *      Returns the incremented index, or SEQ64_NULL_EVENT_INDEX if the
  *      iterator could not be incremented.
  */
 
@@ -955,8 +975,8 @@ eventslots::increment_bottom ()
             result = m_bottom_event_index + 1;
         else
         {
-            m_bottom_iterator = old;        /* backtrack to initial value */
-#ifdef PLATFORM_DEBUG                       // SEQ64_USE_DEBUG_OUTPUT
+            m_bottom_iterator = old;        /* backtrack to initial value   */
+#ifdef SEQ64_USE_DEBUG_OUTPUT               /* PLATFORM_DEBUG               */
             errprint("increment to bad bottom iterator");
 #endif
         }

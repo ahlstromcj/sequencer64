@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-12-05
- * \updates       2015-12-19
+ * \updates       2015-12-25
  * \license       GNU GPLv2 or above
  *
  *  This class supports the left side of the Performance window (also known
@@ -192,6 +192,13 @@ private:
 
     editable_events::iterator m_current_iterator;
 
+    /**
+     *  Indicates the event index that matches the index value of the vertical
+     *  pager.
+     */
+
+    int m_pager_index;
+
 public:
 
     eventslots
@@ -251,6 +258,15 @@ public:
     int current_index () const
     {
         return m_current_event_index;
+    }
+
+    /**
+     * \getter m_pager_index
+     */
+
+    int pager_index () const
+    {
+        return m_pager_index;
     }
 
 private:

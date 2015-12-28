@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-12-05
- * \updates       2015-12-25
+ * \updates       2015-12-27
  * \license       GNU GPLv2 or above
  *
  *  This class supports the left side of the Performance window (also known
@@ -144,33 +144,37 @@ private:
 
     /**
      *  Counts the number of displayed events, which depends on how many
-     *  events there are and the size of the event list.
+     *  events there are (m_event_count) and the size of the event list
+     *  (m_line_maximum).
      */
 
-    int m_display_count;
+    int m_line_count;
+
+    /**
+     *  Counts the maximum number of displayed events, which depends on
+     *  the size of the event list (and thus the size of the dialog box for
+     *  the event editor).
+     */
+
+    int m_line_maximum;
 
     /**
      *  The index of the event that is 0th in the visible list of events.
      *  It is used in numbering the events that are shown in the event-slot
-     *  frame.
+     *  frame.  Do not confuse it with m_current_index, which is relative to
+     *  the frame, not the container-beginning.
      */
 
-    int m_top_event_index;
+    int m_top_index;
 
     /**
-     *  Indicates the number of events visible based on the current size of
-     *  the visible editable event list.  Starts out around 42, and should
-     *  stay at m_top_event_index + 42 as long as the eventedit window is not
-     *  resized vertically.
+     *  Indicates the index of the current event within the frame.
+     *  This event will also be pointed to by the m_current_event iterator.
+     *  Do not confuse it with m_top_index, which is relative to the
+     *  container-beginning, not the frame.
      */
 
-    int m_bottom_event_index;
-
-    /**
-     *  Indicates the index of the current event.
-     */
-
-    int m_current_event_index;
+    int m_current_index;
 
     /**
      *  Provides the top "pointer" to the start of the editable-events section
@@ -221,43 +225,43 @@ public:
     }
 
     /**
-     * \getter m_display_count
-     *      Returns the number of rows (events) in the eventslots's display.
+     * \getter m_line_count
+     *      Returns the current number of rows (events) in the eventslots's
+     *      display.
      */
 
-    int display_count () const
+    int line_count () const
     {
-        return m_display_count;
+        return m_line_count;
     }
 
     /**
-     * \getter m_top_event_index
-     *      This value will almost certainly be 0.
+     * \getter m_line_maximum
+     *      Returns the maximum number of rows (events) in the eventslots's
+     *      display.
+     */
+
+    int line_maximum () const
+    {
+        return m_line_maximum;
+    }
+
+    /**
+     * \getter m_top_index
      */
 
     int top_index () const
     {
-        return m_top_event_index;
+        return m_top_index;
     }
 
     /**
-     * \getter m_bottom_event_index
-     *      This value will be around 40 to 50, but will stay constant unless
-     *      we allow resizing of the eventedit window.
-     */
-
-    int bottom_index () const
-    {
-        return m_bottom_event_index;
-    }
-
-    /**
-     * \getter m_current_event_index
+     * \getter m_current_index
      */
 
     int current_index () const
     {
-        return m_current_event_index;
+        return m_current_index;
     }
 
     /**
@@ -290,7 +294,7 @@ private:
         const std::string & evdata1
     );
     bool save_events ();
-    void select_event (int event_index);
+    void select_event (int event_index = SEQ64_NULL_EVENT_INDEX);
     void set_text
     (
         const std::string & evcategory,
@@ -305,6 +309,8 @@ private:
     void draw_event (editable_events::iterator ei, int index);
     void draw_events ();
     void change_vert ();
+    void page_movement (int new_value);
+    void page_top (editable_events::iterator new_top);
     int decrement_top ();
     int increment_top ();
     int decrement_current ();

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-12-04
- * \updates       2015-12-05
+ * \updates       2015-12-27
  * \license       GNU GPLv2 or above
  *
  *  A MIDI editable event is encapsulated by the seq64::editable_events
@@ -143,13 +143,18 @@ editable_events::add (const event & e)
  * \return
  *      Returns true if the insertion succeeded, as evidenced by an increment
  *      in container size.
+ *
+ * \sideeffect
+ *      Sets m_current_event, which can be used right-away in a
+ *      single-threaded context to get an iterator to the event via the
+ *      current_event() accessor.
  */
 
 bool
 editable_events::add (const editable_event & e)
 {
     size_t count = m_events.size();         /* save initial size            */
-    event_list::event_key key(e);            /* create the key value         */
+    event_list::event_key key(e);           /* create the key value         */
 
 #if __cplusplus >= 201103L                  /* C++11                        */
     EventsPair p = std::make_pair(key, e);
@@ -157,9 +162,11 @@ editable_events::add (const editable_event & e)
     EventsPair p = std::make_pair<event_key, event>(key, e);
 #endif
 
-    m_events.insert(p);                     /* std::multimap operation      */
-
+    iterator ei = m_events.insert(p);       /* std::multimap operation      */
     bool result = m_events.size() == (count + 1);
+    if (result)
+        current_event(ei);
+
     return result;
 }
 

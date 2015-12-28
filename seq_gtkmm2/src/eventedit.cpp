@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-12-05
- * \updates       2015-12-25
+ * \updates       2015-12-27
  * \license       GNU GPLv2 or above
  *
  * To consider:
@@ -502,7 +502,7 @@ eventedit::set_event_data_1 (const std::string & d)
  *  the eventslots event-list user-interface.  Some of the parameters are
  *  obtained from the eventslots object:
  *
- *      -   Page size comes from eventslots::display_count().
+ *      -   Page size comes from eventslots::line_maximum().
  *      -   Page increment is a little less than the page-size value.
  *
  * \param value
@@ -521,9 +521,9 @@ eventedit::v_adjustment (int value, int lower, int upper)
 {
     m_vadjust->set_lower(lower);
     m_vadjust->set_upper(upper);
-    m_vadjust->set_page_size(m_eventslots->display_count());
+    m_vadjust->set_page_size(m_eventslots->line_maximum());
     m_vadjust->set_step_increment(1);
-    m_vadjust->set_page_increment(m_eventslots->display_count() - 8);
+    m_vadjust->set_page_increment(m_eventslots->line_maximum() - 8);
     if (value >= lower && value <= upper)
         m_vadjust->set_value(value);
 }

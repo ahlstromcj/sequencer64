@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-12-05
- * \updates       2015-12-27
+ * \updates       2015-12-29
  * \license       GNU GPLv2 or above
  *
  *  This class supports the left side of the Performance window (also known
@@ -159,6 +159,12 @@ private:
     int m_line_maximum;
 
     /**
+     *  Provides a little overlap for paging through the frame.
+     */
+
+    int m_line_overlap;
+
+    /**
      *  The index of the event that is 0th in the visible list of events.
      *  It is used in numbering the events that are shown in the event-slot
      *  frame.  Do not confuse it with m_current_index, which is relative to
@@ -247,6 +253,17 @@ public:
     }
 
     /**
+     *  Provides the "page increment" or "line increment" of the frame,
+     *  This value is the current line-maximum of the frame minus its
+     *  overlap value.
+     */
+
+    int line_increment () const
+    {
+        return m_line_maximum - m_line_overlap;
+    }
+
+    /**
      * \getter m_top_index
      */
 
@@ -310,7 +327,7 @@ private:
     void draw_events ();
     void change_vert ();
     void page_movement (int new_value);
-    void page_top (editable_events::iterator new_top);
+    void page_top (editable_events::iterator newcurrent);
     int decrement_top ();
     int increment_top ();
     int decrement_current ();

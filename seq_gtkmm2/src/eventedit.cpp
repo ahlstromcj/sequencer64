@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-12-05
- * \updates       2015-12-27
+ * \updates       2015-12-29
  * \license       GNU GPLv2 or above
  *
  * To consider:
@@ -523,7 +523,7 @@ eventedit::v_adjustment (int value, int lower, int upper)
     m_vadjust->set_upper(upper);
     m_vadjust->set_page_size(m_eventslots->line_maximum());
     m_vadjust->set_step_increment(1);
-    m_vadjust->set_page_increment(m_eventslots->line_maximum() - 8);
+    m_vadjust->set_page_increment(m_eventslots->line_increment());
     if (value >= lower && value <= upper)
         m_vadjust->set_value(value);
 }

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-12-05
- * \updates       2015-12-29
+ * \updates       2015-12-30
  * \license       GNU GPLv2 or above
  *
  *  This module is user-interface code.  It is loosely based on the workings
@@ -241,14 +241,19 @@ eventslots::insert_event (const editable_event & edev)
         }
         else
         {
+            /*
+             * This iterator is a short-lived [changed after the next add()
+             * call] pointer to the added event.
+             */
+
             editable_events::iterator nev = m_event_container.current_event();
+
+#ifdef USE_THIS_CODE
             midipulse top_ts = m_top_iterator->second.get_timestamp();
             midipulse bot_ts = m_bottom_iterator->second.get_timestamp();
             midipulse new_ts = edev.get_timestamp();
             if (new_ts < top_ts)                    /* before the frame     */
             {
-//              ++m_top_index;                // (void) increment_top()
-//              ++m_current_index;            // (void) increment_current()
             }
             if (new_ts == top_ts)                   /* at the frame top     */
             {
@@ -261,14 +266,11 @@ eventslots::insert_event (const editable_event & edev)
             }
             else                                    /* within the frame     */
             {
-//              (void) increment_bottom();      // decrement instead?
-//              if (new_ts < m_current_iterator->second.get_timestamp())
-//                  (void) increment_current();
             }
-            page_top(nev);
+#endif  // USE_THIS_CODE
+
+            page_topper(nev);
         }
-//      if (result)
-//          select_event(m_current_index);
 
     }
     return result;
@@ -648,19 +650,20 @@ eventslots::page_movement (int new_value)
 
 /**
  *  Adjusts the vertical position of the frame according to the given new
- *  top iterator.  The adjustment is done "from scratch".  We've
- *  found movement to be an insoluable problem in some editing circumstances.
- *  So now we move to the inserted event, and make it the top
- *  However, moving an inserted event to the top is a bit annoying.
- *  So now we backtrack so that the inserted event is at the bottom.
+ *  bottom iterator.  The adjustment is done "from scratch".  We've found page
+ *  movement to be an insoluable problem in some editing circumstances.  So
+ *  now we move to the inserted event, and make it the top
+ *
+ *  However, moving an inserted event to the top is a bit annoying.  So now we
+ *  backtrack so that the inserted event is at the bottom.
  *
  * \param newcurrent
- *      Provides the iterator to the event to be shown at the top of the
+ *      Provides the iterator to the event to be shown at the bottom of the
  *      frame.
  */
 
 void
-eventslots::page_top (editable_events::iterator newcurrent)
+eventslots::page_topper (editable_events::iterator newcurrent)
 {
     m_event_count = m_event_container.count();
     bool ok = newcurrent != m_event_container.end();
@@ -670,49 +673,50 @@ eventslots::page_top (editable_events::iterator newcurrent)
     if (ok)
     {
         editable_events::iterator ei = m_event_container.begin();
-        int index = 0;
+        int botindex = 0;
         while (ei != newcurrent)
         {
-            ++index;
+            ++botindex;
             ++ei;
-            if (index == m_event_count)
+            if (botindex == m_event_count)
             {
-                ok = false;             /* never found the event!   */
+                ok = false;                     /* never found the event!   */
                 break;
             }
         }
-        if (m_event_count < m_line_maximum)
+        if (m_event_count <= m_line_maximum)    /* fewer events than lines  */
         {
             if (ok)
             {
-                m_pager_index = index;
-                m_top_index = index;
-                m_top_iterator = ei;
+                m_pager_index = 0;
+                m_top_index = 0;
+                m_top_iterator = m_event_container.begin();
                 m_line_count = m_event_count;
                 m_current_iterator = newcurrent;
-                m_current_index = 0;
+                m_current_index = botindex;
             }
         }
         else
         {
+            m_line_count = line_maximum();
             if (ok)
             {
                 /*
-                 * Backtrack by m_line_maximum - m_line_overlap events so that
-                 * the new event is shown near the bottom; it also needs to be
-                 * the current event.
+                 * Backtrack by m_line_maximum events so that the new event is
+                 * shown at the bottom; it also needs to be the current event,
+                 * for highlighting.  Count carefully!
                  */
 
                 editable_events::iterator ei = m_event_container.begin();
-                int countdown = index - line_increment() + 1;
-                while (--countdown > 0)
+                int pageup = botindex - line_maximum();
+                int countdown = pageup;
+                while (countdown-- > 0)
                     ++ei;
 
-                m_top_index = m_pager_index = index - line_increment();
+                m_top_index = m_pager_index = pageup + 1;   /* index re map */
                 m_top_iterator = ei;
-                m_line_count = m_line_maximum;
                 m_current_iterator = newcurrent;
-                m_current_index = index - m_top_index;  /* index re frame */
+                m_current_index = botindex - m_top_index;   /* re the frame */
             }
         }
         if (ok)

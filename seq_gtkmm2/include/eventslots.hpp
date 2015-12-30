@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-12-05
- * \updates       2015-12-29
+ * \updates       2015-12-30
  * \license       GNU GPLv2 or above
  *
  *  This class supports the left side of the Performance window (also known
@@ -327,7 +327,7 @@ private:
     void draw_events ();
     void change_vert ();
     void page_movement (int new_value);
-    void page_top (editable_events::iterator newcurrent);
+    void page_topper (editable_events::iterator newcurrent);
     int decrement_top ();
     int increment_top ();
     int decrement_current ();

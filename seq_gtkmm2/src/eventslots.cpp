@@ -785,27 +785,21 @@ void
 eventslots::draw_event (editable_events::iterator ei, int index)
 {
     int yloc = m_slots_y * index;
-//  Color fg = grey();
     font::Color col = font::BLACK;
     if (index == m_current_index)
     {
 #if USE_YELLOW_AS_CURRENT
-//      fg = yellow();
         col = font::BLACK_ON_YELLOW;
 #else
-//      fg = black();
         col = font::CYAN_ON_BLACK;
 #endif
     }
 #ifdef USE_FUTURE_CODE
     else if (false)     // if (a sysex event or selected event range)
     {
-//      fg = dark_cyan();
         col = font::BLACK_ON_CYAN;
     }
 #endif
-//  else
-//      fg = white();
 
     editable_event & evp = ei->second;
     char tmp[16];

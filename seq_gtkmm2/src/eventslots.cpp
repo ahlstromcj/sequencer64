@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-12-05
- * \updates       2015-12-30
+ * \updates       2015-12-31
  * \license       GNU GPLv2 or above
  *
  *  This module is user-interface code.  It is loosely based on the workings
@@ -207,13 +207,17 @@ eventslots::set_text
  *
  *  If at the frame top:  The new timestamp equals the top timestamp. We don't
  *  know exactly where the new event goes in the multimap, but we do have an
- *  new event.  TODO
+ *  new event.
  *
  *  If at the frame bottom:  TODO
  *
  *  If after the frame: No action needed if the bottom event is actually at
  *  the bottom of the frame.  But if the frame is not yet filled, we need to
  *  increment the bottom iterator, and its index.
+ *
+ * \note
+ *      Actually, it is far easier to just adjust all the counts and iterators
+ *      and redraw the screen, as done by the page_topper() function.
  *
  * \param ev
  *      The event to insert, prebuilt.
@@ -278,16 +282,11 @@ eventslots::insert_event (const editable_event & edev)
 
 /**
  *  Inserts an event based on the setting provided, which the eventedit object
- *  gets from its Entry fields.
+ *  gets from its Entry fields.  It calls the other insert_event() overload.
  *
  *  Note that we need to qualify the temporary event class object we create
  *  below, with the seq64 namespace, otherwise the compiler thinks we're
  *  trying to access some Gtkmm thing.
- *
- *  If the container was empty when the event was inserted, then we have to
- *  fix all of the iterator and index members.
- *
- *  If the container was not empty, ...
  *
  * \param evtimestamp
  *      The time-stamp of the new event, as obtained from the event-edit
@@ -665,7 +664,6 @@ eventslots::page_movement (int new_value)
 void
 eventslots::page_topper (editable_events::iterator newcurrent)
 {
-    m_event_count = m_event_container.count();
     bool ok = newcurrent != m_event_container.end();
     if (ok)
         ok = m_event_count > 0;
@@ -702,21 +700,30 @@ eventslots::page_topper (editable_events::iterator newcurrent)
             if (ok)
             {
                 /*
-                 * Backtrack by m_line_maximum events so that the new event is
-                 * shown at the bottom; it also needs to be the current event,
-                 * for highlighting.  Count carefully!
+                 * Backtrack by up to m_line_maximum events so that the new
+                 * event is shown at the bottom or at its natural location; it
+                 * also needs to be the current event, for highlighting.
+                 * Count carefully!
                  */
 
                 editable_events::iterator ei = m_event_container.begin();
                 int pageup = botindex - line_maximum();
-                int countdown = pageup;
-                while (countdown-- > 0)
-                    ++ei;
+                if (pageup < 0)
+                {
+                    m_top_index = m_pager_index = pageup = 0;
+                }
+                else
+                {
+                    int countdown = pageup;
+                    while (countdown-- > 0)
+                        ++ei;
 
-                m_top_index = m_pager_index = pageup + 1;   /* index re map */
+                    m_top_index = m_pager_index = pageup + 1;   /* re map   */
+                }
+
                 m_top_iterator = ei;
                 m_current_iterator = newcurrent;
-                m_current_index = botindex - m_top_index;   /* re the frame */
+                m_current_index = botindex - m_top_index;       /* re frame */
             }
         }
         if (ok)

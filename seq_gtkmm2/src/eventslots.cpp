@@ -20,12 +20,12 @@
  * \file          eventslots.cpp
  *
  *  This module declares/defines the base class for displaying events in their
- *  editing slotss.
+ *  editing slots.
  *
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-12-05
- * \updates       2015-12-31
+ * \updates       2016-01-01
  * \license       GNU GPLv2 or above
  *
  *  This module is user-interface code.  It is loosely based on the workings
@@ -81,7 +81,7 @@ eventslots::eventslots
     m_pager_index           (0)
 {
     load_events();
-    grab_focus();
+    grab_focus();                   /* doesn't seem to do anything          */
 }
 
 /**
@@ -136,8 +136,9 @@ eventslots::load_events ()
  * \param ei
  *      The iterator that points to the event.
  *
- * \param
- *      The index (re 0) of the event, starting at m_event_container.begin().
+ * \param index
+ *      The index (re 0) of the event, starting at the top line of the frame.
+ *      It is a frame index, not a container index.
  */
 
 void
@@ -394,7 +395,7 @@ eventslots::delete_current_event ()
         int oldcount = m_event_container.count();
         if (oldcount > 1)
         {
-            if (m_current_index == 0)           // m_top_index)
+            if (m_current_index == 0)
             {
                 (void) increment_top();         /* bypass to-delete event   */
                 (void) increment_current();     /* ditto                    */
@@ -607,42 +608,45 @@ eventslots::change_vert ()
 void
 eventslots::page_movement (int new_value)
 {
-    int movement = new_value - m_pager_index;       /* can be negative */
-    int absmovement = movement >= 0 ? movement : -movement;
-    m_pager_index = new_value;
-    if (movement != 0)
+    if ((new_value >= 0) && (new_value < m_event_count))
     {
-        m_top_index += movement;                // or just SET IT?
-        if (movement > 0)
+        int movement = new_value - m_pager_index;       /* can be negative */
+        int absmovement = movement >= 0 ? movement : -movement;
+        m_pager_index = new_value;
+        if (movement != 0)
         {
-            for (int i = 0; i < movement; ++i)
+            m_top_index += movement;
+            if (movement > 0)
             {
-                (void) increment_top();
-                (void) increment_bottom();
+                for (int i = 0; i < movement; ++i)
+                {
+                    (void) increment_top();
+                    (void) increment_bottom();
+                }
             }
-        }
-        else if (movement < 0)
-        {
-            for (int i = 0; i < absmovement; ++i)
+            else if (movement < 0)
             {
-                (void) decrement_top();
-                (void) decrement_bottom();
+                for (int i = 0; i < absmovement; ++i)
+                {
+                    (void) decrement_top();
+                    (void) decrement_bottom();
+                }
             }
-        }
 
-        /*
-         * Don't move the current event (highlighted in yellow) unless
-         * we move more than one event.  Annoying to the user.
-         */
+            /*
+             * Don't move the current event (highlighted in yellow) unless
+             * we move more than one event.  Annoying to the user.
+             */
 
-        if (absmovement > 1)
-            set_current_event(m_top_iterator, 0);   // m_top_index);
-        else
-        {
-            set_current_event
-            (
-                m_current_iterator, m_current_index + movement
-            );
+            if (absmovement > 1)
+                set_current_event(m_top_iterator, 0);
+            else
+            {
+                set_current_event
+                (
+                    m_current_iterator, m_current_index + movement
+                );
+            }
         }
     }
 }
@@ -651,10 +655,10 @@ eventslots::page_movement (int new_value)
  *  Adjusts the vertical position of the frame according to the given new
  *  bottom iterator.  The adjustment is done "from scratch".  We've found page
  *  movement to be an insoluable problem in some editing circumstances.  So
- *  now we move to the inserted event, and make it the top
+ *  now we move to the inserted event, and make it the top event.
  *
- *  However, moving an inserted event to the top is a bit annoying.  So now we
- *  backtrack so that the inserted event is at the bottom.
+ *  However, always moving an inserted event to the top is a bit annoying.  So
+ *  now we backtrack so that the inserted event is at the bottom.
  *
  * \param newcurrent
  *      Provides the iterator to the event to be shown at the bottom of the
@@ -789,7 +793,7 @@ eventslots::draw_event (editable_events::iterator ei, int index)
     if (index == m_current_index)
     {
 #if USE_YELLOW_AS_CURRENT
-        col = font::BLACK_ON_YELLOW;
+        col = font::BLACK_ON_YELLOW;    /* or font::YELLOW_ON_BLACK */
 #else
         col = font::CYAN_ON_BLACK;
 #endif
@@ -871,10 +875,10 @@ eventslots::draw_events ()
 }
 
 /**
- *  Selects and highlight the event that is located in the frame at the given
- *  event index.  The event index is provided by converting the y-coordinate
- *  of the mouse pointer into a slot number, and then an event index (actually
- *  the slot-distance from the m_top_iterator.  Confusing, yes no?
+ *  Selects and highlights the event that is located in the frame at the given
+ *  event index.  The event index is provided by converting the y-coordinate of
+ *  the mouse pointer into a slot number, and then an event index (actually the
+ *  slot-distance from the m_top_iterator.  Confusing, yes no?
  *
  *  Note that, if the event index is negative, then we just queue up a draw
  *  operation, which should paint an empty frame -- the event container is
@@ -896,9 +900,9 @@ eventslots::select_event (int event_index)
     {
         editable_events::iterator ei = m_top_iterator;
         ok = ei != m_event_container.end();
-        if (ok && (event_index > 0))        // m_top_index)
+        if (ok && (event_index > 0))
         {
-            int i = 0;                      // m_top_index;
+            int i = 0;
             while (i++ < event_index)
             {
                 ++ei;
@@ -928,7 +932,7 @@ eventslots::decrement_top ()
     if (m_top_iterator != m_event_container.begin())
     {
         --m_top_iterator;
-        return 0;                       // m_top_index - 1;
+        return m_top_index - 1;
     }
     else
         return SEQ64_NULL_EVENT_INDEX;
@@ -999,13 +1003,18 @@ eventslots::decrement_current ()
 int
 eventslots::increment_current ()
 {
-    if (m_current_iterator != m_event_container.end())
+    editable_events::iterator ei = m_current_iterator;
+    if (ei != m_event_container.end())
     {
-        ++m_current_iterator;
-        int result = m_current_index + 1;
-        if (result >= m_line_count)
-            result = m_line_count - 1;
-
+        int result = SEQ64_NULL_EVENT_INDEX;
+        ++ei;
+        if (ei != m_event_container.end())
+        {
+            m_current_iterator = ei;
+            result = m_current_index + 1;
+            if (result >= m_line_count)
+                result = m_line_count - 1;
+        }
         return result;
     }
     else
@@ -1126,6 +1135,7 @@ eventslots::on_button_press_event (GdkEventButton * ev)
     return true;
 }
 
+
 /**
  *  Handles a button-release for the right button, bringing up a popup
  *  menu.
@@ -1163,7 +1173,6 @@ eventslots::on_focus_out_event (GdkEventFocus *)
     unset_flags(Gtk::HAS_FOCUS);
     return false;
 }
-
 
 /**
  *  Trial balloon for keystroke actions.
@@ -1204,6 +1213,74 @@ eventslots::on_size_allocate (Gtk::Allocation & a)
     gui_drawingarea_gtk2::on_size_allocate(a);
     m_window_x = a.get_width();                     /* side-effect  */
     m_window_y = a.get_height();                    /* side-effect  */
+}
+
+/**
+ *  Move to the previous event.  We must scroll up if the event is now
+ *  before the frame, and should be made the new top event of the frame.  Note
+ *  that this function isn't really an event-response callback.  It is called
+ *  byh eventedit::on_key_press_event().
+ */
+
+void
+eventslots::on_move_up ()
+{
+    if (m_current_index == 0)
+    {
+        /*
+         * Doesn't work at the top of the frame after the bottom of the
+         * frame is hit.
+         *
+         * page_movement(m_top_index - 1);
+         */
+
+        int new_top_index = decrement_top();
+        if (new_top_index >= 0)
+        {
+            m_top_index = new_top_index;
+            select_event(m_current_index);
+        }
+    }
+    else
+    {
+        --m_current_index;
+        select_event(m_current_index);
+    }
+}
+
+/**
+ *  Move to the next event.  We must scroll down if the event is now
+ *  after the frame.  Note that this function isn't really an event-response
+ *  callback.  It is called byh eventedit::on_key_press_event().
+ */
+
+void
+eventslots::on_move_down ()
+{
+    if (m_current_index == (m_line_count - 1))
+    {
+        if (m_line_count == m_line_maximum)
+        {
+            /*
+             * Doesn't work at the bottom of the frame.
+             *
+             * (void) increment_current();
+             * page_topper(m_current_iterator);
+             */
+
+            int new_top_index = increment_top();
+            if (new_top_index >= 0)
+            {
+                m_top_index = new_top_index;
+                select_event(m_current_index);
+            }
+        }
+    }
+    else
+    {
+        ++m_current_index;
+        select_event(m_current_index);
+    }
 }
 
 }           // namespace seq64

@@ -22,16 +22,16 @@
 /**
  * \file          eventslots.hpp
  *
- *  This module declares/defines the base class for performance names.
+ *  This module declares/defines the base class for displaying events in their
+ *  editing slots.
  *
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-12-05
- * \updates       2015-12-30
+ * \updates       2016-01-01
  * \license       GNU GPLv2 or above
  *
- *  This class supports the left side of the Performance window (also known
- *  as the Song window).
+ *  This class supports the left side of the Event Editor window.
  */
 
 #include "globals.h"
@@ -373,6 +373,8 @@ private:    // Gtk callbacks
     bool on_key_press_event (GdkEventKey * ev);
     bool on_scroll_event (GdkEventScroll * ev);
     void on_size_allocate (Gtk::Allocation &);
+    void on_move_up ();
+    void on_move_down ();
 
 };
 

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-12-05
- * \updates       2015-12-29
+ * \updates       2016-01-01
  * \license       GNU GPLv2 or above
  *
  * To consider:
@@ -693,13 +693,18 @@ eventedit::on_realize ()
 }
 
 /**
- *  This function is the callback for a key-press event.
+ *  This function is the callback for a key-press event.  If the Up or Down
+ *  arrow is pressed (later, k and j :-), then we tell the eventslots object to
+ *  move the "current event" highlighting up or down.  In Gtkmm, these arrows
+ *  also cause movement from one edit field to the next, so we disable
+ *  that process if the event was handled here.
  */
 
 bool
 eventedit::on_key_press_event (GdkEventKey * ev)
 {
-    // bool event_was_handled = false;
+    bool result = true;
+    bool event_was_handled = false;
     if (CAST_EQUIVALENT(ev->type, SEQ64_KEY_PRESS))
     {
         if (rc().print_keys())
@@ -710,8 +715,21 @@ eventedit::on_key_press_event (GdkEventKey * ev)
                 ev->keyval, gdk_keyval_name(ev->keyval)
             );
         }
+        if (ev->keyval == SEQ64_Down)
+        {
+            event_was_handled = true;
+            m_eventslots->on_move_down();
+        }
+        else if (ev->keyval == SEQ64_Up)
+        {
+            event_was_handled = true;
+            m_eventslots->on_move_up();
+        }
     }
-    return Gtk::Window::on_key_press_event(ev);
+    if (! event_was_handled)
+        result = Gtk::Window::on_key_press_event(ev);
+
+    return result;
 }
 
 }           // namespace seq64

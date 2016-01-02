@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-29
+ * \updates       2016-01-01
  * \license       GNU GPLv2 or above
  *
  *  Note that this representation is, in a sense, inside the mainwnd
@@ -750,13 +750,18 @@ mainwid::on_expose_event (GdkEventExpose * ev)
  *  arming/muting to be toggled.
  *
  *  If the press is a single Ctrl-left-click, this function brings up the New
- *  or Edit menu.  The New menu is brought up if the grid slot is empty, adn
- *  the Edit menu otherwise.
+ *  or Edit menu.  The New menu is brought up if the grid slot is empty, and
+ *  the Edit menu otherwise.  Another way to bring up the same functionality is
+ *  described in the next paragraph.
  *
  *  If the press is a double-click, it first acts just like two single-clicks
  *  (which might confuse the user at first).  Then it brings up the Edit menu
  *  for the sequence.  This new behavior is closer to what users have come to
  *  expect from a double-click.
+ *
+ *  We also handle a Ctrl-double-click as a signal to do an event edit, instead
+ *  of a sequence edit.  The event editor provides a way to look at all events
+ *  in detail, without having to select the type of event to see.
  *
  * \param p
  *      Provides the parameters of the button event.
@@ -771,7 +776,17 @@ mainwid::on_button_press_event (GdkEventButton * p)
     grab_focus();
     if (CAST_EQUIVALENT(p->type, SEQ64_2BUTTON_PRESS))  /* double-click?    */
     {
-        seq_edit();
+        /*
+         * Doesn't work, the event is treated like a ctrl-single-click.
+         * And we use the Alt key to enable window movement or resizing in our
+         * window manager.
+         *
+         * if (p->state & SEQ64_CONTROL_MASK)
+         *    seq_event_edit();
+         * else
+         */
+
+            seq_edit();
     }
     else
     {

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-12-05
- * \updates       2016-01-01
+ * \updates       2016-01-02
  * \license       GNU GPLv2 or above
  *
  * To consider:
@@ -321,24 +321,52 @@ eventedit::eventedit
     m_entry_ev_timestamp->set_editable(true);
     m_entry_ev_timestamp->set_width_chars(16);
     m_entry_ev_timestamp->set_text("001:1:000");
+    add_tooltip
+    (
+        m_entry_ev_timestamp,
+        "Timestamp field.  Currently only 'measures:beats:divisions' format "
+        "is supported. Measure and beat numbers start at 1, not 0!"
+    );
     m_editbox->pack_start(*m_entry_ev_timestamp, false, false);
 
     m_entry_ev_name->set_max_length(32);
     m_entry_ev_name->set_editable(true);
     m_entry_ev_name->set_width_chars(18);
     m_entry_ev_name->set_text("Note On");
+    add_tooltip
+    (
+        m_entry_ev_name,
+        "Event name field.  Recognized events: Note On/Off, Aftertouch, "
+        "Control/Program Change, Channel Pressure, and Pitch Wheel."
+    );
     m_editbox->pack_start(*m_entry_ev_name, false, false);
 
     m_entry_ev_data_0->set_max_length(32);
     m_entry_ev_data_0->set_editable(true);
     m_entry_ev_data_0->set_width_chars(32);
     m_entry_ev_data_0->set_text("Key 101");
+    add_tooltip
+    (
+        m_entry_ev_data_0,
+        "Type the numeric value of the first data byte here. "
+        "Digits are converted until a non-digit is encountered."
+        "The events that support only one value are Program Change and "
+        "Channel Pressure."
+    );
     m_editbox->pack_start(*m_entry_ev_data_0, false, false);
 
     m_entry_ev_data_1->set_max_length(32);
     m_entry_ev_data_1->set_editable(true);
     m_entry_ev_data_1->set_width_chars(32);
     m_entry_ev_data_1->set_text("Vel 64");
+    add_tooltip
+    (
+        m_entry_ev_data_1,
+        "Type the numeric value of the second data byte here. "
+        "Digits are converted until a non-digit is encountered. "
+        "The events that support two values are Note On/Off, Aftertouch, "
+        "Control Change, and Pitch Wheel."
+    );
     m_editbox->pack_start(*m_entry_ev_data_1, false, false);
 
     m_editbox->pack_start(*m_button_del, false, false);
@@ -498,8 +526,23 @@ eventedit::set_event_data_1 (const std::string & d)
 }
 
 /**
+ *  Sets the parameters for the vertical scroll-bar, using only the value
+ *  parameter.  This function overload provides a common use case.
+ *
+ * \param value
+ *      The new current value to be indicated by the scroll-bar.
+ */
+
+void
+eventedit::v_adjustment (int value)
+{
+    v_adjustment(value, 0, m_eventslots->event_count());
+}
+
+/**
  *  Sets the parameters for the vertical scroll-bar that is associated with
- *  the eventslots event-list user-interface.  Some of the parameters are
+ *  the eventslots event-list user-interface.  It keeps the frame scroll-bar
+ *  in sync with the frame movement actions.  Some of the parameters are
  *  obtained from the eventslots object:
  *
  *      -   Page size comes from eventslots::line_maximum().
@@ -573,7 +616,9 @@ eventedit::handle_delete ()
 
 /**
  *  Initiates the insertion of a new editable event.  The event's location
- *  will be determined by the timestamp and existing events.
+ *  will be determined by the timestamp and existing events.  Note that we
+ *  have to recalibrate the scroll-bar when we insert/delete events by calling
+ *  v_adjustment().
  */
 
 void
@@ -589,16 +634,7 @@ eventedit::handle_insert ()
     {
         m_button_del->set_sensitive(true);
         m_button_modify->set_sensitive(true);
-
-        /*
-         * Somehow we have to recalibrate the scroll-bar when we insert
-         * and delete events.  TEST CODE.
-         */
-
-         v_adjustment
-         (
-            m_eventslots->pager_index(), 0, m_eventslots->event_count()
-         );
+        v_adjustment(m_eventslots->pager_index());
     }
 }
 
@@ -724,6 +760,18 @@ eventedit::on_key_press_event (GdkEventKey * ev)
         {
             event_was_handled = true;
             m_eventslots->on_move_up();
+        }
+        else if (ev->keyval == SEQ64_Page_Down)
+        {
+            event_was_handled = true;
+            m_eventslots->on_frame_down();
+            v_adjustment(m_eventslots->pager_index());
+        }
+        else if (ev->keyval == SEQ64_Page_Up)
+        {
+            event_was_handled = true;
+            m_eventslots->on_frame_up();
+            v_adjustment(m_eventslots->pager_index());
         }
     }
     if (! event_was_handled)

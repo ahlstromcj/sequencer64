@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-12-05
- * \updates       2016-01-01
+ * \updates       2016-01-02
  * \license       GNU GPLv2 or above
  *
  *  This class supports the left side of the Event Editor window.
@@ -293,7 +293,12 @@ public:
 private:
 
     bool load_events ();
-    void set_current_event (const editable_events::iterator ei, int index);
+    void set_current_event
+    (
+        const editable_events::iterator ei,
+        int index,
+        bool full_redraw = true
+    );
     bool insert_event (const editable_event & edev);
     bool insert_event
     (
@@ -311,7 +316,11 @@ private:
         const std::string & evdata1
     );
     bool save_events ();
-    void select_event (int event_index = SEQ64_NULL_EVENT_INDEX);
+    void select_event
+    (
+        int event_index = SEQ64_NULL_EVENT_INDEX,
+        bool full_redraw = true
+    );
     void set_text
     (
         const std::string & evcategory,
@@ -370,11 +379,12 @@ private:    // Gtk callbacks
     bool on_button_release_event (GdkEventButton * ev);
     bool on_focus_in_event (GdkEventFocus * ev);
     bool on_focus_out_event (GdkEventFocus * ev);
-    bool on_key_press_event (GdkEventKey * ev);
     bool on_scroll_event (GdkEventScroll * ev);
     void on_size_allocate (Gtk::Allocation &);
     void on_move_up ();
     void on_move_down ();
+    void on_frame_up ();
+    void on_frame_down ();
 
 };
 

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-12-05
- * \updates       2016-01-01
+ * \updates       2016-01-02
  * \license       GNU GPLv2 or above
  *
  *  This module is user-interface code.  It is loosely based on the workings
@@ -129,7 +129,7 @@ eventslots::load_events ()
 }
 
 /**
- *  Set the current event, which is the event highlighted in yellow.  Note in
+ *  Set the current event, which is the event that is highlighted.  Note in
  *  the snprintf() calls that the first digit is part of the data byte, so
  *  that translation is easier.
  *
@@ -139,10 +139,22 @@ eventslots::load_events ()
  * \param index
  *      The index (re 0) of the event, starting at the top line of the frame.
  *      It is a frame index, not a container index.
+ *
+ * \param full_redraw
+ *      If true (the default) does a full redraw of the frame.  Otherwise,
+ *      only the current event is drawn.  Generally, the only time a single
+ *      event (actually, two adjacent events) is convenient to draw is when
+ *      using the arrow keys, where the speed of keystroke auto-repeats makes
+ *      the full-frame update scrolling very flickery and disconcerting.
  */
 
 void
-eventslots::set_current_event (const editable_events::iterator ei, int index)
+eventslots::set_current_event
+(
+    const editable_events::iterator ei,
+    int index,
+    bool full_redraw
+)
 {
     char tmp[32];
     midibyte d0, d1;
@@ -159,7 +171,14 @@ eventslots::set_current_event (const editable_events::iterator ei, int index)
     );
     m_current_index = index;
     m_current_iterator = ei;
-    enqueue_draw();
+    if (full_redraw)
+    {
+        enqueue_draw();
+    }
+    else
+    {
+        draw_event(m_current_iterator, m_current_index);
+    }
 }
 
 /**
@@ -887,10 +906,14 @@ eventslots::draw_events ()
  * \param event_index
  *      Provides the numeric index of the event in the event frame, or
  *      SEQ64_NULL_EVENT if there is no event to draw.
+ *
+ * \param full_redraw
+ *      Defaulting to true, this parameter can be set to false in some case to
+ *      reduce the flickering of the frame under fast movement.
  */
 
 void
-eventslots::select_event (int event_index)
+eventslots::select_event (int event_index, bool full_redraw)
 {
     bool ok = event_index != SEQ64_NULL_EVENT_INDEX;
     if (ok)
@@ -912,7 +935,7 @@ eventslots::select_event (int event_index)
             }
         }
         if (ok)
-            set_current_event(ei, event_index);
+            set_current_event(ei, event_index, full_redraw);
     }
     else
         enqueue_draw();                 /* for drawing an empty frame */
@@ -1175,17 +1198,6 @@ eventslots::on_focus_out_event (GdkEventFocus *)
 }
 
 /**
- *  Trial balloon for keystroke actions.
- */
-
-bool
-eventslots::on_key_press_event (GdkEventKey * ev)
-{
-    infoprint("KEYSTROKE!");
-    return true;
-}
-
-/**
  *  Handle the scrolling of the window.
  */
 
@@ -1243,8 +1255,9 @@ eventslots::on_move_up ()
     }
     else
     {
-        --m_current_index;
-        select_event(m_current_index);
+        int old_index = m_current_index--;
+        draw_event(m_current_iterator, old_index);
+        select_event(m_current_index, false);       /* no full redraw here */
     }
 }
 
@@ -1278,9 +1291,40 @@ eventslots::on_move_down ()
     }
     else
     {
-        ++m_current_index;
-        select_event(m_current_index);
+        int old_index = m_current_index++;
+        draw_event(m_current_iterator, old_index);
+        select_event(m_current_index, false);   /* no full redraw here */
     }
+}
+
+/**
+ *  Move to the previous frame.
+ */
+
+void
+eventslots::on_frame_up ()
+{
+    int old_value = m_vadjust.get_value();
+    int new_value = old_value - line_increment();
+    if (new_value < 0)
+        new_value = 0;
+
+    page_movement(new_value);
+}
+
+/**
+ *  Move to the next frame.
+ */
+
+void
+eventslots::on_frame_down ()
+{
+    int old_value = m_vadjust.get_value();
+    int new_value = old_value + line_increment();
+    if (new_value >= m_event_count)
+        new_value = m_event_count - 1;
+
+    page_movement(new_value);
 }
 
 }           // namespace seq64

@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-12-05
- * \updates       2015-12-19
+ * \updates       2016-01-02
  * \license       GNU GPLv2 or above
  *
  */
@@ -159,8 +159,9 @@ public:
     void set_event_name (const std::string & n);
     void set_event_data_0 (const std::string & d);
     void set_event_data_1 (const std::string & d);
-    void v_adjustment (int value, int lower, int upper);
     void modify ();
+    void v_adjustment (int value);
+    void v_adjustment (int value, int lower, int upper);
 
 private:
 

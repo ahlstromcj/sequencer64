@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-12-05
- * \updates       2016-01-02
+ * \updates       2016-01-03
  * \license       GNU GPLv2 or above
  *
  *  This module is user-interface code.  It is loosely based on the workings
@@ -339,8 +339,8 @@ eventslots::insert_event
 {
     seq64::event e;                                 /* new default event    */
     editable_event edev(m_event_container, e);
-    edev.set_status_from_string(evtimestamp, evname, evdata0, evdata1);
     edev.set_channel(m_seq.get_midi_channel());
+    edev.set_status_from_string(evtimestamp, evname, evdata0, evdata1);
     return insert_event(edev);
 }
 
@@ -489,6 +489,10 @@ eventslots::delete_current_event ()
  *  finish modifying the event, but tell the caller to delete and reinsert the
  *  new event (in its proper new location based on timestamp).
  *
+ *  This function always copies the original event, modifiies the copy,
+ *  deletes the original event, and inserts the "new" event into the
+ *  editable-event container.
+ *
  * \param evtimestamp
  *      Provides the new event time-stamp as edited by the user.
  *
@@ -517,30 +521,15 @@ eventslots::modify_current_event
     bool result = m_event_count > 0;
     if (result)
     {
-        editable_event & ev = m_current_iterator->second;
-        midipulse oldtimestamp = ev.get_timestamp();
-        bool same_time = ev.get_timestamp() == oldtimestamp;
+        editable_event ev = m_current_iterator->second;
+        ev.set_channel(m_seq.get_midi_channel());   /* just in case     */
         ev.set_status_from_string(evtimestamp, evname, evdata0, evdata1);
-        ev.set_channel(m_seq.get_midi_channel());
-        if (! same_time)
-        {
-            /*
-             * Copy the modified event, delete the original, and insert the
-             * modified event into the editable-event container.
-             */
-
-            editable_event ev_copy = ev;
-            result = delete_current_event();
-            if (result)
-                result = m_event_container.add(ev);
-        }
+        result = delete_current_event();
         if (result)
         {
-            /*
-             * Does this work?
-             */
-
-            select_event(m_current_index);
+            result = m_event_container.add(ev);
+            if (result)
+                select_event(m_current_index);      /* does this work?  */
         }
     }
     return result;
@@ -1325,6 +1314,33 @@ eventslots::on_frame_down ()
         new_value = m_event_count - 1;
 
     page_movement(new_value);
+}
+
+/**
+ *  Move to the first frame.
+ */
+
+void
+eventslots::on_frame_home ()
+{
+    if (m_event_count > 0)
+        page_topper(m_event_container.begin());
+}
+
+/**
+ *  Move to the last frame.
+ */
+
+void
+eventslots::on_frame_end ()
+{
+    if (m_event_count > 0)
+    {
+        editable_events::iterator ei = m_event_container.end();
+        --ei;
+        page_topper(ei);
+    }
+    
 }
 
 }           // namespace seq64

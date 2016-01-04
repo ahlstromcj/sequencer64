@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-12-12
+ * \updates       2016-01-03
  * \license       GNU GPLv2 or above
  *
  *  A MIDI editable event is encapsulated by the seq64::editable_event
@@ -566,7 +566,7 @@ editable_event::set_status_from_string
     {
         midibyte newstatus = midibyte(value);
         midibyte d0 = string_to_midibyte(sd0);
-        set_status(newstatus);
+        set_status(newstatus, get_channel());   /* pass along code & channel */
         if (is_one_byte_msg(newstatus))
         {
             set_data(d0);

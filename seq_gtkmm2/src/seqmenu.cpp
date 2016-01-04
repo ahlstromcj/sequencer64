@@ -25,23 +25,22 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-12-06
+ * \updates       2016-01-03
  * \license       GNU GPLv2 or above
  *
+ *  This object also does some minor coordination of editing a sequence via
+ *  the pattern editor versus the event editor.
  */
 
 #include <gtkmm/box.h>
 #include <gtkmm/menu.h>
 #include <gtkmm/menubar.h>
 
+#include "eventedit.hpp"
 #include "font.hpp"
 #include "perform.hpp"
 #include "seqedit.hpp"
 #include "seqmenu.hpp"
-
-#ifdef USE_EVENTEDIT
-#include "eventedit.hpp"
-#endif
 
 using namespace Gtk::Menu_Helpers;
 
@@ -60,9 +59,7 @@ seqmenu::seqmenu (perform & p)
     m_mainperf      (p),
     m_clipboard     (),
     m_seqedit       (nullptr),
-#ifdef USE_EVENTEDIT
     m_eventedit     (nullptr),
-#endif
     m_current_seq   (-1)            /* (0) is not really current yet    */
 {
     m_clipboard.set_master_midi_bus(&m_mainperf.master_bus());
@@ -98,8 +95,10 @@ seqmenu::get_current_sequence () const
 }
 
 /**
- *  This function sets up the File menu entries.
- *  It also sets up the pattern popup menu entries that are used in mainwid.
+ *  This function sets up the File menu entries.  It also sets up the pattern
+ *  popup menu entries that are used in mainwid.  Note that, for the selected
+ *  sequence, the "Edit" and "Event Edit" menu entries are not included if a
+ *  pattern editor or event editor is already running.
  */
 
 void
@@ -111,16 +110,21 @@ seqmenu::popup_menu ()
     m_menu = manage(new Gtk::Menu());
     if (m_mainperf.is_active(current_sequence()))
     {
-        m_menu->items().push_back
-        (
-            MenuElem("Edit...", mem_fun(*this, &seqmenu::seq_edit))
-        );
-#ifdef USE_EVENTEDIT
-        m_menu->items().push_back
-        (
-            MenuElem("Event Edit...", mem_fun(*this, &seqmenu::seq_event_edit))
-        );
-#endif
+        if (! get_current_sequence()->get_editing())
+        {
+            m_menu->items().push_back
+            (
+                MenuElem("Edit...", mem_fun(*this, &seqmenu::seq_edit))
+            );
+            m_menu->items().push_back
+            (
+                MenuElem
+                (
+                    "Event Edit...", mem_fun(*this, &seqmenu::seq_event_edit)
+                )
+            );
+            m_menu->items().push_back(SeparatorElem());
+        }
     }
     else
     {
@@ -128,8 +132,8 @@ seqmenu::popup_menu ()
         (
             MenuElem("New", mem_fun(*this, &seqmenu::seq_edit))
         );
+        m_menu->items().push_back(SeparatorElem());
     }
-    m_menu->items().push_back(SeparatorElem());
     if (m_mainperf.is_active(current_sequence()))
     {
         m_menu->items().push_back
@@ -261,13 +265,7 @@ seqmenu::seq_edit ()
         if (m_mainperf.is_active(current_sequence()))
         {
             if (! s->get_editing())
-            {
                 m_seqedit = new seqedit(m_mainperf, *s, current_sequence());
-
-                /*
-                 * m_seqedit->show_all();
-                 */
-            }
             else
                 s->set_raise(true);
         }
@@ -275,15 +273,9 @@ seqmenu::seq_edit ()
         {
             seq_new();
             m_seqedit = new seqedit(m_mainperf, *s, current_sequence());
-
-            /*
-             * m_seqedit->show_all();
-             */
         }
     }
 }
-
-#ifdef USE_EVENTEDIT
 
 /**
  *  This menu callback launches the new event editor window.  If it is already
@@ -322,8 +314,6 @@ seqmenu::seq_event_edit ()
         }
     }
 }
-
-#endif  // USE_EVENTEDIT
 
 /**
  *  This function sets the new sequence into the perform object, a bit

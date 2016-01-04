@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-12-04
- * \updates       2015-12-27
+ * \updates       2016-01-03
  * \license       GNU GPLv2 or above
  *
  *  A MIDI editable event is encapsulated by the seq64::editable_events
@@ -205,6 +205,9 @@ editable_events::load_events ()
  *  Note that the old events are replaced only if the container of editable
  *  events is not empty.  There are safer ways for the user to erase all the
  *  events.
+ *
+ * \todo
+ *      Consider what to do about the sequence::m_is_modified flag.
  *
  * \return
  *      Returns true if the size of the final event container matches

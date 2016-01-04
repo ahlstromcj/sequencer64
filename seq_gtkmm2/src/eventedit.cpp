@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-12-05
- * \updates       2016-01-02
+ * \updates       2016-01-03
  * \license       GNU GPLv2 or above
  *
  * To consider:
@@ -33,6 +33,19 @@
  *      -   Selecting multiple events?
  *      -   Looping over multiple events for play/stp?
  *      -   Undo
+ *
+ * Current bugs to fix:
+ *
+ *      -   Implement Home, End, Delete, Insert keys.  Could also implement
+ *          Backspace.
+ *      -   Fix the effect of timestamp modification.
+ *      -   Fix event modification (delete/insert).
+ *      -   Fix event modification of event name.
+ *      -   Fix segfault in sequence's open pattern editor due to deleted
+ *          events.  Maybe we should add "disabled" to the properties of an
+ *          event.
+ *      -   Improve labelling differentiation for the data of various channel
+ *          events.
  */
 
 #include <string>
@@ -179,6 +192,7 @@ eventedit::eventedit
     m_entry_ev_data_1   (manage(new Gtk::Entry())),
     m_label_time_fmt    (manage(new Gtk::Label())),
     m_label_right       (manage(new Gtk::Label())),
+    m_seq               (seq),
     m_redraw_ms         (c_redraw_ms)                       /* 40 ms        */
 {
     std::string title = "Sequencer64 - Event Editor";
@@ -187,6 +201,7 @@ eventedit::eventedit
     title += "\"";
     set_title(title);                                       /* caption bar  */
     set_icon(Gdk::Pixbuf::create_from_xpm_data(perfedit_xpm));
+    m_seq.set_editing(true);
     m_table->set_border_width(2);
     m_htopbox->set_border_width(4);
     m_showbox->set_border_width(4);
@@ -204,6 +219,11 @@ eventedit::eventedit
     m_table->attach(*m_optsbox,  2, 3, 10, 13, Gtk::FILL, Gtk::SHRINK, 8, 8);
     m_table->attach(*m_bottbox,  2, 3, 13, 14, Gtk::FILL, Gtk::SHRINK, 8, 8);
     m_table->attach(*m_rightbox, 3, 4,  1, 14, Gtk::SHRINK, Gtk::SHRINK, 2, 2);
+    add_tooltip
+    (
+        m_eventslots,
+        "Navigate using the scrollbar, arrow keys, Page keys, and Home/End keys. "
+    );
 
 #if USE_BUTTON_PIXMAP
     m_button_del->add
@@ -221,7 +241,8 @@ eventedit::eventedit
     add_tooltip
     (
         m_button_del,
-        "Deletes the currently-selected event, even if event is not visible."
+        "Deletes the currently-selected event, even if event is not visible. "
+        "Can also use the Delete key."
     );
 
 #if USE_BUTTON_PIXMAP
@@ -242,7 +263,7 @@ eventedit::eventedit
         m_button_ins,
         "Insert a new event using the data in the edit fields. "
         "Its actual location is determined by the timestamp, not the current "
-        "event."
+        "event.  Can also use the Insert key."
     );
 
     m_button_modify->set_label("Modify Current Event");
@@ -383,13 +404,6 @@ eventedit::eventedit
     m_rightbox->pack_start(*m_label_right, false, false);
 
     add(*m_table);
-
-    /*
-     * Doesn't do anything:
-     *
-     * m_table->show();
-     * show_all();
-     */
 }
 
 /**
@@ -691,6 +705,8 @@ eventedit::handle_save ()
 void
 eventedit::handle_cancel ()
 {
+    m_seq.set_editing(false);
+
 #if GTK_MAJOR_VERSION >= 3
     Gtk::Window::close();
 #else
@@ -707,8 +723,7 @@ eventedit::handle_cancel ()
 bool
 eventedit::timeout ()
 {
-    // m_eventslots->redraw_dirty_events();
-    return true;
+    return true; // m_eventslots->redraw_dirty_events();
 }
 
 /**
@@ -734,6 +749,9 @@ eventedit::on_realize ()
  *  move the "current event" highlighting up or down.  In Gtkmm, these arrows
  *  also cause movement from one edit field to the next, so we disable
  *  that process if the event was handled here.
+ *
+ *  Note that some vi-like keys were supported, but they are needed for the
+ *  edit fields, so cannot be used here.
  */
 
 bool
@@ -773,11 +791,50 @@ eventedit::on_key_press_event (GdkEventKey * ev)
             m_eventslots->on_frame_up();
             v_adjustment(m_eventslots->pager_index());
         }
+        else if (ev->keyval == SEQ64_Home)
+        {
+            event_was_handled = true;
+            m_eventslots->on_frame_home();
+            v_adjustment(m_eventslots->pager_index());
+        }
+        else if (ev->keyval == SEQ64_End)
+        {
+            event_was_handled = true;
+            m_eventslots->on_frame_end();
+            v_adjustment(m_eventslots->pager_index());
+        }
+        else if (ev->keyval == SEQ64_Insert)
+        {
+            handle_insert ();
+        }
+        else if (ev->keyval == SEQ64_Delete)
+        {
+            event_was_handled = true;
+            handle_delete();
+        }
     }
     if (! event_was_handled)
         result = Gtk::Window::on_key_press_event(ev);
 
     return result;
+}
+
+/**
+ *  Handles an on-delete event.  It sets the sequence object's editing flag to
+ *  false, and deletes "this".  This function is called if the "Close" ("X")
+ *  button in the window's title bar is clicked.  That is a different action
+ *  from clicking the Close button.
+ *
+ * \return
+ *      Always returns false.
+ */
+
+bool
+eventedit::on_delete_event (GdkEventAny *)
+{
+    m_seq.set_editing(false);
+    delete this;
+    return false;
 }
 
 }           // namespace seq64

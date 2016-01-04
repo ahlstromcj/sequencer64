@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-12-05
- * \updates       2016-01-02
+ * \updates       2016-01-03
  * \license       GNU GPLv2 or above
  *
  *  This class supports the left side of the Event Editor window.
@@ -385,6 +385,8 @@ private:    // Gtk callbacks
     void on_move_down ();
     void on_frame_up ();
     void on_frame_down ();
+    void on_frame_home ();
+    void on_frame_end ();
 
 };
 

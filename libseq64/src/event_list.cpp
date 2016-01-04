@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-19
- * \updates       2015-12-02
+ * \updates       2016-01-03
  * \license       GNU GPLv2 or above
  *
  */
@@ -208,6 +208,9 @@ event_list::add (const event & e, bool postsort)
 #endif
 
     bool result = m_events.size() == (count + 1);
+    if (result)
+        m_is_modified = true;
+
     if (postsort)
         sort();                         /* by time-stamp and "rank" */
 

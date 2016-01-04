@@ -28,15 +28,13 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-12-06
+ * \updates       2016-01-03
  * \license       GNU GPLv2 or above
  *
  *  This module is the base class for the perfnames and mainwid classes.
  */
 
 #include "sequence.hpp"
-
-#define USE_EVENTEDIT
 
 namespace Gtk
 {
@@ -48,10 +46,7 @@ namespace seq64
 
 class perform;
 class seqedit;
-
-#ifdef USE_EVENTEDIT
 class eventedit;
-#endif
 
 /**
  *  This class handles the right-click menu of the sequence slots in the
@@ -93,15 +88,11 @@ private:
 
     seqedit * m_seqedit;
 
-#ifdef USE_EVENTEDIT
-
     /**
      *  Points to the latest eventedit object, if created.
      */
 
     eventedit * m_eventedit;
-
-#endif
 
     /**
      *  References the current sequence by sequence number.
@@ -175,10 +166,7 @@ protected:
 protected:
 
     void seq_edit ();
-
-#ifdef USE_EVENTEDIT
     void seq_event_edit ();
-#endif
 
 private:
 

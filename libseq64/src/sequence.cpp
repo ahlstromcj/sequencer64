@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-12-19
+ * \updates       2016-01-03
  * \license       GNU GPLv2 or above
  *
  *  The functionality of this class also includes handling some of the
@@ -2503,7 +2503,7 @@ sequence::get_next_trigger
 }
 
 /**
- *  Clears all events from the event container.
+ *  Clears all events from the event container.  Unsets the modified flag.
  */
 
 void
@@ -2511,6 +2511,7 @@ sequence::remove_all ()
 {
     automutex locker(m_mutex);
     m_events.clear();
+    m_events.unmodify();
 }
 
 /**

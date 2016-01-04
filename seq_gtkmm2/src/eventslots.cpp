@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-12-05
- * \updates       2016-01-03
+ * \updates       2016-01-04
  * \license       GNU GPLv2 or above
  *
  *  This module is user-interface code.  It is loosely based on the workings
@@ -261,7 +261,10 @@ eventslots::insert_event (const editable_event & edev)
                 m_bottom_iterator = m_event_container.begin();
 
             if (result)
+            {
+                m_parent.set_dirty();
                 select_event(m_current_index);
+            }
         }
         else
         {
@@ -293,6 +296,7 @@ eventslots::insert_event (const editable_event & edev)
             }
 #endif  // USE_THIS_CODE
 
+            m_parent.set_dirty();
             page_topper(nev);
         }
 
@@ -472,6 +476,7 @@ eventslots::delete_current_event ()
         bool ok = newcount == (oldcount - 1);
         if (ok)
         {
+            m_parent.set_dirty();
             m_event_count = newcount;
             result = newcount > 0;
             if (result)
@@ -529,7 +534,10 @@ eventslots::modify_current_event
         {
             result = m_event_container.add(ev);
             if (result)
+            {
+                m_parent.set_dirty();
                 select_event(m_current_index);      /* does this work?  */
+            }
         }
     }
     return result;
@@ -565,7 +573,7 @@ eventslots::save_events ()
         }
         result = m_seq.event_count() == m_event_count;
         if (result)
-            m_parent.modify();
+            m_parent.perf_modify();
     }
     return result;
 }

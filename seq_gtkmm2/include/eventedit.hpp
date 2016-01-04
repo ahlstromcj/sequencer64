@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-12-05
- * \updates       2016-01-03
+ * \updates       2016-01-04
  * \license       GNU GPLv2 or above
  *
  */
@@ -114,6 +114,8 @@ private:
     Gtk::Label * m_label_ppqn;
     Gtk::Label * m_label_channel;
     Gtk::Label * m_label_ev_count;
+    Gtk::Label * m_label_spacer;
+    Gtk::Label * m_label_modified;
 
     /**
      *  Items for the inside of the m_editbox member.
@@ -165,7 +167,8 @@ public:
     void set_event_name (const std::string & n);
     void set_event_data_0 (const std::string & d);
     void set_event_data_1 (const std::string & d);
-    void modify ();
+    void perf_modify ();
+    void set_dirty (bool flag = true);
     void v_adjustment (int value);
     void v_adjustment (int value, int lower, int upper);
 

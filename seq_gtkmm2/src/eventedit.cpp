@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-12-05
- * \updates       2016-01-03
+ * \updates       2016-01-04
  * \license       GNU GPLv2 or above
  *
  * To consider:
@@ -185,6 +185,8 @@ eventedit::eventedit
     m_label_ppqn        (manage(new Gtk::Label())),
     m_label_channel     (manage(new Gtk::Label())),
     m_label_ev_count    (manage(new Gtk::Label())),
+    m_label_spacer      (manage(new Gtk::Label())),
+    m_label_modified    (manage(new Gtk::Label())),
     m_label_category    (manage(new Gtk::Label())),
     m_entry_ev_timestamp(manage(new Gtk::Entry())),
     m_entry_ev_name     (manage(new Gtk::Entry())),
@@ -333,6 +335,14 @@ eventedit::eventedit
     m_label_ev_count->set_width_chars(32);
     set_seq_count();
     m_showbox->pack_start(*m_label_ev_count, false, false);
+
+    m_label_spacer->set_width_chars(1);
+    m_showbox->pack_start(*m_label_spacer, false, false);
+    m_label_spacer->set_text("");
+
+    m_label_modified->set_width_chars(1);
+    m_showbox->pack_start(*m_label_modified, false, false);
+    m_label_modified->set_text("");
 
     m_label_category->set_width_chars(24);
     m_label_category->set_text("Channel Event: Ch. 5");
@@ -607,9 +617,26 @@ eventedit::enqueue_draw ()
  */
 
 void
-eventedit::modify ()
+eventedit::perf_modify ()
 {
     perf().modify();
+    set_dirty(false);
+}
+
+/**
+ *  Sets the "modified" status of the user-interface.
+ *
+ * \param flag
+ *      If true, the modified status is indicated, otherwise it is cleared.
+ */
+
+void
+eventedit::set_dirty (bool flag)
+{
+    if (flag)
+        m_label_modified->set_text("[ Modified ]");
+    else
+        m_label_modified->set_text("");
 }
 
 /**

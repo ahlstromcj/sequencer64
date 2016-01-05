@@ -553,14 +553,32 @@ eventslots::modify_current_event
  *      Returns true if the operations succeeded.
  */
 
+/*
+ * TODO:  We need a function in the sequence class to replace add_event()
+ *        for the purpose of reconstructing the events container for the
+ *        sequence.  It should not draw until all is done.
+ *
+ *        Let's try creating a NEW plain event container here, and then
+ *        passing it to a NEW locked/threadsafe sequence::copy_events()
+ *        function that clears the sequence container and copies the events
+ *        from the parameter container.
+ */
+
 bool
 eventslots::save_events ()
 {
     bool result = m_event_count > 0 && m_event_count == m_event_container.count();
     if (result)
     {
-        event_list & seqevents = m_seq.events();
-        seqevents.clear();
+        /*
+         * Replaced with a function that locks the sequence.
+         *
+         * event_list & seqevents = m_seq.events();
+         * seqevents.clear();
+         */
+
+//      m_seq.remove_all();
+        event_list newevents;
         for
         (
             editable_events::iterator ei = m_event_container.begin();
@@ -569,11 +587,16 @@ eventslots::save_events ()
         )
         {
             seq64::event e = ei->second;
-            m_seq.add_event(e);
+//          m_seq.add_event(e);
+            newevents.add(e);
         }
-        result = m_seq.event_count() == m_event_count;
+//      result = m_seq.event_count() == m_event_count;
+        result = newevents.count() == m_event_count;
         if (result)
-            m_parent.perf_modify();
+        {
+            m_seq.copy_events(newevents);
+            result = m_seq.event_count() == m_event_count;
+        }
     }
     return result;
 }

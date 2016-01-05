@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-12-06
+ * \updates       2016-01-04
  * \license       GNU GPLv2 or above
  *
  *  The main window holds the menu and the main controls of the application,
@@ -440,7 +440,7 @@ mainwnd::mainwnd (perform & p, bool allowperf2)
     add_events(Gdk::KEY_PRESS_MASK | Gdk::KEY_RELEASE_MASK);
     m_timeout_connect = Glib::signal_timeout().connect
     (
-        mem_fun(*this, &mainwnd::timer_callback), 25
+        mem_fun(*this, &mainwnd::timer_callback), 25    // 25 ms, fast!
     );
     m_sigpipe[0] = -1;                      // initialize static array
     m_sigpipe[1] = -1;
@@ -476,7 +476,9 @@ mainwnd::~mainwnd ()
  * \note
  *      When Sequencer64 first starts up, and no MIDI tune is loaded, the call
  *      to mainwid::update_markers() leads to trying to do some work on
- *      sequences that don't yet exist.
+ *      sequences that don't yet exist.  Also, if a sequence is changed by the
+ *      event editor, we get a crash; need to find out how seqedit gets away
+ *      with the changes.
  */
 
 bool

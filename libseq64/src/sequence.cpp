@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-01-03
+ * \updates       2016-01-04
  * \license       GNU GPLv2 or above
  *
  *  The functionality of this class also includes handling some of the
@@ -112,85 +112,14 @@ sequence::~sequence ()
     // Empty body
 }
 
-#if 0
-
-/*
- *  We're replacing this incomplete function (many members are not assigned)
+/**
+ *  A cut-down version of principal assignment operator.
+ *  We're replacing that incomplete function (many members are not assigned)
  *  with the more accurately-named partial_assign() function.
  *
- *  Principal assignment operator.  Follows the stock rules for such an
- *  operator, but does a little more then just assign member values.
- *  Currently, it does not assign them all, so we should create a partial_copy()
- *  function to do this work, and use it where it is needed.
- *
- * \threadsafe
- */
-
-sequence &
-sequence::operator = (const sequence & rhs)
-{
-    if (this != &rhs)
-    {
-        automutex locker(m_mutex);
-        m_events   = rhs.m_events;
-        m_triggers = rhs.m_triggers;
-#if ENABLE_THESE_ASSIGNMENTS
-        // m_trigger_clipboard
-        // m_events_undo
-        // m_events_redo
-        // m_triggers_undo
-        // m_triggers_redo
-        // m_iterator_play
-        // m_iterator_draw
-        // m_iterator_play_trigger
-        // m_iterator_draw_trigger
-#endif
-        m_midi_channel = rhs.m_midi_channel;
-        m_bus          = rhs.m_bus;
-        // m_song_mute
-        // m_notes_on
-        m_masterbus    = rhs.m_masterbus;           /* a pointer, be aware! */
-        // m_playing_notes                          /* array, filled below  */
-        // m_was_playing
-        m_playing      = false;
-        // m_recording
-        // m_quantized_rec
-        // m_thru
-        // m_queued
-        // m_trigger_copied
-        // m_dirty_main
-        // m_dirty_edit
-        // m_dirty_perf
-        // m_dirty_names
-        // m_editing
-        // m_raise
-        m_name         = rhs.m_name;
-        // m_last_tick
-        // m_queued_tick
-        //m_maxbeats   = rhs.m_maxbeats;            /* const */
-        m_ppqn         = rhs.m_ppqn;
-        m_length       = rhs.m_length;
-        // m_snap_tick
-        m_time_beats_per_measure = rhs.m_time_beats_per_measure;
-        m_time_beat_width = rhs.m_time_beat_width;
-        // m_rec_vol
-        // m_mutex
-        for (int i = 0; i < c_midi_notes; i++)      /* no notes are playing */
-            m_playing_notes[i] = 0;
-
-        zero_markers();                             /* reset */
-        verify_and_link();
-    }
-    return *this;
-}
-
-#endif  // 0
-
-/**
- *  Principal assignment operator.  Follows the stock rules for such an
- *  operator, but does a little more then just assign member values.
- *  Currently, it does not assign them all, so we should create a partial_copy()
- *  function to do this work, and use it where it is needed.
+ *  It did not assign them all, so we created this partial_assign()
+ *  function to do this work, and replaced operator =() with this function in
+ *  client code.
  *
  * \threadsafe
  */
@@ -1213,13 +1142,15 @@ sequence::increment_selected (midibyte astat, midibyte /*a_control*/)
  *  Decrements events the match the given status and control values.
  *  The supported statuses are:
  *
+ *  -   One-byte messages
+ *      -   EVENT_PROGRAM_CHANGE
+ *      -   EVENT_CHANNEL_PRESSURE
+ *  -   Two-byte messages
  *      -   EVENT_NOTE_ON
  *      -   EVENT_NOTE_OFF
  *      -   EVENT_AFTERTOUCH
  *      -   EVENT_CONTROL_CHANGE
  *      -   EVENT_PITCH_WHEEL
- *      -   EVENT_PROGRAM_CHANGE
- *      -   EVENT_CHANNEL_PRESSURE
  *
  * \threadsafe
  */
@@ -1233,22 +1164,26 @@ sequence::decrement_selected (midibyte astat, midibyte /*a_control*/)
         event & er = DREF(i);
         if (er.is_selected() && er.get_status() == astat)
         {
-            if
-            (
-                astat == EVENT_NOTE_ON || astat == EVENT_NOTE_OFF ||
-                astat == EVENT_AFTERTOUCH || astat == EVENT_CONTROL_CHANGE ||
-                astat == EVENT_PITCH_WHEEL
-            )
-            {
+//          if
+//          (
+//              astat == EVENT_NOTE_ON || astat == EVENT_NOTE_OFF ||
+//              astat == EVENT_AFTERTOUCH || astat == EVENT_CONTROL_CHANGE ||
+//              astat == EVENT_PITCH_WHEEL
+//          )
+//          {
+//              er.decrement_data2();
+//          }
+//          else if
+//          (
+//              astat == EVENT_PROGRAM_CHANGE || astat == EVENT_CHANNEL_PRESSURE
+//          )
+//          {
+//              er.decrement_data1();
+//          }
+            if (event::is_two_byte_msg(astat))
                 er.decrement_data2();
-            }
-            else if
-            (
-                astat == EVENT_PROGRAM_CHANGE || astat == EVENT_CHANNEL_PRESSURE
-            )
-            {
+            else if (event::is_one_byte_msg(astat))
                 er.decrement_data1();
-            }
         }
     }
 }
@@ -1284,6 +1219,23 @@ sequence::copy_selected ()
     {
         DREF(i).set_timestamp(DREF(i).get_timestamp() - first_tick);
     }
+}
+
+/**
+ *  Cuts the selected events.
+ *
+ * \threadsafe
+ */
+
+void
+sequence::cut_selected (bool copyevents)
+{
+    push_undo();
+    if (copyevents)
+        copy_selected();
+
+    mark_selected();
+    remove_marked();
 }
 
 /**
@@ -2983,6 +2935,23 @@ sequence::show_events () const
         std::string evdump = to_string(er);
         printf(evdump.c_str());
     }
+}
+
+/**
+ *  Copies an external container of events into the current container,
+ *  effectively replacing all of its events.  Compare this function to the
+ *  remove_all() function.
+ *
+ * /threadsafe
+ */
+
+void
+sequence::copy_events (const event_list & newevents)
+{
+    automutex locker(m_mutex);
+    m_events.clear();
+    m_events.unmodify();
+    m_events = newevents;
 }
 
 }           // namespace seq64

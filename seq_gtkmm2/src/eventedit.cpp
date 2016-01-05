@@ -717,11 +717,10 @@ eventedit::handle_save ()
 {
     if (not_nullptr(m_eventslots))
     {
+        // m_seq.remove_all();                      // done in save_events()
         bool ok = m_eventslots->save_events();
-        if (! ok)
-        {
-            // Maybe show dirty status and errors in top box
-        }
+        if (ok)
+            perf_modify();
     }
 }
 

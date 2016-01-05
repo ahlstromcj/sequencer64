@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-23
+ * \updates       2016-01-04
  * \license       GNU GPLv2 or above
  *
  */
@@ -1058,9 +1058,11 @@ seqroll::on_key_press_event (GdkEventKey * ev)
 
         if (OR_EQUIVALENT(ev->keyval, SEQ64_Delete, SEQ64_BackSpace))
         {
-            m_seq.push_undo();
-            m_seq.mark_selected();
-            m_seq.remove_marked();
+//          m_seq.push_undo();
+//          m_seq.mark_selected();
+//          m_seq.remove_marked();
+
+            m_seq.cut_selected(false);      /* does not copy the events */
             perf().modify();
             result = true;
         }
@@ -1167,10 +1169,12 @@ seqroll::on_key_press_event (GdkEventKey * ev)
         {
             if (OR_EQUIVALENT(ev->keyval, SEQ64_x, SEQ64_X))        /* cut */
             {
-                m_seq.push_undo();
-                m_seq.copy_selected();
-                m_seq.mark_selected();
-                m_seq.remove_marked();
+//              m_seq.push_undo();
+//              m_seq.copy_selected();
+//              m_seq.mark_selected();
+//              m_seq.remove_marked();
+
+                m_seq.cut_selected();
                 perf().modify();
                 result = true;
             }

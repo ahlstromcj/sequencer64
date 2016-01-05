@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-12-02
+ * \updates       2016-01-04
  * \license       GNU GPLv2 or above
  *
  *  The functions add_list_var() and add_long_list() have been replaced by
@@ -735,6 +735,7 @@ public:
     int get_num_selected_events (midibyte status, midibyte cc) const;
     void select_all ();
     void copy_selected ();
+    void cut_selected (bool copyevents = true);
     void paste_selected (midipulse tick, int note);
     void get_selected_box
     (
@@ -765,6 +766,7 @@ public:
     void decrement_selected (midibyte status, midibyte control);
     void grow_selected (midipulse deltatick);
     void stretch_selected (midipulse deltatick);
+    void remove_all ();                 // was private
     void remove_marked ();
     void mark_selected ();
     void unpaint_all ();
@@ -865,11 +867,12 @@ public:
     }
 
     void show_events () const;
+    void copy_events (const event_list & newevents);
 
 private:
 
     void put_event_on_bus (event & ev);
-    void remove_all ();
+//  void remove_all ();
     void set_trigger_offset (midipulse trigger_offset);
     void split_trigger (trigger & trig, midipulse splittick);
     void adjust_trigger_offsets_to_length (midipulse newlen);

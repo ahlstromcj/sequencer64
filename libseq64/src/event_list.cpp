@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-19
- * \updates       2016-01-03
+ * \updates       2016-01-04
  * \license       GNU GPLv2 or above
  *
  */
@@ -451,6 +451,18 @@ event_list::mark_selected ()
         if (e.is_selected())
             e.mark();
     }
+}
+
+/**
+ *  Marks all events.  Not yet used, but might come in handy with the event
+ *  editor dialog.
+ */
+
+void
+event_list::mark_all ()
+{
+    for (Events::iterator i = m_events.begin(); i != m_events.end(); ++i)
+        dref(i).mark();
 }
 
 /**

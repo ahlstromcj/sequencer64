@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-12-05
- * \updates       2016-01-03
+ * \updates       2016-01-04
  * \license       GNU GPLv2 or above
  *
  *  This class supports the left side of the Event Editor window.

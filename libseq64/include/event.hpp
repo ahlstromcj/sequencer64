@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-12-14
+ * \updates       2016-01-05
  * \license       GNU GPLv2 or above
  *
  *  This module also declares/defines the various constants, status-byte
@@ -348,8 +348,8 @@ public:
     {
         return
         (
-            m == EVENT_NOTE_ON        || m == EVENT_NOTE_OFF ||
-            m == EVENT_AFTERTOUCH     || m == EVENT_CONTROL_CHANGE ||
+            m == EVENT_NOTE_ON        || m == EVENT_NOTE_OFF   ||
+            m == EVENT_CONTROL_CHANGE || m == EVENT_AFTERTOUCH ||
             m == EVENT_PITCH_WHEEL
         );
     }

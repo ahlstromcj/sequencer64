@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-01-04
+ * \updates       2016-01-05
  * \license       GNU GPLv2 or above
  *
  */
@@ -139,18 +139,12 @@ seqroll::set_background_sequence (bool state, int seq)
     if (m_ignore_redraw)
         return;
 
-    update_and_draw();  // update_background(); update_pixmap(); queue_draw();
+    update_and_draw();
 }
 
 /**
  *  Update the sizes of items based on zoom, PPQN, BPM, BW (beat width) and
  *  more.
- *
- *  Old comments:
- *
- *      Use m_zoom and i % m_seq->get_bpm() == 0,
- *      int numberLines = 128 / m_seq->get_bw() / m_zoom;
- *      int distance = c_ppqn / 32;
  */
 
 void
@@ -213,7 +207,7 @@ seqroll::change_horz ()
     if (m_ignore_redraw)
         return;
 
-    update_and_draw(true);  // update_background(); update_pixmap(); force_draw();
+    update_and_draw(true);
 }
 
 /**
@@ -228,7 +222,7 @@ seqroll::change_vert ()
     if (m_ignore_redraw)
         return;
 
-    update_and_draw(true);  // update_background(); update_pixmap(); force_draw();
+    update_and_draw(true);
 }
 
 /**
@@ -245,7 +239,7 @@ seqroll::reset ()
         return;
 
     update_sizes();
-    update_and_draw();  // update_background(); update_pixmap(); queue_draw();
+    update_and_draw();
 }
 
 /**
@@ -260,14 +254,11 @@ seqroll::redraw ()
 
     m_scroll_offset_ticks = int(m_hadjust.get_value());
     m_scroll_offset_x = m_scroll_offset_ticks / m_zoom;
-    update_and_draw(true);  // update_background(); update_pixmap(); force_draw();
+    update_and_draw(true);
 }
 
 /**
  *  Redraws events unless m_ignore_redraw is true.
- *
- *  Almost: update_and_draw(true) are almost replaceable by
- *  update_background(); update_pixmap(); force_draw();
  */
 
 void
@@ -1058,10 +1049,6 @@ seqroll::on_key_press_event (GdkEventKey * ev)
 
         if (OR_EQUIVALENT(ev->keyval, SEQ64_Delete, SEQ64_BackSpace))
         {
-//          m_seq.push_undo();
-//          m_seq.mark_selected();
-//          m_seq.remove_marked();
-
             m_seq.cut_selected(false);      /* does not copy the events */
             perf().modify();
             result = true;
@@ -1169,11 +1156,6 @@ seqroll::on_key_press_event (GdkEventKey * ev)
         {
             if (OR_EQUIVALENT(ev->keyval, SEQ64_x, SEQ64_X))        /* cut */
             {
-//              m_seq.push_undo();
-//              m_seq.copy_selected();
-//              m_seq.mark_selected();
-//              m_seq.remove_marked();
-
                 m_seq.cut_selected();
                 perf().modify();
                 result = true;

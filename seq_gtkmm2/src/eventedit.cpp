@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-12-05
- * \updates       2016-01-04
+ * \updates       2016-01-05
  * \license       GNU GPLv2 or above
  *
  * To consider:
@@ -717,7 +717,6 @@ eventedit::handle_save ()
 {
     if (not_nullptr(m_eventslots))
     {
-        // m_seq.remove_all();                      // done in save_events()
         bool ok = m_eventslots->save_events();
         if (ok)
             perf_modify();

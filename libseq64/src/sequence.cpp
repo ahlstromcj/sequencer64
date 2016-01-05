@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-01-04
+ * \updates       2016-01-05
  * \license       GNU GPLv2 or above
  *
  *  The functionality of this class also includes handling some of the
@@ -1164,22 +1164,6 @@ sequence::decrement_selected (midibyte astat, midibyte /*a_control*/)
         event & er = DREF(i);
         if (er.is_selected() && er.get_status() == astat)
         {
-//          if
-//          (
-//              astat == EVENT_NOTE_ON || astat == EVENT_NOTE_OFF ||
-//              astat == EVENT_AFTERTOUCH || astat == EVENT_CONTROL_CHANGE ||
-//              astat == EVENT_PITCH_WHEEL
-//          )
-//          {
-//              er.decrement_data2();
-//          }
-//          else if
-//          (
-//              astat == EVENT_PROGRAM_CHANGE || astat == EVENT_CHANNEL_PRESSURE
-//          )
-//          {
-//              er.decrement_data1();
-//          }
             if (event::is_two_byte_msg(astat))
                 er.decrement_data2();
             else if (event::is_one_byte_msg(astat))
@@ -2456,6 +2440,7 @@ sequence::get_next_trigger
 
 /**
  *  Clears all events from the event container.  Unsets the modified flag.
+ *  Also see the new copy_events() function.
  */
 
 void
@@ -2940,9 +2925,22 @@ sequence::show_events () const
 /**
  *  Copies an external container of events into the current container,
  *  effectively replacing all of its events.  Compare this function to the
- *  remove_all() function.
+ *  remove_all() function.  Copying the container is a lot of work, but
+ *  fairly fast, even with an std::multimap as the container.
  *
- * /threadsafe
+ * \threadsafe
+ *      Note that we had to consolidate the replacement of all the events in
+ *      the container in order to prevent the "Save to Sequence" button in the
+ *      eventedit object from causing the application to segfault.  It would
+ *      segfault when the mainwnd timer callback would fire, causing updates
+ *      to the sequence's slot pixmap, which would then try to access deleted
+ *      events.  Protecting the whole operation with a mutex seems to solve
+ *      the problem.
+ *
+ * \param newevents
+ *      Provides the container of MIDI events that will completely replace the
+ *      current container.  Normally this container is supplied by the event
+ *      editor, via the eventslots class.
  */
 
 void

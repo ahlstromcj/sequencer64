@@ -150,11 +150,7 @@ private:
 
 public:
 
-    eventedit
-    (
-        perform & p,
-        sequence & seq
-    );
+    eventedit (perform & p, sequence & seq);
     ~eventedit ();
 
     void enqueue_draw ();

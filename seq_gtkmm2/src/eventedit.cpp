@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-12-05
- * \updates       2016-01-05
+ * \updates       2016-01-06
  * \license       GNU GPLv2 or above
  *
  * To consider:
@@ -622,13 +622,6 @@ void
 eventedit::perf_modify ()
 {
     perf().modify();
-
-    /*
-     * Setting it here causes a segfault in multi-event sequences.
-     *
-     * m_seq.set_dirty();
-     */
-
     set_dirty(false);
 }
 
@@ -645,7 +638,7 @@ eventedit::set_dirty (bool flag)
     if (flag)
         m_label_modified->set_text("[ Modified ]");
     else
-        m_label_modified->set_text("");
+        m_label_modified->set_text("[ Saved ]");
 }
 
 /**
@@ -785,7 +778,14 @@ eventedit::on_realize ()
  *  that process if the event was handled here.
  *
  *  Note that some vi-like keys were supported, but they are needed for the
- *  edit fields, so cannot be used here.
+ *  edit fields, so cannot be used here.  Also, the Delete key is needed for
+ *  the edit fields.  For now, we replace it with the asterisk, which is
+ *  easy to access from the numeric pad of a keyboard, and allows for rapid
+ *  deletion.  The Insert key also causes confusing effects in the edit
+ *  fields, so we replace it by the slash.  Note that the asterisk and slash
+ *  should not be required in any of the edit fields.
+ *
+ *  HOWEVER, there are still some issues with "/" and "*"!!!
  */
 
 bool
@@ -837,11 +837,11 @@ eventedit::on_key_press_event (GdkEventKey * ev)
             m_eventslots->on_frame_end();
             v_adjustment(m_eventslots->pager_index());
         }
-        else if (ev->keyval == SEQ64_Insert)
+        else if (ev->keyval == '/')             /* SEQ64_Insert */
         {
             handle_insert ();
         }
-        else if (ev->keyval == SEQ64_Delete)
+        else if (ev->keyval == '*')            /* SEQ64_Delete */
         {
             event_was_handled = true;
             handle_delete();

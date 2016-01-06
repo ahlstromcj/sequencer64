@@ -340,6 +340,12 @@ mainwid::draw_sequence_on_pixmap (int seqnum)
             int velocity;
             draw_type dt;
             seq->reset_draw_marker();
+
+            /*
+             * Doesn't prevent segfault.
+             * seq->lock();                            // EXPERIMENTAL
+             */
+
             while                       /* draws note marks in inner box    */
             (
                 (
@@ -366,6 +372,12 @@ mainwid::draw_sequence_on_pixmap (int seqnum)
                     rectangle_x + tick_f_x, rectangle_y + note_y
                 );
             }
+
+            /*
+             * Doesn't prevent segfault.
+             *
+             * seq->unlock();                            // EXPERIMENTAL
+             */
         }
         else                                /* sequence not active          */
         {

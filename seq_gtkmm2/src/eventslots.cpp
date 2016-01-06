@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-12-05
- * \updates       2016-01-04
+ * \updates       2016-01-05
  * \license       GNU GPLv2 or above
  *
  *  This module is user-interface code.  It is loosely based on the workings
@@ -103,9 +103,10 @@ eventslots::load_events ()
         m_event_count = m_event_container.count();
         if (m_event_count > 0)
         {
-            m_line_count = m_line_maximum;
             if (m_event_count < m_line_count)
                 m_line_count = m_event_count;
+            else
+                m_line_count = m_line_maximum;
 
             m_current_iterator = m_bottom_iterator =
                 m_top_iterator = m_event_container.begin();
@@ -172,13 +173,9 @@ eventslots::set_current_event
     m_current_index = index;
     m_current_iterator = ei;
     if (full_redraw)
-    {
         enqueue_draw();
-    }
     else
-    {
         draw_event(m_current_iterator, m_current_index);
-    }
 }
 
 /**
@@ -255,16 +252,14 @@ eventslots::insert_event (const editable_event & edev)
         m_event_count = m_event_container.count();
         if (m_event_count == 1)
         {
+            m_line_count = 1;           /* used in drawing in a bit */
             m_top_index = 0;
             m_current_index = 0;
             m_top_iterator = m_current_iterator =
                 m_bottom_iterator = m_event_container.begin();
 
-            if (result)
-            {
-                m_parent.set_dirty();
-                select_event(m_current_index);
-            }
+            m_parent.set_dirty();
+            select_event(m_current_index);
         }
         else
         {
@@ -871,7 +866,7 @@ eventslots::convert_y (int y)
 {
     int eventindex = y / m_slots_y;
     if (eventindex >= m_line_count)
-        eventindex = m_line_count;
+        eventindex = m_line_count - 1;
     else if (eventindex < 0)
         eventindex = 0;
 
@@ -936,7 +931,7 @@ eventslots::select_event (int event_index, bool full_redraw)
 {
     bool ok = event_index != SEQ64_NULL_EVENT_INDEX;
     if (ok)
-        ok = event_index < m_line_count;
+        ok = (event_index < m_line_count);  // || (event_index == 0);
 
     if (ok)
     {

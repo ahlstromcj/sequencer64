@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-19
- * \updates       2016-01-04
+ * \updates       2016-01-05
  * \license       GNU GPLv2 or above
  *
  *  This module extracts the event-list functionality from the sequencer
@@ -215,6 +215,15 @@ public:
     int count () const
     {
         return int(m_events.size());
+    }
+
+    /**
+     *  Returns true if there are no events.
+     */
+
+    bool empty () const
+    {
+        return m_events.size() == 0;
     }
 
     bool add (const event & e, bool postsort = true);

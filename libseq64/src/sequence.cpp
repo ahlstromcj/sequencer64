@@ -2948,8 +2948,19 @@ sequence::copy_events (const event_list & newevents)
 {
     automutex locker(m_mutex);
     m_events.clear();
-    m_events.unmodify();
     m_events = newevents;
+    if (m_events.empty())
+        m_events.unmodify();
+
+    /*
+     * If we call this, we can get updates to be seen, but for longer
+     * sequences, it causes a segfault in updating the sequence pixmap in the
+     * mainwnd::timer_callback() function due to null events, when the event
+     * editor has deleted some events.  Not even locking the drawing of the
+     * sequence in mainwid helps.
+     *
+     * set_dirty();
+     */
 }
 
 }           // namespace seq64

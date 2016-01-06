@@ -613,13 +613,22 @@ eventedit::enqueue_draw ()
 
 /**
  *  Provides a way to mark the performance as modified, when the sequence
- *  is modified.
+ *  is modified.  Note that calling m_seg.set_dirty() here would cause
+ *  a segfault much of the time.  Thereforme, that call is folded into
+ *  sequence::copy_event(), which is called in eventslots::save_events().
  */
 
 void
 eventedit::perf_modify ()
 {
     perf().modify();
+
+    /*
+     * Setting it here causes a segfault in multi-event sequences.
+     *
+     * m_seq.set_dirty();
+     */
+
     set_dirty(false);
 }
 

@@ -868,6 +868,20 @@ public:
     void show_events () const;
     void copy_events (const event_list & newevents);
 
+    /*
+     * EXPERIMENTAL
+     */
+
+    void lock () const
+    {
+        m_mutex.lock();
+    }
+
+    void unlock () const
+    {
+        m_mutex.unlock();
+    }
+
 private:
 
     void put_event_on_bus (event & ev);

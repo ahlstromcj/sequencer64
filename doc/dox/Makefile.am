@@ -57,8 +57,8 @@ clean-local:
 #------------------------------------------------------------------------------
 
 install-data-local:
-	mkdir -p /usr/local/doc/sequencer64
-	cp -r -p $(top_builddir)/doc/*.pdf /usr/local/doc/sequencer64
+	mkdir -p $(DESTDIR)$(sequencer64docdir)
+	cp -r -p $(top_builddir)/doc/*.pdf $(DESTDIR)$(sequencer64docdir)
 
 #*******************************************************************************
 # uninstall-hook
@@ -69,7 +69,7 @@ install-data-local:
 #-------------------------------------------------------------------------------
 
 uninstall-hook:
-	rm -rf /usr/local/doc/sequencer64
+	rm -rf $(DESTDIR)$(sequencer64docdir)
 
 #******************************************************************************
 # Makefile.am (dox)

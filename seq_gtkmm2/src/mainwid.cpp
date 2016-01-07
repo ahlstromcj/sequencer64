@@ -338,7 +338,6 @@ mainwid::draw_sequence_on_pixmap (int seqnum)
             int note;
             bool selected;
             int velocity;
-            draw_type dt;
             seq->reset_draw_marker();
 
             /*
@@ -346,19 +345,29 @@ mainwid::draw_sequence_on_pixmap (int seqnum)
              * seq->lock();                            // EXPERIMENTAL
              */
 
-            while                       /* draws note marks in inner box    */
-            (
-                (
-                    dt = seq->get_next_note_event(
-                        &tick_s, &tick_f, &note, &selected, &velocity)
-                ) != DRAW_FIN
-            )
+            draw_type dt = DRAW_FIN;
+            do
             {
-                int note_y = m_seqarea_seq_y -
-                     (m_seqarea_seq_y * (note + 1 - lowest_note)) / height;
+                if (not_nullptr(seq))
+                {
+                    dt = seq->get_next_note_event
+                    (
+                        &tick_s, &tick_f, &note, &selected, &velocity
+                    );
+                }
+                else
+                {
+                    errprint("null sequence in mainwid");
+                    break;
+                }
+                if (dt == DRAW_FIN)
+                    break;
 
-                int tick_s_x = (tick_s * m_seqarea_seq_x) / len;
-                int tick_f_x = (tick_f * m_seqarea_seq_x) / len;
+                int tick_s_x = tick_s * m_seqarea_seq_x / len;
+                int tick_f_x = tick_f * m_seqarea_seq_x / len;
+                int note_y = m_seqarea_seq_y -
+                     m_seqarea_seq_y * (note + 1 - lowest_note) / height;
+
                 if (dt == DRAW_NOTE_ON || dt == DRAW_NOTE_OFF)
                     tick_f_x = tick_s_x + 1;
 
@@ -371,7 +380,8 @@ mainwid::draw_sequence_on_pixmap (int seqnum)
                     rectangle_x + tick_s_x, rectangle_y + note_y,
                     rectangle_x + tick_f_x, rectangle_y + note_y
                 );
-            }
+
+            } while (dt != DRAW_FIN);
 
             /*
              * Doesn't prevent segfault.

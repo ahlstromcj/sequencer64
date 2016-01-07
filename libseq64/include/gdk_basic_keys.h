@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-09-13
- * \updates       2015-10-31
+ * \updates       2016-01-06
  * \license       GNU GPLv2 or above
  *
  *  This file is provided as a convenience so that we have some reasonable
@@ -99,6 +99,45 @@
 #define SEQ64_Mode_switch         0xff7e
 #define SEQ64_script_switch       0xff7e
 #define SEQ64_Num_Lock            0xff7f
+
+#define SEQ64_KP_Space            0xff80
+#define SEQ64_KP_Tab              0xff89
+#define SEQ64_KP_Enter            0xff8d
+#define SEQ64_KP_F1               0xff91
+#define SEQ64_KP_F2               0xff92
+#define SEQ64_KP_F3               0xff93
+#define SEQ64_KP_F4               0xff94
+#define SEQ64_KP_Home             0xff95
+#define SEQ64_KP_Left             0xff96
+#define SEQ64_KP_Up               0xff97
+#define SEQ64_KP_Right            0xff98
+#define SEQ64_KP_Down             0xff99
+#define SEQ64_KP_Prior            0xff9a
+#define SEQ64_KP_Page_Up          0xff9a
+#define SEQ64_KP_Next             0xff9b
+#define SEQ64_KP_Page_Down        0xff9b
+#define SEQ64_KP_End              0xff9c
+#define SEQ64_KP_Begin            0xff9d
+#define SEQ64_KP_Insert           0xff9e
+#define SEQ64_KP_Delete           0xff9f
+#define SEQ64_KP_Equal            0xffbd
+#define SEQ64_KP_Multiply         0xffaa
+#define SEQ64_KP_Add              0xffab
+#define SEQ64_KP_Separator        0xffac
+#define SEQ64_KP_Subtract         0xffad
+#define SEQ64_KP_Decimal          0xffae
+#define SEQ64_KP_Divide           0xffaf
+#define SEQ64_KP_0                0xffb0
+#define SEQ64_KP_1                0xffb1
+#define SEQ64_KP_2                0xffb2
+#define SEQ64_KP_3                0xffb3
+#define SEQ64_KP_4                0xffb4
+#define SEQ64_KP_5                0xffb5
+#define SEQ64_KP_6                0xffb6
+#define SEQ64_KP_7                0xffb7
+#define SEQ64_KP_8                0xffb8
+#define SEQ64_KP_9                0xffb9
+
 #define SEQ64_Shift_L             0xffe1
 #define SEQ64_Shift_R             0xffe2
 #define SEQ64_Control_L           0xffe3

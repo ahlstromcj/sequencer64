@@ -6,7 +6,7 @@ dnl \file          configure.ac
 dnl \library       Sequencer64
 dnl \author        Chris Ahlstrom
 dnl \date          2015-09-11
-dnl \update        2015-12-31
+dnl \update        2016-01-06
 dnl \version       $Revision$
 dnl \license       $XPC_SUITE_GPL_LICENSE$
 dnl
@@ -394,7 +394,7 @@ else
 fi
 
 dnl PortMidi support
-
+dnl
 dnl TODO
 
 dnl Support for highlighting empty sequences (in yellow)
@@ -408,6 +408,21 @@ if test "$highlight" != "no"; then
     AC_DEFINE(HIGHLIGHT_EMPTY_SEQS, 1, [Define to enable highlighting empty sequences])
 else
     AC_MSG_WARN([*** Highlighting empty sequences not enabled.]);
+fi
+
+dnl Support for using the event editor.  It currently causes issues if
+dnl used, so we want the option to disable it.  We leave it in the code,
+dnl but comment out the menu entries to access it.
+
+AC_ARG_ENABLE(eveditor,
+    [AS_HELP_STRING(--disable-eveditor, [Disable using the problematic event editor])],
+    [eveditor=$enableval],
+    [eveditor=yes])
+
+if test "$eveditor" != "no"; then
+    AC_DEFINE(ENABLE_EVENT_EDITOR, 1, [Define to enable the event editor])
+else
+    AC_MSG_WARN([*** Event editor not enabled.]);
 fi
 
 dnl 6.0  Top portion of the config.h/sequencer64-config.h header files.

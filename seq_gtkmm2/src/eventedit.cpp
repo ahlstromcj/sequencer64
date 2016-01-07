@@ -244,7 +244,7 @@ eventedit::eventedit
     (
         m_button_del,
         "Deletes the currently-selected event, even if event is not visible. "
-        "Can also use the Delete key."
+        "Can also use the asterisk key (Delete is reserved for edit fields)."
     );
 
 #if USE_BUTTON_PIXMAP
@@ -785,7 +785,8 @@ eventedit::on_realize ()
  *  fields, so we replace it by the slash.  Note that the asterisk and slash
  *  should not be required in any of the edit fields.
  *
- *  HOWEVER, there are still some issues with "/" and "*"!!!
+ *  HOWEVER, there are still some issues with "/", so you'll just have to
+ *  click the button to insert an event.
  */
 
 bool
@@ -837,11 +838,18 @@ eventedit::on_key_press_event (GdkEventKey * ev)
             m_eventslots->on_frame_end();
             v_adjustment(m_eventslots->pager_index());
         }
+#ifdef CAN_USE_SLASH_PROPERLY                   /* we cannot    */
         else if (ev->keyval == '/')             /* SEQ64_Insert */
         {
             handle_insert ();
         }
+#endif
         else if (ev->keyval == '*')            /* SEQ64_Delete */
+        {
+            event_was_handled = true;
+            handle_delete();
+        }
+        else if (ev->keyval == SEQ64_KP_Multiply)
         {
             event_was_handled = true;
             handle_delete();

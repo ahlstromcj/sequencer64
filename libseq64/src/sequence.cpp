@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-01-05
+ * \updates       2016-01-07
  * \license       GNU GPLv2 or above
  *
  *  The functionality of this class also includes handling some of the
@@ -37,6 +37,8 @@
 #include "mastermidibus.hpp"
 #include "scales.h"
 #include "sequence.hpp"
+
+#define SEQ64_DEFAULT_NOTE_VELOCITY     100
 
 namespace seq64
 {
@@ -1436,12 +1438,12 @@ sequence::add_note
                 e.paint();
 
             e.set_status(EVENT_NOTE_ON);
-            e.set_data(note, 100);
+            e.set_data(note, SEQ64_DEFAULT_NOTE_VELOCITY);
             e.set_timestamp(tick);
             add_event(e);
 
             e.set_status(EVENT_NOTE_OFF);
-            e.set_data(note, 100);
+            e.set_data(note, SEQ64_DEFAULT_NOTE_VELOCITY);
             e.set_timestamp(tick + length);
             add_event(e);
         }
@@ -2327,6 +2329,9 @@ sequence::get_next_note_event
 {
     draw_type result = DRAW_FIN;
     *a_tick_f = 0;
+#ifdef PLATFORM_DEBUG
+    int debugcounter = 0;
+#endif
     while (m_iterator_draw != m_events.end())
     {
         event & drawevent = DREF(m_iterator_draw);
@@ -2341,7 +2346,7 @@ sequence::get_next_note_event
         {
             *a_tick_f = drawevent.get_linked()->get_timestamp();
             result = DRAW_NORMAL_LINKED;
-            m_iterator_draw++;
+            ++m_iterator_draw;
             return result;
         }
         else if
@@ -2350,7 +2355,7 @@ sequence::get_next_note_event
         )
         {
             result = DRAW_NOTE_ON;
-            m_iterator_draw++;
+            ++m_iterator_draw;
             return result;
         }
         else if
@@ -2359,10 +2364,14 @@ sequence::get_next_note_event
         )
         {
             result = DRAW_NOTE_OFF;
-            m_iterator_draw++;
+            ++m_iterator_draw;
             return result;
         }
-        m_iterator_draw++;  /* keep going until we hit null or find a NoteOn */
+        ++m_iterator_draw;  /* keep going until we hit null or find a NoteOn */
+#ifdef PLATFORM_DEBUG
+        infoprintf("sequence::debugcounter = %d\n", debugcounter);
+        ++debugcounter;
+#endif
     }
     return DRAW_FIN;
 }
@@ -2951,6 +2960,8 @@ sequence::copy_events (const event_list & newevents)
     m_events = newevents;
     if (m_events.empty())
         m_events.unmodify();
+
+    m_iterator_draw = m_events.begin();     /* same as in reset_draw_marker */
 
     /*
      * If we call this, we can get updates to be seen, but for longer

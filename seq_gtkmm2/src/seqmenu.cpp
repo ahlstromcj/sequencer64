@@ -25,11 +25,19 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-01-06
+ * \updates       2016-01-08
  * \license       GNU GPLv2 or above
  *
  *  This object also does some minor coordination of editing a sequence via
  *  the pattern editor versus the event editor.
+ *
+ * \warning
+ *      We have currently disabled the "Event Edit..." menu entry at present,
+ *      by default, because of a difficult issue with segfaults caused when
+ *      events are deleted by the event editor (classes eventedit and
+ *      eventslots).  If you want to enable the event editor for your own
+ *      experiments, use the "--enable-eveditor" option with the configure
+ *      script.
  */
 
 #include <gtkmm/box.h>

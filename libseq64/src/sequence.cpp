@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-01-07
+ * \updates       2016-01-08
  * \license       GNU GPLv2 or above
  *
  *  The functionality of this class also includes handling some of the
@@ -2329,7 +2329,7 @@ sequence::get_next_note_event
 {
     draw_type result = DRAW_FIN;
     *a_tick_f = 0;
-#ifdef PLATFORM_DEBUG
+#ifdef SEQ64_USE_DEBUG_OUTPUT                   // PLATFORM_DEBUG
     int debugcounter = 0;
 #endif
     while (m_iterator_draw != m_events.end())
@@ -2368,7 +2368,7 @@ sequence::get_next_note_event
             return result;
         }
         ++m_iterator_draw;  /* keep going until we hit null or find a NoteOn */
-#ifdef PLATFORM_DEBUG
+#ifdef SEQ64_USE_DEBUG_OUTPUT                   // PLATFORM_DEBUG
         infoprintf("sequence::debugcounter = %d\n", debugcounter);
         ++debugcounter;
 #endif

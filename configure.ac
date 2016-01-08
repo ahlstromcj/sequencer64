@@ -6,7 +6,7 @@ dnl \file          configure.ac
 dnl \library       Sequencer64
 dnl \author        Chris Ahlstrom
 dnl \date          2015-09-11
-dnl \update        2016-01-06
+dnl \update        2016-01-08
 dnl \version       $Revision$
 dnl \license       $XPC_SUITE_GPL_LICENSE$
 dnl
@@ -397,7 +397,9 @@ dnl PortMidi support
 dnl
 dnl TODO
 
-dnl Support for highlighting empty sequences (in yellow)
+dnl Support for highlighting empty sequences (in yellow).  If enabled, the
+dnl macro SEQ64_HIGHLIGHT_EMPTY_SEQS is defined.  All macros produced by
+dnl this configuration start with "SEQ64_".
 
 AC_ARG_ENABLE(highlight,
     [AS_HELP_STRING(--disable-highlight, [Disable highlighting empty sequences])],
@@ -412,15 +414,18 @@ fi
 
 dnl Support for using the event editor.  It currently causes issues if
 dnl used, so we want the option to disable it.  We leave it in the code,
-dnl but comment out the menu entries to access it.
+dnl but comment out the menu entries to access it, until we can work out the
+dnl issues.
+dnl
+dnl    [AS_HELP_STRING(--disable-eveditor, [Disable using the problematic event editor])],
 
 AC_ARG_ENABLE(eveditor,
-    [AS_HELP_STRING(--disable-eveditor, [Disable using the problematic event editor])],
+    [AS_HELP_STRING(--enable-eveditor, [Enable using the problematic event editor])],
     [eveditor=$enableval],
-    [eveditor=yes])
+    [eveditor=no])
 
 if test "$eveditor" != "no"; then
-    AC_DEFINE(ENABLE_EVENT_EDITOR, 1, [Define to enable the event editor])
+    AC_DEFINE(ENABLE_EVENT_EDITOR, 1, [Define to enable the problematic event editor])
 else
     AC_MSG_WARN([*** Event editor not enabled.]);
 fi
@@ -438,7 +443,7 @@ dnl #define API_VERSION "0.9"             // already defined on command line
 
 AH_TOP(
 
-#define VERSION_DATE_SHORT "2015-12-31"
+#define VERSION_DATE_SHORT "2015-01-08"
 #define VERSION "0.9.9.12"
 
 )

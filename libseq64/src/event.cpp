@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-01-05
+ * \updates       2016-01-09
  * \license       GNU GPLv2 or above
  *
  *  A MIDI event (i.e. "track event") is encapsulated by the seq64::event
@@ -110,11 +110,17 @@ event::event ()
  *  channel-splitting feature.  Many of the members are not set to useful
  *  values when the MIDI file is read, so we don't handle them for now.
  *
+ *  Note that now events are also copied when creating the editable_events
+ *  container, so this function is even more important.  The event links, for
+ *  linking Note Off events to their respective Note On events, are dropped.
+ *  Generally, they will need to be reconstituted by calling the
+ *  event_list::verify_and_link() function.
+ *
  * \warning
  *      This function does not yet copy the SysEx data.  The inclusion
  *      of SysEx events was not complete in Seq24, and it is still not
  *      complete in Sequencer64.  Nor does it currently bother with the
- *      links.
+ *      links, as noted above.
  *
  * \param rhs
  *      Provides the event object to be copied.
@@ -129,7 +135,7 @@ event::event (const event & rhs)
     m_sysex         (nullptr),              /* pointer, not yet handled */
     m_sysex_size    (rhs.m_sysex_size),
     m_linked        (nullptr),              /* pointer, not yet handled */
-    m_has_link      (rhs.m_has_link),
+    m_has_link      (false),                /* must indicate that fact  */
     m_selected      (rhs.m_selected),
     m_marked        (rhs.m_marked),
     m_painted       (rhs.m_painted)

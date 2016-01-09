@@ -6,7 +6,7 @@ dnl \file          configure.ac
 dnl \library       Sequencer64
 dnl \author        Chris Ahlstrom
 dnl \date          2015-09-11
-dnl \update        2016-01-08
+dnl \update        2016-01-09
 dnl \version       $Revision$
 dnl \license       $XPC_SUITE_GPL_LICENSE$
 dnl
@@ -415,17 +415,15 @@ fi
 dnl Support for using the event editor.  It currently causes issues if
 dnl used, so we want the option to disable it.  We leave it in the code,
 dnl but comment out the menu entries to access it, until we can work out the
-dnl issues.
-dnl
-dnl    [AS_HELP_STRING(--disable-eveditor, [Disable using the problematic event editor])],
+dnl issues.  Ah, finally worked them out, by adding calls to verify_and_link().
 
 AC_ARG_ENABLE(eveditor,
-    [AS_HELP_STRING(--enable-eveditor, [Enable using the problematic event editor])],
+    [AS_HELP_STRING(--disable-eveditor, [Disable using the event editor])],
     [eveditor=$enableval],
-    [eveditor=no])
+    [eveditor=yes])
 
 if test "$eveditor" != "no"; then
-    AC_DEFINE(ENABLE_EVENT_EDITOR, 1, [Define to enable the problematic event editor])
+    AC_DEFINE(ENABLE_EVENT_EDITOR, 1, [Define to enable the event editor])
 else
     AC_MSG_WARN([*** Event editor not enabled.]);
 fi

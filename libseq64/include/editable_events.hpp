@@ -29,7 +29,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-12-04
- * \updates       2015-12-27
+ * \updates       2016-01-09
  * \license       GNU GPLv2 or above
  *
  *  This module extends the event class to support conversions between events
@@ -263,6 +263,14 @@ private:
     {
         m_current_event = cei;
     }
+
+#ifdef USE_VERIFY_AND_LINK                  /* not yet ready */
+    void clear_links ();
+    void verify_and_link (midipulse slength);
+    void mark_all ();
+    void unmark_all ();
+    void mark_out_of_range (midipulse slength);
+#endif
 
 };          // class editable_events
 

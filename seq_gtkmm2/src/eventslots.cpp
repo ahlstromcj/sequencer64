@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-12-05
- * \updates       2016-01-05
+ * \updates       2016-01-09
  * \license       GNU GPLv2 or above
  *
  *  This module is user-interface code.  It is loosely based on the workings
@@ -34,6 +34,12 @@
  *  Now, we have an issue when loading one of the larger sequences in our main
  *  test tune, where X stops the application and Gtk says it got a bad memory
  *  allocation.  So we need to page through the sequence.
+ *
+ *  Also note that, currently, the editable_events container does not support
+ *  a verify_and_link() function like that of the event_list container.
+ *  Eventually, we want to support that feature, so that we can delete a Note
+ *  On event and have the corresponding Note Off event automatically deleted
+ *  as well.
  */
 
 #include <gtkmm/adjustment.h>

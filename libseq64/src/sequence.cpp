@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-01-08
+ * \updates       2016-01-09
  * \license       GNU GPLv2 or above
  *
  *  The functionality of this class also includes handling some of the
@@ -1060,24 +1060,37 @@ sequence::stretch_selected (midipulse delta_tick)
 }
 
 /**
- *  Moves note off event.
+ *  Moves note off event.  If an event is not linked, this function now
+ *  ignores the event's timestamp, rather than risk a segfault on a null
+ *  pointer.
  *
  * \threadsafe
+ *
+ * \param delta_tick
+ *      An offset for each linked event's timestamp.
  */
 
 void
 sequence::grow_selected (midipulse delta_tick)
 {
-    mark_selected();                    /* already locked */
+    mark_selected();                    /* already locked inside    */
     automutex locker(m_mutex);
     for (event_list::iterator i = m_events.begin(); i != m_events.end(); i++)
     {
         event & er = DREF(i);
         if (er.is_marked() && er.is_note_on() && er.is_linked())
         {
+            midipulse len = delta_tick;
             event * on = &er;
             event * off = er.get_linked();
-            midipulse len = off->get_timestamp() + delta_tick;
+            if (not_nullptr(off))
+            {
+                len += off->get_timestamp();
+            }
+            else
+            {
+                errprint("grow_selected(): null event link");
+            }
 
             /*
              * If timestamp + delta is greater that m_length, we do round
@@ -1098,10 +1111,17 @@ sequence::grow_selected (midipulse delta_tick)
                 len = m_length - 2;
 
             on->unmark();
-            event e = *off;                         /* copy event */
-            e.unmark();
-            e.set_timestamp(len);
-            add_event(e);
+            if (not_nullptr(off))
+            {
+                /*
+                 * Do we really need to copy the event?  Think about it.
+                 */
+
+                event e = *off;                         /* copy event */
+                e.unmark();
+                e.set_timestamp(len);
+                add_event(e);
+            }
         }
     }
     remove_marked();
@@ -2329,9 +2349,6 @@ sequence::get_next_note_event
 {
     draw_type result = DRAW_FIN;
     *a_tick_f = 0;
-#ifdef SEQ64_USE_DEBUG_OUTPUT                   // PLATFORM_DEBUG
-    int debugcounter = 0;
-#endif
     while (m_iterator_draw != m_events.end())
     {
         event & drawevent = DREF(m_iterator_draw);
@@ -2368,10 +2385,6 @@ sequence::get_next_note_event
             return result;
         }
         ++m_iterator_draw;  /* keep going until we hit null or find a NoteOn */
-#ifdef SEQ64_USE_DEBUG_OUTPUT                   // PLATFORM_DEBUG
-        infoprintf("sequence::debugcounter = %d\n", debugcounter);
-        ++debugcounter;
-#endif
     }
     return DRAW_FIN;
 }
@@ -2943,8 +2956,9 @@ sequence::show_events () const
  *      eventedit object from causing the application to segfault.  It would
  *      segfault when the mainwnd timer callback would fire, causing updates
  *      to the sequence's slot pixmap, which would then try to access deleted
- *      events.  Protecting the whole operation with a mutex seems to solve
- *      the problem.
+ *      events.  Part of the issue was that note links were dropped when
+ *      copying the events, so now we call verify_and_link() to hopefully
+ *      reconstitute the links.
  *
  * \param newevents
  *      Provides the container of MIDI events that will completely replace the
@@ -2962,6 +2976,8 @@ sequence::copy_events (const event_list & newevents)
         m_events.unmodify();
 
     m_iterator_draw = m_events.begin();     /* same as in reset_draw_marker */
+    if (m_events.count() > 1)               /* need at least two events     */
+        verify_and_link();
 
     /*
      * If we call this, we can get updates to be seen, but for longer
@@ -2972,6 +2988,8 @@ sequence::copy_events (const event_list & newevents)
      *
      * set_dirty();
      */
+
+    set_dirty();
 }
 
 }           // namespace seq64

@@ -1156,7 +1156,7 @@ perform::play (midipulse tick)
         if (is_active(i))
         {
             /*
-             * Skip sequences that have no real MIDI events.
+             * Skip sequences that have no playable MIDI events.
              */
 
             if (m_seqs[i]->event_count() == 0)
@@ -1164,10 +1164,7 @@ perform::play (midipulse tick)
 
             if (m_seqs[i]->check_queued_tick(tick))
             {
-                m_seqs[i]->play
-                (
-                    m_seqs[i]->get_queued_tick() - 1, m_playback_mode
-                );
+                m_seqs[i]->play(m_seqs[i]->get_queued_tick()-1, m_playback_mode);
                 m_seqs[i]->toggle_playing();
             }
             m_seqs[i]->play(tick, m_playback_mode);

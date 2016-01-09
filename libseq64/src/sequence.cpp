@@ -97,11 +97,11 @@ sequence::sequence (int ppqn)
     m_mutex                     ()
 {
     m_ppqn = choose_ppqn(ppqn);
-    m_length = 4 * m_ppqn;
+    m_length = 4 * m_ppqn;                      /* one bar's worth of ticks */
     m_snap_tick = m_ppqn / 4;
     m_triggers.set_ppqn(m_ppqn);
     m_triggers.set_length(m_length);
-    for (int i = 0; i < c_midi_notes; i++)      /* no notes are playing */
+    for (int i = 0; i < c_midi_notes; i++)      /* no notes are playing now */
         m_playing_notes[i] = 0;
 }
 
@@ -165,7 +165,7 @@ sequence::event_count () const
 }
 
 /**
- *  Pushes the list-event into the undo-list.
+ *  Pushes the event-list into the undo-list.
  *
  * \threadsafe
  */
@@ -179,8 +179,8 @@ sequence::push_undo ()
 
 /**
  *  If there are items on the undo list, this function pushes the
- *  list-event into the redo-list, puts the top of the undo-list into the
- *  list-event, pops from the undo-list, calls verify_and_link(), and then
+ *  event-list into the redo-list, puts the top of the undo-list into the
+ *  event-list, pops from the undo-list, calls verify_and_link(), and then
  *  calls unselect.
  *
  * \threadsafe
@@ -202,8 +202,8 @@ sequence::pop_undo ()
 
 /**
  *  If there are items on the redo list, this function pushes the
- *  list-event into the undo-list, puts the top of the redo-list into the
- *  list-event, pops from the redo-list, calls verify_and_link(), and then
+ *  event-list into the undo-list, puts the top of the redo-list into the
+ *  event-list, pops from the redo-list, calls verify_and_link(), and then
  *  calls unselect.
  *
  * \threadsafe
@@ -372,12 +372,11 @@ sequence::off_queued ()
  *      Provides the current end-tick value.
  *
  * \param playback_mode
- *      Provides how playback is managed.
- *      We think it goes like this:
- *      True indicates that it is live playback, controlled by the main windows
- *      and its layout of patterns and triggers.
- *      False indicate that the performance/song editor is in control of
- *      playback.
+ *      Provides how playback is managed.  True indicates that it is
+ *      performance/song-editor playback, controlled by the set of patterns
+ *      and triggers set up in that editor, and saved with the song in seq24
+ *      format.  False indicates that the playback is controlled by the main
+ *      windows, in live mode.
  *
  * \threadsafe
  */
@@ -493,7 +492,7 @@ sequence::link_new ()
 
 /**
  *  A helper function, which does not lock/unlock, so it is unsafe to call
- *  without supplying an iterator from the list-event.
+ *  without supplying an iterator from the event-list.
  *
  *  If it's a note off, and that note is currently playing, then send a
  *  note off.
@@ -517,7 +516,7 @@ sequence::remove (event_list::iterator i)
 
 /**
  *  A helper function, which does not lock/unlock, so it is unsafe to call
- *  without supplying an iterator from the list-event.
+ *  without supplying an iterator from the event-list.
  *
  *  Finds the given event in m_events, and removes the first iterator
  *  matching that.
@@ -585,7 +584,7 @@ sequence::mark_selected ()
 }
 
 /**
- *  Unpaints all list-events.
+ *  Unpaints all events in the event-list.
  *
  * \threadsafe
  */
@@ -598,7 +597,10 @@ sequence::unpaint_all ()
 }
 
 /**
- *  Returns the 'box' of the selected items.
+ *  Returns the 'box' of the selected items.  Note the common-code betweem
+ *  this function and get_clipboard_box().
+ *
+ * \threadsafe
  */
 
 void
@@ -635,7 +637,10 @@ sequence::get_selected_box
 }
 
 /**
- *  Returns the 'box' of selected items.
+ *  Returns the 'box' of the clipboard items.  Note the common-code betweem
+ *  this function and get_selected_box().
+ *
+ * \threadsafe
  */
 
 void
@@ -955,6 +960,12 @@ sequence::unselect ()
 
 /**
  *  Removes and adds reads selected in position.
+ *
+ * \param delta_tick
+ *      Provides the amount of time to move the selected notes.
+ *
+ * \param delta_note
+ *      Provides the amount of pitch to move the selected notes.
  */
 
 void
@@ -969,11 +980,10 @@ sequence::move_selected_notes (midipulse delta_tick, int delta_note)
         {
             event e = er;                         /* copy event             */
             e.unmark();
-            if
-            (
-                (e.get_note() + delta_note) >= 0 &&
-                (e.get_note() + delta_note) < c_num_keys
-            )
+            midibyte new_note = e.get_note() + delta_note;
+//              (e.get_note() + delta_note) >= 0 &&
+//              (e.get_note() + delta_note) < c_num_keys
+            if (new_note >= 0 && new_note < c_num_keys)
             {
                 bool noteon = e.is_note_on();
                 midipulse timestamp = e.get_timestamp() + delta_tick;
@@ -996,7 +1006,8 @@ sequence::move_selected_notes (midipulse delta_tick, int delta_note)
                     timestamp = 0;
 
                 e.set_timestamp(timestamp);
-                e.set_note(e.get_note() + delta_note);
+//              e.set_note(e.get_note() + delta_note);
+                e.set_note(new_note);
                 e.select();
                 add_event(e);
             }
@@ -1593,8 +1604,7 @@ sequence::stream_event (event & ev)
                 push_undo();
                 add_note
                 (
-                    m_last_tick % m_length, m_snap_tick - 2,
-                    ev.get_note(), false
+                    m_last_tick % m_length, m_snap_tick - 2, ev.get_note(), false
                 );
                 set_dirty();
                 ++m_notes_on;
@@ -1614,11 +1624,11 @@ sequence::stream_event (event & ev)
     {
         if (ev.is_note_off())
         {
-            select_note_events
-            (
-                ev.get_timestamp(), ev.get_note(),
-                ev.get_timestamp(), ev.get_note(), e_select
-            );
+            midipulse timestamp = ev.get_timestamp();
+            midibyte note = ev.get_note();
+            select_note_events(timestamp, note, timestamp, note, e_select);
+//              ev.get_timestamp(), ev.get_note(),
+//              ev.get_timestamp(), ev.get_note(), e_select
             quantize_events(EVENT_NOTE_ON, 0, m_snap_tick, 1 , true);
         }
     }
@@ -2499,7 +2509,7 @@ sequence::set_midi_bus (char mb)
 }
 
 /**
- *  Sets the length (m_length) and adjusts triggers for it if desired.
+ *  Sets the length (m_length) and adjusts triggers for it, if desired.
  *  This function is called in seqedit::apply_length(), when the user
  *  selects a sequence length in measures.  That function calculates the
  *  length in ticks:
@@ -2977,16 +2987,21 @@ sequence::copy_events (const event_list & newevents)
 
     m_iterator_draw = m_events.begin();     /* same as in reset_draw_marker */
     if (m_events.count() > 1)               /* need at least two events     */
+    {
+        /*
+         * Another option, if we have a new sequence length value (in pulses)
+         * would be to call sequence::set_length(len, adjust_triggers).
+         */
+
         verify_and_link();
+    }
 
     /*
      * If we call this, we can get updates to be seen, but for longer
      * sequences, it causes a segfault in updating the sequence pixmap in the
      * mainwnd::timer_callback() function due to null events, when the event
      * editor has deleted some events.  Not even locking the drawing of the
-     * sequence in mainwid helps.
-     *
-     * set_dirty();
+     * sequence in mainwid helps.  RE-VERIFY!
      */
 
     set_dirty();

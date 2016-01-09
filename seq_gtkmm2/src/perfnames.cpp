@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-26
+ * \updates       2016-01-09
  * \license       GNU GPLv2 or above
  *
  *  This module is almost exclusively user-interface code.  There are some
@@ -50,6 +50,14 @@
 #include "perfedit.hpp"
 #include "perform.hpp"
 #include "perfnames.hpp"
+
+/*
+ *  If defined, the connect() call for the change_vert() member function is
+ *  done in the constructor, like it was originally.  An attempt to allown an
+ *  Arch Linux user to run Sequencer64 without a segfault at startup.
+ */
+
+#undef CONNECT_CHANGE_VERT_IN_CONSTRUCTOR
 
 namespace seq64
 {
@@ -82,10 +90,17 @@ perfnames::perfnames
     m_sequence_offset       (0),
     m_sequence_active       ()                              /* an array     */
 {
+    /*
+     * Let's try moving this to the on_realize() function to see if
+     * we can avoid the error which occurs on one user's Arch-64 system.
+     */
+
+#ifdef CONNECT_CHANGE_VERT_IN_CONSTRUCTOR
     m_vadjust.signal_value_changed().connect
     (
         mem_fun(*(this), &perfnames::change_vert)
     );
+#endif
 
     /*
      * \todo Change this to a dynamic container.
@@ -283,6 +298,18 @@ perfnames::on_realize ()
     (
         m_window, m_names_x, m_names_y * m_sequence_max + 1, -1
     );
+
+    /*
+     * Moved from the constructor to see if it behaves better on someone
+     * else's (Arch-64) system.
+     */
+
+#ifndef CONNECT_CHANGE_VERT_IN_CONSTRUCTOR
+    m_vadjust.signal_value_changed().connect
+    (
+        mem_fun(*(this), &perfnames::change_vert)
+    );
+#endif
 }
 
 /**

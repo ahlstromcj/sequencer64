@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-01-08
+ * \updates       2016-01-09
  * \license       GNU GPLv2 or above
  *
  *  This object also does some minor coordination of editing a sequence via
@@ -276,21 +276,23 @@ seqmenu::mute_all_tracks ()
 void
 seqmenu::seq_edit ()
 {
-    sequence * s = get_current_sequence();
-    if (not_nullptr(s))
+    if (m_mainperf.is_active(current_sequence()))
     {
-        if (m_mainperf.is_active(current_sequence()))
+        sequence * s = get_current_sequence();
+        if (not_nullptr(s))
         {
             if (! s->get_editing())
                 m_seqedit = new seqedit(m_mainperf, *s, current_sequence());
             else
                 s->set_raise(true);
         }
-        else
-        {
-            seq_new();
+    }
+    else
+    {
+        seq_new();
+        sequence * s = get_current_sequence();
+        if (not_nullptr(s))
             m_seqedit = new seqedit(m_mainperf, *s, current_sequence());
-        }
     }
 }
 

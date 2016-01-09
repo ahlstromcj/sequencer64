@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-12-05
- * \updates       2016-01-06
+ * \updates       2016-01-09
  * \license       GNU GPLv2 or above
  *
  * To consider:
@@ -158,7 +158,11 @@ eventedit::eventedit
     perform & p,
     sequence & seq
 ) :
+#ifdef USE_OLD_LAYOUT
     gui_window_gtk2     (p, 660, 690),      /* make sure it is wide enough! */
+#else
+    gui_window_gtk2     (p, 660, 666),      /* make sure it is wide enough! */
+#endif
     m_table             (manage(new Gtk::Table(14, 4, false))),
     m_vadjust           (manage(new Gtk::Adjustment(0, 0, 1, 1, 1, 1))),
     m_vscroll           (manage(new Gtk::VScrollbar(*m_vadjust))),
@@ -210,6 +214,7 @@ eventedit::eventedit
     m_editbox->set_border_width(4);
     m_optsbox->set_border_width(4);
     m_rightbox->set_border_width(1);
+#ifdef USE_OLD_LAYOUT
     m_table->attach(*m_htopbox,    0, 4,  0,  1,  Gtk::FILL, Gtk::SHRINK, 8, 8);
     m_table->attach(*m_eventslots, 0, 1,  1, 14,  Gtk::FILL, Gtk::FILL, 8, 8);
     m_table->attach
@@ -221,6 +226,19 @@ eventedit::eventedit
     m_table->attach(*m_optsbox,  2, 3, 10, 13, Gtk::FILL, Gtk::SHRINK, 8, 8);
     m_table->attach(*m_bottbox,  2, 3, 13, 14, Gtk::FILL, Gtk::SHRINK, 8, 8);
     m_table->attach(*m_rightbox, 3, 4,  1, 14, Gtk::SHRINK, Gtk::SHRINK, 2, 2);
+#else
+//  m_table->attach(*m_htopbox,    0, 4,  0,  1,  Gtk::FILL, Gtk::SHRINK, 8, 8);
+    m_table->attach(*m_eventslots, 0, 1,  0, 13,  Gtk::FILL, Gtk::FILL, 8, 8);
+    m_table->attach
+    (
+        *m_vscroll, 1, 2, 0, 13, Gtk::SHRINK, Gtk::FILL | Gtk::EXPAND, 4, 4
+    );
+    m_table->attach(*m_showbox,  2, 3,  0,  3, Gtk::FILL, Gtk::SHRINK, 8, 8);
+    m_table->attach(*m_editbox,  2, 3,  3,  9, Gtk::FILL, Gtk::SHRINK, 8, 8);
+    m_table->attach(*m_optsbox,  2, 3,  9, 12, Gtk::FILL, Gtk::SHRINK, 8, 8);
+    m_table->attach(*m_bottbox,  2, 3, 12, 13, Gtk::FILL, Gtk::SHRINK, 8, 8);
+    m_table->attach(*m_rightbox, 3, 4,  0, 13, Gtk::SHRINK, Gtk::SHRINK, 2, 2);
+#endif  // USE_OLD_LAYOUT
     add_tooltip
     (
         m_eventslots,
@@ -243,8 +261,9 @@ eventedit::eventedit
     add_tooltip
     (
         m_button_del,
-        "Deletes the currently-selected event, even if event is not visible. "
-        "Can also use the asterisk key (Delete is reserved for edit fields)."
+        "Deletes the currently-selected event, even if event is not visible "
+        "in the frame.  Can also use the asterisk key (Delete is reserved for "
+        "the edit fields)."
     );
 
 #if USE_BUTTON_PIXMAP
@@ -263,9 +282,9 @@ eventedit::eventedit
     add_tooltip
     (
         m_button_ins,
-        "Insert a new event using the data in the edit fields. "
-        "Its actual location is determined by the timestamp, not the current "
-        "event.  Can also use the Insert key."
+        "Insert a new event using the data in the edit fields. Its actual"
+        "location is determined by the timestamp field, not the current "
+        "event.  The Insert key is reserved for the edit fields."
     );
 
     m_button_modify->set_label("Modify Current Event");
@@ -281,6 +300,7 @@ eventedit::eventedit
     );
 
     m_button_save->set_label("Save to Sequence");
+    m_button_save->set_sensitive(false);
     m_button_save->signal_clicked().connect
     (
         sigc::mem_fun(*this, &eventedit::handle_save)
@@ -612,10 +632,8 @@ eventedit::enqueue_draw ()
 }
 
 /**
- *  Provides a way to mark the performance as modified, when the sequence
- *  is modified.  Note that calling m_seg.set_dirty() here would cause
- *  a segfault much of the time.  Thereforme, that call is folded into
- *  sequence::copy_event(), which is called in eventslots::save_events().
+ *  Provides a way to mark the perform object as modified, when the modified
+ *  sequence is saved.
  */
 
 void
@@ -626,7 +644,8 @@ eventedit::perf_modify ()
 }
 
 /**
- *  Sets the "modified" status of the user-interface.
+ *  Sets the "modified" status of the user-interface.  This includes changing
+ *  a label and enabling/disabling the Save button.
  *
  * \param flag
  *      If true, the modified status is indicated, otherwise it is cleared.
@@ -636,9 +655,15 @@ void
 eventedit::set_dirty (bool flag)
 {
     if (flag)
+    {
         m_label_modified->set_text("[ Modified ]");
+        m_button_save->set_sensitive(true);
+    }
     else
+    {
         m_label_modified->set_text("[ Saved ]");
+        m_button_save->set_sensitive(false);
+    }
 }
 
 /**

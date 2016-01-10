@@ -1,3 +1,123 @@
+2016-01-10  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* contrib/git.txt, configure.ac: Stamping as 0.9.9.12, merging in the current
+	status of the events branch, which is working pretty well.
+
+2016-01-09  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* configure.ac, libseq64/include/perform.hpp, libseq64/src/perform.cpp,
+	libseq64/src/sequence.cpp, seq_gtkmm2/src/eventedit.cpp,
+	seq_gtkmm2/src/perfnames.cpp, seq_gtkmm2/src/seqmenu.cpp,
+	libseq64/include/editable_events.hpp,
+	libseq64/src/editable_events.cpp, libseq64/src/event.cpp,
+	libseq64/src/event_list.cpp, libseq64/src/sequence.cpp,
+	seq_gtkmm2/src/eventslots.cpp: Added verify_and_link() functionality
+	to saving sequences modified by the event editor.
+	Added screenshot, fixed event editor, fixed new-sequence bug.
+	Now the event editor code is enabled by default, but still can be disabled.
+
+2016-01-08  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* VERSION, bootstrap, configure.ac, libseq64/src/sequence.cpp,
+	seq_gtkmm2/src/seqmenu.cpp: Made disabling of event editor the
+	default status, for now, but bootstrap debug setup will enable it.
+
+2016-01-07  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* configure.ac, libseq64/include/gdk_basic_keys.h,
+	libseq64/src/sequence.cpp, seq_gtkmm2/src/eventedit.cpp,
+	seq_gtkmm2/src/mainwid.cpp, seq_gtkmm2/src/seqmenu.cpp: Still
+	hacking at the post-event-editor segfaults.
+
+2016-01-06  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* seq_gtkmm2/src/eventedit.cpp: Issues with deletion and with
+	character handling still extant.
+
+2016-01-05  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/include/event.hpp, libseq64/include/sequence.hpp,
+	libseq64/src/event.cpp, libseq64/src/sequence.cpp,
+	seq_gtkmm2/include/eventedit.hpp,
+	seq_gtkmm2/include/eventslots.hpp, seq_gtkmm2/src/eventedit.cpp,
+	seq_gtkmm2/src/eventslots.cpp, seq_gtkmm2/src/seqroll.cpp: Cleanup
+	of comments and a fix to saving emptied container in event editor.
+	Interim check-in of some attempts to get mainwid sequence redraw and no
+	segfaults in get_next_note_event().
+
+2016-01-04  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/include/event_list.hpp, libseq64/include/sequence.hpp,
+	libseq64/src/event_list.cpp, libseq64/src/sequence.cpp,
+	seq_gtkmm2/src/eventedit.cpp, seq_gtkmm2/src/eventslots.cpp,
+	seq_gtkmm2/src/mainwnd.cpp, seq_gtkmm2/src/seqroll.cpp: Fixed
+	segfault with deleted events in event editor, still needs more
+	testing and commented-code cleanup in many modules.  Added modification
+	notice to event editor, but now found it crashes when saving after
+	deleting an event.
+
+2016-01-03  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/include/event_list.hpp, libseq64/src/editable_event.cpp,
+	libseq64/src/editable_events.cpp, libseq64/src/event_list.cpp,
+	libseq64/src/sequence.cpp, seq_gtkmm2/include/eventedit.hpp,
+	seq_gtkmm2/include/eventslots.hpp, seq_gtkmm2/include/seqmenu.hpp,
+	seq_gtkmm2/src/eventedit.cpp, seq_gtkmm2/src/eventslots.cpp,
+	seq_gtkmm2/src/seqmenu.cpp: Fixed more bugs in event editor, added
+	navigation keys.
+
+2016-01-02  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* seq_gtkmm2/include/eventedit.hpp,
+	seq_gtkmm2/include/eventslots.hpp, seq_gtkmm2/src/eventedit.cpp,
+	seq_gtkmm2/src/eventslots.cpp: Interim event editor check-in, need
+	to add Home/End keys, get timestamp editing improved, fix event name
+	editing, and much more.
+
+2016-01-01  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* seq_gtkmm2/include/eventslots.hpp, seq_gtkmm2/src/eventedit.cpp,
+	seq_gtkmm2/src/eventslots.cpp, seq_gtkmm2/src/mainwid.cpp: Getting
+	arrow keys to work in event editor, still in progress.
+
+2015-12-31  Chris Ahlstrom <ahlstrom@centiped>
+
+	* seq_gtkmm2/src/eventslots.cpp: Removed dead code from event
+	editor.  Fixed insertion issue on first page, index calculated to be below 0.
+
+2015-12-30  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* seq_gtkmm2/include/eventslots.hpp, seq_gtkmm2/src/eventslots.cpp: 
+	More minor paging adjustments, still not there yet.
+
+2015-12-29  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* seq_gtkmm2/include/eventslots.hpp, seq_gtkmm2/src/eventedit.cpp,
+	seq_gtkmm2/src/eventslots.cpp: More improvements to insertion in
+	event editor, ye gods.
+
+2015-12-28  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/include/editable_events.hpp,
+	libseq64/src/editable_events.cpp,
+	seq_gtkmm2/include/eventslots.hpp, seq_gtkmm2/src/eventedit.cpp,
+	seq_gtkmm2/src/eventslots.cpp: Interim check-in of event editing
+	refactoring.
+
+2015-12-27  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* seq_gtkmm2/include/eventslots.hpp, seq_gtkmm2/src/eventedit.cpp,
+	seq_gtkmm2/src/eventslots.cpp: Check-in prior to refactoring event
+	paging.
+
+2015-12-24  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* INSTALL, README, ROADMAP, VERSION, configure.ac,
+	contrib/mute_groups.txt, contrib/update-notes-from-github.txt,
+	doc/dox/doxy-reference.cfg, libseq64/src/cmdlineopts.cpp,
+	libseq64/src/userfile.cpp, man/sequencer64.1,
+	seq_gtkmm2/src/eventslots.cpp: Interim check-in, version increment.
+
 2015-12-22  Chris Ahlstrom <ahlstromcj@gmail.com>
 
 	* contrib/git.txt, configure.ac: Added pulling and merging to

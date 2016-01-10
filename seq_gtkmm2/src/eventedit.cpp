@@ -25,15 +25,27 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-12-05
- * \updates       2015-12-19
+ * \updates       2016-01-09
  * \license       GNU GPLv2 or above
- *
  *
  * To consider:
  *
  *      -   Selecting multiple events?
  *      -   Looping over multiple events for play/stp?
  *      -   Undo
+ *
+ * Current bugs to fix:
+ *
+ *      -   Implement Home, End, Delete, Insert keys.  Could also implement
+ *          Backspace.
+ *      -   Fix the effect of timestamp modification.
+ *      -   Fix event modification (delete/insert).
+ *      -   Fix event modification of event name.
+ *      -   Fix segfault in sequence's open pattern editor due to deleted
+ *          events.  Maybe we should add "disabled" to the properties of an
+ *          event.
+ *      -   Improve labelling differentiation for the data of various channel
+ *          events.
  */
 
 #include <string>
@@ -110,7 +122,7 @@ namespace seq64
 \verbatim
           0                             1   2                         3   4
            ---------------------------------------------------------------   0
-     htop |                             :   :                             |
+     htop |  (OLD LAYOUT)               :   :                             |
           |---------------------------------------- showbox --------------|  1
   e'slots |  1-120:0:192 Program Change | ^ | "Sequence name"         |   |
           |-----------------------------|   | 4/4 PPQN 192            | r |  2
@@ -146,7 +158,11 @@ eventedit::eventedit
     perform & p,
     sequence & seq
 ) :
+#ifdef USE_OLD_LAYOUT
     gui_window_gtk2     (p, 660, 690),      /* make sure it is wide enough! */
+#else
+    gui_window_gtk2     (p, 660, 666),      /* make sure it is wide enough! */
+#endif
     m_table             (manage(new Gtk::Table(14, 4, false))),
     m_vadjust           (manage(new Gtk::Adjustment(0, 0, 1, 1, 1, 1))),
     m_vscroll           (manage(new Gtk::VScrollbar(*m_vadjust))),
@@ -173,6 +189,8 @@ eventedit::eventedit
     m_label_ppqn        (manage(new Gtk::Label())),
     m_label_channel     (manage(new Gtk::Label())),
     m_label_ev_count    (manage(new Gtk::Label())),
+    m_label_spacer      (manage(new Gtk::Label())),
+    m_label_modified    (manage(new Gtk::Label())),
     m_label_category    (manage(new Gtk::Label())),
     m_entry_ev_timestamp(manage(new Gtk::Entry())),
     m_entry_ev_name     (manage(new Gtk::Entry())),
@@ -180,6 +198,7 @@ eventedit::eventedit
     m_entry_ev_data_1   (manage(new Gtk::Entry())),
     m_label_time_fmt    (manage(new Gtk::Label())),
     m_label_right       (manage(new Gtk::Label())),
+    m_seq               (seq),
     m_redraw_ms         (c_redraw_ms)                       /* 40 ms        */
 {
     std::string title = "Sequencer64 - Event Editor";
@@ -188,23 +207,42 @@ eventedit::eventedit
     title += "\"";
     set_title(title);                                       /* caption bar  */
     set_icon(Gdk::Pixbuf::create_from_xpm_data(perfedit_xpm));
+    m_seq.set_editing(true);
     m_table->set_border_width(2);
     m_htopbox->set_border_width(4);
     m_showbox->set_border_width(4);
     m_editbox->set_border_width(4);
     m_optsbox->set_border_width(4);
     m_rightbox->set_border_width(1);
-    m_table->attach(*m_htopbox,    0, 4,  0,  1,   Gtk::FILL, Gtk::SHRINK, 8, 8);
+#ifdef USE_OLD_LAYOUT
+    m_table->attach(*m_htopbox,    0, 4,  0,  1,  Gtk::FILL, Gtk::SHRINK, 8, 8);
     m_table->attach(*m_eventslots, 0, 1,  1, 14,  Gtk::FILL, Gtk::FILL, 8, 8);
     m_table->attach
     (
         *m_vscroll, 1, 2, 1, 14, Gtk::SHRINK, Gtk::FILL | Gtk::EXPAND, 4, 4
     );
-    m_table->attach(*m_showbox,    2, 3,  1,  4,   Gtk::FILL, Gtk::SHRINK, 8, 8);
-    m_table->attach(*m_editbox,    2, 3,  4, 10,  Gtk::FILL, Gtk::SHRINK, 8, 8);
-    m_table->attach(*m_optsbox,    2, 3, 10, 13, Gtk::FILL, Gtk::SHRINK, 8, 8);
-    m_table->attach(*m_bottbox,    2, 3, 13, 14, Gtk::FILL, Gtk::SHRINK, 8, 8);
-    m_table->attach(*m_rightbox,   3, 4,  1, 14,  Gtk::SHRINK, Gtk::SHRINK, 2, 2);
+    m_table->attach(*m_showbox,  2, 3,  1,  4, Gtk::FILL, Gtk::SHRINK, 8, 8);
+    m_table->attach(*m_editbox,  2, 3,  4, 10, Gtk::FILL, Gtk::SHRINK, 8, 8);
+    m_table->attach(*m_optsbox,  2, 3, 10, 13, Gtk::FILL, Gtk::SHRINK, 8, 8);
+    m_table->attach(*m_bottbox,  2, 3, 13, 14, Gtk::FILL, Gtk::SHRINK, 8, 8);
+    m_table->attach(*m_rightbox, 3, 4,  1, 14, Gtk::SHRINK, Gtk::SHRINK, 2, 2);
+#else
+    m_table->attach(*m_eventslots, 0, 1,  0, 13,  Gtk::FILL, Gtk::FILL, 8, 8);
+    m_table->attach
+    (
+        *m_vscroll, 1, 2, 0, 13, Gtk::SHRINK, Gtk::FILL | Gtk::EXPAND, 4, 4
+    );
+    m_table->attach(*m_showbox,  2, 3,  0,  3, Gtk::FILL, Gtk::SHRINK, 8, 8);
+    m_table->attach(*m_editbox,  2, 3,  3,  9, Gtk::FILL, Gtk::SHRINK, 8, 8);
+    m_table->attach(*m_optsbox,  2, 3,  9, 12, Gtk::FILL, Gtk::SHRINK, 8, 8);
+    m_table->attach(*m_bottbox,  2, 3, 12, 13, Gtk::FILL, Gtk::SHRINK, 8, 8);
+    m_table->attach(*m_rightbox, 3, 4,  0, 13, Gtk::SHRINK, Gtk::SHRINK, 2, 2);
+#endif      // USE_OLD_LAYOUT
+    add_tooltip
+    (
+        m_eventslots,
+        "Navigate using the scrollbar, arrow keys, Page keys, and Home/End keys. "
+    );
 
 #if USE_BUTTON_PIXMAP
     m_button_del->add
@@ -222,7 +260,9 @@ eventedit::eventedit
     add_tooltip
     (
         m_button_del,
-        "Deletes the currently-selected event, even if event is not visible."
+        "Deletes the currently-selected event, even if event is not visible "
+        "in the frame.  Can also use the asterisk key (Delete is reserved for "
+        "the edit fields)."
     );
 
 #if USE_BUTTON_PIXMAP
@@ -241,9 +281,9 @@ eventedit::eventedit
     add_tooltip
     (
         m_button_ins,
-        "Insert a new event using the data in the edit fields. "
-        "Its actual location is determined by the timestamp, not the current "
-        "event."
+        "Insert a new event using the data in the edit fields. Its actual"
+        "location is determined by the timestamp field, not the current "
+        "event.  The Insert key is reserved for the edit fields."
     );
 
     m_button_modify->set_label("Modify Current Event");
@@ -259,6 +299,7 @@ eventedit::eventedit
     );
 
     m_button_save->set_label("Save to Sequence");
+    m_button_save->set_sensitive(false);
     m_button_save->signal_clicked().connect
     (
         sigc::mem_fun(*this, &eventedit::handle_save)
@@ -314,6 +355,14 @@ eventedit::eventedit
     set_seq_count();
     m_showbox->pack_start(*m_label_ev_count, false, false);
 
+    m_label_spacer->set_width_chars(1);
+    m_showbox->pack_start(*m_label_spacer, false, false);
+    m_label_spacer->set_text("");
+
+    m_label_modified->set_width_chars(1);
+    m_showbox->pack_start(*m_label_modified, false, false);
+    m_label_modified->set_text("");
+
     m_label_category->set_width_chars(24);
     m_label_category->set_text("Channel Event: Ch. 5");
     m_editbox->pack_start(*m_label_category, false, false);
@@ -322,24 +371,52 @@ eventedit::eventedit
     m_entry_ev_timestamp->set_editable(true);
     m_entry_ev_timestamp->set_width_chars(16);
     m_entry_ev_timestamp->set_text("001:1:000");
+    add_tooltip
+    (
+        m_entry_ev_timestamp,
+        "Timestamp field.  Currently only 'measures:beats:divisions' format "
+        "is supported. Measure and beat numbers start at 1, not 0!"
+    );
     m_editbox->pack_start(*m_entry_ev_timestamp, false, false);
 
     m_entry_ev_name->set_max_length(32);
     m_entry_ev_name->set_editable(true);
     m_entry_ev_name->set_width_chars(18);
     m_entry_ev_name->set_text("Note On");
+    add_tooltip
+    (
+        m_entry_ev_name,
+        "Event name field.  Recognized events: Note On/Off, Aftertouch, "
+        "Control/Program Change, Channel Pressure, and Pitch Wheel."
+    );
     m_editbox->pack_start(*m_entry_ev_name, false, false);
 
     m_entry_ev_data_0->set_max_length(32);
     m_entry_ev_data_0->set_editable(true);
     m_entry_ev_data_0->set_width_chars(32);
     m_entry_ev_data_0->set_text("Key 101");
+    add_tooltip
+    (
+        m_entry_ev_data_0,
+        "Type the numeric value of the first data byte here. "
+        "Digits are converted until a non-digit is encountered."
+        "The events that support only one value are Program Change and "
+        "Channel Pressure."
+    );
     m_editbox->pack_start(*m_entry_ev_data_0, false, false);
 
     m_entry_ev_data_1->set_max_length(32);
     m_entry_ev_data_1->set_editable(true);
     m_entry_ev_data_1->set_width_chars(32);
     m_entry_ev_data_1->set_text("Vel 64");
+    add_tooltip
+    (
+        m_entry_ev_data_1,
+        "Type the numeric value of the second data byte here. "
+        "Digits are converted until a non-digit is encountered. "
+        "The events that support two values are Note On/Off, Aftertouch, "
+        "Control Change, and Pitch Wheel."
+    );
     m_editbox->pack_start(*m_entry_ev_data_1, false, false);
 
     m_editbox->pack_start(*m_button_del, false, false);
@@ -356,13 +433,6 @@ eventedit::eventedit
     m_rightbox->pack_start(*m_label_right, false, false);
 
     add(*m_table);
-
-    /*
-     * Doesn't do anything:
-     *
-     * m_table->show();
-     * show_all();
-     */
 }
 
 /**
@@ -499,11 +569,26 @@ eventedit::set_event_data_1 (const std::string & d)
 }
 
 /**
+ *  Sets the parameters for the vertical scroll-bar, using only the value
+ *  parameter.  This function overload provides a common use case.
+ *
+ * \param value
+ *      The new current value to be indicated by the scroll-bar.
+ */
+
+void
+eventedit::v_adjustment (int value)
+{
+    v_adjustment(value, 0, m_eventslots->event_count());
+}
+
+/**
  *  Sets the parameters for the vertical scroll-bar that is associated with
- *  the eventslots event-list user-interface.  Some of the parameters are
+ *  the eventslots event-list user-interface.  It keeps the frame scroll-bar
+ *  in sync with the frame movement actions.  Some of the parameters are
  *  obtained from the eventslots object:
  *
- *      -   Page size comes from eventslots::display_count().
+ *      -   Page size comes from eventslots::line_maximum().
  *      -   Page increment is a little less than the page-size value.
  *
  * \param value
@@ -522,9 +607,9 @@ eventedit::v_adjustment (int value, int lower, int upper)
 {
     m_vadjust->set_lower(lower);
     m_vadjust->set_upper(upper);
-    m_vadjust->set_page_size(m_eventslots->display_count());
+    m_vadjust->set_page_size(m_eventslots->line_maximum());
     m_vadjust->set_step_increment(1);
-    m_vadjust->set_page_increment(m_eventslots->display_count() - 8);
+    m_vadjust->set_page_increment(m_eventslots->line_increment());
     if (value >= lower && value <= upper)
         m_vadjust->set_value(value);
 }
@@ -546,14 +631,38 @@ eventedit::enqueue_draw ()
 }
 
 /**
- *  Provides a way to mark the performance as modified, when the sequence
- *  is modified.
+ *  Provides a way to mark the perform object as modified, when the modified
+ *  sequence is saved.
  */
 
 void
-eventedit::modify ()
+eventedit::perf_modify ()
 {
     perf().modify();
+    set_dirty(false);
+}
+
+/**
+ *  Sets the "modified" status of the user-interface.  This includes changing
+ *  a label and enabling/disabling the Save button.
+ *
+ * \param flag
+ *      If true, the modified status is indicated, otherwise it is cleared.
+ */
+
+void
+eventedit::set_dirty (bool flag)
+{
+    if (flag)
+    {
+        m_label_modified->set_text("[ Modified ]");
+        m_button_save->set_sensitive(true);
+    }
+    else
+    {
+        m_label_modified->set_text("[ Saved ]");
+        m_button_save->set_sensitive(false);
+    }
 }
 
 /**
@@ -574,7 +683,9 @@ eventedit::handle_delete ()
 
 /**
  *  Initiates the insertion of a new editable event.  The event's location
- *  will be determined by the timestamp and existing events.
+ *  will be determined by the timestamp and existing events.  Note that we
+ *  have to recalibrate the scroll-bar when we insert/delete events by calling
+ *  v_adjustment().
  */
 
 void
@@ -590,6 +701,7 @@ eventedit::handle_insert ()
     {
         m_button_del->set_sensitive(true);
         m_button_modify->set_sensitive(true);
+        v_adjustment(m_eventslots->pager_index());
     }
 }
 
@@ -632,10 +744,8 @@ eventedit::handle_save ()
     if (not_nullptr(m_eventslots))
     {
         bool ok = m_eventslots->save_events();
-        if (! ok)
-        {
-            // Maybe show dirty status and errors in top box
-        }
+        if (ok)
+            perf_modify();
     }
 }
 
@@ -646,6 +756,8 @@ eventedit::handle_save ()
 void
 eventedit::handle_cancel ()
 {
+    m_seq.set_editing(false);
+
 #if GTK_MAJOR_VERSION >= 3
     Gtk::Window::close();
 #else
@@ -662,8 +774,7 @@ eventedit::handle_cancel ()
 bool
 eventedit::timeout ()
 {
-    // m_eventslots->redraw_dirty_events();
-    return true;
+    return true; // m_eventslots->redraw_dirty_events();
 }
 
 /**
@@ -684,13 +795,29 @@ eventedit::on_realize ()
 }
 
 /**
- *  This function is the callback for a key-press event.
+ *  This function is the callback for a key-press event.  If the Up or Down
+ *  arrow is pressed (later, k and j :-), then we tell the eventslots object to
+ *  move the "current event" highlighting up or down.  In Gtkmm, these arrows
+ *  also cause movement from one edit field to the next, so we disable
+ *  that process if the event was handled here.
+ *
+ *  Note that some vi-like keys were supported, but they are needed for the
+ *  edit fields, so cannot be used here.  Also, the Delete key is needed for
+ *  the edit fields.  For now, we replace it with the asterisk, which is
+ *  easy to access from the numeric pad of a keyboard, and allows for rapid
+ *  deletion.  The Insert key also causes confusing effects in the edit
+ *  fields, so we replace it by the slash.  Note that the asterisk and slash
+ *  should not be required in any of the edit fields.
+ *
+ *  HOWEVER, there are still some issues with "/", so you'll just have to
+ *  click the button to insert an event.
  */
 
 bool
 eventedit::on_key_press_event (GdkEventKey * ev)
 {
-    // bool event_was_handled = false;
+    bool result = true;
+    bool event_was_handled = false;
     if (CAST_EQUIVALENT(ev->type, SEQ64_KEY_PRESS))
     {
         if (rc().print_keys())
@@ -701,8 +828,79 @@ eventedit::on_key_press_event (GdkEventKey * ev)
                 ev->keyval, gdk_keyval_name(ev->keyval)
             );
         }
+        if (ev->keyval == SEQ64_Down)
+        {
+            event_was_handled = true;
+            m_eventslots->on_move_down();
+        }
+        else if (ev->keyval == SEQ64_Up)
+        {
+            event_was_handled = true;
+            m_eventslots->on_move_up();
+        }
+        else if (ev->keyval == SEQ64_Page_Down)
+        {
+            event_was_handled = true;
+            m_eventslots->on_frame_down();
+            v_adjustment(m_eventslots->pager_index());
+        }
+        else if (ev->keyval == SEQ64_Page_Up)
+        {
+            event_was_handled = true;
+            m_eventslots->on_frame_up();
+            v_adjustment(m_eventslots->pager_index());
+        }
+        else if (ev->keyval == SEQ64_Home)
+        {
+            event_was_handled = true;
+            m_eventslots->on_frame_home();
+            v_adjustment(m_eventslots->pager_index());
+        }
+        else if (ev->keyval == SEQ64_End)
+        {
+            event_was_handled = true;
+            m_eventslots->on_frame_end();
+            v_adjustment(m_eventslots->pager_index());
+        }
+#ifdef CAN_USE_SLASH_PROPERLY                   /* we cannot    */
+        else if (ev->keyval == '/')             /* SEQ64_Insert */
+        {
+            handle_insert ();
+        }
+#endif
+        else if (ev->keyval == '*')            /* SEQ64_Delete */
+        {
+            event_was_handled = true;
+            handle_delete();
+        }
+        else if (ev->keyval == SEQ64_KP_Multiply)
+        {
+            event_was_handled = true;
+            handle_delete();
+        }
     }
-    return Gtk::Window::on_key_press_event(ev);
+    if (! event_was_handled)
+        result = Gtk::Window::on_key_press_event(ev);
+
+    return result;
+}
+
+/**
+ *  Handles an on-delete event.  It sets the sequence object's editing flag to
+ *  false, and deletes "this".  This function is called if the "Close" ("X")
+ *  button in the window's title bar is clicked.  That is a different action
+ *  from clicking the Close button.
+ *
+ * \return
+ *      Always returns false.
+ */
+
+bool
+eventedit::on_delete_event (GdkEventAny *)
+{
+    m_seq.set_editing(false);
+    delete this;
+    return false;
 }
 
 }           // namespace seq64

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-19
- * \updates       2015-12-02
+ * \updates       2016-01-09
  * \license       GNU GPLv2 or above
  *
  */
@@ -208,6 +208,9 @@ event_list::add (const event & e, bool postsort)
 #endif
 
     bool result = m_events.size() == (count + 1);
+    if (result)
+        m_is_modified = true;
+
     if (postsort)
         sort();                         /* by time-stamp and "rank" */
 
@@ -367,15 +370,15 @@ event_list::verify_and_link (midipulse slength)
     for (event_list::iterator on = m_events.begin(); on != m_events.end(); on++)
     {
         event & eon = dref(on);
-        if (eon.is_note_on())          /* note on, look for its note off */
+        if (eon.is_note_on())               /* Note On, find its Note Off   */
         {
-            event_list::iterator off = on;      /* get next possible off node */
+            event_list::iterator off = on;  /* get next possible Note Off   */
             off++;
             bool endfound = false;
             while (off != m_events.end())
             {
                 event & eoff = dref(off);
-                if              /* is a off event, == notes, and isn't marked  */
+                if                          /* Off, == notes, not marked    */
                 (
                     eoff.is_note_off() &&
                     eoff.get_note() == eon.get_note() &&
@@ -448,6 +451,18 @@ event_list::mark_selected ()
         if (e.is_selected())
             e.mark();
     }
+}
+
+/**
+ *  Marks all events.  Not yet used, but might come in handy with the event
+ *  editor dialog.
+ */
+
+void
+event_list::mark_all ()
+{
+    for (Events::iterator i = m_events.begin(); i != m_events.end(); ++i)
+        dref(i).mark();
 }
 
 /**

@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-30
+ * \updates       2016-01-09
  * \license       GNU GPLv2 or above
  *
  *  The Seq24 MIDI file is a standard, Format 1 MIDI file, with some extra
@@ -81,6 +81,13 @@ private:
      */
 
     std::string m_error_message;
+
+    /**
+     *  Indicates if the error should be considered fatal.  The caller can
+     *  query for this value after getting the return value from parse().
+     */
+
+    bool m_error_is_fatal;
 
     /**
      *  Indicates that file reading has already been disabled (due to serious
@@ -188,6 +195,15 @@ public:
     const std::string & error_message () const
     {
         return m_error_message;
+    }
+
+    /**
+     * \getter m_error_is_fatal
+     */
+
+    bool error_is_fatal () const
+    {
+        return m_error_is_fatal;
     }
 
     /**

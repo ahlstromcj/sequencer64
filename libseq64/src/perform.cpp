@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-29
+ * \updates       2016-01-09
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -521,7 +521,7 @@ perform::set_right_tick (midipulse tick, bool setstart)
  *
  * \return
  *      Returns true if a sequence was removed, or the sequence was
- *      successfully add.  In other words, if a real change in sequence
+ *      successfully added.  In other words, if a real change in sequence
  *      pointers occurred.  It is up to the caller to decide if the change
  *      warrants setting the "is modified" flag.
  */
@@ -532,7 +532,11 @@ perform::install_sequence (sequence * seq, int seqnum)
     bool result = false;
     if (not_nullptr(m_seqs[seqnum]))
     {
-        errprintf("install_sequence(): m_seqs[%d] not null\n", seqnum);
+        errprintf
+        (
+            "install_sequence(): m_seqs[%d] not null, removing old sequence\n",
+            seqnum
+        );
         delete m_seqs[seqnum];
         m_seqs[seqnum] = nullptr;
         if (m_sequence_count > 0)
@@ -1156,7 +1160,7 @@ perform::play (midipulse tick)
         if (is_active(i))
         {
             /*
-             * Skip sequences that have no real MIDI events.
+             * Skip sequences that have no playable MIDI events.
              */
 
             if (m_seqs[i]->event_count() == 0)
@@ -1164,10 +1168,7 @@ perform::play (midipulse tick)
 
             if (m_seqs[i]->check_queued_tick(tick))
             {
-                m_seqs[i]->play
-                (
-                    m_seqs[i]->get_queued_tick() - 1, m_playback_mode
-                );
+                m_seqs[i]->play(m_seqs[i]->get_queued_tick()-1, m_playback_mode);
                 m_seqs[i]->toggle_playing();
             }
             m_seqs[i]->play(tick, m_playback_mode);

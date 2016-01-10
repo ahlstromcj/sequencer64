@@ -20,12 +20,12 @@
  * \file          eventslots.cpp
  *
  *  This module declares/defines the base class for displaying events in their
- *  editing slotss.
+ *  editing slots.
  *
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-12-05
- * \updates       2015-12-19
+ * \updates       2016-01-09
  * \license       GNU GPLv2 or above
  *
  *  This module is user-interface code.  It is loosely based on the workings
@@ -34,6 +34,12 @@
  *  Now, we have an issue when loading one of the larger sequences in our main
  *  test tune, where X stops the application and Gtk says it got a bad memory
  *  allocation.  So we need to page through the sequence.
+ *
+ *  Also note that, currently, the editable_events container does not support
+ *  a verify_and_link() function like that of the event_list container.
+ *  Eventually, we want to support that feature, so that we can delete a Note
+ *  On event and have the corresponding Note Off event automatically deleted
+ *  as well.
  */
 
 #include <gtkmm/adjustment.h>
@@ -70,23 +76,25 @@ eventslots::eventslots
     m_slots_y               (font_render().char_height() + 4),  // c_names_y
     m_xy_offset             (2),
     m_event_count           (0),
-    m_display_count         (43),
-    m_top_event_index       (0),
-    m_bottom_event_index    (42),   /* 41: need way to calculate this one */
-    m_current_event_index   (0),
+    m_line_count            (0),
+    m_line_maximum          (43),   /* need a way to calculate this value   */
+    m_line_overlap          (5),
+    m_top_index             (0),    /* (SEQ64_NULL_EVENT_INDEX),            */
+    m_current_index         (SEQ64_NULL_EVENT_INDEX),
     m_top_iterator          (),
     m_bottom_iterator       (),
-    m_current_iterator      ()
+    m_current_iterator      (),
+    m_pager_index           (0)
 {
     load_events();
-    grab_focus();
+    grab_focus();                   /* doesn't seem to do anything          */
 }
 
 /**
  *  Grabs the event list from the sequence and uses it to fill the
  *  editable-event list.  Determines how many events can be shown in the
  *  GUI [later] and adjusts the top and bottom editable-event iterators to
- *  shows the first page of events.
+ *  show the first page of events.
  *
  * \return
  *      Returns true if the event iterators were able to be set up as valid.
@@ -101,54 +109,59 @@ eventslots::load_events ()
         m_event_count = m_event_container.count();
         if (m_event_count > 0)
         {
-            int count = m_bottom_event_index + 1;
-            if (m_event_count < count)
-            {
-                count = m_event_count;
-                m_bottom_event_index = count - 1;   /* @change ca 2015-12-19 */
-            }
+            if (m_event_count < m_line_count)
+                m_line_count = m_event_count;
+            else
+                m_line_count = m_line_maximum;
 
             m_current_iterator = m_bottom_iterator =
                 m_top_iterator = m_event_container.begin();
 
-            /*
-             * We can't reduce m_display_count without reducing the size of
-             * the white frame that could ultimately hold more events than the
-             * initial count of events.
-             *
-             *      m_display_count = count;
-             */
-
-//          for ( ; count > 0; --count)
-            for (int i = 0; i < count - 1; ++i)
+            for (int i = 0; i < m_line_count - 1; ++i)
             {
-//              ei++;
-//              if (ei != m_event_container.end())
-//                  m_bottom_iterator = ei;
-//              else
-//                  break;
-
                 if (increment_bottom() == SEQ64_NULL_EVENT_INDEX)
                     break;
             }
         }
         else
-        {
             result = false;
-            m_current_iterator = m_bottom_iterator =
-                m_top_iterator = m_event_container.end();
-        }
+    }
+    if (! result)
+    {
+        m_line_count = 0;
+        m_current_iterator = m_bottom_iterator =
+            m_top_iterator = m_event_container.end();
     }
     return result;
 }
 
 /**
- *  Set the current event.  Note in the snprintf() calls that the first digit
- *  is part of the data byte, so that translation is easier.
+ *  Set the current event, which is the event that is highlighted.  Note in
+ *  the snprintf() calls that the first digit is part of the data byte, so
+ *  that translation is easier.
+ *
+ * \param ei
+ *      The iterator that points to the event.
+ *
+ * \param index
+ *      The index (re 0) of the event, starting at the top line of the frame.
+ *      It is a frame index, not a container index.
+ *
+ * \param full_redraw
+ *      If true (the default) does a full redraw of the frame.  Otherwise,
+ *      only the current event is drawn.  Generally, the only time a single
+ *      event (actually, two adjacent events) is convenient to draw is when
+ *      using the arrow keys, where the speed of keystroke auto-repeats makes
+ *      the full-frame update scrolling very flickery and disconcerting.
  */
 
 void
-eventslots::set_current_event (const editable_events::iterator ei, int index)
+eventslots::set_current_event
+(
+    const editable_events::iterator ei,
+    int index,
+    bool full_redraw
+)
 {
     char tmp[32];
     midibyte d0, d1;
@@ -163,9 +176,12 @@ eventslots::set_current_event (const editable_events::iterator ei, int index)
         ev.category_string(), ev.timestamp_string(), ev.status_string(),
         data_0, data_1
     );
-    m_current_event_index = index;
+    m_current_index = index;
     m_current_iterator = ei;
-    enqueue_draw();
+    if (full_redraw)
+        enqueue_draw();
+    else
+        draw_event(m_current_iterator, m_current_index);
 }
 
 /**
@@ -204,7 +220,27 @@ eventslots::set_text
 /**
  *  Inserts an event.
  *
- *  If the container was not empty, ...
+ *  What actually happens here depends if the new event is before the frame,
+ *  within the frame, or after the frame, based on the timestamp.
+ *
+ *  If before the frame: To keep the previous events visible, we do not need
+ *  to increment the iterators (insertion does not affect multimap iterators),
+ *  but we do need to increment their indices.  The contents shown in the frame
+ *  should not change.
+ *
+ *  If at the frame top:  The new timestamp equals the top timestamp. We don't
+ *  know exactly where the new event goes in the multimap, but we do have an
+ *  new event.
+ *
+ *  If at the frame bottom:  TODO
+ *
+ *  If after the frame: No action needed if the bottom event is actually at
+ *  the bottom of the frame.  But if the frame is not yet filled, we need to
+ *  increment the bottom iterator, and its index.
+ *
+ * \note
+ *      Actually, it is far easier to just adjust all the counts and iterators
+ *      and redraw the screen, as done by the page_topper() function.
  *
  * \param ev
  *      The event to insert, prebuilt.
@@ -222,79 +258,60 @@ eventslots::insert_event (const editable_event & edev)
         m_event_count = m_event_container.count();
         if (m_event_count == 1)
         {
-            m_top_iterator = m_current_iterator = 
+            m_line_count = 1;           /* used in drawing in a bit */
+            m_top_index = 0;
+            m_current_index = 0;
+            m_top_iterator = m_current_iterator =
                 m_bottom_iterator = m_event_container.begin();
 
-            m_top_event_index = m_current_event_index =
-                m_bottom_event_index = 0;
+            m_parent.set_dirty();
+            select_event(m_current_index);
         }
         else
         {
             /*
-             * What actually happens here depends if the new event is before
-             * the frame, within the frame, or after the frame, based on the
-             * timestamp.  If before the frame: To keep the previous events
-             * visible, we do not need to increment the iterators (insertion
-             * does not affect multimap iterators), but we do need to
-             * increment their indices.  If after the frame: No action needed
-             * if the bottom event is actually at the bottom of the frame.
-             * But if the frame is not yet filled, we need to increment the
-             * bottom iterator, and its index.
+             * This iterator is a short-lived [changed after the next add()
+             * call] pointer to the added event.
              */
 
+            editable_events::iterator nev = m_event_container.current_event();
+
+#ifdef USE_THIS_CODE
             midipulse top_ts = m_top_iterator->second.get_timestamp();
             midipulse bot_ts = m_bottom_iterator->second.get_timestamp();
             midipulse new_ts = edev.get_timestamp();
             if (new_ts < top_ts)                    /* before the frame     */
             {
-                /*
-                 * (void) increment_top();
-                 * (void) increment_current();
-                 * (void) increment_bottom();
-                 */
-
-                ++m_top_event_index;
-                ++m_current_event_index;
-                ++m_bottom_event_index;
             }
-            if (new_ts == top_ts)                   /* at the frame         */
+            if (new_ts == top_ts)                   /* at the frame top     */
             {
-                ++m_bottom_event_index;
+            }
+            else if (new_ts == bot_ts)              /* at the frame bottom  */
+            {
             }
             else if (new_ts > bot_ts)               /* after the frame      */
             {
-                if (m_bottom_event_index < (m_display_count - 1))
-                    m_bottom_event_index = increment_bottom();
             }
             else                                    /* within the frame     */
             {
-                if (m_bottom_event_index < (m_display_count - 1))
-                    m_bottom_event_index = increment_bottom();
-                else
-                    (void) increment_bottom();
-
-                if (new_ts < m_current_iterator->second.get_timestamp())
-                    (void) increment_current();
             }
+#endif  // USE_THIS_CODE
+
+            m_parent.set_dirty();
+            page_topper(nev);
         }
-        if (result)
-            select_event(m_current_event_index);
+
     }
     return result;
 }
 
 /**
  *  Inserts an event based on the setting provided, which the eventedit object
- *  gets from its Entry fields.
+ *  gets from its Entry fields.  It calls the other insert_event() overload.
  *
  *  Note that we need to qualify the temporary event class object we create
  *  below, with the seq64 namespace, otherwise the compiler thinks we're
  *  trying to access some Gtkmm thing.
- *
- *  If the container was empty when the event was inserted, then we have to
- *  fix all of the iterator and index members.
- *
- *  If the container was not empty, ...
  *
  * \param evtimestamp
  *      The time-stamp of the new event, as obtained from the event-edit
@@ -327,8 +344,8 @@ eventslots::insert_event
 {
     seq64::event e;                                 /* new default event    */
     editable_event edev(m_event_container, e);
-    edev.set_status_from_string(evtimestamp, evname, evdata0, evdata1);
     edev.set_channel(m_seq.get_midi_channel());
+    edev.set_status_from_string(evtimestamp, evname, evdata0, evdata1);
     return insert_event(edev);
 }
 
@@ -402,13 +419,13 @@ eventslots::delete_current_event ()
         int oldcount = m_event_container.count();
         if (oldcount > 1)
         {
-            if (m_current_event_index == m_top_event_index)
+            if (m_current_index == 0)
             {
                 (void) increment_top();         /* bypass to-delete event   */
                 (void) increment_current();     /* ditto                    */
                 (void) increment_bottom();      /* next event up to bottom  */
             }
-            else if (m_current_event_index == m_bottom_event_index)
+            else if (m_current_index == (m_line_count - 1))
             {
                 /*
                  * If we are before the last event in the event container, we
@@ -417,7 +434,7 @@ eventslots::delete_current_event ()
                  * deleted.
                  */
 
-                if (m_current_event_index < (m_event_count - 1))
+                if (m_current_index < (m_event_count - 1))
                 {
                     (void) increment_current();
                     (void) increment_bottom();
@@ -428,8 +445,10 @@ eventslots::delete_current_event ()
                      * The frame must shrink.
                      */
 
-                    m_current_event_index = decrement_current();
-                    m_bottom_event_index = decrement_bottom();
+                    m_current_index = decrement_current();
+                    (void) decrement_bottom();
+                    if (m_line_count > 0)
+                        --m_line_count;
                 }
             }
             else
@@ -437,17 +456,6 @@ eventslots::delete_current_event ()
                 (void) increment_current();
                 (void) increment_bottom();
             }
-
-            /*
-             * The frame must shrink if the iterator is at the end of the
-             * container.
-             */
-
-            if (m_current_iterator == m_event_container.end())
-                m_current_event_index = decrement_current();
-
-            if (m_bottom_iterator == m_event_container.end())
-                m_bottom_event_index = decrement_bottom();
         }
 
         /*
@@ -460,20 +468,20 @@ eventslots::delete_current_event ()
         int newcount = m_event_container.count();
         if (newcount == 0)
         {
+            m_top_index = 0;
+            m_current_index = 0;
             m_top_iterator = m_current_iterator =
                 m_bottom_iterator = m_event_container.end();
-
-            m_top_event_index = m_current_event_index =
-                m_bottom_event_index = 0;       /* SEQ64_NULL_EVENT_INDEX?  */
         }
 
         bool ok = newcount == (oldcount - 1);
         if (ok)
         {
+            m_parent.set_dirty();
             m_event_count = newcount;
             result = newcount > 0;
             if (result)
-                select_event(m_current_event_index);
+                select_event(m_current_index);
             else
                 select_event(SEQ64_NULL_EVENT_INDEX);
         }
@@ -486,6 +494,10 @@ eventslots::delete_current_event ()
  *  changed, however, we can't just modify the event in place.  Instead, we
  *  finish modifying the event, but tell the caller to delete and reinsert the
  *  new event (in its proper new location based on timestamp).
+ *
+ *  This function always copies the original event, modifiies the copy,
+ *  deletes the original event, and inserts the "new" event into the
+ *  editable-event container.
  *
  * \param evtimestamp
  *      Provides the new event time-stamp as edited by the user.
@@ -515,30 +527,18 @@ eventslots::modify_current_event
     bool result = m_event_count > 0;
     if (result)
     {
-        editable_event & ev = m_current_iterator->second;
-        midipulse oldtimestamp = ev.get_timestamp();
-        bool same_time = ev.get_timestamp() == oldtimestamp;
+        editable_event ev = m_current_iterator->second;
+        ev.set_channel(m_seq.get_midi_channel());   /* just in case     */
         ev.set_status_from_string(evtimestamp, evname, evdata0, evdata1);
-        ev.set_channel(m_seq.get_midi_channel());
-        if (! same_time)
-        {
-            /*
-             * Copy the modified event, delete the original, and insert the
-             * modified event into the editable-event container.
-             */
-
-            editable_event ev_copy = ev;
-            result = delete_current_event();
-            if (result)
-                result = m_event_container.add(ev);
-        }
+        result = delete_current_event();
         if (result)
         {
-            /*
-             * Does this work?
-             */
-
-            select_event(m_current_event_index);
+            result = m_event_container.add(ev);
+            if (result)
+            {
+                m_parent.set_dirty();
+                select_event(m_current_index);      /* does this work?  */
+            }
         }
     }
     return result;
@@ -550,6 +550,17 @@ eventslots::modify_current_event
  *  set the perform dirty flag.  So now we pass the modification buck to the
  *  parent, who passes it to the perform object.
  *
+ *  We added a copy_events() function in the sequence class to replace
+ *  add_event() for the purpose of reconstructing the events container for the
+ *  sequence.  It is locked by a mutex, and so will not draw until all is
+ *  done, preventing a nasty segfault (all segfaults are nasty).
+ *
+ *  We create a new plain event container here, and then passing it to the new
+ *  locked/threadsafe sequence::copy_events() function that clears the
+ *  sequence container and copies the events from the parameter container.
+ *
+ *  Note that this code will operate event if all events were deleted.
+ *
  * \return
  *      Returns true if the operations succeeded.
  */
@@ -557,11 +568,19 @@ eventslots::modify_current_event
 bool
 eventslots::save_events ()
 {
-    bool result = m_event_count > 0 && m_event_count == m_event_container.count();
+    bool result = m_event_count >= 0 &&
+        m_event_count == m_event_container.count();
+
     if (result)
     {
-        event_list & seqevents = m_seq.events();
-        seqevents.clear();
+        /*
+         * Replaced with a function that locks the sequence.
+         *
+         * event_list & seqevents = m_seq.events();
+         * seqevents.clear();
+         */
+
+        event_list newevents;
         for
         (
             editable_events::iterator ei = m_event_container.begin();
@@ -570,11 +589,14 @@ eventslots::save_events ()
         )
         {
             seq64::event e = ei->second;
-            m_seq.add_event(e);
+            newevents.add(e);
         }
-        result = m_seq.event_count() == m_event_count;
+        result = newevents.count() == m_event_count;
         if (result)
-            m_parent.modify();
+        {
+            m_seq.copy_events(newevents);                   /* new function */
+            result = m_seq.event_count() == m_event_count;
+        }
     }
     return result;
 }
@@ -602,18 +624,37 @@ void
 eventslots::change_vert ()
 {
     int new_value = m_vadjust.get_value();
-    if (m_top_event_index != new_value)
-    {
-        int movement = new_value - m_top_event_index;   /* can be negative */
-        if ((m_top_event_index + movement) < 0)
-            movement = -m_top_event_index;
-        else if ((m_bottom_event_index + movement) > (m_event_count - 1))
-            movement = m_event_count - 1 - m_bottom_event_index;
+#ifdef SEQ64_USE_DEBUG_OUTPUT               /* PLATFORM_DEBUG               */
+    infoprintf("New page --> %d\n", new_value);
+#endif
+    if (new_value != m_pager_index)
+        page_movement(new_value);
+}
 
+/**
+ *  Adjusts the vertical position of the frame according to the given new
+ *  scrollbar/vadjust value.  The adjustment is done via movement from the
+ *  current position.
+ *
+ *  Do we even need a way to detect excess movement?  The scrollbar, if
+ *  properly set up, should never move the frame too high or too low.
+ *  Verified by testing.
+ *
+ * \param new_value
+ *      Provides the new value of the scrollbar position.
+ */
+
+void
+eventslots::page_movement (int new_value)
+{
+    if ((new_value >= 0) && (new_value < m_event_count))
+    {
+        int movement = new_value - m_pager_index;       /* can be negative */
+        int absmovement = movement >= 0 ? movement : -movement;
+        m_pager_index = new_value;
         if (movement != 0)
         {
-            m_top_event_index += movement;
-            m_bottom_event_index += movement;
+            m_top_index += movement;
             if (movement > 0)
             {
                 for (int i = 0; i < movement; ++i)
@@ -624,15 +665,112 @@ eventslots::change_vert ()
             }
             else if (movement < 0)
             {
-                movement = -movement;
-                for (int i = 0; i < movement; ++i)
+                for (int i = 0; i < absmovement; ++i)
                 {
                     (void) decrement_top();
                     (void) decrement_bottom();
                 }
             }
-            set_current_event(m_top_iterator, m_top_event_index);
+
+            /*
+             * Don't move the current event (highlighted in yellow) unless
+             * we move more than one event.  Annoying to the user.
+             */
+
+            if (absmovement > 1)
+                set_current_event(m_top_iterator, 0);
+            else
+            {
+                set_current_event
+                (
+                    m_current_iterator, m_current_index + movement
+                );
+            }
         }
+    }
+}
+
+/**
+ *  Adjusts the vertical position of the frame according to the given new
+ *  bottom iterator.  The adjustment is done "from scratch".  We've found page
+ *  movement to be an insoluable problem in some editing circumstances.  So
+ *  now we move to the inserted event, and make it the top event.
+ *
+ *  However, always moving an inserted event to the top is a bit annoying.  So
+ *  now we backtrack so that the inserted event is at the bottom.
+ *
+ * \param newcurrent
+ *      Provides the iterator to the event to be shown at the bottom of the
+ *      frame.
+ */
+
+void
+eventslots::page_topper (editable_events::iterator newcurrent)
+{
+    bool ok = newcurrent != m_event_container.end();
+    if (ok)
+        ok = m_event_count > 0;
+
+    if (ok)
+    {
+        editable_events::iterator ei = m_event_container.begin();
+        int botindex = 0;
+        while (ei != newcurrent)
+        {
+            ++botindex;
+            ++ei;
+            if (botindex == m_event_count)
+            {
+                ok = false;                     /* never found the event!   */
+                break;
+            }
+        }
+        if (m_event_count <= m_line_maximum)    /* fewer events than lines  */
+        {
+            if (ok)
+            {
+                m_pager_index = 0;
+                m_top_index = 0;
+                m_top_iterator = m_event_container.begin();
+                m_line_count = m_event_count;
+                m_current_iterator = newcurrent;
+                m_current_index = botindex;
+            }
+        }
+        else
+        {
+            m_line_count = line_maximum();
+            if (ok)
+            {
+                /*
+                 * Backtrack by up to m_line_maximum events so that the new
+                 * event is shown at the bottom or at its natural location; it
+                 * also needs to be the current event, for highlighting.
+                 * Count carefully!
+                 */
+
+                editable_events::iterator ei = m_event_container.begin();
+                int pageup = botindex - line_maximum();
+                if (pageup < 0)
+                {
+                    m_top_index = m_pager_index = pageup = 0;
+                }
+                else
+                {
+                    int countdown = pageup;
+                    while (countdown-- > 0)
+                        ++ei;
+
+                    m_top_index = m_pager_index = pageup + 1;   /* re map   */
+                }
+
+                m_top_iterator = ei;
+                m_current_iterator = newcurrent;
+                m_current_index = botindex - m_top_index;       /* re frame */
+            }
+        }
+        if (ok)
+            select_event(m_current_index);
     }
 }
 
@@ -689,27 +827,26 @@ eventslots::enqueue_draw ()
 void
 eventslots::draw_event (editable_events::iterator ei, int index)
 {
-    int yloc = m_slots_y * (index - m_top_event_index);
-    Color fg = grey();
+    int yloc = m_slots_y * index;
     font::Color col = font::BLACK;
-    if (index == m_current_event_index)
+    if (index == m_current_index)
     {
-        fg = yellow();
-        col = font::BLACK_ON_YELLOW;
+#if USE_YELLOW_AS_CURRENT
+        col = font::BLACK_ON_YELLOW;    /* or font::YELLOW_ON_BLACK */
+#else
+        col = font::CYAN_ON_BLACK;
+#endif
     }
 #ifdef USE_FUTURE_CODE
     else if (false)     // if (a sysex event or selected event range)
     {
-        fg = dark_cyan();
         col = font::BLACK_ON_CYAN;
     }
 #endif
-    else
-        fg = white();
 
     editable_event & evp = ei->second;
     char tmp[16];
-    snprintf(tmp, sizeof tmp, "%4d-", index);
+    snprintf(tmp, sizeof tmp, "%4d-", m_top_index+index);
     std::string temp = tmp;
     temp += evp.stock_event_string();
     temp += "   ";                                          /* coloring */
@@ -727,19 +864,19 @@ eventslots::draw_event (editable_events::iterator ei, int index)
  *
  * \return
  *      Returns the index of the event position in the user-interface, which
- *      should range from 0 to m_bottom_event_index.
+ *      should range from 0 to m_line_count.
  */
 
 int
 eventslots::convert_y (int y)
 {
-    int event_index = y / m_slots_y + m_top_event_index;
-    if (event_index >= m_bottom_event_index)
-        event_index = m_bottom_event_index;
-    else if (event_index < m_top_event_index)       /* not 0 */
-        event_index = m_top_event_index;            /* ditto */
+    int eventindex = y / m_slots_y;
+    if (eventindex >= m_line_count)
+        eventindex = m_line_count - 1;
+    else if (eventindex < 0)
+        eventindex = 0;
 
-    return event_index;
+    return eventindex;
 }
 
 /**
@@ -749,7 +886,7 @@ eventslots::convert_y (int y)
  *
  *  Need to figure out how to calculate the number of displayable events.
  *
- *      m_display_count = ???
+ *      m_line_maximum = ???
  */
 
 void
@@ -758,12 +895,12 @@ eventslots::draw_events ()
     int x = 0;
     int y = 1;                                      // tweakage
     int lx = m_slots_x;                             //  - 3 - m_setbox_w;
-    int ly = m_slots_y * m_display_count;           // 42
+    int ly = m_slots_y * m_line_maximum;           // 42
     draw_rectangle(white(), x, y, lx, ly);          // clear the frame
-    if (m_event_count > 0)                          // m_display_count > 0
+    if (m_event_count > 0)                          // m_line_maximum > 0
     {
         editable_events::iterator ei = m_top_iterator;
-        for (int ev = m_top_event_index; ev <= m_bottom_event_index; ++ev)
+        for (int ev = 0; ev < m_line_count; ++ev)
         {
             if (ei != m_event_container.end())
             {
@@ -777,31 +914,39 @@ eventslots::draw_events ()
 }
 
 /**
- *  Selects and highlight the event that is located in the frame at the given
- *  event index.  The event index is provided by converting the y-coordinate
- *  of the mouse pointer into a slot number, and then an event index (actually
- *  the slot-distance from the m_top_iterator.  Confusing, yes no?
+ *  Selects and highlights the event that is located in the frame at the given
+ *  event index.  The event index is provided by converting the y-coordinate of
+ *  the mouse pointer into a slot number, and then an event index (actually the
+ *  slot-distance from the m_top_iterator.  Confusing, yes no?
  *
  *  Note that, if the event index is negative, then we just queue up a draw
  *  operation, which should paint an empty frame -- the event container is
  *  empty.
  *
  * \param event_index
- *      Provides the numeric index of the event in the event container, or
+ *      Provides the numeric index of the event in the event frame, or
  *      SEQ64_NULL_EVENT if there is no event to draw.
+ *
+ * \param full_redraw
+ *      Defaulting to true, this parameter can be set to false in some case to
+ *      reduce the flickering of the frame under fast movement.
  */
 
 void
-eventslots::select_event (int event_index)
+eventslots::select_event (int event_index, bool full_redraw)
 {
-    if ((event_index >= 0) && (m_top_event_index != SEQ64_NULL_EVENT_INDEX))
+    bool ok = event_index != SEQ64_NULL_EVENT_INDEX;
+    if (ok)
+        ok = (event_index < m_line_count);  // || (event_index == 0);
+
+    if (ok)
     {
-        bool ok = true;
-        int i = m_top_event_index;
         editable_events::iterator ei = m_top_iterator;
-        while (i++ < event_index)
+        ok = ei != m_event_container.end();
+        if (ok && (event_index > 0))
         {
-            if (ei != m_event_container.end())
+            int i = 0;
+            while (i++ < event_index)
             {
                 ++ei;
                 ok = ei != m_event_container.end();
@@ -810,7 +955,7 @@ eventslots::select_event (int event_index)
             }
         }
         if (ok)
-            set_current_event(ei, i - 1);
+            set_current_event(ei, event_index, full_redraw);
     }
     else
         enqueue_draw();                 /* for drawing an empty frame */
@@ -820,8 +965,8 @@ eventslots::select_event (int event_index)
  *  Decrements the top iterator, if possible.
  *
  * \return
- *      Returns the decremented index, or SEQ64_NULL_EVENT_INDEX  if the
- *      iterator could not be decremented.
+ *      Returns 0, or SEQ64_NULL_EVENT_INDEX if the iterator could not be
+ *      decremented.
  */
 
 int
@@ -830,27 +975,35 @@ eventslots::decrement_top ()
     if (m_top_iterator != m_event_container.begin())
     {
         --m_top_iterator;
-        return m_top_event_index - 1;
+        return m_top_index - 1;
     }
     else
         return SEQ64_NULL_EVENT_INDEX;
 }
 
 /**
- *  Increments the top iterator, if possible.
+ *  Increments the top iterator, if possible.  Also handles the top-event
+ *  index, so that the GUI can display the proper event numbers.
  *
  * \return
- *      Returns the incremented index, or SEQ64_NULL_EVENT_INDEX  if the
- *      iterator could not be incremented.
+ *      Returns the top index, or SEQ64_NULL_EVENT_INDEX if the iterator could
+ *      not be incremented, or would increment to the end of the container.
  */
 
 int
 eventslots::increment_top ()
 {
-    if (m_top_iterator != m_event_container.end())
+    editable_events::iterator ei = m_top_iterator;
+    if (ei != m_event_container.end())
     {
-        ++m_top_iterator;
-        return m_top_event_index + 1;
+        ++ei;
+        if (ei != m_event_container.end())
+        {
+            m_top_iterator = ei;
+            return m_top_index + 1;
+        }
+        else
+            return SEQ64_NULL_EVENT_INDEX;
     }
     else
         return SEQ64_NULL_EVENT_INDEX;
@@ -860,8 +1013,9 @@ eventslots::increment_top ()
  *  Decrements the current iterator, if possible.
  *
  * \return
- *      Returns the decremented index, or SEQ64_NULL_EVENT_INDEX  if the
- *      iterator could not be decremented.
+ *      Returns the decremented index, or SEQ64_NULL_EVENT_INDEX if the
+ *      iterator could not be decremented.  Remember that the index ranges
+ *      only from 0 to m_line_count-1, and that is enforced here.
  */
 
 int
@@ -870,7 +1024,11 @@ eventslots::decrement_current ()
     if (m_current_iterator != m_event_container.begin())
     {
         --m_current_iterator;
-        return m_current_event_index - 1;
+        int result = m_current_index - 1;
+        if (result < 0)
+            result = 0;
+
+        return result;
     }
     else
         return SEQ64_NULL_EVENT_INDEX;
@@ -880,17 +1038,27 @@ eventslots::decrement_current ()
  *  Increments the current iterator, if possible.
  *
  * \return
- *      Returns the incremented index, or SEQ64_NULL_EVENT_INDEX  if the
- *      iterator could not be incremented.
+ *      Returns the incremented index, or SEQ64_NULL_EVENT_INDEX if the
+ *      iterator could not be incremented.  Remember that the index ranges
+ *      only from 0 to m_line_count-1, and that is enforced here.
  */
 
 int
 eventslots::increment_current ()
 {
-    if (m_current_iterator != m_event_container.end())
+    editable_events::iterator ei = m_current_iterator;
+    if (ei != m_event_container.end())
     {
-        ++m_current_iterator;
-        return m_current_event_index + 1;
+        int result = SEQ64_NULL_EVENT_INDEX;
+        ++ei;
+        if (ei != m_event_container.end())
+        {
+            m_current_iterator = ei;
+            result = m_current_index + 1;
+            if (result >= m_line_count)
+                result = m_line_count - 1;
+        }
+        return result;
     }
     else
         return SEQ64_NULL_EVENT_INDEX;
@@ -900,8 +1068,8 @@ eventslots::increment_current ()
  *  Decrements the bottom iterator, if possible.
  *
  * \return
- *      Returns the decremented index, or SEQ64_NULL_EVENT_INDEX  if the
- *      iterator could not be decremented.
+ *      Returns 0, or SEQ64_NULL_EVENT_INDEX if the iterator could not be
+ *      decremented.
  */
 
 int
@@ -910,7 +1078,7 @@ eventslots::decrement_bottom ()
     if (m_bottom_iterator != m_event_container.begin())
     {
         --m_bottom_iterator;
-        return m_bottom_event_index - 1;
+        return 0;
     }
     else
         return SEQ64_NULL_EVENT_INDEX;
@@ -923,7 +1091,7 @@ eventslots::decrement_bottom ()
  *  backtrack one event if this happens.
  *
  * \return
- *      Returns the incremented index, or SEQ64_NULL_EVENT_INDEX  if the
+ *      Returns the incremented index, or SEQ64_NULL_EVENT_INDEX if the
  *      iterator could not be incremented.
  */
 
@@ -935,11 +1103,11 @@ eventslots::increment_bottom ()
     {
         editable_events::iterator old = m_bottom_iterator++;
         if (m_bottom_iterator != m_event_container.end())
-            result = m_bottom_event_index + 1;
+            result = 0;
         else
         {
-            m_bottom_iterator = old;        /* backtrack to initial value */
-#ifdef PLATFORM_DEBUG                       // SEQ64_USE_DEBUG_OUTPUT
+            m_bottom_iterator = old;        /* backtrack to initial value   */
+#ifdef SEQ64_USE_DEBUG_OUTPUT               /* PLATFORM_DEBUG               */
             errprint("increment to bad bottom iterator");
 #endif
         }
@@ -959,7 +1127,7 @@ eventslots::on_realize ()
     gui_drawingarea_gtk2::on_realize();
     m_pixmap = Gdk::Pixmap::create
     (
-        m_window, m_slots_x, m_slots_y * m_display_count + 1, -1
+        m_window, m_slots_x, m_slots_y * m_line_maximum + 1, -1
     );
     m_vadjust.signal_value_changed().connect        /* moved from ctor */
     (
@@ -1002,13 +1170,14 @@ bool
 eventslots::on_button_press_event (GdkEventButton * ev)
 {
     int y = int(ev->y);
-    int event_index = convert_y(y);
+    int eventindex = convert_y(y);
     if (SEQ64_CLICK_LEFT(ev->button))
     {
-        select_event(event_index);
+        select_event(eventindex);
     }
     return true;
 }
+
 
 /**
  *  Handles a button-release for the right button, bringing up a popup
@@ -1018,8 +1187,8 @@ eventslots::on_button_press_event (GdkEventButton * ev)
 bool
 eventslots::on_button_release_event (GdkEventButton * p0)
 {
-//  if (SEQ64_CLICK_RIGHT(p0->button))
-//      popup_menu();
+    //  if (SEQ64_CLICK_RIGHT(p0->button))
+    //      popup_menu();
 
     return false;
 }
@@ -1046,18 +1215,6 @@ eventslots::on_focus_out_event (GdkEventFocus *)
 {
     unset_flags(Gtk::HAS_FOCUS);
     return false;
-}
-
-
-/**
- *  Trial balloon for keystroke actions.
- */
-
-bool
-eventslots::on_key_press_event (GdkEventKey * ev)
-{
-    infoprint("KEYSTROKE!");
-    return true;
 }
 
 /**
@@ -1088,6 +1245,133 @@ eventslots::on_size_allocate (Gtk::Allocation & a)
     gui_drawingarea_gtk2::on_size_allocate(a);
     m_window_x = a.get_width();                     /* side-effect  */
     m_window_y = a.get_height();                    /* side-effect  */
+}
+
+/**
+ *  Move to the previous event.  We must scroll up if the event is now
+ *  before the frame, and should be made the new top event of the frame.  Note
+ *  that this function isn't really an event-response callback.  It is called
+ *  byh eventedit::on_key_press_event().
+ */
+
+void
+eventslots::on_move_up ()
+{
+    if (m_current_index == 0)
+    {
+        /*
+         * Doesn't work at the top of the frame after the bottom of the
+         * frame is hit.
+         *
+         * page_movement(m_top_index - 1);
+         */
+
+        int new_top_index = decrement_top();
+        if (new_top_index >= 0)
+        {
+            m_top_index = new_top_index;
+            select_event(m_current_index);
+        }
+    }
+    else
+    {
+        int old_index = m_current_index--;
+        draw_event(m_current_iterator, old_index);
+        select_event(m_current_index, false);       /* no full redraw here */
+    }
+}
+
+/**
+ *  Move to the next event.  We must scroll down if the event is now
+ *  after the frame.  Note that this function isn't really an event-response
+ *  callback.  It is called byh eventedit::on_key_press_event().
+ */
+
+void
+eventslots::on_move_down ()
+{
+    if (m_current_index == (m_line_count - 1))
+    {
+        if (m_line_count == m_line_maximum)
+        {
+            /*
+             * Doesn't work at the bottom of the frame.
+             *
+             * (void) increment_current();
+             * page_topper(m_current_iterator);
+             */
+
+            int new_top_index = increment_top();
+            if (new_top_index >= 0)
+            {
+                m_top_index = new_top_index;
+                select_event(m_current_index);
+            }
+        }
+    }
+    else
+    {
+        int old_index = m_current_index++;
+        draw_event(m_current_iterator, old_index);
+        select_event(m_current_index, false);   /* no full redraw here */
+    }
+}
+
+/**
+ *  Move to the previous frame.
+ */
+
+void
+eventslots::on_frame_up ()
+{
+    int old_value = m_vadjust.get_value();
+    int new_value = old_value - line_increment();
+    if (new_value < 0)
+        new_value = 0;
+
+    page_movement(new_value);
+}
+
+/**
+ *  Move to the next frame.
+ */
+
+void
+eventslots::on_frame_down ()
+{
+    int old_value = m_vadjust.get_value();
+    int new_value = old_value + line_increment();
+    if (new_value >= m_event_count)
+        new_value = m_event_count - 1;
+
+    page_movement(new_value);
+}
+
+/**
+ *  Move to the first frame.
+ */
+
+void
+eventslots::on_frame_home ()
+{
+    if (m_event_count > 0)
+        page_topper(m_event_container.begin());
+}
+
+/**
+ *  Move to the last frame.
+ */
+
+void
+eventslots::on_frame_end ()
+{
+    if (m_event_count > 0)
+    {
+        editable_events::iterator ei = m_event_container.end();
+        --ei;
+        page_topper(ei);
+    }
+    
 }
 
 }           // namespace seq64

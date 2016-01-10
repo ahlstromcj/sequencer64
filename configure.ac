@@ -6,7 +6,7 @@ dnl \file          configure.ac
 dnl \library       Sequencer64
 dnl \author        Chris Ahlstrom
 dnl \date          2015-09-11
-dnl \update        2015-11-28
+dnl \update        2016-01-09
 dnl \version       $Revision$
 dnl \license       $XPC_SUITE_GPL_LICENSE$
 dnl
@@ -44,7 +44,7 @@ PACKAGE=sequencer64
 AC_DEFINE_UNQUOTED(PACKAGE, "$PACKAGE")
 AC_SUBST(PACKAGE)
 
-VERSION="0.9.9.11"
+VERSION="0.9.9.12"
 AC_DEFINE_UNQUOTED(VERSION, "$VERSION")
 AC_SUBST(VERSION)
 
@@ -394,10 +394,12 @@ else
 fi
 
 dnl PortMidi support
-
+dnl
 dnl TODO
 
-dnl Support for highlighting empty sequences (in yellow)
+dnl Support for highlighting empty sequences (in yellow).  If enabled, the
+dnl macro SEQ64_HIGHLIGHT_EMPTY_SEQS is defined.  All macros produced by
+dnl this configuration start with "SEQ64_".
 
 AC_ARG_ENABLE(highlight,
     [AS_HELP_STRING(--disable-highlight, [Disable highlighting empty sequences])],
@@ -408,6 +410,22 @@ if test "$highlight" != "no"; then
     AC_DEFINE(HIGHLIGHT_EMPTY_SEQS, 1, [Define to enable highlighting empty sequences])
 else
     AC_MSG_WARN([*** Highlighting empty sequences not enabled.]);
+fi
+
+dnl Support for using the event editor.  It currently causes issues if
+dnl used, so we want the option to disable it.  We leave it in the code,
+dnl but comment out the menu entries to access it, until we can work out the
+dnl issues.  Ah, finally worked them out, by adding calls to verify_and_link().
+
+AC_ARG_ENABLE(eveditor,
+    [AS_HELP_STRING(--disable-eveditor, [Disable using the event editor])],
+    [eveditor=$enableval],
+    [eveditor=yes])
+
+if test "$eveditor" != "no"; then
+    AC_DEFINE(ENABLE_EVENT_EDITOR, 1, [Define to enable the event editor])
+else
+    AC_MSG_WARN([*** Event editor not enabled.]);
 fi
 
 dnl 6.0  Top portion of the config.h/sequencer64-config.h header files.
@@ -423,8 +441,8 @@ dnl #define API_VERSION "0.9"             // already defined on command line
 
 AH_TOP(
 
-#define VERSION_DATE_SHORT "2015-12-22"
-#define VERSION "0.9.9.11"
+#define VERSION_DATE_SHORT "2015-01-08"
+#define VERSION "0.9.9.12"
 
 )
 

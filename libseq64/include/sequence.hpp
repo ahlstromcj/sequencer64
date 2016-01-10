@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-12-02
+ * \updates       2016-01-09
  * \license       GNU GPLv2 or above
  *
  *  The functions add_list_var() and add_long_list() have been replaced by
@@ -541,6 +541,19 @@ public:
     }
 
     midipulse get_last_tick ();
+
+    /**
+     *  Some MIDI file errors and other things can lead to an m_length of 0,
+     *  which causes arithmetic errors when m_last_tick is modded against it.
+     *  This function replaces the "m_last_tick % m_length", returning
+     *  m_last_tick if m_length is 0 or 1.
+     */
+
+    midipulse mod_last_tick ()
+    {
+        return (m_length > 1) ?  (m_last_tick % m_length) : m_last_tick ;
+    }
+
     void set_playing (bool);
 
     /**
@@ -735,6 +748,7 @@ public:
     int get_num_selected_events (midibyte status, midibyte cc) const;
     void select_all ();
     void copy_selected ();
+    void cut_selected (bool copyevents = true);
     void paste_selected (midipulse tick, int note);
     void get_selected_box
     (
@@ -865,17 +879,32 @@ public:
     }
 
     void show_events () const;
+    void copy_events (const event_list & newevents);
+
+    /*
+     * EXPERIMENTAL
+     */
+
+    void lock () const
+    {
+        m_mutex.lock();
+    }
+
+    void unlock () const
+    {
+        m_mutex.unlock();
+    }
 
 private:
 
     void put_event_on_bus (event & ev);
-    void remove_all ();
     void set_trigger_offset (midipulse trigger_offset);
     void split_trigger (trigger & trig, midipulse splittick);
     void adjust_trigger_offsets_to_length (midipulse newlen);
     midipulse adjust_offset (midipulse offset);
     void remove (event_list::iterator i);
     void remove (event & e);
+    void remove_all ();
 
 };          // class sequence
 

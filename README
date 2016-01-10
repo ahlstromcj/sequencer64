@@ -1,6 +1,6 @@
-README for Sequencer64 0.9.9.11 (current branch = "events")
+README for Sequencer64 0.9.9.12 (current branch = "events redux")
 Chris Ahlstrom
-2015-09-10 to 2015-11-30
+2015-09-10 to 2015-12-23
 
 The sequencer64 project is a continuation of sequencer24 to refactor it to be
 tighter and easier to transition to GTKmm 3, and much more.  By now, it is
@@ -16,6 +16,9 @@ Major updates:
 
     -   Sequencer64 loads SMF 0 files and splits the channels into separate
         tracks/sequences.
+    -   An event-editing window has been added, for viewing and editing a
+        list of events, regardless of event type.  Still in progress; viewing
+        is fine, editing still needs some fixes.
     -   Two synchronized song-editor windows can now be shown on screen, to
         better arrange songs with a large number of tracks.
     -   Added a more modern-looking, bolder font to the graphical user

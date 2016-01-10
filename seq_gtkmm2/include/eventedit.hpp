@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-12-05
- * \updates       2015-12-19
+ * \updates       2016-01-04
  * \license       GNU GPLv2 or above
  *
  */
@@ -114,6 +114,8 @@ private:
     Gtk::Label * m_label_ppqn;
     Gtk::Label * m_label_channel;
     Gtk::Label * m_label_ev_count;
+    Gtk::Label * m_label_spacer;
+    Gtk::Label * m_label_modified;
 
     /**
      *  Items for the inside of the m_editbox member.
@@ -133,6 +135,12 @@ private:
     Gtk::Label * m_label_right;
 
     /**
+     *  A reference to the sequence being edited, to control its editing flag.
+     */
+
+    sequence & m_seq;
+
+    /**
      *  Provides the timer period for the eventedit timer, used to determine
      *  the rate of redrawing.  This is hardwired to 40 ms in Linux, and 20 ms
      *  in Windows.
@@ -142,11 +150,7 @@ private:
 
 public:
 
-    eventedit
-    (
-        perform & p,
-        sequence & seq
-    );
+    eventedit (perform & p, sequence & seq);
     ~eventedit ();
 
     void enqueue_draw ();
@@ -159,8 +163,10 @@ public:
     void set_event_name (const std::string & n);
     void set_event_data_0 (const std::string & d);
     void set_event_data_1 (const std::string & d);
+    void perf_modify ();
+    void set_dirty (bool flag = true);
+    void v_adjustment (int value);
     void v_adjustment (int value, int lower, int upper);
-    void modify ();
 
 private:
 
@@ -175,6 +181,7 @@ private:            // callbacks
 
     void on_realize ();
     bool on_key_press_event (GdkEventKey * ev);
+    bool on_delete_event (GdkEventAny * event);
 
 };          // class eventedit
 

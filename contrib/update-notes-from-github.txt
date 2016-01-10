@@ -1,0 +1,458 @@
+
+
+Date: Wed, 9 Dec 2015 20:31:35 -0500
+From: Rob Buse <rcb@lectricpanda.com>
+To: oli_kester <oli_kester@zoho.com>
+Cc: ahlstromcj@gmail.com
+Subject: Re: Advice wanted - a project to upgrade seq24
+X-Mailer: Apple Mail (2.2102)
+
+Hey Oliver,
+
+Glad someone is still looking at this stuff.  Its been 10 years since I've done
+anything with seq24, so at this point I don't even remember what half of the stuff
+is.  A lot of the code in there I wrote before I knew better methods, so tread
+with caution. I know the launchpad guys picked it up for a bit and I'm pretty sure
+thats been dormant for 5 years or so.  I didn't even know about the Sequencer64
+project, that actually looks pretty awesome.  I'm glad someone is doing something
+with the code.
+
+I'm free to answer any questions you have.  At this point I would be downloading
+the source package and reading the code trying to figure out what I was doing 10+
+years ago, so I might not be much help.
+
+Good luck!
+Rob
+
+
+
+> On Dec 9, 2015, at 3:17 PM, oli_kester <oli_kester@zoho.com> wrote:
+>
+> Hi Seq24 developers,
+
+>
+> For my final year university project, I am taking on an overhaul of seq24. Below
+is an excerpt from my project proposal - the list of features I would like to
+implement -
+>
+> [quote]
+>
+> << Basic (simple changes that should be quick to address) >>
+> - Swap default on midi autoconnect to second value (add to config file)
+> - Song / loop mode switch in main UI
+> - Recent files list
+> - Move config file to .config folder in /home
+> - Label keys correctly on loops past bank 1
+>
+> << Medium (bug fixes, smaller new features) >>
+> - Don't take scene change inputs when renaming loops
+> - With dual screens, remember window placement
+> - Darken Song mode (overall dark theme like Ardour?)
+> - Fix glitch with overlaps in loops
+> - Session manager fixes
+> - Toggle loops in song mode
+> - Click time bar to position transport
+> - Draw and re-position snap in song mode should behave identically
+> - Add one shot loops
+> - Decrease size of grid in song mode
+> - Add name of scene to the side when in song view
+> - Add autosave function
+> - Midi send if halfway through note (can be enabled / disabled in
+preferences)
+> - Draw whole notes instead of cutting off early in song mode loops
+> - Add configurable defaults for note length/ grid snap
+> - Add note stop/panic button
+> - Loop colouring
+> - Fix bug where certain slots cannot contain loops
+>
+> << Challenging (significant new features) >>
+> - Add Box select in song editor (REAPER style)
+> - Add redo in song mode
+> - Add Record in song mode
+> - Allow splitting of song loops at mouse pointer
+> - Zoom in song mode
+> - Window title should just have the song name
+> - Fix jack sync bug/reset button
+> - Relative velocity altering (REAPER style)
+> - Add a double / half timing switch for live performance
+>
+> Where I note “REAPER style”, I plan to source inspiration from the REAPER audio 
+workstation I use under Windows (http://reaper.fm/). The “Ardour” I mention is a
+Linux audio workstation, and probably the most significant audio project on Linux 
+(http://ardour.org/).
+>
+> [end quote]
+>
+> What do you all think? I have a decent amount of programming experience, but
+little in the field of audio and no knowledge of GTK+. My tutor suggested that it 
+might be necessary to drop Windows support to make this feasible in the three
+months I'll be working on it - might this be true? 
+> What is the state of the Launchpad repo? This project will be open source too
+and I'll happily have my changes pulled back into the main seq24 codebase if
+people are happy with them.
+>
+> It'll also be great to have a few people test it during development. I'll send a
+separate email out to users too.
+>
+> @Chris Ahlstrom - I'm aware of your current Sequencer64 project, and might use
+it as my codebase instead of seq24 - please get in touch. Building it as I type!
+>
+> Any advice greatly appreciated,
+>
+> Best,
+>
+> Oliver
+>
+
+
+
+
+Date: Wed, 16 Dec 2015 01:46:31 +0000
+From: oli_kester <oli_kester@zoho.com>
+To: Chris Ahlstrom <ahlstromcj@gmail.com>
+Subject: Re: Re: Advice wanted - a project to upgrade seq24
+X-Mailer: Zoho Mail
+User-Agent: Zoho Mail
+
+Hi Chris
+
+When saw your project, I was concerned that someone else had stolen my idea! But
+like you say, it seems that we're both trying to accomplish different things.
+
+...I kid, there's no such thing as theft round these parts :)
+
+From a quick look at your code, it seems that Seq64 has dropped Windows support.
+Is this correct?
+
+I agree that WIN32 probably isn't important. I make music on Windows, and it seems
+much more of a one-stop-shop situation - i.e. have one application doing all
+DSP/MIDI. The modular approach seems to be a Linux thing, and that's where seq24
+is most relevant.
+
+I wasn't aware of your documentation project - that's fantastic! Especially
+considering the only source of documentation before was that little "SEQ24"
+textfile.
+
+Thanks for the encouragement. I'll stay in touch and would like to hear about your
+project comes along too.
+
+
+
+
+
+Date: Sat, 19 Dec 2015 20:48:34 -0800
+From: Tim Deagan <notifications@github.com>
+To: ahlstromcj/sequencer64 <sequencer64@noreply.github.com>
+Cc: "C. Ahlstrom" <ahlstromcj@gmail.com>
+Subject: Re: [sequencer64] Install-recursive and .seq24rc equivalent (#2)
+
+Sorry to be so slow, all my free time is spent trying to get my upcoming
+book across its jan15 finish line.  But (for deeply nerdy reasons,) I
+always spend a bunch of my christmas vacation time learning new source
+code, so I 've set up a Netbeans environment for sequencer64 (I have to
+confess I'm a Windows developer for a living and really gravitate towards
+IDEs.  I've worked in linux for decades, but linux as an IDE breaks my
+heart.)
+
+In any event, after some code surfing and debugging, it looks like a lot of
+the odd behavior I experience with mute groups is possibly because of the
+line: if ((i == m_playing_screen) && m_tracks_mute_state[j])
+in perform::mute_group_tracks () isn't working as I imagined it should.
+
+Gdb tells me that m_playing_screen never changes from 0 regardless of the
+m_screenset value.  I believe this is why, no matter what screen you're on
+when you hit a mute group key, it ignores that screen and applies the mute
+group to the first screen.
+
+I'll try i == m_screenset as an alternative sometime in the next few days.
+I just wanted to let you know I was still thinking about this.
+
+
+Date: Sun, 20 Dec 2015 06:54:23 -0800
+From: Tim Deagan <notifications@github.com>
+To: ahlstromcj/sequencer64 <sequencer64@noreply.github.com>
+Cc: "C. Ahlstrom" <ahlstromcj@gmail.com>
+Subject: Re: [sequencer64] Install-recursive and .seq24rc equivalent (#2)
+
+ I'll try diff'ing the current netbeans sequencer64 folder with a stock one
+when I get a chance, it _looks_ like there is an nbproject folder in it
+that may be all that's needed to make it netbeans ready.  I did have to run
+the .bootstrap, .config, make sequence in a terminal before I could get
+netbeans happy, but that's probably because I didn't spend enough time
+figuring out the prebuild config it wants.  Once I ran the sequence
+manually, Netbeans picked everything up and seems to be working fine.
+Alas, all my meager linux dev over the years has either been in Python or
+QtCreator (I contributed to OpenSCAD for a while,) so the stock toolchain
+laughs at me.
+
+If the mute functionality is supposed to work like it currently does (a la
+seq24,) then I'm baffled as to how to explain it concisely.  It makes no
+sense to me.  If what I mentioned above truly is a bug (going back into the
+seq24 code,) then I can picture a straightforward way to explain.  But
+there are still some choices to make.
+A) Is mute an overlay on the playing screen's tracks?  If so, what should
+happen to tracks playing on other screens? Ignored, same overlay applied to
+every screen? All other screens' tracks off?
+B) Is mute globally applied?  If so, can you mix and match tracks from
+different screens?
+
+I tend to think, from the size of things in the code, that some variation
+on A is what was intended.  Currently it's something like;
+- The 32 Mute Groups are sets of tracks on Screen 0 that can be turned on
+together (turning all other tracks on Screen 0 and all other screens off.)
+
+which seems weaker than it needs to be.  The easiest (and what I am
+beginning to believe is the intent is;
+- The 32 Mute Groups are an overlay on the active screen that turns a
+predetermined set of tracks on.   All tracks on the active screen that are
+not in the mute group are turned off.  All tracks on all other screens are
+also turned off.
+
+This would allow you to use screens as play 'sets', mixing midi targets on
+the same screen.  I tend to have drums on one screen, synth on another,
+etc., but under this model, I'd rearrange.
+
+
+
+
+Date: Sun, 20 Dec 2015 12:47:05 -0800
+From: Tim Deagan <notifications@github.com>
+To: ahlstromcj/sequencer64 <sequencer64@noreply.github.com>
+Cc: "C. Ahlstrom" <ahlstromcj@gmail.com>
+Subject: Re: [sequencer64] Install-recursive and .seq24rc equivalent (#2)
+
+Cool.  Making the change in  perform::mute_group_tracks ()
+from:
+if ((i == m_playing_screen) && m_tracks_mute_state[j])
+to:
+if ((i == m_screenset) && m_tracks_mute_state[j])
+
+makes the behavior (with light testing,) work as I expected:
+- The 32 Mute Groups are an overlay on the active screen that turns a
+predetermined set of tracks on.   All tracks on the active screen that are
+not in the mute group are turned off.  All tracks on all other screens are
+also turned off.
+
+I'll get a branch set up this week in git and set up a pull request so you
+can see the changes.  I've also added a bunch of comments to it
+and perform::select_mute_group (int a_group)
+that may or may not be in the format you like.  You can toss them if they
+don't work (I started in assembly language many decades ago and have
+trouble shaking the urge to comment every line.)
+
+
+
+
+
+Date: Sun, 20 Dec 2015 13:16:55 -0800
+From: Tim Deagan <notifications@github.com>
+To: ahlstromcj/sequencer64 <sequencer64@noreply.github.com>
+Subject: [sequencer64] Modify perform::mute_group_tracks to used m_screenset for
+        active scre… (#3)
+
+This is a simple change in perform.cpp consisting of replacement of
+m_screen_playing with m_screenset in perform::mute_group_tracks( ).
+m_screen_playing was not picking up the active screen changes so the muting was
+always trying to occur on screen 0.
+You can view, comment on, or merge this pull request online at:
+
+  https://github.com/ahlstromcj/sequencer64/pull/3
+
+-- Commit Summary --
+
+  * Modify perform::mute_group_tracks to used m_screenset for active screen determ
+ination
+
+-- File Changes --
+
+    M libseq64/src/perform.cpp (2)
+
+-- Patch Links --
+
+https://github.com/ahlstromcj/sequencer64/pull/3.patch
+https://github.com/ahlstromcj/sequencer64/pull/3.diff
+
+
+
+Date: Mon, 21 Dec 2015 08:33:34 -0800
+From: Tim Deagan <notifications@github.com>
+To: ahlstromcj/sequencer64 <sequencer64@noreply.github.com>
+Cc: "C. Ahlstrom" <ahlstromcj@gmail.com>
+Subject: Re: [sequencer64] Modify perform::mute_group_tracks to used m_screenset
+        for active scre… (#3)
+
+URP!  This is not a good pull request!!
+
+Further testing has found that in
+```
+perform::select_mute_group (int a_group)
+{
+    int group = clamp_track(a_group);
+    // j is the screen passed by the group
+    int j = group * m_seqs_in_set;
+    // k is the playing screen
+    int k = m_playscreen_offset;
+```
+the var m_playscreen_offset is also not changing with the active screen.  This
+means that the only mute groups that are learned are the ones on screen 0.  I'll
+need to change and test this and create a new pull request. 
+
+
+
+
+
+
+Date: Mon, 21 Dec 2015 07:02:16 -0800
+From: Tim Deagan <notifications@github.com>
+To: ahlstromcj/sequencer64 <sequencer64@noreply.github.com>
+Subject: [sequencer64] Would like unique set of mute groups per screen (1024
+        instead of 32) (#4)
+
+The current mute group model is difficult to use and understand  It also is
+severely limiting as a performance tool compared to the rest of the application
+Expanding the number of mute groups in a usable manner is one way to increase the
+utility of this highly desirable feature
+
+I would like to use a set of 32 mute group keys (the same set of mute group keys
+as is currently used,) to learn and activate a different set of mute groups per
+screen  The current mute group model allows 32 mute groups which are the same
+regardless of the screen you're on (which is the subject of pull request
+https://githubcom/ahlstromcj/sequencer64/pull/3)
+
+It would be a nightmare to try and have 1024 unique mute group keys to remember
+But if each screen could have a different set using the same activation keys, then
+the user would not be forced to organize the tracks exactly the same on each
+screen  Since different screens might represent different 'songs' for a live
+performance, the various sequences could differ in number and arrangement from
+song to song  The current mute group model (which I _think_ is broken and the pull
+request above would fix,) is too limited to allow the flexibility of different
+songs
+
+I am working through the code in the perform class to get a deep understanding of
+where and how to convert the mute group identifier to one that is based on the
+same screen_offset * seqs_in_set model used in many other places Once I get a
+working candidate, I'll create a pull request
+
+I expect that this will modify the mute group learn and activation functions but
+not the functions involved with storing and modifying the key definitions
+
+
+
+Date: Mon, 21 Dec 2015 08:19:19 -0800
+From: Tim Deagan <notifications@github.com>
+To: ahlstromcj/sequencer64 <sequencer64@noreply.github.com>
+Subject: Re: [sequencer64] Would like unique set of mute groups per screen (1024
+        instead of 32) (#4)
+
+In case my concept wasn't clear, I'm not considering mute groups that cross screen
+boundaries.  In other words, a mute group (in the model I'm proposing,) would only
+consist of tracks on a given screen.  All tracks on all other screens would be
+turned off.
+
+32 mute groups whose members could be on any screen is another potential model. 
+But I believe that it would be a mess to try and stay aware of tracks on 32
+different screens.  As a live performance tool, having each screen be self
+contained is a useful paradigm (IMHO.)
+
+
+
+
+Date: Tue, 22 Dec 2015 10:51:56 -0800
+From: Tim Deagan <notifications@github.com>
+To: ahlstromcj/sequencer64 <sequencer64@noreply.github.com>
+Cc: "C. Ahlstrom" <ahlstromcj@gmail.com>
+Subject: Re: [sequencer64] Would like unique set of mute groups per screen (1024
+        instead of 32) (#4)
+
+Thanks, no hurries on my part to get stuff merged.  I'm just trying to knock out
+as much as I can while I have some free time on vacation.  It's just fine if it
+takes time and consideration before they get pulled into the master.  Without an
+automated test harness for regression, slow is a good way to proceed.
+
+Luckily, the things I'm interested in seem to be constrained to a couple of
+functions in perform.cpp.  I'll start spending some cycles to determine how to do
+the feature variant stuff.
+
+A closer look indicates that the requisite arrays will need 32,768 entries to
+provide unique mute groups per key per page.  32 mute keys * 32 screens * 32
+sequence states
+
+The arrays don't look to be bound for the most part, but I'm doing a survey of all
+uses to figure out where the appropriate e
+
+
+
+Date: Mon, 21 Dec 2015 08:37:43 -0800
+From: Tim Deagan <notifications@github.com>
+To: ahlstromcj/sequencer64 <sequencer64@noreply.github.com>
+Subject: [sequencer64] Mute Groups should be applied to active screen (#5)
+
+Currently Mute Groups are applied to Screen 0 only
+
+This was what was intended to be fixed by Pull Request
+https://githubcom/ahlstromcj/sequencer64/pull/3 , but additional vars in the code
+where the active screen is not being tracked have been identified  I'll reference
+this issue when I create a new pull request with a candidate solution
+
+
+
+
+
+Date: Mon, 21 Dec 2015 20:00:27 -0800
+From: Tim Deagan <notifications@github.com>
+To: ahlstromcj/sequencer64 <sequencer64@noreply.github.com>
+Subject: [sequencer64] Mute group active screen tracking modification (#6)
+
+This is a replacement for the incomplete pull request
+https://github.com/ahlstromcj/sequencer64/pull/3 as a response to issue
+https://github.com/ahlstromcj/sequencer64/issues/5
+
+This pull request modifies ***perform::select_mute_group()*** and
+***perform::mute_group_tracks()*** to change expressions that should have been
+tracking the active screen; **m_playing_screen** and **m_playscreen_offset**, but 
+weren't working, with expressions that do.  The replacement expressions;
+**m_screenset** for the active screen number and **m_screenset * m_seqs_in_set**
+for the active screen offset.  These expressions may not be the best choices for
+the larger context of the source, but they're fairly basic and work well.
+
+These changes allow the chosen mute group to be applied as an overlay to the
+tracks on the active screen, turning off all tracks on all other screens.  The
+prior behavior was to only pick up and apply mute groups to screen 0.
+You can view, comment on, or merge this pull request online at:
+
+  https://github.com/ahlstromcj/sequencer64/pull/6
+
+-- Commit Summary --
+
+  * Modify perform::mute_group_tracks to used m_screenset for active screen determ
+ination
+  * Change to select_mute_group to set k, which represents the playing screen offs
+et, from m_playscreen_offset to m_screenset * m_seqs_in_set
+
+-- File Changes --
+
+    M libseq64/src/perform.cpp (4)
+
+
+
+
+Date: Tue, 22 Dec 2015 10:40:17 -0800
+From: Tim Deagan <notifications@github.com>
+To: ahlstromcj/sequencer64 <sequencer64@noreply.github.com>
+Cc: "C. Ahlstrom" <ahlstromcj@gmail.com>
+Subject: Re: [sequencer64] Mute group active screen tracking modification (#6)
+
+Cool, thanks!  For me, this is a major upgrade from seq24.  The confabulated mute
+group functionality was a big constraint on what I was trying to do with the code
+as a performance tool.
+
+I'm digging into the changes needed to expand the mute group model so that there
+is a unique set of mute groups per key per screen.  It looks like it's going to be
+a tiny set of changes, possibly only in perform::select_mute_group() and
+perform::mute_group_tracks().  But I'm trying to spend time understanding the host
+of vars relating to screen and seq counts.
+
+Maybe someday I can help construct a data dictionary that enumerates and describes
+the best use of the various vars.
+
+

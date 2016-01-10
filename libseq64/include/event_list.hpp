@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-19
- * \updates       2015-12-05
+ * \updates       2016-01-05
  * \license       GNU GPLv2 or above
  *
  *  This module extracts the event-list functionality from the sequencer
@@ -154,6 +154,15 @@ private:
 
     Events m_events;
 
+    /**
+     *  A new flag to indicate if an event was added or removed.
+     *  We may need to give client code a way to reload the sequence.
+     *  This is currently an issue when a seqroll and an eventedit/eventslots
+     *  are active for the same sequence.
+     */
+
+    bool m_is_modified;
+
 public:
 
     event_list ();
@@ -208,6 +217,15 @@ public:
         return int(m_events.size());
     }
 
+    /**
+     *  Returns true if there are no events.
+     */
+
+    bool empty () const
+    {
+        return m_events.size() == 0;
+    }
+
     bool add (const event & e, bool postsort = true);
 
 #ifndef SEQ64_USE_EVENT_MAP
@@ -224,22 +242,45 @@ public:
 #endif
 
     /**
+     * \getter m_is_modified
+     */
+
+    bool is_modified () const
+    {
+        return m_is_modified;
+    }
+
+    /**
+     * \setter m_is_modified
+     *      This function may be needed by some of the sequence editors.
+     *      But use it with great caution.
+     */
+
+    void unmodify ()
+    {
+        m_is_modified = false;
+    }
+
+    /**
      *  Provides a wrapper for the iterator form of erase(), which is the
-     *  only one that sequence uses.
+     *  only one that sequence uses.  Currently, no check on removal is
+     *  performed.  Set the modified-flag.
      */
 
     void remove (iterator ie)
     {
         m_events.erase(ie);
+        m_is_modified = true;
     }
 
     /**
-     *  Provides a wrapper for clear().
+     *  Provides a wrapper for clear().  Set the modified-flag.
      */
 
     void clear ()
     {
         m_events.clear();
+        m_is_modified = true;
     }
 
     void merge (event_list & el, bool presort = true);
@@ -299,6 +340,7 @@ private:                                // functions for friend sequence
     void verify_and_link (midipulse slength);
     void mark_selected ();
     void mark_out_of_range (midipulse slength);
+    void mark_all ();
     void unmark_all ();
     void unpaint_all ();
     int count_selected_notes () const;

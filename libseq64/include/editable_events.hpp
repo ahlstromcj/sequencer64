@@ -29,7 +29,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-12-04
- * \updates       2015-12-12
+ * \updates       2016-01-09
  * \license       GNU GPLv2 or above
  *
  *  This module extends the event class to support conversions between events
@@ -76,10 +76,11 @@ private:
     Events m_events;
 
     /**
-     *  Points to the current event.  From this event we get the current time
-     *  and other parameters.  If the container were a plain map, we could
-     *  instead use a key to access it.  But we can at least use an iterator,
-     *  rather than a bare pointer.
+     *  Points to the current event, which is the event that has just been
+     *  inserted.  (From this event we can get the current time and other
+     *  parameters.)  If the container were a plain map, we could instead use
+     *  a key to access it.  But we can at least use an iterator, rather than
+     *  a bare pointer.
      */
 
     iterator m_current_event;
@@ -252,10 +253,24 @@ public:
         return m_current_event;
     }
 
+private:
+
+    /**
+     * \setter m_current_event
+     */
+
     void current_event (iterator cei)
     {
         m_current_event = cei;
     }
+
+#ifdef USE_VERIFY_AND_LINK                  /* not yet ready */
+    void clear_links ();
+    void verify_and_link (midipulse slength);
+    void mark_all ();
+    void unmark_all ();
+    void mark_out_of_range (midipulse slength);
+#endif
 
 };          // class editable_events
 

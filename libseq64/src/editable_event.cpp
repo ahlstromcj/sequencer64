@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-01-03
+ * \updates       2016-01-09
  * \license       GNU GPLv2 or above
  *
  *  A MIDI editable event is encapsulated by the seq64::editable_event
@@ -652,7 +652,7 @@ editable_event::analyze ()
         snprintf(tmp, sizeof tmp, "Chan %d", int(channel));
         m_name_channel = std::string(tmp);
         if (is_one_byte_msg(status))
-            snprintf(tmp, sizeof tmp, "Data = { %d }", int(d0));
+            snprintf(tmp, sizeof tmp, "Data %d", int(d0));
         else
         {
             if (is_note_msg(status))
@@ -663,7 +663,7 @@ editable_event::analyze ()
             {
                 snprintf
                 (
-                    tmp, sizeof tmp, "Data[] = { %d %d }", int(d0), int(d1)
+                    tmp, sizeof tmp, "Data %d, %d", int(d0), int(d1)
                 );
             }
         }

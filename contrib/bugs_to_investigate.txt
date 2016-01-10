@@ -1,11 +1,13 @@
 Bugs and Upgrade Ideas
 Chris Ahlstrom
-2015-10-27 to 2015-12-20
+2015-10-27 to 2016-01-09
 
 In no particular order...  "y" means "in progress", and "x" means it is
 basically done.
 
 -  See BUG REPORTS below.
+-  We need to be able to empty out any sequences and close any editors
+   when loading a new file, otherwise Sequencer64 can freeze.
 -  In the pattern editor piano roll, implement Undo for the arrow keys in the
    same way as for the mouse.
 -  The "increase size of grid" button on the perfedit doesn't work, or at least

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-01-04
+ * \updates       2016-01-09
  * \license       GNU GPLv2 or above
  *
  *  The main window holds the menu and the main controls of the application,
@@ -706,11 +706,7 @@ mainwnd::open_file (const std::string & fn)
     midifile f(fn);                     /* create object to represent file  */
     perf().clear_all();
     result = f.parse(perf());           /* parsing handles old & new format */
-    if (result)
-    {
-        ppqn(f.ppqn());                 /* get and save the actual PPQN     */
-    }
-    else
+    if (! result)
     {
         std::string errmsg = f.error_message();
         Gtk::MessageDialog errdialog
@@ -718,9 +714,11 @@ mainwnd::open_file (const std::string & fn)
             *this, errmsg, false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK, true
         );
         errdialog.run();
-        return;
+        if (f.error_is_fatal())
+            return;
     }
 
+    ppqn(f.ppqn());                     /* get and save the actual PPQN     */
     rc().last_used_dir(fn.substr(0, fn.rfind("/") + 1));
     rc().filename(fn);
     update_window_title();

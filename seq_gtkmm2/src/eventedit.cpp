@@ -122,7 +122,7 @@ namespace seq64
 \verbatim
           0                             1   2                         3   4
            ---------------------------------------------------------------   0
-     htop |                             :   :                             |
+     htop |  (OLD LAYOUT)               :   :                             |
           |---------------------------------------- showbox --------------|  1
   e'slots |  1-120:0:192 Program Change | ^ | "Sequence name"         |   |
           |-----------------------------|   | 4/4 PPQN 192            | r |  2
@@ -227,7 +227,6 @@ eventedit::eventedit
     m_table->attach(*m_bottbox,  2, 3, 13, 14, Gtk::FILL, Gtk::SHRINK, 8, 8);
     m_table->attach(*m_rightbox, 3, 4,  1, 14, Gtk::SHRINK, Gtk::SHRINK, 2, 2);
 #else
-//  m_table->attach(*m_htopbox,    0, 4,  0,  1,  Gtk::FILL, Gtk::SHRINK, 8, 8);
     m_table->attach(*m_eventslots, 0, 1,  0, 13,  Gtk::FILL, Gtk::FILL, 8, 8);
     m_table->attach
     (
@@ -238,7 +237,7 @@ eventedit::eventedit
     m_table->attach(*m_optsbox,  2, 3,  9, 12, Gtk::FILL, Gtk::SHRINK, 8, 8);
     m_table->attach(*m_bottbox,  2, 3, 12, 13, Gtk::FILL, Gtk::SHRINK, 8, 8);
     m_table->attach(*m_rightbox, 3, 4,  0, 13, Gtk::SHRINK, Gtk::SHRINK, 2, 2);
-#endif  // USE_OLD_LAYOUT
+#endif      // USE_OLD_LAYOUT
     add_tooltip
     (
         m_eventslots,

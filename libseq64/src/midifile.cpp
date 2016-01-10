@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-30
+ * \updates       2016-01-09
  * \license       GNU GPLv2 or above
  *
  *  For a quick guide to the MIDI format, see, for example:
@@ -159,6 +159,7 @@ midifile::midifile
 ) :
     m_file_size             (0),
     m_error_message         (),
+    m_error_is_fatal        (false),
     m_disable_reported      (false),
     m_pos                   (0),
     m_name                  (name),
@@ -325,8 +326,10 @@ midifile::parse (perform & p, int screenset)
     (
         m_name.c_str(), std::ios::in | std::ios::binary | std::ios::ate
     );
+    m_error_is_fatal = false;
     if (! file.is_open())
     {
+        m_error_is_fatal = true;
         m_error_message = "Error opening MIDI file '";
         m_error_message += m_name;
         m_error_message += "'";
@@ -337,6 +340,7 @@ midifile::parse (perform & p, int screenset)
     int file_size = file.tellg();                   /* get end offset       */
     if (file_size <= 0)
     {
+        m_error_is_fatal = true;
         m_error_message =
             "Invalid file size... are you trying to read a directory?";
 
@@ -351,6 +355,7 @@ midifile::parse (perform & p, int screenset)
     }
     catch (const std::bad_alloc & ex)
     {
+        m_error_is_fatal = true;
         m_error_message = "Memory allocation failed in midifile::parse()";
         errprint(m_error_message.c_str());
         return false;
@@ -365,6 +370,7 @@ midifile::parse (perform & p, int screenset)
     midilong hdrlength = read_long();               /* stock MThd length    */
     if (ID != SEQ64_HEADER_TAG && hdrlength != 6)   /* magic number 'MThd'  */
     {
+        m_error_is_fatal = true;
         errdump("Invalid MIDI header chunk detected", ID);
         return false;
     }
@@ -380,6 +386,7 @@ midifile::parse (perform & p, int screenset)
     }
     else
     {
+        m_error_is_fatal = true;
         errdump("Unsupported MIDI format number", midilong(Format));
         result = false;
     }
@@ -1018,11 +1025,13 @@ midifile::parse_proprietary_track (perform & p, int file_size)
             }
             else if (seqnum == (-1))
             {
+                m_error_is_fatal = false;
                 errdump("No sequence number in proprietary track, extra data");
                 result = false;
             }
             else
             {
+                m_error_is_fatal = false;
                 m_error_message = "Unexpected sequence number, proprietary track";
                 result = false;
             }
@@ -1120,6 +1129,7 @@ midifile::parse_proprietary_track (perform & p, int file_size)
             long length = read_long();
             if (c_gmute_tracks != length)
             {
+                m_error_is_fatal = true;
                 m_error_message = "Corrupt data in mute-group section";
                 errdump(m_error_message.c_str());
                 result = false;                         /* but keep going   */

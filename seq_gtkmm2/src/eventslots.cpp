@@ -1187,8 +1187,8 @@ eventslots::on_button_press_event (GdkEventButton * ev)
 bool
 eventslots::on_button_release_event (GdkEventButton * p0)
 {
-//  if (SEQ64_CLICK_RIGHT(p0->button))
-//      popup_menu();
+    //  if (SEQ64_CLICK_RIGHT(p0->button))
+    //      popup_menu();
 
     return false;
 }

@@ -331,7 +331,8 @@ sequence::set_orig_tick (midipulse tick)
  * \setter m_queued and m_queued_tick
  *
  *  Toggles the queued flag and sets the dirty-mp flag.  Also calculates
- *  the queued tick based on m_last_tick.
+ *  the queued tick based on m_last_tick.  If m_length is bad (i.e. zero),
+ *  then m_queued_tick is set to 0, to avoid an arithmetic error.
  *
  * \threadsafe
  */
@@ -342,7 +343,7 @@ sequence::toggle_queued ()
     automutex locker(m_mutex);
     set_dirty_mp();
     m_queued = ! m_queued;
-    m_queued_tick = m_last_tick - (m_last_tick % m_length) + m_length;
+    m_queued_tick = m_last_tick - mod_last_tick() + m_length;
 }
 
 /**
@@ -980,9 +981,7 @@ sequence::move_selected_notes (midipulse delta_tick, int delta_note)
         {
             event e = er;                         /* copy event             */
             e.unmark();
-            midibyte new_note = e.get_note() + delta_note;
-//              (e.get_note() + delta_note) >= 0 &&
-//              (e.get_note() + delta_note) < c_num_keys
+            int new_note = e.get_note() + delta_note;
             if (new_note >= 0 && new_note < c_num_keys)
             {
                 bool noteon = e.is_note_on();
@@ -1006,8 +1005,7 @@ sequence::move_selected_notes (midipulse delta_tick, int delta_note)
                     timestamp = 0;
 
                 e.set_timestamp(timestamp);
-//              e.set_note(e.get_note() + delta_note);
-                e.set_note(new_note);
+                e.set_note(midibyte(new_note));
                 e.select();
                 add_event(e);
             }
@@ -1602,10 +1600,7 @@ sequence::stream_event (event & ev)
             if (ev.is_note_on())
             {
                 push_undo();
-                add_note
-                (
-                    m_last_tick % m_length, m_snap_tick - 2, ev.get_note(), false
-                );
+                add_note(mod_last_tick(), m_snap_tick - 2, ev.get_note(), false);
                 set_dirty();
                 ++m_notes_on;
             }
@@ -1627,8 +1622,6 @@ sequence::stream_event (event & ev)
             midipulse timestamp = ev.get_timestamp();
             midibyte note = ev.get_note();
             select_note_events(timestamp, note, timestamp, note, e_select);
-//              ev.get_timestamp(), ev.get_note(),
-//              ev.get_timestamp(), ev.get_note(), e_select
             quantize_events(EVENT_NOTE_ON, 0, m_snap_tick, 1 , true);
         }
     }
@@ -1992,18 +1985,27 @@ sequence::del_trigger (midipulse tick)
 }
 
 /**
- *  Sets m_trigger_offset and wraps it to m_length.
+ *  Sets m_trigger_offset and wraps it to m_length.  If m_length is 0, then
+ *  it is simply set to the parameter.
  *
  * \threadsafe
+ *
+ * \param trigger_offset
+ *      The full trigger offset to set.
  */
 
 void
 sequence::set_trigger_offset (midipulse trigger_offset)
 {
     automutex locker(m_mutex);
-    m_trigger_offset = trigger_offset % m_length;
-    m_trigger_offset += m_length;
-    m_trigger_offset %= m_length;
+    if (m_length > 0)
+    {
+        m_trigger_offset = trigger_offset % m_length;
+        m_trigger_offset += m_length;
+        m_trigger_offset %= m_length;
+    }
+    else
+        m_trigger_offset = trigger_offset;
 }
 
 /**
@@ -2485,12 +2487,17 @@ sequence::remove_all ()
 
 /**
  *  Returns the last tick played, and is used by the editor's idle function.
+ *  If m_length is 0, this function returns m_last_tick - m_trigger_offset, to
+ *  avoid an arithmetic exception.  Should we return 0 instead?
  */
 
 midipulse
 sequence::get_last_tick ()
 {
-    return (m_last_tick + (m_length - m_trigger_offset)) % m_length;
+    if (m_length > 0)
+        return (m_last_tick + m_length - m_trigger_offset) % m_length;
+    else
+        return m_last_tick - m_trigger_offset;
 }
 
 /**

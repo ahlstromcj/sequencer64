@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-01-05
+ * \updates       2016-01-09
  * \license       GNU GPLv2 or above
  *
  *  The functions add_list_var() and add_long_list() have been replaced by
@@ -541,6 +541,19 @@ public:
     }
 
     midipulse get_last_tick ();
+
+    /**
+     *  Some MIDI file errors and other things can lead to an m_length of 0,
+     *  which causes arithmetic errors when m_last_tick is modded against it.
+     *  This function replaces the "m_last_tick % m_length", returning
+     *  m_last_tick if m_length is 0 or 1.
+     */
+
+    midipulse mod_last_tick ()
+    {
+        return (m_length > 1) ?  (m_last_tick % m_length) : m_last_tick ;
+    }
+
     void set_playing (bool);
 
     /**

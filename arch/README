@@ -1,0 +1,29 @@
+The Arch Linux Package Build
+Chris Ahlstrom
+2016-01-10 to 2016-01-10
+
+This directory holds a copy, probably out-of-date, or the PKGBUILD
+file for Arch Linux.  This copy is purely for reference.
+
+This README also provides some handy links to the Arch build of
+Sequencer64.
+
+Package URLs:
+
+    https://aur.archlinux.org/packages/sequencer64-git/
+    https://gist.github.com/danielappelt/f562e5056977699469d5
+
+Arch Package Guidelines:
+
+    https://wiki.archlinux.org/index.php/VCS_package_guidelines
+
+GitHub issues:
+
+    https://github.com/ahlstromcj/sequencer64/pull/7#issuecomment-169947579
+    https://github.com/ahlstromcj/sequencer64/pull/7#issuecomment-170135038
+
+Discussions:
+
+    https://www.linuxmusicians.com/viewtopic.php?f=4&t=15133&p=67807#p67807
+
+# vim: sw=4 ts=4 wm=4 et ft=sh

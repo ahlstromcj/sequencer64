@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-01-09
+ * \updates       2016-01-10
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -856,7 +856,8 @@ perform::is_dirty_names (int seq)
 
 /**
  *  Sets the value of the BPM into the master MIDI buss, after making
- *  sure it is squelched to be between 20 and 500.
+ *  sure it is squelched to be between 20 and 500.  Replaces
+ *  perform::set_bpm() from seq24.
  *
  *  The value is set only if neither JACK nor this performance object are
  *  running.
@@ -883,10 +884,6 @@ perform::set_beats_per_minute (int bpm)
 
     if (! (m_jack_asst.is_running() && m_running))
         m_master_bus.set_beats_per_minute(bpm);
-
-    /*
-     * modify(true);                // iffy!
-     */
 }
 
 /**
@@ -1604,9 +1601,9 @@ perform::output_func ()
         long stats_avg = 0;
         long stats_last_clock_us = 0;
         long stats_clock_width_us = 0;
-        long stats_all[100];
+        long stats_all[100];                // why 100?
         long stats_clock[100];
-        for (int i = 0; i < 100; i++)
+        for (int i = 0; i < 100; ++i)
         {
             stats_all[i] = 0;
             stats_clock[i] = 0;
@@ -1660,8 +1657,8 @@ perform::output_func ()
 
 #ifndef PLATFORM_WINDOWS
             clock_gettime(CLOCK_REALTIME, &current);
-            delta.tv_sec  = (current.tv_sec  - last.tv_sec);
-            delta.tv_nsec = (current.tv_nsec - last.tv_nsec);
+            delta.tv_sec  = current.tv_sec  - last.tv_sec;
+            delta.tv_nsec = current.tv_nsec - last.tv_nsec;
             long delta_us = (delta.tv_sec * 1000000) + (delta.tv_nsec / 1000);
 #else
             current = timeGetTime();
@@ -1697,7 +1694,7 @@ perform::output_func ()
             bool jackrunning = m_jack_asst.output(pad);
             if (jackrunning)
             {
-                // code?
+                // No additional code needed besides the output() call above.
             }
             else
 #endif
@@ -1730,13 +1727,13 @@ perform::output_func ()
                     if (pad.js_current_tick >= get_right_tick())
                     {
                         double leftover_tick =
-                            pad.js_current_tick-(get_right_tick());
+                            pad.js_current_tick-get_right_tick();
 
                         play(get_right_tick() - 1);             // play!
                         reset_sequences();                      // reset!
                         set_orig_ticks(get_left_tick());
                         pad.js_current_tick =
-                            double(get_left_tick() + leftover_tick);
+                            double(get_left_tick()) + leftover_tick;
                     }
                 }
                 play(long(pad.js_current_tick));                // play!
@@ -1745,13 +1742,16 @@ perform::output_func ()
                 {
                     while (stats_total_tick <= pad.js_total_tick)
                     {
+                        /*
+                         * Try reverting to c_ppqn / 24?
+                         */
+
                         int ct = clock_ticks_from_ppqn(m_ppqn);
                         if ((stats_total_tick % ct) == 0)   /* there a tick ? */
                         {
 
 #ifndef PLATFORM_WINDOWS
-                            long current_us =
-                                (current.tv_sec * 1000000) +
+                            long current_us = (current.tv_sec * 1000000) +
                                 (current.tv_nsec / 1000);
 #else
                             long current_us = current * 1000;
@@ -1812,14 +1812,14 @@ perform::output_func ()
 #ifndef PLATFORM_WINDOWS                    // nanosleep() is actually Linux
             if (delta_us > 0)
             {
-                delta.tv_sec = (delta_us / 1000000);
+                delta.tv_sec = delta_us / 1000000;
                 delta.tv_nsec = (delta_us % 1000000) * 1000;
                 nanosleep(&delta, NULL);
             }
 #else
             if (delta_us > 0)
             {
-                delta = (delta_us / 1000);
+                delta = delta_us / 1000;
                 Sleep(delta);
             }
 #endif
@@ -1862,7 +1862,7 @@ perform::output_func ()
 
                 stats_avg += delta_us;
                 stats_loop_index++;
-                if (stats_loop_index > 200)
+                if (stats_loop_index > 200)         // what is 200?
                 {
                     stats_loop_index = 0;
                     stats_avg /= 200;

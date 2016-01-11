@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-26
+ * \updates       2016-01-10
  * \license       GNU GPLv2 or above
  *
  *  Note that there are a number of header files that we don't need to add
@@ -121,7 +121,11 @@ main (int argc, char * argv [])
             seq64::create_lash_driver(p, argc, argv);
 
         kit.run(seq24_window);
+
+#ifdef SEQ64_JACK_SUPPORT
         p.deinit_jack();
+#endif
+
         ok = seq64::write_options_files(p);
         seq64::delete_lash_driver();            /* deletes only if exists   */
     }

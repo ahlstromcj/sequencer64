@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-01-10
+ * \updates       2016-01-11
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -1727,7 +1727,7 @@ perform::output_func ()
                     if (pad.js_current_tick >= get_right_tick())
                     {
                         double leftover_tick =
-                            pad.js_current_tick-get_right_tick();
+                            pad.js_current_tick - get_right_tick();
 
                         play(get_right_tick() - 1);             // play!
                         reset_sequences();                      // reset!
@@ -1743,11 +1743,13 @@ perform::output_func ()
                     while (stats_total_tick <= pad.js_total_tick)
                     {
                         /*
-                         * Try reverting to c_ppqn / 24?
+                         * Uses inline function for c_ppqn / 24.  Checks to see
+                         * if there was a tick.  What's up with the constants
+                         * 100 and 300?
                          */
 
                         int ct = clock_ticks_from_ppqn(m_ppqn);
-                        if ((stats_total_tick % ct) == 0)   /* there a tick ? */
+                        if ((stats_total_tick % ct) == 0)
                         {
 
 #ifndef PLATFORM_WINDOWS
@@ -1778,8 +1780,8 @@ perform::output_func ()
 
 #ifndef PLATFORM_WINDOWS
             clock_gettime(CLOCK_REALTIME, &current);
-            delta.tv_sec  = (current.tv_sec  - last.tv_sec);
-            delta.tv_nsec = (current.tv_nsec - last.tv_nsec);
+            delta.tv_sec  = current.tv_sec  - last.tv_sec;
+            delta.tv_nsec = current.tv_nsec - last.tv_nsec;
             long elapsed_us = (delta.tv_sec * 1000000) + (delta.tv_nsec / 1000);
 #else
             current = timeGetTime();
@@ -1833,23 +1835,15 @@ perform::output_func ()
             {
 #ifndef PLATFORM_WINDOWS
                 clock_gettime(CLOCK_REALTIME, &stats_loop_finish);
-#else
-                stats_loop_finish = timeGetTime();
-#endif
-            }
-
-            if (rc().stats())
-            {
-
-#ifndef PLATFORM_WINDOWS
                 delta.tv_sec  = stats_loop_finish.tv_sec-stats_loop_start.tv_sec;
                 delta.tv_nsec = stats_loop_finish.tv_nsec-stats_loop_start.tv_nsec;
                 long delta_us = (delta.tv_sec*1000000) + (delta.tv_nsec/1000);
 #else
+                stats_loop_finish = timeGetTime();
                 delta = stats_loop_finish - stats_loop_start;
                 long delta_us = delta * 1000;
 #endif
-                int index = delta_us / 100;
+                int index = delta_us / 100;         // why the 100?
                 if (index >= 100)
                     index = 99;
 

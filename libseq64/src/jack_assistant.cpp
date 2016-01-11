@@ -195,10 +195,9 @@ jack_assistant::init ()
 {
     if (rc().with_jack_transport() && ! m_jack_running)
     {
-        m_jack_running = true;              /* determined surely below      */
-        m_jack_master = true;               /* ditto                        */
-
         const char * package = SEQ64_PACKAGE;
+        m_jack_running = true;              /* determined surely below      */
+        m_jack_master = true;               /* ditto, too tricky, though    */
 
 #ifdef SEQ64_JACK_SESSION
         if (rc().jack_session_uuid().empty())
@@ -217,7 +216,7 @@ jack_assistant::init ()
 #endif
         if (m_jack_client == NULL)
         {
-            error_message("[JACK server not running, JACK sync disabled]");
+            error_message("JACK server not running, JACK sync disabled");
             return false;
         }
         jack_on_shutdown(m_jack_client, jack_shutdown, (void *) this);
@@ -266,6 +265,7 @@ jack_assistant::init ()
         }
 #endif
 
+        bool master_is_set = false;         /* flag to handle trickery  */
         if (rc().with_jack_master())
         {
             /*
@@ -282,6 +282,7 @@ jack_assistant::init ()
             {
                 info_message("JACK transport master");
                 m_jack_master = true;
+                master_is_set = true;
             }
             else
             {
@@ -294,7 +295,7 @@ jack_assistant::init ()
                  */
             }
         }
-        else
+        if (! master_is_set)
         {
             info_message("JACK transport slave");
             m_jack_master = false;

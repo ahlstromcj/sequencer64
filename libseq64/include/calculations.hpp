@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-07
- * \updates       2015-12-12
+ * \updates       2016-01-11
  * \license       GNU GPLv2 or above
  *
  *  These items were moved from the globals.h module so that only the modules
@@ -185,7 +185,13 @@ inline double tempo_from_beats_per_minute (double bpm)
 
 inline double pulse_length_us (int bpm, int ppqn)
 {
-    return 60000000.0 / double(bpm * ppqn);
+    /*
+     * Let's use the original notation for now.
+     *
+     * return 60000000.0 / double(bpm * ppqn);
+     */
+
+    return 60000000.0 / ppqn / bpm;
 }
 
 /**
@@ -223,7 +229,7 @@ inline double pulse_length_us (int bpm, int ppqn)
 
 inline double delta_time_us_to_ticks (unsigned long us, int bpm, int ppqn)
 {
-    return double(bpm) * double(ppqn) * (double(us) / 60000000.0);
+    return double(bpm * ppqn * (us / 60000000.0));
 }
 
 /**
@@ -322,7 +328,7 @@ inline int clock_ticks_from_ppqn (int ppqn)
 
 inline double double_ticks_from_ppqn (int ppqn)
 {
-    return double(ppqn) / double(SEQ64_MIDI_CLOCK_IN_PPQN);
+    return ppqn / double(SEQ64_MIDI_CLOCK_IN_PPQN);
 }
 
 /**

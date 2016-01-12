@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-14
- * \updates       2016 01-10
+ * \updates       2016 01-12
  * \license       GNU GPLv2 or above
  *
  *  This module was created from code that existed in the perform object.
@@ -154,15 +154,19 @@ jack_assistant::~jack_assistant ()
  *
  * \param msg
  *      The message to print, sans the newline.
+ *
+ * \return
+ *      Returns true.
  */
 
-void
+bool
 jack_assistant::info_message (const std::string & msg)
 {
     std::string temp = "[";
     temp += msg;
     temp += "]\n";
     printf(temp.c_str());
+    return true;
 }
 
 /**
@@ -171,13 +175,18 @@ jack_assistant::info_message (const std::string & msg)
  *
  * \param msg
  *      The message to print, sans the newline.
+ *
+ * \return
+ *      Returns false for convenience/brevity in setting function return
+ *      values.
  */
 
-void
+bool
 jack_assistant::error_message (const std::string & msg)
 {
-    info_message(msg);
+    (void) info_message(msg);
     m_jack_running = false;
+    return false;
 }
 
 /**
@@ -214,41 +223,30 @@ jack_assistant::init ()
 #else
         m_jack_client = jack_client_open(package, JackNullOption, NULL);
 #endif
+
         if (m_jack_client == NULL)
-        {
-            error_message("JACK server not running, JACK sync disabled");
-            return false;
-        }
+            return error_message("JACK server not running, JACK sync disabled");
+
         jack_on_shutdown(m_jack_client, jack_shutdown, (void *) this);
         int jackcode = jack_set_sync_callback
         (
             m_jack_client, jack_sync_callback, (void *) this
         );
         if (jackcode != 0)
-        {
-            error_message("jack_set_sync_callback() failed");
-            return false;
-        }
+            return error_message("jack_set_sync_callback() failed");
 
         /*
          * Implemented first patch from freddix/seq24 GitHub project, to fix
          * JACK transport.  One line of code.  Well, we added some
          * error-checking. :-)
-         *
-         * TESTING.  DOES THIS CAUSE ISSUES?  COMMENT OUT TEMPORARILY!!!
          */
 
-#ifdef ENABLE_THIS_PATCH
         jackcode = jack_set_process_callback
         (
             m_jack_client, jack_process_callback, NULL
         );
         if (jackcode != 0)
-        {
-            error_message("jack_set_process_callback() failed]");
-            return false;
-        }
-#endif
+            return error_message("jack_set_process_callback() failed]");
 
 #ifdef SEQ64_JACK_SESSION
         if (jack_set_session_callback)
@@ -258,10 +256,7 @@ jack_assistant::init ()
                 m_jack_client, jack_session_callback, (void *) this
             );
             if (jackcode != 0)
-            {
-                error_message("jack_set_session_callback() failed]");
-                return false;
-            }
+                return error_message("jack_set_session_callback() failed]");
         }
 #endif
 
@@ -271,39 +266,41 @@ jack_assistant::init ()
             /*
              * 'cond' is true if we want to fail if there is already a JACK
              * master, i.e. it is a conditional attempt to be JACK master.
+             *
+             * \change ca 2016-01-12
+             *      Found an error; we don't want to pass a perform object,
+             *      we want a jack_assistant object.
+             *
+             *      (void *) &m_jack_parent
              */
 
             bool cond = rc().with_jack_master_cond();
             jackcode = jack_set_timebase_callback
             (
-                m_jack_client, cond, jack_timebase_callback, &m_jack_parent
+                m_jack_client, cond, jack_timebase_callback, (void *) this
             );
             if (jackcode == 0)
             {
-                info_message("JACK transport master");
+                (void) info_message("JACK transport master");
                 m_jack_master = true;
                 master_is_set = true;
             }
             else
             {
-                errprint("jack_set_timebase_callback() failed");
-
                 /*
-                 * seq24 doesn't set this here
-                 *
-                 * m_jack_master = false;
+                 * seq24 doesn't set this here: m_jack_master = false;
                  */
+
+                return error_message("jack_set_timebase_callback() failed");
             }
         }
         if (! master_is_set)
         {
-            info_message("JACK transport slave");
+            (void) info_message("JACK transport slave");
             m_jack_master = false;
         }
         if (jack_activate(m_jack_client) != 0)
-        {
-            error_message("Cannot register as JACK client");
-        }
+            return error_message("Cannot register as JACK client");
     }
     return m_jack_running;
 }
@@ -320,18 +317,17 @@ jack_assistant::deinit ()
         m_jack_running = false;
         m_jack_master = false;
         if (jack_release_timebase(m_jack_client) != 0)
-            error_message("Cannot release timebase");
+            (void) error_message("Cannot release timebase");
 
         if (jack_client_close(m_jack_client) != 0)
-            error_message("Cannot close JACK client");
+            (void) error_message("Cannot close JACK client");
     }
 
     /*
-     * No need for this message.  We are likely exiting the application,
-     * fer cripesake!
+     * No need for this message.  We are likely exiting the application.
      *
      * if (! m_jack_running)
-     *     info_message("JACK sync disabled");
+     *     (void) info_message("JACK sync disabled");
      */
 }
 
@@ -383,7 +379,7 @@ jack_assistant::position (bool /* state */ )
     if (m_jack_running)
     {
         if (jack_transport_locate(m_jack_client, 0) != 0)
-            info_message("jack_transport_locate() failed");
+            (void) info_message("jack_transport_locate() failed");
     }
     return;
 
@@ -454,15 +450,11 @@ jack_assistant::position (bool /* state */ )
  *      Unused.
  */
 
-#ifdef ENABLE_THIS_PATCH
-
 int
 jack_process_callback (jack_nframes_t /* nframes */, void * /* arg */ )
 {
     return 0;
 }
-
-#endif
 
 /**
  *  This JACK synchronization callback informs the specified perform

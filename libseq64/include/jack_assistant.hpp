@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-09-17
- * \updates       2015-10-20
+ * \updates       2016-01-12
  * \license       GNU GPLv2 or above
  *
  *  This class contains a number of functions that used to reside in the
@@ -158,8 +158,8 @@ public:
 
 private:
 
-    void info_message (const std::string & msg);
-    void error_message (const std::string & msg);
+    bool info_message (const std::string & msg);
+    bool error_message (const std::string & msg);
 
 #ifdef SEQ64_USE_DEBUG_OUTPUT
     void jack_debug_print

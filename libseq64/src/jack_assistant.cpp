@@ -34,7 +34,7 @@
  *
  *  Here are summaries of the JACK functions used in this module:
  *
- *      -   jack_client_open().
+ *      -   jack_client_open(const char *, jack_options_t, jack_status_t *).
  *          Open a client session with a JACK server. More complex and
  *          powerful than jack_client_new(). Clients choose which of several
  *          servers to connect, and how to start the server automatically, if
@@ -192,8 +192,6 @@ jack_assistant::error_message (const std::string & msg)
 /**
  *  Initializes JACK support.  Then we become a new client of the JACK server.
  *
- *  Who calls this routine?
- *
  * \return
  *      Returns true if JACK is now considered to be running (or if it was
  *      already running.)
@@ -204,26 +202,10 @@ jack_assistant::init ()
 {
     if (rc().with_jack_transport() && ! m_jack_running)
     {
-        const char * package = SEQ64_PACKAGE;
+        std::string package = SEQ64_PACKAGE;
         m_jack_running = true;              /* determined surely below      */
         m_jack_master = true;               /* ditto, too tricky, though    */
-
-#ifdef SEQ64_JACK_SESSION
-        if (rc().jack_session_uuid().empty())
-        {
-            m_jack_client = jack_client_open(package, JackNullOption, NULL);
-        }
-        else
-        {
-            m_jack_client = jack_client_open
-            (
-                package, JackSessionID, NULL, rc().jack_session_uuid().c_str()
-            );
-        }
-#else
-        m_jack_client = jack_client_open(package, JackNullOption, NULL);
-#endif
-
+        m_jack_client = client_open(package);
         if (m_jack_client == NULL)
             return error_message("JACK server not running, JACK sync disabled");
 
@@ -626,12 +608,12 @@ jack_session_callback (jack_session_event_t * ev, void * arg)
 bool
 jack_assistant::output (jack_scratchpad & pad)
 {
-    if (m_jack_running)             // no init until we get a good lock
+    if (m_jack_running)
     {
         double jack_ticks_converted = 0.0;
         double jack_ticks_converted_last = 0.0;
         double jack_ticks_delta = 0.0;
-        pad.js_init_clock = false;
+        pad.js_init_clock = false;      // no init until we get a good lock
         m_jack_transport_state =
             jack_transport_query(m_jack_client, &m_jack_pos);
 
@@ -639,10 +621,21 @@ jack_assistant::output (jack_scratchpad & pad)
             jack_get_current_transport_frame(m_jack_client);
 
         /*
-         * Need to verify the m_jack_pos.frame_rate is > 0!
-         * Same for m_jack_pos.ticks_per_beat and m_jack_pos.beat_type.
+         * TODO:
+         *      Need to verify the m_jack_pos.frame_rate is > 0!
+         *      Same for m_jack_pos.ticks_per_beat and m_jack_pos.beat_type.
          */
 
+        bool ok = m_jack_pos.frame_rate > 0;
+        if (! ok)
+        {
+            static bool s_report_it = true;
+            if (s_report_it)
+            {
+                (void) info_message("jack output(): zero frame rate");
+                s_report_it = false;
+            }
+        }
         if
         (
             m_jack_transport_state_last == JackTransportStarting &&
@@ -651,13 +644,14 @@ jack_assistant::output (jack_scratchpad & pad)
         {
             m_jack_frame_last = m_jack_frame_current;
             pad.js_dumping = true;
+            (void) info_message("Start playback");
             m_jack_tick = m_jack_pos.frame * m_jack_pos.ticks_per_beat *
                 m_jack_pos.beats_per_minute / (m_jack_pos.frame_rate * 60.0);
 
             jack_ticks_converted = m_jack_tick *        /* convert ticks */
             (
                 double(m_ppqn) / (m_jack_pos.ticks_per_beat *
-                    m_jack_pos.beat_type / 4.0)
+                    m_jack_pos.beat_type / 4.0)         /* why 4?        */
             );
             m_jack_parent.set_orig_ticks(long(jack_ticks_converted));
             pad.js_current_tick = pad.js_clock_tick = pad.js_total_tick =
@@ -667,7 +661,9 @@ jack_assistant::output (jack_scratchpad & pad)
 
             /*
              * We need to make sure another thread can't modify these
-             * values.
+             * values.  Also, maybe some of the parent (perform) values need to
+             * move, to the scratch-pad, if not used directly in the perform
+             * object.  Why the "double" value?
              */
 
             if (pad.js_looping && pad.js_playback_mode)
@@ -694,6 +690,7 @@ jack_assistant::output (jack_scratchpad & pad)
         {
             m_jack_transport_state_last = JackTransportStopped;
             pad.js_jack_stopped = true;
+            (void) info_message("Stop playback");
         }
 
         /*
@@ -707,7 +704,7 @@ jack_assistant::output (jack_scratchpad & pad)
 
             /* if we are moving ahead... */
 
-            if ((m_jack_frame_current > m_jack_frame_last))
+            if (m_jack_frame_current > m_jack_frame_last)
             {
                 m_jack_tick +=
                     (m_jack_frame_current - m_jack_frame_last)  *
@@ -733,11 +730,165 @@ jack_assistant::output (jack_scratchpad & pad)
 
 #ifdef SEQ64_USE_DEBUG_OUTPUT
             jack_debug_print(pad.js_current_tick, jack_ticks_delta);
+            long ptick, pbeat, pbar;
+            pbar  = (long) ((long) m_jack_tick /
+                    (m_jack_pos.ticks_per_beat *  m_jack_pos.beats_per_bar ));
+
+            pbeat = (long) ((long) m_jack_tick %
+                    (long) (m_jack_pos.ticks_per_beat *  m_jack_pos.beats_per_bar ));
+            pbeat = pbeat / (long) m_jack_pos.ticks_per_beat;
+            ptick = (long) m_jack_tick % (long) m_jack_pos.ticks_per_beat;
 #endif
 
         }                               /* if dumping (sane state)  */
     }                                   /* if m_jack_running        */
     return m_jack_running;
+}
+
+/**
+ *  Provides a list of JACK status bits, and a brief string to explain the
+ *  status bit.  Terminated by a 0 value and an empty string.
+ */
+
+jack_status_pair_t jack_assistant::sm_status_pairs [] =
+{
+    {
+        JackFailure,
+        "Overall operation failed."
+    },
+    {
+        JackInvalidOption,
+        "The operation contained an invalid or unsupported option."
+    },
+    {
+        JackNameNotUnique,
+        "The client name was not unique."
+    },
+    {
+        JackServerStarted,
+        "JACK started by this operation, rather than running already."
+    },
+    {
+        JackServerFailed,
+        "Unable to connect to the JACK server."
+    },
+    {
+        JackServerError,
+        "Communication error with the JACK server."
+    },
+    {
+        JackNoSuchClient,
+        "Requested client does not exist."
+    },
+    {
+        JackLoadFailure,
+        "Unable to load internal client."
+    },
+    {
+        JackInitFailure,
+        "Unable to initialize client."
+    },
+    {
+        JackShmFailure,
+        "Unable to access shared memory."
+    },
+    {
+        JackVersionError,
+        "Client's protocol version does not match."
+    },
+    {
+        JackBackendError,
+        "A JACK back-end error occurred."
+    },
+    {
+        JackClientZombie,
+        "A JACK zombie process exists."
+    },
+    {                                   /* terminator */
+        0,
+        ""
+    }
+};
+
+/**
+ *  Loops through the full set of JACK bits, showing the information for any
+ *  bits that are set in the given parameter.
+ */
+
+void
+jack_assistant::show_statuses (unsigned bits)
+{
+    /*
+     * infoprintf("JACK status bits returned = 0x%x\n", bits);
+     */
+
+    jack_status_pair_t * jsp = &sm_status_pairs[0];
+    while (jsp->jf_bit != 0)
+    {
+        /*
+         * infoprintf("Status bit = 0x%x\n", jsp->jf_bit);
+         */
+
+        if (bits & jsp->jf_bit)
+            (void) info_message(jsp->jf_meaning.c_str());
+
+        ++jsp;
+    }
+}
+
+/**
+ *  A more full-featured initialization for a JACK client, which is meant to
+ *  be called by the init() function.
+ *
+ * Status bits for jack_status_t return pointer:
+ *
+ *      JackNameNotUnique means that the client name was not unique. With
+ *      JackUseExactName, this is fatal. Otherwise, the name was modified by
+ *      appending a dash and a two-digit number in the range "-01" to "-99".
+ *      The jack_get_client_name() function returns the exact string used. If
+ *      the specified client_name plus these extra characters would be too
+ *      long, the open fails instead.
+ *
+ *      JackServerStarted means that the JACK server was started as a result
+ *      of this operation. Otherwise, it was running already. In either case
+ *      the caller is now connected to jackd, so there is no race condition.
+ *      When the server shuts down, the client will find out.
+ *
+ * \return
+ *      Returns true if JACK ...
+ */
+
+jack_client_t *
+jack_assistant::client_open (const std::string & clientname)
+{
+    jack_client_t * result = nullptr;
+    jack_status_t status_code;
+
+#ifdef SEQ64_JACK_SESSION
+    if (rc().jack_session_uuid().empty())
+    {
+        result = jack_client_open
+        (
+            clientname.c_str(), JackNullOption, &status_code
+        );
+    }
+    else
+    {
+        result = jack_client_open
+        (
+            clientname.c_str(), JackSessionID, &status_code,
+            rc().jack_session_uuid().c_str()
+        );
+    }
+#else
+    result = jack_client_open
+    (
+        clientname.c_str(), JackNullOption, &status_code
+    );
+#endif
+
+    show_statuses(status_code);
+    return result;
 }
 
 #ifdef SEQ64_USE_DEBUG_OUTPUT
@@ -816,12 +967,13 @@ jack_timebase_callback
 )
 {
     static double s_jack_tick;
+    static jack_nframes_t s_last_frame;
     static jack_nframes_t s_current_frame;
     static jack_transport_state_t s_state_last;
     static jack_transport_state_t s_state_current;
+    jack_assistant * jack = (jack_assistant *)(arg);
     s_state_current = state;
 
-    jack_assistant * jack = (jack_assistant *)(arg);
     s_current_frame = jack_get_current_transport_frame(jack->m_jack_client);
     if (is_nullptr(pos))
     {
@@ -829,9 +981,9 @@ jack_timebase_callback
         return;
     }
     pos->valid = JackPositionBBT;
-    pos->beats_per_bar = 4;
-    pos->beat_type = 4;
-    pos->ticks_per_beat = jack->m_ppqn * 10;
+    pos->beats_per_bar = 4;                     // hardwired!
+    pos->beat_type = 4;                         // hardwired!
+    pos->ticks_per_beat = jack->m_ppqn * 10;    // why 10?
     pos->beats_per_minute = jack->parent().get_beats_per_minute();
 
     /*
@@ -841,25 +993,46 @@ jack_timebase_callback
      * If we are in a new position....
      */
 
-    bool ok = s_state_last == JackTransportStarting;
-    if (ok)
-        ok = s_state_current == JackTransportRolling;
-
-    if (ok)
-        ok = pos->ticks_per_beat > 0;
-
-    if (ok)
-        ok = pos->beats_per_bar > 0;
-
-    if (ok)
+    if
+    (
+        s_state_last == JackTransportStarting &&
+        s_state_current == JackTransportRolling
+    )
     {
-        double jack_delta_tick = (s_current_frame) * pos->ticks_per_beat *
-            pos->beats_per_minute / (pos->frame_rate * 60.0);
+        s_jack_tick = 0.0;
+        s_last_frame = s_current_frame;
+    }
 
-        s_jack_tick = (jack_delta_tick < 0) ? -jack_delta_tick : jack_delta_tick;
+    if (pos->frame_rate > 0)
+    {
+        if (s_current_frame > s_last_frame)
+        {
+            double jack_delta_tick = (s_current_frame - s_last_frame) *
+                pos->ticks_per_beat * pos->beats_per_minute /
+                (pos->frame_rate * 60.0);
 
-        long ptick = 0, pbeat = 0, pbar = 0;
-        long ticks_per_bar = long(pos->ticks_per_beat * pos->beats_per_bar);
+            s_jack_tick += jack_delta_tick;
+            s_last_frame = s_current_frame;
+        }
+    }
+    else
+    {
+        static bool s_report_it = true;
+        if (s_report_it)
+        {
+            errprint("jack_timebase_callback(): zero frame rate");
+            s_report_it = false;
+        }
+    }
+
+//      double jack_delta_tick = (s_current_frame) * pos->ticks_per_beat *
+//          pos->beats_per_minute / (pos->frame_rate * 60.0);
+//      s_jack_tick = (jack_delta_tick < 0) ? -jack_delta_tick : jack_delta_tick;
+
+    long ptick = 0, pbeat = 0, pbar = 0;
+    long ticks_per_bar = long(pos->ticks_per_beat * pos->beats_per_bar);
+    if (ticks_per_bar > 0)
+    {
         pbar = long(long(s_jack_tick) / ticks_per_bar);
         pbeat = long(long(s_jack_tick) % ticks_per_bar);
         pbeat /= long(pos->ticks_per_beat);
@@ -867,14 +1040,16 @@ jack_timebase_callback
         pos->bar = pbar + 1;
         pos->beat = pbeat + 1;
         pos->tick = ptick;
-        pos->bar_start_tick = pos->bar * pos->beats_per_bar * pos->ticks_per_beat;
+        pos->bar_start_tick = pos->bar * pos->beats_per_bar *
+            pos->ticks_per_beat;
     }
+    else
+    {
+        errprint("jack_timebase_callback(): zero values");
+    }
+
     s_state_last = s_state_current;
 
-    if (! ok)
-    {
-        errprint("jack_timebase_callback(): bad position or state info");
-    }
 }
 
 /**

@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-01-11
+ * \updates       2016-01-12
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -1828,7 +1828,7 @@ perform::output_func ()
             else
             {
                 if (rc().stats())
-                    printf("underrun\n");
+                    errprint("Underrun");
             }
 
             if (rc().stats())

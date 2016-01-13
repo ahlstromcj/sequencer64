@@ -69,7 +69,28 @@ struct jack_scratchpad
 };
 
 /**
+ *  Provides an internal type to make it easier to display a specific and
+ *  accurate human-readable message when a JACK operation fails.
+ *
+ * \var jf_bit
+ *      Holds one of the bit-values from jack_status_t, which is defined as
+ *      an "enum JackStatus" type.
+ *
+ * \var jf_meaning
+ *      Holds a textual description of the corresponding status bit.
+ */
+
+typedef struct
+{
+    unsigned jf_bit;
+    std::string jf_meaning;
+
+} jack_status_pair_t;
+
+/**
  *  This class provides the performance mode JACK support.
+ *
+ *  WHY PERFORMANCE MODE?  Only works in that mode???  
  */
 
 class jack_assistant
@@ -93,6 +114,8 @@ class jack_assistant
     );
 
 private:
+
+    static jack_status_pair_t sm_status_pairs [];
 
     perform & m_jack_parent;
     jack_client_t * m_jack_client;
@@ -160,6 +183,8 @@ private:
 
     bool info_message (const std::string & msg);
     bool error_message (const std::string & msg);
+    jack_client_t * client_open (const std::string & clientname);
+    void show_statuses (unsigned bits);
 
 #ifdef SEQ64_USE_DEBUG_OUTPUT
     void jack_debug_print

@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-09-17
- * \updates       2016-01-12
+ * \updates       2016-01-13
  * \license       GNU GPLv2 or above
  *
  *  This class contains a number of functions that used to reside in the
@@ -103,7 +103,7 @@ class jack_assistant
         jack_position_t * pos,
         void * arg
     );
-    friend void jack_shutdown (void * arg);
+    friend void jack_shutdown_callback (void * arg);
     friend void jack_timebase_callback
     (
         jack_transport_state_t state,
@@ -207,7 +207,7 @@ extern int jack_sync_callback
     void * arg
 );
 extern void print_jack_pos (jack_position_t * jack_pos);
-extern void jack_shutdown (void * arg);
+extern void jack_shutdown_callback (void * arg);
 extern void jack_timebase_callback
 (
     jack_transport_state_t state,

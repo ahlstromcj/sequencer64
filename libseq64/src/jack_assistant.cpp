@@ -42,7 +42,7 @@
  *          a unique client name.
  *      -   jack_on_shutdown().
  *          Registers a function to call when the JACK server shuts down the
- *          client thread. The function must be an asynchonrous POSIX signal
+ *          client thread. It must be an asynchonrous POSIX signal
  *          handler: only async-safe functions, executed from another thread.
  *          A typical function might set a flag or write to a pipe so that the
  *          rest of the application knows that the JACK client thread has shut
@@ -50,7 +50,7 @@
  *          clients understand what is going on. It should be called before
  *          jack_client_activate().
  *      -   jack_set_sync_callback().
- *          Register/unregister as a slow-sync client, who cannot respond
+ *          Register/unregister as a slow-sync client; it can't respond
  *          immediately to transport position changes.  The callback is run at
  *          the first opportunity after registration: if the client is active,
  *          this is the next process cycle, otherwise it is the first cycle
@@ -209,7 +209,7 @@ jack_assistant::init ()
         if (m_jack_client == NULL)
             return error_message("JACK server not running, JACK sync disabled");
 
-        jack_on_shutdown(m_jack_client, jack_shutdown, (void *) this);
+        jack_on_shutdown(m_jack_client, jack_shutdown_callback, (void *) this);
         int jackcode = jack_set_sync_callback
         (
             m_jack_client, jack_sync_callback, (void *) this
@@ -282,7 +282,7 @@ jack_assistant::init ()
             m_jack_master = false;
         }
         if (jack_activate(m_jack_client) != 0)
-            return error_message("Cannot register as JACK client");
+            return error_message("Cannot activate JACK client");
     }
     return m_jack_running;
 }
@@ -299,7 +299,16 @@ jack_assistant::deinit ()
         m_jack_running = false;
         m_jack_master = false;
         if (jack_release_timebase(m_jack_client) != 0)
-            (void) error_message("Cannot release timebase");
+            (void) error_message("Cannot release JACK timebase");
+
+        /*
+         * New:  Simply to be symmetric with the startup flow.
+         * Not yet sure why jack_activate() was needed, but assume
+         * that jack_deactivate() is thus important as well.
+         */
+
+        if (jack_deactivate(m_jack_client) != 0)
+            (void) error_message("Cannot deactivate JACK client");
 
         if (jack_client_close(m_jack_client) != 0)
             (void) error_message("Cannot close JACK client");
@@ -485,20 +494,20 @@ jack_sync_callback
         switch (state)
         {
         case JackTransportStopped:
-            infoprint("[JackTransportStopped]");
+            // infoprint("[JackTransportStopped]");
             break;
 
         case JackTransportRolling:
-            infoprint("[JackTransportRolling]");
+            // infoprint("[JackTransportRolling]");
             break;
 
         case JackTransportStarting:
-            infoprint("[JackTransportStarting]");
+            // infoprint("[JackTransportStarting]");
             jack->parent().inner_start(rc().jack_start_mode());
             break;
 
         case JackTransportLooping:
-            infoprint("[JackTransportLooping]");
+            // infoprint("[JackTransportLooping]");
             break;
 
         default:
@@ -1062,7 +1071,7 @@ jack_timebase_callback
  */
 
 void
-jack_shutdown (void * arg)
+jack_shutdown_callback (void * arg)
 {
     jack_assistant * jack = (jack_assistant *)(arg);
     jack->m_jack_running = false;

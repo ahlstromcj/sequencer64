@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-14
- * \updates       2016 01-12
+ * \updates       2016-01-13
  * \license       GNU GPLv2 or above
  *
  *  This module was created from code that existed in the perform object.
@@ -225,10 +225,19 @@ jack_assistant::init ()
 
         jackcode = jack_set_process_callback
         (
-            m_jack_client, jack_process_callback, NULL
+            m_jack_client, jack_process_callback, NULL  // (void *) this
         );
         if (jackcode != 0)
             return error_message("jack_set_process_callback() failed]");
+
+        /*
+         * Some possible code:
+         *
+         * jackcode = jack_set_xrun_callback
+         * (
+         *      m_jack_client, jack_xrun_callback, (void *) this
+         * );
+         */
 
 #ifdef SEQ64_JACK_SESSION
         if (jack_set_session_callback)
@@ -323,7 +332,8 @@ jack_assistant::deinit ()
 }
 
 /**
- *  If JACK is supported, starts the JACK transport.
+ *  If JACK is supported, starts the JACK transport.  This function assumes
+ *  that m_jack_client is not null, if m_jack_running is true.
  */
 
 void
@@ -335,7 +345,9 @@ jack_assistant::start ()
 
 /**
  *  If JACK is supported, stops the JACK transport.  Should it also set
- *  m_jack_running to false?  Let's do that, just for consistency.
+ *  m_jack_running to false?  Let's do that, just for consistency.  This
+ *  function assumes that m_jack_client is not null, if m_jack_running is
+ *  true.
  */
 
 void
@@ -374,7 +386,7 @@ jack_assistant::position (bool /* state */ )
     }
     return;
 
-#ifdef WHY_IS_THIS_CODE_EFFECTIVELY_DISABLED
+#if 0 // WHY_IS_THIS_CODE_EFFECTIVELY_DISABLED
 
     /*
      * Probably because it is hardwired.  We probably should fix this up and
@@ -482,6 +494,16 @@ jack_sync_callback
     jack->m_jack_frame_current =
         jack_get_current_transport_frame(jack->m_jack_client);
 
+    /*
+     * Don't we need to call this here?  Maybe only at the beginning, but
+     * currently we don't get a valid frame rate.
+     *
+     * m_jack_transport_state = jack_transport_query
+     * (
+     *      m_jack_client, &jack->m_jack_pos
+     * );
+     */
+
     if (jack->m_jack_pos.frame_rate != 0)
     {
         jack->m_jack_tick = jack->m_jack_frame_current *
@@ -521,7 +543,7 @@ jack_sync_callback
         static bool s_report_it = true;
         if (s_report_it)
         {
-            errprint("jack_sync_callback(): zero frame rate [reported once]");
+            errprint("jack_sync_callback(): zero frame rate [single report]");
             s_report_it = false;
         }
         return 0;
@@ -540,13 +562,12 @@ jack_sync_callback
  *  applied to seq24 v.0.9.2.  It put quotes around the --file argument.
  *  However, the --file option doesn't work, so let's change that line.
  *
- *      sequencer64 --file \"${SESSION_DIR}file.mid\" --jack_session_uuid 
+ *      sequencer64 --file \"${SESSION_DIR}file.mid\" --jack_session_uuid
  *
- *  Why are we using a Glib::ustring here?  Convenience.  But with
- *  C++11, we could use a lexical_cast<>.  No more ustring, baby!
- *
- *  It doesn't really matter; this function can call Gtk::Main::quit(), via
- *  the parent's gui().quit() function.
+ *  Why are we using a Glib::ustring here?  Convenience.  But with C++11, we
+ *  could use a lexical_cast<>.  No more ustring, baby!  It doesn't really
+ *  matter; this function can call Gtk::Main::quit(), via the parent's
+ *  gui().quit() function.
  *
  * \return
  *      Always returns false.
@@ -555,20 +576,23 @@ jack_sync_callback
 bool
 jack_assistant::session_event ()
 {
-    std::string fname(m_jsession_ev->session_dir);
-    fname += "file.mid";
-    std::string cmd("sequencer64 --jack_session_uuid ");
-    cmd += m_jsession_ev->client_uuid;
-    cmd += " \"${SESSION_DIR}file.mid\"";
+    if (not_nullptr(m_jsession_ev))
+    {
+        std::string fname(m_jsession_ev->session_dir);
+        fname += "file.mid";
+        std::string cmd("sequencer64 --jack_session_uuid ");
+        cmd += m_jsession_ev->client_uuid;
+        cmd += " \"${SESSION_DIR}file.mid\"";
 
-    midifile f(fname, rc().legacy_format(), usr().global_seq_feature());
-    f.write(m_jack_parent);
-    m_jsession_ev->command_line = strdup(cmd.c_str());
-    jack_session_reply(m_jack_client, m_jsession_ev);
-     if (m_jsession_ev->type == JackSessionSaveAndQuit)
-        m_jack_parent.gui().quit();
+        midifile f(fname, rc().legacy_format(), usr().global_seq_feature());
+        f.write(m_jack_parent);
+        m_jsession_ev->command_line = strdup(cmd.c_str());
+        jack_session_reply(m_jack_client, m_jsession_ev);
+         if (m_jsession_ev->type == JackSessionSaveAndQuit)
+            m_jack_parent.gui().quit();
 
-    jack_session_event_free(m_jsession_ev);
+        jack_session_event_free(m_jsession_ev);
+    }
     return false;
 }
 
@@ -623,8 +647,13 @@ jack_assistant::output (jack_scratchpad & pad)
         double jack_ticks_converted_last = 0.0;
         double jack_ticks_delta = 0.0;
         pad.js_init_clock = false;      // no init until we get a good lock
-        m_jack_transport_state =
-            jack_transport_query(m_jack_client, &m_jack_pos);
+        m_jack_transport_state = jack_transport_query(m_jack_client, &m_jack_pos);
+
+        /*
+         * TODO:  Check for m_jack_pos->valid field.  Check for
+         *        m_jack_transport_state == JackTransportRolling?
+         *        m_jack_transport_state == JackTransportStopped?
+         */
 
         m_jack_frame_current =
             jack_get_current_transport_frame(m_jack_client);
@@ -641,7 +670,7 @@ jack_assistant::output (jack_scratchpad & pad)
             static bool s_report_it = true;
             if (s_report_it)
             {
-                (void) info_message("jack output(): zero frame rate");
+                info_message("jack output(): zero frame rate, first report");
                 s_report_it = false;
             }
         }
@@ -896,9 +925,27 @@ jack_assistant::client_open (const std::string & clientname)
     );
 #endif
 
+    if (status_code & JackServerStarted)
+        (void) info_message("JACK server started");
+    else
+        (void) info_message("JACK server NOT started!");
+
+    if (status_code & JackNameNotUnique)
+        (void) info_message("JACK client-name NOT unique");
+
     show_statuses(status_code);
     return result;
 }
+
+/**
+ *  Another init() helper function to keep init() clean and easy to read.
+ *
+ * \return
+ *      Returns true if the function succeeded.
+
+bool
+jack_assistant::
+ */
 
 #ifdef SEQ64_USE_DEBUG_OUTPUT
 
@@ -978,6 +1025,7 @@ jack_timebase_callback
     static double s_jack_tick;
     static jack_nframes_t s_last_frame;
     static jack_nframes_t s_current_frame;
+    static bool s_set_state_last = true;
     static jack_transport_state_t s_state_last;
     static jack_transport_state_t s_state_current;
     jack_assistant * jack = (jack_assistant *)(arg);
@@ -996,11 +1044,20 @@ jack_timebase_callback
     pos->beats_per_minute = jack->parent().get_beats_per_minute();
 
     /*
-     * Compute BBT info from frame number.  This is relatively simple
-     * here, but would become complex if we supported tempo or time
-     * signature changes at specific locations in the transport timeline.
-     * If we are in a new position....
+     * Compute BBT (Bar:Beats.ticks) info from frame number.  This is
+     * relatively simple here, but would become complex if we supported tempo
+     * or time signature changes at specific locations in the transport
+     * timeline.  If we are in a new position....
+     *
+     * \new ca 2016-01-13
+     *      Initialize the last state, if not already initialized.
      */
+
+    if (s_set_state_last)
+    {
+        s_state_last = jack_transport_query(m_jack_client, NULL);
+        s_set_state_last = false;
+    }
 
     if
     (
@@ -1056,9 +1113,7 @@ jack_timebase_callback
     {
         errprint("jack_timebase_callback(): zero values");
     }
-
     s_state_last = s_state_current;
-
 }
 
 /**

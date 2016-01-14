@@ -141,6 +141,9 @@ namespace seq64
  *  This constructor initializes a number of member variables, some
  *  of them public!
  *
+ *  Note that the perform object currently calls jack_assistant::init(), but
+ *  that call could be made here instead.
+ *
  * \param parent
  *      Provides a reference to the main perform object that needs to
  *      control JACK event.
@@ -167,7 +170,9 @@ jack_assistant::jack_assistant (perform & parent, int ppqn)
 }
 
 /**
- *  The destructor doesn't need to do anything yet.
+ *  The destructor doesn't need to do anything yet.  The perform object
+ *  currently calls jack_assistant::deinit(), but that call could be made here
+ *  instead.
  */
 
 jack_assistant::~jack_assistant ()
@@ -495,6 +500,7 @@ jack_assistant::position (bool /* state */ )
 int
 jack_assistant::sync (jack_transport_state_t state)
 {
+    int result = 0;
     m_jack_frame_current = jack_get_current_transport_frame(m_jack_client);
     if (state == (jack_transport_state_t)(-1))
     {
@@ -505,34 +511,9 @@ jack_assistant::sync (jack_transport_state_t state)
     }
     if (m_jack_pos.frame_rate != 0)
     {
+        result = 1;
         m_jack_tick = m_jack_frame_current * m_jack_pos.ticks_per_beat *
             m_jack_pos.beats_per_minute / (m_jack_pos.frame_rate * 60.0) ;
-
-        m_jack_frame_last = m_jack_frame_current;
-        m_jack_transport_state_last = m_jack_transport_state = state;
-        switch (state)
-        {
-        case JackTransportStopped:
-            infoprint("[JackTransportStopped]");
-            break;
-
-        case JackTransportRolling:
-            infoprint("[JackTransportRolling]");
-            break;
-
-        case JackTransportStarting:
-            infoprint("[JackTransportStarting]");
-            parent().inner_start(rc().jack_start_mode());
-            break;
-
-        case JackTransportLooping:
-            infoprint("[JackTransportLooping]");
-            break;
-
-        default:
-            break;
-        }
-        return 1;
     }
     else
     {
@@ -542,8 +523,39 @@ jack_assistant::sync (jack_transport_state_t state)
             errprint("jack sync(): zero frame rate [single report]");
             s_report_it = false;
         }
-        return 0;
+
+        /*
+         * The actual frame rate might be something like 93.
+         */
+
+        m_jack_tick = m_jack_frame_current * m_jack_pos.ticks_per_beat *
+            m_jack_pos.beats_per_minute;
     }
+    m_jack_frame_last = m_jack_frame_current;
+    m_jack_transport_state_last = m_jack_transport_state = state;
+    switch (state)
+    {
+    case JackTransportStopped:
+        infoprint("[JackTransportStopped]");
+        break;
+
+    case JackTransportRolling:
+        infoprint("[JackTransportRolling]");
+        break;
+
+    case JackTransportStarting:
+        infoprint("[JackTransportStarting]");
+        parent().inner_start(rc().jack_start_mode());
+        break;
+
+    case JackTransportLooping:
+        infoprint("[JackTransportLooping]");
+        break;
+
+    default:
+        break;
+    }
+    return result;
 }
 
 /*
@@ -863,59 +875,58 @@ jack_status_pair_t jack_assistant::sm_status_pairs [] =
 {
     {
         JackFailure,
-        "Overall operation failed."
+        "JackFailure, overall operation failed"
     },
     {
         JackInvalidOption,
-        "The operation contained an invalid or unsupported option."
+        "JackInvalidOption, operation contained an invalid or unsupported option"
     },
     {
         JackNameNotUnique,
-        "The client name was not unique."
+        "JackNameNotUnique, the client name was not unique"
     },
     {
         JackServerStarted,
-        "JACK started by this operation, rather than running already."
+        "JackServerStarted, JACK started by this operation, not running already"
     },
     {
         JackServerFailed,
-        "Unable to connect to the JACK server."
+        "JackServerFailed, unable to connect to the JACK server"
     },
     {
         JackServerError,
-        "Communication error with the JACK server."
+        "JackServerError, communication error with the JACK server"
     },
     {
         JackNoSuchClient,
-        "Requested client does not exist."
+        "JackNoSuchClient, requested client does not exist"
     },
     {
         JackLoadFailure,
-        "Unable to load internal client."
+        "JackLoadFailure, unable to load internal client"
     },
     {
         JackInitFailure,
-        "Unable to initialize client."
+        "JackInitFailure, unable to initialize client"
     },
     {
         JackShmFailure,
-        "Unable to access shared memory."
+        "JackShmFailure, unable to access shared memory"
     },
     {
         JackVersionError,
-        "Client's protocol version does not match."
+        "JackVersionError, client's protocol version does not match"
     },
     {
         JackBackendError,
-        "A JACK back-end error occurred."
+        "JackBackendError, a JACK back-end error occurred"
     },
     {
         JackClientZombie,
-        "A JACK zombie process exists."
+        "JackClientZombie, a JACK zombie process exists"
     },
     {                                   /* terminator */
-        0,
-        ""
+        0, ""
     }
 };
 

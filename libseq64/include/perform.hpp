@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-29
+ * \updates       2016-01-14
  * \license       GNU GPLv2 or above
  *
  *  This class has way too many members.
@@ -119,6 +119,7 @@ struct performcallback
 class perform
 {
 
+    friend class jack_assistant;
     friend class keybindentry;
     friend class midifile;
     friend class optionsfile;           // needs cleanup

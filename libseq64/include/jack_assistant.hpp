@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-09-17
- * \updates       2016-01-13
+ * \updates       2016-01-14
  * \license       GNU GPLv2 or above
  *
  *  This class contains a number of functions that used to reside in the
@@ -43,6 +43,13 @@
 #ifdef SEQ64_JACK_SESSION
 #include <jack/session.h>
 #endif
+
+/*
+ *  We don't really need to be a slow-sync client, as far as we can tell.
+ *  In fact, our sync code may interfere with getting a valid frame rate.
+ */
+
+#undef  USE_JACK_SYNC_CALLBACK
 
 namespace seq64
 {
@@ -96,13 +103,16 @@ typedef struct
 class jack_assistant
 {
 
-    friend void jack_session_callback (jack_session_event_t * ev, void * arg);
+#ifdef USE_JACK_SYNC_CALLBACK
     friend int jack_sync_callback
     (
         jack_transport_state_t state,
         jack_position_t * pos,
         void * arg
     );
+#endif  // USE_JACK_SYNC_CALLBACK
+
+    friend void jack_session_callback (jack_session_event_t * ev, void * arg);
     friend void jack_shutdown_callback (void * arg);
     friend void jack_timebase_callback
     (
@@ -185,6 +195,7 @@ private:
     bool error_message (const std::string & msg);
     jack_client_t * client_open (const std::string & clientname);
     void show_statuses (unsigned bits);
+    int sync (jack_transport_state_t state = (jack_transport_state_t)(-1));
 
 #ifdef SEQ64_USE_DEBUG_OUTPUT
     void jack_debug_print
@@ -200,12 +211,15 @@ private:
  *  Global functions for JACK support and JACK sessions.
  */
 
+#ifdef USE_JACK_SYNC_CALLBACK
 extern int jack_sync_callback
 (
     jack_transport_state_t state,
     jack_position_t * pos,
     void * arg
 );
+#endif  // USE_JACK_SYNC_CALLBACK
+
 extern void print_jack_pos (jack_position_t * jack_pos);
 extern void jack_shutdown_callback (void * arg);
 extern void jack_timebase_callback

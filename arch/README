@@ -1,17 +1,19 @@
 The Arch Linux Package Build
 Chris Ahlstrom
-2016-01-10 to 2016-01-10
+2016-01-14 to 2016-01-10
 
-This directory holds a copy, probably out-of-date, or the PKGBUILD
-file for Arch Linux.  This copy is purely for reference.
+The directory "package" holds a copy, probably out-of-date, of the package build
+files for Arch Linux. This copy is purely for reference.
 
-This README also provides some handy links to the Arch build of
-Sequencer64.
+These files may be updated from the original build files via:
 
-Package URLs:
+    git subtree pull --prefix arch/package https://aur.archlinux.org/sequencer64-git.git master --squash
+
+This README also provides some handy links to the Arch build of Sequencer64.
+
+Package URL:
 
     https://aur.archlinux.org/packages/sequencer64-git/
-    https://gist.github.com/danielappelt/f562e5056977699469d5
 
 Arch Package Guidelines:
 
@@ -25,5 +27,9 @@ GitHub issues:
 Discussions:
 
     https://www.linuxmusicians.com/viewtopic.php?f=4&t=15133&p=67807#p67807
+
+Working with git subtree:
+
+    https://www.atlassian.com/git/articles/alternatives-to-git-submodule-git-subtree
 
 # vim: sw=4 ts=4 wm=4 et ft=sh

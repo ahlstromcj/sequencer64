@@ -1,0 +1,35 @@
+# JACK HOME Setup
+# Chris Ahlstrom
+# 2016-01-13 to 2016-01-13
+#
+# Copy this file to ~/.jackdrc to use it, after editing it to match
+# your setup.  Note that if you run qjackctl, it might overwrite this
+# file (you can tell it to write to a different file).
+#
+# Sources:
+#
+#    https://github.com/overtone/overtone/wiki/Installing-and-starting-jack
+#    http://ubuntuforums.org/showthread.php?t=1637399&p=10199399#post10199399
+#
+#    # vi /etc/security/limits.d/audio.conf and add these lines:
+#
+#      @audio - rtprio 95
+#      @audio - memlock unlimited
+#
+#    Or:
+#
+#    # dpkg-reconfigure -p high jackd2
+#
+#    The last "2" is important. Then choose yes, you want to lock down
+#    memory and have rtprio scheduling privilege. This will add those
+#    lines automatically.  Make sure you are in the audio group, so do a:
+#
+#    #  adduser myself audio
+#
+#    Reboot, check that you have said privileges:
+#
+#    $ ulimit -r -l
+ 
+/usr/bin/jackd -dalsa -r48000 -p1024 -n3 -Xraw -D -Chw:PCH -Phw:PCH
+
+# vim: sw=4 ts=4 wm=8 et ft=sh

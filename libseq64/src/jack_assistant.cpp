@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-14
- * \updates       2016-01-13
+ * \updates       2016-01-14
  * \license       GNU GPLv2 or above
  *
  *  This module was created from code that existed in the perform object.
@@ -98,6 +98,9 @@
  *          their sync_callbacks until ready. This function is realtime-safe.
  *          This call, made in the position() function, is currently disabled.
  *
+ *  Please study the following URL:
+ *
+ *      http://jackaudio.org/files/docs/html/transport-design.html
  */
 
 #include <stdio.h>
@@ -221,6 +224,11 @@ jack_assistant::init ()
          * Implemented first patch from freddix/seq24 GitHub project, to fix
          * JACK transport.  One line of code.  Well, we added some
          * error-checking. :-)
+         *
+         * Found some old notes on the Web the this patch really only works
+         * (to prevent seq24 freeze) if seq24 is set as JACK Master, or if
+         * another client application, such as Qtractor, is running as JACK
+         * Master (and then seq24 will apparently follow it).
          */
 
         jackcode = jack_set_process_callback
@@ -631,6 +639,14 @@ jack_session_callback (jack_session_event_t * ev, void * arg)
  *
  *  This code comes from perform::output_func() from seq24.
  *
+ * \todo
+ *      Follow up on this note found "out there":  "Maybe I'm wrong but if I
+ *      understood correctly, recent jack1 transport no longer goes into
+ *      Jack_Transport_Starting state before going to Jack_Transport_Rolling
+ *      (this was deliberately dropped), but seq24 currently needs this to
+ *      start off with jack transport."  On the other hand, some people have
+ *      no issues.
+ *
  * \param pad
  *      Provide a JACK scratchpad, whatever that is.
  *
@@ -926,9 +942,15 @@ jack_assistant::client_open (const std::string & clientname)
 #endif
 
     if (status_code & JackServerStarted)
-        (void) info_message("JACK server started");
+        (void) info_message("JACK server started now");
     else
-        (void) info_message("JACK server NOT started!");
+    {
+        /*
+         * The JACK server was already started.
+         *
+         * (void) info_message("JACK server NOT started!");
+         */
+    }
 
     if (status_code & JackNameNotUnique)
         (void) info_message("JACK client-name NOT unique");
@@ -1055,7 +1077,7 @@ jack_timebase_callback
 
     if (s_set_state_last)
     {
-        s_state_last = jack_transport_query(m_jack_client, NULL);
+        s_state_last = jack_transport_query(jack->m_jack_client, NULL);
         s_set_state_last = false;
     }
 

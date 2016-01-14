@@ -6,7 +6,7 @@ dnl \file          configure.ac
 dnl \library       Sequencer64
 dnl \author        Chris Ahlstrom
 dnl \date          2015-09-11
-dnl \update        2016-01-09
+dnl \update        2016-01-14
 dnl \version       $Revision$
 dnl \license       $XPC_SUITE_GPL_LICENSE$
 dnl
@@ -344,6 +344,9 @@ AC_ARG_ENABLE(jack-session,
     [AS_HELP_STRING(--disable-jack-session, [Disable JACK session support])],
     [jack_session=$enableval],
     [jack_session=yes])
+
+dnl USER_LDFLAGS="${USER_LDFLAGS} $(pkg-config --libs jack )"
+dnl features_list="${features_list} (Jack)"
 
 if test "$jack" != "no"; then
     PKG_CHECK_MODULES(JACK, jack >= 0.90.0, jack_found="yes", jack_found="no")

@@ -8,7 +8,7 @@
 # \library     Home/Audio
 # \author      Chris Ahlstrom
 # \date        2015-04-04
-# \update      2015-09-07
+# \update      2016-01-13
 # \version     $Revision$
 # \license     $XPC_SUITE_GPL_LICENSE$
 #
@@ -33,6 +33,10 @@
 #  Local setup:
 #
 #     Change the variables below to match your setup.
+#
+#  Some sources of information on Seq24 and JACK:
+#
+#     https://help.ubuntu.com/community/HowToSeq24Introduction
 #
 #------------------------------------------------------------------------------
 

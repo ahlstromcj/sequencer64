@@ -1,6 +1,6 @@
 Contributed Code and Ideas
 Chris Ahlstrom
-2015-09-10 to 2015-09-11
+2015-09-10 to 2016-01-14
 
 This directory contains contributed code, patches, and ideas for
 future work and testing found on the Internet and elsewhere.
@@ -13,5 +13,35 @@ Bootstrap files:
 Other files:
 
    HOME.gitignore  My current ~/.gitignore file.
+
+Interesting:
+
+   http://linux-sound.org/lj-seq24-examples.html
+   http://linux-sound.org/artic.ogg
+
+jack-session.patch:
+
+    http://sourceforge.net/p/seq24/mailman/seq24-devel/thread/20101111203416.GA18268@traun.gscholz.bayernline.de/
+
+	[Seq24-devel] [PATCH] support for jack-session API
+	From: torbenh <torbenh@gm...> - 2010-03-30 14:45:13
+	Attachments: jack-session.patch    
+
+	hi...
+
+	here is a patch for jack-session API.
+
+	i changed jack1 behaviour regarding clients that dont have a process
+	callback. the result is that seq24 sync_callback is not called anymore.
+
+	however... seq24 is not a slow-sync client so it shouldnt have a sync
+	callback anyways.
+	gonna change it to a process cb.
+
+	tell me what you think.
+
+	-- 
+	torben Hohn
+
 
 # vim: sw=4 ts=4 wm=8 et ft=sh

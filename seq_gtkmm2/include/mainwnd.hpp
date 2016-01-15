@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-26
+ * \updates       2016-01-15
  * \license       GNU GPLv2 or above
  *
  *  The main windows is known as the "Patterns window" or "Patterns
@@ -237,10 +237,23 @@ private:
     void edit_callback_notepad ();
     bool timer_callback ();
 
+    /**
+     *  Starts playing of the song.  The rc_settings::jack_start_mode()
+     *  function is used (if jack is running) to determine if the playback
+     *  mode is "live" (false) or "song" (true).  An accessor to
+     *  perform::start_playing().
+     */
+
     void start_playing ()               // Play!
     {
-        perf().start_playing();         // also sets is_pattern_playing flag
+        bool usejack = rc().jack_start_mode();
+        perf().start_playing(usejack);  // also sets is_pattern_playing flag
     }
+
+    /**
+     *  Stops the playing of the song.  An accessor to
+     *  perform::stop_playing().
+     */
 
     void stop_playing ()                // Stop!
     {

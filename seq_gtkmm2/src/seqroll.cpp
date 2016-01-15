@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-01-05
+ * \updates       2016-01-15
  * \license       GNU GPLv2 or above
  *
  */
@@ -1036,7 +1036,10 @@ seqroll::on_key_press_event (GdkEventKey * ev)
         if (stop)
             perf().stop_playing();
         else
-            perf().start_playing();
+        {
+            bool usejack = rc().jack_start_mode();
+            perf().start_playing(usejack);          // \change ca 2016-01-15
+        }
     }
     else if (CAST_EQUIVALENT(ev->type, SEQ64_KEY_PRESS)) // this really needed?
     {

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-26
+ * \updates       2016-01-15
  * \license       GNU GPLv2 or above
  *
  */
@@ -588,7 +588,10 @@ perfroll::draw_all ()
 void
 perfroll::start_playing ()
 {
-    perf().start_playing(true);
+    // perf().start_playing(true);
+
+    bool usejack = rc().jack_start_mode();
+    perf().start_playing(usejack);             // \change ca 2016-01-15
 }
 
 /**

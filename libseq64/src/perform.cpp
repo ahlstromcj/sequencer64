@@ -1284,6 +1284,37 @@ perform::copy_triggers ()
 }
 
 /**
+ *  Encapsulates a series of calls used in mainwnd.
+ *  We've reversed the start() and start_jack() calls so that
+ *  JACK is started first, to match all of the other use-cases for playing
+ *  that we've found in the code.
+ *
+ * \param flag
+ *      Indicates if the caller wants to start the playback in JACK mode.
+ *      In the seq42 (yes, "42", not "24") code at GitHub, this flag was
+ *      identical to the "global_jack_start_mode" flag, which is true for
+ *      Song Mode, and false for Live Mode.
+ */
+
+void
+perform::start_playing (bool jackflag)
+{
+    if (jackflag)
+    {
+        position_jack(jackflag);
+        start_jack();
+        start(jackflag);
+    }
+    else
+    {
+        position_jack(jackflag);
+        start(jackflag);
+        start_jack();
+    }
+    rc().is_pattern_playing(true);
+}
+
+/**
  *  If JACK is supported, starts the JACK transport.
  */
 

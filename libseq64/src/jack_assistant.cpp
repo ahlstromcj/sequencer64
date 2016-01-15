@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-14
- * \updates       2016-01-14
+ * \updates       2016-01-15
  * \license       GNU GPLv2 or above
  *
  *  This module was created from code that existed in the perform object.
@@ -126,6 +126,28 @@
  *  Does Sequencer64 need a latency callback?
  *
  *      http://jackaudio.org/files/docs/html/group__ClientCallbacks.html
+ *
+ *  Debugging:
+ *
+ *      In ~/.config/sequencer64/sequencer64.rc, set:
+ *
+ *          -   jack_transport = 1
+ *          -   jack_master = 0
+ *          -   jack_master_cond = 0
+ *          -   jack_start_mode = 0 or 1
+ *
+ *      Start qjackctl, verify that it sets up correctly, then click it's
+ *      "play" button to start the transport rolling.  Run sequencer64, load a
+ *      file.  Then note that starting playback (whether in the main window or
+ *      in the performance window) is ineffective, but resets the time counter
+ *      in qjackctl.  Why?  With JACK sync enabled by the macro:
+ *
+ *			[JACK transport slave]
+ *			jack sync(): zero frame rate [single report]!?
+ *			[JackTransportRolling]
+ *			[JackTransportStarting]  (every time space bar pressed)
+ *			[Start playback]
+ *			. . .
  */
 
 #include <stdio.h>

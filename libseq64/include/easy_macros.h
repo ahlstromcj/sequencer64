@@ -10,7 +10,7 @@
  * \library       sequencer64
  * \author        Chris Ahlstrom and other authors; see documentation
  * \date          2013-11-17
- * \updates       2015-09-12
+ * \updates       2016-01-15
  * \version       $Revision$
  * \license       GNU GPL v2 or above
  *
@@ -166,7 +166,7 @@ typedef bool cbool_t;
  */
 
 #ifdef PLATFORM_DEBUG
-#define errprint(x)           fprintf(stderr, "? %s\n", x)
+#define errprint(x)           fprintf(stderr, "%s!?\n", x)
 #else
 #define errprint(x)
 #endif
@@ -192,7 +192,7 @@ typedef bool cbool_t;
  */
 
 #ifdef PLATFORM_DEBUG
-#define warnprint(x)          fprintf(stderr, "! %s\n", x)
+#define warnprint(x)          fprintf(stderr, "%s!\n", x)
 #else
 #define warnprint(x)
 #endif
@@ -218,7 +218,7 @@ typedef bool cbool_t;
  */
 
 #ifdef PLATFORM_DEBUG
-#define infoprint(x)          fprintf(stderr, "* %s\n", x)
+#define infoprint(x)          fprintf(stderr, "%s\n", x)
 #else
 #define infoprint(x)
 #endif

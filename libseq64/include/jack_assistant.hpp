@@ -49,7 +49,7 @@
  *  In fact, our sync code may interfere with getting a valid frame rate.
  */
 
-#undef  USE_JACK_SYNC_CALLBACK
+#define USE_JACK_SYNC_CALLBACK
 
 namespace seq64
 {

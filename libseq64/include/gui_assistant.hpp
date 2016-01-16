@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-09-19
- * \updates       2015-11-05
+ * \updates       2016-01-15
  * \license       GNU GPLv2 or above
  *
  */
@@ -74,7 +74,11 @@ public:
     }
 
     virtual void quit () = 0;
+
+#ifdef SEQ64_JACK_SESSION
     virtual void jack_idle_connect (jack_assistant & jack) = 0;
+#endif
+
     virtual void lash_timeout_connect (lash * lashobject) = 0;
 
     /**

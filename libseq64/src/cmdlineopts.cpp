@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-20
- * \updates       2015-12-23
+ * \updates       2016-01-15
  * \license       GNU GPLv2 or above
  *
  *  The "rc" command-line options override setting that are first read from
@@ -419,10 +419,7 @@ parse_command_line_options (int argc, char * argv [])
             break;
 
         case 'M':
-            if (atoi(optarg) > 0)
-                seq64::rc().jack_start_mode(true);
-            else
-                seq64::rc().jack_start_mode(false);
+            seq64::rc().jack_start_mode(atoi(optarg) > 0);
             break;
 
         case 'm':

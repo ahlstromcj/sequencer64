@@ -159,6 +159,8 @@
 namespace seq64
 {
 
+#ifdef SEQ64_JACK_SUPPORT
+
 /**
  *  This constructor initializes a number of member variables, some
  *  of them public!
@@ -1272,6 +1274,8 @@ print_jack_pos (jack_position_t * pos)
         pos->frame_time, pos->next_time
     );
 }
+
+#endif  // SEQ64_JACK_SUPPORT
 
 }           // namespace seq64
 

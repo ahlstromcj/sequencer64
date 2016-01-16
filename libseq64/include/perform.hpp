@@ -44,10 +44,7 @@
 #include <unistd.h>
 #endif
 
-#ifdef SEQ64_JACK_SUPPORT
-#include "jack_assistant.hpp"
-#endif
-
+#include "jack_assistant.hpp"           /* optional seq64::jack_assistant   */
 #include "gui_assistant.hpp"            /* seq64::gui_assistant             */
 #include "keys_perform.hpp"             /* seq64::keys_perform              */
 #include "mastermidibus.hpp"            /* seq64::mastermidibus             */
@@ -873,7 +870,23 @@ public:
         return rc().is_pattern_playing();
     }
 
-    void start_playing (bool jackflag = false);
+    /**
+     *  Encapsulates a series of calls used in mainwnd.
+     *  We've reversed the start() and start_jack() calls so that
+     *  JACK is started first, to match all of the other use-cases for playing
+     *  that we've found in the code.
+     *
+     * \todo
+     *      Verify the usage and nature of this flag.
+     */
+
+    void start_playing (bool flag = false)
+    {
+        position_jack(flag);
+        start_jack();
+        start(flag);
+        rc().is_pattern_playing(true);
+    }
 
     /**
      *  Encapsulates a series of calls used in mainwnd.

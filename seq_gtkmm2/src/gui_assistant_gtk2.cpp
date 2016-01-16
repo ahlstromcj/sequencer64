@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-09-19
- * \updates       2015-11-13
+ * \updates       2016-01-15
  * \license       GNU GPLv2 or above
  *
  */
@@ -71,7 +71,11 @@ gui_assistant_gtk2::quit ()
 
 /**
  *  Connects the JACK session-event callback to the Glib idle object.
+ *  If JACK session support is not enabled, we might emit a message.
+ *  This mainly prevents a compiler warning about an unused parameter.
  */
+
+#ifdef SEQ64_JACK_SESSION
 
 void
 gui_assistant_gtk2::jack_idle_connect (jack_assistant & jack)
@@ -81,6 +85,8 @@ gui_assistant_gtk2::jack_idle_connect (jack_assistant & jack)
         sigc::mem_fun(jack, &jack_assistant::session_event)
     );
 }
+
+#endif  // SEQ64_JACK_SESSION
 
 /**
  *  Connects the LASH timeout-event callback to the Glib timeout object.

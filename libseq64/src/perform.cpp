@@ -882,7 +882,13 @@ perform::set_beats_per_minute (int bpm)
      *      that both should be stopped; to be determined.
      */
 
-    if (! (m_jack_asst.is_running() && m_running))
+#ifdef SEQ64_JACK_SUPPORT
+    bool ok = ! (m_jack_asst.is_running() && m_running);
+#else
+    bool ok = ! m_running;
+#endif
+
+    if (ok)
         m_master_bus.set_beats_per_minute(bpm);
 }
 
@@ -1284,37 +1290,6 @@ perform::copy_triggers ()
 }
 
 /**
- *  Encapsulates a series of calls used in mainwnd.
- *  We've reversed the start() and start_jack() calls so that
- *  JACK is started first, to match all of the other use-cases for playing
- *  that we've found in the code.
- *
- * \param flag
- *      Indicates if the caller wants to start the playback in JACK mode.
- *      In the seq42 (yes, "42", not "24") code at GitHub, this flag was
- *      identical to the "global_jack_start_mode" flag, which is true for
- *      Song Mode, and false for Live Mode.
- */
-
-void
-perform::start_playing (bool jackflag)
-{
-    if (jackflag)
-    {
-        position_jack(jackflag);
-        start_jack();
-        start(jackflag);
-    }
-    else
-    {
-        position_jack(jackflag);
-        start(jackflag);
-        start_jack();
-    }
-    rc().is_pattern_playing(true);
-}
-
-/**
  *  If JACK is supported, starts the JACK transport.
  */
 
@@ -1360,7 +1335,9 @@ perform::position_jack (bool state)
 void
 perform::start (bool state)
 {
+#ifdef SEQ64_JACK_SUPPORT
     if (! m_jack_asst.is_running())
+#endif
         inner_start(state);
 }
 
@@ -1375,7 +1352,9 @@ perform::start (bool state)
 void
 perform::stop ()
 {
+#ifdef SEQ64_JACK_SUPPORT
     if (! m_jack_asst.is_running())
+#endif
         inner_stop();
 }
 
@@ -1645,7 +1624,13 @@ perform::output_func ()
          * starting from the offset.
          */
 
-        if (m_playback_mode && ! m_jack_asst.is_running())
+#ifdef SEQ64_JACK_SUPPORT
+        bool ok = m_playback_mode && ! m_jack_asst.is_running();
+#else
+        bool ok = m_playback_mode;
+#endif
+
+        if (ok)
         {
             pad.js_current_tick = m_starting_tick;
             pad.js_clock_tick = m_starting_tick;

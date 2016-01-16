@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-09-17
- * \updates       2016-01-14
+ * \updates       2016-01-15
  * \license       GNU GPLv2 or above
  *
  *  This class contains a number of functions that used to reside in the
@@ -37,12 +37,20 @@
 
 #include "globals.h"                    /* globals, nullptr, and more       */
 
+#ifdef SEQ64_JACK_SUPPORT
+
 #include <jack/jack.h>
 #include <jack/transport.h>
 
 #ifdef SEQ64_JACK_SESSION
 #include <jack/session.h>
 #endif
+
+#else
+
+#undef SEQ64_JACK_SESSION
+
+#endif  // SEQ64_JACK_SUPPORT
 
 /*
  *  We don't really need to be a slow-sync client, as far as we can tell.
@@ -61,6 +69,8 @@ class perform;                          /* jack_assistant parent is perform */
  *  perform and jack_assistant object.  The jack_assistant class already
  *  has access to the members of perform, but it needs access to and
  *  modification of local variables in perform::output_func().
+ *
+ *  This scratchpad is useful even if JACK support is not enabled.
  */
 
 struct jack_scratchpad
@@ -74,6 +84,8 @@ struct jack_scratchpad
     bool js_looping;                    /* perform::m_looping       */
     bool js_playback_mode;              /* perform::m_playback_mode */
 };
+
+#ifdef SEQ64_JACK_SUPPORT
 
 /**
  *  Provides an internal type to make it easier to display a specific and
@@ -112,7 +124,10 @@ class jack_assistant
     );
 #endif  // USE_JACK_SYNC_CALLBACK
 
+#ifdef SEQ64_JACK_SESSION
     friend void jack_session_callback (jack_session_event_t * ev, void * arg);
+#endif
+
     friend void jack_shutdown_callback (void * arg);
     friend void jack_timebase_callback
     (
@@ -242,6 +257,8 @@ extern int jack_process_callback (jack_nframes_t nframes, void * arg);
 #ifdef SEQ64_JACK_SESSION
 extern void jack_session_callback (jack_session_event_t * ev, void * arg);
 #endif
+
+#endif  // SEQ64_JACK_SUPPORT
 
 }           // namespace seq64
 

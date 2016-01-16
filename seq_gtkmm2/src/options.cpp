@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-14
+ * \updates       2016-01-16
  * \license       GNU GPLv2 or above
  *
  *  Here is a list of the global variables used/stored/modified by this
@@ -551,7 +551,7 @@ options::add_mouse_page ()
         "if the Super (Windows) key is pressed in seq24 mode.  This works in "
         "the sequence/pattern and song editor piano rolls.  To get out of "
         "note-add mode, right-click again. An alternative is to use the p and "
-        "P keys (paint mode)."
+        "P keys (paint mode), and the x key to exit the mode."
     );
     mod4box->pack_start(*chk_mod4, Gtk::PACK_SHRINK);
     chk_mod4->signal_toggled().connect
@@ -664,7 +664,13 @@ options::add_jack_sync_page ()
     (
         new Gtk::RadioButton("_Song Mode", true)
     );
-    add_tooltip(rb_perform, "Playback will use the Song Editor's layout data.");
+    add_tooltip
+    (
+        rb_perform,
+        "Playback will use the Song Editor's layout data.  This data is "
+        "used no matter whether the sequence/pattern editor or the song "
+        "editor is active."
+    );
 
     Gtk::RadioButton::Group group = rb_live->get_group();
     rb_perform->set_group(group);

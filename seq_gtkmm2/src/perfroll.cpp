@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-26
+ * \updates       2016-01-16
  * \license       GNU GPLv2 or above
  *
  */
@@ -583,12 +583,16 @@ perfroll::draw_all ()
  *  Start the performance playing.  We need to keep in sync with
  *  perfedit's start_playing()... wish we could call it directly.
  *  Well, now we go to the source, calling perform::start_playing().
+ *  Note that we no longer pass "true" as the playback parameter, instead
+ *  using the global JACK-start-mode flag.  (We might reconsider that,
+ *  later.)
  */
 
 void
 perfroll::start_playing ()
 {
-    perf().start_playing(true);
+    bool usejack = rc().jack_start_mode();
+    perf().start_playing(usejack);             // \change ca 2016-01-15
 }
 
 /**

@@ -1,4 +1,4 @@
-2016-01-08
-0.9.9.12
+2016-01-16
+0.9.9.13
 events redux
-Event Editor currently disabled by default configuration.
+Event Editor now enabled and reasonably useful.

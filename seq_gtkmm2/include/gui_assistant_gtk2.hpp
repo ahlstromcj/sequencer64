@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-09-19
- * \updates       2016-01-15
+ * \updates       2016-01-16
  * \license       GNU GPLv2 or above
  *
  *  Note that this module automatically creates a Gtk-specific
@@ -36,13 +36,17 @@
  *  application the trouble of making one and passing it along.
  */
 
+#include "easy_macros.h"                // SEQ64_JACK_SESSION (indirectly)
 #include "gui_assistant.hpp"            // seq64::gui_assistant interface
 #include "keys_perform_gtk2.hpp"        // seq64::keys_perform_gtk2
 
 namespace seq64
 {
 
+#ifdef SEQ64_JACK_SESSION
 class jack_assistant;                   // forward reference
+#endif
+
 class lash;                             // ditto
 class keys_perform;                     // ditto
 
@@ -66,12 +70,11 @@ public:
     }
 
     virtual void quit ();
+    virtual void lash_timeout_connect (lash * lashobject);
 
 #ifdef SEQ64_JACK_SESSION
     virtual void jack_idle_connect (jack_assistant & jack);
 #endif
-
-    virtual void lash_timeout_connect (lash * lashobject);
 
 };
 

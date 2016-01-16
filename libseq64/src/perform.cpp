@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-01-12
+ * \updates       2016-01-16
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -1287,6 +1287,56 @@ perform::copy_triggers ()
                 m_seqs[i]->copy_triggers(m_left_tick, distance);
         }
     }
+}
+
+/**
+ *  Encapsulates a series of calls used in mainwnd.  We've reversed the
+ *  start() and start_jack() calls so that JACK is started first, to match all
+ *  of the other use-cases for playing that we've found in the code.
+ *
+ *  Note that the complementary function, stop_playing(), is an inline
+ *  function defined in the header file.
+ *
+ * \note
+ *      It would be nice to know why the following code snippet disables the
+ *      mute/unmute functionality of the performance/song editor:
+ *
+\verbatim
+        position_jack(false);
+        start_jack();
+        start(false);
+\endverbatim
+ *
+ *      The jack_assistant::position() function doesn't use the boolean
+ *      parameter at present; that code is effectively disabled.
+ *      The perform::start() function passes its boolean flag to
+ *      perform::inner_start(), which sets the playback mode to that flag; if
+ *      that flag is false, that turns off "song" mode.  So that explains why
+ *      mute/unmute is disabled.
+ *
+ * \param flag
+ *      Indicates if the caller wants to start the playback in JACK mode.
+ *      In the seq42 (yes, "42", not "24") code at GitHub, this flag was
+ *      identical to the "global_jack_start_mode" flag, which is true for
+ *      Song Mode, and false for Live Mode.  False disables Song Mode.
+ */
+
+void
+perform::start_playing (bool jackflag)
+{
+    if (jackflag)
+    {
+        position_jack(jackflag);    /* parameter currently disabled here */
+        start_jack();
+        start(jackflag);
+    }
+    else
+    {
+        position_jack(jackflag);    /* parameter currently disabled here */
+        start(jackflag);
+        start_jack();
+    }
+    rc().is_pattern_playing(true);
 }
 
 /**

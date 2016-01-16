@@ -28,10 +28,16 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-01-15
+ * \updates       2016-01-16
  * \license       GNU GPLv2 or above
  *
- *  This class has way too many members.
+ *  This class still has way too many members, even with the JACK and
+ *  key-binding support moved to separate modules.  Items that could
+ *  profitably be partitioned into separate modules are:
+ *
+ *      -   Mute-group support.
+ *      -   MIDI control support.
+ *      -   The remaining portions of trigger support.
  */
 
 #include <vector>
@@ -870,23 +876,7 @@ public:
         return rc().is_pattern_playing();
     }
 
-    /**
-     *  Encapsulates a series of calls used in mainwnd.
-     *  We've reversed the start() and start_jack() calls so that
-     *  JACK is started first, to match all of the other use-cases for playing
-     *  that we've found in the code.
-     *
-     * \todo
-     *      Verify the usage and nature of this flag.
-     */
-
-    void start_playing (bool flag = false)
-    {
-        position_jack(flag);
-        start_jack();
-        start(flag);
-        rc().is_pattern_playing(true);
-    }
+    void start_playing (bool jackflag = false);
 
     /**
      *  Encapsulates a series of calls used in mainwnd.

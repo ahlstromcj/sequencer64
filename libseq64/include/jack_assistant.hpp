@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-09-17
- * \updates       2016-01-15
+ * \updates       2016-01-16
  * \license       GNU GPLv2 or above
  *
  *  This class contains a number of functions that used to reside in the
@@ -38,7 +38,6 @@
 #include "globals.h"                    /* globals, nullptr, and more       */
 
 #ifdef SEQ64_JACK_SUPPORT
-
 #include <jack/jack.h>
 #include <jack/transport.h>
 
@@ -46,18 +45,18 @@
 #include <jack/session.h>
 #endif
 
-#else
+#else       // ! SEQ64_JACK_SUPPORT
 
 #undef SEQ64_JACK_SESSION
 
-#endif  // SEQ64_JACK_SUPPORT
+#endif      // SEQ64_JACK_SUPPORT
 
 /*
  *  We don't really need to be a slow-sync client, as far as we can tell.
  *  In fact, our sync code may interfere with getting a valid frame rate.
  */
 
-#define USE_JACK_SYNC_CALLBACK
+#undef USE_JACK_SYNC_CALLBACK
 
 namespace seq64
 {
@@ -201,7 +200,11 @@ public:
 
     void start ();                      // start_jack();
     void stop ();                       // stop();
-    void position (bool a_state);       // position_jack();
+    void position                       // position_jack();
+    (
+        bool to_left_tick,              // instead of current tick
+        bool relocate = false
+    );
     bool output (jack_scratchpad & pad);
 
 private:

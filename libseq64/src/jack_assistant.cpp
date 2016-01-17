@@ -25,129 +25,16 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-14
- * \updates       2016-01-15
+ * \updates       2016-01-16
  * \license       GNU GPLv2 or above
  *
  *  This module was created from code that existed in the perform object.
  *  Moving it into is own module makes it easier to maintain and makes the
  *  perform object a little easier to grok.
  *
- *  Here are summaries of the JACK functions used in this module:
- *
- *      -   jack_client_open(const char *, jack_options_t, jack_status_t *).
- *          Open a client session with a JACK server. More complex and
- *          powerful than jack_client_new(). Clients choose which of several
- *          servers to connect, and how to start the server automatically, if
- *          not already running. There is also an option for JACK to generate
- *          a unique client name.
- *      -   jack_on_shutdown().
- *          Registers a function to call when the JACK server shuts down the
- *          client thread. It must be an asynchonrous POSIX signal
- *          handler: only async-safe functions, executed from another thread.
- *          A typical function might set a flag or write to a pipe so that the
- *          rest of the application knows that the JACK client thread has shut
- *          down.  Clients do not need to call this function. It only helps
- *          clients understand what is going on. It should be called before
- *          jack_client_activate().
- *      -   jack_set_sync_callback().
- *          Register/unregister as a slow-sync client; it can't respond
- *          immediately to transport position changes.  The callback is run at
- *          the first opportunity after registration: if the client is active,
- *          this is the next process cycle, otherwise it is the first cycle
- *          after jack_activate().  After that, it runs as per
- *          JackSyncCallback rules.  Clients that don't set this callback are
- *          assumed ready immediately any time the transport wants to start.
- *      -   jack_set_process_callback().
- *          Tells the JACK server to call the callback whenever there is work.
- *          The function must be suitable for real-time execution, it cannot
- *          call functions that might block for a long time: malloc(), free(),
- *          printf(), pthread_mutex_lock(), sleep(), wait(), poll(), select(),
- *          pthread_join(), pthread_cond_wait(), etc.  In the current class,
- *          this function is a do-nothing function.
- *      -   jack_set_session_callback().
- *          Tells the JACK server to call the callback when a session event is
- *          delivered.  Setting more than one session callback per process is
- *          probably a design error.  For a multiclient application, it's more
- *          sensible to create a JACK client with only one session callback.
- *      -   jack_activate().
- *          Tells the JACK server that the application is ready to start
- *          processing.
- *      -   jack_release_timebase().
- *      -   jack_client_close().
- *      -   jack_transport_start().
- *          Starts the JACK transport rolling.  Any client can make this
- *          request at any time. It takes effect no sooner than the next
- *          process cycle, perhaps later if there are slow-sync clients. This
- *          function is realtime-safe.  No return code.
- *      -   jack_transport_stop().
- *          Starts the JACK transport rolling.  Any client can make this
- *          request at any time.  This function is realtime-safe.  No return
- *          code.
- *      -   jack_transport_locate().
- *          Repositions the transport to a new frame number.  May be called at
- *          any time by any client. The new position takes effect in two
- *          process cycles. If there are slow-sync clients and the transport is
- *          already rolling, it will enter the JackTransportStarting state and
- *          begin invoking their sync_callbacks until ready. This function is
- *          realtime-safe.
- *      -   jack_transport_reposition().
- *          Request a new transport position.  May be called at any time by any
- *          client. The new position takes effect in two process cycles. If
- *          there are slow-sync clients and the transport is already rolling,
- *          it will enter the JackTransportStarting state and begin invoking
- *          their sync_callbacks until ready. This function is realtime-safe.
- *          This call, made in the position() function, is currently disabled.
- *
- *  Please study the following URL and note these important point:
- *
- *      http://jackaudio.org/files/docs/html/transport-design.html
- *
- *      -   The timebase master continuously updates position
- *          information, beats, timecode, etc.  There is at most one master
- *          active at a time. If no client is registered as timebase master,
- *          frame numbers will be the only position information available.
- *      -   The timebase master registers a callback that updates position
- *          information while transport is rolling. Its output affects the
- *          following process cycle. This function is called immediately after
- *          the process callback in the same thread whenever the transport is
- *          rolling, or when any client has set a new position in the previous
- *          cycle.
- *      -   Clients that don't declare a sync callback are assumed ready
- *          immediately, anytime the transport wants to start. If a client
- *          doesn't require slow-sync processing, it can set its sync callback
- *          to NULL.
- *      -   The transport state is always valid; initially it is
- *          JackTransportStopped.
- *      -   When someone calls jack_transport_start(), the engine resets the
- *          poll bits and changes to a new state, JackTransportStarting.
- *      -   When all slow-sync clients are ready, the state changes to
- *          JackTransportRolling.
- *
- *  Does Sequencer64 need a latency callback?
- *
- *      http://jackaudio.org/files/docs/html/group__ClientCallbacks.html
- *
- *  Debugging:
- *
- *      In ~/.config/sequencer64/sequencer64.rc, set:
- *
- *          -   jack_transport = 1
- *          -   jack_master = 0
- *          -   jack_master_cond = 0
- *          -   jack_start_mode = 0 or 1
- *
- *      Start qjackctl, verify that it sets up correctly, then click it's
- *      "play" button to start the transport rolling.  Run sequencer64, load a
- *      file.  Then note that starting playback (whether in the main window or
- *      in the performance window) is ineffective, but resets the time counter
- *      in qjackctl.  Why?  With JACK sync enabled by the macro:
- *
- *			[JACK transport slave]
- *			jack sync(): zero frame rate [single report]!?
- *			[JackTransportRolling]
- *			[JackTransportStarting]  (every time space bar pressed)
- *			[Start playback]
- *			. . .
+ *  For the summaries of the JACK functions used in this module, and how
+ *  the code is supposed to operate, see the Sequencer64 developer's reference
+ *  manual.
  */
 
 #include <stdio.h>
@@ -251,8 +138,9 @@ jack_assistant::error_message (const std::string & msg)
  *
  *  Note the USE_JACK_SYNC_CALLBACK macro.  A sync callback is needed for
  *  polling of slow-sync clients.  But seq24/sequencer64 are not slow-sync
- *  clients.  Therefore, let's conditionally commented out the sync callback
- *  code.
+ *  clients.  Therefore, let's conditionally comment out the sync callback
+ *  code.  one of the author's of JACK notes that seq24 is wrong to set up a
+ *  sync callback.
  *
  * jack_set_process_callback() patch:
  *
@@ -291,6 +179,13 @@ jack_assistant::init ()
         if (jackcode != 0)
             return error_message("jack_set_sync_callback() failed");
 #else
+        /*
+         * If we disable the sync callback, we don't get feedback re
+         * the start and stop of playback.  Perhaps sync() needs to be
+         * called additionally in start(), stop(), and in the process
+         * callback?
+         */
+
         int jackcode = jack_set_sync_callback(m_jack_client, NULL, NULL);
         if (jackcode != 0)
             return error_message("jack_set_sync_callback(NULL) failed");
@@ -415,14 +310,20 @@ void
 jack_assistant::start ()
 {
     if (m_jack_running)
+    {
         jack_transport_start(m_jack_client);
+
+        /*
+         * EXPERIMENTAL!!!!!
+         */
+
+        (void) sync();
+    }
 }
 
 /**
- *  If JACK is supported, stops the JACK transport.  Should it also set
- *  m_jack_running to false?  Let's do that, just for consistency.  This
- *  function assumes that m_jack_client is not null, if m_jack_running is
- *  true.
+ *  If JACK is supported, stops the JACK transport.  This function assumes
+ *  that m_jack_client is not null, if m_jack_running is true.
  */
 
 void
@@ -431,94 +332,124 @@ jack_assistant::stop ()
     if (m_jack_running)
     {
         jack_transport_stop(m_jack_client);
-        m_jack_running = false;             /* \change ca 2015-01-10 */
+
+        /*
+         * This isn't quite what the flag means.  JACK can continue running
+         * even though the transport is stopped.  Doh!
+         *
+         * m_jack_running = false;             // \change ca 2015-01-10
+         */
+
+        /*
+         * EXPERIMENTAL!!!!!
+         */
+
+        (void) sync();
     }
 }
 
 /**
- *  If JACK is supported and running, sets the position of the transport.
+ *  If JACK is supported and running, sets the position of the transport to
+ *  the new frame number, frame 0.  This new position takes effect in two
+ *  process cycles. If there are slow-sync clients and the transport is
+ *  already rolling, it will enter the JackTransportStarting state and begin
+ *  invoking their sync_callbacks until ready. This function is realtime-safe.
  *
  *      http://jackaudio.org/files/docs/html/transport-design.html
  *
- *  This function is called via perform::position_jack() in the mainwnd,
- *  perfedit, perfroll, and seqroll graphical user-interface support objects.
+ *  This position() function is called via perform::position_jack() in the
+ *  mainwnd, perfedit, perfroll, and seqroll graphical user-interface support
+ *  objects.
+ *
+ *  The code that was disabled sets the current tick to 0 or, if state was
+ *  true, to the leftmost tick (which is probably the position of the L
+ *  marker).  The current tick is then converted to a frame number, and then
+ *  we locate the transport to that position.  We're going to enable this
+ *  code, but make it dependent on a new boolean parameter that defaults to
+ *  false, in anticipation of trying it out later.
  *
  * \warning
  *      A lot of this code is effectively disabled by an early return
  *      statement.
  *
- * \param state
- *      If true, the current tick is set to the leftmost tick.
+ * \param to_left_tick
+ *      If true, the current tick is set to the leftmost tick, instead of the
+ *      0th tick.  Now used, but only if relocate is true.
+ *      One question is, do we want to perform this function if
+ *      rc().with_jack_transport() is true?  Seems like we should be able to
+ *      do it only if m_jack_master is true.
+ *
+ * \param relocate
+ *      If true (it defaults to false), then we allow the relocation of the
+ *      JACK transport to the current_tick or the left tick, rather than to
+ *      frame 0..
  */
 
 void
-jack_assistant::position (bool /* state */ )
+jack_assistant::position (bool to_left_tick, bool relocate )
 {
     if (m_jack_running)
     {
-        if (jack_transport_locate(m_jack_client, 0) != 0)
-            (void) info_message("jack_transport_locate() failed");
+        if (relocate)
+        {
+            jack_nframes_t rate = jack_get_sample_rate(m_jack_client);
+            midipulse currenttick = 0;
+            if (to_left_tick)
+                currenttick = parent().get_left_tick();
+
+            jack_position_t pos;
+            pos.valid = JackPositionBBT;
+            pos.beats_per_bar = 4;              // DEFAULT_BEATS_PER_MEASURE
+            pos.beat_type = 4;                  // DEFAULT_BEAT_WIDTH
+            pos.ticks_per_beat = m_ppqn * 10;
+            pos.beats_per_minute = parent().get_beats_per_minute();
+
+            /*
+             * Compute BBT info from frame number.  This is relatively simple
+             * here, but would become complex if we supported tempo or time
+             * signature changes at specific locations in the transport timeline.
+             */
+
+            currenttick *= 10;
+            pos.bar = int32_t
+            (
+                (currenttick / long(pos.ticks_per_beat) / pos.beats_per_bar)
+            );
+            pos.beat = int32_t(((currenttick / (long) pos.ticks_per_beat) % 4));
+            pos.tick = int32_t((currenttick % (m_ppqn * 10)));
+            pos.bar_start_tick = pos.bar * pos.beats_per_bar * pos.ticks_per_beat;
+            pos.frame_rate = rate;
+            pos.frame = (jack_nframes_t)
+            (
+                (currenttick * rate * 60.0) /
+                    (pos.ticks_per_beat * pos.beats_per_minute)
+            );
+
+            /*
+             * ticks * 10 = jack ticks;
+             * jack ticks / ticks per beat = num beats;
+             * num beats / beats per minute = num minutes
+             * num minutes * 60 = num seconds
+             * num secords * frame_rate  = frame
+             */
+
+            pos.bar++;
+            pos.beat++;
+            jack_transport_reposition(m_jack_client, &pos);
+        }
+        else
+        {
+            if (jack_transport_locate(m_jack_client, 0) != 0)
+                (void) info_message("jack_transport_locate() failed");
+        }
     }
-    return;
-
-#if 0 // WHY_IS_THIS_CODE_EFFECTIVELY_DISABLED
-
-    /*
-     * Probably because it is hardwired.  We probably should fix this up and
-     * somehow make Sequencer64 support JACK fully.
-     */
-
-    jack_nframes_t rate = jack_get_sample_rate(m_jack_client);
-    midipulse currenttick = 0;
-    if (state)
-        currenttick = m_left_tick;
-
-    jack_position_t pos;
-    pos.valid = JackPositionBBT;
-    pos.beats_per_bar = 4;              // DEFAULT_BEATS_PER_MEASURE
-    pos.beat_type = 4;                  // DEFAULT_BEAT_WIDTH
-    pos.ticks_per_beat = m_ppqn * 10;
-    pos.beats_per_minute = m_master_bus.get_beats_per_minute();
-
-    /*
-     * Compute BBT info from frame number.  This is relatively simple
-     * here, but would become complex if we supported tempo or time
-     * signature changes at specific locations in the transport timeline.
-     */
-
-    currenttick *= 10;
-    pos.bar = int32_t
-    (
-        (currenttick / long(pos.ticks_per_beat) / pos.beats_per_bar);
-    );
-
-    pos.beat = int32_t(((currenttick / (long) pos.ticks_per_beat) % 4));
-    pos.tick = int32_t((currenttick % (m_ppqn * 10)));
-    pos.bar_start_tick = pos.bar * pos.beats_per_bar * pos.ticks_per_beat;
-    pos.frame_rate = rate;
-    pos.frame = (jack_nframes_t)
-    (
-        (currenttick * rate * 60.0) / (pos.ticks_per_beat * pos.beats_per_minute)
-    );
-
-    /*
-     * ticks * 10 = jack ticks;
-     * jack ticks / ticks per beat = num beats;
-     * num beats / beats per minute = num minutes
-     * num minutes * 60 = num seconds
-     * num secords * frame_rate  = frame
-     */
-
-    pos.bar++;
-    pos.beat++;
-    jack_transport_reposition(m_jack_client, &pos);
-
-#endif  // WHY_IS_THIS_CODE_EFFECTIVELY_DISABLED
-
 }
 
 /**
- *  A helper function for syncing up with JACK parameters.
+ *  A helper function for syncing up with JACK parameters.  Sequencer64 is not
+ *  a slow-sync client, so that callback is not really needed, but we probably
+ *  need this sub-function here to start out with the right values for
+ *  interacting with JACK.
  */
 
 int
@@ -541,12 +472,16 @@ jack_assistant::sync (jack_transport_state_t state)
     }
     else
     {
+        errprint("jack_assistant::sync(): zero frame rate");
+
+#if 0
         static bool s_report_it = true;
         if (s_report_it)
         {
             errprint("jack sync(): zero frame rate [single report]");
             s_report_it = false;
         }
+#endif
 
         /*
          * The actual frame rate might be something like 93.
@@ -584,7 +519,8 @@ jack_assistant::sync (jack_transport_state_t state)
 
 /*
  *  Implemented second patch for JACK Transport from freddix/seq24 GitHub
- *  project.  Added the following function.
+ *  project.  Added the following function.  This function is supposed to
+ *  allow seq24/sequencer64 to follow JACK transport.
  *
  * \param nframes
  *      Unused.
@@ -596,6 +532,12 @@ jack_assistant::sync (jack_transport_state_t state)
 int
 jack_process_callback (jack_nframes_t /* nframes */, void * /* arg */ )
 {
+    /*
+     * EXPERIMENTAL!!!!!
+     */
+
+    (void) sync();
+
     return 0;
 }
 
@@ -774,13 +716,22 @@ jack_assistant::output (jack_scratchpad & pad)
         bool ok = m_jack_pos.frame_rate > 0;
         if (! ok)
         {
+            info_message("jack_assistant::output(): zero frame rate");
+#if 0
             static bool s_report_it = true;
             if (s_report_it)
             {
                 info_message("jack output(): zero frame rate, first report");
                 s_report_it = false;
             }
+#endif
         }
+        
+        /*
+         * Question:  Do we really need to check for the starting state here
+         * before we move on?  Should we use an OR?
+         */
+
         if
         (
             m_jack_transport_state_last == JackTransportStarting &&
@@ -1170,6 +1121,11 @@ jack_timebase_callback
         s_state_last = jack_transport_query(jack->m_jack_client, NULL);
         s_set_state_last = false;
     }
+        
+    /*
+     * Question:  Do we really need to check for the starting state here
+     * before we move on?  Should we use an OR?
+     */
 
     if
     (
@@ -1195,16 +1151,20 @@ jack_timebase_callback
     }
     else
     {
+        infoprint("jack_timebase_callback(): zero frame rate");
+#if 0
         static bool s_report_it = true;
         if (s_report_it)
         {
             errprint("jack_timebase_callback(): zero frame rate");
             s_report_it = false;
         }
+#endif
     }
 
 //      double jack_delta_tick = (s_current_frame) * pos->ticks_per_beat *
 //          pos->beats_per_minute / (pos->frame_rate * 60.0);
+//
 //      s_jack_tick = (jack_delta_tick < 0) ? -jack_delta_tick : jack_delta_tick;
 
     long ptick = 0, pbeat = 0, pbar = 0;

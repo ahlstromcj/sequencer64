@@ -1,0 +1,81 @@
+Testing JACK in Sequencer64
+Chris Ahlstrom
+2016-01-16 to 2016-01-16
+
+These tests are done with qjackctl already running.  They currently show
+some issues.
+
+[jack-transport] == 1, the rest of the jack-* settings == 0.
+
+    Start the transport.
+    Run Sequencer64.  This appears in the console:
+
+        [JACK transport slave]
+        jack sync(): zero frame rate [single report]!?
+        [JackTransportStopped]
+    
+    Load a MIDI file.
+    Every time Space is hit in the main window:
+
+        Console window:
+
+            [JackTransportStarting]
+            [Start playback]
+
+        QJackCtl:
+
+            Jack time counter resets to 0.
+
+    Fixed, was setting jack-running flag to false, wrongly:
+
+        Start again, hit Space, observe same.  Now hit Esc.  No output.
+        Hit Space again, it starts playing.
+        Esc, Space do start, stop, while qjackctl is stopped.
+
+        Even if qjacktrl starts and stops, Sequencer64 now behaves
+        independently of qjackctl.
+
+    Seq64 BPM value affects its playback speed.  
+
+    The main window Stop and Start buttons behave the same.
+
+    At exit, we also "[Cannot release JACK timebase]", probably shouldn't
+    be doing that.
+
+    Actions:
+
+        mainwnd -> perform::start_playing(flag = rc().jack_start_mode)
+            perform::position_jack(flag)
+                jack_assistant::position(flag)
+                    if (m_jack_running) jack_transport_locate()
+
+                    TODO: We think we may not want to change the transport
+                    position unless we are the JACK Master.  We have added
+                    a relocate parameter.
+
+                    TODO: Why doesn't the jack transport make seq24
+                    progress??????????????
+
+            perform::start_jack()
+                jack_assistant::start()
+                    jack_transport_start()
+            perform::start(flag)
+                if (! jack...is_running()) inner_start(flag)
+                    perform::set_playback_mode(flag)
+                    if (flag)
+                        perform::off_sequences()
+                            Turns off all the seqs set_playing flags!
+
+            if flag is false, the order of start_jack() and start() is
+            reversed.  Why?
+
+        mainwnd -> perform::stop_playing()
+            perform::stop_jack()
+                jack_assistant::stop()
+            perform::stop()
+                if (! jack...is_running()) inner_start()
+                    reset sequences and flush the buss.
+
+
+
+# vim: sw=4 ts=4 wm=8 et ft=c

@@ -12,7 +12,7 @@
 This document describes how Sequencer64 parses a MIDI file.
 
 \page       midi_parsing_page MIDI File Parsing in Sequencer64
-\author     Chris Ahlstrom 2015-11-29
+\author     Chris Ahlstrom 2016-01-16
 
 \section midi_parsing_intro Introduction
 
@@ -461,11 +461,13 @@ sequence and use it to make more sequences.
 
 TODO: 
 
-<code>sequence::add_event()</code>
-<code>sequence::set_midi_channel()</code>.
-<code>sequence::set_length()</code>
-<code>sequence::set_midi_bus()</code>
-<code>perform::add_sequence()</code>
+   -  <code>sequence::add_event()</code>.
+   -  <code>sequence::set_midi_channel()</code>.
+   -  <code>sequence::set_length()</code>.
+   -  <code>sequence::set_midi_bus()</code>.
+   -  <code>perform::add_sequence()</code>.
+
+For now, please look at the source code for more details.
 
  *//*-------------------------------------------------------------------------*/
 

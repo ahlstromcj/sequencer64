@@ -1,0 +1,290 @@
+/******************************************************************************
+ * jack_modes.dox
+ *-----------------------------------------------------------------------------
+ *
+ *    This module provides no code.  It provides only a Doxygen "Doxygen
+ *    information" page.
+ *
+ *------------------------------------------------------------------------*//**
+
+\file       jack_modes.dox
+
+This document describes some issues and scenarios involving the JACK, live, and
+song modes.
+
+\page       jack_modes_page JACK, Live, and Song Modes in Sequencer64
+\author     Chris Ahlstrom 2016-01-16
+
+\section jack_modes_intro Introduction
+
+This section describes the interactions between JACK settings and the Live/Song
+Mode settings, with an eye to describing the proper behavior of Sequencer64 with
+JACK settings, how the Live/Song modes are supposed to work, and what bugs or
+issues remain in Sequencer64's JACK handling.
+
+I'm not sure why Doxygen is applying the "code" font so often here.
+Weird, annoying.
+
+\section jack_modes_functions JACK Functions
+
+Please study the following URL and note these important points:
+
+\verbatim
+    http://jackaudio.org/files/docs/html/transport-design.html
+\endverbatim
+
+<ul>
+ <li> The timebase master continuously updates position
+        information, beats, timecode, etc.  There is at most one master
+        active at a time. If no client is registered as timebase master,
+        frame numbers will be the only position information available.
+ <li> The timebase master registers a callback that updates position
+        information while transport is rolling. Its output affects the
+        following process cycle. This function is called immediately after
+        the process callback in the same thread whenever the transport is
+        rolling, or when any client has set a new position in the previous
+        cycle.
+ <li> Clients that don't declare a sync callback are assumed ready
+        immediately, anytime the transport wants to start. If a client
+        doesn't require slow-sync processing, it can set its sync callback
+        to NULL.
+ <li> The transport state is always valid; initially it is
+        JackTransportStopped.
+ <li> When someone calls <tt>jack_transport_start()</tt>,
+        the engine resets the
+        poll bits and changes to a new state, JackTransportStarting.
+ <li> When all slow-sync clients are ready, the state changes to
+        JackTransportRolling.
+</ul>
+
+Does Sequencer64 need a latency callback?
+
+    http://jackaudio.org/files/docs/html/group__ClientCallbacks.html
+
+(We need to see why most of the following is in a monospaced font.
+Is there a new Doxygen feature?)
+
+Here are summaries of the JACK functions used in the jack_assistant module:
+
+\subsection jack_client_open jack_client_open()
+
+     Open a client session with a JACK server. More complex and
+     powerful than <tt>jack_client_new()</tt>.
+     Clients choose which of several
+     servers to connect, and how to start the server automatically, if
+     not already running. There is also an option for JACK to generate
+     a unique client name.
+
+\subsection jack_on_shutdown jack_on_shutdown()
+
+     Registers a function to call when the JACK server shuts down the
+     client thread. It must be an asynchonrous POSIX signal
+     handler: only async-safe functions, executed from another thread.
+     A typical function might set a flag or write to a pipe so that the
+     rest of the application knows that the JACK client thread has shut
+     down.  Clients do not need to call this function. It only helps
+     clients understand what is going on. It should be called before
+     <tt>jack_client_activate()</tt>.
+
+\subsection jack_set_sync_callback jack_set_sync_callback()
+
+     Register/unregister as a slow-sync client; it can't respond
+     immediately to transport position changes.  The callback is run at
+     the first opportunity after registration: if the client is active,
+     this is the next process cycle, otherwise it is the first cycle
+     after <tt>jack_activate()</tt>.  After that, it runs as per
+     JackSyncCallback rules.  Clients that don't set this callback are
+     assumed ready immediately any time the transport wants to start.
+
+\subsection jack_set_process_callback jack_set_process_callback()
+
+     Tells the JACK server to call the callback whenever there is work.
+     The function must be suitable for real-time execution, it cannot
+     call functions that might block for a long time: malloc(), free(),
+     printf(), pthread_mutex_lock(), sleep(), wait(), poll(), select(),
+     pthread_join(), pthread_cond_wait(), etc.  In the current class,
+     this function is a do-nothing function.
+
+\subsection jack_set_session_callback jack_set_session_callback()
+
+     Tells the JACK server to call the callback when a session event is
+     delivered.  Setting more than one session callback per process is
+     probably a design error.  For a multiclient application, it's more
+     sensible to create a JACK client with only one session callback.
+
+\subsection jack_activate jack_activate()
+
+     Tells the JACK server that the application is ready to start
+     processing.
+
+\subsection jack_release_timebase jack_release_timebase()
+
+   TODO
+
+\subsection jack_client_close jack_client_close()
+
+   TODO
+
+\subsection jack_transport_start jack_transport_start()
+
+     Starts the JACK transport rolling.  Any client can make this
+     request at any time. It takes effect no sooner than the next
+     process cycle, perhaps later if there are slow-sync clients. This
+     function is realtime-safe.  No return code.
+
+\subsection jack_transport_stop jack_transport_stop()
+
+     Starts the JACK transport rolling.  Any client can make this
+     request at any time.  This function is realtime-safe.  No return
+     code.
+
+\subsection jack_transport_locate jack_transport_locate()
+
+     Repositions the transport to a new frame number.  May be called at
+     any time by any client. The new position takes effect in two
+     process cycles. If there are slow-sync clients and the transport is
+     already rolling, it will enter the JackTransportStarting state and
+     begin invoking their sync_callbacks until ready. This function is
+     realtime-safe.
+
+\subsection jack_transport_reposition jack_transport_reposition()
+
+     Request a new transport position.  May be called at any time by any
+     client. The new position takes effect in two process cycles. If
+     there are slow-sync clients and the transport is already rolling,
+     it will enter the JackTransportStarting state and begin invoking
+     their sync_callbacks until ready. This function is realtime-safe.
+     This call, made in the position() function, is currently disabled.
+
+\section jack_modes_operation Modes Operation
+
+\subsection jack_modes_op_no_jack_live No JACK, Live Mode
+
+ In <tt>~/.config/sequencer64/sequencer64.rc</tt>, set:
+
+<ul>
+     <li>   jack_transport = 0
+     <li>   jack_master = 0
+     <li>   jack_master_cond = 0
+     <li>   jack_start_mode = 0
+</ul>
+
+By changing the start mode to 0 (false), Sequencer64 is put into Live Mode.
+With this setting, control of the muting and unmuting of patterns
+resides in the main window (the patterns window).  One can start
+the playback in the performance (song) window, but it will not affect
+which patterns play, at all.
+
+Note that this option is part of the <i>File / Options / JACK/LASH</i>
+configuration page.
+
+\subsection jack_modes_op_no_jack_song No JACK, Song Mode
+
+In <tt>~/.config/sequencer64/sequencer64.rc</tt>, set:
+
+<ul>
+     <li>   jack_transport = 0
+     <li>   jack_master = 0
+     <li>   jack_master_cond = 0
+     <li>   jack_start_mode = 1
+</ul>
+
+By changing the start mode to 1 (true), Sequencer64 is put into Song Mode.
+
+With this setting, control of the muting and unmuting of patterns
+resides in the song window (the performance window).  The patterns shown in the
+pattern slots of the main window turn on and off whenever the progress bar
+is in the pattern as drawn in the perforance window.
+
+Note that this option is part of the <i>File / Options / JACK/LASH</i>
+configuration page.
+
+\subsection jack_modes_op_jack_transport JACK Transport
+
+In <tt>~/.config/sequencer64/sequencer64.rc</tt>, set:
+
+<ul>
+     <li>   jack_transport = 1
+     <li>   jack_master = 0
+     <li>   jack_master_cond = 0
+     <li>   jack_start_mode = 0 or 1 (see previous section)
+</ul>
+
+The current behavior is that qjackctl and sequencer64 playback/progress seem to
+be independent of each other.
+
+The workaround seems to be to set seq24/sequencer64 as JACK Master, or if
+another <i>application</i> (e.g. Qtractor) is JACK Master.
+
+OLD BEHAVIOR:
+
+    Start qjackctl, verify that it sets up correctly, then click it's
+    "play" button to start the transport rolling.  Run sequencer64, load a
+    file.  Then note that starting playback (whether in the main window or
+    in the performance window) is ineffective, but resets the time counter
+    in qjackctl.  Why?  With JACK sync enabled by the macro:
+
+\verbatim
+			[JACK transport slave]
+			jack sync(): zero frame rate [single report]!?
+			[JackTransportRolling]
+			[JackTransportStarting]  (every time space bar pressed)
+			[Start playback]
+			. . .
+\endverbatim
+
+END OF OLD BEHAVIOR.
+
+\section jack_modes_breakage Breakage
+
+Old message about seq24 being broken:
+
+   http://lists.linuxaudio.org/pipermail/linux-audio-user/2010-November/073848.html
+
+\verbatim
+   i dont see the transport synchronisation working with a jack1 svn version.
+   you are still using only a sync callback.
+
+   and you are relying on the transport to go through the
+   JackTransportStarting state.
+
+   this issue should be fixed.
+   iirc we came to the conclusion, that seq24 is broken, and we will not
+   revert the changes in jack, which break it.
+
+   the quick and dirty fix on your side, would be to register an empty
+   process_callback.
+
+   but the issue still remains. seq24 is NOT a slow sync client. but it
+   registers a sync_callback. 
+   and it even takes a lock in the sync callback.
+
+   the patch for jack-session support didnt get merged either.
+\endverbatim
+
+Another one (no need for a URL):
+
+\verbatim
+   I use seq24 for the majority of my projects but it isn't ideal (I should
+   point out that I never finish anything). I don't like seq24's pianoroll
+   editor, the way you do CC envelopes isn't ideal, it uses alsa-midi, there's
+   unnecessary complexity in switching from pattern-trigger mode to song mode,
+   and its insistence on being transport master while not even being able to
+   adjust tempo when live is annoying
+\endverbatim
+
+\section jack_modes_references JACK References
+
+<ul>
+   <li>  http://libremusicproduction.com/articles/demystifying-jack-%E2%80%93-beginners-guide-getting-started-jack
+   <li>  http://jackaudio.org/files/docs/html/transport-design.html
+   <li>  http://kxstudio.linuxaudio.org/Repositories
+</ul>
+
+ *//*-------------------------------------------------------------------------*/
+
+/******************************************************************************
+ * jack_modes.dox
+ *----------------------------------------------------------------------------
+ * vim: ts=3 sw=3 et syntax=doxygen
+ *//*-------------------------------------------------------------------------*/

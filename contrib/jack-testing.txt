@@ -1,6 +1,6 @@
 Testing JACK in Sequencer64
 Chris Ahlstrom
-2016-01-16 to 2016-01-16
+2016-01-16 to 2016-01-17
 
 These tests are done with qjackctl already running.  They currently show
 some issues.
@@ -75,6 +75,94 @@ some issues.
             perform::stop()
                 if (! jack...is_running()) inner_start()
                     reset sequences and flush the buss.
+
+
+As Jack Slave, how did this happen:
+
+% ./Sequencer64/sequencer64 
+[Reading user configuration /home/ahlstrom/.config/sequencer64/sequencer64.usr]
+[Reading rc configuration /home/ahlstrom/.config/sequencer64/sequencer64.rc]
+mastermidibus::port_start(): m_buses_out[6] not null
+mmbus::port_start(): m_buses_in[1] not null
+mastermidibus::port_start(): m_buses_out[6] not null
+mmbus::port_start(): m_buses_in[1] not null
+mastermidibus::port_start(): m_buses_out[6] not null
+mmbus::port_start(): m_buses_in[1] not null
+[Writing rc configuration /home/ahlstrom/.config/sequencer64/sequencer64.rc]
+
+http://shangrislinuxmusic.blogspot.com/2008/08/writing-and-recording-song-using-seq24.html
+
+Start Qjackctl with
+
+qjackctl &
+
+You can then click on the Start button to start jackd. Your linux station
+is now set up to play music.
+
+Install Zynaddsubfx, Seq24 and Hydrogen 
+
+seq24 --manual_alsa_ports & zynaddsubfx -r 48000 -b 128 & hydrogen -d jack
+&
+
+Click on the "Connect" button of QJackctl. Check on the "Audio" tab that
+Zynaddsubfx and Hydrogen outputs are connected to ALSA's PCM input.
+
+On the ALSA tab, connect Seq24 first output to Zynaddsubfx's input, and
+connect Seq24 second output to Hydrogen's input.
+
+Select an instrument in Zynaddsubfx in the Instrument>Show Instrument Bank
+menu. Then set the MIDI channel of Zynaddsubfx to 2 (It currently shows
+"1"). Select another instrument for the second midi channel. Repeat the
+operation for a third instrument.
+
+Right-click in Seq24's grid and choose new. You will get a sequence
+edition window. You can adjust the length of the sequence, which is by
+default 1 bar. Let's tell Seq24 we want to play on the Hydrogen rhythmbox :
+In the Output Bus menu left to the field that shows "[1] seq24 1" and set
+it to "[2] seq24 2". Remember we connected Seq24's second midi output to
+Hydrogen.
+
+There's three MIDI buttons in the down left corner of the window. Click on
+the first one to tell Seq24 to send midi events to Hydrogen. You can now
+edit your pattern by holding right-mouse's button and left-clicking to
+paste notes. You can adjust their length with the field next to the
+sequence length. You can click on the piano keyboard to ear how each note
+sounds. Hydrogen set's runs from C2 to D#3. Press "Play" to listen to your
+sequence.
+
+Once you have a Drum sequence, you can repeat theses steps to add our
+three Zynaddsufx's instruments. Just select the first Output Bus for the
+sequence (we connected the first seq24 output to Zynaddsubfx already). To
+select one of the three Zynaddsubfx instruments, click on the button
+showing a MIDI plug next to the Output Bus field and select one from 1 to
+3.
+
+Once you have some sequences, you can use them to compose the song : on
+the main Seq24 windows, there's a 'Song Edition' button in the right down
+corner. Click on it. In the new window, you can click the same way that in
+the sequence windows to draw song sequences. Click on "Play" to play your
+song.
+
+https://help.ubuntu.com/community/HowToSeq24Introduction
+
+http://sourceforge.net/p/seq24/mailman/message/1049880/
+
+I use this setup:
+
+                          +---------------+
+                          |    ARDOUR     |
+                          |               |
+Seq24 --> QSynth -----------> Audio 1     |
+  |                       |               |
+  +-----> ZynAddSubFx ------> Audio 2     |
+  |                       |               |
+  +-----> Hydrogen ---------> Audio 3     |
+                          |               |
+                          +---------------+
+
+And works fine for me. As Seq24 generates all the midi events, there are 
+no sync problems.
+
 
 
 

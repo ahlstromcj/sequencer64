@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-01-16
+ * \updates       2016-01-18
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -154,7 +154,7 @@ perform::perform (gui_assistant & mygui, int ppqn)
  *  The destructor sets some running flags to false, signals this
  *  condition, then joins the input and output threads if the were
  *  launched. Finally, any active or inactive (but allocated)
- *  patterns/sequences are deleted, and their pointer nullified..
+ *  patterns/sequences are deleted, and their pointers nullified.
  */
 
 perform::~perform ()
@@ -449,8 +449,12 @@ perform::mute_all_tracks ()
 }
 
 /**
- *  Set the left marker at the given tick.  We let the caller determine is
- *  this setting is a modification.
+ *  Set the left marker at the given tick.  We let the caller determine if
+ *  this setting is a modification.  If the left tick is later than the right
+ *  tick, the right tick is move to one measure past the left tick.
+ *
+ * \todo
+ *      The perform::m_one_measure member is currently hardwired to PPQN * 4.
  *
  * \param tick
  *      The tick (MIDI pulse) at which to place the left tick.  If the left
@@ -1576,7 +1580,12 @@ perform::get_max_trigger ()
 }
 
 /**
- *  Set up the performance, and set the process to realtime privileges.
+ *  Set up the performance, set the process to realtime privileges, and then
+ *  start the output function.
+ *
+ * \param myperf
+ *      Provides the perform object instance that is to be used.  Its
+ *      output_func() is called.
  */
 
 void *
@@ -1589,13 +1598,13 @@ output_thread_func (void * myperf)
         memset(&schp, 0, sizeof(sched_param));
         schp.sched_priority = 1;
 
-#ifndef PLATFORM_WINDOWS            // Not in MinGW RCB
+#ifndef PLATFORM_WINDOWS                /* Not in MinGW RCB */
         if (sched_setscheduler(0, SCHED_FIFO, &schp) != 0)
         {
             errprint
             (
-                "output_thread_func: couldn't sched_setscheduler"
-                " (FIFO), need to be root."
+                "output_thread_func: couldn't sched_setscheduler(FIFO), "
+                "need root priviledges."
             );
             pthread_exit(0);
         }
@@ -1613,7 +1622,10 @@ output_thread_func (void * myperf)
 }
 
 /**
- *  Performance output function.
+ *  Performance output function.  This function is called by the free function
+ *  output_thread_func().  Here's how it works:
+ *
+ *      -   It runs while m_outputing is true.
  */
 
 void
@@ -1621,7 +1633,7 @@ perform::output_func ()
 {
     while (m_outputing)
     {
-        m_condition_var.lock();        // printf ("waiting for signal\n");
+        m_condition_var.lock();         // printf ("waiting for signal\n");
         while (! m_running)
         {
             m_condition_var.wait();
@@ -1629,16 +1641,6 @@ perform::output_func ()
                 break;
         }
         m_condition_var.unlock();
-
-        jack_scratchpad pad;
-        pad.js_current_tick = 0.0;      // tick and tick fraction
-        pad.js_total_tick = 0.0;
-        pad.js_clock_tick = 0.0;
-        pad.js_jack_stopped = false;
-        pad.js_dumping = false;
-        pad.js_init_clock = true;
-        pad.js_looping = m_looping;
-        pad.js_playback_mode = m_playback_mode;
 
 #ifndef PLATFORM_WINDOWS
         struct timespec last;               // beginning time
@@ -1653,6 +1655,16 @@ perform::output_func ()
         long stats_loop_finish = 0;
         long delta;                         // difference between last & current
 #endif
+
+        jack_scratchpad pad;
+        pad.js_current_tick = 0.0;      // tick and tick fraction
+        pad.js_total_tick = 0.0;
+        pad.js_clock_tick = 0.0;
+        pad.js_jack_stopped = false;
+        pad.js_dumping = false;
+        pad.js_init_clock = true;
+        pad.js_looping = m_looping;
+        pad.js_playback_mode = m_playback_mode;
 
         midipulse stats_total_tick = 0;
         long stats_loop_index = 0;
@@ -1684,10 +1696,11 @@ perform::output_func ()
         {
             pad.js_current_tick = m_starting_tick;
             pad.js_clock_tick = m_starting_tick;
-            set_orig_ticks(m_starting_tick);
+            set_orig_ticks(m_starting_tick);            // what member?
         }
 
         int ppqn = m_master_bus.get_ppqn();
+
 #ifndef PLATFORM_WINDOWS
         clock_gettime(CLOCK_REALTIME, &last);   // get start time position
         if (rc().stats())
@@ -1745,7 +1758,7 @@ perform::output_func ()
                 delta_tick = m_midiclocktick;
                 m_midiclocktick = 0;
             }
-            if (0 <= m_midiclockpos)
+            if (m_midiclockpos >= 0)
             {
                 delta_tick = 0;
                 pad.js_clock_tick = pad.js_current_tick =
@@ -1757,7 +1770,7 @@ perform::output_func ()
             }
 
 #ifdef SEQ64_JACK_SUPPORT
-            bool jackrunning = m_jack_asst.output(pad);
+            bool jackrunning = m_jack_asst.output(pad);     // offloaded code
             if (jackrunning)
             {
                 // No additional code needed besides the output() call above.
@@ -1817,7 +1830,6 @@ perform::output_func ()
                         int ct = clock_ticks_from_ppqn(m_ppqn);
                         if ((stats_total_tick % ct) == 0)
                         {
-
 #ifndef PLATFORM_WINDOWS
                             long current_us = (current.tv_sec * 1000000) +
                                 (current.tv_nsec / 1000);
@@ -1857,7 +1869,8 @@ perform::output_func ()
 
             /*
              * Now we want to trigger every c_thread_trigger_width_ms,
-             * and it took us delta_us to play().
+             * and it took us delta_us to play().  Also known as the
+             * "sleeping_us".
              */
 
             delta_us = (c_thread_trigger_width_ms * 1000) - elapsed_us;
@@ -1988,6 +2001,7 @@ input_thread_func (void * myperf)
         }
 #endif
     }
+
 #ifdef PLATFORM_WINDOWS
     timeBeginPeriod(1);
     p->input_func();

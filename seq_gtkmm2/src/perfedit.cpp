@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-12-06
+ * \updates       2016-01-17
  * \license       GNU GPLv2 or above
  *
  */
@@ -568,6 +568,7 @@ perfedit::init_before_show ()
  *  Handles a drawing timeout.  It redraws "dirty" sequences in the
  *  perfroll and the perfnames objects, and shows draw progress on the
  *  perfroll.  This function is called frequently and continuously.
+ *  It will work for both perfedit windows, if both are up.
  */
 
 bool
@@ -575,17 +576,6 @@ perfedit::timeout ()
 {
     m_perfroll->redraw_progress();
     m_perfnames->redraw_dirty_sequences();
-
-    /*
-     * COULD CAUSE PROBLEMS, BUT DOESN"T SEEM TO HAVE ANY EFFECT
-     *
-    if (not_nullptr(m_peer_perfedit))
-    {
-        m_peer_perfedit->m_perfroll->redraw_progress();
-        m_peer_perfedit->m_perfnames->redraw_dirty_sequences();
-    }
-     */
-
     return true;
 }
 

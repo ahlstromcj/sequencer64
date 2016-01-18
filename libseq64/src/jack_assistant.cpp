@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-14
- * \updates       2016-01-16
+ * \updates       2016-01-18
  * \license       GNU GPLv2 or above
  *
  *  This module was created from code that existed in the perform object.
@@ -139,14 +139,13 @@ jack_assistant::error_message (const std::string & msg)
  *  Note the USE_JACK_SYNC_CALLBACK macro.  A sync callback is needed for
  *  polling of slow-sync clients.  But seq24/sequencer64 are not slow-sync
  *  clients.  Therefore, let's conditionally comment out the sync callback
- *  code.  one of the author's of JACK notes that seq24 is wrong to set up a
- *  sync callback.
+ *  code.  One of the author's of JACK notes that seq24 is wrong to set up a
+ *  sync callback.  CURRENTLY NOT COMMENTED OUT!!!
  *
  * jack_set_process_callback() patch:
  *
  *      Implemented first patch from freddix/seq24 GitHub project, to fix JACK
  *      transport.  One line of code.  Well, we added some error-checking. :-)
- *
  *      Found some old notes on the Web the this patch really only works (to
  *      prevent seq24 freeze) if seq24 is set as JACK Master, or if another
  *      client application, such as Qtractor, is running as JACK Master (and
@@ -183,7 +182,7 @@ jack_assistant::init ()
          * If we disable the sync callback, we don't get feedback re
          * the start and stop of playback.  Perhaps sync() needs to be
          * called additionally in start(), stop(), and in the process
-         * callback?
+         * callback?  Search for "EXPERIMENTAL".
          */
 
         int jackcode = jack_set_sync_callback(m_jack_client, NULL, NULL);
@@ -192,6 +191,12 @@ jack_assistant::init ()
 
         (void) sync();                  /* obtains some JACK numbers */
 #endif
+
+        /*
+         * Although they say this code is needed to get JACK transport to work
+         * properly, seq24 doesn't use this, so for now we comment this out
+         * with a macro.
+         */
 
         jackcode = jack_set_process_callback    /* see notes in banner */
         (
@@ -261,7 +266,7 @@ jack_assistant::init ()
             m_jack_master = false;
         }
         if (jack_activate(m_jack_client) != 0)
-            return error_message("Cannot activate JACK client");
+            return error_message("Cannot activate as JACK client");
     }
     return m_jack_running;
 }
@@ -276,14 +281,17 @@ jack_assistant::deinit ()
     if (m_jack_running)
     {
         m_jack_running = false;
-        m_jack_master = false;
-        if (jack_release_timebase(m_jack_client) != 0)
-            (void) error_message("Cannot release JACK timebase");
+        if (m_jack_master)
+        {
+            m_jack_master = false;
+            if (jack_release_timebase(m_jack_client) != 0)
+                (void) error_message("Cannot release JACK timebase");
+        }
 
         /*
-         * New:  Simply to be symmetric with the startup flow.
-         * Not yet sure why jack_activate() was needed, but assume
-         * that jack_deactivate() is thus important as well.
+         * New:  Simply to be symmetric with the startup flow.  Not yet sure
+         * why jack_activate() was needed, but assume that jack_deactivate() is
+         * thus important as well.  However, commented out since not in seq24.
          */
 
         if (jack_deactivate(m_jack_client) != 0)
@@ -292,13 +300,8 @@ jack_assistant::deinit ()
         if (jack_client_close(m_jack_client) != 0)
             (void) error_message("Cannot close JACK client");
     }
-
-    /*
-     * No need for this message.  We are likely exiting the application.
-     *
-     * if (! m_jack_running)
-     *     (void) info_message("JACK sync disabled");
-     */
+    if (! m_jack_running)
+        (void) info_message("Deinitialized, JACK sync now disabled");
 }
 
 /**
@@ -315,10 +318,11 @@ jack_assistant::start ()
 
         /*
          * EXPERIMENTAL!!!!!
+         * (void) sync();
          */
-
-        (void) sync();
     }
+    else
+        (void) error_message("start(): JACK not running");
 }
 
 /**
@@ -334,18 +338,12 @@ jack_assistant::stop ()
         jack_transport_stop(m_jack_client);
 
         /*
-         * This isn't quite what the flag means.  JACK can continue running
-         * even though the transport is stopped.  Doh!
-         *
-         * m_jack_running = false;             // \change ca 2015-01-10
-         */
-
-        /*
          * EXPERIMENTAL!!!!!
+         * (void) sync();
          */
-
-        (void) sync();
     }
+    else
+        (void) error_message("stop(): JACK not running");
 }
 
 /**
@@ -390,7 +388,7 @@ jack_assistant::position (bool to_left_tick, bool relocate )
 {
     if (m_jack_running)
     {
-        if (relocate)
+        if (relocate)                           // false by default
         {
             jack_nframes_t rate = jack_get_sample_rate(m_jack_client);
             midipulse currenttick = 0;
@@ -450,20 +448,25 @@ jack_assistant::position (bool to_left_tick, bool relocate )
  *  a slow-sync client, so that callback is not really needed, but we probably
  *  need this sub-function here to start out with the right values for
  *  interacting with JACK.
+ *
+ *  Note the call to jack_transport_query().  This call is <i> not </i> is
+ *  seq24, but seems to be needed in sequencer64 because we put m_jack_pos in
+ *  the initializer list, which sets all its fields to 0.  Seq24 accesses
+ *  m_jack_pos before it ever gets set, but its fields have values.  These
+ *  values are bogus, but are consistent from run to run on my computer, and
+ *  allow seq24 to follow another JACK Master, on some computers.  It explains
+ *  why people had different experiences with JACK sync.
+ *
+ *  If we explicity call jack_transport_query() here, without changing the \a
+ *  state parameter, then sequencer64 also can follow another JACK Master.
  */
 
 int
 jack_assistant::sync (jack_transport_state_t state)
 {
-    int result = 0;
+    int result = 0;                     /* seq24 always returns 1   */
     m_jack_frame_current = jack_get_current_transport_frame(m_jack_client);
-    if (state == (jack_transport_state_t)(-1))
-    {
-        state = m_jack_transport_state = jack_transport_query
-        (
-             m_jack_client, &m_jack_pos
-        );
-    }
+    (void) jack_transport_query(m_jack_client, &m_jack_pos);    // see banner
     if (m_jack_pos.frame_rate != 0)
     {
         result = 1;
@@ -472,43 +475,34 @@ jack_assistant::sync (jack_transport_state_t state)
     }
     else
     {
-        errprint("jack_assistant::sync(): zero frame rate");
-
-#if 0
-        static bool s_report_it = true;
-        if (s_report_it)
-        {
-            errprint("jack sync(): zero frame rate [single report]");
-            s_report_it = false;
-        }
-#endif
-
         /*
-         * The actual frame rate might be something like 93.
+         * The actual frame rate might be something like 48000.  Try to make
+         * it work somehow, for now.
          */
 
+        errprint("jack_assistant::sync(): zero frame rate");
         m_jack_tick = m_jack_frame_current * m_jack_pos.ticks_per_beat *
-            m_jack_pos.beats_per_minute;
+            m_jack_pos.beats_per_minute / (48000 * 60.0);
     }
     m_jack_frame_last = m_jack_frame_current;
     m_jack_transport_state_last = m_jack_transport_state = state;
     switch (state)
     {
     case JackTransportStopped:
-        infoprint("[JackTransportStopped]");
+        // infoprint("[JackTransportStopped]");
         break;
 
     case JackTransportRolling:
-        infoprint("[JackTransportRolling]");
+        // infoprint("[JackTransportRolling]");
         break;
 
     case JackTransportStarting:
-        infoprint("[JackTransportStarting]");
+        // infoprint("[JackTransportStarting]");
         parent().inner_start(rc().jack_start_mode());
         break;
 
     case JackTransportLooping:
-        infoprint("[JackTransportLooping]");
+        // infoprint("[JackTransportLooping]");
         break;
 
     default:
@@ -534,9 +528,8 @@ jack_process_callback (jack_nframes_t /* nframes */, void * /* arg */ )
 {
     /*
      * EXPERIMENTAL!!!!!
+     * (void) sync();
      */
-
-    (void) sync();
 
     return 0;
 }
@@ -582,7 +575,7 @@ jack_sync_callback
         errprint("jack_sync_callback(): null JACK pointer");
         return 0;
     }
-    int result = jack->sync(state);
+    int result = jack->sync(state);     /* use the new member function */
     if (result == 1)
         print_jack_pos(pos);
 
@@ -713,20 +706,10 @@ jack_assistant::output (jack_scratchpad & pad)
          *      Same for m_jack_pos.ticks_per_beat and m_jack_pos.beat_type.
          */
 
-        bool ok = m_jack_pos.frame_rate > 0;
+        bool ok = m_jack_pos.frame_rate != 0;           // > 0;
         if (! ok)
-        {
             info_message("jack_assistant::output(): zero frame rate");
-#if 0
-            static bool s_report_it = true;
-            if (s_report_it)
-            {
-                info_message("jack output(): zero frame rate, first report");
-                s_report_it = false;
-            }
-#endif
-        }
-        
+
         /*
          * Question:  Do we really need to check for the starting state here
          * before we move on?  Should we use an OR?
@@ -738,9 +721,12 @@ jack_assistant::output (jack_scratchpad & pad)
             m_jack_transport_state == JackTransportRolling
         )
         {
+            /*
+             * (void) info_message("Start playback");
+             */
+
             m_jack_frame_last = m_jack_frame_current;
             pad.js_dumping = true;
-            (void) info_message("Start playback");
             m_jack_tick = m_jack_pos.frame * m_jack_pos.ticks_per_beat *
                 m_jack_pos.beats_per_minute / (m_jack_pos.frame_rate * 60.0);
 
@@ -784,23 +770,25 @@ jack_assistant::output (jack_scratchpad & pad)
             m_jack_transport_state == JackTransportStopped
         )
         {
+            /*
+             * (void) info_message("Stop playback");
+             */
+
             m_jack_transport_state_last = JackTransportStopped;
             pad.js_jack_stopped = true;
-            (void) info_message("Stop playback");
         }
 
         /*
-         * Jack Transport is Rolling Now !!!
-         * Transport is in a sane state if dumping == true.
+         * Jack Transport is Rolling Now !!!  Transport is in a sane state if
+         * dumping == true.
          */
 
         if (pad.js_dumping)
         {
-            m_jack_frame_current = jack_get_current_transport_frame(m_jack_client);
+            m_jack_frame_current =
+                jack_get_current_transport_frame(m_jack_client);
 
-            /* if we are moving ahead... */
-
-            if (m_jack_frame_current > m_jack_frame_last)
+            if (m_jack_frame_current > m_jack_frame_last)   /* moving ahead?  */
             {
                 m_jack_tick +=
                     (m_jack_frame_current - m_jack_frame_last)  *
@@ -957,46 +945,32 @@ jack_client_t *
 jack_assistant::client_open (const std::string & clientname)
 {
     jack_client_t * result = nullptr;
-    jack_status_t status_code;
+    jack_status_t status;
+    const char * name = clientname.c_str();
 
 #ifdef SEQ64_JACK_SESSION
     if (rc().jack_session_uuid().empty())
     {
-        result = jack_client_open
-        (
-            clientname.c_str(), JackNullOption, &status_code
-        );
+        result = jack_client_open(name, JackNullOption, &status);
     }
     else
     {
-        result = jack_client_open
-        (
-            clientname.c_str(), JackSessionID, &status_code,
-            rc().jack_session_uuid().c_str()
-        );
+        const char * uuid = rc().jack_session_uuid().c_str();
+        result = jack_client_open(name, JackSessionID, &status, uuid);
     }
 #else
-    result = jack_client_open
-    (
-        clientname.c_str(), JackNullOption, &status_code
-    );
+    result = jack_client_open(name, JackNullOption, &status);
 #endif
 
-    if (status_code & JackServerStarted)
+    if (status & JackServerStarted)
         (void) info_message("JACK server started now");
     else
-    {
-        /*
-         * The JACK server was already started.
-         *
-         * (void) info_message("JACK server NOT started!");
-         */
-    }
+        (void) info_message("JACK server already started");
 
-    if (status_code & JackNameNotUnique)
+    if (status & JackNameNotUnique)
         (void) info_message("JACK client-name NOT unique");
 
-    show_statuses(status_code);
+    show_statuses(status);
     return result;
 }
 
@@ -1152,20 +1126,7 @@ jack_timebase_callback
     else
     {
         infoprint("jack_timebase_callback(): zero frame rate");
-#if 0
-        static bool s_report_it = true;
-        if (s_report_it)
-        {
-            errprint("jack_timebase_callback(): zero frame rate");
-            s_report_it = false;
-        }
-#endif
     }
-
-//      double jack_delta_tick = (s_current_frame) * pos->ticks_per_beat *
-//          pos->beats_per_minute / (pos->frame_rate * 60.0);
-//
-//      s_jack_tick = (jack_delta_tick < 0) ? -jack_delta_tick : jack_delta_tick;
 
     long ptick = 0, pbeat = 0, pbar = 0;
     long ticks_per_bar = long(pos->ticks_per_beat * pos->beats_per_bar);

@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-09-17
- * \updates       2016-01-16
+ * \updates       2016-01-17
  * \license       GNU GPLv2 or above
  *
  *  This class contains a number of functions that used to reside in the
@@ -54,9 +54,11 @@
 /*
  *  We don't really need to be a slow-sync client, as far as we can tell.
  *  In fact, our sync code may interfere with getting a valid frame rate.
+ *  However, we still can't JACK working exactly the way it does in seq24,
+ *  so we leave the callback in place.
  */
 
-#undef USE_JACK_SYNC_CALLBACK
+#define USE_JACK_SYNC_CALLBACK
 
 namespace seq64
 {
@@ -72,8 +74,11 @@ class perform;                          /* jack_assistant parent is perform */
  *  This scratchpad is useful even if JACK support is not enabled.
  */
 
-struct jack_scratchpad
+class jack_scratchpad
 {
+
+public:
+
     double js_current_tick;
     double js_total_tick;
     double js_clock_tick;
@@ -82,6 +87,7 @@ struct jack_scratchpad
     bool js_init_clock;
     bool js_looping;                    /* perform::m_looping       */
     bool js_playback_mode;              /* perform::m_playback_mode */
+
 };
 
 #ifdef SEQ64_JACK_SUPPORT

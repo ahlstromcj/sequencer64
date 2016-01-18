@@ -25,9 +25,12 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-01-16
+ * \updates       2016-01-19
  * \license       GNU GPLv2 or above
  *
+ *  The performance window allows automatic control of when each
+ *  sequence/pattern starts and stops, and thus offers a fixed-composition
+ *  option, as opposed to live control of the sequences/patterns.
  */
 
 #include <gtkmm/accelkey.h>
@@ -586,6 +589,11 @@ perfroll::draw_all ()
  *  Note that we no longer pass "true" as the playback parameter, instead
  *  using the global JACK-start-mode flag.  (We might reconsider that,
  *  later.)
+ *
+ * \note
+ *      The old behavior was to call this function with true, I believe,
+ *      which means that starting the song from the performance window
+ *      forces playback to use the song/performance mode.
  */
 
 void

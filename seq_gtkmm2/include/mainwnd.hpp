@@ -242,6 +242,10 @@ private:
      *  function is used (if jack is running) to determine if the playback
      *  mode is "live" (false) or "song" (true).  An accessor to
      *  perform::start_playing().
+     *
+     * \note
+     *      This overrides the old behavior of playing live mode if the song
+     *      is started from the main window.
      */
 
     void start_playing ()               // Play!

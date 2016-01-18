@@ -1,9 +1,9 @@
 Notes About JACK
 Chris Ahlstrom
-2016-01-14 to 2016-01-14
+2016-01-14 to 2016-01-19
 
 Also be sure to read through the source code, especially the jack_assistant
-module.
+module.  The following is a note about seq24:
 
    https://community.ardour.org/node/3165
 
@@ -35,5 +35,13 @@ module.
     Master Conditional will make it be Master only if no other JACK
     Transport application is running at the moment. For me that worked well,
     used to be offbeat also.
+
+However, for Sequencer64, only one of the three needs to be set
+
+    Enable Jack Transport (selects slave mode)
+    Enable Transport Master
+    Enable Master Conditional
+
+We still have some work to do to improve our JACK handling.
 
 # vim: sw=4 ts=4 wm=8 et ft=sh

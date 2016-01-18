@@ -1,6 +1,6 @@
 Testing JACK in Sequencer64
 Chris Ahlstrom
-2016-01-16 to 2016-01-17
+2016-01-16 to 2016-01-19
 
 These tests are done with qjackctl already running.  They currently show
 some issues.
@@ -162,8 +162,5 @@ Seq24 --> QSynth -----------> Audio 1     |
 
 And works fine for me. As Seq24 generates all the midi events, there are 
 no sync problems.
-
-
-
 
 # vim: sw=4 ts=4 wm=8 et ft=c

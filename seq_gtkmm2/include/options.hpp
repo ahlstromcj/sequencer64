@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-07
+ * \updates       2016-01-18
  * \license       GNU GPLv2 or above
  *
  */
@@ -61,6 +61,46 @@ private:
 
     /**
      *  Defines buttons indices or IDs for some controls related to JACK.
+     *  These values are handled in options::transport_callback().  Some of
+     *  them set JACK-related values in the rc_settings object, while the
+     *  others set up or tear down the JACK support of sequencer24.
+     *
+     *  The JACK Transport settings are a little messy.  They should be radio
+     *  buttons, and control each other's settings.  Currently, if the user
+     *  wants to set up for JACK Master, the JACK Transport button must also
+     *  be checked.
+     *
+     * \var e_jack_transport
+     *      Turns on the "with JACK Transport" option,
+     *      rc_settings::with_jack_transport().
+     *
+     * \var e_jack_master
+     *      Turns on the "with JACK Master" option,
+     *      rc_settings::with_jack_master().  If another application is
+     *      already JACK Master, this will fail.
+     *
+     * \var e_jack_master_cond
+     *      Turns on the "with JACK Master" option
+     *      rc_settings::with_jack_master_cond().  This option makes
+     *      sequencer64 the JACK Master conditionally, that is, if no other
+     *      application has claimed that role.
+     *
+     * \var e_jack_start_mode_live
+     *      Doesn't directly do anything; the live mode versus song mode is
+     *      set by the e_jack_start_mode_song value.
+     *
+     * \var e_jack_start_mode_song
+     *      Sets the "JACK start mode" value to true, which means that
+     *      sequencer64 is in song mode.  This value is obtained via
+     *      rc_settings::jack_start_mode().
+     *
+     * \var e_jack_connect
+     *      Causes the perform object's JACK initialization function,
+     *      perform::init_jack(), to be called.
+     *
+     * \var e_jack_disconnect
+     *      Causes the perform object's JACK deinitialization function,
+     *      perform::deinit_jack(), to be called.
      */
 
     enum button

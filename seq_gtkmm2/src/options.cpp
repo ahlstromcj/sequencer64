@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-01-16
+ * \updates       2016-01-18
  * \license       GNU GPLv2 or above
  *
  *  Here is a list of the global variables used/stored/modified by this
@@ -604,7 +604,12 @@ options::add_jack_sync_page ()
         new Gtk::CheckButton("JACK _Transport", true)
     );
     check->set_active(rc().with_jack_transport());
-    add_tooltip(check, "Enable sync with JACK Transport.");
+    add_tooltip
+    (
+        check,
+        "Enable slave sync with JACK Transport.  Must NOT be checked if "
+        " the user selected 'Transport Master' or 'Master Conditional'."
+    );
     check->signal_toggled().connect
     (
         bind
@@ -617,7 +622,12 @@ options::add_jack_sync_page ()
 
     check = manage(new Gtk::CheckButton("Trans_port Master", true));
     check->set_active(rc().with_jack_master());
-    add_tooltip(check, "Sequencer64 will attempt to serve as JACK Master.");
+    add_tooltip
+    (
+        check,
+        "Sequencer64 will attempt to serve as JACK Master.  'JACK Transport' "
+        "must NOT be selected.  Select only one setting."
+    );
     check->signal_toggled().connect
     (
         bind(mem_fun(*this, &options::transport_callback), e_jack_master, check)
@@ -629,7 +639,8 @@ options::add_jack_sync_page ()
     add_tooltip
     (
         check,
-        "Sequencer64 will fail to be Master if there is already a Master set."
+        "Sequencer64 will fail to be Master if there is already a Master set. "
+        "'JACK Transport' must NOT be selected.  Select only one setting."
     );
     check->signal_toggled().connect
     (
@@ -698,7 +709,12 @@ options::add_jack_sync_page ()
     vbox->pack_start(*buttonbox, false, false);
 
     Gtk::Button * button = manage(new Gtk::Button("JACK Co_nnect", true));
-    add_tooltip(button, "Connect to JACK.");
+    add_tooltip
+    (
+        button,
+        "Reconnect to JACK. Calls the JACK initialization function, which is "
+        "automatically called at Sequencer64 startup anyway."
+    );
     button->signal_clicked().connect
     (
         bind
@@ -710,7 +726,10 @@ options::add_jack_sync_page ()
     buttonbox->pack_start(*button, false, false);
 
     button = manage(new Gtk::Button("JACK _Disconnect", true));
-    add_tooltip(button, "Disconnect JACK.");
+    add_tooltip
+    (
+        button, "Disconnect JACK. Calls the JACK deinitialization function."
+    );
     button->signal_clicked().connect
     (
         bind
@@ -881,7 +900,20 @@ options::lash_support_callback (Gtk::CheckButton * btn)
 }
 
 /**
- *  Transport callback function.
+ *  Transport callback function.  See the options::button enumeration for the
+ *  meaning of the values.  Note that we added the
+ *  e_jack_start_mode_live value, for completeness, even though no control
+ *  calls this function with that enumeration.
+ *
+ * \warning
+ *      These CheckButtons really need to be radio buttons (along with some
+ *      changes in how the various JACK transport flags of Sequencer64 are
+ *      juxtaposed).  Only <i> one </i> of the following should be
+ *      check-marked:
+ *
+ *          -   JACK Transport (makes Sequencer64 a JACK slave)
+ *          -   Transport Master (makes Sequencer64 a JACK master)
+ *          -   Master Conditional (makes Sequencer64 a JACK master if it can)
  */
 
 void
@@ -902,6 +934,7 @@ options::transport_callback (button type, Gtk::Button * acheck)
         rc().with_jack_master_cond(check->get_active());
         break;
 
+    case e_jack_start_mode_live:
     case e_jack_start_mode_song:
         rc().jack_start_mode(check->get_active());
         break;

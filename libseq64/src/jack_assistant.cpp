@@ -142,6 +142,14 @@ jack_assistant::error_message (const std::string & msg)
  *  code.  One of the author's of JACK notes that seq24 is wrong to set up a
  *  sync callback.  CURRENTLY NOT COMMENTED OUT!!!
  *
+ * Jack transport settings:
+ *
+ *      There are three settings:  On, Master, and Master Conditional.
+ *      Currently, they can all be selected in the user-interface's File /
+ *      Options / JACK/LASH page.  We really want only one to be set, for
+ *      clarity.  They should be radio buttons.  We need to initialize if any
+ *      of them are set.
+ *
  * jack_set_process_callback() patch:
  *
  *      Implemented first patch from freddix/seq24 GitHub project, to fix JACK
@@ -159,7 +167,13 @@ jack_assistant::error_message (const std::string & msg)
 bool
 jack_assistant::init ()
 {
-    if (rc().with_jack_transport() && ! m_jack_running)
+    bool can_initialize =
+    (
+        rc().with_jack_transport() ||
+        rc().with_jack_master() ||
+        rc().with_jack_master_cond()
+    );
+    if (can_initialize && ! m_jack_running)
     {
         std::string package = SEQ64_PACKAGE;
         m_jack_running = true;              /* determined surely below      */
@@ -227,7 +241,8 @@ jack_assistant::init ()
 #endif
 
         bool master_is_set = false;         /* flag to handle trickery  */
-        if (rc().with_jack_master())
+        bool cond = rc().with_jack_master_cond();
+        if (rc().with_jack_master() || cond)
         {
             /*
              * 'cond' is true if we want to fail if there is already a JACK
@@ -240,7 +255,6 @@ jack_assistant::init ()
              *      (void *) &m_jack_parent
              */
 
-            bool cond = rc().with_jack_master_cond();
             jackcode = jack_set_timebase_callback
             (
                 m_jack_client, cond, jack_timebase_callback, (void *) this
@@ -268,6 +282,11 @@ jack_assistant::init ()
         if (jack_activate(m_jack_client) != 0)
             return error_message("Cannot activate as JACK client");
     }
+    if (m_jack_running)
+        (void) info_message("Initialized. JACK sync now enabled");
+    else
+        (void) error_message("Initialization error. JACK sync not enabled");
+
     return m_jack_running;
 }
 
@@ -280,7 +299,6 @@ jack_assistant::deinit ()
 {
     if (m_jack_running)
     {
-        m_jack_running = false;
         if (m_jack_master)
         {
             m_jack_master = false;
@@ -299,9 +317,11 @@ jack_assistant::deinit ()
 
         if (jack_client_close(m_jack_client) != 0)
             (void) error_message("Cannot close JACK client");
+
+        m_jack_running = false;
     }
     if (! m_jack_running)
-        (void) info_message("Deinitialized, JACK sync now disabled");
+        (void) info_message("Deinitialized. JACK sync now disabled");
 }
 
 /**
@@ -322,7 +342,7 @@ jack_assistant::start ()
          */
     }
     else
-        (void) error_message("start(): JACK not running");
+        (void) error_message("Transport Start: JACK not running!");
 }
 
 /**
@@ -343,7 +363,7 @@ jack_assistant::stop ()
          */
     }
     else
-        (void) error_message("stop(): JACK not running");
+        (void) error_message("Transport Stop: JACK not running!");
 }
 
 /**

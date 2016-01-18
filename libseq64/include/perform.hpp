@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-01-16
+ * \updates       2016-01-18
  * \license       GNU GPLv2 or above
  *
  *  This class still has way too many members, even with the JACK and
@@ -481,14 +481,11 @@ public:
             m_notify.push_back(pfcb);
     }
 
-    void init ();
+public:
+
     void clear_all ();
-
-    void launch_input_thread ();
-    void launch_output_thread ();
-    void init_jack ();
-    void deinit_jack ();
-
+    void launch ();
+    void finish ();
     void new_sequence (int seq);                    /* seqmenu & mainwid    */
     void add_sequence (sequence * seq, int perf);   /* midifile             */
     void delete_sequence (int seq);                 /* seqmenu & mainwid    */
@@ -982,6 +979,11 @@ public:
 
 private:
 
+    void init ();
+    void launch_input_thread ();
+    void launch_output_thread ();
+    void init_jack ();
+    void deinit_jack ();
     bool seq_in_playing_screen (int seq);
 
     /**

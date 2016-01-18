@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-01-10
+ * \updates       2016-01-19
  * \license       GNU GPLv2 or above
  *
  *  Note that there are a number of header files that we don't need to add
@@ -95,12 +95,7 @@ main (int argc, char * argv [])
 
     if (! is_help)
     {
-        p.init();
-        p.launch_input_thread();
-        p.launch_output_thread();
-#ifdef SEQ64_JACK_SUPPORT
-        p.init_jack();
-#endif
+        p.launch();                             /* set up performance       */
 
         /*
          * Push the mainwnd window onto the stack, with an option for allowing
@@ -120,12 +115,8 @@ main (int argc, char * argv [])
         if (seq64::rc().lash_support())
             seq64::create_lash_driver(p, argc, argv);
 
-        kit.run(seq24_window);
-
-#ifdef SEQ64_JACK_SUPPORT
-        p.deinit_jack();
-#endif
-
+        kit.run(seq24_window);                  /* run until user quits     */
+        p.finish();                             /* tear down performance    */
         ok = seq64::write_options_files(p);
         seq64::delete_lash_driver();            /* deletes only if exists   */
     }

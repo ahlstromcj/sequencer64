@@ -178,6 +178,33 @@ perform::~perform ()
 }
 
 /**
+ *  Calls the initialization and thread-launching functions.  This function is
+ *  called in main().  We collected all the calls here as a simplification.
+ */
+
+void
+perform::launch ()
+{
+    init();
+    launch_input_thread();
+    launch_output_thread();
+#ifdef SEQ64_JACK_SUPPORT
+    init_jack();
+#endif
+}
+
+/**
+ *  The rough opposite of launch(); it doesn't stop the threads.  A minor
+ *  simplification for the main() routine, hides the JACK support macro.
+ */
+
+void
+perform::finish ()
+{
+    deinit_jack();
+}
+
+/**
  *  Initializes the master MIDI bus.  Who calls this routine?  The main()
  *  routine of the application.
  */

@@ -1,3 +1,75 @@
+2016-01-18  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* arch/PKGBUILD, arch/package/PKGBUILD
+	contrib/jack-testing.txt, contrib/jack.txt,
+	contrib/jack-transport-master.c,
+	doc/dox/doxy-reference.cfg, doc/dox/jack_modes.dox,
+	doc/dox/midi_parsing.dox, libseq64/include/jack_assistant.hpp,
+	libseq64/include/Makefile.am,
+	Sequencer64/sequencer64.cpp, libseq64/include/perform.hpp,
+	libseq64/src/jack_assistant.cpp, libseq64/src/optionsfile.cpp,
+	libseq64/src/perform.cpp, seq_gtkmm2/include/options.hpp,
+	libseq64/src/perfstats.cpp, seq_gtkmm2/src/perfedit.cpp,
+	seq_gtkmm2/src/options.cpp,
+	seq_gtkmm2/include/mainwnd.hpp, seq_gtkmm2/src/perfroll.cpp:
+	Fixed mixup with Arch package directory.  Stamped as 0.9.9.13.  Minor notes
+	about live versus song mode selection.  Cleanup and better tooltips for JACK
+	support.  Got JACK sync basically working, by explicitly calling
+	jack_transport_query() to initialize m_jack_pos.  Added a perfstats module
+	for future usage.  libseq64/src/jack_assistant.cpp: Documenting and exploring
+	JACK transport in Sequencer64, many issues.
+
+2016-01-16  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* INSTALL, README, ROADMAP, VERSION, configure.ac,
+	doc/dox/doxy-reference.cfg, libseq64/include/perform.hpp,
+	libseq64/src/cmdlineopts.cpp, libseq64/src/optionsfile.cpp,
+	libseq64/src/perform.cpp, libseq64/src/userfile.cpp,
+	seq_gtkmm2/include/gui_assistant_gtk2.hpp,
+	seq_gtkmm2/include/perfedit.hpp, seq_gtkmm2/src/options.cpp,
+	seq_gtkmm2/src/perfroll.cpp, seq_gtkmm2/src/seqroll.cpp: Finally got
+	the playback-mode code sorted out, and added better tooltips to
+	explain it.
+
+2016-01-15  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/include/gui_assistant.hpp,
+	libseq64/include/jack_assistant.hpp, libseq64/include/perform.hpp,
+	libseq64/src/cmdlineopts.cpp, libseq64/src/jack_assistant.cpp,
+	libseq64/src/perform.cpp,
+	seq_gtkmm2/include/gui_assistant_gtk2.hpp,
+	seq_gtkmm2/include/perfedit.hpp, seq_gtkmm2/include/perfroll.hpp,
+	seq_gtkmm2/src/gui_assistant_gtk2.cpp, seq_gtkmm2/src/mainwnd.cpp,
+	seq_gtkmm2/src/perfedit.cpp, seq_gtkmm2/src/perfroll.cpp,
+	seq_gtkmm2/src/seqroll.cpp: Backed out latest changes that disabled
+	song mode, and tightened JACK support and session compile options.
+
+2016-01-14  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* configure.ac, contrib/README, contrib/jack-session.patch,
+	contrib/scripts/Seq24-Session, contrib/scripts/jackd.rc,
+	libseq64/src/jack_assistant.cpp: Added some notes about JACK support
+	and its issues in Seq24.
+
+2016-01-13  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/include/jack_assistant.hpp,
+	libseq64/src/jack_assistant.cpp: Interim check-in of jack_assistant
+	updates.
+
+2016-01-12  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/include/jack_assistant.hpp,
+	libseq64/src/jack_assistant.cpp, libseq64/src/perform.cpp: Digging
+	into JACK setup issues.  Fixed bug in setting up JACK callback, but still
+	have issues.
+
+2016-01-11  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/include/calculations.hpp,
+	libseq64/src/jack_assistant.cpp, libseq64/src/perform.cpp: Interim
+	check-in of JACK fixups.
+
 2016-01-10  Chris Ahlstrom <ahlstromcj@gmail.com>
 
 	* contrib/git.txt, configure.ac: Stamping as 0.9.9.12, merging in the current

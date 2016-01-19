@@ -1,71 +1,89 @@
 Sequencer64 Roadmap
 Chris Ahlstrom
-2015-09-10 to 2016-01-16
+2015-09-10 to 2016-01-19
 
 The starting point for the Sequencer64 project is version 0.9.4 of
-Sequencer24.  Sequencer24 itself started with version 0.9.2 of Seq24.
+Sequencer24.  Sequencer24 itself started with version 0.9.2 of Seq24 from
+Debian.
 
-Latest version: 0.9.9.13
-Current branch: events-->master, third round of branch pending
+Latest version: 0.9.9.14
+Current branch: fixups-->master, third round of branch pending
 
 The following changes are planned ('x' means it is done, 'y' means it is
 in progress, and 'z' means it will be moved to a later branch).  But also
-note that there is a lot of work to do that is listed in the
+note that there is a LOT OF WORK to do that is listed in the
 contrib/bugs-to-investigate.txt file!
 
-y  -  Branch off to various incremental branches:
-   y  -  Break out non-GUI functionality into libsequencer64.
-      x  -  Branch "perform":  refactoring the perform class for
+   y  Branch off to various incremental branches:
+      y  Break out non-GUI functionality into libsequencer64.
+         x  Branch "perform":  refactoring the perform class for
             configuration file access and Gtk/Gdk support.  Also
             separated out the JACK support.  Finish on 2015-09-19.
-      x  -  Branch "guibase":  Creating a base class for Gtk::Drawable
+         x  Branch "guibase":  Creating a base class for Gtk::Drawable
             and using that in one of the GUI modules.
-   x  -  Branch "sequencer": Try to replace sequencer event container with
+      x  Branch "sequencer": Try to replace sequencer event container with
          something faster.   We found that using std::multimap instead
          of std::list works well, and, in debug mode, the loading of a
-         MIDI file is a *lot* faster.
-      y  Unit test each element as appropriate using xpc-suite
+         MIDI file is a *lot* faster.  The only potential issue is that the
+         slower map iterator might limit the amount of notes that can be
+         played back at the same time.
+      y  Unit test each element as appropriate using xpccutxx
          functionality.
-   y  -  Add some base classes and additional member functions for common
+      y  Add some base classes and additional member functions for common
          functionality:
-      x  -  Gtk::Drawable-derived base class
+         x  Gtk::Drawable-derived base class
+         x  An autolock object to simplify many of the locked functions.
+         x  Offload triggers functionality as much as possible to a triggers
+            class.
+         x  Offload JACK support as much as possible to a jack_assistant
+            (AKA "jack_ass") class.
+         y  Offload perform "statistics" functionality to a perfstats class.
+         -  Offload perform "mute groups" functionality to a perfmutes class.
          -  Handle Windows vs. Linux code more cleanly.
             -  Windows/Linux mastermidibus bases class
             -  Windows/Linux midibus bases class
-      x  -  An autolock object to simplify many of the locked functions.
-      -  Enhance documentation and recreate it.
-   x  -  Rebuild application using library code.
-   y  -  Verify functionality.
-y  -  Branch off to an "testing", "testing2", "testing3"  branch to perform
-      testing, tweaking, and, quite frankly, some fairly significant
+      y  Enhance documentation and recreate it.
+      x  Rebuild application using library code.
+      y  Verify functionality.
+y  -  Branch off to "testing", "testing2", "testing3", etc.  branches to
+      perform testing, tweaking, and, quite frankly, some fairly significant
       enhancements along the way.
-      y  Created a separate GitHub project, seq64-tests, to do some
+      y  Create a separate GitHub project, seq64-tests, to do some
          unit-testing of Sequencer64, and to provide a test bed to make
          more certain that new features do not break existing
          functionality.
       y  Still more refactoring of the application.
-      -  Created another set of font pixmaps for an anti-aliased font to
-         replace the retro "PC" font used by Seq24.
+      x  Created another set of font pixmaps for an anti-aliased font to
+         replace the retro "PC" font used by Seq24.  We have also added
+         yellow and cyan colored fonts for special purposes.
       y  Still working on making it possible to deal with files with
-         a PPQN other than 192.
-      y  Added arrow-key and "p/P" paint support.
+         a PPQN other than 192.  This seems to have suddenly worked after we
+         got the ability to read SMF 0 files working.  We still need a few
+         displays/options for showing the PPQN, but the files are
+         automatically saved to the default 192 PPQN when saved.
+      y  Added arrow-key and "p/P" paint support.  Also "x" to escape from
+         paint mode.
       y  Added grid and sequence display configuration options to the "user"
-         configuration file.
-      y  Added compile-time option to smooth out the lines on the piano rolls.
-      y  Added ability to store the musical key, musical scale, and the
+         configuration file.  We anticipate still more options as time goes
+         on.
+      x  Added compile-time option to smooth out the lines on the piano rolls.
+      x  Added ability to store the musical key, musical scale, and the
          background sequence number with each sequence, in the MIDI file.
-      -  Did not quite finish testing, but it is time to merge back to
-         "master", and do some more "testing" branches!
-   -  Branch off to an "Enhancements" branch (highly provisional):
+   -  Branch off to an "Enhancements" branch (highly provisional).  This will
+      not be done until we have solidified Sequencer64 at version 1.0.
+      For version 2.0:
       -  Convert to gtkmm-3.
       -  Add optional build using Qt 5.
       -  Flesh out the support for PortMidi.
       -  Support MingW builds in Windows a la the Subatomic Glue port.
-   -  To fix:  See the contrib/bugs_to_investigate.txt
+   y  To fix:  See the contrib/bugs_to_investigate.txt
 
 Eventually, there will be a few features and fixes to try to add:
 
    y  A MIDI event text pane to display (and later edit) all MIDI events.
+      This feature is about as done as we want to make it at this time.
+   y  Fix the JACK support.  Mostly done, but there are a number of legacy
+      issues to deal with.
    -  Speed up the horizontal resize on the Song/Performance Editor.
    -  Make it possible to use Alt or Ctrl plus a sequence-toggling
       key to bring up an edit dialog for that sequence.

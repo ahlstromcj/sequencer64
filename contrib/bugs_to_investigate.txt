@@ -1,6 +1,6 @@
-Bugs and Upgrade Ideas
+Bugs and Additional Upgrade Ideas
 Chris Ahlstrom
-2015-10-27 to 2016-01-09
+2015-10-27 to 2016-01-18
 
 In no particular order...  "y" means "in progress", and "x" means it is
 basically done.
@@ -23,7 +23,7 @@ x  Consider adding support for reading normal MIDI TimeSig and Tempo data from
    test.
 x  Add support for SMF (MIDI format) 0.
 y  Tighten up the is-dirty handling for all dialogs:
-   x  Moving a pattern doesn't turn on any dirty bit, to allow an opportunity
+   x  Moving a pattern does not turn on any dirty bit, to allow an opportunity
       for saving.  This is a legacy bug.
    y  Can the perform object control all the is-dirty stuff?  All the GUIs use
       it!
@@ -47,7 +47,7 @@ x  Add an option that prevents the automatic saving of the "usr" configuration
    the file, a bit of a surpise/annoyance.
 -  When closing a file, either need to blank out or close any pattern-editor
    windows and the performance editor; something like that.
--  Document that right-click on pattern editor's left and right scrollbar
+-  Document that right-click on the pattern editor left and right scrollbar
    arrows act like Home and End for the seqroll.
 -  Better progress and status indicators:
    -  Show the following items in the sequence editor:
@@ -65,7 +65,7 @@ x  Add an option that prevents the automatic saving of the "usr" configuration
    -  Stop progress bar when pattern not playing in performance editor.
 -  Would be nice to have a PAUSE button and PAUSE feature.
 -  Add the legacy-format option to the "rc" configuration file?
--  Seq24/Sequencer64 don't write out the c_midictrl data for any sequences.
+-  Seq24/Sequencer64 do n0t write out the c_midictrl data for any sequences.
    Something to learn more about and fix.
 -  Add optimization to write out minimal qmute etc. to the MIDI file when it is
    not being used.
@@ -93,7 +93,7 @@ x  Add an option that prevents the automatic saving of the "usr" configuration
 -  Should mark empty tracks in the background-sequence selector, or just not
    show them.  Very low priority.
 -  More feedback when adding a new sequence:
-   -  Create a new sequence and add some notes.  It won't appear in the
+   -  Create a new sequence and add some notes.  It will not appear in the
       patterns window until you click in the patterns window, in the same slot
       where New was selected.
    -  It would be nice if it were highlighted somehow, maybe cyan or dark grey
@@ -137,7 +137,7 @@ x  Add an option that prevents the automatic saving of the "usr" configuration
 -  --manual_alsa_ports, etc., should be --manual-alsa_ports.
 -  Can we provide a way to move a note a tiny amount without changing the beat
    size?
--  Ctrl-Z for data/event doesn't work unless the piano roll has the focus.
+-  Ctrl-Z for data/event does n0t work unless the piano roll has the focus.
    Worth worrying about?
 -  If POSSIBLE, avoid loading the "user" configuration file, or at least
    parts of it, when "manual-alsa-ports" is set to "1".
@@ -251,7 +251,7 @@ x  Store new values c_musickey = 0x24240011 and c_musicscale = 0x24240012 in
 x  Using SEQ64_ key and event macros instead of GDK_ key and event macros.
 x  I forgotten instructions of use. 'p' to activate paint, 'P' (shift p) to
    deactivate.  Remember to "select" the piano roll instead of writing on other
-   controls, like the name edit. that's a little tricky but you will overcome
+   controls, like the name edit. that is a little tricky but you will overcome
    that.  ivan
    seqroll.cpp:
    >               m_seq->remove_marked();
@@ -267,7 +267,7 @@ x  I forgotten instructions of use. 'p' to activate paint, 'P' (shift p) to
    > +         }
    >   
    >           if ( a_p0->state & GDK_CONTROL_MASK ){
-      We've now incorporated this feature (2015-11-01).
+      We have now incorporated this feature (2015-11-01).
 
 
 BUG REPORTS:
@@ -281,7 +281,7 @@ Subject: Re: [sequencer64] Install-recursive and .seq24rc equivalent (#2)
 Sorry to be so slow, all my free time is spent trying to get my upcoming          
 book across its jan15 finish line.  But (for deeply nerdy reasons,) I             
 always spend a bunch of my christmas vacation time learning new source            
-code, so I 've set up a Netbeans environment for sequencer64 (I have to           
+code, so I've set up a Netbeans environment for sequencer64 (I have to           
 confess I'm a Windows developer for a living and really gravitate towards         
 IDEs.  I've worked in linux for decades, but linux as an IDE breaks my            
 heart.)                                                                           
@@ -299,4 +299,4 @@ group to the first screen.
 I'll try i == m_screenset as an alternative sometime in the next few days.
 I just wanted to let you know I was still thinking about this.
 
-
+# vim: sw=4 ts=4 wm=4 et ft=sh

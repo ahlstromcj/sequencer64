@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-09-17
- * \updates       2016-01-17
+ * \updates       2016-01-18
  * \license       GNU GPLv2 or above
  *
  *  This class contains a number of functions that used to reside in the
@@ -214,6 +214,16 @@ public:
     bool output (jack_scratchpad & pad);
 
 private:
+
+    /**
+     * \setter m_ppqn
+     *      For the future, changing the PPQN internally.
+     */
+
+    void set_ppqn (int ppqn)
+    {
+        m_ppqn = ppqn;
+    }
 
     bool info_message (const std::string & msg);
     bool error_message (const std::string & msg);

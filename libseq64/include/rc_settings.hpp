@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-22
- * \updates       2015-11-21
+ * \updates       2016-01-19
  * \license       GNU GPLv2 or above
  *
  *  This collection of variables describes the options of the application,
@@ -244,7 +244,22 @@ public:
     }
 
     /**
-     * \accessor m_jack_start_mode
+     * \accessor m_with_jack_transport m_with_jack_master, and
+     * m_with_jack_master_cond, to save client code some trouble.
+     */
+
+    bool with_jack () const
+    {
+        return
+        (
+            m_with_jack_transport ||
+            m_with_jack_master ||
+            m_with_jack_master_cond
+        );
+    }
+
+    /**
+     * \accessor m_jack_start_mode, 
      */
 
     bool jack_start_mode () const

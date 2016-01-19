@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-14
- * \updates       2016-01-18
+ * \updates       2016-01-19
  * \license       GNU GPLv2 or above
  *
  *  This module was created from code that existed in the perform object.
@@ -167,13 +167,7 @@ jack_assistant::error_message (const std::string & msg)
 bool
 jack_assistant::init ()
 {
-    bool can_initialize =
-    (
-        rc().with_jack_transport() ||
-        rc().with_jack_master() ||
-        rc().with_jack_master_cond()
-    );
-    if (can_initialize && ! m_jack_running)
+    if (rc().with_jack() && ! m_jack_running)
     {
         std::string package = SEQ64_PACKAGE;
         m_jack_running = true;              /* determined surely below      */
@@ -281,12 +275,19 @@ jack_assistant::init ()
         }
         if (jack_activate(m_jack_client) != 0)
             return error_message("Cannot activate as JACK client");
-    }
-    if (m_jack_running)
-        (void) info_message("Initialized. JACK sync now enabled");
-    else
-        (void) error_message("Initialization error. JACK sync not enabled");
 
+        if (m_jack_running)
+            (void) info_message("Initialized. JACK sync now enabled.");
+        else
+            (void) error_message("Initialization error. JACK sync not enabled.");
+    }
+    else
+    {
+        if (m_jack_running)
+            (void) info_message("JACK sync already enabled!");
+        else
+            (void) info_message("Initialized. Running without JACK.");
+    }
     return m_jack_running;
 }
 
@@ -321,7 +322,7 @@ jack_assistant::deinit ()
         m_jack_running = false;
     }
     if (! m_jack_running)
-        (void) info_message("Deinitialized. JACK sync now disabled");
+        (void) info_message("Deinitialized. JACK sync now disabled.");
 }
 
 /**
@@ -341,8 +342,8 @@ jack_assistant::start ()
          * (void) sync();
          */
     }
-    else
-        (void) error_message("Transport Start: JACK not running!");
+    else if (rc().with_jack())
+        (void) error_message("Transport Start: JACK not running.");
 }
 
 /**
@@ -362,8 +363,8 @@ jack_assistant::stop ()
          * (void) sync();
          */
     }
-    else
-        (void) error_message("Transport Stop: JACK not running!");
+    else if (rc().with_jack())
+        (void) error_message("Transport Stop: JACK not running.");
 }
 
 /**
@@ -933,7 +934,7 @@ jack_assistant::show_statuses (unsigned bits)
          */
 
         if (bits & jsp->jf_bit)
-            (void) info_message(jsp->jf_meaning.c_str());
+            (void) info_message(jsp->jf_meaning);   // .c_str());
 
         ++jsp;
     }

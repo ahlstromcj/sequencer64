@@ -1,6 +1,6 @@
 Contributed MIDI Files
 Chris Ahlstrom
-2015-09-11 to 2015-11-28
+2015-09-11 to 2016-01-18
 
 This directory contains contributed MIDI files for examples and testing.
 Also see the test files from the midicvt as described in
@@ -105,11 +105,11 @@ by loading them into Sequencer64.
 
    k_seq.mid
 
-        A "tune" I "wrote", having a BPM of 103 (!).
+        A "tune" I "wrote", having a BPM of 103 (!), PPQN = 96 (0x60).
 
    longhair.mid
 
-        "Memories of Professor Longhair", BPM = 115.
+        "Memories of Professor Longhair", BPM = 115, PPQN = 120 (0x78).
 
    MIDIBadTrackHdr.mid:
 

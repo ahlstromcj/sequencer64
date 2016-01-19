@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-07
- * \updates       2016-01-11
+ * \updates       2016-01-18
  * \license       GNU GPLv2 or above
  *
  *  These items were moved from the globals.h module so that only the modules
@@ -132,7 +132,8 @@ extern bool strings_match (const std::string & target, const std::string & x);
  *  bytes, and is in units of microseconds-per-quarter-note (us/qn).
  *
  * \param tempo
- *      The value of the Tempo meta-event, in units of us/qn.
+ *      The value of the Tempo meta-event, in units of us/qn.  If this value
+ *      is 0, we'll get an arithmetic exception.
  *
  * \return
  *      Returns the beats per minute.  If the tempo value is too small,
@@ -148,7 +149,8 @@ inline double beats_per_minute_from_tempo (double tempo)
  *  This function is the inverse of beats_per_minute_from_tempo().
  *
  * \param bpm
- *      The value of beats-per-minute.
+ *      The value of beats-per-minute.  If this value is 0, we'll get an
+ *      arithmetic exception.
  *
  * \return
  *      Returns the tempo in qn/us.  If the bpm value is too small,
@@ -172,11 +174,12 @@ inline double tempo_from_beats_per_minute (double bpm)
 \endverbatim
  *
  * \param bpm
- *      Provides the beats-per-minute value.  No sanity check is made.
+ *      Provides the beats-per-minute value.  No sanity check is made.  If
+ *      this value is 0, we'll get an arithmetic exception.
  *
  * \param ppqn
  *      Provides the pulses-per-quarter-note value.  No sanity check is
- *      made.
+ *      made.  If this value is 0, we'll get an arithmetic exception.
  *
  * \return
  *      Returns the pulse length in microseconds.  If either parameter is
@@ -255,12 +258,7 @@ inline double delta_time_us_to_ticks (unsigned long us, int bpm, int ppqn)
  *      Returns the time value in microseconds.
  */
 
-inline double ticks_to_delta_time_us
-(
-    midipulse delta_ticks,
-    int bpm,
-    int ppqn
-)
+inline double ticks_to_delta_time_us (midipulse delta_ticks, int bpm, int ppqn)
 {
     return double(delta_ticks) * pulse_length_us(bpm, ppqn);
 }
@@ -282,11 +280,12 @@ inline double ticks_to_delta_time_us
  *  MIDI_CLOCK_IN_PPQN is 24.
  *
  * \param bpm
- *      Provides the beats-per-minute value.  No sanity check is made.
+ *      Provides the beats-per-minute value.  No sanity check is made.  If
+ *      this value is 0, we'll get an arithmetic exception.
  *
  * \param ppqn
  *      Provides the pulses-per-quarter-note value.  No sanity check is
- *      made.
+ *      made.  If this value is 0, we'll get an arithmetic exception.
  *
  * \return
  *      Returns the clock tick duration in microseconds.  If either parameter
@@ -361,7 +360,8 @@ inline double double_ticks_from_ppqn (int ppqn)
  *      The P value in the equation.
  *
  * \param bw
- *      The W value in the equation.
+ *      The W value in the equation.  If this value is 0, we'll get an
+ *      arithmetic exception (crash).
  *
  * \param measures
  *      The M value in the equation.  It defaults to 1, in case one desires a
@@ -372,13 +372,7 @@ inline double double_ticks_from_ppqn (int ppqn)
  *      equation.  If bw is 0, then 0 is returned.
  */
 
-inline midipulse measures_to_ticks
-(
-    int bpm,
-    int ppqn,
-    int bw,
-    int measures = 1
-)
+inline midipulse measures_to_ticks (int bpm, int ppqn, int bw, int measures = 1)
 {
     return (bw > 0) ? (4 * measures * bpm * ppqn / bw) : 0 ;
 }

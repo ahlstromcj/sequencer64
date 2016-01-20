@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-01-18
+ * \updates       2016-01-20
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -2495,7 +2495,7 @@ perform::sequence_key (int seq)
  *
  *  The sequence number and buss number are re 0, while the channel number is
  *  displayed re 1, unless it is an SMF 0 null channel (0xFF), in which case
- *  it is 0..
+ *  it is 0.
  *
  * \note
  *      Later, we could add the sequence hot-key to this string, though

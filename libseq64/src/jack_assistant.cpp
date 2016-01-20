@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-14
- * \updates       2016-01-19
+ * \updates       2016-01-20
  * \license       GNU GPLv2 or above
  *
  *  This module was created from code that existed in the perform object.
@@ -401,7 +401,7 @@ jack_assistant::stop ()
  * \param relocate
  *      If true (it defaults to false), then we allow the relocation of the
  *      JACK transport to the current_tick or the left tick, rather than to
- *      frame 0..
+ *      frame 0.
  */
 
 void
@@ -778,7 +778,7 @@ jack_assistant::output (jack_scratchpad & pad)
                         double size = m_jack_parent.get_right_tick() -
                             m_jack_parent.get_left_tick();
 
-                        pad.js_current_tick -= - size;
+                        pad.js_current_tick -= size;    // @change ca 2016-01-20
                     }
                     m_jack_parent.reset_sequences();
                     m_jack_parent.set_orig_ticks(long(pad.js_current_tick));

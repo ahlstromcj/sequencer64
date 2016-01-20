@@ -310,7 +310,7 @@ jack_assistant::deinit ()
         /*
          * New:  Simply to be symmetric with the startup flow.  Not yet sure
          * why jack_activate() was needed, but assume that jack_deactivate() is
-         * thus important as well.  However, commented out since not in seq24.
+         * thus important as well.
          */
 
         if (jack_deactivate(m_jack_client) != 0)

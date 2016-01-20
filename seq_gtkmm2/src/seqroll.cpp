@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-01-16
+ * \updates       2016-01-20
  * \license       GNU GPLv2 or above
  *
  */
@@ -824,7 +824,9 @@ seqroll::start_paste()
     m_drop_y = m_current_y;
     m_paste = true;
 
-    /* get the box that selected elements are in */
+    /*
+     * get the box that selected elements are in
+     */
 
     m_seq.get_clipboard_box(tick_s, note_h, tick_f, note_l);
     convert_tn_box_to_rect
@@ -833,10 +835,16 @@ seqroll::start_paste()
         m_selected.x, m_selected.y, m_selected.width, m_selected.height
     );
 
-    /* adjust for clipboard being shifted to tick 0 */
+    /*
+     * @change ca 2016-01-20
+     * Adjust for clipboard being shifted to tick 0.  Odd,
+     * "m_selected.y += (m_drop_y - m_selected.y)" is
+     * "m_selected.y = m_selected.y + (m_drop_y - m_selected.y)" is
+     * "m_drop_y", so let's do that.
+     */
 
     m_selected.x += m_drop_x;
-    m_selected.y += (m_drop_y - m_selected.y);
+    m_selected.y = m_drop_y;
 }
 
 /**

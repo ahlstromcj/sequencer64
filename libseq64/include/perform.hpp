@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-01-18
+ * \updates       2016-01-19
  * \license       GNU GPLv2 or above
  *
  *  This class still has way too many members, even with the JACK and
@@ -484,7 +484,7 @@ public:
 public:
 
     void clear_all ();
-    void launch ();
+    void launch (int ppqn);
     void finish ();
     void new_sequence (int seq);                    /* seqmenu & mainwid    */
     void add_sequence (sequence * seq, int perf);   /* midifile             */
@@ -978,6 +978,10 @@ public:
     bool perfroll_key_event (const keystroke & k, int drop_sequence);
 
 private:
+
+    /*
+     * See launch() instead.
+     */
 
     void init ();
     void launch_input_thread ();

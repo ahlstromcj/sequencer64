@@ -107,7 +107,7 @@ perfroll::perfroll
     m_growing               (false),
     m_grow_direction        (false)
 {
-    set_ppqn(ppqn);
+    set_ppqn(ppqn);                             // calls choose_ppqn(ppqn);
     for (int i = 0; i < m_sequence_max; ++i)
         m_sequence_active[i] = false;
 }

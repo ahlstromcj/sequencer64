@@ -98,7 +98,7 @@ perfedit::perfedit
     m_perfnames         (manage(new perfnames(perf(), *this, *m_vadjust))),
     m_perfroll
     (
-        manage(new perfroll(perf(), *this, *m_hadjust, *m_vadjust))
+        manage(new perfroll(perf(), *this, *m_hadjust, *m_vadjust, ppqn))
     ),
     m_perftime          (manage(new perftime(perf(), *this, *m_hadjust))),
     m_menu_snap         (manage(new Gtk::Menu())),

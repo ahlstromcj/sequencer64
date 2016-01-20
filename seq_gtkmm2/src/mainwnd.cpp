@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-01-09
+ * \updates       2016-01-19
  * \license       GNU GPLv2 or above
  *
  *  The main window holds the menu and the main controls of the application,
@@ -106,7 +106,7 @@ int mainwnd::m_sigpipe[2];
  *      ourselves, many more leaks occur.
  */
 
-mainwnd::mainwnd (perform & p, bool allowperf2)
+mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
  :
     gui_window_gtk2         (p),
     performcallback         (),
@@ -115,10 +115,14 @@ mainwnd::mainwnd (perform & p, bool allowperf2)
     m_menu_file             (manage(new Gtk::Menu())),
     m_menu_view             (manage(new Gtk::Menu())),
     m_menu_help             (manage(new Gtk::Menu())),
+    m_ppqn                  (choose_ppqn(ppqn)),
     m_main_wid              (manage(new mainwid(p))),
-    m_main_time             (manage(new maintime(p))),
-    m_perf_edit             (new perfedit(p)),
-    m_perf_edit_2           (allowperf2 ? new perfedit(p, true) : nullptr),
+    m_main_time             (manage(new maintime(p, ppqn))),
+    m_perf_edit             (new perfedit(p, allowperf2, ppqn)),
+    m_perf_edit_2
+    (
+        allowperf2 ? new perfedit(p, true, ppqn) : nullptr
+    ),
     m_options               (nullptr),
     m_main_cursor           (),
     m_button_learn          (nullptr),
@@ -132,10 +136,8 @@ mainwnd::mainwnd (perform & p, bool allowperf2)
     m_spinbutton_load_offset(nullptr),
     m_adjust_load_offset    (nullptr),
     m_entry_notes           (nullptr),
-    m_timeout_connect       (),                         // handler
-    m_ppqn                  (SEQ64_USE_DEFAULT_PPQN)
+    m_timeout_connect       ()                          // handler
 {
-
     /*
      * This provides the application icon, seen in the title bar of the
      * window decoration.

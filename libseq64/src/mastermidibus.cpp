@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-30
- * \updates       2015-11-28
+ * \updates       2016-01-19
  * \license       GNU GPLv2 or above
  *
  *  This file provides a Linux-only implementation of MIDI support.
@@ -70,6 +70,16 @@ namespace seq64
 
 /**
  *  The mastermidibus default constructor fills the array with our busses.
+ *
+ * \param ppqn
+ *      Provides the PPQN value for this object.  However, in most cases, the
+ *      default, SEQ64_USE_DEFAULT_PPQN should be specified.  Then the caller
+ *      of this constructor should call mastermidibus::set_ppqn() to set up
+ *      the proper PPQN value.
+ *
+ * \param bpm
+ *      Provides the beats per minute value, which defaults to
+ *      c_beats_per_minute.
  */
 
 mastermidibus::mastermidibus (int ppqn, int bpm)
@@ -201,7 +211,7 @@ mastermidibus::~mastermidibus ()
  */
 
 void
-mastermidibus::init ()
+mastermidibus::init (int ppqn)
 {
 #ifdef SEQ64_HAVE_LIBASOUND
     snd_seq_client_info_t * cinfo;          /* client info */
@@ -326,7 +336,12 @@ mastermidibus::init ()
         }                                       /* end loop for clients */
     }
     set_beats_per_minute(m_beats_per_minute);
-    set_ppqn(m_ppqn);
+
+    /*
+     * set_ppqn(m_ppqn);
+     */
+
+    set_ppqn(ppqn);
 
     /*
      * Get the number of MIDI input poll file descriptors.
@@ -470,7 +485,7 @@ mastermidibus::set_ppqn (int ppqn)
 {
 #ifdef SEQ64_HAVE_LIBASOUND
     automutex locker(m_mutex);
-    m_ppqn = ppqn;                                  /* circular change       */
+    m_ppqn = ppqn;
     snd_seq_queue_tempo_t * tempo;
     snd_seq_queue_tempo_alloca(&tempo);             /* allocate tempo struct */
     snd_seq_get_queue_tempo(m_alsa_seq, m_queue, tempo);

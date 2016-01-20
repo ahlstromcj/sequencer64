@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-30
- * \updates       2015-11-23
+ * \updates       2016-01-19
  * \license       GNU GPLv2 or above
  *
  *  The mastermidibus module is the Linux version of the mastermidibus module.
@@ -190,7 +190,7 @@ public:
     );
     ~mastermidibus ();
 
-    void init ();
+    void init (int ppqn);
 
     /**
      * \getter m_alsa_seq

@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-01-09
+ * \updates       2016-01-19
  * \license       GNU GPLv2 or above
  *
  *  For a quick guide to the MIDI format, see, for example:
@@ -567,7 +567,7 @@ midifile::parse_smf_1 (perform & p, int screenset, bool is_smf0)
                 RunningTime += Delta;           /* add in the time          */
                 if (m_use_default_ppqn)         /* legacy handling of ppqn  */
                 {
-                    CurrentTime = (RunningTime * m_ppqn) / ppqn;
+                    CurrentTime = RunningTime * m_ppqn / ppqn;
                     e.set_timestamp(CurrentTime);
                 }
                 else
@@ -662,15 +662,41 @@ midifile::parse_smf_1 (perform & p, int screenset, bool is_smf0)
                             }
                             else if (proprietary == c_triggers_new)
                             {
+                                /*
+                                 *  If m_ppqn isn't set to the default value,
+                                 *  then we should scale these triggers
+                                 *  accordingly, just as is done for the MIDI
+                                 *  events!  Should split this out into
+                                 *  functions, too.  Too much indenting.
+                                 */
+
                                 int num_triggers = len / 12;
-                                for (int i = 0; i < num_triggers; i++)
+                                if (m_use_default_ppqn)
                                 {
-                                    midilong on = read_long();
-                                    midilong off = read_long();
-                                    midilong length = off - on + 1;
-                                    midilong offset = read_long();
-                                    len -= 12;
-                                    seq.add_trigger(on, length, offset, false);
+                                    for (int i = 0; i < num_triggers; i++)
+                                    {
+                                        midilong on = read_long();
+                                        on = on * m_ppqn / ppqn;
+                                        midilong off = read_long();
+                                        off = off * m_ppqn / ppqn;
+                                        midilong length = off - on + 1;
+                                        midilong offset = read_long();
+                                        offset = offset * m_ppqn / ppqn;
+                                        len -= 12;
+                                        seq.add_trigger(on, length, offset, false);
+                                    }
+                                }
+                                else
+                                {
+                                    for (int i = 0; i < num_triggers; i++)
+                                    {
+                                        midilong on = read_long();
+                                        midilong off = read_long();
+                                        midilong length = off - on + 1;
+                                        midilong offset = read_long();
+                                        len -= 12;
+                                        seq.add_trigger(on, length, offset, false);
+                                    }
                                 }
                             }
                             else if (proprietary == c_musickey)

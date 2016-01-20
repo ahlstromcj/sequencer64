@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-01-15
+ * \updates       2016-01-19
  * \license       GNU GPLv2 or above
  *
  *  The main windows is known as the "Patterns window" or "Patterns
@@ -39,8 +39,9 @@
 #include <gdkmm/cursor.h>
 #include <gtkmm/window.h>
 
-#include "gui_window_gtk2.hpp"
-#include "perform.hpp"                 // perform and performcallback
+#include "app_limits.h"                 // SEQ64_USE_DEFAULT_PPQN
+#include "gui_window_gtk2.hpp"          // seq64::qui_window_gtk2
+#include "perform.hpp"                  // seq64::perform and performcallback
 
 namespace Gtk
 {
@@ -89,6 +90,15 @@ private:
     Gtk::Menu * m_menu_file;
     Gtk::Menu * m_menu_view;
     Gtk::Menu * m_menu_help;
+
+    /**
+     *  Saves the PPQN value obtained from the MIDI file (or the default
+     *  value, the global ppqn, if SEQ64_USE_DEFAULT_PPQN was specified in
+     *  reading the MIDI file.  We need it early here to be able to pass it
+     *  along to child objects.
+     */
+
+    int m_ppqn;
 
     /**
      *  The biggest sub-components of mainwnd.  The first is the Patterns
@@ -187,17 +197,14 @@ private:
 
     sigc::connection m_timeout_connect;
 
-    /**
-     *  Saves the PPQN value obtained from the MIDI file (or the default
-     *  value, the global ppqn, if SEQ64_USE_DEFAULT_PPQN was specified in
-     *  reading the MIDI file.
-     */
-
-    int m_ppqn;
-
 public:
 
-    mainwnd (perform & a_p, bool allowperf2 = true);
+    mainwnd
+    (
+        perform & a_p,
+        bool allowperf2 = true,
+        int ppqn = SEQ64_USE_DEFAULT_PPQN
+    );
     ~mainwnd ();
 
     void open_file (const std::string &);

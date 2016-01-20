@@ -45,11 +45,11 @@
 
 #include "cmdlineopts.hpp"              /* command-line functions           */
 #include "file_functions.hpp"           /* seq64::file_accessible()         */
-#include "font.hpp"
-#include "gui_assistant_gtk2.hpp"
+#include "font.hpp"                     /* seq64::font (colored pixmaps)    */
+#include "gui_assistant_gtk2.hpp"       /* seq64::gui_assistant_gtk2        */
 #include "lash.hpp"                     /* seq64::lash_driver functions     */
 #include "mainwid.hpp"                  /* needed to fulfill mainwnd        */
-#include "mainwnd.hpp"
+#include "mainwnd.hpp"                  /* the main window of sequencer64   */
 
 /**
  *  The standard C/C++ entry point to this application.  This first thing
@@ -95,14 +95,19 @@ main (int argc, char * argv [])
 
     if (! is_help)
     {
-        p.launch();                             /* set up performance       */
+        p.launch(seq64::usr().midi_ppqn());     /* set up performance       */
 
         /*
          * Push the mainwnd window onto the stack, with an option for allowing
-         * a second perfedit to be created.
+         * a second perfedit to be created.  Also be sure to pass along the
+         * PPQN value, which might be different than the default (192), and
+         * affects some of the child objects of mainwnd.
          */
 
-        seq64::mainwnd seq24_window(p, seq64::usr().allow_two_perfedits());
+        seq64::mainwnd seq24_window
+        (
+            p, seq64::usr().allow_two_perfedits(), seq64::usr().midi_ppqn()
+        );
         if (optionindex < argc)                 /* MIDI filename provided?  */
         {
             std::string midifilename = argv[optionindex];

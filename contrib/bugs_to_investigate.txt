@@ -1,6 +1,6 @@
 Bugs and Additional Upgrade Ideas
 Chris Ahlstrom
-2015-10-27 to 2016-01-18
+2015-10-27 to 2016-01-19
 
 In no particular order...  "y" means "in progress", and "x" means it is
 basically done.
@@ -265,26 +265,26 @@ x  I forgotten instructions of use. 'p' to activate paint, 'P' (shift p) to
    > +             set_adding( false );
    > +             ret = true;
    > +         }
-   >   
+   >
    >           if ( a_p0->state & GDK_CONTROL_MASK ){
       We have now incorporated this feature (2015-11-01).
 
 
 BUG REPORTS:
 
-Date: Sat, 19 Dec 2015 20:48:34 -0800                                             
-From: Tim Deagan <notifications@github.com>                                       
-To: ahlstromcj/sequencer64 <sequencer64@noreply.github.com>                       
-Cc: "C. Ahlstrom" <ahlstromcj@gmail.com>                                          
-Subject: Re: [sequencer64] Install-recursive and .seq24rc equivalent (#2)         
+Date: Sat, 19 Dec 2015 20:48:34 -0800
+From: Tim Deagan <notifications@github.com>
+To: ahlstromcj/sequencer64 <sequencer64@noreply.github.com>
+Cc: "C. Ahlstrom" <ahlstromcj@gmail.com>
+Subject: Re: [sequencer64] Install-recursive and .seq24rc equivalent (#2)
 
-Sorry to be so slow, all my free time is spent trying to get my upcoming          
-book across its jan15 finish line.  But (for deeply nerdy reasons,) I             
-always spend a bunch of my christmas vacation time learning new source            
-code, so I've set up a Netbeans environment for sequencer64 (I have to           
-confess I'm a Windows developer for a living and really gravitate towards         
-IDEs.  I've worked in linux for decades, but linux as an IDE breaks my            
-heart.)                                                                           
+Sorry to be so slow, all my free time is spent trying to get my upcoming
+book across its jan15 finish line.  But (for deeply nerdy reasons,) I
+always spend a bunch of my christmas vacation time learning new source
+code, so I've set up a Netbeans environment for sequencer64 (I have to
+confess I'm a Windows developer for a living and really gravitate towards
+IDEs.  I've worked in linux for decades, but linux as an IDE breaks my
+heart.)
 
 In any event, after some code surfing and debugging, it looks like a lot of
 the odd behavior I experience with mute groups is possibly because of the
@@ -298,5 +298,63 @@ group to the first screen.
 
 I'll try i == m_screenset as an alternative sometime in the next few days.
 I just wanted to let you know I was still thinking about this.
+
+
+
+
+Date: Tue, 19 Jan 2016 14:47:50 -0800
+From: Daniel Appelt <notifications@github.com>
+To: ahlstromcj/sequencer64 <sequencer64@noreply.github.com>
+Subject: [sequencer64] Jack Transport Master behaviour is very "jumpy" (#10)
+
+This report might be seen as a follow up to #8 I am trying to use sequencer64 as
+transport master for jack under Arch Linux When I hit play in sequencer64, the
+playroll visualization in the top right corner of the main window is jumping
+around very wildly
+
+In the simplest setup, I just start these applications:
+
+- jack2 via jackdbus
+- qjackctl
+- sequencer64
+
+In the options, I have just ticked the checkbox for "Transport Master" If I hit
+play in sequencer64, I get the jumpy behavior as described above There is no
+position indicator moving at all in the editor window In qjackctl, the BBT display
+is also jumping, but that might be more or less okay as the value is at least
+steadily increasing If I go down to 20bpm in sequencer64, suddenly I can see the
+position indicator jumping around in the pattern editor
+
+If, in addition, I send Midi clock signals from sequencer64 to Rebirth (running
+under wine), Rebirth is syncing to a tempo of 500bpm while I was expecting to see 
+104bpm which I have set in sequencer64 This might explain the jumpy behavior
+described above The same setup works fine without synchronizing the jack transport
+that is if no jack transport checkbox is ticked in the options
+
+In seq24, jack transport synchronization worked better (mostly) Seq24 does not
+send correct Midi clock signals though
+
+
+
+Date: Tue, 19 Jan 2016 15:28:23 -0800
+From: Daniel Appelt <notifications@github.com>
+To: ahlstromcj/sequencer64 <sequencer64@noreply.github.com>
+Subject: Re: [sequencer64] Jack Transport Master behaviour is very "jumpy" (#10)
+
+I just did a further test with the metronome
+[klick](http://das.nasophon.de/klick/). In addition to the simple setup, I start
+it like this:
+
+`klick -j -P`
+
+where -j means "follow jack transport BBT info (no tempo map)". This indeed leads
+to the correct result with respect to the metronome!
+
+So, for now, this just leaves me with two issues when using the jack transport
+master option:
+
+- Midi clock signals seem to be wrong
+- visualisations are jumpy
+
 
 # vim: sw=4 ts=4 wm=4 et ft=sh

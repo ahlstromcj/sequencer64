@@ -96,7 +96,7 @@ perform::perform (gui_assistant & mygui, int ppqn)
     m_was_active_perf           (),         // boolean array
     m_was_active_names          (),         // boolean array
     m_sequence_state            (),         // boolean array
-    m_master_bus                (),
+    m_master_bus                (),         // will call its init() later
     m_out_thread                (),
     m_in_thread                 (),
     m_out_thread_launched       (false),
@@ -180,12 +180,18 @@ perform::~perform ()
 /**
  *  Calls the initialization and thread-launching functions.  This function is
  *  called in main().  We collected all the calls here as a simplification.
+ *  This function must be called after the perform constructor and after the
+ *  configuration file and command-line configuration overrides.
+ *
+ * \param ppqn
+ *      Provides the PPQN value, which is either the default value (192) or is
+ *      read from the "user" configuration file.
  */
 
 void
-perform::launch ()
+perform::launch (int ppqn)
 {
-    init();
+    m_master_bus.init(ppqn);
     launch_input_thread();
     launch_output_thread();
 #ifdef SEQ64_JACK_SUPPORT
@@ -206,14 +212,15 @@ perform::finish ()
 
 /**
  *  Initializes the master MIDI bus.  Who calls this routine?  The main()
- *  routine of the application.
+ *  routine of the application, indirectly, through the launch() function.
+ *  No longer needed; now see the launch function.
+ *
+ * void
+ * perform::init ()
+ * {
+ *     m_master_bus.init();
+ * }
  */
-
-void
-perform::init ()
-{
-    m_master_bus.init();
-}
 
 /**
  *  Initializes JACK support, if SEQ64_JACK_SUPPORT is defined.  Who calls

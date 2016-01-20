@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-07
+ * \updates       2016-01-20
  * \license       GNU GPLv2 or above
  *
  */
@@ -117,6 +117,13 @@ private:
      */
 
     const int m_box_less_pill;
+
+    /**
+     *  Saves the tick value for on_expose_event().  It might actually be
+     *  useful after all.  And the overhead is tiny.
+     */
+
+    midipulse m_tick;
 
     /**
      *  Provides the active PPQN value.  While this is effectively a constant

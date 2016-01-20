@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-29
+ * \updates       2016-01-20
  * \license       GNU GPLv2 or above
  *
  *  The "time" window is the horizontal bar at the upper right of the main
@@ -76,6 +76,7 @@ maintime::maintime
     m_flash_height          (m_window_y - 4),
     m_flash_x               (m_window_x / m_beat_width),
     m_box_less_pill         (m_window_x - m_pill_width - 1),
+    m_tick                  (0),
     m_ppqn                  (0)
 {
     m_ppqn = choose_ppqn(ppqn);
@@ -114,9 +115,10 @@ maintime::on_realize ()
 int
 maintime::idle_progress (midipulse ticks)
 {
-    int tick_x = ((ticks % m_ppqn) * m_box_width) / m_ppqn;
-    int beat_x = (((ticks / m_beat_width) % m_ppqn) * m_box_less_pill) / m_ppqn;
-    int bar_x  = (((ticks / m_bar_width) % m_ppqn) * m_box_less_pill) / m_ppqn;
+    int tick_x = (ticks % m_ppqn) * m_box_width / m_ppqn;
+    int beat_x = ((ticks / m_beat_width) % m_ppqn) * m_box_less_pill / m_ppqn;
+    int bar_x  = ((ticks / m_bar_width)  % m_ppqn) * m_box_less_pill / m_ppqn;
+    m_tick = ticks;
     clear_window();
     draw_rectangle(black(), 0, 0, m_box_width, m_box_height, false);
     if (tick_x <= m_flash_x)                                          // flash
@@ -140,12 +142,16 @@ maintime::idle_progress (midipulse ticks)
 /**
  *  This function merely idles.  We don't need the m_tick member, the function
  *  works as well if 0 is passed in.  We've removed m_tick permanently.
+ *
+ *  Actually, it might be useful after all, to avoid flickering under JACK
+ *  transport.  Let's put it back for now.  (It doesn't help, but we will
+ *  leave it in, the overhead is small.)
  */
 
 bool
 maintime::on_expose_event (GdkEventExpose * a_e)
 {
-    idle_progress(0);               /* idle_progress(m_tick); */
+    idle_progress(m_tick);               /* idle_progress(0); */
     return true;
 }
 

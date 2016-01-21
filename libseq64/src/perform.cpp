@@ -134,13 +134,13 @@ perform::perform (gui_assistant & mygui, int ppqn)
 #endif
     m_notify                    ()      // vector of pointers, public!
 {
-    for (int i = 0; i < m_sequence_max; i++)
+    for (int i = 0; i < m_sequence_max; ++i)
     {
         m_seqs[i] = nullptr;
         m_seqs_active[i] = false;
     }
     midi_control zero;                          /* all members false or 0   */
-    for (int i = 0; i < c_midi_controls; i++)
+    for (int i = 0; i < c_midi_controls; ++i)
     {
         m_midi_cc_toggle[i] = zero;
         m_midi_cc_on[i] = zero;
@@ -262,12 +262,12 @@ void
 perform::clear_all ()
 {
     reset_sequences();
-    for (int i = 0; i < m_sequence_max; i++)
+    for (int i = 0; i < m_sequence_max; ++i)
         if (is_active(i))
             delete_sequence(i);             /* can set "is modified"    */
 
     std::string e;                          /* an empty string          */
-    for (int i = 0; i < m_max_sets; i++)
+    for (int i = 0; i < m_max_sets; ++i)
         set_screen_set_notepad(i, e);
 
     is_modified(false);                     /* new, we start afresh     */
@@ -348,7 +348,7 @@ perform::select_group_mute (int a_g_mute)
     int k = m_playscreen_offset;
     if (m_mode_group_learn)
     {
-        for (int i = 0; i < m_seqs_in_set; i++)
+        for (int i = 0; i < m_seqs_in_set; ++i)
         {
             if (is_active(i+k))
                 m_mute_group[i+j] = m_seqs[i+k]->get_playing();
@@ -418,7 +418,7 @@ perform::select_mute_group (int a_group)
      */
 
     m_mute_group_selected = group;
-    for (int i = 0; i < m_seqs_in_set; i++)
+    for (int i = 0; i < m_seqs_in_set; ++i)
     {
         if ((m_mode_group_learn) && (is_active(i + k)))
             m_mute_group[i+j] = m_seqs[i+k]->get_playing();
@@ -437,9 +437,9 @@ perform::mute_group_tracks ()
 {
     if (m_mode_group)
     {
-        for (int i = 0; i < m_seqs_in_set; i++)
+        for (int i = 0; i < m_seqs_in_set; ++i)
         {
-            for (int j = 0; j < m_seqs_in_set; j++)
+            for (int j = 0; j < m_seqs_in_set; ++j)
             {
                 if (is_active(i * m_seqs_in_set + j))
                 {
@@ -475,7 +475,7 @@ perform::select_and_mute_group (int group)
 void
 perform::mute_all_tracks ()
 {
-    for (int i = 0; i < m_sequence_max; i++)    // TRY sequence_count()
+    for (int i = 0; i < m_sequence_max; ++i)    // TRY sequence_count()
     {
         if (is_active(i))
             m_seqs[i]->set_song_mute(true);
@@ -640,7 +640,7 @@ perform::add_sequence (sequence * seq, int prefnum)
 
     if (is_active(prefnum))                 /* look for next inactive one   */
     {
-        for (int i = prefnum; i < m_sequence_max; i++)
+        for (int i = prefnum; i < m_sequence_max; ++i)
         {
             if (! is_active(i))
             {
@@ -1171,7 +1171,7 @@ perform::set_playing_screenset ()
      * This loop could be changed to avoid the multiplication.
      */
 
-    for (int j, i = 0; i < m_seqs_in_set; i++)
+    for (int j, i = 0; i < m_seqs_in_set; ++i)
     {
         j = i + m_playscreen_offset;    /* m_playing_screen * m_seqs_in_set */
         if (is_active(j))
@@ -1183,10 +1183,8 @@ perform::set_playing_screenset ()
 }
 
 /**
- *  Starts the playing of all the patterns/sequences.
- *
- *  This function just runs down the list of sequences and has them dump
- *  their events.
+ *  Starts the playing of all the patterns/sequences.  This function just runs
+ *  down the list of sequences and has them dump their events.
  *
  * \param tick
  *      Provides the tick at which to start playing.
@@ -1195,8 +1193,8 @@ perform::set_playing_screenset ()
 void
 perform::play (midipulse tick)
 {
-    m_tick = tick;
-    for (int i = 0; i < m_sequence_max; i++)
+    m_tick = tick;                      // printf("play [%ld]\n", tick);
+    for (int i = 0; i < m_sequence_max; ++i)
     {
         if (is_active(i))
         {
@@ -1204,15 +1202,16 @@ perform::play (midipulse tick)
              * Skip sequences that have no playable MIDI events.
              */
 
-            if (m_seqs[i]->event_count() == 0)
-                continue;
-
-            if (m_seqs[i]->check_queued_tick(tick))
+            sequence * s = m_seqs[i];
+            if (s->event_count() > 0)
             {
-                m_seqs[i]->play(m_seqs[i]->get_queued_tick()-1, m_playback_mode);
-                m_seqs[i]->toggle_playing();
+                if (s->check_queued_tick(tick))
+                {
+                    s->play(s->get_queued_tick() - 1, m_playback_mode);
+                    s->toggle_playing();
+                }
+                s->play(tick, m_playback_mode);
             }
-            m_seqs[i]->play(tick, m_playback_mode);
         }
     }
     m_master_bus.flush();               /* flush the MIDI buss  */
@@ -1228,7 +1227,7 @@ perform::play (midipulse tick)
 void
 perform::set_orig_ticks (midipulse tick)
 {
-    for (int i = 0; i < m_sequence_max; i++)
+    for (int i = 0; i < m_sequence_max; ++i)
     {
         if (is_active(i))
             m_seqs[i]->set_orig_tick(tick);
@@ -1265,7 +1264,7 @@ perform::move_triggers (bool direction)
     if (m_left_tick < m_right_tick)
     {
         midipulse distance = m_right_tick - m_left_tick;
-        for (int i = 0; i < m_sequence_max; i++)
+        for (int i = 0; i < m_sequence_max; ++i)
         {
             if (is_active(i))
                 m_seqs[i]->move_triggers(m_left_tick, distance, direction);
@@ -1282,7 +1281,7 @@ perform::move_triggers (bool direction)
 void
 perform::push_trigger_undo ()
 {
-    for (int i = 0; i < m_sequence_max; i++)
+    for (int i = 0; i < m_sequence_max; ++i)
     {
         if (is_active(i))
             m_seqs[i]->push_trigger_undo();
@@ -1297,7 +1296,7 @@ perform::push_trigger_undo ()
 void
 perform::pop_trigger_undo ()
 {
-    for (int i = 0; i < m_sequence_max; i++)
+    for (int i = 0; i < m_sequence_max; ++i)
     {
         if (is_active(i))
             m_seqs[i]->pop_trigger_undo();
@@ -1319,7 +1318,7 @@ perform::copy_triggers ()
     if (m_left_tick < m_right_tick)
     {
         midipulse distance = m_right_tick - m_left_tick;
-        for (int i = 0; i < m_sequence_max; i++)
+        for (int i = 0; i < m_sequence_max; ++i)
         {
             if (is_active(i))
                 m_seqs[i]->copy_triggers(m_left_tick, distance);
@@ -1489,7 +1488,7 @@ perform::inner_stop ()
 void
 perform::off_sequences ()
 {
-    for (int i = 0; i < m_sequence_max; i++)
+    for (int i = 0; i < m_sequence_max; ++i)
     {
         if (is_active(i))
             m_seqs[i]->set_playing(false);
@@ -1504,7 +1503,7 @@ perform::off_sequences ()
 void
 perform::all_notes_off ()
 {
-    for (int i = 0; i < m_sequence_max; i++)
+    for (int i = 0; i < m_sequence_max; ++i)
     {
         if (is_active(i))
             m_seqs[i]->off_playing_notes();
@@ -1515,24 +1514,26 @@ perform::all_notes_off ()
 /**
  *  For all active patterns/sequences, get its playing state, turn off the
  *  playing notes, set playing to false, zero the markers, and, if not in
- *  playback mode, restore the playing state.
+ *  playback mode, restore the playing state.  Note that these calls could be
+ *  folded into one member function of the sequence class.
  *
- *  Then flush the MIDI buss.
+ *  Finally, flush the MIDI buss.
  */
 
 void
 perform::reset_sequences ()
 {
-    for (int i = 0; i < m_sequence_max; i++)
+    for (int i = 0; i < m_sequence_max; ++i)
     {
         if (is_active(i))
         {
-            bool state = m_seqs[i]->get_playing();
-            m_seqs[i]->off_playing_notes();
-            m_seqs[i]->set_playing(false);
-            m_seqs[i]->zero_markers();
+            sequence * s = m_seqs[i];
+            bool state = s->get_playing();
+            s->off_playing_notes();
+            s->set_playing(false);
+            s->zero_markers();
             if (! m_playback_mode)
-                m_seqs[i]->set_playing(state);
+                s->set_playing(state);
         }
     }
     m_master_bus.flush();              // flush the MIDI bus
@@ -1601,7 +1602,7 @@ midipulse
 perform::get_max_trigger ()
 {
     midipulse result = 0;
-    for (int i = 0; i < m_sequence_max; i++)
+    for (int i = 0; i < m_sequence_max; ++i)
     {
         if (is_active(i))
         {
@@ -1655,6 +1656,34 @@ output_thread_func (void * myperf)
     return 0;
 }
 
+#ifdef USE_TIMESPEC_DIFF_CALCULATION
+
+/**
+ *  Calculates the difference between two timespec values, and returns in as a
+ *  microsecond value.  This function isn't really necessary, since the seconds
+ *  difference will never be negative (time_t might be unsigned), and the
+ *  nanoseconds is a signed quantity.
+ */
+
+static long
+timespec_diff_us
+(
+    struct timespec & start,
+    struct timespec & stop
+)
+{
+    long secdiff  = stop.tv_sec  - start.tv_sec;
+    long nsecdiff = stop.tv_nsec - start.tv_nsec;
+    if (nsecdiff < 0)
+    {
+        secdiff -= 1;
+        nsecdiff += 1000000000;
+    }
+    return (secdiff * 1000000) + (nsecdiff / 1000);
+}
+
+#endif  // USE_TIMESPEC_DIFF_CALCULATION
+
 /**
  *  Performance output function.  This function is called by the free function
  *  output_thread_func().  Here's how it works:
@@ -1667,11 +1696,11 @@ perform::output_func ()
 {
     while (m_outputing)
     {
-        m_condition_var.lock();         // printf ("waiting for signal\n");
+        m_condition_var.lock();             // printf ("waiting for signal\n");
         while (! m_running)
         {
             m_condition_var.wait();
-            if (! m_outputing)          // if stopping, then kill thread
+            if (! m_outputing)              // if stopping, then kill thread
                 break;
         }
         m_condition_var.unlock();
@@ -1717,7 +1746,7 @@ perform::output_func ()
 
         /*
          * If we are in the performance view (song editor), we care about
-         * starting from the offset.
+         * starting from the m_starting_tick offset.
          */
 
 #ifdef SEQ64_JACK_SUPPORT
@@ -1769,10 +1798,17 @@ perform::output_func ()
              */
 
 #ifndef PLATFORM_WINDOWS
+
             clock_gettime(CLOCK_REALTIME, &current);
+
+#ifdef USE_TIMESPEC_DIFF_CALCULATION
+            long delta_us = timespec_diff_us(last, current);
+#else
             delta.tv_sec  = current.tv_sec  - last.tv_sec;
             delta.tv_nsec = current.tv_nsec - last.tv_nsec;
             long delta_us = (delta.tv_sec * 1000000) + (delta.tv_nsec / 1000);
+#endif
+
 #else
             current = timeGetTime();
             delta = current - last;
@@ -1990,7 +2026,7 @@ perform::output_func ()
         if (rc().stats())
         {
             printf("\n\n-- trigger width --\n");
-            for (int i = 0; i < 100; i++)
+            for (int i = 0; i < 100; ++i)
             {
                 printf("[%3d][%8ld]\n", i * 100, stats_all[i]);
             }
@@ -2000,7 +2036,7 @@ perform::output_func ()
             (
                 "optimal: [%d us]\n", int(clock_tick_duration_bogus(bpm, m_ppqn))
             );
-            for (int i = 0; i < 100; i++)
+            for (int i = 0; i < 100; ++i)
             {
                 printf("[%3d][%8ld]\n", i * 300, stats_clock[i]);
             }
@@ -2216,7 +2252,7 @@ perform::input_func ()
                         }
                         else
                         {
-                            for (int i = 0; i < c_midi_controls; i++)
+                            for (int i = 0; i < c_midi_controls; ++i)
                             {
                                 midibyte data[2] = { 0, 0 };
                                 midibyte status = ev.get_status();
@@ -2290,7 +2326,7 @@ perform::input_func ()
 void
 perform::save_playing_state ()
 {
-    for (int i = 0; i < m_sequence_max; i++)
+    for (int i = 0; i < m_sequence_max; ++i)
     {
         if (is_active(i))
             m_sequence_state[i] = m_seqs[i]->get_playing();
@@ -2307,7 +2343,7 @@ perform::save_playing_state ()
 void
 perform::restore_playing_state ()
 {
-    for (int i = 0; i < m_sequence_max; i++)
+    for (int i = 0; i < m_sequence_max; ++i)
     {
         if (is_active(i))
             m_seqs[i]->set_playing(m_sequence_state[i]);

@@ -274,13 +274,34 @@ private:
     midipulse m_starting_tick;
 
     /**
-     *  MIDI Clock support.
+     *  MIDI Clock support.  The m_tick member holds the tick to be used in
+     *  displaying the progress bars and the maintime pill.
      */
 
     midipulse m_tick;
+
+    /**
+     *  More MIDI clock support.
+     */
+
     bool m_usemidiclock;
+
+    /**
+     *  More MIDI clock support.
+     */
+
     bool m_midiclockrunning;            // stopped or started
+
+    /**
+     *  More MIDI clock support.
+     */
+
     int m_midiclocktick;
+
+    /**
+     *  More MIDI clock support.
+     */
+
     int m_midiclockpos;
 
 private:

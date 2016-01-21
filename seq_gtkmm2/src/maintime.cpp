@@ -115,17 +115,23 @@ maintime::on_realize ()
 int
 maintime::idle_progress (midipulse ticks)
 {
-    int tick_x = (ticks % m_ppqn) * m_box_width / m_ppqn;
-    int beat_x = ((ticks / m_beat_width) % m_ppqn) * m_box_less_pill / m_ppqn;
-    int bar_x  = ((ticks / m_bar_width)  % m_ppqn) * m_box_less_pill / m_ppqn;
-    m_tick = ticks;
-    clear_window();
-    draw_rectangle(black(), 0, 0, m_box_width, m_box_height, false);
-    if (tick_x <= m_flash_x)                                          // flash
-        draw_rectangle(grey(), 2, 2, m_flash_width, m_flash_height);
+    if (ticks > 0)
+    {
+        if (ticks != m_tick)
+            printf("idle_progress(%ld)\n", long(ticks));
 
-    draw_rectangle(black(), beat_x + 2, 2, m_pill_width, m_flash_height);
-    draw_rectangle(bar_x + 2, 2, m_pill_width, m_flash_height);
+        int tick_x = (ticks % m_ppqn) * m_box_width / m_ppqn;
+        int beat_x = ((ticks / m_beat_width) % m_ppqn) * m_box_less_pill / m_ppqn;
+        int bar_x  = ((ticks / m_bar_width)  % m_ppqn) * m_box_less_pill / m_ppqn;
+        m_tick = ticks;
+        clear_window();
+        draw_rectangle(black(), 0, 0, m_box_width, m_box_height, false);
+        if (tick_x <= m_flash_x)                                          // flash
+            draw_rectangle(grey(), 2, 2, m_flash_width, m_flash_height);
+
+        draw_rectangle(black(), beat_x + 2, 2, m_pill_width, m_flash_height);
+        draw_rectangle(bar_x + 2, 2, m_pill_width, m_flash_height);
+    }
     return true;
 }
 

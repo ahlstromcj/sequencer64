@@ -70,7 +70,6 @@ class perform;                          /* jack_assistant parent is perform */
  *  perform and jack_assistant object.  The jack_assistant class already
  *  has access to the members of perform, but it needs access to and
  *  modification of local variables in perform::output_func().
- *
  *  This scratchpad is useful even if JACK support is not enabled.
  */
 

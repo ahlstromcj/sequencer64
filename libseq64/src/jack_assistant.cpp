@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-14
- * \updates       2016-01-20
+ * \updates       2016-01-21
  * \license       GNU GPLv2 or above
  *
  *  This module was created from code that existed in the perform object.
@@ -64,11 +64,11 @@ jack_assistant::jack_assistant (perform & parent, int ppqn)
  :
     m_jack_parent               (parent),
     m_jack_client               (nullptr),
-    m_jack_frame_current        (),
-    m_jack_frame_last           (),
+    m_jack_frame_current        (0),
+    m_jack_frame_last           (0),
     m_jack_pos                  (),
-    m_jack_transport_state      (),
-    m_jack_transport_state_last (),
+    m_jack_transport_state      (JackTransportStopped),
+    m_jack_transport_state_last (JackTransportStopped),
     m_jack_tick                 (0.0),
 #ifdef SEQ64_JACK_SESSION
     m_jsession_ev               (nullptr),
@@ -277,7 +277,7 @@ jack_assistant::init ()
             return error_message("Cannot activate as JACK client");
 
         if (m_jack_running)
-            (void) info_message("Initialized. JACK sync now enabled.");
+            (void) info_message("JACK sync now enabled.");
         else
             (void) error_message("Initialization error. JACK sync not enabled.");
     }
@@ -322,7 +322,7 @@ jack_assistant::deinit ()
         m_jack_running = false;
     }
     if (! m_jack_running)
-        (void) info_message("Deinitialized. JACK sync now disabled.");
+        (void) info_message("JACK sync now disabled.");
 }
 
 /**
@@ -711,21 +711,7 @@ jack_assistant::output (jack_scratchpad & pad)
         double jack_ticks_delta = 0.0;
         pad.js_init_clock = false;      // no init until we get a good lock
         m_jack_transport_state = jack_transport_query(m_jack_client, &m_jack_pos);
-
-        /*
-         * TODO:  Check for m_jack_pos->valid field.  Check for
-         *        m_jack_transport_state == JackTransportRolling?
-         *        m_jack_transport_state == JackTransportStopped?
-         */
-
-        m_jack_frame_current =
-            jack_get_current_transport_frame(m_jack_client);
-
-        /*
-         * TODO:
-         *      Need to verify the m_jack_pos.frame_rate is > 0!
-         *      Same for m_jack_pos.ticks_per_beat and m_jack_pos.beat_type.
-         */
+        m_jack_frame_current = jack_get_current_transport_frame(m_jack_client);
 
         bool ok = m_jack_pos.frame_rate != 0;           // > 0;
         if (! ok)
@@ -1197,7 +1183,7 @@ jack_shutdown_callback (void * arg)
 void
 print_jack_pos (jack_position_t * pos)
 {
-    return;                                              /* tricky! */
+#ifdef ALLOW_PLATFORM_DEBUG
     printf
     (
         "print_jack_pos()\n"
@@ -1207,14 +1193,16 @@ print_jack_pos (jack_position_t * pos)
         "    bar_start_tick   [%f]\n"
         "    beats_per_bar    [%f]\n"
         "    beat_type        [%f]\n"
-        "    ticks_per_beat   [%f]\n"
+        "    ticks_per_beat   [%f]\n"       // changes from 192 to 1920!
         "    beats_per_minute [%f]\n"
         "    frame_time       [%f]\n"
-        "    next_time        [%f]\n",
+        "    frame_rate       [%f]\n",
+//      "    next_time        [%f]\n",      // an enormous number!
         pos->bar, pos->beat, pos->tick, pos->bar_start_tick, pos->beats_per_bar,
         pos->beat_type, pos->ticks_per_beat, pos->beats_per_minute,
-        pos->frame_time, pos->next_time
+        pos->frame_time, pos->frame_rate    // , pos->next_time
     );
+#endif
 }
 
 #endif  // SEQ64_JACK_SUPPORT

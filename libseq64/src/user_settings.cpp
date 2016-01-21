@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-23
- * \updates       2015-11-26
+ * \updates       2016-01-21
  * \license       GNU GPLv2 or above
  *
  *  Note that this module also sets the remaining legacy global variables, so
@@ -857,7 +857,7 @@ user_settings::zoom (int value)
 void
 user_settings::midi_ppqn (int value)
 {
-    if (value >= 96 && value <= 960)
+    if (value >= SEQ64_MINIMUM_PPQN && value <= SEQ64_MAXIMUM_PPQN)
     {
         m_midi_ppqn = value;
 

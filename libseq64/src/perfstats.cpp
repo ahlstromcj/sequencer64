@@ -24,14 +24,13 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2016-01-17
- * \updates       2016-01-17
+ * \updates       2016-01-18
  * \license       GNU GPLv2 or above
  *
  *  This class was created to reduce the clutter in the perform output
  *  function.
  */
 
-// #include <sched.h>
 #include <stdio.h>
 
 #ifndef PLATFORM_WINDOWS
@@ -270,7 +269,9 @@ perfstats::sleep (long delta_us)
     else
     {
         if (m_using_statistics)
+        {
             errprint("Underrun");
+        }
     }
 }
 

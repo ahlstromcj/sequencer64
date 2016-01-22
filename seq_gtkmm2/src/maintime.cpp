@@ -117,8 +117,8 @@ maintime::idle_progress (midipulse ticks)
 {
     if (ticks > 0)
     {
-        if (ticks != m_tick)
-            printf("idle_progress(%ld)\n", long(ticks));
+//      if (ticks != m_tick)
+//          printf("idle_progress(%ld)\n", long(ticks));
 
         int tick_x = (ticks % m_ppqn) * m_box_width / m_ppqn;
         int beat_x = ((ticks / m_beat_width) % m_ppqn) * m_box_less_pill / m_ppqn;

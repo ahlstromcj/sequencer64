@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-01-20
+ * \updates       2016-01-21
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -43,6 +43,12 @@
 #include "keystroke.hpp"
 #include "midibus.hpp"
 #include "perform.hpp"
+
+/*
+ * -nan(0x8000000000000)
+ */
+
+#define SEQ64_JACK_NAN      0x8000000000000
 
 namespace seq64
 {
@@ -1835,12 +1841,10 @@ perform::output_func ()
             if (m_midiclockpos >= 0)
             {
                 delta_tick = 0;
-                pad.js_clock_tick = pad.js_current_tick =
-                    pad.js_total_tick = m_midiclockpos;
+                pad.js_clock_tick = pad.js_current_tick = pad.js_total_tick =
+                    m_midiclockpos;
 
                 m_midiclockpos = -1;
-
-                // init_clock = true;
             }
 
 #ifdef SEQ64_JACK_SUPPORT
@@ -1875,6 +1879,8 @@ perform::output_func ()
             }
             if (pad.js_dumping)
             {
+                /* HISSSSS */
+
                 if (m_looping && m_playback_mode)
                 {
                     if (pad.js_current_tick >= get_right_tick())
@@ -1889,6 +1895,16 @@ perform::output_func ()
                             double(get_left_tick()) + leftover_tick;
                     }
                 }
+
+                /*
+                 * Under the debugger, we can get -nan(0x8000000000000) here.
+                 * This seems to be accompanied by a jump in the progress bars
+                 * and pill.
+                 */
+
+//              if (pad.js_current_tick == SEQ64_JACK_NAN)
+//              printf("play(%ld)\n", long(pad.js_current_tick));
+
                 play(long(pad.js_current_tick));                // play!
                 m_master_bus.clock(long(pad.js_clock_tick));    // MIDI clock
                 if (rc().stats())

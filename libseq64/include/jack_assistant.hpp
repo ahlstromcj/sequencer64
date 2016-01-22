@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-09-17
- * \updates       2016-01-18
+ * \updates       2016-01-22
  * \license       GNU GPLv2 or above
  *
  *  This class contains a number of functions that used to reside in the
@@ -69,7 +69,7 @@ class perform;                          /* jack_assistant parent is perform */
  *  Provide a temporary structure for passing data and results between a
  *  perform and jack_assistant object.  The jack_assistant class already
  *  has access to the members of perform, but it needs access to and
- *  modification of local variables in perform::output_func().
+ *  modification of "local" variables in perform::output_func().
  *  This scratchpad is useful even if JACK support is not enabled.
  */
 
@@ -208,7 +208,7 @@ public:
     void position                       // position_jack();
     (
         bool to_left_tick,              // instead of current tick
-        bool relocate = false
+        bool relocate = false           // enable "dead code" EXPERIMENTAL
     );
     bool output (jack_scratchpad & pad);
 
@@ -224,6 +224,8 @@ private:
         m_ppqn = ppqn;
     }
 
+    double get_jack_ticks() const;                      // @new ca 2016-01-21
+    double frame_to_ticks (jack_nframes_t frame) const; // @new ca 2016-01-21
     bool info_message (const std::string & msg);
     bool error_message (const std::string & msg);
     jack_client_t * client_open (const std::string & clientname);

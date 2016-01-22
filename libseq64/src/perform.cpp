@@ -1827,7 +1827,7 @@ perform::output_func ()
              *
              * double delta_tick = double(bpm * ppqn * (delta_us / 60000000.0f));
              *
-             * @change ca 2016-01-21  Doh!  Wrong parameter order:
+             * \change ca 2016-01-21  Doh!  Wrong parameter order:
              *
              * double delta_tick = delta_time_us_to_ticks(bpm, ppqn, delta_us);
              */

@@ -765,6 +765,10 @@ jack_assistant::output (jack_scratchpad & pad)
         /*
          * Question:  Do we really need to check for the starting state here
          * before we move on?  Should we use an OR?
+
+        infoprint("output() statuses");
+        show_statuses(m_jack_transport_state_last);
+        show_statuses(m_jack_transport_state);
          */
 
         if
@@ -779,10 +783,17 @@ jack_assistant::output (jack_scratchpad & pad)
 
             m_jack_frame_last = m_jack_frame_current;
             pad.js_dumping = true;
+
+            /*
+             * TODO:
+             * Try new function frame_to_ticks().
+             */
+
             m_jack_tick = m_jack_pos.frame * m_jack_pos.ticks_per_beat *
                 m_jack_pos.beats_per_minute / (m_jack_pos.frame_rate * 60.0);
 
             /*
+             * TODO:
              * Try new function get_jack_ticks().
              */
 
@@ -813,7 +824,7 @@ jack_assistant::output (jack_scratchpad & pad)
                         double size = m_jack_parent.get_right_tick() -
                             m_jack_parent.get_left_tick();
 
-                        pad.js_current_tick -= size;    // @change ca 2016-01-20
+                        pad.js_current_tick -= size;    // \change ca 2016-01-20
                     }
                     m_jack_parent.reset_sequences();
                     m_jack_parent.set_orig_ticks(long(pad.js_current_tick));
@@ -1108,13 +1119,19 @@ jack_assistant::jack_debug_print
  *      Indicates the current state of JACK transport.
  *
  * \param nframes
- *      The number of JACK frames.
+ *      The number of JACK frames in the current time period.
  *
  * \param pos
- *      Provides the position structure to be filled in.
+ *      Provides the position structure to be filled in, the
+ *      address of the position structure for the next cycle; pos->frame will
+ *      be its frame number. If new_pos is FALSE, this structure contains
+ *      extended position information from the current cycle. If TRUE, it
+ *      contains whatever was set by the requester. The timebase_callback's
+ *      task is to update the extended information here.
  *
  * \param new_pos
- *      The new positions to be set.
+ *      TRUE (non-zero) for a newly requested pos, or for the first cycle
+ *      after the timebase_callback is defined.
  *
  * \param arg
  *      Provides the jack_assistant pointer, currently unchecked for nullity.
@@ -1133,12 +1150,13 @@ jack_timebase_callback
     static double s_jack_tick;
     static jack_nframes_t s_last_frame;
     static jack_nframes_t s_current_frame;
-    static bool s_set_state_last = true;
     static jack_transport_state_t s_state_last;
     static jack_transport_state_t s_state_current;
+//  static jack_transport_state_t s_state_last = JackTransportStopped;
+//  static jack_transport_state_t s_state_current = JackTransportStopped;
+
     jack_assistant * jack = (jack_assistant *)(arg);
     s_state_current = state;
-
     s_current_frame = jack_get_current_transport_frame(jack->m_jack_client);
     if (is_nullptr(pos))
     {
@@ -1155,19 +1173,8 @@ jack_timebase_callback
      * Compute BBT (Bar:Beats.ticks) info from frame number.  This is
      * relatively simple here, but would become complex if we supported tempo
      * or time signature changes at specific locations in the transport
-     * timeline.  If we are in a new position....
+     * timeline.
      *
-     * \new ca 2016-01-13
-     *      Initialize the last state, if not already initialized.
-     */
-
-    if (s_set_state_last)
-    {
-        s_state_last = jack_transport_query(jack->m_jack_client, NULL);
-        s_set_state_last = false;
-    }
-        
-    /*
      * Question:  Do we really need to check for the starting state here
      * before we move on?  Should we use an OR?
      */
@@ -1178,45 +1185,56 @@ jack_timebase_callback
         s_state_current == JackTransportRolling
     )
     {
-        s_jack_tick = 0.0;
-        s_last_frame = s_current_frame;
-    }
+//      TOTALLY WRONG!
+//      s_jack_tick = 0.0;
+//      s_last_frame = s_current_frame;
 
-    if (pos->frame_rate > 0)
-    {
-        if (s_current_frame > s_last_frame)
+        if (pos->frame_rate > 0)
         {
-            double jack_delta_tick = (s_current_frame - s_last_frame) *
-                pos->ticks_per_beat * pos->beats_per_minute /
-                (pos->frame_rate * 60.0);
+            if (s_current_frame > s_last_frame)
+            {
+                /*
+                 * TODO:
+                 * m_jack_tick = frame_to_ticks(...);
+                 */
 
-            s_jack_tick += jack_delta_tick;
-            s_last_frame = s_current_frame;
+                // (current_frame) *
+
+                double jack_delta_tick = (s_current_frame - s_last_frame) *
+                    pos->ticks_per_beat * pos->beats_per_minute /
+                    (pos->frame_rate * 60.0);
+
+		        // s_jack_tick = (jack_delta_tick < 0) ?
+                // -jack_delta_tick : jack_delta_tick;
+
+                s_jack_tick += jack_delta_tick;
+                s_last_frame = s_current_frame;
+            }
         }
-    }
-    else
-    {
-        infoprint("jack_timebase_callback(): zero frame rate");
-    }
+        else
+        {
+            infoprint("jack_timebase_callback(): zero frame rate");
+        }
 
-    long ptick = 0, pbeat = 0, pbar = 0;
-    long ticks_per_bar = long(pos->ticks_per_beat * pos->beats_per_bar);
-    if (ticks_per_bar > 0)
-    {
-        pbar = long(long(s_jack_tick) / ticks_per_bar);
-        pbeat = long(long(s_jack_tick) % ticks_per_bar);
-        pbeat /= long(pos->ticks_per_beat);
-        ptick = long(s_jack_tick) % long(pos->ticks_per_beat);
-        pos->bar = pbar + 1;
-        pos->beat = pbeat + 1;
-        pos->tick = ptick;
-        pos->bar_start_tick = pos->bar * pos->beats_per_bar *
-            pos->ticks_per_beat;
-    }
-    else
-    {
-        errprint("jack_timebase_callback(): zero values");
-    }
+        long ptick = 0, pbeat = 0, pbar = 0;
+        long ticks_per_bar = long(pos->ticks_per_beat * pos->beats_per_bar);
+        if (ticks_per_bar > 0)
+        {
+            pbar = long(long(s_jack_tick) / ticks_per_bar);
+            pbeat = long(long(s_jack_tick) % ticks_per_bar);
+            pbeat /= long(pos->ticks_per_beat);
+            ptick = long(s_jack_tick) % long(pos->ticks_per_beat);
+            pos->bar = pbar + 1;
+            pos->beat = pbeat + 1;
+            pos->tick = ptick;
+            pos->bar_start_tick = pos->bar * pos->beats_per_bar *
+                pos->ticks_per_beat;
+        }
+        else
+        {
+            errprint("jack_timebase_callback(): zero values");
+        }
+    }   // MOVED TO HERE
     s_state_last = s_state_current;
 }
 

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-14
- * \updates       2016-01-22
+ * \updates       2016-01-23
  * \license       GNU GPLv2 or above
  *
  *  This module was created from code that existed in the perform object.
@@ -78,9 +78,7 @@ jack_assistant::jack_assistant (perform & parent, int ppqn)
     m_ppqn                      (0)
 {
     m_ppqn = choose_ppqn(ppqn);
-#ifdef PLATFORM_DEBUG
     print_jack_pos(m_jack_pos, "jack_assistant()");
-#endif
 }
 
 /**
@@ -491,9 +489,8 @@ jack_assistant::sync (jack_transport_state_t state)
     int result = 0;                     /* seq24 always returns 1   */
     m_jack_frame_current = jack_get_current_transport_frame(m_jack_client);
     (void) jack_transport_query(m_jack_client, &m_jack_pos);    // see banner
-#ifdef PLATFORM_DEBUG
     print_jack_pos(m_jack_pos, "sync()");
-#endif
+
     jack_nframes_t rate = m_jack_pos.frame_rate;
     if (rate == 0)
     {
@@ -603,20 +600,18 @@ jack_sync_callback
     void * arg
 )
 {
+    int result = 0;
     jack_assistant * jack = (jack_assistant *)(arg);
-    if (is_nullptr(jack))
+    if (not_nullptr(jack))
     {
-        errprint("jack_sync_callback(): null JACK pointer");
-        return 0;
+        result = jack->sync(state);         /* use the new member function */
+        if (result == 1)
+            print_jack_pos(*pos, "jack_sync_callback()");
     }
-    int result = jack->sync(state);     /* use the new member function */
+    else
+        errprint("jack_sync_callback(): null JACK pointer");
 
-#ifdef ALLOW_PLATFORM_DEBUG
-    if (result == 1)
-        print_jack_pos(*pos, "jack_sync_callback()");
-#endif
-
-    return 1;
+    return result;
 }
 
 #endif  // USE_JACK_SYNC_CALLBACK
@@ -740,16 +735,23 @@ jack_assistant::frame_to_ticks (jack_nframes_t frame) const
  *
  *  This code comes from perform::output_func() from seq24.
  *
- * \todo
+ *  Note that Sequencer64 yields JackFailure errors at first.  If
+ *  we don't respond to them by setting m_jack_running to false, then we get
+ *  endless errors, and an unidentifiable segfault when exiting the
+ *  application.
+ *
+ * \note
  *      Follow up on this note found "out there":  "Maybe I'm wrong but if I
  *      understood correctly, recent jack1 transport no longer goes into
  *      Jack_Transport_Starting state before going to Jack_Transport_Rolling
  *      (this was deliberately dropped), but seq24 currently needs this to
  *      start off with jack transport."  On the other hand, some people have
- *      no issues.
+ *      no issues.  This may have been due to the lack of m_jack_pos
+ *      initialization.
  *
  * \param pad
- *      Provide a JACK scratchpad, whatever that is.
+ *      Provide a JACK scratchpad for sharing certain items between the
+ *      perform object and the jack_assistant object.
  *
  * \return
  *      Returns true if JACK is running.
@@ -767,15 +769,13 @@ jack_assistant::output (jack_scratchpad & pad)
         m_jack_transport_state = jack_transport_query(m_jack_client, &m_jack_pos);
         if (m_jack_transport_state | JackFailure)
         {
-            // (void) info_message("JackFailure");
-            show_statuses(m_jack_transport_state);
-            return true;
+            show_statuses(m_jack_transport_state);      // JackFailure?
+            m_jack_running = false;
+            return false;
         }
         m_jack_frame_current = jack_get_current_transport_frame(m_jack_client);
 
-#ifdef PLATFORM_DEBUG
-        print_jack_pos(m_jack_pos, "output()");
-#endif
+        // print_jack_pos(m_jack_pos, "output()");
 
         bool ok = m_jack_pos.frame_rate > 1000;         // ARBITRARY
         if (! ok)
@@ -987,7 +987,24 @@ jack_status_pair_t jack_assistant::sm_status_pairs [] =
 
 /**
  *  Loops through the full set of JACK bits, showing the information for any
- *  bits that are set in the given parameter.
+ *  bits that are set in the given parameter.  For reference, here are the
+ *  enumeration values from /usr/include/jack/types.h:
+ *
+\verbatim
+        JackFailure         = 0x01
+        JackInvalidOption   = 0x02
+        JackNameNotUnique   = 0x04
+        JackServerStarted   = 0x08
+        JackServerFailed    = 0x10
+        JackServerError     = 0x20
+        JackNoSuchClient    = 0x40
+        JackLoadFailure     = 0x80
+        JackInitFailure     = 0x100
+        JackShmFailure      = 0x200
+        JackVersionError    = 0x400
+        JackBackendError    = 0x800
+        JackClientZombie    = 0x1000
+\endverbatim
  */
 
 void
@@ -1158,7 +1175,6 @@ jack_timebase_callback
 )
 {
     static double s_jack_tick;
-    static jack_nframes_t s_last_frame;
     static jack_nframes_t s_current_frame;
     static jack_transport_state_t s_state_last;
     static jack_transport_state_t s_state_current;
@@ -1179,9 +1195,7 @@ jack_timebase_callback
     pos->ticks_per_beat = jack->m_ppqn * 10;    // why 10?
     pos->beats_per_minute = jack->parent().get_beats_per_minute();
 
-#ifdef ALLOW_PLATFORM_DEBUG
-    print_jack_pos(*pos, "jack_timebase_callback");
-#endif
+    // print_jack_pos(*pos, "jack_timebase_callback");
 
     /*
      * If we are in a new position, then compute BBT (Bar:Beats.ticks) info
@@ -1201,33 +1215,18 @@ jack_timebase_callback
     {
         if (pos->frame_rate > 0)
         {
-#ifdef USE_SUSPECT_CODE
-            if (s_current_frame > s_last_frame)
-            {
-#endif
-                /*
-                 * TODO:
-                 * m_jack_tick = frame_to_ticks(...);
-                 */
+            /*
+             * TODO:
+             * m_jack_tick = frame_to_ticks(...);
+             */
 
-                double jack_delta_tick =
-#ifdef USE_SUSPECT_CODE
-                    (s_current_frame - s_last_frame) *
-#else
-                    s_current_frame *
-#endif
-                    pos->ticks_per_beat *
-                    pos->beats_per_minute / (pos->frame_rate * 60.0);
+            double jack_delta_tick =
+                s_current_frame *
+                pos->ticks_per_beat *
+                pos->beats_per_minute / (pos->frame_rate * 60.0);
 
-                s_last_frame = s_current_frame;
-
-#ifdef USE_SUSPECT_CODE
-                s_jack_tick += jack_delta_tick;
-            }
-#else
-		        s_jack_tick = (jack_delta_tick < 0) ?
-                    -jack_delta_tick : jack_delta_tick ;
-#endif
+            s_jack_tick = (jack_delta_tick < 0) ?
+                -jack_delta_tick : jack_delta_tick ;
         }
         else
         {
@@ -1246,8 +1245,6 @@ jack_timebase_callback
             pos->beat = pbeat + 1;
             pos->tick = ptick;
             pos->bar_start_tick = pos->bar * ticks_per_bar;
-//          pos->bar_start_tick = pos->bar * pos->beats_per_bar *
-//              pos->ticks_per_beat;
         }
         else
         {
@@ -1292,12 +1289,11 @@ print_jack_pos (jack_position_t & pos, const std::string & tag)
         "    beats/bar = %f; beat_type = %f\n"
         "    ticks/beat = %f; beats/minute %f\n"
         "    frame = %d; frame_time = %f; frame_rate = %d\n",
-//      "    next_time        [%f]\n",      // an enormous number!
         tag.c_str(),
         pos.bar, pos.beat, pos.tick, pos.bar_start_tick,
         pos.beats_per_bar, pos.beat_type,
         pos.ticks_per_beat, pos.beats_per_minute,
-        int(pos.frame), pos.frame_time, int(pos.frame_rate)    // , pos.next_time
+        int(pos.frame), pos.frame_time, int(pos.frame_rate)
     );
 #endif
 }

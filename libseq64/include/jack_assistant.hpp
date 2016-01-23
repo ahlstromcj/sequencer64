@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-09-17
- * \updates       2016-01-22
+ * \updates       2016-01-23
  * \license       GNU GPLv2 or above
  *
  *  This class contains a number of functions that used to reside in the
@@ -197,6 +197,7 @@ public:
     }
 
     bool init ();                       // init_jack ();
+    bool restart ();                    // NEW 2015-01-23
     void deinit ();                     // deinit_jack ();
 
 #ifdef SEQ64_JACK_SESSION

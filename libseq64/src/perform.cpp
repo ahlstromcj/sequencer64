@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-01-21
+ * \updates       2016-01-23
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -1857,14 +1857,29 @@ perform::output_func ()
 #endif
             {
                 /*
-                 * The default if JACK is not compiled in, or is not running.
-                 * Add the delta to the current ticks.
+                 * NEW 2015-01-23
+                 *  Test for initial failure and try to recover.  If it fails
+                 *  again, fall back to non-JACK operation.
                  */
 
-                pad.js_clock_tick += delta_tick;
-                pad.js_current_tick += delta_tick;
-                pad.js_total_tick += delta_tick;
-                pad.js_dumping = true;
+                bool fallback = true;
+                if (rc().with_jack())
+                {
+                    if (m_jack_asst.restart())
+                        fallback = false;
+                }
+                if (fallback)
+                {
+                    /*
+                     * The default if JACK is not compiled in, or is not
+                     * running.  Add the delta to the current ticks.
+                     */
+
+                    pad.js_clock_tick += delta_tick;
+                    pad.js_current_tick += delta_tick;
+                    pad.js_total_tick += delta_tick;
+                    pad.js_dumping = true;
+                }
             }
 
             /*

@@ -78,7 +78,8 @@ jack_assistant::jack_assistant (perform & parent, int ppqn)
     m_ppqn                      (0)
 {
     m_ppqn = choose_ppqn(ppqn);
-    print_jack_pos(m_jack_pos, "jack_assistant()");
+
+    // print_jack_pos(m_jack_pos, "jack_assistant()");
 }
 
 /**
@@ -179,7 +180,7 @@ jack_assistant::init ()
 
         jack_on_shutdown(m_jack_client, jack_shutdown_callback, (void *) this);
 
-#ifdef USE_JACK_SYNC_CALLBACK
+#ifdef USE_JACK_SYNC_CALLBACK               /* currently enabled            */
         int jackcode = jack_set_sync_callback
         (
             m_jack_client, jack_sync_callback, (void *) this
@@ -198,7 +199,7 @@ jack_assistant::init ()
         if (jackcode != 0)
             return error_message("jack_set_sync_callback(NULL) failed");
 
-        (void) sync();                  /* obtains some JACK numbers */
+        (void) sync();                      /* obtains some JACK numbers    */
 #endif
 
         /*
@@ -290,6 +291,24 @@ jack_assistant::init ()
             (void) info_message("Initialized. Running without JACK.");
     }
     return m_jack_running;
+}
+
+/**
+ *  Let's try to recover from the JackFailures somehow.
+ */
+
+bool
+jack_assistant::restart ()
+{
+    if (rc().with_jack() && ! m_jack_running)
+    {
+        // m_jack_running = true;
+        // return true;
+
+        return false;
+    }
+    else
+        return false;
 }
 
 /**
@@ -439,6 +458,11 @@ jack_assistant::position (bool to_left_tick, bool relocate )
             pos.tick = int32_t((currenttick % (m_ppqn * 10)));
             pos.bar_start_tick = pos.bar * pos.beats_per_bar * pos.ticks_per_beat;
             pos.frame_rate = rate;
+
+            /*
+             * Hey, we are not supposed to change this value!
+             */
+
             pos.frame = (jack_nframes_t)
             (
                 (currenttick * rate * 60.0) /
@@ -481,6 +505,19 @@ jack_assistant::position (bool to_left_tick, bool relocate )
  *
  *  If we explicity call jack_transport_query() here, without changing the \a
  *  state parameter, then sequencer64 also can follow another JACK Master.
+ *  (CURRENTLY BUGGY!)
+ *
+ *  Note that we should consider massaging the following jack_position_t
+ *  members to set them to 0 (or 0.0) if less than 1.0 or 0.5:
+ *
+ *      -   bar_start_tick
+ *      -   ticks_per_beat
+ *      -   beats_per_minute
+ *      -   frame_time
+ *      -   next_time
+ *      -   audio_frames_per_video_frame
+ *
+ *  Also, why does bbt_offset start at 2128362496?
  */
 
 int
@@ -488,8 +525,8 @@ jack_assistant::sync (jack_transport_state_t state)
 {
     int result = 0;                     /* seq24 always returns 1   */
     m_jack_frame_current = jack_get_current_transport_frame(m_jack_client);
-    (void) jack_transport_query(m_jack_client, &m_jack_pos);    // see banner
-    print_jack_pos(m_jack_pos, "sync()");
+
+    (void) jack_transport_query(m_jack_client, &m_jack_pos);
 
     jack_nframes_t rate = m_jack_pos.frame_rate;
     if (rate == 0)
@@ -565,7 +602,7 @@ jack_process_callback (jack_nframes_t /* nframes */, void * /* arg */ )
     return 0;
 }
 
-#ifdef USE_JACK_SYNC_CALLBACK
+#ifdef USE_JACK_SYNC_CALLBACK           /* currently enabled */
 
 /**
  *  This JACK synchronization callback informs the specified perform
@@ -735,10 +772,16 @@ jack_assistant::frame_to_ticks (jack_nframes_t frame) const
  *
  *  This code comes from perform::output_func() from seq24.
  *
- *  Note that Sequencer64 yields JackFailure errors at first.  If
+ *  USE_JACK_TRANSPORT_QUERY_STATUS macro, if enabled:
+ *  Note that Sequencer64 yields JackFailure errors.  If
  *  we don't respond to them by setting m_jack_running to false, then we get
  *  endless errors, and an unidentifiable segfault when exiting the
- *  application.
+ *  application.  If we do set m_jack_running to false and then return,
+ *  we have to disable JACK, and fall back to Sequencer64's own timing.
+ *  If we ignore the error status, we get the jittery progress-pill bug,
+ *  and the JACK transport state value always has the JackFailure bit set.
+ *
+ *  Driving me crazy!!!!
  *
  * \note
  *      Follow up on this note found "out there":  "Maybe I'm wrong but if I
@@ -767,17 +810,21 @@ jack_assistant::output (jack_scratchpad & pad)
         double jack_ticks_delta = 0.0;
         pad.js_init_clock = false;      // no init until we get a good lock
         m_jack_transport_state = jack_transport_query(m_jack_client, &m_jack_pos);
+
+#ifdef USE_JACK_TRANSPORT_QUERY_STATUS                  /* see function banner */
         if (m_jack_transport_state | JackFailure)
         {
-            show_statuses(m_jack_transport_state);      // JackFailure?
+            show_statuses(m_jack_transport_state);      /* JackFailure?        */
             m_jack_running = false;
             return false;
         }
+#endif
+
         m_jack_frame_current = jack_get_current_transport_frame(m_jack_client);
 
         // print_jack_pos(m_jack_pos, "output()");
 
-        bool ok = m_jack_pos.frame_rate > 1000;         // ARBITRARY
+        bool ok = m_jack_pos.frame_rate > 1000;         /* usually 48000       */
         if (! ok)
             info_message("jack_assistant::output(): small frame rate");
 
@@ -865,9 +912,9 @@ jack_assistant::output (jack_scratchpad & pad)
             m_jack_frame_current =
                 jack_get_current_transport_frame(m_jack_client);
 
-            if (m_jack_frame_current > m_jack_frame_last)   /* moving ahead?  */
+            if (m_jack_frame_current > m_jack_frame_last)   /* moving ahead? */
             {
-                if (m_jack_pos.frame_rate > 1000)           // ARBITRARY
+                if (m_jack_pos.frame_rate > 1000)           /* usually 48000 */
                 {
                     /*
                      * TODO:
@@ -1054,32 +1101,37 @@ jack_client_t *
 jack_assistant::client_open (const std::string & clientname)
 {
     jack_client_t * result = nullptr;
-    jack_status_t status;
     const char * name = clientname.c_str();
+    jack_status_t status;
+    jack_status_t * pstatus = &status;          // or NULL
 
 #ifdef SEQ64_JACK_SESSION
     if (rc().jack_session_uuid().empty())
     {
-        result = jack_client_open(name, JackNullOption, &status);
+        result = jack_client_open(name, JackNullOption, pstatus);   // 0x800000
     }
     else
     {
         const char * uuid = rc().jack_session_uuid().c_str();
-        result = jack_client_open(name, JackSessionID, &status, uuid);
+        result = jack_client_open(name, JackSessionID, pstatus, uuid);
     }
 #else
-    result = jack_client_open(name, JackNullOption, &status);
+    result = jack_client_open(name, JackNullOption, pstatus);       // 0x800000
 #endif
 
-    if (status & JackServerStarted)
-        (void) info_message("JACK server started now");
-    else
-        (void) info_message("JACK server already started");
+    if (not_nullptr(pstatus))
+    {
+        if (status & JackServerStarted)
+            (void) info_message("JACK server started now");
+        else
+            (void) info_message("JACK server already started");
 
-    if (status & JackNameNotUnique)
-        (void) info_message("JACK client-name NOT unique");
+        if (status & JackNameNotUnique)
+            (void) info_message("JACK client-name NOT unique");
 
-    show_statuses(status);
+        show_statuses(status);
+    }
+
     return result;
 }
 
@@ -1178,8 +1230,6 @@ jack_timebase_callback
     static jack_nframes_t s_current_frame;
     static jack_transport_state_t s_state_last;
     static jack_transport_state_t s_state_current;
-//  static jack_transport_state_t s_state_last = JackTransportStopped;
-//  static jack_transport_state_t s_state_current = JackTransportStopped;
 
     jack_assistant * jack = (jack_assistant *)(arg);
     s_state_current = state;
@@ -1221,7 +1271,7 @@ jack_timebase_callback
              */
 
             double jack_delta_tick =
-                s_current_frame *
+                s_current_frame *           // why not pos->frame?
                 pos->ticks_per_beat *
                 pos->beats_per_minute / (pos->frame_rate * 60.0);
 

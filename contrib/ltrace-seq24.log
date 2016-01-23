@@ -1,0 +1,16 @@
+seq24->jack_client_open(0x4a9868, 0, 0, 0x800000) = 0x2694140
+seq24->jack_on_shutdown(0x2694140, 0x44832b, 0x7fffb3e28240, 0) = 0x7f3c5f99e000
+seq24->jack_set_sync_callback(0x2694140, 0x4455f4, 0x7fffb3e28240, 0) = 0
+
+seq24->jack_set_session_callback(0x2694140, 0x445914, 0x7fffb3e28240, 0) = 0
+seq24->jack_set_timebase_callback(0x2694140, 0, 0x448052, 0x7fffb3e28240) = 0
+seq24->jack_activate(0x2694140, 0x7f3c5f9b6000, 0x7f3c5c871970, 0x7f3c5c5ac8dd) = 0
+seq24->jack_transport_locate(0x2694140, 0, 32, 0x28d636c) = 0
+seq24->jack_transport_start(0x2694140, 0, 0xc5010101, 0x7f3c5f99f2d7) = 0x7f3c5f99f000
+seq24->jack_transport_stop(0x2694140, 0x7fffb3e271b0, 0xff1b, 0x2697920) = 0x7f3c5f99f000
+seq24->jack_transport_locate(0x2694140, 0, 32, 0x28d636c) = 0
+seq24->jack_transport_start(0x2694140, 0, 0xdd010101, 0x7f3c5f99f2d7) = 0x7f3c5f99f000
+seq24->jack_transport_stop(0x2694140, 0x7fffb3e271b0, 0xff1b, 0x2697920) = 0x7f3c5f99f000
+seq24->jack_release_timebase(0x2694140, 80, 1, 0) = 0
+seq24->jack_client_close(0x2694140, 0x7fffb3e27bf8, 4, 0) = 0
++++ exited (status 0) +++

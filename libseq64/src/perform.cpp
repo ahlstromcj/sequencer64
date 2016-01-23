@@ -1734,6 +1734,7 @@ perform::output_func ()
         pad.js_init_clock = true;
         pad.js_looping = m_looping;
         pad.js_playback_mode = m_playback_mode;
+        pad.js_ticks_converted_last = 0.0;
 
         midipulse stats_total_tick = 0;
         long stats_loop_index = 0;
@@ -1920,7 +1921,16 @@ perform::output_func ()
                     printf("play(NAN=%ld)\n", long(pad.js_current_tick));
                 }
 
+                /*
+                 * Seq24 shows this number incrementing by about 1 or 2 ticks
+                 * each time.  Seq64 increments it by 1, then 3, 5, 6, 8, 10,
+                 * 11, 12, 15, 18, and it just gets larger and larger.
+                 *
+                 * printf("play[%ld]\n", long(pad.js_current_tick));
+                 */
+
                 play(long(pad.js_current_tick));                // play!
+
                 m_master_bus.clock(long(pad.js_clock_tick));    // MIDI clock
                 if (rc().stats())
                 {

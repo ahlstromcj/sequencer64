@@ -86,6 +86,7 @@ public:
     bool js_init_clock;
     bool js_looping;                    /* perform::m_looping       */
     bool js_playback_mode;              /* perform::m_playback_mode */
+    double js_ticks_converted_last;
 
 };
 

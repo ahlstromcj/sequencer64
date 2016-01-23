@@ -642,8 +642,11 @@ jack_sync_callback
     if (not_nullptr(jack))
     {
         result = jack->sync(state);         /* use the new member function */
-        if (result == 1)
-            print_jack_pos(*pos, "jack_sync_callback()");
+
+        /*
+         * if (result == 1)
+         *    nrint_jack_pos(*pos, "jack_sync_callback()");
+         */
     }
     else
         errprint("jack_sync_callback(): null JACK pointer");
@@ -806,9 +809,9 @@ jack_assistant::output (jack_scratchpad & pad)
     if (m_jack_running)
     {
         double jack_ticks_converted = 0.0;
-        double jack_ticks_converted_last = 0.0;
-        double jack_ticks_delta = 0.0;
-        pad.js_init_clock = false;      // no init until we get a good lock
+//      double jack_ticks_converted_last = 0.0;     // moved to scratchpad
+        double jack_ticks_delta;                    //  = 0.0;
+        pad.js_init_clock = false;                  // no init until a good lock
         m_jack_transport_state = jack_transport_query(m_jack_client, &m_jack_pos);
 
 #ifdef USE_JACK_TRANSPORT_QUERY_STATUS                  /* see function banner */
@@ -863,10 +866,9 @@ jack_assistant::output (jack_scratchpad & pad)
                 (m_jack_pos.ticks_per_beat * m_jack_pos.beat_type / 4.0)
             );
             m_jack_parent.set_orig_ticks(long(jack_ticks_converted));
-            pad.js_current_tick = pad.js_clock_tick = pad.js_total_tick =
-                jack_ticks_converted_last = jack_ticks_converted;
-
             pad.js_init_clock = true;
+            pad.js_current_tick = pad.js_clock_tick = pad.js_total_tick =
+                pad.js_ticks_converted_last = jack_ticks_converted;
 
             /*
              * We need to make sure another thread can't modify these
@@ -885,7 +887,6 @@ jack_assistant::output (jack_scratchpad & pad)
                             m_jack_parent.get_left_tick();
 
                         pad.js_current_tick -= lrsize;
-                        // printf( "current_tick[%lf]\n", current_tick );
                     }
                     m_jack_parent.reset_sequences();
                     m_jack_parent.set_orig_ticks(long(pad.js_current_tick));
@@ -944,12 +945,12 @@ jack_assistant::output (jack_scratchpad & pad)
                         (m_jack_pos.ticks_per_beat * m_jack_pos.beat_type / 4.0)
                 );
 
-            jack_ticks_delta = jack_ticks_converted - jack_ticks_converted_last;
+            jack_ticks_delta = jack_ticks_converted - pad.js_ticks_converted_last;
             pad.js_clock_tick += jack_ticks_delta;
             pad.js_current_tick += jack_ticks_delta;
             pad.js_total_tick += jack_ticks_delta;
             m_jack_transport_state_last = m_jack_transport_state;
-            jack_ticks_converted_last = jack_ticks_converted;
+            pad.js_ticks_converted_last = jack_ticks_converted;
 
 #ifdef SEQ64_USE_DEBUG_OUTPUT
             jack_debug_print(pad.js_current_tick, jack_ticks_delta);

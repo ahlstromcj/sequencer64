@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-07
- * \updates       2016-01-18
+ * \updates       2016-01-22
  * \license       GNU GPLv2 or above
  *
  *  These items were moved from the globals.h module so that only the modules
@@ -140,7 +140,8 @@ extern bool strings_match (const std::string & target, const std::string & x);
  *      then this function will crash.  :-D
  */
 
-inline double beats_per_minute_from_tempo (double tempo)
+inline double
+beats_per_minute_from_tempo (double tempo)
 {
     return 60000000.0 / tempo;
 }
@@ -157,7 +158,8 @@ inline double beats_per_minute_from_tempo (double tempo)
  *      then this function will crash.  :-D
  */
 
-inline double tempo_from_beats_per_minute (double bpm)
+inline double
+tempo_from_beats_per_minute (double bpm)
 {
     return 60000000.0 / bpm;
 }
@@ -186,7 +188,8 @@ inline double tempo_from_beats_per_minute (double bpm)
  *      invalid, then this function will crash. :-D
  */
 
-inline double pulse_length_us (int bpm, int ppqn)
+inline double
+pulse_length_us (int bpm, int ppqn)
 {
     /*
      * Let's use the original notation for now.
@@ -230,9 +233,10 @@ inline double pulse_length_us (int bpm, int ppqn)
  *      Returns the tick value.
  */
 
-inline double delta_time_us_to_ticks (unsigned long us, int bpm, int ppqn)
+inline double
+delta_time_us_to_ticks (unsigned long us, int bpm, int ppqn)
 {
-    return double(bpm * ppqn * (us / 60000000.0));
+    return double(bpm * ppqn * (us / 60000000.0f));
 }
 
 /**
@@ -258,7 +262,8 @@ inline double delta_time_us_to_ticks (unsigned long us, int bpm, int ppqn)
  *      Returns the time value in microseconds.
  */
 
-inline double ticks_to_delta_time_us (midipulse delta_ticks, int bpm, int ppqn)
+inline double
+ticks_to_delta_time_us (midipulse delta_ticks, int bpm, int ppqn)
 {
     return double(delta_ticks) * pulse_length_us(bpm, ppqn);
 }
@@ -293,7 +298,8 @@ inline double ticks_to_delta_time_us (midipulse delta_ticks, int bpm, int ppqn)
  *      here? :-D
  */
 
-inline double clock_tick_duration_bogus (int bpm, int ppqn)
+inline double
+clock_tick_duration_bogus (int bpm, int ppqn)
 {
     return (ppqn / SEQ64_MIDI_CLOCK_IN_PPQN) * 60000000.0 / (bpm * ppqn);
 }
@@ -309,7 +315,8 @@ inline double clock_tick_duration_bogus (int bpm, int ppqn)
  *      The integer value of ppqn / 24 [MIDI_CLOCK_IN_PPQN] is returned.
  */
 
-inline int clock_ticks_from_ppqn (int ppqn)
+inline int
+clock_ticks_from_ppqn (int ppqn)
 {
     return ppqn / SEQ64_MIDI_CLOCK_IN_PPQN;
 }
@@ -325,7 +332,8 @@ inline int clock_ticks_from_ppqn (int ppqn)
  *      The double value of ppqn / 24 [SEQ64_MIDI_CLOCK_IN_PPQN]_is returned.
  */
 
-inline double double_ticks_from_ppqn (int ppqn)
+inline double
+double_ticks_from_ppqn (int ppqn)
 {
     return ppqn / double(SEQ64_MIDI_CLOCK_IN_PPQN);
 }
@@ -372,7 +380,8 @@ inline double double_ticks_from_ppqn (int ppqn)
  *      equation.  If bw is 0, then 0 is returned.
  */
 
-inline midipulse measures_to_ticks (int bpm, int ppqn, int bw, int measures = 1)
+inline midipulse
+measures_to_ticks (int bpm, int ppqn, int bw, int measures = 1)
 {
     return (bw > 0) ? (4 * measures * bpm * ppqn / bw) : 0 ;
 }

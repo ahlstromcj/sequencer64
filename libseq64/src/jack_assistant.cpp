@@ -78,6 +78,9 @@ jack_assistant::jack_assistant (perform & parent, int ppqn)
     m_ppqn                      (0)
 {
     m_ppqn = choose_ppqn(ppqn);
+#ifdef PLATFORM_DEBUG
+    print_jack_pos(m_jack_pos, "jack_assistant()");
+#endif
 }
 
 /**
@@ -488,6 +491,9 @@ jack_assistant::sync (jack_transport_state_t state)
     int result = 0;                     /* seq24 always returns 1   */
     m_jack_frame_current = jack_get_current_transport_frame(m_jack_client);
     (void) jack_transport_query(m_jack_client, &m_jack_pos);    // see banner
+#ifdef PLATFORM_DEBUG
+    print_jack_pos(m_jack_pos, "sync()");
+#endif
     jack_nframes_t rate = m_jack_pos.frame_rate;
     if (rate == 0)
     {
@@ -604,8 +610,11 @@ jack_sync_callback
         return 0;
     }
     int result = jack->sync(state);     /* use the new member function */
+
+#ifdef ALLOW_PLATFORM_DEBUG
     if (result == 1)
-        print_jack_pos(pos);
+        print_jack_pos(*pos, "jack_sync_callback()");
+#endif
 
     return 1;
 }
@@ -756,19 +765,25 @@ jack_assistant::output (jack_scratchpad & pad)
         double jack_ticks_delta = 0.0;
         pad.js_init_clock = false;      // no init until we get a good lock
         m_jack_transport_state = jack_transport_query(m_jack_client, &m_jack_pos);
+        if (m_jack_transport_state | JackFailure)
+        {
+            // (void) info_message("JackFailure");
+            show_statuses(m_jack_transport_state);
+            return true;
+        }
         m_jack_frame_current = jack_get_current_transport_frame(m_jack_client);
 
-        bool ok = m_jack_pos.frame_rate != 0;           // > 0;
+#ifdef PLATFORM_DEBUG
+        print_jack_pos(m_jack_pos, "output()");
+#endif
+
+        bool ok = m_jack_pos.frame_rate > 1000;         // ARBITRARY
         if (! ok)
-            info_message("jack_assistant::output(): zero frame rate");
+            info_message("jack_assistant::output(): small frame rate");
 
         /*
          * Question:  Do we really need to check for the starting state here
          * before we move on?  Should we use an OR?
-
-        infoprint("output() statuses");
-        show_statuses(m_jack_transport_state_last);
-        show_statuses(m_jack_transport_state);
          */
 
         if
@@ -777,19 +792,17 @@ jack_assistant::output (jack_scratchpad & pad)
             m_jack_transport_state == JackTransportRolling
         )
         {
-            /*
-             * (void) info_message("Start playback");
-             */
-
             m_jack_frame_last = m_jack_frame_current;
-            pad.js_dumping = true;
+            pad.js_dumping = true;          // info_message("Start playback");
 
             /*
              * TODO:
              * Try new function frame_to_ticks().
              */
 
-            m_jack_tick = m_jack_pos.frame * m_jack_pos.ticks_per_beat *
+            m_jack_tick =
+                m_jack_pos.frame *
+                m_jack_pos.ticks_per_beat *
                 m_jack_pos.beats_per_minute / (m_jack_pos.frame_rate * 60.0);
 
             /*
@@ -821,10 +834,11 @@ jack_assistant::output (jack_scratchpad & pad)
                 {
                     while (pad.js_current_tick >= m_jack_parent.get_right_tick())
                     {
-                        double size = m_jack_parent.get_right_tick() -
+                        double lrsize = m_jack_parent.get_right_tick() -
                             m_jack_parent.get_left_tick();
 
-                        pad.js_current_tick -= size;    // \change ca 2016-01-20
+                        pad.js_current_tick -= lrsize;
+                        // printf( "current_tick[%lf]\n", current_tick );
                     }
                     m_jack_parent.reset_sequences();
                     m_jack_parent.set_orig_ticks(long(pad.js_current_tick));
@@ -837,12 +851,8 @@ jack_assistant::output (jack_scratchpad & pad)
             m_jack_transport_state == JackTransportStopped
         )
         {
-            /*
-             * (void) info_message("Stop playback");
-             */
-
             m_jack_transport_state_last = JackTransportStopped;
-            pad.js_jack_stopped = true;
+            pad.js_jack_stopped = true;     // info_message("Stop playback");
         }
 
         /*
@@ -857,7 +867,7 @@ jack_assistant::output (jack_scratchpad & pad)
 
             if (m_jack_frame_current > m_jack_frame_last)   /* moving ahead?  */
             {
-                if (m_jack_pos.frame_rate != 0)
+                if (m_jack_pos.frame_rate > 1000)           // ARBITRARY
                 {
                     /*
                      * TODO:
@@ -865,7 +875,7 @@ jack_assistant::output (jack_scratchpad & pad)
                      */
 
                     m_jack_tick +=
-                        (m_jack_frame_current - m_jack_frame_last)  *
+                        (m_jack_frame_current - m_jack_frame_last) *
                         m_jack_pos.ticks_per_beat *
                         m_jack_pos.beats_per_minute /
                         (m_jack_pos.frame_rate * 60.0);
@@ -880,7 +890,7 @@ jack_assistant::output (jack_scratchpad & pad)
              * Try new function get_jack_ticks().
              */
 
-            jack_ticks_converted =      /* convert ticks            */
+            jack_ticks_converted =                  /* convert ticks */
                 m_jack_tick *
                 (
                     double(m_ppqn) /
@@ -1169,14 +1179,18 @@ jack_timebase_callback
     pos->ticks_per_beat = jack->m_ppqn * 10;    // why 10?
     pos->beats_per_minute = jack->parent().get_beats_per_minute();
 
+#ifdef ALLOW_PLATFORM_DEBUG
+    print_jack_pos(*pos, "jack_timebase_callback");
+#endif
+
     /*
-     * Compute BBT (Bar:Beats.ticks) info from frame number.  This is
-     * relatively simple here, but would become complex if we supported tempo
-     * or time signature changes at specific locations in the transport
-     * timeline.
+     * If we are in a new position, then compute BBT (Bar:Beats.ticks) info
+     * from frame number.  This is relatively simple here, but would become
+     * complex if we supported tempo or time signature changes at specific
+     * locations in the transport timeline.
      *
-     * Question:  Do we really need to check for the starting state here
-     * before we move on?  Should we use an OR?
+     * Question:  Do we really need to check for the starting state here before
+     * we move on?  Should we use an OR?
      */
 
     if
@@ -1185,31 +1199,35 @@ jack_timebase_callback
         s_state_current == JackTransportRolling
     )
     {
-//      TOTALLY WRONG!
-//      s_jack_tick = 0.0;
-//      s_last_frame = s_current_frame;
-
         if (pos->frame_rate > 0)
         {
+#ifdef USE_SUSPECT_CODE
             if (s_current_frame > s_last_frame)
             {
+#endif
                 /*
                  * TODO:
                  * m_jack_tick = frame_to_ticks(...);
                  */
 
-                // (current_frame) *
+                double jack_delta_tick =
+#ifdef USE_SUSPECT_CODE
+                    (s_current_frame - s_last_frame) *
+#else
+                    s_current_frame *
+#endif
+                    pos->ticks_per_beat *
+                    pos->beats_per_minute / (pos->frame_rate * 60.0);
 
-                double jack_delta_tick = (s_current_frame - s_last_frame) *
-                    pos->ticks_per_beat * pos->beats_per_minute /
-                    (pos->frame_rate * 60.0);
-
-		        // s_jack_tick = (jack_delta_tick < 0) ?
-                // -jack_delta_tick : jack_delta_tick;
-
-                s_jack_tick += jack_delta_tick;
                 s_last_frame = s_current_frame;
+
+#ifdef USE_SUSPECT_CODE
+                s_jack_tick += jack_delta_tick;
             }
+#else
+		        s_jack_tick = (jack_delta_tick < 0) ?
+                    -jack_delta_tick : jack_delta_tick ;
+#endif
         }
         else
         {
@@ -1227,14 +1245,15 @@ jack_timebase_callback
             pos->bar = pbar + 1;
             pos->beat = pbeat + 1;
             pos->tick = ptick;
-            pos->bar_start_tick = pos->bar * pos->beats_per_bar *
-                pos->ticks_per_beat;
+            pos->bar_start_tick = pos->bar * ticks_per_bar;
+//          pos->bar_start_tick = pos->bar * pos->beats_per_bar *
+//              pos->ticks_per_beat;
         }
         else
         {
             errprint("jack_timebase_callback(): zero values");
         }
-    }   // MOVED TO HERE
+    }
     s_state_last = s_state_current;
 }
 
@@ -1263,26 +1282,22 @@ jack_shutdown_callback (void * arg)
  */
 
 void
-print_jack_pos (jack_position_t * pos)
+print_jack_pos (jack_position_t & pos, const std::string & tag)
 {
-#ifdef ALLOW_PLATFORM_DEBUG
+#ifdef PLATFORM_DEBUG
     printf
     (
-        "print_jack_pos()\n"
-        "    bar              [%d]\n"
-        "    beat             [%d]\n"
-        "    tick             [%d]\n"
-        "    bar_start_tick   [%f]\n"
-        "    beats_per_bar    [%f]\n"
-        "    beat_type        [%f]\n"
-        "    ticks_per_beat   [%f]\n"       // changes from 192 to 1920!
-        "    beats_per_minute [%f]\n"
-        "    frame_time       [%f]\n"
-        "    frame_rate       [%f]\n",
+        "print_jack_pos(): '%s'\n"
+        "    B:B:T = %d:%d:%d; bar_start_tick = %f\n"
+        "    beats/bar = %f; beat_type = %f\n"
+        "    ticks/beat = %f; beats/minute %f\n"
+        "    frame = %d; frame_time = %f; frame_rate = %d\n",
 //      "    next_time        [%f]\n",      // an enormous number!
-        pos->bar, pos->beat, pos->tick, pos->bar_start_tick, pos->beats_per_bar,
-        pos->beat_type, pos->ticks_per_beat, pos->beats_per_minute,
-        pos->frame_time, pos->frame_rate    // , pos->next_time
+        tag.c_str(),
+        pos.bar, pos.beat, pos.tick, pos.bar_start_tick,
+        pos.beats_per_bar, pos.beat_type,
+        pos.ticks_per_beat, pos.beats_per_minute,
+        int(pos.frame), pos.frame_time, int(pos.frame_rate)    // , pos.next_time
     );
 #endif
 }

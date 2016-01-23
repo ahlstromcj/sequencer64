@@ -255,7 +255,7 @@ extern int jack_sync_callback
 );
 #endif  // USE_JACK_SYNC_CALLBACK
 
-extern void print_jack_pos (jack_position_t * jack_pos);
+extern void print_jack_pos (jack_position_t & jack_pos, const std::string & tag);
 extern void jack_shutdown_callback (void * arg);
 extern void jack_timebase_callback
 (

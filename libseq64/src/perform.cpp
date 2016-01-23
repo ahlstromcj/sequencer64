@@ -1879,8 +1879,6 @@ perform::output_func ()
             }
             if (pad.js_dumping)
             {
-                /* HISSSSS */
-
                 if (m_looping && m_playback_mode)
                 {
                     if (pad.js_current_tick >= get_right_tick())
@@ -1902,8 +1900,10 @@ perform::output_func ()
                  * and pill.
                  */
 
-//              if (pad.js_current_tick == SEQ64_JACK_NAN)
-//              printf("play(%ld)\n", long(pad.js_current_tick));
+                if (pad.js_current_tick == SEQ64_JACK_NAN)
+                {
+                    printf("play(NAN=%ld)\n", long(pad.js_current_tick));
+                }
 
                 play(long(pad.js_current_tick));                // play!
                 m_master_bus.clock(long(pad.js_clock_tick));    // MIDI clock
@@ -2210,10 +2210,8 @@ perform::input_func ()
             {
                 if (m_master_bus.get_midi_event(&ev))
                 {
-                    if (ev.get_status() == EVENT_MIDI_START)
+                    if (ev.get_status() == EVENT_MIDI_START) // MIDI Time Clock
                     {
-                        // Obey MidiTimeClock.
-
                         stop();
                         start(false);
                         m_midiclockrunning = true;
@@ -2227,15 +2225,15 @@ perform::input_func ()
 
                         m_midiclockrunning = true;
                         start(false);
+                        // m_usemidiclock = true;   ???
                     }
                     else if (ev.get_status() == EVENT_MIDI_STOP)
                     {
                         /*
-                         * Do nothing, just let the system pause.  Since we're
-                         * not getting ticks after the stop, the song won't
-                         * advance when start is received, we'll reset the
-                         * position, or when continue is received, we won't
-                         * reset the position.
+                         * Just let the system pause.  Since we're not getting
+                         * ticks after the stop, the song won't advance when
+                         * start is received, we'll reset the position, or when
+                         * continue is received, we won't reset the position.
                          */
 
                         m_midiclockrunning = false;
@@ -2244,7 +2242,7 @@ perform::input_func ()
                     else if (ev.get_status() == EVENT_MIDI_CLOCK)
                     {
                         if (m_midiclockrunning)
-                            m_midiclocktick += 8;
+                            m_midiclocktick += 8;   // a true constant?
                     }
                     else if (ev.get_status() == EVENT_MIDI_SONG_POS)
                     {

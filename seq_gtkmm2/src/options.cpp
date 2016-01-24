@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-01-18
+ * \updates       2016-01-23
  * \license       GNU GPLv2 or above
  *
  *  Here is a list of the global variables used/stored/modified by this
@@ -82,6 +82,18 @@ options::options
 #endif
     m_mainperf                      (p),
     m_button_ok                     (manage(new Gtk::Button(Gtk::Stock::OK))),
+    m_button_jack_transport
+    (
+        manage(new Gtk::CheckButton("JACK _Transport", true))
+    ),
+    m_button_jack_master
+    (
+        manage(new Gtk::CheckButton("Trans_port Master", true))
+    ),
+    m_button_jack_master_cond
+    (
+        manage(new Gtk::CheckButton("Master C_onditional", true))
+    ),
     m_notebook                      (manage(new Gtk::Notebook()))
 {
     Gtk::HBox * hbox = manage(new Gtk::HBox());
@@ -548,10 +560,10 @@ options::add_mouse_page ()
     (
         chk_mod4,
         "If checked, note-add mode stays active after right-click release "
-        "if the Super (Windows) key is pressed in seq24 mode.  This works in "
+        "if the Super (Windows) key is pressed .  This works in "
         "the sequence/pattern and song editor piano rolls.  To get out of "
-        "note-add mode, right-click again. An alternative is to use the p and "
-        "P keys (paint mode), and the x key to exit the mode."
+        "note-add mode, right-click again. An alternative is to use the p "
+        "key (paint mode), and the x key to exit (xscape) the paint mode."
     );
     mod4box->pack_start(*chk_mod4, Gtk::PACK_SHRINK);
     chk_mod4->signal_toggled().connect
@@ -599,58 +611,57 @@ options::add_jack_sync_page ()
     transportbox->set_border_width(4);
     transportframe->add(*transportbox);
 
-    Gtk::CheckButton * check = manage
-    (
-        new Gtk::CheckButton("JACK _Transport", true)
-    );
-    check->set_active(rc().with_jack_transport());
+    m_button_jack_transport->set_active(rc().with_jack_transport());
     add_tooltip
     (
-        check,
-        "Enable slave sync with JACK Transport.  Must NOT be checked if "
+        m_button_jack_transport,
+        "Enable slave sync with JACK Transport.  Will be forced on if "
         " the user selected 'Transport Master' or 'Master Conditional'."
     );
-    check->signal_toggled().connect
+    m_button_jack_transport->signal_toggled().connect
     (
         bind
         (
             mem_fun(*this, &options::transport_callback),
-            e_jack_transport, check
+            e_jack_transport, m_button_jack_transport
         )
     );
-    transportbox->pack_start(*check, false, false);
+    transportbox->pack_start(*m_button_jack_transport, false, false);
 
-    check = manage(new Gtk::CheckButton("Trans_port Master", true));
-    check->set_active(rc().with_jack_master());
+    m_button_jack_master->set_active(rc().with_jack_master());
     add_tooltip
     (
-        check,
+        m_button_jack_master,
         "Sequencer64 will attempt to serve as JACK Master.  'JACK Transport' "
-        "must NOT be selected.  Select only one setting."
+        "will be forced on, and 'Master Conditional' will be forced off."
     );
-    check->signal_toggled().connect
-    (
-        bind(mem_fun(*this, &options::transport_callback), e_jack_master, check)
-    );
-    transportbox->pack_start(*check, false, false);
-
-    check = manage(new Gtk::CheckButton("Master C_onditional", true));
-    check->set_active(rc().with_jack_master_cond());
-    add_tooltip
-    (
-        check,
-        "Sequencer64 will fail to be Master if there is already a Master set. "
-        "'JACK Transport' must NOT be selected.  Select only one setting."
-    );
-    check->signal_toggled().connect
+    m_button_jack_master->signal_toggled().connect
     (
         bind
         (
             mem_fun(*this, &options::transport_callback),
-            e_jack_master_cond, check
+            e_jack_master, m_button_jack_master
         )
     );
-    transportbox->pack_start(*check, false, false);
+    transportbox->pack_start(*m_button_jack_master, false, false);
+
+    m_button_jack_master_cond->set_active(rc().with_jack_master_cond());
+    add_tooltip
+    (
+        m_button_jack_master_cond,
+        "Sequencer64 will fail to be Master if there is already a Master set. "
+        "'JACK Transport' will be forced on, and 'Transport Master' will be "
+        "forced off."
+    );
+    m_button_jack_master_cond->signal_toggled().connect
+    (
+        bind
+        (
+            mem_fun(*this, &options::transport_callback),
+            e_jack_master_cond, m_button_jack_master_cond
+        )
+    );
+    transportbox->pack_start(*m_button_jack_master_cond, false, false);
 
     /* Frame for jack start mode options */
 
@@ -908,42 +919,78 @@ options::lash_support_callback (Gtk::CheckButton * btn)
  * \warning
  *      These CheckButtons really need to be radio buttons (along with some
  *      changes in how the various JACK transport flags of Sequencer64 are
- *      juxtaposed).  Only <i> one </i> of the following should be
- *      check-marked:
+ *      juxtaposed).  However, what we do instead is make sure that the 
+ *      buttons are coordinated properly:
  *
- *          -   JACK Transport (makes Sequencer64 a JACK slave)
- *          -   Transport Master (makes Sequencer64 a JACK master)
- *          -   Master Conditional (makes Sequencer64 a JACK master if it can)
+ *          -   JACK Transport (makes Sequencer64 a JACK slave).  Always 
+ *              active if one of the other two are set, or if set on its own.
+ *          -   Transport Master (makes Sequencer64 a JACK master).  Forces
+ *              the Master Conditional button off, and the JACK Transport
+ *              button on.
+ *          -   Master Conditional (makes Sequencer64 a JACK master if it
+ *              can).  Forces the Transport Master button off, and the JACK
+ *              Transport button on.
  */
 
 void
 options::transport_callback (button type, Gtk::Button * acheck)
 {
     Gtk::CheckButton * check = (Gtk::CheckButton *) acheck;
+    bool is_active = check->get_active();
     switch (type)
     {
     case e_jack_transport:
-        rc().with_jack_transport(check->get_active());
+
+        if (is_active)
+            rc().with_jack_transport(true);
+        else
+        {
+            if (! rc().with_jack_master() && ! rc().with_jack_master_cond())
+                rc().with_jack_transport(false);
+            else
+                m_button_jack_transport->set_active(1); // force it back on
+        }
         break;
 
     case e_jack_master:
-        rc().with_jack_master(check->get_active());
+
+        rc().with_jack_master(is_active);
+        if (is_active)
+        {
+            rc().with_jack_transport(true);
+            m_button_jack_transport->set_active(1);
+
+            rc().with_jack_master_cond(false);
+            m_button_jack_master_cond->set_active(0);
+        }
         break;
 
     case e_jack_master_cond:
-        rc().with_jack_master_cond(check->get_active());
+
+        rc().with_jack_master_cond(is_active);
+        if (is_active)
+        {
+            rc().with_jack_transport(true);
+            m_button_jack_transport->set_active(1);
+
+            rc().with_jack_master(false);
+            m_button_jack_master->set_active(0);
+        }
         break;
 
     case e_jack_start_mode_live:
     case e_jack_start_mode_song:
-        rc().jack_start_mode(check->get_active());
+
+        rc().jack_start_mode(is_active);
         break;
 
     case e_jack_connect:
+
         perf().init_jack();
         break;
 
     case e_jack_disconnect:
+
         perf().deinit_jack();
         break;
 

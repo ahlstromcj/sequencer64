@@ -294,7 +294,13 @@ jack_assistant::init ()
 }
 
 /**
- *  Let's try to recover from the JackFailures somehow.
+ *  Let's try to recover from the JackFailures somehow.  For now, we
+ *  don't know what is causing this code, which doesn't seem to much affect
+ *  the JACK transport functionality.
+ *
+ * \return
+ *      Will return true if the restart succeeded.  Currently always return
+ *      false.
  */
 
 bool
@@ -771,20 +777,15 @@ jack_assistant::frame_to_ticks (jack_nframes_t frame) const
 
 /**
  *  Performance output function for JACK, called by the perform function
- *  of the same name.
+ *  of the same name.  This code comes from perform::output_func() from seq24.
  *
- *  This code comes from perform::output_func() from seq24.
- *
- *  USE_JACK_TRANSPORT_QUERY_STATUS macro, if enabled:
- *  Note that Sequencer64 yields JackFailure errors.  If
- *  we don't respond to them by setting m_jack_running to false, then we get
- *  endless errors, and an unidentifiable segfault when exiting the
- *  application.  If we do set m_jack_running to false and then return,
- *  we have to disable JACK, and fall back to Sequencer64's own timing.
- *  If we ignore the error status, we get the jittery progress-pill bug,
- *  and the JACK transport state value always has the JackFailure bit set.
- *
- *  Driving me crazy!!!!
+ *  USE_JACK_TRANSPORT_QUERY_STATUS macro: Sequencer64 (and Seq24) yields
+ *  JackFailure errors.  If we don't respond to them by setting m_jack_running
+ *  to false, then we get endless errors, and can get a segfault when exiting
+ *  the application.  If we do set m_jack_running to false and then return, we
+ *  have to disable JACK, and fall back to Sequencer64's own timing.  Right
+ *  now, the best policy is to ignore JackFailure here.  At least until we can
+ *  figure out what causes it.
  *
  * \note
  *      Follow up on this note found "out there":  "Maybe I'm wrong but if I
@@ -809,7 +810,6 @@ jack_assistant::output (jack_scratchpad & pad)
     if (m_jack_running)
     {
         double jack_ticks_converted = 0.0;
-//      double jack_ticks_converted_last = 0.0;     // moved to scratchpad
         double jack_ticks_delta;                    //  = 0.0;
         pad.js_init_clock = false;                  // no init until a good lock
         m_jack_transport_state = jack_transport_query(m_jack_client, &m_jack_pos);
@@ -824,8 +824,6 @@ jack_assistant::output (jack_scratchpad & pad)
 #endif
 
         m_jack_frame_current = jack_get_current_transport_frame(m_jack_client);
-
-        // print_jack_pos(m_jack_pos, "output()");
 
         bool ok = m_jack_pos.frame_rate > 1000;         /* usually 48000       */
         if (! ok)
@@ -1264,7 +1262,7 @@ jack_timebase_callback
         s_state_current == JackTransportRolling
     )
     {
-        if (pos->frame_rate > 0)
+        if (pos->frame_rate > 1000)             /* usually 48000        */
         {
             /*
              * TODO:
@@ -1272,7 +1270,7 @@ jack_timebase_callback
              */
 
             double jack_delta_tick =
-                s_current_frame *           // why not pos->frame?
+                s_current_frame *               /* why not pos->frame? */
                 pos->ticks_per_beat *
                 pos->beats_per_minute / (pos->frame_rate * 60.0);
 

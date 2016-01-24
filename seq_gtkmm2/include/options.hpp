@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-01-18
+ * \updates       2016-01-23
  * \license       GNU GPLv2 or above
  *
  */
@@ -38,6 +38,7 @@
 namespace Gtk
 {
     class Button;
+    class CheckButton;
     class Label;
     class Notebook;
     class RadioButton;
@@ -129,6 +130,24 @@ private:
      */
 
     Gtk::Button * m_button_ok;
+
+    /**
+     *  Main JACK transport selection.
+     */
+
+    Gtk::CheckButton * m_button_jack_transport;
+
+    /**
+     *  Main JACK transport master selection.
+     */
+
+    Gtk::CheckButton * m_button_jack_master;
+
+    /**
+     *  Main JACK transport master-conditional selection.
+     */
+
+    Gtk::CheckButton * m_button_jack_master_cond;
 
     /**
      *  Not sure yet what this notebook is for.  Must be a GTK thang.

@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-01-18
+ * \updates       2016-01-23
  * \license       GNU GPLv2 or above
  *
  *  The <tt> ~/.seq24rc </tt> or <tt> ~/.config/sequencer64/sequencer64.rc
@@ -788,17 +788,17 @@ optionsfile::write (const perform & p)
 
     file
         << "\n[jack-transport]\n\n"
-        "# IMPORTANT:  Only one of the jack_transport, jack_master, and\n"
-        "#             jack_master_cond options can be set to 1.  Otherwise\n"
-        "#             Sequencer64 will not sync to JACK as expected.\n\n"
         "# jack_transport - Enable slave synchronization with JACK Transport.\n\n"
         << rc().with_jack_transport() << "\n\n"
-        "# jack_master - Sequencer64 attempts to serve as JACK Master.\n\n"
+        "# jack_master - Sequencer64 attempts to serve as JACK Master.\n"
+        "# Also must enable jack_transport (the user interface forces this,\n"
+        "# and also disables jack_master_cond).\n\n"
         << rc().with_jack_master() << "\n\n"
         "# jack_master_cond - Sequencer64 is JACK master if no other JACK\n"
-        "# master exists.\n\n"
+        "# master exists. Also must enable jack_transport (the user interface\n"
+        "# forces this, and disables jack_master).\n\n"
         << rc().with_jack_master_cond()  << "\n\n"
-        "# jack_start_mode\n\n"
+        "# jack_start_mode (currently applies even if JACK not enabled).\n\n"
         "# 0 = Playback in live mode. Allows muting and unmuting of loops.\n"
         "#     from the main (patterns) window.  Disables both manual and\n"
         "#     automatic muting and unmuting from the performance window.\n"

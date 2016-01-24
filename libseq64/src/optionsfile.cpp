@@ -20,13 +20,13 @@
  * \file          optionsfile.cpp
  *
  *  This module declares/defines the base class for managing the <tt>
- *  ~/.seq24rc </tt> or <tt> ~/.config/sequencer64/sequencer64.rc </tt> ("rc")
- *  configuration files.
+ *  ~/.seq24rc </tt> legacy configuration file or the new <tt>
+ *  ~/.config/sequencer64/sequencer64.rc </tt> ("rc") configuration file.
  *
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-01-23
+ * \updates       2016-01-24
  * \license       GNU GPLv2 or above
  *
  *  The <tt> ~/.seq24rc </tt> or <tt> ~/.config/sequencer64/sequencer64.rc
@@ -720,7 +720,7 @@ optionsfile::write (const perform & p)
     file
         << "# bpm up and bpm down:\n"
         << ktx.kpt_bpm_up << " "
-        << ktx.kpt_bpm_dn << "   # "
+        << ktx.kpt_bpm_dn << "          # "
         << ucperf.key_name(ktx.kpt_bpm_up) << " "
         << ucperf.key_name(ktx.kpt_bpm_dn) << "\n"
         ;
@@ -728,7 +728,7 @@ optionsfile::write (const perform & p)
         << "# screen set up, screen set down, play:\n"
         << ktx.kpt_screenset_up << " "
         << ktx.kpt_screenset_dn << " "
-        << ktx.kpt_set_playing_screenset << "   # "
+        << ktx.kpt_set_playing_screenset << "    # "
         << ucperf.key_name(ktx.kpt_screenset_up) << " "
         << ucperf.key_name(ktx.kpt_screenset_dn) << " "
         << ucperf.key_name(ktx.kpt_set_playing_screenset) << "\n"
@@ -758,11 +758,11 @@ optionsfile::write (const perform & p)
 
     file
         << (ktx.kpt_show_ui_sequence_key ? 1 : 0)
-        << "    # show_ui_sequence_key (1 = true / 0 = false)\n"
+        << "     # show_ui_sequence_key (1 = true / 0 = false)\n"
         ;
 
     file
-        << ktx.kpt_start << " # "
+        << ktx.kpt_start << "    # "
         << ucperf.key_name(ktx.kpt_start)
         << " start sequencer\n"
        ;
@@ -780,8 +780,8 @@ optionsfile::write (const perform & p)
     if (! rc().legacy_format())
     {
         file
-            << ktx.kpt_show_ui_sequence_number << " # "
-            << " show sequence numbers (1 = true / 0 = false); "
+            << ktx.kpt_show_ui_sequence_number << "     #"
+            << " show sequence numbers (1 = true / 0 = false);"
                " ignored in legacy mode\n"
             ;
     }

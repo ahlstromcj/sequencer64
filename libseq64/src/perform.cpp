@@ -1305,6 +1305,12 @@ perform::copy_triggers ()
  *
  *      The jack_assistant::position() function doesn't use the boolean
  *      parameter at present; that code is effectively disabled.
+ *
+ *      Okay, now it does, if the "relocate" parameter is true.  See
+ *      perform::position_jack() and jack_assistant::position().  This
+ *      parameter, when true, allows the "klick" application to get
+ *      proper position data.
+ *
  *      The perform::start() function passes its boolean flag to
  *      perform::inner_start(), which sets the playback mode to that flag; if
  *      that flag is false, that turns off "song" mode.  So that explains why
@@ -1336,30 +1342,6 @@ perform::start_playing (bool jackflag)
 }
 
 /**
- *  If JACK is supported, starts the JACK transport.
- */
-
-void
-perform::start_jack ()
-{
-#ifdef SEQ64_JACK_SUPPORT
-    m_jack_asst.start();
-#endif
-}
-
-/**
- *  If JACK is supported, stops the JACK transport.
- */
-
-void
-perform::stop_jack ()
-{
-#ifdef SEQ64_JACK_SUPPORT
-    m_jack_asst.stop();
-#endif
-}
-
-/**
  *  If JACK is supported and running, sets the position of the transport.
  *
  * If we run "klick -j -P" and then start Sequencer64, we get:
@@ -1368,7 +1350,8 @@ perform::stop_jack ()
  *      MetronomeJack::process_callback(sample_t*, nframes_t): Assertion
  *      `pos.beat > 0 && pos.beat <= pos.beats_per_bar' failed.
  *
- * Let's try enabling the relocate parameter if we're JACK Master.
+ * Let's try enabling the relocate parameter if we're JACK Master.  This
+ * removes the error from klick, but it clicks at an extremely fast rate!
  */
 
 void
@@ -1399,8 +1382,7 @@ perform::start (bool state)
  *  If JACK is not running, call inner_stop().
  *
  *  The logic seems backward here, in that we call inner_stop() if JACK is
- *  not running.  Or perhaps we misunderstand the meaning of
- *  m_jack_running?
+ *  not running.  Or perhaps we misunderstand the meaning of m_jack_running?
  */
 
 void
@@ -1687,7 +1669,7 @@ perform::output_func ()
 #endif
 
         jack_scratchpad pad;
-        pad.js_current_tick = 0.0;      // tick and tick fraction
+        pad.js_current_tick = 0.0;          // tick and tick fraction
         pad.js_total_tick = 0.0;
         pad.js_clock_tick = 0.0;
         pad.js_jack_stopped = false;
@@ -1706,10 +1688,13 @@ perform::output_func ()
         long stats_clock_width_us = 0;
         long stats_all[100];                // why 100?
         long stats_clock[100];
-        for (int i = 0; i < 100; ++i)
+        if (rc().stats())                   // \new ca 2016-01-24
         {
-            stats_all[i] = 0;
-            stats_clock[i] = 0;
+            for (int i = 0; i < 100; ++i)
+            {
+                stats_all[i] = 0;
+                stats_clock[i] = 0;
+            }
         }
 
         /*
@@ -1827,8 +1812,10 @@ perform::output_func ()
                 bool fallback = true;
                 if (rc().with_jack())
                 {
+#ifdef SEQ64_JACK_SUPPORT
                     if (m_jack_asst.restart())
                         fallback = false;
+#endif
                 }
                 if (fallback)
                 {
@@ -1841,7 +1828,9 @@ perform::output_func ()
                     pad.js_current_tick += delta_tick;
                     pad.js_total_tick += delta_tick;
                     pad.js_dumping = true;
+#ifdef SEQ64_JACK_SUPPORT
                     printf("[JACK error, falling back to normal transport]");
+#endif
                 }
             }
 

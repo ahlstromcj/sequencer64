@@ -346,6 +346,14 @@ jack_assistant::deinit ()
 /**
  *  If JACK is supported, starts the JACK transport.  This function assumes
  *  that m_jack_client is not null, if m_jack_running is true.
+ *
+ *  Found this note in the Hydrogen code:
+ *
+ *      When jack_transport_start() is called, it takes effect from the next
+ *      processing cycle.  The location info from the timebase_master, if
+ *      there is one, will not be available until the _next_ next cycle.  The
+ *      code must therefore wait one cycle before syncing up with
+ *      timebase_master.
  */
 
 void
@@ -405,6 +413,21 @@ jack_assistant::stop ()
  *  code, but make it dependent on a new boolean parameter that defaults to
  *  false, in anticipation of trying it out later.
  *
+ * jack_transport_reposition():
+ *
+ *      Requests a new transport position.  The new position takes effect in
+ *      two process cycles. If there are slow-sync clients and the transport
+ *      is already rolling, it will enter the JackTransportStarting state and
+ *      begin invoking their sync_callbacks until ready. This function is
+ *      realtime-safe.
+ *
+ *      It's pos parameter provides the requested new transport position. Fill
+ *      pos->valid to specify which fields should be taken into account. If
+ *      you mark a set of fields as valid, you are expected to fill them all.
+ *
+ *      Returns 0 if a valid request, EINVAL if the position structure is
+ *      rejected.
+ *
  * \warning
  *      A lot of this code is effectively disabled by an early return
  *      statement.
@@ -419,74 +442,86 @@ jack_assistant::stop ()
  * \param relocate
  *      If true (it defaults to false), then we allow the relocation of the
  *      JACK transport to the current_tick or the left tick, rather than to
- *      frame 0.  EXPERIMENTAL, enables dead code from seq24.
+ *      frame 0.  EXPERIMENTAL, enables dead code from seq24.  Seems to work
+ *      if set to true when we are the JACK Master.  Enabling this code makes
+ *      "klick -j -P" work, after a fashion.  It clicks, but at a way too
+ *      rapid rate.
  */
 
 void
-jack_assistant::position (bool to_left_tick, bool relocate )
+jack_assistant::position (bool to_left_tick, bool relocate)
 {
     if (m_jack_running)
     {
-        /*
-         */
-
         if (relocate)                           // false by default
         {
-            jack_nframes_t rate = jack_get_sample_rate(m_jack_client);
             midipulse currenttick = 0;
             if (to_left_tick)
                 currenttick = parent().get_left_tick();
 
-            jack_position_t pos;
-            pos.valid = JackPositionBBT;
-            pos.beats_per_bar = 4;              // DEFAULT_BEATS_PER_MEASURE
-            pos.beat_type = 4;                  // DEFAULT_BEAT_WIDTH
-            pos.ticks_per_beat = m_ppqn * 10;
-            pos.beats_per_minute = parent().get_beats_per_minute();
-
-            /*
-             * Compute BBT info from frame number.  This is relatively simple
-             * here, but would become complex if we supported tempo or time
-             * signature changes at specific locations in the transport timeline.
-             */
-
-            currenttick *= 10;
-            pos.bar = int32_t
-            (
-                (currenttick / long(pos.ticks_per_beat) / pos.beats_per_bar)
-            );
-            pos.beat = int32_t(((currenttick / (long) pos.ticks_per_beat) % 4));
-            pos.tick = int32_t((currenttick % (m_ppqn * 10)));
-            pos.bar_start_tick = pos.bar * pos.beats_per_bar * pos.ticks_per_beat;
-            pos.frame_rate = rate;
-
-            /*
-             * Hey, we are not supposed to change this value!
-             */
-
-            pos.frame = (jack_nframes_t)
-            (
-                (currenttick * rate * 60.0) /
-                    (pos.ticks_per_beat * pos.beats_per_minute)
-            );
-
-            /*
-             * ticks * 10 = jack ticks;
-             * jack ticks / ticks per beat = num beats;
-             * num beats / beats per minute = num minutes
-             * num minutes * 60 = num seconds
-             * num secords * frame_rate  = frame
-             */
-
-            pos.bar++;
-            pos.beat++;
-            jack_transport_reposition(m_jack_client, &pos);
+            set_position(currenttick);
         }
         else
         {
             if (jack_transport_locate(m_jack_client, 0) != 0)
                 (void) info_message("jack_transport_locate() failed");
         }
+    }
+}
+
+/**
+ *  Provides the code that was effectively commented out in the
+ *  perform::position_jack() function.  We might be able to use it in other
+ *  functions.
+ *
+ *  Computing the  BBT information from the frame number is relatively simple
+ *  here, but would become complex if we supported tempo or time signature
+ *  changes at specific locations in the transport timeline.
+ *
+ \verbatim
+        ticks * 10 = jack ticks;
+        jack ticks / ticks per beat = num beats;
+        num beats / beats per minute = num minutes
+        num minutes * 60 = num seconds
+        num secords * frame_rate  = frame
+ \endverbatim
+ */
+
+void
+jack_assistant::set_position (midipulse currenttick)
+{
+    jack_nframes_t rate = jack_get_sample_rate(m_jack_client);
+    jack_position_t pos;
+    pos.valid = JackPositionBBT;        // what will be modified here
+    pos.beats_per_bar = 4;              // DEFAULT_BEATS_PER_MEASURE
+    pos.beat_type = 4;                  // DEFAULT_BEAT_WIDTH
+    pos.ticks_per_beat = m_ppqn * 10;
+    pos.beats_per_minute = parent().get_beats_per_minute();
+
+    /*
+     * Compute BBT info from frame number.
+     */
+
+    currenttick *= 10;
+    pos.bar = int32_t
+    (
+        currenttick / long(pos.ticks_per_beat) / pos.beats_per_bar
+    );
+    pos.beat = int32_t(((currenttick / (long) pos.ticks_per_beat) % 4));
+    pos.tick = int32_t((currenttick % (m_ppqn * 10)));
+    pos.bar_start_tick = pos.bar * pos.beats_per_bar * pos.ticks_per_beat;
+    pos.frame_rate = rate;
+    pos.frame = (jack_nframes_t)
+    (
+        (currenttick * rate * 60.0) / (pos.ticks_per_beat * pos.beats_per_minute)
+    );
+    pos.bar++;
+    pos.beat++;
+
+    int jackcode = jack_transport_reposition(m_jack_client, &pos);
+    if (jackcode != 0)
+    {
+        errprint("jack_assistant::position(): bad position structure");
     }
 }
 
@@ -599,6 +634,25 @@ jack_process_callback (jack_nframes_t /* nframes */, void * /* arg */ )
      * EXPERIMENTAL!!!!!
      * (void) sync();
      */
+
+#ifdef USE_SAMPLE_AUDIO_CODE    // disabled, shown only for reference & learning
+    jack_default_audio_sample_t * in, * out;
+	jack_transport_state_t ts = jack_transport_query(client, NULL);
+	if (ts == JackTransportRolling)
+    {
+		if (client_state == Init)
+			client_state = Run;
+
+		in = jack_port_get_buffer(input_port, nframes);
+		out = jack_port_get_buffer(output_port, nframes);
+		memcpy(out, in, sizeof (jack_default_audio_sample_t) * nframes);
+	}
+    else if (ts == JackTransportStopped)
+    {
+		if (client_state == Run)
+			client_state = Exit;
+	}
+#endif
 
     return 0;
 }

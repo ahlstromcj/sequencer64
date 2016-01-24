@@ -697,13 +697,31 @@ public:
      * bool jack_session_event (); Replaced by jack_assistant::session_event().
      */
 
-    void start_jack ();
-    void stop_jack ();
-    void position_jack (bool state);
+    /**
+     *  If JACK is supported, starts the JACK transport.
+     */
 
+    void start_jack ()
+    {
+#ifdef SEQ64_JACK_SUPPORT
+        m_jack_asst.start();
+#endif
+    }
+
+    /**
+     *  If JACK is supported, stops the JACK transport.
+     */
+
+    void stop_jack ()
+    {
+#ifdef SEQ64_JACK_SUPPORT
+        m_jack_asst.stop();
+#endif
+    }
+
+    void position_jack (bool state);
     void off_sequences ();
     void all_notes_off ();
-
     void set_active (int seq, bool active);
     void set_was_active (int seq);
     bool is_dirty_main (int seq);

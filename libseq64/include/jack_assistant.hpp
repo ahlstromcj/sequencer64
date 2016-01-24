@@ -234,6 +234,7 @@ private:
     jack_client_t * client_open (const std::string & clientname);
     void show_statuses (unsigned bits);
     int sync (jack_transport_state_t state = (jack_transport_state_t)(-1));
+    void set_position (midipulse currenttick);
 
 #ifdef SEQ64_USE_DEBUG_OUTPUT
     void jack_debug_print

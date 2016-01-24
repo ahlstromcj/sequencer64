@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-01-19
+ * \updates       2016-01-24
  * \license       GNU GPLv2 or above
  *
  *  This class still has way too many members, even with the JACK and
@@ -506,13 +506,22 @@ public:
 
     void clear_all ();
     void launch (int ppqn);
-    void finish ();
     void new_sequence (int seq);                    /* seqmenu & mainwid    */
     void add_sequence (sequence * seq, int perf);   /* midifile             */
     void delete_sequence (int seq);                 /* seqmenu & mainwid    */
 
     bool is_sequence_in_edit (int seq);
     void clear_sequence_triggers (int seq);
+
+    /**
+     *  The rough opposite of launch(); it doesn't stop the threads.  A minor
+     *  simplification for the main() routine, hides the JACK support macro.
+     */
+
+    void finish ()
+    {
+        deinit_jack();
+    }
 
     /**
      * \getter m_tick
@@ -1004,11 +1013,34 @@ private:
      * See launch() instead.
      */
 
-    void init ();
     void launch_input_thread ();
     void launch_output_thread ();
-    void init_jack ();
-    void deinit_jack ();
+
+    /**
+     *  Initializes JACK support, if SEQ64_JACK_SUPPORT is defined.  Who calls
+     *  this routine?  The main() routine of the application [via launch()],
+     *  and the options module, when the Connect button is pressed.
+     */
+
+    void init_jack ()
+    {
+#ifdef SEQ64_JACK_SUPPORT
+        m_jack_asst.init();
+#endif
+    }
+
+    /**
+     *  Tears down the JACK infrastructure.  Called by launch() and in the
+     *  options module, when the Disconnect button is pressed.
+     */
+
+    void deinit_jack ()
+    {
+#ifdef SEQ64_JACK_SUPPORT
+        m_jack_asst.deinit();
+#endif
+    }
+
     bool seq_in_playing_screen (int seq);
 
     /**

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-14
- * \updates       2016-01-23
+ * \updates       2016-01-24
  * \license       GNU GPLv2 or above
  *
  *  This module was created from code that existed in the perform object.
@@ -78,8 +78,6 @@ jack_assistant::jack_assistant (perform & parent, int ppqn)
     m_ppqn                      (0)
 {
     m_ppqn = choose_ppqn(ppqn);
-
-    // print_jack_pos(m_jack_pos, "jack_assistant()");
 }
 
 /**
@@ -142,15 +140,16 @@ jack_assistant::error_message (const std::string & msg)
  *  polling of slow-sync clients.  But seq24/sequencer64 are not slow-sync
  *  clients.  Therefore, let's conditionally comment out the sync callback
  *  code.  One of the author's of JACK notes that seq24 is wrong to set up a
- *  sync callback.  CURRENTLY NOT COMMENTED OUT!!!
+ *  sync callback.  However, this macro is currently enabled.
  *
  * Jack transport settings:
  *
  *      There are three settings:  On, Master, and Master Conditional.
  *      Currently, they can all be selected in the user-interface's File /
- *      Options / JACK/LASH page.  We really want only one to be set, for
- *      clarity.  They should be radio buttons.  We need to initialize if any
- *      of them are set.
+ *      Options / JACK/LASH page.  We really want only the proper combinations
+ *      to be set, for clarity (the user-interface now takes care of this.  We
+ *      need to initialize if any of them are set, and the
+ *      rc_settings::with_jack() function tells us that.
  *
  * jack_set_process_callback() patch:
  *
@@ -204,8 +203,7 @@ jack_assistant::init ()
 
         /*
          * Although they say this code is needed to get JACK transport to work
-         * properly, seq24 doesn't use this, so for now we comment this out
-         * with a macro.
+         * properly, seq24 doesn't use this.  But it doesn't hurt to set it up.
          */
 
         jackcode = jack_set_process_callback    /* see notes in banner */
@@ -243,12 +241,6 @@ jack_assistant::init ()
             /*
              * 'cond' is true if we want to fail if there is already a JACK
              * master, i.e. it is a conditional attempt to be JACK master.
-             *
-             * \change ca 2016-01-12
-             *      Found an error; we don't want to pass a perform object,
-             *      we want a jack_assistant object.
-             *
-             *      (void *) &m_jack_parent
              */
 
             jackcode = jack_set_timebase_callback
@@ -264,9 +256,10 @@ jack_assistant::init ()
             else
             {
                 /*
-                 * seq24 doesn't set this here: m_jack_master = false;
+                 * seq24 doesn't set this flag, but that seems incorrect.
                  */
 
+                m_jack_master = false;
                 return error_message("jack_set_timebase_callback() failed");
             }
         }
@@ -279,16 +272,16 @@ jack_assistant::init ()
             return error_message("Cannot activate as JACK client");
 
         if (m_jack_running)
-            (void) info_message("JACK sync now enabled.");
+            (void) info_message("JACK sync now enabled");
         else
-            (void) error_message("Initialization error. JACK sync not enabled.");
+            (void) error_message("Initialization error, JACK sync not enabled");
     }
     else
     {
         if (m_jack_running)
             (void) info_message("JACK sync already enabled!");
         else
-            (void) info_message("Initialized. Running without JACK.");
+            (void) info_message("Initialized, Running without JACK");
     }
     return m_jack_running;
 }
@@ -296,7 +289,7 @@ jack_assistant::init ()
 /**
  *  Let's try to recover from the JackFailures somehow.  For now, we
  *  don't know what is causing this code, which doesn't seem to much affect
- *  the JACK transport functionality.
+ *  the JACK transport functionality.  This function does nothing.
  *
  * \return
  *      Will return true if the restart succeeded.  Currently always return
@@ -326,6 +319,7 @@ jack_assistant::deinit ()
 {
     if (m_jack_running)
     {
+        m_jack_running = false;
         if (m_jack_master)
         {
             m_jack_master = false;
@@ -344,11 +338,9 @@ jack_assistant::deinit ()
 
         if (jack_client_close(m_jack_client) != 0)
             (void) error_message("Cannot close JACK client");
-
-        m_jack_running = false;
     }
     if (! m_jack_running)
-        (void) info_message("JACK sync now disabled.");
+        (void) info_message("JACK sync now disabled");
 }
 
 /**
@@ -369,7 +361,7 @@ jack_assistant::start ()
          */
     }
     else if (rc().with_jack())
-        (void) error_message("Transport Start: JACK not running.");
+        (void) error_message("Transport Start: JACK not running");
 }
 
 /**
@@ -390,7 +382,7 @@ jack_assistant::stop ()
          */
     }
     else if (rc().with_jack())
-        (void) error_message("Transport Stop: JACK not running.");
+        (void) error_message("Transport Stop: JACK not running");
 }
 
 /**
@@ -435,6 +427,9 @@ jack_assistant::position (bool to_left_tick, bool relocate )
 {
     if (m_jack_running)
     {
+        /*
+         */
+
         if (relocate)                           // false by default
         {
             jack_nframes_t rate = jack_get_sample_rate(m_jack_client);
@@ -809,8 +804,8 @@ jack_assistant::output (jack_scratchpad & pad)
 {
     if (m_jack_running)
     {
-        double jack_ticks_converted = 0.0;
-        double jack_ticks_delta;                    //  = 0.0;
+        double jack_ticks_converted;                // = 0.0;
+        double jack_ticks_delta;                    // = 0.0;
         pad.js_init_clock = false;                  // no init until a good lock
         m_jack_transport_state = jack_transport_query(m_jack_client, &m_jack_pos);
 
@@ -1244,8 +1239,6 @@ jack_timebase_callback
     pos->ticks_per_beat = jack->m_ppqn * 10;    // why 10?
     pos->beats_per_minute = jack->parent().get_beats_per_minute();
 
-    // print_jack_pos(*pos, "jack_timebase_callback");
-
     /*
      * If we are in a new position, then compute BBT (Bar:Beats.ticks) info
      * from frame number.  This is relatively simple here, but would become
@@ -1320,6 +1313,8 @@ jack_shutdown_callback (void * arg)
     infoprint("[JACK shutdown]");
 }
 
+#ifdef ALLOW_PLATFORM_DEBUG
+
 /**
  *  Print the JACK position.
  *
@@ -1330,7 +1325,6 @@ jack_shutdown_callback (void * arg)
 void
 print_jack_pos (jack_position_t & pos, const std::string & tag)
 {
-#ifdef PLATFORM_DEBUG
     printf
     (
         "print_jack_pos(): '%s'\n"
@@ -1344,8 +1338,9 @@ print_jack_pos (jack_position_t & pos, const std::string & tag)
         pos.ticks_per_beat, pos.beats_per_minute,
         int(pos.frame), pos.frame_time, int(pos.frame_rate)
     );
-#endif
 }
+
+#endif
 
 #endif  // SEQ64_JACK_SUPPORT
 

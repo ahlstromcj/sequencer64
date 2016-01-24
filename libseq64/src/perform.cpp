@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-01-23
+ * \updates       2016-01-24
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -184,10 +184,12 @@ perform::~perform ()
 }
 
 /**
- *  Calls the initialization and thread-launching functions.  This function is
- *  called in main().  We collected all the calls here as a simplification.
- *  This function must be called after the perform constructor and after the
- *  configuration file and command-line configuration overrides.
+ *  Calls the MIDI buss and JACK initialization functions and the input/output
+ *  thread-launching functions.  This function is called in main().  We
+ *  collected all the calls here as a simplification, and renamed it because
+ *  it is more than just initialization.  This function must be called after
+ *  the perform constructor and after the configuration file and command-line
+ *  configuration overrides.
  *
  * \param ppqn
  *      Provides the PPQN value, which is either the default value (192) or is
@@ -202,55 +204,6 @@ perform::launch (int ppqn)
     launch_output_thread();
 #ifdef SEQ64_JACK_SUPPORT
     init_jack();
-#endif
-}
-
-/**
- *  The rough opposite of launch(); it doesn't stop the threads.  A minor
- *  simplification for the main() routine, hides the JACK support macro.
- */
-
-void
-perform::finish ()
-{
-    deinit_jack();
-}
-
-/**
- *  Initializes the master MIDI bus.  Who calls this routine?  The main()
- *  routine of the application, indirectly, through the launch() function.
- *  No longer needed; now see the launch function.
- *
- * void
- * perform::init ()
- * {
- *     m_master_bus.init();
- * }
- */
-
-/**
- *  Initializes JACK support, if SEQ64_JACK_SUPPORT is defined.  Who calls
- *  this routine?  The main() routine of the application, and the options
- *  module.
- */
-
-void
-perform::init_jack ()
-{
-#ifdef SEQ64_JACK_SUPPORT
-    m_jack_asst.init();
-#endif
-}
-
-/**
- *  Tears down the JACK infrastructure.
- */
-
-void
-perform::deinit_jack ()
-{
-#ifdef SEQ64_JACK_SUPPORT
-    m_jack_asst.deinit();
 #endif
 }
 
@@ -1199,7 +1152,7 @@ perform::set_playing_screenset ()
 void
 perform::play (midipulse tick)
 {
-    m_tick = tick;                      // printf("play [%ld]\n", tick);
+    m_tick = tick;
     for (int i = 0; i < m_sequence_max; ++i)
     {
         if (is_active(i))
@@ -1408,13 +1361,21 @@ perform::stop_jack ()
 
 /**
  *  If JACK is supported and running, sets the position of the transport.
+ *
+ * If we run "klick -j -P" and then start Sequencer64, we get:
+ *
+ *      klick: src/metronome_jack.cc:52: virtual void
+ *      MetronomeJack::process_callback(sample_t*, nframes_t): Assertion
+ *      `pos.beat > 0 && pos.beat <= pos.beats_per_bar' failed.
+ *
+ * Let's try enabling the relocate parameter if we're JACK Master.
  */
 
 void
 perform::position_jack (bool state)
 {
 #ifdef SEQ64_JACK_SUPPORT
-    m_jack_asst.position(state);
+    m_jack_asst.position(state, rc().with_jack_master());
 #endif
 }
 
@@ -1880,6 +1841,7 @@ perform::output_func ()
                     pad.js_current_tick += delta_tick;
                     pad.js_total_tick += delta_tick;
                     pad.js_dumping = true;
+                    printf("[JACK error, falling back to normal transport]");
                 }
             }
 
@@ -1921,16 +1883,7 @@ perform::output_func ()
                     printf("play(NAN=%ld)\n", long(pad.js_current_tick));
                 }
 
-                /*
-                 * Seq24 shows this number incrementing by about 1 or 2 ticks
-                 * each time.  Seq64 increments it by 1, then 3, 5, 6, 8, 10,
-                 * 11, 12, 15, 18, and it just gets larger and larger.
-                 *
-                 * printf("play[%ld]\n", long(pad.js_current_tick));
-                 */
-
                 play(long(pad.js_current_tick));                // play!
-
                 m_master_bus.clock(long(pad.js_clock_tick));    // MIDI clock
                 if (rc().stats())
                 {
@@ -2067,7 +2020,6 @@ perform::output_func ()
             if (pad.js_jack_stopped)
                 inner_stop();
         }
-
         if (rc().stats())
         {
             printf("\n\n-- trigger width --\n");

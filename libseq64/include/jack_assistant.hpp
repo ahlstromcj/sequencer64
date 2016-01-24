@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-09-17
- * \updates       2016-01-23
+ * \updates       2016-01-24
  * \license       GNU GPLv2 or above
  *
  *  This class contains a number of functions that used to reside in the
@@ -55,7 +55,8 @@
  *  We don't really need to be a slow-sync client, as far as we can tell.
  *  In fact, our sync code may interfere with getting a valid frame rate.
  *  However, we still can't JACK working exactly the way it does in seq24,
- *  so we leave the callback in place.
+ *  so we leave the callback in place.  Plus, it does things important to the
+ *  setup of JACK.
  */
 
 #define USE_JACK_SYNC_CALLBACK
@@ -257,7 +258,6 @@ extern int jack_sync_callback
 );
 #endif  // USE_JACK_SYNC_CALLBACK
 
-extern void print_jack_pos (jack_position_t & jack_pos, const std::string & tag);
 extern void jack_shutdown_callback (void * arg);
 extern void jack_timebase_callback
 (
@@ -278,6 +278,10 @@ extern int jack_process_callback (jack_nframes_t nframes, void * arg);
 
 #ifdef SEQ64_JACK_SESSION
 extern void jack_session_callback (jack_session_event_t * ev, void * arg);
+#endif
+
+#ifdef ALLOW_PLATFORM_DEBUG
+extern void print_jack_pos (jack_position_t & jack_pos, const std::string & tag);
 #endif
 
 #endif  // SEQ64_JACK_SUPPORT

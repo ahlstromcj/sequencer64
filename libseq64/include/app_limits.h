@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-08
- * \updates       2016-01-21
+ * \updates       2016-01-23
  * \license       GNU GPLv2 or above
  *
  *  This collection of global variables describes some facets of the
@@ -135,14 +135,15 @@
 #define SEQ64_DEFAULT_PPQN              192
 
 /**
- *  Minimum value for PPQN.  Mostly for sanity checking.
+ *  Minimum value for PPQN.  Mostly for sanity checking.  This was set to 96,
+ *  but there have been tunes set to 32 PPQN, I think.
  */
 
-#define SEQ64_MINIMUM_PPQN               96
+#define SEQ64_MINIMUM_PPQN               32
 
 /**
  *  Maximum value for PPQN.  Mostly for sanity checking, with higher values
- *  possibly useful for debugging..
+ *  possibly useful for debugging.
  */
 
 #define SEQ64_MAXIMUM_PPQN              19200       /* 960  */
@@ -161,7 +162,7 @@
  *  debugging and troubleshooting.
  */
 
-#define SEQ64_MINIMUM_BPM                 2         /* 20   */
+#define SEQ64_MINIMUM_BPM                 1         /* 20   */
 
 /**
  *  Maximum value for c_beats_per_minute (global beats-per-minute, also known

@@ -1,6 +1,6 @@
-INSTALL for Sequencer64 v 0.9.9.13
+INSTALL for Sequencer64 v 0.9.9.15
 Chris Ahlstrom
-2015-09-10 to 2016-01-16
+2015-09-10 to 2016-01-25
 
 The current packaging for Sequencer64 is primarily aimed at developers.
 There is currently no configure script... it must be bootstrapped.
@@ -35,6 +35,13 @@ Steps:
    4. To install, become root and run:
 
       # make install
+
+   5. See the additional features that can be enabled, below, using 
+      build macros.
+
+   6. Also grab the Sequencer64 User Manual from:
+
+        http://github.com/ahlstromcj/sequencer64-doc.git
 
 CONFIGURE OPTIONS FOR APPLICATION FEATURES:
 
@@ -73,7 +80,7 @@ MANUALLY-DEFINED MACROS IN CODE:
 
     SEQ64_USE_NEW_FONT:
 
-        Obsolete:  now a user-settings option.
+        Obsolete:  now an option that can be set in the user-settings file.
 
         Already defined in the font module.  If defined, a new, anti-aliased,
         bold font is used in the user-interface.  This new font is implemented
@@ -119,12 +126,13 @@ MANUALLY-DEFINED MACROS IN CODE:
         output if the application is compiled for debugging.  This macro
         can be activated only if PLATFORM_DEBUG is defined, which is taken
         care of by the build process.  If set, this macro turns on extra
-        console output for the following modules:
+        (i.e. too much) console output for the following modules:
 
             globals
             jack_assistant
             optionsfile
             user_settings
+            And more...
 
     SEQ64_USE_VI_SEQROLL_MODE:
 
@@ -136,6 +144,8 @@ MANUALLY-DEFINED MACROS IN CODE:
 
         This category of macro are usually undefined values that let us keep
         old code around in case we decide it was the better code after all.
+        Generally, you do not want to change the status of these macros unless
+        you are familiar with the code.
 
 DEPENDENCIES:
 
@@ -175,5 +185,10 @@ DEPENDENCIES:
       -  debhelper
       -  fakeroot
       -  More?
+
+   JACK Testing (optional):
+
+      - hydrogen
+      - klick
 
 # vim: sw=4 ts=4 wm=4 et ft=sh

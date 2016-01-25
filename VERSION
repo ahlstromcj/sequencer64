@@ -1,4 +1,4 @@
-2016-01-19
-0.9.9.14
-events redux
-Event Editor now enabled and reasonably useful.
+2016-01-25
+0.9.9.15
+fixups redux
+JACK now works a lot better.

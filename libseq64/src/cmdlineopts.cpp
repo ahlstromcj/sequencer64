@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-20
- * \updates       2016-01-16
+ * \updates       2016-01-24
  * \license       GNU GPLv2 or above
  *
  *  The "rc" command-line options override setting that are first read from
@@ -62,6 +62,11 @@
 
 namespace seq64
 {
+
+/**
+ *  Sets up the "hardwired" version text for Sequencer64.  This value
+ *  ultimately comes from the configure.ac script.
+ */
 
 static const std::string versiontext =
     SEQ64_PACKAGE " " SEQ64_VERSION " " __DATE__ "\n";
@@ -104,7 +109,7 @@ static struct option long_options [] =
     /**
      * Legacy command-line options are using underscores, which are confusing
      * and not a GNU standard, as far as we know.  Ugh, prefer the hyphen!
-     * But we continue to support them for "backwards compatibility".
+     * But we continue to support them for "backward compatibility".
      */
 
 #ifdef SEQ64_JACK_SUPPORT
@@ -135,7 +140,7 @@ static const std::string s_arg_list =
     ;
 
 static const char * const s_help_1a =
-"sequencer64 v 0.9.9.13 A significant refactoring of the seq24 live sequencer.\n"
+"sequencer64 v 0.9.9.15 A significant refactoring of the seq24 live sequencer.\n"
 "\n"
 "Usage: sequencer64 [options] [MIDI filename]\n\n"
 "Options:\n"
@@ -147,7 +152,8 @@ static const char * const s_help_1a =
 "   -L, --lash               Activate built-in LASH support.\n"
 "   -n, --no-lash            Do not activate built-in LASH support.\n"
 #endif
-"   -m, --manual-alsa-ports  Don't attach ALSA ports.\n"
+"   -m, --manual-alsa-ports  Don't attach ALSA ports.  Use when exposing ALSA\n"
+"                            ports to JACK (e.g. using a2jmidid).\n"
 "   -a, --auto-alsa-ports    Attach ALSA ports (overrides the 'rc' file).\n"
     ;
 
@@ -167,8 +173,9 @@ static const char * const s_help_2 =
 "   -S, --stats              Show global statistics.\n"
 #ifdef SEQ64_JACK_SUPPORT
 "   -j, --jack-transport     Synchronize to JACK transport.\n"
-"   -J, --jack-master        Try to be JACK master.\n"
-"   -C, --jack-master-cond   JACK master will fail if there's already a master.\n"
+"   -J, --jack-master        Try to be JACK Master. Also sets -j.\n"
+"   -C, --jack-master-cond   JACK Master will fail if there's already a master.\n"
+"                            Also sets -j.\n"
 "   -M, --jack-start-mode m  When synced to JACK, the following play modes are\n"
 "                            available: 0 = live mode; 1 = song mode (default).\n"
 " -U, --jack-session-uuid u  Set UUID for JACK session.\n"
@@ -186,10 +193,11 @@ static const char * const s_help_3 =
     ;
 
 static const char * const s_help_4 =
-"Setting --ppqn to double the default causes a MIDI file to play at half\n"
-"the speed.  If the file is re-saved with that setting, the double clock is\n"
-"saved, but it still plays slowly in Sequencer64, but at its original rate\n"
-"in Timidity.  We still have some work to do on PPQN support, obviously.\n"
+"The --ppqn option works pretty well, but be aware that bugs may exist in it.\n"
+"If a MIDI file is re-saved with that setting, the --ppqn value is also saved.\n"
+"\n"
+"If no JACK or LASH options are shown above, they have been disabled in the\n"
+"build configuration.\n"
 "\n"
     ;
 
@@ -329,6 +337,7 @@ parse_options_files (perform & p, int argc, char * argv [])
 }
 
 /**
+ *  Parses the command-line options on behalf of the application.
  *
  * \param argc
  *      The number of command-line arguments.
@@ -411,10 +420,14 @@ parse_command_line_options (int argc, char * argv [])
             break;
 
         case 'J':
+            seq64::rc().with_jack_transport(true);
             seq64::rc().with_jack_master(true);
+            seq64::rc().with_jack_master_cond(false);
             break;
 
         case 'C':
+            seq64::rc().with_jack_transport(true);
+            seq64::rc().with_jack_master(false);
             seq64::rc().with_jack_master_cond(true);
             break;
 

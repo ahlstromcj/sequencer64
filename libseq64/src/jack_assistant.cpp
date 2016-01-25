@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-14
- * \updates       2016-01-24
+ * \updates       2016-01-25
  * \license       GNU GPLv2 or above
  *
  *  This module was created from code that existed in the perform object.
@@ -413,6 +413,9 @@ jack_assistant::stop ()
  *  code, but make it dependent on a new boolean parameter that defaults to
  *  false, in anticipation of trying it out later.
  *
+ *  These repositions reset the progress bars.  We don't always want that, it
+ *  should be an option.  TODO.
+ *
  * jack_transport_reposition():
  *
  *      Requests a new transport position.  The new position takes effect in
@@ -424,6 +427,9 @@ jack_assistant::stop ()
  *      It's pos parameter provides the requested new transport position. Fill
  *      pos->valid to specify which fields should be taken into account. If
  *      you mark a set of fields as valid, you are expected to fill them all.
+ *      Note that "frame" is always assumed, and generally needs to be set:
+ *
+ *         http://comments.gmane.org/gmane.comp.audio.jackit/18705
  *
  *      Returns 0 if a valid request, EINVAL if the position structure is
  *      rejected.
@@ -459,7 +465,7 @@ jack_assistant::position (bool to_left_tick, bool relocate)
             if (to_left_tick)
                 currenttick = parent().get_left_tick();
 
-            set_position(currenttick);
+            set_position(currenttick);          // doesn't quite work
         }
         else
         {
@@ -492,7 +498,13 @@ jack_assistant::set_position (midipulse currenttick)
 {
     jack_nframes_t rate = jack_get_sample_rate(m_jack_client);
     jack_position_t pos;
-    pos.valid = JackPositionBBT;        // what will be modified here
+
+    /*
+     * Sufficient to edit all the fields we want????
+     */
+
+    pos.valid = JackPositionBBT;        // flags what will be modified here
+
     pos.beats_per_bar = 4;              // DEFAULT_BEATS_PER_MEASURE
     pos.beat_type = 4;                  // DEFAULT_BEAT_WIDTH
     pos.ticks_per_beat = m_ppqn * 10;
@@ -510,6 +522,12 @@ jack_assistant::set_position (midipulse currenttick)
     pos.beat = int32_t(((currenttick / (long) pos.ticks_per_beat) % 4));
     pos.tick = int32_t((currenttick % (m_ppqn * 10)));
     pos.bar_start_tick = pos.bar * pos.beats_per_bar * pos.ticks_per_beat;
+
+    /*
+     * I think we will need to add to the "valid" flags; see transport.h of
+     * JACK.
+     */
+
     pos.frame_rate = rate;
     pos.frame = (jack_nframes_t)
     (
@@ -625,6 +643,9 @@ jack_assistant::sync (jack_transport_state_t state)
  *
  * \param arg
  *      Unused.
+ *
+ * \return
+ *      Returns 0 on success, non-zero on error.
  */
 
 int
@@ -636,10 +657,11 @@ jack_process_callback (jack_nframes_t /* nframes */, void * /* arg */ )
      */
 
 #ifdef USE_SAMPLE_AUDIO_CODE    // disabled, shown only for reference & learning
-    jack_default_audio_sample_t * in, * out;
 	jack_transport_state_t ts = jack_transport_query(client, NULL);
 	if (ts == JackTransportRolling)
     {
+        jack_default_audio_sample_t * in;
+        jack_default_audio_sample_t * out;
 		if (client_state == Init)
 			client_state = Run;
 
@@ -1167,7 +1189,7 @@ jack_assistant::client_open (const std::string & clientname)
     result = jack_client_open(name, JackNullOption, pstatus);       // 0x800000
 #endif
 
-    if (not_nullptr(pstatus))
+    if (not_nullptr(result) && not_nullptr(pstatus))
     {
         if (status & JackServerStarted)
             (void) info_message("JACK server started now");
@@ -1179,19 +1201,8 @@ jack_assistant::client_open (const std::string & clientname)
 
         show_statuses(status);
     }
-
     return result;
 }
-
-/**
- *  Another init() helper function to keep init() clean and easy to read.
- *
- * \return
- *      Returns true if the function succeeded.
-
-bool
-jack_assistant::
- */
 
 #ifdef SEQ64_USE_DEBUG_OUTPUT
 
@@ -1200,11 +1211,7 @@ jack_assistant::
  */
 
 void
-jack_assistant::jack_debug_print
-(
-    double current_tick,
-    double ticks_delta
-)
+jack_assistant::jack_debug_print (double current_tick, double ticks_delta)
 {
     double jack_tick = (m_jack_pos.bar-1) *
         (m_jack_pos.ticks_per_beat * m_jack_pos.beats_per_bar ) +
@@ -1274,7 +1281,6 @@ jack_timebase_callback
     void * arg
 )
 {
-    static double s_jack_tick;
     static jack_nframes_t s_current_frame;
     static jack_transport_state_t s_state_last;
     static jack_transport_state_t s_state_current;
@@ -1287,7 +1293,7 @@ jack_timebase_callback
         errprint("jack_timebase_callback(): null position pointer");
         return;
     }
-    pos->valid = JackPositionBBT;
+    pos->valid = JackPositionBBT;               // also see set_position()
     pos->beats_per_bar = 4;                     // hardwired!
     pos->beat_type = 4;                         // hardwired!
     pos->ticks_per_beat = jack->m_ppqn * 10;    // why 10?
@@ -1309,6 +1315,7 @@ jack_timebase_callback
         s_state_current == JackTransportRolling
     )
     {
+        double s_jack_tick;                  // why static?
         if (pos->frame_rate > 1000)             /* usually 48000        */
         {
             /*
@@ -1341,6 +1348,38 @@ jack_timebase_callback
             pos->beat = pbeat + 1;
             pos->tick = ptick;
             pos->bar_start_tick = pos->bar * ticks_per_bar;
+
+            /*
+             * This kind of works, but makes klick and playback jittery.
+             *
+             *  jack->set_position(s_jack_tick);
+             */
+
+            /*
+             * EXPERIMENT
+
+            jack_nframes_t frame = jack_get_current_transport_frame
+            (
+                jack->m_jack_client
+            );
+            pos->frame = frame;
+            int jackcode = jack_transport_reposition(jack->m_jack_client, pos);
+            if (jackcode != 0)
+            {
+                errprint("jack_timebase_callback(): bad position structure");
+            }
+
+             * END OF EXPERIMENT (fails, klick clicks just once, bad playback)
+             */
+
+            if (! (pos->beat > 0 && pos->beat <= pos->beats_per_bar))
+            {
+                printf
+                (
+                    "JACK error: pos->beat = %d, pos->beats_per_bar = %f\n",
+                    pos->beat, pos->beats_per_bar
+                );
+            }
         }
         else
         {

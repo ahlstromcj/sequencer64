@@ -1828,9 +1828,6 @@ perform::output_func ()
                     pad.js_current_tick += delta_tick;
                     pad.js_total_tick += delta_tick;
                     pad.js_dumping = true;
-#ifdef SEQ64_JACK_SUPPORT
-                    printf("[JACK error, falling back to normal transport]");
-#endif
                 }
             }
 

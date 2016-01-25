@@ -1,3 +1,73 @@
+2016-01-24  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* configure.ac: Updated docs and merged fixups branch into master
+	for 0.9.9.14
+
+2016-01-24  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* contrib/jack-testing.txt, libseq64/include/jack_assistant.hpp,
+	libseq64/include/perform.hpp, libseq64/src/jack_assistant.cpp,
+	libseq64/src/optionsfile.cpp, libseq64/src/perform.cpp: Pulled out
+	disabled code into jack_assistant::set_position().  Enabled the JACK
+	position relocation functionality when set as Master, to solve the klick
+	position issue, though it beeps very rapidly.
+	* libseq64/include/app_limits.h: Increased the range of limits for
+	BPM and PPQN
+
+2016-01-23  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/src/jack_assistant.cpp, libseq64/src/optionsfile.cpp,
+	seq_gtkmm2/include/options.hpp, seq_gtkmm2/src/options.cpp: Improved
+	handling of JACK options in JACK/LASH page.
+	* libseq64/include/jack_assistant.hpp,
+	libseq64/src/jack_assistant.cpp, libseq64/src/perform.cpp: Fixed
+	jitter bug by adding a field to the jack scratchpad structure.
+	Hurray.
+	* contrib/ltrace-seq24.log, contrib/ltrace-seq64.log,
+	doc/dox/jack_modes.dox, libseq64/include/jack_assistant.hpp,
+	libseq64/src/jack_assistant.cpp, libseq64/src/perform.cpp: Added
+	ltrace logs for seq24 versus seq64, and some tweaks for debugging
+	the jitter bug.
+
+2016-01-22  Chris Ahlstrom <ahlstrom@centiped>
+
+	* libseq64/src/jack_assistant.cpp, libseq64/src/perform.cpp: Fixed
+	major coding error in jack timebase callback, testing still needed.
+	seq_gtkmm2/src/maintime.cpp: Interim check-in, monkeying with jack.
+
+2016-01-21  Chris Ahlstrom <ahlstrom@centiped>
+
+	* : Back-merged master into fixups branch.
+	* : commit faa0492f5180df55651cdbbeea8c5cc8fd8ab09a Author: Chris
+	Ahlstrom <ahlstromcj@gmail.com> Date:   Thu Jan 21 06:21:53 2016
+	-0500
+
+2016-01-20  Chris Ahlstrom <ahlstrom@centiped>
+
+	* libseq64/src/jack_assistant.cpp, seq_gtkmm2/src/seqroll.cpp: 
+	Merely some comment changes, minor optimization in seqroll.
+	* libseq64/src/jack_assistant.cpp, libseq64/src/perform.cpp: Fixed
+	fat-fingered tick decrement in jack_assistant, trying to fix
+	maintime jittery pill.
+	* seq_gtkmm2/include/maintime.hpp, seq_gtkmm2/src/maintime.cpp: 
+	Added maintime::m_tick back, just in case.
+
+2016-01-19  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* Sequencer64/sequencer64.cpp, contrib/bugs_to_investigate.txt,
+	libseq64/include/mastermidibus.hpp, libseq64/include/perform.hpp,
+	libseq64/src/mastermidibus.cpp, libseq64/src/midifile.cpp,
+	libseq64/src/perform.cpp, seq_gtkmm2/include/mainwnd.hpp,
+	seq_gtkmm2/src/mainwnd.cpp, seq_gtkmm2/src/perfedit.cpp,
+	seq_gtkmm2/src/perfroll.cpp: Got PPQN scaling for playback and
+	triggers working pretty well, hurrah.
+	* README, ROADMAP, VERSION, configure.ac,
+	contrib/bugs_to_investigate.txt, contrib/midi/README,
+	doc/dox/doxy-reference.cfg, libseq64/include/calculations.hpp,
+	libseq64/include/jack_assistant.hpp,
+	libseq64/include/rc_settings.hpp, libseq64/src/jack_assistant.cpp: 
+	Minor tweaks to JACK assistant, and PPQN research.
+
 2016-01-18  Chris Ahlstrom <ahlstromcj@gmail.com>
 
 	* arch/PKGBUILD, arch/package/PKGBUILD

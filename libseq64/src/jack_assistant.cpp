@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-14
- * \updates       2016-01-25
+ * \updates       2016-01-26
  * \license       GNU GPLv2 or above
  *
  *  This module was created from code that existed in the perform object.
@@ -1255,7 +1255,22 @@ jack_assistant::jack_debug_print (double current_tick, double ticks_delta)
  *  This function sets the JACK position structure.  The original version of the
  *  function, enabled by defining USE_ORIGINAL_TIMEBASE_CALLBACK, worked properly
  *  with Hydrogen, but not with Klick.  The new code seems to work with both.
- *  More testing and clarification is needed.
+ *  More testing and clarification is needed.  This new code was "discovered"
+ *  in the source-code for the "SooperLooper" project:
+ *
+ *          http://essej.net/sooperlooper/
+ *
+ *  The first difference with the new code is that it handles the case where
+ *  the JACK position is moved (new_pos == true).  If this is true, and the
+ *  JackPositionBBT bit is off in pos->valid, then the new BBT value is set.
+ *  (Do we have more work to do in Sequencer64 in this case?)
+ *
+ *  The seconds set of differences are in the "else" clause.  In the new code,
+ *  it is very simple: calculate the new tick value, back it off by the number
+ *  of ticks in a beat, and perhaps go to the first beat of the next bar.
+ *  In the old code (complex!), the simple BBT adjustment is always made.
+ *  Then, if transitioning from JackTransportStarting to JackTransportRolling,
+ *  the BBT values are adjusted again.  MORE TO EXPLAIN.
  *
  * \param state
  *      Indicates the current state of JACK transport.

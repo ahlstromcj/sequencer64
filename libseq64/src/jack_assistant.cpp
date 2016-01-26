@@ -461,6 +461,11 @@ jack_assistant::position (bool to_left_tick, bool relocate)
     {
         if (relocate)                           // false by default
         {
+            /*
+             * This seems to be needed to prevent klick from aborting.
+             * Otherwise, it has no effect on klick.
+             */
+
             midipulse currenttick = 0;
             if (to_left_tick)
                 currenttick = parent().get_left_tick();
@@ -1247,7 +1252,10 @@ jack_assistant::jack_debug_print (double current_tick, double ticks_delta)
 #endif  // SEQ64_USE_DEBUG_OUTPUT
 
 /**
- *  This function sets the JACK position structure.
+ *  This function sets the JACK position structure.  The original version of the
+ *  function, enabled by defining USE_ORIGINAL_TIMEBASE_CALLBACK, worked properly
+ *  with Hydrogen, but not with Klick.  The new code seems to work with both.
+ *  More testing and clarification is needed.
  *
  * \param state
  *      Indicates the current state of JACK transport.
@@ -1265,11 +1273,16 @@ jack_assistant::jack_debug_print (double current_tick, double ticks_delta)
  *
  * \param new_pos
  *      TRUE (non-zero) for a newly requested pos, or for the first cycle
- *      after the timebase_callback is defined.
+ *      after the timebase_callback is defined.  This is usually 0 in
+ *      Sequencer64 at present, and 1 if one, say, presses "rewind" in
+ *      qjackctl.
  *
  * \param arg
  *      Provides the jack_assistant pointer, currently unchecked for nullity.
  */
+
+#undef USE_ORIGINAL_TIMEBASE_CALLBACK   // do not define this now
+#ifdef USE_ORIGINAL_TIMEBASE_CALLBACK
 
 void
 jack_timebase_callback
@@ -1284,7 +1297,6 @@ jack_timebase_callback
     static jack_nframes_t s_current_frame;
     static jack_transport_state_t s_state_last;
     static jack_transport_state_t s_state_current;
-
     jack_assistant * jack = (jack_assistant *)(arg);
     s_state_current = state;
     s_current_frame = jack_get_current_transport_frame(jack->m_jack_client);
@@ -1293,7 +1305,7 @@ jack_timebase_callback
         errprint("jack_timebase_callback(): null position pointer");
         return;
     }
-    pos->valid = JackPositionBBT;               // also see set_position()
+    pos->valid = JackPositionBBT;
     pos->beats_per_bar = 4;                     // hardwired!
     pos->beat_type = 4;                         // hardwired!
     pos->ticks_per_beat = jack->m_ppqn * 10;    // why 10?
@@ -1304,9 +1316,6 @@ jack_timebase_callback
      * from frame number.  This is relatively simple here, but would become
      * complex if we supported tempo or time signature changes at specific
      * locations in the transport timeline.
-     *
-     * Question:  Do we really need to check for the starting state here before
-     * we move on?  Should we use an OR?
      */
 
     if
@@ -1348,30 +1357,6 @@ jack_timebase_callback
             pos->beat = pbeat + 1;
             pos->tick = ptick;
             pos->bar_start_tick = pos->bar * ticks_per_bar;
-
-            /*
-             * This kind of works, but makes klick and playback jittery.
-             *
-             *  jack->set_position(s_jack_tick);
-             */
-
-            /*
-             * EXPERIMENT
-
-            jack_nframes_t frame = jack_get_current_transport_frame
-            (
-                jack->m_jack_client
-            );
-            pos->frame = frame;
-            int jackcode = jack_transport_reposition(jack->m_jack_client, pos);
-            if (jackcode != 0)
-            {
-                errprint("jack_timebase_callback(): bad position structure");
-            }
-
-             * END OF EXPERIMENT (fails, klick clicks just once, bad playback)
-             */
-
             if (! (pos->beat > 0 && pos->beat <= pos->beats_per_bar))
             {
                 printf
@@ -1388,6 +1373,67 @@ jack_timebase_callback
     }
     s_state_last = s_state_current;
 }
+
+#else       // USE_ORIGINAL_TIMEBASE_CALLBACK
+
+void
+jack_timebase_callback
+(
+    jack_transport_state_t state,
+    jack_nframes_t nframes,
+    jack_position_t * pos,
+    int new_pos,
+    void * arg
+)
+{
+    if (is_nullptr(pos))
+    {
+        errprint("jack_timebase_callback(): null position pointer");
+        return;
+    }
+	if (new_pos || ! (pos->valid & JackPositionBBT))    // try the NEW code
+    {
+		double minute = pos->frame / (double(pos->frame_rate * 60.0));
+		long abs_tick = long(minute * pos->beats_per_minute * pos->ticks_per_beat);
+		long abs_beat = long(abs_tick / pos->ticks_per_beat);
+        pos->valid = JackPositionBBT;
+		pos->bar = int(abs_beat / pos->beats_per_bar);
+		pos->beat = int(abs_beat - (pos->bar * pos->beats_per_bar) + 1);
+		pos->tick = int(abs_tick - (abs_beat * pos->ticks_per_beat));
+		pos->bar_start_tick = int
+        (
+            pos->bar * pos->beats_per_bar * pos->ticks_per_beat
+        );
+		pos->bar++;		/* adjust start to bar 1 */
+    }
+    else
+    {
+        /*
+         * Try this code, which computes the BBT (beats/bars/ticks) based on
+         * the previous period.  It works!  "klick -j -P" follows Sequencer64
+         * when the latter is JACK Master!
+         */
+
+		pos->tick += int
+        (
+			nframes * pos->ticks_per_beat *
+            pos->beats_per_minute / (pos->frame_rate * 60)
+        );
+
+		while (pos->tick >= pos->ticks_per_beat)
+        {
+			pos->tick -= int(pos->ticks_per_beat);
+			if (++pos->beat > pos->beats_per_bar)
+            {
+				pos->beat = 1;
+				++pos->bar;
+				pos->bar_start_tick += pos->beats_per_bar * pos->ticks_per_beat;
+			}
+		}
+    }
+}
+
+#endif  // USE_ORIGINAL_TIMEBASE_CALLBACK
 
 /**
  *  This callback is to shutdown JACK by clearing the

@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-01-25
+ * \updates       2016-01-26
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -143,7 +143,13 @@ perform::perform (gui_assistant & mygui, int ppqn)
     for (int i = 0; i < m_sequence_max; ++i)
     {
         m_seqs[i] = nullptr;
-        m_seqs_active[i] = false;
+
+        /*
+         * seq24 0.9.3 (!) added initialization of these.
+         */
+
+        m_seqs_active[i] = m_was_active_main[i] = m_was_active_edit[i] = 
+            m_was_active_perf[i] = m_was_active_names[i] = false;
     }
     midi_control zero;                          /* all members false or 0   */
     for (int i = 0; i < c_midi_controls; ++i)
@@ -1638,6 +1644,12 @@ timespec_diff_us
  *  output_thread_func().  Here's how it works:
  *
  *      -   It runs while m_outputing is true.
+ *      -   MORE TO COME
+ *
+ * \change ca 2016-01-26
+ *      Hurray, seq24 is coming back to life!  We see that there is a fix for
+ *      clock tick drift here, which relies on using long and long long
+ *      values.  See the Changelog for seq24 0.9.3.
  */
 
 void
@@ -1671,13 +1683,14 @@ perform::output_func ()
         jack_scratchpad pad;
         pad.js_current_tick = 0.0;          // tick and tick fraction
         pad.js_total_tick = 0.0;
-        pad.js_clock_tick = 0.0;
+        pad.js_clock_tick = 0;              // long probably offers more ticks
         pad.js_jack_stopped = false;
         pad.js_dumping = false;
         pad.js_init_clock = true;
         pad.js_looping = m_looping;
         pad.js_playback_mode = m_playback_mode;
         pad.js_ticks_converted_last = 0.0;
+        pad.js_delta_tick_frac = 0;         // from seq24 0.9.3
 
         midipulse stats_total_tick = 0;
         long stats_loop_index = 0;
@@ -1710,7 +1723,7 @@ perform::output_func ()
 
         if (ok)
         {
-            pad.js_current_tick = m_starting_tick;
+            pad.js_current_tick = long(m_starting_tick);    // midipulse
             pad.js_clock_tick = m_starting_tick;
             set_orig_ticks(m_starting_tick);            // what member?
         }
@@ -1770,16 +1783,24 @@ perform::output_func ()
             int bpm  = m_master_bus.get_beats_per_minute();
 
             /*
-             * Delta time to ticks; get delta ticks.
-             *
+             * Delta time to ticks; get delta ticks:
              * double delta_tick = double(bpm * ppqn * (delta_us / 60000000.0f));
              *
              * \change ca 2016-01-21  Doh!  Wrong parameter order:
-             *
              * double delta_tick = delta_time_us_to_ticks(bpm, ppqn, delta_us);
+             *
+             * seq24 0.9.3 changes delta_tick's type and adds some code:
+             * double delta_tick = delta_time_us_to_ticks(delta_us, bpm, ppqn);
+             *
+             * Get delta ticks; delta_ticks_frac is in 1000th of a tick.
              */
 
-            double delta_tick = delta_time_us_to_ticks(delta_us, bpm, ppqn);
+            long long delta_tick_num = bpm * ppqn * delta_us +
+                pad.js_delta_tick_frac;
+
+            long long delta_tick_denom = 60000000LL;
+            long delta_tick = long(delta_tick_num / delta_tick_denom);
+            pad.js_delta_tick_frac = long(delta_tick_num % delta_tick_denom);
             if (m_usemidiclock)
             {
                 delta_tick = m_midiclocktick;
@@ -1838,7 +1859,7 @@ perform::output_func ()
 
             if (pad.js_init_clock)
             {
-                m_master_bus.init_clock(long(pad.js_clock_tick));
+                m_master_bus.init_clock(pad.js_clock_tick);
                 pad.js_init_clock = false;
             }
             if (pad.js_dumping)

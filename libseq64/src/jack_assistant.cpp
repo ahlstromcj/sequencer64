@@ -1263,14 +1263,33 @@ jack_assistant::jack_debug_print (double current_tick, double ticks_delta)
  *  The first difference with the new code is that it handles the case where
  *  the JACK position is moved (new_pos == true).  If this is true, and the
  *  JackPositionBBT bit is off in pos->valid, then the new BBT value is set.
- *  (Do we have more work to do in Sequencer64 in this case?)
+ *  (Do we have more work to do in Sequencer64 in this case?)  Note that this
+ *  code does not change beats_per_bar, beat_type, ticks_per_beat, or
+ *  beats_per_minute.
  *
  *  The seconds set of differences are in the "else" clause.  In the new code,
  *  it is very simple: calculate the new tick value, back it off by the number
  *  of ticks in a beat, and perhaps go to the first beat of the next bar.
+ *
  *  In the old code (complex!), the simple BBT adjustment is always made.
- *  Then, if transitioning from JackTransportStarting to JackTransportRolling,
- *  the BBT values are adjusted again.  MORE TO EXPLAIN.
+ *  This changes (perhaps) the beats_per_bar, beat_type, etc.  We probably
+ *  need to make these settings use the actual global values for beats set for
+ *  Sequencer64.  Then, if transitioning from JackTransportStarting to
+ *  JackTransportRolling, the BBT values (bar, beat, and tick) are finally
+ *  adjusted.  Here are the steps, with old and new steps noted:
+ *
+ *      -#  Calculate the "delta" ticks based on the current frame, the
+ *          ticks_per_beat, the beats_per_minute, and the frame_rate.  The old
+ *          code saves this in a local, the new code assigns it to pos->tick.
+ *      -#  Old code: save this delta as a positive value.
+ *      -#  Figure out the settings and modify bar, beat, tick, and
+ *          bar_start_tick.  The old and new code seem to have the same intent,
+ *          but it seems like the new code is faster and also correct.
+ *          -   Old code:  Calculations are made by division and mod
+ *              operations.
+ *          -   New code:  Calculations are made by increments and decrements
+ *              in a while loop.
+ *
  *
  * \param state
  *      Indicates the current state of JACK transport.
@@ -1314,6 +1333,12 @@ jack_timebase_callback
     static jack_transport_state_t s_state_current;
     jack_assistant * jack = (jack_assistant *)(arg);
     s_state_current = state;
+
+    /*
+     * Why do this, instead of just using the nframes parameter already given
+     * to us?
+     */
+
     s_current_frame = jack_get_current_transport_frame(jack->m_jack_client);
     if (is_nullptr(pos))
     {
@@ -1339,7 +1364,7 @@ jack_timebase_callback
         s_state_current == JackTransportRolling
     )
     {
-        double s_jack_tick;                  // why static?
+        double d_jack_tick;                     /* was static           */
         if (pos->frame_rate > 1000)             /* usually 48000        */
         {
             /*
@@ -1352,22 +1377,23 @@ jack_timebase_callback
                 pos->ticks_per_beat *
                 pos->beats_per_minute / (pos->frame_rate * 60.0);
 
-            s_jack_tick = (jack_delta_tick < 0) ?
+            d_jack_tick = (jack_delta_tick < 0) ?
                 -jack_delta_tick : jack_delta_tick ;
         }
         else
         {
             infoprint("jack_timebase_callback(): zero frame rate");
+            d_jack_tick = 0;
         }
 
         long ptick = 0, pbeat = 0, pbar = 0;
         long ticks_per_bar = long(pos->ticks_per_beat * pos->beats_per_bar);
         if (ticks_per_bar > 0)
         {
-            pbar = long(long(s_jack_tick) / ticks_per_bar);
-            pbeat = long(long(s_jack_tick) % ticks_per_bar);
+            pbar = long(long(d_jack_tick) / ticks_per_bar);
+            pbeat = long(long(d_jack_tick) % ticks_per_bar);
             pbeat /= long(pos->ticks_per_beat);
-            ptick = long(s_jack_tick) % long(pos->ticks_per_beat);
+            ptick = long(d_jack_tick) % long(pos->ticks_per_beat);
             pos->bar = pbar + 1;
             pos->beat = pbeat + 1;
             pos->tick = ptick;
@@ -1406,45 +1432,48 @@ jack_timebase_callback
         errprint("jack_timebase_callback(): null position pointer");
         return;
     }
-	if (new_pos || ! (pos->valid & JackPositionBBT))    // try the NEW code
+    if (new_pos || ! (pos->valid & JackPositionBBT))    // try the NEW code
     {
-		double minute = pos->frame / (double(pos->frame_rate * 60.0));
-		long abs_tick = long(minute * pos->beats_per_minute * pos->ticks_per_beat);
-		long abs_beat = long(abs_tick / pos->ticks_per_beat);
+        double minute = pos->frame / (double(pos->frame_rate * 60.0));
+        long abs_tick = long(minute * pos->beats_per_minute * pos->ticks_per_beat);
+        long abs_beat = long(abs_tick / pos->ticks_per_beat);
         pos->valid = JackPositionBBT;
-		pos->bar = int(abs_beat / pos->beats_per_bar);
-		pos->beat = int(abs_beat - (pos->bar * pos->beats_per_bar) + 1);
-		pos->tick = int(abs_tick - (abs_beat * pos->ticks_per_beat));
-		pos->bar_start_tick = int
+        pos->bar = int(abs_beat / pos->beats_per_bar);
+        pos->beat = int(abs_beat - (pos->bar * pos->beats_per_bar) + 1);
+        pos->tick = int(abs_tick - (abs_beat * pos->ticks_per_beat));
+        pos->bar_start_tick = int
         (
             pos->bar * pos->beats_per_bar * pos->ticks_per_beat
         );
-		pos->bar++;		/* adjust start to bar 1 */
+        pos->bar++;                             /* adjust start to bar 1 */
     }
     else
     {
         /*
          * Try this code, which computes the BBT (beats/bars/ticks) based on
          * the previous period.  It works!  "klick -j -P" follows Sequencer64
-         * when the latter is JACK Master!
+         * when the latter is JACK Master!  Note that the tick is delta'ed.
          */
 
-		pos->tick += int
+        long ticks_per_bar = long(pos->ticks_per_beat * pos->beats_per_bar);
+        int delta_tick = int
         (
-			nframes * pos->ticks_per_beat *
+            nframes * pos->ticks_per_beat *
             pos->beats_per_minute / (pos->frame_rate * 60)
         );
+        pos->tick += delta_tick;
 
-		while (pos->tick >= pos->ticks_per_beat)
+        while (pos->tick >= pos->ticks_per_beat)
         {
-			pos->tick -= int(pos->ticks_per_beat);
-			if (++pos->beat > pos->beats_per_bar)
+            pos->tick -= int(pos->ticks_per_beat);
+            if (++pos->beat > pos->beats_per_bar)
             {
-				pos->beat = 1;
-				++pos->bar;
-				pos->bar_start_tick += pos->beats_per_bar * pos->ticks_per_beat;
-			}
-		}
+                pos->beat = 1;
+                ++pos->bar;
+//              pos->bar_start_tick += pos->beats_per_bar * pos->ticks_per_beat;
+                pos->bar_start_tick += ticks_per_bar;
+            }
+        }
     }
 }
 

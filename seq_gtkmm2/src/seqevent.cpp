@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-23
+ * \updates       2016-01-26
  * \license       GNU GPLv2 or above
  *
  */
@@ -80,6 +80,7 @@ seqevent::seqevent
     m_cc                     (0)
 {
     m_ppqn = choose_ppqn(ppqn);
+    memset(&m_old, 0, sizeof m_old);        /* from seq24 0.9.3 */
 }
 
 /**

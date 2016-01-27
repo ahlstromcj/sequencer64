@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-01-24
+ * \updates       2016-01-27
  * \license       GNU GPLv2 or above
  *
  *  The <tt> ~/.seq24rc </tt> or <tt> ~/.config/sequencer64/sequencer64.rc
@@ -401,6 +401,11 @@ optionsfile::parse (perform & p)
         line_after(file, "[lash-session]");
         sscanf(m_line, "%ld", &method);
         rc().lash_support(method != 0);
+
+        method = 1;         /* preserve legacy seq24 option if not present */
+        line_after(file, "[auto-option-save]");
+        sscanf(m_line, "%ld", &method);
+        rc().auto_option_save(method != 0);
     }
     file.close();           /* done parsing the "rc" configuration file */
     return true;
@@ -442,8 +447,13 @@ optionsfile::write (const perform & p)
     else
     {
         file <<
-            "# Sequencer64 0.9.9.11 (and above) rc configuration file\n"
-            "# (Also works with Sequencer24)\n"
+            "# Sequencer64 0.9.9.15 (and above) rc configuration file\n"
+            "#\n"
+            "# This file holds the main configuration options for Sequencer64.\n"
+            "# It follows the format of the legacy seq24 'rc' configuration\n"
+            "# file, but adds some new options, such as LASH, Mod4 interaction\n"
+            "# support, and an auto-save-on-exit option.  Also provided is a\n"
+            "# legacy mode.\n"
             ;
     }
     file << "\n"
@@ -812,6 +822,7 @@ optionsfile::write (const perform & p)
      * New for sequencer64:  provide configurable LASH session management.
      * Ignored in legacy mode, for now.
      */
+
     if (! rc().legacy_format())
     {
         file << "\n"
@@ -826,6 +837,22 @@ optionsfile::write (const perform & p)
             << "     # LASH session management support flag\n"
             ;
     }
+
+    file << "\n"
+        "[auto-option-save]\n\n"
+        "# Set the following value to 0 to disable the automatic saving of the\n"
+        "# current configuration to the 'rc' and 'user' files.  Set it to 1 to\n"
+        "# follow legacy seq24 behavior of saving the configuration at exit.\n"
+        "# Note that, if auto-save is set, many of the command-line settings,\n"
+        "# such as the JACK/ALSA settings, are then saved to the configuration,\n"
+        "# which can confuse one at first.  Also note that one currently needs\n"
+        "# this option set to 1 to save the configuration, as there is not a\n"
+        "# user-interface control for it at present.\n"
+        "\n"
+        << (rc().auto_option_save() ? "1" : "0")
+        << "     # auto-save-options-on-exit support flag\n"
+        ;
+
 
     file << "\n"
         "[last-used-dir]\n\n"

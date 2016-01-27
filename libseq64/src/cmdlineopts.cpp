@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-20
- * \updates       2016-01-26
+ * \updates       2016-01-27
  * \license       GNU GPLv2 or above
  *
  *  The "rc" command-line options override setting that are first read from
@@ -202,7 +202,7 @@ static const char * const s_help_4 =
 "If no JACK or LASH options are shown above, they have been disabled in the\n"
 "build configuration.\n"
 "\n"
-"Note that command-line options are sticky; they generally ge saved to the\n"
+"Note that command-line options are sticky; they generally get saved to the\n"
 "configuration file when Sequencer64 exits.\n"
 "\n"
     ;

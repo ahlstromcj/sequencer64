@@ -122,7 +122,17 @@ main (int argc, char * argv [])
 
         kit.run(seq24_window);                  /* run until user quits     */
         p.finish();                             /* tear down performance    */
-        ok = seq64::write_options_files(p);
+        if (seq64::rc().auto_option_save())
+            ok = seq64::write_options_files(p);
+        else
+        {
+            printf
+            (
+                "Not saving configuration files due to [auto-option-save]\n"
+                "set to 0 in the 'rc' configuration file.\n"
+            );
+        }
+
         seq64::delete_lash_driver();            /* deletes only if exists   */
     }
     return ok ? EXIT_SUCCESS : EXIT_FAILURE ;

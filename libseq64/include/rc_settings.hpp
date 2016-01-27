@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-22
- * \updates       2016-01-19
+ * \updates       2016-01-27
  * \license       GNU GPLv2 or above
  *
  *  This collection of variables describes the options of the application,
@@ -61,6 +61,7 @@ class rc_settings
 
 private:
 
+    bool m_auto_option_save;
     bool m_legacy_format;
     bool m_lash_support;
     bool m_allow_mod4_mode;
@@ -102,6 +103,20 @@ public:
     std::string config_filespec () const;
     std::string user_filespec () const;
     void set_defaults ();
+
+    /**
+     * \accessor m_auto_option_save
+     */
+
+    bool auto_option_save () const
+    {
+        return m_auto_option_save;
+    }
+
+    void auto_option_save (bool flag)
+    {
+        m_auto_option_save = flag;
+    }
 
     /**
      * \accessor m_legacy_format

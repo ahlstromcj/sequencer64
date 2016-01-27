@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-22
- * \updates       2015-11-21
+ * \updates       2016-01-27
  * \license       GNU GPLv2 or above
  *
  *  Note that this module also sets the legacy global variables, so that
@@ -66,6 +66,7 @@ namespace seq64
 
 rc_settings::rc_settings ()
  :
+    m_auto_option_save          (true),     /* legacy seq24 behavior */
     m_legacy_format             (false),
     m_lash_support              (false),
     m_allow_mod4_mode           (false),
@@ -101,6 +102,7 @@ rc_settings::rc_settings ()
 
 rc_settings::rc_settings (const rc_settings & rhs)
  :
+    m_auto_option_save          (rhs.m_auto_option_save),
     m_legacy_format             (rhs.m_legacy_format),
     m_lash_support              (rhs.m_lash_support),
     m_allow_mod4_mode           (rhs.m_allow_mod4_mode),
@@ -139,6 +141,7 @@ rc_settings::operator = (const rc_settings & rhs)
 {
     if (this != &rhs)
     {
+        m_auto_option_save          = rhs.m_auto_option_save;
         m_legacy_format             = rhs.m_legacy_format;
         m_lash_support              = rhs.m_lash_support;
         m_allow_mod4_mode           = rhs.m_allow_mod4_mode;
@@ -175,6 +178,7 @@ rc_settings::operator = (const rc_settings & rhs)
 void
 rc_settings::set_defaults ()
 {
+    m_auto_option_save          = true;     /* legacy seq224 setting */
     m_legacy_format             = false;
     m_lash_support              = false;
     m_allow_mod4_mode           = false;

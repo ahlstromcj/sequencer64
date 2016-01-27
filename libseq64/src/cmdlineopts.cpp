@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-20
- * \updates       2016-01-24
+ * \updates       2016-01-26
  * \license       GNU GPLv2 or above
  *
  *  The "rc" command-line options override setting that are first read from
@@ -103,6 +103,7 @@ static struct option long_options [] =
 #endif
     {"manual-alsa-ports",   0, 0, 'm'},
     {"auto-alsa-ports",     0, 0, 'a'},
+    {"alsa",                0, 0, 'A'},                 /* NEW              */
     {"pass-sysex",          0, 0, 'P'},
     {"user-save",           0, 0, 'u'},
 
@@ -135,7 +136,7 @@ static struct option long_options [] =
  */
 
 static const std::string s_arg_list =
-    "Chlb:q:Lni:jJmaM:pPusSU:Vx:"                        /* good args        */
+    "Chlb:q:Lni:jJmaAM:pPusSU:Vx:"                      /* good args        */
     "1234:5:67:89@"                                     /* legacy args      */
     ;
 
@@ -155,6 +156,8 @@ static const char * const s_help_1a =
 "   -m, --manual-alsa-ports  Don't attach ALSA ports.  Use when exposing ALSA\n"
 "                            ports to JACK (e.g. using a2jmidid).\n"
 "   -a, --auto-alsa-ports    Attach ALSA ports (overrides the 'rc' file).\n"
+"   -A, --alsa               Don't use JACK, use ALSA, even if the 'rc' file.\n"
+"                            specifies JACK.\n"
     ;
 
 static const char * const s_help_1b =
@@ -198,6 +201,9 @@ static const char * const s_help_4 =
 "\n"
 "If no JACK or LASH options are shown above, they have been disabled in the\n"
 "build configuration.\n"
+"\n"
+"Note that command-line options are sticky; they generally ge saved to the\n"
+"configuration file when Sequencer64 exits.\n"
 "\n"
     ;
 
@@ -441,6 +447,12 @@ parse_command_line_options (int argc, char * argv [])
 
         case 'a':
             seq64::rc().manual_alsa_ports(false);
+            break;
+
+        case 'A':
+            seq64::rc().with_jack_transport(false);
+            seq64::rc().with_jack_master(false);
+            seq64::rc().with_jack_master_cond(false);
             break;
 
         case 'i':                           /* ignore ALSA device */

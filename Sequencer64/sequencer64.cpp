@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-01-19
+ * \updates       2016-01-28
  * \license       GNU GPLv2 or above
  *
  *  Note that there are a number of header files that we don't need to add
@@ -125,13 +125,7 @@ main (int argc, char * argv [])
         if (seq64::rc().auto_option_save())
             ok = seq64::write_options_files(p);
         else
-        {
-            printf
-            (
-                "Not saving configuration files due to [auto-option-save]\n"
-                "set to 0 in the 'rc' configuration file.\n"
-            );
-        }
+            printf("[auto-option-save is off, so not saving config files]\n");
 
         seq64::delete_lash_driver();            /* deletes only if exists   */
     }

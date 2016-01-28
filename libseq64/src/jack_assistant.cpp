@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-14
- * \updates       2016-01-26
+ * \updates       2016-01-28
  * \license       GNU GPLv2 or above
  *
  *  This module was created from code that existed in the perform object.
@@ -1252,11 +1252,12 @@ jack_assistant::jack_debug_print (double current_tick, double ticks_delta)
 #endif  // SEQ64_USE_DEBUG_OUTPUT
 
 /**
- *  This function sets the JACK position structure.  The original version of the
- *  function, enabled by defining USE_ORIGINAL_TIMEBASE_CALLBACK, worked properly
- *  with Hydrogen, but not with Klick.  The new code seems to work with both.
- *  More testing and clarification is needed.  This new code was "discovered"
- *  in the source-code for the "SooperLooper" project:
+ *  The JACK timebase function defined here sets the JACK position structure.
+ *  The original version of the function, enabled by defining
+ *  USE_ORIGINAL_TIMEBASE_CALLBACK, worked properly with Hydrogen, but not with
+ *  Klick.  The new code seems to work with both.  More testing and
+ *  clarification is needed.  This new code was "discovered" in the source-code
+ *  for the "SooperLooper" project:
  *
  *          http://essej.net/sooperlooper/
  *
@@ -1265,7 +1266,8 @@ jack_assistant::jack_debug_print (double current_tick, double ticks_delta)
  *  JackPositionBBT bit is off in pos->valid, then the new BBT value is set.
  *  (Do we have more work to do in Sequencer64 in this case?)  Note that this
  *  code does not change beats_per_bar, beat_type, ticks_per_beat, or
- *  beats_per_minute.
+ *  beats_per_minute.  It also hardwires pos->beats_per_bar and pos->beat_type
+ *  to 4.
  *
  *  The seconds set of differences are in the "else" clause.  In the new code,
  *  it is very simple: calculate the new tick value, back it off by the number
@@ -1275,8 +1277,9 @@ jack_assistant::jack_debug_print (double current_tick, double ticks_delta)
  *  This changes (perhaps) the beats_per_bar, beat_type, etc.  We probably
  *  need to make these settings use the actual global values for beats set for
  *  Sequencer64.  Then, if transitioning from JackTransportStarting to
- *  JackTransportRolling, the BBT values (bar, beat, and tick) are finally
- *  adjusted.  Here are the steps, with old and new steps noted:
+ *  JackTransportRolling (instead of checking new_pos!), the BBT values (bar,
+ *  beat, and tick) are finally adjusted.  Here are the steps, with old and new
+ *  steps noted:
  *
  *      -#  Calculate the "delta" ticks based on the current frame, the
  *          ticks_per_beat, the beats_per_minute, and the frame_rate.  The old
@@ -1289,7 +1292,6 @@ jack_assistant::jack_debug_print (double current_tick, double ticks_delta)
  *              operations.
  *          -   New code:  Calculations are made by increments and decrements
  *              in a while loop.
- *
  *
  * \param state
  *      Indicates the current state of JACK transport.
@@ -1318,8 +1320,8 @@ jack_assistant::jack_debug_print (double current_tick, double ticks_delta)
 #undef USE_ORIGINAL_TIMEBASE_CALLBACK   // do not define this now
 #ifdef USE_ORIGINAL_TIMEBASE_CALLBACK
 
-void
-jack_timebase_callback
+static void
+jack_timebase_callback_seq24
 (
     jack_transport_state_t state,
     jack_nframes_t nframes,
@@ -1333,12 +1335,6 @@ jack_timebase_callback
     static jack_transport_state_t s_state_current;
     jack_assistant * jack = (jack_assistant *)(arg);
     s_state_current = state;
-
-    /*
-     * Why do this, instead of just using the nframes parameter already given
-     * to us?
-     */
-
     s_current_frame = jack_get_current_transport_frame(jack->m_jack_client);
     if (is_nullptr(pos))
     {
@@ -1352,10 +1348,8 @@ jack_timebase_callback
     pos->beats_per_minute = jack->parent().get_beats_per_minute();
 
     /*
-     * If we are in a new position, then compute BBT (Bar:Beats.ticks) info
-     * from frame number.  This is relatively simple here, but would become
-     * complex if we supported tempo or time signature changes at specific
-     * locations in the transport timeline.
+     * If we are in a new position, then compute BBT (Bar:Beats.ticks).
+     * (I wonder why the new_pos variable was never used here?)
      */
 
     if
@@ -1365,57 +1359,27 @@ jack_timebase_callback
     )
     {
         double d_jack_tick;                     /* was static           */
-        if (pos->frame_rate > 1000)             /* usually 48000        */
-        {
-            /*
-             * TODO:
-             * m_jack_tick = frame_to_ticks(...);
-             */
+        double jack_delta_tick =
+            s_current_frame * pos->ticks_per_beat *
+            pos->beats_per_minute / (pos->frame_rate * 60.0);
 
-            double jack_delta_tick =
-                s_current_frame *               /* why not pos->frame? */
-                pos->ticks_per_beat *
-                pos->beats_per_minute / (pos->frame_rate * 60.0);
-
-            d_jack_tick = (jack_delta_tick < 0) ?
-                -jack_delta_tick : jack_delta_tick ;
-        }
-        else
-        {
-            infoprint("jack_timebase_callback(): zero frame rate");
-            d_jack_tick = 0;
-        }
+        d_jack_tick = (jack_delta_tick < 0) ? -jack_delta_tick : jack_delta_tick ;
 
         long ptick = 0, pbeat = 0, pbar = 0;
         long ticks_per_bar = long(pos->ticks_per_beat * pos->beats_per_bar);
-        if (ticks_per_bar > 0)
-        {
-            pbar = long(long(d_jack_tick) / ticks_per_bar);
-            pbeat = long(long(d_jack_tick) % ticks_per_bar);
-            pbeat /= long(pos->ticks_per_beat);
-            ptick = long(d_jack_tick) % long(pos->ticks_per_beat);
-            pos->bar = pbar + 1;
-            pos->beat = pbeat + 1;
-            pos->tick = ptick;
-            pos->bar_start_tick = pos->bar * ticks_per_bar;
-            if (! (pos->beat > 0 && pos->beat <= pos->beats_per_bar))
-            {
-                printf
-                (
-                    "JACK error: pos->beat = %d, pos->beats_per_bar = %f\n",
-                    pos->beat, pos->beats_per_bar
-                );
-            }
-        }
-        else
-        {
-            errprint("jack_timebase_callback(): zero values");
-        }
+        pbar = long(long(d_jack_tick) / ticks_per_bar);
+        pbeat = long(long(d_jack_tick) % ticks_per_bar);
+        pbeat /= long(pos->ticks_per_beat);
+        ptick = long(d_jack_tick) % long(pos->ticks_per_beat);
+        pos->bar = pbar + 1;
+        pos->beat = pbeat + 1;
+        pos->tick = ptick;
+        pos->bar_start_tick = pos->bar * ticks_per_bar;
     }
     s_state_last = s_state_current;
 }
 
-#else       // USE_ORIGINAL_TIMEBASE_CALLBACK
+#endif      // USE_ORIGINAL_TIMEBASE_CALLBACK
 
 void
 jack_timebase_callback
@@ -1432,6 +1396,7 @@ jack_timebase_callback
         errprint("jack_timebase_callback(): null position pointer");
         return;
     }
+    long ticks_per_bar = long(pos->ticks_per_beat * pos->beats_per_bar);
     if (new_pos || ! (pos->valid & JackPositionBBT))    // try the NEW code
     {
         double minute = pos->frame / (double(pos->frame_rate * 60.0));
@@ -1455,7 +1420,7 @@ jack_timebase_callback
          * when the latter is JACK Master!  Note that the tick is delta'ed.
          */
 
-        long ticks_per_bar = long(pos->ticks_per_beat * pos->beats_per_bar);
+//      long ticks_per_bar = long(pos->ticks_per_beat * pos->beats_per_bar);
         int delta_tick = int
         (
             nframes * pos->ticks_per_beat *
@@ -1470,14 +1435,11 @@ jack_timebase_callback
             {
                 pos->beat = 1;
                 ++pos->bar;
-//              pos->bar_start_tick += pos->beats_per_bar * pos->ticks_per_beat;
                 pos->bar_start_tick += ticks_per_bar;
             }
         }
     }
 }
-
-#endif  // USE_ORIGINAL_TIMEBASE_CALLBACK
 
 /**
  *  This callback is to shutdown JACK by clearing the

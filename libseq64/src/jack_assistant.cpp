@@ -1406,10 +1406,11 @@ jack_timebase_callback
         return;
     }
     long ticks_per_bar = long(pos->ticks_per_beat * pos->beats_per_bar);
+    long ticks_per_minute = long(pos->beats_per_minute * pos->ticks_per_beat);
     if (new_pos || ! (pos->valid & JackPositionBBT))    // try the NEW code
     {
         double minute = pos->frame / (double(pos->frame_rate * 60.0));
-        long abs_tick = long(minute * pos->beats_per_minute * pos->ticks_per_beat);
+        long abs_tick = long(minute * tick_per_minute);
         long abs_beat = long(abs_tick / pos->ticks_per_beat);
         pos->valid = JackPositionBBT;
         pos->bar = int(abs_beat / pos->beats_per_bar);
@@ -1426,13 +1427,8 @@ jack_timebase_callback
          * when the latter is JACK Master!  Note that the tick is delta'ed.
          */
 
-        int delta_tick = int
-        (
-            nframes * pos->ticks_per_beat *
-            pos->beats_per_minute / (pos->frame_rate * 60)
-        );
+        int delta_tick = int(nframes * ticks_per_minute / (pos->frame_rate * 60));
         pos->tick += delta_tick;
-
         while (pos->tick >= pos->ticks_per_beat)
         {
             pos->tick -= int(pos->ticks_per_beat);

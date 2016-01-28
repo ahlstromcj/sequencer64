@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-22
- * \updates       2015-11-26
+ * \updates       2016-01-28
  * \license       GNU GPLv2 or above
  *
  *  This module defines the following categories of "global" variables that
@@ -379,8 +379,8 @@ class user_settings
      *  Provides the universal and unambiguous MIDI value for beats per
      *  measure, also called "beats per bar" (BPB).  This variable will
      *  replace the global beats per measure.  The default value of this
-     *  variable is DEFAULT_BEATS_PER_MEASURE (4).  For external access, we
-     *  will call this value "beats per bar", abbreviate it "BPB", and use
+     *  variable is SEQ64_DEFAULT_BEATS_PER_MEASURE (4).  For external access,
+     *  we will call this value "beats per bar", abbreviate it "BPB", and use
      *  "bpb" in any accessor function names.  Now, although it applies to the
      *  whole session, we should be able to continue seq24's tradition of
      *  allowing each sequence to have its own time signature.  Also, there

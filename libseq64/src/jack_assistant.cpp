@@ -60,8 +60,13 @@ namespace seq64
  *      control JACK event.
  */
 
-jack_assistant::jack_assistant (perform & parent, int ppqn)
- :
+jack_assistant::jack_assistant
+(
+    perform & parent,
+    int ppqn,
+    int bpm,
+    int beatwidth
+) :
     m_jack_parent               (parent),
     m_jack_client               (nullptr),
     m_jack_frame_current        (0),
@@ -75,7 +80,9 @@ jack_assistant::jack_assistant (perform & parent, int ppqn)
 #endif
     m_jack_running              (false),
     m_jack_master               (false),
-    m_ppqn                      (0)
+    m_ppqn                      (0),
+    m_beats_per_measure         (bpm),
+    m_beat_width                (beatwidth)
 {
     m_ppqn = choose_ppqn(ppqn);
 }
@@ -510,8 +517,8 @@ jack_assistant::set_position (midipulse currenttick)
 
     pos.valid = JackPositionBBT;        // flags what will be modified here
 
-    pos.beats_per_bar = 4;              // DEFAULT_BEATS_PER_MEASURE
-    pos.beat_type = 4;                  // DEFAULT_BEAT_WIDTH
+    pos.beats_per_bar = m_beats_per_measure;
+    pos.beat_type = m_beat_width;
     pos.ticks_per_beat = m_ppqn * 10;
     pos.beats_per_minute = parent().get_beats_per_minute();
 
@@ -524,7 +531,8 @@ jack_assistant::set_position (midipulse currenttick)
     (
         currenttick / long(pos.ticks_per_beat) / pos.beats_per_bar
     );
-    pos.beat = int32_t(((currenttick / (long) pos.ticks_per_beat) % 4));
+//  pos.beat = int32_t(((currenttick / (long) pos.ticks_per_beat) % 4));
+    pos.beat = int32_t(((currenttick / long(pos.ticks_per_beat)) % m_beat_width));
     pos.tick = int32_t((currenttick % (m_ppqn * 10)));
     pos.bar_start_tick = pos.bar * pos.beats_per_bar * pos.ticks_per_beat;
 
@@ -815,13 +823,14 @@ jack_session_callback (jack_session_event_t * ev, void * arg)
 
 /**
  *  Helper function for obtaining "jack_ticks_converted".
+ *  Note that we will need to replace 4.0 with a member value.
  */
 
 double
 jack_assistant::get_jack_ticks () const
 {
     double result = m_jack_tick *
-    (
+    (                                                           // m_beat_width
         double(m_ppqn) / (m_jack_pos.ticks_per_beat * m_jack_pos.beat_type / 4.0)
     );
     return result;
@@ -936,7 +945,7 @@ jack_assistant::output (jack_scratchpad & pad)
 
             jack_ticks_converted = m_jack_tick *        /* convert ticks */
             (
-                double(m_ppqn) /
+                double(m_ppqn) /                        // 4.0 --> member below
                 (m_jack_pos.ticks_per_beat * m_jack_pos.beat_type / 4.0)
             );
             m_jack_parent.set_orig_ticks(long(jack_ticks_converted));
@@ -1015,7 +1024,7 @@ jack_assistant::output (jack_scratchpad & pad)
             jack_ticks_converted =                  /* convert ticks */
                 m_jack_tick *
                 (
-                    double(m_ppqn) /
+                    double(m_ppqn) /                    // 4.0 --> member below
                         (m_jack_pos.ticks_per_beat * m_jack_pos.beat_type / 4.0)
                 );
 
@@ -1342,8 +1351,8 @@ jack_timebase_callback_seq24
         return;
     }
     pos->valid = JackPositionBBT;
-    pos->beats_per_bar = 4;                     // hardwired!
-    pos->beat_type = 4;                         // hardwired!
+    pos->beats_per_bar = jack->m_beats_per_measure;
+    pos->beat_type = jack->m_beat_width;
     pos->ticks_per_beat = jack->m_ppqn * 10;    // why 10?
     pos->beats_per_minute = jack->parent().get_beats_per_minute();
 
@@ -1406,10 +1415,7 @@ jack_timebase_callback
         pos->bar = int(abs_beat / pos->beats_per_bar);
         pos->beat = int(abs_beat - (pos->bar * pos->beats_per_bar) + 1);
         pos->tick = int(abs_tick - (abs_beat * pos->ticks_per_beat));
-        pos->bar_start_tick = int
-        (
-            pos->bar * pos->beats_per_bar * pos->ticks_per_beat
-        );
+        pos->bar_start_tick = int(pos->bar * ticks_per_bar);
         pos->bar++;                             /* adjust start to bar 1 */
     }
     else
@@ -1420,7 +1426,6 @@ jack_timebase_callback
          * when the latter is JACK Master!  Note that the tick is delta'ed.
          */
 
-//      long ticks_per_bar = long(pos->ticks_per_beat * pos->beats_per_bar);
         int delta_tick = int
         (
             nframes * pos->ticks_per_beat *

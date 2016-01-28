@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-08
- * \updates       2016-01-23
+ * \updates       2016-01-28
  * \license       GNU GPLv2 or above
  *
  *  This collection of global variables describes some facets of the
@@ -192,7 +192,7 @@
 
 /**
  *  Default value for major divisions per bar.  A graphics version of
- *  DEFAULT_BEATS_PER_MEASURE.
+ *  SEQ64_DEFAULT_BEATS_PER_MEASURE.
  */
 
 #define SEQ64_DEFAULT_LINES_PER_MEASURE   4

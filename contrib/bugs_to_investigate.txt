@@ -1,6 +1,6 @@
 Bugs and Additional Upgrade Ideas
 Chris Ahlstrom
-2015-10-27 to 2016-01-19
+2015-10-27 to 2016-01-28 (New bug)
 
 In no particular order...  "y" means "in progress", and "x" means it is
 basically done.
@@ -356,5 +356,14 @@ master option:
 - Midi clock signals seem to be wrong
 - visualisations are jumpy
 
+
+Date: Fri, 29 Jan 2016
+
+% midicvt hymne-ppqn-384.mid hymne-ppqn-384.asc
+? Error at MIDI file offset 12473 [0x30b9]
+Error: Garbage at end 'readtrack(): unexpected running status'
+
+This means Sequencer64 is doing something wrong is saving hymne.mid when
+PPQN == 384
 
 # vim: sw=4 ts=4 wm=4 et ft=sh

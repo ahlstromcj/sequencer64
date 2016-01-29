@@ -198,12 +198,9 @@ static const char * const s_help_3 =
 static const char * const s_help_4 =
 "The --ppqn option works pretty well, but be aware that bugs may exist in it.\n"
 "If a MIDI file is re-saved with that setting, the --ppqn value is also saved.\n"
-"\n"
 "If no JACK or LASH options are shown above, they have been disabled in the\n"
-"build configuration.\n"
-"\n"
-"Note that command-line options are sticky; they generally get saved to the\n"
-"configuration file when Sequencer64 exits.\n"
+"build configuration. Note that command-line options can be sticky; they\n"
+"generally get saved to the configuration files when Sequencer64 exits.\n"
 "\n"
     ;
 

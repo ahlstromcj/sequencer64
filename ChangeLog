@@ -1,10 +1,42 @@
+2016-01-28  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/include/app_limits.h,
+	libseq64/include/jack_assistant.hpp,
+	libseq64/include/user_settings.hpp, libseq64/src/jack_assistant.cpp: 
+	Removed more hardwired beats/measures values from JACK support.
+	Making JACK timebase callback more efficient.
+
+2016-01-26  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/src/cmdlineopts.cpp: Added -A and --alsa option to negate
+	JACK usage.
+	* libseq64/include/jack_assistant.hpp,
+	libseq64/src/jack_assistant.cpp, libseq64/src/perform.cpp,
+	seq_gtkmm2/src/seqevent.cpp: Added fixes found in new seq24 0.9.3
+	and added comments and refinements to improved JACK Master support.
+
+2016-01-25  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/src/jack_assistant.cpp, libseq64/src/perform.cpp: 
+	Tentatively got JACK Master working with klick and hydrogen using
+	code adapted from SooperLooper, undefined
+	USE_ORIGINAL_TIMEBASE_CALLBACK, which marks the old code.
+	Removed k_seq.mid.
+
 2016-01-24  Chris Ahlstrom <ahlstromcj@gmail.com>
 
+	* INSTALL, README, ROADMAP, VERSION, configure.ac,
+	contrib/ltrace-seq24.log, contrib/ltrace-seq64.log,
+	doc/dox/doxy-reference.cfg, libseq64/src/cmdlineopts.cpp,
+	seq_gtkmm2/src/mainwnd.cpp: Initial setup for fixups 0.9.9.15
+	version.
+
+2016-01-24  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/src/perform.cpp: Fixed output text issue in the perform
+	class.
 	* configure.ac: Updated docs and merged fixups branch into master
 	for 0.9.9.14
-
-2016-01-24  Chris Ahlstrom <ahlstromcj@gmail.com>
-
 	* contrib/jack-testing.txt, libseq64/include/jack_assistant.hpp,
 	libseq64/include/perform.hpp, libseq64/src/jack_assistant.cpp,
 	libseq64/src/optionsfile.cpp, libseq64/src/perform.cpp: Pulled out

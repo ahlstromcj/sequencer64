@@ -1,4 +1,4 @@
-.TH Sequencer64 "Dec 23 2015" "Version 0.9.9.12" "Sequencer64 Manual Page"
+.TH Sequencer64 "Jan 28 2016" "Version 0.9.9.15" "Sequencer64 Manual Page"
 
 .SH NAME
 Sequencer64 - Real time MIDI sequencer refactored from Seq24
@@ -58,12 +58,16 @@ This option does not exist.
 Instead, specify the file itself as the last command-line argument.
 .TP 8
 .B \-m, \-\-manual-alsa-ports
-Sequencer64 won't attach ALSA ports.
+Sequencer64 won't attach ALSA MIDI ports.
 Instead, it will create is own set of input and output busses/ports.
 .TP 8
 .B \-a, \-\-auto-alsa-ports
 Sequencer64 will attach ALSA ports.  Useful for overriding the
 sequencer64.rc configuration file.
+.TP 8
+.B \-A, \-\-alsa
+Sequencer64 will use ALSA MIDI ports.  This option is useful to override the
+configuration file, if it was set up for JACK.
 .TP 8
 .B \-\-show-midi
 Dumps incoming MIDI to screen.
@@ -104,16 +108,17 @@ When Sequencer64 is synced to JACK, the following play modes are available:
 	(0 = live mode)
 	(1 = song mode) (default)
 .TP 8
-.B \-\-stats
-Print statistics on the command-line while running.
-.TP 8
 .B \-\-jack-session-uuid \fI<uuid>\fP
 Set the UUID for the JACK session.
+.TP 8
+.B \-\-stats
+Print statistics on the command-line while running.
 .TP 8
 .B \-\-user-save
 Save the "user" configuration file after exiting.  Normally, it is saved
 only if it does not exist, so as not to make certain command-line "user"
-options (such as --bus) permanent.
+options (such as --bus) permanent.  (Perhaps the same should be true of the
+"rc" configuration options.)
 
 .SH FILES
 \fB$HOME\fP/sequencer64.rc stores the main configuration settings for

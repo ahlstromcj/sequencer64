@@ -1410,7 +1410,7 @@ jack_timebase_callback
     if (new_pos || ! (pos->valid & JackPositionBBT))    // try the NEW code
     {
         double minute = pos->frame / (double(pos->frame_rate * 60.0));
-        long abs_tick = long(minute * tick_per_minute);
+        long abs_tick = long(minute * ticks_per_minute);
         long abs_beat = long(abs_tick / pos->ticks_per_beat);
         pos->valid = JackPositionBBT;
         pos->bar = int(abs_beat / pos->beats_per_bar);

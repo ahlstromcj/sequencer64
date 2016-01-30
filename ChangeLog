@@ -1,10 +1,19 @@
+2016-01-30  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* contrib/configure.ac: Prepping for version 0.9.9.15.
+
+2016-01-29  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* contrib/bugs_to_investigate.txt: Added a bug report for converting
+	hymne.mid to 384 PPQN.
+
 2016-01-28  Chris Ahlstrom <ahlstromcj@gmail.com>
 
 	* libseq64/include/app_limits.h,
 	libseq64/include/jack_assistant.hpp,
 	libseq64/include/user_settings.hpp, libseq64/src/jack_assistant.cpp: 
 	Removed more hardwired beats/measures values from JACK support.
-	Making JACK timebase callback more efficient.
+	Making JACK timebase callback more efficient.  More documentation.
 
 2016-01-26  Chris Ahlstrom <ahlstromcj@gmail.com>
 
@@ -61,20 +70,20 @@
 	ltrace logs for seq24 versus seq64, and some tweaks for debugging
 	the jitter bug.
 
-2016-01-22  Chris Ahlstrom <ahlstrom@centiped>
+2016-01-22  Chris Ahlstrom <ahlstromcj@gmail.com>
 
 	* libseq64/src/jack_assistant.cpp, libseq64/src/perform.cpp: Fixed
 	major coding error in jack timebase callback, testing still needed.
 	seq_gtkmm2/src/maintime.cpp: Interim check-in, monkeying with jack.
 
-2016-01-21  Chris Ahlstrom <ahlstrom@centiped>
+2016-01-21  Chris Ahlstrom <ahlstromcj@gmail.com>
 
 	* : Back-merged master into fixups branch.
 	* : commit faa0492f5180df55651cdbbeea8c5cc8fd8ab09a Author: Chris
 	Ahlstrom <ahlstromcj@gmail.com> Date:   Thu Jan 21 06:21:53 2016
 	-0500
 
-2016-01-20  Chris Ahlstrom <ahlstrom@centiped>
+2016-01-20  Chris Ahlstrom <ahlstromcj@gmail.com>
 
 	* libseq64/src/jack_assistant.cpp, seq_gtkmm2/src/seqroll.cpp: 
 	Merely some comment changes, minor optimization in seqroll.
@@ -254,7 +263,7 @@
 	seq_gtkmm2/src/eventslots.cpp, seq_gtkmm2/src/mainwid.cpp: Getting
 	arrow keys to work in event editor, still in progress.
 
-2015-12-31  Chris Ahlstrom <ahlstrom@centiped>
+2015-12-31  Chris Ahlstrom <ahlstromcj@gmail.com>
 
 	* seq_gtkmm2/src/eventslots.cpp: Removed dead code from event
 	editor.  Fixed insertion issue on first page, index calculated to be below 0.

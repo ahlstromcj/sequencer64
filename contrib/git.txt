@@ -1,6 +1,30 @@
-Quick Reference for Git Processes
+Quick Reference for Git Processes on GitHub
 Chris Ahlstrom
-2015-09-09 to 2015-12-22
+2015-09-09 to 2016-02-01
+
+Creating a GitHub Repository:
+
+First, I like to create the project on my computer.  Once the files
+are in place, run the following commands in the top directory of the
+project:
+
+    $ git init
+    $ git add .
+    $ git commit -m "Created this new and wonderful project."
+
+In GitHub, create the new repository (without the LICENSE and README
+files, which you can create locally).  Then copy the repository URL to the
+system clipboard.  We will call it $MY_GITHUB_URL.  Add the remote
+URL, verify it, and push your local repository to it.
+
+    $ git remote add origin $MY_GITHUB_URL
+    $ git remote -v
+    $ git push -u origin master
+
+Now you are ready to work, making changes locally and pushing them to
+GitHub.
+
+Repository Management:
 
    https://github.com/Kunena/Kunena-Forum/wiki/
       Create-a-new-branch-with-git-and-manage-branches and others

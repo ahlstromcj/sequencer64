@@ -1,6 +1,6 @@
 Bugs and Additional Upgrade Ideas
 Chris Ahlstrom
-2015-10-27 to 2016-01-31 (New bug)
+2015-10-27 to 2016-02-01 (New bug)
 
 In no particular order...  "y" means "in progress", and "x" means it is
 basically done.
@@ -299,13 +299,10 @@ group to the first screen.
 I'll try i == m_screenset as an alternative sometime in the next few days.
 I just wanted to let you know I was still thinking about this.
 
-
-
+    FIXED
 
 Date: Tue, 19 Jan 2016 14:47:50 -0800
 From: Daniel Appelt <notifications@github.com>
-To: ahlstromcj/sequencer64 <sequencer64@noreply.github.com>
-Subject: [sequencer64] Jack Transport Master behaviour is very "jumpy" (#10)
 
 This report might be seen as a follow up to #8 I am trying to use sequencer64 as
 transport master for jack under Arch Linux When I hit play in sequencer64, the
@@ -314,48 +311,42 @@ around very wildly
 
 In the simplest setup, I just start these applications:
 
-- jack2 via jackdbus
-- qjackctl
-- sequencer64
+    - jack2 via jackdbus
+    - qjackctl
+    - sequencer64
 
-In the options, I have just ticked the checkbox for "Transport Master" If I hit
-play in sequencer64, I get the jumpy behavior as described above There is no
-position indicator moving at all in the editor window In qjackctl, the BBT display
-is also jumping, but that might be more or less okay as the value is at least
-steadily increasing If I go down to 20bpm in sequencer64, suddenly I can see the
-position indicator jumping around in the pattern editor
+In the options, I have just ticked the checkbox for "Transport Master" If I
+hit play in sequencer64, I get the jumpy behavior as described above There is
+no position indicator moving at all in the editor window In qjackctl, the BBT
+display is also jumping, but that might be more or less okay as the value is
+at least steadily increasing If I go down to 20bpm in sequencer64, suddenly I
+can see the position indicator jumping around in the pattern editor
 
-If, in addition, I send Midi clock signals from sequencer64 to Rebirth (running
-under wine), Rebirth is syncing to a tempo of 500bpm while I was expecting to see 
-104bpm which I have set in sequencer64 This might explain the jumpy behavior
-described above The same setup works fine without synchronizing the jack transport
-that is if no jack transport checkbox is ticked in the options
+If, in addition, I send Midi clock signals from sequencer64 to Rebirth
+(running under wine), Rebirth is syncing to a tempo of 500bpm while I was
+expecting to see 104bpm which I have set in sequencer64 This might explain the
+jumpy behavior described above The same setup works fine without synchronizing
+the jack transport that is if no jack transport checkbox is ticked in the
+options
 
 In seq24, jack transport synchronization worked better (mostly) Seq24 does not
 send correct Midi clock signals though
 
+    FIXED
 
 
-Date: Tue, 19 Jan 2016 15:28:23 -0800
-From: Daniel Appelt <notifications@github.com>
-To: ahlstromcj/sequencer64 <sequencer64@noreply.github.com>
-Subject: Re: [sequencer64] Jack Transport Master behaviour is very "jumpy" (#10)
-
-I just did a further test with the metronome
-[klick](http://das.nasophon.de/klick/). In addition to the simple setup, I start
-it like this:
+Date: Tue, 19 Jan 2016
 
 `klick -j -P`
 
-where -j means "follow jack transport BBT info (no tempo map)". This indeed leads
-to the correct result with respect to the metronome!
+where -j means "follow jack transport BBT info (no tempo map)". This indeed
+leads to the correct result with respect to the metronome!  So, for now, this
+just leaves me with two issues when using the jack transport master option:
 
-So, for now, this just leaves me with two issues when using the jack transport
-master option:
+    - Midi clock signals seem to be wrong
+    - visualisations are jumpy
 
-- Midi clock signals seem to be wrong
-- visualisations are jumpy
-
+    FIXED.
 
 Date: Fri, 29 Jan 2016
 
@@ -364,166 +355,11 @@ Date: Fri, 29 Jan 2016
 Error: Garbage at end 'readtrack(): unexpected running status'
 
 This means Sequencer64 is doing something wrong is saving hymne.mid when
-PPQN == 384.  Other issues, too.  Here are the tops of both files:
+PPQN == 384.  Other issues, too.
 
-hymne.mid                           hymne-ppqn-384.asc:
-
-MThd 1 4 96                         MThd 1 4 384
-MTrk                                MTrk
-0 Meta SeqName "Vangelis: Hymne"    0 SeqNr 0
-0 TimeSig 4/4 24 8                  0 Meta SeqName "Vangelis: Hymne"
-0 Tempo 750000                      0 SeqSpec 24 24 00 08       (no triggers)
-0 Meta TrkEnd                       0 SeqSpec 24 24 00 01 00    (MIDI buss 0)
-TrkEnd                              0 SeqSpec 24 24 00 06 04 04 (beats, width)
-MTrk                                0 SeqSpec 24 24 00 02 00    (MIDI ch. 0)
-0 Meta TrkName "Strings2"           96 Meta TrkEnd
-1 On ch=1 n=39 v=31                 TrkEnd
-35 On ch=1 n=39 v=0                 MTrk
-47 On ch=1 n=46 v=31                0 SeqNr 1
-83 On ch=1 n=46 v=0                 0 Meta TrkName "Strings2"
-95 On ch=1 n=55 v=31                4 On ch=1 n=39 v=31
-127 On ch=1 n=55 v=0                140 Off ch=1 n=39 v=0
-143 On ch=1 n=51 v=31               188 On ch=1 n=46 v=31
-179 On ch=1 n=51 v=0                332 Off ch=1 n=46 v=0
-191 On ch=1 n=58 v=31               380 On ch=1 n=55 v=31
-227 On ch=1 n=58 v=0                508 Off ch=1 n=55 v=0
-239 On ch=1 n=55 v=31               572 On ch=1 n=51 v=31
-275 On ch=1 n=55 v=0                716 Off ch=1 n=51 v=0
-283 On ch=1 n=39 v=47               764 On ch=1 n=58 v=31
-323 On ch=1 n=39 v=0                908 Off ch=1 n=58 v=0
-335 On ch=1 n=46 v=47               956 On ch=1 n=55 v=31
-371 On ch=1 n=46 v=0                1100 Off ch=1 n=55 v=0              
-
-Reading hymne.mid:
-
-    Get the header stuff, then first track, length = 38.  According to
-    midicvt, it holds SeqName, TimeSig, and Tempo.  Reading:
-
-        Delta = 0
-        status = FF (meta event)
-        type = 3 (track name)
-*       sequence::set_name("Vangelis: Hymne");
-
-        Delta = 0
-        status = FF (meta event)
-        type = 0x58 (time signature)
-        nn = beats per measure = 4
-        dd = log2 = 2
-        cc = 8 (skipped)  0x18 (I think I goofed under the debugger)
-        bb = 0 (skipped)  0x08
-*       sequence::set_beats_per_bar(4)
-*       sequence::set_beats_width(4)
-
-        0 FF 51 03 tt tt tt (tempo as number of microseconds per quarter note)
-
-            This sets the tempo in microseconds per quarter note. This means a
-            change in the unit-length of a delta-time tick. (note 1) If not
-            specified, the default tempo is 120 beats/minute, which is
-            equivalent to tttttt=500000 (0x07A120).  This is said to be 24-bit
-            binary, so we must assume that each byte covers the full range,
-            0x00 to 0xFF.
-
-        Delta = 0
-        status = FF (meta event)
-        type = 0x51
-        3 bytes of tempo --> 750000
-        Calculate BPM from tempo --> 80
-*       perform::set_beats_per_minute(80)
-
-        Delta = 0
-        status = FF (meta event)
-        type = 0x2F (end of track)
-        sequence::set_length(0) [CurrentTime]
-        sequence::zero_markers() [sets sequence::m_last_tick = 0]
-
-        perform::add_sequence(...)
-
-So, we add an empty sequence as the first sequence !!!
-
-        Second track, length = 2168
-        Delta = 0
-        status = FF (meta event)
-        type = 3 (track name)
-*       sequence::set_name("Strings2");
- 
-        Delta = 1
-        status = 0x90 (note on)
-        CurrentTime = 2 (doubled from 1, since 192 == 2 * 96)
-*       event::set_timestamp(2)
-        data[] = 39, 31 (note, velocity)
-*       event::set_data(note, velocity)
-*       sequence::add_event()
-*       sequence::set_midi_channel(0)       [overridden by seq channel later?]
- 
-        Delta = 35
-        status = 0x90 (note on)
-        CurrentTime = 70 (doubled from 35)
-*       event::set_timestamp(70)
-        data[] = 39, 0 (note, velocity)
-*       event::set_status(note off, channel)
-*       sequence::add_event()
-*       sequence::set_midi_channel(0)       [overridden by seq channel later?]
-
-
-Writing:
-
-        The first, empty track is marked as active (!).  
-        Into the MIDI container (vector), write
-
-        0 (var, should be delta, mid_container.cpp#133 commented incorrectly):
-
-        0 FF 00 02 tracknumberbytes
-        0 FF 03 "track name"
-        No events to write in "track" 0
-        No triggers to write in "track" 0
-?       0 FF 7F 0v04 0x24240008 (c_triggers_new), no triggers
-?       0 FF 7F 0v05 0x24240001 (c_midibus) 0
-        0 FF 7F 0v06 0x24240006 (c_timesig) 4 4 (seq beats/bar & beat-width)
-        0 FF 7F 0v05 0x24240002 (c_midich)  0
-
-        (Perhaps we can first write the Time Signature and Tempo in the normal
-        format as well, if not in --legacy mode.  Where is the Tempo in a
-        seq24 file?)
-
-        (Note that non-global sequencer features would also cause the key,
-        scale, and background-sequence settings to be stored here.)
-
-        48 (delta time) FF 2F 00 (End of Track)
-
-Time Signature: FF 58 04 nn dd cc bb
-
-nn is a byte specifying the numerator of the time signature (as notated).
-dd is a byte specifying the denominator of the time signature as a negative power of 2 (ie 2 represents a quarter-note, 3 represents an eighth-note, etc).
-cc is a byte specifying the number of MIDI clocks between metronome clicks.
-bb is a byte specifying the number of notated 32nd-notes in a MIDI
-   quarter-note (24 MIDI Clocks). The usual value for this parameter is 8,
-   though some sequencers allow the user to specify that what MIDI thinks of
-   as a quarter note, should be notated as something else.
-
-Examples:
-
-A time signature of 4/4, with a metronome click every 1/4 note, would be
-encoded:
-
-FF 58 04 04 02 18 08
-
-There are 24 MIDI Clocks per quarter-note, hence cc=24 (0x18).
-
-A time signature of 6/8, with a metronome click every 3rd 1/8 note, would be
-encoded:
-
-FF 58 04 06 03 24 08
-
-Remember, a 1/4 note is 24 MIDI Clocks, therefore a bar of 6/8 is 72 MIDI Clocks.
-Hence 3 1/8 notes is 36 (=0x24) MIDI Clocks.
-
-There should generally be a Time Signature Meta event at the beginning of a
-track (at time = 0), otherwise a default 4/4 time signature will be assumed.
-Thereafter they can be used to effect an immediate time signature change at
-any point within a track.
-
-For a format 1 MIDI file, Time Signature Meta events should only occur within
-the first MTrk chunk.
+The error occurs near the end of the converted file, where the new SeqSpecs
+for Key, Scale, and Background Sequence start.  It appears to be caused by a
+bad length value following the c_mutegroups = 0x24240009 specification.
 
 Note that we added time-signature and tempo support, but have not fixed the
 garbage that appears via midicvt.

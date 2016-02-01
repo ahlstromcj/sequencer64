@@ -12,7 +12,7 @@
 This document describes how Sequencer64 parses a MIDI file.
 
 \page       midi_parsing_page MIDI File Parsing in Sequencer64
-\author     Chris Ahlstrom 2016-01-31
+\author     Chris Ahlstrom 2016-02-01
 
 \section midi_parsing_intro Introduction
 
@@ -311,10 +311,12 @@ Example:
 
 Since there are 60,000,000 microseconds per minute, the event above
 translates to: set the tempo to 60,000,000 / 500,000 = 120 quarter notes per
-minute (120 beats per minute).
+minute (120 beats per minute).  This is a 24-bit binary value, so 
+each byte covers the full range of 0x00 to 0xFF.
 
 This event normally appears in the first track. If not, the default tempo is
-120 beats per minute.  This event is important if the MIDI time division is
+120 beats per minute.
+This event is important if the MIDI time division is
 specified in "pulses per quarter note", which does not itself define the length
 of the quarter note. The length of the quarter note is then determined by the
 Set Tempo meta event.
@@ -325,6 +327,44 @@ protocol such as SMPTE time code or MIDI time code.  This amount of
 accuracy provided by this tempo resolution allows a four-minute piece at
 120 beats per minute to be accurate within 500 usec at the end of the
 piece.
+
+We have now added the Tempo meta event (and the Time Signature meta event) to
+the track, which allows other sequencers to obtain these values from a
+Sequencer64 MIDI file.  Here are the original headers for a normal MIDI file
+and its legacy (Seq24) conversion, as shown by the midicvt application:
+
+\verbatim
+hymne.asc                           hymne-ppqn-384.asc
+
+MThd 1 4 96                         MThd 1 4 384
+MTrk                                MTrk
+0 Meta SeqName "Vangelis: Hymne"    0 SeqNr 0
+0 TimeSig 4/4 24 8                  0 Meta SeqName "Vangelis: Hymne"
+0 Tempo 750000                      0 SeqSpec 24 24 00 08       (no triggers)
+0 Meta TrkEnd                       0 SeqSpec 24 24 00 01 00    (MIDI buss 0)
+TrkEnd                              0 SeqSpec 24 24 00 06 04 04 (beats, width)
+                                    0 SeqSpec 24 24 00 02 00    (MIDI ch. 0)
+                                    96 Meta TrkEnd
+                                    TrkEnd
+\endverbatim
+
+Here is the header data that result from the new conversion, which is used if
+the "legacy" option is not in force:
+
+\verbatim
+   MThd 1 4 192
+   MTrk
+   0 SeqNr 0
+   0 Meta SeqName "Vangelis: Hymne"
+   0 TimeSig 4/4 24 8
+   0 Tempo 750000
+   0 SeqSpec 24 24 00 08
+   0 SeqSpec 24 24 00 01 00
+   0 SeqSpec 24 24 00 06 04 04
+   0 SeqSpec 24 24 00 02 00
+   48 Meta TrkEnd
+   TrkEnd
+\endverbatim
 
 \subsubsection midi_parsing_smf_1_timesig  Time Signature Event (0x58)
 
@@ -347,11 +387,14 @@ or "pulses") in a metronome click.  The standard MIDI clock ticks 24 times per
 quarter note, so a value of 6 would mean the metronome clicks every 1/8th note.
 
 The <code>bb</code> parameter expresses the number of notated 32nd-notes in a
-MIDI quarter- note (24 MIDI Clocks).  For example, a value of 16 means that the
-music plays two quarter notes for each quarter note metered out by the MIDI
-clock, so that the music plays at double speed.
+MIDI quarter note (24 MIDI Clocks).
+The usual value for this parameter is 8, though some sequencers allow the user
+to specify that what MIDI thinks of as a quarter note, should be notated as
+something else.  For example, a value of 16 means that the music plays two
+quarter notes for each quarter note metered out by the MIDI clock, so that the
+music plays at double speed.
 
-Example:
+Examples:
 
 \verbatim
    FF 58 04 04 02 18 08
@@ -374,12 +417,30 @@ Example:
       as there is usually one quarter note per beat, and one quarter note
       contains eight 32nd notes.
 
+A time signature of 6/8, with a metronome click every 3rd 1/8 note, would be
+encoded:
+
+\verbatim
+   FF 58 04 06 03 24 08
+\endverbatim
+
+Remember, a 1/4 note is 24 MIDI Clocks, therefore a bar of 6/8 is 72 MIDI
+Clocks.  Hence 3 1/8 notes is 36 (=0x24) MIDI Clocks.
+
+There should generally be a Time Signature Meta event at the beginning of a
+track (at time = 0), otherwise a default 4/4 time signature will be assumed.
+Thereafter they can be used to effect an immediate time signature change at
+any point within a track.
+
+For a format 1 MIDI file, Time Signature Meta events should only occur within
+the first MTrk chunk.
+
 If a time signature event is not present in a MIDI sequence, 4/4 signature is
 assumed.
 
 In <i>Sequencer64</i>, the c_timesig SeqSpec event is given priority.  The
 conventional time signature is used only if the c_timesig SeqSpec is not
-present in the file.
+present in the file.  NEEDS TO BE TESTED.
 
 \subsubsection midi_parsing_smf_1_sysex  SysEx Event (0xF0)
 

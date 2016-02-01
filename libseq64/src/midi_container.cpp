@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-10-10
- * \updates       2016-01-31
+ * \updates       2016-02-01
  * \license       GNU GPLv2 or above
  *
  */
@@ -152,20 +152,24 @@ midi_container::fill (int tracknumber)
 
 #ifdef SEQ64_HANDLE_TIMESIG_AND_TEMPO
 
-    /*
+    /**
      * To allow other sequencers to read Seq24/Sequencer64 files, we should
      * provide the Time Signature and Tempo meta events, in the 0th (first)
      * track (sequence).  These events must precede any "real" MIDI events.
+     * They are not include if the legacy-format option is in force.
      */
 
-    if (tracknumber == 0)
+    if (tracknumber == 0 && ! rc().legacy_format())
     {
+        int bw = log2_time_sig_value(m_sequence.get_beat_width());
+        midibyte t[3];                              /* hold tempo bytes */
+        tempo_to_bytes(t, m_sequence.us_per_quarter_note());
+
         add_variable(0);                            /* delta time       */
         put(0xFF);                                  /* meta event       */
         put(0x58);                                  /* time sig event   */
         put(0x04);
         put(m_sequence.get_beats_per_bar());
-        int bw = log2_time_sig_value(m_sequence.get_beat_width());
         put(bw);
         put(m_sequence.clocks_per_metronome());
         put(m_sequence.get_32nds_per_quarter());
@@ -174,8 +178,6 @@ midi_container::fill (int tracknumber)
         put(0xFF);                                  /* meta event       */
         put(0x51);                                  /* tempo event      */
         put(0x03);
-        midibyte t[3];                              /* hold tempo bytes */
-        tempo_to_bytes(t, m_sequence.us_per_quarter_note());
         put(t[2]);
         put(t[1]);
         put(t[0]);

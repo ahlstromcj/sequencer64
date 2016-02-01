@@ -25,12 +25,13 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-10-10
- * \updates       2015-11-23
+ * \updates       2016-01-31
  * \license       GNU GPLv2 or above
  *
  */
 
 #include "globals.h"                    /* c_timesig and other flags    */
+#include "calculations.hpp"             /* log2_time_sig_value(), etc.  */
 #include "midi_container.hpp"           /* seq64::midi_container ABC    */
 #include "sequence.hpp"                 /* seq64::sequence ABC          */
 
@@ -149,6 +150,39 @@ midi_container::fill (int tracknumber)
     for (int i = 0; i < len; i++)
         put(midibyte(trackname[i]));
 
+#ifdef SEQ64_HANDLE_TIMESIG_AND_TEMPO
+
+    /*
+     * To allow other sequencers to read Seq24/Sequencer64 files, we should
+     * provide the Time Signature and Tempo meta events, in the 0th (first)
+     * track (sequence).  These events must precede any "real" MIDI events.
+     */
+
+    if (tracknumber == 0)
+    {
+        add_variable(0);                            /* delta time       */
+        put(0xFF);                                  /* meta event       */
+        put(0x58);                                  /* time sig event   */
+        put(0x04);
+        put(m_sequence.get_beats_per_bar());
+        int bw = log2_time_sig_value(m_sequence.get_beat_width());
+        put(bw);
+        put(m_sequence.clocks_per_metronome());
+        put(m_sequence.get_32nds_per_quarter());
+
+        add_variable(0);                            /* delta time       */
+        put(0xFF);                                  /* meta event       */
+        put(0x51);                                  /* tempo event      */
+        put(0x03);
+        midibyte t[3];                              /* hold tempo bytes */
+        tempo_to_bytes(t, m_sequence.us_per_quarter_note());
+        put(t[2]);
+        put(t[1]);
+        put(t[0]);
+    }
+
+#endif  // SEQ64_HANDLE_TIMESIG_AND_TEMPO
+
     midipulse timestamp = 0;
     midipulse deltatime = 0;
     midipulse prevtimestamp = 0;
@@ -199,6 +233,14 @@ midi_container::fill (int tracknumber)
             break;
         }
     }
+    
+    /*
+     * Here, we add SeqSpec entries (specific to seq24) for triggers
+     * (c_triggers_new), the MIDI buss (c_midibus), time signature
+     * (c_timesig), and MIDI channel (c_midich).   Should we restrict this to
+     * only track 0?  Probably not; seq24 saves these events with each
+     * sequence.
+     */
 
     triggers::List & triggerlist = m_sequence.triggerlist();
     int triggercount = int(triggerlist.size());

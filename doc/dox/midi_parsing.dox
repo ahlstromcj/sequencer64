@@ -12,7 +12,7 @@
 This document describes how Sequencer64 parses a MIDI file.
 
 \page       midi_parsing_page MIDI File Parsing in Sequencer64
-\author     Chris Ahlstrom 2016-01-16
+\author     Chris Ahlstrom 2016-01-31
 
 \section midi_parsing_intro Introduction
 
@@ -459,15 +459,16 @@ single track.  Sequencer64 will read SMF 0 data, but we really need to be able
 to have one MIDI channel per track.  So we need to take the data from the
 sequence and use it to make more sequences.
 
-TODO: 
-
    -  <code>sequence::add_event()</code>.
    -  <code>sequence::set_midi_channel()</code>.
    -  <code>sequence::set_length()</code>.
    -  <code>sequence::set_midi_bus()</code>.
    -  <code>perform::add_sequence()</code>.
 
+This code basically works.
 For now, please look at the source code for more details.
+Also, the reading of SMF 0 MIDI files is described in the
+<i>sequencer64-doc</i> project on GitHub.
 
  *//*-------------------------------------------------------------------------*/
 

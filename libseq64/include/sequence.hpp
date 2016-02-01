@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-01-09
+ * \updates       2016-01-31
  * \license       GNU GPLv2 or above
  *
  *  The functions add_list_var() and add_long_list() have been replaced by
@@ -55,6 +55,18 @@
 #include "mutex.hpp"
 #include "scales.h"                     /* key and scale constants  */
 #include "triggers.hpp"                 /* seq64::triggers, etc.    */
+
+/**
+ *  Provides a new option to save the Time Signature and Tempo data
+ *  that may be present in a MIDI file (in the first track) in the
+ *  sequence object, and write them back to the MIDI file when saved
+ *  again, in Sequencer64 format.  The SeqSpec events that Seq24 and
+ *  Sequencer64 save for these "events" are not readable by other MIDI
+ *  applications, such as QTractor.  By enabling this macro, other
+ *  sequencers can read the correct time-signature and tempo values.
+ */
+
+#define SEQ64_HANDLE_TIMESIG_AND_TEMPO
 
 namespace seq64
 {
@@ -298,6 +310,41 @@ private:
 
     int m_time_beat_width;
 
+#ifdef SEQ64_HANDLE_TIMESIG_AND_TEMPO
+
+    /**
+     *  Augments the beats/bar and beat-width with the additional values
+     *  included in a Time Signature meta event.  This value provides the
+     *  number of MIDI clocks between metronome clicks.  The default value of
+     *  this item is 24.  It can also be read from some SMF 1 files, such as
+     *  our hymne.mid example.
+     */
+
+    int m_clocks_per_metronome;
+
+    /**
+     *  Augments the beats/bar and beat-width with the additional values
+     *  included in a Time Signature meta event.  This value provides the
+     *  number of notated 32nd notes in a MIDI quarter note (24 MIDI clocks).
+     *  The usual (and default) value of this parameter is 8; some sequencers
+     *  allow this to be changed.
+     */
+
+    int m_32nds_per_quarter;
+
+    /**
+     *  Augments the beats/bar and beat-width with the additional values
+     *  included in a Tempo meta event.  This value can be extracted from the
+     *  beats-per-minute value (mastermidibus::m_beats_per_minute), but here
+     *  we set it to 0 by default, indicating that we don't want to write it.
+     *  Otherwise, it can be read from a MIDI file, and saved here to be
+     *  restored later.
+     */
+
+    int m_us_per_quarter_note;
+
+#endif  // SEQ64_HANDLE_TIMESIG_AND_TEMPO
+
     /**
      *  The volume to be used when recording.
      */
@@ -453,6 +500,64 @@ public:
     {
         return m_time_beat_width;
     }
+
+#ifdef SEQ64_HANDLE_TIMESIG_AND_TEMPO
+
+    /**
+     * \setter m_clocks_per_metronome
+     */
+
+    void clocks_per_metronome (int cpm)
+    {
+        m_clocks_per_metronome = cpm;       // needs validation
+    }
+
+    /**
+     * \getter m_clocks_per_metronome
+     */
+
+    int clocks_per_metronome () const
+    {
+        return m_clocks_per_metronome;
+    }
+
+    /**
+     * \setter m_32nds_per_quarter
+     */
+
+    void set_32nds_per_quarter (int tpq)
+    {
+        m_32nds_per_quarter = tpq;              // needs validation
+    }
+
+    /**
+     * \getter m_32nds_per_quarter
+     */
+
+    int get_32nds_per_quarter () const
+    {
+        return m_32nds_per_quarter;
+    }
+
+    /**
+     * \setter m_us_per_quarter_note
+     */
+
+    void us_per_quarter_note (int upqn)
+    {
+        m_us_per_quarter_note = upqn;       // needs validation
+    }
+
+    /**
+     * \getter m_us_per_quarter_note
+     */
+
+    int us_per_quarter_note () const
+    {
+        return m_us_per_quarter_note;
+    }
+
+#endif  // SEQ64_HANDLE_TIMESIG_AND_TEMPO
 
     void set_rec_vol (int rec_vol);
 

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-01-09
+ * \updates       2016-01-31
  * \license       GNU GPLv2 or above
  *
  *  The functionality of this class also includes handling some of the
@@ -90,6 +90,11 @@ sequence::sequence (int ppqn)
     m_snap_tick                 (0),            // set in constructor body
     m_time_beats_per_measure    (4),
     m_time_beat_width           (4),
+#ifdef SEQ64_HANDLE_TIMESIG_AND_TEMPO
+    m_clocks_per_metronome      (24),
+    m_32nds_per_quarter         (8),
+    m_us_per_quarter_note       (0),
+#endif
     m_rec_vol                   (0),
     m_musical_key               (SEQ64_KEY_OF_C),
     m_musical_scale             (int(c_scale_off)),

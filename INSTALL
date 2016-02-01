@@ -1,6 +1,6 @@
-INSTALL for Sequencer64 v 0.9.9.16
+INSTALL for Sequencer64 v. 0.9.9.16
 Chris Ahlstrom
-2015-09-10 to 2016-02-01
+2015-09-10 to 2016-01-31
 
 The current packaging for Sequencer64 is primarily aimed at developers.
 There is currently no configure script... it must be bootstrapped.
@@ -24,6 +24,11 @@ Steps:
       --disable-shared options to a configure run:
 
       $ ./bootstrap --enable-debug
+
+      If desired, there are also configure options as described below,
+      and also conditional macros in the code.  The configure options can be 
+      supplied to the ./configure command, while the macros can be defined
+      (in the code) to even further tailor the build.
 
    3. Run the make command:
 
@@ -76,7 +81,19 @@ CONFIGURE OPTIONS FOR APPLICATION FEATURES:
 MANUALLY-DEFINED MACROS IN CODE:
 
     The following items are not yet part of the configure script, but can
-    be edited manually to achieve the desired settings:
+    be edited manually to achieve the desired settings.  Only crazy or
+    experiment-happy people will normally want to change the define-state of
+    these macros.
+
+    SEQ64_HANDLE_TIMESIG_AND_TEMPO:
+
+    Provides a new option to save the Time Signature and Tempo data
+    that may be present in a MIDI file (in the first track) in the
+    sequence object, and write them back to the MIDI file when saved
+    again, in Sequencer64 format.  The SeqSpec events that Seq24 and
+    Sequencer64 save for these "events" are not readable by other MIDI
+    applications, such as QTractor.  By enabling this macro, other
+    sequencers can read the correct time-signature and tempo values.
 
     SEQ64_USE_NEW_FONT:
 
@@ -139,6 +156,7 @@ MANUALLY-DEFINED MACROS IN CODE:
         Definable in the seqroll module, this macro allows the vi hjkl keys to
         be used as arrow keys for moving notes.  Not yet tested.  We will not
         make this a default, because it could drive non-vi users nuts.
+        It is an extra complication for usage and testing, as well.
 
     USE_xxxxxx:
 
@@ -190,5 +208,6 @@ DEPENDENCIES:
 
       - hydrogen
       - klick
+      - qtractor or other MIDI sequencers
 
 # vim: sw=4 ts=4 wm=4 et ft=sh

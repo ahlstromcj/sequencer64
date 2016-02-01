@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-01-19
+ * \updates       2016-01-31
  * \license       GNU GPLv2 or above
  *
  *  For a quick guide to the MIDI format, see, for example:
@@ -734,9 +734,17 @@ midifile::parse_smf_1 (perform & p, int screenset, bool is_smf0)
                             {
                                 seq.set_beats_per_bar(read_byte()); // nn
                                 int logbase2 = int(read_byte());    // dd
+#ifdef SEQ64_HANDLE_TIMESIG_AND_TEMPO
+                                int cc = read_byte();               // cc
+                                int bb = read_byte();               // bb
+                                seq.set_beat_width(long(pow2(logbase2)));
+                                seq.clocks_per_metronome(cc);
+                                seq.set_32nds_per_quarter(bb);
+#else
                                 (void) read_byte();                 // cc
                                 (void) read_byte();                 // bb
                                 seq.set_beat_width(long(pow2(logbase2)));
+#endif
 #ifdef SEQ64_USE_DEBUG_OUTPUT
                                 printf
                                 (
@@ -765,6 +773,9 @@ midifile::parse_smf_1 (perform & p, int screenset, bool is_smf0)
                                     beats_per_minute_from_tempo(double(tt))
                                 );
                                 p.set_beats_per_minute(bpm);
+#ifdef SEQ64_HANDLE_TIMESIG_AND_TEMPO
+                                seq.us_per_quarter_note(int(tt));
+#endif
 #ifdef SEQ64_USE_DEBUG_OUTPUT
                                 printf("BPM set to %d\n", bpm);
 #endif

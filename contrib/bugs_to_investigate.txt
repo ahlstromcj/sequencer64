@@ -1,6 +1,6 @@
 Bugs and Additional Upgrade Ideas
 Chris Ahlstrom
-2015-10-27 to 2016-02-01 (New bug)
+2015-10-27 to 2016-02-02 (New bugs)
 
 In no particular order...  "y" means "in progress", and "x" means it is
 basically done.
@@ -350,8 +350,12 @@ just leaves me with two issues when using the jack transport master option:
 
 Date: Fri, 29 Jan 2016
 
+% midicvt hymne-seq64.midi hymne-seq64.asc
+% ? Error at MIDI file offset 12155 [0x2f7b]
+% Error: Garbage at end 'readtrack(): unexpected running status'
+
 % midicvt hymne-ppqn-384.mid hymne-ppqn-384.asc
-? Error at MIDI file offset 12473 [0x30b9]
+? Error at MIDI file offset 12488 [0x30c8]
 Error: Garbage at end 'readtrack(): unexpected running status'
 
 This means Sequencer64 is doing something wrong is saving hymne.mid when
@@ -360,6 +364,27 @@ PPQN == 384.  Other issues, too.
 The error occurs near the end of the converted file, where the new SeqSpecs
 for Key, Scale, and Background Sequence start.  It appears to be caused by a
 bad length value following the c_mutegroups = 0x24240009 specification.
+
+    gmutesz = 4228, adding 4 for data = 4232 (is this correct?), but
+    the sequence of bytes sequencer64 (and seq24) yield is
+
+        24 24 00 09 00 00 04 00 ... 00 with occasional nonzeroes
+
+    write_prop_header(c_bpmtag, 07), 4:  len = 4+4 = 8, write
+    00 FF 7F 08
+
+    write_long(80): <todo>
+
+    write_prop_header(c_mutegroups, 4228): len = 4228+4 = 4232, write
+    00 FF 7F A1 08 24 24 00 09
+                    ^
+                    |__ 0x1ef3, ends at 2f7b
+
+    This translates to 2f7a - 1ef3 + 1 = 1088 bytes, or 4232 bytes.
+
+    This is then followed with 00 FF 7F 05 24 24 00 11 00 and 00 FF 7F....
+
+    Could this be a bug in midicvt?
 
 Note that we added time-signature and tempo support, but have not fixed the
 garbage that appears via midicvt.

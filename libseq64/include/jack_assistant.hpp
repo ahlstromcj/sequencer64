@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-09-17
- * \updates       2016-02-02
+ * \updates       2016-02-03
  * \license       GNU GPLv2 or above
  *
  *  This class contains a number of functions that used to reside in the
@@ -81,14 +81,20 @@ public:
 
     double js_current_tick;
     double js_total_tick;
+#ifdef USE_SEQ24_0_9_3_CODE
     long js_clock_tick;                 /* changed in seq24 0.9.3   */
+#else
+    double js_clock_tick;
+#endif
     bool js_jack_stopped;
     bool js_dumping;
     bool js_init_clock;
     bool js_looping;                    /* perform::m_looping       */
     bool js_playback_mode;              /* perform::m_playback_mode */
     double js_ticks_converted_last;
+#ifdef USE_SEQ24_0_9_3_CODE
     long js_delta_tick_frac;            /* seq24 0.9.3              */
+#endif
 
 };
 

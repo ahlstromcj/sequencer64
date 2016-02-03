@@ -1692,14 +1692,20 @@ perform::output_func ()
         jack_scratchpad pad;
         pad.js_current_tick = 0.0;          // tick and tick fraction
         pad.js_total_tick = 0.0;
+#ifdef USE_SEQ24_0_9_3_CODE
         pad.js_clock_tick = 0;              // long probably offers more ticks
+#else
+        pad.js_clock_tick = 0.0;
+#endif
         pad.js_jack_stopped = false;
         pad.js_dumping = false;
         pad.js_init_clock = true;
         pad.js_looping = m_looping;
         pad.js_playback_mode = m_playback_mode;
         pad.js_ticks_converted_last = 0.0;
+#ifdef USE_SEQ24_0_9_3_CODE
         pad.js_delta_tick_frac = 0;         // from seq24 0.9.3
+#endif
 
         midipulse stats_total_tick = 0;
         long stats_loop_index = 0;
@@ -1734,7 +1740,7 @@ perform::output_func ()
         {
             pad.js_current_tick = long(m_starting_tick);    // midipulse
             pad.js_clock_tick = m_starting_tick;
-            set_orig_ticks(m_starting_tick);            // what member?
+            set_orig_ticks(m_starting_tick);                // what member?
         }
 
         int ppqn = m_master_bus.get_ppqn();

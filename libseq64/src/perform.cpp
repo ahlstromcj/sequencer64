@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-01-26
+ * \updates       2016-02-02
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -49,6 +49,15 @@
  */
 
 #define SEQ64_JACK_NAN      0x8000000000000
+
+/*
+ * Define this macro to use the new seq24 v. 0.9.3 delta-tick calculation
+ * code.  We're not sure if this works for generating the proper rate of MIDI
+ * clocks, and so have disabled that code for now.  Define this macro if you
+ * want to try the new code.
+ */
+
+#undef  USE_SEQ24_0_9_3_CODE
 
 namespace seq64
 {
@@ -1783,24 +1792,29 @@ perform::output_func ()
             int bpm  = m_master_bus.get_beats_per_minute();
 
             /*
-             * Delta time to ticks; get delta ticks:
-             * double delta_tick = double(bpm * ppqn * (delta_us / 60000000.0f));
+             * Delta time to ticks; get delta ticks.
              *
-             * \change ca 2016-01-21  Doh!  Wrong parameter order:
-             * double delta_tick = delta_time_us_to_ticks(bpm, ppqn, delta_us);
+             * seq24 0.9.3 changes delta_tick's type and adds some code --
+             * delta_ticks_frac is in 1000th of a tick.  This code is meant to
+             * correct for some drift, IIRC.
              *
-             * seq24 0.9.3 changes delta_tick's type and adds some code:
-             * double delta_tick = delta_time_us_to_ticks(delta_us, bpm, ppqn);
-             *
-             * Get delta ticks; delta_ticks_frac is in 1000th of a tick.
+             * However, we suspect that this code breaks the MIDI clock speed,
+             * based on a report by Daniel Appelt.  So let's revert to
+             * our original code, by not defining USE_SEQ24_0_9_3_CODE.
+             * (We might have accidentally left some code from 0.9.3 out,
+             * though.)
              */
 
+#ifdef USE_SEQ24_0_9_3_CODE
             long long delta_tick_num = bpm * ppqn * delta_us +
                 pad.js_delta_tick_frac;
 
             long long delta_tick_denom = 60000000LL;
             long delta_tick = long(delta_tick_num / delta_tick_denom);
             pad.js_delta_tick_frac = long(delta_tick_num % delta_tick_denom);
+#else
+            double delta_tick = delta_time_us_to_ticks(delta_us, bpm, ppqn);
+#endif
             if (m_usemidiclock)
             {
                 delta_tick = m_midiclocktick;

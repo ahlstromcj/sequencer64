@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-14
- * \updates       2016-01-28
+ * \updates       2016-02-02
  * \license       GNU GPLv2 or above
  *
  *  This module was created from code that existed in the perform object.
@@ -42,6 +42,14 @@
 #include "jack_assistant.hpp"
 #include "midifile.hpp"
 #include "perform.hpp"
+
+/*
+ * Define this macro to go back to the original version of the
+ * jack_timebase_callback() function, which handles the JACK Master mode of
+ * sequencer64.
+ */
+
+#undef  USE_ORIGINAL_TIMEBASE_CALLBACK
 
 namespace seq64
 {
@@ -1263,10 +1271,10 @@ jack_assistant::jack_debug_print (double current_tick, double ticks_delta)
 /**
  *  The JACK timebase function defined here sets the JACK position structure.
  *  The original version of the function, enabled by defining
- *  USE_ORIGINAL_TIMEBASE_CALLBACK, worked properly with Hydrogen, but not with
- *  Klick.  The new code seems to work with both.  More testing and
- *  clarification is needed.  This new code was "discovered" in the source-code
- *  for the "SooperLooper" project:
+ *  USE_ORIGINAL_TIMEBASE_CALLBACK, worked properly with Hydrogen, but not
+ *  with Klick.  The new code seems to work with both.  More testing and
+ *  clarification is needed.  This new code was "discovered" in the
+ *  source-code for the "SooperLooper" project:
  *
  *          http://essej.net/sooperlooper/
  *
@@ -1326,11 +1334,10 @@ jack_assistant::jack_debug_print (double current_tick, double ticks_delta)
  *      Provides the jack_assistant pointer, currently unchecked for nullity.
  */
 
-#undef USE_ORIGINAL_TIMEBASE_CALLBACK   // do not define this now
 #ifdef USE_ORIGINAL_TIMEBASE_CALLBACK
 
-static void
-jack_timebase_callback_seq24
+void
+jack_timebase_callback
 (
     jack_transport_state_t state,
     jack_nframes_t nframes,
@@ -1388,7 +1395,7 @@ jack_timebase_callback_seq24
     s_state_last = s_state_current;
 }
 
-#endif      // USE_ORIGINAL_TIMEBASE_CALLBACK
+#else       // ! USE_ORIGINAL_TIMEBASE_CALLBACK
 
 void
 jack_timebase_callback
@@ -1441,6 +1448,8 @@ jack_timebase_callback
         }
     }
 }
+
+#endif      // USE_ORIGINAL_TIMEBASE_CALLBACK
 
 /**
  *  This callback is to shutdown JACK by clearing the

@@ -12,7 +12,7 @@
 This document describes how Sequencer64 parses a MIDI file.
 
 \page       midi_parsing_page MIDI File Parsing in Sequencer64
-\author     Chris Ahlstrom 2016-02-01
+\author     Chris Ahlstrom 2016-02-02
 
 \section midi_parsing_intro Introduction
 
@@ -385,6 +385,9 @@ Seq24/Sequencer64, this value is also called the "beat width".
 The <code>cc</code> parameter expresses the number of MIDI clocks (or "ticks",
 or "pulses") in a metronome click.  The standard MIDI clock ticks 24 times per
 quarter note, so a value of 6 would mean the metronome clicks every 1/8th note.
+A <code>cc</code> value of 6 would mean that the metronome clicks once every
+1/8th of a note (quaver). This MIDI clock is different from the clock (PPQN)
+that determines the start time and duration of the notes.
 
 The <code>bb</code> parameter expresses the number of notated 32nd-notes in a
 MIDI quarter note (24 MIDI Clocks).

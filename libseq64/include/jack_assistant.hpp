@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-09-17
- * \updates       2016-02-03
+ * \updates       2016-02-04
  * \license       GNU GPLv2 or above
  *
  *  This class contains a number of functions that used to reside in the
@@ -50,6 +50,15 @@
 #undef SEQ64_JACK_SESSION
 
 #endif      // SEQ64_JACK_SUPPORT
+
+/*
+ * Define this macro to use the new seq24 v. 0.9.3 delta-tick calculation
+ * code.  We're not sure if this works for generating the proper rate of MIDI
+ * clocks, and so have disabled that code for now.  Define this macro if you
+ * want to try the new code.
+ */
+
+#undef  USE_SEQ24_0_9_3_CODE
 
 /*
  *  We don't really need to be a slow-sync client, as far as we can tell.

@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-02-02
+ * \updates       2016-02-04
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -49,15 +49,6 @@
  */
 
 #define SEQ64_JACK_NAN      0x8000000000000
-
-/*
- * Define this macro to use the new seq24 v. 0.9.3 delta-tick calculation
- * code.  We're not sure if this works for generating the proper rate of MIDI
- * clocks, and so have disabled that code for now.  Define this macro if you
- * want to try the new code.
- */
-
-#undef  USE_SEQ24_0_9_3_CODE
 
 namespace seq64
 {

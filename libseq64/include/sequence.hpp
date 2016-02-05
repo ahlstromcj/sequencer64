@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-01-31
+ * \updates       2016-02-05
  * \license       GNU GPLv2 or above
  *
  *  The functions add_list_var() and add_long_list() have been replaced by
@@ -985,20 +985,6 @@ public:
 
     void show_events () const;
     void copy_events (const event_list & newevents);
-
-    /*
-     * EXPERIMENTAL
-     */
-
-    void lock () const
-    {
-        m_mutex.lock();
-    }
-
-    void unlock () const
-    {
-        m_mutex.unlock();
-    }
 
 private:
 

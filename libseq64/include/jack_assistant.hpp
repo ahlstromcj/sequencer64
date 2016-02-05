@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-09-17
- * \updates       2016-02-04
+ * \updates       2016-02-05
  * \license       GNU GPLv2 or above
  *
  *  This class contains a number of functions that used to reside in the
@@ -59,16 +59,6 @@
  */
 
 #undef  USE_SEQ24_0_9_3_CODE
-
-/*
- *  We don't really need to be a slow-sync client, as far as we can tell.
- *  In fact, our sync code may interfere with getting a valid frame rate.
- *  However, we still can't JACK working exactly the way it does in seq24,
- *  so we leave the callback in place.  Plus, it does things important to the
- *  setup of JACK.
- */
-
-#define USE_JACK_SYNC_CALLBACK
 
 namespace seq64
 {
@@ -130,21 +120,17 @@ typedef struct
 
 /**
  *  This class provides the performance mode JACK support.
- *
- *  WHY PERFORMANCE MODE?  Only works in that mode???  
  */
 
 class jack_assistant
 {
 
-#ifdef USE_JACK_SYNC_CALLBACK
     friend int jack_sync_callback
     (
         jack_transport_state_t state,
         jack_position_t * pos,
         void * arg
     );
-#endif  // USE_JACK_SYNC_CALLBACK
 
 #ifdef SEQ64_JACK_SESSION
     friend void jack_session_callback (jack_session_event_t * ev, void * arg);
@@ -275,14 +261,12 @@ private:
  *  Global functions for JACK support and JACK sessions.
  */
 
-#ifdef USE_JACK_SYNC_CALLBACK
 extern int jack_sync_callback
 (
     jack_transport_state_t state,
     jack_position_t * pos,
     void * arg
 );
-#endif  // USE_JACK_SYNC_CALLBACK
 
 extern void jack_shutdown_callback (void * arg);
 extern void jack_timebase_callback

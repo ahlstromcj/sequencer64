@@ -332,7 +332,57 @@ options
 In seq24, jack transport synchronization worked better (mostly) Seq24 does not
 send correct Midi clock signals though
 
-    FIXED
+Date: Tue, 02 Feb 2016 15:22:42 -0800
+From: Daniel Appelt <notifications@github.com>
+To: ahlstromcj/sequencer64 <sequencer64@noreply.github.com>
+Subject: [sequencer64] Midi realtime clock messages are not in sync (#11)
+
+With the current release 09915, Midi realtime clock messages are broken again
+when connected to jack Currently, it seems that if sequencer64 is transport
+master, the realtime clock messages indicate a much slower tempo than set in
+sequencer64 If sequencer64 is jack transport "slave", the realtime clock
+messages seem to indicate a much faster tempo
+
+This was tested only against ReBirth windows application running on wine using
+an ALSA Midi through port for communication from sequencer64 to wine/ReBirth
+
+In theory, the problem should also be visible using a MIDI monitor application
+connected to an ALSA Midi port that receives clock signals from sequencer64
+(via first tab in options panel)
+
+
+Date: Tue, 02 Feb 2016 15:42:55 -0800
+From: Daniel Appelt <notifications@github.com>
+To: ahlstromcj/sequencer64 <sequencer64@noreply.github.com>
+Cc: "C. Ahlstrom" <ahlstromcj@gmail.com>
+Subject: Re: [sequencer64] Midi realtime clock messages are not in sync (#11)
+
+It works in 0.9.9.14 - I tested commit
+`a4101685cd91a033450a13f70dc1208992881bd6` 
+- if sequencer64 is jack transport master. Transport needs to be started from
+sequencer64 in this case. I checked the diffs between this commit and the
+current release but for me the changes/involved files were too complex.
+
+Date: Thu, 04 Feb 2016 14:39:35 -0800
+From: Daniel Appelt <notifications@github.com>
+To: ahlstromcj/sequencer64 <sequencer64@noreply.github.com>
+Cc: "C. Ahlstrom" <ahlstromcj@gmail.com>
+Subject: Re: [sequencer64] Midi realtime clock messages are not in sync (#11)
+
+I am using [GMIDImonitor](http://home.gna.org/gmidimonitor/) which is a very
+basic monitoring tool together with qjackctl. GMIDImonitor needs to be started
+with option `--alsa` for it to work with ALSA midi ports.
+
+qjackctl is used to create ALSA midi connections and to test jack slave mode
+in sequencer64.  For my tests I  use an ALSA "Midi Through Port" whose output
+is patched to GMIDImonitor. Furthermore, you need to create a pattern in
+sequencer64 containing only quarter  notes.
+
+The output that is to be expected is that you will see 24 "MIDI Real Time
+Clock"  messages in between two adjacent quarter notes. Unfortunately, right
+now I am not seeing any notes at all being sent from sequencer64 - I am using
+the commit that I mentioned earlier.
+
 
 
 Date: Tue, 19 Jan 2016

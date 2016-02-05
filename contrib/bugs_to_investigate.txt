@@ -1,11 +1,13 @@
 Bugs and Additional Upgrade Ideas
 Chris Ahlstrom
-2015-10-27 to 2016-02-02 (New bugs)
+2015-10-27 to 2016-02-05 (New bugs)
 
 In no particular order...  "y" means "in progress", and "x" means it is
 basically done.
 
 -  See BUG REPORTS below.
+-  Need to clarify the behavior of JACK-Live mode versus using the controls of
+   the pattern versus song window.
 -  We need to be able to empty out any sequences and close any editors
    when loading a new file, otherwise Sequencer64 can freeze.
 -  In the pattern editor piano roll, implement Undo for the arrow keys in the
@@ -383,7 +385,36 @@ Clock"  messages in between two adjacent quarter notes. Unfortunately, right
 now I am not seeing any notes at all being sent from sequencer64 - I am using
 the commit that I mentioned earlier.
 
+MY NOTES:
 
+    Dan's rc file gives [0] 14:0 Midi Through Port-0, Clock = On (Pos)
+
+	Okay, I got the setup working, and the latest "fixups" checkout seems to
+	work the same as far as the clock goes.  I'm going to quit tonight, though.
+	Getting tired.  But here's what I did to see notes.
+
+	First, I used "midisnoop" instead of "gmidimonitor".  It shows count number
+	and the timestamps as well.  I don't think this is relevant to the results,
+	just easier to see what's happening and make tick-calculations.
+
+	Second, I hooked the MIDI Through Port-0 to midisnoop's "MIDI input".
+	I configured midisnoop with Driver = ALSA Sequencer, Input Port =
+	MIDI Through 14:0, Output Port = none, and I unchecked "Ignore Time Events".
+
+	Third, after running seq24 or sequencer64 ("fixups" latest) and loading
+	the contrib/midi/click_4_4.midi file, I also opened the Song Editor
+	and layed down a few copies of the pattern.  That was the key to actually
+	seeing notes, I think.  I also enabled the "input goes to output" button,
+	but I doubt that was the key.
+
+	Anyway, I amm getting 24 clocks per quarter note with the latest code.
+	The time values midisnoop shows are "timestamps", not tick numbers.
+	There are about 500 timestamps per quarter note, the BPM is 120.
+
+	So right now I think the code is working, but I will hack at it again
+	tomorrow to be sure, when my eyes are not so bleary.
+
+END OF MY NOTES.
 
 Date: Tue, 19 Jan 2016
 

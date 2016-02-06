@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-02-04
+ * \updates       2016-02-05
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -1793,13 +1793,9 @@ perform::output_func ()
              *
              * seq24 0.9.3 changes delta_tick's type and adds some code --
              * delta_ticks_frac is in 1000th of a tick.  This code is meant to
-             * correct for some drift, IIRC.
-             *
-             * However, we suspect that this code breaks the MIDI clock speed,
-             * based on a report by Daniel Appelt.  So let's revert to
-             * our original code, by not defining USE_SEQ24_0_9_3_CODE.
-             * (We might have accidentally left some code from 0.9.3 out,
-             * though.)
+             * correct for some clock drift.  However, this code breaks the
+             * MIDI clock speed.  So let's revert to our original code, by not
+             * defining USE_SEQ24_0_9_3_CODE.
              */
 
 #ifdef USE_SEQ24_0_9_3_CODE
@@ -1833,35 +1829,20 @@ perform::output_func ()
                 // No additional code needed besides the output() call above.
             }
             else
-#endif
             {
+#endif
                 /*
-                 * NEW 2015-01-23
-                 *  Test for initial failure and try to recover.  If it fails
-                 *  again, fall back to non-JACK operation.
+                 * The default if JACK is not compiled in, or is not
+                 * running.  Add the delta to the current ticks.
                  */
 
-                bool fallback = true;
-                if (rc().with_jack())
-                {
+                pad.js_clock_tick += delta_tick;
+                pad.js_current_tick += delta_tick;
+                pad.js_total_tick += delta_tick;
+                pad.js_dumping = true;
 #ifdef SEQ64_JACK_SUPPORT
-                    if (m_jack_asst.restart())
-                        fallback = false;
-#endif
-                }
-                if (fallback)
-                {
-                    /*
-                     * The default if JACK is not compiled in, or is not
-                     * running.  Add the delta to the current ticks.
-                     */
-
-                    pad.js_clock_tick += delta_tick;
-                    pad.js_current_tick += delta_tick;
-                    pad.js_total_tick += delta_tick;
-                    pad.js_dumping = true;
-                }
             }
+#endif
 
             /*
              * init_clock will be true when we run for the first time, or

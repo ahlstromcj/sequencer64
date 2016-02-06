@@ -281,30 +281,6 @@ jack_assistant::init ()
 }
 
 /**
- *  Let's try to recover from the JackFailures somehow.  For now, we
- *  don't know what is causing this code, which doesn't seem to much affect
- *  the JACK transport functionality.  This function does nothing.
- *
- * \return
- *      Will return true if the restart succeeded.  Currently always return
- *      false.
- */
-
-bool
-jack_assistant::restart ()
-{
-    if (rc().with_jack() && ! m_jack_running)
-    {
-        // m_jack_running = true;
-        // return true;
-
-        return false;
-    }
-    else
-        return false;
-}
-
-/**
  *  Tears down the JACK infrastructure.
  */
 

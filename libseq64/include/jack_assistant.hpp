@@ -209,7 +209,6 @@ public:
     }
 
     bool init ();                       // init_jack ();
-    bool restart ();                    // NEW 2015-01-23
     void deinit ();                     // deinit_jack ();
 
 #ifdef SEQ64_JACK_SESSION

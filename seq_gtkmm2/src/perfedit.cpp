@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-01-17
+ * \updates       2016-02-06
  * \license       GNU GPLv2 or above
  *
  */
@@ -636,10 +636,12 @@ perfedit::on_key_press_event (GdkEventKey * ev)
             event_was_handled = true;
     }
 
-#ifdef USE_PERFTIME_KEYSTROKE_PROCESSING
+    /*
+     * Provide perftime keystroke processing.
+     */
+
     if (! event_was_handled)
         event_was_handled = m_perftime->key_press_event(ev);
-#endif
 
     return Gtk::Window::on_key_press_event(ev);
 }

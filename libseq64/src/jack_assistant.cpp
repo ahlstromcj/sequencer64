@@ -145,11 +145,10 @@ jack_assistant::error_message (const std::string & msg)
  *
  *  A sync callback is needed for polling of slow-sync clients.  But
  *  seq24/sequencer64 are not slow-sync clients.  We don't really need to be a
- *  slow-sync client, as far as we can tell.  We can't JACK working exactly
- *  the way it does in seq24 without the callback in place.  Plus, it does
- *  things important to the setup of JACK.  So now this setup is permanent.
- *
- *      #define USE_JACK_SYNC_CALLBACK
+ *  slow-sync client, as far as we can tell.  We can't get JACK working
+ *  exactly the way it does in seq24 without the callback in place.  Plus, it
+ *  does things important to the setup of JACK.  So now this setup is
+ *  permanent: define USE_JACK_SYNC_CALLBACK.
  *
  * Jack transport settings:
  *

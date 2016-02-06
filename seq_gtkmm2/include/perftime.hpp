@@ -28,18 +28,12 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-26
+ * \updates       2016-02-06
  * \license       GNU GPLv2 or above
  *
  */
 
 #include "gui_drawingarea_gtk2.hpp"
-
-/*
- * A feature that we cannot get to work.
- */
-
-#define  USE_PERFTIME_KEYSTROKE_PROCESSING
 
 namespace Gtk
 {
@@ -101,28 +95,27 @@ private:
     /**
      *  Provides the length of a measure in pulses or ticks.  This value is
      *  m_ppqn * 4, though eventually we want to employ a more flexible
-     *  representation of measure length.
+     *  representation of measure length.  Supports perftime's keystroke
+     *  processing.
      */
 
     int m_measure_length;
 
-#ifdef USE_PERFTIME_KEYSTROKE_PROCESSING
-
     /**
      *  Holds the current location of the left (L) marker when arrow movement
-     *  is in force.  Otherwise it is -1.
+     *  is in force.  Otherwise it is -1.  Supports perftime's keystroke
+     *  processing.
      */
 
     int m_left_marker_tick;
 
     /**
      *  Holds the current location of the right (R) marker when arrow movement
-     *  is in force.  Otherwise it is -1.
+     *  is in force.  Otherwise it is -1.  Supports perftime's keystroke
+     *  processing.
      */
 
     int m_right_marker_tick;
-
-#endif      // USE_PERFTIME_KEYSTROKE_PROCESSING
 
     /**
      *  A class version of the global c_perf_scale_x factor.
@@ -236,9 +229,7 @@ private:        // callbacks
         return false;
     }
 
-#ifdef USE_PERFTIME_KEYSTROKE_PROCESSING
-    bool key_press_event (GdkEventKey * ev);
-#endif
+    bool key_press_event (GdkEventKey * ev);    // perftime keys processing
 
 };
 
@@ -251,3 +242,4 @@ private:        // callbacks
  *
  * vim: sw=4 ts=4 wm=4 et ft=cpp
  */
+

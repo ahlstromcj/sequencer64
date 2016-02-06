@@ -1611,34 +1611,6 @@ output_thread_func (void * myperf)
     return 0;
 }
 
-#ifdef USE_TIMESPEC_DIFF_CALCULATION
-
-/**
- *  Calculates the difference between two timespec values, and returns in as a
- *  microsecond value.  This function isn't really necessary, since the seconds
- *  difference will never be negative (time_t might be unsigned), and the
- *  nanoseconds is a signed quantity.
- */
-
-static long
-timespec_diff_us
-(
-    struct timespec & start,
-    struct timespec & stop
-)
-{
-    long secdiff  = stop.tv_sec  - start.tv_sec;
-    long nsecdiff = stop.tv_nsec - start.tv_nsec;
-    if (nsecdiff < 0)
-    {
-        secdiff -= 1;
-        nsecdiff += 1000000000;
-    }
-    return (secdiff * 1000000) + (nsecdiff / 1000);
-}
-
-#endif  // USE_TIMESPEC_DIFF_CALCULATION
-
 /**
  *  Performance output function.  This function is called by the free function
  *  output_thread_func().  Here's how it works:
@@ -1772,15 +1744,9 @@ perform::output_func ()
 #ifndef PLATFORM_WINDOWS
 
             clock_gettime(CLOCK_REALTIME, &current);
-
-#ifdef USE_TIMESPEC_DIFF_CALCULATION
-            long delta_us = timespec_diff_us(last, current);
-#else
-            delta.tv_sec  = current.tv_sec  - last.tv_sec;
+            delta.tv_sec  = current.tv_sec - last.tv_sec;
             delta.tv_nsec = current.tv_nsec - last.tv_nsec;
             long delta_us = (delta.tv_sec * 1000000) + (delta.tv_nsec / 1000);
-#endif
-
 #else
             current = timeGetTime();
             delta = current - last;

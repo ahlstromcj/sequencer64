@@ -69,10 +69,8 @@ perftime::perftime
     m_ppqn                  (0),                // set in the body
     m_snap                  (0),                // ditto
     m_measure_length        (0),                // tritto
-#ifdef USE_PERFTIME_KEYSTROKE_PROCESSING
-    m_left_marker_tick      (-1),
-    m_right_marker_tick     (-1),
-#endif
+    m_left_marker_tick      (-1),               // for perftime keystrokes
+    m_right_marker_tick     (-1),               // for perftime keystrokes
     m_perf_scale_x          (c_perf_scale_x),   // 32 ticks per pixel
     m_timearea_y            (c_timearea_y)      // pixel-height of time scale
 {
@@ -264,19 +262,14 @@ perftime::on_size_allocate (Gtk::Allocation & a_r)
     m_window_y = a_r.get_height();
 }
 
-#ifdef USE_PERFTIME_KEYSTROKE_PROCESSING
-
-/*
- * Can't get the keystroke events to be seen by perfroll or perftime here
- * using the normal callback function for keystrokes, and not sure why.  This
- * code is currently enabled because the perfedit object can call this
- * function, and that call works.
- */
-
 /**
- *  This callback function handles a key-press event.  However, we cannot get
- *  it to work directly, so the perfedit class, which does get keystrokes,
- *  calls this function to do the work
+ *  This callback function handles a key-press event.
+ *
+ *  Can't get the keystroke events to be seen by perfroll or perftime here
+ *  using the normal callback function for keystrokes, and not sure why.  The
+ *  perfedit object can call this function, and that call works, so the
+ *  perfedit class, which does get keystrokes, calls this function to do the
+ *  work.
  *
  *  This function uses the "l" key to activate the movement of the "L" marker
  *  with the arrow keys, by the interval of on snap value for each press.  It
@@ -353,8 +346,6 @@ perftime::key_press_event (GdkEventKey * ev)
     enqueue_draw();
     return result;
 }
-
-#endif      // USE_PERFTIME_KEYSTROKE_PROCESSING
 
 }           // namespace seq64
 

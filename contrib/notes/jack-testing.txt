@@ -1,6 +1,8 @@
 Testing JACK in Sequencer64
 Chris Ahlstrom
-2016-01-16 to 2016-01-24
+2016-01-16 to 2016-02-06
+
+===========================================================================
 
 These tests are done with qjackctl and hydrogen already running, and then
 starting Sequencer64 with certain settings already made in sequencer64.rc..
@@ -74,6 +76,98 @@ They currently show some issues.
 If we disable Jack Master in Sequencer64 and enable it in Hydrogen,
 then Hydrogren controls playback, including the speed.  It then doesn't
 matter what the BPM is then set to in Sequencer64.
+
+===========================================================================
+
+Sequencer64 and Yoshimi
+
+We test Sequencer64 with Yoshimi quite a lot.  First, Yoshimi has been
+revived by Will Godfrey (and others), and is progressing rapidly.
+Secondly, Yoshimi is aiming toward being runnable without a GUI.  And it
+is lightweight.  Together with the fairly lightweight Sequencer64, one has
+an efficient MIDI player.  Eventually, we hope to make Sequencer64 have a
+command-line mode as well.
+
+We first test the setup in ALSA mode, to verify that the basics are
+working.  Then we'll test in JACK mode.
+
+ALSA:
+
+    Run Yoshimi from a console, in ALSA mode:
+
+        $ yoshimi -a -A
+
+    On our setup, Sequencer64 sees 6 ports.  Port 0 is a Thru port; ports
+    1 to 4 are TiMidity ports; and port 5 is Yoshimi port 0.  So we want
+    to force Sequencer64 to use buss 5 and ALSA:
+
+        $ sequencer64 -a -A -b 5
+
+    Load a complex test tune, such as b4uacuse-GM-format.midi.
+
+    Go to Yoshimi and enable multiple parts.  Any instrument, such as
+    Simple Sound, is enough for this test.
+
+    Finally, open the Song Editor in Sequencer64, and run it.
+    You should hear the music, controlled by the Song Editor.
+
+JACK:
+
+    Run QJackCtl in order to get JACK running:
+
+        $ qjackctl &
+
+    Run Yoshimi from a console, in JACK mode:
+
+        $ yoshimi -j -J         (don't use the ampersand)
+
+    Run Sequencer64 from a console, in JACK Master mode:
+
+        $ sequencer64 -J &
+
+    To make it available to JACK, run a MIDI bridge program:
+
+        $ a2jmidid --export-hw &
+
+    In QJackCtl, make the following connections:
+
+        Audio tab:
+
+            yoshimi:left   ---------> system:playback_1
+            yoshimi:right  ---------> system:playback_2
+
+        MIDI tab:
+
+            a2j:Midi Through 14 (capture): Midi Throu...
+                ---------> yoshimi-01:midi in
+
+    Load a complex test tune, such as b4uacuse-GM-format.midi.
+
+    Go to Yoshimi and enable multiple parts.  Any instrument, such as
+    Simple Sound, is enough for this test.
+
+    Finally:
+    
+        If JACK Song Mode is set in your configuration, open the Song
+        Editor in Sequencer64, and view it.  You can start the music from
+        that view, or the main window.  You should hear the music,
+        controlled by the Song Editor.
+
+        Otherwise, you can use Live Mode and toggle the patterns in the
+        main window.
+
+    BUG:
+
+        We had playback get pretty raggy after awhile!  Who caused this
+        issue?  How can we diagnose it!
+
+===========================================================================
+
+MIDI Clock Testing
+
+    Currently described in contrib/notes/bugs-to-investigate.txt.
+
+===========================================================================
 
 http://shangrislinuxmusic.blogspot.com/2008/08/writing-and-recording-song-using-seq24.html
 

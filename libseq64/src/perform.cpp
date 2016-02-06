@@ -1322,11 +1322,12 @@ perform::copy_triggers ()
  *      that flag is false, that turns off "song" mode.  So that explains why
  *      mute/unmute is disabled.
  *
- * \param flag
+ * \param jackflag
  *      Indicates if the caller wants to start the playback in JACK mode.
  *      In the seq42 (yes, "42", not "24") code at GitHub, this flag was
  *      identical to the "global_jack_start_mode" flag, which is true for
- *      Song Mode, and false for Live Mode.  False disables Song Mode.
+ *      Song Mode, and false for Live Mode.  False disables Song Mode, and
+ *      is the default, which matches seq24.
  */
 
 void
@@ -1482,6 +1483,7 @@ perform::reset_sequences ()
     {
         if (is_active(i))
         {
+#ifdef USE_OLD_CODE
             sequence * s = m_seqs[i];
             bool state = s->get_playing();
             s->off_playing_notes();
@@ -1489,6 +1491,9 @@ perform::reset_sequences ()
             s->zero_markers();
             if (! m_playback_mode)
                 s->set_playing(state);
+#else
+            m_seqs[i]->reset(m_playback_mode);
+#endif
         }
     }
     m_master_bus.flush();              // flush the MIDI bus

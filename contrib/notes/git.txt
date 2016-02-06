@@ -1,6 +1,6 @@
 Quick Reference for Git Processes on GitHub
 Chris Ahlstrom
-2015-09-09 to 2016-02-01
+2015-09-09 to 2016-02-06
 
 Creating a GitHub Repository:
 
@@ -105,5 +105,25 @@ Pulls and merges:
     $ git checkout master
     $ git merge --no-ff TDeagan-mute_groups
     $ git push origin master
+
+Tagging:
+
+    We want to tag release points (currently 0.9.9.xx) with a tag of the
+    same name.  We create an annotated tag, which adds information and
+    requires a commit message, and is meant for public consumption.
+
+    $ git log               [to get the commit hash, abcd1234 (fake example)]
+    $ git tag -a 0.9.9.xx -m "New version 0.9.9.xx tagged" abcd1234
+    $ git push origin 0.9.9.xx              - or -
+    $ git push origin --tags
+
+    Note that each tag to be published needs to be pushed as well.
+    A user can get the tagged code via a command like the followin.
+
+    $ git checkout -b version.xx 0.9.9.xx
+
+    But be careful about modifications; if committed, they represent new
+    work you might need to merge later, but the new work will not be part
+    of the tagged commit.
 
 # vim: sw=4 ts=4 wm=8 et ft=sh

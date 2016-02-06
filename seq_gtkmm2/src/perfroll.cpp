@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-01-19
+ * \updates       2016-02-06
  * \license       GNU GPLv2 or above
  *
  *  The performance window allows automatic control of when each
@@ -47,11 +47,10 @@
 #include "sequence.hpp"
 
 /**
- *  Static (private) convenience values.
- *  We need to be able to adjust s_perfroll_background_x per the selected PPQN
- *  value.  This adjustment is made in the constructor, and assigned to the
- *  perfroll::m_background_x member.  We need named values for 4 and for 16
- *  here.
+ *  Static (private) convenience values.  We need to be able to adjust
+ *  s_perfroll_background_x per the selected PPQN value.  This adjustment is
+ *  made in the constructor, and assigned to the perfroll::m_background_x
+ *  member.  We need named values for 4 and for 16 here.
  */
 
 static int s_perfroll_background_x =
@@ -580,39 +579,6 @@ perfroll::draw_all ()
      */
 
     draw_drawable_row(m_drop_y);
-}
-
-/**
- *  Start the performance playing.  We need to keep in sync with
- *  perfedit's start_playing()... wish we could call it directly.
- *  Well, now we go to the source, calling perform::start_playing().
- *  Note that we no longer pass "true" as the playback parameter, instead
- *  using the global JACK-start-mode flag.  (We might reconsider that,
- *  later.)
- *
- * \note
- *      The old behavior was to call this function with true, I believe,
- *      which means that starting the song from the performance window
- *      forces playback to use the song/performance mode.
- */
-
-void
-perfroll::start_playing ()
-{
-    bool usejack = rc().jack_start_mode();
-    perf().start_playing(usejack);             // \change ca 2016-01-15
-}
-
-/**
- *  Stop the performance playing.  We need to keep in sync with
- *  perfedit's stop_playing()... wish we could call it directly.
- *  Well, now we go to the source, calling perform::stop_playing().
- */
-
-void
-perfroll::stop_playing ()
-{
-    perf().stop_playing();
 }
 
 /**

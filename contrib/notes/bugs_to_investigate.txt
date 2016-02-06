@@ -1,6 +1,6 @@
 Bugs and Additional Upgrade Ideas
 Chris Ahlstrom
-2015-10-27 to 2016-02-05 (New bugs)
+2015-10-27 to 2016-02-06 (New bugs)
 
 In no particular order...  "y" means "in progress", and "x" means it is
 basically done.
@@ -406,6 +406,11 @@ MY NOTES:
 	and layed down a few copies of the pattern.  That was the key to actually
 	seeing notes, I think.  I also enabled the "input goes to output" button,
 	but I doubt that was the key.
+    
+    [ACTUALLY, that may be KEY as well, if played via the Song Editor.  Not
+    sure.  Also, because of our reversion to legacy Seq24 ALSA playback
+    behavior, one can use either the Song Editor or the Pattern Window to
+    make the notes play.
 
 	Anyway, I amm getting 24 clocks per quarter note with the latest code.
 	The time values midisnoop shows are "timestamps", not tick numbers.

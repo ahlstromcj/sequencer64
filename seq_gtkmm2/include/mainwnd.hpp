@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-01-19
+ * \updates       2016-02-06
  * \license       GNU GPLv2 or above
  *
  *  The main windows is known as the "Patterns window" or "Patterns
@@ -252,13 +252,21 @@ private:
      *
      * \note
      *      This overrides the old behavior of playing live mode if the song
-     *      is started from the main window.
+     *      is started from the main window.  So let's go back to the way
+     *      seq24 handles it.  We could also make it dependent on the --legacy
+     *      option, but that's too much trouble for now.
      */
 
-    void start_playing ()               // Play!
+    void start_playing ()                   // Play!
     {
-        bool usejack = rc().jack_start_mode();
-        perf().start_playing(usejack);  // also sets is_pattern_playing flag
+        /*
+         * \change ca 2016-02-06
+         *
+         * bool usejack = rc().jack_start_mode();
+         * perf().start_playing(usejack);   // also sets is_pattern_playing flag
+         */
+
+        perf().start_playing();             // legacy behavior
     }
 
     /**

@@ -1,9 +1,12 @@
 How do Seq24 Triggers Work?
 Chris Ahlstrom
-2015-11-14 to 2015-11-15
+2015-11-14 to 2016-02-06
 
 Trying to figure out triggers.  Remember that sequence and pattern, ticks
-and MIDI pulses are used interchangeably.
+and MIDI pulses are used interchangeably.  This section also includes some
+notes about Live mode.
+
+Triggers:
 
 First, we take the relatively simple file midi/signature-samples.midi,
 which consists of some short sequences with various time signatures and a
@@ -150,5 +153,30 @@ For short tracks, that might repeat during the duration of the gap, the
 offset is also affected by repeats of the pattern, and so would oscillate
 between 0 the the pattern length as the gap continuously increased, we
 surmise.
+
+Live Mode:
+
+In ALSA mode, seq24 behaves as follows:
+
+    -   If playback is initiated from the pattern window (main window),
+        then which patterns are active depends on the muting/arming
+        applied in that window.
+    -   If playback is initiated from the performance window (song
+        editor), then pattern activity depends on what is set up in that
+        window.
+
+This is true no matter whether "JACK Live Mode" is on or off in
+~/.seq24rc.  (Note that seq24 doesn't seem to save this setting if made
+on the command-line; sequencer64 does, unless auto-save is off in
+~/.config/sequencer64/sequencer64.rc.)
+
+In JACK mode:
+
+    -   If JACK Live Mode is off, then control of muting/arming is
+        available only in the pattern window (main window), even if
+        the focus is in the performance window (song editor).
+    -   If JACK Live Mode is off, then control of muting/arming is
+        available only in the performance window, even if the focus is in
+        the pattern window.
 
 # vim: sw=4 ts=4 wm=8 et ft=rc

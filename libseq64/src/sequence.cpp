@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-01-31
+ * \updates       2016-02-06
  * \license       GNU GPLv2 or above
  *
  *  The functionality of this class also includes handling some of the
@@ -2271,6 +2271,25 @@ sequence::paste_trigger ()
      */
 
     m_triggers.paste();
+}
+
+/**
+ *  Provides a helper function simplify and speed up
+ *  perform::reset_sequences().
+ *
+ * \param live_mode
+ *      True if JACK Live Mode is on.
+ */
+
+void
+sequence::reset (bool live_mode)
+{
+    bool state = get_playing();
+    off_playing_notes();
+    set_playing(false);
+    zero_markers();
+    if (! live_mode)
+        set_playing(state);
 }
 
 /**

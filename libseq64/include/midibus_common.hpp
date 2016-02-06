@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-23
+ * \updates       2016-02-06
  * \license       GNU GPLv2 or above
  *
  */
@@ -54,17 +54,26 @@ const int c_midibus_sysex_chunk = 0x100;        //     256
 /**
  *  A clock enumeration.  Not sure yet what these mean.
  *
- *  This enumeration Was also defined in midibus_portmidi.h, but we put it
+ *  This enumeration was also defined in midibus_portmidi.h, but we put it
  *  into this common module to avoid duplication.
  *
  * \var e_clock_off
- *      Corresponds to the "Off" selection in the MIDI Clock tab.
+ *      Corresponds to the "Off" selection in the MIDI Clock tab.  With this
+ *      setting, the MIDI Clock is disabled for the buss using this setting.
+ *      Notes will still be sent that buss, of course.  Some software
+ *      synthesizer might require this setting in order to make a sound.
  *
  * \var e_clock_pos
- *      Corresponds to the "Pos" selection in the MIDI Clock tab.
+ *      Corresponds to the "Pos" selection in the MIDI Clock tab.  With this
+ *      setting, MIDI Clock will be sent to this buss, and, if playback is
+ *      starting beyond tick 0, then MIDI Song Position and MIDI Continue will
+ *      also be sent on this buss.
  *
  * \var e_clock_mod
- *      Corresponds to the "Mod" selection in the MIDI Clock tab.
+ *      Corresponds to the "Mod" selection in the MIDI Clock tab.  With this
+ *      setting, MIDI Clock and MIDI Start will be sent.  But clocking won't
+ *      begin until the Song Position has reached the start modulo (in 1/16th
+ *      notes) that is specified.
  */
 
 enum clock_e

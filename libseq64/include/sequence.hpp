@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-02-05
+ * \updates       2016-02-06
  * \license       GNU GPLv2 or above
  *
  *  The functions add_list_var() and add_long_list() have been replaced by
@@ -894,6 +894,7 @@ public:
     void play_note_on (int note);
     void play_note_off (int note);
     void off_playing_notes ();
+    void reset (bool live_mode);        // \new ca 2016-02-06
     void reset_draw_marker ();
     void reset_draw_trigger_marker ();
     draw_type get_next_note_event

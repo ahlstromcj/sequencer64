@@ -43,14 +43,6 @@
 #include "midifile.hpp"
 #include "perform.hpp"
 
-/**
- *  Try using some helper functions to reduce code duplication
- *  and its attendant ills.
- */
-
-#define USE_GET_JACK_TICKS
-#define USE_FRAME_TO_TICKS
-
 namespace seq64
 {
 
@@ -590,14 +582,8 @@ jack_assistant::sync (jack_transport_state_t state)
     else
         result = 1;
 
-#ifdef USE_FRAME_TO_TICKS
-    m_jack_tick = frame_to_ticks(m_jack_frame_current);
-#else
-    m_jack_tick =
-        m_jack_frame_current *
-        m_jack_pos.ticks_per_beat *
+    m_jack_tick = m_jack_frame_current * m_jack_pos.ticks_per_beat *
         m_jack_pos.beats_per_minute / (rate * 60.0) ;
-#endif
 
     m_jack_frame_last = m_jack_frame_current;
     m_jack_transport_state_last = m_jack_transport_state = state;
@@ -785,54 +771,6 @@ jack_session_callback (jack_session_event_t * ev, void * arg)
 #endif  // SEQ64_JACK_SESSION
 
 /**
- *  A helper function for obtaining "jack_ticks_converted".
- *  Note that we will need to replace 4.0 with a member value.
- *
- * \return
- *      Returns the number of ticks based on the the current tick and some JACK
- *      parameters.
- */
-
-double
-jack_assistant::get_jack_ticks () const
-{
-    double result = m_jack_tick *
-    (
-        double(m_ppqn) /
-        (m_jack_pos.ticks_per_beat * m_jack_pos.beat_type / m_beat_width)
-    );
-    return result;
-}
-
-/**
- *  A helper function for converting a frame number to ticks.  Note the
- *  frame-rate check.  The actual frame rate might be something like 48000.  If
- *  we have an invalid frmae rate, we try to make it work somehow, for now.
- *
- * \param frame
- *      Provides the current frame number or frame offset.
- *
- * \return
- *      Returns the double version of the number of ticks represented by the
- *      frame parameter.
- */
-
-double
-jack_assistant::frame_to_ticks (jack_nframes_t frame) const
-{
-    jack_nframes_t rate = m_jack_pos.frame_rate;
-    double ticks_per_minute =
-        m_jack_pos.ticks_per_beat * m_jack_pos.beats_per_minute;
-
-    if (rate < 1000)                    /* only a sanity check */
-    {
-        errprint("jack frame_to_ticks(): zero frame rate");
-        rate = 48000;
-    }
-    return double(frame * ticks_per_minute / (rate * 60.0));
-}
-
-/**
  *  Performance output function for JACK, called by the perform function
  *  of the same name.  This code comes from perform::output_func() from seq24.
  *
@@ -881,25 +819,15 @@ jack_assistant::output (jack_scratchpad & pad)
         {
             m_jack_frame_last = m_jack_frame_current;
             pad.js_dumping = true;          // info_message("Start playback");
-
-#ifdef USE_FRAME_TO_TICKS
-            m_jack_tick = frame_to_ticks(m_jack_pos.frame);
-#else
-            m_jack_tick =
-                m_jack_pos.frame *
+            m_jack_tick = m_jack_pos.frame *
                 m_jack_pos.ticks_per_beat *
                 m_jack_pos.beats_per_minute / (m_jack_pos.frame_rate * 60.0);
-#endif
 
-#ifdef USE_GET_JACK_TICKS
-            jack_ticks_converted = get_jack_ticks();    /* convert ticks */
-#else
             jack_ticks_converted = m_jack_tick *        /* convert ticks */
             (
                 double(m_ppqn) /                        // 4.0 --> member below
                 (m_jack_pos.ticks_per_beat * m_jack_pos.beat_type / 4.0)
             );
-#endif
             m_jack_parent.set_orig_ticks(long(jack_ticks_converted));
             pad.js_init_clock = true;
             pad.js_current_tick = pad.js_clock_tick = pad.js_total_tick =
@@ -952,18 +880,10 @@ jack_assistant::output (jack_scratchpad & pad)
             {
                 if (m_jack_pos.frame_rate > 1000)           /* usually 48000 */
                 {
-#ifdef USE_FRAME_TO_TICKS
-                    m_jack_tick = frame_to_ticks
-                    (
-                        m_jack_frame_current - m_jack_frame_last
-                    );
-#else
-                    m_jack_tick +=
-                        (m_jack_frame_current - m_jack_frame_last) *
+                    m_jack_tick += (m_jack_frame_current - m_jack_frame_last) *
                         m_jack_pos.ticks_per_beat *
                         m_jack_pos.beats_per_minute /
                         (m_jack_pos.frame_rate * 60.0);
-#endif
                 }
                 else
                     info_message("jack_assistant::output() 2: zero frame rate");
@@ -971,17 +891,11 @@ jack_assistant::output (jack_scratchpad & pad)
                 m_jack_frame_last = m_jack_frame_current;
             }
 
-#ifdef USE_GET_JACK_TICKS
-            jack_ticks_converted = get_jack_ticks();    /* convert ticks */
-#else
-            jack_ticks_converted =                      /* convert ticks */
-                m_jack_tick *
-                (
-                    double(m_ppqn) /
-                        (m_jack_pos.ticks_per_beat * m_jack_pos.beat_type / 4.0)
-                );
-#endif
-
+            jack_ticks_converted = m_jack_tick *
+            (
+                double(m_ppqn) /
+                    (m_jack_pos.ticks_per_beat * m_jack_pos.beat_type / 4.0)
+            );
             jack_ticks_delta = jack_ticks_converted - pad.js_ticks_converted_last;
             pad.js_clock_tick += jack_ticks_delta;
             pad.js_current_tick += jack_ticks_delta;

@@ -53,9 +53,8 @@
 
 /*
  * Define this macro to use the new seq24 v. 0.9.3 delta-tick calculation
- * code.  We're not sure if this works for generating the proper rate of MIDI
- * clocks, and so have disabled that code for now.  Define this macro if you
- * want to try the new code.
+ * code.  This code doesn't quite work for generating the proper rate of MIDI
+ * clocks, and so have disabled that code. Do not enable it.
  */
 
 #undef  USE_SEQ24_0_9_3_CODE
@@ -238,8 +237,6 @@ private:
         m_ppqn = ppqn;
     }
 
-    double get_jack_ticks() const;                      // @new ca 2016-01-21
-    double frame_to_ticks (jack_nframes_t frame) const; // @new ca 2016-01-21
     bool info_message (const std::string & msg);
     bool error_message (const std::string & msg);
     jack_client_t * client_open (const std::string & clientname);

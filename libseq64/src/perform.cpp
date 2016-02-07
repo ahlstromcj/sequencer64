@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-01-26
+ * \updates       2016-02-07
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -1322,11 +1322,12 @@ perform::copy_triggers ()
  *      that flag is false, that turns off "song" mode.  So that explains why
  *      mute/unmute is disabled.
  *
- * \param flag
+ * \param jackflag
  *      Indicates if the caller wants to start the playback in JACK mode.
  *      In the seq42 (yes, "42", not "24") code at GitHub, this flag was
  *      identical to the "global_jack_start_mode" flag, which is true for
- *      Song Mode, and false for Live Mode.  False disables Song Mode.
+ *      Song Mode, and false for Live Mode.  False disables Song Mode, and
+ *      is the default, which matches seq24.
  */
 
 void
@@ -1482,6 +1483,7 @@ perform::reset_sequences ()
     {
         if (is_active(i))
         {
+#ifdef USE_OLD_CODE
             sequence * s = m_seqs[i];
             bool state = s->get_playing();
             s->off_playing_notes();
@@ -1489,6 +1491,9 @@ perform::reset_sequences ()
             s->zero_markers();
             if (! m_playback_mode)
                 s->set_playing(state);
+#else
+            m_seqs[i]->reset(m_playback_mode);
+#endif
         }
     }
     m_master_bus.flush();              // flush the MIDI bus
@@ -1611,34 +1616,6 @@ output_thread_func (void * myperf)
     return 0;
 }
 
-#ifdef USE_TIMESPEC_DIFF_CALCULATION
-
-/**
- *  Calculates the difference between two timespec values, and returns in as a
- *  microsecond value.  This function isn't really necessary, since the seconds
- *  difference will never be negative (time_t might be unsigned), and the
- *  nanoseconds is a signed quantity.
- */
-
-static long
-timespec_diff_us
-(
-    struct timespec & start,
-    struct timespec & stop
-)
-{
-    long secdiff  = stop.tv_sec  - start.tv_sec;
-    long nsecdiff = stop.tv_nsec - start.tv_nsec;
-    if (nsecdiff < 0)
-    {
-        secdiff -= 1;
-        nsecdiff += 1000000000;
-    }
-    return (secdiff * 1000000) + (nsecdiff / 1000);
-}
-
-#endif  // USE_TIMESPEC_DIFF_CALCULATION
-
 /**
  *  Performance output function.  This function is called by the free function
  *  output_thread_func().  Here's how it works:
@@ -1683,14 +1660,20 @@ perform::output_func ()
         jack_scratchpad pad;
         pad.js_current_tick = 0.0;          // tick and tick fraction
         pad.js_total_tick = 0.0;
+#ifdef USE_SEQ24_0_9_3_CODE
         pad.js_clock_tick = 0;              // long probably offers more ticks
+#else
+        pad.js_clock_tick = 0.0;
+#endif
         pad.js_jack_stopped = false;
         pad.js_dumping = false;
         pad.js_init_clock = true;
         pad.js_looping = m_looping;
         pad.js_playback_mode = m_playback_mode;
         pad.js_ticks_converted_last = 0.0;
+#ifdef USE_SEQ24_0_9_3_CODE
         pad.js_delta_tick_frac = 0;         // from seq24 0.9.3
+#endif
 
         midipulse stats_total_tick = 0;
         long stats_loop_index = 0;
@@ -1725,7 +1708,7 @@ perform::output_func ()
         {
             pad.js_current_tick = long(m_starting_tick);    // midipulse
             pad.js_clock_tick = m_starting_tick;
-            set_orig_ticks(m_starting_tick);            // what member?
+            set_orig_ticks(m_starting_tick);                // what member?
         }
 
         int ppqn = m_master_bus.get_ppqn();
@@ -1766,15 +1749,9 @@ perform::output_func ()
 #ifndef PLATFORM_WINDOWS
 
             clock_gettime(CLOCK_REALTIME, &current);
-
-#ifdef USE_TIMESPEC_DIFF_CALCULATION
-            long delta_us = timespec_diff_us(last, current);
-#else
-            delta.tv_sec  = current.tv_sec  - last.tv_sec;
+            delta.tv_sec  = current.tv_sec - last.tv_sec;
             delta.tv_nsec = current.tv_nsec - last.tv_nsec;
             long delta_us = (delta.tv_sec * 1000000) + (delta.tv_nsec / 1000);
-#endif
-
 #else
             current = timeGetTime();
             delta = current - last;
@@ -1783,24 +1760,25 @@ perform::output_func ()
             int bpm  = m_master_bus.get_beats_per_minute();
 
             /*
-             * Delta time to ticks; get delta ticks:
-             * double delta_tick = double(bpm * ppqn * (delta_us / 60000000.0f));
+             * Delta time to ticks; get delta ticks.
              *
-             * \change ca 2016-01-21  Doh!  Wrong parameter order:
-             * double delta_tick = delta_time_us_to_ticks(bpm, ppqn, delta_us);
-             *
-             * seq24 0.9.3 changes delta_tick's type and adds some code:
-             * double delta_tick = delta_time_us_to_ticks(delta_us, bpm, ppqn);
-             *
-             * Get delta ticks; delta_ticks_frac is in 1000th of a tick.
+             * seq24 0.9.3 changes delta_tick's type and adds some code --
+             * delta_ticks_frac is in 1000th of a tick.  This code is meant to
+             * correct for some clock drift.  However, this code breaks the
+             * MIDI clock speed.  So let's revert to our original code, by not
+             * defining USE_SEQ24_0_9_3_CODE.
              */
 
+#ifdef USE_SEQ24_0_9_3_CODE
             long long delta_tick_num = bpm * ppqn * delta_us +
                 pad.js_delta_tick_frac;
 
             long long delta_tick_denom = 60000000LL;
             long delta_tick = long(delta_tick_num / delta_tick_denom);
             pad.js_delta_tick_frac = long(delta_tick_num % delta_tick_denom);
+#else
+            double delta_tick = delta_time_us_to_ticks(delta_us, bpm, ppqn);
+#endif
             if (m_usemidiclock)
             {
                 delta_tick = m_midiclocktick;
@@ -1822,35 +1800,20 @@ perform::output_func ()
                 // No additional code needed besides the output() call above.
             }
             else
-#endif
             {
+#endif
                 /*
-                 * NEW 2015-01-23
-                 *  Test for initial failure and try to recover.  If it fails
-                 *  again, fall back to non-JACK operation.
+                 * The default if JACK is not compiled in, or is not
+                 * running.  Add the delta to the current ticks.
                  */
 
-                bool fallback = true;
-                if (rc().with_jack())
-                {
+                pad.js_clock_tick += delta_tick;
+                pad.js_current_tick += delta_tick;
+                pad.js_total_tick += delta_tick;
+                pad.js_dumping = true;
 #ifdef SEQ64_JACK_SUPPORT
-                    if (m_jack_asst.restart())
-                        fallback = false;
-#endif
-                }
-                if (fallback)
-                {
-                    /*
-                     * The default if JACK is not compiled in, or is not
-                     * running.  Add the delta to the current ticks.
-                     */
-
-                    pad.js_clock_tick += delta_tick;
-                    pad.js_current_tick += delta_tick;
-                    pad.js_total_tick += delta_tick;
-                    pad.js_dumping = true;
-                }
             }
+#endif
 
             /*
              * init_clock will be true when we run for the first time, or
@@ -1982,7 +1945,9 @@ perform::output_func ()
             else
             {
                 if (rc().stats())
+                {
                     errprint("Underrun");
+                }
             }
 
             if (rc().stats())

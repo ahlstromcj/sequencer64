@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-09-17
- * \updates       2016-01-28
+ * \updates       2016-02-07
  * \license       GNU GPLv2 or above
  *
  *  This class contains a number of functions that used to reside in the
@@ -40,26 +40,21 @@
 #ifdef SEQ64_JACK_SUPPORT
 #include <jack/jack.h>
 #include <jack/transport.h>
-
 #ifdef SEQ64_JACK_SESSION
 #include <jack/session.h>
 #endif
-
 #else       // ! SEQ64_JACK_SUPPORT
-
 #undef SEQ64_JACK_SESSION
-
 #endif      // SEQ64_JACK_SUPPORT
 
 /*
- *  We don't really need to be a slow-sync client, as far as we can tell.
- *  In fact, our sync code may interfere with getting a valid frame rate.
- *  However, we still can't JACK working exactly the way it does in seq24,
- *  so we leave the callback in place.  Plus, it does things important to the
- *  setup of JACK.
+ * Define this macro to use the new seq24 v. 0.9.3 delta-tick calculation
+ * code.  This code doesn't quite work for generating the proper rate of MIDI
+ * clocks, and so have disabled that code until we can figure out what it is
+ * we're doing wrong. Do not enable it.
  */
 
-#define USE_JACK_SYNC_CALLBACK
+#undef  USE_SEQ24_0_9_3_CODE
 
 namespace seq64
 {
@@ -81,14 +76,20 @@ public:
 
     double js_current_tick;
     double js_total_tick;
+#ifdef USE_SEQ24_0_9_3_CODE
     long js_clock_tick;                 /* changed in seq24 0.9.3   */
+#else
+    double js_clock_tick;
+#endif
     bool js_jack_stopped;
     bool js_dumping;
     bool js_init_clock;
     bool js_looping;                    /* perform::m_looping       */
     bool js_playback_mode;              /* perform::m_playback_mode */
     double js_ticks_converted_last;
+#ifdef USE_SEQ24_0_9_3_CODE
     long js_delta_tick_frac;            /* seq24 0.9.3              */
+#endif
 
 };
 
@@ -115,27 +116,24 @@ typedef struct
 
 /**
  *  This class provides the performance mode JACK support.
- *
- *  WHY PERFORMANCE MODE?  Only works in that mode???  
  */
 
 class jack_assistant
 {
 
-#ifdef USE_JACK_SYNC_CALLBACK
     friend int jack_sync_callback
     (
         jack_transport_state_t state,
         jack_position_t * pos,
         void * arg
     );
-#endif  // USE_JACK_SYNC_CALLBACK
 
 #ifdef SEQ64_JACK_SESSION
     friend void jack_session_callback (jack_session_event_t * ev, void * arg);
 #endif
 
     friend void jack_shutdown_callback (void * arg);
+
     friend void jack_timebase_callback
     (
         jack_transport_state_t state,
@@ -208,7 +206,6 @@ public:
     }
 
     bool init ();                       // init_jack ();
-    bool restart ();                    // NEW 2015-01-23
     void deinit ();                     // deinit_jack ();
 
 #ifdef SEQ64_JACK_SESSION
@@ -236,8 +233,6 @@ private:
         m_ppqn = ppqn;
     }
 
-    double get_jack_ticks() const;                      // @new ca 2016-01-21
-    double frame_to_ticks (jack_nframes_t frame) const; // @new ca 2016-01-21
     bool info_message (const std::string & msg);
     bool error_message (const std::string & msg);
     jack_client_t * client_open (const std::string & clientname);
@@ -259,14 +254,12 @@ private:
  *  Global functions for JACK support and JACK sessions.
  */
 
-#ifdef USE_JACK_SYNC_CALLBACK
 extern int jack_sync_callback
 (
     jack_transport_state_t state,
     jack_position_t * pos,
     void * arg
 );
-#endif  // USE_JACK_SYNC_CALLBACK
 
 extern void jack_shutdown_callback (void * arg);
 extern void jack_timebase_callback
@@ -290,7 +283,7 @@ extern int jack_process_callback (jack_nframes_t nframes, void * arg);
 extern void jack_session_callback (jack_session_event_t * ev, void * arg);
 #endif
 
-#ifdef ALLOW_PLATFORM_DEBUG
+#ifdef SEQ64_USE_DEBUG_OUTPUT
 extern void print_jack_pos (jack_position_t & jack_pos, const std::string & tag);
 #endif
 

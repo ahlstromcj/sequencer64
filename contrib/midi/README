@@ -1,6 +1,6 @@
 Contributed MIDI Files
 Chris Ahlstrom
-2015-09-11 to 2016-01-28
+2015-09-11 to 2016-01-31
 
 This directory contains contributed MIDI files for examples and testing.
 Also see the test files from the midicvt as described in
@@ -96,7 +96,9 @@ by loading them into Sequencer64.
 
    hymne.mid
 
-        A Vangelis tune with a BPM of 96.
+        A Vangelis tune with a BPM of 80 and a PPQN of 96.   It also seems
+        to have a lot more "Note On" events than "Note Off" events.
+        Weird!
 
    Itis.mid
 

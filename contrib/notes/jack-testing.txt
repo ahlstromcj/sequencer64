@@ -1,0 +1,245 @@
+Testing JACK in Sequencer64
+Chris Ahlstrom
+2016-01-16 to 2016-02-06
+
+===========================================================================
+
+These tests are done with qjackctl and hydrogen already running, and then
+starting Sequencer64 with certain settings already made in sequencer64.rc..
+They currently show some issues.
+
+1.  [jack_transport]    == 1
+    [jack_master]       == 0
+    [jack_master_cond]  == 0
+
+    a. Do not start the JACK transport in qjackctl.
+    b. Set Hydrogen to use JACK transport, but not be Master.
+    c. Load a MIDI file.
+    d. Start playback (Space bar) in Sequencer64, then stop it (Escape)
+       after a bit.
+
+    Actual Results:
+
+        Hydrogen starts playing.  Qjackctl starts counting time.
+        Every Space restarts both, resetting the time.  Escape stops both,
+        but doesn't reset the time.  Sequencer64 does not play.
+
+    Expected Results:
+
+        TO DO
+
+    e. Now start Hydrogen's playback instead.
+
+    Actual Results:
+
+        Hydrogen plays, but Sequencer64 does not.  Hydrogen can pause,
+        which keeps the time the same when restarted.  The Stop button in
+        Hydrogen will cause the time to be restarted.
+
+2.  [jack_transport]    == 1
+    [jack_master]       == 1
+    [jack_master_cond]  == 0
+
+    Either edit sequencer64.rc, or make the setting in the GUI, and click
+    JACK Disconnect, and then JACK Connect.
+
+    Actual Results:
+
+        Similar to scenario 1, except that now Sequencer64 also plays
+        back.
+
+        Are JACK slaves allowed to start/stop playback on the JACK buss?
+    
+    Bug:
+
+        The main window Stop and Start buttons behave the same, except
+        that, once the focus of the user-interface is on the Stop button,
+        hitting the Space bar causes a fast start-then-stop action.
+
+    Bug? (Probably not, I saw this in the code, too):
+
+        Sequencer64, as Master:  BPM value cannot be modified from 120
+        while transport is running.  It can be altered while it is stopped,
+        and will affect the speed of playback..
+
+    Still true?:
+
+        At exit, we also "[Cannot release JACK timebase]", probably
+        shouldn't be doing that.
+
+    Done: We think we may not want to change the transport
+    position unless we are the JACK Master.  We have added
+    a relocate parameter.
+
+    True?: Why doesn't the jack transport make seq24 progress?
+
+If we disable Jack Master in Sequencer64 and enable it in Hydrogen,
+then Hydrogren controls playback, including the speed.  It then doesn't
+matter what the BPM is then set to in Sequencer64.
+
+===========================================================================
+
+Sequencer64 and Yoshimi
+
+We test Sequencer64 with Yoshimi quite a lot.  First, Yoshimi has been
+revived by Will Godfrey (and others), and is progressing rapidly.
+Secondly, Yoshimi is aiming toward being runnable without a GUI.  And it
+is lightweight.  Together with the fairly lightweight Sequencer64, one has
+an efficient MIDI player.  Eventually, we hope to make Sequencer64 have a
+command-line mode as well.
+
+We first test the setup in ALSA mode, to verify that the basics are
+working.  Then we'll test in JACK mode.
+
+ALSA:
+
+    Run Yoshimi from a console, in ALSA mode:
+
+        $ yoshimi -a -A
+
+    On our setup, Sequencer64 sees 6 ports.  Port 0 is a Thru port; ports
+    1 to 4 are TiMidity ports; and port 5 is Yoshimi port 0.  So we want
+    to force Sequencer64 to use buss 5 and ALSA:
+
+        $ sequencer64 -a -A -b 5
+
+    Load a complex test tune, such as b4uacuse-GM-format.midi.
+
+    Go to Yoshimi and enable multiple parts.  Any instrument, such as
+    Simple Sound, is enough for this test.
+
+    Finally, open the Song Editor in Sequencer64, and run it.
+    You should hear the music, controlled by the Song Editor.
+
+JACK:
+
+    Run QJackCtl in order to get JACK running:
+
+        $ qjackctl &
+
+    Run Yoshimi from a console, in JACK mode:
+
+        $ yoshimi -j -J         (don't use the ampersand)
+
+    Run Sequencer64 from a console, in JACK Master mode:
+
+        $ sequencer64 -J &
+
+    To make it available to JACK, run a MIDI bridge program:
+
+        $ a2jmidid --export-hw &
+
+    In QJackCtl, make the following connections:
+
+        Audio tab:
+
+            yoshimi:left   ---------> system:playback_1
+            yoshimi:right  ---------> system:playback_2
+
+        MIDI tab:
+
+            a2j:Midi Through 14 (capture): Midi Throu...
+                ---------> yoshimi-01:midi in
+
+    Load a complex test tune, such as b4uacuse-GM-format.midi.
+
+    Go to Yoshimi and enable multiple parts.  Any instrument, such as
+    Simple Sound, is enough for this test.
+
+    Finally:
+    
+        If JACK Song Mode is set in your configuration, open the Song
+        Editor in Sequencer64, and view it.  You can start the music from
+        that view, or the main window.  You should hear the music,
+        controlled by the Song Editor.
+
+        Otherwise, you can use Live Mode and toggle the patterns in the
+        main window.
+
+    BUG:
+
+        We had playback get pretty raggy after awhile!  Who caused this
+        issue?  How can we diagnose it!
+
+===========================================================================
+
+MIDI Clock Testing
+
+    Currently described in contrib/notes/bugs-to-investigate.txt.
+
+===========================================================================
+
+http://shangrislinuxmusic.blogspot.com/2008/08/writing-and-recording-song-using-seq24.html
+
+Start Qjackctl with
+
+qjackctl &
+
+You can then click on the Start button to start jackd. Your linux station
+is now set up to play music.
+
+Install Zynaddsubfx, Seq24 and Hydrogen 
+
+seq24 --manual_alsa_ports & zynaddsubfx -r 48000 -b 128 & hydrogen -d jack
+&
+
+Click on the "Connect" button of QJackctl. Check on the "Audio" tab that
+Zynaddsubfx and Hydrogen outputs are connected to ALSA's PCM input.
+
+On the ALSA tab, connect Seq24 first output to Zynaddsubfx's input, and
+connect Seq24 second output to Hydrogen's input.
+
+Select an instrument in Zynaddsubfx in the Instrument>Show Instrument Bank
+menu. Then set the MIDI channel of Zynaddsubfx to 2 (It currently shows
+"1"). Select another instrument for the second midi channel. Repeat the
+operation for a third instrument.
+
+Right-click in Seq24's grid and choose new. You will get a sequence
+edition window. You can adjust the length of the sequence, which is by
+default 1 bar. Let's tell Seq24 we want to play on the Hydrogen rhythmbox :
+In the Output Bus menu left to the field that shows "[1] seq24 1" and set
+it to "[2] seq24 2". Remember we connected Seq24's second midi output to
+Hydrogen.
+
+There's three MIDI buttons in the down left corner of the window. Click on
+the first one to tell Seq24 to send midi events to Hydrogen. You can now
+edit your pattern by holding right-mouse's button and left-clicking to
+paste notes. You can adjust their length with the field next to the
+sequence length. You can click on the piano keyboard to ear how each note
+sounds. Hydrogen set's runs from C2 to D#3. Press "Play" to listen to your
+sequence.
+
+Once you have a Drum sequence, you can repeat theses steps to add our
+three Zynaddsufx's instruments. Just select the first Output Bus for the
+sequence (we connected the first seq24 output to Zynaddsubfx already). To
+select one of the three Zynaddsubfx instruments, click on the button
+showing a MIDI plug next to the Output Bus field and select one from 1 to
+3.
+
+Once you have some sequences, you can use them to compose the song : on
+the main Seq24 windows, there's a 'Song Edition' button in the right down
+corner. Click on it. In the new window, you can click the same way that in
+the sequence windows to draw song sequences. Click on "Play" to play your
+song.
+
+https://help.ubuntu.com/community/HowToSeq24Introduction
+
+http://sourceforge.net/p/seq24/mailman/message/1049880/
+
+I use this setup:
+
+                          +---------------+
+                          |    ARDOUR     |
+                          |               |
+Seq24 --> QSynth -----------> Audio 1     |
+  |                       |               |
+  +-----> ZynAddSubFx ------> Audio 2     |
+  |                       |               |
+  +-----> Hydrogen ---------> Audio 3     |
+                          |               |
+                          +---------------+
+
+And works fine for me. As Seq24 generates all the midi events, there are 
+no sync problems.
+
+# vim: sw=4 ts=4 wm=8 et ft=c

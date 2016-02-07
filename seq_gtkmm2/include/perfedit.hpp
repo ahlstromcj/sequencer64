@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-01-16
+ * \updates       2016-02-06
  * \license       GNU GPLv2 or above
  *
  */
@@ -221,17 +221,23 @@ private:
      *  rc().is_pattern_playing(true), indirectly.  Note that, if the
      *  JACK-start-mode value is false, the perfedit's unmute/mute feature is
      *  disabled.  We no longer hardwire the boolean parameter to "true".
-     *  (We might reconsider that at some point.)
+     *  We might reconsider that at some point, and indeed we have reverted to
+     *  legacy seq24 behavior, by passing true to perform::start_playing().
      */
 
     void start_playing ()
     {
-        bool usejack = rc().jack_start_mode(); // \change ca 2016-01-15
-        perf().start_playing(usejack);         // careful now, see perform!!!!
+        /*
+         * bool usejack = rc().jack_start_mode(); // \change ca 2016-01-15
+         * perf().start_playing(usejack);         // careful now, see perform!!!!
+         */
+
+         perf().start_playing(true);
     }
 
     /**
-     *  Stop the playing.  This call also sets rc().is_pattern_playing(true).
+     *  Stop the playing.  This call also sets rc().is_pattern_playing(true),
+     *  indirectly.
      */
 
     void stop_playing ()

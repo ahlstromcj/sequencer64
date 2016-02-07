@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-25
- * \updates       2015-11-21
+ * \updates       2016-02-05
  * \license       GNU GPLv2 or above
  *
  *  We're going to try to collect all the globals here in one module, and
@@ -327,21 +327,6 @@ const std::string c_dummy = "Untitled";
  */
 
 const int c_maxbeats = 0xFFFF;
-
-#if USE_TRADITIONAL_FONT_HANDLING
-
-/**
- *  Provides the various font sizes for the default font.  Not yet sure if
- *  there's a mechanism for selecting the font.  No, there is not.
- *  The font is actually fixed, and is embedded in a couple of XPM
- *  pixmaps.
- */
-
-const char c_font_6_12[] = "-*-fixed-medium-r-*--12-*-*-*-*-*-*";
-const char c_font_8_13[] = "-*-fixed-medium-r-*--13-*-*-*-*-*-*";
-const char c_font_5_7[]  = "-*-fixed-medium-r-*--7-*-*-*-*-*-*";
-
-#endif  // USE_TRADITIONAL_FONT_HANDLING
 
 /**
  *  Values used in the menu to tell setState() what to do.

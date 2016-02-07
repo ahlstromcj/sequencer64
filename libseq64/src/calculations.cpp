@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-07
- * \updates       2015-12-19
+ * \updates       2016-01-31
  * \license       GNU GPLv2 or above
  *
  *  This code was moved from the globals module so that other modules
@@ -708,6 +708,60 @@ strings_match (const std::string & target, const std::string & x)
         }
     }
     return result;
+}
+
+/**
+ *  Calculates the log-base-2 value of a number that is already a power of 2.
+ *  Useful in converting a time signature's denominator to a Time Signature
+ *  meta event's "dd" value.
+ *
+ * \param tsd
+ *      The time signature denominator, which must be a power of 2:  2, 4, 8,
+ *      16, or 32.
+ *
+ * \return
+ *      Returns the power of 2 that achieves the \a tsd parameter value.
+ */
+
+int
+log2_time_sig_value (int tsd)
+{
+    int result = 0;
+    while (tsd > 1)
+    {
+        result++;
+        tsd >>= 1;
+    }
+    return result;
+}
+
+/**
+ *  Provide a way to convert a tempo value (microseconds per quarter note)
+ *  into the three bytes needed as value in a Tempo meta event.  Recall the
+ *  format of a Tempo event:
+ *
+ *  0 FF 51 03 t2 t1 t0 (tempo as number of microseconds per quarter note)
+ *
+ *  This code is the inverse of the lines of code around line 768 in
+ *  midifile.cpp, which is basically
+ *  <code> ((t2 * 256) + t1) * 256 + t0 </code>.
+ *
+ *  As a test case, note that the default tempo is 120 beats/minute, which is
+ *  equivalent to tttttt=500000 (0x07A120).
+ *
+ * \param t
+ *      Provides a small array of at least 3 elements to hold each tempo byte.
+ *
+ * \param tempo_us
+ *      Provides the temp value in microseconds per quarter note.
+ */
+
+void
+tempo_to_bytes (midibyte t[3], int tempo_us)
+{
+    t[0] = midibyte(tempo_us & 0x0000FF);
+    t[1] = midibyte((tempo_us & 0x00FF00) >> 8);
+    t[2] = midibyte((tempo_us & 0xFF0000) >> 16);
 }
 
 }       // namespace seq64

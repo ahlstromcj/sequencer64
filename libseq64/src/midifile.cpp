@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-01-19
+ * \updates       2016-02-06
  * \license       GNU GPLv2 or above
  *
  *  For a quick guide to the MIDI format, see, for example:
@@ -49,7 +49,6 @@
 #include "sequence.hpp"                 /* seq64::sequence                  */
 
 #define SEQ64_USE_MIDI_VECTOR           /* as opposed to the MIDI list      */
-
 #if defined SEQ64_USE_MIDI_VECTOR
 #include "midi_vector.hpp"              /* seq64::midi_vector container     */
 #else
@@ -734,9 +733,17 @@ midifile::parse_smf_1 (perform & p, int screenset, bool is_smf0)
                             {
                                 seq.set_beats_per_bar(read_byte()); // nn
                                 int logbase2 = int(read_byte());    // dd
+#ifdef SEQ64_HANDLE_TIMESIG_AND_TEMPO
+                                int cc = read_byte();               // cc
+                                int bb = read_byte();               // bb
+                                seq.set_beat_width(long(pow2(logbase2)));
+                                seq.clocks_per_metronome(cc);
+                                seq.set_32nds_per_quarter(bb);
+#else
                                 (void) read_byte();                 // cc
                                 (void) read_byte();                 // bb
                                 seq.set_beat_width(long(pow2(logbase2)));
+#endif
 #ifdef SEQ64_USE_DEBUG_OUTPUT
                                 printf
                                 (
@@ -765,6 +772,9 @@ midifile::parse_smf_1 (perform & p, int screenset, bool is_smf0)
                                     beats_per_minute_from_tempo(double(tt))
                                 );
                                 p.set_beats_per_minute(bpm);
+#ifdef SEQ64_HANDLE_TIMESIG_AND_TEMPO
+                                seq.us_per_quarter_note(int(tt));
+#endif
 #ifdef SEQ64_USE_DEBUG_OUTPUT
                                 printf("BPM set to %d\n", bpm);
 #endif
@@ -780,15 +790,12 @@ midifile::parse_smf_1 (perform & p, int screenset, bool is_smf0)
                              * the same time as track-end.  Class sequence
                              * discards the last note.  This fixes that.  A
                              * native Seq24 file will always have a Delta >= 1."
-                             * Not true!  We've fixed the real issue, we
-                             * think, which happens because of code marked by
-                             * the same #ifdef as here in event_list.
+                             * Not true!  We've fixed the real issue by
+                             * commenting this code:
+                             *
+                             *  if (Delta == 0)
+                             *      ++CurrentTime;
                              */
-
-#ifdef USE_EQUALS_IN_COMPARISON                         /* not defined      */
-                            if (Delta == 0)
-                                ++CurrentTime;
-#endif
 
                             seq.set_length(CurrentTime, false);
                             seq.zero_markers();

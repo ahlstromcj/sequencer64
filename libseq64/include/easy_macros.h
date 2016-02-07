@@ -10,7 +10,7 @@
  * \library       sequencer64
  * \author        Chris Ahlstrom and other authors; see documentation
  * \date          2013-11-17
- * \updates       2016-01-15
+ * \updates       2016-02-06
  * \version       $Revision$
  * \license       GNU GPL v2 or above
  *
@@ -130,19 +130,19 @@ typedef bool cbool_t;
  *
  */
 
-#define USE_PRETTY_FUNCTION   1
-
 #ifdef PLATFORM_GNU
 
 #ifndef __func__
 #if __STDC_VERSION__ < 199901L
 #if __GNUC__ >= 2
 
-#ifdef USE_PRETTY_FUNCTION                            /* TODO                 */
+/*
+ * Alternative:
+ *
+ * #define __func__        __FUNCTION__               // bald func names      //
+ */
+
 #define __func__        __PRETTY_FUNCTION__           /* adorned func names   */
-#else
-#define __func__        __FUNCTION__                  /* bald func names      */
-#endif
 
 #else
 #define __func__        "<unknown>"

@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-01-05
+ * \updates       2016-02-07
  * \license       GNU GPLv2 or above
  *
  *  This module also declares/defines the various constants, status-byte
@@ -45,7 +45,7 @@
  *  Defines the number of data bytes in MIDI status data.
  */
 
-#define SEQ64_MIDI_DATA_BYTE_COUNT           2
+#define SEQ64_MIDI_DATA_BYTE_COUNT      2
 
 namespace seq64
 {
@@ -471,12 +471,10 @@ public:
      *  the first and second bytes of m_data.
      *
      * \param d1
-     *      The first byte value to set.  We should make these all
-     *      "midibytes".
+     *      The first byte value to set.
      *
      * \param d2
-     *      The second byte value to set.  We should make these all
-     *      "midibytes".
+     *      The second byte value to set.
      */
 
     void set_data (midibyte d1, midibyte d2)
@@ -774,11 +772,6 @@ public:
      */
 
     int get_rank () const;
-
-#ifdef  USE_SEQ42_PATCHES
-    void save (std::ofstream & file);
-    void load (std::ifstream & file);
-#endif
 
 };          // class event
 

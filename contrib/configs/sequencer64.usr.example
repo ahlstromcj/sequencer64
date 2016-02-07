@@ -1,0 +1,713 @@
+# Sequencer64 0.9.9.8 (and above) user configuration file
+#
+# Created by reading the following file and writing it out via the
+# sequencer64 application:
+#
+# https://raw.githubusercontent.com/vext01/seq24/master/seq24usr.example
+#
+#  This is an example for a sequencer64.usr file. Edit and place in
+#  your home directory. It allows you to give an alias to each
+#  MIDI bus, MIDI channel, and MIDI control codes per channel.
+#
+#  1. Define your instruments and their control-code names,
+#     if they have them.
+#  2. Define a MIDI bus, its name, and what instruments are
+#     on which channel.
+#
+# In the following MIDI buss definitions, channels are counted
+# from 0 to 15, not 1 to 16.  Instruments unspecified are set to
+# -1 (GM_INSTRUMENT_FLAG) and are GM (General MIDI).
+
+[user-midi-bus-definitions]
+
+3     # number of user-defined MIDI busses
+
+[user-midi-bus-0]
+
+# Device name for this buss:
+
+2x2 A (SuperNova,Q,TX81Z,DrumStation)
+
+# Number of channels:
+
+16
+
+# channel and instrument (or program) number
+
+0 1
+1 1
+2 1
+3 1
+4 1
+5 1
+6 1
+7 1
+8 3
+9 3
+10 3
+11 0
+12 0
+13 0
+14 0
+15 2
+
+# End of buss definition 0
+
+[user-midi-bus-1]
+
+# Device name for this buss:
+
+2x2 B (WaveStation,ESI-2000,MV4,ES-1,ER-1)
+
+# Number of channels:
+
+16
+
+# channel and instrument (or program) number
+
+0 4
+1 4
+2 4
+3 4
+4 5
+5 5
+6 5
+7 5
+8 5
+9 5
+10 5
+11 5
+12 5
+13 5
+14 6
+15 7
+
+# End of buss definition 1
+
+[user-midi-bus-2]
+
+# Device name for this buss:
+
+PCR-30 (303)
+
+# Number of channels:
+
+1
+
+# channel and instrument (or program) number
+
+0 8
+
+# End of buss definition 2
+#
+# In the following MIDI instrument definitions, active controller
+# numbers (i.e. supported by the instrument) are paired with
+# the (optional) name of the controller supported.
+
+[user-instrument-definitions]
+
+9     # instrument list count
+
+[user-instrument-0]
+
+# Name of instrument:
+
+Waldorf Micro Q
+
+# Number of MIDI controller values:
+
+128
+
+# controller number and (optional) name:
+
+0 
+1 Modulation Wheel
+2 Breath Control
+3 
+4 Foot Control
+5 Glide Rate
+6 
+7 Channel Volume
+8 
+9 
+10 Pan
+11 
+12 Arp Range (0-9) (1-10 octaves)
+13 Arp Length (0-15) (1-16 steps)
+14 Arp Active (0-3) (Off,On,One Shot,Hold)
+15 LFO 1 Shape (0-5) (Sine,Tri,Square,Saw,Rand,S&H)
+16 LFO 1 Speed (0-127) (256 Bars-1/96)
+17 LFO 1 Sync (0-1) (Off,On)
+18 LFO 1 Delay
+19 LFO 2 Shape (0-5) (Sine,Tri,Square,Saw,Rand,S&H)
+20 LFO 2 Speed (0-127) (256 Bars-1/96)
+21 LFO 2 Sync (0-1) (Off,On)
+22 LFO 2 Delay
+23 LFO 3 Shape (0-5) (Sine,Tri,Square,Saw,Rand,S&H)
+24 LFO 3 Speed (0-127) (256 Bars-1/96)
+25 LFO 3 Sync (0-1) (Off,On)
+26 LFO 3 Delay
+27 Osc 1 Octave (16,28,40-112) (128'-1/2')
+28 Osc 1 Semitone (52-76) (-12-+12)
+29 Osc 1 Detune (0-127) (-64-63)
+30 Osc 1 FM 
+31 Osc 1 Shape (0-5) (Pulse,Saw,Tri,Sine,Alt 1,Alt 2)
+32 Bank Select LSB (0-3) (Bank A-D)
+33 Osc 1 PW
+34 Osc 1 PWM (0-127) (-64-63)
+35 Osc 2 Octave (16,28,40-112) (128'-1/2')
+36 Osc 2 Semitone (52-76) (-12-+12)
+37 Osc 2 Detune (0-127) (-64-63)
+38 Osc 2 FM 
+39 Osc 2 Shape (0-5) (Pulse,Saw,Tri,Sine,Alt 1,Alt 2)
+40 Osc 2 PW
+41 Osc 2 PWM (0-127) (-64-63)
+42 Osc 3 Octave (16,28,40-112) (128'-1/2')
+43 Osc 3 Semitone (52-76) (-12-+12)
+44 Osc 3 Detune (0-127) (-64-63)
+45 Osc 3 FM 
+46 Osc 3 Shape (0-5) (Pulse,Saw,Tri,Sine,Alt 1,Alt 2)
+47 Osc 3 PW
+48 Osc 3 PWM (0-127) (-64-63)
+49 Sync (0-1) (Off,On)
+50 Pitchmod (0-127) (-64-63)
+51 Glide Mode (0-9)
+52 Osc 1 Level
+53 Osc 1 Balance (0-127) (F1-mid-F2)
+54 Ringmod Level 
+55 Ringmod Balance (0-127) (F1-mid-F2)
+56 Osc 2 Level
+57 Osc 2 Balance (0-127) (F1-mid-F2)
+58 Osc 3 Level
+59 Osc 3 Balance (0-127) (F1-mid-F2)
+60 Noise/External Level
+61 Noise/External Balance (0-127) (F1-mid-F2)
+62 
+63 
+64 Sustain Pedal
+65 Glide Active (0-1) (Off,On)
+66 Sostenuto (0-1) (Off,On)
+67 Routing (0-1) (Serial,Parallel)
+68 Filter 1 Type (0-10) 
+69 Filter 1 Cutoff
+70 Filter 1 Resonance
+71 Filter 1 Drive
+72 Filter 1 Keytrack (0-127) (-200-197)
+73 Filter 1 Env Amount (0-127) (-64-63)
+74 Filter 1 Env Velocity (0-127) (-64-63)
+75 Filter 1 Cutoff Mod (0-127) (-64-63)
+76 Filter 1 FM (0-127) (Off,1-127)
+77 Filter 1 Pan (0-127) (L-mid-R)
+78 Filter 1 Pan Mod (0-127) (-64-63)
+79 Filter 2 Type (0-10) 
+80 Filter 2 Cutoff
+81 Filter 2 Resonance
+82 Filter 2 Drive
+83 Filter 2 Keytrack (0-127) (-200-197)
+84 Filter 2 Env Amount (0-127) (-64-63)
+85 Filter 2 Env Velocity (0-127) (-64-63)
+86 Filter 2 Cutoff Mod (0-127) (-64-63)
+87 Filter 2 FM (0-127) (Off,1-127)
+88 Filter 2 Pan (0-127) (L-mid-R)
+89 Filter 2 Pan Mod (0-127) (-64-63)
+90 Amp Volume
+91 Amp Velocity (0-127) (-64-63)
+92 Amp Mod (0-127) (-64-63)
+93 FX 1 Mix
+94 FX 2 Mix
+95 Filter Env Attack
+96 Filter Env Decay
+97 Filter Env Sustain
+98 Filter Env Decay 2
+99 Filter Env Sustain 2
+100 Filter Env Release
+101 Amp Env Attack
+102 Amp Env Decay
+103 Amp Env Sustain
+104 Amp Env Decay 2
+105 Amp Env Sustain 2
+106 Amp Env Release
+107 Env 3 Attack
+108 Env 3 Decay
+109 Env 3 Sustain
+110 Env 3 Decay 2
+111 Env 3 Sustain 2
+112 Env 3 Release
+113 Env 4 Attack
+114 Env 4 Decay
+115 Env 4 Sustain
+116 Env 4 Decay 2
+117 Env 4 Sustain 2
+118 Env 4 Release
+119 
+120 All Sound Off (0)
+121 Reset All Controllers (0)
+122 Local Control (0-127) (Off,On)
+123 All Notes Off (0)
+124 
+125 
+126 
+127 
+
+# End of instrument/controllers definition 0
+
+[user-instrument-1]
+
+# Name of instrument:
+
+SuperNova
+
+# Number of MIDI controller values:
+
+128
+
+# controller number and (optional) name:
+
+0 Bank Select MSB
+1 Modulation Wheel
+2 Breath Controller
+3 Arp Pattern Select
+4 Ring Modulator 2 * 3 Mix Level
+5 Portamento Time
+6 Data Entry
+7 Part / Program Volume
+8 Effects Confg Morph Amount
+9 Arp Speed (Internal Clock Rate) [*]
+10 Pan
+11 Osc 1 Fine Tune
+12 Osc 3 Fine Tune
+13 Osc 1 Soften
+14 Osc 2 Soften
+15 Osc 3 Soften
+16 LFO 1 Speed
+17 LFO 1 Delay
+18 LFO 2 Speed
+19 LFO 2 Delay
+20 Osc 1 Pitch Env 2
+21 Osc 1 Pitch LFO 1
+22 Osc 1 Pulse Width
+23 Osc 2 Fine Tune
+24 Noise Soften
+25 Osc 2 Pitch Env 2
+26 Osc 2 Pitch LFO 1
+27 Osc 2 Pulse Width
+28 Osc 1 Mix Level
+29 Osc 2 Mix Level
+30 Noise Mix Level
+31 Ring Modulator 1 * 3 Mix Level
+32 Bank Select LSB
+33 Osc 3 Mix Level
+34 Filter Tracking
+35 Filter Freq LFO 2
+36 Osc 1 Mix Env 2
+37 Osc 2 Mix Env 2
+38 Osc 3 Mix Env 2
+39 Noise Mix Env 2
+40 Osc 3 Pitch Env 2
+41 Osc 3 Pitch LFO 1
+42 Osc 3 Pulse Width
+43 Osc 1 Width Env 2
+44 Osc 2 Width Env 2
+45 Osc 3 Width Env 2
+46 Osc 1 Width LFO 1
+47 Osc 2 Width LFO 1
+48 Osc 3 Width LFO 1
+49 Osc 1 Sync
+50 Osc 2 Sync
+51 Osc 3 Sync
+52 Osc 1 Sync Env 2
+53 Osc 2 Sync Env 2
+54 Osc 3 Sync Env 2
+55 Osc 1 Sync LFO 1
+56 Osc 2 Sync LFO 1
+57 Osc 3 Sync LFO 1
+58 Distortion Mod Wheel Depth
+59 Filter Freq Env 3
+60 Filter Freq LFO 1
+61 Osc 1 Soften Env 2
+62 Osc 2 Soften Env 2
+63 Osc 3 Soften Env 2
+64 Sustain / Arp Latch
+65 Arp Latch
+66 Osc 1 Pitch Env 3
+67 Osc 2 Pitch Env 3
+68 Osc 3 Pitch Env 3
+69 Osc 1 Width LFO 2
+70 Osc 2 Width LFO 2
+71 Osc 3 Width LFO 2
+72 Filter Res Env 2
+73 Filter Res LFO 1
+74 Env 3 Delay
+75 Env 3 Attack
+76 Env 3 Decay
+77 Env 3 Sustain
+78 Env 3 Release
+79 Env 3 Velocity
+80 LFO 1 Speed Env 3
+81 LFO 2 Speed Env 3
+82 LFO 1 Offset
+83 LFO 2 Offset
+84 Reverb Mod Wheel Depth
+85 Filter Res Env 3
+86 Filter Res LFO 2
+87 Chorus Speed
+88 Chorus Mod Depth
+89 Chorus Feedback
+90 Distortion Level
+91 Reverb Send Level
+92 Delay Send Level
+93 Chorus Send Level
+94 Chorus Mod Wheel Depth
+95 Reverb Decay
+96 Reverb HF Damp
+97 Master Volume Level [*]
+98 NRPN Select LSB
+99 NRPN Select MSB
+100 Reverb Type / Early Ref Level [**]
+101 Delay Time
+102 Delay Feedback
+103 Delay HF Damp
+104 Filter Overdrive
+105 Filter Cutoff Freq
+106 Filter Resonance
+107 Filter Freq Env 2
+108 Env 1 Attack
+109 Env 1 Decay
+110 Env 1 Sustain
+111 Env 1 Release
+112 Env 1 Velocity
+113 Env 2 Delay
+114 Env 2 Attack
+115 Env 2 Decay
+116 Env 2 Sustain
+117 Env 2 Release
+118 Env 2 Velocity
+119 Delay Mod Wheel Depth
+120 All Sound Off
+121 Reset Controllers
+122 Local Control [*]
+123 All Notes Off
+124 All Notes Off
+125 All Notes Off
+126 All Notes Off
+127 All Notes Off
+
+# End of instrument/controllers definition 1
+
+[user-instrument-2]
+
+# Name of instrument:
+
+DrumStation
+
+# Number of MIDI controller values:
+
+92
+
+# controller number and (optional) name:
+
+20 808 Bass Drum Front cut
+21 808 Bass Drum Pan
+22 808 Bass Drum Distortion
+23 808 Bass Drum Tune
+24 808 Bass Drum Tone
+25 808 Bass Drum Decay
+26 808 Snare Drum Front cut
+27 808 Snare Drum Pan
+28 808 Snare Drum Distortion
+29 808 Snare Drum Tune
+30 808 Snare Drum Tone
+31 808 Snare Drum Snappy
+32 808 Low Tom Front cut
+33 808 Low Tom Pan
+34 808 Low Tom Distortion
+35 808 Low Tom Tune
+36 808 Low Tom Decay
+37 808 Mid Tom Front cut
+38 808 Mid Tom Pan
+43 808 Mid Tom Pan
+44 808 Mid Tom Distortion
+45 808 Mid Tom Tune
+46 808 Mid Tom Decay
+47 808 Rim Shot Pan
+48 808 Rim Shot Tune
+49 808 Hand Clap Pan
+50 808 Hand Clap Tune
+51 808 Cowbell Pan
+52 808 Cowbell Distortion
+53 808 Cowbell Tune
+54 808 Closed HiHat Pan
+55 808 Closed HiHat Tune
+56 808 Closed HiHat Decay
+57 808 Open HiHat Pan
+58 808 Open HiHat Tune
+59 808 Open HiHat Decay
+60 808 Crash Cymbal Pan
+65 808 Crash Cymbal Tune
+66 808 Mid Conga Pan
+67 808 Mid Conga Distortion
+68 808 Mid Conga Tune
+69 808 High Conga Pan
+70 808 High Conga Distortion
+71 808 High Conga Tune
+72 808 Maracas Pan
+73 808 Maracas Tune
+74 808 Claves Pan
+75 808 Claves Tune
+76 909 Bass Drum Tune
+77 909 Bass Drum Attack
+78 909 Bass Drum Decay
+79 909 Snare Drum Tune
+80 909 Snare Drum Tone
+81 909 Snare Drum Snappy
+82 909 Low Tom Front cut
+83 909 Low Tom Pan
+84 909 Low Tom Distortion
+85 909 Low Tom Tune
+86 909 Low Tom Decay
+87 909 Mid Tom Front cut
+88 909 Mid Tom Pan
+89 909 Mid Tom Distortion
+90 909 Mid Tom Tune
+91 909 Mid Tom Decay
+92 909 High Tom Front cut
+93 909 High Tom Pan
+94 909 High Tom Distortion
+95 909 High Tom Tune
+96 909 High Tom Decay
+97 909 Rim Shot Pan
+98 909 Rim Shot Tune
+99 909 Rim Shot Hand Clap Pan
+100 909 Rim Shot Tune
+101 909 Closed HiHat Distortion
+102 909 Closed HiHat Tune
+103 909 Closed HiHat Decay
+104 909 Open HiHat Tune
+105 909 Bass Drum Front cut
+106 909 Bass Drum Pan
+107 909 Bass Drum Distortion
+108 909 Snare Drum Front cut
+109 909 Snare Drum Pan
+110 909 Snare Drum Distortion
+111 909 Closed HiHat Pan
+112 909 Open HiHat Pan
+113 909 Open HiHat Decay
+114 909 Crash Cymbal Pan
+115 909 Crash Cymbal Tune
+116 909 Crash Cymbal Decay
+117 909 Ride Cymbal Pan
+118 909 Ride Cymbal Tune
+119 909 Ride Cymbal Decay
+
+# End of instrument/controllers definition 2
+
+[user-instrument-3]
+
+# Name of instrument:
+
+TX81Z
+
+# Number of MIDI controller values:
+
+0
+
+# controller number and (optional) name:
+
+
+# End of instrument/controllers definition 3
+
+[user-instrument-4]
+
+# Name of instrument:
+
+WaveStation
+
+# Number of MIDI controller values:
+
+0
+
+# controller number and (optional) name:
+
+
+# End of instrument/controllers definition 4
+
+[user-instrument-5]
+
+# Name of instrument:
+
+ESI-2000
+
+# Number of MIDI controller values:
+
+0
+
+# controller number and (optional) name:
+
+
+# End of instrument/controllers definition 5
+
+[user-instrument-6]
+
+# Name of instrument:
+
+ES-1
+
+# Number of MIDI controller values:
+
+0
+
+# controller number and (optional) name:
+
+
+# End of instrument/controllers definition 6
+
+[user-instrument-7]
+
+# Name of instrument:
+
+ER-1
+
+# Number of MIDI controller values:
+
+0
+
+# controller number and (optional) name:
+
+
+# End of instrument/controllers definition 7
+
+[user-instrument-8]
+
+# Name of instrument:
+
+TB-303
+
+# Number of MIDI controller values:
+
+0
+
+# controller number and (optional) name:
+
+
+# End of instrument/controllers definition 8
+
+#   ========================================================
+#   ======== Sequencer64-Specific Variables Section ========
+#   ========================================================
+
+
+[user-interface-settings]
+
+# These settings specify the soon-to-be-modifiable configuration
+# of some of the Sequencer64 user-interface elements.
+
+# Specifies the style of the main-window grid of patterns.
+# 0 = normal style, matches the GTK theme, has brackets.
+# 1 = white grid boxes that have brackets.
+# 2 = black grid boxes (no brackets).
+
+0       # grid_style
+
+# Specifies box style of an empty slot in the main-window grid.
+# 0  = Draw a one-pixel box outline around the pattern slot.
+# 1  = Draw brackets on the sides of the pattern slot.
+# 2 to 30 = make the brackets thicker and thicker.
+# -1 = same as 0, draw a box outline one-pixel thick.
+# -2 to -30 = draw a box outline, thicker and thicker.
+
+2       # grid_brackets
+
+# Specifies the number of rows in the main window.
+# At present, only a value of 4 is supportable.
+# In the future, we hope to support an alternate value of 8.
+
+4       # mainwnd_rows
+
+# Specifies the number of columns in the main window.
+# At present, only a value of 8 is supportable.
+
+8       # mainwnd_cols
+
+# Specifies the maximum number of sets, which defaults to 1024.
+# It is currently never necessary to change this value.
+
+32      # max_sets
+
+# Specifies the border width in the main window.
+
+0      # mainwid_border
+
+# Specifies the border spacing in the main window.
+
+2      # mainwid_spacing
+
+# Specifies some quantity, it is not known what it means.
+
+0      # control_height
+
+# Specifies the initial zoom for the piano rolls.  Ranges from 1.
+# to 32, and defaults to 2 unless changed here.
+
+2      # zoom
+
+# Specifies if the key, scale, and background sequence are to be
+# applied to all sequences, or to individual sequences.  The
+# behavior of Seq24 was to apply them to all sequences.  But
+# Sequencer64 takes it further by applying it immediately, and
+# by saving to the end of the MIDI file.  Note that these three
+# values are stored in the MIDI file, not this configuration file.
+
+# 0 = allow each sequence to have its own key/scale/background.
+# 1 = apply these settings globally (similar to seq24).
+
+1      # global_seq_feature
+
+# Specifies if the old, console-style font, or the new anti-
+# alias font, is to be used as the font throughout the GUI.
+# In legacy mode, the old font is the default.
+
+# 0 = use the old-style font.
+# 1 = use the new-style font.
+
+1      # use_new_font
+
+[user-midi-settings]
+
+# These settings specify MIDI-specific value that might be
+# better off as variables, rather than constants.
+
+
+# Specifies parts-per-quarter note to use, if the MIDI file.
+# does not override it.  Default is 192, but we'd like to go
+# higher than that.  BEWARE:  STILL GETTING IT TO WORK!
+
+192       # midi_ppqn
+
+# Specifies the default beats per measure, or beats per bar.
+# The default value is 4.
+
+4       # midi_beats_per_measure/bar
+
+# Specifies the default beats per minute.  The default value
+# is 120, and the legal range is 20 to 500.
+
+120       # midi_beats_per_minute
+
+# Specifies the default beat width. The default value is 4.
+
+4       # midi_beat_width
+
+# Specifies the buss-number override. The default value is -1,
+# which means that there is no buss override.  If a value
+# from 0 to 31 is given, then that buss value overrides all
+# buss values specified in all sequences/patterns.
+# Change this value from -1 only if you want to use a single
+# output buss, either for testing or convenience.  And don't
+# save the MIDI afterwards, unless you really want to change
+# all of its buss values.
+
+-1       # midi_buss_override
+
+# End of /home/ahlstrom/.config/sequencer64/sequencer64.usr
+#
+# vim: sw=4 ts=4 wm=4 et ft=sh

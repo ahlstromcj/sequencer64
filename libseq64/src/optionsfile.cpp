@@ -589,8 +589,19 @@ optionsfile::write (const perform & p)
      */
 
     int buses = ucperf.master_bus().get_num_out_buses();
-    file << "\n[midi-clock]\n\n";
-    file << buses << "    # number of MIDI clocks/busses\n";
+    file
+        << "\n[midi-clock]\n\n"
+        << "# The first line indicates the number of MIDI busses defined.\n"
+        << "\n"
+        << "# Each buss line contains the buss (re 0) and the clock status of\n"
+        << "# that buss.  0 = MIDI Clock is off; 1 = MIDI Clock on, and Song\n"
+        << "# Position and MIDI Continue will be sent, if needed; and 2 = MIDI\n"
+        << "# Clock Modulo, where MIDI clocking will not begin until the song\n"
+        << "# position reaches the start modulo value [midi-clock-mod-ticks].\n"
+        << "\n"
+        ;
+
+    file << buses << "    # number of MIDI clocks/busses\n\n";
     for (int bus = 0; bus < buses; bus++)
     {
         file
@@ -607,11 +618,14 @@ optionsfile::write (const perform & p)
     }
 
     /*
-     * MIDI clock mod
+     * MIDI clock modulo value
      */
 
     file
-        << "\n\n[midi-clock-mod-ticks]\n\n"
+        << "\n[midi-clock-mod-ticks]\n\n"
+        << "# The Song Position (in 16th notes) at which clocking will begin\n"
+        << "# if the buss is set to MIDI Clock mod setting.\n"
+        << "\n"
         << midibus::get_clock_mod() << "\n"
         ;
 

@@ -1,0 +1,48 @@
+
+http://sites.uci.edu/camp2014/2014/05/19/timing-in-midi-files/
+
+Timing in MIDI files
+
+Posted on May 19, 2014 by Christopher Dobrian
+
+In a standard MIDI file, there’s information in the file header about “ticks
+per quarter note”, a.k.a. “parts per quarter” (or “PPQ”). For the purpose of
+this discussion, we’ll consider “beat” and “quarter note” to be synonymous,
+so you can think of a “tick” as a fraction of a beat. The PPQ is stated
+in the last word of information (the last two bytes) of the header
+chunk that appears at the beginning of the file. The PPQ could be a low
+number such as 24 or 96, which is often sufficient resolution for
+simple music, or it could be a larger number such as 480 for higher
+resolution, or even something like 500 or 1000 if one prefers to refer
+to time in milliseconds.
+
+What the PPQ means in terms of absolute time depends on the designated
+tempo. By default, the time signature is 4/4 and the tempo is 120 beats per
+minute. That can be changed, however, by a “meta event” that specifies a
+different tempo. (You can read about the Set Tempo meta event message in the
+file format description document.) The tempo is expressed as a 24-bit
+number that designates microseconds per quarter-note. That’s kind of
+upside-down from the way we normally express tempo, but it has some
+advantages. So, for example, a tempo of 100 bpm would be 600000 microseconds
+per quarter note, so the MIDI meta event for expressing that would be FF 51
+03 09 27 C0 (the last three bytes are the Hex for 600000). The meta event
+would be preceded by a delta time, just like any other MIDI message in the
+file, so a change of tempo can occur anywhere in the music.
+
+Delta times are always expressed as a variable-length quantity, the format
+of which is explained in the document. For example, if the PPQ is 480
+(standard in most MIDI sequencing software), a delta time of a dotted
+quarter note (720 ticks) would be expressed by the two bytes 85 50
+(hexadecimal).
+
+So, bearing all that in mind, there is a correspondence between delta times
+expressed in terms of ticks and note values as we think of them in human
+terms. The relationship depends on the PPQ specified in the header chunk.
+For example, if the PPQ is 96 (hex 60), then a note middle C on MIDI channel
+10 with a velocity of 127 lasting a dotted quarter note (1.5 beats) would be
+expressed as
+
+00 99 3C 7F // delta time 0 ticks, 153 60 127
+90 99 3C 00 // delta time 144 ticks, 153 60 0
+
+

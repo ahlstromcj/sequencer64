@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-12-05
- * \updates       2016-01-09
+ * \updates       2016-02-06
  * \license       GNU GPLv2 or above
  *
  * To consider:
@@ -70,12 +70,6 @@
 #include "eventedit.hpp"
 #include "eventslots.hpp"
 #include "perform.hpp"
-
-#if USE_BUTTON_PIXMAP                   /* not good enough to enable */
-#include "pixmaps/del.xpm"
-#include "pixmaps/ins.xpm"
-#endif
-
 #include "pixmaps/perfedit.xpm"
 
 using namespace Gtk::Menu_Helpers;
@@ -158,11 +152,7 @@ eventedit::eventedit
     perform & p,
     sequence & seq
 ) :
-#ifdef USE_OLD_LAYOUT
-    gui_window_gtk2     (p, 660, 690),      /* make sure it is wide enough! */
-#else
     gui_window_gtk2     (p, 660, 666),      /* make sure it is wide enough! */
-#endif
     m_table             (manage(new Gtk::Table(14, 4, false))),
     m_vadjust           (manage(new Gtk::Adjustment(0, 0, 1, 1, 1, 1))),
     m_vscroll           (manage(new Gtk::VScrollbar(*m_vadjust))),
@@ -214,19 +204,6 @@ eventedit::eventedit
     m_editbox->set_border_width(4);
     m_optsbox->set_border_width(4);
     m_rightbox->set_border_width(1);
-#ifdef USE_OLD_LAYOUT
-    m_table->attach(*m_htopbox,    0, 4,  0,  1,  Gtk::FILL, Gtk::SHRINK, 8, 8);
-    m_table->attach(*m_eventslots, 0, 1,  1, 14,  Gtk::FILL, Gtk::FILL, 8, 8);
-    m_table->attach
-    (
-        *m_vscroll, 1, 2, 1, 14, Gtk::SHRINK, Gtk::FILL | Gtk::EXPAND, 4, 4
-    );
-    m_table->attach(*m_showbox,  2, 3,  1,  4, Gtk::FILL, Gtk::SHRINK, 8, 8);
-    m_table->attach(*m_editbox,  2, 3,  4, 10, Gtk::FILL, Gtk::SHRINK, 8, 8);
-    m_table->attach(*m_optsbox,  2, 3, 10, 13, Gtk::FILL, Gtk::SHRINK, 8, 8);
-    m_table->attach(*m_bottbox,  2, 3, 13, 14, Gtk::FILL, Gtk::SHRINK, 8, 8);
-    m_table->attach(*m_rightbox, 3, 4,  1, 14, Gtk::SHRINK, Gtk::SHRINK, 2, 2);
-#else
     m_table->attach(*m_eventslots, 0, 1,  0, 13,  Gtk::FILL, Gtk::FILL, 8, 8);
     m_table->attach
     (
@@ -237,22 +214,13 @@ eventedit::eventedit
     m_table->attach(*m_optsbox,  2, 3,  9, 12, Gtk::FILL, Gtk::SHRINK, 8, 8);
     m_table->attach(*m_bottbox,  2, 3, 12, 13, Gtk::FILL, Gtk::SHRINK, 8, 8);
     m_table->attach(*m_rightbox, 3, 4,  0, 13, Gtk::SHRINK, Gtk::SHRINK, 2, 2);
-#endif      // USE_OLD_LAYOUT
     add_tooltip
     (
         m_eventslots,
         "Navigate using the scrollbar, arrow keys, Page keys, and Home/End keys. "
     );
 
-#if USE_BUTTON_PIXMAP
-    m_button_del->add
-    (
-        *manage(new Gtk::Image(Gdk::Pixbuf::create_from_xpm_data(del_xpm)))
-    );
-#else
     m_button_del->set_label("Delete Current Event");
-#endif
-
     m_button_del->signal_clicked().connect
     (
         sigc::mem_fun(*this, &eventedit::handle_delete)
@@ -265,15 +233,7 @@ eventedit::eventedit
         "the edit fields)."
     );
 
-#if USE_BUTTON_PIXMAP
-    m_button_ins->add
-    (
-        *manage(new Gtk::Image(Gdk::Pixbuf::create_from_xpm_data(ins_xpm)))
-    );
-#else
     m_button_ins->set_label("Insert New Event");
-#endif
-
     m_button_ins->signal_clicked().connect
     (
         sigc::mem_fun(*this, &eventedit::handle_insert)
@@ -325,7 +285,6 @@ eventedit::eventedit
     );
 
     char temptext[36];
-
     snprintf(temptext, sizeof temptext, "\"%s\"", seq.get_name());
     m_label_seq_name->set_width_chars(32);
     m_label_seq_name->set_text(temptext);

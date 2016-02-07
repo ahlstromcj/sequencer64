@@ -13,12 +13,12 @@
  * sequencer64.
  */
 
-#undef  USE_ORIGINAL_TIMEBASE_CALLBACK
+#undef  ORIGINAL_TIMEBASE_CALLBACK
 
 /**
  *  The JACK timebase function defined here sets the JACK position structure.
  *  The original version of the function, enabled by defining
- *  USE_ORIGINAL_TIMEBASE_CALLBACK, worked properly with Hydrogen, but not
+ *  ORIGINAL_TIMEBASE_CALLBACK, worked properly with Hydrogen, but not
  *  with Klick.
  *
  * \param state
@@ -45,7 +45,7 @@
  *      Provides the jack_assistant pointer, currently unchecked for nullity.
  */
 
-#ifdef USE_ORIGINAL_TIMEBASE_CALLBACK
+#ifdef ORIGINAL_TIMEBASE_CALLBACK
 
 void
 jack_timebase_callback
@@ -105,6 +105,8 @@ jack_timebase_callback
     }
     s_state_last = s_state_current;
 }
+
+#endif      // ORIGINAL_TIMEBASE_CALLBACK
 
 /*
  * jack_timebase_callback.cpp

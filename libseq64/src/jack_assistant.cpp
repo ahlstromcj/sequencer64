@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-14
- * \updates       2016-02-05
+ * \updates       2016-02-07
  * \license       GNU GPLv2 or above
  *
  *  This module was created from code that existed in the perform object.
@@ -148,7 +148,7 @@ jack_assistant::error_message (const std::string & msg)
  *  slow-sync client, as far as we can tell.  We can't get JACK working
  *  exactly the way it does in seq24 without the callback in place.  Plus, it
  *  does things important to the setup of JACK.  So now this setup is
- *  permanent: define USE_JACK_SYNC_CALLBACK.
+ *  permanent.
  *
  * Jack transport settings:
  *
@@ -605,7 +605,7 @@ jack_assistant::sync (jack_transport_state_t state)
 int
 jack_process_callback (jack_nframes_t /* nframes */, void * /* arg */ )
 {
-#ifdef USE_SAMPLE_AUDIO_CODE    // disabled, shown only for reference & learning
+#ifdef SAMPLE_AUDIO_CODE    // disabled, shown only for reference & learning
 	jack_transport_state_t ts = jack_transport_query(client, NULL);
 	if (ts == JackTransportRolling)
     {
@@ -663,10 +663,13 @@ jack_sync_callback
     int result = 0;
     jack_assistant * jack = (jack_assistant *)(arg);
     if (not_nullptr(jack))
+    {
         result = jack->sync(state);         /* use the new member function */
+    }
     else
+    {
         errprint("jack_sync_callback(): null JACK pointer");
-
+    }
     return result;
 }
 
@@ -1228,7 +1231,7 @@ jack_shutdown_callback (void * arg)
     infoprint("[JACK shutdown]");
 }
 
-#ifdef ALLOW_PLATFORM_DEBUG
+#ifdef SEQ64_USE_DEBUG_OUTPUT
 
 /**
  *  Print the JACK position.

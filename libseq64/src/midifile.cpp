@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-01-31
+ * \updates       2016-02-06
  * \license       GNU GPLv2 or above
  *
  *  For a quick guide to the MIDI format, see, for example:
@@ -49,7 +49,6 @@
 #include "sequence.hpp"                 /* seq64::sequence                  */
 
 #define SEQ64_USE_MIDI_VECTOR           /* as opposed to the MIDI list      */
-
 #if defined SEQ64_USE_MIDI_VECTOR
 #include "midi_vector.hpp"              /* seq64::midi_vector container     */
 #else
@@ -791,15 +790,12 @@ midifile::parse_smf_1 (perform & p, int screenset, bool is_smf0)
                              * the same time as track-end.  Class sequence
                              * discards the last note.  This fixes that.  A
                              * native Seq24 file will always have a Delta >= 1."
-                             * Not true!  We've fixed the real issue, we
-                             * think, which happens because of code marked by
-                             * the same #ifdef as here in event_list.
+                             * Not true!  We've fixed the real issue by
+                             * commenting this code:
+                             *
+                             *  if (Delta == 0)
+                             *      ++CurrentTime;
                              */
-
-#ifdef USE_EQUALS_IN_COMPARISON                         /* not defined      */
-                            if (Delta == 0)
-                                ++CurrentTime;
-#endif
 
                             seq.set_length(CurrentTime, false);
                             seq.zero_markers();

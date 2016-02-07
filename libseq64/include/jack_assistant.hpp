@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-09-17
- * \updates       2016-02-05
+ * \updates       2016-02-07
  * \license       GNU GPLv2 or above
  *
  *  This class contains a number of functions that used to reside in the
@@ -40,21 +40,18 @@
 #ifdef SEQ64_JACK_SUPPORT
 #include <jack/jack.h>
 #include <jack/transport.h>
-
 #ifdef SEQ64_JACK_SESSION
 #include <jack/session.h>
 #endif
-
 #else       // ! SEQ64_JACK_SUPPORT
-
 #undef SEQ64_JACK_SESSION
-
 #endif      // SEQ64_JACK_SUPPORT
 
 /*
  * Define this macro to use the new seq24 v. 0.9.3 delta-tick calculation
  * code.  This code doesn't quite work for generating the proper rate of MIDI
- * clocks, and so have disabled that code. Do not enable it.
+ * clocks, and so have disabled that code until we can figure out what it is
+ * we're doing wrong. Do not enable it.
  */
 
 #undef  USE_SEQ24_0_9_3_CODE
@@ -286,7 +283,7 @@ extern int jack_process_callback (jack_nframes_t nframes, void * arg);
 extern void jack_session_callback (jack_session_event_t * ev, void * arg);
 #endif
 
-#ifdef ALLOW_PLATFORM_DEBUG
+#ifdef SEQ64_USE_DEBUG_OUTPUT
 extern void print_jack_pos (jack_position_t & jack_pos, const std::string & tag);
 #endif
 

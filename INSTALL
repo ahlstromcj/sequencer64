@@ -1,6 +1,6 @@
 INSTALL for Sequencer64 v. 0.9.9.16
 Chris Ahlstrom
-2015-09-10 to 2016-01-31
+2015-09-10 to 2016-02-07
 
 The current packaging for Sequencer64 is primarily aimed at developers.
 There is currently no configure script... it must be bootstrapped.
@@ -19,11 +19,21 @@ Steps:
       $ ./bootstrap
       $ ./configure
 
+      If you do not want to see a lot of output, the stock autotools
+      option "--enable-silent-rules" can be added to the ./configure command.
+
       For debugging without libtool getting in the way, just run the
       following command, which will add the --enable-debug and
       --disable-shared options to a configure run:
 
       $ ./bootstrap --enable-debug
+      $ ./bootstrap -ed
+
+      For building in release mode without seeing a ton of compiler output,
+      the following command will configure for the "silent rules" of Automake:
+
+      $ ./bootstrap --enable-release
+      $ ./bootstrap -er
 
       If desired, there are also configure options as described below,
       and also conditional macros in the code.  The configure options can be 
@@ -36,6 +46,10 @@ Steps:
 
       If you do not care about the documentation and debian packaging,
       change to the various sub-project directories before running make.
+      
+      Do not forget that you can add options to "make", such as "V=0" (enable
+      silent build), "V=1" (enable the normal verbose build), and "-j n" (use
+      n processors to speed up the build).
 
    4. To install, become root and run:
 
@@ -47,6 +61,9 @@ Steps:
    6. Also grab the Sequencer64 User Manual from:
 
         http://github.com/ahlstromcj/sequencer64-doc.git
+
+      It contains a prebuilt PDF version of the manual, as well as the
+      LaTeX files needed to rebuild it.
 
 CONFIGURE OPTIONS FOR APPLICATION FEATURES:
 
@@ -206,8 +223,10 @@ DEPENDENCIES:
 
    JACK Testing (optional):
 
+      - qjackctl
       - hydrogen
-      - klick
+      - klick (a command-line metronome)
       - qtractor or other MIDI sequencers
+      - gmidimonitor or (better) midisnoop
 
 # vim: sw=4 ts=4 wm=4 et ft=sh

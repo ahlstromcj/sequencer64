@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-12-05
- * \updates       2016-02-05
+ * \updates       2016-02-06
  * \license       GNU GPLv2 or above
  *
  *  This module is user-interface code.  It is loosely based on the workings
@@ -808,18 +808,8 @@ eventslots::draw_event (editable_events::iterator ei, int index)
     font::Color col = font::BLACK;
     if (index == m_current_index)
     {
-#if USE_YELLOW_AS_CURRENT
-        col = font::BLACK_ON_YELLOW;    /* or font::YELLOW_ON_BLACK */
-#else
-        col = font::CYAN_ON_BLACK;
-#endif
+        col = font::CYAN_ON_BLACK;      /* BLACK_ON_YELLOW, YELLOW_ON_BLACK */
     }
-#ifdef USE_FUTURE_CODE
-    else if (false)     // if (a sysex event or selected event range)
-    {
-        col = font::BLACK_ON_CYAN;
-    }
-#endif
 
     editable_event & evp = ei->second;
     char tmp[16];

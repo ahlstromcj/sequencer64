@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-23
+ * \updates       2016-02-07
  * \license       GNU GPLv2 or above
  *
  *  This file provides a Linux-only implementation of MIDI support.
@@ -702,10 +702,11 @@ midibus::clock (midipulse tick)
 #endif  // SEQ64_HAVE_LIBASOUND
 }
 
-#if USE_REMOVE_QUEUED_ON_EVENTS_CODE
+#if REMOVE_QUEUED_ON_EVENTS_CODE
 
 /**
- *  Deletes events in the queue.
+ *  Deletes events in the queue.  This function is not used anywhere, and
+ *  there was not comment about the intent/context of this function.
  */
 
 void
@@ -724,7 +725,7 @@ midibus::remove_queued_on_events (int tag)
     snd_seq_remove_events_free(remove_events);
 }
 
-#endif      // USE_REMOVE_QUEUED_ON_EVENTS_CODE
+#endif      // REMOVE_QUEUED_ON_EVENTS_CODE
 
 }           // namespace seq64
 

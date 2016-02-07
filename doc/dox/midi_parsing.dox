@@ -12,13 +12,14 @@
 This document describes how Sequencer64 parses a MIDI file.
 
 \page       midi_parsing_page MIDI File Parsing in Sequencer64
-\author     Chris Ahlstrom 2016-02-02
+\author     Chris Ahlstrom 2016-02-07
 
 \section midi_parsing_intro Introduction
 
-This section describes the parsing of a MIDI file.  We start with
-the main format that is supported, SMF 1.  Once we understood that
-we, we figured out how to split a SMF 0 tracks correctly.
+This section describes the parsing of a MIDI file (and a few other topics).
+We wanted to add the reading of SMF 0 files to <i>Sequencer64</i>.
+We started with the main format that is supported, SMF 1.  Once we understood
+that we, we figured out how to split a SMF 0 tracks correctly.
 
 We split the midifile::parse() function into two sections.  The first section
 analyzes the header of the MIDI.  Then, based on whether the file is SMF 1 (the
@@ -533,6 +534,66 @@ This code basically works.
 For now, please look at the source code for more details.
 Also, the reading of SMF 0 MIDI files is described in the
 <i>sequencer64-doc</i> project on GitHub.
+
+\section midi_parsing_rs Running Status
+
+When we apply the <code>midicvt</code> application to a file saved by
+<i>Sequencer64</i>, we can end up with a successful ASCII conversion that ends
+with an error message:
+
+\verbatim
+   $ midicvt hymne-seq64.midi -o hymne-seq64.asc
+   ? Error at MIDI file offset 12155 [0x2f7b]
+   Error: Garbage at end 'readtrack(): unexpected running status'
+\endverbatim
+
+Is this a problem in <code>midicvt</code> or <i>Sequencer4</i>?
+Let's learn about running status.
+
+Running status is a way to speed up the sending of MIDI bytes to a synthesizer
+or sequencer by taking advantage of redundancy where possible.  For example, if
+we're sending a consecutive group of Note On and Note Off messages to a
+particular channel, we can save some time by not sending the channel status
+byte after the first time.  Here's an example with Note On on channel 1:
+
+\verbatim
+   0x90 3C 7F
+   0x90 40 7F
+   0x90 43 F3
+\endverbatim
+
+Since no change in status occurs after the first of these three events, we can
+drop the subsequent status bytes:
+
+\verbatim
+   0x90 3C 7F
+   40 7F
+   43 F3
+\endverbatim
+
+The 0x90 byte is save in a "running status buffer" (RSB), and is filled in by
+the receiving device.
+
+Here is the sequence of events for operating with running status.
+
+   -# Clear the RSB buffer (RSB = 0) to start.
+   -# If a <b>Voice Category Status</b> (VCS) byte is received, then set
+      RSB = VCS.  VCS bytes range from 0x80 to 0xEF.  This is binary
+      1000000 to 11100000.
+   -# If a data byte is received (data bytes range from 0x00 to 0x7F,
+      binary 0000000 to 0111111; that is, bit 7 is always 0 in a data byte):
+      -# If RSB != 0, first insert the RSB into the incoming data stream, then
+         insert the data byte.
+      -# If RSB == 0, then just insert the data byte into the incoming data
+         stream.
+   -# Clear the RSB buffer (RSB = 0) when a System Common Message (SCM) status
+      byte is received.  SCM bytes range from 0xF0 to 0xF7.
+   -# The message after an SCM <b>must</b> begin with a status byte.
+      That is a byte with bit 7 set.
+   -# Do no special action when a Realtime Category Message (RCM) byte is
+      received.  RCM bytes range from 0xF8 to 0xFF.
+
+Note that some events, such as Tempo, assume that its bytes are all data bytes.
 
  *//*-------------------------------------------------------------------------*/
 

@@ -35,7 +35,7 @@ export CYGWIN
 
 export SEQUENCER64_SCRIPT_EDIT_DATE="2016-02-07"
 export SEQUENCER64_LIBRARY_API_VERSION="0.9"
-export SEQUENCER64_LIBRARY_VERSION="$SEQUENCER64_LIBRARY_API_VERSION.9.16"
+export SEQUENCER64_LIBRARY_VERSION="$SEQUENCER64_LIBRARY_API_VERSION.9.17"
 
 #******************************************************************************
 #  Version info

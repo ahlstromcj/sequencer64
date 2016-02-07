@@ -1,6 +1,6 @@
 Quick Reference for Git Processes on GitHub
 Chris Ahlstrom
-2015-09-09 to 2016-02-06
+2015-09-09 to 2016-02-07
 
 Creating a GitHub Repository:
 
@@ -70,15 +70,28 @@ command:
     $ git push
 
 Then you need to apply to merge changes, if your branch is derivated from
-develop you need to do:
+develop you need to do:u
 
     $ git checkout master
     $ git merge [name_of_your_remote]/develop
 
-If you set up an upstream branch, then this will suffice:
+If you set up an upstream branch, then this will suffice: 
 
     $ git checkout master
     $ git merge develop
+   
+Then make any minor tweaks or version stamping you need to make your
+master official.  Also, it is beneficial to tag the release (as discussed
+below) to make it easier for users to determine the differences between
+major/minor releases, without having to study a bunch of intermediate
+commits.
+
+You will probably also want to merge back any tweaks made to master back
+into your branch, if you intend to do further work in that branch:
+
+    $ git checkout develop
+    $ get merge master
+    $ git push origin develop
 
 Delete a branch on your local filesystem, use -d or -D (to force):
 
@@ -118,12 +131,17 @@ Tagging:
     $ git push origin --tags
 
     Note that each tag to be published needs to be pushed as well.
-    A user can get the tagged code via a command like the followin.
+    A user can get the tagged code via a command like the following.
 
     $ git checkout -b version.xx 0.9.9.xx
 
     But be careful about modifications; if committed, they represent new
     work you might need to merge later, but the new work will not be part
     of the tagged commit.
+
+    To show all of the tags present in the project, along with the commit
+    numbers for the tag and the tag operation:
+
+    $ git show-ref --tags -d
 
 # vim: sw=4 ts=4 wm=8 et ft=sh

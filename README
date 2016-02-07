@@ -1,6 +1,6 @@
-README for Sequencer64 0.9.9.16 (current branch = "fixups ongoing")
+README for Sequencer64 0.9.9.17 (current branch = "fixups ongoing")
 Chris Ahlstrom
-2015-09-10 to 2016-02-01
+2015-09-10 to 2016-02-07
 
 The sequencer64 project is a continuation of sequencer24 to refactor it to be
 tighter and easier to transition to GTKmm 3, and much more.  By now, it is

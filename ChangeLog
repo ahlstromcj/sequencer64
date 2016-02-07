@@ -1,7 +1,123 @@
+2016-02-07  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* INSTALL, bootstrap, etc:
+	Stamped master version 0.9.9.16.  The major new features are
+	1. Reverted to legacy handling of the Song and Live modes when running ALSA;
+	2. Disabled the Seq24 0.9.3 patch, as it affected MIDI Clock output;
+	3. Time Signature and Tempo events are now stored in the 0th track, along
+	with their SeqSpec versions, so that any sequencer can access these values in
+	a Sequencer64 *.midi file;
+	4. Cleaned up the contrib files and the usage of "USE" macros.
+
+2016-02-06  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* contrib/Timing-in-MIDI-files.txt, contrib/ascii-matrix-sizes.txt,
+	contrib/ascii-matrix.c, contrib/ascii-matrix.txt,
+	contrib/bugs_to_investigate.txt, contrib/code/README,
+	contrib/code/jack-transport-master.c,
+	contrib/code/jack_timebase_callback.cpp, contrib/fonts/README,
+	contrib/fonts/ascii-matrix-sizes.txt, contrib/fonts/ascii-matrix.c,
+	contrib/fonts/ascii-matrix.txt, contrib/git.txt, contrib/gtk.txt,
+	contrib/jack-testing.txt, contrib/jack-transport-master.c,
+	contrib/jack.txt, contrib/jack_timebase_callback.cpp,
+	contrib/mute_groups.txt, contrib/notes/README,
+	contrib/notes/Timing-in-MIDI-files.txt,
+	contrib/notes/bugs_to_investigate.txt, contrib/notes/git.txt,
+	contrib/notes/gtk.txt, contrib/notes/jack-testing.txt,
+	contrib/notes/jack.txt, contrib/notes/mute_groups.txt,
+	contrib/notes/seq24-triggers.txt,
+	contrib/notes/update-notes-from-github.txt, contrib/pix/README,
+	contrib/seq24-triggers.txt, contrib/update-notes-from-github.txt,
+	libseq64/src/jack_assistant.cpp, libseq64/src/perform.cpp,
+	seq_gtkmm2/include/perftime.hpp, seq_gtkmm2/src/eventslots.cpp,
+	seq_gtkmm2/src/perfedit.cpp, seq_gtkmm2/src/perftime.cpp: Cleaned up
+	the contrib directory and made perftime keystroke support official
+	by removing its USE macro.
+	Reverted Song/Live mode selection for
+	ALSA to Seq24 legacy status, tested a number of things, and added
+	some test documentation.
+
+2016-02-05  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/include/jack_assistant.hpp,
+	libseq64/src/jack_assistant.cpp, libseq64/src/perform.cpp: Removed
+	jack_assistant::restart(), was not useful after all.
+
+2016-02-05  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/include/jack_assistant.hpp,
+	libseq64/src/jack_assistant.cpp: Removed frame_to_ticks(),
+	get_jack_ticks(), and disabled the Seq24 0.9.3 patch, as all messed
+	up the MIDI clock to some degree.
+
+2016-02-05  Chris Ahlstrom <ahlstrom@centiped>
+
+	* contrib/configs/dot-seq24rc, contrib/dot-seq24rc,
+	contrib/jack_timebase_callback.cpp, libseq64/include/globals.h,
+	libseq64/include/jack_assistant.hpp, libseq64/include/sequence.hpp,
+	libseq64/src/jack_assistant.cpp,
+	configure.ac, contrib/bugs_to_investigate.txt,
+	contrib/configs/seq24usr.example,
+	contrib/configs/sequencer64-basic.rc.example,
+	contrib/configs/sequencer64-basic.usr.example,
+	contrib/configs/sequencer64-daniel.rc,
+	contrib/configs/sequencer64-timidity-yoshimi.usr.example,
+	contrib/configs/sequencer64.rc.example,
+	contrib/configs/sequencer64.usr.example, contrib/seq24usr.example,
+	contrib/sequencer64-basic.rc.example,
+	contrib/sequencer64-basic.usr.example,
+	contrib/sequencer64-timidity-yoshimi.usr.example,
+	contrib/sequencer64.rc.example, contrib/sequencer64.usr.example: 
+	Slowly reducing USE macros.
+	Upgraded documentation, bug-reports, and example files.
+
+2016-02-04  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* contrib/bugs_to_investigate.txt, libseq64/include/jack_assistant.hpp,
+	* libseq64/src/perform.cpp: 
+	Added Daniels JACK/MIDI Clock bug reports.
+	Moved USE_SEQ24_0_9_3_CODE macro from perform to jack_assistant.
+
+2016-02-03  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/include/jack_assistant.hpp, libseq64/src/perform.cpp: 
+	Fully macroing out the seq24 0.9.3 changes with
+	USE_SEQ24_0_9_3_CODE.
+
+2016-02-02  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* doc/dox/midi_parsing.dox, libseq64/include/jack_assistant.hpp,
+	libseq64/src/jack_assistant.cpp, libseq64/src/perform.cpp
+	contrib/bugs_to_investigate.txt: More bug analysis for midicvt
+	issue, might be a bug in midicvt.  Added
+	temporary macros USE_SEQ24_0_9_3_CODE and
+	USE_ORIGINAL_TIMEBASE_CALLBACK to experiment with MIDI Clock issues.
+
+2016-02-01  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* contrib/bugs_to_investigate.txt, doc/dox/midi_parsing.dox,
+	libseq64/src/midi_container.cpp: Added MIDI notes for new
+	timesig/tempo feature, and now use the legacy flag to determine if
+	to write them.
+
+2016-01-31  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* INSTALL, contrib/bugs_to_investigate.txt, contrib/midi/README,
+	doc/dox/midi_parsing.dox, libseq64/include/calculations.hpp,
+	libseq64/include/sequence.hpp, libseq64/src/calculations.cpp,
+	libseq64/src/midi_container.cpp, libseq64/src/midifile.cpp,
+	libseq64/src/sequence.cpp,
+	README, ROADMAP, VERSION, configure.ac, contrib/git.txt,
+	doc/dox/doxy-reference.cfg, libseq64/src/cmdlineopts.cpp,
+	man/sequencer64.1:
+	Added Tempo and Time Signature to
+	sequences, still need to fix garbage at end of midicvt output, and
+	document the MIDI support in Doxygen.
+
 2016-01-30  Chris Ahlstrom <ahlstromcj@gmail.com>
 
 	* contrib/configure.ac: Prepping for version 0.9.9.15.  And here it is
-   in the "master" branch.
+	in the "master" branch.
 
 2016-01-29  Chris Ahlstrom <ahlstromcj@gmail.com>
 

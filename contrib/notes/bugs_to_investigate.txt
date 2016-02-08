@@ -1,6 +1,6 @@
 Bugs and Additional Upgrade Ideas
 Chris Ahlstrom
-2015-10-27 to 2016-02-06 (New bugs)
+2015-10-27 to 2016-02-08 (New bugs)
 
 In no particular order...  "y" means "in progress", and "x" means it is
 basically done.
@@ -406,7 +406,7 @@ MY NOTES:
 	and layed down a few copies of the pattern.  That was the key to actually
 	seeing notes, I think.  I also enabled the "input goes to output" button,
 	but I doubt that was the key.
-    
+
     [ACTUALLY, that may be KEY as well, if played via the Song Editor.  Not
     sure.  Also, because of our reversion to legacy Seq24 ALSA playback
     behavior, one can use either the Song Editor or the Pattern Window to
@@ -420,6 +420,27 @@ MY NOTES:
 	tomorrow to be sure, when my eyes are not so bleary.
 
 END OF MY NOTES.
+
+Date: Sun, 07 Feb 2016 16:04:09 -0800
+From: Daniel Appelt <notifications@github.com>
+To: ahlstromcj/sequencer64 <sequencer64@noreply.github.com>
+Cc: "C. Ahlstrom" <ahlstromcj@gmail.com>
+Subject: Re: [sequencer64] Jack Transport Master behaviour is very "jumpy" (#10)
+
+I have just tested version 0.9.9.16 and most of the problems seem to be gone
+now!
+
+There is only one thing left. If you stop the transport (sequencer64 is
+transport master), and you use qjackctl or the carla / catia transport
+functions to roll back transport to the beginning, and then start play back
+again from one of those tools, the BPM information seems to be gone. The
+behaviour is the same when using either qjackctl or carla or catia. For
+example, BPM in qjackctl is then set to "6.953e-310", in catia it is displayed
+as "0" after rolling back.
+
+In general, the "roll back" should be added as a feature to sequencer64 -
+maybe it is there but I don't know where.
+'
 
 Date: Tue, 19 Jan 2016
 

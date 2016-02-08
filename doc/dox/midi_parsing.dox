@@ -571,7 +571,7 @@ drop the subsequent status bytes:
    43 F3
 \endverbatim
 
-The 0x90 byte is save in a "running status buffer" (RSB), and is filled in by
+The 0x90 byte is saved in a "running status buffer" (RSB), and is filled in by
 the receiving device.
 
 Here is the sequence of events for operating with running status.

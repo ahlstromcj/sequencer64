@@ -1,0 +1,348 @@
+#*****************************************************************************
+# astyle.rc
+#-----------------------------------------------------------------------------
+##
+# \file       	astyle.rc
+# \library    	xpc_suite
+# \author     	Chris Ahlstrom
+# \date       	02/26/2008-03/02/2008
+# \version    	$Revision$
+# \license    	$XPC_SUITE_GPL_LICENSE$
+#
+# \usage
+#     This file is a personal settings file for astyle code formatter.
+#
+#     To use it, simply copy it to your home directory in this manner:
+#
+#        cp astyle.rc ~/.astylerc
+#
+#     It can also be specified on the astyle command line.
+#
+#     This configuration file requires astyle 1.21 and above.
+#
+#-----------------------------------------------------------------------------
+
+#-----------------------------------------------------------------------------
+# Set style to ANSI.
+#
+#  =ansi
+#
+#     Brackets are broken, indentation is 4 spaces. Namespaces, classes, and
+#     switches are NOT indented.
+#
+#  =kr    (Kernighan & Ritchie)
+#
+#     Brackets are attached, indentation is 4 spaces. Namespaces, classes,
+#     and switches are NOT indented.
+#
+#  =gnu
+#
+#     Brackets are broken, blocks are indented, indentation is 2 spaces.
+#     Namespaces, classes, and switches are NOT indented.
+#
+#  =Java
+#
+#     Brackets are attached, indentation is 4 spaces. Switches are NOT
+#     indented.
+#
+#  =linux
+#
+#     All brackets are linux style, indentation is 8 spaces. Namespaces,
+#     classes, and switches are NOT indented.
+#
+#-----------------------------------------------------------------------------
+
+style=ansi
+
+#-----------------------------------------------------------------------------
+# Set mode of indentation.
+#
+#  =c
+#
+#     Indent a C or C++ file. The option is set from the file extension for
+#     each file. You can override the setting with this entry. It allows the
+#     formatter to identify language specific syntax such as C++ classes,
+#     templates, and keywords.
+#
+#     The default, except for C# and obvious java files.
+#
+#  =java
+#
+#      Indent a Java file. The option is set from the file extension for
+#      each file. You can override the setting with this entry. It allows
+#      the formatter to identify language specific syntax such as Java
+#      classes keywords.
+#
+#  =cs
+#
+#     Indent a C sharp file. The option is set from the file extension for
+#     each file. You can override the setting with this entry. It allows the
+#     formatter to identify language specific syntax such as C sharp classes
+#     and keywords.
+#
+#-----------------------------------------------------------------------------
+
+#-----------------------------------------------------------------------------
+#  suffix=xxxx
+#
+#     Append the suffix xxxx instead of '.orig' to original filename (e.g.
+#     --suffix=.bak). If this is to be a file extension, the dot '.' must be
+#     included. Otherwise the suffix will be appended to the current file
+#     extension.
+#
+#  =none
+#
+#     Do not retain a backup of the original file. The original file is
+#     purged after it is formatted.
+#
+#-----------------------------------------------------------------------------
+
+suffix=none
+
+#-----------------------------------------------------------------------------
+#  options=xxxx
+#
+#  =filename
+#
+#     Specify an options file to read and use.
+#
+#-----------------------------------------------------------------------------
+
+#-----------------------------------------------------------------------------
+# Set indent to use spaces, with an indent level of 3 spaces
+#
+#  indent=tab[=#]
+#
+#  indent=spaces[=#]
+#
+#  force-indent=tab[=#]
+#
+#-----------------------------------------------------------------------------
+
+indent=spaces=4
+
+#-----------------------------------------------------------------------------
+# Convert tabs to spaces
+#-----------------------------------------------------------------------------
+
+convert-tabs
+
+#-----------------------------------------------------------------------------
+# Move opening brackets (braces, the { character, that is) to the next line.
+#
+#  =attach      
+#
+#     Attach the brackets to their pre-block statements, as in Java or K&R
+#     style.
+#
+#  =break
+#
+#     Put all opening brackets on the next line of code.
+#
+#  =linux
+#
+#     Break brackets from class and function declarations, but attach
+#     brackets to pre-block command statements.
+#
+#  =break-closing
+#
+#     When used with either --brackets=attach or  --brackets=linux, breaks
+#     closing headers (e.g. 'else', 'catch', ...) from their immediately
+#     preceding closing brackets.
+#
+#  If not specified, the brackets will not be changed.
+#
+#-----------------------------------------------------------------------------
+
+# brackets=break
+
+#-----------------------------------------------------------------------------
+# Indent classes
+#
+#  Indent 'class' and 'struct' blocks so that the blocks 'public:',
+#  'protected:' and 'private:' are indented. The entire block is indented.
+#  This option has no effect on Java and C# files.
+#
+#  We don't want this option.
+#-----------------------------------------------------------------------------
+
+#------------------------------
+# indent-classes
+#------------------------------
+
+#-----------------------------------------------------------------------------
+# Indentation options for compound statements (switch, case, and more)
+#
+#  indent-switches
+#
+#     Indent 'switch' blocks so that the 'case X:' statements are indented in
+#     the switch block. The entire case block is indented.
+#
+#     We don't want this option.  However, it does look very good, especially
+#     if the cases have scope braces.
+#
+#  indent-cases
+#
+#     Indent 'case X:' blocks from the 'case X:' headers. Case statements
+#     not enclosed in blocks are NOT indented.
+#
+#  indent-blocks
+#
+#     Add extra indentation to entire blocks.
+#
+#     This option moves both braces, and everything in them, as a solid
+#     block.  Pretty ugly.
+#
+#  indent-brackets
+#
+#     Add extra indentation to brackets. This option has no effect if
+#     --indent-blocks is used.  This option indents the braces, but leaves
+#     everything inside where it is.
+#
+#  indent-namespaces
+#
+#     Add extra indentation to namespace blocks.  Actually, only the stuff
+#     inside the blocks is indented.
+#
+#  indent-labels
+#
+#     Add extra indentation to labels so they appear 1 indent less than the
+#     current indentation, rather than being flushed to the left (the
+#     default).
+#
+#  indent-preprocessor
+#
+#     Indent multi-line preprocessor definitions ending with a backslash.
+#     Should be used with  --convert-tabs for proper results. Does a pretty
+#     good job, but can not perform miracles in obfuscated preprocessor
+#     definitions.
+#
+#  max-instatement-indent=#
+#
+#     Indent a maximum of # spaces in a continuous statement, relative to
+#     the previous line (e.g.  --max-instatement-indent=40). # must be less
+#     than 80. If no # is set, the default value of 40 will be used.
+#
+#     This has the effect of lining up enum values, array initializers, and
+#     function parameters with a hanging indent style.
+#
+#              foofunction(arg1,
+#                          arg2,
+#                          arg3);
+#
+#  min-conditional-indent=#
+#
+#     Set the minimal indent that is added when a header is built of
+#     multiple-lines. This indent makes helps to easily separate the header
+#     from the command statements that follow. The value for # must be less
+#     than 40. The default setting for this option is twice the current
+#     indent (e.g. min-conditional-indent=8).
+#
+#-----------------------------------------------------------------------------
+
+indent-preprocessor
+
+#-----------------------------------------------------------------------------
+#  break-blocks
+#
+#     Pad empty lines around header blocks (e.g. 'if', 'while'...). Be sure
+#     to read the Supplemental Documentation before using this option.
+#
+#  break-blocks=all
+#
+#     Pad empty lines around header blocks (e.g. 'if', 'while'...). Treat
+#     closing header blocks (e.g. 'else', 'catch') as stand-alone blocks.
+#     Be sure to read the  Supplemental Documentation before using this
+#     option.
+#
+#     The following are known problems with the break header blocks and
+#     break all blocks options (--break-blocks, --break-blocks=all).
+#
+#        -	If a statement is NOT part of a block, the following
+#           statements are all double spaced. Statements enclosed in a
+#           block are formatted correctly.
+#
+#        -  Comments are broken (separated) from the block.
+#
+#  break-elseifs
+#
+#     Break 'else if' header combinations into separate lines. This option
+#     has no effect if one-line=keep-statements is used. This option cannot
+#     be undone.
+#
+#-----------------------------------------------------------------------------
+
+#-----------------------------------------------------------------------------
+#  one-line=keep-statements
+#
+#     Don't break complex statements and multiple statements residing on a
+#     single line.
+#
+#  one-line=keep-blocks
+#
+#     Don't break one-line blocks.
+#
+#-----------------------------------------------------------------------------
+
+#-----------------------------------------------------------------------------
+#  fill-empty-lines
+#
+#     Fill empty lines with the white space of the previous line.
+#
+#-----------------------------------------------------------------------------
+
+#-----------------------------------------------------------------------------
+# Add/removing padding to operators and other items
+#
+#  pad=option
+#  unpad=option
+#
+# Options:
+#
+#  =oper
+#  =paren
+#
+#     pad.  Insert space padding around parenthesis on both the outside and the
+#     inside.
+#
+#     unpad.  Remove space padding around parenthesis on the inside and
+#     outside.  Can be used in combination with the paren padding options
+#     pad=paren-out and pad=paren-in above. Only padding that has not been
+#     requested by other options will be removed.
+#
+#     Removes space around parentheses.  For example, if a source has parens
+#     padded on both the inside and outside, and you want inside only. You
+#     need to use unpad=paren to remove the outside padding, and
+#     pad=paren-in to retain the inside padding. Using only pad=paren-in
+#     would not remove the outside padding.
+#
+#  =paren-out
+#
+#      Insert space padding around parenthesis on the outside only. This can
+#      be used with unpad=paren below to remove unwanted spaces.
+#
+#  =paren-in
+#
+#     Insert space padding around parenthesis on the inside only. This can
+#     be used with unpad=paren below to remove unwanted spaces.
+
+#  =oper
+#
+#-----------------------------------------------------------------------------
+
+# pad=oper
+
+pad-oper
+pad-header
+
+# Remove padding inside parentheses
+
+# unpad=paren
+
+unpad-paren
+
+#*****************************************************************************
+# atsyle.rc
+#-----------------------------------------------------------------------------
+# vim: ts=3 sw=3 et ft=make
+#-----------------------------------------------------------------------------

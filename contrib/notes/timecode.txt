@@ -1,0 +1,101 @@
+Timecode Notes
+Chris Ahlstrom
+2016-02-09 to 2016-02-09
+
+Some of these notes are taken from:
+
+   http://manual.ardour.org/synchronization/
+
+There are four common timecode formats:
+
+   -  LTC. A generator of linear timecode, with a configurable output level.
+      LTC (Linear Time Code) is a Manchester encoded, frequency modulated
+      signal that carries both clock and time. It is possible to extract
+      absolute position data and speed from it.
+   -  MTC. A generator of MIDI timecode.  MTC is limited to 24, 25, 29.97
+      and 30 fps.
+   -  MIDI Clock. A generator of tempo-based time. The absolute reference
+      point is expressed as beats-per-minute and Bar, Beat and Tick. There
+      is no concept of sample-locking for MIDI clock signals. An application
+      needs to vari-speed if necessary to chase the incoming signal.
+   -  JACK-transport. JACK-transport cannot be generated. Jack itself is
+      always synced to its own cycle and cannot do varispeed — it will always
+      be synced to a hardware clock or another JACK master.
+
+An application can generate timecode and thus act as timecode master,
+providing timecode information to other applications. An application can
+also be slaved to some external source in which case the playhead follows
+the incoming timecode.  Combining the timecode slave and generator modes,
+An application can also translate timecode. e.g create LTC timecode from
+incoming MTC.
+
+JACK transport slaves can control the JACK transport states
+(stopped/rolling).  It does not support offset and does not support
+vari-speed.  JACK transport also includes temp-based-time information in
+Bar:Beats:Ticks (BBT) and beats-per-minute. However, only one JACK
+application can provide this information at a given time.  An application
+can be configured to act as a translator from timecode to BBT.
+
+JACK provides clock synchronization and is not concerned with time code
+(this is not entirely true, more on jack-transport later). On the software
+side, jackd provides sample-accurate synchronization between all JACK
+applications. On the hardware side, JACK uses the clock of the
+audio-interface. Synchronization of multiple interfaces requires hardware
+support to sync the clocks. If two interfaces run at different clocks the
+only way to align the signals is via re-sampling (SRC - Sample Rate
+Conversion), which is expensive in terms of CPU usage and may
+decreases fidelity if done incorrectly.
+
+Related Concepts:
+
+   Latency compensation
+   Chasing (Synchronization)
+
+https://github.com/hydrogen-music/hydrogen/issues/190
+
+   That works fine, but i noticed that when i play around with the tempo (in
+   hydrogen) i start to get an offset between hydrogen and the synth
+   the tempo on the synth still changes when i change tempo in hydrogen, but
+   there is an offset that seems to grow
+
+   i tried to find an easy way to reproduce this without the need for a
+   hardware synth and i think i was able to do that with this config :
+
+   1) start jack, open hydrogen
+   2) create a pattern with 4 beats on the 1,2,3 and 4 (i used 'click' from
+      the gmkit)
+   3) use this pattern to create a 4-bar song
+   4) set hydrogen in (looped) song mode and set a tempo change on bar1
+(120) and one on bar 3 (200)
+   5) enable jack transport AND jack master
+
+   6) open a second instance of hydrogen
+   7) create a pattern with 4 beats on the 1,2,3 and 4 (here i used 'cowbel'
+      from the gmkit, so it is easy to hear the difference between the 2
+      hydrogen instances)
+   8) use this pattern to create a 4-bar song
+   9) set hydro to song mode (looped)
+   10) enable jack transport (NOT master)
+
+   11) on the first hydrogen instance press stop (to make sure that the
+      transport position is at 'position 0')
+   12) on the first hydrogen instance press play
+
+   what i expect to see :
+   both hydrogen instances play in perfect sync
+
+   what i see instead :
+   after the first tempo change both hydrogen instances are out of sync
+
+   i also did this extra test with jack_transport
+   1) make sure that 'transport master ' is disabled on both hydrogen instances
+   2) in a terminal start jack_transport
+   3) make it master by typing 'master'
+   4) set a tempo : 'tempo 120'
+   5) start transport : 'play'
+   6) while playing change the tempo : 'tempo 200'
+   7) while playing change the tempo : 'tempo 120'
+
+   in this setup both hydrogen instances are in perfect sync, so it seems to
+   be an issue with hydrogen as master
+

@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-02-09
+ * \updates       2016-02-10
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -76,6 +76,18 @@ midi_control perform::sm_mc_dummy;
  *  This construction initializes a vast number of member variables, some
  *  of them public (but we're working on that)!
  *
+ *  Also note that we have a little issue with the fact that various sequences
+ *  (patterns) can potentially have different beats/measure and beat-width
+ *  values.
+ *
+ *  Currently, when reading the MIDI file, the beats/minute value is obtained
+ *  from the MIDI file, if present, and this value is passed to
+ *  perform::set_beats_per_minute(), which forwards it to the master MIDI buss
+ *  and JACK assistant objects.  This Tempo setting comes from both the
+ *  Tempo meta event in track 0, and from the Seq24's c_bpm SeqSpec section!
+ *
+ *  This setting is NOT YET MADE for the two Time Signature values.
+ *
  * \param mygui
  *      Provides access to the GUI assistant that holds many things,
  *      including the containers of keys and the "events" they
@@ -83,6 +95,9 @@ midi_control perform::sm_mc_dummy;
  *      the gui_assistant_gtk2 class in the seq_gtkmm2 GUI-specific library.
  *      Note that we access the m_gui_support member using the gui()
  *      accessor function.
+ *
+ * \param ppqn
+ *      The default, choosable, or actual PPQN value.
  */
 
 perform::perform (gui_assistant & mygui, int ppqn)
@@ -136,7 +151,14 @@ perform::perform (gui_assistant & mygui, int ppqn)
     m_is_modified               (false),
     m_condition_var             (),
 #ifdef SEQ64_JACK_SUPPORT
-    m_jack_asst                 (*this),
+    m_jack_asst
+    (
+        *this,                              // we are the parent
+        SEQ64_DEFAULT_BPM,                  // TODO: get the real value now
+        m_ppqn,
+        SEQ64_DEFAULT_BEATS_PER_MEASURE,    // TODO: get the real value now
+        SEQ64_DEFAULT_BEAT_WIDTH            // TODO: get the real value now
+    ),
 #endif
     m_notify                    ()      // vector of pointers, public!
 {
@@ -881,15 +903,10 @@ perform::set_beats_per_minute (int bpm)
     else if (bpm > SEQ64_MAXIMUM_BPM)       /* 500 */
         bpm = SEQ64_MAXIMUM_BPM;
 
-    /**
-     * \todo
-     *      I think this logic is wrong, in that it needs only one of the
-     *      two to be stopped before it sets the BPM, while it seems to me
-     *      that both should be stopped; to be determined.
-     */
-
 #ifdef SEQ64_JACK_SUPPORT
     bool ok = ! (m_jack_asst.is_running() && m_running);
+    if (ok)
+        m_jack_asst.set_beats_per_minute(bpm);
 #else
     bool ok = ! m_running;
 #endif

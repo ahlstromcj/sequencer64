@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-02-06
+ * \updates       2016-02-10
  * \license       GNU GPLv2 or above
  *
  *  For a quick guide to the MIDI format, see, for example:
@@ -731,19 +731,32 @@ midifile::parse_smf_1 (perform & p, int screenset, bool is_smf0)
 
                             if ((len == 4) && ! timesig_set)
                             {
-                                seq.set_beats_per_bar(read_byte()); // nn
                                 int logbase2 = int(read_byte());    // dd
+                                long bw = long(pow2(logbase2));
+                                int bpm = int(read_byte());         // nn
 #ifdef SEQ64_HANDLE_TIMESIG_AND_TEMPO
                                 int cc = read_byte();               // cc
                                 int bb = read_byte();               // bb
-                                seq.set_beat_width(long(pow2(logbase2)));
+                                seq.set_beats_per_bar(bpm);
+                                seq.set_beat_width(bw);
                                 seq.clocks_per_metronome(cc);
                                 seq.set_32nds_per_quarter(bb);
+
+                                /*
+                                 * TODO:  Add these settings to perform
+                                 * object!  They need to forward them to the
+                                 * JACK assistant, if enabled.
+                                 *
+                                 * p.set_beats_per_bar(bpm);
+                                 * p.set_beat_width(bw);
+                                 */
 #else
                                 (void) read_byte();                 // cc
                                 (void) read_byte();                 // bb
-                                seq.set_beat_width(long(pow2(logbase2)));
+                                seq.set_beats_per_bar(bpm);
+                                seq.set_beat_width(bw);
 #endif
+
 #ifdef SEQ64_USE_DEBUG_OUTPUT
                                 printf
                                 (
@@ -1151,7 +1164,7 @@ midifile::parse_proprietary_track (perform & p, int file_size)
         if (proprietary == c_bpmtag)                    /* beats per minute */
         {
             long bpm = read_long();
-            p.set_beats_per_minute(bpm);
+            p.set_beats_per_minute(bpm);                /* 2nd way to set!  */
         }
 
         /* Read in the mute group information. */

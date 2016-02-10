@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-09-17
- * \updates       2016-02-09
+ * \updates       2016-02-10
  * \license       GNU GPLv2 or above
  *
  *  This class contains a number of functions that used to reside in the
@@ -51,7 +51,7 @@
  * Define this macro to use the new seq24 v. 0.9.3 delta-tick calculation
  * code.  This code doesn't quite work for generating the proper rate of MIDI
  * clocks, and so have disabled that code until we can figure out what it is
- * we're doing wrong. Do not enable it.
+ * we're doing wrong. Do not enable it unless you are willing to test it.
  */
 
 #undef  USE_SEQ24_0_9_3_CODE
@@ -180,6 +180,16 @@ public:
     ~jack_assistant ();
 
     /**
+     * \getter m_jack_parent
+     *      Needed for external callbacks.
+     */
+
+    perform & parent ()
+    {
+        return m_jack_parent;
+    }
+
+    /**
      * \getter m_jack_running
      */
 
@@ -198,13 +208,39 @@ public:
     }
 
     /**
-     * \getter m_jack_parent
-     *      Needed for external callbacks.
+     * \getter m_ppqn
      */
 
-    perform & parent ()
+    int get_ppqn () const
     {
-        return m_jack_parent;
+        return m_ppqn;
+    }
+
+    /**
+     * \getter m_beat_width
+     */
+
+    int get_beat_width () const
+    {
+        return m_beat_width;
+    }
+
+    /**
+     * \getter m_beats_per_measure
+     */
+
+    int get_beats_per_measure () const
+    {
+        return m_beats_per_measure;
+    }
+
+    /**
+     * \getter m_beats_per_minute
+     */
+
+    int get_beats_per_minute () const
+    {
+        return m_beats_per_minute;
     }
 
     bool init ();                       // init_jack ();
@@ -223,16 +259,38 @@ public:
     );
     bool output (jack_scratchpad & pad);
 
-private:
-
     /**
      * \setter m_ppqn
-     *      For the future, changing the PPQN internally.
+     *      For the future, changing the PPQN internally.  We should consider
+     *      adding validation.  But it is used by perform.
      */
 
     void set_ppqn (int ppqn)
     {
         m_ppqn = ppqn;
+    }
+    
+    /**
+     * \setter m_beats_per_minute
+     *      For the future, changing the BPM (beats/minute) internally.  We
+     *      should consider adding validation.  However,
+     *      perform::set_beats_per_minute() does validate already.
+     */
+
+    void set_beats_per_minute (int bpminute)
+    {
+        m_beats_per_minute = bpminute;
+    }
+
+private:
+
+    /**
+     * \sett m_jack_running
+     */
+
+    void set_jack_running (bool flag)
+    {
+        m_jack_running = flag;
     }
 
     bool info_message (const std::string & msg);

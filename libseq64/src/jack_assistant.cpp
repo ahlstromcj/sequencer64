@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-14
- * \updates       2016-02-09
+ * \updates       2016-02-10
  * \license       GNU GPLv2 or above
  *
  *  This module was created from code that existed in the perform object.
@@ -541,7 +541,6 @@ jack_assistant::sync (jack_transport_state_t state)
 {
     int result = 0;                     /* seq24 always returns 1   */
     m_jack_frame_current = jack_get_current_transport_frame(m_jack_client);
-
     (void) jack_transport_query(m_jack_client, &m_jack_pos);
 
     jack_nframes_t rate = m_jack_pos.frame_rate;
@@ -1181,10 +1180,10 @@ jack_timebase_callback
      */
 
     jack_assistant * jack = (jack_assistant *)(arg);
-    pos->beats_per_minute = jack->m_beats_per_minute;
-    pos->beats_per_bar = jack->m_beats_per_measure;
-    pos->beat_type = jack->m_beat_width;
-    pos->ticks_per_beat = jack->m_ppqn * 10.0;
+    pos->beats_per_minute = jack->get_beats_per_minute();
+    pos->beats_per_bar = jack->get_beats_per_measure();
+    pos->beat_type = jack->get_beat_width();
+    pos->ticks_per_beat = jack->get_ppqn() * 10.0;
 
     long ticks_per_bar = long(pos->ticks_per_beat * pos->beats_per_bar);
     long ticks_per_minute = long(pos->beats_per_minute * pos->ticks_per_beat);
@@ -1250,8 +1249,15 @@ void
 jack_shutdown_callback (void * arg)
 {
     jack_assistant * jack = (jack_assistant *)(arg);
-    jack->m_jack_running = false;
-    infoprint("[JACK shutdown]");
+    if (not_nullptr(jack))
+    {
+        jack->set_jack_running(false);
+        infoprint("[JACK shutdown]");
+    }
+    else
+    {
+        errprint("jack_shutdown_callback(): null JACK pointer");
+    }
 }
 
 #ifdef SEQ64_USE_DEBUG_OUTPUT

@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-23
- * \updates       2015-12-05
+ * \updates       2016-02-10
  * \license       GNU GPLv2 or above
  *
  *  These typedef specifications are intended to remove the ambiguity we have
@@ -107,7 +107,8 @@ typedef long midipulse;
 
 /**
  *  Provides a data structure to hold the numeric equivalent of the measures
- *  string "measures:beats:divisions" ("m:b:d").
+ *  string "measures:beats:divisions" ("m:b:d").  More commonly known as
+ *  "bars:beats:ticks", or "BBT".
  */
 
 class midi_measures

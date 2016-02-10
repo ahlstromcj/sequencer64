@@ -1,6 +1,6 @@
 Notes About JACK
 Chris Ahlstrom
-2016-01-14 to 2016-01-19
+2016-01-14 to 2016-02-09
 
 Also be sure to read through the source code, especially the jack_assistant
 module.  The following is a note about seq24:
@@ -22,7 +22,7 @@ module.  The following is a note about seq24:
 
     . . .
 
-    What I had to do is set seq24's options like this:
+    What I had to do is set seq24 options like this:
 
     Enable Jack Transport
     Enable Transport Master
@@ -43,5 +43,33 @@ However, for Sequencer64, only one of the three needs to be set
     Enable Master Conditional
 
 We still have some work to do to improve our JACK handling.
+
+Now, Hydrogen as JACK Master handles the situation where we tell QJackCtl
+to stop, then rewind, then continue.  Hydrogen gives back the information
+needed to tell QJackCtl where the transport is in terms of BBT.
+Sequencer64 and Seq24 do not.  So let us analyze Hydrogen.
+
+First, Hydrogen sets a timebase callback (as JACK Master) and a process
+callback.  We think the former is the key.
+
+Hydrogen maintains a value call bbt_frame_offset:
+
+    void JackOutput::calculateFrameOffset()
+    {
+        bbt_frame_offset = m_JackTransportPos.frame - m_transport.m_nFrames;
+    }
+
+When the last two values are set equal, bbt_frame_offset is 0, and
+indicates to stop re-syncing in every cycled when stopped.
+
+In the timebase callback:
+
+   
+    unsigned long PlayTick = ( pos->frame - me->bbt_frame_offset ) /
+        me->m_transport.m_nTickSize;
+
+    pos->bar = H->getPosForTick ( PlayTick );
+
+
 
 # vim: sw=4 ts=4 wm=8 et ft=sh

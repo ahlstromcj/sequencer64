@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-02-07
+ * \updates       2016-02-09
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -113,7 +113,7 @@ perform::perform (gui_assistant & mygui, int ppqn)
     m_looping                   (false),
     m_playback_mode             (false),
     m_ppqn                      (choose_ppqn(ppqn)),
-    m_one_measure               (m_ppqn * 4),
+    m_one_measure               (m_ppqn * 4),               // INCOMPLETE!
     m_left_tick                 (0),
     m_right_tick                (m_one_measure * 4),        // m_ppqn * 16
     m_starting_tick             (0),
@@ -868,6 +868,9 @@ perform::is_dirty_names (int seq)
  *  It's not clear that we need to set the "is modified" flag just because we
  *  changed the beats per minute.  Does this setting get saved to the MIDI
  *  file?
+ *
+ * \todo
+ *      WE ALSO NEED TO SET BEATS-PER-MINUTE IN jack_assistant!!!
  */
 
 void

@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-09-17
- * \updates       2016-02-07
+ * \updates       2016-02-09
  * \license       GNU GPLv2 or above
  *
  *  This class contains a number of functions that used to reside in the
@@ -165,12 +165,14 @@ private:
     int m_ppqn;
     int m_beats_per_measure;
     int m_beat_width;
+    int m_beats_per_minute;
 
 public:
 
     jack_assistant
     (
         perform & parent,
+        int bpminute    = SEQ64_DEFAULT_BPM,        // TODO TODO TODO
         int ppqn        = SEQ64_USE_DEFAULT_PPQN,
         int bpm         = SEQ64_DEFAULT_BEATS_PER_MEASURE,
         int beatwidth   = SEQ64_DEFAULT_BEAT_WIDTH

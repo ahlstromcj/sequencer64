@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-14
- * \updates       2016-02-07
+ * \updates       2016-02-09
  * \license       GNU GPLv2 or above
  *
  *  This module was created from code that existed in the perform object.
@@ -63,6 +63,7 @@ namespace seq64
 jack_assistant::jack_assistant
 (
     perform & parent,
+    int bpminute,
     int ppqn,
     int bpm,
     int beatwidth
@@ -82,7 +83,8 @@ jack_assistant::jack_assistant
     m_jack_master               (false),
     m_ppqn                      (0),
     m_beats_per_measure         (bpm),
-    m_beat_width                (beatwidth)
+    m_beat_width                (beatwidth),
+    m_beats_per_minute          (bpminute)
 {
     m_ppqn = choose_ppqn(ppqn);
 }
@@ -479,7 +481,6 @@ jack_assistant::set_position (midipulse currenttick)
     (
         currenttick / long(pos.ticks_per_beat) / pos.beats_per_bar
     );
-//  pos.beat = int32_t(((currenttick / (long) pos.ticks_per_beat) % 4));
     pos.beat = int32_t(((currenttick / long(pos.ticks_per_beat)) % m_beat_width));
     pos.tick = int32_t((currenttick % (m_ppqn * 10)));
     pos.bar_start_tick = pos.bar * pos.beats_per_bar * pos.ticks_per_beat;
@@ -500,7 +501,7 @@ jack_assistant::set_position (midipulse currenttick)
     int jackcode = jack_transport_reposition(m_jack_client, &pos);
     if (jackcode != 0)
     {
-        errprint("jack_assistant::position(): bad position structure");
+        errprint("jack_assistant::set_position(): bad position structure");
     }
 }
 
@@ -1109,17 +1110,13 @@ jack_assistant::jack_debug_print (double current_tick, double ticks_delta)
  *  The first difference with the new code is that it handles the case where
  *  the JACK position is moved (new_pos == true).  If this is true, and the
  *  JackPositionBBT bit is off in pos->valid, then the new BBT value is set.
- *  (Do we have more work to do in Sequencer64 in this case?)  Note that this
- *  code does not change beats_per_bar, beat_type, ticks_per_beat, or
- *  beats_per_minute.  It also hardwires pos->beats_per_bar and pos->beat_type
- *  to 4.
  *
  *  The seconds set of differences are in the "else" clause.  In the new code,
  *  it is very simple: calculate the new tick value, back it off by the number
  *  of ticks in a beat, and perhaps go to the first beat of the next bar.
  *
  *  In the old code (complex!), the simple BBT adjustment is always made.
- *  This changes (perhaps) the beats_per_bar, beat_type, etc.  We probably
+ *  This changes (perhaps) the beats_per_bar, beat_type, etc.  We
  *  need to make these settings use the actual global values for beats set for
  *  Sequencer64.  Then, if transitioning from JackTransportStarting to
  *  JackTransportRolling (instead of checking new_pos!), the BBT values (bar,
@@ -1177,15 +1174,40 @@ jack_timebase_callback
         errprint("jack_timebase_callback(): null position pointer");
         return;
     }
+
+    /*
+     * @change ca 2016-02-09
+     *      Code from sooperlooper that we left out!
+     */
+
+    jack_assistant * jack = (jack_assistant *)(arg);
+    pos->beats_per_minute = jack->m_beats_per_minute;
+    pos->beats_per_bar = jack->m_beats_per_measure;
+    pos->beat_type = jack->m_beat_width;
+    pos->ticks_per_beat = jack->m_ppqn * 10.0;
+
     long ticks_per_bar = long(pos->ticks_per_beat * pos->beats_per_bar);
     long ticks_per_minute = long(pos->beats_per_minute * pos->ticks_per_beat);
     if (new_pos || ! (pos->valid & JackPositionBBT))    // try the NEW code
     {
         double minute = pos->frame / (double(pos->frame_rate * 60.0));
         long abs_tick = long(minute * ticks_per_minute);
-        long abs_beat = long(abs_tick / pos->ticks_per_beat);
-        pos->valid = JackPositionBBT;
-        pos->bar = int(abs_beat / pos->beats_per_bar);
+        long abs_beat = 0;
+
+        /*
+         * @change ca 2016-02-09
+         *      Handle 0 values of pos->ticks_per_beat and pos->beats_per_bar
+         *      that occur at startup as JACK Master.
+         */
+
+        if (pos->ticks_per_beat > 0)                    // 0 at startup!
+            abs_beat = long(abs_tick / pos->ticks_per_beat);
+
+        if (pos->beats_per_bar > 0)                     // 0 at startup!
+            pos->bar = int(abs_beat / pos->beats_per_bar);
+        else
+            pos->bar = 0;
+
         pos->beat = int(abs_beat - (pos->bar * pos->beats_per_bar) + 1);
         pos->tick = int(abs_tick - (abs_beat * pos->ticks_per_beat));
         pos->bar_start_tick = int(pos->bar * ticks_per_bar);
@@ -1212,6 +1234,7 @@ jack_timebase_callback
             }
         }
     }
+    pos->valid = JackPositionBBT;
 }
 
 /**

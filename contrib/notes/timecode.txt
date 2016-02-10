@@ -66,20 +66,18 @@ https://github.com/hydrogen-music/hydrogen/issues/190
       the gmkit)
    3) use this pattern to create a 4-bar song
    4) set hydrogen in (looped) song mode and set a tempo change on bar1
-(120) and one on bar 3 (200)
+      (120) and one on bar 3 (200)
    5) enable jack transport AND jack master
-
    6) open a second instance of hydrogen
    7) create a pattern with 4 beats on the 1,2,3 and 4 (here i used 'cowbel'
       from the gmkit, so it is easy to hear the difference between the 2
       hydrogen instances)
    8) use this pattern to create a 4-bar song
    9) set hydro to song mode (looped)
-   10) enable jack transport (NOT master)
-
-   11) on the first hydrogen instance press stop (to make sure that the
+  10) enable jack transport (NOT master)
+  11) on the first hydrogen instance press stop (to make sure that the
       transport position is at 'position 0')
-   12) on the first hydrogen instance press play
+  12) on the first hydrogen instance press play
 
    what i expect to see :
    both hydrogen instances play in perfect sync

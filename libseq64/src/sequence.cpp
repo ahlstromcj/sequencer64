@@ -2259,7 +2259,7 @@ sequence::copy_selected_trigger ()
  *  If there is a copied trigger, then this function grabs it from the trigger
  *  clipboard and adds it.
  *
- *  Why isn't this protected by a mutex?  We will eventually enable this see if
+ *  Why isn't this protected by a mutex?  We will eventually enable this if
  *  anything bad happens, such as a deadlock, or corruption.
  */
 

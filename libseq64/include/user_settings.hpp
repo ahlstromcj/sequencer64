@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-22
- * \updates       2016-01-28
+ * \updates       2016-02-10
  * \license       GNU GPLv2 or above
  *
  *  This module defines the following categories of "global" variables that
@@ -573,13 +573,6 @@ class user_settings
      */
 
     const int mc_baseline_ppqn;
-
-    /**
-     *  Scale factor for PPQN.  Should this be a float (6 significant digits)
-     *  or two integers for scaling?
-     */
-
-    // TODO
 
 public:
 

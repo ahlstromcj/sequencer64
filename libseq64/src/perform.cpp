@@ -85,8 +85,7 @@ midi_control perform::sm_mc_dummy;
  *  perform::set_beats_per_minute(), which forwards it to the master MIDI buss
  *  and JACK assistant objects.  This Tempo setting comes from both the
  *  Tempo meta event in track 0, and from the Seq24's c_bpm SeqSpec section!
- *
- *  This setting is NOT YET MADE for the two Time Signature values.
+ *  This setting is now also made for the two Time Signature values.
  *
  * \param mygui
  *      Provides access to the GUI assistant that holds many things,
@@ -128,6 +127,8 @@ perform::perform (gui_assistant & mygui, int ppqn)
     m_looping                   (false),
     m_playback_mode             (false),
     m_ppqn                      (choose_ppqn(ppqn)),
+    m_beats_per_bar             (SEQ64_DEFAULT_BEATS_PER_MEASURE),
+    m_beat_width                (SEQ64_DEFAULT_BEAT_WIDTH),
     m_one_measure               (m_ppqn * 4),               // INCOMPLETE!
     m_left_tick                 (0),
     m_right_tick                (m_one_measure * 4),        // m_ppqn * 16
@@ -154,10 +155,10 @@ perform::perform (gui_assistant & mygui, int ppqn)
     m_jack_asst
     (
         *this,                              // we are the parent
-        SEQ64_DEFAULT_BPM,                  // TODO: get the real value now
-        m_ppqn,
-        SEQ64_DEFAULT_BEATS_PER_MEASURE,    // TODO: get the real value now
-        SEQ64_DEFAULT_BEAT_WIDTH            // TODO: get the real value now
+        SEQ64_DEFAULT_BPM,                  // may get updated later
+        m_ppqn,                             // probably updated later
+        SEQ64_DEFAULT_BEATS_PER_MEASURE,    // may get updated later
+        SEQ64_DEFAULT_BEAT_WIDTH            // may get updated later
     ),
 #endif
     m_notify                    ()      // vector of pointers, public!
@@ -170,7 +171,7 @@ perform::perform (gui_assistant & mygui, int ppqn)
          * seq24 0.9.3 (!) added initialization of these.
          */
 
-        m_seqs_active[i] = m_was_active_main[i] = m_was_active_edit[i] = 
+        m_seqs_active[i] = m_was_active_main[i] = m_was_active_edit[i] =
             m_was_active_perf[i] = m_was_active_names[i] = false;
     }
     midi_control zero;                          /* all members false or 0   */

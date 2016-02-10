@@ -743,13 +743,11 @@ midifile::parse_smf_1 (perform & p, int screenset, bool is_smf0)
                                 seq.set_32nds_per_quarter(bb);
 
                                 /*
-                                 * TODO:  Add these settings to perform
-                                 * object!  They need to forward them to the
-                                 * JACK assistant, if enabled.
-                                 *
-                                 * p.set_beats_per_bar(bpm);
-                                 * p.set_beat_width(bw);
+                                 * @new ca 2016-02-10 Log for use with JACK.
                                  */
+
+                                p.set_beats_per_bar(bpm);
+                                p.set_beat_width(bw);
 #else
                                 (void) read_byte();                 // cc
                                 (void) read_byte();                 // bb
@@ -1164,6 +1162,12 @@ midifile::parse_proprietary_track (perform & p, int file_size)
         if (proprietary == c_bpmtag)                    /* beats per minute */
         {
             long bpm = read_long();
+
+            /*
+             * We should check here for a conflict between the Tempo meta
+             * event and this seq24 tag's value.  NOT YET.
+             */
+
             p.set_beats_per_minute(bpm);                /* 2nd way to set!  */
         }
 

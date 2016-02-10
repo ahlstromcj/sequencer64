@@ -242,6 +242,20 @@ private:
     int m_ppqn;
 
     /**
+     *  Holds the beats/bar value as obtained from the MIDI file.
+     *  The default value is SEQ64_DEFAULT_BEATS_PER_MEASURE (4).
+     */
+
+    int m_beats_per_bar;
+
+    /**
+     *  Holds the beat width value as obtained from the MIDI file.
+     *  The default value is SEQ64_DEFAULT_BEAT_WIDTH (4).
+     */
+
+    int m_beat_width;
+
+    /**
      *  Holds the "one measure's worth" of pulses (ticks), which is
      *  normally m_ppqn * 4.  We can save some multiplications, and, more
      *  importantly, later define a more flexible definition of "one measure's
@@ -423,6 +437,48 @@ public:
     int sequence_max () const
     {
         return m_sequence_max;
+    }
+
+    /**
+     * \getter m_beats_per_bar
+     */
+
+    int get_beats_per_bar () const
+    {
+        return m_beats_per_bar;
+    }
+
+    /**
+     * \setter m_beats_per_bar
+     */
+
+    void set_beats_per_bar (int bpm)
+    {
+        m_beats_per_bar = bpm;
+#ifdef SEQ64_JACK_SUPPORT
+        m_jack_asst.set_beats_per_measure(bpm);
+#endif
+    }
+
+    /**
+     * \getter m_beat_width
+     */
+
+    int get_beat_width () const
+    {
+        return m_beat_width;
+    }
+
+    /**
+     * \setter m_beat_width
+     */
+
+    void set_beat_width (int bw)
+    {
+        m_beat_width = bw;
+#ifdef SEQ64_JACK_SUPPORT
+        m_jack_asst.set_beat_width(bw);
+#endif
     }
 
     /**

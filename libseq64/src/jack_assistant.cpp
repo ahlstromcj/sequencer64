@@ -470,7 +470,7 @@ jack_assistant::set_position (midipulse currenttick)
     pos.beats_per_bar = m_beats_per_measure;
     pos.beat_type = m_beat_width;
     pos.ticks_per_beat = m_ppqn * 10;
-    pos.beats_per_minute = parent().get_beats_per_minute();
+    pos.beats_per_minute = parent().get_beats_per_minute();  // or jack->?
 
     /*
      * Compute BBT info from frame number.

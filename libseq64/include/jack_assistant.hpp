@@ -172,7 +172,7 @@ public:
     jack_assistant
     (
         perform & parent,
-        int bpminute    = SEQ64_DEFAULT_BPM,        // TODO TODO TODO
+        int bpminute    = SEQ64_DEFAULT_BPM,
         int ppqn        = SEQ64_USE_DEFAULT_PPQN,
         int bpm         = SEQ64_DEFAULT_BEATS_PER_MEASURE,
         int beatwidth   = SEQ64_DEFAULT_BEAT_WIDTH
@@ -226,6 +226,15 @@ public:
     }
 
     /**
+     * \setter m_beat_width
+     */
+
+    void set_beat_width (int bw)
+    {
+        m_beat_width = bw;
+    }
+
+    /**
      * \getter m_beats_per_measure
      */
 
@@ -235,12 +244,33 @@ public:
     }
 
     /**
+     * \setter m_beats_per_measure
+     */
+
+    void set_beats_per_measure (int bpm)
+    {
+        m_beats_per_measure = bpm;
+    }
+
+    /**
      * \getter m_beats_per_minute
      */
 
     int get_beats_per_minute () const
     {
         return m_beats_per_minute;
+    }
+
+    /**
+     * \setter m_beats_per_minute
+     *      For the future, changing the BPM (beats/minute) internally.  We
+     *      should consider adding validation.  However,
+     *      perform::set_beats_per_minute() does validate already.
+     */
+
+    void set_beats_per_minute (int bpminute)
+    {
+        m_beats_per_minute = bpminute;
     }
 
     bool init ();                       // init_jack ();
@@ -268,18 +298,6 @@ public:
     void set_ppqn (int ppqn)
     {
         m_ppqn = ppqn;
-    }
-    
-    /**
-     * \setter m_beats_per_minute
-     *      For the future, changing the BPM (beats/minute) internally.  We
-     *      should consider adding validation.  However,
-     *      perform::set_beats_per_minute() does validate already.
-     */
-
-    void set_beats_per_minute (int bpminute)
-    {
-        m_beats_per_minute = bpminute;
     }
 
 private:

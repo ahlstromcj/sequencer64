@@ -1,6 +1,6 @@
 Bugs and Additional Upgrade Ideas
 Chris Ahlstrom
-2015-10-27 to 2016-02-08 (New bugs)
+2015-10-27 to 2016-02-10 (New bugs)
 
 In no particular order...  "y" means "in progress", and "x" means it is
 basically done.
@@ -441,6 +441,7 @@ as "0" after rolling back.
 In general, the "roll back" should be added as a feature to sequencer64 -
 maybe it is there but I don't know where.
 '
+    FIXED.
 
 Date: Tue, 19 Jan 2016
 

@@ -1,6 +1,6 @@
 README for Sequencer64 0.9.9.17 (current branch = "fixups ongoing")
 Chris Ahlstrom
-2015-09-10 to 2016-02-07
+2015-09-10 to 2016-02-10
 
 The sequencer64 project is a continuation of sequencer24 to refactor it to be
 tighter and easier to transition to GTKmm 3, and much more.  By now, it is
@@ -10,33 +10,40 @@ intact.
 
 See the screenshot in the project root for some idea of what has changed
 visually.  It is an old friend with some user-interface lipstick and a lot of
-internal fixups.  And it still maintains backward-compatibility with seq24.
+internal fixups.  And it still maintains backward-compatibility with seq24,
+with the --legacy option.
 
 Major updates:
 
     -   Sequencer64 loads SMF 0 files and splits the channels into separate
         tracks/sequences.
+    -   JACK support has been improved.  Sequencer64 will track JACK transport
+        properly, and as Master, will provide the proper Bar:Beats:Ticks (BBT)
+        to other JACK clients.
     -   An event-editing window has been added, for viewing and editing a
         list of events, regardless of event type.  Still in progress; viewing
-        is fine, editing still needs some fixes.
+        is fine, editing basics work.
     -   Two synchronized song-editor windows can now be shown on screen, to
         better arrange songs with a large number of tracks.
     -   Added a more modern-looking, bolder font to the graphical user
-        interface, selectable at run-time.
+        interface, selectable at run-time, in the "user" configuration file.
     -   Added a --bus option for easier testing against a specific
         hardware/software synthesizer.
     -   Added a --ppqn option to try to play files at the right speed.  Still
         in progress, as the Seq24 PPQN value of 192 affects a lot of code!
     -   Added support for using the Mod4/Super/Windows key to keep the
         performance and sequence user-interfaces in editing mode, very helpful
-        for certain crappy laptop trackpads.
-    -   Added arrow key support. Also supplemented the mouse with "p" to start
-        paint/draw mode, and "x" to escape it, in the sequence and song editors.
-        The "l" and "r" keys allow arrow movement of the performance markers,
-        with "x" to escape this mode.  If notes are selected in the sequence
-        editor, the arrow keys can be used to move the notes in time and in
-        pitch.  In the performance editor, a pattern can be selected with the
-        mouse and moved right/left with the arrow keys.
+        for certain crappy laptop trackpads.  Extra "paint" key support also
+        gets around the limitations of some trackpads.
+    -   Added arrow key support to some of the windows and panes.
+        -   Also supplemented the mouse with "p" to start paint/draw mode, and
+            "x" to escape it, in the sequence and song editors.
+        -   The "l" and "r" keys allow arrow movement of the performance
+            markers, with "x" to escape this mode.
+        -   If notes are selected in the sequence editor, the arrow keys can
+            be used to move the notes in time and in pitch.  In the
+            performance editor, a pattern can be selected with the mouse and
+            moved right/left with the arrow keys.
     -   Tweaked the colors of some user-interface elements to make it
         easier to see them when combined.  For example, the background
         sequence is now colored, and the scale bars are now light grey.

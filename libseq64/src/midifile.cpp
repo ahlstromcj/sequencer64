@@ -643,8 +643,12 @@ midifile::parse_smf_1 (perform & p, int screenset, bool is_smf0)
                             else if (proprietary == c_timesig)
                             {
                                 timesig_set = true;
-                                seq.set_beats_per_bar(read_byte());
-                                seq.set_beat_width(read_byte());
+                                int bpm = int(read_byte());
+                                int bw = int(read_byte());
+                                seq.set_beats_per_bar(bpm);
+                                seq.set_beat_width(bw);
+                                p.set_beats_per_bar(bpm);
+                                p.set_beat_width(bw);
                                 len -= 2;
                             }
                             else if (proprietary == c_triggers)

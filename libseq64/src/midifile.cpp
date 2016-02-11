@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-02-10
+ * \updates       2016-02-11
  * \license       GNU GPLv2 or above
  *
  *  For a quick guide to the MIDI format, see, for example:
@@ -259,8 +259,9 @@ midifile::read_varinum ()
  *  This function opens a binary MIDI file and parses it into sequences
  *  and other application objects.
  *
- *  In addition to the standard MIDI track data in a normal track, Seq24
- *  adds four sequencer-specific events just before the end of the track:
+ *  In addition to the standard MIDI track data in a normal track,
+ *  Seq24/Sequencer64 adds four sequencer-specific events just before the end
+ *  of the track:
  *
 \verbatim
     c_triggers_new:     SeqSpec FF 7F 1C 24 24 00 08 00 00 ...
@@ -269,19 +270,21 @@ midifile::read_varinum ()
     c_midich:           SeqSpec FF 7F 05 24 24 00 02 06
 \endverbatim
  *
- *  Standard MIDI provides for the port and channel specifications, but
+ *  Note that only Sequencer64 adds "FF 7F len" to the SeqSpec data.
+ *
+ *  Standard MIDI provides for port and channel specification meta events, but
  *  they are apparently considered obsolete:
  *
- *  Obsolete meta-event:                Replacement:
- *
 \verbatim
+    Obsolete meta-event:                Replacement:
+
     MIDI port (buss):   FF 21 01 po     Device (port) name: FF 09 len text
     MIDI channel:       FF 20 01 ch
 \endverbatim
  *
  *  What do other applications use for specifying port/channel?
  *
- *  Note on the is-modified flag.  We now assume that the perform object is
+ *  Note on the is-modified flag:  We now assume that the perform object is
  *  starting from scratch when parsing.  But we let mainwnd tell the perform
  *  object when to clear everything with perform::clear_all().  The mainwnd
  *  does this for a new file, opening a file, but not for a file import, which
@@ -311,10 +314,12 @@ midifile::read_varinum ()
  *      screen-set available in Seq24).  This offset is added to the sequence
  *      number read in for the sequence, to place it elsewhere in the imported
  *      tune, and locate it in a specific screen-set.  If this parameter is
- *      non-zero, the we will assume that the perform data is dirty.
+ *      non-zero, then we will assume that the perform data is dirty.
  *
  * \return
- *      Returns true if the parsing succeeded.
+ *      Returns true if the parsing succeeded.  Note that the error status is
+ *      saved in m_error_is_fatal, and a message (to display later) is saved
+ *      in m_error_message.
  */
 
 bool
@@ -363,7 +368,7 @@ midifile::parse (perform & p, int screenset)
     file.close();
     m_error_message.clear();
     m_disable_reported = false;
-    m_smf0_splitter.initialize();
+    m_smf0_splitter.initialize();                   /* SMF 0 support        */
 
     midilong ID = read_long();                      /* read hdr chunk info  */
     midilong hdrlength = read_long();               /* stock MThd length    */
@@ -391,11 +396,11 @@ midifile::parse (perform & p, int screenset)
     }
     if (result)
     {
-        if (file_size > m_pos)                          /* any more left?   */
+        if (file_size > m_pos)                      /* any more data left?  */
             result = parse_proprietary_track(p, file_size);
 
         if (result && screenset != 0)
-             p.modify();
+             p.modify();                            /* modification flag    */
     }
     return result;
 }
@@ -403,8 +408,9 @@ midifile::parse (perform & p, int screenset)
 /**
  *  This function parses an SMF 0 binary MIDI file as if it were an SMF 1
  *  file, then, if more than one MIDI channel was encountered in the sequence,
- *  splits all of the channels in the sequence out separate sequences, and
- *  deletes the original sequence.
+ *  splits all of the channels in the sequence out into separate sequences.
+ *  The original sequence remains in place, in sequence slot 16 (the 17th
+ *  slot).  The user is responsible for deleting it if it is not needed.
  *
  * \param p
  *      Provides a reference to the perform object into which sequences/tracks
@@ -426,9 +432,9 @@ midifile::parse_smf_0 (perform & p, int screenset)
     {
         result = m_smf0_splitter.split(p, screenset);
         if (result)
-            p.modify();                     /* will prompt user for save    */
+            p.modify();                             /* to prompt for save   */
         else
-            errdump("No SMF 0 main sequence found, bad file");
+            errdump("No SMF 0 main sequence found, bad MIDI file");
     }
     return result;
 }
@@ -463,6 +469,15 @@ midifile::pow2 (int logbase2)
 
 /**
  *  Internal function to check for and report a bad length value.
+ *
+ * \param len
+ *      The length value to be checked, and it should be greater than 0.
+ *
+ * \param type
+ *      The type of meta event.  Used for displaying an error.
+ *
+ * \return
+ *      Returns true if the length parameter is valid.
  */
 
 bool
@@ -517,7 +532,7 @@ midifile::parse_smf_1 (perform & p, int screenset, bool is_smf0)
     char buss_override = usr().midi_buss_override();
     for (int curtrack = 0; curtrack < NumTracks; curtrack++)
     {
-        midipulse Delta;                             /* time                 */
+        midipulse Delta;                            /* MIDI delta time      */
         midipulse RunningTime;
         midipulse CurrentTime;
         char TrackName[TRACKNAME_MAX];              /* track name from file */
@@ -547,7 +562,7 @@ midifile::parse_smf_1 (perform & p, int screenset, bool is_smf0)
                 event e;                        /* safer here, if "slower"  */
                 Delta = read_varinum();         /* get time delta           */
                 laststatus = status;
-                status = m_data[m_pos];         /* get status               */
+                status = m_data[m_pos];         /* get next status byte     */
                 if ((status & 0x80) == 0x00)    /* is it a status bit ?     */
                     status = laststatus;        /* no, it's running status  */
                 else
@@ -556,11 +571,11 @@ midifile::parse_smf_1 (perform & p, int screenset, bool is_smf0)
                 e.set_status(status);           /* set the members in event */
 
                 /*
-                 * Current time is ppqn according to the file, we have to
-                 * adjust it to our own ppqn.  PPQN / ppqn gives us the
+                 * Current time is re the ppqn according to the file, we have
+                 * to adjust it to our own ppqn.  PPQN / ppqn gives us the
                  * ratio.  (This change is not enough; a song with a ppqn of
                  * 120 plays too fast in Seq24, which has a constant ppqn of
-                 * 192.)
+                 * 192.  Triggers must also be modified)
                  */
 
                 RunningTime += Delta;           /* add in the time          */
@@ -654,7 +669,7 @@ midifile::parse_smf_1 (perform & p, int screenset, bool is_smf0)
                             else if (proprietary == c_triggers)
                             {
                                 printf("Old-style triggers event encountered\n");
-                                int num_triggers = len / 4; /* why not 8??? */
+                                int num_triggers = len / 4;
                                 for (int i = 0; i < num_triggers; i += 2)
                                 {
                                     midilong on = read_long();
@@ -667,7 +682,7 @@ midifile::parse_smf_1 (perform & p, int screenset, bool is_smf0)
                             {
                                 /*
                                  *  If m_ppqn isn't set to the default value,
-                                 *  then we should scale these triggers
+                                 *  then we must scale these triggers
                                  *  accordingly, just as is done for the MIDI
                                  *  events!  Should split this out into
                                  *  functions, too.  Too much indenting.
@@ -891,7 +906,10 @@ midifile::parse_smf_1 (perform & p, int screenset, bool is_smf0)
             if (buss_override != SEQ64_BAD_BUSS)
                 seq.set_midi_bus(buss_override);
 
-            /* Sequence has been filled, add it to the performance  */
+            /*
+             * Sequence has been filled, add it to the performance or SMF 0
+             * splitter.
+             */
 
             if (is_smf0)
                 (void) m_smf0_splitter.log_main_sequence(seq, seqnum);

@@ -1,11 +1,13 @@
 Bugs and Additional Upgrade Ideas
 Chris Ahlstrom
-2015-10-27 to 2016-02-10 (New bugs)
+2015-10-27 to 2016-02-11 (New bugs)
 
 In no particular order...  "y" means "in progress", and "x" means it is
 basically done.
 
 -  See BUG REPORTS below.
+-  Make sure that Sequencer64 handles running status, via the files that
+   midicvt discusses.
 -  Need to clarify the behavior of JACK-Live mode versus using the controls of
    the pattern versus song window.
 -  We need to be able to empty out any sequences and close any editors
@@ -442,6 +444,16 @@ In general, the "roll back" should be added as a feature to sequencer64 -
 maybe it is there but I don't know where.
 '
     FIXED.
+    
+    However, if Sequencer64 is JACK slave, using qjackctl play button
+    has the following features:
+
+        -   It will not start Sequencer64.
+        -   Qjackctl will show time advancing, but no BBT information.
+
+    Adding Hydrogen as JACK Master then allows Hydrogen, Sequencer64, or Qjackctl     to start and stop the playback.
+
+    Is this correct behavior?
 
 Date: Tue, 19 Jan 2016
 

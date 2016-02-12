@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-14
- * \updates       2016-02-10
+ * \updates       2016-02-11
  * \license       GNU GPLv2 or above
  *
  *  This module was created from code that existed in the perform object.
@@ -35,6 +35,27 @@
  *  For the summaries of the JACK functions used in this module, and how
  *  the code is supposed to operate, see the Sequencer64 developer's reference
  *  manual.
+ *
+ * JACK Position Bits to support in Sequencer64, their values, their purpose,
+ * and the jack_position_t field they manage:
+ *
+ *  -	JackPositionBBT = 0x10. Bar, Beat, Tick.  The fields managed are bar,
+ *      beat, tick, bar_start_tick, beats_per_bar, beat_type, ticks_per_beat,
+ *      beats_per_minute.
+ *  -	JackPositionTimecode = 0x20. External timecode.  The fields managed
+ *      are frame_time and next_time.
+ *  -	JackBBTFrameOffset = 0x40. Offset of BBT information. The sole field
+ *      managed is bbt_offset, the frame offset for the BBT fields. The given
+ *      bar, beat, and tick values actually refer to a time frame_offset
+ *      frames before the start of the cycle.  It should be assumed to be 0 if
+ *      JackBBTFrameOffset is not set. If JackBBTFrameOffset is set and this
+ *      value is zero, the BBT time refers to the first frame of this cycle.
+ *      If the value is positive, the BBT time refers to a frame that many
+ *      frames before the start of the cycle. 
+ *
+ *	Only JackPositionBBT is supported so far.  Applications that support
+ *	JackPositionBBT are encouraged to also fill the JackBBTFrameOffset-managed
+ *	field (bbt_offset).
  */
 
 #include <stdio.h>
@@ -442,7 +463,7 @@ jack_assistant::position (bool to_left_tick, bool relocate)
  *  perform::position_jack() function.  We might be able to use it in other
  *  functions.
  *
- *  Computing the  BBT information from the frame number is relatively simple
+ *  Computing the BBT information from the frame number is relatively simple
  *  here, but would become complex if we supported tempo or time signature
  *  changes at specific locations in the transport timeline.
  *
@@ -505,6 +526,43 @@ jack_assistant::set_position (midipulse currenttick)
     }
 }
 
+#ifdef USE_NEW_EXPERIMENTAL_JACKBBTFRAMEOFFSET_CODE
+
+/**
+ *  Experimental code from Hydrogen.  Utterly unusable at present.
+ *
+ *  Take the beat-bar-tick (BBT) information from the JACK system, and
+ *  translate it to a new internal frame position and tick-size.  This code is
+ *  not relevant if Sequencer64 is the JACK Master.
+ *
+ *  Also see http://www.teuton.org/~gabriel/jack_midi_clock/.
+ */
+
+void
+jack_assistant::relocate_bbt ()
+{
+    float TPB = float(resolution / pos.beat_type * 4);
+    long bar_ticks = 0;
+    if (song_mode)
+    {
+        bar_ticks = get_tick_for_position(pos.bar - 1);
+        if (bar_ticks < 0)
+            bar_ticks = 0;
+    }
+    float ticks_to_locate = bar_ticks + (pos.beat - 1) * TPB +
+        pos.tick * (TPB / pos.ticks_per_beat);
+
+    float new_tick_size = get_sample_rate() * 60.0 / m_BPM / resolution;
+    if (new_tick_size == 0)
+        return;
+
+    long long new_frames = (long long)(tick_to_locate * new_tick_size);
+    if (pos.valid & JackBBTFrameOffset)
+        new_frames += pos.bbt_offset;
+}
+
+#endif  // USE_NEW_EXPERIMENTAL_JACKBBTFRAMEOFFSET_CODE
+
 /**
  *  A helper function for syncing up with JACK parameters.  Sequencer64 is not
  *  a slow-sync client, so that callback is not really needed, but we probably
@@ -565,23 +623,29 @@ jack_assistant::sync (jack_transport_state_t state)
     switch (state)
     {
     case JackTransportStopped:
+
         // infoprint("[JackTransportStopped]");
         break;
 
     case JackTransportRolling:
+
         // infoprint("[JackTransportRolling]");
         break;
 
     case JackTransportStarting:
+
         // infoprint("[JackTransportStarting]");
         parent().inner_start(rc().jack_start_mode());
         break;
 
     case JackTransportLooping:
+
         // infoprint("[JackTransportLooping]");
         break;
 
     default:
+
+        errprint("jack_assistant::sync(): unknown JACK transport state");
         break;
     }
     return result;
@@ -591,6 +655,11 @@ jack_assistant::sync (jack_transport_state_t state)
  *  Implemented second patch for JACK Transport from freddix/seq24 GitHub
  *  project.  Added the following function.  This function is supposed to
  *  allow seq24/sequencer64 to follow JACK transport.
+ *
+ *  For more advanced ideas, see the MetronomeJack::process_callback()
+ *  function in the klick project.  It plays a metronome tick after
+ *  calculating if it needs to or not.  (Maybe we could use it to provide our
+ *  own tick for recording patterns.)
  *
  * \param nframes
  *      Unused.
@@ -1234,6 +1303,13 @@ jack_timebase_callback
         }
     }
     pos->valid = JackPositionBBT;
+#ifdef USE_JACK_BBT_OFFSET
+    pos->valid = static_cast<jack_position_bits_t>
+    (
+        pos->valid | JackBBTFrameOffset
+    );
+    pos->bbt_offset = 0;
+#endif
 }
 
 /**

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-14
- * \updates       2016-02-11
+ * \updates       2016-02-12
  * \license       GNU GPLv2 or above
  *
  *  This module was created from code that existed in the perform object.
@@ -529,7 +529,8 @@ jack_assistant::set_position (midipulse currenttick)
 #ifdef USE_NEW_EXPERIMENTAL_JACKBBTFRAMEOFFSET_CODE
 
 /**
- *  Experimental code from Hydrogen.  Utterly unusable at present.
+ *  Experimental code from Hydrogen/src/core/src/IO/jack_output.cpp.  Utterly
+ *  unusable at present.
  *
  *  Take the beat-bar-tick (BBT) information from the JACK system, and
  *  translate it to a new internal frame position and tick-size.  This code is
@@ -1063,6 +1064,95 @@ jack_assistant::show_statuses (unsigned bits)
 
         ++jsp;
     }
+}
+
+/**
+ *  Shows a one-line summary of a JACK position structure.  This function is
+ *  meant for experimenting.
+ *
+ *  The fields of this structure are as follows.  Only the fields we care about
+ *  are shown.
+ *
+\verbatim
+    jack_nframes_t      frame_rate:     current frame rate (per second)
+    jack_nframes_t      frame:          frame number, always present
+    jack_position_bits_t valid:         which other fields are valid
+JackPositionBBT:
+    int32_t             bar:            current bar
+    int32_t             beat:           current beat-within-bar
+    int32_t             tick:           current tick-within-beat
+    double              bar_start_tick
+    float               beats_per_bar:  time signature "numerator"
+    float               beat_type:      time signature "denominator"
+    double              ticks_per_beat
+    double              beats_per_minute
+JackBBTFrameOffset:
+    jack_nframes_t      bbt_offset;     frame offset for the BBT fields
+\endverbatim
+ *
+ *  Only the most "important" and time-varying fields are shown. The format
+ *  output is brief and inscrutable unless you read this format example:
+ *
+\verbatim
+    nnnnn frame B:B:T N/D TPB BPM
+      ^     ^     ^   ^ ^  ^   ^
+      |     |     |   | |  |   |
+      |     |     |   | |  |    ------------ beats_per_minute
+      |     |     |   | |   ---------------- ticks_per_beat (PPQN * 10?)
+      |     |     |   |  ------------------- beat_type (denominator)
+      |     |     |    --------------------- beats_per_bar (numerator)
+      |     |      ------------------------- bar : beat : tick
+      |      ------------------------------- frame (number)
+       ------------------------------------- the "valid" bits
+\endverbatim
+ *
+ *  The "valid" field is shown as bits in the same bit order as shown here, but
+ *  represented as a five-character string, "nnnnn", n = 0 or 1:
+ *
+\verbatim
+    JackVideoFrameOffset = 0x100
+    JackAudioVideoRatio  = 0x080
+    JackBBTFrameOffset   = 0x040
+    JackPositionTimecode = 0x020
+    JackPositionBBT      = 0x010
+\endverbatim
+ *
+ *  We care most about nnnnn = "00101" in our experiments.  And we don't worry
+ *  about non-integer measurements... we truncate them to integers.
+ *
+ * \param pos
+ *      The JACK position structure to dump.
+ */
+
+void
+jack_assistant::show_position (const jack_position_t & pos)
+{
+    char temp[80];
+    std::string nnnnn = "00000";
+    if (pos.valid & JackVideoFrameOffset)
+        nnnnn[0] = '1';
+
+    if (pos.valid & JackAudioVideoRatio)
+        nnnnn[1] = '1';
+
+    if (pos.valid & JackBBTFrameOffset)
+        nnnnn[2] = '1';
+
+    if (pos.valid & JackPositionTimecode)
+        nnnnn[3] = '1';
+
+    if (pos.valid & JackPositionBBT)
+        nnnnn[4] = '1';
+
+    snprintf
+    (
+        temp, sizeof temp, "%s %ld %d:%d:%d %d/%d %d %d",
+        nnnnn.c_str(), long(pos.frame),
+        int(pos.bar), int(pos.beat), int(pos.tick),
+        int(pos.beats_per_bar), int(pos.beat_type),
+        int(pos.ticks_per_beat), int(pos.beats_per_minute)
+    );
+    infoprint(temp);
 }
 
 /**

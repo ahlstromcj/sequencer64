@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-09-17
- * \updates       2016-02-10
+ * \updates       2016-02-12
  * \license       GNU GPLv2 or above
  *
  *  This class contains a number of functions that used to reside in the
@@ -315,6 +315,7 @@ private:
     bool error_message (const std::string & msg);
     jack_client_t * client_open (const std::string & clientname);
     void show_statuses (unsigned bits);
+    void show_position (const jack_position_t & pos);
     int sync (jack_transport_state_t state = (jack_transport_state_t)(-1));
     void set_position (midipulse currenttick);
 

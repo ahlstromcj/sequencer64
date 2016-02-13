@@ -1,6 +1,6 @@
 Testing JACK in Sequencer64
 Chris Ahlstrom
-2016-01-16 to 2016-02-06
+2016-01-16 to 2016-02-13
 
 ===========================================================================
 
@@ -165,7 +165,177 @@ JACK:
 
 MIDI Clock Testing
 
-    Currently described in contrib/notes/bugs-to-investigate.txt.
+    Testing of clocking (and JACK positioning) starts by defining
+    SEQ64_USE_DEBUG_OUTPUT in the jack_assistant.cpp module, and
+    rebuilding Sequencer64.
+
+    Start qjackctl in order to get JACK running (use other methods if
+    you wish):
+
+        $ qjackctl &
+
+    Install and run the "klick" application:
+
+        $ klick -j -P &
+    
+    Run Sequencer64 from a console window, to see its internal messages:
+
+        $ ./Sequencer64/sequencer64 -J
+
+    Without loading a MIDI file, hit the Space bar to start "playback".
+    Note the slow debug output.  This comes from printing the position
+    information that the jack_process_callback() function sees.
+    After a bit, stop the playback, and note that the debug output
+    continues, but with the same values over and over. Then stop
+    Sequencer64.  The output might look something like this:
+
+    [JACK server already started]
+    [JACK transport master]
+    [JACK sync now enabled]
+    00000  1383424 014:1:0188 4/4   192 110 4324290
+    00001   100348 002:1:0287 4/4  1920 120 4322752
+    00001   202748 003:1:0707 4/4  1920 120 4322752
+    00001   305148 004:1:1127 4/4  1920 120 4322752
+    00001   407548 005:1:1547 4/4  1920 120 4322752
+    00001   509948 006:2:0047 4/4  1920 120 4322752
+    00001   537596 006:3:0314 4/4  1920 120 4322752
+    00001   537596 006:3:0314 4/4  1920 120 4322752
+    00001   537596 006:3:0314 4/4  1920 120 4322752
+
+    Now add Hydrogen to the mix.  Make sure it uses JACK transport, but
+    not as JACK Master.
+
+    $ Hydrogen &
+
+    Restart Sequencer64 and start the playback, and note the output.
+
+    [JACK server already started]
+    [JACK transport master]
+    [JACK sync now enabled]
+    00000        0 001:1:0000 4/4   192 110 -1049990144
+    00001        0 001:1:0000 4/4  1920 120 -1049990144
+    00001        0 001:1:0000 4/4  1920 120 -1049990144
+    00001   117758 002:1:1664 4/4  1920 120 4322752
+    00001   220158 003:2:0164 4/4  1920 120 4322752
+    00001   322558 004:2:0584 4/4  1920 120 4322752
+    00001   424958 005:2:1004 4/4  1920 120 4322752
+    00001   480254 005:4:1538 4/4  1920 120 4322752
+    00001   480254 005:4:1538 4/4  1920 120 4322752
+    00001   480254 005:4:1538 4/4  1920 120 4322752
+
+    In Sequencer64, go to File / Options / JACK/LASH.  Uncheck
+    JACK Master, click JACK Disconnect, and then JACK Connect.
+    (You might see some silly GTK error messages; we won't show them).
+
+    In Hydrogen, set it to JACK Master, and start playback there.
+    After a bit, stop playback.  Sample output from Sequencer64:
+
+    [JACK transport master]
+    [JACK sync now enabled]
+ A. 00000   480254 005:4:1538 4/4  1920 120 4322752     Seq64 starts, no play
+ B. 00001   480254 006:1:0020 4/4  1920 120 4322752
+    00001   480254 006:1:0020 4/4  1920 120 4322752
+    00001   480254 006:1:0020 4/4  1920 120 4322752
+    00001   480254 006:1:0020 4/4  1920 120 4322752
+    00001   480254 006:1:0020 4/4  1920 120 4322752
+ C. [JACK sync now disabled]                            Disconnect clicked
+    [JACK server already started]
+ D. [JACK transport slave]                              Connect clicked
+    [JACK sync now enabled]
+    00000   480254 006:1:0020 4/4  1920 120 4322752
+    00000   480254 006:1:0020 4/4  1920 120 4322752
+    00000   480254 006:1:0020 4/4  1920 120 4322752
+    00000   480254 006:1:0020 4/4  1920 120 4322752
+    00000   480254 006:1:0020 4/4  1920 120 4322752
+    00000   480254 006:1:0020 4/4  1920 120 4322752
+    00000   480254 006:1:0020 4/4  1920 120 4322752
+    00000   480254 006:1:0020 4/4  1920 120 4322752
+    00000   480254 006:1:0020 4/4  1920 120 4322752
+    00000   480254 006:1:0020 4/4  1920 120 4322752
+    00000   480254 006:1:0020 4/4  1920 120 4322752
+ E. 00001   480254 006:1:0036 4/4   192 110 4322752     Hydrogen now Master
+    00001   480254 006:1:0036 4/4   192 110 4322752
+ F. 00001   568318 007:1:0008 4/4   192 110 4322752     Hydrogen playback start
+    00001   670718 008:1:0056 4/4   192 110 4322752
+    00001   773118 009:1:0108 4/4   192 110 4322752
+    00001   875518 010:1:0160 4/4   192 110 4322752
+    00001   977918 011:2:0020 4/4   192 110 4322752
+    00001  1080318 012:2:0072 4/4   192 110 4322752
+    00001  1182718 013:2:0120 4/4   192 110 4322752
+    00001  1285118 014:2:0172 4/4   192 110 4322752
+ G. 00001        0 001:1:0000 4/4   192 110 -979988768  Hydrogen playback stop
+    00001        0 001:1:0000 4/4   192 110 -979988768
+    00001        0 001:1:0000 4/4   192 110 -979988768
+
+    We have labelled key points with capital letters.
+    
+    A. There are no JACK position bits set at first.  The initial
+       non-1:1:0 position is just a leftover from the previous test.
+       Maybe not?  The jack_position_t::ticks_per_beat field is 192 * 10,
+       where 192 is the default PPQN of Sequencer64.  The
+       jack_position_t::beats_per_minute field is also a Sequencer64
+       default, 120 BPM.  The jack_position_t::bbt_offset value is not
+       "valid".
+
+    B. Once Sequencer64 is registered fully, the JACK process callback
+       sees the JackPositionBBT bit set in the jack_position_t::valid
+       field.
+
+    C. The JACK Master setting of Sequencer64 is unchecked, and we
+       disconnect from JACK.
+       
+    D. We reconnect to JACK, now as Slave.  The JackPositionBBT bit then
+       turns off.
+    
+    E. We see Hydrogen to Master, and The JackPositionBBT bit then
+       turns on.  Of interest is why Hydrogen does not seem to multiply
+       the PPQN (192) by 10.0.  Is this a bug or is it deliberate?  Also of
+       interest is that the BPM (beats per minute) value goes to 110, even
+       though the Hydrogen display shows "120.00".  Again, is this a bug,
+       or is it deliberate?
+
+    F. Hydrogen starts the JACK transport.
+    
+    G. We stop Hydrogen playback.  Note how Hydrogen rewinds the
+       transport.  Is that something Sequencer64 ought to do?
+       Or should we implement a Pause functionality (if feasible) in
+       Sequencer64?  Also of interest is how the
+       jack_position_t::bbt_offset field goes negative.  Not sure if this
+       means anything.
+
+    Also see contrib/notes/bugs-to-investigate.txt starting at "BUG
+    REPORTS" for more issues (solved) to look at.
+
+    Now exit Hydrogen and Sequencer64, leaving qjackctl and klick running.
+    Note that hitting play in qjackctrl starts the timer running, but its
+    BBT display does not move, and klick produces no metronome sounds.
+
+    Start Sequencer64 as JACK Master again.  Now the qjackctl buttons
+    fully work.  BBT is shown, Sequencer64 moves, and klick produces the
+    metronome sounds.
+
+    Start Sequencer64 as JACK Slave.  We have to change this status from
+    the user-interface, currently [1].  We see this status while it is
+    Master:
+
+        00001   525312 006:2:1704 4/4  1920 120 1502342208
+
+    This status continues when we reconnect as JACK Slave.  Then, when we
+    use the qjackctl buttons again, it gets wonky:
+
+        00000    36864 000:8:0000 -2147483648/0     0   0 1502342208
+        00000    69632 000:8:0000 -2147483648/0     0   0 1502342208
+
+    and the results are the same as if no other clients are running: no
+    BBT time shown, and no metronome sounds from klick.
+
+    Note that this is normal.  Sequencer64 as slave registers no timebase
+    callback, and so cannot get access to position data for modification.
+
+    [1] Is this a bug:  -j from the command line doesn't turn off the JACK
+        Master option stored in the "rc" configuration file.  We have to 
+        change the settings in the user-interface and disconnect and
+        reconnect.
 
 ===========================================================================
 
@@ -241,5 +411,7 @@ Seq24 --> QSynth -----------> Audio 1     |
 
 And works fine for me. As Seq24 generates all the midi events, there are 
 no sync problems.
+
+===========================================================================
 
 # vim: sw=4 ts=4 wm=8 et ft=c

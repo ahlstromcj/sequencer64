@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-14
- * \updates       2016-02-12
+ * \updates       2016-02-13
  * \license       GNU GPLv2 or above
  *
  *  This module was created from code that existed in the perform object.
@@ -55,7 +55,12 @@
  *
  *	Only JackPositionBBT is supported so far.  Applications that support
  *	JackPositionBBT are encouraged to also fill the JackBBTFrameOffset-managed
- *	field (bbt_offset).
+ *	field (bbt_offset).  We are experimenting with this for now; there's not a
+ *	lot of material out there on the Web.
+ *
+ *	Lastly, one might be curious as to the origin of the name
+ *	"jack_assistant".  Well, it is simply so this class can be called
+ *	"jack_ass" for short :-D.
  */
 
 #include <stdio.h>
@@ -64,10 +69,64 @@
 #include "midifile.hpp"
 #include "perform.hpp"
 
+#define SEQ64_USE_DEBUG_OUTPUT          /* define for EXPERIMENTS only  */
+
+#ifdef SEQ64_JACK_SUPPORT
+
 namespace seq64
 {
 
-#ifdef SEQ64_JACK_SUPPORT
+#undef  USE_JACK_DEBUG_PRINT
+#ifdef USE_JACK_DEBUG_PRINT
+
+/**
+ *  Debugging code for JACK.  We made this static so that we can hide it in
+ *  this module and enable it without enabling all of the debug code available
+ *  in the Sequencer64 code base.  As a side-effect, we added a couple of
+ *  const accessors to jack_assistant so that outsiders can monitor some of
+ *  its status.
+ *
+ *  Now, this is really too much output, so you'll have to enable it
+ *  separately by defining USE_JACK_DEBUG_PRINT.  The difference in output
+ *  between this function and what jack_assitant::show_position() report may
+ *  be instructive.  LATER.
+ */
+
+static void
+jack_debug_print
+(
+    const jack_assistant & jack,
+    double current_tick,
+    double ticks_delta
+)
+{
+    static long s_output_counter = 0;
+    if ((s_output_counter++ % 100) == 0)
+    {
+        const jack_position_t & p = jack.get_jack_pos();
+        double jtick = jack.get_jack_tick();
+
+        /*
+         * double jack_tick = (p.bar-1) * (p.ticks_per_beat * p.beats_per_bar ) +
+         *  (p.beat-1) * p.ticks_per_beat + p.tick;
+         */
+
+        long pbar = long(jtick) / long(p.ticks_per_beat * p.beats_per_bar);
+        long pbeat = long(jtick) % long(p.ticks_per_beat * p.beats_per_bar);
+        pbeat /= long(p.ticks_per_beat);
+        long ptick = long(jtick) % long(p.ticks_per_beat);
+        printf
+        (
+            "* curtick=%4.2f delta=%4.2f BBT=%ld:%ld:%ld "
+            "jbbt=%d:%d:%d jtick=%4.2f\n"   //  mtick=%4.2f cdelta=%4.2f\n"
+            ,
+            current_tick, ticks_delta, pbar+1, pbeat+1, ptick,
+            p.bar, p.beat, p.tick, jtick    // , jack_tick, jtick - jack_tick
+        );
+    }
+}
+
+#endif  // USE_JACK_DEBUG_PRINT
 
 /**
  *  This constructor initializes a number of member variables, some
@@ -224,7 +283,11 @@ jack_assistant::init ()
 
         jackcode = jack_set_process_callback    /* see notes in banner */
         (
-            m_jack_client, jack_process_callback, NULL  // (void *) this
+#ifdef SEQ64_USE_DEBUG_OUTPUT
+            m_jack_client, jack_process_callback, this
+#else
+            m_jack_client, jack_process_callback, NULL
+#endif
         );
         if (jackcode != 0)
             return error_message("jack_set_process_callback() failed]");
@@ -479,19 +542,26 @@ jack_assistant::position (bool to_left_tick, bool relocate)
 void
 jack_assistant::set_position (midipulse currenttick)
 {
+#ifdef USE_USELESS_CODE
     jack_nframes_t rate = jack_get_sample_rate(m_jack_client);
+#endif
     jack_position_t pos;
 
     /*
      * Sufficient to edit all the fields we want????
      */
 
-    pos.valid = JackPositionBBT;        // flags what will be modified here
-
+    pos.valid = JackPositionBBT;                // flag what will be modified
     pos.beats_per_bar = m_beats_per_measure;
     pos.beat_type = m_beat_width;
     pos.ticks_per_beat = m_ppqn * 10;
-    pos.beats_per_minute = parent().get_beats_per_minute();  // or jack->?
+    
+    /*
+     * Let's use the new accessor.
+     * pos.beats_per_minute = parent().get_beats_per_minute();
+     */
+
+    pos.beats_per_minute = get_beats_per_minute();
 
     /*
      * Compute BBT info from frame number.
@@ -507,17 +577,28 @@ jack_assistant::set_position (midipulse currenttick)
     pos.bar_start_tick = pos.bar * pos.beats_per_bar * pos.ticks_per_beat;
 
     /*
-     * I think we will need to add to the "valid" flags; see transport.h of
-     * JACK.
+     * Modifying frame rate and frame cannot be set from clients, the server
+     * sets them; see transport.h of JACK.
      */
 
+#ifdef USE_USELESS_CODE
     pos.frame_rate = rate;
     pos.frame = (jack_nframes_t)
     (
         (currenttick * rate * 60.0) / (pos.ticks_per_beat * pos.beats_per_minute)
     );
+#endif
+
     pos.bar++;
     pos.beat++;
+
+#ifdef USE_JACK_BBT_OFFSET
+    pos->valid = static_cast<jack_position_bits_t>
+    (
+        pos->valid | JackBBTFrameOffset
+    );
+    pos->bbt_offset = 0;
+#endif
 
     int jackcode = jack_transport_reposition(m_jack_client, &pos);
     if (jackcode != 0)
@@ -662,38 +743,58 @@ jack_assistant::sync (jack_transport_state_t state)
  *  calculating if it needs to or not.  (Maybe we could use it to provide our
  *  own tick for recording patterns.)
  *
+ *  If debugging is enabled in the build, then this function outputs the
+ *  current JACK position information every couple of seconds, which can be
+ *  useful to examine the interactions with other JACK clients.
+ *
  * \param nframes
  *      Unused.
  *
  * \param arg
- *      Unused.
+ *      Used for debug output now.  Note that this function will be called
+ *      very often, and this pointer will be now, unless debugging is turned
+ *      on.
  *
  * \return
  *      Returns 0 on success, non-zero on error.
  */
 
 int
-jack_process_callback (jack_nframes_t /* nframes */, void * /* arg */ )
+jack_process_callback (jack_nframes_t /* nframes */, void * arg)
 {
-#ifdef SAMPLE_AUDIO_CODE    // disabled, shown only for reference & learning
-	jack_transport_state_t ts = jack_transport_query(client, NULL);
-	if (ts == JackTransportRolling)
+    const jack_assistant * jack = (jack_assistant *)(arg);
+    if (not_nullptr(jack))
     {
-        jack_default_audio_sample_t * in;
-        jack_default_audio_sample_t * out;
-		if (client_state == Init)
-			client_state = Run;
-
-		in = jack_port_get_buffer(input_port, nframes);
-		out = jack_port_get_buffer(output_port, nframes);
-		memcpy(out, in, sizeof (jack_default_audio_sample_t) * nframes);
-	}
-    else if (ts == JackTransportStopped)
-    {
-		if (client_state == Run)
-			client_state = Exit;
-	}
+#ifdef SEQ64_USE_DEBUG_OUTPUT
+        static long s_show_counter = 0;
+        if ((s_show_counter++ % 100) == 0)      /* slows down the output    */
+        {
+            jack_position_t pos;
+            (void) jack_transport_query(jack->client(), &pos);
+            jack->show_position(pos);
+        }
 #endif
+
+#ifdef SAMPLE_AUDIO_CODE    // disabled, shown only for reference & learning
+        jack_transport_state_t ts = jack_transport_query(jack->client(), NULL);
+        if (ts == JackTransportRolling)
+        {
+            jack_default_audio_sample_t * in;
+            jack_default_audio_sample_t * out;
+            if (client_state == Init)
+                client_state = Run;
+
+            in = jack_port_get_buffer(input_port, nframes);
+            out = jack_port_get_buffer(output_port, nframes);
+            memcpy(out, in, sizeof (jack_default_audio_sample_t) * nframes);
+        }
+        else if (ts == JackTransportStopped)
+        {
+            if (client_state == Run)
+                client_state = Exit;
+        }
+#endif
+    }
     return 0;
 }
 
@@ -844,8 +945,8 @@ jack_assistant::output (jack_scratchpad & pad)
 {
     if (m_jack_running)
     {
-        double jack_ticks_converted;                // = 0.0;
-        double jack_ticks_delta;                    // = 0.0;
+        double jack_ticks_converted;
+        double jack_ticks_delta;
         pad.js_init_clock = false;                  // no init until a good lock
         m_jack_transport_state = jack_transport_query(m_jack_client, &m_jack_pos);
         m_jack_frame_current = jack_get_current_transport_frame(m_jack_client);
@@ -854,14 +955,9 @@ jack_assistant::output (jack_scratchpad & pad)
         if (! ok)
             info_message("jack_assistant::output(): small frame rate");
 
-        /*
-         * Question:  Do we really need to check for the starting state here
-         * before we move on?  Should we use an OR?
-         */
-
         if
         (
-            m_jack_transport_state_last == JackTransportStarting &&
+            m_jack_transport_state_last == JackTransportStarting &&     // OR?
             m_jack_transport_state == JackTransportRolling
         )
         {
@@ -873,7 +969,7 @@ jack_assistant::output (jack_scratchpad & pad)
 
             jack_ticks_converted = m_jack_tick *        /* convert ticks */
             (
-                double(m_ppqn) /                        // 4.0 --> member below
+                double(m_ppqn) /                        // 4.0 --> use member?
                 (m_jack_pos.ticks_per_beat * m_jack_pos.beat_type / 4.0)
             );
             m_jack_parent.set_orig_ticks(long(jack_ticks_converted));
@@ -885,7 +981,7 @@ jack_assistant::output (jack_scratchpad & pad)
              * We need to make sure another thread can't modify these
              * values.  Also, maybe some of the parent (perform) values need to
              * move, to the scratch-pad, if not used directly in the perform
-             * object.  Why the "double" value?
+             * object.  Why the "double" value here?
              */
 
             if (pad.js_looping && pad.js_playback_mode)
@@ -929,8 +1025,7 @@ jack_assistant::output (jack_scratchpad & pad)
                 if (m_jack_pos.frame_rate > 1000)           /* usually 48000 */
                 {
                     m_jack_tick += (m_jack_frame_current - m_jack_frame_last) *
-                        m_jack_pos.ticks_per_beat *
-                        m_jack_pos.beats_per_minute /
+                        m_jack_pos.ticks_per_beat * m_jack_pos.beats_per_minute /
                         (m_jack_pos.frame_rate * 60.0);
                 }
                 else
@@ -941,7 +1036,7 @@ jack_assistant::output (jack_scratchpad & pad)
 
             jack_ticks_converted = m_jack_tick *
             (
-                double(m_ppqn) /
+                double(m_ppqn) /                                // use member?
                     (m_jack_pos.ticks_per_beat * m_jack_pos.beat_type / 4.0)
             );
             jack_ticks_delta = jack_ticks_converted - pad.js_ticks_converted_last;
@@ -951,8 +1046,8 @@ jack_assistant::output (jack_scratchpad & pad)
             m_jack_transport_state_last = m_jack_transport_state;
             pad.js_ticks_converted_last = jack_ticks_converted;
 
-#ifdef SEQ64_USE_DEBUG_OUTPUT
-            jack_debug_print(pad.js_current_tick, jack_ticks_delta);
+#ifdef USE_JACK_DEBUG_PRINT
+            jack_debug_print(*this, pad.js_current_tick, jack_ticks_delta);
 #endif
         }                               /* if dumping (sane state)  */
     }                                   /* if m_jack_running        */
@@ -1068,15 +1163,18 @@ jack_assistant::show_statuses (unsigned bits)
 
 /**
  *  Shows a one-line summary of a JACK position structure.  This function is
- *  meant for experimenting.
+ *  meant for experimenting and learning.
  *
- *  The fields of this structure are as follows.  Only the fields we care about
- *  are shown.
+ *  The fields of this structure are as follows.  Only the fields we care
+ *  about are shown.
  *
 \verbatim
     jack_nframes_t      frame_rate:     current frame rate (per second)
     jack_nframes_t      frame:          frame number, always present
     jack_position_bits_t valid:         which other fields are valid
+\endverbatim
+ *
+\verbatim
 JackPositionBBT:
     int32_t             bar:            current bar
     int32_t             beat:           current beat-within-bar
@@ -1086,6 +1184,9 @@ JackPositionBBT:
     float               beat_type:      time signature "denominator"
     double              ticks_per_beat
     double              beats_per_minute
+\endverbatim
+ *
+\verbatim
 JackBBTFrameOffset:
     jack_nframes_t      bbt_offset;     frame offset for the BBT fields
 \endverbatim
@@ -1094,9 +1195,10 @@ JackBBTFrameOffset:
  *  output is brief and inscrutable unless you read this format example:
  *
 \verbatim
-    nnnnn frame B:B:T N/D TPB BPM
-      ^     ^     ^   ^ ^  ^   ^
-      |     |     |   | |  |   |
+    nnnnn frame B:B:T N/D TPB BPM BBT
+      ^     ^     ^   ^ ^  ^   ^   ^
+      |     |     |   | |  |   |   |
+      |     |     |   | |  |   |    -------- bbt_offset (frame), even if invalid
       |     |     |   | |  |    ------------ beats_per_minute
       |     |     |   | |   ---------------- ticks_per_beat (PPQN * 10?)
       |     |     |   |  ------------------- beat_type (denominator)
@@ -1117,15 +1219,17 @@ JackBBTFrameOffset:
     JackPositionBBT      = 0x010
 \endverbatim
  *
- *  We care most about nnnnn = "00101" in our experiments.  And we don't worry
- *  about non-integer measurements... we truncate them to integers.
+ *  We care most about nnnnn = "00101" in our experiments (the most common
+ *  output will be "00001").  And we don't worry about non-integer
+ *  measurements... we truncate them to integers.  Change the output format if
+ *  you want to play with non-Western timings.
  *
  * \param pos
  *      The JACK position structure to dump.
  */
 
 void
-jack_assistant::show_position (const jack_position_t & pos)
+jack_assistant::show_position (const jack_position_t & pos) const
 {
     char temp[80];
     std::string nnnnn = "00000";
@@ -1146,11 +1250,12 @@ jack_assistant::show_position (const jack_position_t & pos)
 
     snprintf
     (
-        temp, sizeof temp, "%s %ld %d:%d:%d %d/%d %d %d",
+        temp, sizeof temp, "%s %8ld %03d:%d:%04d %d/%d %5d %3d %d",
         nnnnn.c_str(), long(pos.frame),
         int(pos.bar), int(pos.beat), int(pos.tick),
         int(pos.beats_per_bar), int(pos.beat_type),
-        int(pos.ticks_per_beat), int(pos.beats_per_minute)
+        int(pos.ticks_per_beat), int(pos.beats_per_minute),
+        int(pos.bbt_offset)
     );
     infoprint(temp);
 }
@@ -1174,7 +1279,7 @@ jack_assistant::show_position (const jack_position_t & pos)
  *      When the server shuts down, the client will find out.
  *
  * \return
- *      Returns true if JACK ...
+ *      Returns true if JACK has opened the client connection successfully.
  */
 
 jack_client_t *
@@ -1213,48 +1318,6 @@ jack_assistant::client_open (const std::string & clientname)
     }
     return result;
 }
-
-#ifdef SEQ64_USE_DEBUG_OUTPUT
-
-/**
- *  Debugging code for JACK.
- */
-
-void
-jack_assistant::jack_debug_print (double current_tick, double ticks_delta)
-{
-    double jack_tick = (m_jack_pos.bar-1) *
-        (m_jack_pos.ticks_per_beat * m_jack_pos.beats_per_bar ) +
-        (m_jack_pos.beat-1) * m_jack_pos.ticks_per_beat +
-        m_jack_pos.tick
-        ;
-    long pbar = long
-    (
-        long(m_jack_tick) /
-        long(m_jack_pos.ticks_per_beat * m_jack_pos.beats_per_bar)
-    );
-    long pbeat = long
-    (
-        long(m_jack_tick) %
-        long(m_jack_pos.ticks_per_beat * m_jack_pos.beats_per_bar)
-    );
-    pbeat /= long(m_jack_pos.ticks_per_beat);
-    long ptick = long(m_jack_tick) % long(m_jack_pos.ticks_per_beat);
-    printf
-    (
-        "* current_tick[%f] delta[%f]"
-        "* bbb [%2ld:%2ld:%4ld] "
-        "* jjj [%2d:%2d:%4d] "
-        "* jtick[%8.3f] mtick[%8.3f] delta[%8.3f]\n"
-        ,
-        current_tick, ticks_delta,
-        pbar+1, pbeat+1, ptick,
-        m_jack_pos.bar, m_jack_pos.beat, m_jack_pos.tick,
-        m_jack_tick, jack_tick, m_jack_tick-jack_tick
-    );
-}
-
-#endif  // SEQ64_USE_DEBUG_OUTPUT
 
 /**
  *  The JACK timebase function defined here sets the JACK position structure.
@@ -1426,38 +1489,9 @@ jack_shutdown_callback (void * arg)
     }
 }
 
-#ifdef SEQ64_USE_DEBUG_OUTPUT
-
-/**
- *  Print the JACK position.
- *
- * \param pos
- *      The JACK position to print.
- */
-
-void
-print_jack_pos (jack_position_t & pos, const std::string & tag)
-{
-    printf
-    (
-        "print_jack_pos(): '%s'\n"
-        "    B:B:T = %d:%d:%d; bar_start_tick = %f\n"
-        "    beats/bar = %f; beat_type = %f\n"
-        "    ticks/beat = %f; beats/minute %f\n"
-        "    frame = %d; frame_time = %f; frame_rate = %d\n",
-        tag.c_str(),
-        pos.bar, pos.beat, pos.tick, pos.bar_start_tick,
-        pos.beats_per_bar, pos.beat_type,
-        pos.ticks_per_beat, pos.beats_per_minute,
-        int(pos.frame), pos.frame_time, int(pos.frame_rate)
-    );
-}
-
-#endif
+}           // namespace seq64
 
 #endif      // SEQ64_JACK_SUPPORT
-
-}           // namespace seq64
 
 /*
  * jack_assistant.cpp

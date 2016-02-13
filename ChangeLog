@@ -1,3 +1,45 @@
+2016-02-12  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* contrib/code/jack_process_callback.cpp,
+	libseq64/include/jack_assistant.hpp,
+	libseq64/src/jack_assistant.cpp: Added sample code and a
+	show-position function for experimenting with various JACK
+	application BBT and BBT Frame combinations.  Also some notes
+	about JackBBTFrameOffset.
+
+2016-02-11  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* contrib/notes/bugs_to_investigate.txt, contrib/vim-syntax/c.vim,
+	contrib/vim-syntax/cpp.vim, libseq64/src/midifile.cpp: Fixed
+	comments in midifile, added vim syntax files for our MIDI typedefs.
+
+2016-02-10  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* README, contrib/notes/bugs_to_investigate.txt,
+	libseq64/include/midibyte.hpp, libseq64/include/jack_assistant.hpp,
+	libseq64/include/perform.hpp, libseq64/include/user_settings.hpp,
+	libseq64/src/jack_assistant.cpp, libseq64/src/midifile.cpp,
+	libseq64/src/perform.cpp, libseq64/src/sequence.cpp:
+	Added support for saving the c_bpmtag value in the perform instance.
+	Interim check-in, added BPM and BW members to perform, get from
+	MIDI file.  Refactoring tempo support into perform and jack_assistant,
+	in progress.
+
+2016-02-09  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* contrib/notes/jack.txt, contrib/notes/timecode.txt,
+	contrib/astylerc, libseq64/include/jack_assistant.hpp,
+	libseq64/src/jack_assistant.cpp, libseq64/src/perform.cpp: Added
+	code to JACK timebase function needed to properly calculate BBT for
+	rewinding JACK transport, still a little more work to do, though.
+	Added JACK timecode notes.
+
+2016-02-08  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* contrib/notes/bugs_to_investigate.txt, doc/dox/midi_parsing.dox: 
+	Updated bug notes, adding running status to MIDI parsing
+	documenation.
+
 2016-02-07  Chris Ahlstrom <ahlstromcj@gmail.com>
 
 	* INSTALL, bootstrap, etc:
@@ -50,7 +92,7 @@
 	get_jack_ticks(), and disabled the Seq24 0.9.3 patch, as all messed
 	up the MIDI clock to some degree.
 
-2016-02-05  Chris Ahlstrom <ahlstrom@centiped>
+2016-02-05  Chris Ahlstrom  <ahlstromcj@gmail.com>
 
 	* contrib/configs/dot-seq24rc, contrib/dot-seq24rc,
 	contrib/jack_timebase_callback.cpp, libseq64/include/globals.h,

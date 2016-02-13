@@ -1,6 +1,6 @@
 Notes About JACK
 Chris Ahlstrom
-2016-01-14 to 2016-02-09
+2016-01-14 to 2016-02-13
 
 Also be sure to read through the source code, especially the jack_assistant
 module.  The following is a note about seq24:
@@ -42,7 +42,12 @@ However, for Sequencer64, only one of the three needs to be set
     Enable Transport Master
     Enable Master Conditional
 
-We still have some work to do to improve our JACK handling.
+We still have some work to do to improve our JACK handling.  In addition,
+the JACK reference manual recommends handling JackBBTFrameOffset as well,
+but does not really say enough about it.  Information on this topic is
+very difficult to find elsewhere, and it seems that not a lot of MIDI
+projects use it.  So we are experimenting with that.  See the
+jack_testing.txt file.
 
 Now, Hydrogen as JACK Master handles the situation where we tell QJackCtl
 to stop, then rewind, then continue.  Hydrogen gives back the information
@@ -63,13 +68,12 @@ When the last two values are set equal, bbt_frame_offset is 0, and
 indicates to stop re-syncing in every cycled when stopped.
 
 In the timebase callback:
-
    
     unsigned long PlayTick = ( pos->frame - me->bbt_frame_offset ) /
         me->m_transport.m_nTickSize;
 
     pos->bar = H->getPosForTick ( PlayTick );
 
-
+Duhhhh....
 
 # vim: sw=4 ts=4 wm=8 et ft=sh

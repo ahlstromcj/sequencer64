@@ -1,6 +1,6 @@
 README for Sequencer64 0.9.9.17 (current branch = "fixups ongoing")
 Chris Ahlstrom
-2015-09-10 to 2016-02-10
+2015-09-10 to 2016-02-13 (initial work started in July of 2015)
 
 The sequencer64 project is a continuation of sequencer24 to refactor it to be
 tighter and easier to transition to GTKmm 3, and much more.  By now, it is
@@ -19,7 +19,11 @@ Major updates:
         tracks/sequences.
     -   JACK support has been improved.  Sequencer64 will track JACK transport
         properly, and as Master, will provide the proper Bar:Beats:Ticks (BBT)
-        to other JACK clients.
+        to other JACK clients.  We are still investigating JackBBTFrameOffset
+        support.
+    -   MIDI Clock support has been fixed.  Sequencer64 will now interact
+        well with QJackCtl, Hydrogen, and Klick (command-line metronome).
+        See the testing described in contrib/notes/jack-testing.txt.
     -   An event-editing window has been added, for viewing and editing a
         list of events, regardless of event type.  Still in progress; viewing
         is fine, editing basics work.
@@ -31,6 +35,7 @@ Major updates:
         hardware/software synthesizer.
     -   Added a --ppqn option to try to play files at the right speed.  Still
         in progress, as the Seq24 PPQN value of 192 affects a lot of code!
+        It basically seems to work, but bugs may still lurk.
     -   Added support for using the Mod4/Super/Windows key to keep the
         performance and sequence user-interfaces in editing mode, very helpful
         for certain crappy laptop trackpads.  Extra "paint" key support also

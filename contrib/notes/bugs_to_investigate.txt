@@ -1,6 +1,6 @@
 Bugs and Additional Upgrade Ideas
 Chris Ahlstrom
-2015-10-27 to 2016-02-11 (New bugs)
+2015-10-27 to 2016-02-13 (New bugs)
 
 In no particular order...  "y" means "in progress", and "x" means it is
 basically done.
@@ -273,7 +273,6 @@ x  I forgotten instructions of use. 'p' to activate paint, 'P' (shift p) to
    >           if ( a_p0->state & GDK_CONTROL_MASK ){
       We have now incorporated this feature (2015-11-01).
 
-
 BUG REPORTS:
 
 Date: Sat, 19 Dec 2015 20:48:34 -0800
@@ -336,6 +335,8 @@ options
 In seq24, jack transport synchronization worked better (mostly) Seq24 does not
 send correct Midi clock signals though
 
+    FIXED
+
 Date: Tue, 02 Feb 2016 15:22:42 -0800
 From: Daniel Appelt <notifications@github.com>
 To: ahlstromcj/sequencer64 <sequencer64@noreply.github.com>
@@ -354,6 +355,7 @@ In theory, the problem should also be visible using a MIDI monitor application
 connected to an ALSA Midi port that receives clock signals from sequencer64
 (via first tab in options panel)
 
+    FIXED
 
 Date: Tue, 02 Feb 2016 15:42:55 -0800
 From: Daniel Appelt <notifications@github.com>
@@ -423,6 +425,8 @@ MY NOTES:
 
 END OF MY NOTES.
 
+    FIXED
+
 Date: Sun, 07 Feb 2016 16:04:09 -0800
 From: Daniel Appelt <notifications@github.com>
 To: ahlstromcj/sequencer64 <sequencer64@noreply.github.com>
@@ -453,7 +457,9 @@ maybe it is there but I don't know where.
 
     Adding Hydrogen as JACK Master then allows Hydrogen, Sequencer64, or Qjackctl     to start and stop the playback.
 
-    Is this correct behavior?
+    It seems at least one JACK Master is needed.  Is this correct behavior?
+
+    THAT SEEMS LIKELY.
 
 Date: Tue, 19 Jan 2016
 
@@ -505,6 +511,8 @@ bad length value following the c_mutegroups = 0x24240009 specification.
     This is then followed with 00 FF 7F 05 24 24 00 11 00 and 00 FF 7F....
 
     Could this be a bug in midicvt?
+
+    WORK SUSPENDED FOR NOW.
 
 Note that we added time-signature and tempo support, but have not fixed the
 garbage that appears via midicvt.

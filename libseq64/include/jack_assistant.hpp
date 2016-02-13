@@ -27,8 +27,8 @@
  *
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
- * \date          2015-09-17
- * \updates       2016-02-12
+ * \date          2015-07-23
+ * \updates       2016-02-13
  * \license       GNU GPLv2 or above
  *
  *  This class contains a number of functions that used to reside in the
@@ -120,20 +120,14 @@ typedef struct
 
 class jack_assistant
 {
-
+    friend int jack_process_callback (jack_nframes_t nframes, void * arg);
+    friend void jack_shutdown_callback (void * arg);
     friend int jack_sync_callback
     (
         jack_transport_state_t state,
         jack_position_t * pos,
         void * arg
     );
-
-#ifdef SEQ64_JACK_SESSION
-    friend void jack_session_callback (jack_session_event_t * ev, void * arg);
-#endif
-
-    friend void jack_shutdown_callback (void * arg);
-
     friend void jack_timebase_callback
     (
         jack_transport_state_t state,
@@ -142,6 +136,10 @@ class jack_assistant
         int new_pos,
         void * arg
     );
+
+#ifdef SEQ64_JACK_SESSION
+    friend void jack_session_callback (jack_session_event_t * ev, void * arg);
+#endif
 
 private:
 
@@ -300,32 +298,51 @@ public:
         m_ppqn = ppqn;
     }
 
+    /**
+     * \getter m_jack_tick
+     */
+
+    double get_jack_tick () const
+    {
+        return m_jack_tick;
+    }
+    
+    /**
+     * \getter m_jack_pos
+     */
+
+    const jack_position_t & get_jack_pos () const
+    {
+        return m_jack_pos;
+    }
+
 private:
 
     /**
-     * \sett m_jack_running
+     * \setter m_jack_running
      */
 
     void set_jack_running (bool flag)
     {
         m_jack_running = flag;
     }
+    
+    /**
+     * \getter m_jack_client
+     */
+
+    jack_client_t * client () const
+    {
+        return m_jack_client;
+    }
 
     bool info_message (const std::string & msg);
     bool error_message (const std::string & msg);
     jack_client_t * client_open (const std::string & clientname);
     void show_statuses (unsigned bits);
-    void show_position (const jack_position_t & pos);
+    void show_position (const jack_position_t & pos) const;
     int sync (jack_transport_state_t state = (jack_transport_state_t)(-1));
     void set_position (midipulse currenttick);
-
-#ifdef SEQ64_USE_DEBUG_OUTPUT
-    void jack_debug_print
-    (
-        double current_tick,
-        double ticks_delta
-    );
-#endif
 
 };
 
@@ -360,10 +377,6 @@ extern int jack_process_callback (jack_nframes_t nframes, void * arg);
 
 #ifdef SEQ64_JACK_SESSION
 extern void jack_session_callback (jack_session_event_t * ev, void * arg);
-#endif
-
-#ifdef SEQ64_USE_DEBUG_OUTPUT
-extern void print_jack_pos (jack_position_t & jack_pos, const std::string & tag);
 #endif
 
 #endif  // SEQ64_JACK_SUPPORT

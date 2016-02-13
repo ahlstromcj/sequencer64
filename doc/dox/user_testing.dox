@@ -13,13 +13,17 @@ This document describes basic user testing of Sequencer64 using the
 Yoshimi software synthesizer.
 
 \page       user_testing_page User Testing of Sequencer64 with Yoshimi
-\author     Chris Ahlstrom 2015-10-18
+\author     Chris Ahlstrom 2016-02-13
 
 \section user_testing_intro Introduction
 
 This section describes user testing of Sequencer64 using Yoshimi.
 It will expand as we work our way through all the many use-cases
 that can be achieved with Sequencer64 and Yoshimi.
+
+Please note that the most advanced and recent testing can be found currently in
+the document <code>contrib/notes/jack-testing.txt</code>.  We will eventually
+merge the final tests here... someday.
 
 \section user_testing_smoke Smoke Test
 

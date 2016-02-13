@@ -27,3 +27,4 @@ perform module.
    m_screenset [replaces m_playscreen_offset in the select_mute_group()
    function, but the usage makes it essentially replace m_playing_screen.
 
+# vim: sw=4 ts=4 wm=8 et ft=sh

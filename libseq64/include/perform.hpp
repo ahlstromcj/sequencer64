@@ -612,7 +612,7 @@ public:
      * \getter m_starting_tick
      */
 
-    midipulse get_starting_tick () const
+    midipulse get_start_tick () const
     {
         return m_starting_tick;
     }

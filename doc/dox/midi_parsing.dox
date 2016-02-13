@@ -12,7 +12,7 @@
 This document describes how Sequencer64 parses a MIDI file.
 
 \page       midi_parsing_page MIDI File Parsing in Sequencer64
-\author     Chris Ahlstrom 2016-02-07
+\author     Chris Ahlstrom 2016-02-13
 
 \section midi_parsing_intro Introduction
 
@@ -220,9 +220,9 @@ calls typically made while parsing a MIDI track:
       -# <code>sequence::set_midi_bus()</code>
    -# <code>xxxxx::yyyy()</code>
 
-\subsection midi_parsing_smf_1_meta  Meta Events
+\subsection midi_parsing_smf_1_meta_sum  Meta Events Summary
 
-Here, we summarize the MIDI meta events.
+Here, we summarize the MIDI meta events for your edification.
 
    -# <code>FF 00 02 ssss</code>: Sequence Number.
    -# <code>FF 01 len text</code>: Text Event.

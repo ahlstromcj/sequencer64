@@ -143,7 +143,7 @@ seqtime::redraw ()
         32     4m        2          1          1       1
         64     2m        1          1          1       1
         128    1m        1          1          1       1
-\ endverbatim
+\endverbatim
  */
 
 void

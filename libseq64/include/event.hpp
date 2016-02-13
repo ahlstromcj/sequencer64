@@ -285,6 +285,12 @@ public:
     /**
      *  Checks the channel number to see if the event's channel matches it, or
      *  if the event has no channel.  Used in the SMF 0 track-splitting code.
+     *
+     * \param channel
+     *      The channel to check.
+     *
+     * \return
+     *      Returns true if the given channel matches the event's channel.
      */
 
     bool check_channel (int channel) const

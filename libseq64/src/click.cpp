@@ -125,6 +125,9 @@ click::click (const click & rhs)
  * \param rhs
  *      Provies the source object to be assigned from.  The assignment is not
  *      made if "this" has the same address as this parameter.
+ *
+ * \return
+ *      Returns a reference to self for usage in a string of assignments.
  */
 
 click &

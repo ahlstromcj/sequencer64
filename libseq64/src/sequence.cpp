@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-02-06
+ * \updates       2016-02-13
  * \license       GNU GPLv2 or above
  *
  *  The functionality of this class also includes handling some of the
@@ -456,7 +456,8 @@ sequence::play (midipulse tick, bool playback_mode)
 
 /**
  *  Resets everything to zero.  This function is used when the sequencer
- *  stops.
+ *  stops.  This function currently sets m_last_tick = 0, but we would like to
+ *  avoid that if doing a pause, rather than a stop, of playback.
  *
  * \threadsafe
  */
@@ -2287,7 +2288,7 @@ sequence::reset (bool live_mode)
     bool state = get_playing();
     off_playing_notes();
     set_playing(false);
-    zero_markers();
+    zero_markers();                     /* also sets the "last-tick" value  */
     if (! live_mode)
         set_playing(state);
 }

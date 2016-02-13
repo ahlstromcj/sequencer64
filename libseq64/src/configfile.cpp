@@ -69,7 +69,7 @@ configfile::configfile (const std::string & name)
  *
  *  Member m_line is a "global" return value.
  *
- * @param a_file
+ * @param file
  *      Points to an input stream.
  */
 

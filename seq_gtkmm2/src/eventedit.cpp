@@ -445,9 +445,6 @@ eventedit::set_seq_ppqn (const std::string & p)
 
 /**
  *  Sets m_label_ev_count to the number-of-events string.
- *
- * \param c
- *      The number-of-events string for the sequence.
  */
 
 void
@@ -576,11 +573,6 @@ eventedit::v_adjustment (int value, int lower, int upper)
 /**
  *  Helper wrapper for calling perfroll::queue_draw() for one or both
  *  eventedits.
- *
- * \param forward
- *      If true (the default), pass the call to the peer.  When passing this
- *      call to the peer, this parameter is set to false to prevent an
- *      infinite loop and the resultant stack overflow.
  */
 
 void
@@ -728,12 +720,15 @@ eventedit::handle_cancel ()
 /**
  *  Handles a drawing timeout.  It redraws events in the the eventslots
  *  objects.  This function is called frequently and continuously.
+ *
+ * \return
+ *      Always returns true.  We don't want it doing anything yet.
  */
 
 bool
 eventedit::timeout ()
 {
-    return true; // m_eventslots->redraw_dirty_events();
+    return true;                        // m_eventslots->redraw_dirty_events();
 }
 
 /**
@@ -770,6 +765,12 @@ eventedit::on_realize ()
  *
  *  HOWEVER, there are still some issues with "/", so you'll just have to
  *  click the button to insert an event.
+ *
+ * \param ev
+ *      The key event to process.
+ *
+ * \return
+ *      Returns true if the event got handled somewhere along the line.
  */
 
 bool

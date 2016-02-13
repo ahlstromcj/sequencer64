@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-10-30
- * \updates       2015-11-11
+ * \updates       2016-02-13
  * \license       GNU GPLv2 or above
  *
  *  Man, we need to learn a lot more about triggers.  One important thing to
@@ -187,9 +187,9 @@ triggers::play (midipulse & start_tick, midipulse & end_tick)
         if (trigger_state)                  /* we are turning on */
         {
             if (trigger_tick < m_parent.m_last_tick)
-                start_tick = m_parent.m_last_tick;
+                start_tick = m_parent.m_last_tick;  /* side-effect */
             else
-                start_tick = trigger_tick;
+                start_tick = trigger_tick;          /* side-effect */
 
             m_parent.set_playing(true);
         }
@@ -522,8 +522,14 @@ L       R
  */
 
 /**
- *  Copies triggers to...
+ *  Copies triggers to a point distant from a given tick.
  *
+ * \param starttick
+ *      The current location of the triggers.
+ *
+ * \param distance
+ *      The distance away from the current location to which to copy the
+ *      triggers.
  */
 
 void
@@ -534,15 +540,17 @@ triggers::copy (midipulse starttick, midipulse distance)
     move(starttick, distance, true);
     for (List::iterator i = m_triggers.begin(); i != m_triggers.end(); ++i)
     {
-        if (i->tick_start() >= from_start_tick && i->tick_start() <= from_end_tick)
+        midipulse tickstart = i->tick_start();
+        if (tickstart >= from_start_tick && tickstart <= from_end_tick)
         {
+            midipulse tickend = i->tick_end();
             trigger t;
             t.offset(i->offset());
             t.selected(false);
-            t.tick_start(i->tick_start() - distance);
-            if (i->tick_end() <= from_end_tick)
-                t.tick_end(i->tick_end() - distance);
-            else if (i->tick_end() > from_end_tick)
+            t.tick_start(tickstart - distance);
+            if (tickend <= from_end_tick)
+                t.tick_end(tickend - distance);
+            else if (tickend > from_end_tick)
                 t.tick_end(from_start_tick - 1);
 
             t.increment_offset(m_length - (distance % m_length));
@@ -557,13 +565,27 @@ triggers::copy (midipulse starttick, midipulse distance)
 }
 
 /**
- *  Moves triggers in the trigger-list.
+ *  Moves triggers in the trigger-list.  There's no way to optimize this by
+ *  saving tick values, as they are potentially modified at each step.
+ *
+ * \param starttick
+ *      The current location of the triggers.
+ *
+ * \param distance
+ *      The distance away from the current location to which to move the
+ *      triggers.
+ *
+ * \param direction
+ *      If true, the triggers are moved forward. If false, the triggers are
+ *      moved backward.
  */
 
 void
 triggers::move
 (
-    midipulse starttick, midipulse distance, bool direction
+    midipulse starttick,
+    midipulse distance,
+    bool direction
 )
 {
     midipulse endtick = starttick + distance;
@@ -585,7 +607,8 @@ triggers::move
         }
         if
         (
-            i->tick_start() >= starttick && i->tick_end() <= endtick && ! direction
+            i->tick_start() >= starttick &&
+            i->tick_end() <= endtick && ! direction
         )
         {
             m_triggers.erase(i);
@@ -944,7 +967,10 @@ triggers::paste ()
 bool
 triggers::next
 (
-    midipulse * tick_on, midipulse * tick_off, bool * selected, midipulse * offset
+    midipulse * tick_on,
+    midipulse * tick_off,
+    bool * selected,
+    midipulse * offset
 )
 {
     while (m_iterator_draw_trigger != m_triggers.end())
@@ -987,6 +1013,9 @@ triggers::next_trigger ()
 
 /**
  *  Prints a list of the currently-held triggers.
+ *
+ * \param seqname
+ *      A tag name to accompany the print-out, for the human to read.
  */
 
 void

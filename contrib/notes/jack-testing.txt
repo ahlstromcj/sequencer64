@@ -1,4 +1,4 @@
-Testing JACK in Sequencer64
+User Testing of JACK in Sequencer64
 Chris Ahlstrom
 2016-01-16 to 2016-02-13
 
@@ -294,7 +294,9 @@ MIDI Clock Testing
        the PPQN (192) by 10.0.  Is this a bug or is it deliberate?  Also of
        interest is that the BPM (beats per minute) value goes to 110, even
        though the Hydrogen display shows "120.00".  Again, is this a bug,
-       or is it deliberate?
+       or is it deliberate?  Well, the intended BPM is 110, but
+       Sequencer64-as-Master changes it to 120, then Hydrogen-as-Master
+       changes it to 110, but doesn't update its display.  A minor bug.
 
     F. Hydrogen starts the JACK transport.
     
@@ -415,6 +417,16 @@ Seq24 --> QSynth -----------> Audio 1     |
 
 And works fine for me. As Seq24 generates all the midi events, there are 
 no sync problems.
+
+===========================================================================
+ TO DO LIST
+===========================================================================
+
+    jack_delay
+
+    jack_demolition:
+
+        http://plugin.org.uk/releases/jack-demolition/jack-demolition.tar.gz
 
 ===========================================================================
 

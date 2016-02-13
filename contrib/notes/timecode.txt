@@ -97,3 +97,4 @@ https://github.com/hydrogen-music/hydrogen/issues/190
    in this setup both hydrogen instances are in perfect sync, so it seems to
    be an issue with hydrogen as master
 
+# vim: sw=4 ts=4 wm=8 et ft=sh

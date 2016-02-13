@@ -84,8 +84,12 @@ event_list::event_key::event_key (const event & rhs)
 /**
  *  Provides the minimal operator needed to sort events using an event_key.
  *
- * \param e
+ * \param rhs
  *      Provides the event key to be compared against.
+ *
+ * \return
+ *      Returns true if the rank and timestamp of the current object are less
+ *      than those of rhs.
  */
 
 bool

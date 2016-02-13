@@ -69,7 +69,8 @@
 #include "midifile.hpp"
 #include "perform.hpp"
 
-#undef  SEQ64_USE_DEBUG_OUTPUT          /* define for EXPERIMENTS only  */
+#define SEQ64_USE_DEBUG_OUTPUT          /* define for EXPERIMENTS only  */
+#define USE_JACK_BBT_OFFSET             /* another experiment           */
 
 #ifdef SEQ64_JACK_SUPPORT
 
@@ -281,9 +282,9 @@ jack_assistant::init ()
          * properly, seq24 doesn't use this.  But it doesn't hurt to set it up.
          */
 
-        jackcode = jack_set_process_callback    /* see notes in banner */
+        jackcode = jack_set_process_callback        /* see notes in banner  */
         (
-#ifdef SEQ64_USE_DEBUG_OUTPUT
+#ifdef SEQ64_USE_DEBUG_OUTPUT                       /* EXPERIMENTS          */
             m_jack_client, jack_process_callback, this
 #else
             m_jack_client, jack_process_callback, NULL
@@ -542,32 +543,13 @@ jack_assistant::position (bool to_left_tick, bool relocate)
 void
 jack_assistant::set_position (midipulse currenttick)
 {
-#ifdef USE_USELESS_CODE
-    jack_nframes_t rate = jack_get_sample_rate(m_jack_client);
-#endif
     jack_position_t pos;
-
-    /*
-     * Sufficient to edit all the fields we want????
-     */
-
     pos.valid = JackPositionBBT;                // flag what will be modified
     pos.beats_per_bar = m_beats_per_measure;
     pos.beat_type = m_beat_width;
     pos.ticks_per_beat = m_ppqn * 10;
-    
-    /*
-     * Let's use the new accessor.
-     * pos.beats_per_minute = parent().get_beats_per_minute();
-     */
-
     pos.beats_per_minute = get_beats_per_minute();
-
-    /*
-     * Compute BBT info from frame number.
-     */
-
-    currenttick *= 10;
+    currenttick *= 10;              /* compute BBT info from frame number */
     pos.bar = int32_t
     (
         currenttick / long(pos.ticks_per_beat) / pos.beats_per_bar
@@ -575,29 +557,25 @@ jack_assistant::set_position (midipulse currenttick)
     pos.beat = int32_t(((currenttick / long(pos.ticks_per_beat)) % m_beat_width));
     pos.tick = int32_t((currenttick % (m_ppqn * 10)));
     pos.bar_start_tick = pos.bar * pos.beats_per_bar * pos.ticks_per_beat;
+    pos.bar++;
+    pos.beat++;
 
     /*
      * Modifying frame rate and frame cannot be set from clients, the server
      * sets them; see transport.h of JACK.
+     *
+     *  jack_nframes_t rate = jack_get_sample_rate(m_jack_client);
+     *  pos.frame_rate = rate;
+     *  pos.frame = (jack_nframes_t)
+     *  (
+     *      (currenttick * rate * 60.0) /
+     *      (pos.ticks_per_beat * pos.beats_per_minute)
+     *  );
      */
 
-#ifdef USE_USELESS_CODE
-    pos.frame_rate = rate;
-    pos.frame = (jack_nframes_t)
-    (
-        (currenttick * rate * 60.0) / (pos.ticks_per_beat * pos.beats_per_minute)
-    );
-#endif
-
-    pos.bar++;
-    pos.beat++;
-
 #ifdef USE_JACK_BBT_OFFSET
-    pos->valid = static_cast<jack_position_bits_t>
-    (
-        pos->valid | JackBBTFrameOffset
-    );
-    pos->bbt_offset = 0;
+    pos.valid = (jack_position_bits_t)(pos.valid | JackBBTFrameOffset);
+    pos.bbt_offset = 0;
 #endif
 
     int jackcode = jack_transport_reposition(m_jack_client, &pos);
@@ -747,6 +725,11 @@ jack_assistant::sync (jack_transport_state_t state)
  *  current JACK position information every couple of seconds, which can be
  *  useful to examine the interactions with other JACK clients.
  *
+ *  The code enabled via USE_JACK_BBT_OFFSET sets the JACK
+ *  position fieldl bbt_offset to 0.  It doesn't seem to have any effect,
+ *  though it can be send when calling show_position() in the
+ *  jack_process_callback() function.
+ *
  * \param nframes
  *      Unused.
  *
@@ -765,7 +748,7 @@ jack_process_callback (jack_nframes_t /* nframes */, void * arg)
     const jack_assistant * jack = (jack_assistant *)(arg);
     if (not_nullptr(jack))
     {
-#ifdef SEQ64_USE_DEBUG_OUTPUT
+#ifdef SEQ64_USE_DEBUG_OUTPUT                   /* EXPERIMENTS              */
         static long s_show_counter = 0;
         if ((s_show_counter++ % 100) == 0)      /* slows down the output    */
         {
@@ -1455,13 +1438,15 @@ jack_timebase_callback
             }
         }
     }
-    pos->valid = JackPositionBBT;
 #ifdef USE_JACK_BBT_OFFSET
-    pos->valid = static_cast<jack_position_bits_t>
-    (
-        pos->valid | JackBBTFrameOffset
-    );
+//  pos->valid = (jack_position_bits_t)(pos->valid | JackBBTFrameOffset);
     pos->bbt_offset = 0;
+    pos->valid = (jack_position_bits_t)
+    (
+        pos->valid | JackBBTFrameOffset | JackPositionBBT
+    );
+#else
+    pos->valid = JackPositionBBT;
 #endif
 }
 

@@ -112,7 +112,7 @@ private:
     private:
 
         midipulse m_timestamp;  /**< The primary key-value for the key. */
-        int m_rank;                 /**< The sub-key-value for the key.     */
+        int m_rank;             /**< The sub-key-value for the key.     */
 
     public:
 

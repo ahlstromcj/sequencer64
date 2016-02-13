@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-02-10
+ * \updates       2016-02-13
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -1447,14 +1447,14 @@ perform::inner_start (bool state)
 
 /**
  *  Unconditionally, and without locking, clears the running status,
- *  resets the sequences, and set m_usemidiclock false.
+ *  resets the sequences, and sets m_usemidiclock false.
  */
 
 void
 perform::inner_stop ()
 {
     set_running(false);
-    reset_sequences();                 // off_sequences();
+    reset_sequences();                  /* sets the "last-tick" value   */
     m_usemidiclock = false;
 }
 
@@ -1492,7 +1492,7 @@ perform::all_notes_off ()
  *  For all active patterns/sequences, get its playing state, turn off the
  *  playing notes, set playing to false, zero the markers, and, if not in
  *  playback mode, restore the playing state.  Note that these calls could be
- *  folded into one member function of the sequence class.
+ *  folded into one member function of the sequence class. [Done!]
  *
  *  Finally, flush the MIDI buss.
  */
@@ -1503,21 +1503,9 @@ perform::reset_sequences ()
     for (int i = 0; i < m_sequence_max; ++i)
     {
         if (is_active(i))
-        {
-#ifdef USE_OLD_CODE
-            sequence * s = m_seqs[i];
-            bool state = s->get_playing();
-            s->off_playing_notes();
-            s->set_playing(false);
-            s->zero_markers();
-            if (! m_playback_mode)
-                s->set_playing(state);
-#else
-            m_seqs[i]->reset(m_playback_mode);
-#endif
-        }
+            m_seqs[i]->reset(m_playback_mode);  /* resets the "last-tick"   */
     }
-    m_master_bus.flush();              // flush the MIDI bus
+    m_master_bus.flush();                       /* flush the MIDI buss      */
 }
 
 /**
@@ -2080,13 +2068,15 @@ input_thread_func (void * myperf)
  *      The MIDI control value to use to perform an operation.
  *
  * \param state
- *      The state of the control, used with:
+ *      The state of the control, used with the following values:
  *
- *          -   c_midi_control_mod_replace
- *          -   c_midi_control_mod_snapshot
- *          -   c_midi_control_mod_queue
- *          -   c_midi_control_mod_gmute
- *          -   c_midi_control_mod_glearn
+\verbatim
+        c_midi_control_mod_replace
+        c_midi_control_mod_snapshot
+        c_midi_control_mod_queue
+        c_midi_control_mod_gmute
+        c_midi_control_mod_glearn
+\endverbatim
  */
 
 void

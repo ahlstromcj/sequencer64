@@ -1,0 +1,55 @@
+How to Add Pause Functionality?
+Chris Ahlstrom
+2016-02-13 to 2016-02-13
+
+We would like to be able to pause the playback, and have it resume where
+it left off.  This feature would have to include the ability to have
+Sequencer64 set the new position in JACK when running as JACK Master.
+
+First, let us survey how the Stop functionality works.
+
+In mainwnd::stop_playing(), the important code is a call to
+perform.stop_playing().  Those functions ultimately call
+jack_assistant::stop() and, if jack is NOT running, inner_stop().
+
+The perform::inner_stop() function calls reset_sequences(), which calls
+sequence::reset() for each sequence.  That calls zero_markers(), which
+just sets m_last_tick = 0.  This member is also set by
+sequence::set_orig_tick().  In sequence::play(), the starting tick is set
+to m_last_tick.  The triggers::play() function also bases the starting
+tick on sequence::m_last_tick.
+
+So one idea is to add a pause flag to inner_stop(), reset_sequences(), and
+reset(), to avoid changing m_last_tick.
+
+    Wrinkle:  In perform::input(), MIDI clock is supported, and we want to
+    make sure that we do not break MIDI Start, Continue, and Stop.  Also,
+    we need to test these and Song Position before we start monkeying with
+    a pause functionality.
+
+Now, in jack_assistant::stop(), all that is done is call
+jack_transport_stop().  Not much we can do there, unless we need to add
+code to preserve the JACK transport position.
+
+The perfroll::stop_playing() function calls perfrom::stop_playing(),
+already covered.  Same for perfedit::stop_playing().
+
+A VERY IMPORTANT point to note is that, when Sequencer64 is JACK Master,
+the pause functionality ALREADY exists.  Stopping the song, even using the
+Stop button, preserves the position, which resumes when the song
+continues.  Do not mess that up!
+
+BUG:  In the main window, when paused, the progress bars sit near the end
+      of each pattern.
+
+BUG:  When resetting position to 1:1:0 in qjackctr, Sequencer24 should
+      reset its progress bars in the main and song windows, and in the maintime
+      area.
+
+BUG:  The song window progress bar disappears when JACK transport pauses.
+
+WARNING:
+
+    triggers::copy() optimized, watch for programmer error :-D
+
+# vim: sw=4 ts=4 wm=8 et ft=sh

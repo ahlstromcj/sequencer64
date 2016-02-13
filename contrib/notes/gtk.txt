@@ -86,7 +86,4 @@ gtkmm 2.4 to gtkmm 3.0:
     13. std::vector used instead of *Handle types.
     14. All deprecated API removed.
      
-
-
-
 # vim: sw=4 ts=4 wm=8 et ft=sh

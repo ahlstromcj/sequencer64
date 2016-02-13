@@ -279,8 +279,8 @@ ticks_to_delta_time_us (midipulse delta_ticks, int bpm, int ppqn)
  *      unfortunate fact.  Use pulse_length_us() instead.
  *
 \verbatim
-        us =           60000000 ppqn
-             ---------------------------------
+                       60000000 ppqn
+        us = ---------------------------------
               MIDI_CLOCK_IN_PPQN * bpm * ppqn
 \endverbatim
  *

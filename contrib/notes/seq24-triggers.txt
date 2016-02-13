@@ -179,4 +179,4 @@ In JACK mode:
         available only in the performance window, even if the focus is in
         the pattern window.
 
-# vim: sw=4 ts=4 wm=8 et ft=rc
+# vim: sw=4 ts=4 wm=8 et ft=sh

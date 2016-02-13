@@ -112,22 +112,26 @@ class sequence;
  *
  *  Track (sequencer-specific) data:
  *
- *      -   c_midibus
- *      -   c_midich
- *      -   c_timesig
- *      -   c_triggers
- *      -   c_triggers_new
- *      -   c_musickey
- *      -   c_musicscale
+\verbatim
+            c_midibus
+            c_midich
+            c_timesig
+            c_triggers
+            c_triggers_new
+            c_musickey
+            c_musicscale
+\endverbatim
  *
  * Footer ("proprietary") data:
  *
- *      -   c_midictrl
- *      -   c_midiclocks
- *      -   c_notes
- *      -   c_bpmtag (beats per minute)
- *      -   c_mutegroups
- *      -   c_backsequence
+\verbatim
+            c_midictrl
+            c_midiclocks
+            c_notes
+            c_bpmtag (beats per minute)
+            c_mutegroups
+            c_backsequence
+\endverbatim
  *
  *  Also see the PDF file in the following project for more information about
  *  the "proprietary" data:

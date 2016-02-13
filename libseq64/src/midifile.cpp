@@ -1021,14 +1021,16 @@ midifile::parse_prop_header (int file_size)
  *  "proprietary" Seq24 data section, which describes the various features
  *  that Seq24 supports.  It consists of series of tags:
  *
- *      -   c_midictrl
- *      -   c_midiclocks
- *      -   c_notes
- *      -   c_bpmtag (beats per minute)
- *      -   c_mutegroups
- *      -   c_musickey (new, added if usr() global_seq_feature() is true)
- *      -   c_musicscale (ditto)
- *      -   c_backsequence (ditto)
+\verbatim
+        c_midictrl
+        c_midiclocks
+        c_notes
+        c_bpmtag (beats per minute)
+        c_mutegroups
+        c_musickey (new, added if usr() global_seq_feature() is true)
+        c_musicscale (ditto)
+        c_backsequence (ditto)
+\endverbatim
  *
  *  (There are more tags defined in the globals module, but they are not
  *  used in this function.  This doesn't quite make sense, as there are

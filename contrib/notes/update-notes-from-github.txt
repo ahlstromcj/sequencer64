@@ -24,8 +24,6 @@ years ago, so I might not be much help.
 Good luck!
 Rob
 
-
-
 > On Dec 9, 2015, at 3:17 PM, oli_kester <oli_kester@zoho.com> wrote:
 >
 > Hi Seq24 developers,
@@ -104,9 +102,6 @@ it as my codebase instead of seq24 - please get in touch. Building it as I type!
 > Oliver
 >
 
-
-
-
 Date: Wed, 16 Dec 2015 01:46:31 +0000
 From: oli_kester <oli_kester@zoho.com>
 To: Chris Ahlstrom <ahlstromcj@gmail.com>
@@ -135,9 +130,6 @@ textfile.
 
 Thanks for the encouragement. I'll stay in touch and would like to hear about your
 project comes along too.
-
-
-
 
 
 Date: Sat, 19 Dec 2015 20:48:34 -0800
@@ -213,8 +205,6 @@ the same screen.  I tend to have drums on one screen, synth on another,
 etc., but under this model, I'd rearrange.
 
 
-
-
 Date: Sun, 20 Dec 2015 12:47:05 -0800
 From: Tim Deagan <notifications@github.com>
 To: ahlstromcj/sequencer64 <sequencer64@noreply.github.com>
@@ -239,9 +229,6 @@ and perform::select_mute_group (int a_group)
 that may or may not be in the format you like.  You can toss them if they
 don't work (I started in assembly language many decades ago and have
 trouble shaking the urge to comment every line.)
-
-
-
 
 
 Date: Sun, 20 Dec 2015 13:16:55 -0800
@@ -273,7 +260,6 @@ https://github.com/ahlstromcj/sequencer64/pull/3.patch
 https://github.com/ahlstromcj/sequencer64/pull/3.diff
 
 
-
 Date: Mon, 21 Dec 2015 08:33:34 -0800
 From: Tim Deagan <notifications@github.com>
 To: ahlstromcj/sequencer64 <sequencer64@noreply.github.com>
@@ -294,12 +280,8 @@ perform::select_mute_group (int a_group)
     int k = m_playscreen_offset;
 ```
 the var m_playscreen_offset is also not changing with the active screen.  This
-means that the only mute groups that are learned are the ones on screen 0.  I'll
-need to change and test this and create a new pull request. 
-
-
-
-
+means that the only mute groups that are learned are the ones on screen 0.
+I'll need to change and test this and create a new pull request. 
 
 
 Date: Mon, 21 Dec 2015 07:02:16 -0800
@@ -310,8 +292,8 @@ Subject: [sequencer64] Would like unique set of mute groups per screen (1024
 
 The current mute group model is difficult to use and understand  It also is
 severely limiting as a performance tool compared to the rest of the application
-Expanding the number of mute groups in a usable manner is one way to increase the
-utility of this highly desirable feature
+Expanding the number of mute groups in a usable manner is one way to increase
+the utility of this highly desirable feature
 
 I would like to use a set of 32 mute group keys (the same set of mute group keys
 as is currently used,) to learn and activate a different set of mute groups per
@@ -320,22 +302,21 @@ regardless of the screen you're on (which is the subject of pull request
 https://githubcom/ahlstromcj/sequencer64/pull/3)
 
 It would be a nightmare to try and have 1024 unique mute group keys to remember
-But if each screen could have a different set using the same activation keys, then
-the user would not be forced to organize the tracks exactly the same on each
-screen  Since different screens might represent different 'songs' for a live
-performance, the various sequences could differ in number and arrangement from
-song to song  The current mute group model (which I _think_ is broken and the pull
-request above would fix,) is too limited to allow the flexibility of different
-songs
+But if each screen could have a different set using the same activation keys,
+then the user would not be forced to organize the tracks exactly the same on
+each screen  Since different screens might represent different 'songs' for a
+live performance, the various sequences could differ in number and arrangement
+from song to song  The current mute group model (which I _think_ is broken and
+the pull request above would fix,) is too limited to allow the flexibility of
+different songs
 
-I am working through the code in the perform class to get a deep understanding of
-where and how to convert the mute group identifier to one that is based on the
-same screen_offset * seqs_in_set model used in many other places Once I get a
-working candidate, I'll create a pull request
+I am working through the code in the perform class to get a deep understanding
+of where and how to convert the mute group identifier to one that is based on
+the same screen_offset * seqs_in_set model used in many other places Once I get
+a working candidate, I'll create a pull request
 
-I expect that this will modify the mute group learn and activation functions but
-not the functions involved with storing and modifying the key definitions
-
+I expect that this will modify the mute group learn and activation functions
+but not the functions involved with storing and modifying the key definitions
 
 
 Date: Mon, 21 Dec 2015 08:19:19 -0800
@@ -353,8 +334,6 @@ turned off.
 But I believe that it would be a mess to try and stay aware of tracks on 32
 different screens.  As a live performance tool, having each screen be self
 contained is a useful paradigm (IMHO.)
-
-
 
 
 Date: Tue, 22 Dec 2015 10:51:56 -0800
@@ -381,7 +360,6 @@ The arrays don't look to be bound for the most part, but I'm doing a survey of a
 uses to figure out where the appropriate e
 
 
-
 Date: Mon, 21 Dec 2015 08:37:43 -0800
 From: Tim Deagan <notifications@github.com>
 To: ahlstromcj/sequencer64 <sequencer64@noreply.github.com>
@@ -395,9 +373,6 @@ where the active screen is not being tracked have been identified  I'll referenc
 this issue when I create a new pull request with a candidate solution
 
 
-
-
-
 Date: Mon, 21 Dec 2015 20:00:27 -0800
 From: Tim Deagan <notifications@github.com>
 To: ahlstromcj/sequencer64 <sequencer64@noreply.github.com>
@@ -409,16 +384,17 @@ https://github.com/ahlstromcj/sequencer64/issues/5
 
 This pull request modifies ***perform::select_mute_group()*** and
 ***perform::mute_group_tracks()*** to change expressions that should have been
-tracking the active screen; **m_playing_screen** and **m_playscreen_offset**, but 
-weren't working, with expressions that do.  The replacement expressions;
-**m_screenset** for the active screen number and **m_screenset * m_seqs_in_set**
-for the active screen offset.  These expressions may not be the best choices for
-the larger context of the source, but they're fairly basic and work well.
+tracking the active screen; **m_playing_screen** and **m_playscreen_offset**,
+but weren't working, with expressions that do.  The replacement expressions;
+**m_screenset** for the active screen number and **m_screenset *
+m_seqs_in_set** for the active screen offset.  These expressions may not be the
+best choices for the larger context of the source, but they're fairly basic and
+work well.
 
 These changes allow the chosen mute group to be applied as an overlay to the
 tracks on the active screen, turning off all tracks on all other screens.  The
-prior behavior was to only pick up and apply mute groups to screen 0.
-You can view, comment on, or merge this pull request online at:
+prior behavior was to only pick up and apply mute groups to screen 0.  You can
+view, comment on, or merge this pull request online at:
 
   https://github.com/ahlstromcj/sequencer64/pull/6
 
@@ -434,25 +410,23 @@ et, from m_playscreen_offset to m_screenset * m_seqs_in_set
     M libseq64/src/perform.cpp (4)
 
 
-
-
 Date: Tue, 22 Dec 2015 10:40:17 -0800
 From: Tim Deagan <notifications@github.com>
 To: ahlstromcj/sequencer64 <sequencer64@noreply.github.com>
 Cc: "C. Ahlstrom" <ahlstromcj@gmail.com>
 Subject: Re: [sequencer64] Mute group active screen tracking modification (#6)
 
-Cool, thanks!  For me, this is a major upgrade from seq24.  The confabulated mute
-group functionality was a big constraint on what I was trying to do with the code
-as a performance tool.
+Cool, thanks!  For me, this is a major upgrade from seq24.  The confabulated
+mute group functionality was a big constraint on what I was trying to do with
+the code as a performance tool.
 
-I'm digging into the changes needed to expand the mute group model so that there
-is a unique set of mute groups per key per screen.  It looks like it's going to be
-a tiny set of changes, possibly only in perform::select_mute_group() and
-perform::mute_group_tracks().  But I'm trying to spend time understanding the host
-of vars relating to screen and seq counts.
+I'm digging into the changes needed to expand the mute group model so that
+there is a unique set of mute groups per key per screen.  It looks like it's
+going to be a tiny set of changes, possibly only in
+perform::select_mute_group() and perform::mute_group_tracks().  But I'm trying
+to spend time understanding the host of vars relating to screen and seq counts.
 
-Maybe someday I can help construct a data dictionary that enumerates and describes
-the best use of the various vars.
+Maybe someday I can help construct a data dictionary that enumerates and
+describes the best use of the various vars.
 
 

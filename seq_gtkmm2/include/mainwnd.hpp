@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-02-06
+ * \updates       2016-02-13
  * \license       GNU GPLv2 or above
  *
  *  The main windows is known as the "Patterns window" or "Patterns
@@ -58,10 +58,10 @@ namespace Gtk
 namespace seq64
 {
 
-class maintime;
-class mainwid;
-class options;
-class perfedit;
+    class maintime;
+    class mainwid;
+    class options;
+    class perfedit;
 
 /**
  *  This class implements the functionality of the main window of the
@@ -270,8 +270,9 @@ private:
     }
 
     /**
-     *  Stops the playing of the song.  An accessor to
-     *  perform::stop_playing().
+     *  Stops the playing of the song.  An accessor to perform's
+     *  stop_playing() function.  Also calls the mainwid's
+     *  update_sequences_on_window() function.
      */
 
     void stop_playing ()                // Stop!

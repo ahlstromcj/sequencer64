@@ -3,6 +3,8 @@ Chris Ahlstrom
 2016-01-16 to 2016-02-13
 
 ===========================================================================
+ SETTINGS TESTS
+===========================================================================
 
 These tests are done with qjackctl and hydrogen already running, and then
 starting Sequencer64 with certain settings already made in sequencer64.rc..
@@ -78,8 +80,8 @@ then Hydrogren controls playback, including the speed.  It then doesn't
 matter what the BPM is then set to in Sequencer64.
 
 ===========================================================================
-
-Sequencer64 and Yoshimi
+Sequencer64 and Yoshimi Tests
+===========================================================================
 
 We test Sequencer64 with Yoshimi quite a lot.  First, Yoshimi has been
 revived by Will Godfrey (and others), and is progressing rapidly.
@@ -162,8 +164,8 @@ JACK:
         issue?  How can we diagnose it!
 
 ===========================================================================
-
 MIDI Clock Testing
+===========================================================================
 
     Testing of clocking (and JACK positioning) starts by defining
     SEQ64_USE_DEBUG_OUTPUT in the jack_assistant.cpp module, and
@@ -337,6 +339,8 @@ MIDI Clock Testing
         change the settings in the user-interface and disconnect and
         reconnect.
 
+===========================================================================
+ Notes from Other Sites
 ===========================================================================
 
 http://shangrislinuxmusic.blogspot.com/2008/08/writing-and-recording-song-using-seq24.html

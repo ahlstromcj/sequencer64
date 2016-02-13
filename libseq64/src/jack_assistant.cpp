@@ -69,7 +69,7 @@
 #include "midifile.hpp"
 #include "perform.hpp"
 
-#define SEQ64_USE_DEBUG_OUTPUT          /* define for EXPERIMENTS only  */
+#undef  SEQ64_USE_DEBUG_OUTPUT          /* define for EXPERIMENTS only  */
 
 #ifdef SEQ64_JACK_SUPPORT
 
@@ -1257,7 +1257,7 @@ jack_assistant::show_position (const jack_position_t & pos) const
         int(pos.ticks_per_beat), int(pos.beats_per_minute),
         int(pos.bbt_offset)
     );
-    infoprint(temp);
+    infoprint(temp);                    /* no output in release mode */
 }
 
 /**

@@ -1,3 +1,12 @@
+2016-02-13  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* ChangeLog, README, ROADMAP, configure.ac,
+	contrib/notes/bugs_to_investigate.txt,
+	contrib/notes/jack-testing.txt, contrib/notes/jack.txt,
+	libseq64/include/jack_assistant.hpp,
+	libseq64/src/jack_assistant.cpp: Much more testing and documenting
+	of JACK support before merging into master.  Version 0.9.9.17 pending.
+
 2016-02-12  Chris Ahlstrom <ahlstromcj@gmail.com>
 
 	* contrib/code/jack_process_callback.cpp,

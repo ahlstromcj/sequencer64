@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-25
+ * \updates       2016-02-14
  * \license       GNU GPLv2 or above
  *
  */
@@ -96,6 +96,13 @@ private:
      */
 
     int m_screenset_offset;
+
+    /**
+     *  Provides the height of the progress bar, to save calculations and for
+     *  consistency between drawing and erasing the progress bar.
+     */
+
+    int m_progress_height;
 
 public:
 

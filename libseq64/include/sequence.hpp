@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-02-06
+ * \updates       2016-02-14
  * \license       GNU GPLv2 or above
  *
  *  The functions add_list_var() and add_long_list() have been replaced by
@@ -902,8 +902,16 @@ public:
         midipulse * tick_s, midipulse * tick_f, int * note,
         bool * selected, int * velocity
     );
-    int get_lowest_note_event ();
-    int get_highest_note_event ();
+
+    /*
+     * \obsolete
+     *      Replaced by sequence::get_minmax_note_events().
+     *
+     *  int get_lowest_note_event ();
+     *  int get_highest_note_event ();
+     */
+
+    bool get_minmax_note_events (int & lowest, int & highest);
     bool get_next_event
     (
         midibyte status, midibyte cc,

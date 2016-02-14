@@ -28,7 +28,7 @@
  * \license       GNU GPLv2 or above
  *
  *  This class was created to reduce the clutter in the perform output
- *  function.
+ *  function.  NOT YET IN USE, AT ALL.
  */
 
 #include <stdio.h>

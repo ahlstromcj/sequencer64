@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-02-13
+ * \updates       2016-02-14
  * \license       GNU GPLv2 or above
  *
  *  The functionality of this class also includes handling some of the
@@ -2320,7 +2320,10 @@ sequence::reset_draw_trigger_marker ()
     m_triggers.reset_draw_trigger_marker();
 }
 
-/**
+/*
+ * \obsolete
+ *      Replaced by sequence::get_minmax_note_events().
+ *
  *  Goes through the list of notes, and picks the one with the lowest value.
  *
  * \threadsafe
@@ -2329,7 +2332,6 @@ sequence::reset_draw_trigger_marker ()
  *      Returns the note with the lowest value.  If there are no notes in the
  *      list, then SEQ64_MIDI_COUNT_MAX-1 is returned, which of course doesn't
  *      tell the caller much.
- */
 
 int
 sequence::get_lowest_note_event ()
@@ -2340,21 +2342,31 @@ sequence::get_lowest_note_event ()
     {
         event & er = DREF(i);
         if (er.is_note_on() || er.is_note_off())
+        {
             if (er.get_note() < result)
                 result = er.get_note();
+        }
     }
     return result;
 }
+ */
 
-/**
+/*
+ * \obsolete
+ *      Replaced by sequence::get_minmax_note_events().
+ *
  *  Goes through the list of notes, and picks the one with the highest value.
+ *
+ * \todo
+ *      For efficency, we should calculate this only when the event set
+ *      changes, and save the result and return it if good.
  *
  * \threadsafe
  *
  * \return
  *      Returns the note with the highest value.  If there are no notes in the
- *      list, then 0 is returned, which of course doesn't tell the caller much.
- */
+ *      list, then 0 is returned, which of course doesn't tell the caller
+ *      much.
 
 int
 sequence::get_highest_note_event ()
@@ -2365,9 +2377,64 @@ sequence::get_highest_note_event ()
     {
         event & er = DREF(i);
         if (er.is_note_on() || er.is_note_off())
+        {
             if (er.get_note() > result)
                 result = er.get_note();
+        }
     }
+    return result;
+}
+ */
+
+/**
+ *  A new function provided so that we can find the minimum and maximum notes
+ *  with only one (not two) traversal of the event list.
+ *
+ * \todo
+ *      For efficency, we should calculate this only when the event set
+ *      changes, and save the results and return them if good.
+ *
+ * \threadsafe
+ *
+ * \param lowest
+ *      A reference parameter to return the note with the lowest value.
+ *      if there are no notes, then it is set to SEQ64_MIDI_COUNT_MAX-1.
+ *
+ * \param highest
+ *      A reference parameter to return the note with the highest value.
+ *      if there are no notes, then it is set to -1.
+ *
+ * \return
+ *      If there are no notes in the list, then false is returned, and the
+ *      results should be disregarded.
+ */
+
+bool
+sequence::get_minmax_note_events (int & lowest, int & highest)
+{
+    automutex locker(m_mutex);
+    bool result = false;
+    int low = SEQ64_MIDI_COUNT_MAX-1;
+    int high = -1;
+    for (event_list::iterator i = m_events.begin(); i != m_events.end(); i++)
+    {
+        event & er = DREF(i);
+        if (er.is_note_on() || er.is_note_off())
+        {
+            if (er.get_note() < low)
+            {
+                low = er.get_note();
+                result = true;
+            }
+            else if (er.get_note() > high)
+            {
+                high = er.get_note();
+                result = true;
+            }
+        }
+    }
+    lowest = low;
+    highest = high;
     return result;
 }
 

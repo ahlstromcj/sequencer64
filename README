@@ -1,6 +1,6 @@
 README for Sequencer64 0.9.9.18 (current branch = "fixups ongoing")
 Chris Ahlstrom
-2015-09-10 to 2016-02-13 (initial work started in July of 2015)
+2015-09-10 to 2016-02-14 (initial work started in July of 2015)
 
 The sequencer64 project is a continuation of sequencer24 to refactor it to be
 tighter and easier to transition to GTKmm 3, and much more.  By now, it is
@@ -52,6 +52,7 @@ Major updates:
     -   Tweaked the colors of some user-interface elements to make it
         easier to see them when combined.  For example, the background
         sequence is now colored, and the scale bars are now light grey.
+        Progress bars are now red, if not running in legacy mode.
     -   The "rc" configuration file has been upgraded to support a couple
         more options, including the enabling/disabling of LASH session
         support.

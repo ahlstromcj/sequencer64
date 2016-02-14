@@ -24,12 +24,13 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-21
- * \updates       2015-10-29
+ * \updates       2016-02-14
  * \license       GNU GPLv2 or above
  *
  */
 
-#include "gui_palette_gtk2.hpp"
+#include "globals.h"                    /* rc() access for legacy format    */
+#include "gui_palette_gtk2.hpp"         /* seq64::gui_palette_gtkw          */
 
 namespace seq64
 {
@@ -46,14 +47,18 @@ gui_palette_gtk2::gui_palette_gtk2 ()
     m_black             (Color("black")),
     m_white             (Color("white")),
     m_grey              (Color("grey")),
-    m_dk_grey           (Color("grey50")),              // or "gray50" ?
+    m_dk_grey           (Color("grey50")),
     m_lt_grey           (Color("light grey")),
     m_red               (Color("red")),
     m_orange            (Color("orange")),
     m_yellow            (Color("yellow")),
     m_green             (Color("green")),
     m_blue              (Color("blue")),
-    m_dk_cyan           (Color("dark cyan"))
+    m_dk_cyan           (Color("dark cyan")),
+    m_line_color        (Color("dark cyan")),           // alternative to black
+    m_progress_color    (Color(rc().legacy_format() ? "black" : "red")),
+    m_bg_color          (),
+    m_fg_color          ()
 {
     Glib::RefPtr<Gdk::Colormap> colormap = get_default_colormap();
     colormap->alloc_color(const_cast<Color &>(m_black));
@@ -67,6 +72,8 @@ gui_palette_gtk2::gui_palette_gtk2 ()
     colormap->alloc_color(const_cast<Color &>(m_green));
     colormap->alloc_color(const_cast<Color &>(m_blue));
     colormap->alloc_color(const_cast<Color &>(m_dk_cyan));
+    colormap->alloc_color(const_cast<Color &>(m_line_color));
+    colormap->alloc_color(const_cast<Color &>(m_progress_color));
 }
 
 /**
@@ -85,3 +92,4 @@ gui_palette_gtk2::~gui_palette_gtk2 ()
  *
  * vim: sw=4 ts=4 wm=4 et ft=cpp
  */
+

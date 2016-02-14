@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-21
- * \updates       2015-10-29
+ * \updates       2016-02-14
  * \license       GNU GPLv2 or above
  *
  *  This module defines some Gdk::Color objects.  However, note that this
@@ -76,6 +76,8 @@ private:                                // use the accessor functions
     const Color m_green;
     const Color m_blue;
     const Color m_dk_cyan;
+    const Color m_line_color;
+    const Color m_progress_color;
 
     Color m_bg_color;                   // m_background in some classes
     Color m_fg_color;                   // m_foreground in some classes
@@ -85,64 +87,160 @@ public:
     gui_palette_gtk2 ();
     ~gui_palette_gtk2 ();
 
+    /**
+     * \getter m_line_color
+     *      Provides an experimental way to change some line colors from black
+     *      to something else.  Might eventually be selectable from the "user"
+     *      configuration file
+     */
+
+    const Color & line_color () const
+    {
+        return m_line_color;
+    }
+
+    /**
+     * \getter m_progress_color
+     *      Provides an experimental way to change the progress line color
+     *      from black to something else.  Might eventually be selectable from
+     *      the "user" configuration file
+     */
+
+    const Color & progress_color () const
+    {
+        return m_progress_color;
+    }
+
+    /**
+     * \getter m_black
+     */
+
     const Color & black () const
     {
         return m_black;
     }
+
+    /**
+     * \getter m_white
+     */
+
     const Color & white () const
     {
         return m_white;
     }
+
+    /**
+     * \getter m_grey
+     */
+
     const Color & grey () const
     {
         return m_grey;
     }
+
+    /**
+     * \getter m_dk_grey
+     */
+
     const Color & dark_grey () const
     {
         return m_dk_grey;
     }
+
+    /**
+     * \getter m_lt_grey
+     */
+
     const Color & light_grey () const
     {
         return m_lt_grey;
     }
+
+    /**
+     * \getter m_red
+     */
+
     const Color & red () const
     {
         return m_red;
     }
+
+    /**
+     * \getter m_orange
+     */
+
     const Color & orange () const
     {
         return m_orange;
     }
+
+    /**
+     * \getter m_yellow
+     */
+
     const Color & yellow () const
     {
         return m_yellow;
     }
+
+    /**
+     * \getter m_green
+     */
+
     const Color & green () const
     {
         return m_green;
     }
+
+    /**
+     * \getter m_blue
+     */
+
     const Color & blue () const
     {
         return m_blue;
     }
+
+    /**
+     * \getter m_dk_cyan
+     */
+
     const Color & dark_cyan () const
     {
         return m_dk_cyan;
     }
 
+    /**
+     * \getter m_bg_color
+     */
+
     const Color & bg_color () const
     {
         return m_bg_color;
     }
+
+    /**
+     * \setter m_bg_color
+     */
+
     void bg_color (const Color & c)
     {
         m_bg_color = c;
     }
 
+    /**
+     * \getter m_fg_color
+     */
+
     const Color & fg_color () const
     {
         return m_fg_color;
     }
+
+    /**
+     * \setter m_fg_color
+     */
+
     void fg_color (const Color & c)
     {
         m_fg_color = c;

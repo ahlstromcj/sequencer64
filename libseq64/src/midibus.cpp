@@ -395,7 +395,7 @@ midibus::print ()
 
 
 /**
- *  This play() function takes a native event, encodes it to ALSA event,
+ *  This play() function takes a native event, encodes it to an ALSA event,
  *  and puts it in the queue.
  *
  * \threadsafe

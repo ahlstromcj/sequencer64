@@ -201,7 +201,7 @@ static const char * const s_help_4 =
 "If no JACK or LASH options are shown above, they have been disabled in the\n"
 "build configuration. Note that command-line options can be sticky; they\n"
 "generally get saved to the configuration files when Sequencer64 exits.\n"
-"\n"
+"User manual: https://github.com/ahlstromcj/sequencer64-doc\n"
     ;
 
 /**

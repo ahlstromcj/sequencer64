@@ -1595,14 +1595,13 @@ perform::get_max_trigger ()
 void *
 output_thread_func (void * myperf)
 {
-    perform * p = (perform *) myperf;
+#ifndef PLATFORM_WINDOWS                /* Not in MinGW RCB */
     if (rc().priority())
     {
         struct sched_param schp;
         memset(&schp, 0, sizeof(sched_param));
         schp.sched_priority = 1;
 
-#ifndef PLATFORM_WINDOWS                /* Not in MinGW RCB */
         if (sched_setscheduler(0, SCHED_FIFO, &schp) != 0)
         {
             errprint
@@ -1612,8 +1611,10 @@ output_thread_func (void * myperf)
             );
             pthread_exit(0);
         }
-#endif
     }
+#endif
+
+    perform * p = (perform *) myperf;
 
 #ifdef PLATFORM_WINDOWS
     timeBeginPeriod(1);
@@ -1850,18 +1851,6 @@ perform::output_func ()
                             double(get_left_tick()) + leftover_tick;
                     }
                 }
-
-                /*
-                 * Under the debugger, we can get -nan(0x8000000000000) here.
-                 * This seems to be accompanied by a jump in the progress bars
-                 * and pill.
-                 */
-
-                if (pad.js_current_tick == SEQ64_JACK_NAN)
-                {
-                    printf("play(NAN=%ld)\n", long(pad.js_current_tick));
-                }
-
                 play(long(pad.js_current_tick));                // play!
                 m_master_bus.clock(long(pad.js_clock_tick));    // MIDI clock
                 if (rc().stats())
@@ -2033,22 +2022,25 @@ perform::output_func ()
 void *
 input_thread_func (void * myperf)
 {
-    perform * p = (perform *) myperf;
+#ifndef PLATFORM_WINDOWS                // MinGW RCB
     if (rc().priority())
     {
         struct sched_param schp;
         memset(&schp, 0, sizeof(sched_param));
         schp.sched_priority = 1;
-
-#ifndef PLATFORM_WINDOWS                // MinGW RCB
         if (sched_setscheduler(0, SCHED_FIFO, &schp) != 0)
         {
-            printf("input_thread_func: couldnt sched_setscheduler"
-                   " (FIFO), you need to be root.\n");
+            printf
+            (
+                "input_thread_func: couldn't sched_setscheduler"
+               "(FIFO), you need to be root.\n"
+            );
             pthread_exit(0);
         }
-#endif
     }
+#endif
+
+    perform * p = (perform *) myperf;
 
 #ifdef PLATFORM_WINDOWS
     timeBeginPeriod(1);

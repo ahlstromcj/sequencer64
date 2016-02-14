@@ -70,7 +70,7 @@
 #include "perform.hpp"
 
 #define SEQ64_USE_DEBUG_OUTPUT          /* define for EXPERIMENTS only  */
-#define USE_JACK_BBT_OFFSET             /* another experiment           */
+#define USE_JACK_BBT_OFFSET             /* another EXPERIMENT           */
 
 #ifdef SEQ64_JACK_SUPPORT
 

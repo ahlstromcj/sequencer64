@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-02-06
+ * \updates       2016-02-14
  * \license       GNU GPLv2 or above
  *
  *  The performance window allows automatic control of when each
@@ -353,7 +353,11 @@ perfroll::enqueue_draw ()
 }
 
 /**
- *  Draws the progess line that shows where we are in the performance.
+ *  Draws the progress line that shows where we are in the performance.
+ *
+ *  We would like to be able to leave the line there when the progress is
+ *  paused while running off of JACK transport.  How?  The perf().get_tick()
+ *  call always returns 0 when stop is in force.
  */
 
 void
@@ -367,7 +371,7 @@ perfroll::draw_progress ()
     (
         old_progress_x, 0, old_progress_x, 0, 1, m_window_y
     );
-    draw_line(black(), progress_x, 0, progress_x, m_window_y);
+    draw_line(progress_color(), progress_x, 0, progress_x, m_window_y);
     m_old_progress_ticks = tick;
 }
 
@@ -404,22 +408,21 @@ perfroll::draw_sequence_on (int seqnum)
                 int x = x_on;
                 int y = m_names_y * seqnum + 1;         // + 2
                 int h = m_names_y - 2;                  // - 4
-                x -= x_offset;          /* adjust to screen coordinates */
+                x -= x_offset;                  /* adjust to screen coords  */
                 draw_rectangle_on_pixmap(selected ? grey() : white(), x, y, w, h);
                 draw_rectangle_on_pixmap(black(), x, y, w, h, false);
                 draw_rectangle_on_pixmap
                 (
                     black(), x, y, m_size_box_w, m_size_box_w, false
                 );
-                draw_rectangle_on_pixmap
+                draw_rectangle_on_pixmap        /* color set previous call  */
                 (
-                    // black(),             [done in previous call, tricky]
                     x + w - m_size_box_w, y + h - m_size_box_w,
                     m_size_box_w, m_size_box_w,
                     false
                 );
 
-                midipulse tickmarker =           /* length marker first tick */
+                midipulse tickmarker =          /* length marker first tick */
                 (
                     tick_on - (tick_on % sequence_length) +
                     (offset % sequence_length) - sequence_length
@@ -435,57 +438,66 @@ perfroll::draw_sequence_on (int seqnum)
                         );
                     }
 
-                    int lowest_note = seq->get_lowest_note_event();
-                    int highest_note = seq->get_highest_note_event();
-                    int height = highest_note - lowest_note + 2;
-                    int length = seq->get_length();
-                    midipulse tick_s;
-                    midipulse tick_f;
-                    int note;
-                    bool selected;
-                    int velocity;
-                    draw_type dt;
-                    seq->reset_draw_marker();
-                    m_gc->set_foreground(black());
-                    while
+//                  int lowest_note = seq->get_lowest_note_event();
+//                  int highest_note = seq->get_highest_note_event();
+                    int lowest_note;                        // for side-effect
+                    int highest_note;                       // ditto
+                    bool have_notes = seq->get_minmax_note_events
                     (
-                        (
-                            dt = seq->get_next_note_event
-                            (
-                                &tick_s, &tick_f, &note, &selected, &velocity
-                            )
-                        ) != DRAW_FIN
-                    )
+                        lowest_note, highest_note           // side-effects
+                    );
+                    if (have_notes)
                     {
-                        int mny = m_names_y - 6;        // ????
-                        int note_y =
+                        int height = highest_note - lowest_note + 2;
+                        int length = seq->get_length();
+                        midipulse tick_s;
+                        midipulse tick_f;
+                        int note;
+                        bool selected;
+                        int velocity;
+                        draw_type dt;
+                        seq->reset_draw_marker();
+                        m_gc->set_foreground(black());
+                        while
                         (
-                            mny - (mny * (note - lowest_note)) / height
-                        ) + 1;
-                        int tick_s_x =
-                            ((tick_s * length_w) / length) + tickmarker_x;
-
-                        int tick_f_x =
-                            ((tick_f * length_w) / length) + tickmarker_x;
-
-                        if (dt == DRAW_NOTE_ON || dt == DRAW_NOTE_OFF)
-                            tick_f_x = tick_s_x + 1;
-
-                        if (tick_f_x <= tick_s_x)
-                            tick_f_x = tick_s_x + 1;
-
-                        if (tick_s_x < x)
-                            tick_s_x = x;
-
-                        if (tick_f_x > x + w)
-                            tick_f_x = x + w;
-
-                        if (tick_f_x >= x && tick_s_x <= x + w)
-                        {
-                            draw_line_on_pixmap
                             (
-                                tick_s_x, y + note_y, tick_f_x, y + note_y
-                            );
+                                dt = seq->get_next_note_event
+                                (
+                                    &tick_s, &tick_f, &note, &selected, &velocity
+                                )
+                            ) != DRAW_FIN
+                        )
+                        {
+                            int mny = m_names_y - 6;        // ????
+                            int note_y =
+                            (
+                                mny - (mny * (note - lowest_note)) / height
+                            ) + 1;
+                            int tick_s_x =
+                                ((tick_s * length_w) / length) + tickmarker_x;
+
+                            int tick_f_x =
+                                ((tick_f * length_w) / length) + tickmarker_x;
+
+                            if (dt == DRAW_NOTE_ON || dt == DRAW_NOTE_OFF)
+                                tick_f_x = tick_s_x + 1;
+
+                            if (tick_f_x <= tick_s_x)
+                                tick_f_x = tick_s_x + 1;
+
+                            if (tick_s_x < x)
+                                tick_s_x = x;
+
+                            if (tick_f_x > x + w)
+                                tick_f_x = x + w;
+
+                            if (tick_f_x >= x && tick_s_x <= x + w)
+                            {
+                                draw_line_on_pixmap
+                                (
+                                    tick_s_x, y + note_y, tick_f_x, y + note_y
+                                );
+                            }
                         }
                     }
                     tickmarker += sequence_length;

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-01-01
+ * \updates       2016-02-14
  * \license       GNU GPLv2 or above
  *
  *  Note that this representation is, in a sense, inside the mainwnd
@@ -58,7 +58,7 @@ const int c_mainwid_x =
 );
 
 /*
- * The height  of the main pattern/sequence grid, in pixels.  Affected by
+ * The height of the main pattern/sequence grid, in pixels.  Affected by
  * the c_mainwid_border and c_control_height values.
  */
 
@@ -69,10 +69,9 @@ const int c_mainwid_y =
 );
 
 /**
- *  This constructor sets a lot of the members, but not all.  And it asks
- *  for a size of c_mainwid_x by c_mainwid_y.  It adds GDK masks for
- *  button presses, releases, and motion, and key presses and focus
- *  changes.
+ *  This constructor sets all of the members.  And it asks for a size of
+ *  c_mainwid_x by c_mainwid_y.  It adds GDK masks for button presses,
+ *  releases, motion, key presses, and focus changes.
  *
  * \param p
  *      Provides the reference to the all-important perform object.
@@ -87,8 +86,8 @@ mainwid::mainwid (perform & p)
     m_moving                (false),
     m_old_seq               (0),
     m_screenset             (0),
-    m_last_tick_x           (),     // an array of size c_max_sequence
-    m_last_playing          (),     // an array of size c_max_sequence
+    m_last_tick_x           (),                 // array of size c_max_sequence
+    m_last_playing          (),                 // array of size c_max_sequence
     m_mainwnd_rows          (c_mainwnd_rows),
     m_mainwnd_cols          (c_mainwnd_cols),
     m_seqarea_x             (c_seqarea_x),
@@ -103,7 +102,8 @@ mainwid::mainwid (perform & p)
     m_text_size_y           (font_render().padded_height()),    // c_text_y
     m_max_sets              (c_max_sets),
     m_screenset_slots       (m_mainwnd_rows * m_mainwnd_cols),
-    m_screenset_offset      (m_screenset * m_screenset_slots)
+    m_screenset_offset      (m_screenset * m_screenset_slots),
+    m_progress_height       (m_seqarea_seq_y + 3)
 {
     // It's all done in the base classes and the initializer list.
 }
@@ -135,8 +135,7 @@ mainwid::draw_sequences_on_pixmap ()
 }
 
 /**
- *  Provides a stock callback, because some kind of callback is need.
- *
+ *  Provides a stock callback, because some kind of callback is needed.
  *
  * \todo
  *      We should use this callback to display the current time in the
@@ -172,7 +171,8 @@ mainwid::timeout ()
  *      windows is in force.
  *
  * \param seqnum
- *      Provides the number of the sequence slot that needs to be drawn.
+ *      Provides the number of the sequence slot that needs to be drawn.  It is
+ *      checked for validity before usage.
  */
 
 void
@@ -315,7 +315,7 @@ mainwid::draw_sequence_on_pixmap (int seqnum)
             int x = rectangle_x - 2;
             int y = rectangle_y - 1;
             int lx = m_seqarea_seq_x + 3;
-            int ly = m_seqarea_seq_y + 3;
+            int ly = m_seqarea_seq_y + 3;       // m_progress_height
 
             /*
              * Draw the inner rectangle containing the notes of a sequence.
@@ -329,65 +329,62 @@ mainwid::draw_sequence_on_pixmap (int seqnum)
             }
             draw_rectangle_on_pixmap(fg_color(), x, y, lx, ly, false);
 
-            int lowest_note = seq->get_lowest_note_event();
-            int highest_note = seq->get_highest_note_event();
-            int height = highest_note - lowest_note + 2;
-            int len  = seq->get_length();
-            midipulse tick_s;
-            midipulse tick_f;
-            int note;
-            bool selected;
-            int velocity;
-            seq->reset_draw_marker();
-
-            /*
-             * Doesn't prevent segfault.
-             * seq->lock();                            // EXPERIMENTAL
-             */
-
-            draw_type dt = DRAW_FIN;
-            do
+//          int lowest_note = seq->get_lowest_note_event();
+//          int highest_note = seq->get_highest_note_event();
+            int lowest_note;                                // for side-effect
+            int highest_note;                               // ditto
+            bool have_notes = seq->get_minmax_note_events
+            (
+                lowest_note, highest_note                   // side-effects
+            );
+            if (have_notes)
             {
-                if (not_nullptr(seq))
+                int height = highest_note - lowest_note + 2;
+                int len = seq->get_length();
+                midipulse tick_s;
+                midipulse tick_f;
+                int note;
+                bool selected;
+                int velocity;
+                draw_type dt = DRAW_FIN;
+                seq->reset_draw_marker();
+                do
                 {
-                    dt = seq->get_next_note_event
+                    if (not_nullptr(seq))
+                    {
+                        dt = seq->get_next_note_event
+                        (
+                            &tick_s, &tick_f, &note, &selected, &velocity
+                        );
+                    }
+                    else
+                    {
+                        errprint("null sequence in mainwid");
+                        break;
+                    }
+                    if (dt == DRAW_FIN)
+                        break;
+
+                    int tick_s_x = tick_s * m_seqarea_seq_x / len;
+                    int tick_f_x = tick_f * m_seqarea_seq_x / len;
+                    int note_y = m_seqarea_seq_y -
+                         m_seqarea_seq_y * (note + 1 - lowest_note) / height;
+
+                    if (dt == DRAW_NOTE_ON || dt == DRAW_NOTE_OFF)
+                        tick_f_x = tick_s_x + 1;
+
+                    if (tick_f_x <= tick_s_x)
+                        tick_f_x = tick_s_x + 1;
+
+                    draw_line_on_pixmap
                     (
-                        &tick_s, &tick_f, &note, &selected, &velocity
+                        fg_color(),
+                        rectangle_x + tick_s_x, rectangle_y + note_y,
+                        rectangle_x + tick_f_x, rectangle_y + note_y
                     );
-                }
-                else
-                {
-                    errprint("null sequence in mainwid");
-                    break;
-                }
-                if (dt == DRAW_FIN)
-                    break;
 
-                int tick_s_x = tick_s * m_seqarea_seq_x / len;
-                int tick_f_x = tick_f * m_seqarea_seq_x / len;
-                int note_y = m_seqarea_seq_y -
-                     m_seqarea_seq_y * (note + 1 - lowest_note) / height;
-
-                if (dt == DRAW_NOTE_ON || dt == DRAW_NOTE_OFF)
-                    tick_f_x = tick_s_x + 1;
-
-                if (tick_f_x <= tick_s_x)
-                    tick_f_x = tick_s_x + 1;
-
-                draw_line_on_pixmap
-                (
-                    fg_color(),
-                    rectangle_x + tick_s_x, rectangle_y + note_y,
-                    rectangle_x + tick_f_x, rectangle_y + note_y
-                );
-
-            } while (dt != DRAW_FIN);
-
-            /*
-             * Doesn't prevent segfault.
-             *
-             * seq->unlock();                            // EXPERIMENTAL
-             */
+                } while (dt != DRAW_FIN);
+            }
         }
         else                                /* sequence not active          */
         {
@@ -397,12 +394,9 @@ mainwid::draw_sequence_on_pixmap (int seqnum)
              *  outline.  The second section draws a narrower, but taller grey
              *  box, that yields the outlining "brackets" on each side of the
              *  grid area.  Without either of this drawing, an empty grid is
-             *  all black boxes.  We now offer a drawing option for
-             *  "black-grid", "boxed-grid", or "normal-grid" for the empty
-             *  sequence box.  Now we draw a box, thicker if we're adding
-             *  thickness to the grid bracket.
-             *
-             *  Old:  base_x + 4, base_y, m_seqarea_x - 8, m_seqarea_y
+             *  all black boxes.  We offer a drawing option for "black-grid",
+             *  "boxed-grid", or "normal-grid" for the empty sequence box.  We
+             *  draw a box, thicker if adding thickness to the grid bracket.
              */
 
             int gbt = usr().grid_brackets();            /* gb thickness     */
@@ -491,12 +485,9 @@ mainwid::draw_sequence_pixmap_on_window (int seqnum)
 {
     if (valid_sequence(seqnum))
     {
-        int base_x, base_y;
-        calculate_base_sizes(seqnum, base_x, base_y);   /* side-effects */
-        draw_drawable
-        (
-            base_x, base_y, base_x, base_y, m_seqarea_x, m_seqarea_y + 1
-        );
+        int x, y;
+        calculate_base_sizes(seqnum, x, y);                 /* side-effects */
+        draw_drawable(x, y, x, y, m_seqarea_x, m_seqarea_y + 1);
     }
 }
 
@@ -535,13 +526,13 @@ void
 mainwid::redraw (int seqnum)
 {
     draw_sequence_on_pixmap(seqnum);
-    draw_sequence_pixmap_on_window(seqnum);         // effective?
+    draw_sequence_pixmap_on_window(seqnum);
 }
 
 /**
  *  Draw the cursors (long vertical bars) on each sequence, so that they
  *  follow the playing progress of each sequence in the mainwid (Patterns
- *  Panel.)
+ *  Panel).
  *
  * \param ticks
  *      Starting point for drawing the markers.
@@ -587,11 +578,11 @@ mainwid::draw_marker_on_sequence (int seqnum, int tick)
             return;                         /* new 2015-08-23 don't update  */
 
         int base_x, base_y;
-        calculate_base_sizes(seqnum, base_x, base_y);    // side-effects
+        calculate_base_sizes(seqnum, base_x, base_y);    /* side-effects    */
 
         int rectangle_x = base_x + m_text_size_x - 1;
         int rectangle_y = base_y + m_text_size_y + m_text_size_x - 1;
-        int len  = seq->get_length();
+        int len = seq->get_length();
         tick += len - seq->get_trigger_offset();
         tick %= len;
 
@@ -600,7 +591,7 @@ mainwid::draw_marker_on_sequence (int seqnum, int tick)
         (
             rectangle_x + m_last_tick_x[seqnum], rectangle_y + 1,
             rectangle_x + m_last_tick_x[seqnum], rectangle_y + 1,
-            1, m_seqarea_seq_y
+            1, m_progress_height    // m_seqarea_seq_y
         );
         m_last_tick_x[seqnum] = tick_x;
         if (seqnum == current_sequence())
@@ -610,14 +601,21 @@ mainwid::draw_marker_on_sequence (int seqnum, int tick)
         else
         {
             if (seq->get_queued())
+            {
                 m_gc->set_foreground(black());
+            }
             else
-                m_gc->set_foreground(seq->get_playing() ? white() : black());
+            {
+                m_gc->set_foreground
+                (
+                    seq->get_playing() ? white() : progress_color()
+                );
+            }
         }
         draw_line
         (
             rectangle_x + tick_x, rectangle_y + 1,
-            rectangle_x + tick_x, rectangle_y + m_seqarea_seq_y
+            rectangle_x + tick_x, rectangle_y + m_progress_height // m_seqarea_seq_y
         );
     }
 }

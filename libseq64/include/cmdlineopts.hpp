@@ -2,7 +2,7 @@
 #define SEQ64_CMDLINEOPTS_HPP
 
 /**
- * \file    file_functions.hpp
+ * \file    cmdlineopts.hpp
  *
  *    Provides the declarations for safe replacements for some C++
  *    file functions.
@@ -43,7 +43,7 @@ extern bool write_options_files (const perform & p);
 }           // namespace seq64
 
 /*
- * file_functions.hpp
+ * cmdlineopts.hpp
  *
  * vim: sw=4 ts=4 wm=4 et ft=cpp
  */

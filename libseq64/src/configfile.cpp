@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-10
+ * \updates       2016-02-14
  * \license       GNU GPLv2 or above
  *
  *  We found a couple of unused members in this module and removed them.
@@ -43,7 +43,7 @@ namespace seq64
 /**
  *  Provides the string constructor for a configuration file.
  *
- * @param name
+ * \param name
  *      The name of the configuration file.
  */
 
@@ -58,43 +58,58 @@ configfile::configfile (const std::string & name)
 
 /**
  *  Gets the next line of data from an input stream.
+ *  If the line starts with a number-sign, a space (!), or a null, it is
+ *  skipped, to try the next line.  This occurs until an EOF is encountered.
  *
- *  If the line starts with a number-sign, a space (!), or a null, it
- *  is skipped, to try the next line.  This occurs until an EOF is
- *  encountered.
- *
- *  We may try to convert this item to a reference; pointers can
- *  be subject to problems.  For example, what if someone passes a
- *  nullpointer?  For speed, we don't check it.
  *
  *  Member m_line is a "global" return value.
  *
- * @param file
- *      Points to an input stream.
+ * \param file
+ *      Points to an input stream.  We converted this item to a reference;
+ *      pointers can be subject to problems.  For example, what if someone
+ *      passes a null pointer?
+ *
+ * \return
+ *      Returns true if a presumed data line was found.  False is returned if
+ *      not found before an EOF or a section marker ("[") is found.  This is a
+ *      a new (ca 2016-02-14) feature of this function, to assist in adding
+ *      new data to the file.
  */
 
-void
+bool
 configfile::next_data_line (std::ifstream & file)
 {
+    bool result = true;
+    char ch;
     file.getline(m_line, sizeof(m_line));
-    while
-    (
-        (m_line[0] == '#' || m_line[0] == ' ' || m_line[0] == 0) && ! file.eof()
-    )
+    ch = m_line[0];
+    while ((ch == '#' || ch == ' ' || ch == '[' || ch == 0) && ! file.eof())
     {
+        if (m_line[0] == '[')
+        {
+            result = false;
+            break;
+        }
         file.getline(m_line, sizeof(m_line));
+        ch = m_line[0];
     }
+    if (file.eof())
+        result = false;
+
+    return result;
 }
 
 /**
- * This function gets a specific line of text, specified as a tag.
+ *  This function gets a specific line of text, specified as a tag.
+ *  Then it gets the next non-blank line (i.e. data line) after that.
  *
- * @param file
+ * \param file
  *      Points to the input file stream.
  *
- * @param tag
+ * \param tag
  *      Provides a tag to be found.  Lines are read until a match occurs
- *      with this tag.
+ *      with this tag.  Normally, the tag is a section marker, such as
+ *      "[user-interface]".  Best to assume an exact match is needed.
  */
 
 void
@@ -106,7 +121,7 @@ configfile::line_after (std::ifstream & file, const std::string & tag)
     while (strncmp(m_line, tag.c_str(), tag.length()) != 0  && ! file.eof())
         file.getline(m_line, sizeof(m_line));
 
-    next_data_line(file);
+    (void) next_data_line(file);
 }
 
 }           // namespace seq64

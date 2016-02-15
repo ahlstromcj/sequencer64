@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-10-30
- * \updates       2016-02-13
+ * \updates       2016-02-14
  * \license       GNU GPLv2 or above
  *
  *  Man, we need to learn a lot more about triggers.  One important thing to
@@ -45,14 +45,15 @@ namespace seq64
  *  Principal constructor.
  *
  * \param parent
- *      The triggers object often needs to tell its parent sequence object what
- *      to do (such as stop playing).
+ *      The triggers object often needs to tell its parent sequence object
+ *      what to do (such as stop playing).
  */
 
 triggers::triggers (sequence & parent)
  :
     m_parent                    (parent),
     m_triggers                  (),
+    m_clipboard                 (),
     m_undo_stack                (),
     m_redo_stack                (),
     m_iterator_play_trigger     (),
@@ -77,8 +78,17 @@ triggers::~triggers ()
 /**
  *  Principal assignment operator.  Follows the stock rules for such an
  *  operator, but does a little more then just assign member values.
- *  Currently, it does not assign them all, so we should create a partial_copy()
- *  function to do this work, and use it where it is needed.
+ *
+ *  FIXED, BEWARE:
+ *  Currently, it does not assign them all, so we should create a
+ *  partial_copy() function to do this work, and use it where it is needed.
+ *
+ * \param rhs
+ *      Provides the "right-hand side" of the assignment operation.
+ *
+ * \return
+ *      Returns a reference to self, for use in concatenated assignment
+ *      operations.
  */
 
 triggers &
@@ -97,6 +107,14 @@ triggers::operator = (const triggers & rhs)
         m_iterator_play_trigger = rhs.m_iterator_play_trigger;
         m_iterator_draw_trigger = rhs.m_iterator_draw_trigger;
         m_trigger_copied = rhs.m_trigger_copied;
+        
+        /*
+         * \new ca 2016-02-14
+         */
+
+        m_trigger_offset = rhs.m_trigger_offset;
+        m_ppqn = rhs.m_ppqn;
+        m_length = rhs.m_length;
     }
     return *this;
 }
@@ -107,7 +125,7 @@ triggers::operator = (const triggers & rhs)
  */
 
 void
-triggers::push_undo ()  // was push_trigger_undo ()
+triggers::push_undo ()                  // was push_trigger_undo ()
 {
     m_undo_stack.push(m_triggers);
     for
@@ -127,7 +145,7 @@ triggers::push_undo ()  // was push_trigger_undo ()
  */
 
 void
-triggers::pop_undo ()       // was pop_trigger_undo ()
+triggers::pop_undo ()                   // was pop_trigger_undo ()
 {
     if (m_undo_stack.size() > 0)
     {
@@ -138,9 +156,19 @@ triggers::pop_undo ()       // was pop_trigger_undo ()
 }
 
 /**
- *  If playback-mode (live mode?) is in force, that is, if using in-triggers
+ *  If playback-mode (song mode) is in force, that is, if using in-triggers
  *  and on/off triggers, this function handles that kind of playback.
  *  This is a new function for sequence::play() to call.
+ *
+ *  The for-loop goes through all the triggers, determining if there is are
+ *  trigger start/end values before the \a end_tick.  If so, then the trigger
+ *  state is set to true (start only within the tick range) or false (end is
+ *  within the tick range), and the trigger tick is set to start or end.
+ *  The first start or end trigger that is past the end tick cause the search
+ *  to end.
+ *
+ *  If the trigger state has changed, then the start/end ticks are passed back
+ *  to the sequence, and the trigger offset is adjusted.
  *
  * \param start_tick
  *      Provides the starting tick value, and returns the modified value as a
@@ -151,16 +179,16 @@ triggers::pop_undo ()       // was pop_trigger_undo ()
  *      side-effect.
  *
  * \return
- *      Returns true if we're through playing the frame, and the caller should
- *      stop the playback.
+ *      Returns true if we're through playing the frame (trigger turning off),
+ *      and the caller should stop the playback.
  */
 
 bool
 triggers::play (midipulse & start_tick, midipulse & end_tick)
 {
     bool result = false;       /* turns off after frame play */
-    midipulse trigger_offset = 0;
     bool trigger_state = false;
+    midipulse trigger_offset = 0;
     midipulse trigger_tick = 0;
     for (List::iterator i = m_triggers.begin(); i != m_triggers.end(); ++i)
     {
@@ -184,12 +212,12 @@ triggers::play (midipulse & start_tick, midipulse & end_tick)
 
     if (trigger_state != m_parent.get_playing())
     {
-        if (trigger_state)                  /* we are turning on */
+        if (trigger_state)                  /* we are turning on        */
         {
             if (trigger_tick < m_parent.m_last_tick)
-                start_tick = m_parent.m_last_tick;  /* side-effect */
+                start_tick = m_parent.m_last_tick;      /* side-effect  */
             else
-                start_tick = trigger_tick;          /* side-effect */
+                start_tick = trigger_tick;              /* side-effect  */
 
             m_parent.set_playing(true);
         }
@@ -199,8 +227,8 @@ triggers::play (midipulse & start_tick, midipulse & end_tick)
             result = true;                  /* we are done, tell caller */
         }
     }
-        if (m_triggers.size() == 0 && m_parent.get_playing())
-            m_parent.set_playing(false);    /* stop the playing         */
+    if (m_triggers.size() == 0 && m_parent.get_playing())
+        m_parent.set_playing(false);        /* stop the playing         */
 
     m_parent.set_trigger_offset(trigger_offset);
     return result;
@@ -413,7 +441,7 @@ triggers::remove (midipulse tick)
  *
  * \param trig
  *      Provides the original trigger, and also holds the changes made to
- *      that trigger as it is shortened.
+ *      that trigger as it is shortened, as a side-effect.
  *
  * \param splittick
  *      The position just after where the original trigger will be
@@ -459,6 +487,7 @@ triggers::split (midipulse splittick)
  *  for all triggers, and undo triggers.
  *
  * \param newlength
+ *      Provides the length to which to adjust the offsets.
  */
 
 void
@@ -703,25 +732,23 @@ triggers::get_selected_end ()
  * \param which
  *      Selects which movement will be done.  This parameter has three possible
  *      values:
- *          -   If we are moving the 0, use first as offset.
- *          -   If we are moving the 1, use the last as the offset.
- *          -   If we are moving both (2), use first as offset.
+ *
+ *          -#  If we are moving the 0, use first as offset.
+ *          -#  If we are moving the 1, use the last as the offset.
+ *          -#  If we are moving both (2), use first as offset.
  *
  * \return
  *      Returns true if there was room to move.  Otherwise, false is returned.
  *      We need this feature to support keystoke movement of a selected
  *      trigger in the perfroll window, and keep it from continually
- *      incremented when there can be no more movement. This causes moving the
- *      other direction to be delayed while the accumulating movement counter
- *      is used up.  However, right now we can't rely on this result, and
- *      ignore it.  There may be no way around this minor issue.
+ *      incrementing when there can be no more movement. This causes moving
+ *      the other direction to be delayed while the accumulating movement
+ *      counter is used up.  However, right now we can't rely on this result,
+ *      and ignore it.  There may be no way around this minor issue.
  */
 
 bool
-triggers::move_selected
-(
-    midipulse tick, bool fixoffset, int which
-)
+triggers::move_selected (midipulse tick, bool fixoffset, int which)
 {
     bool result = true;
     midipulse mintick = 0;
@@ -798,6 +825,10 @@ triggers::move_selected
 
 /**
  *  Get the ending value of the last trigger in the trigger-list.
+ *
+ * \return
+ *      Returns the tick-end for the last trigger, if available.  Otherwise, 0
+ *      is returned.
  */
 
 midipulse

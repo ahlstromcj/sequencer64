@@ -358,6 +358,10 @@ perfroll::enqueue_draw ()
  *  We would like to be able to leave the line there when the progress is
  *  paused while running off of JACK transport.  How?  The perf().get_tick()
  *  call always returns 0 when stop is in force.
+ *
+ *  If we comment out the erasure of the old line, we see that the progress
+ *  bar is also erased when a pattern boundary is hit (triggers), and when the
+ *  sequence is stopped by the user.
  */
 
 void
@@ -367,11 +371,19 @@ perfroll::draw_progress ()
     midipulse tick_offset = m_4bar_offset * m_ticks_per_bar;
     int progress_x = (tick - tick_offset) / m_perf_scale_x;
     int old_progress_x = (m_old_progress_ticks - tick_offset) / m_perf_scale_x;
-    draw_drawable                                       /* erase old line */
-    (
-        old_progress_x, 0, old_progress_x, 0, 1, m_window_y
-    );
+
+    if (usr().progress_bar_thick())
+    {
+        draw_drawable(old_progress_x-1, 0, old_progress_x-1, 0, 3, m_window_y);
+        set_line(Gdk::LINE_SOLID, 2);
+    }
+    else
+        draw_drawable(old_progress_x, 0, old_progress_x, 0, 1, m_window_y);
+
     draw_line(progress_color(), progress_x, 0, progress_x, m_window_y);
+    if (usr().progress_bar_thick())
+        set_line(Gdk::LINE_SOLID, 1);
+
     m_old_progress_ticks = tick;
 }
 
@@ -438,8 +450,6 @@ perfroll::draw_sequence_on (int seqnum)
                         );
                     }
 
-//                  int lowest_note = seq->get_lowest_note_event();
-//                  int highest_note = seq->get_highest_note_event();
                     int lowest_note;                        // for side-effect
                     int highest_note;                       // ditto
                     bool have_notes = seq->get_minmax_note_events

@@ -68,7 +68,7 @@
 namespace seq64
 {
 
-/**
+/*
  *  Returns a reference to the global rc_settings and user_settings objects.
  *  Why a function instead of direct variable access?  Encapsulation.  We are
  *  then free to change the way "global" settings are accessed, without
@@ -83,8 +83,8 @@ extern user_settings & usr ();
 /**
  *  Define this macro in order to enable some verbose console output from
  *  various modules.  Undefine it (using "#undef") to disable this extra
- *  output Note that this macro can be enabled only while a debug build is in
- *  force.
+ *  output. Note that this macro can be enabled only while a debug build is in
+ *  force.  Also, enabling it hear might cause an explosion of output.
  */
 
 #ifdef PLATFORM_DEBUG
@@ -412,7 +412,8 @@ extern std::string shorten_file_spec (const std::string & fpath, int leng);
  *      SEQ64_USE_DEFAULT_PPQN (-1), then usr().midi_ppqn is returned.
  */
 
-inline int choose_ppqn (int ppqn)
+inline int
+choose_ppqn (int ppqn)
 {
     return (ppqn == SEQ64_USE_DEFAULT_PPQN) ? usr().midi_ppqn() : ppqn ;
 }
@@ -428,7 +429,8 @@ inline int choose_ppqn (int ppqn)
  *      MAXIMUM_PPQN, or is set to SEQ64_USE_DEFAULT_PPQN (-1).
  */
 
-inline bool ppqn_is_valid (int ppqn)
+inline bool
+ppqn_is_valid (int ppqn)
 {
     return
     (

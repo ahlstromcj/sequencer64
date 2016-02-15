@@ -127,7 +127,6 @@ typedef bool cbool_t;
  *
  *    Visual Studio defines only __FUNCTION__, so a definition is provided
  *    below.
- *
  */
 
 #ifdef PLATFORM_GNU
@@ -236,7 +235,7 @@ typedef bool cbool_t;
 #define infoprintf(fmt, x)
 #endif
 
-/*
+/**
  * Global functions.  The not_nullptr_assert() function is a macro in
  * release mode, to speed up release mode.  It cannot do anything at
  * all, since it is used in the conditional part of if-statements.

@@ -400,26 +400,21 @@ sequence::play (midipulse tick, bool playback_mode)
     }
     else
     {
-        if (playback_mode)          /* if using in-sequence on/off triggers */
+        if (playback_mode)                  /* song mode: on/off triggers   */
         {
             /*
-             * A return value and side-effects.
+             * A return value and side-effects.  Tells us if there's a change
+             * in playing status based on triggers, and the ticks that bracket
+             * the action.
              */
 
             trigger_turning_off = m_triggers.play(start_tick, end_tick);
         }
     }
 
-    /*
-     * triggers::play() can call this function on its parent's
-     * behalf.  It could also fill in the start_tick and end_tick values!
-     *
-     * set_trigger_offset(trigger_offset);      // set m_trigger_offset
-     */
-
     midipulse start_tick_offset = (start_tick + m_length - m_trigger_offset);
     midipulse end_tick_offset = (end_tick + m_length - m_trigger_offset);
-    if (m_playing)                              /* play the notes in frame  */
+    if (m_playing)                                  /* play notes in frame  */
     {
         midipulse times_played = m_last_tick / m_length;
         midipulse offset_base = times_played * m_length;
@@ -427,12 +422,6 @@ sequence::play (midipulse tick, bool playback_mode)
         while (e != m_events.end())
         {
             event & er = DREF(e);
-
-            /*
-             * Hope we can do all this within one tick, so that one get of the
-             * timestamp is sufficient.
-             */
-
             midipulse stamp = er.get_timestamp() + offset_base;
             if (stamp >= start_tick_offset && stamp <= end_tick_offset)
                 put_event_on_bus(er);               /* frame still going    */
@@ -442,31 +431,33 @@ sequence::play (midipulse tick, bool playback_mode)
             ++e;                                    /* go to next event     */
             if (e == m_events.end())                /* did we hit the end ? */
             {
-                e = m_events.begin();
-                offset_base += m_length;
+                e = m_events.begin();               /* yes, start over      */
+                offset_base += m_length;            /* for another go at it */
             }
         }
     }
-    if (trigger_turning_off)            /* if triggers say should turn off  */
+    if (trigger_turning_off)                        /* triggers: "turn off" */
         set_playing(false);
 
-    m_last_tick = end_tick + 1;                 /* update for next frame    */
+    m_last_tick = end_tick + 1;                     /* for next frame       */
     m_was_playing = m_playing;
 }
 
 /**
  *  Resets everything to zero.  This function is used when the sequencer
  *  stops.  This function currently sets m_last_tick = 0, but we would like to
- *  avoid that if doing a pause, rather than a stop, of playback.
- *
- * \threadsafe
+ *  avoid that if doing a pause, rather than a stop, of playback.  However,
+ *  commenting out this setting doesn't have any effect that we can see with a
+ *  quick look at the user-interface.
  */
 
 void
 sequence::zero_markers ()
 {
-    automutex locker(m_mutex);
-    m_last_tick = 0;                    /* m_masterbus->flush()         */
+//  automutex locker(m_mutex);
+//  m_last_tick = 0;                    /* m_masterbus->flush()         */
+
+    set_orig_tick(0);
 }
 
 /**
@@ -1992,7 +1983,7 @@ sequence::del_trigger (midipulse tick)
 
 /**
  *  Sets m_trigger_offset and wraps it to m_length.  If m_length is 0, then
- *  it is simply set to the parameter.
+ *  m_trigger_offset is simply set to the parameter.
  *
  * \threadsafe
  *
@@ -2319,72 +2310,6 @@ sequence::reset_draw_trigger_marker ()
     automutex locker(m_mutex);
     m_triggers.reset_draw_trigger_marker();
 }
-
-/*
- * \obsolete
- *      Replaced by sequence::get_minmax_note_events().
- *
- *  Goes through the list of notes, and picks the one with the lowest value.
- *
- * \threadsafe
- *
- * \return
- *      Returns the note with the lowest value.  If there are no notes in the
- *      list, then SEQ64_MIDI_COUNT_MAX-1 is returned, which of course doesn't
- *      tell the caller much.
-
-int
-sequence::get_lowest_note_event ()
-{
-    automutex locker(m_mutex);
-    int result = SEQ64_MIDI_COUNT_MAX-1;
-    for (event_list::iterator i = m_events.begin(); i != m_events.end(); i++)
-    {
-        event & er = DREF(i);
-        if (er.is_note_on() || er.is_note_off())
-        {
-            if (er.get_note() < result)
-                result = er.get_note();
-        }
-    }
-    return result;
-}
- */
-
-/*
- * \obsolete
- *      Replaced by sequence::get_minmax_note_events().
- *
- *  Goes through the list of notes, and picks the one with the highest value.
- *
- * \todo
- *      For efficency, we should calculate this only when the event set
- *      changes, and save the result and return it if good.
- *
- * \threadsafe
- *
- * \return
- *      Returns the note with the highest value.  If there are no notes in the
- *      list, then 0 is returned, which of course doesn't tell the caller
- *      much.
-
-int
-sequence::get_highest_note_event ()
-{
-    automutex locker(m_mutex);
-    int result = 0;
-    for (event_list::iterator i = m_events.begin(); i != m_events.end(); i++)
-    {
-        event & er = DREF(i);
-        if (er.is_note_on() || er.is_note_off())
-        {
-            if (er.get_note() > result)
-                result = er.get_note();
-        }
-    }
-    return result;
-}
- */
 
 /**
  *  A new function provided so that we can find the minimum and maximum notes

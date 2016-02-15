@@ -367,6 +367,7 @@ public:
     {
         return event::get_timestamp();
     }
+
     void timestamp (midipulse ts);
     void timestamp (const std::string & ts_string);
 

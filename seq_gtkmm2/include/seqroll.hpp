@@ -100,6 +100,11 @@ private:
 
     Seq24SeqRollInput m_seq24_interaction;
 
+    /**
+     *  A position value.  Need to clarify what exactly this member is used
+     *  for.
+     */
+
     int m_pos;
 
     /**

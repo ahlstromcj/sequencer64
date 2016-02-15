@@ -28,11 +28,11 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-10-30
- * \updates       2015-11-08
+ * \updates       2016-02-14
  * \license       GNU GPLv2 or above
  *
- *  By segregating trigger support into its own module, the sequence class is a
- *  bit easier to understand.
+ *  By segregating trigger support into its own module, the sequence class is
+ *  a bit easier to understand.
  */
 
 #include <string>
@@ -95,6 +95,12 @@ public:
 
     /**
      *  This operator compares only the m_tick_start members.
+     *
+     * \param rhs
+     *      The "right-hand side" of the less-than operation.
+     *
+     * \return
+     *      Returns true if m_tick_start is less than rhs's.
      */
 
     bool operator < (const trigger & rhs)

@@ -57,13 +57,13 @@
 #include "triggers.hpp"                 /* seq64::triggers, etc.    */
 
 /**
- *  Provides a new option to save the Time Signature and Tempo data
- *  that may be present in a MIDI file (in the first track) in the
- *  sequence object, and write them back to the MIDI file when saved
- *  again, in Sequencer64 format.  The SeqSpec events that Seq24 and
- *  Sequencer64 save for these "events" are not readable by other MIDI
- *  applications, such as QTractor.  By enabling this macro, other
- *  sequencers can read the correct time-signature and tempo values.
+ *  Provides a new option to save the Time Signature and Tempo data that may
+ *  be present in a MIDI file (in the first track) in the sequence object, and
+ *  write them back to the MIDI file when saved again, in Sequencer64 format.
+ *  The SeqSpec events that Seq24 and Sequencer64 save for these "events" are
+ *  not readable by other MIDI applications, such as QTractor.  By enabling
+ *  this macro, other sequencers can read the correct time-signature and tempo
+ *  values.
  */
 
 #define SEQ64_HANDLE_TIMESIG_AND_TEMPO
@@ -902,15 +902,6 @@ public:
         midipulse * tick_s, midipulse * tick_f, int * note,
         bool * selected, int * velocity
     );
-
-    /*
-     * \obsolete
-     *      Replaced by sequence::get_minmax_note_events().
-     *
-     *  int get_lowest_note_event ();
-     *  int get_highest_note_event ();
-     */
-
     bool get_minmax_note_events (int & lowest, int & highest);
     bool get_next_event
     (

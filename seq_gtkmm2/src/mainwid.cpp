@@ -43,6 +43,15 @@
 #include "mainwid.hpp"
 #include "perform.hpp"
 
+/**
+ *  EXPERIMENTAL.
+ *  Try to highlight the selected pattern using black-on-cyan
+ *  coloring, in addition to the red progress bar marking that already exists.
+ *  Currently, it still has issue.
+ */
+
+#undef USE_EXPERIMENTAL_HIGHLIGHT
+
 namespace seq64
 {
 
@@ -206,9 +215,16 @@ mainwid::draw_sequence_on_pixmap (int seqnum)
                 printf("seq# mismatch: %d-%d\n", seqnum, seq->number());
 #endif
 
-            bool high_light = perf().highlight(*seq);
+            bool empty_highlight = perf().highlight(*seq);
             bool smf_0 = perf().is_smf_0(*seq);
-            if (high_light)
+
+#ifdef USE_EXPERIMENTAL_HIGHLIGHT
+            bool current_highlight = smf_0  || seqnum == current_sequence();
+#else
+            bool current_highlight = smf_0;
+#endif
+
+            if (empty_highlight)
             {
                 m_last_playing[seqnum] = false;         /* active, no play  */
                 if (seq->get_playing())
@@ -222,7 +238,7 @@ mainwid::draw_sequence_on_pixmap (int seqnum)
                     fg_color(black());
                 }
             }
-            else if (smf_0)
+            else if (current_highlight)
             {
                 bg_color(dark_cyan());
                 fg_color(black());
@@ -238,8 +254,21 @@ mainwid::draw_sequence_on_pixmap (int seqnum)
                 else
                 {
                     m_last_playing[seqnum] = false;     /* active, no play  */
+#ifdef USE_EXPERIMENTAL_HIGHLIGHT
+                    if (seqnum == current_sequence())
+                    {
+                        bg_color(dark_cyan());
+                        fg_color(black());
+                    }
+                    else
+                    {
+                        bg_color(white());
+                        fg_color(black());
+                    }
+#else
                     bg_color(white());
                     fg_color(black());
+#endif
                 }
             }
 
@@ -256,15 +285,21 @@ mainwid::draw_sequence_on_pixmap (int seqnum)
             );
             m_gc->set_foreground(fg_color());
 
+#ifdef USE_EXPERIMENTAL_HIGHLIGHT
+            current_highlight = smf_0  || seqnum == current_sequence();
+#else
+            current_highlight = smf_0;
+#endif
+
             font::Color col = font::BLACK;
-            if (high_light)
+            if (empty_highlight)
             {
                 if (fg_color() == black())
                     col = font::BLACK_ON_YELLOW;
                 else if (fg_color() == yellow())
                     col = font::YELLOW_ON_BLACK;
             }
-            else if (smf_0)
+            else if (current_highlight)
             {
                 col = font::BLACK_ON_CYAN;
             }
@@ -329,8 +364,6 @@ mainwid::draw_sequence_on_pixmap (int seqnum)
             }
             draw_rectangle_on_pixmap(fg_color(), x, y, lx, ly, false);
 
-//          int lowest_note = seq->get_lowest_note_event();
-//          int highest_note = seq->get_highest_note_event();
             int lowest_note;                                // for side-effect
             int highest_note;                               // ditto
             bool have_notes = seq->get_minmax_note_events
@@ -591,12 +624,12 @@ mainwid::draw_marker_on_sequence (int seqnum, int tick)
         (
             rectangle_x + m_last_tick_x[seqnum], rectangle_y + 1,
             rectangle_x + m_last_tick_x[seqnum], rectangle_y + 1,
-            1, m_progress_height    // m_seqarea_seq_y
+            1, m_progress_height
         );
         m_last_tick_x[seqnum] = tick_x;
         if (seqnum == current_sequence())
         {
-            m_gc->set_foreground(red());
+            m_gc->set_foreground(red());    /* red is easiest to see    */
         }
         else
         {
@@ -615,7 +648,7 @@ mainwid::draw_marker_on_sequence (int seqnum, int tick)
         draw_line
         (
             rectangle_x + tick_x, rectangle_y + 1,
-            rectangle_x + tick_x, rectangle_y + m_progress_height // m_seqarea_seq_y
+            rectangle_x + tick_x, rectangle_y + m_progress_height
         );
     }
 }

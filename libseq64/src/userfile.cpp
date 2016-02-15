@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-01-16
+ * \updates       2016-02-14
  * \license       GNU GPLv2 or above
  *
  *  Note that the parse function has some code that is not yet enabled.
@@ -140,14 +140,14 @@ userfile::parse (perform & /* a_perf */)
         line_after(file, label);
         if (usr().add_bus(m_line))
         {
-            next_data_line(file);
+            (void) next_data_line(file);
             int instruments = 0;
             int instrument;
             int channel;
             sscanf(m_line, "%d", &instruments);
             for (int j = 0; j < instruments; j++)
             {
-                next_data_line(file);
+                (void) next_data_line(file);
                 sscanf(m_line, "%d %d", &channel, &instrument);
                 usr().set_bus_instrument(bus, channel, instrument);
             }
@@ -180,14 +180,14 @@ userfile::parse (perform & /* a_perf */)
         line_after(file, label);
         if (usr().add_instrument(m_line))
         {
-            next_data_line(file);
             char ccname[SEQ64_LINE_MAX];
             int ccs = 0;
+            (void) next_data_line(file);
             sscanf(m_line, "%d", &ccs);
             for (int j = 0; j < ccs; j++)
             {
                 int c = 0;
-                next_data_line(file);
+                (void) next_data_line(file);
                 ccname[0] = 0;                              // clear the buffer
                 sscanf(m_line, "%d %[^\n]", &c, ccname);
                 if (c >= 0 && c < SEQ64_MIDI_CONTROLLER_MAX)      // 128
@@ -233,35 +233,35 @@ userfile::parse (perform & /* a_perf */)
         sscanf(m_line, "%d", &scratch);
         usr().grid_style(scratch);
 
-        next_data_line(file);
+        (void) next_data_line(file);
         sscanf(m_line, "%d", &scratch);
         usr().grid_brackets(scratch);
 
-        next_data_line(file);
+        (void) next_data_line(file);
         sscanf(m_line, "%d", &scratch);
         usr().mainwnd_rows(scratch);
 
-        next_data_line(file);
+        (void) next_data_line(file);
         sscanf(m_line, "%d", &scratch);
         usr().mainwnd_cols(scratch);
 
-        next_data_line(file);
+        (void) next_data_line(file);
         sscanf(m_line, "%d", &scratch);
         usr().max_sets(scratch);
 
-        next_data_line(file);
+        (void) next_data_line(file);
         sscanf(m_line, "%d", &scratch);
         usr().mainwid_border(scratch);
 
-        next_data_line(file);
+        (void) next_data_line(file);
         sscanf(m_line, "%d", &scratch);
         usr().mainwid_spacing(scratch);
 
-        next_data_line(file);
+        (void) next_data_line(file);
         sscanf(m_line, "%d", &scratch);
         usr().control_height(scratch);
 
-        next_data_line(file);
+        (void) next_data_line(file);
         sscanf(m_line, "%d", &scratch);
         usr().zoom(scratch);
 
@@ -271,7 +271,7 @@ userfile::parse (perform & /* a_perf */)
          * file, not in the "user" configuration file.
          */
 
-        next_data_line(file);
+        (void) next_data_line(file);
         sscanf(m_line, "%d", &scratch);
         usr().global_seq_feature(scratch != 0);
 
@@ -280,22 +280,39 @@ userfile::parse (perform & /* a_perf */)
          * new font.
          */
 
-        next_data_line(file);
+        (void) next_data_line(file);
         sscanf(m_line, "%d", &scratch);
         usr().use_new_font(scratch != 0);
 
-        next_data_line(file);
+        (void) next_data_line(file);
         sscanf(m_line, "%d", &scratch);
         usr().allow_two_perfedits(scratch != 0);
 
-        next_data_line(file);
+        (void) next_data_line(file);
         sscanf(m_line, "%d", &scratch);
         usr().perf_h_page_increment(scratch);
 
-        next_data_line(file);
+        (void) next_data_line(file);
         sscanf(m_line, "%d", &scratch);
         usr().perf_v_page_increment(scratch);
 
+        /*
+         *  Here, we start checking the lines, on the theory that these
+         *  very new (2016-02-14) items might mess up people who already have
+         *  older Sequencer64 "user" configuration files.
+         */
+
+        if (next_data_line(file))
+        {
+            sscanf(m_line, "%d", &scratch);
+            usr().progress_bar_colored(scratch != 0);
+
+            if (next_data_line(file))
+            {
+                sscanf(m_line, "%d", &scratch);
+                usr().progress_bar_thick(scratch != 0);
+            }
+        }
         usr().normalize();    /* calculate derived values */
     }
     else
@@ -318,6 +335,8 @@ userfile::parse (perform & /* a_perf */)
         usr().allow_two_perfedits(false);
         usr().perf_h_page_increment(1);
         usr().perf_v_page_increment(1);
+        usr().progress_bar_colored(false);
+        usr().progress_bar_thick(false);
     }
 
     /*
@@ -716,6 +735,26 @@ userfile::write (const perform & /* a_perf */ )
             "\n"
             << usr().perf_v_page_increment()
             << "      # perf_v_page_increment\n"
+            ;
+
+        file << "\n"
+            "# Specifies if the progress bar is colored black, or a different\n"
+            "# color.  Currently, the different color is hardwired, and is\n"
+            "# red.  The other colors are washed out compared to red. Set this\n"
+            "# value to 1 to enable the feature, 0 to disable it.\n"
+            "\n"
+            << (usr().progress_bar_colored() ? "1" : "0")
+            << "      # progress_bar_colored\n"
+            ;
+
+        file << "\n"
+            "# Specifies if the progress bar is thicker.  The default is 1\n"
+            "# pixel.  The 'thick' value is 2 pixels.  (More than that is not\n"
+            "# useful.  Set this value to 1 to enable the feature, 0 to disable\n"
+            "# it.\n"
+            "\n"
+            << (usr().progress_bar_thick() ? "1" : "0")
+            << "      # progress_bar_thick\n"
             ;
     }
 

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-23
- * \updates       2016-01-21
+ * \updates       2016-02-14
  * \license       GNU GPLv2 or above
  *
  *  Note that this module also sets the remaining legacy global variables, so
@@ -144,6 +144,8 @@ user_settings::user_settings ()
     m_allow_two_perfedits       (false),
     m_h_perf_page_increment     (1),
     m_v_perf_page_increment     (1),
+    m_progress_bar_colored      (false),
+    m_progress_bar_thick        (false),
 
     /*
      * The members that follow are not yet part of the .usr file.
@@ -230,6 +232,8 @@ user_settings::user_settings (const user_settings & rhs)
     m_allow_two_perfedits       (rhs.m_allow_two_perfedits),
     m_h_perf_page_increment     (rhs.m_h_perf_page_increment),
     m_v_perf_page_increment     (rhs.m_v_perf_page_increment),
+    m_progress_bar_colored      (rhs.m_progress_bar_colored),
+    m_progress_bar_thick        (rhs.m_progress_bar_thick),
 
     /*
      * The members that follow are not yet part of the .usr file.
@@ -319,6 +323,8 @@ user_settings::operator = (const user_settings & rhs)
         m_allow_two_perfedits       = rhs.m_allow_two_perfedits;
         m_h_perf_page_increment     = rhs.m_h_perf_page_increment;
         m_v_perf_page_increment     = rhs.m_v_perf_page_increment;
+        m_progress_bar_colored      = rhs.m_progress_bar_colored;
+        m_progress_bar_thick        = rhs.m_progress_bar_thick;
 
         /*
          * The members that follow are not yet part of the .usr file.
@@ -398,6 +404,8 @@ user_settings::set_defaults ()
     m_allow_two_perfedits = true;
     m_h_perf_page_increment = 4;
     m_v_perf_page_increment = 8;
+    m_progress_bar_colored = false;
+    m_progress_bar_thick = false;
 
     m_text_x =  6;                      // range: 6-6
     m_text_y = 12;                      // range: 12-12

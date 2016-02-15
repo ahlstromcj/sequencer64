@@ -43,8 +43,8 @@
  */
 
 /**
- *  Provides a macro for comparing our types with GDK types, with absolutely no
- *  safety at all.  Use at your own risk.  We do!
+ *  Provides a macro for comparing our types with GDK types, with absolutely
+ *  no safety at all.  Use at your own risk.  We do!
  */
 
 #define CAST_EQUIVALENT(x, y)           ((int)(x) == (int)(y))
@@ -59,7 +59,8 @@
 #define OR_EQUIVALENT(x, y, z)          ((x) == (y) || (x) == (z))
 
 /**
- *
+ *  Defines our own names for keystrokes, so that we don't need to rely
+ *  on the headers of a particular user-interface framework.
  */
 
 #ifndef SEQ64_Home
@@ -285,7 +286,7 @@ typedef enum
     SEQ64_BUTTON4_MASK      = 1 << 11,
     SEQ64_BUTTON5_MASK      = 1 << 12,
 
-    /*
+    /**
      * Bits 13 and 14 are used by XKB, bits 15 to 25 are unused. Bit 29 is
      * used internally.
      */

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-01-20
+ * \updates       2016-02-14
  * \license       GNU GPLv2 or above
  *
  */
@@ -50,6 +50,37 @@ namespace seq64
 
 /**
  *  Principal constructor.
+ *
+ * \param p
+ *      The performance object that helps control this piano roll.  Note that
+ *      we can get the perform object from the sequence, and save a parameter.
+ *      Low priority change.
+ *
+ * \param seq
+ *      The sequence object represented by this piano roll.
+ *
+ * \param zoom
+ *      The initial zoom of this piano roll.
+ *
+ * \param snap
+ *      The initial grid snap of this piano roll.
+ *
+ * \param seqkeys_wid
+ *      A reference to the piano keys window that is shown to the left of this
+ *      piano roll.
+ *
+ * \param pos
+ *      A position parameter.  See the description of seqroll::m_pos.
+ *
+ * \param hadjust
+ *      Represents the horizontal scrollbar of this windows.
+ *
+ * \param vadjust
+ *      Represents the vertical scrollbar of this windows.
+ *
+ * \param ppqn
+ *      The initial value of the PPQN for this sequence.  Useful in scale
+ *      calculations.
  */
 
 seqroll::seqroll
@@ -105,7 +136,8 @@ seqroll::seqroll
 }
 
 /**
- *  Provides a destructor to delete allocated objects.
+ *  Provides a destructor to delete allocated objects.  The only thing to
+ *  delete here is the clipboard.
  */
 
 seqroll::~seqroll ()
@@ -122,7 +154,7 @@ seqroll::~seqroll ()
  * \param state
  *      If true, the background sequence will be drawn.
  *
- * \pararm seq
+ * \param seq
  *      Provides the sequence number, which is checked against the
  *      SEQ64_IS_LEGAL_SEQUENCE() macro before being used.  This macro allows 
  *      the value SEQ64_SEQUENCE_LIMIT, which disables the background
@@ -154,14 +186,14 @@ seqroll::update_sizes ()
     m_hadjust.set_upper(m_seq.get_length());
     m_hadjust.set_page_size(m_window_x * m_zoom);
 
-    /*
+    /**
      * The horizontal step increment is 1 semiquaver (1/16) note per zoom
      * level.
      */
 
     m_hadjust.set_step_increment((m_ppqn / 4) * m_zoom);
 
-    /*
+    /**
      * The page increment is always one bar.
      */
 
@@ -418,6 +450,9 @@ seqroll::update_background ()
 
 /**
  *  Sets the zoom to the given value, and then resets the view.
+ *
+ * \param zoom
+ *      The desired zoom value.
  */
 
 void
@@ -432,6 +467,9 @@ seqroll::set_zoom (int zoom)
 
 /**
  *  Sets the music scale to the given value, and then resets the view.
+ *
+ * \param scale
+ *      The desired scale value.
  */
 
 void
@@ -446,6 +484,9 @@ seqroll::set_scale (int scale)
 
 /**
  *  Sets the music key to the given value, and then resets the view.
+ *
+ * \param key
+ *      The desired key value.
  */
 
 void
@@ -472,19 +513,34 @@ seqroll::update_pixmap ()
 }
 
 /**
- *  Draw a progress line on the window.
+ *  Draw a progress line on the window.  This is done by first blanking out
+ *  the line with the background, which contains white space and grey lines,
+ *  using the the draw_drawable function.  Remember that we wrap the
+ *  draw_drawable() function so it's parameters are xsrc, ysrc, xdest, ydest,
+ *  width, and height.
  */
 
 void
 seqroll::draw_progress_on_window ()
 {
-    draw_drawable
-    (
-        m_old_progress_x, 0, m_old_progress_x, 0, 1, m_window_y
-    );
+    if (usr().progress_bar_thick())
+    {
+        draw_drawable(m_old_progress_x-1, 0, m_old_progress_x-1, 0, 2, m_window_y);
+        set_line(Gdk::LINE_SOLID, 2);
+    }
+    else
+        draw_drawable(m_old_progress_x, 0, m_old_progress_x, 0, 1, m_window_y);
+
     m_old_progress_x = (m_seq.get_last_tick() / m_zoom) - m_scroll_offset_x;
     if (m_old_progress_x != 0)
-        draw_line(black(), m_old_progress_x, 0, m_old_progress_x, m_window_y);
+    {
+        draw_line
+        (
+            progress_color(), m_old_progress_x, 0, m_old_progress_x, m_window_y
+        );
+        if (usr().progress_bar_thick())
+            set_line(Gdk::LINE_SOLID, 1);
+    }
 }
 
 /**
@@ -492,6 +548,9 @@ seqroll::draw_progress_on_window ()
  *
  *  "Method 0" seems be the one that draws the background sequence, if active.
  *  "Method 1" draws the sequence itself.
+ *
+ * \param draw
+ *      Provides the area on which to draw.
  */
 
 void
@@ -734,58 +793,83 @@ seqroll::force_draw ()
  *  This function takes the given x and y screen coordinates, and returns
  *  the note and the tick via the pointer parameters.  This function is
  *  the "inverse" of convert_tn().
+ *
+ * \param x
+ *      Provides the x value of the coordinate.
+ *
+ * \param y
+ *      Provides the y value of the coordinate.
+ *
+ * \param tick
+ *      Provides the destination for the horizontal value in MIDI pulses.
+ *
+ * \param note
+ *      Provides the destination for the vertical value, a note value.
  */
 
 void
-seqroll::convert_xy (int a_x, int a_y, midipulse & a_tick, int & a_note)
+seqroll::convert_xy (int x, int y, midipulse & tick, int & note)
 {
-    a_tick = a_x * m_zoom;
-    a_note = (c_rollarea_y - a_y - 2) / c_key_y;
+    tick = x * m_zoom;
+    note = (c_rollarea_y - y - 2) / c_key_y;
 }
 
 /**
  * This function takes the given note and tick, and returns the screen
  * coordinates via the pointer parameters.  This function is the "inverse"
  * of convert_xy().
+ *
+ * \param tick
+ *      Provides the horizontal value in MIDI pulses.
+ *
+ * \param note
+ *      Provides the vertical value, a note value.
+ *
+ * \param x
+ *      Provides the destination x value of the coordinate.
+ *
+ * \param y
+ *      Provides the destination y value of the coordinate.
  */
 
 void
-seqroll::convert_tn (midipulse a_ticks, int a_note, int & a_x, int & a_y)
+seqroll::convert_tn (midipulse ticks, int note, int & x, int & y)
 {
-    a_x = a_ticks /  m_zoom;
-    a_y = c_rollarea_y - ((a_note + 1) * c_key_y) - 1;
+    x = ticks /  m_zoom;
+    y = c_rollarea_y - ((note + 1) * c_key_y) - 1;
 }
 
 /**
- *  This function checks the mins / maxes, and then fills in the x, y,
- *  width, and height values.
+ *  Converts rectangle corner coordinates to a starting coordinate, plus a
+ *  width and height.  This function checks the mins / maxes, and then fills
+ *  in the x, y, width, and height values.
  */
 
 void
 seqroll::xy_to_rect
 (
-    int a_x1, int a_y1, int a_x2, int a_y2,
-    int & a_x, int & a_y, int & a_w, int & a_h)
+    int x1, int y1, int x2, int y2,
+    int & x, int & y, int & w, int & h)
 {
-    if (a_x1 < a_x2)
+    if (x1 < x2)
     {
-        a_x = a_x1;
-        a_w = a_x2 - a_x1;
+        x = x1;
+        w = x2 - x1;
     }
     else
     {
-        a_x = a_x2;
-        a_w = a_x1 - a_x2;
+        x = x2;
+        w = x1 - x2;
     }
-    if (a_y1 < a_y2)
+    if (y1 < y2)
     {
-        a_y = a_y1;
-        a_h = a_y2 - a_y1;
+        y = y1;
+        h = y2 - y1;
     }
     else
     {
-        a_y = a_y2;
-        a_h = a_y1 - a_y2;
+        y = y2;
+        h = y1 - y2;
     }
 }
 
@@ -796,15 +880,15 @@ seqroll::xy_to_rect
 void
 seqroll::convert_tn_box_to_rect
 (
-    midipulse a_tick_s, midipulse a_tick_f, int a_note_h, int a_note_l,
-    int & a_x, int & a_y, int & a_w, int & a_h
+    midipulse tick_s, midipulse tick_f, int note_h, int note_l,
+    int & x, int & y, int & w, int & h
 )
 {
     int x1, y1, x2, y2;
-    convert_tn(a_tick_s, a_note_h, x1, y1);     /* convert box to X,Y values */
-    convert_tn(a_tick_f, a_note_l, x2, y2);
-    xy_to_rect(x1, y1, x2, y2, a_x, a_y, a_w, a_h);
-    a_h += c_key_y;
+    convert_tn(tick_s, note_h, x1, y1);     /* convert box to X,Y values */
+    convert_tn(tick_f, note_l, x2, y2);
+    xy_to_rect(x1, y1, x2, y2, x, y, w, h);
+    h += c_key_y;
 }
 
 /**

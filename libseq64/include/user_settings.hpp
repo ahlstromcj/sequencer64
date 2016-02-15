@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-22
- * \updates       2016-02-10
+ * \updates       2016-02-14
  * \license       GNU GPLv2 or above
  *
  *  This module defines the following categories of "global" variables that
@@ -149,6 +149,25 @@ class user_settings
 
     /**
      *  [user-interface-settings]
+     *
+     *  These are not labelled, but are present in the "user" configuration
+     *  file in the following order:
+     *
+     *      -#  grid-style
+     *      -#  grid-brackets
+     *      -#  mainwnd-rows
+     *      -#  mainwnd-cols
+     *      -#  max-set
+     *      -#  mainwid-border
+     *      -#  control-height
+     *      -#  zoom
+     *      -#  global-seq-feature
+     *      -#  use-new-font
+     *      -#  allow-two-perfedits
+     *      -#  perf-h-page-increment
+     *      -#  perf-v-page-increment
+     *      -#  progress-bar-colored (new)
+     *      -#  progress-bar-thick (new)
      */
 
     /**
@@ -319,6 +338,21 @@ class user_settings
     int m_v_perf_page_increment;
 
     /**
+     *  If set, makes progress bars have the "progress_color()", instead of
+     *  black.  This value is hardwired in the gui_palette_gtk2 module, to
+     *  red.  Really, that is the only color that stands out as well as black.
+     */
+
+    bool m_progress_bar_colored;
+
+    /**
+     *  If set, makes progress bars thicker than 1 pixel... 2 pixels.
+     *  It isn't useful to support anything thicker.
+     */
+
+    bool m_progress_bar_thick;
+
+    /**
      *  Constants for the mainwid class.  The m_text_x and m_text_y
      *  constants help define the "seqarea" size.  It looks like these two
      *  values are the character width (x) and height (y) in pixels.
@@ -332,18 +366,18 @@ class user_settings
      *  background) and <tt> font_w.xpm </tt> (white lettering on a black
      *  background).
      *
-     *  We have added black-on-yellow and yellow-on-black versions of the fonts,
-     *  to support the highlighting of pattern boxes if they are empty of
-     *  actual MIDI events.
+     *  We have added black-on-yellow and yellow-on-black versions of the
+     *  fonts, to support the highlighting of pattern boxes if they are empty
+     *  of actual MIDI events.
      *
      *  We have also added a set of four new font files that are roughly the
      *  same size, and are treated as the same size, but look smooth and less
      *  like a DOS-era font.
      *
-     *  The font module does not use these values directly, but does define some
-     *  similar variables that differ slightly between the two styles of font.
-     *  There are a lot of tricks and hard-wired places to fix before further
-     *  work can be done with fonts in Sequencer64.
+     *  The font module does not use these values directly, but does define
+     *  some similar variables that differ slightly between the two styles of
+     *  font.  There are a lot of tricks and hard-wired places to fix before
+     *  further work can be done with fonts in Sequencer64.
      */
 
     int m_text_x;       /* c_text_x =  6, does not include inner padding    */
@@ -1064,6 +1098,24 @@ public:
     }
 
     /**
+     * \getter m_progress_bar_colored
+     */
+    
+    bool progress_bar_colored () const
+    {
+        return m_progress_bar_colored;
+    }
+
+    /**
+     * \getter m_progress_bar_thick
+     */
+    
+    bool progress_bar_thick () const
+    {
+        return m_progress_bar_thick;
+    }
+
+    /**
      * \getter m_save_user_config
      */
 
@@ -1208,8 +1260,8 @@ public:         // used in main application module and the userfile class
     }
 
     /**
-     *  Sets the value of allowing two perfedits to be created and shown to the
-     *  user.
+     *  Sets the value of allowing two perfedits to be created and shown to
+     *  the user.
      */
 
     void allow_two_perfedits (bool flag)
@@ -1219,6 +1271,24 @@ public:         // used in main application module and the userfile class
 
     void perf_h_page_increment (int inc);
     void perf_v_page_increment (int inc);
+
+    /**
+     * \setter m_progress_bar_colored
+     */
+
+    void progress_bar_colored (bool flag)
+    {
+        m_progress_bar_colored = flag;
+    }
+
+    /**
+     * \setter m_progress_bar_thick
+     */
+
+    void progress_bar_thick (bool flag)
+    {
+        m_progress_bar_thick = flag;
+    }
 
     void midi_ppqn (int ppqn);
     void midi_buss_override (char buss);

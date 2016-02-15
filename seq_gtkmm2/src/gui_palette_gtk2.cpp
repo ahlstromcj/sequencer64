@@ -29,7 +29,7 @@
  *
  */
 
-#include "globals.h"                    /* rc() access for legacy format    */
+#include "globals.h"                    /* usr() access for legacy format   */
 #include "gui_palette_gtk2.hpp"         /* seq64::gui_palette_gtkw          */
 
 namespace seq64
@@ -56,7 +56,7 @@ gui_palette_gtk2::gui_palette_gtk2 ()
     m_blue              (Color("blue")),
     m_dk_cyan           (Color("dark cyan")),
     m_line_color        (Color("dark cyan")),           // alternative to black
-    m_progress_color    (Color(rc().legacy_format() ? "black" : "red")),
+    m_progress_color    (Color(usr().progress_bar_colored() ? "red" : "black")),
     m_bg_color          (),
     m_fg_color          ()
 {

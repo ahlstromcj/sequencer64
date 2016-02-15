@@ -28,9 +28,11 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-23
+ * \updates       2016-02-14
  * \license       GNU GPLv2 or above
  *
+ *  This is actually an elegant little parser, and works well as long as one
+ *  respects its limitations.
  */
 
 #include <fstream>
@@ -60,7 +62,7 @@ class configfile
 protected:
 
     /**
-     *  Provides the name of the file.
+     *  Provides the name of the configuration file.
      */
 
     std::string m_name;
@@ -81,12 +83,12 @@ protected:
 
 protected:
 
-    void next_data_line (std::ifstream & a_file);
-    void line_after (std::ifstream & a_file, const std::string & a_tag);
+    bool next_data_line (std::ifstream & file);
+    void line_after (std::ifstream & file, const std::string & tag);
 
 public:
 
-    configfile (const std::string & a_name);
+    configfile (const std::string & name);
 
     /**
      *  A rote destructor needed for a base class.
@@ -97,8 +99,8 @@ public:
         // empty body
     }
 
-    virtual bool parse (perform & a_perf) = 0;
-    virtual bool write (const perform & a_perf) = 0;
+    virtual bool parse (perform & perf) = 0;
+    virtual bool write (const perform & perf) = 0;
 
 };
 

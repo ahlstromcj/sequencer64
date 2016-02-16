@@ -1071,7 +1071,8 @@ mastermidibus::get_midi_event (event * inev)
  *
  * \parem seq
  *      Provides the sequence object to be logged as the mastermidibus's
- *      sequence.
+ *      sequence.  Can also be used to set a null pointer, to disable the
+ *      sequence setting.
  */
 
 void

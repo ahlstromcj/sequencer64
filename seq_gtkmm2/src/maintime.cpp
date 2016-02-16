@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-01-20
+ * \updates       2016-02-15
  * \license       GNU GPLv2 or above
  *
  *  The "time" window is the horizontal bar at the upper right of the main
@@ -117,9 +117,6 @@ maintime::idle_progress (midipulse ticks)
 {
     if (ticks > 0)
     {
-//      if (ticks != m_tick)
-//          printf("idle_progress(%ld)\n", long(ticks));
-
         int tick_x = (ticks % m_ppqn) * m_box_width / m_ppqn;
         int beat_x = ((ticks / m_beat_width) % m_ppqn) * m_box_less_pill / m_ppqn;
         int bar_x  = ((ticks / m_bar_width)  % m_ppqn) * m_box_less_pill / m_ppqn;

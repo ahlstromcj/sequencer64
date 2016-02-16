@@ -33,7 +33,7 @@
  *
  *  This module defines the following categories of "global" variables that
  *  are good to collect in one place, especially for settings stored in the
- *  "user" configuration file (<tt> sequencer64.usr </tt>):
+ *  "user" configuration file (<code> sequencer64.usr </code>):
  *
  *      -   The [user-midi-bus] settings, collected in the user_midi_bus
  *          class.
@@ -361,9 +361,9 @@ class user_settings
      *  the default font specification.
      *
      *  However, please not that font files are not used.  Instead, the
-     *  fonts are provided by two pixmaps in the <tt> src/pixmap </tt>
-     *  directory: <tt> font_b.xpm </tt> (black lettering on a white
-     *  background) and <tt> font_w.xpm </tt> (white lettering on a black
+     *  fonts are provided by two pixmaps in the <code> src/pixmap </code>
+     *  directory: <code> font_b.xpm </code> (black lettering on a white
+     *  background) and <code> font_w.xpm </code> (white lettering on a black
      *  background).
      *
      *  We have added black-on-yellow and yellow-on-black versions of the

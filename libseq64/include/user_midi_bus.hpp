@@ -58,10 +58,10 @@ const int c_max_busses = SEQ64_DEFAULT_BUSS_MAX;
 #define SEQ64_MIDI_BUS_CHANNEL_MAX       16
 
 /**
- *  This structure corresponds to <tt> [user-midi-bus-0] </tt>
- *  definitions in the <tt> ~/.seq24usr </tt> ("user") file
- *  (<tt> ~/.config/sequencer64/sequencer64.usr </tt> in the latest version of
- *  the application).
+ *  This structure corresponds to <code> [user-midi-bus-0] </code>
+ *  definitions in the <code> ~/.seq24usr </code> ("user") file
+ *  (<code> ~/.config/sequencer64/sequencer64.usr </code> in the latest
+ *  version of the application).
  */
 
 struct user_midi_bus_t

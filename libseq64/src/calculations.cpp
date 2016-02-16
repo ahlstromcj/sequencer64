@@ -554,9 +554,9 @@ string_to_midibyte (const std::string & s)
  *  provided length value.  This is done by removing character in the middle,
  *  if necessary, and replacing them with an ellipse.
  *
- *  This function operates by first trying to find the <tt> /home </tt>
- *  directory.  If found, it strips off <tt> /home/username </tt> and replace
- *  it with the Linux <tt> ~ </tt> replacement for the <tt> $HOME </tt>
+ *  This function operates by first trying to find the <code> /home </code>
+ *  directory.  If found, it strips off <code> /home/username </code> and replace
+ *  it with the Linux <code> ~ </code> replacement for the <code> $HOME </code>
  *  environment variable.  This function assumes that the "username" portion
  *  <i> must </i> exist, and that there's no goofy stuff like double-slashes
  *  in the path.

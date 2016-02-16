@@ -1,11 +1,20 @@
 Bugs and Additional Upgrade Ideas
 Chris Ahlstrom
-2015-10-27 to 2016-02-13 (New bugs)
+2015-10-27 to 2016-02-15 (New bugs)
 
 In no particular order...  "y" means "in progress", and "x" means it is
 basically done.
 
 -  See BUG REPORTS below.
+-  Interesting.  The non-empty patch sequences in the "b4uacuse" MIDI files
+   at first show progress bars that run wildly.  But, if one does a
+   right-click Edit on them, then they run properly for a 4/4 one-bar patter.
+   WHY?  Need to do that without bringing up the sequence editor.
+   However, if the file is saved after that, and reloaded, now the patterns
+   are fine.  The differences?
+   -    The new file has "TimeSig 4/4 24 8"  and "Tempo 8".
+   I also suspect the various seq-set functions (for beat, etc) that are
+   called modify the sequence to make it work.
 -  Make sure that Sequencer64 handles running status, via the files that
    midicvt discusses.
 -  Need to clarify the behavior of JACK-Live mode versus using the controls of

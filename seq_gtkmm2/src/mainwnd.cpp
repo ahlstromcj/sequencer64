@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-01-30
+ * \updates       2016-02-15
  * \license       GNU GPLv2 or above
  *
  *  The main window holds the menu and the main controls of the application,
@@ -136,7 +136,8 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
     m_spinbutton_load_offset(nullptr),
     m_adjust_load_offset    (nullptr),
     m_entry_notes           (nullptr),
-    m_timeout_connect       ()                          // handler
+    m_timeout_connect       (),                     // handler
+    m_timeout_period_ms     (25)                    // 25 is the norm!!!
 {
     /*
      * This provides the application icon, seen in the title bar of the
@@ -442,7 +443,7 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
     add_events(Gdk::KEY_PRESS_MASK | Gdk::KEY_RELEASE_MASK);
     m_timeout_connect = Glib::signal_timeout().connect
     (
-        mem_fun(*this, &mainwnd::timer_callback), 25    // 25 ms, fast!
+        mem_fun(*this, &mainwnd::timer_callback), m_timeout_period_ms
     );
     m_sigpipe[0] = -1;                      // initialize static array
     m_sigpipe[1] = -1;

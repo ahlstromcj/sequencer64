@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-12-05
- * \updates       2016-02-06
+ * \updates       2016-02-15
  * \license       GNU GPLv2 or above
  *
  * To consider:
@@ -198,6 +198,18 @@ eventedit::eventedit
     set_title(title);                                       /* caption bar  */
     set_icon(Gdk::Pixbuf::create_from_xpm_data(perfedit_xpm));
     m_seq.set_editing(true);
+
+    /*
+     *  The seqedit class indirectly sets the sequence dirty flags, and this
+     *  allows the sequence's pattern slot to be updated, which, for example,
+     *  allows the new experimental in-edit-highlight feature to work.  To get
+     *  the eventedit to also show the in-edit highlighing, we can make this
+     *  call.  This call does NOT cause a prompt for saving the file when
+     *  exiting.
+     */
+
+    m_seq.set_dirty_mp();
+
     m_table->set_border_width(2);
     m_htopbox->set_border_width(4);
     m_showbox->set_border_width(4);
@@ -386,12 +398,13 @@ eventedit::eventedit
     m_bottbox->pack_start(*m_button_cancel, true, true, 8); /* expand/fill/pad */
 
     m_label_time_fmt->set_width_chars(32);
-    m_label_time_fmt->set_text("Sequencer64");  //" Time Format (radio buttons)"
-    m_optsbox->pack_end(*m_label_time_fmt, false, false);
+    m_label_time_fmt->set_text("Sequencer64");
 
+    m_optsbox->pack_end(*m_label_time_fmt, false, false);
     m_rightbox->pack_start(*m_label_right, false, false);
 
     add(*m_table);
+    show_all();
 }
 
 /**

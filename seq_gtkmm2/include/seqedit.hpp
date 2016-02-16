@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-23
+ * \updates       2016-02-15
  * \license       GNU GPLv2 or above
  *
  */
@@ -38,7 +38,6 @@
 #include <gtkmm/window.h>
 
 #include "gui_window_gtk2.hpp"
-#include "sequence.hpp"
 
 namespace Gtk
 {
@@ -60,11 +59,12 @@ namespace seq64
 {
 
 class perform;
-class seqroll;
-class seqkeys;
-class seqdata;
-class seqtime;
 class seqevent;
+class seqdata;
+class seqkeys;
+class seqroll;
+class seqtime;
+class sequence;
 
 /**
  *  Implements the Pattern Editor, which has references to:

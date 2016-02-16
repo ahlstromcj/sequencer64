@@ -374,7 +374,7 @@ editable_event::editable_event (const editable_event & rhs)
     // Empty body
 }
 
-/**
+/*
  *  This principal assignment operator sets the class members.
  *
  * \param rhs

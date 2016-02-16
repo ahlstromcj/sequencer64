@@ -6,7 +6,7 @@
 # \library    	libseq64 library
 # \author     	Chris Ahlstrom
 # \date       	2015-09-11
-# \update      2016-01-17
+# \update      2016-02-15
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -138,7 +138,6 @@ libseq64_la_SOURCES = \
 	mutex.cpp \
 	optionsfile.cpp \
    perform.cpp \
-   perfstats.cpp \
 	rc_settings.cpp \
 	sequence.cpp \
 	triggers.cpp \

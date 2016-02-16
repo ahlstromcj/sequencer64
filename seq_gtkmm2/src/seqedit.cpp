@@ -25,9 +25,11 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-12-04
+ * \updates       2016-02-15
  * \license       GNU GPLv2 or above
  *
+ *  Compare this class to eventedit, which has to do some similar things,
+ *  though it has a lot fewer user-interface controls to manage.
  */
 
 #include <gtkmm/adjustment.h>
@@ -58,6 +60,7 @@
 #include "seqkeys.hpp"
 #include "seqroll.hpp"
 #include "seqtime.hpp"
+#include "sequence.hpp"
 
 #include "pixmaps/play.xpm"
 #include "pixmaps/q_rec.xpm"
@@ -174,7 +177,7 @@ seqedit::seqedit
     m_menu_bpm          (manage(new Gtk::Menu())),
     m_menu_bw           (manage(new Gtk::Menu())),
     m_menu_rec_vol      (manage(new Gtk::Menu())),
-    m_pos               (pos),
+    m_pos               (pos),                          // could dispense with
     m_vadjust           (manage(new Gtk::Adjustment(55, 0, c_num_keys, 1, 1, 1))),
     m_hadjust           (manage(new Gtk::Adjustment(0, 0, 1, 1, 1, 1))),
     m_vscroll_new       (manage(new Gtk::VScrollbar(*m_vadjust))),
@@ -249,7 +252,6 @@ seqedit::seqedit
     title.append(m_seq.get_name());
     set_title(title);
     m_seq.set_editing(true);
-
     create_menus();
 
     Gtk::HBox * dhbox = manage(new Gtk::HBox(false, 2));
@@ -368,20 +370,21 @@ seqedit::seqedit
     show_all();
 
     /*
-     * OPTION?  Sets scroll bar to the middle:
+     * OPTION?  Sets vertical scroll bar to the middle:
      *
      * gfloat middle = m_vscroll->get_adjustment()->get_upper() / 3;
      * m_vscroll->get_adjustment()->set_value(middle);
      */
 
-    /*
-     * Let's try this user-interface without calling this function:
-     *
-     * m_seqroll_wid->set_ignore_redraw(true);
-     */
-
     set_zoom(m_zoom);
     set_snap(m_snap);
+
+    /*
+     *  The following few calls cause sequence::set_dirty_mp() to be called,
+     *  which makes mainwid redraw the seqeuence, but does not make the
+     *  application prompt for saving changes when exiting.
+     */
+
     set_note_length(m_note_length);
     set_beats_per_bar(m_seq.get_beats_per_bar());
     set_beat_width(m_seq.get_beat_width());
@@ -389,7 +392,6 @@ seqedit::seqedit
     set_midi_channel(m_seq.get_midi_channel());
     set_midi_bus(m_seq.get_midi_bus());
     set_data_type(EVENT_NOTE_ON);
-
     if (m_seq.musical_scale() != int(c_scale_off))
         set_scale(m_seq.musical_scale());
     else
@@ -423,6 +425,7 @@ seqedit::~seqedit()
  *  "ticks" are actually the "pulses" of "pulses per quarter note".  We would
  *  prefer the notation "n" instead of "1:n", as in "n pulses per pixel".
  *
+ *  Note that many of the setups here could be loops through data structures.
  */
 
 void
@@ -724,11 +727,10 @@ seqedit::create_menus ()
     }
 
     /**
-     *  This section sets up two different menus.  The first is
-     *  m_menu_length.  This menu lets on set the sequence length in bars
-     *  (not the MIDI channel).  The second menu is the m_menu_bpm, or
-     *  BPM, which here means "beats per measure" (not "beats per
-     *  minute").
+     *  This section sets up two different menus.  The first is m_menu_length.
+     *  This menu lets one set the sequence length in bars.  The second menu is
+     *  the m_menu_bpm, or BPM, which here means "beats per measure" (not
+     *  "beats per minute").
      */
 
 #define SET_BPM         mem_fun(*this, &seqedit::set_beats_per_bar)
@@ -1638,7 +1640,7 @@ void
 seqedit::set_midi_bus (int bus)
 {
     m_seq.set_midi_bus(bus);
-    mastermidibus & mmb =  perf().master_bus();
+    mastermidibus & mmb = perf().master_bus();
     m_entry_bus->set_text(mmb.get_midi_out_bus_name(bus));
 }
 
@@ -1914,7 +1916,7 @@ seqedit::q_rec_change_callback ()
 }
 
 /**
- *  Pops an undo operation from the sequence object, and then tell the
+ *  Pops an undo operation from the sequence object, and then tells the
  *  segroll, seqtime, seqdata, and seqevent objects to redraw.
  */
 
@@ -2042,10 +2044,7 @@ void
 seqedit::on_realize()
 {
     gui_window_gtk2::on_realize();
-    Glib::signal_timeout().connect
-    (
-        mem_fun(*this, &seqedit::timeout), c_redraw_ms
-    );
+    Glib::signal_timeout().connect(mem_fun(*this, &seqedit::timeout), c_redraw_ms);
 }
 
 /**
@@ -2064,7 +2063,7 @@ bool
 seqedit::on_delete_event (GdkEventAny *)
 {
     m_seq.set_recording(false);
-    perf().master_bus().set_sequence_input(false, NULL);
+    perf().master_bus().set_sequence_input(false, nullptr);
     m_seq.set_editing(false);
     delete this;
     return false;

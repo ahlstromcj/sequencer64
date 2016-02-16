@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-10-30
- * \updates       2016-02-14
+ * \updates       2016-02-15
  * \license       GNU GPLv2 or above
  *
  *  Man, we need to learn a lot more about triggers.  One important thing to
@@ -729,13 +729,20 @@ triggers::get_selected_end ()
                             2
 \endverbatim
  *
- * \param which
- *      Selects which movement will be done.  This parameter has three possible
- *      values:
+ *  The \a which parameter has three possible values:
  *
- *          -#  If we are moving the 0, use first as offset.
- *          -#  If we are moving the 1, use the last as the offset.
- *          -#  If we are moving both (2), use first as offset.
+ *  -#  If we are moving the 0, use first as offset.
+ *  -#  If we are moving the 1, use the last as the offset.
+ *  -#  If we are moving both (2), use first as offset.
+ *
+ * \param tick
+ *      The tick at which the trigger starts.
+ *
+ * \param fixoffset
+ *      Set to true if the offset is to be adjusted.
+ *
+ * \param which
+ *      Selects which movement will be done, as discussed above.
  *
  * \return
  *      Returns true if there was room to move.  Otherwise, false is returned.

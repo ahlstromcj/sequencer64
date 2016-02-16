@@ -23,8 +23,8 @@
  * \file          userfile.hpp
  *
  *  This module declares/defines the base class for
- *  managing the user's <tt> ~/.config/sequencer64/sequencer64.usr </tt>
- *  or <tt> ~/.seq24usr </tt> configuration file.
+ *  managing the user's <code> ~/.config/sequencer64/sequencer64.usr </code>
+ *  or <code> ~/.seq24usr </code> configuration file.
  *
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
@@ -44,8 +44,8 @@ namespace seq64
 class perform;
 
 /**
- *    Supports the user's <tt> ~/.config/sequencer64/sequencer64.usr </tt> and
- *    <tt> ~/.seq24usr </tt> configuration file.
+ *    Supports the user's <code> ~/.config/sequencer64/sequencer64.usr </code> and
+ *    <code> ~/.seq24usr </code> configuration file.
  */
 
 class userfile : public configfile

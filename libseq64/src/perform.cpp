@@ -2553,7 +2553,7 @@ perform::sequence_label (const sequence & seq)
  *      If this value is greater than SEQ64_DEFAULT_BUSS_MAX (32), then it is
  *      treated as a user-interface flag (PERFORM_KEY_LABELS_ON_SEQUENCE or
  *      PERFORM_NUM_LABELS_ON_SEQUENCE) that causes all the sequences to be
- *      dirtied, and thus get redrawn iwht the new user-interface setting.
+ *      dirtied, and thus get redrawn with the new user-interface setting.
  *
  * \param active
  *      Indicates whether the buss or the user-interface feature is active or

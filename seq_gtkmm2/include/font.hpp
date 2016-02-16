@@ -150,8 +150,8 @@ private:
     /**
      *  The pixmap in the file <tt> src/pixmaps/font_b.xpm </tt> is loaded
      *  into this object.  It contains a black font on a white background.
-     *  The new-style font, if selected, is <tt>
-     *  resources/pixmaps/wenfont_b.xmp </tt> pixmap.
+     *  The new-style font, if selected, is in the
+     *  <tt> resources/pixmaps/wenfont_b.xmp </tt> pixmap.
      */
 
     Glib::RefPtr<Gdk::Pixmap> m_black_pixmap;
@@ -159,8 +159,8 @@ private:
     /**
      *  The pixmap in the file <tt> src/pixmaps/font_w.xpm </tt> is loaded
      *  into this object.  It contains a black font on a white background.
-     *  The new-style font, if selected, is <tt>
-     *  resources/pixmaps/wenfont_w.xmp </tt> pixmap.
+     *  The new-style font, if selected, is in the
+     *  <tt> resources/pixmaps/wenfont_w.xmp </tt> pixmap.
      */
 
     Glib::RefPtr<Gdk::Pixmap> m_white_pixmap;
@@ -168,8 +168,8 @@ private:
     /**
      *  The pixmap in the file <tt> src/pixmaps/font_y.xpm </tt> is loaded
      *  into this object.  It contains a black font on a yellow background.
-     *  The new-style font, if selected, is <tt>
-     *  resources/pixmaps/wenfont_y.xmp </tt> pixmap.
+     *  The new-style font, if selected, is in the
+     *  <tt> resources/pixmaps/wenfont_y.xmp </tt> pixmap.
      */
 
     Glib::RefPtr<Gdk::Pixmap> m_b_on_y_pixmap;

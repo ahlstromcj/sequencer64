@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-02-14
+ * \updates       2016-02-15
  * \license       GNU GPLv2 or above
  *
  */
@@ -55,9 +55,28 @@ private:
 
     static const char m_seq_to_char[c_seqs_in_set];
 
+    /**
+     *  Holds a partial copy of the sequence we a moving on the patterns
+     *  panel.  The assignment is made by sequence::partial_copy(), which
+     *  behaves like the legacy seq24 code.
+     */
+
     sequence m_moving_seq;
+
+    /**
+     *  Indicates that the mouse button is still down.  Used in the
+     *  drag-and-drop functionality.
+     */
+
     bool m_button_down;
+
+    /**
+     *  Indicates that we are still in the middle of a drag-and-drop
+     *  operation.
+     */
+
     bool m_moving;
+
     int m_old_seq;
     int m_screenset;
     long m_last_tick_x[c_max_sequence];
@@ -65,8 +84,8 @@ private:
 
     /**
      *  These values are assigned to the values given by the constants of
-     *  similar names in globals.h, and we will make them parameters
-     *  later.
+     *  similar names in globals.h, and we will make them parameters or
+     *  user-interface configuration items later.
      */
 
     int m_mainwnd_rows;
@@ -85,7 +104,7 @@ private:
 
     /**
      *  Provides a convenience variable for avoiding multiplications.
-     *  It is equally to m_mainwnd_rows * m_mainwnd_cols.
+     *  It is equal to m_mainwnd_rows * m_mainwnd_cols.
      */
 
     int m_screenset_slots;

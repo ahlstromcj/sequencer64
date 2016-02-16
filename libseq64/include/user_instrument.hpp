@@ -48,7 +48,8 @@ namespace seq64
 
 /**
  *  Provides the maximum number of instruments that can be defined in the
- *  <tt> ~/.seq24usr </tt> or <tt> ~/.config/sequencer64/sequencer64.rc </tt>
+ *  <code> ~/.seq24usr </code> or
+ *  <code> ~/.config/sequencer64/sequencer64.rc </code>
  *  file.  With a value of 64, this is more of a sanity-check than a
  *  realistic number of instruments defined by a user.
  */
@@ -64,9 +65,9 @@ const int c_max_instruments = SEQ64_DEFAULT_INSTRUMENT_MAX;
 #define SEQ64_MIDI_CONTROLLER_MAX       128
 
 /**
- *  This structure corresponds to <tt> [user-instrument-N] </tt>
- *  definitions in the <tt> ~/.seq24usr </tt> or
- *  <tt> ~/.config/sequencer64/sequencer64.usr </tt> file.
+ *  This structure corresponds to <code> [user-instrument-N] </code>
+ *  definitions in the <code> ~/.seq24usr </code> or
+ *  <code> ~/.config/sequencer64/sequencer64.usr </code> file.
  */
 
 struct user_instrument_t

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-02-14
+ * \updates       2016-02-15
  * \license       GNU GPLv2 or above
  *
  *  The functionality of this class also includes handling some of the
@@ -441,23 +441,6 @@ sequence::play (midipulse tick, bool playback_mode)
 
     m_last_tick = end_tick + 1;                     /* for next frame       */
     m_was_playing = m_playing;
-}
-
-/**
- *  Resets everything to zero.  This function is used when the sequencer
- *  stops.  This function currently sets m_last_tick = 0, but we would like to
- *  avoid that if doing a pause, rather than a stop, of playback.  However,
- *  commenting out this setting doesn't have any effect that we can see with a
- *  quick look at the user-interface.
- */
-
-void
-sequence::zero_markers ()
-{
-//  automutex locker(m_mutex);
-//  m_last_tick = 0;                    /* m_masterbus->flush()         */
-
-    set_orig_tick(0);
 }
 
 /**
@@ -2125,11 +2108,22 @@ sequence::selected_trigger_end ()
                             2
 \endverbatim
  *
- *  -   If we are moving the 0, use first as offset.
- *  -   If we are moving the 1, use the last as the offset.
- *  -   If we are moving both (2), use first as offset.
+ *  The \a which parameter has three possible values:
+ *
+ *  -#  If we are moving the 0, use first as offset.
+ *  -#  If we are moving the 1, use the last as the offset.
+ *  -#  If we are moving both (2), use first as offset.
  *
  * \threadsafe
+ *
+ * \param tick
+ *      The tick at which the trigger starts.
+ *
+ * \param fixoffset
+ *      Set to true if the offset is to be adjusted.
+ *
+ * \param which
+ *      Selects which movement will be done, as discussed above.
  *
  * \return
  *      Returns the value of triggers::move_selected(), which indicate

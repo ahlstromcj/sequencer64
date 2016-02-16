@@ -20,8 +20,8 @@
  * \file          userfile.cpp
  *
  *  This module declares/defines the base class for managing the user's
- *  <tt> ~/.seq24usr </tt> or <tt> ~/.config/sequencer64/sequencer64.rc
- *  </tt> configuration file.
+ *  <code> ~/.seq24usr </code> or <code> ~/.config/sequencer64/sequencer64.rc
+ *  </code> configuration file.
  *
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom

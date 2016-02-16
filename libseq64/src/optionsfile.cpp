@@ -19,9 +19,9 @@
 /**
  * \file          optionsfile.cpp
  *
- *  This module declares/defines the base class for managing the <tt>
- *  ~/.seq24rc </tt> legacy configuration file or the new <tt>
- *  ~/.config/sequencer64/sequencer64.rc </tt> ("rc") configuration file.
+ *  This module declares/defines the base class for managing the <code>
+ *  ~/.seq24rc </code> legacy configuration file or the new <code>
+ *  ~/.config/sequencer64/sequencer64.rc </code> ("rc") configuration file.
  *
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
@@ -29,8 +29,8 @@
  * \updates       2016-01-27
  * \license       GNU GPLv2 or above
  *
- *  The <tt> ~/.seq24rc </tt> or <tt> ~/.config/sequencer64/sequencer64.rc
- *  </tt> configuration file is fairly simple in layout.  The documentation
+ *  The <code> ~/.seq24rc </code> or <code> ~/.config/sequencer64/sequencer64.rc
+ *  </code> configuration file is fairly simple in layout.  The documentation
  *  for this module is supplemented by the following GitHub projects:
  *
  *      -   https://github.com/ahlstromcj/seq24-doc.git (legacy support)

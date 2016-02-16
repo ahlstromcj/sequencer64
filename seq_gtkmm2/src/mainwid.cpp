@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-02-14
+ * \updates       2016-02-15
  * \license       GNU GPLv2 or above
  *
  *  Note that this representation is, in a sense, inside the mainwnd
@@ -35,6 +35,12 @@
  *  There are a number of issue where active, but non-existent (null
  *  pointered) sequences are accessed, and we're fixing them, but need
  *  to fix the root causes as well.
+ *
+ *  To retest:
+ *
+ *      -   Sequence pattern drag and drop.
+ *      -   Sequence pattern playback toggling.
+ *      -   Menu entry access for each slot.
  */
 
 #include "calculations.hpp"             /* seq64::shorten_file_spec()       */
@@ -42,15 +48,6 @@
 #include "font.hpp"
 #include "mainwid.hpp"
 #include "perform.hpp"
-
-/**
- *  EXPERIMENTAL.
- *  Try to highlight the selected pattern using black-on-cyan
- *  coloring, in addition to the red progress bar marking that already exists.
- *  Currently, it still has issue.
- */
-
-#undef USE_EXPERIMENTAL_HIGHLIGHT
 
 namespace seq64
 {
@@ -90,7 +87,7 @@ mainwid::mainwid (perform & p)
  :
     gui_drawingarea_gtk2    (p, c_mainwid_x, c_mainwid_y),
     seqmenu                 (p),
-    m_moving_seq            (),
+    m_moving_seq            (),                 // a moving sequence object
     m_button_down           (false),
     m_moving                (false),
     m_old_seq               (0),
@@ -177,7 +174,8 @@ mainwid::timeout ()
  *      Song Editor, then the active patterns are black while playing, and
  *      white when gaps in the sequence are encountered.  The muting status in
  *      the main window is ignored.  The muting in the Song (performance)
- *      windows is in force.
+ *      windows is in force.  This setup holds for ALSA, but not for JACK
+ *      transport.
  *
  * \param seqnum
  *      Provides the number of the sequence slot that needs to be drawn.  It is
@@ -210,16 +208,10 @@ mainwid::draw_sequence_on_pixmap (int seqnum)
             if (is_nullptr(seq))                        /* non-existent?    */
                 return;                                 /* yes, ignore it   */
 
-#ifdef SEQ64_USE_DEBUG_OUTPUT
-            if (seqnum != seq->number() && seq->number() != (-1))
-                printf("seq# mismatch: %d-%d\n", seqnum, seq->number());
-#endif
-
             bool empty_highlight = perf().highlight(*seq);
             bool smf_0 = perf().is_smf_0(*seq);
-
-#ifdef USE_EXPERIMENTAL_HIGHLIGHT
-            bool current_highlight = smf_0  || seqnum == current_sequence();
+#ifdef SEQ64_EDIT_SEQUENCE_HIGHLIGHT
+            bool current_highlight = smf_0 || is_edit_sequence(seqnum);
 #else
             bool current_highlight = smf_0;
 #endif
@@ -254,8 +246,8 @@ mainwid::draw_sequence_on_pixmap (int seqnum)
                 else
                 {
                     m_last_playing[seqnum] = false;     /* active, no play  */
-#ifdef USE_EXPERIMENTAL_HIGHLIGHT
-                    if (seqnum == current_sequence())
+#ifdef SEQ64_EDIT_SEQUENCE_HIGHLIGHT
+                    if (is_edit_sequence(seqnum))
                     {
                         bg_color(dark_cyan());
                         fg_color(black());
@@ -285,8 +277,8 @@ mainwid::draw_sequence_on_pixmap (int seqnum)
             );
             m_gc->set_foreground(fg_color());
 
-#ifdef USE_EXPERIMENTAL_HIGHLIGHT
-            current_highlight = smf_0  || seqnum == current_sequence();
+#ifdef SEQ64_EDIT_SEQUENCE_HIGHLIGHT
+            current_highlight = smf_0  || is_edit_sequence(seqnum);
 #else
             current_highlight = smf_0;
 #endif
@@ -366,7 +358,7 @@ mainwid::draw_sequence_on_pixmap (int seqnum)
 
             int lowest_note;                                // for side-effect
             int highest_note;                               // ditto
-            bool have_notes = seq->get_minmax_note_events
+            bool have_notes = seq->get_minmax_note_events   // new, optimized
             (
                 lowest_note, highest_note                   // side-effects
             );
@@ -580,13 +572,15 @@ mainwid::update_markers (int ticks)
 
 /**
  *  Does the actual drawing of one pattern/sequence position marker, a
- *  vertical progress bar.
- *
- *  If the sequence has no events, this function doesn't bother even
- *  drawing a position marker.
+ *  vertical progress bar.  If the sequence has no events, this function
+ *  doesn't bother even drawing a position marker.
  *
  *  Note that, when Sequencer64 first comes up, and perform::is_dirty_main()
- *  is called, no sequences exist yet.
+ *  is called, no sequences exist yet.  Also, currently the redraw() is hit
+ *  when seq_edit() is called, but not when seq_event_edit() is called, which
+ *  makes the latter not paint the in-edit highlight colors (if enabled).
+ *
+ *  Why?
  *
  * \param seqnum
  *      Provides the number of the sequence to draw.
@@ -627,7 +621,7 @@ mainwid::draw_marker_on_sequence (int seqnum, int tick)
             1, m_progress_height
         );
         m_last_tick_x[seqnum] = tick_x;
-        if (seqnum == current_sequence())
+        if (seqnum == current_seq())        /* is this good enough?     */
         {
             m_gc->set_foreground(red());    /* red is easiest to see    */
         }
@@ -654,7 +648,9 @@ mainwid::draw_marker_on_sequence (int seqnum, int tick)
 }
 
 /**
- *  Updates the image of multiple sequencers.
+ *  Updates the image of multiple sequencer/pattern slots.  Used by the friend
+ *  class mainwnd, but also useful for our EXPERIMENTAL feature to fully
+ *  highlight the current sequence.
  */
 
 void
@@ -786,15 +782,14 @@ mainwid::on_expose_event (GdkEventExpose * ev)
 {
     draw_drawable
     (
-        ev->area.x, ev->area.y,
-        ev->area.x, ev->area.y,
+        ev->area.x, ev->area.y, ev->area.x, ev->area.y,
         ev->area.width, ev->area.height
     );
     return true;
 }
 
 /**
- *  Handles a press of a mouse button.
+ *  Handles a press of a mouse button in one of the sequence/pattern slots.
  *
  *  If the press is a single left-click, and no Ctrl key is pressed, then this
  *  function grabs the focus, calculates the pattern/sequence over which the
@@ -808,13 +803,16 @@ mainwid::on_expose_event (GdkEventExpose * ev)
  *  described in the next paragraph.
  *
  *  If the press is a double-click, it first acts just like two single-clicks
- *  (which might confuse the user at first).  Then it brings up the Edit menu
- *  for the sequence.  This new behavior is closer to what users have come to
- *  expect from a double-click.
+ *  (which might confuse the user at first, because it toggles the mute state
+ *  twice).  Then it brings up the Edit menu for the sequence.  This new
+ *  behavior is closer to what users have come to expect from a double-click.
  *
  *  We also handle a Ctrl-double-click as a signal to do an event edit, instead
  *  of a sequence edit.  The event editor provides a way to look at all events
- *  in detail, without having to select the type of event to see.
+ *  in detail, without having to select the type of event to see.  Doesn't
+ *  work, the event is treated like a ctrl-single-click.  And we use the Alt
+ *  key to enable window movement or resizing in our window manager, so that's
+ *  out.
  *
  * \param p
  *      Provides the parameters of the button event.
@@ -827,31 +825,41 @@ bool
 mainwid::on_button_press_event (GdkEventButton * p)
 {
     grab_focus();
+    int seqnum = seq_from_xy(int(p->x), int(p->y));
     if (CAST_EQUIVALENT(p->type, SEQ64_2BUTTON_PRESS))  /* double-click?    */
     {
         /*
-         * Doesn't work, the event is treated like a ctrl-single-click.
-         * And we use the Alt key to enable window movement or resizing in our
-         * window manager.
+         * Doesn't work:
          *
          * if (p->state & SEQ64_CONTROL_MASK)
-         *    seq_event_edit();
+         *    seq_event_edit();                         // seqmenu function
          * else
          */
 
-            seq_edit();
+        seq_edit();                                     /* seqmenu function */
+#ifdef SEQ64_EDIT_SEQUENCE_HIGHLIGHT
+        update_sequences_on_window();
+#endif
     }
     else
     {
-        current_sequence(seq_from_xy(int(p->x), int(p->y)));
+        current_seq(seqnum);
         if (p->state & SEQ64_CONTROL_MASK)
         {
-            seq_edit();
+            seq_edit();                                 /* seqmenu function */
+#ifdef SEQ64_EDIT_SEQUENCE_HIGHLIGHT
+            update_sequences_on_window();
+#endif
         }
         else
         {
-            if (current_sequence() >= 0 && SEQ64_CLICK_LEFT(p->button))
+            if (current_seq() >= 0 && SEQ64_CLICK_LEFT(p->button))
+            {
                 m_button_down = true;
+#ifdef SEQ64_EDIT_SEQUENCE_HIGHLIGHT
+                update_sequences_on_window();
+#endif
+            }
         }
     }
     return true;
@@ -873,9 +881,18 @@ mainwid::on_button_press_event (GdkEventButton * p)
 bool
 mainwid::on_button_release_event (GdkEventButton * p)
 {
-    current_sequence(seq_from_xy(int(p->x), int(p->y)));
+    /*
+     * Try disabling this EXPERIMENTALLY.  It completely disables drag-n-drop.
+     * But leaving it in removes the EXPERIMENTAL current-sequence
+     * highlighting, which otherwise is fine.  So we do it only if moving a
+     * pattern (drag-and-drop).
+     */
+
+    if (m_moving)
+        current_seq(seq_from_xy(int(p->x), int(p->y)));
+
     m_button_down = false;
-    if (current_sequence() < 0)
+    if (current_seq() < 0)
         return true;
 
     if (SEQ64_CLICK_LEFT(p->button))
@@ -883,43 +900,30 @@ mainwid::on_button_release_event (GdkEventButton * p)
         if (m_moving)
         {
             m_moving = false;
-            if              // in a pattern, it's active, not in edit mode...
-            (
-                ! perf().is_active(current_sequence()) &&
-                ! perf().is_sequence_in_edit(current_sequence())
-            )
+
+            /*
+             * Hmmm, seq24 also tests for m_current_seq == -1
+             */
+
+            if (! is_current_seq_active() && ! is_current_seq_in_edit())
             {
-                perf().new_sequence(current_sequence());
-
-                /*
-                 * Instead of using operator equal, use a better function.
-                 *
-                 * *(perf().get_sequence(current_sequence())) = m_moving_seq;
-                 */
-
-                perf().get_sequence(current_sequence())->
-                    partial_assign(m_moving_seq);
-
-                redraw(current_sequence());
+                new_current_sequence();
+                get_current_sequence()->partial_assign(m_moving_seq);
+                redraw(current_seq());
             }
             else
             {
-                perf().new_sequence(m_old_seq);
-
-                /*
-                 * *(perf().get_sequence(m_old_seq)) = m_moving_seq;
-                 */
-
-                perf().get_sequence(m_old_seq)->partial_assign(m_moving_seq);
+                new_sequence(m_old_seq);
+                get_sequence(m_old_seq)->partial_assign(m_moving_seq);
                 redraw(m_old_seq);
             }
         }
         else
         {
-            if (perf().is_active(current_sequence()))
+            if (is_current_seq_active())        /* toggle its playing status */
             {
-                perf().sequence_playing_toggle(current_sequence());
-                redraw(current_sequence());
+                toggle_current_sequence();
+                redraw(current_seq());
             }
         }
     }
@@ -950,28 +954,16 @@ mainwid::on_motion_notify_event (GdkEventMotion * p)
     int seq = seq_from_xy(int(p->x), int(p->y));
     if (m_button_down)
     {
-        if
-        (
-            seq != current_sequence() && ! m_moving &&
-            ! perf().is_sequence_in_edit(current_sequence())
-        )
+        if (seq != current_seq() && ! m_moving && ! is_current_seq_in_edit())
         {
-            if (perf().is_active(current_sequence()))
+            if (is_current_seq_active())
             {
-                m_old_seq = current_sequence();
+                m_old_seq = current_seq();
                 m_moving = true;
-
-                /*
-                 * m_moving_seq = *(perf().get_sequence(current_sequence()));
-                 */
-
-                m_moving_seq.partial_assign
-                (
-                    *(perf().get_sequence(current_sequence()))
-                );
-                perf().delete_sequence(current_sequence());
-                draw_sequence_on_pixmap(current_sequence());
-                draw_sequence_pixmap_on_window(current_sequence());
+                m_moving_seq.partial_assign(*(get_current_sequence()));
+                delete_current_sequence();
+                draw_sequence_on_pixmap(current_seq());
+                draw_sequence_pixmap_on_window(current_seq());
             }
         }
     }

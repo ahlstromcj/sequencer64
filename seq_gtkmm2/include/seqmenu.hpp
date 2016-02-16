@@ -28,13 +28,22 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-01-03
+ * \updates       2016-02-15
  * \license       GNU GPLv2 or above
  *
  *  This module is the base class for the perfnames and mainwid classes.
  */
 
+#include "perform.hpp"
 #include "sequence.hpp"
+
+/**
+ *  Try to highlight the selected pattern using black-on-cyan
+ *  coloring, in addition to the red progress bar marking that already exists.
+ *  Currently, it still has issues.
+ */
+
+#define SEQ64_EDIT_SEQUENCE_HIGHLIGHT
 
 namespace Gtk
 {
@@ -44,7 +53,7 @@ namespace Gtk
 namespace seq64
 {
 
-class perform;
+// class perform;
 class seqedit;
 class eventedit;
 
@@ -100,6 +109,16 @@ private:
 
     int m_current_seq;
 
+#ifdef SEQ64_EDIT_SEQUENCE_HIGHLIGHT
+
+    /**
+     *  Hold the number of the currently-in-edit sequence.
+     */
+
+    int m_edit_sequence;
+
+#endif  // SEQ64_EDIT_SEQUENCE_HIGHLIGHT
+
     /**
      *  Indicates if a sequence has been created.
      *
@@ -123,9 +142,11 @@ public:
 
     /**
      * \getter m_current_seq
+     *      We're changing the name, so that "seq" indicates an integer by
+     *      (an imperfect) convention.
      */
 
-    int current_sequence () const
+    int current_seq () const
     {
         return m_current_seq;
     }
@@ -145,11 +166,44 @@ protected:
      * \setter m_current_seq
      */
 
-    void current_sequence (int seq)
+    void current_seq (int seq)
     {
         if (seq >= 0)                   /* shall we validate the upper end? */
-            m_current_seq = seq;
+        {
+            if (seq != m_current_seq)
+            {
+                m_current_seq = seq;
+#ifdef SEQ64_EDIT_SEQUENCE_HIGHLIGHT
+                m_edit_sequence = -1;
+#endif
+            }
+        }
     }
+
+#ifdef SEQ64_EDIT_SEQUENCE_HIGHLIGHT
+
+    /**
+     * \setter m_edit_sequence
+     *      Pass in -1 to disable the edit-sequence number.
+     */
+
+    void edit_sequence (int seqnum)
+    {
+        m_edit_sequence = seqnum;
+    }
+
+    /**
+     * \getter m_edit_sequence
+     *      Tests the parameter against m_edit_sequence.  Returns true
+     *      if that member is not -1, and the parameter matches it.
+     */
+
+    bool is_edit_sequence (int seqnum) const
+    {
+        return (m_edit_sequence != (-1)) && (seqnum == m_edit_sequence);
+    }
+
+#endif  // SEQ64_EDIT_SEQUENCE_HIGHLIGHT
 
     /**
      * \setter m_modified
@@ -160,7 +214,79 @@ protected:
         m_modified = flag;
     }
 
-    sequence * get_current_sequence () const;
+    /**
+     * \getter m_mainperf.get_sequence(current_seq())
+     *      This call is used many, many times, and well worth wrapping.
+     */
+
+    sequence * get_current_sequence () const
+    {
+        return m_mainperf.get_sequence(m_current_seq);
+    }
+
+    /**
+     *  Forwards the get-sequence call to the perform object.
+     */
+
+    sequence * get_sequence (int seqnum) const
+    {
+        return m_mainperf.get_sequence(seqnum);
+    }
+
+    /**
+     *  Forwards the is-sequence-active check to the perform object.
+     */
+
+    bool is_current_seq_active () const
+    {
+        return m_mainperf.is_active(current_seq());
+    }
+
+    /**
+     *  Forwards the is-sequence-in-edit check to the perform object.
+     */
+
+    bool is_current_seq_in_edit () const
+    {
+        return m_mainperf.is_sequence_in_edit(current_seq());
+    }
+
+    /**
+     *  Forwards the new-current-sequence call to the perform object.
+     */
+
+    void new_current_sequence ()
+    {
+        m_mainperf.new_sequence(current_seq());
+    }
+
+    /**
+     *  Forwards the new-sequence call to the perform object.
+     */
+
+    void new_sequence (int seqnum)
+    {
+        m_mainperf.new_sequence(seqnum);
+    }
+
+    /**
+     *  Forwards the delete-sequence call to the perform object.
+     */
+
+    void delete_current_sequence()
+    {
+        m_mainperf.delete_sequence(current_seq());
+    }
+
+    /**
+     *  Forwards the sequence-playing-toggle call to the perform object.
+     */
+
+    void toggle_current_sequence()
+    {
+        m_mainperf.sequence_playing_toggle(current_seq());
+    }
+
     void popup_menu ();
 
 protected:

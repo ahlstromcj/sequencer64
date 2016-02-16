@@ -43,7 +43,7 @@
  *  called a "set" (in the musical sense) or a "screen set".
  *
  *  Other elements are also set by some of these variables.  See the
- *  spreadsheet in <tt>contrib/sequence24-classes.ods</tt>.
+ *  spreadsheet in <code>contrib/sequence24-classes.ods</code>.
  *
  * \note
  *      This set of variables would be better off placed in a object that the
@@ -168,7 +168,7 @@ const int c_thread_trigger_lookahead_ms = SEQ64_DEFAULT_TRIGLOOK_MS;
  *  specification.
  *
  *  However, please note that font files are not used.  Instead, the fonts
- *  are provided by pixmaps in the <tt> src/pixmap </tt> directory.
+ *  are provided by pixmaps in the <code> src/pixmap </code> directory.
  *  These pixmaps lay out all the characters of the font in a grid.
  *  See the font module for a full description of this grid.
  */

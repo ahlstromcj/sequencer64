@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-01-09
+ * \updates       2016-02-14
  * \license       GNU GPLv2 or above
  *
  *  This module is almost exclusively user-interface code.  There are some
@@ -178,12 +178,21 @@ perfnames::draw_sequence (int seqnum)
              * get_sequence() above!
              */
 
-            if (perf().highlight(*seq))
+            bool empty_highlight = perf().highlight(*seq);
+            bool smf_0 = perf().is_smf_0(*seq);
+
+#ifdef SEQ64_EDIT_SEQUENCE_HIGHLIGHT
+            bool current_highlight = smf_0 || is_edit_sequence(seqnum);
+#else
+            bool current_highlight = smf_0;
+#endif
+
+            if (empty_highlight)
             {
                 fg = yellow();
                 col = font::BLACK_ON_YELLOW;
             }
-            else if (perf().is_smf_0(*seq))
+            else if (current_highlight)
             {
                 fg = dark_cyan();
                 col = font::BLACK_ON_CYAN;
@@ -268,7 +277,7 @@ perfnames::on_button_press_event (GdkEventButton * ev)
 {
     int y = int(ev->y);
     int seqnum = convert_y(y);
-    current_sequence(seqnum);
+    current_seq(seqnum);
     if (SEQ64_CLICK_LEFT(ev->button))
     {
         if (perf().is_active(seqnum))

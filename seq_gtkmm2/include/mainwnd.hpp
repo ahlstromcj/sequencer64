@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-02-13
+ * \updates       2016-02-15
  * \license       GNU GPLv2 or above
  *
  *  The main windows is known as the "Patterns window" or "Patterns
@@ -196,6 +196,14 @@ private:
      */
 
     sigc::connection m_timeout_connect;
+
+    /**
+     *  Provides the timeout periodicity, which is normally 25 ms.  Setting it
+     *  to 100 ms works, but the progress bar moves "backwards" on some of our
+     *  note-empty patterns.
+     */
+
+    int m_timeout_period_ms;
 
 public:
 

@@ -90,4 +90,13 @@ follow the progress bar.
     double Gtk::Adjustment::get_page_size () const
     double Gtk::Adjustment::get_step_increment () const
 
+    seqedit horizontal values (never changes):
+
+        L:   scroll value = 0; step = 96; page = 1392; upper = 66816
+        R:   scroll value = 65424; step = 96; page = 1392; upper = 66816
+
+    With --ppqn 384 option:
+
+        scroll value = 0; step = 192; page = 1392; upper = 133632
+
 # vim: sw=4 ts=4 wm=8 et ft=sh

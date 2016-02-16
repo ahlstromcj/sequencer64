@@ -179,7 +179,21 @@ seqedit::seqedit
     m_menu_rec_vol      (manage(new Gtk::Menu())),
     m_pos               (pos),                          // could dispense with
     m_vadjust           (manage(new Gtk::Adjustment(55, 0, c_num_keys, 1, 1, 1))),
+
+#ifdef USE_NEW_CODE
+
+    /*
+     * The initial value was 0 on a range from 0 to 1, with step and page
+     * increments of 1, and a page_size of 1.  We can fix these values here,
+     * or create an h_adjustment() function similar to
+     * eventedit::v_adjustment(), which first gets called in on_realize().
+     */
+
     m_hadjust           (manage(new Gtk::Adjustment(0, 0, 1, 1, 1, 1))),
+#else
+    m_hadjust           (manage(new Gtk::Adjustment(0, 0, 1, 1, 1, 1))),
+#endif
+
     m_vscroll_new       (manage(new Gtk::VScrollbar(*m_vadjust))),
     m_hscroll_new       (manage(new Gtk::HScrollbar(*m_hadjust))),
     m_seqkeys_wid       (manage(new seqkeys(m_seq, p, *m_vadjust))),
@@ -2032,6 +2046,19 @@ seqedit::timeout ()
         m_seqdata_wid->redraw();
     }
     m_seqroll_wid->draw_progress_on_window();
+
+    // EXPERIMENTAL
+    //
+    double val = m_hadjust->get_value();
+    double page = m_hadjust->get_page_size();
+    double step = m_hadjust->get_step_increment();
+    double upper = m_hadjust->get_upper();
+    printf
+    (
+        "scroll value = %g; step = %g; page = %g; upper = %g\n",
+        val, step, page, upper
+    );
+
     return true;
 }
 

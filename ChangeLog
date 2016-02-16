@@ -1,5 +1,73 @@
+2016-02-15  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* configure.ac, contrib/code/perfstats.cpp,
+	contrib/notes/bugs_to_investigate.txt, doc/dox/doxy-reference.cfg,
+	libseq64/include/globals.h, libseq64/include/sequence.hpp,
+	libseq64/include/user_instrument.hpp,
+	libseq64/include/user_midi_bus.hpp,
+	libseq64/include/user_settings.hpp, libseq64/include/userfile.hpp,
+	libseq64/src/Makefile.am, libseq64/src/calculations.cpp,
+	libseq64/src/editable_event.cpp, libseq64/src/mastermidibus.cpp,
+	libseq64/src/optionsfile.cpp, libseq64/src/perform.cpp,
+	libseq64/src/perfstats.cpp, libseq64/src/sequence.cpp,
+	libseq64/src/triggers.cpp, libseq64/src/userfile.cpp,
+	seq_gtkmm2/include/font.hpp, seq_gtkmm2/include/mainwid.hpp,
+	seq_gtkmm2/include/mainwnd.hpp, seq_gtkmm2/include/seqedit.hpp,
+	seq_gtkmm2/include/seqmenu.hpp, seq_gtkmm2/src/eventedit.cpp,
+	seq_gtkmm2/src/maintime.cpp, seq_gtkmm2/src/mainwid.cpp,
+	seq_gtkmm2/src/mainwnd.cpp, seq_gtkmm2/src/perfnames.cpp,
+	seq_gtkmm2/src/seqedit.cpp, seq_gtkmm2/src/seqmenu.cpp: Optimizing,
+	SEQ64_EDIT_SEQUENCE_HIGHLIGHT-wrapped enabling of current-edit
+	highlighting, moved perfstats to contrib/code, adding time-period
+	member to mainwnd, notes about b4uacuse program-change progress bar,
+	and other cleanup and documentation.
+
+2016-02-14  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/include/cmdlineopts.hpp,
+	libseq64/include/configfile.hpp, libseq64/include/easy_macros.h,
+	libseq64/include/editable_event.hpp,
+	libseq64/include/gdk_basic_keys.h, libseq64/include/globals.h,
+	libseq64/include/platform_macros.h, libseq64/include/sequence.hpp,
+	libseq64/include/triggers.hpp, libseq64/include/user_settings.hpp,
+	libseq64/src/configfile.cpp, libseq64/src/jack_assistant.cpp,
+	libseq64/src/sequence.cpp, libseq64/src/triggers.cpp,
+	libseq64/src/user_settings.cpp, libseq64/src/userfile.cpp,
+	seq_gtkmm2/include/seqroll.hpp,
+	seq_gtkmm2/src/gui_palette_gtk2.cpp, seq_gtkmm2/src/mainwid.cpp,
+	seq_gtkmm2/src/perfroll.cpp, seq_gtkmm2/src/seqroll.cpp, README,
+	VERSION, configure.ac: 
+	Investigation, comments, and experimentation on progress bars and
+	current-sequence highlightin, and adding progress bar configuration
+	to the user configuration file.  Progress bars red if not in legacy
+	mode, and optimized searches for lowest/highest notes.
+
 2016-02-13  Chris Ahlstrom <ahlstromcj@gmail.com>
 
+	* contrib/notes/Timing-in-MIDI-files.txt, contrib/notes/gtk.txt,
+	contrib/notes/jack-testing.txt, contrib/notes/mute_groups.txt,
+	contrib/notes/pausing.txt, contrib/notes/seq24-triggers.txt,
+	contrib/notes/timecode.txt,
+	contrib/notes/update-notes-from-github.txt,
+	doc/dox/doxy-reference.cfg, doc/dox/midi_parsing.dox,
+	libseq64/include/calculations.hpp, libseq64/include/event.hpp,
+	libseq64/include/event_list.hpp,
+	libseq64/include/midi_container.hpp, libseq64/include/perform.hpp,
+	libseq64/src/click.cpp, libseq64/src/configfile.cpp,
+	libseq64/src/event_list.cpp, libseq64/src/jack_assistant.cpp,
+	libseq64/src/midifile.cpp, libseq64/src/perform.cpp,
+	libseq64/src/sequence.cpp, libseq64/src/triggers.cpp,
+	seq_gtkmm2/include/mainwnd.hpp, seq_gtkmm2/src/eventedit.cpp,
+	seq_gtkmm2/src/seqtime.cpp: Fixed Doxygen documentation, somehow
+	broken a week ago, and added some missing documenation, a lot more
+	to document.
+	* INSTALL, README, ROADMAP, VERSION, configure.ac,
+	doc/dox/doxy-reference.cfg, doc/dox/user_testing.dox,
+	libseq64/src/cmdlineopts.cpp, man/sequencer64.1: Stamped files with
+	next pending version 0.9.9.18.
+	* ChangeLog, contrib/notes/jack-testing.txt,
+	libseq64/src/jack_assistant.cpp: Merged fixups to master to create
+	0.9.9.17.
 	* ChangeLog, README, ROADMAP, configure.ac,
 	contrib/notes/bugs_to_investigate.txt,
 	contrib/notes/jack-testing.txt, contrib/notes/jack.txt,

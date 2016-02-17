@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-02-15
+ * \updates       2016-02-17
  * \license       GNU GPLv2 or above
  *
  */
@@ -216,6 +216,10 @@ public:
         int ppqn = SEQ64_USE_DEFAULT_PPQN
     );
     ~seqedit ();
+
+#ifdef USE_EXPERIMENT_SCROLL_ADJUSTMENT
+    void horizontal_adjust (double step);
+#endif
 
 private:
 

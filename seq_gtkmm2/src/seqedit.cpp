@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-02-15
+ * \updates       2016-02-17
  * \license       GNU GPLv2 or above
  *
  *  Compare this class to eventedit, which has to do some similar things,
@@ -2108,38 +2108,80 @@ seqedit::on_scroll_event (GdkEventScroll * ev)
     }
     else if ((ev->state & modifiers) == SEQ64_SHIFT_MASK)
     {
+#ifndef USE_EXPERIMENT_SCROLL_ADJUSTMENT
         double val = m_hadjust->get_value();
         double step = m_hadjust->get_step_increment();
         double upper = m_hadjust->get_upper();
+#endif
         if (CAST_EQUIVALENT(ev->direction, SEQ64_SCROLL_DOWN))
         {
-            if (val + step < upper)
-                m_hadjust->set_value(val + step);
-            else
-                m_hadjust->set_value(upper);
+#ifdef USE_EXPERIMENT_SCROLL_ADJUSTMENT
+            horizontal_adjust(step);
+#else
+            double nextval = val + step;
+            if (nextval > upper)
+                nextval = upper;
+
+            m_hadjust->set_value(nextval);
+#endif
         }
         else if (CAST_EQUIVALENT(ev->direction, SEQ64_SCROLL_UP))
         {
-            m_hadjust->set_value(val - step);
+#ifdef USE_EXPERIMENT_SCROLL_ADJUSTMENT
+            horizontal_adjust(-step);
+#else
+            double nextval = val - step;
+            if (nextval < 0.0)
+                nextval = 0.0;
+
+            m_hadjust->set_value(nextval);
+#endif
         }
         return true;
     }
-    return false;  // means "not handled"
+    return false;                       /* means "not handled"  */
 }
 
+#ifdef USE_EXPERIMENT_SCROLL_ADJUSTMENT
+
+void
+seqedit::horizontal_adjust (double step)
+{
+    double val = m_hadjust->get_value();
+    double upper = m_hadjust->get_upper();
+    double nextval = val + step;
+    bool forward = true;
+    if (step < 0.0)
+        forward = false;
+
+    if (forward)
+    {
+        if (nextval > upper)
+            nextval = upper;
+    }
+    else
+    {
+        if (nextval < 0.0)
+            nextval = 0.0;
+    }
+    m_hadjust->set_value(nextval);
+}
+
+#endif  // USE_EXPERIMENT_SCROLL_ADJUSTMENT
+
 /**
- *  Handles a key-press event.
- */
+*  Handles a key-press event.
+*/
 
 bool
 seqedit::on_key_press_event (GdkEventKey * ev)
 {
-    guint modifiers;            /* for filtering out caps/num-lock etc.     */
-    modifiers = gtk_accelerator_get_default_mod_mask();
-    if ((ev->state & modifiers) == SEQ64_CONTROL_MASK && ev->keyval == 'w')
-        return on_delete_event((GdkEventAny *)(ev));
-    else
-        return Gtk::Window::on_key_press_event(ev);
+guint modifiers;            /* for filtering out caps/num-lock etc.     */
+modifiers = gtk_accelerator_get_default_mod_mask();
+if ((ev->state & modifiers) == SEQ64_CONTROL_MASK && ev->keyval == 'w')
+    return on_delete_event((GdkEventAny *)(ev));
+else
+    return Gtk::Window::on_key_press_event(ev);
 }
 
 }           // namespace seq64

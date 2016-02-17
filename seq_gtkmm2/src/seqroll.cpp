@@ -71,12 +71,16 @@ namespace seq64
  *
  * \param pos
  *      A position parameter.  See the description of seqroll::m_pos.
+ *      This is actually the sequence number, and is currently unused.
+ *      However, we're sure we can find a use for it sometime.
  *
  * \param hadjust
- *      Represents the horizontal scrollbar of this windows.
+ *      Represents the horizontal scrollbar of this window.  It is actually
+ *      created by the "parent" seqedit object.
  *
  * \param vadjust
- *      Represents the vertical scrollbar of this windows.
+ *      Represents the vertical scrollbar of this window.  It is actually
+ *      created by the "parent" seqedit object.
  *
  * \param ppqn
  *      The initial value of the PPQN for this sequence.  Useful in scale
@@ -122,7 +126,7 @@ seqroll::seqroll
     m_move_delta_x          (0),
     m_move_delta_y          (0),
     m_move_snap_offset_x    (0),
-    m_progress_x        (0),
+    m_progress_x            (0),
     m_scroll_offset_ticks   (0),
     m_scroll_offset_key     (0),
     m_scroll_offset_x       (0),
@@ -156,7 +160,7 @@ seqroll::~seqroll ()
  *
  * \param seq
  *      Provides the sequence number, which is checked against the
- *      SEQ64_IS_LEGAL_SEQUENCE() macro before being used.  This macro allows 
+ *      SEQ64_IS_LEGAL_SEQUENCE() macro before being used.  This macro allows
  *      the value SEQ64_SEQUENCE_LIMIT, which disables the background
  *      sequence.
  */

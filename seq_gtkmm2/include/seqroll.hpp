@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-25
+ * \updates       2016-02-17
  * \license       GNU GPLv2 or above
  *
  */
@@ -147,7 +147,7 @@ private:
     int m_move_delta_x;
     int m_move_delta_y;
     int m_move_snap_offset_x;
-    int m_old_progress_x;
+    int m_progress_x;
     int m_scroll_offset_ticks;
     int m_scroll_offset_key;
     int m_scroll_offset_x;

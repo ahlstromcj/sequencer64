@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-02-14
+ * \updates       2016-02-17
  * \license       GNU GPLv2 or above
  *
  */
@@ -122,7 +122,7 @@ seqroll::seqroll
     m_move_delta_x          (0),
     m_move_delta_y          (0),
     m_move_snap_offset_x    (0),
-    m_old_progress_x        (0),
+    m_progress_x        (0),
     m_scroll_offset_ticks   (0),
     m_scroll_offset_key     (0),
     m_scroll_offset_x       (0),
@@ -259,7 +259,8 @@ seqroll::change_vert ()
 
 /**
  *  This function basically resets the whole widget as if it was realized
- *  again.  It's almost identical to the change_horz() function!
+ *  again.  It's almost identical to the change_horz() function, just calling
+ *  update_sizes() before update_and_draw().
  */
 
 void
@@ -518,6 +519,10 @@ seqroll::update_pixmap ()
  *  using the the draw_drawable function.  Remember that we wrap the
  *  draw_drawable() function so it's parameters are xsrc, ysrc, xdest, ydest,
  *  width, and height.
+ *
+ *  Note that the progress-bar position is based on the
+ *  sequence::get_last_tick() value, the current zoom, and the current
+ *  scroll-offset x value.
  */
 
 void
@@ -525,21 +530,38 @@ seqroll::draw_progress_on_window ()
 {
     if (usr().progress_bar_thick())
     {
-        draw_drawable(m_old_progress_x-1, 0, m_old_progress_x-1, 0, 2, m_window_y);
+        draw_drawable(m_progress_x-1, 0, m_progress_x-1, 0, 2, m_window_y);
         set_line(Gdk::LINE_SOLID, 2);
     }
     else
-        draw_drawable(m_old_progress_x, 0, m_old_progress_x, 0, 1, m_window_y);
+        draw_drawable(m_progress_x, 0, m_progress_x, 0, 1, m_window_y);
 
-    m_old_progress_x = (m_seq.get_last_tick() / m_zoom) - m_scroll_offset_x;
-    if (m_old_progress_x != 0)
+    m_progress_x = (m_seq.get_last_tick() / m_zoom) - m_scroll_offset_x;
+    if (m_progress_x != 0)
     {
         draw_line
         (
-            progress_color(), m_old_progress_x, 0, m_old_progress_x, m_window_y
+            progress_color(), m_progress_x, 0, m_progress_x, m_window_y
         );
         if (usr().progress_bar_thick())
             set_line(Gdk::LINE_SOLID, 1);
+
+#if 0
+        /*
+         * EXPERIMENTAL.  See contrib/notes/pausing.txt.
+         */
+
+        double val = m_hadjust.get_value();
+        double page = m_hadjust.get_page_size();
+        double step = m_hadjust.get_step_increment();
+        double upper = m_hadjust.get_upper();
+        printf
+        (
+            "seqroll scroll progress=%d; value=%g; step=%g; page=%g; upper=%g\n",
+            m_progress_x, val, step, page, upper
+        );
+#endif
+
     }
 }
 

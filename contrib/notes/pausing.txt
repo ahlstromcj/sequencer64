@@ -1,10 +1,13 @@
 How to Add Pause Functionality?
 Chris Ahlstrom
-2016-02-13 to 2016-02-16
+2016-02-13 to 2016-02-17
 
 We would like to be able to pause the playback, and have it resume where
 it left off.  This feature would have to include the ability to have
 Sequencer64 set the new position in JACK when running as JACK Master.
+
+We also want to be able to page the seqedit/seqroll view as the bar progresses,
+for sequences that are longer than can be seen whole in the window.
 
 First, let us survey how the Stop functionality works.
 
@@ -90,7 +93,7 @@ follow the progress bar.
     double Gtk::Adjustment::get_page_size () const
     double Gtk::Adjustment::get_step_increment () const
 
-    seqedit horizontal values (never changes):
+    seqedit/seqroll horizontal values (never changes):
 
         L:   scroll value = 0; step = 96; page = 1392; upper = 66816
         R:   scroll value = 65424; step = 96; page = 1392; upper = 66816
@@ -98,5 +101,25 @@ follow the progress bar.
     With --ppqn 384 option:
 
         scroll value = 0; step = 192; page = 1392; upper = 133632
+
+    Again, with progress-x shown in the leftmost position, just as the bar
+    hits the right edge of the window:
+
+        seqroll scroll progress=650; value=0; step=96; page=1388; upper=66816
+        seqroll scroll progress=657; value=0; step=96; page=1388; upper=66816
+        seqroll scroll progress=665; value=0; step=96; page=1388; upper=66816
+        seqroll scroll progress=673; value=0; step=96; page=1388; upper=66816
+        seqroll scroll progress=681; value=0; step=96; page=1388; upper=66816
+        seqroll scroll progress=688; value=0; step=96; page=1388; upper=66816
+        seqroll scroll progress=696; value=0; step=96; page=1388; upper=66816
+
+    With --ppqn 384 option:
+
+		seqroll scroll progress=648; value=0; step=192; page=1388; upper=133632
+		seqroll scroll progress=664; value=0; step=192; page=1388; upper=133632
+		seqroll scroll progress=679; value=0; step=192; page=1388; upper=133632
+		seqroll scroll progress=695; value=0; step=192; page=1388; upper=133632
+		seqroll scroll progress=711; value=0; step=192; page=1388; upper=133632
+		seqroll scroll progress=725; value=0; step=192; page=1388; upper=133632
 
 # vim: sw=4 ts=4 wm=8 et ft=sh

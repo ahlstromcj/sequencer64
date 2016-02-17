@@ -611,7 +611,7 @@ options::add_jack_sync_page ()
 
     /* Frame for transport options */
 
-    Gtk::Frame * transportframe = manage(new Gtk::Frame("JACK Transport mode"));
+    Gtk::Frame * transportframe = manage(new Gtk::Frame("JACK Transport Mode"));
     transportframe->set_border_width(4);
     vbox->pack_start(*transportframe, Gtk::PACK_SHRINK);
 
@@ -691,7 +691,7 @@ options::add_jack_sync_page ()
 
     /* Frame for jack start mode options */
 
-    Gtk::Frame * modeframe = manage(new Gtk::Frame("JACK Start mode"));
+    Gtk::Frame * modeframe = manage(new Gtk::Frame("JACK Start Mode"));
     modeframe->set_border_width(4);
     vbox->pack_start(*modeframe, Gtk::PACK_SHRINK);
 
@@ -705,7 +705,9 @@ options::add_jack_sync_page ()
         rb_live,
         "Playback will be in Live mode.  Use this to "
         "allow live muting and unmuting of patterns (loops) in the "
-        "sequence/pattern window (the main window)."
+        "sequence/pattern window (the main window) when running JACK. "
+        "If JACK is not running, Live mode occurs only if playback is started "
+        "from the main window."
     );
 
     Gtk::RadioButton * rb_perform = manage
@@ -717,7 +719,8 @@ options::add_jack_sync_page ()
         rb_perform,
         "Playback will use the Song Editor's layout data.  This data is "
         "used no matter whether the sequence/pattern editor or the song "
-        "editor is active."
+        "editor is active, if JACK is running.  If JACK is not running, Song "
+        "mode occurs only if playback is started from the song editor."
     );
 
     Gtk::RadioButton::Group group = rb_live->get_group();

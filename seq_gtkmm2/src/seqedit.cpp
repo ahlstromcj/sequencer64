@@ -2046,19 +2046,6 @@ seqedit::timeout ()
         m_seqdata_wid->redraw();
     }
     m_seqroll_wid->draw_progress_on_window();
-
-    // EXPERIMENTAL
-    //
-    double val = m_hadjust->get_value();
-    double page = m_hadjust->get_page_size();
-    double step = m_hadjust->get_step_increment();
-    double upper = m_hadjust->get_upper();
-    printf
-    (
-        "scroll value = %g; step = %g; page = %g; upper = %g\n",
-        val, step, page, upper
-    );
-
     return true;
 }
 

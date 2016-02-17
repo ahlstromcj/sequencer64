@@ -444,7 +444,7 @@ dnl #define API_VERSION "0.9"             // already defined on command line
 
 AH_TOP(
 
-#define VERSION_DATE_SHORT "2015-02-15"
+#define VERSION_DATE_SHORT "2015-02-16"
 #define VERSION "0.9.9.18"
 
 )

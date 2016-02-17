@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-01-23
+ * \updates       2016-02-16
  * \license       GNU GPLv2 or above
  *
  *  Here is a list of the global variables used/stored/modified by this
@@ -93,6 +93,14 @@ options::options
     m_button_jack_master_cond
     (
         manage(new Gtk::CheckButton("Master C_onditional", true))
+    ),
+    m_button_jack_connect
+    (
+        manage(new Gtk::Button("JACK Co_nnect", true))
+    ),
+    m_button_jack_disconnect
+    (
+        manage(new Gtk::Button("JACK _Disconnect", true))
     ),
     m_notebook                      (manage(new Gtk::Notebook()))
 {
@@ -663,6 +671,24 @@ options::add_jack_sync_page ()
     );
     transportbox->pack_start(*m_button_jack_master_cond, false, false);
 
+    /*
+     * If JACK is already running, we don't want the user modifying these
+     * check-boxes.  They'll have to click "JACK Disconnect" to re-enable
+     * changing the status of these check-boxes.
+     */
+
+    if (perf().is_jack_running())
+    {
+        m_button_jack_transport->set_sensitive(false);
+        m_button_jack_master->set_sensitive(false);
+        m_button_jack_master_cond->set_sensitive(false);
+    }
+    else
+    {
+        m_button_jack_connect->set_sensitive(false);
+        m_button_jack_disconnect->set_sensitive(false);
+    }
+
     /* Frame for jack start mode options */
 
     Gtk::Frame * modeframe = manage(new Gtk::Frame("JACK Start mode"));
@@ -719,37 +745,65 @@ options::add_jack_sync_page ()
     buttonbox->set_spacing(12);                      // was 6
     vbox->pack_start(*buttonbox, false, false);
 
-    Gtk::Button * button = manage(new Gtk::Button("JACK Co_nnect", true));
-    add_tooltip
-    (
-        button,
-        "Reconnect to JACK. Calls the JACK initialization function, which is "
-        "automatically called at Sequencer64 startup anyway."
-    );
-    button->signal_clicked().connect
-    (
-        bind
-        (
-            mem_fun(*this, &options::transport_callback),
-            e_jack_connect, button
-        )
-    );
-    buttonbox->pack_start(*button, false, false);
+    /*
+     * JACK Connect.
+     */
 
-    button = manage(new Gtk::Button("JACK _Disconnect", true));
     add_tooltip
     (
-        button, "Disconnect JACK. Calls the JACK deinitialization function."
+        m_button_jack_connect,
+        "Reconnect to JACK. Calls the JACK initialization function, which is "
+        "automatically called at Sequencer64 startup, if configured."
     );
-    button->signal_clicked().connect
+    m_button_jack_connect->signal_clicked().connect
     (
         bind
         (
             mem_fun(*this, &options::transport_callback),
-            e_jack_disconnect, button
+            e_jack_connect, m_button_jack_connect
         )
     );
-    buttonbox->pack_start(*button, false, false);
+    buttonbox->pack_start(*m_button_jack_connect, false, false);
+    if (rc().with_jack_transport())
+    {
+        if (perf().is_jack_running())
+            m_button_jack_connect->set_sensitive(false);
+        else
+            m_button_jack_connect->set_sensitive(true);
+    }
+
+    /*
+     * JACK Disconnect.  Weird.  When we click this button, we see the
+     * following message:
+     *
+     *   (sequencer64:766): Gtk-CRITICAL **: IA__gtk_toggle_button_get_active:
+     *   assertion 'GTK_IS_TOGGLE_BUTTON (toggle_button)' failed
+     *
+     * This doesn't happen in seq24, or to the Connect button, and the code is
+     * identical!  What's up!??
+     */
+
+    add_tooltip
+    (
+        m_button_jack_disconnect,
+        "Disconnect JACK. Calls the JACK deinitialization function."
+    );
+    m_button_jack_disconnect->signal_clicked().connect
+    (
+        bind
+        (
+            mem_fun(*this, &options::transport_callback),
+            e_jack_disconnect, m_button_jack_disconnect
+        )
+    );
+    buttonbox->pack_start(*m_button_jack_disconnect, false, false);
+    if (rc().with_jack_transport())
+    {
+        if (perf().is_jack_running())
+            m_button_jack_disconnect->set_sensitive(true);
+        else
+            m_button_jack_disconnect->set_sensitive(false);
+    }
 
 #endif          // SEQ64_JACK_SUPPORT
 
@@ -942,11 +996,19 @@ options::transport_callback (button type, Gtk::Button * acheck)
     case e_jack_transport:
 
         if (is_active)
+        {
             rc().with_jack_transport(true);
+            m_button_jack_connect->set_sensitive(true);     // enable connect
+            m_button_jack_disconnect->set_sensitive(false); // disable disconnect
+        }
         else
         {
             if (! rc().with_jack_master() && ! rc().with_jack_master_cond())
+            {
                 rc().with_jack_transport(false);
+                m_button_jack_connect->set_sensitive(false);
+                m_button_jack_disconnect->set_sensitive(false);
+            }
             else
                 m_button_jack_transport->set_active(1); // force it back on
         }
@@ -986,12 +1048,26 @@ options::transport_callback (button type, Gtk::Button * acheck)
 
     case e_jack_connect:
 
-        perf().init_jack();
+        if (perf().init_jack())                             // true = it worked
+        {
+            m_button_jack_connect->set_sensitive(false);    // disable connect
+            m_button_jack_disconnect->set_sensitive(true);  // enable disconnect
+            m_button_jack_transport->set_sensitive(false);
+            m_button_jack_master->set_sensitive(false);
+            m_button_jack_master_cond->set_sensitive(false);
+        }
         break;
 
     case e_jack_disconnect:
 
-        perf().deinit_jack();
+        if (! perf().deinit_jack())                         // false = it worked
+        {
+            m_button_jack_connect->set_sensitive(true);     // enable connect
+            m_button_jack_disconnect->set_sensitive(false); // disable disconnect
+            m_button_jack_transport->set_sensitive(true);
+            m_button_jack_master->set_sensitive(true);
+            m_button_jack_master_cond->set_sensitive(true);
+        }
         break;
 
     default:

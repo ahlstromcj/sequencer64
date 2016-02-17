@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-01-23
+ * \updates       2016-02-16
  * \license       GNU GPLv2 or above
  *
  */
@@ -148,6 +148,20 @@ private:
      */
 
     Gtk::CheckButton * m_button_jack_master_cond;
+
+    /**
+     *  JACK Connect button, which we need to enable/disable for clarity and
+     *  some additional safety.
+     */
+
+    Gtk::Button * m_button_jack_connect;
+
+    /**
+     *  JACK Disonnect button, which we need to enable/disable for clarity and
+     *  some additional safety.
+     */
+
+    Gtk::Button * m_button_jack_disconnect;
 
     /**
      *  Not sure yet what this notebook is for.  Must be a GTK thang.

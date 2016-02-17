@@ -526,4 +526,33 @@ bad length value following the c_mutegroups = 0x24240009 specification.
 Note that we added time-signature and tempo support, but have not fixed the
 garbage that appears via midicvt.
 
+
+fixups % ./Sequencer64/sequencer64 -J
+[Reading user configuration /home/ahlstrom/.config/sequencer64/sequencer64.usr]
+[Reading rc configuration /home/ahlstrom/.config/sequencer64/sequencer64.rc]
+[JACK server already started]
+[JACK transport master]
+[JACK sync now enabled]
+
+(sequencer64:2681): Gtk-CRITICAL **: IA__gtk_toggle_button_get_active: assertion 'GTK_IS_TOGGLE_BUTTON (toggle_button)' failed
+[JACK sync already enabled!]
+
+(sequencer64:2681): Gtk-CRITICAL **: IA__gtk_toggle_button_get_active: assertion 'GTK_IS_TOGGLE_BUTTON (toggle_button)' failed
+[JACK sync already enabled!]
+
+(sequencer64:2681): Gtk-CRITICAL **: IA__gtk_toggle_button_get_active: assertion 'GTK_IS_TOGGLE_BUTTON (toggle_button)' failed
+[JACK sync now disabled]
+
+(sequencer64:2681): Gtk-CRITICAL **: IA__gtk_toggle_button_get_active: assertion 'GTK_IS_TOGGLE_BUTTON (toggle_button)' failed
+[JACK server already started]
+[JACK transport master]
+[JACK sync now enabled]
+[JACK shutdown]
+Cannot read socket fd = 12 err = Success
+CheckRes error
+JackSocketClientChannel read fail
+[JACK sync now disabled]
+[Writing rc configuration /home/ahlstrom/.config/sequencer64/sequencer64.rc]
+
+
 # vim: sw=4 ts=4 wm=4 et ft=sh

@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-01-24
+ * \updates       2016-02-16
  * \license       GNU GPLv2 or above
  *
  *  This class still has way too many members, even with the JACK and
@@ -537,6 +537,17 @@ public:
     bool is_running () const
     {
         return m_running;
+    }
+
+    /**
+     * \getter m_jack_asst.is_running()
+     *      This function is useful for announcing the status of JACK in
+     *      user-interface items that only have access to the perform object.
+     */
+
+    bool is_jack_running () const
+    {
+        return m_jack_asst.is_running();
     }
 
     /**
@@ -1094,24 +1105,40 @@ private:
      *  Initializes JACK support, if SEQ64_JACK_SUPPORT is defined.  Who calls
      *  this routine?  The main() routine of the application [via launch()],
      *  and the options module, when the Connect button is pressed.
+     *
+     * \return
+     *      Returns the result of the init() call; true if JACK sync is now
+     *      running.  If JACK support is not built into the application, then
+     *      this function returns false, to indicate that JACK is (definitely)
+     *      not running.
      */
 
-    void init_jack ()
+    bool init_jack ()
     {
 #ifdef SEQ64_JACK_SUPPORT
-        m_jack_asst.init();
+        return m_jack_asst.init();
+#else
+        return false;
 #endif
     }
 
     /**
      *  Tears down the JACK infrastructure.  Called by launch() and in the
      *  options module, when the Disconnect button is pressed.
+     *
+     * \return
+     *      Returns the result of the init() call; false if JACK sync is now
+     *      no longer running.  If JACK support is not built into the
+     *      application, then this function returns true, to indicate that
+     *      JACK is (definitely) not running.
      */
 
-    void deinit_jack ()
+    bool deinit_jack ()
     {
 #ifdef SEQ64_JACK_SUPPORT
-        m_jack_asst.deinit();
+        return m_jack_asst.deinit();
+#else
+        return true;
 #endif
     }
 

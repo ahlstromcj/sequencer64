@@ -272,7 +272,7 @@ public:
     }
 
     bool init ();                       // init_jack ();
-    void deinit ();                     // deinit_jack ();
+    bool deinit ();                     // deinit_jack ();
 
 #ifdef SEQ64_JACK_SESSION
     bool session_event ();              // jack_session_event ();

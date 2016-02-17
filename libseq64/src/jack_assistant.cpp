@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-14
- * \updates       2016-02-14
+ * \updates       2016-02-16
  * \license       GNU GPLv2 or above
  *
  *  This module was created from code that existed in the perform object.
@@ -359,18 +359,19 @@ jack_assistant::init ()
     else
     {
         if (m_jack_running)
-            (void) info_message("JACK sync already enabled!");
+            (void) info_message("JACK sync still enabled");
         else
-            (void) info_message("Initialized, Running without JACK");
+            (void) info_message("Initialized, but running without JACK");
     }
     return m_jack_running;
 }
 
 /**
- *  Tears down the JACK infrastructure.
+ *  Tears down the JACK infrastructure.  Returns the value of m_jack_running,
+ *  which should be false.
  */
 
-void
+bool
 jack_assistant::deinit ()
 {
     if (m_jack_running)
@@ -397,6 +398,8 @@ jack_assistant::deinit ()
     }
     if (! m_jack_running)
         (void) info_message("JACK sync now disabled");
+
+    return m_jack_running;
 }
 
 /**

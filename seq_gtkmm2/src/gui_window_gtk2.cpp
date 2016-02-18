@@ -63,7 +63,8 @@ gui_window_gtk2::gui_window_gtk2
     m_mainperf          (p),
     m_window_x          (window_x),
     m_window_y          (window_y),
-    m_redraw_period_ms  (c_redraw_ms)                       /* 40 ms        */
+//  m_redraw_period_ms  (c_redraw_ms)                       /* 40 ms        */
+    m_redraw_period_ms  (usr().window_redraw_rate())        /* 40 ms        */
 {
     add_events(Gdk::KEY_PRESS_MASK | Gdk::KEY_RELEASE_MASK | Gdk::SCROLL_MASK);
     if (window_x > 0 && window_y > 0)

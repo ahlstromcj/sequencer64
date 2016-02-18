@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-02-14
+ * \updates       2016-02-18
  * \license       GNU GPLv2 or above
  *
  *  Note that the parse function has some code that is not yet enabled.
@@ -306,11 +306,15 @@ userfile::parse (perform & /* a_perf */)
         {
             sscanf(m_line, "%d", &scratch);
             usr().progress_bar_colored(scratch != 0);
-
             if (next_data_line(file))
             {
                 sscanf(m_line, "%d", &scratch);
                 usr().progress_bar_thick(scratch != 0);
+            }
+            if (next_data_line(file))
+            {
+                sscanf(m_line, "%d", &scratch);
+                usr().window_redraw_rate(scratch);
             }
         }
         usr().normalize();    /* calculate derived values */
@@ -337,6 +341,7 @@ userfile::parse (perform & /* a_perf */)
         usr().perf_v_page_increment(1);
         usr().progress_bar_colored(false);
         usr().progress_bar_thick(false);
+        usr().window_redraw_rate(c_redraw_ms);
     }
 
     /*
@@ -755,6 +760,14 @@ userfile::write (const perform & /* a_perf */ )
             "\n"
             << (usr().progress_bar_thick() ? "1" : "0")
             << "      # progress_bar_thick\n"
+            ;
+
+        file << "\n"
+            "# Specifies the window redraw rate for all windows that support\n"
+            "# that concept.  The default is 40 ms.  Some windows used 25 ms.\n"
+            "\n"
+            << usr().window_redraw_rate()
+            << "      # window_redraw_rate\n"
             ;
     }
 

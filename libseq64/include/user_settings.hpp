@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-22
- * \updates       2016-02-14
+ * \updates       2016-02-18
  * \license       GNU GPLv2 or above
  *
  *  This module defines the following categories of "global" variables that
@@ -168,6 +168,7 @@ class user_settings
      *      -#  perf-v-page-increment
      *      -#  progress-bar-colored (new)
      *      -#  progress-bar-thick (new)
+     *      -#  window-redraw-rate-ms (new)
      */
 
     /**
@@ -351,6 +352,15 @@ class user_settings
      */
 
     bool m_progress_bar_thick;
+
+    /**
+     *  Provides the global setting for redraw rate of windows.  Not all
+     *  windows use this yet.  The default is 40 ms (c_redraw_ms, which is 20
+     *  ms in Windows builds)), but some windows originally used 25 ms, so
+     *  beware of side-effects.
+     */
+
+    int m_window_redraw_rate_ms;
 
     /**
      *  Constants for the mainwid class.  The m_text_x and m_text_y
@@ -1100,7 +1110,7 @@ public:
     /**
      * \getter m_progress_bar_colored
      */
-    
+
     bool progress_bar_colored () const
     {
         return m_progress_bar_colored;
@@ -1109,10 +1119,19 @@ public:
     /**
      * \getter m_progress_bar_thick
      */
-    
+
     bool progress_bar_thick () const
     {
         return m_progress_bar_thick;
+    }
+
+    /**
+     * \getter m_window_redraw_rate_ms
+     */
+
+    int window_redraw_rate () const
+    {
+        return m_window_redraw_rate_ms;
     }
 
     /**
@@ -1288,6 +1307,15 @@ public:         // used in main application module and the userfile class
     void progress_bar_thick (bool flag)
     {
         m_progress_bar_thick = flag;
+    }
+
+    /**
+     * \setter m_window_redraw_rate_ms
+     */
+
+    void window_redraw_rate (int ms)
+    {
+        m_window_redraw_rate_ms = ms;
     }
 
     void midi_ppqn (int ppqn);

@@ -143,6 +143,11 @@ static const int c_swing_notes              = 13;   /* swing quantize   */
  * \todo
  *      Offload most of the work into an initialization function like
  *      options does.
+ *
+ *  Horizontal Gtk::Adjustment constructor: The initial value was 0 on a range
+ *  from 0 to 1, with step and page increments of 1, and a page_size of 1.  We
+ *  can fix these values here, or create an h_adjustment() function similar to
+ *  eventedit::v_adjustment(), which first gets called in on_realize().
  */
 
 seqedit::seqedit
@@ -179,21 +184,7 @@ seqedit::seqedit
     m_menu_rec_vol      (manage(new Gtk::Menu())),
     m_pos               (pos),                          // could dispense with
     m_vadjust           (manage(new Gtk::Adjustment(55, 0, c_num_keys, 1, 1, 1))),
-
-#ifdef USE_NEW_CODE
-
-    /*
-     * The initial value was 0 on a range from 0 to 1, with step and page
-     * increments of 1, and a page_size of 1.  We can fix these values here,
-     * or create an h_adjustment() function similar to
-     * eventedit::v_adjustment(), which first gets called in on_realize().
-     */
-
     m_hadjust           (manage(new Gtk::Adjustment(0, 0, 1, 1, 1, 1))),
-#else
-    m_hadjust           (manage(new Gtk::Adjustment(0, 0, 1, 1, 1, 1))),
-#endif
-
     m_vscroll_new       (manage(new Gtk::VScrollbar(*m_vadjust))),
     m_hscroll_new       (manage(new Gtk::HScrollbar(*m_hadjust))),
     m_seqkeys_wid       (manage(new seqkeys(m_seq, p, *m_vadjust))),

@@ -56,6 +56,15 @@
  *
  *  Just before the progress bar reaches a little less than a multiple of Ps,
  *  we want to add to the scrollbar value and adjust it.
+ *
+ *      seqroll scroll progress=696; value=0; step=96; page=1388; upper=66816
+ *
+ *  Note that the default zoom is 2, so that the maximum tick value for
+ *  the window is one/half the windows size, by default.
+ *
+ *  With --ppqn 384 option:
+ *
+ *	    seqroll scroll progress=648; value=0; step=192; page=1388; upper=133632
  */
 
 #include <gtkmm/accelkey.h>
@@ -569,7 +578,7 @@ seqroll::draw_progress_on_window ()
         draw_drawable(m_progress_x, 0, m_progress_x, 0, 1, m_window_y);
 
     m_progress_x = (m_seq.get_last_tick() / m_zoom) - m_scroll_offset_x;
-    if (m_progress_x != 0)
+    if (m_progress_x != 0)                  // >= 0 ????
     {
         draw_line
         (
@@ -579,6 +588,13 @@ seqroll::draw_progress_on_window ()
             set_line(Gdk::LINE_SOLID, 1);
 
 #if 0
+        midipulse progress_tick = m_seq_get_last_tick();
+        if ((progress_tick % m_tick_page_size) > m_tick_page_limit)
+        {
+            double newstep = progress_tick_to_step (.....);
+            parent.horizontal_adjust(newstep);
+        }
+
         /*
          * EXPERIMENTAL.  See contrib/notes/pausing.txt.
          */
@@ -1360,7 +1376,8 @@ seqroll::on_size_allocate (Gtk::Allocation & a)
 /**
  *  Implements the on-scroll event handling.  This scroll event only
  *  handles basic scrolling without any modifier keys such as
- *  SEQ64_CONTROL_MASK or SEQ64_SHIFT_MASK.
+ *  SEQ64_CONTROL_MASK or SEQ64_SHIFT_MASK.  The seqedit class handles that
+ *  fun stuff.
  */
 
 bool

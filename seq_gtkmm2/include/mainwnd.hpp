@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-02-15
+ * \updates       2016-02-18
  * \license       GNU GPLv2 or above
  *
  *  The main windows is known as the "Patterns window" or "Patterns
@@ -200,10 +200,10 @@ private:
     /**
      *  Provides the timeout periodicity, which is normally 25 ms.  Setting it
      *  to 100 ms works, but the progress bar moves "backwards" on some of our
-     *  note-empty patterns.
-     */
+     *  note-empty patterns.  REPLACED BY A BASE CLASS MEMBER.
 
     int m_timeout_period_ms;
+     */
 
 public:
 

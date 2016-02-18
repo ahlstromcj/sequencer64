@@ -1,6 +1,6 @@
 Bugs and Additional Upgrade Ideas
 Chris Ahlstrom
-2015-10-27 to 2016-02-15 (New bugs)
+2015-10-27 to 2016-02-18 (New bugs)
 
 In no particular order...  "y" means "in progress", and "x" means it is
 basically done.
@@ -8,19 +8,22 @@ basically done.
 -  See BUG REPORTS below.
 -  Interesting.  The non-empty patch sequences in the "b4uacuse" MIDI files
    at first show progress bars that run wildly.  But, if one does a
-   right-click Edit on them, then they run properly for a 4/4 one-bar patter.
-   WHY?  Need to do that without bringing up the sequence editor.
+   right-click Edit on them, then they run properly for a 4/4 one-bar pattern.
    However, if the file is saved after that, and reloaded, now the patterns
    are fine.  The differences?
    -    The new file has "TimeSig 4/4 24 8"  and "Tempo 8".
+   -    Measures values of non-zero now?
    I also suspect the various seq-set functions (for beat, etc) that are
-   called modify the sequence to make it work.
+   called modify the sequence to make it work.  HOWEVER, IMPORTING a mid file
+   and SAVING IT still leaves the problem.  Need to fix that without bringing
+   up the sequence editor, when the file is read; if 0, set the measures to 1.
 -  Make sure that Sequencer64 handles running status, via the files that
    midicvt discusses.
--  Need to clarify the behavior of JACK-Live mode versus using the controls of
+x  Need to clarify the behavior of JACK-Live mode versus using the controls of
    the pattern versus song window.
 -  We need to be able to empty out any sequences and close any editors
-   when loading a new file, otherwise Sequencer64 can freeze.
+   when loading a new file, otherwise Sequencer64 can freeze.  In generally,
+   we need to *manage* the various editing windows better.
 -  In the pattern editor piano roll, implement Undo for the arrow keys in the
    same way as for the mouse.
 -  The "increase size of grid" button on the perfedit doesn't work, or at least

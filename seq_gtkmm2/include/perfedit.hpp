@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-02-06
+ * \updates       2016-02-18
  * \license       GNU GPLv2 or above
  *
  */
@@ -166,14 +166,6 @@ private:
      */
 
     int m_standard_bpm;
-
-    /**
-     *  Provides the timer period for the perfedit timer, used to determine
-     *  the rate of redrawing.  This is hardwired to 40 ms in Linux, and 20 ms
-     *  in Windows.
-     */
-
-    int m_redraw_ms;
 
 public:
 

@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-12-05
- * \updates       2016-01-04
+ * \updates       2016-02-18
  * \license       GNU GPLv2 or above
  *
  */
@@ -140,14 +140,6 @@ private:
 
     sequence & m_seq;
 
-    /**
-     *  Provides the timer period for the eventedit timer, used to determine
-     *  the rate of redrawing.  This is hardwired to 40 ms in Linux, and 20 ms
-     *  in Windows.
-     */
-
-    int m_redraw_ms;
-
 public:
 
     eventedit (perform & p, sequence & seq);
@@ -170,7 +162,13 @@ public:
 
 private:
 
-    bool timeout ();
+    /*
+     * We don't need a timeout in this static editing window which doesn't
+     * interact directly with other editing windows.
+     *
+     * bool timeout ();
+     */
+
     void handle_delete ();
     void handle_insert ();
     void handle_modify ();

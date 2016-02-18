@@ -28,6 +28,34 @@
  * \updates       2016-02-17
  * \license       GNU GPLv2 or above
  *
+ *  There are a large number of existing items to discuss.  But for now let's
+ *  talk about how to have the scrollbar follow the progress bar.
+ *
+ *  The full extent of the sequence ranges from 0 to its length in ticks (Ts).
+ *  The horizontal scrollbar is set to match that:
+ *
+\verbatim
+      lower                     Ps                                         upper
+  Seq:  0-------------------------------------------------------------------Ts
+ Page:  0-----------------------| Pp = page-size = window_width * zoom
+        |--|--|--|--|             page-increment, one bar
+        |--|                      step-increment, one semi-quaver (16th note)
+\endverbatim
+ *
+ *  The window width multiplied by the zoom factor is the "page" size, P.
+ *  The page increment is smaller (usually), and is one bar.
+ *
+ *  When the progress bar is nearly at the end of the current page, we want
+ *  to move to the next page and continue the progress bar.
+ *
+ *  The page-size in ticks is the page-size in pixels divided by the zoom:
+ *
+\verbatim
+        Ps = Pp / Z
+\endverbatim
+ *
+ *  Just before the progress bar reaches a little less than a multiple of Ps,
+ *  we want to add to the scrollbar value and adjust it.
  */
 
 #include <gtkmm/accelkey.h>
@@ -180,28 +208,29 @@ seqroll::set_background_sequence (bool state, int seq)
 
 /**
  *  Update the sizes of items based on zoom, PPQN, BPM, BW (beat width) and
- *  more.
+ *  more.  It brings the scrollbar back to the beginning, resets the upper
+ *  limit to the number of ticks in the sequence, sets the page-size based on
+ *  the window size and the zoom factor.
+ *
+ *  The horizontal step increment is 1 semiquaver (1/16) note per zoom level.
+ *  The horizontal page increment is currently always one bar.  We may want to
+ *  make that larger for scrolling after the progress bar.
+ *
+ *  Tha maximum value set for the scrollbar brings it to the last "page" of the
+ *  piano roll.
+ *
+ *  The vertical size are also adjusted.  More on the story later.
  */
 
 void
 seqroll::update_sizes ()
 {
-    m_hadjust.set_lower(0);                            /* set default size */
+    m_hadjust.set_lower(0);                             /* set default size */
     m_hadjust.set_upper(m_seq.get_length());
     m_hadjust.set_page_size(m_window_x * m_zoom);
-
-    /**
-     * The horizontal step increment is 1 semiquaver (1/16) note per zoom
-     * level.
-     */
-
     m_hadjust.set_step_increment((m_ppqn / 4) * m_zoom);
 
-    /**
-     * The page increment is always one bar.
-     */
-
-    int page_increment = int
+    int page_increment = int                            /* always one bar   */
     (
         double(m_ppqn) * double(m_seq.get_beats_per_bar()) *
             (4.0 / double(m_seq.get_beat_width()))
@@ -220,10 +249,9 @@ seqroll::update_sizes ()
 
     int v_max_value = c_num_keys - (m_window_y / c_key_y);
     if (m_vadjust.get_value() > v_max_value)
-    {
         m_vadjust.set_value(v_max_value);
-    }
-    if (is_realized())              /* create pixmaps with window dimentions */
+
+    if (is_realized())              /* create pixmaps with window dimensions */
     {
         m_pixmap = Gdk::Pixmap::create(m_window, m_window_x, m_window_y, -1);
         m_background = Gdk::Pixmap::create(m_window, m_window_x, m_window_y, -1);
@@ -262,7 +290,7 @@ seqroll::change_vert ()
 }
 
 /**
- *  This function basically resets the whole widget as if it was realized
+ *  This function basically resets the whole widget as if it were realized
  *  again.  It's almost identical to the change_horz() function, just calling
  *  update_sizes() before update_and_draw().
  */

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-12-05
- * \updates       2016-02-15
+ * \updates       2016-02-18
  * \license       GNU GPLv2 or above
  *
  * To consider:
@@ -188,8 +188,7 @@ eventedit::eventedit
     m_entry_ev_data_1   (manage(new Gtk::Entry())),
     m_label_time_fmt    (manage(new Gtk::Label())),
     m_label_right       (manage(new Gtk::Label())),
-    m_seq               (seq),
-    m_redraw_ms         (c_redraw_ms)                       /* 40 ms        */
+    m_seq               (seq)
 {
     std::string title = "Sequencer64 - Event Editor";
     title += ": \"";
@@ -736,28 +735,35 @@ eventedit::handle_cancel ()
  *
  * \return
  *      Always returns true.  We don't want it doing anything yet.
- */
 
 bool
 eventedit::timeout ()
 {
     return true;                        // m_eventslots->redraw_dirty_events();
 }
+ */
 
 /**
  *  This callback function calls the base-class on_realize() function, and
  *  then connects the eventedit::timeout() function to the Glib
- *  signal-timeout, with a redraw timeout of m_redraw_ms.
+ *  signal-timeout, with a redraw timeout of redraw_period_ms().
  */
 
 void
 eventedit::on_realize ()
 {
     gui_window_gtk2::on_realize();
+
+    /*
+     * EXPERIMENTAL:  We really don't do anything time sensitive in this
+     * window.
+     *
     Glib::signal_timeout().connect
     (
-        mem_fun(*this, &eventedit::timeout), m_redraw_ms
+        mem_fun(*this, &eventedit::timeout), redraw_period_ms()
     );
+     */
+
     v_adjustment(0, 0, m_eventslots->event_count());
 }
 

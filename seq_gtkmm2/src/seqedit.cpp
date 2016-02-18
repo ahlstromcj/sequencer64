@@ -156,9 +156,9 @@ seqedit::seqedit
     m_zoom              (usr().zoom()),
     m_snap              (m_initial_snap),
     m_note_length       (m_initial_note_length),
-    m_scale             (usr().seqedit_scale()),        // (m_initial_scale),
-    m_key               (usr().seqedit_key()),          // (m_initial_key),
-    m_bgsequence        (usr().seqedit_bgsequence()),   // (m_initial_sequence),
+    m_scale             (usr().seqedit_scale()),        // m_initial_scale
+    m_key               (usr().seqedit_key()),          // m_initial_key
+    m_bgsequence        (usr().seqedit_bgsequence()),   // m_initial_sequence
     m_measures          (0),
     m_ppqn              (0),
     m_seq               (seq),
@@ -2051,14 +2051,17 @@ seqedit::timeout ()
 
 /**
  *  On realization, calls the base-class version, and connects the redraw
- *  timeout signal, timed at c_redraw_ms.
+ *  timeout signal, timed at redraw_period_ms().
  */
 
 void
 seqedit::on_realize()
 {
     gui_window_gtk2::on_realize();
-    Glib::signal_timeout().connect(mem_fun(*this, &seqedit::timeout), c_redraw_ms);
+    Glib::signal_timeout().connect
+    (
+        mem_fun(*this, &seqedit::timeout), redraw_period_ms()
+    );
 }
 
 /**
@@ -2108,41 +2111,31 @@ seqedit::on_scroll_event (GdkEventScroll * ev)
     }
     else if ((ev->state & modifiers) == SEQ64_SHIFT_MASK)
     {
-#ifndef USE_EXPERIMENT_SCROLL_ADJUSTMENT
-        double val = m_hadjust->get_value();
         double step = m_hadjust->get_step_increment();
-        double upper = m_hadjust->get_upper();
-#endif
         if (CAST_EQUIVALENT(ev->direction, SEQ64_SCROLL_DOWN))
         {
-#ifdef USE_EXPERIMENT_SCROLL_ADJUSTMENT
             horizontal_adjust(step);
-#else
-            double nextval = val + step;
-            if (nextval > upper)
-                nextval = upper;
-
-            m_hadjust->set_value(nextval);
-#endif
         }
         else if (CAST_EQUIVALENT(ev->direction, SEQ64_SCROLL_UP))
         {
-#ifdef USE_EXPERIMENT_SCROLL_ADJUSTMENT
             horizontal_adjust(-step);
-#else
-            double nextval = val - step;
-            if (nextval < 0.0)
-                nextval = 0.0;
-
-            m_hadjust->set_value(nextval);
-#endif
         }
         return true;
     }
     return false;                       /* means "not handled"  */
 }
 
-#ifdef USE_EXPERIMENT_SCROLL_ADJUSTMENT
+/**
+ *  This function provides optimization for the on_scroll_event() function,
+ *  and should provide support for having the seqedit/seqroll/seqtime/seqdata
+ *  panes follow the scrollbar, in a future upgrade.
+ *
+ * \param step
+ *      Provides the step value to use for adjusting the horizontal scrollbar.
+ *      If negative, the adjustment is leftward.  If positive, the adjustment
+ *      is rightward.  It can be the value of m_hadjust->get_step_increment(),
+ *      or provided especially to keep up with the progress bar.
+ */
 
 void
 seqedit::horizontal_adjust (double step)
@@ -2150,10 +2143,7 @@ seqedit::horizontal_adjust (double step)
     double val = m_hadjust->get_value();
     double upper = m_hadjust->get_upper();
     double nextval = val + step;
-    bool forward = true;
-    if (step < 0.0)
-        forward = false;
-
+    bool forward = step >= 0.0;
     if (forward)
     {
         if (nextval > upper)
@@ -2167,8 +2157,6 @@ seqedit::horizontal_adjust (double step)
     m_hadjust->set_value(nextval);
 }
 
-#endif  // USE_EXPERIMENT_SCROLL_ADJUSTMENT
-
 /**
 *  Handles a key-press event.
 */
@@ -2176,12 +2164,12 @@ seqedit::horizontal_adjust (double step)
 bool
 seqedit::on_key_press_event (GdkEventKey * ev)
 {
-guint modifiers;            /* for filtering out caps/num-lock etc.     */
-modifiers = gtk_accelerator_get_default_mod_mask();
-if ((ev->state & modifiers) == SEQ64_CONTROL_MASK && ev->keyval == 'w')
-    return on_delete_event((GdkEventAny *)(ev));
-else
-    return Gtk::Window::on_key_press_event(ev);
+    guint modifiers;            /* for filtering out caps/num-lock etc.     */
+    modifiers = gtk_accelerator_get_default_mod_mask();
+    if ((ev->state & modifiers) == SEQ64_CONTROL_MASK && ev->keyval == 'w')
+        return on_delete_event((GdkEventAny *)(ev));
+    else
+        return Gtk::Window::on_key_press_event(ev);
 }
 
 }           // namespace seq64

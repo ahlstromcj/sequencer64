@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-02-06
+ * \updates       2016-02-18
  * \license       GNU GPLv2 or above
  *
  */
@@ -125,8 +125,7 @@ perfedit::perfedit
     m_bpm               (0),
     m_bw                (0),
     m_ppqn              (0),
-    m_standard_bpm      (SEQ64_DEFAULT_LINES_PER_MEASURE),  /* 4            */
-    m_redraw_ms         (c_redraw_ms)                       /* 40 ms        */
+    m_standard_bpm      (SEQ64_DEFAULT_LINES_PER_MEASURE)   /* 4            */
 {
     std::string title = "Sequencer64 - Song Editor";
     if (second_perfedit)
@@ -582,7 +581,7 @@ perfedit::timeout ()
 /**
  *  This callback function calls the base-class on_realize() function, and
  *  then connects the perfedit::timeout() function to the Glib
- *  signal-timeout, with a redraw timeout of m_redraw_ms.
+ *  signal-timeout, with a redraw timeout of redraw_period_ms().
  */
 
 void
@@ -591,7 +590,7 @@ perfedit::on_realize ()
     gui_window_gtk2::on_realize();
     Glib::signal_timeout().connect
     (
-        mem_fun(*this, &perfedit::timeout), m_redraw_ms
+        mem_fun(*this, &perfedit::timeout), redraw_period_ms()
     );
 }
 

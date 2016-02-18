@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-22
- * \updates       2015-11-07
+ * \updates       2016-02-18
  * \license       GNU GPLv2 or above
  *
  */
@@ -37,6 +37,9 @@
  *  Since these items are pointers, we were able to move (most) of the
  *  included header files to the cpp file.   Except for the items that
  *  come from widget.h, perhaps because GdkEventAny was a typedef.
+ *
+ *  This base class supports access to the main performance object, the
+ *  window size, and the redraw rate.
  */
 
 namespace Gtk
@@ -74,6 +77,14 @@ private:
     int m_window_x;
     int m_window_y;
 
+    /**
+     *  Provides the timer period for the eventedit timer, used to determine
+     *  the rate of redrawing.  This is currently hardwired to 40 ms in Linux,
+     *  and 20 ms in Windows.  Note that mainwnd used 25 ms.
+     */
+
+    int m_redraw_period_ms;
+
 public:
 
     gui_window_gtk2
@@ -95,9 +106,22 @@ protected:
         return m_mainperf;
     }
 
+    /**
+     *  Provides "quit" functionality that WE HAVE OVERLOOKED!!!
+     */
+
     virtual void quit ()
     {
         // TO DO!!!!
+    }
+
+    /**
+     * \getter m_redraw_period_ms
+     */
+
+    int redraw_period_ms () const
+    {
+        return m_redraw_period_ms;
     }
 
 };

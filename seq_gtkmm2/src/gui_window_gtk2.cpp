@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-22
- * \updates       2015-09-29
+ * \updates       2016-02-18
  * \license       GNU GPLv2 or above
  *
  */
@@ -41,7 +41,13 @@ namespace seq64
 {
 
 /**
- *  Principal constructor, has a reference to the all-important  perform object.
+ *  Principal constructor, has a reference to the all-important perform
+ *  object.
+ *
+ * \note
+ *      We've collected the redraw timeouts into a base-class member.  Most
+ *      were valued at c_redraw_ms (40 ms), but mainwnd used 25 ms, so beware.
+ *      We will eventually make this a user-interface parameter.
  *
  * \param a_perf
  *      Refers to the main performance object.
@@ -56,7 +62,8 @@ gui_window_gtk2::gui_window_gtk2
     Gtk::Window         (),
     m_mainperf          (p),
     m_window_x          (window_x),
-    m_window_y          (window_y)
+    m_window_y          (window_y),
+    m_redraw_period_ms  (c_redraw_ms)                       /* 40 ms        */
 {
     add_events(Gdk::KEY_PRESS_MASK | Gdk::KEY_RELEASE_MASK | Gdk::SCROLL_MASK);
     if (window_x > 0 && window_y > 0)

@@ -113,6 +113,9 @@ follow the progress bar.
         seqroll scroll progress=688; value=0; step=96; page=1388; upper=66816
         seqroll scroll progress=696; value=0; step=96; page=1388; upper=66816
 
+    Note that the default zoom is 2, so that the maximum tick value for
+    the window is one/half the windows size, by default.
+
     With --ppqn 384 option:
 
 		seqroll scroll progress=648; value=0; step=192; page=1388; upper=133632

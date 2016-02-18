@@ -96,23 +96,49 @@ private:
     int m_zoom;
 
     /**
-     *  Use in setting the snap-to in pulses, off = 1.
+     *  Used in setting the snap-to value in pulses, off = 1.
      */
 
     int m_snap;
+
+    /**
+     *  The default length of a note to be inserted by a right-left-click
+     *  operation.
+     */
+
     int m_note_length;
 
     /**
-     *  Settings for the music scale and key.
+     *  Settings for the music scale, key, and background sequence.
      */
 
     int m_scale;
     int m_key;
     int m_bgsequence;
+
+    /**
+     *  Provides the length of the sequence in measures.
+     */
+
     long m_measures;
+
+    /**
+     *  Holds a copy of the current PPQN for the sequence (and the entire MIDI
+     *  file).
+     */
+
     int m_ppqn;
 
+    /**
+     *  Holds a reference to the sequence that this window represents.
+     */
+
     sequence & m_seq;
+
+    /**
+     *  A number of user-interface objects.
+     */
+
     Gtk::MenuBar * m_menubar;
     Gtk::Menu * m_menu_tools;
     Gtk::Menu * m_menu_zoom;
@@ -141,20 +167,62 @@ private:
     Gtk::Menu * m_menu_rec_vol;
 
     /**
-     * Basically the sequence number.
+     * Basically the sequence number.  We will eventually remove this member,
+     * as we can get it via sequence::number() now.
      */
 
     int m_pos;
+
+    /**
+     *  Scrollbar and adjustment objects for horizontal and vertical panning.
+     */
 
     Gtk::Adjustment * m_vadjust;
     Gtk::Adjustment * m_hadjust;
     Gtk::VScrollbar * m_vscroll_new;
     Gtk::HScrollbar * m_hscroll_new;
+
+    /**
+     *  Handles the piano-keys part of the user-interface.  This item draws the
+     *  piano-keys at the left of the seqedit window.
+     */
+
     seqkeys * m_seqkeys_wid;
+
+    /**
+     *  Handles the time-line (bar or measures) part of the user-interface.
+     *  This is the location where the measure numbers and the END marker are
+     *  shown.
+     */
+
     seqtime * m_seqtime_wid;
+
+    /**
+     *  Handles the event-data part of the user-interface.  This is the area at
+     *  the bottom of the window that shows value lines for the selected kinds
+     *  of events.
+     */
+
     seqdata * m_seqdata_wid;
+
+    /**
+     *  Handles the small event part of the user-interface, where events can be
+     *  moved and added.
+     */
+
     seqevent * m_seqevent_wid;
+
+    /**
+     *  Handles the piano-roll part of the user-interface.
+     */
+
     seqroll * m_seqroll_wid;
+
+    /**
+     *  More user-interface elements.  These items provide a number of buttons
+     *  and text-entry fields, as well as their layout.
+     */
+
     Gtk::Table * m_table;
     Gtk::VBox * m_vbox;
     Gtk::HBox * m_hbox;
@@ -217,9 +285,7 @@ public:
     );
     ~seqedit ();
 
-#ifdef USE_EXPERIMENT_SCROLL_ADJUSTMENT
     void horizontal_adjust (double step);
-#endif
 
 private:
 

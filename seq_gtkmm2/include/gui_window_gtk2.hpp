@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-22
- * \updates       2016-02-18
+ * \updates       2016-02-19
  * \license       GNU GPLv2 or above
  *
  */
@@ -123,6 +123,8 @@ protected:
     {
         return m_redraw_period_ms;
     }
+
+    void scroll_adjust (Gtk::Adjustment & adjust, double step);
 
 };
 

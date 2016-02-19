@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-21
- * \updates       2015-11-08
+ * \updates       2016-02-19
  * \license       GNU GPLv2 or above
  *
  *  We've added a number of wrapper functions for the "draw-rectangle",
@@ -621,6 +621,8 @@ protected:
             m_gc, m_pixmap, xsrc, ysrc, xdest, ydest, width, height
         );
     }
+
+    void scroll_adjust (Gtk::Adjustment & adjust, double step);
 
 protected:            // special dual setters for friend GUI classes
 

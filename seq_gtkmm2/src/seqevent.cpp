@@ -85,7 +85,7 @@ seqevent::seqevent
 
 /**
  *  Changes the horizontal scrolling offset for ticks, then updates the
- *  pixmap and forces a redraw.
+ *  pixmap and forces a redraw.  Very similar to seqroll::change_horz().
  */
 
 void
@@ -146,7 +146,7 @@ seqevent::reset ()
 
 /**
  *  Adjusts the scrolling offset for ticks, updates the pixmap, and draws
- *  it on the window.
+ *  it on the window.  Somewhat similar to seqroll::redraw().
  */
 
 void

@@ -1,11 +1,13 @@
 Bugs and Additional Upgrade Ideas
 Chris Ahlstrom
-2015-10-27 to 2016-02-18 (New bugs)
+2015-10-27 to 2016-02-19 (New bugs)
 
 In no particular order...  "y" means "in progress", and "x" means it is
 basically done.
 
--  See BUG REPORTS below.
+-  See BUG REPORTS below.  These are bug reports from other people.
+-  The vertical scroll feature in seqdata immediately puts the data value at
+   0, but otherwise works fine, adjusting it up and down properly.
 -  Interesting.  The non-empty patch sequences in the "b4uacuse" MIDI files
    at first show progress bars that run wildly.  But, if one does a
    right-click Edit on them, then they run properly for a 4/4 one-bar pattern.

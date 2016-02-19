@@ -137,7 +137,6 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
     m_adjust_load_offset    (nullptr),
     m_entry_notes           (nullptr),
     m_timeout_connect       ()                      // handler
-//  m_timeout_period_ms     (25)                    // 25 is the norm!!!
 {
     /*
      * This provides the application icon, seen in the title bar of the
@@ -444,7 +443,6 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
     m_timeout_connect = Glib::signal_timeout().connect
     (
         mem_fun(*this, &mainwnd::timer_callback), redraw_period_ms()
-        // m_timeout_period_ms
     );
     m_sigpipe[0] = -1;                      // initialize static array
     m_sigpipe[1] = -1;

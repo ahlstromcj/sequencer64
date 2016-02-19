@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-02-17
+ * \updates       2016-02-18
  * \license       GNU GPLv2 or above
  *
  *  There are a large number of existing items to discuss.  But for now let's
@@ -137,6 +137,7 @@ seqroll::seqroll
     int ppqn
 ) :
     gui_drawingarea_gtk2    (p, hadjust, vadjust, 10, 10),
+    m_horizontal_adjust     (hadjust),
     m_old                   (),
     m_selected              (),
     m_seq                   (seq),
@@ -269,7 +270,8 @@ seqroll::update_sizes ()
 }
 
 /**
- *  Change the horizontal scrolling offset and redraw.
+ *  Change the horizontal scrolling offset and redraw.  Roughly similar to
+ *  seqevent::change_horz().
  */
 
 void
@@ -317,7 +319,8 @@ seqroll::reset ()
 }
 
 /**
- *  Redraws unless m_ignore_redraw is true.
+ *  Redraws unless m_ignore_redraw is true.  Somewhat similar to
+ *  seqevent::redraw().
  */
 
 void
@@ -1312,7 +1315,7 @@ seqroll::on_key_press_event (GdkEventKey * ev)
             m_seq24_interaction.set_adding(false, *this);
             result = true;
         }
-#endif  // SEQ64_USE_VI_SEQROLL_MODE
+#endif                                              // SEQ64_USE_VI_SEQROLL_MODE
         else if (ev->keyval == SEQ64_p)
         {
             m_seq24_interaction.set_adding(true, *this);
@@ -1378,6 +1381,10 @@ seqroll::on_size_allocate (Gtk::Allocation & a)
  *  handles basic scrolling without any modifier keys such as
  *  SEQ64_CONTROL_MASK or SEQ64_SHIFT_MASK.  The seqedit class handles that
  *  fun stuff.
+ *
+ *  Note that this function seems to duplicate the functionality of
+ *  seqkeys::on_scroll_event().  Do we really need both?  Which one do we
+ *  need?
  */
 
 bool

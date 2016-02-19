@@ -2078,7 +2078,19 @@ seqedit::on_delete_event (GdkEventAny *)
 }
 
 /**
- *  Handles an on-scroll event.
+ *  Handles an on-scroll event.  This handles moving the scroll wheel on a
+ *  mouse or do a two-fingered scrolling action on a touchpad.  If no modifier
+ *  key is pressed, this moves the view up or down on the "notes" coordinate,
+ *  showing different piano keys.  This behavior is implemented in
+ *  seqkeys::on_scroll_event(), and is called into play by returning false
+ *  here.
+ *
+ *  If the Ctrl key is pressed, then the scrolling action causes the view to
+ *  zoom in or out.  This behavior is implemented here.
+ *
+ *  If the Shift key is pressed, then the scrolling action moves the view
+ *  horizontally on the time-line (measures-line) of the piano roll.  This
+ *  behavior is implemented here.
  */
 
 bool
@@ -2116,18 +2128,7 @@ seqedit::on_scroll_event (GdkEventScroll * ev)
     return false;                       /* means "not handled"  */
 }
 
-/**
- *  This function provides optimization for the on_scroll_event() function,
- *  and should provide support for having the seqedit/seqroll/seqtime/seqdata
- *  panes follow the scrollbar, in a future upgrade.
- *
- * \param step
- *      Provides the step value to use for adjusting the horizontal scrollbar.
- *      If negative, the adjustment is leftward.  If positive, the adjustment
- *      is rightward.  It can be the value of m_hadjust->get_step_increment(),
- *      or provided especially to keep up with the progress bar.
- */
-
+/*
 void
 seqedit::horizontal_adjust (double step)
 {
@@ -2147,6 +2148,7 @@ seqedit::horizontal_adjust (double step)
     }
     m_hadjust->set_value(nextval);
 }
+*/
 
 /**
 *  Handles a key-press event.

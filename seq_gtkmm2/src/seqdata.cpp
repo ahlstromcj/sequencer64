@@ -402,6 +402,9 @@ seqdata::on_realize ()
 
 /**
  *  Implements the on-expose event.
+ *
+ * \return
+ *      Always returns true.
  */
 
 bool
@@ -419,6 +422,14 @@ seqdata::on_expose_event (GdkEventExpose * a_e)
  *  Implements the on-scroll event.  This scroll event only handles basic
  *  scrolling, without any modifier keys such as SEQ64_CONTROL_MASK or
  *  SEQ64K_SHIFT_MASK.
+ *
+ *  If there is a note (seqroll pane) or event (seqevent pane) selected,
+ *  and mouse hovers over the data area (seqdata pane), then this scrolling
+ *  action will increase or decrease the value of the data item, which
+ *  lengthens of shortens the line drawn.
+ *
+ * \todo
+ *      DOCUMENT the seqdata scrolling behavior in the documentation projects.
  *
  * \return
  *      Always returns true.

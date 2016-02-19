@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-22
- * \updates       2016-02-18
+ * \updates       2016-02-19
  * \license       GNU GPLv2 or above
  *
  */
@@ -63,8 +63,7 @@ gui_window_gtk2::gui_window_gtk2
     m_mainperf          (p),
     m_window_x          (window_x),
     m_window_y          (window_y),
-//  m_redraw_period_ms  (c_redraw_ms)                       /* 40 ms        */
-    m_redraw_period_ms  (usr().window_redraw_rate())        /* 40 ms        */
+    m_redraw_period_ms  (usr().window_redraw_rate())        /* 40, 25 ms    */
 {
     add_events(Gdk::KEY_PRESS_MASK | Gdk::KEY_RELEASE_MASK | Gdk::SCROLL_MASK);
     if (window_x > 0 && window_y > 0)
@@ -78,6 +77,43 @@ gui_window_gtk2::gui_window_gtk2
 gui_window_gtk2::~gui_window_gtk2 ()
 {
     // Empty body
+}
+
+/**
+ *  This function provides optimization for the on_scroll_event() functions,
+ *  and should provide support for having the seqedit/seqroll/seqtime/seqdata
+ *  panes follow the scrollbar, in a future upgrade.  This function
+ *  is currently duplicated in the gui_drawingarea_gtk2 and gui_window_gtk2
+ *  modules.
+ *
+ * \param hadjust
+ *      Provides a reference to the adjustment object to be adjusted.
+ *
+ * \param step
+ *      Provides the step value to use for adjusting the horizontal scrollbar.
+ *      If negative, the adjustment is leftward.  If positive, the adjustment
+ *      is rightward.  It can be the value of m_hadjust->get_step_increment(),
+ *      or provided especially to keep up with the progress bar.
+ */
+
+void
+gui_window_gtk2::scroll_adjust (Gtk::Adjustment & hadjust, double step)
+{
+    double val = hadjust.get_value();
+    double upper = hadjust.get_upper();
+    double nextval = val + step;
+    bool forward = step >= 0.0;
+    if (forward)
+    {
+        if (nextval > upper)
+            nextval = upper;
+    }
+    else
+    {
+        if (nextval < 0.0)
+            nextval = 0.0;
+    }
+    hadjust.set_value(nextval);
 }
 
 }           // namespace seq64

@@ -417,19 +417,30 @@ seqkeys::on_leave_notify_event (GdkEventCrossing *)
 
 /**
  *  Implements the on-size-allocation notification event handler.
+ *
+ * \param all
+ *      Provies the allocation and its width and height.
  */
 
 void
-seqkeys::on_size_allocate (Gtk::Allocation & a_r)
+seqkeys::on_size_allocate (Gtk::Allocation & all)
 {
-    gui_drawingarea_gtk2::on_size_allocate(a_r);
-    m_window_x = a_r.get_width();
-    m_window_y = a_r.get_height();
+    gui_drawingarea_gtk2::on_size_allocate(all);
+    m_window_x = all.get_width();
+    m_window_y = all.get_height();
     queue_draw();
 }
 
 /**
  *  Implements the on-scroll-event notification event handler.
+ *  Note that there is no usage of the modifier keys (e.g. Shift or Ctrl).
+ *  Compare this function to seqedit::on_scroll_event().
+ *
+ * \param ev
+ *      Provides the direction of the scroll event.
+ *
+ * \return
+ *      Always returns true.
  */
 
 bool

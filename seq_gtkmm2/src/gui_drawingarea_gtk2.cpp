@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-21
- * \updates       2015-10-29
+ * \updates       2016-02-19
  * \license       GNU GPLv2 or above
  *
  */
@@ -481,6 +481,43 @@ gui_drawingarea_gtk2::on_realize ()
     m_window = get_window();                // more resources
     m_gc = Gdk::GC::create(m_window);       // graphics context?
     m_window->clear();
+}
+
+/**
+ *  This function provides optimization for the on_scroll_event() functions,
+ *  and should provide support for having the seqedit/seqroll/seqtime/seqdata
+ *  panes follow the scrollbar, in a future upgrade.  This function
+ *  is currently duplicated in the gui_drawingarea_gtk2 and gui_window_gtk2
+ *  modules.
+ *
+ * \param hadjust
+ *      Provides a reference to the adjustment object to be adjusted.
+ *
+ * \param step
+ *      Provides the step value to use for adjusting the horizontal scrollbar.
+ *      If negative, the adjustment is leftward.  If positive, the adjustment
+ *      is rightward.  It can be the value of m_hadjust->get_step_increment(),
+ *      or provided especially to keep up with the progress bar.
+ */
+
+void
+gui_drawingarea_gtk2::scroll_adjust (Gtk::Adjustment & hadjust, double step)
+{
+    double val = hadjust.get_value();
+    double upper = hadjust.get_upper();
+    double nextval = val + step;
+    bool forward = step >= 0.0;
+    if (forward)
+    {
+        if (nextval > upper)
+            nextval = upper;
+    }
+    else
+    {
+        if (nextval < 0.0)
+            nextval = 0.0;
+    }
+    hadjust.set_value(nextval);
 }
 
 }           // namespace seq64

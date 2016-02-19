@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-02-17
+ * \updates       2016-02-19
  * \license       GNU GPLv2 or above
  *
  */
@@ -80,6 +80,13 @@ class seqroll : public gui_drawingarea_gtk2
     friend class Seq24SeqRollInput;
 
 private:
+
+    /**
+     *  We need direct access to the horizontal scrollbar if we want to be
+     *  able to make it follow the progress bar.
+     */
+
+    Gtk::Adjustment & m_horizontal_adjust;
 
     rect m_old;
     rect m_selected;
@@ -235,15 +242,36 @@ public:
 
 private:
 
-    int idle_redraw ();
-    void convert_xy (int x, int y, midipulse & ticks, int & note);
-    void convert_tn (midipulse ticks, int note, int & x, int & y);
+    /**
+     *  This function provides optimization for the on_scroll_event() function.
+     *  A duplicate of the one in seqedit.
+     *
+     * \param step
+     *      Provides the step value to use for adjusting the horizontal
+     *      scrollbar.  See gui_drawingarea_gtk2::scroll_adjust() for more
+     *      information.
+     */
+
+    void horizontal_adjust (double step)
+    {
+        scroll_adjust(m_horizontal_adjust, step);
+    }
+
+    /**
+     *  Snaps the y value to the piano-key "height".
+     *
+     * \param y
+     *      The y-value to be snapped.
+     */
+
     void snap_y (int & y)
     {
         y -= (y % c_key_y);
     }
 
     void snap_x (int & x);
+    void convert_xy (int x, int y, midipulse & ticks, int & note);
+    void convert_tn (midipulse ticks, int note, int & x, int & y);
     void xy_to_rect
     (
         int x1, int y1, int x2, int y2,
@@ -255,6 +283,7 @@ private:
         int & x, int & y, int & w, int & h
     );
     void draw_events_on (Glib::RefPtr<Gdk::Drawable> draw);
+    int idle_redraw ();
     int idle_progress ();
     void change_horz ();
     void change_vert ();

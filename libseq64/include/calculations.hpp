@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-07
- * \updates       2016-01-31
+ * \updates       2016-02-20
  * \license       GNU GPLv2 or above
  *
  *  These items were moved from the globals.h module so that only the modules
@@ -364,14 +364,15 @@ double_ticks_from_ppqn (int ppqn)
  *  So p = 100 * 4 * 4 * 192 / 4 = 76800 ticks.  Seems small.
  *
  * \param bpm
- *      The B value in the equation.
+ *      The B value in the equation, beats/measure.
  *
  * \param ppqn
- *      The P value in the equation.
+ *      The P value in the equation, pulses/qn.
  *
  * \param bw
- *      The W value in the equation.  If this value is 0, we'll get an
- *      arithmetic exception (crash).
+ *      The W value in the equation, the denominator of the time signature.
+ *      If this value is 0, we'll get an arithmetic exception (crash), so we
+ *      just return 0 in this case..
  *
  * \param measures
  *      The M value in the equation.  It defaults to 1, in case one desires a

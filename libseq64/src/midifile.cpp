@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-02-11
+ * \updates       2016-02-20
  * \license       GNU GPLv2 or above
  *
  *  For a quick guide to the MIDI format, see, for example:
@@ -914,7 +914,19 @@ midifile::parse_smf_1 (perform & p, int screenset, bool is_smf0)
             if (is_smf0)
                 (void) m_smf0_splitter.log_main_sequence(seq, seqnum);
             else
+            {
+                /*
+                 * If the sequence is shorter than a quarter note, assume it
+                 * needs to be padded to a measure.  This happens anyway if
+                 * the short pattern is opened in the sequence editor
+                 * (seqedit).
+                 */
+
+                if (seq.get_length() < seq.get_ppqn())
+                    seq.set_length(seq.get_ppqn() * seq.get_beats_per_bar());
+
                 p.add_sequence(&seq, seqnum + (screenset * c_seqs_in_set));
+            }
         }
         else
         {

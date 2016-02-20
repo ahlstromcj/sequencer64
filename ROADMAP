@@ -1,6 +1,6 @@
 Sequencer64 Roadmap
 Chris Ahlstrom
-2015-09-10 to 2016-02-13
+2015-09-10 to 2016-02-20
 
 The starting point for the Sequencer64 project is version 0.9.4 of
 Sequencer24.  Sequencer24 itself started with version 0.9.2 of Seq24 from
@@ -23,6 +23,10 @@ contrib/bugs-to-investigate.txt file!
             separated out the JACK support.  Finish on 2015-09-19.
          x  Branch "guibase":  Creating a base class for Gtk::Drawable
             and using that in one of the GUI modules.
+      -  Create a console-only (non-GUI) application that will load and play
+         seq24 and sequencer64 files.
+      -  Detect legacy seq24 MIDI files and perhaps automatically enable
+         legacy mode.
       x  Branch "sequencer": Try to replace sequencer event container with
          something faster.   We found that using std::multimap instead
          of std::list works well, and, in debug mode, the loading of a

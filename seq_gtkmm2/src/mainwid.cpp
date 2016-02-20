@@ -607,18 +607,25 @@ mainwid::draw_marker_on_sequence (int seqnum, int tick)
         int base_x, base_y;
         calculate_base_sizes(seqnum, base_x, base_y);    /* side-effects    */
 
-        int rectangle_x = base_x + m_text_size_x - 1;
-        int rectangle_y = base_y + m_text_size_y + m_text_size_x - 1;
+        int rect_x = base_x + m_text_size_x - 1;
+        int rect_y = base_y + m_text_size_y + m_text_size_x - 1;
         int len = seq->get_length();
         tick += len - seq->get_trigger_offset();
         tick %= len;
 
         midipulse tick_x = tick * m_seqarea_seq_x / len;
+        int bar_x = rect_x + m_last_tick_x[seqnum];
+        int thickness = 1;
+
+        if (usr().progress_bar_thick())
+        {
+            --bar_x;
+            thickness = 2;
+            set_line(Gdk::LINE_SOLID, 2);
+        }
         draw_drawable
         (
-            rectangle_x + m_last_tick_x[seqnum], rectangle_y + 1,
-            rectangle_x + m_last_tick_x[seqnum], rectangle_y + 1,
-            1, m_progress_height
+            bar_x, rect_y + 1, bar_x, rect_y + 1, thickness, m_progress_height
         );
         m_last_tick_x[seqnum] = tick_x;
         if (seqnum == current_seq())        /* is this good enough?     */
@@ -641,9 +648,11 @@ mainwid::draw_marker_on_sequence (int seqnum, int tick)
         }
         draw_line
         (
-            rectangle_x + tick_x, rectangle_y + 1,
-            rectangle_x + tick_x, rectangle_y + m_progress_height
+            rect_x + tick_x, rect_y + 1,
+            rect_x + tick_x, rect_y + m_progress_height
         );
+        if (usr().progress_bar_thick())
+            set_line(Gdk::LINE_SOLID, 1);
     }
 }
 

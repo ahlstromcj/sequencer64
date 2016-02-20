@@ -1,6 +1,6 @@
 Bugs and Additional Upgrade Ideas
 Chris Ahlstrom
-2015-10-27 to 2016-02-19 (New bugs)
+2015-10-27 to 2016-02-20 (New bugs)
 
 In no particular order...  "y" means "in progress", and "x" means it is
 basically done.
@@ -10,15 +10,10 @@ basically done.
    0, but otherwise works fine, adjusting it up and down properly.
 -  Interesting.  The non-empty patch sequences in the "b4uacuse" MIDI files
    at first show progress bars that run wildly.  But, if one does a
-   right-click Edit on them, then they run properly for a 4/4 one-bar pattern.
-   However, if the file is saved after that, and reloaded, now the patterns
-   are fine.  The differences?
-   -    The new file has "TimeSig 4/4 24 8"  and "Tempo 8".
-   -    Measures values of non-zero now?
-   I also suspect the various seq-set functions (for beat, etc) that are
-   called modify the sequence to make it work.  HOWEVER, IMPORTING a mid file
-   and SAVING IT still leaves the problem.  Need to fix that without bringing
-   up the sequence editor, when the file is read; if 0, set the measures to 1.
+   right-click Edit on them, then they run nicely for a 4/4 one-bar pattern.
+   FIXED by setting sequence::m_length to the length of a measure if it is less
+   than the length of a quarter note.  This is what seqedit does anyway if you
+   load the pattern for editing.
 -  Make sure that Sequencer64 handles running status, via the files that
    midicvt discusses.
 x  Need to clarify the behavior of JACK-Live mode versus using the controls of

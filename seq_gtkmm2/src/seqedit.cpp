@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-02-17
+ * \updates       2016-02-20
  * \license       GNU GPLv2 or above
  *
  *  Compare this class to eventedit, which has to do some similar things,
@@ -2019,7 +2019,11 @@ seqedit::set_data_type (midibyte status, midibyte control)
 
 /**
  *  Update the window after a time out, based on dirtiness and on playback
- *  progress.
+ *  progress.  Note the new call to seqroll::follow_progress().  This allows
+ *  the seqroll to pop to the next frame of events to continue to show the
+ *  moving progress bar.  Does this need to be an option?  It only affects
+ *  patterns longer than a measure or two, whatever the width of the seqroll
+ *  window is.
  */
 
 bool
@@ -2030,8 +2034,7 @@ seqedit::timeout ()
         m_seq.set_raise(false);
         raise();
     }
-
-    m_seqroll_wid->follow_progress();
+    m_seqroll_wid->follow_progress();           /* keep up with progress    */
     if (m_seq.is_dirty_edit())
     {
         m_seqroll_wid->redraw_events();
@@ -2130,31 +2133,12 @@ seqedit::on_scroll_event (GdkEventScroll * ev)
     return false;                       /* means "not handled"  */
 }
 
-/*
-void
-seqedit::horizontal_adjust (double step)
-{
-    double val = m_hadjust->get_value();
-    double upper = m_hadjust->get_upper();
-    double nextval = val + step;
-    bool forward = step >= 0.0;
-    if (forward)
-    {
-        if (nextval > upper)
-            nextval = upper;
-    }
-    else
-    {
-        if (nextval < 0.0)
-            nextval = 0.0;
-    }
-    m_hadjust->set_value(nextval);
-}
-*/
-
 /**
-*  Handles a key-press event.
-*/
+ *  Handles a key-press event.  In particular, the Ctrl-W keypress.
+ *  This keypress closes the sequence/pattern editor window by way of calling
+ *  on_delete_event().  We should consider applying this convention to all the
+ *  other windows.
+ */
 
 bool
 seqedit::on_key_press_event (GdkEventKey * ev)

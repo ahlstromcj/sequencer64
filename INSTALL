@@ -1,6 +1,6 @@
 INSTALL for Sequencer64 v. 0.9.9.18
 Chris Ahlstrom
-2015-09-10 to 2016-02-13
+2015-09-10 to 2016-02-20
 
 The current packaging for Sequencer64 is primarily aimed at developers.
 There is currently no configure script... it must be bootstrapped.
@@ -114,7 +114,8 @@ MANUALLY-DEFINED MACROS IN CODE:
 
     SEQ64_USE_NEW_FONT:
 
-        Obsolete:  now an option that can be set in the user-settings file.
+        Obsolete:  now an option that can be changed in the user-settings
+        ("user") configuration file.
 
         Already defined in the font module.  If defined, a new, anti-aliased,
         bold font is used in the user-interface.  This new font is implemented
@@ -153,6 +154,17 @@ MANUALLY-DEFINED MACROS IN CODE:
         markers.  We currently like this look a little better, and so it is
         the default.  See the app_limits.h header file for the definition of
         this variable.
+
+    SEQ64_FOLLOW_PROGRESS_BAR:
+
+        Currently disabled by default in the seqroll.cpp module, this macro
+        turns on code that scrolls the sequence/pattern editor horizontally to
+        keep the progress bar in view for long patterns, as the tune plays.
+        It currently has the following issue:
+
+            -   Tracking when controlled by the Song Mode, with a gap in the
+                pattern triggering, causes the alignment of paging and
+                progress to get out of whack.
 
     SEQ64_USE_DEBUG_OUTPUT:
 

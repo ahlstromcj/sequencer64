@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-02-19
+ * \updates       2016-02-20
  * \license       GNU GPLv2 or above
  *
  */
@@ -159,6 +159,13 @@ private:
     int m_scroll_offset_key;
     int m_scroll_offset_x;
     int m_scroll_offset_y;
+
+    /**
+     *  Provides the current scroll page in which the progress bar resides.
+     */
+
+    int m_scroll_page;
+
     int m_background_sequence;
     bool m_drawing_background_seq;
     bool m_ignore_redraw;

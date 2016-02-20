@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-02-19
+ * \updates       2016-02-20
  * \license       GNU GPLv2 or above
  *
  *  There are a large number of existing items to discuss.  But for now let's
@@ -82,7 +82,31 @@
 #include "seqkeys.hpp"
 #include "perform.hpp"
 
-#define USE_FOLLOW_PROGRESS_BAR_CODE
+/**
+ *  This provides a build option for having the pattern editor window scroll
+ *  to keep of with the progress bar, for sequences that are longer than the
+ *  measure or two that a pattern window will show.
+ *
+ *  We thought about making this a configure option or a run-time option, but
+ *  this kind of scrolling is a universal convention of MIDI sequencers.  If
+ *  you really don't like this feature, let me know, and I will make it a
+ *  configure option.  We could also disable it it "legacy" mode, which also
+ *  disables a lot of other features.
+ *
+ * \warning
+ *      This code still has issues with interactions between triggers and gaps
+ *      in the performance (song) window when JACK transport is active.
+ */
+
+#define SEQ64_FOLLOW_PROGRESS_BAR
+
+/**
+ *  This macro defines the amount of overlap between horizontal "pages" that
+ *  get scrolled to follow the progress bar.  We think it should be greater
+ *  than 0, maybe set to 10. But feel free to experiment.
+ */
+
+#define SEQ64_PROGRESS_PAGE_OVERLAP     10
 
 namespace seq64
 {
@@ -171,6 +195,7 @@ seqroll::seqroll
     m_scroll_offset_key     (0),
     m_scroll_offset_x       (0),
     m_scroll_offset_y       (0),
+    m_scroll_page           (0),
     m_background_sequence   (0),
     m_drawing_background_seq(false),
     m_ignore_redraw         (false)
@@ -594,92 +619,50 @@ seqroll::draw_progress_on_window ()
     }
 }
 
-#if 0
-        /*
-         * EXPERIMENTAL.  See contrib/notes/pausing.txt.
-         */
-
-        double val = m_hadjust.get_value();
-        double page = m_hadjust.get_page_size();
-        double step = m_hadjust.get_step_increment();
-        double upper = m_hadjust.get_upper();
-        printf
-        (
-            "seqroll scroll progress=%d; value=%g; step=%g; page=%g; upper=%g\n",
-            m_progress_x, val, step, page, upper
-        );
-#endif
-
-#ifdef USE_FOLLOW_PROGRESS_BAR_CODE
+#ifdef SEQ64_FOLLOW_PROGRESS_BAR
 
 /**
- *  Checks the position of the tick, and, if it is at the very end of the
- *  current "page", moves the page to the next page.
- *
- *  Being at the very end of the page means that the x value of the progress
- *  bar is at m_window_x.  The effect x-value of the progress bar is that
- *  value plus m_scroll_offset_x.
- *
- *  Once hit, we want to increment
- *  m_scroll_offset_x by m_window_x and incremnt the horizontal scroll value
- *  by the pagesize in ticks.
- *
- *  m_scroll_offset_ticks = int(m_hadjust.get_value());
- *  m_scroll_offset_x = m_scroll_offset_ticks / m_zoom;
+ *  Checks the position of the tick, and, if it is in a different piano-roll
+ *  "page" than the last page, moves the page to the next page.
  *
  *  We don't want to do any of this if the length of the sequence fits in the
- *  window.
+ *  window, but for now it doesn't hurt; the progress bar just never meets the
+ *  criterion for moving to the next page.
+ *
+ * \todo
+ *      -   If playback is disabled (such as by a trigger), then do not update
+ *          the page;
+ *      -   When it comes back, make sure we're on the correct page;
+ *      -   When it stops, put the window back to the beginning, even if the
+ *          beginning is not defined as "0".
  */
 
 void
 seqroll::follow_progress ()
 {
-    static const int s_overlap = 10;        
     midipulse progress_tick = m_seq.get_last_tick();
-    int progress_x = progress_tick / m_zoom - m_scroll_offset_x;
-
-    /*
-     * This is kind of a constant.  Windows width and zoom change "rarely".
-     */
-
-#ifdef ALLOW_DEBUG_CODE
-    double newstep = double(m_window_x * m_zoom - s_overlap);
-#endif
-
-    if ((progress_x % m_window_x) >= (m_window_x - s_overlap))
-    {
-#ifndef ALLOW_DEBUG_CODE
-        double newstep = double((m_window_x - s_overlap) * m_zoom);
-#endif
-        m_scroll_offset_x += m_window_x - s_overlap;
-        horizontal_adjust(newstep);
-    }
-
-#ifdef ALLOW_DEBUG_CODE
     if (progress_tick > 0)
     {
-        printf
-        (
-            "progress: tick=%ld, x=%d, offset=%d, newstep=%g win-x=%d \n",
-            progress_tick, progress_x, m_scroll_offset_x, newstep, m_window_x
-        );
+        int progress_x = progress_tick / m_zoom + SEQ64_PROGRESS_PAGE_OVERLAP;
+        int page = progress_x / m_window_x;
+        if (page != m_scroll_page)
+        {
+            midipulse left_tick = page * m_window_x * m_zoom;
+            m_scroll_page = page;
+            m_hadjust.set_value(double(left_tick));
+        }
     }
-#endif
 }
-
-//  m_progress_x = (m_seq.get_last_tick() / m_zoom) - m_scroll_offset_x;
-//  m_scroll_offset_ticks = int(m_hadjust.get_value());
-//  m_scroll_offset_x = m_scroll_offset_ticks / m_zoom;
 
 #else
 
 void
 seqroll::follow_progress ()
 {
-    // nada
+    // No code, do not follow the progress bar.
 }
 
-#endif      // USE_FOLLOW_PROGRESS_BAR_CODE
+#endif      // SEQ64_FOLLOW_PROGRESS_BAR
 
 /**
  *  Draws events on the given drawable area.
@@ -971,7 +954,7 @@ seqroll::convert_xy (int x, int y, midipulse & tick, int & note)
 void
 seqroll::convert_tn (midipulse ticks, int note, int & x, int & y)
 {
-    x = ticks /  m_zoom;
+    x = ticks / m_zoom;
     y = c_rollarea_y - ((note + 1) * c_key_y) - 1;
 }
 

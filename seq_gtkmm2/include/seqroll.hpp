@@ -179,12 +179,6 @@ public:
     );
     ~seqroll ();
 
-    void reset ();
-    void redraw ();
-    void redraw_events ();
-    void set_key (int key);
-    void set_scale (int scale);
-
     /**
      *  Sets the snap to the given value, and then resets the view.
      */
@@ -215,17 +209,6 @@ public:
         m_ignore_redraw = ignore;
     }
 
-    void set_data_type (midibyte status, midibyte control);
-    void set_background_sequence (bool state, int seq);
-    void update_pixmap ();
-    void update_sizes ();
-    void update_background ();
-    void draw_background_on_pixmap ();
-    void draw_events_on_pixmap ();
-    void draw_selection_on_window ();
-    void draw_progress_on_window ();
-    void start_paste ();
-
     /**
      *  Wraps up some common code.
      */
@@ -239,6 +222,24 @@ public:
         else
             queue_draw();
     }
+
+
+    void set_key (int key);
+    void set_scale (int scale);
+    void set_data_type (midibyte status, midibyte control);
+    void set_background_sequence (bool state, int seq);
+    void update_pixmap ();
+    void update_sizes ();
+    void update_background ();
+    void draw_background_on_pixmap ();
+    void draw_events_on_pixmap ();
+    void draw_selection_on_window ();
+    void draw_progress_on_window ();
+    void reset ();
+    void redraw ();
+    void redraw_events ();
+    void start_paste ();
+    void follow_progress ();
 
 private:
 

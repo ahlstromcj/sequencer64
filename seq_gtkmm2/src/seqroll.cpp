@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-02-18
+ * \updates       2016-02-19
  * \license       GNU GPLv2 or above
  *
  *  There are a large number of existing items to discuss.  But for now let's
@@ -35,9 +35,9 @@
  *  The horizontal scrollbar is set to match that:
  *
 \verbatim
-      lower                     Ps                                         upper
-  Seq:  0-------------------------------------------------------------------Ts
- Page:  0-----------------------| Pp = page-size = window_width * zoom
+      lower                     Ps = page-size (ticks)                     upper
+  Seq:  0-----------------------|-------------------------------------------Ts
+ Page:  0-----------------------| Pp = page-size (pixels) = window_width * zoom
         |--|--|--|--|             page-increment, one bar
         |--|                      step-increment, one semi-quaver (16th note)
 \endverbatim
@@ -81,6 +81,8 @@
 #include "sequence.hpp"
 #include "seqkeys.hpp"
 #include "perform.hpp"
+
+#define USE_FOLLOW_PROGRESS_BAR_CODE
 
 namespace seq64
 {
@@ -589,15 +591,10 @@ seqroll::draw_progress_on_window ()
         );
         if (usr().progress_bar_thick())
             set_line(Gdk::LINE_SOLID, 1);
+    }
+}
 
 #if 0
-        midipulse progress_tick = m_seq_get_last_tick();
-        if ((progress_tick % m_tick_page_size) > m_tick_page_limit)
-        {
-            double newstep = progress_tick_to_step (.....);
-            parent.horizontal_adjust(newstep);
-        }
-
         /*
          * EXPERIMENTAL.  See contrib/notes/pausing.txt.
          */
@@ -613,8 +610,76 @@ seqroll::draw_progress_on_window ()
         );
 #endif
 
+#ifdef USE_FOLLOW_PROGRESS_BAR_CODE
+
+/**
+ *  Checks the position of the tick, and, if it is at the very end of the
+ *  current "page", moves the page to the next page.
+ *
+ *  Being at the very end of the page means that the x value of the progress
+ *  bar is at m_window_x.  The effect x-value of the progress bar is that
+ *  value plus m_scroll_offset_x.
+ *
+ *  Once hit, we want to increment
+ *  m_scroll_offset_x by m_window_x and incremnt the horizontal scroll value
+ *  by the pagesize in ticks.
+ *
+ *  m_scroll_offset_ticks = int(m_hadjust.get_value());
+ *  m_scroll_offset_x = m_scroll_offset_ticks / m_zoom;
+ *
+ *  We don't want to do any of this if the length of the sequence fits in the
+ *  window.
+ */
+
+void
+seqroll::follow_progress ()
+{
+    static const int s_overlap = 10;        
+    midipulse progress_tick = m_seq.get_last_tick();
+    int progress_x = progress_tick / m_zoom - m_scroll_offset_x;
+
+    /*
+     * This is kind of a constant.  Windows width and zoom change "rarely".
+     */
+
+#ifdef ALLOW_DEBUG_CODE
+    double newstep = double(m_window_x * m_zoom - s_overlap);
+#endif
+
+    if ((progress_x % m_window_x) >= (m_window_x - s_overlap))
+    {
+#ifndef ALLOW_DEBUG_CODE
+        double newstep = double((m_window_x - s_overlap) * m_zoom);
+#endif
+        m_scroll_offset_x += m_window_x - s_overlap;
+        horizontal_adjust(newstep);
     }
+
+#ifdef ALLOW_DEBUG_CODE
+    if (progress_tick > 0)
+    {
+        printf
+        (
+            "progress: tick=%ld, x=%d, offset=%d, newstep=%g win-x=%d \n",
+            progress_tick, progress_x, m_scroll_offset_x, newstep, m_window_x
+        );
+    }
+#endif
 }
+
+//  m_progress_x = (m_seq.get_last_tick() / m_zoom) - m_scroll_offset_x;
+//  m_scroll_offset_ticks = int(m_hadjust.get_value());
+//  m_scroll_offset_x = m_scroll_offset_ticks / m_zoom;
+
+#else
+
+void
+seqroll::follow_progress ()
+{
+    // nada
+}
+
+#endif      // USE_FOLLOW_PROGRESS_BAR_CODE
 
 /**
  *  Draws events on the given drawable area.
@@ -622,8 +687,6 @@ seqroll::draw_progress_on_window ()
  *  "Method 0" seems be the one that draws the background sequence, if active.
  *  "Method 1" draws the sequence itself.
  *
- * \param draw
- *      Provides the area on which to draw.
  */
 
 void

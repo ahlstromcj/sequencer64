@@ -2030,6 +2030,8 @@ seqedit::timeout ()
         m_seq.set_raise(false);
         raise();
     }
+
+    m_seqroll_wid->follow_progress();
     if (m_seq.is_dirty_edit())
     {
         m_seqroll_wid->redraw_events();

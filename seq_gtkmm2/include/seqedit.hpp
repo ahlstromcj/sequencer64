@@ -92,7 +92,9 @@ private:
     static int m_initial_note_length;
 
     /**
-     *  Provides the zoom values: 0  1  2  3  4, and 1, 2, 4, 8, 16.
+     *  Provides the zoom values: 1  2  3  4, and 1, 2, 4, 8, 16.
+     *  The value of zoom is the same as the number of pixels per tick on the
+     *  piano roll.
      */
 
     int m_zoom;

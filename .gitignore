@@ -5,23 +5,46 @@
 #
 # Compiled application
 
+Makefile
 Makefile.in
 Sequencer64/sequencer64
 aclocal.m4
 bootstrap.stamp
 configure
+core
 libtool
+vgcore
 m4/libtool.m4
 m4/ltoptions.m4
 m4/ltsugar.m4
 m4/ltversion.m4
 m4/lt~obsolete.m4
+stamp-h1
 *.trs
+*.a
+*.o
+*.lo
+*.la
+*.lai
+*.log
+*.slo
+*.so
+*.status
+latex
+autom4te.cache/
+aux-files/
+compile/
+i18n/
+.deps/
+.libs/
 
 debian/debhelper-build-stamp
+debian/files
+debian/tmp
 debian/sequencer64.postinst.debhelper
 debian/sequencer64.postrm.debhelper
 debian/sequencer64.substvars
 debian/sequencer64/
+debian/*.log
 include/
 

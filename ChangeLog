@@ -1,3 +1,84 @@
+2016-02-21  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* ChangeLog:
+	New features for 0.9.9.18: Color and thickness options for progress bars;
+	user-configurable redraw rate; automatic horizontal scrolling in the sequence
+	editor for long patterns; padding very short patterns to one full measure
+	upon import or reading; highlighting of "current" sequence; additional
+	zoom values to support high-PPQN files.
+
+2016-02-20  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/include/app_limits.h,
+	libseq64/include/user_settings.hpp, libseq64/src/user_settings.cpp,
+	libseq64/src/userfile.cpp, seq_gtkmm2/src/seqedit.cpp,
+	seq_gtkmm2/src/seqroll.cpp, seq_gtkmm2/src/seqtime.cpp: Added
+	additional zoom values to support large PPQN settings.
+	* ROADMAP, contrib/notes/bugs_to_investigate.txt,
+	libseq64/include/calculations.hpp, libseq64/src/midifile.cpp,
+	seq_gtkmm2/src/mainwid.cpp: Pad very short patterns to a measure
+	length, thicken the mainwid progress bars if enabled.
+	* INSTALL, configure.ac, doc/dox/doxy-reference.cfg,
+	seq_gtkmm2/include/seqroll.hpp, seq_gtkmm2/src/seqedit.cpp,
+	seq_gtkmm2/src/seqroll.cpp: Made progress-bar following more robust,
+	tested against zoom, ppqn, JACK, ALSA, and song editor, though not
+	yet implemented in song editor.
+
+2016-02-19  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* seq_gtkmm2/include/seqedit.hpp, seq_gtkmm2/include/seqroll.hpp,
+	seq_gtkmm2/src/seqedit.cpp, seq_gtkmm2/src/seqroll.cpp: Initial pass
+	at following the progress bar in seqroll works, basically.
+	* contrib/notes/bugs_to_investigate.txt,
+	seq_gtkmm2/include/gui_drawingarea_gtk2.hpp,
+	seq_gtkmm2/include/gui_window_gtk2.hpp,
+	seq_gtkmm2/include/seqedit.hpp, seq_gtkmm2/include/seqroll.hpp,
+	seq_gtkmm2/src/gui_drawingarea_gtk2.cpp,
+	seq_gtkmm2/src/gui_window_gtk2.cpp, seq_gtkmm2/src/mainwnd.cpp,
+	seq_gtkmm2/src/seqdata.cpp, seq_gtkmm2/src/seqedit.cpp,
+	seq_gtkmm2/src/seqevent.cpp, seq_gtkmm2/src/seqkeys.cpp,
+	seq_gtkmm2/src/seqroll.cpp: Added horizontal_adjust() infrastructure
+	to the seqxxxx objects.
+
+2016-02-18  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* seq_gtkmm2/src/seqedit.cpp, seq_gtkmm2/src/seqroll.cpp: Interim
+	notes check-in.
+	* contrib/configs/sequencer64.usr.example,
+	libseq64/include/user_settings.hpp, libseq64/src/user_settings.cpp,
+	libseq64/src/userfile.cpp, seq_gtkmm2/src/gui_window_gtk2.cpp: Added
+	redraw times to the user configuration file.
+	* contrib/notes/bugs_to_investigate.txt, contrib/notes/pausing.txt,
+	seq_gtkmm2/include/eventedit.hpp,
+	seq_gtkmm2/include/gui_window_gtk2.hpp,
+	seq_gtkmm2/include/mainwnd.hpp, seq_gtkmm2/include/perfedit.hpp,
+	seq_gtkmm2/include/seqedit.hpp, seq_gtkmm2/src/eventedit.cpp,
+	seq_gtkmm2/src/gui_window_gtk2.cpp, seq_gtkmm2/src/mainwnd.cpp,
+	seq_gtkmm2/src/perfedit.cpp, seq_gtkmm2/src/seqedit.cpp,
+	seq_gtkmm2/src/seqroll.cpp: Refactored redraw timeouts into
+	gui_window_gtk2 class.
+
+2016-02-17  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* seq_gtkmm2/include/seqedit.hpp, seq_gtkmm2/src/seqedit.cpp,
+	seq_gtkmm2/src/seqroll.cpp: Investigation for seqroll scrolling.
+	* configure.ac, contrib/notes/pausing.txt,
+	seq_gtkmm2/include/seqroll.hpp, seq_gtkmm2/src/options.cpp,
+	seq_gtkmm2/src/seqedit.cpp, seq_gtkmm2/src/seqroll.cpp: Test code
+	for seqroll scrolling.
+
+2016-02-17  Daniel Appelt <daniel.appelt@gmail.com>
+
+	* : Merge commit 'af7d33231a4db4ba219216fe76a74419157b6169'
+
+2016-02-16  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* contrib/notes/pausing.txt, seq_gtkmm2/src/seqedit.cpp: Interim
+	check-in, data only.
+	* : Merge pull request #13 from danielappelt/master Updated arch package files from AUR
+	* ChangeLog, contrib/notes/pausing.txt, contrib/notes/seq24.ldd: 
+	Notes for bugs to fix and sequence editor page scrolling option.
+
 2016-02-15  Chris Ahlstrom <ahlstromcj@gmail.com>
 
 	* configure.ac, contrib/code/perfstats.cpp,
@@ -38,7 +119,7 @@
 	seq_gtkmm2/src/perfroll.cpp, seq_gtkmm2/src/seqroll.cpp, README,
 	VERSION, configure.ac: 
 	Investigation, comments, and experimentation on progress bars and
-	current-sequence highlightin, and adding progress bar configuration
+	current-sequence highlighting, and adding progress bar configuration
 	to the user configuration file.  Progress bars red if not in legacy
 	mode, and optimized searches for lowest/highest notes.
 
@@ -2922,7 +3003,6 @@
 	* src/options.cpp, src/options.h: fix tooltip usage for older GTK
 	versions (GTK_MINOR_VERSION < 12)
 
-
 +++ Release 0.9.1 (2010-11-08) +++
 
 2010-11-08  Guido Scholz  <guido.scholz@bayernline.de>
@@ -3097,7 +3177,6 @@
 	src/mainwnd.*, src/optionsfile.*, src/seq24.cpp: Handle
 	filenames more consistently as UTF-8 strings.
 
-
 +++ Release 0.9.0 (2008-11-27) +++
 
 2008-11-27 Guido Scholz <guido.scholz@bayernline.de>
@@ -3187,7 +3266,6 @@
 	you play. Fixed volume. Makes midi input have a fixed volume
 	when you record.
 
-
 v0.4.2 ------------------------------------------------
 2003-5-14
 
@@ -3205,7 +3283,6 @@ v0.4.0 ------------------------------------------------
 2002-10-8
 
 	* Added Performace editor.
-
 
 v0.3.0 ------------------------------------------------
 
@@ -3227,7 +3304,6 @@ v0.2.0 -------------------------------------------------
 
 2002-07-16   
 	* seqkeys.C - fixed black key drawing problem
-
 
 v0.1.1 -------------------------------------------------
 

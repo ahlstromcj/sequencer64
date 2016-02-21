@@ -1,6 +1,6 @@
 User Testing of JACK in Sequencer64
 Chris Ahlstrom
-2016-01-16 to 2016-02-13
+2016-01-16 to 2016-02-21
 
 ===========================================================================
  SETTINGS TESTS
@@ -417,6 +417,25 @@ Seq24 --> QSynth -----------> Audio 1     |
 
 And works fine for me. As Seq24 generates all the midi events, there are 
 no sync problems.
+
+===========================================================================
+ Sample Files of Various Kinds
+===========================================================================
+
+   http://hitmuri.net/index.php/Software/TranchesTutorialsDrums
+
+   http://ccmixter.org/files/nickleus/40234
+
+===========================================================================
+ More Tutorials
+===========================================================================
+
+   http://www.nnc3.com/mags/LM10/Magazine/Archive/2008/88/051-055_music-studios/article.html
+
+   http://penguinpetes.com/b2evo/index.php?p=811
+
+      http://www.penguinpetes.com/pages/Seq24_MP3s/Steely_Dan_Brown.mp3
+      http://penguinpetes.com/pages/Seq24_MP3s/greasy_burgers.mp3
 
 ===========================================================================
  TO DO LIST

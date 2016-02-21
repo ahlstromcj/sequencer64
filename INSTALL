@@ -1,6 +1,6 @@
 INSTALL for Sequencer64 v. 0.9.9.18
 Chris Ahlstrom
-2015-09-10 to 2016-02-20
+2015-09-10 to 2016-02-21
 
 The current packaging for Sequencer64 is primarily aimed at developers.
 There is currently no configure script... it must be bootstrapped.
@@ -236,6 +236,7 @@ DEPENDENCIES:
    JACK Testing (optional):
 
       - qjackctl
+      - a2jmidid (exposes Seq24 ALSA MIDI ports to JACK)
       - hydrogen
       - klick (a command-line metronome)
       - qtractor or other MIDI sequencers

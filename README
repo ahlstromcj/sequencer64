@@ -1,6 +1,6 @@
 README for Sequencer64 0.9.9.18 (current branch = "fixups ongoing")
 Chris Ahlstrom
-2015-09-10 to 2016-02-14 (initial work started in July of 2015)
+2015-09-10 to 2016-02-21 (initial work started in July of 2015)
 
 The sequencer64 project is a continuation of sequencer24 to refactor it to be
 tighter and easier to transition to GTKmm 3, and much more.  By now, it is
@@ -21,6 +21,10 @@ Major updates:
         properly, and as Master, will provide the proper Bar:Beats:Ticks (BBT)
         to other JACK clients.  We are still investigating JackBBTFrameOffset
         support.
+    -   Long sequences now auto-scroll to keep up iwth the progress bar in the
+        sequence/pattern editor.
+    -   Highlighting of last sequence brought up for editing.
+    -   Configurable progress bar and redraw timeouts.
     -   MIDI Clock support has been fixed.  Sequencer64 will now interact
         well with QJackCtl, Hydrogen, and Klick (command-line metronome).
         See the testing described in contrib/notes/jack-testing.txt.

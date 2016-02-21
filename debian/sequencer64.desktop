@@ -2,7 +2,7 @@
 Name=Sequencer64
 GenericName=
 Comment=MIDI Loop Sequencer
-Icon=/usr/share/pixmaps/sequencer24.xpm
+Icon=/usr/share/pixmaps/sequencer64.xpm
 
 Type=Application
 Categories=AudioVideo;Audio;

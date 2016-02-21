@@ -6,7 +6,7 @@
 # \library    	sequencer64 application
 # \author     	Chris Ahlstrom
 # \date       	2014-04-19
-# \update      2014-04-24
+# \update      2016-02-21
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -167,13 +167,20 @@ sequencer64_LDADD = $(libraries) $(GTKMM_LIBS) $(ALSA_LIBS) $(JACK_LIBS) $(LASH_
 #
 # 	   http://www.gnu.org/software/hello/manual/automake/Simple-Tests.html
 #
+#     Not supported for this application.  We supply a bogus test script.
+#
 #------------------------------------------------------------------------------
+#
+# testsubdir = test-results
+# TESTS_ENVIRONMENT =
 
-testsubdir = test-results
-TESTS_ENVIRONMENT =
+.PHONY: test_script
+
 TESTS = test_script
-
+ 
 test: check
+
+#------------------------------------------------------------------------------
 
 #******************************************************************************
 #  distclean

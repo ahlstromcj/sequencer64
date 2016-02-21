@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-20
- * \updates       2016-02-13
+ * \updates       2016-02-21
  * \license       GNU GPLv2 or above
  *
  *  The "rc" command-line options override setting that are first read from
@@ -141,7 +141,7 @@ static const std::string s_arg_list =
     ;
 
 static const char * const s_help_1a =
-"sequencer64 v 0.9.9.18 A significant refactoring of the seq24 live sequencer.\n"
+"sequencer64 v 0.9.10.0 A significant refactoring of the seq24 live sequencer.\n"
 "\n"
 "Usage: sequencer64 [options] [MIDI filename]\n\n"
 "Options:\n"
@@ -255,19 +255,6 @@ help_check (int argc, char * argv [])
     }
     return result;
 }
-
-/*
- * TRIAL FEATURE.  Back up the data read from the two configuration files.
- *                 THIS NEEDS MORE THOUGHT!
- *
- *  The issue is that Sequencer64 saves all changes to parameters in the
- *  "rc" and "user" configuration files, even ones that originate as
- *  supposedly temporary overrides on the command line.  The most
- *  notorious for me is the buss-override features.
- *
- * seq64::rc_settings rc_backup = seq64::rc();
- * seq64::user_settings usr_backup = seq64::usr();
- */
 
 /**
  *  Provides the command-line option support, as well as some setup support,

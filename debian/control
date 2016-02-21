@@ -21,4 +21,4 @@ Depends: ${shlibs:Depends},
  ${misc:Depends}
 Description: Real time MIDI sequencer refactored from seq24 and sequencer24.
  Sequencer64 breaks the project into smaller libraries and modules
- for easier work, and will add some enhancements and upgrades.
+ for easier work, and adds many enhancements and fixes.

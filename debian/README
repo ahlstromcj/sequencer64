@@ -1,8 +1,8 @@
 Sequencer64 Debian Instructions
 Chris Ahlstrom
-2015-09-10 to 2015-09-12
+2015-09-10 to 2016-02-21
 
-There's a concise, recent, and fairly complete guide to creating a "deb"
+There is a concise, recent, and fairly complete guide to creating a "deb"
 package in the Debian package called "maint-guide", which stores different
 versions of the "Debian New Maintainers' Guide" in
 /usr/share/doc/maint-guide.
@@ -10,7 +10,7 @@ versions of the "Debian New Maintainers' Guide" in
 However, since the rules file was already provided by the Debian maintainer
 of seq24, the process of creating a "deb" file is very simple.
 
-1. Make sure the command console's current directory is the top directory
+1. Make sure the command console current directory is the top directory
    of the project.
 
 2. Run the following command (it can be a useful error check):
@@ -19,7 +19,7 @@ of seq24, the process of creating a "deb" file is very simple.
 
 3. Run the following command:
 
-   $ fakeroot debian/rules/binary
+   $ fakeroot debian/rules binary
 
    In the directory just above the top directory of the project, you will
    find:   sequencer64_0.9.9-1_amd64.deb
@@ -27,3 +27,5 @@ of seq24, the process of creating a "deb" file is very simple.
 4. Run the following command again to get rid of all the build products:
 
    $ debian/rules clean
+
+# vim: sw=4 ts=4 wm=4 et ft=sh

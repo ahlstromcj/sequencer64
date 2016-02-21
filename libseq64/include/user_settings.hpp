@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-22
- * \updates       2016-02-18
+ * \updates       2016-02-20
  * \license       GNU GPLv2 or above
  *
  *  This module defines the following categories of "global" variables that
@@ -604,8 +604,9 @@ class user_settings
     const int mc_min_zoom;
 
     /**
-     *  Provides the maximum zoom value, currently a constant.  It's value is
-     *  32.
+     *  Provides the maximum zoom value, currently a constant.  It's value was
+     *  32, but is now 128, to allow for better presentation of high PPQN
+     *  valued sequences.
      */
 
     const int mc_max_zoom;

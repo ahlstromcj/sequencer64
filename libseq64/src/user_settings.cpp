@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-23
- * \updates       2016-02-18
+ * \updates       2016-02-20
  * \license       GNU GPLv2 or above
  *
  *  Note that this module also sets the remaining legacy global variables, so
@@ -56,7 +56,7 @@
      S          -----           16          seqroll-to-perfroll width ratio
      Zseqmin    pulses/pixel    1           Seq editor max zoom in
      Zseq0      pulses/pixel    2           Seq editor default zoom
-     Zseqmax    pulses/pixel    32          Seq editor max zoom out
+     Zseqmax    pulses/pixel    128 (32)    Seq editor max zoom out
 \endverbatim
  *
  * Sequence Editor (seqroll):
@@ -187,8 +187,8 @@ user_settings::user_settings ()
      * Constant values.
      */
 
-    mc_min_zoom                 (1),
-    mc_max_zoom                 (32),
+    mc_min_zoom                 (SEQ64_MINIMUM_ZOOM),
+    mc_max_zoom                 (SEQ64_MAXIMUM_ZOOM),
     mc_baseline_ppqn            (SEQ64_DEFAULT_PPQN)
 {
     // Empty body; it's no use to call normalize() here, see set_defaults().
@@ -390,18 +390,18 @@ user_settings::set_defaults ()
     m_midi_buses.clear();
     m_instruments.clear();
 
-    m_grid_style = grid_style_normal;   // range: 0-2
-    m_grid_brackets = 1;                // range: -30 to 0 to 30
-    m_mainwnd_rows = 4;                 // range: 4-8
-    m_mainwnd_cols = 8;                 // range: 8-10
-    m_max_sets = 32;                    // range: 32-64
-    m_mainwid_border = 0;               // range: 0-3, try 2 or 3
-    m_mainwid_spacing = 2;              // range: 2-6, try 4 or 6
-    m_control_height = 0;               // range: 0-4?
-    m_current_zoom = 2;                 // range: 1-32
+    m_grid_style = grid_style_normal;       // range: 0-2
+    m_grid_brackets = 1;                    // range: -30 to 0 to 30
+    m_mainwnd_rows = 4;                     // range: 4-8
+    m_mainwnd_cols = 8;                     // range: 8-10
+    m_max_sets = 32;                        // range: 32-64
+    m_mainwid_border = 0;                   // range: 0-3, try 2 or 3
+    m_mainwid_spacing = 2;                  // range: 2-6, try 4 or 6
+    m_control_height = 0;                   // range: 0-4?
+    m_current_zoom = SEQ64_DEFAULT_ZOOM;    // range: 1-128
     m_global_seq_feature_save = true;
-    m_seqedit_scale = int(c_scale_off); // range: c_scale_off to < c_scale_size
-    m_seqedit_key = SEQ64_KEY_OF_C;     // range: 0-11
+    m_seqedit_scale = int(c_scale_off);     // c_scale_off to < c_scale_size
+    m_seqedit_key = SEQ64_KEY_OF_C;         // range: 0-11
     m_seqedit_bgsequence = SEQ64_SEQUENCE_LIMIT; // range -1, 0, 1, 2, ...
     m_use_new_font = ! rc().legacy_format();
     m_allow_two_perfedits = true;

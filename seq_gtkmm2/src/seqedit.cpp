@@ -1160,7 +1160,7 @@ seqedit::fill_top_bar ()
     );
     add_tooltip(m_button_zoom, "Zoom, units of pixels:ticks (pixels:pulses).");
     m_entry_zoom = manage(new Gtk::Entry());
-    m_entry_zoom->set_width_chars(4);
+    m_entry_zoom->set_width_chars(5);                       /* was 4        */
     m_entry_zoom->set_editable(false);
     m_hbox2->pack_start(*m_button_zoom , false, false);
     m_hbox2->pack_start(*m_entry_zoom , false, false);

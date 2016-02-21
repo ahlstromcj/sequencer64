@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-10
+ * \updates       2016-02-20
  * \license       GNU GPLv2 or above
  *
  *  The patterns/sequence editor is expandable in both directions, but the
@@ -125,12 +125,14 @@ seqtime::redraw ()
 }
 
 /**
- *  Updates the pixmap.
+ *  Updates the pixmap.  When the zoom is at 32, there is a thick bar for
+ *  every measure, and a measure number and major time division every 4
+ *  measures.at the default PPQN of 192.
  *
- *  When the zoom is at 32, there is a bar for every measure.
- *  At 16, ???
+ *  Let me know if you figure out this legacy chart from the original seq24
+ *  code:
  *
- \verbatim
+\verbatim
         zoom   32         16         8        4        1
         ml
         m_ppqn
@@ -144,6 +146,11 @@ seqtime::redraw ()
         64     2m        1          1          1       1
         128    1m        1          1          1       1
 \endverbatim
+ *
+ *  A major line is a line that has a measure number in the timeline.  The
+ *  number of measures in a major line is 1 for zooms from 1:1 to 1:8; 2 for
+ *  zoom 1:16; 4 for zoom 1:32; 8 for zoom 1:64 (new); and 16 for zoom 1:128.
+ *  Zooms 1:64 and 1:128 look good only for high PPQN values.
  */
 
 void
@@ -164,7 +171,17 @@ seqtime::update_pixmap ()
     int measure_length_32nds = m_seq.get_beats_per_bar() * 32 /
         m_seq.get_beat_width();
 
-    int measures_per_line = (128 / measure_length_32nds) / (32 / m_zoom);
+    /*
+     *  "measures_per_line" is more like "measures per major line".  With a
+     *  higher zoom than 32, this calculation yields a floating-point
+     *  exception if m_zoom > 32, so we rearrange the calculation and hope
+     *  that it still works out the same for smaller values.
+     *
+     * int measures_per_line = (128 / measure_length_32nds) / (32 / m_zoom);
+     * int measures_per_line = (128 * m_zoom / measure_length_32nds) / 32;
+     */
+
+    int measures_per_line = 4 * m_zoom / measure_length_32nds;
     if (measures_per_line <= 0)
         measures_per_line = 1;
 

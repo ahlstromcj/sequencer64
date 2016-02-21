@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-02-18
+ * \updates       2016-02-20
  * \license       GNU GPLv2 or above
  *
  *  Note that the parse function has some code that is not yet enabled.
@@ -333,7 +333,7 @@ userfile::parse (perform & /* a_perf */)
         usr().mainwid_border(0);
         usr().mainwid_spacing(2);
         usr().control_height(0);
-        usr().zoom(2);
+        usr().zoom(SEQ64_DEFAULT_ZOOM);
         usr().global_seq_feature(false);
         usr().use_new_font(false);
         usr().allow_two_perfedits(false);
@@ -420,7 +420,7 @@ userfile::write (const perform & /* a_perf */ )
            "# Sequencer64 user configuration file (legacy Seq24 0.9.2 format)\n";
     }
     else
-        file << "# Sequencer64 0.9.9.13 (and above) user configuration file\n";
+        file << "# Sequencer64 0.9.9.18 (and above) user configuration file\n";
 
     file << "#\n"
         "# Created by reading the following file and writing it out via the\n"
@@ -662,7 +662,9 @@ userfile::write (const perform & /* a_perf */ )
 
         file << "\n"
             "# Specifies the initial zoom for the piano rolls.  Ranges from 1.\n"
-            "# to 32, and defaults to 2 unless changed here.\n"
+            "# to 128 (the legacy maximum was 32), and defaults to 2 unless\n"
+            "# changed here.  Note that large PPQN values will require larger\n"
+            "# zoom values in order to look good in the sequence editor.\n"
             "\n"
             << usr().zoom() << "      # zoom\n"
             ;

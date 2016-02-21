@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-08
- * \updates       2016-01-28
+ * \updates       2016-02-20
  * \license       GNU GPLv2 or above
  *
  *  This collection of global variables describes some facets of the
@@ -38,7 +38,6 @@
  *  The Patterns Panel contains an 8-by-4 grid of "pattern boxes" or
  *  "sequence boxes".  All of the patterns in this grid comprise what is
  *  called a "set" (in the musical sense) or a "screen set".
- *
  */
 
 /**
@@ -147,6 +146,30 @@
  */
 
 #define SEQ64_MAXIMUM_PPQN              19200       /* 960  */
+
+/**
+ *  Minimum possible value for zoom, indicating that one pixel represents one
+ *  tick.
+ */
+
+#define SEQ64_MINIMUM_ZOOM                 1
+
+/**
+ *  The default value of the zoom, indicating that one pixel represents two
+ *  ticks.
+ */
+
+#define SEQ64_DEFAULT_ZOOM                 2
+
+/**
+ *  The maximum value of the zoom, indicating that one pixel represents 128
+ *  ticks.  The old maximum was 32, but now that we support PPQN up to 19200,
+ *  we need a couple of extra entries.  At this time, we're not going to
+ *  support adapting the default zoom to the PPQN; we just allow some extra
+ *  zoom values.
+ */
+
+#define SEQ64_MAXIMUM_ZOOM              128
 
 /**
  *  Default value for c_beats_per_minute (global beats-per-minute, also known

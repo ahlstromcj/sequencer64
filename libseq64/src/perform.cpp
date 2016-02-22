@@ -1673,7 +1673,7 @@ perform::output_func ()
 #ifdef USE_SEQ24_0_9_3_CODE
         pad.js_clock_tick = 0;              // long probably offers more ticks
 #else
-        pad.js_clock_tick = 0.0;
+        pad.js_clock_tick = 0.0;            // double
 #endif
         pad.js_jack_stopped = false;
         pad.js_dumping = false;
@@ -1682,7 +1682,7 @@ perform::output_func ()
         pad.js_playback_mode = m_playback_mode;
         pad.js_ticks_converted_last = 0.0;
 #ifdef USE_SEQ24_0_9_3_CODE
-        pad.js_delta_tick_frac = 0;         // from seq24 0.9.3
+        pad.js_delta_tick_frac = 0L;        // from seq24 0.9.3, long value
 #endif
 
         midipulse stats_total_tick = 0;
@@ -1776,22 +1776,59 @@ perform::output_func ()
              * delta_ticks_frac is in 1000th of a tick.  This code is meant to
              * correct for some clock drift.  However, this code breaks the
              * MIDI clock speed.  So let's revert to our original code, by not
-             * defining USE_SEQ24_0_9_3_CODE.
+             * defining USE_SEQ24_0_9_3_CODE.  I'm thinking we can just keep
+             * the delta_tick value as a double, but accumulate at a higher
+             * resolution and calculate delta_tick from that.
              */
+
+			/*
+			 * EXPERIMENT:  Calculate both ways and print them out.
+			 */
 
 #ifdef USE_SEQ24_0_9_3_CODE
             long long delta_tick_num = bpm * ppqn * delta_us +
                 pad.js_delta_tick_frac;
 
             long long delta_tick_denom = 60000000LL;
-            long delta_tick = long(delta_tick_num / delta_tick_denom);
+
+            /*
+             * EXPERIMENT: Store as a double value instead of long.
+             *
+             * long delta_tick = long(delta_tick_num / delta_tick_denom);
+             *
+             * This seems to get truncated.  Convert to double instead.
+             *
+             * double ll_delta_tick = double(delta_tick_num / delta_tick_denom);
+             *
+             * But even with this change, we still get wide variations:
+             *
+             *  delta_tick: seq24 0.9.3 --> 2.24403, normal --> 1.57286
+             *  delta_tick: seq24 0.9.3 --> 1.82496, normal --> 1.58093
+             *  delta_tick: seq24 0.9.3 --> 2.40896, normal --> 1.584
+             *  delta_tick: seq24 0.9.3 --> 1.98643, normal --> 1.57747
+             */
+
+            double ll_delta_tick = double(delta_tick_num) / 60000000.0;
             pad.js_delta_tick_frac = long(delta_tick_num % delta_tick_denom);
 #else
+            // FYI: delta_tick = double(bpm * ppqn * (delta_us / 60000000.0f));
+
             double delta_tick = delta_time_us_to_ticks(delta_us, bpm, ppqn);
 #endif
+
+#ifdef USE_EXPERIMENTAL_DEBUG_OUTPUT
+            printf                                  // EXPERIMENTAL
+            (
+                "delta_tick: seq24 0.9.3 --> %g, normal --> %g\n",
+                ll_delta_tick, delta_tick
+            );
+#endif
+
+            // CLEAN UP THE ABOVE WHEN DONE EXPERIMENTING
+
             if (m_usemidiclock)
             {
-                delta_tick = m_midiclocktick;
+                delta_tick = m_midiclocktick;       /* int to double */
                 m_midiclocktick = 0;
             }
             if (m_midiclockpos >= 0)

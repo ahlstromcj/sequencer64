@@ -12,6 +12,8 @@ aclocal.m4
 bootstrap.stamp
 configure
 core
+dox-stamp
+doxygen_sqlite3.db
 libtool
 vgcore
 m4/libtool.m4
@@ -46,5 +48,4 @@ debian/sequencer64.postrm.debhelper
 debian/sequencer64.substvars
 debian/sequencer64/
 debian/*.log
-include/
 

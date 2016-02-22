@@ -1,4 +1,4 @@
-#if ! defined SEQ64_CMDLINEOPTS_HPP
+#ifndef SEQ64_CMDLINEOPTS_HPP
 #define SEQ64_CMDLINEOPTS_HPP
 
 /**
@@ -9,10 +9,12 @@
  *
  * \author  Chris Ahlstrom
  * \date    2015-11-20
- * \updates 2015-11-20
+ * \updates 2016-02-22
  * \version $Revision$
  *
- *    Also see the file_functions.cpp module.
+ *    Also see the file_functions.cpp module.  These modules together simply
+ *    the main() module considerably, which will be useful when we have more
+ *    than one "Sequencer64" application.
  */
 
 #include <string>

@@ -1,6 +1,6 @@
 User Testing of JACK in Sequencer64
 Chris Ahlstrom
-2016-01-16 to 2016-02-21
+2016-01-16 to 2016-02-22
 
 ===========================================================================
  SETTINGS TESTS
@@ -417,6 +417,81 @@ Seq24 --> QSynth -----------> Audio 1     |
 
 And works fine for me. As Seq24 generates all the midi events, there are 
 no sync problems.
+
+===========================================================================
+ Ardour and Seq24
+===========================================================================
+
+   http://ooommm.org/sudelwiki/Seq24
+
+   The method uses Ardour as a Time Master and synced application Seq24
+   http://www.filter24.org/seq24
+   as a source of MIDI Clock signal
+
+   start JACK
+   start ARDOUR, set it as Time Master (green button on) and sync source
+   (above the button) should be JACK
+   -start Seq24, create new blank 1 bar pattern
+   -make the following settings in Seq24 (File>Options):
+
+   MIDI Clock tab: use the radio buttons to route the clock signal to your
+   MIDI device 
+   (if it's plugged in, it should be on the list, otherwise choose a port
+   and do the routing in Jack Connect)
+   Jack Sync tab: tick only Jack Transport box, select Live Mode, click on
+   Connect
+   that's all
+
+   The tempo is determined by the ARDOUR tempo ruler (therefore can be
+   variable!!!!), doesn't matter what BPM is set in Seq24
+   I can use both the JACK and ARDOUR transport controls for start/stop
+
+   Explained in Words
+   Setting up Ardours timing:
+
+   In the top-right corner in the Ardour Main Window there are some
+   buttons - Punch In, Auto Play, Auto Input, Punch Out, Auto Return,
+   Click - just left of these six Buttons are the Buttons we are looking
+   for a dropdown menu called "Positional Sync Source" that lets us choose
+   between:
+   Internal
+   MTC ( = Midi Time Code) ( NOT!= Midi Clock)
+   JACK
+   Time Master (Tooltip: "Does Ardour Control the time?")
+   ON = Green = Yes, Ardour is the Time Master
+   OFF = Grey = No, Ardour is not the Time Master and gets controlled
+   from somewhere else
+   For our Seq24-Ardour-Sync-Setup we hit it like this:
+   Positional Sync Source = JACK
+   Time Master = ON/Green
+
+   Setting up JACK-Sync in seq24:
+
+   File -> Options -> Jack Sync
+   check Jack Transport & Song Mode, then hit CONNECT
+   you can leave the seq24-window now and go back to Ardour or
+   JACK/qjackctl
+
+   Controlling seq24 via the Transport-Buttons in Ardour or
+   JACK/qjackctl as you like:
+
+   If you hit play in Ardour your seq24-Song will play at the same
+   position as your Ardour-Playhead. Yeah!
+   The BPM are controlled by the Ardour-Setting, the seq24-BPM-Setter
+   is inactive right now.
+
+   Is the MIDI Clock Tab in seq24 necessary for me?
+
+   Note: there is a MIDI Clock Tab too, maybe i should set up that to
+   keep tempo Synced between seq24/Ardour.
+   I don't know by now. Maybe gonna check out. They were all ON and ON
+   POS for all channels.
+
+===========================================================================
+ Session Management
+===========================================================================
+
+   http://lsn.ponderworthy.com/doku.php/robust_session_management
 
 ===========================================================================
  Sample Files of Various Kinds

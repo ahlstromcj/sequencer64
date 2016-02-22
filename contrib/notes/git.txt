@@ -1,6 +1,6 @@
 Quick Reference for Git Processes on GitHub
 Chris Ahlstrom
-2015-09-09 to 2016-02-07
+2015-09-09 to 2016-02-22
 
 Creating a GitHub Repository:
 
@@ -138,6 +138,11 @@ Tagging:
     But be careful about modifications; if committed, they represent new
     work you might need to merge later, but the new work will not be part
     of the tagged commit.
+
+    To get all of the tags for a project, a simple pull (of all items) is
+    necessary:
+
+    $ git pull
 
     To show all of the tags present in the project, along with the commit
     numbers for the tag and the tag operation:

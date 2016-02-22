@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-07-23
- * \updates       2016-02-13
+ * \updates       2016-02-21
  * \license       GNU GPLv2 or above
  *
  *  This class contains a number of functions that used to reside in the
@@ -47,14 +47,14 @@
 #undef SEQ64_JACK_SESSION
 #endif      // SEQ64_JACK_SUPPORT
 
-/*
+/**
  * Define this macro to use the new seq24 v. 0.9.3 delta-tick calculation
  * code.  This code doesn't quite work for generating the proper rate of MIDI
  * clocks, and so have disabled that code until we can figure out what it is
  * we're doing wrong. Do not enable it unless you are willing to test it.
  */
 
-#undef  USE_SEQ24_0_9_3_CODE
+#undef  USE_SEQ24_0_9_3_CODE            // DEFINE ONLY FOR EXPERIMENTING!
 
 namespace seq64
 {

@@ -1,0 +1,33 @@
+Notes About Non-DAW
+Chris Ahlstrom
+2016-02-21 to 2016-02-21
+
+Considerations for building Non-DAW and adding NSM (Non Session Manager)
+support into Sequencer64.
+
+Getting and building Non-DAW, first try:
+
+    http://comments.gmane.org/gmane.comp.audio.non-daw/94
+
+	Here is what I did a few weeks ago on Ubuntu 12.04:
+
+	Get the most up-to-date version.
+
+	git clone -b next git://git.tuxfamily.org/gitroot/non/daw.git
+	git submodule init
+	git submodule update
+
+	Install the following:
+
+	sudo apt-get install build-essential xutils-dev libjack-jackd2-dev
+		liblo-dev libsigc++-2.0-dev libfltk1.1-dev fluid libsndfile-dev
+		liblrdf-dev libxpm-dev libcairo2-dev checkinstall
+
+	Then run:
+
+	make -C lib
+	make
+	and finally
+	sudo checkinstall
+
+# vim: sw=4 ts=4 wm=8 et ft=sh

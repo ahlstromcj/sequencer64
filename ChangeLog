@@ -1,5 +1,28 @@
+2016-02-23  Chris Ahlstrom <ahlstromcj@gmail.com>
+	* ChangeLog:
+	Unofficial version 0.9.10 with fixes for generating a Debian "deb"
+	package.
+
+2016-02-22  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* .gitignore, contrib/notes/bugs_to_investigate.txt,
+	contrib/notes/git.txt, contrib/notes/jack-test-status.dump,
+	contrib/notes/jack-testing.txt, contrib/notes/nsm.txt,
+	contrib/notes/update-notes-from-github.txt,
+	libseq64/include/cmdlineopts.hpp,
+	libseq64/include/jack_assistant.hpp, libseq64/src/perform.cpp: Notes
+	about NSM and MIDI clock drift code.
+
 2016-02-21  Chris Ahlstrom <ahlstromcj@gmail.com>
 
+	* .gitignore: Update to dot-gitignore.
+	* .gitignore, INSTALL, README, ROADMAP, Sequencer64/Makefile.am,
+	Sequencer64/test_script, VERSION, configure.ac, debian/README,
+	debian/changelog, debian/control, debian/install, debian/menu,
+	debian/sequencer24.xpm, debian/sequencer64.desktop,
+	debian/sequencer64.xpm, doc/dox/doxy-reference.cfg,
+	libseq64/src/cmdlineopts.cpp, man/sequencer64.1: Stamping for
+	pending version 0.9.10 and fixing Debian package support.
 	* ChangeLog:
 	New features for 0.9.9.18: Color and thickness options for progress bars;
 	user-configurable redraw rate; automatic horizontal scrolling in the sequence

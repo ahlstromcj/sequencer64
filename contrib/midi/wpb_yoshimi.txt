@@ -1,6 +1,6 @@
 Construction of "Where's Prince Brilliant" for ZynAddSubFx/Yoshimi
 Chris Ahlstrom
-2012-01-20 to 2015-11-14
+2012-01-20 to 2016-03-04
 
 This file describes the importing of one of my old Cakewalk transcriptions, a
 rendering of "Where's Prince Brilliant?" from (unreliable) memory.
@@ -72,12 +72,12 @@ Seq24 settings:
 
 To set up and play the tune (using ALSA):
 
-   1. Make sure that the seq24 or sequencer24 config ("rc") files
+   1. Make sure that the seq24 or sequencer64 config ("rc") files
       specify 0 for manual-alsa-ports, and do not set up any MIDI clocks.
 
    2. yoshimi -a -A -l wpb_yoshimi_params.xmz
 
-   3. sequencer24 wpb_yoshimi.midi &
+   3. sequencer64 wpb_yoshimi.midi &
 
    4. File / Options / MIDI Clock:  Verify which MIDI buss Yoshimi is
       on.  In our case, it is on buss 5 (buss 0 is Midi Through, and 1
@@ -86,5 +86,5 @@ To set up and play the tune (using ALSA):
       the channel shown after the dash in the lower left corner of each
       pattern.  Probably best to save this to a new file, just in case.
 
-   5. Open the Song Editor of sequencer24.  Click the red play arrow.
+   5. Open the Song Editor of sequencer64.  Click the red play arrow.
 

@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-09-21
- * \updates       2015-10-10
+ * \updates       2016-03-04
  * \license       GNU GPLv2 or above
  *
  *  Most of the GUI modules are publicly derived from Gtk::DrawingArea,
@@ -117,7 +117,7 @@ public:
     bool is_letter (int ch = SEQ64_KEYSTROKE_BAD_VALUE) const;
 
     /**
-     * \better m_key to test for a delete-causing key.
+     * \getter m_key to test for a delete-causing key.
      */
 
     bool is_delete () const

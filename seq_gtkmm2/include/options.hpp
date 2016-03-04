@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-02-16
+ * \updates       2016-03-04
  * \license       GNU GPLv2 or above
  *
  */
@@ -64,7 +64,7 @@ private:
      *  Defines buttons indices or IDs for some controls related to JACK.
      *  These values are handled in options::transport_callback().  Some of
      *  them set JACK-related values in the rc_settings object, while the
-     *  others set up or tear down the JACK support of sequencer24.
+     *  others set up or tear down the JACK support of sequencer64.
      *
      *  The JACK Transport settings are a little messy.  They should be radio
      *  buttons, and control each other's settings.  Currently, if the user

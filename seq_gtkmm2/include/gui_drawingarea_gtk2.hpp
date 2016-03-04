@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-21
- * \updates       2016-02-19
+ * \updates       2016-04-04
  * \license       GNU GPLv2 or above
  *
  *  We've added a number of wrapper functions for the "draw-rectangle",
@@ -531,7 +531,7 @@ protected:
      *  "pixmap" context, where the foreground color has already been
      *  specified.
      *
-     * \param drawable
+     * \param pixmap
      *      The object on which to draw the rectangle.
      *
      * \param x

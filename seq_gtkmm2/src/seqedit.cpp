@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-02-20
+ * \updates       2016-03-04
  * \license       GNU GPLv2 or above
  *
  *  Compare this class to eventedit, which has to do some similar things,
@@ -1588,7 +1588,7 @@ seqedit::popup_event_menu ()
             /*
              * Do we really want the default controller name to start?
              * That's what the legacy Seq24 code does!  We need to document
-             * it in the seq24-doc and sequencer24-doc projects.
+             * it in the seq24-doc and sequencer64-doc projects.
              */
 
             std::string controller_name(c_controller_names[offset + item]);

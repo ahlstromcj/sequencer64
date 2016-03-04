@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-02-15
+ * \updates       2016-03-04
  * \license       GNU GPLv2 or above
  *
  *  The functionality of this class also includes handling some of the
@@ -1485,7 +1485,7 @@ sequence::add_note
  *      until one understands what is happening.  Actually, this is true only
  *      in Seq24, we've fixed that behavior for Sequencer64.
  *
- * \param ep
+ * \param er
  *      Provide a reference to the event to be added; the event is copied into
  *      the events container.
  */
@@ -2119,7 +2119,7 @@ sequence::selected_trigger_end ()
  * \param tick
  *      The tick at which the trigger starts.
  *
- * \param fixoffset
+ * \param adjustoffset
  *      Set to true if the offset is to be adjusted.
  *
  * \param which

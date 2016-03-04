@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-02-13
+ * \updates       2016-03-04
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -1240,7 +1240,7 @@ perform::clear_sequence_triggers (int seq)
  *  that is active, its triggers are moved by the difference between the
  *  right and left in the specified direction.
  *
- * \param a_direction
+ * \param direction
  *      Specifies the desired direction; false = left, true = right.
  */
 

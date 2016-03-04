@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-22
- * \updates       2016-02-19
+ * \updates       2016-03-04
  * \license       GNU GPLv2 or above
  *
  */
@@ -49,8 +49,14 @@ namespace seq64
  *      were valued at c_redraw_ms (40 ms), but mainwnd used 25 ms, so beware.
  *      We will eventually make this a user-interface parameter.
  *
- * \param a_perf
+ * \param p
  *      Refers to the main performance object.
+ *
+ * \param window_x
+ *      The width of the window.
+ *
+ * \param window_y
+ *      The height of the window.
  */
 
 gui_window_gtk2::gui_window_gtk2

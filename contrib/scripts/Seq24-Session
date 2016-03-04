@@ -8,7 +8,7 @@
 # \library     Home/Audio
 # \author      Chris Ahlstrom
 # \date        2015-04-04
-# \update      2016-01-13
+# \update      2016-03-04
 # \version     $Revision$
 # \license     $XPC_SUITE_GPL_LICENSE$
 #
@@ -27,7 +27,7 @@
 #     -  zita-j2a
 #     -  qjackctl
 #     -  yoshimi (software synthesizer)
-#     -  seq24 (MIDI loop application) or sequencer24; change the SEQUENCER
+#     -  seq24 (MIDI loop application) or sequencer64; change the SEQUENCER
 #        environment variable below to the one you want to use.
 #
 #  Local setup:
@@ -40,7 +40,7 @@
 #
 #------------------------------------------------------------------------------
 
-SEQUENCER="sequencer24"
+SEQUENCER="sequencer64"
 SEQ24SONG="$HOME/Home/Audio/Seq24/click_4_4.midi"
 YOSHSTATE="$HOME/.config/yoshimi/yoshimi.state"
 
@@ -192,10 +192,10 @@ if [ "$DoSetup" == "yes" ] ; then
    fi
 
 #------------------------------------------------------------------------------
-# seq24 or sequencer24
+# seq24 or sequencer64
 #------------------------------------------------------------------------------
 #
-#     With ~/.seq24rc (or ~/.config/sequencer24/sequencer24rc) containing:
+#     With ~/.seq24rc (or ~/.config/sequencer64/sequencer64rc) containing:
 #
 #        [manual-alsa-ports]
 #        1

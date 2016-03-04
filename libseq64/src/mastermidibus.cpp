@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-30
- * \updates       2016-02-07
+ * \updates       2016-03-04
  * \license       GNU GPLv2 or above
  *
  *  This file provides a Linux-only implementation of MIDI support.
@@ -1069,7 +1069,7 @@ mastermidibus::get_midi_event (event * inev)
  * \param state
  *      Provides the dumping-input state to be set.
  *
- * \parem seq
+ * \param seq
  *      Provides the sequence object to be logged as the mastermidibus's
  *      sequence.  Can also be used to set a null pointer, to disable the
  *      sequence setting.

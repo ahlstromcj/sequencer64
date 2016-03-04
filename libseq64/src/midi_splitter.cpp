@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-24
- * \updates       2015-11-27
+ * \updates       2016-03-04
  * \license       GNU GPLv2 or above
  *
  */
@@ -42,9 +42,6 @@ namespace seq64
 
 /**
  *  Principal constructor.
- *
- * \param name
- *      Provides the name of the MIDI file to be read or written.
  *
  * \param ppqn
  *      Provides the initial value of the PPQN setting.  It is handled
@@ -63,19 +60,6 @@ namespace seq64
  *          PPQN set during parsing, and pass it to the constructor when
  *          preparing to write the file.  See how it is done in the mainwnd
  *          class.
- *
- * \param oldformat
- *      If true, write out the MIDI file using the old Seq24 format, instead
- *      of the new MIDI-compliant sequencer-specific format, for the
- *      seq24-specific SeqSpec tags defined in the globals module.  This
- *      option is false by default.  Note that this option is only used in
- *      writing; reading can handle either format transparently.
- *
- * \param globalbgs
- *      If true, write any non-default values of the key, scale, and
- *      background sequence to the global "proprietary" section of the MIDI
- *      file, instead of to each sequence.  Note that this option is only used
- *      in writing; reading can handle either format transparently.
  */
 
 midi_splitter::midi_splitter (int ppqn)

@@ -13,7 +13,7 @@ This document describes basic user testing of Sequencer64 using the
 Yoshimi software synthesizer.
 
 \page       user_testing_page User Testing of Sequencer64 with Yoshimi
-\author     Chris Ahlstrom 2016-02-13
+\author     Chris Ahlstrom 2016-03-04
 
 \section user_testing_intro Introduction
 
@@ -60,7 +60,7 @@ setting:
 \verbatim
    [manual-alsa-ports]
 
-   # Set to 1 if you want seq24 to create its own ALSA ports and
+   # Set to 1 if you want sequencer64 to create its own ALSA ports and
    # not connect to other clients
 
    0   # number of manual ALSA ports
@@ -120,7 +120,7 @@ following project, which contains a PDF file and the LaTeX code used to build
 it:
 
 \verbatim
-   https://github.com/ahlstromcj/sequencer24-doc.git
+   https://github.com/ahlstromcj/sequencer64-doc.git
 \endverbatim
 
 Although it applies to an earlier version of the project, it still mostly holds

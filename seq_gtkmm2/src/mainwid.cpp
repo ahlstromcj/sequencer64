@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-02-15
+ * \updates       2016-03-04
  * \license       GNU GPLv2 or above
  *
  *  Note that this representation is, in a sense, inside the mainwnd
@@ -732,7 +732,7 @@ mainwid::reset ()
 /**
  *  Set the current screen-set.
  *
- * \param a_ss
+ * \param ss
  *      Provides the screen-set number to set.
  */
 

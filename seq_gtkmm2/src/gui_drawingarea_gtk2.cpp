@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-21
- * \updates       2016-02-19
+ * \updates       2016-03-04
  * \license       GNU GPLv2 or above
  *
  */
@@ -404,7 +404,7 @@ gui_drawingarea_gtk2::draw_line_on_pixmap
  *  A small wrapper function to draw a line on the pixmap after setting
  *  the given foreground color.
  *
- * \param drawable
+ * \param pixmap
  *      Provides the Gdk::Drawable pointer needed to draw the line.
  *
  * \param c

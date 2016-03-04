@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-01-09
+ * \updates       2016-03-04
  * \license       GNU GPLv2 or above
  *
  *  A MIDI editable event is encapsulated by the seq64::editable_event
@@ -466,7 +466,7 @@ editable_event::timestamp (midipulse ts)
 /**
  * \setter event::set_timestamp() [string version]
  *
- * \param ts
+ * \param ts_string
  *      Provides the timestamp in units of MIDI pulses.
  *
  *  The format of the string representation is of the format selected by the

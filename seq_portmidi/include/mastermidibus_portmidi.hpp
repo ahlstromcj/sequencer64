@@ -2,7 +2,7 @@
 #define SEQ64_MASTERMIDIBUS_PORTMIDI_HPP
 
 /*
- *  This file is part of seq24/sequencer24.
+ *  This file is part of seq24/sequencer64.
  *
  *  seq24 is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-10-30
+ * \updates       2016-03-04
  * \license       GNU GPLv2 or above
  *
  *  The mastermidibus_portmidi module is the Windows version of the

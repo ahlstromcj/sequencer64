@@ -6,7 +6,7 @@
 # \library    	sequencer64 application
 # \author     	Chris Ahlstrom
 # \date       	2015-09-11
-# \update      2015-10-07
+# \update      2016-03-04
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -19,21 +19,27 @@ EXTRA_DIST = \
 	bus.xpm \
 	collapse.xpm \
 	copy.xpm \
+	cyan_wenfont_yb.xpm \
+	cyan_wenfont_y.xpm \
+   del.xpm \
 	down.xpm \
 	expand.xpm \
 	font_b.xpm \
 	font_w.xpm \
 	font_y.xpm \
 	font_yb.xpm \
+   ins.xpm \
 	key.xpm \
 	learn2.xpm \
 	learn.xpm \
+   length_short.xpm \
 	length.xpm \
 	loop.xpm \
 	menu_empty.xpm \
 	menu_full.xpm \
 	midi.xpm \
 	note_length.xpm \
+	paia_seq_24x24.xpm \
 	perfedit.xpm \
 	play2.xpm \
 	play.xpm \
@@ -44,9 +50,14 @@ EXTRA_DIST = \
 	scale.xpm \
 	seq24_32.xpm \
 	seq24.xpm \
+	SEQ64_24x24.xpm \
+	seq64_32.xpm \
+	seq64.xpm \
+	seq-editor.xpm \
 	sequencer24.xpm \
 	sequencer24_legacy.xpm \
 	sequencer24_square.xpm \
+	SEQUENCER-64_24x24.xpm \
 	sequencer64_legacy.xpm \
 	sequencer64_square.xpm \
 	seq-editor.xpm \
@@ -57,6 +68,10 @@ EXTRA_DIST = \
 	thru.xpm \
 	tools.xpm \
 	undo.xpm \
+	wenfont_b.xpm \
+	wenfont_w.xpm \
+	wenfont_yb.xpm \
+	wenfont_y.xpm \
 	zoom.xpm
 
 #*****************************************************************************

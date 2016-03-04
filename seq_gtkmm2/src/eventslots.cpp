@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-12-05
- * \updates       2016-02-06
+ * \updates       2016-03-04
  * \license       GNU GPLv2 or above
  *
  *  This module is user-interface code.  It is loosely based on the workings
@@ -242,7 +242,7 @@ eventslots::set_text
  *      Actually, it is far easier to just adjust all the counts and iterators
  *      and redraw the screen, as done by the page_topper() function.
  *
- * \param ev
+ * \param edev
  *      The event to insert, prebuilt.
  *
  * \return

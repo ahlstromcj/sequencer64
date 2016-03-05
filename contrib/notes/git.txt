@@ -1,6 +1,6 @@
 Quick Reference for Git Processes on GitHub
 Chris Ahlstrom
-2015-09-09 to 2016-02-22
+2015-09-09 to 2016-03-04
 
 Creating a GitHub Repository:
 
@@ -148,5 +148,21 @@ Tagging:
     numbers for the tag and the tag operation:
 
     $ git show-ref --tags -d
+
+Pull Requests:
+
+    When one gets an email about a pull request, there are a couple of
+    ways of dealing with it, given that it is an acceptable request.
+
+    First, one can go to the project GitHub page, and click on the "Merge
+    pull request" button.
+
+    Second, one can do something like this, from the command line:
+
+       $ git checkout -b otherproject-master master
+       $ git pull https://github.com/otherproject/sequencer64.git master
+       $ git checkout master 
+       $ git merge --no-ff otherproject-master
+       $ git  push origin master 
 
 # vim: sw=4 ts=4 wm=8 et ft=sh

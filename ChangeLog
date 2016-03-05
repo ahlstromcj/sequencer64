@@ -1,3 +1,40 @@
+2016-03-04  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* contrib/notes/git.txt, doc/dox/doxy-reference.cfg: Got Doxygen PDF
+	generation to work again.
+	* : commit 294bcc497b90f4847c4108d6d559d63e0bfec223 Merge: 6dd88af
+	3da7446 Author: Chris Ahlstrom <ahlstromcj@gmail.com> Date:   Fri
+	Mar 4 19:10:32 2016 -0500
+	* contrib/midi/wpb_yoshimi.txt, contrib/scripts/Seq24-Session,
+	doc/dox/user_testing.dox, libseq64/include/keystroke.hpp,
+	libseq64/src/editable_event.cpp, libseq64/src/mastermidibus.cpp,
+	libseq64/src/midi_splitter.cpp, libseq64/src/perform.cpp,
+	libseq64/src/sequence.cpp, resources/pixmaps/Makefile.am,
+	resources/pixmaps/sequencer24.xpm,
+	seq_gtkmm2/include/gui_drawingarea_gtk2.hpp,
+	seq_gtkmm2/include/options.hpp, seq_gtkmm2/src/eventslots.cpp,
+	seq_gtkmm2/src/gui_drawingarea_gtk2.cpp,
+	seq_gtkmm2/src/gui_window_gtk2.cpp, seq_gtkmm2/src/mainwid.cpp,
+	seq_gtkmm2/src/seqedit.cpp,
+	seq_portmidi/include/mastermidibus_portmidi.hpp,
+	seq_portmidi/include/midibus_portmidi.hpp,
+	seq_portmidi/src/Makefile.am,
+	seq_portmidi/src/mastermidibus_portmidi.cpp,
+	seq_portmidi/src/midibus_portmidi.cpp: Trying to fix Doxyen LaTeX
+	error.
+
+2016-03-04  Daniel Appelt <daniel.appelt@gmail.com>
+
+	* : Merge commit '8b2c89aa3441b8f7910f279410415f894dadbfc9'
+
+2016-03-03  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* resources/pixmaps/SEQUENCER-64_24x24.xpm: Added one more set of
+	icons and a pixmap.
+	* contrib/notes/urls.txt, resources/pixmaps/SEQ64_24x24.xpm,
+	resources/pixmaps/paia_seq_24x24.xpm: Added some simple icons and
+	pixmaps for desktop, etc.
+
 2016-02-23  Chris Ahlstrom <ahlstromcj@gmail.com>
 	* ChangeLog:
 	Unofficial version 0.9.10 with fixes for generating a Debian "deb"

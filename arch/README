@@ -1,9 +1,9 @@
 The Arch Linux Package Build
 Chris Ahlstrom
-2016-01-14 to 2016-01-10
+2016-01-14 to 2016-03-04
 
-The directory "package" holds a copy, probably out-of-date, of the package build
-files for Arch Linux. This copy is purely for reference.
+The directory "package" holds a copy of the package build
+files for Arch Linux.
 
 These files may be updated from the original build files via:
 

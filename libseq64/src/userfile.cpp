@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-02-20
+ * \updates       2016-03-13
  * \license       GNU GPLv2 or above
  *
  *  Note that the parse function has some code that is not yet enabled.
@@ -814,22 +814,23 @@ userfile::write (const perform & /* a_perf */ )
             ;
 
         file << "\n"
-            "# Specifies the buss-number override. The default value is -1,\n"
-            "# which means that there is no buss override.  If a value\n"
+            "# Specifies the buss-number override, the same as the --bus\n"
+            "# command-line option. The default value is -1, which\n"
+            "# means that there is no buss override.  If a value\n"
             "# from 0 to 31 is given, then that buss value overrides all\n"
             "# buss values specified in all sequences/patterns.\n"
-            "# Change this value from -1 only if you want to use a single\n"
+            "# Change this value from -1 only to use a single\n"
             "# output buss, either for testing or convenience.  And don't\n"
-            "# save the MIDI afterwards, unless you really want to change\n"
-            "# all of its buss values.\n"
+            "# save the MIDI file afterwards, unless you really want to change\n"
+            "# all of its buss values!\n"
             "\n"
             ;
 
         int bo = int(usr().midi_buss_override());   /* writing char no good */
         if (SEQ64_NO_BUSS_OVERRIDE(bo))
-            file << "-1" << "       # midi_buss_override\n";
+            file << "-1" << "       # midi_buss_override (disabled)\n";
         else
-            file << bo   << "       # midi_buss_override\n";
+            file << bo   << "       # midi_buss_override (enabled, careful!)\n";
     }
 
     /*

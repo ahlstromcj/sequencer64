@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-03-04
+ * \updates       2016-03-15
  * \license       GNU GPLv2 or above
  *
  *  Compare this class to eventedit, which has to do some similar things,
@@ -2023,7 +2023,7 @@ seqedit::set_data_type (midibyte status, midibyte control)
  *  the seqroll to pop to the next frame of events to continue to show the
  *  moving progress bar.  Does this need to be an option?  It only affects
  *  patterns longer than a measure or two, whatever the width of the seqroll
- *  window is.
+ *  window is.  This is a new feature that is not in seq24.
  */
 
 bool

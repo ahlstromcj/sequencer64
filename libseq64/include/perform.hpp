@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-02-16
+ * \updates       2016-03-16
  * \license       GNU GPLv2 or above
  *
  *  This class still has way too many members, even with the JACK and
@@ -113,10 +113,9 @@ struct performcallback
 };
 
 /**
- *  This class supports the performance mode.
- *
- *  It has way too many data members, many of the public.
- *  Might be ripe for refactoring.
+ *  This class supports the performance mode.  It has way too many data
+ *  members, one of them public.  Might be ripe for refactoring.  That has its
+ *  own dangers, of course.
  */
 
 class perform
@@ -383,10 +382,9 @@ private:
     jack_assistant m_jack_asst;         // implements most of the JACK stuff
 #endif
 
-public:
-
     /*
      *  Can register here for events.  Used in mainwnd and perform.
+     *  Now wrapped in the enregister() function, so no longer public.
      */
 
     std::vector<performcallback *> m_notify;
@@ -576,7 +574,6 @@ public:
     void new_sequence (int seq);                    /* seqmenu & mainwid    */
     void add_sequence (sequence * seq, int perf);   /* midifile             */
     void delete_sequence (int seq);                 /* seqmenu & mainwid    */
-
     bool is_sequence_in_edit (int seq);
     void clear_sequence_triggers (int seq);
 
@@ -749,13 +746,16 @@ public:
     {
         m_mode_group = false;
     }
+
     void select_group_mute (int g_mute);
     void set_mode_group_learn ();
     void unset_mode_group_learn ();
+
     bool is_group_learning (void)
     {
         return m_mode_group_learn;
     }
+
     void select_mute_group (int group);
     void start (bool state);
     void stop ();
@@ -882,7 +882,7 @@ public:
     void save_playing_state ();
     void restore_playing_state ();
 
-    /*
+    /**
      * Here follows a few forwarding functions for the keys_perform-derived
      * classes.
      */
@@ -937,6 +937,7 @@ public:
     {
         return keys().show_ui_sequence_number();
     }
+
     void show_ui_sequence_number (bool flag)
     {
         keys().show_ui_sequence_number(flag);
@@ -955,6 +956,7 @@ public:
         else
             return '.';                 /* '?' */
     }
+
     long lookup_keyevent_seq (unsigned int keycode)
     {
         if (get_key_events().count(keycode) > 0)
@@ -962,6 +964,7 @@ public:
         else
             return 0;
     }
+
     unsigned int lookup_keygroup_key (long groupnum)
     {
         if (get_key_groups_rev().count(groupnum))
@@ -969,6 +972,7 @@ public:
         else
             return '.';                 /* '?' */
     }
+
     long lookup_keygroup_group (unsigned int keycode)
     {
         if (get_key_groups().count(keycode))

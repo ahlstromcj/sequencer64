@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-02-14
+ * \updates       2016-03-15
  * \license       GNU GPLv2 or above
  *
  *  This module is almost exclusively user-interface code.  There are some
@@ -282,11 +282,35 @@ perfnames::on_button_press_event (GdkEventButton * ev)
     {
         if (perf().is_active(seqnum))
         {
-            // TODO:  use reference here
+            guint modifiers;        /* for filtering out caps/num lock etc. */
+            modifiers = gtk_accelerator_get_default_mod_mask();
+            if ((ev->state & modifiers) == SEQ64_SHIFT_MASK)
+            {
+                /*
+                 * \new ca 2016-03-15
+                 *      If the Shift key is pressed, mute all other sequences.
+                 *      Inactive sequences are skipped.
+                 */
 
-            sequence * seq = perf().get_sequence(seqnum);
-            bool muted = seq->get_song_mute();
-            seq->set_song_mute(! muted);
+                for (int s = 0; s < m_sequence_max; ++s)
+                {
+                    if (s != seqnum)
+                    {
+                        sequence * seq = perf().get_sequence(s);
+                        if (not_nullptr(seq))
+                        {
+                            bool muted = seq->get_song_mute();
+                            seq->set_song_mute(! muted);
+                        }
+                    }
+                }
+            }
+            else
+            {
+                sequence * seq = perf().get_sequence(seqnum);
+                bool muted = seq->get_song_mute();
+                seq->set_song_mute(! muted);
+            }
             enqueue_draw();
         }
     }

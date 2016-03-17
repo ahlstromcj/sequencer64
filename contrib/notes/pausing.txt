@@ -1,6 +1,6 @@
 How to Add Pause Functionality?
 Chris Ahlstrom
-2016-02-13 to 2016-02-17
+2016-02-13 to 2016-03-16
 
 We would like to be able to pause the playback, and have it resume where
 it left off.  This feature would have to include the ability to have
@@ -32,7 +32,7 @@ reset(), to avoid changing m_last_tick.
 
 Now, in jack_assistant::stop(), all that is done is call
 jack_transport_stop().  Not much we can do there, unless we need to add
-code to preserve the JACK transport position.
+code to preserve the JACK transport position. (We do no need to.)
 
 The perfroll::stop_playing() function calls perfrom::stop_playing(),
 already covered.  Same for perfedit::stop_playing().

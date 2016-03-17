@@ -1,6 +1,6 @@
 Bugs and Additional Upgrade Ideas
 Chris Ahlstrom
-2015-10-27 to 2016-03-12 (New bugs)
+2015-10-27 to 2016-03-17 (New bugs)
 
 In no particular order...  "y" means "in progress", and "x" means it is
 basically done.
@@ -8,6 +8,8 @@ basically done.
 -  See BUG REPORTS below.  These are bug reports from other people.
 -  If a MIDI buss override number is provided, it is not applied to a new
    sequence.  Is this a bug?
+-  The GUI now comes up not showing the "pill" progress bar until the tune
+   starts. Fixed, was a comparison error in maintime::idle_progress().
 -  Get variable PPQN support fully working.
 -  Support for the Non Session Manager.
 -  Write up a procedure for using nsm-proxy as Daniel Appelt notes.

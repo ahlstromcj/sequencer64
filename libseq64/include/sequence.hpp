@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-02-15
+ * \updates       2016-03-17
  * \license       GNU GPLv2 or above
  *
  *  The functions add_list_var() and add_long_list() have been replaced by
@@ -893,15 +893,18 @@ public:
 
     /**
      *  Resets everything to zero.  This function is used when the sequencer
-     *  stops.  This function currently sets m_last_tick = 0, but we would like to
-     *  avoid that if doing a pause, rather than a stop, of playback.  However,
-     *  commenting out this setting doesn't have any effect that we can see with a
-     *  quick look at the user-interface.
+     *  stops.  This function currently sets m_last_tick = 0, but we would
+     *  like to avoid that if doing a pause, rather than a stop, of playback.
+     *  However, commenting out this setting doesn't have any effect that we
+     *  can see with a quick look at the user-interface.
+     *
+     * \param tick
+     *      Provides the optional tick value to set as "0".  It defaults to 0.
      */
 
-    void zero_markers ()
+    void zero_markers (midipulse tick = 0)
     {
-        set_orig_tick(0);
+        set_orig_tick(tick);
     }
 
     void play_note_on (int note);

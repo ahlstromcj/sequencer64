@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-02-15
+ * \updates       2016-03-17
  * \license       GNU GPLv2 or above
  *
  *  The "time" window is the horizontal bar at the upper right of the main
@@ -93,6 +93,13 @@ void
 maintime::on_realize ()
 {
     gui_drawingarea_gtk2::on_realize();
+
+    /*
+     * Odd, we now notice that the pill bar isn't showing until the tune
+     * starts to play.  Let's make sure it appears.  Doesn't work.
+     *
+     * (void) idle_progress(0);
+     */
 }
 
 /**
@@ -115,7 +122,7 @@ maintime::on_realize ()
 int
 maintime::idle_progress (midipulse ticks)
 {
-    if (ticks > 0)
+    if (ticks >= 0)                     /* ca 2016-03-17 to make bar appear */
     {
         int tick_x = (ticks % m_ppqn) * m_box_width / m_ppqn;
         int beat_x = ((ticks / m_beat_width) % m_ppqn) * m_box_less_pill / m_ppqn;
@@ -123,7 +130,7 @@ maintime::idle_progress (midipulse ticks)
         m_tick = ticks;
         clear_window();
         draw_rectangle(black(), 0, 0, m_box_width, m_box_height, false);
-        if (tick_x <= m_flash_x)                                          // flash
+        if (tick_x <= m_flash_x)       /* flash */
             draw_rectangle(grey(), 2, 2, m_flash_width, m_flash_height);
 
         draw_rectangle(black(), beat_x + 2, 2, m_pill_width, m_flash_height);

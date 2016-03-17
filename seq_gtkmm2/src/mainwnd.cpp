@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-02-18
+ * \updates       2016-03-17
  * \license       GNU GPLv2 or above
  *
  *  The main window holds the menu and the main controls of the application,
@@ -37,6 +37,27 @@
  *
  *  It can also create and bring up a second perfedit object, as a way
  *  to deal better with large sets of sequences.
+ *
+ * Pause:
+ *
+ *      We are researching how to pause.  It sort of works as desired if JACK
+ *      transport is selected, in that, upon pause and restart, the progress
+ *      bars pick up where they left off, as opposed to live mode, where the
+ *      progress bars go back to 0.
+ *
+ *      However, visibly, the progress bars behave badly when the song is
+ *      paused:
+ *
+ *          -   Main window.  The progress bars in each slot go back to
+ *              position 0.
+ *          -   Pattern editor.  The progress bars in each slot go back to
+ *              position 0.  If 0 is "off the screen", then the progress bar
+ *              isn't even seen.
+ *          -   Song editor.  Same as the pattern editor.
+ *
+ *      The progress pills, however, stay in place when paused.  They pick up
+ *      where they left off when played back in JACK, but restart at the
+ *      beginning in "ALSA" mode.
  */
 
 #include <cctype>

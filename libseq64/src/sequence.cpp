@@ -151,7 +151,7 @@ sequence::partial_assign (const sequence & rhs)
         for (int i = 0; i < c_midi_notes; i++)      /* no notes are playing */
             m_playing_notes[i] = 0;
 
-        zero_markers();                             /* reset */
+        zero_markers();                             /* reset to tick 0      */
         verify_and_link();
     }
 }
@@ -2261,10 +2261,13 @@ sequence::paste_trigger ()
 
 /**
  *  Provides a helper function simplify and speed up
- *  perform::reset_sequences().
+ *  perform::reset_sequences().  Note that, in live mode, the user controls
+ *  playback, while otherwise JACK or the performance/song editor controls
+ *  playback.  (We're still a bit confounded about these modes, alas.)
  *
  * \param live_mode
- *      True if JACK Live Mode is on.
+ *      True if live mode is on.  This means that JACK transport is not in
+ *      control of playback.
  */
 
 void
@@ -2273,7 +2276,7 @@ sequence::reset (bool live_mode)
     bool state = get_playing();
     off_playing_notes();
     set_playing(false);
-    zero_markers();                     /* also sets the "last-tick" value  */
+    zero_markers();                     /* sets the "last-tick" value   */
     if (! live_mode)
         set_playing(state);
 }

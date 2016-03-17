@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-02-18
+ * \updates       2016-03-17
  * \license       GNU GPLv2 or above
  *
  */
@@ -311,9 +311,12 @@ perfedit::perfedit
     );
     m_button_play->signal_clicked().connect
     (
-        mem_fun(*this, &perfedit::start_playing)
+        mem_fun(*this, &perfedit::toggle_playing)   /* ca 2016-03-17 */
     );
-    add_tooltip(m_button_play, "Begin playback at the L marker.");
+    add_tooltip
+    (
+        m_button_play, "Begin playback at the L marker. Toggles playback."
+    );
     m_hlbox->pack_end(*m_button_copy , false, false);
     m_hlbox->pack_end(*m_button_expand , false, false);
     m_hlbox->pack_end(*m_button_collapse , false, false);

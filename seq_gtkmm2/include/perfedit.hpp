@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-02-18
+ * \updates       2016-03-17
  * \license       GNU GPLv2 or above
  *
  */
@@ -235,6 +235,22 @@ private:
     void stop_playing ()
     {
         perf().stop_playing();
+    }
+
+    /**
+     *  Reverses the state of playback.  Meant only to be called when the
+     *  "Play" button is pressed.  Currently, the GUI does not change.
+     *  This function will ultimately act like a Pause/Play button, but
+     *  currently the pause functionality on works (partially) for JACK
+     *  transport.
+     */
+
+    void toggle_playing ()
+    {
+        if (rc().is_pattern_playing())
+            stop_playing();
+        else
+            start_playing();
     }
 
 private:            // callbacks

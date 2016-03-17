@@ -344,9 +344,9 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
     );
     m_button_play->signal_clicked().connect
     (
-        mem_fun(*this, &mainwnd::start_playing)
+        mem_fun(*this, &mainwnd::toggle_playing)    /* ca 2016-03-17 */
     );
-    add_tooltip(m_button_play, "Play the MIDI sequence.");
+    add_tooltip(m_button_play, "Play the MIDI sequence. Toggles playback.");
     startstophbox->pack_start(*m_button_play, Gtk::PACK_SHRINK);
 
     /*

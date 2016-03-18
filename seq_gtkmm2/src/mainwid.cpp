@@ -137,7 +137,9 @@ mainwid::draw_sequences_on_pixmap ()
     {
         draw_sequence_on_pixmap(offset);
 #ifdef USE_PAUSE_SUPPORT
-        m_last_tick_x[offset] = seq.get_last_tick();
+        // TODO:  FIGURE THIS OUT
+        // m_last_tick_x[offset] = seq.get_last_tick();
+        // m_last_tick_x[offset] = 0;
 #else
         m_last_tick_x[offset] = 0;
 #endif

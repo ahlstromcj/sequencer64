@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-03-17
+ * \updates       2016-03-19
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -1389,7 +1389,11 @@ perform::pause_playing ()
 #endif
         // set_start_tick(tick);
         set_running(false);
+#ifdef USE_PAUSE_SUPPORT                                    // VERY IFFY
+        reset_sequences(true);         /* sets the "last-tick" value   */
+#else
         reset_sequences();             /* sets the "last-tick" value   */
+#endif
         m_usemidiclock = false;
 #ifdef SEQ64_JACK_SUPPORT
     }
@@ -1526,6 +1530,20 @@ perform::all_notes_off ()
  */
 
 void
+#ifdef USE_PAUSE_SUPPORT                                    // VERY IFFY
+perform::reset_sequences (bool pause)
+{
+    if (! pause)
+    {
+        for (int i = 0; i < m_sequence_max; ++i)
+        {
+            if (is_active(i))
+                m_seqs[i]->reset(m_playback_mode, pause);
+        }
+    }
+    m_master_bus.flush();                           /* flush the MIDI buss  */
+}
+#else
 perform::reset_sequences ()
 {
     for (int i = 0; i < m_sequence_max; ++i)
@@ -1535,6 +1553,7 @@ perform::reset_sequences ()
     }
     m_master_bus.flush();                       /* flush the MIDI buss      */
 }
+#endif  // USE_PAUSE_SUPPORT
 
 /**
  *  Creates the output thread using output_thread_func().

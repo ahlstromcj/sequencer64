@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-03-17
+ * \updates       2016-03-18
  * \license       GNU GPLv2 or above
  *
  *  This class still has way too many members, even with the JACK and
@@ -834,7 +834,11 @@ public:
         return is_mseq_valid(seq) ? m_seqs[seq] : nullptr ;
     }
 
+#ifdef USE_PAUSE_SUPPORT                                    // VERY IFFY
+    void reset_sequences (bool pause = false);
+#else
     void reset_sequences ();
+#endif
 
     /**
      *  Plays all notes to the current tick.

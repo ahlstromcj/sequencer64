@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-03-17
+ * \updates       2016-03-18
  * \license       GNU GPLv2 or above
  *
  *  The functions add_list_var() and add_long_list() have been replaced by
@@ -55,6 +55,15 @@
 #include "mutex.hpp"
 #include "scales.h"                     /* key and scale constants  */
 #include "triggers.hpp"                 /* seq64::triggers, etc.    */
+
+/**
+ *  An EXPERIMENTAL macro to enable pause functionality.  At the risk of
+ *  messy-looking code, we need to be able to turn this functionality off
+ *  until we are sure it is working in every aspect.  More complex than one
+ *  would think.
+ */
+
+#define USE_PAUSE_SUPPORT
 
 /**
  *  Provides a new option to save the Time Signature and Tempo data that may

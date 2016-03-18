@@ -339,6 +339,7 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
     );
     add_tooltip(m_button_stop, "Stop playing the MIDI sequence.");
     startstophbox->pack_start(*m_button_stop, Gtk::PACK_SHRINK);
+    m_button_stop->set_sensitive(false);
 
     m_button_pause = manage(new Gtk::Button());                  // pause button
     m_button_pause->add
@@ -351,6 +352,7 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
     );
     add_tooltip(m_button_pause, "Pause/Stop the MIDI sequence.");
     startstophbox->pack_start(*m_button_pause, Gtk::PACK_SHRINK);
+    m_button_pause->set_sensitive(false);
 
     m_button_play = manage(new Gtk::Button());                  // play button
     m_button_play->add
@@ -363,6 +365,7 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
     );
     add_tooltip(m_button_play, "Play the MIDI sequence.");
     startstophbox->pack_start(*m_button_play, Gtk::PACK_SHRINK);
+    m_button_play->set_sensitive(true);
 
     /*
      * BPM spin button with label.
@@ -1111,6 +1114,59 @@ mainwnd::edit_callback_notepad ()
 {
     const std::string & text = m_entry_notes->get_text();
     perf().set_screen_set_notepad(text);
+}
+
+/**
+ *  Starts playing of the song.  The rc_settings::jack_start_mode()
+ *  function is used (if jack is running) to determine if the playback
+ *  mode is "live" (false) or "song" (true).  An accessor to
+ *  perform::start_playing().
+ *
+ * \note
+ *      This overrides the old behavior of playing live mode if the song
+ *      is started from the main window.  So let's go back to the way
+ *      seq24 handles it.  We could also make it dependent on the --legacy
+ *      option, but that's too much trouble for now.
+ */
+
+void
+mainwnd::start_playing ()                   // Play!
+{
+    perf().start_playing();                 // legacy behavior
+    m_button_pause->set_sensitive(true);
+    m_button_stop->set_sensitive(true);
+}
+
+/**
+ *  Pauses the playing of the song, leaving the progress bar where it
+ *  stopped.  Currently, it is just the same as stop_playing(), but we
+ *  will get it to work.
+ */
+
+void
+mainwnd::pause_playing ()                   // Stop in place!
+{
+    perf().pause_playing();                 // resets is_pattern_playing flag
+    m_main_wid->update_sequences_on_window();
+    m_button_pause->set_sensitive(false);
+    m_button_stop->set_sensitive(false);
+    m_button_play->set_sensitive(true);
+}
+
+/**
+ *  Stops the playing of the song.  An accessor to perform's
+ *  stop_playing() function.  Also calls the mainwid's
+ *  update_sequences_on_window() function.
+ */
+
+void
+mainwnd::stop_playing ()                    // Stop!
+{
+    perf().stop_playing();                  // resets is_pattern_playing flag
+    m_main_wid->update_sequences_on_window();
+    m_button_pause->set_sensitive(false);
+    m_button_stop->set_sensitive(false);
+    m_button_play->set_sensitive(true);
 }
 
 /**

@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-03-17
+ * \updates       2016-03-18
  * \license       GNU GPLv2 or above
  *
  */
@@ -213,47 +213,9 @@ private:
     void undo ();
     void popup_menu (Gtk::Menu * menu);
     bool timeout ();
-
-    /**
-     *  Implement the playing.  JACK will be used if it is present and, in
-     *  the application, enabled.  This call also sets
-     *  rc().is_pattern_playing(true), indirectly.  Note that, if the
-     *  JACK-start-mode value is false, the perfedit's unmute/mute feature is
-     *  disabled.  We no longer hardwire the boolean parameter to "true".
-     *  We might reconsider that at some point, and indeed we have reverted to
-     *  legacy seq24 behavior, by passing true to perform::start_playing().
-     */
-
-    void start_playing ()
-    {
-        /*
-         * bool usejack = rc().jack_start_mode(); // \change ca 2016-01-15
-         * perf().start_playing(usejack);         // careful now, see perform!!!!
-         */
-
-         perf().start_playing(true);
-    }
-
-    /**
-     *  Pauses the playing of the song, leaving the progress bar where it
-     *  stopped.  Currently, it is just the same as stop_playing(), but we
-     *  will get it to work.
-     */
-
-    void pause_playing ()                   // Stop in place!
-    {
-        perf().pause_playing();
-    }
-
-    /**
-     *  Stop the playing.  This call also sets rc().is_pattern_playing(true),
-     *  indirectly.
-     */
-
-    void stop_playing ()
-    {
-        perf().stop_playing();
-    }
+    void start_playing ();
+    void pause_playing ();
+    void stop_playing ();
 
     /**
      *  Reverses the state of playback.  Meant only to be called when the

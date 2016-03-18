@@ -258,47 +258,9 @@ private:
     void edit_callback_notepad ();
     bool timer_callback ();
 
-    /**
-     *  Starts playing of the song.  The rc_settings::jack_start_mode()
-     *  function is used (if jack is running) to determine if the playback
-     *  mode is "live" (false) or "song" (true).  An accessor to
-     *  perform::start_playing().
-     *
-     * \note
-     *      This overrides the old behavior of playing live mode if the song
-     *      is started from the main window.  So let's go back to the way
-     *      seq24 handles it.  We could also make it dependent on the --legacy
-     *      option, but that's too much trouble for now.
-     */
-
-    void start_playing ()                   // Play!
-    {
-        perf().start_playing();             // legacy behavior
-    }
-
-    /**
-     *  Pauses the playing of the song, leaving the progress bar where it
-     *  stopped.  Currently, it is just the same as stop_playing(), but we
-     *  will get it to work.
-     */
-
-    void pause_playing ()                   // Stop in place!
-    {
-        perf().pause_playing();             // resets is_pattern_playing flag
-        m_main_wid->update_sequences_on_window();
-    }
-
-    /**
-     *  Stops the playing of the song.  An accessor to perform's
-     *  stop_playing() function.  Also calls the mainwid's
-     *  update_sequences_on_window() function.
-     */
-
-    void stop_playing ()                    // Stop!
-    {
-        perf().stop_playing();              // resets is_pattern_playing flag
-        m_main_wid->update_sequences_on_window();
-    }
+    void start_playing ();
+    void pause_playing ();
+    void stop_playing ();
 
     /**
      *  Reverses the state of playback.  Meant only to be called when the

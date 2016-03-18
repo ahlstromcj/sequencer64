@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-03-17
+ * \updates       2016-03-18
  * \license       GNU GPLv2 or above
  *
  */
@@ -307,6 +307,7 @@ perfedit::perfedit
         mem_fun(*this, &perfedit::stop_playing)
     );
     add_tooltip(m_button_stop, "Stop playback.");
+    m_button_stop->set_sensitive(false);
 
     m_button_pause = manage(new Gtk::Button());                  // pause button
     m_button_pause->add
@@ -318,6 +319,7 @@ perfedit::perfedit
         mem_fun(*this, &perfedit::pause_playing)            /* ca 2016-03-17 */
     );
     add_tooltip(m_button_pause, "Pause/Stop the MIDI sequence.");
+    m_button_pause->set_sensitive(false);
 
     m_button_play->add
     (
@@ -331,6 +333,7 @@ perfedit::perfedit
     (
         m_button_play, "Begin playback at the L marker."
     );
+    m_button_play->set_sensitive(true);
 
     m_hlbox->pack_end(*m_button_copy , false, false);
     m_hlbox->pack_end(*m_button_expand , false, false);
@@ -595,6 +598,59 @@ perfedit::timeout ()
     m_perfroll->redraw_progress();
     m_perfnames->redraw_dirty_sequences();
     return true;
+}
+
+/**
+ *  Implement the playing.  JACK will be used if it is present and, in
+ *  the application, enabled.  This call also sets
+ *  rc().is_pattern_playing(true), indirectly.  Note that, if the
+ *  JACK-start-mode value is false, the perfedit's unmute/mute feature is
+ *  disabled.  We no longer hardwire the boolean parameter to "true".
+ *  We might reconsider that at some point, and indeed we have reverted to
+ *  legacy seq24 behavior, by passing true to perform::start_playing().
+ */
+
+void
+perfedit::start_playing ()
+{
+    /*
+     * bool usejack = rc().jack_start_mode(); // \change ca 2016-01-15
+     * perf().start_playing(usejack);         // careful now, see perform!!!!
+     */
+
+    perf().start_playing(true);
+    m_button_play->set_sensitive(false);
+    m_button_pause->set_sensitive(true);
+    m_button_stop->set_sensitive(true);
+}
+
+/**
+ *  Pauses the playing of the song, leaving the progress bar where it
+ *  stopped.  Currently, it is just the same as stop_playing(), but we
+ *  will get it to work.
+ */
+
+void
+perfedit::pause_playing ()                   // Stop in place!
+{
+    perf().pause_playing();
+    m_button_play->set_sensitive(true);
+    m_button_pause->set_sensitive(false);
+    m_button_stop->set_sensitive(false);
+}
+
+/**
+ *  Stop the playing.  This call also sets rc().is_pattern_playing(true),
+ *  indirectly.
+ */
+
+void
+perfedit::stop_playing ()
+{
+    perf().stop_playing();
+    m_button_play->set_sensitive(true);
+    m_button_pause->set_sensitive(false);
+    m_button_stop->set_sensitive(false);
 }
 
 /**

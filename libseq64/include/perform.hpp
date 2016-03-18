@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-03-16
+ * \updates       2016-03-17
  * \license       GNU GPLv2 or above
  *
  *  This class still has way too many members, even with the JACK and
@@ -993,6 +993,7 @@ public:
     }
 
     void start_playing (bool jackflag = false);
+    void pause_playing ();
 
     /**
      *  Encapsulates a series of calls used in mainwnd.

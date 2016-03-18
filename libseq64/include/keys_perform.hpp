@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-09-13
- * \updates       2015-11-08
+ * \updates       2016-03-17
  * \license       GNU GPLv2 or above
  *
  */
@@ -65,10 +65,8 @@ struct keys_perform_transfer
 };
 
 /**
- *  This class supports the performance mode.
- *
- *  It has way too many data members, many of the public.
- *  Might be ripe for refactoring.
+ *  This class supports the performance mode.  It provides a way a mapping
+ *  keystrokes to sequencer actions and song settings.
  */
 
 class keys_perform

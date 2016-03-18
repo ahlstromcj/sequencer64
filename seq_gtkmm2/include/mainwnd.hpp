@@ -151,6 +151,12 @@ private:
     Gtk::Button * m_button_stop;
 
     /**
+     *  Implements the yellow two-bar pause button.
+     */
+
+    Gtk::Button * m_button_pause;
+
+    /**
      *  Implements the green triangle play button.
      */
 
@@ -267,30 +273,19 @@ private:
 
     void start_playing ()                   // Play!
     {
-        /*
-         * \change ca 2016-02-06
-         *
-         * bool usejack = rc().jack_start_mode();
-         * perf().start_playing(usejack);   // also sets is_pattern_playing flag
-         */
-
         perf().start_playing();             // legacy behavior
     }
 
     /**
-     *  Reverses the state of playback.  Meant only to be called when the
-     *  "Play" button is pressed.  Currently, the GUI does not change.
-     *  This function will ultimately act like a Pause/Play button, but
-     *  currently the pause functionality on works (partially) for JACK
-     *  transport.
+     *  Pauses the playing of the song, leaving the progress bar where it
+     *  stopped.  Currently, it is just the same as stop_playing(), but we
+     *  will get it to work.
      */
 
-    void toggle_playing ()
+    void pause_playing ()                   // Stop in place!
     {
-        if (rc().is_pattern_playing())
-            stop_playing();
-        else
-            start_playing();
+        perf().pause_playing();             // resets is_pattern_playing flag
+        m_main_wid->update_sequences_on_window();
     }
 
     /**
@@ -299,10 +294,26 @@ private:
      *  update_sequences_on_window() function.
      */
 
-    void stop_playing ()                // Stop!
+    void stop_playing ()                    // Stop!
     {
-        perf().stop_playing();          // also resets is_pattern_playing flag
+        perf().stop_playing();              // resets is_pattern_playing flag
         m_main_wid->update_sequences_on_window();
+    }
+
+    /**
+     *  Reverses the state of playback.  Meant only to be called when the
+     *  "Play" button is pressed.  Currently, the GUI does not change.
+     *  This function will ultimately act like a Pause/Play button, but
+     *  currently the pause functionality on works (partially) for JACK
+     *  transport.  Currently not used.
+     */
+
+    void toggle_playing ()
+    {
+        if (rc().is_pattern_playing())
+            stop_playing();
+        else
+            start_playing();
     }
 
     /**

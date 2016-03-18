@@ -136,7 +136,11 @@ mainwid::draw_sequences_on_pixmap ()
     for (int s = 0; s < m_screenset_slots; ++s, ++offset)
     {
         draw_sequence_on_pixmap(offset);
+#ifdef USE_PAUSE_SUPPORT
+        m_last_tick_x[offset] = seq.get_last_tick();
+#else
         m_last_tick_x[offset] = 0;
+#endif
     }
 }
 

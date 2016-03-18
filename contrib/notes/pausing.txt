@@ -1,6 +1,6 @@
 How to Add Pause Functionality?
 Chris Ahlstrom
-2016-02-13 to 2016-03-16
+2016-02-13 to 2016-03-17
 
 We would like to be able to pause the playback, and have it resume where
 it left off.  This feature would have to include the ability to have
@@ -17,10 +17,14 @@ jack_assistant::stop() and, if jack is NOT running, inner_stop().
 
 The perform::inner_stop() function calls reset_sequences(), which calls
 sequence::reset() for each sequence.  That calls zero_markers(), which
-just sets m_last_tick = 0.  This member is also set by
-sequence::set_orig_tick().  In sequence::play(), the starting tick is set
-to m_last_tick.  The triggers::play() function also bases the starting
-tick on sequence::m_last_tick.
+just sets m_last_tick = 0 by calling sequence::set_orig_tick(0).
+
+    -   If we are pausing, then we should skip this call to
+        zero_markers(), or pass sequence::m_last_tick to it.
+
+In sequence::play(), the starting tick is set to m_last_tick.  The
+triggers::play() function also bases the starting tick on
+sequence::m_last_tick.
 
 So one idea is to add a pause flag to inner_stop(), reset_sequences(), and
 reset(), to avoid changing m_last_tick.
@@ -29,6 +33,15 @@ reset(), to avoid changing m_last_tick.
     make sure that we do not break MIDI Start, Continue, and Stop.  Also,
     we need to test these and Song Position before we start monkeying with
     a pause functionality.
+
+    We will add a pause button and pause functions to isolate the pause
+    functionality from the stop and play functionality somewhat.
+
+In mainwid::draw_sequences_on_pixmap(), the m_last_tick_x[] values are
+set to 0.
+
+    -   They should set it to the sequence m_last_tick value, as returned
+        by function xxxxxx().
 
 Now, in jack_assistant::stop(), all that is done is call
 jack_transport_stop().  Not much we can do there, unless we need to add

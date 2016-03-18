@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-03-04
+ * \updates       2016-03-17
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -1370,6 +1370,34 @@ perform::start_playing (bool jackflag)
 }
 
 /**
+ *  EXPERIMENTAL.
+ *
+ *  Pause playback, so that progress bars stay where they are, and playback
+ *  always resumes where it left off, even in ALSA mode.
+ *
+ *  Currently the same as stop_playing(), we're research the whole sequence of
+ *  stopping and starting.
+ */
+
+void
+perform::pause_playing ()
+{
+#ifdef SEQ64_JACK_SUPPORT
+    m_jack_asst.stop();                 // stop_jack()
+    if (! m_jack_asst.is_running())     // stop(), inner_stop()
+    {
+#endif
+        // set_start_tick(tick);
+        set_running(false);
+        reset_sequences();             /* sets the "last-tick" value   */
+        m_usemidiclock = false;
+#ifdef SEQ64_JACK_SUPPORT
+    }
+#endif
+    rc().is_pattern_playing(false);
+}
+
+/**
  *  If JACK is supported and running, sets the position of the transport.
  *
  * If we run "klick -j -P" and then start Sequencer64, we get:
@@ -1720,6 +1748,10 @@ perform::output_func ()
             pad.js_clock_tick = m_starting_tick;
             set_orig_ticks(m_starting_tick);                // what member?
         }
+#ifdef USE_PAUSE_SUPPORT                                    // VERY IFFY
+        else
+            set_orig_ticks(m_starting_tick);                // what member?
+#endif
 
         int ppqn = m_master_bus.get_ppqn();
 
@@ -1876,16 +1908,15 @@ perform::output_func ()
             {
                 if (m_looping && m_playback_mode)
                 {
-                    if (pad.js_current_tick >= get_right_tick())
+                    midipulse rtick = get_right_tick();
+                    if (pad.js_current_tick >= rtick)
                     {
-                        double leftover_tick =
-                            pad.js_current_tick - get_right_tick();
-
-                        play(get_right_tick() - 1);             // play!
+                        midipulse ltick = get_left_tick();
+                        double leftover_tick = pad.js_current_tick - rtick;
+                        play(rtick - 1);                        // play!
                         reset_sequences();                      // reset!
-                        set_orig_ticks(get_left_tick());
-                        pad.js_current_tick =
-                            double(get_left_tick()) + leftover_tick;
+                        set_orig_ticks(ltick);
+                        pad.js_current_tick = double(ltick) + leftover_tick;
                     }
                 }
                 play(long(pad.js_current_tick));                // play!

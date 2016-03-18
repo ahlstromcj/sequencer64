@@ -112,6 +112,13 @@ private:
     Gtk::Button * m_button_snap;
     Gtk::Entry * m_entry_snap;
     Gtk::Button * m_button_stop;
+
+    /**
+     *  Implements the yellow two-bar pause button.
+     */
+
+    Gtk::Button * m_button_pause;
+
     Gtk::Button * m_button_play;
     Gtk::ToggleButton * m_button_loop;
     Gtk::Button * m_button_expand;
@@ -228,6 +235,17 @@ private:
     }
 
     /**
+     *  Pauses the playing of the song, leaving the progress bar where it
+     *  stopped.  Currently, it is just the same as stop_playing(), but we
+     *  will get it to work.
+     */
+
+    void pause_playing ()                   // Stop in place!
+    {
+        perf().pause_playing();
+    }
+
+    /**
      *  Stop the playing.  This call also sets rc().is_pattern_playing(true),
      *  indirectly.
      */
@@ -242,7 +260,7 @@ private:
      *  "Play" button is pressed.  Currently, the GUI does not change.
      *  This function will ultimately act like a Pause/Play button, but
      *  currently the pause functionality on works (partially) for JACK
-     *  transport.
+     *  transport.  Currently not used.
      */
 
     void toggle_playing ()

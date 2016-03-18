@@ -53,8 +53,9 @@
 #include "perfroll.hpp"
 #include "perftime.hpp"
 
-#include "pixmaps/snap.xpm"
+#include "pixmaps/pause.xpm"
 #include "pixmaps/play2.xpm"
+#include "pixmaps/snap.xpm"
 #include "pixmaps/stop.xpm"
 #include "pixmaps/expand.xpm"
 #include "pixmaps/collapse.xpm"
@@ -105,6 +106,7 @@ perfedit::perfedit
     m_button_snap       (manage(new Gtk::Button())),
     m_entry_snap        (manage(new Gtk::Entry())),
     m_button_stop       (manage(new Gtk::Button())),
+    m_button_pause      (manage(new Gtk::Button())),
     m_button_play       (manage(new Gtk::Button())),
     m_button_loop       (manage(new Gtk::ToggleButton())),
     m_button_expand     (manage(new Gtk::Button())),
@@ -305,23 +307,37 @@ perfedit::perfedit
         mem_fun(*this, &perfedit::stop_playing)
     );
     add_tooltip(m_button_stop, "Stop playback.");
+
+    m_button_pause = manage(new Gtk::Button());                  // pause button
+    m_button_pause->add
+    (
+        *manage(new Gtk::Image(Gdk::Pixbuf::create_from_xpm_data(pause_xpm)))
+    );
+    m_button_pause->signal_clicked().connect
+    (
+        mem_fun(*this, &perfedit::pause_playing)            /* ca 2016-03-17 */
+    );
+    add_tooltip(m_button_pause, "Pause/Stop the MIDI sequence.");
+
     m_button_play->add
     (
         *manage(new Gtk::Image(Gdk::Pixbuf::create_from_xpm_data(play2_xpm)))
     );
     m_button_play->signal_clicked().connect
     (
-        mem_fun(*this, &perfedit::toggle_playing)   /* ca 2016-03-17 */
+        mem_fun(*this, &perfedit::toggle_playing)           /* ca 2016-03-17 */
     );
     add_tooltip
     (
-        m_button_play, "Begin playback at the L marker. Toggles playback."
+        m_button_play, "Begin playback at the L marker."
     );
+
     m_hlbox->pack_end(*m_button_copy , false, false);
     m_hlbox->pack_end(*m_button_expand , false, false);
     m_hlbox->pack_end(*m_button_collapse , false, false);
     m_hlbox->pack_end(*m_button_undo , false, false);
     m_hlbox->pack_start(*m_button_stop , false, false);
+    m_hlbox->pack_start(*m_button_pause , false, false);
     m_hlbox->pack_start(*m_button_play , false, false);
     m_hlbox->pack_start(*m_button_loop , false, false);
     m_hlbox->pack_start(*(manage(new Gtk::VSeparator())), false, false, 4);

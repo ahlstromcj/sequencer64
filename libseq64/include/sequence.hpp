@@ -902,15 +902,19 @@ public:
      *      Provides the optional tick value to set as "0".  It defaults to 0.
      */
 
-    void zero_markers (midipulse tick = 0)
+    void zero_markers ()
     {
-        set_orig_tick(tick);
+        set_orig_tick(0);
     }
 
     void play_note_on (int note);
     void play_note_off (int note);
     void off_playing_notes ();
-    void reset (bool live_mode);        // \new ca 2016-02-06
+#ifdef USE_PAUSE_SUPPORT
+    void reset (bool live_mode, bool pause = false);
+#else
+    void reset (bool live_mode);
+#endif
     void reset_draw_marker ();
     void reset_draw_trigger_marker ();
     draw_type get_next_note_event

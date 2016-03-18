@@ -2271,12 +2271,23 @@ sequence::paste_trigger ()
  */
 
 void
+#ifdef USE_PAUSE_SUPPORT
+sequence::reset (bool live_mode, bool pause)
+#else
 sequence::reset (bool live_mode)
+#endif
 {
     bool state = get_playing();
     off_playing_notes();
     set_playing(false);
+#ifdef USE_PAUSE_SUPPORT
+    if (pause)
+        set_orig_tick(m_last_tick);
+    else
+        zero_markers();
+#else
     zero_markers();                     /* sets the "last-tick" value   */
+#endif
     if (! live_mode)
         set_playing(state);
 }
@@ -2503,6 +2514,9 @@ sequence::remove_all ()
  *  Returns the last tick played, and is used by the editor's idle function.
  *  If m_length is 0, this function returns m_last_tick - m_trigger_offset, to
  *  avoid an arithmetic exception.  Should we return 0 instead?
+ *
+ *  Note that seqroll calls this function to help get the location of the
+ *  progress bar.  What does perfedit do?
  */
 
 midipulse

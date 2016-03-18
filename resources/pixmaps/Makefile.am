@@ -6,7 +6,7 @@
 # \library    	sequencer64 application
 # \author     	Chris Ahlstrom
 # \date       	2015-09-11
-# \update      2016-03-04
+# \update      2016-03-17
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -40,6 +40,7 @@ EXTRA_DIST = \
 	midi.xpm \
 	note_length.xpm \
 	paia_seq_24x24.xpm \
+	pause.xpm \
 	perfedit.xpm \
 	play2.xpm \
 	play.xpm \

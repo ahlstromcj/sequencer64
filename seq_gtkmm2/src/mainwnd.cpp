@@ -87,6 +87,7 @@
 #include "midifile.hpp"
 #include "options.hpp"
 #include "perfedit.hpp"
+#include "pixmaps/pause.xpm"
 #include "pixmaps/play2.xpm"
 #include "pixmaps/stop.xpm"
 #include "pixmaps/learn.xpm"
@@ -139,15 +140,16 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
     m_ppqn                  (choose_ppqn(ppqn)),
     m_main_wid              (manage(new mainwid(p))),
     m_main_time             (manage(new maintime(p, ppqn))),
-    m_perf_edit             (new perfedit(p, allowperf2, ppqn)),
+    m_perf_edit             (new perfedit(p, false /*allowperf2*/, ppqn)),
     m_perf_edit_2
     (
         allowperf2 ? new perfedit(p, true, ppqn) : nullptr
     ),
     m_options               (nullptr),
     m_main_cursor           (),
-    m_button_learn          (nullptr),
+    m_button_learn          (nullptr),              // compare to perfedit!
     m_button_stop           (nullptr),
+    m_button_pause          (nullptr),
     m_button_play           (nullptr),
     m_button_perfedit       (nullptr),
     m_spinbutton_bpm        (nullptr),
@@ -337,6 +339,19 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
     );
     add_tooltip(m_button_stop, "Stop playing the MIDI sequence.");
     startstophbox->pack_start(*m_button_stop, Gtk::PACK_SHRINK);
+
+    m_button_pause = manage(new Gtk::Button());                  // pause button
+    m_button_pause->add
+    (
+        *manage(new Gtk::Image(Gdk::Pixbuf::create_from_xpm_data(pause_xpm)))
+    );
+    m_button_pause->signal_clicked().connect
+    (
+        mem_fun(*this, &mainwnd::pause_playing)             /* ca 2016-03-17 */
+    );
+    add_tooltip(m_button_pause, "Pause/Stop the MIDI sequence.");
+    startstophbox->pack_start(*m_button_pause, Gtk::PACK_SHRINK);
+
     m_button_play = manage(new Gtk::Button());                  // play button
     m_button_play->add
     (
@@ -344,9 +359,9 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
     );
     m_button_play->signal_clicked().connect
     (
-        mem_fun(*this, &mainwnd::toggle_playing)    /* ca 2016-03-17 */
+        mem_fun(*this, &mainwnd::start_playing)             /* ca 2016-03-17 */
     );
-    add_tooltip(m_button_play, "Play the MIDI sequence. Toggles playback.");
+    add_tooltip(m_button_play, "Play the MIDI sequence.");
     startstophbox->pack_start(*m_button_play, Gtk::PACK_SHRINK);
 
     /*

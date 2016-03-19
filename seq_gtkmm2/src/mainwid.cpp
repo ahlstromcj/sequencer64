@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-03-04
+ * \updates       2016-03-19
  * \license       GNU GPLv2 or above
  *
  *  Note that this representation is, in a sense, inside the mainwnd
@@ -136,7 +136,7 @@ mainwid::draw_sequences_on_pixmap ()
     for (int s = 0; s < m_screenset_slots; ++s, ++offset)
     {
         draw_sequence_on_pixmap(offset);
-#ifdef USE_PAUSE_SUPPORT
+#ifdef SEQ64_PAUSE_SUPPORT
         // TODO:  FIGURE THIS OUT
         // m_last_tick_x[offset] = seq.get_last_tick();
         // m_last_tick_x[offset] = 0;

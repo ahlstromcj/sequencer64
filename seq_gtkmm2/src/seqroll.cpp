@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-02-20
+ * \updates       2016-03-19
  * \license       GNU GPLv2 or above
  *
  *  There are a large number of existing items to discuss.  But for now let's
@@ -74,6 +74,7 @@
 #include "app_limits.h"                 /* SEQ64_SOLID_PIANOROLL_GRID   */
 #include "event.hpp"
 #include "gdk_basic_keys.h"
+#include "keystroke.hpp"
 #include "scales.h"
 #include "seqroll.hpp"
 #include "seqdata.hpp"
@@ -1243,25 +1244,13 @@ bool
 seqroll::on_key_press_event (GdkEventKey * ev)
 {
     bool result = false;
-    bool startstop = OR_EQUIVALENT(ev->keyval, PREFKEY(start), PREFKEY(stop));
+    keystroke k(ev->keyval, SEQ64_KEYSTROKE_PRESS, ev->state);
+    bool startstop = perf().playback_key_event(k);
     if (startstop)
     {
-        bool stop = PREFKEY(start) == PREFKEY(stop) ?
-            perf().is_playing() : ev->keyval == PREFKEY(stop) ;
-
-        if (stop)
-            perf().stop_playing();
-        else
-        {
-            perf().start_playing();
-
-            /*
-             * Alternate code does not apply, so do not enable it!
-             *
-             *  bool usejack = rc().jack_start_mode();
-             *  perf().start_playing(usejack);
-             */
-        }
+        /*
+         * No code, handled in perform::playback_key_event() now.
+         */
     }
     else if (CAST_EQUIVALENT(ev->type, SEQ64_KEY_PRESS)) // this really needed?
     {

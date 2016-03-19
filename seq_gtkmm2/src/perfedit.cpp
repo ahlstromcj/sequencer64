@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-03-18
+ * \updates       2016-03-19
  * \license       GNU GPLv2 or above
  *
  */
@@ -48,6 +48,7 @@
 
 #include "gdk_basic_keys.h"
 #include "gtk_helpers.h"
+#include "keystroke.hpp"
 #include "perfedit.hpp"
 #include "perfnames.hpp"
 #include "perfroll.hpp"
@@ -307,8 +308,9 @@ perfedit::perfedit
         mem_fun(*this, &perfedit::stop_playing)
     );
     add_tooltip(m_button_stop, "Stop playback.");
-    m_button_stop->set_sensitive(false);
+    m_button_stop->set_sensitive(true);
 
+#ifdef SEQ64_PAUSE_SUPPORT
     m_button_pause = manage(new Gtk::Button());                  // pause button
     m_button_pause->add
     (
@@ -319,7 +321,8 @@ perfedit::perfedit
         mem_fun(*this, &perfedit::pause_playing)            /* ca 2016-03-17 */
     );
     add_tooltip(m_button_pause, "Pause/Stop the MIDI sequence.");
-    m_button_pause->set_sensitive(false);
+    m_button_pause->set_sensitive(true);
+#endif  // SEQ64_PAUSE_SUPPORT
 
     m_button_play->add
     (
@@ -327,7 +330,7 @@ perfedit::perfedit
     );
     m_button_play->signal_clicked().connect
     (
-        mem_fun(*this, &perfedit::toggle_playing)           /* ca 2016-03-17 */
+        mem_fun(*this, &perfedit::start_playing)
     );
     add_tooltip
     (
@@ -340,7 +343,9 @@ perfedit::perfedit
     m_hlbox->pack_end(*m_button_collapse , false, false);
     m_hlbox->pack_end(*m_button_undo , false, false);
     m_hlbox->pack_start(*m_button_stop , false, false);
+#ifdef SEQ64_PAUSE_SUPPORT
     m_hlbox->pack_start(*m_button_pause , false, false);
+#endif
     m_hlbox->pack_start(*m_button_play , false, false);
     m_hlbox->pack_start(*m_button_loop , false, false);
     m_hlbox->pack_start(*(manage(new Gtk::VSeparator())), false, false, 4);
@@ -619,9 +624,11 @@ perfedit::start_playing ()
      */
 
     perf().start_playing(true);
-    m_button_play->set_sensitive(false);
-    m_button_pause->set_sensitive(true);
+#ifdef SEQ64_PAUSE_SUPPORT
     m_button_stop->set_sensitive(true);
+    m_button_pause->set_sensitive(true);
+    m_button_play->set_sensitive(false);
+#endif
 }
 
 /**
@@ -634,9 +641,11 @@ void
 perfedit::pause_playing ()                   // Stop in place!
 {
     perf().pause_playing();
-    m_button_play->set_sensitive(true);
-    m_button_pause->set_sensitive(false);
+#ifdef SEQ64_PAUSE_SUPPORT
     m_button_stop->set_sensitive(false);
+    m_button_pause->set_sensitive(false);
+    m_button_play->set_sensitive(true);
+#endif
 }
 
 /**
@@ -648,9 +657,11 @@ void
 perfedit::stop_playing ()
 {
     perf().stop_playing();
-    m_button_play->set_sensitive(true);
-    m_button_pause->set_sensitive(false);
+#ifdef SEQ64_PAUSE_SUPPORT
     m_button_stop->set_sensitive(false);
+    m_button_pause->set_sensitive(false);
+    m_button_play->set_sensitive(true);
+#endif
 }
 
 /**
@@ -695,18 +706,9 @@ perfedit::on_key_press_event (GdkEventKey * ev)
          *  to both triggers.
          */
 
-        bool notoggle = PREFKEY(start) != PREFKEY(stop);
-        if (ev->keyval == PREFKEY(start) && (notoggle || ! perf().is_running()))
-        {
-            start_playing();
-            return true;
-        }
-        if (ev->keyval == PREFKEY(stop) && (notoggle || perf().is_running()))
-        {
-            stop_playing();
-            return true;
-        }
-        if (ev->keyval == PREFKEY(start) || ev->keyval == PREFKEY(stop))
+        keystroke k(ev->keyval, SEQ64_KEYSTROKE_PRESS, ev->state);
+        bool startstop = perf().playback_key_event(k);
+        if (startstop)
             event_was_handled = true;
     }
 

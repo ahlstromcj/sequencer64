@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-03-17
+ * \updates       2016-03-19
  * \license       GNU GPLv2 or above
  *
  *  The main window holds the menu and the main controls of the application,
@@ -339,8 +339,9 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
     );
     add_tooltip(m_button_stop, "Stop playing the MIDI sequence.");
     startstophbox->pack_start(*m_button_stop, Gtk::PACK_SHRINK);
-    m_button_stop->set_sensitive(false);
+    m_button_stop->set_sensitive(true);
 
+#ifdef SEQ64_PAUSE_SUPPORT
     m_button_pause = manage(new Gtk::Button());                  // pause button
     m_button_pause->add
     (
@@ -352,7 +353,8 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
     );
     add_tooltip(m_button_pause, "Pause/Stop the MIDI sequence.");
     startstophbox->pack_start(*m_button_pause, Gtk::PACK_SHRINK);
-    m_button_pause->set_sensitive(false);
+    m_button_pause->set_sensitive(true);
+#endif  // SEQ64_PAUSE_SUPPORT
 
     m_button_play = manage(new Gtk::Button());                  // play button
     m_button_play->add
@@ -1133,14 +1135,17 @@ void
 mainwnd::start_playing ()                   // Play!
 {
     perf().start_playing();                 // legacy behavior
-    m_button_pause->set_sensitive(true);
+#ifdef SEQ64_PAUSE_SUPPORT
     m_button_stop->set_sensitive(true);
+    m_button_pause->set_sensitive(true);
+    m_button_play->set_sensitive(false);
+#endif
 }
 
 /**
- *  Pauses the playing of the song, leaving the progress bar where it
- *  stopped.  Currently, it is just the same as stop_playing(), but we
- *  will get it to work.
+ *  Pauses the playing of the song, leaving the progress bar where it stopped.
+ *  Currently, it is just the same as stop_playing(), but we will get it to
+ *  work.
  */
 
 void
@@ -1148,15 +1153,16 @@ mainwnd::pause_playing ()                   // Stop in place!
 {
     perf().pause_playing();                 // resets is_pattern_playing flag
     m_main_wid->update_sequences_on_window();
-    m_button_pause->set_sensitive(false);
+#ifdef SEQ64_PAUSE_SUPPORT
     m_button_stop->set_sensitive(false);
+    m_button_pause->set_sensitive(false);
     m_button_play->set_sensitive(true);
+#endif
 }
 
 /**
- *  Stops the playing of the song.  An accessor to perform's
- *  stop_playing() function.  Also calls the mainwid's
- *  update_sequences_on_window() function.
+ *  Stops the playing of the song.  An accessor to perform's stop_playing()
+ *  function.  Also calls the mainwid's update_sequences_on_window() function.
  */
 
 void
@@ -1164,9 +1170,11 @@ mainwnd::stop_playing ()                    // Stop!
 {
     perf().stop_playing();                  // resets is_pattern_playing flag
     m_main_wid->update_sequences_on_window();
-    m_button_pause->set_sensitive(false);
+#ifdef SEQ64_PAUSE_SUPPORT
     m_button_stop->set_sensitive(false);
+    m_button_pause->set_sensitive(false);
     m_button_play->set_sensitive(true);
+#endif
 }
 
 /**
@@ -1324,23 +1332,8 @@ mainwnd::on_key_press_event (GdkEventKey * ev)
          * SPACEBAR)
          */
 
-        bool dont_toggle = PREFKEY(start) != PREFKEY(stop);
-        if
-        (
-            ev->keyval == PREFKEY(start) &&
-            (dont_toggle || ! rc().is_pattern_playing())
-        )
-        {
-            start_playing();
-        }
-        else if
-        (
-            ev->keyval == PREFKEY(stop) &&
-            (dont_toggle || rc().is_pattern_playing())
-        )
-        {
-            stop_playing();
-        }
+        // keystroke k(ev->keyval, SEQ64_KEYSTROKE_PRESS, ev->state);
+        (void) perf().playback_key_event(k);
 
         /*
          * Toggle the sequence mute/unmute setting using keyboard keys.

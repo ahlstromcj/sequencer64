@@ -1,6 +1,6 @@
 Bugs and Additional Upgrade Ideas
 Chris Ahlstrom
-2015-10-27 to 2016-03-17 (New bugs)
+2015-10-27 to 2016-03-19 (New bugs)
 
 In no particular order...  "y" means "in progress", and "x" means it is
 basically done.
@@ -54,7 +54,7 @@ y  Tighten up the is-dirty handling for all dialogs:
       progress bar in view.  Already done for sequence editor.
    -  Would be nice to show the current note/time/tick/measure/bar in all of
       the windows.
--  Would be nice to have a PAUSE button and PAUSE feature.
+y  Would be nice to have a PAUSE button and PAUSE feature.
 -  Seq24/Sequencer64 do not write out the c_midictrl data for any sequences.
    Something to learn more about and fix.
 -  Add optimization to write out minimal qmute etc. to the MIDI file when it is

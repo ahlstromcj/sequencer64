@@ -409,9 +409,6 @@ perfstats::output_func ()
 
 //          int bpm  = m_master_bus.get_beats_per_minute();
 //          double delta_tick = delta_time_us_to_ticks(delta_us, bpm, ppqn);
-//
-//              play(long(pad.js_current_tick));                // play!
-//              m_master_bus.clock(long(pad.js_clock_tick));    // MIDI clock
 
                 m_statistics.get_total_tick(pad);
 

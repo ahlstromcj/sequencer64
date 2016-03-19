@@ -25,11 +25,14 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-03-04
+ * \updates       2016-03-19
  * \license       GNU GPLv2 or above
  *
  *  The functionality of this class also includes handling some of the
  *  operations of pattern triggers.
+ *
+ *  We had added null-pointer checks for the master MIDI buss pointer, but
+ *  these just take up needless time, in most cases.
  */
 
 #include <stdlib.h>
@@ -473,10 +476,10 @@ sequence::link_new ()
 
 /**
  *  A helper function, which does not lock/unlock, so it is unsafe to call
- *  without supplying an iterator from the event-list.
- *
+ *  without supplying an iterator from the event-list.  (And we no longer
+ *  bother checking the pointer.  If it is now, all hope is lost.)
  *  If it's a note off, and that note is currently playing, then send a
- *  note off.
+ *  note off.  Do we need a flush() call as well?
  *
  * \threadunsafe
  */
@@ -487,9 +490,8 @@ sequence::remove (event_list::iterator i)
     event & er = DREF(i);
     if (er.is_note_off() && m_playing_notes[er.get_note()] > 0)
     {
-        if (not_nullptr(m_masterbus))
-            m_masterbus->play(m_bus, &er, m_midi_channel);
-
+        m_masterbus->play(m_bus, &er, m_midi_channel);
+        // m_masterbus->flush();                               ???
         m_playing_notes[er.get_note()]--;                   // ugh
     }
     m_events.remove(i);                                     // erase(i)
@@ -1712,11 +1714,8 @@ sequence::play_note_on (int a_note)
     event e;
     e.set_status(EVENT_NOTE_ON);
     e.set_data(a_note, SEQ64_MIDI_COUNT_MAX-1);
-    if (not_nullptr(m_masterbus))
-    {
-        m_masterbus->play(m_bus, &e, m_midi_channel);
-        m_masterbus->flush();
-    }
+    m_masterbus->play(m_bus, &e, m_midi_channel);
+    m_masterbus->flush();
 }
 
 /**
@@ -1733,11 +1732,8 @@ sequence::play_note_off (int a_note)
     event e;
     e.set_status(EVENT_NOTE_OFF);
     e.set_data(a_note, SEQ64_MIDI_COUNT_MAX-1);
-    if (not_nullptr(m_masterbus))
-    {
-        m_masterbus->play(m_bus, &e, m_midi_channel);
-        m_masterbus->flush();
-    }
+    m_masterbus->play(m_bus, &e, m_midi_channel);
+    m_masterbus->flush();
 }
 
 /**
@@ -2271,7 +2267,7 @@ sequence::paste_trigger ()
  */
 
 void
-#ifdef USE_PAUSE_SUPPORT
+#ifdef SEQ64_PAUSE_SUPPORT
 sequence::reset (bool live_mode, bool pause)
 #else
 sequence::reset (bool live_mode)
@@ -2280,7 +2276,7 @@ sequence::reset (bool live_mode)
     bool state = get_playing();
     off_playing_notes();
     set_playing(false);
-#ifdef USE_PAUSE_SUPPORT
+#ifdef SEQ64_PAUSE_SUPPORT
     if (pause)
         set_orig_tick(m_last_tick);
     else
@@ -2725,7 +2721,12 @@ sequence::print_triggers ()
 }
 
 /**
- *  Takes an event that this sequence is holding, and places it on the midibus.
+ *  Takes an event that this sequence is holding, and places it on the MIDI
+ *  buss.  This function does not bother checking if m_masterbus is a null
+ *  pointer.
+ *
+ * \param ev
+ *      The event to put on the buss.
  *
  * \threadsafe
  */
@@ -2747,14 +2748,22 @@ sequence::put_event_on_bus (event & ev)
             m_playing_notes[note]--;
     }
     if (! skip)
-        m_masterbus->play(m_bus, &ev, m_midi_channel);  // pointer!
+    {
+        /*
+         * \change ca 2016-03-19
+         *  Move the flush call into this condition; why flush() 
+         *  unless actually playing an event?
+         */
 
-    if (not_nullptr(m_masterbus))
+        m_masterbus->play(m_bus, &ev, m_midi_channel);
         m_masterbus->flush();
+    }
+    // m_masterbus->flush();        // moved to above
 }
 
 /**
- *  Sends a note-off event for all active notes.
+ *  Sends a note-off event for all active notes.  This function does not
+ *  bother checking if m_masterbus is a null pointer.
  *
  * \threadsafe
  */
@@ -2774,8 +2783,7 @@ sequence::off_playing_notes ()
             m_playing_notes[x]--;
         }
     }
-    if (not_nullptr(m_masterbus))
-        m_masterbus->flush();
+    m_masterbus->flush();
 }
 
 /**
@@ -2787,6 +2795,19 @@ sequence::off_playing_notes ()
  *
  * \warning
  *      This used to be a void function, so it just returns 0 for now.
+ *
+ * \param status
+ *      Provides the status value to be selected.
+ *
+ * \param cc
+ *      If the status is EVENT_CONTROL_CHANGE, then data byte 0 must
+ *      match this value.
+ *
+ * \param inverse
+ *      If true, invert the selection.
+ *
+ * \return
+ *      Always returns 0.
  */
 
 int

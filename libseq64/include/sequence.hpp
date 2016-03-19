@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-03-18
+ * \updates       2016-03-19
  * \license       GNU GPLv2 or above
  *
  *  The functions add_list_var() and add_long_list() have been replaced by
@@ -63,7 +63,7 @@
  *  would think.
  */
 
-#define USE_PAUSE_SUPPORT
+#define SEQ64_PAUSE_SUPPORT
 
 /**
  *  Provides a new option to save the Time Signature and Tempo data that may
@@ -919,7 +919,7 @@ public:
     void play_note_on (int note);
     void play_note_off (int note);
     void off_playing_notes ();
-#ifdef USE_PAUSE_SUPPORT
+#ifdef SEQ64_PAUSE_SUPPORT
     void reset (bool live_mode, bool pause = false);
 #else
     void reset (bool live_mode);

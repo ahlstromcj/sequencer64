@@ -559,7 +559,7 @@ mastermidibus::sysex (event * ev)
     for (int i = 0; i < m_num_out_buses; i++)
         m_buses_out[i]->sysex(ev);
 
-    flush();
+    flush();                /* recursive locking! */
 }
 
 /**

@@ -138,10 +138,11 @@ perform::perform (gui_assistant & mygui, int ppqn)
     m_midiclockrunning          (false),
     m_midiclocktick             (0),
     m_midiclockpos              (-1),
-    m_screen_set_notepad        (),     // string array of size c_max_sets
-    m_midi_cc_toggle            (),     // midi_control array
-    m_midi_cc_on                (),     // midi_control array
-    m_midi_cc_off               (),     // midi_control array
+    m_is_paused                 (false),
+    m_screen_set_notepad        (),         // string array of size c_max_sets
+    m_midi_cc_toggle            (),         // midi_control array
+    m_midi_cc_on                (),         // midi_control array
+    m_midi_cc_off               (),         // midi_control array
     m_offset                    (0),
     m_control_status            (0),
     m_screenset                 (0),
@@ -1191,6 +1192,10 @@ perform::play (midipulse tick)
             sequence * s = m_seqs[i];
             if (s->event_count() > 0)
             {
+                /*
+                 * QUESTION:  Should this "if" be followed by an "else"?
+                 */
+
                 if (s->check_queued_tick(tick))
                 {
                     s->play(s->get_queued_tick() - 1, m_playback_mode);
@@ -1366,6 +1371,7 @@ perform::start_playing (bool jackflag)
         start(jackflag);
         start_jack();
     }
+    m_is_paused = false;
     rc().is_pattern_playing(true);
 }
 
@@ -1389,7 +1395,7 @@ perform::pause_playing ()
 #endif
         // set_start_tick(tick);
         set_running(false);
-#ifdef USE_PAUSE_SUPPORT                                    // VERY IFFY
+#ifdef SEQ64_PAUSE_SUPPORT
         reset_sequences(true);         /* sets the "last-tick" value   */
 #else
         reset_sequences();             /* sets the "last-tick" value   */
@@ -1398,6 +1404,7 @@ perform::pause_playing ()
 #ifdef SEQ64_JACK_SUPPORT
     }
 #endif
+    m_is_paused = false;
     rc().is_pattern_playing(false);
 }
 
@@ -1529,8 +1536,8 @@ perform::all_notes_off ()
  *  Finally, flush the MIDI buss.
  */
 
+#ifdef SEQ64_PAUSE_SUPPORT
 void
-#ifdef USE_PAUSE_SUPPORT                                    // VERY IFFY
 perform::reset_sequences (bool pause)
 {
     if (! pause)
@@ -1544,6 +1551,7 @@ perform::reset_sequences (bool pause)
     m_master_bus.flush();                           /* flush the MIDI buss  */
 }
 #else
+void
 perform::reset_sequences ()
 {
     for (int i = 0; i < m_sequence_max; ++i)
@@ -1553,7 +1561,7 @@ perform::reset_sequences ()
     }
     m_master_bus.flush();                       /* flush the MIDI buss      */
 }
-#endif  // USE_PAUSE_SUPPORT
+#endif  // SEQ64_PAUSE_SUPPORT
 
 /**
  *  Creates the output thread using output_thread_func().
@@ -1767,7 +1775,7 @@ perform::output_func ()
             pad.js_clock_tick = m_starting_tick;
             set_orig_ticks(m_starting_tick);                // what member?
         }
-#ifdef USE_PAUSE_SUPPORT                                    // VERY IFFY
+#ifdef SEQ64_PAUSE_SUPPORT
         else
             set_orig_ticks(m_starting_tick);                // what member?
 #endif
@@ -2774,6 +2782,43 @@ perform::perfroll_key_event (const keystroke & k, int drop_sequence)
                      */
                 }
             }
+        }
+    }
+    return result;
+}
+
+/**
+ *  New function.
+ *  Provided to unify the stop/start (space/escape) behavior of the various
+ *  windows where playback can be started, paused, or stopped.  To be used in
+ *  mainwnd, perfedit, and seqroll.
+ *
+ * \param k
+ *      Provides the encapsulated keystroke to check.
+ *
+ * \return
+ *      Returns true if the keystroke matched the start or stop keystrokes.
+ */
+
+bool
+perform::playback_key_event (const keystroke & k)
+{
+    bool result = OR_EQUIVALENT(k.key(), keys().start(), keys().stop());
+    if (result)
+    {
+        bool onekey = keys().start() == keys().stop();
+        bool stop = onekey ?  is_playing() : k.key() == keys().stop() ;
+        if (stop)
+        {
+#ifdef SEQ64_PAUSE_SUPPORT
+            pause_playing();
+#else
+            stop_playing();
+#endif
+        }
+        else
+        {
+            start_playing();
         }
     }
     return result;

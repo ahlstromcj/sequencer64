@@ -311,9 +311,7 @@ mastermidibus::play (unsigned char bus, event * e24, unsigned char channel)
 {
     automutex locker(m_mutex);
     if (m_buses_out_active[bus] && bus < m_num_out_buses)
-    {
         m_buses_out[bus]->play(e24, channel);
-    }
 }
 
 /**

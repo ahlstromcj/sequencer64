@@ -87,7 +87,9 @@
 #include "midifile.hpp"
 #include "options.hpp"
 #include "perfedit.hpp"
+#ifdef SEQ64_PAUSE_SUPPORT
 #include "pixmaps/pause.xpm"
+#endif
 #include "pixmaps/play2.xpm"
 #include "pixmaps/stop.xpm"
 #include "pixmaps/learn.xpm"
@@ -1005,7 +1007,10 @@ mainwnd::file_exit ()
 {
     if (is_save())
     {
-        if (rc().is_pattern_playing())
+        // if (rc().is_pattern_playing())
+        //     stop_playing();
+
+        if (perf().is_running())        /* \change ca 2016-03-19    */
             stop_playing();
 
         hide();
@@ -1151,7 +1156,7 @@ mainwnd::start_playing ()                   // Play!
 void
 mainwnd::pause_playing ()                   // Stop in place!
 {
-    perf().pause_playing();                 // resets is_pattern_playing flag
+    perf().pause_playing();
     m_main_wid->update_sequences_on_window();
 #ifdef SEQ64_PAUSE_SUPPORT
     m_button_stop->set_sensitive(false);
@@ -1168,7 +1173,7 @@ mainwnd::pause_playing ()                   // Stop in place!
 void
 mainwnd::stop_playing ()                    // Stop!
 {
-    perf().stop_playing();                  // resets is_pattern_playing flag
+    perf().stop_playing();
     m_main_wid->update_sequences_on_window();
 #ifdef SEQ64_PAUSE_SUPPORT
     m_button_stop->set_sensitive(false);
@@ -1188,7 +1193,11 @@ bool
 mainwnd::on_delete_event (GdkEventAny * /*ev*/)
 {
     bool result = is_save();
-    if (result && rc().is_pattern_playing())
+
+    // if (result && rc().is_pattern_playing())
+    //     stop_playing();
+
+    if (result && perf().is_running())      /* \change ca 2016-03-19    */
         stop_playing();
 
     return ! result;

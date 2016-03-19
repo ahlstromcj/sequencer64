@@ -6,6 +6,18 @@ In no particular order...  "y" means "in progress", and "x" means it is
 basically done.
 
 -  See BUG REPORTS below.  These are bug reports from other people.
+-  PAUSE SUPPORT:
+   -    Seems to be susceptible to notes not being turned off
+       (but check the MIDI bus flush as well).
+   -    It also seems to disable start-stop from Seq64 in JACK mode.
+        This is also true in the latest code even if PAUSE SUPPORT is
+        OFF.
+   -    If start key == stop key, they become stop/pause.  Allow
+        Esc to automatically be stop (not pause), then.
+-  Shift Click:
+   -    Make it toggle muting of all the other patterns in the patterns
+       window, the same way it does it in the perfnames window.
+   -    Also see if feasible to show mutes status that mirror each other.
 -  If a MIDI buss override number is provided, it is not applied to a new
    sequence.  Is this a bug?
 -  The GUI now comes up not showing the "pill" progress bar until the tune

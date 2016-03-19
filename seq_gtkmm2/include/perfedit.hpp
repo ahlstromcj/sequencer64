@@ -227,7 +227,9 @@ private:
 
     void toggle_playing ()
     {
-        if (rc().is_pattern_playing())
+        // if (rc().is_pattern_playing())
+
+        if (perf().is_running())        /* \change ca 2016-03-19    */
             stop_playing();
         else
             start_playing();

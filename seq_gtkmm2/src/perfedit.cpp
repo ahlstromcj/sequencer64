@@ -54,7 +54,9 @@
 #include "perfroll.hpp"
 #include "perftime.hpp"
 
+#ifdef SEQ64_PAUSE_SUPPORT
 #include "pixmaps/pause.xpm"
+#endif
 #include "pixmaps/play2.xpm"
 #include "pixmaps/snap.xpm"
 #include "pixmaps/stop.xpm"
@@ -607,22 +609,12 @@ perfedit::timeout ()
 
 /**
  *  Implement the playing.  JACK will be used if it is present and, in
- *  the application, enabled.  This call also sets
- *  rc().is_pattern_playing(true), indirectly.  Note that, if the
- *  JACK-start-mode value is false, the perfedit's unmute/mute feature is
- *  disabled.  We no longer hardwire the boolean parameter to "true".
- *  We might reconsider that at some point, and indeed we have reverted to
- *  legacy seq24 behavior, by passing true to perform::start_playing().
+ *  the application, enabled.
  */
 
 void
 perfedit::start_playing ()
 {
-    /*
-     * bool usejack = rc().jack_start_mode(); // \change ca 2016-01-15
-     * perf().start_playing(usejack);         // careful now, see perform!!!!
-     */
-
     perf().start_playing(true);
 #ifdef SEQ64_PAUSE_SUPPORT
     m_button_stop->set_sensitive(true);
@@ -649,8 +641,7 @@ perfedit::pause_playing ()                   // Stop in place!
 }
 
 /**
- *  Stop the playing.  This call also sets rc().is_pattern_playing(true),
- *  indirectly.
+ *  Stop the playing.
  */
 
 void
@@ -687,7 +678,7 @@ perfedit::on_realize ()
 bool
 perfedit::on_key_press_event (GdkEventKey * ev)
 {
-    bool event_was_handled = false;
+//  // bool event_was_handled = false;
     if (CAST_EQUIVALENT(ev->type, SEQ64_KEY_PRESS))
     {
         if (rc().print_keys())
@@ -707,17 +698,21 @@ perfedit::on_key_press_event (GdkEventKey * ev)
          */
 
         keystroke k(ev->keyval, SEQ64_KEYSTROKE_PRESS, ev->state);
-        bool startstop = perf().playback_key_event(k);
+        bool startstop = perf().playback_key_event(k, true);
         if (startstop)
-            event_was_handled = true;
+            return true;            // event_was_handled = true;
     }
 
     /*
      * Provide perftime keystroke processing.
+     *
+     * NEED TO FIX THIS LOGIC.
      */
 
-    if (! event_was_handled)
-        event_was_handled = m_perftime->key_press_event(ev);
+//  // if (! event_was_handled)
+//  //     event_was_handled = m_perftime->key_press_event(ev);
+
+    (void) m_perftime->key_press_event(ev);
 
     return Gtk::Window::on_key_press_event(ev);
 }

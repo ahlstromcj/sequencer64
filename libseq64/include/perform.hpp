@@ -998,28 +998,17 @@ public:
      *      Provide a convenience function so that clients don't have to mess
      *      with a global variable when they're dealing with a perform object.
      *      Actually, we can use the m_running variable.
-     */
 
     bool is_playing () const
     {
         // return rc().is_pattern_playing();    // \change ca 2016-03-19
         return m_running;
     }
+     */
 
     void start_playing (bool jackflag = false);
     void pause_playing ();
-
-    /**
-     *  Encapsulates a series of calls used in mainwnd.
-     */
-
-    void stop_playing ()
-    {
-        stop_jack();
-        stop();
-        m_is_paused = false;
-        rc().is_pattern_playing(false);
-    }
+    void stop_playing ();
 
     /**
      *  Encapsulates some calls used in mainwnd.
@@ -1111,7 +1100,7 @@ public:
     void set_input_bus (int bus, bool input_active);    // used in options
     bool mainwnd_key_event (const keystroke & k);
     bool perfroll_key_event (const keystroke & k, int drop_sequence);
-    bool playback_key_event (const keystroke & k);
+    bool playback_key_event (const keystroke & k, bool jackflag = false);
 
 private:
 

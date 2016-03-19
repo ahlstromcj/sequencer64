@@ -1361,18 +1361,29 @@ perform::start_playing (bool jackflag)
 {
     if (jackflag)
     {
-        position_jack(jackflag);    /* parameter currently disabled here */
+        position_jack(true);
         start_jack();
-        start(jackflag);
+        start(true);
     }
     else
     {
-        position_jack(jackflag);    /* parameter currently disabled here */
-        start(jackflag);
+        position_jack(false);
+        start(false);
         start_jack();
     }
     m_is_paused = false;
-    rc().is_pattern_playing(true);
+
+    /*
+     * \note ca 2016-03-19
+     * Shouldn't this be needed as well?  It is set in ALSA mode, but not yet
+     * set here in JACK mode.  DO NOT call set_running() here in JACK mode...
+     * it prevents Sequencer64 from starting JACK transport!
+     */
+    
+    if (! m_jack_asst.is_running())
+        set_running(true);
+
+    rc().is_pattern_playing(true);      /* let's deprecate this             */
 }
 
 /**
@@ -1396,15 +1407,36 @@ perform::pause_playing ()
         // set_start_tick(tick);
         set_running(false);
 #ifdef SEQ64_PAUSE_SUPPORT
-        reset_sequences(true);         /* sets the "last-tick" value   */
+        reset_sequences(true);          /* sets the "last-tick" value   */
 #else
-        reset_sequences();             /* sets the "last-tick" value   */
+        reset_sequences();              /* sets the "last-tick" value   */
 #endif
         m_usemidiclock = false;
 #ifdef SEQ64_JACK_SUPPORT
     }
 #endif
     m_is_paused = false;
+    rc().is_pattern_playing(false);     /* let's deprecate this         */
+}
+
+/**
+ *  Encapsulates a series of calls used in mainwnd.
+ */
+
+void
+perform::stop_playing ()
+{
+    stop_jack();
+    stop();
+    m_is_paused = false;
+
+    /*
+     * Workable?
+     *
+    if (! m_jack_asst.is_running())     // stop(), inner_stop()
+        set_running(false);
+     */
+
     rc().is_pattern_playing(false);
 }
 
@@ -1776,8 +1808,10 @@ perform::output_func ()
             set_orig_ticks(m_starting_tick);                // what member?
         }
 #ifdef SEQ64_PAUSE_SUPPORT
-        else
-            set_orig_ticks(m_starting_tick);                // what member?
+        // NOT YET SURE ABOUT THIS CODE, TEST CAREFULLY
+        //
+        // else
+        //     set_orig_ticks(m_starting_tick);                // what member?
 #endif
 
         int ppqn = m_master_bus.get_ppqn();
@@ -2796,29 +2830,42 @@ perform::perfroll_key_event (const keystroke & k, int drop_sequence)
  * \param k
  *      Provides the encapsulated keystroke to check.
  *
+ * \param jackflag
+ *      Provides the "jack flag" needed by the perfedit window.  Defaults to
+ *      false.
+ *
  * \return
  *      Returns true if the keystroke matched the start or stop keystrokes.
  */
 
 bool
-perform::playback_key_event (const keystroke & k)
+perform::playback_key_event (const keystroke & k, bool jackflag)
 {
     bool result = OR_EQUIVALENT(k.key(), keys().start(), keys().stop());
     if (result)
     {
         bool onekey = keys().start() == keys().stop();
-        bool stop = onekey ?  is_playing() : k.key() == keys().stop() ;
+
+        // TRY OLD TEST AS AN EXPERIMENT
+        //bool stop = onekey ? is_running() : k.key() == keys().stop() ;
+
+        bool stop = onekey ?
+            rc().is_pattern_playing() : k.key() == keys().stop() ;
+
         if (stop)
         {
 #ifdef SEQ64_PAUSE_SUPPORT
-            pause_playing();
+            if (onekey)
+                pause_playing();        /* \tricky */
+            else
+                stop_playing();
 #else
             stop_playing();
 #endif
         }
         else
         {
-            start_playing();
+            start_playing(jackflag);
         }
     }
     return result;

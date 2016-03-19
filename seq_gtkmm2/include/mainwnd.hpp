@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-03-17
+ * \updates       2016-03-19
  * \license       GNU GPLv2 or above
  *
  *  The main windows is known as the "Patterns window" or "Patterns
@@ -272,7 +272,9 @@ private:
 
     void toggle_playing ()
     {
-        if (rc().is_pattern_playing())
+        // if (rc().is_pattern_playing())
+
+        if (perf().is_running())        /* \change ca 2016-03-19    */
             stop_playing();
         else
             start_playing();

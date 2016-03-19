@@ -848,7 +848,7 @@ perfroll::on_key_press_event (GdkEventKey * ev)
     }
     else
     {
-        if (! perf().is_playing())
+        if (! perf().is_running())
         {
             if (ev->keyval == SEQ64_p)
             {

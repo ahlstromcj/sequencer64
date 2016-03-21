@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-10-30
- * \updates       2016-02-15
+ * \updates       2016-03-20
  * \license       GNU GPLv2 or above
  *
  *  Man, we need to learn a lot more about triggers.  One important thing to
@@ -59,7 +59,6 @@ triggers::triggers (sequence & parent)
     m_iterator_play_trigger     (),
     m_iterator_draw_trigger     (),
     m_trigger_copied            (false),
-    m_trigger_offset            (0),
     m_ppqn                      (0),
     m_length                    (0)
 {
@@ -112,7 +111,6 @@ triggers::operator = (const triggers & rhs)
          * \new ca 2016-02-14
          */
 
-        m_trigger_offset = rhs.m_trigger_offset;
         m_ppqn = rhs.m_ppqn;
         m_length = rhs.m_length;
     }

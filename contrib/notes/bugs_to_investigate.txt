@@ -1,6 +1,6 @@
 Bugs and Additional Upgrade Ideas
 Chris Ahlstrom
-2015-10-27 to 2016-03-19 (New bugs)
+2015-10-27 to 2016-03-20 (New bugs)
 
 In no particular order...  "y" means "in progress", and "x" means it is
 basically done.
@@ -14,6 +14,13 @@ basically done.
         OFF.
    -    If start key == stop key, they become stop/pause.  Allow
         Esc to automatically be stop (not pause), then.
+-  The pattern editor ends up zipping to the end of the pattern
+   after a few start/stops, in JACK mode only.  Fixed by rewinding
+   in qjackctl; seems to start when using space-bar toggle in perfedit.
+   Accompanied by a glitch in transport, jumping a few bars.
+   Actually seems to happen at the beginning of the triggers at the
+   performance gap (in the b4uacuse alternate tune).  This bug goes
+   back to at least 0.9.9.18, i.e. before the PAUSE SUPPORT.
 -  Shift Click:
    -    Make it toggle muting of all the other patterns in the patterns
        window, the same way it does it in the perfnames window.

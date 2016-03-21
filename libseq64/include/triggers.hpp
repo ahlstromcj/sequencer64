@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-10-30
- * \updates       2016-02-14
+ * \updates       2016-03-20
  * \license       GNU GPLv2 or above
  *
  *  By segregating trigger support into its own module, the sequence class is
@@ -308,12 +308,6 @@ private:
     bool m_trigger_copied;
 
     /**
-     *  Offset.
-     */
-
-    midipulse m_trigger_offset;
-
-    /**
      *  Holds the value of the PPQN from the parent sequence, for easy access.
      *  This should not change, but we have to set it after construction, and
      *  so we provide a setter for it, set_ppqn(), called by the sequence
@@ -408,15 +402,6 @@ public:
     {
         m_triggers.clear();
     }
-
-    /**
-     * \getter m_trigger_offset
-
-    midipulse get_trigger_offset () const
-    {
-        return m_trigger_offset;
-    }
-     */
 
     bool next
     (

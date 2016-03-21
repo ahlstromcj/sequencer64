@@ -94,10 +94,7 @@ gui_assistant_gtk2::jack_idle_connect (jack_assistant & jack)
  */
 
 void
-gui_assistant_gtk2::lash_timeout_connect
-(
-    lash * lashobject
-)
+gui_assistant_gtk2::lash_timeout_connect (lash * lashobject)
 {
     if (not_nullptr(lashobject))
     {

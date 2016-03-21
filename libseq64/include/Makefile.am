@@ -94,7 +94,6 @@ pkginclude_HEADERS = \
 	mutex.hpp \
 	optionsfile.hpp \
 	perform.hpp \
-   perfstats.hpp \
 	platform_macros.h \
 	rc_settings.hpp \
    scales.h \

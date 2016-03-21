@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-03-19
+ * \updates       2016-03-20
  * \license       GNU GPLv2 or above
  *
  *  The functionality of this class also includes handling some of the
@@ -324,12 +324,14 @@ sequence::set_rec_vol (int recvol)
 
 /**
  * \setter m_last_tick
+ *      This function used to be called "set_orig_tick()", to match up with
+ *      get_last_tick().
  *
  * \threadsafe
  */
 
 void
-sequence::set_orig_tick (midipulse tick)
+sequence::set_last_tick (midipulse tick)
 {
     automutex locker(m_mutex);
     m_last_tick = tick;
@@ -2278,7 +2280,7 @@ sequence::reset (bool live_mode)
     set_playing(false);
 #ifdef SEQ64_PAUSE_SUPPORT
     if (pause)
-        set_orig_tick(m_last_tick);
+        set_last_tick(m_last_tick);
     else
         zero_markers();
 #else

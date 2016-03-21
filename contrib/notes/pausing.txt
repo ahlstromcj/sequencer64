@@ -1,6 +1,6 @@
 How to Add Pause Functionality?
 Chris Ahlstrom
-2016-02-13 to 2016-03-17
+2016-02-13 to 2016-03-20
 
 We would like to be able to pause the playback, and have it resume where
 it left off.  This feature would have to include the ability to have
@@ -17,7 +17,7 @@ jack_assistant::stop() and, if jack is NOT running, inner_stop().
 
 The perform::inner_stop() function calls reset_sequences(), which calls
 sequence::reset() for each sequence.  That calls zero_markers(), which
-just sets m_last_tick = 0 by calling sequence::set_orig_tick(0).
+just sets m_last_tick = 0 by calling sequence::set_last_tick(0).
 
     -   If we are pausing, then we should skip this call to
         zero_markers(), or pass sequence::m_last_tick to it.

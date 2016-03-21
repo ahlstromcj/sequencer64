@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-03-19
+ * \updates       2016-03-20
  * \license       GNU GPLv2 or above
  *
  */
@@ -634,7 +634,14 @@ perfedit::pause_playing ()                   // Stop in place!
 {
     perf().pause_playing();
 #ifdef SEQ64_PAUSE_SUPPORT
-    m_button_stop->set_sensitive(false);
+
+    /*
+     * Let's keep the stop button enabled as a kind of rewind for ALSA.
+     *
+     * m_button_stop->set_sensitive(false);
+     */
+
+    m_button_stop->set_sensitive(true);
     m_button_pause->set_sensitive(false);
     m_button_play->set_sensitive(true);
 #endif

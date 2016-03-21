@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-02-06
+ * \updates       2016-03-20
  * \license       GNU GPLv2 or above
  *
  */
@@ -80,8 +80,8 @@ private:
     perfedit & m_parent;
 
     /**
-     *  Provides the horizontal page increment for the horizontal scrollbar.  It
-     *  was set to 1, the same as the step increment.  That is too little.
+     *  Provides the horizontal page increment for the horizontal scrollbar.
+     *  It was set to 1, the same as the step increment.  That is too little.
      *  This value will be set to 4, for now.  Might be a useful "user"
      *  configuration option.
      */
@@ -174,47 +174,12 @@ public:
 
 private:
 
-    /**
-     *  Start the performance playing.  We need to keep in sync with
-     *  perfedit's start_playing()... wish we could call it directly.  Well,
-     *  now we go to the source, calling perform::start_playing().  Note that
-     *  we no longer pass "true" as the playback parameter, instead using the
-     *  global JACK-start-mode flag. And indeed...  The old behavior was to
-     *  call this function with true, which means that starting the song from
-     *  the performance window forces playback to use the song/performance
-     *  mode.  We revert back to that legacy behavior.
-     */
-
-    void start_playing ()
-    {
-        /*
-         * bool usejack = rc().jack_start_mode();
-         * perf().start_playing(usejack);             // \change ca 2016-01-15
-         */
-
-        perf().start_playing(true);
-    }
-
-    /**
-     *  Stop the performance playing.  We need to keep in sync with perfedit's
-     *  stop_playing()... wish we could call it directly.  Well, now we go to
-     *  the source, calling perform::stop_playing().
-     */
-
-    void stop_playing ()
-    {
-        perf().stop_playing();
-    }
-
     void draw_progress ();                  /* called by perfedit       */
     void redraw_dirty_sequences ();         /* called by perfedit       */
     void set_ppqn (int ppqn);
     void convert_xy (int x, int y, midipulse & ticks, int & seq);
     void convert_x (int x, midipulse & ticks);
     void snap_x (int & x);
-
-
-
     void draw_sequence_on (int seqnum);
     void draw_background_on (int seqnum);
     void draw_drawable_row (long y);

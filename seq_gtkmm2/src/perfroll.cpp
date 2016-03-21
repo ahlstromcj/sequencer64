@@ -371,7 +371,6 @@ perfroll::draw_progress ()
     midipulse tick_offset = m_4bar_offset * m_ticks_per_bar;
     int progress_x = (tick - tick_offset) / m_perf_scale_x;
     int old_progress_x = (m_old_progress_ticks - tick_offset) / m_perf_scale_x;
-
     if (usr().progress_bar_thick())
     {
         draw_drawable(old_progress_x-1, 0, old_progress_x-1, 0, 3, m_window_y);

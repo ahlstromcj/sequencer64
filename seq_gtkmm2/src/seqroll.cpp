@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-03-19
+ * \updates       2016-03-20
  * \license       GNU GPLv2 or above
  *
  *  There are a large number of existing items to discuss.  But for now let's
@@ -275,7 +275,7 @@ seqroll::update_sizes ()
     );
     m_hadjust.set_page_increment(page_increment);
 
-    int h_max_value = (m_seq.get_length() - (m_window_x * m_zoom));
+    int h_max_value = m_seq.get_length() - (m_window_x * m_zoom);
     if (m_hadjust.get_value() > h_max_value)
         m_hadjust.set_value(h_max_value);
 
@@ -609,12 +609,7 @@ seqroll::draw_progress_on_window ()
         draw_drawable(m_progress_x, 0, m_progress_x, 0, 1, m_window_y);
 
     m_progress_x = (m_seq.get_last_tick() / m_zoom) - m_scroll_offset_x;
-
-    /*
-     * Let the progress be drawn at the beginning as well.
-     */
-
-    if (m_progress_x >= 0)              // if (m_progress_x != 0)
+    if (m_progress_x >= 0)
     {
         draw_line
         (
@@ -1269,7 +1264,7 @@ seqroll::on_key_press_event (GdkEventKey * ev)
         }
         else if (ev->keyval == SEQ64_Home)
         {
-            m_seq.set_orig_tick(0);
+            m_seq.set_last_tick(0);
             result = true;
         }
         else if (ev->keyval == SEQ64_Left)
@@ -1279,7 +1274,7 @@ seqroll::on_key_press_event (GdkEventKey * ev)
             if (m_seq.any_selected_notes())
                 m_seq.move_selected_notes(-m_snap, /*-48,*/ 0);
             else
-                m_seq.set_orig_tick(m_seq.get_last_tick() - m_snap);
+                m_seq.set_last_tick(m_seq.get_last_tick() - m_snap);
         }
         else if (ev->keyval == SEQ64_Right)
         {
@@ -1288,7 +1283,7 @@ seqroll::on_key_press_event (GdkEventKey * ev)
             if (m_seq.any_selected_notes())
                 m_seq.move_selected_notes(m_snap, /*48,*/ 0);
             else
-                m_seq.set_orig_tick(m_seq.get_last_tick() + m_snap);
+                m_seq.set_last_tick(m_seq.get_last_tick() + m_snap);
         }
         else if (ev->keyval == SEQ64_Down)
         {

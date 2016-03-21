@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-03-19
+ * \updates       2016-03-20
  * \license       GNU GPLv2 or above
  *
  *  The functions add_list_var() and add_long_list() have been replaced by
@@ -655,6 +655,7 @@ public:
     }
 
     midipulse get_last_tick ();
+    void set_last_tick (midipulse tick);
 
     /**
      *  Some MIDI file errors and other things can lead to an m_length of 0,
@@ -781,7 +782,6 @@ public:
     void print ();
     void print_triggers ();
     void play (midipulse tick, bool playback_mode);
-    void set_orig_tick (midipulse tick);
     bool add_event (const event & er);
     void add_trigger
     (
@@ -913,7 +913,7 @@ public:
 
     void zero_markers ()
     {
-        set_orig_tick(0);
+        set_last_tick(0);
     }
 
     void play_note_on (int note);

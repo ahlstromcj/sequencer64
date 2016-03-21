@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-03-19
+ * \updates       2016-03-20
  * \license       GNU GPLv2 or above
  *
  *  This class still has way too many members, even with the JACK and
@@ -626,6 +626,7 @@ public:
 
     /**
      * \getter m_starting_tick
+     *      Doesn't seem to be use yet.  Just sayin'.
      */
 
     midipulse get_start_tick () const

@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-03-19
+ * \updates       2016-03-20
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -1209,10 +1209,13 @@ perform::play (midipulse tick)
 }
 
 /**
- *  For every pattern/sequence that is active, sets the "original ticks"
- *  value for the pattern.
+ *  For every pattern/sequence that is active, sets the "original tick"
+ *  value for the pattern.  This is really the "last tick" value, so we
+ *  renamed sequence::set_orig_tick() to sequence::set_last_tick().
  *
  * \param tick
+ *      Provides the last-tick value to be set for each sequence that is
+ *      active.
  */
 
 void
@@ -1221,7 +1224,7 @@ perform::set_orig_ticks (midipulse tick)
     for (int i = 0; i < m_sequence_max; ++i)
     {
         if (is_active(i))
-            m_seqs[i]->set_orig_tick(tick);
+            m_seqs[i]->set_last_tick(tick);
     }
 }
 
@@ -1374,10 +1377,9 @@ perform::start_playing (bool jackflag)
     m_is_paused = false;
 
     /*
-     * \note ca 2016-03-19
-     * Shouldn't this be needed as well?  It is set in ALSA mode, but not yet
-     * set here in JACK mode.  DO NOT call set_running() here in JACK mode...
-     * it prevents Sequencer64 from starting JACK transport!
+     * Shouldn't this be needed as well?  It is set in ALSA mode, but not JACK
+     * mode... and DO NOT call set_running() here in JACK mode, it prevents
+     * Sequencer64 from starting JACK transport!
      */
     
     if (! m_jack_asst.is_running())
@@ -1429,14 +1431,6 @@ perform::stop_playing ()
     stop_jack();
     stop();
     m_is_paused = false;
-
-    /*
-     * Workable?
-     *
-    if (! m_jack_asst.is_running())     // stop(), inner_stop()
-        set_running(false);
-     */
-
     rc().is_pattern_playing(false);
 }
 
@@ -1498,6 +1492,9 @@ perform::stop ()
  *  mode is set to the given state.  If that state is true, call
  *  off_sequences().  Set the running status, and signal the condition.
  *  Then unlock.
+ *
+ * Minor issue:  In ALSA mode, restarting the sequence moves the progress bar
+ * to the beginning of the sequence, even if just pausing.
  */
 
 void
@@ -1518,14 +1515,23 @@ perform::inner_start (bool state)
 
 /**
  *  Unconditionally, and without locking, clears the running status,
- *  resets the sequences, and sets m_usemidiclock false.
+ *  resets the sequences, and sets m_usemidiclock false.  Note that we do need
+ *  to set the running flag to false here, even when JACK is running.
+ *  Otherwise, JACK starts ping-ponging back and forth between positions under
+ *  some circumstances.
+ *
+ *  However, if JACK is running, we do not want to reset the sequences... this
+ *  causes the progress bar for each sequence to remove to near the end of the
+ *  sequence.
  */
 
 void
 perform::inner_stop ()
 {
     set_running(false);
-    reset_sequences();                  /* sets the "last-tick" value   */
+    if (! m_jack_asst.is_running())
+        reset_sequences();              /* sets the "last-tick" value   */
+
     m_usemidiclock = false;
 }
 
@@ -2844,11 +2850,13 @@ perform::playback_key_event (const keystroke & k, bool jackflag)
     bool result = OR_EQUIVALENT(k.key(), keys().start(), keys().stop());
     if (result)
     {
+        /*
+         * Checking is_running() may not work completely in JACK.
+         *
+         * bool stop = onekey ? is_running() : k.key() == keys().stop() ;
+         */
+
         bool onekey = keys().start() == keys().stop();
-
-        // TRY OLD TEST AS AN EXPERIMENT
-        //bool stop = onekey ? is_running() : k.key() == keys().stop() ;
-
         bool stop = onekey ?
             rc().is_pattern_playing() : k.key() == keys().stop() ;
 

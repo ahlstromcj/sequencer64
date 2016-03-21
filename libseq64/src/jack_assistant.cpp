@@ -1442,7 +1442,6 @@ jack_timebase_callback
         }
     }
 #ifdef USE_JACK_BBT_OFFSET
-//  pos->valid = (jack_position_bits_t)(pos->valid | JackBBTFrameOffset);
     pos->bbt_offset = 0;
     pos->valid = (jack_position_bits_t)
     (

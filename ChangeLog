@@ -1,3 +1,78 @@
+2016-03-20  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* contrib/code/perfstats.hpp,
+	contrib/notes/bugs_to_investigate.txt, contrib/notes/pausing.txt,
+	libseq64/include/Makefile.am, libseq64/include/perform.hpp,
+	libseq64/include/perfstats.hpp, libseq64/include/sequence.hpp,
+	libseq64/include/triggers.hpp, libseq64/src/jack_assistant.cpp,
+	libseq64/src/perform.cpp, libseq64/src/sequence.cpp,
+	libseq64/src/triggers.cpp, seq_gtkmm2/include/perfroll.hpp,
+	seq_gtkmm2/src/gui_assistant_gtk2.cpp, seq_gtkmm2/src/mainwnd.cpp,
+	seq_gtkmm2/src/perfedit.cpp, seq_gtkmm2/src/perfroll.cpp,
+	seq_gtkmm2/src/seqroll.cpp: Cleanup related to song position and
+	progress bars, fixed issue with progress bar moving to end of
+	seqroll when stopping sequence in JACK.
+
+2016-03-19  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* contrib/notes/bugs_to_investigate.txt,
+	libseq64/include/perform.hpp, libseq64/src/perform.cpp,
+	seq_gtkmm2/include/mainwnd.hpp, seq_gtkmm2/include/perfedit.hpp,
+	seq_gtkmm2/src/mainwnd.cpp, seq_gtkmm2/src/perfedit.cpp,
+	seq_gtkmm2/src/perfroll.cpp: Interim check-in of pause
+	functionality, had to fix JACK transport, still have clean up to do.
+	* contrib/code/jack-transport-master.c, contrib/code/perfstats.cpp,
+	contrib/notes/bugs_to_investigate.txt,
+	libseq64/include/perform.hpp, libseq64/include/sequence.hpp,
+	libseq64/src/mastermidibus.cpp, libseq64/src/perform.cpp,
+	libseq64/src/sequence.cpp, seq_gtkmm2/src/mainwid.cpp,
+	seq_gtkmm2/src/mainwnd.cpp, seq_gtkmm2/src/perfedit.cpp,
+	seq_gtkmm2/src/seqroll.cpp,
+	seq_portmidi/src/mastermidibus_portmidi.cpp: Refactoring
+	start/stop/pause keystroke management for mainwnd, seqroll,
+	perfedit, and perform.
+
+2016-03-18  Chris Ahlstrom <ahlstrom@centiped>
+
+	* seq_gtkmm2/include/mainwnd.hpp, seq_gtkmm2/include/perfedit.hpp,
+	seq_gtkmm2/src/mainwnd.cpp, seq_gtkmm2/src/perfedit.cpp: 
+	Enable/disable stop/pause/play buttons.
+	* libseq64/include/perform.hpp, libseq64/include/sequence.hpp,
+	libseq64/src/perform.cpp, seq_gtkmm2/src/mainwid.cpp: Enabled
+	SEQ64_PAUSE_SUPPORT in sequence.hpp for experimenting with the new
+	Pause button.
+
+2016-03-17  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* contrib/notes/pausing.txt, libseq64/include/keys_perform.hpp,
+	libseq64/include/perform.hpp, libseq64/include/sequence.hpp,
+	libseq64/src/perform.cpp, libseq64/src/sequence.cpp,
+	resources/pixmaps/Makefile.am, resources/pixmaps/pause.xpm,
+	seq_gtkmm2/include/mainwnd.hpp, seq_gtkmm2/include/perfedit.hpp,
+	seq_gtkmm2/src/mainwid.cpp, seq_gtkmm2/src/mainwnd.cpp,
+	seq_gtkmm2/src/perfedit.cpp: Undid play-toggle, added pause button
+	instead, still a lot needed for full pausing features.
+	* seq_gtkmm2/include/mainwnd.hpp, seq_gtkmm2/include/perfedit.hpp,
+	seq_gtkmm2/src/mainwnd.cpp, seq_gtkmm2/src/perfedit.cpp: Made
+	mainwnd and perfedit play button toggle playback.
+	* contrib/notes/bugs_to_investigate.txt, contrib/notes/pausing.txt,
+	libseq64/include/sequence.hpp, libseq64/src/sequence.cpp,
+	seq_gtkmm2/src/maintime.cpp, seq_gtkmm2/src/mainwnd.cpp: Fixed
+	missing pill-bar at startup, laying ground for better pause
+	functionality.
+
+2016-03-15  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* seq_gtkmm2/src/perfnames.cpp: Added feature of Shift-left-click on
+	sequence name or M in the performance/song editor toggling the mute
+	status of all other tracks.
+
+2016-03-13  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* arch/README, contrib/notes/bugs_to_investigate.txt,
+	libseq64/src/optionsfile.cpp, libseq64/src/userfile.cpp: Minor
+	changes to comments emitted to rc and usr files, fixed a MIDI file.
+
 2016-03-04  Chris Ahlstrom <ahlstromcj@gmail.com>
 
 	* contrib/notes/git.txt, doc/dox/doxy-reference.cfg: Got Doxygen PDF

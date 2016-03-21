@@ -430,16 +430,17 @@ perform::mute_group_tracks ()
         {
             for (int j = 0; j < m_seqs_in_set; ++j)
             {
-                if (is_active(i * m_seqs_in_set + j))
+                int seqnum = i * m_seqs_in_set + j;
+                if (is_active(seqnum))
                 {
     /*
      * \change tdeagan 2015-12-22 via git pull.  Replaced m_playing_screen
      *      with m_screenset.
      */
                     if ((i == m_screenset) && m_tracks_mute_state[j])
-                        sequence_playing_on(i * m_seqs_in_set + j);
+                        sequence_playing_on(seqnum);
                     else
-                        sequence_playing_off(i * m_seqs_in_set + j);
+                        sequence_playing_off(seqnum);
                 }
             }
         }
@@ -890,11 +891,8 @@ perform::is_dirty_names (int seq)
  *  running.
  *
  *  It's not clear that we need to set the "is modified" flag just because we
- *  changed the beats per minute.  Does this setting get saved to the MIDI
- *  file?
- *
- * \todo
- *      WE ALSO NEED TO SET BEATS-PER-MINUTE IN jack_assistant!!!
+ *  changed the beats per minute.  This setting does get saved to the MIDI
+ *  file, with the c_bpmtag.
  */
 
 void
@@ -1381,7 +1379,7 @@ perform::start_playing (bool jackflag)
      * mode... and DO NOT call set_running() here in JACK mode, it prevents
      * Sequencer64 from starting JACK transport!
      */
-    
+
     if (! m_jack_asst.is_running())
         set_running(true);
 
@@ -1389,13 +1387,16 @@ perform::start_playing (bool jackflag)
 }
 
 /**
- *  EXPERIMENTAL.
- *
  *  Pause playback, so that progress bars stay where they are, and playback
  *  always resumes where it left off, even in ALSA mode.
  *
- *  Currently the same as stop_playing(), we're research the whole sequence of
- *  stopping and starting.
+ *  Currently almost the same as stop_playing(), but expanded as noted in the
+ *  comments so that we ultimately have more granular control over what
+ *  happens.  We're researching the whole sequence of stopping and starting,
+ *  and it can be tricky to make correct changes.
+ *
+ *  We still need to make restarting pick up at the same place in ALSA mode;
+ *  in JACK mode, JACK transport takes care of that feature.
  */
 
 void
@@ -1403,22 +1404,18 @@ perform::pause_playing ()
 {
 #ifdef SEQ64_JACK_SUPPORT
     m_jack_asst.stop();                 // stop_jack()
-    if (! m_jack_asst.is_running())     // stop(), inner_stop()
+    if (! m_jack_asst.is_running())     // stop() { inner_stop(); }
     {
 #endif
         // set_start_tick(tick);
         set_running(false);
-#ifdef SEQ64_PAUSE_SUPPORT
-        reset_sequences(true);          /* sets the "last-tick" value   */
-#else
-        reset_sequences();              /* sets the "last-tick" value   */
-#endif
+        reset_sequences(true);          /* resets "last-tick" for pause  */
         m_usemidiclock = false;
 #ifdef SEQ64_JACK_SUPPORT
     }
 #endif
-    m_is_paused = false;
-    rc().is_pattern_playing(false);     /* let's deprecate this         */
+    m_is_paused = true;
+    rc().is_pattern_playing(false);     /* cannot yet deprecate this    */
 }
 
 /**
@@ -1574,7 +1571,6 @@ perform::all_notes_off ()
  *  Finally, flush the MIDI buss.
  */
 
-#ifdef SEQ64_PAUSE_SUPPORT
 void
 perform::reset_sequences (bool pause)
 {
@@ -1588,18 +1584,6 @@ perform::reset_sequences (bool pause)
     }
     m_master_bus.flush();                           /* flush the MIDI buss  */
 }
-#else
-void
-perform::reset_sequences ()
-{
-    for (int i = 0; i < m_sequence_max; ++i)
-    {
-        if (is_active(i))
-            m_seqs[i]->reset(m_playback_mode);  /* resets the "last-tick"   */
-    }
-    m_master_bus.flush();                       /* flush the MIDI buss      */
-}
-#endif  // SEQ64_PAUSE_SUPPORT
 
 /**
  *  Creates the output thread using output_thread_func().

@@ -1,0 +1,86 @@
+#!/bin/bash
+#
+#******************************************************************************
+# YoSeqAlsa
+#------------------------------------------------------------------------------
+##
+# \file        YoSeqAlsa
+# \library     Home/Audio
+# \author      Chris Ahlstrom
+# \date        2015-07-19
+# \update      2015-07-19
+# \version     $Revision$
+# \license     $XPC_SUITE_GPL_LICENSE$
+#
+#     This script provides a way to set up yoshimi and seq24 to run on ALSA
+#     MIDI (and audio).
+#
+#------------------------------------------------------------------------------
+ 
+YoseqStatus="on"
+DoHelp="no"
+
+if [ $# -ge 1 ] ; then
+
+   while [ "$1" != "" ] ; do
+
+      case "$1" in
+
+         start)
+            YoseqStatus="on"
+            ;;
+
+         stop)
+            YoseqStatus="off"
+            ;;
+
+
+         help)
+            DoHelp="yes"
+            ;;
+
+      esac
+      shift
+   done
+fi
+
+if [ "$DoHelp" == "yes" ] ; then
+
+cat << E_O_F
+
+Usage: YoSeqAlsa [options]
+
+Starts or stops seq24 and yoshimi.
+
+Options:
+
+   stop        Stop seq24 and yoshimi instances.
+   start       Start seq24 and yoshimi.  This is the default action.
+   help        Show this text.
+
+Seq24 is started with a basic file, click_4_4.midi, which must reside
+in the current working directory.
+
+On my setup, running QJackCtl (no JACK running) shows, in the ALSA tab,
+an output ALSA port "129:seq24" and a input ALSA ports "129:seq24" and
+"130:yoshimi".  Yoshimi doesn't appear in the -l (list) option of
+aplaymidi and arecordmidi, oddly enough.
+
+E_O_F
+
+elif [ "$YoseqStatus" == "off" ] ; then
+
+   killall seq24 > /dev/null
+   killall yoshimi > /dev/null
+
+else
+
+   seq24 click_4_4.midi 2> /dev/null &
+   sleep 1
+   yoshimi --alsa-midi=129:seq24 --alsa-audio 2> /dev/null &
+
+fi
+
+#------------------------------------------------------------------------------
+# vim: ft=sh
+#------------------------------------------------------------------------------

@@ -9,9 +9,7 @@
 # \license     $XPC_SUITE_GPL_LICENSE$
 #
 #     This script provides a way to set up yoshimi and seq24/sequencer64
-#     to run on ALSA MIDI (and audio).
-#
-#     It requires some configuration specific to the user's setup.
+#     to run on JACK MIDI (and audio).
  
 YoseqStatus="on"
 DoHelp="no"
@@ -24,7 +22,6 @@ DoHelp="no"
 
 Seq="sequencer64"
 Sequencer="./Sequencer64/$Seq"
-Options="-m --bus 5"
 
 # The installed version of Yoshimi.
 
@@ -59,11 +56,10 @@ if [ "$DoHelp" == "yes" ] ; then
 
 cat << E_O_F
 
-Usage: YoSeqAlsa [options]
+Usage: YoSeqJack [options]
 
-Starts or stops sequencer64 and yoshimi for usage with ALSA.
-You will need to edit some macros in this script to make changes
-to match your system.
+Starts or stops sequencer64 and yoshimi for usage with JACK, via QJackCtl and
+a2jmidid.
 
 Options:
 
@@ -82,15 +78,21 @@ elif [ "$YoseqStatus" == "off" ] ; then
 
    killall $Seq > /dev/null
    killall yoshimi > /dev/null
-   echo "$Seq and Yoshimi stopped."
+   killall a2jmidid > /dev/null
+   killall qjackctl > /dev/null
+   echo "$Seq, Yoshimi, a2jmidid, and qjackctl stopped."
 
 else
 
-   echo "Starting $Seq and Yoshimi.  Connections rely on passing the option"
-   echo "'$Buss' to $Seq."
-   $Sequencer -A &
+   echo "Starting $Seq, Yoshimi, a2jmidid, and qjackctl.  Make connections in"
+   echo "qjackctl, for audio and MIDI, once Yoshimi has started."
+   qjackctl &
    sleep 1
-   $Yoshi -a -A
+   a2jmidid --export-hw &
+   sleep 1
+   $Sequencer -J &
+   sleep 1
+   $Yoshi -j -J
 
 fi
 

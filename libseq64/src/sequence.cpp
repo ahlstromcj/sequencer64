@@ -2269,23 +2269,16 @@ sequence::paste_trigger ()
  */
 
 void
-#ifdef SEQ64_PAUSE_SUPPORT
 sequence::reset (bool live_mode, bool pause)
-#else
-sequence::reset (bool live_mode)
-#endif
 {
     bool state = get_playing();
     off_playing_notes();
     set_playing(false);
-#ifdef SEQ64_PAUSE_SUPPORT
     if (pause)
         set_last_tick(m_last_tick);
     else
-        zero_markers();
-#else
-    zero_markers();                     /* sets the "last-tick" value   */
-#endif
+        zero_markers();                 /* sets the "last-tick" value   */
+
     if (! live_mode)
         set_playing(state);
 }

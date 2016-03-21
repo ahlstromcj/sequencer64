@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-03-20
+ * \updates       2016-03-21
  * \license       GNU GPLv2 or above
  *
  *  There are a large number of existing items to discuss.  But for now let's
@@ -202,7 +202,14 @@ seqroll::seqroll
     m_ignore_redraw         (false)
 {
     m_ppqn = choose_ppqn(ppqn);
-    grab_focus();
+
+    /*
+     * These calls don't seem to work in the constructor.  They do in
+     * the parent's constructor [seqedit()].
+     *
+     *      set_can_focus();
+     *      grab_focus();
+     */
 }
 
 /**

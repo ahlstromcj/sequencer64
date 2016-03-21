@@ -843,11 +843,7 @@ public:
         return is_mseq_valid(seq) ? m_seqs[seq] : nullptr ;
     }
 
-#ifdef SEQ64_PAUSE_SUPPORT
     void reset_sequences (bool pause = false);
-#else
-    void reset_sequences ();
-#endif
 
     /**
      *  Plays all notes to the current tick.

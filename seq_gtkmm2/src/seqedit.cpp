@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-03-15
+ * \updates       2016-03-21
  * \license       GNU GPLv2 or above
  *
  *  Compare this class to eventedit, which has to do some similar things,
@@ -411,6 +411,16 @@ seqedit::seqedit
         m_bgsequence = m_seq.background_sequence();
 
     set_background_sequence(m_bgsequence);
+
+    /*
+     * These calls work if called here, in the parent of the seqroll.
+     * But we want the focus to be conditional; see the fill_top_bar()
+     * function.
+     *
+     *      m_seqroll_wid->set_can_focus();
+     *      m_seqroll_wid->grab_focus();
+     */
+
     m_seqroll_wid->set_ignore_redraw(false);
 }
 
@@ -954,6 +964,11 @@ seqedit::do_action (int action, int var)
  *  This function inserts the user-interface items into the top bar or
  *  panel of the pattern editor; this bar has two rows of user interface
  *  elements.
+ *
+ *  Note that, if a non-default title for the sequence is in force, then
+ *  we immediately force the focus to the seqroll "widget", so that the space
+ *  bar can be used to control playback, instead of immediately erasing the
+ *  name of the sequence.
  */
 
 void
@@ -967,12 +982,33 @@ seqedit::fill_top_bar ()
     m_entry_name->set_max_length(32);                   /* was 26           */
     m_entry_name->set_width_chars(32);                  /* was 26           */
     m_entry_name->set_text(m_seq.get_name());
-    m_entry_name->select_region(0, 0);
-    m_entry_name->set_position(0);
     m_entry_name->signal_changed().connect
     (
         mem_fun(*this, &seqedit::name_change_callback)
     );
+
+    /*
+     * If a new sequence (the name is "Untitled"), put the focus on the entry
+     * field for the sequence name, and select the whole thing for easy
+     * replacement.  Otherwise, unselect the name field and put the focus
+     * (unseen) on the seqroll, so that the start/stop characters (Space and
+     * Esc by default) can be used immediately to control playback.
+     */
+
+    if (m_seq.get_name() != std::string("Untitled"))
+    {
+        m_entry_name->set_position(-1);                 /* unselect text    */
+        m_seqroll_wid->set_can_focus();
+        m_seqroll_wid->grab_focus();
+    }
+    else
+    {
+        m_entry_name->set_position(0);
+        m_entry_name->set_can_focus();
+        m_entry_name->grab_focus();
+        m_entry_name->select_region(0, 0);              /* select text      */
+    }
+
     m_hbox->pack_start(*m_entry_name, true, true);
     m_hbox->pack_start(*(manage(new Gtk::VSeparator())), false, false, 4);
 

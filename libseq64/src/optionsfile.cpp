@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-03-13
+ * \updates       2016-03-22
  * \license       GNU GPLv2 or above
  *
  *  The <code> ~/.seq24rc </code> or <code> ~/.config/sequencer64/sequencer64.rc
@@ -331,6 +331,10 @@ optionsfile::parse (perform & p)
     sscanf(m_line, "%u", &ktx.kpt_start);
     next_data_line(file);
     sscanf(m_line, "%u", &ktx.kpt_stop);
+#ifdef SEQ64_PAUSE_SUPPORT
+    next_data_line(file);
+    sscanf(m_line, "%u", &ktx.kpt_pause);
+#endif
 
     if (! rc().legacy_format())
     {
@@ -798,6 +802,14 @@ optionsfile::write (const perform & p)
         << ucperf.key_name(ktx.kpt_stop)
         << " stop sequencer\n"
         ;
+
+#ifdef SEQ64_PAUSE_SUPPORT
+    file
+        << ktx.kpt_pause << " # "
+        << ucperf.key_name(ktx.kpt_pause)
+        << " pause sequencer\n"
+        ;
+#endif
 
     /**
      *  New boolean to show sequence numbers; ignored in legacy mode.

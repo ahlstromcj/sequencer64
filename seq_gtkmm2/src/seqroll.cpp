@@ -616,7 +616,13 @@ seqroll::draw_progress_on_window ()
         draw_drawable(m_progress_x, 0, m_progress_x, 0, 1, m_window_y);
 
     m_progress_x = (m_seq.get_last_tick() / m_zoom) - m_scroll_offset_x;
-    if (m_progress_x >= 0)
+
+    /*
+     * TRIAL CODE to ensure the occasional slightly negative value still
+     * allows the progress bar to be drawn.
+     */
+
+    if (m_progress_x > -16)             // if (m_progress_x >= 0)
     {
         draw_line
         (

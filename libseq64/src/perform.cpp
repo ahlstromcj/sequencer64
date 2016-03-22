@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-03-20
+ * \updates       2016-03-22
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -1745,7 +1745,19 @@ perform::output_func ()
 #endif
 
         jack_scratchpad pad;
+
+#ifdef SEQ64_PAUSE_SUPPORT                  // EXPERIMENTAL
+        pad.js_current_tick = double(get_tick());   // STILL REWINDS?
+#else
+
+        /*
+         * Disabling this code allows playback to continue from pause in ALSA,
+         * but we need a way to rewind, too.
+         */
+
         pad.js_current_tick = 0.0;          // tick and tick fraction
+#endif
+
         pad.js_total_tick = 0.0;
 #ifdef USE_SEQ24_0_9_3_CODE
         pad.js_clock_tick = 0;              // long probably offers more ticks
@@ -1797,12 +1809,6 @@ perform::output_func ()
             pad.js_clock_tick = m_starting_tick;
             set_orig_ticks(m_starting_tick);                // what member?
         }
-#ifdef SEQ64_PAUSE_SUPPORT
-        // NOT YET SURE ABOUT THIS CODE, TEST CAREFULLY
-        //
-        // else
-        //     set_orig_ticks(m_starting_tick);                // what member?
-#endif
 
         int ppqn = m_master_bus.get_ppqn();
 
@@ -2127,7 +2133,17 @@ perform::output_func ()
                 printf("[%3d][%8ld]\n", i * 300, stats_clock[i]);
             }
         }
+#ifndef SEQ64_PAUSE_SUPPORT             // EXPERIMENTAL
+
+        /*
+         * Disabling this setting allows all of the progress bars (seqroll,
+         * perfroll, and the slots in the mainwid) to stay visible where
+         * they paused.  However, the progress still restarts when playback
+         * begins again.
+         */
+
         m_tick = 0;
+#endif
         m_master_bus.flush();
         m_master_bus.stop();
     }
@@ -2842,7 +2858,12 @@ perform::playback_key_event (const keystroke & k, bool jackflag)
 
         bool onekey = keys().start() == keys().stop();
         bool stop = onekey ?
-            rc().is_pattern_playing() : k.key() == keys().stop() ;
+            is_running() : k.key() == keys().stop() ;       // TO BE TESTED
+//          rc().is_pattern_playing() : k.key() == keys().stop() ;
+
+        // NEW EXPERIMENTAL:  handle a pause key
+        // bool pause = k.key() == keys().pause();
+        // MORE TO COME
 
         if (stop)
         {
@@ -2857,6 +2878,8 @@ perform::playback_key_event (const keystroke & k, bool jackflag)
         }
         else
         {
+#ifdef SEQ64_PAUSE_SUPPORT
+#endif
             start_playing(jackflag);
         }
     }

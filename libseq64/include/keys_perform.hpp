@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-09-13
- * \updates       2016-03-17
+ * \updates       2016-03-22
  * \license       GNU GPLv2 or above
  *
  */
@@ -62,6 +62,9 @@ struct keys_perform_transfer
     unsigned int kpt_stop;
     bool kpt_show_ui_sequence_key;
     bool kpt_show_ui_sequence_number;
+#ifdef SEQ64_PAUSE_SUPPORT
+    unsigned int kpt_pause;
+#endif
 };
 
 /**
@@ -117,8 +120,8 @@ private:
 
     SlotMap m_key_events;
     SlotMap m_key_groups;
-    RevSlotMap m_key_events_rev; // reverse lookup, keep in sync!!
-    RevSlotMap m_key_groups_rev; // reverse lookup, keep in sync!!
+    RevSlotMap m_key_events_rev;        // reverse lookup, keep in sync!!
+    RevSlotMap m_key_groups_rev;        // reverse lookup, keep in sync!!
 
     /**
      *  Provides key assignments for some key sequencer features.
@@ -142,6 +145,9 @@ private:
     unsigned int m_key_group_learn;
     unsigned int m_key_start;
     unsigned int m_key_stop;
+#ifdef SEQ64_PAUSE_SUPPORT
+    unsigned int m_key_pause;
+#endif
 
 public:
 
@@ -285,6 +291,17 @@ public:
     {
         m_key_stop = x;
     }
+
+#ifdef SEQ64_PAUSE_SUPPORT
+    unsigned int pause () const
+    {
+        return m_key_pause;
+    }
+    void pause (unsigned int x)
+    {
+        m_key_pause = x;
+    }
+#endif
 
     /**
      * \accessor m_key_show_ui_sequency_key
@@ -458,6 +475,12 @@ protected:
     {
         return &m_key_stop;
     }
+#ifdef SEQ64_PAUSE_SUPPORT
+    unsigned int * at_pause ()
+    {
+        return &m_key_pause;
+    }
+#endif
     bool * at_show_ui_sequence_key ()
     {
         return &m_key_show_ui_sequence_key;

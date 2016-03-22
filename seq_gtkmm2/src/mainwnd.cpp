@@ -134,7 +134,7 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
  :
     gui_window_gtk2         (p),
     performcallback         (),
-    m_tooltips              (manage(new Gtk::Tooltips())),  // valgrind bitches
+    m_tooltips              (manage(new Gtk::Tooltips())), /* valgrind bitches */
     m_menubar               (manage(new Gtk::MenuBar())),
     m_menu_file             (manage(new Gtk::Menu())),
     m_menu_view             (manage(new Gtk::Menu())),
@@ -149,7 +149,7 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
     ),
     m_options               (nullptr),
     m_main_cursor           (),
-    m_button_learn          (nullptr),              // compare to perfedit!
+    m_button_learn          (nullptr),              /* compare to perfedit! */
     m_button_stop           (nullptr),
     m_button_pause          (nullptr),
     m_button_play           (nullptr),
@@ -161,7 +161,7 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
     m_spinbutton_load_offset(nullptr),
     m_adjust_load_offset    (nullptr),
     m_entry_notes           (nullptr),
-    m_timeout_connect       ()                      // handler
+    m_timeout_connect       ()                      /* handler              */
 {
     /*
      * This provides the application icon, seen in the title bar of the
@@ -170,8 +170,8 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
 
     set_icon(Gdk::Pixbuf::create_from_xpm_data(seq64_xpm));
     set_resizable(false);
-    perf().enregister(this);                        // register for notification
-    update_window_title();                          // main window
+    perf().enregister(this);                        /* register for notify  */
+    update_window_title();                          /* main window          */
     m_menubar->items().push_front(MenuElem("_File", *m_menu_file));
     m_menubar->items().push_back(MenuElem("_View", *m_menu_view));
     m_menubar->items().push_back(MenuElem("_Help", *m_menu_help));
@@ -327,10 +327,10 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
      *  the container that groups them.
      */
 
-    Gtk::HBox * bottomhbox = manage(new Gtk::HBox(false, 10));   // bottom box
-    Gtk::HBox * startstophbox = manage(new Gtk::HBox(false, 4)); // button box
+    Gtk::HBox * bottomhbox = manage(new Gtk::HBox(false, 10));   /* bottom */
+    Gtk::HBox * startstophbox = manage(new Gtk::HBox(false, 4)); /* button */
     bottomhbox->pack_start(*startstophbox, Gtk::PACK_SHRINK);
-    m_button_stop = manage(new Gtk::Button());                   // stop button
+    m_button_stop = manage(new Gtk::Button());
     m_button_stop->add
     (
         *manage(new Gtk::Image(Gdk::Pixbuf::create_from_xpm_data(stop_xpm)))
@@ -344,7 +344,7 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
     m_button_stop->set_sensitive(true);
 
 #ifdef SEQ64_PAUSE_SUPPORT
-    m_button_pause = manage(new Gtk::Button());                  // pause button
+    m_button_pause = manage(new Gtk::Button());
     m_button_pause->add
     (
         *manage(new Gtk::Image(Gdk::Pixbuf::create_from_xpm_data(pause_xpm)))
@@ -358,7 +358,7 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
     m_button_pause->set_sensitive(true);
 #endif  // SEQ64_PAUSE_SUPPORT
 
-    m_button_play = manage(new Gtk::Button());                  // play button
+    m_button_play = manage(new Gtk::Button());
     m_button_play->add
     (
         *manage(new Gtk::Image(Gdk::Pixbuf::create_from_xpm_data(play2_xpm)))
@@ -480,14 +480,14 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
     Gtk::VBox * mainvbox = new Gtk::VBox();
     mainvbox->pack_start(*m_menubar, false, false);
     mainvbox->pack_start(*contentvbox);
-    add(*mainvbox);                         // add main layout box (this->)
-    show_all();                             // show everything
+    add(*mainvbox);                         /* add main layout box (this->) */
+    show_all();                             /* show everything              */
     add_events(Gdk::KEY_PRESS_MASK | Gdk::KEY_RELEASE_MASK);
     m_timeout_connect = Glib::signal_timeout().connect
     (
         mem_fun(*this, &mainwnd::timer_callback), redraw_period_ms()
     );
-    m_sigpipe[0] = -1;                      // initialize static array
+    m_sigpipe[0] = -1;                      /* initialize static array      */
     m_sigpipe[1] = -1;
     install_signal_handlers();
 }
@@ -963,7 +963,7 @@ mainwnd::file_import_dialog ()
     dlg.show_all_children();
 
     int response = dlg.run();
-    switch (response)                  // handle the response
+    switch (response)                  /* handle the response */
     {
     case (Gtk::RESPONSE_OK):
     {
@@ -1007,9 +1007,6 @@ mainwnd::file_exit ()
 {
     if (is_save())
     {
-        // if (rc().is_pattern_playing())
-        //     stop_playing();
-
         if (perf().is_running())        /* \change ca 2016-03-19    */
             stop_playing();
 
@@ -1137,9 +1134,9 @@ mainwnd::edit_callback_notepad ()
  */
 
 void
-mainwnd::start_playing ()                   // Play!
+mainwnd::start_playing ()                   /* Play!            */
 {
-    perf().start_playing();                 // legacy behavior
+    perf().start_playing();                 /* legacy behavior  */
 #ifdef SEQ64_PAUSE_SUPPORT
     m_button_stop->set_sensitive(true);
     m_button_pause->set_sensitive(true);
@@ -1154,7 +1151,7 @@ mainwnd::start_playing ()                   // Play!
  */
 
 void
-mainwnd::pause_playing ()                   // Stop in place!
+mainwnd::pause_playing ()                   /* Stop in place!   */
 {
     perf().pause_playing();
     m_main_wid->update_sequences_on_window();
@@ -1178,7 +1175,7 @@ mainwnd::pause_playing ()                   // Stop in place!
  */
 
 void
-mainwnd::stop_playing ()                    // Stop!
+mainwnd::stop_playing ()                    /* Stop!            */
 {
     perf().stop_playing();
     m_main_wid->update_sequences_on_window();
@@ -1200,10 +1197,6 @@ bool
 mainwnd::on_delete_event (GdkEventAny * /*ev*/)
 {
     bool result = is_save();
-
-    // if (result && rc().is_pattern_playing())
-    //     stop_playing();
-
     if (result && perf().is_running())      /* \change ca 2016-03-19    */
         stop_playing();
 
@@ -1262,8 +1255,7 @@ mainwnd::on_key_press_event (GdkEventKey * ev)
         }
 
         keystroke k(ev->keyval, SEQ64_KEYSTROKE_PRESS);
-        (void) perf().mainwnd_key_event(k);             // pass to perform
-
+        (void) perf().mainwnd_key_event(k);             /* pass to perform  */
         if (ev->keyval == PREFKEY(screenset_dn))
         {
             int newss = perf().decrement_screenset();
@@ -1286,6 +1278,7 @@ mainwnd::on_key_press_event (GdkEventKey * ev)
                 perf().lookup_keygroup_group(ev->keyval)
             );
         }
+
         if                                      /* mute group learn         */
         (
             perf().is_learn_mode() && ev->keyval != PREFKEY(group_learn)
@@ -1348,7 +1341,6 @@ mainwnd::on_key_press_event (GdkEventKey * ev)
          * SPACEBAR)
          */
 
-        // keystroke k(ev->keyval, SEQ64_KEYSTROKE_PRESS, ev->state);
         (void) perf().playback_key_event(k);
 
         /*
@@ -1491,7 +1483,7 @@ mainwnd::signal_action (Glib::IOCondition condition)
     return result;
 }
 
-}           // namespace seq64
+}           /* namespace seq64 */
 
 /*
  * mainwnd.cpp

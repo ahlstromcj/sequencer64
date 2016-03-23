@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-13
- * \updates       2015-11-08
+ * \updates       2016-03-23
  * \license       GNU GPLv2 or above
  *
  */
@@ -64,6 +64,9 @@ keys_perform::keys_perform ()
     m_key_group_off                 (SEQ64_apostrophe),       // a repeat
     m_key_group_learn               (SEQ64_Insert),
     m_key_start                     (SEQ64_space),
+#ifdef SEQ64_PAUSE_SUPPORT
+    m_key_pause                     (SEQ64_period),
+#endif
     m_key_stop                      (SEQ64_Escape)
 {
     // Empty body
@@ -127,6 +130,9 @@ keys_perform::set_keys (const keys_perform_transfer & kpt)
     m_key_group_off                 = kpt.kpt_group_off;
     m_key_group_learn               = kpt.kpt_group_learn;
     m_key_start                     = kpt.kpt_start;
+#ifdef SEQ64_PAUSE_SUPPORT
+    m_key_pause                     = kpt.kpt_pause;
+#endif
     m_key_stop                      = kpt.kpt_stop;
     m_key_show_ui_sequence_key      = kpt.kpt_show_ui_sequence_key;
     m_key_show_ui_sequence_number   = kpt.kpt_show_ui_sequence_number;
@@ -157,6 +163,9 @@ keys_perform::get_keys (keys_perform_transfer & kpt)
      kpt.kpt_group_off               = m_key_group_off;
      kpt.kpt_group_learn             = m_key_group_learn;
      kpt.kpt_start                   = m_key_start;
+#ifdef SEQ64_PAUSE_SUPPORT
+     kpt.kpt_pause                   = m_key_pause;
+#endif
      kpt.kpt_stop                    = m_key_stop;
      kpt.kpt_show_ui_sequence_key    = m_key_show_ui_sequence_key;
      kpt.kpt_show_ui_sequence_number = m_key_show_ui_sequence_number;

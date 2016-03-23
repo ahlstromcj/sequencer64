@@ -1,33 +1,39 @@
 Bugs and Additional Upgrade Ideas
 Chris Ahlstrom
-2015-10-27 to 2016-03-20 (New bugs)
+2015-10-27 to 2016-03-23 (New bugs)
 
 In no particular order...  "y" means "in progress", and "x" means it is
 basically done.
 
 -  See BUG REPORTS below.  These are bug reports from other people.
--  PAUSE SUPPORT:
+-  It would be good to have a command that dumps the current build settings
+   for Sequencer64.  Actually, add it to the --version command.
+y  PAUSE SUPPORT:
    -    Seems to be susceptible to notes not being turned off
-       (but check the MIDI bus flush as well).
-   -    It also seems to disable start-stop from Seq64 in JACK mode.
+        (but check the MIDI bus flush as well).
+   x    It also seems to disable start-stop from Seq64 in JACK mode.
         This is also true in the latest code even if PAUSE SUPPORT is
         OFF.
    -    If start key == stop key, they become stop/pause.  Allow
         Esc to automatically be stop (not pause), then.
--  The pattern editor ends up zipping to the end of the pattern
+   -    Currently, stop (Escape) in seqroll makes the cursor disappear, and
+        then playback resumes from pause.  The cursor rewinds, but then
+        reappears as if a pause was performed.
+x  The pattern editor ends up zipping to the end of the pattern
    after a few start/stops, in JACK mode only.  Fixed by rewinding
    in qjackctl; seems to start when using space-bar toggle in perfedit.
    Accompanied by a glitch in transport, jumping a few bars.
    Actually seems to happen at the beginning of the triggers at the
    performance gap (in the b4uacuse alternate tune).  This bug goes
-   back to at least 0.9.9.18, i.e. before the PAUSE SUPPORT.
+   back to at least 0.9.9.18, i.e. before the PAUSE SUPPORT.  Fixed by
+   not calling set_running() if JACK is active.
 -  Shift Click:
    -    Make it toggle muting of all the other patterns in the patterns
-       window, the same way it does it in the perfnames window.
+        window, the same way it does it in the perfnames window.
    -    Also see if feasible to show mutes status that mirror each other.
 -  If a MIDI buss override number is provided, it is not applied to a new
-   sequence.  Is this a bug?
--  The GUI now comes up not showing the "pill" progress bar until the tune
+   sequence.  Is this a bug or a feature?
+x  The GUI now comes up not showing the "pill" progress bar until the tune
    starts. Fixed, was a comparison error in maintime::idle_progress().
 -  Get variable PPQN support fully working.
 -  Support for the Non Session Manager.

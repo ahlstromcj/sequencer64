@@ -6,7 +6,7 @@ dnl \file          configure.ac
 dnl \library       Sequencer64
 dnl \author        Chris Ahlstrom
 dnl \date          2015-09-11
-dnl \update        2016-03-16
+dnl \update        2016-03-23
 dnl \version       $Revision$
 dnl \license       $XPC_SUITE_GPL_LICENSE$
 dnl
@@ -431,6 +431,20 @@ else
     AC_MSG_WARN([*** Event editor not enabled.]);
 fi
 
+dnl Support for pausing playback in ALSA mode, including a pause button.
+dnl If enabled, the macro SEQ64_PAUSE_SUPPORT is defined.
+
+AC_ARG_ENABLE(pause,
+    [AS_HELP_STRING(--disable-pause, [Disable pausing sequences and pause button])],
+    [pause=$enableval],
+    [pause=yes])
+
+if test "$pause" != "no"; then
+    AC_DEFINE(PAUSE_SUPPORT, 1, [Define to enable pausing and pause button])
+else
+    AC_MSG_WARN([*** Pausing sequences and pause button not enabled.]);
+fi
+
 dnl 6.0  Top portion of the config.h/sequencer64-config.h header files.
 dnl      The sequencer64-config.h header file has "SEQUENCER64_" prepended
 dnl      to these automatically for us.  Also, we can't use
@@ -444,7 +458,7 @@ dnl #define API_VERSION "0.9"             // already defined on command line
 
 AH_TOP(
 
-#define VERSION_DATE_SHORT "2016-03-16"
+#define VERSION_DATE_SHORT "2016-03-23"
 #define VERSION "0.9.10.1"
 
 )

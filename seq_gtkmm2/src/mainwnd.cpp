@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-03-20
+ * \updates       2016-03-23
  * \license       GNU GPLv2 or above
  *
  *  The main window holds the menu and the main controls of the application,
@@ -1134,13 +1134,13 @@ mainwnd::edit_callback_notepad ()
  */
 
 void
-mainwnd::start_playing ()                   /* Play!            */
+mainwnd::start_playing ()                       /* Play!            */
 {
-    perf().start_playing();                 /* legacy behavior  */
+    perf().start_playing();                     /* legacy behavior  */
 #ifdef SEQ64_PAUSE_SUPPORT
     m_button_stop->set_sensitive(true);
     m_button_pause->set_sensitive(true);
-    m_button_play->set_sensitive(false);
+    m_button_play->set_sensitive(true);         // (false);
 #endif
 }
 
@@ -1151,7 +1151,7 @@ mainwnd::start_playing ()                   /* Play!            */
  */
 
 void
-mainwnd::pause_playing ()                   /* Stop in place!   */
+mainwnd::pause_playing ()                       /* Stop in place!   */
 {
     perf().pause_playing();
     m_main_wid->update_sequences_on_window();
@@ -1164,7 +1164,7 @@ mainwnd::pause_playing ()                   /* Stop in place!   */
      */
 
     m_button_stop->set_sensitive(true);
-    m_button_pause->set_sensitive(false);
+    m_button_pause->set_sensitive(true);        // (false);
     m_button_play->set_sensitive(true);
 #endif
 }
@@ -1175,13 +1175,13 @@ mainwnd::pause_playing ()                   /* Stop in place!   */
  */
 
 void
-mainwnd::stop_playing ()                    /* Stop!            */
+mainwnd::stop_playing ()                        /* Stop!            */
 {
     perf().stop_playing();
     m_main_wid->update_sequences_on_window();
 #ifdef SEQ64_PAUSE_SUPPORT
-    m_button_stop->set_sensitive(false);
-    m_button_pause->set_sensitive(false);
+    m_button_stop->set_sensitive(true);         // (false);
+    m_button_pause->set_sensitive(true);        // (false);
     m_button_play->set_sensitive(true);
 #endif
 }
@@ -1190,7 +1190,8 @@ mainwnd::stop_playing ()                    /* Stop!            */
  *  This callback function handles a delete event from ...?
  *
  *  Any changed data is saved.  If the pattern is playing, then it is
- *  stopped.
+ *  stopped.  We now use is_running(), instead of the global
+ *  rc().is_pattern_playing() function.
  */
 
 bool

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-03-20
+ * \updates       2016-03-23
  * \license       GNU GPLv2 or above
  *
  */
@@ -619,7 +619,7 @@ perfedit::start_playing ()
 #ifdef SEQ64_PAUSE_SUPPORT
     m_button_stop->set_sensitive(true);
     m_button_pause->set_sensitive(true);
-    m_button_play->set_sensitive(false);
+    m_button_play->set_sensitive(true);     // (false);
 #endif
 }
 
@@ -642,7 +642,7 @@ perfedit::pause_playing ()                   // Stop in place!
      */
 
     m_button_stop->set_sensitive(true);
-    m_button_pause->set_sensitive(false);
+    m_button_pause->set_sensitive(true);    // (false);
     m_button_play->set_sensitive(true);
 #endif
 }
@@ -656,8 +656,8 @@ perfedit::stop_playing ()
 {
     perf().stop_playing();
 #ifdef SEQ64_PAUSE_SUPPORT
-    m_button_stop->set_sensitive(false);
-    m_button_pause->set_sensitive(false);
+    m_button_stop->set_sensitive(true);     // (false);
+    m_button_pause->set_sensitive(true);    // (false);
     m_button_play->set_sensitive(true);
 #endif
 }

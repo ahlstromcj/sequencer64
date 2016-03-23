@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-02-16
+ * \updates       2016-03-22
  * \license       GNU GPLv2 or above
  *
  *  Here is a list of the global variables used/stored/modified by this
@@ -346,6 +346,16 @@ options::add_keyboard_page ()
     controltable->attach(*label, 0, 1, 1, 2);
     controltable->attach(*entry, 1, 2, 1, 2);
 
+#ifdef SEQ64_PAUSE_SUPPORT
+    label = manage(new Gtk::Label("Pause", Gtk::ALIGN_RIGHT));
+    entry = manage
+    (
+        new keybindentry(keybindentry::location, PREFKEY_ADDR(pause))
+    );
+    controltable->attach(*label, 0, 1, 2, 3);
+    controltable->attach(*entry, 1, 2, 2, 3);
+#endif  // SEQ64_PAUSE_SUPPORT
+
     label = manage(new Gtk::Label("Snapshot 1", Gtk::ALIGN_RIGHT));
     entry = manage
     (
@@ -362,14 +372,6 @@ options::add_keyboard_page ()
     controltable->attach(*label, 2, 3, 1, 2);
     controltable->attach(*entry, 3, 4, 1, 2);
 
-    label = manage(new Gtk::Label("BPM down", Gtk::ALIGN_RIGHT));
-    entry = manage
-    (
-        new keybindentry(keybindentry::location, PREFKEY_ADDR(bpm_dn))
-    );
-    controltable->attach(*label, 2, 3, 3, 4);
-    controltable->attach(*entry, 3, 4, 3, 4);
-
     label = manage(new Gtk::Label("BPM up", Gtk::ALIGN_RIGHT));
     entry = manage
     (
@@ -377,6 +379,14 @@ options::add_keyboard_page ()
     );
     controltable->attach(*label, 2, 3, 2, 3);
     controltable->attach(*entry, 3, 4, 2, 3);
+
+    label = manage(new Gtk::Label("BPM down", Gtk::ALIGN_RIGHT));
+    entry = manage
+    (
+        new keybindentry(keybindentry::location, PREFKEY_ADDR(bpm_dn))
+    );
+    controltable->attach(*label, 2, 3, 3, 4);
+    controltable->attach(*entry, 3, 4, 3, 4);
 
     label = manage(new Gtk::Label("Replace", Gtk::ALIGN_RIGHT));
     entry = manage

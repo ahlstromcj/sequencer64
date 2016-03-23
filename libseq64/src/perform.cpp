@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-03-22
+ * \updates       2016-03-23
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -1368,15 +1368,29 @@ perform::start_playing (bool jackflag)
     }
     else
     {
-        position_jack(false);
-        start(false);
-        start_jack();
+        if (m_is_paused)
+        {
+            /*
+             * We still need to differentiate between resuming from pause
+             * versus restarting the sequences from the beginning.  TODO.
+             */
+
+            position_jack(false);
+            start(false);
+            start_jack();
+        }
+        else
+        {
+            position_jack(false);
+            start(false);
+            start_jack();
+        }
     }
     m_is_paused = false;
 
     /*
      * Shouldn't this be needed as well?  It is set in ALSA mode, but not JACK
-     * mode... and DO NOT call set_running() here in JACK mode, it prevents
+     * mode. But DO NOT call set_running() here in JACK mode, it prevents
      * Sequencer64 from starting JACK transport!
      */
 
@@ -2828,10 +2842,11 @@ perform::perfroll_key_event (const keystroke & k, int drop_sequence)
 }
 
 /**
- *  New function.
- *  Provided to unify the stop/start (space/escape) behavior of the various
- *  windows where playback can be started, paused, or stopped.  To be used in
- *  mainwnd, perfedit, and seqroll.
+ *  New function provided to unify the stop/start (space/escape) behavior of
+ *  the various windows where playback can be started, paused, or stopped.  To
+ *  be used in mainwnd, perfedit, and seqroll.
+ *
+ *  Checking is_running() may not work completely in JACK.
  *
  * \param k
  *      Provides the encapsulated keystroke to check.
@@ -2847,40 +2862,43 @@ perform::perfroll_key_event (const keystroke & k, int drop_sequence)
 bool
 perform::playback_key_event (const keystroke & k, bool jackflag)
 {
+#ifdef SEQ64_PAUSE_SUPPORT
+#define PAUSEKEY    keys().pause()
+#else
+#define PAUSEKEY    0
+#endif
+
     bool result = OR_EQUIVALENT(k.key(), keys().start(), keys().stop());
+    if (! result)
+        result = k.key() == PAUSEKEY;
+
     if (result)
     {
-        /*
-         * Checking is_running() may not work completely in JACK.
-         *
-         * bool stop = onekey ? is_running() : k.key() == keys().stop() ;
-         */
-
         bool onekey = keys().start() == keys().stop();
-        bool stop = onekey ?
-            is_running() : k.key() == keys().stop() ;       // TO BE TESTED
-//          rc().is_pattern_playing() : k.key() == keys().stop() ;
-
-        // NEW EXPERIMENTAL:  handle a pause key
-        // bool pause = k.key() == keys().pause();
-        // MORE TO COME
-
-        if (stop)
+        if (k.key() == keys().start())
         {
-#ifdef SEQ64_PAUSE_SUPPORT
             if (onekey)
-                pause_playing();        /* \tricky */
+            {
+                if (is_running())
+                    pause_playing();
+                else
+                    start_playing(jackflag);
+            }
             else
-                stop_playing();
-#else
-            stop_playing();
-#endif
+            {
+                start_playing(jackflag);
+            }
         }
-        else
+        else if (k.key() == keys().stop())
         {
-#ifdef SEQ64_PAUSE_SUPPORT
-#endif
-            start_playing(jackflag);
+            stop_playing();
+        }
+        else if (k.key() == PAUSEKEY)
+        {
+            if (is_running())
+                pause_playing();
+            else
+                start_playing(jackflag);
         }
     }
     return result;

@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-03-22
+ * \updates       2016-03-23
  * \license       GNU GPLv2 or above
  *
  *  The <code> ~/.seq24rc </code> or <code> ~/.config/sequencer64/sequencer64.rc
@@ -41,6 +41,19 @@
  *
  *  Note that these options are primarily read/written from/to the perform
  *  object that is passed to the parse() and write() functions.
+ *
+ * Fixups:
+ *
+ *  As of version 0.9.10, a "Pause" key is added, if SEQ64_PAUSE_SUPPORT is
+ *  defined.  One must fix up the sequencer64.rc file.  First, run
+ *  Sequencer64.  Then open File / Options, and go to the Keyboard tab.
+ *  Fix the Start, Stop, and Pause fields as desired.  The recommended
+ *  character for Pause is the period (".").
+ *
+ *  Or better yet, add a Pause line to the sequencer.rc file after the
+ *  "stop sequencer" line:
+ *
+ *      46   # period pause sequencer
  */
 
 #include "midibus.hpp"
@@ -331,20 +344,30 @@ optionsfile::parse (perform & p)
     sscanf(m_line, "%u", &ktx.kpt_start);
     next_data_line(file);
     sscanf(m_line, "%u", &ktx.kpt_stop);
-#ifdef SEQ64_PAUSE_SUPPORT
-    next_data_line(file);
-    sscanf(m_line, "%u", &ktx.kpt_pause);
-#endif
 
     if (! rc().legacy_format())
     {
-        /*
-         * New feature for showing sequence number in the GUI.
-         */
-
+#ifdef SEQ64_PAUSE_SUPPORT
         next_data_line(file);
-        sscanf(m_line, "%d", &show_key);
-        ktx.kpt_show_ui_sequence_number = bool(show_key);
+        sscanf(m_line, "%u", &ktx.kpt_pause);
+        if (ktx.kpt_pause <= 1)             /* need to fix the values   */
+        {
+            ktx.kpt_show_ui_sequence_number = bool(ktx.kpt_pause);
+            ktx.kpt_pause = 46;             /* use period by default    */
+        }
+        else
+        {
+#endif
+            /*
+             * New feature for showing sequence number in the GUI.
+             */
+
+            next_data_line(file);
+            sscanf(m_line, "%d", &show_key);
+            ktx.kpt_show_ui_sequence_number = bool(show_key);
+#ifdef SEQ64_PAUSE_SUPPORT
+        }
+#endif
     }
 
     p.keys().set_keys(ktx);                /* copy into perform keys   */
@@ -451,7 +474,7 @@ optionsfile::write (const perform & p)
     else
     {
         file <<
-            "# Sequencer64 0.9.9.15 (and above) rc configuration file\n"
+            "# Sequencer64 0.9.10.1 (and above) rc configuration file\n"
             "#\n"
             "# This file holds the main configuration options for Sequencer64.\n"
             "# It follows the format of the legacy seq24 'rc' configuration\n"
@@ -798,14 +821,14 @@ optionsfile::write (const perform & p)
        ;
 
     file
-        << ktx.kpt_stop << " # "
+        << ktx.kpt_stop << "    # "
         << ucperf.key_name(ktx.kpt_stop)
         << " stop sequencer\n"
         ;
 
 #ifdef SEQ64_PAUSE_SUPPORT
     file
-        << ktx.kpt_pause << " # "
+        << ktx.kpt_pause << "    # "
         << ucperf.key_name(ktx.kpt_pause)
         << " pause sequencer\n"
         ;

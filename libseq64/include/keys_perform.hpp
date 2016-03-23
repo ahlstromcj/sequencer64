@@ -28,12 +28,14 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-09-13
- * \updates       2016-03-22
+ * \updates       2016-03-23
  * \license       GNU GPLv2 or above
  *
  */
 
-#include <map>                          // std::map
+#include <map>                          /* std::map             */
+
+#include "easy_macros.h"                /* SEQ64_PAUSE_SUPPORT  */
 
 namespace seq64
 {
@@ -144,10 +146,10 @@ private:
     unsigned int m_key_group_off;
     unsigned int m_key_group_learn;
     unsigned int m_key_start;
-    unsigned int m_key_stop;
 #ifdef SEQ64_PAUSE_SUPPORT
     unsigned int m_key_pause;
 #endif
+    unsigned int m_key_stop;
 
 public:
 
@@ -283,15 +285,6 @@ public:
         m_key_start = x;
     }
 
-    unsigned int stop () const
-    {
-        return m_key_stop;
-    }
-    void stop (unsigned int x)
-    {
-        m_key_stop = x;
-    }
-
 #ifdef SEQ64_PAUSE_SUPPORT
     unsigned int pause () const
     {
@@ -302,6 +295,15 @@ public:
         m_key_pause = x;
     }
 #endif
+
+    unsigned int stop () const
+    {
+        return m_key_stop;
+    }
+    void stop (unsigned int x)
+    {
+        m_key_stop = x;
+    }
 
     /**
      * \accessor m_key_show_ui_sequency_key
@@ -471,16 +473,16 @@ protected:
     {
         return &m_key_start;
     }
-    unsigned int * at_stop ()
-    {
-        return &m_key_stop;
-    }
 #ifdef SEQ64_PAUSE_SUPPORT
     unsigned int * at_pause ()
     {
         return &m_key_pause;
     }
 #endif
+    unsigned int * at_stop ()
+    {
+        return &m_key_stop;
+    }
     bool * at_show_ui_sequence_key ()
     {
         return &m_key_show_ui_sequence_key;

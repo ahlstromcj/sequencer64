@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-03-18
+ * \updates       2016-03-23
  * \license       GNU GPLv2 or above
  *
  */
@@ -56,6 +56,7 @@ namespace Gtk
     class Entry;
     class HBox;
     class HScrollbar;
+    class Image;
     class Menu;
     class Table;
     class ToggleButton;
@@ -109,6 +110,7 @@ private:
     perfroll * m_perfroll;
     perftime * m_perftime;
     Gtk::Menu * m_menu_snap;
+    Gtk::Image * m_image_play;
     Gtk::Button * m_button_snap;
     Gtk::Entry * m_entry_snap;
     Gtk::Button * m_button_stop;
@@ -116,8 +118,6 @@ private:
     /**
      *  Implements the yellow two-bar pause button.
      */
-
-    Gtk::Button * m_button_pause;
 
     Gtk::Button * m_button_play;
     Gtk::ToggleButton * m_button_loop;
@@ -213,6 +213,7 @@ private:
     void undo ();
     void popup_menu (Gtk::Menu * menu);
     bool timeout ();
+    void set_image (bool isplay);
     void start_playing ();
     void pause_playing ();
     void stop_playing ();

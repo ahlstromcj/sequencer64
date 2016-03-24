@@ -10,7 +10,8 @@ basically done.
    for Sequencer64.  Actually, add it to the --version command.
 y  PAUSE SUPPORT:
    -    Seems to be susceptible to notes not being turned off
-        (but check the MIDI bus flush as well).
+        (but check the MIDI bus flush as well).  We need to make sure that
+        stop and pause both silence all notes, somehow.
    x    It also seems to disable start-stop from Seq64 in JACK mode.
         This is also true in the latest code even if PAUSE SUPPORT is
         OFF.

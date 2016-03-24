@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-03-19
+ * \updates       2016-03-23
  * \license       GNU GPLv2 or above
  *
  *  The main windows is known as the "Patterns window" or "Patterns
@@ -138,6 +138,12 @@ private:
     Gdk::Cursor m_main_cursor;
 
     /**
+     *  Provides a pointer to hold the images for the pause/play button.
+     */
+
+    Gtk::Image * m_image_play;
+
+    /**
      *  This button is the learn button, otherwise known as the "L"
      *  button.
      */
@@ -151,13 +157,8 @@ private:
     Gtk::Button * m_button_stop;
 
     /**
-     *  Implements the yellow two-bar pause button.
-     */
-
-    Gtk::Button * m_button_pause;
-
-    /**
-     *  Implements the green triangle play button.
+     *  Implements the green triangle play button.  If configured to support
+     *  pause, it also supports the pause pixmap and functionality.
      */
 
     Gtk::Button * m_button_play;
@@ -257,7 +258,7 @@ private:
     void adj_callback_bpm ();
     void edit_callback_notepad ();
     bool timer_callback ();
-
+    void set_image (bool isplay);
     void start_playing ();
     void pause_playing ();
     void stop_playing ();

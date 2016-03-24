@@ -54,9 +54,7 @@
 #include "perfroll.hpp"
 #include "perftime.hpp"
 
-#ifdef SEQ64_PAUSE_SUPPORT
 #include "pixmaps/pause.xpm"
-#endif
 #include "pixmaps/play2.xpm"
 #include "pixmaps/snap.xpm"
 #include "pixmaps/stop.xpm"
@@ -106,10 +104,13 @@ perfedit::perfedit
     ),
     m_perftime          (manage(new perftime(perf(), *this, *m_hadjust))),
     m_menu_snap         (manage(new Gtk::Menu())),
+    m_image_play
+    (
+        manage(new Gtk::Image(Gdk::Pixbuf::create_from_xpm_data(play2_xpm)))
+    ),
     m_button_snap       (manage(new Gtk::Button())),
     m_entry_snap        (manage(new Gtk::Entry())),
     m_button_stop       (manage(new Gtk::Button())),
-    m_button_pause      (manage(new Gtk::Button())),
     m_button_play       (manage(new Gtk::Button())),
     m_button_loop       (manage(new Gtk::ToggleButton())),
     m_button_expand     (manage(new Gtk::Button())),
@@ -312,32 +313,12 @@ perfedit::perfedit
     add_tooltip(m_button_stop, "Stop playback.");
     m_button_stop->set_sensitive(true);
 
-#ifdef SEQ64_PAUSE_SUPPORT
-    m_button_pause = manage(new Gtk::Button());                  // pause button
-    m_button_pause->add
-    (
-        *manage(new Gtk::Image(Gdk::Pixbuf::create_from_xpm_data(pause_xpm)))
-    );
-    m_button_pause->signal_clicked().connect
-    (
-        mem_fun(*this, &perfedit::pause_playing)            /* ca 2016-03-17 */
-    );
-    add_tooltip(m_button_pause, "Pause/Stop the MIDI sequence.");
-    m_button_pause->set_sensitive(true);
-#endif  // SEQ64_PAUSE_SUPPORT
-
-    m_button_play->add
-    (
-        *manage(new Gtk::Image(Gdk::Pixbuf::create_from_xpm_data(play2_xpm)))
-    );
+    m_button_play->set_image(*m_image_play);
     m_button_play->signal_clicked().connect
     (
         mem_fun(*this, &perfedit::start_playing)
     );
-    add_tooltip
-    (
-        m_button_play, "Begin playback at the L marker."
-    );
+    add_tooltip(m_button_play, "Begin playback at the L marker.");
     m_button_play->set_sensitive(true);
 
     m_hlbox->pack_end(*m_button_copy , false, false);
@@ -345,9 +326,6 @@ perfedit::perfedit
     m_hlbox->pack_end(*m_button_collapse , false, false);
     m_hlbox->pack_end(*m_button_undo , false, false);
     m_hlbox->pack_start(*m_button_stop , false, false);
-#ifdef SEQ64_PAUSE_SUPPORT
-    m_hlbox->pack_start(*m_button_pause , false, false);
-#endif
     m_hlbox->pack_start(*m_button_play , false, false);
     m_hlbox->pack_start(*m_button_loop , false, false);
     m_hlbox->pack_start(*(manage(new Gtk::VSeparator())), false, false, 4);
@@ -608,6 +586,33 @@ perfedit::timeout ()
 }
 
 /**
+ *  Changes the image used for the pause/play button
+ */
+
+void
+perfedit::set_image (bool isplay)
+{
+    delete m_image_play;
+    if (isplay)
+    {
+        m_image_play =
+        (
+            manage(new Gtk::Image(Gdk::Pixbuf::create_from_xpm_data(play2_xpm)))
+        );
+        add_tooltip(m_button_play, "Begin playback at the L marker.");
+    }
+    else
+    {
+        m_image_play =
+        (
+            manage(new Gtk::Image(Gdk::Pixbuf::create_from_xpm_data(pause_xpm)))
+        );
+        add_tooltip(m_button_play, "Begin playback at the current location.");
+    }
+    m_button_play->set_image(*m_image_play);
+}
+
+/**
  *  Implement the playing.  JACK will be used if it is present and, in
  *  the application, enabled.
  */
@@ -615,35 +620,31 @@ perfedit::timeout ()
 void
 perfedit::start_playing ()
 {
-    perf().start_playing(true);
+    if (perf().is_running())
+    {
+        pause_playing();
+    }
+    else
+    {
+        perf().start_playing(true);
 #ifdef SEQ64_PAUSE_SUPPORT
-    m_button_stop->set_sensitive(true);
-    m_button_pause->set_sensitive(true);
-    m_button_play->set_sensitive(true);     // (false);
+        set_image(false);                       /* set pause image  */
 #endif
+    }
 }
 
 /**
- *  Pauses the playing of the song, leaving the progress bar where it
- *  stopped.  Currently, it is just the same as stop_playing(), but we
- *  will get it to work.
+ *  Pauses the playing of the song, leaving the progress bar where it stopped.
+ *  Currently, it is just the same as stop_playing(), but we will get it to
+ *  work.  Keeps the stop button enabled as a kind of rewind for ALSA.
  */
 
 void
-perfedit::pause_playing ()                   // Stop in place!
+perfedit::pause_playing ()                      /* Stop in place!   */
 {
     perf().pause_playing();
 #ifdef SEQ64_PAUSE_SUPPORT
-
-    /*
-     * Let's keep the stop button enabled as a kind of rewind for ALSA.
-     *
-     * m_button_stop->set_sensitive(false);
-     */
-
-    m_button_stop->set_sensitive(true);
-    m_button_pause->set_sensitive(true);    // (false);
-    m_button_play->set_sensitive(true);
+    set_image(true);                            /* set play image   */
 #endif
 }
 
@@ -655,11 +656,6 @@ void
 perfedit::stop_playing ()
 {
     perf().stop_playing();
-#ifdef SEQ64_PAUSE_SUPPORT
-    m_button_stop->set_sensitive(true);     // (false);
-    m_button_pause->set_sensitive(true);    // (false);
-    m_button_play->set_sensitive(true);
-#endif
 }
 
 /**
@@ -685,7 +681,6 @@ perfedit::on_realize ()
 bool
 perfedit::on_key_press_event (GdkEventKey * ev)
 {
-//  // bool event_was_handled = false;
     if (CAST_EQUIVALENT(ev->type, SEQ64_KEY_PRESS))
     {
         if (rc().print_keys())
@@ -709,18 +704,7 @@ perfedit::on_key_press_event (GdkEventKey * ev)
         if (startstop)
             return true;            // event_was_handled = true;
     }
-
-    /*
-     * Provide perftime keystroke processing.
-     *
-     * NEED TO FIX THIS LOGIC.
-     */
-
-//  // if (! event_was_handled)
-//  //     event_was_handled = m_perftime->key_press_event(ev);
-
     (void) m_perftime->key_press_event(ev);
-
     return Gtk::Window::on_key_press_event(ev);
 }
 

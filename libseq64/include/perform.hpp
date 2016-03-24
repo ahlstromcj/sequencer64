@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-03-20
+ * \updates       2016-03-23
  * \license       GNU GPLv2 or above
  *
  *  This class still has way too many members, even with the JACK and
@@ -409,6 +409,15 @@ public:
     bool is_modified () const
     {
         return m_is_modified;
+    }
+
+    /**
+     * \getter m_is_paused
+     */
+
+    bool is_paused () const
+    {
+        return m_is_paused;
     }
 
     /**

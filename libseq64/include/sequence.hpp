@@ -60,7 +60,8 @@
  *  An EXPERIMENTAL macro to enable pause functionality.  At the risk of
  *  messy-looking code, we need to be able to turn this functionality off
  *  until we are sure it is working in every aspect.  More complex than one
- *  would think.  Now part of the global configuration.
+ *  would think.  Now part of the global configuration, set up by running the
+ *  configure script.
  *
  * #define SEQ64_PAUSE_SUPPORT
  */

@@ -87,9 +87,7 @@
 #include "midifile.hpp"
 #include "options.hpp"
 #include "perfedit.hpp"
-#ifdef SEQ64_PAUSE_SUPPORT
 #include "pixmaps/pause.xpm"
-#endif
 #include "pixmaps/play2.xpm"
 #include "pixmaps/stop.xpm"
 #include "pixmaps/learn.xpm"
@@ -149,9 +147,9 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
     ),
     m_options               (nullptr),
     m_main_cursor           (),
+    m_image_play            (),
     m_button_learn          (nullptr),              /* compare to perfedit! */
     m_button_stop           (nullptr),
-    m_button_pause          (nullptr),
     m_button_play           (nullptr),
     m_button_perfedit       (nullptr),
     m_spinbutton_bpm        (nullptr),
@@ -342,21 +340,6 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
     add_tooltip(m_button_stop, "Stop playing the MIDI sequence.");
     startstophbox->pack_start(*m_button_stop, Gtk::PACK_SHRINK);
     m_button_stop->set_sensitive(true);
-
-#ifdef SEQ64_PAUSE_SUPPORT
-    m_button_pause = manage(new Gtk::Button());
-    m_button_pause->add
-    (
-        *manage(new Gtk::Image(Gdk::Pixbuf::create_from_xpm_data(pause_xpm)))
-    );
-    m_button_pause->signal_clicked().connect
-    (
-        mem_fun(*this, &mainwnd::pause_playing)             /* ca 2016-03-17 */
-    );
-    add_tooltip(m_button_pause, "Pause/Stop the MIDI sequence.");
-    startstophbox->pack_start(*m_button_pause, Gtk::PACK_SHRINK);
-    m_button_pause->set_sensitive(true);
-#endif  // SEQ64_PAUSE_SUPPORT
 
     m_button_play = manage(new Gtk::Button());
     m_button_play->add
@@ -1121,6 +1104,33 @@ mainwnd::edit_callback_notepad ()
 }
 
 /**
+ *  Changes the image used for the pause/play button
+ */
+
+void
+mainwnd::set_image (bool isplay)
+{
+    delete m_image_play;
+    if (isplay)
+    {
+        m_image_play =
+        (
+            manage(new Gtk::Image(Gdk::Pixbuf::create_from_xpm_data(play2_xpm)))
+        );
+        add_tooltip(m_button_play, "Begin playback from the beginning.");
+    }
+    else
+    {
+        m_image_play =
+        (
+            manage(new Gtk::Image(Gdk::Pixbuf::create_from_xpm_data(pause_xpm)))
+        );
+        add_tooltip(m_button_play, "Begin playback at the current location.");
+    }
+    m_button_play->set_image(*m_image_play);
+}
+
+/**
  *  Starts playing of the song.  The rc_settings::jack_start_mode()
  *  function is used (if jack is running) to determine if the playback
  *  mode is "live" (false) or "song" (true).  An accessor to
@@ -1136,12 +1146,17 @@ mainwnd::edit_callback_notepad ()
 void
 mainwnd::start_playing ()                       /* Play!            */
 {
-    perf().start_playing();                     /* legacy behavior  */
+    if (perf().is_running())
+    {
+        pause_playing();
+    }
+    else
+    {
+        perf().start_playing();                     /* legacy behavior  */
 #ifdef SEQ64_PAUSE_SUPPORT
-    m_button_stop->set_sensitive(true);
-    m_button_pause->set_sensitive(true);
-    m_button_play->set_sensitive(true);         // (false);
+        set_image(false);                           /* set pause image  */
 #endif
+    }
 }
 
 /**
@@ -1154,18 +1169,17 @@ void
 mainwnd::pause_playing ()                       /* Stop in place!   */
 {
     perf().pause_playing();
-    m_main_wid->update_sequences_on_window();
-#ifdef SEQ64_PAUSE_SUPPORT
 
     /*
-     * Let's keep the stop button enabled as a kind of rewind for ALSA.
+     * EXPERIMENTAL.
+     * Commenting this out may make pause look more appropriate.
+     * But it acts the same as stop.  Might just uncomment it again.
      *
-     * m_button_stop->set_sensitive(false);
+     * m_main_wid->update_sequences_on_window();
      */
 
-    m_button_stop->set_sensitive(true);
-    m_button_pause->set_sensitive(true);        // (false);
-    m_button_play->set_sensitive(true);
+#ifdef SEQ64_PAUSE_SUPPORT
+    set_image(true);                            // set play image
 #endif
 }
 
@@ -1179,11 +1193,6 @@ mainwnd::stop_playing ()                        /* Stop!            */
 {
     perf().stop_playing();
     m_main_wid->update_sequences_on_window();
-#ifdef SEQ64_PAUSE_SUPPORT
-    m_button_stop->set_sensitive(true);         // (false);
-    m_button_pause->set_sensitive(true);        // (false);
-    m_button_play->set_sensitive(true);
-#endif
 }
 
 /**

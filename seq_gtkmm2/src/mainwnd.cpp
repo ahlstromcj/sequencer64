@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-03-23
+ * \updates       2016-03-24
  * \license       GNU GPLv2 or above
  *
  *  The main window holds the menu and the main controls of the application,
@@ -1152,9 +1152,9 @@ mainwnd::start_playing ()                       /* Play!            */
     }
     else
     {
-        perf().start_playing();                     /* legacy behavior  */
+        perf().start_playing();                 /* legacy behavior  */
 #ifdef SEQ64_PAUSE_SUPPORT
-        set_image(false);                           /* set pause image  */
+        set_image(false);                       /* set pause image  */
 #endif
     }
 }
@@ -1179,7 +1179,7 @@ mainwnd::pause_playing ()                       /* Stop in place!   */
      */
 
 #ifdef SEQ64_PAUSE_SUPPORT
-    set_image(true);                            // set play image
+    set_image(true);                            /* set play image   */
 #endif
 }
 
@@ -1192,6 +1192,9 @@ void
 mainwnd::stop_playing ()                        /* Stop!            */
 {
     perf().stop_playing();
+#ifdef SEQ64_PAUSE_SUPPORT
+    set_image(true);                            /* set play image   */
+#endif
     m_main_wid->update_sequences_on_window();
 }
 

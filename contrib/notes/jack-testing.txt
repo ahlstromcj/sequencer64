@@ -1,13 +1,13 @@
 User Testing of JACK in Sequencer64
 Chris Ahlstrom
-2016-01-16 to 2016-02-22
+2016-01-16 to 2016-03-24
 
 ===========================================================================
  SETTINGS TESTS
 ===========================================================================
 
 These tests are done with qjackctl and hydrogen already running, and then
-starting Sequencer64 with certain settings already made in sequencer64.rc..
+starting Sequencer64 with certain settings already made in sequencer64.rc.
 They currently show some issues.
 
 1.  [jack_transport]    == 1
@@ -224,6 +224,10 @@ MIDI Clock Testing
     00001   480254 005:4:1538 4/4  1920 120 4322752
     00001   480254 005:4:1538 4/4  1920 120 4322752
     00001   480254 005:4:1538 4/4  1920 120 4322752
+
+    Another option is to stop playback in Sequencer64, change the
+    BPM value in its main window, restart playback, and verify
+    that Hydrogen shows the new BPM value.
 
     In Sequencer64, go to File / Options / JACK/LASH.  Uncheck
     JACK Master, click JACK Disconnect, and then JACK Connect.

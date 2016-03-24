@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-03-23
+ * \updates       2016-03-24
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -1760,17 +1760,19 @@ perform::output_func ()
 
         jack_scratchpad pad;
 
-#ifdef SEQ64_PAUSE_SUPPORT                  // EXPERIMENTAL
-        pad.js_current_tick = double(get_tick());   // STILL REWINDS?
-#else
+        if (m_is_paused)                    // EXPERIMENTAL
+            pad.js_current_tick = double(get_tick());   // STILL REWINDS?
+        else
+        {
+            /*
+             * Disabling this code allows playback to continue from pause in
+             * ALSA, but we need a way to rewind, too.  js_total_tick and
+             * js_clock_tick, eventually get set to the apparent
+             * js_current_tick value.  So why the apparent rewind?
+             */
 
-        /*
-         * Disabling this code allows playback to continue from pause in ALSA,
-         * but we need a way to rewind, too.
-         */
-
-        pad.js_current_tick = 0.0;          // tick and tick fraction
-#endif
+            pad.js_current_tick = 0.0;      // tick and tick fraction
+        }
 
         pad.js_total_tick = 0.0;
 #ifdef USE_SEQ24_0_9_3_CODE
@@ -1972,7 +1974,7 @@ perform::output_func ()
 
             if (pad.js_init_clock)
             {
-                m_master_bus.init_clock(pad.js_clock_tick);
+                m_master_bus.init_clock(midipulse(pad.js_clock_tick));
                 pad.js_init_clock = false;
             }
             if (pad.js_dumping)
@@ -1984,14 +1986,14 @@ perform::output_func ()
                     {
                         midipulse ltick = get_left_tick();
                         double leftover_tick = pad.js_current_tick - rtick;
-                        play(rtick - 1);                        // play!
-                        reset_sequences();                      // reset!
+                        play(rtick - 1);                            // play!
+                        reset_sequences();                          // reset!
                         set_orig_ticks(ltick);
                         pad.js_current_tick = double(ltick) + leftover_tick;
                     }
                 }
-                play(long(pad.js_current_tick));                // play!
-                m_master_bus.clock(long(pad.js_clock_tick));    // MIDI clock
+                play(midipulse(pad.js_current_tick));               // play!
+                m_master_bus.clock(midipulse(pad.js_clock_tick));   // MIDI clock
                 if (rc().stats())
                 {
                     while (stats_total_tick <= pad.js_total_tick)

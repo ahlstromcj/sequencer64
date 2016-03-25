@@ -512,9 +512,9 @@ mainwnd::~mainwnd ()
 bool
 mainwnd::timer_callback ()
 {
-    midipulse ticks = perf().get_tick();
-    m_main_time->idle_progress(ticks);
-    m_main_wid->update_markers(ticks);          /* see note above */
+    midipulse tick = perf().get_tick();         /* use no get_start_tick()! */
+    m_main_time->idle_progress(tick);
+    m_main_wid->update_markers(tick);           /* tick ignored for pause   */
 
     int bpm = perf().get_beats_per_minute();
     if (m_adjust_bpm->get_value() != bpm)

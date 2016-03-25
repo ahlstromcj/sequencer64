@@ -203,12 +203,12 @@ perform::~perform ()
     if (m_in_thread_launched)
         pthread_join(m_in_thread, NULL);
 
-    for (int seq = 0; seq < m_sequence_max; seq++)
+    for (int seq = 0; seq < m_sequence_max; ++seq)
     {
         if (not_nullptr(m_seqs[seq]))
         {
             delete m_seqs[seq];
-            m_seqs[seq] = nullptr;
+            m_seqs[seq] = nullptr;              // not strictly necessary
         }
     }
 }
@@ -1504,8 +1504,13 @@ perform::stop ()
  *  off_sequences().  Set the running status, and signal the condition.
  *  Then unlock.
  *
- * Minor issue:  In ALSA mode, restarting the sequence moves the progress bar
- * to the beginning of the sequence, even if just pausing.
+ * Minor issue:
+ *
+ *      In ALSA mode, restarting the sequence moves the progress bar to the
+ *      beginning of the sequence, even if just pausing.
+ *
+ * \param state
+ *      Sets the playback mode, and, if true, turns off all of the sequences.
  */
 
 void
@@ -1759,27 +1764,27 @@ perform::output_func ()
 #endif
 
         jack_scratchpad pad;
-
-        if (m_is_paused)                    // EXPERIMENTAL
+        if (is_pausable())                  // EXPERIMENTAL
+        {
             pad.js_current_tick = double(get_tick());   // STILL REWINDS?
+        }
         else
         {
             /*
-             * Disabling this code allows playback to continue from pause in
-             * ALSA, but we need a way to rewind, too.  js_total_tick and
-             * js_clock_tick, eventually get set to the apparent
-             * js_current_tick value.  So why the apparent rewind?
+             * Disabling this code does not allow playback to continue from
+             * pause in ALSA.  js_total_tick and js_clock_tick, eventually get
+             * set to the apparent js_current_tick value.  So why the rewind?
              */
 
             pad.js_current_tick = 0.0;      // tick and tick fraction
         }
-
         pad.js_total_tick = 0.0;
 #ifdef USE_SEQ24_0_9_3_CODE
         pad.js_clock_tick = 0;              // long probably offers more ticks
 #else
         pad.js_clock_tick = 0.0;            // double
 #endif
+
         pad.js_jack_stopped = false;
         pad.js_dumping = false;
         pad.js_init_clock = true;
@@ -2155,7 +2160,7 @@ perform::output_func ()
          * Disabling this setting allows all of the progress bars (seqroll,
          * perfroll, and the slots in the mainwid) to stay visible where
          * they paused.  However, the progress still restarts when playback
-         * begins again.
+         * begins again, without some other changes.
          */
 
         m_tick = 0;

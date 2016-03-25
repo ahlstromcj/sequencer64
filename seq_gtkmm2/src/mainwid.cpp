@@ -565,15 +565,15 @@ mainwid::redraw (int seqnum)
  *  follow the playing progress of each sequence in the mainwid (Patterns
  *  Panel).
  *
- * \param ticks
+ * \param tick
  *      Starting point for drawing the markers.
  */
 
 void
-mainwid::update_markers (int ticks)
+mainwid::update_markers (int tick)
 {
     for (int s = 0; s < m_screenset_slots; ++s)
-        draw_marker_on_sequence(m_screenset_offset + s, ticks);
+        draw_marker_on_sequence(m_screenset_offset + s, tick);
 }
 
 /**
@@ -585,14 +585,17 @@ mainwid::update_markers (int ticks)
  *  is called, no sequences exist yet.  Also, currently the redraw() is hit
  *  when seq_edit() is called, but not when seq_event_edit() is called, which
  *  makes the latter not paint the in-edit highlight colors (if enabled).
- *
  *  Why?
  *
  * \param seqnum
  *      Provides the number of the sequence to draw.
  *
  * \param tick
- *      Provides the location to draw the marker.
+ *      Provides the location to draw the marker.  If pause support is
+ *      compiled in (i.e. no --disable-pause in the configuration), then this
+ *      parameter is ignored, and is replaced by the sequences'
+ *      get_lask_tick() value.  This causes correct stop/pause/play
+ *      progress-bar behavior in each pattern slot.
  */
 
 void
@@ -609,6 +612,10 @@ mainwid::draw_marker_on_sequence (int seqnum, int tick)
 
         if (seq->event_count() == 0)        /* an event-free track          */
             return;                         /* new 2015-08-23 don't update  */
+
+#ifdef SEQ64_PAUSE_SUPPORT
+        tick = seq->get_last_tick();        /* seems to work, see banner    */
+#endif
 
         int base_x, base_y;
         calculate_base_sizes(seqnum, base_x, base_y);    /* side-effects    */

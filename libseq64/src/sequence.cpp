@@ -324,8 +324,8 @@ sequence::set_rec_vol (int recvol)
 
 /**
  * \setter m_last_tick
- *      This function used to be called "set_orig_tick()", to match up with
- *      get_last_tick().
+ *      This function used to be called "set_orig_tick()", now renamed to
+ *      match up with get_last_tick().
  *
  * \threadsafe
  */
@@ -341,8 +341,7 @@ sequence::set_last_tick (midipulse tick)
  * \setter m_queued and m_queued_tick
  *
  *  Toggles the queued flag and sets the dirty-mp flag.  Also calculates
- *  the queued tick based on m_last_tick.  If m_length is bad (i.e. zero),
- *  then m_queued_tick is set to 0, to avoid an arithmetic error.
+ *  the queued tick based on m_last_tick.
  *
  * \threadsafe
  */
@@ -379,6 +378,13 @@ sequence::off_queued ()
  *
  *  It turns the sequence off after we play in this frame.
  *
+ * \note
+ *      With pause support, the progress bar for the pattern/sequence editor
+ *      does what we want:  pause with the pause button, and rewind with the
+ *      stop button.  However, the mainwid slots still rewind the progress bar
+ *      either way, more work needed.  Works with JACK, but we'd like to have
+ *      the stop button do a rewind in JACK, too.
+ *
  * \param tick
  *      Provides the current end-tick value.
  *
@@ -398,6 +404,11 @@ sequence::play (midipulse tick, bool playback_mode)
     automutex locker(m_mutex);
     bool trigger_turning_off = false;       /* turn off after frame play    */
     midipulse start_tick = m_last_tick;     /* modified in triggers::play() */
+
+#ifdef SEQ64_PAUSE_SUPPORT
+    tick = m_last_tick;                     /* see note in banner           */
+#endif
+
     midipulse end_tick = tick;              /* ditto !!!                    */
     if (m_song_mute)
     {

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-12-05
- * \updates       2016-02-18
+ * \updates       2016-03-24
  * \license       GNU GPLv2 or above
  *
  * To consider:
@@ -730,40 +730,13 @@ eventedit::handle_cancel ()
 }
 
 /**
- *  Handles a drawing timeout.  It redraws events in the the eventslots
- *  objects.  This function is called frequently and continuously.
- *
- * \return
- *      Always returns true.  We don't want it doing anything yet.
-
-bool
-eventedit::timeout ()
-{
-    return true;                        // m_eventslots->redraw_dirty_events();
-}
- */
-
-/**
- *  This callback function calls the base-class on_realize() function, and
- *  then connects the eventedit::timeout() function to the Glib
- *  signal-timeout, with a redraw timeout of redraw_period_ms().
+ *  This callback function calls the base-class on_realize() function.
  */
 
 void
 eventedit::on_realize ()
 {
     gui_window_gtk2::on_realize();
-
-    /*
-     * EXPERIMENTAL:  We really don't do anything time sensitive in this
-     * window.
-     *
-    Glib::signal_timeout().connect
-    (
-        mem_fun(*this, &eventedit::timeout), redraw_period_ms()
-    );
-     */
-
     v_adjustment(0, 0, m_eventslots->event_count());
 }
 

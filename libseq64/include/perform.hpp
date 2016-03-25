@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-03-23
+ * \updates       2016-03-24
  * \license       GNU GPLv2 or above
  *
  *  This class still has way too many members, even with the JACK and
@@ -412,15 +412,6 @@ public:
     }
 
     /**
-     * \getter m_is_paused
-     */
-
-    bool is_paused () const
-    {
-        return m_is_paused;
-    }
-
-    /**
      * \setter m_is_modified
      *      This setter only sets the modified-flag to true.
      *      The setter that will, is_modified(), is private.  No one but
@@ -563,6 +554,25 @@ public:
     bool is_jack_running () const
     {
         return m_jack_asst.is_running();
+    }
+
+    /**
+     * \getter m_is_paused
+     */
+
+    bool is_paused () const
+    {
+        return m_is_paused;
+    }
+
+    /**
+     * \getter m_is_paused and ! m_jack_asst.is_running()
+     *      We might just make this internal.
+     */
+
+    bool is_pausable () const
+    {
+        return m_is_paused && ! m_jack_asst.is_running();
     }
 
     /**

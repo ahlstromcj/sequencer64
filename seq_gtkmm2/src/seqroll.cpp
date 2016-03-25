@@ -95,8 +95,9 @@
  *  disables a lot of other features.
  *
  * \warning
- *      This code still has issues with interactions between triggers and gaps
- *      in the performance (song) window when JACK transport is active.
+ *      This code might still have issues with interactions between triggers
+ *      and gaps in the performance (song) window when JACK transport is
+ *      active.  Still investigating.
  */
 
 #define SEQ64_FOLLOW_PROGRESS_BAR

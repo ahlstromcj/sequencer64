@@ -1,6 +1,6 @@
 README for Sequencer64 0.9.10.1 (current branch = "fixups ongoing")
 Chris Ahlstrom
-2015-09-10 to 2016-03-04 (initial work started in July of 2015)
+2015-09-10 to 2016-03-25 (initial work started in July of 2015)
 
 The sequencer64 project is a continuation of sequencer24 to refactor it to be
 tighter and easier to transition to GTKmm 3, and much more.  By now, it is
@@ -21,7 +21,15 @@ Major updates:
         properly, and as Master, will provide the proper Bar:Beats:Ticks (BBT)
         to other JACK clients.  We are still investigating JackBBTFrameOffset
         support.
-    -   Long sequences now auto-scroll to keep up iwth the progress bar in the
+    -   Pause functionality (still experimental and in progress) has been
+        added to playback under ALSA.  Instead of rewinding, the new Pause
+        button will leave the playback where it is, and resume there when
+        playback starts.  The Stop button still rewinds the sequences.
+        The Pause feature should not affect JACK transport, which already
+        supports pause; we would like to add rewind to JACK transport
+        eventually.  Also added is a Pause key (by default, the period).
+        Pause can be disabled at configure time (--disable-pause).
+    -   Long sequences now auto-scroll to keep up with the progress bar in the
         sequence/pattern editor.
     -   Highlighting of last sequence brought up for editing.
     -   Configurable progress bar and redraw timeouts.
@@ -44,6 +52,8 @@ Major updates:
         performance and sequence user-interfaces in editing mode, very helpful
         for certain crappy laptop trackpads.  Extra "paint" key support also
         gets around the limitations of some trackpads.
+    -   Shift-left-click on the pattern name or M in the song editor now
+        toggles the mute state of all other tracks.
     -   Added arrow key support to some of the windows and panes.
         -   Also supplemented the mouse with "p" to start paint/draw mode, and
             "x" to escape it, in the sequence and song editors.

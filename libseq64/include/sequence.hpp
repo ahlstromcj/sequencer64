@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-03-23
+ * \updates       2016-03-26
  * \license       GNU GPLv2 or above
  *
  *  The functions add_list_var() and add_long_list() have been replaced by
@@ -56,16 +56,6 @@
 #include "scales.h"                     /* key and scale constants  */
 #include "triggers.hpp"                 /* seq64::triggers, etc.    */
 
-/*
- *  An EXPERIMENTAL macro to enable pause functionality.  At the risk of
- *  messy-looking code, we need to be able to turn this functionality off
- *  until we are sure it is working in every aspect.  More complex than one
- *  would think.  Now part of the global configuration, set up by running the
- *  configure script.
- *
- * #define SEQ64_PAUSE_SUPPORT
- */
-
 /**
  *  Provides a new option to save the Time Signature and Tempo data that may
  *  be present in a MIDI file (in the first track) in the sequence object, and
@@ -82,6 +72,10 @@ namespace seq64
 {
 
 class mastermidibus;
+
+#ifdef SEQ64_PAUSE_SUPPORT
+class perform;
+#endif
 
 /**
  *  Provides a set of methods for drawing certain items.
@@ -112,7 +106,11 @@ enum draw_type
 class sequence
 {
 
-    friend class triggers;              /* will unfriend later */
+#ifdef SEQ64_PAUSE_SUPPORT
+    friend class perform;               /* access to set_parent()   */
+#endif
+
+    friend class triggers;              /* will unfriend later      */
 
 public:
 
@@ -160,6 +158,20 @@ private:
 private:
 
     static event_list m_events_clipboard;
+
+#ifdef SEQ64_PAUSE_SUPPORT
+
+    /**
+     *  For pause support, we need a way for the sequence to find out if JACK
+     *  transport is active.  We can use the rc_settings flag(s), but JACK
+     *  could be disconnected.  We could use a reference here, but, to avoid
+     *  modifying the midifile class as well, we use a pointer.  It is set in
+     *  perform::add_sequence().
+     */
+
+    perform * m_parent;
+
+#endif
 
     /**
      *  This list holds the current pattern/sequence events.
@@ -1014,6 +1026,7 @@ public:
 
 private:
 
+    void set_parent (perform * p);
     void put_event_on_bus (event & ev);
     void set_trigger_offset (midipulse trigger_offset);
     void split_trigger (trigger & trig, midipulse splittick);

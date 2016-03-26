@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-03-24
+ * \updates       2016-03-26
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -175,7 +175,7 @@ perform::perform (gui_assistant & mygui, int ppqn)
         m_seqs_active[i] = m_was_active_main[i] = m_was_active_edit[i] =
             m_was_active_perf[i] = m_was_active_names[i] = false;
     }
-    midi_control zero;                          /* all members false or 0   */
+    midi_control zero;                  /* all members false or 0   */
     for (int i = 0; i < c_midi_controls; ++i)
     {
         m_midi_cc_toggle[i] = zero;
@@ -581,6 +581,9 @@ perform::install_sequence (sequence * seq, int seqnum)
     if (not_nullptr(seq))
     {
         set_active(seqnum, true);
+#if SEQ64_PAUSE_SUPPORT
+        seq->set_parent(this);
+#endif
         ++m_sequence_count;
         result = true;                  /* a modification occurred  */
     }
@@ -722,13 +725,13 @@ perform::delete_sequence (int seq)
 void
 perform::set_active (int seq, bool active)
 {
-    if (is_mseq_valid(seq))                     // is_seq_valid(seq)
+    if (is_mseq_valid(seq))
     {
         if (m_seqs_active[seq] && ! active)
             set_was_active(seq);
 
         m_seqs_active[seq] = active;
-        if (active)                             // && not_nullptr(m_seqs[seq]))
+        if (active)
         {
             m_seqs[seq]->number(seq);
             if (m_seqs[seq]->name().empty())
@@ -750,10 +753,10 @@ perform::set_was_active (int seq)
 {
     if (is_seq_valid(seq))
     {
-        m_was_active_main[seq] = true;
-        m_was_active_edit[seq] = true;
-        m_was_active_perf[seq] = true;
-        m_was_active_names[seq] = true;
+        m_was_active_main[seq] = 
+            m_was_active_edit[seq] =
+            m_was_active_perf[seq] =
+            m_was_active_names[seq] = true;
     }
 }
 
@@ -904,7 +907,7 @@ perform::set_beats_per_minute (int bpm)
         bpm = SEQ64_MAXIMUM_BPM;
 
 #ifdef SEQ64_JACK_SUPPORT
-    bool ok = ! (m_jack_asst.is_running() && m_running);
+    bool ok = ! (is_jack_running() && m_running);
     if (ok)
         m_jack_asst.set_beats_per_minute(bpm);
 #else
@@ -1394,7 +1397,7 @@ perform::start_playing (bool jackflag)
      * Sequencer64 from starting JACK transport!
      */
 
-    if (! m_jack_asst.is_running())
+    if (! is_jack_running())
         set_running(true);
 
     rc().is_pattern_playing(true);      /* let's deprecate this             */
@@ -1418,10 +1421,9 @@ perform::pause_playing ()
 {
 #ifdef SEQ64_JACK_SUPPORT
     m_jack_asst.stop();                 // stop_jack()
-    if (! m_jack_asst.is_running())     // stop() { inner_stop(); }
+    if (! is_jack_running())            // stop() { inner_stop(); }
     {
 #endif
-        // set_start_tick(tick);
         set_running(false);
         reset_sequences(true);          /* resets "last-tick" for pause  */
         m_usemidiclock = false;
@@ -1477,7 +1479,7 @@ void
 perform::start (bool state)
 {
 #ifdef SEQ64_JACK_SUPPORT
-    if (! m_jack_asst.is_running())
+    if (! is_jack_running())
 #endif
         inner_start(state);
 }
@@ -1493,7 +1495,7 @@ void
 perform::stop ()
 {
 #ifdef SEQ64_JACK_SUPPORT
-    if (! m_jack_asst.is_running())
+    if (! is_jack_running())
 #endif
         inner_stop();
 }
@@ -1545,7 +1547,7 @@ void
 perform::inner_stop ()
 {
     set_running(false);
-    if (! m_jack_asst.is_running())
+    if (! is_jack_running())
         reset_sequences();              /* sets the "last-tick" value   */
 
     m_usemidiclock = false;
@@ -1595,10 +1597,10 @@ perform::reset_sequences (bool pause)
 {
     if (! pause)
     {
-        for (int i = 0; i < m_sequence_max; ++i)
+        for (int s = 0; s < m_sequence_max; ++s)
         {
-            if (is_active(i))
-                m_seqs[i]->reset(m_playback_mode, pause);
+            if (is_active(s))
+                m_seqs[s]->reset(m_playback_mode);
         }
     }
     m_master_bus.flush();                           /* flush the MIDI buss  */
@@ -1764,20 +1766,7 @@ perform::output_func ()
 #endif
 
         jack_scratchpad pad;
-        if (is_pausable())                  // EXPERIMENTAL
-        {
-            pad.js_current_tick = double(get_tick());   // STILL REWINDS?
-        }
-        else
-        {
-            /*
-             * Disabling this code does not allow playback to continue from
-             * pause in ALSA.  js_total_tick and js_clock_tick, eventually get
-             * set to the apparent js_current_tick value.  So why the rewind?
-             */
-
-            pad.js_current_tick = 0.0;      // tick and tick fraction
-        }
+        pad.js_current_tick = 0.0;          // tick and tick fraction
         pad.js_total_tick = 0.0;
 #ifdef USE_SEQ24_0_9_3_CODE
         pad.js_clock_tick = 0;              // long probably offers more ticks
@@ -1819,7 +1808,7 @@ perform::output_func ()
          */
 
 #ifdef SEQ64_JACK_SUPPORT
-        bool ok = m_playback_mode && ! m_jack_asst.is_running();
+        bool ok = m_playback_mode && !  is_jack_running();
 #else
         bool ok = m_playback_mode;
 #endif
@@ -1867,7 +1856,6 @@ perform::output_func ()
              */
 
 #ifndef PLATFORM_WINDOWS
-
             clock_gettime(CLOCK_REALTIME, &current);
             delta.tv_sec  = current.tv_sec - last.tv_sec;
             delta.tv_nsec = current.tv_nsec - last.tv_nsec;
@@ -1891,10 +1879,6 @@ perform::output_func ()
              * resolution and calculate delta_tick from that.
              */
 
-			/*
-			 * EXPERIMENT:  Calculate both ways and print them out.
-			 */
-
 #ifdef USE_SEQ24_0_9_3_CODE
             long long delta_tick_num = bpm * ppqn * delta_us +
                 pad.js_delta_tick_frac;
@@ -1902,13 +1886,13 @@ perform::output_func ()
             long long delta_tick_denom = 60000000LL;
 
             /*
-             * EXPERIMENT: Store as a double value instead of long.
+             * Store as a double value instead of long.
              *
-             * long delta_tick = long(delta_tick_num / delta_tick_denom);
+             *  long delta_tick = long(delta_tick_num / delta_tick_denom);
              *
              * This seems to get truncated.  Convert to double instead.
              *
-             * double ll_delta_tick = double(delta_tick_num / delta_tick_denom);
+             *  double ll_delta_tick = double(delta_tick_num / delta_tick_denom);
              *
              * But even with this change, we still get wide variations:
              *
@@ -1927,14 +1911,12 @@ perform::output_func ()
 #endif
 
 #ifdef USE_EXPERIMENTAL_DEBUG_OUTPUT
-            printf                                  // EXPERIMENTAL
+            printf
             (
                 "delta_tick: seq24 0.9.3 --> %g, normal --> %g\n",
                 ll_delta_tick, delta_tick
             );
 #endif
-
-            // CLEAN UP THE ABOVE WHEN DONE EXPERIMENTING
 
             if (m_usemidiclock)
             {
@@ -2154,7 +2136,6 @@ perform::output_func ()
                 printf("[%3d][%8ld]\n", i * 300, stats_clock[i]);
             }
         }
-#ifndef SEQ64_PAUSE_SUPPORT             // EXPERIMENTAL
 
         /*
          * Disabling this setting allows all of the progress bars (seqroll,
@@ -2163,8 +2144,11 @@ perform::output_func ()
          * begins again, without some other changes.
          */
 
-        m_tick = 0;
+#ifdef SEQ64_PAUSE_SUPPORT
+        if (is_jack_running())
 #endif
+            m_tick = 0;
+
         m_master_bus.flush();
         m_master_bus.stop();
     }
@@ -2909,6 +2893,45 @@ perform::playback_key_event (const keystroke & k, bool jackflag)
         }
     }
     return result;
+}
+
+/**
+ *  Gets the max-tick value of all active sequences.  We can't seem to
+ *  find a way to get a good value from the perform object itself, so we get
+ *  it from the sequences.  This approach kind of works, but the result is
+ *  slow.  We could optimize it a little by saving the indices of the first
+ *  and last active sequence.
+ *
+ * \return
+ *      If no active sequence is found, 0 is returned.  Otherwise, the
+ *      maximum get_last_tick() value of the active sequences is returned.
+ */
+
+midipulse
+perform::get_max_tick () const
+{
+#ifdef SEQ64_PAUSE_SUPPORT
+    midipulse result = 0;
+    if (is_jack_running())
+    {
+        result = get_tick();
+    }
+    else
+    {
+        for (int s = 0; s < c_max_sequence; ++s)
+        {
+            if (is_active(s))
+            {
+                midipulse current = m_seqs[s]->get_last_tick();
+                if (current > result)
+                    result = current;
+            }
+        }
+    }
+    return result;
+#else
+    return get_tick();
+#endif
 }
 
 }           // namespace seq64

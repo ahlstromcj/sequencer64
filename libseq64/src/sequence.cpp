@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-03-20
+ * \updates       2016-03-26
  * \license       GNU GPLv2 or above
  *
  *  The functionality of this class also includes handling some of the
@@ -38,6 +38,7 @@
 #include <stdlib.h>
 
 #include "mastermidibus.hpp"
+#include "perform.hpp"
 #include "scales.h"
 #include "sequence.hpp"
 
@@ -58,6 +59,7 @@ event_list sequence::m_events_clipboard;
 
 sequence::sequence (int ppqn)
  :
+    m_parent                    (nullptr),
     m_events                    (),
     m_triggers                  (*this),
     m_events_undo               (),
@@ -140,6 +142,7 @@ sequence::partial_assign (const sequence & rhs)
     if (this != &rhs)
     {
         automutex locker(m_mutex);
+        m_parent   = rhs.m_parent;                  /* a pointer, careful!  */
         m_events   = rhs.m_events;
         m_triggers = rhs.m_triggers;
         m_midi_channel = rhs.m_midi_channel;
@@ -381,8 +384,7 @@ sequence::off_queued ()
  * \note
  *      With pause support, the progress bar for the pattern/sequence editor
  *      does what we want:  pause with the pause button, and rewind with the
- *      stop button.  However, the mainwid slots still rewind the progress bar
- *      either way, more work needed.  Works with JACK, but we'd like to have
+ *      stop button.  Works with JACK, with issues, but we'd like to have
  *      the stop button do a rewind in JACK, too.
  *
  * \param tick
@@ -406,7 +408,14 @@ sequence::play (midipulse tick, bool playback_mode)
     midipulse start_tick = m_last_tick;     /* modified in triggers::play() */
 
 #ifdef SEQ64_PAUSE_SUPPORT
-    tick = m_last_tick;                     /* see note in banner           */
+
+    /*
+     * Note that this is currently the only reason for providing the m_parent
+     * member.
+     */
+
+    if (not_nullptr(m_parent) && ! m_parent->is_jack_running())
+        tick = m_last_tick;                 /* see note in banner           */
 #endif
 
     midipulse end_tick = tick;              /* ditto !!!                    */
@@ -3067,6 +3076,21 @@ sequence::copy_events (const event_list & newevents)
      */
 
     set_dirty();
+}
+
+/**
+ * \setter m_parent
+ *      Sets the "parent" of this sequence, so that it can get some extra
+ *      information about the performance.  Remember that m_parent is not at
+ *      all owned by the sequence.  We just don't want to do all the work
+ *      necessary to make it a reference, at this time.
+ */
+
+void
+sequence::set_parent (perform * p)
+{
+    if (is_nullptr(m_parent) && not_nullptr(p))
+        m_parent = p;
 }
 
 }           // namespace seq64

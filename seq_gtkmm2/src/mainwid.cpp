@@ -136,11 +136,7 @@ mainwid::draw_sequences_on_pixmap ()
     for (int s = 0; s < m_screenset_slots; ++s, ++offset)
     {
         draw_sequence_on_pixmap(offset);
-#ifdef SEQ64_PAUSE_SUPPORT
-        // TODO:  FIGURE THIS OUT
-        // m_last_tick_x[offset] = seq.get_last_tick();
-        // m_last_tick_x[offset] = 0;
-#else
+#ifndef SEQ64_PAUSE_SUPPORT
         m_last_tick_x[offset] = 0;
 #endif
     }

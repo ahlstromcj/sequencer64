@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-03-24
+ * \updates       2016-03-26
  * \license       GNU GPLv2 or above
  *
  *  This class still has way too many members, even with the JACK and
@@ -288,10 +288,12 @@ private:
 
     /**
      *  MIDI Clock support.  The m_tick member holds the tick to be used in
-     *  displaying the progress bars and the maintime pill.
+     *  displaying the progress bars and the maintime pill.  It is mutable
+     *  because sometimes we want to adjust it in a const function for pause
+     *  functionality.
      */
 
-    midipulse m_tick;
+    mutable midipulse m_tick;
 
     /**
      *  More MIDI clock support.
@@ -318,7 +320,6 @@ private:
     int m_midiclockpos;
 
     /**
-     *  EXPERIMENTAL.
      *  Support for pause, which does not reset the "last tick" when playback
      *  stops/starts.
      */
@@ -646,13 +647,15 @@ public:
     /**
      * \getter m_starting_tick
      *      Doesn't seem to be use yet.  Just sayin'.
-     */
 
     midipulse get_start_tick () const
     {
         return m_starting_tick;
     }
+     *
+     */
 
+    midipulse get_max_tick () const;
     void set_right_tick (midipulse tick, bool setstart = true);
 
     /**
@@ -841,7 +844,7 @@ public:
      *      invalid or null.
      */
 
-    bool is_active (int seq)
+    bool is_active (int seq) const
     {
         return is_mseq_valid(seq) ? m_seqs_active[seq] : false ;
     }

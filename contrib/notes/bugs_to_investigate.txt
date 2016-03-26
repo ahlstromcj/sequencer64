@@ -1,6 +1,6 @@
 Bugs and Additional Upgrade Ideas
 Chris Ahlstrom
-2015-10-27 to 2016-03-23 (New bugs)
+2015-10-27 to 2016-03-26 (New bugs)
 
 In no particular order...  "y" means "in progress", and "x" means it is
 basically done.
@@ -20,6 +20,9 @@ y  PAUSE SUPPORT:
    -    Currently, stop (Escape) in seqroll makes the cursor disappear, and
         then playback resumes from pause.  The cursor rewinds, but then
         reappears as if a pause was performed.
+   -    When the song editor Pause is used, the mainwid progress bars still
+        reset to the beginning.  Same for song editor and pattern editor
+        progress bars.  The reset does not occur until Play is pressed again.
 x  The pattern editor ends up zipping to the end of the pattern
    after a few start/stops, in JACK mode only.  Fixed by rewinding
    in qjackctl; seems to start when using space-bar toggle in perfedit.

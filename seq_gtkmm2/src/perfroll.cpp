@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-02-14
+ * \updates       2016-03-26
  * \license       GNU GPLv2 or above
  *
  *  The performance window allows automatic control of when each
@@ -362,12 +362,28 @@ perfroll::enqueue_draw ()
  *  If we comment out the erasure of the old line, we see that the progress
  *  bar is also erased when a pattern boundary is hit (triggers), and when the
  *  sequence is stopped by the user.
+ *
+ *  In order to support true pause in the song editor, we tried to replace
+ *  perform::get_tick() with perform::get_start_tick() and
+ *  perform::get_last_tick() [a new experimental function].  But those
+ *  replacements here always return 0, even as perform::get_tick() increases.
+ *  Now were are trying a newer function, perform::get_max_tick(), which seems
+ *  to do the trick for resuming (instead of rewinding) the progress bar.
+ *  It's still a tiny bit laggy, so we have to find a faster way to get the
+ *  maximum.  (Note that the draw_progress function is called at every
+ *  timeout, that is, constantly.)
  */
 
 void
 perfroll::draw_progress ()
 {
-    midipulse tick = perf().get_tick();
+    /*
+     * This perform::get_max_tick() call doesn't work with JACK, the progress
+     * bar rewinds to the beginning when playback is paused, though it does
+     * resume where it left off.
+     */
+
+    midipulse tick = perf().get_max_tick();     // replaces/enhances get_tick()
     midipulse tick_offset = m_4bar_offset * m_ticks_per_bar;
     int progress_x = (tick - tick_offset) / m_perf_scale_x;
     int old_progress_x = (m_old_progress_ticks - tick_offset) / m_perf_scale_x;

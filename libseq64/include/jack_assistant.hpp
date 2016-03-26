@@ -54,7 +54,7 @@
  * we're doing wrong. Do not enable it unless you are willing to test it.
  */
 
-#undef  USE_SEQ24_0_9_3_CODE            // DEFINE ONLY FOR EXPERIMENTING!
+#undef  USE_SEQ24_0_9_3_CODE            /* DEFINE ONLY FOR EXPERIMENTING!   */
 
 namespace seq64
 {
@@ -283,7 +283,7 @@ public:
     void position                       // position_jack();
     (
         bool to_left_tick,              // instead of current tick
-        bool relocate = false           // enable "dead code" EXPERIMENTAL
+        bool relocate = false           // enable "dead code"
     );
     bool output (jack_scratchpad & pad);
 

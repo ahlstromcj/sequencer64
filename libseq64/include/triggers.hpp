@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-10-30
- * \updates       2016-03-20
+ * \updates       2016-03-25
  * \license       GNU GPLv2 or above
  *
  *  By segregating trigger support into its own module, the sequence class is
@@ -366,16 +366,16 @@ public:
     void push_undo ();
     void pop_undo ();
     void print (const std::string & seqname);
-    bool play (midipulse & start_tick, midipulse & end_tick);
-
+    bool play (midipulse & starttick, midipulse & endtick);
     void add
     (
-        midipulse tick, midipulse len, midipulse offset = 0, bool adjustoffset = true
+        midipulse tick, midipulse len,
+        midipulse offset = 0, bool adjustoffset = true
     );
     void adjust_offsets_to_length (midipulse newlen);
     void split (midipulse tick);
-    void split (trigger & trig, midipulse split_tick);
-    void grow (midipulse tick_from, midipulse tick_to, midipulse length);
+    void split (trigger & trig, midipulse splittick);
+    void grow (midipulse tickfrom, midipulse tickto, midipulse length);
     void remove (midipulse tick);
     bool get_state (midipulse tick);
     bool select (midipulse tick);
@@ -391,8 +391,8 @@ public:
     midipulse get_selected_start ();
     midipulse get_selected_end ();
     midipulse get_maximum ();
-    void move (midipulse start_tick, midipulse distance, bool direction);
-    void copy (midipulse start_tick, midipulse distance);
+    void move (midipulse starttick, midipulse distance, bool direction);
+    void copy (midipulse starttick, midipulse distance);
 
     /**
      *  Clears the whole list of triggers.

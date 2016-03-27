@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-03-26
+ * \updates       2016-03-27
  * \license       GNU GPLv2 or above
  *
  *  The functionality of this class also includes handling some of the
@@ -59,7 +59,9 @@ event_list sequence::m_events_clipboard;
 
 sequence::sequence (int ppqn)
  :
+#ifdef SEQ64_PAUSE_SUPPORT
     m_parent                    (nullptr),
+#endif
     m_events                    (),
     m_triggers                  (*this),
     m_events_undo               (),
@@ -142,7 +144,9 @@ sequence::partial_assign (const sequence & rhs)
     if (this != &rhs)
     {
         automutex locker(m_mutex);
+#ifdef SEQ64_PAUSE_SUPPORT
         m_parent   = rhs.m_parent;                  /* a pointer, careful!  */
+#endif
         m_events   = rhs.m_events;
         m_triggers = rhs.m_triggers;
         m_midi_channel = rhs.m_midi_channel;
@@ -407,11 +411,14 @@ sequence::play (midipulse tick, bool playback_mode)
     bool trigger_turning_off = false;       /* turn off after frame play    */
     midipulse start_tick = m_last_tick;     /* modified in triggers::play() */
 
-#ifdef SEQ64_PAUSE_SUPPORT
+#ifdef SEQ64_PAUSE_SUPPORT_XXX              /* disable, it works like crap  */
 
     /*
      * Note that this is currently the only reason for providing the m_parent
      * member.
+     *
+     * HOWEVER, enabling this code can make ALSA playback run slow!  Not yet
+     * sure why.  Therefore, this code is currently DISABLED.
      */
 
     if (not_nullptr(m_parent) && ! m_parent->is_jack_running())
@@ -3078,6 +3085,8 @@ sequence::copy_events (const event_list & newevents)
     set_dirty();
 }
 
+#ifdef SEQ64_PAUSE_SUPPORT
+
 /**
  * \setter m_parent
  *      Sets the "parent" of this sequence, so that it can get some extra
@@ -3092,6 +3101,8 @@ sequence::set_parent (perform * p)
     if (is_nullptr(m_parent) && not_nullptr(p))
         m_parent = p;
 }
+
+#endif
 
 }           // namespace seq64
 

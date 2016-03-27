@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-20
- * \updates       2016-03-04
+ * \updates       2016-03-27
  * \license       GNU GPLv2 or above
  *
  *  The "rc" command-line options override setting that are first read from
@@ -141,14 +141,14 @@ static const std::string s_arg_list =
     ;
 
 static const char * const s_help_1a =
-"sequencer64 v 0.9.10.1 A significant refactoring of the seq24 live sequencer.\n"
+"sequencer64 v 0.9.10.1 A significant reboot of the seq24 live sequencer.\n"
 "\n"
 "Usage: sequencer64 [options] [MIDI filename]\n\n"
 "Options:\n"
 "   -h, --help               Show this message.\n"
 "   -V, --version            Show program version information.\n"
-"   -l, --legacy             Write MIDI file in old Seq24 format.  Also set\n"
-"                            if Sequencer64 is called as 'seq24'.\n"
+"   -l, --legacy             Write MIDI file in strict Seq24 format.  Same if\n"
+"                            Sequencer64 is run as 'seq24'.\n"
 #ifdef SEQ64_LASH_SUPPORT
 "   -L, --lash               Activate built-in LASH support.\n"
 "   -n, --no-lash            Do not activate built-in LASH support.\n"
@@ -156,8 +156,7 @@ static const char * const s_help_1a =
 "   -m, --manual-alsa-ports  Don't attach ALSA ports.  Use when exposing ALSA\n"
 "                            ports to JACK (e.g. using a2jmidid).\n"
 "   -a, --auto-alsa-ports    Attach ALSA ports (overrides the 'rc' file).\n"
-"   -A, --alsa               Don't use JACK, use ALSA, even if the 'rc' file.\n"
-"                            specifies JACK.\n"
+"   -A, --alsa               Don't use JACK, use ALSA. A sticky option.\n"
     ;
 
 static const char * const s_help_1b =
@@ -165,8 +164,8 @@ static const char * const s_help_1b =
 "   -q, --ppqn qn            Specify new default PPQN, or 'file'.  Note that\n"
 "                            the legacy default is 192.\n"
 "   -p, --priority           Run high priority, FIFO scheduler (needs root).\n"
-"   -P, --pass-sysex         Passes incoming SysEx messages to all outputs.\n"
-"                            IS THIS SUPPORTED?\n"
+// "   -P, --pass-sysex         Passes incoming SysEx messages to all outputs.\n"
+// "                            IS THIS SUPPORTED?\n"
 "   -i, --ignore n           Ignore ALSA device number.\n"
 "   -s, --show-midi          Dump incoming MIDI events to the screen.\n"
     ;
@@ -177,8 +176,7 @@ static const char * const s_help_2 =
 #ifdef SEQ64_JACK_SUPPORT
 "   -j, --jack-transport     Synchronize to JACK transport.\n"
 "   -J, --jack-master        Try to be JACK Master. Also sets -j.\n"
-"   -C, --jack-master-cond   JACK Master will fail if there's already a master.\n"
-"                            Also sets -j.\n"
+"   -C, --jack-master-cond   Fail if there's already a Jack Master; sets -j.\n"
 "   -M, --jack-start-mode m  When synced to JACK, the following play modes are\n"
 "                            available: 0 = live mode; 1 = song mode (default).\n"
 " -U, --jack-session-uuid u  Set UUID for JACK session.\n"
@@ -196,11 +194,10 @@ static const char * const s_help_3 =
     ;
 
 static const char * const s_help_4 =
-"The --ppqn option works pretty well, but be aware that bugs may exist in it.\n"
-"If a MIDI file is re-saved with that setting, the --ppqn value is also saved.\n"
-"If no JACK or LASH options are shown above, they have been disabled in the\n"
-"build configuration. Note that command-line options can be sticky; they\n"
-"generally get saved to the configuration files when Sequencer64 exits.\n"
+"--ppqn works, but be aware that it may have bugs.  If a MIDI file is re-saved,\n"
+"--ppqn is also saved.  If no JACK/LASH options are shown above, they were\n"
+"disabled in the build configuration. Command-line options can be sticky; most\n"
+"get re-saved to the configuration files when Sequencer64 exits.\n"
 "User manual: https://github.com/ahlstromcj/sequencer64-doc\n"
     ;
 

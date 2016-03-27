@@ -1,6 +1,6 @@
 Contributed MIDI Files
 Chris Ahlstrom
-2015-09-11 to 2016-01-31
+2015-09-11 to 2016-03-27
 
 This directory contains contributed MIDI files for examples and testing.
 Also see the test files from the midicvt as described in
@@ -10,6 +10,9 @@ by loading them into Sequencer64.
    allofarow.mid:
 
         A file having a lot of empty tracks and one filled track.
+        In Sequencer64, it loads as 140 BPM, but plays really slowly.
+
+        In seq24, it loads as 120 BPM, but plays somewhat normally!
 
    ameeting.mid:
 

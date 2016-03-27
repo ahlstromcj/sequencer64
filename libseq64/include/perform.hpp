@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-03-26
+ * \updates       2016-03-27
  * \license       GNU GPLv2 or above
  *
  *  This class still has way too many members, even with the JACK and
@@ -383,11 +383,11 @@ private:
 
     condition_var m_condition_var;
 
+#ifdef SEQ64_JACK_SUPPORT
     /**
      *  A wrapper object for the JACK support of this application.
      */
 
-#ifdef SEQ64_JACK_SUPPORT
     jack_assistant m_jack_asst;         // implements most of the JACK stuff
 #endif
 
@@ -644,17 +644,6 @@ public:
         m_starting_tick = tick;
     }
 
-    /**
-     * \getter m_starting_tick
-     *      Doesn't seem to be use yet.  Just sayin'.
-
-    midipulse get_start_tick () const
-    {
-        return m_starting_tick;
-    }
-     *
-     */
-
     midipulse get_max_tick () const;
     void set_right_tick (midipulse tick, bool setstart = true);
 
@@ -790,10 +779,6 @@ public:
     void select_mute_group (int group);
     void start (bool state);
     void stop ();
-
-    /*
-     * bool jack_session_event (); Replaced by jack_assistant::session_event().
-     */
 
     /**
      *  If JACK is supported, starts the JACK transport.
@@ -974,7 +959,7 @@ public:
         keys().show_ui_sequence_number(flag);
     }
 
-    /*
+    /**
      * Getters of keyboard mapping for sequence and groups.
      * If not found, returns something "safe" [so use get_key()->count()
      * to see if it's there first]

@@ -1,3 +1,61 @@
+2016-03-26  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* configure.ac, contrib/notes/bugs_to_investigate.txt,
+	libseq64/include/jack_assistant.hpp, libseq64/include/perform.hpp,
+	libseq64/include/sequence.hpp, libseq64/include/triggers.hpp,
+	libseq64/src/perform.cpp, libseq64/src/sequence.cpp,
+	seq_gtkmm2/src/mainwid.cpp, seq_gtkmm2/src/perfroll.cpp: Interim
+	check-in of progress/pause code, more fixed, but still more issues.
+
+2016-03-25  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* INSTALL, README, configure.ac, libseq64/include/perform.hpp,
+	libseq64/src/perform.cpp, libseq64/src/sequence.cpp,
+	seq_gtkmm2/src/eventedit.cpp, seq_gtkmm2/src/mainwid.cpp,
+	seq_gtkmm2/src/mainwnd.cpp, seq_gtkmm2/src/seqroll.cpp: Got pause
+	working in mainwid pattern slots, still experimental.
+
+2016-03-24  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* contrib/notes/jack-testing.txt, libseq64/src/perform.cpp,
+	resources/pixmaps/pause.xpm, seq_gtkmm2/src/mainwnd.cpp,
+	seq_gtkmm2/src/perfedit.cpp: Tweaked pause button bitmap and
+	progress-bar support.
+
+2016-03-23  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* contrib/notes/bugs_to_investigate.txt,
+	libseq64/include/perform.hpp, libseq64/include/sequence.hpp,
+	seq_gtkmm2/include/mainwnd.hpp, seq_gtkmm2/include/perfedit.hpp,
+	seq_gtkmm2/src/mainwnd.cpp, seq_gtkmm2/src/options.cpp,
+	seq_gtkmm2/src/perfedit.cpp: Changed play button to move between
+	play image and pause image.
+	* configure.ac, contrib/notes/bugs_to_investigate.txt,
+	libseq64/include/keys_perform.hpp, libseq64/include/sequence.hpp,
+	libseq64/src/keys_perform.cpp, libseq64/src/optionsfile.cpp,
+	libseq64/src/perform.cpp, seq_gtkmm2/src/mainwnd.cpp,
+	seq_gtkmm2/src/options.cpp, seq_gtkmm2/src/perfedit.cpp: Add
+	--disable-pause option to configure.ac, more refining and analysis
+	of pause/resume/stop/start action.
+
+2016-03-22  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/include/keys_perform.hpp, libseq64/src/optionsfile.cpp,
+	libseq64/src/perform.cpp, seq_gtkmm2/src/mainwnd.cpp,
+	seq_gtkmm2/src/seqroll.cpp: Adding a pause key to the configuration,
+	in progress.
+
+2016-03-21  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* ChangeLog, contrib/scripts/AlsaExample,
+	contrib/scripts/YoSeqAlsa, contrib/scripts/YoSeqJack,
+	libseq64/include/perform.hpp, libseq64/include/sequence.hpp,
+	libseq64/src/perform.cpp, libseq64/src/sequence.cpp,
+	seq_gtkmm2/src/seqedit.cpp, seq_gtkmm2/src/seqroll.cpp: Progress
+	cleaning/testing, and giving seqroll the first focus, to allow
+	start/stop control keys there, if the seqedit sequence name has
+	already been set.
+
 2016-03-20  Chris Ahlstrom <ahlstromcj@gmail.com>
 
 	* contrib/code/perfstats.hpp,

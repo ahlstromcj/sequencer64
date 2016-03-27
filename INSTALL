@@ -1,6 +1,6 @@
 INSTALL for Sequencer64 v. 0.9.10.1
 Chris Ahlstrom
-2015-09-10 to 2016-03-25
+2015-09-10 to 2016-03-27
 
 The current packaging for Sequencer64 is primarily aimed at developers.
 There is currently no configure script... it must be bootstrapped.
@@ -12,7 +12,9 @@ Steps:
        or, at worst, a build error will tell you.
 
    1.  Check-out the branch you want.  Make a branch if you want to make
-       changes.
+       changes.  The current branches are "master" and "fixups".  The latter
+       is where we do most of our tentative changes, and it can be way ahead
+       of "master" in number of commits.
 
    2. From the top project directory, run the commands:
 
@@ -118,17 +120,18 @@ MANUALLY-DEFINED MACROS IN CODE:
 
     SEQ64_HANDLE_TIMESIG_AND_TEMPO:
 
-    Provides a new option to save the Time Signature and Tempo data
-    that may be present in a MIDI file (in the first track) in the
-    sequence object, and write them back to the MIDI file when saved
-    again, in Sequencer64 format.  The SeqSpec events that Seq24 and
-    Sequencer64 save for these "events" are not readable by other MIDI
-    applications, such as QTractor.  By enabling this macro, other
-    sequencers can read the correct time-signature and tempo values.
+        Provides a new option to save the Time Signature and Tempo data
+        that may be present in a MIDI file (in the first track) in the
+        sequence object, and write them back to the MIDI file when saved
+        again, in Sequencer64 format.  The SeqSpec events that Seq24 and
+        Sequencer64 save for these "events" are not readable by other MIDI
+        applications, such as QTractor.  By enabling this macro, other
+        sequencers can read the correct time-signature and tempo values from
+        Sequencer64 MIDI files.
 
     SEQ64_USE_NEW_FONT:
 
-        Obsolete:  now an option that can be changed in the user-settings
+        OBSOLETE:  now an option that can be changed in the user-settings
         ("user") configuration file.
 
         Already defined in the font module.  If defined, a new, anti-aliased,
@@ -206,7 +209,7 @@ MANUALLY-DEFINED MACROS IN CODE:
         This category of macro are usually undefined values that let us keep
         old code around in case we decide it was the better code after all.
         Generally, you do not want to change the status of these macros unless
-        you are familiar with the code.
+        you are very familiar with the code.
 
 DEPENDENCIES:
 

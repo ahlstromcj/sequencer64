@@ -59,7 +59,7 @@ cat << E_O_F
 Usage: YoSeqJack [options]
 
 Starts or stops sequencer64 and yoshimi for usage with JACK, via QJackCtl and
-a2jmidid.
+a2jmidid.  Also adds klick, a command-line JACK metronome, to the mix.
 
 Options:
 
@@ -79,17 +79,20 @@ elif [ "$YoseqStatus" == "off" ] ; then
    killall $Seq > /dev/null
    killall yoshimi > /dev/null
    killall a2jmidid > /dev/null
+#  killall klick > /dev/null
    killall qjackctl > /dev/null
    echo "$Seq, Yoshimi, a2jmidid, and qjackctl stopped."
 
 else
 
-   echo "Starting $Seq, Yoshimi, a2jmidid, and qjackctl.  Make connections in"
-   echo "qjackctl, for audio and MIDI, once Yoshimi has started."
+   echo "Starting $Seq, Yoshimi, a2jmidid, klick, and qjackctl.  Make connections"
+   echo "in qjackctl, for audio and MIDI, once Yoshimi has started."
    qjackctl &
    sleep 1
    a2jmidid --export-hw &
    sleep 1
+#  klick -j -P &
+#  sleep 1
    $Sequencer -J &
    sleep 1
    $Yoshi -j -J

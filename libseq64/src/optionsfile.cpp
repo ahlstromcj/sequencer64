@@ -402,6 +402,7 @@ optionsfile::parse (perform & p)
     }
 
     line_after(file, "[midi-clock-mod-ticks]");
+
     long ticks = 64;
     sscanf(m_line, "%ld", &ticks);
     midibus::set_clock_mod(ticks);
@@ -687,9 +688,10 @@ optionsfile::write (const perform & p)
     file
         << "\n[manual-alsa-ports]\n\n"
         << "# Set to 1 to have sequencer64 create its own ALSA ports and not\n"
-        << "# connect to other clients.  Use 1 to expose the MIDI ports to\n"
+        << "# connect to other clients.  Use 1 to expose all the MIDI ports to\n"
         << "# JACK (e.g. via a2jmidid).  Use 0 to access the ALSA MIDI ports\n"
-        << "# already running on one's computer.\n"
+        << "# already running on one's computer, or to use the MIDI Through\n"
+        << "# (capture) output alone in JACK.\n"
         << "\n"
         << rc().manual_alsa_ports()
         << "   # flag for manual ALSA ports\n"

@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-02-20
+ * \updates       2016-03-27
  * \license       GNU GPLv2 or above
  *
  *  For a quick guide to the MIDI format, see, for example:
@@ -750,9 +750,15 @@ midifile::parse_smf_1 (perform & p, int screenset, bool is_smf0)
 
                             if ((len == 4) && ! timesig_set)
                             {
+                                /*
+                                 * \change ca 2016-03-27
+                                 *      Found bug when reading allofarow.mid.
+                                 *      Had reversed nn and dd!
+                                 */
+
+                                int bpm = int(read_byte());         // nn
                                 int logbase2 = int(read_byte());    // dd
                                 long bw = long(pow2(logbase2));
-                                int bpm = int(read_byte());         // nn
 #ifdef SEQ64_HANDLE_TIMESIG_AND_TEMPO
                                 int cc = read_byte();               // cc
                                 int bb = read_byte();               // bb

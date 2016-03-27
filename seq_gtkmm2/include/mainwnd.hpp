@@ -57,7 +57,6 @@ namespace Gtk
 
 namespace seq64
 {
-
     class maintime;
     class mainwid;
     class options;

@@ -44,7 +44,8 @@
 #include "midibus.hpp"
 #include "perform.hpp"
 
-/*
+/**
+ *  Provide a "not-a-number" macro.
  * -nan(0x8000000000000)
  */
 

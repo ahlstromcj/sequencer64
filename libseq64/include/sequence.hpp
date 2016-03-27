@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-03-26
+ * \updates       2016-03-27
  * \license       GNU GPLv2 or above
  *
  *  The functions add_list_var() and add_long_list() have been replaced by
@@ -679,7 +679,7 @@ public:
 
     midipulse mod_last_tick ()
     {
-        return (m_length > 1) ?  (m_last_tick % m_length) : m_last_tick ;
+        return (m_length > 1) ? (m_last_tick % m_length) : m_last_tick ;
     }
 
     void set_playing (bool);
@@ -1026,7 +1026,10 @@ public:
 
 private:
 
+#ifdef SEQ64_PAUSE_SUPPORT
     void set_parent (perform * p);
+#endif
+
     void put_event_on_bus (event & ev);
     void set_trigger_offset (midipulse trigger_offset);
     void split_trigger (trigger & trig, midipulse splittick);

@@ -1,6 +1,6 @@
 README for Sequencer64 0.9.10.1 (current branch = "fixups ongoing")
 Chris Ahlstrom
-2015-09-10 to 2016-03-25 (initial work started in July of 2015)
+2015-09-10 to 2016-03-27 (initial work started in July of 2015)
 
 The sequencer64 project is a continuation of sequencer24 to refactor it to be
 tighter and easier to transition to GTKmm 3, and much more.  By now, it is
@@ -29,8 +29,8 @@ Major updates:
         supports pause; we would like to add rewind to JACK transport
         eventually.  Also added is a Pause key (by default, the period).
         Pause can be disabled at configure time (--disable-pause).
-    -   Long sequences now auto-scroll to keep up with the progress bar in the
-        sequence/pattern editor.
+    -   Long sequences/patterns now auto-scroll horizontally during playback
+        to keep up with the progress bar in the sequence/pattern editor.
     -   Highlighting of last sequence brought up for editing.
     -   Configurable progress bar and redraw timeouts.
     -   MIDI Clock support has been fixed.  Sequencer64 will now interact
@@ -101,7 +101,9 @@ Major updates:
             improving its accuracy and comprehensiveness, still in progress,
             but much progress made.
         -   Set Tempo and Time Signature events are now read from
-            non-Sequencer64 MIDI files.
+            non-Sequencer64 MIDI files.  They are also saved in the normal
+            MIDI format, so other sequencers can get them from Sequencer64
+            MIDI files.
         -   The user-interface classes have refactored to derive from
             base classes providing common code.
         -   Sequencer64 now uses std::multimap instead of std::list as an

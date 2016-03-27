@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-03-24
+ * \updates       2016-03-26
  * \license       GNU GPLv2 or above
  *
  */
@@ -614,7 +614,12 @@ perfedit::set_image (bool isplay)
 
 /**
  *  Implement the playing.  JACK will be used if it is present and, in
- *  the application, enabled.
+ *  the application, enabled and working.
+ *
+ * Issue:
+ *      Using false in start_playing() lets ALSA not rewind the progress bar
+ *      when restarting, but it does rewind it when pausing ALSA, though it
+ *      resumes properly when play is clicked again.
  */
 
 void
@@ -626,7 +631,7 @@ perfedit::start_playing ()
     }
     else
     {
-        perf().start_playing(true);
+        perf().start_playing(false);            /* not "true" now   */
 #ifdef SEQ64_PAUSE_SUPPORT
         set_image(false);                       /* set pause image  */
 #endif

@@ -173,10 +173,8 @@ keys_perform::get_keys (keys_perform_transfer & kpt)
 
 /**
  *  At construction time, this function sets up one keycode and one event
- *  slot.
- *
- *  It is called 32 times, corresponding the pattern/sequence slots in the
- *  Patterns window.
+ *  slot.  It is called 32 times, corresponding the pattern/sequence slots in
+ *  the Patterns window.
  *
  * \param keycode
  *      The key to be assigned.
@@ -212,10 +210,8 @@ keys_perform::set_key_event (unsigned int keycode, long sequence_slot)
 
 /**
  *  At construction time, this function sets up one keycode and one group
- *  slot.
- *
- *  It is called 32 times, corresponding the pattern/sequence slots in the
- *  Patterns window.
+ *  slot.  It is called 32 times, corresponding the pattern/sequence slots in
+ *  the Patterns window.
  *
  * \param keycode
  *      The key to be assigned.

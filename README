@@ -52,6 +52,9 @@ Major updates:
         performance and sequence user-interfaces in editing mode, very helpful
         for certain crappy laptop trackpads.  Extra "paint" key support also
         gets around the limitations of some trackpads.
+    -   Shift-left-click on the pattern slot in the pattern editor now
+        toggles the playing state of all other patterns.  This works across
+        screensets.
     -   Shift-left-click on the pattern name or M in the song editor now
         toggles the mute state of all other tracks.
     -   Added arrow key support to some of the windows and panes.

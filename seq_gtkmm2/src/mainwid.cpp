@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-03-19
+ * \updates       2016-03-27
  * \license       GNU GPLv2 or above
  *
  *  Note that this representation is, in a sense, inside the mainwnd
@@ -938,10 +938,34 @@ mainwid::on_button_release_event (GdkEventButton * p)
         }
         else
         {
-            if (is_current_seq_active())        /* toggle its playing status */
+            /*
+             * EXPERIMENTAL.  IF shift is held, toggle all the other
+             * sequences.
+             */
+
+            guint modifiers;        /* for filtering out caps/num lock etc. */
+            modifiers = gtk_accelerator_get_default_mod_mask();
+            if ((p->state & modifiers) == SEQ64_SHIFT_MASK)
             {
-                toggle_current_sequence();
-                redraw(current_seq());
+                for (int s = 0; s < c_max_sequence; ++s)
+                {
+                    if (s != current_seq())
+                    {
+                        perf().sequence_playing_toggle(s);
+                    }
+                }
+            }
+            else
+            {
+                /*
+                 * This is the original, a toggle of one pattern.
+                 */
+
+                if (is_current_seq_active())    /* toggle its playing status */
+                {
+                    toggle_current_sequence();
+                    redraw(current_seq());
+                }
             }
         }
     }

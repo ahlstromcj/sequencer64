@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-03-26
+ * \updates       2016-03-28
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -1596,7 +1596,20 @@ perform::all_notes_off ()
 void
 perform::reset_sequences (bool pause)
 {
-    if (! pause)
+    if (pause)
+    {
+        /*
+         * Try to prevent notes from lingering on pause.  EXPERIMENTAL.
+         * We should also remove the pause parameter from reset.
+         */
+
+        for (int s = 0; s < m_sequence_max; ++s)
+        {
+            if (is_active(s))
+                m_seqs[s]->pause();
+        }
+    }
+    else
     {
         for (int s = 0; s < m_sequence_max; ++s)
         {

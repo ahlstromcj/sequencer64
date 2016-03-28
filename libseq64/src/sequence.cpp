@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-03-27
+ * \updates       2016-03-28
  * \license       GNU GPLv2 or above
  *
  *  The functionality of this class also includes handling some of the
@@ -411,13 +411,14 @@ sequence::play (midipulse tick, bool playback_mode)
     bool trigger_turning_off = false;       /* turn off after frame play    */
     midipulse start_tick = m_last_tick;     /* modified in triggers::play() */
 
-#ifdef SEQ64_PAUSE_SUPPORT_XXX              /* disable, it works like crap  */
+#ifdef SEQ64_PAUSE_SUPPORT_XXX              /* disable, it works wrongly    */
 
     /*
      * Note that this is currently the only reason for providing the m_parent
      * member.
      *
-     * HOWEVER, enabling this code can make ALSA playback run slow!  Not yet
+     * HOWEVER, enabling this code can make ALSA playback run slow!  And it
+     * seems to disable the effect of the BPM control.  Not yet
      * sure why.  Therefore, this code is currently DISABLED.
      */
 
@@ -2308,6 +2309,21 @@ sequence::reset (bool live_mode, bool pause)
 
     if (! live_mode)
         set_playing(state);
+}
+
+/**
+ *  EXPERIMENTAL.  A pause version of reset().  The reset() function is
+ *  currently not called when pausing, but we still need the note-shutoff
+ *  capability to prevent notes from lingering.  Not that we do not call
+ *  set_playing(false)... it disarms the sequence, which we do not want upon
+ *  pausing.
+ */
+
+void
+sequence::pause ()
+{
+    if (get_playing())
+        off_playing_notes();
 }
 
 /**

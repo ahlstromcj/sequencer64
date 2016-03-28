@@ -1,6 +1,6 @@
 Bugs and Additional Upgrade Ideas
 Chris Ahlstrom
-2015-10-27 to 2016-03-27 (New bugs)
+2015-10-27 to 2016-03-28 (New bugs)
 
 In no particular order...  "y" means "in progress", and "x" means it is
 basically done.
@@ -23,13 +23,13 @@ x  allofarow.mid:
 -  It would be good to have a command that dumps the current build settings
    for Sequencer64.  Actually, add it to the --version command.
 y  PAUSE SUPPORT:
-   -    Seems to be susceptible to notes not being turned off
+   x    Seems to be susceptible to notes not being turned off
         (but check the MIDI bus flush as well).  We need to make sure that
         stop and pause both silence all notes, somehow.
    x    It also seems to disable start-stop from Seq64 in JACK mode.
         This is also true in the latest code even if PAUSE SUPPORT is
         OFF.
-   -    If start key == stop key, they become stop/pause.  Allow
+   y    If start key == stop key, they become stop/pause.  Allow
         Esc to automatically be stop (not pause), then.
    -    Currently, stop (Escape) in seqroll makes the cursor disappear, and
         then playback resumes from pause.  The cursor rewinds, but then
@@ -37,6 +37,8 @@ y  PAUSE SUPPORT:
    -    When the song editor Pause is used, the mainwid progress bars still
         reset to the beginning.  Same for song editor and pattern editor
         progress bars.  The reset does not occur until Play is pressed again.
+   -    In ALSA mode, Pause now causes progress to rewind upon re-start.
+        Churn!
 x  The pattern editor ends up zipping to the end of the pattern
    after a few start/stops, in JACK mode only.  Fixed by rewinding
    in qjackctl; seems to start when using space-bar toggle in perfedit.

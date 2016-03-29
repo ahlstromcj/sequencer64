@@ -330,21 +330,6 @@ sequence::set_rec_vol (int recvol)
 }
 
 /**
- * \setter m_last_tick
- *      This function used to be called "set_orig_tick()", now renamed to
- *      match up with get_last_tick().
- *
- * \threadsafe
- */
-
-void
-sequence::set_last_tick (midipulse tick)
-{
-    automutex locker(m_mutex);
-    m_last_tick = tick;
-}
-
-/**
  * \setter m_queued and m_queued_tick
  *
  *  Toggles the queued flag and sets the dirty-mp flag.  Also calculates
@@ -419,7 +404,8 @@ sequence::play (midipulse tick, bool playback_mode)
      *
      * HOWEVER, enabling this code can make ALSA playback run slow!  And it
      * seems to disable the effect of the BPM control.  Not yet
-     * sure why.  Therefore, this code is currently DISABLED.
+     * sure why.  Therefore, this code is currently DISABLED, even though
+     * it allows pause to work correctly.
      */
 
     if (not_nullptr(m_parent) && ! m_parent->is_jack_running())
@@ -2297,14 +2283,14 @@ sequence::paste_trigger ()
  */
 
 void
-sequence::reset (bool live_mode, bool pause)
+sequence::reset (bool live_mode)    // , bool pause)
 {
     bool state = get_playing();
     off_playing_notes();
     set_playing(false);
-    if (pause)
-        set_last_tick(m_last_tick);
-    else
+//  if (pause)
+//      set_last_tick(m_last_tick);
+//  else
         zero_markers();                 /* sets the "last-tick" value   */
 
     if (! live_mode)
@@ -2324,6 +2310,8 @@ sequence::pause ()
 {
     if (get_playing())
         off_playing_notes();
+
+    ///// set_last_tick(m_last_tick);     // TEST ONLY AT PRESENT, no effect
 }
 
 /**
@@ -2542,6 +2530,21 @@ sequence::remove_all ()
     automutex locker(m_mutex);
     m_events.clear();
     m_events.unmodify();
+}
+
+/**
+ * \setter m_last_tick
+ *      This function used to be called "set_orig_tick()", now renamed to
+ *      match up with get_last_tick().
+ *
+ * \threadsafe
+ */
+
+void
+sequence::set_last_tick (midipulse tick)
+{
+    automutex locker(m_mutex);
+    m_last_tick = tick;
 }
 
 /**

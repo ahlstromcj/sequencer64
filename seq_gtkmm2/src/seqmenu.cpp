@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-02-15
+ * \updates       2016-03-29
  * \license       GNU GPLv2 or above
  *
  *  This object also does some minor coordination of editing a sequence via
@@ -320,10 +320,7 @@ seqmenu::seq_event_edit ()
         if (not_nullptr(s))
         {
             if (! s->get_editing())
-            {
                 m_eventedit = new eventedit(m_mainperf, *s);
-                // m_eventedit->show_all();         // no longer needed
-            }
             else
                 s->set_raise(true);
         }

@@ -135,6 +135,9 @@ perform::perform (gui_assistant & mygui, int ppqn)
     m_right_tick                (m_one_measure * 4),        // m_ppqn * 16
     m_starting_tick             (0),
     m_tick                      (0),
+#ifdef SEQ64_PAUSE_SUPPORT
+    m_jack_tick                 (0),
+#endif
     m_usemidiclock              (false),
     m_midiclockrunning          (false),
     m_midiclocktick             (0),
@@ -1379,7 +1382,7 @@ perform::start_playing (bool jackflag)
              * versus restarting the sequences from the beginning.  TODO.
              */
 
-            position_jack(false);
+            position_jack(false);                   /* to left tick, false  */
             start(false);
             start_jack();
         }
@@ -1599,7 +1602,7 @@ perform::reset_sequences (bool pause)
     if (pause)
     {
         /*
-         * Try to prevent notes from lingering on pause.  EXPERIMENTAL.
+         * Try to prevent notes from lingering on pause.
          * We should also remove the pause parameter from reset.
          */
 
@@ -1780,13 +1783,27 @@ perform::output_func ()
 #endif
 
         jack_scratchpad pad;
-        pad.js_current_tick = 0.0;          // tick and tick fraction
-        pad.js_total_tick = 0.0;
+        if (m_is_paused)
+        {
+            ///// TODO use get_jack_tick()
+            pad.js_current_tick = 0.0;      // tick and tick fraction
+            pad.js_total_tick = 0.0;
 #ifdef USE_SEQ24_0_9_3_CODE
-        pad.js_clock_tick = 0;              // long probably offers more ticks
+            pad.js_clock_tick = 0;          // long probably offers more ticks
 #else
-        pad.js_clock_tick = 0.0;            // double
+            pad.js_clock_tick = 0.0;        // double
 #endif
+        }
+        else
+        {
+            pad.js_current_tick = 0.0;      // tick and tick fraction
+            pad.js_total_tick = 0.0;
+#ifdef USE_SEQ24_0_9_3_CODE
+            pad.js_clock_tick = 0;          // long probably offers more ticks
+#else
+            pad.js_clock_tick = 0.0;        // double
+#endif
+        }
 
         pad.js_jack_stopped = false;
         pad.js_dumping = false;

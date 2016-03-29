@@ -263,6 +263,11 @@ private:
 
     bool m_editing;
 
+    /**
+     *  Used in seqmenu and seqedit.  It allows a sequence editor window to
+     *  pop up if not already raised, in seqedit::timeout().
+     */
+
     bool m_raise;
 
     /**
@@ -933,7 +938,7 @@ public:
     void play_note_off (int note);
     void off_playing_notes ();
     void pause ();
-    void reset (bool live_mode, bool pause = false);
+    void reset (bool live_mode);    // , bool pause = false);
     void reset_draw_marker ();
     void reset_draw_trigger_marker ();
     draw_type get_next_note_event

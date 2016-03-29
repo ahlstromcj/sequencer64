@@ -1658,7 +1658,7 @@ seqedit::popup_event_menu ()
  *  Selects the given MIDI channel parameter in the main sequence object,
  *  so that it will use that channel.
  *
- *  Should this change raise the is-modified flag?
+ *  Should this change set the is-modified flag?
  */
 
 void
@@ -1674,7 +1674,7 @@ seqedit::set_midi_channel (int midichannel)
  *  Selects the given MIDI buss parameter in the main sequence object,
  *  so that it will use that buss.
  *
- *  Should this change raise the is-modified flag?
+ *  Should this change set the is-modified flag?
  */
 
 void

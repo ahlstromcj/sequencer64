@@ -1226,10 +1226,13 @@ perform::play (midipulse tick)
 void
 perform::set_orig_ticks (midipulse tick)
 {
-    for (int i = 0; i < m_sequence_max; ++i)
+    for (int s = 0; s < m_sequence_max; ++s)
     {
-        if (is_active(i))
-            m_seqs[i]->set_last_tick(tick);
+        if (is_active(s))
+        {
+//          if (m_seqs[s]->event_count() > 0)       /* \change ca 2016-03-30 */
+                m_seqs[s]->set_last_tick(tick);
+        }
     }
 }
 
@@ -1402,9 +1405,7 @@ perform::start_playing (bool jackflag)
      * flag in that function to control the next tick to play at resume time.
      *
      *      m_is_paused = false;
-     */
-
-    /*
+     *
      * Shouldn't this be needed as well?  It is set in ALSA mode, but not JACK
      * mode. But DO NOT call set_running() here in JACK mode, it prevents
      * Sequencer64 from starting JACK transport!

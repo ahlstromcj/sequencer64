@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-03-28
+ * \updates       2016-03-30
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -1356,11 +1356,14 @@ perform::copy_triggers ()
  *      that flag is false, that turns off "song" mode.  So that explains why
  *      mute/unmute is disabled.
  *
+ *  -   seqroll and mainwnd: position_jack(false); start(false); start_jack().
+ *  -   perfedit: position_jack(true); start_jack(); start(true).
+ *
  * \param jackflag
  *      Indicates if the caller wants to start the playback in JACK mode.
  *      In the seq42 (yes, "42", not "24") code at GitHub, this flag was
  *      identical to the "global_jack_start_mode" flag, which is true for
- *      Song Mode, and false for Live Mode.  False disables Song Mode, and
+ *      Song mode, and false for Live mode.  False disables Song mode, and
  *      is the default, which matches seq24.
  */
 
@@ -1393,7 +1396,13 @@ perform::start_playing (bool jackflag)
             start_jack();
         }
     }
-    m_is_paused = false;
+
+    /*
+     * Let's let the output() function clear this, so that we can use this
+     * flag in that function to control the next tick to play at resume time.
+     *
+     *      m_is_paused = false;
+     */
 
     /*
      * Shouldn't this be needed as well?  It is set in ALSA mode, but not JACK
@@ -1404,7 +1413,7 @@ perform::start_playing (bool jackflag)
     if (! is_jack_running())
         set_running(true);
 
-    rc().is_pattern_playing(true);      /* let's deprecate this             */
+    rc().is_pattern_playing(true);      /* cannot deprecate this flag yet   */
 }
 
 /**
@@ -1439,7 +1448,9 @@ perform::pause_playing ()
 }
 
 /**
- *  Encapsulates a series of calls used in mainwnd.
+ *  Encapsulates a series of calls used in mainwnd.  Stops playback,
+ *  turns off the (new) m_is_paused flag, and set the "is-pattern-playing"
+ *  flag to false.  Do we need to reset the m_running flag here?
  */
 
 void
@@ -1785,14 +1796,8 @@ perform::output_func ()
         jack_scratchpad pad;
         if (m_is_paused)
         {
-            ///// TODO use get_jack_tick()
-            pad.js_current_tick = 0.0;      // tick and tick fraction
-            pad.js_total_tick = 0.0;
-#ifdef USE_SEQ24_0_9_3_CODE
-            pad.js_clock_tick = 0;          // long probably offers more ticks
-#else
-            pad.js_clock_tick = 0.0;        // double
-#endif
+            pad.js_current_tick = get_jack_tick();
+            m_is_paused = false;
         }
         else
         {
@@ -2011,6 +2016,10 @@ perform::output_func ()
                     }
                 }
                 play(midipulse(pad.js_current_tick));               // play!
+
+#ifdef SEQ64_PAUSE_SUPPORT
+                set_jack_tick(pad.js_current_tick);
+#endif
                 m_master_bus.clock(midipulse(pad.js_clock_tick));   // MIDI clock
                 if (rc().stats())
                 {
@@ -2874,11 +2883,13 @@ perform::perfroll_key_event (const keystroke & k, int drop_sequence)
  *      Provides the encapsulated keystroke to check.
  *
  * \param jackflag
- *      Provides the "jack flag" needed by the perfedit window.  Defaults to
- *      false.
+ *      Provides the "jack flag" needed by the mainwnd, seqroll, and perfedit
+ *      windows.  Defaults to false, which disables Song mode, and enables
+ *      Live mode.
  *
  * \return
- *      Returns true if the keystroke matched the start or stop keystrokes.
+ *      Returns true if the keystroke matched the start, stop, or (new) pause
+ *      keystrokes.
  */
 
 bool
@@ -2907,9 +2918,7 @@ perform::playback_key_event (const keystroke & k, bool jackflag)
                     start_playing(jackflag);
             }
             else
-            {
                 start_playing(jackflag);
-            }
         }
         else if (k.key() == keys().stop())
         {
@@ -2949,7 +2958,7 @@ perform::get_max_tick () const
     }
     else
     {
-        for (int s = 0; s < c_max_sequence; ++s)
+        for (int s = 0; s < m_sequence_max; ++s)
         {
             if (is_active(s))
             {

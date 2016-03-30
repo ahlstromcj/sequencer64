@@ -145,17 +145,17 @@ sequence::partial_assign (const sequence & rhs)
     {
         automutex locker(m_mutex);
 #ifdef SEQ64_PAUSE_SUPPORT
-        m_parent   = rhs.m_parent;                  /* a pointer, careful!  */
+        m_parent        = rhs.m_parent;             /* a pointer, careful!  */
 #endif
-        m_events   = rhs.m_events;
-        m_triggers = rhs.m_triggers;
-        m_midi_channel = rhs.m_midi_channel;
-        m_bus          = rhs.m_bus;
-        m_masterbus    = rhs.m_masterbus;           /* a pointer, be aware! */
-        m_playing      = false;
-        m_name         = rhs.m_name;
-        m_ppqn         = rhs.m_ppqn;
-        m_length       = rhs.m_length;
+        m_events        = rhs.m_events;
+        m_triggers      = rhs.m_triggers;
+        m_midi_channel  = rhs.m_midi_channel;
+        m_bus           = rhs.m_bus;
+        m_masterbus     = rhs.m_masterbus;          /* a pointer, be aware! */
+        m_playing       = false;
+        m_name          = rhs.m_name;
+        m_ppqn          = rhs.m_ppqn;
+        m_length        = rhs.m_length;
         m_time_beats_per_measure = rhs.m_time_beats_per_measure;
         m_time_beat_width = rhs.m_time_beat_width;
         for (int i = 0; i < c_midi_notes; i++)      /* no notes are playing */
@@ -396,7 +396,7 @@ sequence::play (midipulse tick, bool playback_mode)
     bool trigger_turning_off = false;       /* turn off after frame play    */
     midipulse start_tick = m_last_tick;     /* modified in triggers::play() */
 
-#ifdef SEQ64_PAUSE_SUPPORT_XXX              /* disable, it works wrongly    */
+#ifdef SEQ64_PAUSE_SUPPORT_THIS_WORKS       /* disable, it works wrongly    */
 
     /*
      * Note that this is currently the only reason for providing the m_parent
@@ -409,7 +409,7 @@ sequence::play (midipulse tick, bool playback_mode)
      */
 
     if (not_nullptr(m_parent) && ! m_parent->is_jack_running())
-        tick = m_last_tick;                 /* see note in banner           */
+        tick = m_parent->get_jack_tick();
 #endif
 
     midipulse end_tick = tick;              /* ditto !!!                    */

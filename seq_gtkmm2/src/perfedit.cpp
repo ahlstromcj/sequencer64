@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-03-26
+ * \updates       2016-03-29
  * \license       GNU GPLv2 or above
  *
  */
@@ -631,7 +631,12 @@ perfedit::start_playing ()
     }
     else
     {
-        perf().start_playing(false);            /* not "true" now   */
+        /*
+         * We must work out this flag, but let's try true.  False doesn't seem
+         * to work in ALSA mode when the button is pushed.
+         */
+
+        perf().start_playing(true); // (false);       /* not "true" now   */
 #ifdef SEQ64_PAUSE_SUPPORT
         set_image(false);                       /* set pause image  */
 #endif
@@ -647,7 +652,11 @@ perfedit::start_playing ()
 void
 perfedit::pause_playing ()                      /* Stop in place!   */
 {
-    perf().pause_playing();
+    if (perf().is_running())
+        perf().pause_playing();
+    else
+        perf().start_playing(false);            /* tentative, false fails */
+
 #ifdef SEQ64_PAUSE_SUPPORT
     set_image(true);                            /* set play image   */
 #endif

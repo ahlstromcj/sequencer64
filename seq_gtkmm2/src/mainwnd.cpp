@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-03-24
+ * \updates       2016-03-30
  * \license       GNU GPLv2 or above
  *
  *  The main window holds the menu and the main controls of the application,
@@ -513,6 +513,8 @@ bool
 mainwnd::timer_callback ()
 {
     midipulse tick = perf().get_tick();         /* use no get_start_tick()! */
+//  midipulse tick = perf().get_jack_tick();    // EXPERIMENTAL
+//  midipulse tick = perf().get_max_tick();     // EXPERIMENTAL
     m_main_time->idle_progress(tick);
     m_main_wid->update_markers(tick);           /* tick ignored for pause   */
 
@@ -1354,24 +1356,25 @@ mainwnd::on_key_press_event (GdkEventKey * ev)
          * SPACEBAR)
          */
 
-        (void) perf().playback_key_event(k);
-
-        /*
-         * Toggle the sequence mute/unmute setting using keyboard keys.
-         *
-         * \change ca 2015-08-12
-         *      However, do not do this if the Ctrl key is being pressed.
-         *      Ctrl-E, for example, brings up the Song Editor, and should
-         *      not toggle the sequence controlled by the "e" key.  Will
-         *      also see if the Alt key could/should be intercepted.
-         */
-
-        if (perf().get_key_events().count(ev->keyval) != 0)
+        if (! perf().playback_key_event(k))
         {
-            guint modifiers = gtk_accelerator_get_default_mod_mask();
-            bool ok = (ev->state & modifiers) != SEQ64_CONTROL_MASK;
-            if (ok)
-                sequence_key(perf().lookup_keyevent_seq(ev->keyval));
+            /*
+             * Toggle the sequence mute/unmute setting using keyboard keys.
+             *
+             * \change ca 2015-08-12
+             *      However, do not do this if the Ctrl key is being pressed.
+             *      Ctrl-E, for example, brings up the Song Editor, and should
+             *      not toggle the sequence controlled by the "e" key.  Will
+             *      also see if the Alt key could/should be intercepted.
+             */
+
+            if (perf().get_key_events().count(ev->keyval) != 0)
+            {
+                guint modifiers = gtk_accelerator_get_default_mod_mask();
+                bool ok = (ev->state & modifiers) != SEQ64_CONTROL_MASK;
+                if (ok)
+                    sequence_key(perf().lookup_keyevent_seq(ev->keyval));
+            }
         }
     }
     return false;

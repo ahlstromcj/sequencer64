@@ -638,12 +638,21 @@ public:
 #ifdef SEQ64_PAUSE_SUPPORT
 
     /**
-     * \getter m_jack_tick
+     *  \getter m_jack_tick
      */
 
     midipulse get_jack_tick () const
     {
         return m_jack_tick;
+    }
+
+    /**
+     *  \setter m_jack_tick
+     */
+
+    void set_jack_tick (midipulse tick)
+    {
+        m_jack_tick = tick;
     }
 
 #endif

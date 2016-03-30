@@ -1,6 +1,6 @@
 Bugs and Additional Upgrade Ideas
 Chris Ahlstrom
-2015-10-27 to 2016-03-28 (New bugs)
+2015-10-27 to 2016-03-30 (New bugs)
 
 In no particular order...  "y" means "in progress", and "x" means it is
 basically done.
@@ -23,6 +23,8 @@ x  allofarow.mid:
 -  It would be good to have a command that dumps the current build settings
    for Sequencer64.  Actually, add it to the --version command.
 y  PAUSE SUPPORT:
+   -    ALSA: Live Mode supports resume-from-pause, Song Mode does not.
+        Is this a BUG, or a FEATURE?
    x    Seems to be susceptible to notes not being turned off
         (but check the MIDI bus flush as well).  We need to make sure that
         stop and pause both silence all notes, somehow.

@@ -6,7 +6,7 @@ dnl \file          configure.ac
 dnl \library       Sequencer64
 dnl \author        Chris Ahlstrom
 dnl \date          2015-09-11
-dnl \update        2016-03-27
+dnl \update        2016-03-31
 dnl \version       $Revision$
 dnl \license       $XPC_SUITE_GPL_LICENSE$
 dnl
@@ -445,6 +445,21 @@ else
     AC_MSG_WARN([*** Pausing sequences and pause button not enabled.]);
 fi
 
+dnl Support for re-enabling the "statistics" code.
+dnl If enabled, the macro SEQ64_STATISTICS_SUPPORT is defined.
+dnl The default is for this feature to be disabled.
+
+AC_ARG_ENABLE(statistics,
+    [AS_HELP_STRING(--enable-statistics, [Enable statistics gathering])],
+    [statistics=$enableval],
+    [statistics=no])
+
+if test "$statistics" != "no"; then
+    AC_DEFINE(STATISTICS_SUPPORT, 1, [Define to enable statistics gathering])
+else
+    AC_MSG_WARN([*** Running statistics gathering not enabled.]);
+fi
+
 dnl 6.0  Top portion of the config.h/sequencer64-config.h header files.
 dnl      The sequencer64-config.h header file has "SEQUENCER64_" prepended
 dnl      to these automatically for us.  Also, we can't use
@@ -458,7 +473,7 @@ dnl #define API_VERSION "0.9"             // already defined on command line
 
 AH_TOP(
 
-#define VERSION_DATE_SHORT "2016-03-27"
+#define VERSION_DATE_SHORT "2016-03-31"
 #define VERSION "0.9.10.1"
 
 )

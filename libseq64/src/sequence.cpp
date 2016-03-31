@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-03-28
+ * \updates       2016-03-30
  * \license       GNU GPLv2 or above
  *
  *  The functionality of this class also includes handling some of the
@@ -2170,7 +2170,6 @@ sequence::get_max_trigger ()
  *  Checks the list of triggers against the given tick.  If any
  *  trigger is found to bracket that tick, then true is returned.
  *
- *
  * \param tick
  *      Provides the tick of interest.
  *
@@ -2283,16 +2282,12 @@ sequence::paste_trigger ()
  */
 
 void
-sequence::reset (bool live_mode)    // , bool pause)
+sequence::reset (bool live_mode)
 {
     bool state = get_playing();
     off_playing_notes();
     set_playing(false);
-//  if (pause)
-//      set_last_tick(m_last_tick);
-//  else
-        zero_markers();                 /* sets the "last-tick" value   */
-
+    zero_markers();                 /* sets the "last-tick" value   */
     if (! live_mode)
         set_playing(state);
 }
@@ -2310,8 +2305,6 @@ sequence::pause ()
 {
     if (get_playing())
         off_playing_notes();
-
-    ///// set_last_tick(m_last_tick);     // TEST ONLY AT PRESENT, no effect
 }
 
 /**

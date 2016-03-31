@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-03-30
+ * \updates       2016-03-31
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -50,6 +50,12 @@
  */
 
 #define SEQ64_JACK_NAN      0x8000000000000
+
+/*
+ * Does disabling stats break things?
+ */
+
+#define SEQ64_STATISTICS_SUPPORT
 
 namespace seq64
 {
@@ -130,7 +136,7 @@ perform::perform (gui_assistant & mygui, int ppqn)
     m_ppqn                      (choose_ppqn(ppqn)),
     m_beats_per_bar             (SEQ64_DEFAULT_BEATS_PER_MEASURE),
     m_beat_width                (SEQ64_DEFAULT_BEAT_WIDTH),
-    m_one_measure               (m_ppqn * 4),               // INCOMPLETE!
+    m_one_measure               (m_ppqn * 4),
     m_left_tick                 (0),
     m_right_tick                (m_one_measure * 4),        // m_ppqn * 16
     m_starting_tick             (0),
@@ -166,7 +172,7 @@ perform::perform (gui_assistant & mygui, int ppqn)
         SEQ64_DEFAULT_BEAT_WIDTH            // may get updated later
     ),
 #endif
-    m_notify                    ()      // vector of pointers, public!
+    m_notify                    ()          // vector of pointers, public!
 {
     for (int i = 0; i < m_sequence_max; ++i)
     {
@@ -200,7 +206,7 @@ perform::perform (gui_assistant & mygui, int ppqn)
 perform::~perform ()
 {
     m_inputing = m_outputing = m_running = false;
-    m_condition_var.signal();                   // signal the end
+    m_condition_var.signal();                   /* signal the end   */
     if (m_out_thread_launched)
         pthread_join(m_out_thread, NULL);
 
@@ -212,7 +218,7 @@ perform::~perform ()
         if (not_nullptr(m_seqs[seq]))
         {
             delete m_seqs[seq];
-            m_seqs[seq] = nullptr;              // not strictly necessary
+            m_seqs[seq] = nullptr;              /* not strictly necessary   */
         }
     }
 }
@@ -404,12 +410,7 @@ perform::select_mute_group (int a_group)
      * git pull https://github.com/TDeagan/sequencer64.git mute_groups
      */
 
-    int k = m_screenset * m_seqs_in_set; // replaces m_playscreen_offset
-
-    /*
-     * Should make this assignment contingent upon error.
-     */
-
+    int k = m_screenset * m_seqs_in_set;    /* replaces m_playscreen_offset */
     m_mute_group_selected = group;
     for (int i = 0; i < m_seqs_in_set; ++i)
     {
@@ -469,7 +470,7 @@ perform::select_and_mute_group (int group)
 void
 perform::mute_all_tracks ()
 {
-    for (int i = 0; i < m_sequence_max; ++i)    // TRY sequence_count()
+    for (int i = 0; i < m_sequence_max; ++i)
     {
         if (is_active(i))
             m_seqs[i]->set_song_mute(true);
@@ -1115,11 +1116,9 @@ perform::get_screen_set_notepad (int screenset) const
 }
 
 /**
- *  Sets the m_screenset value (the index or ID of the current screen
- *  set).
- *
+ *  Sets the m_screenset value (the index or ID of the current screen set).
  *  It's not clear that we need to set the "is modified" flag just because we
- *  changed the screen set.
+ *  changed the screen set, so we don't.
  *
  * \param ss
  *      The index of the desired string set.  It is forced to range from
@@ -1135,13 +1134,7 @@ perform::set_screenset (int ss)
         ss = 0;
 
     if (ss != m_screenset)
-    {
         m_screenset = ss;
-
-        /*
-         * modify(true);                // iffy, so we comment it out
-         */
-    }
 }
 
 /**
@@ -1229,10 +1222,7 @@ perform::set_orig_ticks (midipulse tick)
     for (int s = 0; s < m_sequence_max; ++s)
     {
         if (is_active(s))
-        {
-//          if (m_seqs[s]->event_count() > 0)       /* \change ca 2016-03-30 */
-                m_seqs[s]->set_last_tick(tick);
-        }
+            m_seqs[s]->set_last_tick(tick);
     }
 }
 
@@ -1362,18 +1352,21 @@ perform::copy_triggers ()
  *  -   seqroll and mainwnd: position_jack(false); start(false); start_jack().
  *  -   perfedit: position_jack(true); start_jack(); start(true).
  *
- * \param jackflag
+ * \param songmode
  *      Indicates if the caller wants to start the playback in JACK mode.
  *      In the seq42 (yes, "42", not "24") code at GitHub, this flag was
  *      identical to the "global_jack_start_mode" flag, which is true for
  *      Song mode, and false for Live mode.  False disables Song mode, and
- *      is the default, which matches seq24.
+ *      is the default, which matches seq24.  If the previous state was
+ *      "paused", then we start it in Live mode, which works because Song
+ *      mode has already turned on the sequences.  This method is not quite
+ *      intuitive, because it is really following Live mode.
  */
 
 void
-perform::start_playing (bool jackflag)
+perform::start_playing (bool songmode)
 {
-    if (jackflag)
+    if (songmode)
     {
         position_jack(true);
         start_jack();
@@ -1434,12 +1427,12 @@ void
 perform::pause_playing ()
 {
 #ifdef SEQ64_JACK_SUPPORT
-    m_jack_asst.stop();                 // stop_jack()
-    if (! is_jack_running())            // stop() { inner_stop(); }
+    m_jack_asst.stop();                 /* stop_jack()                  */
+    if (! is_jack_running())            /* stop() { inner_stop(); }     */
     {
 #endif
         set_running(false);
-        reset_sequences(true);          /* resets "last-tick" for pause  */
+        reset_sequences(true);          /* reset "last-tick" for pause  */
         m_usemidiclock = false;
 #ifdef SEQ64_JACK_SUPPORT
     }
@@ -1596,7 +1589,7 @@ perform::all_notes_off ()
         if (is_active(i))
             m_seqs[i]->off_playing_notes();
     }
-    m_master_bus.flush();              // flush the MIDI buss
+    m_master_bus.flush();               /* flush the MIDI buss  */
 }
 
 /**
@@ -1771,27 +1764,31 @@ perform::output_func ()
 {
     while (m_outputing)
     {
-        m_condition_var.lock();             // printf ("waiting for signal\n");
+        m_condition_var.lock();
         while (! m_running)
         {
             m_condition_var.wait();
-            if (! m_outputing)              // if stopping, then kill thread
+            if (! m_outputing)              /* if stopping, kill thread */
                 break;
         }
         m_condition_var.unlock();
 
-#ifndef PLATFORM_WINDOWS
-        struct timespec last;               // beginning time
-        struct timespec current;            // current time
-        struct timespec stats_loop_start;
-        struct timespec stats_loop_finish;
-        struct timespec delta;              // difference between last & current
-#else
+#ifdef PLATFORM_WINDOWS
         long last;                          // beginning time
         long current;                       // current time
+#ifdef SEQ64_STATISTICS_SUPPORT
         long stats_loop_start = 0;
         long stats_loop_finish = 0;
+#endif
         long delta;                         // difference between last & current
+#else
+        struct timespec last;               // beginning time
+        struct timespec current;            // current time
+#ifdef SEQ64_STATISTICS_SUPPORT
+        struct timespec stats_loop_start;
+        struct timespec stats_loop_finish;
+#endif
+        struct timespec delta;              // difference between last & current
 #endif
 
         jack_scratchpad pad;
@@ -1821,6 +1818,13 @@ perform::output_func ()
         pad.js_delta_tick_frac = 0L;        // from seq24 0.9.3, long value
 #endif
 
+        /*
+         * Not sure that we really need this feature.  Will have to see if
+         * anyone wants it.  This is currently not a complete commenting out
+         * of the feature at this time.
+         */
+
+#ifdef SEQ64_STATISTICS_SUPPORT
         midipulse stats_total_tick = 0;
         long stats_loop_index = 0;
         long stats_min = 0x7FFFFFFF;
@@ -1838,6 +1842,7 @@ perform::output_func ()
                 stats_clock[i] = 0;
             }
         }
+#endif  // SEQ64_STATISTICS_SUPPORT
 
         /*
          * If we are in the performance view (song editor), we care about
@@ -1845,7 +1850,7 @@ perform::output_func ()
          */
 
 #ifdef SEQ64_JACK_SUPPORT
-        bool ok = m_playback_mode && !  is_jack_running();
+        bool ok = m_playback_mode && ! is_jack_running();
 #else
         bool ok = m_playback_mode;
 #endif
@@ -1859,6 +1864,7 @@ perform::output_func ()
 
         int ppqn = m_master_bus.get_ppqn();
 
+#ifdef SEQ64_STATISTICS_SUPPORT
 #ifndef PLATFORM_WINDOWS
         clock_gettime(CLOCK_REALTIME, &last);   // get start time position
         if (rc().stats())
@@ -1868,6 +1874,7 @@ perform::output_func ()
         if (rc().stats())
             stats_last_clock_us = last * 1000;
 #endif
+#endif  // SEQ64_STATISTICS_SUPPORT
 
         while (m_running)
         {
@@ -1879,6 +1886,7 @@ perform::output_func ()
              * -# Play from current tick to prebuffer.
              */
 
+#ifdef SEQ64_STATISTICS_SUPPORT
             if (rc().stats())
             {
 #ifndef PLATFORM_WINDOWS
@@ -1887,6 +1895,7 @@ perform::output_func ()
                 stats_loop_start = timeGetTime();
 #endif
             }
+#endif  // SEQ64_STATISTICS_SUPPORT
 
             /*
              * Get the delta time.
@@ -2022,6 +2031,8 @@ perform::output_func ()
                 set_jack_tick(pad.js_current_tick);
 #endif
                 m_master_bus.clock(midipulse(pad.js_clock_tick));   // MIDI clock
+
+#ifdef SEQ64_STATISTICS_SUPPORT
                 if (rc().stats())
                 {
                     while (stats_total_tick <= pad.js_total_tick)
@@ -2053,6 +2064,7 @@ perform::output_func ()
                         stats_total_tick++;
                     }
                 }
+#endif  // SEQ64_STATISTICS_SUPPORT
             }
 
             /**
@@ -2095,20 +2107,18 @@ perform::output_func ()
             if (next_clock_delta_us < (c_thread_trigger_width_ms * 1000.0 * 2.0))
                 delta_us = long(next_clock_delta_us);
 
-#ifndef PLATFORM_WINDOWS                    // nanosleep() is actually Linux
             if (delta_us > 0)
             {
-                delta.tv_sec = delta_us / 1000000;
-                delta.tv_nsec = (delta_us % 1000000) * 1000;
-                nanosleep(&delta, NULL);
-            }
-#else
-            if (delta_us > 0)
-            {
+#ifdef PLATFORM_WINDOWS
                 delta = delta_us / 1000;
                 Sleep(delta);
-            }
+#else
+                delta.tv_sec = delta_us / 1000000;
+                delta.tv_nsec = (delta_us % 1000000) * 1000;
+                nanosleep(&delta, NULL);    /* nanosleep() is Linux */
 #endif
+            }
+#ifdef SEQ64_STATISTICS_SUPPORT
             else
             {
                 if (rc().stats())
@@ -2116,7 +2126,9 @@ perform::output_func ()
                     errprint("Underrun");
                 }
             }
+#endif  // SEQ64_STATISTICS_SUPPORT
 
+#ifdef SEQ64_STATISTICS_SUPPORT
             if (rc().stats())
             {
 #ifndef PLATFORM_WINDOWS
@@ -2156,9 +2168,12 @@ perform::output_func ()
                     stats_avg = 0;
                 }
             }
+#endif  // SEQ64_STATISTICS_SUPPORT
+
             if (pad.js_jack_stopped)
                 inner_stop();
         }
+#ifdef SEQ64_STATISTICS_SUPPORT
         if (rc().stats())
         {
             printf("\n\n-- trigger width --\n");
@@ -2177,6 +2192,7 @@ perform::output_func ()
                 printf("[%3d][%8ld]\n", i * 300, stats_clock[i]);
             }
         }
+#endif  // SEQ64_STATISTICS_SUPPORT
 
         /*
          * Disabling this setting allows all of the progress bars (seqroll,
@@ -2883,7 +2899,7 @@ perform::perfroll_key_event (const keystroke & k, int drop_sequence)
  * \param k
  *      Provides the encapsulated keystroke to check.
  *
- * \param jackflag
+ * \param songmode
  *      Provides the "jack flag" needed by the mainwnd, seqroll, and perfedit
  *      windows.  Defaults to false, which disables Song mode, and enables
  *      Live mode.
@@ -2894,7 +2910,7 @@ perform::perfroll_key_event (const keystroke & k, int drop_sequence)
  */
 
 bool
-perform::playback_key_event (const keystroke & k, bool jackflag)
+perform::playback_key_event (const keystroke & k, bool songmode)
 {
 #ifdef SEQ64_PAUSE_SUPPORT
 #define PAUSEKEY    keys().pause()
@@ -2916,10 +2932,10 @@ perform::playback_key_event (const keystroke & k, bool jackflag)
                 if (is_running())
                     pause_playing();
                 else
-                    start_playing(jackflag);
+                    start_playing(songmode);
             }
             else
-                start_playing(jackflag);
+                start_playing(songmode);
         }
         else if (k.key() == keys().stop())
         {
@@ -2930,7 +2946,7 @@ perform::playback_key_event (const keystroke & k, bool jackflag)
             if (is_running())
                 pause_playing();
             else
-                start_playing(jackflag);
+                start_playing(songmode);
         }
     }
     return result;

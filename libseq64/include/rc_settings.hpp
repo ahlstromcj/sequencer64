@@ -28,11 +28,16 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-22
- * \updates       2016-01-27
+ * \updates       2016-03-31
  * \license       GNU GPLv2 or above
  *
  *  This collection of variables describes the options of the application,
  *  accessible from the command-line or from the "rc" file.
+ *
+ * \warning
+ *      We're making the "statistics" support a configure-time option.  The
+ *      run-time option will be left here, but the actual usage of it will be
+ *      disabled unless configured with the --enable-statistics option.
  */
 
 #include <string>

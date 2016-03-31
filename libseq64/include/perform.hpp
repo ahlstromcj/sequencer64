@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-03-27
+ * \updates       2016-03-30
  * \license       GNU GPLv2 or above
  *
  *  This class still has way too many members, even with the JACK and
@@ -225,10 +225,10 @@ private:
      *  Specifies the playback mode.  There are two, "live" and "song",
      *  indicated by the following values:
      *
-    \verbatim
+\verbatim
             m_playback_mode == false:       live mode
             m_playback_mode == true:        playback/song mode
-    \endverbatim
+\endverbatim
      *
      */
 
@@ -367,7 +367,9 @@ private:
 
     /**
      *  Keeps track of created sequences, whether or not they are active.
-     *  Used by the install_sequence() function.
+     *  Used by the install_sequence() function.  Note that this value is
+     *  not a suitable replacement for c_max_sequence/m_sequence_max, because
+     *  there can be inactive sequences amidst the active sequences.
      */
 
     int m_sequence_count;
@@ -1043,7 +1045,7 @@ public:
     }
      */
 
-    void start_playing (bool jackflag = false);
+    void start_playing (bool songmode = false);
     void pause_playing ();
     void stop_playing ();
 
@@ -1137,7 +1139,7 @@ public:
     void set_input_bus (int bus, bool input_active);    // used in options
     bool mainwnd_key_event (const keystroke & k);
     bool perfroll_key_event (const keystroke & k, int drop_sequence);
-    bool playback_key_event (const keystroke & k, bool jackflag = false);
+    bool playback_key_event (const keystroke & k, bool songmode = false);
 
 private:
 

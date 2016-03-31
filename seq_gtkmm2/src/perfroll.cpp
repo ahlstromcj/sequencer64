@@ -380,10 +380,12 @@ perfroll::draw_progress ()
     /*
      * This perform::get_max_tick() call doesn't work with JACK, the progress
      * bar rewinds to the beginning when playback is paused, though it does
-     * resume where it left off.
+     * resume where it left off.  It also may cause the progress bar to
+     * backtrack through any gap.  LET's restore the get_tick() call!
      */
 
-    midipulse tick = perf().get_max_tick();     // replaces/enhances get_tick()
+//  midipulse tick = perf().get_max_tick();     // replaces/enhances get_tick()
+    midipulse tick = perf().get_tick();
     midipulse tick_offset = m_4bar_offset * m_ticks_per_bar;
     int progress_x = (tick - tick_offset) / m_perf_scale_x;
     int old_progress_x = (m_old_progress_ticks - tick_offset) / m_perf_scale_x;

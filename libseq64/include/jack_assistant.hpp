@@ -38,13 +38,17 @@
 #include "globals.h"                    /* globals, nullptr, and more       */
 
 #ifdef SEQ64_JACK_SUPPORT
+
 #include <jack/jack.h>
 #include <jack/transport.h>
 #ifdef SEQ64_JACK_SESSION
 #include <jack/session.h>
 #endif
+
 #else       // ! SEQ64_JACK_SUPPORT
+
 #undef SEQ64_JACK_SESSION
+
 #endif      // SEQ64_JACK_SUPPORT
 
 /**

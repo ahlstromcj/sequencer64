@@ -507,14 +507,19 @@ mainwnd::~mainwnd ()
  *      sequences that don't yet exist.  Also, if a sequence is changed by the
  *      event editor, we get a crash; need to find out how seqedit gets away
  *      with the changes.
+ *
+ * Pause:
+ *
+ *      These do not work:
+ *
+ *      -  midipulse tick = perf().get_jack_tick();
+ *      -  midipulse tick = perf().get_max_tick();
  */
 
 bool
 mainwnd::timer_callback ()
 {
     midipulse tick = perf().get_tick();         /* use no get_start_tick()! */
-//  midipulse tick = perf().get_jack_tick();    // EXPERIMENTAL
-//  midipulse tick = perf().get_max_tick();     // EXPERIMENTAL
     m_main_time->idle_progress(tick);
     m_main_wid->update_markers(tick);           /* tick ignored for pause   */
 

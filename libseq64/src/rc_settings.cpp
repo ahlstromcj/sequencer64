@@ -25,11 +25,16 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-22
- * \updates       2016-01-27
+ * \updates       2016-03-31
  * \license       GNU GPLv2 or above
  *
  *  Note that this module also sets the legacy global variables, so that
  *  they can be used by modules that have not yet been cleaned up.
+ *
+ * \warning
+ *      We're making the "statistics" support a configure-time option.  The
+ *      run-time option will be left here, but the actual usage of it will be
+ *      disabled unless configured with the --enable-statistics option.
  */
 
 #include <stdlib.h>                     /* getenv()                     */

@@ -55,7 +55,7 @@
  * Does disabling stats break things?
  */
 
-#define SEQ64_STATISTICS_SUPPORT
+// #define SEQ64_STATISTICS_SUPPORT
 
 namespace seq64
 {
@@ -1781,7 +1781,7 @@ perform::output_func ()
         long stats_loop_finish = 0;
 #endif
         long delta;                         // difference between last & current
-#else
+#else                                       // not Windows
         struct timespec last;               // beginning time
         struct timespec current;            // current time
 #ifdef SEQ64_STATISTICS_SUPPORT
@@ -1865,6 +1865,7 @@ perform::output_func ()
         int ppqn = m_master_bus.get_ppqn();
 
 #ifdef SEQ64_STATISTICS_SUPPORT
+
 #ifndef PLATFORM_WINDOWS
         clock_gettime(CLOCK_REALTIME, &last);   // get start time position
         if (rc().stats())
@@ -1874,6 +1875,15 @@ perform::output_func ()
         if (rc().stats())
             stats_last_clock_us = last * 1000;
 #endif
+
+#else   // SEQ64_STATISTICS_SUPPORT
+
+#ifndef PLATFORM_WINDOWS
+        clock_gettime(CLOCK_REALTIME, &last);   // get start time position
+#else
+        last = timeGetTime();                   // get start time position
+#endif
+
 #endif  // SEQ64_STATISTICS_SUPPORT
 
         while (m_running)
@@ -1901,15 +1911,15 @@ perform::output_func ()
              * Get the delta time.
              */
 
-#ifndef PLATFORM_WINDOWS
-            clock_gettime(CLOCK_REALTIME, &current);
-            delta.tv_sec  = current.tv_sec - last.tv_sec;
-            delta.tv_nsec = current.tv_nsec - last.tv_nsec;
-            long delta_us = (delta.tv_sec * 1000000) + (delta.tv_nsec / 1000);
-#else
+#ifdef PLATFORM_WINDOWS
             current = timeGetTime();
             delta = current - last;
             long delta_us = delta * 1000;
+#else
+            clock_gettime(CLOCK_REALTIME, &current);
+            delta.tv_sec  = current.tv_sec - last.tv_sec;       // delta!
+            delta.tv_nsec = current.tv_nsec - last.tv_nsec;     // delta!
+            long delta_us = (delta.tv_sec * 1000000) + (delta.tv_nsec / 1000);
 #endif
             int bpm  = m_master_bus.get_beats_per_minute();
 

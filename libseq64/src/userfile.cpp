@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-03-13
+ * \updates       2016-03-31
  * \license       GNU GPLv2 or above
  *
  *  Note that the parse function has some code that is not yet enabled.
@@ -314,6 +314,11 @@ userfile::parse (perform & /* a_perf */)
             if (next_data_line(file))
             {
                 sscanf(m_line, "%d", &scratch);
+                if (scratch < SEQ64_MINIMUM_REDRAW)
+                    scratch = SEQ64_MINIMUM_REDRAW;
+                else if (scratch > SEQ64_MAXIMUM_REDRAW)
+                    scratch = SEQ64_MAXIMUM_REDRAW;
+
                 usr().window_redraw_rate(scratch);
             }
         }

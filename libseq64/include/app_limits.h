@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-08
- * \updates       2016-02-20
+ * \updates       2016-03-31
  * \license       GNU GPLv2 or above
  *
  *  This collection of global variables describes some facets of the
@@ -170,6 +170,30 @@
  */
 
 #define SEQ64_MAXIMUM_ZOOM              128
+
+/**
+ *  Minimum possible value for zoom, indicating that one pixel represents one
+ *  tick.
+ */
+
+#define SEQ64_MINIMUM_REDRAW             10
+
+/**
+ *  The default value of the zoom, indicating that one pixel represents two
+ *  ticks.
+ */
+
+#define SEQ64_DEFAULT_REDRAW             40     /* or 25 for Windows */
+
+/**
+ *  The maximum value of the zoom, indicating that one pixel represents 128
+ *  ticks.  The old maximum was 32, but now that we support PPQN up to 19200,
+ *  we need a couple of extra entries.  At this time, we're not going to
+ *  support adapting the default zoom to the PPQN; we just allow some extra
+ *  zoom values.
+ */
+
+#define SEQ64_MAXIMUM_REDRAW           100
 
 /**
  *  Default value for c_beats_per_minute (global beats-per-minute, also known

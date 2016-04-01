@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-03-30
+ * \updates       2016-04-01
  * \license       GNU GPLv2 or above
  *
  *  This class still has way too many members, even with the JACK and
@@ -58,14 +58,16 @@
 
 /**
  *  We have offloaded the keybinding support to another class, derived
- *  from keys_perform.  The new feature does seem to work.
+ *  from keys_perform.  These macros make the code easier to read, or a least
+ *  shorter.  :-)
  */
 
 #define PERFKEY(x)              m_mainperf->keys().x()
 #define PERFKEY_ADDR(x)         m_mainperf->keys().at_##x()
 
 /**
- *  Uses a function returning a reference.
+ *  Uses a function returning a reference.  These macros make the code easier
+ *  to read, or a least shorter.  :-)
  */
 
 #define PREFKEY(x)              perf().keys().x()
@@ -1048,6 +1050,10 @@ public:
     void start_playing (bool songmode = false);
     void pause_playing ();
     void stop_playing ();
+
+    void start_key (bool songmode = false);
+    void pause_key ();
+    void stop_key ();
 
     /**
      *  Encapsulates some calls used in mainwnd.

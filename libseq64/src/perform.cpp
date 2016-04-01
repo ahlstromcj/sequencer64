@@ -2880,6 +2880,42 @@ perform::perfroll_key_event (const keystroke & k, int drop_sequence)
 }
 
 /**
+ *  Invoke the start key functionality.  Meant to be used by GUIs to unify the
+ *  treatment of keys versus buttons.
+ *
+ * \param songmode
+ *      The live/play mode parameter to be passed along to the key processor.
+ */
+
+void
+perform::start_key (bool songmode)
+{
+    (void) playback_key_event(keys().start(), songmode);
+}
+
+/**
+ *  Invoke the pause key functionality.  Meant to be used by GUIs to unify the
+ *  treatment of keys versus buttons.
+ */
+
+void
+perform::pause_key ()
+{
+    (void) playback_key_event(keys().pause());
+}
+
+/**
+ *  Invoke the stop key functionality.  Meant to be used by GUIs to unify the
+ *  treatment of keys versus buttons.
+ */
+
+void
+perform::stop_key ()
+{
+    (void) playback_key_event(keys().stop());
+}
+
+/**
  *  New function provided to unify the stop/start (space/escape) behavior of
  *  the various windows where playback can be started, paused, or stopped.  To
  *  be used in mainwnd, perfedit, and seqroll.

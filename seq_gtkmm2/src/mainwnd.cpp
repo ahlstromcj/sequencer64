@@ -1158,9 +1158,8 @@ void
 mainwnd::start_playing ()               /* Play!            */
 {
 #ifdef SEQ64_PAUSE_SUPPORT
-    toggle_playing();
-//  (void) perf().playback_key_event(perf().keys().start());
-//  set_image(! perf().is_running());
+    perf().start_key();
+    set_image(! perf().is_running());
 #else
     perf().start_playing();             /* legacy behavior  */
 #endif
@@ -1176,8 +1175,7 @@ void
 mainwnd::pause_playing ()               /* Stop in place!   */
 {
 #ifdef SEQ64_PAUSE_SUPPORT
-    (void) perf().playback_key_event(perf().keys().pause());
-//  set_image(true);                    /* set play image   */
+    perf().pause_key();
     set_image(! perf().is_running());
 #else
     perf().pause_playing();
@@ -1193,8 +1191,8 @@ void
 mainwnd::stop_playing ()                /* Stop!            */
 {
 #ifdef SEQ64_PAUSE_SUPPORT
-    (void) perf().playback_key_event(perf().keys().stop());
-    set_image(true);                    /* set play image   */
+    perf().stop_key();
+    set_image(true);                    /* set Play image   */
 #else
     perf().stop_playing();
 #endif

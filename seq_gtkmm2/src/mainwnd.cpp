@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-03-30
+ * \updates       2016-04-01
  * \license       GNU GPLv2 or above
  *
  *  The main window holds the menu and the main controls of the application,
@@ -1112,6 +1112,10 @@ mainwnd::edit_callback_notepad ()
 
 /**
  *  Changes the image used for the pause/play button
+ *
+ * \param isplay
+ *      If true, set the image to the "Play" icon.  Otherwise, set it to the
+ *      "Pause" button.
  */
 
 void
@@ -1151,19 +1155,15 @@ mainwnd::set_image (bool isplay)
  */
 
 void
-mainwnd::start_playing ()                       /* Play!            */
+mainwnd::start_playing ()               /* Play!            */
 {
-    if (perf().is_running())
-    {
-        pause_playing();
-    }
-    else
-    {
-        perf().start_playing();                 /* legacy behavior  */
 #ifdef SEQ64_PAUSE_SUPPORT
-        set_image(false);                       /* set pause image  */
+    toggle_playing();
+//  (void) perf().playback_key_event(perf().keys().start());
+//  set_image(! perf().is_running());
+#else
+    perf().start_playing();             /* legacy behavior  */
 #endif
-    }
 }
 
 /**
@@ -1173,20 +1173,14 @@ mainwnd::start_playing ()                       /* Play!            */
  */
 
 void
-mainwnd::pause_playing ()                       /* Stop in place!   */
+mainwnd::pause_playing ()               /* Stop in place!   */
 {
-    perf().pause_playing();
-
-    /*
-     * EXPERIMENTAL.
-     * Commenting this out may make pause look more appropriate.
-     * But it acts the same as stop.  Might just uncomment it again.
-     *
-     * m_main_wid->update_sequences_on_window();
-     */
-
 #ifdef SEQ64_PAUSE_SUPPORT
-    set_image(true);                            /* set play image   */
+    (void) perf().playback_key_event(perf().keys().pause());
+//  set_image(true);                    /* set play image   */
+    set_image(! perf().is_running());
+#else
+    perf().pause_playing();
 #endif
 }
 
@@ -1196,13 +1190,43 @@ mainwnd::pause_playing ()                       /* Stop in place!   */
  */
 
 void
-mainwnd::stop_playing ()                        /* Stop!            */
+mainwnd::stop_playing ()                /* Stop!            */
 {
-    perf().stop_playing();
 #ifdef SEQ64_PAUSE_SUPPORT
-    set_image(true);                            /* set play image   */
+    (void) perf().playback_key_event(perf().keys().stop());
+    set_image(true);                    /* set play image   */
+#else
+    perf().stop_playing();
 #endif
     m_main_wid->update_sequences_on_window();
+}
+
+/**
+ *  Reverses the state of playback.  Meant only to be called when the "Play"
+ *  button is pressed, if the pause feature has been compiled into the
+ *  application.
+ */
+
+void
+mainwnd::toggle_playing ()
+{
+    if (perf().is_running())
+    {
+#ifdef SEQ64_PAUSE_SUPPORT
+        (void) perf().playback_key_event(perf().keys().stop());
+#else
+        perf().stop_playing();
+#endif
+    }
+    else
+    {
+#ifdef SEQ64_PAUSE_SUPPORT
+        (void) perf().playback_key_event(perf().keys().start());
+#else
+        perf().start_playing();
+#endif
+    }
+    set_image(! perf().is_running());
 }
 
 /**

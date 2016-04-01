@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-03-31
+ * \updates       2016-04-01
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -50,12 +50,6 @@
  */
 
 #define SEQ64_JACK_NAN      0x8000000000000
-
-/*
- * Does disabling stats break things?
- */
-
-// #define SEQ64_STATISTICS_SUPPORT
 
 namespace seq64
 {
@@ -1374,23 +1368,9 @@ perform::start_playing (bool songmode)
     }
     else
     {
-        if (m_is_paused)
-        {
-            /*
-             * We still need to differentiate between resuming from pause
-             * versus restarting the sequences from the beginning.  TODO.
-             */
-
-            position_jack(false);                   /* to left tick, false  */
-            start(false);
-            start_jack();
-        }
-        else
-        {
-            position_jack(false);
-            start(false);
-            start_jack();
-        }
+        position_jack(false);
+        start(false);
+        start_jack();
     }
 
     /*
@@ -2944,7 +2924,7 @@ perform::playback_key_event (const keystroke & k, bool songmode)
                 else
                     start_playing(songmode);
             }
-            else
+            else if (! is_running())
                 start_playing(songmode);
         }
         else if (k.key() == keys().stop())

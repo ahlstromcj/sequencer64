@@ -1,3 +1,90 @@
+2016-04-02  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* README, contrib/notes/bugs_to_investigate.txt,
+	seq_gtkmm2/include/mainwnd.hpp, seq_gtkmm2/include/perfedit.hpp,
+	seq_gtkmm2/src/mainwnd.cpp, seq_gtkmm2/src/perfedit.cpp: Fixed issue
+	where main window stop/play stole focus and used the space bar as a
+	click key, very confusing, a seq24 bug.  Interim check-in, dealing with
+	mainwnd stop-button breaking the start key.  Major upgrades in "fixups"
+	pending for "master" version 0.9.10.1:
+	-  Fixed issue with main window's stop/play buttons grabbing focus and
+		responding to the space-bar.
+	-  Added support for Pause functionality in ALSA mode.  Also includes
+		additional Pause key, the period (.) by default.  Pause is enabled by
+		default, but can be disabled by "configure":  --disable-pause.
+		The Play button alternates between a Play and Pause icon. The
+		song editor currently always rewinds, due to its triggers.
+	-  Made statistics a "configure" option:  --enable-statistics.
+	-  Added Shift-Left click for toggling the armed/mute status of all other
+		patterns than the one clicked.  Works in the song editor and in the
+		pattern editor (main window).
+	-  A bug where the timing bar didn't appear until the tune started was
+		fixed.
+
+2016-04-01  Chris Ahlstrom <ahlstrom@centiped>
+
+	* libseq64/include/perform.hpp, libseq64/src/perform.cpp,
+	seq_gtkmm2/src/mainwnd.cpp: Fixing space key support, still need to
+	fix icon changes for play/pause.
+	* contrib/notes/bugs_to_investigate.txt, libseq64/src/perform.cpp,
+	seq_gtkmm2/include/mainwnd.hpp, seq_gtkmm2/src/mainwnd.cpp: Trying
+	work out bad interaction between mainwnd pause/play button and the
+	start keystroke, who would think this would be so intractable.
+
+2016-03-31  Chris Ahlstrom <ahlstrom@centiped>
+
+	* libseq64/include/app_limits.h, libseq64/src/perform.cpp,
+	libseq64/src/userfile.cpp: Added min/max values for usr setting for
+	redraw rate.
+
+	* configure.ac, libseq64/include/jack_assistant.hpp,
+	libseq64/include/perform.hpp, libseq64/include/rc_settings.hpp,
+	libseq64/src/perform.cpp, libseq64/src/rc_settings.cpp,
+	libseq64/src/sequence.cpp, seq_gtkmm2/src/mainwnd.cpp,
+	seq_gtkmm2/src/perfedit.cpp, seq_gtkmm2/src/perfroll.cpp: Added
+	enable-statistics options, but left enabled because it breaks
+	stop/play/pause somewhat, so we have some debugging to do.
+
+2016-03-30  Chris Ahlstrom <ahlstrom@centiped>
+
+	* libseq64/src/perform.cpp: Incremental update of perform.
+	* contrib/notes/bugs_to_investigate.txt,
+	libseq64/include/perform.hpp, libseq64/src/perform.cpp,
+	libseq64/src/sequence.cpp, seq_gtkmm2/src/mainwnd.cpp,
+	seq_gtkmm2/src/perfedit.cpp: Got pause/resume to work in ALSA Live
+	mode.
+
+2016-03-29  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/include/perform.hpp, libseq64/include/sequence.hpp,
+	libseq64/src/perform.cpp, libseq64/src/sequence.cpp,
+	seq_gtkmm2/src/seqedit.cpp, seq_gtkmm2/src/seqmenu.cpp: Trying to
+	save the JACK ticks for foolproof pausing, in progress.
+
+2016-03-28  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* contrib/notes/bugs_to_investigate.txt,
+	libseq64/include/sequence.hpp, libseq64/src/perform.cpp,
+	libseq64/src/sequence.cpp: Notes are now turned off when pausing,
+	still have issue with mainwid pattern slot rewind upon
+	pause-then-play.
+
+2016-03-27  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* README, seq_gtkmm2/src/mainwid.cpp: Added Shift-Left-Click support
+	to toggle the armed state of all other pattern slots in the pattern
+	window, across sets.
+	* ChangeLog, INSTALL, README, configure.ac, contrib/midi/README,
+	contrib/notes/bugs_to_investigate.txt, contrib/scripts/YoSeqJack,
+	doc/dox/doxy-reference.cfg, libseq64/include/perform.hpp,
+	libseq64/include/sequence.hpp, libseq64/src/cmdlineopts.cpp,
+	libseq64/src/keys_perform.cpp, libseq64/src/midifile.cpp,
+	libseq64/src/optionsfile.cpp, libseq64/src/perform.cpp,
+	libseq64/src/sequence.cpp, seq_gtkmm2/include/mainwnd.hpp,
+	seq_gtkmm2/src/perfedit.cpp: Fixed issues with ALSA
+	progress/playback and with a bug in converting real MIDI time
+	signatures!
+
 2016-03-26  Chris Ahlstrom <ahlstromcj@gmail.com>
 
 	* configure.ac, contrib/notes/bugs_to_investigate.txt,
@@ -136,7 +223,7 @@
 	* contrib/notes/git.txt, doc/dox/doxy-reference.cfg: Got Doxygen PDF
 	generation to work again.
 	* : commit 294bcc497b90f4847c4108d6d559d63e0bfec223 Merge: 6dd88af
-	3da7446 Author: Chris Ahlstrom <ahlstromcj@gmail.com> Date:   Fri
+	3da7446 Author: Chris Ahlstrom <ahlstromcj@gmail.com> Date:	Fri
 	Mar 4 19:10:32 2016 -0500
 	* contrib/midi/wpb_yoshimi.txt, contrib/scripts/Seq24-Session,
 	doc/dox/user_testing.dox, libseq64/include/keystroke.hpp,
@@ -590,7 +677,7 @@
 
 	* : Back-merged master into fixups branch.
 	* : commit faa0492f5180df55651cdbbeea8c5cc8fd8ab09a Author: Chris
-	Ahlstrom <ahlstromcj@gmail.com> Date:   Thu Jan 21 06:21:53 2016
+	Ahlstrom <ahlstromcj@gmail.com> Date:	Thu Jan 21 06:21:53 2016
 	-0500
 
 2016-01-20  Chris Ahlstrom <ahlstromcj@gmail.com>
@@ -1915,13 +2002,13 @@
 2015-10-20  Chris Ahlstrom <ahlstromcj@gmail.com>
 
 	* : commit b84a83e00de68e54c43945dc42fda565d3031c30 Author: Chris
-	Ahlstrom <ahlstromcj@gmail.com> Date:   Tue Oct 20 20:56:31 2015
+	Ahlstrom <ahlstromcj@gmail.com> Date:	Tue Oct 20 20:56:31 2015
 	-0400
 
 2015-10-20  Chris Ahlstrom <ahlstromcj@gmail.com>
 
 	* : commit e6bb26a784291fcd973ea8ea0aade6217185d85f Author: Chris
-	Ahlstrom <ahlstromcj@gmail.com> Date:   Tue Oct 20 07:48:02 2015 -0400
+	Ahlstrom <ahlstromcj@gmail.com> Date:	Tue Oct 20 07:48:02 2015 -0400
 
 2015-10-20  Chris Ahlstrom <ahlstromcj@gmail.com>
 
@@ -3495,16 +3582,16 @@ v0.2.0 -------------------------------------------------
 2002-08-04
 	* Added Control Code Editor
 
-2002-07-16   
+2002-07-16	
 	* seqkeys.C - fixed black key drawing problem
 
 v0.1.1 -------------------------------------------------
 
-2002-07-15    Rob Buse    rcbuse@filter24.org
+2002-07-15	 Rob Buse	 rcbuse@filter24.org
 	* added #define _GNU_SOURCE to makefile.in
 
 v0.1.0 -------------------------------------------------
 
-2002-07-14    Rob Buse    rcbuse@filter24.org 
+2002-07-14	 Rob Buse	 rcbuse@filter24.org 
 	* Initial release of seq24-0.1.0  woohoo!
 

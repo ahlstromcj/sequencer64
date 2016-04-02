@@ -18,16 +18,13 @@ x  allofarow.mid:
    in this file.  We had it as 2/16, and it was actually 4/4!  It is somewhat
    hidden because Sequencer64/Seq24 has another MIDI construct that works
    correctly to get the time signature.
--  It seems like note-off is not working when the song is stopped or paused
-   now.
+y  It seems like note-off is not working when the song is stopped or paused
+   now.  This is fixed for ALSA, but not for JACK.
 -  It would be good to have a command that dumps the current build settings
    for Sequencer64.  Actually, add it to the --version command.
-y  PAUSE SUPPORT:
+y  Pause Support:
    -    ALSA: Live Mode supports resume-from-pause, Song Mode does not.
         Is this a BUG, or a FEATURE?
-   -    When the song editor Pause is used, the mainwid progress bars still
-        reset to the beginning.  Same for song editor and pattern editor
-        progress bars.  The reset does not occur until Play is pressed again.
    -    Currently, stop (Escape) in seqroll makes the cursor disappear, and
         then playback resumes from pause.  The cursor rewinds, but then
         reappears as if a pause was performed.

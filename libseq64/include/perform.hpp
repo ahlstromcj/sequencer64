@@ -1052,7 +1052,7 @@ public:
     void stop_playing ();
 
     void start_key (bool songmode = false);
-    void pause_key ();
+    void pause_key (bool songmode = false);
     void stop_key ();
 
     /**

@@ -397,6 +397,10 @@ mainwid::draw_sequence_on_pixmap (int seqnum)
                     int note_y = m_seqarea_seq_y -
                          m_seqarea_seq_y * (note + 1 - lowest_note) / height;
 
+                    // Alternative notation:
+                    // int note_y = m_seqarea_seq_y *
+                    //      (1 - (note + 1 - lowest_note) / height);
+
                     if (dt == DRAW_NOTE_ON || dt == DRAW_NOTE_OFF)
                         tick_f_x = tick_s_x + 1;
 

@@ -659,9 +659,11 @@ perfedit::pause_playing ()                      /* Stop in place!   */
 void
 perfedit::stop_playing ()
 {
-    perf().stop_playing();
 #ifdef SEQ64_PAUSE_SUPPORT
+    perf().stop_key();
     set_image(true);                            /* set play image   */
+#else
+    perf().stop_playing();
 #endif
 }
 

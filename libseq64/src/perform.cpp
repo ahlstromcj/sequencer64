@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-04-01
+ * \updates       2016-04-02
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -1774,7 +1774,9 @@ perform::output_func ()
         jack_scratchpad pad;
         if (m_is_paused)
         {
+#ifdef SEQ64_PAUSE_SUPPORT
             pad.js_current_tick = get_jack_tick();
+#endif
             m_is_paused = false;
         }
         else
@@ -2896,12 +2898,20 @@ perform::start_key (bool songmode)
 /**
  *  Invoke the pause key functionality.  Meant to be used by GUIs to unify the
  *  treatment of keys versus buttons.
+ *
+ * \param songmode
+ *      The live/play mode parameter to be passed along to the key processor,
+ *      when starting playback.
  */
 
 void
-perform::pause_key ()
+perform::pause_key (bool songmode)
 {
-    (void) playback_key_event(keys().pause());
+#ifdef SEQ64_PAUSE_SUPPORT
+    (void) playback_key_event(keys().pause(), songmode);
+#else
+    (void) playback_key_event(keys().start(), songmode);
+#endif
 }
 
 /**
@@ -2919,6 +2929,9 @@ perform::stop_key ()
  *  New function provided to unify the stop/start (space/escape) behavior of
  *  the various windows where playback can be started, paused, or stopped.  To
  *  be used in mainwnd, perfedit, and seqroll.
+ *
+ *  The start/end key may be the same key (e.g. Space) to allow toggling when
+ *  the same key is mapped to both triggers.
  *
  *  Checking is_running() may not work completely in JACK.
  *
@@ -2967,6 +2980,7 @@ perform::playback_key_event (const keystroke & k, bool songmode)
         {
             stop_playing();
         }
+#ifdef SEQ64_PAUSE_SUPPORT
         else if (k.key() == PAUSEKEY)
         {
             if (is_running())
@@ -2974,6 +2988,7 @@ perform::playback_key_event (const keystroke & k, bool songmode)
             else
                 start_playing(songmode);
         }
+#endif
     }
     return result;
 }

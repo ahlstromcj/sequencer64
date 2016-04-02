@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-04-01
+ * \updates       2016-04-02
  * \license       GNU GPLv2 or above
  *
  *  The main windows is known as the "Patterns window" or "Patterns
@@ -197,19 +197,22 @@ private:
 
     Gtk::Entry * m_entry_notes;
 
+#ifdef SEQ64_PAUSE_SUPPORT
+
+    /**
+     *  Holds the current status of running, for use in display the play
+     *  versus pause icon.
+     */
+
+    bool m_is_running;
+
+#endif
+
     /**
      *  Provides a timeout handler.
      */
 
     sigc::connection m_timeout_connect;
-
-    /**
-     *  Provides the timeout periodicity, which is normally 25 ms.  Setting it
-     *  to 100 ms works, but the progress bar moves "backwards" on some of our
-     *  note-empty patterns.  REPLACED BY A BASE CLASS MEMBER.
-
-    int m_timeout_period_ms;
-     */
 
 public:
 
@@ -257,7 +260,7 @@ private:
     void adj_callback_bpm ();
     void edit_callback_notepad ();
     bool timer_callback ();
-    void set_image (bool isplay);
+    void set_image (bool isrunning);
     void start_playing ();
     void pause_playing ();
     void stop_playing ();

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-04-01
+ * \updates       2016-04-02
  * \license       GNU GPLv2 or above
  *
  *  The main window holds the menu and the main controls of the application,
@@ -159,6 +159,9 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
     m_spinbutton_load_offset(nullptr),
     m_adjust_load_offset    (nullptr),
     m_entry_notes           (nullptr),
+#ifdef SEQ64_PAUSE_SUPPORT
+    m_is_running            (false),
+#endif
     m_timeout_connect       ()                      /* handler              */
 {
     /*
@@ -520,6 +523,15 @@ bool
 mainwnd::timer_callback ()
 {
     midipulse tick = perf().get_tick();         /* use no get_start_tick()! */
+
+#if 0
+    printf
+    (
+        "tick = %ld; running = %s\n",
+        tick, perf().is_running() ? "true" : "false"
+    );
+#endif
+
     m_main_time->idle_progress(tick);
     m_main_wid->update_markers(tick);           /* tick ignored for pause   */
 
@@ -534,6 +546,14 @@ mainwnd::timer_callback ()
         m_adjust_ss->set_value(screenset);
         m_entry_notes->set_text(perf().current_screen_set_notepad());
     }
+
+#ifdef SEQ64_PAUSE_SUPPORT
+    if (perf().is_running() != m_is_running)
+    {
+        m_is_running = perf().is_running();
+        set_image(m_is_running);
+    }
+#endif
     return true;
 }
 
@@ -1113,30 +1133,30 @@ mainwnd::edit_callback_notepad ()
 /**
  *  Changes the image used for the pause/play button
  *
- * \param isplay
- *      If true, set the image to the "Play" icon.  Otherwise, set it to the
- *      "Pause" button.
+ * \param isrunning
+ *      If true, set the image to the "Pause" icon, since playback is running.
+ *      Otherwise, set it to the "Play" button, since playback is not running.
  */
 
 void
-mainwnd::set_image (bool isplay)
+mainwnd::set_image (bool isrunning)
 {
     delete m_image_play;
-    if (isplay)
-    {
-        m_image_play =
-        (
-            manage(new Gtk::Image(Gdk::Pixbuf::create_from_xpm_data(play2_xpm)))
-        );
-        add_tooltip(m_button_play, "Begin playback from the beginning.");
-    }
-    else
+    if (isrunning)
     {
         m_image_play =
         (
             manage(new Gtk::Image(Gdk::Pixbuf::create_from_xpm_data(pause_xpm)))
         );
-        add_tooltip(m_button_play, "Begin playback at the current location.");
+        add_tooltip(m_button_play, "Pause playback at the current location.");
+    }
+    else
+    {
+        m_image_play =
+        (
+            manage(new Gtk::Image(Gdk::Pixbuf::create_from_xpm_data(play2_xpm)))
+        );
+        add_tooltip(m_button_play, "Resume playback from the current Location.");
     }
     m_button_play->set_image(*m_image_play);
 }
@@ -1145,7 +1165,8 @@ mainwnd::set_image (bool isplay)
  *  Starts playing of the song.  The rc_settings::jack_start_mode()
  *  function is used (if jack is running) to determine if the playback
  *  mode is "live" (false) or "song" (true).  An accessor to
- *  perform::start_playing().
+ *  perform::start_playing().  This function is actually a callback for the
+ *  pause/play button.
  *
  * \note
  *      This overrides the old behavior of playing live mode if the song
@@ -1158,8 +1179,7 @@ void
 mainwnd::start_playing ()               /* Play!            */
 {
 #ifdef SEQ64_PAUSE_SUPPORT
-    perf().start_key();
-    set_image(! perf().is_running());
+    perf().pause_key();                 /* perf().start_key() */
 #else
     perf().start_playing();             /* legacy behavior  */
 #endif
@@ -1176,7 +1196,6 @@ mainwnd::pause_playing ()               /* Stop in place!   */
 {
 #ifdef SEQ64_PAUSE_SUPPORT
     perf().pause_key();
-    set_image(! perf().is_running());
 #else
     perf().pause_playing();
 #endif
@@ -1185,6 +1204,16 @@ mainwnd::pause_playing ()               /* Stop in place!   */
 /**
  *  Stops the playing of the song.  An accessor to perform's stop_playing()
  *  function.  Also calls the mainwid's update_sequences_on_window() function.
+ *  Not sure that we need this call, since the slots seem to update anyway.
+ *  But we've noticed that, with this call in place, hitting the Stop button
+ *  causes a subtle change in the appearance of the first non-empty pattern of
+ *  the "allofarow.mid" file.
+ *
+ *  After the Stop button is pushed (in ALSA mode), then the Space key
+ *  ("start") doesn't work properly.  The song starts, then quickly stops.  It
+ *  doesn't matter if update_sequences_on_window() is called or not.  This
+ *  happens even in seq24!  This bug has proven incredibly difficult to track
+ *  down, still working on it.
  */
 
 void
@@ -1192,10 +1221,10 @@ mainwnd::stop_playing ()                /* Stop!            */
 {
 #ifdef SEQ64_PAUSE_SUPPORT
     perf().stop_key();
-    set_image(true);                    /* set Play image   */
 #else
     perf().stop_playing();
 #endif
+
     m_main_wid->update_sequences_on_window();
 }
 
@@ -1224,7 +1253,6 @@ mainwnd::toggle_playing ()
         perf().start_playing();
 #endif
     }
-    set_image(! perf().is_running());
 }
 
 /**
@@ -1276,15 +1304,21 @@ mainwnd::on_key_release_event (GdkEventKey * ev)
 bool
 mainwnd::on_key_press_event (GdkEventKey * ev)
 {
-    Gtk::Window::on_key_press_event(ev);
+    /*
+     * Shouldn't this call be last, and only if the key wasn't handled?
+     * It freakin' freezes up cgdb!  Let's at least move it to the end.
+     * 
+     * Gtk::Window::on_key_press_event(ev);
+     */
+
     if (CAST_EQUIVALENT(ev->type, SEQ64_KEY_PRESS))
     {
+        keystroke k(ev->keyval, SEQ64_KEYSTROKE_PRESS);
         if (rc().print_keys())
         {
             printf("key_press[%d]\n", ev->keyval);
             fflush(stdout);
         }
-
         if (ev->keyval == PREFKEY(bpm_dn))
         {
             int newbpm = perf().decrement_beats_per_minute();
@@ -1296,8 +1330,10 @@ mainwnd::on_key_press_event (GdkEventKey * ev)
             m_adjust_bpm->set_value(newbpm);
         }
 
-        keystroke k(ev->keyval, SEQ64_KEYSTROKE_PRESS);
-        (void) perf().mainwnd_key_event(k);             /* pass to perform  */
+        // We already do this on a key_release!!!!
+        //
+        // (void) perf().mainwnd_key_event(k);             /* pass to perform  */
+
         if (ev->keyval == PREFKEY(screenset_dn))
         {
             int newss = perf().decrement_screenset();
@@ -1321,18 +1357,15 @@ mainwnd::on_key_press_event (GdkEventKey * ev)
             );
         }
 
-        if                                      /* mute group learn         */
-        (
-            perf().is_learn_mode() && ev->keyval != PREFKEY(group_learn)
-        )
+        bool mgl = perf().is_learn_mode() && ev->keyval != PREFKEY(group_learn);
+        if (mgl)                                /* mute group learn         */
         {
             if (perf().get_key_groups().count(ev->keyval) != 0)
             {
                 std::ostringstream os;
                 os
                     << "Key '" << gdk_keyval_name(ev->keyval)
-                    << "' (code = " << ev->keyval
-                    << ") successfully mapped."
+                    << "' (code = " << ev->keyval << ") successfully mapped."
                    ;
 
                 Gtk::MessageDialog dialog
@@ -1344,8 +1377,7 @@ mainwnd::on_key_press_event (GdkEventKey * ev)
                 dialog.run();
 
                 /*
-                 * Missed the key-up message for group-learn, so force it
-                 * to off
+                 * Missed the key-up group-learn message, so force it to off.
                  */
 
                 perf().unset_mode_group_learn();
@@ -1377,12 +1409,6 @@ mainwnd::on_key_press_event (GdkEventKey * ev)
             }
         }
 
-        /*
-         * The start/end key may be the same key (i.e. SPACE) to allow
-         * toggling when the same key is mapped to both triggers (i.e.
-         * SPACEBAR)
-         */
-
         if (! perf().playback_key_event(k))
         {
             /*
@@ -1404,7 +1430,14 @@ mainwnd::on_key_press_event (GdkEventKey * ev)
             }
         }
     }
-    return false;
+
+    /*
+     * And let's return the key-press event's return value!
+     *
+     * return false;
+     */
+
+    return Gtk::Window::on_key_press_event(ev);
 }
 
 /**

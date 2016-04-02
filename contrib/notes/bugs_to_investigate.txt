@@ -1,6 +1,6 @@
 Bugs and Additional Upgrade Ideas
 Chris Ahlstrom
-2015-10-27 to 2016-03-31 (New bugs)
+2015-10-27 to 2016-04-01 (New bugs)
 
 In no particular order...  "y" means "in progress", and "x" means it is
 basically done.
@@ -34,7 +34,8 @@ y  PAUSE SUPPORT:
    -    In the main window, the pause/play button works, but the space bar
         plays only a tiny bit each time it is pressed.  This is triggered
         by hitting the play/pause button; but it does not happen for the real
-        pause key (the period).
+        pause key (the period).  This bug occurs if configured with
+        --disable-pause, and also occurs in seq24!
    x    Seems to be susceptible to notes not being turned off
         (but check the MIDI bus flush as well).  We need to make sure that
         stop and pause both silence all notes, somehow.

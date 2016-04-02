@@ -1,6 +1,6 @@
 README for Sequencer64 0.9.10.1 (current branch = "fixups ongoing")
 Chris Ahlstrom
-2015-09-10 to 2016-03-27 (initial work started in July of 2015)
+2015-09-10 to 2016-04-02 (initial work started in July of 2015)
 
 The sequencer64 project is a continuation of sequencer24 to refactor it to be
 tighter and easier to transition to GTKmm 3, and much more.  By now, it is
@@ -95,6 +95,9 @@ Major updates:
             -   Global beats per minute
             -   Global beat width
             -   Global MIDI buss override
+    -   Fixed a long-standing (back to seq24) bug that caused the main window
+        buttons to grab focus, causing the space bar to press the button, as
+        well as doing its start function.
     -   Internal (invisible) work:
         -   The code has been broken up into libraries, for better separation
             between GUI support and the files, MIDI, JACK, and LASH support.

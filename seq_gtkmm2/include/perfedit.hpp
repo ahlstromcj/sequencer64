@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-03-23
+ * \updates       2016-04-02
  * \license       GNU GPLv2 or above
  *
  */
@@ -167,6 +167,17 @@ private:
 
     int m_ppqn;
 
+#ifdef SEQ64_PAUSE_SUPPORT
+
+    /**
+     *  Holds the current status of running, for use in display the play
+     *  versus pause icon.
+     */
+
+    bool m_is_running;
+
+#endif
+
     /**
      *  The standard "beats per measure" of Sequencer64, which here matches
      *  the beats-per-measure displayed in the perfroll (piano roll).
@@ -213,7 +224,7 @@ private:
     void undo ();
     void popup_menu (Gtk::Menu * menu);
     bool timeout ();
-    void set_image (bool isplay);
+    void set_image (bool isrunning);
     void start_playing ();
     void pause_playing ();
     void stop_playing ();

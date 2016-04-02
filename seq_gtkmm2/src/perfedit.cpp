@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-03-29
+ * \updates       2016-04-02
  * \license       GNU GPLv2 or above
  *
  */
@@ -131,6 +131,9 @@ perfedit::perfedit
     m_bpm               (0),
     m_bw                (0),
     m_ppqn              (0),
+#ifdef SEQ64_PAUSE_SUPPORT
+    m_is_running        (false),
+#endif
     m_standard_bpm      (SEQ64_DEFAULT_LINES_PER_MEASURE)   /* 4            */
 {
     std::string title = "Sequencer64 - Song Editor";
@@ -188,6 +191,7 @@ perfedit::perfedit
     (
         MenuElem("1/32", sigc::bind(mem_fun(*this, &perfedit::set_snap), 32))
     );
+
     m_button_snap->add
     (
         *manage(new Gtk::Image(Gdk::Pixbuf::create_from_xpm_data(snap_xpm)))
@@ -200,6 +204,7 @@ perfedit::perfedit
         )
     );
     add_tooltip(m_button_snap, "Grid snap (fraction of measure length).");
+
     m_entry_snap->set_size_request(40, -1);
     m_entry_snap->set_editable(false);
     m_menu_bw->items().push_back
@@ -249,6 +254,7 @@ perfedit::perfedit
     );
     m_entry_bpm->set_width_chars(2);
     m_entry_bpm->set_editable(false);
+
     m_button_bw->add                                /* beat width */
     (
         *manage(new Gtk::Image(Gdk::Pixbuf::create_from_xpm_data(down_xpm)))
@@ -258,8 +264,10 @@ perfedit::perfedit
         sigc::bind<Gtk::Menu *>(mem_fun(*this, &perfedit::popup_menu), m_menu_bw)
     );
     add_tooltip(m_button_bw, "Time signature: length of beat.");
+
     m_entry_bw->set_width_chars(2);
     m_entry_bw->set_editable(false);
+
     m_button_undo->add
     (
         *manage(new Gtk::Image(Gdk::Pixbuf::create_from_xpm_data(undo_xpm)))
@@ -269,6 +277,7 @@ perfedit::perfedit
         mem_fun(*this, &perfedit::undo)
     );
     add_tooltip(m_button_undo, "Undo.");
+
     m_button_expand->add                            /* expand           */
     (
         *manage(new Gtk::Image(Gdk::Pixbuf::create_from_xpm_data(expand_xpm)))
@@ -278,6 +287,7 @@ perfedit::perfedit
         mem_fun(*this, &perfedit::expand)
     );
     add_tooltip(m_button_expand, "Expand between the L and R markers.");
+
     m_button_collapse->add                          /* collapse         */
     (
         *manage(new Gtk::Image(Gdk::Pixbuf::create_from_xpm_data(collapse_xpm)))
@@ -287,12 +297,14 @@ perfedit::perfedit
         mem_fun(*this, &perfedit::collapse)
     );
     add_tooltip(m_button_collapse, "Collapse between the L and R markers.");
+
     m_button_copy->add                              /* expand & copy    */
     (
         *manage(new Gtk::Image(Gdk::Pixbuf::create_from_xpm_data(copy_xpm)))
     );
     m_button_copy->signal_clicked().connect(mem_fun(*this, &perfedit::copy));
     add_tooltip(m_button_copy, "Expand and copy between the L and R markers.");
+
     m_button_loop->add
     (
         *manage(new Gtk::Image(Gdk::Pixbuf::create_from_xpm_data(loop_xpm)))
@@ -302,6 +314,8 @@ perfedit::perfedit
         mem_fun(*this, &perfedit::set_looped)
     );
     add_tooltip(m_button_loop, "Playback looped between the L and R markers.");
+
+    m_button_stop->set_focus_on_click(false);
     m_button_stop->add
     (
         *manage(new Gtk::Image(Gdk::Pixbuf::create_from_xpm_data(stop_xpm)))
@@ -313,6 +327,7 @@ perfedit::perfedit
     add_tooltip(m_button_stop, "Stop playback.");
     m_button_stop->set_sensitive(true);
 
+    m_button_play->set_focus_on_click(false);
     m_button_play->set_image(*m_image_play);
     m_button_play->signal_clicked().connect
     (
@@ -582,6 +597,15 @@ perfedit::timeout ()
 {
     m_perfroll->redraw_progress();
     m_perfnames->redraw_dirty_sequences();
+
+#ifdef SEQ64_PAUSE_SUPPORT
+    if (perf().is_running() != m_is_running)
+    {
+        m_is_running = perf().is_running();
+        set_image(m_is_running);
+    }
+#endif
+
     return true;
 }
 
@@ -590,24 +614,24 @@ perfedit::timeout ()
  */
 
 void
-perfedit::set_image (bool isplay)
+perfedit::set_image (bool isrunning)
 {
     delete m_image_play;
-    if (isplay)
-    {
-        m_image_play =
-        (
-            manage(new Gtk::Image(Gdk::Pixbuf::create_from_xpm_data(play2_xpm)))
-        );
-        add_tooltip(m_button_play, "Begin playback at the L marker.");
-    }
-    else
+    if (isrunning)
     {
         m_image_play =
         (
             manage(new Gtk::Image(Gdk::Pixbuf::create_from_xpm_data(pause_xpm)))
         );
-        add_tooltip(m_button_play, "Begin playback at the current location.");
+        add_tooltip(m_button_play, "Pause playback at the current location.");
+    }
+    else
+    {
+        m_image_play =
+        (
+            manage(new Gtk::Image(Gdk::Pixbuf::create_from_xpm_data(play2_xpm)))
+        );
+        add_tooltip(m_button_play, "Resume playback from the current location.");
     }
     m_button_play->set_image(*m_image_play);
 }
@@ -620,17 +644,11 @@ perfedit::set_image (bool isplay)
 void
 perfedit::start_playing ()
 {
-    if (perf().is_running())
-    {
-        pause_playing();
-    }
-    else
-    {
-        perf().start_playing(true);
 #ifdef SEQ64_PAUSE_SUPPORT
-        set_image(false);                       /* set pause image  */
+    perf().pause_key();                 /* perf().start_key() */
+#else
+    perf().start_playing();             /* legacy behavior  */
 #endif
-    }
 }
 
 /**
@@ -642,13 +660,10 @@ perfedit::start_playing ()
 void
 perfedit::pause_playing ()                      /* Stop in place!   */
 {
-    if (perf().is_running())
-        perf().pause_playing();
-    else
-        perf().start_playing(false);            /* tentative, false fails */
-
 #ifdef SEQ64_PAUSE_SUPPORT
-    set_image(true);                            /* set play image   */
+    perf().pause_key();
+#else
+    perf().pause_playing();
 #endif
 }
 
@@ -661,7 +676,6 @@ perfedit::stop_playing ()
 {
 #ifdef SEQ64_PAUSE_SUPPORT
     perf().stop_key();
-    set_image(true);                            /* set play image   */
 #else
     perf().stop_playing();
 #endif

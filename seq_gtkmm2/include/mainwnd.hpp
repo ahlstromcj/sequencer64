@@ -172,15 +172,15 @@ private:
      *  The spin/adjustment controls for the BPM (beats-per-minute) value.
      */
 
-    Gtk::SpinButton * m_spinbutton_bpm;
     Gtk::Adjustment * m_adjust_bpm;
+    Gtk::SpinButton * m_spinbutton_bpm;
 
     /**
      *  The spin/adjustment controls for the screen set value.
      */
 
-    Gtk::SpinButton * m_spinbutton_ss;
     Gtk::Adjustment * m_adjust_ss;
+    Gtk::SpinButton * m_spinbutton_ss;
 
     /**
      *  The spin/adjustment controls for the load offset value.
@@ -188,8 +188,8 @@ private:
      *  but I've never seen the button!
      */
 
-    Gtk::SpinButton * m_spinbutton_load_offset;
     Gtk::Adjustment * m_adjust_load_offset;
+    Gtk::SpinButton * m_spinbutton_load_offset;
 
     /**
      *  What is this?

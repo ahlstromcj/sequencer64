@@ -132,7 +132,7 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
  :
     gui_window_gtk2         (p),
     performcallback         (),
-    m_tooltips              (manage(new Gtk::Tooltips())), /* valgrind bitches */
+    m_tooltips              (manage(new Gtk::Tooltips())),  /* valgrind bitches */
     m_menubar               (manage(new Gtk::MenuBar())),
     m_menu_file             (manage(new Gtk::Menu())),
     m_menu_view             (manage(new Gtk::Menu())),
@@ -148,16 +148,29 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
     m_options               (nullptr),
     m_main_cursor           (),
     m_image_play            (),
-    m_button_learn          (nullptr),              /* compare to perfedit! */
-    m_button_stop           (nullptr),
-    m_button_play           (nullptr),
-    m_button_perfedit       (nullptr),
-    m_spinbutton_bpm        (nullptr),
-    m_adjust_bpm            (nullptr),
-    m_spinbutton_ss         (nullptr),
-    m_adjust_ss             (nullptr),
-    m_spinbutton_load_offset(nullptr),
-    m_adjust_load_offset    (nullptr),
+    m_button_learn          (manage(new Gtk::Button())),    /* group learn (L) */
+    m_button_stop           (manage(new Gtk::Button())),
+    m_button_play           (manage(new Gtk::Button())),
+    m_button_perfedit       (manage(new Gtk::Button())),
+    m_adjust_bpm
+    (
+        manage
+        (
+            new Gtk::Adjustment
+            (
+                perf().get_beats_per_minute(),
+                SEQ64_MINIMUM_BPM, SEQ64_MAXIMUM_BPM, 1
+            )
+        )
+    ),
+    m_spinbutton_bpm        (manage(new Gtk::SpinButton(*m_adjust_bpm))),
+    m_adjust_ss             (manage(new Gtk::Adjustment(0, 0, c_max_sets-1, 1))),
+    m_spinbutton_ss         (manage(new Gtk::SpinButton(*m_adjust_ss))),
+    m_adjust_load_offset
+    (
+        manage(new Gtk::Adjustment(0, -(c_max_sets - 1), c_max_sets - 1, 1))
+    ),
+    m_spinbutton_load_offset(manage(new Gtk::SpinButton(*m_adjust_load_offset))),
     m_entry_notes           (nullptr),
 #ifdef SEQ64_PAUSE_SUPPORT
     m_is_running            (false),
@@ -293,7 +306,7 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
     tophbox->pack_end(*vbox_b, false, false);
     hbox3->set_spacing(10);
     hbox3->pack_start(*m_main_time, false, false);  /* timeline          */
-    m_button_learn = manage(new Gtk::Button());     /* group learn ("L") */
+
     m_button_learn->set_focus_on_click(false);
     m_button_learn->set_flags(m_button_learn->get_flags() & ~Gtk::CAN_FOCUS);
     m_button_learn->set_image
@@ -317,7 +330,7 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
 
     /*
      *  This seems to be a dirty hack to clear the focus, not to trigger L
-     *  via keys.
+     *  via keys.  We had to add some set_focus_on_click(false) calls anyway.
      */
 
     Gtk::Button w;
@@ -331,7 +344,14 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
     Gtk::HBox * bottomhbox = manage(new Gtk::HBox(false, 10));   /* bottom */
     Gtk::HBox * startstophbox = manage(new Gtk::HBox(false, 4)); /* button */
     bottomhbox->pack_start(*startstophbox, Gtk::PACK_SHRINK);
-    m_button_stop = manage(new Gtk::Button());
+
+    /*
+     * If we don't call this function, then clicking the stop button makes
+     * it steal focus, and be "clicked" when the space bar is hit, which is
+     * very confusing.
+     */
+
+    m_button_stop->set_focus_on_click(false);
     m_button_stop->add
     (
         *manage(new Gtk::Image(Gdk::Pixbuf::create_from_xpm_data(stop_xpm)))
@@ -344,7 +364,13 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
     startstophbox->pack_start(*m_button_stop, Gtk::PACK_SHRINK);
     m_button_stop->set_sensitive(true);
 
-    m_button_play = manage(new Gtk::Button());
+    /*
+     * If we don't call this function, then clicking the stop button makes
+     * it steal focus, and be "clicked" when the space bar is hit, which is
+     * very confusing.
+     */
+
+    m_button_play->set_focus_on_click(false);
     m_button_play->add
     (
         *manage(new Gtk::Image(Gdk::Pixbuf::create_from_xpm_data(play2_xpm)))
@@ -358,20 +384,12 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
     m_button_play->set_sensitive(true);
 
     /*
-     * BPM spin button with label.
+     * BPM spin button with label.  Be sure to document that right-clicking on
+     * the up or down button brings it to the very end of its range.
      */
 
     Gtk::HBox * bpmhbox = manage(new Gtk::HBox(false, 4));
     bottomhbox->pack_start(*bpmhbox, Gtk::PACK_SHRINK);
-    m_adjust_bpm = manage
-    (
-        new Gtk::Adjustment
-        (
-            perf().get_beats_per_minute(),
-            SEQ64_MINIMUM_BPM, SEQ64_MAXIMUM_BPM, 1
-        )
-    );
-    m_spinbutton_bpm = manage(new Gtk::SpinButton(*m_adjust_bpm));
     m_spinbutton_bpm->set_editable(false);
     m_adjust_bpm->signal_value_changed().connect
     (
@@ -414,8 +432,6 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
 
     Gtk::HBox * sethbox = manage(new Gtk::HBox(false, 4));
     bottomhbox->pack_start(*sethbox, Gtk::PACK_SHRINK);
-    m_adjust_ss = manage(new Gtk::Adjustment(0, 0, c_max_sets - 1, 1));
-    m_spinbutton_ss = manage(new Gtk::SpinButton(*m_adjust_ss));
     m_spinbutton_ss->set_editable(false);
     m_spinbutton_ss->set_wrap(true);
     m_adjust_ss->signal_value_changed().connect
@@ -430,10 +446,12 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
 
     /*
      * Song editor button.  Although there can be two of them brought
-     * on-screen, only one has a button devoted to it.
+     * on-screen, only one has a button devoted to it.  Also, we prevent
+     * this button from grabbing focus, as it interacts "badly" with the space
+     * bar.
      */
 
-    m_button_perfedit = manage(new Gtk::Button());
+    m_button_perfedit->set_focus_on_click(false);
     m_button_perfedit->add
     (
         *manage(new Gtk::Image(Gdk::Pixbuf::create_from_xpm_data(perfedit_xpm)))
@@ -523,15 +541,6 @@ bool
 mainwnd::timer_callback ()
 {
     midipulse tick = perf().get_tick();         /* use no get_start_tick()! */
-
-#if 0
-    printf
-    (
-        "tick = %ld; running = %s\n",
-        tick, perf().is_running() ? "true" : "false"
-    );
-#endif
-
     m_main_time->idle_progress(tick);
     m_main_wid->update_markers(tick);           /* tick ignored for pause   */
 
@@ -554,6 +563,7 @@ mainwnd::timer_callback ()
         set_image(m_is_running);
     }
 #endif
+
     return true;
 }
 
@@ -955,11 +965,6 @@ mainwnd::file_import_dialog ()
 
     Gtk::ButtonBox * btnbox = dlg.get_action_area();
     Gtk::HBox hbox(false, 2);
-    m_adjust_load_offset = manage
-    (
-        new Gtk::Adjustment(0, -(c_max_sets - 1), c_max_sets - 1, 1)
-    );
-    m_spinbutton_load_offset = manage(new Gtk::SpinButton(*m_adjust_load_offset));
     m_spinbutton_load_offset->set_editable(false);
     m_spinbutton_load_offset->set_wrap(true);
     hbox.pack_end(*m_spinbutton_load_offset, false, false);
@@ -1156,7 +1161,7 @@ mainwnd::set_image (bool isrunning)
         (
             manage(new Gtk::Image(Gdk::Pixbuf::create_from_xpm_data(play2_xpm)))
         );
-        add_tooltip(m_button_play, "Resume playback from the current Location.");
+        add_tooltip(m_button_play, "Resume playback from the current location.");
     }
     m_button_play->set_image(*m_image_play);
 }

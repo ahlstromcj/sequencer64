@@ -268,7 +268,9 @@ midibus::init_in ()
     dest.port = m_local_addr_port;
     snd_seq_port_subscribe_set_dest(subs, &dest);       /* local              */
 
-    /* use the master queue, and get ticks, then subscribe */
+    /*
+     * Use the master queue, and get ticks, then subscribe.
+     */
 
     snd_seq_port_subscribe_set_queue(subs, m_queue);
     snd_seq_port_subscribe_set_time_update(subs, 1);

@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-03-23
+ * \updates       2016-04-03
  * \license       GNU GPLv2 or above
  *
  *  The <code> ~/.seq24rc </code> or <code> ~/.config/sequencer64/sequencer64.rc
@@ -861,7 +861,7 @@ optionsfile::write (const perform & p)
         "# master exists. Also must enable jack_transport (the user interface\n"
         "# forces this, and disables jack_master).\n\n"
         << rc().with_jack_master_cond()  << "\n\n"
-        "# jack_start_mode (currently applies even if JACK not enabled).\n\n"
+        "# jack_start_mode (applies only if JACK is enabled).\n\n"
         "# 0 = Playback in live mode. Allows muting and unmuting of loops.\n"
         "#     from the main (patterns) window.  Disables both manual and\n"
         "#     automatic muting and unmuting from the performance window.\n"

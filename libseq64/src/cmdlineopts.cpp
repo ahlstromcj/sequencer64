@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-20
- * \updates       2016-03-27
+ * \updates       2016-04-03
  * \license       GNU GPLv2 or above
  *
  *  The "rc" command-line options override setting that are first read from
@@ -141,7 +141,7 @@ static const std::string s_arg_list =
     ;
 
 static const char * const s_help_1a =
-"sequencer64 v 0.9.10.1 A significant reboot of the seq24 live sequencer.\n"
+"sequencer64 v 0.9.10.1  A significant reboot of the seq24 live sequencer.\n"
 "\n"
 "Usage: sequencer64 [options] [MIDI filename]\n\n"
 "Options:\n"
@@ -276,6 +276,12 @@ help_check (int argc, char * argv [])
  *      if (cfg_dir.empty())
  *          return EXIT_FAILURE;
  *
+ * \change ca 2016-04-03
+ *      We were parsing the user-file first, but we now need to parse
+ *      the rc-file first, to get the manual-alsa-ports option, so that we can
+ *      avoid overriding the port names that the ALSA system provides, if the
+ *      manual-alsa-option is false.
+ *
  * \param p
  *      Provides the perform object that will be affected by the new
  *      parameters.
@@ -294,26 +300,26 @@ bool
 parse_options_files (perform & p, int argc, char * argv [])
 {
     bool result = true;
-    std::string rcname = seq64::rc().user_filespec();
+    std::string rcname = seq64::rc().config_filespec();
     seq64::rc().set_defaults();     /* start out with normal values */
     seq64::usr().set_defaults();    /* start out with normal values */
     if (file_accessible(rcname))
     {
-        printf("[Reading user configuration %s]\n", rcname.c_str());
-        seq64::userfile ufile(rcname);
-        if (ufile.parse(p))
+        printf("[Reading rc configuration %s]\n", rcname.c_str());
+        seq64::optionsfile options(rcname);
+        if (options.parse(p))
         {
             // Nothing to do?
         }
         else
             result = false;
     }
-    rcname = seq64::rc().config_filespec();
+    rcname = seq64::rc().user_filespec();
     if (file_accessible(rcname))
     {
-        printf("[Reading rc configuration %s]\n", rcname.c_str());
-        seq64::optionsfile options(rcname);
-        if (options.parse(p))
+        printf("[Reading user configuration %s]\n", rcname.c_str());
+        seq64::userfile ufile(rcname);
+        if (ufile.parse(p))
         {
             // Nothing to do?
         }

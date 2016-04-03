@@ -141,11 +141,12 @@ mastermidibus::mastermidibus (int ppqn, int bpm)
     }
 
     /*
-     * Set the client's name for ALSA.  It used to be "seq24".
+     * Set the client's name for ALSA.  It used to be "seq24".  Then set up our
+     * ALSA client's queue.
      */
 
     snd_seq_set_client_name(m_alsa_seq, "sequencer64");
-    m_queue = snd_seq_alloc_queue(m_alsa_seq);      /* client's queue          */
+    m_queue = snd_seq_alloc_queue(m_alsa_seq);
 #endif
 
     /*
@@ -189,14 +190,20 @@ mastermidibus::~mastermidibus ()
             m_buses_in[i] = nullptr;
         }
     }
+
 #ifdef SEQ64_HAVE_LIBASOUND
     snd_seq_event_t ev;
-    snd_seq_ev_clear(&ev);                          /* kill timer */
+    snd_seq_ev_clear(&ev);                          /* kill timer           */
     snd_seq_stop_queue(m_alsa_seq, m_queue, &ev);
     snd_seq_free_queue(m_alsa_seq, m_queue);
-    snd_seq_close(m_alsa_seq);                      /* close client */
-    (void) snd_config_update_free_global();
+    snd_seq_close(m_alsa_seq);                      /* close client         */
+    (void) snd_config_update_free_global();         /* additional cleanup   */
 #endif
+
+    /*
+     * Still more cleanup, not in seq24.
+     */
+
     if (not_nullptr(m_poll_descriptors))
     {
         delete [] m_poll_descriptors;
@@ -249,8 +256,7 @@ mastermidibus::init (int ppqn)
         m_num_in_buses = 1;
         m_buses_in[0] = new midibus
         (
-            snd_seq_client_id(m_alsa_seq), m_alsa_seq,
-            m_num_in_buses, m_queue
+            snd_seq_client_id(m_alsa_seq), m_alsa_seq, m_num_in_buses, m_queue
         );
         m_buses_in[0]->init_in_sub();
         m_buses_in_active[0] = true;
@@ -258,7 +264,10 @@ mastermidibus::init (int ppqn)
     }
     else
     {
-        /* While the next client for the sequencer is available */
+        /*
+         * While the next client for the sequencer is available, get the client
+         * from cinfo.  Fill pinfo.
+         */
 
         while (snd_seq_query_next_client(m_alsa_seq, cinfo) >= 0)
         {
@@ -268,7 +277,9 @@ mastermidibus::init (int ppqn)
             snd_seq_port_info_set_port(pinfo, -1);
             while (snd_seq_query_next_port(m_alsa_seq, pinfo) >= 0)
             {
-                /* While the next port is available, get its capability */
+                /*
+                 * While the next port is available, get its capability.
+                 */
 
                 int cap = snd_seq_port_info_get_capability(pinfo);
                 if
@@ -277,6 +288,10 @@ mastermidibus::init (int ppqn)
                     snd_seq_port_info_get_client(pinfo) != SND_SEQ_CLIENT_SYSTEM
                 )
                 {
+                    /*
+                     * Why are we doing the ALSA client check again here?
+                     */
+
                     if (CAP_WRITE(cap) && ALSA_CLIENT_CHECK(pinfo)) /* outputs */
                     {
                         if (not_nullptr(m_buses_out[m_num_out_buses]))
@@ -292,12 +307,10 @@ mastermidibus::init (int ppqn)
                         (
                             snd_seq_client_id(m_alsa_seq),
                             snd_seq_port_info_get_client(pinfo),
-                            snd_seq_port_info_get_port(pinfo),
-                            m_alsa_seq,
+                            snd_seq_port_info_get_port(pinfo), m_alsa_seq,
                             snd_seq_client_info_get_name(cinfo),
                             snd_seq_port_info_get_name(pinfo),
-                            m_num_out_buses,
-                            m_queue
+                            m_num_out_buses, m_queue
                         );
                         if (m_buses_out[m_num_out_buses]->init_out())
                         {
@@ -307,7 +320,7 @@ mastermidibus::init (int ppqn)
                         else
                             m_buses_out_init[m_num_out_buses] = true;
 
-                        m_num_out_buses++;
+                        ++m_num_out_buses;
                     }
                     if (CAP_READ(cap) && ALSA_CLIENT_CHECK(pinfo)) /* inputs */
                     {
@@ -324,16 +337,14 @@ mastermidibus::init (int ppqn)
                         (
                             snd_seq_client_id(m_alsa_seq),
                             snd_seq_port_info_get_client(pinfo),
-                            snd_seq_port_info_get_port(pinfo),
-                            m_alsa_seq,
+                            snd_seq_port_info_get_port(pinfo), m_alsa_seq,
                             snd_seq_client_info_get_name(cinfo),
                             snd_seq_port_info_get_name(pinfo),
-                            m_num_in_buses,
-                            m_queue
+                            m_num_in_buses, m_queue
                         );
                         m_buses_in_active[m_num_in_buses] = true;
                         m_buses_in_init[m_num_in_buses] = true;
-                        m_num_in_buses++;
+                        ++m_num_in_buses;
                     }
                 }
             }
@@ -342,18 +353,21 @@ mastermidibus::init (int ppqn)
     set_beats_per_minute(m_beats_per_minute);
 
     /*
-     * set_ppqn(m_ppqn);
+     * set_bpm( c_bpm );
+     * set_ppqn(c_ppqn);
      */
 
     set_ppqn(ppqn);
 
     /*
-     * Get the number of MIDI input poll file descriptors.
+     * Get the number of MIDI input poll file descriptors.  Allocate the
+     * poll-descriptors array.  Then get the input poll-descriptors into the
+     * array
      */
 
     m_num_poll_descriptors = snd_seq_poll_descriptors_count(m_alsa_seq, POLLIN);
-    m_poll_descriptors = new pollfd[m_num_poll_descriptors]; /* allocate into */
-    snd_seq_poll_descriptors                    /* get input poll descriptors */
+    m_poll_descriptors = new pollfd[m_num_poll_descriptors];
+    snd_seq_poll_descriptors
     (
         m_alsa_seq, m_poll_descriptors, m_num_poll_descriptors, POLLIN
     );
@@ -367,13 +381,14 @@ mastermidibus::init (int ppqn)
     (
         snd_seq_client_id(m_alsa_seq),
         SND_SEQ_CLIENT_SYSTEM, SND_SEQ_PORT_SYSTEM_ANNOUNCE,
-        m_alsa_seq, "system", "annouce", 0, m_queue
+        m_alsa_seq, "system", "announce",   // was "annouce" ca 2016-04-03
+        0, m_queue
     );
     m_bus_announce->set_input(true);
-    for (int i = 0; i < m_num_out_buses; i++)
+    for (int i = 0; i < m_num_out_buses; ++i)
         set_clock(i, m_init_clock[i]);
 
-    for (int i = 0; i < m_num_in_buses; i++)
+    for (int i = 0; i < m_num_in_buses; ++i)
         set_input(i, m_init_input[i]);
 
 #endif  // SEQ64_HAVE_LIBASOUND
@@ -411,7 +426,7 @@ mastermidibus::continue_from (midipulse tick)
 #ifdef SEQ64_HAVE_LIBASOUND
     automutex locker(m_mutex);
     snd_seq_start_queue(m_alsa_seq, m_queue, NULL);     /* start timer */
-    for (int i = 0; i < m_num_out_buses; i++)
+    for (int i = 0; i < m_num_out_buses; ++i)
         m_buses_out[i]->continue_from(tick);
 #endif
 }
@@ -429,7 +444,7 @@ void
 mastermidibus::init_clock (midipulse tick)
 {
     automutex locker(m_mutex);
-    for (int i = 0; i < m_num_out_buses; i++)
+    for (int i = 0; i < m_num_out_buses; ++i)
         m_buses_out[i]->init_clock(tick);
 }
 
@@ -444,7 +459,7 @@ void
 mastermidibus::stop ()
 {
     automutex locker(m_mutex);
-    for (int i = 0; i < m_num_out_buses; i++)
+    for (int i = 0; i < m_num_out_buses; ++i)
         m_buses_out[i]->stop();
 
 #ifdef SEQ64_HAVE_LIBASOUND

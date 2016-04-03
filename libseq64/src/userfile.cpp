@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-03-31
+ * \updates       2016-04-03
  * \license       GNU GPLv2 or above
  *
  *  Note that the parse function has some code that is not yet enabled.
@@ -119,46 +119,56 @@ userfile::parse (perform & /* a_perf */)
     file.seekg(0, std::ios::beg);                       /* seek to start */
 
     /*
-     * Header commentary.  Skipped during parsing.
+     * Header commentary is skipped during parsing.
+     *
+     * \change ca 2016-04-03
+     *      Next, if we're using the manual ALSA port option specified in
+     *      the RC file, we do want to override the ports that the queries
+     *      of the ALSA system find.  Otherwise, we're using automatic port
+     *      detection for ALSA and do not want to override the names of the
+     *      ports that are found.
      */
 
-    /*
-     * [user-midi-bus-definitions]
-     */
-
-    line_after(file, "[user-midi-bus-definitions]");    /* find the tag  */
-    int buses = 0;
-    sscanf(m_line, "%d", &buses);                       /* atavistic!    */
-
-    /*
-     * [user-midi-bus-x]
-     */
-
-    for (int bus = 0; bus < buses; ++bus)
+    if (rc().manual_alsa_ports())
     {
-        std::string label = make_section_name("user-midi-bus", bus);
-        line_after(file, label);
-        if (usr().add_bus(m_line))
+        /*
+         * [user-midi-bus-definitions]
+         */
+
+        line_after(file, "[user-midi-bus-definitions]");    /* find the tag  */
+        int buses = 0;
+        sscanf(m_line, "%d", &buses);                       /* atavistic!    */
+
+        /*
+         * [user-midi-bus-x]
+         */
+
+        for (int bus = 0; bus < buses; ++bus)
         {
-            (void) next_data_line(file);
-            int instruments = 0;
-            int instrument;
-            int channel;
-            sscanf(m_line, "%d", &instruments);
-            for (int j = 0; j < instruments; j++)
+            std::string label = make_section_name("user-midi-bus", bus);
+            line_after(file, label);
+            if (usr().add_bus(m_line))
             {
                 (void) next_data_line(file);
-                sscanf(m_line, "%d %d", &channel, &instrument);
-                usr().set_bus_instrument(bus, channel, instrument);
+                int instruments = 0;
+                int instrument;
+                int channel;
+                sscanf(m_line, "%d", &instruments);
+                for (int j = 0; j < instruments; ++j)
+                {
+                    (void) next_data_line(file);
+                    sscanf(m_line, "%d %d", &channel, &instrument);
+                    usr().set_bus_instrument(bus, channel, instrument);
+                }
             }
-        }
-        else
-        {
-            fprintf
-            (
-                stderr, "? error adding %s (line = '%s')\n",
-                label.c_str(), m_line
-            );
+            else
+            {
+                fprintf
+                (
+                    stderr, "? error adding %s (line = '%s')\n",
+                    label.c_str(), m_line
+                );
+            }
         }
     }
 
@@ -174,7 +184,7 @@ userfile::parse (perform & /* a_perf */)
      * [user-instrument-x]
      */
 
-    for (int i = 0; i < instruments; i++)
+    for (int i = 0; i < instruments; ++i)
     {
         std::string label = make_section_name("user-instrument", i);
         line_after(file, label);
@@ -184,7 +194,7 @@ userfile::parse (perform & /* a_perf */)
             int ccs = 0;
             (void) next_data_line(file);
             sscanf(m_line, "%d", &ccs);
-            for (int j = 0; j < ccs; j++)
+            for (int j = 0; j < ccs; ++j)
             {
                 int c = 0;
                 (void) next_data_line(file);

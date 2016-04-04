@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-04-03
+ * \updates       2016-04-04
  * \license       GNU GPLv2 or above
  *
  *  The <code> ~/.seq24rc </code> or <code> ~/.config/sequencer64/sequencer64.rc
@@ -229,7 +229,7 @@ optionsfile::parse (perform & p)
     next_data_line(file);
     int mtx[c_seqs_in_set];
     int j = 0;
-    for (int i = 0; i < c_seqs_in_set; i++)
+    for (int i = 0; i < c_seqs_in_set; ++i)
     {
         p.select_group_mute(j);
         sscanf
@@ -249,7 +249,7 @@ optionsfile::parse (perform & p)
             &mtx[24], &mtx[25], &mtx[26], &mtx[27],         /* 4th */
                 &mtx[28], &mtx[29], &mtx[30], &mtx[31]
         );
-        for (int k = 0; k < c_seqs_in_set; k++)
+        for (int k = 0; k < c_seqs_in_set; ++k)
             p.set_group_mute_state(k, mtx[k]);
 
         j++;
@@ -411,6 +411,10 @@ optionsfile::parse (perform & p)
     sscanf(m_line, "%ld", &flag);
     rc().manual_alsa_ports(bool(flag));
 
+    line_after(file, "[reveal-alsa-ports]");
+    sscanf(m_line, "%ld", &flag);
+    rc().reveal_alsa_ports(bool(flag));
+
     line_after(file, "[last-used-dir]");
     if (strlen(m_line) > 0)
         rc().last_used_dir(m_line); // FIXME: check for valid path
@@ -490,7 +494,7 @@ optionsfile::write (const perform & p)
         ;
 
     char outs[SEQ64_LINE_MAX];
-    for (int mcontrol = 0; mcontrol < c_midi_controls; mcontrol++)
+    for (int mcontrol = 0; mcontrol < c_midi_controls; ++mcontrol)
     {
         /*
          * \tricky
@@ -585,10 +589,10 @@ optionsfile::write (const perform & p)
     file << "\n[mute-group]\n\n";
     int mtx[c_seqs_in_set];
     file <<  c_gmute_tracks << "    # group mute value count\n";
-    for (int seqj = 0; seqj < c_seqs_in_set; seqj++)
+    for (int seqj = 0; seqj < c_seqs_in_set; ++seqj)
     {
         ucperf.select_group_mute(seqj);
-        for (int seqi = 0; seqi < c_seqs_in_set; seqi++)
+        for (int seqi = 0; seqi < c_seqs_in_set; ++seqi)
         {
             mtx[seqi] = ucperf.get_group_mute_state(seqi);
         }
@@ -630,7 +634,7 @@ optionsfile::write (const perform & p)
         ;
 
     file << buses << "    # number of MIDI clocks/busses\n\n";
-    for (int bus = 0; bus < buses; bus++)
+    for (int bus = 0; bus < buses; ++bus)
     {
         file
             << "# Output buss name: "
@@ -666,7 +670,7 @@ optionsfile::write (const perform & p)
         << "\n[midi-input]\n\n"
         << buses << "   # number of MIDI busses\n\n"
         ;
-    for (int i = 0; i < buses; i++)
+    for (int i = 0; i < buses; ++i)
     {
         file
             << "# "
@@ -695,6 +699,20 @@ optionsfile::write (const perform & p)
         << "\n"
         << rc().manual_alsa_ports()
         << "   # flag for manual ALSA ports\n"
+        ;
+
+    /*
+     * Reveal ALSA ports
+     */
+
+    file
+        << "\n[reveal-alsa-ports]\n\n"
+        << "# Set to 1 to have sequencer64 ignore any system port names\n"
+        << "# declared in the 'user' configuration file.  Use this option if\n"
+        << "# you want to be able to see the port names as detected by ALSA.\n"
+        << "\n"
+        << rc().reveal_alsa_ports()
+        << "   # flag for reveal ALSA ports\n"
         ;
 
     /*

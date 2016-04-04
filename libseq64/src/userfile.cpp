@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-04-03
+ * \updates       2016-04-04
  * \license       GNU GPLv2 or above
  *
  *  Note that the parse function has some code that is not yet enabled.
@@ -121,15 +121,15 @@ userfile::parse (perform & /* a_perf */)
     /*
      * Header commentary is skipped during parsing.
      *
-     * \change ca 2016-04-03
-     *      Next, if we're using the manual ALSA port option specified in
-     *      the RC file, we do want to override the ports that the queries
-     *      of the ALSA system find.  Otherwise, we're using automatic port
-     *      detection for ALSA and do not want to override the names of the
-     *      ports that are found.
+     * \change ca 2016-04-04
+     *      Next, if we're using the manual or auto ALSA port options
+     *      specified in the RC file, we do want to override the ports that
+     *      the queries of the ALSA system find.  Otherwise, we might want to
+     *      reveal the names obtained by port detection for ALSA, and do not
+     *      want to override the names of the ports that are found.
      */
 
-    if (rc().manual_alsa_ports())
+    if (! rc().reveal_alsa_ports())
     {
         /*
          * [user-midi-bus-definitions]
@@ -230,10 +230,9 @@ userfile::parse (perform & /* a_perf */)
     /*
      * [user-interface-settings]
      *
-     * These are new items stored in the user file.
-     *
-     * Only variables whose effects we can be completely sure of are read
-     * from this section, and used, at this time.
+     * These are new items stored in the user file.  Only variables whose
+     * effects we can be completely sure of are read from this section, and
+     * used, at this time.  More to come.
      */
 
     if (! rc().legacy_format())

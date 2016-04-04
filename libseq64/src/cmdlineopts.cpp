@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-20
- * \updates       2016-04-03
+ * \updates       2016-04-04
  * \license       GNU GPLv2 or above
  *
  *  The "rc" command-line options override setting that are first read from
@@ -88,6 +88,7 @@ static struct option long_options [] =
     {"bus",                 required_argument, 0, 'b'}, /* new */
     {"ppqn",                required_argument, 0, 'q'}, /* new */
     {"legacy",              0, 0, 'l'},                 /* new */
+    {"reveal-ports",        0, 0, 'r'},                 /* new */
     {"show-midi",           0, 0, 's'},
     {"show-keys",           0, 0, 'k'},
     {"stats",               0, 0, 'S'},
@@ -136,7 +137,7 @@ static struct option long_options [] =
  */
 
 static const std::string s_arg_list =
-    "Chlb:q:Lni:jJmaAM:pPusSU:Vx:"                      /* good args        */
+    "Chlrb:q:Lni:jJmaAM:pPusSU:Vx:"                     /* good args        */
     "1234:5:67:89@"                                     /* legacy args      */
     ;
 
@@ -156,6 +157,7 @@ static const char * const s_help_1a =
 "   -m, --manual-alsa-ports  Don't attach ALSA ports.  Use when exposing ALSA\n"
 "                            ports to JACK (e.g. using a2jmidid).\n"
 "   -a, --auto-alsa-ports    Attach ALSA ports (overrides the 'rc' file).\n"
+"   -r, --reveal-ports       Don't use the 'user' definitions for port names.\n"
 "   -A, --alsa               Don't use JACK, use ALSA. A sticky option.\n"
     ;
 
@@ -352,7 +354,7 @@ parse_command_line_options (int argc, char * argv [])
         int c = getopt_long
         (
             argc, argv,
-            s_arg_list.c_str(),             // "Chlb:q:Li:jJmaM:pPsSU:Vx:",
+            s_arg_list.c_str(),             /* "Chlrb:q:Li:jJmaM:pPsSU:Vx:" */
             long_options, &option_index
         );
         if (c == -1)                        /* detect the end of options    */
@@ -372,6 +374,11 @@ parse_command_line_options (int argc, char * argv [])
         case 'l':
             seq64::rc().legacy_format(true);
             printf("Setting legacy seq24 file format for writing.\n");
+            break;
+
+        case 'r':
+            seq64::rc().reveal_alsa_ports(true);
+            printf("Showing native ALSA ports.\n");
             break;
 
         case 'L':

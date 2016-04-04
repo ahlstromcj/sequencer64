@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-01-28
+ * \updates       2016-04-04
  * \license       GNU GPLv2 or above
  *
  *  Note that there are a number of header files that we don't need to add
@@ -72,6 +72,15 @@ main (int argc, char * argv [])
     Gtk::Main kit(argc, argv);              /* strip GTK+ parameters        */
     seq64::rc().set_defaults();             /* start out with normal values */
     seq64::usr().set_defaults();            /* start out with normal values */
+
+    /*
+     * First parse any command-line options to see if they might affect what
+     * gets read from the 'rc' or 'user' configuration files.  They will be
+     * parsed again later so that they can still override whatever other
+     * settings were made via the configuration files.
+     */
+
+    (void) seq64::parse_command_line_options(argc, argv);
 
     /*
      * Set up objects that are specific to the Gtk-2 GUI.  Pass them to

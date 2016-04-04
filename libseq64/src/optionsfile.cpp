@@ -413,7 +413,14 @@ optionsfile::parse (perform & p)
 
     line_after(file, "[reveal-alsa-ports]");
     sscanf(m_line, "%ld", &flag);
-    rc().reveal_alsa_ports(bool(flag));
+
+    /*
+     * If this flag is already raised, it was raised on the command line, and
+     * we don't want to change it.  An ugly special case.
+     */
+
+    if (! rc().reveal_alsa_ports())
+        rc().reveal_alsa_ports(bool(flag));
 
     line_after(file, "[last-used-dir]");
     if (strlen(m_line) > 0)
@@ -697,7 +704,7 @@ optionsfile::write (const perform & p)
         << "# already running on one's computer, or to use the MIDI Through\n"
         << "# (capture) output alone in JACK.\n"
         << "\n"
-        << rc().manual_alsa_ports()
+        << (rc().manual_alsa_ports() ? "1" : "0")
         << "   # flag for manual ALSA ports\n"
         ;
 
@@ -711,7 +718,7 @@ optionsfile::write (const perform & p)
         << "# declared in the 'user' configuration file.  Use this option if\n"
         << "# you want to be able to see the port names as detected by ALSA.\n"
         << "\n"
-        << rc().reveal_alsa_ports()
+        << (rc().reveal_alsa_ports() ? "1" : "0")
         << "   # flag for reveal ALSA ports\n"
         ;
 

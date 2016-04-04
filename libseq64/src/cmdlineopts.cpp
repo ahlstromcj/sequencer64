@@ -267,12 +267,18 @@ help_check (int argc, char * argv [])
  *      seq64::gui_assistant_gtk2 gui;
  *      seq64::perform p(gui);
  *
- *  Instead of the Seq24 names, use the new configuration file-names, located
- *  in the ~/.config/sequencer64 directory. However, if they aren't found, we
- *  no longer fall back to the legacy configuration file-names.  If the
- *  --legacy option is in force, use only the legacy configuration file-name.
- *  The code also ensures the directory exists.  CURRENTLY LINUX-SPECIFIC.
- *  See the rc_settings class for how this works.
+ *  It also requires the caller to call rc().set_defaults() and
+ *  usr().set_defaults().  The caller can then use the command-line to make
+ *  any modifications to the setting that will be used here.  The biggest
+ *  example is the -r/--reveal-ports option, which determines if the MIDI buss
+ *  definition strings are read from the 'user' configuration file.
+ *
+ *  Instead of the legacy Seq24 names, we use the new configuration
+ *  file-names, located in the ~/.config/sequencer64 directory. However, if
+ *  they aren't found, we no longer fall back to the legacy configuration
+ *  file-names.  If the --legacy option is in force, use only the legacy
+ *  configuration file-name.  The code also ensures the directory exists.
+ *  CURRENTLY LINUX-SPECIFIC.  See the rc_settings class for how this works.
  *
  *      std::string cfg_dir = seq64::rc().home_config_directory();
  *      if (cfg_dir.empty())
@@ -303,8 +309,15 @@ parse_options_files (perform & p, int argc, char * argv [])
 {
     bool result = true;
     std::string rcname = seq64::rc().config_filespec();
-    seq64::rc().set_defaults();     /* start out with normal values */
-    seq64::usr().set_defaults();    /* start out with normal values */
+
+    /*
+     * The caller must make these calls, at the appropriate time, which is
+     * before any parsing of the command-line options.
+     *
+     * seq64::rc().set_defaults();     // start out with normal values
+     * seq64::usr().set_defaults();    // ditto
+     */
+
     if (file_accessible(rcname))
     {
         printf("[Reading rc configuration %s]\n", rcname.c_str());

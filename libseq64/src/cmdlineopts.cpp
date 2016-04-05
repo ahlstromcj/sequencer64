@@ -81,6 +81,7 @@ static struct option long_options [] =
 {
     {"help",                0, 0, 'h'},
     {"version",             0, 0, 'V'},
+    {"home",                required_argument, 0, 'H'}, /* new */
 #ifdef SEQ64_LASH_SUPPORT
     {"lash",                0, 0, 'L'},                 /* new */
     {"no-lash",             0, 0, 'n'},                 /* new */
@@ -88,7 +89,6 @@ static struct option long_options [] =
     {"bus",                 required_argument, 0, 'b'}, /* new */
     {"ppqn",                required_argument, 0, 'q'}, /* new */
     {"legacy",              0, 0, 'l'},                 /* new */
-    {"reveal-ports",        0, 0, 'r'},                 /* new */
     {"show-midi",           0, 0, 's'},
     {"show-keys",           0, 0, 'k'},
     {"stats",               0, 0, 'S'},
@@ -104,6 +104,8 @@ static struct option long_options [] =
 #endif
     {"manual-alsa-ports",   0, 0, 'm'},
     {"auto-alsa-ports",     0, 0, 'a'},
+    {"reveal-alsa-ports",   0, 0, 'r'},                 /* new */
+    {"hide-alsa-ports",     0, 0, 'R'},                 /* new */
     {"alsa",                0, 0, 'A'},                 /* NEW              */
     {"pass-sysex",          0, 0, 'P'},
     {"user-save",           0, 0, 'u'},
@@ -137,7 +139,7 @@ static struct option long_options [] =
  */
 
 static const std::string s_arg_list =
-    "Chlrb:q:Lni:jJmaAM:pPusSU:Vx:"                     /* good args        */
+    "ChVH:lRrb:q:Lni:jJmaAM:pPusSU:x:"                  /* good args        */
     "1234:5:67:89@"                                     /* legacy args      */
     ;
 
@@ -148,6 +150,9 @@ static const char * const s_help_1a =
 "Options:\n"
 "   -h, --help               Show this message.\n"
 "   -V, --version            Show program version information.\n"
+"   -H, --home dir           Set the directory to hold the configuration files,\n"
+"                            always relative to $HOME.  The default is\n"
+"                            .config/sequencer64.\n"
 "   -l, --legacy             Write MIDI file in strict Seq24 format.  Same if\n"
 "                            Sequencer64 is run as 'seq24'.\n"
 #ifdef SEQ64_LASH_SUPPORT
@@ -157,7 +162,8 @@ static const char * const s_help_1a =
 "   -m, --manual-alsa-ports  Don't attach ALSA ports.  Use when exposing ALSA\n"
 "                            ports to JACK (e.g. using a2jmidid).\n"
 "   -a, --auto-alsa-ports    Attach ALSA ports (overrides the 'rc' file).\n"
-"   -r, --reveal-ports       Don't use the 'user' definitions for port names.\n"
+"   -r, --reveal-alsa-ports  Don't use the 'user' definitions for port names.\n"
+"   -R, --hide-alsa-ports    Use the 'user' definitions for port names.\n"
 "   -A, --alsa               Don't use JACK, use ALSA. A sticky option.\n"
     ;
 
@@ -270,7 +276,7 @@ help_check (int argc, char * argv [])
  *  It also requires the caller to call rc().set_defaults() and
  *  usr().set_defaults().  The caller can then use the command-line to make
  *  any modifications to the setting that will be used here.  The biggest
- *  example is the -r/--reveal-ports option, which determines if the MIDI buss
+ *  example is the -r/--reveal-alsa-ports option, which determines if the MIDI buss
  *  definition strings are read from the 'user' configuration file.
  *
  *  Instead of the legacy Seq24 names, we use the new configuration
@@ -387,6 +393,16 @@ parse_command_line_options (int argc, char * argv [])
         case 'l':
             seq64::rc().legacy_format(true);
             printf("Setting legacy seq24 file format for writing.\n");
+            break;
+
+        case 'H':
+            seq64::rc().config_directory(optarg);
+            printf("Setting 'home' directory to %s.\n", optarg);
+            break;
+
+        case 'R':
+            seq64::rc().reveal_alsa_ports(false);
+            printf("Showing user-configured ALSA ports.\n");
             break;
 
         case 'r':

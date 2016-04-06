@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-04-05
+ * \updates       2016-04-06
  * \license       GNU GPLv2 or above
  *
  */
@@ -194,7 +194,7 @@ private:
     void change_vert ();
     void split_trigger(int sequence, midipulse tick);
     void enqueue_draw ();
-    void zoom (int z);
+    void set_zoom (int z);
 
 private:        // callbacks
 

@@ -686,10 +686,10 @@ perfedit::stop_playing ()
  */
 
 void
-perfedit::zoom (int z)
+perfedit::set_zoom (int z)
 {
-    m_perfroll->zoom(z);
-    m_perftime->zoom(z);
+    m_perfroll->set_zoom(z);
+    m_perftime->set_zoom(z);
 }
 
 /**

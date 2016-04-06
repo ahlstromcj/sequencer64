@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-03-21
+ * \updates       2016-04-06
  * \license       GNU GPLv2 or above
  *
  *  Compare this class to eventedit, which has to do some similar things,
@@ -1702,12 +1702,23 @@ seqedit::set_zoom (int z)
     char b[8];
     snprintf(b, sizeof(b), "1:%d", z);
     m_entry_zoom->set_text(b);
-    m_zoom = z;
-    usr().zoom(z);
-    m_seqroll_wid->set_zoom(z);
-    m_seqtime_wid->set_zoom(z);
-    m_seqdata_wid->set_zoom(z);
-    m_seqevent_wid->set_zoom(z);
+    if ((z >= usr().min_zoom()) && (z <= usr().max_zoom()))
+    {
+        m_zoom = z;
+
+        /*
+         * \change ca 2016-04-06
+         *      Not sure we want to modify this value.  It might get saved, and
+         *      not sure we want that.
+         *
+         * usr().zoom(z);
+         */
+
+        m_seqroll_wid->set_zoom(z);
+        m_seqtime_wid->set_zoom(z);
+        m_seqdata_wid->set_zoom(z);
+        m_seqevent_wid->set_zoom(z);
+    }
 }
 
 /**
@@ -2184,7 +2195,28 @@ seqedit::on_key_press_event (GdkEventKey * ev)
     if ((ev->state & modifiers) == SEQ64_CONTROL_MASK && ev->keyval == 'w')
         return on_delete_event((GdkEventAny *)(ev));
     else
-        return Gtk::Window::on_key_press_event(ev);
+    {
+        bool result = false;
+        if (ev->keyval == SEQ64_Z)              /* zoom in              */
+        {
+            set_zoom(m_zoom / 2);
+            result = true;
+        }
+        else if (ev->keyval == SEQ64_0)         /* reset to normal zoom */
+        {
+            set_zoom(usr().zoom());
+            result = true;
+        }
+        else if (ev->keyval == SEQ64_z)         /* zoom out             */
+        {
+            set_zoom(m_zoom * 2);
+            result = true;
+        }
+        if (! result)
+            result = Gtk::Window::on_key_press_event(ev);
+
+        return result;
+    }
 }
 
 }           // namespace seq64

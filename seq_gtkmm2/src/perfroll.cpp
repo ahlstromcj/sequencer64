@@ -719,9 +719,8 @@ perfroll::convert_xy (int x, int y, midipulse & d_tick, int & d_seq)
  */
 
 void
-perfroll::zoom (int z)
+perfroll::set_zoom (int z)
 {
-//  if (z > 0 && z <= 4 * c_perf_scale_x)
     if (perfedit::zoom_check(z))
     {
         m_zoom = z;
@@ -922,12 +921,17 @@ perfroll::on_key_press_event (GdkEventKey * ev)
             }
             else if (ev->keyval == SEQ64_Z)         /* zoom in              */
             {
-                m_parent.zoom(m_zoom / 2);
+                m_parent.set_zoom(m_zoom / 2);
+                result = true;
+            }
+            else if (ev->keyval == SEQ64_0)         /* reset to normal zoom */
+            {
+                m_parent.set_zoom(c_perf_scale_x);
                 result = true;
             }
             else if (ev->keyval == SEQ64_z)         /* zoom out             */
             {
-                m_parent.zoom(m_zoom * 2);
+                m_parent.set_zoom(m_zoom * 2);
                 result = true;
             }
             else if (ev->keyval == SEQ64_Left)

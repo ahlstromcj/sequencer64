@@ -199,7 +199,7 @@ public:
 
     void init_before_show ();
     void enqueue_draw (bool forward = true);
-    void zoom (int z);
+    void set_zoom (int z);
 
     /**
      *  Checks zoom values for the z/Z keystrokes used in perfroll and

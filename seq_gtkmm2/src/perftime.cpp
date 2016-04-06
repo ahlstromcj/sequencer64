@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-04-05
+ * \updates       2016-04-06
  * \license       GNU GPLv2 or above
  *
  *  The time bar shows markers and numbers for the measures of the song,
@@ -165,7 +165,7 @@ perftime::enqueue_draw ()
  */
 
 void
-perftime::zoom (int z)
+perftime::set_zoom (int z)
 {
     if (perfedit::zoom_check(z))
     {

@@ -167,7 +167,7 @@ perftime::enqueue_draw ()
 void
 perftime::zoom (int z)
 {
-    if (z > 0 && z <= 4 * c_perf_scale_x)
+    if (perfedit::zoom_check(z))
     {
         m_perf_scale_x = z;
         draw_background();

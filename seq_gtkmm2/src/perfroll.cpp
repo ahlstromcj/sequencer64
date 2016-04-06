@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-04-05
+ * \updates       2016-04-06
  * \license       GNU GPLv2 or above
  *
  *  The performance window allows automatic control of when each
@@ -580,7 +580,6 @@ void
 perfroll::redraw_dirty_sequences ()
 {
     bool draw = false;
-//  int ys = 0;
     int yf = m_window_y / m_names_y;
     for (int y = 0; y <= yf; y++)
     {
@@ -722,7 +721,8 @@ perfroll::convert_xy (int x, int y, midipulse & d_tick, int & d_seq)
 void
 perfroll::zoom (int z)
 {
-    if (z > 0 && z <= 4 * c_perf_scale_x)
+//  if (z > 0 && z <= 4 * c_perf_scale_x)
+    if (perfedit::zoom_check(z))
     {
         m_zoom = z;
         set_ppqn(m_ppqn);               /* recalculates other "x" values    */

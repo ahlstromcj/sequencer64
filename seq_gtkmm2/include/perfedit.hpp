@@ -28,9 +28,11 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-04-05
+ * \updates       2016-04-06
  * \license       GNU GPLv2 or above
  *
+ *  Note that, as of version 0.9.10.1, the z and Z keys, when focus is on the
+ *  perfroll (piano roll), will zoom the view horizontally.
  */
 
 #include <list>
@@ -200,6 +202,20 @@ public:
     void zoom (int z);
 
     /**
+     *  Checks zoom values for the z/Z keystrokes used in perfroll and
+     *  perftime.  It has to range from greater than 1 (the highest zoom-in
+     *  causes an unexplained drawing artifact at this time), and not greater
+     *  than four times the c_perf_scale_x value, at which point we have
+     *  zoomed out so far that the measure numbers are almost completely
+     *  obscured.
+     */
+
+    static bool zoom_check (int z)
+    {
+        return z > 1 && z <= (4 * c_perf_scale_x);
+    }
+
+    /**
      *  Register the peer perfedit object.  This function is meant to be
      *  called by mainwnd, which creates the perfedits and then makes sure
      *  they get along.
@@ -240,9 +256,7 @@ private:
 
     void toggle_playing ()
     {
-        // if (rc().is_pattern_playing())
-
-        if (perf().is_running())        /* \change ca 2016-03-19    */
+        if (perf().is_running())
             stop_playing();
         else
             start_playing();

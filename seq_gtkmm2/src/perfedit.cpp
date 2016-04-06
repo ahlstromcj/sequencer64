@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-04-02
+ * \updates       2016-04-05
  * \license       GNU GPLv2 or above
  *
  */
@@ -679,6 +679,17 @@ perfedit::stop_playing ()
 #else
     perf().stop_playing();
 #endif
+}
+
+/**
+ *  Implements the horizontal zoom feature.
+ */
+
+void
+perfedit::zoom (int z)
+{
+    m_perfroll->zoom(z);
+    m_perftime->zoom(z);
 }
 
 /**

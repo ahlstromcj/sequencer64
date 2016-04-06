@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-03-26
+ * \updates       2016-04-05
  * \license       GNU GPLv2 or above
  *
  *  The performance window allows automatic control of when each
@@ -85,6 +85,7 @@ perfroll::perfroll
     m_divs_per_beat         (SEQ64_PERFROLL_DIVS_PER_BEAT), // 16
     m_ticks_per_bar         (0),                            // set in the body
     m_perf_scale_x          (c_perf_scale_x),               // 32 ticks per pixel
+    m_zoom                  (c_perf_scale_x),               // 32 ticks per pixel
     m_names_y               (c_names_y),
     m_background_x          (s_perfroll_background_x),      // gets adjusted!
     m_size_box_w            (s_perfroll_size_box_w),        // 3
@@ -141,7 +142,9 @@ perfroll::set_ppqn (int ppqn)
         m_ppqn = choose_ppqn(ppqn);
         m_ticks_per_bar = m_ppqn * m_divs_per_beat;
         m_background_x = (m_ppqn * 4 * 16) / c_perf_scale_x;
-        m_perf_scale_x = c_perf_scale_x * m_ppqn / SEQ64_DEFAULT_PPQN;
+        m_perf_scale_x = m_zoom * m_ppqn / SEQ64_DEFAULT_PPQN;
+        if (m_perf_scale_x == 0)
+            m_perf_scale_x = 1;
     }
 }
 
@@ -254,9 +257,12 @@ perfroll::increment_size ()
 }
 
 /**
- *  This function updates the background of the Performance roll.  This first
- *  thing done is to clear the background by painting it with a filled white
+ *  This function updates the background of the piano roll.  The first thing
+ *  done is to clear the background by painting it with a filled white
  *  rectangle.
+ *
+ *  This function is called whenever something occurs (e.g. zoom) that can
+ *  affect how the piano roll is drawn.
  */
 
 void
@@ -289,12 +295,12 @@ perfroll::fill_background_pixmap ()
         else
             set_line(Gdk::LINE_ON_OFF_DASH);
 #endif
+        /*
+         * Draw a solid vertical line, at every beat.
+         */
 
         int beat_x = i * m_beat_length / m_perf_scale_x;
-        draw_line                                   /* solid line, every beat */
-        (
-            m_background, beat_x, 0, beat_x, m_names_y
-        );
+        draw_line(m_background, beat_x, 0, beat_x, m_names_y);
         if (m_beat_length < m_ppqn / 2)             /* jump 2 if 16th notes   */
             i += (m_ppqn / m_beat_length);
         else
@@ -378,13 +384,12 @@ void
 perfroll::draw_progress ()
 {
     /*
-     * This perform::get_max_tick() call doesn't work with JACK, the progress
+     * The perform::get_max_tick() call doesn't work with JACK: the progress
      * bar rewinds to the beginning when playback is paused, though it does
      * resume where it left off.  It also may cause the progress bar to
      * backtrack through any gap.  LET's restore the get_tick() call!
      */
 
-//  midipulse tick = perf().get_max_tick();     // replaces/enhances get_tick()
     midipulse tick = perf().get_tick();
     midipulse tick_offset = m_4bar_offset * m_ticks_per_bar;
     int progress_x = (tick - tick_offset) / m_perf_scale_x;
@@ -412,7 +417,14 @@ perfroll::draw_progress ()
 void
 perfroll::draw_sequence_on (int seqnum)
 {
-    if ((seqnum < m_sequence_max) && perf().is_active(seqnum))
+    /*
+     * ca 2016-04-05
+     *      The is_active() call covers any possible issues.
+     *
+     * if ((seqnum < m_sequence_max) && perf().is_active(seqnum))
+     */
+
+    if (perf().is_active(seqnum))
     {
         midipulse tick_offset = m_4bar_offset * m_ticks_per_bar;
         long x_offset = tick_offset / m_perf_scale_x;
@@ -520,10 +532,8 @@ perfroll::draw_sequence_on (int seqnum)
 
                             if (tick_f_x >= x && tick_s_x <= x + w)
                             {
-                                draw_line_on_pixmap
-                                (
-                                    tick_s_x, y + note_y, tick_f_x, y + note_y
-                                );
+                                int ny = y + note_y;
+                                draw_line_on_pixmap(tick_s_x, ny, tick_f_x, ny);
                             }
                         }
                     }
@@ -570,9 +580,9 @@ void
 perfroll::redraw_dirty_sequences ()
 {
     bool draw = false;
-    int y_s = 0;
-    int y_f = m_window_y / m_names_y;
-    for (int y = y_s; y <= y_f; y++)
+//  int ys = 0;
+    int yf = m_window_y / m_names_y;
+    for (int y = 0; y <= yf; y++)
     {
         int seq = y + m_sequence_offset;
         if (perf().is_dirty_perf(seq))
@@ -667,9 +677,23 @@ perfroll::convert_x (int x, midipulse & tick)
 }
 
 /**
- *  Converts a tick-offset....
+ *  Converts (x, y) coordinates on the piano roll to tick (pulse) and sequence
+ *  numbers.
  *
- *  The results are returned via the d_tick and d_seq parameters.
+ *  The results are returned via the d_tick and d_seq parameters.  The
+ *  sequence number is clipped to a legal value (0 to m_sequence_max).
+ *
+ * \param x
+ *      The x coordinate of the mouse pointer.
+ *
+ * \param y
+ *      The y coordinate of the mouse pointer.
+ *
+ * \param [out] d_tick
+ *      Holds the calculated tick value.
+ *
+ * \param [out] d_seq
+ *      Holds the calculated sequence-number value.
  */
 
 void
@@ -685,6 +709,25 @@ perfroll::convert_xy (int x, int y, midipulse & d_tick, int & d_seq)
 
     d_tick = tick;
     d_seq = seq;
+}
+
+/**
+ *  Implements the horizontal zoom feature.
+ *
+ * \new ca 2016-04-05
+ *      The initial zoom value is c_perf_scale_x (32).  We allow it to 
+ *      range from 1 to 128, for now.  Smaller values zoom in.
+ */
+
+void
+perfroll::zoom (int z)
+{
+    if (z > 0 && z <= 4 * c_perf_scale_x)
+    {
+        m_zoom = z;
+        set_ppqn(m_ppqn);               /* recalculates other "x" values    */
+        update_sizes();
+    }
 }
 
 /**
@@ -726,9 +769,9 @@ perfroll::on_realize ()
 bool
 perfroll::on_expose_event (GdkEventExpose * ev)
 {
-    int y_s = ev->area.y / m_names_y;
-    int y_f = (ev->area.y + ev->area.height) / m_names_y;
-    for (int y = y_s; y <= y_f; ++y)
+    int ys = ev->area.y / m_names_y;
+    int yf = (ev->area.y + ev->area.height) / m_names_y;
+    for (int y = ys; y <= yf; ++y)
     {
         draw_background_on(y + m_sequence_offset);
         draw_sequence_on(y + m_sequence_offset);
@@ -877,22 +920,45 @@ perfroll::on_key_press_event (GdkEventKey * ev)
                 m_seq24_interaction.set_adding(false, *this);
                 result = true;
             }
+            else if (ev->keyval == SEQ64_Z)         /* zoom in              */
+            {
+                m_parent.zoom(m_zoom / 2);
+                result = true;
+            }
+            else if (ev->keyval == SEQ64_z)         /* zoom out             */
+            {
+                m_parent.zoom(m_zoom * 2);
+                result = true;
+            }
             else if (ev->keyval == SEQ64_Left)
             {
                 if (m_seq24_interaction.is_adding())
+                {
                     result = m_seq24_interaction.handle_motion_key(true, *this);
+                    if (result)
+                        perf().modify();
+                }
             }
             else if (ev->keyval == SEQ64_Right)
             {
                 if (m_seq24_interaction.is_adding())
+                {
                     result = m_seq24_interaction.handle_motion_key(false, *this);
+                    if (result)
+                        perf().modify();
+                }
             }
         }
     }
     if (result)
     {
         fill_background_pixmap();
-        perf().modify();
+
+        /*
+         * Not needed for all keystrokes.
+         *
+         * perf().modify();
+         */
     }
     else
         return Gtk::DrawingArea::on_key_press_event(ev);

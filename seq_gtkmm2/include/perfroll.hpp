@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-03-20
+ * \updates       2016-04-05
  * \license       GNU GPLv2 or above
  *
  */
@@ -103,6 +103,13 @@ private:
     int m_divs_per_beat;            // 16, provisional name
     int m_ticks_per_bar;            // m_ppqn * m_divs_per_beat, provisional name
     int m_perf_scale_x;
+
+    /**
+     *  New value to attempt a rudimentary time-zoom feature.
+     */
+
+    int m_zoom;
+
     int m_names_y;
     int m_background_x;
     int m_size_box_w;
@@ -187,6 +194,7 @@ private:
     void change_vert ();
     void split_trigger(int sequence, midipulse tick);
     void enqueue_draw ();
+    void zoom (int z);
 
 private:        // callbacks
 

@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-04-02
+ * \updates       2016-04-05
  * \license       GNU GPLv2 or above
  *
  */
@@ -197,6 +197,7 @@ public:
 
     void init_before_show ();
     void enqueue_draw (bool forward = true);
+    void zoom (int z);
 
     /**
      *  Register the peer perfedit object.  This function is meant to be

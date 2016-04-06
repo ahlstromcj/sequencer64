@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-26
+ * \updates       2016-04-05
  * \license       GNU GPLv2 or above
  *
  *  The time bar shows markers and numbers for the measures of the song,
@@ -161,6 +161,20 @@ perftime::enqueue_draw ()
 }
 
 /**
+ *  Implements the horizontal zoom feature.
+ */
+
+void
+perftime::zoom (int z)
+{
+    if (z > 0 && z <= 4 * c_perf_scale_x)
+    {
+        m_perf_scale_x = z;
+        draw_background();
+    }
+}
+
+/**
  *  Implements the on-realization event, then allocates some resources the
  *  could not be allocated in the constructor.  It is important to call the
  *  base-class version of this function.
@@ -188,12 +202,22 @@ perftime::on_realize ()
  *      The perfedit object is created early on.  When brought on-screen from
  *      mainwnd (the main window), first, perftime::on_realize() is called,
  *      then this event is called.
- *
- *      It crashes trying to set the foreground color.
  */
 
 bool
 perftime::on_expose_event (GdkEventExpose * /* ev */ )
+{
+    draw_background();
+    return true;
+}
+
+/**
+ *  Separated out the drawing done in on_expose_event(), so that it can be
+ *  redone when the zoom changes.
+ */
+
+void
+perftime::draw_background ()
 {
     draw_rectangle(white(), 0, 0, m_window_x, m_window_y);
     draw_line(black(), 0, m_window_y - 1, m_window_x, m_window_y - 1);
@@ -223,7 +247,6 @@ perftime::on_expose_event (GdkEventExpose * /* ev */ )
         draw_rectangle(black(), right - 6, m_window_y - 9, 7, 10);
         render_string(right - 6 + 1, 9, "R", font::WHITE);
     }
-    return true;
 }
 
 /**

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-03-23
+ * \updates       2016-04-06
  * \license       GNU GPLv2 or above
  *
  *  Here is a list of the global variables used/stored/modified by this
@@ -472,7 +472,7 @@ options::add_keyboard_page ()
 
     Gtk::Frame * mutegroupframe = manage
     (
-        new Gtk::Frame("Mute-group slots [keyboard-group]")
+        new Gtk::Frame("Mute-group slots [mute-group]")
     );
     mutegroupframe->set_border_width(4);
     mainbox->pack_start(*mutegroupframe, Gtk::PACK_SHRINK);

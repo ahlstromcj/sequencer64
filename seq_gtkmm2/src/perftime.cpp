@@ -304,7 +304,7 @@ perftime::on_size_allocate (Gtk::Allocation & a_r)
  *
  *  Also be aware the changing the name of this function from
  *  "key_press_event()" to "on_key_press_event()" will disrupt the process,
- *  causing keystrokes not get here.  Too tricky.
+ *  causing keystrokes to not get here.  Too tricky.
  */
 
 bool

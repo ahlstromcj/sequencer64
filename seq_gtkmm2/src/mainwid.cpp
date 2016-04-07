@@ -829,12 +829,12 @@ mainwid::on_expose_event (GdkEventExpose * ev)
  *  twice).  Then it brings up the Edit menu for the sequence.  This new
  *  behavior is closer to what users have come to expect from a double-click.
  *
- *  We also handle a Ctrl-double-click as a signal to do an event edit, instead
- *  of a sequence edit.  The event editor provides a way to look at all events
- *  in detail, without having to select the type of event to see.  Doesn't
- *  work, the event is treated like a ctrl-single-click.  And we use the Alt
- *  key to enable window movement or resizing in our window manager, so that's
- *  out.
+ *  We also try to handle a Ctrl-double-click as a signal to do an event edit,
+ *  instead of a sequence edit.  The event editor provides a way to look at
+ *  all events in detail, without having to select the type of event to see.
+ *  However, this doesn't work, the event is treated like a ctrl-single-click.
+ *  And we use the Alt key to enable window movement or resizing in our window
+ *  manager, so that's out.
  *
  * \param p
  *      Provides the parameters of the button event.
@@ -893,6 +893,9 @@ mainwid::on_button_press_event (GdkEventButton * p)
  *  button brings up a popup menu.  If the slot is empty, then a "New" popup
  *  is presented, otherwise an "Edit" and selection popup is presented.
  *
+ *  Also now implements the new "toggle all other patterns" action, initiated
+ *  via Shift-Left-Click.
+ *
  * \param p
  *      Provides the parameters of the button event.
  *
@@ -903,9 +906,9 @@ mainwid::on_button_press_event (GdkEventButton * p)
 bool
 mainwid::on_button_release_event (GdkEventButton * p)
 {
-    /*
-     * Try disabling this EXPERIMENTALLY.  It completely disables drag-n-drop.
-     * But leaving it in removes the EXPERIMENTAL current-sequence
+    /**
+     * Try disabling the setting of the current sequence; It completely
+     * disables drag-n-drop.  But leaving it in removes the current-sequence
      * highlighting, which otherwise is fine.  So we do it only if moving a
      * pattern (drag-and-drop).
      */
@@ -921,12 +924,11 @@ mainwid::on_button_release_event (GdkEventButton * p)
     {
         if (m_moving)
         {
-            m_moving = false;
-
             /*
-             * Hmmm, seq24 also tests for m_current_seq == -1
+             * Hmmm, seq24 also tests for m_current_seq == -1.
              */
 
+            m_moving = false;
             if (! is_current_seq_active() && ! is_current_seq_in_edit())
             {
                 new_current_sequence();
@@ -943,8 +945,7 @@ mainwid::on_button_release_event (GdkEventButton * p)
         else
         {
             /*
-             * EXPERIMENTAL.  IF shift is held, toggle all the other
-             * sequences.
+             * If shift is held, toggle all the other sequences.
              */
 
             guint modifiers;        /* for filtering out caps/num lock etc. */
@@ -954,15 +955,13 @@ mainwid::on_button_release_event (GdkEventButton * p)
                 for (int s = 0; s < c_max_sequence; ++s)
                 {
                     if (s != current_seq())
-                    {
                         perf().sequence_playing_toggle(s);
-                    }
                 }
             }
             else
             {
                 /*
-                 * This is the original, a toggle of one pattern.
+                 * This is the original action, a toggle of one pattern.
                  */
 
                 if (is_current_seq_active())    /* toggle its playing status */
@@ -980,12 +979,10 @@ mainwid::on_button_release_event (GdkEventButton * p)
 }
 
 /**
- *  Handle the motion of the mouse if a mouse button is down and in
- *  another sequence and if the current sequence is not in edit mode.
- *  This function moves the selected pattern to another pattern slot.
- *
- *  The perform::delete_sequence() function sets the perform modification
- *  flag.
+ *  Handle the motion of the mouse if a mouse button is down and in another
+ *  sequence and if the current sequence is not in edit mode.  This function
+ *  moves the selected pattern to another pattern slot.  The
+ *  perform::delete_sequence() function sets the perform modification flag.
  *
  * \param p
  *      Provides the parameters of the button event.

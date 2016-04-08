@@ -247,10 +247,8 @@ Seq24SeqRollInput::on_button_press_event
 
 /**
  *  Implements the on-button-release event handling for the Seq24 style of
- *  mouse interaction.
- *
- *  This function now uses the needs_update flag to determine if the perform
- *  object should modify().
+ *  mouse interaction.  This function now uses the needs_update flag to
+ *  determine if the perform object should modify().
  *
  * \return
  *      Returns the value of needs_update.  It used to return only true.

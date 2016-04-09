@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-03-27
+ * \updates       2016-04-09
  * \license       GNU GPLv2 or above
  *
  *  For a quick guide to the MIDI format, see, for example:
@@ -38,7 +38,7 @@
  *  program (https://github.com/ahlstromcj/midicvt, derived from midicomp,
  *  midi2text, and mf2t/t2mf) does not ignore this lack, and hence we
  *  decided to provide a new, more strict input and output format for the
- *  the proprietary track in Sequencer24.
+ *  the proprietary/SeqSpec track in Sequencer24.
  */
 
 #include <fstream>
@@ -81,7 +81,7 @@
 #define SEQ64_TRACK_TAG             0x4D54726B      /* magic number 'MTrk'  */
 
 /**
- *  The chunk header value for the Sequencer64 proprietary section.
+ *  The chunk header value for the Sequencer64 proprietary/SeqSpec section.
  *  We might try other chunks, as well, since, as per the MIDI
  *  specification, unknown chunks should not cause an error in a sequencer
  *  (or our midicvt program).  For now, we stick with "MTrk".
@@ -90,12 +90,12 @@
 #define PROPRIETARY_CHUNK_TAG       SEQ64_TRACK_TAG
 
 /**
- *  Provides the sequence number for the proprietary data when using the new
- *  format.  (There is no sequence number for the legacy format.)  Can't use
- *  numbers, such as 0xFFFF, that have MIDI meta tags in them, confuses
- *  our "proprietary" track parser.  This sequence number, 0x7777, is neither
- *  a valid nor legal sequence number.  No real sequence will ever have this
- *  number in Sequencer64.
+ *  Provides the sequence number for the proprietary/SeqSpec data when using
+ *  the new format.  (There is no sequence number for the legacy format.)
+ *  Can't use numbers, such as 0xFFFF, that have MIDI meta tags in them,
+ *  confuses our "proprietary" track parser.  This sequence number, 0x7777, is
+ *  neither a valid nor legal sequence number.  No real sequence will ever
+ *  have this number in Sequencer64.
  */
 
 #define PROPRIETARY_SEQ_NUMBER      0x7777
@@ -402,6 +402,9 @@ midifile::parse (perform & p, int screenset)
         if (result && screenset != 0)
              p.modify();                            /* modification flag    */
     }
+#ifdef SEQ64_USE_DEBUG_OUTPUT
+    p.print_triggers();
+#endif
     return result;
 }
 
@@ -498,6 +501,37 @@ midifile::checklen (midilong len, midibyte type)
 }
 
 /**
+ *  Internal function to make the parser easier to read.  Handles only
+ *  c_triggers_new values, not the old c_triggers value.  If m_ppqn isn't set
+ *  to the default value, then we must scale these triggers accordingly, just
+ *  as is done for the MIDI events.
+ *
+ * \param seq
+ *      Provides the sequence to which the trigger is to be added.
+ *
+ * \param ppqn
+ *      Provides the ppqn value to use to scale the tick values if
+ *      m_use_default_ppqn is true.  If 0, the ppqn value is not used.
+ */
+
+void
+midifile::add_trigger (sequence & seq, midishort ppqn)
+{
+    midilong on = read_long();
+    midilong off = read_long();
+    midilong offset = read_long();
+    if (ppqn > 0)
+    {
+        on *= m_ppqn / ppqn;
+        off *= m_ppqn / ppqn;
+        offset *= m_ppqn / ppqn;
+    }
+    midilong length = off - on + 1;
+    seq.add_trigger(on, length, offset, false);
+}
+
+
+/**
  *  This function parses an SMF 1 binary MIDI file; it is basically the
  *  original seq25 midifile::parse() function.  It assumes the file-data has
  *  already been read into memory.  It also assumes that the ID, track-length,
@@ -543,12 +577,12 @@ midifile::parse_smf_1 (perform & p, int screenset, bool is_smf0)
             bool timesig_set = false;               /* seq24 style wins     */
             midishort seqnum = 0;
             midibyte status = 0;
-            midibyte d0, d1;                        /* was data[2];         */
             midibyte laststatus;
-            midilong proprietary = 0;               /* sequencer-specifics  */
+            midilong seqspec = 0;                   /* sequencer-specific   */
             bool done = false;                      /* done for each track  */
-            midilong len;                           /* important counter!   */
             sequence * s = new sequence(m_ppqn);    /* create new sequence  */
+            midilong len;                           /* important counter!   */
+            midibyte d0, d1;                        /* was data[2];         */
             if (s == nullptr)
             {
                 errdump("MIDI file parsing: sequence allocation failed");
@@ -635,18 +669,18 @@ midifile::parse_smf_1 (perform & p, int screenset, bool is_smf0)
 
                             if (len > 4)                  /* FF 7F len data   */
                             {
-                                proprietary = read_long();
+                                seqspec = read_long();
                                 len -= 4;
                             }
                             else if (! checklen(len, type))
                                 return false;
 
-                            if (proprietary == c_midibus)
+                            if (seqspec == c_midibus)
                             {
                                 seq.set_midi_bus(read_byte());
                                 --len;
                             }
-                            else if (proprietary == c_midich)
+                            else if (seqspec == c_midich)
                             {
                                 midibyte channel = read_byte();
                                 seq.set_midi_channel(channel);
@@ -655,7 +689,7 @@ midifile::parse_smf_1 (perform & p, int screenset, bool is_smf0)
 
                                 --len;
                             }
-                            else if (proprietary == c_timesig)
+                            else if (seqspec == c_timesig)
                             {
                                 timesig_set = true;
                                 int bpm = int(read_byte());
@@ -666,7 +700,7 @@ midifile::parse_smf_1 (perform & p, int screenset, bool is_smf0)
                                 p.set_beat_width(bw);
                                 len -= 2;
                             }
-                            else if (proprietary == c_triggers)
+                            else if (seqspec == c_triggers)
                             {
                                 printf("Old-style triggers event encountered\n");
                                 int num_triggers = len / 4;
@@ -678,66 +712,37 @@ midifile::parse_smf_1 (perform & p, int screenset, bool is_smf0)
                                     seq.add_trigger(on, length, 0, false);
                                 }
                             }
-                            else if (proprietary == c_triggers_new)
+                            else if (seqspec == c_triggers_new)
                             {
-                                /*
-                                 *  If m_ppqn isn't set to the default value,
-                                 *  then we must scale these triggers
-                                 *  accordingly, just as is done for the MIDI
-                                 *  events!  Should split this out into
-                                 *  functions, too.  Too much indenting.
-                                 */
-
                                 int num_triggers = len / 12;
-                                if (m_use_default_ppqn)
+                                midishort p = m_use_default_ppqn ? ppqn : 0 ;
+                                for (int i = 0; i < num_triggers; ++i)
                                 {
-                                    for (int i = 0; i < num_triggers; i++)
-                                    {
-                                        midilong on = read_long();
-                                        on = on * m_ppqn / ppqn;
-                                        midilong off = read_long();
-                                        off = off * m_ppqn / ppqn;
-                                        midilong length = off - on + 1;
-                                        midilong offset = read_long();
-                                        offset = offset * m_ppqn / ppqn;
-                                        len -= 12;
-                                        seq.add_trigger(on, length, offset, false);
-                                    }
-                                }
-                                else
-                                {
-                                    for (int i = 0; i < num_triggers; i++)
-                                    {
-                                        midilong on = read_long();
-                                        midilong off = read_long();
-                                        midilong length = off - on + 1;
-                                        midilong offset = read_long();
-                                        len -= 12;
-                                        seq.add_trigger(on, length, offset, false);
-                                    }
+                                    len -= 12;
+                                    add_trigger(seq, p);
                                 }
                             }
-                            else if (proprietary == c_musickey)
+                            else if (seqspec == c_musickey)
                             {
                                 seq.musical_key(read_byte());
                                 --len;
                             }
-                            else if (proprietary == c_musicscale)
+                            else if (seqspec == c_musicscale)
                             {
                                 seq.musical_scale(read_byte());
                                 --len;
                             }
-                            else if (proprietary == c_backsequence)
+                            else if (seqspec == c_backsequence)
                             {
                                 seq.background_sequence(int(read_long()));
                                 len -= 4;
                             }
-                            else if (SEQ64_IS_PROPTAG(proprietary))
+                            else if (SEQ64_IS_PROPTAG(seqspec))
                             {
                                 errdump
                                 (
                                     "Unsupported track SeqSpec, skipping...",
-                                    proprietary
+                                    seqspec
                                 );
                             }
                             m_pos += len;               /* eat the rest     */
@@ -1112,13 +1117,13 @@ midifile::parse_proprietary_track (perform & p, int file_size)
             else if (seqnum == (-1))
             {
                 m_error_is_fatal = false;
-                errdump("No sequence number in proprietary track, extra data");
+                errdump("No sequence number in seqspec track, extra data");
                 result = false;
             }
             else
             {
                 m_error_is_fatal = false;
-                m_error_message = "Unexpected sequence number, proprietary track";
+                m_error_message = "Unexpected sequence number, seqspec track";
                 result = false;
             }
         }
@@ -1130,8 +1135,8 @@ midifile::parse_proprietary_track (perform & p, int file_size)
 
     if (result)
     {
-        midilong proprietary = parse_prop_header(file_size);
-        if (proprietary == c_midictrl)
+        midilong seqspec = parse_prop_header(file_size);
+        if (seqspec == c_midictrl)
         {
             int seqs = int(read_long());
 
@@ -1164,8 +1169,8 @@ midifile::parse_proprietary_track (perform & p, int file_size)
                 p.midi_control_off(i).set(a);
             }
         }
-        proprietary = parse_prop_header(file_size);
-        if (proprietary == c_midiclocks)
+        seqspec = parse_prop_header(file_size);
+        if (seqspec == c_midiclocks)
         {
             int busscount = int(read_long());
 
@@ -1186,8 +1191,8 @@ midifile::parse_proprietary_track (perform & p, int file_size)
                 p.master_bus().set_clock(bussbyte(buss), (clock_e)(clocktype));
             }
         }
-        proprietary = parse_prop_header(file_size);
-        if (proprietary == c_notes)
+        seqspec = parse_prop_header(file_size);
+        if (seqspec == c_notes)
         {
             midishort screen_sets = read_short();
             for (midishort x = 0; x < screen_sets; x++)
@@ -1200,23 +1205,22 @@ midifile::parse_proprietary_track (perform & p, int file_size)
                 p.set_screen_set_notepad(x, notess);
             }
         }
-        proprietary = parse_prop_header(file_size);
-        if (proprietary == c_bpmtag)                    /* beats per minute */
+        seqspec = parse_prop_header(file_size);
+        if (seqspec == c_bpmtag)                        /* beats per minute */
         {
-            long bpm = read_long();
-
             /*
-             * We should check here for a conflict between the Tempo meta
-             * event and this seq24 tag's value.  NOT YET.
+             * Should check here for a conflict between the Tempo meta event
+             * and this tag's value.  NOT YET.
              */
 
+            long bpm = read_long();
             p.set_beats_per_minute(bpm);                /* 2nd way to set!  */
         }
 
         /* Read in the mute group information. */
 
-        proprietary = parse_prop_header(file_size);
-        if (proprietary == c_mutegroups)
+        seqspec = parse_prop_header(file_size);
+        if (seqspec == c_mutegroups)
         {
             long length = read_long();
             if (c_gmute_tracks != length)
@@ -1258,20 +1262,20 @@ midifile::parse_proprietary_track (perform & p, int file_size)
          * flags should affect only the writing of the MIDI file, not the reading.
          */
 
-        proprietary = parse_prop_header(file_size);
-        if (proprietary == c_musickey)
+        seqspec = parse_prop_header(file_size);
+        if (seqspec == c_musickey)
         {
             int key = int(read_byte());
             usr().seqedit_key(key);
         }
-        proprietary = parse_prop_header(file_size);
-        if (proprietary == c_musicscale)
+        seqspec = parse_prop_header(file_size);
+        if (seqspec == c_musicscale)
         {
             int scale = int(read_byte());
             usr().seqedit_scale(scale);
         }
-        proprietary = parse_prop_header(file_size);
-        if (proprietary == c_backsequence)
+        seqspec = parse_prop_header(file_size);
+        if (seqspec == c_backsequence)
         {
             int seqnum = int(read_long());
             usr().seqedit_bgsequence(seqnum);
@@ -1292,12 +1296,12 @@ midifile::parse_proprietary_track (perform & p, int file_size)
  */
 
 void
-midifile::write_long (midilong a_x)
+midifile::write_long (midilong x)
 {
-    write_byte((a_x & 0xFF000000) >> 24);
-    write_byte((a_x & 0x00FF0000) >> 16);
-    write_byte((a_x & 0x0000FF00) >> 8);
-    write_byte((a_x & 0x000000FF));
+    write_byte((x & 0xFF000000) >> 24);
+    write_byte((x & 0x00FF0000) >> 16);
+    write_byte((x & 0x0000FF00) >> 8);
+    write_byte((x & 0x000000FF));
 }
 
 /**
@@ -1308,10 +1312,10 @@ midifile::write_long (midilong a_x)
  */
 
 void
-midifile::write_short (midishort a_x)
+midifile::write_short (midishort x)
 {
-    write_byte((a_x & 0xFF00) >> 8);
-    write_byte((a_x & 0x00FF));
+    write_byte((x & 0xFF00) >> 8);
+    write_byte((x & 0x00FF));
 }
 
 /**
@@ -1416,7 +1420,7 @@ midifile::varinum_size (long len) const
  *      -   "Seq24-Spec"
  *      -   "Sequencer64-S"
  *
- *   Then follows the proprietary data, written in the normal manner.
+ *   Then follows the proprietary/SeqSpec data, written in the normal manner.
  *   Finally, tack on the track-end meta-event.
  *
  *      Components of final track size:
@@ -1424,7 +1428,7 @@ midifile::varinum_size (long len) const
  *          -# Delta time.  1 byte, always 0x00.
  *          -# Sequence number.  5 bytes.  OPTIONAL.  We won't write it.
  *          -# Track name. 3 + 10 or 3 + 15
- *          -# Series of proprietary specs:
+ *          -# Series of proprietary/SeqSpec specs:
  *             -# Prop header:
  *                -# If legacy format, 4 bytes.
  *                -# Otherwise, 2 bytes + varinum_size(length) + 4 bytes.
@@ -1433,7 +1437,7 @@ midifile::varinum_size (long len) const
  */
 
 /**
- *  Writes a "proprietary" Seq24 footer header in either the new
+ *  Writes a "proprietary" (SeqSpec) Seq24 footer header in either the new
  *  MIDI-compliant format, or the legacy Seq24 format.  This function does not
  *  write the data.  It replaces calls such as "write_long(c_midich)" in the
  *  proprietary secton of write().
@@ -1605,7 +1609,7 @@ midifile::write (perform & p)
 }
 
 /**
- *  Writes out the proprietary section, using the new format if the
+ *  Writes out the proprietary/SeqSpec section, using the new format if the
  *  legacy format is not in force.
  *
  *  The first thing to do, for the new format only, is calculate the length
@@ -1729,8 +1733,8 @@ midifile::write_track_name (const std::string & trackname)
 }
 
 /**
- *  Reads the track name.  Meant only for usage in the proprietary footer
- *  track, in the new file format.
+ *  Reads the track name.  Meant only for usage in the proprietary/SeqSpec
+ *  footer track, in the new file format.
  *
  * \return
  *      Returns the track name, or an empty string if there was a problem.
@@ -1800,8 +1804,8 @@ midifile::write_seq_number (midishort seqnum)
 }
 
 /**
- *  Reads the sequence number.  Meant only for usage in the proprietary
- *  footer track, in the new file format.
+ *  Reads the sequence number.  Meant only for usage in the
+ *  proprietary/SeqSpec footer track, in the new file format.
  *
  * \return
  *      Returns the sequence number found, or -1 if it was not found.

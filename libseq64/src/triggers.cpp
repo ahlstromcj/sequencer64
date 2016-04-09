@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-10-30
- * \updates       2016-03-20
+ * \updates       2016-04-09
  * \license       GNU GPLv2 or above
  *
  *  Man, we need to learn a lot more about triggers.  One important thing to
@@ -307,6 +307,15 @@ triggers::add
     t.selected(false);
     t.tick_start(tick);
     t.tick_end(tick + len - 1);
+
+#ifdef SEQ64_USE_DEBUG_OUTPUT
+    printf
+    (
+        "triggers::add(): tick = %ld; len = %ld; offset = %ld; fix = %s\n",
+        tick, len, offset, bool_string(fixoffset)
+    );
+#endif
+
     for (List::iterator i = m_triggers.begin(); i != m_triggers.end(); ++i)
     {
         if (i->tick_start() >= t.tick_start() && i->tick_end() <= t.tick_end())
@@ -759,7 +768,7 @@ triggers::move_selected (midipulse tick, bool fixoffset, int which)
     midipulse mintick = 0;
     midipulse maxtick = 0x7ffffff;
     List::iterator s = m_triggers.begin();
-    for (List::iterator i = m_triggers.begin(); i != m_triggers.end(); i++)
+    for (List::iterator i = m_triggers.begin(); i != m_triggers.end(); ++i)
     {
         if (i->selected())
         {
@@ -939,7 +948,7 @@ triggers::remove_selected ()
 void
 triggers::copy_selected ()
 {
-    for (List::iterator i = m_triggers.begin(); i != m_triggers.end(); i++)
+    for (List::iterator i = m_triggers.begin(); i != m_triggers.end(); ++i)
     {
         if (i->selected())
         {
@@ -1011,28 +1020,22 @@ triggers::next
 {
     while (m_iterator_draw_trigger != m_triggers.end())
     {
-        *tick_on  = (*m_iterator_draw_trigger).tick_start();
-        *selected = (*m_iterator_draw_trigger).selected();
-        *offset = (*m_iterator_draw_trigger).offset();
-        *tick_off = (*m_iterator_draw_trigger).tick_end();
-        m_iterator_draw_trigger++;
+        *tick_on  = m_iterator_draw_trigger->tick_start();
+        *selected = m_iterator_draw_trigger->selected();
+        *offset = m_iterator_draw_trigger->offset();
+        *tick_off = m_iterator_draw_trigger->tick_end();
+        ++m_iterator_draw_trigger;
         return true;
     }
     return false;
 }
 
 /**
- *  Get the next trigger in the trigger list, and set the parameters based
- *  on that trigger.
+ *  Get the next trigger in the trigger list.
  *
  * \return
  *      Returns the next trigger.  If there is none, a default trigger object
  *      is returned.
- *
- * \sideeffect
- *      The value of the m_iterator_draw_trigger member will be altered by this
- *      call, unless pointing to the end of the triggerlist, or if there are
- *      no triggers.
  */
 
 trigger
@@ -1042,7 +1045,7 @@ triggers::next_trigger ()
     while (m_iterator_draw_trigger != m_triggers.end())
     {
         result = *m_iterator_draw_trigger;
-        m_iterator_draw_trigger++;
+        ++m_iterator_draw_trigger;
     }
     return result;
 }
@@ -1055,15 +1058,16 @@ triggers::next_trigger ()
  */
 
 void
-triggers::print (const std::string & seqname)
+triggers::print (const std::string & seqname) const
 {
-    printf("[%s]\n", seqname.c_str());
-    for (List::iterator i = m_triggers.begin(); i != m_triggers.end(); ++i)
+    printf("sequence '%s' triggers:\n", seqname.c_str());
+    for (List::const_iterator i = m_triggers.begin(); i != m_triggers.end(); ++i)
     {
         printf
         (
-            "  tick_start[%ld] tick_end[%ld] off[%ld]\n",
-            i->tick_start(), i->tick_end(), i->offset()
+            "  tick_start = %ld; tick_end = %ld; offset = %ld; selected = %s\n",
+            i->tick_start(), i->tick_end(), i->offset(),
+            bool_string(i->selected())
         );
     }
 }

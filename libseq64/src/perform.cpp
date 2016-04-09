@@ -1146,10 +1146,6 @@ perform::set_screenset (int ss)
 void
 perform::set_playing_screenset ()
 {
-    /*
-     * This loop could be changed to avoid the multiplication.
-     */
-
     for (int j, i = 0; i < m_seqs_in_set; ++i)
     {
         j = i + m_playscreen_offset;    /* m_playing_screen * m_seqs_in_set */
@@ -2429,14 +2425,14 @@ perform::input_func ()
                                     if (midi_control_on(i).in_range(data[1]))
                                     {
                                         if (i <  m_seqs_in_set)
-                                            sequence_playing_on(i + m_offset);
+                                            sequence_playing_on(i+m_offset);
                                         else
                                             handle_midi_control(i, true);
                                     }
                                     else if (midi_control_on(i).inverse_active())
                                     {
                                         if (i <  m_seqs_in_set)
-                                            sequence_playing_off(i + m_offset);
+                                            sequence_playing_off(i+m_offset);
                                         else
                                             handle_midi_control(i, false);
                                     }
@@ -2446,14 +2442,14 @@ perform::input_func ()
                                     if (midi_control_on(i).in_range(data[1]))
                                     {
                                         if (i <  m_seqs_in_set)
-                                            sequence_playing_off(i + m_offset);
+                                            sequence_playing_off(i+m_offset);
                                         else
                                             handle_midi_control(i, false);
                                     }
                                     else if (midi_control_off(i).inverse_active())
                                     {
                                         if (i <  m_seqs_in_set)
-                                            sequence_playing_on(i + m_offset);
+                                            sequence_playing_on(i+m_offset);
                                         else
                                             handle_midi_control(i, true);
                                     }
@@ -3030,6 +3026,20 @@ perform::get_max_tick () const
 #else
     return get_tick();
 #endif
+}
+
+/**
+ *  Shows all the triggers of all the sequences.
+ */
+
+void
+perform::print_triggers () const
+{
+    for (int s = 0; s < m_sequence_max; ++s)
+    {
+        if (is_active(s))
+            m_seqs[s]->print_triggers();
+    }
 }
 
 }           // namespace seq64

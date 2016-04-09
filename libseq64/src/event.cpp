@@ -378,7 +378,7 @@ event::append_sysex (midibyte * data, int dsize)
  */
 
 void
-event::print ()
+event::print () const
 {
     printf
     (

@@ -2737,7 +2737,7 @@ sequence::set_midi_channel (midibyte ch)
  */
 
 void
-sequence::print ()
+sequence::print () const
 {
     m_events.print();
 }
@@ -2749,7 +2749,7 @@ sequence::print ()
  */
 
 void
-sequence::print_triggers ()
+sequence::print_triggers () const
 {
     m_triggers.print(m_name);
 }

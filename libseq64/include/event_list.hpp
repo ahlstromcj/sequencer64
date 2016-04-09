@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-19
- * \updates       2016-01-05
+ * \updates       2016-04-09
  * \license       GNU GPLv2 or above
  *
  *  This module extracts the event-list functionality from the sequencer
@@ -348,7 +348,7 @@ private:                                // functions for friend sequence
     int count_selected_events (midibyte status, midibyte cc) const;
     void select_all ();
     void unselect_all ();
-    void print ();
+    void print () const;
 
     /**
      * \getter m_events

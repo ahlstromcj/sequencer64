@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-04-01
+ * \updates       2016-04-09
  * \license       GNU GPLv2 or above
  *
  *  This class still has way too many members, even with the JACK and
@@ -619,6 +619,7 @@ public:
     void delete_sequence (int seq);                 /* seqmenu & mainwid    */
     bool is_sequence_in_edit (int seq);
     void clear_sequence_triggers (int seq);
+    void print_triggers () const;
 
     /**
      *  The rough opposite of launch(); it doesn't stop the threads.  A minor
@@ -1201,8 +1202,6 @@ private:
 
     /**
      * \setter m_is_modified
-     *      This setter is private.  The modify() setter, which is public, can
-     *      only set m_is_motified to true.
      */
 
     void is_modified (bool flag)

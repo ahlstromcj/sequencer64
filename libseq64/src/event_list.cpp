@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-19
- * \updates       2016-01-09
+ * \updates       2016-04-09
  * \license       GNU GPLv2 or above
  *
  */
@@ -613,10 +613,10 @@ event_list::unselect_all ()
  */
 
 void
-event_list::print ()
+event_list::print () const
 {
     printf("events[%ld]\n\n", m_events.size());
-    for (Events::iterator i = m_events.begin(); i != m_events.end(); ++i)
+    for (Events::const_iterator i = m_events.begin(); i != m_events.end(); ++i)
         dref(i).print();
 
     printf("events[%d]\n\n", count());

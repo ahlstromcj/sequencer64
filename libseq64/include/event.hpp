@@ -28,13 +28,12 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-02-07
+ * \updates       2016-04-09
  * \license       GNU GPLv2 or above
  *
  *  This module also declares/defines the various constants, status-byte
- *  values, or data values for MIDI events.
- *
- *  This class is now a base class, so that we can manage "editable events".
+ *  values, or data values for MIDI events.  This class is also a base class,
+ *  so that we can manage "editable events".
  */
 
 #include <string>                       /* used in to_string()          */
@@ -769,7 +768,7 @@ public:
         return m_status == EVENT_NOTE_OFF;
     }
 
-    void print ();
+    void print () const;
 
     /**
      *  This function is used in sorting MIDI status events (e.g. note

@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-03-28
+ * \updates       2016-04-09
  * \license       GNU GPLv2 or above
  *
  *  The functions add_list_var() and add_long_list() have been replaced by
@@ -797,8 +797,8 @@ public:
     }
 
     void set_midi_channel (midibyte ch);
-    void print ();
-    void print_triggers ();
+    void print () const;
+    void print_triggers () const;
     void play (midipulse tick, bool playback_mode);
     bool add_event (const event & er);
     void add_trigger

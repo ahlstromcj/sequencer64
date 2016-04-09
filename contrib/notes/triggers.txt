@@ -1,0 +1,71 @@
+Triggers in Sequencer64
+Chris Ahlstrom
+2016-04-09 to 2016-04-09
+
+This document analyzes how triggers work.  We turn on the printing of triggers
+and look at some examples.
+
+b4uacus-GM-alternate.midi:
+
+	sequence 'Untitled' triggers:
+	sequence 'PSS-790 Patchin' triggers:
+	  tick_start = 240; tick_end = 287; offset = 768; selected = false
+	  tick_start = 768; tick_end = 2255; offset = 768; selected = false
+	sequence 'Guitar 1 (E.C.)' triggers:
+	  tick_start = 0; tick_end = 5375; offset = 0; selected = false
+	  tick_start = 8448; tick_end = 80112; offset = 3072; selected = false
+	sequence 'Guitar 2 (R.C.)' triggers:
+	  tick_start = 0; tick_end = 5375; offset = 0; selected = false
+	  tick_start = 8448; tick_end = 80240; offset = 3072; selected = false
+	sequence 'Vocal' triggers:
+	  tick_start = 0; tick_end = 5375; offset = 0; selected = false
+	  tick_start = 8448; tick_end = 69264; offset = 3072; selected = false
+	sequence 'Rhythm (Chords)' triggers:
+	  tick_start = 0; tick_end = 5375; offset = 0; selected = false
+	  tick_start = 8448; tick_end = 80384; offset = 3072; selected = false
+	sequence 'Bass Guitar' triggers:
+	  tick_start = 0; tick_end = 5375; offset = 0; selected = false
+	  tick_start = 8448; tick_end = 79856; offset = 3072; selected = false
+	sequence 'Drums' triggers:
+	  tick_start = 0; tick_end = 5375; offset = 0; selected = false
+	  tick_start = 8448; tick_end = 80235; offset = 3072; selected = false
+	sequence 'Chris Ahlstrom' triggers:
+	sequence '(GEnie: KICKAHA' triggers:
+	sequence '"Before You' triggers:
+	sequence 'Accuse Me" by' triggers:
+	sequence 'Eric Clapton &' triggers:
+	sequence 'Robert Cray' triggers:
+
+Bars.midi:
+
+	sequence 'One Bar' triggers:
+	  tick_start = 0; tick_end = 767; offset = 0; selected = false
+	  tick_start = 1536; tick_end = 2303; offset = 0; selected = false
+	  tick_start = 3072; tick_end = 3839; offset = 0; selected = false
+	sequence 'Two Bars' triggers:
+	  tick_start = 1536; tick_end = 3071; offset = 0; selected = false
+
+	After adding another 'Two Bars' segment, and extra line:
+
+	  tick_start = 4608; tick_end = 9215; offset = 0; selected = false
+
+    After moving the new segment rightward one quarter-note:
+
+      tick_start = 4800; tick_end = 9407; offset = 192; selected = false
+
+    After moving the new segment leftward two quarter-notes:
+
+      tick_start = 4416; tick_end = 9023; offset = 1344; selected = false
+
+TODO:
+
+    Document that, after selecting (greying) a segment, and then going
+    into Paint mode, the Left and Right arrow keys can move then segment.
+
+    FIX the zZ keys so that they DO NOT work if Ctrl is held.  Very
+    confusing!!!!
+
+    Figure out how to keep tables (in the documentation) in their proper
+    location.
+
+# vim: sw=4 ts=4 wm=8 et ft=c

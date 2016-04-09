@@ -10,7 +10,7 @@
  * \library       sequencer64
  * \author        Chris Ahlstrom and other authors; see documentation
  * \date          2013-11-17
- * \updates       2016-02-06
+ * \updates       2016-04-09
  * \version       $Revision$
  * \license       GNU GPL v2 or above
  *
@@ -92,7 +92,7 @@ typedef bool cbool_t;
 #endif
 
 /**
- *    Provides the "false" value of the wbool_t type definition.
+ *  Provides the "false" value of the wbool_t type definition.
  */
 
 #ifndef __cplus_plus
@@ -100,12 +100,18 @@ typedef bool cbool_t;
 #endif
 
 /**
- *    Provides the "true" value of the wbool_t type definition.
+ *  Provides the "true" value of the wbool_t type definition.
  */
 
 #ifndef __cplus_plus
 #define true     1
 #endif
+
+/**
+ *  Easy conversion from boolean to string.
+ */
+
+#define bool_string(x)      ((x) ? "true" : "false")
 
 /**
  *    GCC provides three magic variables which hold the name of the current

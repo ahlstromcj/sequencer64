@@ -6,7 +6,7 @@
 # \library    	generic
 # \author     	Chris Ahlstrom
 # \date       	2015-09-10
-# \update     	2015-10-17
+# \update     	2016-04-10
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -27,12 +27,17 @@ srcdir = @srcdir@
 # The $(srcdir) component points us to the correct place whether the build is
 # in-source or out-of-source.  Can't use pushd/popd because they are bash
 # builtins and are not available, except inside a script.
+#
+# 	$(srcdir)/make_dox $(srcdir) reference
+# 	echo "Generating dox-stamp file..."
+# 	date > dox-stamp
 
 dox-stamp: $(EXTRA_DIST)
-	$(srcdir)/make_dox $(srcdir) reference
-	echo "Generating dox-stamp file..."
-	date > dox-stamp
-
+	-echo "We no longer rebuild the developer documentation for Sequencer64."
+	-echo "To rebuild it, change to the doc/dox directory and run the command"
+	-echo "'./make_dox reference'.  Installation is still supported, however."
+	-date > dox-stamp
+ 
 all-local: dox-stamp
 
 clean-local:

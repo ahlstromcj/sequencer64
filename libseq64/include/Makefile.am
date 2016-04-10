@@ -6,7 +6,7 @@
 # \library    	libseq64 library
 # \author     	Chris Ahlstrom
 # \date       	2015-09-11
-# \update      2016-01-17
+# \update      2016-04-10
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -76,7 +76,6 @@ pkginclude_HEADERS = \
 	file_functions.hpp \
 	globals.h \
    gui_assistant.hpp \
-   gui_play_base.hpp \
    jack_assistant.hpp \
    keys_perform.hpp \
 	keystroke.hpp \

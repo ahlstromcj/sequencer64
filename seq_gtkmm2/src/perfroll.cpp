@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-04-06
+ * \updates       2016-04-10
  * \license       GNU GPLv2 or above
  *
  *  The performance window allows automatic control of when each
@@ -903,11 +903,21 @@ perfroll::on_key_press_event (GdkEventKey * ev)
     bool result = perf().perfroll_key_event(k, m_drop_sequence);
     if (result)
     {
-        // Nothing to do here
+        /**
+         * The perfroll_key_event() call handles Del, Ctrl-X, Ctrl-C,
+         * Ctrl-V, and Ctrl-Z (which does nothing at present).
+         */
     }
     else
     {
-        if (! perf().is_running())
+        /**
+         * Note that, even though we filter out the Ctrl key here, it still
+         * works for Ctrl-X (cut) and Ctrl-V (paste).  For undo, the Undo
+         * button can be used, Ctrl-Z never worked in this view anyway.
+         */
+
+        bool is_ctrl = (ev->state & SEQ64_CONTROL_MASK) != 0;
+        if (! perf().is_running() && ! is_ctrl)
         {
             if (ev->keyval == SEQ64_p)
             {
@@ -955,15 +965,7 @@ perfroll::on_key_press_event (GdkEventKey * ev)
         }
     }
     if (result)
-    {
         fill_background_pixmap();
-
-        /*
-         * Not needed for all keystrokes.
-         *
-         * perf().modify();
-         */
-    }
     else
         return Gtk::DrawingArea::on_key_press_event(ev);
 

@@ -1,6 +1,6 @@
 INSTALL for Sequencer64 v. 0.9.10.1
 Chris Ahlstrom
-2015-09-10 to 2016-03-27
+2015-09-10 to 2016-04-10
 
 The current packaging for Sequencer64 is primarily aimed at developers.
 There is currently no configure script... it must be bootstrapped.
@@ -56,6 +56,10 @@ Steps:
    4. To install, become root and run:
 
       # make install
+
+      Note that we have removed the developer reference manual from the
+      automated build (see the Doxygen DEPENDENCIES below), but the existig
+      documents will still be installed.
 
    5. See the additional features that can be enabled, below, using 
       build macros.
@@ -222,6 +226,8 @@ DEPENDENCIES:
       -  libsigc++-2.0-dev
       -  libjack-jackd2-dev
       -  liblash-compat-dev (optional)
+      -  libpng-dev (replaces libpng12-dev with libpng16, latest Debian Sid,
+         and brings in libpng-tools)
 
    Runtime:
 
@@ -238,6 +244,13 @@ DEPENDENCIES:
       -  More?
 
    Documentation:
+
+      We have removed the automatic generation of the developer reference
+      documentation.  It is a pain to deal with relative to the number of
+      times one needs to read it.  To build it, change to the doc/dox
+      directory and run "./make_dox reference".  Note that the PDF files
+      will always be present and installed, even if not up-to-date with the
+      latest code.
 
       -  doxygen and doxygen-latex
       -  graphviz

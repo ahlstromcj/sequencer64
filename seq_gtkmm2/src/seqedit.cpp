@@ -2192,8 +2192,13 @@ seqedit::on_key_press_event (GdkEventKey * ev)
 {
     guint modifiers;            /* for filtering out caps/num-lock etc.     */
     modifiers = gtk_accelerator_get_default_mod_mask();
-    if ((ev->state & modifiers) == SEQ64_CONTROL_MASK && ev->keyval == 'w')
-        return on_delete_event((GdkEventAny *)(ev));
+    if ((ev->state & modifiers) == SEQ64_CONTROL_MASK)
+    {
+        if (ev->keyval == 'w')
+            return on_delete_event((GdkEventAny *)(ev));
+        else
+            return Gtk::Window::on_key_press_event(ev);
+    }
     else
     {
         bool result = false;

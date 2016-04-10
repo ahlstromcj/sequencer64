@@ -73,10 +73,15 @@ NEWDIR="$1"
 TARGET="$2"
 LASTDIR="`pwd`"
 
-if [ "$NEWDIR" == "clean" ] ; then
+if [ "$1" == "clean" ] ; then
    rm -f *.log
    rm -rf html/
    rm -rf latex/
+   exit 0
+fi
+
+if [ "$1" == "help" ] || [ "$1" == "--help" ]; then
+   echo "Usage:  ./make_dox [ dirname ] [ clean | reference ]"
    exit 0
 fi
 

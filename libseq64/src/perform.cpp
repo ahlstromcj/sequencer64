@@ -2831,7 +2831,7 @@ bool
 perform::perfroll_key_event (const keystroke & k, int drop_sequence)
 {
     bool result = false;
-    if (k.is_press())                       // a_p0->type == SEQ64_PRESS
+    if (k.is_press())
     {
         if (is_active(drop_sequence))
         {
@@ -2842,9 +2842,9 @@ perform::perfroll_key_event (const keystroke & k, int drop_sequence)
                 modify();
                 result = true;
             }
-            else if (k.mod_control())            // SEQ64_CONTROL_MASK
+            else if (k.mod_control())               /* SEQ64_CONTROL_MASK   */
             {
-                if (k.is_letter('x'))                           /* cut  */
+                if (k.is_letter('x'))                           /* cut      */
                 {
                     push_trigger_undo();
                     get_sequence(drop_sequence)->cut_selected_trigger();

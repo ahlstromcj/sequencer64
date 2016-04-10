@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-03-21
+ * \updates       2016-04-10
  * \license       GNU GPLv2 or above
  *
  *  There are a large number of existing items to discuss.  But for now let's
@@ -1261,63 +1261,121 @@ seqroll::on_key_press_event (GdkEventKey * ev)
          * No code, handled in perform::playback_key_event() now.
          */
     }
-    else if (CAST_EQUIVALENT(ev->type, SEQ64_KEY_PRESS)) // this really needed?
+    else
     {
-        /*
-         * I think we should be able to move and remove notes while playing,
-         * which is already supported using the mouse.
-         *
-         * if (! perf().is_playing)
-         */
+        if (ev->state & SEQ64_CONTROL_MASK)
+        {
+            if (OR_EQUIVALENT(ev->keyval, SEQ64_x, SEQ64_X))        /* cut */
+            {
+                m_seq.cut_selected();
+                perf().modify();
+                result = true;
+            }
+            else if (OR_EQUIVALENT(ev->keyval, SEQ64_c, SEQ64_C))   /* copy */
+            {
+                m_seq.copy_selected();
+                result = true;
+            }
+            else if (OR_EQUIVALENT(ev->keyval, SEQ64_v, SEQ64_V))   /* paste */
+            {
+                start_paste();
+                perf().modify();
+                result = true;
+            }
+            else if (OR_EQUIVALENT(ev->keyval, SEQ64_z, SEQ64_Z))   /* Undo */
+            {
+                m_seq.pop_undo();
+                result = true;
+            }
+            else if (OR_EQUIVALENT(ev->keyval, SEQ64_a, SEQ64_A))   /* sel all */
+            {
+                m_seq.select_all();
+                result = true;
+            }
+        }
+        else
+        {
+            /*
+             * I think we should be able to move and remove notes while playing,
+             * which is already supported using the mouse.
+             *
+             * if (! perf().is_playing)
+             */
 
-        if (OR_EQUIVALENT(ev->keyval, SEQ64_Delete, SEQ64_BackSpace))
-        {
-            m_seq.cut_selected(false);      /* does not copy the events */
-            perf().modify();
-            result = true;
-        }
-        else if (ev->keyval == SEQ64_Home)
-        {
-            m_seq.set_last_tick(0);
-            result = true;
-        }
-        else if (ev->keyval == SEQ64_Left)
-        {
-            perf().modify();
-            result = true;
-            if (m_seq.any_selected_notes())
-                m_seq.move_selected_notes(-m_snap, /*-48,*/ 0);
-            else
-                m_seq.set_last_tick(m_seq.get_last_tick() - m_snap);
-        }
-        else if (ev->keyval == SEQ64_Right)
-        {
-            perf().modify();
-            result = true;
-            if (m_seq.any_selected_notes())
-                m_seq.move_selected_notes(m_snap, /*48,*/ 0);
-            else
-                m_seq.set_last_tick(m_seq.get_last_tick() + m_snap);
-        }
-        else if (ev->keyval == SEQ64_Down)
-        {
-            perf().modify();
-            if (m_seq.any_selected_notes())
+            if (OR_EQUIVALENT(ev->keyval, SEQ64_Delete, SEQ64_BackSpace))
             {
-                m_seq.move_selected_notes(0, -1);
+                m_seq.cut_selected(false);      /* does not copy the events */
+                perf().modify();
+                result = true;
+            }
+            else if (ev->keyval == SEQ64_Home)
+            {
+                m_seq.set_last_tick(0);
+                result = true;
+            }
+            else if (ev->keyval == SEQ64_Left)
+            {
+                perf().modify();
+                result = true;
+                if (m_seq.any_selected_notes())
+                    m_seq.move_selected_notes(-m_snap, /*-48,*/ 0);
+                else
+                    m_seq.set_last_tick(m_seq.get_last_tick() - m_snap);
+            }
+            else if (ev->keyval == SEQ64_Right)
+            {
+                perf().modify();
+                result = true;
+                if (m_seq.any_selected_notes())
+                    m_seq.move_selected_notes(m_snap, /*48,*/ 0);
+                else
+                    m_seq.set_last_tick(m_seq.get_last_tick() + m_snap);
+            }
+            else if (ev->keyval == SEQ64_Down)
+            {
+                perf().modify();
+                if (m_seq.any_selected_notes())
+                {
+                    m_seq.move_selected_notes(0, -1);
+                    result = true;
+                }
+            }
+            else if (ev->keyval == SEQ64_Up)
+            {
+                perf().modify();
+                if (m_seq.any_selected_notes())
+                {
+                    m_seq.move_selected_notes(0, 1);
+                    result = true;
+                }
+            }
+            else if (ev->keyval == SEQ64_p)
+            {
+                m_seq24_interaction.set_adding(true, *this);
+                result = true;
+            }
+            else if (ev->keyval == SEQ64_x)             /* "x-scape" the mode   */
+            {
+                m_seq24_interaction.set_adding(false, *this);
                 result = true;
             }
         }
-        else if (ev->keyval == SEQ64_Up)
-        {
-            perf().modify();
-            if (m_seq.any_selected_notes())
-            {
-                m_seq.move_selected_notes(0, 1);
-                result = true;
-            }
-        }
+    }
+    if (result)
+        m_seq.set_dirty();             // redraw_events();
+
+    return result;
+}
+
 #if SEQ64_USE_VI_SEQROLL_MODE       /* disabled, for programmers only! :-D  */
+
+/*
+ * Just here to save some provisional code in case we ever want it.
+ */
+
+bool
+seqroll::vi_key_press_event (GdkEventKey * ev)
+{
         else if (ev->keyval == SEQ64_h)
         {
             if (m_seq.any_selected_notes())
@@ -1364,53 +1422,9 @@ seqroll::on_key_press_event (GdkEventKey * ev)
             m_seq24_interaction.set_adding(false, *this);
             result = true;
         }
-#endif                                              // SEQ64_USE_VI_SEQROLL_MODE
-        else if (ev->keyval == SEQ64_p)
-        {
-            m_seq24_interaction.set_adding(true, *this);
-            result = true;
-        }
-        else if (ev->keyval == SEQ64_x)             /* "x-scape" the mode   */
-        {
-            m_seq24_interaction.set_adding(false, *this);
-            result = true;
-        }
-        if (ev->state & SEQ64_CONTROL_MASK)
-        {
-            if (OR_EQUIVALENT(ev->keyval, SEQ64_x, SEQ64_X))        /* cut */
-            {
-                m_seq.cut_selected();
-                perf().modify();
-                result = true;
-            }
-            else if (OR_EQUIVALENT(ev->keyval, SEQ64_c, SEQ64_C))   /* copy */
-            {
-                m_seq.copy_selected();
-                result = true;
-            }
-            else if (OR_EQUIVALENT(ev->keyval, SEQ64_v, SEQ64_V))   /* paste */
-            {
-                start_paste();
-                perf().modify();
-                result = true;
-            }
-            else if (OR_EQUIVALENT(ev->keyval, SEQ64_z, SEQ64_Z))   /* Undo */
-            {
-                m_seq.pop_undo();
-                result = true;
-            }
-            else if (OR_EQUIVALENT(ev->keyval, SEQ64_a, SEQ64_A))   /* sel all */
-            {
-                m_seq.select_all();
-                result = true;
-            }
-        }
-    }
-    if (result)
-        m_seq.set_dirty();             // redraw_events();
-
-    return result;
 }
+
+#endif                                              // SEQ64_USE_VI_SEQROLL_MODE
 
 /**
  *  Implements the on-size-allocate event handling.

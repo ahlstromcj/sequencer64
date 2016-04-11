@@ -1707,11 +1707,11 @@ seqedit::set_midi_bus (int bus)
 void
 seqedit::set_zoom (int z)
 {
-    char b[8];
-    snprintf(b, sizeof(b), "1:%d", z);
-    m_entry_zoom->set_text(b);
     if ((z >= usr().min_zoom()) && (z <= usr().max_zoom()))
     {
+        char b[8];
+        snprintf(b, sizeof(b), "1:%d", z);
+        m_entry_zoom->set_text(b);
         m_zoom = z;
 
         /*

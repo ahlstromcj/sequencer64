@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-22
- * \updates       2016-04-10
+ * \updates       2016-04-11
  * \license       GNU GPLv2 or above
  *
  *  This module defines the following categories of "global" variables that
@@ -237,7 +237,10 @@ class user_settings
     int m_control_height;   /* c_control_height = 0;                        */
 
     /**
-     *  Provides the initial zoom value, in units of
+     *  Provides the initial zoom value, in units of ticks per pixel.  The
+     *  original default value was 32 ticks per pixel, but larger PPQN values
+     *  need higher values, and we will have to adapt the default zoom to the
+     *  PPQN value.
      */
 
     int m_current_zoom;
@@ -605,7 +608,7 @@ class user_settings
 
     /**
      *  Provides the maximum zoom value, currently a constant.  It's value was
-     *  32, but is now 128, to allow for better presentation of high PPQN
+     *  32, but is now 512, to allow for better presentation of high PPQN
      *  valued sequences.
      */
 

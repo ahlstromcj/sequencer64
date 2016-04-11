@@ -25,11 +25,16 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-04-10
+ * \updates       2016-04-11
  * \license       GNU GPLv2 or above
  *
  *  Compare this class to eventedit, which has to do some similar things,
  *  though it has a lot fewer user-interface controls to manage.
+ *
+ *  There's one big mistake in this module... making the size of the grid
+ *  dependent on the PPQN values.  As the PPQN gets larger, so does the size
+ *  of each measure, until too big to appear in whole on the screen.  Luckily,
+ *  we can get around this issue by changing the zoom range.
  */
 
 #include <gtkmm/adjustment.h>
@@ -162,15 +167,15 @@ seqedit::seqedit
     int pos,
     int ppqn
 ) :
-    gui_window_gtk2     (p, 750, 500),          /* set_size_request(700, 500) */
-    m_zoom              (usr().zoom()),
+    gui_window_gtk2     (p, 750, 500),                  // size request
+    m_zoom              (SEQ64_DEFAULT_ZOOM),           // fixed below
     m_snap              (m_initial_snap),
     m_note_length       (m_initial_note_length),
     m_scale             (usr().seqedit_scale()),        // m_initial_scale
     m_key               (usr().seqedit_key()),          // m_initial_key
     m_bgsequence        (usr().seqedit_bgsequence()),   // m_initial_sequence
-    m_measures          (0),
-    m_ppqn              (0),
+    m_measures          (0),                            // fixed below
+    m_ppqn              (0),                            // fixed below
     m_seq               (seq),
     m_menubar           (manage(new Gtk::MenuBar())),
     m_menu_tools        (manage(new Gtk::Menu())),
@@ -388,7 +393,12 @@ seqedit::seqedit
 
     set_snap(m_initial_snap * m_ppqn / SEQ64_DEFAULT_PPQN);
     set_note_length(m_initial_note_length * m_ppqn / SEQ64_DEFAULT_PPQN);
-    set_zoom(m_zoom);
+
+    int zoom = usr().zoom();
+    if (usr().zoom() == 0)
+        zoom = SEQ64_DEFAULT_ZOOM * m_ppqn / SEQ64_DEFAULT_PPQN;
+
+    set_zoom(zoom);
     set_beats_per_bar(m_seq.get_beats_per_bar());
     set_beat_width(m_seq.get_beat_width());
     set_measures(get_measures());
@@ -2010,8 +2020,8 @@ seqedit::thru_change_callback ()
 }
 
 /**
- *      Sets the data type based on the given parameters.
- *      This function uses the hardwired array c_controller_names.
+ *  Sets the data type based on the given parameters.  This function uses the
+ *  hardwired array c_controller_names.
  *
  * \param status
  *      The current editing status.
@@ -2046,10 +2056,7 @@ seqedit::set_data_type (midibyte status, midibyte control)
         if (usr().controller_active(bus, channel, control))
             ccname = usr().controller_name(bus, channel, control);
 
-        snprintf
-        (
-            type, sizeof(type), "Control Change - %s", ccname.c_str()
-        );
+        snprintf(type, sizeof(type), "Control Change - %s", ccname.c_str());
     }
     else if (status == EVENT_PROGRAM_CHANGE)
         snprintf(type, sizeof(type), "Program Change");
@@ -2060,7 +2067,7 @@ seqedit::set_data_type (midibyte status, midibyte control)
     else
         snprintf(type, sizeof(type), "Unknown MIDI Event");
 
-    char text[90];
+    char text[80];
     snprintf(text, sizeof(text), "%s %s", hex, type);
     m_entry_data->set_text(text);
 }
@@ -2185,7 +2192,7 @@ seqedit::on_scroll_event (GdkEventScroll * ev)
  *  Handles a key-press event.  In particular, the Ctrl-W keypress.
  *  This keypress closes the sequence/pattern editor window by way of calling
  *  on_delete_event().  We should consider applying this convention to all the
- *  other windows.
+ *  other windows.  Also handled are the new z0Z zoom keys.
  */
 
 bool

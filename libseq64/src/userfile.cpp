@@ -667,9 +667,11 @@ userfile::write (const perform & /* a_perf */ )
 
         file << "\n"
             "# Specifies the initial zoom for the piano rolls.  Ranges from 1.\n"
-            "# to 128 (the legacy maximum was 32), and defaults to 2 unless\n"
+            "# to 512 (the legacy maximum was 32), and defaults to 2 unless\n"
             "# changed here.  Note that large PPQN values will require larger\n"
             "# zoom values in order to look good in the sequence editor.\n"
+            "# Sequencer64 currently doesn't adapt this value to the PPQN,\n"
+            "# but will eventually do so if this value is set to 0.\n"
             "\n"
             << usr().zoom() << "      # zoom\n"
             ;

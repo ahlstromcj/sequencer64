@@ -410,25 +410,25 @@ user_settings::set_defaults ()
     m_progress_bar_colored = false;
     m_progress_bar_thick = false;
     m_window_redraw_rate_ms = c_redraw_ms;
-
-    m_text_x =  6;                      // range: 6-6
-    m_text_y = 12;                      // range: 12-12
-    m_seqchars_x = 15;                  // range: 15-15
-    m_seqchars_y =  5;                  // range: 5-5
-
-    m_midi_ppqn = SEQ64_DEFAULT_PPQN;   // range: 96 to 960, default 192
+    m_text_x =  6;                          // range: 6-6
+    m_text_y = 12;                          // range: 12-12
+    m_seqchars_x = 15;                      // range: 15-15
+    m_seqchars_y =  5;                      // range: 5-5
+    m_midi_ppqn = SEQ64_DEFAULT_PPQN;       // range: 96 to 960, default 192
     m_midi_beats_per_measure = SEQ64_DEFAULT_BEATS_PER_MEASURE; // range: 1-16
-    m_midi_beats_per_minute = SEQ64_DEFAULT_BPM;                // range: 20-500
-    m_midi_beat_width = SEQ64_DEFAULT_BEAT_WIDTH;     // range: 1-16, powers of 2
-    m_midi_buss_override = SEQ64_BAD_BUSS;            // range: 1 to 32
+    m_midi_beats_per_minute = SEQ64_DEFAULT_BPM;    // range: 20-500
+    m_midi_beat_width = SEQ64_DEFAULT_BEAT_WIDTH;   // range: 1-16, powers of 2
+    m_midi_buss_override = SEQ64_BAD_BUSS;          // range: 1 to 32
 
     /*
-     * mc_min_zoom
-     * mc_max_zoom
-     * mc_baseline_ppqn
+     * Constants:
+     *
+     *  mc_min_zoom
+     *  mc_max_zoom
+     *  mc_baseline_ppqn
      */
 
-    normalize();                        // recalculate derived values
+    normalize();                            // recalculate derived values
 }
 
 /**
@@ -459,7 +459,7 @@ user_settings::normalize ()
 }
 
 /**
- *  Adds a user bus to the container, but only does so if the name
+ *  Adds a user buss to the container, but only does so if the name
  *  parameter is not empty.
  */
 
@@ -794,37 +794,28 @@ user_settings::control_height (int value)
 /**
  * \setter m_current_zoom
  *      This value is not modified unless the value parameter is
- *      between 1 and 32, inclusive.  The default value is 2.
+ *      between 1 and 512, inclusive.  The default value is 2.
  */
 
 void
 user_settings::zoom (int value)
 {
     if (value >= mc_min_zoom && value <= mc_max_zoom)
-    {
         m_current_zoom = value;
-    }
 }
 
 /**
  * \setter m_midi_ppqn
- *      This value can be set from 96 to 960 (this upper limit will be
- *      determined by what Sequencer64 can actually handle).
- *      The default value is 192.
- *      Dependent values may be recalculated after the assignment.
+ *      This value can be set from 96 to 19200 (this upper limit will be
+ *      determined by what Sequencer64 can actually handle).  The default
+ *      value is 192.
  */
 
 void
 user_settings::midi_ppqn (int value)
 {
     if (value >= SEQ64_MINIMUM_PPQN && value <= SEQ64_MAXIMUM_PPQN)
-    {
         m_midi_ppqn = value;
-
-        /*
-         * Any need to normalize()?
-         */
-    }
 }
 
 /**

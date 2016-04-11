@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-04-05
+ * \updates       2016-04-10
  * \license       GNU GPLv2 or above
  *
  */
@@ -500,16 +500,23 @@ perfedit::set_guides ()
 /**
  *  Sets the snap text and values to the given value, and then calls
  *  set_guides().
+ *
+ * \param snap
+ *      Provide the snap value to be set.  This value is basically the
+ *      numerator of the expression "1 / snap".
  */
 
 void
 perfedit::set_snap (int snap)
 {
-    char b[8];
-    snprintf(b, sizeof(b), "1/%d", snap);
-    m_entry_snap->set_text(b);
-    m_snap = snap;
-    set_guides();
+    if (snap > 0)
+    {
+        char b[8];
+        snprintf(b, sizeof(b), "1/%d", snap);
+        m_entry_snap->set_text(b);
+        m_snap = snap;
+        set_guides();
+    }
 }
 
 /**
@@ -518,12 +525,16 @@ perfedit::set_snap (int snap)
  *
  *  The usage of is modified was faulty.  Offloaded it to the perform object
  *  to make it more foolproof.  See the perform::modify() function.
+ *
+ * \param bpm
+ *      Provides the beats/measure or beats/bar value to be set.  This value
+ *      is basically the numerator of the time signature.
  */
 
 void
 perfedit::set_beats_per_bar (int bpm)
 {
-    if (bpm != m_bpm)
+    if (bpm != m_bpm && bpm > 0)
     {
         char b[8];
         snprintf(b, sizeof(b), "%d", bpm);
@@ -542,12 +553,16 @@ perfedit::set_beats_per_bar (int bpm)
  *
  *  The usage of is modified was faulty.  Offloaded it to the perform object
  *  to make it more foolproof.  See the perform::modify() function.
+ *
+ * \param bw
+ *      Provides the beat width to be set.  The beat width is basically the
+ *      denominator of the time signature.
  */
 
 void
 perfedit::set_beat_width (int bw)
 {
-    if (bw != m_bw)
+    if (bw != m_bw && bw > 0)
     {
         char b[8];
         snprintf(b, sizeof(b), "%d", bw);
@@ -561,16 +576,16 @@ perfedit::set_beat_width (int bw)
 }
 
 /**
- *  Increments the size of the perfroll and perftime objects.
- *  Make sure that setting the modified flag makes sense for this operation.
- *  It doesn't seem to modify members.
+ *  Increments the size of the perfroll and perftime objects.  Make sure that
+ *  setting the modified flag makes sense for this operation.  It doesn't seem
+ *  to modify members.
  */
 
 void
 perfedit::grow ()
 {
     m_perfroll->increment_size();
-    m_perftime->increment_size();           /* a do-nothing function    */
+    m_perftime->increment_size();           /* a do-nothing function        */
 }
 
 /**

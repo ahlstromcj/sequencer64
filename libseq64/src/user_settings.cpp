@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-23
- * \updates       2016-02-20
+ * \updates       2016-04-10
  * \license       GNU GPLv2 or above
  *
  *  Note that this module also sets the remaining legacy global variables, so
@@ -456,58 +456,6 @@ user_settings::normalize ()
         (m_seqarea_y + m_mainwid_spacing) * m_mainwnd_rows +
              m_control_height + m_mainwid_border * 2
     );
-}
-
-/**
- *  Copies the current values of the member variables into their
- *  corresponding global variables.  Should be called at initialization,
- *  and after settings are read from the "user" configuration file.
- *
- *  DO NOT PUT ANY GLOBALS HERE UNTIL THEIR EFFECTS HAVE BEEN TESTED!!!!
- */
-
-void
-user_settings::set_globals () const
-{
-    /*
-     * Done with the full conversion to [user-midi-bus] and
-     * [user-instrument] values, they don't need to be here anymore.
-     */
-
-    /*
-     *  [user-interface-settings]
-     *
-     *  We're ignoring these for now, don't want to mess up the GUI.
-     */
-
-    /*
-     *  [user-midi-settings]:  No more globals to set, hurrah!
-     */
-}
-
-/**
- *  Copies the current values of the global variables into their
- *  corresponding member variables.  Should be called before settings are
- *  written to the "user" configuration file.
- */
-
-void
-user_settings::get_globals ()
-{
-    /*
-     * Done with the full conversion to [user-midi-bus] and
-     * [user-instrument] values, they don't need to be here anymore.
-     */
-
-    /*
-     *  [user-interface-settings]
-     *
-     *  We're ignoring these for now, don't want to mess up the GUI.
-     */
-
-    /*
-     *  [user-midi-settings]: No more globals to set, hurrah!
-     */
 }
 
 /**

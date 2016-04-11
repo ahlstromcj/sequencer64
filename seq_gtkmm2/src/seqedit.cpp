@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-04-06
+ * \updates       2016-04-10
  * \license       GNU GPLv2 or above
  *
  *  Compare this class to eventedit, which has to do some similar things,
@@ -107,7 +107,12 @@ namespace seq64
  *  Note that, currently, that some of these "initial values" are modified, so
  *  that they are "contagious".  That is, the next sequence to be opened in
  *  the sequence editor will adopt these values.  This is a long-standing
- *  feature of Seq24, but strikes us as a bit too surprising and tricky.
+ *  feature of Seq24, but strikes us as a bit surprising.
+ *
+ * \new ca 2016-04-10
+ *      If we just double the PPQN, then the snap divisor becomes 32, and the
+ *      snap interval is a 32nd note.  We would like to keep it at a 16th
+ *      note.  We correct the snap ticks to the actual PPQN ratio.
  */
 
 int seqedit::m_initial_snap                 = SEQ64_DEFAULT_PPQN / 4;
@@ -381,16 +386,9 @@ seqedit::seqedit
      * m_vscroll->get_adjustment()->set_value(middle);
      */
 
+    set_snap(m_initial_snap * m_ppqn / SEQ64_DEFAULT_PPQN);
+    set_note_length(m_initial_note_length * m_ppqn / SEQ64_DEFAULT_PPQN);
     set_zoom(m_zoom);
-    set_snap(m_snap);
-
-    /*
-     *  The following few calls cause sequence::set_dirty_mp() to be called,
-     *  which makes mainwid redraw the seqeuence, but does not make the
-     *  application prompt for saving changes when exiting.
-     */
-
-    set_note_length(m_note_length);
     set_beats_per_bar(m_seq.get_beats_per_bar());
     set_beat_width(m_seq.get_beat_width());
     set_measures(get_measures());
@@ -1722,8 +1720,13 @@ seqedit::set_zoom (int z)
 }
 
 /**
- *  Selects the given snap value.  It is passed to the seqroll, seqevent,
- *  and sequence objects, as well.
+ *  Selects the given snap value, which is the number of ticks in a snap-sized
+ *  interval.  It is passed to the seqroll, seqevent, and sequence objects, as
+ *  well.
+ *
+ *  The default initial snap is the default PPQN divided by 4, or the
+ *  equivalent of a 16th note (48 ticks).  The snap divisor is 192 * 4 / 48 or
+ *  16.
  */
 
 void
@@ -1751,12 +1754,10 @@ seqedit::set_snap (int snap)
  *      notelength based on the new PPQN.  For example if the new PPQN is
  *      twice as high as 192, then the notelength should double, though the
  *      text displayed in the "Note length" field should remain the same.
- *      A double value would be needed to handle the setting of a smaller
- *      m_ppqn.  Not needed until we support a set_ppqn() function in this
- *      class.  Another option is to rebuild the menu.
+ *      However, we do adjust for a non-default PPQN at startup time.
  *
  * \param notelength
- *      Provides the note length in units of MIDI pulses.  For example
+ *      Provides the note length in units of MIDI pulses.
  */
 
 void

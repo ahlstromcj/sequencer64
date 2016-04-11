@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-22
- * \updates       2016-02-20
+ * \updates       2016-04-10
  * \license       GNU GPLv2 or above
  *
  *  This module defines the following categories of "global" variables that
@@ -627,8 +627,6 @@ public:
 
     void set_defaults ();
     void normalize ();
-    void set_globals () const;
-    void get_globals ();
 
     bool add_bus (const std::string & alias);
     bool add_instrument (const std::string & instname);

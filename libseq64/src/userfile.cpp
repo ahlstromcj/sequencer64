@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-04-04
+ * \updates       2016-04-10
  * \license       GNU GPLv2 or above
  *
  *  Note that the parse function has some code that is not yet enabled.
@@ -387,11 +387,9 @@ userfile::parse (perform & /* a_perf */)
     }
 
     /*
-     * We have all of the data, now distribute the values to any legacy global
-     * variables that are still being used.  Then close the file.
+     * We have all of the data.  Close the file.
      */
 
-    usr().set_globals();
     dump_setting_summary();
     file.close();                       /* End Of File, EOF, done! */
     return true;
@@ -415,13 +413,6 @@ userfile::write (const perform & /* a_perf */ )
         return false;
     }
 
-    /*
-     * Any legacy global variables still outstanding?  These might have been
-     * modified by older code, and we need to make sure we get those changes
-     * into the user-settings object before we write to the file.
-     */
-
-    usr().get_globals();
     dump_setting_summary();
 
     /*

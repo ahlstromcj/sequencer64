@@ -464,12 +464,22 @@ seqroll::update_background ()
      * int measures_per_line = (256 / measure_length_64ths) / (32 / m_zoom);
      * if (measures_per_line <= 0)
      *      int measures_per_line = 1;
+     *
+     * The ticks_per_step value needs to be figured out.  Why 6 * m_zoom?
+     * The default zoom is 2.  192 / 32 = 6.  6 is the number of pixels in the
+     * smallest divisions in the default seqroll background.
      */
 
     int measures_per_line = 1;
     int ticks_per_beat = (4 * m_ppqn) / m_seq.get_beat_width();
     int ticks_per_measure = m_seq.get_beats_per_bar() * ticks_per_beat;
-    int ticks_per_step = 6 * m_zoom;
+
+    /*
+     * int ticks_per_step = 6 * m_zoom;
+     */
+
+    int ticks_per_step = m_zoom * 6 * m_ppqn / SEQ64_DEFAULT_PPQN;
+
     int ticks_per_m_line = ticks_per_measure * measures_per_line;
     int endtick = (m_window_x * m_zoom) + m_scroll_offset_ticks;
     int starttick = m_scroll_offset_ticks -

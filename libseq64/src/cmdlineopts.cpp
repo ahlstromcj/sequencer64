@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-20
- * \updates       2016-04-04
+ * \updates       2016-04-10
  * \license       GNU GPLv2 or above
  *
  *  The "rc" command-line options override setting that are first read from
@@ -169,8 +169,8 @@ static const char * const s_help_1a =
 
 static const char * const s_help_1b =
 "   -b, --bus b              Global override of bus number (for testing).\n"
-"   -q, --ppqn qn            Specify new default PPQN, or 'file'.  Note that\n"
-"                            the legacy default is 192.\n"
+"   -q, --ppqn qn            Specify default PPQN to replace 192.  The MIDI\n"
+"                            file might specify its own PPQN.\n"
 "   -p, --priority           Run high priority, FIFO scheduler (needs root).\n"
 // "   -P, --pass-sysex         Passes incoming SysEx messages to all outputs.\n"
 // "                            IS THIS SUPPORTED?\n"
@@ -352,6 +352,11 @@ parse_options_files (perform & p, int argc, char * argv [])
 
 /**
  *  Parses the command-line options on behalf of the application.
+ *  Note that, since we call this function twice (once before the
+ *  configuration files are parsed, and once after), we have to make sure that
+ *  the global value optind is reset to 0 before calling this function.
+ *  Note that the traditional reset value for optind is 1, but 0 is used in
+ *  GNU code to trigger the internal initialization routine of get_opt().
  *
  * \param argc
  *      The number of command-line arguments.
@@ -367,6 +372,7 @@ int
 parse_command_line_options (int argc, char * argv [])
 {
     int result = 0;
+    optind = 0;
     for (;;)                                /* parse all command parameters */
     {
         int option_index = 0;               /* getopt_long index storage    */
@@ -504,14 +510,7 @@ parse_command_line_options (int argc, char * argv [])
             break;
 
         case 'q':
-            if (std::string(optarg) == std::string("file"))
-            {
-                seq64::usr().midi_ppqn(0);      /* NOT READY */
-            }
-            else
-            {
-                seq64::usr().midi_ppqn(atoi(optarg));
-            }
+            seq64::usr().midi_ppqn(atoi(optarg));
             break;
 
         default:
@@ -528,24 +527,10 @@ parse_command_line_options (int argc, char * argv [])
             seq64::rc().legacy_format(true);
             printf("Setting legacy seq24 file format.\n");
         }
-        seq64::usr().set_globals();             /* copy to legacy globals   */
         result = optind;
     }
     return result;
 }
-
-/*
- * TRIAL FEATURE.  Restore the data read from the two configuration files.
- *                 This will remove any "rc" edits made in the Options
- *                 dialog, though.
- *
- *                 THIS NEEDS MORE THOUGHT!
- *
- * seq64::rc_settings & rc_ref = seq64::rc();
- * seq64::user_settings & usr_ref = seq64::usr();
- * rc_ref = rc_backup;
- * usr_ref = usr_backup;
- */
 
 /**
  *  Saves all options to the "rc" and "user" configuration files.
@@ -585,7 +570,6 @@ write_options_files (const perform & p)
 
     if (cansave)
     {
-        seq64::usr().get_globals();             /* copy from legacy globals */
         printf("[Writing user configuration %s]\n", rcname.c_str());
         seq64::userfile userstuff(rcname);
         if (userstuff.write(p))
@@ -595,7 +579,6 @@ write_options_files (const perform & p)
         else
             result = false;
     }
-
     return result;
 }
 

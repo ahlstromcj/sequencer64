@@ -125,11 +125,11 @@ seqtime::redraw ()
 }
 
 /**
- *  Updates the pixmap.  When the zoom is at 32, there is a thick bar for
- *  every measure, and a measure number and major time division every 4
- *  measures.at the default PPQN of 192.
+ *  Updates the pixmap.  When the zoom is at 32 ticks per pixel, there is a
+ *  thick bar for every measure, and a measure number and major time division
+ *  every 4 measures.at the default PPQN of 192.
  *
- *  Let me know if you figure out this legacy chart from the original seq24
+ *  Let us know if you figure out this legacy chart from the original seq24
  *  code:
  *
 \verbatim
@@ -150,8 +150,15 @@ seqtime::redraw ()
  *  A major line is a line that has a measure number in the timeline.  The
  *  number of measures in a major line is 1 for zooms from 1:1 to 1:8; 2 for
  *  zoom 1:16; 4 for zoom 1:32; 8 for zoom 1:64 (new); and 16 for zoom 1:128.
- *  Zooms 1:64 and 1:128 look good only for high PPQN values.
- */
+ *  Zooms 1:64 and above look good only for high PPQN values.
+ *
+ *  We calculate the measure length in 32nd notes.  This value is, of course,
+ *  32, when the time signature is 4/4.  Then calculate measures/line.
+ *  "measures_per_major" is more like "measures per major line".  With a higher
+ *  zoom than 32, this calculation yields a floating-point exception if m_zoom
+ *  > 32, so we rearrange the calculation and hope that it still works out the
+ *  same for smaller values.
+*/
 
 void
 seqtime::update_pixmap ()
@@ -165,48 +172,36 @@ seqtime::update_pixmap ()
     draw_line_on_pixmap(black(), 0, m_window_y - 1, m_window_x, m_window_y - 1);
 
     /*
-     * See the description in the banner.
+     * See the description of measure length above.
+     * int measures_per_major = (128 / measure_length_32nds) / (32 / m_zoom);
+     * int measures_per_major = (128 * m_zoom / measure_length_32nds) / 32;
      */
 
-    int measure_length_32nds = m_seq.get_beats_per_bar() * 32 /
-        m_seq.get_beat_width();
+    int bpbar = m_seq.get_beats_per_bar();
+    int bwidth = m_seq.get_beat_width();
+    int measure_length_32nds = 32 * bpbar / bwidth;                 /* 32   */
+    int measures_per_major = 4 * m_zoom / measure_length_32nds;
+    if (measures_per_major <= 0)
+        measures_per_major = 1;
 
-    /*
-     *  "measures_per_line" is more like "measures per major line".  With a
-     *  higher zoom than 32, this calculation yields a floating-point
-     *  exception if m_zoom > 32, so we rearrange the calculation and hope
-     *  that it still works out the same for smaller values.
-     *
-     * int measures_per_line = (128 / measure_length_32nds) / (32 / m_zoom);
-     * int measures_per_line = (128 * m_zoom / measure_length_32nds) / 32;
-     */
-
-    int measures_per_line = 4 * m_zoom / measure_length_32nds;
-    if (measures_per_line <= 0)
-        measures_per_line = 1;
-
-    int ticks_per_measure = m_seq.get_beats_per_bar() * (4 * m_ppqn) /
-        m_seq.get_beat_width();
-
-    int ticks_per_step = ticks_per_measure * measures_per_line;
+    int ticks_per_measure = 4 * m_ppqn * bpbar / bwidth;
+    int ticks_per_major = ticks_per_measure * measures_per_major;
     int starttick = m_scroll_offset_ticks -
-        (m_scroll_offset_ticks % ticks_per_step);
+        (m_scroll_offset_ticks % ticks_per_major);
 
     int endtick = (m_window_x * m_zoom) + m_scroll_offset_ticks;
-    m_gc->set_foreground(black());                      /* draw vert lines  */
-    for (int tick = starttick; tick < endtick; tick += ticks_per_step)
+    m_gc->set_foreground(black());                      /* vertical lines  */
+    for (int tick = starttick; tick < endtick; tick += ticks_per_major)
     {
+        char bar[8];
         int base_line = tick / m_zoom;
         int x_offset = base_line - m_scroll_offset_x;   /* to draw the beat */
         draw_line_on_pixmap(x_offset, 0, x_offset, m_window_y);
-
-        char bar[8];
         snprintf(bar, sizeof(bar), "%d", (tick / ticks_per_measure) + 1);
         render_string_on_pixmap(x_offset + 2, 1, bar, font::BLACK);
     }
 
-
-    /*
+    /**
      * \todo
      *      Sizing needs to be controlled by font parameters. Instead of 19 or
      *      20, estimate the width of 3 letters. Instead of 9 pixels down, use

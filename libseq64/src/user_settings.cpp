@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-23
- * \updates       2016-04-10
+ * \updates       2016-04-11
  * \license       GNU GPLv2 or above
  *
  *  Note that this module also sets the remaining legacy global variables, so
@@ -794,13 +794,15 @@ user_settings::control_height (int value)
 /**
  * \setter m_current_zoom
  *      This value is not modified unless the value parameter is
- *      between 1 and 512, inclusive.  The default value is 2.
+ *      between 1 and 512, inclusive.  The default value is 2.  Note that 0 is
+ *      allowed as a special case, which allows the default zoom to be
+ *      adjusted when the PPQN value is different from the default.
  */
 
 void
 user_settings::zoom (int value)
 {
-    if (value >= mc_min_zoom && value <= mc_max_zoom)
+    if ((value >= mc_min_zoom && value <= mc_max_zoom) || value == 0)
         m_current_zoom = value;
 }
 

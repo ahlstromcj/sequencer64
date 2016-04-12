@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-07
- * \updates       2016-02-20
+ * \updates       2016-04-12
  * \license       GNU GPLv2 or above
  *
  *  These items were moved from the globals.h module so that only the modules
@@ -127,6 +127,7 @@ extern bool string_is_void (const std::string & s);
 extern bool strings_match (const std::string & target, const std::string & x);
 extern int log2_time_sig_value (int tsd);
 extern void tempo_to_bytes (midibyte t[3], int tempo_us);
+extern int zoom_power_of_2 (int ppqn);
 
 /**
  *  This function calculates the effective beats-per-minute based on the value

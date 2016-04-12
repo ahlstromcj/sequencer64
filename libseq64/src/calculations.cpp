@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-07
- * \updates       2016-01-31
+ * \updates       2016-04-12
  * \license       GNU GPLv2 or above
  *
  *  This code was moved from the globals module so that other modules
@@ -74,6 +74,7 @@
 #include <stdlib.h>                     /* C::atoi(), C::strtol()           */
 #include <time.h>                       /* C::strftime()                    */
 
+#include "app_limits.h"
 #include "calculations.hpp"
 
 namespace seq64
@@ -731,6 +732,36 @@ log2_time_sig_value (int tsd)
     {
         result++;
         tsd >>= 1;
+    }
+    return result;
+}
+
+/**
+ *  Calculates a suitable starting zoom value for the given PPQN value.  The
+ *  default starting zoom is 2, but this value is suitable only for PPQN of
+ *  192 and below.  Also, zoom currently works properly only if it is a power
+ *  of 2.  For starters, we scale the zoom to the selected ppqn, and then
+ *  shift it each way to get a suitable power of two.
+ *
+ * \param ppqn
+ *      The ppqn of interest.
+ *
+ * \return
+ *      Returns the power of 2 appropriate for the given PPQN value.
+ */
+
+int
+zoom_power_of_2 (int ppqn)
+{
+    int result = SEQ64_DEFAULT_ZOOM;
+    if (ppqn > SEQ64_DEFAULT_PPQN)
+    {
+        int zoom = result * ppqn / SEQ64_DEFAULT_PPQN;
+        zoom >>= 2;                     /* "divide" by 2    */
+        zoom <<= 2;                     /* "multiply" by 2  */
+        result = zoom;
+        if (result > SEQ64_MAXIMUM_ZOOM)
+            result = SEQ64_MAXIMUM_ZOOM;
     }
     return result;
 }

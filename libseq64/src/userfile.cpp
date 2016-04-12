@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-04-10
+ * \updates       2016-04-11
  * \license       GNU GPLv2 or above
  *
  *  Note that the parse function has some code that is not yet enabled.
@@ -670,10 +670,10 @@ userfile::write (const perform & /* a_perf */ )
             "# to 512 (the legacy maximum was 32), and defaults to 2 unless\n"
             "# changed here.  Note that large PPQN values will require larger\n"
             "# zoom values in order to look good in the sequence editor.\n"
-            "# Sequencer64 currently doesn't adapt this value to the PPQN,\n"
-            "# but will eventually do so if this value is set to 0.\n"
+            "# Sequencer64 adapts the zoom to the PPQN, if zoom is set to 0.\n"
+            "# \n"
             "\n"
-            << usr().zoom() << "      # zoom\n"
+            << usr().zoom() << "      # default zoom (0 = auto-adjust)\n"
             ;
 
         /*

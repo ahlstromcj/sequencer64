@@ -396,7 +396,7 @@ seqedit::seqedit
 
     int zoom = usr().zoom();
     if (usr().zoom() == 0)
-        zoom = SEQ64_DEFAULT_ZOOM * m_ppqn / SEQ64_DEFAULT_PPQN;
+        zoom = zoom_power_of_2(m_ppqn);
 
     set_zoom(zoom);
     set_beats_per_bar(m_seq.get_beats_per_bar());

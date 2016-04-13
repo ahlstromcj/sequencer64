@@ -1,3 +1,88 @@
+2016-04-12  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* seq_gtkmm2/include/seqroll.hpp, seq_gtkmm2/include/seqtime.hpp,
+	seq_gtkmm2/src/seqdata.cpp, seq_gtkmm2/src/seqedit.cpp,
+	seq_gtkmm2/src/seqevent.cpp, seq_gtkmm2/src/seqroll.cpp,
+	seq_gtkmm2/src/seqtime.cpp: Improving support of zoom with high
+	PPQN, and also changed selected event data values to orange, as a
+	new feature to be documented.
+	* libseq64/include/calculations.hpp, libseq64/src/calculations.cpp,
+	libseq64/src/user_settings.cpp, libseq64/src/userfile.cpp,
+	seq_gtkmm2/src/seqedit.cpp, seq_gtkmm2/src/seqtime.cpp: Refining
+	drawing of seqtime under varying zoom and ppqn, still in progress.
+
+2016-04-11  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* seq_gtkmm2/src/seqedit.cpp: Fixed zoom and zoom-menu interaction
+	bug.
+	* libseq64/include/app_limits.h,
+	libseq64/include/user_settings.hpp, libseq64/src/user_settings.cpp,
+	libseq64/src/userfile.cpp, seq_gtkmm2/src/seqedit.cpp: Working out
+	issues with zoom values at high PPQN.
+
+2016-04-10  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/include/user_settings.hpp, libseq64/src/cmdlineopts.cpp,
+	libseq64/src/user_settings.cpp, libseq64/src/userfile.cpp,
+	seq_gtkmm2/src/perfedit.cpp, seq_gtkmm2/src/seqedit.cpp,
+	seq_gtkmm2/src/seqroll.cpp: Fixed ppqn command-line option and
+	related drawing issues in the seqroll grid, but more to come.
+	* INSTALL, configure.ac, doc/dox/Makefile.am,
+	doc/dox/doxy-reference.cfg, doc/dox/make_dox,
+	libseq64/include/Makefile.am, libseq64/include/gui_play_base.hpp,
+	libseq64/src/Makefile.am, libseq64/src/gui_play_base.cpp,
+	libseq64/src/perform.cpp, seq_gtkmm2/src/perfroll.cpp,
+	seq_gtkmm2/src/seqedit.cpp, seq_gtkmm2/src/seqroll.cpp: Fixed use of
+	Ctrl vs Z keys, removed old modules, removed auto document build
+	from configuration.
+
+2016-04-09  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* contrib/notes/triggers.txt, libseq64/include/easy_macros.h,
+	libseq64/include/event.hpp, libseq64/include/event_list.hpp,
+	libseq64/include/midifile.hpp, libseq64/include/perform.hpp,
+	libseq64/include/sequence.hpp, libseq64/include/triggers.hpp,
+	libseq64/src/event.cpp, libseq64/src/event_list.cpp,
+	libseq64/src/midifile.cpp, libseq64/src/perform.cpp,
+	libseq64/src/sequence.cpp, libseq64/src/triggers.cpp: Added print
+	support for triggers and started documenting how they work.
+
+2016-04-06  Chris Ahlstrom <ahlstrom@centiped>
+
+	* seq_gtkmm2/include/perfedit.hpp, seq_gtkmm2/include/perfroll.hpp,
+	seq_gtkmm2/include/perftime.hpp, seq_gtkmm2/src/perfedit.cpp,
+	seq_gtkmm2/src/perfroll.cpp, seq_gtkmm2/src/perftime.cpp,
+	seq_gtkmm2/src/seqedit.cpp: Added more z0Z zoom support.
+	* seq_gtkmm2/include/perfedit.hpp, seq_gtkmm2/src/perfroll.cpp,
+	seq_gtkmm2/src/perftime.cpp: Tweaking perfedit z/Z zoom, more to
+	come.
+
+2016-04-05  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* seq_gtkmm2/include/perfedit.hpp, seq_gtkmm2/include/perfroll.hpp,
+	seq_gtkmm2/include/perftime.hpp, seq_gtkmm2/src/perfedit.cpp,
+	seq_gtkmm2/src/perfroll.cpp, seq_gtkmm2/src/perftime.cpp: 
+	Provisional z/Z perfroll zooming in place, still issue with in-most
+	zoom drawing.
+
+2016-04-04  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* Sequencer64/sequencer64.cpp, libseq64/src/cmdlineopts.cpp,
+	libseq64/src/optionsfile.cpp: Got the --reveal-ports option working
+	seamlessly, we think, now.
+	* configure.ac, libseq64/include/rc_settings.hpp,
+	libseq64/src/cmdlineopts.cpp, libseq64/src/optionsfile.cpp,
+	libseq64/src/rc_settings.cpp, libseq64/src/userfile.cpp: Added
+	reveal-ports option for ALSA to avoid hiding ALSA port names via the
+	user configuration file.
+
+2016-04-03  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/src/cmdlineopts.cpp, libseq64/src/mastermidibus.cpp,
+	libseq64/src/midibus.cpp, libseq64/src/optionsfile.cpp,
+	libseq64/src/userfile.cpp: If the manual-alsa-ports option is false,
+	do not read the user-midi-bus definitions from the usr file.
+
 2016-04-02  Chris Ahlstrom <ahlstromcj@gmail.com>
 
 	* README, contrib/notes/bugs_to_investigate.txt,

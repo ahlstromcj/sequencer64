@@ -160,7 +160,7 @@ seqdata::update_pixmap ()
  *  seqevent::draw_events_on().  And yet it doesn't handle zooming
  *  as well, must fix!
  *
- * \new
+ * \new ca 2016-04-13
  *      We now draw the data line for selected event in orange, instead of
  *      black.
  *

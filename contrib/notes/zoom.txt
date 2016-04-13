@@ -1,0 +1,25 @@
+Zoom in Sequencer64
+Chris Ahlstrom
+2016-04-13 to 2016-04-13
+
+This document analyzes how zoom works.  We have issues synchronizing the
+seqroll, seqdata (especially), seqevent, and seqtime views.
+
+All zoom functions are called by seqedit::set_zoom() and basically set the
+class member m_zoom and then call the class reset() function.  So we trace
+each reset function.
+
+seqroll:
+
+    reset()
+    {
+        get m_hadjust value and modify the x offset based on m_zoom;
+        update_sizes()
+        {
+        }
+        update_and_draw()
+        {
+        }
+    }
+
+# vim: sw=4 ts=4 wm=8 et ft=c

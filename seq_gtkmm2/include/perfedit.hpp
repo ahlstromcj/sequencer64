@@ -31,7 +31,7 @@
  * \updates       2016-04-06
  * \license       GNU GPLv2 or above
  *
- *  Note that, as of version 0.9.10.1, the z and Z keys, when focus is on the
+ *  Note that, as of version 0.9.10, the z and Z keys, when focus is on the
  *  perfroll (piano roll), will zoom the view horizontally.
  */
 

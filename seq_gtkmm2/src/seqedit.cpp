@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-04-11
+ * \updates       2016-04-12
  * \license       GNU GPLv2 or above
  *
  *  Compare this class to eventedit, which has to do some similar things,
@@ -1714,14 +1714,6 @@ seqedit::set_zoom (int z)
         m_entry_zoom->set_text(b);
         m_zoom = z;
 
-        /*
-         * \change ca 2016-04-06
-         *      Not sure we want to modify this value.  It might get saved, and
-         *      not sure we want that.
-         *
-         * usr().zoom(z);
-         */
-
         m_seqroll_wid->set_zoom(z);
         m_seqtime_wid->set_zoom(z);
         m_seqdata_wid->set_zoom(z);
@@ -2079,6 +2071,8 @@ seqedit::set_data_type (midibyte status, midibyte control)
  *  moving progress bar.  Does this need to be an option?  It only affects
  *  patterns longer than a measure or two, whatever the width of the seqroll
  *  window is.  This is a new feature that is not in seq24.
+ *
+ *  What about seqtime?  That doesn't change.
  */
 
 bool

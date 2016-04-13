@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-02-20
+ * \updates       2016-04-12
  * \license       GNU GPLv2 or above
  *
  */
@@ -216,21 +216,6 @@ public:
         m_ignore_redraw = ignore;
     }
 
-    /**
-     *  Wraps up some common code.
-     */
-
-    void update_and_draw (int force = false)
-    {
-        update_background();
-        update_pixmap();
-        if (force)
-            force_draw();
-        else
-            queue_draw();
-    }
-
-
     void set_key (int key);
     void set_scale (int scale);
     void set_data_type (midibyte status, midibyte control);
@@ -243,6 +228,7 @@ public:
     void draw_selection_on_window ();
     void draw_progress_on_window ();
     void reset ();
+    void update_and_draw (int force = false);
     void redraw ();
     void redraw_events ();
     void start_paste ();

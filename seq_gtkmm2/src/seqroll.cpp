@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-04-10
+ * \updates       2016-04-12
  * \license       GNU GPLv2 or above
  *
  *  There are a large number of existing items to discuss.  But for now let's
@@ -271,19 +271,16 @@ seqroll::set_background_sequence (bool state, int seq)
 void
 seqroll::update_sizes ()
 {
+    int zoom_x = m_window_x * m_zoom;
+    int h_max_value = m_seq.get_length() - zoom_x;
+    int page_increment =
+        4 * m_ppqn * m_seq.get_beats_per_bar() / m_seq.get_beat_width();
+
     m_hadjust.set_lower(0);                             /* set default size */
     m_hadjust.set_upper(m_seq.get_length());
-    m_hadjust.set_page_size(m_window_x * m_zoom);
-    m_hadjust.set_step_increment((m_ppqn / 4) * m_zoom);
-
-    int page_increment = int                            /* always one bar   */
-    (
-        double(m_ppqn) * double(m_seq.get_beats_per_bar()) *
-            (4.0 / double(m_seq.get_beat_width()))
-    );
+    m_hadjust.set_page_size(zoom_x);
+    m_hadjust.set_step_increment(m_zoom * m_ppqn / 4);
     m_hadjust.set_page_increment(page_increment);
-
-    int h_max_value = m_seq.get_length() - (m_window_x * m_zoom);
     if (m_hadjust.get_value() > h_max_value)
         m_hadjust.set_value(h_max_value);
 
@@ -347,11 +344,11 @@ seqroll::reset ()
 {
     m_scroll_offset_ticks = int(m_hadjust.get_value());
     m_scroll_offset_x = m_scroll_offset_ticks / m_zoom;
-    if (m_ignore_redraw)
-        return;
-
-    update_sizes();
-    update_and_draw();
+    if (! m_ignore_redraw)
+    {
+        update_sizes();
+        update_and_draw();
+    }
 }
 
 /**
@@ -368,6 +365,24 @@ seqroll::redraw ()
     m_scroll_offset_ticks = int(m_hadjust.get_value());
     m_scroll_offset_x = m_scroll_offset_ticks / m_zoom;
     update_and_draw(true);
+}
+
+/**
+ *  Wraps up some common code.
+ *
+ * \param force
+ *      If true, force an immediate draw, otherwise just queue up a draw.
+ */
+
+void
+seqroll::update_and_draw (int force)
+{
+    update_background();
+    update_pixmap();
+    if (force)
+        force_draw();
+    else
+        queue_draw();
 }
 
 /**
@@ -457,39 +472,30 @@ seqroll::update_background ()
     }
 
     /*
-     * This could be applied here, and also to seqevent::draw_background().
-     *
-     * int measure_length_64ths = m_seq.get_beats_per_bar() *
-     *      64 / m_seq.get_beat_width();
-     * int measures_per_line = (256 / measure_length_64ths) / (32 / m_zoom);
-     * if (measures_per_line <= 0)
-     *      int measures_per_line = 1;
-     *
-     * The ticks_per_step value needs to be figured out.  Why 6 * m_zoom?
-     * The default zoom is 2.  192 / 32 = 6.  6 is the number of pixels in the
-     * smallest divisions in the default seqroll background.
+     * The ticks_per_step value needs to be figured out.  Why 6 * m_zoom?  6
+     * is the number of pixels in the smallest divisions in the default
+     * seqroll background.
      */
 
-    int measures_per_line = 1;
-    int ticks_per_beat = (4 * m_ppqn) / m_seq.get_beat_width();
-    int ticks_per_measure = m_seq.get_beats_per_bar() * ticks_per_beat;
-
-    /*
-     * int ticks_per_step = 6 * m_zoom;
-     */
-
-    int ticks_per_step = m_zoom * 6 * m_ppqn / SEQ64_DEFAULT_PPQN;
-
-    int ticks_per_m_line = ticks_per_measure * measures_per_line;
+    int bpbar = m_seq.get_beats_per_bar();
+    int bwidth = m_seq.get_beat_width();
+    int ticks_per_step = m_zoom * 6;
+    int ticks_per_beat = 4 * m_ppqn / bwidth;
+    int ticks_per_major = bpbar * ticks_per_beat;
     int endtick = (m_window_x * m_zoom) + m_scroll_offset_ticks;
     int starttick = m_scroll_offset_ticks -
-         (m_scroll_offset_ticks % ticks_per_step);
+        (m_scroll_offset_ticks % ticks_per_major);
 
     m_gc->set_foreground(grey());
+
+    /*
+     * Incrementing by ticks_per_step only works for PPQN of certain
+     * multiples.
+     */
+
     for (int tick = starttick; tick < endtick; tick += ticks_per_step)
     {
-        int base_line = tick / m_zoom;
-        if (tick % ticks_per_m_line == 0)
+        if (tick % ticks_per_major == 0)
         {
 #ifdef SEQ64_SOLID_PIANOROLL_GRID
             set_line(Gdk::LINE_SOLID, 2);
@@ -531,7 +537,7 @@ seqroll::update_background ()
             m_gc->set_dashes(0, &dash, 1);
 #endif
         }
-        int x = base_line - m_scroll_offset_x;
+        int x = (tick / m_zoom) - m_scroll_offset_x;
         draw_line(m_background, x, 0, x, m_window_y);
     }
 #ifndef SEQ64_SOLID_PIANOROLL_GRID

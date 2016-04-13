@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-02-20
+ * \updates       2016-04-12
  * \license       GNU GPLv2 or above
  *
  *  The patterns/sequence editor is expandable in both directions, but the
@@ -67,6 +67,20 @@ seqtime::seqtime
 }
 
 /**
+ *  Sets the zoom to the given value and resets the window.
+ */
+
+void
+seqtime::set_zoom (int zoom)
+{
+    if (m_zoom != zoom)
+    {
+        m_zoom = zoom;
+        reset();
+    }
+}
+
+/**
  *  Updates the pixmap to a new size and queues up a draw operation.
  */
 
@@ -97,7 +111,7 @@ seqtime::change_horz ()
 
 /**
  *  Sets the scroll offset tick and x values, updates the sizes and the
- *  pixmap, and resets the window.
+ *  pixmap, and resets the window.  Basically identical to seqevent::reset().
  */
 
 void
@@ -129,24 +143,6 @@ seqtime::redraw ()
  *  thick bar for every measure, and a measure number and major time division
  *  every 4 measures.at the default PPQN of 192.
  *
- *  Let us know if you figure out this legacy chart from the original seq24
- *  code:
- *
-\verbatim
-        zoom   32         16         8        4        1
-        ml
-        m_ppqn
-        *
-        1      128
-        2      64
-        4      32        16         8
-        8      16m       8          4          2       1
-        16     8m        4          2          1       1
-        32     4m        2          1          1       1
-        64     2m        1          1          1       1
-        128    1m        1          1          1       1
-\endverbatim
- *
  *  A major line is a line that has a measure number in the timeline.  The
  *  number of measures in a major line is 1 for zooms from 1:1 to 1:8; 2 for
  *  zoom 1:16; 4 for zoom 1:32; 8 for zoom 1:64 (new); and 16 for zoom 1:128.
@@ -171,33 +167,20 @@ seqtime::update_pixmap ()
 #endif
     draw_line_on_pixmap(black(), 0, m_window_y - 1, m_window_x, m_window_y - 1);
 
-    /*
-     * See the description of measure length above.
-     * int measures_per_major = (128 / measure_length_32nds) / (32 / m_zoom);
-     * int measures_per_major = (128 * m_zoom / measure_length_32nds) / 32;
-     */
-
     int bpbar = m_seq.get_beats_per_bar();
     int bwidth = m_seq.get_beat_width();
-    int measure_length_32nds = 32 * bpbar / bwidth;                 /* 32   */
-    int measures_per_major = 4 * m_zoom / measure_length_32nds;
-    if (measures_per_major <= 0)
-        measures_per_major = 1;
-
-    int ticks_per_measure = 4 * m_ppqn * bpbar / bwidth;
-    int ticks_per_major = ticks_per_measure * measures_per_major;
+    int ticks_per_major = 4 * m_ppqn * bpbar / bwidth;
+    int endtick = (m_window_x * m_zoom) + m_scroll_offset_ticks;
     int starttick = m_scroll_offset_ticks -
         (m_scroll_offset_ticks % ticks_per_major);
 
-    int endtick = (m_window_x * m_zoom) + m_scroll_offset_ticks;
-    m_gc->set_foreground(black());                      /* vertical lines  */
+    m_gc->set_foreground(black());                          /* vert. line   */
     for (int tick = starttick; tick < endtick; tick += ticks_per_major)
     {
         char bar[8];
-        int base_line = tick / m_zoom;
-        int x_offset = base_line - m_scroll_offset_x;   /* to draw the beat */
+        int x_offset = (tick / m_zoom) - m_scroll_offset_x; /* for the beat */
         draw_line_on_pixmap(x_offset, 0, x_offset, m_window_y);
-        snprintf(bar, sizeof(bar), "%d", (tick / ticks_per_measure) + 1);
+        snprintf(bar, sizeof(bar), "%d", (tick / ticks_per_major) + 1);
         render_string_on_pixmap(x_offset + 2, 1, bar, font::BLACK);
     }
 
@@ -210,14 +193,14 @@ seqtime::update_pixmap ()
 
 #ifdef SEQ64_SOLID_PIANOROLL_GRID
     /*
-     *  Puts number after the number of the next measure.
+     *  Puts number after the number of the next measure:
      *
      *  long end_x = m_seq.get_length() / m_zoom - m_scroll_offset_x + 15;
      *  draw_rectangle_on_pixmap(black(), end_x, 2, 20, 10);
      *  render_string_on_pixmap(end_x + 1, 2, "END", font::WHITE);
      *
-     *  This puts the number just before the end of the next measure, and
-     *  is less cramped.  Some might not like it.
+     *  The new code puts the number just before the end of the next measure,
+     *  and is less cramped.  Some might not like it.
      */
 
     long end_x = m_seq.get_length() / m_zoom - m_scroll_offset_x - 21;

@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-01-26
+ * \updates       2016-04-12
  * \license       GNU GPLv2 or above
  *
  */
@@ -86,6 +86,7 @@ seqevent::seqevent
 /**
  *  Changes the horizontal scrolling offset for ticks, then updates the
  *  pixmap and forces a redraw.  Very similar to seqroll::change_horz().
+ *  Basically identical to seqevent::change_horz().
  */
 
 void
@@ -131,7 +132,7 @@ seqevent::update_sizes ()
 
 /**
  *  This function basically resets the whole widget as if it was realized
- *  again.
+ *  again.  Basically identical to seqtime::reset().
  */
 
 void
@@ -166,35 +167,22 @@ seqevent::redraw ()
 void
 seqevent::draw_background ()
 {
-    draw_rectangle_on_pixmap(white(),  0, 0, m_window_x, m_window_y);
+    draw_rectangle_on_pixmap(white(), 0, 0, m_window_x, m_window_y);
 
-    /*
-     * See the upgrades in seqroll::update_background(), which could be
-     * applicable here, too.  Very similar code!
-     *
-     * Code commented out in the original module:
-     *
-     *    int measure_length_64ths =
-     *          m_seq->get_bpm() * 64 / m_seq->get_bw();
-     *    int measures_per_line = (256 / measure_length_64ths) / (32 / m_zoom);
-     *    if (measures_per_line <= 0)
-     *      measures_per_line = 1;
-     */
-
-    int measures_per_line = 1;
-    int ticks_per_beat = (4 * m_ppqn) / m_seq.get_beat_width();
-    int ticks_per_measure = m_seq.get_beats_per_bar() * ticks_per_beat;
+    int bpbar = m_seq.get_beats_per_bar();
+    int bwidth = m_seq.get_beat_width();
+    int ticks_per_beat = 4 * m_ppqn / bwidth;
+    int ticks_per_major = bpbar * ticks_per_beat;
     int ticks_per_step = 6 * m_zoom;
-    int ticks_per_m_line = ticks_per_measure * measures_per_line;
+    int endtick = (m_window_x * m_zoom) + m_scroll_offset_ticks;
     int starttick = m_scroll_offset_ticks -
         (m_scroll_offset_ticks % ticks_per_step);
 
-    int endtick = (m_window_x * m_zoom) + m_scroll_offset_ticks;
     m_gc->set_foreground(grey());
     for (int tick = starttick; tick < endtick; tick += ticks_per_step)
     {
         int base_line = tick / m_zoom;
-        if (tick % ticks_per_m_line == 0)       /* solid line on every beat */
+        if (tick % ticks_per_major == 0)       /* solid line on every beat */
         {
 #ifdef SEQ64_SOLID_PIANOROLL_GRID
             set_line(Gdk::LINE_SOLID, 2);
@@ -292,39 +280,38 @@ seqevent::update_pixmap ()
 }
 
 /**
- *  Draws events on the given drawable object.
+ *  Draws events on the given drawable object.  Very similar to
+ *  seqdata::draw_events_on().
  *
- * \param draw
+ * \param drawable
  *      The given drawable object.
  */
 
 void
-seqevent::draw_events_on (Glib::RefPtr<Gdk::Drawable> draw)
+seqevent::draw_events_on (Glib::RefPtr<Gdk::Drawable> drawable)
 {
     midipulse tick;
-    int x;
     midibyte d0, d1;
     bool selected;
     int starttick = m_scroll_offset_ticks;
     int endtick = (m_window_x * m_zoom) + m_scroll_offset_ticks;
-    m_gc->set_foreground(black());          /* draw boxes from sequence */
+    m_gc->set_foreground(black());              /* draw boxes from sequence */
     m_seq.reset_draw_marker();
     while (m_seq.get_next_event(m_status, m_cc, &tick, &d0, &d1, &selected))
     {
-        if ((tick >= starttick && tick <= endtick))
+        if (tick >= starttick && tick <= endtick)
         {
-            x = tick / m_zoom;              /* turn into screen coordinates */
+            int x = tick / m_zoom - m_scroll_offset_x;  /* screen coordinate */
             draw_rectangle
             (
-                draw, black(),
-                x -  m_scroll_offset_x, (c_eventarea_y - c_eventevent_y) / 2,
+                drawable, black(),
+                x, (c_eventarea_y - c_eventevent_y) / 2,
                 c_eventevent_x, c_eventevent_y
             );
             draw_rectangle
             (
-                draw, selected ? orange() : white(),
-                x -  m_scroll_offset_x + 1,
-                (c_eventarea_y - c_eventevent_y) / 2 + 1,
+                drawable, selected ? orange() : white(),
+                x, (c_eventarea_y - c_eventevent_y) / 2 + 1,
                 c_eventevent_x - 3, c_eventevent_y - 3
             );
         }
@@ -753,7 +740,7 @@ seqevent::on_key_press_event (GdkEventKey * ev)
             }
         }
     }
-    if (result)                 
+    if (result)
     {
         redraw();
         m_seq.set_dirty();

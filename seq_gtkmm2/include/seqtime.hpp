@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-04
+ * \updates       2016-04-12
  * \license       GNU GPLv2 or above
  *
  */
@@ -82,16 +82,7 @@ public:
 
     void reset ();
     void redraw ();
-
-    /**
-     *  Sets the zoom to the given value and resets the window.
-     */
-
-    void set_zoom (int zoom)
-    {
-        m_zoom = zoom;
-        reset();
-    }
+    void set_zoom (int zoom);
 
 private:
 

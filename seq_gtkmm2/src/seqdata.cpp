@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-23
+ * \updates       2016-04-12
  * \license       GNU GPLv2 or above
  *
  */
@@ -102,14 +102,21 @@ void
 seqdata::reset ()
 {
     update_sizes();
-    redraw();                   // instead of update_pixmap(); queue_draw();
+
+    /*
+     * Instead of this, try forcing the redraw, to eliminate the bug of not
+     * redrawing on zoom.
+     *
+     * redraw();                   // instead of update_pixmap(); queue_draw();
+     */
+
+    update_pixmap();
+    force_draw();
 }
 
 /**
  *  Sets the zoom to the given value and resets the view via the reset
  *  function.
- *
- *  This begs the question, do we have GUI access to the zoom setting?
  */
 
 void
@@ -149,7 +156,16 @@ seqdata::update_pixmap ()
 }
 
 /**
- *  Draws events on the given drawable object.
+ *  Draws events on the given drawable object.  Very similar to
+ *  seqevent::draw_events_on().  And yet it doesn't handle zooming
+ *  as well, must fix!
+ *
+ * \new
+ *      We now draw the data line for selected event in orange, instead of
+ *      black.
+ *
+ * \param drawable
+ *      The given drawable object.
  */
 
 void
@@ -158,20 +174,24 @@ seqdata::draw_events_on (Glib::RefPtr<Gdk::Drawable> drawable)
     midipulse tick;
     midibyte d0, d1;
     bool selected;
-    int start_tick = m_scroll_offset_ticks;
-    int end_tick = (m_window_x * m_zoom) + m_scroll_offset_ticks;
+    int starttick = m_scroll_offset_ticks;
+    int endtick = (m_window_x * m_zoom) + m_scroll_offset_ticks;
     draw_rectangle(drawable, white(), 0, 0, m_window_x, m_window_y);
     m_gc->set_foreground(black());
     m_seq.reset_draw_marker();
     while (m_seq.get_next_event(m_status, m_cc, &tick, &d0, &d1, &selected))
     {
-        if (tick >= start_tick && tick <= end_tick)
+        if (tick >= starttick && tick <= endtick)
         {
-            int event_x = tick / m_zoom;
+            int event_x = tick / m_zoom;            /* screen coordinate    */
             int event_height = event::is_one_byte_msg(m_status) ? d0 : d1 ;
             int x = event_x - m_scroll_offset_x + 1;
             set_line(Gdk::LINE_SOLID, 2);           /* vertical event line  */
-            draw_line(drawable, x, c_dataarea_y - event_height, x, c_dataarea_y);
+            draw_line
+            (
+                drawable, selected ? orange() : black(),
+                x, c_dataarea_y - event_height, x, c_dataarea_y
+            );
             drawable->draw_drawable
             (
                 m_gc, m_numbers[event_height], 0, 0,
@@ -230,7 +250,8 @@ seqdata::draw_line_on_window ()
 }
 
 /**
- *  Change the scrolling offset on the x-axis, and redraw.
+ *  Change the scrolling offset on the x-axis, and redraw.  Basically
+ *  identical to seqevent::change_horz().
  */
 
 void
@@ -331,7 +352,7 @@ seqdata::on_motion_notify_event (GdkEventMotion * ev)
             tick_s, tick_f, m_status, m_cc,
             c_dataarea_y - adj_y_min - 1, c_dataarea_y - adj_y_max - 1
         );
-        update_pixmap();
+        update_pixmap();                /* calls draw_events_on_pixmap()    */
         draw_events_on(m_window);
         draw_line_on_window();
         if (result)

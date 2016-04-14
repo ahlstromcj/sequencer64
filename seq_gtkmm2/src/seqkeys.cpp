@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-15
+ * \updates       2016-04-14
  * \license       GNU GPLv2 or above
  *
  */
@@ -165,7 +165,9 @@ seqkeys::draw_area()
 }
 
 /**
- *  Forces a draw operation on the whole window.
+ *  Forces a draw operation on the whole window.  Unlike most other
+ *  overridden versions of force_draw(), this one does not call the
+ *  base-class version.
  */
 
 void

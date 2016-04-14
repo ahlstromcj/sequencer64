@@ -2464,36 +2464,59 @@ sequence::get_next_event (midibyte * a_status, midibyte * a_cc)
 /**
  *  Get the next event in the event list that matches the given status and
  *  control character.  Then set the rest of the parameters parameters
- *  using that event.
+ *  using that event.  If the status is the new value EVENT_ANY, then any
+ *  event will be obtained.
  *
  *  Note the usage of event::is_desired_cc_or_not_cc(status, cc, *d0); Either
  *  we have a control change with the right CC or it's a different type of
  *  event.
+ *
+ * \param status
+ *      The type of event to be obtained.  The special value EVENT_ANY can be
+ *      provided so that no event statuses are filtered.
+ *
+ * \param cc
+ *      The continuous controller value that might be desired.
+ *
+ * \param tick
+ *      A pointer return value for the tick value of the next event found.
+ *
+ * \param d0
+ *      A pointer return value for the first data value of the event.
+ *
+ * \param d1
+ *      A pointer return value for the second data value of the event.
+ *
+ * \param selected
+ *      A pointer return value for the is-selected status of the event.
  */
 
 bool
 sequence::get_next_event
 (
     midibyte status, midibyte cc,
-    midipulse * tick, midibyte * d0, midibyte * d1,
-    bool * selected
+    midipulse * tick, midibyte * d0, midibyte * d1, bool * selected
 )
 {
     while (m_iterator_draw != m_events.end())
     {
         event & drawevent = DREF(m_iterator_draw);
-        if (drawevent.get_status() == status)     /* note on, so linked */
+        bool ok = drawevent.get_status() == status;
+        if (! ok)
+            ok = status == EVENT_ANY;
+
+        if (ok)
         {
             drawevent.get_data(*d0, *d1);
             *tick = drawevent.get_timestamp();
             *selected = drawevent.is_selected();
             if (event::is_desired_cc_or_not_cc(status, cc, *d0))
             {
-                m_iterator_draw++; /* we have a good one update and return */
+                ++m_iterator_draw;  /* good one, so update and return       */
                 return true;
             }
         }
-        m_iterator_draw++;  /* keep going until we hit null or find a NoteOn */
+        ++m_iterator_draw;          /* keep going until null or a Note On   */
     }
     return false;
 }
@@ -2506,7 +2529,8 @@ sequence::get_next_event
 bool
 sequence::get_next_trigger
 (
-    midipulse * tick_on, midipulse * tick_off, bool * selected, midipulse * offset
+    midipulse * tick_on, midipulse * tick_off, bool * selected,
+    midipulse * offset
 )
 {
     return m_triggers.next(tick_on, tick_off, selected, offset);

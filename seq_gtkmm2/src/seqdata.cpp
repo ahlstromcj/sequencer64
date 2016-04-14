@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-04-12
+ * \updates       2016-04-14
  * \license       GNU GPLv2 or above
  *
  */
@@ -85,7 +85,7 @@ seqdata::update_sizes ()
     if (is_realized())
     {
         m_pixmap = Gdk::Pixmap::create(m_window, m_window_x, m_window_y, -1);
-        redraw();               // instead of update_pixmap(); queue_draw();
+        redraw();               // update_pixmap(); queue_draw();
     }
 }
 
@@ -105,7 +105,7 @@ seqdata::reset ()
 
     /*
      * Instead of this, try forcing the redraw, to eliminate the bug of not
-     * redrawing on zoom.
+     * redrawing on changing zoom.
      *
      * redraw();                   // instead of update_pixmap(); queue_draw();
      */
@@ -261,16 +261,6 @@ seqdata::change_horz ()
     m_scroll_offset_x = m_scroll_offset_ticks / m_zoom;
     update_pixmap();
     force_draw();
-}
-
-/**
- *  Force a redraw.
- */
-
-void
-seqdata::force_draw ()
-{
-    draw_drawable(0, 0, 0, 0, m_window_x, m_window_y);
 }
 
 /**

@@ -7,7 +7,7 @@ seqroll, seqdata (especially), seqevent, and seqtime views.
 
 All zoom functions are called by seqedit::set_zoom() and basically set the
 class member m_zoom and then call the class reset() function.  So we trace
-each reset function.
+each reset() function.
 
 seqroll:
 
@@ -16,10 +16,115 @@ seqroll:
         get m_hadjust value and modify the x offset based on m_zoom;
         update_sizes()
         {
+            adjust x for zoom;
+            set new hadjust values;         // no change_horz() (!!!)
+            set new vadjust values;         change_vert();
         }
         update_and_draw()
         {
+            update_background()
+            {
+                draw the keys and piano roll;
+            }
+            update_pixmap()
+            {
+                draw_background_on_pixmap();        // draw_drawable()
+                draw_events_on_pixmap()
+                {
+                    draw_events_on(m_pixmap);       // draw events on piano roll
+                }
+            }
+            if (force)
+                force_draw()
+                {
+                    draw_drawable(0, 0, 0, 0, m_window_x, m_window_y);
+                    draw_selection_on_window();
+                }
+            else
+                queue_draw();
         }
     }
+
+seqdata:
+
+    reset()
+    {
+        update_sizes()
+        {
+            m_pixmap = Gdk::Pixmap::create(m_window, m_window_x, m_window_y, -1);
+            redraw()
+            {
+                update_pixmap();
+                queue_draw();
+            }
+        }
+        update_pixmap()             // REDUNDANT?!
+        {
+            draw_events_on_pixmap()
+            {
+                draw_events_on(m_pixmap); // draws the vertical lines on pixmap
+            }
+        }
+        force_draw()
+        {
+            draw_drawable(0, 0, 0, 0, m_window_x, m_window_y);
+        }
+    }
+
+seqtime:
+
+    reset()
+    {
+        get m_hadjust value and modify the x offset based on m_zoom;
+        update_sizes()
+        {
+            m_pixmap = Gdk::Pixmap::create(m_window, m_window_x, m_window_y, -1);
+            update_pixmap();
+            queue_draw();
+        }
+        update_pixmap()             // REDUNDANT
+        {
+            // draws measure lines, measure numbers, and the END marker
+        }
+        draw_pixmap_on_window()
+        {
+            draw_drawable(0, 0, 0, 0, m_window_x, m_window_y);
+        }
+    }
+
+seqevent:                           // very similar to seqtime
+
+    reset()
+    {
+        get m_hadjust value and modify the x offset based on m_zoom;
+        update_sizes()
+        {
+            m_pixmap = Gdk::Pixmap::create(m_window, m_window_x, m_window_y, -1);
+            update_pixmap();
+            queue_draw();
+        }
+        update_pixmap()             // REDUNDANT
+        {
+            draw_background()
+            {
+                // draws ticks on the event strip
+            }
+            draw_events_on_pixmap()
+            {
+                draw_events_on(m_pixmap)
+                {
+                    // draws events on the event strip
+                }
+            }
+            m_seqdata_wid.update_pixmap();
+            m_seqdata_wid.draw_pixmap_on_window();
+        }
+        draw_pixmap_on_window()
+        {
+            draw_drawable(0, 0, 0, 0, m_window_x, m_window_y);
+        }
+    }
+
+do we have functions for m_pixmap->draw_drawable(gc, color, etc)?
 
 # vim: sw=4 ts=4 wm=8 et ft=c

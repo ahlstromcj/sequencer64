@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-04-12
+ * \updates       2016-04-14
  * \license       GNU GPLv2 or above
  *
  */
@@ -86,7 +86,7 @@ seqevent::seqevent
 /**
  *  Changes the horizontal scrolling offset for ticks, then updates the
  *  pixmap and forces a redraw.  Very similar to seqroll::change_horz().
- *  Basically identical to seqevent::change_horz().
+ *  Basically identical to seqdata::change_horz().
  */
 
 void
@@ -297,6 +297,7 @@ seqevent::draw_events_on (Glib::RefPtr<Gdk::Drawable> drawable)
     int endtick = (m_window_x * m_zoom) + m_scroll_offset_ticks;
     m_gc->set_foreground(black());              /* draw boxes from sequence */
     m_seq.reset_draw_marker();
+
     while (m_seq.get_next_event(m_status, m_cc, &tick, &d0, &d1, &selected))
     {
         if (tick >= starttick && tick <= endtick)
@@ -406,7 +407,7 @@ seqevent::draw_selection_on_window ()
 void
 seqevent::force_draw ()
 {
-    draw_drawable(0, 0, 0, 0, m_window_x, m_window_y);
+    gui_drawingarea_gtk2::force_draw();
     draw_selection_on_window();
 }
 

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-04-12
+ * \updates       2016-04-14
  * \license       GNU GPLv2 or above
  *
  *  The patterns/sequence editor is expandable in both directions, but the
@@ -220,17 +220,7 @@ seqtime::update_pixmap ()
 void
 seqtime::draw_pixmap_on_window ()
 {
-    draw_drawable(0, 0, 0, 0, m_window_x, m_window_y);
-}
-
-/**
- *  Same as draw_pixmap_on_window().
- */
-
-void
-seqtime::force_draw ()
-{
-    draw_drawable(0, 0, 0, 0, m_window_x, m_window_y);
+    force_draw();   // draw_drawable(0, 0, 0, 0, m_window_x, m_window_y);
 }
 
 /**

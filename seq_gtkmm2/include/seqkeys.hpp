@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-10
+ * \updates       2016-04-14
  * \license       GNU GPLv2 or above
  *
  */
@@ -89,12 +89,13 @@ public:
 
 private:
 
+    virtual void force_draw ();
+
     void draw_area ();
     void update_pixmap ();
     void convert_y (int a_y, int & a_note);
     void draw_key (int a_key, bool a_state);
     void change_vert ();
-    void force_draw ();
     void update_sizes ();
     void reset ();
 

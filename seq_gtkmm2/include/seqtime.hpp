@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-04-12
+ * \updates       2016-04-14
  * \license       GNU GPLv2 or above
  *
  */
@@ -91,7 +91,8 @@ private:
     void update_pixmap ();
     void change_horz ();
     void update_sizes ();
-    void force_draw ();
+
+    // virtual void force_draw ();
 
     /**
      *  Simply returns true.

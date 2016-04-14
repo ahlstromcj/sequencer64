@@ -124,8 +124,10 @@ public:
 
     void redraw ()
     {
-        update_pixmap();
-        queue_draw();
+        // EXPERIMENTAL:
+        // update_pixmap();
+        // queue_draw();
+        change_horz();
     }
 
     void set_zoom (int a_zoom);
@@ -146,7 +148,8 @@ private:
    );
     void draw_events_on (Glib::RefPtr<Gdk::Drawable> drawable);
     void change_horz ();
-    void force_draw ();
+
+    // virtual void force_draw ();
 
     /**
      *  This function takes screen coordinates, and gives the horizontaol

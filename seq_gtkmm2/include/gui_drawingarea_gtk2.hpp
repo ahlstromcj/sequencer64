@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-21
- * \updates       2016-04-04
+ * \updates       2016-04-14
  * \license       GNU GPLv2 or above
  *
  *  We've added a number of wrapper functions for the "draw-rectangle",
@@ -245,6 +245,16 @@ public:
     }
 
 protected:
+
+    /**
+     *  Provides a common function for redrawing.  This function forces a
+     *  redraw.  Some classes extend this function.
+     */
+
+    virtual void force_draw ()
+    {
+        draw_drawable(0, 0, 0, 0, m_window_x, m_window_y);
+    }
 
     /**
      * \getter m_mainperf

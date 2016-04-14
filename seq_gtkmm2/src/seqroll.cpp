@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-04-12
+ * \updates       2016-04-14
  * \license       GNU GPLv2 or above
  *
  *  There are a large number of existing items to discuss.  But for now let's
@@ -935,7 +935,7 @@ seqroll::draw_selection_on_window ()
 void
 seqroll::force_draw ()
 {
-    draw_drawable(0, 0, 0, 0, m_window_x, m_window_y);
+    gui_drawingarea_gtk2::force_draw();
     draw_selection_on_window();
 }
 

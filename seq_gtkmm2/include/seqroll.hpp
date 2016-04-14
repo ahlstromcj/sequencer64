@@ -236,6 +236,8 @@ public:
 
 private:
 
+    virtual void force_draw ();
+
     /**
      *  This function provides optimization for the on_scroll_event() function.
      *  A duplicate of the one in seqedit.
@@ -281,7 +283,6 @@ private:
     int idle_progress ();
     void change_horz ();
     void change_vert ();
-    void force_draw ();
 
 private:            // callbacks
 

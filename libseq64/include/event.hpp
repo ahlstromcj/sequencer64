@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-04-09
+ * \updates       2016-04-13
  * \license       GNU GPLv2 or above
  *
  *  This module also declares/defines the various constants, status-byte
@@ -63,8 +63,12 @@ const midibyte EVENT_STATUS_BIT         = 0x80;
  *
  *  Note that Channel Mode Messages use the same code as the Control Change,
  *  but uses reserved controller numbers ranging from 122 to 127.
+ *
+ *  The EVENT_ANY (0x00) value may prove to be useful in allowing any event to
+ *  be dealt with.  Not sure yet, but the cost is minimal.
  */
 
+const midibyte EVENT_ANY                = 0x00;      // our own value
 const midibyte EVENT_NOTE_OFF           = 0x80;      // 0kkkkkkk 0vvvvvvv
 const midibyte EVENT_NOTE_ON            = 0x90;      // 0kkkkkkk 0vvvvvvv
 const midibyte EVENT_AFTERTOUCH         = 0xA0;      // 0kkkkkkk 0vvvvvvv

@@ -146,13 +146,14 @@ public:
 
 private:
 
+    virtual void force_draw ();
+
     int idle_redraw ();
     void x_to_w (int a_x1, int a_x2, int & a_x, int & a_w);
     void drop_event (midipulse a_tick);
     void draw_events_on (Glib::RefPtr<Gdk::Drawable> a_draw);
     void start_paste ();
     void change_horz ();
-    void force_draw ();
 
     /**
      *  Takes the screen x coordinate, multiplies it by the current zoom, and

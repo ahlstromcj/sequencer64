@@ -1,6 +1,6 @@
 Bugs and Additional Upgrade Ideas
 Chris Ahlstrom
-2015-10-27 to 2016-04-02 (New bugs)
+2015-10-27 to 2016-04-16 (New bugs)
 
 In no particular order...  "y" means "in progress", and "x" means it is
 basically done.
@@ -20,6 +20,7 @@ x  allofarow.mid:
    correctly to get the time signature.
 y  It seems like note-off is not working when the song is stopped or paused
    now.  This is fixed for ALSA, but not for JACK.
+-  Can we make the drawing Color objects static, to save some space?
 -  It would be good to have a command that dumps the current build settings
    for Sequencer64.  Actually, add it to the --version command.
 y  Pause Support:

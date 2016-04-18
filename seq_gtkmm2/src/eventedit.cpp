@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-12-05
- * \updates       2016-03-24
+ * \updates       2016-04-17
  * \license       GNU GPLv2 or above
  *
  * To consider:
@@ -313,10 +313,15 @@ eventedit::eventedit
     m_label_ppqn->set_text(temptext);
     m_showbox->pack_start(*m_label_ppqn, false, false);
 
+    /*
+     * \change ca 2016-04-17
+     *      For display, we have to increment the channel number.
+     */
+
     snprintf
     (
         temptext, sizeof temptext, "Sequence Channel: %d",
-        seq.get_midi_channel()
+        seq.get_midi_channel() + 1
     );
     m_label_channel->set_text(temptext);
     m_showbox->pack_start(*m_label_channel, false, false);

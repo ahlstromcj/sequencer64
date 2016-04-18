@@ -6,7 +6,7 @@ dnl \file          configure.ac
 dnl \library       Sequencer64
 dnl \author        Chris Ahlstrom
 dnl \date          2015-09-11
-dnl \update        2016-04-13
+dnl \update        2016-04-15
 dnl \version       $Revision$
 dnl \license       $XPC_SUITE_GPL_LICENSE$
 dnl
@@ -29,7 +29,7 @@ AC_CANONICAL_SYSTEM
 AM_INIT_AUTOMAKE([dist-bzip2])
 AC_CONFIG_HEADER([include/config.h])
 
-dnl Prepends "SEQ64" to a lot of the macro definitions, for a better
+dnl Prepends "SEQ64_" to a lot of the macro definitions, for a better
 dnl guarantee of avoiding naming conflicts.
 
 AX_PREFIX_CONFIG_H([include/seq64-config.h], [seq64])
@@ -125,7 +125,7 @@ AC_DEFINE(_GNU_SOURCE, 1, [gnu source])
 
 dnl Checks for programs.
 
-AC_PROG_AWK
+dnl AC_PROG_AWK
 AC_PROG_CC
 AC_PROG_CXX
 AC_PROG_INSTALL
@@ -473,7 +473,7 @@ dnl #define API_VERSION "0.9"             // already defined on command line
 
 AH_TOP(
 
-#define VERSION_DATE_SHORT "2016-04-13"
+#define VERSION_DATE_SHORT "2016-04-15"
 #define VERSION "0.9.10"
 
 )
@@ -507,11 +507,15 @@ dnl stop g++ 5.2 from griping about usage of std::auto_ptr<>.
 dnl
 dnl 2015-10-02:  After a Debian Sid update, the configfile module wouldn't
 dnl compile because, we think, the sigc++ now required C++11 support.
-dnl So we put that requiremet back, and had to fix some issues with
+dnl So we put that requirement back, and had to fix some issues with
 dnl conditional compilation.
 
 CFLAGS="$CFLAGS $COMMONFLAGS"
 CXXFLAGS="$CFLAGS -std=c++11 -Wno-variadic-macros -Wno-deprecated-declarations"
+
+AH_BOTTOM(
+   /* Bottom of header config */
+)
 
 dnl Set up the Makefiles.  First, add Doxygen support conditionally, not using
 dnl doc/dox/Makefile.  Then do the rest.
@@ -538,6 +542,16 @@ AC_CONFIG_FILES([
 
 AC_OUTPUT
 
+cat << E_O_F
+
+Then do 'make' to compile the sequencer64-related projects.
+Do 'make check' or 'make test' to run the tests of the projects.
+Do 'make install' to install the sequencer64 application.
+Do 'make dist', etc. to create gzip and other archives.
+
+E_O_F
+
 dnl configure.ac (sequencer64)
 dnl
 dnl vim: ts=4 sw=4 et ft=config
+

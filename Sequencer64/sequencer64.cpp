@@ -97,13 +97,11 @@ main (int argc, char * argv [])
     bool ok = true;
     int optionindex = SEQ64_NULL_OPTION_INDEX;
     if (! is_help)
-        ok = seq64::parse_options_files(p, argc, argv);
-
-    if (ok)
-        optionindex = seq64::parse_command_line_options(argc, argv);
-
-    if (! is_help)
     {
+        ok = seq64::parse_options_files(p, argc, argv);
+        if (ok)
+            optionindex = seq64::parse_command_line_options(argc, argv);
+
         p.launch(seq64::usr().midi_ppqn());     /* set up performance       */
 
         /*

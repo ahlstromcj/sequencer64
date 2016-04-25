@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-20
- * \updates       2016-04-10
+ * \updates       2016-04-24
  * \license       GNU GPLv2 or above
  *
  *  The "rc" command-line options override setting that are first read from
@@ -145,11 +145,10 @@ static const std::string s_arg_list =
 
 static const char * const s_help_1a =
 "sequencer64 v 0.9.10  A significant reboot of the seq24 live sequencer.\n"
-"\n"
 "Usage: sequencer64 [options] [MIDI filename]\n\n"
 "Options:\n"
-"   -h, --help               Show this message.\n"
-"   -V, --version            Show program version information.\n"
+"   -h, --help               Show this message and exit.\n"
+"   -V, --version            Show program version information and exit.\n"
 "   -H, --home dir           Set the directory to hold the configuration files,\n"
 "                            always relative to $HOME.  The default is\n"
 "                            .config/sequencer64.\n"
@@ -205,8 +204,8 @@ static const char * const s_help_4 =
 "--ppqn works, but be aware that it may have bugs.  If a MIDI file is re-saved,\n"
 "--ppqn is also saved.  If no JACK/LASH options are shown above, they were\n"
 "disabled in the build configuration. Command-line options can be sticky; most\n"
-"get re-saved to the configuration files when Sequencer64 exits.\n"
-"User manual: https://github.com/ahlstromcj/sequencer64-doc\n"
+"get re-saved to the configuration files when Sequencer64 exits.  See the\n"
+"user manual at https://github.com/ahlstromcj/sequencer64-doc.\n"
     ;
 
 /**

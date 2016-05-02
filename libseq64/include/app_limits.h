@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-08
- * \updates       2016-04-11
+ * \updates       2016-05-02
  * \license       GNU GPLv2 or above
  *
  *  This collection of global variables describes some facets of the
@@ -255,11 +255,11 @@
 
 #define SEQ64_DEFAULT_TRIGWIDTH_MS        4
 
-/**
- *  Default value for c_thread_trigger_width_ms.
+/*
+ *  Default value for c_thread_trigger_width_ms.  Not in use at present.
+ *
+ *  #define SEQ64_DEFAULT_TRIGLOOK_MS         2
  */
-
-#define SEQ64_DEFAULT_TRIGLOOK_MS         2
 
 /**
  *  Defines the maximum number of MIDI values, and one more than the

@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-04-02
+ * \updates       2016-05-02
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -2072,18 +2072,17 @@ perform::output_func ()
             long elapsed_us = delta * 1000;
 #endif
 
-            /*
-             * Now we want to trigger every c_thread_trigger_width_ms,
-             * and it took us delta_us to play().  Also known as the
-             * "sleeping_us".
+            /**
+             * Now we want to trigger every c_thread_trigger_width_us, and it
+             * took us delta_us to play().  Also known as the "sleeping_us".
              */
 
-            delta_us = (c_thread_trigger_width_ms * 1000) - elapsed_us;
+            delta_us = c_thread_trigger_width_us - elapsed_us;
 
-            /*
+            /**
              * Check MIDI clock adjustment.  Note that we replaced
-             * "60000000.0f / m_ppqn / bpm" with a call to a function.
-             * We also removed the "f" specification from the constants.
+             * "60000000.0f / m_ppqn / bpm" with a call to a function.  We
+             * also removed the "f" specification from the constants.
              */
 
             double dct = double_ticks_from_ppqn(m_ppqn);
@@ -2092,7 +2091,7 @@ perform::output_func ()
             double next_clock_delta_us =
                 next_clock_delta * pulse_length_us(bpm, m_ppqn);
 
-            if (next_clock_delta_us < (c_thread_trigger_width_ms * 1000.0 * 2.0))
+            if (next_clock_delta_us < (c_thread_trigger_width_us * 2.0))
                 delta_us = long(next_clock_delta_us);
 
             if (delta_us > 0)

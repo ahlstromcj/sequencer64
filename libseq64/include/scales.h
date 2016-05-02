@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-06
- * \updates       2015-11-13
+ * \updates       2016-05-02
  * \license       GNU GPLv2 or above
  *
  *  These values were moved from the globals module.
@@ -239,18 +239,7 @@ const char c_scales_text[c_scale_size][32] =                /* careful!        *
 
 const char c_key_text[SEQ64_OCTAVE_SIZE][3] =
 {
-    "C",
-    "C#",
-    "D",
-    "D#",
-    "E",
-    "F",
-    "F#",
-    "G",
-    "G#",
-    "A",
-    "A#",
-    "B"
+    "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"
 };
 
 /**
@@ -260,40 +249,19 @@ const char c_key_text[SEQ64_OCTAVE_SIZE][3] =
 
 const char c_interval_text[16][3] =
 {
-    "P1",
-    "m2",
-    "M2",
-    "m3",
-    "M3",
-    "P4",
-    "TT",
-    "P5",
-    "m6",
-    "M6",
-    "m7",
-    "M7",
-    "P8",
-    "m9",
-    "M9",
-    ""
+    "P1", "m2", "M2", "m3", "M3", "P4", "TT", "P5",
+    "m6", "M6", "m7", "M7", "P8", "m9", "M9", ""
 };
 
 /**
  *  Provides the entries for the Chord dropdown menu in the Pattern Editor
- *  window.  However, I have not seen this menu in the GUI!  Ah, it only
+ *  window.  However, we have not seen this menu in the GUI!  Ah, it only
  *  appears if the user has selected a musical scale like Major or Minor.
  */
 
 const char c_chord_text[8][5] =
 {
-    "I",
-    "II",
-    "III",
-    "IV",
-    "V",
-    "VI",
-    "VII",
-    "VIII"
+    "I", "II", "III", "IV", "V", "VI", "VII", "VIII"
 };
 
 }           // namespace seq64
@@ -301,7 +269,7 @@ const char c_chord_text[8][5] =
 #endif      // SEQ64_SCALES_H
 
 /*
- * globals.h
+ * scales.h
  *
  * vim: sw=4 ts=4 wm=4 et ft=cpp
  */

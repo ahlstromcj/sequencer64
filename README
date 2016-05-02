@@ -1,12 +1,11 @@
 README for Sequencer64 0.9.10 (current branch = "fixups ongoing")
 Chris Ahlstrom
-2015-09-10 to 2016-04-13 (initial work started in July of 2015)
+2015-09-10 to 2016-04-28 (initial work started in July of 2015)
 
-The sequencer64 project is a continuation of sequencer24 to refactor it to be
-tighter and easier to transition to GTKmm 3, and much more.  By now, it is
-well beyond the sequencer24 project (and seq24), in functionality, and the
-code is already *significantly* refactored, although the heart of it remains
-intact.
+Sequencer64 (replaces sequencer24) is a reboot of seq24 to refactor it to be
+tighter and easier to transition to GTKmm 3, and much more.  It is now
+beyond seq24 in functionality and bug fixes; the code is *significantly*
+refactored, although the heart of seq24 definitely remains intact.
 
 See the screenshot in the project root for some idea of what has changed
 visually.  It is an old friend with some user-interface lipstick and a lot of
@@ -21,18 +20,17 @@ Major updates:
         properly, and as Master, will provide the proper Bar:Beats:Ticks (BBT)
         to other JACK clients.  We are still investigating JackBBTFrameOffset
         support.
-    -   Pause functionality (still experimental and in progress) has been
-        added to playback under ALSA.  Instead of rewinding, the new Pause
-        button will leave the playback where it is, and resume there when
-        playback starts.  The Stop button still rewinds the sequences.
-        The Pause feature should not affect JACK transport, which already
-        supports pause; we would like to add rewind to JACK transport
-        eventually.  Also added is a Pause key (by default, the period).
-        Pause can be disabled at configure time (--disable-pause).
+    -   Pause functionality (still tweaking it) has been added to playback
+        under ALSA.  Instead of rewinding, the Pause button leaves
+        playback where it is, and resumes when playback restarts.  Stop
+        still rewinds the sequences.  The Pause feature does not affect JACK
+        transport, which already supports pause; we would like to add rewind
+        to JACK transport eventually.  Also added is a Pause key (by default,
+        the period).  Pause can be disabled at configure time (--disable-pause).
     -   Long sequences/patterns now auto-scroll horizontally during playback
         to keep up with the progress bar in the sequence/pattern editor.
     -   Highlighting of last sequence brought up for editing.
-    -   Configurable progress bar and redraw timeouts.
+    -   Configurable progress bar, font, redraw timeouts, and more.
     -   MIDI Clock support has been fixed.  Sequencer64 will now interact
         well with QJackCtl, Hydrogen, and Klick (command-line metronome).
         See the testing described in contrib/notes/jack-testing.txt.
@@ -43,7 +41,7 @@ Major updates:
         better arrange songs with a large number of tracks.
     -   Added a more modern-looking, bolder font to the graphical user
         interface, selectable at run-time, in the "user" configuration file.
-    -   Added a --bus option for easier testing against a specific
+    -   Added an ALSA --bus option for easier testing against a specific
         hardware/software synthesizer.
     -   Added a --ppqn option to try to play files at the right speed.  Still
         in progress, as the Seq24 PPQN value of 192 affects a lot of code!
@@ -54,9 +52,8 @@ Major updates:
         gets around the limitations of some trackpads.
     -   Shift-left-click on the pattern slot in the pattern editor now
         toggles the playing state of all other patterns.  This works across
-        screensets.
-    -   Shift-left-click on the pattern name or M in the song editor now
-        toggles the mute state of all other tracks.
+        screensets.  Shift-left-click on the pattern name or M in the song
+        editor now toggles the mute state of all other tracks.
     -   Added arrow key support to some of the windows and panes.
         -   Also supplemented the mouse with "p" to start paint/draw mode, and
             "x" to escape it, in the sequence and song editors.
@@ -66,18 +63,20 @@ Major updates:
             be used to move the notes in time and in pitch.  In the
             performance editor, a pattern can be selected with the mouse and
             moved right/left with the arrow keys.
+        -   Add "z" and "Z" keys to zoom out and zoom in the pattern and song
+            piano rolls.  "0" restores the default zoom.
     -   Tweaked the colors of some user-interface elements to make it
         easier to see them when combined.  For example, the background
         sequence is now colored, and the scale bars are now light grey.
-        Progress bars are now red, if not running in legacy mode.
+        Progress bars are now red, if not running in legacy mode.  Selected
+        events now appear as orange in the data panel.
     -   The "rc" configuration file has been upgraded to support a couple
         more options, including the enabling/disabling of LASH session
         support.
     -   The "user" configuration file is now written, as well as being read.
-        It will eventually contain more extensive run-time configuration for
+        It contains more extensive run-time configuration for
         the user-interface.  The following items have been added so far,
-        though they are not yet dispersed to all areas of the application
-        and do not yet affect the appearance of the GUI:
+        though not all are internally implemented:
         -   [user-interface-setting]
             -   Style of the main-window grid is now modifiable.
             -   Main window rows
@@ -104,8 +103,7 @@ Major updates:
         -   A wide range of MIDI files have been tested, to find bugs that
             can crash the application.  A nice increase in robustness.
         -   Centralized dirtiness-handling to the perform module, and
-            improving its accuracy and comprehensiveness, still in progress,
-            but much progress made.
+            improving its accuracy and comprehensiveness.
         -   Set Tempo and Time Signature events are now read from
             non-Sequencer64 MIDI files.  They are also saved in the normal
             MIDI format, so other sequencers can get them from Sequencer64
@@ -124,18 +122,15 @@ Major updates:
 
 The list of minor issues we have found while exploring with Sequencer64 has
 gotten fairly long, so we will concentrate on tightening up the application
-behavior as much as possible.
+behavior as much as possible.  This package is currently oriented to
+developers.  It is fairly well organized, fairly well documented, and less
+mysterious (to us, anyway) than before.  Please see the INSTALL file for a
+brief description of installation.
 
-This package is currently oriented to developers.  It is fairly well
-organized, fairly well documented, and less mysterious (to us, anyway)
-than before.  Please see the INSTALL file for a brief description of
-installation.
-
-See the ROADMAP file for more information and a kind of TODO list.
-Also see contrib/bugs_to_investigate.
-
-Note that sequencer64 is reasonably well documented by the following
-project, which provides a 100+-page PDF file and its LaTeX source code:
+See the ROADMAP file for more information and a kind of TODO list.  Also see
+contrib/notes/bugs_to_investigate.  Sequencer64 is well-documented by the
+following project, which provides a 100+-page PDF file and its LaTeX source
+code:
 
    https://github.com/ahlstromcj/sequencer64-doc.git
 

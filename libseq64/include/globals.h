@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-25
- * \updates       2016-02-05
+ * \updates       2016-05-02
  * \license       GNU GPLv2 or above
  *
  *  We're going to try to collect all the globals here in one module, and
@@ -154,10 +154,18 @@ const int c_beats_per_minute = SEQ64_DEFAULT_BPM;
 const int c_thread_trigger_width_ms = SEQ64_DEFAULT_TRIGWIDTH_MS;
 
 /**
- *  The trigger lookahead in milliseconds.  This value is 2 ms.
+ *  The trigger width in microseconds.  This value is 4000 us.  Makes the code
+ *  just a teensy bit tighter.
  */
 
-const int c_thread_trigger_lookahead_ms = SEQ64_DEFAULT_TRIGLOOK_MS;
+const int c_thread_trigger_width_us = SEQ64_DEFAULT_TRIGWIDTH_MS * 1000;
+
+/*
+ *  The trigger lookahead in milliseconds.  This value is 2 ms.  Not used
+ *  anywhere, so commented out.
+ *
+ *  const int c_thread_trigger_lookahead_ms = SEQ64_DEFAULT_TRIGLOOK_MS;
+ */
 
 /**
  *  Constants for the font class.  The c_text_x and c_text_y constants

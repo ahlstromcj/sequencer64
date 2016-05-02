@@ -390,27 +390,12 @@ perfstats::output_func ()
 
             m_statistics.get_loop_start();      // stats_loop_start
 
-            /*
+            /**
              * Get the delta time.
              */
 
             long delta_us = m_statistics.get_delta_time();
-
-#ifndef PLATFORM_WINDOWS
-//          clock_gettime(CLOCK_REALTIME, &current);
-//          delta.tv_sec  = current.tv_sec  - last.tv_sec;
-//          delta.tv_nsec = current.tv_nsec - last.tv_nsec;
-//          long delta_us = (delta.tv_sec * 1000000) + (delta.tv_nsec / 1000);
-#else
-//          current = timeGetTime();
-//          delta = current - last;
-//          long delta_us = delta * 1000;
-#endif
-
-//          int bpm  = m_master_bus.get_beats_per_minute();
-//          double delta_tick = delta_time_us_to_ticks(delta_us, bpm, ppqn);
-
-                m_statistics.get_total_tick(pad);
+            m_statistics.get_total_tick(pad);
 
             /**
              *  Figure out how much time we need to sleep, and do it.
@@ -418,14 +403,14 @@ perfstats::output_func ()
 
             long elapsed_us = m_statistics.get_elapsed_time();
 
-            /*
-             * Now we want to trigger every c_thread_trigger_width_ms,
+            /**
+             * Now we want to trigger every c_thread_trigger_width_us,
              * and it took us delta_us to play().
              */
 
-            delta_us = (c_thread_trigger_width_ms * 1000) - elapsed_us;
+            delta_us = c_thread_trigger_width_us - elapsed_us;
 
-            /*
+            /**
              * Check MIDI clock adjustment.  Note that we replaced
              * "60000000.0f / m_ppqn / bpm" with a call to a function.
              * We also removed the "f" specification from the constants.
@@ -437,18 +422,15 @@ perfstats::output_func ()
             double next_clock_delta_us =
                 next_clock_delta * pulse_length_us(bpm, m_ppqn);
 
-            if (next_clock_delta_us < (c_thread_trigger_width_ms * 1000.0 * 2.0))
+            if (next_clock_delta_us < (c_thread_trigger_width_us * 2.0))
                 delta_us = long(next_clock_delta_us);
 
             m_statistics.sleep(delta_us);
-
             m_statistics.show();
             if (pad.js_jack_stopped)
                 inner_stop();
         }
-
         m_statistics.final_stats();
-
         m_tick = 0;
         m_master_bus.flush();
         m_master_bus.stop();

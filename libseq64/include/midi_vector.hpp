@@ -101,6 +101,9 @@ public:
     /**
      *  Provides a way to add a MIDI byte into the list.  The original seq24
      *  list used an std::list and a push_front operation.
+     *
+     * \param b
+     *      Provides the MIDI byte to push_back() into the character vector.
      */
 
     virtual void put (midibyte b)

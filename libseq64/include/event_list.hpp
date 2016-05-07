@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-19
- * \updates       2016-04-09
+ * \updates       2016-05-05
  * \license       GNU GPLv2 or above
  *
  *  This module extracts the event-list functionality from the sequencer
@@ -232,6 +232,9 @@ public:
 
     /**
      *  Needed as a special case when std::list is used.
+     *
+     * \param e
+     *      Provides the event value to push at the back of the event list.
      */
 
     void push_back (event & e)
@@ -265,6 +268,9 @@ public:
      *  Provides a wrapper for the iterator form of erase(), which is the
      *  only one that sequence uses.  Currently, no check on removal is
      *  performed.  Set the modified-flag.
+     *
+     * \param ie
+     *      Provides the iterator to the event to be removed.
      */
 
     void remove (iterator ie)
@@ -304,6 +310,9 @@ public:
 
     /**
      *  Dereference access for list or map.
+     *
+     * \param ie
+     *      Provides the iterator to the event to which to get a reference.
      */
 
     static event & dref (iterator ie)
@@ -317,6 +326,9 @@ public:
 
     /**
      *  Dereference const access for list or map.
+     *
+     * \param ie
+     *      Provides the iterator to the event to which to get a reference.
      */
 
     static const event & dref (const_iterator ie)

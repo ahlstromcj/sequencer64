@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-23
+ * \updates       2016-05-06
  * \license       GNU GPLv2 or above
  *
  *  The midibus module is the Linux version of the midibus module.
@@ -219,6 +219,9 @@ public:
 
     /**
      * \setter m_clock_type
+     *
+     * \param clocktype
+     *      The value used to set the clock-type.
      */
 
     void set_clock (clock_e clocktype)
@@ -235,10 +238,6 @@ public:
         return m_clock_type;
     }
 
-    /**
-     *  Input functions
-     */
-
     void set_input (bool inputing);   // too much to inline
 
     /**
@@ -249,10 +248,11 @@ public:
     {
         return m_inputing;
     }
+
     void flush ();
 
     /**
-     *  \getter m_dest_addr_client
+     * \getter m_dest_addr_client
      *      The address of client.
      */
 
@@ -262,7 +262,7 @@ public:
     }
 
     /**
-     *  \getter m_dest_addr_port
+     * \getter m_dest_addr_port
      */
 
     int get_port () const
@@ -272,6 +272,10 @@ public:
 
     /**
      *  Set the clock mod to the given value, if legal.
+     *
+     * \param clockmod
+     *      If this value is not equal to 0, it is used to set the static
+     *      member m_clock_mod.
      */
 
     static void set_clock_mod (int clockmod)
@@ -281,7 +285,7 @@ public:
     }
 
     /**
-     *  Get the clock mod.
+     *  Get the clock mod value.
      */
 
     static int get_clock_mod ()

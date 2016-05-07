@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-04-09
+ * \updates       2016-05-06
  * \license       GNU GPLv2 or above
  *
  *  This class still has way too many members, even with the JACK and
@@ -107,7 +107,14 @@ struct performcallback
 #pragma GCC diagnostic ignored "-Wunused-parameter"
 #endif
 
-    virtual void on_grouplearnchange (bool state)
+    /**
+     *  A do-nothing callback.
+     *
+     * \param state
+     *      Unused parameter.
+     */
+
+    virtual void on_grouplearnchange (bool /* state */)
     {
         // Empty body
     }
@@ -156,13 +163,42 @@ private:
     gui_assistant & m_gui_support;
 
     /**
-     *  Mute group support.
+     *  Mute group support.  This value determines whether a particular track
+     *  will be muted or unmuted.  Note that the current state of playing can
+     *  be "learned", and stored herein as the desired state for the track.
      */
 
     bool m_mute_group[c_gmute_tracks];
+
+    /**
+     *  Holds the current mute states of each track.  Unlike the
+     *  m_mute_group[] array, this holds the current state, rather than the
+     *  state desired by activating a mute group.
+     */
+
     bool m_tracks_mute_state[c_seqs_in_set];
+
+    /**
+     *  If true, indicates that a mode group is selected, and playing statuses
+     *  will be "memorized".
+     */
+
     bool m_mode_group;
+
+    /**
+     *  If true, indicates that a group learn is selected, which also
+     *  "memorizes" a mode group, and notifies subscribers of a group-learn
+     *  change.
+     */
+
     bool m_mode_group_learn;
+
+    /**
+     *  Selects a group to mute.  It seems like a "group" is essentially a
+     *  "set" that is selected for the saving and restoring of the status of
+     *  all patterns in that set.
+     */
+
     int m_mute_group_selected;
 
     /**
@@ -190,11 +226,61 @@ private:
 
     sequence * m_seqs[c_max_sequence];
 
+    /**
+     *  Each boolean value in this array is set to true if a sequence is
+     *  active, meaning that it will be used to hold some kind of MIDI data,
+     *  even if only Meta events.  This array can have "holes" with inactive
+     *  sequences, so every sequence needs to be checked before using it.
+     */
+
     bool m_seqs_active[c_max_sequence];
+
+    /**
+     *  Each boolean value in this array is set to true if a sequence was
+     *  active, meaning that it was found to be active at the time we were
+     *  setting it to inactive.  This value seems to be used only in
+     *  maintaining dirtiness-status; did some process modify the sequence?
+     *  Was it's mute/unmute status changed?
+     */
+
     bool m_was_active_main[c_max_sequence];
+
+    /**
+     *  Each boolean value in this array is set to true if a sequence was
+     *  active, meaning that it was found to be active at the time we were
+     *  setting it to inactive.  This value seems to be used only in
+     *  maintaining dirtiness-status for editing the mute/unmute status during
+     *  pattern editing.
+     */
+
     bool m_was_active_edit[c_max_sequence];
+
+    /**
+     *  Each boolean value in this array is set to true if a sequence was
+     *  active, meaning that it was found to be active at the time we were
+     *  setting it to inactive.  This value seems to be used only in
+     *  maintaining dirtiness-status for editing the mute/unmute status during
+     *  performance/song editing.
+     */
+
     bool m_was_active_perf[c_max_sequence];
+
+    /**
+     *  Each boolean value in this array is set to true if a sequence was
+     *  active, meaning that it was found to be active at the time we were
+     *  setting it to inactive.  This value seems to be used only in
+     *  maintaining dirtiness-status for editing the mute/unmute status during
+     *  performance names editing.  Not sure that it serves a real purpose;
+     *  perhaps created with an eye to editing the pattern name in the song
+     *  editor?
+     */
+
     bool m_was_active_names[c_max_sequence];
+
+    /**
+     *  Saves the current playing state of each pattern.
+     */
+
     bool m_sequence_state[c_max_sequence];
 
     /**
@@ -206,21 +292,56 @@ private:
 private:
 
     /**
-     *  Provides information for managing pthreads.
+     *  Provides information for managing pthreads.  Provides a "handle" to
+     *  the output thread.
      */
 
     pthread_t m_out_thread;
+
+    /**
+     *  Provides a "handle" to the input thread.
+     */
+
     pthread_t m_in_thread;
+
+    /**
+     *  Indicates that the output thread has been started.
+     */
+
     bool m_out_thread_launched;
+
+    /**
+     *  Indicates that the input thread has been started.
+     */
+
     bool m_in_thread_launched;
 
     /*
-     * More variables.
+     *  Indicates that playback is running.
      */
 
     bool m_running;
+
+    /**
+     *  Indicates that events are being written to the MIDI input busses in
+     *  the input thread.
+     */
+
     bool m_inputing;
+
+    /**
+     *  Indicates that events are being written to the MIDI output busses in
+     *  the output thread.
+     */
+
     bool m_outputing;
+
+    /**
+     *  Indicates that status of the "loop" button in the performance editor.
+     *  If true, the performance will loop between the L and R markers in the
+     *  performance editor.
+     */
+
     bool m_looping;
 
     /**
@@ -228,8 +349,8 @@ private:
      *  indicated by the following values:
      *
 \verbatim
-            m_playback_mode == false:       live mode
-            m_playback_mode == true:        playback/song mode
+        m_playback_mode == false:       live mode
+        m_playback_mode == true:        playback/song mode
 \endverbatim
      *
      */
@@ -341,14 +462,47 @@ private:
 
 private:
 
+    /**
+     *  Used in the mainwnd class to set the notepad text for the given set.
+     */
+
     std::string m_screen_set_notepad[c_max_sets];
 
+    /**
+     *  Provides the settings of MIDI Toggle, as read from the "rc" file.
+     */
+
     midi_control m_midi_cc_toggle[c_midi_controls];
+
+    /**
+     *  Provides the settings of MIDI On, as read from the "rc" file.
+     */
+
     midi_control m_midi_cc_on[c_midi_controls];
+
+    /**
+     *  Provides the settings of MIDI Off, as read from the "rc" file.
+     */
+
     midi_control m_midi_cc_off[c_midi_controls];
 
+    /**
+     *  Holds the offset into the screen sets.
+     */
+
     int m_offset;
+
+    /**
+     *  Holds the OR'ed control status values.  Need to learn more about this
+     *  one.
+     */
+
     int m_control_status;
+
+    /**
+     *  Indicates the number of the currently-selected screen-set.
+     */
+
     int m_screenset;
 
     /**
@@ -393,17 +547,22 @@ private:
     bool m_is_modified;
 
     /**
-     *  A condition variable to protect...
+     *  A condition variable to protect playback.  It is signalled if playback
+     *  has been started.  The output thread function waits on this variable
+     *  until m_running and m_outputing are false.  This variable is also
+     *  signalled in the perform destructor.
      */
 
     condition_var m_condition_var;
 
 #ifdef SEQ64_JACK_SUPPORT
+
     /**
      *  A wrapper object for the JACK support of this application.
      */
 
     jack_assistant m_jack_asst;         // implements most of the JACK stuff
+
 #endif
 
     /*
@@ -472,6 +631,10 @@ public:
 
     /**
      * \setter m_beats_per_bar
+     *
+     * \param bpm
+     *      Provides the value for beats/measure.  Also used to set the
+     *      beats/measure in the JACK assistant object.
      */
 
     void set_beats_per_bar (int bpm)
@@ -493,6 +656,10 @@ public:
 
     /**
      * \setter m_beat_width
+     *
+     * \param bw
+     *      Provides the value for beat-width.  Also used to set the
+     *      beat-width in the JACK assistant object.
      */
 
     void set_beat_width (int bw)
@@ -602,6 +769,9 @@ public:
 
     /**
      *  Adds a pointer to an object to be notified by this perform object.
+     *
+     * \param pfcb
+     *      Provides the pointer to the performance callback.
      */
 
     void enregister (performcallback * pfcb)
@@ -643,7 +813,7 @@ public:
 #ifdef SEQ64_PAUSE_SUPPORT
 
     /**
-     *  \getter m_jack_tick
+     * \getter m_jack_tick
      */
 
     midipulse get_jack_tick () const
@@ -652,7 +822,10 @@ public:
     }
 
     /**
-     *  \setter m_jack_tick
+     * \setter m_jack_tick
+     *
+     * \param tick
+     *      Provides the current JACK tick (pulse) value to set.
      */
 
     void set_jack_tick (midipulse tick)
@@ -675,6 +848,9 @@ public:
 
     /**
      * \setter m_starting_tick
+     *
+     * \param tick
+     *      Provides the starting JACK tick (pulse) value to set.
      */
 
     void set_start_tick (midipulse tick)
@@ -754,6 +930,9 @@ public:
 
     /**
      *  Sets the notepad text for the current screen-set.
+     *
+     * \param note
+     *      The string value to set into the notepad text.
      */
 
     void set_screen_set_notepad (const std::string & note)
@@ -901,6 +1080,10 @@ public:
 
     /**
      * \setter m_looping
+     *
+     * \param looping
+     *      The boolean value to set for looping, used in the performance
+     *      editor.
      */
 
     void set_looping (bool looping)
@@ -921,8 +1104,7 @@ public:
 
     /**
      *  Calculates the offset into the screen sets.
-     *
-     *  Sets m_offset = offset * c_mainwnd_rows * c_mainwnd_cols;
+     *  Sets <code>m_offset = offset * c_mainwnd_rows * c_mainwnd_cols</code>.
      *
      * \param offset
      *      The desired offset.
@@ -939,6 +1121,9 @@ public:
     /**
      * Here follows a few forwarding functions for the keys_perform-derived
      * classes.
+     *
+     * \param k
+     *      The key number for which to return the string name of the key.
      */
 
     std::string key_name (unsigned int k) const
@@ -946,20 +1131,36 @@ public:
         return keys().key_name(k);
     }
 
+    /**
+     *  Forwarding function for key events.
+     */
+
     keys_perform::SlotMap & get_key_events ()
     {
         return keys().get_key_events();
     }
+
+    /**
+     *  Forwarding function for key groups.
+     */
 
     keys_perform::SlotMap & get_key_groups ()
     {
         return keys().get_key_groups();
     }
 
+    /**
+     *  Forwarding function for reverse key events.
+     */
+
     keys_perform::RevSlotMap & get_key_events_rev ()
     {
         return keys().get_key_events_rev();
     }
+
+    /**
+     *  Forwarding function for reverse key groups.
+     */
 
     keys_perform::RevSlotMap & get_key_groups_rev ()
     {
@@ -967,7 +1168,7 @@ public:
     }
 
     /**
-     * \accessor m_show_ui_sequency_key
+     * \getter m_show_ui_sequency_key
      *      Provides access to keys().show_ui_sequence_key().
      *      Used in mainwid, options, optionsfile, userfile, and perform.
      */
@@ -976,13 +1177,21 @@ public:
     {
         return keys().show_ui_sequence_key();
     }
+
+    /**
+     * \setter m_show_ui_sequency_key
+     *
+     * \param flag
+     *      Provides the flag to set into keys().show_ui_sequence_key().
+     */
+
     void show_ui_sequence_key (bool flag)
     {
         keys().show_ui_sequence_key(flag);
     }
 
     /**
-     * \accessor m_show_ui_sequency_number
+     * \getter m_show_ui_sequency_number
      *      Provides access to keys().show_ui_sequence_number().
      *      Used in mainwid, optionsfile, and perform.
      */
@@ -992,15 +1201,33 @@ public:
         return keys().show_ui_sequence_number();
     }
 
+    /**
+     * \getter m_show_ui_sequency_number
+     *
+     * \param flag
+     *      Provides the value to set into keys().show_ui_sequence_number().
+     */
+
     void show_ui_sequence_number (bool flag)
     {
         keys().show_ui_sequence_number(flag);
     }
 
-    /**
+    /*
      * Getters of keyboard mapping for sequence and groups.
      * If not found, returns something "safe" [so use get_key()->count()
      * to see if it's there first]
+     */
+
+    /**
+     *  Gets the event key for the given sequence.
+     *
+     * \param seqnum
+     *      The number of the sequence for which to return the event key.
+     *
+     * \return
+     *      Returns the desired key.  If there is no such value, then the
+     *      period ('.') character is returned.
      */
 
     unsigned int lookup_keyevent_key (long seqnum)
@@ -1011,6 +1238,19 @@ public:
             return '.';                 /* '?' */
     }
 
+    /**
+     *  Gets the sequence number for the given event key.  The inverse of
+     *  lookup_keyevent_key().
+     *
+     * \param keycode
+     *      The number of the event key for which to return the configured
+     *      sequence number.
+     *
+     * \return
+     *      Returns the desired sequence.  If there is no such value, then
+     *      a sequence number of 0 is returned.
+     */
+
     long lookup_keyevent_seq (unsigned int keycode)
     {
         if (get_key_events().count(keycode) > 0)
@@ -1019,6 +1259,17 @@ public:
             return 0;
     }
 
+    /**
+     *  Gets the group key for the given sequence.
+     *
+     * \param seqnum
+     *      The number of the sequence for which to return the group key.
+     *
+     * \return
+     *      Returns the desired key.  If there is no such value, then the
+     *      period ('.') character is returned.
+     */
+
     unsigned int lookup_keygroup_key (long groupnum)
     {
         if (get_key_groups_rev().count(groupnum))
@@ -1026,6 +1277,19 @@ public:
         else
             return '.';                 /* '?' */
     }
+
+    /**
+     *  Gets the group number for the given group key.  The inverse of
+     *  lookup_keygroup_key().
+     *
+     * \param keycode
+     *      The number of the group key for which to return the configured
+     *      sequence number.
+     *
+     * \return
+     *      Returns the desired group number.  If there is no such value, then
+     *      a group number of 0 is returned.
+     */
 
     long lookup_keygroup_group (unsigned int keycode)
     {
@@ -1118,22 +1382,32 @@ public:
      *  True if a sequence is empty and should be highlighted.  This setting
      *  is currently a build-time option, but could be made a run-time option
      *  later.
+     *
+     * \param seq
+     *      Provides a reference to the desired sequence.
      */
 
 #if SEQ64_HIGHLIGHT_EMPTY_SEQS
+
     bool highlight (const sequence & seq) const
     {
         return seq.event_count() == 0;
     }
+
 #else
+
     bool highlight (const sequence & /*seq*/) const
     {
         return false;
     }
+
 #endif
 
     /**
      *  True if the sequence is an SMF 0 sequence.
+     *
+     * \param seq
+     *      Provides a reference to the desired sequence.
      */
 
     bool is_smf_0 (const sequence & seq) const
@@ -1202,6 +1476,9 @@ private:
 
     /**
      * \setter m_is_modified
+     *
+     * \param flag
+     *      The value of the modified flag to be set.
      */
 
     void is_modified (bool flag)
@@ -1243,6 +1520,9 @@ private:
 
     /**
      * \setter m_running
+     *
+     * \param running
+     *      The value of the running flag to be set.
      */
 
     void set_running (bool running)
@@ -1252,6 +1532,9 @@ private:
 
     /**
      * \setter m_playback_mode
+     *
+     * \param playbackmode
+     *      The value of the playback mode flag to be set.
      */
 
     void set_playback_mode (bool playbackmode)
@@ -1262,6 +1545,9 @@ private:
     /**
      *  A helper function to calculate the index into the mute-group array,
      *  based on the desired track.
+     *
+     * \param track
+     *      The number of the desired track.
      */
 
     int mute_group_offset (int track)
@@ -1302,6 +1588,12 @@ private:
      *  sequence-slot from the regular and reverse slot-maps.  Finally, it
      *  adds the sequence-slot with a key value of key-code, and adds the
      *  key-code with a value of sequence-slot.
+     *
+     * \param keycode
+     *      The keycode for which to set the sequence slot.
+     *
+     * \param sequence_slot
+     *      The sequence slot to be set.
      */
 
     void set_key_event (unsigned int keycode, long sequence_slot)
@@ -1313,6 +1605,12 @@ private:
      *  At construction time, this function sets up one keycode and one group
      *  slot.  It is called 32 times, corresponding the pattern/sequence slots
      *  in the Patterns window.  Compare it to the set_key_events() function.
+     *
+     * \param keycode
+     *      The keycode for which to set the group slot.
+     *
+     * \param group_slot
+     *      The group slot to be set.
      */
 
     void set_key_group (unsigned int keycode, long group_slot)

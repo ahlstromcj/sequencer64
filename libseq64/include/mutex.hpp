@@ -27,13 +27,13 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-09-13
+ * \updates       2016-05-06
  * \license       GNU GPLv2 or above
  *
  *  This module defines the following classes:
  *
  *      -   mutex.  A primitive wrapper for pthread_mutex_t.
- *      -   automutex. A way to lock a function more safely and easily.
+ *      -   automutex. A way to lock a function exception-safely and easily.
  *      -   condition_var.  Provides a common usage paradigm, for the
  *          perform object.
  */
@@ -54,18 +54,8 @@ class mutex
 private:
 
     /**
-     *  Provides a way to disable the locking.  Mostly experimental,
-     *  we want to disable locking to see if we can speed up MIDI file
-     *  reading when the application is compiled for debugging.  It takes
-     *  about 8 seconds to read our sample MIDI files.  This does not
-     *  solve the problem of the long MIDI-file parsing, however.
-     *
-     *      static bool sm_mutex_enabled;
-     */
-
-    /**
      *  Provides a recursive mutex that can be used by the whole
-     *  application, apparently.
+     *  application, and is, apparently.
      */
 
     static const pthread_mutex_t sm_recursive_mutex;
@@ -74,6 +64,8 @@ protected:
 
     /**
      *  Provides a mutex lock usable by a single module or class.
+     *  However, this mutex ends up being a copy of the static
+     *  sm_recursive_mutex (and, of course, a different "object").
      */
 
     mutable pthread_mutex_t m_mutex_lock;
@@ -84,20 +76,13 @@ public:
     void lock () const;
     void unlock () const;
 
-    /*
-     * static void enable (bool flag = true)        // experimental
-     * {
-     *     sm_mutex_enabled = flag;
-     * }
-     */
-
 };
 
 /**
  *  Provides a mutex that locks automatically when created, and unlocks
- *  when destroyed.  This has a couple of benefits.  First, it is more
- *  threadsafe in the face of exception handling.  Secondly, it can be
- *  done with just one line of code.
+ *  when destroyed.  This has a couple of benefits.  First, it is threadsafe
+ *  in the face of exception handling.  Secondly, it can be done with just one
+ *  line of code.
  */
 
 class automutex
@@ -122,6 +107,9 @@ public:
     /**
      *  Principal constructor gets a reference to a mutex parameter, and
      *  then locks the mutex.
+     *
+     * \param my_mutex
+     *      The caller's mutex to be used for locking.
      */
 
     automutex (mutex & my_mutex) : m_safety_mutex (my_mutex)
@@ -155,7 +143,7 @@ private:
      *  Provides a "global" condition variable.
      */
 
-    static const pthread_cond_t cond;
+    static const pthread_cond_t sm_cond;
 
     /**
      *  Provides a class-specific condition variable.

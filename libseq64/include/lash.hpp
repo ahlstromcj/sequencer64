@@ -27,9 +27,12 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-05
+ * \updates       2016-05-06
  * \license       GNU GPLv2 or above
  *
+ *  Some believe that LASH support is going by the wayside, perhaps being
+ *  replaced by NSM (Non Session Manager) or supported well enough at the
+ *  application level.
  */
 
 #include "easy_macros.h"                // platform and debugging macros
@@ -63,9 +66,27 @@ private:
     perform & m_perform;
 
 #ifdef SEQ64_LASH_SUPPORT
+
+    /**
+     *  Holds the client "handle" returned by the lash_init() function.
+     */
+
     lash_client_t * m_client;
+
+    /**
+     *  Holds the command-line arguments used by the lash_init() function.
+     */
+
     lash_args_t * m_lash_args;
+
 #endif
+
+    /**
+     *  Indicates if LASH support has been compiled into the library.  Is set
+     *  to true if SEQ64_LASH_SUPPORT is defined.  This variable is not used,
+     *  but we will keep it around for the possibility of testing LASH support
+     *  at run time.
+     */
 
     bool m_is_lash_supported;
 

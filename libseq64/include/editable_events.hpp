@@ -29,7 +29,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-12-04
- * \updates       2016-01-09
+ * \updates       2016-05-05
  * \license       GNU GPLv2 or above
  *
  *  This module extends the event class to support conversions between events
@@ -257,6 +257,9 @@ private:
 
     /**
      * \setter m_current_event
+     *
+     * \param cei
+     *      Provide an iterator to the event to set as the current event.
      */
 
     void current_event (iterator cei)

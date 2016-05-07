@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-04-13
+ * \updates       2016-05-05
  * \license       GNU GPLv2 or above
  *
  *  This module also declares/defines the various constants, status-byte
@@ -260,6 +260,9 @@ public:
 
     /**
      * \setter m_timestamp
+     *
+     * \param time
+     *      Provides the time value, in ticks, to set as the timestamp.
      */
 
     void set_timestamp (midipulse time)
@@ -302,11 +305,14 @@ public:
     }
 
     /**
-     *  Static test for channel messages/statuses.  This function requires that
-     *  the channel data have already been masked off.
+     *  Static test for the channel message/statuse values: Note On, Note Off,
+     *  Aftertouch, Control Change, Program Change, Channel Pressure, and
+     *  Pitch Wheel.  This function requires that the channel data have
+     *  already been masked off.
      *
      * \param m
-     *      The channel status or message byte to be tested.
+     *      The channel status or message byte to be tested, with the channel
+     *      bits masked off.
      *
      * \return
      *      Returns true if the byte represents a MIDI channel message.
@@ -324,11 +330,14 @@ public:
     }
 
     /**
-     *  Static test for channel messages that have only one data byte.
-     *  The rest have two.
+     *  Static test for channel messages that have only one data byte: Program
+     *  Change and Channel Pressure.  The rest of the channel messages have
+     *  two data bytes.  This function requires that the channel data have
+     *  already been masked off.
      *
      * \param m
-     *      The channel status or message byte to be tested.
+     *      The channel status or message byte to be tested, with the channel
+     *      bits masked off.
      *
      * \return
      *      Returns true if the byte represents a MIDI channel message that
@@ -342,10 +351,13 @@ public:
     }
 
     /**
-     *  Static test for channel messages that have two data bytes.
+     *  Static test for channel messages that have two data bytes: Note On,
+     *  Note Off, Control Change, Aftertouch, and Pitch Wheel.  This function
+     *  requires that the channel data have already been masked off.
      *
      * \param m
-     *      The channel status or message byte to be tested.
+     *      The channel status or message byte to be tested, with the channel
+     *      bits masked off.
      *
      * \return
      *      Returns true if the byte represents a MIDI channel message that
@@ -364,10 +376,13 @@ public:
     }
 
     /**
-     *  Static test for messages that involve notes and velocity.
+     *  Static test for messages that involve notes and velocity: Note On,
+     *  Note Off, and Aftertouch.  This function requires that the channel
+     *  data have already been masked off.
      *
      * \param m
-     *      The channel status or message byte to be tested.
+     *      The channel status or message byte to be tested, with the channel
+     *      bits masked off.
      *
      * \return
      *      Returns true if the byte represents a MIDI note message.
@@ -397,7 +412,8 @@ public:
 \endverbatim
      *
      * \param m
-     *      The channel status or message byte to be tested.
+     *      The channel status or message byte to be tested, with the channel
+     *      bits masked off.
      *
      * \param cc
      *      The desired cc value, which the datum must match, if the message is
@@ -425,7 +441,7 @@ public:
      *  parameter.
      *
      * \param a_mod
-     *      The value to mod the timestamp against.
+     *      The tick value to mod the timestamp against.
      *
      * \return
      *      Returns a value ranging from 0 to a_mod-1.
@@ -441,10 +457,11 @@ public:
 
     /**
      *  Sets the channel "nybble", without modifying the status "nybble".
-     *  Note that the sequence channel generally overrides this value.
+     *  It actually just sets the m_channel member.  Note that the sequence
+     *  channel generally overrides this value in the usage of the event.
      *
      * \param channel
-     *      The channel byte.
+     *      The channel byte to be set.
      */
 
     void set_channel (midibyte channel)
@@ -463,10 +480,11 @@ public:
 
     /**
      *  Clears the most-significant-bit of the d1 parameter, and sets it into
-     *  the first byte of m_data.
+     *  the first byte of m_data.  The second byte of data is zeroed.  The
+     *  data bytes are in a two =-byte array member, m_data.
      *
      * \param d1
-     *      The byte value to set.  We should make these all "midibytes".
+     *      The byte value to set as the first data byte.
      */
 
     void set_data (midibyte d1)
@@ -510,7 +528,7 @@ public:
     }
 
     /**
-     *  Increments the first data byte (m_data[1]) and clears the most
+     *  Increments the first data byte (m_data[0]) and clears the most
      *  significant bit.
      */
 
@@ -520,7 +538,7 @@ public:
     }
 
     /**
-     *  Decrements the first data byte (m_data[1]) and clears the most
+     *  Decrements the first data byte (m_data[0]) and clears the most
      *  significant bit.
      */
 
@@ -563,6 +581,9 @@ public:
 
     /**
      * \setter m_sysex_size
+     *
+     * \param len
+     *      Provides the length value to set as the size of the SYSEX data.
      */
 
     void set_sysex_size (int len)
@@ -581,6 +602,9 @@ public:
 
     /**
      *  Sets m_has_link and sets m_link to the provided event pointer.
+     *
+     * \param a_event
+     *      Provides a pointer to the event value to set.
      */
 
     void link (event * a_event)
@@ -728,6 +752,9 @@ public:
     /**
      *  Sets the note number, clearing off the most-significant-bit and
      *  assigning it to the first data byte, m_data[0].
+     *
+     * \param note
+     *      Provides the note value to set.
      */
 
     void set_note (midibyte note)
@@ -745,8 +772,11 @@ public:
     }
 
     /**
-     *  Sets the note velocity, with is held in the second data byte,
-     *  m_data[1].
+     *  Sets the note velocity, which is held in the second data byte, and
+     *  clearing off the most-significant-bit, storing it in m_data[1].
+     *
+     * \param a_vel
+     *      Provides the velocity value to set.
      */
 
     void set_note_velocity (int a_vel)

@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-09-30
- * \updates       2015-10-28
+ * \updates       2016-05-05
  * \license       GNU GPLv2 or above
  *
  *  Most of the GUI modules are publicly derived from Gtk::DrawingArea,
@@ -43,7 +43,7 @@
 
 /**
  *  Provides readability macros for true and false, to indicate if a
- *  mouse button is pressed, or released.
+ *  mouse button is pressed (true), or released (false).
  */
 
 #define SEQ64_CLICK_RELEASE             false
@@ -60,11 +60,20 @@
 #define SEQ64_CLICK_Y_MIN                   0
 #define SEQ64_CLICK_Y_MAX                1080       // just one pixel too high
 
+/**
+ *  Defines the integer values associated with the left mouse button (1), the
+ *  middle mouse button (2), and the right mouse button (3).
+ */
+
 #define SEQ64_CLICK_BUTTON_MIN              1
 #define SEQ64_CLICK_BUTTON_LEFT             1
 #define SEQ64_CLICK_BUTTON_MIDDLE           2
 #define SEQ64_CLICK_BUTTON_RIGHT            3
 #define SEQ64_CLICK_BUTTON_MAX              3
+
+/**
+ *  Provides a "bad" value (-1) for values related to clicks.
+ */
 
 #define SEQ64_CLICK_BAD_VALUE             (-1)
 
@@ -72,7 +81,7 @@
  *  Readability macros for testing (GDK) button clicks.  Meant for legacy
  *  code; use the corresponding click mod_xxx() member functions for new code.
  *  However, keep these macros, as they are used in the member functions now.
- *  Note the "b" parameter is the ev->button field.
+ *  Note that the "b" parameter is the ev->button field.
  */
 
 #define SEQ64_CLICK_LEFT(b)             ((b) == SEQ64_CLICK_BUTTON_LEFT)

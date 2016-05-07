@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-09-13
- * \updates       2016-03-23
+ * \updates       2016-05-05
  * \license       GNU GPLv2 or above
  *
  */
@@ -120,36 +120,57 @@ private:
      *  below.
      */
 
+    /**
+     *  Holds the mapping of keys to the pattern slots.
+     */
+
     SlotMap m_key_events;
+
+    /**
+     *  Holds the mapping of keys to the mute groups.
+     */
+
     SlotMap m_key_groups;
+
+    /**
+     *  Holds the reverse mapping of the pattern slots to the keys.
+     */
+
     RevSlotMap m_key_events_rev;        // reverse lookup, keep in sync!!
+
+    /**
+     *  Holds the reverse mapping of the mute groups to the keys.
+     */
+
     RevSlotMap m_key_groups_rev;        // reverse lookup, keep in sync!!
 
     /**
      *  Provides key assignments for some key sequencer features.
-     *
      *  Used in mainwnd, options, optionsfile, perfedit, seqroll,
      *  userfile, and perform.
+     *
+     *  We could instead use the keys_perform_transfer structure instead of
+     *  all these individual members.
      */
 
-    unsigned int m_key_bpm_up;
-    unsigned int m_key_bpm_dn;
-    unsigned int m_key_replace;
-    unsigned int m_key_queue;
-    unsigned int m_key_keep_queue;
-    unsigned int m_key_snapshot_1;
-    unsigned int m_key_snapshot_2;
-    unsigned int m_key_screenset_up;
-    unsigned int m_key_screenset_dn;
-    unsigned int m_key_set_playing_screenset;
-    unsigned int m_key_group_on;
-    unsigned int m_key_group_off;
-    unsigned int m_key_group_learn;
-    unsigned int m_key_start;
+    unsigned int m_key_bpm_up;                  /**< BPM up, apostrophe!!!  */
+    unsigned int m_key_bpm_dn;                  /**< BPM down, semicolon.   */
+    unsigned int m_key_replace;                 /**< Replace, Ctrl-L.       */
+    unsigned int m_key_queue;                   /**< Queue, Ctrl-R.         */
+    unsigned int m_key_keep_queue;              /**< Keep queue, backslash. */
+    unsigned int m_key_snapshot_1;              /**< Snapshot 1, Alt-L.     */
+    unsigned int m_key_snapshot_2;              /**< Snapshot 1, Alt-R.     */
+    unsigned int m_key_screenset_up;            /**< Set up, Right-].       */
+    unsigned int m_key_screenset_dn;            /**< Set down, Left-[.      */
+    unsigned int m_key_set_playing_screenset;   /**< Set set, Home key.     */
+    unsigned int m_key_group_on;                /**< Group on, igrave key.  */
+    unsigned int m_key_group_off;               /**< Group off, apostrophe! */
+    unsigned int m_key_group_learn;             /**< Group learn, Insert.   */
+    unsigned int m_key_start;                   /**< Start play, Space key. */
 #ifdef SEQ64_PAUSE_SUPPORT
-    unsigned int m_key_pause;
+    unsigned int m_key_pause;                   /**< Pause play, Period.    */
 #endif
-    unsigned int m_key_stop;
+    unsigned int m_key_stop;                    /**< Stop play, Escape.     */
 
 public:
 
@@ -159,154 +180,348 @@ public:
     void set_keys (const keys_perform_transfer & kpt);
     void get_keys (keys_perform_transfer & kpt);
 
+    /**
+     * \getter m_key_bpm_up
+     */
+
     unsigned int bpm_up () const
     {
         return m_key_bpm_up;
     }
+
+    /**
+     * \setter m_key_bpm_up
+     *
+     * \param x
+     *      The key value to assign to the operation.
+     */
+
     void bpm_up (unsigned int x)
     {
         m_key_bpm_up = x;
     }
 
+    /**
+     * \getter m_key_bpm_dn
+     */
+
     unsigned int bpm_dn () const
     {
         return m_key_bpm_dn;
     }
+
+    /**
+     * \setter m_key_bpm_dn
+     *
+     * \param x
+     *      The key value to assign to the operation.
+     */
+
     void bpm_dn (unsigned int x)
     {
         m_key_bpm_dn = x;
     }
 
+    /**
+     * \getter m_key_replace
+     */
+
     unsigned int replace () const
     {
         return m_key_replace;
     }
+
+    /**
+     * \setter m_key_replace
+     *
+     * \param x
+     *      The key value to assign to the operation.
+     */
+
     void replace (unsigned int x)
     {
         m_key_replace = x;
     }
 
+    /**
+     * \getter m_key_queue
+     */
+
     unsigned int queue () const
     {
         return m_key_queue;
     }
+
+    /**
+     * \setter m_key_queue
+     *
+     * \param x
+     *      The key value to assign to the operation.
+     */
+
     void queue (unsigned int x)
     {
         m_key_queue = x;
     }
 
+    /**
+     * \getter m_key_keep_queue
+     */
+
     unsigned int keep_queue () const
     {
         return m_key_keep_queue;
     }
+
+    /**
+     * \setter m_key_keep_queue
+     *
+     * \param x
+     *      The key value to assign to the operation.
+     */
+
     void keep_queue (unsigned int x)
     {
         m_key_keep_queue = x;
     }
 
+    /**
+     * \getter m_key_snapshot_1
+     */
+
     unsigned int snapshot_1 () const
     {
         return m_key_snapshot_1;
     }
+
+    /**
+     * \setter m_key_snapshot_1
+     *
+     * \param x
+     *      The key value to assign to the operation.
+     */
+
     void snapshot_1 (unsigned int x)
     {
         m_key_snapshot_1 = x;
     }
 
+    /**
+     * \getter m_key_snapshot_2
+     */
+
     unsigned int snapshot_2 () const
     {
         return m_key_snapshot_2;
     }
+
+    /**
+     * \setter m_key_snapshot_2
+     *
+     * \param x
+     *      The key value to assign to the operation.
+     */
+
     void snapshot_2 (unsigned int x)
     {
         m_key_snapshot_2 = x;
     }
 
+    /**
+     * \getter m_key_screenset_up
+     */
+
     unsigned int screenset_up () const
     {
         return m_key_screenset_up;
     }
+
+    /**
+     * \setter m_key_screenset_up
+     *
+     * \param x
+     *      The key value to assign to the operation.
+     */
+
     void screenset_up (unsigned int x)
     {
         m_key_screenset_up = x;
     }
 
+    /**
+     * \getter m_key_screenset_dn
+     */
+
     unsigned int screenset_dn () const
     {
         return m_key_screenset_dn;
     }
+
+    /**
+     * \setter m_key_screenset_dn
+     *
+     * \param x
+     *      The key value to assign to the operation.
+     */
+
     void screenset_dn (unsigned int x)
     {
         m_key_screenset_dn = x;
     }
 
+    /**
+     * \getter m_key_playing_screenset
+     */
+
     unsigned int set_playing_screenset () const
     {
         return m_key_set_playing_screenset;
     }
+
+    /**
+     * \setter m_key_playing_screenset
+     *
+     * \param x
+     *      The key value to assign to the operation.
+     */
+
     void set_playing_screenset (unsigned int x)
     {
         m_key_set_playing_screenset = x;
     }
 
+    /**
+     * \getter m_key_group_on
+     */
+
     unsigned int group_on () const
     {
         return m_key_group_on;
     }
+
+    /**
+     * \setter m_key_group_on
+     *
+     * \param x
+     *      The key value to assign to the operation.
+     */
+
     void group_on (unsigned int x)
     {
         m_key_group_on = x;
     }
 
+    /**
+     * \getter m_key_group_off
+     */
+
     unsigned int group_off () const
     {
         return m_key_group_off;
     }
+
+    /**
+     * \setter m_key_group_off
+     *
+     * \param x
+     *      The key value to assign to the operation.
+     */
+
     void group_off (unsigned int x)
     {
         m_key_group_off = x;
     }
 
+    /**
+     * \getter m_key_group_learn
+     */
+
     unsigned int group_learn () const
     {
         return m_key_group_learn;
     }
+
+    /**
+     * \setter m_key_group_learn
+     *
+     * \param x
+     *      The key value to assign to the operation.
+     */
+
     void group_learn (unsigned int x)
     {
         m_key_group_learn = x;
     }
 
+    /**
+     * \getter m_key_start
+     */
+
     unsigned int start () const
     {
         return m_key_start;
     }
+
+    /**
+     * \setter m_key_start
+     *
+     * \param x
+     *      The key value to assign to the operation.
+     */
+
     void start (unsigned int x)
     {
         m_key_start = x;
     }
 
 #ifdef SEQ64_PAUSE_SUPPORT
+
+    /**
+     * \getter m_key_pause
+     */
+
     unsigned int pause () const
     {
         return m_key_pause;
     }
+
+    /**
+     * \setter m_key_pause
+     *
+     * \param x
+     *      The key value to assign to the operation.
+     */
+
     void pause (unsigned int x)
     {
         m_key_pause = x;
     }
+
 #endif
+
+    /**
+     * \getter m_key_stop
+     */
 
     unsigned int stop () const
     {
         return m_key_stop;
     }
+
+    /**
+     * \setter m_key_stop
+     *
+     * \param x
+     *      The key value to assign to the operation.
+     */
+
     void stop (unsigned int x)
     {
         m_key_stop = x;
     }
 
     /**
-     * \accessor m_key_show_ui_sequency_key
+     * \getter m_key_show_ui_sequency_key
      *
      *  Used in mainwid, options, optionsfile, userfile, and perform.
      */
@@ -315,13 +530,22 @@ public:
     {
         return m_key_show_ui_sequence_key;
     }
+
+    /**
+     * \setter m_key_show_ui_sequency_key
+     *
+     * \param flag
+     *      The flag for showing the sequence key characters in each pattern
+     *      slot.
+     */
+
     void show_ui_sequence_key (bool flag)
     {
         m_key_show_ui_sequence_key = flag;
     }
 
     /**
-     * \accessor m_key_show_ui_sequency_number
+     * \getter m_key_show_ui_sequency_number
      *
      *  Used in mainwid, options, optionsfile, userfile, and perform.
      */
@@ -330,24 +554,51 @@ public:
     {
         return m_key_show_ui_sequence_number;
     }
+
+    /**
+     * \setter m_key_show_ui_sequency_key
+     *
+     * \param flag
+     *      The flag for showing the sequence number in each pattern
+     *      slot.
+     */
+
     void show_ui_sequence_number (bool flag)
     {
         m_key_show_ui_sequence_number = flag;
     }
 
+    /**
+     * \getter m_key_events
+     */
+
     SlotMap & get_key_events ()
     {
         return m_key_events;
     }
+
+    /**
+     * \getter m_key_groups
+     */
+
     SlotMap & get_key_groups ()
     {
         return m_key_groups;
     }
 
+    /**
+     * \getter m_key_events_rev
+     */
+
     RevSlotMap & get_key_events_rev ()
     {
         return m_key_events_rev;
     }
+
+    /**
+     * \getter m_key_groups_rev
+     */
+
     RevSlotMap & get_key_groups_rev ()
     {
         return m_key_groups_rev;
@@ -359,6 +610,15 @@ public:
      * to see if it's there first]
      */
 
+    /**
+     * \getter m_key_events_rev[seqnum];
+     *
+     * \param seqnum
+     *      Provides the sequence number to look up in the reverse key map for
+     *      patterns/sequences.  If the count for this value is 0, then a
+     *      question mark character is returned.
+     */
+
     unsigned int lookup_keyevent_key (long seqnum)
     {
         if (m_key_events_rev.count(seqnum) > 0)
@@ -366,6 +626,16 @@ public:
         else
             return '?';
     }
+
+    /**
+     * \getter m_key_events_rev[keycode];
+     *
+     * \param keycode
+     *      Provides the keycode to look up in the (forward) key map for
+     *      patterns/sequences.  If the count for this value is 0, then a
+     *      0 is returned.
+     */
+
     long lookup_keyevent_seq (unsigned int keycode)
     {
         if (m_key_events.count(keycode) > 0)
@@ -373,6 +643,16 @@ public:
         else
             return 0;
     }
+
+    /**
+     * \getter m_key_events_rev[groupnum];
+     *
+     * \param groupnum
+     *      Provides the group number to look up in the reverse key map for
+     *      groups.  If the count for this value is 0, then a question mark
+     *      character is returned.
+     */
+
     unsigned int lookup_keygroup_key (long groupnum)
     {
         if (m_key_groups_rev.count(groupnum) > 0)
@@ -380,6 +660,15 @@ public:
         else
             return '?';
     }
+
+    /**
+     * \getter m_key_events_rev[keycode];
+     *
+     * \param keycode
+     *      Provides the sequence number to look up in the reverse key map for
+     *      groups.  If the count for this value is 0, then a 0 is returned.
+     */
+
     long lookup_keygroup_group (unsigned int keycode)
     {
         if (m_key_groups.count(keycode) > 0)
@@ -417,76 +706,173 @@ public:
 
 protected:
 
+    /*
+     * The following are tricky ways to get at address of the key and group
+     * operation values so that we don't directly expose the members to
+     * manipulation.
+     */
+
+    /**
+     *  Address getter for the bpm_up operation.
+     */
+
     unsigned int * at_bpm_up ()
     {
         return &m_key_bpm_up;
     }
+
+    /**
+     *  Address getter for the bpm_dn operation.
+     */
+
     unsigned int * at_bpm_dn ()
     {
         return & m_key_bpm_dn;
     }
+
+    /**
+     *  Address getter for the replace operation.
+     */
+
     unsigned int * at_replace ()
     {
         return &m_key_replace;
     }
+
+    /**
+     *  Address getter for the queue operation.
+     */
+
     unsigned int * at_queue ()
     {
         return &m_key_queue;
     }
+
+    /**
+     *  Address getter for the keep_queue operation.
+     */
+
     unsigned int * at_keep_queue ()
     {
         return &m_key_keep_queue;
     }
+
+    /**
+     *  Address getter for the snapshot_1 operation.
+     */
+
     unsigned int * at_snapshot_1 ()
     {
         return &m_key_snapshot_1;
     }
+
+    /**
+     *  Address getter for the snapshot_2 operation.
+     */
+
     unsigned int * at_snapshot_2 ()
     {
         return &m_key_snapshot_2;
     }
+
+    /**
+     *  Address getter for the screenset_up operation.
+     */
+
     unsigned int * at_screenset_up ()
     {
         return &m_key_screenset_up;
     }
+
+    /**
+     *  Address getter for the screenset_dn operation.
+     */
+
     unsigned int * at_screenset_dn ()
     {
         return &m_key_screenset_dn;
     }
+
+    /**
+     *  Address getter for the set_playing_screenset operation.
+     */
+
     unsigned int * at_set_playing_screenset ()
     {
         return &m_key_set_playing_screenset;
     }
+
+    /**
+     *  Address getter for the group_on operation.
+     */
+
     unsigned int * at_group_on ()
     {
         return &m_key_group_on;
     }
+
+    /**
+     *  Address getter for the group_off operation.
+     */
+
     unsigned int * at_group_off ()
     {
         return &m_key_group_off;
     }
+
+    /**
+     *  Address getter for the group_learn operation.
+     */
+
     unsigned int * at_group_learn ()
     {
         return &m_key_group_learn;
     }
+
+    /**
+     *  Address getter for the start operation.
+     */
+
     unsigned int * at_start ()
     {
         return &m_key_start;
     }
+
 #ifdef SEQ64_PAUSE_SUPPORT
+
+    /**
+     *  Address getter for the pause operation.
+     */
+
     unsigned int * at_pause ()
     {
         return &m_key_pause;
     }
+
 #endif
+
+    /**
+     *  Address getter for the stop operation.
+     */
+
     unsigned int * at_stop ()
     {
         return &m_key_stop;
     }
+
+    /**
+     *  Address getter for the show_ui_sequence_key value.
+     */
+
     bool * at_show_ui_sequence_key ()
     {
         return &m_key_show_ui_sequence_key;
     }
+
+    /**
+     *  Address getter for the show_ui_sequence_number value.
+     */
+
     bool * at_show_ui_sequence_number ()
     {
         return &m_key_show_ui_sequence_number;

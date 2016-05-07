@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-23
- * \updates       2016-02-10
+ * \updates       2016-05-06
  * \license       GNU GPLv2 or above
  *
  *  These typedef specifications are intended to remove the ambiguity we have
@@ -155,6 +155,9 @@ public:
 
     /**
      * \setter m_measures
+     *
+     * \param m
+     *      The value to which to set the number of measures.
      *      We can add validation later.
      */
 
@@ -174,6 +177,9 @@ public:
 
     /**
      * \setter m_beats
+     *
+     * \param m
+     *      The value to which to set the number of beats.
      *      We can add validation later.
      */
 
@@ -193,6 +199,9 @@ public:
 
     /**
      * \setter m_divisions
+     *
+     * \param m
+     *      The value to which to set the number of divisions.
      *      We can add validation later.
      */
 
@@ -262,6 +271,9 @@ public:
 
     /**
      * \setter m_beats_per_minute
+     *
+     * \param b
+     *      The value to which to set the number of beats/minute.
      *      We can add validation later.
      */
 
@@ -281,6 +293,9 @@ public:
 
     /**
      * \setter m_beats_per_measure
+     *
+     * \param b
+     *      The value to which to set the number of beats/measure.
      *      We can add validation later.
      */
 
@@ -300,7 +315,10 @@ public:
 
     /**
      * \setter m_beats_per_beat_width
-     *      We can add validation later.
+     *
+     * \param bw
+     *      The value to which to set the number of beats in the denominator
+     *      of the time signature.  We can add validation later.
      */
 
     void beat_width (int bw)
@@ -319,6 +337,9 @@ public:
 
     /**
      * \setter m_ppqn
+     *
+     * \param p
+     *      The value to which to set the PPQN member.
      *      We can add validation later.
      */
 

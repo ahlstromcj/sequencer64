@@ -304,7 +304,7 @@ perform::set_group_mute_state (int gtrack, bool muted)
 }
 
 /**
- *  The "inverse" of set_group_mute_state(), it gets the value of the desired
+ *  The opposite of set_group_mute_state(), it gets the value of the desired
  *  track.
  *
  * \param gtrack
@@ -351,8 +351,8 @@ perform::select_group_mute (int a_g_mute)
 }
 
 /**
- *  Sets the group-mute mode, then the group-learn mode,
- *  then notifies all of the notification subscribers.
+ *  Sets the group-mute mode, then the group-learn mode, then notifies all of
+ *  the notification subscribers.
  */
 
 void
@@ -365,8 +365,8 @@ perform::set_mode_group_learn ()
 }
 
 /**
- *  Notifies all of the notification subscribers that group-learn
- *  is being turned off.  Then unsets the group-learn mode flag.
+ *  Notifies all of the notification subscribers that group-learn is being
+ *  turned off.  Then unsets the group-learn mode flag.
  */
 
 void
@@ -387,8 +387,8 @@ perform::unset_mode_group_learn ()
  *  Will need to study this one more closely.
  *
  * \param a_group
- *      Provides the group to mute.  Note that this parameter is
- *      essentially a track or sequence number.
+ *      Provides the group to mute.  Note that this parameter is essentially a
+ *      track or sequence number.
  */
 
 void
@@ -418,6 +418,10 @@ perform::select_mute_group (int a_group)
 
 /**
  *  Will need to study this one more closely.
+ *
+ * \change 2016-05-06
+ *      It seems to us that the for (i) clause should have i range from 0 to
+ *      m_max_sets, not m_seqs_in_set.  So let's do it, pre-emptively.
  */
 
 void
@@ -425,7 +429,7 @@ perform::mute_group_tracks ()
 {
     if (m_mode_group)
     {
-        for (int i = 0; i < m_seqs_in_set; ++i)
+        for (int i = 0; i < m_max_sets; ++i)            // see note in banner
         {
             for (int j = 0; j < m_seqs_in_set; ++j)
             {
@@ -1071,7 +1075,7 @@ perform::midi_control_off (int seq)
  * \param notepad
  *      Provides the string date to copy into the notepad.
  *      Not sure why a pointer is used, instead of nice "const std::string
- *      &" parameter.  And this pointer isn't checked.
+ *      &" parameter.  And this pointer isn't checked.  Fixed.
  */
 
 void
@@ -1146,9 +1150,9 @@ perform::set_screenset (int ss)
 void
 perform::set_playing_screenset ()
 {
-    for (int j, i = 0; i < m_seqs_in_set; ++i)
+    for (int i = 0; i < m_seqs_in_set; ++i)
     {
-        j = i + m_playscreen_offset;    /* m_playing_screen * m_seqs_in_set */
+        int j = i + m_playscreen_offset;    /* m_playing_screen*m_seqs_in_set */
         if (is_active(j))
             m_tracks_mute_state[i] = m_seqs[j]->get_playing();
     }
@@ -2415,7 +2419,7 @@ perform::input_func ()
                                 {
                                     if (midi_control_toggle(i).in_range(data[1]))
                                     {
-                                        if (i <  m_seqs_in_set)
+                                        if (i < m_seqs_in_set)
                                             sequence_playing_toggle(i+m_offset);
                                     }
                                 }
@@ -2423,14 +2427,14 @@ perform::input_func ()
                                 {
                                     if (midi_control_on(i).in_range(data[1]))
                                     {
-                                        if (i <  m_seqs_in_set)
+                                        if (i < m_seqs_in_set)
                                             sequence_playing_on(i+m_offset);
                                         else
                                             handle_midi_control(i, true);
                                     }
                                     else if (midi_control_on(i).inverse_active())
                                     {
-                                        if (i <  m_seqs_in_set)
+                                        if (i < m_seqs_in_set)
                                             sequence_playing_off(i+m_offset);
                                         else
                                             handle_midi_control(i, false);
@@ -2440,14 +2444,14 @@ perform::input_func ()
                                 {
                                     if (midi_control_on(i).in_range(data[1]))
                                     {
-                                        if (i <  m_seqs_in_set)
+                                        if (i < m_seqs_in_set)
                                             sequence_playing_off(i+m_offset);
                                         else
                                             handle_midi_control(i, false);
                                     }
                                     else if (midi_control_off(i).inverse_active())
                                     {
-                                        if (i <  m_seqs_in_set)
+                                        if (i < m_seqs_in_set)
                                             sequence_playing_on(i+m_offset);
                                         else
                                             handle_midi_control(i, true);

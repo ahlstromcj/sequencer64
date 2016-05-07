@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-10-10
- * \updates       2015-12-06
+ * \updates       2016-05-06
  * \license       GNU GPLv2 or above
  *
  */
@@ -55,21 +55,18 @@
     (((p) & SEQ64_PROPTAG_HIGHWORD) == SEQ64_PROPTAG_HIGHWORD)
 
 /**
- *  The maximum sequence number, in macro form.
- */
-
-/**
- *  Inidcates that no sequence value has been assigned yet.  See the value
+ *  The maximum sequence number, in macro form.  This value indicates that no
+ *  background sequence value has been assigned yet.  See the value
  *  seqedit::m_initial_sequence, which was originally set to -1 directly.
- *  However, we have issues saving a negative number, so we will use the
- *  "proprietary" track's bogus sequence number, which double the 1024
+ *  However, we have issues saving a negative number in MIDI, so we will use
+ *  the "proprietary" track's bogus sequence number, which double the 1024
  *  sequences we can support.  Values between 0 (inclusive) and
  *  SEQ64_SEQUENCE_LIMIT (exclusive) are valid.  But SEQ64_SEQUENCE_LIMIT is a
  *  <i> legal</i> value, used only for disabling the selection of a background
  *  sequence.
  */
 
-#define SEQ64_SEQUENCE_LIMIT        0x0800          /* 2048 */
+#define SEQ64_SEQUENCE_LIMIT            0x0800          /* 2048 */
 
 /**
  *  A convenient macro function to test against SEQ64_SEQUENCE_LIMIT.
@@ -93,7 +90,8 @@
 #define SEQ64_IS_DISABLED_SEQUENCE(s)   ((s) == SEQ64_SEQUENCE_LIMIT)
 
 /**
- *  Provides a way to detect a sequence number that has not yet been assigned.
+ *  Provides a way to detect that a background sequence number that has not
+ *  yet been assigned.
  */
 
 #define SEQ64_IS_NULL_SEQUENCE(s)       ((s) == (-1))
@@ -144,11 +142,10 @@ class sequence;
  *  Also note that c_triggers has been replaced by c_triggers_new as the code
  *  that marks the triggers stored with a sequence.
  *
- *  As an extension, we will eventually grab the last key, scale, and
- *  background sequence value selected in a sequence and write them as track
- *  data, where they can be read in and applied to a specific sequence, when
- *  the seqedit object is created.  These values would not be stored in the
- *  legacy format.
+ *  As an extension, we can also grab the key, scale, and background sequence
+ *  value selected in a sequence and write these values as track data, where
+ *  they can be read in and applied to a specific sequence, when the seqedit
+ *  object is created.  These values would not be stored in the legacy format.
  *
  *  Something like this could be done in the "user" configuration file, but
  *  then the key and scale would apply to all songs.  We don't want that.
@@ -158,19 +155,19 @@ class sequence;
  *  preferences.
  */
 
-const midilong c_midibus =          0x24240001;     /* track buss number    */
-const midilong c_midich =           0x24240002;     /* track channel number */
-const midilong c_midiclocks =       0x24240003;     /* track clocking       */
-const midilong c_triggers =         0x24240004;     /* see c_triggers_new   */
-const midilong c_notes =            0x24240005;     /* song ??? data        */
-const midilong c_timesig =          0x24240006;     /* track time signature */
-const midilong c_bpmtag =           0x24240007;     /* song beats/minute    */
-const midilong c_triggers_new =     0x24240008;     /* track trigger data   */
-const midilong c_mutegroups =       0x24240009;     /* song mute group data */
-const midilong c_midictrl =         0x24240010;     /* song MIDI control    */
-const midilong c_musickey =         0x24240011;     /* track key            */
-const midilong c_musicscale =       0x24240012;     /* track scale          */
-const midilong c_backsequence =     0x24240013;     /* track b'ground seq   */
+const midilong c_midibus =      0x24240001; /**< Track buss number.         */
+const midilong c_midich =       0x24240002; /**< Track channel number.      */
+const midilong c_midiclocks =   0x24240003; /**< Track clocking.            */
+const midilong c_triggers =     0x24240004; /**< See c_triggers_new.        */
+const midilong c_notes =        0x24240005; /**< Song data.                 */
+const midilong c_timesig =      0x24240006; /**< Track time signature.      */
+const midilong c_bpmtag =       0x24240007; /**< Song beats/minute.         */
+const midilong c_triggers_new = 0x24240008; /**< Track trigger data.        */
+const midilong c_mutegroups =   0x24240009; /**< Song mute group data.      */
+const midilong c_midictrl =     0x24240010; /**< Song MIDI control.         */
+const midilong c_musickey =     0x24240011; /**< The track's key.           */
+const midilong c_musicscale =   0x24240012; /**< The track's scale.         */
+const midilong c_backsequence = 0x24240013; /**< Track background sequence. */
 
 /**
  *    This class is the abstract base class for a container of MIDI track
@@ -254,14 +251,19 @@ protected:
     }
 
     /**
-     *  Returns the current position.  Before the return, the position counter
-     *  is incremented to the next position.
+     * \getter m_position_for_get
+     *      Returns the current position.
      */
 
     unsigned int position () const
     {
         return m_position_for_get;
     }
+
+    /**
+     * \getter m_position_for_get
+     *      Increments the current position.
+     */
 
     void position_increment () const
     {

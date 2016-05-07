@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-21
- * \updates       2015-11-23
+ * \updates       2016-05-06
  * \license       GNU GPLv2 or above
  *
  */
@@ -65,19 +65,46 @@ const int c_midi_control_mod_glearn   = c_midi_track_ctrl + 8;
 const int c_midi_control_play_ss      = c_midi_track_ctrl + 9;
 const int c_midi_controls             = c_midi_track_ctrl + 10;
 
-/*
- * This class (actually a struct) contains the control information for
- * sequences that make up a live
- * set.
+/**
+ *  This class (formerly a struct) contains the control information for
+ *  sequences that make up a live set.
  *
- * Note that, although we've converted this to a full-fledged class, the
- * ordering of variables and the data arrays used to fill them is very
- * signifcant.  See the midifile and optionsfile modules.
+ *  Note that, although we've converted this to a full-fledged class, the
+ *  ordering of variables and the data arrays used to fill them is very
+ *  signifcant.  See the midifile and optionsfile modules.
  *
- * Why are the status, data, and min/max values long?  A character
- * or midibyte would be enough.  We'll fix that later, once we have tested
- * this stuff.  We do need to convert them from long to int, though, and
- * do that in the scanning and output done by optionsfile.
+ *  The perform module sets up the three following arrays for each of the MIDI
+ *  controls that can be defined in the "rc" file:
+ *
+\verbatim
+    m_midi_cc_toggle[]
+    m_midi_cc_on[]
+    m_midi_cc_off[]
+\endverbatim
+ *
+ *  These three arrays are specified in the "rc" by a line like the following:
+ *
+\verbatim
+    n [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+\endverbatim
+ *
+ *  where n ranges from 0 to 73.  Lines 0 to 31 provide controller values for
+ *  the "pattern group", one line for each of the 32 pattern slots.
+ *  Lines 32 to 63 provide controller values for
+ *  the "mute in group", one line for each of the 32 pattern slots.
+ *  The rest of the lines provide entries for control of:
+ *  BPM up, BPM down, Screen-set up, Screen-set down, Mod Replaces, Mod
+ *  Snapshot, Mod Queue, Mod gmute (group mute), Mod glearn (group learn),
+ *  and Screen-set Play.
+ *
+ *  In each of the bracketed sections, the values correspond to the members in
+ *  this order: m_active, m_inverse_active, m_status, m_data, m_min_value, and
+ *  m_max_value.
+ *
+ *  Why are the status, data, and min/max values long?  A character or
+ *  midibyte would be enough.  We'll fix that later, once we have tested this
+ *  stuff.  We do need to convert them from long to int, though, and do that
+ *  in the scanning and output done by optionsfile.
  */
 
 class midi_control
@@ -85,11 +112,40 @@ class midi_control
 
 private:
 
+    /**
+     *  Provides the value for active.
+     */
+
     bool m_active;
+
+    /**
+     *  Provides the value for inverse-active.
+     */
+
     bool m_inverse_active;
+
+    /**
+     *  Provides the value for the status.
+     */
+
     int m_status;               // midibyte
+
+    /**
+     *  Provides the value for the data.
+     */
+
     int m_data;                 // midibyte
+
+    /**
+     *  Provides the minimum value for the controller.
+     */
+
     int m_min_value;
+
+    /**
+     *  Provides the value for the controller.
+     */
+
     int m_max_value;
 
 public:
@@ -167,6 +223,11 @@ public:
     /**
      *  Not so sure if this really saves trouble for the caller.  It fits in
      *  with the big-ass sscanf() call in optionsfile.
+     *
+     * \param values
+     *      Provides the six values, in an integer array, to set into the
+     *      members in this order: m_active, m_inverse_active, m_status,
+     *      m_data, m_min_value, and m_max_value.
      */
     
     void set (int values[6])
@@ -182,6 +243,11 @@ public:
     /**
      *  Not so sure if this really saves trouble for the caller.  It fits in
      *  with the usage in midifile.
+     *
+     * \param values
+     *      Provides the six values, in a byte array, to set into the
+     *      members in this order: m_active, m_inverse_active, m_status,
+     *      m_data, m_min_value, and m_max_value.
      */
     
     void set (midibyte values[6])
@@ -196,6 +262,12 @@ public:
 
     /**
      *  Handles a common check in the perform module.
+     *
+     * \param status
+     *      Provides the status byte, which is checked against m_status.
+     *
+     * \param data
+     *      Provides the data byte, which is checked against m_data.
      */
 
     bool match (midibyte status, midibyte data) const

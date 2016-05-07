@@ -478,8 +478,8 @@ midibus::sysex (event * e24)
         (
             &ev, min(data_left, c_midibus_sysex_chunk), &data[offset]
         );
-        snd_seq_event_output_direct(m_seq, &ev);    /* pump into the queue */
-        usleep(80000);
+        snd_seq_event_output_direct(m_seq, &ev);        /* pump into queue  */
+        usleep(80000);                                  /* why this value?  */
         flush();
     }
 #endif  // SEQ64_HAVE_LIBASOUND

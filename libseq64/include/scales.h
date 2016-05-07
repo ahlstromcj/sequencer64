@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-06
- * \updates       2016-05-02
+ * \updates       2016-05-05
  * \license       GNU GPLv2 or above
  *
  *  These values were moved from the globals module.
@@ -189,19 +189,27 @@ const int c_scales_transpose_dn[c_scale_size][SEQ64_OCTAVE_SIZE] =
     Major               C  .  D  .  E  F  .  G  .  A  .  B
     Transpose down      1  0  2  0  2  1  0  2  0  2  0  2
     Result down         B  .  C  .  D  E  .  F  .  G  .  A
-
+\endverbatim
+ *
+\verbatim
     Minor               C  .  D  D# .  F  .  G  G# .  A# .
     Transpose down      2  0  2  1  0  2  0  2  1  0  2  0
     Result down         A# .  C  D  .  D# .  F  G  .  G# .
-
+\endverbatim
+ *
+\verbatim
     Harmonic minor      C  .  D  Eb .  F  .  G  Ab .  .  B
     Transpose down      1  .  2  1  .  2  .  2  1  .  .  3
     Result down         B  .  C  D  .  Eb .  F  G  .  .  Ab
-
+\endverbatim
+ *
+\verbatim
     Melodic minor       C  .  D  Eb .  F  .  G  .  A  .  B
     Transpose down      1  .  2  1  .  2  .  2  .  2  .  2
     Result down         B  .  C  D  .  Eb .  F  .  G  .  A
-
+\endverbatim
+ *
+\verbatim
     C whole tone        C  .  D  .  E  .  F# .  G# .  A# .
     Transpose down      2  .  2  .  2  .  2  .  2  .  2  .
     Result down         A# .  C  .  D  .  E  .  F# .  G# .
@@ -219,7 +227,7 @@ const int c_scales_transpose_dn_neg[c_scale_size][SEQ64_OCTAVE_SIZE] =
 };
 
 /**
- *  The names of the supported scales.
+ *  The names of the currently-supported scales.
  */
 
 const char c_scales_text[c_scale_size][32] =                /* careful!        */

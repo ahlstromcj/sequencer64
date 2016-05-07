@@ -41,14 +41,28 @@ namespace seq64
 {
 
 /**
- *  Manifest global constants.
+ *  Manifest global constants.  These constants were also defined in
+ *  midibus_portmidi.h, but we made them common to both implementations here.
  *
- *  These constants were also defined in midibus_portmidi.h, but we made
- *  them common to both implementations here.
+ *  The c_midibus_output_size value is passed, in mastermidibus,  to
+ *  snd_seq_set_output_buffer_size().  Not sure if the value needs to be so
+ *  large.
  */
 
 const int c_midibus_output_size = 0x100000;     // 1048576
+
+/**
+ *  The c_midibus_input_size value is passed, in mastermidibus,  to
+ *  snd_seq_set_input_buffer_size().  Not sure if the value needs to be so
+ *  large.
+ */
+
 const int c_midibus_input_size  = 0x100000;     // 1048576
+
+/**
+ *  Controls the amount a SysEx data sent at one time, in the midibus module.
+ */
+
 const int c_midibus_sysex_chunk = 0x100;        //     256
 
 /**

@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-07-23
- * \updates       2016-02-21
+ * \updates       2016-05-05
  * \license       GNU GPLv2 or above
  *
  *  This class contains a number of functions that used to reside in the
@@ -78,21 +78,21 @@ class jack_scratchpad
 
 public:
 
-    double js_current_tick;
-    double js_total_tick;
+    double js_current_tick;             /**< Holds current location.        */
+    double js_total_tick;               /**< Current location ignoring L/R. */
 #ifdef USE_SEQ24_0_9_3_CODE
-    long js_clock_tick;                 /* changed in seq24 0.9.3   */
+    long js_clock_tick;                 /* changed in seq24 0.9.3           */
 #else
-    double js_clock_tick;
+    double js_clock_tick;               /**< Identical to js_total_tick.    */
 #endif
-    bool js_jack_stopped;
-    bool js_dumping;
-    bool js_init_clock;
-    bool js_looping;                    /* perform::m_looping       */
-    bool js_playback_mode;              /* perform::m_playback_mode */
-    double js_ticks_converted_last;
+    bool js_jack_stopped;               /**< Flags perform::inner_stop().   */
+    bool js_dumping;                    /**< Non-JACK playback in progress? */
+    bool js_init_clock;                 /**< We now have a good JACK lock.  */
+    bool js_looping;                    /**< seqedit loop button is active. */
+    bool js_playback_mode;              /**< Song mode (versus live mode).  */
+    double js_ticks_converted_last;     /**< Keeps track of position?       */
 #ifdef USE_SEQ24_0_9_3_CODE
-    long js_delta_tick_frac;            /* seq24 0.9.3              */
+    long js_delta_tick_frac;            /* seq24 0.9.3                      */
 #endif
 
 };
@@ -147,26 +147,121 @@ class jack_assistant
 
 private:
 
+    /**
+     *  Pairs the JACK status bits with human-readable descriptions of each
+     *  one.
+     */
+
     static jack_status_pair_t sm_status_pairs [];
 
+    /**
+     *  Provides the perform object that needs this JACK assistant/scratchpad
+     *  class.
+     */
+
     perform & m_jack_parent;
+
+    /**
+     *  Provides a handle into JACK, so that the application, as a JACK
+     *  client, can issue commands and retrieve status information from JACK.
+     */
+
     jack_client_t * m_jack_client;
+
+    /**
+     *  Holds the current frame number obtained from JACK transport, via a
+     *  call to jack_get_current_transport_frame().
+     */
+
     jack_nframes_t m_jack_frame_current;
+
+    /**
+     *  Holds the last frame number we got from JACK, so that progress can be
+     *  tracked.  Also used in incrementing m_jack_tick.
+     */
+
     jack_nframes_t m_jack_frame_last;
+
+    /**
+     *  Provides positioning information on JACK playback.  This structure is
+     *  filled via a call to jack_transport_query().  It holds, among other
+     *  items, the frame rate (often 48000), the ticks/beat, and the
+     *  beats/minute.
+     */
+
     jack_position_t m_jack_pos;
+
+    /**
+     *  Holds the JACK transport state.  Common values are
+     *  JackTransportStopped, JackTransportRolling, and JackTransportLooping.
+     */
+
     jack_transport_state_t m_jack_transport_state;
+
+    /**
+     *  Holds the last JACK transport state.
+     */
+
     jack_transport_state_t m_jack_transport_state_last;
+
+    /**
+     *  The tick/pulse value derived from the current frame number, the
+     *  ticks/beat value, the beats/minute value, and the frame rate.
+     */
+
     double m_jack_tick;
 
 #ifdef SEQ64_JACK_SESSION
+
+    /**
+     *  Provides a kind of handle to the JACK session manager.  Used in the
+     *  session_event() function.
+     */
+
     jack_session_event_t * m_jsession_ev;
 #endif
 
+    /**
+     *  Indicates if JACK Sync has been enabled successfully.
+     */
+
     bool m_jack_running;
+
+    /**
+     *  Indicates if JACK Sync has been enabled successfully, with the
+     *  application running as JACK Master.
+     */
+
     bool m_jack_master;
+
+    /**
+     *  Holds the global PPQN value for the Sequencer64 session.  It is used
+     *  for calculating ticks/beat (pulses/beat) and for setting the tick
+     *  position.
+     *
+     */
+
     int m_ppqn;
+
+    /**
+     *  Holds the song's beats/measure value for using in setting JACK
+     *  position.
+     */
+
     int m_beats_per_measure;
+
+    /**
+     *  Holds the song's beat width value (denominator of the time signature)
+     *  for using in setting JACK position.
+     */
+
     int m_beat_width;
+
+    /**
+     *  Holds the song's beats/minute (BPM) value for using in setting JACK
+     *  position.
+     */
+
     int m_beats_per_minute;
 
 public:
@@ -229,6 +324,10 @@ public:
 
     /**
      * \setter m_beat_width
+     *
+     * \param bw
+     *      Provides the beat-width (denominator of the time signature)
+     *      value to set.
      */
 
     void set_beat_width (int bw)
@@ -247,6 +346,10 @@ public:
 
     /**
      * \setter m_beats_per_measure
+     *
+     * \param bpm
+     *      Provides the beats/measure (numerator of the time signature)
+     *      value to set.
      */
 
     void set_beats_per_measure (int bpm)
@@ -268,6 +371,9 @@ public:
      *      For the future, changing the BPM (beats/minute) internally.  We
      *      should consider adding validation.  However,
      *      perform::set_beats_per_minute() does validate already.
+     *
+     * \param bpminute
+     *      Provides the beats/minute value to set.
      */
 
     void set_beats_per_minute (int bpminute)
@@ -295,6 +401,9 @@ public:
      * \setter m_ppqn
      *      For the future, changing the PPQN internally.  We should consider
      *      adding validation.  But it is used by perform.
+     *
+     * \param ppqn
+     *      Provides the PPQN value to set.
      */
 
     void set_ppqn (int ppqn)
@@ -324,6 +433,9 @@ private:
 
     /**
      * \setter m_jack_running
+     *
+     * \param flag
+     *      Provides the is-running value to set.
      */
 
     void set_jack_running (bool flag)

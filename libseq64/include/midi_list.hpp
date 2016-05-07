@@ -58,8 +58,7 @@ private:
 
     /**
      *  Provides the type of this container.  This type is basically the same
-     *  as the container used in the midifile module, and almost identical to
-     *  the CharList type defined in the sequence module.
+     *  as the midifile::m_char_list container in the midifile module.
      */
 
     typedef std::list<midibyte> CharList;
@@ -103,9 +102,8 @@ public:
     }
 
     /**
-     *  Provides a way to add a MIDI byte into the list.
-     *  The original seq24 list used an std::list and a push_front
-     *  operation.
+     *  Provides a way to add a MIDI byte into the list.  The original seq24
+     *  list used an std::list and a push_front operation.
      */
 
     virtual void put (midibyte b)
@@ -114,9 +112,9 @@ public:
     }
 
     /**
-     *  Provide a way to get the next byte from the container.
-     *  In this implementation, m_position_for_get is not used.  The elements
-     *  of the container are popped off backward!
+     *  Provide a way to get the next byte from the container.  In this
+     *  implementation, m_position_for_get is not used.  The elements of the
+     *  container are popped off backward!
      */
 
     virtual midibyte get ()

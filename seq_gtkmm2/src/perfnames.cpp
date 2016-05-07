@@ -418,7 +418,7 @@ perfnames::redraw_dirty_sequences ()
         int seq = y + m_sequence_offset;
         if (seq < m_sequence_max)
         {
-            bool dirty = (perf().is_dirty_names(seq));
+            bool dirty = perf().is_dirty_names(seq);
             if (dirty)
                 draw_sequence(seq);
         }

@@ -256,6 +256,9 @@ private:
     /**
      *  Writes 1 byte.  The byte is written to the m_char_list member, using a
      *  call to push_back().
+     *
+     * \param c
+     *      The MIDI byte to be "written".
      */
 
     void write_byte (midibyte c)

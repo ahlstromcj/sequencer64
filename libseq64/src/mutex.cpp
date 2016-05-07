@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-09-13
+ * \updates       2016-05-06
  * \license       GNU GPLv2 or above
  *
  */
@@ -52,7 +52,7 @@ const pthread_mutex_t mutex::sm_recursive_mutex =
  *  Define the static condition variable used by all mutex locks.
  */
 
-const pthread_cond_t condition_var::cond = PTHREAD_COND_INITIALIZER;
+const pthread_cond_t condition_var::sm_cond = PTHREAD_COND_INITIALIZER;
 
 /**
  *  The constructor assigns the recursive mutex to the local locking
@@ -92,7 +92,8 @@ mutex::unlock () const
 
 condition_var::condition_var ()
  :
-    m_cond  (cond)
+    mutex   (),                         // @new ca 2016-05-06 (!)
+    m_cond  (sm_cond)
 {
     // Empty body
 }
@@ -124,3 +125,4 @@ condition_var::wait ()
  *
  * vim: sw=4 ts=4 wm=4 et ft=cpp
  */
+

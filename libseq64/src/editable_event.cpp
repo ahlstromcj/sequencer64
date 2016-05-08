@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-05-05
+ * \updates       2016-05-07
  * \license       GNU GPLv2 or above
  *
  *  A MIDI editable event is encapsulated by the seq64::editable_event
@@ -294,6 +294,10 @@ editable_event::name_to_value
 
 /**
  *  Principal constructor.
+ *
+ * \param parent
+ *      Provides the overall editable-events object that manages the whole set
+ *      of editable-event.
  */
 
 editable_event::editable_event (const editable_events & parent)
@@ -409,6 +413,9 @@ editable_event::operator = (const editable_event & rhs)
  * \setter m_category by value
  *      Also keeps the m_name_category member in synchrony.  Note that a bad
  *      value is translated to the value of category_name.
+ *
+ * \param c
+ *      Provides the category value to set.
  */
 
 void
@@ -423,11 +430,14 @@ editable_event::category (category_t c)
 }
 
 /**
- * \setter m_category by value
+ * \setter m_category by name
  *      Also keeps the m_name_category member in synchrony, but looks up the
  *      name, rather than using the name parameter, to avoid storing
  *      abbreviations.  Note that a bad value is translated to the value of
  *      category_name.
+ *
+ * \param c
+ *      Provides the category name for the category value to set.
  */
 
 void
@@ -448,11 +458,11 @@ editable_event::category (const std::string & name)
  *      slavish to the get/set crowd [this ain't Java].  Plus, we also
  *      have to set the string version at the same time.
  *
- * \param ts
- *      Provides the timestamp in units of MIDI pulses.
- *
  *  The format of the string representation is of the format selected by the
  *  m_format_timestamp member and is set by the format_timestamp() function.
+ *
+ * \param ts
+ *      Provides the timestamp in units of MIDI pulses.
  */
 
 void
@@ -465,11 +475,11 @@ editable_event::timestamp (midipulse ts)
 /**
  * \setter event::set_timestamp() [string version]
  *
- * \param ts_string
- *      Provides the timestamp in units of MIDI pulses.
- *
  *  The format of the string representation is of the format selected by the
  *  m_format_timestamp member and is set by the format_timestamp() function.
+ *
+ * \param ts_string
+ *      Provides the timestamp in units of MIDI pulses.
  */
 
 void
@@ -540,7 +550,7 @@ editable_event::time_as_minutes ()
  *      Provides the time-stamp string of the event.
  *
  * \param s
- *      Provides the name  of the event, such as "Program Change".
+ *      Provides the name of the event, such as "Program Change".
  *
  * \param sd0
  *      Provides the string defining the first data byte of the event.
@@ -589,9 +599,12 @@ editable_event::set_status_from_string
 }
 
 /**
- *  Converts the event into a string desribing the full event.
- *  We get the time-stamp as a string, make sure the event is fully analyzed so
- *  that all items and strings are set correctly.
+ *  Converts the event into a string desribing the full event.  We get the
+ *  time-stamp as a string, make sure the event is fully analyzed so that all
+ *  items and strings are set correctly.
+ *
+ * \return
+ *      Returns a human-readable string describing this event.
  */
 
 std::string
@@ -619,9 +632,9 @@ editable_event::stock_event_string ()
  *      This function can figure out if the status byte implies a channel
  *      message or a system message, and set the category string as well.
  *      However, at this time, detection of Meta events (0xFF) or
- *      Proprietary/SeqSpec events (0xFF with 0x2424) aren't able to be
- *      detected due to lack of context here (and due to the fact that
- *      currently such events are not yet stored in a sequence, and the
+ *      Proprietary/SeqSpec events (0xFF with 0x2424) doesn't work due to lack
+ *      of context here (and due to the fact that currently such events are
+ *      not yet stored in a Sequencer64 sequence/track, and the
  *      least-significant-byte gets masked off anyway.)
  *
  * Status:

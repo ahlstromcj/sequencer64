@@ -442,6 +442,9 @@ event::get_rank () const
  *  A free function to convert an event into an informative string, just
  *  enough to save some debugging time.  Nothing fancy.  If you want that, use
  *  the midicvt project.
+ *
+ * \param ev
+ *      The event to put on show.
  */
 
 std::string

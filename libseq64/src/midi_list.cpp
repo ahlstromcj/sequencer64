@@ -37,6 +37,9 @@ namespace seq64
 
 /**
  *    This constructor fills in the members.
+ *
+ * \param seq
+ *      The sequence/track object that is using this container.
  */
 
 midi_list::midi_list (sequence & seq)

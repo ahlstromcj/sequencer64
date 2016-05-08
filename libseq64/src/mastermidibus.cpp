@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-30
- * \updates       2016-03-04
+ * \updates       2016-05-07
  * \license       GNU GPLv2 or above
  *
  *  This file provides a Linux-only implementation of MIDI support.
@@ -174,7 +174,7 @@ mastermidibus::mastermidibus (int ppqn, int bpm)
 
 mastermidibus::~mastermidibus ()
 {
-    for (int i = 0; i < m_num_out_buses; i++)
+    for (int i = 0; i < m_num_out_buses; ++i)
     {
         if (not_nullptr(m_buses_out[i]))
         {
@@ -182,7 +182,7 @@ mastermidibus::~mastermidibus ()
             m_buses_out[i] = nullptr;
         }
     }
-    for (int i = 0; i < m_num_in_buses; i++)
+    for (int i = 0; i < m_num_in_buses; ++i)
     {
         if (not_nullptr(m_buses_in[i]))
         {
@@ -218,7 +218,11 @@ mastermidibus::~mastermidibus ()
 
 /**
  *  Initialize the mastermidibus.  It initializes 16 MIDI output busses, a
- *  hardwired constant, 16.  Only one MIDI input buss is initialized.
+ *  hardwired constant, SEQ64_ALSA_OUTPUT_BUSS_MAX == 16.  Only one MIDI input
+ *  buss is initialized.
+ *
+ * \param ppqn
+ *      The PPQN value to which to initialize the master MIDI buss.
  */
 
 void
@@ -231,7 +235,7 @@ mastermidibus::init (int ppqn)
     snd_seq_client_info_set_client(cinfo, -1);
     if (rc().manual_alsa_ports())
     {
-        int num_buses = 16;
+        int num_buses = SEQ64_ALSA_OUTPUT_BUSS_MAX;
         for (int i = 0; i < num_buses; ++i)
         {
             if (not_nullptr(m_buses_out[i]))
@@ -351,12 +355,6 @@ mastermidibus::init (int ppqn)
         }                                       /* end loop for clients */
     }
     set_beats_per_minute(m_beats_per_minute);
-
-    /*
-     * set_bpm( c_bpm );
-     * set_ppqn(c_ppqn);
-     */
-
     set_ppqn(ppqn);
 
     /*
@@ -648,14 +646,18 @@ mastermidibus::get_clock (bussbyte bus)
 
 /**
  *  Set the status of the given input buss, if a legal buss number.
- *
  *  Why is another buss-count constant, and a global one at that, being
- *  used?  And I thought there was only one input buss anyway!
+ *  used?  And I thought there was only one input buss anyway!  Well,
+ *  there is only one ALSA input buss, but more can be used with JACK,
+ *  apparently.
  *
  * \threadsafe
  *
  * \param bus
  *      Provides the buss number.
+ *
+ * \param inputing
+ *      True if the input bus will be inputting MIDI data.
  */
 
 void

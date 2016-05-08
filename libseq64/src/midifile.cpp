@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-04-09
+ * \updates       2016-05-07
  * \license       GNU GPLv2 or above
  *
  *  For a quick guide to the MIDI format, see, for example:
@@ -66,7 +66,7 @@
  *  The maximum length of a Seq24 track name.  This is a bit excessive.
  */
 
-#define TRACKNAME_MAX                256
+#define SEQ64_TRACKNAME_MAX          256
 
 /**
  *  Highlights the MIDI file header value, "MThd".
@@ -187,35 +187,46 @@ midifile::~midifile ()
  *
  * \warning
  *      This code looks endian-dependent and integer-size dependent.
+ *
+ * \return
+ *      Returns the four bytes, shifted appropriately and added together,
+ *      most-significant byte first, to sum to a long value.
  */
 
 midilong
 midifile::read_long ()
 {
-    midilong result = 0;
-    result += (read_byte() << 24);
-    result += (read_byte() << 16);
-    result += (read_byte() << 8);
-    result += (read_byte());
+    midilong result = read_byte() << 24;
+    result += read_byte() << 16;
+    result += read_byte() << 8;
+    result += read_byte();
     return result;
 }
 
 /**
  *  Reads 2 bytes of data using read_byte().
+ *
+ * \return
+ *      Returns the two bytes, shifted appropriately and added together,
+ *      most-significant byte first, to sum to a short value.
  */
 
 midishort
 midifile::read_short ()
 {
-    midishort result = 0;
-    result += (read_byte() << 8);
-    result += (read_byte());
+    midishort result = read_byte() << 8;
+    result += read_byte();
     return result;
 }
 
 /**
  *  Reads 1 byte of data directly from the m_data vector, incrementing
  *  m_pos after doing so.
+ *
+ * \return
+ *      Returns the byte that was read.  Returns 0 if there was an error,
+ *      though there's no way for the caller to determine if this is an error
+ *      or a good value.
  */
 
 midibyte
@@ -238,6 +249,9 @@ midifile::read_byte ()
  *  of bytes.  This function reads the bytes while bit 7 is set in each
  *  byte.  Bit 7 is a continuation bit.  See write_varinum() for more
  *  information.
+ *
+ * \return
+ *      Returns the accumulated values as a single number.
  */
 
 midilong
@@ -248,10 +262,10 @@ midifile::read_varinum ()
     while (((c = read_byte()) & 0x80) != 0x00)      /* while bit 7 is set  */
     {
         result <<= 7;                               /* shift result 7 bits */
-        result += (c & 0x7F);                       /* add bits 0-6        */
+        result += c & 0x7F;                         /* add bits 0-6        */
     }
     result <<= 7;                                   /* bit was clear       */
-    result += (c & 0x7F);
+    result += c & 0x7F;
     return result;
 }
 
@@ -464,7 +478,7 @@ midifile::pow2 (int logbase2)
     else
     {
         result = 2;
-        for (int c = 1; c < logbase2; c++) 
+        for (int c = 1; c < logbase2; ++c) 
             result *= 2;
     }
     return result;
@@ -530,7 +544,6 @@ midifile::add_trigger (sequence & seq, midishort ppqn)
     seq.add_trigger(on, length, offset, false);
 }
 
-
 /**
  *  This function parses an SMF 1 binary MIDI file; it is basically the
  *  original seq25 midifile::parse() function.  It assumes the file-data has
@@ -564,12 +577,12 @@ midifile::parse_smf_1 (perform & p, int screenset, bool is_smf0)
      */
 
     char buss_override = usr().midi_buss_override();
-    for (int curtrack = 0; curtrack < NumTracks; curtrack++)
+    for (int curtrack = 0; curtrack < NumTracks; ++curtrack)
     {
         midipulse Delta;                            /* MIDI delta time      */
         midipulse RunningTime;
         midipulse CurrentTime;
-        char TrackName[TRACKNAME_MAX];              /* track name from file */
+        char TrackName[SEQ64_TRACKNAME_MAX];        /* track name from file */
         midilong ID = read_long();                  /* get track marker     */
         midilong TrackLength = read_long();         /* get track length     */
         if (ID == SEQ64_TRACK_TAG)                  /* magic number 'MTrk'  */
@@ -600,7 +613,7 @@ midifile::parse_smf_1 (perform & p, int screenset, bool is_smf0)
                 if ((status & 0x80) == 0x00)    /* is it a status bit ?     */
                     status = laststatus;        /* no, it's running status  */
                 else
-                    m_pos++;                    /* it's a status, increment */
+                    ++m_pos;                    /* it's a status, increment */
 
                 e.set_status(status);           /* set the members in event */
 
@@ -848,10 +861,10 @@ midifile::parse_smf_1 (perform & p, int screenset, bool is_smf0)
                             if (! checklen(len, type))
                                 return false;
 
-                            if (len > TRACKNAME_MAX)
-                                len = TRACKNAME_MAX;    /* avoid a vuln     */
+                            if (len > SEQ64_TRACKNAME_MAX)
+                                len = SEQ64_TRACKNAME_MAX;
 
-                            for (int i = 0; i < int(len); i++)
+                            for (int i = 0; i < int(len); ++i)
                                 TrackName[i] = char(read_byte());
 
                             TrackName[len] = '\0';
@@ -871,7 +884,7 @@ midifile::parse_smf_1 (perform & p, int screenset, bool is_smf0)
                             if (! checklen(len, type))
                                 return false;
 
-                            for (int i = 0; i < int(len); i++)
+                            for (int i = 0; i < int(len); ++i)
                                 (void) read_byte();     /* ignore the rest  */
                             break;
                         }
@@ -1129,9 +1142,7 @@ midifile::parse_proprietary_track (perform & p, int file_size)
         }
     }
     else
-    {
         m_pos -= 4;                                 /* unread the "ID code" */
-    }
 
     if (result)
     {
@@ -1157,7 +1168,7 @@ midifile::parse_proprietary_track (perform & p, int file_size)
                 seqs = midilong(read_byte());
             }
             midibyte a[6];
-            for (int i = 0; i < seqs; i++)
+            for (int i = 0; i < seqs; ++i)
             {
                 read_byte_array(a, 6);
                 p.midi_control_toggle(i).set(a);
@@ -1195,11 +1206,11 @@ midifile::parse_proprietary_track (perform & p, int file_size)
         if (seqspec == c_notes)
         {
             midishort screen_sets = read_short();
-            for (midishort x = 0; x < screen_sets; x++)
+            for (midishort x = 0; x < screen_sets; ++x)
             {
                 midishort len = read_short();           /* length of string */
                 std::string notess;
-                for (midishort i = 0; i < len; i++)
+                for (midishort i = 0; i < len; ++i)
                     notess += read_byte();              /* unsigned!        */
 
                 p.set_screen_set_notepad(x, notess);
@@ -1230,7 +1241,7 @@ midifile::parse_proprietary_track (perform & p, int file_size)
                 errdump(m_error_message.c_str());
                 result = false;                         /* but keep going   */
             }
-            for (int i = 0; i < c_seqs_in_set; i++)
+            for (int i = 0; i < c_seqs_in_set; ++i)
             {
                 midilong groupmute = read_long();
                 p.select_group_mute(int(groupmute));
@@ -1257,9 +1268,9 @@ midifile::parse_proprietary_track (perform & p, int file_size)
         }
 
         /*
-         * We will let Sequencer64 try to read this new stuff even if legacy mode
-         * is in force, and the global-background sequence is in force.  These two
-         * flags should affect only the writing of the MIDI file, not the reading.
+         * We let Sequencer64 read this new stuff even if legacy mode or the
+         * global-background sequence is in force.  These two flags affect
+         * only the writing of the MIDI file, not the reading.
          */
 
         seqspec = parse_prop_header(file_size);
@@ -1289,10 +1300,14 @@ midifile::parse_proprietary_track (perform & p, int file_size)
 }
 
 /**
- *  Writes 4 bytes, using the write_byte() function.
+ *  Writes 4 bytes, each extracted from the long value and shifted rightward
+ *  down to byte size, using the write_byte() function.
  *
  * \warning
  *      This code looks endian-dependent.
+ *
+ * \param x
+ *      The long value to be written to the MIDI file.
  */
 
 void
@@ -1305,10 +1320,14 @@ midifile::write_long (midilong x)
 }
 
 /**
- *  Writes 2 bytes, using the write_byte() function.
+ *  Writes 2 bytes, each extracted from the long value and shifted rightward
+ *  down to byte size, using the write_byte() function.
  *
  * \warning
  *      This code looks endian-dependent.
+ *
+ * \param x
+ *      The short value to be written to the MIDI file.
  */
 
 void
@@ -1349,6 +1368,10 @@ midifile::write_short (midishort x)
  *         0xFF 0x7F".
  *
  *  Also see the varinum_size() function.
+ *
+ * \param value
+ *      The long value to be encoded as a MIDI varinum, and written to the
+ *      MIDI file.
  */
 
 void
@@ -1376,7 +1399,9 @@ midifile::write_varinum (midilong value)
  *  needed when calculating the length of a track.  Note that it handles
  *  only the following situations:
  *
- *  https://en.wikipedia.org/wiki/Variable-length_quantity
+ *      https://en.wikipedia.org/wiki/Variable-length_quantity
+ *
+ *  This restriction allows the calculation to be simple and fast.
  *
 \verbatim
        1 byte:  0x00 to 0x7F
@@ -1384,6 +1409,10 @@ midifile::write_varinum (midilong value)
        3 bytes: 0x4000 to 0x001FFFFF
        4 bytes: 0x200000 to 0x0FFFFFFF
 \endverbatim
+ *
+ * \param len
+ *      The long value whose length, when encoded as a MIDI varinum, is to be
+ *      found.
  *
  * \return
  *      Returns values as noted above.  Anything beyond that range returns
@@ -1492,6 +1521,13 @@ midifile::write_prop_header
  *  tag (0xFF 0x7F) and the size of the variable-length value.  Then, for
  *  legacy and new format, 4 bytes are added for the Seq24 MIDI control
  *  value, and then the data length is added.
+ *
+ * \param data_length
+ *      Provides the data length value to be encoded.
+ *
+ * \return
+ *      Returns the length of the item size, including the delta time, meta
+ *      bytes, length byes, the control tag, and the data-length itself.
  */
 
 long
@@ -1527,10 +1563,10 @@ midifile::write (perform & p)
     int numtracks = 0;
     m_error_message.clear();
     printf("[Writing MIDI file, %d ppqn]\n", m_ppqn);
-    for (int i = 0; i < c_max_sequence; i++) /* get number of active tracks */
+    for (int i = 0; i < c_max_sequence; ++i) /* get number of active tracks */
     {
         if (p.is_active(i))
-            numtracks++;
+            ++numtracks;
     }
     write_long(0x4D546864);                 /* MIDI Format 1 header MThd    */
     write_long(6);                          /* Length of the header         */
@@ -1542,7 +1578,7 @@ midifile::write (perform & p)
      * Write out the active tracks.  The value of c_max_sequence is 1024.
      */
 
-    for (int curtrack = 0; curtrack < c_max_sequence; curtrack++)
+    for (int curtrack = 0; curtrack < c_max_sequence; ++curtrack)
     {
         if (p.is_active(curtrack))
         {
@@ -1589,7 +1625,7 @@ midifile::write (perform & p)
             char file_buffer[SEQ64_MIDI_LINE_MAX];  /* enable bufferization */
             file.rdbuf()->pubsetbuf(file_buffer, sizeof file_buffer);
             std::list<midibyte>::iterator it;
-            for (it = m_char_list.begin(); it != m_char_list.end(); it++)
+            for (it = m_char_list.begin(); it != m_char_list.end(); ++it)
             {
                 char c = *it;
                 file.write(&c, 1);
@@ -1629,6 +1665,14 @@ midifile::write (perform & p)
  *          that!  Perhaps they decided it was best kept in the "rc"
  *          configuration file.
  *      -#  MORE TO COME.
+ *
+ * \param p
+ *      Provides the object that will contain and manage the entire
+ *      performance.
+ *
+ * \return
+ *      Always returns true.  No efficient way to check all of the writes that
+ *      can happen.  Might revisit this issue if some bug crops up.
  */
 
 bool
@@ -1636,7 +1680,7 @@ midifile::write_proprietary_track (perform & p)
 {
     long tracklength = 0;
     int cnotesz = 2;                            /* first value is short     */
-    for (int s = 0; s < c_max_sets; s++)
+    for (int s = 0; s < c_max_sets; ++s)
     {
         const std::string & note = p.get_screen_set_notepad(s);
         cnotesz += 2 + note.length();           /* short + note length      */
@@ -1678,11 +1722,11 @@ midifile::write_proprietary_track (perform & p)
     write_long(0);                              /* SEQ24 WRITES ZERO ONLY!  */
     write_prop_header(c_notes, cnotesz);        /* notepad data tag + data  */
     write_short(c_max_sets);                    /* data, not a tag          */
-    for (int s = 0; s < c_max_sets; s++)        /* see "cnotesz" calc       */
+    for (int s = 0; s < c_max_sets; ++s)        /* see "cnotesz" calc       */
     {
         const std::string & note = p.get_screen_set_notepad(s);
         write_short(note.length());
-        for (unsigned n = 0; n < unsigned(note.length()); n++)
+        for (unsigned n = 0; n < unsigned(note.length()); ++n)
             write_byte(note[n]);
     }
     write_prop_header(c_bpmtag, 4);             /* bpm tag + long data      */
@@ -1714,7 +1758,11 @@ midifile::write_proprietary_track (perform & p)
 
 /**
  *  Writes out a track name.  Note that we have to precede this "event"
- *  with a delta time value, set to 0.
+ *  with a delta time value, set to 0.  The format of the output is
+ *  "0x00 0xFF 0x03 len track-name-bytes".
+ *
+ * \param trackname
+ *      Provides the name of the track to be written to the MIDI file.
  */
 
 void
@@ -1727,7 +1775,7 @@ midifile::write_track_name (const std::string & trackname)
         write_byte(0xFF);                               /* meta tag         */
         write_byte(0x03);                               /* second byte      */
         write_varinum(midilong(trackname.size()));
-        for (int i = 0; i < int(trackname.size()); i++)
+        for (int i = 0; i < int(trackname.size()); ++i)
             write_byte(trackname[i]);
     }
 }
@@ -1753,7 +1801,7 @@ midifile::read_track_name ()
             midilong tl = int(read_varinum());     /* track length     */
             if (tl > 0)
             {
-                for (midilong i = 0; i < tl; i++)
+                for (midilong i = 0; i < tl; ++i)
                 {
                     midibyte c = read_byte();
                     result += c;
@@ -1767,6 +1815,13 @@ midifile::read_track_name ()
 /**
  *  Calculates the size of a trackname and the meta event that specifies
  *  it.
+ *
+ * \param trackname
+ *      Provides the name of the track to be written to the MIDI file.
+ *
+ * \return
+ *      Returns the length of the event, which is of the format "0x00 0xFF
+ *      0x03 len track-name-bytes".
  */
 
 long
@@ -1791,6 +1846,9 @@ midifile::track_name_size (const std::string & trackname) const
  *  format can only occur in the first track, and the rest of the tracks then
  *  don't need a sequence number, since it is assumed to increment.  Our
  *  application doesn't bother with that shortcut.
+ *
+ * \param seqnum
+ *      The sequence number to write.
  */
 
 void

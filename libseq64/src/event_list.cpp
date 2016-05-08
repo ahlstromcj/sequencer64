@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-19
- * \updates       2016-04-09
+ * \updates       2016-05-07
  * \license       GNU GPLv2 or above
  *
  */
@@ -175,7 +175,7 @@ event_list::~event_list ()
  *      causes events with identical timestamps to be written in
  *      reverse order.  Doesn't affect functionality, but it's puzzling
  *      until one understands what is happening.  That's why we're
- *      exploring using a multimap as the container.
+ *      now preferring to use a multimap as the container.
  *
  * \param e
  *      Provides the event to be added to the list.
@@ -225,34 +225,34 @@ event_list::add (const event & e, bool postsort)
 
 /**
  *  Provides a merge operation for the event multimap analogous to the merge
- *  operation for the event list.  We have certain constraints to
- *  preserve, as the following discussion shows.
+ *  operation for the event list.  We have certain constraints to preserve, as
+ *  the following discussion shows.
  *
  *  For std::list, sequence merges list T into list A by first calling
- *  T.sort(), and then A.merge(T).  The merge() operation merges T into A
- *  by transferring all of its elements, at their respective ordered
- *  positions, into A.  Both containers must already be ordered.
+ *  T.sort(), and then A.merge(T).  The merge() operation merges T into A by
+ *  transferring all of its elements, at their respective ordered positions,
+ *  into A.  Both containers must already be ordered.
  *
- *  The merge effectively removes all the elements in T (which becomes
- *  empty), and inserts them into their ordered position within container
- *  (which expands in size by the number of elements transferred). The
- *  operation is performed without constructing nor destroying any
- *  element, whether T is an lvalue or an rvalue, or whether the
- *  value-type supports move-construction or not.
+ *  The merge effectively removes all the elements in T (which becomes empty),
+ *  and inserts them into their ordered position within container (which
+ *  expands in size by the number of elements transferred). The operation is
+ *  performed without constructing nor destroying any element, whether T is an
+ *  lvalue or an rvalue, or whether the value-type supports move-construction
+ *  or not.
  *
  *  Each element of T is inserted at the position that corresponds to its
  *  value according to the strict weak ordering defined by operator <. The
- *  resulting order of equivalent elements is stable (i.e. equivalent
- *  elements preserve the relative order they had before the call, and
- *  existing elements precede those equivalent inserted from x).  The
- *  function does nothing if (&x == this).
+ *  resulting order of equivalent elements is stable (i.e. equivalent elements
+ *  preserve the relative order they had before the call, and existing
+ *  elements precede those equivalent inserted from x).  The function does
+ *  nothing if (&x == this).
  *
- *  For std::multimap, sorting is automatic.  However, unless move-construction
- *  is supported, merging will be less efficient than for the list
- *  version.  Also, we need a way to include duplicates of each event, so
- *  we need to use a multi-map.  Once all this setup, merging is really
- *  just insertion.  And, since sorting isn't needed, the multimap actually
- *  turns out to be faster.
+ *  For std::multimap, sorting is automatic.  However, unless
+ *  move-construction is supported, merging will be less efficient than for
+ *  the list version.  Also, we need a way to include duplicates of each
+ *  event, so we need to use a multi-map.  Once all this setup, merging is
+ *  really just insertion.  And, since sorting isn't needed, the multimap
+ *  actually turns out to be faster.
  *
  * \param el
  *      Provides the event list to be merged into the current event list.
@@ -313,7 +313,7 @@ event_list::link_new ()
         if (eon.is_note_on() && ! eon.is_linked())  /* note on, unlinked?   */
         {
             Events::iterator off = on;              /* point to note on     */
-            off++;                                  /* get next element     */
+            ++off;                                  /* get next element     */
             endfound = false;
             while (off != m_events.end())
             {
@@ -330,7 +330,7 @@ event_list::link_new ()
                     endfound = true;                /* note on fulfilled    */
                     break;
                 }
-                off++;
+                ++off;
             }
             if (! endfound)
             {
@@ -350,7 +350,7 @@ event_list::link_new ()
                         endfound = true;            /* note on fulfilled    */
                         break;
                     }
-                    off++;
+                    ++off;
                 }
             }
         }
@@ -361,7 +361,7 @@ event_list::link_new ()
  *  This function verifies state: all note-ons have an off, and it links
  *  note-offs with their note-ons.
  *
- * \threadsafe
+ * \threadunsafe
  *
  * \param slength
  *      Provides the length beyond which events will be pruned.
@@ -371,13 +371,13 @@ void
 event_list::verify_and_link (midipulse slength)
 {
     clear_links();
-    for (event_list::iterator on = m_events.begin(); on != m_events.end(); on++)
+    for (event_list::iterator on = m_events.begin(); on != m_events.end(); ++on)
     {
         event & eon = dref(on);
         if (eon.is_note_on())               /* Note On, find its Note Off   */
         {
             event_list::iterator off = on;  /* get next possible Note Off   */
-            off++;
+            ++off;
             bool endfound = false;
             while (off != m_events.end())
             {
@@ -396,7 +396,7 @@ event_list::verify_and_link (midipulse slength)
                     endfound = true;
                     break;
                 }
-                off++;
+                ++off;
             }
             if (! endfound)
             {
@@ -418,7 +418,7 @@ event_list::verify_and_link (midipulse slength)
                         endfound = true;
                         break;
                     }
-                    off++;
+                    ++off;
                 }
             }
         }
@@ -542,6 +542,9 @@ event_list::count_selected_notes () const
  *  Indicates that at least one note is selected.  Acts like
  *  event_list::count_selected_notes(), but stops after finding a selected
  *  note. We could add a flag to count_selected_notes() to break, I suppose.
+ *
+ * \return
+ *      Returns true if at least one note is selected.
  */
 
 bool
@@ -563,6 +566,16 @@ event_list::any_selected_notes () const
  *  Counts the selected events, with the given status, in the event list.
  *  If the event is a control change (CC), then it must also match the
  *  given CC value.
+ *
+ * \param status
+ *      The desired status value to count.
+ *
+ * \param cc
+ *      The desired control-change to count.  Used only if the status
+ *      parameter indicates a control-change event.
+ *
+ * \return
+ *      Returns the number of selected events.
  */
 
 int

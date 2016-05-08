@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-07
- * \updates       2016-04-12
+ * \updates       2016-05-07
  * \license       GNU GPLv2 or above
  *
  *  This code was moved from the globals module so that other modules
@@ -95,6 +95,22 @@ namespace seq64
  *      At some point we will tighten it up.  This function is tested in the
  *      seq64-tests project, in the "calculations_unit_test" module.
  *
+ * \param s
+ *      Provides the input time string, in measures or time format,
+ *      to be processed.
+ *
+ * \param [out] part_1
+ *      The destination reference for the first part of the time.
+ *
+ * \param [out] part_2
+ *      The destination reference for the second part of the time.
+ *
+ * \param [out] part_3
+ *      The destination reference for the third part of the time.
+ *
+ * \param [out] fraction
+ *      The destination reference for the fractional part of the time.
+ *
  * \return
  *      Returns true if a reasonable portion (3 numbers) was good for
  *      extraction.  The fraction part will start with a period for easier
@@ -159,6 +175,12 @@ extract_timing_numbers
  *
  * \todo
  *      Still needs to be unit tested.
+ *
+ * \param p
+ *      The MIDI pulse/tick value to be converted.
+ *
+ * \return
+ *      Returns the string as an unsigned ASCII integer number.
  */
 
 std::string
@@ -182,10 +204,12 @@ pulses_to_string (midipulse p)
  *
  * \param seqparms
  *      This small structure provides the beats/measure, beat-width, and PPQN
- *      that hold for the sequence involved in this calculation.
+ *      that hold for the sequence involved in this calculation.  These values
+ *      are needed in the calculations
  *
  * \return
- *      Returns the absolute pulses that mark this duration.
+ *      Returns the string, in measures notation, for the absolute pulses that
+ *      mark this duration.
  */
 
 std::string
@@ -209,7 +233,9 @@ pulses_to_measurestring (midipulse p, const midi_timing & seqparms)
  *  Converts a MIDI pulse/ticks/clock value into a string that represents
  *  "measures:beats:ticks" ("measures:beats:division").
  *
- *      m = p * W / (4 * P * B)
+\verbatim
+        m = p * W / (4 * P * B)
+\endverbatim
  *
  * \param p
  *      Provides the MIDI pulses (as in "pulses per quarter note") that are to
@@ -220,8 +246,8 @@ pulses_to_measurestring (midipulse p, const midi_timing & seqparms)
  *      and PPQN (P) that hold for the sequence involved in this calculation.
  *      The beats/minute (T for tempo) value is not needed.
  *
- * \param measures
- *      Provides the current MIDI song time structure holding the results,
+ * \param [out] measures
+ *      Provides the current MIDI song time structure to hold the results,
  *      which are the measures, beats, and divisions values for the time of
  *      interest.  Note that the measures and beats are corrected to be re 1,
  *      not 0.
@@ -262,7 +288,7 @@ pulses_to_midi_measures
 
 /**
  *  Converts a MIDI pulse/ticks/clock value into a string that represents
- *  "hours:minutes:seconds.fraction".  See the pulses_to_timestring()
+ *  "hours:minutes:seconds.fraction".  See the other pulses_to_timestring()
  *  overload.
  *
  * \todo
@@ -304,7 +330,7 @@ pulses_to_timestring (midipulse p, const midi_timing & timinginfo)
  *      Provides the tempo of the song, in beats/minute.
  *
  * \param ppqn
- *      Provides the pulse-per-quarter-note of the song.
+ *      Provides the pulses-per-quarter-note of the song.
  */
 
 std::string
@@ -321,6 +347,11 @@ pulses_to_timestring (midipulse p, int bpm, int ppqn)
     char tmp[32];
     if (microseconds == 0)
     {
+        /*
+         * Why the spaces?  It is inconsistent.  But see the
+         * timestring_to_pulses() function first.
+         */
+
         snprintf(tmp, sizeof tmp, "%03d:%d:%02d   ", hours, minutes, seconds);
     }
     else
@@ -348,7 +379,8 @@ pulses_to_timestring (midipulse p, int bpm, int ppqn)
  *      that hold for the sequence involved in this calculation.
  *
  * \return
- *      Returns the absolute pulses that mark this duration.
+ *      Returns the absolute pulses that mark this duration.  If the input
+ *      string is empty, then 0 is returned.
  */
 
 midipulse
@@ -459,15 +491,14 @@ timestring_to_pulses (const std::string & timestring, int bpm, int ppqn)
         std::string sh, sm, ss, us;
         if (extract_timing_numbers(timestring, sh, sm, ss, us))
         {
+            /**
+             * This conversion assumes that the fractional parts of the
+             * seconds is padded with zeroes on the left or right to 6 digits.
+             */
+
             int hours = atoi(sh.c_str());
             int minutes = atoi(sm.c_str());
             int seconds = atoi(ss.c_str());
-
-            /*
-             * This conversion assumes that the fractional parts of the seconds
-             * is padded with zeroes on the left or right to 6 digits.
-             */
-
             double secfraction = atof(us.c_str());
             long sec = ((hours * 60) + minutes) * 60 + seconds;
             long microseconds = 1000000 * sec + long(1000000.0 * secfraction);
@@ -494,11 +525,11 @@ timestring_to_pulses (const std::string & timestring, int bpm, int ppqn)
  *      Provides the string to convert to pulses.
  *
  * \param mt
- *      Provides the structures needed to provide BPM and other values needed
- *      for some of the conversions.
+ *      Provides the structure needed to provide BPM and other values needed
+ *      for some of the conversions done by this function.
  *
  * \return
- *      Returns the string as converted to MIDI pulses (divisions, clocks,
+ *      Returns the string as converted to MIDI pulses (or divisions, clocks,
  *      ticks, whatever you call it).
  */
 
@@ -532,6 +563,9 @@ string_to_pulses
  *  Converts a string to a MIDI byte.  This function bypasses characters until
  *  it finds a digit (whether part of the number or a "0x" construct), and
  *  then converts it.
+ *
+ * \param s
+ *      Provides the string to convert to a MIDI byte.
  */
 
 midibyte
@@ -606,19 +640,17 @@ shorten_file_spec (const std::string & fpath, int leng)
 }
 
 /**
- *    Tests that a string is not empty and has non-space characters.
- *    Provides essentially the opposite test that string_is_void()
- *    provides.
+ *  Tests that a string is not empty and has non-space characters.  Provides
+ *  essentially the opposite test that string_is_void() provides.  The
+ *  definition of white-space is provided by the std::isspace()
+ *  function/macro.
  *
  * \param s
  *      The string pointer to check for emptiness.
  *
  * \return
- *    Returns 'true' if the pointer is valid, the string has a non-zero
- *    length, and is not just white-space.
- *
- *    The definition of white-space is provided by the std::isspace()
- *    function/macro.
+ *      Returns true if the pointer is valid, the string has a non-zero
+ *      length, and is not just white-space.
  */
 
 bool
@@ -627,7 +659,7 @@ string_not_void (const std::string & s)
    bool result = false;
    if (! s.empty())
    {
-      for (int i = 0; i < int(s.length()); i++)
+      for (int i = 0; i < int(s.length()); ++i)
       {
          if (! std::isspace(s[i]))
          {
@@ -640,10 +672,9 @@ string_not_void (const std::string & s)
 }
 
 /**
- *    Tests that a string is empty or has only white-space characters.  Meant
- *    to have essentially the opposite result of string_not_void().  The
- *    meaning of empty is special here, as it refers to a string being useless
- *    as a token:
+ *  Tests that a string is empty or has only white-space characters.  Meant to
+ *  have essentially the opposite result of string_not_void().  The meaning of
+ *  empty is special here, as it refers to a string being useless as a token:
  *
  *      -  The string is of zero length.
  *      -  The string has only white-space characters in it, where the
@@ -653,7 +684,8 @@ string_not_void (const std::string & s)
  *      The string pointer to check for emptiness.
  *
  * \return
- *    Returns 'true' if the string has a zero length, or is only white-space.
+ *      Returns true if the string has a zero length, or is only
+ *      white-space.
  */
 
 bool
@@ -667,12 +699,12 @@ string_is_void (const std::string & s)
 }
 
 /**
- *    Compares two strings for a form of semantic equality, for the purposes
- *    of editable_event(), for example.  The strings_match() function returns
- *    true if the comparison items are identical, without case-sensitivity
- *    in character content up to the length of the secondary string.
- *    This allows abbreviations to match. (And, in scanning routines, the
- *    first match is immediately accepted.)
+ *  Compares two strings for a form of semantic equality, for the purposes of
+ *  editable_event(), for example.  The strings_match() function returns true
+ *  if the comparison items are identical, without case-sensitivity in
+ *  character content up to the length of the secondary string.  This allows
+ *  abbreviations to match. (And, in scanning routines, the first match is
+ *  immediately accepted.)
  *
  * \param target
  *      The primary string in the comparison.  This is the target string, the
@@ -684,9 +716,9 @@ string_is_void (const std::string & s)
  *      target string, or the match is false.
  *
  * \return
- *    Returns true if both strings are are identical in characters, up to the
- *    length of the secondary string, with the case of the characters being
- *    insignificant.  Otherwise, false is returned.
+ *      Returns true if both strings are are identical in characters, up to
+ *      the length of the secondary string, with the case of the characters
+ *      being insignificant.  Otherwise, false is returned.
  */
 
 bool
@@ -698,7 +730,7 @@ strings_match (const std::string & target, const std::string & x)
         result = x.length() <= target.length();
         if (result)
         {
-            for (int i = 0; i < int(x.length()); i++)
+            for (int i = 0; i < int(x.length()); ++i)
             {
                 if (std::tolower(x[i]) != std::tolower(target[i]))
                 {
@@ -730,7 +762,7 @@ log2_time_sig_value (int tsd)
     int result = 0;
     while (tsd > 1)
     {
-        result++;
+        ++result;
         tsd >>= 1;
     }
     return result;
@@ -739,9 +771,9 @@ log2_time_sig_value (int tsd)
 /**
  *  Calculates a suitable starting zoom value for the given PPQN value.  The
  *  default starting zoom is 2, but this value is suitable only for PPQN of
- *  192 and below.  Also, zoom currently works properly only if it is a power
- *  of 2.  For starters, we scale the zoom to the selected ppqn, and then
- *  shift it each way to get a suitable power of two.
+ *  192 and below.  Also, zoom currently works consistently only if it is a
+ *  power of 2.  For starters, we scale the zoom to the selected ppqn, and
+ *  then shift it each way to get a suitable power of two.
  *
  * \param ppqn
  *      The ppqn of interest.
@@ -781,7 +813,7 @@ zoom_power_of_2 (int ppqn)
  *  equivalent to tttttt=500000 (0x07A120).
  *
  * \param t
- *      Provides a small array of at least 3 elements to hold each tempo byte.
+ *      Provides a small array of 3 elements to hold each tempo byte.
  *
  * \param tempo_us
  *      Provides the temp value in microseconds per quarter note.

@@ -57,10 +57,9 @@ configfile::configfile (const std::string & name)
 }
 
 /**
- *  Gets the next line of data from an input stream.
- *  If the line starts with a number-sign, a space (!), or a null, it is
- *  skipped, to try the next line.  This occurs until an EOF is encountered.
- *
+ *  Gets the next line of data from an input stream.  If the line starts with
+ *  a number-sign, a space (!), or a null, it is skipped, to try the next
+ *  line.  This occurs until an EOF is encountered.
  *
  *  Member m_line is a "global" return value.
  *

@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-08
- * \updates       2016-05-02
+ * \updates       2016-05-08
  * \license       GNU GPLv2 or above
  *
  *  This collection of global variables describes some facets of the
@@ -46,6 +46,13 @@
  */
 
 #define SEQ64_SOLID_PIANOROLL_GRID
+
+/**
+ *  Indicates the maximum number of MIDI channels, counted internally from 0
+ *  to 15, and by humans (sequencer user-interfaces) from 1 to 16.
+ */
+
+#define SEQ64_MIDI_CHANNEL_MAX          16
 
 /**
  *  No global buss override is in force if the global buss override number is
@@ -71,6 +78,12 @@
  */
 
 #define SEQ64_DEFAULT_BUSS_MAX           32
+
+/**
+ *  The number of ALSA busses supported.  See mastermidibus::init().
+ */
+
+#define SEQ64_ALSA_OUTPUT_BUSS_MAX       16
 
 /**
  *  Guessing that this has to do with the width of the performance piano roll.

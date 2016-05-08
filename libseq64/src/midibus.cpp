@@ -78,6 +78,9 @@ int midibus::m_clock_mod = 16 * 4;
  *
  * \param queue
  *      Provides the queue ID.
+ *
+ * \param ppqn
+ *      Provides the PPQN value.
  */
 
 midibus::midibus
@@ -140,6 +143,9 @@ midibus::midibus
  *
  * \param queue
  *      Provides the queue ID.
+ *
+ * \param ppqn
+ *      Provides the PPQN value.
  */
 
 midibus::midibus
@@ -708,7 +714,7 @@ midibus::clock (midipulse tick)
 
 /**
  *  Deletes events in the queue.  This function is not used anywhere, and
- *  there was not comment about the intent/context of this function.
+ *  there was no comment about the intent/context of this function.
  */
 
 void

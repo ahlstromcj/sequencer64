@@ -53,12 +53,13 @@ namespace seq64
  *    Checks a file for the desired access modes.
  *    The following modes are defined, and can be OR'd:
  *
- *          POSIX Value Windows  Meaning
- *
- *       -  F_OK    0   0x00     Existence
- *       -  X_OK    1   N/A      Executable
- *       -  W_OK    2   0x04     Writable
- *       -  R_OK    4   0x02     Readable
+\verbatim
+      POSIX Value Windows  Meaning
+      F_OK    0   0x00     Existence
+      X_OK    1   N/A      Executable
+      W_OK    2   0x04     Writable
+      R_OK    4   0x02     Readable
+\endverbatim
  *
  * \win32
  *    Windows does not provide a mode to check for executability.

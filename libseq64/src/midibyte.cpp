@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-12-05
- * \updates       2015-12-05
+ * \updates       2016-05-07
  * \license       GNU GPLv2 or above
  *
  *  These classes were originally structures, but now they are "constant"
@@ -53,6 +53,15 @@ midi_measures::midi_measures ()
 
 /**
  *  Principal constructor for midi_measures.
+ *
+ * \param measures
+ *      Copied into the m_measures member.
+ *
+ * \param beats
+ *      Copied into the m_beats member.
+ *
+ * \param divisions
+ *      Copied into the m_divisions member.
  */
 
 midi_measures::midi_measures
@@ -84,6 +93,18 @@ midi_timing::midi_timing ()
 
 /**
  *  Principal constructor for midi_timing.
+ *
+ * \param bpminute
+ *      Copied into the m_beats_per_minute member.
+ *
+ * \param bpmeasure
+ *      Copied into the m_beats_per_measure member.
+ *
+ * \param beatwidth
+ *      Copied into the m_beat_width member.
+ *
+ * \param ppqn
+ *      Copied into the m_ppqn member.
  */
 
 midi_timing::midi_timing

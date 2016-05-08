@@ -310,9 +310,7 @@ lash::handle_event (lash_event_t * ev)
 }
 
 /*
- * ca 2015-07-24
- * Eliminate this annoying warning.  Will do it for Microsoft's bloody
- * compiler later.
+ * Eliminate this annoying warning.
  */
 
 #ifdef PLATFORM_GNU

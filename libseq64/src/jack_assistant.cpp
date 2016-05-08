@@ -91,6 +91,15 @@ namespace seq64
  *  separately by defining USE_JACK_DEBUG_PRINT.  The difference in output
  *  between this function and what jack_assitant::show_position() report may
  *  be instructive.  LATER.
+ *
+ * \param jack
+ *      The jack_assistant object for which to show debugging data.
+ *
+ * \param current_tick
+ *      The current time location.
+ *
+ * \param tick_delta
+ *      The change in ticks to show.
  */
 
 static void
@@ -139,6 +148,20 @@ jack_debug_print
  * \param parent
  *      Provides a reference to the main perform object that needs to
  *      control JACK event.
+ *
+ * \param bpminute
+ *      The beats/minute to set up JACK to use (applies to Master setup).
+ *
+ * \param ppqn
+ *      The parts-per-quarter-note setting in force for the present tune.
+ *
+ * \param bpm
+ *      The beats/measure (time signature numerator) in force for the present
+ *      tune.
+ *
+ * \param beatwidth
+ *      The beat-width (time signature denominator)  in force for the present
+ *      tune.
  */
 
 jack_assistant::jack_assistant
@@ -367,8 +390,10 @@ jack_assistant::init ()
 }
 
 /**
- *  Tears down the JACK infrastructure.  Returns the value of m_jack_running,
- *  which should be false.
+ *  Tears down the JACK infrastructure.
+ *
+ * \return
+ *      Returns the value of m_jack_running, which should be false.
  */
 
 bool
@@ -485,10 +510,10 @@ jack_assistant::stop ()
  *
  * \param to_left_tick
  *      If true, the current tick is set to the leftmost tick, instead of the
- *      0th tick.  Now used, but only if relocate is true.
- *      One question is, do we want to perform this function if
- *      rc().with_jack_transport() is true?  Seems like we should be able to
- *      do it only if m_jack_master is true.
+ *      0th tick.  Now used, but only if relocate is true.  One question is,
+ *      do we want to perform this function if rc().with_jack_transport() is
+ *      true?  Seems like we should be able to do it only if m_jack_master is
+ *      true.
  *
  * \param relocate
  *      If true (it defaults to false), then we allow the relocation of the
@@ -541,6 +566,9 @@ jack_assistant::position (bool to_left_tick, bool relocate)
         num minutes * 60 = num seconds
         num secords * frame_rate  = frame
  \endverbatim
+ *
+ * \param currenttick
+ *      Provides the current position to be set.
  */
 
 void
@@ -655,6 +683,9 @@ jack_assistant::relocate_bbt ()
  *      -   audio_frames_per_video_frame
  *
  *  Also, why does bbt_offset start at 2128362496?
+ *
+ * \param state
+ *      The JACK transport state to be set.
  */
 
 int
@@ -738,8 +769,8 @@ jack_assistant::sync (jack_transport_state_t state)
  *
  * \param arg
  *      Used for debug output now.  Note that this function will be called
- *      very often, and this pointer will be now, unless debugging is turned
- *      on.
+ *      very often, and this pointer will currently not be used unless
+ *      debugging is turned on.
  *
  * \return
  *      Returns 0 on success, non-zero on error.
@@ -1124,24 +1155,19 @@ jack_status_pair_t jack_assistant::sm_status_pairs [] =
         JackBackendError    = 0x800
         JackClientZombie    = 0x1000
 \endverbatim
+ *
+ * \param bits
+ *      The mask of the bits to be shown in the output.
  */
 
 void
 jack_assistant::show_statuses (unsigned bits)
 {
-    /*
-     * infoprintf("JACK status bits returned = 0x%x\n", bits);
-     */
-
     jack_status_pair_t * jsp = &sm_status_pairs[0];
     while (jsp->jf_bit != 0)
     {
-        /*
-         * infoprintf("Status bit = 0x%x\n", jsp->jf_bit);
-         */
-
         if (bits & jsp->jf_bit)
-            (void) info_message(jsp->jf_meaning);   // .c_str());
+            (void) info_message(jsp->jf_meaning);
 
         ++jsp;
     }
@@ -1264,8 +1290,13 @@ jack_assistant::show_position (const jack_position_t & pos) const
  *      the caller is now connected to jackd, so there is no race condition.
  *      When the server shuts down, the client will find out.
  *
+ * \param clientname
+ *      Provides the name of the client, used in the call to
+ *      jack_client_open().
+ *
  * \return
- *      Returns true if JACK has opened the client connection successfully.
+ *      Returns a pointer to the JACK client if JACK has opened the client
+ *      connection successfully.  Otherwise, a null pointer is returned.
  */
 
 jack_client_t *

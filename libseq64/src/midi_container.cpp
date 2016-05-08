@@ -19,13 +19,12 @@
 /**
  * \file          midi_container.cpp
  *
- *  This module declares the abstract base class for configuration and
- *  options files.
+ *  This module declares a class for holding and managing MIDI data.
  *
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-10-10
- * \updates       2016-02-01
+ * \updates       2016-05-07
  * \license       GNU GPLv2 or above
  *
  */
@@ -39,7 +38,12 @@ namespace seq64
 {
 
 /**
- *    Fills in the few members of this class.
+ *  Fills in the few members of this class.
+ *
+ * \param seq
+ *      Provides a reference to the sequence/track for which this container
+ *      holds MIDI data.
+ *      
  */
 
 midi_container::midi_container (sequence & seq)
@@ -52,16 +56,18 @@ midi_container::midi_container (sequence & seq)
 
 /**
  *  This function masks off the lower 8 bits of the long parameter, then
- *  shifts it right 7, and, if there are still set bits, it encodes it
- *  into the buffer in reverse order.
+ *  shifts it right 7, and, if there are still set bits, it encodes it into
+ *  the buffer in reverse order.  This function "replaces"
+ *  sequence::add_list_var().
  *
- *  This function "replaces" sequence::add_list_var().
+ * \param v
+ *      The data value to be added to the current event in the MIDI container.
  */
 
 void
 midi_container::add_variable (midipulse v)
 {
-    midipulse buffer = v & 0x7F;                     /* mask off a no-sign byte  */
+    midipulse buffer = v & 0x7F;                /* mask off a no-sign byte  */
     while (v >>= 7)                             /* shift right 7 bits, test */
     {
         buffer <<= 8;                           /* move LSB bits to MSB     */
@@ -78,13 +84,16 @@ midi_container::add_variable (midipulse v)
 }
 
 /**
+ *  Adds a long value (a MIDI pulse/tick value) to the container.
+ *
  *  What is the difference between this function and add_list_var()?
- *
  *  This function "replaces" sequence::add_long_list().
- *
  *  This was a <i> global </i> internal function called addLongList().
  *  Let's at least make it a private member now, and hew to the naming
  *  conventions of this class.
+ *
+ * \param x
+ *      Provides the timestamp (pulse value) to be added to the container.
  */
 
 void
@@ -98,12 +107,10 @@ midi_container::add_long (midipulse x)
 
 /**
  *  This function fills the given track (sequence) with MIDI data from the
- *  current sequence, preparatory to writing it to a file.
- *
- *  Note that some of the events might not come out in the same order they
- *  were stored in (we see that with program-change events).
- *
- *  This function replaces sequence::fill_container().
+ *  current sequence, preparatory to writing it to a file.  Note that some of
+ *  the events might not come out in the same order they were stored in (we
+ *  see that with program-change events).  This function replaces
+ *  sequence::fill_container().
  *
  *  Now, for sequence 0, an alternate format for writing the sequencer number
  *  chunk is "FF 00 00".  But that format can only occur in the first track,
@@ -150,13 +157,13 @@ midi_container::fill (int tracknumber)
     for (int i = 0; i < len; i++)
         put(midibyte(trackname[i]));
 
-#ifdef SEQ64_HANDLE_TIMESIG_AND_TEMPO
+#ifdef SEQ64_HANDLE_TIMESIG_AND_TEMPO           /* defined in sequence.hpp */
 
     /**
      * To allow other sequencers to read Seq24/Sequencer64 files, we should
      * provide the Time Signature and Tempo meta events, in the 0th (first)
      * track (sequence).  These events must precede any "real" MIDI events.
-     * They are not include if the legacy-format option is in force.
+     * They are not included if the legacy-format option is in force.
      */
 
     if (tracknumber == 0 && ! rc().legacy_format())
@@ -205,8 +212,8 @@ midi_container::fill (int tracknumber)
          * If the sequence's MIDI channel is EVENT_NULL_CHANNEL == 0xFF, then
          * it is the copy of an SMF 0 sequence that the midi_splitter created.
          * We want to be able to save it along with the other tracks, but
-         * won't be able to read it back if all the channels's are bad.
-         * So we just use the channel from the event.
+         * won't be able to read it back if all the channels are bad.  So we
+         * just use the channel from the event.
          */
 
         midibyte channel = m_sequence.get_midi_channel();
@@ -293,8 +300,8 @@ midi_container::fill (int tracknumber)
     put(m_sequence.get_midi_channel());
     if (! usr().global_seq_feature() && ! rc().legacy_format())
     {
-        /*
-         * New feature, save more sequence-specific values, if not legacy
+        /**
+         * New feature: save more sequence-specific values, if not legacy
          * format and not saved globally.  We use a single byte for the key
          * and scale, and a long for the background sequence.  We save these
          * values only if they are different from the defaults; in most cases

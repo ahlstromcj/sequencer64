@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-20
- * \updates       2016-04-24
+ * \updates       2016-05-07
  * \license       GNU GPLv2 or above
  *
  *  The "rc" command-line options override setting that are first read from
@@ -87,6 +87,7 @@ static struct option long_options [] =
     {"no-lash",             0, 0, 'n'},                 /* new */
 #endif
     {"bus",                 required_argument, 0, 'b'}, /* new */
+    {"buss",                required_argument, 0, 'B'}, /* new */
     {"ppqn",                required_argument, 0, 'q'}, /* new */
     {"legacy",              0, 0, 'l'},                 /* new */
     {"show-midi",           0, 0, 's'},
@@ -143,6 +144,10 @@ static const std::string s_arg_list =
     "1234:5:67:89@"                                     /* legacy args      */
     ;
 
+/**
+ *  Provides more help text.
+ */
+
 static const char * const s_help_1a =
 "sequencer64 v 0.9.10  A significant reboot of the seq24 live sequencer.\n"
 "Usage: sequencer64 [options] [MIDI filename]\n\n"
@@ -166,8 +171,13 @@ static const char * const s_help_1a =
 "   -A, --alsa               Don't use JACK, use ALSA. A sticky option.\n"
     ;
 
+/**
+ *  More help text.
+ */
+
 static const char * const s_help_1b =
 "   -b, --bus b              Global override of bus number (for testing).\n"
+"   -B, --buss b             Avoids the 'bus' versus 'buss' confusion.\n"
 "   -q, --ppqn qn            Specify default PPQN to replace 192.  The MIDI\n"
 "                            file might specify its own PPQN.\n"
 "   -p, --priority           Run high priority, FIFO scheduler (needs root).\n"
@@ -176,6 +186,10 @@ static const char * const s_help_1b =
 "   -i, --ignore n           Ignore ALSA device number.\n"
 "   -s, --show-midi          Dump incoming MIDI events to the screen.\n"
     ;
+
+/**
+ *  Still more help text.
+ */
 
 static const char * const s_help_2 =
 "   -k, --show-keys          Prints pressed key value.\n"
@@ -192,6 +206,10 @@ static const char * const s_help_2 =
 "                            fruity doesn't support arrow keys and paint key.\n"
     ;
 
+/**
+ *  Still more help text.
+ */
+
 static const char * const s_help_3 =
 "   -u, --user-save          Save the 'user' configuration settings.  Normally,\n"
 "                            they are saved only if the file does not exist, so\n"
@@ -199,6 +217,10 @@ static const char * const s_help_3 =
 "                            --bus, do not become permanent.\n"
 "\n"
     ;
+
+/**
+ *  Still more help text.
+ */
 
 static const char * const s_help_4 =
 "--ppqn works, but be aware that it may have bugs.  If a MIDI file is re-saved,\n"
@@ -275,8 +297,8 @@ help_check (int argc, char * argv [])
  *  It also requires the caller to call rc().set_defaults() and
  *  usr().set_defaults().  The caller can then use the command-line to make
  *  any modifications to the setting that will be used here.  The biggest
- *  example is the -r/--reveal-alsa-ports option, which determines if the MIDI buss
- *  definition strings are read from the 'user' configuration file.
+ *  example is the -r/--reveal-alsa-ports option, which determines if the MIDI
+ *  buss definition strings are read from the 'user' configuration file.
  *
  *  Instead of the legacy Seq24 names, we use the new configuration
  *  file-names, located in the ~/.config/sequencer64 directory. However, if
@@ -285,9 +307,11 @@ help_check (int argc, char * argv [])
  *  configuration file-name.  The code also ensures the directory exists.
  *  CURRENTLY LINUX-SPECIFIC.  See the rc_settings class for how this works.
  *
- *      std::string cfg_dir = seq64::rc().home_config_directory();
- *      if (cfg_dir.empty())
- *          return EXIT_FAILURE;
+\verbatim
+        std::string cfg_dir = seq64::rc().home_config_directory();
+        if (cfg_dir.empty())
+            return EXIT_FAILURE;
+\endverbatim
  *
  * \change ca 2016-04-03
  *      We were parsing the user-file first, but we now need to parse
@@ -350,12 +374,12 @@ parse_options_files (perform & p, int argc, char * argv [])
 }
 
 /**
- *  Parses the command-line options on behalf of the application.
- *  Note that, since we call this function twice (once before the
- *  configuration files are parsed, and once after), we have to make sure that
- *  the global value optind is reset to 0 before calling this function.
- *  Note that the traditional reset value for optind is 1, but 0 is used in
- *  GNU code to trigger the internal initialization routine of get_opt().
+ *  Parses the command-line options on behalf of the application.  Note that,
+ *  since we call this function twice (once before the configuration files are
+ *  parsed, and once after), we have to make sure that the global value optind
+ *  is reset to 0 before calling this function.  Note that the traditional
+ *  reset value for optind is 1, but 0 is used in GNU code to trigger the
+ *  internal initialization routine of get_opt().
  *
  * \param argc
  *      The number of command-line arguments.
@@ -483,7 +507,7 @@ parse_command_line_options (int argc, char * argv [])
             seq64::rc().with_jack_master_cond(false);
             break;
 
-        case 'i':                           /* ignore ALSA device */
+        case 'i':                           /* ignore ALSA device           */
             seq64::rc().device_ignore(true);
             seq64::rc().device_ignore_num(atoi(optarg));
             break;
@@ -504,7 +528,8 @@ parse_command_line_options (int argc, char * argv [])
             );
             break;
 
-        case 'b':
+        case 'B':                           /* --buss for the oldsters      */
+        case 'b':                           /* --bus for the youngsters     */
             seq64::usr().midi_buss_override(char(atoi(optarg)));
             break;
 
@@ -533,13 +558,16 @@ parse_command_line_options (int argc, char * argv [])
 
 /**
  *  Saves all options to the "rc" and "user" configuration files.
- *
  *  This function gets any legacy global variables, on the theory that they
  *  might have been changed.
  *
+ * \param p
+ *      Provides the perform object that may provide new values for the
+ *      parameters.
+ *
  * \return
- *      Returns true if both files were saved successfully.  Even if one write
- *      failed, the other might have succeeded.
+ *      Returns true if both files were saved successfully.  Otherwise returns
+ *      false.  But even if one write failed, the other might have succeeded.
  */
 
 bool

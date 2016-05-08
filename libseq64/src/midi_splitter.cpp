@@ -93,7 +93,7 @@ void
 midi_splitter::initialize ()
 {
     m_smf0_channels_count = 0;
-    for (int i = 0; i < 16; i++)
+    for (int i = 0; i < SEQ64_MIDI_CHANNEL_MAX; ++i)
         m_smf0_channels[i] = false;
 }
 
@@ -102,6 +102,10 @@ midi_splitter::initialize ()
  *  array.  If it is the first entry for that channel, m_smf0_channels_count
  *  is incremented.  We won't check the channel number, to save time,
  *  until someday we segfault :-D
+ *
+ * \param channel
+ *      The MIDI channel number.  The caller is responsible to make sure it
+ *      ranges from 0 to 15.
  */
 
 void
@@ -117,6 +121,16 @@ midi_splitter::increment (int channel)
 /**
  *  Logs the main sequence (an SMF 0 track) for later usage in splitting the
  *  track.
+ *
+ * /param seq
+ *      The main sequence to be logged.
+ *
+ * /param seqnum
+ *      The sequence number of the main sequence.
+ *
+ * /return
+ *      Returns true if the main sequence's address was logged, and false if
+ *      it was already logged.
  */
 
 bool
@@ -148,7 +162,8 @@ midi_splitter::log_main_sequence (sequence & seq, int seqnum)
  *  one channel, this code will still create a new sequence, as well as the
  *  main sequence.  Not sure if this is worth extra code to just change the
  *  channels on the main sequence and put it into the correct track for the
- *  one channel it contains.
+ *  one channel it contains.  In fact, we just want to keep it in patter slot
+ *  number 16, to keep it out of the way.
  *
  * \param p
  *      Provides a reference to the perform object into which sequences/tracks
@@ -172,9 +187,9 @@ midi_splitter::split (perform & p, int screenset)
         if (m_smf0_channels_count > 0)
         {
             int seqnum = screenset * c_seqs_in_set;
-            for (int channel = 0; channel < 16; channel++, seqnum++)
+            for (int chan = 0; chan < SEQ64_MIDI_CHANNEL_MAX; ++chan, ++seqnum)
             {
-                if (m_smf0_channels[channel])
+                if (m_smf0_channels[chan])
                 {
                     sequence * s = new sequence(m_ppqn);
 
@@ -184,7 +199,7 @@ midi_splitter::split (perform & p, int screenset)
                      */
 
                     s->set_master_midi_bus(&p.master_bus());
-                    if (split_channel(*m_smf0_main_sequence, s, channel))
+                    if (split_channel(*m_smf0_main_sequence, s, chan))
                     {
                         p.add_sequence(s, seqnum);
 #ifdef SEQ64_USE_DEBUG_OUTPUT
@@ -269,7 +284,7 @@ midi_splitter::split_channel
 
     midipulse length_in_ticks = 0;      /* an accumulator of delta times    */
     const event_list & evl = main_seq.events();
-    for (event_list::const_iterator i = evl.begin(); i != evl.end(); i++)
+    for (event_list::const_iterator i = evl.begin(); i != evl.end(); ++i)
     {
         const event & er = DREF(i);
         if (er.check_channel(channel))

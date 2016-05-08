@@ -6,7 +6,7 @@ dnl \file          configure.ac
 dnl \library       Sequencer64
 dnl \author        Chris Ahlstrom
 dnl \date          2015-09-11
-dnl \update        2016-02-21
+dnl \update        2016-05-08
 dnl \version       $Revision$
 dnl \license       $XPC_SUITE_GPL_LICENSE$
 dnl
@@ -44,7 +44,7 @@ PACKAGE=sequencer64
 AC_DEFINE_UNQUOTED(PACKAGE, "$PACKAGE")
 AC_SUBST(PACKAGE)
 
-VERSION="0.9.10.0"
+VERSION="0.9.10.1"
 AC_DEFINE_UNQUOTED(VERSION, "$VERSION")
 AC_SUBST(VERSION)
 
@@ -444,8 +444,8 @@ dnl #define API_VERSION "0.9"             // already defined on command line
 
 AH_TOP(
 
-#define VERSION_DATE_SHORT "2016-02-21"
-#define VERSION "0.9.10.0"
+#define VERSION_DATE_SHORT "2016-05-08"
+#define VERSION "0.9.10.1"
 
 )
 
@@ -486,10 +486,15 @@ CXXFLAGS="$CFLAGS -std=c++11 -Wno-variadic-macros -Wno-deprecated-declarations"
 
 dnl Set up the Makefiles.  First, add Doxygen support conditionally, not using
 dnl doc/dox/Makefile.  Then do the rest.
-
-AM_CONDITIONAL([HAVE_DOXYGEN],
-    [test -n "$DOXYGEN"])AM_COND_IF([HAVE_DOXYGEN],
-    [AC_CONFIG_FILES([doc/dox/Makefile])])
+dnl
+dnl ca 2016-05-07
+dnl We decided to build the Doxygen documentation only manually, and have
+dnl removed the doc directory from the Makefile.am, and commented out the
+dnl following check.
+dnl
+dnl AM_CONDITIONAL([HAVE_DOXYGEN],
+dnl     [test -n "$DOXYGEN"])AM_COND_IF([HAVE_DOXYGEN],
+dnl     [AC_CONFIG_FILES([doc/dox/Makefile])])
 
 AC_CONFIG_FILES([
  Makefile
@@ -508,6 +513,17 @@ AC_CONFIG_FILES([
  ])
 
 AC_OUTPUT
+
+cat << E_O_F
+
+Now do 'make' to compile the Sequencer64-related projects.
+Do 'make install' as root/sudo to install the Sequencer64 application.
+Do 'make dist', etc. to create gzip and other archives.
+To build the PDF documentation, make sure Doxygen and TexLive are installed,
+change to the doc/dox directory, and run './make_dox reference'.  To clean
+the documentation, run './make_dox clean'.
+
+E_O_F
 
 dnl configure.ac (sequencer64)
 dnl

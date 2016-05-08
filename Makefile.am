@@ -123,9 +123,14 @@ libtool: $(LIBTOOL_DEPS)
 #*****************************************************************************
 # SUBDIRS
 #-----------------------------------------------------------------------------
+#
+# ca 2016-05-07
+# We decided to build the Doxygen documentation only manually. and have
+#
+#-----------------------------------------------------------------------------
 
 SUBDIRS = resources/pixmaps libseq64 seq_gtkmm2 seq_portmidi \
- Sequencer64 man doc/dox
+ Sequencer64 man # doc/dox
 
 #*****************************************************************************
 # DIST_SUBDIRS

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-20
- * \updates       2016-05-07
+ * \updates       2016-05-08
  * \license       GNU GPLv2 or above
  *
  *  The "rc" command-line options override setting that are first read from
@@ -149,7 +149,7 @@ static const std::string s_arg_list =
  */
 
 static const char * const s_help_1a =
-"sequencer64 v 0.9.10  A significant reboot of the seq24 live sequencer.\n"
+"sequencer64 v 0.9.11  A significant reboot of the seq24 live sequencer.\n"
 "Usage: sequencer64 [options] [MIDI filename]\n\n"
 "Options:\n"
 "   -h, --help               Show this message and exit.\n"
@@ -181,8 +181,8 @@ static const char * const s_help_1b =
 "   -q, --ppqn qn            Specify default PPQN to replace 192.  The MIDI\n"
 "                            file might specify its own PPQN.\n"
 "   -p, --priority           Run high priority, FIFO scheduler (needs root).\n"
-// "   -P, --pass-sysex         Passes incoming SysEx messages to all outputs.\n"
-// "                            IS THIS SUPPORTED?\n"
+// "   -P, --pass-sysex      Passes incoming SysEx messages to all outputs.\n"
+// "                         IS THIS SUPPORTED?\n"
 "   -i, --ignore n           Ignore ALSA device number.\n"
 "   -s, --show-midi          Dump incoming MIDI events to the screen.\n"
     ;

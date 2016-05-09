@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-04-04
+ * \updates       2016-05-08
  * \license       GNU GPLv2 or above
  *
  *  The <code> ~/.seq24rc </code> or <code> ~/.config/sequencer64/sequencer64.rc
@@ -44,7 +44,7 @@
  *
  * Fixups:
  *
- *  As of version 0.9.10, a "Pause" key is added, if SEQ64_PAUSE_SUPPORT is
+ *  As of version 0.9.11, a "Pause" key is added, if SEQ64_PAUSE_SUPPORT is
  *  defined.  One must fix up the sequencer64.rc file.  First, run
  *  Sequencer64.  Then open File / Options, and go to the Keyboard tab.
  *  Fix the Start, Stop, and Pause fields as desired.  The recommended
@@ -65,6 +65,10 @@ namespace seq64
 
 /**
  *  Principal constructor.
+ *
+ * \param name
+ *      Provides the name of the options file; this is usually a full path
+ *      file-specification.
  */
 
 optionsfile::optionsfile (const std::string & name)
@@ -177,6 +181,13 @@ optionsfile::~optionsfile ()
  *  The second data line is set to "1" if Mod4 can be used to keep seq24
  *  in note-adding mode even after the right-click is released, and "0"
  *  otherwise.
+ *
+ * \param p
+ *      Provides the performance object to which all of these options apply.
+ *
+ * \return
+ *      Returns true if the file was able to be opened for reading.
+ *      Currently, there is no indication if the parsing actually succeeded.
  */
 
 bool
@@ -486,7 +497,7 @@ optionsfile::write (const perform & p)
     else
     {
         file <<
-            "# Sequencer64 0.9.10 (and above) rc configuration file\n"
+            "# Sequencer64 0.9.11 (and above) rc configuration file\n"
             "#\n"
             "# This file holds the main configuration options for Sequencer64.\n"
             "# It follows the format of the legacy seq24 'rc' configuration\n"

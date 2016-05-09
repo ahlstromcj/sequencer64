@@ -1,6 +1,6 @@
-INSTALL for Sequencer64 v. 0.9.10
+INSTALL for Sequencer64 v. 0.9.11
 Chris Ahlstrom
-2015-09-10 to 2016-04-13
+2015-09-10 to 2016-05-08
 
 The current packaging for Sequencer64 is primarily aimed at developers.
 There is currently no configure script... it must be bootstrapped.
@@ -47,7 +47,12 @@ Steps:
       $ make
 
       If you do not care about the documentation and debian packaging,
-      change to the various sub-project directories before running make.
+      you should be fine.  If you want to build the documentation (it is
+      mainly just a developer reference manual containing comments from
+      the source code), then change to the doc/dox directory and run:
+
+        ./make_dox reference
+        ./make_dox clean
       
       Do not forget that you can add options to "make", such as "V=0" (enable
       silent build), "V=1" (enable the normal verbose build), and "-j n" (use

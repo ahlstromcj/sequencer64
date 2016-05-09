@@ -6,7 +6,7 @@ dnl \file          configure.ac
 dnl \library       Sequencer64
 dnl \author        Chris Ahlstrom
 dnl \date          2015-09-11
-dnl \update        2016-05-06
+dnl \update        2016-05-08
 dnl \version       $Revision$
 dnl \license       $XPC_SUITE_GPL_LICENSE$
 dnl
@@ -19,7 +19,7 @@ dnl ---------------------------------------------------------------------------
 
 AC_PREREQ(2.60)
 AC_REVISION($Revision: 0.9$)dnl
-AC_INIT(Sequencer64, [0.9.10], [ahlstromcj@gmail.com])
+AC_INIT(Sequencer64, [0.9.11], [ahlstromcj@gmail.com])
 AC_CONFIG_AUX_DIR([aux-files])
 
 dnl Do we need the following?  No, but it cleans up a lot of warning messages.
@@ -44,7 +44,7 @@ PACKAGE=sequencer64
 AC_DEFINE_UNQUOTED(PACKAGE, "$PACKAGE")
 AC_SUBST(PACKAGE)
 
-VERSION="0.9.10.0"
+VERSION="0.9.11.0"
 AC_DEFINE_UNQUOTED(VERSION, "$VERSION")
 AC_SUBST(VERSION)
 
@@ -473,8 +473,8 @@ dnl #define API_VERSION "0.9"             // already defined on command line
 
 AH_TOP(
 
-#define VERSION_DATE_SHORT "2016-05-06"
-#define VERSION "0.9.10"
+#define VERSION_DATE_SHORT "2016-05-08"
+#define VERSION "0.9.11.0"
 
 )
 
@@ -519,10 +519,15 @@ AH_BOTTOM(
 
 dnl Set up the Makefiles.  First, add Doxygen support conditionally, not using
 dnl doc/dox/Makefile.  Then do the rest.
-
-AM_CONDITIONAL([HAVE_DOXYGEN],
-    [test -n "$DOXYGEN"])AM_COND_IF([HAVE_DOXYGEN],
-    [AC_CONFIG_FILES([doc/dox/Makefile])])
+dnl
+dnl ca 2016-05-07
+dnl We decided to build the Doxygen documentation only manually, and have
+dnl removed the doc directory from the Makefile.am, and commented out the
+dnl following check.
+dnl
+dnl AM_CONDITIONAL([HAVE_DOXYGEN],
+dnl     [test -n "$DOXYGEN"])AM_COND_IF([HAVE_DOXYGEN],
+dnl     [AC_CONFIG_FILES([doc/dox/Makefile])])
 
 AC_CONFIG_FILES([
  Makefile
@@ -544,14 +549,15 @@ AC_OUTPUT
 
 cat << E_O_F
 
-Then do 'make' to compile the sequencer64-related projects.
-Do 'make check' or 'make test' to run the tests of the projects.
-Do 'make install' to install the sequencer64 application.
+Now do 'make' to compile the Sequencer64-related projects.
+Do 'make install' as root/sudo to install the Sequencer64 application.
 Do 'make dist', etc. to create gzip and other archives.
+To build the PDF documentation, make sure Doxygen and TexLive are installed,
+change to the doc/dox directory, and run './make_dox reference'.  To clean
+the documentation, run './make_dox clean'.
 
 E_O_F
 
 dnl configure.ac (sequencer64)
 dnl
 dnl vim: ts=4 sw=4 et ft=config
-

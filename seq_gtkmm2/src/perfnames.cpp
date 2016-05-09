@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-03-15
+ * \updates       2016-05-09
  * \license       GNU GPLv2 or above
  *
  *  This module is almost exclusively user-interface code.  There are some
@@ -73,10 +73,11 @@ perfnames::perfnames
 (
     perform & p,
     perfedit & parent,
+    mainwid & mymainwid,
     Gtk::Adjustment & vadjust
 ) :
     gui_drawingarea_gtk2    (p, adjustment_dummy(), vadjust, c_names_x, 100),
-    seqmenu                 (p),
+    seqmenu                 (p, mymainwid),
     m_parent                (parent),
     m_names_chars           (24),
     m_char_w                (font_render().char_width()),   /* 6            */

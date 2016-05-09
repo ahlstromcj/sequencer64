@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-03-27
+ * \updates       2016-05-09
  * \license       GNU GPLv2 or above
  *
  *  Note that this representation is, in a sense, inside the mainwnd
@@ -86,7 +86,7 @@ const int c_mainwid_y =
 mainwid::mainwid (perform & p)
  :
     gui_drawingarea_gtk2    (p, c_mainwid_x, c_mainwid_y),
-    seqmenu                 (p),
+    seqmenu                 (p, *this),         // too tricky!!!
     m_moving_seq            (),                 // a moving sequence object
     m_button_down           (false),
     m_moving                (false),
@@ -234,8 +234,21 @@ mainwid::draw_sequence_on_pixmap (int seqnum)
             }
             else if (current_highlight)
             {
-                bg_color(dark_cyan());
-                fg_color(black());
+                /*
+                 * \change ca 2016-05-08 Let's try to preserve the muting
+                 * status as well.  Idea from muranyia on GitHub.
+                 */
+
+                if (seq->get_playing())
+                {
+                    bg_color(black());
+                    fg_color(dark_cyan());
+                }
+                else
+                {
+                    bg_color(dark_cyan());
+                    fg_color(black());
+                }
             }
             else
             {
@@ -295,7 +308,10 @@ mainwid::draw_sequence_on_pixmap (int seqnum)
             }
             else if (current_highlight)
             {
-                col = font::BLACK_ON_CYAN;
+                if (seq->get_playing())
+                    col = font::CYAN_ON_BLACK;
+                else
+                    col = font::BLACK_ON_CYAN;
             }
             else
             {

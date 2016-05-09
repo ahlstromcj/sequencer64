@@ -28,10 +28,10 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-04-06
+ * \updates       2016-05-09
  * \license       GNU GPLv2 or above
  *
- *  Note that, as of version 0.9.10, the z and Z keys, when focus is on the
+ *  Note that, as of version 0.9.11, the z and Z keys, when focus is on the
  *  perfroll (piano roll), will zoom the view horizontally.
  */
 
@@ -69,6 +69,7 @@ namespace Gtk
 namespace seq64
 {
 
+class mainwid;
 class perfnames;
 class perfroll;
 class perftime;
@@ -92,6 +93,13 @@ class perfedit : public gui_window_gtk2
 {
 
 private:
+
+    /**
+     *  The mainwid object we need to pass around.  A new feature to support
+     *  more control over the display of the currently-edited sequence.
+     */
+
+    mainwid & m_my_mainwid;
 
     /**
      *  The partner instance of perfedit.
@@ -191,6 +199,7 @@ public:
 
     perfedit
     (
+        mainwid & mymainwid,
         perform & p,
         bool second_perfedit    = false,
         int ppqn                = SEQ64_USE_DEFAULT_PPQN

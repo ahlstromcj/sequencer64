@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-02-15
+ * \updates       2016-05-09
  * \license       GNU GPLv2 or above
  *
  *  This module is the base class for the perfnames and mainwid classes.
@@ -40,10 +40,10 @@
 /**
  *  Try to highlight the selected pattern using black-on-cyan
  *  coloring, in addition to the red progress bar marking that already exists.
- *  Currently, it still has issues.
+ *  Currently, it still has issues.  Moved to the perform object.
+ *
+ *      #define SEQ64_EDIT_SEQUENCE_HIGHLIGHT
  */
-
-#define SEQ64_EDIT_SEQUENCE_HIGHLIGHT
 
 namespace Gtk
 {
@@ -53,9 +53,9 @@ namespace Gtk
 namespace seq64
 {
 
-// class perform;
-class seqedit;
 class eventedit;
+class mainwid;
+class seqedit;
 
 /**
  *  This class handles the right-click menu of the sequence slots in the
@@ -72,11 +72,20 @@ private:
     Gtk::Menu * m_menu;
 
     /**
-     *  Provides a reference to the central  object involved in managing a
-     *  song and performance.
+     *  Provides a reference to the central (non-UI) object involved in
+     *  managing a song and performance.
      */
 
     perform & m_mainperf;
+
+    /**
+     *  Provides a reference to the mainwid to the derived classes (even for
+     *  the mainwid class) in order that seqmenu be able to pass it on to the
+     *  seqedit class, for better control over the handling of the display of
+     *  the "current" sequence.
+     */
+
+    mainwid & m_my_mainwid;
 
     /**
      *  Holds a copy of data concerning a sequence, which can then be pasted
@@ -109,15 +118,16 @@ private:
 
     int m_current_seq;
 
-#ifdef SEQ64_EDIT_SEQUENCE_HIGHLIGHT
+#if 0       // SEQ64_EDIT_SEQUENCE_HIGHLIGHT
 
     /**
-     *  Hold the number of the currently-in-edit sequence.
+     *  Hold the number of the currently-in-edit sequence.  We're moving this
+     *  variable into the perform class for better control of this value.
      */
 
     int m_edit_sequence;
 
-#endif  // SEQ64_EDIT_SEQUENCE_HIGHLIGHT
+#endif      // SEQ64_EDIT_SEQUENCE_HIGHLIGHT
 
     /**
      *  Indicates if a sequence has been created.
@@ -131,7 +141,7 @@ private:
 
 public:
 
-    seqmenu (perform & a_p);
+    seqmenu (perform & a_p, mainwid & mymainwid);
 
     /**
      *  Provides a rote base-class destructor.  This is necessary in an
@@ -174,7 +184,7 @@ protected:
             {
                 m_current_seq = seq;
 #ifdef SEQ64_EDIT_SEQUENCE_HIGHLIGHT
-                m_edit_sequence = -1;
+                m_mainperf.set_edit_sequence(-1);  // m_edit_sequence = -1;
 #endif
             }
         }
@@ -184,23 +194,35 @@ protected:
 
     /**
      * \setter m_edit_sequence
-     *      Pass in -1 to disable the edit-sequence number.
+     *      Pass in -1 to disable the edit-sequence number.  Now a pass-along
+     *      to the perform object.
      */
 
-    void edit_sequence (int seqnum)
+    void set_edit_sequence (int seqnum)
     {
-        m_edit_sequence = seqnum;
+        m_mainperf.set_edit_sequence(seqnum);   // m_edit_sequence = seqnum;
+    }
+
+    /**
+     * \setter m_edit_sequence
+     *      Disable the edit-sequence number if it matches the parameter.
+     */
+
+    void unset_edit_sequence (int seqnum)
+    {
+        m_mainperf.unset_edit_sequence(seqnum);
     }
 
     /**
      * \getter m_edit_sequence
      *      Tests the parameter against m_edit_sequence.  Returns true
-     *      if that member is not -1, and the parameter matches it.
+     *      if that member is not -1, and the parameter matches it.  Now a
+     *      pass-along to the perform object.
      */
 
     bool is_edit_sequence (int seqnum) const
     {
-        return (m_edit_sequence != (-1)) && (seqnum == m_edit_sequence);
+        return m_mainperf.is_edit_sequence(seqnum);
     }
 
 #endif  // SEQ64_EDIT_SEQUENCE_HIGHLIGHT

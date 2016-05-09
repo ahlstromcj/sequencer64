@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-04-02
+ * \updates       2016-05-09
  * \license       GNU GPLv2 or above
  *
  *  The main window holds the menu and the main controls of the application,
@@ -58,6 +58,18 @@
  *      The progress pills, however, stay in place when paused.  They pick up
  *      where they left off when played back in JACK, but restart at the
  *      beginning in "ALSA" mode.
+ *
+ * Current sequence:
+ *
+ *      We've elaborated on the concept of the currently-edited sequence so
+ *      that the seqedit window can tell the mainwid when to change the
+ *      display of the current sequence.  This makes the code more complex,
+ *      because, after creating the mainwid (derived from seqmenu), we have to
+ *      get a reference to the mainwid object into the seqedit object by
+ *      passing down through the following constructors:  mainwnd, mainwid,
+ *      perfedit, perfnames (derived from seqmenu), seqmenu, and seqedit.
+ *      Still preferable to making a global object, because at least the
+ *      provenance of the mainwid reference is now clearcut.
  */
 
 #include <cctype>
@@ -140,10 +152,13 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
     m_ppqn                  (choose_ppqn(ppqn)),
     m_main_wid              (manage(new mainwid(p))),
     m_main_time             (manage(new maintime(p, ppqn))),
-    m_perf_edit             (new perfedit(p, false /*allowperf2*/, ppqn)),
+    m_perf_edit
+    (
+        new perfedit(*m_main_wid, p, false /*allowperf2*/, ppqn)
+    ),
     m_perf_edit_2
     (
-        allowperf2 ? new perfedit(p, true, ppqn) : nullptr
+        allowperf2 ? new perfedit(*m_main_wid, p, true, ppqn) : nullptr
     ),
     m_options               (nullptr),
     m_main_cursor           (),

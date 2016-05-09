@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-04-02
+ * \updates       2016-05-09
  * \license       GNU GPLv2 or above
  *
  *  The main windows is known as the "Patterns window" or "Patterns
@@ -101,7 +101,10 @@ private:
 
     /**
      *  The biggest sub-components of mainwnd.  The first is the Patterns
-     *  Panel.
+     *  Panel, which the mainwid helps implement.  We end up sharing this
+     *  object with perfedit, perfnames, and seqedit in order to allow the
+     *  seqedit object to notify the mainwid (indirectly) of the
+     *  currently-edited sequence.
      */
 
     mainwid * m_main_wid;

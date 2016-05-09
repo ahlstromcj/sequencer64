@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-26
+ * \updates       2016-05-09
  * \license       GNU GPLv2 or above
  *
  *  This class supports the left side of the Performance window (also known
@@ -46,6 +46,7 @@ namespace Gtk
 namespace seq64
 {
 
+class mainwid;
 class perform;
 class perfedit;
 
@@ -133,6 +134,7 @@ public:
     (
         perform & p,
         perfedit & parent,
+        mainwid & mymainwid,
         Gtk::Adjustment & vadjust
     );
 

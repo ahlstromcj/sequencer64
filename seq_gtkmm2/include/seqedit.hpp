@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-02-19
+ * \updates       2016-05-09
  * \license       GNU GPLv2 or above
  *
  *  The seqedit is a kind of master class for holding aseqroll, seqkeys,
@@ -60,6 +60,7 @@ namespace Gtk
 namespace seq64
 {
 
+class mainwid;
 class perform;
 class seqevent;
 class seqdata;
@@ -132,6 +133,13 @@ private:
      */
 
     int m_ppqn;
+
+    /**
+     *  Holds a reference to the mainwid so that the seqedit can inform it to
+     *  update its display.
+     */
+
+    mainwid & m_my_mainwid;
 
     /**
      *  Holds a reference to the sequence that this window represents.
@@ -278,10 +286,17 @@ private:
     midibyte m_editing_status;
     midibyte m_editing_cc;
 
+    /**
+     *  Indicates that the focus has already been changed to this sequence.
+     */
+
+    bool m_have_focus;
+
 public:
 
     seqedit
     (
+        mainwid & mymainwid,
         perform & perf,
         sequence & seq,
         int pos,
@@ -350,10 +365,15 @@ private:
     bool timeout ();
     void do_action (int action, int var);
     void mouse_action (mouse_action_e action);
+    void change_focus (bool set_it = true);
+    void handle_close ();
 
 private:        // callbacks
 
     void on_realize ();
+    void on_set_focus (Widget * focus);
+    bool on_focus_in_event (GdkEventFocus *);
+    bool on_focus_out_event (GdkEventFocus *);
     bool on_delete_event (GdkEventAny * event);
     bool on_scroll_event (GdkEventScroll * ev);
     bool on_key_press_event (GdkEventKey * ev);

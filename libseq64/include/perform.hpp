@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-05-06
+ * \updates       2016-05-08
  * \license       GNU GPLv2 or above
  *
  *  This class still has way too many members, even with the JACK and
@@ -55,6 +55,14 @@
 #include "keys_perform.hpp"             /* seq64::keys_perform              */
 #include "mastermidibus.hpp"            /* seq64::mastermidibus             */
 #include "midi_control.hpp"             /* seq64::midi_control "struct"     */
+
+/**
+ *  Try to highlight the selected pattern using black-on-cyan
+ *  coloring, in addition to the red progress bar marking that already exists.
+ *  Currently, it still has issues.  Moved from seqmenu.
+ */
+
+#define SEQ64_EDIT_SEQUENCE_HIGHLIGHT
 
 /**
  *  We have offloaded the keybinding support to another class, derived
@@ -538,6 +546,17 @@ private:
 
     int m_sequence_max;
 
+#ifdef SEQ64_EDIT_SEQUENCE_HIGHLIGHT
+
+    /**
+     *  Hold the number of the currently-in-edit sequence.  Moving this
+     *  status from seqmenu into perform for better centralized management.
+     */
+
+    int m_edit_sequence;
+
+#endif  // SEQ64_EDIT_SEQUENCE_HIGHLIGHT
+
     /**
      *  It may be a good idea to eventually centralize all of the dirtiness of
      *  a performance here.  All the GUIs seem to use a perform object.
@@ -619,6 +638,44 @@ public:
     {
         return m_sequence_max;
     }
+
+#ifdef SEQ64_EDIT_SEQUENCE_HIGHLIGHT
+
+    /**
+     * \setter m_edit_sequence
+     *      Pass in -1 to disable the edit-sequence number to disable it
+     *      unconditionally.  Use unset_edit_sequence() to disable it if
+     *      it matches the current edit-sequence number.
+     */
+
+    void set_edit_sequence (int seqnum)
+    {
+        m_edit_sequence = seqnum;
+    }
+
+    /**
+     * \setter m_edit_sequence
+     *      Disable the edit-sequence number if it matches the parameter.
+     */
+
+    void unset_edit_sequence (int seqnum)
+    {
+        if (is_edit_sequence(seqnum))
+            set_edit_sequence(-1);
+    }
+
+    /**
+     * \getter m_edit_sequence
+     *      Tests the parameter against m_edit_sequence.  Returns true
+     *      if that member is not -1, and the parameter matches it.
+     */
+
+    bool is_edit_sequence (int seqnum) const
+    {
+        return (m_edit_sequence != (-1)) && (seqnum == m_edit_sequence);
+    }
+
+#endif  // SEQ64_EDIT_SEQUENCE_HIGHLIGHT
 
     /**
      * \getter m_beats_per_bar
@@ -1076,7 +1133,19 @@ public:
     void play (midipulse tick);
     void set_orig_ticks (midipulse tick);
     void set_beats_per_minute (int bpm);        /* more than just a setter  */
-    int get_beats_per_minute ();                /* get BPM from the buss    */
+
+    /**
+     * \getter m_master_bus.get_beats_per_minute
+     *      Retrieves the BPM setting of the master MIDI buss.
+     *
+     * \return
+     *      Returns the value of beats/minute from the master buss.
+     */
+
+    int get_beats_per_minute ()
+    {
+        return m_master_bus.get_beats_per_minute();
+    }
 
     /**
      * \setter m_looping

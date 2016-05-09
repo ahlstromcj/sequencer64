@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-05-02
+ * \updates       2016-05-08
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -56,11 +56,24 @@ namespace seq64
 
 /**
  *  Purely internal constants used with the functions that implement MIDI
- *  control for the application.
+ *  control for the application.  Note how they specify different bit values,
+ *  as it they could be masked together to signal multiple functions.
+ *
+ *  This value signals the "replace" functionality.
  */
 
 static const int c_status_replace  = 0x01;
+
+/**
+ *  This value signals the "snapshot" functionality.
+ */
+
 static const int c_status_snapshot = 0x02;
+
+/**
+ *  This value signals the "queue" functionality.
+ */
+
 static const int c_status_queue    = 0x04;
 
 /**
@@ -154,6 +167,7 @@ perform::perform (gui_assistant & mygui, int ppqn)
     m_max_sets                  (c_max_sets),
     m_sequence_count            (0),
     m_sequence_max              (c_max_sequence),
+    m_edit_sequence             (-1),
     m_is_modified               (false),
     m_condition_var             (),
 #ifdef SEQ64_JACK_SUPPORT
@@ -191,16 +205,16 @@ perform::perform (gui_assistant & mygui, int ppqn)
 }
 
 /**
- *  The destructor sets some running flags to false, signals this
- *  condition, then joins the input and output threads if the were
- *  launched. Finally, any active or inactive (but allocated)
- *  patterns/sequences are deleted, and their pointers nullified.
+ *  The destructor sets some running flags to false, signals this condition,
+ *  then joins the input and output threads if the were launched. Finally, any
+ *  active or inactive (but allocated) patterns/sequences are deleted, and
+ *  their pointers nullified.
  */
 
 perform::~perform ()
 {
     m_inputing = m_outputing = m_running = false;
-    m_condition_var.signal();                   /* signal the end   */
+    m_condition_var.signal();                   /* signal the end of play   */
     if (m_out_thread_launched)
         pthread_join(m_out_thread, NULL);
 
@@ -270,9 +284,16 @@ perform::clear_all ()
  *  Provides common code to keep the track value valid.  Note the bug we
  *  found, where we checked for track > m_seqs_in_set, but set it to
  *  m_seqs_in_set - 1 in that case!
+ *
+ * \param track
+ *      The track value to be checked and rectified as necessary.
+ *
+ * \return
+ *      Returns the track parameter, clamped between 0 and m_seqs_in_set-1,
+ *      inclusive.
  */
 
-inline int
+int
 perform::clamp_track (int track) const
 {
     if (track < 0)
@@ -284,10 +305,10 @@ perform::clamp_track (int track) const
 }
 
 /**
- * This function sets the mute state of an element in the m_mute_group array.
- * The index value is the track number offset by the number of the selected
- * mute group (which seems equivalent to a set number) times the number of
- * sequences in a set.
+ *  This function sets the mute state of an element in the m_mute_group array.
+ *  The index value is the track number offset by the number of the selected
+ *  mute group (which seems equivalent to a set number) times the number of
+ *  sequences in a set.
  *
  * \param gtrack
  *      The number of the track to be muted/unmuted.
@@ -305,7 +326,7 @@ perform::set_group_mute_state (int gtrack, bool muted)
 
 /**
  *  The opposite of set_group_mute_state(), it gets the value of the desired
- *  track.
+ *  track.  Uses the mute_group_offset function.
  *
  * \param gtrack
  *      The number of the track for which the state is to be obtained.
@@ -343,8 +364,8 @@ perform::select_group_mute (int a_g_mute)
     {
         for (int i = 0; i < m_seqs_in_set; ++i)
         {
-            if (is_active(i+k))
-                m_mute_group[i+j] = m_seqs[i+k]->get_playing();
+            if (is_active(i + k))
+                m_mute_group[i + j] = m_seqs[i+k]->get_playing();
         }
     }
     m_mute_group_selected = gmute;
@@ -409,7 +430,7 @@ perform::select_mute_group (int a_group)
     for (int i = 0; i < m_seqs_in_set; ++i)
     {
         if ((m_mode_group_learn) && (is_active(i + k)))
-            m_mute_group[i+j] = m_seqs[i+k]->get_playing();
+            m_mute_group[i + j] = m_seqs[i + k]->get_playing();
 
         int index = mute_group_offset(i);
         m_tracks_mute_state[i] = m_mute_group[index];
@@ -452,6 +473,9 @@ perform::mute_group_tracks ()
 
 /**
  *  Select a mute group and then mutes the track in the group.
+ *
+ * \param group
+ *      Provides the group number for the group to be muted.
  */
 
 void
@@ -463,6 +487,7 @@ perform::select_and_mute_group (int group)
 
 /**
  *  Mutes all tracks in the current set of active patterns/sequences.
+ *  Covers tracks from 0 to m_sequence_max.
  */
 
 void
@@ -490,7 +515,7 @@ perform::mute_all_tracks ()
  *      tick.
  *
  * \param setstart
- *      If true (the default, and longstanding implicit setting), then the
+ *      If true (the default, and long-standing implicit setting), then the
  *      starting tick is also set to the left tick.
  */
 
@@ -517,7 +542,7 @@ perform::set_left_tick (midipulse tick, bool setstart)
  *      tick.
  *
  * \param setstart
- *      If true (the default, and longstanding implicit setting), then the
+ *      If true (the default, and long-standing implicit setting), then the
  *      starting tick is also set to the left tick, if that got changed.
  */
 
@@ -548,7 +573,8 @@ perform::set_right_tick (midipulse tick, bool setstart)
  *      The pointer to the pattern/sequence to add.
  *
  * \param seqnum
- *      The sequence number of the pattern to be added.
+ *      The sequence number of the pattern to be added.  Not validated, to
+ *      save some time.
  *
  * \return
  *      Returns true if a sequence was removed, or the sequence was
@@ -659,7 +685,7 @@ perform::add_sequence (sequence * seq, int prefnum)
  *  sequence.  We now pass this sequence to install_sequence() to better
  *  handle potential memory leakage, and to make sure the sequence gets
  *  counted.  Also, adding a new sequence from the user-interface is a
- *  significant modification, so the "is modified" flag gtes set.
+ *  significant modification, so the "is modified" flag gets set.
  *
  * \param seq
  *      The prospective sequence number of the new sequence.
@@ -694,6 +720,9 @@ perform::new_sequence (int seq)
  *  Now, this function obviously sets the "active" flag for the sequence to
  *  false.  But there are a few other flags that are not modified; shouldn't
  *  we also falsify them here?
+ *
+ * \param seq
+ *      The sequence number of the sequence to be deleted.  It is validated.
  */
 
 void
@@ -748,7 +777,7 @@ perform::set_active (int seq, bool active)
  *  Why do we need this routine?
  *
  * \param seq
- *      The pattern number.  It is checked for invalidity.
+ *      The pattern number.  It is checked for validity.
  */
 
 void
@@ -768,7 +797,7 @@ perform::set_was_active (int seq)
  *  sequence::is_dirty_main() function.
  *
  * \param seq
- *      The pattern number.  It is checked for invalidity.
+ *      The pattern number.  It is checked for validity.
  *
  * \return
  *      Returns the was-active-main flag value, before setting it to
@@ -799,7 +828,7 @@ perform::is_dirty_main (int seq)
  *  Checks the pattern/sequence for edit-dirtiness.
  *
  * \param seq
- *      The pattern number.  It is checked for invalidity.
+ *      The pattern number.  It is checked for validity.
  *
  * \return
  *      Returns the was-active-edit flag value, before setting it to
@@ -830,7 +859,7 @@ perform::is_dirty_edit (int seq)
  *  Checks the pattern/sequence for perf-dirtiness.
  *
  * \param seq
- *      The pattern number.  It is checked for invalidity.
+ *      The pattern number.  It is checked for validity.
  *
  * \return
  *      Returns the was-active-perf flag value, before setting it to
@@ -861,7 +890,7 @@ perform::is_dirty_perf (int seq)
  *  Checks the pattern/sequence for names-dirtiness.
  *
  * \param seq
- *      The pattern number.  It is checked for invalidity.
+ *      The pattern number.  It is checked for validity.
  *
  * \return
  *      Returns the was-active-names flag value, before setting it to
@@ -899,17 +928,28 @@ perform::is_dirty_names (int seq)
  *  It's not clear that we need to set the "is modified" flag just because we
  *  changed the beats per minute.  This setting does get saved to the MIDI
  *  file, with the c_bpmtag.
+ *
+ * \param bpm
+ *      Provides the beats/minute value to be set.  It is clamped, if
+ *      necessary, between the values SEQ64_MINIMUM_BPM to SEQ64_MAXIMUM_BPM.
+ *      They provide a wide range of speeds, well beyond what normal music
+ *      needs.
  */
 
 void
 perform::set_beats_per_minute (int bpm)
 {
-    if (bpm < SEQ64_MINIMUM_BPM)            /*  20 */
+    if (bpm < SEQ64_MINIMUM_BPM)
         bpm = SEQ64_MINIMUM_BPM;
-    else if (bpm > SEQ64_MAXIMUM_BPM)       /* 500 */
+    else if (bpm > SEQ64_MAXIMUM_BPM)
         bpm = SEQ64_MAXIMUM_BPM;
 
 #ifdef SEQ64_JACK_SUPPORT
+
+    /*
+     * This logic matches the original seq24, but is it really correct?
+     */
+
     bool ok = ! (is_jack_running() && m_running);
     if (ok)
         m_jack_asst.set_beats_per_minute(bpm);
@@ -919,16 +959,6 @@ perform::set_beats_per_minute (int bpm)
 
     if (ok)
         m_master_bus.set_beats_per_minute(bpm);
-}
-
-/**
- *  Retrieves the BPM setting of the master MIDI buss.
- */
-
-int
-perform::get_beats_per_minute ()
-{
-    return m_master_bus.get_beats_per_minute();
 }
 
 /**
@@ -962,10 +992,7 @@ perform::is_seq_valid (int seq) const
         }
         else if (! SEQ64_IS_DISABLED_SEQUENCE(seq))
         {
-            fprintf
-            (
-                stderr, "is_seq_valid(): seq = %d > %d\n", seq, m_sequence_max-1
-            );
+            errprintf("is_seq_valid(): seq = %d\n", seq);
         }
         return false;
     }
@@ -1010,6 +1037,14 @@ perform::is_mseq_valid (int seq) const
 /**
  *  Check if the pattern/sequence, given by number, has an edit in
  *  progress.
+ *
+ * \param seq
+ *      Provides the sequence number to be checked.
+ *
+ * \return
+ *      Returns truen if the sequence's get_editing() call returns true.
+ *      Otherwise, false is returned, which can also indicate an illegal
+ *      sequence number.
  */
 
 bool
@@ -1029,6 +1064,10 @@ perform::is_sequence_in_edit (int seq)
  *      retrieve the desired midi_control object.  Note that this value is
  *      unsigned simply to make the legality check of the parameter
  *      easier.
+ *
+ * \return
+ *      Returns the "toggle" value if the sequence is valid, and a reference
+ *      to sm_mc_dummy otherwise.
  */
 
 midi_control &
@@ -1043,6 +1082,10 @@ perform::midi_control_toggle (int seq)
  * \param seq
  *      Provides a control value (such as c_midi_control_bpm_up) to use to
  *      retrieve the desired midi_control object.
+ *
+ * \return
+ *      Returns the "on" value if the sequence is valid, and a reference
+ *      to sm_mc_dummy otherwise.
  */
 
 midi_control &
@@ -1057,6 +1100,10 @@ perform::midi_control_on (int seq)
  * \param seq
  *      Provides a control value (such as c_midi_control_bpm_up) to use to
  *      retrieve the desired midi_control object.
+ *
+ * \return
+ *      Returns the "off" value if the sequence is valid, and a reference
+ *      to sm_mc_dummy otherwise.
  */
 
 midi_control &
@@ -1163,7 +1210,8 @@ perform::set_playing_screenset ()
 
 /**
  *  Starts the playing of all the patterns/sequences.  This function just runs
- *  down the list of sequences and has them dump their events.
+ *  down the list of sequences and has them dump their events.  It skips
+ *  sequences that have no playable MIDI events.
  *
  * \param tick
  *      Provides the tick at which to start playing.
@@ -1177,17 +1225,9 @@ perform::play (midipulse tick)
     {
         if (is_active(i))
         {
-            /*
-             * Skip sequences that have no playable MIDI events.
-             */
-
             sequence * s = m_seqs[i];
-            if (s->event_count() > 0)
+            if (s->event_count() > 0)               /* playable events? */
             {
-                /*
-                 * QUESTION:  Should this "if" be followed by an "else"?
-                 */
-
                 if (s->check_queued_tick(tick))
                 {
                     s->play(s->get_queued_tick() - 1, m_playback_mode);
@@ -1197,7 +1237,7 @@ perform::play (midipulse tick)
             }
         }
     }
-    m_master_bus.flush();               /* flush the MIDI buss  */
+    m_master_bus.flush();                           /* flush MIDI buss  */
 }
 
 /**

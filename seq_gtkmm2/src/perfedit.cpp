@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-04-10
+ * \updates       2016-05-09
  * \license       GNU GPLv2 or above
  *
  */
@@ -49,6 +49,7 @@
 #include "gdk_basic_keys.h"
 #include "gtk_helpers.h"
 #include "keystroke.hpp"
+#include "mainwid.hpp"
 #include "perfedit.hpp"
 #include "perfnames.hpp"
 #include "perfroll.hpp"
@@ -86,18 +87,23 @@ namespace seq64
 
 perfedit::perfedit
 (
+    mainwid & mymainwid,
     perform & p,
     bool second_perfedit,
     int ppqn
 ) :
     gui_window_gtk2     (p, 750, 500),
+    m_my_mainwid        (mymainwid),
     m_peer_perfedit     (nullptr),
     m_table             (manage(new Gtk::Table(6, 3, false))),  /* no matter */
     m_vadjust           (manage(new Gtk::Adjustment(0, 0, 1, 1, 1, 1))),
     m_hadjust           (manage(new Gtk::Adjustment(0, 0, 1, 1, 1, 1))),
     m_vscroll           (manage(new Gtk::VScrollbar(*m_vadjust))),
     m_hscroll           (manage(new Gtk::HScrollbar(*m_hadjust))),
-    m_perfnames         (manage(new perfnames(perf(), *this, *m_vadjust))),
+    m_perfnames
+    (
+        manage(new perfnames(perf(), *this, mymainwid, *m_vadjust))
+    ),
     m_perfroll
     (
         manage(new perfroll(perf(), *this, *m_hadjust, *m_vadjust, ppqn))

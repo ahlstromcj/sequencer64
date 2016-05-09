@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-02-15
+ * \updates       2016-05-09
  * \license       GNU GPLv2 or above
  *
  */
@@ -50,6 +50,7 @@ class mainwid : public gui_drawingarea_gtk2, public seqmenu
 {
 
     friend class mainwnd;
+    friend class seqedit;
 
 private:
 
@@ -136,7 +137,7 @@ private:
 
     void reset ();
     void draw_marker_on_sequence (int seq, int tick);
-    void update_sequences_on_window ();         /* for friend mainwnd       */
+    void update_sequences_on_window ();         /* friends mainwnd, seqedit */
     void update_markers (int ticks);            /* ditto                    */
     bool valid_sequence (int seq);
     void draw_sequence_on_pixmap (int seq);

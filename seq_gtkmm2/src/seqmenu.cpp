@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-03-29
+ * \updates       2016-05-09
  * \license       GNU GPLv2 or above
  *
  *  This object also does some minor coordination of editing a sequence via
@@ -61,16 +61,17 @@ namespace seq64
  *  on a paste with no previous copy.
  */
 
-seqmenu::seqmenu (perform & p)
+seqmenu::seqmenu (perform & p, mainwid & mymainwid)
  :
     m_menu          (nullptr),
     m_mainperf      (p),
+    m_my_mainwid    (mymainwid),
     m_clipboard     (),
     m_seqedit       (nullptr),
     m_eventedit     (nullptr),
-    m_current_seq   (-1),           /* (0) is not really current yet    */
+    m_current_seq   (-1)            /* (0) is not really current yet    */
 #ifdef SEQ64_EDIT_SEQUENCE_HIGHLIGHT
-    m_edit_sequence (-1)
+    // m_edit_sequence (-1)         // moved to the perform object
 #endif
 {
     m_clipboard.set_master_midi_bus(&m_mainperf.master_bus());
@@ -278,7 +279,12 @@ seqmenu::seq_edit ()
         if (not_nullptr(s))
         {
             if (! s->get_editing())
-                m_seqedit = new seqedit(m_mainperf, *s, current_seq());
+            {
+                m_seqedit = new seqedit
+                (
+                    m_my_mainwid, m_mainperf, *s, current_seq()
+                );
+            }
             else
                 s->set_raise(true);
         }
@@ -288,10 +294,10 @@ seqmenu::seq_edit ()
         seq_new();
         sequence * s = get_current_sequence();
         if (not_nullptr(s))
-            m_seqedit = new seqedit(m_mainperf, *s, current_seq());
+            m_seqedit = new seqedit(m_my_mainwid, m_mainperf, *s, current_seq());
     }
 #ifdef SEQ64_EDIT_SEQUENCE_HIGHLIGHT
-    edit_sequence(current_seq());
+    set_edit_sequence(current_seq());
 #endif
 }
 
@@ -333,7 +339,7 @@ seqmenu::seq_event_edit ()
             m_eventedit = new eventedit(m_mainperf, *s);
     }
 #ifdef SEQ64_EDIT_SEQUENCE_HIGHLIGHT
-    edit_sequence(current_seq());
+    set_edit_sequence(current_seq());
 #endif
 }
 

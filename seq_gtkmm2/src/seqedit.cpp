@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-04-12
+ * \updates       2016-05-09
  * \license       GNU GPLv2 or above
  *
  *  Compare this class to eventedit, which has to do some similar things,
@@ -55,6 +55,7 @@
 #include "gdk_basic_keys.h"
 #include "globals.h"
 #include "gtk_helpers.h"
+#include "mainwid.hpp"
 #include "midibus.hpp"
 #include "options.hpp"
 #include "perform.hpp"
@@ -162,6 +163,7 @@ static const int c_swing_notes              = 13;   /* swing quantize   */
 
 seqedit::seqedit
 (
+    mainwid & mymainwid,
     perform & p,
     sequence & seq,
     int pos,
@@ -176,6 +178,7 @@ seqedit::seqedit
     m_bgsequence        (usr().seqedit_bgsequence()),   // m_initial_sequence
     m_measures          (0),                            // fixed below
     m_ppqn              (0),                            // fixed below
+    m_my_mainwid        (mymainwid),
     m_seq               (seq),
     m_menubar           (manage(new Gtk::MenuBar())),
     m_menu_tools        (manage(new Gtk::Menu())),
@@ -259,7 +262,8 @@ seqedit::seqedit
     m_radio_draw        (nullptr),
     m_entry_name        (nullptr),
     m_editing_status    (0),
-    m_editing_cc        (0)
+    m_editing_cc        (0),
+    m_have_focus        (false)
 {
     std::string title = "Sequencer64 - ";                   /* main window */
     m_ppqn = choose_ppqn(ppqn);
@@ -455,7 +459,6 @@ void
 seqedit::create_menus ()
 {
     using namespace Gtk::Menu_Helpers;
-
     char b[8];
     for (int z = usr().min_zoom(); z <= usr().max_zoom(); z *= 2)
     {
@@ -909,6 +912,7 @@ seqedit::popup_tool_menu ()
 void
 seqedit::do_action (int action, int var)
 {
+    // change_focus();
     switch (action)
     {
     case c_select_all_notes:
@@ -1301,6 +1305,7 @@ seqedit::fill_top_bar ()
 void
 seqedit::popup_menu (Gtk::Menu * menu)
 {
+    // change_focus();
     menu->popup(0, 0);
 }
 
@@ -1313,6 +1318,7 @@ seqedit::popup_menu (Gtk::Menu * menu)
 void
 seqedit::popup_midibus_menu ()
 {
+    // change_focus();
     m_menu_midibus = manage(new Gtk::Menu());
     mastermidibus & masterbus = perf().master_bus();
 
@@ -1335,6 +1341,7 @@ seqedit::popup_midibus_menu ()
 void
 seqedit::popup_midich_menu ()
 {
+    // change_focus();
     m_menu_midich = manage(new Gtk::Menu());
     int bus = m_seq.get_midi_bus();
     for (int channel = 0; channel < SEQ64_MIDI_BUS_CHANNEL_MAX; ++channel)
@@ -1374,6 +1381,7 @@ seqedit::popup_midich_menu ()
 void
 seqedit::popup_sequence_menu ()
 {
+    // change_focus();
     m_menu_sequences = manage(new Gtk::Menu());
 
 #define SET_BG_SEQ     mem_fun(*this, &seqedit::set_background_sequence)
@@ -1502,6 +1510,7 @@ seqedit::popup_event_menu ()
     int bus = m_seq.get_midi_bus();
     int channel = m_seq.get_midi_channel();
     memset(ccs, false, sizeof(bool) * SEQ64_MIDI_COUNT_MAX);
+    // change_focus();
     m_seq.reset_draw_marker();
     while (m_seq.get_next_event(&status, &cc))
     {
@@ -2095,18 +2104,100 @@ seqedit::timeout ()
 }
 
 /**
+ *  Changes what perform and mainwid see as the "current sequence".
+ *
+ * \param set_it
+ *      If true, indicates we want focus, otherwise we want to give up focus.
+ */
+
+void
+seqedit::change_focus (bool set_it)
+{
+    if (set_it)
+    {
+        if (! m_have_focus)
+        {
+            // printf("SET FOCUS\n");
+            perf().set_edit_sequence(m_seq.number());
+            m_my_mainwid.update_sequences_on_window();
+            m_have_focus = true;
+        }
+    }
+    else
+    {
+        if (m_have_focus)
+        {
+            // printf("UNSET FOCUS\n");
+            perf().unset_edit_sequence(m_seq.number());
+            m_my_mainwid.update_sequences_on_window();
+            m_have_focus = false;
+        }
+    }
+}
+
+/**
+ *  Handles closing the sequence editor.
+ */
+
+void
+seqedit::handle_close ()
+{
+    perf().master_bus().set_sequence_input(false, nullptr);
+    m_seq.set_recording(false);
+    m_seq.set_editing(false);
+    change_focus(false);
+}
+
+/**
  *  On realization, calls the base-class version, and connects the redraw
  *  timeout signal, timed at redraw_period_ms().
  */
 
 void
-seqedit::on_realize()
+seqedit::on_realize ()
 {
     gui_window_gtk2::on_realize();
     Glib::signal_timeout().connect
     (
         mem_fun(*this, &seqedit::timeout), redraw_period_ms()
     );
+    // change_focus();
+}
+
+/**
+ *  On receiving focus, attempt to tell mainwid that this sequence is now the
+ *  current sequence.  Only works in certain circumstances.
+ */
+
+void
+seqedit::on_set_focus (Widget * focus)
+{
+    gui_window_gtk2::on_set_focus(focus);
+    change_focus();
+}
+
+/**
+ *  Implements the on-focus event handling.
+ */
+
+bool
+seqedit::on_focus_in_event (GdkEventFocus *)
+{
+    set_flags(Gtk::HAS_FOCUS);
+    change_focus(true);
+    return false;
+}
+
+/**
+ *  Implements the on-unfocus event handling.
+ */
+
+bool
+seqedit::on_focus_out_event (GdkEventFocus *)
+{
+    unset_flags(Gtk::HAS_FOCUS);
+    change_focus(false);
+    return false;
 }
 
 /**
@@ -2124,9 +2215,7 @@ seqedit::on_realize()
 bool
 seqedit::on_delete_event (GdkEventAny *)
 {
-    m_seq.set_recording(false);
-    perf().master_bus().set_sequence_input(false, nullptr);
-    m_seq.set_editing(false);
+    handle_close();
     delete this;
     return false;
 }
@@ -2179,6 +2268,7 @@ seqedit::on_scroll_event (GdkEventScroll * ev)
         }
         return true;
     }
+    // change_focus();
     return false;                       /* means "not handled"  */
 }
 
@@ -2199,7 +2289,10 @@ seqedit::on_key_press_event (GdkEventKey * ev)
         if (ev->keyval == 'w')
             return on_delete_event((GdkEventAny *)(ev));
         else
+        {
+            // change_focus();
             return Gtk::Window::on_key_press_event(ev);
+        }
     }
     else
     {
@@ -2222,6 +2315,7 @@ seqedit::on_key_press_event (GdkEventKey * ev)
         if (! result)
             result = Gtk::Window::on_key_press_event(ev);
 
+        // change_focus();
         return result;
     }
 }

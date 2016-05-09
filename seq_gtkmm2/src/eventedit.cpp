@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-12-05
- * \updates       2016-04-17
+ * \updates       2016-05-09
  * \license       GNU GPLv2 or above
  *
  * To consider:
@@ -69,6 +69,7 @@
 #include "gtk_helpers.h"
 #include "eventedit.hpp"
 #include "eventslots.hpp"
+#include "mainwid.hpp"
 #include "perform.hpp"
 #include "pixmaps/perfedit.xpm"
 
@@ -149,6 +150,7 @@ namespace seq64
 
 eventedit::eventedit
 (
+    mainwid & mymainwid,
     perform & p,
     sequence & seq
 ) :
@@ -188,11 +190,12 @@ eventedit::eventedit
     m_entry_ev_data_1   (manage(new Gtk::Entry())),
     m_label_time_fmt    (manage(new Gtk::Label())),
     m_label_right       (manage(new Gtk::Label())),
-    m_seq               (seq)
+    m_my_mainwid        (mymainwid),
+    m_seq               (seq),
+    m_have_focus        (false)
 {
-    std::string title = "Sequencer64 - Event Editor";
-    title += ": \"";
-    title += seq.get_name();
+    std::string title = "Sequencer64 - Event Editor -\"";
+    title += m_seq.get_name();
     title += "\"";
     set_title(title);                                       /* caption bar  */
     set_icon(Gdk::Pixbuf::create_from_xpm_data(perfedit_xpm));
@@ -735,6 +738,47 @@ eventedit::handle_cancel ()
 }
 
 /**
+ *  Changes what perform and mainwid see as the "current sequence".
+ *
+ * \param set_it
+ *      If true, indicates we want focus, otherwise we want to give up focus.
+ */
+
+void
+eventedit::change_focus (bool set_it)
+{
+    if (set_it)
+    {
+        if (! m_have_focus)
+        {
+            perf().set_edit_sequence(m_seq.number());
+            m_my_mainwid.update_sequences_on_window();
+            m_have_focus = true;
+        }
+    }
+    else
+    {
+        if (m_have_focus)
+        {
+            perf().unset_edit_sequence(m_seq.number());
+            m_my_mainwid.update_sequences_on_window();
+            m_have_focus = false;
+        }
+    }
+}
+
+/**
+ *  Handles closing the sequence editor.
+ */
+
+void
+eventedit::handle_close ()
+{
+    m_seq.set_editing(false);
+    change_focus(false);
+}
+
+/**
  *  This callback function calls the base-class on_realize() function.
  */
 
@@ -743,6 +787,60 @@ eventedit::on_realize ()
 {
     gui_window_gtk2::on_realize();
     v_adjustment(0, 0, m_eventslots->event_count());
+}
+
+/**
+ *  On receiving focus, attempt to tell mainwid that this sequence is now the
+ *  current sequence.  Only works in certain circumstances.
+ */
+
+void
+eventedit::on_set_focus (Widget * focus)
+{
+    gui_window_gtk2::on_set_focus(focus);
+    change_focus();
+}
+
+/**
+ *  Implements the on-focus event handling.
+ */
+
+bool
+eventedit::on_focus_in_event (GdkEventFocus *)
+{
+    set_flags(Gtk::HAS_FOCUS);
+    change_focus(true);
+    return false;
+}
+
+/**
+ *  Implements the on-unfocus event handling.
+ */
+
+bool
+eventedit::on_focus_out_event (GdkEventFocus *)
+{
+    unset_flags(Gtk::HAS_FOCUS);
+    change_focus(false);
+    return false;
+}
+
+/**
+ *  Handles an on-delete event.  It sets the sequence object's editing flag to
+ *  false, and deletes "this".  This function is called if the "Close" ("X")
+ *  button in the window's title bar is clicked.  That is a different action
+ *  from clicking the Close button.
+ *
+ * \return
+ *      Always returns false.
+ */
+
+bool
+eventedit::on_delete_event (GdkEventAny *)
+{
+    handle_close();
+    delete this;
+    return false;
 }
 
 /**
@@ -840,24 +938,6 @@ eventedit::on_key_press_event (GdkEventKey * ev)
         result = Gtk::Window::on_key_press_event(ev);
 
     return result;
-}
-
-/**
- *  Handles an on-delete event.  It sets the sequence object's editing flag to
- *  false, and deletes "this".  This function is called if the "Close" ("X")
- *  button in the window's title bar is clicked.  That is a different action
- *  from clicking the Close button.
- *
- * \return
- *      Always returns false.
- */
-
-bool
-eventedit::on_delete_event (GdkEventAny *)
-{
-    m_seq.set_editing(false);
-    delete this;
-    return false;
 }
 
 }           // namespace seq64

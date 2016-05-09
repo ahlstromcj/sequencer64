@@ -265,12 +265,13 @@ seqedit::seqedit
     m_editing_cc        (0),
     m_have_focus        (false)
 {
-    std::string title = "Sequencer64 - ";                   /* main window */
-    m_ppqn = choose_ppqn(ppqn);
-    set_icon(Gdk::Pixbuf::create_from_xpm_data(seq_editor_xpm));
-    title.append(m_seq.get_name());
+    std::string title = "Sequencer64 - \"";                 /* main window */
+    title += m_seq.get_name();
+    title += "\"";
     set_title(title);
+    set_icon(Gdk::Pixbuf::create_from_xpm_data(seq_editor_xpm));
     m_seq.set_editing(true);
+    m_ppqn = choose_ppqn(ppqn);
     create_menus();
 
     Gtk::HBox * dhbox = manage(new Gtk::HBox(false, 2));
@@ -912,7 +913,6 @@ seqedit::popup_tool_menu ()
 void
 seqedit::do_action (int action, int var)
 {
-    // change_focus();
     switch (action)
     {
     case c_select_all_notes:
@@ -1305,7 +1305,6 @@ seqedit::fill_top_bar ()
 void
 seqedit::popup_menu (Gtk::Menu * menu)
 {
-    // change_focus();
     menu->popup(0, 0);
 }
 
@@ -1318,7 +1317,6 @@ seqedit::popup_menu (Gtk::Menu * menu)
 void
 seqedit::popup_midibus_menu ()
 {
-    // change_focus();
     m_menu_midibus = manage(new Gtk::Menu());
     mastermidibus & masterbus = perf().master_bus();
 
@@ -1341,7 +1339,6 @@ seqedit::popup_midibus_menu ()
 void
 seqedit::popup_midich_menu ()
 {
-    // change_focus();
     m_menu_midich = manage(new Gtk::Menu());
     int bus = m_seq.get_midi_bus();
     for (int channel = 0; channel < SEQ64_MIDI_BUS_CHANNEL_MAX; ++channel)
@@ -1381,7 +1378,6 @@ seqedit::popup_midich_menu ()
 void
 seqedit::popup_sequence_menu ()
 {
-    // change_focus();
     m_menu_sequences = manage(new Gtk::Menu());
 
 #define SET_BG_SEQ     mem_fun(*this, &seqedit::set_background_sequence)
@@ -1510,7 +1506,6 @@ seqedit::popup_event_menu ()
     int bus = m_seq.get_midi_bus();
     int channel = m_seq.get_midi_channel();
     memset(ccs, false, sizeof(bool) * SEQ64_MIDI_COUNT_MAX);
-    // change_focus();
     m_seq.reset_draw_marker();
     while (m_seq.get_next_event(&status, &cc))
     {
@@ -2117,7 +2112,6 @@ seqedit::change_focus (bool set_it)
     {
         if (! m_have_focus)
         {
-            // printf("SET FOCUS\n");
             perf().set_edit_sequence(m_seq.number());
             m_my_mainwid.update_sequences_on_window();
             m_have_focus = true;
@@ -2127,7 +2121,6 @@ seqedit::change_focus (bool set_it)
     {
         if (m_have_focus)
         {
-            // printf("UNSET FOCUS\n");
             perf().unset_edit_sequence(m_seq.number());
             m_my_mainwid.update_sequences_on_window();
             m_have_focus = false;
@@ -2161,7 +2154,6 @@ seqedit::on_realize ()
     (
         mem_fun(*this, &seqedit::timeout), redraw_period_ms()
     );
-    // change_focus();
 }
 
 /**
@@ -2268,7 +2260,6 @@ seqedit::on_scroll_event (GdkEventScroll * ev)
         }
         return true;
     }
-    // change_focus();
     return false;                       /* means "not handled"  */
 }
 
@@ -2289,10 +2280,7 @@ seqedit::on_key_press_event (GdkEventKey * ev)
         if (ev->keyval == 'w')
             return on_delete_event((GdkEventAny *)(ev));
         else
-        {
-            // change_focus();
             return Gtk::Window::on_key_press_event(ev);
-        }
     }
     else
     {
@@ -2315,7 +2303,6 @@ seqedit::on_key_press_event (GdkEventKey * ev)
         if (! result)
             result = Gtk::Window::on_key_press_event(ev);
 
-        // change_focus();
         return result;
     }
 }

@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-12-05
- * \updates       2016-02-18
+ * \updates       2016-05-09
  * \license       GNU GPLv2 or above
  *
  */
@@ -63,7 +63,9 @@ namespace Gtk
 namespace seq64
 {
 
+class mainwid;
 class eventslots;
+class perform;
 class sequence;
 
 /**
@@ -135,14 +137,27 @@ private:
     Gtk::Label * m_label_right;
 
     /**
+     *  Holds a reference to the mainwid so that the seqedit can inform it to
+     *  update its display.
+     */
+
+    mainwid & m_my_mainwid;
+
+    /**
      *  A reference to the sequence being edited, to control its editing flag.
      */
 
     sequence & m_seq;
 
+    /**
+     *  Indicates that the focus has already been changed to this sequence.
+     */
+
+    bool m_have_focus;
+
 public:
 
-    eventedit (perform & p, sequence & seq);
+    eventedit (mainwid & mymainwid, perform & p, sequence & seq);
     ~eventedit ();
 
     void enqueue_draw ();
@@ -159,6 +174,8 @@ public:
     void set_dirty (bool flag = true);
     void v_adjustment (int value);
     void v_adjustment (int value, int lower, int upper);
+    void change_focus (bool set_it = true);
+    void handle_close ();
 
 private:
 
@@ -178,6 +195,9 @@ private:
 private:            // callbacks
 
     void on_realize ();
+    void on_set_focus (Widget * focus);
+    bool on_focus_in_event (GdkEventFocus *);
+    bool on_focus_out_event (GdkEventFocus *);
     bool on_key_press_event (GdkEventKey * ev);
     bool on_delete_event (GdkEventAny * event);
 

@@ -49,8 +49,13 @@ class perform;
 class mainwid : public gui_drawingarea_gtk2, public seqmenu
 {
 
-    friend class mainwnd;
+    /*
+     * for updating for current sequence and other purposes.
+     */
+
+    friend class eventedit;
     friend class seqedit;
+    friend class mainwnd;
 
 private:
 

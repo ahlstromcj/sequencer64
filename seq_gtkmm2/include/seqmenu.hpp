@@ -118,17 +118,6 @@ private:
 
     int m_current_seq;
 
-#if 0       // SEQ64_EDIT_SEQUENCE_HIGHLIGHT
-
-    /**
-     *  Hold the number of the currently-in-edit sequence.  We're moving this
-     *  variable into the perform class for better control of this value.
-     */
-
-    int m_edit_sequence;
-
-#endif      // SEQ64_EDIT_SEQUENCE_HIGHLIGHT
-
     /**
      *  Indicates if a sequence has been created.
      *

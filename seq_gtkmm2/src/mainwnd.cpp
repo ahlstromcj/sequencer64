@@ -1350,10 +1350,6 @@ mainwnd::on_key_press_event (GdkEventKey * ev)
             m_adjust_bpm->set_value(newbpm);
         }
 
-        // We already do this on a key_release!!!!
-        //
-        // (void) perf().mainwnd_key_event(k);             /* pass to perform  */
-
         if (ev->keyval == PREFKEY(screenset_dn))
         {
             int newss = perf().decrement_screenset();

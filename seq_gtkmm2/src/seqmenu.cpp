@@ -70,9 +70,6 @@ seqmenu::seqmenu (perform & p, mainwid & mymainwid)
     m_seqedit       (nullptr),
     m_eventedit     (nullptr),
     m_current_seq   (-1)            /* (0) is not really current yet    */
-#ifdef SEQ64_EDIT_SEQUENCE_HIGHLIGHT
-    // m_edit_sequence (-1)         // moved to the perform object
-#endif
 {
     m_clipboard.set_master_midi_bus(&m_mainperf.master_bus());
 }
@@ -326,7 +323,7 @@ seqmenu::seq_event_edit ()
         if (not_nullptr(s))
         {
             if (! s->get_editing())
-                m_eventedit = new eventedit(m_mainperf, *s);
+                m_eventedit = new eventedit(m_my_mainwid, m_mainperf, *s);
             else
                 s->set_raise(true);
         }
@@ -336,7 +333,7 @@ seqmenu::seq_event_edit ()
         seq_new();
         sequence * s = get_current_sequence();
         if (not_nullptr(s))
-            m_eventedit = new eventedit(m_mainperf, *s);
+            m_eventedit = new eventedit(m_my_mainwid, m_mainperf, *s);
     }
 #ifdef SEQ64_EDIT_SEQUENCE_HIGHLIGHT
     set_edit_sequence(current_seq());

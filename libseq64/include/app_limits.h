@@ -228,7 +228,7 @@
  *  as "BPM").  Mostly for sanity-checking.
  */
 
-#define SEQ64_MAXIMUM_BPM               500
+#define SEQ64_MAXIMUM_BPM               600         /* 500  */
 
 /**
  *  Default value for "beats-per-measure".  This is the "numerator" in a 4/4

@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-05-06
+ * \updates       2016-05-08
  * \license       GNU GPLv2 or above
  *
  */
@@ -99,7 +99,7 @@ condition_var::condition_var ()
 }
 
 /**
- *  Signals the confition variable.
+ *  Signals the condition variable.
  */
 
 void
@@ -109,7 +109,7 @@ condition_var::signal ()
 }
 
 /**
- *  Waits for the confition variable.
+ *  Waits for the condition variable.
  */
 
 void

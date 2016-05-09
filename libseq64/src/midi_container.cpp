@@ -27,6 +27,8 @@
  * \updates       2016-05-07
  * \license       GNU GPLv2 or above
  *
+ *  This class is important when writing the MIDI and sequencer data out to a
+ *  MIDI file.
  */
 
 #include "globals.h"                    /* c_timesig and other flags    */
@@ -43,7 +45,6 @@ namespace seq64
  * \param seq
  *      Provides a reference to the sequence/track for which this container
  *      holds MIDI data.
- *      
  */
 
 midi_container::midi_container (sequence & seq)

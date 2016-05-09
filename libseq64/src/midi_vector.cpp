@@ -30,13 +30,17 @@
  *
  */
 
-#include "midi_vector.hpp"                /* seq64::midi_container ABC    */
+#include "midi_vector.hpp"                /* seq64::midi_container base   */
 
 namespace seq64
 {
 
 /**
- *    This constructor fills in the members.
+ *  This constructor fills in the members of this class.
+ *
+ * \param seq
+ *      Provides a reference to the sequence/track for which this container
+ *      holds MIDI data.
  */
 
 midi_vector::midi_vector (sequence & seq)
@@ -54,3 +58,4 @@ midi_vector::midi_vector (sequence & seq)
  *
  * vim: sw=4 ts=4 wm=4 et ft=cpp
  */
+

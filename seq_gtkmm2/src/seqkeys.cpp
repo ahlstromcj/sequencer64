@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-04-14
+ * \updates       2016-05-09
  * \license       GNU GPLv2 or above
  *
  */
@@ -67,7 +67,8 @@ seqkeys::seqkeys
     m_keying                (false),
     m_keying_note           (0),
     m_scale                 (0),
-    m_key                   (0)
+    m_key                   (0),
+    m_show_octave_letters   (true)
 {
     // Empty body
 }
@@ -114,6 +115,16 @@ seqkeys::reset ()
 
 /**
  *  Updates the pixmaps to prepare it for the next draw operation.
+ *  This function draws the keys, which range from 0 to 127
+ *  (SEQ64_MIDI_COUNT_MAX - 1 = c_num_keys - 1).  Every octave,
+ *  a key letter and number (e.g. "C4") is shown.  The letter is adjusted to
+ *  match the current scale (e.g. "C#4").
+ *
+ *  We want to support an option to show the key number rather than the note
+ *  letter/number combination, and perhaps to toggle between them.  The
+ *  current difficulty is that the fonts used are just a little to high to fit
+ *  within the vertical limits of each key.  We really don't want to change
+ *  the vertical size at this time, so we just print every other note value.
  */
 
 void
@@ -122,7 +133,6 @@ seqkeys::update_pixmap ()
     int kx = c_keyoffset_x + 1;
     draw_rectangle_on_pixmap(black(), 0, 0, c_keyarea_x, c_keyarea_y);
     draw_rectangle_on_pixmap(white(), 1, 1, c_keyoffset_x-1, c_keyarea_y-2);
-
     for (int key = 0; key < c_num_keys; ++key)
     {
         draw_rectangle_on_pixmap
@@ -139,15 +149,26 @@ seqkeys::update_pixmap ()
             );
         }
 
-        char notes[8];
-        if (okey == m_key)                       /* notes */
+        char note[8];
+        if (m_show_octave_letters)
         {
-            int octave = ((c_num_keys - key - 1) / SEQ64_OCTAVE_SIZE) - 1;
-            if (octave < 0)
-                octave *= -1;
+            if (okey == m_key)                  /* octave note      */
+            {
+                int octave = ((c_num_keys - key - 1) / SEQ64_OCTAVE_SIZE) - 1;
+                if (octave < 0)
+                    octave *= -1;
 
-            snprintf(notes, sizeof notes, "%2s%1d", c_key_text[okey], octave);
-            render_string_on_pixmap(2, c_key_y * key - 1, notes, font::BLACK);
+                snprintf(note, sizeof note, "%2s%1d", c_key_text[okey], octave);
+                render_string_on_pixmap(2, c_key_y * key - 1, note, font::BLACK);
+            }
+        }
+        else
+        {
+            if ((key % 2) == 0)
+            {
+                snprintf(note, sizeof note, "%3d", key);
+                render_string_on_pixmap(2, c_key_y * key - 1, note, font::BLACK);
+            }
         }
     }
 }
@@ -293,9 +314,10 @@ seqkeys::on_expose_event (GdkEventExpose * ev)
 }
 
 /**
- *  Implements the on-button-press event callback.  It currently handles
- *  only the left button.  This button, pressed on the piano keyboard,
- *  causes m_keying to be set to true, and the given note to play.
+ *  Implements the on-button-press event callback.  It handles the left and
+ *  right buttons.  The left button, pressed on the piano keyboard, causes
+ *  m_keying to be set to true, and the given note to play.  The right button
+ *  toggles the note display between letter/number and MIDI note number.
  *
  * \return
  *      Always returns true.
@@ -314,6 +336,11 @@ seqkeys::on_button_press_event (GdkEventButton * ev)
             convert_y(y, note);
             m_seq.play_note_on(note);
             m_keying_note = note;
+        }
+        else if (SEQ64_CLICK_RIGHT(ev->button))
+        {
+            m_show_octave_letters = ! m_show_octave_letters;
+            reset();                /* draw_area() or update_pixmap() */
         }
     }
     return true;

@@ -206,6 +206,19 @@ public:
         return m_events.end();
     }
 
+#ifdef USE_FIND_IN_SEQUENCE_REMOVE      // EXPERIMENTAL
+
+    /**
+     *  Return an iterator to the desired event.
+     */
+
+    event_list::iterator find (const event & e)
+    {
+        return m_events.find(e);
+    }
+
+#endif
+
     /**
      *  Returns the number of events stored in m_events.  We like returning
      *  an integer instead of size_t, and rename the function so nobody is

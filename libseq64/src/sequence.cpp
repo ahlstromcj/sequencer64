@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-03-30
+ * \updates       2016-05-10
  * \license       GNU GPLv2 or above
  *
  *  The functionality of this class also includes handling some of the
@@ -55,6 +55,10 @@ event_list sequence::m_events_clipboard;
 
 /**
  *  Principal constructor.
+ *
+ * \param ppqn
+ *      Provides the PPQN parameter to perhaps alter the default PPQN value of
+ *      this sequence.
  */
 
 sequence::sequence (int ppqn)
@@ -113,7 +117,7 @@ sequence::sequence (int ppqn)
     m_snap_tick = m_ppqn / 4;
     m_triggers.set_ppqn(m_ppqn);
     m_triggers.set_length(m_length);
-    for (int i = 0; i < c_midi_notes; i++)      /* no notes are playing now */
+    for (int i = 0; i < c_midi_notes; ++i)      /* no notes are playing now */
         m_playing_notes[i] = 0;
 }
 
@@ -136,6 +140,9 @@ sequence::~sequence ()
  *  client code.
  *
  * \threadsafe
+ *
+ * \param rhs
+ *      Provides the source of the new member values.
  */
 
 void
@@ -158,7 +165,7 @@ sequence::partial_assign (const sequence & rhs)
         m_length        = rhs.m_length;
         m_time_beats_per_measure = rhs.m_time_beats_per_measure;
         m_time_beat_width = rhs.m_time_beat_width;
-        for (int i = 0; i < c_midi_notes; i++)      /* no notes are playing */
+        for (int i = 0; i < c_midi_notes; ++i)      /* no notes are playing */
             m_playing_notes[i] = 0;
 
         zero_markers();                             /* reset to tick 0      */
@@ -167,9 +174,13 @@ sequence::partial_assign (const sequence & rhs)
 }
 
 /**
- *  Returns the number of events stored in m_events.
+ *  Returns the number of events stored in m_events.  Note that only playable
+ *  events are counted in a sequence.
  *
  * \threadsafe
+ *
+ * \return
+ *      Returns m_events.count().
  */
 
 int
@@ -269,7 +280,7 @@ sequence::pop_trigger_undo ()
  *
  * \param mmb
  *      Provides a pointer to the master MIDI buss for this sequence.  This
- *      should be a reference.
+ *      should be a reference, but isn't, nor is it checked.
  */
 
 void
@@ -410,9 +421,10 @@ sequence::play (midipulse tick, bool playback_mode)
 
     if (not_nullptr(m_parent) && ! m_parent->is_jack_running())
         tick = m_parent->get_jack_tick();
+
 #endif
 
-    midipulse end_tick = tick;              /* ditto !!!                    */
+    midipulse end_tick = tick;
     if (m_song_mute)
     {
         set_playing(false);
@@ -463,7 +475,7 @@ sequence::play (midipulse tick, bool playback_mode)
 }
 
 /**
- *  This function verifies state: all note-ons have an off, and it links
+ *  This function verifies state: all note-ons have a note-off, and it links
  *  note-offs with their note-ons.
  *
  * \threadsafe
@@ -492,12 +504,15 @@ sequence::link_new ()
 
 /**
  *  A helper function, which does not lock/unlock, so it is unsafe to call
- *  without supplying an iterator from the event-list.  (And we no longer
- *  bother checking the pointer.  If it is now, all hope is lost.)
- *  If it's a note off, and that note is currently playing, then send a
- *  note off.  Do we need a flush() call as well?
+ *  without supplying an iterator from the event-list.  We no longer
+ *  bother checking the pointer.  If it is bad, all hope is lost.
+ *  If the event is a note off, and that note is currently playing, then send
+ *  a note off.
  *
  * \threadunsafe
+ *
+ * \param i
+ *      Provides the iterator to the event to remove from the event list.
  */
 
 void
@@ -507,7 +522,6 @@ sequence::remove (event_list::iterator i)
     if (er.is_note_off() && m_playing_notes[er.get_note()] > 0)
     {
         m_masterbus->play(m_bus, &er, m_midi_channel);
-        // m_masterbus->flush();                               ???
         m_playing_notes[er.get_note()]--;                   // ugh
     }
     m_events.remove(i);                                     // erase(i)
@@ -518,25 +532,25 @@ sequence::remove (event_list::iterator i)
  *  without supplying an iterator from the event-list.
  *
  *  Finds the given event in m_events, and removes the first iterator
- *  matching that.
+ *  matching that.  If there are events that would match after that, they
+ *  remain in the container.  This matches seq24 behavior.
  *
  * \threadunsafe
+ *
+ * \param e
+ *      Provides a reference to the event to be removed.
  */
 
 void
 sequence::remove (event & e)
 {
-    /**
-     * \todo Use find instead in sequence::remove()!
-     */
-
-    for (event_list::iterator i = m_events.begin(); i != m_events.end(); i++)
+    for (event_list::iterator i = m_events.begin(); i != m_events.end(); ++i)
     {
         event & er = DREF(i);
         if (&e == &er)                  /* comparing pointers, not values */
         {
             m_events.remove(i);
-            return;
+            break;
         }
     }
 }
@@ -558,12 +572,12 @@ sequence::remove_marked ()
         if (DREF(i).is_marked())
         {
             event_list::iterator t = i;
-            t++;
+            ++t;
             remove(i);
             i = t;
         }
         else
-            i++;
+            ++i;
     }
     reset_draw_marker();
 }
@@ -597,9 +611,22 @@ sequence::unpaint_all ()
 
 /**
  *  Returns the 'box' of the selected items.  Note the common-code betweem
- *  this function and get_clipboard_box().
+ *  this function and get_clipboard_box().  Also note we could return a
+ *  boolean indicating if the return values were filled in.
  *
  * \threadsafe
+ *
+ * \param [out] tick_s
+ *      Side-effect return reference for the start time.
+ *
+ * \param [out] note_h
+ *      Side-effect return reference for the high note.
+ *
+ * \param [out] tick_f
+ *      Side-effect return reference for the finish time.
+ *
+ * \param [out] note_l
+ *      Side-effect return reference for the low note.
  */
 
 void
@@ -614,7 +641,7 @@ sequence::get_selected_box
     note_h = 0;
     note_l = SEQ64_MIDI_COUNT_MAX;
     event_list::iterator i;
-    for (i = m_events.begin(); i != m_events.end(); i++)
+    for (i = m_events.begin(); i != m_events.end(); ++i)
     {
         if (DREF(i).is_selected())
         {
@@ -637,9 +664,22 @@ sequence::get_selected_box
 
 /**
  *  Returns the 'box' of the clipboard items.  Note the common-code betweem
- *  this function and get_selected_box().
+ *  this function and get_selected_box().  Also note we could return a boolean
+ *  indicating if the return values were filled in.
  *
  * \threadsafe
+ *
+ * \param [out] tick_s
+ *      Side-effect return reference for the start time.
+ *
+ * \param [out] note_h
+ *      Side-effect return reference for the high note.
+ *
+ * \param [out] tick_f
+ *      Side-effect return reference for the finish time.
+ *
+ * \param [out] note_l
+ *      Side-effect return reference for the low note.
  */
 
 void
@@ -657,7 +697,7 @@ sequence::get_clipboard_box
         tick_s = tick_f = note_h = note_l = 0;
 
     event_list::iterator i;
-    for (i = m_events_clipboard.begin(); i != m_events_clipboard.end(); i++)
+    for (i = m_events_clipboard.begin(); i != m_events_clipboard.end(); ++i)
     {
         midipulse time = DREF(i).get_timestamp();
         if (time < tick_s)
@@ -679,6 +719,9 @@ sequence::get_clipboard_box
  *  Counts the selected notes in the event list.
  *
  * \threadsafe
+ *
+ * \return
+ *      Returns m_events.count_selected_notes().
  */
 
 int
@@ -694,6 +737,15 @@ sequence::get_num_selected_notes () const
  *  given CC value.
  *
  * \threadsafe
+ *
+ * \param status
+ *      The desired kind of event to count.
+ *
+ * \param cc
+ *      The desired control-change to count, if the event is a control-change.
+ *
+ * \return
+ *      Returns m_events.count_selected_events().
  */
 
 int
@@ -708,55 +760,75 @@ sequence::get_num_selected_events (midibyte status, midibyte cc) const
  *  and note low.  Returns the number selected.
  *
  * \threadsafe
+ *
+ * \param a_tick_s
+ *      The start time of the selection.
+ *
+ * \param note_h
+ *      The high note of the selection.
+ *
+ * \param tick_f
+ *      The finish time of the selection.
+ *
+ * \param note_l
+ *      The low note of the selection.
+ *
+ * \param action
+ *      The action to perform, one of e_select, e_select_one, e_is_selected,
+ *      e_would_select, e_deselect, e_toggle_selection, and e_remove_one.
+ *
+ * \return
+ *      Returns the number of events acted on, or 0 if no desired event was
+ *      found.
  */
 
 int
 sequence::select_note_events
 (
-    midipulse a_tick_s, int a_note_h,
-    midipulse a_tick_f, int a_note_l, select_action_e a_action
+    midipulse tick_s, int note_h,
+    midipulse tick_f, int note_l, select_action_e action
 )
 {
     int result = 0;
     automutex locker(m_mutex);
-    for (event_list::iterator i = m_events.begin(); i != m_events.end(); i++)
+    for (event_list::iterator i = m_events.begin(); i != m_events.end(); ++i)
     {
         event & er = DREF(i);
-        if (er.get_note() <= a_note_h && er.get_note() >= a_note_l)
+        if (er.get_note() <= note_h && er.get_note() >= note_l)
         {
-            midipulse tick_s = 0;            // must be initialized
-            midipulse tick_f = 0;            // must be initialized
+            midipulse stick = 0;                   // must be initialized
+            midipulse ftick = 0;                   // must be initialized
             if (er.is_linked())
             {
                 event * ev = er.get_linked();       // pointer
                 if (er.is_note_off())
                 {
-                    tick_s = ev->get_timestamp();
-                    tick_f = er.get_timestamp();
+                    stick = ev->get_timestamp();
+                    ftick = er.get_timestamp();
                 }
                 else if (er.is_note_on())
                 {
-                    tick_f = ev->get_timestamp();
-                    tick_s = er.get_timestamp();
+                    ftick = ev->get_timestamp();
+                    stick = er.get_timestamp();
                 }
 
-                bool tick_and = (tick_s <= a_tick_f) && (tick_f >= a_tick_s);
-                bool tick_or = (tick_s <= a_tick_f) || (tick_f >= a_tick_s);
+                bool tick_and = (stick <= tick_f) && (ftick >= tick_s);
+                bool tick_or = (stick <= tick_f) || (ftick >= tick_s);
                 if
                 (
-                    ((tick_s <= tick_f) && tick_and) ||
-                    ((tick_s > tick_f) && tick_or)
+                    ((stick <= ftick) && tick_and) ||
+                    ((stick > ftick) && tick_or)
                 )
                 {
-                    if (a_action == e_select || a_action == e_select_one)
+                    if (action == e_select || action == e_select_one)
                     {
                         er.select();
                         ev->select();
-                        result++;
-                        if (a_action == e_select_one)
+                        ++result;
+                        if (action == e_select_one)
                             break;
                     }
-                    if (a_action == e_is_selected)
+                    if (action == e_is_selected)
                     {
                         if (er.is_selected())
                         {
@@ -764,18 +836,18 @@ sequence::select_note_events
                             break;
                         }
                     }
-                    if (a_action == e_would_select)
+                    if (action == e_would_select)
                     {
                         result = 1;
                         break;
                     }
-                    if (a_action == e_deselect)
+                    if (action == e_deselect)
                     {
                         result = 0;
                         er.unselect();
                         ev->unselect();
                     }
-                    if (a_action == e_toggle_selection && er.is_note_on())
+                    if (action == e_toggle_selection && er.is_note_on())
                     {
                         if (er.is_selected())       // don't toggle twice
                         {
@@ -790,7 +862,7 @@ sequence::select_note_events
                             ++result;
                         }
                     }
-                    if (a_action == e_remove_one)
+                    if (action == e_remove_one)
                     {
                         remove(er);
                         remove(*ev);
@@ -802,17 +874,17 @@ sequence::select_note_events
             }
             else
             {
-                tick_s = tick_f = er.get_timestamp();
-                if (tick_s >= a_tick_s - 16 && tick_f <= a_tick_f)
+                stick = ftick = er.get_timestamp();
+                if (stick >= tick_s - 16 && ftick <= tick_f)
                 {
-                    if (a_action == e_select || a_action == e_select_one)
+                    if (action == e_select || action == e_select_one)
                     {
                         er.select();
                         ++result;
-                        if (a_action == e_select_one)
+                        if (action == e_select_one)
                             break;
                     }
-                    if (a_action == e_is_selected)
+                    if (action == e_is_selected)
                     {
                         if (er.is_selected())
                         {
@@ -820,17 +892,17 @@ sequence::select_note_events
                             break;
                         }
                     }
-                    if (a_action == e_would_select)
+                    if (action == e_would_select)
                     {
                         result = 1;
                         break;
                     }
-                    if (a_action == e_deselect)
+                    if (action == e_deselect)
                     {
                         result = 0;
                         er.unselect();
                     }
-                    if (a_action == e_toggle_selection)
+                    if (action == e_toggle_selection)
                     {
                         if (er.is_selected())
                         {
@@ -843,11 +915,11 @@ sequence::select_note_events
                             ++result;
                         }
                     }
-                    if (a_action == e_remove_one)
+                    if (action == e_remove_one)
                     {
                         remove(er);
                         reset_draw_marker();
-                        result++;
+                        ++result;
                         break;
                     }
                 }
@@ -863,6 +935,25 @@ sequence::select_note_events
  *  function.
  *
  * \threadsafe
+ *
+ * \param tick_s
+ *      The start time of the selection.
+ *
+ * \param tick_f
+ *      The finish time of the selection.
+ *
+ * \param status
+ *      The desired event in the selection.
+ *
+ * \param cc
+ *      The desired control-change in the selection, if the event is a
+ *      control-change.
+ *
+ * \param action
+ *      The desired selection action.
+ *
+ * \return
+ *      Returns the number of events selected.
  */
 
 int
@@ -875,7 +966,7 @@ sequence::select_events
 {
     int result = 0;
     automutex locker(m_mutex);
-    for (event_list::iterator i = m_events.begin(); i != m_events.end(); i++)
+    for (event_list::iterator i = m_events.begin(); i != m_events.end(); ++i)
     {
         event & er = DREF(i);
         if
@@ -891,7 +982,7 @@ sequence::select_events
                 if (action == e_select || action == e_select_one)
                 {
                     er.select();
-                    result++;
+                    ++result;
                     if (action == e_select_one)
                         break;
                 }
@@ -922,7 +1013,7 @@ sequence::select_events
                 {
                     remove(er);
                     reset_draw_marker();
-                    result++;
+                    ++result;
                     break;
                 }
             }
@@ -972,7 +1063,7 @@ sequence::move_selected_notes (midipulse delta_tick, int delta_note)
 {
     automutex locker(m_mutex);
     mark_selected();
-    for (event_list::iterator i = m_events.begin(); i != m_events.end(); i++)
+    for (event_list::iterator i = m_events.begin(); i != m_events.end(); ++i)
     {
         event & er = DREF(i);
         if (er.is_marked())                       /* is it being moved ?    */
@@ -1019,6 +1110,9 @@ sequence::move_selected_notes (midipulse delta_tick, int delta_note)
  *  that.  See the grow_selected() function.
  *
  * \threadsafe
+ *
+ * \param delta_tick
+ *      Provides the amount of time to stretch the selected notes.
  */
 
 void
@@ -1027,7 +1121,7 @@ sequence::stretch_selected (midipulse delta_tick)
     automutex locker(m_mutex);
     unsigned first_ev = 0x7fffffff;       // INT_MAX /* timestamp lower limit */
     unsigned last_ev = 0x00000000;                   /* timestamp upper limit */
-    for (event_list::iterator i = m_events.begin(); i != m_events.end(); i++)
+    for (event_list::iterator i = m_events.begin(); i != m_events.end(); ++i)
     {
         event & er = DREF(i);
         if (er.is_selected())
@@ -1046,7 +1140,7 @@ sequence::stretch_selected (midipulse delta_tick)
     {
         float ratio = float(new_len) / float(old_len);
         mark_selected();
-        for (event_list::iterator i = m_events.begin(); i != m_events.end(); i++)
+        for (event_list::iterator i = m_events.begin(); i != m_events.end(); ++i)
         {
             event & er = DREF(i);
             if (er.is_marked())
@@ -1082,7 +1176,7 @@ sequence::grow_selected (midipulse delta_tick)
 {
     mark_selected();                    /* already locked inside    */
     automutex locker(m_mutex);
-    for (event_list::iterator i = m_events.begin(); i != m_events.end(); i++)
+    for (event_list::iterator i = m_events.begin(); i != m_events.end(); ++i)
     {
         event & er = DREF(i);
         if (er.is_marked() && er.is_note_on() && er.is_linked())
@@ -1148,13 +1242,19 @@ sequence::grow_selected (midipulse delta_tick)
  *      -   EVENT_CHANNEL_PRESSURE
  *
  * \threadsafe
+ *
+ * \param astat
+ *      The desired event.
+ *
+ * \param acontrol
+ *      The desired control-change, unused.
  */
 
 void
-sequence::increment_selected (midibyte astat, midibyte /*a_control*/)
+sequence::increment_selected (midibyte astat, midibyte /*acontrol*/)
 {
     automutex locker(m_mutex);
-    for (event_list::iterator i = m_events.begin(); i != m_events.end(); i++)
+    for (event_list::iterator i = m_events.begin(); i != m_events.end(); ++i)
     {
         event & er = DREF(i);
         if (er.is_selected() && er.get_status() == astat)
@@ -1182,13 +1282,19 @@ sequence::increment_selected (midibyte astat, midibyte /*a_control*/)
  *      -   EVENT_PITCH_WHEEL
  *
  * \threadsafe
+ *
+ * \param astat
+ *      The desired event.
+ *
+ * \param acontrol
+ *      The desired control-change, unused.
  */
 
 void
-sequence::decrement_selected (midibyte astat, midibyte /*a_control*/)
+sequence::decrement_selected (midibyte astat, midibyte /*acontrol*/)
 {
     automutex locker(m_mutex);
-    for (event_list::iterator i = m_events.begin(); i != m_events.end(); i++)
+    for (event_list::iterator i = m_events.begin(); i != m_events.end(); ++i)
     {
         event & er = DREF(i);
         if (er.is_selected() && er.get_status() == astat)
@@ -1227,7 +1333,7 @@ sequence::copy_selected ()
     for
     (
         event_list::iterator i = m_events_clipboard.begin();
-        i != m_events_clipboard.end(); i++
+        i != m_events_clipboard.end(); ++i
     )
     {
         DREF(i).set_timestamp(DREF(i).get_timestamp() - first_tick);
@@ -1238,6 +1344,9 @@ sequence::copy_selected ()
  *  Cuts the selected events.
  *
  * \threadsafe
+ *
+ * \param copyevents
+ *      If true, copy the selected events before marking and removing them.
  */
 
 void
@@ -1259,6 +1368,12 @@ sequence::cut_selected (bool copyevents)
  *  m_events_clipboard, rather than copying the whole thing, for speed.
  *
  * \threadsafe
+ *
+ * \param tick
+ *      The time destination for the paste.
+ *
+ * \param note
+ *      The note/pitch destination for the paste.
  */
 
 void
@@ -1266,19 +1381,19 @@ sequence::paste_selected (midipulse tick, int note)
 {
     automutex locker(m_mutex);
     event_list clipbd = m_events_clipboard;     /* copy clipboard           */
-    for (event_list::iterator i = clipbd.begin(); i != clipbd.end(); i++)
+    for (event_list::iterator i = clipbd.begin(); i != clipbd.end(); ++i)
         DREF(i).set_timestamp(DREF(i).get_timestamp() + tick);
 
     event & er = DREF(clipbd.begin());
     if (er.is_note_on() || er.is_note_off())
     {
         int highest_note = 0;
-        for (event_list::iterator i = clipbd.begin(); i != clipbd.end(); i++)
+        for (event_list::iterator i = clipbd.begin(); i != clipbd.end(); ++i)
         {
             if (DREF(i).get_note() > highest_note)
                 highest_note = DREF(i).get_note();
         }
-        for (event_list::iterator i = clipbd.begin(); i != clipbd.end(); i++)
+        for (event_list::iterator i = clipbd.begin(); i != clipbd.end(); ++i)
         {
             DREF(i).set_note(DREF(i).get_note() - (highest_note - note));
         }
@@ -1352,7 +1467,7 @@ sequence::change_event_data_range
     if (get_num_selected_events(status, cc))
         have_selection = true;
 
-    for (event_list::iterator i = m_events.begin(); i != m_events.end(); i++)
+    for (event_list::iterator i = m_events.begin(); i != m_events.end(); ++i)
     {
         midibyte d0, d1;
         event & er = DREF(i);
@@ -1413,6 +1528,18 @@ sequence::change_event_data_range
  *  ones that overlap the ones we want to add.
  *
  * \threadsafe
+ *
+ * \param tick
+ *      The time destination of the new note, in pulses.
+ *
+ * \param length
+ *      The duration of the new note, in pulses.
+ *
+ * \param note
+ *      The pitch destination of the new note.
+ *
+ * \param paint
+ *      If true, repaint to be left with just the inserted event.
  */
 
 void
@@ -1433,14 +1560,13 @@ sequence::add_note
             for
             (
                 event_list::iterator i = m_events.begin();
-                i != m_events.end(); i++
+                i != m_events.end(); ++i
             )
             {
                 event & er = DREF(i);
                 if
                 (
-                    er.is_painted() &&
-                    er.is_note_on() &&
+                    er.is_painted() && er.is_note_on() &&
                     er.get_timestamp() == tick
                 )
                 {
@@ -1506,6 +1632,9 @@ sequence::add_note
  * \param er
  *      Provide a reference to the event to be added; the event is copied into
  *      the events container.
+ *
+ * \return
+ *      Returns true if the event was added.
  */
 
 bool
@@ -1534,6 +1663,21 @@ sequence::add_event (const event & er)
  *  ones that overlap the ones we want to add.
  *
  * \threadsafe
+ *
+ * \param tick
+ *      The time destination of the event.
+ *
+ * \param status
+ *      The type of event to add.
+ *
+ * \param d0
+ *      The first data byte for the event.
+ *
+ * \param d1
+ *      The second data byte for the event (if needed).
+ *
+ * \param paint
+ *      If true, repaint to be left with just the inserted event.
  */
 
 void
@@ -1549,7 +1693,7 @@ sequence::add_event
         if (paint)
         {
             event_list::iterator i;
-            for (i = m_events.begin(); i != m_events.end(); i++)
+            for (i = m_events.begin(); i != m_events.end(); ++i)
             {
                 event & er = DREF(i);
                 if (er.is_painted() && er.get_timestamp() == tick)
@@ -1565,7 +1709,7 @@ sequence::add_event
         }
         event e;
         if (paint)
-            e.paint();                              // ???
+            e.paint();
 
         e.set_status(status);
         e.set_data(d0, d1);
@@ -1579,6 +1723,9 @@ sequence::add_event
  *  Streams the given event.
  *
  * \threadsafe
+ *
+ * \param ev
+ *      Provides the event to stream.
  */
 
 void
@@ -1655,6 +1802,9 @@ sequence::set_dirty ()
  *  flag to false.
  *
  * \threadsafe
+ *
+ * \return
+ *      Returns the dirty status.
  */
 
 bool
@@ -1672,6 +1822,9 @@ sequence::is_dirty_names ()
  *  recording.
  *
  * \threadsafe
+ *
+ * \return
+ *      Returns the dirty status.
  */
 
 bool
@@ -1688,6 +1841,9 @@ sequence::is_dirty_main ()
  *  flag to false.
  *
  * \threadsafe
+ *
+ * \return
+ *      Returns the dirty status.
  */
 
 bool
@@ -1704,6 +1860,9 @@ sequence::is_dirty_perf ()
  *  flag to false.
  *
  * \threadsafe
+ *
+ * \return
+ *      Returns the dirty status.
  */
 
 bool
@@ -1721,15 +1880,18 @@ sequence::is_dirty_edit ()
  *  the virtual piano.
  *
  * \threadsafe
+ *
+ * \param note
+ *      The note to play.
  */
 
 void
-sequence::play_note_on (int a_note)
+sequence::play_note_on (int note)
 {
     automutex locker(m_mutex);
     event e;
     e.set_status(EVENT_NOTE_ON);
-    e.set_data(a_note, SEQ64_MIDI_COUNT_MAX-1);
+    e.set_data(note, SEQ64_MIDI_COUNT_MAX-1);
     m_masterbus->play(m_bus, &e, m_midi_channel);
     m_masterbus->flush();
 }
@@ -1739,15 +1901,18 @@ sequence::play_note_on (int a_note)
  *  buss.
  *
  * \threadsafe
+ *
+ * \param note
+ *      The note to turn off.
  */
 
 void
-sequence::play_note_off (int a_note)
+sequence::play_note_off (int note)
 {
     automutex locker(m_mutex);
     event e;
     e.set_status(EVENT_NOTE_OFF);
-    e.set_data(a_note, SEQ64_MIDI_COUNT_MAX-1);
+    e.set_data(note, SEQ64_MIDI_COUNT_MAX-1);
     m_masterbus->play(m_bus, &e, m_midi_channel);
     m_masterbus->flush();
 }
@@ -1767,7 +1932,22 @@ sequence::clear_triggers ()
 
 /**
  *  Adds a trigger.  A pass-through function that calls triggers::add().
-*/
+ *  See that function for more details.
+ *
+ * \threadsafe
+ *
+ * \param tick
+ *      The time destination of the trigger.
+ *
+ * \param len
+ *      The duration of the trigger.
+ *
+ * \param offset
+ *      The performance offset of the trigger.
+ *
+ * \param fixoffset
+ *      If true, adjust the offset.
+ */
 
 void
 sequence::add_trigger
@@ -1783,7 +1963,7 @@ sequence::add_trigger
  *  This function examines each trigger in the trigger list.  If the given
  *  position is between the current trigger's tick-start and tick-end
  *  values, the these values are copied to the start and end parameters,
- *  respectively, and then we exit.
+ *  respectively, and then we exit.  See triggers::intersect().
  *
  * \threadsafe
  *
@@ -1828,13 +2008,13 @@ sequence::intersect_triggers
  * \param position_note
  *      I think this is the note value we might be looking for ???
  *
- * \param start
+ * \param [out] start
  *      The destination for the starting timestamp of the matching note.
  *
- * \param ender
+ * \param [out] ender
  *      The destination for the ending timestamp of the matching note.
  *
- * \param note
+ * \param [out] note
  *      The destination for the note of the matching event.
  *      Why is this an int value???
  *
@@ -1942,7 +2122,7 @@ sequence::intersect_events
 }
 
 /**
- *  Grows a trigger.
+ *  Grows a trigger.  See triggers::grow() for more information.
  *
  * \param tickfrom
  *      The desired from-value back which to expand the trigger, if necessary.
@@ -1965,8 +2145,12 @@ sequence::grow_trigger (midipulse tickfrom, midipulse tickto, midipulse len)
 
 /**
  *  Deletes a trigger, that brackets the given tick, from the trigger-list.
+ *  See triggers::remove().
  *
  * \threadsafe
+ *
+ * \param tick
+ *      Provides the tick to be used for finding the trigger to be erased.
  */
 
 void
@@ -2023,11 +2207,12 @@ sequence::split_trigger (trigger & trig, midipulse splittick)
 }
 
 /**
- *  Splits a trigger.
- *
- *  This is the public overload of split_trigger.
+ *  Splits a trigger.  This is the public overload of split_trigger.
  *
  * \threadsafe
+ *
+ * \param splittick
+ *      The time location of the split.
  */
 
 void
@@ -2038,12 +2223,15 @@ sequence::split_trigger (midipulse splittick)
 }
 
 /**
- *  Adjusts trigger offsets to the length of ???,
- *  for all triggers, and undo triggers.
+ *  Adjusts trigger offsets to the length specified for all triggers, and undo
+ *  triggers.
  *
  * \threadsafe
  *
  *  Might can get rid of this function?
+ *
+ * \param newlength
+ *      The new length of the adjusted trigger.
  */
 
 void
@@ -2054,9 +2242,16 @@ sequence::adjust_trigger_offsets_to_length (midipulse newlength)
 }
 
 /**
- *  Copies triggers to...
+ *  Copies triggers to another location.
  *
  * \threadsafe
+ *
+ * \param starttick
+ *      The current location of the triggers.
+ *
+ * \param distance
+ *      The distance away from the current location to which to copy the
+ *      triggers.
  */
 
 void
@@ -2073,13 +2268,24 @@ sequence::copy_triggers (midipulse starttick, midipulse distance)
  *  parent's value of m_length.
  *
  * \threadsafe
+ *
+ * \param starttick
+ *      The current location of the triggers.
+ *
+ * \param distance
+ *      The distance away from the current location to which to move the
+ *      triggers.
+ *
+ * \param direction
+ *      If true, the triggers are moved forward. If false, the triggers are
+ *      moved backward.
  */
 
 void
 sequence::move_triggers (midipulse starttick, midipulse distance, bool direction)
 {
     automutex locker(m_mutex);
-    m_triggers.move(starttick, distance, direction);    // , m_length);
+    m_triggers.move(starttick, distance, direction);
 }
 
 /**
@@ -2103,6 +2309,10 @@ sequence::selected_trigger_start ()
  *  Gets the selected trigger's end tick.
  *
  * \threadsafe
+ *
+ * \return
+ *      Returns the tick_end() value of the last-selected trigger.  If no
+ *      triggers are selected, then -1 is returned.
  */
 
 midipulse
@@ -2157,6 +2367,9 @@ sequence::move_selected_triggers_to
  *  Get the ending value of the last trigger in the trigger-list.
  *
  * \threadsafe
+ *
+ * \return
+ *      Returns the maximum trigger value.
  */
 
 midipulse
@@ -2193,7 +2406,8 @@ sequence::get_trigger_state (midipulse tick)
  *      Provides the tick of interest.
  *
  * \return
- *      Returns true if a trigger is found that brackets the given tick.
+ *      Returns true if a trigger is found that brackets the given tick;
+ *      this is the return value of m_triggers.select().
  */
 
 bool
@@ -2204,10 +2418,10 @@ sequence::select_trigger (midipulse tick)
 }
 
 /**
- *      Unselects all triggers.
+ *  Unselects all triggers.
  *
  * \return
- *      Always returns false.
+ *      Returns the m_triggers.unselect() return value.
  */
 
 bool
@@ -2218,7 +2432,7 @@ sequence::unselect_triggers ()
 }
 
 /**
- *      Deletes the first selected trigger that is found.
+ *  Deletes the first selected trigger that is found.
  */
 
 void
@@ -2229,7 +2443,7 @@ sequence::del_selected_trigger ()
 }
 
 /**
- *      Copies and deletes the first selected trigger that is found.
+ *  Copies and deletes the first selected trigger that is found.
  */
 
 void
@@ -2256,8 +2470,9 @@ sequence::copy_selected_trigger ()
  *  If there is a copied trigger, then this function grabs it from the trigger
  *  clipboard and adds it.
  *
- *  Why isn't this protected by a mutex?  We will eventually enable this if
- *  anything bad happens, such as a deadlock, or corruption.
+ *  Why isn't this protected by a mutex?  We will enable this if anything bad
+ *  happens, such as a deadlock, or corruption, that we can prove happens
+ *  here.
  */
 
 void
@@ -2293,11 +2508,10 @@ sequence::reset (bool live_mode)
 }
 
 /**
- *  EXPERIMENTAL.  A pause version of reset().  The reset() function is
- *  currently not called when pausing, but we still need the note-shutoff
- *  capability to prevent notes from lingering.  Not that we do not call
- *  set_playing(false)... it disarms the sequence, which we do not want upon
- *  pausing.
+ *  A pause version of reset().  The reset() function is currently not called
+ *  when pausing, but we still need the note-shutoff capability to prevent
+ *  notes from lingering.  Not that we do not call set_playing(false)... it
+ *  disarms the sequence, which we do not want upon pausing.
  */
 
 void
@@ -2364,7 +2578,7 @@ sequence::get_minmax_note_events (int & lowest, int & highest)
     bool result = false;
     int low = SEQ64_MIDI_COUNT_MAX-1;
     int high = -1;
-    for (event_list::iterator i = m_events.begin(); i != m_events.end(); i++)
+    for (event_list::iterator i = m_events.begin(); i != m_events.end(); ++i)
     {
         event & er = DREF(i);
         if (er.is_note_on() || er.is_note_off())
@@ -2390,6 +2604,12 @@ sequence::get_minmax_note_events (int & lowest, int & highest)
  *  Each call to seqdata() fills the passed references with a events
  *  elements, and returns true.  When it has no more events, returns a
  *  false.
+ *
+ * \param [out] a_tick_s
+ *      Provides a pointer destination for the start time.
+ *
+ * \param [out] a_tick_f
+ *      Provides a pointer destination for the finish time.
  */
 
 draw_type
@@ -2455,7 +2675,7 @@ sequence::get_next_event (midibyte * a_status, midibyte * a_cc)
         event & drawevent = DREF(m_iterator_draw);
         *a_status = drawevent.get_status();
         drawevent.get_data(*a_cc, j);
-        m_iterator_draw++;
+        ++m_iterator_draw;
         return true;                /* we have a good one; update and return */
     }
     return false;
@@ -2796,7 +3016,7 @@ sequence::put_event_on_bus (event & ev)
     midibyte note = ev.get_note();
     bool skip = false;
     if (ev.is_note_on())
-        m_playing_notes[note]++;
+        m_playing_notes[note]++;                // *(m_playing_notes + note)++
 
     if (ev.is_note_off())
     {
@@ -2809,14 +3029,13 @@ sequence::put_event_on_bus (event & ev)
     {
         /*
          * \change ca 2016-03-19
-         *  Move the flush call into this condition; why flush() 
-         *  unless actually playing an event?
+         *      Move the flush call into this condition; why flush() unless
+         *      actually playing an event?
          */
 
         m_masterbus->play(m_bus, &ev, m_midi_channel);
         m_masterbus->flush();
     }
-    // m_masterbus->flush();        // moved to above
 }
 
 /**
@@ -2876,7 +3095,7 @@ sequence::select_events
 {
     automutex locker(m_mutex);
     midibyte d0, d1;
-    for (event_list::iterator i = m_events.begin(); i != m_events.end(); i++)
+    for (event_list::iterator i = m_events.begin(); i != m_events.end(); ++i)
     {
         event & er = DREF(i);
         er.get_data(d0, d1);
@@ -2908,6 +3127,19 @@ sequence::select_events
  *  scale.  If the scale value is 0, this is "no scale", which is the
  *  chromatic scale, where all 12 notes, including sharps and flats, are
  *  part of the scale.
+ *
+ * \note
+ *      We noticed (ca 2016-06-10) that MIDI aftertouch events need to be
+ *      transposed, but are not being transposed here.  Assuming they are
+ *      selectable (another question!), the test for note-on and note-off is
+ *      not sufficient, and so has been replaced by a call to
+ *      event::is_note_msg().
+ *
+ * \param steps
+ *      The number of steps to transpose the notes.
+ *
+ * \param scale
+ *      The scale to make the notes adhere to while transposing.
  */
 
 void
@@ -2926,14 +3158,18 @@ sequence::transpose_notes (int steps, int scale)
     else
         transpose_table = &c_scales_transpose_up[scale][0];     /* up   */
 
-    for (event_list::iterator i = m_events.begin(); i != m_events.end(); i++)
+    for (event_list::iterator i = m_events.begin(); i != m_events.end(); ++i)
     {
         event & er = DREF(i);
+#if 0
         if                                          /* is it being moved ?  */
         (
-            (er.get_status() == EVENT_NOTE_ON ||
-                er.get_status() == EVENT_NOTE_OFF) && er.is_marked()
+            er.is_marked() && (
+                er.get_status() == EVENT_NOTE_ON ||
+                er.get_status() == EVENT_NOTE_OFF)
         )
+#endif
+        if (er.is_marked() && er.is_note())         /* transposable event?  */
         {
             e = er;
             e.unmark();
@@ -2960,7 +3196,29 @@ sequence::transpose_notes (int steps, int scale)
 }
 
 /**
- * Not deleting the ends, not selected.
+ *  Grabs the specified events, puts them into a list, quantizes them against
+ *  the snap ticks, and merges them in to the event container.  One confusing
+ *  things is why the original versions of the events don't seem to be
+ *  deleted.
+ *
+ * \param status
+ *      Indicates the type of event to be quantized.
+ *
+ * \param cc
+ *      The desired control-change to count, if the event is a control-change.
+ *
+ * \param snap_tick
+ *      Provides the maximum amount to move the events.  Actually, events are
+ *      moved to the previous or next snap_tick value depend on whether they
+ *      are halfway to the next one or not.
+ *
+ * \param divide
+ *      A rough indicator of the amount of quantization.  The only values used
+ *      in the application seem to be either 1 or 2.
+ *
+ * \param linked
+ *      False by default, this parameter indicates if marked events are to be
+ *      relinked, as far as we can tell.
  */
 
 void
@@ -2974,7 +3232,7 @@ sequence::quantize_events
     midibyte d0, d1;
     event_list quantized_events;
     mark_selected();
-    for (event_list::iterator i = m_events.begin(); i != m_events.end(); i++)
+    for (event_list::iterator i = m_events.begin(); i != m_events.end(); ++i)
     {
         event & er = DREF(i);
         er.get_data(d0, d1);
@@ -2995,7 +3253,7 @@ sequence::quantize_events
             e.unmark();
 
             midipulse timestamp = e.get_timestamp();
-            midipulse timestamp_remander = (timestamp % snap_tick);
+            midipulse timestamp_remander = timestamp % snap_tick;
             midipulse timestamp_delta = 0;
             if (timestamp_remander < snap_tick / 2)
                 timestamp_delta = - (timestamp_remander / divide);
@@ -3023,7 +3281,7 @@ sequence::quantize_events
 }
 
 /**
- *  This function fills the given character list with MIDI data from the
+ *  This function fills the given MIDI container with MIDI data from the
  *  current sequence, preparatory to writing it to a file.
  *
  *  Note that some of the events might not come out in the same order they
@@ -3060,7 +3318,7 @@ sequence::show_events () const
         number(), name().c_str(), get_midi_channel(), event_count()
     );
     const event_list & evl = events();
-    for (event_list::const_iterator i = evl.begin(); i != evl.end(); i++)
+    for (event_list::const_iterator i = evl.begin(); i != evl.end(); ++i)
     {
         const event & er = DREF(i);
         std::string evdump = to_string(er);
@@ -3129,6 +3387,9 @@ sequence::copy_events (const event_list & newevents)
  *      information about the performance.  Remember that m_parent is not at
  *      all owned by the sequence.  We just don't want to do all the work
  *      necessary to make it a reference, at this time.
+ *
+ * \param p
+ *      A pointer to the parent, assigned only if not already assigned.
  */
 
 void

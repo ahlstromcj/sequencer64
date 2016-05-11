@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-05-09
+ * \updates       2016-05-10
  * \license       GNU GPLv2 or above
  *
  *  This module is almost exclusively user-interface code.  There are some
@@ -51,14 +51,6 @@
 #include "perform.hpp"
 #include "perfnames.hpp"
 
-/*
- *  If defined, the connect() call for the change_vert() member function is
- *  done in the constructor, like it was originally.  An attempt to allown an
- *  Arch Linux user to run Sequencer64 without a segfault at startup.
- */
-
-#undef CONNECT_CHANGE_VERT_IN_CONSTRUCTOR
-
 namespace seq64
 {
 
@@ -67,6 +59,24 @@ namespace seq64
  *
  *  Weird is that the window (x,y) are set to (c_names_x, 100), when c_names_y
  *  is 22 (now 24) in globals.h.
+ *
+ * \param p
+ *      Provides a reference to the main performance object of the
+ *      application.
+ *
+ * \param parent
+ *      Provides a reference to the object that contains this object, so that
+ *      this object can tell the parent to queue up a drawing operation.
+ *
+ * \param mymainwnd
+ *      Provides a reference to the single mainwid object that exists in this
+ *      application, so that this object can tell the mainwid that it is now
+ *      the currently-edited object, for the highlight current sequence
+ *      features.
+ *
+ * \param vadjust
+ *      Provides the vertical scrollbar object needed so that perfnames can
+ *      respond to scrollbar cursor/thumb movement.
  */
 
 perfnames::perfnames
@@ -91,22 +101,6 @@ perfnames::perfnames
     m_sequence_offset       (0),
     m_sequence_active       ()                              /* an array     */
 {
-    /*
-     * Let's try moving this to the on_realize() function to see if
-     * we can avoid the error which occurs on one user's Arch-64 system.
-     */
-
-#ifdef CONNECT_CHANGE_VERT_IN_CONSTRUCTOR
-    m_vadjust.signal_value_changed().connect
-    (
-        mem_fun(*(this), &perfnames::change_vert)
-    );
-#endif
-
-    /*
-     * \todo Change this to a dynamic container.
-     */
-
     for (int i = 0; i < m_sequence_max; ++i)
         m_sequence_active[i] = false;
 }
@@ -126,12 +120,11 @@ perfnames::change_vert ()
 }
 
 /**
- *  Wraps queue_draw() and forwards the call to the parent perfedit, so
- *  that it can forward it to any other perfedit that exists.
- *
- *  The parent perfedit will call perfnames::queue_draw() on behalf of this
- *  object, and it will pass a perfnames::enqueue_draw() to the peer perfedit's
- *  perfnames, if the peer exists.
+ *  Wraps queue_draw() and forwards the call to the parent perfedit, so that
+ *  it can forward it to any other perfedit that exists.  The parent perfedit
+ *  will call perfnames::queue_draw() on behalf of this object, and it will
+ *  pass a perfnames::enqueue_draw() to the peer perfedit's perfnames, if the
+ *  peer exists.
  */
 
 void
@@ -145,6 +138,9 @@ perfnames::enqueue_draw ()
  *  almost endless list of sequences, including unused ones, to draw them all
  *  with compatible styles.  The sequences are grouped by set-number.  The
  *  set-number occurs every 32 sequences in the leftmost column of the window.
+ *
+ * \param seqnum
+ *      Index to the sequence information to be drawn.
  */
 
 void
@@ -253,7 +249,15 @@ perfnames::draw_sequence (int seqnum)
 }
 
 /**
- *  Converts a y-value into a sequence number and returns it.
+ *  Converts a y-value into a sequence number and returns it.  Used in
+ *  figuring out which sequence to mute/unmute in the performance editor.
+ *
+ * \param y
+ *      The y value (within the vertical limits of the perfnames column to the
+ *      left of the performance editor's piano roll.
+ *
+ * \return
+ *      Returns the sequence number corresponding to the y value.
  */
 
 int
@@ -270,7 +274,20 @@ perfnames::convert_y (int y)
 
 /**
  *  Provides the callback for a button press, and it handles only a left
- *  mouse button.
+ *  mouse button [the right mouse button is handled in
+ *  on_button_release_event()].  Two operations are supported by left-clicking
+ *  on the sequence/track name:
+ *
+ *      -   Normal.  Toggles the mute status of the sequence that is clicked.
+ *      -   Shift.  Toggles the mutes status of all other sequences, making
+ *          this operation an easy way to preview a single sequence in the
+ *          performance editor, then bring back the rest of the tracks.
+ *
+ * \param ev
+ *      The mouse button event.
+ *
+ * \return
+ *      Always returns true.
  */
 
 bool
@@ -335,26 +352,35 @@ perfnames::on_realize ()
 
     /*
      * Moved from the constructor to see if it behaves better on someone
-     * else's (Arch-64) system.
+     * else's (Arch-64) system.  Looks good, now official.  Follows other
+     * code, anyway.
      */
 
-#ifndef CONNECT_CHANGE_VERT_IN_CONSTRUCTOR
     m_vadjust.signal_value_changed().connect
     (
         mem_fun(*(this), &perfnames::change_vert)
     );
-#endif
 }
 
 /**
- *  Handles an on-expose event.  It draws all of the sequences.
+ *  Handles an on-expose event.  It draws all of the sequences that will be
+ *  visible.
+ *
+ *  We could actually optimize this a tiny bit, to save some additions in the
+ *  for loop.
+ *
+ * \param ev
+ *      The expose event, not used.
+ *
+ * \return
+ *      Always returns true.
  */
 
 bool
-perfnames::on_expose_event (GdkEventExpose *)
+perfnames::on_expose_event (GdkEventExpose * /* ev */)
 {
     int seqs = (m_window_y / m_names_y) + 1;
-    for (int i = 0; i < seqs; i++)
+    for (int i = 0; i < seqs; ++i)
     {
         int sequence = i + m_sequence_offset;
         draw_sequence(sequence);
@@ -364,7 +390,14 @@ perfnames::on_expose_event (GdkEventExpose *)
 
 /**
  *  Handles a button-release for the right button, bringing up a popup
- *  menu.
+ *  menu that is identical to the right-click popup menu for a slot in the
+ *  patterns panel (mainwid).
+ *
+ * \param p0
+ *      The button event.
+ *
+ * \return
+ *      Always returns false.
  */
 
 bool
@@ -377,7 +410,15 @@ perfnames::on_button_release_event (GdkEventButton * p0)
 }
 
 /**
- *  Handle the scrolling of the window.
+ *  Handle the vertical scrolling of the window.  The vertical value is
+ *  incremented or decremented by the amount of the step increment, and
+ *  the page is clamped to the new value.
+ *
+ * \param ev
+ *      The scrolling event.
+ *
+ * \return
+ *      Always returns true.
  */
 
 bool
@@ -396,6 +437,11 @@ perfnames::on_scroll_event (GdkEventScroll * ev)
 /**
  *  Handles a size-allocation event.  It first calls the base-class
  *  version of this function.
+ *
+ * \param a
+ *      The allocation event.  It is passed to the base-class
+ *      on_size_allocate() function, and then m_window_x and m_window_y are
+ *      set to the width and height, respectively, of the allocation.
  */
 
 void
@@ -414,7 +460,7 @@ void
 perfnames::redraw_dirty_sequences ()
 {
     int y_f = m_window_y / m_names_y;
-    for (int y = 0; y <= y_f; y++)
+    for (int y = 0; y <= y_f; ++y)
     {
         int seq = y + m_sequence_offset;
         if (seq < m_sequence_max)

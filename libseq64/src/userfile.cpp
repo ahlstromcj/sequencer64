@@ -35,7 +35,7 @@
 #include <iostream>
 
 /*
- * Not yet actually used!
+ * Not yet actually used!  See the userfile::parse(perform &) function.
  *
  * #include "perform.hpp"
  */
@@ -50,11 +50,14 @@ class perform;          // temporary forward reference
 
 /**
  *  Principal constructor.
+ *
+ * \param name
+ *      Provides the full file path specification to the configuration file.
  */
 
-userfile::userfile (const std::string & a_name)
+userfile::userfile (const std::string & name)
   :
-    configfile (a_name)
+    configfile (name)
 {
     // Empty body
 }
@@ -71,6 +74,15 @@ userfile::~userfile ()
 /**
  *  Provides a purely internal, ad hoc helper function to create numbered
  *  section names for the userfile class.
+ *
+ * \param label
+ *      The base-name of the section.
+ *
+ * \param value
+ *      The numeric value to append to the section name.
+ *
+ * \return
+ *      Returns a string of the form "[basename-1]".
  */
 
 static std::string
@@ -87,10 +99,10 @@ make_section_name (const std::string & label, int value)
 }
 
 /**
- *  Provides a debug dump of basic information to help debug a
- *  surprisingly intractable problem with all busses having the name and
- *  values of the last buss in the configuration.  Does work only if
- *  PLATFORM_DEBUG is defined; see the user_settings class.
+ *  Provides a debug dump of basic information to help debug a surprisingly
+ *  intractable problem with all busses having the name and values of the last
+ *  buss in the configuration.  Does work only if PLATFORM_DEBUG is defined;
+ *  see the user_settings class.
  */
 
 void
@@ -100,11 +112,14 @@ userfile::dump_setting_summary ()
 }
 
 /**
- *  Parses a "usr" file, filling in the given perform object.
- *  This function opens the file as a text file (line-oriented).
+ *  Parses a "usr" file, filling in the given perform object.  This function
+ *  opens the file as a text file (line-oriented).
  *
  * \param a_perf
  *      The performance object, currently unused.
+ *
+ * \return
+ *      Returns true if the parsing succeeded.
  */
 
 bool
@@ -401,6 +416,9 @@ userfile::parse (perform & /* a_perf */)
  *
  * \param a_perf
  *      The performance object, currently unused.
+ *
+ * \return
+ *      Returns true if the writing succeeded.
  */
 
 bool
@@ -425,11 +443,11 @@ userfile::write (const perform & /* a_perf */ )
            "# Sequencer64 user configuration file (legacy Seq24 0.9.2 format)\n";
     }
     else
-        file << "# Sequencer64 0.9.9.18 (and above) user configuration file\n";
+        file << "# Sequencer64 0.9.11 (and above) user configuration file\n";
 
     file << "#\n"
         "# Created by reading the following file and writing it out via the\n"
-        "# sequencer64 application:\n"
+        "# Sequencer64 application:\n"
         "#\n"
         "# https://raw.githubusercontent.com/vext01/"
                "seq24/master/seq24usr.example\n"

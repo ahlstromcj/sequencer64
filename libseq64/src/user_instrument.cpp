@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-25
- * \updates       2015-11-15
+ * \updates       2016-05-10
  * \license       GNU GPLv2 or above
  *
  *  Note that this module also sets the legacy global variables, so that
@@ -38,7 +38,11 @@ namespace seq64
 {
 
 /**
- *  Default constructor.
+ *  Default constructor.  Fills in the defaults for the instrument definition,
+ *  sets its name, and provides some light validation.
+ *
+ * \param name
+ *      The name of the instrument, valid only if it is not empty.
  */
 
 user_instrument::user_instrument (const std::string & name)
@@ -53,6 +57,9 @@ user_instrument::user_instrument (const std::string & name)
 
 /**
  *  Copy constructor.
+ *
+ * \param rhs
+ *      The sources of the data for the copy.
  */
 
 user_instrument::user_instrument (const user_instrument & rhs)
@@ -66,6 +73,12 @@ user_instrument::user_instrument (const user_instrument & rhs)
 
 /**
  *  Principal assignment operator.
+ *
+ * \param rhs
+ *      The sources of the data for the assignment.
+ *
+ * \return
+ *      Returns a reference to this object.
  */
 
 user_instrument &
@@ -90,7 +103,7 @@ user_instrument::set_defaults ()
     m_is_valid = false;
     m_controller_count = 0;
     m_instrument_def.instrument.clear();
-    for (int c = 0; c < SEQ64_MIDI_CONTROLLER_MAX; c++)
+    for (int c = 0; c < SEQ64_MIDI_CONTROLLER_MAX; ++c)
     {
         m_instrument_def.controllers_active[c] = false;
         m_instrument_def.controllers[c].clear();
@@ -99,9 +112,11 @@ user_instrument::set_defaults ()
 
 /**
  * \setter m_instrument_def.instrument
- *
  *      If the name parameter is not empty, the validity flag is set to
  *      true, otherwise it is set to false.  Too tricky?
+ *
+ * \param instname
+ *      The name of the instrument, valid only if it is not empty.
  */
 
 void
@@ -161,7 +176,7 @@ user_instrument::set_controller
 const std::string &
 user_instrument::controller_name (int c) const
 {
-    static std::string s_empty;
+    static const std::string s_empty;
     if (m_is_valid && c >= 0 && c < SEQ64_MIDI_CONTROLLER_MAX)
         return m_instrument_def.controllers[c];
     else
@@ -192,13 +207,16 @@ user_instrument::controller_active (int c) const
 /**
  *  Copies the array members from one instance of user_instrument to this
  *  one.  Does not include the validity flag.
+ *
+ * \param rhs
+ *      The sources of the data for the partial copy.
  */
 
 void
 user_instrument::copy_definitions (const user_instrument & rhs)
 {
     m_instrument_def.instrument = rhs.m_instrument_def.instrument;
-    for (int c = 0; c < SEQ64_MIDI_CONTROLLER_MAX; c++)
+    for (int c = 0; c < SEQ64_MIDI_CONTROLLER_MAX; ++c)
     {
         m_instrument_def.controllers_active[c] =
             rhs.m_instrument_def.controllers_active[c];

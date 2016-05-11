@@ -53,6 +53,21 @@ namespace seq64
  *      Note that we still have to use a global constant in the base-class
  *      constructor; we cannot assign it to the corresponding member
  *      beforehand.
+ *
+ * \param p
+ *      Provides a reference to the main performance object of the
+ *      application.
+ *
+ * \param parent
+ *      Provides a reference to the object that contains this object, so that
+ *      this object can tell the parent to queue up a drawing operation.
+ *
+ * \param hadjust
+ *      Provides the horizontal scrollbar object needed so that perftime can
+ *      respond to scrollbar cursor/thumb movement.
+ *
+ * \param ppqn
+ *      An optional override of the default PPQN value for the application.
  */
 
 perftime::perftime
@@ -75,8 +90,7 @@ perftime::perftime
     m_timearea_y            (c_timearea_y)      // pixel-height of time scale
 {
     /*
-     * This adds many fewer events than the base class.  Any bad effects?
-     *
+     * This adds many fewer events than the base class.  Any bad effects? No.
      * add_events(Gdk::BUTTON_PRESS_MASK | Gdk::BUTTON_RELEASE_MASK);
      * set_double_buffered(false);
      */
@@ -89,7 +103,16 @@ perftime::perftime
 }
 
 /**
- *  Handles changes to the PPQN value in one place.
+ *  Handles changes to the PPQN value in one place.  It also modifies m_snap,
+ *  m_measure_length (but always for four measures!), and m_tick_offset.
+ *
+ * \todo
+ *      We need make the 4 constant variable per the number of beats
+ *      (quarter-notes) per bar, and also at least make 16 (4x4) a meaningful
+ *      manifest constant.
+ *
+ * \param ppqn
+ *      The override value for the PPQN.
  */
 
 void
@@ -105,7 +128,8 @@ perftime::set_ppqn (int ppqn)
 }
 
 /**
- *  Change the m_4bar_offset and queue a draw operation.
+ *  Change the m_4bar_offset and queue a draw operation.  Again, uses the
+ *  constant, 16.
  */
 
 void

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-10-30
- * \updates       2016-04-09
+ * \updates       2016-05-10
  * \license       GNU GPLv2 or above
  *
  *  Man, we need to learn a lot more about triggers.  One important thing to
@@ -490,8 +490,8 @@ triggers::split (midipulse splittick)
 }
 
 /**
- *  Adjusts trigger offsets to the length of ???,
- *  for all triggers, and undo triggers.
+ *  Adjusts trigger offsets to the length specified for all triggers, and undo
+ *  triggers.
  *
  * \param newlength
  *      Provides the length to which to adjust the offsets.
@@ -617,12 +617,7 @@ triggers::copy (midipulse starttick, midipulse distance)
  */
 
 void
-triggers::move
-(
-    midipulse starttick,
-    midipulse distance,
-    bool direction
-)
+triggers::move (midipulse starttick, midipulse distance, bool direction)
 {
     midipulse endtick = starttick + distance;
     for (List::iterator i = m_triggers.begin(); i != m_triggers.end(); ++i)

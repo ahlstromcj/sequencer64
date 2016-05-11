@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-05-08
+ * \updates       2016-05-10
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -1060,10 +1060,10 @@ perform::is_sequence_in_edit (int seq)
  *  Retrieves a reference to a value from m_midi_cc_toggle[].
  *
  * \param seq
- *      Provides a control value (such as c_midi_control_bpm_up) to use to
- *      retrieve the desired midi_control object.  Note that this value is
- *      unsigned simply to make the legality check of the parameter
- *      easier.
+ *      Provides the index to pass to is_midi_control_valid() to obtain a
+ *      control value (such as c_midi_control_bpm_up) to use to retrieve the
+ *      desired midi_control object.  Note that this value is unsigned simply
+ *      to make the legality check of the parameter easier.
  *
  * \return
  *      Returns the "toggle" value if the sequence is valid, and a reference
@@ -1080,8 +1080,9 @@ perform::midi_control_toggle (int seq)
  *  Retrieves a reference to a value from m_midi_cc_on[].
  *
  * \param seq
- *      Provides a control value (such as c_midi_control_bpm_up) to use to
- *      retrieve the desired midi_control object.
+ *      Provides the index to pass to is_midi_control_valid() to obtain a
+ *      control value (such as c_midi_control_bpm_up) to use to retrieve the
+ *      desired midi_control object.
  *
  * \return
  *      Returns the "on" value if the sequence is valid, and a reference
@@ -1167,7 +1168,7 @@ perform::get_screen_set_notepad (int screenset) const
  *
  * \param ss
  *      The index of the desired string set.  It is forced to range from
- *      0 to m_max_sets - 1.
+ *      0 to m_max_sets - 1.  The clamping seems wrong, but hews to seq24.
  */
 
 void
@@ -1191,7 +1192,8 @@ perform::set_screenset (int ss)
  *  If it is active and the sequence actually exists.  Null sequences are no
  *  longer flagged as an error, they are just ignored.
  *
- *  Modifies m_playing_screen, and mutes the group tracks.
+ *  Modifies m_playing_screen, m_playscreen_offset, and mutes the group
+ *  tracks.
  */
 
 void
@@ -1264,8 +1266,8 @@ perform::set_orig_ticks (midipulse tick)
  *  Clears the patterns/sequence for the given sequence, if it is active.
  *
  * \param seq
- *      Provides the desired sequence.  Hopefull, the is_active() function
- *      validates this value.
+ *      Provides the desired sequence.  The is_active() function validates
+ *      this value.
  */
 
 void
@@ -1330,12 +1332,10 @@ perform::pop_trigger_undo ()
 }
 
 /**
- *  If the left tick is less than the right tick, then, for each sequence
- *  that is active, its triggers are copied, offset by the difference
- *  between the right and left.
- *
- *  This copies the triggers between the L marker and R marker to the R
- *  marker.
+ *  If the left tick is less than the right tick, then, for each sequence that
+ *  is active, its triggers are copied, offset by the difference between the
+ *  right and left.  This copies the triggers between the L marker and R
+ *  marker to the R marker.
  */
 
 void
@@ -1356,7 +1356,6 @@ perform::copy_triggers ()
  *  Encapsulates a series of calls used in mainwnd.  We've reversed the
  *  start() and start_jack() calls so that JACK is started first, to match all
  *  of the other use-cases for playing that we've found in the code.
- *
  *  Note that the complementary function, stop_playing(), is an inline
  *  function defined in the header file.
  *
@@ -1371,20 +1370,16 @@ perform::copy_triggers ()
 \endverbatim
  *
  *      The jack_assistant::position() function doesn't use the boolean
- *      parameter at present; that code is effectively disabled.
- *
- *      Okay, now it does, if the "relocate" parameter is true.  See
+ *      parameter at present; that code is effectively disabled.  Okay, now it
+ *      does, if the "relocate" parameter is true.  See
  *      perform::position_jack() and jack_assistant::position().  This
- *      parameter, when true, allows the "klick" application to get
- *      proper position data.
+ *      parameter, when true, allows the "klick" application to get proper
+ *      position data.
  *
  *      The perform::start() function passes its boolean flag to
  *      perform::inner_start(), which sets the playback mode to that flag; if
  *      that flag is false, that turns off "song" mode.  So that explains why
  *      mute/unmute is disabled.
- *
- *  -   seqroll and mainwnd: position_jack(false); start(false); start_jack().
- *  -   perfedit: position_jack(true); start_jack(); start(true).
  *
  * \param songmode
  *      Indicates if the caller wants to start the playback in JACK mode.
@@ -1464,7 +1459,7 @@ perform::pause_playing ()
 /**
  *  Encapsulates a series of calls used in mainwnd.  Stops playback,
  *  turns off the (new) m_is_paused flag, and set the "is-pattern-playing"
- *  flag to false.  Do we need to reset the m_running flag here?
+ *  flag to false.
  */
 
 void
@@ -1478,15 +1473,6 @@ perform::stop_playing ()
 
 /**
  *  If JACK is supported and running, sets the position of the transport.
- *
- * If we run "klick -j -P" and then start Sequencer64, we get:
- *
- *      klick: src/metronome_jack.cc:52: virtual void
- *      MetronomeJack::process_callback(sample_t*, nframes_t): Assertion
- *      `pos.beat > 0 && pos.beat <= pos.beats_per_bar' failed.
- *
- * Let's try enabling the relocate parameter if we're JACK Master.  This
- * removes the error from klick, but it clicks at an extremely fast rate!
  */
 
 void
@@ -1514,10 +1500,9 @@ perform::start (bool state)
 }
 
 /**
- *  If JACK is not running, call inner_stop().
- *
- *  The logic seems backward here, in that we call inner_stop() if JACK is
- *  not running.  Or perhaps we misunderstand the meaning of m_jack_running?
+ *  If JACK is not running, call inner_stop().  The logic seems backward here,
+ *  in that we call inner_stop() if JACK is not running.  Or perhaps we
+ *  misunderstand the meaning of m_jack_running?
  */
 
 void
@@ -1561,11 +1546,11 @@ perform::inner_start (bool state)
 }
 
 /**
- *  Unconditionally, and without locking, clears the running status,
- *  resets the sequences, and sets m_usemidiclock false.  Note that we do need
- *  to set the running flag to false here, even when JACK is running.
- *  Otherwise, JACK starts ping-ponging back and forth between positions under
- *  some circumstances.
+ *  Unconditionally, and without locking, clears the running status, resets
+ *  the sequences, and sets m_usemidiclock false.  Note that we do need to set
+ *  the running flag to false here, even when JACK is running.  Otherwise,
+ *  JACK starts ping-ponging back and forth between positions under some
+ *  circumstances.
  *
  *  However, if JACK is running, we do not want to reset the sequences... this
  *  causes the progress bar for each sequence to remove to near the end of the
@@ -1598,7 +1583,7 @@ perform::off_sequences ()
 
 /**
  *  For all active patterns/sequences, turn off its playing notes.
- *  Then flush the MIDI buss.
+ *  Then flush the master MIDI buss.
  */
 
 void
@@ -1615,10 +1600,9 @@ perform::all_notes_off ()
 /**
  *  For all active patterns/sequences, get its playing state, turn off the
  *  playing notes, set playing to false, zero the markers, and, if not in
- *  playback mode, restore the playing state.  Note that these calls could be
- *  folded into one member function of the sequence class. [Done!]
- *
- *  Finally, flush the MIDI buss.
+ *  playback mode, restore the playing state.  Note that these calls are
+ *  folded into one member function of the sequence class.  Finally, flush the
+ *  master MIDI buss.
  */
 
 void
@@ -1628,7 +1612,6 @@ perform::reset_sequences (bool pause)
     {
         /*
          * Try to prevent notes from lingering on pause.
-         * We should also remove the pause parameter from reset.
          */
 
         for (int s = 0; s < m_sequence_max; ++s)
@@ -1649,10 +1632,8 @@ perform::reset_sequences (bool pause)
 }
 
 /**
- *  Creates the output thread using output_thread_func().
- *
- *  This might be a good candidate for a small thread class derived from a
- *  small base class.
+ *  Creates the output thread using output_thread_func().  This might be a
+ *  good candidate for a small thread class derived from a small base class.
  */
 
 void
@@ -1668,10 +1649,8 @@ perform::launch_output_thread ()
 }
 
 /**
- *  Creates the input thread using input_thread_func().
- *
- *  This might be a good candidate for a small thread class derived from a
- *  small base class.
+ *  Creates the input thread using input_thread_func().  This might be a good
+ *  candidate for a small thread class derived from a small base class.
  */
 
 void
@@ -1688,6 +1667,12 @@ perform::launch_input_thread ()
 
 /**
  *  Convenience function for perfroll's split-trigger functionality.
+ *
+ * \param seqnum
+ *      Indicates the sequence that needs to have its trigger split.
+ *
+ * \param tick
+ *      The MIDI pulse number at which the trigger should be split.
  */
 
 void
@@ -1729,7 +1714,11 @@ perform::get_max_trigger ()
  *
  * \param myperf
  *      Provides the perform object instance that is to be used.  Its
- *      output_func() is called.
+ *      output_func() is called.  Currently, this parameter is not validated,
+ *      for speed.
+ *
+ * \return
+ *      Always returns nullptr.
  */
 
 void *
@@ -1763,7 +1752,7 @@ output_thread_func (void * myperf)
 #else
     p->output_func();
 #endif
-    return 0;
+    return nullptr;
 }
 
 /**
@@ -1771,7 +1760,8 @@ output_thread_func (void * myperf)
  *  output_thread_func().  Here's how it works:
  *
  *      -   It runs while m_outputing is true.
- *      -   MORE TO COME
+ *      -   MORE TO COME.  Yeah, a lot more to come.  It is a complex
+ *          function.
  *
  * \change ca 2016-01-26
  *      Hurray, seq24 is coming back to life!  We see that there is a fix for
@@ -2245,6 +2235,14 @@ perform::output_func ()
 
 /**
  *  Set up the performance, and set the process to realtime privileges.
+ *
+ * \param myperf
+ *      Provides the perform object instance that is to be used.  Its
+ *      output_func() is called.  Currently, this parameter is not validated,
+ *      for speed.
+ *
+ * \return
+ *      Always returns nullptr.
  */
 
 void *
@@ -2277,7 +2275,7 @@ input_thread_func (void * myperf)
 #else
     p->input_func();
 #endif
-    return 0;
+    return nullptr;
 }
 
 /**
@@ -2549,9 +2547,11 @@ perform::restore_playing_state ()
 }
 
 /**
- *  If the given status is present in the c_status_snapshot, the playing
- *  state is saved.  Then the given status is OR'd into the
- *  m_control_status.
+ *  If the given status is present in the c_status_snapshot, the playing state
+ *  is saved.  Then the given status is OR'd into the m_control_status.
+ *
+ * \param status
+ *      The status to be used.
  */
 
 void
@@ -2564,9 +2564,11 @@ perform::set_sequence_control_status (int status)
 }
 
 /**
- *  If the given status is present in the c_status_snapshot, the playing
- *  state is restored.  Then the given status is reversed in
- *  m_control_status.
+ *  If the given status is present in the c_status_snapshot, the playing state
+ *  is restored.  Then the given status is reversed in m_control_status.
+ *
+ * \param status
+ *      The status to be used.
  */
 
 void
@@ -2579,17 +2581,24 @@ perform::unset_sequence_control_status (int status)
 }
 
 /**
+ *  If the given sequence is active, then it is toggled.  If the
+ *  m_control_status is c_status_queue, then the sequence's toggle_queued()
+ *  function is called.  Otherwise, if it is c_status_replace, then the status
+ *  is unset, and all sequences (?) are turned off.  Then the sequence's
+ *  toggle-playing() function is called.
  *
+ * \param seq
+ *      The sequence number of the sequence to be potentially toggled.
  */
 
 void
-perform::sequence_playing_toggle (int sequence)
+perform::sequence_playing_toggle (int seq)
 {
-    if (is_active(sequence))
+    if (is_active(seq))
     {
         if (m_control_status & c_status_queue)
         {
-            m_seqs[sequence]->toggle_queued();
+            m_seqs[seq]->toggle_queued();
         }
         else
         {
@@ -2598,14 +2607,14 @@ perform::sequence_playing_toggle (int sequence)
                 unset_sequence_control_status(c_status_replace);
                 off_sequences();
             }
-            m_seqs[sequence]->toggle_playing();
+            m_seqs[seq]->toggle_playing();
         }
     }
 }
 
 /**
- *  A helper function for determining if the mode group is in force,
- *  the playing screenset is the same as the current screenset, and the sequence
+ *  A helper function for determining if the mode group is in force, the
+ *  playing screenset is the same as the current screenset, and the sequence
  *  is in the range of the playing screenset.
  *
  * \param seq
@@ -2627,11 +2636,11 @@ perform::seq_in_playing_screen (int seq)
 }
 
 /**
- *  Turn off the playing of a sequence, if it is active.
+ *  Turn off the playing of a sequence, if it is active.  Compare it to
+ *  sequence_playing_toggle().
  *
  * \param seq
  *      The number of the sequence to be turned on.
- *
  */
 
 void
@@ -2701,7 +2710,11 @@ perform::sequence_playing_off (int seq)
 
 /**
  *  Handle a sequence key to toggle the playing of an active pattern in
- *  the selected screen-set.
+ *  the selected screen-set.  This function is use in mainwnd when toggling
+ *  the mute/unmute setting using keyboard keys.
+ *
+ * \param seq
+ *      The sequence's sequence number.
  */
 
 void
@@ -2813,6 +2826,9 @@ perform::set_input_bus (int bus, bool active)
  *  Provided for mainwnd::on_key_press_event() and
  *  mainwnd::on_key_release_event() to call.
  *
+ * \param k
+ *      The keystroke object to be handled.
+ *
  * \return
  *      Returns true if the key was handled.
  */
@@ -2865,6 +2881,13 @@ perform::mainwnd_key_event (const keystroke & k)
  *  yet handle the case where we undo all the changes.  So, for now,
  *  we play it safe with the user, even if the user gets annoyed because he
  *  knows that he undid all the changes.
+ *
+ * \param k
+ *      The keystroke object to be handled.
+ *
+ * \param drop_sequence
+ *      Provides the index of the sequence whose selected trigger is to be
+ *      cut, copied, or pasted.  (Undo not yet supported).
  *
  * \return
  *      Returns true if the key was handled.
@@ -3032,17 +3055,19 @@ perform::playback_key_event (const keystroke & k, bool songmode)
     return result;
 }
 
-/**
+/*
  *  Gets the max-tick value of all active sequences.  We can't seem to
  *  find a way to get a good value from the perform object itself, so we get
  *  it from the sequences.  This approach kind of works, but the result is
  *  slow.  We could optimize it a little by saving the indices of the first
  *  and last active sequence.
  *
+ * \obsolete
+ *      Usage in mainwnd and perfoll is commented out.
+ *
  * \return
  *      If no active sequence is found, 0 is returned.  Otherwise, the
  *      maximum get_last_tick() value of the active sequences is returned.
- */
 
 midipulse
 perform::get_max_tick () const
@@ -3070,6 +3095,8 @@ perform::get_max_tick () const
     return get_tick();
 #endif
 }
+ *
+ */
 
 /**
  *  Shows all the triggers of all the sequences.

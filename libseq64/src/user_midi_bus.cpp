@@ -39,6 +39,9 @@ namespace seq64
 
 /**
  *  Default constructor.
+ *
+ * \param name
+ *      The name of the buss, valid only if it is not empty.
  */
 
 user_midi_bus::user_midi_bus (const std::string & name)
@@ -53,6 +56,9 @@ user_midi_bus::user_midi_bus (const std::string & name)
 
 /**
  *  Copy constructor.
+ *
+ * \param rhs
+ *      The sources of the data for the copy.
  */
 
 user_midi_bus::user_midi_bus (const user_midi_bus & rhs)
@@ -66,6 +72,12 @@ user_midi_bus::user_midi_bus (const user_midi_bus & rhs)
 
 /**
  *  Principal assignment operator.
+ *
+ * \param rhs
+ *      The sources of the data for the assignment.
+ *
+ * \return
+ *      Returns a reference to this object.
  */
 
 user_midi_bus &
@@ -91,7 +103,7 @@ user_midi_bus::set_defaults ()
     m_is_valid = false;
     m_channel_count = 0;
     m_midi_bus_def.alias.clear();
-    for (int channel = 0; channel < SEQ64_MIDI_BUS_CHANNEL_MAX; channel++)
+    for (int channel = 0; channel < SEQ64_MIDI_BUS_CHANNEL_MAX; ++channel)
         m_midi_bus_def.instrument[channel] = SEQ64_GM_INSTRUMENT_FLAG;
 }
 
@@ -148,7 +160,7 @@ void
 user_midi_bus::copy_definitions (const user_midi_bus & rhs)
 {
     m_midi_bus_def.alias = rhs.m_midi_bus_def.alias;
-    for (int channel = 0; channel < SEQ64_MIDI_BUS_CHANNEL_MAX; channel++)
+    for (int channel = 0; channel < SEQ64_MIDI_BUS_CHANNEL_MAX; ++channel)
     {
         m_midi_bus_def.instrument[channel] =
             rhs.m_midi_bus_def.instrument[channel];

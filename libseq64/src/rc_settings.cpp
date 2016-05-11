@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-22
- * \updates       2016-04-04
+ * \updates       2016-05-10
  * \license       GNU GPLv2 or above
  *
  *  Note that this module also sets the legacy global variables, so that
@@ -104,6 +104,9 @@ rc_settings::rc_settings ()
 
 /**
  *  Copy constructor.
+ *
+ * \param rhs
+ *      The source of the data for the copy.
  */
 
 rc_settings::rc_settings (const rc_settings & rhs)
@@ -141,6 +144,12 @@ rc_settings::rc_settings (const rc_settings & rhs)
 
 /**
  *  Principal assignment operator.
+ *
+ * \param rhs
+ *      The source of the data for the assignment.
+ *
+ * \return
+ *      Returns a reference to the destination for use in serial assignments.
  */
 
 rc_settings &
@@ -228,8 +237,8 @@ rc_settings::set_defaults ()
  *  "sequencer64.rc".
  *
  * \return
- *      Returns the selection home configuration directory.  If it does not
- *      exist orcould not be created, then an empty string is returned.
+ *      Returns the selected home configuration directory.  If it does not
+ *      exist, or could not be created, then an empty string is returned.
  */
 
 std::string
@@ -262,6 +271,11 @@ rc_settings::home_config_directory () const
 /**
  *  Constructs the full path and file specification for the "rc" file
  *  based on whether or not the legacy Seq24 filenames are being used.
+ *
+ * \return
+ *      If home_config_directory() returns a non-empty string, then the legacy
+ *      or normal "rc" configuration file-name is appended to that result, and
+ *      returned.  Otherwise, an empty string is returned.
  */
 
 std::string
@@ -281,6 +295,11 @@ rc_settings::config_filespec () const
 /**
  *  Constructs the full path and file specification for the "user" file
  *  based on whether or not the legacy Seq24 filenames are being used.
+ *
+ * \return
+ *      If home_config_directory() returns a non-empty string, then the legacy
+ *      or normal "user" configuration file-name is appended to that result,
+ *      and returned.  Otherwise, an empty string is returned.
  */
 
 std::string
@@ -302,6 +321,9 @@ rc_settings::user_filespec () const
  *      However, please note that this value, while set in the options
  *      processing of the main module, does not appear to be used anywhere
  *      in the code in seq24, Sequencer24, and this application.
+ *
+ * \param value
+ *      The value to use to make the setting.
  */
 
 void
@@ -313,6 +335,9 @@ rc_settings::device_ignore_num (int value)
 
 /**
  * \setter m_interaction_method
+ *
+ * \param value
+ *      The value to use to make the setting.
  */
 
 void
@@ -334,6 +359,9 @@ rc_settings::interaction_method (interaction_method_t value)
 
 /**
  * \setter m_filename
+ *
+ * \param value
+ *      The value to use to make the setting.
  */
 
 void
@@ -345,6 +373,9 @@ rc_settings::filename (const std::string & value)
 
 /**
  * \setter m_jack_session_uuid
+ *
+ * \param value
+ *      The value to use to make the setting.
  */
 
 void
@@ -356,6 +387,9 @@ rc_settings::jack_session_uuid (const std::string & value)
 
 /**
  * \setter m_last_used_dir
+ *
+ * \param value
+ *      The value to use to make the setting.
  */
 
 void
@@ -367,6 +401,9 @@ rc_settings::last_used_dir (const std::string & value)
 
 /**
  * \setter m_config_directory
+ *
+ * \param value
+ *      The value to use to make the setting.
  */
 
 void
@@ -378,6 +415,9 @@ rc_settings::config_directory (const std::string & value)
 
 /**
  * \setter m_config_filename
+ *
+ * \param value
+ *      The value to use to make the setting.
  */
 
 void
@@ -389,6 +429,9 @@ rc_settings::config_filename (const std::string & value)
 
 /**
  * \setter m_user_filename
+ *
+ * \param value
+ *      The value to use to make the setting.
  */
 
 void
@@ -400,6 +443,9 @@ rc_settings::user_filename (const std::string & value)
 
 /**
  * \setter m_config_filename_alt;
+ *
+ * \param value
+ *      The value to use to make the setting.
  */
 
 void
@@ -411,6 +457,9 @@ rc_settings::config_filename_alt (const std::string & value)
 
 /**
  * \setter m_user_filename_alt
+ *
+ * \param value
+ *      The value to use to make the setting.
  */
 
 void

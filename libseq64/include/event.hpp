@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-05-05
+ * \updates       2016-05-10
  * \license       GNU GPLv2 or above
  *
  *  This module also declares/defines the various constants, status-byte
@@ -800,6 +800,17 @@ public:
     bool is_note_off () const
     {
         return m_status == EVENT_NOTE_OFF;
+    }
+
+    /**
+     *  Returns true if m_status is a Note On, Note Off, or Aftertouch message.
+     *  All of these are notes, associated with a MIDI key value.  Uses the
+     *  static function is_note_msg().
+     */
+
+    bool is_note () const
+    {
+        return is_note_msg(m_status);
     }
 
     void print () const;

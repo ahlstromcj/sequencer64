@@ -894,26 +894,44 @@ perfroll::on_motion_notify_event (GdkEventMotion * ev)
  *
  *  Note that only the Seq24 input interaction object handles additional
  *  keystrokes not handled by the perfroll_key_event() function.
+ *
+ *  The perfroll_key_event() call handles Del, Ctrl-X, Ctrl-C, Ctrl-V, and
+ *  Ctrl-Z (which does nothing at present).
  */
 
 bool
 perfroll::on_key_press_event (GdkEventKey * ev)
 {
     keystroke k(ev->keyval, SEQ64_KEYSTROKE_PRESS, ev->state);
-    bool result = perf().perfroll_key_event(k, m_drop_sequence);
+
+    /*
+     * EXPERIMENT:  add this call to try to make seqroll and perfroll act the
+     * same for start/stop/play.  Doesn't work, but doesn't break anything.
+     * Turns out perfedit handles this event.
+     */
+
+    bool result = perf().playback_key_event(k);
     if (result)
     {
-        /**
-         * The perfroll_key_event() call handles Del, Ctrl-X, Ctrl-C,
-         * Ctrl-V, and Ctrl-Z (which does nothing at present).
+        /*
+         * How can we restore the tick at which the song paused?
+         *
+         * perf().set_start_tick(perf().get_jack_tick());
          */
     }
     else
+        result = perf().perfroll_key_event(k, m_drop_sequence);
+
+    if (! result)
     {
         /**
-         * Note that, even though we filter out the Ctrl key here, it still
-         * works for Ctrl-X (cut) and Ctrl-V (paste).  For undo, the Undo
-         * button can be used, Ctrl-Z never worked in this view anyway.
+         *  Note that, even though we filter out the Ctrl key here, it still
+         *  works for Ctrl-X (cut) and Ctrl-V (paste).  For undo, the Undo
+         *  button can be used, Ctrl-Z never worked in this view anyway.
+         *
+         * \warning
+         *      We see that 'x' and 'z' are already handled in
+         *      perfroll_key_event() if the Ctrl key was pressed.  Be careful.
          */
 
         bool is_ctrl = (ev->state & SEQ64_CONTROL_MASK) != 0;

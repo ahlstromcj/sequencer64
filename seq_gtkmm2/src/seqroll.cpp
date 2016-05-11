@@ -1378,7 +1378,7 @@ seqroll::on_key_press_event (GdkEventKey * ev)
         }
     }
     if (result)
-        m_seq.set_dirty();             // redraw_events();
+        m_seq.set_dirty();
 
     return result;
 }

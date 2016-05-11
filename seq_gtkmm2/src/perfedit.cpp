@@ -747,7 +747,7 @@ perfedit::on_key_press_event (GdkEventKey * ev)
             );
         }
 
-        /*
+        /**
          *  By default, the space-bar starts the playing, and the Escape
          *  key stops the playing.  The start/end key may be the same key
          *  (i.e. space-bar), allow toggling when the same key is mapped

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-05-09
+ * \updates       2016-05-11
  * \license       GNU GPLv2 or above
  *
  *  The main window holds the menu and the main controls of the application,
@@ -1446,13 +1446,6 @@ mainwnd::on_key_press_event (GdkEventKey * ev)
             }
         }
     }
-
-    /*
-     * And let's return the key-press event's return value!
-     *
-     * return false;
-     */
-
     return Gtk::Window::on_key_press_event(ev);
 }
 

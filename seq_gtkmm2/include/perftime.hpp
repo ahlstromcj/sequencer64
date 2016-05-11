@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-04-06
+ * \updates       2016-05-11
  * \license       GNU GPLv2 or above
  *
  */
@@ -67,14 +67,15 @@ private:
     perfedit & m_parent;
 
     /**
-     *  Not yet sure exactly what this member represents.
+     *  Not yet sure exactly what this member represents.  Also, why always
+     *  4/16 in the calculations of this value?
      */
 
     int m_4bar_offset;
 
     /**
      *  This member is m_4bar_offset times 16 times the current PPQN,
-     *  to save some calculations and centralize this value.
+     *  to save some calculations and centralize this value.  Why 16?
      */
 
     int m_tick_offset;
@@ -144,7 +145,7 @@ public:
     void set_guides (int snap, int measure);
 
     /**
-     *  This function does nothing.
+     *  This function does nothing.  Compare it to perfroll::increment_size().
      */
 
     void increment_size ()
@@ -163,6 +164,13 @@ private:
 
     /**
      *  Common calculation to convert a pulse/tick value to a perftime x value.
+     *
+     * \param tick
+     *      The horizontal tick value to convert to an x pixel value, based on
+     *      tick-offset and the x-scale.
+     *
+     * \return
+     *      Returns the x-pixel representing the time location parameter.
      */
 
     long tick_to_pixel (midipulse tick)
@@ -172,11 +180,29 @@ private:
 
     /**
      *  The inverse of tick_to_pixel().
+     *
+     * \param pixel
+     *      The pixel value.
+     *
+     * \return
+     *      Returns the time value represented b the pixel.
      */
 
     midipulse pixel_to_tick (long pixel)
     {
         return pixel * m_perf_scale_x + m_tick_offset;
+    }
+
+    /**
+     *  Centralizes calculation of the tick offset of the time bar.
+     *
+     * \return
+     *      Returns m_4bar_offset * 16 * m_ppqn.
+     */
+
+    int tick_offset ()
+    {
+        return m_4bar_offset * 16 * m_ppqn;
     }
 
     /**
@@ -224,6 +250,12 @@ private:        // callbacks
 
     /**
      *  This button-release handler does nothing.
+     *
+     * \param ev
+     *      The button event, not used.
+     *
+     * \return
+     *      Always returns false
      */
 
     bool on_button_release_event (GdkEventButton * /*ev*/)

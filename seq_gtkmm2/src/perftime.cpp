@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-04-06
+ * \updates       2016-05-11
  * \license       GNU GPLv2 or above
  *
  *  The time bar shows markers and numbers for the measures of the song,
@@ -123,13 +123,13 @@ perftime::set_ppqn (int ppqn)
         m_ppqn = choose_ppqn(ppqn);
         m_snap = m_ppqn;
         m_measure_length = m_ppqn * 4;
-        m_tick_offset = m_4bar_offset * 16 * m_ppqn;
+        m_tick_offset = tick_offset();
     }
 }
 
 /**
- *  Change the m_4bar_offset and queue a draw operation.  Again, uses the
- *  constant, 16.
+ *  Changes the m_4bar_offset and queues a draw operation.  Again, uses the
+ *  constant, 16 [now offloaded to the new tick_offset() function.].
  */
 
 void
@@ -138,7 +138,7 @@ perftime::change_horz ()
     if (m_4bar_offset != int(m_hadjust.get_value()))
     {
         m_4bar_offset = int(m_hadjust.get_value());
-        m_tick_offset = m_4bar_offset * 16 * m_ppqn;
+        m_tick_offset = tick_offset();
         enqueue_draw();
     }
 }
@@ -185,7 +185,12 @@ perftime::enqueue_draw ()
 }
 
 /**
- *  Implements the horizontal zoom feature.
+ *  Implements the horizontal zoom feature.  Redraws the background if the new
+ *  zoom checked out.
+ *
+ * \param z
+ *      Provides the zoom value, which is checked, and then copied into
+ *      m_perf_scale_x.
  */
 
 void
@@ -203,7 +208,8 @@ perftime::set_zoom (int z)
  *  could not be allocated in the constructor.  It is important to call the
  *  base-class version of this function.
  *
- *  Done in base-class's on_realize() and in its constructor now.
+ *  The former work of this function is now done in base-class's on_realize()
+ *  and in its constructor now.
  *
 \verbatim
         m_window = get_window();
@@ -220,12 +226,18 @@ perftime::on_realize ()
 }
 
 /**
- *  Implements the on-expose event.
+ *  Implements the on-expose event.  Redraws the background.
  *
  * \note
  *      The perfedit object is created early on.  When brought on-screen from
  *      mainwnd (the main window), first, perftime::on_realize() is called,
  *      then this event is called.
+ *
+ * \param ev
+ *      The expose event, not used.
+ *
+ * \return
+ *      Always returns true.
  */
 
 bool
@@ -237,7 +249,8 @@ perftime::on_expose_event (GdkEventExpose * /* ev */ )
 
 /**
  *  Separated out the drawing done in on_expose_event(), so that it can be
- *  redone when the zoom changes.
+ *  redone when the zoom changes.  Note that m_measure_length == 0 will cause
+ *  integer overflow.
  */
 
 void
@@ -274,7 +287,14 @@ perftime::draw_background ()
 }
 
 /**
- *  Implement the button-press event.
+ *  Implement the button-press event to set the L and R ticks.  Added
+ *  functionality to try to set the start-tick if ctrl-left-click is pressed.
+ *
+ * \param p0
+ *      The button event.
+ *
+ * \return
+ *      Always returns true.
  */
 
 bool
@@ -283,16 +303,29 @@ perftime::on_button_press_event (GdkEventButton * p0)
     midipulse tick = pixel_to_tick(long(p0->x));
     tick -= (tick % m_snap);
 
-    // Why is this disabled?  We should re-enable and see if it works.
-    //
-    // if (SEQ64_CLICK_MIDDLE(p0->button))
-    //      perf().set_start_tick(tick);
+    /**
+     * Why is setting the start-tick disabled?  We now re-enable it and see if
+     * it works.  To our surprise, it works, but it sticks between stop/pause
+     * and the next playback in the performance editor.  We will need to add a
+     * feature where stop sets the start-tick to the left tick (or the
+     * beginning tick).
+     */
 
-    if (SEQ64_CLICK_LEFT(p0->button))
-        perf().set_left_tick(tick);
+    if (SEQ64_CLICK_MIDDLE(p0->button))
+    {
+        perf().set_start_tick(tick);
+    }
+    else if (SEQ64_CLICK_LEFT(p0->button))
+    {
+        if (p0->state & SEQ64_CONTROL_MASK)
+            perf().set_start_tick(tick);
+        else
+            perf().set_left_tick(tick);
+    }
     else if (SEQ64_CLICK_RIGHT(p0->button))
+    {
         perf().set_right_tick(tick + m_snap);
-
+    }
     enqueue_draw();
     return true;
 }

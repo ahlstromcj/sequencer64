@@ -45,8 +45,7 @@
 #include "perform.hpp"
 
 /**
- *  Provide a "not-a-number" macro.
- * -nan(0x8000000000000)
+ *  Provide a "not-a-number" macro.  -nan(0x8000000000000)
  */
 
 #define SEQ64_JACK_NAN      0x8000000000000
@@ -1469,6 +1468,13 @@ perform::stop_playing ()
     stop();
     m_is_paused = false;
     rc().is_pattern_playing(false);
+
+    /**
+     * EXPERIMENTAL.  With stop, reset the start-tick to either the left-tick
+     * or the 0th tick.
+     */
+
+    set_start_tick(get_left_tick());
 }
 
 /**
@@ -2932,10 +2938,12 @@ perform::perfroll_key_event (const keystroke & k, int drop_sequence)
                 else if (k.is_letter('z'))                      /* undo     */
                 {
                     /*
-                     * Can we support undo here?
-                     *
-                     * result = true;
+                     * \change ca 2016-05-11
+                     *      Can we support undo here?  It seems to work.
                      */
+
+                   pop_trigger_undo();
+                   result = true;
                 }
             }
         }
@@ -3007,12 +3015,14 @@ perform::stop_key ()
  *
  * \return
  *      Returns true if the keystroke matched the start, stop, or (new) pause
- *      keystrokes.
+ *      keystrokes.  Generally, no further keystroke processing is needed in
+ *      this case.
  */
 
 bool
 perform::playback_key_event (const keystroke & k, bool songmode)
 {
+
 #ifdef SEQ64_PAUSE_SUPPORT
 #define PAUSEKEY    keys().pause()
 #else
@@ -3054,49 +3064,6 @@ perform::playback_key_event (const keystroke & k, bool songmode)
     }
     return result;
 }
-
-/*
- *  Gets the max-tick value of all active sequences.  We can't seem to
- *  find a way to get a good value from the perform object itself, so we get
- *  it from the sequences.  This approach kind of works, but the result is
- *  slow.  We could optimize it a little by saving the indices of the first
- *  and last active sequence.
- *
- * \obsolete
- *      Usage in mainwnd and perfoll is commented out.
- *
- * \return
- *      If no active sequence is found, 0 is returned.  Otherwise, the
- *      maximum get_last_tick() value of the active sequences is returned.
-
-midipulse
-perform::get_max_tick () const
-{
-#ifdef SEQ64_PAUSE_SUPPORT
-    midipulse result = 0;
-    if (is_jack_running())
-    {
-        result = get_tick();
-    }
-    else
-    {
-        for (int s = 0; s < m_sequence_max; ++s)
-        {
-            if (is_active(s))
-            {
-                midipulse current = m_seqs[s]->get_last_tick();
-                if (current > result)
-                    result = current;
-            }
-        }
-    }
-    return result;
-#else
-    return get_tick();
-#endif
-}
- *
- */
 
 /**
  *  Shows all the triggers of all the sequences.

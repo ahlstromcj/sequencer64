@@ -1259,10 +1259,10 @@ seqroll::on_focus_out_event (GdkEventFocus *)
  *
  *  Concerning the usage of the arrow keys in this function: This code is
  *  reached, but has no visible effect.  Why?  I think they were meant to move
- *  the point for playback.  We may HAVE A BUG with our new handling of
- *  triggers, or maybe these depend upon the proper playback mode.  In any
- *  case, the old functionality is preserved.  However, if there are notes
- *  selected, then these keys support selection movement.
+ *  the point for playback.  We may have a bug with our new handling of
+ *  triggers (unlikely), or maybe these depend upon the proper playback mode.
+ *  In any case, the old functionality is preserved.  However, if there are
+ *  notes selected, then these keys support selection movement.
  */
 
 bool
@@ -1311,10 +1311,12 @@ seqroll::on_key_press_event (GdkEventKey * ev)
         }
         else
         {
+            /**
+             * I think we should be able to move and remove notes while
+             * playing, which is already supported using the mouse.
+             */
+
             /*
-             * I think we should be able to move and remove notes while playing,
-             * which is already supported using the mouse.
-             *
              * if (! perf().is_playing)
              */
 

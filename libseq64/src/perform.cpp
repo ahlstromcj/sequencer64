@@ -1472,9 +1472,11 @@ perform::stop_playing ()
     /**
      * EXPERIMENTAL.  With stop, reset the start-tick to either the left-tick
      * or the 0th tick.
+     *
+     * set_start_tick(get_left_tick());
      */
 
-    set_start_tick(get_left_tick());
+    m_tick = 0;
 }
 
 /**
@@ -2957,6 +2959,7 @@ perform::perfroll_key_event (const keystroke & k, int drop_sequence)
  *
  * \param songmode
  *      The live/play mode parameter to be passed along to the key processor.
+ *      Defaults to false (live mode).
  */
 
 void
@@ -2971,7 +2974,7 @@ perform::start_key (bool songmode)
  *
  * \param songmode
  *      The live/play mode parameter to be passed along to the key processor,
- *      when starting playback.
+ *      when starting playback.  Defaults to false (live mode).
  */
 
 void
@@ -3011,7 +3014,8 @@ perform::stop_key ()
  * \param songmode
  *      Provides the "jack flag" needed by the mainwnd, seqroll, and perfedit
  *      windows.  Defaults to false, which disables Song mode, and enables
- *      Live mode.
+ *      Live mode.  But using Song mode seems to make the pause key not work
+ *      in the performance editor.
  *
  * \return
  *      Returns true if the keystroke matched the start, stop, or (new) pause

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-05-09
+ * \updates       2016-05-11
  * \license       GNU GPLv2 or above
  *
  */
@@ -631,7 +631,11 @@ perfedit::timeout ()
 }
 
 /**
- *  Changes the image used for the pause/play button
+ *  Changes the image used for the pause/play button.
+ *
+ * \param isrunning
+ *      If true, the image should be the pause image.  Otherwise, it should be
+ *      the play image.
  */
 
 void
@@ -690,6 +694,9 @@ perfedit::pause_playing ()                      /* Stop in place!   */
 
 /**
  *  Stop the playing.
+ *
+ *  We need to make the progress line move back to the beginning right away
+ *  here.
  */
 
 void
@@ -700,6 +707,10 @@ perfedit::stop_playing ()
 #else
     perf().stop_playing();
 #endif
+
+    /*
+     * Doesn't work: m_perfroll->redraw_progress();      // EXPERIMENTAL !!!!!
+     */
 }
 
 /**
@@ -751,13 +762,17 @@ perfedit::on_key_press_event (GdkEventKey * ev)
          *  By default, the space-bar starts the playing, and the Escape
          *  key stops the playing.  The start/end key may be the same key
          *  (i.e. space-bar), allow toggling when the same key is mapped
-         *  to both triggers.
+         *  to both triggers.  Note that we now pass false in the call to
+         *  perform::playback_key_event().  Song mode doesn't yield the pause
+         *  effect we want.
+         *
+         * bool startstop = perf().playback_key_event(k, true);
          */
 
         keystroke k(ev->keyval, SEQ64_KEYSTROKE_PRESS, ev->state);
-        bool startstop = perf().playback_key_event(k, true);
+        bool startstop = perf().playback_key_event(k, false);   // see notes
         if (startstop)
-            return true;            // event_was_handled = true;
+            return true;                                        // event handled
     }
     (void) m_perftime->key_press_event(ev);
     return Gtk::Window::on_key_press_event(ev);

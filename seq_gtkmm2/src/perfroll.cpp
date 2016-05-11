@@ -378,18 +378,16 @@ perfroll::enqueue_draw ()
  *  It's still a tiny bit laggy, so we have to find a faster way to get the
  *  maximum.  (Note that the draw_progress function is called at every
  *  timeout, that is, constantly.)
+ * 
+ *  The perform::get_max_tick() call doesn't work with JACK: the progress bar
+ *  rewinds to the beginning when playback is paused, though it does resume
+ *  where it left off.  It also may cause the progress bar to backtrack
+ *  through any gap.  Let's restore the get_tick() call.
  */
 
 void
 perfroll::draw_progress ()
 {
-    /*
-     * The perform::get_max_tick() call doesn't work with JACK: the progress
-     * bar rewinds to the beginning when playback is paused, though it does
-     * resume where it left off.  It also may cause the progress bar to
-     * backtrack through any gap.  LET's restore the get_tick() call!
-     */
-
     midipulse tick = perf().get_tick();
     midipulse tick_offset = m_4bar_offset * m_ticks_per_bar;
     int progress_x = (tick - tick_offset) / m_perf_scale_x;

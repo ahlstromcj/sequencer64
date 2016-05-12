@@ -155,6 +155,10 @@ static const int c_swing_notes              = 13;   /* swing quantize   */
  *      Offload most of the work into an initialization function like
  *      options does.
  *
+ * \todo
+ *      Support the hightlight feature in one or both perfedit windows in the
+ *      same way it is done in the mainwid.
+ *
  *  Horizontal Gtk::Adjustment constructor: The initial value was 0 on a range
  *  from 0 to 1, with step and page increments of 1, and a page_size of 1.  We
  *  can fix these values here, or create an h_adjustment() function similar to

@@ -304,11 +304,10 @@ perftime::on_button_press_event (GdkEventButton * p0)
     tick -= (tick % m_snap);
 
     /**
-     * Why is setting the start-tick disabled?  We now re-enable it and see if
-     * it works.  To our surprise, it works, but it sticks between stop/pause
-     * and the next playback in the performance editor.  We will need to add a
-     * feature where stop sets the start-tick to the left tick (or the
-     * beginning tick).
+     * Why is setting the start-tick disabled?  We re-enable it and see if it
+     * works.  To our surprise, it works, but it sticks between stop/pause and
+     * the next playback in the performance editor.  We added a feature where
+     * stop sets the start-tick to the left tick (or the beginning tick).
      */
 
     if (SEQ64_CLICK_MIDDLE(p0->button))

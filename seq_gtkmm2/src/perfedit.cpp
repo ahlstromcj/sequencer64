@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-05-11
+ * \updates       2016-05-12
  * \license       GNU GPLv2 or above
  *
  */
@@ -235,9 +235,9 @@ perfedit::perfedit
     );
 
     char b[4];
-    for (int i = 0; i < 16; i++)
+    for (int i = 0; i < 16; ++i)
     {
-        snprintf(b, sizeof(b), "%d", i + 1);
+        snprintf(b, sizeof b, "%d", i + 1);
         m_menu_bpm->items().push_back
         (
             MenuElem
@@ -515,10 +515,10 @@ perfedit::set_guides ()
 void
 perfedit::set_snap (int snap)
 {
-    if (snap > 0)
+    if (snap != m_snap && snap > 0)
     {
         char b[8];
-        snprintf(b, sizeof(b), "1/%d", snap);
+        snprintf(b, sizeof b, "1/%d", snap);
         m_entry_snap->set_text(b);
         m_snap = snap;
         set_guides();
@@ -543,7 +543,7 @@ perfedit::set_beats_per_bar (int bpm)
     if (bpm != m_bpm && bpm > 0)
     {
         char b[8];
-        snprintf(b, sizeof(b), "%d", bpm);
+        snprintf(b, sizeof b, "%d", bpm);
         m_entry_bpm->set_text(b);
         if (m_bpm != 0)                     /* are we in construction?      */
             perf().modify();                /* no, it's a modification now  */
@@ -571,7 +571,7 @@ perfedit::set_beat_width (int bw)
     if (bw != m_bw && bw > 0)
     {
         char b[8];
-        snprintf(b, sizeof(b), "%d", bw);
+        snprintf(b, sizeof b, "%d", bw);
         m_entry_bw->set_text(b);
         if (m_bw != 0)                      /* are we in construction?      */
             perf().modify();                /* no, it's a modification now  */
@@ -609,7 +609,8 @@ perfedit::init_before_show ()
 /**
  *  Handles a drawing timeout.  It redraws "dirty" sequences in the
  *  perfroll and the perfnames objects, and shows draw progress on the
- *  perfroll.  This function is called frequently and continuously.
+ *  perfroll.  It also changes the pause/play image if the status of running
+ *  has changed. This function is called frequently and continuously.
  *  It will work for both perfedit windows, if both are up.
  */
 
@@ -707,10 +708,6 @@ perfedit::stop_playing ()
 #else
     perf().stop_playing();
 #endif
-
-    /*
-     * Doesn't work: m_perfroll->redraw_progress();      // EXPERIMENTAL !!!!!
-     */
 }
 
 /**

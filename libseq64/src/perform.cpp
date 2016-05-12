@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-05-10
+ * \updates       2016-05-12
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -1458,7 +1458,8 @@ perform::pause_playing ()
 /**
  *  Encapsulates a series of calls used in mainwnd.  Stops playback,
  *  turns off the (new) m_is_paused flag, and set the "is-pattern-playing"
- *  flag to false.
+ *  flag to false.  With stop, reset the start-tick to either the left-tick or
+ *  the 0th tick (to be determined, currently resets to 0)..
  */
 
 void
@@ -1468,15 +1469,7 @@ perform::stop_playing ()
     stop();
     m_is_paused = false;
     rc().is_pattern_playing(false);
-
-    /**
-     * EXPERIMENTAL.  With stop, reset the start-tick to either the left-tick
-     * or the 0th tick.
-     *
-     * set_start_tick(get_left_tick());
-     */
-
-    m_tick = 0;
+    m_tick = 0;                         // or get_left_tick()
 }
 
 /**

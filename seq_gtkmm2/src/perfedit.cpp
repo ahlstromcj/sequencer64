@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-05-12
+ * \updates       2016-05-13
  * \license       GNU GPLv2 or above
  *
  */
@@ -425,7 +425,8 @@ perfedit::~perfedit ()
 
 /**
  *  Helper wrapper for calling perfroll::queue_draw() for one or both
- *  perfedits.
+ *  perfedits.  Note that we call the children's queue_draw() functions, not
+ *  enqueue_draw(), otherwise we'll get stack overflow.
  *
  * \param forward
  *      If true (the default), pass the call to the peer.  When passing this
@@ -536,11 +537,6 @@ perfedit::set_guides ()
     {
         midipulse measure_pulses = m_ppqn * m_standard_bpm * m_bpm / m_bw;
         midipulse snap_pulses = measure_pulses / m_snap;
-
-        /*
-         * long beat_pulses = m_ppqn * m_standard_bpm / m_bw;
-         */
-
         midipulse beat_pulses = measure_pulses / m_bpm;
         m_perfroll->set_guides(snap_pulses, measure_pulses, beat_pulses);
         m_perftime->set_guides(snap_pulses, measure_pulses);
@@ -795,7 +791,12 @@ perfedit::on_realize ()
 }
 
 /**
- *  This function is the callback for a key-press event.
+ *  This function is the callback for a key-press event.  By default, the
+ *  space-bar starts the playing, and the Escape key stops the playing.  The
+ *  start/end key may be the same key (i.e. space-bar), allow toggling when
+ *  the same key is mapped to both triggers.  Note that we now pass false in
+ *  the call to perform::playback_key_event(), if SEQ64_PAUSE_SUPPORT is
+ *  compiled in.  Song mode doesn't yield the pause effect we want.
  */
 
 bool
@@ -803,28 +804,18 @@ perfedit::on_key_press_event (GdkEventKey * ev)
 {
     if (CAST_EQUIVALENT(ev->type, SEQ64_KEY_PRESS))
     {
-        if (rc().print_keys())
-        {
-            printf
-            (
-                "key_press[%d] == %s\n",
-                ev->keyval, gdk_keyval_name(ev->keyval)
-            );
-        }
-
-        /**
-         *  By default, the space-bar starts the playing, and the Escape
-         *  key stops the playing.  The start/end key may be the same key
-         *  (i.e. space-bar), allow toggling when the same key is mapped
-         *  to both triggers.  Note that we now pass false in the call to
-         *  perform::playback_key_event().  Song mode doesn't yield the pause
-         *  effect we want.
-         *
-         * bool startstop = perf().playback_key_event(k, true);
-         */
-
         keystroke k(ev->keyval, SEQ64_KEYSTROKE_PRESS, ev->state);
+
+#ifdef SEQ64_USE_DEBUG_OUTPUT
+        printf("key_press[%d] == %s\n", ev->keyval, gdk_keyval_name(ev->keyval));
+#endif
+
+#ifdef SEQ64_PAUSE_SUPPORT_XXX           // EXPERIMENTAL, disables song mode
         bool startstop = perf().playback_key_event(k, false);   // see notes
+#else
+        bool startstop = perf().playback_key_event(k, true);
+#endif
+
         if (startstop)
             return true;                                        // event handled
     }

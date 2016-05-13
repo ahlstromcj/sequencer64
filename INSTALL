@@ -1,6 +1,6 @@
 INSTALL for Sequencer64 v. 0.9.11
 Chris Ahlstrom
-2015-09-10 to 2016-05-08
+2015-09-10 to 2016-05-13
 
 The current packaging for Sequencer64 is primarily aimed at developers.
 There is currently no configure script... it must be bootstrapped.
@@ -126,6 +126,15 @@ MANUALLY-DEFINED MACROS IN CODE:
     be edited manually to achieve the desired settings.  Only crazy or
     experiment-happy people will normally want to change the define-state of
     these macros.
+
+    SEQ64_EDIT_SEQUENCE_HIGHLIGHT:
+
+        Provides the option to highlight the currently-editing sequence
+        in the main window view and in the song editor.  If the sequence is
+        muted, it is highlighted in black text on a cyan background.  If
+        it is unmuted, it is highlighted in cyan text on a black background.
+        The highlighting follows whichever pattern editor or event editor has
+        the focus.
 
     SEQ64_HANDLE_TIMESIG_AND_TEMPO:
 

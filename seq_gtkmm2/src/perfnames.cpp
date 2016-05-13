@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-05-12
+ * \updates       2016-05-13
  * \license       GNU GPLv2 or above
  *
  *  This module is almost exclusively user-interface code.  There are some
@@ -120,10 +120,11 @@ perfnames::change_vert ()
 
 /**
  *  Wraps queue_draw() and forwards the call to the parent perfedit, so that
- *  it can forward it to any other perfedit that exists.  The parent perfedit
- *  will call perfnames::queue_draw() on behalf of this object, and it will
- *  pass a perfnames::enqueue_draw() to the peer perfedit's perfnames, if the
- *  peer exists.
+ *  it can forward it to any other perfedit that exists, and to the other
+ *  sub-elements of the song editor.  The parent perfedit will call
+ *  perfnames::queue_draw() on behalf of this object, and it will pass a
+ *  perfnames::enqueue_draw() to the peer perfedit's perfnames, if the peer
+ *  exists.
  */
 
 void
@@ -277,69 +278,6 @@ perfnames::convert_y (int y)
 }
 
 /**
- *  Provides the callback for a button press, and it handles only a left
- *  mouse button [the right mouse button is handled in
- *  on_button_release_event()].  Two operations are supported by left-clicking
- *  on the sequence/track name:
- *
- *      -   Normal.  Toggles the mute status of the sequence that is clicked.
- *      -   Shift.  Toggles the mutes status of all other sequences, making
- *          this operation an easy way to preview a single sequence in the
- *          performance editor, then bring back the rest of the tracks.
- *
- * \param ev
- *      The mouse button event.
- *
- * \return
- *      Always returns true.
- */
-
-bool
-perfnames::on_button_press_event (GdkEventButton * ev)
-{
-    int y = int(ev->y);
-    int seqnum = convert_y(y);
-    current_seq(seqnum);
-    if (SEQ64_CLICK_LEFT(ev->button))
-    {
-        if (perf().is_active(seqnum))
-        {
-            guint modifiers;        /* for filtering out caps/num lock etc. */
-            modifiers = gtk_accelerator_get_default_mod_mask();
-            if ((ev->state & modifiers) == SEQ64_SHIFT_MASK)
-            {
-                /*
-                 * \new ca 2016-03-15
-                 *      If the Shift key is pressed, mute all other sequences.
-                 *      Inactive sequences are skipped.
-                 */
-
-                for (int s = 0; s < m_sequence_max; ++s)
-                {
-                    if (s != seqnum)
-                    {
-                        sequence * seq = perf().get_sequence(s);
-                        if (not_nullptr(seq))
-                        {
-                            bool muted = seq->get_song_mute();
-                            seq->set_song_mute(! muted);
-                        }
-                    }
-                }
-            }
-            else
-            {
-                sequence * seq = perf().get_sequence(seqnum);
-                bool muted = seq->get_song_mute();
-                seq->set_song_mute(! muted);
-            }
-            enqueue_draw();
-        }
-    }
-    return true;
-}
-
-/**
  *  New function to encapsulate forced redrawing of all sequence names in the
  *  current viewport.
  */
@@ -404,9 +342,72 @@ perfnames::on_expose_event (GdkEventExpose * /* ev */)
 }
 
 /**
+ *  Provides the callback for a button press, and it handles only a left
+ *  mouse button [the right mouse button is handled in
+ *  on_button_release_event()].  Two operations are supported by left-clicking
+ *  on the sequence/track name:
+ *
+ *      -   Normal.  Toggles the mute status of the sequence that is clicked.
+ *      -   Shift.  Toggles the mutes status of all other sequences, making
+ *          this operation an easy way to preview a single sequence in the
+ *          performance editor, then bring back the rest of the tracks.
+ *
+ * \param ev
+ *      The mouse button event.
+ *
+ * \return
+ *      Always returns true.
+ */
+
+bool
+perfnames::on_button_press_event (GdkEventButton * ev)
+{
+    int y = int(ev->y);
+    int seqnum = convert_y(y);
+    current_seq(seqnum);
+    if (SEQ64_CLICK_LEFT(ev->button))
+    {
+        if (perf().is_active(seqnum))
+        {
+            guint modifiers;        /* for filtering out caps/num lock etc. */
+            modifiers = gtk_accelerator_get_default_mod_mask();
+            if ((ev->state & modifiers) == SEQ64_SHIFT_MASK)
+            {
+                /*
+                 * \new ca 2016-03-15
+                 *      If the Shift key is pressed, mute all other sequences.
+                 *      Inactive sequences are skipped.
+                 */
+
+                for (int s = 0; s < m_sequence_max; ++s)
+                {
+                    if (s != seqnum)
+                    {
+                        sequence * seq = perf().get_sequence(s);
+                        if (not_nullptr(seq))
+                        {
+                            bool muted = seq->get_song_mute();
+                            seq->set_song_mute(! muted);
+                        }
+                    }
+                }
+            }
+            else
+            {
+                sequence * seq = perf().get_sequence(seqnum);
+                bool muted = seq->get_song_mute();
+                seq->set_song_mute(! muted);
+            }
+            enqueue_draw();
+        }
+    }
+    return true;
+}
+
+/**
  *  Handles a button-release for the right button, bringing up a popup
  *  menu that is identical to the right-click popup menu for a slot in the
- *  patterns panel (mainwid).
+ *  patterns panel (mainwid), and context sensitive.
  *
  * \param p0
  *      The button event.

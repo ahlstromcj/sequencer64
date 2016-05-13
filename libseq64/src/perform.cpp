@@ -22,9 +22,9 @@
  *  This module defines the base class for the performance mode.
  *
  * \library       sequencer64 application
- * \author        Seq24 team; modifications by Chris Ahlstrom
+ * \author        Seq24 team; modifications by Chris Ahlstrom and Tim Deagan
  * \date          2015-07-24
- * \updates       2016-05-12
+ * \updates       2016-05-13
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -1398,12 +1398,12 @@ perform::start_playing (bool songmode)
     {
         position_jack(true);
         start_jack();
-        start(true);
+        start(true);                    /* causes perfedit rewind           */
     }
     else
     {
         position_jack(false);
-        start(false);
+        start(false);                   /* disables perfedit mute control   */
         start_jack();
     }
 

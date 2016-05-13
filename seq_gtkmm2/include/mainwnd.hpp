@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-05-09
+ * \updates       2016-05-12
  * \license       GNU GPLv2 or above
  *
  *  The main windows is known as the "Patterns window" or "Patterns
@@ -58,7 +58,6 @@ namespace Gtk
 namespace seq64
 {
     class maintime;
-    class mainwid;
     class options;
     class perfedit;
 

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-05-09
+ * \updates       2016-05-12
  * \license       GNU GPLv2 or above
  *
  *  Compare this class to eventedit, which has to do some similar things,
@@ -58,6 +58,7 @@
 #include "mainwid.hpp"
 #include "midibus.hpp"
 #include "options.hpp"
+#include "perfedit.hpp"
 #include "perform.hpp"
 #include "scales.h"
 #include "seqdata.hpp"
@@ -167,7 +168,6 @@ static const int c_swing_notes              = 13;   /* swing quantize   */
 
 seqedit::seqedit
 (
-    mainwid & mymainwid,
     perform & p,
     sequence & seq,
     int pos,
@@ -182,7 +182,6 @@ seqedit::seqedit
     m_bgsequence        (usr().seqedit_bgsequence()),   // m_initial_sequence
     m_measures          (0),                            // fixed below
     m_ppqn              (0),                            // fixed below
-    m_my_mainwid        (mymainwid),
     m_seq               (seq),
     m_menubar           (manage(new Gtk::MenuBar())),
     m_menu_tools        (manage(new Gtk::Menu())),
@@ -2117,7 +2116,8 @@ seqedit::change_focus (bool set_it)
         if (! m_have_focus)
         {
             perf().set_edit_sequence(m_seq.number());
-            m_my_mainwid.update_sequences_on_window();
+            update_mainwid_sequences();
+            update_perfedit_sequences();
             m_have_focus = true;
         }
     }
@@ -2126,7 +2126,8 @@ seqedit::change_focus (bool set_it)
         if (m_have_focus)
         {
             perf().unset_edit_sequence(m_seq.number());
-            m_my_mainwid.update_sequences_on_window();
+            update_mainwid_sequences();
+            update_perfedit_sequences();
             m_have_focus = false;
         }
     }

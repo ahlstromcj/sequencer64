@@ -83,11 +83,10 @@ perfnames::perfnames
 (
     perform & p,
     perfedit & parent,
-    mainwid & mymainwid,
     Gtk::Adjustment & vadjust
 ) :
     gui_drawingarea_gtk2    (p, adjustment_dummy(), vadjust, c_names_x, 100),
-    seqmenu                 (p, mymainwid),
+    seqmenu                 (p),
     m_parent                (parent),
     m_names_chars           (24),
     m_char_w                (font_render().char_width()),   /* 6            */
@@ -225,7 +224,6 @@ perfnames::draw_sequence (int seqnum)
                 }
             }
         }
-
         draw_rectangle                              /* Note 3               */
         (
             fg, m_setbox_w + 3, yloc + 1,
@@ -342,6 +340,22 @@ perfnames::on_button_press_event (GdkEventButton * ev)
 }
 
 /**
+ *  New function to encapsulate forced redrawing of all sequence names in the
+ *  current viewport.
+ */
+
+void
+perfnames::draw_sequences ()
+{
+    int seqs = (m_window_y / m_names_y) + 1;
+    for (int i = 0; i < seqs; ++i)
+    {
+        int sequence = i + m_sequence_offset;
+        draw_sequence(sequence);
+    }
+}
+
+/**
  *  Handles the callback when the window is realized.  It first calls the
  *  base-class version of on_realize().  Then it allocates any additional
  *  resources needed.
@@ -385,12 +399,7 @@ perfnames::on_realize ()
 bool
 perfnames::on_expose_event (GdkEventExpose * /* ev */)
 {
-    int seqs = (m_window_y / m_names_y) + 1;
-    for (int i = 0; i < seqs; ++i)
-    {
-        int sequence = i + m_sequence_offset;
-        draw_sequence(sequence);
-    }
+    draw_sequences();
     return true;
 }
 

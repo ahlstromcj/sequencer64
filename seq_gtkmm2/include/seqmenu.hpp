@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-05-09
+ * \updates       2016-05-12
  * \license       GNU GPLv2 or above
  *
  *  This module is the base class for the perfnames and mainwid classes.
@@ -54,7 +54,6 @@ namespace seq64
 {
 
 class eventedit;
-class mainwid;
 class seqedit;
 
 /**
@@ -77,15 +76,6 @@ private:
      */
 
     perform & m_mainperf;
-
-    /**
-     *  Provides a reference to the mainwid to the derived classes (even for
-     *  the mainwid class) in order that seqmenu be able to pass it on to the
-     *  seqedit class, for better control over the handling of the display of
-     *  the "current" sequence.
-     */
-
-    mainwid & m_my_mainwid;
 
     /**
      *  Holds a copy of data concerning a sequence, which can then be pasted
@@ -130,7 +120,7 @@ private:
 
 public:
 
-    seqmenu (perform & a_p, mainwid & mymainwid);
+    seqmenu (perform & a_p);
 
     /**
      *  Provides a rote base-class destructor.  This is necessary in an
@@ -141,8 +131,8 @@ public:
 
     /**
      * \getter m_current_seq
-     *      We're changing the name, so that "seq" indicates an integer by
-     *      (an imperfect) convention.
+     *      We're changing the name, so that "seq" indicates an integer by (an
+     *      imperfect) convention.
      */
 
     int current_seq () const

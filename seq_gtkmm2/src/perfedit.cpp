@@ -49,7 +49,6 @@
 #include "gdk_basic_keys.h"
 #include "gtk_helpers.h"
 #include "keystroke.hpp"
-#include "mainwid.hpp"
 #include "perfedit.hpp"
 #include "perfnames.hpp"
 #include "perfroll.hpp"
@@ -73,6 +72,37 @@ namespace seq64
 {
 
 /**
+ *  Holds a pointer to the first instance of perfedit for the entire
+ *  application.
+ */
+
+static perfedit * gs_perfedit_pointer_0 = nullptr;
+
+/**
+ *  Holds a pointer to the second instance of perfedit for the entire
+ *  application (if created).
+ */
+
+static perfedit * gs_perfedit_pointer_1 = nullptr;
+
+/**
+ *  This global function in the seq64 namespace calls
+ *  perfedit::draw_sequences(), if the global perfedit objects exist.
+ *  It is used by other objects that can modify the currently-edited sequence
+ *  shown in the perfedit (song window).
+ */
+
+void
+update_perfedit_sequences ()
+{
+    if (not_nullptr(gs_perfedit_pointer_0))
+        gs_perfedit_pointer_0->draw_sequences();
+
+    if (not_nullptr(gs_perfedit_pointer_1))
+        gs_perfedit_pointer_1->draw_sequences();
+}
+
+/**
  *  Principal constructor, has a reference to a perform object.
  *  We've reordered the pointer members and put them in the initializer
  *  list to make the constructor a bit cleaner.
@@ -87,13 +117,11 @@ namespace seq64
 
 perfedit::perfedit
 (
-    mainwid & mymainwid,
     perform & p,
     bool second_perfedit,
     int ppqn
 ) :
     gui_window_gtk2     (p, 750, 500),
-    m_my_mainwid        (mymainwid),
     m_peer_perfedit     (nullptr),
     m_table             (manage(new Gtk::Table(6, 3, false))),  /* no matter */
     m_vadjust           (manage(new Gtk::Adjustment(0, 0, 1, 1, 1, 1))),
@@ -102,7 +130,7 @@ perfedit::perfedit
     m_hscroll           (manage(new Gtk::HScrollbar(*m_hadjust))),
     m_perfnames
     (
-        manage(new perfnames(perf(), *this, mymainwid, *m_vadjust))
+        manage(new perfnames(perf(), *this, *m_vadjust))
     ),
     m_perfroll
     (
@@ -367,6 +395,22 @@ perfedit::perfedit
     set_beats_per_bar(SEQ64_DEFAULT_BEATS_PER_MEASURE); /* time-sig numerator   */
     set_beat_width(SEQ64_DEFAULT_BEAT_WIDTH);           /* time-sig denominator */
     set_snap(SEQ64_DEFAULT_PERFEDIT_SNAP);
+
+    /*
+     * Log the pointer to the appropriate perfedit object, if not already
+     * done.
+     */
+
+    if (second_perfedit)
+    {
+        if (is_nullptr(gs_perfedit_pointer_1))
+            gs_perfedit_pointer_1 = this;
+    }
+    else
+    {
+        if (is_nullptr(gs_perfedit_pointer_0))
+            gs_perfedit_pointer_0 = this;
+    }
 }
 
 /**
@@ -607,11 +651,24 @@ perfedit::init_before_show ()
 }
 
 /**
- *  Handles a drawing timeout.  It redraws "dirty" sequences in the
- *  perfroll and the perfnames objects, and shows draw progress on the
- *  perfroll.  It also changes the pause/play image if the status of running
- *  has changed. This function is called frequently and continuously.
- *  It will work for both perfedit windows, if both are up.
+ *  Forces a redraw of the sequences, though currently just the perfnames
+ *  part of each sequence in the performance editor.  This is meant to be
+ *  called when the focus of an open seqedit or eventedit window changes.
+ */
+
+void
+perfedit::draw_sequences ()
+{
+    if (is_realized())
+        m_perfnames->draw_sequences();
+}
+
+/**
+ *  Handles a drawing timeout.  It redraws "dirty" sequences in the perfroll
+ *  and the perfnames objects, and shows draw progress on the perfroll.  It
+ *  also changes the pause/play image if the status of running has changed.
+ *  This function is called frequently and continuously.  It will work for
+ *  both perfedit windows, if both are up.
  */
 
 bool

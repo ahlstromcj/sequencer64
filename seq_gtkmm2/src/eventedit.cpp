@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-12-05
- * \updates       2016-05-09
+ * \updates       2016-05-12
  * \license       GNU GPLv2 or above
  *
  * To consider:
@@ -70,6 +70,7 @@
 #include "eventedit.hpp"
 #include "eventslots.hpp"
 #include "mainwid.hpp"
+#include "perfedit.hpp"
 #include "perform.hpp"
 #include "pixmaps/perfedit.xpm"
 
@@ -148,12 +149,8 @@ namespace seq64
  *      Refers to the sequence holding the event data to be edited.
  */
 
-eventedit::eventedit
-(
-    mainwid & mymainwid,
-    perform & p,
-    sequence & seq
-) :
+eventedit::eventedit (perform & p, sequence & seq)
+ :
     gui_window_gtk2     (p, 660, 666),      /* make sure it is wide enough! */
     m_table             (manage(new Gtk::Table(14, 4, false))),
     m_vadjust           (manage(new Gtk::Adjustment(0, 0, 1, 1, 1, 1))),
@@ -190,7 +187,6 @@ eventedit::eventedit
     m_entry_ev_data_1   (manage(new Gtk::Entry())),
     m_label_time_fmt    (manage(new Gtk::Label())),
     m_label_right       (manage(new Gtk::Label())),
-    m_my_mainwid        (mymainwid),
     m_seq               (seq),
     m_have_focus        (false)
 {
@@ -201,13 +197,13 @@ eventedit::eventedit
     set_icon(Gdk::Pixbuf::create_from_xpm_data(perfedit_xpm));
     m_seq.set_editing(true);
 
-    /*
+    /**
      *  The seqedit class indirectly sets the sequence dirty flags, and this
      *  allows the sequence's pattern slot to be updated, which, for example,
      *  allows the new experimental in-edit-highlight feature to work.  To get
-     *  the eventedit to also show the in-edit highlighing, we can make this
-     *  call.  This call does NOT cause a prompt for saving the file when
-     *  exiting.
+     *  the eventedit to also show the in-edit highlighing, we can make the
+     *  sequence::set_dirty_mp() call.  This call does NOT cause a prompt for
+     *  saving the file when exiting.
      */
 
     m_seq.set_dirty_mp();
@@ -752,7 +748,8 @@ eventedit::change_focus (bool set_it)
         if (! m_have_focus)
         {
             perf().set_edit_sequence(m_seq.number());
-            m_my_mainwid.update_sequences_on_window();
+            update_mainwid_sequences();
+            update_perfedit_sequences();
             m_have_focus = true;
         }
     }
@@ -761,7 +758,8 @@ eventedit::change_focus (bool set_it)
         if (m_have_focus)
         {
             perf().unset_edit_sequence(m_seq.number());
-            m_my_mainwid.update_sequences_on_window();
+            update_mainwid_sequences();
+            update_perfedit_sequences();
             m_have_focus = false;
         }
     }

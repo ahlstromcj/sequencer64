@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-05-09
+ * \updates       2016-05-12
  * \license       GNU GPLv2 or above
  *
  *  Note that this representation is, in a sense, inside the mainwnd
@@ -51,6 +51,30 @@
 
 namespace seq64
 {
+
+/**
+ *  Holds a pointer to the single instance of mainwnd for the entire
+ *  application.  We have decided that passing along a mainwnd reference among
+ *  a number of constructors is too much and actually harder to understand and
+ *  more error prone.  This value is set at the end of the mainwnd
+ *  constructor, but only the first time that constructor is called.
+ */
+
+static mainwid * gs_mainwid_pointer = nullptr;
+
+/**
+ *  This global function in the seq64 namespace calls
+ *  mainwid::update_sequences_on_window(), if the global mainwid object exists.
+ *  It is used by other objects that can modify the currently-edited sequence
+ *  shown in the mainwid (main window).
+ */
+
+void
+update_mainwid_sequences ()
+{
+    if (not_nullptr(gs_mainwid_pointer))
+        gs_mainwid_pointer->update_sequences_on_window();
+}
 
 /**
  * The width of the main pattern/sequence grid, in pixels.  Affected by
@@ -86,7 +110,7 @@ const int c_mainwid_y =
 mainwid::mainwid (perform & p)
  :
     gui_drawingarea_gtk2    (p, c_mainwid_x, c_mainwid_y),
-    seqmenu                 (p, *this),         // too tricky!!!
+    seqmenu                 (p),
     m_moving_seq            (),                 // a moving sequence object
     m_button_down           (false),
     m_moving                (false),
@@ -111,7 +135,13 @@ mainwid::mainwid (perform & p)
     m_screenset_offset      (m_screenset * m_screenset_slots),
     m_progress_height       (m_seqarea_seq_y + 3)
 {
-    // It's all done in the base classes and the initializer list.
+    /*
+     * It's all done in the base classes and the initializer list, except for
+     * logging this self-referential singleton pointer.
+     */
+
+    if (is_nullptr(gs_mainwid_pointer))
+        gs_mainwid_pointer = this;
 }
 
 /**
@@ -180,8 +210,8 @@ mainwid::timeout ()
  *      transport.
  *
  * \param seqnum
- *      Provides the number of the sequence slot that needs to be drawn.  It is
- *      checked for validity before usage.
+ *      Provides the number of the sequence slot that needs to be drawn.  It
+ *      is checked for validity before usage.
  */
 
 void

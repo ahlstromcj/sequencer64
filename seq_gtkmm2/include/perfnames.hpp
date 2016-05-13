@@ -46,7 +46,6 @@ namespace Gtk
 namespace seq64
 {
 
-class mainwid;
 class perform;
 class perfedit;
 
@@ -61,6 +60,8 @@ class perfedit;
 
 class perfnames : public gui_drawingarea_gtk2, public seqmenu
 {
+
+    friend class perfedit;
 
 private:
 
@@ -134,7 +135,6 @@ public:
     (
         perform & p,
         perfedit & parent,
-        mainwid & mymainwid,
         Gtk::Adjustment & vadjust
     );
 
@@ -144,6 +144,7 @@ private:
 
     void enqueue_draw ();
     int convert_y (int y);
+    void draw_sequences ();
     void draw_sequence (int sequence);
     void change_vert ();
 
@@ -183,7 +184,13 @@ private:    // Gtk callbacks
     void on_size_allocate (Gtk::Allocation &);
     bool on_scroll_event (GdkEventScroll * ev);
 
-};
+};          // class perfnames
+
+/*
+ * Free functions and values in the seq64 namespace.
+
+extern void update_perfnames_sequences ();
+ */
 
 }           // namespace seq64
 

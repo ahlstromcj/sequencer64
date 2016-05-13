@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-05-11
+ * \updates       2016-05-12
  * \license       GNU GPLv2 or above
  *
  *  The main window holds the menu and the main controls of the application,
@@ -67,9 +67,12 @@
  *      because, after creating the mainwid (derived from seqmenu), we have to
  *      get a reference to the mainwid object into the seqedit object by
  *      passing down through the following constructors:  mainwnd, mainwid,
- *      perfedit, perfnames (derived from seqmenu), seqmenu, and seqedit.
- *      Still preferable to making a global object, because at least the
- *      provenance of the mainwid reference is now clearcut.
+ *      perfedit, perfnames (derived from seqmenu), seqmenu, and seqedit.  We
+ *      thought it was  preferable to making a global object, because at least
+ *      the provenance of the mainwid reference is now clearcut, but then we
+ *      realized we'd have to do the same for the perfedit/perfnames class,
+ *      and that's just too much.  We now add a global/free function to the
+ *      mainwid module to access the update function we need.
  */
 
 #include <cctype>
@@ -154,11 +157,11 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
     m_main_time             (manage(new maintime(p, ppqn))),
     m_perf_edit
     (
-        new perfedit(*m_main_wid, p, false /*allowperf2*/, ppqn)
+        new perfedit(p, false /*allowperf2*/, ppqn)
     ),
     m_perf_edit_2
     (
-        allowperf2 ? new perfedit(*m_main_wid, p, true, ppqn) : nullptr
+        allowperf2 ? new perfedit(p, true, ppqn) : nullptr
     ),
     m_options               (nullptr),
     m_main_cursor           (),
@@ -1223,7 +1226,7 @@ mainwnd::pause_playing ()               /* Stop in place!   */
 
 /**
  *  Stops the playing of the song.  An accessor to perform's stop_playing()
- *  function.  Also calls the mainwid's update_sequences_on_window() function.
+ *  function.  Also calls the mainwid::update_sequences_on_window() function.
  *  Not sure that we need this call, since the slots seem to update anyway.
  *  But we've noticed that, with this call in place, hitting the Stop button
  *  causes a subtle change in the appearance of the first non-empty pattern of
@@ -1245,7 +1248,7 @@ mainwnd::stop_playing ()                /* Stop!            */
     perf().stop_playing();
 #endif
 
-    m_main_wid->update_sequences_on_window();
+    m_main_wid->update_sequences_on_window();   // update_mainwid_sequences()
 }
 
 /**

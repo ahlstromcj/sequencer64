@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-05-09
+ * \updates       2016-05-12
  * \license       GNU GPLv2 or above
  *
  *  Note that, as of version 0.9.11, the z and Z keys, when focus is on the
@@ -69,7 +69,6 @@ namespace Gtk
 namespace seq64
 {
 
-class mainwid;
 class perfnames;
 class perfroll;
 class perftime;
@@ -92,14 +91,9 @@ class perftime;
 class perfedit : public gui_window_gtk2
 {
 
+    friend void update_perfedit_sequences ();
+
 private:
-
-    /**
-     *  The mainwid object we need to pass around.  A new feature to support
-     *  more control over the display of the currently-edited sequence.
-     */
-
-    mainwid & m_my_mainwid;
 
     /**
      *  The partner instance of perfedit.
@@ -199,7 +193,6 @@ public:
 
     perfedit
     (
-        mainwid & mymainwid,
         perform & p,
         bool second_perfedit    = false,
         int ppqn                = SEQ64_USE_DEFAULT_PPQN
@@ -249,6 +242,7 @@ private:
     void copy ();
     void undo ();
     void popup_menu (Gtk::Menu * menu);
+    void draw_sequences ();
     bool timeout ();
     void set_image (bool isrunning);
     void start_playing ();
@@ -271,7 +265,7 @@ private:
             start_playing();
     }
 
-private:            // callbacks
+private:        // Gtkmm 2.4 callbacks
 
     void on_realize ();
     bool on_key_press_event (GdkEventKey * ev);
@@ -285,11 +279,17 @@ private:            // callbacks
         return false;
     }
 
-};
+};              // class perfedit
 
-}           // namespace seq64
+/*
+ * Free functions and values is the seq64 namespace.
+ */
 
-#endif      // SEQ64_PERFEDIT_HPP
+extern void update_perfedit_sequences ();
+
+}               // namespace seq64
+
+#endif          // SEQ64_PERFEDIT_HPP
 
 /*
  * perfedit.hpp

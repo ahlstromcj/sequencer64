@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-05-09
+ * \updates       2016-05-12
  * \license       GNU GPLv2 or above
  *
  */
@@ -50,12 +50,12 @@ class mainwid : public gui_drawingarea_gtk2, public seqmenu
 {
 
     /*
-     * for updating for current sequence and other purposes.
-     */
+     * Friends for updating the current sequence and for control via the
+     * mainwnd object.
+     */ 
 
-    friend class eventedit;
-    friend class seqedit;
     friend class mainwnd;
+    friend void update_mainwid_sequences ();
 
 private:
 
@@ -163,7 +163,7 @@ private:
     int timeout ();
     void calculate_base_sizes (int seq, int & basex, int & basey);
 
-private:        // callbacks
+private:    // Gtkmm 2.4 callbacks
 
     void on_realize ();
     bool on_expose_event (GdkEventExpose * ev);
@@ -173,7 +173,13 @@ private:        // callbacks
     bool on_focus_in_event (GdkEventFocus *);
     bool on_focus_out_event (GdkEventFocus *);
 
-};
+};          // class mainwid
+
+/*
+ * Free functions and values in the seq64 namespace.
+ */
+
+extern void update_mainwid_sequences ();
 
 }           // namespace seq64
 

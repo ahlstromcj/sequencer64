@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-22
- * \updates       2016-02-19
+ * \updates       2016-05-12
  * \license       GNU GPLv2 or above
  *
  */
@@ -85,6 +85,13 @@ private:
 
     int m_redraw_period_ms;
 
+    /**
+     *  Indicates if on_realize() has been called.  In some cases, we don't
+     *  want to draw in objects that haven't yet appeared.
+     */
+
+    bool m_is_realized;
+
 public:
 
     gui_window_gtk2
@@ -124,13 +131,26 @@ protected:
         return m_redraw_period_ms;
     }
 
+    /**
+     * \getter m_is_realized
+     */
+
+    bool is_realized () const
+    {
+        return m_is_realized;
+    }
+
     void scroll_adjust (Gtk::Adjustment & adjust, double step);
 
-};
+protected:
 
-}           // namespace seq64
+    void on_realize ();
 
-#endif      // SEQ64_GUI_WINDOW_GTK2_HPP
+};              // class gui_window_gtk2
+
+}               // namespace seq64
+
+#endif          // SEQ64_GUI_WINDOW_GTK2_HPP
 
 /*
  * gui_window_gtk2.hpp

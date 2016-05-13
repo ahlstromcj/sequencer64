@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-22
- * \updates       2016-03-04
+ * \updates       2016-05-12
  * \license       GNU GPLv2 or above
  *
  */
@@ -69,7 +69,8 @@ gui_window_gtk2::gui_window_gtk2
     m_mainperf          (p),
     m_window_x          (window_x),
     m_window_y          (window_y),
-    m_redraw_period_ms  (usr().window_redraw_rate())        /* 40, 25 ms    */
+    m_redraw_period_ms  (usr().window_redraw_rate()),       /* 40, 25 ms    */
+    m_is_realized       (false)
 {
     add_events(Gdk::KEY_PRESS_MASK | Gdk::KEY_RELEASE_MASK | Gdk::SCROLL_MASK);
     if (window_x > 0 && window_y > 0)
@@ -120,6 +121,18 @@ gui_window_gtk2::scroll_adjust (Gtk::Adjustment & hadjust, double step)
             nextval = 0.0;
     }
     hadjust.set_value(nextval);
+}
+
+/**
+ *  This callback function calls the base-class on_realize() function, and
+ *  sets the m_is_realized flag.
+ */
+
+void
+gui_window_gtk2::on_realize ()
+{
+    Gtk::Window::on_realize();
+    m_is_realized = true;
 }
 
 }           // namespace seq64

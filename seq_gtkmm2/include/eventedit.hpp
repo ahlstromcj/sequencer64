@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-12-05
- * \updates       2016-05-09
+ * \updates       2016-05-12
  * \license       GNU GPLv2 or above
  *
  */
@@ -38,14 +38,14 @@
 
 #include "gui_window_gtk2.hpp"
 
-/*
- *  Since these items are pointers, we were able to move (most) of the
- *  included header files to the cpp file.   Except for the items that
- *  come from widget.h, perhaps because GdkEventAny was a typedef.
- */
-
 namespace Gtk
 {
+    /*
+     *  Since these items are pointers, we were able to move (most) of the
+     *  included header files to the cpp file.   Except for the items that
+     *  come from widget.h, perhaps because GdkEventAny was a typedef.
+     */
+
     class Adjustment;
     class Button;
     class Entry;
@@ -63,7 +63,6 @@ namespace Gtk
 namespace seq64
 {
 
-class mainwid;
 class eventslots;
 class perform;
 class sequence;
@@ -137,13 +136,6 @@ private:
     Gtk::Label * m_label_right;
 
     /**
-     *  Holds a reference to the mainwid so that the seqedit can inform it to
-     *  update its display.
-     */
-
-    mainwid & m_my_mainwid;
-
-    /**
      *  A reference to the sequence being edited, to control its editing flag.
      */
 
@@ -157,7 +149,7 @@ private:
 
 public:
 
-    eventedit (mainwid & mymainwid, perform & p, sequence & seq);
+    eventedit (perform & p, sequence & seq);
     ~eventedit ();
 
     void enqueue_draw ();
@@ -192,7 +184,7 @@ private:
     void handle_save ();
     void handle_cancel ();
 
-private:            // callbacks
+private:            // Gtkmm 2.4 callbacks
 
     void on_realize ();
     void on_set_focus (Widget * focus);

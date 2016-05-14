@@ -1524,7 +1524,12 @@ perform::stop ()
  * Minor issue:
  *
  *      In ALSA mode, restarting the sequence moves the progress bar to the
- *      beginning of the sequence, even if just pausing.
+ *      beginning of the sequence, even if just pausing.  This is fixed by
+ *      compiling with SEQ64_PAUSE_SUPPORT, which disables calling
+ *      off_sequences() when starting playback from the song editor /
+ *      performance window.  WE STILL HAVE TO EVALUATE WHAT SIDE-EFFECTS MIGHT
+ *      OCCUR.  ALSO CONSIDER A RUN-TIME --pause-support option for this
+ *      feature.
  *
  * \param state
  *      Sets the playback mode, and, if true, turns off all of the sequences.
@@ -1537,8 +1542,11 @@ perform::inner_start (bool state)
     if (! is_running())
     {
         set_playback_mode(state);
+
+#ifndef SEQ64_PAUSE_SUPPORT             // EXPERIMENTAL ca 2016-05-13
         if (state)
             off_sequences();
+#endif
 
         set_running(true);
         m_condition_var.signal();

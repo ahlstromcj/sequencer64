@@ -25,48 +25,50 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-05-12
+ * \updates       2016-05-14
  * \license       GNU GPLv2 or above
  *
  *  Note that this representation is, in a sense, inside the mainwnd
  *  implementation.  While mainwid represents the pattern slots, mainwnd
  *  represents the menu and surrounding elements.
  *
- *  There are a number of issue where active, but non-existent (null
- *  pointered) sequences are accessed, and we're fixing them, but need
- *  to fix the root causes as well.
+ *  There are a number of issues where active, but non-existent (null pointer)
+ *  sequences are accessed, and we've fixed them, but need to fix the root
+ *  causes as well.
  *
  *  To retest:
  *
  *      -   Sequence pattern drag and drop.
  *      -   Sequence pattern playback toggling.
  *      -   Menu entry access for each slot.
+ *      -   Current-edit highlighting
  */
 
 #include "calculations.hpp"             /* seq64::shorten_file_spec()       */
 #include "click.hpp"                    /* SEQ64_CLICK_LEFT(), etc.         */
-#include "font.hpp"
-#include "mainwid.hpp"
-#include "perform.hpp"
+#include "font.hpp"                     /* access to font bitmap functions  */
+#include "mainwid.hpp"                  /* seq64::mainwid (patterns panel)  */
+#include "perform.hpp"                  /* seq64::perform music control     */
 
 namespace seq64
 {
 
 /**
  *  Holds a pointer to the single instance of mainwnd for the entire
- *  application.  We have decided that passing along a mainwnd reference among
- *  a number of constructors is too much and actually harder to understand and
- *  more error prone.  This value is set at the end of the mainwnd
- *  constructor, but only the first time that constructor is called.
+ *  application, once it is created.  We have decided that passing along a
+ *  mainwnd reference among a number of constructors is too much and actually
+ *  harder to understand and more error prone.  This value is set at the end
+ *  of the mainwnd constructor, but only the first time that constructor is
+ *  called.
  */
 
 static mainwid * gs_mainwid_pointer = nullptr;
 
 /**
- *  This global function in the seq64 namespace calls
- *  mainwid::update_sequences_on_window(), if the global mainwid object exists.
- *  It is used by other objects that can modify the currently-edited sequence
- *  shown in the mainwid (main window).
+ *  This global function in the seq64 namespace calls mainwid ::
+ *  update_sequences_on_window(), if the global mainwid object exists.  It is
+ *  used by other objects that can modify the currently-edited sequence shown
+ *  in the mainwid (main window).
  */
 
 void

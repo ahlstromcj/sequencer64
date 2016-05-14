@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-05-13
+ * \updates       2016-05-14
  * \license       GNU GPLv2 or above
  *
  */
@@ -73,23 +73,23 @@ namespace seq64
 
 /**
  *  Holds a pointer to the first instance of perfedit for the entire
- *  application.
+ *  application, once it is created.
  */
 
 static perfedit * gs_perfedit_pointer_0 = nullptr;
 
 /**
  *  Holds a pointer to the second instance of perfedit for the entire
- *  application (if created).
+ *  application, once it is created.
  */
 
 static perfedit * gs_perfedit_pointer_1 = nullptr;
 
 /**
- *  This global function in the seq64 namespace calls
- *  perfedit::draw_sequences(), if the global perfedit objects exist.
- *  It is used by other objects that can modify the currently-edited sequence
- *  shown in the perfedit (song window).
+ *  This global function in the seq64 namespace calls perfedit ::
+ *  draw_sequences(), if the global perfedit objects exist.  It is used by
+ *  other objects (seqedit and eventedit) that can modify the currently-edited
+ *  sequence shown in the perfedit (song window).
  */
 
 void
@@ -103,9 +103,9 @@ update_perfedit_sequences ()
 }
 
 /**
- *  Principal constructor, has a reference to a perform object.
- *  We've reordered the pointer members and put them in the initializer
- *  list to make the constructor a bit cleaner.
+ *  Principal constructor, has a reference to a perform object.  We've
+ *  reordered the pointer members and put them in the initializer list to make
+ *  the constructor a bit cleaner.
  *
  * \param p
  *      Refers to the main performance object.
@@ -123,15 +123,12 @@ perfedit::perfedit
 ) :
     gui_window_gtk2     (p, 750, 500),
     m_peer_perfedit     (nullptr),
-    m_table             (manage(new Gtk::Table(6, 3, false))),  /* no matter */
+    m_table             (manage(new Gtk::Table(6, 3, false))),
     m_vadjust           (manage(new Gtk::Adjustment(0, 0, 1, 1, 1, 1))),
     m_hadjust           (manage(new Gtk::Adjustment(0, 0, 1, 1, 1, 1))),
     m_vscroll           (manage(new Gtk::VScrollbar(*m_vadjust))),
     m_hscroll           (manage(new Gtk::HScrollbar(*m_hadjust))),
-    m_perfnames
-    (
-        manage(new perfnames(perf(), *this, *m_vadjust))
-    ),
+    m_perfnames         (manage(new perfnames(perf(), *this, *m_vadjust))),
     m_perfroll
     (
         manage(new perfroll(perf(), *this, *m_hadjust, *m_vadjust, ppqn))
@@ -201,6 +198,9 @@ perfedit::perfedit
     m_table->attach(*m_hbox,  0, 1, 3, 4,  Gtk::FILL, Gtk::SHRINK, 0, 2);
     m_table->attach(*m_hscroll, 1, 2, 3, 4, Gtk::FILL | Gtk::EXPAND, Gtk::SHRINK);
     m_table->attach(*m_button_grow, 2, 3, 3, 4, Gtk::SHRINK, Gtk::SHRINK);
+
+#ifdef USE_BRUTE_FORCE_MENU_INIT
+
     m_menu_snap->items().push_back
     (
         MenuElem("1/1", sigc::bind(mem_fun(*this, &perfedit::set_snap), 1))
@@ -226,6 +226,38 @@ perfedit::perfedit
         MenuElem("1/32", sigc::bind(mem_fun(*this, &perfedit::set_snap), 32))
     );
 
+#else   //  USE_BRUTE_FORCE_MENU_INIT
+
+    /*
+     * To reduce the amount of written code, we now use a static array to
+     * initialize some of the menu entries.  We use the same list for the snap
+     * menu and for the beat-width menu.  This adds a beat-width of 32 to the
+     * beat-width menu.  A new feature!  :-D
+     */
+
+    static const int s_width_items [] = { 1, 2, 4, 8, 16, 32 };
+    static const int s_width_count = sizeof(s_width_items) / sizeof(int);
+    for (int si = 0; si < s_width_count; ++si)
+    {
+        int item = s_width_items[si];
+        char fmt[8];
+        snprintf(fmt, sizeof fmt, "1/%d", item);
+        m_menu_snap->items().push_back
+        (
+            MenuElem(fmt, sigc::bind(mem_fun(*this, &perfedit::set_snap), item))
+        );
+        snprintf(fmt, sizeof fmt, "%d", item);
+        m_menu_bw->items().push_back
+        (
+            MenuElem
+            (
+                fmt, sigc::bind(mem_fun(*this, &perfedit::set_beat_width), item)
+            )
+        );
+    }
+
+#endif  // USE_BRUTE_FORCE_MENU_INIT
+
     m_button_snap->add
     (
         *manage(new Gtk::Image(Gdk::Pixbuf::create_from_xpm_data(snap_xpm)))
@@ -241,6 +273,9 @@ perfedit::perfedit
 
     m_entry_snap->set_size_request(40, -1);
     m_entry_snap->set_editable(false);
+
+#ifdef USE_BRUTE_FORCE_MENU_INIT
+
     m_menu_bw->items().push_back
     (
         MenuElem("1", sigc::bind(mem_fun(*this, &perfedit::set_beat_width), 1))
@@ -261,6 +296,12 @@ perfedit::perfedit
     (
         MenuElem("16", sigc::bind(mem_fun(*this, &perfedit::set_beat_width), 16))
     );
+
+#else   //  USE_BRUTE_FORCE_MENU_INIT
+
+    // Merged into the loop above, and this adds a beat-width of 32
+
+#endif  // USE_BRUTE_FORCE_MENU_INIT
 
     char b[4];
     for (int i = 0; i < 16; ++i)

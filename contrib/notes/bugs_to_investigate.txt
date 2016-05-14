@@ -1,6 +1,6 @@
 Bugs and Additional Upgrade Ideas
 Chris Ahlstrom
-2015-10-27 to 2016-05-10 (New bugs)
+2015-10-27 to 2016-05-14 (New bugs)
 
 In no particular order...  "y" means "in progress", and "x" means it is
 basically done.
@@ -24,6 +24,9 @@ y  It seems like note-off is not working when the song is stopped or paused
 -  Can we make the drawing Color objects static, to save some space?
 -  It would be good to have a command that dumps the current build settings
    for Sequencer64.  Actually, add it to the --version command.
+-  When we set the beat-width high (e.g. 16 or 32) in perfedit, we need to
+   either increase the zoom or change how the time grid drawing works.
+   (The seqroll class handles the grid drawing well.)
 y  Pause Support:
    -    ALSA: Live Mode supports resume-from-pause, Song Mode does not.
         Is this a BUG, or a FEATURE?

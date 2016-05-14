@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-05-09
+ * \updates       2016-05-14
  * \license       GNU GPLv2 or above
  *
  *  This class supports the left side of the Performance window (also known
@@ -50,7 +50,10 @@ class perform;
 class perfedit;
 
 /**
- *  This class implements the left-side keyboard in the patterns window.
+ *  This class implements the left-side keyboard in the patterns window.  It
+ *  inherits from gui_drawingarea_gtk2 to support the font, color, and other
+ *  GUI functionality, and from seqmenu to support the right-click
+ *  Edit/New/Cut right-click menu.
  *
  * \obsolete
  *      Note the usage of virtual base classes.  Since these can add some

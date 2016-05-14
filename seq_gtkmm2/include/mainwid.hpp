@@ -22,13 +22,13 @@
 /**
  * \file          mainwid.hpp
  *
- *  This module declares/defines the base class for drawing
- *  patterns/sequences in the Patterns Panel grid.
+ *  This module declares/defines the base class for drawing patterns/sequences in
+ *  the Patterns Panel grid.
  *
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-05-12
+ * \updates       2016-05-14
  * \license       GNU GPLv2 or above
  *
  */
@@ -40,20 +40,18 @@
 namespace seq64
 {
 
-class perform;
+class perform;                          /* forward reference        */
 
 /**
- *    This class implement the piano roll area of the application.
+ *  This class implements the piano roll area of the application.  It inherits
+ *  from gui_drawingarea_gtk2 to support the font, color, and other GUI
+ *  functionality, and from seqmenu to support the right-click Edit/New/Cut
+ *  right-click menu.  The friend class and function are for updating the
+ *  current sequence and for control via the mainwnd object.
  */
 
 class mainwid : public gui_drawingarea_gtk2, public seqmenu
 {
-
-    /*
-     * Friends for updating the current sequence and for control via the
-     * mainwnd object.
-     */ 
-
     friend class mainwnd;
     friend void update_mainwid_sequences ();
 

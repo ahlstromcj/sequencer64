@@ -475,10 +475,14 @@ seqedit::create_menus ()
 
     /**
      *  The Snap menu is actually the Grid Snap button, which shows two
-     *  arrows pointing to a central bar.
+     *  arrows pointing to a central bar.  This menu somewhat duplicates the
+     *  same menu in perfedit.
      */
 
 #define SET_SNAP    mem_fun(*this, &seqedit::set_snap)
+#define SET_NOTE    mem_fun(*this, &seqedit::set_note_length)
+
+#ifdef USE_BRUTE_FORCE_MENU_INIT
 
     m_menu_snap->items().push_back                          /* note snap    */
     (
@@ -512,6 +516,55 @@ seqedit::create_menus ()
     (
         MenuElem("1/128", sigc::bind(SET_SNAP, m_ppqn / 32))
     );
+
+#else   //  USE_BRUTE_FORCE_MENU_INIT
+
+    /*
+     * To reduce the amount of written code, we now use a static array to
+     * initialize som e of the menu entries.  0 denotes the separator.  This
+     * same setup is used to set up both the snap and note menu, since they
+     * are exactly the same.  Saves a *lot* of code.
+     */
+
+    static const int s_snap_items [] =
+    {
+        1, 2, 4, 8, 16, 32, 64, 128, 0, 3, 6, 12, 24, 48, 96, 192
+    };
+    static const int s_snap_count = sizeof(s_snap_items) / sizeof(int);
+    int qnfactor = m_ppqn * 4;
+    for (int si = 0; si < s_snap_count; ++si)
+    {
+        int item = s_snap_items[si];
+        char fmt[8];
+        if (item > 1)
+            snprintf(fmt, sizeof fmt, "1/%d", item);
+        else
+            snprintf(fmt, sizeof fmt, "%d", item);
+
+        if (item == 0)
+        {
+            m_menu_snap->items().push_back(SeparatorElem());
+            m_menu_note_length->items().push_back(SeparatorElem());
+            continue;
+        }
+        else
+        {
+            int v = qnfactor / item;
+            m_menu_snap->items().push_back                  /* snap length  */
+            (
+                MenuElem(fmt, sigc::bind(SET_SNAP, v))
+            );
+            m_menu_note_length->items().push_back           /* note length  */
+            (
+                MenuElem(fmt, sigc::bind(SET_NOTE, v))
+            );
+        }
+    }
+
+#endif  // USE_BRUTE_FORCE_MENU_INIT
+
+#ifdef USE_BRUTE_FORCE_MENU_INIT
+
     m_menu_snap->items().push_back(SeparatorElem());        /* separator */
     m_menu_snap->items().push_back
     (
@@ -541,6 +594,11 @@ seqedit::create_menus ()
     (
         MenuElem("1/192", sigc::bind(SET_SNAP, m_ppqn / 16 / 3))
     );
+
+#endif  //  USE_BRUTE_FORCE_MENU_INIT
+
+
+#ifdef USE_BRUTE_FORCE_MENU_INIT
 
     /**
      *  The note-length menu is on the button that shows four notes.
@@ -610,12 +668,16 @@ seqedit::create_menus ()
         MenuElem("1/192", sigc::bind(SET_NOTE, m_ppqn / 16 / 3))
     );
 
+#endif  // USE_BRUTE_FORCE_MENU_INIT
+
     /**
      *  This menu lets one set the key of the sequence, and is brought up
      *  by the button with the "golden key" image on it.
      */
 
 #define SET_KEY     mem_fun(*this, &seqedit::set_key)
+
+#ifdef USE_BRUTE_FORCE_MENU_INIT
 
     m_menu_key->items().push_back                                   /* Key  */
     (
@@ -666,6 +728,22 @@ seqedit::create_menus ()
         MenuElem(c_key_text[11], sigc::bind(SET_KEY, 11))
     );
 
+#else   //  USE_BRUTE_FORCE_MENU_INIT
+
+    /*
+     * To reduce the amount of written code, we now use a loop.
+     */
+
+    for (int key = 0; key < SEQ64_OCTAVE_SIZE; ++key)
+    {
+        m_menu_key->items().push_back
+        (
+            MenuElem(c_key_text[key], sigc::bind(SET_KEY, key))
+        );
+    }
+
+#endif  // USE_BRUTE_FORCE_MENU_INIT
+
     /**
      *  This button shows a down around for the bottom half of the time
      *  signature.  It's tooltip is "Time signature.  Length of beat."
@@ -673,6 +751,8 @@ seqedit::create_menus ()
      */
 
 #define SET_BW      mem_fun(*this, &seqedit::set_beat_width)
+
+#ifdef USE_BRUTE_FORCE_MENU_INIT
 
     m_menu_bw->items().push_back                        /* bw, beat width  */
     (
@@ -694,6 +774,27 @@ seqedit::create_menus ()
     (
         MenuElem("16", sigc::bind(SET_BW, 16))
     );
+
+#else   // USE_BRUTE_FORCE_MENU_INIT
+
+    /*
+     * To reduce the amount of written code, we now use a static array to
+     * initialize some of the menu entries.  We use the same list for the snap
+     * menu and for the beat-width menu.  This adds a beat-width of 32 to the
+     * beat-width menu, just like in the perfedit menu.  A new feature!  :-D
+     */
+
+    static const int s_width_items [] = { 1, 2, 4, 8, 16, 32 };
+    static const int s_width_count = sizeof(s_width_items) / sizeof(int);
+    for (int si = 0; si < s_width_count; ++si)
+    {
+        int item = s_width_items[si];
+        char fmt[8];
+        snprintf(fmt, sizeof fmt, "%d", item);
+        m_menu_bw->items().push_back(MenuElem(fmt, sigc::bind(SET_BW, item)));
+    }
+
+#endif  // USE_BRUTE_FORCE_MENU_INIT
 
     /**
      *  This menu is shown when pressing the button at the bottom of the

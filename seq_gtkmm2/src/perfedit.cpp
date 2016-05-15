@@ -135,10 +135,7 @@ perfedit::perfedit
     ),
     m_perftime          (manage(new perftime(perf(), *this, *m_hadjust))),
     m_menu_snap         (manage(new Gtk::Menu())),
-    m_image_play
-    (
-        manage(new Gtk::Image(Gdk::Pixbuf::create_from_xpm_data(play2_xpm)))
-    ),
+    m_image_play        (manage(new PIXBUF_IMAGE(play2_xpm))),
     m_button_snap       (manage(new Gtk::Button())),
     m_entry_snap        (manage(new Gtk::Entry())),
     m_button_stop       (manage(new Gtk::Button())),
@@ -158,7 +155,7 @@ perfedit::perfedit
     m_tooltips          (manage(new Gtk::Tooltips())),  // valgrind complains!
     m_menu_bpm          (manage(new Gtk::Menu())),
     m_menu_bw           (manage(new Gtk::Menu())),
-    m_snap              (SEQ64_DEFAULT_PERFEDIT_SNAP),
+    m_snap              (0),
     m_bpm               (0),
     m_bw                (0),
     m_ppqn              (0),
@@ -199,35 +196,6 @@ perfedit::perfedit
     m_table->attach(*m_hscroll, 1, 2, 3, 4, Gtk::FILL | Gtk::EXPAND, Gtk::SHRINK);
     m_table->attach(*m_button_grow, 2, 3, 3, 4, Gtk::SHRINK, Gtk::SHRINK);
 
-#ifdef USE_BRUTE_FORCE_MENU_INIT
-
-    m_menu_snap->items().push_back
-    (
-        MenuElem("1/1", sigc::bind(mem_fun(*this, &perfedit::set_snap), 1))
-    );
-    m_menu_snap->items().push_back
-    (
-        MenuElem("1/2", sigc::bind(mem_fun(*this, &perfedit::set_snap), 2))
-    );
-    m_menu_snap->items().push_back
-    (
-        MenuElem("1/4", sigc::bind(mem_fun(*this, &perfedit::set_snap), 4))
-    );
-    m_menu_snap->items().push_back
-    (
-        MenuElem("1/8", sigc::bind(mem_fun(*this, &perfedit::set_snap), 8))
-    );
-    m_menu_snap->items().push_back
-    (
-        MenuElem("1/16", sigc::bind(mem_fun(*this, &perfedit::set_snap), 16))
-    );
-    m_menu_snap->items().push_back
-    (
-        MenuElem("1/32", sigc::bind(mem_fun(*this, &perfedit::set_snap), 32))
-    );
-
-#else   //  USE_BRUTE_FORCE_MENU_INIT
-
     /*
      * To reduce the amount of written code, we now use a static array to
      * initialize some of the menu entries.  We use the same list for the snap
@@ -235,93 +203,49 @@ perfedit::perfedit
      * beat-width menu.  A new feature!  :-D
      */
 
+#define SET_SNAP    mem_fun(*this, &perfedit::set_snap)
+#define SET_BW      mem_fun(*this, &perfedit::set_beat_width)
+
     static const int s_width_items [] = { 1, 2, 4, 8, 16, 32 };
     static const int s_width_count = sizeof(s_width_items) / sizeof(int);
     for (int si = 0; si < s_width_count; ++si)
     {
         int item = s_width_items[si];
         char fmt[8];
-        snprintf(fmt, sizeof fmt, "1/%d", item);
-        m_menu_snap->items().push_back
-        (
-            MenuElem(fmt, sigc::bind(mem_fun(*this, &perfedit::set_snap), item))
-        );
+        if (item > 1)
+            snprintf(fmt, sizeof fmt, "1/%d", item);
+        else
+            snprintf(fmt, sizeof fmt, "%d", item);
+
+        m_menu_snap->items().push_back(MenuElem(fmt, sigc::bind(SET_SNAP, item)));
         snprintf(fmt, sizeof fmt, "%d", item);
-        m_menu_bw->items().push_back
-        (
-            MenuElem
-            (
-                fmt, sigc::bind(mem_fun(*this, &perfedit::set_beat_width), item)
-            )
-        );
+        m_menu_bw->items().push_back(MenuElem(fmt, sigc::bind(SET_BW, item)));
     }
 
-#endif  // USE_BRUTE_FORCE_MENU_INIT
+#define SET_POPUP   mem_fun(*this, &perfedit::popup_menu)
 
-    m_button_snap->add
-    (
-        *manage(new Gtk::Image(Gdk::Pixbuf::create_from_xpm_data(snap_xpm)))
-    );
+    m_button_snap->add(*manage(new PIXBUF_IMAGE(snap_xpm)));
     m_button_snap->signal_clicked().connect
     (
-        sigc::bind<Gtk::Menu *>
-        (
-            mem_fun(*this, &perfedit::popup_menu), m_menu_snap
-        )
+        sigc::bind<Gtk::Menu *>(SET_POPUP, m_menu_snap)
     );
     add_tooltip(m_button_snap, "Grid snap (fraction of measure length).");
-
     m_entry_snap->set_size_request(40, -1);
     m_entry_snap->set_editable(false);
 
-#ifdef USE_BRUTE_FORCE_MENU_INIT
-
-    m_menu_bw->items().push_back
-    (
-        MenuElem("1", sigc::bind(mem_fun(*this, &perfedit::set_beat_width), 1))
-    );
-    m_menu_bw->items().push_back
-    (
-        MenuElem("2", sigc::bind(mem_fun(*this, &perfedit::set_beat_width), 2))
-    );
-    m_menu_bw->items().push_back
-    (
-        MenuElem("4", sigc::bind(mem_fun(*this, &perfedit::set_beat_width), 4))
-    );
-    m_menu_bw->items().push_back
-    (
-        MenuElem("8", sigc::bind(mem_fun(*this, &perfedit::set_beat_width), 8))
-    );
-    m_menu_bw->items().push_back
-    (
-        MenuElem("16", sigc::bind(mem_fun(*this, &perfedit::set_beat_width), 16))
-    );
-
-#else   //  USE_BRUTE_FORCE_MENU_INIT
-
-    // Merged into the loop above, and this adds a beat-width of 32
-
-#endif  // USE_BRUTE_FORCE_MENU_INIT
+#define SET_BPB     mem_fun(*this, &perfedit::set_beats_per_bar)
 
     char b[4];
     for (int i = 0; i < 16; ++i)
     {
         snprintf(b, sizeof b, "%d", i + 1);
-        m_menu_bpm->items().push_back
-        (
-            MenuElem
-            (
-                b, sigc::bind(mem_fun(*this, &perfedit::set_beats_per_bar), i + 1)
-            )
-        );
+        m_menu_bpm->items().push_back(MenuElem(b, sigc::bind(SET_BPB, i + 1)));
     }
-    m_button_bpm->add                               /* beats per measure */
-    (
-        *manage(new Gtk::Image(Gdk::Pixbuf::create_from_xpm_data(down_xpm)))
-    );
+    m_button_bpm->add(*manage(new PIXBUF_IMAGE(down_xpm)));
+
     m_button_bpm->signal_clicked().connect
     (
-        sigc::bind<Gtk::Menu *>(mem_fun(*this, &perfedit::popup_menu), m_menu_bpm)
+        sigc::bind<Gtk::Menu *>(SET_POPUP, m_menu_bpm)
     );
     add_tooltip
     (
@@ -330,60 +254,36 @@ perfedit::perfedit
     m_entry_bpm->set_width_chars(2);
     m_entry_bpm->set_editable(false);
 
-    m_button_bw->add                                /* beat width */
-    (
-        *manage(new Gtk::Image(Gdk::Pixbuf::create_from_xpm_data(down_xpm)))
-    );
+    m_button_bw->add(*manage(new PIXBUF_IMAGE(down_xpm)));  /* beat width */
     m_button_bw->signal_clicked().connect
     (
-        sigc::bind<Gtk::Menu *>(mem_fun(*this, &perfedit::popup_menu), m_menu_bw)
+        sigc::bind<Gtk::Menu *>(SET_POPUP, m_menu_bw)
     );
     add_tooltip(m_button_bw, "Time signature: length of beat.");
 
     m_entry_bw->set_width_chars(2);
     m_entry_bw->set_editable(false);
 
-    m_button_undo->add
-    (
-        *manage(new Gtk::Image(Gdk::Pixbuf::create_from_xpm_data(undo_xpm)))
-    );
-    m_button_undo->signal_clicked().connect
-    (
-        mem_fun(*this, &perfedit::undo)
-    );
+    m_button_undo->add(*manage(new PIXBUF_IMAGE(undo_xpm)));
+    m_button_undo->signal_clicked().connect(mem_fun(*this, &perfedit::undo));
     add_tooltip(m_button_undo, "Undo.");
 
-    m_button_expand->add                            /* expand           */
-    (
-        *manage(new Gtk::Image(Gdk::Pixbuf::create_from_xpm_data(expand_xpm)))
-    );
-    m_button_expand->signal_clicked().connect
-    (
-        mem_fun(*this, &perfedit::expand)
-    );
+    m_button_expand->add(*manage(new PIXBUF_IMAGE(expand_xpm)));
+    m_button_expand->signal_clicked().connect(mem_fun(*this, &perfedit::expand));
     add_tooltip(m_button_expand, "Expand between the L and R markers.");
 
-    m_button_collapse->add                          /* collapse         */
-    (
-        *manage(new Gtk::Image(Gdk::Pixbuf::create_from_xpm_data(collapse_xpm)))
-    );
+    m_button_collapse->add(*manage(new PIXBUF_IMAGE(collapse_xpm)));
     m_button_collapse->signal_clicked().connect
     (
         mem_fun(*this, &perfedit::collapse)
     );
     add_tooltip(m_button_collapse, "Collapse between the L and R markers.");
 
-    m_button_copy->add                              /* expand & copy    */
-    (
-        *manage(new Gtk::Image(Gdk::Pixbuf::create_from_xpm_data(copy_xpm)))
-    );
+    m_button_copy->add(*manage(new PIXBUF_IMAGE(copy_xpm))); /* expand+copy */
     m_button_copy->signal_clicked().connect(mem_fun(*this, &perfedit::copy));
     add_tooltip(m_button_copy, "Expand and copy between the L and R markers.");
 
-    m_button_loop->add
-    (
-        *manage(new Gtk::Image(Gdk::Pixbuf::create_from_xpm_data(loop_xpm)))
-    );
+    m_button_loop->add(*manage(new PIXBUF_IMAGE(loop_xpm)));
     m_button_loop->signal_toggled().connect
     (
         mem_fun(*this, &perfedit::set_looped)
@@ -391,10 +291,7 @@ perfedit::perfedit
     add_tooltip(m_button_loop, "Playback looped between the L and R markers.");
 
     m_button_stop->set_focus_on_click(false);
-    m_button_stop->add
-    (
-        *manage(new Gtk::Image(Gdk::Pixbuf::create_from_xpm_data(stop_xpm)))
-    );
+    m_button_stop->add(*manage(new PIXBUF_IMAGE(stop_xpm)));
     m_button_stop->signal_clicked().connect
     (
         mem_fun(*this, &perfedit::stop_playing)
@@ -430,7 +327,10 @@ perfedit::perfedit
     add(*m_table);
 
     /*
-     * Here, the set_snap call depends on the others being done first.
+     * Here, the set_snap call depends on the others being done first.  These
+     * calls also depend upon the values being set to bogus (0) values in the
+     * initializer list, otherwise no change will occur, and the items won't
+     * be displayed.
      */
 
     set_beats_per_bar(SEQ64_DEFAULT_BEATS_PER_MEASURE); /* time-sig numerator   */
@@ -599,7 +499,11 @@ perfedit::set_snap (int snap)
     if (snap != m_snap && snap > 0)
     {
         char b[8];
-        snprintf(b, sizeof b, "1/%d", snap);
+        if (snap > 1)
+            snprintf(b, sizeof b, "1/%d", snap);
+        else
+            snprintf(b, sizeof b, "%d", snap);
+
         m_entry_snap->set_text(b);
         m_snap = snap;
         set_guides();
@@ -739,18 +643,12 @@ perfedit::set_image (bool isrunning)
     delete m_image_play;
     if (isrunning)
     {
-        m_image_play =
-        (
-            manage(new Gtk::Image(Gdk::Pixbuf::create_from_xpm_data(pause_xpm)))
-        );
+        m_image_play = manage(new PIXBUF_IMAGE(pause_xpm));
         add_tooltip(m_button_play, "Pause playback at the current location.");
     }
     else
     {
-        m_image_play =
-        (
-            manage(new Gtk::Image(Gdk::Pixbuf::create_from_xpm_data(play2_xpm)))
-        );
+        m_image_play = manage(new PIXBUF_IMAGE(play2_xpm));
         add_tooltip(m_button_play, "Resume playback from the current location.");
     }
     m_button_play->set_image(*m_image_play);

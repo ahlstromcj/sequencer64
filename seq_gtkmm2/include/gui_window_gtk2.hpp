@@ -28,10 +28,17 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-22
- * \updates       2016-05-12
+ * \updates       2016-05-14
  * \license       GNU GPLv2 or above
  *
  */
+
+/**
+ *  Provides an abbreviated way to set up a button image.  Used in mainwnd,
+ *  perfedit, and seqedit.
+ */
+
+#define PIXBUF_IMAGE(x)     Gtk::Image(Gdk::Pixbuf::create_from_xpm_data(x))
 
 /*
  *  Since these items are pointers, we were able to move (most) of the

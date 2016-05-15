@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-05-12
+ * \updates       2016-05-14
  * \license       GNU GPLv2 or above
  *
  *  The main window holds the menu and the main controls of the application,
@@ -310,11 +310,7 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
     const char ** bitmap = rc().legacy_format() ?
         sequencer64_legacy_xpm : sequencer64_square_xpm ;
 
-    tophbox->pack_start
-    (
-        *manage(new Gtk::Image(Gdk::Pixbuf::create_from_xpm_data(bitmap))),
-        false, false
-    );
+    tophbox->pack_start(*manage(new PIXBUF_IMAGE(bitmap)), false, false);
 
     /* Adjust placement of the logo. */
 
@@ -327,10 +323,7 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
 
     m_button_learn->set_focus_on_click(false);
     m_button_learn->set_flags(m_button_learn->get_flags() & ~Gtk::CAN_FOCUS);
-    m_button_learn->set_image
-    (
-        *manage(new Gtk::Image(Gdk::Pixbuf::create_from_xpm_data(learn_xpm)))
-    );
+    m_button_learn->set_image(*manage(new PIXBUF_IMAGE(learn_xpm)));
     m_button_learn->signal_clicked().connect
     (
         mem_fun(*this, &mainwnd::learn_toggle)
@@ -370,10 +363,7 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
      */
 
     m_button_stop->set_focus_on_click(false);
-    m_button_stop->add
-    (
-        *manage(new Gtk::Image(Gdk::Pixbuf::create_from_xpm_data(stop_xpm)))
-    );
+    m_button_stop->add(*manage(new PIXBUF_IMAGE(stop_xpm)));
     m_button_stop->signal_clicked().connect
     (
         mem_fun(*this, &mainwnd::stop_playing)
@@ -389,10 +379,7 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
      */
 
     m_button_play->set_focus_on_click(false);
-    m_button_play->add
-    (
-        *manage(new Gtk::Image(Gdk::Pixbuf::create_from_xpm_data(play2_xpm)))
-    );
+    m_button_play->add(*manage(new PIXBUF_IMAGE(play2_xpm)));
     m_button_play->signal_clicked().connect
     (
         mem_fun(*this, &mainwnd::start_playing)             /* ca 2016-03-17 */
@@ -470,10 +457,7 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
      */
 
     m_button_perfedit->set_focus_on_click(false);
-    m_button_perfedit->add
-    (
-        *manage(new Gtk::Image(Gdk::Pixbuf::create_from_xpm_data(perfedit_xpm)))
-    );
+    m_button_perfedit->add(*manage(new PIXBUF_IMAGE(perfedit_xpm)));
     m_button_perfedit->signal_clicked().connect
     (
         mem_fun(*this, &mainwnd::open_performance_edit)
@@ -671,10 +655,7 @@ void
 mainwnd::on_grouplearnchange (bool state)
 {
     const char ** bitmap = state ? learn2_xpm : learn_xpm ;
-    m_button_learn->set_image
-    (
-        *manage(new Gtk::Image(Gdk::Pixbuf::create_from_xpm_data(bitmap)))
-    );
+    m_button_learn->set_image(*manage(new PIXBUF_IMAGE(bitmap)));
 }
 
 /**
@@ -1167,18 +1148,12 @@ mainwnd::set_image (bool isrunning)
     delete m_image_play;
     if (isrunning)
     {
-        m_image_play =
-        (
-            manage(new Gtk::Image(Gdk::Pixbuf::create_from_xpm_data(pause_xpm)))
-        );
+        m_image_play = manage(new PIXBUF_IMAGE(pause_xpm));
         add_tooltip(m_button_play, "Pause playback at the current location.");
     }
     else
     {
-        m_image_play =
-        (
-            manage(new Gtk::Image(Gdk::Pixbuf::create_from_xpm_data(play2_xpm)))
-        );
+        m_image_play = manage(new PIXBUF_IMAGE(play2_xpm));
         add_tooltip(m_button_play, "Resume playback from the current location.");
     }
     m_button_play->set_image(*m_image_play);

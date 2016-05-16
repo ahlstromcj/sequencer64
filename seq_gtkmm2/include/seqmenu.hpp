@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-05-12
+ * \updates       2016-05-15
  * \license       GNU GPLv2 or above
  *
  *  This module is the base class for the perfnames and mainwid classes.
@@ -294,6 +294,8 @@ protected:
 
     void seq_edit ();
     void seq_event_edit ();
+
+    virtual void seq_set_and_edit (int seqnum);
 
 private:
 

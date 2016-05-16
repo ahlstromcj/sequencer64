@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-05-14
+ * \updates       2016-05-15
  * \license       GNU GPLv2 or above
  *
  */
@@ -57,10 +57,8 @@ class mainwid : public gui_drawingarea_gtk2, public seqmenu
 
 private:
 
-    static const char m_seq_to_char[c_seqs_in_set];
-
     /**
-     *  Holds a partial copy of the sequence we a moving on the patterns
+     *  Holds a partial copy of the sequence we are moving on the patterns
      *  panel.  The assignment is made by sequence::partial_copy(), which
      *  behaves like the legacy seq24 code.
      */
@@ -81,9 +79,29 @@ private:
 
     bool m_moving;
 
+    /**
+     *  Holds the sequence number of a sequence being drag-and-dropped.
+     */
+
     int m_old_seq;
+
+    /**
+     *  Indicates the current screenset that is visible.
+     */
+
     int m_screenset;
+
+    /**
+     *  Holds the last active tick for each sequence, used in erasing the
+     *  progress bar.
+     */
+
     long m_last_tick_x[c_max_sequence];
+
+    /**
+     *  Indicates if each sequence was playing, or not.
+     */
+
     bool m_last_playing[c_max_sequence];
 
     /**
@@ -136,15 +154,35 @@ public:
 
 private:
 
-    virtual void redraw (int seq);              /* override seqmenu's       */
+    /**
+     *  This function redraws everything and queues up a redraw operation.
+     */
 
-    void reset ();
-    void draw_marker_on_sequence (int seq, int tick);
-    void update_sequences_on_window ();         /* friends mainwnd, seqedit */
-    void update_markers (int ticks);            /* ditto                    */
-    bool valid_sequence (int seq);
-    void draw_sequence_on_pixmap (int seq);
-    void draw_sequences_on_pixmap ();
+    void reset ()
+    {
+        draw_sequences_on_pixmap();
+        draw_pixmap_on_window();
+    }
+
+    /**
+     *  Updates the image of multiple sequencer/pattern slots.  Used by the
+     *  friend class mainwnd, but also useful for our EXPERIMENTAL feature to
+     *  fully highlight the current sequence.
+     */
+
+    void update_sequences_on_window ()
+    {
+        reset();
+    }
+
+    /**
+     *  This function queues the blit of pixmap to window.
+     */
+
+    void draw_pixmap_on_window ()
+    {
+        queue_draw();
+    }
 
     /**
      *  This function updates the background window, clearing it.
@@ -155,7 +193,14 @@ private:
         draw_normal_rectangle_on_pixmap(0, 0, m_window_x, m_window_y);
     }
 
-    void draw_pixmap_on_window ();
+    virtual void redraw (int seq);              /* override seqmenu's       */
+    virtual void seq_set_and_edit (int seqnum); /* ditto                    */
+
+    void draw_marker_on_sequence (int seq, int tick);
+    void update_markers (int ticks);            /* ditto                    */
+    bool valid_sequence (int seq);
+    void draw_sequence_on_pixmap (int seq);
+    void draw_sequences_on_pixmap ();
     void draw_sequence_pixmap_on_window (int seq);
     int seq_from_xy (int x, int y);
     int timeout ();

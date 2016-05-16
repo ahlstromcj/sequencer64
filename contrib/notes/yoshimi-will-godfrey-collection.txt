@@ -1,0 +1,69 @@
+Notes on Yoshimi
+Chris Ahlstrom
+2016-05-15 to 2016-05-15
+
+This directory contains notes on setting up a sample sequence from scratch, and
+the steps we followed.  Should be useful as an integration test.
+
+First, let us explore the Will Godfrey (folderol, abrolag) collection and find
+some good sounds and ideas for an original "composition".
+
+Run "Yoshimi / Paths / Bank Root Dirs..." and then select the directory where
+the Yoshimi banks are stored.  On our setup, we had previously added
+/user/local/share/yoshimi/banks.  Then click the "Open current" button.
+In the banks dialog that comes up, click on "Will Godfrey Collection".
+Now we can explore the instruments in this bank.
+
+   2. Vibraphone:  Sounds good as a slow beat background with a spacey feel.
+   7. Ethereal: A good metallic step background in the low notes.
+   8. Metal Drips:  A combination of synth, organ, and harpsichoard.  A
+      sub-lead.
+  11. Trem Synth: Violin-like heavy tremolo.
+  13. Full Square:  A rasty, nasty, full-throated lead sound.
+  14. Super Square:  Good, too.
+  19. Soft:  Lead echoey sound.
+  24. Full Strings: It is what it is.
+  27. Sweep Synth:  Full throated reverberant lead.
+  32. Slow Saw: slow onset mystery sound.
+  43. Fretless Bass:  Useful bass.
+  44. Decay Bass:  More natural.
+  57. Soft Flute:  Actually a very good oboe.
+  60. Beyond:  Pure atmosphere.
+  73. Bright Rush Pipe:  Breathy big organ.
+  84. Sharp Reed:  Great nasty sharp reed sound.
+  86. Clarinet:  Oboey reed.
+  87. Bassoon:  Great deep reed.
+  91. Yiee:  Nice voice, sharp, vaguely Tomita.
+  94. Overdrive 2:  Nasty resonant overdrive synth/guitar.
+ 101. Bottle:  Okay.
+
+"Will Godfrey Companion":
+
+   6. Tinkle Bell:  Classic magic sweep sound.
+  13. Bright Metal:  Buzzy lead sound.
+  38. Smooth Saw: Good solid lead.
+  40. Shimmer:  Nice effect.
+ 127. Hoover: Nice weird downshift lead.
+
+"Arpeggios":
+
+  10. Arpeggio10 ("aaaaarppppp"): Cool laser effect.
+  33. Sequence1.  Two-note sequence.
+  34. Seqeuence2.  Jarre-like sequence.
+  68. Glass Arpeggio1.  Sharp sequence.
+  69. Glass Arpeggio2.  Even sharper.
+
+"Bass":
+
+   4. Bass 4.  Nice synth bass.
+  33. Wah Bass.  Useful effect.
+
+"Drums":
+
+ 126. Drum Kit 2.
+ 128. Moor Drums.
+
+# vim: sw=4 ts=4 wm=8 et ft=sh
+
+
+

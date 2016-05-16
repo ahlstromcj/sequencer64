@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-05-10
+ * \updates       2016-05-15
  * \license       GNU GPLv2 or above
  *
  *  This class still has way too many members, even with the JACK and
@@ -1291,24 +1291,7 @@ public:
      * to see if it's there first]
      */
 
-    /**
-     *  Gets the event key for the given sequence.
-     *
-     * \param seqnum
-     *      The number of the sequence for which to return the event key.
-     *
-     * \return
-     *      Returns the desired key.  If there is no such value, then the
-     *      period ('.') character is returned.
-     */
-
-    unsigned int lookup_keyevent_key (long seqnum)
-    {
-        if (get_key_events_rev().count(seqnum) > 0)
-            return get_key_events_rev()[seqnum];
-        else
-            return '.';                 /* '?' */
-    }
+    unsigned int lookup_keyevent_key (int seqnum);
 
     /**
      *  Gets the sequence number for the given event key.  The inverse of

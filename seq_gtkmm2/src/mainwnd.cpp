@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-05-14
+ * \updates       2016-05-15
  * \license       GNU GPLv2 or above
  *
  *  The main window holds the menu and the main controls of the application,
@@ -40,20 +40,12 @@
  *
  * Pause:
  *
- *      We are researching how to pause.  It sort of works as desired if JACK
- *      transport is selected, in that, upon pause and restart, the progress
- *      bars pick up where they left off, as opposed to live mode, where the
- *      progress bars go back to 0.
- *
- *      However, visibly, the progress bars behave badly when the song is
- *      paused:
- *
- *          -   Main window.  The progress bars in each slot go back to
- *              position 0.
- *          -   Pattern editor.  The progress bars in each slot go back to
- *              position 0.  If 0 is "off the screen", then the progress bar
- *              isn't even seen.
- *          -   Song editor.  Same as the pattern editor.
+ *      We have basically finished this feature, with some minor follow-on
+ *      work in making some of it a user-configurable option.  It works as
+ *      desired if JACK transport is selected, in that, upon pause and
+ *      restart, the progress bars pick up where they left off, as opposed to
+ *      live mode, where the progress bars go back to 0.  The progress bars
+ *      now behave when the song is paused.  (Heavy testing still needed.)
  *
  *      The progress pills, however, stay in place when paused.  They pick up
  *      where they left off when played back in JACK, but restart at the
@@ -184,16 +176,22 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
     m_spinbutton_bpm        (manage(new Gtk::SpinButton(*m_adjust_bpm))),
     m_adjust_ss             (manage(new Gtk::Adjustment(0, 0, c_max_sets-1, 1))),
     m_spinbutton_ss         (manage(new Gtk::SpinButton(*m_adjust_ss))),
-    m_adjust_load_offset
-    (
-        manage(new Gtk::Adjustment(0, -(c_max_sets - 1), c_max_sets - 1, 1))
-    ),
-    m_spinbutton_load_offset(manage(new Gtk::SpinButton(*m_adjust_load_offset))),
+
+    /*
+     * \change ca 2016-05-15
+     *      We were allocating these items here, but doing so causes a
+     *      segfault the second time file_import_dialog() was called.  We
+     *      moved the allocation to that function, as it was in seq24.
+     */
+
+    m_adjust_load_offset    (nullptr),  /* created in file_import_dialog()  */
+    m_spinbutton_load_offset(nullptr),  /* created in file_import_dialog()  */
     m_entry_notes           (nullptr),
 #ifdef SEQ64_PAUSE_SUPPORT
     m_is_running            (false),
 #endif
-    m_timeout_connect       ()                      /* handler              */
+    m_timeout_connect       (),                     /* handler              */
+    m_call_seq_edit         (false)                 /* new ca 2016-05-15    */
 {
     /*
      * This provides the application icon, seen in the title bar of the
@@ -522,7 +520,8 @@ mainwnd::~mainwnd ()
 
 /**
  *  This function is the GTK timer callback, used to draw our current time
- *  and BPM on_events (the main window).
+ *  and BPM on_events (the main window).  It also supports the ALSA pause
+ *  functionality.
  *
  * \note
  *      When Sequencer64 first starts up, and no MIDI tune is loaded, the call
@@ -530,13 +529,6 @@ mainwnd::~mainwnd ()
  *      sequences that don't yet exist.  Also, if a sequence is changed by the
  *      event editor, we get a crash; need to find out how seqedit gets away
  *      with the changes.
- *
- * Pause:
- *
- *      These do not work:
- *
- *      -  midipulse tick = perf().get_jack_tick();
- *      -  midipulse tick = perf().get_max_tick();
  */
 
 bool
@@ -964,6 +956,8 @@ mainwnd::file_import_dialog ()
 
     Gtk::ButtonBox * btnbox = dlg.get_action_area();
     Gtk::HBox hbox(false, 2);
+    m_adjust_load_offset = manage(new Gtk::Adjustment(0, 0, c_max_sets-1, 1));
+    m_spinbutton_load_offset = manage(new Gtk::SpinButton(*m_adjust_load_offset));
     m_spinbutton_load_offset->set_editable(false);
     m_spinbutton_load_offset->set_wrap(true);
     hbox.pack_end(*m_spinbutton_load_offset, false, false);
@@ -1420,7 +1414,21 @@ mainwnd::on_key_press_event (GdkEventKey * ev)
                 guint modifiers = gtk_accelerator_get_default_mod_mask();
                 bool ok = (ev->state & modifiers) != SEQ64_CONTROL_MASK;
                 if (ok)
-                    sequence_key(perf().lookup_keyevent_seq(ev->keyval));
+                {
+                    int seqnum = perf().lookup_keyevent_seq(ev->keyval);
+                    if (m_call_seq_edit)
+                    {
+                        m_call_seq_edit = false;
+                        m_main_wid->seq_set_and_edit(seqnum);
+                    }
+                    else
+                        sequence_key(seqnum);   /* toggle the sequence */
+                }
+            }
+            else
+            {
+                if (k.is('='))
+                    m_call_seq_edit = ! m_call_seq_edit;
             }
         }
     }

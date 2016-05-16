@@ -27,11 +27,14 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-05-12
+ * \updates       2016-05-15
  * \license       GNU GPLv2 or above
  *
- *  The main windows is known as the "Patterns window" or "Patterns
- *  panel".  It holds the "Pattern Editor" or "Sequence Editor".
+ *  The main window is known as the "Patterns window" or "Patterns
+ *  panel".  It holds the "Pattern Editor" or "Sequence Editor".  The main
+ *  window consists of two object:  mainwnd, which provides the user-interface
+ *  elements that surround the patterns, and mainwid, which implements the
+ *  behavior of the pattern slots.
  */
 
 #include <map>
@@ -73,10 +76,16 @@ class mainwnd : public gui_window_gtk2, public performcallback
 private:
 
     /**
-     *  Interesting; what is this used for.
+     *  This small array holds the "handles" for the pipes need to intercept
+     *  the system signals SIGINT and SIGUSR1, so that the application shuts
+     *  down gracefully when aborted.
      */
 
     static int m_sigpipe[2];
+
+    /**
+     *  A repository for tooltips.
+     */
 
     Gtk::Tooltips * m_tooltips;
 
@@ -215,6 +224,14 @@ private:
      */
 
     sigc::connection m_timeout_connect;
+
+    /**
+     *  Indicates that this object is in a mode where the usual mute/unmute
+     *  keystroke will instead bring up the pattern slot for editing.
+     *  Currently, the hard-wired key for this function is the equals key.
+     */
+
+    bool m_call_seq_edit;
 
 public:
 

@@ -103,7 +103,9 @@ const int c_mainwid_y =
 /**
  *  This constructor sets all of the members.  And it asks for a size of
  *  c_mainwid_x by c_mainwid_y.  It adds GDK masks for button presses,
- *  releases, motion, key presses, and focus changes.
+ *  releases, motion, key presses, and focus changes.  Also logs a
+ *  self-referential singleton pointer to use for the current-edit highlighting
+ *  support.
  *
  * \param p
  *      Provides the reference to the all-important perform object.
@@ -137,11 +139,6 @@ mainwid::mainwid (perform & p)
     m_screenset_offset      (m_screenset * m_screenset_slots),
     m_progress_height       (m_seqarea_seq_y + 3)
 {
-    /*
-     * It's all done in the base classes and the initializer list, except for
-     * logging this self-referential singleton pointer.
-     */
-
     if (is_nullptr(gs_mainwid_pointer))
         gs_mainwid_pointer = this;
 }
@@ -195,9 +192,7 @@ mainwid::timeout ()
  *  This function draws a specific pattern/sequence on the pixmap located
  *  in the main window of the application, the Patterns Panel.  The
  *  sequence is drawn only if it is in the current screen set (indicated
- *  by m_screenset).
- *
- *  Also, we now ignore the sequence if it does not exist.  :-D
+ *  by m_screenset).  Also, we ignore the sequence if it does not exist.
  *
  * \note
  *      If only the main window is up, then the sequences just play (muted by
@@ -223,8 +218,6 @@ mainwid::draw_sequence_on_pixmap (int seqnum)
     {
         int base_x, base_y;
         calculate_base_sizes(seqnum, base_x, base_y);   /* side-effects     */
-        ++base_x;                                       /* overall fix-up   */
-        ++base_y;                                       /* overall fix-up   */
 
         /*
          * If we contract this one pixel on every side, the brackets
@@ -232,6 +225,8 @@ mainwid::draw_sequence_on_pixmap (int seqnum)
          * the pixmap showing the sequence information.
          */
 
+        ++base_x;                                       /* overall fix-up   */
+        ++base_y;                                       /* overall fix-up   */
         draw_rectangle_on_pixmap                        /* filled black box */
         (
             black(), base_x, base_y, m_seqarea_x, m_seqarea_y
@@ -325,7 +320,7 @@ mainwid::draw_sequence_on_pixmap (int seqnum)
             m_gc->set_foreground(fg_color());
 
 #ifdef SEQ64_EDIT_SEQUENCE_HIGHLIGHT
-            current_highlight = smf_0  || is_edit_sequence(seqnum);
+            current_highlight = smf_0 || is_edit_sequence(seqnum);
 #else
             current_highlight = smf_0;
 #endif
@@ -392,7 +387,7 @@ mainwid::draw_sequence_on_pixmap (int seqnum)
             int x = rectangle_x - 2;
             int y = rectangle_y - 1;
             int lx = m_seqarea_seq_x + 3;
-            int ly = m_seqarea_seq_y + 3;       // m_progress_height
+            int ly = m_seqarea_seq_y + 3;
 
             /*
              * Draw the inner rectangle containing the notes of a sequence.
@@ -444,10 +439,6 @@ mainwid::draw_sequence_on_pixmap (int seqnum)
                     int tick_f_x = tick_f * m_seqarea_seq_x / len;
                     int note_y = m_seqarea_seq_y -
                          m_seqarea_seq_y * (note + 1 - lowest_note) / height;
-
-                    // Alternative notation:
-                    // int note_y = m_seqarea_seq_y *
-                    //      (1 - (note + 1 - lowest_note) / height);
 
                     if (dt == DRAW_NOTE_ON || dt == DRAW_NOTE_OFF)
                         tick_f_x = tick_s_x + 1;
@@ -577,10 +568,10 @@ mainwid::draw_sequence_pixmap_on_window (int seqnum)
  * \param seqnum
  *      Provides the number of the sequence to calculate.
  *
- * \param basex
+ * \param [out] basex
  *      A return parameter for the x coordinate of the base size.
  *
- * \param basey
+ * \param [out] basey
  *      A return parameter for the y coordinate of the base size.
  */
 
@@ -652,12 +643,9 @@ mainwid::draw_marker_on_sequence (int seqnum, int tick)
     if (perf().is_dirty_main(seqnum))
         redraw(seqnum);
 
-    if (perf().is_active(seqnum))
+    if (perf().is_active(seqnum))           /* also checks for nullptr      */
     {
         sequence * seq = perf().get_sequence(seqnum);
-        if (is_nullptr(seq))
-            return;                         /* active but non-existent!     */
-
         if (seq->event_count() == 0)        /* an event-free track          */
             return;                         /* new 2015-08-23 don't update  */
 
@@ -718,35 +706,12 @@ mainwid::draw_marker_on_sequence (int seqnum, int tick)
 }
 
 /**
- *  Updates the image of multiple sequencer/pattern slots.  Used by the friend
- *  class mainwnd, but also useful for our EXPERIMENTAL feature to fully
- *  highlight the current sequence.
- */
-
-void
-mainwid::update_sequences_on_window ()
-{
-    draw_sequences_on_pixmap();
-    draw_pixmap_on_window();
-}
-
-/**
- *  This function queues the blit of pixmap to window.
- */
-
-void
-mainwid::draw_pixmap_on_window ()
-{
-    queue_draw();
-}
-
-/**
  *  Translates XY coordiinates in the Patterns Panel to a sequence number.
  *
- * \param a_x
+ * \param x
  *      Provides the x coordinate.
  *
- * \param a_y
+ * \param y
  *      Provides the y coordinate.
  *
  * \return
@@ -780,17 +745,6 @@ mainwid::seq_from_xy (int x, int y)
 }
 
 /**
- *  This function redraws everything and queues up a redraw operation.
- */
-
-void
-mainwid::reset ()
-{
-    draw_sequences_on_pixmap();
-    draw_pixmap_on_window();
-}
-
-/**
  *  Set the current screen-set.
  *
  * \param ss
@@ -810,6 +764,18 @@ mainwid::set_screenset (int ss)
     m_screenset_offset = m_screenset * m_mainwnd_rows * m_mainwnd_cols;
     perf().set_offset(m_screenset);
     reset();
+}
+
+/**
+ *  Calculates the sequence number based on the screenset and then
+ *  calls the base-class function to bring up the pattern/sequence editor.
+ *  Used with the '=' key selection.
+ */
+
+void
+mainwid::seq_set_and_edit (int seqnum)
+{
+    seqmenu::seq_set_and_edit(seqnum + m_screenset_offset);
 }
 
 /*
@@ -898,14 +864,6 @@ mainwid::on_button_press_event (GdkEventButton * p)
     int seqnum = seq_from_xy(int(p->x), int(p->y));
     if (CAST_EQUIVALENT(p->type, SEQ64_2BUTTON_PRESS))  /* double-click?    */
     {
-        /*
-         * Doesn't work:
-         *
-         * if (p->state & SEQ64_CONTROL_MASK)
-         *    seq_event_edit();                         // seqmenu function
-         * else
-         */
-
         seq_edit();                                     /* seqmenu function */
 #ifdef SEQ64_EDIT_SEQUENCE_HIGHLIGHT
         update_sequences_on_window();

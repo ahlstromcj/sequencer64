@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and Tim Deagan
  * \date          2015-07-24
- * \updates       2016-05-13
+ * \updates       2016-05-15
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -686,6 +686,9 @@ perform::add_sequence (sequence * seq, int prefnum)
  *  counted.  Also, adding a new sequence from the user-interface is a
  *  significant modification, so the "is modified" flag gets set.
  *
+ * \new ca 2016-05-15
+ *      If enabled, wire in the MIDI buss override.
+ *
  * \param seq
  *      The prospective sequence number of the new sequence.
  */
@@ -702,8 +705,17 @@ perform::new_sequence (int seq)
             {
                 if (is_mseq_valid(seq))
                 {
+                    /*
+                     * Add the buss override, if specifed.  We can't set it
+                     * until after we have assigned the master MIDI buss,
+                     * otherwise we get a segfault.
+                     */
+
+                    char buss_override = usr().midi_buss_override();
                     m_seqs[seq]->set_master_midi_bus(&m_master_bus);
                     modify();
+                    if (buss_override != SEQ64_BAD_BUSS)
+                        m_seqs[seq]->set_midi_bus(buss_override);
                 }
             }
         }
@@ -1027,7 +1039,7 @@ perform::is_mseq_valid (int seq) const
         result = not_nullptr(m_seqs[seq]);
         if (! result && m_seqs_active[seq])
         {
-            errprintf("is_mseq_valid(): m_seqs[%d] is null\n", seq);
+            errprintf("is_mseq_valid(): active m_seqs[%d] is null\n", seq);
         }
     }
     return result;
@@ -2832,8 +2844,42 @@ perform::set_input_bus (int bus, bool active)
 }
 
 /**
- *  Provided for mainwnd::on_key_press_event() and
- *  mainwnd::on_key_release_event() to call.
+ *  Gets the event key for the given sequence.  If we're not in legacy mode,
+ *  then we adjust for the screenset, so that screensets greater than 0 can
+ *  also show the correct key name, instead of a question mark.
+ *
+ *  Legacy seq24 already responds to the toggling of the mute state via the
+ *  shortcut keys even if screenset > 0, but it shows the question mark.
+ *
+ * \param seqnum
+ *      The number of the sequence for which to return the event key.
+ *
+ * \return
+ *      Returns the desired key.  If there is no such value, then the
+ *      period ('?') character is returned.
+ */
+
+unsigned int
+perform::lookup_keyevent_key (int seqnum)
+{
+    unsigned int result = (unsigned int)('?');
+    if (! rc().legacy_format())
+        seqnum -= m_offset;
+
+    if (get_key_events_rev().count(seqnum) > 0)
+        result = get_key_events_rev()[seqnum];
+    else
+        result = '?';                 /* '.' */
+
+    return result;
+}
+
+/**
+ *  Provided for mainwnd :: on_key_press_event() and mainwnd ::
+ *  on_key_release_event() to call.  This function handles the keys for the
+ *  functions of replace, queue, keep-queue, snapshots, toggling mute groups,
+ *  group learn, and playing screenset.  For further keystroke processing, see
+ *  mainwnd :: on_key_press_event().
  *
  * \param k
  *      The keystroke object to be handled.
@@ -2883,8 +2929,9 @@ perform::mainwnd_key_event (const keystroke & k)
 }
 
 /**
- *  Provided for perfroll::on_key_press_event() and
- *  perfroll::on_key_release_event() to call.
+ *  Provided for perfroll :: on_key_press_event() and perfroll ::
+ *  on_key_release_event() to call.  It handles the Ctrl keys for cut, copy,
+ *  paste, and undo.
  *
  *  The "is modified" flag is raised if something is deleted, but we cannot
  *  yet handle the case where we undo all the changes.  So, for now,

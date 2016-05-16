@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-30
- * \updates       2016-05-07
+ * \updates       2016-05-15
  * \license       GNU GPLv2 or above
  *
  *  This file provides a Linux-only implementation of MIDI support.
@@ -119,6 +119,7 @@ mastermidibus::mastermidibus (int ppqn, int bpm)
     }
 
 #ifdef SEQ64_HAVE_LIBASOUND
+
     /*
      * Open the sequencer client.  This line of code results in a loss of
      * 4 bytes somewhere in snd_seq_open(), as discovered via valgrind.
@@ -147,15 +148,18 @@ mastermidibus::mastermidibus (int ppqn, int bpm)
 
     snd_seq_set_client_name(m_alsa_seq, "sequencer64");
     m_queue = snd_seq_alloc_queue(m_alsa_seq);
-#endif
+
+#endif      // SEQ64_HAVE_LIBASOUND
+
+#ifdef SEQ64_LASH_SUPPORT
 
     /*
      * Notify LASH of our client ID so that it can restore connections.
      */
 
-#ifdef SEQ64_LASH_SUPPORT
     if (not_nullptr(lash_driver()))
         lash_driver()->set_alsa_client_id(snd_seq_client_id(m_alsa_seq));
+
 #endif
 }
 
@@ -716,13 +720,13 @@ mastermidibus::get_midi_out_bus_name (int bus)
         {
             snprintf
             (
-                tmp, sizeof(tmp), "[%d] %d:%d (disconnected)",
+                tmp, sizeof tmp, "[%d] %d:%d (disconnected)",
                 bus, m_buses_out[bus]->get_client(),
                 m_buses_out[bus]->get_port()
             );
         }
         else
-            snprintf(tmp, sizeof(tmp), "[%d] (unconnected)", bus);
+            snprintf(tmp, sizeof tmp, "[%d] (unconnected)", bus);
 
         return std::string(tmp);
     }
@@ -754,13 +758,13 @@ mastermidibus::get_midi_in_bus_name (int bus)
         {
             snprintf
             (
-                tmp, sizeof(tmp), "[%d] %d:%d (disconnected)",
+                tmp, sizeof tmp, "[%d] %d:%d (disconnected)",
                 bus, m_buses_in[bus]->get_client(),
                 m_buses_in[bus]->get_port()
             );
         }
         else
-            snprintf(tmp, sizeof(tmp), "[%d] (unconnected)", bus);
+            snprintf(tmp, sizeof tmp, "[%d] (unconnected)", bus);
 
         return std::string(tmp);
     }
@@ -1043,10 +1047,10 @@ mastermidibus::get_midi_event (event * inev)
      *  the rest we have to poll for.
      */
 
-#if USE_SYSEX_PROCESSING
+#if USE_SYSEX_PROCESSING                /* currently disabled           */
     if (buffer[0] == EVENT_SYSEX 
     {
-        inev->restart_sysex();          /* set up for sysex if needed */
+        inev->restart_sysex();          /* set up for sysex if needed   */
         sysex = inev->append_sysex(buffer, bytes);
     }
     else

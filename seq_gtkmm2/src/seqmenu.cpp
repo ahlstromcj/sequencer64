@@ -251,16 +251,15 @@ seqmenu::mute_all_tracks ()
 }
 
 /**
- *  This menu callback launches the sequence-editor (pattern editor)
- *  window.  If it is already open for that sequence, this function just
- *  raises it.
+ *  This menu callback launches the sequence-editor (pattern editor) window.
+ *  If it is already open for that sequence, this function just raises it.
  *
  *  Note that the m_seqedit member to which we save the new pointer is
  *  currently there just to avoid a compiler warning.
  *
- *  Also, if a new sequences is created, we set the m_modified flag to
- *  true, even though the sequence might later be deleted.  Too much
- *  modification to keep track of!
+ *  Also, if a new sequences is created, we set the m_modified flag to true,
+ *  even though the sequence might later be deleted.  Too much modification to
+ *  keep track of!
  *
  *  An oddity is that calling show_all() here does not work unless the
  *  seqedit() constructor makes its show_all() call.
@@ -290,6 +289,25 @@ seqmenu::seq_edit ()
 #ifdef SEQ64_EDIT_SEQUENCE_HIGHLIGHT
     set_edit_sequence(current_seq());
 #endif
+}
+
+/**
+ *  Sets the current sequence and then acts as if the user had clicked on its
+ *  slot.
+ *
+ *  How do we account for the current screenset?  It might not matter if the
+ *  mute/unmute keystrokes were designed to work only with the current
+ *  screenset.
+ *
+ * \param seqnum
+ *      The number of the sequence to edit.
+ */
+
+void
+seqmenu::seq_set_and_edit (int seqnum)
+{
+    current_seq(seqnum);
+    seq_edit();
 }
 
 /**

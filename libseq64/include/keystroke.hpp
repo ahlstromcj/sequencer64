@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-09-21
- * \updates       2016-03-04
+ * \updates       2016-05-15
  * \license       GNU GPLv2 or above
  *
  *  Most of the GUI modules are publicly derived from Gtk::DrawingArea,
@@ -114,7 +114,23 @@ public:
         return m_is_press;
     }
 
-    bool is_letter (int ch = SEQ64_KEYSTROKE_BAD_VALUE) const;
+    bool is_letter (unsigned int ch = SEQ64_KEYSTROKE_BAD_VALUE) const;
+
+    /**
+     *  Tests the key value to see if it matches the given character exactly
+     *  (no case-insensitivity).
+     *
+     * \param ch
+     *      The character to be tested.
+     *
+     * \return
+     *      Returns true if m_key == ch.
+     */
+
+    bool is (unsigned int ch)
+    {
+        return m_key == ch;
+    }
 
     /**
      * \getter m_key to test for a delete-causing key.

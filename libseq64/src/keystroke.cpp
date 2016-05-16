@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-09-30
- * \updates       2015-10-10
+ * \updates       2016-05-15
  * \license       GNU GPLv2 or above
  *
  */
@@ -128,7 +128,7 @@ keystroke::operator = (const keystroke & rhs)
  */
 
 bool
-keystroke::is_letter (int ch) const
+keystroke::is_letter (unsigned int ch) const
 {
     if (ch == SEQ64_KEYSTROKE_BAD_VALUE)
         return bool(isalpha(m_key));

@@ -237,13 +237,13 @@ const int c_scales_transpose_dn[c_scale_size][SEQ64_OCTAVE_SIZE] =
 
 const int c_scales_transpose_dn_neg[c_scale_size][SEQ64_OCTAVE_SIZE] =
 {
-    { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},                  /* off = chromatic */
-    { 1, 0, 2, 0, 2, 1, 0, 2, 0, 2, 0, 2},                  /* major           */
-    { 2, 0, 2, 1, 0, 2, 0, 2, 1, 0, 2, 0},                  /* minor           */
-    { 1, 0, 2, 1, 0, 2, 0, 2, 1, 0, 0, 3},                  /* harmonic minor  */
-    { 1, 0, 2, 1, 0, 2, 0, 2, 0, 2, 0, 2},                  /* melodic minor   */
-    { 2, 0, 2, 0, 2, 0, 2, 0, 2, 0, 2, 0},                  /* C whole tone    */
-    { 2, 0, 0, 3, 0, 2, 1, 1, 0, 0, 3, 0},                  /* blues           */
+    { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},              /* off = chromatic */
+    { 1, 0, 2, 0, 2, 1, 0, 2, 0, 2, 0, 2},              /* major           */
+    { 2, 0, 2, 1, 0, 2, 0, 2, 1, 0, 2, 0},              /* minor           */
+    { 1, 0, 2, 1, 0, 2, 0, 2, 1, 0, 0, 3},              /* harmonic minor  */
+    { 1, 0, 2, 1, 0, 2, 0, 2, 0, 2, 0, 2},              /* melodic minor   */
+    { 2, 0, 2, 0, 2, 0, 2, 0, 2, 0, 2, 0},              /* C whole tone    */
+    { 2, 0, 0, 3, 0, 2, 1, 1, 0, 0, 3, 0},              /* blues           */
 };
 
 #endif      // USE_C_SCALES_TRANSPOSE_DN_NEG
@@ -252,7 +252,7 @@ const int c_scales_transpose_dn_neg[c_scale_size][SEQ64_OCTAVE_SIZE] =
  *  The names of the currently-supported scales.
  */
 
-const char c_scales_text[c_scale_size][32] =                /* careful!        */
+const char c_scales_text[c_scale_size][32] =            /* careful!        */
 {
     "Off (chromatic)",
     "Major",

@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-30
- * \updates       2016-05-06
+ * \updates       2016-05-17
  * \license       GNU GPLv2 or above
  *
  *  The mastermidibus module is the Linux version of the mastermidibus module.
@@ -36,9 +36,9 @@
  *  classes into their own modules.  This module is the latter.
  */
 
-#include "globals.h"
 #include "midibus_common.hpp"
 #include "mutex.hpp"
+#include "user_midi_bus.hpp"
 
 #if SEQ64_HAVE_LIBASOUND                // covers this whole module
 
@@ -50,6 +50,7 @@ namespace seq64
 
 class event;
 class midibus;
+class sequence;
 
 /**
  *  The class that "supervises" all of the midibus objects?
@@ -241,19 +242,19 @@ public:
         return m_ppqn;
     }
 
-    std::string get_midi_out_bus_name (int a_bus);
-    std::string get_midi_in_bus_name (int a_bus);
+    std::string get_midi_out_bus_name (int bus);
+    std::string get_midi_in_bus_name (int bus);
     void print ();
     void flush ();
     void start ();
     void stop ();
-    void clock (midipulse a_tick);
-    void continue_from (midipulse a_tick);
-    void init_clock (midipulse a_tick);
+    void clock (midipulse tick);
+    void continue_from (midipulse tick);
+    void init_clock (midipulse tick);
     int poll_for_midi ();
     bool is_more_input ();
-    bool get_midi_event (event * a_in);
-    void set_sequence_input (bool a_state, sequence * a_seq);
+    bool get_midi_event (event * in);
+    void set_sequence_input (bool state, sequence * seq);
 
     /**
      * \getter m_dumping_input
@@ -273,13 +274,13 @@ public:
         return m_seq;
     }
 
-    void sysex (event * a_event);
-    void port_start (int a_client, int a_port);
-    void port_exit (int a_client, int a_port);
-    void play (bussbyte bus, event * a_e24, midibyte a_channel);
-    void set_clock (bussbyte bus, clock_e a_clock_type);
+    void sysex (event * event);
+    void port_start (int client, int port);
+    void port_exit (int client, int port);
+    void play (bussbyte bus, event * e24, midibyte channel);
+    void set_clock (bussbyte bus, clock_e clock_type);
     clock_e get_clock (bussbyte bus);
-    void set_input (bussbyte bus, bool a_inputing);
+    void set_input (bussbyte bus, bool inputing);
     bool get_input (bussbyte bus);
 
 };

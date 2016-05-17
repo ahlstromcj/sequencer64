@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-20
- * \updates       2016-05-08
+ * \updates       2016-05-17
  * \license       GNU GPLv2 or above
  *
  *  The "rc" command-line options override setting that are first read from
@@ -48,16 +48,16 @@
  */
 
 #include "platform_macros.h"
-#include "cmdlineopts.hpp"
-#include "file_functions.hpp"           /* file_accessible()                */
 
 #ifdef PLATFORM_UNIX
 #include <getopt.h>
 #endif
 
-#include "globals.h"                    /* full platform configuration      */
+#include "cmdlineopts.hpp"
+#include "file_functions.hpp"           /* file_accessible()                */
 #include "optionsfile.hpp"
 #include "perform.hpp"
+#include "settings.hpp"
 #include "userfile.hpp"
 
 namespace seq64

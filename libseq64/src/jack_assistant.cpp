@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-14
- * \updates       2016-02-16
+ * \updates       2016-05-17
  * \license       GNU GPLv2 or above
  *
  *  This module was created from code that existed in the perform object.
@@ -68,6 +68,7 @@
 #include "jack_assistant.hpp"
 #include "midifile.hpp"
 #include "perform.hpp"
+#include "settings.hpp"
 
 #undef  SEQ64_USE_DEBUG_OUTPUT          /* define for EXPERIMENTS only  */
 #define USE_JACK_BBT_OFFSET             /* another EXPERIMENT           */

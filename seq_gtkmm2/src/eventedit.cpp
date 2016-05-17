@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-12-05
- * \updates       2016-05-12
+ * \updates       2016-05-17
  * \license       GNU GPLv2 or above
  *
  * To consider:
@@ -72,6 +72,7 @@
 #include "mainwid.hpp"
 #include "perfedit.hpp"
 #include "perform.hpp"
+#include "settings.hpp"                 /* seq64::rc() or seq64::usr()  */
 #include "pixmaps/perfedit.xpm"
 
 using namespace Gtk::Menu_Helpers;

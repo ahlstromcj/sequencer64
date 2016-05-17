@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-25
- * \updates       2015-11-15
+ * \updates       2016-05-17
  * \license       GNU GPLv2 or above
  *
  *  This class replaces an global_user_midi_bus_definitions[] array element
@@ -37,7 +37,6 @@
 
 #include <string>
 
-#include "app_limits.h"                 /* application-specific constants   */
 #include "globals.h"                    /* constants and "easy macros"      */
 
 namespace seq64

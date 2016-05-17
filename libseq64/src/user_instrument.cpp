@@ -25,14 +25,14 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-25
- * \updates       2016-05-10
+ * \updates       2016-05-17
  * \license       GNU GPLv2 or above
  *
  *  Note that this module also sets the legacy global variables, so that
  *  they can be used by modules that have not yet been cleaned up.
  */
 
-#include "globals.h"                    /* to support legacy variables */
+#include "user_instrument.hpp"          /* seq64::user_instrument       */
 
 namespace seq64
 {

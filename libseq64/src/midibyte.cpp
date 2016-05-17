@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-12-05
- * \updates       2016-05-07
+ * \updates       2016-05-17
  * \license       GNU GPLv2 or above
  *
  *  These classes were originally structures, but now they are "constant"
@@ -32,7 +32,6 @@
  *  functions.
  */
 
-#include "app_limits.h"                 /* SEQ64_DEFAULT_PPQN               */
 #include "midibyte.hpp"                 /* seq64::midi_timing, _measures    */
 
 namespace seq64

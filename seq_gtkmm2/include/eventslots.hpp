@@ -28,13 +28,12 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-12-05
- * \updates       2016-01-04
+ * \updates       2016-05-17
  * \license       GNU GPLv2 or above
  *
  *  This class supports the left side of the Event Editor window.
  */
 
-#include "globals.h"
 #include "editable_events.hpp"          /* seq64::editable_events container  */
 #include "gui_drawingarea_gtk2.hpp"
 

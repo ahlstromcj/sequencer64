@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-04-04
+ * \updates       2016-05-17
  * \license       GNU GPLv2 or above
  *
  *  Note that there are a number of header files that we don't need to add
@@ -50,6 +50,7 @@
 #include "lash.hpp"                     /* seq64::lash_driver functions     */
 #include "mainwid.hpp"                  /* needed to fulfill mainwnd        */
 #include "mainwnd.hpp"                  /* the main window of sequencer64   */
+#include "settings.hpp"                 /* seq64::usr() and seq64::rc()     */
 
 /**
  *  The standard C/C++ entry point to this application.  This first thing

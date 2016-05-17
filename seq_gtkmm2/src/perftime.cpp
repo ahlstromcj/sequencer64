@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-05-11
+ * \updates       2016-05-17
  * \license       GNU GPLv2 or above
  *
  *  The time bar shows markers and numbers for the measures of the song,
@@ -40,6 +40,7 @@
 #include "perfedit.hpp"
 #include "perform.hpp"
 #include "perftime.hpp"
+#include "settings.hpp"                 /* seq64::choose_ppqn()         */
 
 namespace seq64
 {

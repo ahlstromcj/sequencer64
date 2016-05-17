@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-22
- * \updates       2016-05-10
+ * \updates       2016-05-17
  * \license       GNU GPLv2 or above
  *
  *  Note that this module also sets the legacy global variables, so that
@@ -46,7 +46,8 @@
 #endif
 
 #include "file_functions.hpp"           /* make_directory()             */
-#include "rc_settings.hpp"
+#include "rc_settings.hpp"              /* seq64::rc_settings class     */
+#include "settings.hpp"                 /* seq64::rc()                  */
 
 /**
  *  Select the HOME or HOMEPATH environment variables depending on whether

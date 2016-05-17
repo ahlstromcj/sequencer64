@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-24
- * \updates       2016-03-04
+ * \updates       2016-05-17
  * \license       GNU GPLv2 or above
  *
  */
@@ -36,6 +36,7 @@
 #include "perform.hpp"                  /* seq64::perform               */
 #include "midi_splitter.hpp"            /* seq64::midi_splitter         */
 #include "sequence.hpp"                 /* seq64::sequence              */
+#include "settings.hpp"                 /* seq64::choose_ppqn()         */
 
 namespace seq64
 {

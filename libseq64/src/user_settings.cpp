@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-23
- * \updates       2016-04-11
+ * \updates       2016-05-17
  * \license       GNU GPLv2 or above
  *
  *  Note that this module also sets the remaining legacy global variables, so
@@ -99,8 +99,8 @@
  *  pixel-width of reach measure.
  */
 
-#include "globals.h"                    /* to support legacy variables */
-#include "user_settings.hpp"
+#include "settings.hpp"                 /* seq64::rc()                  */
+#include "user_settings.hpp"            /* seq64::user_settings         */
 
 namespace seq64
 {

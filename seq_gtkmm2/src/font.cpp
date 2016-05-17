@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-25
+ * \updates       2016-05-17
  * \license       GNU GPLv2 or above
  *
  *  The interesting thing about this font class is that font files are not
@@ -65,8 +65,8 @@
  */
 
 #include "easy_macros.h"
-#include "globals.h"                    /* user configuration settings      */
 #include "font.hpp"
+#include "settings.hpp"                 /* seq64::rc() or seq64::usr()  */
 
 /*
  * Font grid size

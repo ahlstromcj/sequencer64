@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-05-10
+ * \updates       2016-05-17
  * \license       GNU GPLv2 or above
  *
  *  The functionality of this class also includes handling some of the
@@ -41,6 +41,7 @@
 #include "perform.hpp"
 #include "scales.h"
 #include "sequence.hpp"
+#include "settings.hpp"                 /* seq64::rc() and choose_ppqn()    */
 
 #define SEQ64_DEFAULT_NOTE_VELOCITY     100
 

@@ -28,12 +28,11 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-21
- * \updates       2016-05-06
+ * \updates       2016-05-17
  * \license       GNU GPLv2 or above
  *
  */
 
-#include "globals.h"                    /* globals, nullptr, config headers */
 #include "midibyte.hpp"                 /* seq64::midibyte                  */
 
 namespace seq64

@@ -24,13 +24,13 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-21
- * \updates       2016-02-14
+ * \updates       2016-05-17
  * \license       GNU GPLv2 or above
  *
  */
 
-#include "globals.h"                    /* usr() access for legacy format   */
 #include "gui_palette_gtk2.hpp"         /* seq64::gui_palette_gtkw          */
+#include "settings.hpp"                 /* seq64::rc() or seq64::usr()      */
 
 namespace seq64
 {

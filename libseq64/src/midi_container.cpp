@@ -24,17 +24,18 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-10-10
- * \updates       2016-05-07
+ * \updates       2016-05-17
  * \license       GNU GPLv2 or above
  *
  *  This class is important when writing the MIDI and sequencer data out to a
  *  MIDI file.
  */
 
-#include "globals.h"                    /* c_timesig and other flags    */
-#include "calculations.hpp"             /* log2_time_sig_value(), etc.  */
-#include "midi_container.hpp"           /* seq64::midi_container ABC    */
-#include "sequence.hpp"                 /* seq64::sequence ABC          */
+#include "globals.h"                    /* c_timesig and other flags        */
+#include "calculations.hpp"             /* log2_time_sig_value(), etc.      */
+#include "midi_container.hpp"           /* seq64::midi_container ABC        */
+#include "sequence.hpp"                 /* seq64::sequence ABC              */
+#include "settings.hpp"                 /* seq64::rc() and choose_ppqn()    */
 
 namespace seq64
 {

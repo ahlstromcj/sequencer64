@@ -25,16 +25,17 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-02-07
+ * \updates       2016-05-17
  * \license       GNU GPLv2 or above
  *
  *  This file provides a Linux-only implementation of MIDI support.
  */
 
 #include "globals.h"
-#include "calculations.hpp"             /* clock_ticks_from_ppqn()      */
+#include "calculations.hpp"             /* clock_ticks_from_ppqn()          */
 #include "event.hpp"
 #include "midibus.hpp"
+#include "settings.hpp"                 /* seq64::rc() and choose_ppqn()    */
 
 namespace seq64
 {

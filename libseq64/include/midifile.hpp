@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-04-09
+ * \updates       2016-05-17
  * \license       GNU GPLv2 or above
  *
  *  The Seq24 MIDI file is a standard, Format 1 MIDI file, with some extra
@@ -47,13 +47,14 @@
 #include <list>
 #include <vector>
 
-#include "globals.h"                    /* SEQ64_USE_DEFAULT_PPQN   */
-#include "midi_splitter.hpp"            /* seq64::midi_splitter     */
+#include "globals.h"                    /* SEQ64_USE_DEFAULT_PPQN       */
+#include "midibyte.hpp"                 /* midishort, midibyte, etc.    */
+#include "midi_splitter.hpp"            /* seq64::midi_splitter         */
 
 namespace seq64
 {
 
-class perform;                          /* forward reference        */
+class perform;                          /* forward reference            */
 
 /**
  *  This class handles the parsing and writing of MIDI files.  In addition to

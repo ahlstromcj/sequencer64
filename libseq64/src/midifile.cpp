@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-05-07
+ * \updates       2016-05-17
  * \license       GNU GPLv2 or above
  *
  *  For a quick guide to the MIDI format, see, for example:
@@ -47,6 +47,7 @@
 #include "perform.hpp"                  /* must precede midifile.hpp !      */
 #include "midifile.hpp"                 /* seq64::midifile                  */
 #include "sequence.hpp"                 /* seq64::sequence                  */
+#include "settings.hpp"                 /* seq64::rc() and choose_ppqn()    */
 
 #define SEQ64_USE_MIDI_VECTOR           /* as opposed to the MIDI list      */
 #if defined SEQ64_USE_MIDI_VECTOR

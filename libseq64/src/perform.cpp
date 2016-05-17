@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and Tim Deagan
  * \date          2015-07-24
- * \updates       2016-05-15
+ * \updates       2016-05-17
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -43,6 +43,7 @@
 #include "keystroke.hpp"
 #include "midibus.hpp"
 #include "perform.hpp"
+#include "settings.hpp"                 /* seq64::rc() and choose_ppqn()    */
 
 /**
  *  Provide a "not-a-number" macro.  -nan(0x8000000000000)

@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-07-23
- * \updates       2016-05-05
+ * \updates       2016-05-17
  * \license       GNU GPLv2 or above
  *
  *  This class contains a number of functions that used to reside in the
@@ -36,6 +36,7 @@
  */
 
 #include "globals.h"                    /* globals, nullptr, and more       */
+#include "midibyte.hpp"                 /* midipulse typedef                */
 
 #ifdef SEQ64_JACK_SUPPORT
 

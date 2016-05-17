@@ -6,7 +6,7 @@
 # \library    	libseq64 library
 # \author     	Chris Ahlstrom
 # \date       	2015-09-11
-# \update      2016-04-10
+# \update      2016-05-17
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -97,6 +97,7 @@ pkginclude_HEADERS = \
 	rc_settings.hpp \
    scales.h \
 	sequence.hpp \
+	settings.hpp \
    triggers.hpp \
 	userfile.hpp \
    user_instrument.hpp \

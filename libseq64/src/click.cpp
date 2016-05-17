@@ -25,15 +25,15 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-09-30
- * \updates       2015-10-10
+ * \updates       2016-05-17
  * \license       GNU GPLv2 or above
  *
  *  Provides the implementation of the seq64::click class.
  */
 
 #include "click.hpp"                    // seq64::click
-#include "gdk_basic_keys.h"             // seq64::SEQ64_MASK_MAX, etc.
 #include "easy_macros.h"                // errprint() macro
+#include "gdk_basic_keys.h"             // seq64::SEQ64_MASK_MAX, etc.
 
 namespace seq64
 {

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-04-10
+ * \updates       2016-05-17
  * \license       GNU GPLv2 or above
  *
  *  The performance window allows automatic control of when each
@@ -45,6 +45,7 @@
 #include "perfroll.hpp"
 #include "perfroll_input.hpp"
 #include "sequence.hpp"
+#include "settings.hpp"                 /* seq64::rc() or seq64::usr()  */
 
 /**
  *  Static (private) convenience values.  We need to be able to adjust

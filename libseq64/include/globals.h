@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-25
- * \updates       2016-05-02
+ * \updates       2016-05-17
  * \license       GNU GPLv2 or above
  *
  *  We're going to try to collect all the globals here in one module, and
@@ -62,23 +62,6 @@
 
 #include "app_limits.h"                 /* basic hardwired app limits   */
 #include "easy_macros.h"                /* with platform_macros.h, too  */
-#include "rc_settings.hpp"              /* seq64::rc_settings           */
-#include "user_settings.hpp"            /* seq64::user_settings         */
-
-namespace seq64
-{
-
-/*
- *  Returns a reference to the global rc_settings and user_settings objects.
- *  Why a function instead of direct variable access?  Encapsulation.  We are
- *  then free to change the way "global" settings are accessed, without
- *  changing client code.
- */
-
-extern rc_settings & rc ();
-extern user_settings & usr ();
-
-}           // namespace seq64
 
 /**
  *  Define this macro in order to enable some verbose console output from
@@ -407,24 +390,6 @@ namespace seq64
 {
 
 extern std::string shorten_file_spec (const std::string & fpath, int leng);
-
-/**
- *  Common code for handling PPQN settings.  Putting it here means we can
- *  reduce the reliance on the global ppqn.
- *
- * \param ppqn
- *      Provides the PPQN value to be used.
- *
- * \return
- *      Returns the ppqn parameter, unless that parameter is
- *      SEQ64_USE_DEFAULT_PPQN (-1), then usr().midi_ppqn is returned.
- */
-
-inline int
-choose_ppqn (int ppqn)
-{
-    return (ppqn == SEQ64_USE_DEFAULT_PPQN) ? usr().midi_ppqn() : ppqn ;
-}
 
 /**
  *  Common code for handling PPQN settings.  Validates a PPQN value.

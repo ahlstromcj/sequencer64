@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-05-12
+ * \updates       2016-05-17
  * \license       GNU GPLv2 or above
  *
  *  Compare this class to eventedit, which has to do some similar things,
@@ -49,7 +49,7 @@
 #include <gtkmm/tooltips.h>
 #include <sigc++/bind.h>
 
-#include "calculations.hpp"             /* measures_to_ticks()              */
+#include "calculations.hpp"             /* measures_to_ticks()          */
 #include "controllers.hpp"
 #include "event.hpp"
 #include "gdk_basic_keys.h"
@@ -68,6 +68,8 @@
 #include "seqroll.hpp"
 #include "seqtime.hpp"
 #include "sequence.hpp"
+#include "settings.hpp"                 /* seq64::rc() or seq64::usr()  */
+#include "user_instrument.hpp"          /* seq64::user_instrument       */
 
 #include "pixmaps/play.xpm"
 #include "pixmaps/q_rec.xpm"

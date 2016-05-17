@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-04-11
+ * \updates       2016-05-17
  * \license       GNU GPLv2 or above
  *
  *  Note that the parse function has some code that is not yet enabled.
@@ -34,14 +34,10 @@
 
 #include <iostream>
 
-/*
- * Not yet actually used!  See the userfile::parse(perform &) function.
- *
- * #include "perform.hpp"
- */
-
 #include "globals.h"
-#include "userfile.hpp"
+#include "settings.hpp"                 /* seq64::rc()                  */
+#include "userfile.hpp"                 /* seq64::userfile              */
+#include "user_instrument.hpp"          /* seq64::user_instrument       */
 
 namespace seq64
 {

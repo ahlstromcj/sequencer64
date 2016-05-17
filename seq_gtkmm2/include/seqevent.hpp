@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-25
+ * \updates       2016-05-17
  * \license       GNU GPLv2 or above
  *
  */
@@ -39,6 +39,7 @@
 #include "globals.h"
 #include "gui_drawingarea_gtk2.hpp"
 #include "fruityseq.hpp"
+#include "midibyte.hpp"                 /* seq64::midibyte, etc.        */
 #include "seq24seq.hpp"
 
 namespace Gtk
@@ -123,7 +124,7 @@ public:
 
     void reset ();
     void redraw ();
-    void set_zoom (int a_zoom);
+    void set_zoom (int zoom);
 
     /**
      * \setter m_snap
@@ -131,12 +132,12 @@ public:
      *  Simply sets the snap member.
      */
 
-    void set_snap (int a_snap)
+    void set_snap (int snap)
     {
-        m_snap = a_snap;
+        m_snap = snap;
     }
 
-    void set_data_type (midibyte a_status, midibyte a_control);
+    void set_data_type (midibyte status, midibyte control);
     void update_sizes ();
     void draw_background ();
     void draw_events_on_pixmap ();
@@ -149,9 +150,9 @@ private:
     virtual void force_draw ();
 
     int idle_redraw ();
-    void x_to_w (int a_x1, int a_x2, int & a_x, int & a_w);
-    void drop_event (midipulse a_tick);
-    void draw_events_on (Glib::RefPtr<Gdk::Drawable> a_draw);
+    void x_to_w (int x1, int x2, int & x, int & w);
+    void drop_event (midipulse tick);
+    void draw_events_on (Glib::RefPtr<Gdk::Drawable> draw);
     void start_paste ();
     void change_horz ();
 
@@ -186,18 +187,18 @@ private:
         y -= (y % c_key_y);
     }
 
-    void snap_x (int & a_x);
+    void snap_x (int & x);
 
 private:        // callbacks
 
     void on_realize ();
-    bool on_expose_event (GdkEventExpose * a_ev);
-    bool on_button_press_event (GdkEventButton * a_ev);
-    bool on_button_release_event (GdkEventButton * a_ev);
-    bool on_motion_notify_event (GdkEventMotion * a_ev);
+    bool on_expose_event (GdkEventExpose * ev);
+    bool on_button_press_event (GdkEventButton * ev);
+    bool on_button_release_event (GdkEventButton * ev);
+    bool on_motion_notify_event (GdkEventMotion * ev);
     bool on_focus_in_event (GdkEventFocus *);
     bool on_focus_out_event (GdkEventFocus *);
-    bool on_key_press_event (GdkEventKey * a_p0);
+    bool on_key_press_event (GdkEventKey * p0);
     void on_size_allocate (Gtk::Allocation &);
 
 };

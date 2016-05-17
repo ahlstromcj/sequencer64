@@ -25,12 +25,13 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-26
- * \updates       2015-09-11
+ * \updates       2016-05-17
  * \license       GNU GPLv2 or above
  *
  */
 
 #include <assert.h>
+
 #include "easy_macros.h"
 
 /**

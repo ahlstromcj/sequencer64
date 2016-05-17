@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-04-14
+ * \updates       2016-05-17
  * \license       GNU GPLv2 or above
  *
  *  There are a large number of existing items to discuss.  But for now let's
@@ -82,6 +82,7 @@
 #include "sequence.hpp"
 #include "seqkeys.hpp"
 #include "perform.hpp"
+#include "settings.hpp"                 /* seq64::usr() and seq64::rc() */
 
 /**
  *  This provides a build option for having the pattern editor window scroll

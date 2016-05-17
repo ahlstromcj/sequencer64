@@ -25,9 +25,11 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-22
- * \updates       2016-05-12
+ * \updates       2016-05-17
  * \license       GNU GPLv2 or above
  *
+ *  This module uses Gtk::Window as the base class, and also holds the main
+ *  perform object and some window parameters.
  */
 
 #include <gtkmm/adjustment.h>
@@ -36,6 +38,7 @@
 
 #include "gui_window_gtk2.hpp"
 #include "perform.hpp"
+#include "settings.hpp"                 /* seq64::rc() or seq64::usr()      */
 
 namespace seq64
 {

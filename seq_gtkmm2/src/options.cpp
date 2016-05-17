@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-04-06
+ * \updates       2016-05-17
  * \license       GNU GPLv2 or above
  *
  *  Here is a list of the global variables used/stored/modified by this
@@ -62,6 +62,7 @@
 #include "options.hpp"
 #include "perform.hpp"
 #include "sequence.hpp"
+#include "settings.hpp"                 /* seq64::rc() or seq64::usr()  */
 
 namespace seq64
 {

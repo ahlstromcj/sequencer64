@@ -28,12 +28,14 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-01-20
+ * \updates       2016-05-17
  * \license       GNU GPLv2 or above
  *
  */
 
 #include "gui_drawingarea_gtk2.hpp"
+#include "midibyte.hpp"                 /* seq64::midipulse typedef     */
+#include "settings.hpp"                 /* seq64::choose_ppqn()         */
 
 namespace seq64
 {

@@ -27,14 +27,13 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-05-14
+ * \updates       2016-05-17
  * \license       GNU GPLv2 or above
  *
  *  This class supports the left side of the Performance window (also known
  *  as the Song window).
  */
 
-#include "globals.h"
 #include "gui_drawingarea_gtk2.hpp"
 #include "seqmenu.hpp"
 

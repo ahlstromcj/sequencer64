@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-05-08
+ * \updates       2016-05-17
  * \license       GNU GPLv2 or above
  *
  *  The <code> ~/.seq24rc </code> or <code> ~/.config/sequencer64/sequencer64.rc
@@ -59,6 +59,7 @@
 #include "midibus.hpp"
 #include "optionsfile.hpp"
 #include "perform.hpp"
+#include "settings.hpp"                 /* seq64::rc() and choose_ppqn()    */
 
 namespace seq64
 {

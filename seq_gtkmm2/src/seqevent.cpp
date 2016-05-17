@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-04-14
+ * \updates       2016-05-17
  * \license       GNU GPLv2 or above
  *
  */
@@ -39,6 +39,7 @@
 #include "seqevent.hpp"
 #include "seqdata.hpp"
 #include "sequence.hpp"
+#include "settings.hpp"                 /* seq64::rc_settings items     */
 
 namespace seq64
 {

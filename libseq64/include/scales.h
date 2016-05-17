@@ -73,6 +73,7 @@ enum c_music_scales
     c_scale_harmonic_minor,
     c_scale_melodic_minor,
     c_scale_c_whole_tone,
+    c_scale_blues,
     c_scale_size            // a "maximum" or "size of set" value.
 };
 
@@ -96,10 +97,11 @@ enum c_music_scales
     Harmonic Minor      C  .  D  Eb .  F  .  G  Ab .  .  B
     Melodic Minor       C  .  D  Eb .  F  .  G  .  A  .  B   Descending diff.
     C Whole Tone        C  .  D  .  E  .  F# .  G# .  A# .   C+7 chord
+    Blues               C  .  .  Eb .  F  Gb G  .  .  Bb .   TODO
     Major Pentatonic    C  .  D  .  E  .  .  G  .  A  .  .   Unimplemented
-    Minor Pentatonic    C  .  .  Eb .  F  .  G  .  .  Bb .   Correct???
-    Blues               C  .  .  Eb .  F  Gb G  .  .  Bb .   Unimplemented
-    G Octatonic         .  C# D  .  E  F  .  G  Ab .  Bb B   Unimplemented
+    Minor Pentatonic    C  .  .  Eb .  F  .  G  .  .  Bb .   Unimplemented
+    Octatonic 1         C  .  D  Eb .  F  Gb .  Ab A  .  B   Unimplemented
+    Octatonic 2         C  Db .  Eb E  F  F# G  .  A  Bb .   Unimplemented
 \endverbatim
  */
 
@@ -128,6 +130,10 @@ const bool c_scales_policy[c_scale_size][SEQ64_OCTAVE_SIZE] =
     {                                                       /* whole tone      */
         true, false, true, false, true, false,
         true, false, true, false, true, false
+    },
+    {                                                       /* blues           */
+        true, false, false, true, false, true,
+        true, true, false, false, true, false
     },
 };
 
@@ -158,6 +164,10 @@ const bool c_scales_policy[c_scale_size][SEQ64_OCTAVE_SIZE] =
     C Whole Tone        C  .  D  .  E  .  F# .  G# .  A# .
     Transpose up        2  .  2  .  2  .  2  .  2  .  2  .
     Result up           D  .  E  .  F# .  G# .  A# .  C  .
+
+    Blues               C  .  .  Eb .  F  Gb G  .  .  Bb .
+    Transpose up        3  .  .  2  .  1  1  3  .  .  2  .
+    Result up           Eb .  .  F  .  Gb G  Bb .  .  C  .
 \endverbatim
  */
 
@@ -169,16 +179,7 @@ const int c_scales_transpose_up[c_scale_size][SEQ64_OCTAVE_SIZE] =
     { 2, 0, 1, 2, 0, 2, 0, 1, 3, 0, 0, 1},              /* harmonic minor  */
     { 2, 0, 1, 2, 0, 2, 0, 2, 0, 2, 0, 1},              /* melodic minor   */
     { 2, 0, 2, 0, 2, 0, 2, 0, 2, 0, 2, 0},              /* C whole tone    */
-};
-
-const int c_scales_transpose_dn[c_scale_size][SEQ64_OCTAVE_SIZE] =
-{
-    { -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},  /* off = chromatic */
-    { -1, 0, -2, 0, -2, -1, 0, -2, 0, -2, 0, -2},       /* major           */
-    { -2, 0, -2, -1, 0, -2, 0, -2, -1, 0, -2, 0},       /* minor           */
-    { -1, -0, -2, -1, 0, -2, 0, -2, -1, 0, 0, -3},      /* harmonic minor  */
-    { -1, 0, -2, -1, 0, -2, 0, -2, 0, -2, 0, -2},       /* melodic minor   */
-    { -2, 0, -2, 0, -2, 0, -2, 0, -2, 0, -2, 0},        /* C whole tone    */
+    { 3, 0, 0, 2, 0, 1, 1, 3, 0, 0, 2, 0},              /* blues           */
 };
 
 /**
@@ -217,6 +218,23 @@ const int c_scales_transpose_dn[c_scale_size][SEQ64_OCTAVE_SIZE] =
  *
  */
 
+const int c_scales_transpose_dn[c_scale_size][SEQ64_OCTAVE_SIZE] =
+{
+    { -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},  /* off = chromatic */
+    { -1,  0, -2,  0, -2, -1,  0, -2,  0, -2,  0, -2},  /* major           */
+    { -2,  0, -2, -1,  0, -2,  0, -2, -1,  0, -2,  0},  /* minor           */
+    { -1,  0, -2, -1,  0, -2,  0, -2, -1,  0,  0, -3},  /* harmonic minor  */
+    { -1,  0, -2, -1,  0, -2,  0, -2,  0, -2,  0, -2},  /* melodic minor   */
+    { -2,  0, -2,  0, -2,  0, -2,  0, -2,  0, -2,  0},  /* C whole tone    */
+    { -2,  0,  0, -3,  0, -2, -1, -1,  0,  0, -3,  0},  /* blues           */
+};
+
+#ifdef USE_C_SCALES_TRANSPOSE_DN_NEG
+
+/**
+ *  This array is easier to read, but not yet used in actual code.
+ */
+
 const int c_scales_transpose_dn_neg[c_scale_size][SEQ64_OCTAVE_SIZE] =
 {
     { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},                  /* off = chromatic */
@@ -225,7 +243,10 @@ const int c_scales_transpose_dn_neg[c_scale_size][SEQ64_OCTAVE_SIZE] =
     { 1, 0, 2, 1, 0, 2, 0, 2, 1, 0, 0, 3},                  /* harmonic minor  */
     { 1, 0, 2, 1, 0, 2, 0, 2, 0, 2, 0, 2},                  /* melodic minor   */
     { 2, 0, 2, 0, 2, 0, 2, 0, 2, 0, 2, 0},                  /* C whole tone    */
+    { 2, 0, 0, 3, 0, 2, 1, 1, 0, 0, 3, 0},                  /* blues           */
 };
+
+#endif      // USE_C_SCALES_TRANSPOSE_DN_NEG
 
 /**
  *  The names of the currently-supported scales.
@@ -239,6 +260,7 @@ const char c_scales_text[c_scale_size][32] =                /* careful!        *
     "Harmonic Minor",
     "Melodic Minor",
     "Whole Tone",
+    "Blues",
 };
 
 /**

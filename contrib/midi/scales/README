@@ -1,0 +1,13 @@
+MIDI Files for Scales
+Chris Ahlstrom
+2016-05-17 to 2016-05-17
+
+This directory contains MIDI files for scales, to help test
+the scales feature of the pattern editor.  They come from this site:
+
+    https://en.wikipedia.org/wiki/List_of_musical_scales_and_modes
+
+Note that the Aeolean mode is the natural minor scale, and the Ionian mode
+is the major scale.
+
+# vim: sw=4 ts=4 wm=8 et ft=sh

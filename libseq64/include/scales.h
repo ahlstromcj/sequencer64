@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-06
- * \updates       2016-05-05
+ * \updates       2016-05-17
  * \license       GNU GPLv2 or above
  *
  *  These values were moved from the globals module.
@@ -80,13 +80,14 @@ enum c_music_scales
  *  Each value in the kind of scale is denoted by a true value in these
  *  arrays.  See the following sites for more information:
  *
- *      http://method-behind-the-music.com/theory/scalesandkeys/
- *
- *      https://en.wikipedia.org/wiki/Heptatonic_scale
+ *      -   http://method-behind-the-music.com/theory/scalesandkeys/
+ *      -   https://en.wikipedia.org/wiki/Heptatonic_scale
+ *      -   https://en.wikibooks.org/wiki/Music_Theory/Scales_and_Intervals
  *
  *  Note that melodic minor descends in the same way as the natural minor
  *  scale, so it descends differently than it ascends.  We don't deal with
- *  that trick, at all.
+ *  that trick, at all.  In the following table, the scales all start with C,
+ *  but seq24/sequencer64 allow other starting notes (e.g. "keys").
  *
 \verbatim
     Chromatic           C  C# D  D# E  F  F# G  G# A  A# B   Notes, chord
@@ -95,10 +96,9 @@ enum c_music_scales
     Harmonic Minor      C  .  D  Eb .  F  .  G  Ab .  .  B
     Melodic Minor       C  .  D  Eb .  F  .  G  .  A  .  B   Descending diff.
     C Whole Tone        C  .  D  .  E  .  F# .  G# .  A# .   C+7 chord
-    C Lydian Dominant   C  .  D  .  E  .  F# .  G  .  A  Bb  Unimplemented, A7
-    A Mixolydian        C# .  D  .  E  .  F# .  G  .  A  .   Unimplemented, A7
-    B Whole Tone        .  Db .  Eb .  F  .  G  .  A  .  B   Unimplemented
-    G Whole Tone        .  C# .  D# .  F  .  G  .  A  .  B   Unimplemented, same
+    Major Pentatonic    C  .  D  .  E  .  .  G  .  A  .  .   Unimplemented
+    Minor Pentatonic    C  .  .  Eb .  F  .  G  .  .  Bb .   Correct???
+    Blues               C  .  .  Eb .  F  Gb G  .  .  Bb .   Unimplemented
     G Octatonic         .  C# D  .  E  F  .  G  Ab .  Bb B   Unimplemented
 \endverbatim
  */
@@ -214,6 +214,7 @@ const int c_scales_transpose_dn[c_scale_size][SEQ64_OCTAVE_SIZE] =
     Transpose down      2  .  2  .  2  .  2  .  2  .  2  .
     Result down         A# .  C  .  D  .  E  .  F# .  G# .
 \endverbatim
+ *
  */
 
 const int c_scales_transpose_dn_neg[c_scale_size][SEQ64_OCTAVE_SIZE] =

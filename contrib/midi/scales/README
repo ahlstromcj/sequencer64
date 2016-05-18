@@ -1,6 +1,6 @@
 MIDI Files for Scales
 Chris Ahlstrom
-2016-05-17 to 2016-05-17
+2016-05-17 to 2016-05-18
 
 This directory contains MIDI files for scales, to help test
 the scales feature of the pattern editor.  They come from this site:
@@ -9,5 +9,27 @@ the scales feature of the pattern editor.  They come from this site:
 
 Note that the Aeolean mode is the natural minor scale, and the Ionian mode
 is the major scale.
+
+All events are on channel 0. The file starts with a Program Change to 0
+(i.e. the Piano).  Then 5 MIDI CC (Control Change or Continuous
+Controllers) values are presented:
+
+    121 Reset All Controllers
+     64 Damper Pedal/Sustain Pedal 0 (off)
+     91 Effect 1 value 48 Depth Usually controls reverb send amount.
+     10 Pan value 51 (just left of center)
+      7 Volume Control value 100
+
+We will preserve this information only for the first (major) scale.
+
+    "Off (chromatic)"
+    "Major (Ionian)"
+    "Minor (Aeolan)"
+    "Harmonic Minor"
+    "Melodic Minor"
+    "Whole Tone"
+    "Blues"
+    "Pentatonic Major"
+    "Pentatonic Minor"
 
 # vim: sw=4 ts=4 wm=8 et ft=sh

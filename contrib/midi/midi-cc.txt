@@ -1,0 +1,100 @@
+
+0 Bank Select Allows user to switch bank for patch selection. Program change
+   used with Bank Select. MIDI can access 16,384 patches per MIDI channel.
+1 Modulation Generally this CC controls a vibrato effect (pitch, loudness,
+   brighness). What is modulated is based on the patch.
+2 Breath Controller Often times associated with aftertouch messages. It was
+   originally intended for use with a breath MIDI controller in which blowing
+   harder produced higher MIDI control values. It can be used for modulation as
+   well.
+3 Undefined  
+4 Foot Controller Often used with aftertouch messages. It can send a
+   continuous stream of values based on how the pedal is used.
+5 Portamento Time Controls portamento rate to slide between 2 notes played
+   subsequently.
+6 Data Entry Most Significant Bit(MSB) Controls Value for NRPN or RPN
+   parameters.
+7 Volume Control the volume of the channel
+8 Balance Controls the left and right balance, generally for stereo patches.
+   0 = hard left, 64 = center, 127 = hard right
+9 Undefined  
+10 Pan Controls the left and right balance, generally for mono patches.
+   0 = hard left, 64 = center, 127 = hard right
+11 Expression Expression is a percentage of volume (CC7).
+12 Effect Controller 1 Usually used to control a parameter of an effect within
+   the synth/workstation.
+13 Effect Controller 2 Usually used to control a parameter of an effect within
+   the synth/workstation.
+14 Undefined  
+15 Undefined  
+16 – 19 General Purpose  
+20 – 31 Undefined  
+32 – 63 Controller 0-31 Least Significant Bit (LSB)  
+64 Damper Pedal / Sustain Pedal On/Off switch that controls sustain. (See also
+   Sostenuto CC 66) 0 to 63 = Off, 64 to 127 = On
+65 Portamento On/Off Switch On/Off switch
+   0 to 63 = Off, 64 to 127 = On
+66 Sostenuto On/Off Switch On/Off switch – Like the Sustain controller (CC 64),
+   However it only holds notes that were “On” when the pedal was pressed. People
+   use it to “hold” chords” and play melodies over the held chord.
+   0 to 63 = Off, 64 to 127 = On
+67 Soft Pedal On/Off Switch On/Off switch - Lowers the volume of notes played.
+   0 to 63 = Off, 64 to 127 = On
+68 Legato FootSwitch On/Off switch - Turns Legato effect between 2 subsequent
+   notes On or Off.
+   0 to 63 = Off, 64 to 127 = On
+70 Sound Controller 1 Usually controls the way a sound is produced. Default =
+   Sound Variation.
+71 Sound Controller 2 Allows shaping the Voltage Controlled Filter (VCF).
+   Default = Resonance - also (Timbre or Harmonics)
+72 Sound Controller 3 Controls release time of the Voltage controlled
+   Amplifier (VCA). Default = Release Time.
+73 Sound Controller 4 Controls the “Attack’ of a sound. The attack is the
+   amount of time it takes forthe sound to reach maximum amplitude.
+74 Sound Controller 5 Controls VCFs cutoff frequency of the filter.
+75 Sound Controller 6 Generic – Some manufacturers may use to further shave
+   their sounds.
+76 Sound Controller 7 Generic – Some manufacturers may use to further shave
+   their sounds.
+77 Sound Controller 8 Generic – Some manufacturers may use to further shave
+   their sounds.
+78 Sound Controller 9 Generic – Some manufacturers may use to further shave
+   their sounds.
+79 Sound Controller 10 Generic – Some manufacturers may use to further shave
+   their sounds.
+80 General Purpose On/Off switch 0 to 63 = Off, 64 to 127 = On
+81 On/Off switch 0 to 63 = Off, 64 to 127 = On
+82 General Purpose On/Off switch 0 to 63 = Off, 64 to 127 = On
+83 On/Off switch 0 to 63 = Off, 64 to 127 = On
+84 Portamento CC Control Controls the amount of Portamento.
+85 – 90 Undefined  
+91 Effect 1 Depth Usually controls reverb send amount
+92 Effect 2 Depth Usually controls tremolo amount
+93 Effect 3 Depth Usually controls chorus amount
+94 Effect 4 Depth Usually controls detune amount
+95 Effect 5 Depth Usually controls phaser amount
+96 (+1) Data Increment Usually used to increment data for RPN and NRPN messages.
+97 (-1) Data Decrement Usually used to decrement data for RPN and NRPN messages.
+98 Non-Registered Parameter Number LSB (NRPN) For controllers 6, 38, 96, and
+   97, it selects the NRPN parameter.
+99 Non-Registered Parameter Number MSB (NRPN) For controllers 6, 38, 96, and
+   97, it selects the NRPN parameter.
+100 Registered Parameter Number LSB (RPN) For controllers 6, 38, 96, and 97,
+   it selects the RPN parameter.
+101 Registered Parameter Number MSB (RPN) For controllers 6, 38, 96, and 97,
+   it selects the RPN parameter.
+102 – 119 Undefined  
+121 Reset All Controllers It will reset all controllers to their default.
+122 Local On/Off Switch Turns internal connection of a MIDI
+   keyboard/workstation, etc. On or Off. If you use a computer, you will most
+   likely want local control off to avoid notes being played twice. Once
+   locally and twice whent the note is sent back from the computer to your
+   keyboard.
+123 All Notes Off Mutes all sounding notes. Release time will still be
+   maintained, and notes held by sustain will not turn off until sustain pedal
+   is depressed.
+124 Omni Mode Off Sets to “Omni Off” mode.
+125 Omni Mode On Sets to “Omni On” mode.
+126 Mono Mode Sets device mode to Monophonic.
+127 Poly Mode Sets device mode to Polyphonic.
+

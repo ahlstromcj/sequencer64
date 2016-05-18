@@ -1,11 +1,12 @@
 Bugs and Additional Upgrade Ideas
 Chris Ahlstrom
-2015-10-27 to 2016-05-15 (New bugs)
+2015-10-27 to 2016-05-18 (New bugs)
 
 In no particular order...  "y" means "in progress", and "x" means it is
 basically done.
 
 -  Also see BUG REPORTS below.  Those are bug reports from other people.
+-  Deleting last note of Ionian MIDI import in event editor causes a CRASH!
 y  Aftertouch events are not transposed.  Are they also selectable?
 x  allofarow.mid:
    x    Load the allofarow.mid tune while in JACK mode.  It loads as 140 BPM,
@@ -29,9 +30,12 @@ y  It seems like note-off is not working when the song is stopped or paused
    (The seqroll class handles the grid drawing well.)
 -  When the sequence numbers reach 4 digits, they make the slot labelling
    crammed up and ugly.
-y  Keystroke editing of pattern works, but only for the first screenset.
-   Added usage of the screenset number in mainwnd/seqmenu, but only for the
-   new '=' key.  Also should add the '=' keystroke to the options dialog.
+-  When exiting a single pattern editor, the current-edit highlight does NOT
+   go away.
+y  Keystroke editing of pattern (bringing up the pattern editor) works, but
+   only for the first screenset.  Added usage of the screenset number in
+   mainwnd/seqmenu, but only for the new '=' key.  Also should add the '='
+   keystroke to the options dialog.
 x  Fixed a crash when File / Import dialog came up a second time.
 x  Screen-sets > 0 would not show the shortcut mute/unmute keys, even though
    the keys would work.

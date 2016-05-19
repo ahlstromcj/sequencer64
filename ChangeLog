@@ -1,3 +1,244 @@
+2016-05-19  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* README, configure.ac: Minor tweaks to README and configure.ac.
+	Merged 84 commits into the master branch for version 0.9.11, which has
+	many more bug fixes and feature enhancements than I had planned for.
+	* contrib/notes/bugs_to_investigate.txt, libseq64/src/perform.cpp,
+	seq_gtkmm2/src/mainwnd.cpp: Fixed a bug where queue and other key
+	processing was not being called, very embarrassing.
+
+2016-05-18  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* contrib/notes/bugs_to_investigate.txt,
+	seq_gtkmm2/src/eventedit.cpp, seq_gtkmm2/src/eventslots.cpp: Fixed
+	bug in deleting last item in event editor, finished the Sequencer64
+	demo scales MIDI file.
+	* contrib/midi/midi-cc.txt, contrib/midi/scales/README,
+	contrib/notes/bugs_to_investigate.txt: Starting to collect scales,
+	expand examples, and noting bugs in the event editor.
+
+2016-05-17  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* Sequencer64/sequencer64.cpp, libseq64/include/Makefile.am,
+	libseq64/include/globals.h, libseq64/include/jack_assistant.hpp,
+	libseq64/include/mastermidibus.hpp,
+	libseq64/include/midi_control.hpp, libseq64/include/midifile.hpp,
+	libseq64/include/scales.h, libseq64/include/settings.hpp,
+	libseq64/include/user_midi_bus.hpp, libseq64/src/Makefile.am,
+	libseq64/src/click.cpp, libseq64/src/cmdlineopts.cpp,
+	libseq64/src/easy_macros.cpp, libseq64/src/event_list.cpp,
+	libseq64/src/globals.cpp, libseq64/src/jack_assistant.cpp,
+	libseq64/src/lash.cpp, libseq64/src/mastermidibus.cpp,
+	libseq64/src/midi_container.cpp, libseq64/src/midi_splitter.cpp,
+	libseq64/src/midibus.cpp, libseq64/src/midibyte.cpp,
+	libseq64/src/midifile.cpp, libseq64/src/optionsfile.cpp,
+	libseq64/src/perform.cpp, libseq64/src/rc_settings.cpp,
+	libseq64/src/sequence.cpp, libseq64/src/settings.cpp,
+	libseq64/src/user_instrument.cpp, libseq64/src/user_midi_bus.cpp,
+	libseq64/src/user_settings.cpp, libseq64/src/userfile.cpp,
+	seq_gtkmm2/include/eventslots.hpp, seq_gtkmm2/include/maintime.hpp,
+	seq_gtkmm2/include/perfnames.hpp, seq_gtkmm2/include/perfroll.hpp,
+	seq_gtkmm2/include/seqevent.hpp, seq_gtkmm2/src/eventedit.cpp,
+	seq_gtkmm2/src/font.cpp, seq_gtkmm2/src/gui_palette_gtk2.cpp,
+	seq_gtkmm2/src/gui_window_gtk2.cpp, seq_gtkmm2/src/mainwid.cpp,
+	seq_gtkmm2/src/options.cpp, seq_gtkmm2/src/perfedit.cpp,
+	seq_gtkmm2/src/perfroll.cpp, seq_gtkmm2/src/perfroll_input.cpp,
+	seq_gtkmm2/src/perftime.cpp, seq_gtkmm2/src/seq24seqroll.cpp,
+	seq_gtkmm2/src/seqedit.cpp, seq_gtkmm2/src/seqevent.cpp,
+	seq_gtkmm2/src/seqmenu.cpp, seq_gtkmm2/src/seqroll.cpp,
+	seq_gtkmm2/src/seqtime.cpp: Refactored the header files, added two
+	more scales.
+	* libseq64/include/scales.h: Minor fixes to blues scale for horse.
+	Added blues scales and MIDI examples of the scales.
+	* configure.ac, libseq64/include/scales.h: Starting a
+	built-from-scratch sequence to use for testing.
+
+2016-05-16  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* : Added 0.9.11 screenshot.
+
+2016-05-15  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* contrib/notes/bugs_to_investigate.txt,
+	contrib/notes/yoshimi-will-godfrey-collection.txt,
+	libseq64/include/keystroke.hpp, libseq64/include/perform.hpp,
+	libseq64/src/keystroke.cpp, libseq64/src/mastermidibus.cpp,
+	libseq64/src/perform.cpp, seq_gtkmm2/include/mainwid.hpp,
+	seq_gtkmm2/include/mainwnd.hpp, seq_gtkmm2/include/seqmenu.hpp,
+	seq_gtkmm2/src/mainwid.cpp, seq_gtkmm2/src/mainwnd.cpp,
+	seq_gtkmm2/src/seqmenu.cpp: Added buss override to new sequences,
+	and the equals-shortcut feature now accounts for screenset number.
+
+2016-05-14  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* seq_gtkmm2/include/gui_window_gtk2.hpp,
+	seq_gtkmm2/src/mainwnd.cpp, seq_gtkmm2/src/perfedit.cpp,
+	seq_gtkmm2/src/seqedit.cpp: Shortened mainwnd, perfedit, and seqedit
+	menu/image setup with SET_POPUP and PIXBUF_IMAGE macros, a
+	readability thing.
+	* contrib/notes/bugs_to_investigate.txt, contrib/notes/ruler.txt,
+	libseq64/src/perform.cpp, seq_gtkmm2/include/mainwid.hpp,
+	seq_gtkmm2/include/perfnames.hpp, seq_gtkmm2/src/mainwid.cpp,
+	seq_gtkmm2/src/perfedit.cpp, seq_gtkmm2/src/seqedit.cpp: Optimized
+	the creation of many of the menus of seqedit and perfedit, left old
+	code macroed out.
+
+2016-05-13  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* INSTALL, libseq64/src/perform.cpp, seq_gtkmm2/src/perfedit.cpp,
+	seq_gtkmm2/src/perfnames.cpp: Disabled full pause support for song
+	editor because it disables muting/unmuting control.
+
+2016-05-12  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* seq_gtkmm2/include/eventedit.hpp,
+	seq_gtkmm2/include/gui_window_gtk2.hpp,
+	seq_gtkmm2/include/mainwid.hpp, seq_gtkmm2/include/mainwnd.hpp,
+	seq_gtkmm2/include/perfedit.hpp, seq_gtkmm2/include/perfnames.hpp,
+	seq_gtkmm2/include/seqedit.hpp, seq_gtkmm2/include/seqmenu.hpp,
+	seq_gtkmm2/src/eventedit.cpp, seq_gtkmm2/src/gui_window_gtk2.cpp,
+	seq_gtkmm2/src/mainwid.cpp, seq_gtkmm2/src/mainwnd.cpp,
+	seq_gtkmm2/src/perfedit.cpp, seq_gtkmm2/src/perfnames.cpp,
+	seq_gtkmm2/src/seqedit.cpp, seq_gtkmm2/src/seqmenu.cpp: Got
+	free-function implementation of current-edit highlighting done for
+	seqedit/eventedit and mainwid/perfedit combinations, more testing
+	needed, had to add an on-realized flag to gui_window_gtk2 to keep
+	perfedit 2 from crashing.
+	* libseq64/src/perform.cpp, seq_gtkmm2/src/perfedit.cpp,
+	seq_gtkmm2/src/perfnames.cpp, seq_gtkmm2/src/perftime.cpp,
+	seq_gtkmm2/src/seqedit.cpp: Interim check-in before refactoring
+	mainwnd current-edit support to use a global pointer.
+
+2016-05-11  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/src/perform.cpp, seq_gtkmm2/src/perfedit.cpp,
+	seq_gtkmm2/src/perfroll.cpp, seq_gtkmm2/src/seqroll.cpp: Seems like
+	start/pause/stop is working very well now, interim check-in for
+	safety.
+	* libseq64/src/perform.cpp, seq_gtkmm2/include/perftime.hpp,
+	seq_gtkmm2/src/mainwnd.cpp, seq_gtkmm2/src/perfedit.cpp,
+	seq_gtkmm2/src/perfroll.cpp, seq_gtkmm2/src/perftime.cpp,
+	seq_gtkmm2/src/seqroll.cpp: Interim check-in, experiments trying to
+	get perf pause to act like seq pause.
+
+2016-05-10  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* contrib/notes/bugs_to_investigate.txt,
+	libseq64/include/event.hpp, libseq64/include/event_list.hpp,
+	libseq64/include/perform.hpp, libseq64/src/perform.cpp,
+	libseq64/src/rc_settings.cpp, libseq64/src/sequence.cpp,
+	libseq64/src/triggers.cpp, libseq64/src/user_instrument.cpp,
+	libseq64/src/user_midi_bus.cpp, libseq64/src/userfile.cpp,
+	seq_gtkmm2/src/perfnames.cpp, seq_gtkmm2/src/perftime.cpp: Interim
+	commit, adding documentation, minor optimizations, and a fix or two
+	to pending version 0.9.11.
+
+2016-05-09  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* seq_gtkmm2/include/seqkeys.hpp, seq_gtkmm2/src/seqkeys.cpp: Added
+	right-click to seqkeys to toggle between shown the note octaves,
+	such as C4, and the MIDI note numbers for every other key.
+	* seq_gtkmm2/include/eventedit.hpp, seq_gtkmm2/include/mainwid.hpp,
+	seq_gtkmm2/include/seqmenu.hpp, seq_gtkmm2/src/eventedit.cpp,
+	seq_gtkmm2/src/mainwnd.cpp, seq_gtkmm2/src/seqedit.cpp,
+	seq_gtkmm2/src/seqmenu.cpp: Added proper current-sequence handling
+	to the eventedit class as well.
+	* libseq64/include/perform.hpp, libseq64/src/perform.cpp,
+	seq_gtkmm2/include/mainwid.hpp, seq_gtkmm2/include/mainwnd.hpp,
+	seq_gtkmm2/include/perfedit.hpp, seq_gtkmm2/include/perfnames.hpp,
+	seq_gtkmm2/include/seqedit.hpp, seq_gtkmm2/include/seqmenu.hpp,
+	seq_gtkmm2/src/mainwid.cpp, seq_gtkmm2/src/mainwnd.cpp,
+	seq_gtkmm2/src/perfedit.cpp, seq_gtkmm2/src/perfnames.cpp,
+	seq_gtkmm2/src/seqedit.cpp, seq_gtkmm2/src/seqmenu.cpp: Got the
+	basics of current-sequence highlighting based on focus events
+	working.
+	* libseq64/include/app_limits.h, libseq64/src/midi_container.cpp,
+	libseq64/src/midi_vector.cpp, libseq64/src/mutex.cpp: More
+	documentation fill-in for libseq64.
+	* INSTALL, Makefile.am, README, ROADMAP, VERSION, configure.ac,
+	doc/dox/doxy-reference.cfg, libseq64/src/cmdlineopts.cpp,
+	libseq64/src/optionsfile.cpp, man/sequencer64.1: Readied versioning
+	for 0.9.11.
+
+2016-05-08  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* INSTALL, Makefile.am, configure.ac, doc/dox/doxy-reference.cfg: 
+	Update configure.ac and Makefile.am to force the PDF documentation
+	to not be built, use make_dox to build it.
+
+2016-05-08  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/include/app_limits.h, libseq64/src/calculations.cpp,
+	libseq64/src/cmdlineopts.cpp, libseq64/src/configfile.cpp,
+	libseq64/src/editable_event.cpp, libseq64/src/event.cpp,
+	libseq64/src/event_list.cpp, libseq64/src/file_functions.cpp,
+	libseq64/src/globals.cpp, libseq64/src/jack_assistant.cpp,
+	libseq64/src/lash.cpp, libseq64/src/mastermidibus.cpp,
+	libseq64/src/midi_container.cpp, libseq64/src/midi_list.cpp,
+	libseq64/src/midi_splitter.cpp, libseq64/src/midibus.cpp,
+	libseq64/src/midibyte.cpp, libseq64/src/midifile.cpp: Interim
+	check-in, halfway through bringing the libseq64/src document up to
+	snuff.
+
+2016-05-06  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* configure.ac, libseq64/include/click.hpp,
+	libseq64/include/controllers.hpp,
+	libseq64/include/editable_events.hpp, libseq64/include/event.hpp,
+	libseq64/include/event_list.hpp,
+	libseq64/include/jack_assistant.hpp,
+	libseq64/include/keys_perform.hpp, libseq64/include/lash.hpp,
+	libseq64/include/mastermidibus.hpp,
+	libseq64/include/midi_container.hpp,
+	libseq64/include/midi_control.hpp, libseq64/include/midi_list.hpp,
+	libseq64/include/midi_vector.hpp, libseq64/include/midibus.hpp,
+	libseq64/include/midibus_common.hpp, libseq64/include/midibyte.hpp,
+	libseq64/include/midifile.hpp, libseq64/include/mutex.hpp,
+	libseq64/include/perform.hpp, libseq64/include/scales.h,
+	libseq64/src/editable_event.cpp, libseq64/src/midibus.cpp,
+	libseq64/src/mutex.cpp, libseq64/src/perform.cpp,
+	seq_gtkmm2/src/perfnames.cpp: Interim check-in for a thorough
+	documentation of the rest of the members and functions.  Minor
+	mistakes fixed when found.
+
+2016-05-02  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* README, configure.ac, contrib/code/perfstats.cpp,
+	libseq64/include/app_limits.h, libseq64/include/globals.h,
+	libseq64/include/scales.h, libseq64/src/perform.cpp: Ongoing code
+	cleaning during fixups testing phase.
+
+2016-04-25  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* Sequencer64/sequencer64.cpp, libseq64/src/cmdlineopts.cpp: Minor
+	fixes to the --version option and help.
+
+2016-04-17  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* configure.ac, contrib/notes/bugs_to_investigate.txt,
+	seq_gtkmm2/src/eventedit.cpp: In event editor, had to increment
+	channel number for Sequence Channel display.
+
+2016-04-14  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* contrib/notes/zoom.txt, libseq64/include/event.hpp,
+	libseq64/src/sequence.cpp,
+	seq_gtkmm2/include/gui_drawingarea_gtk2.hpp,
+	seq_gtkmm2/include/seqdata.hpp, seq_gtkmm2/include/seqevent.hpp,
+	seq_gtkmm2/include/seqkeys.hpp, seq_gtkmm2/include/seqroll.hpp,
+	seq_gtkmm2/include/seqtime.hpp, seq_gtkmm2/src/seqdata.cpp,
+	seq_gtkmm2/src/seqevent.cpp, seq_gtkmm2/src/seqkeys.cpp,
+	seq_gtkmm2/src/seqroll.cpp, seq_gtkmm2/src/seqtime.cpp: Made
+	force_draw() a virtual function for more consistent redrawing.
+
+2016-04-13  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* ChangeLog, INSTALL, README, ROADMAP, VERSION, configure.ac,
+	contrib/notes/zoom.txt, doc/dox/doxy-reference.cfg,
+	libseq64/src/cmdlineopts.cpp, libseq64/src/optionsfile.cpp,
+	man/sequencer64.1, seq_gtkmm2/include/perfedit.hpp,
+	seq_gtkmm2/src/seqdata.cpp: Changed pending version to 0.9.10 and
+	started notes on how zoom works in order to solve some issues.
 2016-04-12  Chris Ahlstrom <ahlstromcj@gmail.com>
 
 	* seq_gtkmm2/include/seqroll.hpp, seq_gtkmm2/include/seqtime.hpp,

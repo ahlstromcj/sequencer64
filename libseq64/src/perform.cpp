@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and Tim Deagan
  * \date          2015-07-24
- * \updates       2016-05-17
+ * \updates       2016-05-19
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -2896,6 +2896,11 @@ perform::mainwnd_key_event (const keystroke & k)
     unsigned int key = k.key();
     if (k.is_press())
     {
+        /*
+         * Keys not handled here:  bpm up & down; screenset up & down.
+         * Also not handled here:  mute group key and mute group learn.
+         */
+
         if (key == keys().replace())
             set_sequence_control_status(c_status_replace);
         else if (key == keys().queue() || key == keys().keep_queue())

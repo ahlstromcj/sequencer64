@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-05-15
+ * \updates       2016-05-19
  * \license       GNU GPLv2 or above
  *
  *  The main window holds the menu and the main controls of the application,
@@ -1273,7 +1273,7 @@ mainwnd::on_delete_event (GdkEventAny * /*ev*/)
  *      Test this functionality in old and new application.
  *
  * \return
- *      Always returns false.
+ *      Always returns false.  This matches seq24 behavior.
  */
 
 bool
@@ -1311,30 +1311,33 @@ mainwnd::on_key_press_event (GdkEventKey * ev)
             printf("key_press[%d]\n", ev->keyval);
             fflush(stdout);
         }
-        if (ev->keyval == PREFKEY(bpm_dn))
+        if (! perf().mainwnd_key_event(k))          // EXPERIMENT
         {
-            int newbpm = perf().decrement_beats_per_minute();
-            m_adjust_bpm->set_value(newbpm);
-        }
-        else if (ev->keyval == PREFKEY(bpm_up))
-        {
-            int newbpm = perf().increment_beats_per_minute();
-            m_adjust_bpm->set_value(newbpm);
-        }
+            if (ev->keyval == PREFKEY(bpm_dn))
+            {
+                int newbpm = perf().decrement_beats_per_minute();
+                m_adjust_bpm->set_value(newbpm);
+            }
+            else if (ev->keyval == PREFKEY(bpm_up))
+            {
+                int newbpm = perf().increment_beats_per_minute();
+                m_adjust_bpm->set_value(newbpm);
+            }
 
-        if (ev->keyval == PREFKEY(screenset_dn))
-        {
-            int newss = perf().decrement_screenset();
-            m_main_wid->set_screenset(newss);
-            m_adjust_ss->set_value(newss);
-            m_entry_notes->set_text(perf().current_screen_set_notepad());
-        }
-        else if (ev->keyval == PREFKEY(screenset_up))
-        {
-            int newss = perf().increment_screenset();
-            m_main_wid->set_screenset(newss);
-            m_adjust_ss->set_value(newss);
-            m_entry_notes->set_text(perf().current_screen_set_notepad());
+            if (ev->keyval == PREFKEY(screenset_dn))
+            {
+                int newss = perf().decrement_screenset();
+                m_main_wid->set_screenset(newss);
+                m_adjust_ss->set_value(newss);
+                m_entry_notes->set_text(perf().current_screen_set_notepad());
+            }
+            else if (ev->keyval == PREFKEY(screenset_up))
+            {
+                int newss = perf().increment_screenset();
+                m_main_wid->set_screenset(newss);
+                m_adjust_ss->set_value(newss);
+                m_entry_notes->set_text(perf().current_screen_set_notepad());
+            }
         }
 
         if (perf().get_key_groups().count(ev->keyval) != 0)

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-12-05
- * \updates       2016-03-04
+ * \updates       2016-05-18
  * \license       GNU GPLv2 or above
  *
  *  This module is user-interface code.  It is loosely based on the workings
@@ -430,8 +430,22 @@ eventslots::delete_current_event ()
             }
             else
             {
-                (void) increment_current();
-                (void) increment_bottom();
+                /*
+                 * \change ca 2016-05-18
+                 *      Try to avoid a crash deleting the last item again
+                 *      (since it is still visible).
+                 *
+                 * (void) increment_current();
+                 * (void) increment_bottom();
+                 */
+
+                if (increment_current() != SEQ64_NULL_EVENT_INDEX)
+                {
+                    (void) increment_bottom();
+                    m_bottom_iterator = m_event_container.end();
+                }
+                else
+                    --m_current_index;
             }
         }
 

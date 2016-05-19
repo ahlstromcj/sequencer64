@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-12-05
- * \updates       2016-05-17
+ * \updates       2016-05-18
  * \license       GNU GPLv2 or above
  *
  * To consider:
@@ -231,7 +231,7 @@ eventedit::eventedit (perform & p, sequence & seq)
         "Navigate using the scrollbar, arrow keys, Page keys, and Home/End keys. "
     );
 
-    m_button_del->set_label("Delete Current Event");
+    m_button_del->set_label("Delete Current Event (*)");
     m_button_del->signal_clicked().connect
     (
         sigc::mem_fun(*this, &eventedit::handle_delete)

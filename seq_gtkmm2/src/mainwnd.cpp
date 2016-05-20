@@ -192,6 +192,9 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
 #endif
     m_timeout_connect       (),                     /* handler              */
     m_call_seq_edit         (false)                 /* new ca 2016-05-15    */
+#ifdef USE_EVENT_EDIT_KEY
+    , m_call_seq_eventedit    (false)                 /* new ca 2016-05-19    */
+#endif
 {
     /*
      * This provides the application icon, seen in the title bar of the
@@ -1424,14 +1427,25 @@ mainwnd::on_key_press_event (GdkEventKey * ev)
                         m_call_seq_edit = false;
                         m_main_wid->seq_set_and_edit(seqnum);
                     }
+#ifdef USE_EVENT_EDIT_KEY
+                    else if (m_call_seq_eventedit)
+                    {
+                        m_call_seq_eventedit = false;
+                        m_main_wid->seq_set_and_eventedit(seqnum);
+                    }
+#endif
                     else
-                        sequence_key(seqnum);   /* toggle the sequence */
+                        sequence_key(seqnum);   /* toggle the sequence  */
                 }
             }
             else
             {
-                if (k.is('='))
+                if (k.is(SEQ64_equal))          /* '='                  */
                     m_call_seq_edit = ! m_call_seq_edit;
+#ifdef USE_EVENT_EDIT_KEY
+                else if (k.is(SEQ64_minus))     /* '-'                  */
+                    m_call_seq_eventedit = ! m_call_seq_eventedit;
+#endif
             }
         }
     }

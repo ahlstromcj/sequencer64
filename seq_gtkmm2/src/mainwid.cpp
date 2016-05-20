@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-05-17
+ * \updates       2016-05-19
  * \license       GNU GPLv2 or above
  *
  *  Note that this representation is, in a sense, inside the mainwnd
@@ -770,7 +770,7 @@ mainwid::set_screenset (int ss)
 /**
  *  Calculates the sequence number based on the screenset and then
  *  calls the base-class function to bring up the pattern/sequence editor.
- *  Used with the '=' key selection.
+ *  Used with the '=' key selection, by default.
  */
 
 void
@@ -778,6 +778,22 @@ mainwid::seq_set_and_edit (int seqnum)
 {
     seqmenu::seq_set_and_edit(seqnum + m_screenset_offset);
 }
+
+#ifdef USE_EVENT_EDIT_KEY
+
+/**
+ *  Calculates the sequence number based on the screenset and then
+ *  calls the base-class function to bring up the event editor.
+ *  Used with the '-' key selection, by default.
+ */
+
+void
+mainwid::seq_set_and_eventedit (int seqnum)
+{
+    seqmenu::seq_set_and_eventedit(seqnum + m_screenset_offset);
+}
+
+#endif
 
 /*
  * Event-handler section:

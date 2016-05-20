@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-05-15
+ * \updates       2016-05-19
  * \license       GNU GPLv2 or above
  *
  *  This module is the base class for the perfnames and mainwid classes.
@@ -44,6 +44,8 @@
  *
  *      #define SEQ64_EDIT_SEQUENCE_HIGHLIGHT
  */
+
+#define USE_EVENT_EDIT_KEY
 
 namespace Gtk
 {
@@ -296,6 +298,10 @@ protected:
     void seq_event_edit ();
 
     virtual void seq_set_and_edit (int seqnum);
+
+#ifdef USE_EVENT_EDIT_KEY
+    virtual void seq_set_and_eventedit (int seqnum);
+#endif
 
 private:
 

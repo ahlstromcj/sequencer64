@@ -311,6 +311,25 @@ seqmenu::seq_set_and_edit (int seqnum)
     seq_edit();
 }
 
+#ifdef USE_EVENT_EDIT_KEY
+
+/**
+ *  Sets the current sequence and then acts as if the user had right-clicked
+ *  on its slot and selected "Event Edit".
+ *
+ * \param seqnum
+ *      The number of the sequence to event-edit.
+ */
+
+void
+seqmenu::seq_set_and_eventedit (int seqnum)
+{
+    current_seq(seqnum);
+    seq_event_edit();
+}
+
+#endif
+
 /**
  *  This menu callback launches the new event editor window.  If it is already
  *  open for that sequence, this function just raises it.

@@ -1,6 +1,6 @@
 Sequencer64 Roadmap
 Chris Ahlstrom
-2015-09-10 to 2016-05-08
+2015-09-10 to 2016-05-19
 
 The starting point for the Sequencer64 project is version 0.9.4 of
 Sequencer24.  Sequencer24 itself started with version 0.9.2 of Seq24 from
@@ -8,7 +8,7 @@ Debian.  The initial work for this Seq24 reboot started in late July of
 2015, when I was laid up for awhile, and had basically finished documenting
 the Yoshimi software synthesizer.
 
-Latest version: 0.9.11
+Latest version: 0.9.12
 Current branch: fixups-->master, eighth round of branch pending
 
 The following changes are planned ('x' means it is done, 'y' means it is
@@ -51,7 +51,7 @@ contrib/bugs-to-investigate.txt file!
       y  Enhance documentation and recreate it.
       x  Rebuild application using library code.
       y  Verify functionality.
-y  -  Branch off to "testing", "testing2", "testing3", etc.  branches to
+   y  Branch off to "testing", "testing2", "testing3", etc.  branches to
       perform testing, tweaking, and, quite frankly, some fairly significant
       enhancements along the way.
       y  Create a separate GitHub project, seq64-tests, to do some

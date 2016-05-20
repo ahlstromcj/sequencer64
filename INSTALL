@@ -1,6 +1,6 @@
-INSTALL for Sequencer64 v. 0.9.11
+INSTALL for Sequencer64 v. 0.9.12
 Chris Ahlstrom
-2015-09-10 to 2016-05-17
+2015-09-10 to 2016-05-19
 
 The current packaging for Sequencer64 is primarily aimed at developers.
 There is currently no configure script... it must be bootstrapped.

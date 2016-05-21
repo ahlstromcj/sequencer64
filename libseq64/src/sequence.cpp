@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-05-17
+ * \updates       2016-05-21
  * \license       GNU GPLv2 or above
  *
  *  The functionality of this class also includes handling some of the
@@ -1128,10 +1128,10 @@ sequence::stretch_selected (midipulse delta_tick)
         if (er.is_selected())
         {
             event * e = &er;
-            if (e->get_timestamp() < first_ev)
+            if (e->get_timestamp() < midipulse(first_ev))
                 first_ev = e->get_timestamp();
 
-            if (e->get_timestamp() > last_ev)
+            if (e->get_timestamp() > midipulse(last_ev))
                 last_ev = e->get_timestamp();
         }
     }

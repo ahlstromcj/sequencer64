@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-05-19
+ * \updates       2016-05-21
  * \license       GNU GPLv2 or above
  *
  */
@@ -195,10 +195,7 @@ private:
 
     virtual void redraw (int seq);              /* override seqmenu's       */
     virtual void seq_set_and_edit (int seqnum); /* ditto                    */
-
-#ifdef USE_EVENT_EDIT_KEY
     virtual void seq_set_and_eventedit (int seqnum);
-#endif
 
     void draw_marker_on_sequence (int seq, int tick);
     void update_markers (int ticks);            /* ditto                    */

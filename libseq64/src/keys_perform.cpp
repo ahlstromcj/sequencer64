@@ -24,9 +24,12 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-13
- * \updates       2016-03-23
+ * \updates       2016-05-22
  * \license       GNU GPLv2 or above
  *
+ * \change ca 2016-05-22
+ *      Added pattern-edit and event-edit keys which change the pattern slot
+ *      shortcut/toggle keys to bring up one of the editor dialogs.
  */
 
 #include <stdio.h>                      /* snprintf() */
@@ -67,6 +70,8 @@ keys_perform::keys_perform ()
 #ifdef SEQ64_PAUSE_SUPPORT
     m_key_pause                     (SEQ64_period),
 #endif
+    m_key_pattern_edit              (SEQ64_equal),
+    m_key_event_edit                (SEQ64_minus),
     m_key_stop                      (SEQ64_Escape)
 {
     // Empty body
@@ -133,6 +138,8 @@ keys_perform::set_keys (const keys_perform_transfer & kpt)
 #ifdef SEQ64_PAUSE_SUPPORT
     m_key_pause                     = kpt.kpt_pause;
 #endif
+    m_key_pattern_edit              = kpt.kpt_pattern_edit;
+    m_key_event_edit                = kpt.kpt_event_edit;
     m_key_stop                      = kpt.kpt_stop;
     m_key_show_ui_sequence_key      = kpt.kpt_show_ui_sequence_key;
     m_key_show_ui_sequence_number   = kpt.kpt_show_ui_sequence_number;
@@ -166,6 +173,8 @@ keys_perform::get_keys (keys_perform_transfer & kpt)
 #ifdef SEQ64_PAUSE_SUPPORT
      kpt.kpt_pause                   = m_key_pause;
 #endif
+     kpt.kpt_pattern_edit            = m_key_pattern_edit;
+     kpt.kpt_event_edit              = m_key_event_edit;
      kpt.kpt_stop                    = m_key_stop;
      kpt.kpt_show_ui_sequence_key    = m_key_show_ui_sequence_key;
      kpt.kpt_show_ui_sequence_number = m_key_show_ui_sequence_number;

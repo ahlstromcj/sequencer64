@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-08
- * \updates       2016-05-08
+ * \updates       2016-05-21
  * \license       GNU GPLv2 or above
  *
  *  This collection of global variables describes some facets of the
@@ -74,16 +74,32 @@
 #define SEQ64_DEFAULT_SET_MAX            32
 
 /**
+ *  Default value of number of slot toggle keys (shortcut keys) that
+ *  can be defined.  Even if we end up adding more slots to a set, this
+ *  would be about the maximum number of keys we could really support.
+ */
+
+#define SEQ64_SET_KEYS_MAX              32
+
+/**
+ *  Default value of the width (number of columns) of the slot toggle keys.
+ *  Again, this matches with number of columns in a set in the main window of
+ *  the application.
+ */
+
+#define SEQ64_SET_KEYS_COLUMNS           8
+
+/**
  *  Default value for c_max_busses.
  */
 
-#define SEQ64_DEFAULT_BUSS_MAX           32
+#define SEQ64_DEFAULT_BUSS_MAX          32
 
 /**
  *  The number of ALSA busses supported.  See mastermidibus::init().
  */
 
-#define SEQ64_ALSA_OUTPUT_BUSS_MAX       16
+#define SEQ64_ALSA_OUTPUT_BUSS_MAX      16
 
 /**
  *  Guessing that this has to do with the width of the performance piano roll.

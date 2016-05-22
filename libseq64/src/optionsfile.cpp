@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-05-19
+ * \updates       2016-05-22
  * \license       GNU GPLv2 or above
  *
  *  The <code> ~/.seq24rc </code> or <code> ~/.config/sequencer64/sequencer64.rc
@@ -56,6 +56,7 @@
  *      46   # period pause sequencer
  */
 
+#include "gdk_basic_keys.h"             /* SEQ64_equal, SEQ64_minus         */
 #include "midibus.hpp"
 #include "optionsfile.hpp"
 #include "perform.hpp"
@@ -380,6 +381,25 @@ optionsfile::parse (perform & p)
 #ifdef SEQ64_PAUSE_SUPPORT
         }
 #endif
+
+        /*
+         * Might need to be fixed up for existing config files.  Will fix when
+         * we see what the problem would be.  Right now, they both come up as
+         * an apostrophe when the config file exists.  Actually, the integer
+         * value for each is zero!  So, if it comes up zero, we force them the
+         * SEQ64_equal and SEQ64_minus.  This might still screw up
+         * configurations that have devoted those keys to other purposes.
+         */
+
+        next_data_line(file);
+        sscanf(m_line, "%u", &ktx.kpt_pattern_edit);
+        if (ktx.kpt_pattern_edit == 0)
+            ktx.kpt_pattern_edit = SEQ64_equal;
+
+        next_data_line(file);
+        sscanf(m_line, "%u", &ktx.kpt_event_edit);
+        if (ktx.kpt_event_edit == 0)
+            ktx.kpt_event_edit = SEQ64_minus;
     }
 
     p.keys().set_keys(ktx);                /* copy into perform keys   */
@@ -865,6 +885,13 @@ optionsfile::write (const perform & p)
         << " stop sequencer\n"
         ;
 
+    /**
+     *  New boolean to show sequence numbers; ignored in legacy mode.
+     */
+
+    if (! rc().legacy_format())
+    {
+
 #ifdef SEQ64_PAUSE_SUPPORT
     file
         << ktx.kpt_pause << "    # "
@@ -873,17 +900,23 @@ optionsfile::write (const perform & p)
         ;
 #endif
 
-    /**
-     *  New boolean to show sequence numbers; ignored in legacy mode.
-     */
-
-    if (! rc().legacy_format())
-    {
         file
             << ktx.kpt_show_ui_sequence_number << "     #"
             << " show sequence numbers (1 = true / 0 = false);"
                " ignored in legacy mode\n"
             ;
+
+    file
+        << ktx.kpt_pattern_edit << "    # "
+        << ucperf.key_name(ktx.kpt_pattern_edit)
+        << " toggle use of slot shortcut key to bring up pattern editor\n"
+        ;
+
+    file
+        << ktx.kpt_event_edit << "    # "
+        << ucperf.key_name(ktx.kpt_event_edit)
+        << " toggle use of slot shortcut key to bring up event editor\n"
+        ;
     }
 
     file

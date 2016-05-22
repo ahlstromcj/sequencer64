@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-05-19
+ * \updates       2016-05-21
  * \license       GNU GPLv2 or above
  *
  *  This module is the base class for the perfnames and mainwid classes.
@@ -36,16 +36,6 @@
 
 #include "perform.hpp"
 #include "sequence.hpp"
-
-/**
- *  Try to highlight the selected pattern using black-on-cyan
- *  coloring, in addition to the red progress bar marking that already exists.
- *  Currently, it still has issues.  Moved to the perform object.
- *
- *      #define SEQ64_EDIT_SEQUENCE_HIGHLIGHT
- */
-
-#define USE_EVENT_EDIT_KEY
 
 namespace Gtk
 {
@@ -298,10 +288,7 @@ protected:
     void seq_event_edit ();
 
     virtual void seq_set_and_edit (int seqnum);
-
-#ifdef USE_EVENT_EDIT_KEY
     virtual void seq_set_and_eventedit (int seqnum);
-#endif
 
 private:
 

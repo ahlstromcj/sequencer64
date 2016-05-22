@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-05-19
+ * \updates       2016-05-22
  * \license       GNU GPLv2 or above
  *
  *  The main window holds the menu and the main controls of the application,
@@ -191,10 +191,8 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
     m_is_running            (false),
 #endif
     m_timeout_connect       (),                     /* handler              */
-    m_call_seq_edit         (false)                 /* new ca 2016-05-15    */
-#ifdef USE_EVENT_EDIT_KEY
-    , m_call_seq_eventedit    (false)                 /* new ca 2016-05-19    */
-#endif
+    m_call_seq_edit         (false),                /* new ca 2016-05-15    */
+    m_call_seq_eventedit    (false)                 /* new ca 2016-05-19    */
 {
     /*
      * This provides the application icon, seen in the title bar of the
@@ -1413,6 +1411,12 @@ mainwnd::on_key_press_event (GdkEventKey * ev)
              *      Ctrl-E, for example, brings up the Song Editor, and should
              *      not toggle the sequence controlled by the "e" key.  Will
              *      also see if the Alt key could/should be intercepted.
+             *
+             * \change ca 2016-05-21
+             *      Also, if the pattern-edit keys (will be minus and equals
+             *      by default) are enabled and have been pressed, then bring
+             *      up one of the editors (pattern or event) when the slot
+             *      shortcut key is pressed.
              */
 
             if (perf().get_key_events().count(ev->keyval) != 0)
@@ -1427,25 +1431,21 @@ mainwnd::on_key_press_event (GdkEventKey * ev)
                         m_call_seq_edit = false;
                         m_main_wid->seq_set_and_edit(seqnum);
                     }
-#ifdef USE_EVENT_EDIT_KEY
                     else if (m_call_seq_eventedit)
                     {
                         m_call_seq_eventedit = false;
                         m_main_wid->seq_set_and_eventedit(seqnum);
                     }
-#endif
                     else
                         sequence_key(seqnum);   /* toggle the sequence  */
                 }
             }
             else
             {
-                if (k.is(SEQ64_equal))          /* '='                  */
+                if (ev->keyval == PREFKEY(pattern_edit))
                     m_call_seq_edit = ! m_call_seq_edit;
-#ifdef USE_EVENT_EDIT_KEY
-                else if (k.is(SEQ64_minus))     /* '-'                  */
+                else if (ev->keyval == PREFKEY(event_edit))
                     m_call_seq_eventedit = ! m_call_seq_eventedit;
-#endif
             }
         }
     }

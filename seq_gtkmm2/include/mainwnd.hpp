@@ -233,8 +233,6 @@ private:
 
     bool m_call_seq_edit;
 
-#ifdef USE_EVENT_EDIT_KEY
-
     /**
      *  Indicates that this object is in a mode where the usual mute/unmute
      *  keystroke will instead bring up the pattern slot for event-editing.
@@ -242,8 +240,6 @@ private:
      */
 
     bool m_call_seq_eventedit;
-
-#endif
 
 public:
 

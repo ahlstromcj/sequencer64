@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-09-13
- * \updates       2016-05-05
+ * \updates       2016-05-22
  * \license       GNU GPLv2 or above
  *
  */
@@ -64,9 +64,13 @@ struct keys_perform_transfer
     unsigned int kpt_stop;
     bool kpt_show_ui_sequence_key;
     bool kpt_show_ui_sequence_number;
+
 #ifdef SEQ64_PAUSE_SUPPORT
     unsigned int kpt_pause;
 #endif
+
+    unsigned int kpt_pattern_edit;
+    unsigned int kpt_event_edit;
 };
 
 /**
@@ -108,8 +112,8 @@ private:
     bool m_key_show_ui_sequence_key;
 
     /**
-     *  If set, shows the sequence number  on each filled pattern and empty
-     *  pattern slot in the main window.  Also show the sequence number as
+     *  If set, shows the sequence number on each filled pattern and empty
+     *  pattern slot in the main window.  Also shows the sequence number as
      *  part of the sequence name in the performance window (song editor).
      */
 
@@ -167,9 +171,13 @@ private:
     unsigned int m_key_group_off;               /**< Group off, apostrophe! */
     unsigned int m_key_group_learn;             /**< Group learn, Insert.   */
     unsigned int m_key_start;                   /**< Start play, Space key. */
+
 #ifdef SEQ64_PAUSE_SUPPORT
     unsigned int m_key_pause;                   /**< Pause play, Period.    */
 #endif
+
+    unsigned int m_key_pattern_edit;
+    unsigned int m_key_event_edit;
     unsigned int m_key_stop;                    /**< Stop play, Escape.     */
 
 public:
@@ -500,6 +508,48 @@ public:
 #endif
 
     /**
+     * \getter m_key_pattern_edit
+     */
+
+    unsigned int pattern_edit () const
+    {
+        return m_key_pattern_edit;
+    }
+
+    /**
+     * \setter m_key_pattern_edit
+     *
+     * \param x
+     *      The key value to assign to the operation.
+     */
+
+    void pattern_edit (unsigned int x)
+    {
+        m_key_pattern_edit = x;
+    }
+
+    /**
+     * \getter m_key_event_edit
+     */
+
+    unsigned int event_edit () const
+    {
+        return m_key_event_edit;
+    }
+
+    /**
+     * \setter m_key_event_edit
+     *
+     * \param x
+     *      The key value to assign to the operation.
+     */
+
+    void event_edit (unsigned int x)
+    {
+        m_key_event_edit = x;
+    }
+
+    /**
      * \getter m_key_stop
      */
 
@@ -706,10 +756,11 @@ public:
 
 protected:
 
-    /*
+    /**
      * The following are tricky ways to get at address of the key and group
      * operation values so that we don't directly expose the members to
-     * manipulation.
+     * manipulation.  They are used in the options module, and, for brevity,
+     * are accessed using the PREFKEY_ADDR() macro.
      */
 
     /**
@@ -850,6 +901,24 @@ protected:
     }
 
 #endif
+
+    /**
+     *  Address getter for the pattern edit operation.
+     */
+
+    unsigned int * at_pattern_edit ()
+    {
+        return &m_key_pattern_edit;
+    }
+
+    /**
+     *  Address getter for the event edit operation.
+     */
+
+    unsigned int * at_event_edit ()
+    {
+        return &m_key_event_edit;
+    }
 
     /**
      *  Address getter for the stop operation.

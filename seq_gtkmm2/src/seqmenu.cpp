@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-05-17
+ * \updates       2016-05-21
  * \license       GNU GPLv2 or above
  *
  *  This object also does some minor coordination of editing a sequence via
@@ -311,8 +311,6 @@ seqmenu::seq_set_and_edit (int seqnum)
     seq_edit();
 }
 
-#ifdef USE_EVENT_EDIT_KEY
-
 /**
  *  Sets the current sequence and then acts as if the user had right-clicked
  *  on its slot and selected "Event Edit".
@@ -327,8 +325,6 @@ seqmenu::seq_set_and_eventedit (int seqnum)
     current_seq(seqnum);
     seq_event_edit();
 }
-
-#endif
 
 /**
  *  This menu callback launches the new event editor window.  If it is already

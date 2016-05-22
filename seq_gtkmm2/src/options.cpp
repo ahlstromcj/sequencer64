@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-05-17
+ * \updates       2016-05-22
  * \license       GNU GPLv2 or above
  *
  *  Here is a list of the global variables used/stored/modified by this
@@ -81,7 +81,7 @@ options::options
 #if GTK_MINOR_VERSION < 12
     m_tooltips                      (manage(new Gtk::Tooltips()),
 #endif
-    m_mainperf                      (p),
+    m_mainperf                      (p),        /* accessed via perf() */
     m_button_ok                     (manage(new Gtk::Button(Gtk::Stock::OK))),
     m_button_jack_transport
     (
@@ -134,15 +134,12 @@ options::add_midi_clock_page ()
 #if GTK_MINOR_VERSION < 12
     manage(new Gtk::Tooltips());
 #endif
-    for (int i = 0; i < buses; i++)
+    for (int i = 0; i < buses; ++i)
     {
         Gtk::HBox * hbox2 = manage(new Gtk::HBox());
         Gtk::Label * label = manage
         (
-            new Gtk::Label
-            (
-                perf().master_bus().get_midi_out_bus_name(i), 0
-            )
+            new Gtk::Label(perf().master_bus().get_midi_out_bus_name(i), 0)
         );
         hbox2->pack_start(*label, false, false);
 
@@ -246,10 +243,7 @@ options::add_midi_input_page ()
     {
         Gtk::CheckButton * check = manage
         (
-            new Gtk::CheckButton
-            (
-                perf().master_bus().get_midi_in_bus_name(bus), 0
-            )
+            new Gtk::CheckButton(perf().master_bus().get_midi_in_bus_name(bus), 0)
         );
         check->signal_toggled().connect
         (
@@ -405,7 +399,7 @@ options::add_keyboard_page ()
     controltable->attach(*label, 4, 5, 1, 2);
     controltable->attach(*entry, 5, 6, 1, 2);
 
-    label = manage(new Gtk::Label("Keep queue", Gtk::ALIGN_RIGHT));
+    label = manage(new Gtk::Label("Keep Queue", Gtk::ALIGN_RIGHT));
     entry = manage
     (
         new keybindentry(keybindentry::location, PREFKEY_ADDR(keep_queue))
@@ -413,7 +407,18 @@ options::add_keyboard_page ()
     controltable->attach(*label, 4, 5, 2, 3);
     controltable->attach(*entry, 5, 6, 2, 3);
 
-    label = manage(new Gtk::Label("Screenset up", Gtk::ALIGN_RIGHT));
+    if (! rc().legacy_format())
+    {
+        label = manage(new Gtk::Label("Pattern Edit", Gtk::ALIGN_RIGHT));
+        entry = manage
+        (
+            new keybindentry(keybindentry::location, PREFKEY_ADDR(pattern_edit))
+        );
+        controltable->attach(*label, 4, 5, 3, 4);
+        controltable->attach(*entry, 5, 6, 3, 4);
+    }
+
+    label = manage(new Gtk::Label("Screenset Up", Gtk::ALIGN_RIGHT));
     entry = manage
     (
         new keybindentry(keybindentry::location, PREFKEY_ADDR(screenset_up))
@@ -421,7 +426,7 @@ options::add_keyboard_page ()
     controltable->attach(*label, 6, 7, 0, 1);
     controltable->attach(*entry, 7, 8, 0, 1);
 
-    label = manage(new Gtk::Label("Screenset down", Gtk::ALIGN_RIGHT));
+    label = manage(new Gtk::Label("Screenset Down", Gtk::ALIGN_RIGHT));
     entry = manage
     (
         new keybindentry(keybindentry::location, PREFKEY_ADDR(screenset_dn))
@@ -429,7 +434,7 @@ options::add_keyboard_page ()
     controltable->attach(*label, 6, 7, 1, 2);
     controltable->attach(*entry, 7, 8, 1, 2);
 
-    label = manage(new Gtk::Label("Set playing screenset", Gtk::ALIGN_RIGHT));
+    label = manage(new Gtk::Label("Set Playing Screenset", Gtk::ALIGN_RIGHT));
     entry = manage
     (
         new keybindentry
@@ -439,6 +444,17 @@ options::add_keyboard_page ()
     );
     controltable->attach(*label, 6, 7, 2, 3);
     controltable->attach(*entry, 7, 8, 2, 3);
+
+    if (! rc().legacy_format())
+    {
+        label = manage(new Gtk::Label("Event Edit", Gtk::ALIGN_RIGHT));
+        entry = manage
+        (
+            new keybindentry(keybindentry::location, PREFKEY_ADDR(event_edit))
+        );
+        controltable->attach(*label, 6, 7, 3, 4);
+        controltable->attach(*entry, 7, 8, 3, 4);
+    }
 
     /* Frame for sequence toggle keys */
 
@@ -453,13 +469,13 @@ options::add_keyboard_page ()
     toggletable->set_border_width(4);
     toggletable->set_spacings(4);
     toggleframe->add(*toggletable);
-    for (int i = 0; i < 32; i++)        // c_seqs_in_set ?
+    for (int i = 0; i < SEQ64_SET_KEYS_MAX; ++i)    // 32 = c_seqs_in_set ?
     {
-        int x = i % 8 * 2;
-        int y = i / 8;
+        int x = i % SEQ64_SET_KEYS_COLUMNS * 2;     // 8 = c_mainwnd_cols ?
+        int y = i / SEQ64_SET_KEYS_COLUMNS;
         int slot = x * 2 + y;           // count this way: 0, 4, 8, 16...
         char buf[8];
-        snprintf(buf, sizeof(buf), "%d", slot);
+        snprintf(buf, sizeof buf, "%d", slot);
         Gtk::Label * numlabel = manage(new Gtk::Label(buf, Gtk::ALIGN_RIGHT));
         entry = manage
         (
@@ -482,12 +498,12 @@ options::add_keyboard_page ()
     mutegrouptable->set_border_width(4);
     mutegrouptable->set_spacings(4);
     mutegroupframe->add(*mutegrouptable);
-    for (int i = 0; i < 32; i++)        // 32 = c_seqs_in_set ?
+    for (int i = 0; i < SEQ64_SET_KEYS_MAX; ++i)    // 32 = c_seqs_in_set ?
     {
-        int x = i % 8 * 2;              // 8 = c_mainwnd_cols ?
-        int y = i / 8;
+        int x = i % SEQ64_SET_KEYS_COLUMNS * 2;     // 8 = c_mainwnd_cols ?
+        int y = i / SEQ64_SET_KEYS_COLUMNS;
         char buf[8];
-        snprintf(buf, sizeof(buf), "%d", i);
+        snprintf(buf, sizeof buf, "%d", i);
         Gtk::Label * numlabel = manage(new Gtk::Label(buf, Gtk::ALIGN_RIGHT));
         entry = manage
         (
@@ -904,7 +920,7 @@ options::clock_mod_callback (Gtk::Adjustment * adj)
 /**
  *  Input callback function.  This is kind of a weird function, but it allows
  *  immediate redrawing of the mainwid and perfnames user-interfaces when this
- *  item is modified in the File / Options /Keyboard tab.  This drawing is
+ *  item is modified in the File / Options / Keyboard tab.  This drawing is
  *  indirect, and triggered by the perform object setting the dirty-flag on
  *  all of the sequences in the bus.
  *

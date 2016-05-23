@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-05-17
+ * \updates       2016-05-23
  * \license       GNU GPLv2 or above
  *
  *  There are a large number of existing items to discuss.  But for now let's
@@ -192,7 +192,7 @@ seqroll::seqroll
     m_justselected_one      (false),
     m_move_delta_x          (0),
     m_move_delta_y          (0),
-    m_move_snap_offset_x    (0),
+    m_move_snap_offset_x    (0),        /* used in fruityseqroll */
     m_progress_x            (0),
     m_scroll_offset_ticks   (0),
     m_scroll_offset_key     (0),
@@ -710,7 +710,6 @@ seqroll::draw_events_on (Glib::RefPtr<Gdk::Drawable> draw)
     midipulse tick_s;
     midipulse tick_f;
     int note;
-    int note_x, note_y, note_width, note_height;
     bool selected;
     int velocity;
     draw_type dt;
@@ -724,10 +723,10 @@ seqroll::draw_events_on (Glib::RefPtr<Gdk::Drawable> draw)
             if (perf().is_active(m_background_sequence))
                 seq = perf().get_sequence(m_background_sequence);
             else
-                method++;
+                ++method;
         }
         else if (method == 0)                   /* done with background?    */
-            method++;                           /* now draw the sequence    */
+            ++method;                           /* now draw the sequence    */
 
         if (method == 1)
             seq = &m_seq;
@@ -749,9 +748,10 @@ seqroll::draw_events_on (Glib::RefPtr<Gdk::Drawable> draw)
                     (tick_f >= starttick && tick_f <= endtick))
             )
             {
-                note_x = tick_s / m_zoom;       /* turn into screen coords */
-                note_y = c_rollarea_y - (note * c_key_y) - c_key_y - 1 + 2;
-                note_height = c_key_y - 3;
+                int note_width;
+                int note_x = tick_s / m_zoom;       /* turn into screen coords */
+                int note_y = c_rollarea_y - (note * c_key_y) - c_key_y - 1 + 2;
+                int note_height = c_key_y - 3;
                 int in_shift = 0;
                 int length_add = 0;
                 if (dt == DRAW_NORMAL_LINKED)
@@ -781,33 +781,21 @@ seqroll::draw_events_on (Glib::RefPtr<Gdk::Drawable> draw)
                 note_x -= m_scroll_offset_x;
                 note_y -= m_scroll_offset_y;
 
-                /* Draw note boxes for main or background sequence */
+                /*
+                 * Draw note boxes for main or background sequence.
+                 * Use a color more distinguishable from the "scale" color for
+                 * the background sequence.
+                 */
 
                 if (method == 0)
-                {
-                    /*
-                     * Let's try a color more distinguishable from the
-                     * "scale" color.
-                     *
-                     * m_gc->set_foreground(dark_grey());
-                     */
-
-                     m_gc->set_foreground(dark_cyan());
-                }
+                     m_gc->set_foreground(dark_cyan());     /* vs dark_grey() */
                 else
                     m_gc->set_foreground(black());
 
-                draw_rectangle
-                (
-                    draw, note_x, note_y, note_width, note_height
-                );
+                draw_rectangle(draw, note_x, note_y, note_width, note_height);
                 if (tick_f < tick_s)
-                {
-                    draw_rectangle
-                    (
-                        draw, 0, note_y, tick_f / m_zoom, note_height
-                    );
-                }
+                    draw_rectangle(draw, 0, note_y, tick_f / m_zoom, note_height);
+
                 if (note_width > 3)     /* draw inside box if there is room */
                 {
                     if (selected)
@@ -817,27 +805,27 @@ seqroll::draw_events_on (Glib::RefPtr<Gdk::Drawable> draw)
 
                     if (method == 1)
                     {
+                        int xinc = note_x + 1;
+                        int yinc = note_y + 1;
+                        int hdec = note_height - 3;
                         if (tick_f >= tick_s)
                         {
                             draw->draw_rectangle
                             (
-                                m_gc, true, note_x + 1 + in_shift,
-                                note_y + 1, note_width - 3 + length_add,
-                                note_height - 3
+                                m_gc, true, xinc + in_shift,
+                                yinc, note_width - 3 + length_add, hdec
                             );
                         }
                         else
                         {
                             draw_rectangle
                             (
-                                draw, note_x + 1 + in_shift, note_y + 1,
-                                note_width, note_height - 3
+                                draw, xinc + in_shift, yinc, note_width, hdec
                             );
                             draw_rectangle
                             (
-                                draw,  0, note_y + 1,
-                                (tick_f / m_zoom) - 3 + length_add,
-                                note_height - 3
+                                draw, 0, yinc,
+                                (tick_f / m_zoom) - 3 + length_add, hdec
                             );
                         }
                     }
@@ -877,7 +865,7 @@ void
 seqroll::draw_selection_on_window ()
 {
     int x, y, w, h;
-    if (m_selecting  ||  m_moving || m_paste ||  m_growing)
+    if (m_selecting || m_moving || m_paste || m_growing)
     {
         set_line(Gdk::LINE_SOLID);
         draw_drawable                                   /* replace old */
@@ -898,13 +886,18 @@ seqroll::draw_selection_on_window ()
     }
     if (m_moving || m_paste)
     {
-        int delta_x = m_current_x - m_drop_x;
-        int delta_y = m_current_y - m_drop_y;
-        x = m_selected.x + delta_x;
-        y = m_selected.y + delta_y;
-        x -= m_scroll_offset_x;
-        y -= m_scroll_offset_y;
+        x = m_selected.x + m_current_x - m_drop_x - m_scroll_offset_x;
+        y = m_selected.y + m_current_y - m_drop_y - m_scroll_offset_y;
+
+        /*
+         * Orange makes it a little more clear that we're pasting, I think.
+         */
+
+#ifdef USE_OLD_COLOR
         draw_rectangle(black(), x, y, m_selected.width, m_selected.height, false);
+#else
+        draw_rectangle(orange(), x, y, m_selected.width, m_selected.height, false);
+#endif
         m_old.x = x;
         m_old.y = y;
         m_old.width = m_selected.width;
@@ -917,10 +910,8 @@ seqroll::draw_selection_on_window ()
         if (width < 1)
             width = 1;
 
-        x = m_selected.x;
-        y = m_selected.y;
-        x -= m_scroll_offset_x;
-        y -= m_scroll_offset_y;
+        x = m_selected.x - m_scroll_offset_x;
+        y = m_selected.y - m_scroll_offset_y;
         draw_rectangle(black(), x, y, width, m_selected.height, false);
         m_old.x = x;
         m_old.y = y;
@@ -1054,13 +1045,20 @@ seqroll::start_paste()
     int note_h;
     int note_l;
     snap_x(m_current_x);
-    snap_y(m_current_x);
+
+    /*
+     * Makes no sense to snap a y value according to an x value!
+     *
+     * snap_y(m_current_x);                    // is this really right?
+     */
+
+    snap_y(m_current_y);
     m_drop_x = m_current_x;
     m_drop_y = m_current_y;
     m_paste = true;
 
     /*
-     * get the box that selected elements are in
+     * Get the box that selected elements are in.
      */
 
     m_seq.get_clipboard_box(tick_s, note_h, tick_f, note_l);
@@ -1069,15 +1067,6 @@ seqroll::start_paste()
         tick_s, tick_f, note_h, note_l,
         m_selected.x, m_selected.y, m_selected.width, m_selected.height
     );
-
-    /*
-     * @change ca 2016-01-20
-     * Adjust for clipboard being shifted to tick 0.  Odd,
-     * "m_selected.y += (m_drop_y - m_selected.y)" is
-     * "m_selected.y = m_selected.y + (m_drop_y - m_selected.y)" is
-     * "m_drop_y", so let's do that.
-     */
-
     m_selected.x += m_drop_x;
     m_selected.y = m_drop_y;
 }
@@ -1091,16 +1080,19 @@ seqroll::start_paste()
  *      -   m_zoom = number of pulses per pixel
  *
  *  Therefore, m_snap / m_zoom = number pixels to snap to.
+ *
+ * \param x
+ *      Provides the x-value to be snapped.
  */
 
 void
 seqroll::snap_x (int & x)
 {
-    int mod = (m_snap / m_zoom);
+    int mod = m_snap / m_zoom;
     if (mod <= 0)
         mod = 1;
 
-    x -= (x % mod);
+    x -= x % mod;
 }
 
 /**
@@ -1114,6 +1106,39 @@ seqroll::set_data_type (midibyte status, midibyte control)
 {
     m_status = status;
     m_cc = control;
+}
+
+/**
+ *  Proposed new function to allow motion of the selection box via the arrow
+ *  keys.
+ *
+ * \todo
+ *      Still need to get the Enter key or some-such to
+ *      paste the notes, and also handle the other three
+ *      directions.
+ *
+ * \param dx
+ *      The amount to move the selection box.  Values are -1, 0, or 1.
+ *
+ * \param dy
+ *      The amount to move the selection box.  Values are -1, 0, or 1.
+ */
+
+void
+seqroll::move_selection_box (int dx, int dy)
+{
+    int x = m_old.x + (m_snap / m_zoom);    // 32;
+    int y = m_old.y;
+    int w = m_selected.width;
+    int h = m_selected.height;
+    draw_drawable       /* replace old */
+    (
+        m_old.x, m_old.y,
+        m_old.x, m_old.y, m_old.width + 1, m_old.height + 1
+    );
+    draw_rectangle(orange(), x, y, w, h, false);
+    m_old.x = x;
+    m_old.y = y;
 }
 
 /**
@@ -1143,11 +1168,8 @@ seqroll::on_realize ()
 bool
 seqroll::on_expose_event (GdkEventExpose * e)
 {
-    draw_drawable
-    (
-        e->area.x, e->area.y, e->area.x, e->area.y,
-        e->area.width, e->area.height
-    );
+    GdkRectangle & area = e->area;
+    draw_drawable(area.x, area.y, area.x, area.y, area.width, area.height);
     draw_selection_on_window();
     return true;
 }
@@ -1334,39 +1356,84 @@ seqroll::on_key_press_event (GdkEventKey * ev)
             }
             else if (ev->keyval == SEQ64_Left)
             {
-                perf().modify();
-                result = true;
-                if (m_seq.any_selected_notes())
-                    m_seq.move_selected_notes(-m_snap, /*-48,*/ 0);
+                if (m_paste)
+                {
+                    // will try to move the pasting selection somehow
+                }
                 else
-                    m_seq.set_last_tick(m_seq.get_last_tick() - m_snap);
+                {
+                    perf().modify();
+                    result = true;
+                    if (m_seq.any_selected_notes())
+                        m_seq.move_selected_notes(-m_snap, /*-48,*/ 0);
+                    else
+                        m_seq.set_last_tick(m_seq.get_last_tick() - m_snap);
+                }
             }
             else if (ev->keyval == SEQ64_Right)
             {
-                perf().modify();
-                result = true;
-                if (m_seq.any_selected_notes())
-                    m_seq.move_selected_notes(m_snap, /*48,*/ 0);
+                if (m_paste)
+                {
+                     // Will try to move the pasting selection somehow.
+
+                    move_selection_box(1, 0);
+                }
                 else
-                    m_seq.set_last_tick(m_seq.get_last_tick() + m_snap);
+                {
+                    perf().modify();
+                    result = true;
+                    if (m_seq.any_selected_notes())
+                        m_seq.move_selected_notes(m_snap, /*48,*/ 0);
+                    else
+                        m_seq.set_last_tick(m_seq.get_last_tick() + m_snap);
+                }
             }
             else if (ev->keyval == SEQ64_Down)
             {
-                perf().modify();
-                if (m_seq.any_selected_notes())
+                if (m_paste)
                 {
-                    m_seq.move_selected_notes(0, -1);
-                    result = true;
+                    // will try to move the pasting selection somehow
+                }
+                else
+                {
+                    perf().modify();
+                    if (m_seq.any_selected_notes())
+                    {
+                        m_seq.move_selected_notes(0, -1);
+                        result = true;
+                    }
                 }
             }
             else if (ev->keyval == SEQ64_Up)
             {
-                perf().modify();
-                if (m_seq.any_selected_notes())
+                if (m_paste)
                 {
-                    m_seq.move_selected_notes(0, 1);
-                    result = true;
+                    // will try to move the pasting selection somehow
                 }
+                else
+                {
+                    perf().modify();
+                    if (m_seq.any_selected_notes())
+                    {
+                        m_seq.move_selected_notes(0, 1);
+                        result = true;
+                    }
+                }
+            }
+            else if (CAST_OR_EQUIVALENT(ev->keyval, SEQ64_Return, SEQ64_KP_Enter))
+            {
+                /*
+                 * This code is similar to that in Seq24SeqRollInput ::
+                 * on_button_press_event().
+                 */
+
+                midipulse tick;
+                int note;
+                m_paste = false;
+                m_seq.push_undo();
+                convert_xy(m_old.x, m_old.y, tick, note);
+                m_seq.paste_selected(tick, note);
+                result = true;
             }
             else if (ev->keyval == SEQ64_p)
             {

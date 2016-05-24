@@ -1113,22 +1113,27 @@ seqroll::set_data_type (midibyte status, midibyte control)
  *  keys.
  *
  * \todo
- *      Still need to get the Enter key or some-such to
- *      paste the notes, and also handle the other three
- *      directions.
+ *      Still need to get the Enter key or some-such to paste the notes, and
+ *      also handle the other three directions.
  *
  * \param dx
- *      The amount to move the selection box.  Values are -1, 0, or 1.
+ *      The amount to move the selection box.  Values are -1, 0, or 1.  -1 is
+ *      left one snap, 0 is no movement horizontally, and 1 is right one snap.
  *
  * \param dy
- *      The amount to move the selection box.  Values are -1, 0, or 1.
+ *      The amount to move the selection box.  Values are -1, 0, or 1.  -1 is
+ *      up one snap, 0 is no movement vertically, and 1 is down one snap.
  */
 
 void
 seqroll::move_selection_box (int dx, int dy)
 {
-    int x = m_old.x + (m_snap / m_zoom);    // 32;
-    int y = m_old.y;
+    int x = m_old.x + dx * m_snap / m_zoom;
+    int y = m_old.y + dy * c_key_y;
+
+    m_current_x = x;
+    m_current_y = y;
+#if 0
     int w = m_selected.width;
     int h = m_selected.height;
     draw_drawable       /* replace old */
@@ -1137,6 +1142,8 @@ seqroll::move_selection_box (int dx, int dy)
         m_old.x, m_old.y, m_old.width + 1, m_old.height + 1
     );
     draw_rectangle(orange(), x, y, w, h, false);
+#endif
+    draw_selection_on_window();
     m_old.x = x;
     m_old.y = y;
 }
@@ -1337,9 +1344,7 @@ seqroll::on_key_press_event (GdkEventKey * ev)
             /**
              * I think we should be able to move and remove notes while
              * playing, which is already supported using the mouse.
-             */
-
-            /*
+             *
              * if (! perf().is_playing)
              */
 
@@ -1358,14 +1363,15 @@ seqroll::on_key_press_event (GdkEventKey * ev)
             {
                 if (m_paste)
                 {
-                    // will try to move the pasting selection somehow
+                    move_selection_box(-1, 0);
+                    result = true;
                 }
                 else
                 {
                     perf().modify();
                     result = true;
                     if (m_seq.any_selected_notes())
-                        m_seq.move_selected_notes(-m_snap, /*-48,*/ 0);
+                        m_seq.move_selected_notes(-m_snap, 0);
                     else
                         m_seq.set_last_tick(m_seq.get_last_tick() - m_snap);
                 }
@@ -1374,16 +1380,15 @@ seqroll::on_key_press_event (GdkEventKey * ev)
             {
                 if (m_paste)
                 {
-                     // Will try to move the pasting selection somehow.
-
                     move_selection_box(1, 0);
+                    result = true;
                 }
                 else
                 {
                     perf().modify();
                     result = true;
                     if (m_seq.any_selected_notes())
-                        m_seq.move_selected_notes(m_snap, /*48,*/ 0);
+                        m_seq.move_selected_notes(m_snap, 0);
                     else
                         m_seq.set_last_tick(m_seq.get_last_tick() + m_snap);
                 }
@@ -1392,7 +1397,8 @@ seqroll::on_key_press_event (GdkEventKey * ev)
             {
                 if (m_paste)
                 {
-                    // will try to move the pasting selection somehow
+                    move_selection_box(0, 1);
+                    result = true;
                 }
                 else
                 {
@@ -1408,7 +1414,8 @@ seqroll::on_key_press_event (GdkEventKey * ev)
             {
                 if (m_paste)
                 {
-                    // will try to move the pasting selection somehow
+                    move_selection_box(0, -1);
+                    result = true;
                 }
                 else
                 {

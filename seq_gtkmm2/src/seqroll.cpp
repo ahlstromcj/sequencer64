@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-05-23
+ * \updates       2016-05-24
  * \license       GNU GPLv2 or above
  *
  *  There are a large number of existing items to discuss.  But for now let's
@@ -896,7 +896,10 @@ seqroll::draw_selection_on_window ()
 #ifdef USE_OLD_COLOR
         draw_rectangle(black(), x, y, m_selected.width, m_selected.height, false);
 #else
-        draw_rectangle(orange(), x, y, m_selected.width, m_selected.height, false);
+        draw_rectangle
+        (
+            dark_orange(), x, y, m_selected.width, m_selected.height, false
+        );
 #endif
         m_old.x = x;
         m_old.y = y;

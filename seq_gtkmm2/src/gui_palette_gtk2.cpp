@@ -24,9 +24,12 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-21
- * \updates       2016-05-17
+ * \updates       2016-05-24
  * \license       GNU GPLv2 or above
  *
+ *  One possible idea would be a color configuration that would radically
+ *  change drawing of the lines and pixmaps, opening up the way for night
+ *  views and color schemes that match the desktop theme.
  */
 
 #include "gui_palette_gtk2.hpp"         /* seq64::gui_palette_gtkw          */
@@ -36,9 +39,10 @@ namespace seq64
 {
 
 /**
- *  Principal constructor.
- *  In the constructor you can only allocate colors;
- *  get_window() returns 0 because this window has not be realized.
+ *  Principal constructor.  In the constructor one can only allocate colors;
+ *  get_window() returns 0 because this window has not yet been realized.
+ *  Also note that the possible color names that can be used are found in
+ *  /usr/share/X11/rgb.txt.
  */
 
 gui_palette_gtk2::gui_palette_gtk2 ()
@@ -51,6 +55,7 @@ gui_palette_gtk2::gui_palette_gtk2 ()
     m_lt_grey           (Color("light grey")),
     m_red               (Color("red")),
     m_orange            (Color("orange")),
+    m_dk_orange         (Color("dark orange")),
     m_yellow            (Color("yellow")),
     m_green             (Color("green")),
     m_blue              (Color("blue")),
@@ -68,6 +73,7 @@ gui_palette_gtk2::gui_palette_gtk2 ()
     colormap->alloc_color(const_cast<Color &>(m_lt_grey));
     colormap->alloc_color(const_cast<Color &>(m_red));
     colormap->alloc_color(const_cast<Color &>(m_orange));
+    colormap->alloc_color(const_cast<Color &>(m_dk_orange));
     colormap->alloc_color(const_cast<Color &>(m_yellow));
     colormap->alloc_color(const_cast<Color &>(m_green));
     colormap->alloc_color(const_cast<Color &>(m_blue));

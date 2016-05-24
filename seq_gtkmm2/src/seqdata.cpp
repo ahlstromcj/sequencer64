@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-04-14
+ * \updates       2016-05-24
  * \license       GNU GPLv2 or above
  *
  */
@@ -160,9 +160,9 @@ seqdata::update_pixmap ()
  *  seqevent::draw_events_on().  And yet it doesn't handle zooming
  *  as well, must fix!
  *
- * \new ca 2016-04-13
- *      We now draw the data line for selected event in orange, instead of
- *      black.
+ * \change ca 2016-04-13, 2016-05-24
+ *      We now draw the data line for selected event in dark orange, instead
+ *      of black.
  *
  * \param drawable
  *      The given drawable object.
@@ -189,7 +189,7 @@ seqdata::draw_events_on (Glib::RefPtr<Gdk::Drawable> drawable)
             set_line(Gdk::LINE_SOLID, 2);           /* vertical event line  */
             draw_line
             (
-                drawable, selected ? orange() : black(),
+                drawable, selected ? dark_orange() : black(),
                 x, c_dataarea_y - event_height, x, c_dataarea_y
             );
             drawable->draw_drawable

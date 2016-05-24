@@ -1,6 +1,6 @@
 README for Sequencer64 0.9.12 (current branch = "fixups")
 Chris Ahlstrom
-2015-09-10 to 2016-05-19 (initial work started in July of 2015)
+2015-09-10 to 2016-05-24 (initial work started in July of 2015)
 
 Sequencer64 (replaces sequencer24) is a reboot of seq24 to refactor it to be
 tighter and easier to transition to GTKmm 3, and much more.  It is now
@@ -31,7 +31,7 @@ Major updates:
         the period).  Pause can be disabled at configure time (--disable-pause).
     -   Long sequences/patterns now auto-scroll horizontally during playback
         to keep up with the progress bar in the sequence/pattern editor.
-    -   Highlighting of last sequence brought up for editing.
+    -   Highlighting of the current sequence brought up for editing.
     -   Configurable progress bar, font, redraw timeouts, and more.
     -   MIDI Clock support has been fixed.  Sequencer64 will now interact
         well with QJackCtl, Hydrogen, and Klick (command-line metronome).
@@ -57,21 +57,29 @@ Major updates:
         screensets.  Shift-left-click on the pattern name or M in the song
         editor now toggles the mute state of all other tracks.
     -   Added arrow key support to some of the windows and panes.
+        -   The "l" and "r" keys initiate arrow movement of the performance
+            markers.
+        -   If notes are selected in the pattern editor, the arrow keys can
+            be used to move the notes in time and in pitch.
+        -   If selected notes are copied-and-pasted, the selection box
+            that indicates where they will be dropped can now be moved with
+            the arrow keys.  Hitting "Enter" will then drop the notes in the
+            same wasy that a click does.
+        -   In the performance editor, a pattern can be selected with the
+            mouse and moved right/left with the arrow keys.
+    -   Added support for using special keys to manipulate some of the
+        user-interface elements:
+        -   The "l" and "r" keys initiate arrow movement of the performance
+            markers, with "x" to escape this mode.
         -   Also supplemented the mouse with "p" to start paint/draw mode, and
             "x" to escape it, in the sequence and song editors.
-        -   The "l" and "r" keys allow arrow movement of the performance
-            markers, with "x" to escape this mode.
-        -   If notes are selected in the sequence editor, the arrow keys can
-            be used to move the notes in time and in pitch.  In the
-            performance editor, a pattern can be selected with the mouse and
-            moved right/left with the arrow keys.
         -   Add "z" and "Z" keys to zoom out and zoom in the pattern and song
             piano rolls.  "0" restores the default zoom.
     -   Tweaked the colors of some user-interface elements to make it
         easier to see them when combined.  For example, the background
         sequence is now colored, and the scale bars are now light grey.
-        Progress bars are now red, if not running in legacy mode.  Selected
-        events now appear as orange in the data panel.
+        Progress bars can be set to red, if not running in legacy mode.
+        Selected events now appear as orange in the data panel.
     -   The "rc" configuration file has been upgraded to support a couple
         more options, including the enabling/disabling of LASH session
         support.

@@ -1130,19 +1130,15 @@ seqroll::move_selection_box (int dx, int dy)
 {
     int x = m_old.x + dx * m_snap / m_zoom;
     int y = m_old.y + dy * c_key_y;
+    m_current_x = x + m_scroll_offset_x;
+    m_current_y = y + m_scroll_offset_y;
+    snap_y(m_current_y);
 
-    m_current_x = x;
-    m_current_y = y;
-#if 0
-    int w = m_selected.width;
-    int h = m_selected.height;
-    draw_drawable       /* replace old */
-    (
-        m_old.x, m_old.y,
-        m_old.x, m_old.y, m_old.width + 1, m_old.height + 1
-    );
-    draw_rectangle(orange(), x, y, w, h, false);
-#endif
+    midipulse tick;
+    int note;
+    convert_xy(0, m_current_y, tick, note);
+    m_seqkeys_wid.set_hint_key(note);
+    snap_x(m_current_x);
     draw_selection_on_window();
     m_old.x = x;
     m_old.y = y;
@@ -1436,10 +1432,10 @@ seqroll::on_key_press_event (GdkEventKey * ev)
 
                 midipulse tick;
                 int note;
-                m_paste = false;
                 m_seq.push_undo();
-                convert_xy(m_old.x, m_old.y, tick, note);
+                convert_xy(m_current_x, m_current_y, tick, note);
                 m_seq.paste_selected(tick, note);
+                m_paste = false;
                 result = true;
             }
             else if (ev->keyval == SEQ64_p)

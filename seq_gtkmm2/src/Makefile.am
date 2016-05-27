@@ -6,7 +6,7 @@
 # \library    	libseq_gtkmm2 library
 # \author     	Chris Ahlstrom
 # \date       	2015-09-11
-# \update      2015-12-06
+# \update      2016-05-26
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -41,6 +41,7 @@ EXTRA_DIST =
 
 PACKAGE = @PACKAGE@
 VERSION = @VERSION@
+GIT_VERSION = @GIT_VERSION@
 
 SEQUENCER64_API_MAJOR = @SEQUENCER64_API_MAJOR@
 SEQUENCER64_API_MINOR = @SEQUENCER64_API_MINOR@
@@ -84,6 +85,12 @@ builddir = @abs_top_builddir@
 
 version = $(SEQUENCER64_API_MAJOR):$(SEQUENCER64_API_MINOR):$(SEQUENCER64_API_PATCH)
 
+#*****************************************************************************
+# git_version
+#-----------------------------------------------------------------------------
+
+git_version = $(shell git describe --abbrev=7 --always --tags)
+
 #******************************************************************************
 # Compiler and linker flags (later, PortMidi)
 #------------------------------------------------------------------------------
@@ -96,6 +103,7 @@ AM_CXXFLAGS = \
  $(GTKMM_CFLAGS) \
  $(JACK_CFLAGS) \
  $(LASH_CFLAGS) \
+ -DSEQ64_GIT_VERSION=\"$(git_version)\" \
  -Wall $(MM_WFLAGS)
 
 #******************************************************************************

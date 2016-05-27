@@ -6,7 +6,7 @@ dnl \file          configure.ac
 dnl \library       Sequencer64
 dnl \author        Chris Ahlstrom
 dnl \date          2015-09-11
-dnl \update        2016-05-24
+dnl \update        2016-05-26
 dnl \version       $Revision$
 dnl \license       $XPC_SUITE_GPL_LICENSE$
 dnl
@@ -47,6 +47,12 @@ AC_SUBST(PACKAGE)
 VERSION="0.9.12.0"
 AC_DEFINE_UNQUOTED(VERSION, "$VERSION")
 AC_SUBST(VERSION)
+
+dnl GIT_VERSION=$(shell git describe --abbrev=7 --always --tags)
+dnl GIT_VERSION="0.9.11-9-gc9ee500"
+dnl AC_DEFINE_UNQUOTED(GIT_VERSION, "$GIT_VERSION")
+dnl AC_DEFINE(GIT_VERSION, "$GIT_VERSION")
+dnl AC_SUBST(GIT_VERSION)
 
 SEQUENCER64_SUITE_NAME="SEQUENCER64"
 AC_SUBST([SEQUENCER64_SUITE_NAME])
@@ -477,6 +483,8 @@ AH_TOP(
 #define VERSION "0.9.12.0"
 
 )
+
+dnl #define GIT_VERSION "0.9.11-9-gc9ee500"
 
 dnl 7. Checks for build configuration.
 dnl

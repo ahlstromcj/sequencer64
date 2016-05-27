@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-05-22
+ * \updates       2016-05-26
  * \license       GNU GPLv2 or above
  *
  *  The main window holds the menu and the main controls of the application,
@@ -1035,7 +1035,11 @@ mainwnd::about_dialog ()
     Gtk::AboutDialog dialog;
     dialog.set_transient_for(*this);
     dialog.set_name(SEQ64_PACKAGE_NAME);
-    dialog.set_version(SEQ64_VERSION " " SEQ64_VERSION_DATE_SHORT);
+    dialog.set_version
+    (
+        SEQ64_VERSION " " SEQ64_VERSION_DATE_SHORT "\n"
+        "(" SEQ64_GIT_VERSION ")"
+    );
     std::string comment("Interactive MIDI Sequencer\n");
     if (rc().legacy_format())
         comment += "Using original seq24 format\n";

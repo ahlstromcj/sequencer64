@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-20
- * \updates       2016-05-19
+ * \updates       2016-05-27
  * \license       GNU GPLv2 or above
  *
  *  The "rc" command-line options override setting that are first read from
@@ -69,7 +69,7 @@ namespace seq64
  */
 
 static const std::string versiontext =
-    SEQ64_PACKAGE " " SEQ64_VERSION " " __DATE__ "\n";
+    SEQ64_PACKAGE " " SEQ64_VERSION " (" SEQ64_GIT_VERSION ") " __DATE__ "\n";
 
 /**
  *  A structure for command parsing that provides the long forms of

@@ -6,7 +6,7 @@
 # \library    	libseq_gtkmm2 library
 # \author     	Chris Ahlstrom
 # \date       	2015-09-11
-# \update      2016-05-26
+# \update      2016-05-28
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -57,6 +57,9 @@ SEQUENCER64_LT_AGE = @SEQUENCER64_LT_AGE@
 #------------------------------------------------------------------------------
 
 prefix = @prefix@
+libdir = @sequencer64libdir@
+datadir = @datadir@
+datarootdir = @datarootdir@
 sequencer64includedir = @sequencer64includedir@
 sequencer64libdir = @sequencer64libdir@
 
@@ -114,12 +117,6 @@ lib_LTLIBRARIES = libseq_gtkmm2.la
 
 #******************************************************************************
 # Source files
-#----------------------------------------------------------------------------
-#
-#  Moved to libseq64:
-#
-#     lash.cpp, midifile.cpp, optionsfile.cpp, perform.cpp
-#
 #----------------------------------------------------------------------------
 
 libseq_gtkmm2_la_SOURCES = \

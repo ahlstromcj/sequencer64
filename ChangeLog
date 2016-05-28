@@ -1,5 +1,62 @@
+2016-05-27  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* configure.ac, libseq64/src/Makefile.am,
+	libseq64/src/cmdlineopts.cpp: Added git-describe version info to
+	command-line output as well.
+
+2016-05-26  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* configure.ac, seq_gtkmm2/src/Makefile.am,
+	seq_gtkmm2/src/mainwnd.cpp: Added tentative support for specifying
+	git version number automatically based on tags, needs improvement
+	and testing against shells other than bash.
+
+2016-05-24  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* README, configure.ac, seq_gtkmm2/include/gui_palette_gtk2.hpp,
+	seq_gtkmm2/src/gui_palette_gtk2.cpp, seq_gtkmm2/src/seqdata.cpp,
+	seq_gtkmm2/src/seqroll.cpp: The arrow movement of drag-and-drop
+	selection now seems to work.
+
+2016-05-23  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* seq_gtkmm2/src/seqroll.cpp: Interim check-in, got seqroll
+	selection movement by arrow keys, and pasting by Enter, basically
+	working.
+	* seq_gtkmm2/src/seqroll.cpp: Interim check-in of seqroll, trying to
+	get paste selection redraw for keystrokes to work.
+	* seq_gtkmm2/include/seqroll.hpp, seq_gtkmm2/src/seqroll.cpp: 
+	Beginnings of moving paste box by keystroke in seqroll.
+
+2016-05-22  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* configure.ac, libseq64/include/app_limits.h,
+	libseq64/include/keys_perform.hpp, libseq64/src/keys_perform.cpp,
+	libseq64/src/optionsfile.cpp, seq_gtkmm2/include/mainwid.hpp,
+	seq_gtkmm2/include/mainwnd.hpp, seq_gtkmm2/include/seqmenu.hpp,
+	seq_gtkmm2/src/mainwid.cpp, seq_gtkmm2/src/mainwnd.cpp,
+	seq_gtkmm2/src/options.cpp, seq_gtkmm2/src/seqmenu.cpp: Added
+	official support for = and - keys enabling keystroke pattern edit
+	and event edit for 0.9.12.
+
+2016-05-21  Chris Ahlstrom <ahlstrom@mlsacer.mls>
+
+	* libseq64/src/event_list.cpp, libseq64/src/sequence.cpp: Fixed a
+	couple of warnings in 32-bit compilation in Linux.
+
 2016-05-19  Chris Ahlstrom <ahlstromcj@gmail.com>
 
+	* seq_gtkmm2/include/mainwid.hpp, seq_gtkmm2/include/mainwnd.hpp,
+	seq_gtkmm2/include/seqmenu.hpp, seq_gtkmm2/src/mainwid.cpp,
+	seq_gtkmm2/src/mainwnd.cpp, seq_gtkmm2/src/seqmenu.cpp: Initial
+	conditional support for minus-shortcut bringing up the event editor.
+	* libseq64/src/cmdlineopts.cpp, libseq64/src/optionsfile.cpp,
+	libseq64/src/userfile.cpp: More prepping of fixups branch for next
+	version 0.9.12, doh.
+	* INSTALL, README, ROADMAP, VERSION, configure.ac,
+	doc/dox/doxy-reference.cfg, man/sequencer64.1: Prepping fixups
+	branch for next version 0.9.12.
+	* ChangeLog: Updated documentation for version 0.9.11 master.
 	* README, configure.ac: Minor tweaks to README and configure.ac.
 	Merged 84 commits into the master branch for version 0.9.11, which has
 	many more bug fixes and feature enhancements than I had planned for.

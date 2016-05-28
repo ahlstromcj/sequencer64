@@ -6,7 +6,7 @@ dnl \file          configure.ac
 dnl \library       Sequencer64
 dnl \author        Chris Ahlstrom
 dnl \date          2015-09-11
-dnl \update        2016-05-27
+dnl \update        2016-05-28
 dnl \version       $Revision$
 dnl \license       $XPC_SUITE_GPL_LICENSE$
 dnl
@@ -22,9 +22,13 @@ AC_REVISION($Revision: 0.9$)dnl
 AC_INIT(Sequencer64, [0.9.12], [ahlstromcj@gmail.com])
 AC_CONFIG_AUX_DIR([aux-files])
 
+dnl AC_CONFIG_SRCDIR([libseq64/src/midibus.cpp])
+
 dnl Do we need the following?  No, but it cleans up a lot of warning messages.
 
 AC_CANONICAL_SYSTEM
+
+dnl See http://www.delorie.com/gnu/docs/automake/automake_24.html
 
 AM_INIT_AUTOMAKE([dist-bzip2])
 AC_CONFIG_HEADER([include/config.h])
@@ -38,7 +42,12 @@ dnl New for autoconf 2.60, prevents spurious datarootdir warnings.
 
 AC_DEFUN([AC_DATAROOTDIR_CHECKED])
 
-dnl 1. Package version information.
+dnl 1. Package version information.  The first item is the name that covers
+dnl    a number of libraries, all of whose names start with "midicvt".
+dnl    We have to set up a "suite" name; since PACKAGE is defined to be the
+dnl    name of the current project, we can't use that value in the package
+dnl    configuration files.  It is replaced by MIDICVT_SUITE_NAME, which covers
+dnl    all of the library projects.
 
 PACKAGE=sequencer64
 AC_DEFINE_UNQUOTED(PACKAGE, "$PACKAGE")
@@ -48,14 +57,17 @@ VERSION="0.9.12.0"
 AC_DEFINE_UNQUOTED(VERSION, "$VERSION")
 AC_SUBST(VERSION)
 
+SEQUENCER64_SUITE_NAME="SEQUENCER64"
+AC_SUBST([SEQUENCER64_SUITE_NAME])
+
+dnl For now, the code to set this up is in the libseq64 and seq_gtkmm2
+dnl Makefiles:
+dnl
 dnl GIT_VERSION=$(shell git describe --abbrev=7 --always --tags)
 dnl GIT_VERSION="0.9.11-9-gc9ee500"
 dnl AC_DEFINE_UNQUOTED(GIT_VERSION, "$GIT_VERSION")
 dnl AC_DEFINE(GIT_VERSION, "$GIT_VERSION")
 dnl AC_SUBST(GIT_VERSION)
-
-SEQUENCER64_SUITE_NAME="SEQUENCER64"
-AC_SUBST([SEQUENCER64_SUITE_NAME])
 
 dnl 1.a. Set up version information for this project.
 dnl
@@ -91,8 +103,7 @@ AC_SUBST([SEQUENCER64_API_PATCH])
 
 SEQUENCER64_OFFICIAL_VERSION="$SEQUENCER64_API_MAJOR.$SEQUENCER64_API_MINOR.$SEQUENCER64_API_PATCH"
 
-dnl For version 1.0.0, our own first version, we reset the libtool version
-dnl information.
+dnl For version 1.0.0, we will reset the libtool version information.
 
 SEQUENCER64_LT_CURRENT="0"
 AC_SUBST([SEQUENCER64_LT_CURRENT])
@@ -125,17 +136,7 @@ dnl 1.d. Set up the suite name and current-project name.
 SEQUENCER64_PROJECT_NAME="SEQUENCER64"
 AC_SUBST([SEQUENCER64_PROJECT_NAME])
 
-dnl ---------------------------------------------------------
-
 AC_DEFINE(_GNU_SOURCE, 1, [gnu source])
-
-dnl Checks for programs.
-
-dnl AC_PROG_AWK
-AC_PROG_CC
-AC_PROG_CXX
-AC_PROG_INSTALL
-AC_PROG_LN_S
 
 dnl 2. Libtool
 dnl
@@ -186,16 +187,19 @@ dnl      /usr/lib/sequencer64-0.9
 dnl      /usr/man/man1
 dnl      /usr/share/doc/sequencer64-0.9/doc/dox/html
 
-sequencer64includedir="${includedir}/sequencer64.1-${SEQUENCER64_API_VERSION}"
+sequencer64includedir="${includedir}/sequencer64-${SEQUENCER64_API_VERSION}"
 AC_SUBST(sequencer64includedir)
 
-sequencer64libdir="${libdir}/sequencer64.1-${SEQUENCER64_API_VERSION}"
+sequencer64libdir="${libdir}/sequencer64-${SEQUENCER64_API_VERSION}"
 AC_SUBST(sequencer64libdir)
 
-sequencer64docdir="${datadir}/doc/sequencer64.1-${SEQUENCER64_API_VERSION}"
+sequencer64docdir="${datadir}/doc/sequencer64-${SEQUENCER64_API_VERSION}"
 AC_SUBST(sequencer64docdir)
 
-sequencer64doxygendir="${datadir}/doc/sequencer64.1-${SEQUENCER64_API_VERSION}"
+sequencer64datadir="${datadir}/sequencer64-${MIDICVT_API_VERSION}"
+AC_SUBST(sequencer64datadir)
+
+sequencer64doxygendir="${datadir}/doc/sequencer64-${SEQUENCER64_API_VERSION}"
 AC_SUBST(sequencer64doxygendir)
 
 dnl Do we have -Wl,--as-needed?
@@ -295,9 +299,12 @@ AC_GCC_VERSION
 dnl C++ support.  Run tests in C++.  Note the order; avoids messy warnings.
 
 AC_LANG_C
-AC_LANG_CPLUSPLUS dnl or AC_LANG([C++])
+AC_PROG_CC
+AC_LANG_CPLUSPLUS       dnl or AC_LANG([C++])
 AC_PROG_CXX
 AC_PROG_CXXCPP
+AC_PROG_INSTALL
+AC_PROG_LN_S
 
 dnl 5.c. Mingw support.
 dnl
@@ -322,7 +329,6 @@ dnl
 dnl PKG_CHECK_MODULES(GTKMM, gtkmm-3.0 >= 3.0.0)
 
 PKG_CHECK_MODULES(GTKMM, gtkmm-2.4 >= 2.4.0)
-
 AC_SUBST(GTKMM_CFLAGS)
 AC_SUBST(GTKMM_LIBS)
 
@@ -475,16 +481,14 @@ dnl
 dnl Note: The AX_PREFIX_CONFIG_H macro called way above prepends
 dnl       "SEQUENCER64_" to these values when it generated sequencer64-config.h.
 dnl
-dnl #define API_VERSION "0.9"             // already defined on command line
+dnl #define API_VERSION "0.9"             // defined on command line
 
 AH_TOP(
 
-#define VERSION_DATE_SHORT "2016-05-27"
+#define VERSION_DATE_SHORT "2016-05-28"
 #define VERSION "0.9.12.0"
 
 )
-
-dnl #define GIT_VERSION "0.9.11-9-gc9ee500"
 
 dnl 7. Checks for build configuration.
 dnl
@@ -539,6 +543,7 @@ dnl     [AC_CONFIG_FILES([doc/dox/Makefile])])
 
 AC_CONFIG_FILES([
  Makefile
+ m4/Makefile
  libseq64/Makefile
  libseq64/include/Makefile
  libseq64/src/Makefile
@@ -559,6 +564,7 @@ cat << E_O_F
 
 Now do 'make' to compile the Sequencer64-related projects.
 Do 'make install' as root/sudo to install the Sequencer64 application.
+Some tests can be run using the separate seq64-tests project.
 Do 'make dist', etc. to create gzip and other archives.
 To build the PDF documentation, make sure Doxygen and TexLive are installed,
 change to the doc/dox directory, and run './make_dox reference'.  To clean
@@ -569,3 +575,4 @@ E_O_F
 dnl configure.ac (sequencer64)
 dnl
 dnl vim: ts=4 sw=4 et ft=config
+

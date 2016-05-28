@@ -6,7 +6,7 @@
 # \library    	libseq_gtkmm2 library
 # \author     	Chris Ahlstrom
 # \date       	2015-09-11
-# \update      2015-12-06
+# \update      2016-05-28
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -33,7 +33,7 @@ MOSTLYCLEANFILES = *~
 #  EXTRA_DIST
 #------------------------------------------------------------------------------
 
-EXTRA_DIST =
+EXTRA_DIST = *.h *.hpp
 
 #******************************************************************************
 # Items from configure.ac
@@ -41,6 +41,7 @@ EXTRA_DIST =
 
 PACKAGE = @PACKAGE@
 VERSION = @VERSION@
+GIT_VERSION = @GIT_VERSION@
 
 #******************************************************************************
 # Local project directories
@@ -54,21 +55,15 @@ builddir = @abs_top_builddir@
 #------------------------------------------------------------------------------
 
 prefix = @prefix@
+includedir = @sequencer64includedir@
+libdir = @sequencer64libdir@
+datadir = @datadir@
+datarootdir = @datarootdir@
 sequencer64includedir = @sequencer64includedir@
 sequencer64libdir = @sequencer64libdir@
 
 #******************************************************************************
 # Source files
-#----------------------------------------------------------------------------
-#
-#  Moved to libseq64:
-#
-#     lash.hpp
-#     midifile.hpp
-#     optionsfile.hpp
-#     perform.hpp
-#     gdk_basic_keys.h
-#
 #----------------------------------------------------------------------------
 
 pkginclude_HEADERS = \
@@ -84,6 +79,7 @@ pkginclude_HEADERS = \
    gui_palette_gtk2.hpp \
    gui_window_gtk2.hpp \
 	keybindentry.hpp \
+   keys_perform_gtk2.hpp
 	maintime.hpp \
 	mainwid.hpp \
 	mainwnd.hpp \

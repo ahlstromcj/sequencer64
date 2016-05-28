@@ -1,12 +1,12 @@
 #******************************************************************************
-# Makefile.am (libseq64)
+# Makefile.am (libseq64/src)
 #------------------------------------------------------------------------------
 ##
 # \file       	Makefile.am
 # \library    	libseq64 library
 # \author     	Chris Ahlstrom
 # \date       	2015-09-11
-# \update      2016-05-27
+# \update      2016-05-28
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -57,6 +57,10 @@ SEQUENCER64_LT_AGE = @SEQUENCER64_LT_AGE@
 #------------------------------------------------------------------------------
 
 prefix = @prefix@
+includedir = @sequencer64includedir@
+libdir = @sequencer64libdir@
+datadir = @datadir@
+datarootdir = @datarootdir@
 sequencer64includedir = @sequencer64includedir@
 sequencer64libdir = @sequencer64libdir@
 
@@ -93,7 +97,6 @@ git_version = $(shell git describe --abbrev=7 --always --tags)
 
 #******************************************************************************
 # Compiler and linker flags
-#------------------------------------------------------------------------------
 #------------------------------------------------------------------------------
 
 AM_CXXFLAGS = \
@@ -161,7 +164,7 @@ libseq64_la_LIBADD = $(GTKMM_LIBS) $(ALSA_LIBS) $(JACK_LIBS) $(LASH_LIBS)
 # uninstall-hook
 #------------------------------------------------------------------------------
 #
-#     We'd like to remove /usr/local/include/libseq64-1.0 if it is
+#     We'd like to remove /usr/local/include/sequencer64-1.0 if it is
 #     empty.  However, we don't have a good way to do it yet.
 #
 #------------------------------------------------------------------------------
@@ -170,7 +173,7 @@ uninstall-hook:
 	@echo "Note:  you may want to remove $(libdir) manually"
 
 #******************************************************************************
-# Makefile.am (libseq64)
+# Makefile.am (libseq64/src)
 #------------------------------------------------------------------------------
 # 	vim: ts=3 sw=3 ft=automake
 #------------------------------------------------------------------------------

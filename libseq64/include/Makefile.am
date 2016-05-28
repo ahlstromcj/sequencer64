@@ -6,7 +6,7 @@
 # \library    	libseq64 library
 # \author     	Chris Ahlstrom
 # \date       	2015-09-11
-# \update      2016-05-17
+# \update      2016-05-28
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -21,11 +21,6 @@
 
 AUTOMAKE_OPTIONS = foreign dist-zip dist-bzip2
 MAINTAINERCLEANFILES = Makefile.in Makefile $(AUX_DIST)
-
-#******************************************************************************
-# CLEANFILES
-#------------------------------------------------------------------------------
-
 CLEANFILES = *.gc*
 MOSTLYCLEANFILES = *~
 
@@ -33,7 +28,7 @@ MOSTLYCLEANFILES = *~
 #  EXTRA_DIST
 #------------------------------------------------------------------------------
 
-EXTRA_DIST = *.h
+EXTRA_DIST = *.h *.hpp
 
 #******************************************************************************
 # Items from configure.ac
@@ -41,6 +36,7 @@ EXTRA_DIST = *.h
 
 PACKAGE = @PACKAGE@
 VERSION = @VERSION@
+GIT_VERSION = @GIT_VERSION@
 
 #******************************************************************************
 # Local project directories
@@ -54,6 +50,10 @@ builddir = @abs_top_builddir@
 #------------------------------------------------------------------------------
 
 prefix = @prefix@
+includedir = @sequencer64includedir@
+libdir = @sequencer64libdir@
+datadir = @datadir@
+datarootdir = @datarootdir@
 sequencer64includedir = @sequencer64includedir@
 sequencer64libdir = @sequencer64libdir@
 
@@ -64,9 +64,9 @@ sequencer64libdir = @sequencer64libdir@
 pkginclude_HEADERS = \
 	app_limits.h \
 	calculations.hpp \
+	click.hpp \
 	cmdlineopts.hpp \
 	configfile.hpp \
-	click.hpp \
 	controllers.hpp \
 	easy_macros.h \
 	editable_event.hpp \
@@ -74,6 +74,7 @@ pkginclude_HEADERS = \
 	event.hpp \
 	event_list.hpp \
 	file_functions.hpp \
+   gdk_basic_keys.h \
 	globals.h \
    gui_assistant.hpp \
    jack_assistant.hpp \

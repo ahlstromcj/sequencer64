@@ -6,7 +6,7 @@
 # \library    	libseq_portmidi library
 # \author     	Chris Ahlstrom
 # \date       	2015-09-11
-# \update      2015-10-07
+# \update      2016-05-28
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -33,26 +33,32 @@ MOSTLYCLEANFILES = *~
 #  EXTRA_DIST
 #------------------------------------------------------------------------------
 
-EXTRA_DIST =
+EXTRA_DIST = *.h
 
 #******************************************************************************
 # Items from configure.ac
 #-------------------------------------------------------------------------------
-#
-#  XPCCUT_LIBS is defined by the PKG_CHECK_MODULES macro.  The xpccut
-#  library must be installed officially in order to be used to build the
-#  unit-test application of the XPC library.
-#
-#-------------------------------------------------------------------------------
 
 PACKAGE = @PACKAGE@
 VERSION = @VERSION@
+GIT_VERSION = @GIT_VERSION@
+
+#******************************************************************************
+# Local project directories
+#------------------------------------------------------------------------------
+
+top_srcdir = @top_srcdir@
+builddir = @abs_top_builddir@
 
 #******************************************************************************
 # Install directories
 #------------------------------------------------------------------------------
 
 prefix = @prefix@
+includedir = @sequencer64includedir@
+libdir = @sequencer64libdir@
+datadir = @datadir@
+datarootdir = @datarootdir@
 sequencer64includedir = @sequencer64includedir@
 sequencer64libdir = @sequencer64libdir@
 

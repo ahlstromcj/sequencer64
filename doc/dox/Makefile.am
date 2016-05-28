@@ -6,7 +6,7 @@
 # \library    	generic
 # \author     	Chris Ahlstrom
 # \date       	2015-09-10
-# \update     	2016-04-10
+# \update     	2016-05-28
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -17,13 +17,43 @@
 #
 #-------------------------------------------------------------------------------
 
+#*****************************************************************************
+# Packing/cleaning targets
+#-----------------------------------------------------------------------------
+
 AUTOMAKE_OPTIONS = foreign dist-zip dist-bzip2
 MAINTAINERCLEANFILES = Makefile.in dox-warnings.log
 CLEANFILES = dox-stamp
-EXTRA_DIST = make_dox doxy*.cfg *.dox
 
+#******************************************************************************
+#  EXTRA_DIST
+#------------------------------------------------------------------------------
+#
+# We need to move some of this to a Makefile.am in the directory aboe.
+#
+#------------------------------------------------------------------------------
+
+EXTRA_DIST = make_dox doxy*.cfg *.dox ../*.pdf
+
+#******************************************************************************
+# Local project directories
+#------------------------------------------------------------------------------
+
+top_srcdir = @top_srcdir@
 srcdir = @srcdir@
+sequencer64docdir = @sequencer64docdir@
 
+#******************************************************************************
+# Install directories
+#------------------------------------------------------------------------------
+
+prefix = @prefix@
+datadir = @datadir@
+docdir = @docdir@
+datarootdir = @datarootdir@
+sequencer64docdir = @sequencer64docdir@
+
+#------------------------------------------------------------------------------
 # The $(srcdir) component points us to the correct place whether the build is
 # in-source or out-of-source.  Can't use pushd/popd because they are bash
 # builtins and are not available, except inside a script.
@@ -31,6 +61,7 @@ srcdir = @srcdir@
 # 	$(srcdir)/make_dox $(srcdir) reference
 # 	echo "Generating dox-stamp file..."
 # 	date > dox-stamp
+#------------------------------------------------------------------------------
 
 dox-stamp: $(EXTRA_DIST)
 	-echo "We no longer rebuild the developer documentation for Sequencer64."

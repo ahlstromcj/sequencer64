@@ -8,7 +8,7 @@
 # \library    	Sequencer64
 # \author     	Chris Ahlstrom
 # \date       	2015-09-10
-# \update     	2016-02-07
+# \update     	2016-05-28
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -33,7 +33,7 @@ export LANG
 CYGWIN=binmode
 export CYGWIN
 
-export SEQUENCER64_SCRIPT_EDIT_DATE="2016-02-07"
+export SEQUENCER64_SCRIPT_EDIT_DATE="2016-05-28"
 export SEQUENCER64_LIBRARY_API_VERSION="0.9"
 export SEQUENCER64_LIBRARY_VERSION="$SEQUENCER64_LIBRARY_API_VERSION.9.17"
 
@@ -91,8 +91,8 @@ Usage: ./bootstrap [options]                                 (0.9-2016-02-07)
  --prefix dest       Change the destination for installation.
  --debug, -ed,       Also configure for debugging, which also disables
    --enable-debug    shared libraries/libtool for easier debugging.
- --release, -er,     Also configure for release, to save a little time.
-   --enable-release  Sets up a "silent" build, as well.
+ --release, -er,     Also configure for release, to save a little time.  Sets up
+   --enable-release  a "silent" build, as well.
  --help              Show this help text.
 
    The default bootstraps the projects.  Then one should run 'configure',
@@ -252,9 +252,7 @@ if [ $DOBOOTSTRAP == "yes" ] ; then
 
          rm -f configure.in
          if [ -x configure ] ; then
-
             echo The Sequencer64 configure script already exists.  Replacing it.
-
          fi
       fi
 
@@ -356,7 +354,6 @@ E_O_F
 # autoconf:
 
    cp contrib/config.rpath aux-files
-
    run_cmd ${ACLOCAL} -I ${M4DIR} --install
    run_cmd ${AUTOCONF}
    run_cmd ${AUTOHEADER}
@@ -376,7 +373,6 @@ E_O_F
 # Right now, this is done with the --clean option.
 
    case "$PKGCONFIG" in
-
      yes) ;;
      no) cat << E_O_F
 
@@ -403,7 +399,6 @@ E_O_F
    esac
 
    case "$INSTALL_BAD" in
-
      no) ;;
      yes) cat << E_O_F
 
@@ -440,20 +435,14 @@ E_O_F
 #------------------------------------------------------------------------
 
    if [ "$DOBOOTSTRAP" == "yes" ] ; then
-
       if [ "$DODEBUG" == "yes" ] ; then
-
          echo "Running './configure --enable-eveditor --enable-debug --disable-shared'..."
          ./configure --enable-eveditor --enable-debug --disable-shared
-
       elif [ "$DORELEASE" == "yes" ] ; then
-
          echo "Running './configure --enable-silent-rules ..."
          ./configure --enable-silent-rules
          echo "Note that running 'make V=1' will turn on full command output."
-
       else
-
          cat << E_O_F
 
 Now run './configure' to configure Sequencer64 for compilation, or './configure

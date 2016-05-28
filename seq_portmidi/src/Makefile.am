@@ -56,6 +56,10 @@ SEQUENCER64_LT_AGE = @SEQUENCER64_LT_AGE@
 #------------------------------------------------------------------------------
 
 prefix = @prefix@
+libdir = @sequencer64libdir@
+datadir = @datadir@
+sequencer64docdir = @sequencer64docdir@
+sequencer64libdir = @sequencer64libdir@
 sequencer64includedir = @sequencer64includedir@
 sequencer64libdir = @sequencer64libdir@
 
@@ -77,6 +81,12 @@ DEFS = -DLOCALEDIR=\"$(localedir)\" @DEFS@
 
 top_srcdir = @top_srcdir@
 builddir = @abs_top_builddir@
+
+#******************************************************************************
+# aclocal support
+#------------------------------------------------------------------------------
+
+ACLOCAL_AMFLAGS = -I m4 ${ACLOCAL_FLAGS}
 
 #*****************************************************************************
 # libtool

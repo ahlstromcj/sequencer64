@@ -1,3 +1,24 @@
+2016-05-29  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* contrib/notes/bugs_to_investigate.txt, doc/dox/make_dox,
+	seq_gtkmm2/include/eventedit.hpp, seq_gtkmm2/include/gtk_helpers.h,
+	seq_gtkmm2/src/eventedit.cpp, seq_gtkmm2/src/seqkeys.cpp: While
+	documenting eventedit, got a bug report on getting the key numbering
+	backwards in seqedit, which is enough to warrant the next version.
+	* configure.ac, contrib/notes/git.txt, contrib/scripts/README,
+	contrib/scripts/branch, libseq64/src/Makefile.am,
+	seq_gtkmm2/src/Makefile.am, seq_gtkmm2/src/mainwnd.cpp: Added the
+	branch name to the version info.
+
+2016-05-28  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* ChangeLog, bootstrap, configure.ac, doc/dox/Makefile.am,
+	libseq64/include/Makefile.am, libseq64/src/Makefile.am,
+	seq_gtkmm2/include/Makefile.am, seq_gtkmm2/src/Makefile.am,
+	seq_portmidi/include/Makefile.am, seq_portmidi/src/Makefile.am: 
+	Improving the make-install procedures for the libraries and header
+	files.
+
 2016-05-27  Chris Ahlstrom <ahlstromcj@gmail.com>
 
 	* configure.ac, libseq64/src/Makefile.am,

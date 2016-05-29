@@ -1,6 +1,6 @@
 Quick Reference for Git Processes on GitHub
 Chris Ahlstrom
-2015-09-09 to 2016-03-04
+2015-09-09 to 2016-05-29
 
 Creating a GitHub Repository:
 
@@ -41,7 +41,8 @@ Create the branch on your local machine and switch to it:
 
     $ git checkout -b [name_of_your_new_branch]
 
-When the branch is ready, push the branch to github:
+When the branch is ready, push the branch to your "origin" remote on
+GitHub:
 
     $ git push origin [name_of_your_new_branch]
 
@@ -62,22 +63,26 @@ updated:
 
     $ git fetch [name_of_your_remote]
 
+(It is important to be aware that the fetch command does not do a merge,
+while a pull command does attempt to do a merge.  Doing a pull of one
+branch while the current branch is a different one is something one
+generally does not want to do.)
+
 Others can track your branch in this manner to simplify the git push
 command:
 
     $ git checkout --track -b your_branch origin/your_branch
-    $ git commit ...
+    $ git commit -m "the relevant message"
     $ git push
 
-Then you need to apply to merge changes, if your branch is derivated from
-develop you need to do:u
+Then you need to apply (merge) changes. If your branch is derived from the
+"develop" branch you need to do:
 
     $ git checkout master
     $ git merge [name_of_your_remote]/develop
 
-If you set up an upstream branch, then this will suffice: 
+If you had set up an upstream branch, then this command will suffice: 
 
-    $ git checkout master
     $ git merge develop
    
 Then make any minor tweaks or version stamping you need to make your
@@ -121,7 +126,7 @@ Pulls and merges:
 
 Tagging:
 
-    We want to tag release points (currently 0.9.9.xx) with a tag of the
+    We want to tag release points (e.g. 0.9.9.xx) with a tag of the
     same name.  We create an annotated tag, which adds information and
     requires a commit message, and is meant for public consumption.
 
@@ -147,7 +152,23 @@ Tagging:
     To show all of the tags present in the project, along with the commit
     numbers for the tag and the tag operation:
 
-    $ git show-ref --tags -d
+    $ git show-ref --tags
+
+    To show just the tag names:
+
+    $ git tag
+
+    Related to tags, one can generate a brief description of the current
+    commit, based from the latest tag, using the following call (with the
+    result shown):
+
+    $ git describe --tags
+    0.9.11-12-gca37826
+
+    This output says that the command was run after the 12th commit after
+    the 0.9.11 tag, and includes a hash code (after the "g", which simply
+    denotes that the "git" DVCS is being used) that can be used if the
+    commit changes, or there are many 12th commits.
 
 Pull Requests:
 

@@ -1,0 +1,10 @@
+#!/bin/bash
+
+gb=`git branch 2> /dev/null | grep -e ^* | sed -E  s/^\\\\\*\ \(.+\)$/\\\\\1\ /`
+echo "$gb"
+
+# Simpler, but leaves the asterisk in place:
+#
+# gg=`git branch | grep -e ^*`
+# echo "$gg"
+

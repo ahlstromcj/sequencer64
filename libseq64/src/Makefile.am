@@ -6,7 +6,7 @@
 # \library    	libseq64 library
 # \author     	Chris Ahlstrom
 # \date       	2015-09-11
-# \update      2016-05-28
+# \update      2016-05-29
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -92,8 +92,12 @@ version = $(SEQUENCER64_API_MAJOR):$(SEQUENCER64_API_MINOR):$(SEQUENCER64_API_PA
 #*****************************************************************************
 # git_version
 #-----------------------------------------------------------------------------
+# git_version = $(shell git describe --abbrev=7 --always --tags)
+#-----------------------------------------------------------------------------
 
-git_version = $(shell git describe --abbrev=7 --always --tags)
+git_version = $(shell git describe)
+git_branch =$(shell git branch | grep -e ^*)
+git_info = "$(git_version) $(git_branch)"
 
 #******************************************************************************
 # Compiler and linker flags
@@ -106,7 +110,7 @@ AM_CXXFLAGS = \
  $(GTKMM_CFLAGS) \
  $(JACK_CFLAGS) \
  $(LASH_CFLAGS) \
- -DSEQ64_GIT_VERSION=\"$(git_version)\" \
+ -DSEQ64_GIT_VERSION=\"$(git_info)\" \
  -Wall $(MM_WFLAGS)
 
 #******************************************************************************

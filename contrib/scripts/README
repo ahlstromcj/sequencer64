@@ -1,6 +1,6 @@
 Contributed Scripts
 Chris Ahlstrom
-2015-09-11 to 2015-09-11
+2015-09-11 to 2016-05-29
 
 This directory contains contributed script for example of setting up various
 subsystems for Sequencer64 usage and testing.
@@ -14,5 +14,8 @@ subsystems for Sequencer64 usage and testing.
    Seq24-Session
    systemctl-doers
    YoSeqAlsa
+
+The "branch" script shows how to get the branch name, which is useful in
+the .bashrc file.
 
 # vim: sw=4 ts=4 wm=8 et ft=sh

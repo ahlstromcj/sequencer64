@@ -1,11 +1,13 @@
 Bugs and Additional Upgrade Ideas
 Chris Ahlstrom
-2015-10-27 to 2016-05-18 (New bugs)
+2015-10-27 to 2016-05-29 (New bugs)
 
 In no particular order...  "y" means "in progress", and "x" means it is
 basically done.
 
 -  Also see BUG REPORTS below.  Those are bug reports from other people.
+x  Had the seqkey numbering (accessed by right-click) backwards.  What
+   an idiot!
 x  Deleting last note of Ionian MIDI import in event editor causes a CRASH!
    Fixed, but will still try more edits though.
 y  Aftertouch events are not transposed.  Are they also selectable?

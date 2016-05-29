@@ -8,7 +8,7 @@
 # \library    	generic
 # \author     	Chris Ahlstrom
 # \date       	2015-08-08
-# \update     	2015-10-11
+# \update     	2016-05-29
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -81,7 +81,7 @@ if [ "$1" == "clean" ] ; then
 fi
 
 if [ "$1" == "help" ] || [ "$1" == "--help" ]; then
-   echo "Usage:  ./make_dox [ dirname ] [ clean | reference ]"
+   echo "Usage: ./make_dox [dirname] [clean | reference | install | uninstall]"
    exit 0
 fi
 
@@ -132,6 +132,15 @@ if [ "$TARGET" == "reference" ] ; then
 elif [ "$TARGET" == "userman" ] ; then
 
 	echo "Option 'userman' not supported in this project."
+
+elif [ "$TARGET" == "install" ] ; then
+
+   mkdir -p /usr/local/doc/sequencer64-0.9
+   cp ../*.pdf /usr/local/doc/sequencer64-0.9
+
+elif [ "$TARGET" == "uninstall" ] ; then
+
+   rm -rf /usr/local/doc/sequencer64-0.9
 
 fi
 

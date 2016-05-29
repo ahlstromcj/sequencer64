@@ -27,10 +27,10 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-08-09
+ * \updates       2016-05-29
  * \license       GNU GPLv2 or above
  *
- *  Copyright (C) 2015-2015 Chris Ahlstrom <ahlstromcj@gmail.com>
+ *  Copyright (C) 2015-2016 Chris Ahlstrom <ahlstromcj@gmail.com>
  *
  *  Currently, the only thing defined is the add_tooltip() macro.
  */
@@ -53,3 +53,4 @@
  *
  * vim: sw=4 ts=4 wm=4 et ft=cpp
  */
+

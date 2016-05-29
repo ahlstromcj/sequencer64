@@ -25,9 +25,30 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-05-09
+ * \updates       2016-05-29
  * \license       GNU GPLv2 or above
  *
+ *  One thing we must be sure of is the MIDI note range.  Obviously, in terms
+ *  of MIDI byte values, these range from 0 to 127.  In the ISO system
+ *  (see http://www.midikits.net/midi_analyser/midi_note_numbers_for_octaves.htm)
+ *  the following key values exist:
+ *
+ *      -   <b>C-1</b>. The first octave is -1, and the first note is C, so
+ *          that the lowest labelled note would be "C-1", with a MIDI note
+ *          value of 0.
+ *      -   <b>C4</b>. Middle C is "C4", with a MIDI note value of 60.
+ *      -   <b>A4</b>. For A-440 tuning, the note is "A4", with a MIDI note
+ *          value of 69.
+ *      -   <b>G9</b>.  The highest labelled note in this system is "G9", with
+ *          a MIDI note value of 127.
+ *
+ *  Various devices and MIDI applications can have different base values:
+ *
+ *      -   If the device/application considers the lowest (first) MIDI note
+ *          octave to be 0, then middle C is still 60, but is called "C5".
+ *      -   If the device/application considers the third MIDI note
+ *          octave to be 0, then middle C is still 60, but is called "C3",
+ *          and the highest note is "G8".
  */
 
 #include <gtkmm/adjustment.h>
@@ -125,6 +146,9 @@ seqkeys::reset ()
  *  current difficulty is that the fonts used are just a little to high to fit
  *  within the vertical limits of each key.  We really don't want to change
  *  the vertical size at this time, so we just print every other note value.
+ *
+ *  Also note that this algorithm draws from the top down, so we have to
+ *  account for that.
  */
 
 void
@@ -150,11 +174,12 @@ seqkeys::update_pixmap ()
         }
 
         char note[8];
+        int keyvalue = c_num_keys - key - 1;
         if (m_show_octave_letters)
         {
             if (okey == m_key)                  /* octave note      */
             {
-                int octave = ((c_num_keys - key - 1) / SEQ64_OCTAVE_SIZE) - 1;
+                int octave = (keyvalue / SEQ64_OCTAVE_SIZE) - 1;
                 if (octave < 0)
                     octave *= -1;
 
@@ -164,9 +189,9 @@ seqkeys::update_pixmap ()
         }
         else
         {
-            if ((key % 2) == 0)
+            if ((keyvalue % 2) == 0)
             {
-                snprintf(note, sizeof note, "%3d", key);
+                snprintf(note, sizeof note, "%3d", keyvalue);
                 render_string_on_pixmap(2, c_key_y * key - 1, note, font::BLACK);
             }
         }

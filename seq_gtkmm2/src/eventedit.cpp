@@ -25,14 +25,15 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-12-05
- * \updates       2016-05-18
+ * \updates       2016-05-29
  * \license       GNU GPLv2 or above
  *
  * To consider:
  *
  *      -   Selecting multiple events?
- *      -   Looping over multiple events for play/stp?
- *      -   Undo
+ *      -   Looping over multiple events for play/stop?
+ *      -   Undo?  Currently, one can only exit the dialog without saving the
+ *          edits to the sequence.
  *
  * Current bugs to fix:
  *
@@ -46,6 +47,9 @@
  *          event.
  *      -   Improve labelling differentiation for the data of various channel
  *          events.
+ *
+ *      Actually, some of these bugs might already be fixed, but we don't
+ *      remember which.
  */
 
 #include <string>
@@ -87,34 +91,38 @@ namespace seq64
  *
  *  Adjustment parameters:
  *
- *      value            initial value
- *      lower            minimum value
- *      upper            maximum value
- *      step_increment   step increment
- *      page_increment   page increment
- *      page_size        page size
+\verbatim
+        value            initial value
+        lower            minimum value
+        upper            maximum value
+        step_increment   step increment
+        page_increment   page increment
+        page_size        page size
+\endverbatim
  *
  *  Table constructor parameters:
  *
- *      rows
- *      columns
- *      homogenous
+\verbatim
+        rows
+        columns
+        homogenous
+\endverbatim
  *
  *  Table attach() parameters:
  *
- *      child           widget to add.
- *      left_attach     column number to attach left side of a child widget
- *      right_attach    column number to attach right side of a child widget
- *      top_attach      row number to attach the top of a child widget
- *      bottom_attach   row number to attach the bottom of a child widget
- *      xoptions        properties of the child widget when table resized
- *      yoptions        same as xoptions, except vertical.
- *      xpadding        padding on L and R of widget added to table
- *      ypadding        amount of padding above and below the child widget
+\verbatim
+        child           widget to add.
+        left_attach     column number to attach left side of a child widget
+        right_attach    column number to attach right side of a child widget
+        top_attach      row number to attach the top of a child widget
+        bottom_attach   row number to attach the bottom of a child widget
+        xoptions        properties of the child widget when table resized
+        yoptions        same as xoptions, except vertical.
+        xpadding        padding on L and R of widget added to table
+        ypadding        amount of padding above and below the child widget
+\endverbatim
  *
  * Layout:
- *
- *      We're going to change the layout.
  *
 \verbatim
           0                             1   2                         3   4
@@ -122,9 +130,9 @@ namespace seq64
      htop |  (OLD LAYOUT)               :   :                             |
           |---------------------------------------- showbox --------------|  1
   e'slots |  1-120:0:192 Program Change | ^ | "Sequence name"         |   |
-          |-----------------------------|   | 4/4 PPQN 192            | r |  2
+          |- - - - - - - - - - - - - - -|   | 4/4 PPQN 192            | r |  2
           |  2-120:1:0   Program Change | s | 9999 events             | i |  3
-          |-----------------------------| c |------ editbox ----------| g |  4
+          |- - - - - - - - - - - - - - -| c |------ editbox ----------| g |  4
           | ...    ...          ...     | r | Channel Event: Ch. 5    | h |
           | ...    ...          ...     | o |- - - - - - - - - - - - -| t |  6
           | ...    ...          ...     | l | [Edit field: Note On  ] |   |
@@ -138,7 +146,7 @@ namespace seq64
           | ...    ...          ...     |   |  o Pulses               |   |
           | ...    ...          ...     |   |  o Measures             |   |
           | ...    ...          ...     | v |  o Time                 |   |
-          |-----------------------------|   |------ bottbox ----------|   | 13
+          |- - - - - - - - - - - - - - -|   |------ bottbox ----------|   | 13
           | 56-136:3:133 Program Change | v |  | Save |    |  Close | |   |
            ---------------------------------------------------------------  14
 \endverbatim
@@ -171,9 +179,11 @@ eventedit::eventedit (perform & p, sequence & seq)
     m_button_modify     (manage(new Gtk::Button())),
     m_button_save       (manage(new Gtk::Button())),
     m_button_cancel     (manage(new Gtk::Button())),
+#if 0
     m_label_index       (manage(new Gtk::Label())),
     m_label_time        (manage(new Gtk::Label())),
     m_label_event       (manage(new Gtk::Label())),
+#endif
     m_label_seq_name    (manage(new Gtk::Label())),
     m_label_time_sig    (manage(new Gtk::Label())),
     m_label_ppqn        (manage(new Gtk::Label())),
@@ -202,8 +212,8 @@ eventedit::eventedit (perform & p, sequence & seq)
      *  The seqedit class indirectly sets the sequence dirty flags, and this
      *  allows the sequence's pattern slot to be updated, which, for example,
      *  allows the new experimental in-edit-highlight feature to work.  To get
-     *  the eventedit to also show the in-edit highlighing, we can make the
-     *  sequence::set_dirty_mp() call.  This call does NOT cause a prompt for
+     *  the eventedit to also show the in-edit highlighting, we can make the
+     *  sequence::set_dirty_mp() call.  This call does not cause a prompt for
      *  saving the file when exiting.
      */
 

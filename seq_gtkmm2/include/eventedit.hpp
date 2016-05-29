@@ -22,15 +22,19 @@
 /**
  * \file          eventedit.hpp
  *
- *  This module declares/defines the base class for the Performance Editor,
- *  also known as the Song Editor.
+ *  This module declares/defines the base class for the Event Editor.
  *
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-12-05
- * \updates       2016-05-12
+ * \updates       2016-05-29
  * \license       GNU GPLv2 or above
  *
+ *  The Event Editor complements the Pattern (Sequence) Editor by allowing the
+ *  composer to view all events, no matter what the type of event, and once,
+ *  and to make detailed changes of events, or to add and delete individual
+ *  events.  It is not a fully mature editor, but is useful enough for doing
+ *  some fixups of MIDI events in a given pattern.
  */
 
 #include <gtkmm/widget.h>               /* can't forward-declare GdkEventAny */
@@ -38,14 +42,14 @@
 
 #include "gui_window_gtk2.hpp"
 
+/*
+ *  Since these items are pointers, we were able to move (most) of the
+ *  included header files to the cpp file.   Except for the items that
+ *  come from widget.h, perhaps because GdkEventAny was a typedef.
+ */
+
 namespace Gtk
 {
-    /*
-     *  Since these items are pointers, we were able to move (most) of the
-     *  included header files to the cpp file.   Except for the items that
-     *  come from widget.h, perhaps because GdkEventAny was a typedef.
-     */
-
     class Adjustment;
     class Button;
     class Entry;
@@ -62,10 +66,9 @@ namespace Gtk
 
 namespace seq64
 {
-
-class eventslots;
-class perform;
-class sequence;
+    class eventslots;
+    class perform;
+    class sequence;
 
 /**
  *  This class supports an Event Editor that is used to tweak the details of
@@ -81,59 +84,56 @@ private:
      *  A whole horde of GUI elements.
      */
 
-    Gtk::Table * m_table;
-    Gtk::Adjustment * m_vadjust;
-    Gtk::VScrollbar * m_vscroll;
-    eventslots * m_eventslots;
-    Gtk::HBox * m_htopbox;
-    Gtk::VBox * m_showbox;
-    Gtk::VBox * m_editbox;
-    Gtk::VBox * m_optsbox;
-    Gtk::HBox * m_bottbox;
-    Gtk::VBox * m_rightbox;
+    Gtk::Table * m_table;               /**< Provides the layout table for UI.  */
+    Gtk::Adjustment * m_vadjust;        /**< Vertical paging for event list.    */
+    Gtk::VScrollbar * m_vscroll;        /**< Vertical scroll for event list.    */
+    eventslots * m_eventslots;          /**< Drawing area for events.           */
+    Gtk::HBox * m_htopbox;              /**< Padding at the top of the dialog.  */
+    Gtk::VBox * m_showbox;              /**< Area for sequence information.     */
+    Gtk::VBox * m_editbox;              /**< Text-edits and buttons for data.   */
+    Gtk::VBox * m_optsbox;              /**< Reserved for future options.       */
+    Gtk::HBox * m_bottbox;              /**< Holds the Save and Close buttons.  */
+    Gtk::VBox * m_rightbox;             /**< Used for padding on right side.    */
 
-    Gtk::Button * m_button_del;
-    Gtk::Button * m_button_ins;
-    Gtk::Button * m_button_modify;
-    Gtk::Button * m_button_save;
-    Gtk::Button * m_button_cancel;
+    Gtk::Button * m_button_del;         /**< "Delete Current Event (*)" button. */
+    Gtk::Button * m_button_ins;         /**< "Insert New Event" button.         */
+    Gtk::Button * m_button_modify;      /**< "Modify New Event" button.         */
+    Gtk::Button * m_button_save;        /**< "Save to Sequence" button.         */
+    Gtk::Button * m_button_cancel;      /**< "Close" button.                    */
 
+#if 0
     /**
      *  Items to size the m_indexslots member.
      */
 
-    Gtk::Label * m_label_index;
-    Gtk::Label * m_label_time;
-    Gtk::Label * m_label_event;
+    Gtk::Label * m_label_index;         /**< xxxxxxxxxx */
+    Gtk::Label * m_label_time;          /**< xxxxxxxxxx */
+    Gtk::Label * m_label_event;         /**< xxxxxxxxxx */
+#endif
 
     /**
      * Items for the inside of the m_showbox member.
      */
 
-    Gtk::Label * m_label_seq_name;
-    Gtk::Label * m_label_time_sig;
-    Gtk::Label * m_label_ppqn;
-    Gtk::Label * m_label_channel;
-    Gtk::Label * m_label_ev_count;
-    Gtk::Label * m_label_spacer;
-    Gtk::Label * m_label_modified;
+    Gtk::Label * m_label_seq_name;      /**< Shows the name of the pattern.     */
+    Gtk::Label * m_label_time_sig;      /**< Shows time signature for pattern.  */
+    Gtk::Label * m_label_ppqn;          /**< Shows the parts per quarter note.  */
+    Gtk::Label * m_label_channel;       /**< Shows channel number of pattern.   */
+    Gtk::Label * m_label_ev_count;      /**< Shows the count of pattern events. */
+    Gtk::Label * m_label_spacer;        /**< Spacer for the showbox elements.   */
+    Gtk::Label * m_label_modified;      /**< Shows "[Modified]" if edited.      */
 
     /**
      *  Items for the inside of the m_editbox member.
      */
 
-    Gtk::Label * m_label_category;
-    Gtk::Entry * m_entry_ev_timestamp;
-    Gtk::Entry * m_entry_ev_name;
-    Gtk::Entry * m_entry_ev_data_0;
-    Gtk::Entry * m_entry_ev_data_1;
-    Gtk::Label * m_label_time_fmt;
-
-    /**
-     *  Padding for the right side of the user-interface.
-     */
-
-    Gtk::Label * m_label_right;
+    Gtk::Label * m_label_category;      /**< Shows the type of MIDI event.      */
+    Gtk::Entry * m_entry_ev_timestamp;  /**< Text edit for event time-stamp.    */
+    Gtk::Entry * m_entry_ev_name;       /**< Text edit for MIDI event name.     */
+    Gtk::Entry * m_entry_ev_data_0;     /**< Text edit for first event datum.   */
+    Gtk::Entry * m_entry_ev_data_1;     /**< Text edit for second event datum.  */
+    Gtk::Label * m_label_time_fmt;      /**< Optsbox item, only "Sequencer64".  */
+    Gtk::Label * m_label_right;         /**< Padding at the right of dialog.    */
 
     /**
      *  A reference to the sequence being edited, to control its editing flag.
@@ -143,6 +143,9 @@ private:
 
     /**
      *  Indicates that the focus has already been changed to this sequence.
+     *  This item is to modify the mainwid and perfedit "edit-sequence" value
+     *  in order to highlight pattern slot of the pattern/event editor that
+     *  currently has the user-input focus.
      */
 
     bool m_have_focus;

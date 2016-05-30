@@ -35,8 +35,7 @@
 
 namespace seq64
 {
-
-class seqroll;
+    class seqroll;
 
 /**
  *  Implements the fruity mouse interaction paradigm for the seqroll.
@@ -70,10 +69,11 @@ public:
 
 public:         // callbacks
 
-    bool on_button_press_event (GdkEventButton * a_ev, seqroll & ths);
-    bool on_button_release_event (GdkEventButton * a_ev, seqroll & ths);
-    bool on_motion_notify_event (GdkEventMotion * a_ev, seqroll & ths);
-};
+    bool on_button_press_event (GdkEventButton * ev, seqroll & ths);
+    bool on_button_release_event (GdkEventButton * ev, seqroll & ths);
+    bool on_motion_notify_event (GdkEventMotion * ev, seqroll & ths);
+
+};          // FruitySeqRollInput
 
 }           // namespace seq64
 
@@ -84,3 +84,4 @@ public:         // callbacks
  *
  * vim: sw=4 ts=4 wm=4 et ft=cpp
  */
+

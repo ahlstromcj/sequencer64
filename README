@@ -1,6 +1,6 @@
-README for Sequencer64 0.9.12 (current branch = "fixups")
+README for Sequencer64 0.9.13 (current branch = "fixups")
 Chris Ahlstrom
-2015-09-10 to 2016-05-24 (initial work started in July of 2015)
+2015-09-10 to 2016-05-29 (initial work started in July of 2015)
 
 Sequencer64 (replaces sequencer24) is a reboot of seq24 to refactor it to be
 tighter and easier to transition to GTKmm 3, and much more.  It is now
@@ -14,8 +14,8 @@ with the --legacy option.
 
 Major updates:
 
-    -   Version 0.9.11 fixes a bug that disabled the important queueing
-        feature!  Many other bugs fixed as well.
+    -   Version 0.9.12 fixes a bug in the drawing of MIDI note numbers in the
+        seqkeys panel.
     -   Sequencer64 loads SMF 0 files and splits the channels into separate
         tracks/sequences.
     -   JACK support has been improved.  Sequencer64 will track JACK transport

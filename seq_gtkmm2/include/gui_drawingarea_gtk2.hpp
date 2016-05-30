@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-21
- * \updates       2016-04-14
+ * \updates       2016-05-30
  * \license       GNU GPLv2 or above
  *
  *  We've added a number of wrapper functions for the "draw-rectangle",
@@ -57,13 +57,13 @@ namespace Gtk
 namespace seq64
 {
 
-class perform;                          /* forward reference                */
-
 extern Gtk::Adjustment & adjustment_dummy ();
+
+class perform;                          /* forward reference                */
 
 /**
  *  Implements the basic drawing areas of the application.  Note that this
- *  class really "isn't a" gui_pallete_gtk2; it should simply have one.
+ *  class really "isn't" a gui_pallete_gtk2; it should simply "have" one.
  *  But that base class must be derived from Gtk::DrawingArea.  We don't
  *  want to waste some space by using a "has-a" relationship, and also put
  *  up with having to access the palette indirectly.  So, in this case, we
@@ -148,24 +148,24 @@ protected:              // private: should provide accessors
      *  resizable.
      */
 
-    int m_window_x;
-    int m_window_y;
+    int m_window_x;                     /**< Window width value.            */
+    int m_window_y;                     /**< Window height value.           */
 
     /**
      *  The x and y value of the current location of the mouse (during
      *  dragging?)
      */
 
-    int m_current_x;
-    int m_current_y;
+    int m_current_x;                    /**< Current mouse x value.         */
+    int m_current_y;                    /**< Current mouse y value.         */
 
     /**
      *  These values are used when roping and highlighting a bunch of events.
      *  Provides the x and y value of where the dragging started.
      */
 
-    int m_drop_x;
-    int m_drop_y;
+    int m_drop_x;                       /**< Current mouse x-drop value.    */
+    int m_drop_y;                       /**< Current mouse y-drop value.    */
 
 private:
 
@@ -188,7 +188,7 @@ public:
         int window_x = 0,
         int window_y = 0
     );
-    ~gui_drawingarea_gtk2 ();
+    virtual ~gui_drawingarea_gtk2 ();
 
     /**
      * \getter m_window_x
@@ -632,14 +632,29 @@ protected:
         );
     }
 
-    void scroll_adjust (Gtk::Adjustment & adjust, double step);
+    void scroll_hadjust (Gtk::Adjustment & hadjust, double step);
+    void scroll_vadjust (Gtk::Adjustment & vadjust, double step);
 
 protected:            // special dual setters for friend GUI classes
+
+    /**
+     *  Sets the current x value and the drop x value.
+     *
+     * \param x
+     *      The x value to be set.
+     */
 
     void set_current_drop_x (int x)
     {
         m_current_x = m_drop_x = x;
     }
+
+    /**
+     *  Sets the current y value and the drop y value.
+     *
+     * \param y
+     *      The y value to be set.
+     */
 
     void set_current_drop_y (int y)
     {
@@ -653,16 +668,6 @@ private:
 protected:          // callbacks
 
     void on_realize ();
-
-private:            // callbacks
-
-#if 0
-    bool on_button_press_event (GdkEventButton *);
-    bool on_button_release_event (GdkEventButton *);
-    bool on_key_press_event (GdkEventKey *);
-    bool on_key_release_event (GdkEventKey *);
-    void on_size_allocate (Gtk::Allocation &);
-#endif  // 0
 
 };
 

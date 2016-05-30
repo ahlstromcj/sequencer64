@@ -58,8 +58,7 @@ static int s_perfroll_background_x =
 (
     (SEQ64_DEFAULT_PPQN * 4 * 16) / c_perf_scale_x
 );
-static int s_perfroll_size_box_w = 3;
-static int s_perfroll_size_box_click_w = 4; /* s_perfroll_size_box_w + 1 */
+static int s_perfroll_size_box_w = 6;           /* 3; */
 
 namespace seq64
 {
@@ -90,18 +89,17 @@ perfroll::perfroll
     m_names_y               (c_names_y),
     m_background_x          (s_perfroll_background_x),      // gets adjusted!
     m_size_box_w            (s_perfroll_size_box_w),        // 3
-    m_size_box_click_w      (s_perfroll_size_box_click_w),  // 3+1, not yet used
     m_measure_length        (0),
     m_beat_length           (0),
     m_old_progress_ticks    (0),
-    m_4bar_offset           (0),
+    m_4bar_offset           (0),                            // now a full offset
     m_sequence_offset       (0),
     m_roll_length_ticks     (0),
     m_drop_tick             (0),
     m_drop_tick_trigger_offset (0),
     m_drop_sequence         (0),
     m_sequence_max          (c_max_sequence),
-    m_sequence_active       (),                 // array, size c_max_sequence
+    m_sequence_active       (),                     // array [ c_max_sequence ]
     m_fruity_interaction    (),
     m_seq24_interaction     (),
     m_moving                (false),
@@ -133,6 +131,9 @@ perfroll::~perfroll ()
  *  The m_perf_scale_x member starts out at c_perf_scale_x, which is 32 ticks
  *  per pixel at the default tick rate of 192 PPQN.  We adjust this now.
  *  But note that this calculation still involves the c_perf_scale_x constant.
+ *
+ * \todo
+ *      Resolve the issue of c_perf_scale_x versus m_perf_scale_x in perfroll.
  */
 
 void
@@ -151,7 +152,9 @@ perfroll::set_ppqn (int ppqn)
 
 /**
  *  Changes the 4-bar horizontal offset member and queues up a draw
- *  operation.
+ *  operation.  Since the m_4bar_offset value is always multiplied by
+ *  m_ticks_per_bar before usage, let's just do it here and not have to
+ *  multiply it later.
  */
 
 void
@@ -159,7 +162,9 @@ perfroll::change_horz ()
 {
     if (m_4bar_offset != int(m_hadjust.get_value()))
     {
-        m_4bar_offset = int(m_hadjust.get_value());
+        // m_4bar_offset = int(m_hadjust.get_value());      // see note above
+
+        m_4bar_offset = int(m_hadjust.get_value()) * m_ticks_per_bar;
         enqueue_draw();
     }
 }
@@ -229,13 +234,14 @@ perfroll::update_sizes ()
     if (m_hadjust.get_value() > h_max_value)
         m_hadjust.set_value(h_max_value);
 
+    int vpagesize = m_window_y / m_names_y;
     m_vadjust.set_lower(0);
     m_vadjust.set_upper(m_sequence_max);
-    m_vadjust.set_page_size(m_window_y / m_names_y);
+    m_vadjust.set_page_size(vpagesize);
     m_vadjust.set_step_increment(1);
     m_vadjust.set_page_increment(m_v_page_increment);
 
-    int v_max_value = m_sequence_max - (m_window_y / m_names_y);
+    int v_max_value = m_sequence_max - vpagesize;
     if (m_vadjust.get_value() > v_max_value)
         m_vadjust.set_value(v_max_value);
 
@@ -390,7 +396,7 @@ void
 perfroll::draw_progress ()
 {
     midipulse tick = perf().get_tick();
-    midipulse tick_offset = m_4bar_offset * m_ticks_per_bar;
+    midipulse tick_offset = m_4bar_offset;              //  * m_ticks_per_bar;
     int progress_x = (tick - tick_offset) / m_perf_scale_x;
     int old_progress_x = (m_old_progress_ticks - tick_offset) / m_perf_scale_x;
     if (usr().progress_bar_thick())
@@ -425,7 +431,7 @@ perfroll::draw_sequence_on (int seqnum)
 
     if (perf().is_active(seqnum))
     {
-        midipulse tick_offset = m_4bar_offset * m_ticks_per_bar;
+        midipulse tick_offset = m_4bar_offset;          //  * m_ticks_per_bar;
         long x_offset = tick_offset / m_perf_scale_x;
         m_sequence_active[seqnum] = true;
         sequence * seq = perf().get_sequence(seqnum);
@@ -453,13 +459,13 @@ perfroll::draw_sequence_on (int seqnum)
                 draw_rectangle_on_pixmap(black(), x, y, w, h, false);
                 draw_rectangle_on_pixmap
                 (
-                    black(), x, y, m_size_box_w, m_size_box_w, false
+                    dark_cyan(),                /* try instead of black()   */
+                    x, y, m_size_box_w, m_size_box_w, false
                 );
                 draw_rectangle_on_pixmap        /* color set previous call  */
                 (
                     x + w - m_size_box_w, y + h - m_size_box_w,
-                    m_size_box_w, m_size_box_w,
-                    false
+                    m_size_box_w, m_size_box_w, false
                 );
 
                 midipulse tickmarker =          /* length marker first tick */
@@ -549,7 +555,7 @@ perfroll::draw_sequence_on (int seqnum)
 
 void perfroll::draw_background_on (int seqnum)
 {
-    midipulse tick_offset = m_4bar_offset * m_ticks_per_bar;
+    midipulse tick_offset = m_4bar_offset ;             // * m_ticks_per_bar;
     long first_measure = tick_offset / m_measure_length;
     long last_measure = first_measure +
         (m_window_x * m_perf_scale_x / m_measure_length) + 1;
@@ -565,8 +571,7 @@ void perfroll::draw_background_on (int seqnum)
         int x_pos = ((i * m_measure_length) - tick_offset) / m_perf_scale_x;
         m_pixmap->draw_drawable
         (
-            m_gc, m_background, 0, 0, x_pos, y,
-            m_background_x, m_names_y
+            m_gc, m_background, 0, 0, x_pos, y, m_background_x, m_names_y
         );
     }
 }
@@ -580,7 +585,7 @@ perfroll::redraw_dirty_sequences ()
 {
     bool draw = false;
     int yf = m_window_y / m_names_y;
-    for (int y = 0; y <= yf; y++)
+    for (int y = 0; y <= yf; ++y)
     {
         int seq = y + m_sequence_offset;
         if (perf().is_dirty_perf(seq))
@@ -670,7 +675,7 @@ perfroll::snap_x (int & x)
 void
 perfroll::convert_x (int x, midipulse & tick)
 {
-    midipulse tick_offset = m_4bar_offset * m_ticks_per_bar;
+    midipulse tick_offset = m_4bar_offset;              //  * m_ticks_per_bar;
     tick = x * m_perf_scale_x + tick_offset;
 }
 
@@ -697,7 +702,7 @@ perfroll::convert_x (int x, midipulse & tick)
 void
 perfroll::convert_xy (int x, int y, midipulse & d_tick, int & d_seq)
 {
-    midipulse tick_offset = m_4bar_offset * m_ticks_per_bar;
+    midipulse tick_offset = m_4bar_offset;              //  * m_ticks_per_bar;
     midipulse tick = x * m_perf_scale_x + tick_offset;
     int seq = y / m_names_y + m_sequence_offset;
     if (seq >= m_sequence_max)
@@ -771,8 +776,9 @@ perfroll::on_expose_event (GdkEventExpose * ev)
     int yf = (ev->area.y + ev->area.height) / m_names_y;
     for (int y = ys; y <= yf; ++y)
     {
-        draw_background_on(y + m_sequence_offset);
-        draw_sequence_on(y + m_sequence_offset);
+        int seq = y + m_sequence_offset;
+        draw_background_on(seq);
+        draw_sequence_on(seq);
     }
     m_window->draw_drawable
     (

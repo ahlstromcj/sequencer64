@@ -48,8 +48,7 @@ namespace Gtk
 
 namespace seq64
 {
-
-class perform;
+    class perform;
 
 /**
  *  This class supports a full tabbed options dialog.
@@ -171,21 +170,25 @@ private:
 
 public:
 
-    options (Gtk::Window & parent, perform & a_p);
+    options (Gtk::Window & parent, perform & p);
 
 private:
+
+    /**
+     * \getter m_mainperf
+     */
 
     perform & perf ()
     {
         return m_mainperf;
     }
 
-    void clock_callback_off (int a_bus, Gtk::RadioButton * a_button);
-    void clock_callback_on (int a_bus, Gtk::RadioButton * a_button);
-    void clock_callback_mod (int a_bus, Gtk::RadioButton * a_button);
+    void clock_callback_off (int bus, Gtk::RadioButton * button);
+    void clock_callback_on (int bus, Gtk::RadioButton * button);
+    void clock_callback_mod (int bus, Gtk::RadioButton * button);
     void clock_mod_callback (Gtk::Adjustment * adj);
-    void input_callback (int a_bus, Gtk::Button * a_button);
-    void transport_callback (button a_type, Gtk::Button * a_button);
+    void input_callback (int bus, Gtk::Button * button);
+    void transport_callback (button type, Gtk::Button * button);
     void mouse_seq24_callback (Gtk::RadioButton *);
     void mouse_fruity_callback (Gtk::RadioButton *);
     void mouse_mod4_callback (Gtk::CheckButton *);
@@ -198,7 +201,8 @@ private:
     void add_keyboard_page ();
     void add_mouse_page ();
     void add_jack_sync_page ();
-};
+
+};          // class options
 
 }           // namespace seq64
 

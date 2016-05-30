@@ -93,10 +93,10 @@ private:
      *  Theses objects support the menu and its sub-menus.
      */
 
-    Gtk::MenuBar * m_menubar;
-    Gtk::Menu * m_menu_file;
-    Gtk::Menu * m_menu_view;
-    Gtk::Menu * m_menu_help;
+    Gtk::MenuBar * m_menubar;           /**< The whole menu bar.        */
+    Gtk::Menu * m_menu_file;            /**< The File menu entry.       */
+    Gtk::Menu * m_menu_view;            /**< The View menu entry.       */
+    Gtk::Menu * m_menu_help;            /**< The Help menu entry.       */
 
     /**
      *  Saves the PPQN value obtained from the MIDI file (or the default
@@ -118,19 +118,22 @@ private:
     mainwid * m_main_wid;
 
     /**
-     *  Is this the bar at the top that shows moving squares?
+     *  Is this the bar at the top that shows moving squares, also known as
+     *  "pills"?  Why yes, it is.
      */
 
     maintime * m_main_time;
 
     /**
-     *  A pointer to the song/performance editor.
+     *  A pointer to the first song/performance editor.
      */
 
     perfedit * m_perf_edit;
 
     /**
-     *  A pointer to an optional second song/performance editor.
+     *  A pointer to an optional second song/performance editor.  The second
+     *  makes it easy to line up two different patterns that cannot be seen
+     *  together on one performance editor.
      */
 
     perfedit * m_perf_edit_2;
@@ -183,27 +186,30 @@ private:
      *  The spin/adjustment controls for the BPM (beats-per-minute) value.
      */
 
-    Gtk::Adjustment * m_adjust_bpm;
-    Gtk::SpinButton * m_spinbutton_bpm;
+    Gtk::Adjustment * m_adjust_bpm;         /**< BPM adjustment object.     */
+    Gtk::SpinButton * m_spinbutton_bpm;     /**< BPM spin-button object.    */
 
     /**
-     *  The spin/adjustment controls for the screen set value.
+     *  The spin/adjustment controls for the screenset value.
      */
 
-    Gtk::Adjustment * m_adjust_ss;
-    Gtk::SpinButton * m_spinbutton_ss;
+    Gtk::Adjustment * m_adjust_ss;          /**< Screenset adjustment.      */
+    Gtk::SpinButton * m_spinbutton_ss;      /**< Screenset adjustment.      */
 
     /**
      *  The spin/adjustment controls for the load offset value.
-     *  However, where is this button located?  It is handled in the code,
-     *  but I've never seen the button!
+     *  These controls are used in the File / Import dialog to change where
+     *  the imported file will be loaded in the sequences space, which ranges
+     *  from 0 to 1024 in blocks of 32 patterns.
      */
 
-    Gtk::Adjustment * m_adjust_load_offset;
-    Gtk::SpinButton * m_spinbutton_load_offset;
+    Gtk::Adjustment * m_adjust_load_offset;     /**< Load number for import.    */
+    Gtk::SpinButton * m_spinbutton_load_offset; /**< Spin button for import.    */
 
     /**
-     *  What is this?
+     *  This item provides user-interface access to the screenset notepad
+     *  editor.  This is just a long text-edit field that can be used to enter
+     *  a long name or a short description of the current screenset.
      */
 
     Gtk::Entry * m_entry_notes;
@@ -249,9 +255,9 @@ public:
         bool allowperf2 = true,
         int ppqn = SEQ64_USE_DEFAULT_PPQN
     );
-    ~mainwnd ();
+    virtual ~mainwnd ();
 
-    void open_file (const std::string &);
+    void open_file (const std::string & filename);
 
     /**
      * \getter m_ppqn

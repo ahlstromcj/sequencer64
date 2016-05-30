@@ -22,23 +22,20 @@
 /**
  * \file          seq24seq.hpp
  *
- *  This module declares/defines the mouse interactions for the "fruity"
+ *  This module declares/defines the mouse interactions for the "seq24"
  *  mode.
  *
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-08-02
- * \updates       2015-09-13
+ * \updates       2016-05-29
  * \license       GNU GPLv2 or above
  *
  */
 
-#include <gdk/gdkevents.h>              // GdkEventButton & GdkEventMotion
-
 namespace seq64
 {
-
-class seqevent;
+    class seqevent;
 
 /**
  *  This structure implement the normal interaction methods for Seq24.
@@ -46,6 +43,10 @@ class seqevent;
 
 struct Seq24SeqEventInput
 {
+    /**
+     *  True if we're adding events via the mouse.
+     */
+
     bool m_adding;
 
     /**
@@ -57,10 +58,10 @@ struct Seq24SeqEventInput
     {
         // Empty body
     }
-    void set_adding (bool a_adding, seqevent & ths);
-    bool on_button_press_event (GdkEventButton * a_ev, seqevent & ths);
-    bool on_button_release_event (GdkEventButton * a_ev, seqevent & ths);
-    bool on_motion_notify_event (GdkEventMotion * a_ev, seqevent & ths);
+    void set_adding (bool adding, seqevent & ths);
+    bool on_button_press_event (GdkEventButton * ev, seqevent & ths);
+    bool on_button_release_event (GdkEventButton * ev, seqevent & ths);
+    bool on_motion_notify_event (GdkEventMotion * ev, seqevent & ths);
 };
 
 }           // namespace seq64

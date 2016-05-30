@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-05-12
+ * \updates       2016-05-29
  * \license       GNU GPLv2 or above
  *
  *  Note that, as of version 0.9.11, the z and Z keys, when focus is on the
@@ -68,10 +68,9 @@ namespace Gtk
 
 namespace seq64
 {
-
-class perfnames;
-class perfroll;
-class perftime;
+    class perfnames;
+    class perfroll;
+    class perftime;
 
 /*
  * ca 2015-07-24
@@ -105,48 +104,48 @@ private:
      *  A whole horde of GUI elements.
      */
 
-    Gtk::Table * m_table;
-    Gtk::Adjustment * m_vadjust;
-    Gtk::Adjustment * m_hadjust;
-    Gtk::VScrollbar * m_vscroll;
-    Gtk::HScrollbar * m_hscroll;
-    perfnames * m_perfnames;
-    perfroll * m_perfroll;
-    perftime * m_perftime;
-    Gtk::Menu * m_menu_snap;
-    Gtk::Image * m_image_play;
-    Gtk::Button * m_button_snap;
-    Gtk::Entry * m_entry_snap;
-    Gtk::Button * m_button_stop;
+    Gtk::Table * m_table;               /**< Layout table for song editor.      */
+    Gtk::Adjustment * m_vadjust;        /**< Vertical adjust for piano roll.    */
+    Gtk::Adjustment * m_hadjust;        /**< Horizontal adjust for piano roll.  */
+    Gtk::VScrollbar * m_vscroll;        /**< Vertical scroll for piano roll.    */
+    Gtk::HScrollbar * m_hscroll;        /**< Horizonatl scroll for piano roll.  */
+    perfnames * m_perfnames;            /**< Pattern names in leftmost column.  */
+    perfroll * m_perfroll;              /**< The piano roll in the song editor. */
+    perftime * m_perftime;              /**< The time/measures bar above roll.  */
+    Gtk::Menu * m_menu_snap;            /**< The menu for grid-snap selection.  */
+    Gtk::Image * m_image_play;          /**< The image for the play button.     */
+    Gtk::Button * m_button_snap;        /**< Button to bring up the snap menu.  */
+    Gtk::Entry * m_entry_snap;          /**< Text edit for the grid-snap value. */
+    Gtk::Button * m_button_stop;        /**< The Stop Play button object.       */
 
     /**
      *  Implements the yellow two-bar pause button.
      */
 
-    Gtk::Button * m_button_play;
-    Gtk::ToggleButton * m_button_loop;
-    Gtk::Button * m_button_expand;
-    Gtk::Button * m_button_collapse;
-    Gtk::Button * m_button_copy;
-    Gtk::Button * m_button_grow;
-    Gtk::Button * m_button_undo;
-    Gtk::Button * m_button_bpm;
-    Gtk::Entry * m_entry_bpm;
-    Gtk::Button * m_button_bw;
-    Gtk::Entry * m_entry_bw;
-    Gtk::HBox * m_hbox;
-    Gtk::HBox * m_hlbox;
-    Gtk::Tooltips * m_tooltips;        // why not conditional on Gtk version?
+    Gtk::Button * m_button_play;        /**< The Play button object.            */
+    Gtk::ToggleButton * m_button_loop;  /**< Button for Left-to-Right looping.  */
+    Gtk::Button * m_button_expand;      /**< Button for Left/Right expansion.   */
+    Gtk::Button * m_button_collapse;    /**< Button for Left/Right collapse.    */
+    Gtk::Button * m_button_copy;        /**< Expand and copy between L/R.       */
+    Gtk::Button * m_button_grow;        /**< Expand grid (bottom-right button). */
+    Gtk::Button * m_button_undo;        /**< Button to undo previous action.    */
+    Gtk::Button * m_button_bpm;         /**< Beats-per-measure menu button.     */
+    Gtk::Entry * m_entry_bpm;           /**< Text-edit for beats-per-measure.   */
+    Gtk::Button * m_button_bw;          /**< Beat-width menu button.            */
+    Gtk::Entry * m_entry_bw;            /**< Text-edit for beat-width.          */
+    Gtk::HBox * m_hbox;                 /**< Horizontal box (which?) in table.  */
+    Gtk::HBox * m_hlbox;                /**< Horizontal box for buttons at top. */
+    Gtk::Tooltips * m_tooltips;         /**< Container for tool-tips.           */
 
     /**
      * Menus for time signature, beats per measure, beat width.
      */
 
-    Gtk::Menu * m_menu_bpm;
-    Gtk::Menu * m_menu_bw;
+    Gtk::Menu * m_menu_bpm;             /**< Drop-down menu for beats/minute.   */
+    Gtk::Menu * m_menu_bw;              /**< Drop-down menu for beat-width.     */
 
     /**
-     * Set snap-to in "pulses".
+     * Sets the horizontal grid snap-to in units of "pulses" or "ticks".
      */
 
     int m_snap;
@@ -210,6 +209,9 @@ public:
      *  than four times the c_perf_scale_x value, at which point we have
      *  zoomed out so far that the measure numbers are almost completely
      *  obscured.
+     *
+     * \param z
+     *      The desired zoom value to validate.
      */
 
     static bool zoom_check (int z)
@@ -220,7 +222,11 @@ public:
     /**
      *  Register the peer perfedit object.  This function is meant to be
      *  called by mainwnd, which creates the perfedits and then makes sure
-     *  they get along.
+     *  they get along.  Only the first call to this function will work; only
+     *  one peer can be registered.
+     *
+     * \param peer
+     *      The peer perfedit object to register, if not null.
      */
 
     void enregister_peer (perfedit * peer)
@@ -274,7 +280,7 @@ private:        // Gtkmm 2.4 callbacks
      *  All this callback function does is return false.
      */
 
-    bool on_delete_event (GdkEventAny * /*a_event*/ )
+    bool on_delete_event (GdkEventAny * /* ev */ )
     {
         return false;
     }

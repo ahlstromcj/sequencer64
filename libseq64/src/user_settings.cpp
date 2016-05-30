@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-23
- * \updates       2016-05-17
+ * \updates       2016-05-29
  * \license       GNU GPLv2 or above
  *
  *  Note that this module also sets the remaining legacy global variables, so
@@ -115,13 +115,13 @@ user_settings::user_settings ()
      * [user-midi-bus-definitions]
      */
 
-    m_midi_buses                (),         // vector
+    m_midi_buses                (),             // vector
 
     /*
      * [user-instrument-definitions]
      */
 
-    m_instruments               (),         // vector
+    m_instruments               (),             // vector
 
     /*
      * [user-interface-settings]
@@ -135,8 +135,8 @@ user_settings::user_settings ()
     m_mainwid_border            (0),
     m_mainwid_spacing           (0),
     m_control_height            (0),
-    m_current_zoom              (0),
-    m_global_seq_feature_save   (false),  // will be true once supported
+    m_current_zoom              (0),            // 0 is unsafe, but a feature
+    m_global_seq_feature_save   (true),
     m_seqedit_scale             (0),
     m_seqedit_key               (0),
     m_seqedit_bgsequence        (0),
@@ -146,7 +146,7 @@ user_settings::user_settings ()
     m_v_perf_page_increment     (1),
     m_progress_bar_colored      (false),
     m_progress_bar_thick        (false),
-    m_window_redraw_rate_ms     (c_redraw_ms),   // 40 ms or 20 ms; 25 ms
+    m_window_redraw_rate_ms     (c_redraw_ms),  // 40 ms or 20 ms; 25 ms
 
     /*
      * The members that follow are not yet part of the .usr file.
@@ -802,7 +802,8 @@ user_settings::control_height (int value)
 void
 user_settings::zoom (int value)
 {
-    if ((value >= mc_min_zoom && value <= mc_max_zoom) || value == 0)
+    bool ok = value >= mc_min_zoom && value <= mc_max_zoom;
+    if (ok || value == SEQ64_USE_ZOOM_POWER_OF_2)
         m_current_zoom = value;
 }
 

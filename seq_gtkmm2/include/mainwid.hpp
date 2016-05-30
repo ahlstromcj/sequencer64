@@ -107,22 +107,23 @@ private:
     /**
      *  These values are assigned to the values given by the constants of
      *  similar names in globals.h, and we will make them parameters or
-     *  user-interface configuration items later.
+     *  user-interface configuration items later.  Some of them already have
+     *  counterparts in the user_settings class.
      */
 
-    int m_mainwnd_rows;
-    int m_mainwnd_cols;
-    int m_seqarea_x;
-    int m_seqarea_y;
-    int m_seqarea_seq_x;
-    int m_seqarea_seq_y;
-    int m_mainwid_x;
-    int m_mainwid_y;
-    int m_mainwid_border;
-    int m_mainwid_spacing;
-    int m_text_size_x;
-    int m_text_size_y;
-    int m_max_sets;
+    int m_mainwnd_rows;         /**< Number of rows, unused part of settings.   */
+    int m_mainwnd_cols;         /**< Number of columns, unused in settings.     */
+    int m_seqarea_x;            /**< Roughly with width of the main window.     */
+    int m_seqarea_y;            /**< Roughly with height of the main window.    */
+    int m_seqarea_seq_x;        /**< To be determined.                          */
+    int m_seqarea_seq_y;        /**< To be determined.                          */
+    int m_mainwid_x;            /**< To be determined.                          */
+    int m_mainwid_y;            /**< To be determined.                          */
+    int m_mainwid_border;       /**< Main-window border, unused setting.        */
+    int m_mainwid_spacing;      /**< Main-window spacing, unused setting.       */
+    int m_text_size_x;          /**< Text width, varies with font in use.       */
+    int m_text_size_y;          /**< Text height, varies with font in use.      */
+    int m_max_sets;             /**< The maximum number of sets, use all over.  */
 
     /**
      *  Provides a convenience variable for avoiding multiplications.

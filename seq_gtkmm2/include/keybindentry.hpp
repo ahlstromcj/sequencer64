@@ -43,8 +43,7 @@
 
 namespace seq64
 {
-
-class perform;
+    class perform;
 
 /**
  *  Class for management of application key-bindings.
@@ -103,7 +102,8 @@ private:
     perform * m_perf;
 
     /**
-     *  Provides???
+     *  Provides an index into a set of group-keys or event-keys.  (This item
+     *  should be changed to unsigned int, though.)
      */
 
     long m_slot;

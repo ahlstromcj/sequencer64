@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-05-24
+ * \updates       2016-05-30
  * \license       GNU GPLv2 or above
  *
  *  There are a large number of existing items to discuss.  But for now let's
@@ -167,6 +167,7 @@ seqroll::seqroll
 ) :
     gui_drawingarea_gtk2    (p, hadjust, vadjust, 10, 10),
     m_horizontal_adjust     (hadjust),
+    m_vertical_adjust       (vadjust),
     m_old                   (),
     m_selected              (),
     m_seq                   (seq),

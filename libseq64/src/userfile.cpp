@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-05-17
+ * \updates       2016-05-29
  * \license       GNU GPLv2 or above
  *
  *  Note that the parse function has some code that is not yet enabled.
@@ -439,7 +439,7 @@ userfile::write (const perform & /* a_perf */ )
            "# Sequencer64 user configuration file (legacy Seq24 0.9.2 format)\n";
     }
     else
-        file << "# Sequencer64 0.9.12 (and above) user configuration file\n";
+        file << "# Sequencer64 0.9.13 (and above) user configuration file\n";
 
     file << "#\n"
         "# Created by reading the following file and writing it out via the\n"
@@ -687,7 +687,7 @@ userfile::write (const perform & /* a_perf */ )
             "# Sequencer64 adapts the zoom to the PPQN, if zoom is set to 0.\n"
             "# \n"
             "\n"
-            << usr().zoom() << "      # default zoom (0 = auto-adjust)\n"
+            << usr().zoom() << "      # default zoom (0 = auto-adjust to PPQN)\n"
             ;
 
         /*

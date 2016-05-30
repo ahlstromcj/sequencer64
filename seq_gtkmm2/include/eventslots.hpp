@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-12-05
- * \updates       2016-05-17
+ * \updates       2016-05-29
  * \license       GNU GPLv2 or above
  *
  *  This class supports the left side of the Event Editor window.
@@ -50,13 +50,13 @@ namespace Gtk
 
 namespace seq64
 {
-
-class eventedit;
-class perform;
-class sequence;
+    class eventedit;
+    class perform;
+    class sequence;
 
 /**
- *  This class implements the left-side keyboard in the patterns window.
+ *  This class implements the left-side list of events in the pattern
+ *  event-edit window.
  */
 
 class eventslots : public gui_drawingarea_gtk2
@@ -87,7 +87,8 @@ private:
 
     /**
      *  Provides the number of the characters in the name box.  Pretty much
-     *  hardwired to 24 at present.
+     *  hardwired to 64 at present.  It helps determine the m_slots_x value
+     *  (the width of the eventslots list).
      */
 
     int m_slots_chars;
@@ -107,12 +108,6 @@ private:
     int m_setbox_w;
 
     /**
-     *  Provides the width of the "slot" box.
-     */
-
-    int m_slots_box_w;
-
-    /**
      *  Provides the width of the names box, which is the width of a character
      *  for 24 characters.
      */
@@ -127,13 +122,6 @@ private:
      */
 
     int m_slots_y;
-
-    /**
-     *  Provides the horizontal and vertical offsets of the text relative to
-     *  the names box.  Currently hardwired.
-     */
-
-    int m_xy_offset;
 
     /**
      *  The current number of events in the edited container.
@@ -342,33 +330,6 @@ private:
     int increment_current ();
     int decrement_bottom ();
     int increment_bottom ();
-
-    /**
-     *  This function does nothing.
-     */
-
-    void update_pixmap ()
-    {
-        // Empty body
-    }
-
-    /**
-     *  This function does nothing.
-     */
-
-    void draw_area ()
-    {
-        // Empty body
-    }
-
-    /**
-     *  Redraw the given sequence.
-     */
-
-    void redraw ()
-    {
-        // draw_event(eventindex);
-    }
 
 private:    // Gtk callbacks
 

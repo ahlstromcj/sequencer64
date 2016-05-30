@@ -28,8 +28,11 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-05-17
+ * \updates       2016-05-29
  * \license       GNU GPLv2 or above
+ *
+ *  This class represents the central piano-roll user-interface area of the
+ *  performance/song editor.
  *
  */
 
@@ -44,10 +47,9 @@ namespace Gtk
 
 namespace seq64
 {
-
-class AbstractPerfInput;
-class perform;
-class perfedit;
+    class AbstractPerfInput;
+    class perform;
+    class perfedit;
 
 /**
  *  This class implements the performance roll user interface.
@@ -55,11 +57,10 @@ class perfedit;
 
 class perfroll : public gui_drawingarea_gtk2
 {
-
     /**
      *  These friend implement interaction-specific behavior, although only
-     *  the Seq24 interactions support keyboard processing, except for some
-     *  common functionality provided by perform::perfroll_key_event().
+     *  the Seq24 interactions support full keyboard processing, except for
+     *  some common functionality provided by perform::perfroll_key_event().
      *  The perfedit class needs access to the private enqueue_draw()
      *  function.
      */
@@ -96,33 +97,126 @@ private:
 
     int m_v_page_increment;
 
-    int m_snap;
-    int m_ppqn;
-    int m_page_factor;              // 4096, provisional name
-    int m_divs_per_beat;            // 16, provisional name
-    int m_ticks_per_bar;            // m_ppqn * m_divs_per_beat, provisional name
-    int m_perf_scale_x;
+    int m_snap;                         /**< The amount of horizontal snap.     */
+    int m_ppqn;                         /**< Parts-per-quarter-note value.      */
+    int m_page_factor;                  /**< 4096, horizonal page sizing.       */
+    int m_divs_per_beat;                /**< Holds current tick scaling value.  */
+    int m_ticks_per_bar;                /**< Holds current bar scaling value.   */
+    int m_perf_scale_x;                 /**< Scaling based on zoom and PPQN.    */
 
     /**
-     *  New value to attempt a rudimentary time-zoom feature.
+     *  New value to attempt a rudimentary time-zoom feature.  It seems to
+     *  work pretty well now.
      */
 
     int m_zoom;
 
+    /**
+     *  The maximum height of the perfroll names box, in pixes.  This is
+     *  currently semantically a constant set to c_names_y = 24.
+     */
+
     int m_names_y;
+
+    /**
+     *  The width of the perfroll background.  This is based on the m_ppqn
+     *  value and the value of c_perf_scale_x (or is m_perf_scale_x preferable?)
+     */
+
     int m_background_x;
+
+    /**
+     *  This is a basically constant value set to s_perfroll_size_box_w = 3.
+     *  It is used in drawing the short lines of the small box that sits at
+     *  the top-left and bottom-right corners of each segment in the pattern
+     *  editor.  These can be used to lengthen and shorten a section in the
+     *  song editor.  We will increase this size, perhaps double it, to make
+     *  it easier to grab.
+     */
+
     int m_size_box_w;
-    int m_size_box_click_w;
+
+    /**
+     *  The legnth of a measure, in beat units.
+     */
+
     int m_measure_length;
+
+    /**
+     *  The length of a beat, in parts-per-quarter note.
+     */
+
     int m_beat_length;
+
+    /**
+     *  Saves the position of the progress bar, for erasing it in preparation
+     *  for drawing it at the next tick value.  See the draw_progress()
+     *  function.  This could almost be static inside that function.
+     */
+
     midipulse m_old_progress_ticks;
+
+    /**
+     *  Holds the horizontal offset related to the horizontal scroll-bar
+     *  position.  Used in drawing the progress bar and the sequence events.
+     *  Also used in convert_x() and convert_xy().  This used to be the offset
+     *  in units of bar ticks, but now we use it as a full-fledged ticks
+     *  value.  See the change_horz() function.
+     */
+
     int m_4bar_offset;
+
+    /**
+     *  This value is the vertical version of m_4bar_offset.  It is obtained
+     *  or changed when the vertical scroll-bar moves.  It is used for drawing
+     *  the correct vertical window in the piano roll.
+     */
+
     int m_sequence_offset;
+
+    /**
+     *  Provides the width of the piano roll in ticks.  Calculated in
+     *  init_before_show() based on the maximum trigger found in the perform
+     *  object, the ticks/bar, the PPQN, and the page factor.  Also can be
+     *  increased in size in the increment_size() function [tied to the Grow
+     *  button].  Used in update_sizes().  
+     */
+
     int m_roll_length_ticks;
+
+    /**
+     *  The horizontal location for section movement.  Used only by the
+     *  friend modules perfroll_input and fruityperfroll_input.
+     */
+
     midipulse m_drop_tick;
+
+    /**
+     *  The horizontal trigger location for section movement.  Used only by
+     *  the friend modules perfroll_input and fruityperfroll_input.
+     */
+
     midipulse m_drop_tick_trigger_offset;
+
+    /**
+     *  Holds the currently-selected sequence being moved.  Used for redrawing
+     *  the sequence.
+     */
+
     int m_drop_sequence;
+
+    /**
+     *  Currently, just a class-specific version of c_max_sequence, meant for
+     *  the future.
+     */
+
     int m_sequence_max;
+
+    /**
+     *  Used when drawing an active sequence.  Not sure yet why we can't just
+     *  use the sequence's member function to access this status boolean.
+     */
+
     bool m_sequence_active[c_max_sequence];
 
     /**
@@ -145,8 +239,26 @@ private:
 
     Seq24PerfInput m_seq24_interaction;
 
+    /**
+     *  Used in the Seq24 or Fruity processing when moving a section of
+     *  triggers.
+     */
+
     bool m_moving;
+
+    /**
+     *  Used in the Seq24 or Fruity processing when growing a section of
+     *  triggers.
+     */
+
     bool m_growing;
+
+    /**
+     *  Used in the Seq24 or Fruity processing when growing a section of
+     *  triggers.  Determines whether the section is growing to the left or to
+     *  the right.
+     */
+
     bool m_grow_direction;
 
 public:

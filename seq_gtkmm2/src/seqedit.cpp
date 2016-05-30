@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-05-17
+ * \updates       2016-05-30
  * \license       GNU GPLv2 or above
  *
  *  Compare this class to eventedit, which has to do some similar things,
@@ -393,7 +393,7 @@ seqedit::seqedit
     set_note_length(m_initial_note_length * m_ppqn / SEQ64_DEFAULT_PPQN);
 
     int zoom = usr().zoom();
-    if (usr().zoom() == 0)
+    if (usr().zoom() == SEQ64_USE_ZOOM_POWER_OF_2)      /* i.e. 0 */
         zoom = zoom_power_of_2(m_ppqn);
 
     set_zoom(zoom);
@@ -1506,13 +1506,19 @@ seqedit::set_midi_bus (int bus)
 
 /**
  *  Selects the given zoom value.  It is passed to the seqroll, seqtime,
- *  seqdata, and seqevent objects, as well.
+ *  seqdata, and seqevent objects, as well.  This function doesn't check if
+ *  the zoom will change, because this function might be used to initialize
+ *  the zoom of the children.
  *
- *  The notation is in pixels:ticks, but I would prefer to use
- *  pulses/pixel (pulses per pixel).  Oh well.
+ *  The notation for zoom in the user-interface is in pixels:ticks, but I
+ *  would prefer to use pulses/pixel (pulses per pixel).  Oh well.  Note that
+ *  this value of zoom is saved to the "user" configuration file when
+ *  Sequencer64 exit.
  *
- *  Finally, note that this value of zoom is saved to the "user" configuration
- *  file when Sequencer64 exit.
+ * \param z
+ *      The prospective zoom value to set.  It is applied only if between the
+ *      minimum and maximum allowed zoom values, inclusive.  See the
+ *      usr().min_zoom() and usr().max_zoom() function.
  */
 
 void
@@ -1520,11 +1526,10 @@ seqedit::set_zoom (int z)
 {
     if ((z >= usr().min_zoom()) && (z <= usr().max_zoom()))
     {
-        char b[8];
-        snprintf(b, sizeof(b), "1:%d", z);
+        char b[16];
+        snprintf(b, sizeof b, "1:%d", z);
         m_entry_zoom->set_text(b);
         m_zoom = z;
-
         m_seqroll_wid->set_zoom(z);
         m_seqtime_wid->set_zoom(z);
         m_seqdata_wid->set_zoom(z);
@@ -1540,19 +1545,26 @@ seqedit::set_zoom (int z)
  *  The default initial snap is the default PPQN divided by 4, or the
  *  equivalent of a 16th note (48 ticks).  The snap divisor is 192 * 4 / 48 or
  *  16.
+ *
+ * \param s
+ *      The prospective snap value to set.  It is checked only to make sure it
+ *      is greater than 0, to avoid a numeric exception.
  */
 
 void
-seqedit::set_snap (int snap)
+seqedit::set_snap (int s)
 {
-    char b[8];
-    snprintf(b, sizeof(b), "1/%d", m_ppqn * 4 / snap);
-    m_entry_snap->set_text(b);
-    m_snap = snap;
-    m_initial_snap = snap;
-    m_seqroll_wid->set_snap(snap);
-    m_seqevent_wid->set_snap(snap);
-    m_seq.set_snap_tick(snap);
+    if (s > 0)
+    {
+        char b[16];
+        snprintf(b, sizeof(b), "1/%d", m_ppqn * 4 / s);
+        m_entry_snap->set_text(b);
+        m_snap = s;
+        m_initial_snap = s;
+        m_seqroll_wid->set_snap(s);
+        m_seqevent_wid->set_snap(s);
+        m_seq.set_snap_tick(s);
+    }
 }
 
 /**
@@ -2040,19 +2052,17 @@ seqedit::on_delete_event (GdkEventAny *)
 bool
 seqedit::on_scroll_event (GdkEventScroll * ev)
 {
-    guint modifiers;                /* for filtering out caps/num lock etc. */
+    guint modifiers;                    /* to filter caps/num lock etc. */
     modifiers = gtk_accelerator_get_default_mod_mask();
     if ((ev->state & modifiers) == SEQ64_CONTROL_MASK)
     {
         if (CAST_EQUIVALENT(ev->direction, SEQ64_SCROLL_DOWN))
         {
-            if (m_zoom * 2 <= usr().max_zoom())
-                set_zoom(m_zoom * 2);
+            set_zoom(m_zoom * 2);       /* validates the new zoom value */
         }
         else if (CAST_EQUIVALENT(ev->direction, SEQ64_SCROLL_UP))
         {
-            if (m_zoom / 2 >= usr().min_zoom())
-                set_zoom(m_zoom / 2);
+            set_zoom(m_zoom / 2);       /* validates the new zoom value */
         }
         return true;
     }

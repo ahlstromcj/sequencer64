@@ -22,14 +22,18 @@
 /**
  * \file          gui_window_gtk2.hpp
  *
- *  This module declares/defines the base class for the Performance Editor,
- *  also known as the Song Editor.
+ *  This module declares/defines the base class for main window of some of the
+ *  user-interface classes.
  *
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-22
- * \updates       2016-05-14
+ * \updates       2016-05-30
  * \license       GNU GPLv2 or above
+ *
+ *  This module declares/defines the base class for main window of the
+ *  Performance Editor, also known as the Song Editor, the Pattern Editor, and
+ *  the main window of the whole application.
  *
  */
 
@@ -58,8 +62,7 @@ namespace Gtk
 
 namespace seq64
 {
-
-class perform;
+    class perform;
 
 /**
  *  This class supports a basic interface for Gtk::Window-derived objects.
@@ -71,7 +74,8 @@ class gui_window_gtk2 : public Gtk::Window
 private:
 
     /**
-     *  The master object, sort of a sequence buss.
+     *  The master object, sort of a sequence buss for all of the sequence.
+     *  And a whole lot more than that.
      */
 
     perform & m_mainperf;
@@ -81,8 +85,8 @@ private:
      *  resizable.
      */
 
-    int m_window_x;
-    int m_window_y;
+    int m_window_x;                     /**< The width of the window.       */
+    int m_window_y;                     /**< The height of the window.      */
 
     /**
      *  Provides the timer period for the eventedit timer, used to determine
@@ -94,7 +98,8 @@ private:
 
     /**
      *  Indicates if on_realize() has been called.  In some cases, we don't
-     *  want to draw in objects that haven't yet appeared.
+     *  want to draw in objects that haven't yet appeared, otherwise crashes
+     *  occur.
      */
 
     bool m_is_realized;
@@ -107,7 +112,7 @@ public:
         int window_x = 0,
         int window_y = 0
     );
-    ~gui_window_gtk2 ();
+    virtual ~gui_window_gtk2 ();
 
 protected:
 
@@ -121,7 +126,9 @@ protected:
     }
 
     /**
-     *  Provides "quit" functionality that WE HAVE OVERLOOKED!!!
+     *  Provides "quit" functionality that WE HAVE OVERLOOKED!!!  At some
+     *  point we need to rectify this situation, probably for the sake of
+     *  session support.
      */
 
     virtual void quit ()
@@ -147,7 +154,8 @@ protected:
         return m_is_realized;
     }
 
-    void scroll_adjust (Gtk::Adjustment & adjust, double step);
+    void scroll_hadjust (Gtk::Adjustment & hadjust, double step);
+    void scroll_vadjust (Gtk::Adjustment & vadjust, double step);
 
 protected:
 

@@ -26,9 +26,12 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-05-24
+ * \updates       2016-05-30
  * \license       GNU GPLv2 or above
  *
+ *  The data area consists of vertical lines, with the height of each line
+ *  representing the value of the event data.  Currently, the scaling of the
+ *  line height is very easy... one pixel per value, ranging from 0 to 127.
  */
 
 #include <gtkmm/adjustment.h>
@@ -43,14 +46,28 @@ namespace seq64
 {
 
 /**
- *  Principal constructor.  In the constructor you can only allocate
- *  colors, get_window() returns 0 because we have not been realized.
+ *  Principal constructor.  In the constructor you can only allocate colors,
+ *  get_window() returns 0 because this pane has not yet been realized.
+ *
+ * \param seq
+ *      The sequence that is being displayed and edited by this data pane.
+ *
+ * \param p
+ *      The performance object that oversees all of the sequences.  This
+ *      object is needed here only to access the perform::modify() function.
+ *
+ * \param zoom
+ *      The starting zoom of this pane.
+ *
+ * \param hadjust
+ *      The horizontal adjustment object provided by the parent class,
+ *      seqedit, that created this pane.
  */
 
 seqdata::seqdata
 (
     sequence & seq,
-    perform & p,            // used only to satisfy gui_drawingarea_gtk2()
+    perform & p,
     int zoom,
     Gtk::Adjustment & hadjust
 ) :
@@ -59,8 +76,6 @@ seqdata::seqdata
     m_zoom                  (zoom),
     m_scroll_offset_ticks   (0),
     m_scroll_offset_x       (0),
-    m_background_tile_x     (0),
-    m_background_tile_y     (0),
     m_number_w              (font_render().char_width()+1),      // was 6
     m_number_h              (3*(font_render().char_height()+1)), // was 3*10
     m_number_offset_y       (font_render().char_height()-1),     // was 8
@@ -77,6 +92,10 @@ seqdata::seqdata
  *  Updates the sizes in the pixmap if the view is realized, and queues up
  *  a draw operation.  It creates a pixmap with window dimensions given by
  *  m_window_x and m_window_y.
+ *
+ *  We thought there was a potential memory leak, since m_pixmap is created
+ *  every time the window is resized, but valgrind says otherwise... maybe.
+ *  An awful lot of Gtk leaks!
  */
 
 void
@@ -85,7 +104,7 @@ seqdata::update_sizes ()
     if (is_realized())
     {
         m_pixmap = Gdk::Pixmap::create(m_window, m_window_x, m_window_y, -1);
-        redraw();               // update_pixmap(); queue_draw();
+        redraw();
     }
 }
 
@@ -107,7 +126,7 @@ seqdata::reset ()
      * Instead of this, try forcing the redraw, to eliminate the bug of not
      * redrawing on changing zoom.
      *
-     * redraw();                   // instead of update_pixmap(); queue_draw();
+     * redraw();
      */
 
     update_pixmap();
@@ -116,25 +135,32 @@ seqdata::reset ()
 
 /**
  *  Sets the zoom to the given value and resets the view via the reset
- *  function.
+ *  function.  Called by seqedit::set_zoom(), which validates the zoom value.
+ *
+ * \param z
+ *      The zoom value to be set.
  */
 
 void
-seqdata::set_zoom (int zoom)
+seqdata::set_zoom (int z)
 {
-    if (m_zoom != zoom)
+    if (m_zoom != z)
     {
-        m_zoom = zoom;
+        m_zoom = z;
         reset();
     }
 }
 
 /**
- *  Sets the status to the given value, and the control to the optional
- *  given value, which defaults to 0, then calls redraw().
+ *  Sets the status to the given value, and the control to the optional given
+ *  value, which defaults to 0, then calls redraw().  Perhaps we should check
+ *  that at least one of the parameters causes a change.
  *
- *  Perhaps we should check that at least one of the parameters causes a
- *  change.
+ * \param status
+ *      The MIDI event byte (status byte) to set.
+ *
+ * \param control
+ *      The MIDI CC value to set.
  */
 
 void
@@ -156,9 +182,8 @@ seqdata::update_pixmap ()
 }
 
 /**
- *  Draws events on the given drawable object.  Very similar to
- *  seqevent::draw_events_on().  And yet it doesn't handle zooming
- *  as well, must fix!
+ *  Draws events on the given drawable object.  Very similar to seqevent ::
+ *  draw_events_on().  And yet it doesn't handle zooming as well, must fix!
  *
  * \change ca 2016-04-13, 2016-05-24
  *      We now draw the data line for selected event in dark orange, instead
@@ -230,8 +255,7 @@ seqdata::draw_line_on_window ()
     set_line(Gdk::LINE_SOLID);
     draw_drawable                                   /* replace old */
     (
-        m_old.x, m_old.y, m_old.x, m_old.y,
-        m_old.width + 1, m_old.height + 1
+        m_old.x, m_old.y, m_old.x, m_old.y, m_old.width + 1, m_old.height + 1
     );
 
     int x, y, w, h;
@@ -243,8 +267,7 @@ seqdata::draw_line_on_window ()
     m_old.height = h;
     draw_line
     (
-        black(),
-        m_current_x - m_scroll_offset_x, m_current_y,
+        black(), m_current_x - m_scroll_offset_x, m_current_y,
         m_drop_x - m_scroll_offset_x, m_drop_y
     );
 }
@@ -264,9 +287,33 @@ seqdata::change_horz ()
 }
 
 /**
- *  This function takes two points, and returns an Xwin rectangle, returned
+ *  This function takes two points, and returns an XWin rectangle, returned
  *  via the last four parameters.  It checks the mins/maxes, then fills in x,
  *  y, and width, height.
+ *
+ * \param x1
+ *      The input x value for the first data point.
+ *
+ * \param y1
+ *      The input y value for the first data point.
+ *
+ * \param x2
+ *      The input x value for the second data point.
+ *
+ * \param y2
+ *      The input y value for the second data point.
+ *
+ * \param [out] rx
+ *      The output for the x value of the XWin rectangle.
+ *
+ * \param [out] ry
+ *      The output for the y value of the XWin rectangle.
+ *
+ * \param [out] rw
+ *      The output for the width value of the XWin rectangle.
+ *
+ * \param [out] rh
+ *      The output for the height of the XWin rectangle.
  */
 
 void
@@ -288,6 +335,7 @@ seqdata::xy_to_rect
         rx = x2;
         rw = x1 - x2;
     }
+
     if (y1 < y2)
     {
         ry = y1;
@@ -304,6 +352,9 @@ seqdata::xy_to_rect
  *  Handles a motion-notify event.  It converts the x,y of the mouse to
  *  ticks, then sets the events in the event-data-range, updates the
  *  pixmap, draws events in the window, and draws a line on the window.
+ *
+ * \param ev
+ *      The motion event.
  *
  * \return
  *      Returns true if a change in event data occurred.  If true, then
@@ -363,12 +414,15 @@ seqdata::on_motion_notify_event (GdkEventMotion * ev)
 
 /**
  *  Handles an on-leave notification event.
+ *
+ * \param p0
+ *      The crossing point for the event, unused.
  */
 
 bool
-seqdata::on_leave_notify_event (GdkEventCrossing * p0)
+seqdata::on_leave_notify_event (GdkEventCrossing * /*p0*/)
 {
-    redraw();           // instead of update_pixmap(); queue_draw();
+    redraw();
     return true;
 }
 
@@ -392,18 +446,17 @@ seqdata::on_realize ()
         mem_fun(*this, &seqdata::change_horz)
     );
     m_gc->set_foreground(white());              /* works for all drawing    */
+    char num[8];                                /* pulled this out of loop  */
+    memset(num, 0, sizeof num);                 /* only need this once!     */
     for (int i = 0; i < c_dataarea_y; ++i)      /* MIDI_COUNT_MAX; 128      */
     {
-        m_numbers[i] = Gdk::Pixmap::create(m_window, m_number_w, m_number_h, -1);
-        draw_rectangle(m_numbers[i], 0, 0, m_number_w, m_number_h);
-
         char val[8];
-        char num[8];
-        snprintf(val, sizeof(val), "%3d\n", i);
-        memset(num, 0, sizeof(num));
+        snprintf(val, sizeof val, "%3d", i);    /* removed the newline      */
         num[0] = val[0];                        /* converting to unicode?   */
         num[2] = val[1];
         num[4] = val[2];
+        m_numbers[i] = Gdk::Pixmap::create(m_window, m_number_w, m_number_h, -1);
+        draw_rectangle(m_numbers[i], 0, 0, m_number_w, m_number_h);
         render_number(m_numbers[i], 0, 0, &num[0]);
         render_number(m_numbers[i], 0, m_number_offset_y,     &num[2]);
         render_number(m_numbers[i], 0, m_number_offset_y * 2, &num[4]);
@@ -412,19 +465,22 @@ seqdata::on_realize ()
 }
 
 /**
- *  Implements the on-expose event.
+ *  Implements the on-expose event by calling draw_drawable() on the event.
+ *
+ * \param ev
+ *      Provides the expose-event.
  *
  * \return
  *      Always returns true.
  */
 
 bool
-seqdata::on_expose_event (GdkEventExpose * a_e)
+seqdata::on_expose_event (GdkEventExpose * ev)
 {
     draw_drawable
     (
-        a_e->area.x, a_e->area.y, a_e->area.x, a_e->area.y,
-        a_e->area.width, a_e->area.height
+        ev->area.x, ev->area.y, ev->area.x, ev->area.y,
+        ev->area.width, ev->area.height
     );
     return true;
 }
@@ -442,22 +498,25 @@ seqdata::on_expose_event (GdkEventExpose * a_e)
  * \todo
  *      DOCUMENT the seqdata scrolling behavior in the documentation projects.
  *
+ * \param ev
+ *      Provides the scroll-event.
+ *
  * \return
  *      Always returns true.
  */
 
 bool
-seqdata::on_scroll_event (GdkEventScroll * a_ev)
+seqdata::on_scroll_event (GdkEventScroll * ev)
 {
     guint modifiers;                    // Used to filter out caps/num lock etc.
     modifiers = gtk_accelerator_get_default_mod_mask();
-    if ((a_ev->state & modifiers) != 0)
+    if ((ev->state & modifiers) != 0)
         return false;
 
-    if (CAST_EQUIVALENT(a_ev->direction, SEQ64_SCROLL_UP))
+    if (CAST_EQUIVALENT(ev->direction, SEQ64_SCROLL_UP))
         m_seq.increment_selected(m_status, m_cc);
 
-    if (CAST_EQUIVALENT(a_ev->direction, SEQ64_SCROLL_DOWN))
+    if (CAST_EQUIVALENT(ev->direction, SEQ64_SCROLL_DOWN))
         m_seq.decrement_selected(m_status, m_cc);
 
     update_pixmap();
@@ -466,7 +525,12 @@ seqdata::on_scroll_event (GdkEventScroll * a_ev)
 }
 
 /**
- *  Implement a button-press event.
+ *  Implements a mouse button-press event.  This function pushes the undo
+ *  information for the sequence, sets the drop-point, 
+ *  resets the box that holds dirty redraw spot, and sets m_dragging to true.
+ *
+ * \param ev
+ *      Provides the button-press event.
  *
  * \return
  *      Always returns true.
@@ -478,19 +542,21 @@ seqdata::on_button_press_event (GdkEventButton * ev)
     if (CAST_EQUIVALENT(ev->type, SEQ64_BUTTON_PRESS))
     {
         m_seq.push_undo();
-        m_drop_x = (int) ev->x + m_scroll_offset_x; /* set values for line  */
-        m_drop_y = (int) ev->y;
-        m_old.x = 0;                /* reset box that holds dirty redraw spot */
-        m_old.y = 0;
-        m_old.width = 0;
-        m_old.height = 0;
-        m_dragging = true;          /* we are potentially dragging now!       */
+        m_drop_x = int(ev->x) + m_scroll_offset_x;  /* set values for line  */
+        m_drop_y = int(ev->y);
+        m_old.x = m_old.y = m_old.width = m_old.height = 0;
+        m_dragging = true;                          /* may be dragging now  */
     }
     return true;
 }
 
 /**
- *  Implement a button-release event.
+ *  Implement a button-release event.  Sets the current point.  If m_dragging
+ *  is true, then the sequence data is changed, the performance modification
+ *  flag is set, and m_dragging is reset.
+ *
+ * \param ev
+ *      Provides the button-release event.
  *
  * \return
  *      Returns true if a modification occurred, and in that case also sets
@@ -528,15 +594,19 @@ seqdata::on_button_release_event (GdkEventButton * ev)
 }
 
 /**
- *  Handle a size-allocation event.
+ *  Handles a size-allocation event by updating m_window_x and m_window_y, and
+ *  then updating all of the sizes of the data pane in update_sizes().
+ *
+ * \param r
+ *      Provides the allocation event.
  */
 
 void
-seqdata::on_size_allocate (Gtk::Allocation & a_r)
+seqdata::on_size_allocate (Gtk::Allocation & r)
 {
-    gui_drawingarea_gtk2::on_size_allocate(a_r);
-    m_window_x = a_r.get_width();
-    m_window_y = a_r.get_height();
+    gui_drawingarea_gtk2::on_size_allocate(r);
+    m_window_x = r.get_width();
+    m_window_y = r.get_height();
     update_sizes();
 }
 

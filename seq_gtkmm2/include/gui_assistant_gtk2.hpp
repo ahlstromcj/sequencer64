@@ -44,11 +44,11 @@ namespace seq64
 {
 
 #ifdef SEQ64_JACK_SESSION
-class jack_assistant;                   // forward reference
+    class jack_assistant;               // forward reference
 #endif
 
-class lash;                             // ditto
-class keys_perform;                     // ditto
+    class lash;                         // ditto
+    class keys_perform;                 // ditto
 
 /**
  *  This class provides an interface for some of the Gtk/Gdk/Glib support
@@ -64,6 +64,11 @@ private:
 public:
 
     gui_assistant_gtk2 ();
+
+    /**
+     *  Virtual classes require a virtual destructor.
+     */
+
     virtual ~gui_assistant_gtk2 ()
     {
         // stock base-class implementation

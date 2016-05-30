@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-20
- * \updates       2016-05-27
+ * \updates       2016-05-29
  * \license       GNU GPLv2 or above
  *
  *  The "rc" command-line options override setting that are first read from
@@ -66,10 +66,14 @@ namespace seq64
 /**
  *  Sets up the "hardwired" version text for Sequencer64.  This value
  *  ultimately comes from the configure.ac script.
+ *
+ *  This was too redundant:
+ *
+ *  SEQ64_PACKAGE " " SEQ64_VERSION " (" SEQ64_GIT_VERSION ") " __DATE__ "\n"
  */
 
 static const std::string versiontext =
-    SEQ64_PACKAGE " " SEQ64_VERSION " (" SEQ64_GIT_VERSION ") " __DATE__ "\n";
+    SEQ64_PACKAGE " " SEQ64_GIT_VERSION " " __DATE__ "\n";
 
 /**
  *  A structure for command parsing that provides the long forms of
@@ -149,7 +153,7 @@ static const std::string s_arg_list =
  */
 
 static const char * const s_help_1a =
-"sequencer64 v 0.9.12  A significant reboot of the seq24 live sequencer.\n"
+"sequencer64 v 0.9.13  A significant reboot of the seq24 live sequencer.\n"
 "Usage: sequencer64 [options] [MIDI filename]\n\n"
 "Options:\n"
 "   -h, --help               Show this message and exit.\n"

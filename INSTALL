@@ -1,6 +1,6 @@
-INSTALL for Sequencer64 v. 0.9.12
+INSTALL for Sequencer64 v. 0.9.13
 Chris Ahlstrom
-2015-09-10 to 2016-05-19
+2015-09-10 to 2016-05-29
 
 The current packaging for Sequencer64 is primarily aimed at developers.
 There is currently no configure script... it must be bootstrapped.
@@ -270,8 +270,12 @@ DEPENDENCIES:
       To build the documentation manually, change to the doc/dox
       directory and run:
 
-        ./make_dox reference
-        ./make_dox clean
+         ./make_dox reference
+         ./make_dox clean
+
+      To install the documentation to /usr/local/doc/sequencer64-0.9:
+
+         ./make_dox install
       
    Debian packaging:
 

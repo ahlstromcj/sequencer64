@@ -58,30 +58,64 @@ class gui_palette_gtk2 : public Gtk::DrawingArea    // or Gtk::Widget
 protected:
 
     /**
-     *  Provides a type for the color object.
+     *  Provides a type for the color object.  The following uses are made of
+     *  each color:
+     *
+     *  -   Black.  The background color of armed patterns.  The color of
+     *      most lines in the user interface, including the main grid
+     *      lines.  The default color of progress lines and text.
+     *  -   White.  The default background color of just about everything
+     *      drawn in the application.
+     *  -   Grey.  The color of minor grid lines and the markers for the
+     *      currently-selected scale.
+     *  -   Dark grey.  The color of some grid lines, and the background
+     *      of a queued pattern slot.
+     *  -   Light grey.  The color of some grid lines.
+     *  -   Red.  The optional color of progress bars.
+     *  -   Orange.  The fill-in color for selected notes and events.
+     *  -   Dark orange.  The color of selected event data lines and the
+     *      color of the selection box for events to be pasted.
+     *  -   Yellow.  The background of the pattern and name slots for empty
+     *      patterns.  The text color for selected empty pattern slots.
+     *  -   Green.  Not yet used.
+     *  -   Blue.   Not yet used.
+     *  -   Dark cyan.  The background color of muted patterns currently in
+     *      edit, or the pattern that contains the original data for an
+     *      imported SMF 0 song.  The text color of an unmuted pattern
+     *      currently in edit.  These colors apply to the pattern editor and
+     *      the song editor.  The color of the selected background pattern
+     *      in the song editor.
+     *  -   Line color. The generic line color, meant for expansion.
+     *      Currently black.
+     *  -   Progress color. The progress line color.  Black by default, but
+     *      can be set to red.
+     *  -   Background color.  The currently-in-use background color.  Can
+     *      vary a lot when a pixmap is being redrawn.
+     *  -   Foreground color.  The currently-in-use foreground color.  Can
+     *      vary a lot when a pixmap is being redrawn.
      */
 
     typedef Gdk::Color Color;
 
 private:                                // use the accessor functions
 
-    const Color m_black;
-    const Color m_white;
-    const Color m_grey;
-    const Color m_dk_grey;
-    const Color m_lt_grey;
-    const Color m_red;
-    const Color m_orange;
-    const Color m_dk_orange;
-    const Color m_yellow;
-    const Color m_green;
-    const Color m_blue;
-    const Color m_dk_cyan;
-    const Color m_line_color;
-    const Color m_progress_color;
+    const Color m_black;                /**< Provides the black color.      */
+    const Color m_white;                /**< Provides the white color.      */
+    const Color m_grey;                 /**< Provides the grey color.       */
+    const Color m_dk_grey;              /**< Provides the dark grey color.  */
+    const Color m_lt_grey;              /**< Provides the light grey color. */
+    const Color m_red;                  /**< Provides the red color.        */
+    const Color m_orange;               /**< Provides the orange color.     */
+    const Color m_dk_orange;            /**< Provides a dark orange color.  */
+    const Color m_yellow;               /**< Provides the yellow color.     */
+    const Color m_green;                /**< Provides the green color.      */
+    const Color m_blue;                 /**< Provides the blue color.       */
+    const Color m_dk_cyan;              /**< Provides the dark cyan color.  */
+    const Color m_line_color;           /**< Provides the line color.       */
+    const Color m_progress_color;       /**< Provides the progress color.   */
 
-    Color m_bg_color;                   // m_background in some classes
-    Color m_fg_color;                   // m_foreground in some classes
+    Color m_bg_color;                   /**< The background color.          */
+    Color m_fg_color;                   /**< The foreground color.          */
 
 public:
 

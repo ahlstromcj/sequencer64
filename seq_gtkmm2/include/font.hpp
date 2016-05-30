@@ -30,6 +30,9 @@
  * \updates       2015-11-25
  * \license       GNU GPLv2 or above
  *
+ *  Note that the fonts are actually embedded in a large bitmap matrix, and
+ *  are rendered by blitting the letter to the desired pixmaps.  Not very
+ *  flexible, but very fast.
  */
 
 #include <gtkmm/image.h>
@@ -54,7 +57,8 @@ public:
      *  text.  Basically, these two values cause the selection of one or
      *  another pixmap (font_b_xpm and font_w_xpm).  We've added two more
      *  pixmaps to draw black text on a yellow background (font_y.xpm) and
-     *  yellow text on a black background (font_yb.xpm).
+     *  yellow text on a black background (font_yb.xpm).  Oh, and couple more
+     *  for cyan and black text-blitting.
      *
      * \var BLACK
      *      The first supported color.  A black font on a white
@@ -90,19 +94,20 @@ public:
 private:
 
     /**
-     *  If true, use the new font, which is a little bit more modern looking.
+     *  If true, use the new font, which is a little bit more modern looking,
+     *  and is also thicker, and thus a little easier to see.
      */
 
     bool m_use_new_font;
 
     /**
-     *  Specifies the cell width of the whole cell.
+     *  Specifies the cell width of the whole character cell.
      */
 
     int m_cell_w;
 
     /**
-     *  Specfies the cell height of the whole cell.
+     *  Specfies the cell height of the whole character cell.
      */
 
     int m_cell_h;

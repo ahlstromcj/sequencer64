@@ -36,8 +36,7 @@
 
 namespace seq64
 {
-
-class seqroll;
+    class seqroll;
 
 /**
  *  Implements the Seq24 mouse interaction paradigm for the seqroll.
@@ -47,6 +46,10 @@ class Seq24SeqRollInput
 {
 
 private:
+
+    /**
+     *  True if adding events to the seqroll via the mouse.
+     */
 
     bool m_adding;
 
@@ -62,13 +65,13 @@ public:
         // Empty body
     }
 
-    void set_adding (bool a_adding, seqroll & ths);
+    void set_adding (bool adding, seqroll & ths);
 
 public:         // callbacks
 
-    bool on_button_press_event (GdkEventButton * a_ev, seqroll & ths);
-    bool on_button_release_event (GdkEventButton * a_ev, seqroll & ths);
-    bool on_motion_notify_event (GdkEventMotion * a_ev, seqroll & ths);
+    bool on_button_press_event (GdkEventButton * ev, seqroll & ths);
+    bool on_button_release_event (GdkEventButton * ev, seqroll & ths);
+    bool on_motion_notify_event (GdkEventMotion * ev, seqroll & ths);
 
 };
 

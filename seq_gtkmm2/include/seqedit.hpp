@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-05-12
+ * \updates       2016-05-30
  * \license       GNU GPLv2 or above
  *
  *  The seqedit is a kind of master class for holding aseqroll, seqkeys,
@@ -318,13 +318,28 @@ private:
      *
      * \param step
      *      Provides the step value to use for adjusting the horizontal
-     *      scrollbar.  See gui_drawingarea_gtk2::scroll_adjust() for more
+     *      scrollbar.  See gui_drawingarea_gtk2::scroll_hadjust() for more
      *      information.
      */
 
     void horizontal_adjust (double step)
     {
-        scroll_adjust(*m_hadjust, step);
+        scroll_hadjust(*m_hadjust, step);
+    }
+
+    /**
+     *  This function provides optimization for the on_scroll_event() function.
+     *  A near-duplicate of the one in seqroll.
+     *
+     * \param step
+     *      Provides the step value to use for adjusting the vertical
+     *      scrollbar.  See gui_drawingarea_gtk2::scroll_vadjust() for more
+     *      information.
+     */
+
+    void vertical_adjust (double step)
+    {
+        scroll_vadjust(*m_vadjust, step);
     }
 
     void set_measures (int lim);

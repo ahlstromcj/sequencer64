@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-22
- * \updates       2016-04-11
+ * \updates       2016-05-29
  * \license       GNU GPLv2 or above
  *
  *  This module defines the following categories of "global" variables that
@@ -65,6 +65,13 @@
 #include "midi_container.hpp"           /* SEQ64_IS_LEGAL_SEQUENCE etc. */
 #include "user_instrument.hpp"
 #include "user_midi_bus.hpp"
+
+/**
+ *  This special value of zoom sets the zoom according to a power of two
+ *  related to the PPQN value of the song.
+ */
+
+#define SEQ64_USE_ZOOM_POWER_OF_2       0
 
 namespace seq64
 {
@@ -240,7 +247,8 @@ class user_settings
      *  Provides the initial zoom value, in units of ticks per pixel.  The
      *  original default value was 32 ticks per pixel, but larger PPQN values
      *  need higher values, and we will have to adapt the default zoom to the
-     *  PPQN value.
+     *  PPQN value.  Also, the zoom can never be zero, as it can appear as the
+     *  divisor in scaling equations.
      */
 
     int m_current_zoom;

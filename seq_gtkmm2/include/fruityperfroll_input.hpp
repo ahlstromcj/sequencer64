@@ -40,8 +40,7 @@
 
 namespace seq64
 {
-
-class perfroll;
+    class perfroll;
 
 /**
  *  Implements the performance input of that certain fruity sequencer that
@@ -60,6 +59,10 @@ private:
 
 public:
 
+    /**
+     *  Default constructor.
+     */
+
     FruityPerfInput() :
         AbstractPerfInput   (),
         m_current_x         (0),
@@ -68,16 +71,17 @@ public:
         // Empty body
     }
 
-    bool on_button_press_event (GdkEventButton * a_ev, perfroll & roll);
-    bool on_button_release_event (GdkEventButton * a_ev, perfroll & roll);
-    bool on_motion_notify_event (GdkEventMotion * a_ev, perfroll & roll);
+    bool on_button_press_event (GdkEventButton * ev, perfroll & roll);
+    bool on_button_release_event (GdkEventButton * ev, perfroll & roll);
+    bool on_motion_notify_event (GdkEventMotion * ev, perfroll & roll);
 
 private:
 
     void update_mouse_pointer (perfroll & roll);
-    bool on_left_button_pressed (GdkEventButton * a_ev, perfroll & roll);
-    bool on_right_button_pressed (GdkEventButton * a_ev, perfroll & roll);
-};
+    bool on_left_button_pressed (GdkEventButton * ev, perfroll & roll);
+    bool on_right_button_pressed (GdkEventButton * ev, perfroll & roll);
+
+};          // FruityPerfInput
 
 }           // namespace seq64
 

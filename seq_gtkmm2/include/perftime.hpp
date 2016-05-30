@@ -42,9 +42,8 @@ namespace Gtk
 
 namespace seq64
 {
-
-class perform;
-class perfedit;
+    class perform;
+    class perfedit;
 
 /**
  *  This class implements drawing the piano time at the top of the
@@ -68,7 +67,8 @@ private:
 
     /**
      *  Not yet sure exactly what this member represents.  Also, why always
-     *  4/16 in the calculations of this value?
+     *  4/16 in the calculations of this value?  Might be able to get rid of
+     *  this member, though it's a bit tricky.
      */
 
     int m_4bar_offset;

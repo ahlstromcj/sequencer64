@@ -33,7 +33,7 @@
  *
  */
 
-#include "gui_drawingarea_gtk2.hpp"
+#include "gui_drawingarea_gtk2.hpp"     /* the base class of this one   */
 #include "midibyte.hpp"                 /* seq64::midipulse typedef     */
 #include "settings.hpp"                 /* seq64::choose_ppqn()         */
 

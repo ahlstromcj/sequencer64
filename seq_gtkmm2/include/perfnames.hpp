@@ -27,11 +27,12 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-05-17
+ * \updates       2016-05-29
  * \license       GNU GPLv2 or above
  *
  *  This class supports the left side of the Performance window (also known
- *  as the Song window).
+ *  as the Song window).  It also inherits from seqmenu as a means of
+ *  supporting the same sequence-operation menus of the pattern editor.
  */
 
 #include "gui_drawingarea_gtk2.hpp"
@@ -44,9 +45,8 @@ namespace Gtk
 
 namespace seq64
 {
-
-class perform;
-class perfedit;
+    class perform;
+    class perfedit;
 
 /**
  *  This class implements the left-side keyboard in the patterns window.  It
@@ -126,10 +126,32 @@ private:
 
     int m_xy_offset;
 
-    int m_seqs_in_set;
-    int m_sequence_max;                         // CONST
+    /**
+     *  The number of sequences in a set, currently still hardwired to 32.
+     */
+
+    const int m_seqs_in_set;
+
+    /**
+     *  The maximum number of sequences, current 32 x 32 = 1024.
+     */
+
+    const int m_sequence_max;
+
+    /**
+     *  The offset from the 0th sequence, which is determined by the vertical
+     *  view of the piano roll, controlled by the vertical scroll-bar.
+     */
+
     int m_sequence_offset;
-    bool m_sequence_active[c_max_sequence];     // CONST
+
+    /**
+     *  Indicates if the given sequence is active or not.  If this really is
+     *  the true meaning of this value, we ought to get it directly from the
+     *  sequence if we can.
+     */
+
+    bool m_sequence_active[c_max_sequence];
 
 public:
 
@@ -151,25 +173,11 @@ private:
     void change_vert ();
 
     /**
-     *  This function does nothing.
-     */
-
-    void update_pixmap ()
-    {
-        // Empty body
-    }
-
-    /**
-     *  This function does nothing.
-     */
-
-    void draw_area ()
-    {
-        // Empty body
-    }
-
-    /**
-     *  Redraw the given sequence.
+     *  Redraw the given sequence.  This function is a virtual function of
+     *  seqmenu that must be overridden in this class.
+     *
+     * \param sequence
+     *      Provides the number of the sequence to be redrawn.
      */
 
     void redraw (int sequence)
@@ -187,12 +195,6 @@ private:    // Gtk callbacks
     bool on_scroll_event (GdkEventScroll * ev);
 
 };          // class perfnames
-
-/*
- * Free functions and values in the seq64 namespace.
-
-extern void update_perfnames_sequences ();
- */
 
 }           // namespace seq64
 

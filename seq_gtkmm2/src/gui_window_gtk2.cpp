@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-22
- * \updates       2016-05-17
+ * \updates       2016-05-30
  * \license       GNU GPLv2 or above
  *
  *  This module uses Gtk::Window as the base class, and also holds the main
@@ -107,7 +107,7 @@ gui_window_gtk2::~gui_window_gtk2 ()
  */
 
 void
-gui_window_gtk2::scroll_adjust (Gtk::Adjustment & hadjust, double step)
+gui_window_gtk2::scroll_hadjust (Gtk::Adjustment & hadjust, double step)
 {
     double val = hadjust.get_value();
     double upper = hadjust.get_upper();
@@ -124,6 +124,36 @@ gui_window_gtk2::scroll_adjust (Gtk::Adjustment & hadjust, double step)
             nextval = 0.0;
     }
     hadjust.set_value(nextval);
+}
+
+/**
+ *  This function is the vertical version of scroll_hadjust().
+ *
+ * \param vadjust
+ *      Provides a reference to the adjustment object to be adjusted.
+ *
+ * \param step
+ *      Provides the step value to use for adjusting the horizontal scrollbar.
+ */
+
+void
+gui_window_gtk2::scroll_vadjust (Gtk::Adjustment & vadjust, double step)
+{
+    double val = vadjust.get_value();
+    double upper = vadjust.get_upper();
+    double nextval = val + step;
+    bool forward = step >= 0.0;
+    if (forward)
+    {
+        if (nextval > upper)
+            nextval = upper;
+    }
+    else
+    {
+        if (nextval < 0.0)
+            nextval = 0.0;
+    }
+    vadjust.set_value(nextval);
 }
 
 /**

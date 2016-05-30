@@ -29,7 +29,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-25
+ * \updates       2016-05-30
  * \license       GNU GPLv2 or above
  *
  */
@@ -44,9 +44,8 @@ namespace Gtk
 
 namespace seq64
 {
-
-class perform;
-class sequence;
+    class perform;
+    class sequence;
 
 /**
  *    This class supports drawing piano-roll eventis on a window.
@@ -60,18 +59,33 @@ class seqdata : public gui_drawingarea_gtk2
 
 private:
 
+    /**
+     *  Points to the sequence whose data is being affected by this class.
+     */
+
     sequence & m_seq;
 
     /**
-     *  one pixel == m_zoom ticks
+     *  Sets the zoom value for this part of the sequence editor,
+     *  one pixel == m_zoom ticks, i.e. the unit is ticks/pixel.
      */
 
     int m_zoom;
 
+    /**
+     *  The value of the leftmost tick in the data pane.  Adjusted in the
+     *  change_horz() function.
+     */
+
     int m_scroll_offset_ticks;
+
+    /**
+     *  The value of the leftmost pixel in the data pane.  Adjusted in the
+     *  change_horz() function.  It is the offset ticks divided by the zoom
+     *  value, i.e. the unit is pixels..
+     */
+
     int m_scroll_offset_x;
-    int m_background_tile_x;
-    int m_background_tile_y;
 
     /**
      *  The adjusted width of a digit in a data number.  By "adjusted", well
@@ -97,13 +111,40 @@ private:
     int m_number_offset_y;
 
     /**
-     *  What is the data window currently editing?
+     *  Holds the status byte of the next event in the sequence, and indicates
+     *  What the data window is currently editing or drawing.
      */
 
     midibyte m_status;
+
+    /**
+     *  Holds the MIDI CC byte of the next event in the sequence, and
+     *  indicates What the data window is currently editing or drawing.
+     */
+
     midibyte m_cc;
+
+    /**
+     *  Holds the pixmaps for each number (0 to 127) that can be drawn for a
+     *  data value in the data pane.  This array is filled only once, in the
+     *  on_realize() function.
+     */
+
     Glib::RefPtr<Gdk::Pixmap> m_numbers[c_dataarea_y];
+
+    /**
+     *  This rectangle is used in blanking out a data line in
+     *  draw_line_on_window().
+     */
+
     GdkRectangle m_old;
+
+    /**
+     *  This value is true if the mouse is being dragged in the data pane,
+     *  which is done in order to change the height and value of each data
+     *  line.
+     */
+
     bool m_dragging;
 
 public:
@@ -119,14 +160,12 @@ public:
     void reset ();
 
     /**
-     *  Updates the pixmap and queues up a redraw operation.
+     *  Calls change_horz() to update the pixmap and queue up a redraw
+     *  operation.
      */
 
     void redraw ()
     {
-        // EXPERIMENTAL:
-        // update_pixmap();
-        // queue_draw();
         change_horz();
     }
 

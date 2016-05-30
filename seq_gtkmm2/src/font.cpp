@@ -66,20 +66,17 @@
 
 #include "easy_macros.h"
 #include "font.hpp"
-#include "settings.hpp"                 /* seq64::rc() or seq64::usr()  */
+#include "settings.hpp"                 /* seq64::rc() or seq64::usr()      */
 
 /*
- * Font grid size
+ * Old and New values for the fonts, and additional font files for cyan
+ * coloring, available only with the new font.
  */
 
-const int cf_grid_w = 16;               /* number of horizontal font cells  */
-const int cf_grid_h = 16;               /* number of vertical font cells    */
-
-/*
- * New values for the font, and additional font files for cyan coloring,
- * available only with the new font.
- */
-
+#include "pixmaps/font_w.xpm"           /* white on black (inverse video)   */
+#include "pixmaps/font_b.xpm"           /* black on white                   */
+#include "pixmaps/font_yb.xpm"          /* yellow on black (inverse video)  */
+#include "pixmaps/font_y.xpm"           /* black on yellow                  */
 #include "pixmaps/wenfont_w.xpm"        /* white on black (inverse video)   */
 #include "pixmaps/wenfont_b.xpm"        /* black on white                   */
 #include "pixmaps/wenfont_yb.xpm"       /* yellow on black (inverse video)  */
@@ -87,32 +84,39 @@ const int cf_grid_h = 16;               /* number of vertical font cells    */
 #include "pixmaps/cyan_wenfont_yb.xpm"  /* cyan on black (inverse video)    */
 #include "pixmaps/cyan_wenfont_y.xpm"   /* black on cyan                    */
 
-const int cf_cell_w = 11;               /* full width of character cell     */
-const int cf_cell_h = 15;               /* full height of character cell    */
-const int cf_offset =  3;               /* x, y offsets of top left pixel   */
-const int cf_text_w =  6; // actual:  8 /* doesn't include inner padding    */
-const int cf_text_h = 11; // actual: 12 /* ditto                            */
-
 /*
- * Old values for the font
+ * Font grid sizes.
  */
 
-#include "pixmaps/font_w.xpm"           /* white on black (inverse video)   */
-#include "pixmaps/font_b.xpm"           /* black on white                   */
-#include "pixmaps/font_yb.xpm"          /* yellow on black (inverse video)  */
-#include "pixmaps/font_y.xpm"           /* black on yellow                  */
+static const int cf_grid_w = 16;    /**< Number of horizontal font cells.   */
+static const int cf_grid_h = 16;    /**< Number of vertical font cells.     */
 
-const int co_cell_w =  9;               /* full width of character cell     */
-const int co_cell_h = 13;               /* full height of character cell    */
-const int co_offset =  2;               /* x, y offsets of top left pixel   */
-const int co_text_w =  6;               /* doesn't include inner padding    */
-const int co_text_h = 10;               /* ditto                            */
+/*
+ * New values for the font.
+ */
+
+static const int cf_cell_w = 11;    /**< Full width of character cell.      */
+static const int cf_cell_h = 15;    /**< Full height of character cell.     */
+static const int cf_offset =  3;    /**< x, y offsets of top left pixel.    */
+static const int cf_text_w =  6;    /**< Doesn't include inner padding.     */
+static const int cf_text_h = 11;    /**< Doesn't include inner padding.     */
+
+/*
+ * Old values for the font.
+ */
+
+static const int co_cell_w =  9;    /**< Full width of character cell.      */
+static const int co_cell_h = 13;    /**< Full height of character cell.     */
+static const int co_offset =  2;    /**< x, y offsets of top left pixel.    */
+static const int co_text_w =  6;    /**< Doesn't include inner padding.     */
+static const int co_text_h = 10;    /**< Doesn't include inner padding.     */
 
 namespace seq64
 {
 
 /**
- *    Rote default constructor.
+ *    Rote default constructor, except that it does add 1 to the cf_text_h or
+ *    co_text_h values to use in m_padded_h.
  */
 
 font::font ()
@@ -150,6 +154,9 @@ font::font ()
  *  One pixmap has white characters on a black background, one has black
  *  characters on a white background, one has yellow characters on a black
  *  background, and one has black characters on a yellow background.
+ *
+ * \param wp
+ *      Provides the windows pointer for the window that holds the color map.
  */
 
 void
@@ -216,7 +223,7 @@ font::init (Glib::RefPtr<Gdk::Window> wp)
  *  extracts the current character pixmap from it, and slaps it down where
  *  it needs to be to render the character in the string.
  *
- * \param a_gc
+ * \param gc
  *      Provides the graphics context for drawing the text using GTK+.
  *
  * \param x
@@ -243,7 +250,7 @@ font::init (Glib::RefPtr<Gdk::Window> wp)
 void
 font::render_string_on_drawable
 (
-    Glib::RefPtr<Gdk::GC> a_gc,
+    Glib::RefPtr<Gdk::GC> gc,
     int x, int y,
     Glib::RefPtr<Gdk::Drawable> a_draw,
     const char * str,
@@ -272,20 +279,20 @@ font::render_string_on_drawable
     else if (col == font::CYAN_ON_BLACK)
         m_pixmap = &m_c_on_b_pixmap;
     else
-        m_pixmap = &m_black_pixmap;     /* user lied, provide a legal pointer */
+        m_pixmap = &m_black_pixmap;     /* user lied, provide legal pointer */
 
     for (int k = 0; k < length; ++k)
     {
         int c = int(str[k]);
         int pixbuf_index_x = c % cf_grid_w;
         int pixbuf_index_y = c / cf_grid_h;
-        pixbuf_index_x *= m_cell_w;     /* width of grid (letter = 6 pixels)   */
-        pixbuf_index_x += m_offset;     /* add around 2 for border?            */
-        pixbuf_index_y *= m_cell_h;     /* height of grid (letter = 10 pixels) */
-        pixbuf_index_y += m_offset;     /* add around 2 for border?            */
+        pixbuf_index_x *= m_cell_w;     /* width of grid (letter=6 pixels)  */
+        pixbuf_index_x += m_offset;     /* add around 2 for border?         */
+        pixbuf_index_y *= m_cell_h;     /* height of grid (letter=10 pixel) */
+        pixbuf_index_y += m_offset;     /* add around 2 for border?         */
         a_draw->draw_drawable
         (
-            a_gc, *m_pixmap, pixbuf_index_x, pixbuf_index_y,
+            gc, *m_pixmap, pixbuf_index_x, pixbuf_index_y,
             x + (k * m_font_w), y, m_font_w, m_font_h
         );
     }

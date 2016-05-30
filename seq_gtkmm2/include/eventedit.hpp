@@ -101,16 +101,6 @@ private:
     Gtk::Button * m_button_save;        /**< "Save to Sequence" button.         */
     Gtk::Button * m_button_cancel;      /**< "Close" button.                    */
 
-#if 0
-    /**
-     *  Items to size the m_indexslots member.
-     */
-
-    Gtk::Label * m_label_index;         /**< xxxxxxxxxx */
-    Gtk::Label * m_label_time;          /**< xxxxxxxxxx */
-    Gtk::Label * m_label_event;         /**< xxxxxxxxxx */
-#endif
-
     /**
      * Items for the inside of the m_showbox member.
      */

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-12-05
- * \updates       2016-05-18
+ * \updates       2016-05-29
  * \license       GNU GPLv2 or above
  *
  *  This module is user-interface code.  It is loosely based on the workings
@@ -68,18 +68,16 @@ eventslots::eventslots
     m_parent                (parent),
     m_seq                   (seq),
     m_event_container       (seq, p.get_beats_per_minute()),
-    m_slots_chars           (64),                               // 24
+    m_slots_chars           (64),
     m_char_w                (font_render().char_width()),
-    m_setbox_w              (m_char_w),                         // * 2
-    m_slots_box_w           (m_char_w * 62),                    // 22
+    m_setbox_w              (m_char_w),
     m_slots_x               (m_slots_chars * m_char_w),
-    m_slots_y               (font_render().char_height() + 4),  // c_names_y
-    m_xy_offset             (2),
+    m_slots_y               (font_render().char_height() + 4),
     m_event_count           (0),
     m_line_count            (0),
     m_line_maximum          (43),   /* need a way to calculate this value   */
     m_line_overlap          (5),
-    m_top_index             (0),    /* (SEQ64_NULL_EVENT_INDEX),            */
+    m_top_index             (0),    /* SEQ64_NULL_EVENT_INDEX               */
     m_current_index         (SEQ64_NULL_EVENT_INDEX),
     m_top_iterator          (),
     m_bottom_iterator       (),

@@ -420,7 +420,7 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
     add_tooltip
     (
         m_entry_notes,
-        "Enter screen-set name.  A screen-set is one page of "
+        "Enter the screen-set notes.  A screen-set is one page of "
         "up to 32 patterns that can be seen and manipulated in "
         "the Patterns window."
     );
@@ -1032,15 +1032,14 @@ mainwnd::file_exit ()
 void
 mainwnd::about_dialog ()
 {
+    std::string comment("Interactive MIDI Sequencer\n");
     Gtk::AboutDialog dialog;
     dialog.set_transient_for(*this);
-    dialog.set_name(SEQ64_PACKAGE_NAME);
+    dialog.set_name(SEQ64_PACKAGE_NAME " " SEQ64_VERSION "\n");
     dialog.set_version
     (
-        SEQ64_VERSION " " SEQ64_VERSION_DATE_SHORT "\n"
-        "(" SEQ64_GIT_VERSION ")"
-    );
-    std::string comment("Interactive MIDI Sequencer\n");
+        SEQ64_VERSION_DATE_SHORT "\n" SEQ64_GIT_VERSION "\n");
+
     if (rc().legacy_format())
         comment += "Using original seq24 format\n";
     else
@@ -1091,15 +1090,11 @@ mainwnd::about_dialog ()
 }
 
 /**
- *  This function is the callback for adjusting the screen-set value.
- *
- *  Sets the screen-set value in the Performance/Song window, the
- *  Patterns, and something about setting the text based on a screen-set
- *  notepad from the Performance/Song window.
- *
- *  Let the perform object keep track of modifications.
- *
- *  Screen-set notepad?
+ *  This function is the callback for adjusting the screen-set value.  Its
+ *  sets the screen-set value in the Performance/Song window, the Patterns,
+ *  and something about setting the text based on a screen-set notepad from
+ *  the Performance/Song window.  We let the perform object keep track of
+ *  modifications.
  */
 
 void

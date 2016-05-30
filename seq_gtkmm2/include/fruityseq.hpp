@@ -35,8 +35,7 @@
 
 namespace seq64
 {
-
-class seqevent;
+    class seqevent;
 
 /**
  *  This structure implements the interaction methods for the "fruity"
@@ -62,9 +61,9 @@ struct FruitySeqEventInput
     }
 
     void update_mouse_pointer (seqevent & ths);
-    bool on_button_press_event (GdkEventButton * a_ev, seqevent & ths);
-    bool on_button_release_event (GdkEventButton * a_ev, seqevent & ths);
-    bool on_motion_notify_event (GdkEventMotion * a_ev, seqevent & ths);
+    bool on_button_press_event (GdkEventButton * ev, seqevent & ths);
+    bool on_button_release_event (GdkEventButton * ev, seqevent & ths);
+    bool on_motion_notify_event (GdkEventMotion * ev, seqevent & ths);
 };
 
 }           // namespace seq64

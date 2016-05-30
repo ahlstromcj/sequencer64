@@ -37,14 +37,13 @@
  *
  * Current bugs to fix:
  *
- *      -   Implement Home, End, Delete, Insert keys.  Could also implement
- *          Backspace.
+ *      -   Implement End key.
+ *      -   Implement Delete and Insert keys.  Could also implement
+ *          Backspace.  However, the edit boxes currently some grab these
+ *          keystrokes.  For the Delete key, using the asterisk is supported.
  *      -   Fix the effect of timestamp modification.
  *      -   Fix event modification (delete/insert).
  *      -   Fix event modification of event name.
- *      -   Fix segfault in sequence's open pattern editor due to deleted
- *          events.  Maybe we should add "disabled" to the properties of an
- *          event.
  *      -   Improve labelling differentiation for the data of various channel
  *          events.
  *
@@ -164,10 +163,7 @@ eventedit::eventedit (perform & p, sequence & seq)
     m_table             (manage(new Gtk::Table(14, 4, false))),
     m_vadjust           (manage(new Gtk::Adjustment(0, 0, 1, 1, 1, 1))),
     m_vscroll           (manage(new Gtk::VScrollbar(*m_vadjust))),
-    m_eventslots
-    (
-        manage(new eventslots(perf(), *this, seq, *m_vadjust))
-    ),
+    m_eventslots        (manage(new eventslots(perf(), *this, seq, *m_vadjust))),
     m_htopbox           (manage(new Gtk::HBox(false, 2))),
     m_showbox           (manage(new Gtk::VBox(false, 2))),
     m_editbox           (manage(new Gtk::VBox(false, 2))),
@@ -179,11 +175,6 @@ eventedit::eventedit (perform & p, sequence & seq)
     m_button_modify     (manage(new Gtk::Button())),
     m_button_save       (manage(new Gtk::Button())),
     m_button_cancel     (manage(new Gtk::Button())),
-#if 0
-    m_label_index       (manage(new Gtk::Label())),
-    m_label_time        (manage(new Gtk::Label())),
-    m_label_event       (manage(new Gtk::Label())),
-#endif
     m_label_seq_name    (manage(new Gtk::Label())),
     m_label_time_sig    (manage(new Gtk::Label())),
     m_label_ppqn        (manage(new Gtk::Label())),
@@ -250,8 +241,8 @@ eventedit::eventedit (perform & p, sequence & seq)
     (
         m_button_del,
         "Deletes the currently-selected event, even if event is not visible "
-        "in the frame.  Can also use the asterisk key (Delete is reserved for "
-        "the edit fields)."
+        "in the frame.  Can also use the asterisk key. The Delete key "
+        "is reserved for the edit fields."
     );
 
     m_button_ins->set_label("Insert New Event");
@@ -598,8 +589,7 @@ eventedit::v_adjustment (int value, int lower, int upper)
 }
 
 /**
- *  Helper wrapper for calling perfroll::queue_draw() for one or both
- *  eventedits.
+ *  Helper wrapper for calling eventslots::queue_draw().
  */
 
 void
@@ -789,6 +779,8 @@ eventedit::handle_close ()
 
 /**
  *  This callback function calls the base-class on_realize() function.
+ *  Then it sets the vertical adjustment to account for the number of events
+ *  in the eventslot.
  */
 
 void
@@ -801,6 +793,10 @@ eventedit::on_realize ()
 /**
  *  On receiving focus, attempt to tell mainwid that this sequence is now the
  *  current sequence.  Only works in certain circumstances.
+ *
+ * \param focus
+ *      The widget that has the focus.  Merely passed on to gui_window_gtk2's
+ *      version of this function.
  */
 
 void
@@ -811,7 +807,8 @@ eventedit::on_set_focus (Widget * focus)
 }
 
 /**
- *  Implements the on-focus event handling.
+ *  Implements the on-focus event handling.  It sets the focus flag and calls
+ *  change_focus().
  */
 
 bool
@@ -823,7 +820,8 @@ eventedit::on_focus_in_event (GdkEventFocus *)
 }
 
 /**
- *  Implements the on-unfocus event handling.
+ *  Implements the on-unfocus event handling.  It resets the focus flag and
+ *  calls change_focus().
  */
 
 bool
@@ -867,8 +865,8 @@ eventedit::on_delete_event (GdkEventAny *)
  *  fields, so we replace it by the slash.  Note that the asterisk and slash
  *  should not be required in any of the edit fields.
  *
- *  HOWEVER, there are still some issues with "/", so you'll just have to
- *  click the button to insert an event.
+ *  HOWEVER, "/" still gets passed the edit fields (!), so you'll just have to
+ *  click the button to insert an event.  Let's try the backslash!
  *
  * \param ev
  *      The key event to process.
@@ -931,8 +929,12 @@ eventedit::on_key_press_event (GdkEventKey * ev)
         {
             handle_insert ();
         }
+        else if (ev->keyval == '\\')            /* SEQ64_Insert */
+        {
+            handle_insert ();
+        }
 #endif
-        else if (ev->keyval == '*')            /* SEQ64_Delete */
+        else if (ev->keyval == '*')             /* SEQ64_Delete */
         {
             event_was_handled = true;
             handle_delete();

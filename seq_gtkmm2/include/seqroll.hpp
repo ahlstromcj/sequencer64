@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-05-23
+ * \updates       2016-05-30
  * \license       GNU GPLv2 or above
  *
  */
@@ -45,12 +45,11 @@ namespace Gtk
 
 namespace seq64
 {
-
-class sequence;
-class perform;
-class seqdata;
-class seqevent;
-class seqkeys;
+    class sequence;
+    class perform;
+    class seqdata;
+    class seqevent;
+    class seqkeys;
 
 /**
  *  A small helper class representing a rectangle.
@@ -70,7 +69,6 @@ public:
 
 class seqroll : public gui_drawingarea_gtk2
 {
-
     /**
      *  These friend implement interaction-specific behavior, although only
      *  the Seq24 interactions support keyboard processing.
@@ -87,6 +85,13 @@ private:
      */
 
     Gtk::Adjustment & m_horizontal_adjust;
+
+    /**
+     *  We need direct access to the vertical scrollbar if we want to be
+     *  able to make it follow PageUp and PageDown
+     */
+
+    Gtk::Adjustment & m_vertical_adjust;
 
     rect m_old;
     rect m_selected;
@@ -115,7 +120,7 @@ private:
     int m_pos;
 
     /**
-     * one pixel == m_zoom ticks*
+     * one pixel == m_zoom ticks
      */
 
     int m_zoom;
@@ -190,7 +195,7 @@ public:
         Gtk::Adjustment & vadjust,
         int ppqn = SEQ64_USE_DEFAULT_PPQN
     );
-    ~seqroll ();
+    virtual ~seqroll ();
 
     /**
      *  Sets the snap to the given value, and then resets the view.
@@ -250,13 +255,28 @@ private:
      *
      * \param step
      *      Provides the step value to use for adjusting the horizontal
-     *      scrollbar.  See gui_drawingarea_gtk2::scroll_adjust() for more
+     *      scrollbar.  See gui_drawingarea_gtk2::scroll_hadjust() for more
      *      information.
      */
 
     void horizontal_adjust (double step)
     {
-        scroll_adjust(m_horizontal_adjust, step);
+        scroll_hadjust(m_horizontal_adjust, step);
+    }
+
+    /**
+     *  This function provides optimization for the on_scroll_event() function.
+     *  A duplicate of the one in seqedit.
+     *
+     * \param step
+     *      Provides the step value to use for adjusting the vertical
+     *      scrollbar.  See gui_drawingarea_gtk2::scroll_vadjust() for more
+     *      information.
+     */
+
+    void vertical_adjust (double step)
+    {
+        scroll_vadjust(m_vertical_adjust, step);
     }
 
     /**

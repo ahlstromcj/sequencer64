@@ -35,8 +35,7 @@
 
 namespace seq64
 {
-
-class perfroll;
+    class perfroll;
 
 /**
  *  Provides an abstract base class to provide the minimal interface for
@@ -48,15 +47,27 @@ class AbstractPerfInput
 
 protected:
 
+    /**
+     *  Indicates if the left mouse button is pressed while in adding mode.
+     */
+
     bool m_adding_pressed;
 
 public:
+
+    /**
+     *  Default constructor.
+     */
 
     AbstractPerfInput () :
         m_adding_pressed    (false)
     {
         // Empty body
     }
+
+    /**
+     *  Destructor, does nothing.
+     */
 
     virtual ~AbstractPerfInput ()
     {

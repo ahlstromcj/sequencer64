@@ -156,6 +156,8 @@ protected:
 
     void scroll_hadjust (Gtk::Adjustment & hadjust, double step);
     void scroll_vadjust (Gtk::Adjustment & vadjust, double step);
+    void scroll_hset (Gtk::Adjustment & hadjust, double value);
+    void scroll_vset (Gtk::Adjustment & vadjust, double value);
 
 protected:
 

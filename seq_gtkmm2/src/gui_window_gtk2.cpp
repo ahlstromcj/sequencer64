@@ -159,6 +159,38 @@ gui_window_gtk2::scroll_vadjust (Gtk::Adjustment & vadjust, double step)
 }
 
 /**
+ *
+ */
+
+void
+gui_window_gtk2::scroll_hset (Gtk::Adjustment & hadjust, double value)
+{
+    double upper = hadjust.get_upper();
+    if (value > upper - hadjust.get_page_size())
+        value = upper - hadjust.get_page_size();
+    else if (value < 0.0)
+        value = 0.0;
+
+    hadjust.set_value(value);
+}
+
+/**
+ *
+ */
+
+void
+gui_window_gtk2::scroll_vset (Gtk::Adjustment & vadjust, double value)
+{
+    double upper = vadjust.get_upper();
+    if (value > upper - vadjust.get_page_size())
+        value = upper - vadjust.get_page_size();
+    else if (value < 0.0)
+        value = 0.0;
+
+    vadjust.set_value(value);
+}
+
+/**
  *  This callback function calls the base-class on_realize() function, and
  *  sets the m_is_realized flag.
  */

@@ -2144,13 +2144,23 @@ seqedit::on_key_press_event (GdkEventKey * ev)
             horizontal_adjust(step);
             result = true;
         }
+        else if (OR_EQUIVALENT(ev->keyval, SEQ64_End, SEQ64_KP_End))
+        {
+            horizontal_set(9999999.0);          /* scroll to the end    */
+            result = true;
+        }
         else if (ev->keyval == SEQ64_Page_Up)   /* scroll leftward      */
         {
             double step = m_hadjust->get_page_increment();
             horizontal_adjust(-step);
             result = true;
         }
-        else if (ev->keyval == SEQ64_Z)        /* zoom in              */
+        else if (OR_EQUIVALENT(ev->keyval, SEQ64_Home, SEQ64_KP_Home))
+        {
+            horizontal_set(0);                  /* scroll to beginning  */
+            result = true;
+        }
+        else if (ev->keyval == SEQ64_Z)        /* zoom in               */
         {
             set_zoom(m_zoom / 2);
             result = true;
@@ -2187,10 +2197,20 @@ seqedit::on_key_press_event (GdkEventKey * ev)
             vertical_adjust(step);
             result = true;
         }
+        else if (OR_EQUIVALENT(ev->keyval, SEQ64_End, SEQ64_KP_End))
+        {
+            vertical_set(9999999.0);            /* scroll to the end    */
+            result = true;                  // XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+        }
         else if (ev->keyval == SEQ64_Page_Up)   /* scroll upward        */
         {
             double step = m_vadjust->get_page_increment();
             vertical_adjust(-step);
+            result = true;
+        }
+        else if (OR_EQUIVALENT(ev->keyval, SEQ64_Home, SEQ64_KP_Home))
+        {
+            vertical_set(0);                    /* scroll to beginning  */
             result = true;
         }
     }

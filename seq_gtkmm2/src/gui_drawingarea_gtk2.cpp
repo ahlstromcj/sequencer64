@@ -492,6 +492,9 @@ gui_drawingarea_gtk2::on_realize ()
  *
  * \param hadjust
  *      Provides a reference to the adjustment object to be adjusted.
+ *      Do we really need this to be a parameter?  Why not just use the
+ *      m_hadjust member?  (Note that this member is not present in the
+ *      similar gui_window_gtk2 class.)
  *
  * \param step
  *      Provides the step value to use for adjusting the horizontal scrollbar.
@@ -552,6 +555,38 @@ gui_drawingarea_gtk2::scroll_vadjust (Gtk::Adjustment & vadjust, double step)
             nextval = 0.0;
     }
     vadjust.set_value(nextval);
+}
+
+/**
+ *
+ */
+
+void
+gui_drawingarea_gtk2::scroll_hset (Gtk::Adjustment & hadjust, double value)
+{
+    double upper = hadjust.get_upper();
+    if (value > upper - hadjust.get_page_size())
+        value = upper - hadjust.get_page_size();
+    else if (value < 0.0)
+        value = 0.0;
+
+    hadjust.set_value(value);
+}
+
+/**
+ *
+ */
+
+void
+gui_drawingarea_gtk2::scroll_vset (Gtk::Adjustment & vadjust, double value)
+{
+    double upper = vadjust.get_upper();
+    if (value > upper - vadjust.get_page_size())
+        value = upper - vadjust.get_page_size();
+    else if (value < 0.0)
+        value = 0.0;
+
+    vadjust.set_value(value);
 }
 
 }           // namespace seq64

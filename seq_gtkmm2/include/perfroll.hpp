@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-05-29
+ * \updates       2016-05-30
  * \license       GNU GPLv2 or above
  *
  *  This class represents the central piano-roll user-interface area of the
@@ -306,6 +306,58 @@ private:
     void split_trigger(int sequence, midipulse tick);
     void enqueue_draw ();
     void set_zoom (int z);
+
+#ifndef USE_OLD_CODE
+
+    /**
+     *  This function provides optimization for the on_scroll_event() function.
+     *  A duplicate of the one in seqroll.
+     *
+     * \param step
+     *      Provides the step value to use for adjusting the horizontal
+     *      scrollbar.  See gui_drawingarea_gtk2::scroll_hadjust() for more
+     *      information.
+     */
+
+    void horizontal_adjust (double step)
+    {
+        scroll_hadjust(m_hadjust, step);
+    }
+
+    /**
+     *  This function provides optimization for the on_scroll_event() function.
+     *  A near-duplicate of the one in seqroll.
+     *
+     * \param step
+     *      Provides the step value to use for adjusting the vertical
+     *      scrollbar.  See gui_drawingarea_gtk2::scroll_vadjust() for more
+     *      information.
+     */
+
+    void vertical_adjust (double step)
+    {
+        scroll_vadjust(m_vadjust, step);
+    }
+
+    /**
+     *
+     */
+
+    void horizontal_set (double value)
+    {
+        scroll_hset(m_hadjust, value);
+    }
+
+    /**
+     *
+     */
+
+    void vertical_set (double value)
+    {
+        scroll_vset(m_vadjust, value);
+    }
+
+#endif          // USE_OLD_CODE
 
 private:        // callbacks
 

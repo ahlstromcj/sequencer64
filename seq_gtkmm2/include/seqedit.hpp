@@ -349,6 +349,24 @@ private:
         scroll_vadjust(*m_vadjust, step);
     }
 
+    /**
+     *
+     */
+
+    void horizontal_set (double value)
+    {
+        scroll_hset(*m_hadjust, value);
+    }
+
+    /**
+     *
+     */
+
+    void vertical_set (double value)
+    {
+        scroll_vset(*m_vadjust, value);
+    }
+
     void set_measures (int lim);
     void apply_length (int bpm, int bw, int measures);
     long get_measures ();

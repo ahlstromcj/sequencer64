@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-05-17
+ * \updates       2016-05-30
  * \license       GNU GPLv2 or above
  *
  *  The performance window allows automatic control of when each
@@ -578,6 +578,9 @@ void perfroll::draw_background_on (int seqnum)
 
 /**
  *  Redraws patterns/sequences that have been modified.
+ *
+ * \change ca 2016-05-30
+ *      Lets try not drawing sequences greater than the maximum, at all.
  */
 
 void
@@ -588,7 +591,7 @@ perfroll::redraw_dirty_sequences ()
     for (int y = 0; y <= yf; ++y)
     {
         int seq = y + m_sequence_offset;
-        if (perf().is_dirty_perf(seq))
+        if (seq < m_sequence_max && perf().is_dirty_perf(seq))  /* see note */
         {
             draw_background_on(seq);
             draw_sequence_on(seq);
@@ -763,7 +766,18 @@ perfroll::on_realize ()
 }
 
 /**
- *  Handles the on-expose event.
+ *  Handles the on-expose event.  Draws a vertical page of the performance
+ *  editor.  The part drawn starts at m_sequence_offset and continues until
+ *  the last sequence that can be at least partially seen given the height of
+ *  the window.
+ *
+ *  If we're at the bottom of the sequences (1024, a non-existent sequence)
+ *  would be the last sequence shown, we don't bother drawing it.  This
+ *  prevents debug messages about an illegal sequence, and can show a black
+ *  bottom row that is a clear sign we're at the end of the legal sequences.
+ *
+ * \param ev
+ *      Provides the expose event.
  *
  * \return
  *      Always returns true.
@@ -777,8 +791,11 @@ perfroll::on_expose_event (GdkEventExpose * ev)
     for (int y = ys; y <= yf; ++y)
     {
         int seq = y + m_sequence_offset;
-        draw_background_on(seq);
-        draw_sequence_on(seq);
+        if (seq < m_sequence_max)           /* see note in banner */
+        {
+            draw_background_on(seq);
+            draw_sequence_on(seq);
+        }
     }
     m_window->draw_drawable
     (
@@ -836,35 +853,50 @@ perfroll::on_button_release_event (GdkEventButton * ev)
 }
 
 /**
- *  Handles horizontal and vertical scrolling.
+ *  Handles horizontal and vertical scrolling.  If the Shift key is held while
+ *  scrolling, then the scrolling is horizontal, otherwise it is vertical.
+ *  This matches the convention of the seqedit class.
+ *
+ *  Note the guint modifiers value; it is used to filter out CAPS/Num-Lock etc.
+ *  Also note that, unlike the seqedit class, Ctrl-Scroll is not used to modify
+ *  the zoom value.  Rather than mess up legacy behavior, we will rely on
+ *  keystrokes (z, 0, Z, and Ctrl-Page-Up and Ctrl-Page-Down) to implement this
+ *  zoom.
+ *
+ * \param ev
+ *      Provides the scroll event.
+ *
+ * \return
+ *      Currently always returns true.
  */
 
 bool
 perfroll::on_scroll_event (GdkEventScroll * ev)
 {
-    guint modifiers;                /* used to filter out caps/num lock etc. */
-    modifiers = gtk_accelerator_get_default_mod_mask();
+    guint modifiers = gtk_accelerator_get_default_mod_mask();
     if ((ev->state & modifiers) == SEQ64_SHIFT_MASK)
     {
         double val = m_hadjust.get_value();
+        double increment = m_hadjust.get_step_increment();
         if (CAST_EQUIVALENT(ev->direction, SEQ64_SCROLL_UP))
-            val -= m_hadjust.get_step_increment();
+            val -= increment;
         else if (CAST_EQUIVALENT(ev->direction, SEQ64_SCROLL_DOWN))
-            val += m_hadjust.get_step_increment();
+            val += increment;
 
         m_hadjust.clamp_page(val, val + m_hadjust.get_page_size());
     }
     else
     {
         double val = m_vadjust.get_value();
+        double increment = m_vadjust.get_step_increment();
         if (CAST_EQUIVALENT(ev->direction, SEQ64_SCROLL_UP))
-            val -= m_vadjust.get_step_increment();
+            val -= increment;
         else if (CAST_EQUIVALENT(ev->direction, SEQ64_SCROLL_DOWN))
-            val += m_vadjust.get_step_increment();
+            val += increment;
 
         m_vadjust.clamp_page(val, val + m_vadjust.get_page_size());
     }
-    return true;
+    return gui_drawingarea_gtk2::on_scroll_event(ev); /* instead of true */
 }
 
 /**
@@ -940,49 +972,130 @@ perfroll::on_key_press_event (GdkEventKey * ev)
          */
 
         bool is_ctrl = (ev->state & SEQ64_CONTROL_MASK) != 0;
-        if (! perf().is_running() && ! is_ctrl)
+        bool is_shift = (ev->state & SEQ64_SHIFT_MASK) != 0;
+        if (! perf().is_running())                  //  && ! is_ctrl)
         {
-            if (ev->keyval == SEQ64_p)
+            if (is_ctrl)
             {
-                m_seq24_interaction.set_adding(true, *this);
-                result = true;
+                /*
+                 * We won't bother handling zoom with Ctrl Page keys, yet.
+                 */
             }
-            else if (ev->keyval == SEQ64_x)         /* "x-scape" the mode   */
+            else if (is_shift)
             {
-                m_seq24_interaction.set_adding(false, *this);
-                result = true;
-            }
-            else if (ev->keyval == SEQ64_Z)         /* zoom in              */
-            {
-                m_parent.set_zoom(m_zoom / 2);
-                result = true;
-            }
-            else if (ev->keyval == SEQ64_0)         /* reset to normal zoom */
-            {
-                m_parent.set_zoom(c_perf_scale_x);
-                result = true;
-            }
-            else if (ev->keyval == SEQ64_z)         /* zoom out             */
-            {
-                m_parent.set_zoom(m_zoom * 2);
-                result = true;
-            }
-            else if (ev->keyval == SEQ64_Left)
-            {
-                if (m_seq24_interaction.is_adding())
+                if (ev->keyval == SEQ64_z)          /* zoom in              */
                 {
-                    result = m_seq24_interaction.handle_motion_key(true, *this);
-                    if (result)
-                        perf().modify();
+                    m_parent.set_zoom(m_zoom / 2);
+                    result = true;
+                }
+                else if (ev->keyval == SEQ64_Up)    /* horizontal movement  */
+                {
+                    double increment = m_hadjust.get_step_increment();
+                    double val = m_hadjust.get_value() - increment;
+                    m_hadjust.clamp_page(val, val + m_hadjust.get_page_size());
+                    result = true;
+                }
+                else if (ev->keyval == SEQ64_Down)
+                {
+                    double increment = m_hadjust.get_step_increment();
+                    double val = m_hadjust.get_value() + increment;
+                    m_hadjust.clamp_page(val, val + m_hadjust.get_page_size());
+                    result = true;
+                }
+                else if (ev->keyval == SEQ64_Page_Up)
+                {
+                    double increment = m_hadjust.get_page_increment();
+                    double val = m_hadjust.get_value() - increment;
+                    m_hadjust.clamp_page(val, val + m_hadjust.get_page_size());
+                    result = true;
+                }
+                else if (ev->keyval == SEQ64_Page_Down)
+                {
+                    double increment = m_hadjust.get_page_increment();
+                    double val = m_hadjust.get_value() + increment;
+                    m_hadjust.clamp_page(val, val + m_hadjust.get_page_size());
+                    result = true;
                 }
             }
-            else if (ev->keyval == SEQ64_Right)
+            else
             {
-                if (m_seq24_interaction.is_adding())
+                if (ev->keyval == SEQ64_p)
                 {
-                    result = m_seq24_interaction.handle_motion_key(false, *this);
-                    if (result)
-                        perf().modify();
+                    m_seq24_interaction.set_adding(true, *this);
+                    result = true;
+                }
+                else if (ev->keyval == SEQ64_x)     /* "x-scape" the mode   */
+                {
+                    m_seq24_interaction.set_adding(false, *this);
+                    result = true;
+                }
+#ifdef USE_UNHANDLED_SHIFT_KEY
+
+                /*
+                 * Handled in Shift key handling above now.
+                 */
+
+                else if (ev->keyval == SEQ64_Z)     /* zoom in              */
+                {
+                    m_parent.set_zoom(m_zoom / 2);
+                    result = true;
+                }
+#endif
+                else if (ev->keyval == SEQ64_0)     /* reset to normal zoom */
+                {
+                    m_parent.set_zoom(c_perf_scale_x);
+                    result = true;
+                }
+                else if (ev->keyval == SEQ64_z)     /* zoom out             */
+                {
+                    m_parent.set_zoom(m_zoom * 2);
+                    result = true;
+                }
+                else if (ev->keyval == SEQ64_Left)
+                {
+                    if (m_seq24_interaction.is_adding())
+                    {
+                        result = m_seq24_interaction.handle_motion_key(true, *this);
+                        if (result)
+                            perf().modify();
+                    }
+                }
+                else if (ev->keyval == SEQ64_Right)
+                {
+                    if (m_seq24_interaction.is_adding())
+                    {
+                        result = m_seq24_interaction.handle_motion_key(false, *this);
+                        if (result)
+                            perf().modify();
+                    }
+                }
+                else if (ev->keyval == SEQ64_Up)    /* vertical movement    */
+                {
+                    double increment = m_vadjust.get_step_increment();
+                    double val = m_vadjust.get_value() - increment;
+                    m_vadjust.clamp_page(val, val + m_vadjust.get_page_size());
+                    result = true;
+                }
+                else if (ev->keyval == SEQ64_Down)
+                {
+                    double increment = m_vadjust.get_step_increment();
+                    double val = m_vadjust.get_value() + increment;
+                    m_vadjust.clamp_page(val, val + m_vadjust.get_page_size());
+                    result = true;
+                }
+                else if (ev->keyval == SEQ64_Page_Up)
+                {
+                    double increment = m_vadjust.get_page_increment();
+                    double val = m_vadjust.get_value() - increment;
+                    m_vadjust.clamp_page(val, val + m_vadjust.get_page_size());
+                    result = true;
+                }
+                else if (ev->keyval == SEQ64_Page_Down)
+                {
+                    double increment = m_vadjust.get_page_increment();
+                    double val = m_vadjust.get_value() + increment;
+                    m_vadjust.clamp_page(val, val + m_vadjust.get_page_size());
+                    result = true;
                 }
             }
         }

@@ -509,8 +509,8 @@ gui_drawingarea_gtk2::scroll_hadjust (Gtk::Adjustment & hadjust, double step)
     bool forward = step >= 0.0;
     if (forward)
     {
-        if (nextval > upper)
-            nextval = upper;
+        if (nextval > upper - hadjust.get_page_size())
+            nextval = upper - hadjust.get_page_size();
     }
     else
     {
@@ -523,7 +523,7 @@ gui_drawingarea_gtk2::scroll_hadjust (Gtk::Adjustment & hadjust, double step)
 /**
  *  This function is the vertical version of the scroll_hadjust() function,
  *  intended for adding keystroke vertical scrolling using the Page-Up and
- *  PageDown keys, as a new feature of Sequencer64.
+ *  Page-Down keys, as a new feature of Sequencer64.
  *
  * \param vadjust
  *      Provides a reference to the adjustment object to be adjusted.
@@ -540,11 +540,11 @@ gui_drawingarea_gtk2::scroll_vadjust (Gtk::Adjustment & vadjust, double step)
     double val = vadjust.get_value();
     double upper = vadjust.get_upper();
     double nextval = val + step;
-    bool forward = step >= 0.0;
-    if (forward)
+    bool downward = step >= 0.0;
+    if (downward)
     {
-        if (nextval > upper)
-            nextval = upper;
+        if (nextval >= upper - vadjust.get_page_size())
+            nextval = upper - vadjust.get_page_size();
     }
     else
     {

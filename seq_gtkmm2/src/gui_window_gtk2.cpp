@@ -115,8 +115,8 @@ gui_window_gtk2::scroll_hadjust (Gtk::Adjustment & hadjust, double step)
     bool forward = step >= 0.0;
     if (forward)
     {
-        if (nextval > upper)
-            nextval = upper;
+        if (nextval > upper - hadjust.get_page_size())
+            nextval = upper - hadjust.get_page_size();
     }
     else
     {
@@ -134,6 +134,8 @@ gui_window_gtk2::scroll_hadjust (Gtk::Adjustment & hadjust, double step)
  *
  * \param step
  *      Provides the step value to use for adjusting the horizontal scrollbar.
+ *      If greater than 0, the movement is downward.  If less than zero, the
+ *      movement is upward.
  */
 
 void
@@ -142,11 +144,11 @@ gui_window_gtk2::scroll_vadjust (Gtk::Adjustment & vadjust, double step)
     double val = vadjust.get_value();
     double upper = vadjust.get_upper();
     double nextval = val + step;
-    bool forward = step >= 0.0;
-    if (forward)
+    bool downward = step >= 0.0;
+    if (downward)
     {
-        if (nextval > upper)
-            nextval = upper;
+        if (nextval >= upper - vadjust.get_page_size())
+            nextval = upper - vadjust.get_page_size();
     }
     else
     {

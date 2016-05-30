@@ -737,6 +737,9 @@ perfedit::on_realize ()
  *  the same key is mapped to both triggers.  Note that we now pass false in
  *  the call to perform::playback_key_event(), if SEQ64_PAUSE_SUPPORT is
  *  compiled in.  Song mode doesn't yield the pause effect we want.
+ *
+ * \param ev
+ *      Provides the key event to implement.
  */
 
 bool
@@ -745,17 +748,7 @@ perfedit::on_key_press_event (GdkEventKey * ev)
     if (CAST_EQUIVALENT(ev->type, SEQ64_KEY_PRESS))
     {
         keystroke k(ev->keyval, SEQ64_KEYSTROKE_PRESS, ev->state);
-
-#ifdef SEQ64_USE_DEBUG_OUTPUT
-        printf("key_press[%d] == %s\n", ev->keyval, gdk_keyval_name(ev->keyval));
-#endif
-
-#ifdef SEQ64_PAUSE_SUPPORT_XXX           // EXPERIMENTAL, disables song mode
-        bool startstop = perf().playback_key_event(k, false);   // see notes
-#else
         bool startstop = perf().playback_key_event(k, true);
-#endif
-
         if (startstop)
             return true;                                        // event handled
     }

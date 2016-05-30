@@ -176,6 +176,7 @@ seqedit::seqedit
     int ppqn
 ) :
     gui_window_gtk2     (p, 750, 500),                  // size request
+    m_initial_zoom      (SEQ64_DEFAULT_ZOOM),           // constant
     m_zoom              (SEQ64_DEFAULT_ZOOM),           // fixed below
     m_snap              (m_initial_snap),
     m_note_length       (m_initial_note_length),
@@ -2079,14 +2080,32 @@ seqedit::on_scroll_event (GdkEventScroll * ev)
         }
         return true;
     }
-    return false;                       /* means "not handled"  */
+    else
+        return gui_window_gtk2::on_scroll_event(ev); /* instead of false */
 }
 
 /**
- *  Handles a key-press event.  In particular, the Ctrl-W keypress.
- *  This keypress closes the sequence/pattern editor window by way of calling
- *  on_delete_event().  We should consider applying this convention to all the
- *  other windows.  Also handled are the new z0Z zoom keys.
+ *  Handles a key-press event.  A number of new keystrokes are processed, so
+ *  that we can lessen the reliance on the mouse and work a little faster.
+ *
+ *      -   Ctrl-W keypress.  This keypress closes the sequence/pattern editor
+ *          window by way of calling on_delete_event().  We could apply this
+ *          convention to all the other windows.
+ *      -   z 0 Z zoom keys.  "z" zooms out, "Z" (Shift-z) zooms in, and "0"
+ *          resets the zoom to the default.
+ *      -   Page-Up and Page-Down.  Moves up and down in the piano roll.
+ *      -   Shift-Page-Up and Shift-Page-Down.  Move left and right in the
+ *          piano roll.
+ *      -   Ctrl-Page-Up and Ctrl-Page-Down.  Mirrors the zoom-in and zoom-out
+ *          capabilities of scrolling up and down with the mouse while the
+ *          Ctrl key is pressed.
+ *
+ * \param ev
+ *      Provides the keystroke event to be handled.
+ *
+ * \return
+ *      Returns true if we handled the keystroke here.  Otherwise, returns the
+ *      value of Gtk::Window::on_key_press_event(ev).
  */
 
 bool
@@ -2094,24 +2113,67 @@ seqedit::on_key_press_event (GdkEventKey * ev)
 {
     guint modifiers;            /* for filtering out caps/num-lock etc.     */
     modifiers = gtk_accelerator_get_default_mod_mask();
+    bool result = false;
     if ((ev->state & modifiers) == SEQ64_CONTROL_MASK)
     {
         if (ev->keyval == 'w')
+        {
+            /*
+             * Here, we must return immediately, since this function deletes
+             * "this", and we cannot access this object anymore.  Segfault!
+             */
+
             return on_delete_event((GdkEventAny *)(ev));
-        else
-            return Gtk::Window::on_key_press_event(ev);
+        }
+        else if (ev->keyval == SEQ64_Page_Up)   /* zoom in              */
+        {
+            set_zoom(m_zoom / 2);
+            result = true;
+        }
+        else if (ev->keyval == SEQ64_Page_Down) /* zoom out             */
+        {
+            set_zoom(m_zoom * 2);
+            result = true;
+        }
+    }
+    else if ((ev->state & modifiers) == SEQ64_SHIFT_MASK)
+    {
+        if (ev->keyval == SEQ64_Page_Down)      /* scroll rightward     */
+        {
+            double step = m_hadjust->get_page_increment();
+            horizontal_adjust(step);
+            result = true;
+        }
+        else if (ev->keyval == SEQ64_Page_Up)   /* scroll leftward      */
+        {
+            double step = m_hadjust->get_page_increment();
+            horizontal_adjust(-step);
+            result = true;
+        }
+        else if (ev->keyval == SEQ64_Z)        /* zoom in              */
+        {
+            set_zoom(m_zoom / 2);
+            result = true;
+        }
     }
     else
     {
-        bool result = false;
+#ifdef USE_UNHANDLED_SHIFT_KEY
+
+        /*
+         * Handled in Shift key handling above now.
+         */
+
         if (ev->keyval == SEQ64_Z)              /* zoom in              */
         {
             set_zoom(m_zoom / 2);
             result = true;
         }
-        else if (ev->keyval == SEQ64_0)         /* reset to normal zoom */
+        else
+#endif
+        if (ev->keyval == SEQ64_0)              /* reset to normal zoom */
         {
-            set_zoom(usr().zoom());
+            set_zoom(m_initial_zoom);           /* not usr().zoom())    */
             result = true;
         }
         else if (ev->keyval == SEQ64_z)         /* zoom out             */
@@ -2119,11 +2181,23 @@ seqedit::on_key_press_event (GdkEventKey * ev)
             set_zoom(m_zoom * 2);
             result = true;
         }
-        if (! result)
-            result = Gtk::Window::on_key_press_event(ev);
-
-        return result;
+        else if (ev->keyval == SEQ64_Page_Down) /* scroll downward      */
+        {
+            double step = m_vadjust->get_page_increment();
+            vertical_adjust(step);
+            result = true;
+        }
+        else if (ev->keyval == SEQ64_Page_Up)   /* scroll upward        */
+        {
+            double step = m_vadjust->get_page_increment();
+            vertical_adjust(-step);
+            result = true;
+        }
     }
+    if (! result)
+        result = Gtk::Window::on_key_press_event(ev);
+
+    return result;
 }
 
 }           // namespace seq64

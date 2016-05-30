@@ -35,11 +35,11 @@
  *  The horizontal scrollbar is set to match that:
  *
 \verbatim
-      lower                     Ps = page-size (ticks)                     upper
-  Seq:  0-----------------------|-------------------------------------------Ts
- Page:  0-----------------------| Pp = page-size (pixels) = window_width * zoom
-        |--|--|--|--|             page-increment, one bar
-        |--|                      step-increment, one semi-quaver (16th note)
+      lower                 Ps = page-size (ticks)                     upper
+  Seq:  0-------------------|-------------------------------------------Ts
+ Page:  0-------------------| Pp = page-size (pixels) = window_width * zoom
+        |--|--|--|--|         page-increment, one bar
+        |--|                  step-increment, one semi-quaver (16th note)
 \endverbatim
  *
  *  The window width multiplied by the zoom factor is the "page" size, P.
@@ -1293,6 +1293,11 @@ seqroll::on_focus_out_event (GdkEventFocus *)
  *  triggers (unlikely), or maybe these depend upon the proper playback mode.
  *  In any case, the old functionality is preserved.  However, if there are
  *  notes selected, then these keys support selection movement.
+ *
+ *  Since the Up and Down arrow keys are used for movement, we'd have to
+ *  check selection status before trying to use them to move up and down in
+ *  the piano roll, in smaller steps than the new Page-Up and Page-Down key
+ *  support.
  */
 
 bool

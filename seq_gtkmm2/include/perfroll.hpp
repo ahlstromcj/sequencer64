@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-05-30
+ * \updates       2016-05-31
  * \license       GNU GPLv2 or above
  *
  *  This class represents the central piano-roll user-interface area of the
@@ -97,12 +97,12 @@ private:
 
     int m_v_page_increment;
 
-    int m_snap;                         /**< The amount of horizontal snap.     */
-    int m_ppqn;                         /**< Parts-per-quarter-note value.      */
-    int m_page_factor;                  /**< 4096, horizonal page sizing.       */
-    int m_divs_per_beat;                /**< Holds current tick scaling value.  */
-    int m_ticks_per_bar;                /**< Holds current bar scaling value.   */
-    int m_perf_scale_x;                 /**< Scaling based on zoom and PPQN.    */
+    int m_snap;                     /**< The amount of horizontal snap.     */
+    int m_ppqn;                     /**< Parts-per-quarter-note value.      */
+    int m_page_factor;              /**< 4096, horizonal page sizing.       */
+    int m_divs_per_beat;            /**< Holds current tick scaling value.  */
+    int m_ticks_per_bar;            /**< Holds current bar scaling value.   */
+    int m_perf_scale_x;             /**< Scaling based on zoom and PPQN.    */
 
     /**
      *  New value to attempt a rudimentary time-zoom feature.  It seems to
@@ -271,7 +271,7 @@ public:
         Gtk::Adjustment & vadjust,
         int ppqn = SEQ64_USE_DEFAULT_PPQN
     );
-    ~perfroll();
+    virtual ~perfroll();
 
     void set_guides (int snap, int measure, int beat);
     void update_sizes ();
@@ -307,8 +307,6 @@ private:
     void enqueue_draw ();
     void set_zoom (int z);
 
-#ifndef USE_OLD_CODE
-
     /**
      *  This function provides optimization for the on_scroll_event() function.
      *  A duplicate of the one in seqroll.
@@ -340,7 +338,11 @@ private:
     }
 
     /**
+     *  Sets the exact position of a horizontal scroll-bar.
      *
+     * \param value
+     *      The desired position.  Mostly this is either 0.0 or 9999999.0 (an
+     *      "infinite" value to select the start or end position.
      */
 
     void horizontal_set (double value)
@@ -349,15 +351,17 @@ private:
     }
 
     /**
+     *  Sets the exact position of a vertical scroll-bar.
      *
+     * \param value
+     *      The desired position.  Mostly this is either 0.0 or 9999999.0 (an
+     *      "infinite" value to select the start or end position.
      */
 
     void vertical_set (double value)
     {
         scroll_vset(m_vadjust, value);
     }
-
-#endif          // USE_OLD_CODE
 
 private:        // callbacks
 

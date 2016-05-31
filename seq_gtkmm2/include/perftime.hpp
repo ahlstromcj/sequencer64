@@ -140,6 +140,15 @@ public:
         int ppqn = SEQ64_USE_DEFAULT_PPQN
     );
 
+    /**
+     *  Let's provide a do-nothing virtual destructor.
+     */
+
+    virtual ~perftime ()
+    {
+        // I got nothin'
+    }
+
     void reset ();
     void set_scale (int scale);
     void set_guides (int snap, int measure);

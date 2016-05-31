@@ -120,12 +120,19 @@ private:
     int m_pos;
 
     /**
-     * one pixel == m_zoom ticks
+     *  Zoom setting, means that one pixel == m_zoom ticks.
      */
 
     int m_zoom;
 
+    /**
+     *  The grid-snap setting for the piano roll grid.  Same meaning as for the
+     *  event-bar grid.  This value is the denominator of the note size used
+     *  for the snap.
+     */
+
     int m_snap;
+
     int m_ppqn;
     int m_note_length;
     int m_scale;

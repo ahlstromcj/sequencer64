@@ -201,7 +201,6 @@ seqedit::seqedit
     m_menu_bpm          (manage(new Gtk::Menu())),
     m_menu_bw           (manage(new Gtk::Menu())),
     m_menu_rec_vol      (manage(new Gtk::Menu())),
-    m_pos               (pos),                          // could dispense with
     m_vadjust           (manage(new Gtk::Adjustment(55, 0, c_num_keys, 1, 1, 1))),
     m_hadjust           (manage(new Gtk::Adjustment(0, 0, 1, 1, 1, 1))),
     m_vscroll_new       (manage(new Gtk::VScrollbar(*m_vadjust))),
@@ -219,7 +218,7 @@ seqedit::seqedit
         (
             new seqroll
             (
-                p, m_seq, m_zoom, m_snap, *m_seqkeys_wid, m_pos,
+                p, m_seq, m_zoom, m_snap, *m_seqkeys_wid, pos,
                 *m_hadjust, *m_vadjust
             )
         )
@@ -228,7 +227,9 @@ seqedit::seqedit
     m_vbox              (manage(new Gtk::VBox(false, 2))),
     m_hbox              (manage(new Gtk::HBox(false, 2))),
     m_hbox2             (manage(new Gtk::HBox(false, 2))),
+#if USE_THIRD_SEQEDIT_BUTTON_ROW
     m_hbox3             (manage(new Gtk::HBox(false, 2))),
+#endif
     m_button_undo       (nullptr),
     m_button_redo       (nullptr),
     m_button_quantize   (nullptr),
@@ -263,9 +264,11 @@ seqedit::seqedit
     m_toggle_record     (manage(new Gtk::ToggleButton())),
     m_toggle_q_rec      (manage(new Gtk::ToggleButton())),
     m_toggle_thru       (manage(new Gtk::ToggleButton())),
+#if USE_THIRD_SEQEDIT_BUTTON_ROW
     m_radio_select      (nullptr),
     m_radio_grow        (nullptr),
     m_radio_draw        (nullptr),
+#endif
     m_entry_name        (nullptr),
     m_editing_status    (0),
     m_editing_cc        (0),
@@ -311,7 +314,9 @@ seqedit::seqedit
 
     m_vbox->pack_start(*m_hbox,  false, false, 0);
     m_vbox->pack_start(*m_hbox2, false, false, 0);
+#if USE_THIRD_SEQEDIT_BUTTON_ROW
     m_vbox->pack_start(*m_hbox3, false, false, 0);
+#endif
 
     /* expand, cause rollview expands */
 
@@ -1084,7 +1089,7 @@ seqedit::fill_top_bar ()
      * mouse button and some other tricks, though.
      */
 
-#if 0
+#if USE_THIRD_SEQEDIT_BUTTON_ROW
 
     m_radio_select = manage(new Gtk::RadioButton("Sel", true)); /* Select */
     m_radio_select->signal_clicked().connect
@@ -2094,11 +2099,18 @@ seqedit::on_scroll_event (GdkEventScroll * ev)
  *      -   z 0 Z zoom keys.  "z" zooms out, "Z" (Shift-z) zooms in, and "0"
  *          resets the zoom to the default.
  *      -   Page-Up and Page-Down.  Moves up and down in the piano roll.
+ *      -   Home and End.  Page to the top or the bottom of the piano roll.
  *      -   Shift-Page-Up and Shift-Page-Down.  Move left and right in the
+ *          piano roll.
+ *      -   Shift-Home and Shift-End.  Page to the start or the end of the
  *          piano roll.
  *      -   Ctrl-Page-Up and Ctrl-Page-Down.  Mirrors the zoom-in and zoom-out
  *          capabilities of scrolling up and down with the mouse while the
  *          Ctrl key is pressed.
+ *
+ *  The Keypad-End key is an issue on our ASUS "gaming" laptop.  Whether it is 
+ *  seen as a "1" or an "End" key depends on an interaction between the Shift
+ *  and the Num Lock key.  Annoying, takes some time to get used to.
  *
  * \param ev
  *      Provides the keystroke event to be handled.
@@ -2200,7 +2212,7 @@ seqedit::on_key_press_event (GdkEventKey * ev)
         else if (OR_EQUIVALENT(ev->keyval, SEQ64_End, SEQ64_KP_End))
         {
             vertical_set(9999999.0);            /* scroll to the end    */
-            result = true;                  // XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+            result = true;
         }
         else if (ev->keyval == SEQ64_Page_Up)   /* scroll upward        */
         {

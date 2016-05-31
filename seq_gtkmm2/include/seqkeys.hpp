@@ -44,9 +44,8 @@ namespace Gtk
 
 namespace seq64
 {
-
-class perform;
-class sequence;
+    class perform;
+    class sequence;
 
 /**
  *  This class implements the left side piano of the pattern/sequence
@@ -89,10 +88,19 @@ public:
         Gtk::Adjustment & vadjust
     );
 
-    void set_scale (int a_scale);
-    void set_key (int a_key);
-    void set_hint_key (int a_key);       /* sets key to grey */
-    void set_hint_state (bool a_state);  /* true == on, false == off */
+    /**
+     *  Let's provide a do-nothing virtual destructor.
+     */
+
+    virtual ~seqkeys ()
+    {
+        // I got nothin'
+    }
+
+    void set_scale (int scale);
+    void set_key (int key);
+    void set_hint_key (int key);        /* sets key to grey         */
+    void set_hint_state (bool state);   /* true == on, false == off */
 
 private:
 

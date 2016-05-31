@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-05-30
+ * \updates       2016-05-31
  * \license       GNU GPLv2 or above
  *
  *  The seqedit is a kind of master class for holding aseqroll, seqkeys,
@@ -59,14 +59,13 @@ namespace Gtk
 
 namespace seq64
 {
-
-class perform;
-class seqevent;
-class seqdata;
-class seqkeys;
-class seqroll;
-class seqtime;
-class sequence;
+    class perform;
+    class seqevent;
+    class seqdata;
+    class seqkeys;
+    class seqroll;
+    class seqtime;
+    class sequence;
 
 /**
  *  Implements the Pattern Editor, which has references to:
@@ -120,11 +119,22 @@ private:
     int m_note_length;
 
     /**
-     *  Settings for the music scale, key, and background sequence.
+     *  Setting for the music scale, can now be saved with the sequence.
      */
 
     int m_scale;
+
+    /**
+     *  Setting for the music key, can now be saved with the sequence.
+     */
+
     int m_key;
+
+    /**
+     *  Setting for the background sequence, can now be saved with the
+     *  sequence.
+     */
+
     int m_bgsequence;
 
     /**
@@ -147,84 +157,68 @@ private:
     sequence & m_seq;
 
     /**
-     *  A number of user-interface objects.
+     *  A number of user-interface objects for common.  Many of these are menu
+     *  items, and are associated with buttons that, when pressed, bring up
+     *  the menu for display and selection of its entries.
      */
 
-    Gtk::MenuBar * m_menubar;
-    Gtk::Menu * m_menu_tools;
-    Gtk::Menu * m_menu_zoom;
-    Gtk::Menu * m_menu_snap;
-    Gtk::Menu * m_menu_note_length;
-
-    /**
-     *  Provides the length in measures.
-     */
-
-    Gtk::Menu * m_menu_length;
-    Gtk::Menu * m_menu_midich;
-    Gtk::Menu * m_menu_midibus;
-    Gtk::Menu * m_menu_data;
-    Gtk::Menu * m_menu_key;
-    Gtk::Menu * m_menu_scale;
-    Gtk::Menu * m_menu_sequences;
-
-    /**
-     *  These member provife the time signature, beats per measure, and
-     *  beat width menus.
-     */
-
-    Gtk::Menu * m_menu_bpm;
-    Gtk::Menu * m_menu_bw;
-    Gtk::Menu * m_menu_rec_vol;
-
-    /**
-     * Basically the sequence number.  We will eventually remove this member,
-     * as we can get it via sequence::number() now.
-     */
-
-    int m_pos;
+    Gtk::MenuBar * m_menubar;           /**< The top bar with menu buttons. */
+    Gtk::Menu * m_menu_tools;           /**< The "hammer" tool button menu. */
+    Gtk::Menu * m_menu_zoom;            /**< Magnifying glass zoom menu.    */
+    Gtk::Menu * m_menu_snap;            /**< Two-arrows grid-snap menu.     */
+    Gtk::Menu * m_menu_note_length;     /**< Notes menu for note length.    */
+    Gtk::Menu * m_menu_length;          /**< Pattern-length "bars" menu.    */
+    Gtk::Menu * m_menu_midich;          /**< MIDI channel DIN menu button.  */
+    Gtk::Menu * m_menu_midibus;         /**< MIDI output buss menu button.  */
+    Gtk::Menu * m_menu_data;            /**< "Event" button to select data. */
+    Gtk::Menu * m_menu_key;             /**< "Music key" menu button.       */
+    Gtk::Menu * m_menu_scale;           /**< "Music scale" menu button.     */
+    Gtk::Menu * m_menu_sequences;       /**< "Background sequence" button.  */
+    Gtk::Menu * m_menu_bpm;             /**< Beats/measure numerator menu.  */
+    Gtk::Menu * m_menu_bw;              /**< Beat-width denominator menu.   */
+    Gtk::Menu * m_menu_rec_vol;         /**< Recording level "Vol" button.  */
 
     /**
      *  Scrollbar and adjustment objects for horizontal and vertical panning.
      */
 
-    Gtk::Adjustment * m_vadjust;
-    Gtk::Adjustment * m_hadjust;
-    Gtk::VScrollbar * m_vscroll_new;
-    Gtk::HScrollbar * m_hscroll_new;
+    Gtk::Adjustment * m_vadjust;        /**< Vertical position descriptor.  */
+    Gtk::Adjustment * m_hadjust;        /**< Horizontal motion scratchpad.  */
+    Gtk::VScrollbar * m_vscroll_new;    /**< Main vertical scroll-bar.      */
+    Gtk::HScrollbar * m_hscroll_new;    /**< Main horizontal scroll-bar.    */
 
     /**
-     *  Handles the piano-keys part of the user-interface.  This item draws the
-     *  piano-keys at the left of the seqedit window.
+     *  Handles the piano-keys part of the pattern-editor user-interface.
+     *  This item draws the piano-keys at the left of the seqedit window.
      */
 
     seqkeys * m_seqkeys_wid;
 
     /**
-     *  Handles the time-line (bar or measures) part of the user-interface.
-     *  This is the location where the measure numbers and the END marker are
-     *  shown.
+     *  Handles the time-line (bar or measures) part of the pattern-editor
+     *  user-interface.  This is the location where the measure numbers and
+     *  the END marker are shown.
      */
 
     seqtime * m_seqtime_wid;
 
     /**
-     *  Handles the event-data part of the user-interface.  This is the area at
-     *  the bottom of the window that shows value lines for the selected kinds
-     *  of events.
+     *  Handles the event-data part of the pattern-editor user-interface.
+     *  This is the area at the bottom of the window that shows value lines
+     *  for the selected kinds of events.
      */
 
     seqdata * m_seqdata_wid;
 
     /**
-     *  Handles the small event part of the user-interface, where events can be
-     *  moved and added.
+     *  Handles the small event part of the pattern-editor user-interface,
+     *  where events can be moved and added.
      */
 
     seqevent * m_seqevent_wid;
 
     /**
-     *  Handles the piano-roll part of the user-interface.
+     *  Handles the piano-roll part of the pattern-editor user-interface.
      */
 
     seqroll * m_seqroll_wid;
@@ -234,55 +228,64 @@ private:
      *  and text-entry fields, as well as their layout.
      */
 
-    Gtk::Table * m_table;
-    Gtk::VBox * m_vbox;
-    Gtk::HBox * m_hbox;
-    Gtk::HBox * m_hbox2;
-    Gtk::HBox * m_hbox3;
-    Gtk::Button * m_button_undo;
-    Gtk::Button * m_button_redo;
-    Gtk::Button * m_button_quantize;
-    Gtk::Button * m_button_tools;
-    Gtk::Button * m_button_sequence;
-    Gtk::Entry * m_entry_sequence;
-    Gtk::Button * m_button_bus;
-    Gtk::Entry * m_entry_bus;
-    Gtk::Button * m_button_channel;
-    Gtk::Entry * m_entry_channel;
-    Gtk::Button * m_button_snap;
-    Gtk::Entry * m_entry_snap;
-    Gtk::Button * m_button_note_length;
-    Gtk::Entry * m_entry_note_length;
-    Gtk::Button * m_button_zoom;
-    Gtk::Entry * m_entry_zoom;
-    Gtk::Button * m_button_length;
-    Gtk::Entry * m_entry_length;
-    Gtk::Button * m_button_key;
-    Gtk::Entry * m_entry_key;
-    Gtk::Button * m_button_scale;
-    Gtk::Entry * m_entry_scale;
-    Gtk::Tooltips * m_tooltips;
-    Gtk::Button * m_button_data;
-    Gtk::Entry * m_entry_data;
-    Gtk::Button * m_button_bpm;
-    Gtk::Entry * m_entry_bpm;
-    Gtk::Button * m_button_bw;
-    Gtk::Entry * m_entry_bw;
-    Gtk::Button * m_button_rec_vol;
-    Gtk::ToggleButton * m_toggle_play;
-    Gtk::ToggleButton * m_toggle_record;
-    Gtk::ToggleButton * m_toggle_q_rec;
-    Gtk::ToggleButton * m_toggle_thru;
-    Gtk::RadioButton * m_radio_select;
-    Gtk::RadioButton * m_radio_grow;
-    Gtk::RadioButton * m_radio_draw;
-    Gtk::Entry * m_entry_name;
+    Gtk::Table * m_table;               /**< The layout table for editor.   */
+    Gtk::VBox * m_vbox;                 /**< Layout box for 3 h-boxes.      */
+    Gtk::HBox * m_hbox;                 /**< Topmost menu/text dialog row.  */
+    Gtk::HBox * m_hbox2;                /**< Second row of buttons.         */
+#if USE_THIRD_SEQEDIT_BUTTON_ROW
+    Gtk::HBox * m_hbox3;                /**< Unused third row of buttons.   */
+#endif
+    Gtk::Button * m_button_undo;        /**< Undo-edit button.              */
+    Gtk::Button * m_button_redo;        /**< Redo-edit button.              */
+    Gtk::Button * m_button_quantize;    /**< Quantize-pattern button.       */
+    Gtk::Button * m_button_tools;       /**< Button for the Tools menu.     */
+    Gtk::Button * m_button_sequence;    /**< Button for Background pattern. */
+    Gtk::Entry * m_entry_sequence;      /**< Text for background pattern.   */
+    Gtk::Button * m_button_bus;         /**< Button for MIDI Buss menu.     */
+    Gtk::Entry * m_entry_bus;           /**< Text showing MIDI Buss name.   */
+    Gtk::Button * m_button_channel;     /**< Button for the MIDI Channel.   */
+    Gtk::Entry * m_entry_channel;       /**< Text for the MIDI Channel.     */
+    Gtk::Button * m_button_snap;        /**< Button for the Grid-snap menu. */
+    Gtk::Entry * m_entry_snap;          /**< Text for selected Grid-snap.   */
+    Gtk::Button * m_button_note_length; /**< Button for Note-length menu.   */
+    Gtk::Entry * m_entry_note_length;   /**< Text showing the Note-length.  */
+    Gtk::Button * m_button_zoom;        /**< Button for the Zoom menu.      */
+    Gtk::Entry * m_entry_zoom;          /**< Text for the selected Zoom.    */
+    Gtk::Button * m_button_length;      /**< Button for pattern-length.     */
+    Gtk::Entry * m_entry_length;        /**< Text for the pattern-length.   */
+    Gtk::Button * m_button_key;         /**< Button for the Music Key.      */
+    Gtk::Entry * m_entry_key;           /**< Text for selected Music Key.   */
+    Gtk::Button * m_button_scale;       /**< Button for the Music Scale.    */
+    Gtk::Entry * m_entry_scale;         /**< Text for the Music Scale.      */
+    Gtk::Tooltips * m_tooltips;         /**< Tooltip collector for dialog.  */
+    Gtk::Button * m_button_data;        /**< Button for Event (data) menu.  */
+    Gtk::Entry * m_entry_data;          /**< Text for the selected Event.   */
+    Gtk::Button * m_button_bpm;         /**< Button for Beats/Measure menu. */
+    Gtk::Entry * m_entry_bpm;           /**< Text for chosen Beats/Measure. */
+    Gtk::Button * m_button_bw;          /**< Button for Beat-Width menu.    */
+    Gtk::Entry * m_entry_bw;            /**< Text for chosen Beat-Width.    */
+    Gtk::Button * m_button_rec_vol;     /**< Button for recording volume.   */
+    Gtk::ToggleButton * m_toggle_play;  /**< Pattern-to-MIDI record button. */
+    Gtk::ToggleButton * m_toggle_record; /**< MIDI-port-to-pattern button.  */
+    Gtk::ToggleButton * m_toggle_q_rec; /**< Quantized-record MIDI button.  */
+    Gtk::ToggleButton * m_toggle_thru;  /**< MIDI-to-pattern-MIDI button.   */
+#if USE_THIRD_SEQEDIT_BUTTON_ROW
+    Gtk::RadioButton * m_radio_select;  /**< Unused selection button.       */
+    Gtk::RadioButton * m_radio_grow;    /**< Unused grow button.            */
+    Gtk::RadioButton * m_radio_draw;    /**< Unused selection button.       */
+#endif
+    Gtk::Entry * m_entry_name;          /**< Name of the sequence.          */
 
     /**
-     *  Indicates what is the data window currently editing?
+     *  Indicates what MIDI event/status the data window currently editing.
      */
 
     midibyte m_editing_status;
+
+    /**
+     *  Indicates what MIDI CC value the data window currently editing.
+     */
+
     midibyte m_editing_cc;
 
     /**
@@ -300,7 +303,7 @@ public:
         int pos,
         int ppqn = SEQ64_USE_DEFAULT_PPQN
     );
-    ~seqedit ();
+    virtual ~seqedit ();
 
 private:
 
@@ -312,6 +315,10 @@ private:
 
     /**
      *  Passes the given parameter to sequence::set_rec_vol().
+     *
+     * \param recvol
+     *      The setting to be made, obtained from the recording-volume ("Vol")
+     *      menu.
      */
 
     void set_rec_vol (int recvol)
@@ -350,7 +357,11 @@ private:
     }
 
     /**
+     *  Sets the exact position of a horizontal scroll-bar.
      *
+     * \param value
+     *      The desired position.  Mostly this is either 0.0 or 9999999.0 (an
+     *      "infinite" value to select the start or end position.
      */
 
     void horizontal_set (double value)
@@ -359,7 +370,11 @@ private:
     }
 
     /**
+     *  Sets the exact position of a vertical scroll-bar.
      *
+     * \param value
+     *      The desired position.  Mostly this is either 0.0 or 9999999.0 (an
+     *      "infinite" value to select the start or end position.
      */
 
     void vertical_set (double value)
@@ -419,3 +434,4 @@ private:    // Gtkmm 2.4 callbacks
  *
  * vim: sw=4 ts=4 wm=4 et ft=cpp
  */
+

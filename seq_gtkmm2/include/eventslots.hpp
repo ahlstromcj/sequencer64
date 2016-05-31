@@ -207,6 +207,15 @@ public:
     );
 
     /**
+     *  Let's provide a do-nothing virtual destructor.
+     */
+
+    virtual ~eventslots ()
+    {
+        // I got nothin'
+    }
+
+    /**
      * \getter m_event_count
      *      Returns the number of total events in the sequence represented by
      *      the eventslots object.

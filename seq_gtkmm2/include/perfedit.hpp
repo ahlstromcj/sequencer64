@@ -196,7 +196,7 @@ public:
         bool second_perfedit    = false,
         int ppqn                = SEQ64_USE_DEFAULT_PPQN
     );
-    ~perfedit ();
+    virtual ~perfedit ();
 
     void init_before_show ();
     void enqueue_draw (bool forward = true);

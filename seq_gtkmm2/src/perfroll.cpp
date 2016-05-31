@@ -934,6 +934,15 @@ perfroll::on_motion_notify_event (GdkEventMotion * ev)
  *
  *  The perfroll_key_event() call handles Del, Ctrl-X, Ctrl-C, Ctrl-V, and
  *  Ctrl-Z (which does nothing at present).
+ *
+ *  We've also added support for moving up and down in the piano roll (Up and
+ *  Down arrows), paging up and down (Page-Up and Page-Down keys), paging left
+ *  and right (Shift Page-Up and Page-Down), paging to top and bottom (Home
+ *  and End), and paging to start and end (Shift Home and End).
+ *
+ *  The Keypad-End key is an issue on our ASUS "gaming" laptop.  Whether it is 
+ *  seen as a "1" or an "End" key depends on an interaction between the Shift
+ *  and the Num Lock key.  Annoying, takes some time to get used to.
  */
 
 bool
@@ -990,38 +999,20 @@ perfroll::on_key_press_event (GdkEventKey * ev)
                 }
                 else if (ev->keyval == SEQ64_Up)    /* horizontal movement  */
                 {
-#ifdef USE_OLD_CODE
-                    double increment = m_hadjust.get_step_increment();
-                    double val = m_hadjust.get_value() - increment;
-                    m_hadjust.clamp_page(val, val + m_hadjust.get_page_size());
-#else
                     double step = m_hadjust.get_step_increment();
                     horizontal_adjust(-step);
-#endif
                     result = true;
                 }
                 else if (ev->keyval == SEQ64_Down)
                 {
-#ifdef USE_OLD_CODE
-                    double increment = m_hadjust.get_step_increment();
-                    double val = m_hadjust.get_value() + increment;
-                    m_hadjust.clamp_page(val, val + m_hadjust.get_page_size());
-#else
                     double step = m_hadjust.get_step_increment();
                     horizontal_adjust(step);
-#endif
                     result = true;
                 }
                 else if (ev->keyval == SEQ64_Page_Up)
                 {
-#ifdef USE_OLD_CODE
-                    double increment = m_hadjust.get_page_increment();
-                    double val = m_hadjust.get_value() - increment;
-                    m_hadjust.clamp_page(val, val + m_hadjust.get_page_size());
-#else
                     double step = m_hadjust.get_page_increment();
                     horizontal_adjust(-step);
-#endif
                     result = true;
                 }
                 else if (OR_EQUIVALENT(ev->keyval, SEQ64_Home, SEQ64_KP_Home))
@@ -1031,20 +1022,14 @@ perfroll::on_key_press_event (GdkEventKey * ev)
                 }
                 else if (ev->keyval == SEQ64_Page_Down)
                 {
-#ifdef USE_OLD_CODE
-                    double increment = m_hadjust.get_page_increment();
-                    double val = m_hadjust.get_value() + increment;
-                    m_hadjust.clamp_page(val, val + m_hadjust.get_page_size());
-#else
                     double step = m_hadjust.get_page_increment();
                     horizontal_adjust(step);
-#endif
                     result = true;
                 }
                 else if (OR_EQUIVALENT(ev->keyval, SEQ64_End, SEQ64_KP_End))
                 {
                     horizontal_set(9999999.0);      /* scroll to the end    */
-                    result = true;          // XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+                    result = true;
                 }
             }
             else
@@ -1101,38 +1086,20 @@ perfroll::on_key_press_event (GdkEventKey * ev)
                 }
                 else if (ev->keyval == SEQ64_Up)    /* vertical movement    */
                 {
-#ifdef USE_OLD_CODE
-                    double increment = m_vadjust.get_step_increment();
-                    double val = m_vadjust.get_value() - increment;
-                    m_vadjust.clamp_page(val, val + m_vadjust.get_page_size());
-#else
                     double step = m_vadjust.get_step_increment();
                     vertical_adjust(-step);
-#endif
                     result = true;
                 }
                 else if (ev->keyval == SEQ64_Down)
                 {
-#ifdef USE_OLD_CODE
-                    double increment = m_vadjust.get_step_increment();
-                    double val = m_vadjust.get_value() + increment;
-                    m_vadjust.clamp_page(val, val + m_vadjust.get_page_size());
-#else
                     double step = m_vadjust.get_step_increment();
                     vertical_adjust(step);
-#endif
                     result = true;
                 }
                 else if (ev->keyval == SEQ64_Page_Up)
                 {
-#ifdef USE_OLD_CODE
-                    double increment = m_vadjust.get_page_increment();
-                    double val = m_vadjust.get_value() - increment;
-                    m_vadjust.clamp_page(val, val + m_vadjust.get_page_size());
-#else
                     double step = m_hadjust.get_page_increment();
                     vertical_adjust(-step);
-#endif
                     result = true;
                 }
                 else if (OR_EQUIVALENT(ev->keyval, SEQ64_Home, SEQ64_KP_Home))
@@ -1142,14 +1109,8 @@ perfroll::on_key_press_event (GdkEventKey * ev)
                 }
                 else if (ev->keyval == SEQ64_Page_Down)
                 {
-#ifdef USE_OLD_CODE
-                    double increment = m_vadjust.get_page_increment();
-                    double val = m_vadjust.get_value() + increment;
-                    m_vadjust.clamp_page(val, val + m_vadjust.get_page_size());
-#else
                     double step = m_hadjust.get_page_increment();
                     vertical_adjust(step);
-#endif
                     result = true;
                 }
                 else if (OR_EQUIVALENT(ev->keyval, SEQ64_End, SEQ64_KP_End))

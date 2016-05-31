@@ -29,9 +29,12 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-05-30
+ * \updates       2016-05-31
  * \license       GNU GPLv2 or above
  *
+ *  The data pane is the drawing-area below the seqedit's event area, and
+ *  contains vertical lines whose height matches the value of each data event.
+ *  The height of the vertical lines is editable via the mouse.
  */
 
 #include "globals.h"
@@ -156,6 +159,15 @@ public:
         int zoom,
         Gtk::Adjustment & hadjust
     );
+
+    /**
+     *  Let's provide a do-nothing virtual destructor.
+     */
+
+    virtual ~seqdata ()
+    {
+        // I got nothin'
+    }
 
     void reset ();
 

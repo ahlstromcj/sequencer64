@@ -143,7 +143,7 @@ private:
 public:
 
     eventedit (perform & p, sequence & seq);
-    ~eventedit ();
+    virtual ~eventedit ();
 
     void enqueue_draw ();
     void set_seq_title (const std::string & title);

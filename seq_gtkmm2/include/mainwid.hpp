@@ -39,8 +39,7 @@
 
 namespace seq64
 {
-
-class perform;                          /* forward reference        */
+    class perform;                      /* forward reference        */
 
 /**
  *  This class implements the piano roll area of the application.  It inherits
@@ -149,7 +148,7 @@ private:
 public:
 
     mainwid (perform & p);
-    ~mainwid ();
+    virtual ~mainwid ();
 
     void set_screenset (int ss);                /* int get_screenset() ?    */
 

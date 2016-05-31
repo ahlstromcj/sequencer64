@@ -148,6 +148,15 @@ public:
         int ppqn = SEQ64_USE_DEFAULT_PPQN
     );
 
+    /**
+     *  Let's provide a do-nothing virtual destructor.
+     */
+
+    virtual ~maintime ()
+    {
+        // I got nothin'
+    }
+
 private:
 
     int idle_progress (midipulse ticks);

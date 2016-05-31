@@ -162,6 +162,15 @@ public:
         Gtk::Adjustment & vadjust
     );
 
+    /**
+     *  Let's provide a do-nothing virtual destructor.
+     */
+
+    virtual ~perfnames ()
+    {
+        // I got nothin'
+    }
+
     void redraw_dirty_sequences ();
 
 private:

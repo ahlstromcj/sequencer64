@@ -27,9 +27,11 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-05-17
+ * \updates       2016-05-31
  * \license       GNU GPLv2 or above
  *
+ *  The event pane is the thin gridded drawing-area below the seqedit's piano
+ *  roll, and contains small boxes representing the position of each event.
  */
 
 #include <gdkmm/pixmap.h>
@@ -49,10 +51,9 @@ namespace Gtk
 
 namespace seq64
 {
-
-class perform;
-class seqdata;
-class sequence;
+    class perform;
+    class seqdata;
+    class sequence;
 
 /**
  *  Implements the piano event drawing area.
@@ -60,19 +61,29 @@ class sequence;
 
 class seqevent : public gui_drawingarea_gtk2
 {
-
     friend struct FruitySeqEventInput;
     friend struct Seq24SeqEventInput;
 
 private:
 
     /**
-     * Why should we need both at the same time?  Just load the one that
-     * is specified in the configuration.
+     *  Provides the mouse-handling paradigm for the fruity interaction.  Why
+     *  should we need both at the same time?  Just load the one that is
+     *  specified in the configuration.
      */
 
     FruitySeqEventInput m_fruity_interaction;
+
+    /**
+     *  Provides the normal mouse-handling for Sequencer64.
+     */
+
     Seq24SeqEventInput m_seq24_interaction;
+
+    /**
+     *  Provides a reference to the sequence whose data is represented in this
+     *  seqevent object.
+     */
 
     sequence & m_seq;
 
@@ -81,7 +92,20 @@ private:
      */
 
     int m_zoom;
+
+    /**
+     *  The grid-snap setting for the event bar grid.  Same meaning as for the
+     *  piano roll.  This value is the denominator of the note size used for
+     *  the snap.
+     */
+
     int m_snap;
+
+    /**
+     *  The value to use for the PPQN for this sequence.  Used in snap and
+     *  zoom scaling.
+     */
+
     int m_ppqn;
 
     GdkRectangle m_old;
@@ -121,6 +145,15 @@ public:
         Gtk::Adjustment & hadjust,
         int ppqn = SEQ64_USE_DEFAULT_PPQN
     );
+
+    /**
+     *  Let's provide a do-nothing virtual destructor.
+     */
+
+    virtual ~seqevent ()
+    {
+        // I got nothin'
+    }
 
     void reset ();
     void redraw ();

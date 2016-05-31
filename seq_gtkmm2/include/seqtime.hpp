@@ -80,6 +80,15 @@ public:
         int ppqn = SEQ64_USE_DEFAULT_PPQN
     );
 
+    /**
+     *  Let's provide a do-nothing virtual destructor.
+     */
+
+    virtual ~seqtime ()
+    {
+        // I got nothin'
+    }
+
     void reset ();
     void redraw ();
     void set_zoom (int zoom);

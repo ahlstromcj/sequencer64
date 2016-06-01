@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-05-09
+ * \updates       2016-06-01
  * \license       GNU GPLv2 or above
  *
  */
@@ -57,36 +57,71 @@ class seqkeys : public gui_drawingarea_gtk2
 
 private:
 
+    /**
+     *  The sequence object that the keys pane will be using.
+     */
+
     sequence & m_seq;
+
+    /**
+     *  Provides the value of the current top key in the keys pane.
+     */
+
     int m_scroll_offset_key;
+
+    /**
+     *
+     */
+
     int m_scroll_offset_y;
+
+    /**
+     *
+     */
+
     bool m_hint_state;
+
+    /**
+     *
+     */
+
     int m_hint_key;
 
     /**
-     *  What is this?
+     *
      */
 
     bool m_keying;
+
+    /**
+     *
+     */
+
     int m_keying_note;
+
+    /**
+     *
+     */
+
     int m_scale;
+
+    /**
+     *
+     */
+
     int m_key;
 
     /**
      *  The default value is to show the octave letters on the vertical
-     *  virtual keyboard.
+     *  virtual keyboard.  If false, then the MIDI key numbers are shown
+     *  instead.  This is a new feature of Sequencer64.
      */
 
     bool m_show_octave_letters;
 
 public:
 
-    seqkeys
-    (
-        sequence & seq,
-        perform & p,
-        Gtk::Adjustment & vadjust
-    );
+    seqkeys (sequence & seq, perform & p, Gtk::Adjustment & vadjust);
 
     /**
      *  Let's provide a do-nothing virtual destructor.
@@ -108,14 +143,20 @@ private:
 
     void draw_area ();
     void update_pixmap ();
-    void convert_y (int a_y, int & a_note);
-    void draw_key (int a_key, bool a_state);
+    void convert_y (int y, int & note);
+    void draw_key (int key, bool state);
     void change_vert ();
     void update_sizes ();
     void reset ();
 
     /**
      *  Detects a black key.
+     *
+     * \param key
+     *      The key to analyze.
+     *
+     * \return
+     *      Returns true if the key is black (value 1, 3, 6, 8, or 10).
      */
 
     bool is_black_key (int key) const
@@ -126,13 +167,13 @@ private:
 private:        // callbacks
 
     void on_realize ();
-    bool on_expose_event (GdkEventExpose * a_ev);
-    bool on_button_press_event (GdkEventButton * a_ev);
-    bool on_button_release_event (GdkEventButton * a_ev);
-    bool on_motion_notify_event (GdkEventMotion * a_p0);
+    bool on_expose_event (GdkEventExpose * ev);
+    bool on_button_press_event (GdkEventButton * ev);
+    bool on_button_release_event (GdkEventButton * ev);
+    bool on_motion_notify_event (GdkEventMotion * p0);
     bool on_enter_notify_event (GdkEventCrossing * p0);
     bool on_leave_notify_event (GdkEventCrossing * p0);
-    bool on_scroll_event (GdkEventScroll * a_ev);
+    bool on_scroll_event (GdkEventScroll * ev);
     void on_size_allocate (Gtk::Allocation &);
 
 };

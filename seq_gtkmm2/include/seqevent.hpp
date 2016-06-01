@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-05-31
+ * \updates       2016-06-01
  * \license       GNU GPLv2 or above
  *
  *  The event pane is the thin gridded drawing-area below the seqedit's piano
@@ -61,8 +61,8 @@ namespace seq64
 
 class seqevent : public gui_drawingarea_gtk2
 {
-    friend struct FruitySeqEventInput;
-    friend struct Seq24SeqEventInput;
+    friend struct FruitySeqEventInput;      /* module fruitseq  */
+    friend struct Seq24SeqEventInput;       /* module seq24seq  */ 
 
 private:
 
@@ -108,10 +108,37 @@ private:
 
     int m_ppqn;
 
+    /**
+     *  Used in drawing the event selection in the thing event row.
+     */
+
     GdkRectangle m_old;
+
+    /**
+     *  Used in moving and pasting the selected events in the thin event row.
+     */
+
     GdkRectangle m_selected;
+
+    /**
+     *  Provides the offset of the ticks in the event view based on where the
+     *  scroll-bar has moved the view "window".
+     */
+
     int m_scroll_offset_ticks;
+
+    /**
+     *  Provides the offset of the pixels in the event view based on where the
+     *  scroll-bar has moved the view "window".  Set to m_scroll_offset_ticks
+     *  divided by m_zoom.
+     */
+
     int m_scroll_offset_x;
+
+    /**
+     *  The data view that parallels this event view.
+     */
+
     seqdata & m_seqdata_wid;
 
     /**
@@ -119,30 +146,71 @@ private:
      */
 
     bool m_selecting;
+
+    /**
+     *  Used externally by the fruityseq and seq24seq modules, to initialize
+     *  the act of moving events.
+     */
+
     bool m_moving_init;
+
+    /**
+     *  Indicates that this pane is in the act of moving a selection.
+     *
+     *  WARNING:  This operation seems to have a bug.  It makes the events
+     *  very very long.  This bug exists in Seq24.
+     */
+
     bool m_moving;
+
+    /**
+     *  Used externally by the fruityseq and seq24seq modules, when growing
+     *  the event duration.
+     *
+     *  Does growing work in this view?  Need to do some better testing.
+     */
+
     bool m_growing;
+
+    /**
+     *  Used externally by the fruityseq and seq24seq modules, in painting
+     *  the selected events.
+     */
+
     bool m_painting;
+
+    /**
+     *  Indicates that we've selected some events and are in paste mode.
+     */
+
     bool m_paste;
+
+    /**
+     *  Used externally by the fruityseq and seq24seq modules, in snapping.
+     */
+
     int m_move_snap_offset_x;
 
     /**
-     *  Indicates what is the data window currently editing?
+     *  Indicates what is the data window currently editing.
+     *  The current status/event byte.
      */
 
     midibyte m_status;
+
+    /**
+     *  Indicates what is the data window currently editing.
+     *  The current MIDI CC value.
+     */
+
     midibyte m_cc;
 
 public:
 
     seqevent
     (
-        perform & p,
-        sequence & seq,
-        int zoom,
-        int snap,
-        seqdata & seqdata_wid,
-        Gtk::Adjustment & hadjust,
+        perform & p, sequence & seq, int zoom, int snap,
+        seqdata & seqdata_wid, Gtk::Adjustment & hadjust,
         int ppqn = SEQ64_USE_DEFAULT_PPQN
     );
 
@@ -161,8 +229,7 @@ public:
 
     /**
      * \setter m_snap
-     *
-     *  Simply sets the snap member.
+     *      Simply sets the snap member.  The parameter is not validated.
      */
 
     void set_snap (int snap)
@@ -193,6 +260,12 @@ private:
      *  Takes the screen x coordinate, multiplies it by the current zoom, and
      *  returns the tick value in the given parameter.  Why not just return it
      *  normally?
+     *
+     * \param x
+     *      The x (pixel) value to convert.
+     *
+     * \param [out] tick
+     *      The destination for the converted x value.
      */
 
     void convert_x (int x, midipulse & tick)
@@ -204,6 +277,12 @@ private:
      *  Converts the given tick value to an x corrdinate, based on the zoom,
      *  and returns it via the second parameter.  Why not just return it
      *  normally?
+     *
+     * \param tick
+     *      The tick (pulse) value to convert.
+     *
+     * \param [out] x
+     *      The destination for the converted tick value.
      */
 
     void convert_t (midipulse ticks, int & x)
@@ -213,6 +292,10 @@ private:
 
     /**
      *  This function performs a 'snap' on y.
+     *
+     * \param [out] y
+     *      The return parameter for the conversion.  Why not just return the
+     *      value?
      */
 
     void snap_y (int & y)

@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-05-17
+ * \updates       2016-06-01
  * \license       GNU GPLv2 or above
  *
  */
@@ -46,6 +46,27 @@ namespace seq64
 
 /**
  *  Principal constructor.
+ *
+ * \param p
+ *      The "parent" perform object controlling all of the sequences.
+ *
+ * \param seq
+ *      The current sequence operated on by this object.
+ *
+ * \param zoom
+ *      The initial zoom value.
+ *
+ * \param snap
+ *      The initial snap value.
+ *
+ * \param seqdata_wid
+ *      The data pane that this event pane is associated with.
+ *
+ * \param hadjust
+ *      The horizontal scroll-bar.
+ *
+ * \param ppqn
+ *      The initial PPQN value.
  */
 
 seqevent::seqevent
@@ -100,9 +121,11 @@ seqevent::change_horz ()
 }
 
 /**
- *  Implements redraw while idling.
+ *  Implements redraw while idling.  Who calls this routine?  Probably the
+ *  default timer routine, but not sure.
  *
- *  Who calls this routine?
+ * \return
+ *      Always returns true.
  */
 
 int
@@ -115,9 +138,8 @@ seqevent::idle_redraw ()
 
 /**
  *  If the window is realized, this function creates a pixmap with window
- *  dimensions, the updates the pixmap, and queues up a redraw.
- *
- *  This ends up filling  the background with dotted lines, etc.
+ *  dimensions, the updates the pixmap, and queues up a redraw.  This ends up
+ *  filling the background with dotted lines, etc.
  */
 
 void
@@ -242,14 +264,17 @@ seqevent::draw_background ()
 /**
  *  Sets zoom to the given value, and resets if the value ended up being
  *  changed.
+ *
+ * \param z
+ *      The desired zoom value, presumably already validated by the caller.
  */
 
 void
-seqevent::set_zoom (int zoom)
+seqevent::set_zoom (int z)
 {
-    if (m_zoom != zoom)
+    if (m_zoom != z)
     {
-        m_zoom = zoom;
+        m_zoom = z;
         reset();
     }
 }
@@ -257,10 +282,16 @@ seqevent::set_zoom (int zoom)
 /**
  *  Sets the status to the given parameter, and the CC value to the given
  *  optional control parameter, which defaults to 0.  Then redraws.
+ *
+ * \param status
+ *      The status/event byte to set.
+ *
+ * \param control
+ *      The MIDI CC byte to set.
  */
 
 void
-seqevent::set_data_type (midibyte status, midibyte control = 0)
+seqevent::set_data_type (midibyte status, midibyte control)
 {
     m_status = status;
     m_cc = control;
@@ -298,7 +329,6 @@ seqevent::draw_events_on (Glib::RefPtr<Gdk::Drawable> drawable)
     int endtick = (m_window_x * m_zoom) + m_scroll_offset_ticks;
     m_gc->set_foreground(black());              /* draw boxes from sequence */
     m_seq.reset_draw_marker();
-
     while (m_seq.get_next_event(m_status, m_cc, &tick, &d0, &d1, &selected))
     {
         if (tick >= starttick && tick <= endtick)
@@ -336,9 +366,9 @@ seqevent::draw_events_on_pixmap ()
  *
  *  Old comments:
  *
- *      It then tells event to do the same.
- *      We changed something on this window, and chances are we need to
- *      update the event widget as well and update our velocity window.
+ *      It then tells event to do the same.  We changed something on this
+ *      window, and chances are we need to update the event widget as well and
+ *      update our velocity window.
  */
 
 void
@@ -350,20 +380,32 @@ seqevent::draw_pixmap_on_window ()
 /**
  *  This function checks the mins / maxes.  Then it fills in x
  *  and the width.
+ *
+ * \param x1
+ *      The "left" x value.
+ *
+ * \param x1
+ *      The "right" x value.
+ *
+ * \param [out] x
+ *      The destination for the converted x value.
+ *
+ * \param [out] w
+ *      The destination for the converted width value.
  */
 
 void
-seqevent::x_to_w (int a_x1, int a_x2, int & a_x, int & a_w)
+seqevent::x_to_w (int x1, int x2, int & x, int & w)
 {
-    if (a_x1 < a_x2)
+    if (x1 < x2)
     {
-        a_x = a_x1;
-        a_w = a_x2 - a_x1;
+        x = x1;
+        w = x2 - x1;
     }
     else
     {
-        a_x = a_x2;
-        a_w = a_x1 - a_x2;
+        x = x2;
+        w = x1 - x2;
     }
 }
 
@@ -448,6 +490,9 @@ seqevent::start_paste ()
  *      -   snap = number pulses to snap to
  *      -   m_zoom = number of pulses per pixel
  *      -   Therefore snap / m_zoom = number of pixels to snap to.
+ *
+ * \param [out] x
+ *      The output destination for the snapped x value.
  */
 
 void
@@ -464,10 +509,14 @@ seqevent::snap_x (int & x)
  *  Drops (adds) an event at the given tick. It sets the first byte
  *  properly for after-touch, program-change, channel-pressure, and
  *  pitch-wheel.  The type of event is determined by m_status.
+ *
+ * \param tick
+ *      The destination time (division, pulse, tick) for the event to be
+ *      dropped at.
  */
 
 void
-seqevent::drop_event (midipulse a_tick)
+seqevent::drop_event (midipulse tick)
 {
     midibyte status = m_status;
     midibyte d0 = m_cc;
@@ -481,7 +530,7 @@ seqevent::drop_event (midipulse a_tick)
     else if (m_status == EVENT_PITCH_WHEEL)
         d0 = 0;
 
-    m_seq.add_event(a_tick, status, d0, d1, true);
+    m_seq.add_event(tick, status, d0, d1, true);
 }
 
 /**
@@ -503,7 +552,12 @@ seqevent::on_realize ()
 }
 
 /**
- *  Implements the on-size-allocate event callback.
+ *  Implements the on-size-allocate event callback.  The m_window_x and
+ *  m_window_y values are set to the allocation width and height,
+ *  respectively.
+ *
+ * \param a
+ *      The allocation to be processed.
  */
 
 void
@@ -517,15 +571,18 @@ seqevent::on_size_allocate (Gtk::Allocation & a)
 
 /**
  *  Implements the on-expose event callback.
+ *
+ * \param ev
+ *      The expose event.
  */
 
 bool
-seqevent::on_expose_event (GdkEventExpose * e)
+seqevent::on_expose_event (GdkEventExpose * ev)
 {
     draw_drawable
     (
-        e->area.x, e->area.y,
-        e->area.x, e->area.y, e->area.width, e->area.height
+        ev->area.x, ev->area.y,
+        ev->area.x, ev->area.y, ev->area.width, ev->area.height
     );
     draw_selection_on_window();
     return true;
@@ -544,21 +601,28 @@ seqevent::on_expose_event (GdkEventExpose * e)
  *  fall-through code caused false to be returned, always.  Not sure what
  *  effect this had.  Added some fixes, but then commented them out until
  *  better testing can be done.
+ *
+ * \param ev
+ *      The button event.
+ *
+ * \return
+ *      Returns true if the button-press was handled.
  */
 
 bool
-seqevent::on_button_press_event (GdkEventButton * a_ev)
+seqevent::on_button_press_event (GdkEventButton * ev)
 {
     bool result = false;
     interaction_method_t interactionmethod = rc().interaction_method();
     switch (interactionmethod)
     {
     case e_fruity_interaction:
-        result = m_fruity_interaction.on_button_press_event(a_ev, *this);
+        result = m_fruity_interaction.on_button_press_event(ev, *this);
+
         // break;              // removed the FALL THROUGH
 
     case e_seq24_interaction:
-        if (m_seq24_interaction.on_button_press_event(a_ev, *this))
+        if (m_seq24_interaction.on_button_press_event(ev, *this))
             result = true;
         break;
 
@@ -578,25 +642,32 @@ seqevent::on_button_press_event (GdkEventButton * a_ev)
  *  Odd.  The fruity case fell through to the Seq24 case.  We will assume
  *  for now that this is correct.  Added some fixes, but then commented them
  *  out until better testing can be done.
+ *
+ * \param ev
+ *      The button event.
+ *
+ * \return
+ *      Returns true if the button-press was handled.
  */
 
 bool
-seqevent::on_button_release_event (GdkEventButton * a_ev)
+seqevent::on_button_release_event (GdkEventButton * ev)
 {
     bool result = false;
     interaction_method_t interactionmethod = rc().interaction_method();
     switch (interactionmethod)
     {
     case e_fruity_interaction:
-        result = m_fruity_interaction.on_button_release_event(a_ev, *this);
+        result = m_fruity_interaction.on_button_release_event(ev, *this);
 
         /*
          * FALL THROUGH.  Is this correct behavior?
+         *
          * break;              // removed the FALL THROUGH
          */
 
     case e_seq24_interaction:
-        if (m_seq24_interaction.on_button_release_event(a_ev, *this))
+        if (m_seq24_interaction.on_button_release_event(ev, *this))
             result = true;
         break;
 
@@ -616,25 +687,32 @@ seqevent::on_button_release_event (GdkEventButton * a_ev)
  *  Odd.  The fruity case fell through to the Seq24 case.  We will assume
  *  for now that this is correct.  Added some fixes, but then commented them
  *  out until better testing can be done.
+ *
+ * \param ev
+ *      The motion event.
+ *
+ * \return
+ *      Returns true if the motion-event was handled.
  */
 
 bool
-seqevent::on_motion_notify_event (GdkEventMotion * a_ev)
+seqevent::on_motion_notify_event (GdkEventMotion * ev)
 {
     bool result = false;
     interaction_method_t interactionmethod = rc().interaction_method();
     switch (interactionmethod)
     {
     case e_fruity_interaction:
-        result = m_fruity_interaction.on_motion_notify_event(a_ev, *this);
+        result = m_fruity_interaction.on_motion_notify_event(ev, *this);
 
         /*
          * FALL THROUGH.  Is this correct behavior?
+         *
          * break;              // removed the FALL THROUGH
          */
 
     case e_seq24_interaction:
-        if (m_seq24_interaction.on_motion_notify_event(a_ev, *this))
+        if (m_seq24_interaction.on_motion_notify_event(ev, *this))
             result = true;
         break;
 
@@ -649,10 +727,16 @@ seqevent::on_motion_notify_event (GdkEventMotion * a_ev)
 
 /**
  *  Responds to a focus event by setting the HAS_FOCUS flag.
+ *
+ * \param ev
+ *      The focus event, unused.
+ *
+ * \return
+ *      Always returns false.
  */
 
 bool
-seqevent::on_focus_in_event (GdkEventFocus *)
+seqevent::on_focus_in_event (GdkEventFocus * /*ev*/)
 {
     set_flags(Gtk::HAS_FOCUS);
     return false;
@@ -660,10 +744,16 @@ seqevent::on_focus_in_event (GdkEventFocus *)
 
 /**
  *  Responds to a unfocus event by resetting the HAS_FOCUS flag.
+ *
+ * \param ev
+ *      The focus event, unused.
+ *
+ * \return
+ *      Always returns false.
  */
 
 bool
-seqevent::on_focus_out_event (GdkEventFocus *)
+seqevent::on_focus_out_event (GdkEventFocus * /*ev*/)
 {
     unset_flags(Gtk::HAS_FOCUS);
     return false;
@@ -677,6 +767,9 @@ seqevent::on_focus_out_event (GdkEventFocus *)
  *  Ctrl-Z.
  *
  *  Would be nice to provide redo functionality via Ctrl-Y.  :-)
+ *
+ * \param ev
+ *      The key-press event.
  *
  * \return
  *      Returns true if an event was handled.  Only some of the handled events

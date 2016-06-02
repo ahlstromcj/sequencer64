@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-12-05
- * \updates       2016-05-29
+ * \updates       2016-06-02
  * \license       GNU GPLv2 or above
  *
  * To consider:
@@ -718,13 +718,15 @@ eventedit::handle_save ()
 }
 
 /**
- *  Cancels the edits and closes the dialog box.
+ *  Cancels the edits and closes the dialog box.  In order for removing the
+ *  current-highlighting in the mainwd or perfedit windows, some of the work
+ *  of handle_close() needs to be done here as well.
  */
 
 void
 eventedit::handle_cancel ()
 {
-    m_seq.set_editing(false);
+    close_out();
 
 #if GTK_MAJOR_VERSION >= 3
     Gtk::Window::close();
@@ -735,10 +737,12 @@ eventedit::handle_cancel ()
 }
 
 /**
- *  Changes what perform and mainwid see as the "current sequence".
+ *  Changes what perform and mainwid see as the "current sequence".  Similar
+ *  to the same function in seqedit.
  *
  * \param set_it
- *      If true, indicates we want focus, otherwise we want to give up focus.
+ *      If true (the default value), indicates we want focus, otherwise we
+ *      want to give up focus.
  */
 
 void
@@ -767,12 +771,29 @@ eventedit::change_focus (bool set_it)
 }
 
 /**
- *  Handles closing the sequence editor.
+ *  Handles closing the sequence editor.  Simply calls close_out().
  */
 
 void
 eventedit::handle_close ()
 {
+    close_out();
+}
+
+/**
+ *  Handles closing the sequence editor, common code for handle_cancel() and
+ *  handle_close()..
+ */
+
+void
+eventedit::close_out ()
+{
+    /*
+     * Added the next two lines to match seqedit::handle_close().
+     */
+
+    perf().master_bus().set_sequence_input(false, nullptr);
+    m_seq.set_recording(false);
     m_seq.set_editing(false);
     change_focus(false);
 }
@@ -815,7 +836,7 @@ bool
 eventedit::on_focus_in_event (GdkEventFocus *)
 {
     set_flags(Gtk::HAS_FOCUS);
-    change_focus(true);
+    change_focus();
     return false;
 }
 

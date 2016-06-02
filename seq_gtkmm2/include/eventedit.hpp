@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-12-05
- * \updates       2016-05-29
+ * \updates       2016-06-02
  * \license       GNU GPLv2 or above
  *
  *  The Event Editor complements the Pattern (Sequence) Editor by allowing the
@@ -77,6 +77,8 @@ namespace seq64
 
 class eventedit : public gui_window_gtk2
 {
+
+    friend class eventslots;
 
 private:
 
@@ -145,6 +147,8 @@ public:
     eventedit (perform & p, sequence & seq);
     virtual ~eventedit ();
 
+private:                                // functions used by friend eventslots
+
     void enqueue_draw ();
     void set_seq_title (const std::string & title);
     void set_seq_time_sig (const std::string & sig);
@@ -159,18 +163,12 @@ public:
     void set_dirty (bool flag = true);
     void v_adjustment (int value);
     void v_adjustment (int value, int lower, int upper);
-    void change_focus (bool set_it = true);
-    void handle_close ();
 
 private:
 
-    /*
-     * We don't need a timeout in this static editing window which doesn't
-     * interact directly with other editing windows.
-     *
-     * bool timeout ();
-     */
-
+    void change_focus (bool set_it = true);
+    void close_out ();
+    void handle_close ();
     void handle_delete ();
     void handle_insert ();
     void handle_modify ();

@@ -1924,10 +1924,12 @@ seqedit::timeout ()
 }
 
 /**
- *  Changes what perform and mainwid see as the "current sequence".
+ *  Changes what perform and mainwid see as the "current sequence".  Similar to
+ *  the same function in eventedit.
  *
  * \param set_it
- *      If true, indicates we want focus, otherwise we want to give up focus.
+ *      If true (the default value), indicates we want focus, otherwise we
+ *      want to give up focus.
  */
 
 void
@@ -2003,7 +2005,7 @@ bool
 seqedit::on_focus_in_event (GdkEventFocus *)
 {
     set_flags(Gtk::HAS_FOCUS);
-    change_focus(true);
+    change_focus();
     return false;
 }
 

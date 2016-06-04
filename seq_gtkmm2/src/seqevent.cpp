@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-06-01
+ * \updates       2016-06-04
  * \license       GNU GPLv2 or above
  *
  */
@@ -185,12 +185,32 @@ seqevent::redraw ()
 /**
  *  This function updates the background.  It sets the foreground to
  *  white, draws the rectangle, in order to clear the pixmap.
+ *  The build-time option SEQ64_SOLID_PIANOROLL_GRID causes solid lines to be
+ *  drawn, in gray, instead of dotted black lines, for a smoother look.
+ *
+ *  Also, as a trial option, if the current data type is EVENT_NOTE_ON,
+ *  EVENT_NOTE_OFF, and EVENT_AFTERTOUCH, we draw the background in light grey
+ *  to remind the user that there are issues in copying or moving these events
+ *  around (unlinked) by themselves.
  */
 
 void
 seqevent::draw_background ()
 {
-    draw_rectangle_on_pixmap(white(), 0, 0, m_window_x, m_window_y);
+
+#ifdef SEQ64_SOLID_PIANOROLL_GRID
+    Color minor_line_color = light_grey();
+#else
+    Color minor_line_color = grey();
+#endif
+
+    if (event::is_note_msg(m_status))
+    {
+        draw_rectangle_on_pixmap(light_grey(), 0, 0, m_window_x, m_window_y);
+        minor_line_color = dark_grey();         /* or white()? black()? */
+    }
+    else
+        draw_rectangle_on_pixmap(white(), 0, 0, m_window_x, m_window_y);
 
     int bpbar = m_seq.get_beats_per_bar();
     int bwidth = m_seq.get_beat_width();
@@ -231,12 +251,12 @@ seqevent::draw_background ()
             if (tick == tick_snap)
             {
                 set_line(Gdk::LINE_SOLID);
-                m_gc->set_foreground(light_grey());
+                m_gc->set_foreground(minor_line_color);
             }
             else
             {
                 set_line(Gdk::LINE_ON_OFF_DASH);
-                m_gc->set_foreground(light_grey());
+                m_gc->set_foreground(minor_line_color);
                 gint8 dash = 1;
                 m_gc->set_dashes(0, &dash, 1);
             }
@@ -284,7 +304,8 @@ seqevent::set_zoom (int z)
  *  optional control parameter, which defaults to 0.  Then redraws.
  *
  * \param status
- *      The status/event byte to set.
+ *      The status/event byte to set.  For example, EVENT_NOTE_ON and
+ *      EVENT_NOTE off.  This byte should have the channel nybble cleared.
  *
  * \param control
  *      The MIDI CC byte to set.

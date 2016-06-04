@@ -1442,7 +1442,7 @@ seqedit::popup_event_menu ()
     for (int submenu = 0; submenu < menucount; submenu++)
     {
         int offset = submenu * itemcount;
-        snprintf(b, sizeof(b), "Controls %d-%d", offset, offset + itemcount - 1);
+        snprintf(b, sizeof b, "Controls %d-%d", offset, offset + itemcount - 1);
         Gtk::Menu * menucc = manage(new Gtk::Menu());
         for (int item = 0; item < itemcount; item++)
         {
@@ -1483,14 +1483,15 @@ seqedit::popup_event_menu ()
  *  Selects the given MIDI channel parameter in the main sequence object,
  *  so that it will use that channel.
  *
- *  Should this change set the is-modified flag?
+ *  Should this change set the is-modified flag?  Where should validation
+ *  occur?
  */
 
 void
 seqedit::set_midi_channel (int midichannel)
 {
     char b[8];
-    snprintf(b, sizeof(b), "%d", midichannel + 1);
+    snprintf(b, sizeof b, "%d", midichannel + 1);
     m_entry_channel->set_text(b);
     m_seq.set_midi_channel(midichannel);
 }
@@ -1499,7 +1500,8 @@ seqedit::set_midi_channel (int midichannel)
  *  Selects the given MIDI buss parameter in the main sequence object,
  *  so that it will use that buss.
  *
- *  Should this change set the is-modified flag?
+ *  Should this change set the is-modified flag?  Where should validation
+ *  against the ALSA or JACK buss limits occur?
  */
 
 void

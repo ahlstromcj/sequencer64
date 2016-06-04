@@ -390,10 +390,7 @@ public:
 
     static bool is_note_msg (midibyte m)
     {
-        return
-        (
-            m == EVENT_NOTE_ON || m == EVENT_NOTE_OFF || m == EVENT_AFTERTOUCH
-        );
+        return m == EVENT_NOTE_ON || m == EVENT_NOTE_OFF || m == EVENT_AFTERTOUCH;
     }
 
     /**

@@ -26,9 +26,9 @@
  *  Sequencer64.
  *
  * \library       sequencer64 application
- * \author        Seq24 team; modifications by Chris Ahlstrom
+ * \author        Chris Ahlstrom
  * \date          2015-11-08
- * \updates       2016-05-21
+ * \updates       2016-06-04
  * \license       GNU GPLv2 or above
  *
  *  This collection of global variables describes some facets of the
@@ -55,19 +55,6 @@
 #define SEQ64_MIDI_CHANNEL_MAX          16
 
 /**
- *  No global buss override is in force if the global buss override number is
- *  this value (-1).
- */
-
-#define SEQ64_BAD_BUSS                  (char(-1))
-
-/**
- *  An easier macro for testing SEQ64_BAD_BUSS.
- */
-
-#define SEQ64_NO_BUSS_OVERRIDE(b)       (char(b) == SEQ64_BAD_BUSS)
-
-/**
  *  Default value for c_max_sets.
  */
 
@@ -88,6 +75,19 @@
  */
 
 #define SEQ64_SET_KEYS_COLUMNS           8
+
+/**
+ *  No global buss override is in force if the global buss override number is
+ *  this value (-1).
+ */
+
+#define SEQ64_BAD_BUSS                  (char(-1))
+
+/**
+ *  An easier macro for testing SEQ64_BAD_BUSS.
+ */
+
+#define SEQ64_NO_BUSS_OVERRIDE(b)       (char(b) == SEQ64_BAD_BUSS)
 
 /**
  *  Default value for c_max_busses.

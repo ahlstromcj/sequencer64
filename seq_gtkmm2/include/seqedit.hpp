@@ -87,6 +87,10 @@ class seqedit : public gui_window_gtk2
 
 private:
 
+    /*
+     * Documented in the cpp file.
+     */
+
     static int m_initial_snap;
     static int m_initial_note_length;
 

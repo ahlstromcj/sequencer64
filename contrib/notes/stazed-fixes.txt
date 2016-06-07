@@ -1,0 +1,311 @@
+Fixes and Other Ideas from Stan Preston (stazed)
+Chris Ahlstrom
+2016-06-06 to 2016-06-06
+
+
+Date: Sat, 19 Mar 2016 13:55:24 -0500
+From: Stan Preston <sspresto10@hotmail.com>
+To: ahlstromcj@gmail.com
+Subject: sequencer64
+User-Agent: Mozilla/5.0 (X11; Linux i686; rv:38.0) Gecko/20100101
+        Thunderbird/38.6.0
+
+Hello Chris,
+
+It seems that seq24 has become very popular lately!
+
+FYI, last November I began reviving seq42, the fork of seq24 that began in
+2010 by Sam Brauer.
+
+https://github.com/Stazed/seq42
+
+In working with the program I noticed some bugs, some of which were imported
+from seq24 and still existed in the current version.  I also got carried away
+and started adding some enhancements to seq24 that I found useful. To get to
+the point... this happened :)
+
+https://github.com/Stazed/seq24
+
+There are many enhancements, bug fixes, some refactoring etc.  I tried to keep
+the original design purpose of simplicity as well as live performance in mind
+when making the changes.
+
+Of special interest:
+
+- fixed jack master to work, it now loops and starts on left frame
+- from the seq24 TODO, added note listen on paint and move notes in the seqroll
+- refactored the menu so it will not conflict with the live keybinding - added
+  off button!
+
+There are many other items, see the changelog, commits.
+
+About a week ago I came across your sequencer64 project and was very impressed
+and humbled!  I confess that I have already used some of your code...
+
+I wanted to let you know in case any of my stuff could be of help to you since
+your project has already been of help to me.
+
+FYI, I have no formal training in programming, just a part time hobby that I
+picked up recently from taking some online tutorials. In part, my work on
+seq42/seq24 was a learning experience and also served to make the projects
+more useful to me.
+
+Thank you again for the work on sequencer64, the documentation is very
+helpful.
+
+Emulation is the sincerest form of flattery!
+
+Stan (AKA Stazed)
+
+
+
+
+Date: Mon, 6 Jun 2016 13:50:34 -0500
+From: Stan Preston <stazed10@gmail.com>
+To: ahlstromcj@gmail.com
+Subject: Re: Fwd: Re: sequencer64
+User-Agent: Mozilla/5.0 (X11; Linux i686; rv:38.0) Gecko/20100101
+        Thunderbird/38.8.0
+
+Hey Chris,
+
+Please note the email address change.
+
+Also, I recently changed the project to a new name to avoid confusion:
+
+https://github.com/Stazed/seq32
+
+Re:
+
+"I'm going to assume that the superlooper fix for JACK that I used is correct,
+like yours, unless you tell me otherwise.  If it isn't quite right, I would
+love feedback on that."
+
+
+Check out the recent 6/5/2016 commits in seq32.  I wrote a lengthy explanation
+about an obscure bug that occurs when using qjackctl in master mode.  I checked
+it out on sequencer64 and it does also occur.  I also removed the new position
+change stuff because I don't see any need for it. It seems to me that all the
+timebase callback is     doing, is calculating BBT info to send to jack based
+on pos.frame. It does not seem to matter if the position changes... and it
+seems a lot easier and cleaner. This might not work with the superlooper method
+of "Calculations are made by increments and decrement in a while loop."
+
+To create the obscure bug... set sequencer64 to master, then start jack
+rolling.  In qjackctl hold down the >> (fast forward) button for a while and
+watch the BBT display.  Try the << button as well.  If you pay close attention
+you will see a brief flash of some very large numbers that are obviously wrong
+due to the zero (or junk) value of pos.frame_rate sent when new_pos = TRUE;
+
+"what is your setup process for the seq24 build?"
+
+I'm not sure of anything special. Using ubuntu-studio 14.04 and simply pulled
+the original seq24 from bzr which I compile using their configure. I'm still a
+noob about all that, make, cmake, configure, etc...... Maybe you could tell
+me!! :)
+
+"What is the set_chord() feature?  That looks intriguing."
+
+Select a chord type from the drop down, then add a note to the seqroll. It will
+auto paint the whole chord. Oops, I noticed that I failed to give LMMS
+credit... that's where the idea and some code came from.
+
+"Also, can you explain more about the listen button?"
+
+Did you mean "note listen"?
+
+If so...  Connect to a synth, and paint or move a note on the seqroll. It will
+play!!!  This was one of my proudest achievements!!! Or at least the most
+fulfilling.  Thanks for asking! :) If not...  ??
+
+Anything you can use you are welcome to...
+
+Stazed
+
+PARTIAL CHANGELOG:
+
+
+commit 8978a3efc65c97f1f5ab52d10f9050943ce21909
+Author: Stazed <Stazed@mapson.com>
+Date:   Mon Jun 6 18:32:12 2016 -0500
+
+    Fix obscure freeze on rapid toggle start/stop.
+
+commit cc2cbe69a7b663d72aa84cb7375cff0a18b0fbd9
+Author: Stazed <Stazed@mapson.com>
+Date:   Sun Jun 5 12:51:02 2016 -0500
+
+    Cleanup jack_timebase_callback() - unnecessary calculations.
+
+commit 9e1b286f033c9aa5887327d503a7bcfdd30d0123
+Author: Stazed <Stazed@mapson.com>
+Date:   Sun Jun 5 12:41:44 2016 -0500
+
+    Use initial m_jack_frame_rate for all internal calculations to fix jack_timebase_call_back()
+    BBT calculations and for consistency.
+    Add note of explanation.
+
+commit fad310707c5cdbd9edb4528f64cc30d1332ca509
+Author: Stazed <Stazed@mapson.com>
+Date:   Wed Jun 1 22:13:43 2016 -0500
+
+    Fix jack beat_type to use user selected bw instead of hard code of 4.
+    Set tempo/BBT to always use from internal amounts, not jack.
+    Add a note of explanation.
+
+commit 6dabbeaae764066f039a8036f293df0769a5ac8a
+Author: Stazed <Stazed@mapson.com>
+Date:   Tue May 31 22:45:09 2016 -0500
+
+    Remove redundant position_jack() call in output_func().
+    Remove redundant frame position call in jack_sync_callback().
+
+commit 002069a2f4d96d5a0c284acd8bde1b8a6ee996bd
+Author: Stazed <Stazed@mapson.com>
+Date:   Sun May 29 22:16:28 2016 -0500
+
+    Fix multiple position_jack() calls on master looping.
+
+. . .
+
+commit f94fc237955158af3c05b784477b85d55d0d04e4
+Author: Stazed <Stazed@mapson.com>
+Date:   Fri Mar 11 19:43:48 2016 -0600
+
+    Set menus non-sensitive when global_is_running.
+    Set song button non-sensitive when global_is_running.
+    Remove global_is_running checks on key press and jack toggles no longer needed.
+
+commit 360bedcdba308d8b946b96d82171575774eae70b
+Author: Stazed <Stazed@mapson.com>
+Date:   Fri Mar 11 15:19:06 2016 -0600
+
+    Set Jack buttons to insensitive when global_is_running.
+    Re-write menu tooltip.
+    Cleanup.
+
+commit dc2681f76071456492010f4687f5c5b4971638a1
+Author: Stazed <Stazed@mapson.com>
+Date:   Thu Mar 10 23:04:35 2016 -0600
+
+    refactor seqroll auto scroll - sequencer64 method
+
+commit 50ac457724fbb69f1e49d252e2c61cbc197fab1f
+Author: Stazed <Stazed@mapson.com>
+Date:   Sun Mar 6 20:25:15 2016 -0600
+
+    Don't mix the build system with the target platform
+    from seq24 trunk Sebastien Alaiwan, commit #147
+
+. . .
+
+commit b06af04c913240ecd36cfb96848410103453c877
+Author: Stazed <Stazed@mapson.com>
+Date:   Sun Mar 6 19:46:23 2016 -0600
+
+    Use std::vector to store sysex messages.
+    Use 'auto' on comparison.
+    from seq24 trunk Sebastien Alaiwan, commits #143, #144
+
+. . .
+
+commit 0b9c5026cef420651c762f68c430eae758322ad8
+Author: Stazed <Stazed@mapson.com>
+Date:   Mon Jan 25 20:04:59 2016 -0600
+
+    fix "dirty hack" space bar press on focused buttons
+    optimize code for !mark_selected() - stop redraw
+    cleanup
+
+commit 63b1771c5757eb3063c6e8788b2af874aef4e885
+Author: Stazed <Stazed@mapson.com>
+Date:   Sat Jan 23 15:16:37 2016 -0600
+
+    fix start from perfedit to always start in song mode
+    cleanup - remove start_playing() stop_playing() from perfroll - never called
+    rename global_jack_start_mode to global_song_start_mode
+    change command line message for renaming
+
+. . .
+
+commit 1d76c3de5cd3187d146f81161e209eda9e78a42a
+Author: Stazed <Stazed@mapson.com>
+Date:   Fri Jan 15 19:22:38 2016 -0600
+
+    add move notes with cursor keys: left/right move to snap: shift left/right move to tick : ctrl left/right move transport line to grid.
+    fix unnecessary pushes to undo when nothing selected in mark_selected().
+
+. . .
+
+commit afc7ecc969173ab6f3079dcf325d7698efa59165
+Author: Stazed <Stazed@mapson.com>
+Date:   Sun Jan 3 23:11:56 2016 -0600
+
+    remove song mode buttons from options
+    add position_jack() to startup to stop flicker
+
+commit 991255ca12b6867dc32e99ddf2bc5e689edf98ab
+Author: Stazed <Stazed@mapson.com>
+Date:   Sun Jan 3 20:11:30 2016 -0600
+
+    remove position_jack() from start_playing() and clean up code
+
+commit 55988dee62de75bd13071ee7c0b8d09d807018c4
+Author: Stazed <Stazed@mapson.com>
+Date:   Sun Jan 3 15:08:38 2016 -0600
+
+    fix bbt jack calc
+
+. . .
+
+commit 91e7890f80d59f17e01b8c81193f3d458bc17137
+Author: Stazed <Stazed@mapson.com>
+Date:   Fri Jan 1 22:52:07 2016 -0600
+
+    fix jack master mode
+
+. . .
+
+commit 1c6a5afc2f64f0f7f938c368e8d5ee387e10a979
+Author: Stazed <Stazed@mapson.com>
+Date:   Sat Dec 26 13:19:02 2015 -0600
+
+    add listen to notes on draw/move seqroll
+
+commit 0d84b568b6a20c5feebd9e8752e62a5480d0b762
+Author: Stazed <Stazed@mapson.com>
+Date:   Wed Dec 23 12:55:46 2015 -0600
+
+    add song mode toggle button to main window
+
+commit 17ba6c3a33cb6924ae0a72ed24fe3f0a417ff926
+Author: Stazed <Stazed@mapson.com>
+Date:   Mon Dec 21 19:22:13 2015 -0600
+
+    add lfo window to seq undo
+
+commit efbb03d06a314fde53c490f0aef21961d8df40bf
+Author: Stazed <Stazed@mapson.com>
+Date:   Mon Dec 21 15:27:59 2015 -0600
+
+    add lfo-window
+    thanks to Mattias Lasersköld - Seq42
+
+. . .
+
+commit 9b8a856e95a5abb3e10f1ef10a55a9593dc1bac8
+Author: Stazed <Stazed@mapson.com>
+Date:   Tue Nov 10 19:21:45 2015 -0600
+
+    seqedit enhancements
+    
+    	From the seq42 fork - now dead??
+    	thanks to Sam Brauer
+    
+    	new functions to expand or compress patterns (doubling or halving timing of selected pattern)
+    	new actions to select notes on even or odd beats (1/4, 1/8 or 1/16)
+    	new event value randomize function
+    
+    	lower bpm minimum from 20 to 5 (please!)
+    	got rid of a few magic numbers for consistency
+

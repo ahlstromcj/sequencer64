@@ -408,6 +408,4 @@ fixups % ./Sequencer64/sequencer64 -J
 (sequencer64:2681): Gtk-CRITICAL **: IA__gtk_toggle_button_get_active: assertion 'GTK_IS_TOGGLE_BUTTON (toggle_button)' failed
 [JACK sync already enabled!]
 
-Why the Gtk issue?
-
 # vim: sw=4 ts=4 wm=4 et ft=sh

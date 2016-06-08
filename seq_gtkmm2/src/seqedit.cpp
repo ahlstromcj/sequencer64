@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-05-30
+ * \updates       2016-06-07
  * \license       GNU GPLv2 or above
  *
  *  Compare this class to eventedit, which has to do some similar things,
@@ -393,6 +393,8 @@ seqedit::seqedit
      *
      * gfloat middle = m_vscroll->get_adjustment()->get_upper() / 3;
      * m_vscroll->get_adjustment()->set_value(middle);
+     *
+     * m_seqroll_wid->set_ignore_draw(true);        // WE MISSED THIS!
      */
 
     set_snap(m_initial_snap * m_ppqn / SEQ64_DEFAULT_PPQN);
@@ -431,9 +433,9 @@ seqedit::seqedit
      *
      *      m_seqroll_wid->set_can_focus();
      *      m_seqroll_wid->grab_focus();
-     */
 
     m_seqroll_wid->set_ignore_redraw(false);
+     */
 }
 
 /**

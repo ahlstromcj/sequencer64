@@ -59,8 +59,7 @@ public:
      * Default constructor.
      */
 
-    Seq24SeqRollInput () :
-        m_adding    (false)
+    Seq24SeqRollInput () : m_adding(false)
     {
         // Empty body
     }

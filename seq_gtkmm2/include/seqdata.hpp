@@ -29,7 +29,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-05-31
+ * \updates       2016-06-07
  * \license       GNU GPLv2 or above
  *
  *  The data pane is the drawing-area below the seqedit's event area, and
@@ -200,8 +200,6 @@ private:
     void draw_events_on (Glib::RefPtr<Gdk::Drawable> drawable);
     void change_horz ();
 
-    // virtual void force_draw ();
-
     /**
      *  This function takes screen coordinates, and gives the horizontaol
      *  tick value based on the current zoom, returned via the second
@@ -215,6 +213,20 @@ private:
 
     /**
      *  Convenience function for rendering numbers.
+     *
+     * \param pixmap
+     *      The reference pointer to the GDK pixmap onto which this number
+     *      will be drawing.
+     *
+     * \param x
+     *      The x-coordinate of the position of the text.
+     *
+     * \param y
+     *      The y-coordinate of the position of the text.
+     *
+     * \param num
+     *      The number to be rendered.  This should be a string reference, but
+     *      oh well.
      */
 
     void render_number

@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-05-30
+ * \updates       2016-06-07
  * \license       GNU GPLv2 or above
  *
  */
@@ -60,7 +60,29 @@ class rect
 
 public:
 
-    int x, y, height, width;
+    /**
+     *  The x-coordinate of the origin of the rectangle.
+     */
+
+    int x;
+
+    /**
+     *  The y-coordinate of the origin of the rectangle.
+     */
+
+    int y;
+
+    /**
+     *  The height of the rectangle, in units of pixels.
+     */
+
+    int height;
+
+    /**
+     *  The width of the rectangle, in units of pixels.
+     */
+
+    int width;
 };
 
 /**
@@ -71,7 +93,8 @@ class seqroll : public gui_drawingarea_gtk2
 {
     /**
      *  These friend implement interaction-specific behavior, although only
-     *  the Seq24 interactions support keyboard processing.
+     *  the Seq24 interactions support keyboard processing.  (Actually,
+     *  keyboard processing is common to both types of behavior.
      */
 
     friend class FruitySeqRollInput;
@@ -93,10 +116,36 @@ private:
 
     Gtk::Adjustment & m_vertical_adjust;
 
+    /**
+     *  The previous selection rectangle, used for undrawing it.
+     */
+
     rect m_old;
+
+    /**
+     *  Used in moving and pasting notes.
+     */
+
     rect m_selected;
+
+    /**
+     *  Provides a reference to the seqeunce represented by piano roll.
+     */
+
     sequence & m_seq;
-    sequence * m_clipboard;
+
+    /*
+     *  Provides a sequence object to hold a copy of the .... sequence.
+     *  Not used at all.
+     *
+     *  sequence * m_clipboard;
+     */
+
+    /**
+     *  Holds a reference to the seqkeys pane that is associated with the
+     *  seqroll piano roll.
+     */
+
     seqkeys & m_seqkeys_wid;
 
     /**
@@ -133,37 +182,113 @@ private:
 
     int m_snap;
 
+    /**
+     *  The value of PPQN for the current MIDI song.  Supports values other
+     *  than the default of 192.
+     */
+
     int m_ppqn;
+
+    /**
+     *  Holds the note length in force for this sequence.  Used in the
+     *  seq24seqroll module only.
+     */
+
     int m_note_length;
+
+    /**
+     *  Indicates the musical scale in force for this sequence.
+     */
+
     int m_scale;
+
+    /**
+     *  Indicates the musical key in force for this sequence.
+     */
+
     int m_key;
 
     /**
      *  Indicates what is the data window currently editing.
      */
 
-    midibyte m_status;
-    midibyte m_cc;
+//  midibyte m_status;
 
     /**
-     *  When highlighting a bunch of events.
+     *
+     */
+
+//  midibyte m_cc;
+
+    /**
+     *  Set when highlighting a bunch of events.
      */
 
     bool m_selecting;
+
+    /**
+     *  Set when moving a bunch of events.
+     */
+
     bool m_moving;
+
+    /**
+     *  Indicates the beginning of moving some events.  Used in the fruity and
+     *  seq24 mouse-handling modules.
+     */
+
     bool m_moving_init;
+
+    /**
+     *  Indicates that the notes are to be extended or reduced in length.
+     */
+
     bool m_growing;
+
+    /**
+     *  Indicates the painting of events.  Used in the fruity and seq24
+     *  mouse-handling modules.
+     */
+
     bool m_painting;
+
+    /**
+     *  Indicates that we are in the process of painting notes.
+     */
+
     bool m_paste;
+
+    /**
+     *  Indicates the drag-pasting of events.  Used in the fruity
+     *  mouse-handling module.
+     */
+
     bool m_is_drag_pasting;
+
+    /**
+     *  Indicates the drag-pasting of events.  Used in the fruity
+     *  mouse-handling module.
+     */
+
     bool m_is_drag_pasting_start;
+
+    /**
+     *  Indicates the selection of one event.  Used in the fruity
+     *  mouse-handling module.
+     */
+
     bool m_justselected_one;
 
     /**
-     *  Tells where the dragging started.
+     *  Tells where the dragging started, the x value.
      */
 
     int m_move_delta_x;
+
+    /**
+     *  Tells where the dragging started, the y value.
+     */
+
     int m_move_delta_y;
 
     /**
@@ -172,10 +297,35 @@ private:
 
     int m_move_snap_offset_x;
 
+    /**
+     *  Provides the location of the progress bar.
+     */
+
     int m_progress_x;
+
+    /**
+     *  The horizontal value of the scroll window in units of
+     *  ticks/pulses/divisions.
+     */
+
     int m_scroll_offset_ticks;
+
+    /**
+     *  The vertical offset of the scroll window in units of MIDI notes/keys.
+     */
+
     int m_scroll_offset_key;
+
+    /**
+     *  The horizontal value of the scroll window in units of pixels.
+     */
+
     int m_scroll_offset_x;
+
+    /**
+     *  The vertical value of the scroll window in units of pixels.
+     */
+
     int m_scroll_offset_y;
 
     /**
@@ -184,28 +334,44 @@ private:
 
     int m_scroll_page;
 
+    /**
+     *  Holds the value of the musical background sequence that is shown in
+     *  cyan (formerly grey) on the background of the piano roll.
+     */
+
     int m_background_sequence;
+
+    /**
+     *  Set to true if the drawing of the background sequence is to be done.
+     */
+
     bool m_drawing_background_seq;
-    bool m_ignore_redraw;
+
+    /**
+     *  Set to true to avoid the call to update_and_draw().  Used in
+     *  set_background_sequence(), change_horz(), change_vert(), reset()....
+     *
+     *  Never set to true, let's eliminate it.
+     */
+
+    // bool m_ignore_redraw;
 
 public:
 
     seqroll
     (
-        perform & perf,
-        sequence & seq,
-        int zoom,
-        int snap,
-        seqkeys & seqkeys_wid,
-        int pos,
-        Gtk::Adjustment & hadjust,
-        Gtk::Adjustment & vadjust,
+        perform & perf, sequence & seq, int zoom, int snap,
+        seqkeys & seqkeys_wid, int pos,
+        Gtk::Adjustment & hadjust, Gtk::Adjustment & vadjust,
         int ppqn = SEQ64_USE_DEFAULT_PPQN
     );
     virtual ~seqroll ();
 
     /**
      *  Sets the snap to the given value, and then resets the view.
+     *
+     * \param snap
+     *      Provides the sname value to set.
      */
 
     void set_snap (int snap)
@@ -227,12 +393,12 @@ public:
 
     /**
      * \setter m_ignore_redraw
-     */
 
     void set_ignore_redraw (bool ignore)
     {
         m_ignore_redraw = ignore;
     }
+     */
 
     void set_key (int key);
     void set_scale (int scale);
@@ -289,7 +455,7 @@ private:
     /**
      *  Snaps the y value to the piano-key "height".
      *
-     * \param y
+     * \param [out] y
      *      The y-value to be snapped.
      */
 

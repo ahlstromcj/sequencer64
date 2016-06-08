@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-05-29
+ * \updates       2016-06-07
  * \license       GNU GPLv2 or above
  *
  *  One thing we must be sure of is the MIDI note range.  Obviously, in terms
@@ -66,6 +66,17 @@ namespace seq64
 
 /**
  *  Principal constructor.
+ *
+ * \param seq
+ *      Provides the sequence object to which this seqkeys pane is associated.
+ *
+ * \param p
+ *      Provides the performance object to which this seqkeys pane (and all
+ *      sequences) are associated.
+ *
+ * \param vadjust
+ *      The range object for the vertical scrollbar linked to the position in
+ *      the seqkeys pane.
  */
 
 seqkeys::seqkeys
@@ -95,7 +106,11 @@ seqkeys::seqkeys
 }
 
 /**
- *  Sets the musical scale, then resets.
+ *  Sets the musical scale, then resets.  This function is called by the
+ *  seqedit class.
+ *
+ * \param scale
+ *      The musical scale value to be set.
  */
 
 void
@@ -110,6 +125,9 @@ seqkeys::set_scale (int scale)
 
 /**
  *  Sets the musical key, then resets.
+ *
+ * \param key
+ *      The musical key value to be set.
  */
 
 void
@@ -225,6 +243,13 @@ seqkeys::force_draw ()
 /**
  *  Takes the screen y coordinate, and returns the note value in the
  *  second parameter.
+ *
+ * \param y
+ *      The y (vertical) screen coordinate to convert.
+ *
+ * \param [out] note
+ *      The destination for the note calculation.  This would be better as a
+ *      return value.
  */
 
 void
@@ -234,7 +259,11 @@ seqkeys::convert_y (int y, int & note)
 }
 
 /**
- *  Sets a key to grey so that it can serve as a scale hint.
+ *  Sets a key to grey so that it can serve as a scale hint.  If m_hint_state
+ *  is true, the key is drawn (again).
+ *
+ * \param key
+ *      The key value to set the hint-key to.
  */
 
 void
@@ -293,13 +322,21 @@ seqkeys::draw_key (int key, bool state)
 
 /**
  *  Changes the y offset of the scrolling, and the forces a draw.
+ *
+ *  Weird, in seq24 and here, the following was used, completely by accident!
+ *  We fixed it, but must beware!
+ *
+\verbatim
+    m_scroll_offset_y = m_scroll_offset_key * c_key_y,  // comma operator!!!
+    force_draw();
+\endverbatim
  */
 
 void
 seqkeys::change_vert ()
 {
     m_scroll_offset_key = int(m_vadjust.get_value());
-    m_scroll_offset_y = m_scroll_offset_key * c_key_y,
+    m_scroll_offset_y = m_scroll_offset_key * c_key_y;
     force_draw();
 }
 
@@ -324,6 +361,9 @@ seqkeys::on_realize ()
 
 /**
  *  Implements the on-expose event, by drawing on the window.
+ *
+ * \param ev
+ *      The expose-event object.
  */
 
 bool
@@ -332,8 +372,7 @@ seqkeys::on_expose_event (GdkEventExpose * ev)
     draw_drawable
     (
         ev->area.x, ev->area.y + m_scroll_offset_y,
-        ev->area.x, ev->area.y,
-        ev->area.width, ev->area.height
+        ev->area.x, ev->area.y, ev->area.width, ev->area.height
     );
     return true;
 }
@@ -343,6 +382,9 @@ seqkeys::on_expose_event (GdkEventExpose * ev)
  *  right buttons.  The left button, pressed on the piano keyboard, causes
  *  m_keying to be set to true, and the given note to play.  The right button
  *  toggles the note display between letter/number and MIDI note number.
+ *
+ * \param ev
+ *      The mouse-button event to use.
  *
  * \return
  *      Always returns true.
@@ -376,10 +418,10 @@ seqkeys::on_button_press_event (GdkEventButton * ev)
  *  only the left button, and only if m_keying is true.
  *
  *  This function is used after pressing on one of the keys on the left-side
- *
- * \return
- *      Always returns true.
  *  piano keyboard, to make it play, and turns off the playing of the note.
+ *
+ * \param ev
+ *      The button-event.
  *
  * \return
  *      Always returns true.
@@ -403,15 +445,18 @@ seqkeys::on_button_release_event (GdkEventButton * ev)
  *  Implements the on-motion-notify event handler.  This allows
  *  rolling down the keyboard, playing the notes one-by-one.
  *
+ * \param p0
+ *      The motion event.
+ *
  * \return
  *      Always returns false.
  */
 
 bool
-seqkeys::on_motion_notify_event (GdkEventMotion * a_p0)
+seqkeys::on_motion_notify_event (GdkEventMotion * p0)
 {
     int note;
-    int y = int(a_p0->y + m_scroll_offset_y);
+    int y = int(p0->y + m_scroll_offset_y);
     convert_y(y, note);
     set_hint_key(note);
     if (m_keying)
@@ -438,7 +483,7 @@ seqkeys::on_motion_notify_event (GdkEventMotion * a_p0)
 
 /**
  *  Implements the on-enter notification event handler.
- *  I think this greys the current key.
+ *  This greys the current key.
  */
 
 bool
@@ -453,8 +498,8 @@ seqkeys::on_enter_notify_event (GdkEventCrossing *)
 #endif
 
 /**
- *  Implements the on-leave notification event handler.
- *  I think this un-greys the current key.
+ *  Implements the on-leave notification event handler.  This un-greys
+ *  the current key and stops playing the note.
  */
 
 bool

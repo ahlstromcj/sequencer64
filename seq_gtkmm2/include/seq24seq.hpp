@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-08-02
- * \updates       2016-05-29
+ * \updates       2016-06-07
  * \license       GNU GPLv2 or above
  *
  */
@@ -53,11 +53,11 @@ struct Seq24SeqEventInput
      * Default constructor.
      */
 
-    Seq24SeqEventInput () :
-        m_adding    (false)
+    Seq24SeqEventInput () : m_adding(false)
     {
         // Empty body
     }
+
     void set_adding (bool adding, seqevent & ths);
     bool on_button_press_event (GdkEventButton * ev, seqevent & ths);
     bool on_button_release_event (GdkEventButton * ev, seqevent & ths);
@@ -73,3 +73,4 @@ struct Seq24SeqEventInput
  *
  * vim: sw=4 ts=4 wm=4 et ft=cpp
  */
+

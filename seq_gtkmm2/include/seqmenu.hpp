@@ -45,8 +45,8 @@ namespace Gtk
 namespace seq64
 {
 
-class eventedit;
-class seqedit;
+    class eventedit;
+    class seqedit;
 
 /**
  *  This class handles the right-click menu of the sequence slots in the
@@ -59,6 +59,11 @@ class seqmenu : public virtual Glib::ObjectBase
 {
 
 private:
+
+    /**
+     *  The menu to pop up when the right-click action is used either on a
+     *  mainwid pattern slot or on a perfedit pattern name.
+     */
 
     Gtk::Menu * m_menu;
 

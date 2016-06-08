@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-05-30
+ * \updates       2016-06-07
  * \license       GNU GPLv2 or above
  *
  *  There are a large number of existing items to discuss.  But for now let's
@@ -171,7 +171,7 @@ seqroll::seqroll
     m_old                   (),
     m_selected              (),
     m_seq                   (seq),
-    m_clipboard             (new sequence()),
+//  m_clipboard             (new sequence()),
     m_seqkeys_wid           (seqkeys_wid),
     m_fruity_interaction    (),
     m_seq24_interaction     (),
@@ -182,6 +182,8 @@ seqroll::seqroll
     m_note_length           (0),
     m_scale                 (0),
     m_key                   (0),
+//  m_status                (0),
+//  m_cc                    (0),
     m_selecting             (false),
     m_moving                (false),
     m_moving_init           (false),
@@ -201,8 +203,8 @@ seqroll::seqroll
     m_scroll_offset_y       (0),
     m_scroll_page           (0),
     m_background_sequence   (0),
-    m_drawing_background_seq(false),
-    m_ignore_redraw         (false)
+    m_drawing_background_seq(false) // ,
+//  m_ignore_redraw         (false)
 {
     m_ppqn = choose_ppqn(ppqn);
 
@@ -217,13 +219,14 @@ seqroll::seqroll
 
 /**
  *  Provides a destructor to delete allocated objects.  The only thing to
- *  delete here is the clipboard.
+ *  delete here is the clipboard.  Except it is never used, so is commented
+ *  out.
  */
 
 seqroll::~seqroll ()
 {
-    if (not_nullptr(m_clipboard))
-        delete m_clipboard;
+    // if (not_nullptr(m_clipboard))
+    //      delete m_clipboard;
 }
 
 /**
@@ -248,10 +251,8 @@ seqroll::set_background_sequence (bool state, int seq)
     if (SEQ64_IS_LEGAL_SEQUENCE(seq))
         m_background_sequence = seq;
 
-    if (m_ignore_redraw)
-        return;
-
-    update_and_draw();
+//  if (! m_ignore_redraw)
+        update_and_draw();
 }
 
 /**
@@ -314,10 +315,8 @@ seqroll::change_horz ()
 {
     m_scroll_offset_ticks = int(m_hadjust.get_value());
     m_scroll_offset_x = m_scroll_offset_ticks / m_zoom;
-    if (m_ignore_redraw)
-        return;
-
-    update_and_draw(true);
+//  if (! m_ignore_redraw)
+        update_and_draw(true);
 }
 
 /**
@@ -329,10 +328,8 @@ seqroll::change_vert ()
 {
     m_scroll_offset_key = int(m_vadjust.get_value());
     m_scroll_offset_y = m_scroll_offset_key * c_key_y;
-    if (m_ignore_redraw)
-        return;
-
-    update_and_draw(true);
+//  if (! m_ignore_redraw)
+        update_and_draw(true);
 }
 
 /**
@@ -346,7 +343,7 @@ seqroll::reset ()
 {
     m_scroll_offset_ticks = int(m_hadjust.get_value());
     m_scroll_offset_x = m_scroll_offset_ticks / m_zoom;
-    if (! m_ignore_redraw)
+//  if (! m_ignore_redraw)
     {
         update_sizes();
         update_and_draw();
@@ -361,12 +358,12 @@ seqroll::reset ()
 void
 seqroll::redraw ()
 {
-    if (m_ignore_redraw)
-        return;
-
-    m_scroll_offset_ticks = int(m_hadjust.get_value());
-    m_scroll_offset_x = m_scroll_offset_ticks / m_zoom;
-    update_and_draw(true);
+//  if (! m_ignore_redraw)
+    {
+        m_scroll_offset_ticks = int(m_hadjust.get_value());
+        m_scroll_offset_x = m_scroll_offset_ticks / m_zoom;
+        update_and_draw(true);
+    }
 }
 
 /**
@@ -394,11 +391,11 @@ seqroll::update_and_draw (int force)
 void
 seqroll::redraw_events ()
 {
-    if (m_ignore_redraw)
-        return;
-
-    update_pixmap();
-    force_draw();
+//  if (! m_ignore_redraw)
+    {
+        update_pixmap();
+        force_draw();
+    }
 }
 
 /**
@@ -643,10 +640,7 @@ seqroll::draw_progress_on_window ()
 
     if (m_progress_x > -16)             // if (m_progress_x >= 0)
     {
-        draw_line
-        (
-            progress_color(), m_progress_x, 0, m_progress_x, m_window_y
-        );
+        draw_line(progress_color(), m_progress_x, 0, m_progress_x, m_window_y);
         if (usr().progress_bar_thick())
             set_line(Gdk::LINE_SOLID, 1);
     }
@@ -714,7 +708,7 @@ seqroll::draw_events_on (Glib::RefPtr<Gdk::Drawable> draw)
     bool selected;
     int velocity;
     draw_type dt;
-    int starttick = m_scroll_offset_ticks ;
+    int starttick = m_scroll_offset_ticks;
     int endtick = (m_window_x * m_zoom) + m_scroll_offset_ticks;
     sequence * seq = nullptr;
     for (int method = 0; method < 2; ++method)  /* weird way to do it       */
@@ -1042,7 +1036,7 @@ seqroll::convert_tn_box_to_rect
  */
 
 void
-seqroll::start_paste()
+seqroll::start_paste ()
 {
     midipulse tick_s;
     midipulse tick_f;
@@ -1108,8 +1102,8 @@ seqroll::snap_x (int & x)
 void
 seqroll::set_data_type (midibyte status, midibyte control)
 {
-    m_status = status;
-    m_cc = control;
+//  m_status = status;
+//  m_cc = control;
 }
 
 /**

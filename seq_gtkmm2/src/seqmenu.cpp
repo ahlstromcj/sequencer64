@@ -60,6 +60,9 @@ namespace seq64
  *  Principal constructor.  Apart from filling in some of the members,
  *  this function initializes the clipboard, so that we don't get a crash
  *  on a paste with no previous copy.
+ *
+ * \param p
+ *      The main performance object representing the whole MIDI song.
  */
 
 seqmenu::seqmenu (perform & p)
@@ -224,18 +227,24 @@ seqmenu::popup_menu ()
 /**
  *  Sets up the bus, MIDI channel, and dirtiness flag of the current
  *  sequence in the main perform object, as per the give parameters.
+ *
+ * \param bus
+ *      The MIDI buss number to set (bus vs buss?  You decide.)
+ *
+ * \param ch
+ *      The MIDI channel number to set.
  */
 
 void
-seqmenu::set_bus_and_midi_channel (int a_bus, int a_ch)
+seqmenu::set_bus_and_midi_channel (int bus, int ch)
 {
     if (is_current_seq_active())
     {
         sequence * s = get_current_sequence();
         if (not_nullptr(s))
         {
-            s->set_midi_bus(a_bus);
-            s->set_midi_channel(a_ch);
+            s->set_midi_bus(bus);
+            s->set_midi_channel(ch);
             s->set_dirty();
         }
     }

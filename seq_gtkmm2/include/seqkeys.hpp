@@ -31,6 +31,9 @@
  * \updates       2016-06-01
  * \license       GNU GPLv2 or above
  *
+ *      We've added the feature of a right-click toggling between showing the
+ *      main octave values (e.g. "C1" or "C#1") versus the numerical MIDI
+ *      values of the keys.
  */
 
 #include <gtkmm/window.h>
@@ -65,48 +68,55 @@ private:
 
     /**
      *  Provides the value of the current top key in the keys pane.
+     *  Modified in change_vert().
      */
 
     int m_scroll_offset_key;
 
     /**
-     *
+     *  Provides the value of the current top key in the keys pane in units of
+     *  relative pixels.  Modified in change_vert().
      */
 
     int m_scroll_offset_y;
 
     /**
-     *
+     *  Indicates if a piano key is set to indicate where on the pitch
+     *  scale the mouse cursor is sitting.
      */
 
     bool m_hint_state;
 
     /**
-     *
+     *  Indicates the current y-value of the mouse pointer in units of key
+     *  value.
      */
 
     int m_hint_key;
 
     /**
-     *
+     *  Set to true while the left mouse button is being pressed.  Used in
+     *  playing the sound for each note as it is clicked in the seqkeys pane.
      */
 
     bool m_keying;
 
     /**
-     *
+     *  The note to be played when selected in the seqkeys pane.
      */
 
     int m_keying_note;
 
     /**
-     *
+     *  This member holds the scale value for the musical scale for the
+     *  current edit of the sequence.
      */
 
     int m_scale;
 
     /**
-     *
+     *  This member holds the key value for the musical key for the current
+     *  edit of the sequence.
      */
 
     int m_key;
@@ -187,3 +197,4 @@ private:        // callbacks
  *
  * vim: sw=4 ts=4 wm=4 et ft=cpp
  */
+

@@ -433,8 +433,10 @@ seqedit::seqedit
      *
      *      m_seqroll_wid->set_can_focus();
      *      m_seqroll_wid->grab_focus();
-
-    m_seqroll_wid->set_ignore_redraw(false);
+     *
+     * Not needed:
+     *
+     * m_seqroll_wid->set_ignore_redraw(false);
      */
 }
 

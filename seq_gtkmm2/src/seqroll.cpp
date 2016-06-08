@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-06-07
+ * \updates       2016-06-08
  * \license       GNU GPLv2 or above
  *
  *  There are a large number of existing items to discuss.  But for now let's
@@ -171,7 +171,6 @@ seqroll::seqroll
     m_old                   (),
     m_selected              (),
     m_seq                   (seq),
-//  m_clipboard             (new sequence()),
     m_seqkeys_wid           (seqkeys_wid),
     m_fruity_interaction    (),
     m_seq24_interaction     (),
@@ -182,8 +181,6 @@ seqroll::seqroll
     m_note_length           (0),
     m_scale                 (0),
     m_key                   (0),
-//  m_status                (0),
-//  m_cc                    (0),
     m_selecting             (false),
     m_moving                (false),
     m_moving_init           (false),
@@ -203,8 +200,9 @@ seqroll::seqroll
     m_scroll_offset_y       (0),
     m_scroll_page           (0),
     m_background_sequence   (0),
-    m_drawing_background_seq(false) // ,
-//  m_ignore_redraw         (false)
+    m_drawing_background_seq(false),
+    m_status                (0),
+    m_cc                    (0)
 {
     m_ppqn = choose_ppqn(ppqn);
 
@@ -225,8 +223,10 @@ seqroll::seqroll
 
 seqroll::~seqroll ()
 {
-    // if (not_nullptr(m_clipboard))
-    //      delete m_clipboard;
+    /*
+     * if (not_nullptr(m_clipboard))
+     *      delete m_clipboard;
+     */
 }
 
 /**
@@ -251,8 +251,7 @@ seqroll::set_background_sequence (bool state, int seq)
     if (SEQ64_IS_LEGAL_SEQUENCE(seq))
         m_background_sequence = seq;
 
-//  if (! m_ignore_redraw)
-        update_and_draw();
+    update_and_draw();
 }
 
 /**
@@ -315,8 +314,7 @@ seqroll::change_horz ()
 {
     m_scroll_offset_ticks = int(m_hadjust.get_value());
     m_scroll_offset_x = m_scroll_offset_ticks / m_zoom;
-//  if (! m_ignore_redraw)
-        update_and_draw(true);
+    update_and_draw(true);
 }
 
 /**
@@ -328,8 +326,7 @@ seqroll::change_vert ()
 {
     m_scroll_offset_key = int(m_vadjust.get_value());
     m_scroll_offset_y = m_scroll_offset_key * c_key_y;
-//  if (! m_ignore_redraw)
-        update_and_draw(true);
+    update_and_draw(true);
 }
 
 /**
@@ -343,27 +340,23 @@ seqroll::reset ()
 {
     m_scroll_offset_ticks = int(m_hadjust.get_value());
     m_scroll_offset_x = m_scroll_offset_ticks / m_zoom;
-//  if (! m_ignore_redraw)
-    {
-        update_sizes();
-        update_and_draw();
-    }
+    update_sizes();
+    update_and_draw();
 }
 
 /**
  *  Redraws unless m_ignore_redraw is true.  Somewhat similar to
- *  seqevent::redraw().
+ *  seqevent::redraw().  Actually, we don't seem to need to ignore redraw when
+ *  making settings in the seqedit constructor, so this member no longer
+ *  exists.
  */
 
 void
 seqroll::redraw ()
 {
-//  if (! m_ignore_redraw)
-    {
-        m_scroll_offset_ticks = int(m_hadjust.get_value());
-        m_scroll_offset_x = m_scroll_offset_ticks / m_zoom;
-        update_and_draw(true);
-    }
+    m_scroll_offset_ticks = int(m_hadjust.get_value());
+    m_scroll_offset_x = m_scroll_offset_ticks / m_zoom;
+    update_and_draw(true);
 }
 
 /**
@@ -385,17 +378,15 @@ seqroll::update_and_draw (int force)
 }
 
 /**
- *  Redraws events unless m_ignore_redraw is true.
+ *  Redraws events unless m_ignore_redraw is true.  Actually, that member is
+ *  not needed and no longer exists.
  */
 
 void
 seqroll::redraw_events ()
 {
-//  if (! m_ignore_redraw)
-    {
-        update_pixmap();
-        force_draw();
-    }
+    update_pixmap();
+    force_draw();
 }
 
 /**
@@ -595,7 +586,6 @@ seqroll::set_key (int key)
     }
 }
 
-
 /**
  *  This function draws the background pixmap on the main pixmap, and
  *  then draws the events on it.
@@ -697,6 +687,8 @@ seqroll::follow_progress ()
  *  "Method 0" seems be the one that draws the background sequence, if active.
  *  "Method 1" draws the sequence itself.
  *
+ * \param draw
+ *      The "drawable" area to draw on.
  */
 
 void
@@ -859,7 +851,6 @@ seqroll::idle_redraw ()
 void
 seqroll::draw_selection_on_window ()
 {
-    int x, y, w, h;
     if (m_selecting || m_moving || m_paste || m_growing)
     {
         set_line(Gdk::LINE_SOLID);
@@ -868,6 +859,8 @@ seqroll::draw_selection_on_window ()
             m_old.x, m_old.y, m_old.x, m_old.y, m_old.width + 1, m_old.height + 1
         );
     }
+
+    int x, y, w, h;
     if (m_selecting)
     {
         xy_to_rect(m_drop_x, m_drop_y, m_current_x, m_current_y, x, y, w, h);
@@ -983,13 +976,41 @@ seqroll::convert_tn (midipulse ticks, int note, int & x, int & y)
  *  Converts rectangle corner coordinates to a starting coordinate, plus a
  *  width and height.  This function checks the mins / maxes, and then fills
  *  in the x, y, width, and height values.
+ *
+ *  We should refactor this function to use the utility class seqroll::rect as
+ *  the destination for the conversion.
+ *
+ * \param x1
+ *      The x value of the first corner.
+ *
+ * \param y1
+ *      The y value of the first corner.
+ *
+ * \param x2
+ *      The x value of the second corner.
+ *
+ * \param y2
+ *      The y value of the second corner.
+ *
+ * \param [out] x
+ *      The destination for the x value in pixels.
+ *
+ * \param [out] y
+ *      The destination for the y value in pixels.
+ *
+ * \param [out] w
+ *      The destination for the rectangle width in pixels.
+ *
+ * \param [out] h
+ *      The destination for the rectangle height value in pixels.
  */
 
 void
 seqroll::xy_to_rect
 (
     int x1, int y1, int x2, int y2,
-    int & x, int & y, int & w, int & h)
+    int & x, int & y, int & w, int & h
+)
 {
     if (x1 < x2)
     {
@@ -1015,6 +1036,33 @@ seqroll::xy_to_rect
 
 /**
  *  Converts a tick/note box to an x/y rectangle.
+ *
+ *  We should refactor this function to use the utility class seqroll::rect as
+ *  the destination for the conversion.
+ *
+ * \param tick_s
+ *      The starting tick of the rectangle.
+ *
+ * \param tick_f
+ *      The finishing tick of the rectangle.
+ *
+ * \param note_h
+ *      The high note of the rectangle.
+ *
+ * \param note_l
+ *      The low note of the rectangle.
+ *
+ * \param [out] x
+ *      The destination for the x value in pixels.
+ *
+ * \param [out] y
+ *      The destination for the y value in pixels.
+ *
+ * \param [out] w
+ *      The destination for the rectangle width in pixels.
+ *
+ * \param [out] h
+ *      The destination for the rectangle height value in pixels.
  */
 
 void
@@ -1038,10 +1086,6 @@ seqroll::convert_tn_box_to_rect
 void
 seqroll::start_paste ()
 {
-    midipulse tick_s;
-    midipulse tick_f;
-    int note_h;
-    int note_l;
     snap_x(m_current_x);
 
     /*
@@ -1059,6 +1103,8 @@ seqroll::start_paste ()
      * Get the box that selected elements are in.
      */
 
+    midipulse tick_s, tick_f;
+    int note_h, note_l;
     m_seq.get_clipboard_box(tick_s, note_h, tick_f, note_l);
     convert_tn_box_to_rect
     (
@@ -1091,19 +1137,6 @@ seqroll::snap_x (int & x)
         mod = 1;
 
     x -= x % mod;
-}
-
-/**
- *  Sets the status to the given parameter, and the CC value to the given
- *  optional control parameter, which defaults to 0.  Unlike the same
- *  function in seqevent, this version does not redraw.
- */
-
-void
-seqroll::set_data_type (midibyte status, midibyte control)
-{
-//  m_status = status;
-//  m_cc = control;
 }
 
 /**

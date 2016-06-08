@@ -209,18 +209,6 @@ private:
     int m_key;
 
     /**
-     *  Indicates what is the data window currently editing.
-     */
-
-//  midibyte m_status;
-
-    /**
-     *
-     */
-
-//  midibyte m_cc;
-
-    /**
      *  Set when highlighting a bunch of events.
      */
 
@@ -350,11 +338,25 @@ private:
     /**
      *  Set to true to avoid the call to update_and_draw().  Used in
      *  set_background_sequence(), change_horz(), change_vert(), reset()....
+     *  Never set to true, except in seq24, let's just comment it out for now.
+     *  It hasn't been used in sequencer64 for awhile now.
      *
-     *  Never set to true, let's eliminate it.
+     * bool m_ignore_redraw;
      */
 
-    // bool m_ignore_redraw;
+    /**
+     *  The current status/event selected in the seqedit.  Not used in seqroll
+     *  at present.
+     */
+
+    midibyte m_status;
+
+    /**
+     *  The current MIDI control value selected in the seqedit.  Not used in
+     *  seqroll at present.
+     */
+
+    midibyte m_cc;
 
 public:
 
@@ -391,18 +393,31 @@ public:
         m_note_length = note_length;
     }
 
-    /**
+    /*
      * \setter m_ignore_redraw
-
-    void set_ignore_redraw (bool ignore)
-    {
-        m_ignore_redraw = ignore;
-    }
+     *
+     *  void set_ignore_redraw (bool ignore)
+     *  {
+     *      m_ignore_redraw = ignore;
+     *  }
+     *
      */
 
     void set_key (int key);
     void set_scale (int scale);
-    void set_data_type (midibyte status, midibyte control);
+
+    /**
+     *  Sets the status to the given parameter, and the CC value to the given
+     *  optional control parameter, which defaults to 0.  Unlike the same
+     *  function in seqevent, this version does not redraw.  Used by seqedit.
+     */
+
+    void set_data_type (midibyte status, midibyte control)
+    {
+        m_status = status;
+        m_cc = control;
+    }
+
     void set_background_sequence (bool state, int seq);
     void update_pixmap ();
     void update_sizes ();

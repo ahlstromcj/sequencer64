@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-22
+ * \updates       2016-06-08
  * \license       GNU GPLv2 or above
  *
  *  Note that this class doesn't handle keystrokes (directly), so even if the
@@ -49,12 +49,20 @@ namespace seq64
 
 class FruityPerfInput : public AbstractPerfInput
 {
-
     friend class perfroll;
 
 private:
 
+    /**
+     *  The current x value of the mouse.
+     */
+
     long m_current_x;
+
+    /**
+     *  The current y value of the mouse.
+     */
+
     long m_current_y;
 
 public:
@@ -63,7 +71,7 @@ public:
      *  Default constructor.
      */
 
-    FruityPerfInput() :
+    FruityPerfInput () :
         AbstractPerfInput   (),
         m_current_x         (0),
         m_current_y         (0)

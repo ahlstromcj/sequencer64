@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-08-02
- * \updates       2015-11-29
+ * \updates       2016-06-08
  * \license       GNU GPLv2 or above
  *
  *  This code was extracted from seqevent to make that module more
@@ -46,17 +46,23 @@ namespace seq64
 
 /**
  *  Provides support for a context-sensitive mouse.
+ *
+ * \param seqev
+ *      Provides the seqevent pane (actually a strip on the seqedit window)
+ *      to update to show the proper mouse cursor (left pointer, center
+ *      pointer, and pencil).
  */
 
 void
 FruitySeqEventInput::update_mouse_pointer (seqevent & seqev)
 {
-    midipulse tick_s, tick_w, tick_f, pos;
+    midipulse tick_s, tick_w, pos;
     seqev.convert_x(seqev.m_current_x, tick_s);
     seqev.convert_x(c_eventevent_x, tick_w);
-    tick_f = tick_s + tick_w;
+
+    midipulse tick_f = tick_s + tick_w; // can tick_f ever get < 0?
     if (tick_s < 0)
-        tick_s = 0;                    // clamp to 0
+        tick_s = 0;                     // clamp to 0
 
     if (m_is_drag_pasting || seqev.m_selecting || seqev.m_moving || seqev.m_paste)
         seqev.get_window()->set_cursor(Gdk::Cursor(Gdk::LEFT_PTR));
@@ -89,6 +95,12 @@ FruitySeqEventInput::update_mouse_pointer (seqevent & seqev)
  *          -#  If no events selected in the end, undo the selection.
  *  -   Ctrl-left button:
  *
+ * \param ev
+ *      The button event for the press of a mouse button.
+ *
+ * \param seqev
+ *      Provides the seqevent strip to be affected by this button event.
+ *
  * \return
  *      Returns true if a modification was made.  It used to return true all
  *      the time.
@@ -97,7 +109,7 @@ FruitySeqEventInput::update_mouse_pointer (seqevent & seqev)
 bool
 FruitySeqEventInput::on_button_press_event
 (
-    GdkEventButton * a_ev,
+    GdkEventButton * ev,
     seqevent & seqev
 )
 {
@@ -105,7 +117,7 @@ FruitySeqEventInput::on_button_press_event
     midipulse tick_s, tick_w;
     seqev.grab_focus();                 // NEW: I think this would be helpful
     seqev.convert_x(c_eventevent_x, tick_w);
-    seqev.m_drop_x = seqev.m_current_x = int(a_ev->x) + seqev.m_scroll_offset_x;
+    seqev.m_drop_x = seqev.m_current_x = int(ev->x) + seqev.m_scroll_offset_x;
     seqev.m_old.x = seqev.m_old.y = seqev.m_old.width = seqev.m_old.height = 0;
     if (seqev.m_paste)
     {
@@ -120,7 +132,7 @@ FruitySeqEventInput::on_button_press_event
     {
         int x, w;
         midipulse tick_f;
-        if (SEQ64_CLICK_LEFT(a_ev->button))       /* Note 1   */
+        if (SEQ64_CLICK_LEFT(ev->button))       /* Note 1   */
         {
             seqev.convert_x(seqev.m_drop_x, tick_s); /* x,y into tick/note    */
             tick_f = tick_s + seqev.m_zoom;          /* shift back some ticks */
@@ -133,7 +145,7 @@ FruitySeqEventInput::on_button_press_event
                 tick_s, tick_f, seqev.m_status, seqev.m_cc,
                 sequence::e_would_select
             );
-            if (! (a_ev->state & SEQ64_CONTROL_MASK) && eventcount == 0)
+            if (! (ev->state & SEQ64_CONTROL_MASK) && eventcount == 0)
             {
                 seqev.m_painting = true;
                 seqev.snap_x(seqev.m_drop_x);
@@ -166,15 +178,15 @@ FruitySeqEventInput::on_button_press_event
                     );
                     if (eventcount > 0)             /* if clicking event */
                     {
-                        if (! (a_ev->state & SEQ64_CONTROL_MASK))
+                        if (! (ev->state & SEQ64_CONTROL_MASK))
                             seqev.m_seq.unselect();
                     }
                     else /* clicking empty space, unselect all if no Ctrl-Sh  */
                     {
                         if
                         (
-                            ! ((a_ev->state & SEQ64_CONTROL_MASK) &&
-                                (a_ev->state & SEQ64_SHIFT_MASK))
+                            ! ((ev->state & SEQ64_CONTROL_MASK) &&
+                                (ev->state & SEQ64_SHIFT_MASK))
                         )
                         {
                             seqev.m_seq.unselect();
@@ -193,7 +205,7 @@ FruitySeqEventInput::on_button_press_event
 
                     /* if nothing selected, start the selection box */
 
-                    if (eventcount == 0 && (a_ev->state & SEQ64_CONTROL_MASK))
+                    if (eventcount == 0 && (ev->state & SEQ64_CONTROL_MASK))
                         seqev.m_selecting = true;
                 }
                 eventcount = seqev.m_seq.select_events
@@ -203,7 +215,7 @@ FruitySeqEventInput::on_button_press_event
                 );
                 if (eventcount > 0)         /* if event under cursor selected */
                 {
-                    if (! (a_ev->state & SEQ64_CONTROL_MASK)) /* grab/move note */
+                    if (! (ev->state & SEQ64_CONTROL_MASK)) /* grab/move note */
                     {
                         seqev.m_moving_init = true;
                         int note;
@@ -235,7 +247,7 @@ FruitySeqEventInput::on_button_press_event
                     }
                     else if   /* Ctrl-Left-click when stuff already selected */
                     (
-                        (a_ev->state & SEQ64_CONTROL_MASK) &&
+                        (ev->state & SEQ64_CONTROL_MASK) &&
                         seqev.m_seq.select_events(tick_s, tick_f,
                            seqev. m_status, seqev.m_cc, sequence::e_is_selected)
                     )
@@ -246,7 +258,7 @@ FruitySeqEventInput::on_button_press_event
             }
 
         }
-        if (SEQ64_CLICK_RIGHT(a_ev->button))
+        if (SEQ64_CLICK_RIGHT(ev->button))
         {
             seqev.convert_x(seqev.m_drop_x, tick_s); /* x,y in to tick/note   */
             tick_f = tick_s + seqev.m_zoom;          /* shift back some ticks */
@@ -275,7 +287,7 @@ FruitySeqEventInput::on_button_press_event
             }
             else                                        /* selecting        */
             {
-                if (! (a_ev->state & SEQ64_CONTROL_MASK))
+                if (! (ev->state & SEQ64_CONTROL_MASK))
                     seqev.m_seq.unselect();             /* nothing selected   */
 
                 seqev.m_selecting = true;               /* start select-box   */
@@ -291,6 +303,12 @@ FruitySeqEventInput::on_button_press_event
 /**
  *  Implements the on-button-release callback.
  *
+ * \param ev
+ *      The button event for the press of a mouse button.
+ *
+ * \param seqev
+ *      Provides the seqevent strip to be affected by this button event.
+ *
  * \return
  *      Returns true if a modification was made.  It used to return true all
  *      the time.
@@ -299,7 +317,7 @@ FruitySeqEventInput::on_button_press_event
 bool
 FruitySeqEventInput::on_button_release_event
 (
-    GdkEventButton * a_ev,
+    GdkEventButton * ev,
     seqevent & seqev
 )
 {
@@ -307,13 +325,13 @@ FruitySeqEventInput::on_button_release_event
     midipulse tick_s;
     midipulse tick_f;
     seqev.grab_focus();
-    seqev.m_current_x = int(a_ev->x) + seqev.m_scroll_offset_x;;
+    seqev.m_current_x = int(ev->x) + seqev.m_scroll_offset_x;;
     if (seqev.m_moving || m_is_drag_pasting)
         seqev.snap_x(seqev.m_current_x);
 
     int delta_x = seqev.m_current_x - seqev.m_drop_x;
     midipulse delta_tick;
-    if (SEQ64_CLICK_LEFT(a_ev->button))
+    if (SEQ64_CLICK_LEFT(ev->button))
     {
         int current_x = seqev.m_current_x;
         midipulse t_s, t_f;
@@ -345,8 +363,8 @@ FruitySeqEventInput::on_button_release_event
             m_is_drag_pasting_start = false;
 
             /*
-             * If a ctrl-left click without movement and if note under
-             * cursor is selected, and ctrl is held and button-down didn't
+             * If a ctrl-left click without movement and if the note under
+             * cursor is selected, and ctrl is held and button-down,
              * just select one.
              */
 
@@ -358,7 +376,7 @@ FruitySeqEventInput::on_button_release_event
                     t_s, t_f,
                     seqev.m_status, seqev.m_cc, sequence::e_is_selected
                 ) &&
-                (a_ev->state & SEQ64_CONTROL_MASK)
+                (ev->state & SEQ64_CONTROL_MASK)
             )
             {
                 (void) seqev.m_seq.select_events
@@ -377,7 +395,7 @@ FruitySeqEventInput::on_button_release_event
             result = true;
         }
     }
-    if (SEQ64_CLICK_LEFT_RIGHT(a_ev->button))
+    if (SEQ64_CLICK_LEFT_RIGHT(ev->button))
     {
         if (seqev.m_selecting)
         {
@@ -407,6 +425,12 @@ FruitySeqEventInput::on_button_release_event
 /**
  *  Implements the on-motion-notify callback.
  *
+ * \param ev
+ *      The button event for the press of a mouse button.
+ *
+ * \param seqev
+ *      Provides the seqevent strip to be affected by this button event.
+ *
  * \return
  *      Returns true if a modification occurred, and sets the perform modified
  *      flag based on that result.
@@ -415,13 +439,13 @@ FruitySeqEventInput::on_button_release_event
 bool
 FruitySeqEventInput::on_motion_notify_event
 (
-    GdkEventMotion * a_ev,
+    GdkEventMotion * ev,
     seqevent & seqev
 )
 {
     bool result = false;
     midipulse tick = 0;
-    seqev.m_current_x = (int) a_ev->x  + seqev.m_scroll_offset_x;
+    seqev.m_current_x = (int) ev->x  + seqev.m_scroll_offset_x;
     if (seqev.m_moving_init)
     {
         seqev.m_moving_init = false;
@@ -447,11 +471,10 @@ FruitySeqEventInput::on_motion_notify_event
             seqev.snap_x(seqev.m_current_x);
 
         seqev.draw_selection_on_window();
-        // result = true;
     }
     if (seqev.m_painting)
     {
-        seqev.m_current_x = (int) a_ev->x  + seqev.m_scroll_offset_x;
+        seqev.m_current_x = int(ev->x)  + seqev.m_scroll_offset_x;
         seqev.snap_x(seqev.m_current_x);
         seqev.convert_x(seqev.m_current_x, tick);
         seqev.drop_event(tick);
@@ -467,3 +490,4 @@ FruitySeqEventInput::on_motion_notify_event
  *
  * vim: sw=4 ts=4 wm=4 et ft=cpp
  */
+

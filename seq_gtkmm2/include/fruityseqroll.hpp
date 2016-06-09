@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-09-13
+ * \updates       2016-06-09
  * \license       GNU GPLv2 or above
  *
  */
@@ -46,10 +46,27 @@ class FruitySeqRollInput
 
 private:
 
+    /**
+     *  Set to true if in note-adding mode.
+     */
+
     bool m_adding;
-    bool m_canadd;
+
+    /**
+     *  Set to tru if we hold the right mouse button down (in "fruity" mode)
+     *  and start to drag the mouse around, erasing notes.
+     */
+
     bool m_erase_painting;
-    long m_drag_paste_start_pos[2];
+
+    /**
+     *  Holds the original position of the mouse when ctrl-left-click-drag is
+     *  done, and is used to make sure that the action doesn't occur until a
+     *  movement of at least 6 pixels has occurred, to avoid unintended
+     *  actions caused by minimal jitter in the user's hands.
+     */
+
+    int m_drag_paste_start_pos[2];
 
 public:
 
@@ -59,7 +76,6 @@ public:
 
     FruitySeqRollInput () :
         m_adding        (false),
-        m_canadd        (true),
         m_erase_painting(false)
     {
         // Empty body

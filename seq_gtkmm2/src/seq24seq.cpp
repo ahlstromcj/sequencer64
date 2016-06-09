@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-08-02
- * \updates       2015-11-22
+ * \updates       2016-06-08
  * \license       GNU GPLv2 or above
  *
  *  This code was extracted from seqevent to make that module more
@@ -50,8 +50,15 @@ namespace seq64
 
 /**
  *  Changes the mouse cursor to a pencil or a left pointer in the given
- *  seqevent aobject, depending on the first parameter.  Modifies m_adding
+ *  seqevent object, depending on the first parameter.  Modifies m_adding
  *  as well.
+ *
+ * \param adding
+ *      The value to set m_adding to, and if true, sets the mouse cursor to a
+ *      pencil icon, otherwise sets it to a standard mouse-pointer icon.
+ *
+ * \param seqev
+ *      The seqevent whose window will be set to "adding" mode.
  */
 
 void
@@ -68,6 +75,12 @@ Seq24SeqEventInput::set_adding (bool adding, seqevent & seqev)
  *  Implements the on-button-press event callback.  Set values for dragging,
  *  then reset the box that holds dirty redraw spot.  Then do the rest.
  *
+ * \param ev
+ *      The button event for the press of a mouse button.
+ *
+ * \param seqev
+ *      Provides the seqevent strip to be affected by this button event.
+ *
  * \return
  *      Returns true if a likely modification was made.  This function used to
  *      return true all the time.
@@ -76,7 +89,7 @@ Seq24SeqEventInput::set_adding (bool adding, seqevent & seqev)
 bool
 Seq24SeqEventInput::on_button_press_event
 (
-    GdkEventButton * a_ev,
+    GdkEventButton * ev,
     seqevent & seqev
 )
 {
@@ -84,7 +97,7 @@ Seq24SeqEventInput::on_button_press_event
     midipulse tick_s, tick_w;
     seqev.grab_focus();                 // NEW: I think this would be helpful
     seqev.convert_x(c_eventevent_x, tick_w);
-    seqev.set_current_drop_x(int(a_ev->x + seqev.m_scroll_offset_x));
+    seqev.set_current_drop_x(int(ev->x + seqev.m_scroll_offset_x));
     seqev.m_old.x = seqev.m_old.y = seqev.m_old.width = seqev.m_old.height = 0;
     if (seqev.m_paste)
     {
@@ -99,7 +112,7 @@ Seq24SeqEventInput::on_button_press_event
     {
         int x, w;
         midipulse tick_f;
-        if (SEQ64_CLICK_LEFT(a_ev->button))
+        if (SEQ64_CLICK_LEFT(ev->button))
         {
             seqev.convert_x(seqev.m_drop_x, tick_s); /* x,y in to tick/note    */
             tick_f = tick_s + seqev.m_zoom;          /* shift back a few ticks */
@@ -134,7 +147,7 @@ Seq24SeqEventInput::on_button_press_event
                 );
                 if (eventcount == 0)
                 {
-                    if (! (a_ev->state & SEQ64_CONTROL_MASK))
+                    if (! (ev->state & SEQ64_CONTROL_MASK))
                         seqev.m_seq.unselect();
 
                     eventcount = seqev.m_seq.select_events
@@ -198,7 +211,7 @@ Seq24SeqEventInput::on_button_press_event
                 }
             }
         }
-        if (SEQ64_CLICK_RIGHT(a_ev->button))
+        if (SEQ64_CLICK_RIGHT(ev->button))
             set_adding(true, seqev);
     }
     seqev.update_pixmap();              /* if they clicked, something changed */
@@ -209,6 +222,12 @@ Seq24SeqEventInput::on_button_press_event
 /**
  *  Implements the on-button-release callback.
  *
+ * \param ev
+ *      The button event for the release of a mouse button.
+ *
+ * \param seqev
+ *      Provides the seqevent strip to be affected by this button event.
+ *
  * \return
  *      Returns true if a likely modification was made.  This function used to
  *      return true all the time.
@@ -217,7 +236,7 @@ Seq24SeqEventInput::on_button_press_event
 bool
 Seq24SeqEventInput::on_button_release_event
 (
-    GdkEventButton * a_ev,
+    GdkEventButton * ev,
     seqevent & seqev
 )
 {
@@ -225,13 +244,13 @@ Seq24SeqEventInput::on_button_release_event
     midipulse tick_s;
     midipulse tick_f;
     seqev.grab_focus();
-    seqev.m_current_x = int(a_ev->x) + seqev.m_scroll_offset_x;
+    seqev.m_current_x = int(ev->x) + seqev.m_scroll_offset_x;
     if (seqev.m_moving)
         seqev.snap_x(seqev.m_current_x);
 
     int delta_x = seqev.m_current_x - seqev.m_drop_x;
     midipulse delta_tick;
-    if (SEQ64_CLICK_LEFT(a_ev->button))
+    if (SEQ64_CLICK_LEFT(ev->button))
     {
         if (seqev.m_selecting)
         {
@@ -254,7 +273,7 @@ Seq24SeqEventInput::on_button_release_event
         }
         set_adding(m_adding, seqev);
     }
-    if (SEQ64_CLICK_RIGHT(a_ev->button))
+    if (SEQ64_CLICK_RIGHT(ev->button))
     {
         set_adding(false, seqev);
     }
@@ -272,6 +291,12 @@ Seq24SeqEventInput::on_button_release_event
 /**
  *  Implements the on-motion-notify event.
  *
+ * \param ev
+ *      The button event for the motion of the mouse cursor.
+ *
+ * \param seqev
+ *      Provides the seqevent strip to be affected by this button event.
+ *
  * \return
  *      Returns true if a likely modification was made.  This function used to
  *      return true all the time.
@@ -280,7 +305,7 @@ Seq24SeqEventInput::on_button_release_event
 bool
 Seq24SeqEventInput::on_motion_notify_event
 (
-   GdkEventMotion * a_ev,
+   GdkEventMotion * ev,
    seqevent & seqev
 )
 {
@@ -293,7 +318,7 @@ Seq24SeqEventInput::on_motion_notify_event
     }
     if (seqev.m_selecting || seqev.m_moving || seqev.m_paste)
     {
-        seqev.m_current_x = int(a_ev->x) + seqev.m_scroll_offset_x;
+        seqev.m_current_x = int(ev->x) + seqev.m_scroll_offset_x;
         if (seqev.m_moving || seqev.m_paste)
             seqev.snap_x(seqev.m_current_x);
 
@@ -301,7 +326,7 @@ Seq24SeqEventInput::on_motion_notify_event
     }
     if (seqev.m_painting)
     {
-        seqev.m_current_x = int(a_ev->x) + seqev.m_scroll_offset_x;
+        seqev.m_current_x = int(ev->x) + seqev.m_scroll_offset_x;
         seqev.snap_x(seqev.m_current_x);
         seqev.convert_x(seqev.m_current_x, tick);
         seqev.drop_event(tick);

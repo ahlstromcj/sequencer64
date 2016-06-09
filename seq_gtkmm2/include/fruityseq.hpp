@@ -44,8 +44,25 @@ namespace seq64
 
 struct FruitySeqEventInput
 {
+    /**
+     *  Indicates that the left mouse button was click to start a selection.
+     */
+
     bool m_justselected_one;
+
+    /**
+     *  Set to true when the mouse button is pressed and we're starting to
+     *  drag some notes to move them and paste them to a different location.
+     */
+
     bool m_is_drag_pasting_start;
+
+    /**
+     *  Set to true when the left mouse button is pressed for dragging and
+     *  pasting, set to false when the mouse button is released to drop the
+     *  pasted items.
+     */
+
     bool m_is_drag_pasting;
 
     /**

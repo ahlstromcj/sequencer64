@@ -53,7 +53,7 @@ struct Seq24SeqEventInput
      * Default constructor.
      */
 
-    Seq24SeqEventInput () : m_adding(false)
+    Seq24SeqEventInput () : m_adding (false)
     {
         // Empty body
     }

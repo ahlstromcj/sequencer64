@@ -1,0 +1,91 @@
+Notes about the "Fruity" Interaction Mode
+Chris Ahlstrom
+2016-06-09 to 2016-06-09
+
+In this document we survey the fruity mode to learn how it works.
+
+FruitySeqRollInput:
+
+    The seqroll interactions supported are drag-pasting, selecting,
+    moving, growing, and simple pasting.
+
+    The mouse cursor icons used are stock GDK items:  CENTER_PTR,
+    LEFT_PTR, PENCIL.
+
+    paste:  ctrl-v+left-click
+
+    paint:  If not on top of an existing note, left-click+left-drag;
+            will add a note of length a little less than seqroll snap.
+
+    select one: If on top of an existing note, left-click.
+    select many: Otherwise prepare for drag ???
+    select all:
+
+            ???: ctrl+shift+left-click
+
+    unselect one:
+    unselect many:
+    unselect all:  If not ctrl, left-click on note
+            If not ctrl+shift, left-click
+
+
+    seqroll function calls:
+
+        sroll.convert_tn_box_to_rect()
+        sroll.convert_xy()
+        sroll.current_x()
+        sroll.current_y()
+        sroll.draw_selection_on_window()
+        sroll.drop_x()
+        sroll.drop_y()
+        sroll.get_window()->set_cursor()
+        sroll.grab_focus()
+        sroll.m_seq.add_note()
+        sroll.m_seq.get_selected_box()
+        sroll.m_seq.grow_selected()
+        sroll.m_seq.intersect_notes()
+        sroll.m_seq.mark_selected()
+        sroll.m_seq.move_selected_notes()
+        sroll.m_seq.paste_selected()
+        sroll.m_seq.push_undo()
+        sroll.m_seq.remove_marked()
+        sroll.m_seq.select_note_events()
+        sroll.m_seq.set_dirty()
+        sroll.m_seq.stretch_selected()
+        sroll.m_seq.unpaint_all()
+        sroll.m_seq.unselect()
+        sroll.set_current_drop_x()
+        sroll.set_current_drop_y()
+        sroll.snap_x()
+        sroll.snap_y()
+
+    seqroll member usage:
+
+        sroll.m_current_x
+        sroll.m_current_y
+        sroll.m_drop_x
+        sroll.m_drop_y
+        sroll.m_growing
+        sroll.m_is_drag_pasting
+        sroll.m_is_drag_pasting_start
+        sroll.m_justselected_one
+        sroll.m_move_snap_offset_x
+        sroll.m_moving
+        sroll.m_moving_init
+        sroll.m_note_length      in sroll.m_seq.add_note()
+        sroll.m_old.height
+        sroll.m_old.width
+        sroll.m_old.x
+        sroll.m_old.y
+        sroll.m_painting
+        sroll.m_paste
+        sroll.m_scroll_offset_x
+        sroll.m_scroll_offset_y
+        sroll.m_selected.height
+        sroll.m_selected.width
+        sroll.m_selected.x
+        sroll.m_selected.y
+        sroll.m_selecting
+        sroll.m_seq
+
+# vim: sw=4 ts=4 wm=8 et ft=sh

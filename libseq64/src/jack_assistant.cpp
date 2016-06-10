@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-14
- * \updates       2016-05-17
+ * \updates       2016-06-09
  * \license       GNU GPLv2 or above
  *
  *  This module was created from code that existed in the perform object.
@@ -39,28 +39,28 @@
  * JACK Position Bits to support in Sequencer64, their values, their purpose,
  * and the jack_position_t field they manage:
  *
- *  -	JackPositionBBT = 0x10. Bar, Beat, Tick.  The fields managed are bar,
+ *  -   JackPositionBBT = 0x10. Bar, Beat, Tick.  The fields managed are bar,
  *      beat, tick, bar_start_tick, beats_per_bar, beat_type, ticks_per_beat,
  *      beats_per_minute.
- *  -	JackPositionTimecode = 0x20. External timecode.  The fields managed
+ *  -   JackPositionTimecode = 0x20. External timecode.  The fields managed
  *      are frame_time and next_time.
- *  -	JackBBTFrameOffset = 0x40. Offset of BBT information. The sole field
+ *  -   JackBBTFrameOffset = 0x40. Offset of BBT information. The sole field
  *      managed is bbt_offset, the frame offset for the BBT fields. The given
  *      bar, beat, and tick values actually refer to a time frame_offset
  *      frames before the start of the cycle.  It should be assumed to be 0 if
  *      JackBBTFrameOffset is not set. If JackBBTFrameOffset is set and this
  *      value is zero, the BBT time refers to the first frame of this cycle.
  *      If the value is positive, the BBT time refers to a frame that many
- *      frames before the start of the cycle. 
+ *      frames before the start of the cycle.
  *
- *	Only JackPositionBBT is supported so far.  Applications that support
- *	JackPositionBBT are encouraged to also fill the JackBBTFrameOffset-managed
- *	field (bbt_offset).  We are experimenting with this for now; there's not a
- *	lot of material out there on the Web.
+ *  Only JackPositionBBT is supported so far.  Applications that support
+ *  JackPositionBBT are encouraged to also fill the JackBBTFrameOffset-managed
+ *  field (bbt_offset).  We are experimenting with this for now; there's not a
+ *  lot of material out there on the Web.
  *
- *	Lastly, one might be curious as to the origin of the name
- *	"jack_assistant".  Well, it is simply so this class can be called
- *	"jack_ass" for short :-D.
+ *  Lastly, one might be curious as to the origin of the name
+ *  "jack_assistant".  Well, it is simply so this class can be called
+ *  "jack_ass" for short :-D.
  */
 
 #include <stdio.h>
@@ -186,6 +186,9 @@ jack_assistant::jack_assistant
 #endif
     m_jack_running              (false),
     m_jack_master               (false),
+#ifdef USE_STAZED_JACK_SUPPORT
+    m_left_frame                (0),
+#endif
     m_ppqn                      (0),
     m_beats_per_measure         (bpm),
     m_beat_width                (beatwidth),
@@ -275,6 +278,26 @@ jack_assistant::error_message (const std::string & msg)
  *      client application, such as Qtractor, is running as JACK Master (and
  *      then seq24 will apparently follow it).
  *
+ * #ifdef USE_STAZED_JACK_SUPPORT
+ *
+ *  The call to jack_timebase_callback() to supply JACK with BBT, would
+ *  occasionally fail when the pos information had zero or some garbage in the
+ *  pos.frame_rate variable, which would occur when there was a rapid change of
+ *  frame position by another client, i.e. qjackctl.  From the jack API:
+ *
+ *      pos address of the position structure for the next cycle; pos->frame
+ *      will be its frame number. If new_pos is FALSE, this structure contains
+ *      extended position information from the current cycle.  If TRUE, it
+ *      contains whatever was set by the requester.  The timebase_callback's
+ *      task is to update the extended information here."
+ *
+ *  The "If TRUE" line seems to be the issue. It seems that qjackctl does not
+ *  always set pos.frame_rate so we get garbage and some strange BBT
+ *  calculations that display in qjackctl. So we need to set it here and just
+ *  use m_jack_frame_rate for calculations instead of pos.frame_rate.
+ *
+ * #endif
+ *
  * \return
  *      Returns true if JACK is now considered to be running (or if it was
  *      already running.)
@@ -291,6 +314,10 @@ jack_assistant::init ()
         m_jack_client = client_open(package);
         if (m_jack_client == NULL)
             return error_message("JACK server not running, JACK sync disabled");
+#ifdef USE_STAZED_JACK_SUPPORT
+            else
+                m_jack_frame_rate = jack_get_sample_rate(m_jack_client);
+#endif
 
         jack_on_shutdown(m_jack_client, jack_shutdown_callback, (void *) this);
 

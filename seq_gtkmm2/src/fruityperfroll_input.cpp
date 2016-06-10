@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-10-13
- * \updates       2015-11-22
+ * \updates       2016-06-10
  * \license       GNU GPLv2 or above
  *
  */
@@ -52,6 +52,9 @@ namespace seq64
  *  Updates the mouse pointer, implementing a context-sensitive mouse.
  *  Note that perform::convert_xy() returns its values via side-effects on the
  *  last two parameters.
+ *
+ * \param
+ *      The song editor piano roll that is the "parent" of this class.
  */
 
 void
@@ -98,12 +101,18 @@ FruityPerfInput::update_mouse_pointer (perfroll & roll)
 /**
  *  Handles a button-press event in the Fruity manner.
  *
+ * \param ev
+ *      The button-press event to process.
+ *
+ * \param
+ *      The song editor piano roll that is the "parent" of this class.
+ *
  * \return
  *      Returns true if a modification occurred.
  */
 
 bool
-FruityPerfInput::on_button_press_event (GdkEventButton * a_ev, perfroll & roll)
+FruityPerfInput::on_button_press_event (GdkEventButton * ev, perfroll & roll)
 {
     bool result = false;
     perform & p = roll.perf();
@@ -114,23 +123,23 @@ FruityPerfInput::on_button_press_event (GdkEventButton * a_ev, perfroll & roll)
         p.get_sequence(dropseq)->unselect_triggers();
         roll.draw_all();
     }
-    roll.m_drop_x = int(a_ev->x);
-    roll.m_drop_y = int(a_ev->y);
-    m_current_x = int(a_ev->x);
-    m_current_y = int(a_ev->y);
+    roll.m_drop_x = int(ev->x);
+    roll.m_drop_y = int(ev->y);
+    m_current_x = int(ev->x);
+    m_current_y = int(ev->y);
     roll.convert_xy                             /* side-effects             */
     (
         roll.m_drop_x, roll.m_drop_y, roll.m_drop_tick, dropseq
     );
-    if (SEQ64_CLICK_LEFT(a_ev->button))
+    if (SEQ64_CLICK_LEFT(ev->button))
     {
-        result = on_left_button_pressed(a_ev, roll);
+        result = on_left_button_pressed(ev, roll);
     }
-    else if (SEQ64_CLICK_RIGHT(a_ev->button))
+    else if (SEQ64_CLICK_RIGHT(ev->button))
     {
-        result = on_right_button_pressed(a_ev, roll);
+        result = on_right_button_pressed(ev, roll);
     }
-    else if (SEQ64_CLICK_MIDDLE(a_ev->button))   /* left-ctrl???, middle    */
+    else if (SEQ64_CLICK_MIDDLE(ev->button))   /* left-ctrl???, middle    */
     {
         if (p.is_active(dropseq))
         {
@@ -160,17 +169,23 @@ FruityPerfInput::on_button_press_event (GdkEventButton * a_ev, perfroll & roll)
  *  I don't get it, though... all three buttons are handled in the generic
  *  button-press callback.  Oh, this is just a helper function.
  *
+ * \param ev
+ *      The left-button-press event to process.
+ *
+ * \param
+ *      The song editor piano roll that is the "parent" of this class.
+ *
  * \return
  *      Now returns true if a modification occurred.
  */
 
 bool
-FruityPerfInput::on_left_button_pressed (GdkEventButton * a_ev, perfroll & roll)
+FruityPerfInput::on_left_button_pressed (GdkEventButton * ev, perfroll & roll)
 {
     bool result = false;
     perform & p = roll.perf();
     int dropseq = roll.m_drop_sequence;
-    if (a_ev->state & SEQ64_CONTROL_MASK)
+    if (ev->state & SEQ64_CONTROL_MASK)
     {
         if (p.is_active(dropseq))
         {
@@ -190,15 +205,16 @@ FruityPerfInput::on_left_button_pressed (GdkEventButton * a_ev, perfroll & roll)
         m_adding_pressed = true;
         if (p.is_active(dropseq))
         {
-            midipulse seqlength = p.get_sequence(dropseq)->get_length();
-            bool state = p.get_sequence(dropseq)->get_trigger_state(tick);
+            sequence * seq = p.get_sequence(dropseq);
+            midipulse seqlength = seq->get_length();
+            bool state = seq->get_trigger_state(tick);
             if (state)  /* resize event or move it based on where clicked */
             {
                 m_adding_pressed = false;
                 p.push_trigger_undo();
-                p.get_sequence(dropseq)->select_trigger(tick);
-                midipulse starttick = p.get_sequence(dropseq)->selected_trigger_start();
-                midipulse endtick = p.get_sequence(dropseq)->selected_trigger_end();
+                seq->select_trigger(tick);
+                midipulse starttick = seq->selected_trigger_start();
+                midipulse endtick = seq->selected_trigger_end();
                 int wscalex = s_perfroll_size_box_click_w * c_perf_scale_x;
                 int ydrop = roll.m_drop_y % c_names_y;
                 if
@@ -210,7 +226,7 @@ FruityPerfInput::on_left_button_pressed (GdkEventButton * a_ev, perfroll & roll)
                     roll.m_growing = true;
                     roll.m_grow_direction = true;
                     roll.m_drop_tick_trigger_offset = roll.m_drop_tick -
-                        p.get_sequence(dropseq)->selected_trigger_start();
+                        seq->selected_trigger_start();
                 }
                 else if
                 (
@@ -221,13 +237,13 @@ FruityPerfInput::on_left_button_pressed (GdkEventButton * a_ev, perfroll & roll)
                     roll.m_growing = true;
                     roll.m_grow_direction = false;
                     roll.m_drop_tick_trigger_offset = roll.m_drop_tick -
-                        p.get_sequence(dropseq)->selected_trigger_end();
+                        seq->selected_trigger_end();
                 }
                 else        /* clicked in the middle - move it              */
                 {
                     roll.m_moving = true;
                     roll.m_drop_tick_trigger_offset = roll.m_drop_tick -
-                         p.get_sequence(dropseq)->selected_trigger_start();
+                         seq->selected_trigger_start();
                 }
                 roll.draw_all();
             }
@@ -235,7 +251,7 @@ FruityPerfInput::on_left_button_pressed (GdkEventButton * a_ev, perfroll & roll)
             {
                 tick -= (tick % seqlength);         /* snap to seqlength    */
                 p.push_trigger_undo();
-                p.get_sequence(dropseq)->add_trigger(tick, seqlength);
+                seq->add_trigger(tick, seqlength);
                 result = true;
                 roll.draw_all();
             }
@@ -250,12 +266,18 @@ FruityPerfInput::on_left_button_pressed (GdkEventButton * a_ev, perfroll & roll)
  *  I don't get it, though... all three buttons are handled in the generic
  *  button-press callback.  Oh, this is a helper function.
  *
+ * \param ev
+ *      The right-button-press event to process.
+ *
+ * \param
+ *      The song editor piano roll that is the "parent" of this class.
+ *
  * \return
  *      Returns true if a modification occurred.
  */
 
 bool
-FruityPerfInput::on_right_button_pressed (GdkEventButton * a_ev, perfroll & roll)
+FruityPerfInput::on_right_button_pressed (GdkEventButton * ev, perfroll & roll)
 {
     bool result = false;
     perform & p = roll.perf();
@@ -263,11 +285,12 @@ FruityPerfInput::on_right_button_pressed (GdkEventButton * a_ev, perfroll & roll
     int dropseq = roll.m_drop_sequence;
     if (p.is_active(dropseq))
     {
-        bool state = p.get_sequence(dropseq)->get_trigger_state(tick);
+        sequence * seq = p.get_sequence(dropseq);
+        bool state = seq->get_trigger_state(tick);
         if (state)
         {
             p.push_trigger_undo();
-            p.get_sequence(dropseq)->del_trigger(tick);
+            seq->del_trigger(tick);
             result = true;
         }
     }
@@ -278,20 +301,26 @@ FruityPerfInput::on_right_button_pressed (GdkEventButton * a_ev, perfroll & roll
  *  Handles a button-release event.  Why is m_adding_pressed modified
  *  conditionally when the same modification is then made unconditionally?
  *
+ * \param ev
+ *      The button-release event to process.
+ *
+ * \param
+ *      The song editor piano roll that is the "parent" of this class.
+ *
  * \return
  *      Returns true if a modification occurred.
  */
 
 bool
-FruityPerfInput::on_button_release_event (GdkEventButton * a_ev, perfroll & roll)
+FruityPerfInput::on_button_release_event (GdkEventButton * ev, perfroll & roll)
 {
     bool result = false;
-    m_current_x = (int) a_ev->x;
-    m_current_y = (int) a_ev->y;
+    m_current_x = int(ev->x);
+    m_current_y = int(ev->y);
 
     /*
-     * if (SEQ64_CLICK_LEFT(a_ev->button) ||
-     *      SEQ64_CLICK_RIGHT(a_ev->button))
+     * if (SEQ64_CLICK_LEFT(ev->button) ||
+     *      SEQ64_CLICK_RIGHT(ev->button))
      *  m_adding_pressed = false;                   // done here...
      */
 
@@ -311,31 +340,38 @@ FruityPerfInput::on_button_release_event (GdkEventButton * a_ev, perfroll & roll
 /**
  *  Handles a Fruity motion-notify event.
  *
+ * \param ev
+ *      The motion-notify event to process.
+ *
+ * \param
+ *      The song editor piano roll that is the "parent" of this class.
+ *
  * \return
  *      Returns true if a modification occurred, and sets the perform modified
  *      flag based on that result.
  */
 
 bool
-FruityPerfInput::on_motion_notify_event (GdkEventMotion * a_ev, perfroll & roll)
+FruityPerfInput::on_motion_notify_event (GdkEventMotion * ev, perfroll & roll)
 {
     bool result = false;
     perform & p = roll.perf();
     int dropseq = roll.m_drop_sequence;
-    int x = int(a_ev->x);
-    m_current_x = int(a_ev->x);
-    m_current_y = int(a_ev->y);
+    int x = int(ev->x);
+    m_current_x = int(ev->x);
+    m_current_y = int(ev->y);
     if (m_adding_pressed)
     {
         midipulse tick;
         roll.convert_x(x, tick);
         if (p.is_active(dropseq))
         {
-            midipulse seqlength = p.get_sequence(dropseq)->get_length();
+            sequence * seq = p.get_sequence(dropseq);
+            midipulse seqlength = seq->get_length();
             tick -= (tick % seqlength);
 
             midipulse length = seqlength;
-            p.get_sequence(dropseq)->grow_trigger(roll.m_drop_tick, tick, length);
+            seq->grow_trigger(roll.m_drop_tick, tick, length);
             roll.draw_all();
             result = true;
         }
@@ -344,24 +380,23 @@ FruityPerfInput::on_motion_notify_event (GdkEventMotion * a_ev, perfroll & roll)
     {
         if (p.is_active(dropseq))
         {
+            sequence * seq = p.get_sequence(dropseq);
             midipulse tick;
             roll.convert_x(x, tick);
             tick -= roll.m_drop_tick_trigger_offset;
             tick -= tick % roll.m_snap;
             if (roll.m_moving)
             {
-                p.get_sequence(dropseq)->move_selected_triggers_to(tick, true);
+                seq->move_selected_triggers_to(tick, true);
                 result = true;
             }
             if (roll.m_growing)
             {
                 result = true;
                 if (roll.m_grow_direction)
-                    p.get_sequence(dropseq)->
-                        move_selected_triggers_to(tick, false, 0);
+                    seq->move_selected_triggers_to(tick, false, 0);
                 else
-                    p.get_sequence(dropseq)->
-                        move_selected_triggers_to(tick - 1, false, 1);
+                    seq->move_selected_triggers_to(tick - 1, false, 1);
             }
             roll.draw_all();
         }

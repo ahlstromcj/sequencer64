@@ -48,9 +48,10 @@ namespace seq64
 
 /**
  *  Changes the mouse cursor pixmap according to whether a note is being
- *  added or not.
+ *  added or not.  What calls this?  It is actually a right click.
  *
- *  What calls this?  It is actually a right click.
+ * \param adding
+ *      True if adding a note.  Sets m_adding.
  */
 
 void
@@ -69,6 +70,12 @@ Seq24SeqRollInput::set_adding (bool adding, seqroll & sroll)
  *
  *  This function now uses the needs_update flag to determine if the perform
  *  object should modify().
+ *
+ * \param ev
+ *      Provides the button-press event to process.
+ *
+ * \param sroll
+ *      Provides the "parent" seqroll object for this class.
  *
  * \return
  *      Returns the value of needs_update.  It used to return only true.
@@ -251,6 +258,12 @@ Seq24SeqRollInput::on_button_press_event
  *  mouse interaction.  This function now uses the needs_update flag to
  *  determine if the perform object should modify().
  *
+ * \param ev
+ *      Provides the button-release event to process.
+ *
+ * \param sroll
+ *      Provides the "parent" seqroll object for this class.
+ *
  * \return
  *      Returns the value of needs_update.  It used to return only true.
  */
@@ -333,7 +346,7 @@ Seq24SeqRollInput::on_button_release_event
     }
     if (SEQ64_CLICK_RIGHT(ev->button))
     {
-        /*
+        /**
          * Minor new feature.  If the Super (Mod4, Windows) key is
          * pressed when release, keep the adding state in force.  One
          * can then use the unadorned left-click key to add notes.  Right
@@ -364,6 +377,15 @@ Seq24SeqRollInput::on_button_release_event
 
 /**
  *      Seq24-style on-motion mouse interaction.
+ *
+ * \param ev
+ *      Provides the button-release event to process.
+ *
+ * \param sroll
+ *      Provides the "parent" seqroll object for this class.
+ *
+ * \return
+ *      Returns true if the event was processed.
  */
 
 bool Seq24SeqRollInput::on_motion_notify_event

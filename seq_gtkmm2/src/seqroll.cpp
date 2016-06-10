@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-06-08
+ * \updates       2016-06-09
  * \license       GNU GPLv2 or above
  *
  *  There are a large number of existing items to discuss.  But for now let's
@@ -933,10 +933,10 @@ seqroll::force_draw ()
  * \param y
  *      Provides the y value of the coordinate.
  *
- * \param tick
+ * \param [out] tick
  *      Provides the destination for the horizontal value in MIDI pulses.
  *
- * \param note
+ * \param [out] note
  *      Provides the destination for the vertical value, a note value.
  */
 
@@ -958,10 +958,10 @@ seqroll::convert_xy (int x, int y, midipulse & tick, int & note)
  * \param note
  *      Provides the vertical value, a note value.
  *
- * \param x
+ * \param [out] x
  *      Provides the destination x value of the coordinate.
  *
- * \param y
+ * \param [out] y
  *      Provides the destination y value of the coordinate.
  */
 
@@ -1125,8 +1125,9 @@ seqroll::start_paste ()
  *
  *  Therefore, m_snap / m_zoom = number pixels to snap to.
  *
- * \param x
- *      Provides the x-value to be snapped.
+ * \param [out] x
+ *      Provides the x-value to be snapped and returned.  A return value would
+ *      be better.
  */
 
 void
@@ -1197,12 +1198,18 @@ seqroll::on_realize ()
 
 /**
  *  Implements the on-expose event handling.
+ *
+ * \param ev
+ *      The expose event to process.
+ *
+ * \return
+ *      Always returns true.
  */
 
 bool
-seqroll::on_expose_event (GdkEventExpose * e)
+seqroll::on_expose_event (GdkEventExpose * ev)
 {
-    GdkRectangle & area = e->area;
+    GdkRectangle & area = ev->area;
     draw_drawable(area.x, area.y, area.x, area.y, area.width, area.height);
     draw_selection_on_window();
     return true;
@@ -1210,6 +1217,15 @@ seqroll::on_expose_event (GdkEventExpose * e)
 
 /**
  *  Implements the on-button-press event handling.
+ *
+ * \param ev
+ *      The expose event to process.
+ *
+ * \return
+ *      Returns the result of the Seq24 interaction or the Fruity interaction,
+ *      that is, the return value of
+ *      Seq24SeqRollInput::on_button_press_event() or
+ *      FruitySeqRollInput::on_button_press_event().
  */
 
 bool
@@ -1228,7 +1244,19 @@ seqroll::on_button_press_event (GdkEventButton * ev)
 }
 
 /**
- *  Implements the on-button-release event handling.
+ *  Implements the on-button-release event handling.  This function checks the
+ *  "rc" interaction-method option, and calls the forwarding function for the
+ *  seq24 or the fruity interaction method.  Might be a good case to prefer
+ *  inheritance and not try to support changing the interaction method without
+ *  a restart of Sequencer64.
+ *
+ * \param ev
+ *      The button release event to process.
+ *
+ * \return
+ *      Returns the return value of
+ *      Seq24SeqRollInput::on_button_release_event() or
+ *      FruitySeqRollInput::on_button_release_event().
  */
 
 bool
@@ -1248,6 +1276,14 @@ seqroll::on_button_release_event (GdkEventButton * ev)
 
 /**
  *  Implements the on-motion-notify event handling.
+ *
+ * \param ev
+ *      The motion-notification event to process.
+ *
+ * \return
+ *      Returns the return value of
+ *      Seq24SeqRollInput::on_motion_notify_event() or
+ *      FruitySeqRollInput::on_motion_notify_event().
  */
 
 bool
@@ -1267,6 +1303,13 @@ seqroll::on_motion_notify_event (GdkEventMotion * ev)
 
 /**
  *  Implements the on-enter-notify event handling.
+ *  Calls m_seqkeys_wid.set_hint_state(true).
+ *
+ * \param ev
+ *      The event-crossing event, not used.
+ *
+ * \return
+ *      Always returns false.
  */
 
 bool
@@ -1278,6 +1321,13 @@ seqroll::on_enter_notify_event (GdkEventCrossing *)
 
 /**
  *  Implements the on-leave-notify event handling.
+ *  Calls m_seqkeys_wid.set_hint_state(false).
+ *
+ * \param ev
+ *      The event-crossing event, not used.
+ *
+ * \return
+ *      Always returns false.
  */
 
 bool
@@ -1289,6 +1339,13 @@ seqroll::on_leave_notify_event (GdkEventCrossing *)
 
 /**
  *  Implements the on-focus event handling.
+ *  Sets the GDK HAS_FOCUS flag.
+ *
+ * \param ev
+ *      The event-focus event, not used.
+ *
+ * \return
+ *      Always returns false.
  */
 
 bool
@@ -1300,6 +1357,13 @@ seqroll::on_focus_in_event (GdkEventFocus *)
 
 /**
  *  Implements the on-unfocus event handling.
+ *  Resets the GDK HAS_FOCUS flag.
+ *
+ * \param ev
+ *      The event-focus event, not used.
+ *
+ * \return
+ *      Always returns false.
  */
 
 bool
@@ -1325,6 +1389,12 @@ seqroll::on_focus_out_event (GdkEventFocus *)
  *  check selection status before trying to use them to move up and down in
  *  the piano roll, in smaller steps than the new Page-Up and Page-Down key
  *  support.
+ *
+ * \param ev
+ *      The key-press event to process.
+ *
+ * \return
+ *      Returns true if the key-press was handled.
  */
 
 bool
@@ -1492,67 +1562,13 @@ seqroll::on_key_press_event (GdkEventKey * ev)
     return result;
 }
 
-#if SEQ64_USE_VI_SEQROLL_MODE       /* disabled, for programmers only! :-D  */
-
-/*
- * Just here to save some provisional code in case we ever want it.
- */
-
-bool
-seqroll::vi_key_press_event (GdkEventKey * ev)
-{
-        else if (ev->keyval == SEQ64_h)
-        {
-            if (m_seq.any_selected_notes())
-            {
-                m_seq.move_selected_notes(-m_snap, /*-48,*/ 0);
-                perf().modify();
-                result = true;
-            }
-        }
-        else if (ev->keyval == SEQ64_l)
-        {
-            if (m_seq.any_selected_notes())
-            {
-                m_seq.move_selected_notes(m_snap, /*48,*/ 0);
-                perf().modify();
-                result = true;
-            }
-        }
-        else if (ev->keyval == SEQ64_j)
-        {
-            if (m_seq.any_selected_notes())
-            {
-                m_seq.move_selected_notes(0, -1);
-                perf().modify();
-                result = true;
-            }
-        }
-        else if (ev->keyval == SEQ64_k)
-        {
-            if (m_seq.any_selected_notes())
-            {
-                m_seq.move_selected_notes(0, 1);
-                perf().modify();
-                result = true;
-            }
-        }
-        else if (ev->keyval == SEQ64_i)
-        {
-            m_seq24_interaction.set_adding(true, *this);
-            result = true;
-        }
-        else if (ev->keyval == SEQ64_I)             /* escape is stop-play  */
-        {
-            m_seq24_interaction.set_adding(false, *this);
-            result = true;
-        }
-}
-
-#endif                                              // SEQ64_USE_VI_SEQROLL_MODE
-
 /**
- *  Implements the on-size-allocate event handling.
+ *  Implements the on-size-allocate event handling.  Calls the base-class
+ *  version of this function and sets m_window_x and m_window_y to the width
+ *  and height of the allocation parameter.  Then calls update_sizes().
+ *
+ * \param a
+ *      The GDK allocation event object.
  */
 
 void
@@ -1573,6 +1589,12 @@ seqroll::on_size_allocate (Gtk::Allocation & a)
  *  Note that this function seems to duplicate the functionality of
  *  seqkeys::on_scroll_event().  Do we really need both?  Which one do we
  *  need?
+ *
+ * \param ev
+ *      The scroll event to process.
+ *
+ * \return
+ *      Returns true if the scroll event was handled.
  */
 
 bool

@@ -1,8 +1,70 @@
 Notes about the "Fruity" Interaction Mode
 Chris Ahlstrom
-2016-06-09 to 2016-06-09
+2016-06-09 to 2016-06-10
 
 In this document we survey the fruity mode to learn how it works.
+We found the following resource as well, which saves us a lot of research:
+
+    http://www.subatomicglue.com/seq24/readme-subatomic.txt
+
+    New Mouse Controls:
+
+    "Fruity Mode"  (like the fruityloops piano roll mouse interaction)
+    (selectable in options menu, in .seq24rc, and on command line)
+
+    Sequencer Roll:
+
+    Pencil (draw) or Selection (context sensitive)
+
+     - Left click on empty space adds a note
+     - Left click on note toggles note selection
+     - Left click move from empty space draw many notes while moving ptr
+	 - Left click move on a note moves/grows the selected note depending on
+	   where pointer is
+
+    Think of Ctrl like a selection modifier to default pencil ptr
+
+     - Left Ctrl click on empty space deselect all selected notes
+     - Left Ctrl click on note adds to selection
+	 - Left Ctrl click move in empty space starts selection box that only
+       selects what is inside on button up
+	 - Left Ctrl click move on a note make a copy of the selection (does
+       copy/paste of selected notes)
+
+    Think of Shift like an "add to selection" modifier
+
+     - Left Ctrl Shift click on empty space nothing
+     - Left Ctrl Shift click on note adds to selection
+     - Left Ctrl Shift click move in empty space
+       starts selection box that toggles selection on button up
+     - Left Ctrl Shift click move on a note
+       make a copy of the selection (does copy/paste of selected notes)
+
+    Think of Right Click like an eraser or easy selection...
+
+    Eraser
+	 - Right click on note deletes note...  if you drag the mouse around it
+       will delete other notes too.
+	 - Right+Ctrl click on note delete all selected notes at once time
+       including under the cursor
+
+    Selection:
+     - Right click on empty space deselect all notes
+     - Right+Ctrl click on empty space nothing
+	 - Right click move from empty space starts selection box that sets
+       selection only to the notes inside it
+	 - Right+Ctrl click move from empty space starts selection box that toggles
+       selection on notes inside it
+
+    Song Editor Window:
+
+     - is kinda similar to the SequencerRoll mouse buttons, though more limited
+       due to how the editor works...   you'll figure it out. :)
+
+    Also added:
+
+     - Ctrl A :  select All
+     - Space bar starts/stops the main window's playback...
 
 FruitySeqRollInput:
 
@@ -27,7 +89,6 @@ FruitySeqRollInput:
     unselect many:
     unselect all:  If not ctrl, left-click on note
             If not ctrl+shift, left-click
-
 
     seqroll function calls:
 
@@ -87,5 +148,10 @@ FruitySeqRollInput:
         sroll.m_selected.y
         sroll.m_selecting
         sroll.m_seq
+
+Seqroll:
+
+    m_seq24_interaction and m_fruity_interaction are both created, and
+    only one is used, depending on the "rc" interaction-method option.
 
 # vim: sw=4 ts=4 wm=8 et ft=sh

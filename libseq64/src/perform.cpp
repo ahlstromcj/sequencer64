@@ -528,6 +528,10 @@ perform::set_left_tick (midipulse tick, bool setstart)
 
     if (m_left_tick >= m_right_tick)
         m_right_tick = m_left_tick + m_one_measure;
+
+#ifdef USE_STAZED_JACK_SUPPORT
+    set_left_frame();
+#endif
 }
 
 /**
@@ -1407,15 +1411,48 @@ perform::copy_triggers ()
 void
 perform::start_playing (bool songmode)
 {
-    if (songmode)
+    if (songmode)                   // STAZED: || m_start_from_perfedit
     {
-        position_jack(true);
+#ifdef USE_STAZED_JACK_SUPPORT
+
+        if (m_jack_master)
+        {
+            /*
+             * Make sure it gets initial set if m_left_tick moved when
+             * ! m_jack_running.
+             */
+
+            set_left_frame();
+#endif
+            /*
+             * For cosmetic reasons, to stop transport line flicker on start.
+             */
+
+            position_jack(true);
+
+#ifdef USE_STAZED_JACK_SUPPORT
+        }
+#endif
         start_jack();
+
+        /*
+         * true for setting song m_playback_mode = true
+         */
+
         start(true);                    /* causes perfedit rewind           */
     }
-    else
+    else                                /* live mode                        */
     {
-        position_jack(false);
+#ifdef USE_STAZED_JACK_SUPPORT
+        if (m_jack_master)
+#endif
+        {
+            /*
+             * For cosmetic reasons, to stop transport line flicker on start.
+             */
+
+            position_jack(false);
+        }
         start(false);                   /* disables perfedit mute control   */
         start_jack();
     }
@@ -1484,6 +1521,62 @@ perform::stop_playing ()
     rc().is_pattern_playing(false);
     m_tick = 0;                         // or get_left_tick()
 }
+
+#ifdef USE_STAZED_JACK_SUPPORT
+
+void
+perform::set_start_from_perfedit (bool start)
+{
+    m_start_from_perfedit = start;
+}
+
+void
+perform::toggle_song_mode ()
+{
+    if (rc().jack_start_mode())
+        rc().jack_start_mode(false);
+    else
+    {
+        rc().jack_start_mode(true);
+        set_left_frame();
+    }
+}
+
+void
+perform::toggle_jack_mode ()
+{
+    set_jack_mode(! m_jack_running);
+}
+
+void
+perform::set_jack_mode (bool mode)
+{
+    m_toggle_jack = mode;
+}
+
+bool
+perform::get_toggle_jack ()
+{
+    return m_toggle_jack;
+}
+
+void
+perform::set_follow_transport (bool set_it)
+{
+    m_follow_transport = set_it;
+}
+
+bool
+perform::get_follow_transport ()
+{
+    return m_follow_transport;
+}
+
+void perform::toggle_follow_transport()
+{
+    set_follow_transport(! m_follow_transport);
+}
+#endif
 
 /**
  *  If JACK is supported and running, sets the position of the transport.

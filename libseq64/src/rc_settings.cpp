@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-22
- * \updates       2016-05-17
+ * \updates       2016-06-11
  * \license       GNU GPLv2 or above
  *
  *  Note that this module also sets the legacy global variables, so that
@@ -415,10 +415,40 @@ rc_settings::config_directory (const std::string & value)
 }
 
 /**
- * \setter m_config_filename
+ * \setter m_config_filename and m_user_filename
+ *
+ *      Implements the --config option to change both configuration files
+ *      ("rc" and "usr") with one option.
  *
  * \param value
- *      The value to use to make the setting.
+ *      The value to use to make the setting, if the string is not empty.
+ *      If the value has an extension, it is stripped first.
+ */
+
+void
+rc_settings::set_config_files (const std::string & value)
+{
+    if (! value.empty())
+    {
+        size_t ppos = value.rfind(".");
+        std::string basename;
+        if (ppos != std::string::npos)
+            basename = value.substr(0, ppos);   /* strip after first period */
+        else
+            basename = value;
+
+        config_filename(basename);
+        user_filename(basename);
+    }
+}
+
+/**
+ * \setter m_config_filename ("rc")
+ *
+ * \param value
+ *      The value to use to make the setting, if the string is not empty.
+ *      If there is no period in the string, then ".rc" is appended to the
+ *      end of the filename.
  */
 
 void
@@ -426,13 +456,18 @@ rc_settings::config_filename (const std::string & value)
 {
     if (! value.empty())
         m_config_filename = value;
+
+    if (m_config_filename.find(".") == std::string::npos)
+        m_config_filename += ".rc";
 }
 
 /**
- * \setter m_user_filename
+ * \setter m_user_filename ("usr")
  *
  * \param value
- *      The value to use to make the setting.
+ *      The value to use to make the setting, if the string is not empty.
+ *      If there is no period in the string, then ".usr" is appended to the
+ *      end of the filename.
  */
 
 void
@@ -440,13 +475,16 @@ rc_settings::user_filename (const std::string & value)
 {
     if (! value.empty())
         m_user_filename = value;
+
+    if (m_user_filename.find(".") == std::string::npos)
+        m_user_filename += ".usr";
 }
 
 /**
- * \setter m_config_filename_alt;
+ * \setter m_config_filename_alt
  *
  * \param value
- *      The value to use to make the setting.
+ *      The value to use to make the setting, if the string is not empty.
  */
 
 void

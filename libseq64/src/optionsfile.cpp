@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-05-29
+ * \updates       2016-06-11
  * \license       GNU GPLv2 or above
  *
  *  The <code> ~/.seq24rc </code> or <code> ~/.config/sequencer64/sequencer64.rc
@@ -358,7 +358,16 @@ optionsfile::parse (perform & p)
     next_data_line(file);
     sscanf(m_line, "%u", &ktx.kpt_stop);
 
-    if (! rc().legacy_format())
+    if (rc().legacy_format())               /* init "non-legacy" fields */
+    {
+        ktx.kpt_show_ui_sequence_number = false;
+        ktx.kpt_pattern_edit = 0;
+        ktx.kpt_event_edit = 0;
+#ifdef SEQ64_PAUSE_SUPPORT
+        ktx.kpt_pause = 0;
+#endif
+    }
+    else
     {
 #ifdef SEQ64_PAUSE_SUPPORT
         next_data_line(file);

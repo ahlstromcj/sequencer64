@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-09-13
- * \updates       2016-05-22
+ * \updates       2016-06-11
  * \license       GNU GPLv2 or above
  *
  */
@@ -64,13 +64,13 @@ struct keys_perform_transfer
     unsigned int kpt_stop;
     bool kpt_show_ui_sequence_key;
     bool kpt_show_ui_sequence_number;
+    unsigned int kpt_pattern_edit;
+    unsigned int kpt_event_edit;
 
 #ifdef SEQ64_PAUSE_SUPPORT
     unsigned int kpt_pause;
 #endif
 
-    unsigned int kpt_pattern_edit;
-    unsigned int kpt_event_edit;
 };
 
 /**
@@ -80,7 +80,6 @@ struct keys_perform_transfer
 
 class keys_perform
 {
-
     friend class options;               /* for member address access    */
     friend class perform;               /* for map-types access         */
     friend class optionsfile;           /* for map-types access         */
@@ -115,43 +114,43 @@ private:
      *  If set, shows the sequence number on each filled pattern and empty
      *  pattern slot in the main window.  Also shows the sequence number as
      *  part of the sequence name in the performance window (song editor).
+     *  Always disabled in legacy mode.
      */
 
     bool m_key_show_ui_sequence_number;
 
-    /*
-     *  Do not access these directly, use set/lookup functions declared
-     *  below.
-     */
-
     /**
-     *  Holds the mapping of keys to the pattern slots.
+     *  Holds the mapping of keys to the pattern slots.  Do not access
+     *  directly, use the set/lookup functions declared below.
      */
 
     SlotMap m_key_events;
 
     /**
-     *  Holds the mapping of keys to the mute groups.
+     *  Holds the mapping of keys to the mute groups.  Do not access directly,
+     *  use the set/lookup functions declared below.
      */
 
     SlotMap m_key_groups;
 
     /**
-     *  Holds the reverse mapping of the pattern slots to the keys.
+     *  Holds the reverse mapping of the pattern slots to the keys.  Do not
+     *  access directly, use the set/lookup functions declared below.
      */
 
     RevSlotMap m_key_events_rev;        // reverse lookup, keep in sync!!
 
     /**
-     *  Holds the reverse mapping of the mute groups to the keys.
+     *  Holds the reverse mapping of the mute groups to the keys.  Do not
+     *  access directly, use the set/lookup functions declared below.
      */
 
     RevSlotMap m_key_groups_rev;        // reverse lookup, keep in sync!!
 
     /**
-     *  Provides key assignments for some key sequencer features.
-     *  Used in mainwnd, options, optionsfile, perfedit, seqroll,
-     *  userfile, and perform.
+     *  Provides key assignments for some key sequencer features.  Used in
+     *  mainwnd, options, optionsfile, perfedit, seqroll, userfile, and
+     *  perform.
      *
      *  We could instead use the keys_perform_transfer structure instead of
      *  all these individual members.

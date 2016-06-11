@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-05-17
+ * \updates       2016-06-10
  * \license       GNU GPLv2 or above
  *
  *  Note that there are a number of header files that we don't need to add
@@ -65,6 +65,17 @@
  *
  *  The last thing is to override any other settings via the command-line
  *  parameters.
+ *
+ * \param argc
+ *      The number of command-line parameters, including the name of the
+ *      application as parameter 0.
+ *
+ * \param argv
+ *      The array of pointers to the command-line parameters.
+ *
+ * \return
+ *      Returns EXIT_SUCCESS (0) or EXIT_FAILURE, depending on the status of
+ *      the run.
  */
 
 int

@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-22
- * \updates       2016-04-04
+ * \updates       2016-06-11
  * \license       GNU GPLv2 or above
  *
  *  This collection of variables describes the options of the application,
@@ -464,6 +464,7 @@ public:
     void jack_session_uuid (const std::string & value);
     void last_used_dir (const std::string & value);
     void config_directory (const std::string & value);
+    void set_config_files (const std::string & value);
     void config_filename (const std::string & value);
     void user_filename (const std::string & value);
     void config_filename_alt (const std::string & value);

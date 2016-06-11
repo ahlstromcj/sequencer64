@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-20
- * \updates       2016-05-29
+ * \updates       2016-06-11
  * \license       GNU GPLv2 or above
  *
  *  The "rc" command-line options override setting that are first read from
@@ -39,7 +39,7 @@
  *  The "user" settings are mostly not available from the command-line
  *  (--bus being one exception).  They, too, are partly system-dependent, but
  *  there is no user-interface for changing the "user" options at this time.
- *  So the "user" configuration file is not saved unless it doesn't exist in
+ *  So the "user" configuration file is not saved unless it does not exist in
  *  the first place, or the "--user-save" option isprovided on the ommand
  *  line.
  *
@@ -111,9 +111,12 @@ static struct option long_options [] =
     {"auto-alsa-ports",     0, 0, 'a'},
     {"reveal-alsa-ports",   0, 0, 'r'},                 /* new */
     {"hide-alsa-ports",     0, 0, 'R'},                 /* new */
-    {"alsa",                0, 0, 'A'},                 /* NEW              */
+    {"alsa",                0, 0, 'A'},                 /* new */
     {"pass-sysex",          0, 0, 'P'},
     {"user-save",           0, 0, 'u'},
+    {"config",              required_argument, 0, 'c'}, /* new */
+    {"rc",                  required_argument, 0, 'f'}, /* new */
+    {"usr",                 required_argument, 0, 'F'}, /* new */
 
     /**
      * Legacy command-line options are using underscores, which are confusing
@@ -140,16 +143,23 @@ static struct option long_options [] =
 
 /**
  *  Provides a complete list of the short options, and is passed to
- *  getopt_long().
+ *  getopt_long().  The following string keeps track of the characters used so
+ *  far.  An 'x' means the character is used; an 'o' means it is used for the
+ *  legacy spelling of the option.
+ *
+ *      0123456789 @AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz
+ *       ooooooooo oxxxxxx        xx xxx xxxxx x  xx xxxxx  xxx    x
+ *
+ *  Previous arg-list, items missing! "ChVH:lRrb:q:Lni:jJmaAM:pPusSU:x:"
  */
 
 static const std::string s_arg_list =
-    "ChVH:lRrb:q:Lni:jJmaAM:pPusSU:x:"                  /* good args        */
+    "AaB:b:Cc:F:f:H:hi:JjkLlM:mnPpq:RrSsU:uV:x:"        /* modern args      */
     "1234:5:67:89@"                                     /* legacy args      */
     ;
 
 /**
- *  Provides more help text.
+ *  Provides help text.
  */
 
 static const char * const s_help_1a =
@@ -167,12 +177,9 @@ static const char * const s_help_1a =
 "   -L, --lash               Activate built-in LASH support.\n"
 "   -n, --no-lash            Do not activate built-in LASH support.\n"
 #endif
-"   -m, --manual-alsa-ports  Don't attach ALSA ports.  Use when exposing ALSA\n"
+"   -m, --manual-alsa-ports  Do not attach ALSA ports.  Use when exposing ALSA\n"
 "                            ports to JACK (e.g. using a2jmidid).\n"
 "   -a, --auto-alsa-ports    Attach ALSA ports (overrides the 'rc' file).\n"
-"   -r, --reveal-alsa-ports  Don't use the 'user' definitions for port names.\n"
-"   -R, --hide-alsa-ports    Use the 'user' definitions for port names.\n"
-"   -A, --alsa               Don't use JACK, use ALSA. A sticky option.\n"
     ;
 
 /**
@@ -180,13 +187,16 @@ static const char * const s_help_1a =
  */
 
 static const char * const s_help_1b =
+"   -r, --reveal-alsa-ports  Do not use the 'user' definitions for port names.\n"
+"   -R, --hide-alsa-ports    Use the 'user' definitions for port names.\n"
+"   -A, --alsa               Do not use JACK, use ALSA. A sticky option.\n"
 "   -b, --bus b              Global override of bus number (for testing).\n"
 "   -B, --buss b             Avoids the 'bus' versus 'buss' confusion.\n"
 "   -q, --ppqn qn            Specify default PPQN to replace 192.  The MIDI\n"
 "                            file might specify its own PPQN.\n"
 "   -p, --priority           Run high priority, FIFO scheduler (needs root).\n"
-// "   -P, --pass-sysex      Passes incoming SysEx messages to all outputs.\n"
-// "                         IS THIS SUPPORTED?\n"
+"   -P, --pass-sysex         Passes incoming SysEx messages to all outputs.\n"
+"                            Not yet fully implemented.\n"
 "   -i, --ignore n           Ignore ALSA device number.\n"
 "   -s, --show-midi          Dump incoming MIDI events to the screen.\n"
     ;
@@ -207,7 +217,7 @@ static const char * const s_help_2 =
 " -U, --jack-session-uuid u  Set UUID for JACK session.\n"
 #endif
 " -x, --interaction-method n Set mouse style: 0 = seq24; 1 = fruity. Note that\n"
-"                            fruity doesn't support arrow keys and paint key.\n"
+"                            fruity does not support arrow keys and paint key.\n"
     ;
 
 /**
@@ -219,6 +229,15 @@ static const char * const s_help_3 =
 "                            they are saved only if the file does not exist, so\n"
 "                            that certain 'user' command-line options, such as\n"
 "                            --bus, do not become permanent.\n"
+"   -f, --rc filename        Use a different 'rc' configuration file.  It must\n"
+"                            be a file in the user's $HOME/.config/sequencer64\n"
+"                            directory.  Not supported by the legacy mode. The\n"
+"                            '.rc' extension is added if needed.\n"
+"   -F, --usr filename       Use a different 'usr' configuration file.  Same\n"
+"                            rules as for the --rc option. The '.usr'\n"
+"                            extension is added if needed.\n"
+"   -c, --config basename    Change both 'rc' and 'usr' files.  Any extension\n"
+"                            provided is stripped starting at the last period.\n"
 "\n"
     ;
 
@@ -306,7 +325,7 @@ help_check (int argc, char * argv [])
  *
  *  Instead of the legacy Seq24 names, we use the new configuration
  *  file-names, located in the ~/.config/sequencer64 directory. However, if
- *  they aren't found, we no longer fall back to the legacy configuration
+ *  they are not found, we no longer fall back to the legacy configuration
  *  file-names.  If the --legacy option is in force, use only the legacy
  *  configuration file-name.  The code also ensures the directory exists.
  *  CURRENTLY LINUX-SPECIFIC.  See the rc_settings class for how this works.
@@ -414,6 +433,45 @@ parse_command_line_options (int argc, char * argv [])
 
         switch (c)
         {
+        case 'A':
+            seq64::rc().with_jack_transport(false);
+            seq64::rc().with_jack_master(false);
+            seq64::rc().with_jack_master_cond(false);
+            break;
+
+        case 'a':
+            seq64::rc().manual_alsa_ports(false);
+            break;
+
+        case 'B':                           /* --buss for the oldsters      */
+        case 'b':                           /* --bus for the youngsters     */
+            seq64::usr().midi_buss_override(char(atoi(optarg)));
+            break;
+
+        case 'C':
+        case '3':
+            seq64::rc().with_jack_transport(true);
+            seq64::rc().with_jack_master(false);
+            seq64::rc().with_jack_master_cond(true);
+            break;
+
+        case 'c':                           /* --config option              */
+            seq64::rc().set_config_files(optarg);
+            break;
+
+        case 'F':                           /* --usr option                 */
+            seq64::rc().user_filename(optarg);
+            break;
+
+        case 'f':                           /* --rc option                  */
+            seq64::rc().config_filename(optarg);
+            break;
+
+        case 'H':
+            seq64::rc().config_directory(optarg);
+            printf("Set home to %s.\n", seq64::rc().config_directory().c_str());
+            break;
+
         case 'h':
             printf(s_help_1a);
             printf(s_help_1b);
@@ -423,14 +481,64 @@ parse_command_line_options (int argc, char * argv [])
             result = SEQ64_NULL_OPTION_INDEX;
             break;
 
+        case 'i':                           /* ignore ALSA device           */
+            seq64::rc().device_ignore(true);
+            seq64::rc().device_ignore_num(atoi(optarg));
+            break;
+
+        case 'J':
+        case '2':
+            seq64::rc().with_jack_transport(true);
+            seq64::rc().with_jack_master(true);
+            seq64::rc().with_jack_master_cond(false);
+            break;
+
+        case 'j':
+        case '1':
+            seq64::rc().with_jack_transport(true);
+            break;
+
+        case 'k':
+        case '6':
+            seq64::rc().print_keys(true);
+            break;
+
+        case 'L':
+            seq64::rc().lash_support(true);
+            printf("Activating LASH support.\n");
+            break;
+
         case 'l':
             seq64::rc().legacy_format(true);
             printf("Setting legacy seq24 file format for writing.\n");
             break;
 
-        case 'H':
-            seq64::rc().config_directory(optarg);
-            printf("Setting 'home' directory to %s.\n", optarg);
+        case 'M':
+        case '4':
+            seq64::rc().jack_start_mode(atoi(optarg) > 0);
+            break;
+
+        case 'm':
+        case '8':
+            seq64::rc().manual_alsa_ports(true);
+            break;
+
+        case 'n':
+            seq64::rc().lash_support(false);
+            printf("Deactivating LASH support.\n");
+            break;
+
+        case 'P':
+        case '9':
+            seq64::rc().pass_sysex(true);
+            break;
+
+        case 'p':
+            seq64::rc().priority(true);
+            break;
+
+        case 'q':
+            seq64::usr().midi_ppqn(atoi(optarg));
             break;
 
         case 'R':
@@ -443,16 +551,6 @@ parse_command_line_options (int argc, char * argv [])
             printf("Showing native ALSA ports.\n");
             break;
 
-        case 'L':
-            seq64::rc().lash_support(true);
-            printf("Activating LASH support.\n");
-            break;
-
-        case 'n':
-            seq64::rc().lash_support(false);
-            printf("Deactivating LASH support.\n");
-            break;
-
         case 'S':
             seq64::rc().stats(true);
             break;
@@ -461,59 +559,13 @@ parse_command_line_options (int argc, char * argv [])
             seq64::rc().show_midi(true);
             break;
 
-        case 'p':
-            seq64::rc().priority(true);
-            break;
-
-        case 'P':
-            seq64::rc().pass_sysex(true);
+        case 'U':
+        case '5':
+            seq64::rc().jack_session_uuid(std::string(optarg));
             break;
 
         case 'u':
             seq64::usr().save_user_config(true);    /* usr(), not rc()! */
-            break;
-
-        case 'k':
-            seq64::rc().print_keys(true);
-            break;
-
-        case 'j':
-            seq64::rc().with_jack_transport(true);
-            break;
-
-        case 'J':
-            seq64::rc().with_jack_transport(true);
-            seq64::rc().with_jack_master(true);
-            seq64::rc().with_jack_master_cond(false);
-            break;
-
-        case 'C':
-            seq64::rc().with_jack_transport(true);
-            seq64::rc().with_jack_master(false);
-            seq64::rc().with_jack_master_cond(true);
-            break;
-
-        case 'M':
-            seq64::rc().jack_start_mode(atoi(optarg) > 0);
-            break;
-
-        case 'm':
-            seq64::rc().manual_alsa_ports(true);
-            break;
-
-        case 'a':
-            seq64::rc().manual_alsa_ports(false);
-            break;
-
-        case 'A':
-            seq64::rc().with_jack_transport(false);
-            seq64::rc().with_jack_master(false);
-            seq64::rc().with_jack_master_cond(false);
-            break;
-
-        case 'i':                           /* ignore ALSA device           */
-            seq64::rc().device_ignore(true);
-            seq64::rc().device_ignore_num(atoi(optarg));
             break;
 
         case 'V':
@@ -521,24 +573,12 @@ parse_command_line_options (int argc, char * argv [])
             result = SEQ64_NULL_OPTION_INDEX;
             break;
 
-        case 'U':
-            seq64::rc().jack_session_uuid(std::string(optarg));
-            break;
-
         case 'x':
+        case '7':
             seq64::rc().interaction_method
             (
                 seq64::interaction_method_t(atoi(optarg))
             );
-            break;
-
-        case 'B':                           /* --buss for the oldsters      */
-        case 'b':                           /* --bus for the youngsters     */
-            seq64::usr().midi_buss_override(char(atoi(optarg)));
-            break;
-
-        case 'q':
-            seq64::usr().midi_ppqn(atoi(optarg));
             break;
 
         default:

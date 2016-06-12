@@ -782,7 +782,7 @@ eventedit::handle_close ()
 
 /**
  *  Handles closing the sequence editor, common code for handle_cancel() and
- *  handle_close()..
+ *  handle_close().
  */
 
 void

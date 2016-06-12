@@ -118,7 +118,7 @@ namespace seq64
  *  the sequence editor will adopt these values.  This is a long-standing
  *  feature of Seq24, but strikes us as a bit surprising.
  *
- * \new ca 2016-04-10
+ * \change ca 2016-04-10
  *      If we just double the PPQN, then the snap divisor becomes 32, and the
  *      snap interval is a 32nd note.  We would like to keep it at a 16th
  *      note.  We correct the snap ticks to the actual PPQN ratio.

@@ -103,18 +103,21 @@ public:
 /**
  *  Provides an internal type to make it easier to display a specific and
  *  accurate human-readable message when a JACK operation fails.
- *
- * \var jf_bit
- *      Holds one of the bit-values from jack_status_t, which is defined as
- *      an "enum JackStatus" type.
- *
- * \var jf_meaning
- *      Holds a textual description of the corresponding status bit.
  */
 
 typedef struct
 {
+    /**
+     *  Holds one of the bit-values from jack_status_t, which is defined as an
+     *  "enum JackStatus" type.
+     */
+
     unsigned jf_bit;
+
+    /**
+     *  Holds a textual description of the corresponding status bit.
+     */
+
     std::string jf_meaning;
 
 } jack_status_pair_t;

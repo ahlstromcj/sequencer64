@@ -720,7 +720,7 @@ perfroll::convert_xy (int x, int y, midipulse & d_tick, int & d_seq)
 /**
  *  Implements the horizontal zoom feature.
  *
- * \new ca 2016-04-05
+ * \change ca 2016-04-05
  *      The initial zoom value is c_perf_scale_x (32).  We allow it to 
  *      range from 1 to 128, for now.  Smaller values zoom in.
  */

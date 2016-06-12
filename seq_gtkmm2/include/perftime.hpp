@@ -260,8 +260,7 @@ private:        // callbacks
     /**
      *  This button-release handler does nothing.
      *
-     * \param ev
-     *      The button event, not used.
+     *  "ev", The button event parameter, is not used.
      *
      * \return
      *      Always returns false

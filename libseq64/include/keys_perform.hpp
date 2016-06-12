@@ -175,8 +175,8 @@ private:
     unsigned int m_key_pause;                   /**< Pause play, Period.    */
 #endif
 
-    unsigned int m_key_pattern_edit;
-    unsigned int m_key_event_edit;
+    unsigned int m_key_pattern_edit;            /**< Show pattern editor.   */
+    unsigned int m_key_event_edit;              /**< Show event editor.     */
     unsigned int m_key_stop;                    /**< Stop play, Escape.     */
 
 public:
@@ -763,6 +763,8 @@ protected:
      */
 
     /**
+     * \getter m_key_bpm_up
+     *
      *  Address getter for the bpm_up operation.
      */
 
@@ -772,6 +774,8 @@ protected:
     }
 
     /**
+     * \getter m_key_bpm_dn
+     *
      *  Address getter for the bpm_dn operation.
      */
 
@@ -781,6 +785,8 @@ protected:
     }
 
     /**
+     * \getter m_key_replace
+     *
      *  Address getter for the replace operation.
      */
 
@@ -790,6 +796,8 @@ protected:
     }
 
     /**
+     * \getter m_key_queue
+     *
      *  Address getter for the queue operation.
      */
 
@@ -799,6 +807,8 @@ protected:
     }
 
     /**
+     * \getter m_key_keep_queue
+     *
      *  Address getter for the keep_queue operation.
      */
 
@@ -808,6 +818,8 @@ protected:
     }
 
     /**
+     * \getter m_key_snapshot_1
+     *
      *  Address getter for the snapshot_1 operation.
      */
 
@@ -817,6 +829,8 @@ protected:
     }
 
     /**
+     * \getter m_key_snapshot_2
+     *
      *  Address getter for the snapshot_2 operation.
      */
 
@@ -826,6 +840,8 @@ protected:
     }
 
     /**
+     * \getter m_key_screenset_up
+     *
      *  Address getter for the screenset_up operation.
      */
 
@@ -835,6 +851,8 @@ protected:
     }
 
     /**
+     * \getter m_key_screenset_dn
+     *
      *  Address getter for the screenset_dn operation.
      */
 
@@ -844,6 +862,8 @@ protected:
     }
 
     /**
+     * \getter m_key_playing_screenset
+     *
      *  Address getter for the set_playing_screenset operation.
      */
 
@@ -853,6 +873,8 @@ protected:
     }
 
     /**
+     * \getter m_key_group_on
+     *
      *  Address getter for the group_on operation.
      */
 
@@ -862,6 +884,8 @@ protected:
     }
 
     /**
+     * \getter m_key_group_off
+     *
      *  Address getter for the group_off operation.
      */
 
@@ -871,6 +895,8 @@ protected:
     }
 
     /**
+     * \getter m_key_group_learn
+     *
      *  Address getter for the group_learn operation.
      */
 
@@ -880,6 +906,8 @@ protected:
     }
 
     /**
+     * \getter m_key_start
+     *
      *  Address getter for the start operation.
      */
 
@@ -891,6 +919,8 @@ protected:
 #ifdef SEQ64_PAUSE_SUPPORT
 
     /**
+     * \getter m_key_pause
+     *
      *  Address getter for the pause operation.
      */
 
@@ -902,6 +932,8 @@ protected:
 #endif
 
     /**
+     * \getter m_key_pattern_edit
+     *
      *  Address getter for the pattern edit operation.
      */
 
@@ -911,6 +943,8 @@ protected:
     }
 
     /**
+     * \getter m_key_event_edit
+     *
      *  Address getter for the event edit operation.
      */
 
@@ -920,6 +954,8 @@ protected:
     }
 
     /**
+     * \getter m_key_stop
+     *
      *  Address getter for the stop operation.
      */
 
@@ -929,6 +965,8 @@ protected:
     }
 
     /**
+     * \getter m_key_show_ui_sequence_key
+     *
      *  Address getter for the show_ui_sequence_key value.
      */
 
@@ -938,6 +976,8 @@ protected:
     }
 
     /**
+     * \getter m_key_show_ui_sequence_number
+     *
      *  Address getter for the show_ui_sequence_number value.
      */
 
@@ -946,7 +986,7 @@ protected:
         return &m_key_show_ui_sequence_number;
     }
 
-};
+};          // class keys_perform
 
 }           // namespace seq64
 

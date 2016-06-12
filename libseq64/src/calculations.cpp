@@ -301,6 +301,9 @@ pulses_to_midi_measures
  * \param timinginfo
  *      Provides the tempo of the song, in beats/minute, and the
  *      pulse-per-quarter-note of the song.
+ *
+ * \return
+ *      Returns the return-value of the other pulses_to_timestring() function.
  */
 
 std::string
@@ -331,6 +334,9 @@ pulses_to_timestring (midipulse p, const midi_timing & timinginfo)
  *
  * \param ppqn
  *      Provides the pulses-per-quarter-note of the song.
+ *
+ * \return
+ *      Returns the time-string representation of the pulse (ticks) value.
  */
 
 std::string
@@ -566,6 +572,9 @@ string_to_pulses
  *
  * \param s
  *      Provides the string to convert to a MIDI byte.
+ *
+ * \return
+ *      Returns the MIDI byte value represented by the string.
  */
 
 midibyte

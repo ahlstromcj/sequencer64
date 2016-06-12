@@ -445,6 +445,9 @@ event::get_rank () const
  *
  * \param ev
  *      The event to put on show.
+ *
+ * \return
+ *      Returns the string representation of the event parameter.
  */
 
 std::string

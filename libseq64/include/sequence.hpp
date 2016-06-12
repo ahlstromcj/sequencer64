@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-04-09
+ * \updates       2016-06-11
  * \license       GNU GPLv2 or above
  *
  *  The functions add_list_var() and add_long_list() have been replaced by
@@ -78,22 +78,34 @@ class perform;
 #endif
 
 /**
- *  Provides a set of methods for drawing certain items.
- *
- * \var DRAW_FIN
- *
- * \var DRAW_NORMAL_LINKED
- *
- * \var DRAW_NOTE_ON
- *
- * \var DRAW_NOTE_OFF
+ *  Provides a set of methods for drawing certain items.  These values are
+ *  used in the sequence, seqroll, perfroll, and mainwid classes.
  */
 
 enum draw_type
 {
+    /**
+     *  Indicates that drawing is finished?
+     */
+
     DRAW_FIN = 0,
+
+    /**
+     *  Probably used for drawing linked notes.
+     */
+
     DRAW_NORMAL_LINKED,
+
+    /**
+     *  For starting the drawing of a note?
+     */
+
     DRAW_NOTE_ON,
+
+    /**
+     *  For finishing the drawing of a note?
+     */
+
     DRAW_NOTE_OFF
 };
 
@@ -117,37 +129,50 @@ public:
     /**
      *  This enumeration is used in selecting events and note.  Se the
      *  select_note_events() and select_events() functions.
-     *
-     * \var e_select
-     *      To select ...
-     *
-     * \var e_select_one
-     *      To select ...
-     *
-     * \var e_is_selected
-     *      The events are selected ...
-     *
-     * \var e_would_select
-     *      The events would be selected ...
-     *
-     * \var e_deselect
-     *      To deselect the event under the cursor.
-     *
-     * \var e_toggle_selection
-     *      To toggle the selection of the event under the cursor.
-     *
-     * \var e_remove_one
-     *      To remove one note under the cursor.
      */
 
     enum select_action_e
     {
+        /**
+         *  To select an event.
+         */
+
         e_select,
+
+        /**
+         *  To select a single event.
+         */
+
         e_select_one,
+
+        /**
+         *  The events are selected.
+         */
+
         e_is_selected,
+
+        /**
+         *  The events would be selected.
+         */
+
         e_would_select,
+
+        /**
+         *  To deselect the event under the cursor.
+         */
+
         e_deselect,
+
+        /**
+         *  To toggle the selection of the event under the cursor.
+         */
+
         e_toggle_selection,
+
+        /**
+         *  To remove one note under the cursor.
+         */
+
         e_remove_one
     };
 
@@ -178,10 +203,36 @@ private:
      */
 
     event_list m_events;
+
+    /**
+     *  The triggers associated with the sequence, used in the
+     *  performance/song editor.
+     */
+
     triggers m_triggers;
+
+    /**
+     *  Provides a list of event actions to undo.
+     */
+
     EventStack m_events_undo;
+
+    /**
+     *  Provides a list of event actions to redo.
+     */
+
     EventStack m_events_redo;
+
+    /**
+     *  An iterator for playing events.
+     */
+
     event_list::iterator m_iterator_play;
+
+    /**
+     *  An iterator for drawing events.
+     */
+
     event_list::iterator m_iterator_draw;
 
     /**
@@ -242,8 +293,22 @@ private:
 
     bool m_recording;
 
+    /**
+     *  True if recoring in quantized mode.
+     */
+
     bool m_quantized_rec;
+
+    /**
+     *  True if recoring in MIDI-through mode.
+     */
+
     bool m_thru;
+
+    /**
+     *  True if the events are queued.
+     */
+
     bool m_queued;
 
     /**
@@ -252,10 +317,10 @@ private:
      *  name change.
      */
 
-    bool m_dirty_main;
-    bool m_dirty_edit;
-    bool m_dirty_perf;
-    bool m_dirty_names;
+    bool m_dirty_main;      /**< Provides the main dirtiness flag.      */
+    bool m_dirty_edit;      /**< Provides the main is-edited flag.      */
+    bool m_dirty_perf;      /**< Provides performance dirty flagflag.   */
+    bool m_dirty_names;     /**< Provides the names dirtiness flag.     */
 
     /**
      *  Indicates that the sequence is currently being edited.
@@ -281,9 +346,9 @@ private:
      *  including triggering.
      */
 
-    midipulse m_last_tick;
-    midipulse m_queued_tick;
-    midipulse m_trigger_offset;
+    midipulse m_last_tick;          /**< Provides the last tick played.     */
+    midipulse m_queued_tick;        /**< Provides the next tick to play?    */
+    midipulse m_trigger_offset;     /**< Provides the trigger offset.       */
 
     /**
      *  This constant provides ...?
@@ -907,8 +972,8 @@ public:
         midibyte status, midibyte cc,
         int d_s, int d_f
     );
-    void increment_selected (midibyte status, midibyte control);
-    void decrement_selected (midibyte status, midibyte control);
+    void increment_selected (midibyte status, midibyte /*control*/);
+    void decrement_selected (midibyte status, midibyte /*control*/);
     void grow_selected (midipulse deltatick);
     void stretch_selected (midipulse deltatick);
     void remove_marked ();
@@ -924,9 +989,6 @@ public:
      *  like to avoid that if doing a pause, rather than a stop, of playback.
      *  However, commenting out this setting doesn't have any effect that we
      *  can see with a quick look at the user-interface.
-     *
-     * \param tick
-     *      Provides the optional tick value to set as "0".  It defaults to 0.
      */
 
     void zero_markers ()

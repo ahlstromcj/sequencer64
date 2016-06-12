@@ -436,7 +436,7 @@ editable_event::category (category_t c)
  *      abbreviations.  Note that a bad value is translated to the value of
  *      category_name.
  *
- * \param c
+ * \param name
  *      Provides the category name for the category value to set.
  */
 

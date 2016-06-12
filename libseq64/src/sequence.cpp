@@ -762,7 +762,7 @@ sequence::get_num_selected_events (midibyte status, midibyte cc) const
  *
  * \threadsafe
  *
- * \param a_tick_s
+ * \param tick_s
  *      The start time of the selection.
  *
  * \param note_h
@@ -1247,8 +1247,8 @@ sequence::grow_selected (midipulse delta_tick)
  * \param astat
  *      The desired event.
  *
- * \param acontrol
- *      The desired control-change, unused.
+ *  Parameter "acontrol", the desired control-change, is unused.
+ *  This might be a bug, or at least a missing feature.
  */
 
 void
@@ -1258,12 +1258,15 @@ sequence::increment_selected (midibyte astat, midibyte /*acontrol*/)
     for (event_list::iterator i = m_events.begin(); i != m_events.end(); ++i)
     {
         event & er = DREF(i);
-        if (er.is_selected() && er.get_status() == astat)
+        if (er.is_selected())
         {
-            if (event::is_two_byte_msg(astat))
-                er.increment_data2();
-            else if (event::is_one_byte_msg(astat))
-                er.increment_data1();
+            if (er.get_status() == astat)   // && er.get_control == acontrol
+            {
+                if (event::is_two_byte_msg(astat))
+                    er.increment_data2();
+                else if (event::is_one_byte_msg(astat))
+                    er.increment_data1();
+            }
         }
     }
 }
@@ -1287,8 +1290,8 @@ sequence::increment_selected (midibyte astat, midibyte /*acontrol*/)
  * \param astat
  *      The desired event.
  *
- * \param acontrol
- *      The desired control-change, unused.
+ *  Parameter "acontrol", the desired control-change, is unused.
+ *  This might be a bug, or at least a missing feature.
  */
 
 void
@@ -1298,12 +1301,15 @@ sequence::decrement_selected (midibyte astat, midibyte /*acontrol*/)
     for (event_list::iterator i = m_events.begin(); i != m_events.end(); ++i)
     {
         event & er = DREF(i);
-        if (er.is_selected() && er.get_status() == astat)
+        if (er.is_selected())
         {
-            if (event::is_two_byte_msg(astat))
-                er.decrement_data2();
-            else if (event::is_one_byte_msg(astat))
-                er.decrement_data1();
+            if (er.get_status() == astat)   // && er.get_control == acontrol
+            {
+                if (event::is_two_byte_msg(astat))
+                    er.decrement_data2();
+                else if (event::is_one_byte_msg(astat))
+                    er.decrement_data1();
+            }
         }
     }
 }
@@ -1659,7 +1665,7 @@ sequence::add_event (const event & er)
  *  Adds a event of a given status value and data values, at a given tick
  *  location.
  *
- *  The a_paint parameter indicates if we care about the painted event,
+ *  The paint parameter indicates if we care about the painted event,
  *  so then the function runs though the events and deletes the painted
  *  ones that overlap the ones we want to add.
  *
@@ -2606,35 +2612,46 @@ sequence::get_minmax_note_events (int & lowest, int & highest)
  *  elements, and returns true.  When it has no more events, returns a
  *  false.
  *
- * \param [out] a_tick_s
+ * \param [out] tick_s
  *      Provides a pointer destination for the start time.
  *
- * \param [out] a_tick_f
+ * \param [out] tick_f
  *      Provides a pointer destination for the finish time.
+ *
+ * \param [out] note
+ *      Provides a pointer destination for the note pitch value
+ *      Probably should be a midibyte value.
+ *
+ * \param [out] selected
+ *      Provides a pointer destination for the selection status of the note.
+ *
+ * \param [out] velocity
+ *      Provides a pointer destination for the note velocity.
+ *      Probably should be a midibyte value.
  */
 
 draw_type
 sequence::get_next_note_event
 (
-    midipulse * a_tick_s, midipulse * a_tick_f,
-    int * a_note, bool * a_selected, int * a_velocity
+    midipulse * tick_s, midipulse * tick_f,
+    int * note, bool * selected, int * velocity
 )
 {
     draw_type result = DRAW_FIN;
-    *a_tick_f = 0;
+    *tick_f = 0;
     while (m_iterator_draw != m_events.end())
     {
         event & drawevent = DREF(m_iterator_draw);
-        *a_tick_s   = drawevent.get_timestamp();
-        *a_note     = drawevent.get_note();
-        *a_selected = drawevent.is_selected();
-        *a_velocity = drawevent.get_note_velocity();
+        *tick_s   = drawevent.get_timestamp();
+        *note     = drawevent.get_note();
+        *selected = drawevent.is_selected();
+        *velocity = drawevent.get_note_velocity();
 
         /* note on, so its linked */
 
         if (drawevent.is_note_on() && drawevent.is_linked())
         {
-            *a_tick_f = drawevent.get_linked()->get_timestamp();
+            *tick_f = drawevent.get_linked()->get_timestamp();
             result = DRAW_NORMAL_LINKED;
             ++m_iterator_draw;
             return result;
@@ -2668,14 +2685,14 @@ sequence::get_next_note_event
  */
 
 bool
-sequence::get_next_event (midibyte * a_status, midibyte * a_cc)
+sequence::get_next_event (midibyte * status, midibyte * cc)
 {
     while (m_iterator_draw != m_events.end())
     {
         midibyte j;
         event & drawevent = DREF(m_iterator_draw);
-        *a_status = drawevent.get_status();
-        drawevent.get_data(*a_cc, j);
+        *status = drawevent.get_status();
+        drawevent.get_data(*cc, j);
         ++m_iterator_draw;
         return true;                /* we have a good one; update and return */
     }

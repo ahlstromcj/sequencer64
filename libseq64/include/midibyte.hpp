@@ -178,7 +178,7 @@ public:
     /**
      * \setter m_beats
      *
-     * \param m
+     * \param b
      *      The value to which to set the number of beats.
      *      We can add validation later.
      */
@@ -200,7 +200,7 @@ public:
     /**
      * \setter m_divisions
      *
-     * \param m
+     * \param d
      *      The value to which to set the number of divisions.
      *      We can add validation later.
      */

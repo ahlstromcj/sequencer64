@@ -43,12 +43,11 @@
 
 namespace seq64
 {
-
-class perform;
+    class perform;
 
 /**
  *  This class supports LASH operations, if compiled with LASH support
- *  (i.e. SEQ64_LASH_SUPPORT is defined). All of the #ifdef skeleton work
+ *  (i.e. SEQ64_LASH_SUPPORT is defined). All of the ifdef skeleton work
  *  is done in this class in such a way that any other part of the code
  *  can use this class whether or not lash support is actually built in;
  *  the functions will just do nothing.

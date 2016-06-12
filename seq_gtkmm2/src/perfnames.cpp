@@ -68,12 +68,6 @@ namespace seq64
  *      Provides a reference to the object that contains this object, so that
  *      this object can tell the parent to queue up a drawing operation.
  *
- * \param mymainwnd
- *      Provides a reference to the single mainwid object that exists in this
- *      application, so that this object can tell the mainwid that it is now
- *      the currently-edited object, for the highlight current sequence
- *      features.
- *
  * \param vadjust
  *      Provides the vertical scrollbar object needed so that perfnames can
  *      respond to scrollbar cursor/thumb movement.

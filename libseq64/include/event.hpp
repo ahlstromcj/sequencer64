@@ -782,7 +782,8 @@ public:
     }
 
     /**
-     *  Returns true if m_status is EVENT_NOTE_ON.
+     * \return
+     *      Returns true if m_status is EVENT_NOTE_ON.
      */
 
     bool is_note_on () const
@@ -791,7 +792,8 @@ public:
     }
 
     /**
-     *  Returns true if m_status is EVENT_NOTE_OFF.
+     * \return
+     *      Returns true if m_status is EVENT_NOTE_OFF.
      */
 
     bool is_note_off () const
@@ -803,6 +805,9 @@ public:
      *  Returns true if m_status is a Note On, Note Off, or Aftertouch message.
      *  All of these are notes, associated with a MIDI key value.  Uses the
      *  static function is_note_msg().
+     *
+     * \return
+     *      The return value of is_note_msg() is returned.
      */
 
     bool is_note () const

@@ -185,6 +185,9 @@ eventslots::set_current_event
 /**
  *  Sets the text in the parent dialog, eventedit.
  *
+ * \param evcategory
+ *      The category of event to be set in the parent.
+ *
  * \param evtimestamp
  *      The event time-stamp to be set in the parent.
  *
@@ -495,10 +498,10 @@ eventslots::delete_current_event ()
  *      Provides the event name as edited by the user.
  *
  * \param evdata0
- *      Provides the time-stamp as edited by the user.
+ *      Provides the first data byte as edited by the user.
  *
- * \param evtimestamp
- *      Provides the time-stamp as edited by the user.
+ * \param evdata1
+ *      Provides the second data byte as edited by the user.
  *
  * \return
  *      Returns true simply if the event-count is greater than 0.

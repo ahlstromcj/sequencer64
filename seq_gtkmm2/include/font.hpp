@@ -59,35 +59,45 @@ public:
      *  pixmaps to draw black text on a yellow background (font_y.xpm) and
      *  yellow text on a black background (font_yb.xpm).  Oh, and couple more
      *  for cyan and black text-blitting.
-     *
-     * \var BLACK
-     *      The first supported color.  A black font on a white
-     *      background.
-     *
-     * \var WHITE
-     *      The second supported color. A white font on a black
-     *      background.
-     *
-     * \var BLACK_ON_YELLOW
-     *      A new color, for drawing black text on a yellow background.
-     *
-     * \var YELLOW_ON_BLACK
-     *      A new color, for drawing yellow text on a black background.
-     *
-     * \var BLACK_ON_CYAN
-     *      A new color, for drawing black text on a cyan background.
-     *
-     * \var CYAN_ON_BLACK
-     *      A new color, for drawing cyan text on a black background.
      */
 
     enum Color
     {
+        /**
+         *      The first supported color.  A black font on a white
+         *      background.
+         */
+
         BLACK,              /* font_b.xpm or wenfont_b.xpm  */
+
+        /**
+         *  The second supported color. A white font on a black background.
+         */
+
         WHITE,              /* font_w.xpm or wenfont_w.xpm  */
+
+        /**
+         *  A new color, for drawing black text on a yellow background.
+         */
+
         BLACK_ON_YELLOW,    /* font_y.xpm or wenfont_y.xpm  */
+
+        /**
+         *  A new color, for drawing yellow text on a black background.
+         */
+
         YELLOW_ON_BLACK,    /* font_yb.xpm or wenfont_y.xpm */
+
+        /**
+         *  A new color, for drawing black text on a cyan background.
+         */
+
         BLACK_ON_CYAN,      /* cyan_wenfont_y.xpm           */
+
+        /**
+         *      A new color, for drawing cyan text on a black background.
+         */
+
         CYAN_ON_BLACK       /* cyan_wenfont_y.xpm           */
     };
 
@@ -270,9 +280,13 @@ public:
  *  However, at some point we need some quarantee that the init() function is
  *  called before rendering a string.  Right now, we guarantee it only by
  *  build order.
+ *
+ * \return
+ *      Returns a reference to the object pointed to by sp_font_renderer.
  */
 
-inline /* const */ font & font_render ()
+inline font &
+font_render ()
 {
     static font * sp_font_renderer = nullptr;
     if (is_nullptr(sp_font_renderer))
@@ -284,7 +298,7 @@ inline /* const */ font & font_render ()
         }
         else
         {
-            errprint("could not create the application font object");
+            errprint("could not create the application font object, crash!");
         }
     }
     return *sp_font_renderer;

@@ -966,10 +966,10 @@ seqroll::convert_xy (int x, int y, midipulse & tick, int & note)
  */
 
 void
-seqroll::convert_tn (midipulse ticks, int note, int & x, int & y)
+seqroll::convert_tn (midipulse tick, int note, int & x, int & y)
 {
-    x = ticks / m_zoom;
-    y = c_rollarea_y - ((note + 1) * c_key_y) - 1;
+    x = tick / m_zoom;
+    y = c_rollarea_y - (note + 1) * c_key_y - 1;
 }
 
 /**
@@ -1304,15 +1304,13 @@ seqroll::on_motion_notify_event (GdkEventMotion * ev)
 /**
  *  Implements the on-enter-notify event handling.
  *  Calls m_seqkeys_wid.set_hint_state(true).
- *
- * \param ev
- *      The event-crossing event, not used.
+ *  Parameter "ev" is the event-crossing event, not used.
  *
  * \return
  *      Always returns false.
  */
 
-bool
+booL
 seqroll::on_enter_notify_event (GdkEventCrossing *)
 {
     m_seqkeys_wid.set_hint_state(true);
@@ -1322,9 +1320,7 @@ seqroll::on_enter_notify_event (GdkEventCrossing *)
 /**
  *  Implements the on-leave-notify event handling.
  *  Calls m_seqkeys_wid.set_hint_state(false).
- *
- * \param ev
- *      The event-crossing event, not used.
+ *  Parameter "ev" is the event-crossing event, not used.
  *
  * \return
  *      Always returns false.
@@ -1340,9 +1336,7 @@ seqroll::on_leave_notify_event (GdkEventCrossing *)
 /**
  *  Implements the on-focus event handling.
  *  Sets the GDK HAS_FOCUS flag.
- *
- * \param ev
- *      The event-focus event, not used.
+ *  Parameter "ev" is the event-focus event, not used.
  *
  * \return
  *      Always returns false.
@@ -1358,9 +1352,7 @@ seqroll::on_focus_in_event (GdkEventFocus *)
 /**
  *  Implements the on-unfocus event handling.
  *  Resets the GDK HAS_FOCUS flag.
- *
- * \param ev
- *      The event-focus event, not used.
+ *  Parameter "ev" is the event-focus event, not used.
  *
  * \return
  *      Always returns false.

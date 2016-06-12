@@ -56,10 +56,9 @@ namespace Gtk
 
 namespace seq64
 {
+    extern Gtk::Adjustment & adjustment_dummy ();
 
-extern Gtk::Adjustment & adjustment_dummy ();
-
-class perform;                          /* forward reference                */
+    class perform;                      /* forward reference                */
 
 /**
  *  Implements the basic drawing areas of the application.  Note that this
@@ -123,7 +122,7 @@ protected:              // private: should provide accessors
 
     /**
      *  Another pixmap, used for backgrounds.  Our wrappers still leave this
-     *  member exposed <giggle>.
+     *  member exposed (giggle).
      */
 
     Glib::RefPtr<Gdk::Pixmap> m_background;

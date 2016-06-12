@@ -108,12 +108,18 @@ update_perfedit_sequences ()
  *  reordered the pointer members and put them in the initializer list to make
  *  the constructor a bit cleaner.
  *
- * \param p
- *      Refers to the main performance object.
- *
  * \todo
  *      Offload most of the work into an initialization function like
  *      options does.
+ *
+ * \param p
+ *      Refers to the main performance object.
+ *
+ * \param second_perfedit
+ *      If true, this object is the second perfedit object.
+ *
+ * \param ppqn
+ *      The optionally-changed PPQN value to use for the performance editor.
  */
 
 perfedit::perfedit

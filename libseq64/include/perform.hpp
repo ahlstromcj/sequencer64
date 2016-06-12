@@ -108,7 +108,8 @@ struct performcallback
 /*
  * ca 2015-07-24
  * Eliminate this annoying warning.  Will do it for Microsoft's bloddy
- * compiler later.
+ * compiler later.  Actually, this pragma affect any module that includes this
+ * header file.
  */
 
 #ifdef PLATFORM_GNU
@@ -116,10 +117,7 @@ struct performcallback
 #endif
 
     /**
-     *  A do-nothing callback.
-     *
-     * \param state
-     *      Unused parameter.
+     *  A do-nothing callback.  "state" is an Unused parameter.
      */
 
     virtual void on_grouplearnchange (bool /* state */)
@@ -643,9 +641,11 @@ public:
 
     /**
      * \setter m_edit_sequence
-     *      Pass in -1 to disable the edit-sequence number to disable it
-     *      unconditionally.  Use unset_edit_sequence() to disable it if
-     *      it matches the current edit-sequence number.
+     *
+     * \param seqnum
+     *      Pass in -1 to disable the edit-sequence number unconditionally.
+     *      Use unset_edit_sequence() to disable it if it matches the current
+     *      edit-sequence number.
      */
 
     void set_edit_sequence (int seqnum)
@@ -655,7 +655,11 @@ public:
 
     /**
      * \setter m_edit_sequence
-     *      Disable the edit-sequence number if it matches the parameter.
+     *
+     *      Disables the edit-sequence number if it matches the parameter.
+     *
+     * \param seqnum
+     *      The sequence number of the sequence to unset.
      */
 
     void unset_edit_sequence (int seqnum)
@@ -666,6 +670,8 @@ public:
 
     /**
      * \getter m_edit_sequence
+     *
+     * \param seqnum
      *      Tests the parameter against m_edit_sequence.  Returns true
      *      if that member is not -1, and the parameter matches it.
      */
@@ -1317,7 +1323,7 @@ public:
     /**
      *  Gets the group key for the given sequence.
      *
-     * \param seqnum
+     * \param groupnum
      *      The number of the sequence for which to return the group key.
      *
      * \return

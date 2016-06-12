@@ -58,24 +58,29 @@ private:
 
     /**
      * Provides the type of keybindings that can be made.
-     *
-     * \var location
-     *      Used for handling a keystroke made while a keyboard-options
-     *      field is active, for selecting a key via the keyboard, and
-     *      binding to pattern/sequence boxes, we think.  It is used in
-     *      the options class to associate a key with the binding.
-     *
-     * \var events
-     *      Used for binding to events.
-     *
-     * \var groups
-     *      Used for binding to groups.
      */
 
     enum type
     {
+        /**
+         *  Used for handling a keystroke made while a keyboard-options field
+         *  is active, for selecting a key via the keyboard, and binding to
+         *  pattern/sequence boxes, we think.  It is used in the options class
+         *  to associate a key with the binding.
+         */
+
         location,
+
+        /**
+         *  Used for binding to events.
+         */
+
         events,
+
+        /**
+         *  Used for binding to groups.
+         */
+
         groups
     };
 

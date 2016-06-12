@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-05-17
+ * \updates       2016-06-11
  * \license       GNU GPLv2 or above
  *
  *  This file provides a Linux-only implementation of MIDI support.
@@ -41,8 +41,6 @@ namespace seq64
 {
 
 #ifdef SEQ64_HAVE_LIBASOUND
-
-#include <sys/poll.h>
 
 /**
  *  Initialize this static member.
@@ -113,14 +111,14 @@ midibus::midibus
     char alias[64];
     const std::string & bussname = usr().bus_name(m_id);
     if (! bussname.empty())
-        snprintf(alias, sizeof(alias), "%s", bussname.c_str());
+        snprintf(alias, sizeof alias, "%s", bussname.c_str());
     else
-        snprintf(alias, sizeof(alias), "%s", port_name);
+        snprintf(alias, sizeof alias, "%s", port_name);
 
     char name[80];
     snprintf                            /* copy the client name parts */
     (
-        name, sizeof(name), "[%d] %d:%d %s",
+        name, sizeof name, "[%d] %d:%d %s",
         m_id, m_dest_addr_client, m_dest_addr_port, alias
     );
     m_name = name;
@@ -180,7 +178,7 @@ midibus::midibus
      */
 
     char name[64];
-    snprintf(name, sizeof(name), "[%d] sequencer64 %d", m_id, m_id);
+    snprintf(name, sizeof name, "[%d] sequencer64 %d", m_id, m_id);
     m_name = name;
     m_ppqn = choose_ppqn(ppqn);
 }
@@ -448,6 +446,9 @@ midibus::play (event * e24, midibyte channel)
  *
  * \param b
  *      Second operand.
+ *
+ * \return
+ *      Returns the minimum value of a and b.
  */
 
 inline long

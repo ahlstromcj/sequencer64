@@ -559,6 +559,9 @@ midifile::add_trigger (sequence & seq, midishort ppqn)
  *      The screen-set offset to be used when loading a sequence (track) from
  *      the file.
  *
+ * \param is_smf0
+ *      True if we detected that the MIDI file is in SMF 0 format.
+ *
  * \return
  *      Returns true if the parsing succeeded.
  */

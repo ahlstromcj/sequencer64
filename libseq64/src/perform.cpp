@@ -691,7 +691,7 @@ perform::add_sequence (sequence * seq, int prefnum)
  *  counted.  Also, adding a new sequence from the user-interface is a
  *  significant modification, so the "is modified" flag gets set.
  *
- * \new ca 2016-05-15
+ * \change ca 2016-05-15
  *      If enabled, wire in the MIDI buss override.
  *
  * \param seq
@@ -1961,7 +1961,7 @@ perform::output_func ()
         long stats_clock_width_us = 0;
         long stats_all[100];                // why 100?
         long stats_clock[100];
-        if (rc().stats())                   // \new ca 2016-01-24
+        if (rc().stats())                   // \change ca 2016-01-24
         {
             for (int i = 0; i < 100; ++i)
             {

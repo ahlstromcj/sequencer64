@@ -78,38 +78,47 @@ public:
      *  These tags are accompanied by category names in sm_category_names[].
      *  The enum values are cast to midibyte values for the purposes of using
      *  the lookup infrastructure.
-     *
-     * \var category_name
-     *      Indicates that the lookup needs to be done on the category names,
-     *      as listed in sm_category_names[].
-     *
-     * \var category_channel_message
-     *      Indicates a channel event, with a value ranging from 0x80 through
-     *      0xEF.  Some examples are note on/off, control change, and program
-     *      change.  Values are looked up in sm_channel_event_names[].
-     *
-     * \var category_system_message
-     *      Indicates a system event, with a value ranging from 0xF0 through
-     *      0xFF.  Some examples are SysEx start/end, song position, and
-     *      stop/start/continue/reset.  Values are looked up in
-     *      sm_system_event_names[].
-     *
-     * \var category_meta_event
-     *      Indicates a meta event, and there is a second value that is used to
-     *      look up the name of the meta event, in sm_meta_event_names[].
-     *
-     * \var category_prop_event
-     *      Indicates a "proprietary", Sequencer64 event.  Indicates to look
-     *      up the name of the event in sm_prop_event_names[].  Not sure if
-     *      these kinds of events will be stored separately.
      */
 
     typedef enum
     {
+        /**
+         *  Indicates that the lookup needs to be done on the category names,
+         *  as listed in sm_category_names[].
+         */
+
         category_name,              /* sm_category_names[]          */
+
+        /**
+         *  Indicates a channel event, with a value ranging from 0x80 through
+         *  0xEF.  Some examples are note on/off, control change, and program
+         *  change.  Values are looked up in sm_channel_event_names[].
+         */
+
         category_channel_message,   /* sm_channel_event_names[]     */
+
+        /**
+         *  Indicates a system event, with a value ranging from 0xF0 through
+         *  0xFF.  Some examples are SysEx start/end, song position, and
+         *  stop/start/continue/reset.  Values are looked up in
+         *  sm_system_event_names[].
+         */
+
         category_system_message,    /* sm_system_event_names[]      */
+
+        /**
+         *  Indicates a meta event, and there is a second value that is used
+         *  to look up the name of the meta event, in sm_meta_event_names[].
+         */
+
         category_meta_event,        /* sm_meta_event_names[]        */
+
+        /**
+         *  Indicates a "proprietary", Sequencer64 event.  Indicates to look
+         *  up the name of the event in sm_prop_event_names[].  Not sure if
+         *  these kinds of events will be stored separately.
+         */
+
         category_prop_event         /* sm_prop_event_names[]        */
 
     } category_t;
@@ -119,27 +128,32 @@ public:
      *  supported.  All editable events will share the same timestamp format,
      *  but it seems good to make this a event class member, rather than
      *  something imposed from an outside static value.  We shall see.
-     *
-     * \var timestamp_measures
-     *      This format displays the time in "measures:beats:divisions"
-     *      format, where measures and beats start at 1.  Thus, "1:1:0" is
-     *      equivalent to 0 pulses or to "0:0:0.0" in normal time values.
-     *
-     * \var timestamp_time
-     *      This format displays the time in "hh:mm:second.fraction" format.
-     *      The value displayed should not depend upon the internal timing
-     *      parameters of the event.
-     *
-     * \var timestamp_pulses
-     *      This format specifies a bare pulse format for the timestamp -- a
-     *      long integer ranging from 0 on up.  Obviously, this representation
-     *      depends on the PPQN value for the sequence holding this event.
      */
 
     typedef enum
     {
+        /**
+         *  This format displays the time in "measures:beats:divisions"
+         *  format, where measures and beats start at 1.  Thus, "1:1:0" is
+         *  equivalent to 0 pulses or to "0:0:0.0" in normal time values.
+         */
+
         timestamp_measures,
+
+        /**
+         *  This format displays the time in "hh:mm:second.fraction" format.
+         *  The value displayed should not depend upon the internal timing
+         *  parameters of the event.
+         */
+
         timestamp_time,
+
+        /**
+         *  This format specifies a bare pulse format for the timestamp -- a
+         *  long integer ranging from 0 on up.  Obviously, this representation
+         *  depends on the PPQN value for the sequence holding this event.
+         */
+
         timestamp_pulses
 
     } timestamp_format_t;
@@ -147,20 +161,23 @@ public:
     /**
      *  Provides a type that contains the pair of values needed for the
      *  various lookup maps that are needed to manage editable events.
-     *
-     * \var event_value
-     *      Holds a midibyte value (0x00 to 0xFF) or
-     *      SEQ64_END_OF_MIDIBYTE_TABLE to indicate the end of an array of
-     *      name_value_t items.
-     *
-     * \var event_name
-     *      Holds the human-readable name for an event code or other numeric
-     *      value in an array of name_value_t items.
      */
 
     typedef struct
     {
+        /**
+         *  Holds a midibyte value (0x00 to 0xFF) or
+         *  SEQ64_END_OF_MIDIBYTE_TABLE to indicate the end of an array of
+         *  name_value_t items.
+         */
+
         unsigned short event_value;
+
+        /**
+         *  Holds the human-readable name for an event code or other numeric
+         *  value in an array of name_value_t items.
+         */
+
         std::string event_name;
 
     } name_value_t;

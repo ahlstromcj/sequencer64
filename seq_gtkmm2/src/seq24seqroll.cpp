@@ -52,6 +52,10 @@ namespace seq64
  *
  * \param adding
  *      True if adding a note.  Sets m_adding.
+ *
+ * \param sroll
+ *      Provides the "parent" object to which to forward the set_cursor()
+ *      calls.
  */
 
 void

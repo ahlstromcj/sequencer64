@@ -53,7 +53,7 @@ namespace seq64
  *  Note that perform::convert_xy() returns its values via side-effects on the
  *  last two parameters.
  *
- * \param
+ * \param roll
  *      The song editor piano roll that is the "parent" of this class.
  */
 
@@ -104,7 +104,7 @@ FruityPerfInput::update_mouse_pointer (perfroll & roll)
  * \param ev
  *      The button-press event to process.
  *
- * \param
+ * \param roll
  *      The song editor piano roll that is the "parent" of this class.
  *
  * \return
@@ -172,7 +172,7 @@ FruityPerfInput::on_button_press_event (GdkEventButton * ev, perfroll & roll)
  * \param ev
  *      The left-button-press event to process.
  *
- * \param
+ * \param roll
  *      The song editor piano roll that is the "parent" of this class.
  *
  * \return
@@ -269,7 +269,7 @@ FruityPerfInput::on_left_button_pressed (GdkEventButton * ev, perfroll & roll)
  * \param ev
  *      The right-button-press event to process.
  *
- * \param
+ * \param roll
  *      The song editor piano roll that is the "parent" of this class.
  *
  * \return
@@ -304,7 +304,7 @@ FruityPerfInput::on_right_button_pressed (GdkEventButton * ev, perfroll & roll)
  * \param ev
  *      The button-release event to process.
  *
- * \param
+ * \param roll
  *      The song editor piano roll that is the "parent" of this class.
  *
  * \return
@@ -343,7 +343,7 @@ FruityPerfInput::on_button_release_event (GdkEventButton * ev, perfroll & roll)
  * \param ev
  *      The motion-notify event to process.
  *
- * \param
+ * \param roll
  *      The song editor piano roll that is the "parent" of this class.
  *
  * \return

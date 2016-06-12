@@ -298,14 +298,284 @@ Author: Stazed <Stazed@mapson.com>
 Date:   Tue Nov 10 19:21:45 2015 -0600
 
     seqedit enhancements
-    
+
     	From the seq42 fork - now dead??
     	thanks to Sam Brauer
-    
+
     	new functions to expand or compress patterns (doubling or halving timing of selected pattern)
     	new actions to select notes on even or odd beats (1/4, 1/8 or 1/16)
     	new event value randomize function
-    
+
     	lower bpm minimum from 20 to 5 (please!)
     	got rid of a few magic numbers for consistency
+
+
+
+
+
+----------------
+ JACK
+----------------
+
+
+Date: Sat, 11 Jun 2016 19:29:46 -0500
+From: Stan Preston <stazed10@gmail.com>
+To: Chris Ahlstrom <ahlstromcj@gmail.com>
+Subject: Re: Fwd: Re: sequencer64
+User-Agent: Mozilla/5.0 (X11; Linux i686; rv:38.0) Gecko/20100101
+        Thunderbird/38.8.0
+
+jack,jack,jack....
+
+Well, first let me explain how I think it works. From what I can tell, there is
+only one difference between jack master and jack slave. The master gets it's
+jack_timebase_callback() called and gets to send to jack BBT (and other) info.
+Any client, master or slave can send position changes and start/stop messages.
+It appears that the BBT is largely ignored by all other time-line based DAWs or
+sequencers (that I checked - non-timeline, qtractor).
+
+Seq24, and as imported into sequencer64 are the exceptions... and it does not
+work.
+
+From my 6/01 commit:
+
+   If another jack client is supplying tempo/BBT info that is different from
+   seq42 (as Master), the perfroll grid will be incorrect. Perfroll uses
+   internal temp/BBT and cannot update on the fly. Even if seq42 could support
+   tempo/BBT changes, all info would have to be available before the transport
+   start, to work. For this reason, the tempo/BBT info will be plugged from the
+   seq42 internal settings here... always. This is the method used by probably
+   all other jack clients with some sort of time-line. The jack API indicates
+   that BBT is optional and AFIK, other sequencers only use frame & frame_rate
+   from jack for internal calculations. The tempo and BBT info is always
+   internal. Also, if there is no Master set, then we would need to plug it
+   here to follow the jack frame anyways.
+
+You can test the last sentence on sequencer64. Start qjackctl and look at the
+BBT display before any other client is attached. It will show -.-.--- . No
+master is set. Now start sequencer64 and set as slave. The qjackctl display
+should still show blanks. Press start in sequencer64 or qjackctl and the
+transport will start rolling but sequencer64 will freeze. This is the same
+behavior that occurred in the original seq24. It is because seq24 is trying to
+use BBT queried from jack in the output_func() that does not exist. This
+behavior was imported into sequencer64 and I have seen a number of complaints
+over the years in forums about the seq24 inconsistent behavior. This is
+probably why.
+
+You can also try this same test with other programs such as non-timeline,
+qtractor are the ones I checked. Since these (and probably all) of the other
+time-line based programs set themselves as master, you have to replace them
+with another master such as sequencer64, last one attached wins. Then
+disconnect sequencer64 from jack. Check qjackctl for the blanks to be sure that
+you have no master set. Now start the transport. The other programs follow,
+obviously using their own internal tempo/BBT using jack frame and frame_rate
+only from jack. You can hook up several different programs in this way, remove
+the master, and if they all have the same internal tempo/BBT set, they will run
+perfectly in sync. You can also change transport positions with these programs
+when rolling, as well as from qjackctl and they will still stay in sync.
+
+What this all means to me is that as far as time-line type programs are
+concerned, BBT from jack is just pretty, but superficial display in qjackctl.
+It's not necessary for them to sync when received from jack. Other type
+programs, the only one I can think of is klick, do use BBT.
+
+Try this test with klick. Set sequencer64 up as master, and klick running.
+Start the transport rolling then change on the perfroll the beats per bar.
+klick won't adjust. Sequencer64 is not resetting the beats per bar when changed
+internally? Is the button callback connected? Try this same test with seq32 and
+klick adjusts to the new beats per bar. klick will not work when no master is
+set.
+
+For the jack_timebase_callback():
+
+   All I did was strip out the calculations regarding new position changes and
+   always use internal tempo/BBT. It seems to me that as far as tempo/BBT is
+   concerned, the only thing that matters is jack frame and frame_rate. Just
+   use internal tempo/BBT on all calculations. Your calculations in timebase
+   callback seem to work (might be overkill), except for using pos->frame_rate.
+   If the client sending a position change uses jack_transport_locate(), then
+   they are only sending jack frame position and no BBT.
+
+The perhaps overkill...
+
+Your conditional:
+
+        if (new_pos || ! (pos->valid & JackPositionBBT))
+
+and seq24 original's version:
+
+          if (state_last == JackTransportStarting && state_current ==
+            JackTransportRolling )
+
+Why is this needed? Obviously seq24's callback did not work regardless of the
+check, but why bother??  You get a new jack frame or the transport sends one,
+and calculate BBT to plug into pos->.  And by the time jack slow sync catches
+up and changes to JackTransportRolling you are a number of cycles past new_pos
+anyway. I suspect this check may be necessary for something like klick or
+perhaps sooperlooper?(I have not used) that are not time-line based? klick
+adjusts to changes in beats per measure (probably tempo also). Maybe
+sooperlooper as well?  I just took this stuff out and it seems to work with
+everthing I tested including klick.
+
+Onward...
+
+   position_jack()
+   jack_transport_reposition()
+   jack_transport_locate()...
+
+This is were I was concerned about seq32.  See my latest commits from last
+night, I mean morning 4:11 am.  Let me expain :)
+The changes I made in seq32 are just my personal preferences.
+
+The original seq24 did this in position_jack()
+
+    if ( m_jack_running ){
+        jack_transport_locate( m_jack_client, 0 );
+    }
+    return;
+
+Obviously just started at 0 frame position. It was only called when seq24
+started the transport rolling from various different locations that I remember
+and was a really ugly complicated mess that took me many hours to decipher. I
+finally concluded that everything should be called from a single perform
+start_playing(). I think you did something similar. nightmares!
+
+Anyway regarding position_jack(). As you know, there was the code after the
+above return that was never used. My guess is that the seq24 team decided to
+follow Rob Buse's original plan of a minimalist sequencer for LIVE performance
+only. Jack reposition's hesitate because jack waits for slow sync clients to
+catch up, thus making repositions useless in a live setup. They just abandoned
+any running position changes and if synced to jack, just start at 0.
+
+It is this issue that I deviated from the original seq24. I used seq24 as a
+sort of creative experimental looping tool, for editing. Not for live
+purposes... yet?? Because it is more of an editor for me, I wanted seq32 master
+to change position, loop in sync with other programs. If you just want
+sequencer64 for live purposes, then jack_position() is not needed. But, I
+suspect since you added the second performance editor, and the event editor,
+that you want better editing capabilities.
+
+So, to explain what I did for seq32 as of last night...
+
+The set_left_frame() stuff worked but really, really, really ugly.
+
+The actual transport reposition calculations/BBT in position_jack() that were
+NOT used were actually very close. The problem with them was... I can't think
+of the correct programming term... the variable size was too small... the
+calculations were truncated?? They also hard coded beats_per_bar and beat_type
+to 4.
+
+The below calculation is where the problem was. I replaced this with
+set_left_frame() which calculated m_left_frame.
+
+Before:
+
+    pos.frame = (jack_nframes_t) ( (current_tick * rate * 60.0)
+            / (pos.ticks_per_beat * pos.beats_per_minute) );
+
+Now:
+
+    uint64_t tick_rate = ((uint64_t)m_jack_frame_rate * current_tick * 60.0);
+    long tpb_bpm = ticks_per_beat * beats_per_minute;
+    uint64_t jack_frame = tick_rate / tpb_bpm;
+
+The only real difference between the before calculation above and the one that
+calculated m_left_frame in set_left_frame() was I separated things and added a
+few more casts to uint64_t and stored them in uint64_t's to stop the
+truncation. It was really ugly looking... but I think it calculated
+correctly... well at least I did not find it to be wrong... :) I removed
+set_left_frame() and m_left_frame last morning.
+
+I moved the set_left_frame() calc back into position_jack() and commented out
+all the BBT stuff, and replaced jack_transport_reposition() with
+jack_transport_locate(). The difference is that jack_transport_locate() just
+sends the frame position, NOT BBT. And it works...
+
+From my note:
+
+    This jack_frame calculation is all that is needed to change jack position
+    The BBT calc below can be sent but will be overridden by the first call to
+    jack_timebase_callback() of any master set. If no master is set, then the
+    BBT will display the new position but will not change even if the transport
+    is rolling. I'm going with the KISS (keep it simple stupid) rule here.
+    There is no need to send BBT on position change - the fact that the
+    function jack_transport_locate() exists and only uses the frame position is
+    proof that BBT is not needed!
+
+The reason that I decided to dump BBT on position change altogether is the part
+about sending BBT when there is no master set. If you do this with klick
+connected and hit the precise position change it will cause the "click" to
+play, endlessly loudly... also, the unchanging BBT displayed in qjackctl could
+be confusing to users.  You don't want to send BBT position info if there is no
+master, and it gets immediately overridden by any master's timebase callback.
+Seems useless to me.  I left the BBT code (uncommented) in in case I am wrong.
+
+Previous position_jack() used set_left_frame() which was hard coded to use
+m_left_tick. The last commit of last morning I added a new feature that I
+previously added in seq42.
+
+FYI almost everything done to seq32 is cut and paste from seq42. I use the two
+programs interchangeably and want the features to be the same.
+
+This new feature required the tick be passed into position_jack(). m_left_tick
+is the left tick marker in the perfroll as you know. Currently, this is also
+how I get jack to loop.. call position_jack() which repositions to the left
+tick in output_func when m_looping or when called from start_playing().
+Instead of only positioning to m_left_tick, it now accepts a tick variable and
+then can adjust to any position. The new feature is one "filched" from
+non-timeline which allows the user to adjust the position on the perfedit to
+the mouse pointer with key-p. The mouse must be focused on the perfroll.  In
+seq42 I also added FF and rewind buttons that use it also.
+
+If you don't want the key-p type position change, then m_left_tick can be hard
+code.
+
+To summarize how things work now in seq32:
+
+The "nightmare" that was replaced with perform::start_playing(), and the added
+buttons of "song mode" on the mainwnd and jack sync (xpm) in the perfedit were
+done for consistency. The original seq24....... could drive a person to...
+learn programming!
+
+I was going to try to explain all the variations the program used to start
+rolling, based on which place you pressed the space bar or whether you used the
+buttons or key-binding, in mainwnd, seqroll, perfedit. And all the rules
+changed if connected to jack, depending on the song/live button hidden in the
+
+Instead I will just explain how seq32 works.
+
+The "song mode" button was moved from the jack sync menu and now applies
+always, not just for jack.
+
+When starting from the mainwnd, seqroll(keybind), or when connected to jack and
+started by the transport, when the song button is pressed it will cause the
+perfedit to play. It will start at the left tick marker if in jack master mode,
+and also when not connected to jack. When started from the perfedit, the song
+button is ignored and ALWAYS plays the song.  When the song button is
+unchecked, it will play live if started from the mainwnd and seqroll jack or
+not.
+
+The jack sync button does what it did before.. connects and disconnects jack.
+I moved it to perfedit for personal preference and to be able to attach
+key-binding. I also attached key-binding to the song button. This allows me to
+turn both on and off from the seqroll without having to go all the way to the
+file/options/jack sync menu or to the perfedit for song play.
+
+The difference between jack master and slave:
+
+   -  Master starts at left tick marker and will loop.
+   -  Slave just starts at transport position... like sequencer64 master.
+   -  When in live mode, master starts at 0. Slave continues at transport
+      position.
+
+The new key-p feature will work all cases, master, slave and when not connected
+to jack. I stopped it from working if m_usemidiclock... not sure how that works
+yet.
+
+How you want sequencer64 to work with jack as master vs slave or even if you
+want to have position changes is matter of preference. This is mine.
+Well thats my long winded thoughts on jack. Hope it helps.
+
+Stan
+
 

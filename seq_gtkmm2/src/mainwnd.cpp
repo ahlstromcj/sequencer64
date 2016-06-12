@@ -128,6 +128,9 @@ int mainwnd::m_sigpipe[2];
  *      This is currently a run-time option, selectable in the "user"
  *      configuration file.
  *
+ * \param ppqn
+ *      An optional PPQN value to use in the song.
+ *
  * \todo
  *      Offload most of the work into an initialization function like
  *      options does; make the perform parameter a reference;

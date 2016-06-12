@@ -69,52 +69,69 @@ private:
      *  buttons, and control each other's settings.  Currently, if the user
      *  wants to set up for JACK Master, the JACK Transport button must also
      *  be checked.
-     *
-     * \var e_jack_transport
-     *      Turns on the "with JACK Transport" option,
-     *      rc_settings::with_jack_transport().
-     *
-     * \var e_jack_master
-     *      Turns on the "with JACK Master" option,
-     *      rc_settings::with_jack_master().  If another application is
-     *      already JACK Master, this will fail.
-     *
-     * \var e_jack_master_cond
-     *      Turns on the "with JACK Master" option
-     *      rc_settings::with_jack_master_cond().  This option makes
-     *      sequencer64 the JACK Master conditionally, that is, if no other
-     *      application has claimed that role.
-     *
-     * \var e_jack_start_mode_live
-     *      Doesn't directly do anything; the live mode versus song mode is
-     *      set by the e_jack_start_mode_song value.
-     *
-     * \var e_jack_start_mode_song
-     *      Sets the "JACK start mode" value to true, which means that
-     *      sequencer64 is in song mode.  This value is obtained via
-     *      rc_settings::jack_start_mode().
-     *
-     * \var e_jack_connect
-     *      Causes the perform object's JACK initialization function,
-     *      perform::init_jack(), to be called.
-     *
-     * \var e_jack_disconnect
-     *      Causes the perform object's JACK deinitialization function,
-     *      perform::deinit_jack(), to be called.
      */
 
     enum button
     {
+        /**
+         *  Turns on the "with JACK Transport" option,
+         *  rc_settings::with_jack_transport().
+         */
+
         e_jack_transport,
+
+        /**
+         *  Turns on the "with JACK Master" option,
+         *  rc_settings::with_jack_master().  If another application is
+         *  already JACK Master, this will fail.
+         */
+
         e_jack_master,
+
+        /**
+         *  Turns on the "with JACK Master" option
+         *  rc_settings::with_jack_master_cond().  This option makes
+         *  sequencer64 the JACK Master conditionally, that is, if no other
+         *  application has claimed that role.
+         */
+
         e_jack_master_cond,
+
+        /**
+         *  Doesn't directly do anything; the live mode versus song mode is
+         *  set by the e_jack_start_mode_song value.
+         */
+
         e_jack_start_mode_live,
+
+        /**
+         *  Sets the "JACK start mode" value to true, which means that
+         *  sequencer64 is in song mode.  This value is obtained via
+         *  rc_settings::jack_start_mode().
+         */
+
         e_jack_start_mode_song,
+
+        /**
+         *  Causes the perform object's JACK initialization function,
+         *  perform::init_jack(), to be called.
+         */
+
         e_jack_connect,
+
+        /**
+         *  Causes the perform object's JACK deinitialization function,
+         *  perform::deinit_jack(), to be called.
+         */
+
         e_jack_disconnect
     };
 
 private:
+
+    /**
+     *  A repository for GTK tooltip support.
+     */
 
     Gtk::Tooltips * m_tooltips;
 

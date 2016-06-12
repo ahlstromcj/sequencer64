@@ -80,7 +80,8 @@ public:
     }
 
     /**
-     *  Returns the size of the container, in midibytes.
+     * \return
+     *      Returns the size of the container, in midibytes.
      */
 
     virtual std::size_t size () const
@@ -91,6 +92,10 @@ public:
     /**
      *  For iterating through the data in the MIDI vector, we are done when
      *  we've gotten the last element of the container.
+     *
+     * \return
+     *      Returns true if the position is greater than or equal to the size
+     *      of the character vector.
      */
 
     virtual bool done () const
@@ -113,7 +118,11 @@ public:
 
     /**
      *  Provide a way to get the next byte from the container.  In this
-     *  implementation, m_position_for_get is used.
+     *  implementation, m_position_for_get is used.  As a side-effect, the
+     *  position value is incremented.
+     *
+     * \return
+     *      Returns the next byte in the character vector.
      */
 
     virtual midibyte get ()

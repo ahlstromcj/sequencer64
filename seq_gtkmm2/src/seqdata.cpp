@@ -415,8 +415,7 @@ seqdata::on_motion_notify_event (GdkEventMotion * ev)
 /**
  *  Handles an on-leave notification event.
  *
- * \param p0
- *      The crossing point for the event, unused.
+ *  Parameter "p0", the crossing point for the event, is unused.
  */
 
 bool

@@ -405,7 +405,7 @@ seqevent::draw_pixmap_on_window ()
  * \param x1
  *      The "left" x value.
  *
- * \param x1
+ * \param x2
  *      The "right" x value.
  *
  * \param [out] x
@@ -748,9 +748,7 @@ seqevent::on_motion_notify_event (GdkEventMotion * ev)
 
 /**
  *  Responds to a focus event by setting the HAS_FOCUS flag.
- *
- * \param ev
- *      The focus event, unused.
+ *  Parameter "ev" is the focus event, unused.
  *
  * \return
  *      Always returns false.
@@ -765,9 +763,7 @@ seqevent::on_focus_in_event (GdkEventFocus * /*ev*/)
 
 /**
  *  Responds to a unfocus event by resetting the HAS_FOCUS flag.
- *
- * \param ev
- *      The focus event, unused.
+ *  Parameter "ev" is the focus event, unused.
  *
  * \return
  *      Always returns false.

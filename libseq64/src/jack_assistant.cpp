@@ -278,7 +278,7 @@ jack_assistant::error_message (const std::string & msg)
  *      client application, such as Qtractor, is running as JACK Master (and
  *      then seq24 will apparently follow it).
  *
- * #ifdef USE_STAZED_JACK_SUPPORT
+ * ifdef USE_STAZED_JACK_SUPPORT
  *
  *  The call to jack_timebase_callback() to supply JACK with BBT, would
  *  occasionally fail when the pos information had zero or some garbage in the
@@ -296,7 +296,7 @@ jack_assistant::error_message (const std::string & msg)
  *  calculations that display in qjackctl. So we need to set it here and just
  *  use m_jack_frame_rate for calculations instead of pos.frame_rate.
  *
- * #endif
+ * endif
  *
  * \return
  *      Returns true if JACK is now considered to be running (or if it was

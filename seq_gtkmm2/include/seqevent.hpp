@@ -285,9 +285,9 @@ private:
      *      The destination for the converted tick value.
      */
 
-    void convert_t (midipulse ticks, int & x)
+    void convert_t (midipulse tick, int & x)
     {
-        x = ticks / m_zoom;
+        x = tick / m_zoom;
     }
 
     /**

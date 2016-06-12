@@ -1412,6 +1412,24 @@ sequence::paste_selected (midipulse tick, int note)
             DREF(i).set_note(n - (highest_note - note));
         }
     }
+	
+#ifdef SEQ64_USE_EVENT_MAP
+    /* 
+     * TEMPORARY FIX:
+     * The event_keys used to access/sort the multimap event_list is not
+     * updated after changing timestamp/rank of the stored events.
+     * Regenerating all key/value pairs before merging them solves this 
+     * issue temporarily, so that the order of events in the sequence will
+     * be preserved:
+     */
+    event_list clipbd_updated;
+    for (event_list::iterator i = clipbd.begin(); i != clipbd.end(); ++i)
+    {
+        clipbd_updated.add( DREF(i) );
+    }
+    clipbd = clipbd_updated;
+#endif // SEQ64_USE_EVENT_MAP
+	
     m_events.merge(clipbd, false);              /* don't presort clipboard  */
     m_events.sort();
     verify_and_link();

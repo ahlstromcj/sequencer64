@@ -156,7 +156,7 @@ midi_container::fill (int tracknumber)
         len = 0x7f;
 
     put(midibyte(len));
-    for (int i = 0; i < len; i++)
+    for (int i = 0; i < len; ++i)
         put(midibyte(trackname[i]));
 
 #ifdef SEQ64_HANDLE_TIMESIG_AND_TEMPO           /* defined in sequence.hpp */
@@ -198,12 +198,17 @@ midi_container::fill (int tracknumber)
     midipulse deltatime = 0;
     midipulse prevtimestamp = 0;
     event_list evl = m_sequence.events();
-    for (event_list::iterator i = evl.begin(); i != evl.end(); i++)
+    for (event_list::iterator i = evl.begin(); i != evl.end(); ++i)
     {
         event & er = DREF(i);
         const event & e = er;
         timestamp = e.get_timestamp();
         deltatime = timestamp - prevtimestamp;
+        if (deltatime < 0)                          /* midipulse == long    */
+        {
+            errprint("midi_container::fill(): Bad delta-time, aborting");
+            break;
+        }
         prevtimestamp = timestamp;
         add_variable(deltatime);                    /* encode delta_time    */
 

@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-06-11
+ * \updates       2016-06-12
  * \license       GNU GPLv2 or above
  *
  *  The functions add_list_var() and add_long_list() have been replaced by
@@ -976,7 +976,7 @@ public:
     void decrement_selected (midibyte status, midibyte /*control*/);
     void grow_selected (midipulse deltatick);
     void stretch_selected (midipulse deltatick);
-    void remove_marked ();
+    void remove_marked ();                      /* a forwarding function */
     void mark_selected ();
     void unpaint_all ();
     void unselect ();

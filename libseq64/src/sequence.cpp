@@ -487,7 +487,7 @@ sequence::verify_and_link ()
 {
     automutex locker(m_mutex);
     m_events.verify_and_link(m_length);
-    remove_marked();                    /* prune out-of-range events    */
+//  remove_marked();                        /* prune out-of-range events    */
 }
 
 /**
@@ -567,6 +567,7 @@ void
 sequence::remove_marked ()
 {
     automutex locker(m_mutex);
+#if 0
     event_list::iterator i = m_events.begin();
     while (i != m_events.end())
     {
@@ -580,6 +581,8 @@ sequence::remove_marked ()
         else
             ++i;
     }
+#endif
+    m_events.remove_marked();
     reset_draw_marker();
 }
 
@@ -696,23 +699,25 @@ sequence::get_clipboard_box
     note_l = SEQ64_MIDI_COUNT_MAX;
     if (m_events_clipboard.count() == 0)
         tick_s = tick_f = note_h = note_l = 0;
-
-    event_list::iterator i;
-    for (i = m_events_clipboard.begin(); i != m_events_clipboard.end(); ++i)
+    else
     {
-        midipulse time = DREF(i).get_timestamp();
-        if (time < tick_s)
-            tick_s = time;
+        event_list::iterator i;
+        for (i = m_events_clipboard.begin(); i != m_events_clipboard.end(); ++i)
+        {
+            midipulse time = DREF(i).get_timestamp();
+            if (time < tick_s)
+                tick_s = time;
 
-        if (time > tick_f)
-            tick_f = time;
+            if (time > tick_f)
+                tick_f = time;
 
-        int note = DREF(i).get_note();
-        if (note < note_l)
-            note_l = note;
+            int note = DREF(i).get_note();
+            if (note < note_l)
+                note_l = note;
 
-        if (note > note_h)
-            note_h = note;
+            if (note > note_h)
+                note_h = note;
+        }
     }
 }
 
@@ -1397,12 +1402,14 @@ sequence::paste_selected (midipulse tick, int note)
         int highest_note = 0;
         for (event_list::iterator i = clipbd.begin(); i != clipbd.end(); ++i)
         {
-            if (DREF(i).get_note() > highest_note)
-                highest_note = DREF(i).get_note();
+            midibyte n = DREF(i).get_note();
+            if (n > highest_note)
+                highest_note = n;
         }
         for (event_list::iterator i = clipbd.begin(); i != clipbd.end(); ++i)
         {
-            DREF(i).set_note(DREF(i).get_note() - (highest_note - note));
+            midibyte n = DREF(i).get_note();
+            DREF(i).set_note(n - (highest_note - note));
         }
     }
     m_events.merge(clipbd, false);              /* don't presort clipboard  */

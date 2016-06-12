@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-19
- * \updates       2016-05-21
+ * \updates       2016-06-12
  * \license       GNU GPLv2 or above
  *
  */
@@ -377,8 +377,8 @@ event_list::verify_and_link (midipulse slength)
         event & eon = dref(on);
         if (eon.is_note_on())               /* Note On, find its Note Off   */
         {
-            event_list::iterator off = on;  /* get next possible Note Off   */
-            ++off;
+            event_list::iterator off = on;  /* next possible Note Off...    */
+            ++off;                          /* ...starting here             */
             bool endfound = false;
             while (off != m_events.end())
             {
@@ -426,6 +426,7 @@ event_list::verify_and_link (midipulse slength)
     }
     unmark_all();
     mark_out_of_range(slength);
+    remove_marked();
 }
 
 /**
@@ -503,12 +504,41 @@ event_list::mark_out_of_range (midipulse slength)
     for (Events::iterator i = m_events.begin(); i != m_events.end(); ++i)
     {
         event & e = dref(i);
-        if (e.get_timestamp() > slength)
+        bool prune = e.get_timestamp() > slength;   /* was ">="             */
+        if (! prune)
+            prune = e.get_timestamp() < 0;          /* added back, seq24    */
+
+        if (prune)
         {
-            e.mark();                           /* we have to prune it  */
+            e.mark();
             if (e.is_linked())
                 e.get_linked()->mark();
         }
+    }
+}
+
+/**
+ *  Removes marked events.  Note how this function handles removing a
+ *  value to avoid incrementing a now-invalid iterator.
+ *
+ * \threadsafe
+ */
+
+void
+event_list::remove_marked ()
+{
+    Events::iterator i = m_events.begin();
+    while (i != m_events.end())
+    {
+        if (DREF(i).is_marked())
+        {
+            event_list::iterator t = i;
+            ++t;
+            remove(i);
+            i = t;
+        }
+        else
+            ++i;
     }
 }
 

@@ -969,7 +969,7 @@ void
 seqroll::convert_tn (midipulse tick, int note, int & x, int & y)
 {
     x = tick / m_zoom;
-    y = c_rollarea_y - (note + 1) * c_key_y - 1;
+    y = c_rollarea_y - ((note + 1) * c_key_y) - 1;
 }
 
 /**
@@ -1087,14 +1087,7 @@ void
 seqroll::start_paste ()
 {
     snap_x(m_current_x);
-
-    /*
-     * Makes no sense to snap a y value according to an x value!
-     *
-     * snap_y(m_current_x);                    // is this really right?
-     */
-
-    snap_y(m_current_y);
+    snap_y(m_current_y);                        // was snap_y(m_current_x) !!
     m_drop_x = m_current_x;
     m_drop_y = m_current_y;
     m_paste = true;
@@ -1310,7 +1303,7 @@ seqroll::on_motion_notify_event (GdkEventMotion * ev)
  *      Always returns false.
  */
 
-booL
+bool
 seqroll::on_enter_notify_event (GdkEventCrossing *)
 {
     m_seqkeys_wid.set_hint_state(true);

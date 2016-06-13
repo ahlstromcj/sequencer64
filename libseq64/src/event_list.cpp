@@ -105,7 +105,7 @@ event_list::event_key::operator < (const event_key & rhs) const
 #endif  // SEQ64_USE_EVENT_MAP
 
 /*
- * Section: event_key
+ * Section: event_list
  */
 
 /**

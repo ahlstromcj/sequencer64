@@ -1,6 +1,6 @@
 README for Sequencer64 0.9.13 (current branch = "fixups")
 Chris Ahlstrom
-2015-09-10 to 2016-05-30 (initial work started in July of 2015)
+2015-09-10 to 2016-06-12 (initial work started in July of 2015)
 
 Sequencer64 (replaces sequencer24) is a reboot of seq24 to refactor it to be
 tighter and easier to transition to GTKmm 3, and much more.  It is now
@@ -16,12 +16,14 @@ Major updates:
 
     -   Version 0.9.13 adds nearly complete support for moving, paging, and
         going to start and end both horizontally and vertically in the song
-        editor and the pattern editor.
+        editor and the pattern editor.  It also includes an important bug-fix
+        from user 0rel that caused some notes to be missing or messed up 
+        in a copy operation in the pattern editor.
     -   Version 0.9.12 fixes a bug in the drawing of MIDI note numbers in the
         seqkeys panel.
     -   Sequencer64 loads SMF 0 files and splits the channels into separate
         tracks/sequences.
-    -   JACK support has been improved.  Sequencer64 will track JACK transport
+    -   JACK support has been improved.  Sequencer64 will track JACK tranisport
         properly, and as Master, will provide the proper Bar:Beats:Ticks (BBT)
         to other JACK clients.  We are still investigating JackBBTFrameOffset
         support.
@@ -31,7 +33,7 @@ Major updates:
         still rewinds the sequences.  The Pause feature does not affect JACK
         transport, which already supports pause; we would like to add rewind
         to JACK transport eventually.  Also added is a Pause key (by default,
-        the period).  Pause can be disabled at configure time (--disable-pause).
+        the period).  Pause can be disabled at configure time (--disable-pnause).
     -   Long sequences/patterns now auto-scroll horizontally during playback
         to keep up with the progress bar in the sequence/pattern editor.
     -   Highlighting of the current sequence brought up for editing.

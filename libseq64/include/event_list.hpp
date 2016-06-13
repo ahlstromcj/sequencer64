@@ -56,15 +56,19 @@
  * using std::list.  Define this macro to use the multimap.  So far, we
  * recommend using it.  In debug mode, the b4uacuse MIDI files take about 8
  * seconds (!) to load using the list, but barely any time to load using the
- * multimap.
+ * multimap.  It turns out the multimap does have issues; one must be careful
+ * dealing with insertions since multiple events with the same keys can be
+ * load.  This caused an issue with copy/paste leaving unlinked notes that
+ * would either play forever or not play at all.  A good fix was provided by
+ * user 0rel.
  */
 
-#define SEQ64_USE_EVENT_MAP             /* this seems to work well! */
+#define SEQ64_USE_EVENT_MAP             /* the map seems to work well!  */
 
 #ifdef SEQ64_USE_EVENT_MAP
-#include <map>                          /* std::multimap            */
+#include <map>                          /* std::multimap                */
 #else
-#include <list>
+#include <list>                         /* std::list                    */
 #endif
 
 /**

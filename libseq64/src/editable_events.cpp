@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-12-04
- * \updates       2016-01-09
+ * \updates       2016-06-12
  * \license       GNU GPLv2 or above
  *
  *  A MIDI editable event is encapsulated by the seq64::editable_events
@@ -163,6 +163,9 @@ bool
 editable_events::add (const editable_event & e)
 {
     size_t count = m_events.size();         /* save initial size            */
+
+#ifdef SEQ64_USE_EVENT_MAP
+
     event_list::event_key key(e);           /* create the key value         */
 
 #if __cplusplus >= 201103L                  /* C++11                        */
@@ -175,6 +178,14 @@ editable_events::add (const editable_event & e)
     bool result = m_events.size() == (count + 1);
     if (result)
         current_event(ei);
+
+#else                                       /* std::list implementation     */
+
+    m_events.push_front(e);
+    bool result = m_events.size() == (count + 1);
+    
+#endif  // SEQ64_USE_EVENT_MAP
+
 
     return result;
 }
@@ -205,8 +216,13 @@ editable_events::load_events ()
         ei != m_sequence.events().end(); ++ei
     )
     {
+#ifdef SEQ64_USE_EVENT_MAP
         if (! add(ei->second))
             break;
+#else
+        if (! add(*ei))
+            break;
+#endif
     }
     result = count() == original_count;
 #ifdef USE_VERIFY_AND_LINK                  /* not yet ready */
@@ -242,7 +258,11 @@ editable_events::save_events ()
         m_sequence.events().clear();
         for (const_iterator ei = events().begin(); ei != events().end(); ++ei)
         {
+#ifdef SEQ64_USE_EVENT_MAP
             event ev = ei->second;
+#else
+            event ev = *ei;
+#endif
             if (! m_sequence.add_event(ev))
                 break;
         }

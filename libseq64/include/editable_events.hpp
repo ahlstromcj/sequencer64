@@ -29,7 +29,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-12-04
- * \updates       2016-05-05
+ * \updates       2016-06-12
  * \license       GNU GPLv2 or above
  *
  *  This module extends the event class to support conversions between events
@@ -52,22 +52,37 @@ class sequence;
 
 class editable_events
 {
-
     friend class eventslots;            /* part of ed-event user-interface */
 
 private:
 
+#ifdef SEQ64_USE_EVENT_MAP
+
     /**
      *  Types to use to with the multimap implementation.  These typenames are
      *  identical to those used in event_list, but of course they are in the
-     *  editable_events scope instead.
+     *  editable_events scope instead.  See the event_list class.
      */
 
     typedef event_list::event_key Key;
-    typedef std::multimap<Key, editable_event> Events;
     typedef std::pair<Key, editable_event> EventsPair;
+    typedef std::multimap<Key, editable_event> Events;
     typedef std::multimap<Key, editable_event>::iterator iterator;
     typedef std::multimap<Key, editable_event>::const_iterator const_iterator;
+
+#else
+
+    /**
+     *  Types to use to with the list implementation.  These typenames are
+     *  identical to those used in event_list, but of course they are in the
+     *  editable_events scope instead.  See the event_list class.
+     */
+
+    typedef std::list<editable_event> Events;
+    typedef std::list<editable_event>::iterator iterator;
+    typedef std::list<editable_event>::const_iterator const_iterator;
+
+#endif  // SEQ64_USE_EVENT_MAP
 
     /**
      *  Holds the editable_events.

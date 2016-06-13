@@ -1,3 +1,167 @@
+2016-06-12  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* : commit ab2e1f4caa758a5a60100eda2878af9550094c10 Merge: e68f482
+	6530205 Author: C. Ahlstrom <ahlstromcj@gmail.com> Date:   Sun Jun
+	12 16:19:11 2016 -0400: Merged 0rel's provisional fix for the issues in
+	pasting notes in the pattern editor, caused by the properties of the
+	multipmap container.
+	* libseq64/include/event_list.hpp, libseq64/include/sequence.hpp,
+	libseq64/src/event_list.cpp, libseq64/src/midi_container.cpp,
+	libseq64/src/sequence.cpp, seq_gtkmm2/src/seqroll.cpp: Interim
+	check-in, trying to find copy/paste bug in seqroll.
+	* libseq64/src/sequence.cpp: Temporary fix for copy/paste bug (order
+	of events) added.
+	* contrib/notes/stazed-fixes.txt, doc/dox/doxy-reference.cfg,
+	libseq64/include/editable_event.hpp, libseq64/include/event.hpp,
+	libseq64/include/jack_assistant.hpp,
+	libseq64/include/keys_perform.hpp, libseq64/include/lash.hpp,
+	libseq64/include/midi_vector.hpp,
+	libseq64/include/midibus_common.hpp, libseq64/include/midibyte.hpp,
+	libseq64/include/perform.hpp, libseq64/include/sequence.hpp,
+	libseq64/src/calculations.cpp, libseq64/src/editable_event.cpp,
+	libseq64/src/event.cpp, libseq64/src/jack_assistant.cpp,
+	libseq64/src/midibus.cpp, libseq64/src/midifile.cpp,
+	libseq64/src/perform.cpp, libseq64/src/sequence.cpp,
+	seq_gtkmm2/include/font.hpp,
+	seq_gtkmm2/include/gui_drawingarea_gtk2.hpp,
+	seq_gtkmm2/include/keybindentry.hpp,
+	seq_gtkmm2/include/options.hpp, seq_gtkmm2/include/perftime.hpp,
+	seq_gtkmm2/include/seqevent.hpp, seq_gtkmm2/src/eventedit.cpp,
+	seq_gtkmm2/src/eventslots.cpp,
+	seq_gtkmm2/src/fruityperfroll_input.cpp,
+	seq_gtkmm2/src/mainwnd.cpp, seq_gtkmm2/src/perfedit.cpp,
+	seq_gtkmm2/src/perfnames.cpp, seq_gtkmm2/src/perfroll.cpp,
+	seq_gtkmm2/src/seq24seqroll.cpp, seq_gtkmm2/src/seqdata.cpp,
+	seq_gtkmm2/src/seqedit.cpp, seq_gtkmm2/src/seqevent.cpp,
+	seq_gtkmm2/src/seqroll.cpp: Hurrah, got essentially all source-code
+	entities document to some extent, Doxygen has very few complaints
+	now.
+
+2016-06-11  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* Sequencer64/sequencer64.cpp, libseq64/include/keys_perform.hpp,
+	libseq64/include/rc_settings.hpp, libseq64/src/cmdlineopts.cpp,
+	libseq64/src/optionsfile.cpp, libseq64/src/rc_settings.cpp: Added
+	--rc, --usr, --config options, fixed bugs in the legacy and option
+	support.
+
+2016-06-10  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* contrib/notes/fruity-mode.txt, libseq64/src/jack_assistant.cpp,
+	libseq64/src/perform.cpp, seq_gtkmm2/src/fruityperfroll_input.cpp,
+	seq_gtkmm2/src/seq24seqroll.cpp, seq_gtkmm2/src/seqroll.cpp: Ongoing
+	documentation for fruity mode, research into seq32 features.
+
+2016-06-09  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* contrib/notes/fruity-mode.txt,
+	seq_gtkmm2/include/fruityperfroll_input.hpp,
+	seq_gtkmm2/include/fruityseq.hpp,
+	seq_gtkmm2/include/fruityseqroll.hpp,
+	seq_gtkmm2/include/seq24seq.hpp, seq_gtkmm2/src/fruityseq.cpp,
+	seq_gtkmm2/src/fruityseqroll.cpp, seq_gtkmm2/src/seq24seq.cpp: 
+	Interim check-in, documenting and analyzing fruityseqroll.
+
+2016-06-08  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* seq_gtkmm2/include/seqroll.hpp, seq_gtkmm2/src/seqedit.cpp,
+	seq_gtkmm2/src/seqroll.cpp: Interim check-in, documenting seqroll.
+
+2016-06-07  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* seq_gtkmm2/include/seq24seq.hpp,
+	seq_gtkmm2/include/seq24seqroll.hpp,
+	seq_gtkmm2/include/seqdata.hpp, seq_gtkmm2/include/seqkeys.hpp,
+	seq_gtkmm2/include/seqmenu.hpp, seq_gtkmm2/include/seqroll.hpp,
+	seq_gtkmm2/src/seqedit.cpp, seq_gtkmm2/src/seqkeys.cpp,
+	seq_gtkmm2/src/seqmenu.cpp, seq_gtkmm2/src/seqroll.cpp: Interim
+	check-in, cleanup of seqroll module and other seq modules.
+	* contrib/notes/bugs_to_investigate.txt,
+	contrib/notes/stazed-fixes.txt, contrib/notes/urls.txt: Added some
+	notes from Stazed for consideration.
+
+2016-06-04  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/include/app_limits.h, libseq64/include/event.hpp,
+	seq_gtkmm2/include/seqedit.hpp, seq_gtkmm2/src/seqedit.cpp,
+	seq_gtkmm2/src/seqevent.cpp: Added feature to use a grey background
+	in the event strip of seqroll when note messages or aftertouch are
+	being shown, to indicate indirectly that there are issues with
+	editing these single events alone.
+
+2016-06-02  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* seq_gtkmm2/include/eventedit.hpp, seq_gtkmm2/src/eventedit.cpp,
+	seq_gtkmm2/src/seqedit.cpp: Fixed close-out and
+	focus-of-current-edit issues in eventedit.
+
+2016-06-01  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* configure.ac, contrib/notes/bugs_to_investigate.txt,
+	seq_gtkmm2/include/seqevent.hpp, seq_gtkmm2/include/seqkeys.hpp,
+	seq_gtkmm2/src/seqevent.cpp: Additional code document and a note
+	about a long-standing bug in seqevent event movement with the mouse.
+
+2016-05-31  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* README, configure.ac, seq_gtkmm2/include/eventedit.hpp,
+	seq_gtkmm2/include/eventslots.hpp, seq_gtkmm2/include/maintime.hpp,
+	seq_gtkmm2/include/mainwid.hpp, seq_gtkmm2/include/perfedit.hpp,
+	seq_gtkmm2/include/perfnames.hpp, seq_gtkmm2/include/perfroll.hpp,
+	seq_gtkmm2/include/perftime.hpp, seq_gtkmm2/include/seqdata.hpp,
+	seq_gtkmm2/include/seqedit.hpp, seq_gtkmm2/include/seqevent.hpp,
+	seq_gtkmm2/include/seqkeys.hpp, seq_gtkmm2/include/seqroll.hpp,
+	seq_gtkmm2/include/seqtime.hpp, seq_gtkmm2/src/perfroll.cpp,
+	seq_gtkmm2/src/seqedit.cpp: More code documentation and cleanup on
+	in the user-interface library.
+
+2016-05-30  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* seq_gtkmm2/include/gui_drawingarea_gtk2.hpp,
+	seq_gtkmm2/include/gui_window_gtk2.hpp,
+	seq_gtkmm2/include/perfroll.hpp, seq_gtkmm2/include/seqedit.hpp,
+	seq_gtkmm2/src/gui_drawingarea_gtk2.cpp,
+	seq_gtkmm2/src/gui_window_gtk2.cpp, seq_gtkmm2/src/perfroll.cpp,
+	seq_gtkmm2/src/seqedit.cpp: Added Home/End and Keypad Home/End
+	support to perfroll and seqedit.
+	* configure.ac, seq_gtkmm2/include/seqedit.hpp,
+	seq_gtkmm2/src/gui_drawingarea_gtk2.cpp,
+	seq_gtkmm2/src/gui_window_gtk2.cpp, seq_gtkmm2/src/perfedit.cpp,
+	seq_gtkmm2/src/perfroll.cpp, seq_gtkmm2/src/seqedit.cpp,
+	seq_gtkmm2/src/seqroll.cpp: Got horizontal and vertical Page-Up and
+	Page-Down working for song and sequence editors, now thinking about
+	Home and End support.
+	* INSTALL, README, ROADMAP, VERSION, configure.ac,
+	doc/dox/doxy-reference.cfg, libseq64/include/user_settings.hpp,
+	libseq64/src/cmdlineopts.cpp, libseq64/src/optionsfile.cpp,
+	libseq64/src/user_settings.cpp, libseq64/src/userfile.cpp,
+	man/sequencer64.1, seq_gtkmm2/include/eventedit.hpp,
+	seq_gtkmm2/include/eventslots.hpp, seq_gtkmm2/include/font.hpp,
+	seq_gtkmm2/include/fruityperfroll_input.hpp,
+	seq_gtkmm2/include/fruityseq.hpp,
+	seq_gtkmm2/include/fruityseqroll.hpp,
+	seq_gtkmm2/include/gui_assistant_gtk2.hpp,
+	seq_gtkmm2/include/gui_drawingarea_gtk2.hpp,
+	seq_gtkmm2/include/gui_palette_gtk2.hpp,
+	seq_gtkmm2/include/gui_window_gtk2.hpp,
+	seq_gtkmm2/include/keybindentry.hpp,
+	seq_gtkmm2/include/maintime.hpp, seq_gtkmm2/include/mainwid.hpp,
+	seq_gtkmm2/include/mainwnd.hpp, seq_gtkmm2/include/options.hpp,
+	seq_gtkmm2/include/perfedit.hpp, seq_gtkmm2/include/perfnames.hpp,
+	seq_gtkmm2/include/perfroll.hpp,
+	seq_gtkmm2/include/perfroll_input.hpp,
+	seq_gtkmm2/include/perftime.hpp, seq_gtkmm2/include/seq24seq.hpp,
+	seq_gtkmm2/include/seq24seqroll.hpp,
+	seq_gtkmm2/include/seqdata.hpp, seq_gtkmm2/include/seqedit.hpp,
+	seq_gtkmm2/include/seqroll.hpp, seq_gtkmm2/src/eventedit.cpp,
+	seq_gtkmm2/src/eventslots.cpp, seq_gtkmm2/src/font.cpp,
+	seq_gtkmm2/src/gui_drawingarea_gtk2.cpp,
+	seq_gtkmm2/src/gui_window_gtk2.cpp, seq_gtkmm2/src/mainwnd.cpp,
+	seq_gtkmm2/src/perfroll.cpp, seq_gtkmm2/src/seqdata.cpp,
+	seq_gtkmm2/src/seqedit.cpp, seq_gtkmm2/src/seqroll.cpp: Beefing up
+	Doxygen documentation, adding scroll-adjustment functions for
+	upcoming PageUp/PageDown support in the sequence editor.
+
 2016-05-29  Chris Ahlstrom <ahlstromcj@gmail.com>
 
 	* contrib/notes/bugs_to_investigate.txt, doc/dox/make_dox,

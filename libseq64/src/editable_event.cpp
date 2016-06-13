@@ -343,7 +343,6 @@ editable_event::editable_event
     // analyze();               // DO IT NOW OR LATER?
 }
 
-
 /**
  *  This copy constructor initializes most of the class members.  This
  *  function is currently geared only toward support of the SMF 0
@@ -386,15 +385,16 @@ editable_event::editable_event (const editable_event & rhs)
  * \return
  *      Returns a reference to "this" object, to support the serial assignment
  *      of editable_events.
- *
+ */
+
 editable_event &
 editable_event::operator = (const editable_event & rhs)
 {
     if (this != &rhs)
     {
         event::operator =(rhs);
-        m_category          = rhs.m_category;
     //  m_parent            = rhs.m_parent;
+        m_category          = rhs.m_category;
         m_name_category     = rhs.m_name_category;
         m_format_timestamp  = rhs.m_format_timestamp;
         m_name_timestamp    = rhs.m_name_timestamp;
@@ -406,8 +406,6 @@ editable_event::operator = (const editable_event & rhs)
     }
     return *this;
 }
- *
- */
 
 /**
  * \setter m_category by value

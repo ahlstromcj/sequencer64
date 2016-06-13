@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-05-21
+ * \updates       2016-06-12
  * \license       GNU GPLv2 or above
  *
  *  The functionality of this class also includes handling some of the
@@ -1412,26 +1412,30 @@ sequence::paste_selected (midipulse tick, int note)
             DREF(i).set_note(n - (highest_note - note));
         }
     }
-	
+
 #ifdef SEQ64_USE_EVENT_MAP
-    /* 
-     * TEMPORARY FIX:
-     * The event_keys used to access/sort the multimap event_list is not
-     * updated after changing timestamp/rank of the stored events.
-     * Regenerating all key/value pairs before merging them solves this 
-     * issue temporarily, so that the order of events in the sequence will
-     * be preserved:
+
+    /*
+     * \change 0rel 2016-06-12 PROVISIONAL FIX
+     *      The event_keys used to access/sort the multimap event_list is not
+     *      updated after changing timestamp/rank of the stored events.
+     *      Regenerating all key/value pairs before merging them solves this
+     *      issue temporarily, so that the order of events in the sequence
+     *      will be preserved.  This action is not needed for moving or
+     *      growing events.  Nor is it needed if the old std::list
+     *      implementation of the event container is compiled in.
      */
+
     event_list clipbd_updated;
     for (event_list::iterator i = clipbd.begin(); i != clipbd.end(); ++i)
-    {
-        clipbd_updated.add( DREF(i) );
-    }
+        clipbd_updated.add(DREF(i));
+
     clipbd = clipbd_updated;
-#endif // SEQ64_USE_EVENT_MAP
-	
+
+#endif      // SEQ64_USE_EVENT_MAP
+
     m_events.merge(clipbd, false);              /* don't presort clipboard  */
-    m_events.sort();
+    m_events.sort();                            /* uh, does nothing in map  */
     verify_and_link();
     reset_draw_marker();
 }

@@ -311,7 +311,6 @@ private:
 private:        // hidden functions
 
     editable_event ();
-    editable_event & operator = (const editable_event & rhs);
 
 public:
 
@@ -322,6 +321,7 @@ public:
         const event & ev
     );
     editable_event (const editable_event & rhs);
+    editable_event & operator = (const editable_event & rhs);
 
     /**
      *  This destructor current is a rote virtual function override.

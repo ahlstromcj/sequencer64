@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-12-05
- * \updates       2016-06-02
+ * \updates       2016-06-13
  * \license       GNU GPLv2 or above
  *
  * To consider:
@@ -253,7 +253,7 @@ eventedit::eventedit (perform & p, sequence & seq)
     add_tooltip
     (
         m_button_ins,
-        "Insert a new event using the data in the edit fields. Its actual"
+        "Insert a new event using the data in the edit fields. Its actual "
         "location is determined by the timestamp field, not the current "
         "event.  The Insert key is reserved for the edit fields."
     );

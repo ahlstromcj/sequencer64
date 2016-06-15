@@ -1,6 +1,6 @@
 Bugs and Additional Upgrade Ideas
 Chris Ahlstrom
-2015-10-27 to 2016-05-31 (New bugs)
+2015-10-27 to 2016-06-13 (New bugs)
 
 In no particular order...  "y" means "in progress", and "x" means it is
 basically done.
@@ -9,6 +9,10 @@ basically done.
 -  In Sequencer64 and Seq24, select a couple events in the event row of the
    seqedit dialog, and then move them a little to the right... the events end
    up greatly elongated in the seqroll section.
+-  Saving a pattern in the event editor does not cause a performance
+   modification!
+y  Copying and pasting notes ruins the original notes. Orel found a solution,
+   but it needs more testing.
 x  Had the seqkey numbering (accessed by right-click) backwards.  What
    an idiot!
 x  Deleting last note of Ionian MIDI import in event editor causes a CRASH!

@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and Tim Deagan
  * \date          2015-07-24
- * \updates       2016-06-15
+ * \updates       2016-06-14
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -180,6 +180,25 @@ perform::perform (gui_assistant & mygui, int ppqn)
         SEQ64_DEFAULT_BEAT_WIDTH            // may get updated later
     ),
 #endif
+#ifdef USE_STAZED_JACK_SUPPORT
+    m_reposition                (false),
+    thread_trigger_width_ms     (c_thread_trigger_width_ms),
+    m_follow_transport          (true),
+    m_start_from_perfedit       (false),
+    m_bp_measure                (4),
+    m_bw                        (4),
+    m_have_undo                 (false),
+    m_have_redo                 (false),
+
+    /*
+     * Additional keys:
+     *
+     *  m_key_song              (SEQ64_F1),
+     *  m_key_jack              (SEQ64_F2),
+     *  m_key_menu              (SEQ64_F3),
+     *  m_key_follow_trans      (SEQ64_F4),
+     */
+#endif
     m_notify                    ()          // vector of pointers, public!
 {
     for (int i = 0; i < m_sequence_max; ++i)
@@ -278,6 +297,11 @@ perform::clear_all ()
         set_screen_set_notepad(i, e);
 
     is_modified(false);                     /* new, we start afresh     */
+#ifdef USE_STAZED_JACK_SUPPORT
+    set_beats_per_minute(4 /*c_bpm*/);      /* find a better way        */
+    set_have_undo(false);
+    set_have_redo(false);
+#endif
 }
 
 /**
@@ -528,6 +552,11 @@ perform::set_left_tick (midipulse tick, bool setstart)
 
     if (m_left_tick >= m_right_tick)
         m_right_tick = m_left_tick + m_one_measure;
+
+#ifdef USE_STAZED_JACK_SUPPORT
+    // Did stazed remove this?
+    // set_left_frame();
+#endif
 }
 
 /**
@@ -797,7 +826,7 @@ perform::set_was_active (int seq)
 {
     if (is_seq_valid(seq))
     {
-        m_was_active_main[seq] = 
+        m_was_active_main[seq] =
             m_was_active_edit[seq] =
             m_was_active_perf[seq] =
             m_was_active_names[seq] = true;
@@ -1407,13 +1436,30 @@ perform::copy_triggers ()
 void
 perform::start_playing (bool songmode)
 {
-    if (songmode)                       // || m_start_from_perfedit???
+#ifdef USE_STAZED_JACK_SUPPORT
+    if (songmode || m_start_from_perfedit)
+#else
+    if (songmode)
+#endif
     {
-        /*
-         * For cosmetic reasons, to stop transport line flicker on start.
-         */
+#ifdef USE_STAZED_JACK_SUPPORT
+        if (m_jack_asst.is_master())
+        {
+            /*
+             * Allow starting at the key-p position if set.  And, for
+             * cosmetic reasons, to stop transport line flicker on start,
+             * position to the left tick..
+             */
 
-        position_jack(true);            // if Master and set_left_frame()???
+            if (! m_reposition)
+                position_jack(true, m_left_tick);
+#else
+            position_jack(true);
+#endif
+
+#ifdef USE_STAZED_JACK_SUPPORT
+        }
+#endif
         start_jack();
 
         /*
@@ -1424,11 +1470,18 @@ perform::start_playing (bool songmode)
     }
     else                                /* live mode                        */
     {
-        /*
-         * For cosmetic reasons, to stop transport line flicker on start.
-         */
+#ifdef USE_STAZED_JACK_SUPPORT
+        if (m_jack_asst.is_master())
+        {
+            /*
+             * For cosmetic reasons, to stop transport line flicker on start.
+             */
 
-        position_jack(false);           // if Master???
+            position_jack(false, 0);
+        }
+#else
+        position_jack(false);
+#endif
         start(false);                   /* disables perfedit mute control   */
         start_jack();
     }
@@ -1497,6 +1550,24 @@ perform::stop_playing ()
     rc().is_pattern_playing(false);
     m_tick = 0;                         // or get_left_tick()
 }
+
+#ifdef USE_STAZED_JACK_SUPPORT
+
+void
+perform::toggle_song_mode ()
+{
+    if (rc().jack_start_mode())
+        rc().jack_start_mode(false);
+    else
+    {
+        rc().jack_start_mode(true);
+
+        // Did stazed remove this?
+        // set_left_frame();
+    }
+}
+
+#endif  // USE_STAZED_JACK_SUPPORT
 
 /**
  *  If JACK is supported and running, sets the position of the transport.

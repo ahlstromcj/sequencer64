@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-14
- * \updates       2016-06-15
+ * \updates       2016-06-09
  * \license       GNU GPLv2 or above
  *
  *  This module was created from code that existed in the perform object.
@@ -177,6 +177,9 @@ jack_assistant::jack_assistant
     m_jack_client               (nullptr),
     m_jack_frame_current        (0),
     m_jack_frame_last           (0),
+#ifdef USE_STAZED_JACK_SUPPORT
+    m_jack_frame_rate           (0),
+#endif
     m_jack_pos                  (),
     m_jack_transport_state      (JackTransportStopped),
     m_jack_transport_state_last (JackTransportStopped),
@@ -186,6 +189,9 @@ jack_assistant::jack_assistant
 #endif
     m_jack_running              (false),
     m_jack_master               (false),
+#ifdef USE_STAZED_JACK_SUPPORT
+    // m_left_frame             (0),            // removed by stazed recently
+#endif
     m_ppqn                      (0),
     m_beats_per_measure         (bpm),
     m_beat_width                (beatwidth),
@@ -275,6 +281,26 @@ jack_assistant::error_message (const std::string & msg)
  *      client application, such as Qtractor, is running as JACK Master (and
  *      then seq24 will apparently follow it).
  *
+ * ifdef USE_STAZED_JACK_SUPPORT
+ *
+ *  The call to jack_timebase_callback() to supply JACK with BBT, would
+ *  occasionally fail when the pos information had zero or some garbage in the
+ *  pos.frame_rate variable, which would occur when there was a rapid change of
+ *  frame position by another client, i.e. qjackctl.  From the jack API:
+ *
+ *      pos address of the position structure for the next cycle; pos->frame
+ *      will be its frame number. If new_pos is FALSE, this structure contains
+ *      extended position information from the current cycle.  If TRUE, it
+ *      contains whatever was set by the requester.  The timebase_callback's
+ *      task is to update the extended information here."
+ *
+ *  The "If TRUE" line seems to be the issue. It seems that qjackctl does not
+ *  always set pos.frame_rate so we get garbage and some strange BBT
+ *  calculations that display in qjackctl. So we need to set it here and just
+ *  use m_jack_frame_rate for calculations instead of pos.frame_rate.
+ *
+ * endif
+ *
  * \return
  *      Returns true if JACK is now considered to be running (or if it was
  *      already running.)
@@ -290,7 +316,18 @@ jack_assistant::init ()
         m_jack_master = true;               /* ditto, too tricky, though    */
         m_jack_client = client_open(package);
         if (m_jack_client == NULL)
+        {
+            m_jack_running = false;         /* from the stazed fixes        */
             return error_message("JACK server not running, JACK sync disabled");
+        }
+#ifdef USE_STAZED_JACK_SUPPORT
+        else
+            m_jack_frame_rate = jack_get_sample_rate(m_jack_client);
+
+        /*
+         * See the "ifdef USE_STAZED_JACK_SUPPORT" note in the function banner.
+         */
+#endif
 
         jack_on_shutdown(m_jack_client, jack_shutdown_callback, (void *) this);
 
@@ -439,7 +476,52 @@ jack_assistant::deinit ()
  *      there is one, will not be available until the _next_ next cycle.  The
  *      code must therefore wait one cycle before syncing up with
  *      timebase_master.
+ *
+ *  ifdef USE_STAZED_JACK_SUPPORT
+ *
+ *      stop(): This function's sole purpose was to prevent inner_stop() from
+ *      being called internally when JACK was running...potentially twice?.
+ *      inner_stop() was called by output_func() when JACK sent a
+ *      JackTransportStopped message. If seq42 initiated the stop, then
+ *      stop_jack() was called, which then triggered the JackTransportStopped
+ *      message to output_func() which then triggered the bool stop_jack to
+ *      call inner_stop().  The output_func() call to inner_stop() is only
+ *      necessary when some other JACK client sends a jack_transport_stop
+ *      message to JACK, not when it is initiated by seq42.
+ *
+ *      The method of relying on JACK to call inner_stop() when internally
+ *      initiated caused a (very) obscure apparent freeze if you press and hold
+ *      the start/stop key if set to toggle. This occurs because of the delay
+ *      between JackTransportStarting and JackTransportStopped if both are
+ *      triggered in rapid succession by holding the toggle key down.
+ *
+ *      The variable global_is_running gets set false by a delayed inner_stop()
+ *      from JACK after the start (true) is already sent. This means the global
+ *      is set to true when JACK is actually off (false). Any subsequent
+ *      presses to the toggle key send a stop message because the global is set
+ *      to true.  Because JACK is not running, output_func() is not running to
+ *      send the inner_stop() call which resets the global to false. Thus an
+ *      apparent freeze as the toggle key endlessly sends a stop, but
+ *      inner_stop() never gets called to reset. Whoo!
+ *
+ *      So, to fix this we just need to call inner_stop() directly rather than
+ *      wait for JACK to send a delayed stop, only when running. This makes the
+ *      whole purpose of this stop() function unneeded. The check for
+ *      m_jack_running is commented out and this function could be removed. It
+ *      is being left for future generations to ponder!!!
+ *
+ *  endif USE_STAZED_JACK_SUPPORT
  */
+
+#ifdef USE_STAZED_JACK_SUPPORT
+
+void
+jack_assistant::stop()
+{
+    inner_stop();
+}
+
+#else   // USE_STAZED_JACK_SUPPORT
 
 void
 jack_assistant::start ()
@@ -449,6 +531,8 @@ jack_assistant::start ()
     else if (rc().with_jack())
         (void) error_message("Transport Start: JACK not running");
 }
+
+#endif  // USE_STAZED_JACK_SUPPORT
 
 /**
  *  If JACK is supported, stops the JACK transport.  This function assumes
@@ -505,6 +589,30 @@ jack_assistant::stop ()
  *      Returns 0 if a valid request, EINVAL if the position structure is
  *      rejected.
  *
+ *  ifdef USE_STAZED_JACK_SUPPORT
+ *
+ *      This jack_frame calculation is all that is needed to change JACK
+ *      position. The BBT calculation can be sent, but will be overridden by
+ *      the first call to jack_timebase_callback() of any Master set. If no
+ *      Master is set, then the BBT will display the new position, but will not
+ *      change it even if the transport is rolling. There is no need to send
+ *      BBT on position change -- the fact that the function
+ *      jack_transport_locate() exists and only uses the frame position is
+ *      proof that BBT is not needed!
+ *
+ *      Upon further reflection, why not send BBT?  The calculation below for
+ *      jack_transport_locate(), works, is simpler and does not send BBT. It is
+ *      commented out to use the BBT call to jack_BBT_position() because it is
+ *      useful in debugging.
+ *
+ *      jack_assistant::position (bool state, long tick)
+ *
+ *          state means that we are Master and are in Song Mode.  If this is
+ *          true, then Stazed would set long current_tick = tick, rather than
+ *          to 0.  Then current_tick *= 10.
+ *
+ *  endif // USE_STAZED_JACK_SUPPORT
+ *
  * \warning
  *      A lot of this code is effectively disabled by an early return
  *      statement.
@@ -523,7 +631,69 @@ jack_assistant::stop ()
  *      if set to true when we are the JACK Master.  Enabling this code makes
  *      "klick -j -P" work, after a fashion.  It clicks, but at a way too
  *      rapid rate.
+ *
  */
+
+#ifdef USE_STAZED_JACK_SUPPORT
+
+void
+perform::position_jack( bool state, long tick )
+{
+    long current_tick = 0;
+    if (state)                        /* master in song mode */
+    {
+        current_tick = tick;
+    }
+
+    current_tick *= 10;
+
+    /*
+     *  See banner note.
+     */
+
+    /*
+     *  int ticks_per_beat = c_ppqn * 10; // 192 * 10 = 1920
+     *  int beats_per_minute =  m_master_bus.get_bpm();
+     *  uint64_t tick_rate = ((uint64_t)m_jack_frame_rate * current_tick * 60.0);
+     *  long tpb_bpm = ticks_per_beat * beats_per_minute / (m_bw / 4.0 );
+     *  uint64_t jack_frame = tick_rate / tpb_bpm;
+     *  jack_transport_locate(m_jack_client,jack_frame);
+     */
+
+    /*
+     * The below BBT call to jack_BBT_position() is not necessary to change
+     * JACK position!
+     */
+
+    jack_position_t pos;
+    double jack_tick = current_tick * (m_bw / 4.0 );
+    jack_BBT_position(pos, jack_tick);
+
+    /*
+     * This calculates JACK frame to put into pos.frame.  It is what really
+     * matters for the position change.
+     */
+
+    uint64_t tick_rate = uint64_t(pos.frame_rate * current_tick * 60.0);
+    long tpb_bpm = pos.ticks_per_beat * pos.beats_per_minute /
+        (pos.beat_type / 4.0 );
+
+    pos.frame = tick_rate / tpb_bpm;
+
+    /*
+     * ticks * 10 = jack ticks;
+     * jack ticks / ticks per beat = num beats;
+     * num beats / beats per minute = num minutes
+     * num minutes * 60 = num seconds
+     * num secords * frame_rate = frame
+     */
+
+    jack_transport_reposition(m_jack_client, &pos);
+    if (global_is_running)
+        m_reposition = false;
+}
+
+#else   // USE_STAZED_JACK_SUPPORT
 
 void
 jack_assistant::position (bool to_left_tick, bool relocate)
@@ -550,6 +720,8 @@ jack_assistant::position (bool to_left_tick, bool relocate)
         }
     }
 }
+
+#endif  // USE_STAZED_JACK_SUPPORT
 
 /**
  *  Provides the code that was effectively commented out in the

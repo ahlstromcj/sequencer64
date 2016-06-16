@@ -176,7 +176,8 @@ sequence::partial_assign (const sequence & rhs)
 
 /**
  *  Returns the number of events stored in m_events.  Note that only playable
- *  events are counted in a sequence.
+ *  events are counted in a sequence.  If a sequence class function provides a
+ *  mutex, call m_events.count() instead.
  *
  * \threadsafe
  *
@@ -629,8 +630,7 @@ sequence::get_selected_box
     tick_f = 0;
     note_h = 0;
     note_l = SEQ64_MIDI_COUNT_MAX;
-    event_list::iterator i;
-    for (i = m_events.begin(); i != m_events.end(); ++i)
+    for (event_list::iterator i; i = m_events.begin(); i != m_events.end(); ++i)
     {
         if (DREF(i).is_selected())
         {
@@ -683,7 +683,9 @@ sequence::get_clipboard_box
     note_h = 0;
     note_l = SEQ64_MIDI_COUNT_MAX;
     if (m_events_clipboard.count() == 0)
+    {
         tick_s = tick_f = note_h = note_l = 0;
+    }
     else
     {
         event_list::iterator i;
@@ -1098,7 +1100,8 @@ sequence::move_selected_notes (midipulse delta_tick, int delta_note)
 /**
  *  Performs a stretch operation on the selected events.  This should move
  *  a note off event, according to old comments, but it doesn't seem to do
- *  that.  See the grow_selected() function.
+ *  that.  See the grow_selected() function.  Rather, it moves any event in the
+ *  selection.
  *
  * \threadsafe
  *
@@ -1127,7 +1130,7 @@ sequence::stretch_selected (midipulse delta_tick)
     }
     unsigned old_len = last_ev - first_ev;
     unsigned new_len = old_len + delta_tick;
-    if (new_len > 1)
+    if (new_len > 1)                                // ???????
     {
         float ratio = float(new_len) / float(old_len);
         mark_selected();
@@ -1136,12 +1139,14 @@ sequence::stretch_selected (midipulse delta_tick)
             event & er = DREF(i);
             if (er.is_marked())
             {
-                event * e = &er;                  /* copy & scale event */
+                /*
+                 * Why such stilted code?
+                 */
+
+                event * e = &er;                    /* copy & scale event */
                 event new_e = *e;
-                new_e.set_timestamp
-                (
-                    midipulse(ratio * (e->get_timestamp() - first_ev)) + first_ev
-                );
+                midipulse t = e->get_timestamp();
+                new_e.set_timestamp(midipulse(ratio * (t-first_ev)) + first_ev);
                 new_e.unmark();
                 add_event(new_e);
             }
@@ -1154,7 +1159,9 @@ sequence::stretch_selected (midipulse delta_tick)
 /**
  *  Moves note off event.  If an event is not linked, this function now
  *  ignores the event's timestamp, rather than risk a segfault on a null
- *  pointer.
+ *  pointer.  Compare this function to the stretch_selected() function.
+ *  This function would be better named as "grow_marked()".  The user "selects"
+ *  notes, while the sequencer "marks" notes.
  *
  * \threadsafe
  *
@@ -1167,6 +1174,7 @@ sequence::grow_selected (midipulse delta_tick)
 {
     mark_selected();                    /* already locked inside    */
     automutex locker(m_mutex);
+    bool failed = false;
     for (event_list::iterator i = m_events.begin(); i != m_events.end(); ++i)
     {
         event & er = DREF(i);
@@ -1181,7 +1189,9 @@ sequence::grow_selected (midipulse delta_tick)
             }
             else
             {
-                errprint("grow_selected(): null event link");
+                errprint("grow_selected(): null event link, aborting");
+                failed = true;
+                break;
             }
 
             /*
@@ -1192,11 +1202,7 @@ sequence::grow_selected (midipulse delta_tick)
             if (len > m_length)
                 len -= m_length;
 
-            /*
-             * Can this ever happen?
-             */
-
-            if (len < 0)
+            if (len < 0)                /* only if midipulse is signed  */
                 len += m_length;
 
             if (len == 0)
@@ -1206,18 +1212,21 @@ sequence::grow_selected (midipulse delta_tick)
             if (not_nullptr(off))
             {
                 /*
-                 * Do we really need to copy the event?  Think about it.
+                 * Do we really need to copy the event? Try a reference.
                  */
 
-                event e = *off;                         /* copy event */
+                event & e = *off;       /* no copy, just a reference    */
                 e.unmark();
                 e.set_timestamp(len);
                 add_event(e);
             }
         }
     }
-    remove_marked();
-    verify_and_link();
+    if (! failed)
+    {
+        remove_marked();
+        verify_and_link();
+    }
 }
 
 /**
@@ -1318,6 +1327,7 @@ sequence::decrement_selected (midibyte astat, midibyte /*acontrol*/)
  *  This process is a bit easier to manage than erase/insert on events because
  *  std::multimap has no erase() function that returns the next valid
  *  iterator.  Also, we use a local clipboard first, to save on copying.
+ *  We've enhanced the error-checking, too.
  *
  *  Finally, note that m_events_clipboard is a static member of sequence, so:
  *
@@ -1331,23 +1341,33 @@ void
 sequence::copy_selected ()
 {
     automutex locker(m_mutex);
-    event_list clipbd;                          // m_events_clipboard.clear();
+    event_list clipbd;
     for (event_list::iterator i = m_events.begin(); i != m_events.end(); ++i)
     {
 #ifdef SEQ64_USE_EVENT_MAP
         if (DREF(i).is_selected())
-            clipbd.add(DREF(i), false);      /* no post-sort */
+            clipbd.add(DREF(i), false);         /* no post-sort */
 #else
         if (DREF(i).is_selected())
             clipbd.push_back(DREF(i));
 #endif
     }
-
-    midipulse first_tick = DREF(clipbd.begin()).get_timestamp();
-    for (event_list::iterator i = clipbd.begin(); i != clipbd.end(); ++i)
-        DREF(i).set_timestamp(DREF(i).get_timestamp() - first_tick);
-
-    m_events_clipboard = clipbd;
+    if (clipbd.count() > 0)
+    {
+        midipulse first_tick = DREF(clipbd.begin()).get_timestamp();
+        if (first_tick >= 0)
+        {
+            for (event_list::iterator i = clipbd.begin(); i != clipbd.end(); ++i)
+            {
+                midipulse t = DREF(i).get_timestamp();
+                if (t >= first_tick)
+                    DREF(i).set_timestamp(t - first_tick);
+            }
+        }
+        m_events_clipboard = clipbd;
+    }
+    else
+        m_events_clipboard.clear();
 }
 
 /**
@@ -1414,43 +1434,48 @@ sequence::paste_selected (midipulse tick, int note)
     automutex locker(m_mutex);
     event_list clipbd = m_events_clipboard;     /* copy clipboard           */
     for (event_list::iterator i = clipbd.begin(); i != clipbd.end(); ++i)
-        DREF(i).set_timestamp(DREF(i).get_timestamp() + tick);
-
-    event & er = DREF(clipbd.begin());
-    if (er.is_note_on() || er.is_note_off())
     {
-        int highest_note = 0;
-        for (event_list::iterator i = clipbd.begin(); i != clipbd.end(); ++i)
-        {
-            midibyte n = DREF(i).get_note();
-            if (n > highest_note)
-                highest_note = n;
-        }
-        for (event_list::iterator i = clipbd.begin(); i != clipbd.end(); ++i)
-        {
-            midibyte n = DREF(i).get_note();
-            DREF(i).set_note(n - (highest_note - note));
-        }
+        midipulse t = DREF(i).get_timestamp();
+        DREF(i).set_timestamp(t + tick);
     }
+    if (clipbd.count() > 0)
+    {
+        event & er = DREF(clipbd.begin());
+        if (er.is_note_on() || er.is_note_off())
+        {
+            int highest_note = 0;
+            for (event_list::iterator i = clipbd.begin(); i != clipbd.end(); ++i)
+            {
+                midibyte n = DREF(i).get_note();
+                if (n > highest_note)
+                    highest_note = n;
+            }
+            for (event_list::iterator i = clipbd.begin(); i != clipbd.end(); ++i)
+            {
+                midibyte n = DREF(i).get_note();
+                DREF(i).set_note(n - (highest_note - note));
+            }
+        }
 
 #ifdef SEQ64_USE_EVENT_MAP
 
-    /*
-     * \change 0rel 2016-06-12 PROVISIONAL FIX, see the banner notes.
-     */
+        /*
+         * \change 0rel 2016-06-12 PROVISIONAL FIX, see the banner notes.
+         */
 
-    event_list clipbd_updated;
-    for (event_list::iterator i = clipbd.begin(); i != clipbd.end(); ++i)
-        clipbd_updated.add(DREF(i));
+        event_list clipbd_updated;
+        for (event_list::iterator i = clipbd.begin(); i != clipbd.end(); ++i)
+            clipbd_updated.add(DREF(i));
 
-    clipbd = clipbd_updated;
+        clipbd = clipbd_updated;
 
 #endif      // SEQ64_USE_EVENT_MAP
 
-    m_events.merge(clipbd, false);              /* don't presort clipboard  */
-    m_events.sort();                            /* uh, does nothing in map  */
-    verify_and_link();
-    reset_draw_marker();
+        m_events.merge(clipbd, false);          /* don't presort clipboard  */
+        m_events.sort();                        /* uh, does nothing in map  */
+        verify_and_link();
+        reset_draw_marker();
+    }
 }
 
 /**
@@ -1606,8 +1631,7 @@ sequence::add_note
         {
             for
             (
-                event_list::iterator i = m_events.begin();
-                i != m_events.end(); ++i
+                event_list::iterator i = m_events.begin(); i != m_events.end(); ++i
             )
             {
                 event & er = DREF(i);
@@ -2040,12 +2064,10 @@ sequence::intersect_triggers
 }
 
 /**
- *  This function examines each note in the event list.
- *
- *  If the given position is between the current notes on and off time
- *  values, values, the these values are copied to the start and end
- *  parameters, respectively, the note value is copied to the note
- *  parameter, and then we exit.
+ *  This function examines each note in the event list.  If the given position
+ *  is between the current notes on and off time values, values, the these
+ *  values are copied to the start and end parameters, respectively, the note
+ *  value is copied to the note parameter, and then we exit.
  *
  * \threadsafe
  *
@@ -3416,7 +3438,7 @@ sequence::copy_events (const event_list & newevents)
         m_events.unmodify();
 
     m_iterator_draw = m_events.begin();     /* same as in reset_draw_marker */
-    if (m_events.count() > 1)               /* need at least two events     */
+    if (m_events.count() > 0)               /* need at least 1 (2?) events  */
     {
         /*
          * Another option, if we have a new sequence length value (in pulses)

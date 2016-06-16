@@ -345,8 +345,8 @@ jack_assistant::init ()
 
         jackcode = jack_set_process_callback        /* see notes in banner  */
         (
-#ifdef SEQ64_USE_DEBUG_OUTPUT                       /* EXPERIMENTS          */
-            m_jack_client, jack_process_callback, this
+#ifdef SEQ64_USE_DEBUG_OUTPUT                           /* EXPERIMENTS      */
+            m_jack_client, jack_process_callback, this  /* stazed prefers   */
 #else
             m_jack_client, jack_process_callback, NULL
 #endif
@@ -518,21 +518,10 @@ jack_assistant::deinit ()
 void
 jack_assistant::stop()
 {
-    inner_stop();
+    // inner_stop();        // ca - already called in perform::stop()
 }
 
-#else   // USE_STAZED_JACK_SUPPORT
-
-void
-jack_assistant::start ()
-{
-    if (m_jack_running)
-        jack_transport_start(m_jack_client);
-    else if (rc().with_jack())
-        (void) error_message("Transport Start: JACK not running");
-}
-
-#endif  // USE_STAZED_JACK_SUPPORT
+#else
 
 /**
  *  If JACK is supported, stops the JACK transport.  This function assumes
@@ -546,6 +535,17 @@ jack_assistant::stop ()
         jack_transport_stop(m_jack_client);
     else if (rc().with_jack())
         (void) error_message("Transport Stop: JACK not running");
+}
+
+#endif  // USE_STAZED_JACK_SUPPORT
+
+void
+jack_assistant::start ()
+{
+    if (m_jack_running)
+        jack_transport_start(m_jack_client);
+    else if (rc().with_jack())
+        (void) error_message("Transport Start: JACK not running");
 }
 
 /**
@@ -637,15 +637,11 @@ jack_assistant::stop ()
 #ifdef USE_STAZED_JACK_SUPPORT
 
 void
-perform::position_jack( bool state, long tick )
+jack_assistant::position (bool state, long tick)
 {
     long current_tick = 0;
     if (state)                        /* master in song mode */
-    {
-        current_tick = tick;
-    }
-
-    current_tick *= 10;
+        current_tick = tick * 10;
 
     /*
      *  See banner note.
@@ -671,7 +667,7 @@ perform::position_jack( bool state, long tick )
 
     /*
      * This calculates JACK frame to put into pos.frame.  It is what really
-     * matters for the position change.
+     * matters, is all that is needed, for the position change.
      */
 
     uint64_t tick_rate = uint64_t(pos.frame_rate * current_tick * 60.0);
@@ -719,6 +715,46 @@ jack_assistant::position (bool to_left_tick, bool relocate)
                 (void) info_message("jack_transport_locate() failed");
         }
     }
+}
+
+#endif  // USE_STAZED_JACK_SUPPORT
+
+#ifdef USE_STAZED_JACK_SUPPORT
+
+/*
+ * called by position_jack() and jack_timebase_callback()
+ *
+ * Similar to jack_assistant::set_position (midipulse currenttick)
+ * defined below, more detailed research needed.
+ */
+
+void
+jack_assistant::jack_BBT_position (jack_position_t & pos, double jack_tick)
+{
+    pos.valid = JackPositionBBT;
+    pos.beats_per_bar = m_bp_measure;
+    pos.beat_type = m_bw;
+    pos.ticks_per_beat = c_ppqn * 10; // 192 * 10 = 1920
+    pos.beats_per_minute =  m_master_bus.get_bpm();
+    pos.frame_rate =  m_jack_frame_rate; // comes from init_jack()
+
+    /*
+     * Compute BBT info from frame number.  This is relatively simple here, but
+     * would become complex if we supported tempo or time signature changes at
+     * specific locations in the transport timeline.
+     */
+
+    long ptick = 0, pbeat = 0, pbar = 0;
+    pbar = long((long) jack_tick / (pos.ticks_per_beat * pos.beats_per_bar));
+    pbeat = long(
+        (long) jack_tick % (long) (pos.ticks_per_beat *  pos.beats_per_bar ));
+
+    pbeat = pbeat / long(pos.ticks_per_beat);
+    ptick = long(jack_tick) % long(pos.ticks_per_beat);
+    pos.bar = pbar + 1;
+    pos.beat = pbeat + 1;
+    pos.tick = ptick;
+    pos.bar_start_tick = pos.bar * pos.beats_per_bar * pos.ticks_per_beat;
 }
 
 #endif  // USE_STAZED_JACK_SUPPORT

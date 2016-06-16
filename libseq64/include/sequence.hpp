@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-06-12
+ * \updates       2016-06-16
  * \license       GNU GPLv2 or above
  *
  *  The functions add_list_var() and add_long_list() have been replaced by
@@ -182,7 +182,7 @@ private:
 
 private:
 
-    static event_list m_events_clipboard;
+    static event_list m_events_clipboard;   /* shared between sequences */
 
 #ifdef SEQ64_PAUSE_SUPPORT
 

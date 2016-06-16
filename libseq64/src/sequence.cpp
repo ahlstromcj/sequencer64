@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-06-12
+ * \updates       2016-06-16
  * \license       GNU GPLv2 or above
  *
  *  The functionality of this class also includes handling some of the
@@ -557,8 +557,8 @@ sequence::remove (event & e)
 }
 
 /**
- *  Removes marked events.  Note how this function handles removing a
- *  value to avoid incrementing a now-invalid iterator.
+ *  Removes marked events.  Note how this function forwards teh call to
+ *  m_event.remove_marked().
  *
  * \threadsafe
  */
@@ -567,21 +567,6 @@ void
 sequence::remove_marked ()
 {
     automutex locker(m_mutex);
-#if 0
-    event_list::iterator i = m_events.begin();
-    while (i != m_events.end())
-    {
-        if (DREF(i).is_marked())
-        {
-            event_list::iterator t = i;
-            ++t;
-            remove(i);
-            i = t;
-        }
-        else
-            ++i;
-    }
-#endif
     m_events.remove_marked();
     reset_draw_marker();
 }
@@ -1320,7 +1305,24 @@ sequence::decrement_selected (midibyte astat, midibyte /*acontrol*/)
 }
 
 /**
- *  Copies the selected events.
+ *  Copies the selected events.  This function also has the danger, discovered
+ *  by user 0rel, of events being modified after being added to the clipboard.
+ *  So we add his reconstruction fix here as well.  To summarize the steps:
+ *
+ *      -#  Clear the m_events_clipboard.
+ *      -#  Add all selected events in this clipboard to the sequence.
+ *      -#  Normalize the timestamps of the events in the clip relative to the
+ *          timestamp of the first selected event.  (Is this really needed?)
+ *      -#  Reconstruct/reconstitute the m_events_clipboard.
+ *
+ *  This process is a bit easier to manage than erase/insert on events because
+ *  std::multimap has no erase() function that returns the next valid
+ *  iterator.  Also, we use a local clipboard first, to save on copying.
+ *
+ *  Finally, note that m_events_clipboard is a static member of sequence, so:
+ *
+ *      -#  Copying can be done between sequences.
+ *      -#  Access to it needs to be protected by a mutex.
  *
  * \threadsafe
  */
@@ -1329,27 +1331,23 @@ void
 sequence::copy_selected ()
 {
     automutex locker(m_mutex);
-    m_events_clipboard.clear();
+    event_list clipbd;                          // m_events_clipboard.clear();
     for (event_list::iterator i = m_events.begin(); i != m_events.end(); ++i)
     {
 #ifdef SEQ64_USE_EVENT_MAP
         if (DREF(i).is_selected())
-            m_events_clipboard.add(DREF(i), false);      /* no post-sort */
+            clipbd.add(DREF(i), false);      /* no post-sort */
 #else
         if (DREF(i).is_selected())
-            m_events_clipboard.push_back(DREF(i));
+            clipbd.push_back(DREF(i));
 #endif
     }
 
-    midipulse first_tick = DREF(m_events_clipboard.begin()).get_timestamp();
-    for
-    (
-        event_list::iterator i = m_events_clipboard.begin();
-        i != m_events_clipboard.end(); ++i
-    )
-    {
+    midipulse first_tick = DREF(clipbd.begin()).get_timestamp();
+    for (event_list::iterator i = clipbd.begin(); i != clipbd.end(); ++i)
         DREF(i).set_timestamp(DREF(i).get_timestamp() - first_tick);
-    }
+
+    m_events_clipboard = clipbd;
 }
 
 /**
@@ -1376,8 +1374,30 @@ sequence::cut_selected (bool copyevents)
  *  Pastes the selected notes (and only note events) at the given tick and
  *  the given note value.
  *
- *  I wonder if we can get away with just getting a reference to
- *  m_events_clipboard, rather than copying the whole thing, for speed.
+ *  The event_keys used to access/sort the multimap event_list is not updated
+ *  after changing timestamp/rank of the stored events.  Regenerating all
+ *  key/value pairs before merging them solves this issue temporarily, so that
+ *  the order of events in the sequence will be preserved.  This action is not
+ *  needed for moving or growing events.  Nor is it needed if the old
+ *  std::list implementation of the event container is compiled in.  However,
+ *  it is needed in any operation that modifies the timestamp of an event
+ *  inside the container:
+ *
+ *      -   copy_selected()
+ *      -   paste_selected()
+ *      -   quantize_events() TODO TODO TODO!
+ *
+ *  The alternative to reconstructing the map is to erase-and-insert the
+ *  events modified in the code above, rather than just tweaking their values,
+ *  which have an effect on sorting for the event-map implementation.
+ *  However, multimap does not provide an erase() function that returns the
+ *  next valid iterator, which would complicate this method of operation.  So
+ *  we're inclined to stick with this solution.
+ *
+ * \todo
+ *      There is an issue with copy/pasting a whole sequence.  The pasted
+ *      events do not go to their destination, but overlay the original
+ *      events.  This bugs also occurs in Seq24 0.9.2.
  *
  * \threadsafe
  *
@@ -1416,14 +1436,7 @@ sequence::paste_selected (midipulse tick, int note)
 #ifdef SEQ64_USE_EVENT_MAP
 
     /*
-     * \change 0rel 2016-06-12 PROVISIONAL FIX
-     *      The event_keys used to access/sort the multimap event_list is not
-     *      updated after changing timestamp/rank of the stored events.
-     *      Regenerating all key/value pairs before merging them solves this
-     *      issue temporarily, so that the order of events in the sequence
-     *      will be preserved.  This action is not needed for moving or
-     *      growing events.  Nor is it needed if the old std::list
-     *      implementation of the event container is compiled in.
+     * \change 0rel 2016-06-12 PROVISIONAL FIX, see the banner notes.
      */
 
     event_list clipbd_updated;
@@ -1447,9 +1460,7 @@ sequence::paste_selected (midipulse tick, int note)
  *
  *  Let t == the current tick value; ts == tick start value; tf == tick
  *  finish value; ds = data start value; df == data finish value; d = the
- *  new data value.
- *
- *  Then
+ *  new data value.  Then
  *
 \verbatim
              df (t - ts) + ds (tf - t)

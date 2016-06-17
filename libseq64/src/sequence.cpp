@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-06-16
+ * \updates       2016-06-17
  * \license       GNU GPLv2 or above
  *
  *  The functionality of this class also includes handling some of the
@@ -1194,9 +1194,12 @@ sequence::grow_selected (midipulse delta_tick)
             {
                 /*
                  * Do we really need to copy the event? Try a reference.
+                 * No, we want to mark the original off-event for deletion,
+                 * otherwise we get duplicate off events.
                  */
 
-                event & e = *off;       /* no copy, just a reference    */
+                event e = *off;         /* copy the original off-event  */
+                off->mark();
                 e.unmark();
                 e.set_timestamp(len);
                 add_event(e);

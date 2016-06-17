@@ -1,18 +1,30 @@
 Bugs and Additional Upgrade Ideas
 Chris Ahlstrom
-2015-10-27 to 2016-06-13 (New bugs)
+2015-10-27 to 2016-06-17 (New bugs)
 
 In no particular order...  "y" means "in progress", and "x" means it is
 basically done.
 
 -  Also see BUG REPORTS below.  Those are bug reports from other people.
--  In Sequencer64 and Seq24, select a couple events in the event row of the
-   seqedit dialog, and then move them a little to the right... the events end
-   up greatly elongated in the seqroll section.
+-  Load the very simple test.midi file.  Open the pattern editor. Select the
+   left note.  Ctrl-Select the right note.  Note the drawing artifacts.
+   See the extra events *created*, at the bottom of this file!
 -  Saving a pattern in the event editor does not cause a performance
    modification!
 y  Copying and pasting notes ruins the original notes. Orel found a solution,
-   but it needs more testing.
+   but it needs more testing, which has already found the two bugs listed
+   above.
+y  In Sequencer64 and Seq24, select a couple events in the event row of the
+   seqedit dialog, and then move them a little to the right... the events end
+   up greatly elongated in the seqroll section.  This really is not a bug,
+   but shows that the user can move Note On events past the original Note Off
+   events.  For now, we gray the event panel for these events just as a
+   warning to the user.
+-  Select all of the notes in allofarow.mid, Ctrl-C, Ctrl-V, and left-click.
+   The notes overlay the original notes, instead of being where one dropped
+   the.
+-  Not necessarily a bug, but Enter remembers the previous copies and
+   pastes them.
 x  Had the seqkey numbering (accessed by right-click) backwards.  What
    an idiot!
 x  Deleting last note of Ionian MIDI import in event editor causes a CRASH!
@@ -386,7 +398,6 @@ bad length value following the c_mutegroups = 0x24240009 specification.
 Note that we added time-signature and tempo support, but have not fixed the
 garbage that appears via midicvt.
 
-
 Date: Tue, 02 Feb 2016 15:32:40 -0800                                             
 From: Daniel Appelt <notifications@github.com>                                    
                                                                                   
@@ -411,5 +422,25 @@ fixups % ./Sequencer64/sequencer64 -J
 
 (sequencer64:2681): Gtk-CRITICAL **: IA__gtk_toggle_button_get_active: assertion 'GTK_IS_TOGGLE_BUTTON (toggle_button)' failed
 [JACK sync already enabled!]
+
+Ctrl-select bug:
+
+   Initial notes:
+
+   1:1:000 On  57
+   1:1:040 Off 57
+
+   1:4:144 On  54
+   1:4:190 Off 54
+
+   After selection:
+
+   1:1:000 On  57
+   1:1:046 Off 57
+   1:1:046 Off 57
+
+   1:4:144 On  54
+   1:4:190 Off 54
+   1:4:190 Off 54
 
 # vim: sw=4 ts=4 wm=4 et ft=sh

@@ -630,7 +630,7 @@ sequence::get_selected_box
     tick_f = 0;
     note_h = 0;
     note_l = SEQ64_MIDI_COUNT_MAX;
-    for (event_list::iterator i; i = m_events.begin(); i != m_events.end(); ++i)
+    for (event_list::iterator i = m_events.begin(); i != m_events.end(); ++i)
     {
         if (DREF(i).is_selected())
         {
@@ -805,13 +805,9 @@ sequence::select_note_events
                     stick = er.get_timestamp();
                 }
 
-                bool tick_and = (stick <= tick_f) && (ftick >= tick_s);
-                bool tick_or = (stick <= tick_f) || (ftick >= tick_s);
-                if
-                (
-                    ((stick <= ftick) && tick_and) ||
-                    ((stick > ftick) && tick_or)
-                )
+                bool tand = (stick <= tick_f) && (ftick >= tick_s);
+                bool tor = (stick <= tick_f) || (ftick >= tick_s);
+                if (((stick <= ftick) && tand) || ((stick > ftick) && tor))
                 {
                     if (action == e_select || action == e_select_one)
                     {
@@ -842,17 +838,16 @@ sequence::select_note_events
                     }
                     if (action == e_toggle_selection && er.is_note_on())
                     {
+                        ++result;
                         if (er.is_selected())       // don't toggle twice
                         {
                             er.unselect();
                             ev->unselect();
-                            ++result;
                         }
                         else
                         {
                             er.select();
                             ev->select();
-                            ++result;
                         }
                     }
                     if (action == e_remove_one)
@@ -897,16 +892,11 @@ sequence::select_note_events
                     }
                     if (action == e_toggle_selection)
                     {
+                        ++result;
                         if (er.is_selected())
-                        {
                             er.unselect();
-                            ++result;
-                        }
                         else
-                        {
                             er.select();
-                            ++result;
-                        }
                     }
                     if (action == e_remove_one)
                     {
@@ -962,11 +952,8 @@ sequence::select_events
     for (event_list::iterator i = m_events.begin(); i != m_events.end(); ++i)
     {
         event & er = DREF(i);
-        if
-        (
-            er.get_status() == status &&
-            er.get_timestamp() >= tick_s && er.get_timestamp() <= tick_f
-        )
+        midipulse t = er.get_timestamp();
+        if (er.get_status() == status && t >= tick_s && t <= tick_f)
         {
             midibyte d0, d1;
             er.get_data(d0, d1);
@@ -1070,12 +1057,6 @@ sequence::move_selected_notes (midipulse delta_tick, int delta_note)
                 midipulse timestamp = e.get_timestamp() + delta_tick;
                 if (timestamp > m_length)
                     timestamp -= m_length;
-
-                /*
-                 * We will not even worry about this issue unless it bites us.
-                 * Really unlikely in 64-bit code, and even in 32-bit code.
-                 * See midibyte.hpp for more discussion.
-                 */
 
                  if (timestamp < 0)
                     timestamp += m_length;

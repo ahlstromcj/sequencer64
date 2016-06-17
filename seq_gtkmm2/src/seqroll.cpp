@@ -682,10 +682,8 @@ seqroll::follow_progress ()
 #endif      // SEQ64_FOLLOW_PROGRESS_BAR
 
 /**
- *  Draws events on the given drawable area.
- *
- *  "Method 0" seems be the one that draws the background sequence, if active.
- *  "Method 1" draws the sequence itself.
+ *  Draws events on the given drawable area.  "Method 0" draws the background
+ *  sequence, if active.  "Method 1" draws the sequence itself.
  *
  * \param draw
  *      The "drawable" area to draw on.
@@ -737,7 +735,7 @@ seqroll::draw_events_on (Glib::RefPtr<Gdk::Drawable> draw)
             {
                 int note_width;
                 int note_x = tick_s / m_zoom;       /* turn into screen coords */
-                int note_y = c_rollarea_y - (note * c_key_y) - c_key_y - 1 + 2;
+                int note_y = c_rollarea_y - (note * c_key_y) - c_key_y + 1;
                 int note_height = c_key_y - 3;
                 int in_shift = 0;
                 int length_add = 0;
@@ -797,10 +795,17 @@ seqroll::draw_events_on (Glib::RefPtr<Gdk::Drawable> draw)
                         int hdec = note_height - 3;
                         if (tick_f >= tick_s)
                         {
+#if 0
                             draw->draw_rectangle
                             (
-                                m_gc, true, xinc + in_shift,
-                                yinc, note_width - 3 + length_add, hdec
+                                m_gc, true, xinc + in_shift, yinc,
+                                note_width - 3 + length_add, hdec
+                            );
+#endif
+                            draw_rectangle
+                            (
+                                draw, xinc + in_shift, yinc,
+                                note_width - 3 + length_add, hdec
                             );
                         }
                         else
@@ -809,11 +814,20 @@ seqroll::draw_events_on (Glib::RefPtr<Gdk::Drawable> draw)
                             (
                                 draw, xinc + in_shift, yinc, note_width, hdec
                             );
-                            draw_rectangle
-                            (
-                                draw, 0, yinc,
-                                (tick_f / m_zoom) - 3 + length_add, hdec
-                            );
+
+                            /*
+                             * TRIAL CODE - ca 2016-06-16.  It helps prevent
+                             * two selected begin/end events in a loop from
+                             * drawing very long orange selection lines.
+                             * However, it still draws a fragment that is
+                             * outside the loop boundaries.
+                             */
+
+                            int width = (tick_f / m_zoom) - 3 + length_add;
+                            if (width < 0)
+                                width = note_width;     // 0;
+
+                            draw_rectangle(draw, 0, yinc, width, hdec);
                         }
                     }
                 }

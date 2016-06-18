@@ -7,8 +7,10 @@ basically done.
 
 -  Also see BUG REPORTS below.  Those are bug reports from other people.
 -  To investigate:
-   -  sequence::move_selected_notes() looks like it can treat non-note
-      events like notes.
+   x  sequence::move_selected_notes() looks like it can treat non-note
+      events like notes.  It also mismanaged the timestamp adjustments
+      of non-note events.
+   x  sequence::paste_selected() also transposes non-note data.
 y  Load the very simple test.midi file.  Open the pattern editor. Select the
    left note.  Ctrl-Select the right note.  Note the drawing artifacts.
    See the extra events *created*, at the bottom of this file!  Still needs

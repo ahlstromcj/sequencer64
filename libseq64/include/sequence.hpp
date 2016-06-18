@@ -955,7 +955,7 @@ public:
     (
         midipulse & tick_s, int & note_h, midipulse & tick_f, int & note_l
     );
-    midipulse adjust_timestamp (midipulse t, bool noteon = false);
+    midipulse adjust_timestamp (midipulse t, bool expand = false);
     void move_selected_notes (midipulse deltatick, int deltanote);
     void add_note
     (

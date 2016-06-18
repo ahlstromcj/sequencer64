@@ -1028,14 +1028,26 @@ sequence::unselect ()
 }
 
 /**
- *  Removes and adds selected notes in position.
+ *  Removes and adds selected notes in position.  Also currently moves any
+ *  other events in the range of the selection.
+ *
+ *  Another thing this function does is wrap-around when movement occurs.
+ *  Any events that will start just after the END of the pattern will be
+ *  wrapped around to the beginning of the pattern.
+ *
+ * \todo
+ *      Select all notes in a short pattern; move them with the right arrow,
+ *      and move them back with the left arrow; then view in the event editor,
+ *      and see that the non-Note events have not moved back, and in fact
+ *      move way too far to the right, actually to near the END marker, even
+ *      after being moved only a 16th note.
  *
  * \todo
  *      This function checks for any marked events in seq24, but should we make
  *      sure the event is a Note On or Note Off event before even dealing with
  *      it?  This leaves out events like Program Change, Control Change, and
- *      Pitch Wheel.  However, remember that Aftertouch is treated like a note,
- *      as it has velocity.  For non-Notes, event::get_note() is just returning
+ *      Pitch Wheel; however, remember that Aftertouch is treated like a note,
+ *      as it has velocity; for non-Notes, event::get_note() is just returning
  *      m_data[0]; we don't want to adjust that.
  *
  * \param delta_tick
@@ -1060,25 +1072,12 @@ sequence::move_selected_notes (midipulse delta_tick, int delta_note)
             int newnote = e.get_note() + delta_note;
             if (newnote >= 0 && newnote < c_num_keys)
             {
-                bool noteon = e.is_note_on();
+                bool expand = e.is_note_off();
                 midipulse newts = e.get_timestamp() + delta_tick;
+                newts = adjust_timestamp(newts, expand);
+                if (e.is_note())                    /* Note On or Note Off  */
+                    e.set_note(midibyte(newnote));
 
-#if 0
-                if (newts > m_length)
-                    newts -= m_length;
-
-                if (newts < 0)
-                    newts += m_length;
-
-                if ((newts == 0) && ! noteon)
-                    newts = m_length - 2;
-#endif
-
-                newts = adjust_timestamp(newts, noteon);
-                if ((newts == m_length) && noteon)
-                    newts = 0;
-
-                e.set_note(midibyte(newnote));
                 e.set_timestamp(newts);
                 e.select();
                 add_event(e);
@@ -1098,13 +1097,15 @@ sequence::move_selected_notes (midipulse delta_tick, int delta_note)
  * \param t
  *      Provides the timestamp to be adjusted based on m_length.
  *
- * \param noteon
- *      Used for adjusting the timestamp from 0 to just less than m_length.
- *      Used only for non-Note On events, and defaults to false.
+ * \param expand
+ *      Used for "expanding" the timestamp from 0 to just less than m_length,
+ *      if necessary.
+ *      Should be used only for Note Off events, and defaults to false, which
+ *      means to wrap the events if necessary.
  */
 
 midipulse
-sequence::adjust_timestamp (midipulse t, bool noteon)
+sequence::adjust_timestamp (midipulse t, bool expand)
 {
     if (t > m_length)
         t -= m_length;
@@ -1112,9 +1113,16 @@ sequence::adjust_timestamp (midipulse t, bool noteon)
     if (t < 0)                          /* only if midipulse is signed  */
         t += m_length;
 
-    if ((t == 0) && ! noteon)
-        t = m_length - 2;
-
+    if (expand)
+    {
+        if (t == 0)
+            t = m_length - 2;
+    }
+    else                                /* if (wrap)                    */
+    {
+        if (t == m_length)
+            t = 0;
+    }
     return t;
 }
 
@@ -1221,7 +1229,7 @@ sequence::grow_selected (midipulse delta_tick)
                 break;
             }
 
-            len = adjust_timestamp(len);
+            len = adjust_timestamp(len);    // bool expand = e.is_note_off();
             on->unmark();
             if (not_nullptr(off))
             {
@@ -1434,15 +1442,24 @@ sequence::cut_selected (bool copyevents)
  *  (or other non-Note events), the highest note was never modified, and none
  *  of the note events were adjusted.
  *
+ *  Finally, we only want to transpose note events (i.e. alter m_data[0]),
+ *  and not other kinds of events.  We still need to figure out what to do
+ *  with aftertouch, though.  Currently likely to be covered by the processing
+ *  of the note that it accompanies.
+ *
  * \threadsafe
  *
  * \param tick
  *      The time destination for the paste. This represents the "x" coordinate
- *      of the upper left corner of the paste-box.
+ *      of the upper left corner of the paste-box.  It will be converted to an
+ *      offset, for example pasting every event 48 ticks forward from the
+ *      original copy.
  *
  * \param note
  *      The note/pitch destination for the paste. This represents the "y"
- *      coordinate of the upper left corner of the paste-box.
+ *      coordinate of the upper left corner of the paste-box.  It will be
+ *      converted to an offset, for example pasting every event 7 notes
+ *      higher than the original copy.
  */
 
 void
@@ -1475,8 +1492,11 @@ sequence::paste_selected (midipulse tick, int note)
         for (event_list::iterator i = clipbd.begin(); i != clipbd.end(); ++i)
         {
             event & e = DREF(i);
-            midibyte n = e.get_note();
-            e.set_note(n + note_delta);
+            if (e.is_note())                        /* Note On or Note Off  */
+            {
+                midibyte n = e.get_note();
+                e.set_note(n + note_delta);
+            }
         }
 
 #ifdef SEQ64_USE_EVENT_MAP

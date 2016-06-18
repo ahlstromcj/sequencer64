@@ -322,8 +322,7 @@ event_list::link_new ()
                 if                  /* off event, == notes, and not linked  */
                 (
                     eoff.is_note_off() &&
-                    eoff.get_note() == eoff.get_note() &&
-                    ! eoff.is_linked()
+                    eoff.get_note() == eoff.get_note() && ! eoff.is_linked()
                 )
                 {
                     eon.link(&eoff);                /* link backward        */
@@ -342,8 +341,7 @@ event_list::link_new ()
                     if              /* off event, == notes, and not linked  */
                     (
                         eoff.is_note_off() &&
-                        eoff.get_note() == eon.get_note() &&
-                        ! eoff.is_linked()
+                        eoff.get_note() == eon.get_note() && ! eoff.is_linked()
                     )
                     {
                         eon.link(&eoff);            /* link backward        */
@@ -385,8 +383,7 @@ event_list::verify_and_link (midipulse slength)
                 event & eoff = dref(off);
                 if                          /* Off, == notes, not marked    */
                 (
-                    eoff.is_note_off() &&
-                    eoff.get_note() == eon.get_note() &&
+                    eoff.is_note_off() && eoff.get_note() == eon.get_note() &&
                     ! eoff.is_marked()
                 )
                 {
@@ -408,8 +405,7 @@ event_list::verify_and_link (midipulse slength)
                     if
                     (
                         eoff.is_note_off() &&
-                        eoff.get_note() == eon.get_note() &&
-                        ! eoff.is_marked()
+                        eoff.get_note() == eon.get_note() && ! eoff.is_marked()
                     )
                     {
                         eon.link(&eoff);                /* link + mark */
@@ -426,7 +422,7 @@ event_list::verify_and_link (midipulse slength)
     }
     unmark_all();
     mark_out_of_range(slength);
-    remove_marked();
+    remove_marked();                        /* prune out-of-range events    */
 }
 
 /**

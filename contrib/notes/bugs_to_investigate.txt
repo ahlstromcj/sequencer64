@@ -6,9 +6,10 @@ In no particular order...  "y" means "in progress", and "x" means it is
 basically done.
 
 -  Also see BUG REPORTS below.  Those are bug reports from other people.
--  Load the very simple test.midi file.  Open the pattern editor. Select the
+y  Load the very simple test.midi file.  Open the pattern editor. Select the
    left note.  Ctrl-Select the right note.  Note the drawing artifacts.
-   See the extra events *created*, at the bottom of this file!
+   See the extra events *created*, at the bottom of this file!  Still needs
+   more testing.
 -  Saving a pattern in the event editor does not cause a performance
    modification!
 y  Copying and pasting notes ruins the original notes. Orel found a solution,
@@ -20,9 +21,12 @@ y  In Sequencer64 and Seq24, select a couple events in the event row of the
    but shows that the user can move Note On events past the original Note Off
    events.  For now, we gray the event panel for these events just as a
    warning to the user.
--  Select all of the notes in allofarow.mid, Ctrl-C, Ctrl-V, and left-click.
+y  Select all of the notes in allofarow.mid, Ctrl-C, Ctrl-V, and left-click.
    The notes overlay the original notes, instead of being where one dropped
-   the.
+   them.  Turns out to be a long-standing bug in sequence::paste_selected(),
+   which had an algorithm for finding the highest note in the selection
+   that worked only if the first selected event was a note event.  Still needs
+   more testing.
 -  Not necessarily a bug, but Enter remembers the previous copies and
    pastes them.
 x  Had the seqkey numbering (accessed by right-click) backwards.  What

@@ -478,7 +478,7 @@ sequence::play (midipulse tick, bool playback_mode)
 
 /**
  *  This function verifies state: all note-ons have a note-off, and it links
- *  note-offs with their note-ons.
+ *  note-offs with their note-ons.  
  *
  * \threadsafe
  */
@@ -488,7 +488,6 @@ sequence::verify_and_link ()
 {
     automutex locker(m_mutex);
     m_events.verify_and_link(m_length);
-//  remove_marked();                        /* prune out-of-range events    */
 }
 
 /**
@@ -1120,16 +1119,11 @@ sequence::stretch_selected (midipulse delta_tick)
             event & er = DREF(i);
             if (er.is_marked())
             {
-                /*
-                 * Why such stilted code?
-                 */
-
-                event * e = &er;                    /* copy & scale event */
-                event new_e = *e;
-                midipulse t = e->get_timestamp();
-                new_e.set_timestamp(midipulse(ratio * (t-first_ev)) + first_ev);
-                new_e.unmark();
-                add_event(new_e);
+                event n = er;                       /* copy the event       */
+                midipulse t = er.get_timestamp();
+                n.set_timestamp(midipulse(ratio * (t-first_ev)) + first_ev);
+                n.unmark();
+                add_event(n);
             }
         }
         remove_marked();
@@ -1140,9 +1134,10 @@ sequence::stretch_selected (midipulse delta_tick)
 /**
  *  Moves note off event.  If an event is not linked, this function now
  *  ignores the event's timestamp, rather than risk a segfault on a null
- *  pointer.  Compare this function to the stretch_selected() function.
- *  This function would be better named as "grow_marked()".  The user "selects"
- *  notes, while the sequencer "marks" notes.
+ *  pointer.  Compare this function to the stretch_selected() function.  This
+ *  function would be better named as "grow_marked()".  The user "selects"
+ *  notes, while the sequencer "marks" notes. Oh, the first thing this
+ *  function does is mark all the selected notes, so the name is fine.
  *
  * \threadsafe
  *
@@ -1380,7 +1375,7 @@ sequence::cut_selected (bool copyevents)
  *
  *  The event_keys used to access/sort the multimap event_list is not updated
  *  after changing timestamp/rank of the stored events.  Regenerating all
- *  key/value pairs before merging them solves this issue temporarily, so that
+ *  key/value pairs before merging them solves this issue, so that
  *  the order of events in the sequence will be preserved.  This action is not
  *  needed for moving or growing events.  Nor is it needed if the old
  *  std::list implementation of the event container is compiled in.  However,
@@ -1398,47 +1393,58 @@ sequence::cut_selected (bool copyevents)
  *  next valid iterator, which would complicate this method of operation.  So
  *  we're inclined to stick with this solution.
  *
- * \todo
- *      There is an issue with copy/pasting a whole sequence.  The pasted
- *      events do not go to their destination, but overlay the original
- *      events.  This bugs also occurs in Seq24 0.9.2.
+ *  There was an issue with copy/pasting a whole sequence.  The pasted events
+ *  did not go to their destination, but overlayed the original events.  This
+ *  bugs also occurred in Seq24 0.9.2.  It occurs with the allofarow.mid file
+ *  when doing Ctrl-A Ctrl-C Ctrl-V Move-Mouse Left-Click.  It turns out the
+ *  original code was checking only the first event to see if it was a Note
+ *  event.  For sequences that started with a Control Change or Program Change
+ *  (or other non-Note events), the highest note was never modified, and none
+ *  of the note events were adjusted.
  *
  * \threadsafe
  *
  * \param tick
- *      The time destination for the paste.
+ *      The time destination for the paste. This represents the "x" coordinate
+ *      of the upper left corner of the paste-box.
  *
  * \param note
- *      The note/pitch destination for the paste.
+ *      The note/pitch destination for the paste. This represents the "y"
+ *      coordinate of the upper left corner of the paste-box.
  */
 
 void
 sequence::paste_selected (midipulse tick, int note)
 {
     automutex locker(m_mutex);
-    event_list clipbd = m_events_clipboard;     /* copy clipboard           */
-    for (event_list::iterator i = clipbd.begin(); i != clipbd.end(); ++i)
-    {
-        midipulse t = DREF(i).get_timestamp();
-        DREF(i).set_timestamp(t + tick);
-    }
+    event_list clipbd = m_events_clipboard;         /* copy the clipboard   */
     if (clipbd.count() > 0)
     {
-        event & er = DREF(clipbd.begin());
-        if (er.is_note_on() || er.is_note_off())
+        for (event_list::iterator i = clipbd.begin(); i != clipbd.end(); ++i)
         {
-            int highest_note = 0;
-            for (event_list::iterator i = clipbd.begin(); i != clipbd.end(); ++i)
+            event & e = DREF(i);
+            midipulse t = e.get_timestamp();
+            e.set_timestamp(t + tick);
+        }
+
+        int highest_note = 0;
+        for (event_list::iterator i = clipbd.begin(); i != clipbd.end(); ++i)
+        {
+            event & e = DREF(i);
+            if (e.is_note_on() || e.is_note_off())        // just note on?
             {
-                midibyte n = DREF(i).get_note();
+                midibyte n = e.get_note();
                 if (n > highest_note)
                     highest_note = n;
             }
-            for (event_list::iterator i = clipbd.begin(); i != clipbd.end(); ++i)
-            {
-                midibyte n = DREF(i).get_note();
-                DREF(i).set_note(n - (highest_note - note));
-            }
+        }
+
+        int note_delta = note - highest_note;
+        for (event_list::iterator i = clipbd.begin(); i != clipbd.end(); ++i)
+        {
+            event & e = DREF(i);
+            midibyte n = e.get_note();
+            e.set_note(n + note_delta);
         }
 
 #ifdef SEQ64_USE_EVENT_MAP
@@ -3293,12 +3299,12 @@ sequence::quantize_events
 )
 {
     automutex locker(m_mutex);
-    midibyte d0, d1;
     event_list quantized_events;
     mark_selected();
     for (event_list::iterator i = m_events.begin(); i != m_events.end(); ++i)
     {
         event & er = DREF(i);
+        midibyte d0, d1;
         er.get_data(d0, d1);
         bool match = er.get_status() == status;
         bool canselect;
@@ -3312,29 +3318,30 @@ sequence::quantize_events
 
         if (canselect)
         {
-            event e = er;             /* copy event */
-            er.select();
-            e.unmark();
+            event e = er;                   /* copy the event               */
+            er.select();                    /* selected the original event  */
+            e.unmark();                     /* unmark the copy of the event */
 
-            midipulse timestamp = e.get_timestamp();
-            midipulse timestamp_remander = timestamp % snap_tick;
-            midipulse timestamp_delta = 0;
-            if (timestamp_remander < snap_tick / 2)
-                timestamp_delta = - (timestamp_remander / divide);
+            midipulse t = e.get_timestamp();
+            midipulse t_remainder = t % snap_tick;
+            midipulse t_delta = 0;
+            if (t_remainder < snap_tick / 2)
+                t_delta = -(t_remainder / divide);
             else
-                timestamp_delta = (snap_tick - timestamp_remander) / divide;
+                t_delta = (snap_tick - t_remainder) / divide;
 
-            if ((timestamp_delta + timestamp) >= m_length)
-                timestamp_delta = - e.get_timestamp() ;
+            if ((t_delta + t) >= m_length)
+                t_delta = -e.get_timestamp();
 
-            e.set_timestamp(e.get_timestamp() + timestamp_delta);
+            e.set_timestamp(e.get_timestamp() + t_delta);
             quantized_events.add(e, false);         // will sort afterward
             if (er.is_linked() && linked)
             {
                 event f = *er.get_linked();
+                midipulse ft = f.get_timestamp();
                 f.unmark();
                 er.get_linked()->select();
-                f.set_timestamp(f.get_timestamp() + timestamp_delta);
+                f.set_timestamp(ft + t_delta);
                 quantized_events.add(f, false);     // will sort afterward
             }
         }

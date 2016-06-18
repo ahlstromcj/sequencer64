@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-06-17
+ * \updates       2016-06-18
  * \license       GNU GPLv2 or above
  *
  *  The functionality of this class also includes handling some of the
@@ -1028,7 +1028,15 @@ sequence::unselect ()
 }
 
 /**
- *  Removes and adds reads selected in position.
+ *  Removes and adds selected notes in position.
+ *
+ * \todo
+ *      This function checks for any marked events in seq24, but should we make
+ *      sure the event is a Note On or Note Off event before even dealing with
+ *      it?  This leaves out events like Program Change, Control Change, and
+ *      Pitch Wheel.  However, remember that Aftertouch is treated like a note,
+ *      as it has velocity.  For non-Notes, event::get_note() is just returning
+ *      m_data[0]; we don't want to adjust that.
  *
  * \param delta_tick
  *      Provides the amount of time to move the selected notes.
@@ -1041,33 +1049,37 @@ void
 sequence::move_selected_notes (midipulse delta_tick, int delta_note)
 {
     automutex locker(m_mutex);
-    mark_selected();
+    mark_selected();                    /* also locked recursively inside   */
     for (event_list::iterator i = m_events.begin(); i != m_events.end(); ++i)
     {
         event & er = DREF(i);
-        if (er.is_marked())                       /* is it being moved ?    */
+        if (er.is_marked())                         /* is it being moved ?  */
         {
-            event e = er;                         /* copy event             */
-            e.unmark();
-            int new_note = e.get_note() + delta_note;
-            if (new_note >= 0 && new_note < c_num_keys)
+            event e = er;                           /* copy event           */
+            e.unmark();                             /* unmark the new event */
+            int newnote = e.get_note() + delta_note;
+            if (newnote >= 0 && newnote < c_num_keys)
             {
                 bool noteon = e.is_note_on();
-                midipulse timestamp = e.get_timestamp() + delta_tick;
-                if (timestamp > m_length)
-                    timestamp -= m_length;
+                midipulse newts = e.get_timestamp() + delta_tick;
 
-                 if (timestamp < 0)
-                    timestamp += m_length;
+#if 0
+                if (newts > m_length)
+                    newts -= m_length;
 
-                if ((timestamp == 0) && ! noteon)
-                    timestamp = m_length - 2;
+                if (newts < 0)
+                    newts += m_length;
 
-                if ((timestamp == m_length) && noteon)
-                    timestamp = 0;
+                if ((newts == 0) && ! noteon)
+                    newts = m_length - 2;
+#endif
 
-                e.set_timestamp(timestamp);
-                e.set_note(midibyte(new_note));
+                newts = adjust_timestamp(newts, noteon);
+                if ((newts == m_length) && noteon)
+                    newts = 0;
+
+                e.set_note(midibyte(newnote));
+                e.set_timestamp(newts);
                 e.select();
                 add_event(e);
             }
@@ -1075,6 +1087,35 @@ sequence::move_selected_notes (midipulse delta_tick, int delta_note)
     }
     remove_marked();
     verify_and_link();
+}
+
+/**
+ *  A new function to consolidate the adjustment of timestamps in a pattern.
+ *  If the timestamp is greater that m_length, we do round robin magic.  Taken
+ *  from similar code in move_selected_notes() and grow_selected().
+ *  Be careful using this function.
+ *
+ * \param t
+ *      Provides the timestamp to be adjusted based on m_length.
+ *
+ * \param noteon
+ *      Used for adjusting the timestamp from 0 to just less than m_length.
+ *      Used only for non-Note On events, and defaults to false.
+ */
+
+midipulse
+sequence::adjust_timestamp (midipulse t, bool noteon)
+{
+    if (t > m_length)
+        t -= m_length;
+
+    if (t < 0)                          /* only if midipulse is signed  */
+        t += m_length;
+
+    if ((t == 0) && ! noteon)
+        t = m_length - 2;
+
+    return t;
 }
 
 /**
@@ -1110,10 +1151,10 @@ sequence::stretch_selected (midipulse delta_tick)
     }
     unsigned old_len = last_ev - first_ev;
     unsigned new_len = old_len + delta_tick;
-    if (new_len > 1)                                // ???????
+    if (new_len > 1)
     {
         float ratio = float(new_len) / float(old_len);
-        mark_selected();
+        mark_selected();                /* also locked recursively inside   */
         for (event_list::iterator i = m_events.begin(); i != m_events.end(); ++i)
         {
             event & er = DREF(i);
@@ -1132,12 +1173,22 @@ sequence::stretch_selected (midipulse delta_tick)
 }
 
 /**
- *  Moves note off event.  If an event is not linked, this function now
- *  ignores the event's timestamp, rather than risk a segfault on a null
- *  pointer.  Compare this function to the stretch_selected() function.  This
- *  function would be better named as "grow_marked()".  The user "selects"
- *  notes, while the sequencer "marks" notes. Oh, the first thing this
- *  function does is mark all the selected notes, so the name is fine.
+ *  The original description was "Moves note off event."  But this also gets
+ *  called when simply selecting a second note via a ctrl-left-click, even in
+ *  seq24.
+ *
+ *  This function operates only on Note On events that are marked and linked.
+ *  If an event is not linked, this function now ignores the event's timestamp,
+ *  rather than risk a segfault on a null pointer.  Compare this function to
+ *  the stretch_selected() and move_selected_notes() functions.
+ *
+ *  A note on terminology:  The user "selects" notes, while the sequencer
+ *  "marks" notes. The first thing this function does is mark all the selected
+ *  notes.
+ *
+ *  In any case, we want to mark the original off-event for deletion, otherwise
+ *  we get duplicate off events, for example in the "Begin/End" pattern in the
+ *  test.midi file.
  *
  * \threadsafe
  *
@@ -1148,8 +1199,8 @@ sequence::stretch_selected (midipulse delta_tick)
 void
 sequence::grow_selected (midipulse delta_tick)
 {
-    mark_selected();                    /* already locked inside    */
     automutex locker(m_mutex);
+    mark_selected();                    /* also locked recursively inside   */
     bool failed = false;
     for (event_list::iterator i = m_events.begin(); i != m_events.end(); ++i)
     {
@@ -1170,31 +1221,12 @@ sequence::grow_selected (midipulse delta_tick)
                 break;
             }
 
-            /*
-             * If timestamp + delta is greater that m_length, we do round
-             * robin magic.  See similar code in move_selected_notes().
-             */
-
-            if (len > m_length)
-                len -= m_length;
-
-            if (len < 0)                /* only if midipulse is signed  */
-                len += m_length;
-
-            if (len == 0)
-                len = m_length - 2;
-
+            len = adjust_timestamp(len);
             on->unmark();
             if (not_nullptr(off))
             {
-                /*
-                 * Do we really need to copy the event? Try a reference.
-                 * No, we want to mark the original off-event for deletion,
-                 * otherwise we get duplicate off events.
-                 */
-
                 event e = *off;         /* copy the original off-event  */
-                off->mark();
+                off->mark();            /* mark old off event to delete */
                 e.unmark();
                 e.set_timestamp(len);
                 add_event(e);
@@ -1365,7 +1397,7 @@ sequence::cut_selected (bool copyevents)
     if (copyevents)
         copy_selected();
 
-    mark_selected();
+    mark_selected();                    /* also locked recursively inside   */
     remove_marked();
 }
 

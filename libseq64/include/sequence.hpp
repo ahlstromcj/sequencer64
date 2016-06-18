@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-06-16
+ * \updates       2016-06-18
  * \license       GNU GPLv2 or above
  *
  *  The functions add_list_var() and add_long_list() have been replaced by
@@ -955,6 +955,7 @@ public:
     (
         midipulse & tick_s, int & note_h, midipulse & tick_f, int & note_l
     );
+    midipulse adjust_timestamp (midipulse t, bool noteon = false);
     void move_selected_notes (midipulse deltatick, int deltanote);
     void add_note
     (

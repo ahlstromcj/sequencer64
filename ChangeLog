@@ -1,3 +1,15 @@
+2016-06-19  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* ChangeLog, README, contrib/notes/bugs_to_investigate.txt,
+	libseq64/include/sequence.hpp, libseq64/src/editable_event.cpp,
+	libseq64/src/sequence.cpp, seq_gtkmm2/include/seqroll.hpp,
+	seq_gtkmm2/src/eventedit.cpp, seq_gtkmm2/src/eventslots.cpp,
+	seq_gtkmm2/src/mainwnd.cpp, seq_gtkmm2/src/perfroll.cpp,
+	seq_gtkmm2/src/seq24seqroll.cpp, seq_gtkmm2/src/seqdata.cpp,
+	seq_gtkmm2/src/seqevent.cpp, seq_gtkmm2/src/seqroll.cpp: Tightened
+	up song modify flags, copy/paste/move, usage of arrow keys to grow
+	events.  Going to stamp 0.9.13 next.
+
 2016-06-18  Chris Ahlstrom <ahlstromcj@gmail.com>
 
 	* README, contrib/notes/bugs_to_investigate.txt,

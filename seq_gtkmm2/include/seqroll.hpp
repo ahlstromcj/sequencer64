@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-06-07
+ * \updates       2016-06-19
  * \license       GNU GPLv2 or above
  *
  */
@@ -498,6 +498,8 @@ private:
     void change_horz ();
     void change_vert ();
     void move_selection_box (int dx, int dy);           // new
+    void move_selected_notes (int dx, int dy);          // new
+    void grow_selected_notes (int dx);                  // new
 
 private:            // callbacks
 

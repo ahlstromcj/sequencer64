@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-06-09
+ * \updates       2016-06-19
  * \license       GNU GPLv2 or above
  *
  *  There are a large number of existing items to discuss.  But for now let's
@@ -1148,12 +1148,12 @@ seqroll::snap_x (int & x)
 }
 
 /**
- *  Proposed new function to allow motion of the selection box via the arrow
+ *  Function to allow motion of the selection box via the arrow
  *  keys.
  *
- * \todo
- *      Still need to get the Enter key or some-such to paste the notes, and
- *      also handle the other three directions.
+ *  Could let the Enter key to deselect the moved notes.  Currently, with them
+ *  mouse, selecting all notes, copying them, and moving the selection box,
+ *  pasting can be completed with either a left-click or the Enter key.
  *
  * \param dx
  *      The amount to move the selection box.  Values are -1, 0, or 1.  -1 is
@@ -1181,6 +1181,90 @@ seqroll::move_selection_box (int dx, int dy)
     draw_selection_on_window();
     m_old.x = x;
     m_old.y = y;
+}
+
+/**
+ *  Proposed new function to encapsulate the movement of selections even
+ *  more fully.
+ *
+ *  Note that the movement vertically is different for the selection box versus
+ *  the notes.  While the movement values are -1, 0, or 1, the differences are
+ *  as follows:
+ *
+ *      -   Selection box vertical movement:
+ *          -   -1 is up one note snap.
+ *          -   0 is no vertical movement.
+ *          -   +1 is down one note snap.
+ *      -   Note vertical movement:
+ *          -   -1 is down one note.
+ *          -   0 is no note vertical movement.
+ *          -   +1 is up one note.
+ *
+ * \param dx
+ *      The amount to move the selection box or the selection horizontally.
+ *      Values are -1 (left one time snap), 0 (no movement), and +1 (right one
+ *      snap).  Obviously values other than +-1 can be used for larger
+ *      movement, but the GUI doesn't yet support that ... we could implement
+ *      movement by "pages" some day.
+ *
+ * \param dy
+ *      The amount to move the selection box or the selection vertically.  See
+ *      the notes above.
+ */
+
+void
+seqroll::move_selected_notes (int dx, int dy)
+{
+    if (m_paste)
+    {
+        move_selection_box(dx, dy);
+    }
+    else
+    {
+        int snap_x = dx * m_snap;                   /* time-stamp snap  */
+        int snap_y = -dy;                           /* note pitch snap  */
+
+        /*
+         * Moved to sequence::move_selected_notes(): perf().modify();
+         */
+
+        if (m_seq.any_selected_notes())
+        {
+            m_seq.move_selected_notes(snap_x, snap_y);
+        }
+        else
+        {
+            if (snap_x != 0)
+                m_seq.set_last_tick(m_seq.get_last_tick() + snap_x);
+        }
+    }
+}
+
+/**
+ *  Proposed new function to encapsulate the movement of selections even
+ *  more fully.
+ *
+ * \param dx
+ *      The amount to grow the selection horizontally.  Values are -1 (left one
+ *      time snap), 0 (no stretching), and +1 (right one snap).  Obviously
+ *      values other than +-1 can be used for larger stretching, but the GUI
+ *      doesn't yet support that.
+ */
+
+void
+seqroll::grow_selected_notes (int dx)
+{
+    if (! m_paste)
+    {
+        int snap_x = dx * m_snap;                   /* time-stamp snap  */
+        m_growing = true;
+        m_seq.push_undo();
+        m_seq.grow_selected(snap_x);
+
+        /*
+         * Moved to sequence::grow_selected(): perf().modify();
+         */
+    }
 }
 
 /**
@@ -1415,7 +1499,11 @@ seqroll::on_key_press_event (GdkEventKey * ev)
             if (OR_EQUIVALENT(ev->keyval, SEQ64_x, SEQ64_X))        /* cut */
             {
                 m_seq.cut_selected();
-                perf().modify();
+
+                /*
+                 * Moved to sequence::cut_selected(): perf().modify();
+                 */
+
                 result = true;
             }
             else if (OR_EQUIVALENT(ev->keyval, SEQ64_c, SEQ64_C))   /* copy */
@@ -1426,7 +1514,11 @@ seqroll::on_key_press_event (GdkEventKey * ev)
             else if (OR_EQUIVALENT(ev->keyval, SEQ64_v, SEQ64_V))   /* paste */
             {
                 start_paste();
-                perf().modify();
+
+                /*
+                 * Moved to sequence::paste_selected(): perf().modify();
+                 */
+
                 result = true;
             }
             else if (OR_EQUIVALENT(ev->keyval, SEQ64_z, SEQ64_Z))   /* Undo */
@@ -1437,6 +1529,16 @@ seqroll::on_key_press_event (GdkEventKey * ev)
             else if (OR_EQUIVALENT(ev->keyval, SEQ64_a, SEQ64_A))   /* sel all */
             {
                 m_seq.select_all();
+                result = true;
+            }
+            else if (ev->keyval == SEQ64_Left)
+            {
+                grow_selected_notes(-1);
+                result = true;
+            }
+            else if (ev->keyval == SEQ64_Right)
+            {
+                grow_selected_notes(1);
                 result = true;
             }
         }
@@ -1452,7 +1554,11 @@ seqroll::on_key_press_event (GdkEventKey * ev)
             if (OR_EQUIVALENT(ev->keyval, SEQ64_Delete, SEQ64_BackSpace))
             {
                 m_seq.cut_selected(false);      /* does not copy the events */
-                perf().modify();
+
+                /*
+                 * Moved to sequence::cut_selected(): perf().modify();
+                 */
+
                 result = true;
             }
             else if (ev->keyval == SEQ64_Home)
@@ -1462,85 +1568,51 @@ seqroll::on_key_press_event (GdkEventKey * ev)
             }
             else if (ev->keyval == SEQ64_Left)
             {
-                if (m_paste)
-                {
-                    move_selection_box(-1, 0);
-                    result = true;
-                }
-                else
-                {
-                    perf().modify();
-                    result = true;
-                    if (m_seq.any_selected_notes())
-                        m_seq.move_selected_notes(-m_snap, 0);
-                    else
-                        m_seq.set_last_tick(m_seq.get_last_tick() - m_snap);
-                }
+                move_selected_notes(-1, 0);
+                result = true;
             }
             else if (ev->keyval == SEQ64_Right)
             {
-                if (m_paste)
-                {
-                    move_selection_box(1, 0);
-                    result = true;
-                }
-                else
-                {
-                    perf().modify();
-                    result = true;
-                    if (m_seq.any_selected_notes())
-                        m_seq.move_selected_notes(m_snap, 0);
-                    else
-                        m_seq.set_last_tick(m_seq.get_last_tick() + m_snap);
-                }
+                move_selected_notes(1, 0);
+                result = true;
             }
             else if (ev->keyval == SEQ64_Down)
             {
-                if (m_paste)
-                {
-                    move_selection_box(0, 1);
-                    result = true;
-                }
-                else
-                {
-                    perf().modify();
-                    if (m_seq.any_selected_notes())
-                    {
-                        m_seq.move_selected_notes(0, -1);
-                        result = true;
-                    }
-                }
+                move_selected_notes(0, 1);
+                result = true;
             }
             else if (ev->keyval == SEQ64_Up)
             {
-                if (m_paste)
-                {
-                    move_selection_box(0, -1);
-                    result = true;
-                }
-                else
-                {
-                    perf().modify();
-                    if (m_seq.any_selected_notes())
-                    {
-                        m_seq.move_selected_notes(0, 1);
-                        result = true;
-                    }
-                }
+                move_selected_notes(0, -1);
+                result = true;
             }
             else if (CAST_OR_EQUIVALENT(ev->keyval, SEQ64_Return, SEQ64_KP_Enter))
             {
-                /*
-                 * This code is similar to that in Seq24SeqRollInput ::
-                 * on_button_press_event().
-                 */
+                if (m_paste)
+                {
+                    /*
+                     * This code is similar to that in Seq24SeqRollInput ::
+                     * on_button_press_event().
+                     */
 
-                midipulse tick;
-                int note;
-                m_seq.push_undo();
-                convert_xy(m_current_x, m_current_y, tick, note);
-                m_seq.paste_selected(tick, note);
-                m_paste = false;
+                    midipulse tick;
+                    int note;
+                    m_seq.push_undo();
+                    convert_xy(m_current_x, m_current_y, tick, note);
+                    m_seq.paste_selected(tick, note);
+                    m_paste = false;
+                }
+                if (m_growing)
+                    m_growing = false;
+
+                if (m_moving)
+                    m_moving = false;
+
+                m_selecting = false;
+                m_selected.x = m_selected.y = m_selected.width = 
+                    m_selected.height = 0;
+
+                m_seq.unselect();
                 result = true;
             }
             else if (ev->keyval == SEQ64_p)

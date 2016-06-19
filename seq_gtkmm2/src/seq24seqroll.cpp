@@ -315,17 +315,15 @@ Seq24SeqRollInput::on_button_release_event
         }
         if (sroll.m_moving)
         {
-            delta_x -= sroll.m_move_snap_offset_x;      /* adjust for snap */
-
-            /* convert deltas into screen coordinates */
-
-            sroll.convert_xy(delta_x, delta_y, delta_tick, delta_note);
-
-            /*
-             * Since delta_note was from delta_y, it will be flipped
-             * (delta_y[0] = note[127], etc.), so we have to adjust.
+            /**
+             * If in moving mode, adjust for snap and convert deltas into
+             * screen coordinates.  Since delta_note was from delta_y, it will
+             * be flipped (delta_y[0] = note[127], etc.), so we have to
+             * adjust.
              */
 
+            delta_x -= sroll.m_move_snap_offset_x;      /* adjust for snap */
+            sroll.convert_xy(delta_x, delta_y, delta_tick, delta_note);
             delta_note -= (c_num_keys - 1);
             sroll.m_seq.push_undo();
             sroll.m_seq.move_selected_notes(delta_tick, delta_note);
@@ -336,7 +334,12 @@ Seq24SeqRollInput::on_button_release_event
     {
         if (sroll.m_growing)
         {
-            /* convert deltas into screen coordinates */
+            /**
+             * A left/middle click converts deltas into screen coordinates,
+             * then pushs the undo state.  Shift causes a "stretch selected"
+             * which currently acts like a "move selected" operation.
+             * Otherwise, Ctrl indirectly allows a "grow selected" operation.
+             */
 
             sroll.convert_xy(delta_x, delta_y, delta_tick, delta_note);
             sroll.m_seq.push_undo();

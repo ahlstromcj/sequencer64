@@ -1302,7 +1302,7 @@ mainwnd::on_key_press_event (GdkEventKey * ev)
     /*
      * Shouldn't this call be last, and only if the key wasn't handled?
      * It freakin' freezes up cgdb!  Let's at least move it to the end.
-     * 
+     *
      * Gtk::Window::on_key_press_event(ev);
      */
 

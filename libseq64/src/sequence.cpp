@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-06-18
+ * \updates       2016-06-19
  * \license       GNU GPLv2 or above
  *
  *  The functionality of this class also includes handling some of the
@@ -44,12 +44,14 @@
 #include "settings.hpp"                 /* seq64::rc() and choose_ppqn()    */
 
 #define SEQ64_DEFAULT_NOTE_VELOCITY     100
+#define USE_NON_NOTE_EVENT_ADJUSTMENT
 
 namespace seq64
 {
 
 /**
- *  A static clipboard for holding pattern/sequence events.
+ *  A static clipboard for holding pattern/sequence events.  Being static
+ *  allows for copy/paste between patterns. 
  */
 
 event_list sequence::m_events_clipboard;
@@ -64,9 +66,7 @@ event_list sequence::m_events_clipboard;
 
 sequence::sequence (int ppqn)
  :
-#ifdef SEQ64_PAUSE_SUPPORT
     m_parent                    (nullptr),
-#endif
     m_events                    (),
     m_triggers                  (*this),
     m_events_undo               (),
@@ -152,9 +152,7 @@ sequence::partial_assign (const sequence & rhs)
     if (this != &rhs)
     {
         automutex locker(m_mutex);
-#ifdef SEQ64_PAUSE_SUPPORT
         m_parent        = rhs.m_parent;             /* a pointer, careful!  */
-#endif
         m_events        = rhs.m_events;
         m_triggers      = rhs.m_triggers;
         m_midi_channel  = rhs.m_midi_channel;
@@ -778,7 +776,8 @@ int
 sequence::select_note_events
 (
     midipulse tick_s, int note_h,
-    midipulse tick_f, int note_l, select_action_e action
+    midipulse tick_f, int note_l,
+    select_action_e action
 )
 {
     int result = 0;
@@ -1032,36 +1031,42 @@ sequence::unselect ()
  *  other events in the range of the selection.
  *
  *  Another thing this function does is wrap-around when movement occurs.
- *  Any events that will start just after the END of the pattern will be
- *  wrapped around to the beginning of the pattern.
+ *  Any events (except Note Off) that will start just after the END of the
+ *  pattern will be wrapped around to the beginning of the pattern.
  *
- * \todo
- *      Select all notes in a short pattern; move them with the right arrow,
- *      and move them back with the left arrow; then view in the event editor,
- *      and see that the non-Note events have not moved back, and in fact
- *      move way too far to the right, actually to near the END marker, even
- *      after being moved only a 16th note.
+ * Fixed:
  *
- * \todo
- *      This function checks for any marked events in seq24, but should we make
- *      sure the event is a Note On or Note Off event before even dealing with
- *      it?  This leaves out events like Program Change, Control Change, and
- *      Pitch Wheel; however, remember that Aftertouch is treated like a note,
- *      as it has velocity; for non-Notes, event::get_note() is just returning
- *      m_data[0]; we don't want to adjust that.
+ *  Select all notes in a short pattern that starts at time 0 and has non-note
+ *  events starting at time 0 (see contrib/midi/allofarow.mid); move them with
+ *  the right arrow, and move them back with the left arrow; then view in the
+ *  event editor, and see that the non-Note events have not moved back, and in
+ *  fact move way too far to the right, actually to near the END marker.
+ *  We've fixed that in the new adjust_timestamp() function.
+ *
+ *  This function checks for any marked events in seq24, but now we make sure
+ *  the event is a Note On or Note Off event before dealing with it.  We now
+ *  handle properly events like Program Change, Control Change, and Pitch
+ *  Wheel. Remember that Aftertouch is treated like a note, as it has
+ *  velocity. For non-Notes, event::get_note() returns m_data[0], and we don't
+ *  want to adjust that.
  *
  * \param delta_tick
- *      Provides the amount of time to move the selected notes.
+ *      Provides the amount of time to move the selected notes.  Note that it
+ *      also applies to events.  Note-Off events are expanded to m_length if
+ *      their timestamp would be 0.  All other events will wrap around to 0.
  *
  * \param delta_note
- *      Provides the amount of pitch to move the selected notes.
+ *      Provides the amount of pitch to move the selected notes.  This value
+ *      is applied only to Note (On and Off) events.  Also, if this value
+ *      would bring a note outside the range of 0 to 127, that note is not
+ *      changed and the event is not moved.
  */
 
 void
 sequence::move_selected_notes (midipulse delta_tick, int delta_note)
 {
     automutex locker(m_mutex);
-    mark_selected();                    /* also locked recursively inside   */
+    mark_selected();                                /* locked recursively   */
     for (event_list::iterator i = m_events.begin(); i != m_events.end(); ++i)
     {
         event & er = DREF(i);
@@ -1079,8 +1084,10 @@ sequence::move_selected_notes (midipulse delta_tick, int delta_note)
                     e.set_note(midibyte(newnote));
 
                 e.set_timestamp(newts);
-                e.select();
+                e.select();                         /* keep it selected     */
                 add_event(e);
+                if (not_nullptr(m_parent))
+                    m_parent->modify();             /* new, centralize      */
             }
         }
     }
@@ -1099,9 +1106,9 @@ sequence::move_selected_notes (midipulse delta_tick, int delta_note)
  *
  * \param expand
  *      Used for "expanding" the timestamp from 0 to just less than m_length,
- *      if necessary.
- *      Should be used only for Note Off events, and defaults to false, which
- *      means to wrap the events if necessary.
+ *      if necessary.  Should be set to true only for Note Off events; it
+ *      defaults to false, which means to wrap the events around the end of
+ *      the sequence if necessary.
  */
 
 midipulse
@@ -1162,7 +1169,7 @@ sequence::stretch_selected (midipulse delta_tick)
     if (new_len > 1)
     {
         float ratio = float(new_len) / float(old_len);
-        mark_selected();                /* also locked recursively inside   */
+        mark_selected();                            /* locked recursively   */
         for (event_list::iterator i = m_events.begin(); i != m_events.end(); ++i)
         {
             event & er = DREF(i);
@@ -1183,14 +1190,22 @@ sequence::stretch_selected (midipulse delta_tick)
 /**
  *  The original description was "Moves note off event."  But this also gets
  *  called when simply selecting a second note via a ctrl-left-click, even in
- *  seq24.
+ *  seq24.  And, though it doesn't move Note Off events, it does reconstruct
+ *  them.
+ *
+ * \todo
+ *      Can we have ctrl-right also stretch the selected notes?
  *
  *  This function operates only on Note On events that are marked and linked.
  *  If an event is not linked, this function now ignores the event's timestamp,
  *  rather than risk a segfault on a null pointer.  Compare this function to
  *  the stretch_selected() and move_selected_notes() functions.
  *
- *  A note on terminology:  The user "selects" notes, while the sequencer
+ *  This function would strip out non-Notes, but not it at least preserves
+ *  them.  It is probably a good thing to "stretch" them, too, to help
+ *  preserve their relative position re the notes.
+ *
+ *  A comment on terminology:  The user "selects" notes, while the sequencer
  *  "marks" notes. The first thing this function does is mark all the selected
  *  notes.
  *
@@ -1208,37 +1223,47 @@ void
 sequence::grow_selected (midipulse delta_tick)
 {
     automutex locker(m_mutex);
-    mark_selected();                    /* also locked recursively inside   */
+    mark_selected();                                /* locked recursively   */
     bool failed = false;
     for (event_list::iterator i = m_events.begin(); i != m_events.end(); ++i)
     {
         event & er = DREF(i);
-        if (er.is_marked() && er.is_note_on() && er.is_linked())
+        midipulse len = adjust_timestamp(delta_tick);
+        if (er.is_note())
         {
-            midipulse len = delta_tick;
-            event * on = &er;
-            event * off = er.get_linked();
-            if (not_nullptr(off))
+            if (er.is_marked() && er.is_note_on() && er.is_linked())
             {
-                len += off->get_timestamp();
+                event * off = er.get_linked();
+                er.unmark();
+                if (not_nullptr(off))
+                {
+                    len += off->get_timestamp();
+                    event e = *off;         /* copy the original off-event  */
+                    off->mark();            /* mark old off event to delete */
+                    e.unmark();
+                    e.set_timestamp(len);
+                    add_event(e);           /* add the adjusted off event   */
+                    if (not_nullptr(m_parent))
+                        m_parent->modify();         /* new, centralize      */
+                }
+                else
+                {
+                    errprint("grow_selected(): null event link, aborting");
+                    failed = true;
+                    break;
+                }
             }
-            else
-            {
-                errprint("grow_selected(): null event link, aborting");
-                failed = true;
-                break;
-            }
-
-            len = adjust_timestamp(len);    // bool expand = e.is_note_off();
-            on->unmark();
-            if (not_nullptr(off))
-            {
-                event e = *off;         /* copy the original off-event  */
-                off->mark();            /* mark old off event to delete */
-                e.unmark();
-                e.set_timestamp(len);
-                add_event(e);
-            }
+        }
+        else if (er.is_marked())            /* a marked non-Note event?     */
+        {
+            er.unmark();                    /* unmarked the old version     */
+#ifdef USE_NON_NOTE_EVENT_ADJUSTMENT
+            event e = er;                   /* copy the original evnet      */
+            e.set_timestamp(len);           /* adjust the time-stamp        */
+            add_event(e);                   /* add the adjusted event       */
+            if (not_nullptr(m_parent))
+                m_parent->modify();         /* new, centralize this call    */
+#endif
         }
     }
     if (! failed)
@@ -1405,8 +1430,10 @@ sequence::cut_selected (bool copyevents)
     if (copyevents)
         copy_selected();
 
-    mark_selected();                    /* also locked recursively inside   */
+    mark_selected();                                /* locked recursively   */
     remove_marked();
+    if (not_nullptr(m_parent))
+        m_parent->modify();                         /* new, centralize      */
 }
 
 /**
@@ -1517,6 +1544,8 @@ sequence::paste_selected (midipulse tick, int note)
         m_events.sort();                        /* uh, does nothing in map  */
         verify_and_link();
         reset_draw_marker();
+        if (not_nullptr(m_parent))
+            m_parent->modify();                 /* new, centralize it here  */
     }
 }
 
@@ -1790,7 +1819,7 @@ sequence::add_event (const event & er)
  *      The second data byte for the event (if needed).
  *
  * \param paint
- *      If true, repaint to be left with just the inserted event.
+ *      If true, the inserted event is marked for painting.
  */
 
 void
@@ -2880,7 +2909,7 @@ sequence::get_next_trigger
 
 /**
  *  Clears all events from the event container.  Unsets the modified flag.
- *  Also see the new copy_events() function.
+ *  (Why?) Also see the new copy_events() function.
  */
 
 void
@@ -3500,9 +3529,9 @@ sequence::copy_events (const event_list & newevents)
      */
 
     set_dirty();
+    if (not_nullptr(m_parent))
+        m_parent->modify();                 /* new, centralize it here      */
 }
-
-#ifdef SEQ64_PAUSE_SUPPORT
 
 /**
  * \setter m_parent
@@ -3521,8 +3550,6 @@ sequence::set_parent (perform * p)
     if (is_nullptr(m_parent) && not_nullptr(p))
         m_parent = p;
 }
-
-#endif
 
 }           // namespace seq64
 

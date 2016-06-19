@@ -215,7 +215,7 @@ editable_event::value_to_name
             result = table[counter].event_name;
             break;
         }
-        counter++;
+        ++counter;
     }
     return result;
 }
@@ -259,7 +259,7 @@ editable_event::name_to_value
                 result = table[counter].event_value;
                 break;
             }
-            counter++;
+            ++counter;
         }
     }
     return result;

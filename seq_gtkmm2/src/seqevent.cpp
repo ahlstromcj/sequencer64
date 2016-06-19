@@ -801,20 +801,28 @@ seqevent::on_key_press_event (GdkEventKey * ev)
     {
         if (ev->keyval == SEQ64_Delete || ev->keyval == SEQ64_BackSpace)
         {
-            m_seq.push_undo();
-            m_seq.mark_selected();
-            m_seq.remove_marked();
-            perf().modify();
+            /*
+             * m_seq.push_undo();
+             * m_seq.mark_selected();
+             * m_seq.remove_marked();
+             * perf().modify();
+             */
+
+            m_seq.cut_selected(false);      /* cut events without copying   */
             result = true;
         }
         if (ev->state & SEQ64_CONTROL_MASK)
         {
-            if (ev->keyval == SEQ64_x || ev->keyval == SEQ64_X) /* cut */
+            if (ev->keyval == SEQ64_x || ev->keyval == SEQ64_X)     /* cut  */
             {
-                m_seq.copy_selected();
-                m_seq.mark_selected();
-                m_seq.remove_marked();
-                perf().modify();
+                /*
+                 * m_seq.copy_selected();
+                 * m_seq.mark_selected();
+                 * m_seq.remove_marked();
+                 * perf().modify();
+                 */
+
+                m_seq.cut_selected();       /* cut events with copying      */
                 result = true;
             }
             if (ev->keyval == SEQ64_c || ev->keyval == SEQ64_C) /* copy */
@@ -824,8 +832,11 @@ seqevent::on_key_press_event (GdkEventKey * ev)
             }
             if (ev->keyval == SEQ64_v || ev->keyval == SEQ64_V) /* paste */
             {
+                /*
+                 * Let the actual paste call do this: perf().modify();
+                 */
+
                 start_paste();
-                perf().modify();
                 result = true;
             }
             if (ev->keyval == SEQ64_z || ev->keyval == SEQ64_Z) /* Undo */

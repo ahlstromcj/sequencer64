@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-05-30
+ * \updates       2016-06-19
  * \license       GNU GPLv2 or above
  *
  *  The data area consists of vertical lines, with the height of each line
@@ -46,7 +46,7 @@ namespace seq64
 {
 
 /**
- *  Principal constructor.  In the constructor you can only allocate colors,
+ *  Principal constructor.  In the constructor one can only allocate colors,
  *  get_window() returns 0 because this pane has not yet been realized.
  *
  * \param seq
@@ -396,8 +396,14 @@ seqdata::on_motion_notify_event (GdkEventMotion * ev)
         update_pixmap();                /* calls draw_events_on_pixmap()    */
         draw_events_on(m_window);
         draw_line_on_window();
-        if (result)
-            perf().modify();
+
+        /*
+         * \change ca 2016-06-19
+         *  Why do we modify here?
+         *
+         *  if (result)
+         *      perf().modify();
+         */
     }
     return result;
 }
@@ -584,8 +590,14 @@ seqdata::on_button_release_event (GdkEventButton * ev)
             c_dataarea_y - m_drop_y - 1, c_dataarea_y - m_current_y - 1
         );
         m_dragging = false;     /* convert x,y to ticks, set events in range */
-        if (result)
-            perf().modify();
+
+        /*
+         * \change ca 2016-06-19
+         *  Why do we modify here?
+         *
+         *  if (result)
+         *      perf().modify();
+         */
     }
     update_pixmap();
     queue_draw();

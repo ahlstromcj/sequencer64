@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-12-05
- * \updates       2016-06-13
+ * \updates       2016-06-19
  * \license       GNU GPLv2 or above
  *
  * To consider:
@@ -314,15 +314,10 @@ eventedit::eventedit (perform & p, sequence & seq)
     m_label_ppqn->set_text(temptext);
     m_showbox->pack_start(*m_label_ppqn, false, false);
 
-    /*
-     * \change ca 2016-04-17
-     *      For display, we have to increment the channel number.
-     */
-
     snprintf
     (
-        temptext, sizeof temptext, "Sequence Channel: %d",
-        seq.get_midi_channel() + 1
+        temptext, sizeof temptext, "Sequence Channel: %d [re 0]",
+        seq.get_midi_channel()          /* + 1 to show MIDI channels 1-16 */
     );
     m_label_channel->set_text(temptext);
     m_showbox->pack_start(*m_label_channel, false, false);
@@ -713,7 +708,15 @@ eventedit::handle_save ()
     {
         bool ok = m_eventslots->save_events();
         if (ok)
-            perf_modify();
+        {
+            m_button_save->set_sensitive(false);
+
+            /*
+             * Now happens in save_events() which calls sequence::copy_events().
+             *
+             * perf_modify();
+             */
+        }
     }
 }
 

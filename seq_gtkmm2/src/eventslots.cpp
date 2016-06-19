@@ -584,8 +584,7 @@ eventslots::save_events ()
         for
         (
             editable_events::iterator ei = m_event_container.begin();
-            ei != m_event_container.end();
-            ++ei
+            ei != m_event_container.end(); ++ei
         )
         {
 #ifdef SEQ64_USE_EVENT_MAP

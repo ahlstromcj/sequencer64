@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-06-18
+ * \updates       2016-06-19
  * \license       GNU GPLv2 or above
  *
  *  The functions add_list_var() and add_long_list() have been replaced by
@@ -70,12 +70,8 @@
 
 namespace seq64
 {
-
-class mastermidibus;
-
-#ifdef SEQ64_PAUSE_SUPPORT
-class perform;
-#endif
+    class mastermidibus;
+    class perform;
 
 /**
  *  Provides a set of methods for drawing certain items.  These values are
@@ -118,10 +114,7 @@ enum draw_type
 class sequence
 {
 
-#ifdef SEQ64_PAUSE_SUPPORT
     friend class perform;               /* access to set_parent()   */
-#endif
-
     friend class triggers;              /* will unfriend later      */
 
 public:
@@ -184,19 +177,17 @@ private:
 
     static event_list m_events_clipboard;   /* shared between sequences */
 
-#ifdef SEQ64_PAUSE_SUPPORT
-
     /**
      *  For pause support, we need a way for the sequence to find out if JACK
      *  transport is active.  We can use the rc_settings flag(s), but JACK
      *  could be disconnected.  We could use a reference here, but, to avoid
      *  modifying the midifile class as well, we use a pointer.  It is set in
-     *  perform::add_sequence().
+     *  perform::add_sequence().  This member would also be using for passing
+     *  modification status to the parent, so that the GUI code doesn't have
+     *  to do it.
      */
 
     perform * m_parent;
-
-#endif
 
     /**
      *  This list holds the current pattern/sequence events.
@@ -1095,10 +1086,7 @@ public:
 
 private:
 
-#ifdef SEQ64_PAUSE_SUPPORT
     void set_parent (perform * p);
-#endif
-
     void put_event_on_bus (event & ev);
     void set_trigger_offset (midipulse trigger_offset);
     void split_trigger (trigger & trig, midipulse splittick);

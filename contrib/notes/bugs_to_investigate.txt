@@ -1,22 +1,39 @@
 Bugs and Additional Upgrade Ideas
 Chris Ahlstrom
-2015-10-27 to 2016-06-18 (New bugs)
+2015-10-27 to 2016-06-19 (New bugs)
 
 In no particular order...  "y" means "in progress", and "x" means it is
 basically done.
 
 -  Also see BUG REPORTS below.  Those are bug reports from other people.
+-  Modify-flag improvements:
+   x  Make the perform pointer a member of sequence regardless of the status
+      of the "use pause" macro.
+   y  Move the calls to perform::modify() from the GUI code to the
+      relevant sequence member functions.
+   -  Test heavily.
 -  To investigate:
    x  sequence::move_selected_notes() looks like it can treat non-note
       events like notes.  It also mismanaged the timestamp adjustments
       of non-note events.
    x  sequence::paste_selected() also transposes non-note data.
+   x  sequence::grow_selected() removes non-note events (when the user
+      selects all and does ctrl-left-drag).
 y  Load the very simple test.midi file.  Open the pattern editor. Select the
    left note.  Ctrl-Select the right note.  Note the drawing artifacts.
    See the extra events *created*, at the bottom of this file!  Still needs
    more testing.
--  Saving a pattern in the event editor does not cause a performance
-   modification!
+-  Event Editor bugs:
+   y  Saving a pattern in the event editor does not cause a performance
+      modification!
+   x  Trying to insert a "Pitch Wheel" event in the event editor inserts a note
+      event instead.  Seems to be a side-effect of earlier bugs, now fixed.
+   x  Saving a time-modified "Pitch Wheel" event leaves the event unmodified.
+      Seems to be a side-effect of earlier bugs, now fixed.
+   -  Need case-insensitive abbreviations for inserting events:
+      CC (Control Change), PC (Program Change), ON (Note On), OFF (Note Off),
+      AT (Aftertouch), ...
+   -  How do we provide the channel value for an inserted event?
 y  Copying and pasting notes ruins the original notes. Orel found a solution,
    but it needs more testing, which has already found the two bugs listed
    above.
@@ -94,6 +111,8 @@ y  Pause Support:
         OFF.
    y    If start key == stop key, they become stop/pause.  Allow
         Esc to automatically be stop (not pause), then.
+   -    In playing in Song Mode in ALSA, the pause button seems to work, but the
+        period key does not.
 x  The pattern editor ends up zipping to the end of the pattern
    after a few start/stops, in JACK mode only.  Fixed by rewinding
    in qjackctl; seems to start when using space-bar toggle in perfedit.

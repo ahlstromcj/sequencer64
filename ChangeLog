@@ -1,3 +1,43 @@
+2016-06-18  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* README, contrib/notes/bugs_to_investigate.txt,
+	libseq64/include/sequence.hpp, libseq64/src/sequence.cpp: Fixed
+	inadvertent transposing of non-note events in paste_selected() and
+	move_selected_notes().
+	* contrib/notes/bugs_to_investigate.txt,
+	libseq64/include/sequence.hpp, libseq64/src/sequence.cpp: Interim
+	check-in, working on note movement improvements.
+
+2016-06-17  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* contrib/notes/bugs_to_investigate.txt,
+	libseq64/src/event_list.cpp, libseq64/src/sequence.cpp: Fixed
+	long-standing bug from seq24 in pasting selections in the pattern
+	editor that do not begin with a Note On or Note Off event.
+	* libseq64/src/sequence.cpp: Remove extra note off events from
+	test.midi in grow_select().
+	* contrib/notes/bugs_to_investigate.txt, libseq64/src/sequence.cpp,
+	seq_gtkmm2/src/seqroll.cpp: Still investigating the weird
+	Ctrl-Select bug.
+
+2016-06-16  Chris Ahlstrom <ahlstrom@centiped>
+
+	* libseq64/src/sequence.cpp: Tightening up sequence-event copying.
+	* contrib/code/stazed/jack_assistant.cpp,
+	libseq64/include/sequence.hpp, libseq64/src/sequence.cpp: Fixing
+	copy/paste, still have an old seq24 issue with copy/paste for a
+	whole long sequence, see the allofarow.mid file.
+
+2016-06-15  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* contrib/code/stazed/jack_assistant.cpp,
+	contrib/code/stazed/jack_assistant.hpp,
+	contrib/code/stazed/perform.cpp, contrib/code/stazed/perform.hpp,
+	contrib/notes/bugs_to_investigate.txt,
+	libseq64/src/jack_assistant.cpp, libseq64/src/perform.cpp,
+	seq_gtkmm2/src/eventedit.cpp: Stashed initial attempt at
+	incorporated stazed JACK support.
+
 2016-06-12  Chris Ahlstrom <ahlstromcj@gmail.com>
 
 	* : commit ab2e1f4caa758a5a60100eda2878af9550094c10 Merge: e68f482

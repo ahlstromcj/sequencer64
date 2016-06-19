@@ -915,7 +915,12 @@ perfroll::on_motion_notify_event (GdkEventMotion * ev)
 
     if (result)
     {
-        perf().modify();
+        /*
+         * \change ca 2016-06-19
+         *  Why do we modify here?
+         *  perf().modify();
+         */
+
         enqueue_draw();     /* put in if() to reduce flickering */
     }
     return result;

@@ -180,6 +180,9 @@ seqroll::seqroll
     m_ppqn                  (0),
     m_note_length           (0),
     m_scale                 (0),
+#ifdef SEQ64_STAZED_CHORD_GENERATOR
+    m_chord                 (0),
+#endif
     m_key                   (0),
     m_selecting             (false),
     m_moving                (false),
@@ -568,6 +571,24 @@ seqroll::set_scale (int scale)
         reset();
     }
 }
+
+#ifdef SEQ64_STAZED_CHORD_GENERATOR
+
+/**
+ *  Sets the current chord to the given value.
+ *
+ * \param chord
+ *      The desired chord value.
+ */
+
+void
+seqroll::set_chord (int chord)
+{
+    if (m_chord != chord)
+        m_chord = chord;
+}
+
+#endif  // SEQ64_STAZED_CHORD_GENERATOR
 
 /**
  *  Sets the music key to the given value, and then resets the view.

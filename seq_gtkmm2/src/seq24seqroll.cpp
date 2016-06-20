@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-05-17
+ * \updates       2016-06-20
  * \license       GNU GPLv2 or above
  *
  */
@@ -144,10 +144,37 @@ Seq24SeqRollInput::on_button_press_event
                 )
                 {
                     sroll.m_seq.push_undo();
+
+#ifdef SEQ64_STAZED_CHORD_GENERATOR
+                    if (sroll.m_chord > 0)                  /* and less than? */
+                    {
+                        for(int i = 0; i < c_chord_size; ++i)
+                        {
+                            if (c_chord_table[ths.m_chord][i] == -1)
+                                break;
+
+                            sroll.m_seq->add_note
+                            (
+                                tick_s,
+                                sroll.m_note_length - 2 // c_note_off_margin,
+                                note_h + c_chord_table[sroll.m_chord][i],
+                                false
+                            );
+                        }
+                    }
+                    else
+                    {
+                        sroll.m_seq.add_note  /* length = little less than snap */
+                        (
+                            tick_s, sroll.m_note_length - 2, note_h, true
+                        );
+                    }
+#else
                     sroll.m_seq.add_note  /* length = little less than snap */
                     (
                         tick_s, sroll.m_note_length - 2, note_h, true
                     );
+#endif
                     needs_update = true;
                 }
             }
@@ -425,10 +452,17 @@ bool Seq24SeqRollInput::on_motion_notify_event
     }
     else if (sroll.m_painting)
     {
-        sroll.snap_x(sroll.m_current_x);
-        sroll.convert_xy(sroll.m_current_x, sroll.m_current_y, tick, note);
-        sroll.m_seq.add_note(tick, sroll.m_note_length - 2, note, true);
-        result = true;
+#ifdef SEQ64_STAZED_CHORD_GENERATOR
+        if (sroll.m_chord != 0)
+            result = true;
+        else
+#endif
+        {
+            sroll.snap_x(sroll.m_current_x);
+            sroll.convert_xy(sroll.m_current_x, sroll.m_current_y, tick, note);
+            sroll.m_seq.add_note(tick, sroll.m_note_length - 2, note, true);
+            result = true;
+        }
     }
     return result;
 }

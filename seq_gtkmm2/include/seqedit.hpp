@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-05-31
+ * \updates       2016-06-20
  * \license       GNU GPLv2 or above
  *
  *  The seqedit is a kind of master class for holding aseqroll, seqkeys,
@@ -94,6 +94,10 @@ private:
     static int m_initial_snap;
     static int m_initial_note_length;
 
+#ifdef SEQ64_STAZED_CHORD_GENERATOR
+    static int m_initial_chord;
+#endif
+
     /**
      *  Provides the initial zoom, used for restoring the original zoom using
      *  the 0 key.
@@ -127,6 +131,17 @@ private:
      */
 
     int m_scale;
+
+#ifdef SEQ64_STAZED_CHORD_GENERATOR
+
+    /**
+     *  Setting for the current chord generation; not now saved with the
+     *  sequence.
+     */
+
+    int m_chord;
+
+#endif
 
     /**
      *  Setting for the music key, can now be saved with the sequence.
@@ -177,6 +192,9 @@ private:
     Gtk::Menu * m_menu_data;            /**< "Event" button to select data. */
     Gtk::Menu * m_menu_key;             /**< "Music key" menu button.       */
     Gtk::Menu * m_menu_scale;           /**< "Music scale" menu button.     */
+#ifdef SEQ64_STAZED_CHORD_GENERATOR
+    Gtk::Menu * m_menu_chords;          /**< "Chords" menu button.          */
+#endif
     Gtk::Menu * m_menu_sequences;       /**< "Background sequence" button.  */
     Gtk::Menu * m_menu_bpm;             /**< Beats/measure numerator menu.  */
     Gtk::Menu * m_menu_bw;              /**< Beat-width denominator menu.   */
@@ -261,6 +279,10 @@ private:
     Gtk::Entry * m_entry_key;           /**< Text for selected Music Key.   */
     Gtk::Button * m_button_scale;       /**< Button for the Music Scale.    */
     Gtk::Entry * m_entry_scale;         /**< Text for the Music Scale.      */
+#ifdef SEQ64_STAZED_CHORD_GENERATOR
+    Gtk::Button * m_button_scale;       /**< Button for the current Chord.  */
+    Gtk::Entry * m_entry_scale;         /**< Text for the current Chord.    */
+#endif
     Gtk::Tooltips * m_tooltips;         /**< Tooltip collector for dialog.  */
     Gtk::Button * m_button_data;        /**< Button for Event (data) menu.  */
     Gtk::Entry * m_entry_data;          /**< Text for the selected Event.   */
@@ -392,6 +414,11 @@ private:
     void set_midi_channel (int midichannel);
     void set_midi_bus (int midibus);
     void set_scale (int scale);
+
+#ifdef SEQ64_STAZED_CHORD_GENERATOR
+    void set_chord (int chord);
+#endif
+
     void set_key (int note);
     void set_background_sequence (int seq);
     void name_change_callback ();

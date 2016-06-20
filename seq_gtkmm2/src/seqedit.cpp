@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-06-07
+ * \updates       2016-06-20
  * \license       GNU GPLv2 or above
  *
  *  Compare this class to eventedit, which has to do some similar things,
@@ -94,7 +94,7 @@
 #include "pixmaps/seq-editor.xpm"
 
 #ifdef SEQ64_STAZED_CHORD_GENERATOR
-#include "pixmaps/chord.xpm"
+#include "pixmaps/chord3-inv.xpm"
 #endif
 
 using namespace Gtk::Menu_Helpers;
@@ -213,7 +213,7 @@ seqedit::seqedit
     m_menu_key          (manage(new Gtk::Menu())),
     m_menu_scale        (manage(new Gtk::Menu())),
 #ifdef SEQ64_STAZED_CHORD_GENERATOR
-    m_menu_chord        (manage(new Gtk::Menu())),
+    m_menu_chords       (manage(new Gtk::Menu())),
 #endif
     m_menu_sequences    (nullptr),
     m_menu_bpm          (manage(new Gtk::Menu())),
@@ -1128,7 +1128,7 @@ seqedit::fill_top_bar ()
     m_button_chord = manage(new Button());
     m_button_chord->add
     (
-        *manage(new Image(Gdk::Pixbuf::create_from_xpm_data(chord_xpm)))
+        *manage(new Image(Gdk::Pixbuf::create_from_xpm_data(chord3_inv_xpm)))
     );
     m_button_chord->signal_clicked().connect
     (

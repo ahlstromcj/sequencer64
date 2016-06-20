@@ -1,4 +1,4 @@
-README for Sequencer64 0.9.13 (current branch = "fixups")
+README for Sequencer64 0.9.14 (current branch = "fixups")
 Chris Ahlstrom
 2015-09-10 to 2016-06-19 (initial work started in July of 2015)
 
@@ -14,6 +14,7 @@ with the --legacy option.
 
 Major updates:
 
+    -   Version 0.9.14:  TO DO
     -   Version 0.9.13:
         -   Includes an important bug-fix from user 0rel that caused some
             notes to be missing or messed up in a copy operation in the

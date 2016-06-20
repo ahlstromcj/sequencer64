@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-06
- * \updates       2016-05-17
+ * \updates       2016-06-20
  * \license       GNU GPLv2 or above
  *
  *  These values were moved from the globals module.
@@ -312,7 +312,7 @@ const char c_scales_text[c_scale_size][20] =            /* careful!        */
  *  window.
  */
 
-const char c_key_text[SEQ64_OCTAVE_SIZE][3] =
+const char c_key_text[SEQ64_OCTAVE_SIZE][4] =
 {
     "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"
 };
@@ -322,7 +322,7 @@ const char c_key_text[SEQ64_OCTAVE_SIZE][3] =
  *  window.
  */
 
-const char c_interval_text[16][3] =
+const char c_interval_text[16][4] =
 {
     "P1", "m2", "M2", "m3", "M3", "P4", "TT", "P5",
     "m6", "M6", "m7", "M7", "P8", "m9", "M9", ""
@@ -334,10 +334,98 @@ const char c_interval_text[16][3] =
  *  appears if the user has selected a musical scale like Major or Minor.
  */
 
-const char c_chord_text[8][5] =
+const char c_chord_text[8][6] =
 {
     "I", "II", "III", "IV", "V", "VI", "VII", "VIII"
 };
+
+#ifdef SEQ64_STAZED_CHORD_GENERATOR
+
+/**
+ *  Additional support data for the chord-generation feature from Stazed's
+ *  seq32 project.  The chord-number is a count of the number of entries in
+ *  c_chord_table_text.  Will never change, luckily.
+ */
+
+const int c_chord_number = 40;
+
+/**
+ *  Additional support data for the chord-generation feature from Stazed's
+ *  seq32 project.  These chords appear in the sequence-editor chord-button
+ *  dropdown menu.  The longest string is 11 characters, and we add one
+ *  for the null terminator.  A good case for using std::string here. :-)
+ */
+
+const char c_chord_table_text[c_chord_number][12] =
+{
+    "Off",    "Major",       "Majb5",      "minor",   "minb5",
+    "sus2",   "sus4",        "aug",        "augsus4", "tri",
+    "6",      "6sus4",       "6add9",      "m6",      "m6add9",
+    "7",      "7sus4",       "7#5",        "7b5",     "7#9",       "7b9",
+    "7#5#9",  "7#5b9",       "7b5b9",      "7add11",  "7add13",    "7#11",
+    "Maj7",   "Maj7b5",      "Maj7#5",     "Maj7#11", "Maj7add13",
+    "m7",     "m7b5",        "m7b9",       "m7add11", "m7add13",
+    "m-Maj7", "m-Maj7add11", "m-Maj7add13"
+};
+
+/**
+ *  Provides the number of chord values in each chord's specification
+ *  array.
+ */
+
+const int c_chord_size = 6;
+
+/**
+ *  Additional support data for the chord-generation feature from Stazed's
+ *  seq32 project.  These values indicate the note offsets needed for a
+ *  particular kind of chord.
+ */
+
+const int c_chord_table[c_chord_number][c_chord_size] =
+{
+    { 0, -1, 0, 0, 0, 0 },      /* Off          */
+    { 0, 4, 7, -1, 0, 0 },      /* Major        */
+    { 0, 4, 6, -1, 0, 0 },      /* Majb5        */
+    { 0, 3, 7, -1, 0, 0 },      /* minor        */
+    { 0, 3, 6, -1, 0, 0 },      /* minb5        */
+    { 0, 2, 7, -1, 0, 0 },      /* sus2         */
+    { 0, 5, 7, -1, 0, 0 },      /* sus4         */
+    { 0, 4, 8, -1, 0, 0 },      /* aug          */
+    { 0, 5, 8, -1, 0, 0 },      /* augsus4      */
+    { 0, 3, 6, 9, -1, 0 },      /* tri          */
+    { 0, 4, 7, 9, -1, 0 },      /* 6            */
+    { 0, 5, 7, 9, -1, 0 },      /* 6sus4        */
+    { 0, 4, 7, 9, 14, -1 },     /* 6add9        */
+    { 0, 3, 7, 9, -1, 0 },      /* m6           */
+    { 0, 3, 7, 9, 14, -1 },     /* m6add9       */
+    { 0, 4, 7, 10, -1, 0 },     /* 7            */
+    { 0, 5, 7, 10, -1, 0 },     /* 7sus4        */
+    { 0, 4, 8, 10, -1, 0 },     /* 7#5          */
+    { 0, 4, 6, 10, -1, 0 },     /* 7b5          */
+    { 0, 4, 7, 10, 15, -1 },    /* 7#9          */
+    { 0, 4, 7, 10, 13, -1 },    /* 7b9          */
+    { 0, 4, 8, 10, 15, -1 },    /* 7#5#9        */
+    { 0, 4, 8, 10, 13, -1 },    /* 7#5b9        */
+    { 0, 4, 6, 10, 13, -1 },    /* 7b5b9        */
+    { 0, 4, 7, 10, 17, -1 },    /* 7add11       */
+    { 0, 4, 7, 10, 21, -1 },    /* 7add13       */
+    { 0, 4, 7, 10, 18, -1 },    /* 7#11         */
+    { 0, 4, 7, 11, -1, 0 },     /* Maj7         */
+    { 0, 4, 6, 11, -1, 0 },     /* Maj7b5       */
+    { 0, 4, 8, 11, -1, 0 },     /* Maj7#5       */
+    { 0, 4, 7, 11, 18, -1 },    /* Maj7#11      */
+    { 0, 4, 7, 11, 21, -1 },    /* Maj7add13    */
+    { 0, 3, 7, 10, -1, 0 },     /* m7           */
+    { 0, 3, 6, 10, -1, 0 },     /* m7b5         */
+    { 0, 3, 7, 10, 13, -1 },    /* m7b9         */
+    { 0, 3, 7, 10, 17, -1 },    /* m7add11      */
+    { 0, 3, 7, 10, 21, -1 },    /* m7add13      */
+    { 0, 3, 7, 11, -1, 0 },     /* m-Maj7       */
+    { 0, 3, 7, 11, 17, -1 },    /* m-Maj7add11  */
+    { 0, 3, 7, 11, 21, -1 }     /* m-Maj7add13  */
+};
+
+#endif      // SEQ64_STAZED_CHORD_GENERATOR
 
 }           // namespace seq64
 

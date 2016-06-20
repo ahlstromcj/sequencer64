@@ -93,6 +93,10 @@
 #include "pixmaps/tools.xpm"
 #include "pixmaps/seq-editor.xpm"
 
+#ifdef SEQ64_STAZED_CHORD_GENERATOR
+#include "pixmaps/chord.xpm"
+#endif
+
 using namespace Gtk::Menu_Helpers;
 
 namespace seq64
@@ -126,6 +130,10 @@ namespace seq64
 
 int seqedit::m_initial_snap                 = SEQ64_DEFAULT_PPQN / 4;
 int seqedit::m_initial_note_length          = SEQ64_DEFAULT_PPQN / 4;
+
+#ifdef SEQ64_STAZED_CHORD_GENERATOR
+int seqedit::m_initial_chord = 0;
+#endif
 
 /**
  * Actions.  These variables represent actions that can be applied to a
@@ -175,7 +183,11 @@ seqedit::seqedit
     int pos,
     int ppqn
 ) :
+#ifdef SEQ64_STAZED_CHORD_GENERATOR
+    gui_window_gtk2     (p, 800, 500),                  // size request
+#else
     gui_window_gtk2     (p, 750, 500),                  // size request
+#endif
     m_initial_zoom      (SEQ64_DEFAULT_ZOOM),           // constant
     m_zoom              (SEQ64_DEFAULT_ZOOM),           // fixed below
     m_snap              (m_initial_snap),
@@ -183,6 +195,9 @@ seqedit::seqedit
     m_scale             (usr().seqedit_scale()),        // m_initial_scale
     m_key               (usr().seqedit_key()),          // m_initial_key
     m_bgsequence        (usr().seqedit_bgsequence()),   // m_initial_sequence
+#ifdef SEQ64_STAZED_CHORD_GENERATOR
+    m_chord             (usr().seqedit_chord()),        // m_initial_chord
+#endif
     m_measures          (0),                            // fixed below
     m_ppqn              (0),                            // fixed below
     m_seq               (seq),
@@ -197,6 +212,9 @@ seqedit::seqedit
     m_menu_data         (nullptr),
     m_menu_key          (manage(new Gtk::Menu())),
     m_menu_scale        (manage(new Gtk::Menu())),
+#ifdef SEQ64_STAZED_CHORD_GENERATOR
+    m_menu_chord        (manage(new Gtk::Menu())),
+#endif
     m_menu_sequences    (nullptr),
     m_menu_bpm          (manage(new Gtk::Menu())),
     m_menu_bw           (manage(new Gtk::Menu())),
@@ -421,6 +439,10 @@ seqedit::seqedit
     else
         set_key(m_key);
 
+#ifdef SEQ64_STAZED_CHORD_GENERATOR
+    set_chord(m_chord);
+#endif
+
     if (SEQ64_IS_VALID_SEQUENCE(m_seq.background_sequence()))
         m_bgsequence = m_seq.background_sequence();
 
@@ -621,13 +643,26 @@ seqedit::create_menus ()
 
 #define SET_SCALE   mem_fun(*this, &seqedit::set_scale)
 
-    for (int i = int(c_scale_off); i < int(c_scale_size); i++)
+    for (int i = int(c_scale_off); i < int(c_scale_size); ++i)
     {
         m_menu_scale->items().push_back                 /* music scale      */
         (
             MenuElem(c_scales_text[i], sigc::bind(SET_SCALE, i))
         );
     }
+
+#ifdef SEQ64_STAZED_CHORD_GENERATOR
+#define SET_CHORD   mem_fun(*this, &seqedit::set_chord)
+
+    for (int i = 0; i < c_chord_number; ++i)
+    {
+        m_menu_chords->items().push_back                 /* Chords     */
+        (
+            MenuElem(c_chord_table_text[i], sigc::bind(SET_CHORD, i))
+        );
+    }
+
+#endif  // SEQ64_STAZED_CHORD_GENERATOR
 
     /**
      *  This section sets up two different menus.  The first is m_menu_length.
@@ -639,16 +674,17 @@ seqedit::create_menus ()
 #define SET_BPM         mem_fun(*this, &seqedit::set_beats_per_bar)
 #define SET_MEASURES    mem_fun(*this, &seqedit::set_measures)
 
-    for (int i = 0; i < 16; i++)                        /* seq length menu   */
+    for (int i = 0; i < 16; ++i)                        /* seq length menu   */
     {
-        snprintf(b, sizeof(b), "%d", i + 1);
+        int len = i + 1;
+        snprintf(b, sizeof(b), "%d", len);
         m_menu_length->items().push_back                /* length            */
         (
-            MenuElem(b, sigc::bind(SET_MEASURES, i + 1))
+            MenuElem(b, sigc::bind(SET_MEASURES, len))
         );
         m_menu_bpm->items().push_back                   /* beats per measure */
         (
-            MenuElem(b, sigc::bind(SET_BPM, i + 1))
+            MenuElem(b, sigc::bind(SET_BPM, len))
         );
     }
     m_menu_length->items().push_back
@@ -1087,10 +1123,31 @@ seqedit::fill_top_bar ()
     m_hbox2->pack_start(*m_button_sequence , false, false);
     m_hbox2->pack_start(*m_entry_sequence , true, true);
 
-    /*
-     * The following commented buttons were a visual way to select the
-     * modes of note editing.  These can easily be done with the left
-     * mouse button and some other tricks, though.
+#ifdef SEQ64_STAZED_CHORD_GENERATOR
+
+    m_button_chord = manage(new Button());
+    m_button_chord->add
+    (
+        *manage(new Image(Gdk::Pixbuf::create_from_xpm_data(chord_xpm)))
+    );
+    m_button_chord->signal_clicked().connect
+    (
+        sigc::bind<Menu *>(mem_fun(*this, &seqedit::popup_menu), m_menu_chords)
+    );
+    add_tooltip( m_button_chord, "Select a chord type to generate." );
+    m_entry_chord = manage(new Entry());
+    m_entry_chord->set_size_request(10, -1);
+    m_entry_chord->set_editable(false);
+    m_hbox2->pack_start( *m_button_chord, false, false );
+    m_hbox2->pack_start( *m_entry_chord, true, true );
+
+#endif  // SEQ64_STAZED_CHORD_GENERATOR
+
+    /**
+     * The following commented radio-buttons were a visual way to select the
+     * modes of note editing (select, draw, and grow).  These can easily be
+     * done with the left mouse button, keystrokes, or some other tricks,
+     * though.
      */
 
 #if USE_THIRD_SEQEDIT_BUTTON_ROW
@@ -1149,7 +1206,7 @@ seqedit::popup_midibus_menu ()
 
 #define SET_BUS         mem_fun(*this, &seqedit::set_midi_bus)
 
-    for (int i = 0; i < masterbus.get_num_out_buses(); i++)
+    for (int i = 0; i < masterbus.get_num_out_buses(); ++i)
     {
         m_menu_midibus->items().push_back
         (
@@ -1664,6 +1721,21 @@ seqedit::set_key (int key)
     if (usr().global_seq_feature())
         usr().seqedit_key(key);
 }
+
+#ifdef SEQ64_STAZED_CHORD_GENERATOR
+
+void
+seqedit::set_chord (int chord)
+{
+    if (chord >= 0 && chord < c_chord_number)
+    {
+        m_entry_chord->set_text(c_chord_table_text[chord]);
+        m_chord = m_initial_chord = chord;
+        m_seqroll_wid->set_chord(m_chord);
+    }
+}
+
+#endif  // SEQ64_STAZED_CHORD_GENERATOR
 
 /**
  *  Sets the sequence length based on the three given parameters.  There's an

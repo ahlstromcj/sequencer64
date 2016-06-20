@@ -6,7 +6,7 @@
 # \library    	sequencer64 application
 # \author     	Chris Ahlstrom
 # \date       	2015-09-11
-# \update      2016-03-17
+# \update      2016-06-20
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -17,6 +17,7 @@
 
 EXTRA_DIST = \
 	bus.xpm \
+	chord.xpm \
 	collapse.xpm \
 	copy.xpm \
 	cyan_wenfont_yb.xpm \

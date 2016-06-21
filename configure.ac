@@ -6,7 +6,7 @@ dnl \file          configure.ac
 dnl \library       Sequencer64
 dnl \author        Chris Ahlstrom
 dnl \date          2015-09-11
-dnl \update        2016-06-19
+dnl \update        2016-06-21
 dnl \version       $Revision$
 dnl \license       $XPC_SUITE_GPL_LICENSE$
 dnl
@@ -472,6 +472,19 @@ else
     AC_MSG_WARN([*** Running statistics gathering not enabled.]);
 fi
 
+dnl Support for using the chord generator.
+
+AC_ARG_ENABLE(chords,
+    [AS_HELP_STRING(--disable-chords, [Disable using the chord generator])],
+    [chords=$enableval],
+    [chords=yes])
+
+if test "$chords" != "no"; then
+    AC_DEFINE(STAZED_CHORD_GENERATOR, 1, [Define to enable the chord generator])
+else
+    AC_MSG_WARN([*** Chord generator not enabled.]);
+fi
+
 dnl 6.0  Top portion of the config.h/sequencer64-config.h header files.
 dnl      The sequencer64-config.h header file has "SEQUENCER64_" prepended
 dnl      to these automatically for us.  Also, we can't use
@@ -485,7 +498,7 @@ dnl #define API_VERSION "0.9"             // defined on command line
 
 AH_TOP(
 
-#define VERSION_DATE_SHORT "2016-06-20"
+#define VERSION_DATE_SHORT "2016-06-21"
 #define VERSION "0.9.14.0"
 
 )

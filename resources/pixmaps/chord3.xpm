@@ -1,5 +1,5 @@
 /* XPM */
-static const char *chord3_xpm[] = {
+static const char * chord3_xpm [] = {
 "17 17 3 1 ",
 "  c #None",
 ". c #000000",

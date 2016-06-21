@@ -150,13 +150,13 @@ Seq24SeqRollInput::on_button_press_event
                     {
                         for(int i = 0; i < c_chord_size; ++i)
                         {
-                            if (c_chord_table[ths.m_chord][i] == -1)
+                            if (c_chord_table[sroll.m_chord][i] == -1)
                                 break;
 
-                            sroll.m_seq->add_note
+                            sroll.m_seq.add_note
                             (
                                 tick_s,
-                                sroll.m_note_length - 2 // c_note_off_margin,
+                                sroll.m_note_length - 2, // c_note_off_margin,
                                 note_h + c_chord_table[sroll.m_chord][i],
                                 false
                             );

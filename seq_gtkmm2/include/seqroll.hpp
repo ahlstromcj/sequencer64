@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-06-19
+ * \updates       2016-06-20
  * \license       GNU GPLv2 or above
  *
  */
@@ -37,6 +37,8 @@
 #include "gui_drawingarea_gtk2.hpp"
 #include "fruityseqroll.hpp"
 #include "seq24seqroll.hpp"
+
+#include "scales.h"                     /* STAZED chord support */
 
 namespace Gtk
 {
@@ -201,6 +203,17 @@ private:
      */
 
     int m_scale;
+
+#ifdef SEQ64_STAZED_CHORD_GENERATOR
+
+    /**
+     *  Indicates the current chord in force for this sequence for inserting
+     *  notes..
+     */
+
+    int m_chord;
+
+#endif
 
     /**
      *  Indicates the musical key in force for this sequence.
@@ -405,6 +418,10 @@ public:
 
     void set_key (int key);
     void set_scale (int scale);
+
+#ifdef SEQ64_STAZED_CHORD_GENERATOR
+    void set_chord (int chord);
+#endif
 
     /**
      *  Sets the status to the given parameter, and the CC value to the given

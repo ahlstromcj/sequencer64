@@ -184,7 +184,7 @@ seqedit::seqedit
     int ppqn
 ) :
 #ifdef SEQ64_STAZED_CHORD_GENERATOR
-    gui_window_gtk2     (p, 800, 500),                  // size request
+    gui_window_gtk2     (p, 900, 500),                  // size request
 #else
     gui_window_gtk2     (p, 750, 500),                  // size request
 #endif
@@ -193,11 +193,11 @@ seqedit::seqedit
     m_snap              (m_initial_snap),
     m_note_length       (m_initial_note_length),
     m_scale             (usr().seqedit_scale()),        // m_initial_scale
+#ifdef SEQ64_STAZED_CHORD_GENERATOR
+    m_chord             (0),    // (usr().seqedit_chord()),  // m_initial_chord
+#endif
     m_key               (usr().seqedit_key()),          // m_initial_key
     m_bgsequence        (usr().seqedit_bgsequence()),   // m_initial_sequence
-#ifdef SEQ64_STAZED_CHORD_GENERATOR
-    m_chord             (usr().seqedit_chord()),        // m_initial_chord
-#endif
     m_measures          (0),                            // fixed below
     m_ppqn              (0),                            // fixed below
     m_seq               (seq),
@@ -270,6 +270,10 @@ seqedit::seqedit
     m_entry_key         (nullptr),
     m_button_scale      (nullptr),
     m_entry_scale       (nullptr),
+#ifdef SEQ64_STAZED_CHORD_GENERATOR
+    m_button_chord      (nullptr),
+    m_entry_chord       (nullptr),
+#endif
     m_tooltips          (manage(new Gtk::Tooltips())),
     m_button_data       (manage(new Gtk::Button(" Event "))),
     m_entry_data        (manage(new Gtk::Entry())),
@@ -1038,7 +1042,11 @@ seqedit::fill_top_bar ()
     );
     add_tooltip(m_button_quantize, "Quantize the selection.");
     m_hbox2->pack_start(*m_button_quantize , false, false);
+
+#ifndef SEQ64_STAZED_CHORD_GENERATOR
     m_hbox2->pack_start(*(manage(new Gtk::VSeparator())), false, false, 4);
+#endif
+
     m_button_tools = manage(new Gtk::Button());             /* tools button  */
     m_button_tools->add(*manage(new PIXBUF_IMAGE(tools_xpm)));
     m_button_tools->signal_clicked().connect
@@ -1047,7 +1055,11 @@ seqedit::fill_top_bar ()
     );
     m_tooltips->set_tip(*m_button_tools, "Tools");
     m_hbox2->pack_start(*m_button_tools , false, false);
+
+#ifndef SEQ64_STAZED_CHORD_GENERATOR
     m_hbox2->pack_start(*(manage(new Gtk::VSeparator())), false, false, 4);
+#endif
+
     m_button_snap = manage(new Gtk::Button());              /* snap          */
     m_button_snap->add(*manage(new PIXBUF_IMAGE(snap_xpm)));
     m_button_snap->signal_clicked().connect
@@ -1080,11 +1092,15 @@ seqedit::fill_top_bar ()
     );
     add_tooltip(m_button_zoom, "Zoom, units of pixels:ticks (pixels:pulses).");
     m_entry_zoom = manage(new Gtk::Entry());
-    m_entry_zoom->set_width_chars(5);                       /* was 4        */
+    m_entry_zoom->set_width_chars(5);
     m_entry_zoom->set_editable(false);
     m_hbox2->pack_start(*m_button_zoom , false, false);
     m_hbox2->pack_start(*m_entry_zoom , false, false);
+
+#ifndef SEQ64_STAZED_CHORD_GENERATOR
     m_hbox2->pack_start(*(manage(new Gtk::VSeparator())), false, false, 4);
+#endif
+
     m_button_key = manage(new Gtk::Button());               /* musical key   */
     m_button_key->add(*manage(new PIXBUF_IMAGE(key_xpm)));
     m_button_key->signal_clicked().connect
@@ -1093,7 +1109,7 @@ seqedit::fill_top_bar ()
     );
     add_tooltip(m_button_key, "Select the musical key of sequence.");
     m_entry_key = manage(new Gtk::Entry());
-    m_entry_key->set_width_chars(5);
+    m_entry_key->set_width_chars(2);
     m_entry_key->set_editable(false);
     m_hbox2->pack_start(*m_button_key , false, false);
     m_hbox2->pack_start(*m_entry_key , false, false);
@@ -1105,11 +1121,16 @@ seqedit::fill_top_bar ()
     );
     add_tooltip(m_button_scale, "Select the musical scale for sequence.");
     m_entry_scale = manage(new Gtk::Entry());
-    m_entry_scale->set_width_chars(5);
+    m_entry_scale->set_width_chars(10);      // 5
     m_entry_scale->set_editable(false);
     m_hbox2->pack_start(*m_button_scale , false, false);
-    m_hbox2->pack_start(*m_entry_scale , false, false);
+//  m_hbox2->pack_start(*m_entry_scale , false, false);
+    m_hbox2->pack_start(*m_entry_scale , true, true);
+
+#ifndef SEQ64_STAZED_CHORD_GENERATOR
     m_hbox2->pack_start(*(manage(new Gtk::VSeparator())), false, false, 4);
+#endif
+
     m_button_sequence = manage(new Gtk::Button());      /* background sequence */
     m_button_sequence->add(*manage(new PIXBUF_IMAGE(sequences_xpm)));
     m_button_sequence->signal_clicked().connect
@@ -1118,25 +1139,28 @@ seqedit::fill_top_bar ()
     );
     add_tooltip(m_button_sequence, "Select a background sequence to display.");
     m_entry_sequence = manage(new Gtk::Entry());
-    m_entry_sequence->set_width_chars(14);
+    m_entry_sequence->set_width_chars(10);          /* 14 */
     m_entry_sequence->set_editable(false);
-    m_hbox2->pack_start(*m_button_sequence , false, false);
-    m_hbox2->pack_start(*m_entry_sequence , true, true);
+    m_hbox2->pack_start(*m_button_sequence, false, false);
+    m_hbox2->pack_start(*m_entry_sequence, true, true);
 
 #ifdef SEQ64_STAZED_CHORD_GENERATOR
 
-    m_button_chord = manage(new Button());
+    m_button_chord = manage(new Gtk::Button());
     m_button_chord->add
     (
-        *manage(new Image(Gdk::Pixbuf::create_from_xpm_data(chord3_inv_xpm)))
+        *manage(new Gtk::Image(Gdk::Pixbuf::create_from_xpm_data(chord3_inv_xpm)))
     );
     m_button_chord->signal_clicked().connect
     (
-        sigc::bind<Menu *>(mem_fun(*this, &seqedit::popup_menu), m_menu_chords)
+        sigc::bind<Gtk::Menu *>
+        (
+            mem_fun(*this, &seqedit::popup_menu), m_menu_chords
+        )
     );
-    add_tooltip( m_button_chord, "Select a chord type to generate." );
-    m_entry_chord = manage(new Entry());
-    m_entry_chord->set_size_request(10, -1);
+    add_tooltip(m_button_chord, "Select a chord type to generate.");
+    m_entry_chord = manage(new Gtk::Entry());
+    m_entry_chord->set_width_chars(10); // m_entry_chord->set_size_request(10,-1)
     m_entry_chord->set_editable(false);
     m_hbox2->pack_start( *m_button_chord, false, false );
     m_hbox2->pack_start( *m_entry_chord, true, true );

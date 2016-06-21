@@ -280,8 +280,8 @@ private:
     Gtk::Button * m_button_scale;       /**< Button for the Music Scale.    */
     Gtk::Entry * m_entry_scale;         /**< Text for the Music Scale.      */
 #ifdef SEQ64_STAZED_CHORD_GENERATOR
-    Gtk::Button * m_button_scale;       /**< Button for the current Chord.  */
-    Gtk::Entry * m_entry_scale;         /**< Text for the current Chord.    */
+    Gtk::Button * m_button_chord;       /**< Button for the current Chord.  */
+    Gtk::Entry * m_entry_chord;         /**< Text for the current Chord.    */
 #endif
     Gtk::Tooltips * m_tooltips;         /**< Tooltip collector for dialog.  */
     Gtk::Button * m_button_data;        /**< Button for Event (data) menu.  */

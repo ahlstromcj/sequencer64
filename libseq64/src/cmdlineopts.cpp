@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-20
- * \updates       2016-06-11
+ * \updates       2016-06-21
  * \license       GNU GPLv2 or above
  *
  *  The "rc" command-line options override setting that are first read from
@@ -47,6 +47,7 @@
  *  at some point.
  */
 
+#include <sstream>
 #include "platform_macros.h"
 
 #ifdef PLATFORM_UNIX
@@ -154,7 +155,7 @@ static struct option long_options [] =
  */
 
 static const std::string s_arg_list =
-    "AaB:b:Cc:F:f:H:hi:JjkLlM:mnPpq:RrSsU:uV:x:"        /* modern args      */
+    "AaB:b:Cc:F:f:H:hi:JjkLlM:mnPpq:RrSsU:uVx:"         /* modern args      */
     "1234:5:67:89@"                                     /* legacy args      */
     ;
 
@@ -570,6 +571,7 @@ parse_command_line_options (int argc, char * argv [])
 
         case 'V':
             printf("%s", versiontext.c_str());
+            printf("%s", build_details().c_str());
             result = SEQ64_NULL_OPTION_INDEX;
             break;
 
@@ -651,6 +653,77 @@ write_options_files (const perform & p)
             result = false;
     }
     return result;
+}
+
+/**
+ *  This section of variables provide static information about the options
+ *  enabled or disabled during the build.
+ */
+
+#ifdef SEQ64_HIGHLIGHT_EMPTY_SEQS
+const static std::string s_build_highlight_empty = "on";
+#else
+const static std::string s_build_highlight_empty = "off";
+#endif
+
+#ifdef SEQ64_LASH_SUPPORT
+const static std::string s_build_lash_support = "on";
+#else
+const static std::string s_build_lash_support = "off";
+#endif
+
+#ifdef SEQ64_JACK_SUPPORT
+const static std::string s_build_jack_support = "on";
+#else
+const static std::string s_build_jack_support = "off";
+#endif
+
+#ifdef SEQ64_JACK_SESSION
+const static std::string s_build_jack_session = "on";
+#else
+const static std::string s_build_jack_session = "off";
+#endif
+
+#ifdef SEQ64_PAUSE_SUPPORT
+const static std::string s_build_pause_support = "on";
+#else
+const static std::string s_build_pause_support = "off";
+#endif
+
+#ifdef SEQ64_USE_EVENT_MAP
+const static std::string s_build_use_event_map = "on";
+#else
+const static std::string s_build_use_event_map = "off";
+#endif
+
+#ifdef SEQ64_STAZED_CHORD_GENERATOR
+const static std::string s_build_chord_generator = "on";
+#else
+const static std::string s_build_chord_generator = "off";
+#endif
+
+/**
+ *  Generates a string describing the features of the build.
+ *
+ * \return
+ *      Returns an ordered, human-readable string enumerating the features.
+ */
+
+std::string
+build_details ()
+{
+    std::ostringstream result;
+    result
+<< "Build features:" << std::endl
+<< "  Highlight empty sequences: " << s_build_highlight_empty << std::endl
+<< "  LASH support:              " << s_build_lash_support << std::endl
+<< "  JACK support:              " << s_build_jack_support << std::endl
+<< "  JACK session:              " << s_build_jack_session << std::endl
+<< "  Pause support:             " << s_build_pause_support << std::endl
+<< "  Event multimap (vs list):  " << s_build_use_event_map << std::endl
+<< "  Stazed chord generator:    " << s_build_chord_generator << std::endl
+    ;
+    return result.str();
 }
 
 }           // namespace seq64

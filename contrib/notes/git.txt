@@ -1,6 +1,6 @@
 Quick Reference for Git Processes on GitHub
 Chris Ahlstrom
-2015-09-09 to 2016-05-29
+2015-09-09 to 2016-06-21
 
 Creating a GitHub Repository:
 
@@ -162,13 +162,14 @@ Tagging:
     commit, based from the latest tag, using the following call (with the
     result shown):
 
-    $ git describe --tags
+    $ git describe --tags --long
     0.9.11-12-gca37826
 
     This output says that the command was run after the 12th commit after
     the 0.9.11 tag, and includes a hash code (after the "g", which simply
     denotes that the "git" DVCS is being used) that can be used if the
-    commit changes, or there are many 12th commits.
+    commit changes, or there are many 12th commits.  Note that the output
+    also depends on the current branch that is checked out.
 
 Pull Requests:
 

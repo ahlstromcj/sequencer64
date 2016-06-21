@@ -41,11 +41,45 @@
  */
 
 /**
+ *  Determins which implementation of a MIDI byte container is used.
+ *  See the midifile module.
+ */
+
+#define SEQ64_USE_MIDI_VECTOR           /* as opposed to the MIDI list      */
+
+/**
  *  Let's try using lighter solid lines in the piano rolls and see how it
  *  looks.  It looks a little better.
  */
 
 #define SEQ64_SOLID_PIANOROLL_GRID
+
+/**
+ *  This provides a build option for having the pattern editor window scroll
+ *  to keep of with the progress bar, for sequences that are longer than the
+ *  measure or two that a pattern window will show.
+ *
+ *  We thought about making this a configure option or a run-time option, but
+ *  this kind of scrolling is a universal convention of MIDI sequencers.  If
+ *  you really don't like this feature, let me know, and I will make it a
+ *  configure option.  We could also disable it it "legacy" mode, which also
+ *  disables a lot of other features.
+ *
+ * \warning
+ *      This code might still have issues with interactions between triggers
+ *      and gaps in the performance (song) window when JACK transport is
+ *      active.  Still investigating.
+ */
+
+#define SEQ64_FOLLOW_PROGRESS_BAR
+
+/**
+ *  This macro defines the amount of overlap between horizontal "pages" that
+ *  get scrolled to follow the progress bar.  We think it should be greater
+ *  than 0, maybe set to 10. But feel free to experiment.
+ */
+
+#define SEQ64_PROGRESS_PAGE_OVERLAP     10
 
 /**
  *  Indicates the maximum number of MIDI channels, counted internally from 0
@@ -58,7 +92,7 @@
  *  Default value for c_max_sets.
  */
 
-#define SEQ64_DEFAULT_SET_MAX            32
+#define SEQ64_DEFAULT_SET_MAX           32
 
 /**
  *  Default value of number of slot toggle keys (shortcut keys) that

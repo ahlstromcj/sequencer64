@@ -54,6 +54,7 @@
 #include <getopt.h>
 #endif
 
+#include "app_limits.h"                 /* macros for build_details()       */
 #include "cmdlineopts.hpp"
 #include "file_functions.hpp"           /* file_accessible()                */
 #include "optionsfile.hpp"
@@ -702,6 +703,36 @@ const static std::string s_build_chord_generator = "on";
 const static std::string s_build_chord_generator = "off";
 #endif
 
+#ifdef SEQ64_EDIT_SEQUENCE_HIGHLIGHT
+const static std::string s_build_edit_highlight = "on";
+#else
+const static std::string s_build_edit_highlight = "off";
+#endif
+
+#ifdef SEQ64_HANDLE_TIMESIG_AND_TEMPO
+const static std::string s_build_timesig_tempo = "on";
+#else
+const static std::string s_build_timesig_tempo = "off";
+#endif
+
+#ifdef SEQ64_USE_MIDI_VECTOR
+const static std::string s_build_midi_vector = "on";
+#else
+const static std::string s_build_midi_vector = "off";
+#endif
+
+#ifdef SEQ64_SOLID_PIANOROLL_GRID
+const static std::string s_build_solid_grid = "on";
+#else
+const static std::string s_build_solid_grid = "off";
+#endif
+
+#ifdef SEQ64_FOLLOW_PROGRESS_BAR
+const static std::string s_build_follow_progress = "on";
+#else
+const static std::string s_build_follow_progress = "off";
+#endif
+
 /**
  *  Generates a string describing the features of the build.
  *
@@ -720,8 +751,13 @@ build_details ()
 << "  JACK support:              " << s_build_jack_support << std::endl
 << "  JACK session:              " << s_build_jack_session << std::endl
 << "  Pause support:             " << s_build_pause_support << std::endl
-<< "  Event multimap (vs list):  " << s_build_use_event_map << std::endl
 << "  Stazed chord generator:    " << s_build_chord_generator << std::endl
+<< "  Event multimap (vs list):  " << s_build_use_event_map << std::endl
+<< "  Highlight pattern in edit: " << s_build_edit_highlight << std::endl
+<< "  Save time-signature/tempo: " << s_build_timesig_tempo << std::endl
+<< "  Use MIDI vector (vs list): " << s_build_midi_vector << std::endl
+<< "  Solid piano-roll grid:     " << s_build_solid_grid << std::endl
+<< "  Follow progress bar:       " << s_build_follow_progress << std::endl
     ;
     return result.str();
 }

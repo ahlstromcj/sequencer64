@@ -196,7 +196,7 @@ MANUALLY-DEFINED MACROS IN CODE:
 
     SEQ64_FOLLOW_PROGRESS_BAR:
 
-        Currently disabled by default in the seqroll.cpp module, this macro
+        Currently enabled by default in the seqroll.cpp module, this macro
         turns on code that scrolls the sequence/pattern editor horizontally to
         keep the progress bar in view for long patterns, as the tune plays.
         It currently has the following issue:

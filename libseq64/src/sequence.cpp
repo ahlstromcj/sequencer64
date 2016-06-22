@@ -111,7 +111,8 @@ sequence::sequence (int ppqn)
     m_musical_key               (SEQ64_KEY_OF_C),
     m_musical_scale             (int(c_scale_off)),
     m_background_sequence       (SEQ64_SEQUENCE_LIMIT),
-    m_mutex                     ()
+    m_mutex                     (),
+    m_note_off_margin           (2)
 {
     m_ppqn = choose_ppqn(ppqn);
     m_length = 4 * m_ppqn;                      /* one bar's worth of ticks */
@@ -152,6 +153,11 @@ sequence::partial_assign (const sequence & rhs)
     if (this != &rhs)
     {
         automutex locker(m_mutex);
+
+        /*
+         * const: m_note_off_margin
+         */
+
         m_parent        = rhs.m_parent;             /* a pointer, careful!  */
         m_events        = rhs.m_events;
         m_triggers      = rhs.m_triggers;

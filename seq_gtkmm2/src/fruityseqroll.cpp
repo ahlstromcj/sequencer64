@@ -76,41 +76,6 @@ clamp (long val, long low, long hi)
 void
 FruitySeqRollInput::update_mouse_pointer (seqroll & sroll)
 {
-#if 0
-    midipulse drop_tick;
-    int drop_note;
-    sroll.convert_xy
-    (
-        sroll.current_x(), sroll.current_y(), drop_tick, drop_note
-    );
-    midipulse start, end;
-    int note;                           // midibyte
-    if
-    (
-        sroll.m_is_drag_pasting || sroll.m_selecting || sroll.m_moving ||
-        sroll.m_growing || sroll.m_paste
-    )
-    {
-        sroll.get_window()->set_cursor(Gdk::Cursor(Gdk::LEFT_PTR));
-    }
-    else if
-    (
-         ! m_adding &&
-         sroll.m_seq.intersect_notes(drop_tick, drop_note, start, end, note) &&
-         note == drop_note
-    )
-    {
-        long handle_size = clamp(s_handlesize, 0, (end - start) / 3);
-        if (start <= drop_tick && drop_tick <= start + handle_size)
-            sroll.get_window()->set_cursor(Gdk::Cursor(Gdk::CENTER_PTR));
-        else if (end - handle_size <= drop_tick && drop_tick <= end)
-            sroll.get_window()->set_cursor(Gdk::Cursor(Gdk::LEFT_PTR));
-        else
-            sroll.get_window()->set_cursor(Gdk::Cursor(Gdk::CENTER_PTR));
-    }
-    else
-        sroll.get_window()->set_cursor(Gdk::Cursor(Gdk::PENCIL));
-#endif
     sroll.update_mouse_pointer(m_adding);
 }
 
@@ -151,11 +116,6 @@ FruitySeqRollInput::on_button_press_event (GdkEventButton * ev, seqroll & sroll)
     sroll.m_old.height = 0;
     if (sroll.m_paste)    /* ctrl-v pressed, waiting for click where to paste */
     {
-        // sroll.convert_xy(snapped_x, snapped_y, tick_s, note_h);
-        // sroll.m_paste = false;
-        // sroll.m_seq.push_undo();
-        // sroll.m_seq.paste_selected(tick_s, note_h);
-
         sroll.complete_paste(snapped_x, snapped_y);
         needs_update = true;
     }
@@ -207,32 +167,19 @@ FruitySeqRollInput::on_button_press_event (GdkEventButton * ev, seqroll & sroll)
 #ifdef SEQ64_STAZED_CHORD_GENERATOR
                     if (sroll.m_chord > 0)                  /* and less than? */
                     {
-                        for(int i = 0; i < c_chord_size; ++i)
+                        for (int i = 0; i < c_chord_size; ++i)
                         {
-                            if (c_chord_table[sroll.m_chord][i] == -1)
+                            int cnote = c_chord_table[sroll.m_chord][i];
+                            if (cnote == -1)
                                 break;
 
-                            sroll.m_seq.add_note
-                            (
-                                tick_s,
-                                sroll.m_note_length - 2, // c_note_off_margin,
-                                note_h + c_chord_table[sroll.m_chord][i],
-                                false
-                            );
+                            sroll.add_note(tick_s, note_h + cnote, false);
                         }
                     }
                     else
-                    {
-                        sroll.m_seq.add_note
-                        (
-                            tick_s, sroll.m_note_length - 2, note_h, true
-                        );
-                    }
+                        sroll.add_note(tick_s, note_h);
 #else
-                    sroll.m_seq.add_note
-                    (
-                        tick_s, sroll.m_note_length - 2, note_h, true
-                    );
+                    sroll.add_note(tick_s, note_h);
 #endif
                     needs_update = true;
                 }
@@ -364,17 +311,6 @@ FruitySeqRollInput::on_button_press_event (GdkEventButton * ev, seqroll & sroll)
 
                         sroll.get_selected_box(tick_s, note_h, tick_f, note_l);
 
-//                      sroll.m_seq.get_selected_box
-//                      (
-//                          tick_s, note_h, tick_f, note_l
-//                      );
-//                      sroll.convert_sel_box_to_rect
-//                      (
-//                          tick_s, tick_f, note_h, note_l // ,
-//                          sroll.m_selected.x, sroll.m_selected.y,
-//                          sroll.m_selected.width, sroll.m_selected.height
-//                      );
-
                         /* save offset that we get from the snap above */
 
                         int adjusted_selected_x = sroll.m_selected.x;
@@ -416,17 +352,6 @@ FruitySeqRollInput::on_button_press_event (GdkEventButton * ev, seqroll & sroll)
 
                         sroll.m_growing = true;
                         sroll.get_selected_box(tick_s, note_h, tick_f, note_l);
-
-//                      sroll.m_seq.get_selected_box
-//                      (
-//                          tick_s, note_h, tick_f, note_l
-//                      );
-//                      sroll.convert_sel_box_to_rect
-//                      (
-//                          tick_s, tick_f, note_h, note_l // ,
-//                          sroll.m_selected.x, sroll.m_selected.y,
-//                          sroll.m_selected.width, sroll.m_selected.height
-//                      );
                     }
                 }
             }
@@ -573,10 +498,6 @@ FruitySeqRollInput::on_button_release_event
             sroll.m_is_drag_pasting_start = false;
 
             /* convert deltas into screen coordinates */
-
-            // sroll.m_paste = false;
-            // sroll.m_seq.push_undo();
-            // sroll.m_seq.paste_selected(current_tick, current_note);
 
             sroll.complete_paste();
             needs_update = true;
@@ -750,7 +671,7 @@ FruitySeqRollInput::on_motion_notify_event
         {
             sroll.snap_x(sroll.m_current_x);
             sroll.convert_xy(sroll.current_x(), sroll.current_y(), tick, note);
-            sroll.m_seq.add_note(tick, sroll.m_note_length - 2, note, true);
+            sroll.add_note(tick, note);
             result = true;
         }
     }

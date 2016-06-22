@@ -466,6 +466,12 @@ private:
 
     mutable mutex m_mutex;
 
+    /**
+     *  Provides the number of ticks to shave off of the end of painted notes.
+     */
+
+    const midipulse m_note_off_margin;
+
 private:
 
     /*
@@ -1083,6 +1089,15 @@ public:
 
     void show_events () const;
     void copy_events (const event_list & newevents);
+
+    /**
+     * \getter m_note_length
+     */
+
+    midipulse note_off_margin () const
+    {
+        return m_note_off_margin;
+    }
 
 private:
 

@@ -406,6 +406,13 @@ public:
     }
 
     /*
+     * Convenience functions.
+     */
+
+    int note_off_length () const;
+    void add_note (midipulse tick, int note, bool paint = true);
+
+    /*
      * \setter m_ignore_redraw
      *
      *  void set_ignore_redraw (bool ignore)

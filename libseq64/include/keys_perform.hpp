@@ -28,12 +28,13 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-09-13
- * \updates       2016-06-11
+ * \updates       2016-06-22
  * \license       GNU GPLv2 or above
  *
  */
 
 #include <map>                          /* std::map             */
+#include <string>                       /* std::string          */
 
 #include "easy_macros.h"                /* SEQ64_PAUSE_SUPPORT  */
 
@@ -987,6 +988,14 @@ protected:
     }
 
 };          // class keys_perform
+
+/*
+ * Free functions.  The implementation of this function will ultimately
+ * depend on the GUI environment; currently it is GTK 2.x, so the
+ * implementation is in seq_gtkmm2/src/keys_perform_gtk2.cpp..
+ */
+
+extern std::string keyval_name (unsigned int key);
 
 }           // namespace seq64
 

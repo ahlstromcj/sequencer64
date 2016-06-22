@@ -108,11 +108,19 @@ void
 keybindentry::set (unsigned int val)
 {
     char buf[64] = "";
+#if 0
     char * special = gdk_keyval_name(val);  // long name of the key
     if (not_nullptr(special))
         snprintf(buf, sizeof(buf), "%s", special);
     else
         snprintf(buf, sizeof(buf), "'%c'", char(val));
+#else
+    std::string special = keyval_name(val);
+    if (special.empty())
+        snprintf(buf, sizeof(buf), "'%c'", char(val));
+    else
+        snprintf(buf, sizeof(buf), "%s", special.c_str());
+#endif
 
     set_text(buf);
     int width = strlen(buf) - 1;

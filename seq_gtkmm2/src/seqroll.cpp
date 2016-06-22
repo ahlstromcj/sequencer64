@@ -945,7 +945,7 @@ void
 seqroll::convert_xy (int x, int y, midipulse & tick, int & note)
 {
     tick = x * m_zoom;
-    note = (c_rollarea_y - y - 2) / c_key_y;
+    note = (c_rollarea_y - y - 2) / c_key_y;        // why -2 ?
 }
 
 /**
@@ -1156,11 +1156,7 @@ seqroll::start_paste ()
     midipulse tick_s, tick_f;
     int note_h, note_l;
     m_seq.get_clipboard_box(tick_s, note_h, tick_f, note_l);
-    convert_sel_box_to_rect
-    (
-        tick_s, tick_f, note_h, note_l // ,
-//      m_selected.x, m_selected.y, m_selected.width, m_selected.height
-    );
+    convert_sel_box_to_rect(tick_s, tick_f, note_h, note_l);
     m_selected.x += m_drop_x;
     m_selected.y = m_drop_y;
 }
@@ -1227,11 +1223,6 @@ seqroll::move_selection_box (int dx, int dy)
     int y = m_old.y + dy * c_key_y;
     m_current_x = x + m_scroll_offset_x;
     m_current_y = y + m_scroll_offset_y;
-
-#if 0
-    m_moving_init = false;
-    m_moving = true;        // ???
-#endif
 
 	int note;
 	midipulse tick;
@@ -1340,8 +1331,6 @@ seqroll::grow_selected_notes (int dx)
     }
 }
 
-
-
 /**
  *  Changes the mouse cursor pixmap according to whether a note is being
  *  added or not.  What calls this?  It is actually a right click.
@@ -1412,6 +1401,38 @@ seqroll::update_mouse_pointer (bool adding)
     }
     else
         get_window()->set_cursor(Gdk::Cursor(Gdk::PENCIL));
+}
+
+/**
+ * \getter m_note_length, adjusted for the note_off_margin.
+ */
+
+int
+seqroll::note_off_length () const
+{
+    return m_note_length - m_seq.note_off_margin();
+}
+
+/**
+ * Convenience wrapper for sequence::add_note().  The length parameters
+ * is obtained from the note_off_length() function.  This sets the note length
+ * at a little less than the snap value.
+ *
+ * \param tick
+ *      The time destination of the new note, in pulses.
+ *
+ * \param note
+ *      The pitch destination of the new note.
+ *
+ * \param paint
+ *      If true, repaint to be left with just the inserted event.  The default
+ *      is true.
+ */
+
+void
+seqroll::add_note (midipulse tick, int note, bool paint)
+{
+    m_seq.add_note(tick, note_off_length(), note, paint);
 }
 
 /**
@@ -1736,21 +1757,8 @@ seqroll::on_key_press_event (GdkEventKey * ev)
             else if (CAST_OR_EQUIVALENT(ev->keyval, SEQ64_Return, SEQ64_KP_Enter))
             {
                 if (m_paste)
-                {
-                    /*
-                     * This code is similar to that in Seq24SeqRollInput ::
-                     * on_button_press_event().
-                     */
-
-                    // midipulse tick;
-                    // int note;
-                    // convert_xy(m_current_x, m_current_y, tick, note);
-                    // m_paste = false;
-                    // m_seq.push_undo();
-                    // m_seq.paste_selected(tick, note);
-
                     complete_paste(m_current_x, m_current_y);
-                }
+
                 if (m_growing)
                     m_growing = false;
 
@@ -1758,7 +1766,7 @@ seqroll::on_key_press_event (GdkEventKey * ev)
                     m_moving = false;
 
                 m_selecting = false;
-                m_selected.x = m_selected.y = m_selected.width = 
+                m_selected.x = m_selected.y = m_selected.width =
                     m_selected.height = 0;
 
                 m_seq.unselect();

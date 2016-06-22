@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-06-20
+ * \updates       2016-06-21
  * \license       GNU GPLv2 or above
  *
  */
@@ -49,6 +49,7 @@ namespace seq64
 /**
  *  Changes the mouse cursor pixmap according to whether a note is being
  *  added or not.  What calls this?  It is actually a right click.
+ *  Not present in the "fruity" implementation.
  *
  * \param adding
  *      True if adding a note.  Sets m_adding.
@@ -62,10 +63,11 @@ void
 Seq24SeqRollInput::set_adding (bool adding, seqroll & sroll)
 {
     m_adding = adding;
-    if (adding)
-        sroll.get_window()->set_cursor(Gdk::Cursor(Gdk::PENCIL));
-    else
-        sroll.get_window()->set_cursor(Gdk::Cursor(Gdk::LEFT_PTR));
+    sroll.set_adding(adding);
+//  if (adding)
+//      sroll.get_window()->set_cursor(Gdk::Cursor(Gdk::PENCIL));
+//  else
+//      sroll.get_window()->set_cursor(Gdk::Cursor(Gdk::LEFT_PTR));
 }
 
 /**
@@ -106,10 +108,12 @@ Seq24SeqRollInput::on_button_press_event
     int note_h, note_l;
     if (sroll.m_paste)
     {
-        sroll.convert_xy(snapped_x, snapped_y, tick_s, note_h);
-        sroll.m_paste = false;
-        sroll.m_seq.push_undo();
-        sroll.m_seq.paste_selected(tick_s, note_h);
+        // sroll.convert_xy(snapped_x, snapped_y, tick_s, note_h);
+        // sroll.m_paste = false;
+        // sroll.m_seq.push_undo();
+        // sroll.m_seq.paste_selected(tick_s, note_h);
+
+        sroll.complete_paste(snapped_x, snapped_y);
         needs_update = true;
     }
     else
@@ -226,18 +230,20 @@ Seq24SeqRollInput::on_button_press_event
                     {
                         sroll.m_moving_init = true;
                         needs_update = true;
-                        sroll.m_seq.get_selected_box
-                        (
-                            tick_s, note_h, tick_f, note_l
-                        );
-                        sroll.convert_tn_box_to_rect
-                        (
-                            tick_s, tick_f, note_h, note_l,
-                            sroll.m_selected.x,
-                            sroll.m_selected.y,
-                            sroll.m_selected.width,
-                            sroll.m_selected.height
-                        );
+                        sroll.get_selected_box(tick_s, note_h, tick_f, note_l);
+
+//                      sroll.m_seq.get_selected_box
+//                      (
+//                          tick_s, note_h, tick_f, note_l
+//                      );
+//                      sroll.convert_sel_box_to_rect
+//                      (
+//                          tick_s, tick_f, note_h, note_l //,
+//                          sroll.m_selected.x,
+//                          sroll.m_selected.y,
+//                          sroll.m_selected.width,
+//                          sroll.m_selected.height
+//                      );
 
                         /* save offset that we get from the snap above */
 
@@ -259,18 +265,20 @@ Seq24SeqRollInput::on_button_press_event
                     if (SEQ64_CLICK_CTRL_LEFT_MIDDLE(ev->button, ev->state))
                     {
                         sroll.m_growing = true;         /* moving, normal x  */
-                        sroll.m_seq.get_selected_box    /* selected elements */
-                        (
-                            tick_s, note_h, tick_f, note_l
-                        );
-                        sroll.convert_tn_box_to_rect
-                        (
-                            tick_s, tick_f, note_h, note_l,
-                            sroll.m_selected.x,
-                            sroll.m_selected.y,
-                            sroll.m_selected.width,
-                            sroll.m_selected.height
-                        );
+                        sroll.get_selected_box(tick_s, note_h, tick_f, note_l);
+
+//                      sroll.m_seq.get_selected_box    /* selected elements */
+//                      (
+//                          tick_s, note_h, tick_f, note_l
+//                      );
+//                      sroll.convert_sel_box_to_rect
+//                      (
+//                          tick_s, tick_f, note_h, note_l //,
+//                          sroll.m_selected.x,
+//                          sroll.m_selected.y,
+//                          sroll.m_selected.width,
+//                          sroll.m_selected.height
+//                      );
                     }
                 }
             }

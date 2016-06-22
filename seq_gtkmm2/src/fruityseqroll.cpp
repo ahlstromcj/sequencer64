@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-06-20
+ * \updates       2016-06-22
  * \license       GNU GPLv2 or above
  *
  *  This module handles "fruity" interactions only in the piano roll
@@ -76,6 +76,7 @@ clamp (long val, long low, long hi)
 void
 FruitySeqRollInput::update_mouse_pointer (seqroll & sroll)
 {
+#if 0
     midipulse drop_tick;
     int drop_note;
     sroll.convert_xy
@@ -109,6 +110,8 @@ FruitySeqRollInput::update_mouse_pointer (seqroll & sroll)
     }
     else
         sroll.get_window()->set_cursor(Gdk::Cursor(Gdk::PENCIL));
+#endif
+    sroll.update_mouse_pointer(m_adding);
 }
 
 /**
@@ -148,10 +151,12 @@ FruitySeqRollInput::on_button_press_event (GdkEventButton * ev, seqroll & sroll)
     sroll.m_old.height = 0;
     if (sroll.m_paste)    /* ctrl-v pressed, waiting for click where to paste */
     {
-        sroll.convert_xy(snapped_x, snapped_y, tick_s, note_h);
-        sroll.m_paste = false;
-        sroll.m_seq.push_undo();
-        sroll.m_seq.paste_selected(tick_s, note_h);
+        // sroll.convert_xy(snapped_x, snapped_y, tick_s, note_h);
+        // sroll.m_paste = false;
+        // sroll.m_seq.push_undo();
+        // sroll.m_seq.paste_selected(tick_s, note_h);
+
+        sroll.complete_paste(snapped_x, snapped_y);
         needs_update = true;
     }
     else
@@ -184,8 +189,7 @@ FruitySeqRollInput::on_button_press_event (GdkEventButton * ev, seqroll & sroll)
                 );
 
                 /*
-                 * Test if a note is already there; fake select, if so, no
-                 * add.
+                 * Test if a note is already there; fake select, if so, no add.
                  */
 
                 if
@@ -358,16 +362,18 @@ FruitySeqRollInput::on_button_press_event (GdkEventButton * ev, seqroll & sroll)
 
                         /* get the box that selected elements are in */
 
-                        sroll.m_seq.get_selected_box
-                        (
-                            tick_s, note_h, tick_f, note_l
-                        );
-                        sroll.convert_tn_box_to_rect
-                        (
-                            tick_s, tick_f, note_h, note_l,
-                            sroll.m_selected.x, sroll.m_selected.y,
-                            sroll.m_selected.width, sroll.m_selected.height
-                        );
+                        sroll.get_selected_box(tick_s, note_h, tick_f, note_l);
+
+//                      sroll.m_seq.get_selected_box
+//                      (
+//                          tick_s, note_h, tick_f, note_l
+//                      );
+//                      sroll.convert_sel_box_to_rect
+//                      (
+//                          tick_s, tick_f, note_h, note_l // ,
+//                          sroll.m_selected.x, sroll.m_selected.y,
+//                          sroll.m_selected.width, sroll.m_selected.height
+//                      );
 
                         /* save offset that we get from the snap above */
 
@@ -409,16 +415,18 @@ FruitySeqRollInput::on_button_press_event (GdkEventButton * ev, seqroll & sroll)
                         /* get the box that selected elements are in */
 
                         sroll.m_growing = true;
-                        sroll.m_seq.get_selected_box
-                        (
-                            tick_s, note_h, tick_f, note_l
-                        );
-                        sroll.convert_tn_box_to_rect
-                        (
-                            tick_s, tick_f, note_h, note_l,
-                            sroll.m_selected.x, sroll.m_selected.y,
-                            sroll.m_selected.width, sroll.m_selected.height
-                        );
+                        sroll.get_selected_box(tick_s, note_h, tick_f, note_l);
+
+//                      sroll.m_seq.get_selected_box
+//                      (
+//                          tick_s, note_h, tick_f, note_l
+//                      );
+//                      sroll.convert_sel_box_to_rect
+//                      (
+//                          tick_s, tick_f, note_h, note_l // ,
+//                          sroll.m_selected.x, sroll.m_selected.y,
+//                          sroll.m_selected.width, sroll.m_selected.height
+//                      );
                     }
                 }
             }
@@ -482,7 +490,7 @@ FruitySeqRollInput::on_button_press_event (GdkEventButton * ev, seqroll & sroll)
             }
         }
     }
-    update_mouse_pointer(sroll);    /* context sensative mouse pointer... */
+    update_mouse_pointer(sroll);    /* context sensitive mouse pointer... */
     if (needs_update)               /* if they clicked, something changed */
         sroll.m_seq.set_dirty();    /* redraw_events();                   */
 
@@ -546,7 +554,7 @@ FruitySeqRollInput::on_button_release_event
 
     midipulse current_tick;
     int current_note;
-    sroll.convert_xy
+    sroll.convert_xy            /* try to eliminate this */
     (
         sroll.current_x(), sroll.current_y(), current_tick, current_note
     );
@@ -566,9 +574,11 @@ FruitySeqRollInput::on_button_release_event
 
             /* convert deltas into screen coordinates */
 
-            sroll.m_paste = false;
-            sroll.m_seq.push_undo();
-            sroll.m_seq.paste_selected(current_tick, current_note);
+            // sroll.m_paste = false;
+            // sroll.m_seq.push_undo();
+            // sroll.m_seq.paste_selected(current_tick, current_note);
+
+            sroll.complete_paste();
             needs_update = true;
         }
 

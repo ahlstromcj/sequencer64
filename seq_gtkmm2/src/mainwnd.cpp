@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-05-29
+ * \updates       2016-06-21
  * \license       GNU GPLv2 or above
  *
  *  The main window holds the menu and the main controls of the application,
@@ -150,14 +150,8 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
     m_ppqn                  (choose_ppqn(ppqn)),
     m_main_wid              (manage(new mainwid(p))),
     m_main_time             (manage(new maintime(p, ppqn))),
-    m_perf_edit
-    (
-        new perfedit(p, false /*allowperf2*/, ppqn)
-    ),
-    m_perf_edit_2
-    (
-        allowperf2 ? new perfedit(p, true, ppqn) : nullptr
-    ),
+    m_perf_edit             (new perfedit(p, false /*allowperf2*/, ppqn)),
+    m_perf_edit_2           (allowperf2 ? new perfedit(p, true, ppqn) : nullptr),
     m_options               (nullptr),
     m_main_cursor           (),
     m_image_play            (),
@@ -1028,7 +1022,7 @@ mainwnd::file_exit ()
 
 /**
  *  Presents a Help / About dialog.  I (Chris) took the liberty of tacking
- *  my name at the end, and hope to eventually have done enough work to
+ *  my name at the end, and hope to have done eventually enough work to
  *  warrant having it there.
  */
 
@@ -1073,16 +1067,13 @@ mainwnd::about_dialog ()
     list_authors.push_back("Sebastien Alaiwan <sebastien.alaiwan@gmail.com>");
     list_authors.push_back("Kevin Meinert <kevin@subatomicglue.com>");
     list_authors.push_back("Andrea delle Canne <andreadellecanne@gmail.com>");
-    list_authors.push_back("Chris Ahlstrom<ahlstromcj@gmail.com>");
+    list_authors.push_back("Chris Ahlstrom <ahlstromcj@gmail.com>");
     dialog.set_authors(list_authors);
 
     std::list<std::string> list_documenters;
     list_documenters.push_back("Dana Olson <seq24@ubuntustudio.com>");
-    list_documenters.push_back("Chris Ahlstrom<ahlstromcj@gmail.com>:");
-    list_documenters.push_back
-    (
-        "<https://github.com/ahlstromcj/seq24-doc.git>"
-    );
+    list_documenters.push_back("Chris Ahlstrom <ahlstromcj@gmail.com>:");
+    list_documenters.push_back("<https://github.com/ahlstromcj/seq24-doc.git>");
     list_documenters.push_back
     (
         "<https://github.com/ahlstromcj/sequencer64-doc.git>"

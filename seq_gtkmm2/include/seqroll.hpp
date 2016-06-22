@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-06-20
+ * \updates       2016-06-22
  * \license       GNU GPLv2 or above
  *
  */
@@ -37,7 +37,6 @@
 #include "gui_drawingarea_gtk2.hpp"
 #include "fruityseqroll.hpp"
 #include "seq24seqroll.hpp"
-
 #include "scales.h"                     /* STAZED chord support */
 
 namespace Gtk
@@ -448,6 +447,18 @@ public:
     void redraw ();
     void redraw_events ();
     void start_paste ();
+
+    /*
+     *  Completes a paste operation based on the current coordinates in the
+     *  piano roll.
+     */
+
+    void complete_paste ()
+    {
+        complete_paste(current_x(), current_y());
+    }
+
+    void complete_paste (int x, int y);
     void follow_progress ();
 
 private:
@@ -509,6 +520,14 @@ private:
         midipulse tick_s, midipulse tick_f, int note_h, int note_l,
         int & x, int & y, int & w, int & h
     );
+    void convert_sel_box_to_rect
+    (
+        midipulse tick_s, midipulse tick_f, int note_h, int note_l
+    );
+    void get_selected_box
+    (
+        midipulse & tick_s, int & note_h, midipulse & tick_f, int & note_l
+    );
     void draw_events_on (Glib::RefPtr<Gdk::Drawable> draw);
     int idle_redraw ();
     int idle_progress ();
@@ -517,6 +536,8 @@ private:
     void move_selection_box (int dx, int dy);           // new
     void move_selected_notes (int dx, int dy);          // new
     void grow_selected_notes (int dx);                  // new
+    void set_adding (bool adding);                      // from seq24 seqroll
+    void update_mouse_pointer (bool adding);            // from fruity seqroll
 
 private:            // callbacks
 

@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-13
- * \updates       2016-05-22
+ * \updates       2016-05-23
  * \license       GNU GPLv2 or above
  *
  * \change ca 2016-05-22
@@ -204,6 +204,7 @@ keys_perform::set_key_event (unsigned int keycode, long sequence_slot)
 
         m_key_events.erase(it1);                /* unhook the reverse one   */
     }
+
     RevSlotMap::iterator it2 = m_key_events_rev.find(sequence_slot);
     if (it2 != m_key_events_rev.end())
     {
@@ -241,6 +242,7 @@ keys_perform::set_key_group (unsigned int keycode, long group_slot)
 
         m_key_groups.erase(it1);
     }
+
     RevSlotMap::iterator it2 = m_key_groups_rev.find(group_slot);
     if (it2 != m_key_groups_rev.end())
     {
@@ -253,6 +255,83 @@ keys_perform::set_key_group (unsigned int keycode, long group_slot)
     m_key_groups[keycode] = group_slot;         /* set the new binding      */
     m_key_groups_rev[group_slot] = keycode;
 }
+
+/*
+ * Functions for the key-transfer structure.
+ */
+
+/**
+ *  For the case in which the "rc" file is missing or corrupt, this function
+ *  makes sure that each control key has a reasonable value.  Otherwise, random
+ *  values, unchecked, can cause the application to crash.
+ *
+ *  Any field that is 0 or greater than 65536 is fixed.  Not perfect, but
+ *  better than allowing random values to be used.
+ *
+ * \param k
+ *      The structure to be validated and normalized.
+ */
+
+void
+keyval_normalize (keys_perform_transfer & k)
+{
+    if (k.kpt_bpm_up == 0 || k.kpt_bpm_up > 65536)
+        k.kpt_bpm_up = '\'';
+
+    if (k.kpt_bpm_dn == 0 || k.kpt_bpm_dn > 65536)
+        k.kpt_bpm_dn = ';';
+
+    if (k.kpt_screenset_up == 0 || k.kpt_screenset_up > 65536)
+        k.kpt_screenset_up = ']';
+
+    if (k.kpt_screenset_dn == 0 || k.kpt_screenset_dn > 65536)
+        k.kpt_screenset_dn = '[';
+
+    if (k.kpt_set_playing_screenset == 0 || k.kpt_set_playing_screenset > 65536)
+        k.kpt_set_playing_screenset = 65360;    /* Home         */
+
+    if (k.kpt_group_on == 0 || k.kpt_group_on > 65536)
+        k.kpt_group_on = '`';                   /* igrave       */
+
+    if (k.kpt_group_off == 0 || k.kpt_group_off > 65536)
+        k.kpt_group_off = '\'';                 /* bpm up too!! */
+
+    if (k.kpt_group_learn == 0 || k.kpt_group_learn > 65536)
+        k.kpt_group_learn = 65379;              /* Insert       */
+
+    if (k.kpt_replace == 0 || k.kpt_replace > 65536)
+        k.kpt_replace = 65507;                  /* Ctrl-L       */
+
+    if (k.kpt_queue == 0 || k.kpt_queue > 65536)
+        k.kpt_queue = 65455;                    /* Keypad-/     */
+
+    if (k.kpt_keep_queue == 0 || k.kpt_keep_queue > 65536)
+        k.kpt_keep_queue = '\\';
+
+    if (k.kpt_snapshot_1 == 0 || k.kpt_snapshot_1 > 65536)
+        k.kpt_snapshot_1 = 65513;               /* Alt-L        */
+
+    if (k.kpt_snapshot_2 == 0 || k.kpt_snapshot_2 > 65536)
+        k.kpt_snapshot_2 = 65514;               /* Alt-R        */
+
+    if (k.kpt_start == 0 || k.kpt_start > 65536)
+        k.kpt_start = ' ';
+
+    if (k.kpt_stop == 0 || k.kpt_stop > 65536)
+        k.kpt_stop = 65307;                     /* Escape       */
+
+    if (k.kpt_pattern_edit == 0 || k.kpt_pattern_edit > 65536)
+        k.kpt_pattern_edit = '=';
+
+    if (k.kpt_event_edit == 0 || k.kpt_event_edit > 65536)
+        k.kpt_event_edit = '-';
+
+#ifdef SEQ64_PAUSE_SUPPORT
+    if (k.kpt_event_edit == 0 || k.kpt_pause > 65536)
+        k.kpt_event_edit = '.';
+#endif
+}
+
 
 }           // namespace seq64
 

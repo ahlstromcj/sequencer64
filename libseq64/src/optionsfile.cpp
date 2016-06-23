@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-06-11
+ * \updates       2016-06-23
  * \license       GNU GPLv2 or above
  *
  *  The <code> ~/.seq24rc </code> or <code> ~/.config/sequencer64/sequencer64.rc
@@ -298,12 +298,19 @@ optionsfile::parse (perform & p)
 
     p.get_key_events().clear();
     p.get_key_events_rev().clear();       // \new ca 2015-09-16
-    for (int i = 0; i < keys; ++i)
+    if (keys > 0)
     {
-        long key = 0, seq = 0;
-        sscanf(m_line, "%ld %ld", &key, &seq);
-        p.set_key_event(key, seq);
-        next_data_line(file);
+        for (int i = 0; i < keys; ++i)
+        {
+            long key = 0, seq = 0;
+            sscanf(m_line, "%ld %ld", &key, &seq);
+            p.set_key_event(key, seq);
+            next_data_line(file);
+        }
+    }
+    else
+    {
+        // TODO
     }
 
     line_after(file, "[keyboard-group]");
@@ -312,12 +319,19 @@ optionsfile::parse (perform & p)
     next_data_line(file);
     p.get_key_groups().clear();
     p.get_key_groups_rev().clear();       // \new ca 2015-09-16
-    for (int i = 0; i < groups; ++i)
+    if (groups > 0)
     {
-        long key = 0, group = 0;
-        sscanf(m_line, "%ld %ld", &key, &group);
-        p.set_key_group(key, group);
-        next_data_line(file);
+        for (int i = 0; i < groups; ++i)
+        {
+            long key = 0, group = 0;
+            sscanf(m_line, "%ld %ld", &key, &group);
+            p.set_key_group(key, group);
+            next_data_line(file);
+        }
+    }
+    else
+    {
+        // TODO
     }
 
     keys_perform_transfer ktx;
@@ -411,7 +425,8 @@ optionsfile::parse (perform & p)
             ktx.kpt_event_edit = SEQ64_minus;
     }
 
-    p.keys().set_keys(ktx);                /* copy into perform keys   */
+    keyval_normalize(ktx);                  /* fix any missing values   */
+    p.keys().set_keys(ktx);                 /* copy into perform keys   */
 
     line_after(file, "[jack-transport]");
     long flag = 0;

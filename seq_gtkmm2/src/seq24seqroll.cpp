@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-06-22
+ * \updates       2016-06-23
  * \license       GNU GPLv2 or above
  *
  */
@@ -84,24 +84,19 @@ Seq24SeqRollInput::set_adding (bool adding, seqroll & sroll)
  */
 
 bool
-Seq24SeqRollInput::on_button_press_event
-(
-    GdkEventButton * ev,
-    seqroll & sroll
-)
+Seq24SeqRollInput::on_button_press_event (GdkEventButton * ev, seqroll & sroll)
 {
-    int norm_x, norm_y, snapped_x, snapped_y;
-    sroll.grab_focus();
-    snapped_x = norm_x = int(ev->x + sroll.m_scroll_offset_x);
-    snapped_y = norm_y = int(ev->y + sroll.m_scroll_offset_y);
-    sroll.snap_x(snapped_x);
-    sroll.snap_y(snapped_y);
-    sroll.set_current_drop_y(snapped_y);            /* y is always snapped */
-    sroll.m_old.x = sroll.m_old.y = sroll.m_old.width = sroll.m_old.height = 0;
-
-    bool needs_update = false;
     midipulse tick_s, tick_f;
     int note_h, note_l;
+    int norm_x, norm_y;
+    bool needs_update = false;
+    int snapped_x = norm_x = int(ev->x + sroll.m_scroll_offset_x);
+    int snapped_y = norm_y = int(ev->y + sroll.m_scroll_offset_y);
+    sroll.grab_focus();
+    sroll.snap_x(snapped_x);
+    sroll.snap_y(snapped_y);
+    sroll.set_current_drop_y(snapped_y);            /* y is always snapped  */
+    sroll.m_old.x = sroll.m_old.y = sroll.m_old.width = sroll.m_old.height = 0;
     if (sroll.m_paste)
     {
         sroll.complete_paste(snapped_x, snapped_y);
@@ -109,14 +104,9 @@ Seq24SeqRollInput::on_button_press_event
     }
     else
     {
-        int numsel;
-        if (SEQ64_CLICK_LEFT_MIDDLE(ev->button))      /* either button */
+        if (SEQ64_CLICK_LEFT_MIDDLE(ev->button))    /* either button        */
         {
-            /*
-             * Set the selection for normal x, then turn x,y in to tick,note.
-             */
-
-            sroll.set_current_drop_x(norm_x);
+            sroll.set_current_drop_x(norm_x);       /* selection normal x   */
             sroll.convert_xy(sroll.m_drop_x, sroll.m_drop_y, tick_s, note_h);
             if (m_adding)
             {
@@ -130,14 +120,19 @@ Seq24SeqRollInput::on_button_press_event
                 (
                     sroll.m_drop_x, sroll.m_drop_y, tick_s, note_h
                 );
-                if      /* if note already there, fake a select, do not add */
+
+                /*
+                 * Test if a note is already there; fake select, if so, no add.
+                 */
+
+                int eventcount = sroll.m_seq.select_note_events
                 (
-                    ! sroll.m_seq.select_note_events
-                    (
-                        tick_s, note_h, tick_s, note_h, sequence::e_would_select
-                    )
-                )
+                    tick_s, note_h, tick_s, note_h, sequence::e_would_select
+                );
+                if (eventcount == 0)
                 {
+                    /* add note, length = little less than snap */
+
                     sroll.m_seq.push_undo();
 
 #ifdef SEQ64_STAZED_CHORD_GENERATOR
@@ -162,23 +157,21 @@ Seq24SeqRollInput::on_button_press_event
             }
             else                                        /* selecting */
             {
-                if
+                int eventcount = sroll.m_seq.select_note_events
                 (
-                    ! sroll.m_seq.select_note_events
-                    (
-                        tick_s, note_h, tick_s, note_h, sequence::e_is_selected
-                    )
-                )
+                    tick_s, note_h, tick_s, note_h, sequence::e_is_selected
+                );
+                if (eventcount == 0)
                 {
                     if (! (ev->state & SEQ64_CONTROL_MASK))
                         sroll.m_seq.unselect();
 
-                    numsel = sroll.m_seq.select_note_events
+                    eventcount = sroll.m_seq.select_note_events
                     (
                         tick_s, note_h, tick_s, note_h,
                         sequence::e_select_one  /* direct click, one event */
                     );
-                    if (numsel == 0) /* none selected, start selection box */
+                    if (eventcount == 0) /* none selected, start selection box */
                     {
                         if (SEQ64_CLICK_LEFT(ev->button))
                             sroll.m_selecting = true;
@@ -186,18 +179,15 @@ Seq24SeqRollInput::on_button_press_event
                     else
                         needs_update = true;
                 }
-                if
+                eventcount = sroll.m_seq.select_note_events
                 (
-                    sroll.m_seq.select_note_events
-                    (
-                        tick_s, note_h, tick_s, note_h, sequence::e_is_selected
-                    )
-                )
+                    tick_s, note_h, tick_s, note_h, sequence::e_is_selected
+                );
+                if (eventcount > 0)
                 {
                     /*
-                     * Moving and selecting, left-click (without Ctrl
-                     * key) only.  Get the box that selected elements are
-                     * in.
+                     * Moving and selecting, left-click (without Ctrl key)
+                     * only.  Get the box that selected elements are in.
                      */
 
                     if
@@ -206,18 +196,22 @@ Seq24SeqRollInput::on_button_press_event
                         ! (ev->state & SEQ64_CONTROL_MASK)
                     )
                     {
-                        sroll.m_moving_init = true;
-                        needs_update = true;
-                        sroll.get_selected_box(tick_s, note_h, tick_f, note_l);
+                        /*
+                         * seqroll::align_selection() [proposed]:
+                         *
+                         * Get the box that selected elements are in.  Save
+                         * offset that we get from the snap above.  Align
+                         * selection for drawing.
+                         */
 
-                        /* save offset that we get from the snap above */
+                        needs_update = true;
+                        sroll.m_moving_init = true;
+                        sroll.get_selected_box(tick_s, note_h, tick_f, note_l);
 
                         int adjusted_selected_x = sroll.m_selected.x;
                         sroll.snap_x(adjusted_selected_x);
                         sroll.m_move_snap_offset_x =
                             sroll.m_selected.x - adjusted_selected_x;
-
-                        /* align selection for drawing */
 
                         sroll.snap_x(sroll.m_selected.x);
                         sroll.set_current_drop_x(snapped_x);
@@ -311,7 +305,7 @@ Seq24SeqRollInput::on_button_release_event
 
             delta_x -= sroll.m_move_snap_offset_x;      /* adjust for snap */
             sroll.convert_xy(delta_x, delta_y, delta_tick, delta_note);
-            delta_note -= (c_num_keys - 1);
+            delta_note -= c_num_keys - 1;
             sroll.m_seq.push_undo();
             sroll.m_seq.move_selected_notes(delta_tick, delta_note);
             needs_update = true;

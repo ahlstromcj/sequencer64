@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-09-13
- * \updates       2016-06-22
+ * \updates       2016-06-23
  * \license       GNU GPLv2 or above
  *
  */
@@ -183,7 +183,7 @@ private:
 public:
 
     keys_perform ();
-    ~keys_perform ();
+    virtual ~keys_perform ();
 
     void set_keys (const keys_perform_transfer & kpt);
     void get_keys (keys_perform_transfer & kpt);
@@ -992,10 +992,11 @@ protected:
 /*
  * Free functions.  The implementation of this function will ultimately
  * depend on the GUI environment; currently it is GTK 2.x, so the
- * implementation is in seq_gtkmm2/src/keys_perform_gtk2.cpp..
+ * implementation is in seq_gtkmm2/src/keys_perform_gtk2.cpp.
  */
 
 extern std::string keyval_name (unsigned int key);
+extern void keyval_normalize (keys_perform_transfer & k);
 
 }           // namespace seq64
 

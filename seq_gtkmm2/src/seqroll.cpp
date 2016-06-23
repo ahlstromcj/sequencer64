@@ -1230,6 +1230,11 @@ seqroll::move_selection_box (int dx, int dy)
 	convert_xy(0, m_current_y, tick, note);
     m_seqkeys_wid.set_hint_key(note);
 
+    /*
+     * We have a weird problem on our main system where the selection box is
+     * very flickery.  But it works fine on another system.  A Gtk-2 issue?
+     */
+
 #if 0
     if (m_selecting || m_moving || m_growing || m_paste)
     {
@@ -1434,6 +1439,33 @@ seqroll::add_note (midipulse tick, int note, bool paint)
 {
     m_seq.add_note(tick, note_off_length(), note, paint);
 }
+
+#ifdef USE_NEW_FUNCTION
+
+/*
+ * Get the box that selected elements are in.  Save
+ * offset that we get from the snap above.  Align
+ * selection for drawing.
+ */
+
+void
+seqroll::align_selection
+(
+    midipulse & tick_s, int & note_h, midipulse & tick_f, int & note_l,
+    int snapped_x
+)
+{
+    m_moving_init = true;
+    get_selected_box(tick_s, note_h, tick_f, note_l);
+
+    int adjusted_selected_x = m_selected.x;
+    snap_x(adjusted_selected_x);
+    m_move_snap_offset_x = m_selected.x - adjusted_selected_x;
+    snap_x(m_selected.x);
+    set_current_drop_x(snapped_x);
+}
+
+#endif  // USE_NEW_FUNCTION
 
 /**
  *  Implements the on-realize event handling.

@@ -49,9 +49,7 @@ keys_perform_gtk2::keys_perform_gtk2 ()
 }
 
 /**
- *  The destructor sets some running flags to false, signals this
- *  condition, then joins the input and output threads if the were
- *  launched. Finally, any active patterns/sequences are deleted.
+ *  A rote virtual destructor.  No action.
  */
 
 keys_perform_gtk2::~keys_perform_gtk2 ()
@@ -150,7 +148,8 @@ keys_perform_gtk2::set_all_key_groups ()
 /**
  *  Obtains the name of the key.  In gtkmm, this is done via the
  *  gdk_keyval_name() function.  Here, in the base class, we just provide an
- *  easy-to-create string.
+ *  easy-to-create string.  Note that this is a free function, not a class
+ *  member.
  *
  * \param key
  *      Provides the key-number to be converted to a key name.

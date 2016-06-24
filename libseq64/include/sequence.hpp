@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-06-19
+ * \updates       2016-06-24
  * \license       GNU GPLv2 or above
  *
  *  The functions add_list_var() and add_long_list() have been replaced by
@@ -39,20 +39,20 @@
  */
 
 #include <string>
-#include <list>
+// #include <list>
 #include <stack>
 
-#include "easy_macros.h"
-#include "event_list.hpp"
+#include "easy_macros.h"                /* fun macros for you       */
+#include "event_list.hpp"               /* seq64::event_list        */
 
 #ifdef PLATFORM_WINDOWS
-#include "midibus_portmidi.hpp"
+#include "midibus_portmidi.hpp"         /* only semi-supported      */
 #else
-#include "midibus.hpp"
+#include "midibus.hpp"                  /* seq64::midibus           */
 #endif
 
 #include "midi_container.hpp"           /* seq64::midi_container    */
-#include "mutex.hpp"
+#include "mutex.hpp"                    /* seq64::mutex, automutex  */
 #include "scales.h"                     /* key and scale constants  */
 #include "triggers.hpp"                 /* seq64::triggers, etc.    */
 
@@ -171,9 +171,18 @@ public:
 
 private:
 
+    /**
+     *  Provides a stack of event-lists for use with the undo and redo
+     *  facility.
+     */
+
     typedef std::stack<event_list> EventStack;
 
 private:
+
+    /*
+     * Documented at the definition point in the cpp module.
+     */
 
     static event_list m_events_clipboard;   /* shared between sequences */
 
@@ -308,10 +317,10 @@ private:
      *  name change.
      */
 
-    bool m_dirty_main;      /**< Provides the main dirtiness flag.      */
-    bool m_dirty_edit;      /**< Provides the main is-edited flag.      */
-    bool m_dirty_perf;      /**< Provides performance dirty flagflag.   */
-    bool m_dirty_names;     /**< Provides the names dirtiness flag.     */
+    bool m_dirty_main;          /**< Provides the main dirtiness flag.      */
+    bool m_dirty_edit;          /**< Provides the main is-edited flag.      */
+    bool m_dirty_perf;          /**< Provides performance dirty flagflag.   */
+    bool m_dirty_names;         /**< Provides the names dirtiness flag.     */
 
     /**
      *  Indicates that the sequence is currently being edited.
@@ -342,7 +351,9 @@ private:
     midipulse m_trigger_offset;     /**< Provides the trigger offset.       */
 
     /**
-     *  This constant provides ...?
+     *  This constant provides the scaling used to calculate the time position
+     *  in ticks (pulses), based also on the PPQN value.  Hardwired to
+     *  c_maxbeats at present.
      */
 
     const int m_maxbeats;
@@ -723,7 +734,11 @@ public:
         return m_raise;
     }
 
-    void set_length (midipulse len, bool adjust_triggers = true); /* in ticks */
+    /*
+     * Documented at the definition point in the cpp module.
+     */
+
+    void set_length (midipulse len, bool adjust_triggers = true);
 
     /**
      * \getter m_length
@@ -748,6 +763,10 @@ public:
     {
         return (m_length > 1) ? (m_last_tick % m_length) : m_last_tick ;
     }
+
+    /*
+     * Documented at the definition point in the cpp module.
+     */
 
     void set_playing (bool);
 

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-06-22
+ * \updates       2016-06-24
  * \license       GNU GPLv2 or above
  *
  *  There are a large number of existing items to discuss.  But for now let's
@@ -625,8 +625,8 @@ seqroll::draw_progress_on_window ()
     m_progress_x = (m_seq.get_last_tick() / m_zoom) - m_scroll_offset_x;
 
     /*
-     * TRIAL CODE to ensure the occasional slightly negative value still
-     * allows the progress bar to be drawn.
+     * Ensure that the occasional slightly negative value still allows the
+     * progress bar to be drawn.
      */
 
     if (m_progress_x > -16)             // if (m_progress_x >= 0)
@@ -1207,6 +1207,10 @@ seqroll::snap_x (int & x)
  *  all notes, copying them, and moving the selection box, pasting can be
  *  completed with either a left-click or the Enter key.
  *
+ *  We have a weird problem on our main system where the selection box is very
+ *  flickery.  But it works fine on another system.  A Gtk-2 issue?  Now it
+ *  seems to work fine, after an update.  :-D
+ *
  * \param dx
  *      The amount to move the selection box.  Values are -1, 0, or 1.  -1 is
  *      left one snap, 0 is no movement horizontally, and 1 is right one snap.
@@ -1229,25 +1233,8 @@ seqroll::move_selection_box (int dx, int dy)
     snap_y(m_current_y);
 	convert_xy(0, m_current_y, tick, note);
     m_seqkeys_wid.set_hint_key(note);
-
-    /*
-     * We have a weird problem on our main system where the selection box is
-     * very flickery.  But it works fine on another system.  A Gtk-2 issue?
-     */
-
-#if 0
-    if (m_selecting || m_moving || m_growing || m_paste)
-    {
-        if (m_moving || m_paste)
-            snap_x(m_current_x);
-
-        draw_selection_on_window();
-    }
-#else
     snap_x(m_current_x);
     draw_selection_on_window();
-#endif
-
     m_old.x = x;
     m_old.y = y;
 }
@@ -1292,11 +1279,6 @@ seqroll::move_selected_notes (int dx, int dy)
     {
         int snap_x = dx * m_snap;                   /* time-stamp snap  */
         int snap_y = -dy;                           /* note pitch snap  */
-
-        /*
-         * Moved to sequence::move_selected_notes(): perf().modify();
-         */
-
         if (m_seq.any_selected_notes())
         {
             m_seq.move_selected_notes(snap_x, snap_y);
@@ -1329,10 +1311,6 @@ seqroll::grow_selected_notes (int dx)
         m_growing = true;
         m_seq.push_undo();
         m_seq.grow_selected(snap_x);
-
-        /*
-         * Moved to sequence::grow_selected(): perf().modify();
-         */
     }
 }
 
@@ -1699,11 +1677,6 @@ seqroll::on_key_press_event (GdkEventKey * ev)
             if (OR_EQUIVALENT(ev->keyval, SEQ64_x, SEQ64_X))        /* cut */
             {
                 m_seq.cut_selected();
-
-                /*
-                 * Moved to sequence::cut_selected(): perf().modify();
-                 */
-
                 result = true;
             }
             else if (OR_EQUIVALENT(ev->keyval, SEQ64_c, SEQ64_C))   /* copy */
@@ -1714,11 +1687,6 @@ seqroll::on_key_press_event (GdkEventKey * ev)
             else if (OR_EQUIVALENT(ev->keyval, SEQ64_v, SEQ64_V))   /* paste */
             {
                 start_paste();
-
-                /*
-                 * Moved to sequence::paste_selected(): perf().modify();
-                 */
-
                 result = true;
             }
             else if (OR_EQUIVALENT(ev->keyval, SEQ64_z, SEQ64_Z))   /* Undo */
@@ -1754,11 +1722,6 @@ seqroll::on_key_press_event (GdkEventKey * ev)
             if (OR_EQUIVALENT(ev->keyval, SEQ64_Delete, SEQ64_BackSpace))
             {
                 m_seq.cut_selected(false);      /* does not copy the events */
-
-                /*
-                 * Moved to sequence::cut_selected(): perf().modify();
-                 */
-
                 result = true;
             }
             else if (ev->keyval == SEQ64_Home)

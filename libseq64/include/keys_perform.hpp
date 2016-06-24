@@ -655,9 +655,9 @@ public:
     }
 
     /*
-     * Getters of keyboard mapping for sequence and groups.
-     * If not found, returns something "safe" [so use get_key()->count()
-     * to see if it's there first]
+     * Getters of keyboard mapping for sequence and groups.  If not found,
+     * returns something "safe" [so use get_key()->count() to see if it's
+     * there first]
      */
 
     /**
@@ -666,7 +666,7 @@ public:
      * \param seqnum
      *      Provides the sequence number to look up in the reverse key map for
      *      patterns/sequences.  If the count for this value is 0, then a
-     *      question mark character is returned.
+     *      question mark character is returned.  Not checked for maximum!
      */
 
     unsigned int lookup_keyevent_key (long seqnum)

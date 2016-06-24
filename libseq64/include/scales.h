@@ -27,10 +27,14 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-06
- * \updates       2016-06-20
+ * \updates       2016-06-24
  * \license       GNU GPLv2 or above
  *
- *  These values were moved from the globals module.
+ *  These values were moved from the globals module.  Now included the
+ *  chord-generation data, enabled by defining the
+ *  SEQ64_STAZED_CHORD_GENERATOR macro, which is defined by default in the
+ *  configure.ac file.  It can be disabled by the command
+ *  "./configure --disable-chords".
  */
 
 #include <string>
@@ -158,31 +162,45 @@ const bool c_scales_policy[c_scale_size][SEQ64_OCTAVE_SIZE] =
     Major               C  .  D  .  E  F  .  G  .  A  .  B
     Transpose up        2  0  2  0  1  2  0  2  0  2  0  1
     Result up           D  .  E  .  F  G  .  A  .  B  .  C
-
+\endverbatim
+ *
+\verbatim
     Minor               C  .  D  D# .  F  .  G  G# .  A# .
     Transpose up        2  0  1  2  0  2  0  1  2  0  2  0
     Result up           D  .  D# F  .  G  .  G# A# .  C  .
-
+\endverbatim
+ *
+\verbatim
     Harmonic minor      C  .  D  Eb .  F  .  G  Ab .  .  B
     Transpose up        2  .  1  2  .  2  .  1  3  .  .  1
     Result up           D  .  Eb F  .  G  .  Ab B  .  .  C
-
+\endverbatim
+ *
+\verbatim
     Melodic minor       C  .  D  Eb .  F  .  G  .  A  .  B
     Transpose up        2  .  1  2  .  2  .  2  .  2  .  1
     Result up           D  .  Eb F  .  G  .  A  .  B  .  C
-
+\endverbatim
+ *
+\verbatim
     C Whole Tone        C  .  D  .  E  .  F# .  G# .  A# .
     Transpose up        2  .  2  .  2  .  2  .  2  .  2  .
     Result up           D  .  E  .  F# .  G# .  A# .  C  .
-
+\endverbatim
+ *
+\verbatim
     Blues               C  .  .  Eb .  F  Gb G  .  .  Bb .
     Transpose up        3  .  .  2  .  1  1  3  .  .  2  .
     Result up           Eb .  .  F  .  Gb G  Bb .  .  C  .
-
+\endverbatim
+ *
+\verbatim
     Major Pentatonic    C  .  D  .  E  .  .  G  .  A  .  .
     Transpose up        2  .  2  .  3  .  .  2  .  3  .  .
     Result up           D  .  E  .  G  .  .  A  .  C  .  .
-
+\endverbatim
+ *
+\verbatim
     Minor Pentatonic    C  .  .  Eb .  F  .  G  .  .  Bb .
     Transpose up        3  .  .  2  .  2  .  3  .  .  2  .
     Result up           Eb .  .  F  .  G  .  Bb .  .  C  .
@@ -378,7 +396,8 @@ const int c_chord_size = 6;
 /**
  *  Additional support data for the chord-generation feature from Stazed's
  *  seq32 project.  These values indicate the note offsets needed for a
- *  particular kind of chord.
+ *  particular kind of chord.  0 means no offset, and a -1 ends the list of
+ *  note offsets for the chord.
  */
 
 const int c_chord_table[c_chord_number][c_chord_size] =

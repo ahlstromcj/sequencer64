@@ -12,7 +12,7 @@
  * \updates 2016-06-21
  * \version $Revision$
  *
- *    Also see the file_functions.cpp module.  These modules together simply
+ *    Also see the file_functions.cpp module.  These modules together simplify
  *    the main() module considerably, which will be useful when we have more
  *    than one "Sequencer64" application.
  */

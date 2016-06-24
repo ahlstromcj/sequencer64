@@ -1,6 +1,6 @@
 /* XPM */
 static const char * sequencer64_square_xpm[] = {
-"195 24 2 1",
+"195 32 2 1",
 " 	c None",
 ".	c #000000",
 "                                                                                                                                                                                                   ",
@@ -24,6 +24,14 @@ static const char * sequencer64_square_xpm[] = {
 "                                            ...                                                                                                         ...                                        ",
 "                                            ...                                                                                                         ...                                        ",
 "                                            ...                                                                                                         ...                                        ",
+"                                                                                                                                                                                                   ",
+"                                                                                                                                                                                                   ",
+"                                                                                                                                                                                                   ",
+"                                                                                                                                                                                                   ",
+"                                                                                                                                                                                                   ",
+"                                                                                                                                                                                                   ",
+"                                                                                                                                                                                                   ",
+"                                                                                                                                                                                                   ",
 "                                                                                                                                                                                                   ",
 "                                                                                                                                                                                                   ",
 "                                                                                                                                                                                                   "};

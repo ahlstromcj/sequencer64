@@ -181,7 +181,9 @@ seqroll::seqroll
     m_scroll_offset_key     (0),
     m_scroll_offset_x       (0),
     m_scroll_offset_y       (0),
+#ifdef SEQ64_FOLLOW_PROGRESS_BAR
     m_scroll_page           (0),
+#endif
     m_background_sequence   (0),
     m_drawing_background_seq(false),
     m_status                (0),

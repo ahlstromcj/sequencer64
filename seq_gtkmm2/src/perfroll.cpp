@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-05-30
+ * \updates       2016-06-25
  * \license       GNU GPLv2 or above
  *
  *  The performance window allows automatic control of when each
@@ -92,6 +92,9 @@ perfroll::perfroll
     m_measure_length        (0),
     m_beat_length           (0),
     m_old_progress_ticks    (0),
+#ifdef SEQ64_FOLLOW_PROGRESS_BAR
+    m_scroll_page           (0),
+#endif
     m_4bar_offset           (0),                            // now a full offset
     m_sequence_offset       (0),
     m_roll_length_ticks     (0),
@@ -162,8 +165,6 @@ perfroll::change_horz ()
 {
     if (m_4bar_offset != int(m_hadjust.get_value()))
     {
-        // m_4bar_offset = int(m_hadjust.get_value());      // see note above
-
         m_4bar_offset = int(m_hadjust.get_value()) * m_ticks_per_bar;
         enqueue_draw();
     }
@@ -385,7 +386,7 @@ perfroll::enqueue_draw ()
  *  It's still a tiny bit laggy, so we have to find a faster way to get the
  *  maximum.  (Note that the draw_progress function is called at every
  *  timeout, that is, constantly.)
- * 
+ *
  *  The perform::get_max_tick() call doesn't work with JACK: the progress bar
  *  rewinds to the beginning when playback is paused, though it does resume
  *  where it left off.  It also may cause the progress bar to backtrack
@@ -413,6 +414,40 @@ perfroll::draw_progress ()
 
     m_old_progress_ticks = tick;
 }
+
+#ifdef SEQ64_FOLLOW_PROGRESS_BAR
+
+/**
+ *  Checks the position of the tick, and, if it is in a different piano-roll
+ *  "page" than the last page, moves the page to the next page.
+ */
+
+void
+perfroll::follow_progress ()
+{
+    midipulse progress_tick = m_old_progress_ticks; // m_seq.get_last_tick();
+    if (progress_tick > 0)
+    {
+        int progress_x = progress_tick / m_zoom + SEQ64_PROGRESS_PAGE_OVERLAP;
+        int page = progress_x / m_window_x;
+        if (page != m_scroll_page)
+        {
+            midipulse left_tick = page * m_window_x * m_zoom;
+            m_scroll_page = page;
+            m_hadjust.set_value(double(left_tick / m_ticks_per_bar));
+        }
+    }
+}
+
+#else
+
+void
+perfqroll::follow_progress ()
+{
+    // No code, do not follow the progress bar.
+}
+
+#endif      // SEQ64_FOLLOW_PROGRESS_BAR
 
 /**
  *  Draws the given pattern/sequence on the given drawable area.

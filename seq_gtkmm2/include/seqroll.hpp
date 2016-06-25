@@ -328,11 +328,15 @@ private:
 
     int m_scroll_offset_y;
 
+#ifdef SEQ64_FOLLOW_PROGRESS_BAR
+
     /**
      *  Provides the current scroll page in which the progress bar resides.
      */
 
     int m_scroll_page;
+
+#endif
 
     /**
      *  Holds the value of the musical background sequence that is shown in

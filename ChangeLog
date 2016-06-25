@@ -1,3 +1,102 @@
+2016-06-25  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* contrib/configs/sequencer64-minimal.rc,
+	resources/pixmaps/chord3-inv.xpm, seq_gtkmm2/include/perfroll.hpp,
+	seq_gtkmm2/include/seqroll.hpp, seq_gtkmm2/src/perfedit.cpp,
+	seq_gtkmm2/src/perfroll.cpp, seq_gtkmm2/src/seqroll.cpp: Some
+	clean-up and getting the perfroll to follow the progress bar.
+
+2016-06-24  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* configure.ac, contrib/yoshimi/horse.xmz,
+	libseq64/include/app_limits.h, libseq64/include/cmdlineopts.hpp,
+	libseq64/include/keys_perform.hpp, libseq64/include/scales.h,
+	libseq64/include/sequence.hpp,
+	resources/pixmaps/sequencer64_square.xpm,
+	seq_gtkmm2/src/seqroll.cpp: Minor cleanup of commented code and
+	documentation.
+
+2016-06-23  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* contrib/configs/sequence64.rc.bad,
+	resources/pixmaps/sequencer64_legacy.xpm,
+	resources/pixmaps/sequencer64_legacy_large.xpm,
+	resources/pixmaps/sequencer64_square.xpm,
+	resources/pixmaps/sequencer64_square_large.xpm: Updated logo and
+	added a bad rc file for testing.
+	* libseq64/include/keys_perform.hpp, libseq64/src/keys_perform.cpp,
+	libseq64/src/optionsfile.cpp, seq_gtkmm2/src/fruityseqroll.cpp,
+	seq_gtkmm2/src/keybindentry.cpp,
+	seq_gtkmm2/src/keys_perform_gtk2.cpp,
+	seq_gtkmm2/src/seq24seqroll.cpp, seq_gtkmm2/src/seqroll.cpp: 
+	Refinements to fruity/seq24 seqroll support, and validation of some
+	key definitions from the rc file.
+
+2016-06-22  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/include/keys_perform.hpp, libseq64/include/sequence.hpp,
+	libseq64/src/sequence.cpp,
+	seq_gtkmm2/include/keys_perform_gtk2.hpp,
+	seq_gtkmm2/include/seqroll.hpp, seq_gtkmm2/src/eventedit.cpp,
+	seq_gtkmm2/src/fruityseqroll.cpp, seq_gtkmm2/src/keybindentry.cpp,
+	seq_gtkmm2/src/keys_perform_gtk2.cpp, seq_gtkmm2/src/mainwnd.cpp,
+	seq_gtkmm2/src/seq24seqroll.cpp, seq_gtkmm2/src/seqroll.cpp: Fixed
+	bug in accessing key name for saving to configuration, still need to
+	figure out why some key entries are not written when saved on one
+	computer.
+
+2016-06-22  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* seq_gtkmm2/include/seqroll.hpp, seq_gtkmm2/src/fruityseqroll.cpp,
+	seq_gtkmm2/src/mainwnd.cpp, seq_gtkmm2/src/seq24seqroll.cpp,
+	seq_gtkmm2/src/seqroll.cpp: Interim check-in, minor seqroll
+	refactoring, in progress, ugly still.
+
+2016-06-21  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* INSTALL, libseq64/include/app_limits.h,
+	libseq64/src/cmdlineopts.cpp, libseq64/src/midifile.cpp,
+	seq_gtkmm2/src/seqroll.cpp: Rearranged some build macros to be
+	accessible from cmdlineopts module.
+	* contrib/notes/git.txt, libseq64/include/cmdlineopts.hpp,
+	libseq64/src/Makefile.am, libseq64/src/cmdlineopts.cpp,
+	seq_gtkmm2/src/Makefile.am: Added build settings list to --version
+	output via new build_details() function.
+
+2016-06-20  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* INSTALL, configure.ac, configure.help,
+	resources/pixmaps/chord.xpm, resources/pixmaps/chord3-inv.xpm,
+	resources/pixmaps/chord3.xpm, resources/pixmaps/scale.xpm,
+	seq_gtkmm2/include/seqedit.hpp, seq_gtkmm2/include/seqroll.hpp,
+	seq_gtkmm2/src/fruityseqroll.cpp, seq_gtkmm2/src/seq24seqroll.cpp,
+	seq_gtkmm2/src/seqedit.cpp: Add Stazed chord generation, the
+	default, can be disabled by the --disable-chords option in the
+	configure script.
+	* resources/pixmaps/chord3-inv.xpm, resources/pixmaps/chord3.xpm,
+	seq_gtkmm2/include/seqedit.hpp, seq_gtkmm2/src/fruityseqroll.cpp,
+	seq_gtkmm2/src/seq24seqroll.cpp, seq_gtkmm2/src/seqedit.cpp,
+	seq_gtkmm2/src/seqroll.cpp: More chord work in the fruity and seq24
+	seqroll modules.
+	* README, ROADMAP, VERSION, configure.ac,
+	doc/dox/doxy-reference.cfg, libseq64/include/scales.h,
+	resources/pixmaps/Makefile.am, resources/pixmaps/chord.xpm,
+	seq_gtkmm2/src/seqedit.cpp: Setting up for next version 0.9.14,
+	starting to add conditional support for chord generation from Stazed
+	Seq32.
+
+2016-06-19  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* ChangeLog, README, contrib/notes/bugs_to_investigate.txt,
+	libseq64/include/sequence.hpp, libseq64/src/editable_event.cpp,
+	libseq64/src/sequence.cpp, seq_gtkmm2/include/seqroll.hpp,
+	seq_gtkmm2/src/eventedit.cpp, seq_gtkmm2/src/eventslots.cpp,
+	seq_gtkmm2/src/mainwnd.cpp, seq_gtkmm2/src/perfroll.cpp,
+	seq_gtkmm2/src/seq24seqroll.cpp, seq_gtkmm2/src/seqdata.cpp,
+	seq_gtkmm2/src/seqevent.cpp, seq_gtkmm2/src/seqroll.cpp: Tightened
+	up song modify flags, copy/paste/move, usage of arrow keys to grow
+	events.  Going to stamp 0.9.13 next.
+
 2016-06-18  Chris Ahlstrom <ahlstromcj@gmail.com>
 
 	* README, contrib/notes/bugs_to_investigate.txt,
@@ -20,7 +119,7 @@
 	seq_gtkmm2/src/seqroll.cpp: Still investigating the weird
 	Ctrl-Select bug.
 
-2016-06-16  Chris Ahlstrom <ahlstrom@centiped>
+2016-06-16  Chris Ahlstrom <ahlstromcj@gmail.com>
 
 	* libseq64/src/sequence.cpp: Tightening up sequence-event copying.
 	* contrib/code/stazed/jack_assistant.cpp,
@@ -570,7 +669,7 @@
 	libseq64/src/sequence.cpp, libseq64/src/triggers.cpp: Added print
 	support for triggers and started documenting how they work.
 
-2016-04-06  Chris Ahlstrom <ahlstrom@centiped>
+2016-04-06  Chris Ahlstrom <ahlstromcj@gmail.com>
 
 	* seq_gtkmm2/include/perfedit.hpp, seq_gtkmm2/include/perfroll.hpp,
 	seq_gtkmm2/include/perftime.hpp, seq_gtkmm2/src/perfedit.cpp,
@@ -629,7 +728,7 @@
 	-  A bug where the timing bar didn't appear until the tune started was
 		fixed.
 
-2016-04-01  Chris Ahlstrom <ahlstrom@centiped>
+2016-04-01  Chris Ahlstrom <ahlstromcj@gmail.com>
 
 	* libseq64/include/perform.hpp, libseq64/src/perform.cpp,
 	seq_gtkmm2/src/mainwnd.cpp: Fixing space key support, still need to
@@ -639,7 +738,7 @@
 	work out bad interaction between mainwnd pause/play button and the
 	start keystroke, who would think this would be so intractable.
 
-2016-03-31  Chris Ahlstrom <ahlstrom@centiped>
+2016-03-31  Chris Ahlstrom <ahlstromcj@gmail.com>
 
 	* libseq64/include/app_limits.h, libseq64/src/perform.cpp,
 	libseq64/src/userfile.cpp: Added min/max values for usr setting for
@@ -653,7 +752,7 @@
 	enable-statistics options, but left enabled because it breaks
 	stop/play/pause somewhat, so we have some debugging to do.
 
-2016-03-30  Chris Ahlstrom <ahlstrom@centiped>
+2016-03-30  Chris Ahlstrom <ahlstromcj@gmail.com>
 
 	* libseq64/src/perform.cpp: Incremental update of perform.
 	* contrib/notes/bugs_to_investigate.txt,
@@ -785,7 +884,7 @@
 	start/stop/pause keystroke management for mainwnd, seqroll,
 	perfedit, and perform.
 
-2016-03-18  Chris Ahlstrom <ahlstrom@centiped>
+2016-03-18  Chris Ahlstrom <ahlstromcj@gmail.com>
 
 	* seq_gtkmm2/include/mainwnd.hpp, seq_gtkmm2/include/perfedit.hpp,
 	seq_gtkmm2/src/mainwnd.cpp, seq_gtkmm2/src/perfedit.cpp: 

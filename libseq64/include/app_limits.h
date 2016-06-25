@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-11-08
- * \updates       2016-06-04
+ * \updates       2016-06-24
  * \license       GNU GPLv2 or above
  *
  *  This collection of global variables describes some facets of the
@@ -41,6 +41,13 @@
  */
 
 /**
+ *  Determins which implementation of a MIDI byte container is used.
+ *  See the midifile module.
+ */
+
+#define SEQ64_USE_MIDI_VECTOR           /* as opposed to the MIDI list      */
+
+/**
  *  Let's try using lighter solid lines in the piano rolls and see how it
  *  looks.  It looks a little better.
  */
@@ -48,17 +55,44 @@
 #define SEQ64_SOLID_PIANOROLL_GRID
 
 /**
+ *  This provides a build option for having the pattern editor window scroll
+ *  to keep of with the progress bar, for sequences that are longer than the
+ *  measure or two that a pattern window will show.
+ *
+ *  We thought about making this a configure option or a run-time option, but
+ *  this kind of scrolling is a universal convention of MIDI sequencers.  If
+ *  you really don't like this feature, let me know, and I will make it a
+ *  configure option.  We could also disable it it "legacy" mode, which also
+ *  disables a lot of other features.
+ *
+ * \warning
+ *      This code might still have issues with interactions between triggers
+ *      and gaps in the performance (song) window when JACK transport is
+ *      active.  Still investigating.
+ */
+
+#define SEQ64_FOLLOW_PROGRESS_BAR
+
+/**
+ *  This macro defines the amount of overlap between horizontal "pages" that
+ *  get scrolled to follow the progress bar.  We think it should be greater
+ *  than 0, maybe set to 10. But feel free to experiment.
+ */
+
+#define SEQ64_PROGRESS_PAGE_OVERLAP       10
+
+/**
  *  Indicates the maximum number of MIDI channels, counted internally from 0
  *  to 15, and by humans (sequencer user-interfaces) from 1 to 16.
  */
 
-#define SEQ64_MIDI_CHANNEL_MAX          16
+#define SEQ64_MIDI_CHANNEL_MAX            16
 
 /**
  *  Default value for c_max_sets.
  */
 
-#define SEQ64_DEFAULT_SET_MAX            32
+#define SEQ64_DEFAULT_SET_MAX             32
 
 /**
  *  Default value of number of slot toggle keys (shortcut keys) that
@@ -66,7 +100,7 @@
  *  would be about the maximum number of keys we could really support.
  */
 
-#define SEQ64_SET_KEYS_MAX              32
+#define SEQ64_SET_KEYS_MAX                32
 
 /**
  *  Default value of the width (number of columns) of the slot toggle keys.
@@ -74,32 +108,36 @@
  *  the application.
  */
 
-#define SEQ64_SET_KEYS_COLUMNS           8
+#define SEQ64_SET_KEYS_COLUMNS             8
 
 /**
  *  No global buss override is in force if the global buss override number is
  *  this value (-1).
  */
 
-#define SEQ64_BAD_BUSS                  (char(-1))
+#ifdef __cplusplus
+#define SEQ64_BAD_BUSS                    (char(-1))
+#else
+#define SEQ64_BAD_BUSS                    ((char)(-1))
+#endif
 
 /**
  *  An easier macro for testing SEQ64_BAD_BUSS.
  */
 
-#define SEQ64_NO_BUSS_OVERRIDE(b)       (char(b) == SEQ64_BAD_BUSS)
+#define SEQ64_NO_BUSS_OVERRIDE(b)         (char(b) == SEQ64_BAD_BUSS)
 
 /**
  *  Default value for c_max_busses.
  */
 
-#define SEQ64_DEFAULT_BUSS_MAX          32
+#define SEQ64_DEFAULT_BUSS_MAX            32
 
 /**
  *  The number of ALSA busses supported.  See mastermidibus::init().
  */
 
-#define SEQ64_ALSA_OUTPUT_BUSS_MAX      16
+#define SEQ64_ALSA_OUTPUT_BUSS_MAX        16
 
 /**
  *  Guessing that this has to do with the width of the performance piano roll.
@@ -142,7 +180,7 @@
  *  instrument.  Used in the "user" configuration-file processing.
  */
 
-#define SEQ64_GM_INSTRUMENT_FLAG        (-1)
+#define SEQ64_GM_INSTRUMENT_FLAG          (-1)
 
 /**
  *  This value indicates to use the default value of PPQN and ignore (to some
@@ -151,7 +189,7 @@
  *  option is specified on the command-line, by the global ppqn = qn.
  */
 
-#define SEQ64_USE_DEFAULT_PPQN          (-1)
+#define SEQ64_USE_DEFAULT_PPQN            (-1)
 
 /**
  *  Default value for the global parts-per-quarter-note value.  This is
@@ -160,21 +198,21 @@
  *  user_settings class.
  */
 
-#define SEQ64_DEFAULT_PPQN              192
+#define SEQ64_DEFAULT_PPQN               192
 
 /**
  *  Minimum value for PPQN.  Mostly for sanity checking.  This was set to 96,
  *  but there have been tunes set to 32 PPQN, I think.
  */
 
-#define SEQ64_MINIMUM_PPQN               32
+#define SEQ64_MINIMUM_PPQN                32
 
 /**
  *  Maximum value for PPQN.  Mostly for sanity checking, with higher values
  *  possibly useful for debugging.
  */
 
-#define SEQ64_MAXIMUM_PPQN              19200       /* 960  */
+#define SEQ64_MAXIMUM_PPQN             19200       /* 960  */
 
 /**
  *  Minimum possible value for zoom, indicating that one pixel represents one
@@ -197,31 +235,25 @@
  *  we need a couple of extra entries.
  */
 
-#define SEQ64_MAXIMUM_ZOOM              512
+#define SEQ64_MAXIMUM_ZOOM               512
 
 /**
- *  Minimum possible value for zoom, indicating that one pixel represents one
- *  tick.
+ *  Minimum possible value for the global redraw rate.
  */
 
-#define SEQ64_MINIMUM_REDRAW             10
+#define SEQ64_MINIMUM_REDRAW              10
 
 /**
- *  The default value of the zoom, indicating that one pixel represents two
- *  ticks.
+ *  The default value global redraw rate.
  */
 
-#define SEQ64_DEFAULT_REDRAW             40     /* or 25 for Windows */
+#define SEQ64_DEFAULT_REDRAW              40     /* or 25 for Windows */
 
 /**
- *  The maximum value of the zoom, indicating that one pixel represents 128
- *  ticks.  The old maximum was 32, but now that we support PPQN up to 19200,
- *  we need a couple of extra entries.  At this time, we're not going to
- *  support adapting the default zoom to the PPQN; we just allow some extra
- *  zoom values.
+ *  The maximum value for the global redraw rate.
  */
 
-#define SEQ64_MAXIMUM_REDRAW           100
+#define SEQ64_MAXIMUM_REDRAW             100
 
 /**
  *  Default value for c_beats_per_minute (global beats-per-minute, also known
@@ -229,7 +261,7 @@
  *  measure".
  */
 
-#define SEQ64_DEFAULT_BPM               120
+#define SEQ64_DEFAULT_BPM                120
 
 /**
  *  Minimum value for c_beats_per_minute (global beats-per-minute, also known
@@ -237,14 +269,14 @@
  *  debugging and troubleshooting.
  */
 
-#define SEQ64_MINIMUM_BPM                 1         /* 20   */
+#define SEQ64_MINIMUM_BPM                  1         /* 20   */
 
 /**
  *  Maximum value for c_beats_per_minute (global beats-per-minute, also known
  *  as "BPM").  Mostly for sanity-checking.
  */
 
-#define SEQ64_MAXIMUM_BPM               600         /* 500  */
+#define SEQ64_MAXIMUM_BPM                600         /* 500  */
 
 /**
  *  Default value for "beats-per-measure".  This is the "numerator" in a 4/4
@@ -254,7 +286,7 @@
  *  per minute".
  */
 
-#define SEQ64_DEFAULT_BEATS_PER_MEASURE   4
+#define SEQ64_DEFAULT_BEATS_PER_MEASURE    4
 
 /**
  *  Default value for "beat-width".  This is the "denominator" in a 4/4 time
@@ -263,26 +295,26 @@
  *  "BW", or "beat width", not to be confused with "bandwidth".
  */
 
-#define SEQ64_DEFAULT_BEAT_WIDTH          4
+#define SEQ64_DEFAULT_BEAT_WIDTH           4
 
 /**
  *  Default value for major divisions per bar.  A graphics version of
  *  SEQ64_DEFAULT_BEATS_PER_MEASURE.
  */
 
-#define SEQ64_DEFAULT_LINES_PER_MEASURE   4
+#define SEQ64_DEFAULT_LINES_PER_MEASURE    4
 
 /**
  *  Default value for perfedit snap.
  */
 
-#define SEQ64_DEFAULT_PERFEDIT_SNAP       8
+#define SEQ64_DEFAULT_PERFEDIT_SNAP        8
 
 /**
  *  Default value for c_thread_trigger_width_ms.
  */
 
-#define SEQ64_DEFAULT_TRIGWIDTH_MS        4
+#define SEQ64_DEFAULT_TRIGWIDTH_MS         4
 
 /*
  *  Default value for c_thread_trigger_width_ms.  Not in use at present.
@@ -295,14 +327,14 @@
  *  highest MIDI value, which is 127.
  */
 
-#define SEQ64_MIDI_COUNT_MAX            128
+#define SEQ64_MIDI_COUNT_MAX             128
 
 /**
  *  Defines the maximum number of notes playing at one time that the
  *  application will support.
  */
 
-#define SEQ64_MIDI_NOTES_MAX            256
+#define SEQ64_MIDI_NOTES_MAX             256
 
 #endif      // SEQ64_APP_LIMITS_H
 

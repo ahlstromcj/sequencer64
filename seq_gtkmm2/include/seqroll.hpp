@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-06-19
+ * \updates       2016-06-22
  * \license       GNU GPLv2 or above
  *
  */
@@ -37,6 +37,7 @@
 #include "gui_drawingarea_gtk2.hpp"
 #include "fruityseqroll.hpp"
 #include "seq24seqroll.hpp"
+#include "scales.h"                     /* STAZED chord support */
 
 namespace Gtk
 {
@@ -202,6 +203,17 @@ private:
 
     int m_scale;
 
+#ifdef SEQ64_STAZED_CHORD_GENERATOR
+
+    /**
+     *  Indicates the current chord in force for this sequence for inserting
+     *  notes..
+     */
+
+    int m_chord;
+
+#endif
+
     /**
      *  Indicates the musical key in force for this sequence.
      */
@@ -316,11 +328,15 @@ private:
 
     int m_scroll_offset_y;
 
+#ifdef SEQ64_FOLLOW_PROGRESS_BAR
+
     /**
      *  Provides the current scroll page in which the progress bar resides.
      */
 
     int m_scroll_page;
+
+#endif
 
     /**
      *  Holds the value of the musical background sequence that is shown in
@@ -394,6 +410,13 @@ public:
     }
 
     /*
+     * Convenience functions.
+     */
+
+    int note_off_length () const;
+    void add_note (midipulse tick, int note, bool paint = true);
+
+    /*
      * \setter m_ignore_redraw
      *
      *  void set_ignore_redraw (bool ignore)
@@ -405,6 +428,10 @@ public:
 
     void set_key (int key);
     void set_scale (int scale);
+
+#ifdef SEQ64_STAZED_CHORD_GENERATOR
+    void set_chord (int chord);
+#endif
 
     /**
      *  Sets the status to the given parameter, and the CC value to the given
@@ -431,6 +458,18 @@ public:
     void redraw ();
     void redraw_events ();
     void start_paste ();
+
+    /*
+     *  Completes a paste operation based on the current coordinates in the
+     *  piano roll.
+     */
+
+    void complete_paste ()
+    {
+        complete_paste(current_x(), current_y());
+    }
+
+    void complete_paste (int x, int y);
     void follow_progress ();
 
 private:
@@ -492,6 +531,14 @@ private:
         midipulse tick_s, midipulse tick_f, int note_h, int note_l,
         int & x, int & y, int & w, int & h
     );
+    void convert_sel_box_to_rect
+    (
+        midipulse tick_s, midipulse tick_f, int note_h, int note_l
+    );
+    void get_selected_box
+    (
+        midipulse & tick_s, int & note_h, midipulse & tick_f, int & note_l
+    );
     void draw_events_on (Glib::RefPtr<Gdk::Drawable> draw);
     int idle_redraw ();
     int idle_progress ();
@@ -500,6 +547,8 @@ private:
     void move_selection_box (int dx, int dy);           // new
     void move_selected_notes (int dx, int dy);          // new
     void grow_selected_notes (int dx);                  // new
+    void set_adding (bool adding);                      // from seq24 seqroll
+    void update_mouse_pointer (bool adding);            // from fruity seqroll
 
 private:            // callbacks
 

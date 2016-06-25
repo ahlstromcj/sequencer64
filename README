@@ -1,6 +1,6 @@
-README for Sequencer64 0.9.13 (current branch = "master")
+README for Sequencer64 0.9.14 (current branch = "master")
 Chris Ahlstrom
-2015-09-10 to 2016-06-19 (initial work started in July of 2015)
+2015-09-10 to 2016-06-25 (initial work started in July of 2015)
 
 Sequencer64 (replaces sequencer24) is a reboot of seq24 to refactor it to be
 tighter and easier to transition to GTKmm 3, and much more.  It is now
@@ -14,6 +14,11 @@ with the --legacy option.
 
 Major updates:
 
+    -   Version 0.9.14:  Apart from some bug fixes and tweaks, the following
+        major features have been added:
+        -   Chord generation in the pattern editor, similar to what the 
+            seq32 project has, but it can be disabled via the configure step.
+        -   The song editor now pages horizontally to follow the progress bar.
     -   Version 0.9.13:
         -   Includes an important bug-fix from user 0rel that caused some
             notes to be missing or messed up in a copy operation in the

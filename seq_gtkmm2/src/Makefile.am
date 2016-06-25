@@ -6,7 +6,7 @@
 # \library    	libseq_gtkmm2 library
 # \author     	Chris Ahlstrom
 # \date       	2015-09-11
-# \update      2016-05-29
+# \update      2016-06-21
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -94,7 +94,7 @@ version = $(SEQUENCER64_API_MAJOR):$(SEQUENCER64_API_MINOR):$(SEQUENCER64_API_PA
 # git_version = $(shell git describe --abbrev=7 --always --tags)
 #-----------------------------------------------------------------------------
 
-git_version = $(shell git describe)
+git_version = $(shell git describe --tags --long)
 git_branch =$(shell git branch | grep -e ^*)
 git_info = "$(git_version) $(git_branch)"
 

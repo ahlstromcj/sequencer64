@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-06-19
+ * \updates       2016-06-24
  * \license       GNU GPLv2 or above
  *
  *  There are a large number of existing items to discuss.  But for now let's
@@ -67,6 +67,7 @@
  *	    seqroll scroll progress=648; value=0; step=192; page=1388; upper=133632
  */
 
+#include <gdkmm/cursor.h>
 #include <gtkmm/accelkey.h>
 #include <gtkmm/adjustment.h>
 #include <gtkmm/menu.h>
@@ -84,35 +85,14 @@
 #include "perform.hpp"
 #include "settings.hpp"                 /* seq64::usr() and seq64::rc() */
 
-/**
- *  This provides a build option for having the pattern editor window scroll
- *  to keep of with the progress bar, for sequences that are longer than the
- *  measure or two that a pattern window will show.
- *
- *  We thought about making this a configure option or a run-time option, but
- *  this kind of scrolling is a universal convention of MIDI sequencers.  If
- *  you really don't like this feature, let me know, and I will make it a
- *  configure option.  We could also disable it it "legacy" mode, which also
- *  disables a lot of other features.
- *
- * \warning
- *      This code might still have issues with interactions between triggers
- *      and gaps in the performance (song) window when JACK transport is
- *      active.  Still investigating.
- */
-
-#define SEQ64_FOLLOW_PROGRESS_BAR
-
-/**
- *  This macro defines the amount of overlap between horizontal "pages" that
- *  get scrolled to follow the progress bar.  We think it should be greater
- *  than 0, maybe set to 10. But feel free to experiment.
- */
-
-#define SEQ64_PROGRESS_PAGE_OVERLAP     10
-
 namespace seq64
 {
+
+/**
+ *  An internal variable for handle size.
+ */
+
+static const long s_handlesize = 16;
 
 /**
  *  Principal constructor.
@@ -180,6 +160,9 @@ seqroll::seqroll
     m_ppqn                  (0),
     m_note_length           (0),
     m_scale                 (0),
+#ifdef SEQ64_STAZED_CHORD_GENERATOR
+    m_chord                 (0),
+#endif
     m_key                   (0),
     m_selecting             (false),
     m_moving                (false),
@@ -198,7 +181,9 @@ seqroll::seqroll
     m_scroll_offset_key     (0),
     m_scroll_offset_x       (0),
     m_scroll_offset_y       (0),
+#ifdef SEQ64_FOLLOW_PROGRESS_BAR
     m_scroll_page           (0),
+#endif
     m_background_sequence   (0),
     m_drawing_background_seq(false),
     m_status                (0),
@@ -569,6 +554,24 @@ seqroll::set_scale (int scale)
     }
 }
 
+#ifdef SEQ64_STAZED_CHORD_GENERATOR
+
+/**
+ *  Sets the current chord to the given value.
+ *
+ * \param chord
+ *      The desired chord value.
+ */
+
+void
+seqroll::set_chord (int chord)
+{
+    if (m_chord != chord)
+        m_chord = chord;
+}
+
+#endif  // SEQ64_STAZED_CHORD_GENERATOR
+
 /**
  *  Sets the music key to the given value, and then resets the view.
  *
@@ -624,8 +627,8 @@ seqroll::draw_progress_on_window ()
     m_progress_x = (m_seq.get_last_tick() / m_zoom) - m_scroll_offset_x;
 
     /*
-     * TRIAL CODE to ensure the occasional slightly negative value still
-     * allows the progress bar to be drawn.
+     * Ensure that the occasional slightly negative value still allows the
+     * progress bar to be drawn.
      */
 
     if (m_progress_x > -16)             // if (m_progress_x >= 0)
@@ -767,9 +770,9 @@ seqroll::draw_events_on (Glib::RefPtr<Gdk::Drawable> draw)
                 note_y -= m_scroll_offset_y;
 
                 /*
-                 * Draw note boxes for main or background sequence.
-                 * Use a color more distinguishable from the "scale" color for
-                 * the background sequence.
+                 * Draw note boxes for main or background sequence.  Use a
+                 * color more distinguishable from the "scale" color for the
+                 * background sequence.
                  */
 
                 if (method == 0)
@@ -795,13 +798,6 @@ seqroll::draw_events_on (Glib::RefPtr<Gdk::Drawable> draw)
                         int hdec = note_height - 3;
                         if (tick_f >= tick_s)
                         {
-#if 0
-                            draw->draw_rectangle
-                            (
-                                m_gc, true, xinc + in_shift, yinc,
-                                note_width - 3 + length_add, hdec
-                            );
-#endif
                             draw_rectangle
                             (
                                 draw, xinc + in_shift, yinc,
@@ -814,14 +810,6 @@ seqroll::draw_events_on (Glib::RefPtr<Gdk::Drawable> draw)
                             (
                                 draw, xinc + in_shift, yinc, note_width, hdec
                             );
-
-                            /*
-                             * TRIAL CODE - ca 2016-06-16.  It helps prevent
-                             * two selected begin/end events in a loop from
-                             * drawing very long orange selection lines.
-                             * However, it still draws a fragment that is
-                             * outside the loop boundaries.
-                             */
 
                             int width = (tick_f / m_zoom) - 3 + length_add;
                             if (width < 0)
@@ -874,9 +862,9 @@ seqroll::draw_selection_on_window ()
         );
     }
 
-    int x, y, w, h;
     if (m_selecting)
     {
+        int x, y, w, h;
         xy_to_rect(m_drop_x, m_drop_y, m_current_x, m_current_y, x, y, w, h);
         x -= m_scroll_offset_x;
         y -= m_scroll_offset_y;
@@ -888,8 +876,8 @@ seqroll::draw_selection_on_window ()
     }
     if (m_moving || m_paste)
     {
-        x = m_selected.x + m_current_x - m_drop_x - m_scroll_offset_x;
-        y = m_selected.y + m_current_y - m_drop_y - m_scroll_offset_y;
+        int x = m_selected.x + m_current_x - m_drop_x - m_scroll_offset_x;
+        int y = m_selected.y + m_current_y - m_drop_y - m_scroll_offset_y;
 
         /*
          * Orange makes it a little more clear that we're pasting, I think.
@@ -900,7 +888,8 @@ seqroll::draw_selection_on_window ()
 #else
         draw_rectangle
         (
-            dark_orange(), x, y, m_selected.width, m_selected.height, false
+            dark_orange(), x, y,
+            m_selected.width, m_selected.height, false  // true fills the box
         );
 #endif
         m_old.x = x;
@@ -915,8 +904,8 @@ seqroll::draw_selection_on_window ()
         if (width < 1)
             width = 1;
 
-        x = m_selected.x - m_scroll_offset_x;
-        y = m_selected.y - m_scroll_offset_y;
+        int x = m_selected.x - m_scroll_offset_x;
+        int y = m_selected.y - m_scroll_offset_y;
         draw_rectangle(black(), x, y, width, m_selected.height, false);
         m_old.x = x;
         m_old.y = y;
@@ -958,7 +947,7 @@ void
 seqroll::convert_xy (int x, int y, midipulse & tick, int & note)
 {
     tick = x * m_zoom;
-    note = (c_rollarea_y - y - 2) / c_key_y;
+    note = (c_rollarea_y - y - 2) / c_key_y;        // why -2 ?
 }
 
 /**
@@ -1094,6 +1083,62 @@ seqroll::convert_tn_box_to_rect
 }
 
 /**
+ *  A convenience function wrapping a common call to convert_tn_box_to_rect().
+ *
+ * \param tick_s
+ *      The starting tick of the rectangle.
+ *
+ * \param tick_f
+ *      The finishing tick of the rectangle.
+ *
+ * \param note_h
+ *      The high note of the rectangle.
+ *
+ * \param note_l
+ *      The low note of the rectangle.
+ */
+
+void
+seqroll::convert_sel_box_to_rect
+(
+    midipulse tick_s, midipulse tick_f, int note_h, int note_l
+)
+{
+    convert_tn_box_to_rect
+    (
+        tick_s, tick_f, note_h, note_l,
+        m_selected.x, m_selected.y, m_selected.width, m_selected.height
+    );
+}
+
+/**
+ *  A convenience function wrapping a common call to m_seq.get_selected_box()
+ *  and convert_tn_box_to_rect().
+ *
+ * \param [out] tick_s
+ *      The starting tick of the rectangle.
+ *
+ * \param [out] tick_f
+ *      The finishing tick of the rectangle.
+ *
+ * \param [out] note_h
+ *      The high note of the rectangle.
+ *
+ * \param [out] note_l
+ *      The low note of the rectangle.
+ */
+
+void
+seqroll::get_selected_box
+(
+    midipulse & tick_s, int & note_h, midipulse & tick_f, int & note_l
+)
+{
+    m_seq.get_selected_box(tick_s, note_h, tick_f, note_l);
+    convert_sel_box_to_rect(tick_s, tick_f, note_h, note_l);
+}
+
+/**
  *  Starts a paste operation.
  */
 
@@ -1113,13 +1158,24 @@ seqroll::start_paste ()
     midipulse tick_s, tick_f;
     int note_h, note_l;
     m_seq.get_clipboard_box(tick_s, note_h, tick_f, note_l);
-    convert_tn_box_to_rect
-    (
-        tick_s, tick_f, note_h, note_l,
-        m_selected.x, m_selected.y, m_selected.width, m_selected.height
-    );
+    convert_sel_box_to_rect(tick_s, tick_f, note_h, note_l);
     m_selected.x += m_drop_x;
     m_selected.y = m_drop_y;
+}
+
+/**
+ *  Completes a paste operation.
+ */
+
+void
+seqroll::complete_paste (int x, int y)
+{
+    midipulse tick;
+    int note;
+    convert_xy(m_current_x, m_current_y, tick, note);
+    m_paste = false;
+    m_seq.push_undo();
+    m_seq.paste_selected(tick, note);
 }
 
 /**
@@ -1148,12 +1204,14 @@ seqroll::snap_x (int & x)
 }
 
 /**
- *  Function to allow motion of the selection box via the arrow
- *  keys.
+ *  Function to allow motion of the selection box via the arrow keys.  We now
+ *  let the Enter key to deselect the moved notes.  With the mouse, selecting
+ *  all notes, copying them, and moving the selection box, pasting can be
+ *  completed with either a left-click or the Enter key.
  *
- *  Could let the Enter key to deselect the moved notes.  Currently, with them
- *  mouse, selecting all notes, copying them, and moving the selection box,
- *  pasting can be completed with either a left-click or the Enter key.
+ *  We have a weird problem on our main system where the selection box is very
+ *  flickery.  But it works fine on another system.  A Gtk-2 issue?  Now it
+ *  seems to work fine, after an update.  :-D
  *
  * \param dx
  *      The amount to move the selection box.  Values are -1, 0, or 1.  -1 is
@@ -1171,11 +1229,11 @@ seqroll::move_selection_box (int dx, int dy)
     int y = m_old.y + dy * c_key_y;
     m_current_x = x + m_scroll_offset_x;
     m_current_y = y + m_scroll_offset_y;
-    snap_y(m_current_y);
 
-    midipulse tick;
-    int note;
-    convert_xy(0, m_current_y, tick, note);
+	int note;
+	midipulse tick;
+    snap_y(m_current_y);
+	convert_xy(0, m_current_y, tick, note);
     m_seqkeys_wid.set_hint_key(note);
     snap_x(m_current_x);
     draw_selection_on_window();
@@ -1185,7 +1243,7 @@ seqroll::move_selection_box (int dx, int dy)
 
 /**
  *  Proposed new function to encapsulate the movement of selections even
- *  more fully.
+ *  more fully.  Works with the four arrow keys.
  *
  *  Note that the movement vertically is different for the selection box versus
  *  the notes.  While the movement values are -1, 0, or 1, the differences are
@@ -1223,11 +1281,6 @@ seqroll::move_selected_notes (int dx, int dy)
     {
         int snap_x = dx * m_snap;                   /* time-stamp snap  */
         int snap_y = -dy;                           /* note pitch snap  */
-
-        /*
-         * Moved to sequence::move_selected_notes(): perf().modify();
-         */
-
         if (m_seq.any_selected_notes())
         {
             m_seq.move_selected_notes(snap_x, snap_y);
@@ -1260,12 +1313,139 @@ seqroll::grow_selected_notes (int dx)
         m_growing = true;
         m_seq.push_undo();
         m_seq.grow_selected(snap_x);
-
-        /*
-         * Moved to sequence::grow_selected(): perf().modify();
-         */
     }
 }
+
+/**
+ *  Changes the mouse cursor pixmap according to whether a note is being
+ *  added or not.  What calls this?  It is actually a right click.
+ *  Not present in the "fruity" implementation.  Now moved to the normal
+ *  seqroll class.
+ *
+ * \param adding
+ *      True if adding a note.
+ */
+
+void
+seqroll::set_adding (bool adding)
+{
+    if (adding)
+        get_window()->set_cursor(Gdk::Cursor(Gdk::PENCIL));
+    else
+        get_window()->set_cursor(Gdk::Cursor(Gdk::LEFT_PTR));
+}
+
+/**
+ *  An internal function used by the FruitySeqRollInput class.
+ */
+
+inline static long
+clamp (long val, long low, long hi)
+{
+    return val < low ? low : (hi < val ? hi : val) ;
+}
+
+/**
+ *  Updates the mouse pointer, implementing a context-sensitive mouse.
+ *  Moved here from the "fruity" seqroll class.
+ */
+
+void
+seqroll::update_mouse_pointer (bool adding)
+{
+    midipulse drop_tick;
+    int drop_note;
+    convert_xy
+    (
+        current_x(), current_y(), drop_tick, drop_note
+    );
+    midipulse start, end;
+    int note;                           // midibyte
+    if
+    (
+        m_is_drag_pasting || m_selecting || m_moving ||
+        m_growing || m_paste
+    )
+    {
+        get_window()->set_cursor(Gdk::Cursor(Gdk::LEFT_PTR));
+    }
+    else if
+    (
+         ! adding &&
+         m_seq.intersect_notes(drop_tick, drop_note, start, end, note) &&
+         note == drop_note
+    )
+    {
+        long handle_size = clamp(s_handlesize, 0, (end - start) / 3);
+        if (start <= drop_tick && drop_tick <= start + handle_size)
+            get_window()->set_cursor(Gdk::Cursor(Gdk::CENTER_PTR));
+        else if (end - handle_size <= drop_tick && drop_tick <= end)
+            get_window()->set_cursor(Gdk::Cursor(Gdk::LEFT_PTR));
+        else
+            get_window()->set_cursor(Gdk::Cursor(Gdk::CENTER_PTR));
+    }
+    else
+        get_window()->set_cursor(Gdk::Cursor(Gdk::PENCIL));
+}
+
+/**
+ * \getter m_note_length, adjusted for the note_off_margin.
+ */
+
+int
+seqroll::note_off_length () const
+{
+    return m_note_length - m_seq.note_off_margin();
+}
+
+/**
+ * Convenience wrapper for sequence::add_note().  The length parameters
+ * is obtained from the note_off_length() function.  This sets the note length
+ * at a little less than the snap value.
+ *
+ * \param tick
+ *      The time destination of the new note, in pulses.
+ *
+ * \param note
+ *      The pitch destination of the new note.
+ *
+ * \param paint
+ *      If true, repaint to be left with just the inserted event.  The default
+ *      is true.
+ */
+
+void
+seqroll::add_note (midipulse tick, int note, bool paint)
+{
+    m_seq.add_note(tick, note_off_length(), note, paint);
+}
+
+#ifdef USE_NEW_FUNCTION
+
+/*
+ * Get the box that selected elements are in.  Save
+ * offset that we get from the snap above.  Align
+ * selection for drawing.
+ */
+
+void
+seqroll::align_selection
+(
+    midipulse & tick_s, int & note_h, midipulse & tick_f, int & note_l,
+    int snapped_x
+)
+{
+    m_moving_init = true;
+    get_selected_box(tick_s, note_h, tick_f, note_l);
+
+    int adjusted_selected_x = m_selected.x;
+    snap_x(adjusted_selected_x);
+    m_move_snap_offset_x = m_selected.x - adjusted_selected_x;
+    snap_x(m_selected.x);
+    set_current_drop_x(snapped_x);
+}
+
+#endif  // USE_NEW_FUNCTION
 
 /**
  *  Implements the on-realize event handling.
@@ -1499,11 +1679,6 @@ seqroll::on_key_press_event (GdkEventKey * ev)
             if (OR_EQUIVALENT(ev->keyval, SEQ64_x, SEQ64_X))        /* cut */
             {
                 m_seq.cut_selected();
-
-                /*
-                 * Moved to sequence::cut_selected(): perf().modify();
-                 */
-
                 result = true;
             }
             else if (OR_EQUIVALENT(ev->keyval, SEQ64_c, SEQ64_C))   /* copy */
@@ -1514,11 +1689,6 @@ seqroll::on_key_press_event (GdkEventKey * ev)
             else if (OR_EQUIVALENT(ev->keyval, SEQ64_v, SEQ64_V))   /* paste */
             {
                 start_paste();
-
-                /*
-                 * Moved to sequence::paste_selected(): perf().modify();
-                 */
-
                 result = true;
             }
             else if (OR_EQUIVALENT(ev->keyval, SEQ64_z, SEQ64_Z))   /* Undo */
@@ -1554,11 +1724,6 @@ seqroll::on_key_press_event (GdkEventKey * ev)
             if (OR_EQUIVALENT(ev->keyval, SEQ64_Delete, SEQ64_BackSpace))
             {
                 m_seq.cut_selected(false);      /* does not copy the events */
-
-                /*
-                 * Moved to sequence::cut_selected(): perf().modify();
-                 */
-
                 result = true;
             }
             else if (ev->keyval == SEQ64_Home)
@@ -1589,19 +1754,8 @@ seqroll::on_key_press_event (GdkEventKey * ev)
             else if (CAST_OR_EQUIVALENT(ev->keyval, SEQ64_Return, SEQ64_KP_Enter))
             {
                 if (m_paste)
-                {
-                    /*
-                     * This code is similar to that in Seq24SeqRollInput ::
-                     * on_button_press_event().
-                     */
+                    complete_paste(m_current_x, m_current_y);
 
-                    midipulse tick;
-                    int note;
-                    m_seq.push_undo();
-                    convert_xy(m_current_x, m_current_y, tick, note);
-                    m_seq.paste_selected(tick, note);
-                    m_paste = false;
-                }
                 if (m_growing)
                     m_growing = false;
 
@@ -1609,7 +1763,7 @@ seqroll::on_key_press_event (GdkEventKey * ev)
                     m_moving = false;
 
                 m_selecting = false;
-                m_selected.x = m_selected.y = m_selected.width = 
+                m_selected.x = m_selected.y = m_selected.width =
                     m_selected.height = 0;
 
                 m_seq.unselect();

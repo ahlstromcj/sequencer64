@@ -1,0 +1,283 @@
+# Sequencer64 0.9.13 (and above) rc configuration file
+#
+# This file holds the main configuration options for Sequencer64.
+# It follows the format of the legacy seq24 'rc' configuration
+# file, but adds some new options, such as LASH, Mod4 interaction
+# support, and an auto-save-on-exit option.  Also provided is a
+# legacy mode.
+
+[midi-control]
+
+74      # MIDI controls count
+0 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+1 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+2 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+3 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+4 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+5 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+6 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+7 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+8 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+9 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+10 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+11 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+12 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+13 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+14 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+15 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+16 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+17 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+18 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+19 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+20 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+21 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+22 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+23 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+24 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+25 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+26 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+27 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+28 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+29 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+30 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+31 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+# mute in group section:
+32 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+33 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+34 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+35 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+36 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+37 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+38 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+39 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+40 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+41 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+42 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+43 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+44 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+45 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+46 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+47 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+48 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+49 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+50 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+51 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+52 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+53 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+54 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+55 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+56 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+57 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+58 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+59 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+60 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+61 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+62 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+63 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+# bpm up:
+64 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+# bpm down:
+65 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+# screen set up:
+66 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+# screen set down:
+67 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+# mod replace:
+68 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+# mod snapshot:
+69 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+# mod queue:
+70 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+# mod gmute:
+71 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+# mod glearn:
+72 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+# screen set play:
+73 [0 0   0   0   0   0] [0 0   0   0   0   0] [0 0   0   0   0   0]
+
+[mute-group]
+
+1024    # group mute value count
+0 [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0]
+1 [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0]
+2 [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0]
+3 [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0]
+4 [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0]
+5 [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0]
+6 [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0]
+7 [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0]
+8 [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0]
+9 [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0]
+10 [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0]
+11 [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0]
+12 [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0]
+13 [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0]
+14 [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0]
+15 [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0]
+16 [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0]
+17 [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0]
+18 [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0]
+19 [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0]
+20 [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0]
+21 [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0]
+22 [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0]
+23 [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0]
+24 [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0]
+25 [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0]
+26 [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0]
+27 [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0]
+28 [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0]
+29 [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0]
+30 [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0]
+31 [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0]
+
+[midi-clock]
+
+# The first line indicates the number of MIDI busses defined.
+
+# Each buss line contains the buss (re 0) and the clock status of
+# that buss.  0 = MIDI Clock is off; 1 = MIDI Clock on, and Song
+# Position and MIDI Continue will be sent, if needed; and 2 = MIDI
+# Clock Modulo, where MIDI clocking will not begin until the song
+# position reaches the start modulo value [midi-clock-mod-ticks].
+
+1    # number of MIDI clocks/busses
+
+# Output buss name: [0] 14:0 Midi Through Port-0
+0 0  # buss number, clock status
+
+[midi-clock-mod-ticks]
+
+# The Song Position (in 16th notes) at which clocking will begin
+# if the buss is set to MIDI Clock mod setting.
+
+64
+
+[midi-input]
+
+1   # number of MIDI busses
+
+# [0] 14:0 Midi Through Port-0
+0 0
+
+[manual-alsa-ports]
+
+# Set to 1 to have sequencer64 create its own ALSA ports and not
+# connect to other clients.  Use 1 to expose all the MIDI ports to
+# JACK (e.g. via a2jmidid).  Use 0 to access the ALSA MIDI ports
+# already running on one's computer, or to use the MIDI Through
+# (capture) output alone in JACK.
+
+0   # flag for manual ALSA ports
+
+[reveal-alsa-ports]
+
+# Set to 1 to have sequencer64 ignore any system port names
+# declared in the 'user' configuration file.  Use this option if
+# you want to be able to see the port names as detected by ALSA.
+
+0   # flag for reveal ALSA ports
+
+[interaction-method]
+
+# 0 - 'seq24' (original seq24 method)
+# 1 - 'fruity' (similar to a certain fruity sequencer we like)
+
+0
+
+# Set to 1 to allow Sequencer64 to stay in note-adding mode when
+# the right-click is released while holding the Mod4 (Super or
+# Windows) key.
+
+0
+
+[keyboard-control]
+
+0     # number of keys
+
+# Key #  Sequence #  Key name
+
+
+[keyboard-group]
+
+0     # number of key groups
+
+# Key #  group # Key name
+
+# bpm up and bpm down:
+39 1          # apostrophe 
+# screen set up, screen set down, play:
+1326 1 65360    #   Home
+# group on, group off, group learn:
+32564 39 32766   #  apostrophe 
+# replace, queue, snapshot_1, snapshot 2, keep queue:
+65507 32766 65513 65514 1   # Control_L  Alt_L Alt_R 
+0     # show_ui_sequence_key (1 = true / 0 = false)
+32564    #  start sequencer
+65307    # Escape stop sequencer
+1345408623    #  pause sequencer
+0     # show sequence numbers (1 = true / 0 = false); ignored in legacy mode
+61    # equal toggle use of slot shortcut key to bring up pattern editor
+46    # period toggle use of slot shortcut key to bring up event editor
+
+[jack-transport]
+
+# jack_transport - Enable slave synchronization with JACK Transport.
+
+0
+
+# jack_master - Sequencer64 attempts to serve as JACK Master.
+# Also must enable jack_transport (the user interface forces this,
+# and also disables jack_master_cond).
+
+0
+
+# jack_master_cond - Sequencer64 is JACK master if no other JACK
+# master exists. Also must enable jack_transport (the user interface
+# forces this, and disables jack_master).
+
+0
+
+# jack_start_mode (applies only if JACK is enabled).
+
+# 0 = Playback in live mode. Allows muting and unmuting of loops.
+#     from the main (patterns) window.  Disables both manual and
+#     automatic muting and unmuting from the performance window.
+# 1 = Playback uses the song (performance) editor's data and mute
+#     controls, regardless of which window was used to start the
+#     playback.
+
+0
+
+[lash-session]
+
+# Set the following value to 0 to disable LASH session management.
+# Set the following value to 1 to enable LASH session management.
+# This value will have no effect if LASH support is not built into
+# the application.  Use --help option to see if LASH is part of
+# the options list.
+
+0     # LASH session management support flag
+
+[auto-option-save]
+
+# Set the following value to 0 to disable the automatic saving of the
+# current configuration to the 'rc' and 'user' files.  Set it to 1 to
+# follow legacy seq24 behavior of saving the configuration at exit.
+# Note that, if auto-save is set, many of the command-line settings,
+# such as the JACK/ALSA settings, are then saved to the configuration,
+# which can confuse one at first.  Also note that one currently needs
+# this option set to 1 to save the configuration, as there is not a
+# user-interface control for it at present.
+
+1     # auto-save-options-on-exit support flag
+
+[last-used-dir]
+
+# Last used directory:
+
+/home/ahlstrom/Home/ca/mls/git/sequencer64/contrib/midi/
+
+# End of /home/ahlstrom/.config/sequencer64/sequencer64.rc
+#
+# vim: sw=4 ts=4 wm=4 et ft=sh

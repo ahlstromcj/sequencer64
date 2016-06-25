@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-12-05
- * \updates       2016-06-19
+ * \updates       2016-06-22
  * \license       GNU GPLv2 or above
  *
  * To consider:
@@ -911,7 +911,8 @@ eventedit::on_key_press_event (GdkEventKey * ev)
             printf
             (
                 "key_press[%d] == %s\n",
-                ev->keyval, gdk_keyval_name(ev->keyval)
+                ev->keyval,
+                keyval_name(ev->keyval).c_str() // gdk_keyval_name(ev->keyval)
             );
         }
         if (ev->keyval == SEQ64_Down)

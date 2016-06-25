@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-05-31
+ * \updates       2016-06-25
  * \license       GNU GPLv2 or above
  *
  *  This class represents the central piano-roll user-interface area of the
@@ -156,6 +156,16 @@ private:
 
     midipulse m_old_progress_ticks;
 
+#ifdef SEQ64_FOLLOW_PROGRESS_BAR
+
+    /**
+     *  Provides the current scroll page in which the progress bar resides.
+     */
+
+    int m_scroll_page;
+
+#endif
+
     /**
      *  Holds the horizontal offset related to the horizontal scroll-bar
      *  position.  Used in drawing the progress bar and the sequence events.
@@ -279,6 +289,7 @@ public:
     void fill_background_pixmap ();
     void increment_size ();
     void draw_all ();                       /* used by perfroll_input   */
+    void follow_progress ();
 
     /**
      *  Helper function to simplify the client call.

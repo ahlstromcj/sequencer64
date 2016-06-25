@@ -28,12 +28,13 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-09-13
- * \updates       2016-06-11
+ * \updates       2016-06-23
  * \license       GNU GPLv2 or above
  *
  */
 
 #include <map>                          /* std::map             */
+#include <string>                       /* std::string          */
 
 #include "easy_macros.h"                /* SEQ64_PAUSE_SUPPORT  */
 
@@ -182,7 +183,7 @@ private:
 public:
 
     keys_perform ();
-    ~keys_perform ();
+    virtual ~keys_perform ();
 
     void set_keys (const keys_perform_transfer & kpt);
     void get_keys (keys_perform_transfer & kpt);
@@ -654,9 +655,9 @@ public:
     }
 
     /*
-     * Getters of keyboard mapping for sequence and groups.
-     * If not found, returns something "safe" [so use get_key()->count()
-     * to see if it's there first]
+     * Getters of keyboard mapping for sequence and groups.  If not found,
+     * returns something "safe" [so use get_key()->count() to see if it's
+     * there first]
      */
 
     /**
@@ -665,7 +666,7 @@ public:
      * \param seqnum
      *      Provides the sequence number to look up in the reverse key map for
      *      patterns/sequences.  If the count for this value is 0, then a
-     *      question mark character is returned.
+     *      question mark character is returned.  Not checked for maximum!
      */
 
     unsigned int lookup_keyevent_key (long seqnum)
@@ -987,6 +988,15 @@ protected:
     }
 
 };          // class keys_perform
+
+/*
+ * Free functions.  The implementation of this function will ultimately
+ * depend on the GUI environment; currently it is GTK 2.x, so the
+ * implementation is in seq_gtkmm2/src/keys_perform_gtk2.cpp.
+ */
+
+extern std::string keyval_name (unsigned int key);
+extern void keyval_normalize (keys_perform_transfer & k);
 
 }           // namespace seq64
 

@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-09-18
+ * \updates       2016-06-23
  * \license       GNU GPLv2 or above
  *
  *  This module define a GTK text-edit widget for getting keyboard button
@@ -108,11 +108,11 @@ void
 keybindentry::set (unsigned int val)
 {
     char buf[64] = "";
-    char * special = gdk_keyval_name(val);  // long name of the key
-    if (not_nullptr(special))
-        snprintf(buf, sizeof(buf), "%s", special);
-    else
+    std::string special = keyval_name(val);
+    if (special.empty())
         snprintf(buf, sizeof(buf), "'%c'", char(val));
+    else
+        snprintf(buf, sizeof(buf), "%s", special.c_str());
 
     set_text(buf);
     int width = strlen(buf) - 1;
@@ -123,6 +123,12 @@ keybindentry::set (unsigned int val)
  *  Handles a key press by calling set() with the event's key value.
  *  This value is used to set the event or key depending on the value of
  *  m_type.
+ *
+ * \param event
+ *      Provides the key-press event.
+ *
+ * \return
+ *      Returns the result of the call to Entry::on_key_press_event().
  */
 
 bool
@@ -135,7 +141,9 @@ keybindentry::on_key_press_event (GdkEventKey * event)
     case location:          /* copy the pressed key into this binding   */
 
         if (not_nullptr(m_key))
+        {
             *m_key = event->keyval;
+        }
         else
         {
             warnprint("keybindentry(): null key pointer");
@@ -145,7 +153,9 @@ keybindentry::on_key_press_event (GdkEventKey * event)
     case events:            /* set the event key in the perform object  */
 
         if (not_nullptr(m_perf))
+        {
             m_perf->set_key_event(event->keyval, m_slot);
+        }
         else
         {
             warnprint("keybindentry(): null perform pointer for events");
@@ -155,7 +165,9 @@ keybindentry::on_key_press_event (GdkEventKey * event)
     case groups:            /* set the group key in the perform object  */
 
         if (not_nullptr(m_perf))
+        {
             m_perf->set_key_group(event->keyval, m_slot);
+        }
         else
         {
             warnprint("keybindentry(): null perform pointer for groups");
@@ -172,3 +184,4 @@ keybindentry::on_key_press_event (GdkEventKey * event)
  *
  * vim: sw=4 ts=4 wm=4 et ft=cpp
  */
+

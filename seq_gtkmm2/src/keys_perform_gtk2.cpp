@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-13
- * \updates       2015-10-10
+ * \updates       2016-06-22
  * \license       GNU GPLv2 or above
  *
  */
@@ -49,26 +49,12 @@ keys_perform_gtk2::keys_perform_gtk2 ()
 }
 
 /**
- *  The destructor sets some running flags to false, signals this
- *  condition, then joins the input and output threads if the were
- *  launched. Finally, any active patterns/sequences are deleted.
+ *  A rote virtual destructor.  No action.
  */
 
 keys_perform_gtk2::~keys_perform_gtk2 ()
 {
     // what to do?
-}
-
-/**
- *  Obtains the name of the key.  In gtkmm, this is done via the
- *  gdk_keyval_name() function.  Here, in the base class, we just provide an
- *  easy-to-create string.
- */
-
-std::string
-keys_perform_gtk2::key_name (unsigned int key) const
-{
-    return std::string(gdk_keyval_name(key));
 }
 
 /**
@@ -157,6 +143,31 @@ keys_perform_gtk2::set_all_key_groups ()
     set_key_group(GDK_KEY_X, 25);
     set_key_group(GDK_KEY_Y, 13);
     set_key_group(GDK_KEY_Z, 24);
+}
+
+/**
+ *  Obtains the name of the key.  In gtkmm, this is done via the
+ *  gdk_keyval_name() function.  Here, in the base class, we just provide an
+ *  easy-to-create string.  Note that this is a free function, not a class
+ *  member.
+ *
+ * \param key
+ *      Provides the key-number to be converted to a key name.
+ *
+ * \return
+ *      Returns the key name as looked up by the GDK infrastructure.  If the
+ *      key is not found, then an empty string is returned.
+ */
+
+std::string
+keyval_name (unsigned int key)
+{
+    std::string result;
+    gchar * kname = gdk_keyval_name(key);
+    if (not_nullptr(kname))
+        result = std::string((char *) kname);
+
+    return result;
 }
 
 }           // namespace seq64

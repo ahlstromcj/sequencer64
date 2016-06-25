@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-05-17
+ * \updates       2016-06-23
  * \license       GNU GPLv2 or above
  *
  */
@@ -49,6 +49,7 @@ namespace seq64
 /**
  *  Changes the mouse cursor pixmap according to whether a note is being
  *  added or not.  What calls this?  It is actually a right click.
+ *  Not present in the "fruity" implementation.
  *
  * \param adding
  *      True if adding a note.  Sets m_adding.
@@ -62,10 +63,7 @@ void
 Seq24SeqRollInput::set_adding (bool adding, seqroll & sroll)
 {
     m_adding = adding;
-    if (adding)
-        sroll.get_window()->set_cursor(Gdk::Cursor(Gdk::PENCIL));
-    else
-        sroll.get_window()->set_cursor(Gdk::Cursor(Gdk::LEFT_PTR));
+    sroll.set_adding(adding);
 }
 
 /**
@@ -86,42 +84,29 @@ Seq24SeqRollInput::set_adding (bool adding, seqroll & sroll)
  */
 
 bool
-Seq24SeqRollInput::on_button_press_event
-(
-    GdkEventButton * ev,
-    seqroll & sroll
-)
+Seq24SeqRollInput::on_button_press_event (GdkEventButton * ev, seqroll & sroll)
 {
-    int norm_x, norm_y, snapped_x, snapped_y;
-    sroll.grab_focus();
-    snapped_x = norm_x = int(ev->x + sroll.m_scroll_offset_x);
-    snapped_y = norm_y = int(ev->y + sroll.m_scroll_offset_y);
-    sroll.snap_x(snapped_x);
-    sroll.snap_y(snapped_y);
-    sroll.set_current_drop_y(snapped_y);            /* y is always snapped */
-    sroll.m_old.x = sroll.m_old.y = sroll.m_old.width = sroll.m_old.height = 0;
-
-    bool needs_update = false;
     midipulse tick_s, tick_f;
     int note_h, note_l;
+    int norm_x, norm_y;
+    bool needs_update = false;
+    int snapped_x = norm_x = int(ev->x + sroll.m_scroll_offset_x);
+    int snapped_y = norm_y = int(ev->y + sroll.m_scroll_offset_y);
+    sroll.grab_focus();
+    sroll.snap_x(snapped_x);
+    sroll.snap_y(snapped_y);
+    sroll.set_current_drop_y(snapped_y);            /* y is always snapped  */
+    sroll.m_old.x = sroll.m_old.y = sroll.m_old.width = sroll.m_old.height = 0;
     if (sroll.m_paste)
     {
-        sroll.convert_xy(snapped_x, snapped_y, tick_s, note_h);
-        sroll.m_paste = false;
-        sroll.m_seq.push_undo();
-        sroll.m_seq.paste_selected(tick_s, note_h);
+        sroll.complete_paste(snapped_x, snapped_y);
         needs_update = true;
     }
     else
     {
-        int numsel;
-        if (SEQ64_CLICK_LEFT_MIDDLE(ev->button))      /* either button */
+        if (SEQ64_CLICK_LEFT_MIDDLE(ev->button))    /* either button        */
         {
-            /*
-             * Set the selection for normal x, then turn x,y in to tick,note.
-             */
-
-            sroll.set_current_drop_x(norm_x);
+            sroll.set_current_drop_x(norm_x);       /* selection normal x   */
             sroll.convert_xy(sroll.m_drop_x, sroll.m_drop_y, tick_s, note_h);
             if (m_adding)
             {
@@ -135,41 +120,58 @@ Seq24SeqRollInput::on_button_press_event
                 (
                     sroll.m_drop_x, sroll.m_drop_y, tick_s, note_h
                 );
-                if      /* if note already there, fake a select, do not add */
+
+                /*
+                 * Test if a note is already there; fake select, if so, no add.
+                 */
+
+                int eventcount = sroll.m_seq.select_note_events
                 (
-                    ! sroll.m_seq.select_note_events
-                    (
-                        tick_s, note_h, tick_s, note_h, sequence::e_would_select
-                    )
-                )
+                    tick_s, note_h, tick_s, note_h, sequence::e_would_select
+                );
+                if (eventcount == 0)
                 {
+                    /* add note, length = little less than snap */
+
                     sroll.m_seq.push_undo();
-                    sroll.m_seq.add_note  /* length = little less than snap */
-                    (
-                        tick_s, sroll.m_note_length - 2, note_h, true
-                    );
+
+#ifdef SEQ64_STAZED_CHORD_GENERATOR
+                    if (sroll.m_chord > 0)                  /* and less than? */
+                    {
+                        for (int i = 0; i < c_chord_size; ++i)
+                        {
+                            int cnote = c_chord_table[sroll.m_chord][i];
+                            if (cnote == -1)
+                                break;
+
+                            sroll.add_note(tick_s, note_h + cnote, false);
+                        }
+                    }
+                    else
+                        sroll.add_note(tick_s, note_h);
+#else
+                    sroll.add_note(tick_s, note_h);
+#endif
                     needs_update = true;
                 }
             }
             else                                        /* selecting */
             {
-                if
+                int eventcount = sroll.m_seq.select_note_events
                 (
-                    ! sroll.m_seq.select_note_events
-                    (
-                        tick_s, note_h, tick_s, note_h, sequence::e_is_selected
-                    )
-                )
+                    tick_s, note_h, tick_s, note_h, sequence::e_is_selected
+                );
+                if (eventcount == 0)
                 {
                     if (! (ev->state & SEQ64_CONTROL_MASK))
                         sroll.m_seq.unselect();
 
-                    numsel = sroll.m_seq.select_note_events
+                    eventcount = sroll.m_seq.select_note_events
                     (
                         tick_s, note_h, tick_s, note_h,
                         sequence::e_select_one  /* direct click, one event */
                     );
-                    if (numsel == 0) /* none selected, start selection box */
+                    if (eventcount == 0) /* none selected, start selection box */
                     {
                         if (SEQ64_CLICK_LEFT(ev->button))
                             sroll.m_selecting = true;
@@ -177,18 +179,15 @@ Seq24SeqRollInput::on_button_press_event
                     else
                         needs_update = true;
                 }
-                if
+                eventcount = sroll.m_seq.select_note_events
                 (
-                    sroll.m_seq.select_note_events
-                    (
-                        tick_s, note_h, tick_s, note_h, sequence::e_is_selected
-                    )
-                )
+                    tick_s, note_h, tick_s, note_h, sequence::e_is_selected
+                );
+                if (eventcount > 0)
                 {
                     /*
-                     * Moving and selecting, left-click (without Ctrl
-                     * key) only.  Get the box that selected elements are
-                     * in.
+                     * Moving and selecting, left-click (without Ctrl key)
+                     * only.  Get the box that selected elements are in.
                      */
 
                     if
@@ -197,29 +196,22 @@ Seq24SeqRollInput::on_button_press_event
                         ! (ev->state & SEQ64_CONTROL_MASK)
                     )
                     {
-                        sroll.m_moving_init = true;
-                        needs_update = true;
-                        sroll.m_seq.get_selected_box
-                        (
-                            tick_s, note_h, tick_f, note_l
-                        );
-                        sroll.convert_tn_box_to_rect
-                        (
-                            tick_s, tick_f, note_h, note_l,
-                            sroll.m_selected.x,
-                            sroll.m_selected.y,
-                            sroll.m_selected.width,
-                            sroll.m_selected.height
-                        );
+                        /*
+                         * seqroll::align_selection() [proposed]:
+                         *
+                         * Get the box that selected elements are in.  Save
+                         * offset that we get from the snap above.  Align
+                         * selection for drawing.
+                         */
 
-                        /* save offset that we get from the snap above */
+                        needs_update = true;
+                        sroll.m_moving_init = true;
+                        sroll.get_selected_box(tick_s, note_h, tick_f, note_l);
 
                         int adjusted_selected_x = sroll.m_selected.x;
                         sroll.snap_x(adjusted_selected_x);
                         sroll.m_move_snap_offset_x =
                             sroll.m_selected.x - adjusted_selected_x;
-
-                        /* align selection for drawing */
 
                         sroll.snap_x(sroll.m_selected.x);
                         sroll.set_current_drop_x(snapped_x);
@@ -232,18 +224,7 @@ Seq24SeqRollInput::on_button_press_event
                     if (SEQ64_CLICK_CTRL_LEFT_MIDDLE(ev->button, ev->state))
                     {
                         sroll.m_growing = true;         /* moving, normal x  */
-                        sroll.m_seq.get_selected_box    /* selected elements */
-                        (
-                            tick_s, note_h, tick_f, note_l
-                        );
-                        sroll.convert_tn_box_to_rect
-                        (
-                            tick_s, tick_f, note_h, note_l,
-                            sroll.m_selected.x,
-                            sroll.m_selected.y,
-                            sroll.m_selected.width,
-                            sroll.m_selected.height
-                        );
+                        sroll.get_selected_box(tick_s, note_h, tick_f, note_l);
                     }
                 }
             }
@@ -324,7 +305,7 @@ Seq24SeqRollInput::on_button_release_event
 
             delta_x -= sroll.m_move_snap_offset_x;      /* adjust for snap */
             sroll.convert_xy(delta_x, delta_y, delta_tick, delta_note);
-            delta_note -= (c_num_keys - 1);
+            delta_note -= c_num_keys - 1;
             sroll.m_seq.push_undo();
             sroll.m_seq.move_selected_notes(delta_tick, delta_note);
             needs_update = true;
@@ -425,10 +406,17 @@ bool Seq24SeqRollInput::on_motion_notify_event
     }
     else if (sroll.m_painting)
     {
-        sroll.snap_x(sroll.m_current_x);
-        sroll.convert_xy(sroll.m_current_x, sroll.m_current_y, tick, note);
-        sroll.m_seq.add_note(tick, sroll.m_note_length - 2, note, true);
-        result = true;
+#ifdef SEQ64_STAZED_CHORD_GENERATOR
+        if (sroll.m_chord != 0)
+            result = true;
+        else
+#endif
+        {
+            sroll.snap_x(sroll.m_current_x);
+            sroll.convert_xy(sroll.m_current_x, sroll.m_current_y, tick, note);
+            sroll.add_note(tick, note);
+            result = true;
+        }
     }
     return result;
 }

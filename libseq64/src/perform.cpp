@@ -131,7 +131,7 @@ perform::perform (gui_assistant & mygui, int ppqn)
     m_was_active_names          (),         // boolean array
     m_sequence_state            (),         // boolean array
     m_master_bus                (),         // will call its init() later
-#ifdef USE_STAZED_TRANSPOSE
+#ifdef SEQ64_STAZED_TRANSPOSE
     m_transpose                 (0),
 #endif
     m_out_thread                (),
@@ -3153,7 +3153,7 @@ perform::print_triggers () const
     }
 }
 
-#ifdef USE_STAZED_TRANSPOSE
+#ifdef SEQ64_STAZED_TRANSPOSE
 
 /**
  *  Calls the apply_song_transpose() function for all active sequences.

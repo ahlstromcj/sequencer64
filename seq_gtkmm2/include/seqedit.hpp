@@ -187,6 +187,9 @@ private:
     Gtk::Menu * m_menu_snap;            /**< Two-arrows grid-snap menu.     */
     Gtk::Menu * m_menu_note_length;     /**< Notes menu for note length.    */
     Gtk::Menu * m_menu_length;          /**< Pattern-length "bars" menu.    */
+#ifdef SEQ64_STAZED_TRANSPOSE
+    Gtk::ToggleButton * m_toggle_transpose;  /**< Transpose toggle button.  */
+#endif
     Gtk::Menu * m_menu_midich;          /**< MIDI channel DIN menu button.  */
     Gtk::Menu * m_menu_midibus;         /**< MIDI output buss menu button.  */
     Gtk::Menu * m_menu_data;            /**< "Event" button to select data. */
@@ -421,6 +424,9 @@ private:
 
     void set_key (int note);
     void set_background_sequence (int seq);
+#ifdef SEQ64_STAZED_TRANSPOSE
+    void transpose_change_callback ();
+#endif
     void name_change_callback ();
     void play_change_callback ();
     void record_change_callback ();

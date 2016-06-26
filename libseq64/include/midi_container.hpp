@@ -169,7 +169,7 @@ const midilong c_musickey =     0x24240011; /**< The track's key.           */
 const midilong c_musicscale =   0x24240012; /**< The track's scale.         */
 const midilong c_backsequence = 0x24240013; /**< Track background sequence. */
 
-#ifdef USE_STAZED_TRANSPOSE
+#ifdef SEQ64_STAZED_TRANSPOSE
 const midilong c_transpose =    0x24240013; /**< Track transpose value.     */
 #endif
 

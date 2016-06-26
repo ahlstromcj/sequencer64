@@ -295,7 +295,7 @@ private:
 
     mastermidibus m_master_bus;
 
-#ifdef USE_STAZED_TRANSPOSE
+#ifdef SEQ64_STAZED_TRANSPOSE
 
     /**
      *  Holds the global MIDI transposition value.
@@ -1179,7 +1179,7 @@ public:
         m_looping = looping;
     }
 
-#ifdef USE_STAZED_TRANSPOSE
+#ifdef SEQ64_STAZED_TRANSPOSE
 
     void apply_song_transpose ();
 

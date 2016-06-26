@@ -67,7 +67,7 @@
 #include "pixmaps/down.xpm"
 #include "pixmaps/perfedit.xpm"
 
-#ifdef USE_STAZED_TRANSPOSE
+#ifdef SEQ64_STAZED_TRANSPOSE
 #include "pixmaps/transpose.xpm"
 #endif
 
@@ -146,10 +146,10 @@ perfedit::perfedit
     ),
     m_perftime          (manage(new perftime(perf(), *this, *m_hadjust))),
     m_menu_snap         (manage(new Gtk::Menu())),
-#ifdef USE_STAZED_TRANSPOSE
+#ifdef SEQ64_STAZED_TRANSPOSE
     m_menu_xpose        (manage(new Gtk::Menu())),
-    m_button_xpose;       /**< Button to bring up transpose menu. */
-    m_entry_xpose;         /**< Text edit for the transpose value. */
+    m_button_xpose      (manage(new Gtk::Button())),
+    m_entry_xpose       (manage(new Gtk::Entry())),
 #endif
     m_image_play        (manage(new PIXBUF_IMAGE(play2_xpm))),
     m_button_snap       (manage(new Gtk::Button())),
@@ -249,7 +249,7 @@ perfedit::perfedit
     m_entry_snap->set_size_request(40, -1);
     m_entry_snap->set_editable(false);
 
-#ifdef USE_STAZED_TRANSPOSE
+#ifdef SEQ64_STAZED_TRANSPOSE
 
     char num[12];
     for (int i = -SEQ64_OCTAVE_SIZE; i <= SEQ64_OCTAVE_SIZE; ++i)
@@ -274,17 +274,20 @@ perfedit::perfedit
 
     m_button_xpose->add
     (
-        *manage( new Image(Gdk::Pixbuf::create_from_xpm_data(transpose_xpm)))
+        *manage(new Gtk::Image(Gdk::Pixbuf::create_from_xpm_data(transpose_xpm)))
     );
     m_button_xpose->signal_clicked().connect
     (
-        sigc::bind<Menu *>(mem_fun(*this, &perfedit::popup_menu), m_menu_xpose)
+        sigc::bind<Gtk::Menu *>
+        (
+            mem_fun(*this, &perfedit::popup_menu), m_menu_xpose
+        )
     );
     add_tooltip(m_button_xpose, "Song transpose, for all transposable sequences");
     m_entry_xpose->set_size_request(30, -1);
     m_entry_xpose->set_editable(false);
 
-#endif  // USE_STAZED_TRANSPOSE
+#endif  // SEQ64_STAZED_TRANSPOSE
 
 #define SET_BPB     mem_fun(*this, &perfedit::set_beats_per_bar)
 
@@ -295,7 +298,6 @@ perfedit::perfedit
         m_menu_bpm->items().push_back(MenuElem(b, sigc::bind(SET_BPB, i + 1)));
     }
     m_button_bpm->add(*manage(new PIXBUF_IMAGE(down_xpm)));
-
     m_button_bpm->signal_clicked().connect
     (
         sigc::bind<Gtk::Menu *>(SET_POPUP, m_menu_bpm)
@@ -313,7 +315,6 @@ perfedit::perfedit
         sigc::bind<Gtk::Menu *>(SET_POPUP, m_menu_bw)
     );
     add_tooltip(m_button_bw, "Time signature: length of beat.");
-
     m_entry_bw->set_width_chars(2);
     m_entry_bw->set_editable(false);
 
@@ -377,7 +378,7 @@ perfedit::perfedit
     m_hlbox->pack_start(*(manage(new Gtk::Label("x"))), false, false, 4);
     m_hlbox->pack_start(*m_button_snap , false, false);
     m_hlbox->pack_start(*m_entry_snap , false, false);
-#ifdef USE_STAZED_TRANSPOSE
+#ifdef SEQ64_STAZED_TRANSPOSE
     m_hlbox->pack_start(*m_button_xpose , false, false);
     m_hlbox->pack_start(*m_entry_xpose , false, false);
 #endif
@@ -393,7 +394,7 @@ perfedit::perfedit
     set_beats_per_bar(SEQ64_DEFAULT_BEATS_PER_MEASURE); /* time-sig numerator   */
     set_beat_width(SEQ64_DEFAULT_BEAT_WIDTH);           /* time-sig denominator */
     set_snap(SEQ64_DEFAULT_PERFEDIT_SNAP);
-#ifdef USE_STAZED_TRANSPOSE
+#ifdef SEQ64_STAZED_TRANSPOSE
     set_transpose(0);
 #endif
 
@@ -774,7 +775,7 @@ perfedit::set_zoom (int z)
     m_perftime->set_zoom(z);
 }
 
-#ifdef USE_STAZED_TRANSPOSE
+#ifdef SEQ64_STAZED_TRANSPOSE
 
 void
 perfedit::transpose_button_callback (int transpose)
@@ -793,7 +794,7 @@ perfedit::set_transpose( int transpose  )
     perf().set_transpose(transpose);
 }
 
-#endif  // USE_STAZED_TRANSPOSE
+#endif  // SEQ64_STAZED_TRANSPOSE
 
 /**
  *  This callback function calls the base-class on_realize() function, and

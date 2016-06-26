@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-01-09
+ * \updates       2016-06-26
  * \license       GNU GPLv2 or above
  *
  *  A MIDI event (i.e. "track event") is encapsulated by the seq64::event
@@ -76,6 +76,7 @@
 
 #include <string.h>                    /* memcpy()  */
 
+#include "app_limits.h"
 #include "easy_macros.h"
 #include "event.hpp"
 
@@ -243,7 +244,7 @@ event::operator < (const event & rhs) const
         return m_timestamp < rhs.m_timestamp;
 }
 
-#ifdef USE_STAZED_TRANSPOSE
+#ifdef SEQ64_STAZED_TRANSPOSE
 
 /**
  *  Transpose the note, if possible.

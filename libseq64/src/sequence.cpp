@@ -76,7 +76,7 @@ sequence::sequence (int ppqn)
     m_midi_channel              (0),
     m_bus                       (0),
     m_song_mute                 (false),
-#ifdef USE_STAZED_TRANSPOSE
+#ifdef SEQ64_STAZED_TRANSPOSE
     m_transposable              (true),
 #endif
     m_notes_on                  (0),
@@ -165,7 +165,7 @@ sequence::partial_assign (const sequence & rhs)
         m_events        = rhs.m_events;
         m_triggers      = rhs.m_triggers;
         m_midi_channel  = rhs.m_midi_channel;
-#ifdef USE_STAZED_TRANSPOSE
+#ifdef SEQ64_STAZED_TRANSPOSE
         m_transposable  = rhs.m_transposable;
 #endif
         m_bus           = rhs.m_bus;
@@ -458,8 +458,8 @@ sequence::play (midipulse tick, bool playback_mode)
     midipulse start_tick_offset = (start_tick + m_length - m_trigger_offset);
     midipulse end_tick_offset = (end_tick + m_length - m_trigger_offset);
 
-#ifdef USE_STAZED_TRANSPOSE
-    int transpose_it = get_transposable() ? m_masterbus->get_transpose() : 0 ;
+#ifdef SEQ64_STAZED_TRANSPOSE
+    int transpose = get_transposable() ? m_parent->get_transpose() : 0 ;
 #endif
 
     if (m_playing)                                  /* play notes in frame  */
@@ -473,7 +473,7 @@ sequence::play (midipulse tick, bool playback_mode)
             midipulse stamp = er.get_timestamp() + offset_base;
             if (stamp >= start_tick_offset && stamp <= end_tick_offset)
             {
-#ifdef USE_STAZED_TRANSPOSE
+#ifdef SEQ64_STAZED_TRANSPOSE
                 if (transpose != 0 && er.is_note()) /* includes Aftertouch  */
                 {
                     event transposed_event = er;    /* assign ALL members   */
@@ -481,9 +481,8 @@ sequence::play (midipulse tick, bool playback_mode)
                     put_event_on_bus(transposed_event);
                 }
                 else
-#else
-                put_event_on_bus(er);               /* frame still going    */
 #endif
+                put_event_on_bus(er);               /* frame still going    */
             }
             else if (stamp > end_tick_offset)
                 break;                              /* frame is done        */
@@ -3367,7 +3366,7 @@ sequence::transpose_notes (int steps, int scale)
     verify_and_link();
 }
 
-#ifdef USE_STAZED_TRANSPOSE
+#ifdef SEQ64_STAZED_TRANSPOSE
 
 /**
  *  Applies the transpose value held by the master MIDI buss object, if
@@ -3377,7 +3376,7 @@ sequence::transpose_notes (int steps, int scale)
 void
 sequence::apply_song_transpose ()
 {
-    int transpose_it = get_transposable() ? m_masterbus->get_transpose() : 0 ;
+    int transpose = get_transposable() ? m_parent->get_transpose() : 0 ;
     if (transpose != 0)
     {
         automutex locker(m_mutex);
@@ -3390,6 +3389,20 @@ sequence::apply_song_transpose ()
         }
         set_dirty();
     }
+}
+
+/**
+ * \setter m_transposable
+ *      Changing this flag modifies the sequence and performance.
+ */
+
+void
+sequence::set_transposable (bool flag)
+{
+    if (flag != m_transposable)
+        m_parent->modify();
+
+    m_transposable = flag;
 }
 
 #endif

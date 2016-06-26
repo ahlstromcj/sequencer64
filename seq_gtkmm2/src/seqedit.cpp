@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-06-20
+ * \updates       2016-06-26
  * \license       GNU GPLv2 or above
  *
  *  Compare this class to eventedit, which has to do some similar things,
@@ -97,6 +97,10 @@
 #include "pixmaps/chord3-inv.xpm"
 #endif
 
+#ifdef SEQ64_STAZED_TRANSPOSE
+#include "pixmaps/transpose.xpm"
+#endif
+
 using namespace Gtk::Menu_Helpers;
 
 namespace seq64
@@ -150,7 +154,7 @@ static const int c_quantize_notes           =  5;
 static const int c_quantize_events          =  6;
 static const int c_tighten_events           =  8;
 static const int c_tighten_notes            =  9;
-static const int c_transpose                = 10;
+static const int c_transpose_notes          = 10;
 static const int c_reserved                 = 11;
 static const int c_transpose_h              = 12;
 static const int c_swing_notes              = 13;   /* swing quantize   */
@@ -207,6 +211,9 @@ seqedit::seqedit
     m_menu_snap         (manage(new Gtk::Menu())),
     m_menu_note_length  (manage(new Gtk::Menu())),
     m_menu_length       (manage(new Gtk::Menu())),
+#ifdef SEQ64_STAZED_TRANSPOSE
+    m_toggle_transpose  (manage(new Gtk::ToggleButton())),
+#endif
     m_menu_midich       (nullptr),
     m_menu_midibus      (nullptr),
     m_menu_data         (nullptr),
@@ -351,6 +358,20 @@ seqedit::seqedit
     m_entry_data->set_editable(false);
     dhbox->pack_start(*m_button_data, false, false);
     dhbox->pack_start(*m_entry_data, true, true);
+
+#ifdef SEQ64_STAZED_TRANSPOSE
+    m_toggle_transpose->add(*manage(new PIXBUF_IMAGE(transpose_xpm)));
+    m_toggle_transpose->signal_clicked().connect
+    (
+        mem_fun(*this, &seqedit::transpose_change_callback)
+    );
+    add_tooltip
+    (
+        m_toggle_transpose,
+        "Sequence is allowed to be transposed if button is highighted (checked)."
+    );
+    m_toggle_transpose->set_active(m_seq.get_transposable());
+#endif
 
     /* play, rec, thru */
 
@@ -980,6 +1001,7 @@ seqedit::fill_top_bar ()
     m_entry_length->set_editable(false);
     m_hbox->pack_start(*m_button_length , false, false);
     m_hbox->pack_start(*m_entry_length , false, false);
+    m_hbox->pack_start(*m_toggle_transpose, false, false, 4);
     m_hbox->pack_start(*(manage(new Gtk::VSeparator())), false, false, 4);
     m_button_bus = manage(new Gtk::Button());           /* MIDI output bus   */
     m_button_bus->add(*manage(new PIXBUF_IMAGE(bus_xpm)));
@@ -990,7 +1012,7 @@ seqedit::fill_top_bar ()
     add_tooltip(m_button_bus, "Select MIDI output bus.");
     m_entry_bus = manage(new Gtk::Entry());
     m_entry_bus->set_max_length(60);
-    m_entry_bus->set_width_chars(50);                   /* was 60           */
+    m_entry_bus->set_width_chars(40);                   /* was 60, then 50  */
     m_entry_bus->set_editable(false);
     m_hbox->pack_start(*m_button_bus , false, false);
     m_hbox->pack_start(*m_entry_bus , true, true);
@@ -1869,6 +1891,20 @@ seqedit::name_change_callback ()
 {
     m_seq.set_name(m_entry_name->get_text());
 }
+
+#ifdef SEQ64_STAZED_TRANSPOSE
+
+/**
+ *  Passes the transpose status to the sequence object.
+ */
+
+void
+seqedit::transpose_change_callback ()
+{
+    m_seq.set_transposable(m_toggle_transpose->get_active());
+}
+
+#endif
 
 /**
  *  Passes the play status to the sequence object.

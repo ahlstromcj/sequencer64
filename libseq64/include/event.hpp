@@ -759,7 +759,7 @@ public:
         m_data[0] = note & 0x7F;
     }
 
-#ifdef USE_STAZED_TRANSPOSE
+#ifdef SEQ64_STAZED_TRANSPOSE
     void transpose_note (int tn);
 #endif
 

@@ -39,22 +39,20 @@
  */
 
 #include <string>
-// #include <list>
 #include <stack>
 
 #include "easy_macros.h"                /* fun macros for you       */
 #include "event_list.hpp"               /* seq64::event_list        */
+#include "midi_container.hpp"           /* seq64::midi_container    */
+#include "mutex.hpp"                    /* seq64::mutex, automutex  */
+#include "scales.h"                     /* key and scale constants  */
+#include "triggers.hpp"                 /* seq64::triggers, etc.    */
 
 #ifdef PLATFORM_WINDOWS
 #include "midibus_portmidi.hpp"         /* only semi-supported      */
 #else
 #include "midibus.hpp"                  /* seq64::midibus           */
 #endif
-
-#include "midi_container.hpp"           /* seq64::midi_container    */
-#include "mutex.hpp"                    /* seq64::mutex, automutex  */
-#include "scales.h"                     /* key and scale constants  */
-#include "triggers.hpp"                 /* seq64::triggers, etc.    */
 
 /**
  *  Provides a new option to save the Time Signature and Tempo data that may
@@ -255,7 +253,7 @@ private:
 
     bool m_song_mute;
 
-#ifdef USE_STAZED_TRANSPOSE
+#ifdef SEQ64_STAZED_TRANSPOSE
 
     /**
      *  Indicate if the sequence is transposable or not.  A potential feature
@@ -690,18 +688,10 @@ public:
         return m_song_mute;
     }
 
-#ifdef USE_STAZED_TRANSPOSE
+#ifdef SEQ64_STAZED_TRANSPOSE
 
-    void apply_song_tranpose ();
-
-    /**
-     * \setter m_transposable
-     */
-
-    void set_transposable (bool flag)
-    {
-        m_transposable = flag;
-    }
+    void apply_song_transpose ();
+    void set_transposable (bool flag);
 
     /**
      * \getter m_transposable

@@ -779,7 +779,7 @@ perfedit::set_zoom (int z)
 void
 perfedit::transpose_button_callback (int transpose)
 {
-    if (perf().get_midi_transpose() != transpose)
+    if (perf().get_transpose() != transpose)
         set_transpose(transpose);
 }
 
@@ -790,7 +790,7 @@ perfedit::set_transpose( int transpose  )
     snprintf(b, sizeof b, "%+d", transpose);
     m_entry_xpose->set_text(b);
     perf().all_notes_off();
-    perf().set_midi_transpose(transpose);
+    perf().set_transpose(transpose);
 }
 
 #endif  // USE_STAZED_TRANSPOSE

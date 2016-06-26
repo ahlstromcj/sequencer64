@@ -106,9 +106,6 @@ mastermidibus::mastermidibus (int ppqn, int bpm)
     m_poll_descriptors  (nullptr),
     m_dumping_input     (false),
     m_seq               (nullptr),
-#ifdef USE_STAZED_TRANSPOSE
-    m_transpose         (0),
-#endif
     m_mutex             ()
 {
     m_ppqn = choose_ppqn(ppqn);

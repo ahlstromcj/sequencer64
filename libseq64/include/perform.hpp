@@ -295,6 +295,16 @@ private:
 
     mastermidibus m_master_bus;
 
+#ifdef USE_STAZED_TRANSPOSE
+
+    /**
+     *  Holds the global MIDI transposition value.
+     */
+
+    int m_transpose;
+
+#endif
+
 private:
 
     /**
@@ -1174,23 +1184,42 @@ public:
     void apply_song_transpose ();
 
     /**
-     *  Gets the transposition value stored in the master MIDI buss.
-     *  A convenience function.
+     * \setter m_transpose
      */
+
+    void set_transpose (int transpose)
+    {
+        m_transpose = transpose;
+    }
+
+    /**
+     * \getter m_transpose
+     */
+
+    int get_transpose () const
+    {
+        return m_transpose;
+    }
+
+    /**
+     *  Gets the transposition value stored in the master MIDI buss.
+     *  A convenience function.  We've moved the transpose variable into
+     *  perform, where it belongs.
 
     int get_midi_transpose () const
     {
         return m_master_bus->get_transpose();
     }
+     */
 
     /**
      *  Sets the transposition value in the master MIDI buss.
-     */
 
     void set_midi_transpose (int transpose)
     {
         m_master_bus->set_transpose(transpose);
     }
+     */
 
 #endif
 

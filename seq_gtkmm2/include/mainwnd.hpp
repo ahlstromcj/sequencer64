@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-05-15
+ * \updates       2016-06-26
  * \license       GNU GPLv2 or above
  *
  *  The main window is known as the "Patterns window" or "Patterns
@@ -330,7 +330,7 @@ private:
 
     void apply_song_transpose ()
     {
-        if (perf().get_midi_transpose() != 0)
+        if (perf().get_transpose() != 0)
         {
             perf().apply_song_transpose();
             m_perf_edit->set_transpose();

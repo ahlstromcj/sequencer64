@@ -131,6 +131,9 @@ perform::perform (gui_assistant & mygui, int ppqn)
     m_was_active_names          (),         // boolean array
     m_sequence_state            (),         // boolean array
     m_master_bus                (),         // will call its init() later
+#ifdef USE_STAZED_TRANSPOSE
+    m_transpose                 (0),
+#endif
     m_out_thread                (),
     m_in_thread                 (),
     m_out_thread_launched       (false),

@@ -3150,6 +3150,24 @@ perform::print_triggers () const
     }
 }
 
+#ifdef USE_STAZED_TRANSPOSE
+
+/**
+ *  Calls the apply_song_transpose() function for all active sequences.
+ */
+
+void
+perform::apply_song_transpose ()
+{
+    for (int i = 0; i < m_sequence_max; ++i)
+    {
+        if (is_active(i))
+            get_sequence(i)->apply_song_transpose();
+    }
+}
+
+#endif
+
 }           // namespace seq64
 
 /*

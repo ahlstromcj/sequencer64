@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-30
- * \updates       2016-05-17
+ * \updates       2016-06-26
  * \license       GNU GPLv2 or above
  *
  *  The mastermidibus module is the Linux version of the mastermidibus module.
@@ -176,6 +176,16 @@ private:
 
     sequence * m_seq;
 
+#ifdef USE_STAZED_TRANSPOSE
+
+    /**
+     *  Holds the global MIDI transposition value.
+     */
+
+    int m_transpose;
+
+#endif
+
     /**
      *  The locking mutex.  This object is passed to an automutex object that
      *  lends exception-safety to the mutex locking.
@@ -241,6 +251,28 @@ public:
     {
         return m_ppqn;
     }
+
+#ifdef USE_STAZED_TRANSPOSE
+
+    /**
+     * \setter m_transpose
+     */
+
+    void set_transpose (int transpose)
+    {
+        m_transpose = transpose;
+    }
+
+    /**
+     * \getter m_transpose
+     */
+
+    int get_transpose () const
+    {
+        return m_transpose;
+    }
+
+#endif
 
     std::string get_midi_out_bus_name (int bus);
     std::string get_midi_in_bus_name (int bus);

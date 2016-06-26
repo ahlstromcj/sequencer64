@@ -175,12 +175,12 @@ event::operator = (const event & rhs)
         m_data[0]       = rhs.m_data[0];
         m_data[1]       = rhs.m_data[1];
         m_sysex         = nullptr;
-        m_sysex_size    = rhs.m_sysex_size;
+        m_sysex_size    = rhs.m_sysex_size;         /* 0 instead?       */
         m_linked        = nullptr;
-        m_has_link      = rhs.m_has_link;
-        m_selected      = rhs.m_selected;
-        m_marked        = rhs.m_marked;
-        m_painted       = rhs.m_painted;
+        m_has_link      = rhs.m_has_link;           /* false instead?   */
+        m_selected      = rhs.m_selected;           /* false instead?   */
+        m_marked        = rhs.m_marked;             /* false instead?   */
+        m_painted       = rhs.m_painted;            /* false instead?   */
     }
     return *this;
 }
@@ -242,6 +242,26 @@ event::operator < (const event & rhs) const
     else
         return m_timestamp < rhs.m_timestamp;
 }
+
+#ifdef USE_STAZED_TRANSPOSE
+
+/**
+ *  Transpose the note, if possible.
+ *
+ * \param tn
+ *      The amount (positive or negative) to transpose a note.  If the result
+ *      is out of range, the transposition is not performed.
+ */
+
+void
+event::transpose_note (int tn)
+{
+    int note = int(m_data[0]) + tn;
+    if (note >= 0 && note < SEQ64_MIDI_COUNT_MAX)
+        m_data[0] = midibyte(note);
+}
+
+#endif
 
 /**
  *  Sets the m_status member to the value of status.  If a_status is a

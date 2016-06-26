@@ -1,4 +1,4 @@
-README for Sequencer64 0.9.14 (current branch = "fixups")
+README for Sequencer64 0.9.15 (current branch = "fixups")
 Chris Ahlstrom
 2015-09-10 to 2016-06-25 (initial work started in July of 2015)
 
@@ -14,6 +14,7 @@ with the --legacy option.
 
 Major updates:
 
+    -   Version 0.9.15:  TODO
     -   Version 0.9.14:  Apart from some bug fixes and tweaks, the following
         major features have been added:
         -   Chord generation in the pattern editor, similar to what the 

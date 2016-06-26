@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-06-21
+ * \updates       2016-06-26
  * \license       GNU GPLv2 or above
  *
  *  For a quick guide to the MIDI format, see, for example:
@@ -754,6 +754,13 @@ midifile::parse_smf_1 (perform & p, int screenset, bool is_smf0)
                                 seq.background_sequence(int(read_long()));
                                 len -= 4;
                             }
+#ifdef USE_STAZED_TRANSPOSE
+                            else if (seqspec == c_transpose)
+                            {
+                                seq.set_transposable(read_byte());
+                                --len;
+                            }
+#endif
                             else if (SEQ64_IS_PROPTAG(seqspec))
                             {
                                 errdump

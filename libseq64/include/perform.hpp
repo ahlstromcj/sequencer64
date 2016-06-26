@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-05-15
+ * \updates       2016-06-26
  * \license       GNU GPLv2 or above
  *
  *  This class still has way too many members, even with the JACK and
@@ -1168,6 +1168,31 @@ public:
     {
         m_looping = looping;
     }
+
+#ifdef USE_STAZED_TRANSPOSE
+
+    void apply_song_transpose ();
+
+    /**
+     *  Gets the transposition value stored in the master MIDI buss.
+     *  A convenience function.
+     */
+
+    int get_midi_transpose () const
+    {
+        return m_master_bus->get_transpose();
+    }
+
+    /**
+     *  Sets the transposition value in the master MIDI buss.
+     */
+
+    void set_midi_transpose (int transpose)
+    {
+        m_master_bus->set_transpose(transpose);
+    }
+
+#endif
 
     void set_sequence_control_status (int status);
     void unset_sequence_control_status (int status);

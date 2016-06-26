@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-10-10
- * \updates       2016-05-06
+ * \updates       2016-06-25
  * \license       GNU GPLv2 or above
  *
  */
@@ -128,7 +128,7 @@ class sequence;
             c_notes
             c_bpmtag (beats per minute)
             c_mutegroups
-            c_backsequence
+            c_backsequence (isn't this track-specific?)
 \endverbatim
  *
  *  Also see the PDF file in the following project for more information about
@@ -168,6 +168,10 @@ const midilong c_midictrl =     0x24240010; /**< Song MIDI control.         */
 const midilong c_musickey =     0x24240011; /**< The track's key.           */
 const midilong c_musicscale =   0x24240012; /**< The track's scale.         */
 const midilong c_backsequence = 0x24240013; /**< Track background sequence. */
+
+#ifdef USE_STAZED_TRANSPOSE
+const midilong c_transpose =    0x24240013; /**< Track transpose value.     */
+#endif
 
 /**
  *    This class is the abstract base class for a container of MIDI track

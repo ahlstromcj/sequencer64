@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-10-10
- * \updates       2016-05-17
+ * \updates       2016-06-25
  * \license       GNU GPLv2 or above
  *
  *  This class is important when writing the MIDI and sequencer data out to a
@@ -292,6 +292,7 @@ midi_container::fill (int tracknumber)
     put(0x05);
     add_long(c_midibus);
     put(m_sequence.get_midi_bus());
+
     add_variable(0);                                /* timesig delta t  */
     put(0xFF);
     put(0x7F);
@@ -299,6 +300,7 @@ midi_container::fill (int tracknumber)
     add_long(c_timesig);
     put(m_sequence.get_beats_per_bar());
     put(m_sequence.get_beat_width());
+
     add_variable(0);                                /* channel delta t  */
     put(0xFF);
     put(0x7F);
@@ -342,8 +344,19 @@ midi_container::fill (int tracknumber)
             put(0x7F);
             put(0x08);                              /* two long values  */
             add_long(c_backsequence);
-            add_long(m_sequence.background_sequence());
+            add_long(m_sequence.background_sequence()); /* put_long()?  */
         }
+#ifdef USE_STAZED_TRANSPOSE
+        if (m_sequence.TRANSPOSE() != 0)
+        {
+            add_variable(0);                        /* transposition    */
+            put(0xFF);
+            put(0x7F);
+            put(0x05);                              /* long + midibyte  */
+            add_long(c_transpose);
+            put(m_sequence.TRANSPOSE());
+        }
+#endif
     }
 
     /*

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-06-19
+ * \updates       2016-06-26
  * \license       GNU GPLv2 or above
  *
  *  The functionality of this class also includes handling some of the
@@ -76,6 +76,9 @@ sequence::sequence (int ppqn)
     m_midi_channel              (0),
     m_bus                       (0),
     m_song_mute                 (false),
+#ifdef USE_STAZED_TRANSPOSE
+    m_transposable              (true),
+#endif
     m_notes_on                  (0),
     m_masterbus                 (nullptr),
     m_playing_notes             (),             // an array
@@ -162,6 +165,9 @@ sequence::partial_assign (const sequence & rhs)
         m_events        = rhs.m_events;
         m_triggers      = rhs.m_triggers;
         m_midi_channel  = rhs.m_midi_channel;
+#ifdef USE_STAZED_TRANSPOSE
+        m_transposable  = rhs.m_transposable;
+#endif
         m_bus           = rhs.m_bus;
         m_masterbus     = rhs.m_masterbus;          /* a pointer, be aware! */
         m_playing       = false;
@@ -451,6 +457,11 @@ sequence::play (midipulse tick, bool playback_mode)
 
     midipulse start_tick_offset = (start_tick + m_length - m_trigger_offset);
     midipulse end_tick_offset = (end_tick + m_length - m_trigger_offset);
+
+#ifdef USE_STAZED_TRANSPOSE
+    int transpose_it = get_transposable() ? m_masterbus->get_transpose() : 0 ;
+#endif
+
     if (m_playing)                                  /* play notes in frame  */
     {
         midipulse times_played = m_last_tick / m_length;
@@ -461,7 +472,19 @@ sequence::play (midipulse tick, bool playback_mode)
             event & er = DREF(e);
             midipulse stamp = er.get_timestamp() + offset_base;
             if (stamp >= start_tick_offset && stamp <= end_tick_offset)
+            {
+#ifdef USE_STAZED_TRANSPOSE
+                if (transpose != 0 && er.is_note()) /* includes Aftertouch  */
+                {
+                    event transposed_event = er;    /* assign ALL members   */
+                    transposed_event.transpose_note(transpose);
+                    put_event_on_bus(transposed_event);
+                }
+                else
+#else
                 put_event_on_bus(er);               /* frame still going    */
+#endif
+            }
             else if (stamp > end_tick_offset)
                 break;                              /* frame is done        */
 
@@ -3318,14 +3341,6 @@ sequence::transpose_notes (int steps, int scale)
     for (event_list::iterator i = m_events.begin(); i != m_events.end(); ++i)
     {
         event & er = DREF(i);
-#if 0
-        if                                          /* is it being moved ?  */
-        (
-            er.is_marked() && (
-                er.get_status() == EVENT_NOTE_ON ||
-                er.get_status() == EVENT_NOTE_OFF)
-        )
-#endif
         if (er.is_marked() && er.is_note())         /* transposable event?  */
         {
             e = er;
@@ -3351,6 +3366,33 @@ sequence::transpose_notes (int steps, int scale)
     m_events.merge(transposed_events);  /* transposed events get presorted  */
     verify_and_link();
 }
+
+#ifdef USE_STAZED_TRANSPOSE
+
+/**
+ *  Applies the transpose value held by the master MIDI buss object, if
+ *  non-zero, and if the sequence is set to be transposable.
+ */
+
+void
+sequence::apply_song_transpose ()
+{
+    int transpose_it = get_transposable() ? m_masterbus->get_transpose() : 0 ;
+    if (transpose != 0)
+    {
+        automutex locker(m_mutex);
+        m_events_undo.push(m_events);   /* push_undo() without lock         */
+        for (event_list::iterator i = m_events.begin(); i != m_events.end(); ++i)
+        {
+            event & er = DREF(i);
+            if (er.is_note())           /* includes aftertouch events       */
+                er.transpose_note(transpose);
+        }
+        set_dirty();
+    }
+}
+
+#endif
 
 /**
  *  Grabs the specified events, puts them into a list, quantizes them against

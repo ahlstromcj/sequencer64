@@ -28,18 +28,12 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-07-23
- * \updates       2016-06-14
+ * \updates       2016-06-25
  * \license       GNU GPLv2 or above
  *
  *  This class contains a number of functions that used to reside in the
  *  still-large perform module.
  */
-
-/*
- * EXPERIMENTAL incorporation of seq32 JACK support, not nearly done.
- */
-
-#undef USE_STAZED_JACK_SUPPORT
 
 #include "globals.h"                    /* globals, nullptr, and more       */
 #include "midibyte.hpp"                 /* midipulse typedef                */
@@ -48,7 +42,6 @@
 
 #include <jack/jack.h>
 #include <jack/transport.h>
-
 #ifdef SEQ64_JACK_SESSION
 #include <jack/session.h>
 #endif
@@ -70,8 +63,7 @@
 
 namespace seq64
 {
-
-class perform;                          /* jack_assistant parent is perform */
+    class perform;                      /* jack_assistant parent is perform */
 
 /**
  *  Provide a temporary structure for passing data and results between a
@@ -193,17 +185,6 @@ private:
 
     jack_nframes_t m_jack_frame_last;
 
-#ifdef USE_STAZED_JACK_SUPPORT
-
-    /**
-     * TBD
-     */
-
-    jack_nframes_t m_jack_frame_rate;
-
-#endif  // USE_STAZED_JACK_SUPPORT
-
-
     /**
      *  Provides positioning information on JACK playback.  This structure is
      *  filled via a call to jack_transport_query().  It holds, among other
@@ -249,22 +230,17 @@ private:
 
     bool m_jack_running;
 
-#ifdef USE_STAZED_JACK_SUPPORT
-
-    /**
-     *  Indicates to toggle JACK support.
-     */
-
-    bool m_toggle_jack;
-
-#endif
-
     /**
      *  Indicates if JACK Sync has been enabled successfully, with the
      *  application running as JACK Master.
      */
 
     bool m_jack_master;
+
+#ifdef USE_STAZED
+    bool m_toggle_jack;
+    midipulse m_jack_stop_tick;
+#endif
 
     /**
      *  Holds the global PPQN value for the Sequencer64 session.  It is used
@@ -416,11 +392,35 @@ public:
     bool init ();                       // init_jack ();
     bool deinit ();                     // deinit_jack ();
 
-#ifdef USE_STAZED_JACK_SUPPORT
+#ifdef SEQ64_JACK_SESSION
+    bool session_event ();              // jack_session_event ();
+#endif
 
-    void set_jack_mode (bool mode)
+    void start ();                      // start_jack();
+    void stop ();                       // stop();
+
+#ifdef USE_STAZED
+
+    void bbt_position(jack_position_t & pos, double jacktick);
+
+    void set_start_from_perfedit (bool flag)
     {
-        m_toggle_jack = mode;
+        m_start_from_perfedit = flag;
+    }
+
+    void toggle_song_mode ()
+    {
+        global_song_start_mode = ! global_song_start_mode;
+    }
+
+    void toggle_jack_mode ()
+    {
+        set_jack_mode(! m_jack_running);
+    }
+
+    void set_jack_mode (bool flag)
+    {
+        m_toggle_jack = flag;
     }
 
     bool get_toggle_jack () const
@@ -428,14 +428,33 @@ public:
         return m_toggle_jack;
     }
 
-#endif  // USE_STAZED_JACK_SUPPORT
+    void set_follow_transport (bool flag)
+    {
+        m_follow_transport = flag;
+    }
 
-#ifdef SEQ64_JACK_SESSION
-    bool session_event ();              // jack_session_event ();
+    bool get_follow_transport () const
+    {
+        return m_follow_transport;
+    }
+
+    void toggle_follow_transport ()
+    {
+        set_follow_transport(! m_follow_transport);
+    }
+
+    void set_jack_stop_tick (midipulse tick)
+    {
+        m_jack_stop_tick = tick;
+    }
+
+    midipulse get_jack_stop_tick () const
+    {
+        return m_jack_stop_tick;
+    }
+
 #endif
 
-    void start ();                      // start_jack();
-    void stop ();                       // stop();
     void position                       // position_jack();
     (
         bool to_left_tick,              // instead of current tick
@@ -465,7 +484,7 @@ public:
     {
         return m_jack_tick;
     }
-    
+
     /**
      * \getter m_jack_pos
      */

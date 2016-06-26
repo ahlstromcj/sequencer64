@@ -322,6 +322,23 @@ private:
         perf().sequence_key(seq);
     }
 
+#ifdef USE_STAZED_TRANSPOSE
+
+    /**
+     *  Apply full song transposition, if enabled.
+     */
+
+    void apply_song_transpose ()
+    {
+        if (perf().get_midi_transpose() != 0)
+        {
+            perf().apply_song_transpose();
+            m_perf_edit->set_transpose();
+        }
+    }
+
+#endif
+
     void update_window_title ();
     void toLower (std::string &);       // isn't this part of std::string?
 

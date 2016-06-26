@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-06-24
+ * \updates       2016-06-26
  * \license       GNU GPLv2 or above
  *
  *  The functions add_list_var() and add_long_list() have been replaced by
@@ -254,6 +254,17 @@ private:
      */
 
     bool m_song_mute;
+
+#ifdef USE_STAZED_TRANSPOSE
+
+    /**
+     *  Indicate if the sequence is transposable or not.  A potential feature
+     *  from stazed's seq32 project.
+     */
+
+    bool m_transposable;
+
+#endif
 
     /**
      *  Provides a member to hold the polyphonic step-edit note counter.
@@ -678,6 +689,30 @@ public:
     {
         return m_song_mute;
     }
+
+#ifdef USE_STAZED_TRANSPOSE
+
+    void apply_song_tranpose ();
+
+    /**
+     * \setter m_transposable
+     */
+
+    void set_transposable (bool flag)
+    {
+        m_transposable = flag;
+    }
+
+    /**
+     * \getter m_transposable
+     */
+
+    bool get_transposable () const
+    {
+        return m_transposable;
+    }
+
+#endif
 
     /**
      * \getter m_name pointer

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-05-17
+ * \updates       2016-06-26
  * \license       GNU GPLv2 or above
  *
  */
@@ -66,6 +66,10 @@
 #include "pixmaps/undo.xpm"
 #include "pixmaps/down.xpm"
 #include "pixmaps/perfedit.xpm"
+
+#ifdef USE_STAZED_TRANSPOSE
+#include "pixmaps/transpose.xpm"
+#endif
 
 using namespace Gtk::Menu_Helpers;
 
@@ -142,6 +146,11 @@ perfedit::perfedit
     ),
     m_perftime          (manage(new perftime(perf(), *this, *m_hadjust))),
     m_menu_snap         (manage(new Gtk::Menu())),
+#ifdef USE_STAZED_TRANSPOSE
+    m_menu_xpose        (manage(new Gtk::Menu())),
+    m_button_xpose;       /**< Button to bring up transpose menu. */
+    m_entry_xpose;         /**< Text edit for the transpose value. */
+#endif
     m_image_play        (manage(new PIXBUF_IMAGE(play2_xpm))),
     m_button_snap       (manage(new Gtk::Button())),
     m_entry_snap        (manage(new Gtk::Entry())),
@@ -240,6 +249,43 @@ perfedit::perfedit
     m_entry_snap->set_size_request(40, -1);
     m_entry_snap->set_editable(false);
 
+#ifdef USE_STAZED_TRANSPOSE
+
+    char num[12];
+    for (int i = -SEQ64_OCTAVE_SIZE; i <= SEQ64_OCTAVE_SIZE; ++i)
+    {
+        if (i != 0)
+            snprintf(num, sizeof num, "%+d [%s]", i, c_interval_text[abs(i)]);
+        else
+            snprintf(num, sizeof num, "0 [normal]");
+
+        m_menu_xpose->items().push_front
+        (
+            MenuElem
+            (
+                num,
+                sigc::bind
+                (
+                    mem_fun(*this, &perfedit::transpose_button_callback), i
+                )
+            )
+        );
+    }
+
+    m_button_xpose->add
+    (
+        *manage( new Image(Gdk::Pixbuf::create_from_xpm_data(transpose_xpm)))
+    );
+    m_button_xpose->signal_clicked().connect
+    (
+        sigc::bind<Menu *>(mem_fun(*this, &perfedit::popup_menu), m_menu_xpose)
+    );
+    add_tooltip(m_button_xpose, "Song transpose, for all transposable sequences");
+    m_entry_xpose->set_size_request(30, -1);
+    m_entry_xpose->set_editable(false);
+
+#endif  // USE_STAZED_TRANSPOSE
+
 #define SET_BPB     mem_fun(*this, &perfedit::set_beats_per_bar)
 
     char b[4];
@@ -331,6 +377,10 @@ perfedit::perfedit
     m_hlbox->pack_start(*(manage(new Gtk::Label("x"))), false, false, 4);
     m_hlbox->pack_start(*m_button_snap , false, false);
     m_hlbox->pack_start(*m_entry_snap , false, false);
+#ifdef USE_STAZED_TRANSPOSE
+    m_hlbox->pack_start(*m_button_xpose , false, false);
+    m_hlbox->pack_start(*m_entry_xpose , false, false);
+#endif
     add(*m_table);
 
     /*
@@ -343,6 +393,9 @@ perfedit::perfedit
     set_beats_per_bar(SEQ64_DEFAULT_BEATS_PER_MEASURE); /* time-sig numerator   */
     set_beat_width(SEQ64_DEFAULT_BEAT_WIDTH);           /* time-sig denominator */
     set_snap(SEQ64_DEFAULT_PERFEDIT_SNAP);
+#ifdef USE_STAZED_TRANSPOSE
+    set_transpose(0);
+#endif
 
     /*
      * Log the pointer to the appropriate perfedit object, if not already
@@ -720,6 +773,27 @@ perfedit::set_zoom (int z)
     m_perfroll->set_zoom(z);
     m_perftime->set_zoom(z);
 }
+
+#ifdef USE_STAZED_TRANSPOSE
+
+void
+perfedit::transpose_button_callback (int transpose)
+{
+    if (perf().get_midi_transpose() != transpose)
+        set_transpose(transpose);
+}
+
+void
+perfedit::set_transpose( int transpose  )
+{
+    char b[12];
+    snprintf(b, sizeof b, "%+d", transpose);
+    m_entry_xpose->set_text(b);
+    perf().all_notes_off();
+    perf().set_midi_transpose(transpose);
+}
+
+#endif  // USE_STAZED_TRANSPOSE
 
 /**
  *  This callback function calls the base-class on_realize() function, and

@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-23
- * \updates       2016-05-06
+ * \updates       2016-06-26
  * \license       GNU GPLv2 or above
  *
  *  These typedef specifications are intended to remove the ambiguity we have
@@ -44,7 +44,9 @@
  *  encapsulating MIDI timing information.
  */
 
-#include <limits.h>                     // ULONG_MAX and other limits   //
+#include <limits.h>                     /* ULONG_MAX and other limits   */
+
+#include "easy_macros.h"                /* insure build macros defined  */
 
 /*
  *  Since we're using unsigned variables for counting pulses, we can't do the
@@ -76,7 +78,7 @@ namespace seq64
 typedef unsigned char midibyte;
 
 /**
- *  Distinguishes a bus number from other MIDI bytes.
+ *  Distinguishes a buss/bus number from other MIDI bytes.
  */
 
 typedef unsigned char bussbyte;
@@ -100,7 +102,8 @@ typedef unsigned long midilong;
  *  time measurements.
  *
  *  HOWEVER, CURRENTLY, if you make this value unsigned, then perfroll won't
- *  show any notes in the sequence bars!!!
+ *  show any notes in the sequence bars!!!  Also, a number of manipulations of
+ *  this type currently depend upon it being a signed value.
  */
 
 typedef long midipulse;
@@ -133,7 +136,7 @@ private:
      *  There are two possible translations of the two bytes of a division. If
      *  the top bit of the 16 bits is 0, then the time division is in "ticks
      *  per beat" (or “pulses per quarter note”). If the top bit is 1, then
-     *  the time division is in "frames per second".  This function deals only
+     *  the time division is in "frames per second".  This member deals only
      *  with the ticks/beat definition.
      */
 

@@ -307,56 +307,72 @@ midi_container::fill (int tracknumber)
     put(0x05);
     add_long(c_midich);
     put(m_sequence.get_midi_channel());
-    if (! usr().global_seq_feature() && ! rc().legacy_format())
+    if (! rc().legacy_format())
     {
+        if (! usr().global_seq_feature())
+        {
+            /**
+             * New feature: save more sequence-specific values, if not legacy
+             * format and not saved globally.  We use a single byte for the
+             * key and scale, and a long for the background sequence.  We save
+             * these values only if they are different from the defaults; in
+             * most cases they will have been left alone by the user.  We save
+             * per-sequence values here only if the global-background-sequence
+             * feature is not in force.
+             */
+
+            if (m_sequence.musical_key() != SEQ64_KEY_OF_C)
+            {
+                add_variable(0);                        /* key selection dt */
+                put(0xFF);
+                put(0x7F);
+                put(0x05);                              /* long + midibyte  */
+                add_long(c_musickey);
+                put(m_sequence.musical_key());
+            }
+            if (m_sequence.musical_scale() != int(c_scale_off))
+            {
+                add_variable(0);                        /* scale selection  */
+                put(0xFF);
+                put(0x7F);
+                put(0x05);                              /* long + midibyte  */
+                add_long(c_musicscale);
+                put(m_sequence.musical_scale());
+            }
+            if (SEQ64_IS_VALID_SEQUENCE(m_sequence.background_sequence()))
+            {
+                add_variable(0);                        /* b'ground seq.    */
+                put(0xFF);
+                put(0x7F);
+                put(0x08);                              /* two long values  */
+                add_long(c_backsequence);
+                add_long(m_sequence.background_sequence()); /* put_long()?  */
+            }
+        }
+
+#ifdef SEQ64_STAZED_TRANSPOSE
+
         /**
-         * New feature: save more sequence-specific values, if not legacy
-         * format and not saved globally.  We use a single byte for the key
-         * and scale, and a long for the background sequence.  We save these
-         * values only if they are different from the defaults; in most cases
-         * they will have been left alone by the user.  We save per-sequence
-         * values here only if the global-background-sequence feature is not
-         * in force.
+         *  For the new "transposable" flag (tagged by the value c_transpose)
+         *  we really only care about saving the value of "false", because
+         *  otherwise we can assume the value is true for the given sequence,
+         *  and save space by not saving it... generally only drum patterns
+         *  will not be transposable.
          */
 
-        if (m_sequence.musical_key() != SEQ64_KEY_OF_C)
+        bool transpose = m_sequence.get_transposable();
+        if (! transpose)                                /* save only false  */
         {
-            add_variable(0);                        /* key selection dt */
+            add_variable(0);                            /* transposition    */
             put(0xFF);
             put(0x7F);
-            put(0x05);                              /* long + midibyte  */
-            add_long(c_musickey);
-            put(m_sequence.musical_key());
-        }
-        if (m_sequence.musical_scale() != int(c_scale_off))
-        {
-            add_variable(0);                        /* scale selection  */
-            put(0xFF);
-            put(0x7F);
-            put(0x05);                              /* long + midibyte  */
-            add_long(c_musicscale);
-            put(m_sequence.musical_scale());
-        }
-        if (SEQ64_IS_VALID_SEQUENCE(m_sequence.background_sequence()))
-        {
-            add_variable(0);                        /* b'ground seq.    */
-            put(0xFF);
-            put(0x7F);
-            put(0x08);                              /* two long values  */
-            add_long(c_backsequence);
-            add_long(m_sequence.background_sequence()); /* put_long()?  */
-        }
-#ifdef SEQ64_STAZED_TRANSPOSE
-        if (m_sequence.get_transposable() != 0)
-        {
-            add_variable(0);                        /* transposition    */
-            put(0xFF);
-            put(0x7F);
-            put(0x05);                              /* long + midibyte  */
+            put(0x05);                                  /* long + midibyte  */
             add_long(c_transpose);
-            put(m_sequence.get_transposable());
+            put(transpose);                             /* a boolean        */
         }
+
 #endif
+
     }
 
     /*

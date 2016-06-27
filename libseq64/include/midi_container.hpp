@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-10-10
- * \updates       2016-06-25
+ * \updates       2016-06-27
  * \license       GNU GPLv2 or above
  *
  */
@@ -114,10 +114,12 @@ class sequence;
             c_midibus
             c_midich
             c_timesig
-            c_triggers
+            c_triggers (deprecated)
             c_triggers_new
-            c_musickey
-            c_musicscale
+            c_musickey (can be in footer, as well)
+            c_musicscale (ditto)
+            c_backsequence (ditto)
+            c_transpose
 \endverbatim
  *
  * Footer ("proprietary") data:
@@ -128,7 +130,6 @@ class sequence;
             c_notes
             c_bpmtag (beats per minute)
             c_mutegroups
-            c_backsequence (isn't this track-specific?)
 \endverbatim
  *
  *  Also see the PDF file in the following project for more information about
@@ -170,12 +171,12 @@ const midilong c_musicscale =   0x24240012; /**< The track's scale.         */
 const midilong c_backsequence = 0x24240013; /**< Track background sequence. */
 
 #ifdef SEQ64_STAZED_TRANSPOSE
-const midilong c_transpose =    0x24240013; /**< Track transpose value.     */
+const midilong c_transpose =    0x24240014; /**< Track transpose value.     */
 #endif
 
 /**
  *    This class is the abstract base class for a container of MIDI track
- *    information.
+ *    information.  It is the base class for midi_list and midi_vector.
  */
 
 class midi_container
@@ -213,7 +214,8 @@ public:
     void fill (int tracknumber);
 
     /**
-     *  Returns the size of the container, in midibytes.
+     *  Returns the size of the container, in midibytes.  Must be overridden
+     *  in the derived class, though not pure.
      */
 
     virtual std::size_t size () const
@@ -247,6 +249,11 @@ public:
     virtual midibyte get () = 0;
 
 protected:
+
+    /**
+     * \setter m_position_for_get
+     *      Sets the position to 0 and then returns that value.
+     */
 
     unsigned int position_reset () const
     {

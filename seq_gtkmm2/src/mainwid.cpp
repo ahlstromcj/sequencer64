@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-05-21
+ * \updates       2016-06-26
  * \license       GNU GPLv2 or above
  *
  *  Note that this representation is, in a sense, inside the mainwnd
@@ -419,6 +419,15 @@ mainwid::draw_sequence_on_pixmap (int seqnum)
                 int velocity;
                 draw_type dt = DRAW_FIN;
                 seq->reset_draw_marker();
+
+                Color eventcolor;
+#ifdef SEQ64_STAZED_TRANSPOSE
+                if (! seq->get_transposable())
+                    eventcolor = red();
+                else
+#endif
+                    eventcolor = fg_color();
+
                 do
                 {
                     if (not_nullptr(seq))
@@ -449,7 +458,7 @@ mainwid::draw_sequence_on_pixmap (int seqnum)
 
                     draw_line_on_pixmap
                     (
-                        fg_color(),
+                        eventcolor,                         // fg_color()
                         rectangle_x + tick_s_x, rectangle_y + note_y,
                         rectangle_x + tick_f_x, rectangle_y + note_y
                     );

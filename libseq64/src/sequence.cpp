@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-06-26
+ * \updates       2016-06-27
  * \license       GNU GPLv2 or above
  *
  *  The functionality of this class also includes handling some of the
@@ -1151,7 +1151,7 @@ sequence::adjust_timestamp (midipulse t, bool expand)
     if (expand)
     {
         if (t == 0)
-            t = m_length - 2;
+            t = m_length - m_note_off_margin;
     }
     else                                /* if (wrap)                    */
     {
@@ -1915,7 +1915,11 @@ sequence::stream_event (event & ev)
             if (ev.is_note_on())
             {
                 push_undo();
-                add_note(mod_last_tick(), m_snap_tick - 2, ev.get_note(), false);
+                add_note
+                (
+                    mod_last_tick(), m_snap_tick - m_note_off_margin,
+                    ev.get_note(), false
+                );
                 set_dirty();
                 ++m_notes_on;
             }
@@ -3393,15 +3397,20 @@ sequence::apply_song_transpose ()
 
 /**
  * \setter m_transposable
- *      Changing this flag modifies the sequence and performance.
+ *      Changing this flag modifies the sequence and performance.  Note that
+ *      when a sequence is being read from a MIDI file, it will not yet have a
+ *      parent, so we have to check for that before setting the perform modify
+ *      flag.
  */
 
 void
 sequence::set_transposable (bool flag)
 {
     if (flag != m_transposable)
-        m_parent->modify();
-
+    {
+        if (not_nullptr(m_parent))
+            m_parent->modify();
+    }
     m_transposable = flag;
 }
 

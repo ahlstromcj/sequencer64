@@ -491,6 +491,10 @@ perform::select_and_mute_group (int group)
 /**
  *  Mutes all tracks in the current set of active patterns/sequences.
  *  Covers tracks from 0 to m_sequence_max.
+ *
+ * \param flag
+ *      If true (the default), the song-mute of the sequence is turned on.
+ *      Otherwise, it is turned off.
  */
 
 void

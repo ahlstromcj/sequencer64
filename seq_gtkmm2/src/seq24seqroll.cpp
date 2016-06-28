@@ -90,13 +90,20 @@ Seq24SeqRollInput::on_button_press_event (GdkEventButton * ev, seqroll & sroll)
     int note_h, note_l;
     int norm_x, norm_y;
     bool needs_update = false;
-    int snapped_x = norm_x = int(ev->x + sroll.m_scroll_offset_x);
-    int snapped_y = norm_y = int(ev->y + sroll.m_scroll_offset_y);
+    int snapped_x = norm_x = sroll.scroll_offset_x(int(ev->x));
+    int snapped_y = norm_y = sroll.scroll_offset_y(int(ev->y));
+    sequence & seq = sroll.m_seq;                   /* just do this once!   */
+
+    /*
+     * sroll.button_press_init(snapped_x, snapped_y)
+     */
+
     sroll.grab_focus();
     sroll.snap_x(snapped_x);
     sroll.snap_y(snapped_y);
     sroll.set_current_drop_y(snapped_y);            /* y is always snapped  */
     sroll.m_old.x = sroll.m_old.y = sroll.m_old.width = sroll.m_old.height = 0;
+
     if (sroll.m_paste)
     {
         sroll.complete_paste(snapped_x, snapped_y);
@@ -125,7 +132,7 @@ Seq24SeqRollInput::on_button_press_event (GdkEventButton * ev, seqroll & sroll)
                  * Test if a note is already there; fake select, if so, no add.
                  */
 
-                int eventcount = sroll.m_seq.select_note_events
+                int eventcount = seq.select_note_events
                 (
                     tick_s, note_h, tick_s, note_h, sequence::e_would_select
                 );
@@ -133,7 +140,7 @@ Seq24SeqRollInput::on_button_press_event (GdkEventButton * ev, seqroll & sroll)
                 {
                     /* add note, length = little less than snap */
 
-                    sroll.m_seq.push_undo();
+                    seq.push_undo();
 
 #ifdef SEQ64_STAZED_CHORD_GENERATOR
                     if (sroll.m_chord > 0)                  /* and less than? */
@@ -157,16 +164,16 @@ Seq24SeqRollInput::on_button_press_event (GdkEventButton * ev, seqroll & sroll)
             }
             else                                        /* selecting */
             {
-                int eventcount = sroll.m_seq.select_note_events
+                int eventcount = seq.select_note_events
                 (
                     tick_s, note_h, tick_s, note_h, sequence::e_is_selected
                 );
                 if (eventcount == 0)
                 {
                     if (! (ev->state & SEQ64_CONTROL_MASK))
-                        sroll.m_seq.unselect();
+                        seq.unselect();
 
-                    eventcount = sroll.m_seq.select_note_events
+                    eventcount = seq.select_note_events
                     (
                         tick_s, note_h, tick_s, note_h,
                         sequence::e_select_one  /* direct click, one event */
@@ -179,7 +186,7 @@ Seq24SeqRollInput::on_button_press_event (GdkEventButton * ev, seqroll & sroll)
                     else
                         needs_update = true;
                 }
-                eventcount = sroll.m_seq.select_note_events
+                eventcount = seq.select_note_events
                 (
                     tick_s, note_h, tick_s, note_h, sequence::e_is_selected
                 );
@@ -233,7 +240,7 @@ Seq24SeqRollInput::on_button_press_event (GdkEventButton * ev, seqroll & sroll)
             set_adding(true, sroll);
     }
     if (needs_update)               /* if they clicked, something changed */
-        sroll.m_seq.set_dirty();    /* redraw_events();                   */
+        seq.set_dirty();            /* redraw_events();                   */
 
     return needs_update;
 }
@@ -275,6 +282,7 @@ Seq24SeqRollInput::on_button_release_event
     int delta_y = sroll.m_current_y - sroll.m_drop_y;
     midipulse delta_tick;
     int delta_note;
+    sequence & seq = sroll.m_seq;                   /* just do this once!   */
     if (SEQ64_CLICK_LEFT(ev->button))
     {
         if (sroll.m_selecting)
@@ -288,7 +296,7 @@ Seq24SeqRollInput::on_button_release_event
             );
             sroll.convert_xy(x, y, tick_s, note_h);
             sroll.convert_xy(x + w, y + h, tick_f, note_l);
-            (void) sroll.m_seq.select_note_events
+            (void) seq.select_note_events
             (
                 tick_s, note_h, tick_f, note_l, sequence::e_select
             );
@@ -306,8 +314,8 @@ Seq24SeqRollInput::on_button_release_event
             delta_x -= sroll.m_move_snap_offset_x;      /* adjust for snap */
             sroll.convert_xy(delta_x, delta_y, delta_tick, delta_note);
             delta_note -= c_num_keys - 1;
-            sroll.m_seq.push_undo();
-            sroll.m_seq.move_selected_notes(delta_tick, delta_note);
+            seq.push_undo();
+            seq.move_selected_notes(delta_tick, delta_note);
             needs_update = true;
         }
     }
@@ -323,11 +331,11 @@ Seq24SeqRollInput::on_button_release_event
              */
 
             sroll.convert_xy(delta_x, delta_y, delta_tick, delta_note);
-            sroll.m_seq.push_undo();
+            seq.push_undo();
             if (ev->state & SEQ64_SHIFT_MASK)
-                sroll.m_seq.stretch_selected(delta_tick);
+                seq.stretch_selected(delta_tick);
             else
-                sroll.m_seq.grow_selected(delta_tick);
+                seq.grow_selected(delta_tick);
 
             needs_update = true;
         }
@@ -356,9 +364,9 @@ Seq24SeqRollInput::on_button_release_event
     sroll.m_paste = false;
     sroll.m_moving_init = false;
     sroll.m_painting = false;
-    sroll.m_seq.unpaint_all();
+    seq.unpaint_all();
     if (needs_update)               /* if they clicked, something changed   */
-        sroll.m_seq.set_dirty();    /* redraw_events();                     */
+        seq.set_dirty();            /* redraw_events();                     */
 
     return needs_update;
 }
@@ -383,22 +391,32 @@ bool Seq24SeqRollInput::on_motion_notify_event
 )
 {
     bool result = false;
-    sroll.m_current_x = int(ev->x + sroll.m_scroll_offset_x);
-    sroll.m_current_y = int(ev->y + sroll.m_scroll_offset_y);
+//  sroll.m_current_x = int(ev->x + sroll.m_scroll_offset_x);
+//  sroll.m_current_y = int(ev->y + sroll.m_scroll_offset_y);
+    sroll.set_current_offset_x(int(ev->x));
+    sroll.set_current_offset_y(int(ev->y));
+
     if (sroll.m_moving_init)
     {
         sroll.m_moving_init = false;
         sroll.m_moving = true;
     }
 
+    /*
+     * seqroll::set_hint_note()
+     */
+
     int note;
     midipulse tick;
     sroll.snap_y(sroll.m_current_y);
     sroll.convert_xy(0, sroll.m_current_y, tick, note);
     sroll.m_seqkeys_wid.set_hint_key(note);
-    if (sroll.m_selecting || sroll.m_moving || sroll.m_growing || sroll.m_paste)
+
+//  if (sroll.m_selecting || sroll.m_moving || sroll.m_growing || sroll.m_paste)
+    if (sroll.select_action())
     {
-        if (sroll.m_moving || sroll.m_paste)
+//      if (sroll.m_moving || sroll.m_paste)
+        if (sroll.drop_action())
             sroll.snap_x(sroll.m_current_x);
 
         sroll.draw_selection_on_window();
@@ -412,6 +430,10 @@ bool Seq24SeqRollInput::on_motion_notify_event
         else
 #endif
         {
+            /*
+             * sroll.add_snapped_note() a potential replacement.
+             */
+
             sroll.snap_x(sroll.m_current_x);
             sroll.convert_xy(sroll.m_current_x, sroll.m_current_y, tick, note);
             sroll.add_note(tick, note);

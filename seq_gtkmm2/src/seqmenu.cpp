@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-05-21
+ * \updates       2016-06-28
  * \license       GNU GPLv2 or above
  *
  *  This object also does some minor coordination of editing a sequence via
@@ -96,10 +96,10 @@ seqmenu::~seqmenu ()
 }
 
 /**
- *  This function sets up the File menu entries.  It also sets up the pattern
- *  popup menu entries that are used in mainwid.  Note that, for the selected
- *  sequence, the "Edit" and "Event Edit" menu entries are not included if a
- *  pattern editor or event editor is already running.
+ *  This function sets up the pattern menu entries.  It also sets up the
+ *  pattern popup menu entries that are used in mainwid.  Note that, for the
+ *  selected sequence, the "Edit" and "Event Edit" menu entries are not
+ *  included if a pattern editor or event editor is already running.
  */
 
 void
@@ -138,18 +138,12 @@ seqmenu::popup_menu ()
 #endif
             m_menu->items().push_back(SeparatorElem());
         }
-    }
-    else
-    {
-        m_menu->items().push_back
-        (
-            MenuElem("New", mem_fun(*this, &seqmenu::seq_edit))
-        );
-        m_menu->items().push_back(SeparatorElem());
-    }
 
-    if (is_current_seq_active())
-    {
+        //
+        // TODO:  Add a menu entry to change the is-transposable flag which
+        //        mirrors the reverse of the current state of the sequence
+        //
+
         m_menu->items().push_back
         (
             MenuElem("Cut", mem_fun(*this, &seqmenu::seq_cut))
@@ -161,6 +155,12 @@ seqmenu::popup_menu ()
     }
     else
     {
+        m_menu->items().push_back
+        (
+            MenuElem("New", mem_fun(*this, &seqmenu::seq_edit))
+        );
+        m_menu->items().push_back(SeparatorElem());
+
         m_menu->items().push_back
         (
             MenuElem("Paste", mem_fun(*this, &seqmenu::seq_paste))
@@ -179,6 +179,10 @@ seqmenu::popup_menu ()
     menu_song->items().push_back
     (
         MenuElem("Mute All Tracks", mem_fun(*this, &seqmenu::mute_all_tracks))
+    );
+    menu_song->items().push_back
+    (
+        MenuElem("Unmute All Tracks", mem_fun(*this, &seqmenu::unmute_all_tracks))
     );
 
     /*
@@ -243,9 +247,34 @@ seqmenu::set_bus_and_midi_channel (int bus, int ch)
         sequence * s = get_current_sequence();
         if (not_nullptr(s))
         {
+            if (s->get_midi_bus() != bus || s->get_midi_channel() != ch)
+                s->set_dirty();
+
             s->set_midi_bus(bus);
             s->set_midi_channel(ch);
-            s->set_dirty();
+        }
+    }
+}
+
+/**
+ *  Sets the "is-transposable" flag of the current sequence.
+ *
+ * \param flag
+ *      The value to use to set the flag.
+ */
+
+void
+seqmenu::set_transposable (bool flag)
+{
+    if (is_current_seq_active())
+    {
+        sequence * s = get_current_sequence();
+        if (not_nullptr(s))
+        {
+            if (s->get_transposable() != flag)
+                s->set_dirty();
+
+            s->set_transposable(flag);
         }
     }
 }
@@ -258,6 +287,16 @@ void
 seqmenu::mute_all_tracks ()
 {
     m_mainperf.mute_all_tracks();
+}
+
+/**
+ *  Unmutes all tracks in the main perform object.
+ */
+
+void
+seqmenu::unmute_all_tracks ()
+{
+    m_mainperf.mute_all_tracks(false);
 }
 
 /**

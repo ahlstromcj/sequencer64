@@ -168,14 +168,14 @@ seqroll::seqroll
     m_moving                (false),
     m_moving_init           (false),
     m_growing               (false),
-    m_painting              (false),
+    m_painting              (false),    /* used in fruity & seq24 seqrolls  */
     m_paste                 (false),
     m_is_drag_pasting       (false),
     m_is_drag_pasting_start (false),
     m_justselected_one      (false),
     m_move_delta_x          (0),
     m_move_delta_y          (0),
-    m_move_snap_offset_x    (0),        /* used in fruityseqroll */
+    m_move_snap_offset_x    (0),        /* used in fruityseqroll            */
     m_progress_x            (0),
     m_scroll_offset_ticks   (0),
     m_scroll_offset_key     (0),
@@ -1227,8 +1227,8 @@ seqroll::move_selection_box (int dx, int dy)
 {
     int x = m_old.x + dx * m_snap / m_zoom;
     int y = m_old.y + dy * c_key_y;
-    m_current_x = x + m_scroll_offset_x;
-    m_current_y = y + m_scroll_offset_y;
+    m_current_x = scroll_offset_x(x);
+    m_current_y = scroll_offset_y(y);
 
 	int note;
 	midipulse tick;
@@ -1420,12 +1420,26 @@ seqroll::add_note (midipulse tick, int note, bool paint)
     m_seq.add_note(tick, note_off_length(), note, paint);
 }
 
-#ifdef USE_NEW_FUNCTION
+#ifdef USE_NEW_FUNCTIONS
 
 /*
- * Get the box that selected elements are in.  Save
- * offset that we get from the snap above.  Align
- * selection for drawing.
+ * A potential function for XRollInput::on_button_press_event().
+ */
+
+void
+seqroll::button_press_init (int & snapped_x, int & snapped_y)
+{
+    grab_focus();
+    snap_x(snapped_x);
+    snap_y(snapped_y);
+    set_current_drop_y(snapped_y);                  /* y is always snapped  */
+    m_old.x = m_old.y = m_old.width = m_old.height = 0;
+}
+
+/*
+ * Get the box that selected elements are in.  Save offset that we get from
+ * the snap above.  Align selection for drawing.  Could be used in
+ * XRollInput::on_button_press_event().
  */
 
 void
@@ -1443,6 +1457,34 @@ seqroll::align_selection
     m_move_snap_offset_x = m_selected.x - adjusted_selected_x;
     snap_x(m_selected.x);
     set_current_drop_x(snapped_x);
+}
+
+/*
+ *  Sets the hint key based on the current mouse position.
+ */
+
+void
+seqroll::set_hint_note ()
+{
+    int note;
+    midipulse tick;
+    snap_y(m_current_y);
+    convert_xy(0, m_current_y, tick, note);
+    m_seqkeys_wid.set_hint_key(note);
+}
+
+/*
+ *  Adds a note based on the current mouse position.
+ */
+
+void
+seqroll::add_snapped_note ()
+{
+    int note;
+    midipulse tick;
+    snap_x(m_current_x);
+    convert_xy(m_current_x, m_current_y, tick, note);
+    add_note(tick, note);
 }
 
 #endif  // USE_NEW_FUNCTION

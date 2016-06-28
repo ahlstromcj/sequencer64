@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-06-26
+ * \updates       2016-06-28
  * \license       GNU GPLv2 or above
  *
  *  This class still has way too many members, even with the JACK and
@@ -1230,7 +1230,7 @@ public:
     void sequence_playing_off (int seq);
     void set_group_mute_state (int g_track, bool mute_state);
     bool get_group_mute_state (int g_track);
-    void mute_all_tracks ();
+    void mute_all_tracks (bool flag = true);
     void output_func ();
     void input_func ();
 

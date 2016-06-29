@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-06-26
+ * \updates       2016-06-29
  * \license       GNU GPLv2 or above
  *
  *  The functions add_list_var() and add_long_list() have been replaced by
@@ -672,11 +672,15 @@ public:
 
     /**
      * \setter m_song_mute
+     *      This function also calls set_dirty_mp() to make sure that the
+     *      perfnames panel is updated to show the new mute status of the
+     *      sequence.
      */
 
     void set_song_mute (bool mute)
     {
         m_song_mute = mute;
+        set_dirty_mp();
     }
 
     /**

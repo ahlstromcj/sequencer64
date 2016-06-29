@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-06-27
+ * \updates       2016-06-29
  * \license       GNU GPLv2 or above
  *
  *  The functionality of this class also includes handling some of the
@@ -1947,7 +1947,9 @@ sequence::stream_event (event & ev)
 }
 
 /**
- *  Sets the dirty flags for names, main, and performance.
+ *  Sets the dirty flags for names, main, and performance.  These flags are
+ *  meant for causing user-interface refreshes, not for performance
+ *  modification.
  *
  * \threadunsafe
  */

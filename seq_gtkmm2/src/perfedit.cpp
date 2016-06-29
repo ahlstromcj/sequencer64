@@ -679,8 +679,16 @@ perfedit::timeout ()
     m_perfroll->follow_progress();          /* keep up with progress        */
     m_perfroll->redraw_progress();
     m_perfnames->redraw_dirty_sequences();
-#ifdef USE_IMMEDIATE_REDRAE
+
+#ifdef USE_IMMEDIATE_REDRAW
+
+    /*
+     * Do not enable this code, it makes the whole perfedit panel flicker.
+     * Instead, one can set (for example) the sequence's "dirty mp" flag.
+     */
+
     m_perfroll->enqueue_draw();             /* necessary to force redraw    */
+
 #endif
 
 #ifdef SEQ64_PAUSE_SUPPORT

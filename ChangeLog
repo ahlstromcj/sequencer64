@@ -1,5 +1,61 @@
+2016-06-28  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* : Merged fixups into master to create 0.9.15.
+	* libseq64/include/perform.hpp, libseq64/src/perform.cpp,
+	seq_gtkmm2/include/seqmenu.hpp, seq_gtkmm2/include/seqroll.hpp,
+	seq_gtkmm2/src/seq24seqroll.cpp, seq_gtkmm2/src/seqmenu.cpp,
+	seq_gtkmm2/src/seqroll.cpp: Started adding a few new entries to the
+	seqmenu, such as for unmuting all tracks and changing the
+	transposable flag.
+
+2016-06-27  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/include/midi_container.hpp,
+	libseq64/include/midibyte.hpp, libseq64/src/midi_container.cpp,
+	libseq64/src/midifile.cpp, libseq64/src/sequence.cpp,
+	resources/pixmaps/follow.xpm, resources/pixmaps/transpose.xpm,
+	seq_gtkmm2/src/mainwid.cpp, seq_gtkmm2/src/perfroll.cpp: Added
+	non-transposable pattern highlighting to pattern and song editors,
+	and fixed read/write of that pattern flag.
+
+2016-06-26  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* INSTALL, README, configure.ac,
+	contrib/notes/bugs_to_investigate.txt, libseq64/include/event.hpp,
+	libseq64/include/midi_container.hpp, libseq64/include/perform.hpp,
+	libseq64/include/sequence.hpp, libseq64/src/event.cpp,
+	libseq64/src/midi_container.cpp, libseq64/src/midifile.cpp,
+	libseq64/src/perform.cpp, libseq64/src/sequence.cpp,
+	resources/pixmaps/transpose.xpm, seq_gtkmm2/include/mainwnd.hpp,
+	seq_gtkmm2/include/perfedit.hpp, seq_gtkmm2/include/seqedit.hpp,
+	seq_gtkmm2/src/mainwnd.cpp, seq_gtkmm2/src/perfedit.cpp,
+	seq_gtkmm2/src/seqedit.cpp: Basically finished the stazed transpose
+	feature, still needs more testing.
+	* libseq64/include/mastermidibus.hpp, libseq64/include/perform.hpp,
+	libseq64/src/mastermidibus.cpp, libseq64/src/perform.cpp,
+	seq_gtkmm2/include/mainwnd.hpp, seq_gtkmm2/src/perfedit.cpp: Moved
+	transpose flag from mastermidibus to perform.
+	* README, ROADMAP, VERSION, configure.ac,
+	contrib/code/stazed/jack_assistant.cpp,
+	contrib/code/stazed/jack_assistant.hpp,
+	contrib/code/stazed/perform.cpp, contrib/code/stazed/perform.hpp,
+	contrib/notes/stazed-fixes.txt, doc/dox/doxy-reference.cfg,
+	libseq64/include/event.hpp, libseq64/include/keys_perform.hpp,
+	libseq64/include/mastermidibus.hpp,
+	libseq64/include/midi_container.hpp, libseq64/include/perform.hpp,
+	libseq64/include/sequence.hpp, libseq64/src/cmdlineopts.cpp,
+	libseq64/src/event.cpp, libseq64/src/mastermidibus.cpp,
+	libseq64/src/midi_container.cpp, libseq64/src/midifile.cpp,
+	libseq64/src/perform.cpp, libseq64/src/sequence.cpp,
+	resources/pixmaps/chord3-inv.xpm, resources/pixmaps/follow.xpm,
+	resources/pixmaps/transpose.xpm, seq_gtkmm2/include/mainwnd.hpp,
+	seq_gtkmm2/include/perfedit.hpp, seq_gtkmm2/src/perfedit.cpp: Start
+	0.9.15 in fixups branch, added macroed-out stazed song-transpose
+	support.
+
 2016-06-25  Chris Ahlstrom <ahlstromcj@gmail.com>
 
+	* : Merged fixups into master to create 0.9.14.
 	* contrib/configs/sequencer64-minimal.rc,
 	resources/pixmaps/chord3-inv.xpm, seq_gtkmm2/include/perfroll.hpp,
 	seq_gtkmm2/include/seqroll.hpp, seq_gtkmm2/src/perfedit.cpp,

@@ -266,6 +266,17 @@ seqmenu::set_bus_and_midi_channel (int bus, int ch)
 
         s->set_midi_bus(bus);
         s->set_midi_channel(ch);
+
+        /*
+         * New for 0.9.15.2:  Let's try to update the seqedit as well, if it
+         * is open.
+         */
+
+        if (not_nullptr(m_seqedit))
+        {
+            m_seqedit->set_midi_bus(bus);
+            m_seqedit->set_midi_channel(ch);
+        }
     }
 }
 

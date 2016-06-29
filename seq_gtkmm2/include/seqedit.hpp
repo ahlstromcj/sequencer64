@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-06-20
+ * \updates       2016-06-29
  * \license       GNU GPLv2 or above
  *
  *  The seqedit is a kind of master class for holding aseqroll, seqkeys,
@@ -63,6 +63,7 @@ namespace seq64
     class seqevent;
     class seqdata;
     class seqkeys;
+    class seqmenu;                      /* new */
     class seqroll;
     class seqtime;
     class sequence;
@@ -84,6 +85,7 @@ namespace seq64
 
 class seqedit : public gui_window_gtk2
 {
+    friend seqmenu;                     /* new, to follow seqmenu setting   */
 
 private:
 

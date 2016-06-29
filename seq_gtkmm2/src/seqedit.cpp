@@ -1609,6 +1609,9 @@ seqedit::set_midi_channel (int midichannel)
  *
  *  Should this change set the is-modified flag?  Where should validation
  *  against the ALSA or JACK buss limits occur?
+ *
+ *  Also, it would be nice to be able to update this display of the MIDI bus
+ *  in the field if we set it from the seqmenu.
  */
 
 void
@@ -2051,7 +2054,7 @@ seqedit::timeout ()
         raise();
     }
     m_seqroll_wid->follow_progress();           /* keep up with progress    */
-    if (m_seq.is_dirty_edit())
+    if (m_seq.is_dirty_edit())                  /* m_seq.is_dirty_main()    */
     {
         m_seqroll_wid->redraw_events();
         m_seqevent_wid->redraw();

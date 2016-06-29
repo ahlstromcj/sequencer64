@@ -156,11 +156,6 @@ sequence::partial_assign (const sequence & rhs)
     if (this != &rhs)
     {
         automutex locker(m_mutex);
-
-        /*
-         * const: m_note_off_margin
-         */
-
         m_parent        = rhs.m_parent;             /* a pointer, careful!  */
         m_events        = rhs.m_events;
         m_triggers      = rhs.m_triggers;
@@ -287,6 +282,7 @@ sequence::pop_trigger_undo ()
 
 /**
  * \setter m_masterbus
+ *      Do we need to call set_dirty_mp() here?
  *
  * \threadsafe
  *
@@ -354,9 +350,8 @@ sequence::set_rec_vol (int recvol)
 
 /**
  * \setter m_queued and m_queued_tick
- *
- *  Toggles the queued flag and sets the dirty-mp flag.  Also calculates
- *  the queued tick based on m_last_tick.
+ *      Toggles the queued flag and sets the dirty-mp flag.  Also calculates
+ *      the queued tick based on m_last_tick.
  *
  * \threadsafe
  */
@@ -365,9 +360,9 @@ void
 sequence::toggle_queued ()
 {
     automutex locker(m_mutex);
-    set_dirty_mp();
     m_queued = ! m_queued;
     m_queued_tick = m_last_tick - mod_last_tick() + m_length;
+    set_dirty_mp();
 }
 
 /**
@@ -382,8 +377,8 @@ void
 sequence::off_queued ()
 {
     automutex locker(m_mutex);
-    set_dirty_mp();
     m_queued = false;
+    set_dirty_mp();
 }
 
 /**
@@ -549,7 +544,7 @@ sequence::remove (event_list::iterator i)
     if (er.is_note_off() && m_playing_notes[er.get_note()] > 0)
     {
         m_masterbus->play(m_bus, &er, m_midi_channel);
-        m_playing_notes[er.get_note()]--;                   // ugh
+        --m_playing_notes[er.get_note()];                   // ugh
     }
     m_events.remove(i);                                     // erase(i)
 }
@@ -1951,6 +1946,10 @@ sequence::stream_event (event & ev)
  *  meant for causing user-interface refreshes, not for performance
  *  modification.
  *
+ *  m_dirty_names is set to false in is_dirty_names(); m_dirty_names is set to
+ *  false in is_dirty_main(); m_dirty_names is set to false in
+ *  is_dirty_perf().
+ *
  * \threadunsafe
  */
 
@@ -1975,7 +1974,8 @@ sequence::set_dirty ()
 
 /**
  *  Returns the value of the dirty names (heh heh) flag, and sets that
- *  flag to false.
+ *  flag to false.  Not sure that we need to lock a boolean on modern
+ *  processors.
  *
  * \threadsafe
  *
@@ -2032,8 +2032,8 @@ sequence::is_dirty_perf ()
 }
 
 /**
- *  Returns the value of the dirty edit flag, and sets that
- *  flag to false.
+ *  Returns the value of the dirty edit flag, and sets that flag to false.
+ *  The m_dirty_edit flag is set by the function set_dirty().
  *
  * \threadsafe
  *
@@ -3234,15 +3234,15 @@ void
 sequence::off_playing_notes ()
 {
     automutex locker(m_mutex);
-    event e;
     for (int x = 0; x < c_midi_notes; ++x)
     {
         while (m_playing_notes[x] > 0)
         {
+            event e;
             e.set_status(EVENT_NOTE_OFF);
             e.set_data(x, 0);
             m_masterbus->play(m_bus, &e, m_midi_channel);
-            m_playing_notes[x]--;
+            --m_playing_notes[x];
         }
     }
     m_masterbus->flush();

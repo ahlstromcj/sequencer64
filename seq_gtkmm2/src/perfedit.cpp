@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-06-28
+ * \updates       2016-06-29
  * \license       GNU GPLv2 or above
  *
  */
@@ -679,7 +679,9 @@ perfedit::timeout ()
     m_perfroll->follow_progress();          /* keep up with progress        */
     m_perfroll->redraw_progress();
     m_perfnames->redraw_dirty_sequences();
+#ifdef USE_IMMEDIATE_REDRAE
     m_perfroll->enqueue_draw();             /* necessary to force redraw    */
+#endif
 
 #ifdef SEQ64_PAUSE_SUPPORT
     if (perf().is_running() != m_is_running)

@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-05-29
+ * \updates       2016-06-26
  * \license       GNU GPLv2 or above
  *
  *  Note that, as of version 0.9.11, the z and Z keys, when focus is on the
@@ -113,6 +113,11 @@ private:
     perfroll * m_perfroll;              /**< The piano roll in the song editor. */
     perftime * m_perftime;              /**< The time/measures bar above roll.  */
     Gtk::Menu * m_menu_snap;            /**< The menu for grid-snap selection.  */
+#ifdef SEQ64_STAZED_TRANSPOSE
+    Gtk::Menu * m_menu_xpose;           /**< The menu for transpose selection.  */
+    Gtk::Button * m_button_xpose;       /**< Button to bring up transpose menu. */
+    Gtk::Entry * m_entry_xpose;         /**< Text edit for the transpose value. */
+#endif
     Gtk::Image * m_image_play;          /**< The image for the play button.     */
     Gtk::Button * m_button_snap;        /**< Button to bring up the snap menu.  */
     Gtk::Entry * m_entry_snap;          /**< Text edit for the grid-snap value. */
@@ -200,7 +205,6 @@ public:
 
     void init_before_show ();
     void enqueue_draw (bool forward = true);
-    void set_zoom (int z);
 
     /**
      *  Checks zoom values for the z/Z keystrokes used in perfroll and
@@ -234,6 +238,13 @@ public:
         if (not_nullptr(peer) && is_nullptr(m_peer_perfedit))
             m_peer_perfedit = peer;
     }
+
+    void set_zoom (int z);
+
+#ifdef SEQ64_STAZED_TRANSPOSE
+    void set_transpose (int transpose);
+    void transpose_button_callback (int transpose);
+#endif
 
 private:
 

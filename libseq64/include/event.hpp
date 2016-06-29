@@ -759,6 +759,10 @@ public:
         m_data[0] = note & 0x7F;
     }
 
+#ifdef SEQ64_STAZED_TRANSPOSE
+    void transpose_note (int tn);
+#endif
+
     /**
      * \getter m_data[1], the note velocity.
      */

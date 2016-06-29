@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-05-15
+ * \updates       2016-06-26
  * \license       GNU GPLv2 or above
  *
  *  The main window is known as the "Patterns window" or "Patterns
@@ -321,6 +321,10 @@ private:
     {
         perf().sequence_key(seq);
     }
+
+#ifdef SEQ64_STAZED_TRANSPOSE
+    void apply_song_transpose ();
+#endif
 
     void update_window_title ();
     void toLower (std::string &);       // isn't this part of std::string?

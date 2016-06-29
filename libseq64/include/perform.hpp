@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-05-15
+ * \updates       2016-06-28
  * \license       GNU GPLv2 or above
  *
  *  This class still has way too many members, even with the JACK and
@@ -294,6 +294,16 @@ private:
      */
 
     mastermidibus m_master_bus;
+
+#ifdef SEQ64_STAZED_TRANSPOSE
+
+    /**
+     *  Holds the global MIDI transposition value.
+     */
+
+    int m_transpose;
+
+#endif
 
 private:
 
@@ -1169,6 +1179,50 @@ public:
         m_looping = looping;
     }
 
+#ifdef SEQ64_STAZED_TRANSPOSE
+
+    void apply_song_transpose ();
+
+    /**
+     * \setter m_transpose
+     */
+
+    void set_transpose (int transpose)
+    {
+        m_transpose = transpose;
+    }
+
+    /**
+     * \getter m_transpose
+     */
+
+    int get_transpose () const
+    {
+        return m_transpose;
+    }
+
+    /**
+     *  Gets the transposition value stored in the master MIDI buss.
+     *  A convenience function.  We've moved the transpose variable into
+     *  perform, where it belongs.
+
+    int get_midi_transpose () const
+    {
+        return m_master_bus->get_transpose();
+    }
+     */
+
+    /**
+     *  Sets the transposition value in the master MIDI buss.
+
+    void set_midi_transpose (int transpose)
+    {
+        m_master_bus->set_transpose(transpose);
+    }
+     */
+
+#endif
+
     void set_sequence_control_status (int status);
     void unset_sequence_control_status (int status);
     void sequence_playing_toggle (int seq);
@@ -1176,7 +1230,7 @@ public:
     void sequence_playing_off (int seq);
     void set_group_mute_state (int g_track, bool mute_state);
     bool get_group_mute_state (int g_track);
-    void mute_all_tracks ();
+    void mute_all_tracks (bool flag = true);
     void output_func ();
     void input_func ();
 

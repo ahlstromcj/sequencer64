@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and Tim Deagan
  * \date          2015-07-24
- * \updates       2016-06-14
+ * \updates       2016-06-25
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -180,25 +180,6 @@ perform::perform (gui_assistant & mygui, int ppqn)
         SEQ64_DEFAULT_BEAT_WIDTH            // may get updated later
     ),
 #endif
-#ifdef USE_STAZED_JACK_SUPPORT
-    m_reposition                (false),
-    thread_trigger_width_ms     (c_thread_trigger_width_ms),
-    m_follow_transport          (true),
-    m_start_from_perfedit       (false),
-    m_bp_measure                (4),
-    m_bw                        (4),
-    m_have_undo                 (false),
-    m_have_redo                 (false),
-
-    /*
-     * Additional keys:
-     *
-     *  m_key_song              (SEQ64_F1),
-     *  m_key_jack              (SEQ64_F2),
-     *  m_key_menu              (SEQ64_F3),
-     *  m_key_follow_trans      (SEQ64_F4),
-     */
-#endif
     m_notify                    ()          // vector of pointers, public!
 {
     for (int i = 0; i < m_sequence_max; ++i)
@@ -297,11 +278,6 @@ perform::clear_all ()
         set_screen_set_notepad(i, e);
 
     is_modified(false);                     /* new, we start afresh     */
-#ifdef USE_STAZED_JACK_SUPPORT
-    set_beats_per_minute(4 /*c_bpm*/);      /* find a better way        */
-    set_have_undo(false);
-    set_have_redo(false);
-#endif
 }
 
 /**
@@ -552,11 +528,6 @@ perform::set_left_tick (midipulse tick, bool setstart)
 
     if (m_left_tick >= m_right_tick)
         m_right_tick = m_left_tick + m_one_measure;
-
-#ifdef USE_STAZED_JACK_SUPPORT
-    // Did stazed remove this?
-    // set_left_frame();
-#endif
 }
 
 /**
@@ -826,7 +797,7 @@ perform::set_was_active (int seq)
 {
     if (is_seq_valid(seq))
     {
-        m_was_active_main[seq] =
+        m_was_active_main[seq] = 
             m_was_active_edit[seq] =
             m_was_active_perf[seq] =
             m_was_active_names[seq] = true;
@@ -1436,30 +1407,13 @@ perform::copy_triggers ()
 void
 perform::start_playing (bool songmode)
 {
-#ifdef USE_STAZED_JACK_SUPPORT
-    if (songmode || m_start_from_perfedit)
-#else
-    if (songmode)
-#endif
+    if (songmode)                       // || m_start_from_perfedit???
     {
-#ifdef USE_STAZED_JACK_SUPPORT
-        if (m_jack_asst.is_master())
-        {
-            /*
-             * Allow starting at the key-p position if set.  And, for
-             * cosmetic reasons, to stop transport line flicker on start,
-             * position to the left tick..
-             */
+        /*
+         * For cosmetic reasons, to stop transport line flicker on start.
+         */
 
-            if (! m_reposition)
-                position_jack(true, m_left_tick);
-#else
-            position_jack(true);
-#endif
-
-#ifdef USE_STAZED_JACK_SUPPORT
-        }
-#endif
+        position_jack(true);            // if Master and set_left_frame()???
         start_jack();
 
         /*
@@ -1470,18 +1424,11 @@ perform::start_playing (bool songmode)
     }
     else                                /* live mode                        */
     {
-#ifdef USE_STAZED_JACK_SUPPORT
-        if (m_jack_asst.is_master())
-        {
-            /*
-             * For cosmetic reasons, to stop transport line flicker on start.
-             */
+        /*
+         * For cosmetic reasons, to stop transport line flicker on start.
+         */
 
-            position_jack(false, 0);
-        }
-#else
-        position_jack(false);
-#endif
+        position_jack(false);           // if Master???
         start(false);                   /* disables perfedit mute control   */
         start_jack();
     }
@@ -1551,24 +1498,6 @@ perform::stop_playing ()
     m_tick = 0;                         // or get_left_tick()
 }
 
-#ifdef USE_STAZED_JACK_SUPPORT
-
-void
-perform::toggle_song_mode ()
-{
-    if (rc().jack_start_mode())
-        rc().jack_start_mode(false);
-    else
-    {
-        rc().jack_start_mode(true);
-
-        // Did stazed remove this?
-        // set_left_frame();
-    }
-}
-
-#endif  // USE_STAZED_JACK_SUPPORT
-
 /**
  *  If JACK is supported and running, sets the position of the transport.
  */
@@ -1636,7 +1565,7 @@ void
 perform::inner_start (bool state)
 {
     m_condition_var.lock();
-    if (! is_running())
+    if (! is_running())                 // ! global_is_running
     {
         set_playback_mode(state);
 
@@ -1645,11 +1574,39 @@ perform::inner_start (bool state)
             off_sequences();
 #endif
 
-        set_running(true);
+        set_running(true);              // global_is_running = true
         m_condition_var.signal();
     }
     m_condition_var.unlock();
 }
+
+/*
+ *  stop(). This function's sole purpose was to prevent inner_stop() from being
+ *  called internally when JACK was running...potentially twice. inner_stop()
+ *  was called by output_func() when JACK sent a JackTransportStopped message.
+ *  If seq42 initiated the stop, then stop_jack() was called which then
+ *  triggered the JackTransportStopped message to output_func() which then
+ *  triggered the bool stop_jack to call inner_stop().  The output_func() call
+ *  to inner_stop() is only necessary when some other JACK client sends a
+ *  jack_transport_stop message to JACK, not when it is initiated by seq42.  The
+ *  method of relying on JACK to call inner_stop() when internally initiated
+ *  caused a (very) obscure apparent freeze if you press and hold the start/stop
+ *  key if set to toggle. This occurs because of the delay between
+ *  JackTransportStarting and JackTransportStopped if both triggered in rapid
+ *  succession by holding the toggle key down.  The variable global_is_running
+ *  gets set false by a delayed inner_stop() from JACK after the start (true) is
+ *  already sent. This means the global is set to true when JACK is actually off
+ *  (false). Any subsequent presses to the toggle key send a stop message
+ *  because the global is set to true. Because JACK is not running,
+ *  output_func() is not running to send the inner_stop() call which resets the
+ *  global to false. Thus an apparent freeze as the toggle key endlessly sends a
+ *  stop, but inner_stop() never gets called to reset. Whoo! So, to fix this we
+ *  just need to call inner_stop() directly rather than wait for JACK to send a
+ *  delayed stop, only when running. This makes the whole purpose of this stop()
+ *  function unneeded. The check for m_jack_running is commented out and this
+ *  function could be removed. It is being left for future generations to
+ *  ponder!!!
+ */
 
 /**
  *  Unconditionally, and without locking, clears the running status, resets
@@ -1666,9 +1623,15 @@ perform::inner_start (bool state)
 void
 perform::inner_stop ()
 {
+#ifdef USE_STAZED
+    set_start_from_perfedit(false);
+    global_is_running = false;
+    reset_sequences();
+#else
     set_running(false);
     if (! is_jack_running())
         reset_sequences();              /* sets the "last-tick" value   */
+#endif
 
     m_usemidiclock = false;
 }

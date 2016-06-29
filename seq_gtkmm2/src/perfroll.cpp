@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-06-25
+ * \updates       2016-06-26
  * \license       GNU GPLv2 or above
  *
  *  The performance window allows automatic control of when each
@@ -457,13 +457,6 @@ perfqroll::follow_progress ()
 void
 perfroll::draw_sequence_on (int seqnum)
 {
-    /*
-     * ca 2016-04-05
-     *      The is_active() call covers any possible issues.
-     *
-     * if ((seqnum < m_sequence_max) && perf().is_active(seqnum))
-     */
-
     if (perf().is_active(seqnum))
     {
         midipulse tick_offset = m_4bar_offset;          //  * m_ticks_per_bar;
@@ -536,7 +529,21 @@ perfroll::draw_sequence_on (int seqnum)
                         int velocity;
                         draw_type dt;
                         seq->reset_draw_marker();
+
+#ifdef SEQ64_STAZED_TRANSPOSE
+
+                        /*
+                         * If a pattern is not transposable, draw it in red
+                         * instead of black.
+                         */
+
+                        if (seq->get_transposable())
+                            m_gc->set_foreground(black());
+                        else
+                            m_gc->set_foreground(red());
+#else
                         m_gc->set_foreground(black());
+#endif
                         while
                         (
                             (
@@ -1022,7 +1029,7 @@ perfroll::on_key_press_event (GdkEventKey * ev)
 
         bool is_ctrl = (ev->state & SEQ64_CONTROL_MASK) != 0;
         bool is_shift = (ev->state & SEQ64_SHIFT_MASK) != 0;
-        if (! perf().is_running())                  //  && ! is_ctrl)
+        if (! perf().is_running())
         {
             if (is_ctrl)
             {
@@ -1032,7 +1039,7 @@ perfroll::on_key_press_event (GdkEventKey * ev)
             }
             else if (is_shift)
             {
-                if (ev->keyval == SEQ64_z)          /* zoom in              */
+                if (ev->keyval == SEQ64_Z)          /* zoom in, "z" no go   */
                 {
                     m_parent.set_zoom(m_zoom / 2);
                     result = true;

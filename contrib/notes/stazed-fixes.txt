@@ -578,4 +578,24 @@ Well thats my long winded thoughts on jack. Hope it helps.
 
 Stan
 
+---------------------------------------------------------------
+
+Features from seq32
+
+   x  Chord generator
+   -  LFO
+   -  JACK fixes
+   -  Song Mode button (in pattern editor)
+   -  JACK sync toggle button (in song editor)
+   -  JACK follow transport button (in song editor)
+   -  Menu disable button (in pattern editor)
+   -  Run-time sequence transpose (in pattern editor)
+   -  Run-time song transpose (in song editor and Edit menu)
+   -  F keys for song mode, jack sync toggle, menu mode, and follow transport
+   -  MIDI Export song
+   -  Mute/Unmute/Toggle All Tracks menu entry
+   -  Tools:
+      -  Select extra odd and even notes of various durations
+      -  Modify time (expand and compress)
+      -  Randomize event values
 

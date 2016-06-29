@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-06-14
+ * \updates       2016-06-25
  * \license       GNU GPLv2 or above
  *
  *  This class still has way too many members, even with the JACK and
@@ -94,8 +94,23 @@
 
 namespace seq64
 {
+    class keystroke;
 
-class keystroke;
+#ifdef USE_STAZED_MUTE_TOGGLE
+
+/**
+ *  Provides the domain of mute operations provided by the stazed mute-toggle
+ *  feature.
+ */
+
+enum mute_op
+{
+    MUTE_TOGGLE = -1,       /**< Indicates to toggle the mute status.       */
+    MUTE_OFF = 0,           /**< Indicates to turn off the mute status.     */
+    MUTE_ON = 1             /**< Indicates to turn on the mute status.      */
+};
+
+#endif
 
 /**
  *      Provides for notification of events.  Provide a response to a
@@ -135,6 +150,7 @@ struct performcallback
 
 class perform
 {
+
     friend class jack_assistant;
     friend class keybindentry;
     friend class midifile;
@@ -142,12 +158,14 @@ class perform
     friend class options;
 
 #ifdef SEQ64_JACK_SUPPORT
+
     friend int jack_sync_callback       // accesses perform::inner_start()
     (
         jack_transport_state_t state,
         jack_position_t * pos,
         void * arg
     );
+
 #endif
 
 private:
@@ -169,7 +187,6 @@ private:
      *  Mute group support.  This value determines whether a particular track
      *  will be muted or unmuted.  Note that the current state of playing can
      *  be "learned", and stored herein as the desired state for the track.
-     *  Thanks to Andy.
      */
 
     bool m_mute_group[c_gmute_tracks];
@@ -206,7 +223,7 @@ private:
     int m_mute_group_selected;
 
     /**
-     *  Playing screen support.  Thanks to Andy.
+     *  Playing screen support.
      */
 
     int m_playing_screen;
@@ -361,6 +378,12 @@ private:
 
     bool m_playback_mode;
 
+#ifdef USE_STAZED
+    bool m_follow_transport;
+    bool m_start_from_perfedit;
+    bool m_reposition;
+#endif
+
     /**
      *  Holds the current PPQN for usage in various actions.
      */
@@ -372,14 +395,14 @@ private:
      *  The default value is SEQ64_DEFAULT_BEATS_PER_MEASURE (4).
      */
 
-    int m_beats_per_bar;
+    int m_beats_per_bar;            // STAZED: m_bp_measure
 
     /**
      *  Holds the beat width value as obtained from the MIDI file.
      *  The default value is SEQ64_DEFAULT_BEAT_WIDTH (4).
      */
 
-    int m_beat_width;
+    int m_beat_width;               // STAZED: m_bw
 
     /**
      *  Holds the "one measure's worth" of pulses (ticks), which is
@@ -580,17 +603,6 @@ private:
 
 #endif
 
-#ifdef USE_STAZED_JACK_SUPPORT
-    bool m_reposition;
-    int thread_trigger_width_ms;        // add m_ !!!
-    bool m_follow_transport;
-    bool m_start_from_perfedit;
-    int m_bp_measure;
-    int m_bw;
-    bool m_have_undo;
-    bool m_have_redo;
-#endif
-
     /*
      *  Can register here for events.  Used in mainwnd and perform.
      *  Now wrapped in the enregister() function, so no longer public.
@@ -696,7 +708,7 @@ public:
      * \getter m_beats_per_bar
      */
 
-    int get_beats_per_bar () const
+    int get_beats_per_bar () const              // STAZED: get_bp_measure
     {
         return m_beats_per_bar;
     }
@@ -721,7 +733,7 @@ public:
      * \getter m_beat_width
      */
 
-    int get_beat_width () const
+    int get_beat_width () const                 // STAZED: get_bw()
     {
         return m_beat_width;
     }
@@ -945,62 +957,6 @@ public:
         return m_right_tick;
     }
 
-#ifdef USE_STAZED_JACK_SUPPORT
-
-    void set_start_from_perfedit (bool start)
-    {
-        m_start_from_perfedit = start;
-    }
-
-    void toggle_song_mode ();
-
-    void toggle_jack_mode ()
-    {
-        // TODO:  Forward to jack_assistant!!!!
-        //
-        // set_jack_mode(! m_jack_running);
-    }
-
-    void set_jack_mode (bool mode)
-    {
-        m_jack_asst.set_jack_mode(mode);
-    }
-
-    bool get_toggle_jack () const
-    {
-        return m_jack_asst.get_toggle_jack();
-    }
-
-    void set_follow_transport (bool set_it)
-    {
-        m_follow_transport = set_it;
-    }
-
-    bool get_follow_transport ()
-    {
-        return m_follow_transport;
-    }
-
-    void toggle_follow_transport ()
-    {
-        set_follow_transport(! m_follow_transport);
-    }
-
-    void set_have_undo (bool undo)
-    {
-        m_have_undo = undo;
-
-        // once set always set - unless cleared by save file
-        ////////// TODO!!!!!! global_is_modified = true;
-    }
-
-    void set_have_redo (bool redo)
-    {
-        m_have_redo = redo;
-    }
-
-#endif  // USE_STAZED_JACK_SUPPORT
-
     void move_triggers (bool direction);
     void copy_triggers ();
     void push_trigger_undo ();
@@ -1216,7 +1172,7 @@ public:
      *      Returns the value of beats/minute from the master buss.
      */
 
-    int get_beats_per_minute ()
+    int get_beats_per_minute ()                 // STAZED: get_bpm()
     {
         return m_master_bus.get_beats_per_minute();
     }
@@ -1241,6 +1197,11 @@ public:
     void sequence_playing_off (int seq);
     void set_group_mute_state (int g_track, bool mute_state);
     bool get_group_mute_state (int g_track);
+
+#ifdef USE_STAZED_MUTE_TOGGLE
+    void set_song_mute (mute_op op);
+#endif
+
     void mute_all_tracks ();
     void output_func ();
     void input_func ();
@@ -1441,6 +1402,18 @@ public:
     void start_playing (bool songmode = false);
     void pause_playing ();
     void stop_playing ();
+
+#ifdef USE_STAZED
+    void set_start_from_perfedit (bool a_start);
+    void toggle_song_mode ();
+    void toggle_jack_mode ();
+    void set_jack_mode (bool a_mode);
+    bool get_toggle_jack ();
+    void set_follow_transport (bool a_set);
+    bool get_follow_transport ();
+    void toggle_follow_transport ();
+    void set_reposition (bool a_pos_type = true);
+#endif
 
     void start_key (bool songmode = false);
     void pause_key (bool songmode = false);

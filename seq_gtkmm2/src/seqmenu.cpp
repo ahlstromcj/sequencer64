@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-05-21
+ * \updates       2016-06-28
  * \license       GNU GPLv2 or above
  *
  *  This object also does some minor coordination of editing a sequence via
@@ -96,10 +96,10 @@ seqmenu::~seqmenu ()
 }
 
 /**
- *  This function sets up the File menu entries.  It also sets up the pattern
- *  popup menu entries that are used in mainwid.  Note that, for the selected
- *  sequence, the "Edit" and "Event Edit" menu entries are not included if a
- *  pattern editor or event editor is already running.
+ *  This function sets up the pattern menu entries.  It also sets up the
+ *  pattern popup menu entries that are used in mainwid.  Note that, for the
+ *  selected sequence, the "Edit" and "Event Edit" menu entries are not
+ *  included if a pattern editor or event editor is already running.
  */
 
 void
@@ -109,7 +109,7 @@ seqmenu::popup_menu ()
         delete m_menu;
 
     m_menu = manage(new Gtk::Menu());
-    if (is_current_seq_active())
+    if (is_current_seq_active())        /* also checks sequence pointer */
     {
         if (! get_current_sequence()->get_editing())
         {
@@ -138,18 +138,6 @@ seqmenu::popup_menu ()
 #endif
             m_menu->items().push_back(SeparatorElem());
         }
-    }
-    else
-    {
-        m_menu->items().push_back
-        (
-            MenuElem("New", mem_fun(*this, &seqmenu::seq_edit))
-        );
-        m_menu->items().push_back(SeparatorElem());
-    }
-
-    if (is_current_seq_active())
-    {
         m_menu->items().push_back
         (
             MenuElem("Cut", mem_fun(*this, &seqmenu::seq_cut))
@@ -163,36 +151,70 @@ seqmenu::popup_menu ()
     {
         m_menu->items().push_back
         (
+            MenuElem("New", mem_fun(*this, &seqmenu::seq_edit))
+        );
+        m_menu->items().push_back(SeparatorElem());
+
+        m_menu->items().push_back
+        (
             MenuElem("Paste", mem_fun(*this, &seqmenu::seq_paste))
         );
     }
     m_menu->items().push_back(SeparatorElem());
     Gtk::Menu * menu_song = manage(new Gtk::Menu());
     m_menu->items().push_back(MenuElem("Song", *menu_song));
-    if (is_current_seq_active())
+    if (is_current_seq_active())        /* also checks sequence pointer */
     {
         menu_song->items().push_back
         (
-            MenuElem("Clear Song Data", mem_fun(*this, &seqmenu::seq_clear_perf))
+            MenuElem
+            (
+                "Clear Track's Song Data",
+                mem_fun(*this, &seqmenu::seq_clear_perf)
+            )
         );
     }
     menu_song->items().push_back
     (
         MenuElem("Mute All Tracks", mem_fun(*this, &seqmenu::mute_all_tracks))
     );
+    menu_song->items().push_back
+    (
+        MenuElem("Unmute All Tracks", mem_fun(*this, &seqmenu::unmute_all_tracks))
+    );
 
     /*
-     * This is the MIDI channel menu accessible from a non-empty pattern slot
-     * on the main window.
+     * This is the bottom part of the menu accessible from a non-empty pattern
+     * slot on the main window.  Some of the seqedit settings functions are
+     * also exposed here.
      */
 
-    if (is_current_seq_active())
+    if (is_current_seq_active())        /* also checks sequence pointer */
     {
         m_menu->items().push_back(SeparatorElem());
+
+#define SET_TRANS   mem_fun(*this, &seqmenu::set_transposable)
+
+        sequence * s = get_current_sequence();
+        if (s->get_transposable())
+        {
+            m_menu->items().push_back
+            (
+                MenuElem("Disable Transpose", sigc::bind(SET_TRANS, false))
+            );
+        }
+        else
+        {
+            m_menu->items().push_back
+            (
+                MenuElem("Enable Transpose", sigc::bind(SET_TRANS, true))
+            );
+        }
+
         Gtk::Menu * menu_buses = manage(new Gtk::Menu());
         m_menu->items().push_back(MenuElem("MIDI Bus", *menu_buses));
 
-        /* Get the MIDI buses */
+#define SET_BUS     mem_fun(*this, &seqmenu::set_bus_and_midi_channel)
 
         mastermidibus & masterbus = m_mainperf.master_bus();
         for (int bus = 0; bus < masterbus.get_num_out_buses(); ++bus)
@@ -211,8 +233,6 @@ seqmenu::popup_menu ()
                 std::string s = usr().instrument_name(bus, channel);
                 if (! s.empty())
                     name += (std::string(" ") + s);
-
-#define SET_BUS     mem_fun(*this, &seqmenu::set_bus_and_midi_channel)
 
                 menu_channels->items().push_back
                 (
@@ -238,15 +258,34 @@ seqmenu::popup_menu ()
 void
 seqmenu::set_bus_and_midi_channel (int bus, int ch)
 {
-    if (is_current_seq_active())
+    if (is_current_seq_active())        /* also checks sequence pointer */
     {
         sequence * s = get_current_sequence();
-        if (not_nullptr(s))
-        {
-            s->set_midi_bus(bus);
-            s->set_midi_channel(ch);
+        if (s->get_midi_bus() != bus || s->get_midi_channel() != ch)
             s->set_dirty();
-        }
+
+        s->set_midi_bus(bus);
+        s->set_midi_channel(ch);
+    }
+}
+
+/**
+ *  Sets the "is-transposable" flag of the current sequence.
+ *
+ * \param flag
+ *      The value to use to set the flag.
+ */
+
+void
+seqmenu::set_transposable (bool flag)
+{
+    if (is_current_seq_active())        /* also checks sequence pointer */
+    {
+        sequence * s = get_current_sequence();
+        if (s->get_transposable() != flag)
+            s->set_dirty();
+
+        s->set_transposable(flag);
     }
 }
 
@@ -258,6 +297,16 @@ void
 seqmenu::mute_all_tracks ()
 {
     m_mainperf.mute_all_tracks();
+}
+
+/**
+ *  Unmutes all tracks in the main perform object.
+ */
+
+void
+seqmenu::unmute_all_tracks ()
+{
+    m_mainperf.mute_all_tracks(false);
 }
 
 /**
@@ -278,16 +327,13 @@ seqmenu::mute_all_tracks ()
 void
 seqmenu::seq_edit ()
 {
-    if (is_current_seq_active())
+    if (is_current_seq_active())        /* also checks sequence pointer */
     {
         sequence * s = get_current_sequence();
-        if (not_nullptr(s))
-        {
-            if (! s->get_editing())
-                m_seqedit = new seqedit(m_mainperf, *s, current_seq());
-            else
-                s->set_raise(true);
-        }
+        if (! s->get_editing())
+            m_seqedit = new seqedit(m_mainperf, *s, current_seq());
+        else
+            s->set_raise(true);
     }
     else
     {
@@ -354,16 +400,13 @@ seqmenu::seq_set_and_eventedit (int seqnum)
 void
 seqmenu::seq_event_edit ()
 {
-    if (is_current_seq_active())
+    if (is_current_seq_active())        /* also checks sequence pointer */
     {
         sequence * s = get_current_sequence();
-        if (not_nullptr(s))
-        {
-            if (! s->get_editing())
-                m_eventedit = new eventedit(m_mainperf, *s);
-            else
-                s->set_raise(true);
-        }
+        if (! s->get_editing())
+            m_eventedit = new eventedit(m_mainperf, *s);
+        else
+            s->set_raise(true);
     }
     else
     {
@@ -389,7 +432,7 @@ seqmenu::seq_event_edit ()
 void
 seqmenu::seq_new ()
 {
-    if (! is_current_seq_active())
+    if (! is_current_seq_active())      /* false if not active or if null   */
     {
         new_current_sequence();
         sequence * s = get_current_sequence();
@@ -411,7 +454,7 @@ seqmenu::seq_new ()
 void
 seqmenu::seq_copy ()
 {
-    if (is_current_seq_active())
+    if (is_current_seq_active())        /* also checks sequence pointer */
         m_clipboard.partial_assign(*get_current_sequence());
 }
 
@@ -449,7 +492,7 @@ seqmenu::seq_cut ()
 void
 seqmenu::seq_paste ()
 {
-    if (! is_current_seq_active())
+    if (! is_current_seq_active())      /* false if not active or if null   */
     {
         new_current_sequence();
         sequence * s = get_current_sequence();
@@ -474,13 +517,12 @@ seqmenu::seq_paste ()
 void
 seqmenu::seq_clear_perf ()
 {
-    if (is_current_seq_active())
+    if (is_current_seq_active())        /* checks the sequence pointer  */
     {
         m_mainperf.push_trigger_undo();
         m_mainperf.clear_sequence_triggers(current_seq());
         sequence * s = get_current_sequence();
-        if (not_nullptr(s))
-            s->set_dirty();
+        s->set_dirty();
     }
 }
 

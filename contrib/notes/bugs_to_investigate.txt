@@ -1,11 +1,13 @@
 Bugs and Additional Upgrade Ideas
 Chris Ahlstrom
-2015-10-27 to 2016-06-19 (New bugs)
+2015-10-27 to 2016-06-26 (New bugs)
 
 In no particular order...  "y" means "in progress", and "x" means it is
 basically done.
 
 -  Also see BUG REPORTS below.  Those are bug reports from other people.
+-  Still need to test saving and reading of the new transposable sequence
+   state.
 -  Modify-flag improvements:
    x  Make the perform pointer a member of sequence regardless of the status
       of the "use pause" macro.

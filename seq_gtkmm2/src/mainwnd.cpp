@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-06-22
+ * \updates       2016-06-26
  * \license       GNU GPLv2 or above
  *
  *  The main window holds the menu and the main controls of the application,
@@ -1146,6 +1146,25 @@ mainwnd::set_image (bool isrunning)
     }
     m_button_play->set_image(*m_image_play);
 }
+
+#ifdef SEQ64_STAZED_TRANSPOSE
+
+/**
+ *  Apply full song transposition, if enabled.  Then reset the perfedit
+ *  transpose setting to 0.
+ */
+
+void
+mainwnd::apply_song_transpose ()
+{
+    if (perf().get_transpose() != 0)
+    {
+        perf().apply_song_transpose();
+        m_perf_edit->set_transpose(0);
+    }
+}
+
+#endif
 
 /**
  *  Starts playing of the song.  The rc_settings::jack_start_mode()

@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-06-22
+ * \updates       2016-06-27
  * \license       GNU GPLv2 or above
  *
  */
@@ -95,7 +95,7 @@ class seqroll : public gui_drawingarea_gtk2
     /**
      *  These friend implement interaction-specific behavior, although only
      *  the Seq24 interactions support keyboard processing.  (Actually,
-     *  keyboard processing is common to both types of behavior.
+     *  keyboard processing is common to both types of behavior).
      */
 
     friend class FruitySeqRollInput;
@@ -549,6 +549,84 @@ private:
     void grow_selected_notes (int dx);                  // new
     void set_adding (bool adding);                      // from seq24 seqroll
     void update_mouse_pointer (bool adding);            // from fruity seqroll
+
+private:            // new internal/friend functions
+
+    /**
+     *  Useful x calculation.  Offsets the x value by the x origin of the
+     *  current page.
+     *
+     * \param x
+     *      The x value to offset.
+     */
+
+    int scroll_offset_x (int x) const
+    {
+        return x + m_scroll_offset_x;
+    }
+
+    /**
+     *  Useful y calculation.  Offsets the y value by the y origin of the
+     *  current page.
+     *
+     * \param y
+     *      The y value to offset.
+     */
+
+    int scroll_offset_y (int y) const
+    {
+        return y + m_scroll_offset_y;
+    }
+
+    /**
+     *  Useful x calculation.  Offsets the current x value by the x origin of
+     *  the current page.
+     *
+     * \param x
+     *      The x value to offset.
+     */
+
+    void set_current_offset_x (int x)
+    {
+        m_current_x = x + m_scroll_offset_x;
+    }
+
+    /**
+     *  Useful y calculation.  Offsets the current y value by the y origin of
+     *  the current page.
+     *
+     * \param y
+     *      The y value to offset.
+     */
+
+    void set_current_offset_y (int y)
+    {
+        m_current_y = y + m_scroll_offset_y;
+    }
+
+    /**
+     *  Indicates if we're selecting, moving, growing, or pasting.
+     *
+     * \return
+     *      Returns true if one of those four flags are set.
+     */
+
+    bool select_action () const
+    {
+        return m_selecting || m_growing || drop_action();
+    }
+
+    /**
+     *  Indicates if we're moving or pasting.
+     *
+     * \return
+     *      Returns true if one of those two flags are set.
+     */
+
+    bool drop_action () const
+    {
+        return m_moving || m_paste;
+    }
 
 private:            // callbacks
 

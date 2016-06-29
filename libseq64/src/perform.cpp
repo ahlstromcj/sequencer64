@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and Tim Deagan
  * \date          2015-07-24
- * \updates       2016-06-15
+ * \updates       2016-06-28
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -131,6 +131,9 @@ perform::perform (gui_assistant & mygui, int ppqn)
     m_was_active_names          (),         // boolean array
     m_sequence_state            (),         // boolean array
     m_master_bus                (),         // will call its init() later
+#ifdef SEQ64_STAZED_TRANSPOSE
+    m_transpose                 (0),
+#endif
     m_out_thread                (),
     m_in_thread                 (),
     m_out_thread_launched       (false),
@@ -488,15 +491,19 @@ perform::select_and_mute_group (int group)
 /**
  *  Mutes all tracks in the current set of active patterns/sequences.
  *  Covers tracks from 0 to m_sequence_max.
+ *
+ * \param flag
+ *      If true (the default), the song-mute of the sequence is turned on.
+ *      Otherwise, it is turned off.
  */
 
 void
-perform::mute_all_tracks ()
+perform::mute_all_tracks (bool flag)
 {
     for (int i = 0; i < m_sequence_max; ++i)
     {
         if (is_active(i))
-            m_seqs[i]->set_song_mute(true);
+            m_seqs[i]->set_song_mute(flag);
     }
 }
 
@@ -3149,6 +3156,24 @@ perform::print_triggers () const
             m_seqs[s]->print_triggers();
     }
 }
+
+#ifdef SEQ64_STAZED_TRANSPOSE
+
+/**
+ *  Calls the apply_song_transpose() function for all active sequences.
+ */
+
+void
+perform::apply_song_transpose ()
+{
+    for (int i = 0; i < m_sequence_max; ++i)
+    {
+        if (is_active(i))
+            get_sequence(i)->apply_song_transpose();
+    }
+}
+
+#endif
 
 }           // namespace seq64
 

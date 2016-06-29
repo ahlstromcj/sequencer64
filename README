@@ -1,6 +1,6 @@
 README for Sequencer64 0.9.14 (current branch = "master")
 Chris Ahlstrom
-2015-09-10 to 2016-06-25 (initial work started in July of 2015)
+2015-09-10 to 2016-06-28 (initial work started in July of 2015)
 
 Sequencer64 (replaces sequencer24) is a reboot of seq24 to refactor it to be
 tighter and easier to transition to GTKmm 3, and much more.  It is now
@@ -14,6 +14,10 @@ with the --legacy option.
 
 Major updates:
 
+    -   Version 0.9.15:
+        -   Added the Stazed song-transpose feature from his Seq32 project.
+        -   Additional sequence menu entries.
+        -   Fixed a bug in muting/unmuting all tracks.
     -   Version 0.9.14:  Apart from some bug fixes and tweaks, the following
         major features have been added:
         -   Chord generation in the pattern editor, similar to what the 

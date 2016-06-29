@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-06-21
+ * \updates       2016-06-26
  * \license       GNU GPLv2 or above
  *
  *  For a quick guide to the MIDI format, see, for example:
@@ -292,20 +292,18 @@ midifile::read_varinum ()
  *
 \verbatim
     Obsolete meta-event:                Replacement:
-
     MIDI port (buss):   FF 21 01 po     Device (port) name: FF 09 len text
     MIDI channel:       FF 20 01 ch
 \endverbatim
  *
  *  What do other applications use for specifying port/channel?
  *
- *  Note on the is-modified flag:  We now assume that the perform object is
+ *  Note the is-modified flag:  We now assume that the perform object is
  *  starting from scratch when parsing.  But we let mainwnd tell the perform
  *  object when to clear everything with perform::clear_all().  The mainwnd
  *  does this for a new file, opening a file, but not for a file import, which
  *  might be done simply to add more MIDI tracks to the current composition.
  *  So, if parsing succeeds, all we want to do is make sure the flag is set.
- *
  *  Parsing a file successfully is not always a modification of the setup.
  *  For instance, the first read of a MIDI file should start clean, not dirty.
  *
@@ -754,6 +752,13 @@ midifile::parse_smf_1 (perform & p, int screenset, bool is_smf0)
                                 seq.background_sequence(int(read_long()));
                                 len -= 4;
                             }
+#ifdef SEQ64_STAZED_TRANSPOSE
+                            else if (seqspec == c_transpose)
+                            {
+                                seq.set_transposable(read_byte() != 0);
+                                --len;
+                            }
+#endif
                             else if (SEQ64_IS_PROPTAG(seqspec))
                             {
                                 errdump

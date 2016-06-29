@@ -1,6 +1,6 @@
-INSTALL for Sequencer64 v. 0.9.14
+INSTALL for Sequencer64 v. 0.9.15
 Chris Ahlstrom
-2015-09-10 to 2016-06-20
+2015-09-10 to 2016-06-26
 
 The current packaging for Sequencer64 is primarily aimed at developers.
 There is currently no configure script... it must be bootstrapped.
@@ -82,6 +82,7 @@ CONFIGURE OPTIONS FOR APPLICATION FEATURES:
         SEQ64_JACK_SESSION
         SEQ64_PAUSE_SUPPORT
         SEQ64_STAZED_CHORD_GENERATOR
+        SEQ64_STAZED_TRANSPOSE
 
     --disable-highlight
 
@@ -123,6 +124,16 @@ CONFIGURE OPTIONS FOR APPLICATION FEATURES:
         then the application is built with support for a Chord button in the
         pattern editor, which enables entering whole chords with a single
         click.  This feature is grabbed from https://github.com/Stazed/seq32.
+
+    --disable-transpose
+
+        Undefines the SEQ64_STAZED_TRNASPOSE.  If this macro is defined, then
+        the application is built with support for transpose buttons in the
+        pattern and song editors, which enable transposing whole songs, or
+        just sequences that are marked as transposable.  This feature is
+        grabbed from https://github.com/Stazed/seq32.  It does not affect the
+        ability to select notes and transpose them individually.  It doe
+        affect Aftertouch events.
 
 MANUALLY-DEFINED MACROS IN CODE:
 

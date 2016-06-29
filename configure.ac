@@ -6,7 +6,7 @@ dnl \file          configure.ac
 dnl \library       Sequencer64
 dnl \author        Chris Ahlstrom
 dnl \date          2015-09-11
-dnl \update        2016-06-24
+dnl \update        2016-06-26
 dnl \version       $Revision$
 dnl \license       $XPC_SUITE_GPL_LICENSE$
 dnl
@@ -19,7 +19,7 @@ dnl ---------------------------------------------------------------------------
 
 AC_PREREQ(2.60)
 AC_REVISION($Revision: 0.9$)dnl
-AC_INIT(Sequencer64, [0.9.14], [ahlstromcj@gmail.com])
+AC_INIT(Sequencer64, [0.9.15], [ahlstromcj@gmail.com])
 AC_CONFIG_AUX_DIR([aux-files])
 
 dnl AC_CONFIG_SRCDIR([libseq64/src/midibus.cpp])
@@ -53,7 +53,7 @@ PACKAGE=sequencer64
 AC_DEFINE_UNQUOTED(PACKAGE, "$PACKAGE")
 AC_SUBST(PACKAGE)
 
-VERSION="0.9.14.0"
+VERSION="0.9.15.0"
 AC_DEFINE_UNQUOTED(VERSION, "$VERSION")
 AC_SUBST(VERSION)
 
@@ -472,7 +472,7 @@ else
     AC_MSG_WARN([*** Running statistics gathering not enabled.]);
 fi
 
-dnl Support for using the chord generator.
+dnl Support for using the stazed chord generator.
 
 AC_ARG_ENABLE(chords,
     [AS_HELP_STRING(--disable-chords, [Disable using the chord generator])],
@@ -483,6 +483,20 @@ if test "$chords" != "no"; then
     AC_DEFINE(STAZED_CHORD_GENERATOR, 1, [Define to enable the chord generator])
 else
     AC_MSG_WARN([*** Chord generator not enabled.]);
+fi
+
+dnl Support for using the stazed transpose feature.  This affects sequence and
+dnl song transpose, not the transpose tool.
+
+AC_ARG_ENABLE(transpose,
+    [AS_HELP_STRING(--disable-transpose, [Disable using global transpose])],
+    [transpose=$enableval],
+    [transpose=yes])
+
+if test "$transpose" != "no"; then
+    AC_DEFINE(STAZED_TRANSPOSE, 1, [Define to enable global transpose])
+else
+    AC_MSG_WARN([*** Global transpose not enabled.]);
 fi
 
 dnl 6.0  Top portion of the config.h/sequencer64-config.h header files.
@@ -498,8 +512,8 @@ dnl #define API_VERSION "0.9"             // defined on command line
 
 AH_TOP(
 
-#define VERSION_DATE_SHORT "2016-06-24"
-#define VERSION "0.9.14.0"
+#define VERSION_DATE_SHORT "2016-06-26"
+#define VERSION "0.9.15.0"
 
 )
 

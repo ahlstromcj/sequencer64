@@ -368,9 +368,8 @@ perfnames::on_button_press_event (GdkEventButton * ev)
             if ((ev->state & modifiers) == SEQ64_SHIFT_MASK)
             {
                 /*
-                 * \new ca 2016-03-15
-                 *      If the Shift key is pressed, mute all other sequences.
-                 *      Inactive sequences are skipped.
+                 *  If the Shift key is pressed, toggle the mute state of all
+                 *  other sequences.  Inactive sequences are skipped.
                  */
 
                 for (int s = 0; s < m_sequence_max; ++s)

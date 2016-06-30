@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-06-24
+ * \updates       2016-06-30
  * \license       GNU GPLv2 or above
  *
  *  There are a large number of existing items to discuss.  But for now let's
@@ -1174,7 +1174,6 @@ seqroll::complete_paste (int x, int y)
     int note;
     convert_xy(m_current_x, m_current_y, tick, note);
     m_paste = false;
-    // m_seq.push_undo();                           // moved into the call
     m_seq.paste_selected(tick, note);
 }
 
@@ -1311,7 +1310,6 @@ seqroll::grow_selected_notes (int dx)
     {
         int snap_x = dx * m_snap;                   /* time-stamp snap  */
         m_growing = true;
-        // m_seq.push_undo();                       // moved into the call
         m_seq.grow_selected(snap_x);
     }
 }

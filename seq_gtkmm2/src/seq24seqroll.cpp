@@ -140,22 +140,24 @@ Seq24SeqRollInput::on_button_press_event (GdkEventButton * ev, seqroll & sroll)
                 {
                     /* add note, length = little less than snap */
 
-                    seq.push_undo();
-
 #ifdef SEQ64_STAZED_CHORD_GENERATOR
-                    if (sroll.m_chord > 0)                  /* and less than? */
-                    {
-                        for (int i = 0; i < c_chord_size; ++i)
-                        {
-                            int cnote = c_chord_table[sroll.m_chord][i];
-                            if (cnote == -1)
-                                break;
-
-                            sroll.add_note(tick_s, note_h + cnote, false);
-                        }
-                    }
-                    else
-                        sroll.add_note(tick_s, note_h);
+//                  if (sroll.m_chord > 0)                  /* and less than? */
+//                  {
+//                      for (int i = 0; i < c_chord_size; ++i)
+//                      {
+//                          int cnote = c_chord_table[sroll.m_chord][i];
+//                          if (cnote == -1)
+//                              break;
+//
+//                          sroll.add_note(tick_s, note_h + cnote, false);
+//                      }
+//                  }
+//                  else
+//                      sroll.add_note(tick_s, note_h);
+                    sroll.m_seq.add_chord
+                    (
+                        sroll.m_chord, tick_s, sroll.note_off_length(), note_h
+                    );
 #else
                     sroll.add_note(tick_s, note_h);
 #endif
@@ -314,7 +316,6 @@ Seq24SeqRollInput::on_button_release_event
             delta_x -= sroll.m_move_snap_offset_x;      /* adjust for snap */
             sroll.convert_xy(delta_x, delta_y, delta_tick, delta_note);
             delta_note -= c_num_keys - 1;
-            // seq.push_undo();         // now part of the next call
             seq.move_selected_notes(delta_tick, delta_note);
             needs_update = true;
         }
@@ -331,7 +332,6 @@ Seq24SeqRollInput::on_button_release_event
              */
 
             sroll.convert_xy(delta_x, delta_y, delta_tick, delta_note);
-            // sroll.m_seq.push_undo();         // moved into the functions
             if (ev->state & SEQ64_SHIFT_MASK)
                 seq.stretch_selected(delta_tick);
             else
@@ -391,8 +391,6 @@ bool Seq24SeqRollInput::on_motion_notify_event
 )
 {
     bool result = false;
-//  sroll.m_current_x = int(ev->x + sroll.m_scroll_offset_x);
-//  sroll.m_current_y = int(ev->y + sroll.m_scroll_offset_y);
     sroll.set_current_offset_x(int(ev->x));
     sroll.set_current_offset_y(int(ev->y));
 
@@ -412,10 +410,8 @@ bool Seq24SeqRollInput::on_motion_notify_event
     sroll.convert_xy(0, sroll.m_current_y, tick, note);
     sroll.m_seqkeys_wid.set_hint_key(note);
 
-//  if (sroll.m_selecting || sroll.m_moving || sroll.m_growing || sroll.m_paste)
     if (sroll.select_action())
     {
-//      if (sroll.m_moving || sroll.m_paste)
         if (sroll.drop_action())
             sroll.snap_x(sroll.m_current_x);
 

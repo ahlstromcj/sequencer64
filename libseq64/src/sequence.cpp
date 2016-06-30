@@ -499,7 +499,7 @@ sequence::play (midipulse tick, bool playback_mode)
 
 /**
  *  This function verifies state: all note-ons have a note-off, and it links
- *  note-offs with their note-ons.  
+ *  note-offs with their note-ons.
  *
  * \threadsafe
  */
@@ -1748,13 +1748,7 @@ sequence::change_event_data_range
  */
 
 void
-sequence::add_note
-(
-    midipulse tick,
-    midipulse length,
-    int note,
-    bool paint
-)
+sequence::add_note (midipulse tick, midipulse length, int note, bool paint)
 {
     automutex locker(m_mutex);
     if (tick >= 0 && note >= 0 && note < c_num_keys)
@@ -1806,6 +1800,29 @@ sequence::add_note
         }
     }
     verify_and_link();
+}
+
+void
+sequence::add_chord (int chord, midipulse tick, midipulse len, int note)
+{
+#ifdef SEQ64_STAZED_CHORD_GENERATOR
+    push_undo();
+    if (chord > 0)                  /* and less than? */
+    {
+        for (int i = 0; i < c_chord_size; ++i)
+        {
+            int cnote = c_chord_table[chord][i];
+            if (cnote == -1)
+                break;
+
+            add_note(tick, len, note+cnote, false);
+        }
+    }
+    else
+        add_note(tick, len - note_off_margin(), note, true);
+#else
+    add_note(tick, len, note, true);
+#endif
 }
 
 /**
@@ -3352,6 +3369,9 @@ sequence::select_events
  *  chromatic scale, where all 12 notes, including sharps and flats, are
  *  part of the scale.
  *
+ *  Also, we've moved external calls to push_undo() into this function.
+ *  The caller shouldn't have to do that.
+ *
  * \note
  *      We noticed (ca 2016-06-10) that MIDI aftertouch events need to be
  *      transposed, but are not being transposed here.  Assuming they are
@@ -3373,6 +3393,7 @@ sequence::transpose_notes (int steps, int scale)
     event_list transposed_events;
     const int * transpose_table = nullptr;
     automutex locker(m_mutex);
+    m_events_undo.push(m_events);                   /* do this for callers  */
     mark_selected();                                /* mark original notes  */
     if (steps < 0)
     {
@@ -3541,6 +3562,22 @@ sequence::quantize_events
     remove_marked();
     m_events.merge(quantized_events);       // quantized events get presorted
     verify_and_link();
+}
+
+/**
+ *  A new convenience function.
+ */
+
+void
+sequence::push_quantize
+(
+    midibyte status, midibyte cc,
+    midipulse snap_tick, int divide, bool linked
+)
+{
+    automutex locker(m_mutex);
+    m_events_undo.push(m_events);
+    quantize_events(status, cc, snap_tick, divide, linked);
 }
 
 /**

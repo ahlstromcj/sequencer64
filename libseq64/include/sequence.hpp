@@ -986,6 +986,17 @@ public:
     (
         midibyte status, midibyte cc, bool inverse = false
     );
+
+    /*
+     *  New convenience function.
+     */
+
+    void select_all_notes (bool inverse = false)
+    {
+        (void) select_events(EVENT_NOTE_ON, 0, inverse);
+        (void) select_events(EVENT_NOTE_OFF, 0, inverse);
+    }
+
     int get_num_selected_notes () const;
     int get_num_selected_events (midibyte status, midibyte cc) const;
     void select_all ();
@@ -1006,6 +1017,7 @@ public:
     (
         midipulse tick, midipulse len, int note, bool paint = false
     );
+    void add_chord (int chord, midipulse tick, midipulse len, int note);
     void add_event
     (
         midipulse tick, midibyte status,
@@ -1070,6 +1082,11 @@ public:
     );
     void fill_container (midi_container & c, int tracknumber);
     void quantize_events
+    (
+        midibyte status, midibyte cc,
+        midipulse snap_tick, int divide, bool linked = false
+    );
+    void push_quantize
     (
         midibyte status, midibyte cc,
         midipulse snap_tick, int divide, bool linked = false

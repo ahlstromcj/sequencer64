@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-06-26
+ * \updates       2016-06-30
  * \license       GNU GPLv2 or above
  *
  *  Compare this class to eventedit, which has to do some similar things,
@@ -853,8 +853,9 @@ seqedit::do_action (int action, int var)
     switch (action)
     {
     case c_select_all_notes:
-        m_seq.select_events(EVENT_NOTE_ON, 0);
-        m_seq.select_events(EVENT_NOTE_OFF, 0);
+//      m_seq.select_events(EVENT_NOTE_ON, 0);
+//      m_seq.select_events(EVENT_NOTE_OFF, 0);
+        m_seq.select_all_notes();
         break;
 
     case c_select_all_events:
@@ -862,8 +863,9 @@ seqedit::do_action (int action, int var)
         break;
 
     case c_select_inverse_notes:
-        m_seq.select_events(EVENT_NOTE_ON, 0, true);
-        m_seq.select_events(EVENT_NOTE_OFF, 0, true);
+//      m_seq.select_events(EVENT_NOTE_ON, 0, true);
+//      m_seq.select_events(EVENT_NOTE_OFF, 0, true);
+        m_seq.select_all_notes();
         break;
 
     case c_select_inverse_events:
@@ -871,32 +873,39 @@ seqedit::do_action (int action, int var)
         break;
 
     case c_quantize_notes:
-        m_seq.push_undo();
-        m_seq.quantize_events(EVENT_NOTE_ON, 0, m_snap, 1 , true);
+
+        /*
+         * sequence::quantize_events() is used in recording as well, so we do
+         * not want to incorporate sequence::push_undo() into it.  So we make
+         * a new function to do that.
+         */
+
+//      m_seq.push_undo();
+        m_seq.push_quantize(EVENT_NOTE_ON, 0, m_snap, 1 , true);
         break;
 
     case c_quantize_events:
-        m_seq.push_undo();
-        m_seq.quantize_events(m_editing_status, m_editing_cc, m_snap, 1);
+//      m_seq.push_undo();
+        m_seq.push_quantize(m_editing_status, m_editing_cc, m_snap, 1);
         break;
 
     case c_tighten_notes:
-        m_seq.push_undo();
-        m_seq.quantize_events(EVENT_NOTE_ON, 0, m_snap, 2 , true);
+//      m_seq.push_undo();
+        m_seq.push_quantize(EVENT_NOTE_ON, 0, m_snap, 2 , true);
         break;
 
     case c_tighten_events:
-        m_seq.push_undo();
-        m_seq.quantize_events(m_editing_status, m_editing_cc, m_snap, 2);
+//      m_seq.push_undo();
+        m_seq.push_quantize(m_editing_status, m_editing_cc, m_snap, 2);
         break;
 
     case c_transpose:
-        m_seq.push_undo();
+//      m_seq.push_undo();                  // TODO ???
         m_seq.transpose_notes(var, 0);
         break;
 
-    case c_transpose_h:
-        m_seq.push_undo();
+    case c_transpose_h:                     // harmonic transpose
+//      m_seq.push_undo();
         m_seq.transpose_notes(var, m_scale);
         break;
 
@@ -1146,7 +1155,6 @@ seqedit::fill_top_bar ()
     m_entry_scale->set_width_chars(10);      // 5
     m_entry_scale->set_editable(false);
     m_hbox2->pack_start(*m_button_scale , false, false);
-//  m_hbox2->pack_start(*m_entry_scale , false, false);
     m_hbox2->pack_start(*m_entry_scale , true, true);
 
 #ifndef SEQ64_STAZED_CHORD_GENERATOR

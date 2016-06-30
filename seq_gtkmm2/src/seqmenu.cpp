@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-06-28
+ * \updates       2016-06-29
  * \license       GNU GPLv2 or above
  *
  *  This object also does some minor coordination of editing a sequence via
@@ -269,7 +269,7 @@ seqmenu::set_bus_and_midi_channel (int bus, int ch)
 
         /*
          * New for 0.9.15.2:  Let's try to update the seqedit as well, if it
-         * is open.
+         * is open.  Seems to work!
          */
 
         if (not_nullptr(m_seqedit))

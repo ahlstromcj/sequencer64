@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-06-23
+ * \updates       2016-06-30
  * \license       GNU GPLv2 or above
  *
  */
@@ -314,7 +314,7 @@ Seq24SeqRollInput::on_button_release_event
             delta_x -= sroll.m_move_snap_offset_x;      /* adjust for snap */
             sroll.convert_xy(delta_x, delta_y, delta_tick, delta_note);
             delta_note -= c_num_keys - 1;
-            seq.push_undo();
+            // seq.push_undo();         // now part of the next call
             seq.move_selected_notes(delta_tick, delta_note);
             needs_update = true;
         }
@@ -331,7 +331,7 @@ Seq24SeqRollInput::on_button_release_event
              */
 
             sroll.convert_xy(delta_x, delta_y, delta_tick, delta_note);
-            seq.push_undo();
+            // sroll.m_seq.push_undo();         // moved into the functions
             if (ev->state & SEQ64_SHIFT_MASK)
                 seq.stretch_selected(delta_tick);
             else

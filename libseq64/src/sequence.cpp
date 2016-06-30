@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-06-29
+ * \updates       2016-06-30
  * \license       GNU GPLv2 or above
  *
  *  The functionality of this class also includes handling some of the
@@ -578,7 +578,7 @@ sequence::remove (event & e)
 }
 
 /**
- *  Removes marked events.  Note how this function forwards teh call to
+ *  Removes marked events.  Note how this function forwards the call to
  *  m_event.remove_marked().
  *
  * \threadsafe
@@ -603,6 +603,25 @@ sequence::mark_selected ()
 {
     automutex locker(m_mutex);
     m_events.mark_selected();
+    reset_draw_marker();
+}
+
+/**
+ *  Removes selected events.  This is a new convenience function to fold in
+ *  the push_undo() and mark_selected() calls.  It makes the process slightly
+ *  faster, as well.
+ *
+ * \threadsafe
+ *      Also makes the whole process threadsafe.
+ */
+
+void
+sequence::remove_selected ()
+{
+    automutex locker(m_mutex);
+    m_events_undo.push(m_events);
+    m_events.mark_selected();
+    m_events.remove_marked();
     reset_draw_marker();
 }
 
@@ -1053,6 +1072,9 @@ sequence::unselect ()
  *  Removes and adds selected notes in position.  Also currently moves any
  *  other events in the range of the selection.
  *
+ *  Also, we've moved external calls to push_undo() into this function.
+ *  The caller shouldn't have to do that.
+ *
  *  Another thing this function does is wrap-around when movement occurs.
  *  Any events (except Note Off) that will start just after the END of the
  *  pattern will be wrapped around to the beginning of the pattern.
@@ -1089,6 +1111,7 @@ void
 sequence::move_selected_notes (midipulse delta_tick, int delta_note)
 {
     automutex locker(m_mutex);
+    push_undo();                                    /* do it for caller     */
     mark_selected();                                /* locked recursively   */
     for (event_list::iterator i = m_events.begin(); i != m_events.end(); ++i)
     {
@@ -1162,6 +1185,9 @@ sequence::adjust_timestamp (midipulse t, bool expand)
  *  that.  See the grow_selected() function.  Rather, it moves any event in the
  *  selection.
  *
+ *  Also, we've moved external calls to push_undo() into this function.
+ *  The caller shouldn't have to do that.
+ *
  * \threadsafe
  *
  * \param delta_tick
@@ -1172,8 +1198,9 @@ void
 sequence::stretch_selected (midipulse delta_tick)
 {
     automutex locker(m_mutex);
-    unsigned first_ev = 0x7fffffff;       // INT_MAX /* timestamp lower limit */
-    unsigned last_ev = 0x00000000;                   /* timestamp upper limit */
+    unsigned first_ev = 0x7fffffff;                 /* timestamp lower limit */
+    unsigned last_ev = 0x00000000;                  /* timestamp upper limit */
+    push_undo();                                    /* do it for caller      */
     for (event_list::iterator i = m_events.begin(); i != m_events.end(); ++i)
     {
         event & er = DREF(i);
@@ -1224,6 +1251,9 @@ sequence::stretch_selected (midipulse delta_tick)
  *  rather than risk a segfault on a null pointer.  Compare this function to
  *  the stretch_selected() and move_selected_notes() functions.
  *
+ *  Also, we've moved external calls to push_undo() into this function.
+ *  The caller shouldn't have to do that.
+ *
  *  This function would strip out non-Notes, but not it at least preserves
  *  them.  It is probably a good thing to "stretch" them, too, to help
  *  preserve their relative position re the notes.
@@ -1246,6 +1276,7 @@ void
 sequence::grow_selected (midipulse delta_tick)
 {
     automutex locker(m_mutex);
+    push_undo();                                    /* do it for caller     */
     mark_selected();                                /* locked recursively   */
     bool failed = false;
     for (event_list::iterator i = m_events.begin(); i != m_events.end(); ++i)
@@ -1438,7 +1469,10 @@ sequence::copy_selected ()
 }
 
 /**
- *  Cuts the selected events.
+ *  Cuts the selected events.  Pushes onto the undo stack, may copy the
+ *  events, marks the selected events, and removes them.  Now also sets the
+ *  dirty flag so that the caller doesn't have to.  Also raises the modify
+ *  flag on the parent perform object.
  *
  * \threadsafe
  *
@@ -1455,6 +1489,7 @@ sequence::cut_selected (bool copyevents)
 
     mark_selected();                                /* locked recursively   */
     remove_marked();
+    set_dirty();                                    /* do it for the caller */
     if (not_nullptr(m_parent))
         m_parent->modify();                         /* new, centralize      */
 }
@@ -1462,6 +1497,9 @@ sequence::cut_selected (bool copyevents)
 /**
  *  Pastes the selected notes (and only note events) at the given tick and
  *  the given note value.
+ *
+ *  Also, we've moved external calls to push_undo() into this function.
+ *  The caller shouldn't have to do that.
  *
  *  The event_keys used to access/sort the multimap event_list is not updated
  *  after changing timestamp/rank of the stored events.  Regenerating all
@@ -1517,6 +1555,7 @@ sequence::paste_selected (midipulse tick, int note)
 {
     automutex locker(m_mutex);
     event_list clipbd = m_events_clipboard;         /* copy the clipboard   */
+    push_undo();                                    /* do it for caller     */
     if (clipbd.count() > 0)
     {
         for (event_list::iterator i = clipbd.begin(); i != clipbd.end(); ++i)

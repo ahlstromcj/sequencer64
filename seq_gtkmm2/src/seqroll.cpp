@@ -1174,7 +1174,7 @@ seqroll::complete_paste (int x, int y)
     int note;
     convert_xy(m_current_x, m_current_y, tick, note);
     m_paste = false;
-    m_seq.push_undo();
+    // m_seq.push_undo();                           // moved into the call
     m_seq.paste_selected(tick, note);
 }
 
@@ -1311,7 +1311,7 @@ seqroll::grow_selected_notes (int dx)
     {
         int snap_x = dx * m_snap;                   /* time-stamp snap  */
         m_growing = true;
-        m_seq.push_undo();
+        // m_seq.push_undo();                       // moved into the call
         m_seq.grow_selected(snap_x);
     }
 }
@@ -1823,8 +1823,14 @@ seqroll::on_key_press_event (GdkEventKey * ev)
             }
         }
     }
-    if (result)
-        m_seq.set_dirty();
+
+    /*
+     * Move the dirtying of the sequence to the functions that actually do
+     * make it dirty.
+     *
+     * if (result)
+     *      m_seq.set_dirty();
+     */
 
     return result;
 }

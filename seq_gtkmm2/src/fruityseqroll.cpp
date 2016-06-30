@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-06-23
+ * \updates       2016-06-30
  * \license       GNU GPLv2 or above
  *
  *  This module handles "fruity" interactions only in the piano roll
@@ -156,6 +156,11 @@ FruitySeqRollInput::on_button_press_event (GdkEventButton * ev, seqroll & sroll)
 #ifdef SEQ64_STAZED_CHORD_GENERATOR
                     if (sroll.m_chord > 0)                  /* and less than? */
                     {
+                        /*
+                         * Needs to be a function in sequence class!  Include
+                         * the push_undo() call!
+                         */
+
                         for (int i = 0; i < c_chord_size; ++i)
                         {
                             int cnote = c_chord_table[sroll.m_chord][i];
@@ -368,9 +373,10 @@ FruitySeqRollInput::on_button_press_event (GdkEventButton * ev, seqroll & sroll)
                     (
                         tick_s, note_h, tick_s, note_h, sequence::e_select_one
                     );
-                    sroll.m_seq.push_undo();
-                    sroll.m_seq.mark_selected();
-                    sroll.m_seq.remove_marked();
+//                  sroll.m_seq.push_undo();
+//                  sroll.m_seq.mark_selected();
+//                  sroll.m_seq.remove_marked();
+                    sroll.m_seq.remove_selected();  // consolidates the calls
                 }
                 else
                 {
@@ -379,7 +385,7 @@ FruitySeqRollInput::on_button_press_event (GdkEventButton * ev, seqroll & sroll)
                      * leave the selection intact.
                      */
 
-                    sroll.m_seq.push_undo();
+                    // sroll.m_seq.push_undo();         // WHY???
                     sroll.m_seq.select_note_events
                     (
                         tick_s, note_h, tick_s, note_h, sequence::e_remove_one
@@ -455,7 +461,7 @@ FruitySeqRollInput::on_button_release_event
             /* convert deltas into screen coordinates */
 
             sroll.convert_xy(delta_x, delta_y, delta_tick, delta_note);
-            sroll.m_seq.push_undo();
+            // sroll.m_seq.push_undo();         // moved into the functions
             if (ev->state & SEQ64_SHIFT_MASK)
                 sroll.m_seq.stretch_selected(delta_tick);
             else
@@ -535,7 +541,7 @@ FruitySeqRollInput::on_button_release_event
             delta_x -= sroll.m_move_snap_offset_x;      /* adjust for snap */
             sroll.convert_xy(delta_x, delta_y, delta_tick, delta_note);
             delta_note -= c_num_keys - 1;
-            sroll.m_seq.push_undo();
+            // sroll. m_seq.push_undo();                // moved into the call
             sroll.m_seq.move_selected_notes(delta_tick, delta_note);
             needs_update = true;
         }
@@ -675,7 +681,7 @@ FruitySeqRollInput::on_motion_notify_event
         {
             /* remove only note under the cursor, leave selection intact */
 
-            sroll.m_seq.push_undo();
+            // sroll.m_seq.push_undo();             // WHY IS THIS NEEDED?
             sroll.m_seq.select_note_events
             (
                 tick, note, tick, note, sequence::e_remove_one

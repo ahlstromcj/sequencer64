@@ -90,14 +90,14 @@ Seq24SeqRollInput::on_button_press_event (GdkEventButton * ev, seqroll & sroll)
     int note_h, note_l;
     int norm_x, norm_y;
     bool needs_update = false;
-    int snapped_x = norm_x = sroll.scroll_offset_x(int(ev->x));
-    int snapped_y = norm_y = sroll.scroll_offset_y(int(ev->y));
     sequence & seq = sroll.m_seq;                   /* just do this once!   */
 
     /*
      * sroll.button_press_init(snapped_x, snapped_y)
      */
 
+    int snapped_x = norm_x = sroll.scroll_offset_x(int(ev->x));
+    int snapped_y = norm_y = sroll.scroll_offset_y(int(ev->y));
     sroll.grab_focus();
     sroll.snap_x(snapped_x);
     sroll.snap_y(snapped_y);

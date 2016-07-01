@@ -102,6 +102,12 @@ FruitySeqRollInput::on_button_press_event (GdkEventButton * ev, seqroll & sroll)
     int note_h, note_l;
     int norm_x, norm_y;
     bool needs_update = false;
+    sequence & seq = sroll.m_seq;                   /* just do this once!   */
+
+    /*
+     * sroll.button_press_init(snapped_x, snapped_y)
+     */
+
     int snapped_x = norm_x = int(ev->x + sroll.m_scroll_offset_x);
     int snapped_y = norm_y = int(ev->y + sroll.m_scroll_offset_y);
     sroll.grab_focus();
@@ -109,6 +115,7 @@ FruitySeqRollInput::on_button_press_event (GdkEventButton * ev, seqroll & sroll)
     sroll.snap_y(snapped_y);
     sroll.set_current_drop_y(snapped_y);            /* y is always snapped   */
     sroll.m_old.x = sroll.m_old.y = sroll.m_old.width = sroll.m_old.height = 0;
+
     if (sroll.m_paste)    /* ctrl-v pressed, waiting for click where to paste */
     {
         sroll.complete_paste(snapped_x, snapped_y);

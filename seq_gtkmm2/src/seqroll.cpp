@@ -1392,8 +1392,11 @@ seqroll::update_mouse_pointer (bool adding)
  */
 
 void
-seqroll::button_press_init (int & snapped_x, int & snapped_y)
+seqroll::button_press_init (GdkEventButton * ev, int & snapped_x, int & snapped_y)
 {
+    snapped_x = int(ev->x + m_scroll_offset_x);     // copy to norm_x, y
+    snapped_y = int(ev->y + m_scroll_offset_y);
+
     grab_focus();
     snap_x(snapped_x);
     snap_y(snapped_y);

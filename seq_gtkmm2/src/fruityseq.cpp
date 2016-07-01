@@ -124,7 +124,7 @@ FruitySeqEventInput::on_button_press_event
         seqev.snap_x(seqev.m_current_x);
         seqev.convert_x(seqev.m_current_x, tick_s);
         seqev.m_paste = false;
-        seqev.m_seq.push_undo();
+//      seqev.m_seq.push_undo();
         seqev.m_seq.paste_selected(tick_s, 0);
         result = true;
     }
@@ -149,7 +149,7 @@ FruitySeqEventInput::on_button_press_event
             {
                 seqev.m_painting = true;
                 seqev.snap_x(seqev.m_drop_x);
-                seqev.convert_x(seqev.m_drop_x, tick_s); /* x,y into tick/note */
+                seqev.convert_x(seqev.m_drop_x, tick_s); /* x,y-->tick/note  */
                 eventcount = seqev.m_seq.select_events
                 (
                     tick_s, tick_f, seqev.m_status, seqev.m_cc,
@@ -157,8 +157,8 @@ FruitySeqEventInput::on_button_press_event
                 );
                 if (eventcount == 0)
                 {
-                    seqev.m_seq.push_undo();
-                    seqev.drop_event(tick_s);
+                    seqev.m_seq.push_undo();            /* add to add_event? */
+                    seqev.drop_event(tick_s);           /* m_seq.add_event() */
                     result = true;
                 }
             }
@@ -275,7 +275,7 @@ FruitySeqEventInput::on_button_press_event
             {
                 /* remove only note under cursor, leave selection intact */
 
-                seqev.m_seq.push_undo();
+                // seqev.m_seq.push_undo();             // WHY???
                 (void) seqev.m_seq.select_events
                 (
                     tick_s, tick_f,
@@ -351,7 +351,7 @@ FruitySeqEventInput::on_button_release_event
             m_is_drag_pasting = false;
             m_is_drag_pasting_start = false;
             seqev.m_paste = false; /* convert deltas into screen coordinates */
-            seqev.m_seq.push_undo();
+            // seqev.m_seq.push_undo();
             seqev.m_seq.paste_selected(t_s, 0);
             result = true;
         }
@@ -390,7 +390,7 @@ FruitySeqEventInput::on_button_release_event
         {
             delta_x -= seqev.m_move_snap_offset_x; /* adjust for snap         */
             seqev.convert_x(delta_x, delta_tick);  /* deltas to screen coords */
-            seqev.m_seq.push_undo();               /* still moves events      */
+            // seqev.m_seq.push_undo();            /* still moves events      */
             seqev.m_seq.move_selected_notes(delta_tick, 0);
             result = true;
         }
@@ -477,7 +477,7 @@ FruitySeqEventInput::on_motion_notify_event
         seqev.m_current_x = int(ev->x)  + seqev.m_scroll_offset_x;
         seqev.snap_x(seqev.m_current_x);
         seqev.convert_x(seqev.m_current_x, tick);
-        seqev.drop_event(tick);
+        seqev.drop_event(tick);             // Why no push_undo()?
         result = true;
     }
     return result;

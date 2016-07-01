@@ -853,19 +853,15 @@ seqedit::do_action (int action, int var)
     switch (action)
     {
     case c_select_all_notes:
-//      m_seq.select_events(EVENT_NOTE_ON, 0);
-//      m_seq.select_events(EVENT_NOTE_OFF, 0);
         m_seq.select_all_notes();
+        break;
+
+    case c_select_inverse_notes:
+        m_seq.select_all_notes(true);
         break;
 
     case c_select_all_events:
         m_seq.select_events(m_editing_status, m_editing_cc);
-        break;
-
-    case c_select_inverse_notes:
-//      m_seq.select_events(EVENT_NOTE_ON, 0, true);
-//      m_seq.select_events(EVENT_NOTE_OFF, 0, true);
-        m_seq.select_all_notes();
         break;
 
     case c_select_inverse_events:
@@ -880,32 +876,26 @@ seqedit::do_action (int action, int var)
          * a new function to do that.
          */
 
-//      m_seq.push_undo();
         m_seq.push_quantize(EVENT_NOTE_ON, 0, m_snap, 1 , true);
         break;
 
     case c_quantize_events:
-//      m_seq.push_undo();
         m_seq.push_quantize(m_editing_status, m_editing_cc, m_snap, 1);
         break;
 
     case c_tighten_notes:
-//      m_seq.push_undo();
         m_seq.push_quantize(EVENT_NOTE_ON, 0, m_snap, 2 , true);
         break;
 
     case c_tighten_events:
-//      m_seq.push_undo();
         m_seq.push_quantize(m_editing_status, m_editing_cc, m_snap, 2);
         break;
 
     case c_transpose:
-//      m_seq.push_undo();                  // TODO ???
         m_seq.transpose_notes(var, 0);
         break;
 
     case c_transpose_h:                     // harmonic transpose
-//      m_seq.push_undo();
         m_seq.transpose_notes(var, m_scale);
         break;
 
@@ -1458,8 +1448,6 @@ seqedit::popup_event_menu ()
         case EVENT_PITCH_WHEEL:
             pitch_wheel = true;
             break;
-
-        /* one data item */
 
         case EVENT_PROGRAM_CHANGE:
             program_change = true;

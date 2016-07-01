@@ -1732,33 +1732,38 @@ sequence::change_event_data_range
  *  so then the function runs though the events and deletes the painted
  *  ones that overlap the ones we want to add.
  *
+ *  Also note that push_undo() is not incorporated into this function, for
+ *  the sake of speed.
+ *
  * \threadsafe
  *
  * \param tick
  *      The time destination of the new note, in pulses.
  *
- * \param length
+ * \param len
  *      The duration of the new note, in pulses.
  *
  * \param note
  *      The pitch destination of the new note.
  *
  * \param paint
- *      If true, repaint to be left with just the inserted event.
+ *      If true, repaint the whole set of events, in order to be left with
+ *      a clean view of the inserted event.  The default is false.
  */
 
 void
-sequence::add_note (midipulse tick, midipulse length, int note, bool paint)
+sequence::add_note (midipulse tick, midipulse len, int note, bool paint)
 {
-    automutex locker(m_mutex);
     if (tick >= 0 && note >= 0 && note < c_num_keys)
     {
+        automutex locker(m_mutex);
         bool ignore = false;
         if (paint)                        /* see the banner above */
         {
             for
             (
-                event_list::iterator i = m_events.begin(); i != m_events.end(); ++i
+                event_list::iterator i = m_events.begin();
+                i != m_events.end(); ++i
             )
             {
                 event & er = DREF(i);
@@ -1795,19 +1800,40 @@ sequence::add_note (midipulse tick, midipulse length, int note, bool paint)
 
             e.set_status(EVENT_NOTE_OFF);
             e.set_data(note, SEQ64_DEFAULT_NOTE_VELOCITY);
-            e.set_timestamp(tick + length);
+            e.set_timestamp(tick + len);
             add_event(e);
         }
+        verify_and_link();
     }
-    verify_and_link();
 }
+
+#ifdef SEQ64_STAZED_CHORD_GENERATOR
+
+/**
+ *  Adds a chord of a given length and  note value, at a given tick
+ *  location.  If SEQ64_STAZED_CHORD_GENERATOR is not defined, it
+ *  devolves to add_note().
+ *
+ * \threadsafe
+ *
+ * \param tick
+ *      The time destination of the new note, in pulses.
+ *
+ * \param len
+ *      The duration of the new note, in pulses.
+ *
+ * \param note
+ *      The pitch destination of the new note.
+ *
+ * \param paint
+ *      If true, repaint to be left with just the inserted event.
+ */
 
 void
 sequence::add_chord (int chord, midipulse tick, midipulse len, int note)
 {
-#ifdef SEQ64_STAZED_CHORD_GENERATOR
     push_undo();
-    if (chord > 0)                  /* and less than? */
+    if (chord > 0 && chord < c_chord_number)
     {
         for (int i = 0; i < c_chord_size; ++i)
         {
@@ -1815,15 +1841,14 @@ sequence::add_chord (int chord, midipulse tick, midipulse len, int note)
             if (cnote == -1)
                 break;
 
-            add_note(tick, len, note+cnote, false);
+            add_note(tick, len, note + cnote, false);
         }
     }
     else
-        add_note(tick, len - note_off_margin(), note, true);
-#else
-    add_note(tick, len, note, true);
-#endif
+        add_note(tick, len, note, true);
 }
+
+#endif
 
 /**
  *  Adds an event to the internal event list in a sorted manner.  Then it

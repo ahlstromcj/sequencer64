@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-06-30
+ * \updates       2016-07-01
  * \license       GNU GPLv2 or above
  *
  *  There are a large number of existing items to discuss.  But for now let's
@@ -80,7 +80,6 @@
 #include "seqroll.hpp"
 #include "seqdata.hpp"
 #include "seqevent.hpp"
-#include "sequence.hpp"
 #include "seqkeys.hpp"
 #include "perform.hpp"
 #include "settings.hpp"                 /* seq64::usr() and seq64::rc() */
@@ -1386,38 +1385,6 @@ seqroll::update_mouse_pointer (bool adding)
         get_window()->set_cursor(Gdk::Cursor(Gdk::PENCIL));
 }
 
-/**
- * \getter m_note_length, adjusted for the note_off_margin.
- */
-
-int
-seqroll::note_off_length () const
-{
-    return m_note_length - m_seq.note_off_margin();
-}
-
-/**
- * Convenience wrapper for sequence::add_note().  The length parameters
- * is obtained from the note_off_length() function.  This sets the note length
- * at a little less than the snap value.
- *
- * \param tick
- *      The time destination of the new note, in pulses.
- *
- * \param note
- *      The pitch destination of the new note.
- *
- * \param paint
- *      If true, repaint to be left with just the inserted event.  The default
- *      is true.
- */
-
-void
-seqroll::add_note (midipulse tick, int note, bool paint)
-{
-    m_seq.add_note(tick, note_off_length(), note, paint);
-}
-
 #ifdef USE_NEW_FUNCTIONS
 
 /*
@@ -1824,11 +1791,11 @@ seqroll::on_key_press_event (GdkEventKey * ev)
 
     /*
      * Move the dirtying of the sequence to the functions that actually do
-     * make it dirty.
-     *
-     * if (result)
-     *      m_seq.set_dirty();
+     * make it dirty.  However, commenting this out leaves artifacts.
      */
+
+     if (result)
+          m_seq.set_dirty();
 
     return result;
 }

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-06-30
+ * \updates       2016-07-01
  * \license       GNU GPLv2 or above
  *
  *  This module handles "fruity" interactions only in the piano roll
@@ -149,36 +149,12 @@ FruitySeqRollInput::on_button_press_event (GdkEventButton * ev, seqroll & sroll)
                 );
                 if (eventcount == 0)
                 {
-                    /* add note, length = little less than snap */
-
 #ifdef SEQ64_STAZED_CHORD_GENERATOR
-#if 0
-                    if (sroll.m_chord > 0)                  /* and less than? */
-                    {
-                        /*
-                         * Needs to be a function in sequence class!  Include
-                         * the push_undo() call!
-                         */
-
-                        for (int i = 0; i < c_chord_size; ++i)
-                        {
-                            int cnote = c_chord_table[sroll.m_chord][i];
-                            if (cnote == -1)
-                                break;
-
-                            sroll.add_note(tick_s, note_h + cnote, false);
-                        }
-                    }
+                    if (sroll.m_chord > 0)
+                        sroll.add_chord(tick_s, note_h);
                     else
-                        sroll.add_note(tick_s, note_h);
 #endif
-                    sroll.m_seq.add_chord
-                    (
-                        sroll.m_chord, tick_s, sroll.note_off_length(), note_h
-                    );
-#else
                     sroll.add_note(tick_s, note_h);
-#endif
                     needs_update = true;
                 }
             }

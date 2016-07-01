@@ -1,13 +1,16 @@
 Bugs and Additional Upgrade Ideas
 Chris Ahlstrom
-2015-10-27 to 2016-06-26 (New bugs)
+2015-10-27 to 2016-07-01 (New bugs)
 
 In no particular order...  "y" means "in progress", and "x" means it is
 basically done.
 
 -  Also see BUG REPORTS below.  Those are bug reports from other people.
--  Still need to test saving and reading of the new transposable sequence
+y  Still need to test saving and reading of the new transposable sequence
    state.
+-  If building with chord support is active, then the movement of the
+   selection box by the arrow keys is more flickery.  Seems to depend upon
+   context.
 -  Modify-flag improvements:
    x  Make the perform pointer a member of sequence regardless of the status
       of the "use pause" macro.

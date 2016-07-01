@@ -138,29 +138,12 @@ Seq24SeqRollInput::on_button_press_event (GdkEventButton * ev, seqroll & sroll)
                 );
                 if (eventcount == 0)
                 {
-                    /* add note, length = little less than snap */
-
 #ifdef SEQ64_STAZED_CHORD_GENERATOR
-//                  if (sroll.m_chord > 0)                  /* and less than? */
-//                  {
-//                      for (int i = 0; i < c_chord_size; ++i)
-//                      {
-//                          int cnote = c_chord_table[sroll.m_chord][i];
-//                          if (cnote == -1)
-//                              break;
-//
-//                          sroll.add_note(tick_s, note_h + cnote, false);
-//                      }
-//                  }
-//                  else
-//                      sroll.add_note(tick_s, note_h);
-                    sroll.m_seq.add_chord
-                    (
-                        sroll.m_chord, tick_s, sroll.note_off_length(), note_h
-                    );
-#else
-                    sroll.add_note(tick_s, note_h);
+                    if (sroll.m_chord > 0)
+                        sroll.add_chord(tick_s, note_h);
+                    else
 #endif
+                    sroll.add_note(tick_s, note_h);
                     needs_update = true;
                 }
             }
@@ -420,8 +403,17 @@ bool Seq24SeqRollInput::on_motion_notify_event
     }
     else if (sroll.m_painting)
     {
+
 #ifdef SEQ64_STAZED_CHORD_GENERATOR
-        if (sroll.m_chord != 0)
+
+        /*
+         * We could allow move painting for chords, but that would take
+         * some tricky code to move all of the notes of the chord.  And
+         * allowing painting here currently affects only one note after the
+         * chord itself is created.
+         */
+
+        if (sroll.m_chord != 0)     /* chord, don't allow move painting */
             result = true;
         else
 #endif

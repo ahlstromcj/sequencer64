@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-06-27
+ * \updates       2016-07-01
  * \license       GNU GPLv2 or above
  *
  */
@@ -37,6 +37,7 @@
 #include "gui_drawingarea_gtk2.hpp"
 #include "fruityseqroll.hpp"
 #include "seq24seqroll.hpp"
+#include "sequence.hpp"
 #include "scales.h"                     /* STAZED chord support */
 
 namespace Gtk
@@ -46,7 +47,6 @@ namespace Gtk
 
 namespace seq64
 {
-    class sequence;
     class perform;
     class seqdata;
     class seqevent;
@@ -207,7 +207,7 @@ private:
 
     /**
      *  Indicates the current chord in force for this sequence for inserting
-     *  notes..
+     *  notes.
      */
 
     int m_chord;
@@ -413,8 +413,59 @@ public:
      * Convenience functions.
      */
 
-    int note_off_length () const;
-    void add_note (midipulse tick, int note, bool paint = true);
+    /**
+     * \getter m_note_length, adjusted for the note_off_margin.
+     */
+
+    int note_off_length () const
+    {
+        return m_note_length - m_seq.note_off_margin();
+    }
+
+    /**
+     * Convenience wrapper for sequence::add_note().  The length parameters is
+     * obtained from the note_off_length() function.  This sets the note
+     * length at a little less than the snap value.
+     *
+     * \param tick
+     *      The time destination of the new note, in pulses.
+     *
+     * \param note
+     *      The pitch destination of the new note.
+     *
+     * \param paint
+     *      If true, repaint to be left with just the inserted event.  The
+     *      default is true.  The value of false is useful in inserting a
+     *      number of events and saving the repainting until last.  It is a
+     *      bit tricky, as the default paint value for sequence::add_note() is
+     *      false.
+     */
+
+    void add_note (midipulse tick, int note, bool paint = true)
+    {
+        m_seq.add_note(tick, note_off_length(), note, paint);
+    }
+
+#ifdef SEQ64_STAZED_CHORD_GENERATOR
+
+    /**
+     * Convenience wrapper for sequence::add_chord().  Implicit parameters are
+     * the m_chord and note_off_length() members.  The latter deducts just a
+     * little from the snap value.
+     *
+     * \param tick
+     *      The tick at which to add the chord.
+     *
+     * \param note
+     *      The base (bottom) note of the chord.
+     */
+
+    void add_chord (midipulse tick, int note)
+    {
+        m_seq.add_chord(m_chord, tick, note_off_length(), note);
+    }
+
+#endif
 
     /*
      * \setter m_ignore_redraw

@@ -104,7 +104,7 @@ Seq24SeqEventInput::on_button_press_event
         seqev.snap_x(seqev.m_current_x);
         seqev.convert_x(seqev.m_current_x, tick_s);
         seqev.m_paste = false;
-        seqev.m_seq.push_undo();
+        // seqev.m_seq.push_undo();
         seqev.m_seq.paste_selected(tick_s, 0);
         result = true;
     }
@@ -134,7 +134,7 @@ Seq24SeqEventInput::on_button_press_event
                 if (eventcount == 0)
                 {
                     seqev.m_seq.push_undo();
-                    seqev.drop_event(tick_s);
+                    seqev.drop_event(tick_s);           // CHECK!
                     result = true;
                 }
             }
@@ -267,7 +267,7 @@ Seq24SeqEventInput::on_button_release_event
         {
             delta_x -= seqev.m_move_snap_offset_x;  /* adjust for snap       */
             seqev.convert_x(delta_x, delta_tick);   /* to screen coordinates */
-            seqev.m_seq.push_undo();                /* still moves events    */
+            // seqev.m_seq.push_undo();             /* still moves events    */
             seqev.m_seq.move_selected_notes(delta_tick, 0);
             result = true;
         }

@@ -546,7 +546,7 @@ seqdata::on_button_press_event (GdkEventButton * ev)
 {
     if (CAST_EQUIVALENT(ev->type, SEQ64_BUTTON_PRESS))
     {
-        m_seq.push_undo();
+        // m_seq.push_undo();                       // WHY???
         m_drop_x = int(ev->x) + m_scroll_offset_x;  /* set values for line  */
         m_drop_y = int(ev->y);
         m_old.x = m_old.y = m_old.width = m_old.height = 0;

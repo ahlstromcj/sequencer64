@@ -88,66 +88,57 @@ Seq24SeqRollInput::on_button_press_event (GdkEventButton * ev, seqroll & sroll)
 {
     midipulse tick_s, tick_f;
     int note_h, note_l;
-    int norm_x, norm_y;
+    sequence & seq = sroll.m_seq;
+#ifdef USE_NEW_FUNCTIONS
+    int norm_x, snapped_x, snapped_y;
+    bool needs_update = sroll.button_press_initial
+    (
+        ev, norm_x, snapped_x, snapped_y                /* 3 side-effects   */
+    );
+    if (! needs_update)
+#else
     bool needs_update = false;
-    sequence & seq = sroll.m_seq;                   /* just do this once!   */
-
-    /*
-     * sroll.button_press_init(snapped_x, snapped_y)
-     */
-
-    int snapped_x = norm_x = sroll.scroll_offset_x(int(ev->x));
-    int snapped_y = norm_y = sroll.scroll_offset_y(int(ev->y));
+    int snapped_x = sroll.scroll_offset_x(int(ev->x));
+    int snapped_y = sroll.scroll_offset_y(int(ev->y));
+    int norm_x = snapped_x;                             /* needed later     */
     sroll.grab_focus();
     sroll.snap_x(snapped_x);
     sroll.snap_y(snapped_y);
-    sroll.set_current_drop_y(snapped_y);            /* y is always snapped  */
+    sroll.set_current_drop_y(snapped_y);                /* y always snapped */
     sroll.m_old.x = sroll.m_old.y = sroll.m_old.width = sroll.m_old.height = 0;
-
     if (sroll.m_paste)
     {
         sroll.complete_paste(snapped_x, snapped_y);
         needs_update = true;
     }
     else
+#endif
     {
-        if (SEQ64_CLICK_LEFT_MIDDLE(ev->button))    /* either button        */
+        if (SEQ64_CLICK_LEFT_MIDDLE(ev->button))        /* either button    */
         {
-            sroll.set_current_drop_x(norm_x);       /* selection normal x   */
+            sroll.set_current_drop_x(norm_x);           /* select normal x  */
             sroll.convert_xy(sroll.m_drop_x, sroll.m_drop_y, tick_s, note_h);
             if (m_adding)
             {
-                /*
-                 * Start paint job.  If snapped, add the snapped x value.
-                 */
-
-                sroll.m_painting = true;
-                sroll.set_current_drop_x(snapped_x);
-                sroll.convert_xy
-                (
-                    sroll.m_drop_x, sroll.m_drop_y, tick_s, note_h
-                );
-
-                /*
-                 * Test if a note is already there; fake select, if so, no add.
-                 */
+                sroll.m_painting = true;                /* start paint job  */
+                sroll.set_current_drop_x(snapped_x);    /* used snapped x   */
+                sroll.convert_xy(sroll.m_drop_x, sroll.m_drop_y, tick_s, note_h);
 
                 int eventcount = seq.select_note_events
                 (
                     tick_s, note_h, tick_s, note_h, sequence::e_would_select
                 );
-                if (eventcount == 0)
+                if (eventcount == 0)                    /* no note? add one */
                 {
-#ifdef SEQ64_STAZED_CHORD_GENERATOR
-                    if (sroll.m_chord > 0)
-                        sroll.add_chord(tick_s, note_h);
-                    else
-#endif
-                    sroll.add_note(tick_s, note_h);
+                    /*
+                     * Do we need push_undo() here?
+                     */
+
+                    sroll.add_note(tick_s, note_h);     /* also does chords */
                     needs_update = true;
                 }
             }
-            else                                        /* selecting */
+            else                                        /* selecting        */
             {
                 int eventcount = seq.select_note_events
                 (
@@ -158,15 +149,14 @@ Seq24SeqRollInput::on_button_press_event (GdkEventButton * ev, seqroll & sroll)
                     if (! (ev->state & SEQ64_CONTROL_MASK))
                         seq.unselect();
 
-                    eventcount = seq.select_note_events
+                    eventcount = seq.select_note_events /* direct click     */
                     (
-                        tick_s, note_h, tick_s, note_h,
-                        sequence::e_select_one  /* direct click, one event */
+                        tick_s, note_h, tick_s, note_h, sequence::e_select_one
                     );
-                    if (eventcount == 0) /* none selected, start selection box */
+                    if (eventcount == 0)                /* none             */
                     {
                         if (SEQ64_CLICK_LEFT(ev->button))
-                            sroll.m_selecting = true;
+                            sroll.m_selecting = true;   /* start selection  */
                     }
                     else
                         needs_update = true;
@@ -188,15 +178,12 @@ Seq24SeqRollInput::on_button_press_event (GdkEventButton * ev, seqroll & sroll)
                         ! (ev->state & SEQ64_CONTROL_MASK)
                     )
                     {
-                        /*
-                         * seqroll::align_selection() [proposed]:
-                         *
-                         * Get the box that selected elements are in.  Save
-                         * offset that we get from the snap above.  Align
-                         * selection for drawing.
-                         */
-
-                        needs_update = true;
+#ifdef USE_NEW_FUNCTIONS
+                        sroll.align_selection
+                        (
+                            tick_s, note_h, tick_f, note_l, snapped_x
+                        );
+#else
                         sroll.m_moving_init = true;
                         sroll.get_selected_box(tick_s, note_h, tick_f, note_l);
 
@@ -207,6 +194,9 @@ Seq24SeqRollInput::on_button_press_event (GdkEventButton * ev, seqroll & sroll)
 
                         sroll.snap_x(sroll.m_selected.x);
                         sroll.set_current_drop_x(snapped_x);
+#endif
+
+                        needs_update = true;
                     }
 
                     /*

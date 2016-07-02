@@ -1385,26 +1385,83 @@ seqroll::update_mouse_pointer (bool adding)
         get_window()->set_cursor(Gdk::Cursor(Gdk::PENCIL));
 }
 
+/**
+ * Convenience wrapper for sequence::add_note().  The length parameters is
+ * obtained from the note_off_length() function.  This sets the note
+ * length at a little less than the snap value.
+ *
+ * \param tick
+ *      The time destination of the new note, in pulses.
+ *
+ * \param note
+ *      The pitch destination of the new note.
+ *
+ * \param paint
+ *      If true, repaint to be left with just the inserted event.  The
+ *      default is true.  The value of false is useful in inserting a
+ *      number of events and saving the repainting until last.  It is a
+ *      bit tricky, as the default paint value for sequence::add_note() is
+ *      false.
+ */
+
+bool
+seqroll::add_note (midipulse tick, int note, bool paint)
+{
+#ifdef SEQ64_STAZED_CHORD_GENERATOR
+    if (m_chord > 0)
+        add_chord(tick, note);
+    else
+#endif
+        m_seq.add_note(tick, note_off_length(), note, paint);
+
+    return true;
+}
+
 #ifdef USE_NEW_FUNCTIONS
 
 /*
  * A potential function for XRollInput::on_button_press_event().
+ *
+ * \param ev
+ *      Provides the button-press event to process.
+ *
+ * \param [out] norm_x
+ *      The normalized x coordinate from the button press before snap.
+ *
+ * \param [out] snapped_x
+ *      The snapped x coordinate from the button press.
+ *
+ * \param [out] snapped_j
+ *      The snapped j coordinate from the button press.
+ *
+ * \return
+ *      Returns true if a paste operation was pending and was completed.
  */
 
-void
-seqroll::button_press_init (GdkEventButton * ev, int & snapped_x, int & snapped_y)
+bool
+seqroll::button_press_initial
+(
+    GdkEventButton * ev, int & norm_x, int & snapped_x, int & snapped_y
+)
 {
-    snapped_x = int(ev->x + m_scroll_offset_x);     // copy to norm_x, y
-    snapped_y = int(ev->y + m_scroll_offset_y);
-
+    bool needs_update = false;
+    snapped_x = scroll_offset_x(int(ev->x));
+    snapped_y = scroll_offset_y(int(ev->y));
+    norm_x = snapped_x;                             /* side-effect          */
     grab_focus();
-    snap_x(snapped_x);
-    snap_y(snapped_y);
+    snap_x(snapped_x);                              /* side-effect          */
+    snap_y(snapped_y);                              /* side-effect          */
     set_current_drop_y(snapped_y);                  /* y is always snapped  */
     m_old.x = m_old.y = m_old.width = m_old.height = 0;
+    if (m_paste)                /* ctrl-v pressed, ready for click to paste */
+    {
+        complete_paste(snapped_x, snapped_y);
+        needs_update = true;
+    }
+    return needs_update;
 }
 
-/*
+/**
  * Get the box that selected elements are in.  Save offset that we get from
  * the snap above.  Align selection for drawing.  Could be used in
  * XRollInput::on_button_press_event().
@@ -1426,6 +1483,8 @@ seqroll::align_selection
     snap_x(m_selected.x);
     set_current_drop_x(snapped_x);
 }
+
+#ifdef USE_UNREADY_NEW_FUNCTIONS
 
 /*
  *  Sets the hint key based on the current mouse position.
@@ -1455,7 +1514,9 @@ seqroll::add_snapped_note ()
     add_note(tick, note);
 }
 
-#endif  // USE_NEW_FUNCTION
+#endif  // USE_UNREADY_NEW_FUNCTIONS
+
+#endif  // USE_NEW_FUNCTIONS
 
 /**
  *  Implements the on-realize event handling.

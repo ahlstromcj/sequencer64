@@ -100,68 +100,57 @@ FruitySeqRollInput::on_button_press_event (GdkEventButton * ev, seqroll & sroll)
 {
     midipulse tick_s, tick_f;
     int note_h, note_l;
-    int norm_x, norm_y;
-    bool needs_update = false;
     sequence & seq = sroll.m_seq;                   /* just do this once!   */
-
-    /*
-     * sroll.button_press_init(snapped_x, snapped_y)
-     */
-
-    int snapped_x = norm_x = int(ev->x + sroll.m_scroll_offset_x);
-    int snapped_y = norm_y = int(ev->y + sroll.m_scroll_offset_y);
+#ifdef USE_NEW_FUNCTIONS
+    int norm_x, snapped_x, snapped_y;
+    bool needs_update = sroll.button_press_initial
+    (
+        ev, norm_x, snapped_x, snapped_y                /* 3 side-effects   */
+    );
+    if (! needs_update)
+#else
+    bool needs_update = false;
+    int snapped_x = sroll.scroll_offset_x(int(ev->x));
+    int snapped_y = sroll.scroll_offset_y(int(ev->y));
     sroll.grab_focus();
     sroll.snap_x(snapped_x);
     sroll.snap_y(snapped_y);
-    sroll.set_current_drop_y(snapped_y);            /* y is always snapped   */
+    sroll.set_current_drop_y(snapped_y);            /* y is always snapped  */
     sroll.m_old.x = sroll.m_old.y = sroll.m_old.width = sroll.m_old.height = 0;
 
-    if (sroll.m_paste)    /* ctrl-v pressed, waiting for click where to paste */
+    if (sroll.m_paste)
     {
         sroll.complete_paste(snapped_x, snapped_y);
         needs_update = true;
     }
     else
+#endif
     {
+        int norm_x = snapped_x;
         if (SEQ64_CLICK_LEFT(ev->button))
         {
             sroll.set_current_drop_x(norm_x);       /* selection normal x   */
             sroll.convert_xy(sroll.m_drop_x, sroll.m_drop_y, tick_s, note_h);
-            int eventcount = sroll.m_seq.select_note_events
+            int eventcount = seq.select_note_events
             (
                 tick_s, note_h, tick_s, note_h, sequence::e_would_select
             );
-
-            /*
-             * If not on top of event then add one...
-             */
-
             if (eventcount == 0 && ! (ev->state & SEQ64_CONTROL_MASK))
             {
-                m_adding = true;
+                m_adding = true;                     /* not on top of event */
                 sroll.m_painting = true;             /* start the paint job */
                 sroll.set_current_drop_x(snapped_x); /* adding, snapped x   */
                 sroll.convert_xy
                 (
                     sroll.m_drop_x, sroll.m_drop_y, tick_s, note_h
                 );
-
-                /*
-                 * Test if a note is already there; fake select, if so, no add.
-                 */
-
-                eventcount = sroll.m_seq.select_note_events
+                eventcount = seq.select_note_events /* note already there?  */
                 (
                     tick_s, note_h, tick_s, note_h, sequence::e_would_select
                 );
                 if (eventcount == 0)
                 {
-#ifdef SEQ64_STAZED_CHORD_GENERATOR
-                    if (sroll.m_chord > 0)
-                        sroll.add_chord(tick_s, note_h);
-                    else
-#endif
-                    sroll.add_note(tick_s, note_h);
+                    sroll.add_note(tick_s, note_h);     /* also does chords */
                     needs_update = true;
                 }
             }
@@ -171,13 +160,13 @@ FruitySeqRollInput::on_button_press_event (GdkEventButton * ev, seqroll & sroll)
                  * If under the cursor is not a selected note...
                  */
 
-                eventcount = sroll.m_seq.select_note_events
+                eventcount = seq.select_note_events
                 (
                     tick_s, note_h, tick_s, note_h, sequence::e_is_selected
                 );
                 if (eventcount == 0)
                 {
-                    eventcount = sroll.m_seq.select_note_events
+                    eventcount = seq.select_note_events
                     (
                         tick_s, note_h, tick_s, note_h, sequence::e_would_select
                     );
@@ -188,7 +177,7 @@ FruitySeqRollInput::on_button_press_event (GdkEventButton * ev, seqroll & sroll)
                          */
 
                         if (! (ev->state & SEQ64_CONTROL_MASK))
-                            sroll.m_seq.unselect();
+                            seq.unselect();
                     }
                     else
                     {
@@ -202,10 +191,10 @@ FruitySeqRollInput::on_button_press_event (GdkEventButton * ev, seqroll & sroll)
                             ! ( (ev->state & SEQ64_CONTROL_MASK) &&
                                 (ev->state & SEQ64_SHIFT_MASK) )
                         )
-                            sroll.m_seq.unselect();
+                            seq.unselect();
                     }
 
-                    eventcount = sroll.m_seq.select_note_events
+                    eventcount = seq.select_note_events
                     (
                         tick_s, note_h, tick_s, note_h,
                         sequence::e_select_one  /* direct click, one event */
@@ -226,7 +215,7 @@ FruitySeqRollInput::on_button_press_event (GdkEventButton * ev, seqroll & sroll)
 
                 /* if note under cursor is selected */
 
-                eventcount = sroll.m_seq.select_note_events
+                eventcount = seq.select_note_events
                 (
                     tick_s, note_h, tick_s, note_h, sequence::e_is_selected
                 );
@@ -245,7 +234,7 @@ FruitySeqRollInput::on_button_press_event (GdkEventButton * ev, seqroll & sroll)
                         int note;                   // midibyte
                         if
                         (
-                            sroll.m_seq.intersect_notes
+                            seq.intersect_notes
                             (
                                 drop_tick, drop_note, start, end, note
                             ) &&
@@ -307,7 +296,7 @@ FruitySeqRollInput::on_button_press_event (GdkEventButton * ev, seqroll & sroll)
                     (
                         SEQ64_CLICK_LEFT(ev->button) &&
                         (ev->state & SEQ64_CONTROL_MASK) &&
-                        sroll.m_seq.select_note_events
+                        seq.select_note_events
                         (
                             tick_s, note_h, tick_s, note_h,
                             sequence::e_is_selected
@@ -346,7 +335,7 @@ FruitySeqRollInput::on_button_press_event (GdkEventButton * ev, seqroll & sroll)
             sroll.convert_xy(sroll.m_drop_x, sroll.m_drop_y, tick_s, note_h);
             if              /* erase event(s) under cursor if there is one */
             (
-                sroll.m_seq.select_note_events
+                seq.select_note_events
                 (
                     tick_s, note_h, tick_s, note_h, sequence::e_would_select
                 )
@@ -356,11 +345,11 @@ FruitySeqRollInput::on_button_press_event (GdkEventButton * ev, seqroll & sroll)
 
                 if (ev->state & SEQ64_CONTROL_MASK)
                 {
-                    sroll.m_seq.select_note_events
+                    seq.select_note_events
                     (
                         tick_s, note_h, tick_s, note_h, sequence::e_select_one
                     );
-                    sroll.m_seq.remove_selected();
+                    seq.remove_selected();
                 }
                 else
                 {
@@ -369,7 +358,7 @@ FruitySeqRollInput::on_button_press_event (GdkEventButton * ev, seqroll & sroll)
                      * leave the selection intact.
                      */
 
-                    sroll.m_seq.select_note_events
+                    seq.select_note_events
                     (
                         tick_s, note_h, tick_s, note_h, sequence::e_remove_one
                     );
@@ -385,7 +374,7 @@ FruitySeqRollInput::on_button_press_event (GdkEventButton * ev, seqroll & sroll)
             else                                            /* selecting */
             {
                 if (!(ev->state & SEQ64_CONTROL_MASK))
-                    sroll.m_seq.unselect();
+                    seq.unselect();
 
                 sroll.m_selecting = true;   /* start the new selection box */
                 needs_update = true;
@@ -394,7 +383,7 @@ FruitySeqRollInput::on_button_press_event (GdkEventButton * ev, seqroll & sroll)
     }
     update_mouse_pointer(sroll);    /* context sensitive mouse pointer... */
     if (needs_update)               /* if they clicked, something changed */
-        sroll.m_seq.set_dirty();    /* redraw_events();                   */
+        seq.set_dirty();    /* redraw_events();                   */
 
     return needs_update;
 }
@@ -423,6 +412,7 @@ FruitySeqRollInput::on_button_release_event
     int note_h;
     int note_l;
     int x, y, w, h;
+    sequence & seq = sroll.m_seq;                   /* just do this once!   */
     bool needs_update = false;
     sroll.m_current_x = int(ev->x + sroll.m_scroll_offset_x);
     sroll.m_current_y = int(ev->y + sroll.m_scroll_offset_y);
@@ -445,9 +435,9 @@ FruitySeqRollInput::on_button_release_event
 
             sroll.convert_xy(delta_x, delta_y, delta_tick, delta_note);
             if (ev->state & SEQ64_SHIFT_MASK)
-                sroll.m_seq.stretch_selected(delta_tick);
+                seq.stretch_selected(delta_tick);
             else
-                sroll.m_seq.grow_selected(delta_tick);
+                seq.grow_selected(delta_tick);
 
             needs_update = true;
         }
@@ -494,14 +484,14 @@ FruitySeqRollInput::on_button_release_event
             if
             (
                 ! sroll.m_justselected_one &&
-                sroll.m_seq.select_note_events
+                seq.select_note_events
                 (
                     current_tick, current_note, current_tick, current_note,
                     sequence::e_is_selected
                 ) &&
                 (ev->state & SEQ64_CONTROL_MASK))
             {
-                (void) sroll.m_seq.select_note_events
+                (void) seq.select_note_events
                 (
                     current_tick, current_note, current_tick, current_note,
                     sequence::e_deselect
@@ -523,7 +513,7 @@ FruitySeqRollInput::on_button_release_event
             delta_x -= sroll.m_move_snap_offset_x;      /* adjust for snap */
             sroll.convert_xy(delta_x, delta_y, delta_tick, delta_note);
             delta_note -= c_num_keys - 1;
-            sroll.m_seq.move_selected_notes(delta_tick, delta_note);
+            seq.move_selected_notes(delta_tick, delta_note);
             needs_update = true;
         }
     }
@@ -541,7 +531,7 @@ FruitySeqRollInput::on_button_release_event
             );
             sroll.convert_xy(x, y, tick_s, note_h);
             sroll.convert_xy(x + w, y + h, tick_f, note_l);
-            (void) sroll.m_seq.select_note_events
+            (void) seq.select_note_events
             (
                 tick_s, note_h, tick_f, note_l, sequence::e_toggle_selection
             );
@@ -557,10 +547,10 @@ FruitySeqRollInput::on_button_release_event
     sroll.m_paste = false;
     sroll.m_moving_init = false;
     sroll.m_painting = false;
-    sroll.m_seq.unpaint_all();
+    seq.unpaint_all();
     update_mouse_pointer(sroll);        /* context sensitive mouse pointer... */
     if (needs_update)                   /* if they clicked, something changed */
-        sroll.m_seq.set_dirty();        /* redraw_events();                   */
+        seq.set_dirty();        /* redraw_events();                   */
 
     return needs_update;
 }
@@ -589,6 +579,7 @@ FruitySeqRollInput::on_motion_notify_event
 )
 {
     bool result = false;
+    sequence & seq = sroll.m_seq;                   /* just do this once!   */
     sroll.m_current_x = int(ev->x  + sroll.m_scroll_offset_x);
     sroll.m_current_y = int(ev->y  + sroll.m_scroll_offset_y);
     if (sroll.m_moving_init)
@@ -613,8 +604,8 @@ FruitySeqRollInput::on_motion_notify_event
         )
     )
     {
-        sroll.m_seq.copy_selected();
-        sroll.m_seq.unselect();
+        seq.copy_selected();
+        seq.unselect();
         sroll.start_paste();
         sroll.m_is_drag_pasting_start = false;
         sroll.m_is_drag_pasting = true;
@@ -652,7 +643,7 @@ FruitySeqRollInput::on_motion_notify_event
         sroll.convert_xy(sroll.current_x(), sroll.current_y(), tick, note);
         if
         (
-            sroll.m_seq.select_note_events
+            seq.select_note_events
             (
                 tick, note, tick, note, sequence::e_would_select
             )
@@ -660,11 +651,11 @@ FruitySeqRollInput::on_motion_notify_event
         {
             /* remove only note under the cursor, leave selection intact */
 
-            sroll.m_seq.select_note_events
+            seq.select_note_events
             (
                 tick, note, tick, note, sequence::e_remove_one
             );
-            sroll.m_seq.set_dirty();
+            seq.set_dirty();
         }
     }
     return result;

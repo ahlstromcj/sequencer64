@@ -2052,7 +2052,6 @@ seqedit::timeout ()
     m_seqroll_wid->follow_progress();           /* keep up with progress    */
     if (m_seq.is_dirty_edit())                  /* m_seq.is_dirty_main()    */
     {
-        puts("seqedit dirty\n");
         m_seqroll_wid->redraw_events();
         m_seqevent_wid->redraw();
         m_seqdata_wid->redraw();

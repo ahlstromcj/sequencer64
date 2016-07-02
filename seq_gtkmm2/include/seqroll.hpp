@@ -40,6 +40,8 @@
 #include "sequence.hpp"
 #include "scales.h"                     /* STAZED chord support */
 
+#define USE_NEW_FUNCTIONS
+
 namespace Gtk
 {
     class Adjustment;
@@ -422,29 +424,7 @@ public:
         return m_note_length - m_seq.note_off_margin();
     }
 
-    /**
-     * Convenience wrapper for sequence::add_note().  The length parameters is
-     * obtained from the note_off_length() function.  This sets the note
-     * length at a little less than the snap value.
-     *
-     * \param tick
-     *      The time destination of the new note, in pulses.
-     *
-     * \param note
-     *      The pitch destination of the new note.
-     *
-     * \param paint
-     *      If true, repaint to be left with just the inserted event.  The
-     *      default is true.  The value of false is useful in inserting a
-     *      number of events and saving the repainting until last.  It is a
-     *      bit tricky, as the default paint value for sequence::add_note() is
-     *      false.
-     */
-
-    void add_note (midipulse tick, int note, bool paint = true)
-    {
-        m_seq.add_note(tick, note_off_length(), note, paint);
-    }
+    bool add_note (midipulse tick, int note, bool paint = true);
 
 #ifdef SEQ64_STAZED_CHORD_GENERATOR
 
@@ -600,6 +580,17 @@ private:
     void grow_selected_notes (int dx);                  // new
     void set_adding (bool adding);                      // from seq24 seqroll
     void update_mouse_pointer (bool adding);            // from fruity seqroll
+#ifdef  USE_NEW_FUNCTIONS
+    bool button_press_initial
+    (
+        GdkEventButton * ev, int & norm_x, int & snapped_x, int & snapped_y
+    );
+    void align_selection
+    (
+        midipulse & tick_s, int & note_h,
+        midipulse & tick_f, int & note_l, int snapped_x
+    );
+#endif
 
 private:            // new internal/friend functions
 

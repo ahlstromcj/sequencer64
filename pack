@@ -8,7 +8,7 @@
 # \library    	Sequencer64
 # \author     	Chris Ahlstrom
 # \date       	2015-09-10
-# \update     	2015-09-10
+# \update     	2016-07-01
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -46,7 +46,7 @@ fi
 if [ "$1" == "--help" ] || [ "$1" == "help" ] ; then
 
    echo
-   echo "pack 0.1 edited on 2015-09-10"
+   echo "pack 0.2 edited on 2016-07-01"
    echo
    echo "Usage:  ./pack [--dry-run] [--clean] [tag]"
    echo
@@ -122,6 +122,7 @@ else
       if [ "$DOCLEAN" == "yes" ] ; then
          echo "Sequencer64 will be cleaned by 'bootstrap --clean'."
       fi
+      echo "Would run 'tar cJf $TARBALLNAME ... $WORKINGDIR '"
       exit 1
    fi
 
@@ -139,9 +140,14 @@ else
 # Makefile.in
 # Linux executable files
 # --exclude="aux-files"
+#
+# Removed the slash after WORKINGDIR, and moved it to the end, which
+# now allows tar to not include .git in the archive, saving a lot of time
+# and space.
 
-   tar cJf $TARBALLNAME $WORKINGDIR/ \
+   tar cJf $TARBALLNAME \
  --exclude-vcs         \
+ --exclude=".git"      \
  --exclude="src/seq24" \
  --exclude="src/sequencer64" \
  --exclude="config.status"  \
@@ -191,7 +197,8 @@ else
  --exclude="*.tmp"     \
  --exclude="*.user"    \
  --exclude="*.xz"      \
- --exclude="*.testsettings"
+ --exclude="*.testsettings" \
+   $WORKINGDIR
 
       echo
 

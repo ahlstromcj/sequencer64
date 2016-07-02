@@ -48,9 +48,9 @@ private:
 
     /**
      *  Set to true if in note-adding mode.
-     */
 
     bool m_adding;
+     */
 
     /**
      *  Set to tru if we hold the right mouse button down (in "fruity" mode)
@@ -75,7 +75,7 @@ public:
      */
 
     FruitySeqRollInput () :
-        m_adding        (false),
+//      m_adding        (false),
         m_erase_painting(false)
     {
         // Empty body

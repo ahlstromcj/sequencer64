@@ -62,7 +62,7 @@ namespace seq64
 void
 Seq24SeqRollInput::set_adding (bool adding, seqroll & sroll)
 {
-    m_adding = adding;
+//  m_adding = adding;
     sroll.set_adding(adding);
 }
 
@@ -118,7 +118,8 @@ Seq24SeqRollInput::on_button_press_event (GdkEventButton * ev, seqroll & sroll)
         {
             sroll.set_current_drop_x(norm_x);           /* select normal x  */
             sroll.convert_xy(sroll.m_drop_x, sroll.m_drop_y, tick_s, note_h);
-            if (m_adding)
+//          if (m_adding)
+            if (sroll.adding())
             {
                 sroll.m_painting = true;                /* start paint job  */
                 sroll.set_current_drop_x(snapped_x);    /* used snapped x   */
@@ -357,21 +358,22 @@ Seq24SeqRollInput::on_button_release_event
  *      Returns true if the event was processed.
  */
 
-bool Seq24SeqRollInput::on_motion_notify_event
+bool
+Seq24SeqRollInput::on_motion_notify_event
 (
     GdkEventMotion * ev,
     seqroll & sroll
 )
 {
     bool result = false;
-    sroll.set_current_offset_x(int(ev->x));
-    sroll.set_current_offset_y(int(ev->y));
-
+    sroll.set_current_offset_x_y(int(ev->x), int(ev->y));
+//  sroll.set_current_offset_y(int(ev->y));
     if (sroll.m_moving_init)
     {
         sroll.m_moving_init = false;
         sroll.m_moving = true;
     }
+//  update_mouse_pointer(sroll);    /* context sensitive mouse pointer... */
 
     /*
      * seqroll::set_hint_note()

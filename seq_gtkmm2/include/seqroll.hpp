@@ -28,9 +28,10 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-07-01
+ * \updates       2016-07-02
  * \license       GNU GPLv2 or above
  *
+ *  We are currently moving toward making this class a base class.
  */
 
 #include "globals.h"
@@ -221,6 +222,13 @@ private:
      */
 
     int m_key;
+
+    /**
+     *  Set when in note-adding mode.  This flag was moved from both
+     *  the fruity and the seq24 seqroll classes.
+     */
+
+    bool m_adding;
 
     /**
      *  Set when highlighting a bunch of events.
@@ -579,8 +587,17 @@ private:
     void move_selected_notes (int dx, int dy);          // new
     void grow_selected_notes (int dx);                  // new
     void set_adding (bool adding);                      // from seq24 seqroll
-    void update_mouse_pointer (bool adding);            // from fruity seqroll
-#ifdef  USE_NEW_FUNCTIONS
+
+    /**
+     * \getter m_adding
+     */
+
+    bool adding () const
+    {
+        return m_adding;
+    }
+
+    void update_mouse_pointer (bool adding = false);    // from fruity seqroll
     bool button_press_initial
     (
         GdkEventButton * ev, int & norm_x, int & snapped_x, int & snapped_y
@@ -590,6 +607,11 @@ private:
         midipulse & tick_s, int & note_h,
         midipulse & tick_f, int & note_l, int snapped_x
     );
+
+#ifdef  USE_NEW_FUNCTIONS
+
+    /* virtual */ bool motion_notify (GdkEventMotion * ev);
+
 #endif
 
 private:            // new internal/friend functions
@@ -626,12 +648,12 @@ private:            // new internal/friend functions
      *
      * \param x
      *      The x value to offset.
-     */
 
     void set_current_offset_x (int x)
     {
         m_current_x = x + m_scroll_offset_x;
     }
+     */
 
     /**
      *  Useful y calculation.  Offsets the current y value by the y origin of
@@ -639,11 +661,40 @@ private:            // new internal/friend functions
      *
      * \param y
      *      The y value to offset.
-     */
 
     void set_current_offset_y (int y)
     {
         m_current_y = y + m_scroll_offset_y;
+    }
+     */
+
+    /**
+     *  Useful x and y calculation.  Offsets the current x and y values by the
+     *  x and y origin of the current page.
+     *
+     * \param x
+     *      The y value to offset.
+     *
+     * \param y
+     *      The y value to offset.
+     */
+
+    void set_current_offset_x_y (int x, int y)
+    {
+        m_current_x = x + m_scroll_offset_x;
+        m_current_y = y + m_scroll_offset_y;
+    }
+
+    /**
+     *  Indicates if we're drag-pasting, selecting, moving, growing, or pasting.
+     *
+     * \return
+     *      Returns true if one of those five flags are set.
+     */
+
+    bool normal_action () const
+    {
+        return m_is_drag_pasting || select_action();
     }
 
     /**

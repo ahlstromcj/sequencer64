@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-07-01
+ * \updates       2016-07-02
  * \license       GNU GPLv2 or above
  *
  *  There are a large number of existing items to discuss.  But for now let's
@@ -163,6 +163,7 @@ seqroll::seqroll
     m_chord                 (0),
 #endif
     m_key                   (0),
+    m_adding                (false),
     m_selecting             (false),
     m_moving                (false),
     m_moving_init           (false),
@@ -189,6 +190,10 @@ seqroll::seqroll
     m_cc                    (0)
 {
     m_ppqn = choose_ppqn(ppqn);
+    m_old.x = 0;
+    m_old.y = 0;
+    m_old.width = 0;
+    m_old.height = 0;
 
     /*
      * These calls don't seem to work in the constructor.  They do in
@@ -846,71 +851,94 @@ seqroll::idle_redraw ()
 }
 
 /**
- *  Draws the current selecton on the main window.
+ *  Draws the current selecton on the main window.  Note the parameters of
+ *  draw_drawable(), which we need to be sure of to draw thicker boxes.
+ *
+ *      -   x and y position of rectangle to draw
+ *      -   x and y position in drawable where rectangle should be drawn
+ *      -   width and height of rectangle to draw
  */
 
 void
 seqroll::draw_selection_on_window ()
 {
-    if (m_selecting || m_moving || m_paste || m_growing)
+    const int thickness = 1;        /* normally 1   */
+    const int sizeinc = 1;          /* normally 1   */
+    const int selinc = 0;           /* normally 0   */
+    int x, y, w, h;
+    set_line(Gdk::LINE_SOLID, thickness);
+
+    if (select_action())
     {
-        set_line(Gdk::LINE_SOLID);
-        draw_drawable                                   /* replace old */
-        (
-            m_old.x, m_old.y, m_old.x, m_old.y, m_old.width + 1, m_old.height + 1
-        );
+        x = m_old.x;
+        y = m_old.y;
+        w = m_old.width;
+        h = m_old.height;
+        draw_drawable(x, y, x, y, w + sizeinc, h + sizeinc);    /* replace old */
+//      (
+//          m_old.x, m_old.y, m_old.x, m_old.y,
+//          m_old.width + sizeinc, m_old.height + sizeinc
+//      );
     }
 
     if (m_selecting)
     {
-        int x, y, w, h;
         xy_to_rect(m_drop_x, m_drop_y, m_current_x, m_current_y, x, y, w, h);
         x -= m_scroll_offset_x;
         y -= m_scroll_offset_y;
-        m_old.x = x;
-        m_old.y = y;
-        m_old.width = w;
-        m_old.height = h + c_key_y;
-        draw_rectangle(black(), x, y, w, h + c_key_y, false);
+        h += c_key_y;
+        draw_rectangle(black(), x, y, w + selinc, h + selinc, false);
+//      m_old.x = x;
+//      m_old.y = y;
+//      m_old.width = w;
+//      m_old.height = h;
     }
-    if (m_moving || m_paste)
+    if (drop_action())
     {
-        int x = m_selected.x + m_current_x - m_drop_x - m_scroll_offset_x;
-        int y = m_selected.y + m_current_y - m_drop_y - m_scroll_offset_y;
+        x = m_selected.x + m_current_x - m_drop_x - m_scroll_offset_x;
+        y = m_selected.y + m_current_y - m_drop_y - m_scroll_offset_y;
+        w = m_selected.width;
+        h = m_selected.height;
 
         /*
          * Orange makes it a little more clear that we're pasting, I think.
+         * A parameter of false draws an unfilled rectangle.
          */
 
 #ifdef USE_OLD_COLOR
-        draw_rectangle(black(), x, y, m_selected.width, m_selected.height, false);
+        draw_rectangle(black(), x, y, w, h, false);
 #else
-        draw_rectangle
-        (
-            dark_orange(), x, y,
-            m_selected.width, m_selected.height, false  // true fills the box
-        );
+        draw_rectangle(dark_orange(), x, y, w + selinc, h + selinc, false);
 #endif
-        m_old.x = x;
-        m_old.y = y;
-        m_old.width = m_selected.width;
-        m_old.height = m_selected.height;
+//      m_old.x = x;
+//      m_old.y = y;
+//      m_old.width = w;
+//      m_old.height = h;
     }
     if (m_growing)
     {
         int delta_x = m_current_x - m_drop_x;
-        int width = delta_x + m_selected.width;
-        if (width < 1)
-            width = 1;
+        x = m_selected.x - m_scroll_offset_x;
+        y = m_selected.y - m_scroll_offset_y;
+        w = delta_x + m_selected.width;
+        h = m_selected.height;
+        if (w < 1)
+            w = 1;
 
-        int x = m_selected.x - m_scroll_offset_x;
-        int y = m_selected.y - m_scroll_offset_y;
-        draw_rectangle(black(), x, y, width, m_selected.height, false);
-        m_old.x = x;
-        m_old.y = y;
-        m_old.width = width;
-        m_old.height = m_selected.height;
+#ifdef USE_OLD_COLOR
+        draw_rectangle(black(), x, y, w, h, false);
+#else
+        draw_rectangle(dark_orange(), x, y, w + selinc, h + selinc, false);
+#endif
+//      m_old.x = x;
+//      m_old.y = y;
+//      m_old.width = w;
+//      m_old.height = h;
     }
+    m_old.x = x;
+    m_old.y = y;
+    m_old.width = w;
+    m_old.height = h;
 }
 
 /**
@@ -1225,8 +1253,9 @@ seqroll::move_selection_box (int dx, int dy)
 {
     int x = m_old.x + dx * m_snap / m_zoom;
     int y = m_old.y + dy * c_key_y;
-    m_current_x = scroll_offset_x(x);
-    m_current_y = scroll_offset_y(y);
+//  m_current_x = scroll_offset_x(x);
+//  m_current_y = scroll_offset_y(y);
+    set_current_offset_x_y(x, y);
 
 	int note;
 	midipulse tick;
@@ -1326,6 +1355,7 @@ seqroll::grow_selected_notes (int dx)
 void
 seqroll::set_adding (bool adding)
 {
+    m_adding = adding;
     if (adding)
         get_window()->set_cursor(Gdk::Cursor(Gdk::PENCIL));
     else
@@ -1358,17 +1388,16 @@ seqroll::update_mouse_pointer (bool adding)
     );
     midipulse start, end;
     int note;                           // midibyte
-    if
-    (
-        m_is_drag_pasting || m_selecting || m_moving ||
-        m_growing || m_paste
-    )
+    if (normal_action())
     {
         get_window()->set_cursor(Gdk::Cursor(Gdk::LEFT_PTR));
     }
+    else if (adding)
+    {
+        get_window()->set_cursor(Gdk::Cursor(Gdk::PENCIL));
+    }
     else if
     (
-         ! adding &&
          m_seq.intersect_notes(drop_tick, drop_note, start, end, note) &&
          note == drop_note
     )
@@ -1381,8 +1410,6 @@ seqroll::update_mouse_pointer (bool adding)
         else
             get_window()->set_cursor(Gdk::Cursor(Gdk::CENTER_PTR));
     }
-    else
-        get_window()->set_cursor(Gdk::Cursor(Gdk::PENCIL));
 }
 
 /**
@@ -1416,8 +1443,6 @@ seqroll::add_note (midipulse tick, int note, bool paint)
 
     return true;
 }
-
-#ifdef USE_NEW_FUNCTIONS
 
 /*
  * A potential function for XRollInput::on_button_press_event().
@@ -1482,6 +1507,65 @@ seqroll::align_selection
     m_move_snap_offset_x = m_selected.x - adjusted_selected_x;
     snap_x(m_selected.x);
     set_current_drop_x(snapped_x);
+}
+
+#ifdef USE_NEW_FUNCTIONS
+
+/**
+ *  Seq24-style on-motion mouse interaction.
+ *
+ *  We could allow move painting for chords, but that would take some tricky
+ *  code to move all of the notes of the chord.  And allowing painting here
+ *  currently affects only one note after the chord itself is created.
+ *
+ * \param ev
+ *      Provides the button-release event to process.
+ *
+ * \return
+ *      Returns true if the event was processed.
+ */
+
+bool
+seqroll::motion_notify (GdkEventMotion * ev)
+{
+    bool result = false;
+    set_current_offset_x_y(int(ev->x), int(ev->y));
+    if (m_moving_init)
+    {
+        m_moving_init = false;
+        m_moving = true;
+    }
+    update_mouse_pointer(m_adding);     /* context sensitive mouse pointer  */
+
+    int note;
+    midipulse tick;
+    snap_y(m_current_y);
+    convert_xy(0, m_current_y, tick, note);
+    m_seqkeys_wid.set_hint_key(note);
+    if (select_action())
+    {
+        if (drop_action())
+            snap_x(m_current_x);
+
+        draw_selection_on_window();
+        result = true;
+    }
+    else if (m_painting)
+    {
+
+#ifdef SEQ64_STAZED_CHORD_GENERATOR
+        if (m_chord != 0)               /* chord, don't allow move painting */
+            result = true;
+        else
+#endif
+        {
+            snap_x(m_current_x);
+            convert_xy(m_current_x, m_current_y, tick, note);
+            add_note(tick, note);
+            result = true;
+        }
+    }
+    return result;
 }
 
 #ifdef USE_UNREADY_NEW_FUNCTIONS
@@ -1633,7 +1717,8 @@ seqroll::on_motion_notify_event (GdkEventMotion * ev)
 {
     bool result;
     if (rc().interaction_method() == e_seq24_interaction)
-        result = m_seq24_interaction.on_motion_notify_event(ev, *this);
+//      result = m_seq24_interaction.on_motion_notify_event(ev, *this);
+        result = motion_notify(ev);
     else
         result = m_fruity_interaction.on_motion_notify_event(ev, *this);
 
@@ -1842,12 +1927,14 @@ seqroll::on_key_press_event (GdkEventKey * ev)
             }
             else if (ev->keyval == SEQ64_p)
             {
-                m_seq24_interaction.set_adding(true, *this);
+//              m_seq24_interaction.set_adding(true, *this);
+                set_adding(true);
                 result = true;
             }
             else if (ev->keyval == SEQ64_x)             /* "x-scape" the mode   */
             {
-                m_seq24_interaction.set_adding(false, *this);
+//              m_seq24_interaction.set_adding(false, *this);
+                set_adding(false);
                 result = true;
             }
         }

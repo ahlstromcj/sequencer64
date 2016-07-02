@@ -49,9 +49,9 @@ private:
 
     /**
      *  True if adding events to the seqroll via the mouse.
-     */
 
     bool m_adding;
+     */
 
 public:
 
@@ -59,7 +59,7 @@ public:
      * Default constructor.
      */
 
-    Seq24SeqRollInput () : m_adding(false)
+    Seq24SeqRollInput () // : m_adding(false)
     {
         // Empty body
     }

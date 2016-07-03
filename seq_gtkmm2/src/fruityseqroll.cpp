@@ -76,7 +76,6 @@ clamp (long val, long low, long hi)
 void
 FruitySeqRollInput::update_mouse_pointer (seqroll & sroll)
 {
-//  sroll.update_mouse_pointer(m_adding);
     sroll.update_mouse_pointer(sroll.adding());
 }
 
@@ -459,7 +458,6 @@ FruitySeqRollInput::on_button_release_event
 
     if (SEQ64_CLICK_LEFT(ev->button))
     {
-//      m_adding = false;
         sroll.set_adding(false);
         if (sroll.m_is_drag_pasting)
         {
@@ -583,8 +581,6 @@ FruitySeqRollInput::on_motion_notify_event
 {
     bool result = false;
     sequence & seq = sroll.m_seq;                   /* just do this once!   */
-//  sroll.m_current_x = int(ev->x  + sroll.m_scroll_offset_x);
-//  sroll.m_current_y = int(ev->y  + sroll.m_scroll_offset_y);
     sroll.set_current_offset_x_y(int(ev->x), int(ev->y));
     if (sroll.m_moving_init)
     {
@@ -624,9 +620,6 @@ FruitySeqRollInput::on_motion_notify_event
     sroll.snap_y(sroll.m_current_y);
     sroll.convert_xy(0, sroll.m_current_y, tick, note);
     sroll.m_seqkeys_wid.set_hint_key(note);
-
-//  if (sroll.m_selecting || sroll.m_moving || sroll.m_growing || sroll.m_paste)
-
     if (sroll.select_action())
     {
         if (sroll.drop_action())

@@ -1,6 +1,6 @@
 Bugs and Additional Upgrade Ideas
 Chris Ahlstrom
-2015-10-27 to 2016-07-01 (New bugs)
+2015-10-27 to 2016-07-02 (New bugs)
 
 In no particular order...  "y" means "in progress", and "x" means it is
 basically done.
@@ -39,6 +39,7 @@ y  Load the very simple test.midi file.  Open the pattern editor. Select the
       CC (Control Change), PC (Program Change), ON (Note On), OFF (Note Off),
       AT (Aftertouch), ...
    -  How do we provide the channel value for an inserted event?
+-  Grow using a ctrl-arrow key can fail in odd ways.
 y  Copying and pasting notes ruins the original notes. Orel found a solution,
    but it needs more testing, which has already found the two bugs listed
    above.

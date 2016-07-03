@@ -37,11 +37,12 @@
 #include "globals.h"
 #include "gui_drawingarea_gtk2.hpp"
 #include "fruityseqroll.hpp"
-#include "seq24seqroll.hpp"
 #include "sequence.hpp"
-#include "scales.h"                     /* STAZED chord support */
+#include "scales.h"                     /* STAZED chord support     */
 
 #define USE_NEW_FUNCTIONS
+
+#include "seq24seqroll.hpp"             /* will be OBSOLETE soon    */
 
 namespace Gtk
 {
@@ -102,7 +103,7 @@ class seqroll : public gui_drawingarea_gtk2
      */
 
     friend class FruitySeqRollInput;
-    friend class Seq24SeqRollInput;
+    friend class Seq24SeqRollInput;     /* will be OBSOLETE soon */
 
 private:
 
@@ -158,12 +159,16 @@ private:
 
     FruitySeqRollInput m_fruity_interaction;
 
+#ifndef USE_NEW_FUNCTIONS
+
     /**
      *  Provides a normal seq24 input object, which is always needed to
-     *  handle, for example, keystroke input.
+     *  handle, for example, keystroke input.  Will be OBSOLETE soon.
      */
 
     Seq24SeqRollInput m_seq24_interaction;
+
+#endif
 
     /**
      *  A position value.  Need to clarify what exactly this member is used
@@ -509,7 +514,15 @@ public:
     }
 
     void complete_paste (int x, int y);
+
+#ifdef SEQ64_FOLLOW_PROGRESS_BAR
     void follow_progress ();
+#else
+    void follow_progress ()
+    {
+        // No code, do not follow the progress bar.
+    }
+#endif
 
 private:
 
@@ -587,17 +600,10 @@ private:
     void move_selected_notes (int dx, int dy);          // new
     void grow_selected_notes (int dx);                  // new
     void set_adding (bool adding);                      // from seq24 seqroll
-
-    /**
-     * \getter m_adding
-     */
-
-    bool adding () const
-    {
-        return m_adding;
-    }
-
     void update_mouse_pointer (bool adding = false);    // from fruity seqroll
+
+#ifdef  USE_NEW_FUNCTIONS
+
     bool button_press_initial
     (
         GdkEventButton * ev, int & norm_x, int & snapped_x, int & snapped_y
@@ -608,13 +614,46 @@ private:
         midipulse & tick_f, int & note_l, int snapped_x
     );
 
-#ifdef  USE_NEW_FUNCTIONS
-
+    /* virtual */ bool button_press (GdkEventButton * ev);
+    /* virtual */ bool button_release (GdkEventButton * ev);
     /* virtual */ bool motion_notify (GdkEventMotion * ev);
 
+#ifdef USE_UNREADY_NEW_FUNCTIONS
+    void set_hint_note ();
+    void add_snapped_note ();
 #endif
 
+#endif      // USE_NEW_FUNCTIONS
+
 private:            // new internal/friend functions
+
+    /**
+     * \setter m_old
+     */
+
+    void clear_selected ()
+    {
+        m_selected.x = m_selected.y = m_selected.width = m_selected.height = 0;
+    }
+
+    /**
+     * \setter m_old
+     */
+
+    void clear_old ()
+    {
+        m_old.x = m_old.y = m_old.width = m_old.height = 0;
+    }
+
+    /**
+     *  Clears all the mouse-action flags.
+     */
+
+    void clear_flags ()
+    {
+		m_selecting = m_moving = m_growing = m_paste = m_moving_init =
+			 m_painting = false;
+    }
 
     /**
      *  Useful x calculation.  Offsets the x value by the x origin of the
@@ -683,6 +722,33 @@ private:            // new internal/friend functions
     {
         m_current_x = x + m_scroll_offset_x;
         m_current_y = y + m_scroll_offset_y;
+    }
+
+    /**
+     * \getter m_adding
+     */
+
+    bool adding () const
+    {
+        return m_adding;
+    }
+
+    /**
+     * \getter m_selecting
+     */
+
+    bool selecting () const
+    {
+        return m_selecting;
+    }
+
+    /**
+     * \getter m_growing
+     */
+
+    bool growing () const
+    {
+        return m_growing;
     }
 
     /**

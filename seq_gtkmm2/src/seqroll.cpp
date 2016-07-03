@@ -73,6 +73,7 @@
 #include <gtkmm/menu.h>
 
 #include "app_limits.h"                 /* SEQ64_SOLID_PIANOROLL_GRID   */
+#include "click.hpp"                    /* SEQ64_CLICK_LEFT(), etc.     */
 #include "event.hpp"
 #include "gdk_basic_keys.h"
 #include "keystroke.hpp"
@@ -152,7 +153,9 @@ seqroll::seqroll
     m_seq                   (seq),
     m_seqkeys_wid           (seqkeys_wid),
     m_fruity_interaction    (),
+#ifndef USE_NEW_FUNCTIONS
     m_seq24_interaction     (),
+#endif
     m_pos                   (pos),
     m_zoom                  (zoom),
     m_snap                  (snap),
@@ -190,10 +193,7 @@ seqroll::seqroll
     m_cc                    (0)
 {
     m_ppqn = choose_ppqn(ppqn);
-    m_old.x = 0;
-    m_old.y = 0;
-    m_old.width = 0;
-    m_old.height = 0;
+    clear_old();
 
     /*
      * These calls don't seem to work in the constructor.  They do in
@@ -615,31 +615,39 @@ seqroll::update_pixmap ()
  *  Note that the progress-bar position is based on the
  *  sequence::get_last_tick() value, the current zoom, and the current
  *  scroll-offset x value.
+ *
+ *  Finally, we had an issue with the selection box flickering, which seems to
+ *  be solved satisfactorily by not drawing it if a select action is in force.
+ *  Hopefully no one needs to select notes on the fly and see the progress bar
+ *  moving at the same time!
  */
 
 void
 seqroll::draw_progress_on_window ()
 {
-    if (usr().progress_bar_thick())
+    if (! select_action())                  // EXPERIMENTAL
     {
-        draw_drawable(m_progress_x-1, 0, m_progress_x-1, 0, 2, m_window_y);
-        set_line(Gdk::LINE_SOLID, 2);
-    }
-    else
-        draw_drawable(m_progress_x, 0, m_progress_x, 0, 1, m_window_y);
-
-    m_progress_x = (m_seq.get_last_tick() / m_zoom) - m_scroll_offset_x;
-
-    /*
-     * Ensure that the occasional slightly negative value still allows the
-     * progress bar to be drawn.
-     */
-
-    if (m_progress_x > -16)             // if (m_progress_x >= 0)
-    {
-        draw_line(progress_color(), m_progress_x, 0, m_progress_x, m_window_y);
         if (usr().progress_bar_thick())
-            set_line(Gdk::LINE_SOLID, 1);
+        {
+            draw_drawable(m_progress_x-1, 0, m_progress_x-1, 0, 2, m_window_y);
+            set_line(Gdk::LINE_SOLID, 2);
+        }
+        else
+            draw_drawable(m_progress_x, 0, m_progress_x, 0, 1, m_window_y);
+
+        m_progress_x = (m_seq.get_last_tick() / m_zoom) - m_scroll_offset_x;
+
+        /*
+         * Ensure that the occasional slightly negative value still allows the
+         * progress bar to be drawn.
+         */
+
+        if (m_progress_x > -16)             // if (m_progress_x >= 0)
+        {
+            draw_line(progress_color(), m_progress_x, 0, m_progress_x, m_window_y);
+            if (usr().progress_bar_thick())
+                set_line(Gdk::LINE_SOLID, 1);
+        }
     }
 }
 
@@ -676,14 +684,6 @@ seqroll::follow_progress ()
             m_hadjust.set_value(double(left_tick));
         }
     }
-}
-
-#else
-
-void
-seqroll::follow_progress ()
-{
-    // No code, do not follow the progress bar.
 }
 
 #endif      // SEQ64_FOLLOW_PROGRESS_BAR
@@ -857,41 +857,32 @@ seqroll::idle_redraw ()
  *      -   x and y position of rectangle to draw
  *      -   x and y position in drawable where rectangle should be drawn
  *      -   width and height of rectangle to draw
+ *
+ *  A final parameter of false draws an unfilled rectangle.  Orange makes it a
+ *  little more clear that we're pasting, I think.  We also want to try to
+ *  thicken the lines somehow.
  */
 
 void
 seqroll::draw_selection_on_window ()
 {
-    const int thickness = 1;        /* normally 1   */
-    const int sizeinc = 1;          /* normally 1   */
-    const int selinc = 0;           /* normally 0   */
-    int x, y, w, h;
+    const int thickness = 1;            /* normally 1       */
+    int x = 0, y = 0, w = 0, h = 0;     /* used throughout  */
     set_line(Gdk::LINE_SOLID, thickness);
-
     if (select_action())
     {
         x = m_old.x;
         y = m_old.y;
         w = m_old.width;
         h = m_old.height;
-        draw_drawable(x, y, x, y, w + sizeinc, h + sizeinc);    /* replace old */
-//      (
-//          m_old.x, m_old.y, m_old.x, m_old.y,
-//          m_old.width + sizeinc, m_old.height + sizeinc
-//      );
+        draw_drawable(x, y, x, y, w + 1, h + 1);    /* erase old rectangle */
     }
-
-    if (m_selecting)
+    if (selecting())
     {
         xy_to_rect(m_drop_x, m_drop_y, m_current_x, m_current_y, x, y, w, h);
         x -= m_scroll_offset_x;
         y -= m_scroll_offset_y;
         h += c_key_y;
-        draw_rectangle(black(), x, y, w + selinc, h + selinc, false);
-//      m_old.x = x;
-//      m_old.y = y;
-//      m_old.width = w;
-//      m_old.height = h;
     }
     if (drop_action())
     {
@@ -899,23 +890,8 @@ seqroll::draw_selection_on_window ()
         y = m_selected.y + m_current_y - m_drop_y - m_scroll_offset_y;
         w = m_selected.width;
         h = m_selected.height;
-
-        /*
-         * Orange makes it a little more clear that we're pasting, I think.
-         * A parameter of false draws an unfilled rectangle.
-         */
-
-#ifdef USE_OLD_COLOR
-        draw_rectangle(black(), x, y, w, h, false);
-#else
-        draw_rectangle(dark_orange(), x, y, w + selinc, h + selinc, false);
-#endif
-//      m_old.x = x;
-//      m_old.y = y;
-//      m_old.width = w;
-//      m_old.height = h;
     }
-    if (m_growing)
+    if (growing())
     {
         int delta_x = m_current_x - m_drop_x;
         x = m_selected.x - m_scroll_offset_x;
@@ -924,17 +900,12 @@ seqroll::draw_selection_on_window ()
         h = m_selected.height;
         if (w < 1)
             w = 1;
-
-#ifdef USE_OLD_COLOR
+    }
+#ifdef SEQ64_USE_BLACK_SELECTION_BOX
         draw_rectangle(black(), x, y, w, h, false);
 #else
-        draw_rectangle(dark_orange(), x, y, w + selinc, h + selinc, false);
+        draw_rectangle(dark_orange(), x, y, w, h, false);
 #endif
-//      m_old.x = x;
-//      m_old.y = y;
-//      m_old.width = w;
-//      m_old.height = h;
-    }
     m_old.x = x;
     m_old.y = y;
     m_old.width = w;
@@ -1231,13 +1202,14 @@ seqroll::snap_x (int & x)
 
 /**
  *  Function to allow motion of the selection box via the arrow keys.  We now
- *  let the Enter key to deselect the moved notes.  With the mouse, selecting
- *  all notes, copying them, and moving the selection box, pasting can be
- *  completed with either a left-click or the Enter key.
+ *  let the Enter key to finish pasting and deselect the moved notes.  With
+ *  the mouse, selecting all notes, copying them, and moving the selection
+ *  box, pasting can be completed with either a left-click or the Enter key.
  *
  *  We have a weird problem on our main system where the selection box is very
  *  flickery.  But it works fine on another system.  A Gtk-2 issue?  Now it
- *  seems to work fine, after an update.  :-D
+ *  seems to work fine, after an update.  No, it seems to work well in
+ *  sequences that have non-note events amongst the note events.
  *
  * \param dx
  *      The amount to move the selection box.  Values are -1, 0, or 1.  -1 is
@@ -1253,8 +1225,6 @@ seqroll::move_selection_box (int dx, int dy)
 {
     int x = m_old.x + dx * m_snap / m_zoom;
     int y = m_old.y + dy * c_key_y;
-//  m_current_x = scroll_offset_x(x);
-//  m_current_y = scroll_offset_y(y);
     set_current_offset_x_y(x, y);
 
 	int note;
@@ -1263,9 +1233,25 @@ seqroll::move_selection_box (int dx, int dy)
 	convert_xy(0, m_current_y, tick, note);
     m_seqkeys_wid.set_hint_key(note);
     snap_x(m_current_x);
+
+#ifdef USE_EXPERIMENTAL_CODE
+    int x0 = m_old.x;
+    int y0 = m_old.y;
+    int w = m_old.width;
+    int h = m_old.height;
+    draw_drawable(x0, y0, x0, y0, w + 1, h + 1);    /* erase old rectangle */
+    draw_rectangle(dark_orange(), x, y, w, h, false);
+#else
     draw_selection_on_window();
-    m_old.x = x;
-    m_old.y = y;
+#endif
+
+    /*
+     * draw_selection_on_window() takes care of this!
+     *
+     *      m_old.x = x;
+     *      m_old.y = y;
+     */
+
 }
 
 /**
@@ -1444,8 +1430,11 @@ seqroll::add_note (midipulse tick, int note, bool paint)
     return true;
 }
 
+#ifdef USE_NEW_FUNCTIONS
+
 /*
- * A potential function for XRollInput::on_button_press_event().
+ *  Encapsulates some setup behavior for the fruity and seq24
+ *  on_button_press_event() handlers.
  *
  * \param ev
  *      Provides the button-press event to process.
@@ -1477,7 +1466,7 @@ seqroll::button_press_initial
     snap_x(snapped_x);                              /* side-effect          */
     snap_y(snapped_y);                              /* side-effect          */
     set_current_drop_y(snapped_y);                  /* y is always snapped  */
-    m_old.x = m_old.y = m_old.width = m_old.height = 0;
+    clear_old();
     if (m_paste)                /* ctrl-v pressed, ready for click to paste */
     {
         complete_paste(snapped_x, snapped_y);
@@ -1509,7 +1498,234 @@ seqroll::align_selection
     set_current_drop_x(snapped_x);
 }
 
-#ifdef USE_NEW_FUNCTIONS
+/**
+ *  Implements the on-button-press event handling for the Seq24 style of
+ *  mouse interaction.
+ *
+ *  This function now uses the needs_update flag to determine if the perform
+ *  object should modify().
+ *
+ * \param ev
+ *      Provides the button-press event to process.
+ *
+ * \return
+ *      Returns the value of needs_update.  It used to return only true.
+ */
+
+bool
+seqroll::button_press (GdkEventButton * ev)
+{
+    midipulse tick_s, tick_f;
+    int note_h, note_l;
+    int norm_x, snapped_x, snapped_y;
+    bool needs_update = button_press_initial
+    (
+        ev, norm_x, snapped_x, snapped_y                /* 3 side-effects   */
+    );
+    if (! needs_update)
+    {
+        if (SEQ64_CLICK_LEFT_MIDDLE(ev->button))        /* either button    */
+        {
+            set_current_drop_x(norm_x);                 /* select normal x  */
+            convert_xy(m_drop_x, m_drop_y, tick_s, note_h);
+            if (adding())
+            {
+                m_painting = true;                      /* start paint job  */
+                set_current_drop_x(snapped_x);          /* used snapped x   */
+                convert_xy(m_drop_x, m_drop_y, tick_s, note_h);
+
+                int eventcount = m_seq.select_note_events
+                (
+                    tick_s, note_h, tick_s, note_h, sequence::e_would_select
+                );
+                if (eventcount == 0)                    /* no note? add one */
+                {
+                    /*
+                     * Do we need push_undo() here?
+                     */
+
+                    add_note(tick_s, note_h);           /* also does chords */
+                    needs_update = true;
+                }
+            }
+            else                                        /* selecting        */
+            {
+                int eventcount = m_seq.select_note_events
+                (
+                    tick_s, note_h, tick_s, note_h, sequence::e_is_selected
+                );
+                if (eventcount == 0)
+                {
+                    if (! (ev->state & SEQ64_CONTROL_MASK))
+                        m_seq.unselect();
+
+                    eventcount = m_seq.select_note_events /* direct click   */
+                    (
+                        tick_s, note_h, tick_s, note_h, sequence::e_select_one
+                    );
+                    if (eventcount == 0)                /* none             */
+                    {
+                        if (SEQ64_CLICK_LEFT(ev->button))
+                            m_selecting = true;         /* start selection  */
+                    }
+                    else
+                        needs_update = true;
+                }
+                eventcount = m_seq.select_note_events
+                (
+                    tick_s, note_h, tick_s, note_h, sequence::e_is_selected
+                );
+                if (eventcount > 0)
+                {
+                    /*
+                     * Moving and selecting, left-click (without Ctrl key)
+                     * only.  Get the box that selected elements are in.
+                     */
+
+                    if
+                    (
+                        SEQ64_CLICK_LEFT(ev->button) &&
+                        ! (ev->state & SEQ64_CONTROL_MASK)
+                    )
+                    {
+                        align_selection
+                        (
+                            tick_s, note_h, tick_f, note_l, snapped_x
+                        );
+                        needs_update = true;
+                    }
+
+                    /*
+                     * Middle mouse button, or left-ctrl-click (2-button mice)
+                     */
+
+                    if (SEQ64_CLICK_CTRL_LEFT_MIDDLE(ev->button, ev->state))
+                    {
+                        m_growing = true;         /* moving, normal x  */
+                        get_selected_box(tick_s, note_h, tick_f, note_l);
+                    }
+                }
+            }
+        }
+        if (SEQ64_CLICK_RIGHT(ev->button))
+            set_adding(true);
+    }
+    if (needs_update)               /* if they clicked, something changed */
+        m_seq.set_dirty();          /* redraw_events();                   */
+
+    return needs_update;
+}
+
+/**
+ *  Implements the on-button-release event handling for the Seq24 style of
+ *  mouse interaction.  This function now uses the needs_update flag to
+ *  determine if the perform object should modify().
+ *
+ * \param ev
+ *      Provides the button-release event to process.
+ *
+ * \return
+ *      Returns the value of needs_update.  It used to return only true.
+ */
+
+bool
+seqroll::button_release (GdkEventButton * ev)
+{
+    midipulse tick_s;
+    midipulse tick_f;
+    int note_h;
+    int note_l;
+    bool needs_update = false;
+    m_current_x = int(ev->x + m_scroll_offset_x);
+    m_current_y = int(ev->y + m_scroll_offset_y);
+    snap_y(m_current_y);
+    if (m_moving)
+        snap_x(m_current_x);
+
+    int delta_x = m_current_x - m_drop_x;
+    int delta_y = m_current_y - m_drop_y;
+    midipulse delta_tick;
+    int delta_note;
+    if (SEQ64_CLICK_LEFT(ev->button))
+    {
+        if (m_selecting)
+        {
+            int x, y, w, h;
+            xy_to_rect
+            (
+                m_drop_x, m_drop_y,
+                m_current_x, m_current_y,
+                x, y, w, h
+            );
+            convert_xy(x, y, tick_s, note_h);
+            convert_xy(x + w, y + h, tick_f, note_l);
+            (void) m_seq.select_note_events
+            (
+                tick_s, note_h, tick_f, note_l, sequence::e_select
+            );
+            needs_update = true;
+        }
+        if (m_moving)
+        {
+            /**
+             * If in moving mode, adjust for snap and convert deltas into
+             * screen coordinates.  Since delta_note was from delta_y, it will
+             * be flipped (delta_y[0] = note[127], etc.), so we have to
+             * adjust.
+             */
+
+            delta_x -= m_move_snap_offset_x;      /* adjust for snap */
+            convert_xy(delta_x, delta_y, delta_tick, delta_note);
+            delta_note -= c_num_keys - 1;
+            m_seq.move_selected_notes(delta_tick, delta_note);
+            needs_update = true;
+        }
+    }
+    if (SEQ64_CLICK_LEFT_MIDDLE(ev->button))
+    {
+        if (m_growing)
+        {
+            /**
+             * A left/middle click converts deltas into screen coordinates,
+             * then pushs the undo state.  Shift causes a "stretch selected"
+             * which currently acts like a "move selected" operation.
+             * Otherwise, Ctrl indirectly allows a "grow selected" operation.
+             */
+
+            convert_xy(delta_x, delta_y, delta_tick, delta_note);
+            if (ev->state & SEQ64_SHIFT_MASK)
+                m_seq.stretch_selected(delta_tick);
+            else
+                m_seq.grow_selected(delta_tick);
+
+            needs_update = true;
+        }
+    }
+    if (SEQ64_CLICK_RIGHT(ev->button))
+    {
+        /**
+         * Minor new feature.  If the Super (Mod4, Windows) key is
+         * pressed when release, keep the adding state in force.  One
+         * can then use the unadorned left-click key to add notes.  Right
+         * click to reset the adding mode.  This feature is enabled only
+         * if allowed by the settings (but is true by default).
+         * See the same code in perfrollinput.cpp.
+         */
+
+        bool addmode_exit = ! rc().allow_mod4_mode();
+        if (! addmode_exit)
+            addmode_exit = ! (ev->state & SEQ64_MOD4_MASK); /* Mod4 held? */
+
+        if (addmode_exit)
+            set_adding(false);
+    }
+    clear_flags();
+    m_seq.unpaint_all();
+    if (needs_update)               /* if they clicked, something changed   */
+        m_seq.set_dirty();            /* redraw_events();                     */
+
+    return needs_update;
+}
 
 /**
  *  Seq24-style on-motion mouse interaction.
@@ -1659,7 +1875,11 @@ seqroll::on_button_press_event (GdkEventButton * ev)
 {
     bool result;
     if (rc().interaction_method() == e_seq24_interaction)
+#ifdef USE_NEW_FUNCTIONS
+        result = button_press(ev);
+#else
         result = m_seq24_interaction.on_button_press_event(ev, *this);
+#endif
     else
         result = m_fruity_interaction.on_button_press_event(ev, *this);
 
@@ -1690,7 +1910,11 @@ seqroll::on_button_release_event (GdkEventButton * ev)
 {
     bool result;
     if (rc().interaction_method() == e_seq24_interaction)
+#ifdef USE_NEW_FUNCTIONS
+        result = button_release(ev);
+#else
         result = m_seq24_interaction.on_button_release_event(ev, *this);
+#endif
     else
         result = m_fruity_interaction.on_button_release_event(ev, *this);
 
@@ -1717,8 +1941,11 @@ seqroll::on_motion_notify_event (GdkEventMotion * ev)
 {
     bool result;
     if (rc().interaction_method() == e_seq24_interaction)
-//      result = m_seq24_interaction.on_motion_notify_event(ev, *this);
+#ifdef USE_NEW_FUNCTIONS
         result = motion_notify(ev);
+#else
+        result = m_seq24_interaction.on_motion_notify_event(ev, *this);
+#endif
     else
         result = m_fruity_interaction.on_motion_notify_event(ev, *this);
 
@@ -1912,6 +2139,9 @@ seqroll::on_key_press_event (GdkEventKey * ev)
                 if (m_paste)
                     complete_paste(m_current_x, m_current_y);
 
+                /*
+                 * Do we just want to call clear_flags() here?
+
                 if (m_growing)
                     m_growing = false;
 
@@ -1919,21 +2149,20 @@ seqroll::on_key_press_event (GdkEventKey * ev)
                     m_moving = false;
 
                 m_selecting = false;
-                m_selected.x = m_selected.y = m_selected.width =
-                    m_selected.height = 0;
+                 */
 
+                clear_flags();          // NEW NEW NEW NEW NEW
+                clear_selected();
                 m_seq.unselect();
                 result = true;
             }
             else if (ev->keyval == SEQ64_p)
             {
-//              m_seq24_interaction.set_adding(true, *this);
                 set_adding(true);
                 result = true;
             }
             else if (ev->keyval == SEQ64_x)             /* "x-scape" the mode   */
             {
-//              m_seq24_interaction.set_adding(false, *this);
                 set_adding(false);
                 result = true;
             }

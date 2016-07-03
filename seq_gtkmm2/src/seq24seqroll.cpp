@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-06-30
+ * \updates       2016-07-02
  * \license       GNU GPLv2 or above
  *
  */
@@ -62,7 +62,6 @@ namespace seq64
 void
 Seq24SeqRollInput::set_adding (bool adding, seqroll & sroll)
 {
-//  m_adding = adding;
     sroll.set_adding(adding);
 }
 
@@ -105,7 +104,7 @@ Seq24SeqRollInput::on_button_press_event (GdkEventButton * ev, seqroll & sroll)
     sroll.snap_x(snapped_x);
     sroll.snap_y(snapped_y);
     sroll.set_current_drop_y(snapped_y);                /* y always snapped */
-    sroll.m_old.x = sroll.m_old.y = sroll.m_old.width = sroll.m_old.height = 0;
+    sroll.clear_old();
     if (sroll.m_paste)
     {
         sroll.complete_paste(snapped_x, snapped_y);
@@ -118,7 +117,6 @@ Seq24SeqRollInput::on_button_press_event (GdkEventButton * ev, seqroll & sroll)
         {
             sroll.set_current_drop_x(norm_x);           /* select normal x  */
             sroll.convert_xy(sroll.m_drop_x, sroll.m_drop_y, tick_s, note_h);
-//          if (m_adding)
             if (sroll.adding())
             {
                 sroll.m_painting = true;                /* start paint job  */
@@ -367,13 +365,11 @@ Seq24SeqRollInput::on_motion_notify_event
 {
     bool result = false;
     sroll.set_current_offset_x_y(int(ev->x), int(ev->y));
-//  sroll.set_current_offset_y(int(ev->y));
     if (sroll.m_moving_init)
     {
         sroll.m_moving_init = false;
         sroll.m_moving = true;
     }
-//  update_mouse_pointer(sroll);    /* context sensitive mouse pointer... */
 
     /*
      * seqroll::set_hint_note()

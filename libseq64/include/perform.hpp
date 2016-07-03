@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-06-28
+ * \updates       2016-07-03
  * \license       GNU GPLv2 or above
  *
  *  This class still has way too many members, even with the JACK and
@@ -794,6 +794,7 @@ public:
 
     /**
      * \getter m_running
+     *      Could also be called "is_playing()".
      */
 
     bool is_running () const
@@ -1414,23 +1415,9 @@ public:
             return 0;
     }
 
-    /**
-     * \getter rc().is_pattern_playing()
-     *      Provide a convenience function so that clients don't have to mess
-     *      with a global variable when they're dealing with a perform object.
-     *      Actually, we can use the m_running variable.
-
-    bool is_playing () const
-    {
-        // return rc().is_pattern_playing();    // \change ca 2016-03-19
-        return m_running;
-    }
-     */
-
     void start_playing (bool songmode = false);
     void pause_playing ();
     void stop_playing ();
-
     void start_key (bool songmode = false);
     void pause_key (bool songmode = false);
     void stop_key ();

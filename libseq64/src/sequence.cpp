@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-06-30
+ * \updates       2016-07-03
  * \license       GNU GPLv2 or above
  *
  *  The functionality of this class also includes handling some of the
@@ -582,14 +582,17 @@ sequence::remove (event & e)
  *  m_event.remove_marked().
  *
  * \threadsafe
+ *
+ * \return
+ *      Returns true if at least one event was removed.
  */
 
-void
+bool
 sequence::remove_marked ()
 {
     automutex locker(m_mutex);
-    m_events.remove_marked();
     reset_draw_marker();
+    return m_events.remove_marked();
 }
 
 /**
@@ -621,7 +624,7 @@ sequence::remove_selected ()
     automutex locker(m_mutex);
     m_events_undo.push(m_events);
     m_events.mark_selected();
-    m_events.remove_marked();
+    (void) m_events.remove_marked();
     reset_draw_marker();
 }
 
@@ -1123,9 +1126,8 @@ sequence::move_selected_notes (midipulse delta_tick, int delta_note)
             int newnote = e.get_note() + delta_note;
             if (newnote >= 0 && newnote < c_num_keys)
             {
-                bool expand = e.is_note_off();
                 midipulse newts = e.get_timestamp() + delta_tick;
-                newts = adjust_timestamp(newts, expand);
+                newts = adjust_timestamp(newts, e.is_note_off());
                 if (e.is_note())                    /* Note On or Note Off  */
                     e.set_note(midibyte(newnote));
 
@@ -1137,8 +1139,8 @@ sequence::move_selected_notes (midipulse delta_tick, int delta_note)
             }
         }
     }
-    remove_marked();
-    verify_and_link();
+    if (remove_marked())
+        verify_and_link();
 }
 
 /**
@@ -1150,15 +1152,18 @@ sequence::move_selected_notes (midipulse delta_tick, int delta_note)
  * \param t
  *      Provides the timestamp to be adjusted based on m_length.
  *
- * \param expand
+ * \param isnoteoff
  *      Used for "expanding" the timestamp from 0 to just less than m_length,
  *      if necessary.  Should be set to true only for Note Off events; it
  *      defaults to false, which means to wrap the events around the end of
- *      the sequence if necessary.
+ *      the sequence if necessary, and is used only in movement, not in growth.
+ *
+ * \return
+ *      Returns the adjusted timestamp.
  */
 
 midipulse
-sequence::adjust_timestamp (midipulse t, bool expand)
+sequence::adjust_timestamp (midipulse t, bool isnoteoff)
 {
     if (t > m_length)
         t -= m_length;
@@ -1166,7 +1171,7 @@ sequence::adjust_timestamp (midipulse t, bool expand)
     if (t < 0)                          /* only if midipulse is signed  */
         t += m_length;
 
-    if (expand)
+    if (isnoteoff)
     {
         if (t == 0)
             t = m_length - m_note_off_margin;
@@ -1177,6 +1182,34 @@ sequence::adjust_timestamp (midipulse t, bool expand)
             t = 0;
     }
     return t;
+}
+
+/**
+ *  A new function to consolidate the growth/shrinkage of timestamps in a
+ *  pattern.  If the new (off) timestamp is less than the on-time, it is
+ *  clipped to the snap value.  If it is greater than the length of the
+ *  sequence, then it is clipped to the sequence length.  No wrap-around.
+ *
+ * \param ontime
+ *      Provides the original time, which limits the amount of negative
+ *      adjustment that can be done.
+ *
+ * \param offtime
+ *      Provides the timestamp to be adjusted and clipped.
+ *
+ * \return
+ *      Returns the adjusted timestamp.
+ */
+
+midipulse
+sequence::clip_timestamp (midipulse ontime, midipulse offtime)
+{
+    if (offtime <= ontime)
+        offtime = ontime + m_snap_tick - note_off_margin();
+    else if (offtime >= m_length)
+        offtime = m_length - note_off_margin();
+
+    return offtime;
 }
 
 /**
@@ -1232,8 +1265,8 @@ sequence::stretch_selected (midipulse delta_tick)
                 add_event(n);
             }
         }
-        remove_marked();
-        verify_and_link();
+        if (remove_marked())
+            verify_and_link();
     }
 }
 
@@ -1243,28 +1276,35 @@ sequence::stretch_selected (midipulse delta_tick)
  *  seq24.  And, though it doesn't move Note Off events, it does reconstruct
  *  them.
  *
- * \todo
- *      Can we have ctrl-right also stretch the selected notes?
+ *  This function is called when doing a ctrl-left mouse move on the selected
+ *  notes or when using ctrl-left-arrow or ctrl-right-arrow to shrink or
+ *  stretch the selected notes.  Using the mouse allows pretty much any amount
+ *  of growth or shrinkage, but use the arrow keys limits the changes to the
+ *  current snap value.
  *
- *  This function operates only on Note On events that are marked and linked.
+ *  This function grows/shrinks only Note On events that are marked and linked.
  *  If an event is not linked, this function now ignores the event's timestamp,
  *  rather than risk a segfault on a null pointer.  Compare this function to
  *  the stretch_selected() and move_selected_notes() functions.
  *
- *  Also, we've moved external calls to push_undo() into this function.
- *  The caller shouldn't have to do that.
- *
- *  This function would strip out non-Notes, but not it at least preserves
- *  them.  It is probably a good thing to "stretch" them, too, to help
- *  preserve their relative position re the notes.
- *
- *  A comment on terminology:  The user "selects" notes, while the sequencer
- *  "marks" notes. The first thing this function does is mark all the selected
+ *  This function would strip out non-Notes, but now it at least preserves
+ *  them and moves them, to try to preserve their relative position re the
  *  notes.
  *
  *  In any case, we want to mark the original off-event for deletion, otherwise
  *  we get duplicate off events, for example in the "Begin/End" pattern in the
  *  test.midi file.
+ *
+ *  This function now tries to prevent pathological growth, such as trying to
+ *  shrink the notes to zero length or less, or stretch them beyond the length
+ *  of the sequence.  Otherwise we get weird and unexpected results.
+ *
+ *  Also, we've moved external calls to push_undo() into this function.
+ *  The caller shouldn't have to do that.
+ *
+ *  A comment on terminology:  The user "selects" notes, while the sequencer
+ *  "marks" notes. The first thing this function does is mark all the selected
+ *  notes.
  *
  * \threadsafe
  *
@@ -1278,53 +1318,44 @@ sequence::grow_selected (midipulse delta_tick)
     automutex locker(m_mutex);
     push_undo();                                    /* do it for caller     */
     mark_selected();                                /* locked recursively   */
-    bool failed = false;
     for (event_list::iterator i = m_events.begin(); i != m_events.end(); ++i)
     {
         event & er = DREF(i);
-        midipulse len = adjust_timestamp(delta_tick);
         if (er.is_note())
         {
             if (er.is_marked() && er.is_note_on() && er.is_linked())
             {
                 event * off = er.get_linked();
-                er.unmark();
-                if (not_nullptr(off))
-                {
-                    len += off->get_timestamp();
-                    event e = *off;         /* copy the original off-event  */
-                    off->mark();            /* mark old off event to delete */
-                    e.unmark();
-                    e.set_timestamp(len);
-                    add_event(e);           /* add the adjusted off event   */
-                    if (not_nullptr(m_parent))
-                        m_parent->modify();         /* new, centralize      */
-                }
-                else
-                {
-                    errprint("grow_selected(): null event link, aborting");
-                    failed = true;
-                    break;
-                }
+                event e = *off;                     /* original off-event   */
+                midipulse ontime = er.get_timestamp();
+                midipulse offtime = off->get_timestamp();
+                midipulse newtime = clip_timestamp(ontime, offtime + delta_tick);
+                off->mark();                        /* kill old off event   */
+                er.unmark();                        /* keep old on event    */
+                e.unmark();                         /* keep new off event   */
+                e.set_timestamp(newtime);           /* new off-time         */
+                add_event(e);                       /* add fixed off event  */
+                if (not_nullptr(m_parent))
+                    m_parent->modify();             /* new, centralize      */
             }
         }
-        else if (er.is_marked())            /* a marked non-Note event?     */
+        else if (er.is_marked())                    /* non-Note event?      */
         {
-            er.unmark();                    /* unmarked the old version     */
 #ifdef USE_NON_NOTE_EVENT_ADJUSTMENT
-            event e = er;                   /* copy the original evnet      */
-            e.set_timestamp(len);           /* adjust the time-stamp        */
-            add_event(e);                   /* add the adjusted event       */
+            event e = er;                           /* copy original event  */
+            midipulse ontime = er.get_timestamp();
+            midipulse newtime = clip_timestamp(ontime, ontime + delta_tick);
+            e.set_timestamp(newtime);               /* adjust time-stamp    */
+            add_event(e);                           /* add adjusted event   */
             if (not_nullptr(m_parent))
-                m_parent->modify();         /* new, centralize this call    */
+                m_parent->modify();                 /* new, centralize      */
+#else
+            er.unmark();                            /* unmark old version   */
 #endif
         }
     }
-    if (! failed)
-    {
-        remove_marked();
+    if (remove_marked())
         verify_and_link();
-    }
 }
 
 /**
@@ -1488,10 +1519,12 @@ sequence::cut_selected (bool copyevents)
         copy_selected();
 
     mark_selected();                                /* locked recursively   */
-    remove_marked();
-    set_dirty();                                    /* do it for the caller */
-    if (not_nullptr(m_parent))
-        m_parent->modify();                         /* new, centralize      */
+    if (remove_marked())
+    {
+        set_dirty();                                /* do it for the caller */
+        if (not_nullptr(m_parent))
+            m_parent->modify();                     /* new, centralize      */
+    }
 }
 
 /**
@@ -1785,7 +1818,7 @@ sequence::add_note (midipulse tick, midipulse len, int note, bool paint)
                     set_dirty();
                 }
             }
-            remove_marked();
+            (void) remove_marked();
         }
         if (! ignore)
         {
@@ -1951,7 +1984,7 @@ sequence::add_event
                     set_dirty();
                 }
             }
-            remove_marked();
+            (void) remove_marked();
         }
         event e;
         if (paint)
@@ -3452,8 +3485,8 @@ sequence::transpose_notes (int steps, int scale)
             transposed_events.add(e, false);        /* will sort afterward  */
         }
     }
-    remove_marked();                    /* remove original selected notes   */
-    m_events.merge(transposed_events);  /* transposed events get presorted  */
+    (void) remove_marked();                         /* remove original notes */
+    m_events.merge(transposed_events);              /* events get presorted  */
     verify_and_link();
 }
 
@@ -3584,7 +3617,7 @@ sequence::quantize_events
             }
         }
     }
-    remove_marked();
+    (void) remove_marked();
     m_events.merge(quantized_events);       // quantized events get presorted
     verify_and_link();
 }

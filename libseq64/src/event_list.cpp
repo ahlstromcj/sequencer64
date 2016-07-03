@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-19
- * \updates       2016-06-12
+ * \updates       2016-07-03
  * \license       GNU GPLv2 or above
  *
  */
@@ -518,11 +518,15 @@ event_list::mark_out_of_range (midipulse slength)
  *  value to avoid incrementing a now-invalid iterator.
  *
  * \threadsafe
+ *
+ * \return
+ *      Returns true if at least one event was removed.
  */
 
-void
+bool
 event_list::remove_marked ()
 {
+    bool result = false;
     Events::iterator i = m_events.begin();
     while (i != m_events.end())
     {
@@ -532,10 +536,12 @@ event_list::remove_marked ()
             ++t;
             remove(i);
             i = t;
+            result = true;
         }
         else
             ++i;
     }
+    return result;
 }
 
 /**

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-07-02
+ * \updates       2016-07-03
  * \license       GNU GPLv2 or above
  *
  *  There are a large number of existing items to discuss.  But for now let's
@@ -619,13 +619,16 @@ seqroll::update_pixmap ()
  *  Finally, we had an issue with the selection box flickering, which seems to
  *  be solved satisfactorily by not drawing it if a select action is in force.
  *  Hopefully no one needs to select notes on the fly and see the progress bar
- *  moving at the same time!
+ *  moving at the same time!  Another tactic is to draw progress only when the
+ *  performance is running.  This has the benefit/drawback that the progress
+ *  bar is left where it stops.  Consider an enumeration of options: normal,
+ *  when-not-selecting, and when-running.
  */
 
 void
 seqroll::draw_progress_on_window ()
 {
-    if (! select_action())                  // EXPERIMENTAL
+    if (perf().is_running())        // ! select_action()  // EXPERIMENTAL
     {
         if (usr().progress_bar_thick())
         {

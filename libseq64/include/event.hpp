@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-05-10
+ * \updates       2016-07-03
  * \license       GNU GPLv2 or above
  *
  *  This module also declares/defines the various constants, status-byte
@@ -601,13 +601,15 @@ public:
      *  Sets m_has_link and sets m_link to the provided event pointer.
      *
      * \param a_event
-     *      Provides a pointer to the event value to set.
+     *      Provides a pointer to the event value to set.  If null, then
+     *      m_has_link is set to false, to guarantee that is_linked() is
+     *      correct.
      */
 
-    void link (event * a_event)
+    void link (event * ev)
     {
-        m_has_link = true;
-        m_linked = a_event;
+        m_linked = ev;
+        m_has_link = not_nullptr(ev);
     }
 
     /**

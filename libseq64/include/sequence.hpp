@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-07-01
+ * \updates       2016-07-03
  * \license       GNU GPLv2 or above
  *
  *  The functions add_list_var() and add_long_list() have been replaced by
@@ -488,6 +488,8 @@ private:
 
     /**
      *  Provides the number of ticks to shave off of the end of painted notes.
+     *  Also used when the user attempts to shrink a note to zero (or less
+     *  than zero) length.
      */
 
     const midipulse m_note_off_margin;
@@ -1011,7 +1013,8 @@ public:
     (
         midipulse & tick_s, int & note_h, midipulse & tick_f, int & note_l
     );
-    midipulse adjust_timestamp (midipulse t, bool expand = false);
+    midipulse adjust_timestamp (midipulse t, bool isnoteoff = false);
+    midipulse clip_timestamp (midipulse ontime, midipulse offtime);
     void move_selected_notes (midipulse deltatick, int deltanote);
     void add_note (midipulse tick, midipulse len, int note, bool paint = false);
 
@@ -1035,7 +1038,7 @@ public:
     void decrement_selected (midibyte status, midibyte /*control*/);
     void grow_selected (midipulse deltatick);
     void stretch_selected (midipulse deltatick);
-    void remove_marked ();                      /* a forwarding function */
+    bool remove_marked ();                      /* a forwarding function */
     void mark_selected ();
     void remove_selected ();
     void unpaint_all ();

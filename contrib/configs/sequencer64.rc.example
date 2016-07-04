@@ -1,5 +1,10 @@
-# Sequencer64 0.9.9.11 (and above) rc configuration file
-# (Also works with Sequencer24)
+# Sequencer64 0.9.13 (and above) rc configuration file
+#
+# This file holds the main configuration options for Sequencer64.
+# It follows the format of the legacy seq24 'rc' configuration
+# file, but adds some new options, such as LASH, Mod4 interaction
+# support, and an auto-save-on-exit option.  Also provided is a
+# legacy mode.
 
 [midi-control]
 
@@ -128,42 +133,33 @@
 
 [midi-clock]
 
-16    # number of MIDI clocks/busses
-# Output buss name: [1] sequencer64 1
-0 0  # buss number, clock status
-# Output buss name: [2] sequencer64 2
-1 0  # buss number, clock status
-# Output buss name: [3] sequencer64 3
-2 0  # buss number, clock status
-# Output buss name: [4] sequencer64 4
-3 0  # buss number, clock status
-# Output buss name: [5] sequencer64 5
-4 0  # buss number, clock status
-# Output buss name: [6] sequencer64 6
-5 0  # buss number, clock status
-# Output buss name: [7] sequencer64 7
-6 0  # buss number, clock status
-# Output buss name: [8] sequencer64 8
-7 0  # buss number, clock status
-# Output buss name: [9] sequencer64 9
-8 0  # buss number, clock status
-# Output buss name: [10] sequencer64 10
-9 0  # buss number, clock status
-# Output buss name: [11] sequencer64 11
-10 0  # buss number, clock status
-# Output buss name: [12] sequencer64 12
-11 0  # buss number, clock status
-# Output buss name: [13] sequencer64 13
-12 0  # buss number, clock status
-# Output buss name: [14] sequencer64 14
-13 0  # buss number, clock status
-# Output buss name: [15] sequencer64 15
-14 0  # buss number, clock status
-# Output buss name: [16] sequencer64 16
-15 0  # buss number, clock status
+# The first line indicates the number of MIDI busses defined.
 
+# Each buss line contains the buss (re 0) and the clock status of
+# that buss.  0 = MIDI Clock is off; 1 = MIDI Clock on, and Song
+# Position and MIDI Continue will be sent, if needed; and 2 = MIDI
+# Clock Modulo, where MIDI clocking will not begin until the song
+# position reaches the start modulo value [midi-clock-mod-ticks].
+
+6    # number of MIDI clocks/busses
+
+# Output buss name: [0] 14:0 Midi Through Port-0
+0 1  # buss number, clock status
+# Output buss name: [1] 128:0 Timid port 0
+1 0  # buss number, clock status
+# Output buss name: [2] 128:1 Timid port 1
+2 0  # buss number, clock status
+# Output buss name: [3] 128:2 Timid port 2
+3 0  # buss number, clock status
+# Output buss name: [4] 128:3 Timid port 3
+4 0  # buss number, clock status
+# Output buss name: [5] 129:0 Yoshimi Port 0
+5 0  # buss number, clock status
 
 [midi-clock-mod-ticks]
+
+# The Song Position (in 16th notes) at which clocking will begin
+# if the buss is set to MIDI Clock mod setting.
 
 64
 
@@ -171,15 +167,26 @@
 
 1   # number of MIDI busses
 
-# [1] sequencer64 1
+# [0] 14:0 Midi Through Port-0
 0 0
 
 [manual-alsa-ports]
 
-# Set to 1 if you want sequencer64 to create its own ALSA ports and
-# not connect to other clients
+# Set to 1 to have sequencer64 create its own ALSA ports and not
+# connect to other clients.  Use 1 to expose all the MIDI ports to
+# JACK (e.g. via a2jmidid).  Use 0 to access the ALSA MIDI ports
+# already running on one's computer, or to use the MIDI Through
+# (capture) output alone in JACK.
 
-1   # flag for manual ALSA ports
+0   # flag for manual ALSA ports
+
+[reveal-alsa-ports]
+
+# Set to 1 to have sequencer64 ignore any system port names
+# declared in the 'user' configuration file.  Use this option if
+# you want to be able to see the port names as detected by ALSA.
+
+0   # flag for reveal ALSA ports
 
 [interaction-method]
 
@@ -247,7 +254,6 @@
 38  5   # ampersand
 40  7   # parenleft
 47  6   # slash
-59  31   # semicolon
 65  16   # A
 66  28   # B
 67  26   # C
@@ -271,30 +277,34 @@
 88  25   # X
 89  13   # Y
 90  24   # Z
+65450  31   # KP_Multiply
 # bpm up and bpm down:
 39 59          # apostrophe semicolon
 # screen set up, screen set down, play:
 93 91 65360    # bracketright bracketleft Home
 # group on, group off, group learn:
-236 39 65379   # igrave apostrophe Insert
+236 58 65379   # igrave colon Insert
 # replace, queue, snapshot_1, snapshot 2, keep queue:
-65507 65508 65513 65514 92   # Control_L Control_R Alt_L Alt_R backslash
+65507 65455 65513 65514 92   # Control_L KP_Divide Alt_L Alt_R backslash
 1     # show_ui_sequence_key (1 = true / 0 = false)
 32    # space start sequencer
-65307 # Escape stop sequencer
+65307    # Escape stop sequencer
+46    # period pause sequencer
 1     # show sequence numbers (1 = true / 0 = false); ignored in legacy mode
+61    # equal toggle use of slot shortcut key to bring up pattern editor
+45    # minus toggle use of slot shortcut key to bring up event editor
 
 [jack-transport]
 
 # jack_transport - Enable slave synchronization with JACK Transport.
 
-1
+0
 
 # jack_master - Sequencer64 attempts to serve as JACK Master.
 # Also must enable jack_transport (the user interface forces this,
 # and also disables jack_master_cond).
 
-1
+0
 
 # jack_master_cond - Sequencer64 is JACK master if no other JACK
 # master exists. Also must enable jack_transport (the user interface
@@ -302,7 +312,7 @@
 
 0
 
-# jack_start_mode (currently applies even if JACK not enabled).
+# jack_start_mode (applies only if JACK is enabled).
 
 # 0 = Playback in live mode. Allows muting and unmuting of loops.
 #     from the main (patterns) window.  Disables both manual and
@@ -322,6 +332,19 @@
 # the options list.
 
 0     # LASH session management support flag
+
+[auto-option-save]
+
+# Set the following value to 0 to disable the automatic saving of the
+# current configuration to the 'rc' and 'user' files.  Set it to 1 to
+# follow legacy seq24 behavior of saving the configuration at exit.
+# Note that, if auto-save is set, many of the command-line settings,
+# such as the JACK/ALSA settings, are then saved to the configuration,
+# which can confuse one at first.  Also note that one currently needs
+# this option set to 1 to save the configuration, as there is not a
+# user-interface control for it at present.
+
+1     # auto-save-options-on-exit support flag
 
 [last-used-dir]
 

@@ -137,7 +137,6 @@ FruitySeqRollInput::on_button_press_event (GdkEventButton * ev, seqroll & sroll)
             );
             if (eventcount == 0 && ! (ev->state & SEQ64_CONTROL_MASK))
             {
-//              m_adding = true;                     /* not on top of event */
                 sroll.set_adding(true);              /* not on top of event */
                 sroll.m_painting = true;             /* start the paint job */
                 sroll.set_current_drop_x(snapped_x); /* adding, snapped x   */

@@ -27,4 +27,73 @@ perform module.
    m_screenset [replaces m_playscreen_offset in the select_mute_group()
    function, but the usage makes it essentially replace m_playing_screen.
 
-# vim: sw=4 ts=4 wm=8 et ft=sh
+	https://linuxmusicians.com/viewtopic.php?t=2443&start=15
+
+        For anyone else who is interested in working with Mute Groups -
+        I'll point out here the main problem that I had getting them
+        working (and this applies more to using it from the laptop rather
+        than the Midi side of things)...
+
+        To set up the Mute Groups you press the 'L' button on the top of
+        the SEQ24 window, and then press a key on your keyboard to 'learn'
+        or 'save' the preset. Looking at the list of keys assigned for
+        these mute groups (in File, Options, Keyboard), the first bank of
+        keys are ! ' ? etc and th second bank are Q W E etc...  When you
+        ask the program to 'learn' the key, you can't use the SHIFT key,
+        so (on Windows at least) you are not able to use the ! or other
+        symbol keys. Similarly, you need to make sure CAPS LOCK is on
+        before you start the 'learn' process (as it won't recognise q only
+        Q) (I'm sure you could change all the key settings in the Keyboard
+        screen to help overcome some of these issues)
+
+        Once that is working OK, you can configure the MIDI settings in
+        similar ways to assigning midi commands to toggle loops - just
+        note that you have to use the 'ON' option in the .seq24rc file
+        (which is the second set of numbers) - you can't use the first set
+        (used to 'toggle').
+
+
+    You can toggle the playing status of up to 32 previously defined
+    mute/unmute patterns (groups) in the active screen set, similar to
+    hardware sequencers.  This is done either by one of the 'group toggle'
+    keys or by a MIDI controller, both assigned in the .seq24rc file.  A
+    Mute/Unmute pattern (group) is stored by holding a 'group learn' key
+    while pressing the corresponding 'group toggle' key.  There are also
+    keys assigned to turn on/off the group functionality.
+    
+        * Replace
+
+    Holding down 'Left Ctrl' while selecting a sequence will mute all
+    other sequences and turn on the selected sequences.
+
+        * Restore
+
+    Holding 'Alt' will save the state of playing sequences and restore
+    them when 'Alt' is lifted.
+
+    Holding 'Left Ctrl' and 'Alt' at the same time will enable you to flip
+    over to new sequences briefly and then flip right back upon lifting
+    'Alt'.
+
+        * Queue
+
+    Holding 'Right Ctrl' will queue a on/off toggle for a sequence when
+    the loop ends. Queue also works for mute/unmute patterns (groups), in
+    this case every sequence will toggle its status after its individual
+    loop end. 
+
+        * keep queue
+
+    Pressing the 'keep queue' key assigned in the .seq24rc file activates
+    permanent queue mode until you use the temporary Queue function again
+    pressing 'Right Ctrl'. 
+
+---------
+
+    Late to reply to this I know, but SEQ24 will do what you want. I'm not
+    at my music computer right now, but I think you do ALT click or CTRL
+    click, and it puts your command in a buffer and will activate it at
+    the end of the clip.  Hope that helps.
+
+
+# vim: sw=4 ts=4 wm=8 et ft=rc

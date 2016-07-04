@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-06-09
+ * \updates       2016-07-03
  * \license       GNU GPLv2 or above
  *
  */
@@ -45,12 +45,6 @@ class FruitySeqRollInput
 {
 
 private:
-
-    /**
-     *  Set to true if in note-adding mode.
-
-    bool m_adding;
-     */
 
     /**
      *  Set to tru if we hold the right mouse button down (in "fruity" mode)
@@ -74,9 +68,7 @@ public:
      * Default constructor.
      */
 
-    FruitySeqRollInput () :
-//      m_adding        (false),
-        m_erase_painting(false)
+    FruitySeqRollInput () : m_erase_painting(false)
     {
         // Empty body
     }

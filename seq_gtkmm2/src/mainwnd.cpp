@@ -1458,6 +1458,8 @@ mainwnd::on_key_press_event (GdkEventKey * ev)
                     m_call_seq_edit = ! m_call_seq_edit;
                 else if (ev->keyval == PREFKEY(event_edit))
                     m_call_seq_eventedit = ! m_call_seq_eventedit;
+                else
+                    m_call_seq_edit = m_call_seq_eventedit = false; ////////
             }
         }
     }

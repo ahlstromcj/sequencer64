@@ -368,7 +368,7 @@ perform::select_group_mute (int a_g_mute)
         for (int i = 0; i < m_seqs_in_set; ++i)
         {
             if (is_active(i + k))
-                m_mute_group[i + j] = m_seqs[i+k]->get_playing();
+                m_mute_group[i + j] = m_seqs[i + k]->get_playing();
         }
     }
     m_mute_group_selected = gmute;
@@ -455,9 +455,10 @@ perform::mute_group_tracks ()
     {
         for (int i = 0; i < m_max_sets; ++i)            // see note in banner
         {
+            int seqoffset = i * m_seqs_in_set;
             for (int j = 0; j < m_seqs_in_set; ++j)
             {
-                int seqnum = i * m_seqs_in_set + j;
+                int seqnum = seqoffset++;
                 if (is_active(seqnum))
                 {
     /*
@@ -1203,16 +1204,17 @@ perform::set_screenset (int ss)
 }
 
 /**
- *  Sets the screen set that is active, based on the value of
- *  m_playing_screen.
+ *  Sets the screen set that is active, based on the value of m_screenset.
  *
- *  For each value up to m_seqs_in_set (32), the index of the current
- *  sequence in the currently screen set (m_playing_screen) is obtained.
- *  If it is active and the sequence actually exists.  Null sequences are no
- *  longer flagged as an error, they are just ignored.
+ *  For each value up to m_seqs_in_set (32), the index of the current sequence
+ *  in the current screen set (m_playing_screen) is obtained.  If the sequence
+ *  is active and the sequence actually exists, it is processed;  null
+ *  sequences are no longer flagged as an error, they are just ignored.
  *
- *  Modifies m_playing_screen, m_playscreen_offset, and mutes the group
- *  tracks.
+ *  Modifies m_playing_screen, m_playscreen_offset, stores the current
+ *  playing-status of each sequence in m_tracks_mute_state[], and then calls
+ *  mute_group_tracks(), turns on unmuted tracks in the current screen-set.
+ *  A bit confusing to me at present.
  */
 
 void

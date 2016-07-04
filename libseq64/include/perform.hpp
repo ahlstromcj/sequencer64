@@ -208,7 +208,9 @@ private:
     int m_mute_group_selected;
 
     /**
-     *  Playing screen support.
+     *  Playing screen support.  In seq24, this value is altered by
+     *  set_playing_screenset(), which is called by
+     *  handle_midi_control(c_midi_control_play_ss, state).
      */
 
     int m_playing_screen;
@@ -516,7 +518,8 @@ private:
     int m_control_status;
 
     /**
-     *  Indicates the number of the currently-selected screen-set.
+     *  Indicates the number of the currently-selected screen-set.  This is
+     *  merely the screen-set that is in view.
      */
 
     int m_screenset;
@@ -1369,10 +1372,11 @@ public:
 
     long lookup_keyevent_seq (unsigned int keycode)
     {
+        long result = 0;
         if (get_key_events().count(keycode) > 0)
-            return get_key_events()[keycode];
-        else
-            return 0;
+            result = get_key_events()[keycode];
+
+        return result;
     }
 
     /**
@@ -1388,10 +1392,11 @@ public:
 
     unsigned int lookup_keygroup_key (long groupnum)
     {
-        if (get_key_groups_rev().count(groupnum))
-            return get_key_groups_rev()[groupnum];
-        else
-            return '.';                 /* '?' */
+        unsigned int result = '.';                      /* '?' */
+        if (get_key_groups_rev().count(groupnum) > 0)
+            result = get_key_groups_rev()[groupnum];
+
+        return result;
     }
 
     /**
@@ -1409,10 +1414,11 @@ public:
 
     long lookup_keygroup_group (unsigned int keycode)
     {
+        long result = 0;
         if (get_key_groups().count(keycode))
-            return get_key_groups()[keycode];
-        else
-            return 0;
+            result = get_key_groups()[keycode];
+
+        return result;
     }
 
     void start_playing (bool songmode = false);

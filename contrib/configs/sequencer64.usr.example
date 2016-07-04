@@ -20,15 +20,205 @@
 
 [user-midi-bus-definitions]
 
-0     # number of user-defined MIDI busses
+6     # number of user-defined MIDI busses
 
+[user-midi-bus-0]
+
+# Device name for this buss:
+
+Midi Through Port-0
+
+# Number of channels:
+
+1
+
+# channel and instrument (or program) number
+
+0 0
+
+# End of buss definition 0
+
+[user-midi-bus-1]
+
+# Device name for this buss:
+
+Timid port 0
+
+# Number of channels:
+
+1
+
+# channel and instrument (or program) number
+
+0 1
+
+# End of buss definition 1
+
+[user-midi-bus-2]
+
+# Device name for this buss:
+
+Timid port 1
+
+# Number of channels:
+
+1
+
+# channel and instrument (or program) number
+
+0 1
+
+# End of buss definition 2
+
+[user-midi-bus-3]
+
+# Device name for this buss:
+
+Timid port 2
+
+# Number of channels:
+
+1
+
+# channel and instrument (or program) number
+
+0 1
+
+# End of buss definition 3
+
+[user-midi-bus-4]
+
+# Device name for this buss:
+
+Timid port 3
+
+# Number of channels:
+
+1
+
+# channel and instrument (or program) number
+
+0 1
+
+# End of buss definition 4
+
+[user-midi-bus-5]
+
+# Device name for this buss:
+
+Yoshimi Port 0
+
+# Number of channels:
+
+1
+
+# channel and instrument (or program) number
+
+0 1
+
+# End of buss definition 5
 # In the following MIDI instrument definitions, active controller
 # numbers (i.e. supported by the instrument) are paired with
 # the (optional) name of the controller supported.
 
 [user-instrument-definitions]
 
-0     # instrument list count
+3     # instrument list count
+
+[user-instrument-0]
+
+# Name of instrument:
+
+Midi Thru 0
+
+# Number of MIDI controller values:
+
+0
+
+# controller number and (optional) name:
+
+
+# End of instrument/controllers definition 0
+
+
+[user-instrument-1]
+
+# Name of instrument:
+
+Timidity
+
+# Number of MIDI controller values:
+
+0
+
+# controller number and (optional) name:
+
+
+# End of instrument/controllers definition 1
+
+
+[user-instrument-2]
+
+# Name of instrument:
+
+Timidity
+
+# Number of MIDI controller values:
+
+0
+
+# controller number and (optional) name:
+
+
+# End of instrument/controllers definition 2
+
+
+[user-instrument-3]
+
+# Name of instrument:
+
+Timidity
+
+# Number of MIDI controller values:
+
+0
+
+# controller number and (optional) name:
+
+
+# End of instrument/controllers definition 2
+
+
+[user-instrument-4]
+
+# Name of instrument:
+
+Timidity
+
+# Number of MIDI controller values:
+
+0
+
+# controller number and (optional) name:
+
+
+# End of instrument/controllers definition 2
+
+
+[user-instrument-5]
+
+# Name of instrument:
+
+Yoshimi
+
+# Number of MIDI controller values:
+
+0
+
+# controller number and (optional) name:
+
+
+# End of instrument/controllers definition 2
 
 #   ======== Sequencer64-Specific Variables Section ========
 
@@ -53,7 +243,7 @@
 # -1 = Same as 0, draw a box outline one-pixel thick.
 # -2 to -30 = Draw a box outline, thicker and thicker.
 
-0       # grid_brackets
+0        # grid_brackets
 
 # Specifies the number of rows in the main window.
 # At present, only a value of 4 is supportable.
@@ -84,9 +274,9 @@
 0      # control_height
 
 # Specifies the initial zoom for the piano rolls.  Ranges from 1.
-# to 32, and defaults to 2 unless changed here.
+# to 512, and defaults to 2 unless changed here.
 
-2      # zoom
+0      # zoom (0 == auto-adjust to PPQN)
 
 # Specifies if the key, scale, and background sequence are to be
 # applied to all sequences, or to individual sequences.  The
@@ -103,7 +293,7 @@
 # 1 = Apply these settings globally (similar to seq24).
 #     Settings are saved in the global final section of the file.
 
-0      # global_seq_feature
+1      # global_seq_feature
 
 # Specifies if the old, console-style font, or the new anti-
 # aliased font, is to be used as the font throughout the GUI.
@@ -135,7 +325,7 @@
 # small.  The new default is 8.  The legal range is 1 to 18, where
 # 18 is about the height of the whole performance piano roll view.
 
-4      # perf_v_page_increment
+8      # perf_v_page_increment
 
 # Specifies if the progress bar is colored black, or a different
 # color.  Currently, the different color is hardwired, and is
@@ -154,7 +344,7 @@
 # Specifies the window redraw rate for all windows that support
 # that concept.  The default is 40 ms.  Some windows used 25 ms.
 
-40      # window_redraw_rate
+40       # window_redraw_rate
 
 [user-midi-settings]
 
@@ -190,7 +380,7 @@
 # save the MIDI afterwards, unless you really want to change
 # all of its buss values.
 
-0       # midi_buss_override
+-1      # midi_buss_override
 
 # End of /home/ahlstrom/.config/sequencer64/sequencer64.usr
 #

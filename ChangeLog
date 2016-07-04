@@ -1,3 +1,7 @@
+2016-07-04  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* README: Stamping for official version 0.9.15.2.
+
 2016-07-03  Chris Ahlstrom <ahlstromcj@gmail.com>
 
 	* libseq64/include/event.hpp, libseq64/include/event_list.hpp,

@@ -1,4 +1,4 @@
-README for Sequencer64 0.9.15.2 (current branch = "master")
+README for Sequencer64 0.9.16
 Chris Ahlstrom
 2015-09-10 to 2016-07-04 (initial work started in July of 2015)
 
@@ -14,15 +14,8 @@ with the --legacy option.
 
 Major updates:
 
-    -   Version 0.9.15.1 and .2:
-        -   Fixing corner-case issues with saving the configuration.
-            Transpose state saved with each pattern.
-        -   Moved transpose support to the perform class.
-        -   Red-colored events in non-transposable patterns (e.g. drums).
-        -   Addition menu entries for muting/unmuting.
-        -   Fixed perfedit continual-refresh bug.
-        -   Prevent pathological note alterations when growing/shrinking
-            selected notes.
+    -   Version 0.9.16:
+        -   TBD
         -   See earlier version fixes near the end of this README.
     -   Sequencer64 loads SMF 0 files and splits the channels into separate
         tracks/sequences.
@@ -137,6 +130,15 @@ Major updates:
         -   Constant variables are slowly being assigned to new members, in
             preparation for support of altering the number of sequences and
             screen sets supported.
+    -   Version 0.9.15.1 and .2:
+        -   Fixing corner-case issues with saving the configuration.
+            Transpose state saved with each pattern.
+        -   Moved transpose support to the perform class.
+        -   Red-colored events in non-transposable patterns (e.g. drums).
+        -   Addition menu entries for muting/unmuting.
+        -   Fixed perfedit continual-refresh bug.
+        -   Prevent pathological note alterations when growing/shrinking
+            selected notes.
     -   Version 0.9.15:
         -   Added the Stazed song-transpose feature from his Seq32 project.
         -   Additional sequence menu entries.

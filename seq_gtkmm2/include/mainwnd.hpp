@@ -300,7 +300,8 @@ private:
     void toggle_playing ();
 
     /**
-     *  Toggle the group-learn status.
+     *  Toggle the group-learn status.  Simply forwards the call to
+     *  perform::learn_toggle().
      */
 
     void learn_toggle ()

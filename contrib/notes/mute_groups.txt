@@ -1,6 +1,6 @@
 Mute-Group Explorations
 Chris Ahlstrom
-2015-12-23 to 2015-12-23
+2015-12-23 to 2016-07-05
 
 In this document we explore mute-groups, how they might work, and
 Tim's fixes to them.  The primary module under discussion is the
@@ -52,6 +52,7 @@ perform module.
         (which is the second set of numbers) - you can't use the first set
         (used to 'toggle').
 
+From another source:
 
     You can toggle the playing status of up to 32 previously defined
     mute/unmute patterns (groups) in the active screen set, similar to
@@ -94,6 +95,31 @@ perform module.
     at my music computer right now, but I think you do ALT click or CTRL
     click, and it puts your command in a buffer and will activate it at
     the end of the clip.  Hope that helps.
+
+---------
+
+Source-code investigations:
+
+    mainwid:
+
+        Muting status is tested by sequence::get_playing().  This value may
+        also be stored in mainwid::m_last_playing[].  However, that member
+        seems to be unused.  We're removing it.
+
+        Queued status is tested by sequence::get_queued().
+
+    mainwnd:
+
+        Clicking the L button (a toggle) and pressing a mute-group key
+        stores the current mute state (of the set OR the whole thing???) in
+        that key.  This is passed to perform::learn_toggle().
+
+    perform:
+
+        If m_mode_group_learn, the L button calls unset_mode_group_learn(),
+        otherwise, it calls set_mode_group_learn().
+
+
 
 
 # vim: sw=4 ts=4 wm=8 et ft=rc

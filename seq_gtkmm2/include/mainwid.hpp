@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-05-21
+ * \updates       2016-07-05
  * \license       GNU GPLv2 or above
  *
  */
@@ -97,11 +97,12 @@ private:
 
     long m_last_tick_x[c_max_sequence];
 
-    /**
-     *  Indicates if each sequence was playing, or not.
-     */
+    /*
+     *  Indicates if each sequence was playing, or not.  Doesn't seem to be
+     *  used!
 
     bool m_last_playing[c_max_sequence];
+     */
 
     /**
      *  These values are assigned to the values given by the constants of
@@ -167,12 +168,15 @@ private:
     /**
      *  Updates the image of multiple sequencer/pattern slots.  Used by the
      *  friend class mainwnd, but also useful for our EXPERIMENTAL feature to
-     *  fully highlight the current sequence.
+     *  fully highlight the current sequence.  Calls reset() if
+     *  SEQ64_EDIT_SEQUENCE_HIGHLIGHT is defined.
      */
 
     void update_sequences_on_window ()
     {
+#ifdef SEQ64_EDIT_SEQUENCE_HIGHLIGHT
         reset();
+#endif
     }
 
     /**
@@ -206,6 +210,7 @@ private:
     int seq_from_xy (int x, int y);
     int timeout ();
     void calculate_base_sizes (int seq, int & basex, int & basey);
+    void select_fg_bg_colors (int seqnum);
 
 private:    // Gtkmm 2.4 callbacks
 

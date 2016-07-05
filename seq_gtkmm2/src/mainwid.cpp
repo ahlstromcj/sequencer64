@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-06-26
+ * \updates       2016-07-05
  * \license       GNU GPLv2 or above
  *
  *  Note that this representation is, in a sense, inside the mainwnd
@@ -122,7 +122,7 @@ mainwid::mainwid (perform & p)
     m_old_seq               (0),
     m_screenset             (0),
     m_last_tick_x           (),                 // array of size c_max_sequence
-    m_last_playing          (),                 // array of size c_max_sequence
+//  m_last_playing          (),                 // array of size c_max_sequence
     m_mainwnd_rows          (c_mainwnd_rows),
     m_mainwnd_cols          (c_mainwnd_cols),
     m_seqarea_x             (c_seqarea_x),
@@ -150,7 +150,7 @@ mainwid::mainwid (perform & p)
 
 mainwid::~mainwid ()
 {
-    // Empty body
+    /* Empty body   */
 }
 
 /**
@@ -162,7 +162,7 @@ mainwid::~mainwid ()
 void
 mainwid::draw_sequences_on_pixmap ()
 {
-    int offset = m_screenset_offset;                // m_screenset * slots
+    int offset = m_screenset_offset;                /* m_screenset * slots  */
     for (int s = 0; s < m_screenset_slots; ++s, ++offset)
     {
         draw_sequence_on_pixmap(offset);
@@ -187,6 +187,31 @@ int
 mainwid::timeout ()
 {
     return true;
+}
+
+/**
+ *  Picks the foreground and background colors based on the sequence in edit
+ *  and the SEQ64_EDIT_SEQUENCE_HIGHLIGHT macro.
+ */
+
+void
+mainwid::select_fg_bg_colors (int seqnum)
+{
+#ifdef SEQ64_EDIT_SEQUENCE_HIGHLIGHT
+    if (is_edit_sequence(seqnum))
+    {
+        bg_color(dark_cyan());
+        fg_color(black());
+    }
+    else
+    {
+        bg_color(white());
+        fg_color(black());
+    }
+#else
+    bg_color(white());
+    fg_color(black());
+#endif
 }
 
 /**
@@ -248,7 +273,7 @@ mainwid::draw_sequence_on_pixmap (int seqnum)
 
             if (empty_highlight)
             {
-                m_last_playing[seqnum] = false;         /* active, no play  */
+//              m_last_playing[seqnum] = false;         /* active, no play  */
                 if (seq->get_playing())
                 {
                     bg_color(black());
@@ -282,28 +307,14 @@ mainwid::draw_sequence_on_pixmap (int seqnum)
             {
                 if (seq->get_playing())
                 {
-                    m_last_playing[seqnum] = true;      /* active & playing */
+//                  m_last_playing[seqnum] = true;      /* active & playing */
                     bg_color(black());
                     fg_color(white());
                 }
                 else
                 {
-                    m_last_playing[seqnum] = false;     /* active, no play  */
-#ifdef SEQ64_EDIT_SEQUENCE_HIGHLIGHT
-                    if (is_edit_sequence(seqnum))
-                    {
-                        bg_color(dark_cyan());
-                        fg_color(black());
-                    }
-                    else
-                    {
-                        bg_color(white());
-                        fg_color(black());
-                    }
-#else
-                    bg_color(white());
-                    fg_color(black());
-#endif
+//                  m_last_playing[seqnum] = false;     /* active, no play  */
+                    select_fg_bg_colors(seqnum);
                 }
             }
 
@@ -319,12 +330,6 @@ mainwid::draw_sequence_on_pixmap (int seqnum)
                 bg_color(), base_x+1, base_y+1, m_seqarea_x-2, m_seqarea_y-2
             );
             m_gc->set_foreground(fg_color());
-
-#ifdef SEQ64_EDIT_SEQUENCE_HIGHLIGHT
-            current_highlight = smf_0 || is_edit_sequence(seqnum);
-#else
-            current_highlight = smf_0;
-#endif
 
             font::Color col = font::BLACK;
             if (empty_highlight)
@@ -675,7 +680,6 @@ mainwid::draw_marker_on_sequence (int seqnum, int tick)
         midipulse tick_x = tick * m_seqarea_seq_x / len;
         int bar_x = rect_x + m_last_tick_x[seqnum];
         int thickness = 1;
-
         if (usr().progress_bar_thick())
         {
             --bar_x;
@@ -864,6 +868,7 @@ mainwid::on_expose_event (GdkEventExpose * ev)
  *  (which might confuse the user at first, because it toggles the mute state
  *  twice).  Then it brings up the Edit menu for the sequence.  This new
  *  behavior is closer to what users have come to expect from a double-click.
+ *  I miss the double-click when running seq24.
  *
  *  We also try to handle a Ctrl-double-click as a signal to do an event edit,
  *  instead of a sequence edit.  The event editor provides a way to look at
@@ -887,9 +892,7 @@ mainwid::on_button_press_event (GdkEventButton * p)
     if (CAST_EQUIVALENT(p->type, SEQ64_2BUTTON_PRESS))  /* double-click?    */
     {
         seq_edit();                                     /* seqmenu function */
-#ifdef SEQ64_EDIT_SEQUENCE_HIGHLIGHT
         update_sequences_on_window();
-#endif
     }
     else
     {
@@ -897,18 +900,14 @@ mainwid::on_button_press_event (GdkEventButton * p)
         if (p->state & SEQ64_CONTROL_MASK)
         {
             seq_edit();                                 /* seqmenu function */
-#ifdef SEQ64_EDIT_SEQUENCE_HIGHLIGHT
             update_sequences_on_window();
-#endif
         }
         else
         {
             if (current_seq() >= 0 && SEQ64_CLICK_LEFT(p->button))
             {
                 m_button_down = true;
-#ifdef SEQ64_EDIT_SEQUENCE_HIGHLIGHT
                 update_sequences_on_window();
-#endif
             }
         }
     }

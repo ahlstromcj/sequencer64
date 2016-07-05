@@ -119,6 +119,26 @@ Source-code investigations:
         If m_mode_group_learn, the L button calls unset_mode_group_learn(),
         otherwise, it calls set_mode_group_learn().
 
+        int index = mute_group_offset(gtrack);
+
+            Gets offset re m_mute_group_selected * c_seqs_in_set.
+
+        set_group_mute_state (int gtrack, bool muted) (and get_....)
+
+            Sets m_mute_group[index] = muted;
+                   
+        select_group_mute (int mutegroup)
+
+            If in group-learn mode, sets the mute-group status of all
+            sequences in that screen-set to their current playing status.
+
+        m_playing_screen = m_screenset;
+        m_playscreen_offset = m_playing_screen * m_seqs_in_set;
+
+        m_mute_group[1024] contains the mutings for all mute groups.
+
+        TODO:  Determine difference between select_group_mute() and
+               select_mute_group() !!!
 
 
 

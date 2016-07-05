@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and Tim Deagan
  * \date          2015-07-24
- * \updates       2016-06-28
+ * \updates       2016-07-05
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -116,7 +116,7 @@ midi_control perform::sm_mc_dummy;
 perform::perform (gui_assistant & mygui, int ppqn)
  :
     m_gui_support               (mygui),
-    m_mute_group                (),         // boolean array
+    m_mute_group                (),         // boolean array, size 32 * 32
     m_tracks_mute_state         (),         // boolean array
     m_mode_group                (true),
     m_mode_group_learn          (false),
@@ -348,30 +348,33 @@ perform::get_group_mute_state (int gtrack)
 }
 
 /**
- *  Makes some checks on all of the active sequences, and sets the group mute
- *  flag, m_mute_group_selected, to the clamped g-mute value.  Null sequences
- *  are no longer flagged as an error, they are just ignored.
+ *  If we're in group-learn mode, then this function gets the playing statuses
+ *  of all of the sequences in the current play-screen, and copies them into
+ *  the desired mute-group.  Then, no matter what, it makes the desired
+ *  mute-group the selected mute-group.
  *
- * \param a_g_mute
- *      The number of the mute group, clamped to be between 0 and
- *      m_seqs_in_set-1.
+ * \param mutegroup
+ *      The number of the desired mute group, clamped to be between 0 and
+ *      m_seqs_in_set-1.  Obviously, it is the set whose state is to be
+ *      stored, if in group-learn mode.
  */
 
 void
-perform::select_group_mute (int a_g_mute)
+perform::select_group_mute (int mutegroup)
 {
-    int gmute = clamp_track(a_g_mute);
-    int j = gmute * m_seqs_in_set;
-    int k = m_playscreen_offset;
+    mutegroup = clamp_track(mutegroup);
     if (m_mode_group_learn)
     {
+        int base_seqnum = mutegroup * m_seqs_in_set;    /* 1st seq in group */
         for (int i = 0; i < m_seqs_in_set; ++i)
         {
-            if (is_active(i + k))
-                m_mute_group[i + j] = m_seqs[i + k]->get_playing();
+            int source = m_playscreen_offset + i;
+            int dest = base_seqnum + i;
+            if (is_active(source))
+                m_mute_group[dest] = m_seqs[source]->get_playing();
         }
     }
-    m_mute_group_selected = gmute;
+    m_mute_group_selected = mutegroup;
 }
 
 /**
@@ -410,30 +413,27 @@ perform::unset_mode_group_learn ()
  *
  *  Will need to study this one more closely.
  *
- * \param a_group
- *      Provides the group to mute.  Note that this parameter is essentially a
- *      track or sequence number.
+ * \change tdeagan 2015-12-22 via git pull:
+ *      git pull https://github.com/TDeagan/sequencer64.git mute_groups
+ *      m_screenset replaces m_playscreen_offset.
+ *
+ * \param mutegroup
+ *      Provides the mute-group to select.
  */
 
 void
-perform::select_mute_group (int a_group)
+perform::select_mute_group (int mutegroup)
 {
-    int group = clamp_track(a_group);
-    int j = group * m_seqs_in_set;
-
-    /*
-     * \change tdeagan 2015-12-22 via git pull:
-     *
-     * git checkout -b TDeagan-mute_groups master
-     * git pull https://github.com/TDeagan/sequencer64.git mute_groups
-     */
-
+    mutegroup = clamp_track(mutegroup);
+    int base_seqnum = mutegroup * m_seqs_in_set;
     int k = m_screenset * m_seqs_in_set;    /* replaces m_playscreen_offset */
-    m_mute_group_selected = group;
+    m_mute_group_selected = mutegroup;
     for (int i = 0; i < m_seqs_in_set; ++i)
     {
-        if ((m_mode_group_learn) && (is_active(i + k)))
-            m_mute_group[i + j] = m_seqs[i + k]->get_playing();
+        int source = k + i;
+        int dest = base_seqnum + i;
+        if (m_mode_group_learn && (is_active(source)))
+            m_mute_group[dest] = m_seqs[source]->get_playing();
 
         int index = mute_group_offset(i);
         m_tracks_mute_state[i] = m_mute_group[index];

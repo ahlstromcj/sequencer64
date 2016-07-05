@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-25
- * \updates       2016-05-17
+ * \updates       2016-07-05
  * \license       GNU GPLv2 or above
  *
  *  We're going to try to collect all the globals here in one module, and
@@ -100,19 +100,19 @@ const int c_mainwnd_cols = SEQ64_DEFAULT_MAINWND_COLUMNS;
 const int c_seqs_in_set = c_mainwnd_rows * c_mainwnd_cols;
 
 /**
- *  Number of group-mute tracks that can be support, which is
- *  c_seqs_in_set squared, or 1024.
- */
-
-const int c_gmute_tracks = c_seqs_in_set * c_seqs_in_set;
-
-/**
  *  Maximum number of screen sets that can be supported.  Basically, that
  *  the number of times the Patterns Panel can be filled.  32 sets can be
  *  created.
  */
 
 const int c_max_sets = SEQ64_DEFAULT_SET_MAX;
+
+/**
+ *  Number of group-mute tracks that can be support, which is
+ *  c_seqs_in_set squared, or 1024.
+ */
+
+const int c_gmute_tracks = c_max_sets * c_seqs_in_set;
 
 /**
  *  The maximum number of patterns supported is given by the number of

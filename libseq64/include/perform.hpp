@@ -170,8 +170,10 @@ private:
 
     /**
      *  Mute group support.  This value determines whether a particular track
-     *  will be muted or unmuted.  Note that the current state of playing can
-     *  be "learned", and stored herein as the desired state for the track.
+     *  will be muted or unmuted, and it can handle all tracks available in
+     *  the application (currently 1024).  Note that the current state of
+     *  playing can be "learned", and stored herein as the desired state for
+     *  the track.
      */
 
     bool m_mute_group[c_gmute_tracks];

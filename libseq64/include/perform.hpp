@@ -181,7 +181,8 @@ private:
     /**
      *  Holds the current mute states of each track.  Unlike the
      *  m_mute_group[] array, this holds the current state, rather than the
-     *  state desired by activating a mute group.
+     *  state desired by activating a mute group, and it applies to only one
+     *  screen-set.
      */
 
     bool m_tracks_mute_state[c_seqs_in_set];
@@ -521,7 +522,8 @@ private:
 
     /**
      *  Indicates the number of the currently-selected screen-set.  This is
-     *  merely the screen-set that is in view.
+     *  merely the screen-set that is in view.  The fix of tdeagan substitutes
+     *  the "in-view" screen-set for the "playing" screen-set.
      */
 
     int m_screenset;

@@ -325,11 +325,11 @@ perform::select_group_mute (int mutegroup)
     mutegroup = clamp_track(mutegroup);
     if (m_mode_group_learn)
     {
-        int base_seqnum = mutegroup * m_seqs_in_set;    /* 1st seq in group */
+        int groupbase = mutegroup * m_seqs_in_set;    /* 1st seq in group */
         for (int i = 0; i < m_seqs_in_set; ++i)
         {
             int source = m_playscreen_offset + i;       /* m_screenset?     */
-            int dest = base_seqnum + i;
+            int dest = groupbase + i;
             if (is_active(source))
                 m_mute_group[dest] = m_seqs[source]->get_playing();
         }
@@ -339,7 +339,8 @@ perform::select_group_mute (int mutegroup)
 
 /**
  *  Sets the group-mute mode, then the group-learn mode, then notifies all of
- *  the notification subscribers.
+ *  the notification subscribers.  This function is called via a MIDI control
+ *  c_midi_control_mod_glearn and via the group-learn keystroke.
  */
 
 void
@@ -353,7 +354,10 @@ perform::set_mode_group_learn ()
 
 /**
  *  Notifies all of the notification subscribers that group-learn is being
- *  turned off.  Then unsets the group-learn mode flag.
+ *  turned off.  Then unsets the group-learn mode flag.  This function is
+ *  called via a MIDI control c_midi_control_mod_glearn, via the group-learn
+ *  keystroke, and in mainwnd::on_key_press_event(), to end the group-learn
+ *  mode.
  */
 
 void
@@ -362,12 +366,27 @@ perform::unset_mode_group_learn ()
     for (size_t x = 0; x < m_notify.size(); ++x)
         m_notify[x]->on_grouplearnchange(false);
 
+    /*
+     * Shouldn't it also call this one?
+     *
+     * unset_mode_group_mute();
+     */
+
     m_mode_group_learn = false;
 }
 
 /**
+ *  When in group-learn mode, for active sequences, the mute-group settings
+ *  are set based on the playing status of each sequence.  Then the mute-group
+ *  is stored in m_tracks_mute_state[], which holds states for only the number
+ *  of sequences in a set.
  *
- *  Compare to select_group_mute(); this function is used only once.
+ *  Compare to select_group_mute(); its main difference is that it will
+ *  at least copy the states even if not in group-learn mode.  And, if in
+ *  group-learn mode, it will grab the playing states of the sequences before
+ *  copying them.
+ *
+ *  This function is used only once, in select_and_mute_group().
  *
  * \change tdeagan 2015-12-22 via git pull:
  *      git pull https://github.com/TDeagan/sequencer64.git mute_groups
@@ -381,25 +400,27 @@ void
 perform::set_and_copy_mute_group (int mutegroup)
 {
     mutegroup = clamp_track(mutegroup);
-    int base_seqnum = mutegroup * m_seqs_in_set;
-    int sbase = m_screenset * m_seqs_in_set;    /* was m_playscreen_offset */
-    m_mute_group_selected = mutegroup;
+    int groupbase = mutegroup * m_seqs_in_set;
+    int setbase = m_screenset * m_seqs_in_set;    /* was m_playscreen_offset */
     for (int i = 0; i < m_seqs_in_set; ++i)
     {
-        int source = sbase + i;
+        int source = setbase + i;
         if (m_mode_group_learn && is_active(source))
         {
-            int dest = base_seqnum + i;
+            int dest = groupbase + i;
             m_mute_group[dest] = m_seqs[source]->get_playing();
         }
-
-        int index = mute_group_offset(i);
-        m_tracks_mute_state[i] = m_mute_group[index];
+        m_tracks_mute_state[i] = m_mute_group[mute_group_offset(i)];
     }
+    m_mute_group_selected = mutegroup;
 }
 
 /**
- *  Will need to study this one more closely.
+ *  If m_mode_group is true, then this function operates.  It loops through
+ *  every screen-set.  In each screen-set, it acts on each active sequence.
+ *  If the active sequence is in the current "in-view" screen-set (m_screenset
+ *  as opposed to m_playing_screen), and its m_track_mute_state[] is true,
+ *  then the sequence is turned on, otherwise it is turned off.
  *
  * \change 2016-05-06
  *      It seems to us that the for (i) clause should have i range from 0 to
@@ -2364,7 +2385,7 @@ perform::handle_midi_control (int ctrl, bool state)
     default:
 
         /*
-         * Based on the value of c_midi_track_crl (32 *2) versus
+         * Based on the value of c_midi_track_crl (32 * 2) versus
          * m_seqs_in_set (32), maybe the first comparison should be
          * "ctrl >= 2 * m_seqs_in_set".
          */

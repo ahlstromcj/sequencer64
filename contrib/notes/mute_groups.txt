@@ -134,11 +134,11 @@ Source-code investigations:
 
         m_playing_screen = m_screenset;
         m_playscreen_offset = m_playing_screen * m_seqs_in_set;
-
         m_mute_group[1024] contains the mutings for all mute groups.
+        bool m_mode_group flag for memorizing?
+        bool m_mode_group_learn
+        bool m_mute_group_selected
 
-        TODO:  Determine difference between select_group_mute() and
-               select_mute_group() !!!
 
 
 

@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-07-03
+ * \updates       2016-07-06
  * \license       GNU GPLv2 or above
  *
  *  This class still has way too many members, even with the JACK and
@@ -1075,7 +1075,7 @@ public:
         return m_mode_group_learn;
     }
 
-    void select_mute_group (int group);
+    void set_and_copy_mute_group (int group);
     void start (bool state);
     void stop ();
 
@@ -1234,11 +1234,48 @@ public:
     void sequence_playing_toggle (int seq);
     void sequence_playing_on (int seq);
     void sequence_playing_off (int seq);
-    void set_group_mute_state (int g_track, bool mute_state);
-    bool get_group_mute_state (int g_track);
     void mute_all_tracks (bool flag = true);
     void output_func ();
     void input_func ();
+
+    /**
+     *  This function sets the mute state of an element in the m_mute_group
+     *  array.  The index value is the track number offset by the number of
+     *  the selected mute group (which is equivalent to a set number) times
+     *  the number of sequences in a set.  This function is used in midifile
+     *  and optionsfile when parsing the file to get the initial mute-groups.
+     *
+     * \param gtrack
+     *      The number of the track to be muted/unmuted.
+     *
+     * \param muted
+     *      This boolean indicates the state to which the track should be set.
+     */
+
+    void set_group_mute_state (int gtrack, bool muted)
+    {
+        m_mute_group[mute_group_offset(gtrack)] = muted;
+    }
+
+    /**
+     *  The opposite of set_group_mute_state(), it gets the value of the
+     *  desired track.  Uses the mute_group_offset() function.  This function
+     *  is used in midifile and optionsfile when writing the file to get the
+     *  initial mute-groups.
+     *
+     * \param gtrack
+     *      The number of the track for which the state is to be obtained.
+     *      Like set_group_mute_state(), this value is offset by adding
+     *      m_mute_group_selected * m_seqs_in_set.
+     *
+     * \return
+     *      Returns the desired m_mute_group[] value.
+     */
+
+    bool get_group_mute_state (int gtrack)
+    {
+        return m_mute_group[mute_group_offset(gtrack)];
+    }
 
     /**
      *  Calculates the offset into the screen sets.

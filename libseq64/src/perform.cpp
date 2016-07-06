@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and Tim Deagan
  * \date          2015-07-24
- * \updates       2016-07-05
+ * \updates       2016-07-06
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -308,50 +308,10 @@ perform::clamp_track (int track) const
 }
 
 /**
- *  This function sets the mute state of an element in the m_mute_group array.
- *  The index value is the track number offset by the number of the selected
- *  mute group (which seems equivalent to a set number) times the number of
- *  sequences in a set.
- *
- * \param gtrack
- *      The number of the track to be muted/unmuted.
- *
- * \param muted
- *      This boolean indicates the state to which the track should be set.
- */
-
-void
-perform::set_group_mute_state (int gtrack, bool muted)
-{
-    int index = mute_group_offset(gtrack);
-    m_mute_group[index] = muted;
-}
-
-/**
- *  The opposite of set_group_mute_state(), it gets the value of the desired
- *  track.  Uses the mute_group_offset function.
- *
- * \param gtrack
- *      The number of the track for which the state is to be obtained.
- *      Like set_group_mute_state(), this value is offset by adding
- *      m_mute_group_selected * m_seqs_in_set.
- *
- * \return
- *      Returns the value of m_mute_group[gtrack + set offset]
- */
-
-bool
-perform::get_group_mute_state (int gtrack)
-{
-    int index = mute_group_offset(gtrack);
-    return m_mute_group[index];
-}
-
-/**
  *  If we're in group-learn mode, then this function gets the playing statuses
  *  of all of the sequences in the current play-screen, and copies them into
  *  the desired mute-group.  Then, no matter what, it makes the desired
- *  mute-group the selected mute-group.
+ *  mute-group the selected mute-group.  Compare to set_and_copy_mute_group().
  *
  * \param mutegroup
  *      The number of the desired mute group, clamped to be between 0 and
@@ -368,7 +328,7 @@ perform::select_group_mute (int mutegroup)
         int base_seqnum = mutegroup * m_seqs_in_set;    /* 1st seq in group */
         for (int i = 0; i < m_seqs_in_set; ++i)
         {
-            int source = m_playscreen_offset + i;
+            int source = m_playscreen_offset + i;       /* m_screenset?     */
             int dest = base_seqnum + i;
             if (is_active(source))
                 m_mute_group[dest] = m_seqs[source]->get_playing();
@@ -406,12 +366,8 @@ perform::unset_mode_group_learn ()
 }
 
 /**
- *  Makes some checks and sets the group mute flag, m_mute_group_selected, to
- *  the clamped g-mute value, if all goes well (no null sequences are
- *  encountered).  Null sequences are no longer flagged as an error, they are
- *  just ignored.
  *
- *  Will need to study this one more closely.
+ *  Compare to select_group_mute(); this function is used only once.
  *
  * \change tdeagan 2015-12-22 via git pull:
  *      git pull https://github.com/TDeagan/sequencer64.git mute_groups
@@ -422,18 +378,20 @@ perform::unset_mode_group_learn ()
  */
 
 void
-perform::select_mute_group (int mutegroup)
+perform::set_and_copy_mute_group (int mutegroup)
 {
     mutegroup = clamp_track(mutegroup);
     int base_seqnum = mutegroup * m_seqs_in_set;
-    int k = m_screenset * m_seqs_in_set;    /* replaces m_playscreen_offset */
+    int sbase = m_screenset * m_seqs_in_set;    /* was m_playscreen_offset */
     m_mute_group_selected = mutegroup;
     for (int i = 0; i < m_seqs_in_set; ++i)
     {
-        int source = k + i;
-        int dest = base_seqnum + i;
-        if (m_mode_group_learn && (is_active(source)))
+        int source = sbase + i;
+        if (m_mode_group_learn && is_active(source))
+        {
+            int dest = base_seqnum + i;
             m_mute_group[dest] = m_seqs[source]->get_playing();
+        }
 
         int index = mute_group_offset(i);
         m_tracks_mute_state[i] = m_mute_group[index];
@@ -485,7 +443,7 @@ perform::mute_group_tracks ()
 void
 perform::select_and_mute_group (int group)
 {
-    select_mute_group(group);
+    set_and_copy_mute_group(group);
     mute_group_tracks();
 }
 
@@ -1205,16 +1163,19 @@ perform::set_screenset (int ss)
 
 /**
  *  Sets the screen set that is active, based on the value of m_screenset.
- *
  *  For each value up to m_seqs_in_set (32), the index of the current sequence
  *  in the current screen set (m_playing_screen) is obtained.  If the sequence
- *  is active and the sequence actually exists, it is processed;  null
+ *  is active and the sequence actually exists, it is processed; null
  *  sequences are no longer flagged as an error, they are just ignored.
  *
  *  Modifies m_playing_screen, m_playscreen_offset, stores the current
  *  playing-status of each sequence in m_tracks_mute_state[], and then calls
  *  mute_group_tracks(), turns on unmuted tracks in the current screen-set.
- *  A bit confusing to me at present.
+ *
+ *  Basically, this function retrieves and saves the playing status of the
+ *  sequences in the current play-screen, sets the play-screen to the current
+ *  screen-set, and then mutes the previous play-screen.  It is called via the
+ *  c_midi_control_play_ss value or via the set-playing-screen-set keystroke.
  */
 
 void
@@ -1222,9 +1183,9 @@ perform::set_playing_screenset ()
 {
     for (int i = 0; i < m_seqs_in_set; ++i)
     {
-        int j = i + m_playscreen_offset;    /* m_playing_screen*m_seqs_in_set */
-        if (is_active(j))
-            m_tracks_mute_state[i] = m_seqs[j]->get_playing();
+        int source = m_playscreen_offset + i;
+        if (is_active(source))
+            m_tracks_mute_state[i] = m_seqs[source]->get_playing();
     }
     m_playing_screen = m_screenset;
     m_playscreen_offset = m_playing_screen * m_seqs_in_set;

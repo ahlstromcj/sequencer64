@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-20
- * \updates       2016-07-04
+ * \updates       2016-07-07
  * \license       GNU GPLv2 or above
  *
  *  The "rc" command-line options override setting that are first read from
@@ -107,7 +107,7 @@ static struct option long_options [] =
     {"jack-master",         0, 0, 'J'},
     {"jack-master_cond",    0, 0, 'C'},
     {"jack-start_mode",     required_argument, 0, 'M'},
-    {"jack-session_uuid",   required_argument, 0, 'U'},
+    {"jack-session-uuid",   required_argument, 0, 'U'},
 #endif
     {"manual-alsa-ports",   0, 0, 'm'},
     {"auto-alsa-ports",     0, 0, 'a'},

@@ -1,6 +1,6 @@
 Mute-Group Explorations
 Chris Ahlstrom
-2015-12-23 to 2016-07-05
+2015-12-23 to 2016-07-07
 
 In this document we explore mute-groups, how they might work, and
 Tim's fixes to them.  The primary module under discussion is the
@@ -136,10 +136,138 @@ Source-code investigations:
         m_playscreen_offset = m_playing_screen * m_seqs_in_set;
         m_mute_group[1024] contains the mutings for all mute groups.
         bool m_mode_group flag for memorizing?
-        bool m_mode_group_learn
-        bool m_mute_group_selected
+
+Life-cycle:
+
+    midifile (parse and write):
+
+        c_mutegroups:
+
+            for groupmute in 0..c_seqs_in_set
+                select_group_mute(groupmute);
+                for gmutestate in 0..c_seqs_in_set
+                    set_group_mute_state(gmutestate != 0);
+
+            Somehow can we make this optional in the file?
+
+    optionsfile (parse and write):
+
+        [mute-group]:
+
+            Similar to midifile, reading the mute-group number and giving
+            it to select_group_mute(), and then the 4 x 8 = 32 state values
+            and giving them to set_group_mute_state() or getting them from
+            get_group_mute_state().
+
+        [midi-control]:
+
+            Writes the value for gmute.
+
+    mainwnd:
+
+        L button --> learn_toggle()
+
+        Key presses:
+
+            if (perf().get_key_groups().count(ev->keyval) != 0)
+            {
+                perf().select_and_mute_group    /* activate mute group key  */
+                (
+                    perf().lookup_keygroup_group(ev->keyval)
+                );
+            }
+
+            bool mgl = perf().is_learn_mode() && ev->keyval != (group_learn);
+
+                Cancels learn mode, calls unset_mode_group_learn().
+
+    perform:
+
+        mainwnd_key_event():
+
+        press:
+
+        key == keys().queue() || key == keys().keep_queue()
+            set_sequence_control_status(c_status_queue);
+
+        key == keys().snapshot_1() || key == keys().snapshot_2()
+            set_sequence_control_status(c_status_snapshot);
+
+        key == keys().set_playing_screenset()
+            set_playing_screenset();
+
+        key == keys().group_on()
+            set_mode_group_mute();
+
+        key == keys().group_off()
+            unset_mode_group_mute();
+
+        key == keys().group_learn()
+            set_mode_group_learn();
+
+        release:
+
+        key == keys().replace()
+            unset_sequence_control_status(c_status_replace);
+
+        key == keys().queue()
+            unset_sequence_control_status(c_status_queue);
+
+        key == keys().snapshot_1() || key == keys().snapshot_2()
+            unset_sequence_control_status(c_status_snapshot);
+
+        key == keys().group_learn()
+            unset_mode_group_learn();
+
+            
+            bool m_mode_group
+            bool m_mode_group_learn
+            int m_mute_group_selected
+            int m_screenset;
+            int m_playing_screen;
+            return m_mode_group_learn;
+
+            void mute_group_tracks()
+            void select_and_mute_group(int group)
+            void set_mode_group_mute() and void unset_mode_group_mute()
+            void select_group_mute(int mute)
+            void set_mode_group_learn()
+            void unset_mode_group_learn()
+            bool is_group_learning() return m_mode_group_learn
+            void set_and_copy_mute_group(int group)
+            int mute_group_offset (int track)
+    {
+        return clamp_track(track) + m_mute_group_selected * c_seqs_in_set;
+    }
+        
+         ------------------------------
+        |   bool m_mute_group[1024]    |
+         ------------------------------
 
 
+         ------------------------------
+        | bool m_tracks_mute_state[32] |
+         ------------------------------
 
+Flow diagrams:
+
+    "rc" file ---> [mute-group] ---> select_group_mute(g) --->
+        m_mute_group_selected = g (we're not in learn mode) --->
+        set_group_mute_state(track, gm[track]) for 32 sets --->
+            m_mute_group[mute_group_offset(track)] = muted;
+                           |
+                            ---> track + m_mute_group_selected * c_seqs_in_set;
+
+    In the other direction, we write c_gmute_tracks (1024),
+    select_group_mute(g) for each of 32 groups, and write 32
+    get_group_mute_state(track) values for each group.
+
+    MIDI file ---> c_mutegroups ---> length, must match c_gmute_tracks --->
+        m_mute_group_selected = g (we're not in learn mode) --->
+        set_group_mute_state(track, mute != 0) --->
+        
+
+    Q:  What happens if we turn on learn mode, then read a MIDI file
+        containing a c_mutegroups section?
 
 # vim: sw=4 ts=4 wm=8 et ft=rc

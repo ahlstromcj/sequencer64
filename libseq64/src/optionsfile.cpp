@@ -240,11 +240,17 @@ optionsfile::parse (perform & p)
     int gtrack = 0;
     sscanf(m_line, "%d", &gtrack);                  /* value thrown away  */
     next_data_line(file);
-    int mtx[c_seqs_in_set];
-    int j = 0;
+    int gm[c_seqs_in_set];
+
+    /*
+     * This loop is a bit odd.  We set groupmute, read it, increment it,
+     * and then read it again.  Issue?
+     */
+
+    int groupmute = 0;
     for (int i = 0; i < c_seqs_in_set; ++i)
     {
-        p.select_group_mute(j);
+        p.select_group_mute(groupmute);
         sscanf
         (
             m_line,
@@ -252,20 +258,16 @@ optionsfile::parse (perform & p)
               " [%d %d %d %d %d %d %d %d]"
               " [%d %d %d %d %d %d %d %d]"
               " [%d %d %d %d %d %d %d %d]",
-            &j,
-            &mtx[0], &mtx[1], &mtx[2], &mtx[3],             /* 1st */
-                &mtx[4], &mtx[5], &mtx[6], &mtx[7],
-            &mtx[8], &mtx[9], &mtx[10], &mtx[11],           /* 2nd */
-                &mtx[12], &mtx[13], &mtx[14], &mtx[15],
-            &mtx[16], &mtx[17], &mtx[18], &mtx[19],         /* 3rd */
-                &mtx[20], &mtx[21], &mtx[22], &mtx[23],
-            &mtx[24], &mtx[25], &mtx[26], &mtx[27],         /* 4th */
-                &mtx[28], &mtx[29], &mtx[30], &mtx[31]
+            &groupmute,
+            &gm[0], &gm[1], &gm[2], &gm[3], &gm[4], &gm[5], &gm[6], &gm[7],
+            &gm[8], &gm[9], &gm[10], &gm[11], &gm[12], &gm[13], &gm[14], &gm[15],
+            &gm[16], &gm[17], &gm[18], &gm[19], &gm[20], &gm[21], &gm[22], &gm[23],
+            &gm[24], &gm[25], &gm[26], &gm[27], &gm[28], &gm[29], &gm[30], &gm[31]
         );
         for (int k = 0; k < c_seqs_in_set; ++k)
-            p.set_group_mute_state(k, mtx[k]);
+            p.set_group_mute_state(k, gm[k]);
 
-        j++;
+        ++groupmute;
         next_data_line(file);
     }
 
@@ -631,7 +633,7 @@ optionsfile::write (const perform & p)
         snprintf
         (
             outs, sizeof(outs),
-            "%d [%1d %1d %3d %3d %3d %3d]"  /* [%1d %1d %3ld %3ld %3ld %3ld] */
+            "%d [%1d %1d %3d %3d %3d %3d]"
               " [%1d %1d %3d %3d %3d %3d]"
               " [%1d %1d %3d %3d %3d %3d]",
              mcontrol,
@@ -650,14 +652,14 @@ optionsfile::write (const perform & p)
      */
 
     file << "\n[mute-group]\n\n";
-    int mtx[c_seqs_in_set];
+    int gm[c_seqs_in_set];
     file <<  c_gmute_tracks << "    # group mute value count\n";
     for (int seqj = 0; seqj < c_seqs_in_set; ++seqj)
     {
         ucperf.select_group_mute(seqj);
         for (int seqi = 0; seqi < c_seqs_in_set; ++seqi)
         {
-            mtx[seqi] = ucperf.get_group_mute_state(seqi);
+            gm[seqi] = ucperf.get_group_mute_state(seqi);
         }
         snprintf
         (
@@ -667,14 +669,10 @@ optionsfile::write (const perform & p)
             " [%1d %1d %1d %1d %1d %1d %1d %1d]"
             " [%1d %1d %1d %1d %1d %1d %1d %1d]",
             seqj,
-            mtx[0], mtx[1], mtx[2], mtx[3],
-                mtx[4], mtx[5], mtx[6], mtx[7],
-            mtx[8], mtx[9], mtx[10], mtx[11],
-                mtx[12], mtx[13], mtx[14], mtx[15],
-            mtx[16], mtx[17], mtx[18], mtx[19],
-                mtx[20], mtx[21], mtx[22], mtx[23],
-            mtx[24], mtx[25], mtx[26], mtx[27],
-                mtx[28], mtx[29], mtx[30], mtx[31]
+            gm[0],  gm[1],  gm[2],  gm[3],  gm[4],  gm[5],  gm[6],  gm[7],
+            gm[8],  gm[9],  gm[10], gm[11], gm[12], gm[13], gm[14], gm[15],
+            gm[16], gm[17], gm[18], gm[19], gm[20], gm[21], gm[22], gm[23],
+            gm[24], gm[25], gm[26], gm[27], gm[28], gm[29], gm[30], gm[31]
         );
         file << std::string(outs) << "\n";
     }

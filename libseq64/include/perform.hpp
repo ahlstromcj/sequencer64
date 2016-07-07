@@ -1072,7 +1072,7 @@ public:
     void set_mode_group_learn ();
     void unset_mode_group_learn ();
 
-    bool is_group_learning (void)
+    bool is_group_learning ()
     {
         return m_mode_group_learn;
     }

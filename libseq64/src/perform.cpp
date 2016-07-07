@@ -196,7 +196,13 @@ perform::perform (gui_assistant & mygui, int ppqn)
         m_seqs_active[i] = m_was_active_main[i] = m_was_active_edit[i] =
             m_was_active_perf[i] = m_was_active_names[i] = false;
     }
-    midi_control zero;                  /* all members false or 0   */
+    for (int i = 0; i < c_gmute_tracks; ++i)    // use c_sequence_max!
+        m_mute_group[i] = false;
+
+    for (int i = 0; i < c_seqs_in_set; ++i)
+        m_tracks_mute_state[i] = false;
+
+    midi_control zero;                      /* all members false or 0   */
     for (int i = 0; i < c_midi_controls; ++i)
     {
         m_midi_cc_toggle[i] = zero;
@@ -305,6 +311,28 @@ perform::clamp_track (int track) const
         track = m_seqs_in_set - 1;
 
     return track;
+}
+
+/**
+ * \getter m_mute_group[]
+ *      Returns true if there are any unmute statuses in the mute-group
+ *      array.  If they're all zero, we don't need to save them.
+ */
+
+bool
+perform::any_group_unmutes () const
+{
+    bool result = false;
+    const bool * mp = &m_mute_group[0];
+    for (int i = 0; i < c_gmute_tracks; ++i, ++mp)
+    {
+        if (*mp)
+        {
+            result = true;
+            break;
+        }
+    }
+    return result;
 }
 
 /**

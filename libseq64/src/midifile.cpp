@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-06-26
+ * \updates       2016-07-07
  * \license       GNU GPLv2 or above
  *
  *  For a quick guide to the MIDI format, see, for example:
@@ -1701,6 +1701,10 @@ midifile::write_proprietary_track (perform & p)
      */
 
     int gmutesz = 4 + c_seqs_in_set * (4 + c_seqs_in_set * 4);
+    if (! p.any_group_unmutes())
+    {
+        gmutesz = 0;
+    }
     if (m_new_format)                           /* calculate track size     */
     {
         tracklength += seq_number_size();       /* bogus sequence number    */
@@ -1709,7 +1713,9 @@ midifile::write_proprietary_track (perform & p)
         tracklength += prop_item_size(4);       /* c_midiclocks             */
         tracklength += prop_item_size(cnotesz); /* c_notes                  */
         tracklength += prop_item_size(4);       /* c_bpmtag, beats/minute   */
-        tracklength += prop_item_size(gmutesz); /* c_mutegroups             */
+        if (gmutesz > 0)
+            tracklength += prop_item_size(gmutesz); /* c_mutegroups         */
+
         if (m_global_bgsequence)
         {
             tracklength += prop_item_size(1);   /* c_musickey               */
@@ -1740,14 +1746,17 @@ midifile::write_proprietary_track (perform & p)
     }
     write_prop_header(c_bpmtag, 4);             /* bpm tag + long data      */
     write_long(p.get_beats_per_minute());       /* 4 bytes                  */
-    write_prop_header(c_mutegroups, gmutesz);   /* the mute groups tag etc. */
-    write_long(c_gmute_tracks);                 /* data, not a tag          */
-    for (int j = 0; j < c_seqs_in_set; ++j)     /* should be optional!      */
+    if (gmutesz > 0)
     {
-        p.select_group_mute(j);
-        write_long(j);
-        for (int i = 0; i < c_seqs_in_set; ++i)
-            write_long(p.get_group_mute_state(i));
+        write_prop_header(c_mutegroups, gmutesz);   /* mute groups tag etc. */
+        write_long(c_gmute_tracks);                 /* data, not a tag      */
+        for (int j = 0; j < c_seqs_in_set; ++j)     /* now is optional      */
+        {
+            p.select_group_mute(j);
+            write_long(j);
+            for (int i = 0; i < c_seqs_in_set; ++i)
+                write_long(p.get_group_mute_state(i));
+        }
     }
     if (m_new_format)                           /* write beginning of track */
     {

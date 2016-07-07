@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-07-06
+ * \updates       2016-07-07
  * \license       GNU GPLv2 or above
  *
  *  This class still has way too many members, even with the JACK and
@@ -1046,6 +1046,7 @@ public:
         return m_playing_screen;
     }
 
+    bool any_group_unmutes () const;
     void mute_group_tracks ();
     void select_and_mute_group (int g_group);
 

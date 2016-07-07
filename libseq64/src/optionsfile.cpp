@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-06-23
+ * \updates       2016-07-07
  * \license       GNU GPLv2 or above
  *
  *  The <code> ~/.seq24rc </code> or <code> ~/.config/sequencer64/sequencer64.rc
@@ -212,6 +212,7 @@ optionsfile::parse (perform & p)
      * we should modify that value, instead of the throw-away "sequences"
      * values.  Note that c_midi_controls is, in a roundabout way, defined
      * as 74.  See the old "dot-seq24rc" file in the contrib directory.
+     * We should do some testing on what happens if "sequences" is 0.
      */
 
     next_data_line(file);
@@ -238,37 +239,49 @@ optionsfile::parse (perform & p)
 
     line_after(file, "[mute-group]");               /* Group MIDI control */
     int gtrack = 0;
-    sscanf(m_line, "%d", &gtrack);                  /* value thrown away  */
-    next_data_line(file);
-    int gm[c_seqs_in_set];
 
     /*
-     * This loop is a bit odd.  We set groupmute, read it, increment it,
-     * and then read it again.  Issue?
+     * @change ca 2016-07-07
+     *  We used to throw this value away, but it is useful if
+     *  no mute groups have been created.  So, if it reads 0 (instead of
+     *  1024), we will assume there are no mute-group settings.
      */
 
-    int groupmute = 0;
-    for (int i = 0; i < c_seqs_in_set; ++i)
+    sscanf(m_line, "%d", &gtrack);
+    next_data_line(file);
+    if (gtrack > 0)
     {
-        p.select_group_mute(groupmute);
-        sscanf
-        (
-            m_line,
-            "%d [%d %d %d %d %d %d %d %d]"
-              " [%d %d %d %d %d %d %d %d]"
-              " [%d %d %d %d %d %d %d %d]"
-              " [%d %d %d %d %d %d %d %d]",
-            &groupmute,
-            &gm[0], &gm[1], &gm[2], &gm[3], &gm[4], &gm[5], &gm[6], &gm[7],
-            &gm[8], &gm[9], &gm[10], &gm[11], &gm[12], &gm[13], &gm[14], &gm[15],
-            &gm[16], &gm[17], &gm[18], &gm[19], &gm[20], &gm[21], &gm[22], &gm[23],
-            &gm[24], &gm[25], &gm[26], &gm[27], &gm[28], &gm[29], &gm[30], &gm[31]
-        );
-        for (int k = 0; k < c_seqs_in_set; ++k)
-            p.set_group_mute_state(k, gm[k]);
+        int gm[c_seqs_in_set];
 
-        ++groupmute;
-        next_data_line(file);
+        /*
+         * This loop is a bit odd.  We set groupmute, read it, increment it,
+         * and then read it again.  Issue?  Will fix when we have time to test
+         * it fully.
+         */
+
+        int groupmute = 0;
+        for (int i = 0; i < c_seqs_in_set; ++i)
+        {
+            p.select_group_mute(groupmute);
+            sscanf
+            (
+                m_line,
+                "%d [%d %d %d %d %d %d %d %d]"
+                  " [%d %d %d %d %d %d %d %d]"
+                  " [%d %d %d %d %d %d %d %d]"
+                  " [%d %d %d %d %d %d %d %d]",
+        &groupmute,
+        &gm[0],  &gm[1],  &gm[2],  &gm[3],  &gm[4],  &gm[5],  &gm[6],  &gm[7],
+        &gm[8],  &gm[9],  &gm[10], &gm[11], &gm[12], &gm[13], &gm[14], &gm[15],
+        &gm[16], &gm[17], &gm[18], &gm[19], &gm[20], &gm[21], &gm[22], &gm[23],
+        &gm[24], &gm[25], &gm[26], &gm[27], &gm[28], &gm[29], &gm[30], &gm[31]
+            );
+            for (int k = 0; k < c_seqs_in_set; ++k)
+                p.set_group_mute_state(k, gm[k]);
+
+            ++groupmute;
+            next_data_line(file);
+        }
     }
 
     line_after(file, "[midi-clock]");
@@ -653,28 +666,37 @@ optionsfile::write (const perform & p)
 
     file << "\n[mute-group]\n\n";
     int gm[c_seqs_in_set];
-    file <<  c_gmute_tracks << "    # group mute value count\n";
-    for (int seqj = 0; seqj < c_seqs_in_set; ++seqj)
+    int gmute_track_count = c_gmute_tracks;
+    if (! p.any_group_unmutes())
     {
-        ucperf.select_group_mute(seqj);
-        for (int seqi = 0; seqi < c_seqs_in_set; ++seqi)
+        printf("No active mute-group status, saving skipped\n");
+        gmute_track_count = 0;
+    }
+    file <<  gmute_track_count << "    # group mute value count\n";
+    if (gmute_track_count > 0)
+    {
+        for (int seqj = 0; seqj < c_seqs_in_set; ++seqj)
         {
-            gm[seqi] = ucperf.get_group_mute_state(seqi);
+            ucperf.select_group_mute(seqj);
+            for (int seqi = 0; seqi < c_seqs_in_set; ++seqi)
+            {
+                gm[seqi] = ucperf.get_group_mute_state(seqi);
+            }
+            snprintf
+            (
+                outs, sizeof(outs),
+                "%d [%1d %1d %1d %1d %1d %1d %1d %1d]"
+                " [%1d %1d %1d %1d %1d %1d %1d %1d]"
+                " [%1d %1d %1d %1d %1d %1d %1d %1d]"
+                " [%1d %1d %1d %1d %1d %1d %1d %1d]",
+                seqj,
+                gm[0],  gm[1],  gm[2],  gm[3],  gm[4],  gm[5],  gm[6],  gm[7],
+                gm[8],  gm[9],  gm[10], gm[11], gm[12], gm[13], gm[14], gm[15],
+                gm[16], gm[17], gm[18], gm[19], gm[20], gm[21], gm[22], gm[23],
+                gm[24], gm[25], gm[26], gm[27], gm[28], gm[29], gm[30], gm[31]
+            );
+            file << std::string(outs) << "\n";
         }
-        snprintf
-        (
-            outs, sizeof(outs),
-            "%d [%1d %1d %1d %1d %1d %1d %1d %1d]"
-            " [%1d %1d %1d %1d %1d %1d %1d %1d]"
-            " [%1d %1d %1d %1d %1d %1d %1d %1d]"
-            " [%1d %1d %1d %1d %1d %1d %1d %1d]",
-            seqj,
-            gm[0],  gm[1],  gm[2],  gm[3],  gm[4],  gm[5],  gm[6],  gm[7],
-            gm[8],  gm[9],  gm[10], gm[11], gm[12], gm[13], gm[14], gm[15],
-            gm[16], gm[17], gm[18], gm[19], gm[20], gm[21], gm[22], gm[23],
-            gm[24], gm[25], gm[26], gm[27], gm[28], gm[29], gm[30], gm[31]
-        );
-        file << std::string(outs) << "\n";
     }
 
     /*

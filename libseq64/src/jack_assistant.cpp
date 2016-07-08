@@ -176,6 +176,7 @@ jack_assistant::jack_assistant
     m_jack_parent               (parent),
     m_jack_client               (nullptr),
     m_jack_client_name          (),
+    m_jack_client_uuid          (),
     m_jack_frame_current        (0),
     m_jack_frame_last           (0),
     m_jack_pos                  (),
@@ -249,6 +250,54 @@ jack_assistant::error_message (const std::string & msg)
 }
 
 /**
+ *  Tries to obtain the best information on the JACK client and the UUID
+ *  assigned to this client.  Sets m_jack_client_name and m_jack_client_info
+ *  as side-effects.
+ */
+
+void
+jack_assistant::get_jack_client_info ()
+{
+    char * actualname = nullptr;
+    if (rc().jack_session_uuid().empty())
+    {
+        actualname = jack_get_client_name(m_jack_client);
+    }
+    else
+    {
+        /*
+         * Currently, this doesn't seem to work, no matter what
+         * is supplied as a UUID.  A null pointer is returned.  Still
+         * investigating.
+         */
+
+        const char * uuid = rc().jack_session_uuid().c_str();
+        actualname = jack_get_client_name_by_uuid(m_jack_client, uuid);
+    }
+    if (not_nullptr(actualname))
+        m_jack_client_name = actualname;
+    else
+        m_jack_client_name = SEQ64_PACKAGE;
+
+    char * actualuuid = jack_get_uuid_for_client_name
+    (
+        m_jack_client, m_jack_client_name.c_str()
+    );
+    if (not_nullptr(actualuuid))
+        m_jack_client_uuid = actualuuid;
+    else
+        m_jack_client_uuid = rc().jack_session_uuid();
+
+    std::string jinfo = m_jack_client_name;
+    if (! m_jack_client_uuid.empty())
+    {
+        jinfo += ":";
+        jinfo += m_jack_client_uuid;
+    }
+    (void) info_message(jinfo);
+}
+
+/**
  *  Initializes JACK support.  Then we become a new client of the JACK server.
  *
  *  A sync callback is needed for polling of slow-sync clients.  But
@@ -293,27 +342,7 @@ jack_assistant::init ()
         if (m_jack_client == NULL)
             return error_message("JACK server not running, JACK sync disabled");
 
-        char * actualname = nullptr;
-        if (rc().jack_session_uuid().empty())
-        {
-            actualname = jack_get_client_name(m_jack_client);
-        }
-        else
-        {
-            /*
-             * Currently, this doesn't seem to work, no matter what
-             * is supplied as a UUID.  A null pointer is returned.  Still
-             * investigating.
-             */
-
-            const char * uuid = rc().jack_session_uuid().c_str();
-            actualname = jack_get_client_name_by_uuid(m_jack_client, uuid);
-        }
-        if (not_nullptr(actualname))
-        {
-            m_jack_client_name = actualname;
-            (void) info_message(m_jack_client_name);
-        }
+        get_jack_client_info();
         jack_on_shutdown(m_jack_client, jack_shutdown_callback, (void *) this);
 
         int jackcode = jack_set_sync_callback
@@ -1317,10 +1346,12 @@ jack_assistant::show_position (const jack_position_t & pos) const
  *
  *      JackSessionID | JackServerName | JackNoStartServer | JackUseExactName
  *
+ *      Only the first is used at present.
+ *
  * \param clientname
  *      Provides the name of the client, used in the call to
- *      jack_client_open().  By default, this name is the macro PACKAGE (i.e.
- *      "sequencer64").  The name scope is local to each server. Unless
+ *      jack_client_open().  By default, this name is the macro SEQ64_PACKAGE
+ *      (i.e.  "sequencer64").  The name scope is local to each server. Unless
  *      forbidden by the JackUseExactName option, the server will modify this
  *      name to create a unique variant, if needed.
  *

@@ -174,11 +174,17 @@ private:
 
     /**
      *  A new member to hold the actual name of the client assigned by JACK.
-     *  We might show this in the user-interface at some point.  For now,
-     *  it is filled in only if the UUID option was specified.
+     *  We might show this in the user-interface at some point.
      */
 
     std::string m_jack_client_name;
+
+    /**
+     *  A new member to hold the actual UUID of the client assigned by JACK.
+     *  We might show this in the user-interface at some point.
+     */
+
+    std::string m_jack_client_uuid;
 
     /**
      *  Holds the current frame number obtained from JACK transport, via a
@@ -473,9 +479,19 @@ private:
         return m_jack_client_name;
     }
 
+    /**
+     * \getter m_jack_client_uuid
+     */
+
+    const std::string & client_uuid () const
+    {
+        return m_jack_client_uuid;
+    }
+
     bool info_message (const std::string & msg);
     bool error_message (const std::string & msg);
     jack_client_t * client_open (const std::string & clientname);
+    void get_jack_client_info ();
     void show_statuses (unsigned bits);
     void show_position (const jack_position_t & pos) const;
     int sync (jack_transport_state_t state = (jack_transport_state_t)(-1));

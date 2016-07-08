@@ -250,23 +250,33 @@ Life-cycle:
 
 Flow diagrams:
 
-    "rc" file ---> [mute-group] ---> select_group_mute(g) --->
+ o  "rc" file --->
+        [mute-group] --->
+        select_group_mute(g) --->
         m_mute_group_selected = g (we're not in learn mode) --->
         set_group_mute_state(track, gm[track]) for 32 sets --->
-            m_mute_group[mute_group_offset(track)] = muted;
-                           |
-                            ---> track + m_mute_group_selected * c_seqs_in_set;
+        m_mute_group[mute_group_offset(track)] = muted;
+                       |
+                        ---> track + m_mute_group_selected * c_seqs_in_set;
 
     In the other direction, we write c_gmute_tracks (1024),
     select_group_mute(g) for each of 32 groups, and write 32
     get_group_mute_state(track) values for each group.
 
-    MIDI file ---> c_mutegroups ---> length, must match c_gmute_tracks --->
+ o  MIDI file --->
+        c_mutegroups --->
+        length, must match c_gmute_tracks --->
         m_mute_group_selected = g (we're not in learn mode) --->
-        set_group_mute_state(track, mute != 0) --->
+        set_group_mute_state(track, mute != 0)
 
     Q:  What happens if we turn on learn mode, then read a MIDI file
         containing a c_mutegroups section?  Does not look like learn-mode
         makes a difference in this case.
+
+ o  L button --->
+        perform::learn_toggle()
+
+ o  mainwnd key "group_learn" in learn-mode --->
+        
 
 # vim: sw=4 ts=4 wm=8 et ft=rc

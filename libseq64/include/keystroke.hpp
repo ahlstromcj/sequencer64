@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-09-21
- * \updates       2016-05-15
+ * \updates       2016-07-08
  * \license       GNU GPLv2 or above
  *
  *  Most of the GUI modules are publicly derived from Gtk::DrawingArea,
@@ -148,6 +148,19 @@ public:
     unsigned int key () const
     {
         return m_key;
+    }
+
+    /**
+     * \setter m_key
+     *      If a lower-case letter, converted to upper-case.  Currently
+     *      assumes the ASCII character set. Will use the proper conversion
+     *      macro later.
+     */
+
+    void caps_lock ()
+    {
+        if (m_key >= 'a' && m_key <= 'z')
+            m_key -= 32;
     }
 
     /**

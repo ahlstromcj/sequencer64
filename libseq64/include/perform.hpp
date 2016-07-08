@@ -839,14 +839,15 @@ public:
         return m_is_paused && ! m_jack_asst.is_running();
     }
 
-    /**
+    /*
      * \getter m_mode_group_learn
-     */
+     *  Redundant, use is_group_learn().
 
     bool is_learn_mode () const
     {
         return m_mode_group_learn;
     }
+     */
 
     /**
      *  Adds a pointer to an object to be notified by this perform object.

@@ -1282,6 +1282,9 @@ mainwnd::on_delete_event (GdkEventAny * /*ev*/)
  *  Handles a key release event.  Is this worth turning into a switch
  *  statement?  Or offloading to a perform member function?  The latter.
  *
+ *  Also, we now effectively press the CAPS LOCK key for the user if in
+ *  group-learn mode.
+ *
  * \todo
  *      Test this functionality in old and new application.
  *
@@ -1293,6 +1296,9 @@ bool
 mainwnd::on_key_release_event (GdkEventKey * ev)
 {
     keystroke k(ev->keyval, SEQ64_KEYSTROKE_RELEASE);
+    if (perf().is_group_learning())
+        k.caps_lock();
+
     (void) perf().mainwnd_key_event(k);
     return false;
 }
@@ -1301,6 +1307,9 @@ mainwnd::on_key_release_event (GdkEventKey * ev)
  *  Handles a key press event.  It also handles the control-key and
  *  modifier-key combinations matching the entries in its list of if
  *  statements.
+ *
+ *  Also, we now effectively press the CAPS LOCK key for the user if in
+ *  group-learn mode.
  *
  * \todo
  *      Test this functionality in old and new application.
@@ -1319,32 +1328,35 @@ mainwnd::on_key_press_event (GdkEventKey * ev)
     if (CAST_EQUIVALENT(ev->type, SEQ64_KEY_PRESS))
     {
         keystroke k(ev->keyval, SEQ64_KEYSTROKE_PRESS);
+        if (perf().is_group_learning())
+            k.caps_lock();
+
         if (rc().print_keys())
         {
-            printf("key_press[%d]\n", ev->keyval);
+            printf("key_press[%d]\n", k.key());
             fflush(stdout);
         }
         if (! perf().mainwnd_key_event(k))          // EXPERIMENT
         {
-            if (ev->keyval == PREFKEY(bpm_dn))
+            if (k.key() == PREFKEY(bpm_dn))
             {
                 int newbpm = perf().decrement_beats_per_minute();
                 m_adjust_bpm->set_value(newbpm);
             }
-            else if (ev->keyval == PREFKEY(bpm_up))
+            else if (k.key() == PREFKEY(bpm_up))
             {
                 int newbpm = perf().increment_beats_per_minute();
                 m_adjust_bpm->set_value(newbpm);
             }
 
-            if (ev->keyval == PREFKEY(screenset_dn))
+            if (k.key() == PREFKEY(screenset_dn))
             {
                 int newss = perf().decrement_screenset();
                 m_main_wid->set_screenset(newss);
                 m_adjust_ss->set_value(newss);
                 m_entry_notes->set_text(perf().current_screen_set_notepad());
             }
-            else if (ev->keyval == PREFKEY(screenset_up))
+            else if (k.key() == PREFKEY(screenset_up))
             {
                 int newss = perf().increment_screenset();
                 m_main_wid->set_screenset(newss);
@@ -1353,23 +1365,27 @@ mainwnd::on_key_press_event (GdkEventKey * ev)
             }
         }
 
-        if (perf().get_key_groups().count(ev->keyval) != 0)
+        /*
+         * Need to change ev->keyvalue to k.key() in all of these.
+         */
+
+        if (perf().get_key_groups().count(k.key()) != 0)
         {
             perf().select_and_mute_group        /* activate mute group key  */
             (
-                perf().lookup_keygroup_group(ev->keyval)
+                perf().lookup_keygroup_group(k.key())
             );
         }
 
-        bool mgl = perf().is_learn_mode() && ev->keyval != PREFKEY(group_learn);
+        bool mgl = perf().is_group_learning() && k.key() != PREFKEY(group_learn);
         if (mgl)                                /* mute group learn         */
         {
-            if (perf().get_key_groups().count(ev->keyval) != 0)
+            if (perf().get_key_groups().count(k.key()) != 0)
             {
                 std::ostringstream os;
                 os
-                    << "Key '" << keyval_name(ev->keyval)   // gdk_
-                    << "' (code = " << ev->keyval << ") successfully mapped."
+                    << "Key '" << keyval_name(k.key())   // gdk_
+                    << "' (code = " << k.key() << ") successfully mapped."
                    ;
 
                 Gtk::MessageDialog dialog
@@ -1390,10 +1406,10 @@ mainwnd::on_key_press_event (GdkEventKey * ev)
             {
                 std::ostringstream os;
                 os
-                    << "Key '" << keyval_name(ev->keyval)   // gdk_
-                    << "' (code = " << ev->keyval
-                    << ") is not one of the configured mute-group keys.\n"
-                    << "To change this see File/Options menu or the rc file."
+                    << "Key '" << keyval_name(k.key())
+                    << "' (code = " << k.key()
+                    << ") is not one of the configured mute-group keys. "
+                    << "To change it, see File/Options menu or the rc file."
                    ;
 
                 Gtk::MessageDialog dialog
@@ -1405,8 +1421,7 @@ mainwnd::on_key_press_event (GdkEventKey * ev)
                 dialog.run();
 
                 /*
-                 * Missed the key-up message for group-learn, so force it
-                 * to off.
+                 * Missed the key-up message for group-learn, so force it off.
                  */
 
                 perf().unset_mode_group_learn();
@@ -1431,13 +1446,13 @@ mainwnd::on_key_press_event (GdkEventKey * ev)
              *      shortcut key is pressed.
              */
 
-            if (perf().get_key_events().count(ev->keyval) != 0)
+            if (perf().get_key_events().count(k.key()) != 0)
             {
                 guint modifiers = gtk_accelerator_get_default_mod_mask();
                 bool ok = (ev->state & modifiers) != SEQ64_CONTROL_MASK;
                 if (ok)
                 {
-                    int seqnum = perf().lookup_keyevent_seq(ev->keyval);
+                    int seqnum = perf().lookup_keyevent_seq(k.key());
                     if (m_call_seq_edit)
                     {
                         m_call_seq_edit = false;
@@ -1454,9 +1469,9 @@ mainwnd::on_key_press_event (GdkEventKey * ev)
             }
             else
             {
-                if (ev->keyval == PREFKEY(pattern_edit))
+                if (k.key() == PREFKEY(pattern_edit))
                     m_call_seq_edit = ! m_call_seq_edit;
-                else if (ev->keyval == PREFKEY(event_edit))
+                else if (k.key() == PREFKEY(event_edit))
                     m_call_seq_eventedit = ! m_call_seq_eventedit;
                 else
                     m_call_seq_edit = m_call_seq_eventedit = false; ////////

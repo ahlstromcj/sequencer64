@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-14
- * \updates       2016-06-15
+ * \updates       2016-07-08
  * \license       GNU GPLv2 or above
  *
  *  This module was created from code that existed in the perform object.
@@ -175,6 +175,7 @@ jack_assistant::jack_assistant
 ) :
     m_jack_parent               (parent),
     m_jack_client               (nullptr),
+    m_jack_client_name          (),
     m_jack_frame_current        (0),
     m_jack_frame_last           (0),
     m_jack_pos                  (),
@@ -292,6 +293,27 @@ jack_assistant::init ()
         if (m_jack_client == NULL)
             return error_message("JACK server not running, JACK sync disabled");
 
+        char * actualname = nullptr;
+        if (rc().jack_session_uuid().empty())
+        {
+            actualname = jack_get_client_name(m_jack_client);
+        }
+        else
+        {
+            /*
+             * Currently, this doesn't seem to work, no matter what
+             * is supplied as a UUID.  A null pointer is returned.  Still
+             * investigating.
+             */
+
+            const char * uuid = rc().jack_session_uuid().c_str();
+            actualname = jack_get_client_name_by_uuid(m_jack_client, uuid);
+        }
+        if (not_nullptr(actualname))
+        {
+            m_jack_client_name = actualname;
+            (void) info_message(m_jack_client_name);
+        }
         jack_on_shutdown(m_jack_client, jack_shutdown_callback, (void *) this);
 
         int jackcode = jack_set_sync_callback
@@ -1291,9 +1313,16 @@ jack_assistant::show_position (const jack_position_t & pos) const
  *      the caller is now connected to jackd, so there is no race condition.
  *      When the server shuts down, the client will find out.
  *
+ * JackOpenOptions:
+ *
+ *      JackSessionID | JackServerName | JackNoStartServer | JackUseExactName
+ *
  * \param clientname
  *      Provides the name of the client, used in the call to
- *      jack_client_open().
+ *      jack_client_open().  By default, this name is the macro PACKAGE (i.e.
+ *      "sequencer64").  The name scope is local to each server. Unless
+ *      forbidden by the JackUseExactName option, the server will modify this
+ *      name to create a unique variant, if needed.
  *
  * \return
  *      Returns a pointer to the JACK client if JACK has opened the client

@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-07-23
- * \updates       2016-05-17
+ * \updates       2016-07-08
  * \license       GNU GPLv2 or above
  *
  *  This class contains a number of functions that used to reside in the
@@ -171,6 +171,14 @@ private:
      */
 
     jack_client_t * m_jack_client;
+
+    /**
+     *  A new member to hold the actual name of the client assigned by JACK.
+     *  We might show this in the user-interface at some point.  For now,
+     *  it is filled in only if the UUID option was specified.
+     */
+
+    std::string m_jack_client_name;
 
     /**
      *  Holds the current frame number obtained from JACK transport, via a
@@ -454,6 +462,15 @@ private:
     jack_client_t * client () const
     {
         return m_jack_client;
+    }
+
+    /**
+     * \getter m_jack_client_name
+     */
+
+    const std::string & client_name () const
+    {
+        return m_jack_client_name;
     }
 
     bool info_message (const std::string & msg);

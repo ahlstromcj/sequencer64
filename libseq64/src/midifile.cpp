@@ -415,9 +415,6 @@ midifile::parse (perform & p, int screenset)
         if (result && screenset != 0)
              p.modify();                            /* modification flag    */
     }
-#ifdef SEQ64_USE_DEBUG_OUTPUT
-    p.print_triggers();
-#endif
     return result;
 }
 
@@ -806,15 +803,6 @@ midifile::parse_smf_1 (perform & p, int screenset, bool is_smf0)
                                 seq.set_beats_per_bar(bpm);
                                 seq.set_beat_width(bw);
 #endif
-
-#ifdef SEQ64_USE_DEBUG_OUTPUT
-                                printf
-                                (
-                                    "Time Signature set to %d/%d\n",
-                                    int(seq.get_beats_per_bar()),
-                                    int(seq.get_beat_width())
-                                );
-#endif
                             }
                             else
                                 m_pos += len;           /* eat it           */
@@ -837,9 +825,6 @@ midifile::parse_smf_1 (perform & p, int screenset, bool is_smf0)
                                 p.set_beats_per_minute(bpm);
 #ifdef SEQ64_HANDLE_TIMESIG_AND_TEMPO
                                 seq.us_per_quarter_note(int(tt));
-#endif
-#ifdef SEQ64_USE_DEBUG_OUTPUT
-                                printf("BPM set to %d\n", bpm);
 #endif
                             }
                             else
@@ -1254,24 +1239,10 @@ midifile::parse_proprietary_track (perform & p, int file_size)
             {
                 midilong groupmute = read_long();
                 p.select_group_mute(int(groupmute));
-#ifdef SEQ64_USE_DEBUG_OUTPUT
-                if (groupmute != 0)
-                    fprintf(stderr, "group-mute[%d] = %ld\n", i, groupmute);
-#endif
                 for (int k = 0; k < c_seqs_in_set; ++k)
                 {
                     midilong gmutestate = read_long();
                     p.set_group_mute_state(k, gmutestate != 0);
-#ifdef SEQ64_USE_DEBUG_OUTPUT
-                    if (gmutestate != 0)
-                    {
-                        fprintf
-                        (
-                            stderr, "group-mute-state[%d] = %ld\n",
-                            k, gmutestate
-                        );
-                    }
-#endif
                 }
             }
         }

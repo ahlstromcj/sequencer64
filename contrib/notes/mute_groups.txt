@@ -218,7 +218,6 @@ Life-cycle:
 
         key == keys().group_learn()
             unset_mode_group_learn();
-
             
             bool m_mode_group
             bool m_mode_group_learn
@@ -265,9 +264,9 @@ Flow diagrams:
     MIDI file ---> c_mutegroups ---> length, must match c_gmute_tracks --->
         m_mute_group_selected = g (we're not in learn mode) --->
         set_group_mute_state(track, mute != 0) --->
-        
 
     Q:  What happens if we turn on learn mode, then read a MIDI file
-        containing a c_mutegroups section?
+        containing a c_mutegroups section?  Does not look like learn-mode
+        makes a difference in this case.
 
 # vim: sw=4 ts=4 wm=8 et ft=rc

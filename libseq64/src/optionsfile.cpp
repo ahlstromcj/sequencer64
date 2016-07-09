@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-07-07
+ * \updates       2016-07-09
  * \license       GNU GPLv2 or above
  *
  *  The <code> ~/.seq24rc </code> or <code> ~/.config/sequencer64/sequencer64.rc
@@ -667,11 +667,21 @@ optionsfile::write (const perform & p)
     file << "\n[mute-group]\n\n";
     int gm[c_seqs_in_set];
     int gmute_track_count = c_gmute_tracks;
+
+#ifdef SEQ64_STRIP_EMPTY_MUTES
+
+    /*
+     * This option currently causes issues !!!
+     */
+
     if (! p.any_group_unmutes())
     {
         printf("No active mute-group status, saving skipped\n");
         gmute_track_count = 0;
     }
+
+#endif  // SEQ64_STRIP_EMPTY_MUTES
+
     file <<  gmute_track_count << "    # group mute value count\n";
     if (gmute_track_count > 0)
     {

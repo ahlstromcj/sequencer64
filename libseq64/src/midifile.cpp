@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-07-07
+ * \updates       2016-07-09
  * \license       GNU GPLv2 or above
  *
  *  For a quick guide to the MIDI format, see, for example:
@@ -1672,10 +1672,20 @@ midifile::write_proprietary_track (perform & p)
      */
 
     int gmutesz = 4 + c_seqs_in_set * (4 + c_seqs_in_set * 4);
+
+#ifdef SEQ64_STRIP_EMPTY_MUTES
+
+    /*
+     * This option currently causes issues !!!
+     */
+
     if (! p.any_group_unmutes())
     {
         gmutesz = 0;
     }
+
+#endif  // SEQ64_STRIP_EMPTY_MUTES
+
     if (m_new_format)                           /* calculate track size     */
     {
         tracklength += seq_number_size();       /* bogus sequence number    */

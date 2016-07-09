@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-06-26
+ * \updates       2016-07-08
  * \license       GNU GPLv2 or above
  *
  *  The main window holds the menu and the main controls of the application,
@@ -1449,6 +1449,11 @@ mainwnd::on_key_press_event (GdkEventKey * ev)
             if (perf().get_key_events().count(k.key()) != 0)
             {
                 guint modifiers = gtk_accelerator_get_default_mod_mask();
+
+                /*
+                 * This mask test doesn't seem right!
+                 */
+
                 bool ok = (ev->state & modifiers) != SEQ64_CONTROL_MASK;
                 if (ok)
                 {
@@ -1474,7 +1479,22 @@ mainwnd::on_key_press_event (GdkEventKey * ev)
                 else if (k.key() == PREFKEY(event_edit))
                     m_call_seq_eventedit = ! m_call_seq_eventedit;
                 else
-                    m_call_seq_edit = m_call_seq_eventedit = false; ////////
+                {
+                    m_call_seq_edit = m_call_seq_eventedit = false;
+
+                    /*
+                     * EXPERIMENTAL:  Use Ctrl-L to toggle the group-learn mode.
+                     * Similar to Ctrl-E to bring up the Song Editor.
+                     */
+
+                    guint modifiers = gtk_accelerator_get_default_mod_mask();
+                    if
+                    (
+                        k.key() == SEQ64_l &&
+                        (ev->state & modifiers) == SEQ64_CONTROL_MASK
+                    )
+                        perf().learn_toggle();
+                }
             }
         }
     }

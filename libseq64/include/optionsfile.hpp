@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-09-26
+ * \updates       2016-07-09
  * \license       GNU GPLv2 or above
  *
  *  The ~/.seq24rc or ~/.config/sequencer64/sequencer64.rc files are
@@ -58,6 +58,10 @@ public:
 
     bool parse (perform & perf);
     bool write (const perform & perf);
+
+private:
+
+    bool error_message (const std::string & sectionname);
 
 };
 

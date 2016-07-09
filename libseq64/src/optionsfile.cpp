@@ -90,6 +90,26 @@ optionsfile::~optionsfile ()
 }
 
 /**
+ *  Helper function for error-handling.
+ *
+ * \param sectionname
+ *      Provides the name of the section for reporting the error.
+ *
+ * \return
+ *      Always returns false.
+ */
+
+bool
+optionsfile::error_message (const std::string & sectionname)
+{
+    std::string msg = "BAD DATA after [";
+    msg += sectionname;
+    msg += "], should ABORT";
+    errprint(msg.c_str());
+    return false;
+}
+
+/**
  *  Parse the ~/.seq24rc or ~/.config/sequencer64/sequencer64.rc file.
  *
  *  [midi-control]
@@ -215,7 +235,10 @@ optionsfile::parse (perform & p)
      * We should do some testing on what happens if "sequences" is 0.
      */
 
-    next_data_line(file);
+    bool ok = next_data_line(file);
+    if (! ok)
+        return error_message("midi-control");
+
     for (unsigned i = 0; i < sequences; ++i)    /* 0 to c_midi_controls-1 */
     {
         int sequence = 0;
@@ -223,7 +246,7 @@ optionsfile::parse (perform & p)
         sscanf
         (
             m_line,
-            "%d [ %d %d %d %d %d %d ]"          /* [ %d %d %ld %ld %ld %ld ] */
+            "%d [ %d %d %d %d %d %d ]"
               " [ %d %d %d %d %d %d ]"
               " [ %d %d %d %d %d %d ]",
             &sequence,
@@ -234,10 +257,12 @@ optionsfile::parse (perform & p)
         p.midi_control_toggle(i).set(a);
         p.midi_control_on(i).set(b);
         p.midi_control_off(i).set(c);
-        next_data_line(file);
+        ok = next_data_line(file);
+        if (! ok && i < (sequences - 1))
+            return error_message("midi-control data line");
     }
 
-    line_after(file, "[mute-group]");               /* Group MIDI control */
+    line_after(file, "[mute-group]");               /* Group MIDI control   */
     int gtrack = 0;
 
     /*
@@ -248,8 +273,20 @@ optionsfile::parse (perform & p)
      */
 
     sscanf(m_line, "%d", &gtrack);
-    next_data_line(file);
-    if (gtrack > 0)
+
+#ifdef SEQ64_STRIP_EMPTY_MUTES
+    ok = gtrack == 0 ||
+        gtrack == SEQ64_DEFAULT_SET_MAX * SEQ64_SET_KEYS_MAX;       /* 1024 */
+#else
+    ok = next_data_line(file);
+    if (ok)
+        ok = gtrack == SEQ64_DEFAULT_SET_MAX * SEQ64_SET_KEYS_MAX;  /* 1024 */
+
+    if (! ok)
+        return error_message("mute-group");
+#endif
+
+    if (ok && gtrack > 0)
     {
         int gm[c_seqs_in_set];
 
@@ -280,26 +317,35 @@ optionsfile::parse (perform & p)
                 p.set_group_mute_state(k, gm[k]);
 
             ++groupmute;
-            next_data_line(file);
+            ok = next_data_line(file);
+            if (! ok && i < (c_seqs_in_set - 1))
+                return error_message("mute-group data line");
         }
     }
 
     line_after(file, "[midi-clock]");
     long buses = 0;
     sscanf(m_line, "%ld", &buses);
-    next_data_line(file);
+    ok = next_data_line(file) && buses > 0 && buses <= SEQ64_DEFAULT_BUSS_MAX;
+    if (! ok)
+        return error_message("midi-clock");
+
     for (int i = 0; i < buses; ++i)
     {
         long bus_on, bus;
         sscanf(m_line, "%ld %ld", &bus, &bus_on);
         p.master_bus().set_clock(bus, (clock_e) bus_on);
-        next_data_line(file);
+        ok = next_data_line(file);
+        if (! ok && i < (buses - 1))
+            return error_message("midi-clock data line");
     }
 
     line_after(file, "[keyboard-control]");
     long keys = 0;
     sscanf(m_line, "%ld", &keys);
-    next_data_line(file);
+    ok = next_data_line(file) && keys > 0 && keys <= SEQ64_SET_KEYS_MAX;
+    if (! ok)
+        return error_message("keyboard-control");
 
     /*
      * Bug involving the optionsfile and perform modules:  At the
@@ -312,41 +358,34 @@ optionsfile::parse (perform & p)
      */
 
     p.get_key_events().clear();
-    p.get_key_events_rev().clear();       // \new ca 2015-09-16
-    if (keys > 0)
+    p.get_key_events_rev().clear();
+    for (int i = 0; i < keys; ++i)
     {
-        for (int i = 0; i < keys; ++i)
-        {
-            long key = 0, seq = 0;
-            sscanf(m_line, "%ld %ld", &key, &seq);
-            p.set_key_event(key, seq);
-            next_data_line(file);
-        }
-    }
-    else
-    {
-        // TODO
+        long key = 0, seq = 0;
+        sscanf(m_line, "%ld %ld", &key, &seq);
+        p.set_key_event(key, seq);
+        ok = next_data_line(file);
+        if (! ok && i < (keys - 1))
+            return error_message("keyboard-control data line");
     }
 
     line_after(file, "[keyboard-group]");
     long groups = 0;
     sscanf(m_line, "%ld", &groups);
-    next_data_line(file);
+    ok = next_data_line(file) && groups > 0 && groups <= SEQ64_SET_KEYS_MAX;
+    if (! ok)
+        return error_message("keyboard-group");
+
     p.get_key_groups().clear();
     p.get_key_groups_rev().clear();       // \new ca 2015-09-16
-    if (groups > 0)
+    for (int i = 0; i < groups; ++i)
     {
-        for (int i = 0; i < groups; ++i)
-        {
-            long key = 0, group = 0;
-            sscanf(m_line, "%ld %ld", &key, &group);
-            p.set_key_group(key, group);
-            next_data_line(file);
-        }
-    }
-    else
-    {
-        // TODO
+        long key = 0, group = 0;
+        sscanf(m_line, "%ld %ld", &key, &group);
+        p.set_key_group(key, group);
+        ok = next_data_line(file);
+        if (! ok && i < (groups - 1))
+            return error_message("keyboard-group data line");
     }
 
     keys_perform_transfer ktx;
@@ -668,10 +707,11 @@ optionsfile::write (const perform & p)
     int gm[c_seqs_in_set];
     int gmute_track_count = c_gmute_tracks;
 
-#ifdef SEQ64_STRIP_EMPTY_MUTES
-
     /*
-     * This option currently causes issues !!!
+     * We might as well save the empty mutes in the "rc" configuration file,
+     * even if we don't save empty mutes to the MIDI file.  This is less
+     * confusing to the user, especially if issues with the mute groups occur.
+     * We do save the mute-group of 0 if it applies.
      */
 
     if (! p.any_group_unmutes())
@@ -679,19 +719,15 @@ optionsfile::write (const perform & p)
         printf("No active mute-group status, saving skipped\n");
         gmute_track_count = 0;
     }
-
-#endif  // SEQ64_STRIP_EMPTY_MUTES
-
-    file <<  gmute_track_count << "    # group mute value count\n";
-    if (gmute_track_count > 0)
+    file << gmute_track_count << "    # group mute value count (0 or 1024)\n";
+    if (c_gmute_tracks > 0)
     {
         for (int seqj = 0; seqj < c_seqs_in_set; ++seqj)
         {
             ucperf.select_group_mute(seqj);
             for (int seqi = 0; seqi < c_seqs_in_set; ++seqi)
-            {
                 gm[seqi] = ucperf.get_group_mute_state(seqi);
-            }
+
             snprintf
             (
                 outs, sizeof(outs),

@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-06-10
+ * \updates       2016-07-09
  * \license       GNU GPLv2 or above
  *
  *  Note that there are a number of header files that we don't need to add
@@ -110,6 +110,12 @@ main (int argc, char * argv [])
     int optionindex = SEQ64_NULL_OPTION_INDEX;
     if (! is_help)
     {
+        /*
+         * TODO:  If parsing fails at all, we need to report it and
+         *        disable usage of the application and saving bad garbage
+         *        out when exiting.
+         */
+
         ok = seq64::parse_options_files(p, argc, argv);
         if (ok)
             optionindex = seq64::parse_command_line_options(argc, argv);
@@ -142,7 +148,10 @@ main (int argc, char * argv [])
         kit.run(seq24_window);                  /* run until user quits     */
         p.finish();                             /* tear down performance    */
         if (seq64::rc().auto_option_save())
-            ok = seq64::write_options_files(p);
+        {
+            if (ok)                             /* don't write bad stuff    */
+                ok = seq64::write_options_files(p);
+        }
         else
             printf("[auto-option-save is off, so not saving config files]\n");
 

@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-07-07
+ * \updates       2016-07-09
  * \license       GNU GPLv2 or above
  *
  *  This class still has way too many members, even with the JACK and
@@ -63,6 +63,14 @@
  */
 
 #define SEQ64_EDIT_SEQUENCE_HIGHLIGHT
+
+/**
+ *  EXPERIMENTAL.
+ *  If no mute-group value in any of the 1024 sequences possible is found,
+ *  then let's not save them.
+ */
+
+#define SEQ64_STRIP_EMPTY_MUTES         // currently causes ISSUES
 
 /**
  *  We have offloaded the keybinding support to another class, derived

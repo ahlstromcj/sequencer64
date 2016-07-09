@@ -70,7 +70,7 @@
  *  then let's not save them.
  */
 
-#define SEQ64_STRIP_EMPTY_MUTES         // currently causes ISSUES
+#undef  SEQ64_STRIP_EMPTY_MUTES         // currently causes ISSUES
 
 /**
  *  We have offloaded the keybinding support to another class, derived

@@ -714,13 +714,16 @@ optionsfile::write (const perform & p)
      * We do save the mute-group of 0 if it applies.
      */
 
+#ifdef SEQ64_STRIP_EMPTY_MUTES_XXX          // keep it disabled
     if (! p.any_group_unmutes())
     {
         printf("No active mute-group status, saving skipped\n");
         gmute_track_count = 0;
     }
+#endif
+
     file << gmute_track_count << "    # group mute value count (0 or 1024)\n";
-    if (c_gmute_tracks > 0)
+    if (gmute_track_count > 0)
     {
         for (int seqj = 0; seqj < c_seqs_in_set; ++seqj)
         {

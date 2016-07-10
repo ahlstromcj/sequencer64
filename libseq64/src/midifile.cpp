@@ -1675,16 +1675,13 @@ midifile::write_proprietary_track (perform & p)
 
 #ifdef SEQ64_STRIP_EMPTY_MUTES
 
-    /*
-     * This option currently causes issues !!!
-     */
-
-    if (! p.any_group_unmutes())
+    if (! rc().legacy_format())
     {
-        gmutesz = 0;
+        if (! p.any_group_unmutes())
+            gmutesz = 0;
     }
 
-#endif  // SEQ64_STRIP_EMPTY_MUTES
+#endif
 
     if (m_new_format)                           /* calculate track size     */
     {

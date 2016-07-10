@@ -1,6 +1,6 @@
 INSTALL for Sequencer64 v. 0.9.16
 Chris Ahlstrom
-2015-09-10 to 2016-07-04
+2015-09-10 to 2016-07-10
 
 The current packaging for Sequencer64 is primarily aimed at developers.
 There is currently no configure script... it must be bootstrapped.
@@ -83,6 +83,7 @@ CONFIGURE OPTIONS FOR APPLICATION FEATURES:
         SEQ64_PAUSE_SUPPORT
         SEQ64_STAZED_CHORD_GENERATOR
         SEQ64_STAZED_TRANSPOSE
+        SEQ64_STRIP_EMPTY_MUTES
 
     --disable-highlight
 
@@ -120,20 +121,32 @@ CONFIGURE OPTIONS FOR APPLICATION FEATURES:
 
     --disable-chords
 
-        Undefines the SEQ64_STAZED_CHORD_GENERATOR.  If this macro is defined,
-        then the application is built with support for a Chord button in the
-        pattern editor, which enables entering whole chords with a single
-        click.  This feature is grabbed from https://github.com/Stazed/seq32.
+        Undefines the SEQ64_STAZED_CHORD_GENERATOR macro.  If this macro is
+        defined, then the application is built with support for a Chord button
+        in the pattern editor, which enables entering whole chords with a
+        single click.  This feature is grabbed from
+        https://github.com/Stazed/seq32.
 
     --disable-transpose
 
-        Undefines the SEQ64_STAZED_TRNASPOSE.  If this macro is defined, then
-        the application is built with support for transpose buttons in the
-        pattern and song editors, which enable transposing whole songs, or
+        Undefines the SEQ64_STAZED_TRANSPOSE macro.  If this macro is defined,
+        then the application is built with support for transpose buttons in
+        the pattern and song editors, which enable transposing whole songs, or
         just sequences that are marked as transposable.  This feature is
         grabbed from https://github.com/Stazed/seq32.  It does not affect the
         ability to select notes and transpose them individually.  It doe
         affect Aftertouch events.
+
+    --disable-mutestrip
+
+        Undefines the SEQ64_STRIP_EMPTY_MUTES macro.  If this macro is
+        defined, then the application is built to strip out the whole
+        Seq24/Sequencer64-specific mute-groups section if all 1024 of them are
+        false (muted or unarmed).  Note that, for now, this section is still
+        in the "rc" configuration file, even if all entries are 0, because
+        saving 4096 bytes in a single file is not too useful.  Note that this
+        feature, even if enabled, is not used if Sequencer64 is run in
+        "legacy" mode.
 
 MANUALLY-DEFINED MACROS IN CODE:
 
@@ -164,8 +177,8 @@ MANUALLY-DEFINED MACROS IN CODE:
 
     SEQ64_USE_NEW_FONT:
 
-        OBSOLETE:  now an option that can be changed in the user-settings
-        ("user") configuration file.
+        OBSOLETE:  now a run-time option that can be changed in the
+        user-settings ("user") configuration file.
 
         Already defined in the font module.  If defined, a new, anti-aliased,
         bold font is used in the user-interface.  This new font is implemented
@@ -238,11 +251,13 @@ MANUALLY-DEFINED MACROS IN CODE:
         It is an extra complication for usage and testing, as well.
 
     USE_xxxxxx:
+    SEQ64_xxxxxx_XXX:
 
         This category of macro are usually undefined values that let us keep
         old code around in case we decide it was the better code after all.
         Generally, you do not want to change the status of these macros unless
-        you are very familiar with the code.
+        you are very familiar with the code and willing to temporarily break
+        stuff.
 
 DEPENDENCIES:
 

@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-07-09
+ * \updates       2016-07-10
  * \license       GNU GPLv2 or above
  *
  *  The <code> ~/.seq24rc </code> or <code> ~/.config/sequencer64/sequencer64.rc
@@ -307,11 +307,11 @@ optionsfile::parse (perform & p)
                   " [%d %d %d %d %d %d %d %d]"
                   " [%d %d %d %d %d %d %d %d]"
                   " [%d %d %d %d %d %d %d %d]",
-        &groupmute,
-        &gm[0],  &gm[1],  &gm[2],  &gm[3],  &gm[4],  &gm[5],  &gm[6],  &gm[7],
-        &gm[8],  &gm[9],  &gm[10], &gm[11], &gm[12], &gm[13], &gm[14], &gm[15],
-        &gm[16], &gm[17], &gm[18], &gm[19], &gm[20], &gm[21], &gm[22], &gm[23],
-        &gm[24], &gm[25], &gm[26], &gm[27], &gm[28], &gm[29], &gm[30], &gm[31]
+    &groupmute,
+    &gm[0],  &gm[1],  &gm[2],  &gm[3],  &gm[4],  &gm[5],  &gm[6],  &gm[7],
+    &gm[8],  &gm[9],  &gm[10], &gm[11], &gm[12], &gm[13], &gm[14], &gm[15],
+    &gm[16], &gm[17], &gm[18], &gm[19], &gm[20], &gm[21], &gm[22], &gm[23],
+    &gm[24], &gm[25], &gm[26], &gm[27], &gm[28], &gm[29], &gm[30], &gm[31]
             );
             for (int k = 0; k < c_seqs_in_set; ++k)
                 p.set_group_mute_state(k, gm[k]);
@@ -596,7 +596,7 @@ optionsfile::write (const perform & p)
     else
     {
         file <<
-            "# Sequencer64 0.9.13 (and above) rc configuration file\n"
+            "# Sequencer64 0.9.16 (and above) rc configuration file\n"
             "#\n"
             "# This file holds the main configuration options for Sequencer64.\n"
             "# It follows the format of the legacy seq24 'rc' configuration\n"
@@ -705,47 +705,49 @@ optionsfile::write (const perform & p)
 
     file << "\n[mute-group]\n\n";
     int gm[c_seqs_in_set];
-    int gmute_track_count = c_gmute_tracks;
 
     /*
      * We might as well save the empty mutes in the "rc" configuration file,
      * even if we don't save empty mutes to the MIDI file.  This is less
-     * confusing to the user, especially if issues with the mute groups occur.
-     * We do save the mute-group of 0 if it applies.
+     * confusing to the user, especially if issues with the mute groups occur,
+     * and is not a lot of space to waste, it's just one file.  We do save the
+     * mute-group of 0 if it applies.
      */
 
-#ifdef SEQ64_STRIP_EMPTY_MUTES_XXX          // keep it disabled
-    if (! p.any_group_unmutes())
+#ifdef SEQ64_STRIP_EMPTY_MUTES
+    if (rc().legacy_format())
     {
-        printf("No active mute-group status, saving skipped\n");
-        gmute_track_count = 0;
+        file << c_gmute_tracks << "    # group mute value count (0 or 1024)\n";
     }
+    else
+    {
+        if (! p.any_group_unmutes())
+            file << 0 << "       # group mute value count (0 or 1024)\n";
+    }
+#else
+    file << c_gmute_tracks << "    # group mute value count (0 or 1024)\n";
 #endif
 
-    file << gmute_track_count << "    # group mute value count (0 or 1024)\n";
-    if (gmute_track_count > 0)
+    for (int seqj = 0; seqj < c_seqs_in_set; ++seqj)
     {
-        for (int seqj = 0; seqj < c_seqs_in_set; ++seqj)
-        {
-            ucperf.select_group_mute(seqj);
-            for (int seqi = 0; seqi < c_seqs_in_set; ++seqi)
-                gm[seqi] = ucperf.get_group_mute_state(seqi);
+        ucperf.select_group_mute(seqj);
+        for (int seqi = 0; seqi < c_seqs_in_set; ++seqi)
+            gm[seqi] = ucperf.get_group_mute_state(seqi);
 
-            snprintf
-            (
-                outs, sizeof(outs),
-                "%d [%1d %1d %1d %1d %1d %1d %1d %1d]"
-                " [%1d %1d %1d %1d %1d %1d %1d %1d]"
-                " [%1d %1d %1d %1d %1d %1d %1d %1d]"
-                " [%1d %1d %1d %1d %1d %1d %1d %1d]",
-                seqj,
-                gm[0],  gm[1],  gm[2],  gm[3],  gm[4],  gm[5],  gm[6],  gm[7],
-                gm[8],  gm[9],  gm[10], gm[11], gm[12], gm[13], gm[14], gm[15],
-                gm[16], gm[17], gm[18], gm[19], gm[20], gm[21], gm[22], gm[23],
-                gm[24], gm[25], gm[26], gm[27], gm[28], gm[29], gm[30], gm[31]
-            );
-            file << std::string(outs) << "\n";
-        }
+        snprintf
+        (
+            outs, sizeof(outs),
+            "%d [%1d %1d %1d %1d %1d %1d %1d %1d]"
+            " [%1d %1d %1d %1d %1d %1d %1d %1d]"
+            " [%1d %1d %1d %1d %1d %1d %1d %1d]"
+            " [%1d %1d %1d %1d %1d %1d %1d %1d]",
+            seqj,
+            gm[0],  gm[1],  gm[2],  gm[3],  gm[4],  gm[5],  gm[6],  gm[7],
+            gm[8],  gm[9],  gm[10], gm[11], gm[12], gm[13], gm[14], gm[15],
+            gm[16], gm[17], gm[18], gm[19], gm[20], gm[21], gm[22], gm[23],
+            gm[24], gm[25], gm[26], gm[27], gm[28], gm[29], gm[30], gm[31]
+        );
+        file << std::string(outs) << "\n";
     }
 
     /*
@@ -800,8 +802,11 @@ optionsfile::write (const perform & p)
     buses = ucperf.master_bus().get_num_in_buses();
     file
         << "\n[midi-input]\n\n"
-        << buses << "   # number of MIDI busses\n\n"
+        << buses << "   # number of input MIDI busses\n\n"
+        << "# The first number is the port number, and the second number\n"
+        << "# indicates whether it is disabled (0), or enabled (1).\n\n"
         ;
+
     for (int i = 0; i < buses; ++i)
     {
         file

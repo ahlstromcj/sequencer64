@@ -6,7 +6,7 @@ dnl \file          configure.ac
 dnl \library       Sequencer64
 dnl \author        Chris Ahlstrom
 dnl \date          2015-09-11
-dnl \update        2016-07-04
+dnl \update        2016-07-10
 dnl \version       $Revision$
 dnl \license       $XPC_SUITE_GPL_LICENSE$
 dnl
@@ -499,6 +499,28 @@ else
     AC_MSG_WARN([*** Global transpose not enabled.]);
 fi
 
+
+
+dnl Support for stripping unused mute-group specifications from the output MIDI
+dnl file.  They are still left in the "rc" configuration file, but can be
+dnl manually disabled by setting the mute-group size to 0 in that file.
+
+AC_ARG_ENABLE(mutestrip,
+    [AS_HELP_STRING(--disable-mutestrip,
+        [Disable stripping empty mute groups from MIDI files])],
+    [mutestrip=$enableval],
+    [mutestrip=yes])
+
+if test "$mutestrip" != "no"; then
+    AC_DEFINE(STAZED_TRANSPOSE, 1, [Define to enable stripping empty mute groups])
+else
+    AC_MSG_WARN([*** mutestrip not enabled.]);
+fi
+
+
+
+
+
 dnl 6.0  Top portion of the config.h/sequencer64-config.h header files.
 dnl      The sequencer64-config.h header file has "SEQUENCER64_" prepended
 dnl      to these automatically for us.  Also, we can't use
@@ -512,7 +534,7 @@ dnl #define API_VERSION "0.9"             // defined on command line
 
 AH_TOP(
 
-#define VERSION_DATE_SHORT "2016-07-04"
+#define VERSION_DATE_SHORT "2016-07-10"
 #define VERSION "0.9.16"
 
 )

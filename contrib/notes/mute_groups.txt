@@ -1,9 +1,9 @@
 Mute-Group Explorations
 Chris Ahlstrom
-2015-12-23 to 2016-07-07
+2015-12-23 to 2016-07-09
 
 In this document we explore mute-groups, how they might work, and
-Tim's fixes to them.  The primary module under discussion is the
+Tim fixes to them.  The primary module under discussion is the
 perform module.
 
    m_play_screen_offset:
@@ -30,7 +30,7 @@ perform module.
 	https://linuxmusicians.com/viewtopic.php?t=2443&start=15
 
         For anyone else who is interested in working with Mute Groups -
-        I'll point out here the main problem that I had getting them
+        I will point out here the main problem that I had getting them
         working (and this applies more to using it from the laptop rather
         than the Midi side of things)...
 
@@ -43,7 +43,13 @@ perform module.
         so (on Windows at least) you are not able to use the ! or other
         symbol keys. Similarly, you need to make sure CAPS LOCK is on
         before you start the 'learn' process (as it won't recognise q only
-        Q) (I'm sure you could change all the key settings in the Keyboard
+        Q)
+
+            Sequencer64 fixes this issue by automatically converting these
+            keys to their shifted versions when group-learn mode is
+            active.
+        
+        (I'm sure you could change all the key settings in the Keyboard
         screen to help overcome some of these issues)
 
         Once that is working OK, you can configure the MIDI settings in
@@ -266,7 +272,7 @@ Flow diagrams:
  o  MIDI file --->
         c_mutegroups --->
         length, must match c_gmute_tracks --->
-        m_mute_group_selected = g (we're not in learn mode) --->
+        m_mute_group_selected = g (we are not in learn mode) --->
         set_group_mute_state(track, mute != 0)
 
     Q:  What happens if we turn on learn mode, then read a MIDI file
@@ -278,5 +284,38 @@ Flow diagrams:
 
  o  mainwnd key "group_learn" in learn-mode --->
         
+My Brief Examples:
 
-# vim: sw=4 ts=4 wm=8 et ft=rc
+    These examples assume the latest Sequencer64, with support for
+    Auto-Shift (acting as if the Shift key was pressed, a form of
+    Shift-Lock) in Group-Learn mode.  They also assume the nicer
+    group-keys layout obtained by copying contrib/configs/sequenceer64.rc.keys
+    to ~/.config/sequencer64/sequencer64.rc.
+
+    Load contrib/midi/b4uacuse-GM-format.midi.  Arm patterns 4 ("Vocal")
+    and 5 ("Rhythm (Chord...").  Press the "L" button or press Ctrl-L.
+    Then click the "1" key.  You should see a message to the effect of
+    "MIDI mute group learn success:  Key 'exclam' (code = 33) successfully
+    mapped."
+
+    Exit Sequencer64 to save the configuration.  Open the rewritten
+    ~/.config/sequencer64/sequencer64.rc file.  Note the following values:
+
+    [mute-group]
+
+    1024    # group mute value count (0 or 1024)
+    0 [0 0 0 0 1 1 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0]
+               ^ ^
+               | |
+               |  ------- pattern 5
+                --------- pattern 4
+
+    Now, if one does not save contrib/midi/b4uacuse-GM-format.midi, when
+    it is loaded again, these settings are lost.  To keep them for that
+    song, save the song before exiting.
+
+    Loading the song again, the pressing Shift-1 ("!") will turn on those
+    sequences.  Pressing another one (e.g. Shift-Q) will turn them off.
+
+
+# vim: sw=4 ts=4 wm=8 et ft=sh

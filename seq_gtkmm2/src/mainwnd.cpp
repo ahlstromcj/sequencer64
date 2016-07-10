@@ -1297,7 +1297,7 @@ mainwnd::on_key_release_event (GdkEventKey * ev)
 {
     keystroke k(ev->keyval, SEQ64_KEYSTROKE_RELEASE);
     if (perf().is_group_learning())
-        k.caps_lock();
+        k.shift_lock();
 
     (void) perf().mainwnd_key_event(k);
     return false;
@@ -1318,18 +1318,11 @@ mainwnd::on_key_release_event (GdkEventKey * ev)
 bool
 mainwnd::on_key_press_event (GdkEventKey * ev)
 {
-    /*
-     * Shouldn't this call be last, and only if the key wasn't handled?
-     * It freakin' freezes up cgdb!  Let's at least move it to the end.
-     *
-     * Gtk::Window::on_key_press_event(ev);
-     */
-
     if (CAST_EQUIVALENT(ev->type, SEQ64_KEY_PRESS))
     {
         keystroke k(ev->keyval, SEQ64_KEYSTROKE_PRESS);
         if (perf().is_group_learning())
-            k.caps_lock();
+            k.shift_lock();
 
         if (rc().print_keys())
         {

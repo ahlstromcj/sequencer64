@@ -1,0 +1,45 @@
+Sample Configuration Files
+Chris Ahlstrom
+2016-07-09 to 2016-07-09
+
+This README explains what each of these files are.
+
+sequencer64.conf:
+
+   This file should be copied to /etc/ld.so.conf.d, and then "installed"
+   by running the ldconfig command.  All done as root, of course.
+   Should be done by the installer, but saved here just in case.
+
+sequencer64.rc.example:
+
+   An "rc" file that somewhat hews to the default seq24 settings.
+
+sequencer64.rc.keys:
+
+   An "rc" file with the keys for mute-toggling and group-learning
+   arrange similarly, so that the latter are the "Shift" versions of
+   the former.
+
+   When in group-learn mode, the Shift key cannot be hit, so this mode
+   automatically converts the keys to their shifted versions.
+
+sequencer64.usr.example:
+
+   A new-format "usr" file illustrating all of the new settings that can be
+   made.
+
+TO DO:
+
+   sequence64.rc.bad
+   sequencer64-basic.rc.example
+   sequencer64-basic.usr.example
+   sequencer64-daniel.rc
+   sequencer64-minimal.rc
+   sequencer64-timidity-yoshimi.usr.example
+
+dot-seq24rc:
+seq24usr.example:
+
+   Configuration Files in seq24 format.
+
+# vim: sw=4 ts=4 wm=8 et ft=sh

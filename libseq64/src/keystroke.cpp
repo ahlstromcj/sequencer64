@@ -136,6 +136,84 @@ keystroke::is_letter (unsigned int ch) const
         return tolower(m_key) == tolower(ch);
 }
 
+/**
+ *  Holds a pair of characters.  These don't yet apply to A-Z, for speed.
+ */
+
+struct charpair_t
+{
+    unsigned int m_character;   /**< The input character.               */
+    unsigned int m_shift;       /**< The shift of the input character.  */
+};
+
+/**
+ *  The array of mappings of the non-alphabetic characters.
+ */
+
+struct charpair_t s_character_mapping [] =
+{
+    {   '0',    ')'     },      // no mapping
+    {   '1',    '!'     },
+    {   '2',    '@'     },      // "
+    {   '3',    '#'     },
+    {   '4',    '$'     },
+    {   '5',    '%'     },
+    {   '6',    '&'     },
+    {   '7',    '^'     },      // Super-L
+    {   '8',    '*'     },      // (
+    {   '9',    '('     },      // no mapping
+    {   '-',    '_'     },
+    {   '=',    '+'     },
+    {   '[',    '{'     },
+    {   ']',    '}'     },
+    {   ';',    ':'     },
+    {   '\'',    '"'    },
+    {   ',',    '<'     },
+    {   '.',    '>'     },
+    {   '/',    '?'     },
+    {     0,      0     },
+};
+
+/**
+ *  If a lower-case letter, a number, or another character on the "main" part
+ *  of the keyboard, shift the m_key value to upper-case or the character
+ *  shifted on a standard American keyboard.  Currently also assumes the ASCII
+ *  character set.
+ *
+ *  There's an oddity here:  the shift of '2' is the '@' character, but seq24
+ *  seems to have treated it like the '"' character. Some others were treated
+ *  the same:
+ *
+\verbatim
+    Key:        1 2 3 4 5 6 7 8 9 0
+    Shift:      ! @ # $ % ^ & * ( )
+    Seq24:      ! " # $ % & ' ( ) space
+\endverbatim
+ *
+ *  This function is meant to avoid using the Caps-Lock when picking a
+ *  group-learn character in the group-learn mode.
+ */
+
+void
+keystroke::shift_lock ()
+{
+    if (m_key >= 'a' && m_key <= 'z')
+        m_key -= 32;
+    else
+    {
+        charpair_t * cp_ptr = &s_character_mapping[0];
+        while (cp_ptr->m_character != 0)
+        {
+            if (cp_ptr->m_character == m_key)
+            {
+                m_key = cp_ptr->m_shift;
+                break;
+            }
+            ++cp_ptr;
+        }
+    }
+}
+
 }           // namespace seq64
 
 /*

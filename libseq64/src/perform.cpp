@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and Tim Deagan
  * \date          2015-07-24
- * \updates       2016-07-06
+ * \updates       2016-07-09
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -414,7 +414,9 @@ perform::unset_mode_group_learn ()
  *  group-learn mode, it will grab the playing states of the sequences before
  *  copying them.
  *
- *  This function is used only once, in select_and_mute_group().
+ *  This function is used only once, in select_and_mute_group().  It used to
+ *  be called just select_mute_group(), but that's too easy to confuse with
+ *  select_group_mute().
  *
  * \change tdeagan 2015-12-22 via git pull:
  *      git pull https://github.com/TDeagan/sequencer64.git mute_groups
@@ -429,7 +431,8 @@ perform::set_and_copy_mute_group (int mutegroup)
 {
     mutegroup = clamp_track(mutegroup);
     int groupbase = mutegroup * m_seqs_in_set;
-    int setbase = m_screenset * m_seqs_in_set;    /* was m_playscreen_offset */
+    int setbase = m_screenset * m_seqs_in_set;  /* was m_playscreen_offset  */
+    m_mute_group_selected = mutegroup;          /* must set it before loop  */
     for (int i = 0; i < m_seqs_in_set; ++i)
     {
         int source = setbase + i;
@@ -440,7 +443,6 @@ perform::set_and_copy_mute_group (int mutegroup)
         }
         m_tracks_mute_state[i] = m_mute_group[mute_group_offset(i)];
     }
-    m_mute_group_selected = mutegroup;
 }
 
 /**

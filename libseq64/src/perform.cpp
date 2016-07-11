@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and Tim Deagan
  * \date          2015-07-24
- * \updates       2016-07-09
+ * \updates       2016-07-10
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -50,6 +50,15 @@
  */
 
 #define SEQ64_JACK_NAN      0x8000000000000
+
+/**
+ *  Indicates if the playing-screenset code is in force or not, for
+ *  experimenting.  Without this patch, ignoring snapshots, it seems
+ *  like mute-groups only work on screen-set 0, where as with the patch (again
+ *  ignoring snapshots), they apply to the "in-view" screen-set.
+ */
+
+#define SEQ64_USE_TDEAGAN_CODE
 
 namespace seq64
 {
@@ -431,7 +440,11 @@ perform::set_and_copy_mute_group (int mutegroup)
 {
     mutegroup = clamp_track(mutegroup);
     int groupbase = mutegroup * m_seqs_in_set;
+#ifdef SEQ64_USE_TDEAGAN_CODE
     int setbase = m_screenset * m_seqs_in_set;  /* was m_playscreen_offset  */
+#else
+    int setbase = m_playscreen_offset;
+#endif
     m_mute_group_selected = mutegroup;          /* must set it before loop  */
     for (int i = 0; i < m_seqs_in_set; ++i)
     {
@@ -452,6 +465,9 @@ perform::set_and_copy_mute_group (int mutegroup)
  *  as opposed to m_playing_screen), and its m_track_mute_state[] is true,
  *  then the sequence is turned on, otherwise it is turned off.
  *
+ * \change tdeagan 2015-12-22 via git pull.
+ *      Replaced m_playing_screen with m_screenset.
+ *
  * \change 2016-05-06
  *      It seems to us that the for (i) clause should have i range from 0 to
  *      m_max_sets, not m_seqs_in_set.  So let's do it, pre-emptively.
@@ -470,11 +486,11 @@ perform::mute_group_tracks ()
                 int seqnum = seqoffset++;
                 if (is_active(seqnum))
                 {
-    /*
-     * \change tdeagan 2015-12-22 via git pull.  Replaced m_playing_screen
-     *      with m_screenset.
-     */
+#ifdef SEQ64_USE_TDEAGAN_CODE
                     if ((i == m_screenset) && m_tracks_mute_state[j])
+#else
+                    if ((i == m_playing_screen) && m_tracks_mute_state[j])
+#endif
                         sequence_playing_on(seqnum);
                     else
                         sequence_playing_off(seqnum);
@@ -1214,6 +1230,8 @@ perform::set_screenset (int ss)
 
 /**
  *  Sets the screen set that is active, based on the value of m_screenset.
+ *  This function is called when one of the snapshot keys is pressed.
+ *
  *  For each value up to m_seqs_in_set (32), the index of the current sequence
  *  in the current screen set (m_playing_screen) is obtained.  If the sequence
  *  is active and the sequence actually exists, it is processed; null
@@ -1734,9 +1752,13 @@ perform::launch_input_thread ()
 void
 perform::split_trigger (int seqnum, midipulse tick)
 {
-    push_trigger_undo();
-    get_sequence(seqnum)->split_trigger(tick);
-    modify();
+    sequence * s = get_sequence(seqnum);
+    if (not_nullptr(s))
+    {
+        push_trigger_undo();
+        s->split_trigger(tick);
+        modify();
+    }
 }
 
 /**
@@ -2633,7 +2655,7 @@ perform::unset_sequence_control_status (int status)
     if (status & c_status_snapshot)
         restore_playing_state();
 
-    m_control_status &= (~status);
+    m_control_status &= ~status;
 }
 
 /**
@@ -2720,7 +2742,7 @@ perform::sequence_playing_on (int seq)
         }
         else
         {
-            if (queued && (m_control_status & c_status_queue))
+            if (queued && (m_control_status & c_status_queue) != 0)
                 m_seqs[seq]->toggle_queued();
         }
     }
@@ -2754,7 +2776,7 @@ perform::sequence_playing_off (int seq)
         }
         else
         {
-            if (queued && (m_control_status & c_status_queue))
+            if (queued && (m_control_status & c_status_queue) != 0)
                 m_seqs[seq]->toggle_queued();
         }
     }
@@ -2776,9 +2798,9 @@ perform::sequence_playing_off (int seq)
 void
 perform::sequence_key (int seq)
 {
-    int offset = get_screenset() * c_mainwnd_rows * c_mainwnd_cols;
-    if (is_active(seq + offset))
-        sequence_playing_toggle(seq + offset);
+    seq += get_screenset() * c_mainwnd_rows * c_mainwnd_cols;
+    if (is_active(seq))
+        sequence_playing_toggle(seq);
 }
 
 /**
@@ -2916,6 +2938,9 @@ perform::lookup_keyevent_key (int seqnum)
  *  group learn, and playing screenset.  For further keystroke processing, see
  *  mainwnd :: on_key_press_event().
  *
+ *  Keys not handled here are handled in mainwnd:  bpm up & down; screenset up
+ *  & down.
+ *
  * \param k
  *      The keystroke object to be handled.
  *
@@ -2931,7 +2956,6 @@ perform::mainwnd_key_event (const keystroke & k)
     if (k.is_press())
     {
         /*
-         * Keys not handled here:  bpm up & down; screenset up & down.
          * Also not handled here:  mute group key and mute group learn.
          */
 
@@ -2951,7 +2975,7 @@ perform::mainwnd_key_event (const keystroke & k)
             set_mode_group_learn();
         else
             result = false;
-    }
+        }
     else
     {
         if (key == keys().replace())
@@ -2997,10 +3021,11 @@ perform::perfroll_key_event (const keystroke & k, int drop_sequence)
     {
         if (is_active(drop_sequence))
         {
+            sequence * s = get_sequence(drop_sequence);
             if (k.is_delete())
             {
                 push_trigger_undo();
-                get_sequence(drop_sequence)->del_selected_trigger();
+                s->del_selected_trigger();
                 modify();
                 result = true;
             }
@@ -3009,19 +3034,19 @@ perform::perfroll_key_event (const keystroke & k, int drop_sequence)
                 if (k.is_letter('x'))                           /* cut      */
                 {
                     push_trigger_undo();
-                    get_sequence(drop_sequence)->cut_selected_trigger();
+                    s->cut_selected_trigger();
                     modify();
                     result = true;
                 }
                 else if (k.is_letter('c'))                      /* copy     */
                 {
-                    get_sequence(drop_sequence)->copy_selected_trigger();
+                    s->copy_selected_trigger();
                     result = true;
                 }
                 else if (k.is_letter('v'))                      /* paste    */
                 {
                     push_trigger_undo();
-                    get_sequence(drop_sequence)->paste_trigger();
+                    s->paste_trigger();
                     modify();
                     result = true;
                 }

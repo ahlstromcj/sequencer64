@@ -25,7 +25,7 @@ perform module.
       in that screenset to the that playing status.
 
    m_screenset [replaces m_playscreen_offset in the select_mute_group()
-   function, but the usage makes it essentially replace m_playing_screen.
+   function, but the usage makes it essentially replace m_playing_screen.]
 
 	https://linuxmusicians.com/viewtopic.php?t=2443&start=15
 
@@ -55,7 +55,7 @@ perform module.
         Once that is working OK, you can configure the MIDI settings in
         similar ways to assigning midi commands to toggle loops - just
         note that you have to use the 'ON' option in the .seq24rc file
-        (which is the second set of numbers) - you can't use the first set
+        (which is the second set of numbers) - you cannot use the first set
         (used to 'toggle').
 
 From another source:
@@ -292,6 +292,8 @@ My Brief Examples:
     group-keys layout obtained by copying contrib/configs/sequenceer64.rc.keys
     to ~/.config/sequencer64/sequencer64.rc.
 
+Simple:
+
     Load contrib/midi/b4uacuse-GM-format.midi.  Arm patterns 4 ("Vocal")
     and 5 ("Rhythm (Chord...").  Press the "L" button or press Ctrl-L.
     Then click the "1" key.  You should see a message to the effect of
@@ -316,6 +318,27 @@ My Brief Examples:
 
     Loading the song again, the pressing Shift-1 ("!") will turn on those
     sequences.  Pressing another one (e.g. Shift-Q) will turn them off.
+
+Horse:
+
+    Load horse.midi (the short version, stripped of mute groups).
+    Unmute all patterns in set 0, press "L", and press "1".
+    Unmute all patterns in set 1, press "L", and press "q".
+    Now Shift-1 will turn on the same current *relative* set of patterns,
+    affecting set 0 if selected or set 1 if selected.
+    Same for Shift-q.
+    Shift-w will turn off the current set no matter which is selected.
+
+    Therefore, the mute-groups operate on whatever is the current set in
+    view.  And turns off the other set that was "active" due to the mute
+    group setting.
+
+    So, if mute-group "!" is applied on set 0, it turns on the patterns in
+    set 0.  Then if applied to set 1, it turns off the patterns in set 0
+    and turns on the similar group of patterns in set 1.
+
+    So a mute-group is not associate with a particular set, though it can
+    turn off other sets.
 
 
 # vim: sw=4 ts=4 wm=8 et ft=sh

@@ -1,6 +1,6 @@
 Bugs and Additional Upgrade Ideas
 Chris Ahlstrom
-2015-10-27 to 2016-07-02 (New bugs)
+2015-10-27 to 2016-07-10 (New bugs)
 
 In no particular order...  "y" means "in progress", and "x" means it is
 basically done.
@@ -8,9 +8,18 @@ basically done.
 -  Also see BUG REPORTS below.  Those are bug reports from other people.
 y  Still need to test saving and reading of the new transposable sequence
    state.
+y  Added ability to strip out mute-groups from a MIDI file when not being
+   used.  Still testing
+y  The "replace" key functionality (turn on the selected pattern and turn off
+   all others) is broken.  Basically fixed when using the Control keys.  Other
+   keys (e.g. keypad keys) behave slightly differently.
 -  If building with chord support is active, then the movement of the
    selection box by the arrow keys is more flickery.  Seems to depend upon
    context.
+-  Check this URL out re MIDI input enabling/disabling, and a Seq24 defect
+   where it does not filter incoming MIDI by channel:
+   http://ubuntuforums.org/archive/index.php/t-1674890.html
+-  Can we add a button to reset all outputs on all active busses and channels?
 -  Modify-flag improvements:
    x  Make the perform pointer a member of sequence regardless of the status
       of the "use pause" macro.
@@ -135,8 +144,10 @@ x  Shift Click:
    sequence.  Is this a bug or a feature?
 x  The GUI now comes up not showing the "pill" progress bar until the tune
    starts. Fixed, was a comparison error in maintime::idle_progress().
--  Get variable PPQN support fully working.
+y  Get variable PPQN support fully working.
 -  Support for the Non Session Manager.
+-  Support for automation via scripting.
+-  Support for automation via OSC.
 -  Write up a procedure for using nsm-proxy as Daniel Appelt notes.
 -  Add JACK-fuzzing code feature for testing and stressing JACK transport and
    other JACK transport clients.

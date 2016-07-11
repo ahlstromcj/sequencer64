@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-07-10
+ * \updates       2016-07-11
  * \license       GNU GPLv2 or above
  *
  *  This class still has way too many members, even with the JACK and
@@ -40,21 +40,16 @@
  *      -   The remaining portions of trigger support.
  */
 
-#include <vector>
-#include <pthread.h>
+#include <vector>                       /* std::vector                      */
+#include <pthread.h>                    /* pthread_t C structure            */
 
 #include "globals.h"                    /* globals, nullptr, & more         */
-#include "sequence.hpp"
-
-#ifndef PLATFORM_WINDOWS                /* see globals.h, platform_macros.h */
-#include <unistd.h>
-#endif
-
 #include "jack_assistant.hpp"           /* optional seq64::jack_assistant   */
 #include "gui_assistant.hpp"            /* seq64::gui_assistant             */
 #include "keys_perform.hpp"             /* seq64::keys_perform              */
 #include "mastermidibus.hpp"            /* seq64::mastermidibus             */
 #include "midi_control.hpp"             /* seq64::midi_control "struct"     */
+#include "sequence.hpp"                 /* seq64::sequence                  */
 
 /**
  *  Try to highlight the selected pattern using black-on-cyan
@@ -515,7 +510,7 @@ private:
 
     /**
      *  Holds the OR'ed control status values.  Need to learn more about this
-     *  one.
+     *  one.  It is used in the replace, snapshot, and queue functionality.
      */
 
     int m_control_status;
@@ -652,6 +647,20 @@ public:
     int sequence_max () const
     {
         return m_sequence_max;
+    }
+
+    /**
+     * \getter m_control_status
+     *
+     * \return
+     *      Returns true if the m_control_status value is non-zero, which
+     *      means that there is a queue, replace, or snapshot functionality in
+     *      progress. 
+     */
+
+    bool is_control_status () const
+    {
+        return m_control_status != 0;
     }
 
 #ifdef SEQ64_EDIT_SEQUENCE_HIGHLIGHT

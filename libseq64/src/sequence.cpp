@@ -1624,7 +1624,7 @@ sequence::paste_selected (midipulse tick, int note)
 #ifdef SEQ64_USE_EVENT_MAP
 
         /*
-         * \change 0rel 2016-06-12 PROVISIONAL FIX, see the banner notes.
+         * \change 0rel 2016-06-12 fix, see the banner notes.
          */
 
         event_list clipbd_updated;
@@ -1768,6 +1768,9 @@ sequence::change_event_data_range
  *  Also note that push_undo() is not incorporated into this function, for
  *  the sake of speed.
  *
+ *  Here, we could ignore events not on the sequence's channel, as an option.
+ *  We have to be careful because this function can be used in painting notes.
+ *
  * \threadsafe
  *
  * \param tick
@@ -1899,6 +1902,9 @@ sequence::add_chord (int chord, midipulse tick, midipulse len, int note)
  *  can surely add other events.  We should assume that any events
  *  added by sequencer are playable/usable.
  *
+ *  Here, we could ignore events not on the sequence's channel, as an option.
+ *  We have to be careful because this function can be used in painting events.
+ *
  * \threadsafe
  *
  * \warning
@@ -1999,7 +2005,21 @@ sequence::add_event
 }
 
 /**
- *  Streams the given event.
+ *  Streams the given event.  The event's timestamp is adjusted, if needed.
+ *  If recording:
+ *
+ *      -   If the pattern is playing, the event is added.
+ *      -   If the pattern is playing and quantized record is in force, the
+ *          note's timestamp is altered.
+ *      -   If not playing, but the event is a Note On or Note Off, we add it
+ *          and keep track of it.
+ *
+ *  If MIDI Thru is enabled, the event is put on the buss.
+ *
+ * \todo
+ *      Consider adding a feature where event's are rejected if their channel
+ *      doesn't match that of the sequence.  This has been a complaint of some
+ *      people.  Would modify the add_event() and add_note() functions.
  *
  * \threadsafe
  *

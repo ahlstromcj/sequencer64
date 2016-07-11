@@ -991,11 +991,11 @@ optionsfile::write (const perform & p)
     {
 
 #ifdef SEQ64_PAUSE_SUPPORT
-    file
-        << ktx.kpt_pause << "    # "
-        << ucperf.key_name(ktx.kpt_pause)
-        << " pause sequencer\n"
-        ;
+        file
+            << ktx.kpt_pause << "    # "
+            << ucperf.key_name(ktx.kpt_pause)
+            << " pause sequencer\n"
+            ;
 #endif
 
         file
@@ -1004,17 +1004,17 @@ optionsfile::write (const perform & p)
                " ignored in legacy mode\n"
             ;
 
-    file
-        << ktx.kpt_pattern_edit << "    # "
-        << ucperf.key_name(ktx.kpt_pattern_edit)
-        << " toggle use of slot shortcut key to bring up pattern editor\n"
-        ;
+        file
+            << ktx.kpt_pattern_edit << "    # "
+            << ucperf.key_name(ktx.kpt_pattern_edit)
+            << " toggle use of slot shortcut key to bring up pattern editor\n"
+            ;
 
-    file
-        << ktx.kpt_event_edit << "    # "
-        << ucperf.key_name(ktx.kpt_event_edit)
-        << " toggle use of slot shortcut key to bring up event editor\n"
-        ;
+        file
+            << ktx.kpt_event_edit << "    # "
+            << ucperf.key_name(ktx.kpt_event_edit)
+            << " toggle use of slot shortcut key to bring up event editor\n"
+            ;
     }
 
     file

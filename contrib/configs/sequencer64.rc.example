@@ -1,4 +1,4 @@
-# Sequencer64 0.9.13 (and above) rc configuration file
+# Sequencer64 0.9.16 (and above) rc configuration file
 #
 # This file holds the main configuration options for Sequencer64.
 # It follows the format of the legacy seq24 'rc' configuration
@@ -97,7 +97,7 @@
 
 [mute-group]
 
-1024    # group mute value count
+1024    # group mute value count (0 or 1024)
 0 [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0]
 1 [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0]
 2 [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0] [0 0 0 0 0 0 0 0]
@@ -165,7 +165,10 @@
 
 [midi-input]
 
-1   # number of MIDI busses
+1   # number of input MIDI busses
+
+# The first number is the port number, and the second number
+# indicates whether it is disabled (0), or enabled (1).
 
 # [0] 14:0 Midi Through Port-0
 0 0
@@ -254,6 +257,7 @@
 38  5   # ampersand
 40  7   # parenleft
 47  6   # slash
+60  31   # less
 65  16   # A
 66  28   # B
 67  26   # C
@@ -277,15 +281,14 @@
 88  25   # X
 89  13   # Y
 90  24   # Z
-65450  31   # KP_Multiply
 # bpm up and bpm down:
 39 59          # apostrophe semicolon
 # screen set up, screen set down, play:
 93 91 65360    # bracketright bracketleft Home
 # group on, group off, group learn:
-236 58 65379   # igrave colon Insert
+236 58 65451   # igrave colon KP_Add
 # replace, queue, snapshot_1, snapshot 2, keep queue:
-65507 65455 65513 65514 92   # Control_L KP_Divide Alt_L Alt_R backslash
+65453 65455 65480 65481 92   # KP_Subtract KP_Divide F11 F12 backslash
 1     # show_ui_sequence_key (1 = true / 0 = false)
 32    # space start sequencer
 65307    # Escape stop sequencer

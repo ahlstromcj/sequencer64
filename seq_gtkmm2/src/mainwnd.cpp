@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-07-08
+ * \updates       2016-07-11
  * \license       GNU GPLv2 or above
  *
  *  The main window holds the menu and the main controls of the application,
@@ -1309,15 +1309,13 @@ mainwnd::on_key_release_event (GdkEventKey * ev)
  *  statements.
  *
  *  Also, we now effectively press the CAPS LOCK key for the user if in
- *  group-learn mode.
- *
- * \todo
- *      Test this functionality in old and new application.
+ *  group-learn mode, via the keystroke::shift_lock() function.
  */
 
 bool
 mainwnd::on_key_press_event (GdkEventKey * ev)
 {
+    Gtk::Window::on_key_press_event(ev);
     if (CAST_EQUIVALENT(ev->type, SEQ64_KEY_PRESS))
     {
         keystroke k(ev->keyval, SEQ64_KEYSTROKE_PRESS);
@@ -1341,6 +1339,12 @@ mainwnd::on_key_press_event (GdkEventKey * ev)
                 int newbpm = perf().increment_beats_per_minute();
                 m_adjust_bpm->set_value(newbpm);
             }
+
+            /*
+             * Replace, Queue, Snapshot 1, Snapshot 2, Set-Playing-Screenset,
+             * Group On, Group Off, Group Learn key handling moved to a
+             * perform function.
+             */
 
             if (k.key() == PREFKEY(screenset_dn))
             {
@@ -1441,13 +1445,19 @@ mainwnd::on_key_press_event (GdkEventKey * ev)
 
             if (perf().get_key_events().count(k.key()) != 0)
             {
-                guint modifiers = gtk_accelerator_get_default_mod_mask();
-
+#ifdef USE_OLD_VERSION                  // section to be deleted after testing
                 /*
-                 * This mask test doesn't seem right!
+                 * This mask test doesn't seem right.  Or at least, too much.
+                 *
+                 * guint modifiers = gtk_accelerator_get_default_mod_mask();
+                 * bool ok = (ev->state & modifiers) != SEQ64_CONTROL_MASK;
                  */
 
-                bool ok = (ev->state & modifiers) != SEQ64_CONTROL_MASK;
+                bool ok = (ev->state & SEQ64_CONTROL_MASK) != 0;
+#else
+                bool ok = perf().is_control_status() ||
+                            (ev->state & SEQ64_CONTROL_MASK) == 0;
+#endif
                 if (ok)
                 {
                     int seqnum = perf().lookup_keyevent_seq(k.key());
@@ -1468,16 +1478,21 @@ mainwnd::on_key_press_event (GdkEventKey * ev)
             else
             {
                 if (k.key() == PREFKEY(pattern_edit))
+                {
                     m_call_seq_edit = ! m_call_seq_edit;
+                }
                 else if (k.key() == PREFKEY(event_edit))
+                {
                     m_call_seq_eventedit = ! m_call_seq_eventedit;
+                }
                 else
                 {
                     m_call_seq_edit = m_call_seq_eventedit = false;
 
                     /*
-                     * EXPERIMENTAL:  Use Ctrl-L to toggle the group-learn mode.
-                     * Similar to Ctrl-E to bring up the Song Editor.
+                     * Ctrl-L to toggle the group-learn mode.  Similar to
+                     * Ctrl-E to bring up the Song Editor.  Another
+                     * overly-complex Ctrl-key test?
                      */
 
                     guint modifiers = gtk_accelerator_get_default_mod_mask();
@@ -1486,12 +1501,14 @@ mainwnd::on_key_press_event (GdkEventKey * ev)
                         k.key() == SEQ64_l &&
                         (ev->state & modifiers) == SEQ64_CONTROL_MASK
                     )
+                    {
                         perf().learn_toggle();
+                    }
                 }
             }
         }
     }
-    return Gtk::Window::on_key_press_event(ev);
+    return false;
 }
 
 /**

@@ -45,6 +45,8 @@
 #include "perform.hpp"
 #include "settings.hpp"                 /* seq64::rc() and choose_ppqn()    */
 
+#define USE_EXPERIMENTAL_CODE
+
 /**
  *  Provide a "not-a-number" macro.  -nan(0x8000000000000)
  */
@@ -2533,6 +2535,7 @@ perform::input_func ()
                         {
                             for (int i = 0; i < c_midi_controls; ++i)
                             {
+                                int offset = m_offset + 1;
                                 midibyte data[2] = { 0, 0 };
                                 midibyte status = ev.get_status();
                                 ev.get_data(data[0], data[1]);
@@ -2541,7 +2544,7 @@ perform::input_func ()
                                     if (midi_control_toggle(i).in_range(data[1]))
                                     {
                                         if (i < m_seqs_in_set)
-                                            sequence_playing_toggle(i+m_offset);
+                                            sequence_playing_toggle(offset);
                                     }
                                 }
                                 if (midi_control_on(i).match(status, data[0]))
@@ -2549,14 +2552,14 @@ perform::input_func ()
                                     if (midi_control_on(i).in_range(data[1]))
                                     {
                                         if (i < m_seqs_in_set)
-                                            sequence_playing_on(i+m_offset);
+                                            sequence_playing_on(offset);
                                         else
                                             handle_midi_control(i, true);
                                     }
                                     else if (midi_control_on(i).inverse_active())
                                     {
                                         if (i < m_seqs_in_set)
-                                            sequence_playing_off(i+m_offset);
+                                            sequence_playing_off(offset);
                                         else
                                             handle_midi_control(i, false);
                                     }
@@ -2566,14 +2569,14 @@ perform::input_func ()
                                     if (midi_control_on(i).in_range(data[1]))
                                     {
                                         if (i < m_seqs_in_set)
-                                            sequence_playing_off(i+m_offset);
+                                            sequence_playing_off(offset);
                                         else
                                             handle_midi_control(i, false);
                                     }
                                     else if (midi_control_off(i).inverse_active())
                                     {
                                         if (i < m_seqs_in_set)
-                                            sequence_playing_on(i+m_offset);
+                                            sequence_playing_on(offset);
                                         else
                                             handle_midi_control(i, true);
                                     }

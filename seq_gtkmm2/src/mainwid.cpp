@@ -51,6 +51,8 @@
 #include "perform.hpp"                  /* seq64::perform music control     */
 #include "settings.hpp"                 /* seq64::usr()                     */
 
+#define USE_EXPERIMENTAL_CODE
+
 namespace seq64
 {
 

@@ -106,6 +106,8 @@
 
 using namespace Gtk::Menu_Helpers;      /* MenuElem, etc.                */
 
+#define USE_EXPERIMENTAL_CODE
+
 namespace seq64
 {
 
@@ -544,7 +546,7 @@ mainwnd::timer_callback ()
     if (m_adjust_ss->get_value() != screenset)
     {
         m_main_wid->set_screenset(screenset);
-        
+
         /*
          * Shouldn't we call this here?  No matter, we are going to fold this
          * call into the call above.
@@ -1103,7 +1105,7 @@ void
 mainwnd::adj_callback_ss ()
 {
 #ifdef USE_EXPERIMENTAL_CODE
-    m_main_wid->set_screenset(int(m_adjust_ss->get_value()));
+    m_main_wid->set_screenset(int(m_adjust_ss->get_value()), true);
 #else
     perf().set_screenset(int(m_adjust_ss->get_value()));
     m_main_wid->set_screenset(perf().get_screenset());

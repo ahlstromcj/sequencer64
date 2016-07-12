@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-07-05
+ * \updates       2016-07-12
  * \license       GNU GPLv2 or above
  *
  */
@@ -36,6 +36,8 @@
 #include "globals.h"                    /* c_max_sequence, etc.     */
 #include "gui_drawingarea_gtk2.hpp"     /* one base class           */
 #include "seqmenu.hpp"                  /* the other base class     */
+
+#define USE_EXPERIMENTAL_CODE
 
 namespace seq64
 {
@@ -151,7 +153,11 @@ public:
     mainwid (perform & p);
     virtual ~mainwid ();
 
+#ifdef USE_EXPERIMENTAL_CODE
+    void set_screenset (int ss, bool setperf = false);
+#else
     void set_screenset (int ss);                /* int get_screenset() ?    */
+#endif
 
 private:
 

@@ -1237,7 +1237,7 @@ seqroll::move_selection_box (int dx, int dy)
     m_seqkeys_wid.set_hint_key(note);
     snap_x(m_current_x);
 
-#ifdef USE_EXPERIMENTAL_CODE
+#ifdef USE_EXPERIMENTAL_CODE_XXX
     int x0 = m_old.x;
     int y0 = m_old.y;
     int w = m_old.width;

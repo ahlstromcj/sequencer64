@@ -503,7 +503,10 @@ private:
     midi_control m_midi_cc_off[c_midi_controls];
 
     /**
-     *  Holds the offset into the screen sets.
+     *  Holds the current offset into the screen-sets.  It is used in the MIDI
+     *  control of the playback status of the sequences in the current
+     *  screen-set.  It is also used to offset the sequence numbers so that
+     *  the control (mute/unmute) keys can be shown on any screen-set.
      */
 
     int m_offset;

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-07-11
+ * \updates       2016-07-12
  * \license       GNU GPLv2 or above
  *
  *  The main window holds the menu and the main controls of the application,
@@ -544,6 +544,14 @@ mainwnd::timer_callback ()
     if (m_adjust_ss->get_value() != screenset)
     {
         m_main_wid->set_screenset(screenset);
+        
+        /*
+         * Shouldn't we call this here?  No matter, we are going to fold this
+         * call into the call above.
+         *
+         * perf().set_screenset(int(m_adjust_ss->get_value()));
+         */
+
         m_adjust_ss->set_value(screenset);
         m_entry_notes->set_text(perf().current_screen_set_notepad());
     }
@@ -1094,8 +1102,13 @@ mainwnd::about_dialog ()
 void
 mainwnd::adj_callback_ss ()
 {
+#ifdef USE_EXPERIMENTAL_CODE
+    m_main_wid->set_screenset(int(m_adjust_ss->get_value()));
+#else
     perf().set_screenset(int(m_adjust_ss->get_value()));
     m_main_wid->set_screenset(perf().get_screenset());
+#endif
+
     m_entry_notes->set_text(perf().current_screen_set_notepad());
 }
 

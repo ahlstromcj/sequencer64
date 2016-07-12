@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and Tim Deagan
  * \date          2015-07-24
- * \updates       2016-07-10
+ * \updates       2016-07-12
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -1226,6 +1226,11 @@ perform::set_screenset (int ss)
 
     if (ss != m_screenset)
         m_screenset = ss;
+
+#ifdef USE_EXPERIMENTAL_CODE
+    set_offset(ss);             /* was called in mainwid::set_screenset() */
+#endif
+
 }
 
 /**

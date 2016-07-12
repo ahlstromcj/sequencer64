@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-07-11
+ * \updates       2016-07-12
  * \license       GNU GPLv2 or above
  *
  *  This class still has way too many members, even with the JACK and
@@ -1301,6 +1301,15 @@ public:
     void set_offset (int offset)
     {
         m_offset = offset * c_mainwnd_rows * c_mainwnd_cols;
+    }
+
+    /**
+     * \getter m_offset
+     */
+
+    int get_offset () const
+    {
+        return m_offset;
     }
 
     void save_playing_state ();

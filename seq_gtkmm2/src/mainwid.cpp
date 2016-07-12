@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-07-05
+ * \updates       2016-07-12
  * \license       GNU GPLv2 or above
  *
  *  Note that this representation is, in a sense, inside the mainwnd
@@ -122,7 +122,6 @@ mainwid::mainwid (perform & p)
     m_old_seq               (0),
     m_screenset             (0),
     m_last_tick_x           (),                 // array of size c_max_sequence
-//  m_last_playing          (),                 // array of size c_max_sequence
     m_mainwnd_rows          (c_mainwnd_rows),
     m_mainwnd_cols          (c_mainwnd_cols),
     m_seqarea_x             (c_seqarea_x),
@@ -759,26 +758,57 @@ mainwid::seq_from_xy (int x, int y)
 }
 
 /**
- *  Set the current screen-set.
+ *  Set the current screen-set.  The clamping algorithm for the screeset is a
+ *  bit weird:  if less than 0, we set m_screenset to its maximum, and if
+ *  greater than the maximum, we set it to its minimum.  Not sure if this
+ *  matters.
+ *
+ *  Note that m_screenset_slots = m_mainwnd_rows * m_mainwnd_cols.
+ *
+ *  We will likely replace this with perform::set_screenset(), which
+ *  recapitulates the code above completely, whereas perform::set-offset()
+ *  recapitulates only the line of code immediately above it.  However,
+ *  note that there is a back-and-forth between setting the screenset via
+ *  perform (using MIDI control) versus the GUI in the mainwnd class.
+ *  Probably useful to add a default boolean to prevent circular manipulation.
  *
  * \param ss
  *      Provides the screen-set number to set.
  */
 
+#ifdef USE_EXPERIMENTAL_CODE
+
+void
+mainwid::set_screenset (int ss, bool setperf)   // default = false? true?
+{
+    if (setperf)
+        perf().set_screenset(ss);
+
+    m_screenset = perf().get_screenset();
+    m_screenset_offset = perf().get_offset();
+    reset();
+}
+
+#else
+
 void
 mainwid::set_screenset (int ss)
 {
-    m_screenset = ss;
-    if (m_screenset < 0)
-        m_screenset = m_max_sets - 1;
+    if (ss != m_screenset)                  /* a new test, too strict?  */
+    {
+        if (ss < 0)
+            ss = m_max_sets - 1;
+        else if (ss >= m_max_sets)
+            ss = 0;
 
-    if (m_screenset >= m_max_sets)
-        m_screenset = 0;
-
-    m_screenset_offset = m_screenset * m_mainwnd_rows * m_mainwnd_cols;
-    perf().set_offset(m_screenset);
-    reset();
+        m_screenset = ss;
+        m_screenset_offset = ss * m_screenset_slots;    /* rows * cols  */
+        perf().set_offset(ss);
+        reset();
+    }
 }
+
+#endif
 
 /**
  *  Calculates the sequence number based on the screenset and then

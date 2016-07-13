@@ -283,7 +283,7 @@ optionsfile::parse (perform & p)
         ok = gtrack == SEQ64_DEFAULT_SET_MAX * SEQ64_SET_KEYS_MAX;  /* 1024 */
 
     if (! ok)
-        return error_message("mute-group");
+        (void) error_message("mute-group");         /* finish the parsing!  */
 #endif
 
     if (ok && gtrack > 0)

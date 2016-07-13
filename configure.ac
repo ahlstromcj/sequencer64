@@ -6,7 +6,7 @@ dnl \file          configure.ac
 dnl \library       Sequencer64
 dnl \author        Chris Ahlstrom
 dnl \date          2015-09-11
-dnl \update        2016-07-10
+dnl \update        2016-07-13
 dnl \version       $Revision$
 dnl \license       $XPC_SUITE_GPL_LICENSE$
 dnl
@@ -512,7 +512,7 @@ AC_ARG_ENABLE(mutestrip,
     [mutestrip=yes])
 
 if test "$mutestrip" != "no"; then
-    AC_DEFINE(STAZED_TRANSPOSE, 1, [Define to enable stripping empty mute groups])
+    AC_DEFINE(STRIP_EMPTY_MUTES, 1, [Define to enable stripping empty mute groups])
 else
     AC_MSG_WARN([*** mutestrip not enabled.]);
 fi

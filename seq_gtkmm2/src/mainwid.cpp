@@ -418,7 +418,7 @@ mainwid::draw_sequence_on_pixmap (int seqnum)
                 int note;
                 bool selected;
                 int velocity;
-                draw_type dt = DRAW_FIN;
+                draw_type dt;
                 seq->reset_draw_marker();
 
                 Color eventcolor;
@@ -431,18 +431,10 @@ mainwid::draw_sequence_on_pixmap (int seqnum)
 
                 do
                 {
-                    if (not_nullptr(seq))
-                    {
-                        dt = seq->get_next_note_event
-                        (
-                            &tick_s, &tick_f, &note, &selected, &velocity
-                        );
-                    }
-                    else
-                    {
-                        errprint("null sequence in mainwid");
-                        break;
-                    }
+                    dt = seq->get_next_note_event
+                    (
+                        &tick_s, &tick_f, &note, &selected, &velocity
+                    );
                     if (dt == DRAW_FIN)
                         break;
 

@@ -1325,6 +1325,7 @@ mainwnd::on_key_release_event (GdkEventKey * ev)
 bool
 mainwnd::on_key_press_event (GdkEventKey * ev)
 {
+    bool result = false;
     Gtk::Window::on_key_press_event(ev);
     if (CAST_EQUIVALENT(ev->type, SEQ64_KEY_PRESS))
     {
@@ -1465,8 +1466,9 @@ mainwnd::on_key_press_event (GdkEventKey * ev)
 
                 bool ok = (ev->state & SEQ64_CONTROL_MASK) != 0;
 #else
-                bool ok = perf().is_control_status() ||
-                            (ev->state & SEQ64_CONTROL_MASK) == 0;
+                bool ok = perf().is_control_status();
+                if (! ok)
+                    ok = (ev->state & SEQ64_CONTROL_MASK) == 0;
 #endif
                 if (ok)
                 {
@@ -1475,14 +1477,19 @@ mainwnd::on_key_press_event (GdkEventKey * ev)
                     {
                         m_call_seq_edit = false;
                         m_main_wid->seq_set_and_edit(seqnum);
+                        result = true;
                     }
                     else if (m_call_seq_eventedit)
                     {
                         m_call_seq_eventedit = false;
                         m_main_wid->seq_set_and_eventedit(seqnum);
+                        result = true;
                     }
                     else
+                    {
                         sequence_key(seqnum);   /* toggle the sequence  */
+                        result = true;
+                    }
                 }
             }
             else
@@ -1518,7 +1525,7 @@ mainwnd::on_key_press_event (GdkEventKey * ev)
             }
         }
     }
-    return false;
+    return result;
 }
 
 /**

@@ -97,7 +97,7 @@ From another source:
 
 ---------
 
-    Late to reply to this I know, but SEQ24 will do what you want. I'm not
+    Late to reply to this I know, but SEQ24 will do what you want. I am not
     at my music computer right now, but I think you do ALT click or CTRL
     click, and it puts your command in a buffer and will activate it at
     the end of the clip.  Hope that helps.
@@ -110,7 +110,7 @@ Source-code investigations:
 
         Muting status is tested by sequence::get_playing().  This value may
         also be stored in mainwid::m_last_playing[].  However, that member
-        seems to be unused.  We're removing it.
+        seems to be unused.  We are removing it.
 
         Queued status is tested by sequence::get_queued().
 
@@ -259,7 +259,7 @@ Flow diagrams:
  o  "rc" file --->
         [mute-group] --->
         select_group_mute(g) --->
-        m_mute_group_selected = g (we're not in learn mode) --->
+        m_mute_group_selected = g (we are not in learn mode) --->
         set_group_mute_state(track, gm[track]) for 32 sets --->
         m_mute_group[mute_group_offset(track)] = muted;
                        |

@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and Tim Deagan
  * \date          2015-07-24
- * \updates       2016-07-12
+ * \updates       2016-07-13
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -44,14 +44,6 @@
 #include "midibus.hpp"
 #include "perform.hpp"
 #include "settings.hpp"                 /* seq64::rc() and choose_ppqn()    */
-
-#define USE_EXPERIMENTAL_CODE
-
-/**
- *  Provide a "not-a-number" macro.  -nan(0x8000000000000)
- */
-
-#define SEQ64_JACK_NAN      0x8000000000000
 
 /**
  *  Indicates if the playing-screenset code is in force or not, for
@@ -349,8 +341,14 @@ perform::any_group_unmutes () const
 /**
  *  If we're in group-learn mode, then this function gets the playing statuses
  *  of all of the sequences in the current play-screen, and copies them into
- *  the desired mute-group.  Then, no matter what, it makes the desired
- *  mute-group the selected mute-group.  Compare to set_and_copy_mute_group().
+ *  the desired mute-group.
+ *
+ *  Then, no matter what, it makes the desired mute-group the selected
+ *  mute-group.  Compare to set_and_copy_mute_group().
+ *
+ *  One thing to note is that, once saved, then, if used, it is applied
+ *  to the current screen-set, even if it is not the screen-set whose
+ *  playing status were saved.
  *
  * \param mutegroup
  *      The number of the desired mute group, clamped to be between 0 and
@@ -385,7 +383,7 @@ perform::select_group_mute (int mutegroup)
 void
 perform::set_mode_group_learn ()
 {
-    set_mode_group_mute();
+    set_mode_group_mute();                          /* m_mode_group = true */
     m_mode_group_learn = true;
     for (size_t x = 0; x < m_notify.size(); ++x)
         m_notify[x]->on_grouplearnchange(true);
@@ -397,6 +395,9 @@ perform::set_mode_group_learn ()
  *  called via a MIDI control c_midi_control_mod_glearn, via the group-learn
  *  keystroke, and in mainwnd::on_key_press_event(), to end the group-learn
  *  mode.
+ *
+ *  Shouldn't this function also call this one, to perfectly complement
+ *  set_mode_group_learn: unset_mode_group_mute().  Too tricky.
  */
 
 void
@@ -404,12 +405,6 @@ perform::unset_mode_group_learn ()
 {
     for (size_t x = 0; x < m_notify.size(); ++x)
         m_notify[x]->on_grouplearnchange(false);
-
-    /*
-     * Shouldn't it also call this one?
-     *
-     * unset_mode_group_mute();
-     */
 
     m_mode_group_learn = false;
 }
@@ -489,10 +484,11 @@ perform::mute_group_tracks ()
                 if (is_active(seqnum))
                 {
 #ifdef SEQ64_USE_TDEAGAN_CODE
-                    if ((i == m_screenset) && m_tracks_mute_state[j])
+                    bool on = (i == m_screenset) && m_tracks_mute_state[j];
 #else
-                    if ((i == m_playing_screen) && m_tracks_mute_state[j])
+                    bool on = (i == m_playing_screen) && m_tracks_mute_state[j];
 #endif
+                    if (on)
                         sequence_playing_on(seqnum);
                     else
                         sequence_playing_off(seqnum);
@@ -503,7 +499,8 @@ perform::mute_group_tracks ()
 }
 
 /**
- *  Select a mute group and then mutes the track in the group.
+ *  Select a mute group and then mutes the track in the group.  Called in
+ *  perform and in mainwnd.
  *
  * \param group
  *      Provides the group number for the group to be muted.
@@ -859,8 +856,7 @@ perform::is_dirty_main (int seq)
     {
         if (is_active(seq))
         {
-            if (not_nullptr(m_seqs[seq]))
-                was_active = m_seqs[seq]->is_dirty_main();
+            was_active = m_seqs[seq]->is_dirty_main();
         }
         else
         {
@@ -890,8 +886,7 @@ perform::is_dirty_edit (int seq)
     {
         if (is_active(seq))
         {
-            if (not_nullptr(m_seqs[seq]))
-                was_active = m_seqs[seq]->is_dirty_edit();
+            was_active = m_seqs[seq]->is_dirty_edit();
         }
         else
         {
@@ -921,8 +916,7 @@ perform::is_dirty_perf (int seq)
     {
         if (is_active(seq))
         {
-            if (not_nullptr(m_seqs[seq]))
-                was_active = m_seqs[seq]->is_dirty_perf();
+            was_active = m_seqs[seq]->is_dirty_perf();
         }
         else
         {
@@ -952,8 +946,7 @@ perform::is_dirty_names (int seq)
     {
         if (is_active(seq))
         {
-            if (not_nullptr(m_seqs[seq]))
-                was_active = m_seqs[seq]->is_dirty_names();
+            was_active = m_seqs[seq]->is_dirty_names();
         }
         else
         {
@@ -1229,10 +1222,7 @@ perform::set_screenset (int ss)
     if (ss != m_screenset)
         m_screenset = ss;
 
-#ifdef USE_EXPERIMENTAL_CODE
     set_offset(ss);             /* was called in mainwid::set_screenset() */
-#endif
-
 }
 
 /**
@@ -1615,7 +1605,7 @@ perform::inner_start (bool state)
     {
         set_playback_mode(state);
 
-#ifndef SEQ64_PAUSE_SUPPORT             // EXPERIMENTAL ca 2016-05-13
+#ifndef SEQ64_PAUSE_SUPPORT
         if (state)
             off_sequences();
 #endif
@@ -2387,50 +2377,50 @@ perform::handle_midi_control (int ctrl, bool state)
 {
     switch (ctrl)
     {
-    case c_midi_control_bpm_up:                 // printf("bpm up\n");
+    case c_midi_control_bpm_up:
         set_beats_per_minute(get_beats_per_minute() + 1);
         break;
 
-    case c_midi_control_bpm_dn:                 // printf("bpm dn\n");
+    case c_midi_control_bpm_dn:
         set_beats_per_minute(get_beats_per_minute() - 1);
         break;
 
-    case c_midi_control_ss_up:                  // printf("ss up\n");
+    case c_midi_control_ss_up:
         set_screenset(get_screenset() + 1);
         break;
 
-    case c_midi_control_ss_dn:                  // printf("ss dn\n");
+    case c_midi_control_ss_dn:
         set_screenset(get_screenset() - 1);
         break;
 
-    case c_midi_control_mod_replace:            // printf("replace\n");
+    case c_midi_control_mod_replace:
         if (state)
             set_sequence_control_status(c_status_replace);
         else
             unset_sequence_control_status(c_status_replace);
         break;
 
-    case c_midi_control_mod_snapshot:           // printf("snapshot\n");
+    case c_midi_control_mod_snapshot:
         if (state)
             set_sequence_control_status(c_status_snapshot);
         else
             unset_sequence_control_status(c_status_snapshot);
         break;
 
-    case c_midi_control_mod_queue:              // printf("queue\n");
+    case c_midi_control_mod_queue:
         if (state)
             set_sequence_control_status(c_status_queue);
         else
             unset_sequence_control_status(c_status_queue);
 
-    case c_midi_control_mod_gmute:              // Andy case; printf("gmute\n");
+    case c_midi_control_mod_gmute:
         if (state)
-            set_mode_group_mute();
+            set_mode_group_mute();              /* m_mode_group = true */
         else
             unset_mode_group_mute();
         break;
 
-    case c_midi_control_mod_glearn:             // Andy case; printf("glearn\n");
+    case c_midi_control_mod_glearn:
         if (state)
             set_mode_group_learn();
         else
@@ -2721,6 +2711,53 @@ perform::seq_in_playing_screen (int seq)
     );
 }
 
+#ifdef USE_REPLACEMENT_FUNCTION
+
+/**
+ *  Turn the playing of a sequence on or off, if it is active.  Used for the
+ *  implementation of sequence_playing_on() and sequence_playing_off().
+ *
+ * \param seq
+ *      The number of the sequence to be turned off.
+ *
+ * \param on
+ *      True if the sequence is to be turned on, false if it is to be turned
+ *      off.
+ */
+
+void
+perform::sequence_playing_change (int seq, bool on)
+{
+    if (is_active(seq))
+    {
+        if (seq_in_playing_screen(seq))
+            m_tracks_mute_state[seq - m_playscreen_offset] = on;
+
+        bool queued = m_seqs[seq]->get_queued();
+        bool ok = m_seqs[seq]->get_playing();
+        if (on)
+            ok = ! ok;
+
+        if (ok)
+        {
+            if (m_control_status & c_status_queue)
+            {
+                if (! queued)
+                    m_seqs[seq]->toggle_queued();
+            }
+            else
+                m_seqs[seq]->set_playing(on);
+        }
+        else
+        {
+            if (queued && (m_control_status & c_status_queue) != 0)
+                m_seqs[seq]->toggle_queued();
+        }
+    }
+}
+
+#else   // USE_REPLACEMENT_FUNCTION
+
 /**
  *  Turn off the playing of a sequence, if it is active.  Compare it to
  *  sequence_playing_toggle().
@@ -2789,6 +2826,8 @@ perform::sequence_playing_off (int seq)
         }
     }
 }
+
+#endif  // USE_REPLACEMENT_FUNCTION
 
 /*
  * Non-inline encapsulation functions start here.
@@ -2976,14 +3015,14 @@ perform::mainwnd_key_event (const keystroke & k)
         else if (key == keys().set_playing_screenset())
             set_playing_screenset();
         else if (key == keys().group_on())
-            set_mode_group_mute();
+            set_mode_group_mute();              /* m_mode_group = true */
         else if (key == keys().group_off())
             unset_mode_group_mute();
         else if (key == keys().group_learn())
             set_mode_group_learn();
         else
             result = false;
-        }
+    }
     else
     {
         if (key == keys().replace())

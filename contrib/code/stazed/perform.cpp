@@ -1569,7 +1569,7 @@ perform::inner_start (bool state)
     {
         set_playback_mode(state);
 
-#ifndef SEQ64_PAUSE_SUPPORT             // EXPERIMENTAL ca 2016-05-13
+#ifndef SEQ64_PAUSE_SUPPORT
         if (state)
             off_sequences();
 #endif

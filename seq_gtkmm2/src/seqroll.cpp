@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-07-03
+ * \updates       2016-07-12
  * \license       GNU GPLv2 or above
  *
  *  There are a large number of existing items to discuss.  But for now let's
@@ -628,7 +628,7 @@ seqroll::update_pixmap ()
 void
 seqroll::draw_progress_on_window ()
 {
-    if (perf().is_running())        // ! select_action()  // EXPERIMENTAL
+    if (perf().is_running())
     {
         if (usr().progress_bar_thick())
         {
@@ -1245,16 +1245,8 @@ seqroll::move_selection_box (int dx, int dy)
     draw_drawable(x0, y0, x0, y0, w + 1, h + 1);    /* erase old rectangle */
     draw_rectangle(dark_orange(), x, y, w, h, false);
 #else
-    draw_selection_on_window();
+    draw_selection_on_window();         /* m_old.x = x, m_old.y = y handled */
 #endif
-
-    /*
-     * draw_selection_on_window() takes care of this!
-     *
-     *      m_old.x = x;
-     *      m_old.y = y;
-     */
-
 }
 
 /**

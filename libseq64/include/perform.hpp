@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-07-12
+ * \updates       2016-07-13
  * \license       GNU GPLv2 or above
  *
  *  This class still has way too many members, even with the JACK and
@@ -50,6 +50,8 @@
 #include "mastermidibus.hpp"            /* seq64::mastermidibus             */
 #include "midi_control.hpp"             /* seq64::midi_control "struct"     */
 #include "sequence.hpp"                 /* seq64::sequence                  */
+
+#define USE_REPLACEMENT_FUNCTION        /* totally EXPERIMENTAL!!!!         */
 
 /**
  *  Try to highlight the selected pattern using black-on-cyan
@@ -184,7 +186,9 @@ private:
 
     /**
      *  If true, indicates that a mode group is selected, and playing statuses
-     *  will be "memorized".
+     *  will be "memorized".  This value starts out true.  It is altered by
+     *  the c_midi_control_mod_gmute handler or when the keys().group_off()
+     *  or the keys().group_on() keys are struck.
      */
 
     bool m_mode_group;
@@ -1248,8 +1252,34 @@ public:
     void set_sequence_control_status (int status);
     void unset_sequence_control_status (int status);
     void sequence_playing_toggle (int seq);
+
+#ifdef USE_REPLACEMENT_FUNCTION
+
+    void sequence_playing_change (int seq, bool on);
+
+    void sequence_playing_on (int seq)
+    {
+        sequence_playing_change(seq, true);
+    }
+
+    /**
+     *  Calls sequence_playing_change() with a value of false.
+     *
+     * \param seq
+     *      The sequence number of the sequence to turn off.
+     */
+
+    void sequence_playing_off (int seq)
+    {
+        sequence_playing_change(seq, false);
+    }
+
+#else
+
     void sequence_playing_on (int seq);
     void sequence_playing_off (int seq);
+
+#endif
     void mute_all_tracks (bool flag = true);
     void output_func ();
     void input_func ();

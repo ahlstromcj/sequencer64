@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-07-12
+ * \updates       2016-07-13
  * \license       GNU GPLv2 or above
  *
  */
@@ -36,8 +36,6 @@
 #include "globals.h"                    /* c_max_sequence, etc.     */
 #include "gui_drawingarea_gtk2.hpp"     /* one base class           */
 #include "seqmenu.hpp"                  /* the other base class     */
-
-#define USE_EXPERIMENTAL_CODE
 
 namespace seq64
 {
@@ -99,13 +97,6 @@ private:
 
     long m_last_tick_x[c_max_sequence];
 
-    /*
-     *  Indicates if each sequence was playing, or not.  Doesn't seem to be
-     *  used!
-
-    bool m_last_playing[c_max_sequence];
-     */
-
     /**
      *  These values are assigned to the values given by the constants of
      *  similar names in globals.h, and we will make them parameters or
@@ -153,11 +144,7 @@ public:
     mainwid (perform & p);
     virtual ~mainwid ();
 
-#ifdef USE_EXPERIMENTAL_CODE
     void set_screenset (int ss, bool setperf = false);
-#else
-    void set_screenset (int ss);                /* int get_screenset() ?    */
-#endif
 
 private:
 
@@ -173,7 +160,7 @@ private:
 
     /**
      *  Updates the image of multiple sequencer/pattern slots.  Used by the
-     *  friend class mainwnd, but also useful for our EXPERIMENTAL feature to
+     *  friend class mainwnd, but also useful for our new feature to
      *  fully highlight the current sequence.  Calls reset() if
      *  SEQ64_EDIT_SEQUENCE_HIGHLIGHT is defined.
      */

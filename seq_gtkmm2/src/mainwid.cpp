@@ -51,8 +51,6 @@
 #include "perform.hpp"                  /* seq64::perform music control     */
 #include "settings.hpp"                 /* seq64::usr()                     */
 
-#define USE_EXPERIMENTAL_CODE
-
 namespace seq64
 {
 
@@ -274,7 +272,6 @@ mainwid::draw_sequence_on_pixmap (int seqnum)
 
             if (empty_highlight)
             {
-//              m_last_playing[seqnum] = false;         /* active, no play  */
                 if (seq->get_playing())
                 {
                     bg_color(black());
@@ -308,13 +305,11 @@ mainwid::draw_sequence_on_pixmap (int seqnum)
             {
                 if (seq->get_playing())
                 {
-//                  m_last_playing[seqnum] = true;      /* active & playing */
                     bg_color(black());
                     fg_color(white());
                 }
                 else
                 {
-//                  m_last_playing[seqnum] = false;     /* active, no play  */
                     select_fg_bg_colors(seqnum);
                 }
             }
@@ -778,8 +773,6 @@ mainwid::seq_from_xy (int x, int y)
  *      Provides the screen-set number to set.
  */
 
-#ifdef USE_EXPERIMENTAL_CODE
-
 void
 mainwid::set_screenset (int ss, bool setperf)   // default = false? true?
 {
@@ -790,27 +783,6 @@ mainwid::set_screenset (int ss, bool setperf)   // default = false? true?
     m_screenset_offset = perf().get_offset();
     reset();
 }
-
-#else
-
-void
-mainwid::set_screenset (int ss)
-{
-    if (ss != m_screenset)                  /* a new test, too strict?  */
-    {
-        if (ss < 0)
-            ss = m_max_sets - 1;
-        else if (ss >= m_max_sets)
-            ss = 0;
-
-        m_screenset = ss;
-        m_screenset_offset = ss * m_screenset_slots;    /* rows * cols  */
-        perf().set_offset(ss);
-        reset();
-    }
-}
-
-#endif
 
 /**
  *  Calculates the sequence number based on the screenset and then

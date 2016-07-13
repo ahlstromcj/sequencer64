@@ -106,8 +106,6 @@
 
 using namespace Gtk::Menu_Helpers;      /* MenuElem, etc.                */
 
-#define USE_EXPERIMENTAL_CODE
-
 namespace seq64
 {
 
@@ -1104,14 +1102,11 @@ mainwnd::about_dialog ()
 void
 mainwnd::adj_callback_ss ()
 {
-#ifdef USE_EXPERIMENTAL_CODE
     m_main_wid->set_screenset(int(m_adjust_ss->get_value()), true);
-#else
-    perf().set_screenset(int(m_adjust_ss->get_value()));
-    m_main_wid->set_screenset(perf().get_screenset());
-#endif
-
     m_entry_notes->set_text(perf().current_screen_set_notepad());
+
+//  perf().set_screenset(int(m_adjust_ss->get_value()));
+//  m_main_wid->set_screenset(perf().get_screenset());
 }
 
 /**
@@ -1342,7 +1337,7 @@ mainwnd::on_key_press_event (GdkEventKey * ev)
             printf("key_press[%d]\n", k.key());
             fflush(stdout);
         }
-        if (! perf().mainwnd_key_event(k))          // EXPERIMENT
+        if (! perf().mainwnd_key_event(k))
         {
             if (k.key() == PREFKEY(bpm_dn))
             {

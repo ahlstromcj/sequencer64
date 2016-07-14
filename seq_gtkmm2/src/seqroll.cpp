@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-07-12
+ * \updates       2016-07-14
  * \license       GNU GPLv2 or above
  *
  *  There are a large number of existing items to discuss.  But for now let's
@@ -153,9 +153,6 @@ seqroll::seqroll
     m_seq                   (seq),
     m_seqkeys_wid           (seqkeys_wid),
     m_fruity_interaction    (),
-#ifndef USE_NEW_FUNCTIONS
-    m_seq24_interaction     (),
-#endif
     m_pos                   (pos),
     m_zoom                  (zoom),
     m_snap                  (snap),
@@ -1425,8 +1422,6 @@ seqroll::add_note (midipulse tick, int note, bool paint)
     return true;
 }
 
-#ifdef USE_NEW_FUNCTIONS
-
 /*
  *  Encapsulates some setup behavior for the fruity and seq24
  *  on_button_press_event() handlers.
@@ -1811,8 +1806,6 @@ seqroll::add_snapped_note ()
 
 #endif  // USE_UNREADY_NEW_FUNCTIONS
 
-#endif  // USE_NEW_FUNCTIONS
-
 /**
  *  Implements the on-realize event handling.
  */
@@ -1870,11 +1863,7 @@ seqroll::on_button_press_event (GdkEventButton * ev)
 {
     bool result;
     if (rc().interaction_method() == e_seq24_interaction)
-#ifdef USE_NEW_FUNCTIONS
         result = button_press(ev);
-#else
-        result = m_seq24_interaction.on_button_press_event(ev, *this);
-#endif
     else
         result = m_fruity_interaction.on_button_press_event(ev, *this);
 
@@ -1905,11 +1894,7 @@ seqroll::on_button_release_event (GdkEventButton * ev)
 {
     bool result;
     if (rc().interaction_method() == e_seq24_interaction)
-#ifdef USE_NEW_FUNCTIONS
         result = button_release(ev);
-#else
-        result = m_seq24_interaction.on_button_release_event(ev, *this);
-#endif
     else
         result = m_fruity_interaction.on_button_release_event(ev, *this);
 
@@ -1936,11 +1921,7 @@ seqroll::on_motion_notify_event (GdkEventMotion * ev)
 {
     bool result;
     if (rc().interaction_method() == e_seq24_interaction)
-#ifdef USE_NEW_FUNCTIONS
         result = motion_notify(ev);
-#else
-        result = m_seq24_interaction.on_motion_notify_event(ev, *this);
-#endif
     else
         result = m_fruity_interaction.on_motion_notify_event(ev, *this);
 

@@ -6,7 +6,7 @@
 # \library    	libseq_gtkmm2 library
 # \author     	Chris Ahlstrom
 # \date       	2015-09-11
-# \update      2016-05-28
+# \update      2016-07-14
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -65,6 +65,10 @@ sequencer64libdir = @sequencer64libdir@
 #******************************************************************************
 # Source files
 #----------------------------------------------------------------------------
+#
+# seq24seqroll.h now obsolete, removed from the build.
+#
+#----------------------------------------------------------------------------
 
 pkginclude_HEADERS = \
    eventedit.hpp \
@@ -90,7 +94,6 @@ pkginclude_HEADERS = \
 	perfroll_input.hpp \
 	perftime.hpp \
 	seq24seq.hpp \
-	seq24seqroll.hpp \
 	seqdata.hpp \
 	seqedit.hpp \
 	seqevent.hpp \

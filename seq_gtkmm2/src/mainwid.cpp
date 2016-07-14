@@ -930,7 +930,7 @@ bool
 mainwid::on_button_release_event (GdkEventButton * p)
 {
     /**
-     * Try disabling the setting of the current sequence; It completely
+     * Tried disabling the setting of the current sequence; it completely
      * disables drag-n-drop.  But leaving it in removes the current-sequence
      * highlighting, which otherwise is fine.  So we do it only if moving a
      * pattern (drag-and-drop).
@@ -968,7 +968,8 @@ mainwid::on_button_release_event (GdkEventButton * p)
         else
         {
             /*
-             * If shift is held, toggle all the other sequences.
+             * If shift is held, toggle all the other sequences.  We could
+             * move this modifiers code into functions in the base class.
              */
 
             guint modifiers;        /* for filtering out caps/num lock etc. */

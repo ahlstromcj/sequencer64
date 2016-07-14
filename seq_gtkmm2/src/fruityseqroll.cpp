@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-07-01
+ * \updates       2016-07-14
  * \license       GNU GPLv2 or above
  *
  *  This module handles "fruity" interactions only in the piano roll
@@ -101,30 +101,12 @@ FruitySeqRollInput::on_button_press_event (GdkEventButton * ev, seqroll & sroll)
     midipulse tick_s, tick_f;
     int note_h, note_l;
     sequence & seq = sroll.m_seq;                   /* just do this once!   */
-#ifdef USE_NEW_FUNCTIONS
     int norm_x, snapped_x, snapped_y;
     bool needs_update = sroll.button_press_initial
     (
         ev, norm_x, snapped_x, snapped_y                /* 3 side-effects   */
     );
     if (! needs_update)
-#else
-    bool needs_update = false;
-    int snapped_x = sroll.scroll_offset_x(int(ev->x));
-    int snapped_y = sroll.scroll_offset_y(int(ev->y));
-    sroll.grab_focus();
-    sroll.snap_x(snapped_x);
-    sroll.snap_y(snapped_y);
-    sroll.set_current_drop_y(snapped_y);            /* y is always snapped  */
-    sroll.m_old.x = sroll.m_old.y = sroll.m_old.width = sroll.m_old.height = 0;
-
-    if (sroll.m_paste)
-    {
-        sroll.complete_paste(snapped_x, snapped_y);
-        needs_update = true;
-    }
-    else
-#endif
     {
         int norm_x = snapped_x;
         if (SEQ64_CLICK_LEFT(ev->button))

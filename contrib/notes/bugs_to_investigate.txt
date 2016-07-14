@@ -1,6 +1,6 @@
 Bugs and Additional Upgrade Ideas
 Chris Ahlstrom
-2015-10-27 to 2016-07-10 (New bugs)
+2015-10-27 to 2016-07-13 (New bugs)
 
 In no particular order...  "y" means "in progress", and "x" means it is
 basically done.
@@ -8,6 +8,7 @@ basically done.
 -  Also see BUG REPORTS below.  Those are bug reports from other people.
 y  Still need to test saving and reading of the new transposable sequence
    state.
+-  Need to remove using Ctrl-key as a way to open a pattern for editing.
 y  Added ability to strip out mute-groups from a MIDI file when not being
    used.  Still testing
 y  The "replace" key functionality (turn on the selected pattern and turn off

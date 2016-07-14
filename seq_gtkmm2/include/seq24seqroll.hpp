@@ -29,10 +29,12 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-01
+ * \updates       2015-07-14
  * \license       GNU GPLv2 or above
  *
  */
+
+#error The seq24seqroll module is now OBSOLETE.
 
 namespace seq64
 {

@@ -1104,9 +1104,6 @@ mainwnd::adj_callback_ss ()
 {
     m_main_wid->set_screenset(int(m_adjust_ss->get_value()), true);
     m_entry_notes->set_text(perf().current_screen_set_notepad());
-
-//  perf().set_screenset(int(m_adjust_ss->get_value()));
-//  m_main_wid->set_screenset(perf().get_screenset());
 }
 
 /**
@@ -1439,37 +1436,26 @@ mainwnd::on_key_press_event (GdkEventKey * ev)
         if (! perf().playback_key_event(k))
         {
             /*
-             * Toggle the sequence mute/unmute setting using keyboard keys.
+             *  Toggle the sequence mute/unmute setting using keyboard keys.
+             *  However, do not do this if the Ctrl key is being pressed.
+             *  Ctrl-E, for example, brings up the Song Editor, and should not
+             *  toggle the sequence controlled by the "e" key.  Will also see
+             *  if the Alt key could/should be intercepted.
              *
-             * \change ca 2015-08-12
-             *      However, do not do this if the Ctrl key is being pressed.
-             *      Ctrl-E, for example, brings up the Song Editor, and should
-             *      not toggle the sequence controlled by the "e" key.  Will
-             *      also see if the Alt key could/should be intercepted.
-             *
-             * \change ca 2016-05-21
-             *      Also, if the pattern-edit keys (will be minus and equals
-             *      by default) are enabled and have been pressed, then bring
-             *      up one of the editors (pattern or event) when the slot
-             *      shortcut key is pressed.
+             *  Also, if the pattern-edit keys (will be minus and equals by
+             *  default) are enabled and have been pressed, then bring up one
+             *  of the editors (pattern or event) when the slot shortcut key
+             *  is pressed.
              */
 
             if (perf().get_key_events().count(k.key()) != 0)
             {
-#ifdef USE_OLD_VERSION                  // section to be deleted after testing
-                /*
-                 * This mask test doesn't seem right.  Or at least, too much.
-                 *
-                 * guint modifiers = gtk_accelerator_get_default_mod_mask();
-                 * bool ok = (ev->state & modifiers) != SEQ64_CONTROL_MASK;
-                 */
-
-                bool ok = (ev->state & SEQ64_CONTROL_MASK) != 0;
-#else
                 bool ok = perf().is_control_status();
                 if (! ok)
-                    ok = (ev->state & SEQ64_CONTROL_MASK) == 0;
-#endif
+                {
+                    guint modifiers = gtk_accelerator_get_default_mod_mask();
+                    ok = (ev->state & modifiers) != SEQ64_CONTROL_MASK;
+                }
                 if (ok)
                 {
                     int seqnum = perf().lookup_keyevent_seq(k.key());
@@ -1509,18 +1495,14 @@ mainwnd::on_key_press_event (GdkEventKey * ev)
                     /*
                      * Ctrl-L to toggle the group-learn mode.  Similar to
                      * Ctrl-E to bring up the Song Editor.  Another
-                     * overly-complex Ctrl-key test?
+                     * overly-complex Ctrl-key test?  Fold into the base class
+                     * later!
                      */
 
                     guint modifiers = gtk_accelerator_get_default_mod_mask();
-                    if
-                    (
-                        k.key() == SEQ64_l &&
-                        (ev->state & modifiers) == SEQ64_CONTROL_MASK
-                    )
-                    {
+                    bool ok = (ev->state & modifiers) == SEQ64_CONTROL_MASK;
+                    if (ok && (k.key() == SEQ64_l))
                         perf().learn_toggle();
-                    }
                 }
             }
         }

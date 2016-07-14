@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-07-02
+ * \updates       2016-07-14
  * \license       GNU GPLv2 or above
  *
  *  We are currently moving toward making this class a base class.
@@ -39,10 +39,6 @@
 #include "fruityseqroll.hpp"
 #include "sequence.hpp"
 #include "scales.h"                     /* STAZED chord support     */
-
-#define USE_NEW_FUNCTIONS
-
-#include "seq24seqroll.hpp"             /* will be OBSOLETE soon    */
 
 namespace Gtk
 {
@@ -97,13 +93,12 @@ public:
 class seqroll : public gui_drawingarea_gtk2
 {
     /**
-     *  These friend implement interaction-specific behavior, although only
-     *  the Seq24 interactions support keyboard processing.  (Actually,
-     *  keyboard processing is common to both types of behavior).
+     *  This friend implements fruity interaction-specific behavior.
+     *  We've absorbed the Seq24SeqRollInput class functionality back into 
+     *  seqroll, to save code.
      */
 
     friend class FruitySeqRollInput;
-    friend class Seq24SeqRollInput;     /* will be OBSOLETE soon */
 
 private:
 
@@ -158,17 +153,6 @@ private:
      */
 
     FruitySeqRollInput m_fruity_interaction;
-
-#ifndef USE_NEW_FUNCTIONS
-
-    /**
-     *  Provides a normal seq24 input object, which is always needed to
-     *  handle, for example, keystroke input.  Will be OBSOLETE soon.
-     */
-
-    Seq24SeqRollInput m_seq24_interaction;
-
-#endif
 
     /**
      *  A position value.  Need to clarify what exactly this member is used
@@ -602,8 +586,6 @@ private:
     void set_adding (bool adding);                      // from seq24 seqroll
     void update_mouse_pointer (bool adding = false);    // from fruity seqroll
 
-#ifdef  USE_NEW_FUNCTIONS
-
     bool button_press_initial
     (
         GdkEventButton * ev, int & norm_x, int & snapped_x, int & snapped_y
@@ -622,8 +604,6 @@ private:
     void set_hint_note ();
     void add_snapped_note ();
 #endif
-
-#endif      // USE_NEW_FUNCTIONS
 
 private:            // new internal/friend functions
 

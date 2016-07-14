@@ -6,7 +6,7 @@
 # \library    	libseq_gtkmm2 library
 # \author     	Chris Ahlstrom
 # \date       	2015-09-11
-# \update      2016-06-21
+# \update      2016-07-14
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -122,6 +122,10 @@ lib_LTLIBRARIES = libseq_gtkmm2.la
 #******************************************************************************
 # Source files
 #----------------------------------------------------------------------------
+#
+# seq24seqroll.cpp now obsolete, removed from the build.
+#
+#----------------------------------------------------------------------------
 
 libseq_gtkmm2_la_SOURCES = \
    eventedit.cpp \
@@ -146,7 +150,6 @@ libseq_gtkmm2_la_SOURCES = \
 	perfroll_input.cpp \
 	perftime.cpp \
 	seq24seq.cpp \
-	seq24seqroll.cpp \
 	seqdata.cpp \
 	seqedit.cpp \
 	seqevent.cpp \

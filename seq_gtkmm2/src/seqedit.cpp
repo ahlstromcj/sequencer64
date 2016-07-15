@@ -513,7 +513,7 @@ seqedit::create_menus ()
     char b[8];
     for (int z = usr().min_zoom(); z <= usr().max_zoom(); z *= 2)
     {
-        snprintf(b, sizeof(b), "1:%d", z);
+        snprintf(b, sizeof b, "1:%d", z);
         m_menu_zoom->items().push_back      /* add an entry to zoom menu    */
         (
             MenuElem(b, sigc::bind(mem_fun(*this, &seqedit::set_zoom), z))
@@ -702,7 +702,7 @@ seqedit::create_menus ()
     for (int i = 0; i < 16; ++i)                        /* seq length menu   */
     {
         int len = i + 1;
-        snprintf(b, sizeof(b), "%d", len);
+        snprintf(b, sizeof b, "%d", len);
         m_menu_length->items().push_back                /* length            */
         (
             MenuElem(b, sigc::bind(SET_MEASURES, len))
@@ -805,7 +805,7 @@ seqedit::popup_tool_menu ()
     {
         if (i != 0)
         {
-            snprintf(num, sizeof(num), "%+d [%s]", i, c_interval_text[abs(i)]);
+            snprintf(num, sizeof num, "%+d [%s]", i, c_interval_text[abs(i)]);
             holder2->items().push_front
             (
                 MenuElem(num, sigc::bind(DO_ACTION, c_transpose, i))
@@ -820,7 +820,7 @@ seqedit::popup_tool_menu ()
         {
             snprintf
             (
-                num, sizeof(num), "%+d [%s]",
+                num, sizeof num, "%+d [%s]",
                 (i < 0) ? i-1 : i+1, c_chord_text[abs(i)]
             );
             holder2->items().push_front
@@ -1272,7 +1272,7 @@ seqedit::popup_midich_menu ()
     for (int channel = 0; channel < SEQ64_MIDI_BUS_CHANNEL_MAX; ++channel)
     {
         char b[4];                                  /* 2 digits or less  */
-        snprintf(b, sizeof(b), "%d", channel + 1);
+        snprintf(b, sizeof b, "%d", channel + 1);
         std::string name = std::string(b);
         std::string s = usr().instrument_name(bus, channel);
         if (! s.empty())
@@ -1328,12 +1328,12 @@ seqedit::popup_sequence_menu ()
                 if (! inserted)
                 {
                     inserted = true;
-                    snprintf(name, sizeof(name), "[%d]", ss);
+                    snprintf(name, sizeof name, "[%d]", ss);
                     menuss = manage(new Gtk::Menu());
                     m_menu_sequences->items().push_back(MenuElem(name, *menuss));
                 }
                 sequence * seq = perf().get_sequence(i);
-                snprintf(name, sizeof(name), "[%d] %.13s", i, seq->get_name());
+                snprintf(name, sizeof name, "[%d] %.13s", i, seq->get_name());
                 menuss->items().push_back
                 (
                     MenuElem(name, sigc::bind(SET_BG_SEQ, i))
@@ -1372,14 +1372,9 @@ seqedit::set_background_sequence (int seqnum)
     }
     if (perf().is_active(seqnum))
     {
-        /**
-         * \todo
-         *      Make the sequence pointer a reference.
-         */
-
         char name[24];
         sequence * seq = perf().get_sequence(seqnum);
-        snprintf(name, sizeof(name), "[%d] %.13s", seqnum, seq->get_name());
+        snprintf(name, sizeof name, "[%d] %.13s", seqnum, seq->get_name());
         m_entry_sequence->set_text(name);
         m_seqroll_wid->set_background_sequence(true, seqnum);
         if (seqnum < usr().max_sequence())      /* even more restrictive */
@@ -1388,17 +1383,19 @@ seqedit::set_background_sequence (int seqnum)
 }
 
 /**
- *  Sets the manu pixmap depending on the given state, where true is a
+ *  Sets the menu pixmap depending on the given state, where true is a
  *  full menu (black backgroun), and empty menu (gray background).
  */
 
 Gtk::Image *
 seqedit::create_menu_image (bool state)
 {
-    if (state)
-        return manage(new PIXBUF_IMAGE(menu_full_xpm));
-    else
-        return manage(new PIXBUF_IMAGE(menu_empty_xpm));
+//  if (state)
+//      return manage(new PIXBUF_IMAGE(menu_full_xpm));
+//  else
+//      return manage(new PIXBUF_IMAGE(menu_empty_xpm));
+
+    return manage(new PIXBUF_IMAGE(state ? menu_full_xpm : menu_empty_xpm));
 }
 
 /**
@@ -1671,7 +1668,7 @@ seqedit::set_snap (int s)
     if (s > 0)
     {
         char b[16];
-        snprintf(b, sizeof(b), "1/%d", m_ppqn * 4 / s);
+        snprintf(b, sizeof b, "1/%d", m_ppqn * 4 / s);
         m_entry_snap->set_text(b);
         m_snap = s;
         m_initial_snap = s;
@@ -1703,7 +1700,7 @@ void
 seqedit::set_note_length (int notelength)
 {
     char b[8];
-    snprintf(b, sizeof(b), "1/%d", m_ppqn * 4 / notelength);
+    snprintf(b, sizeof b, "1/%d", m_ppqn * 4 / notelength);
     m_entry_note_length->set_text(b);
 
 #ifdef CAN_MODIFY_GLOBAL_PPQN
@@ -1836,7 +1833,7 @@ void
 seqedit::set_measures (int lim)
 {
     char b[8];
-    snprintf(b, sizeof(b), "%d", lim);
+    snprintf(b, sizeof b, "%d", lim);
     m_entry_length->set_text(b);
     m_measures = lim;
     apply_length(m_seq.get_beats_per_bar(), m_seq.get_beat_width(), lim);
@@ -1851,7 +1848,7 @@ void
 seqedit::set_beats_per_bar (int bpm)
 {
     char b[8];
-    snprintf(b, sizeof(b), "%d", bpm);
+    snprintf(b, sizeof b, "%d", bpm);
     m_entry_bpm->set_text(b);
     if (bpm != m_seq.get_beats_per_bar())
     {
@@ -1870,7 +1867,7 @@ void
 seqedit::set_beat_width (int bw)
 {
     char b[8];
-    snprintf(b, sizeof(b), "%d", bw);
+    snprintf(b, sizeof b, "%d", bw);
     m_entry_bw->set_text(b);
     if (bw != m_seq.get_beat_width())
     {
@@ -1999,13 +1996,13 @@ seqedit::set_data_type (midibyte status, midibyte control)
 
     char hex[8];
     char type[80];
-    snprintf(hex, sizeof(hex), "[0x%02X]", status);
+    snprintf(hex, sizeof hex, "[0x%02X]", status);
     if (status == EVENT_NOTE_OFF)
-        snprintf(type, sizeof(type), "Note Off");
+        snprintf(type, sizeof type, "Note Off");
     else if (status == EVENT_NOTE_ON)
-        snprintf(type, sizeof(type), "Note On");
+        snprintf(type, sizeof type, "Note On");
     else if (status == EVENT_AFTERTOUCH)
-        snprintf(type, sizeof(type), "Aftertouch");
+        snprintf(type, sizeof type, "Aftertouch");
     else if (status == EVENT_CONTROL_CHANGE)
     {
         int bus = m_seq.get_midi_bus();
@@ -2014,19 +2011,19 @@ seqedit::set_data_type (midibyte status, midibyte control)
         if (usr().controller_active(bus, channel, control))
             ccname = usr().controller_name(bus, channel, control);
 
-        snprintf(type, sizeof(type), "Control Change - %s", ccname.c_str());
+        snprintf(type, sizeof type, "Control Change - %s", ccname.c_str());
     }
     else if (status == EVENT_PROGRAM_CHANGE)
-        snprintf(type, sizeof(type), "Program Change");
+        snprintf(type, sizeof type, "Program Change");
     else if (status == EVENT_CHANNEL_PRESSURE)
-        snprintf(type, sizeof(type), "Channel Pressure");
+        snprintf(type, sizeof type, "Channel Pressure");
     else if (status == EVENT_PITCH_WHEEL)
-        snprintf(type, sizeof(type), "Pitch Wheel");
+        snprintf(type, sizeof type, "Pitch Wheel");
     else
-        snprintf(type, sizeof(type), "Unknown MIDI Event");
+        snprintf(type, sizeof type, "Unknown MIDI Event");
 
     char text[80];
-    snprintf(text, sizeof(text), "%s %s", hex, type);
+    snprintf(text, sizeof text, "%s %s", hex, type);
     m_entry_data->set_text(text);
 }
 
@@ -2262,10 +2259,11 @@ seqedit::on_scroll_event (GdkEventScroll * ev)
 bool
 seqedit::on_key_press_event (GdkEventKey * ev)
 {
-    guint modifiers;            /* for filtering out caps/num-lock etc.     */
-    modifiers = gtk_accelerator_get_default_mod_mask();
     bool result = false;
-    if ((ev->state & modifiers) == SEQ64_CONTROL_MASK)
+//  guint modifiers;            /* for filtering out caps/num-lock etc.     */
+//  modifiers = gtk_accelerator_get_default_mod_mask();
+//  if ((ev->state & modifiers) == SEQ64_CONTROL_MASK)
+    if (is_ctrl_key(ev))
     {
         if (ev->keyval == 'w')
         {
@@ -2287,7 +2285,8 @@ seqedit::on_key_press_event (GdkEventKey * ev)
             result = true;
         }
     }
-    else if ((ev->state & modifiers) == SEQ64_SHIFT_MASK)
+//  else if ((ev->state & modifiers) == SEQ64_SHIFT_MASK)
+    else if (is_shift_key(ev))
     {
         if (ev->keyval == SEQ64_Page_Down)      /* scroll rightward     */
         {

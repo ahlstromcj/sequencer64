@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-22
- * \updates       2016-05-30
+ * \updates       2016-07-15
  * \license       GNU GPLv2 or above
  *
  *  This module uses Gtk::Window as the base class, and also holds the main
@@ -36,6 +36,7 @@
 #include <gtkmm/window.h>
 #include <gtkmm/scrollbar.h>
 
+#include "gdk_basic_keys.h"
 #include "gui_window_gtk2.hpp"
 #include "perform.hpp"
 #include "settings.hpp"                 /* seq64::rc() or seq64::usr()      */
@@ -86,7 +87,39 @@ gui_window_gtk2::gui_window_gtk2
 
 gui_window_gtk2::~gui_window_gtk2 ()
 {
-    // Empty body
+    /* Empty body */
+}
+
+/**
+ *  Encapsulates the safe test for the control key, as described here:
+ *  https://developer.gnome.org/gtk3/stable/checklist-modifiers.html.
+ *  It's a shame that GdkEventAny doesn't also encapsulate the keyboard
+ *  state, since that is also available for other events, such as scroll
+ *  events.
+ *
+ * \param ev
+ *      The keystroke event to be tested.
+ */
+
+bool
+gui_window_gtk2::is_ctrl_key (GdkEventKey * ev)
+{
+    guint modifiers = gtk_accelerator_get_default_mod_mask();
+    return (ev->state & modifiers) == SEQ64_CONTROL_MASK;
+}
+
+/**
+ *  Encapsulates the safe test for the shift key.
+ *
+ * \param ev
+ *      The keystroke event to be tested.
+ */
+
+bool
+gui_window_gtk2::is_shift_key (GdkEventKey * ev)
+{
+    guint modifiers = gtk_accelerator_get_default_mod_mask();
+    return (ev->state & modifiers) == SEQ64_SHIFT_MASK;
 }
 
 /**
@@ -133,7 +166,7 @@ gui_window_gtk2::scroll_hadjust (Gtk::Adjustment & hadjust, double step)
  *      Provides a reference to the adjustment object to be adjusted.
  *
  * \param step
- *      Provides the step value to use for adjusting the horizontal scrollbar.
+ *      Provides the step value to use for adjusting the vertical scrollbar.
  *      If greater than 0, the movement is downward.  If less than zero, the
  *      movement is upward.
  */
@@ -159,7 +192,14 @@ gui_window_gtk2::scroll_vadjust (Gtk::Adjustment & vadjust, double step)
 }
 
 /**
+ *  This function is the horizontal scroll setter.
  *
+ * \param hadjust
+ *      Provides a reference to the adjustment object to be set.  It is
+ *      clamped as necessary.
+ *
+ * \param value
+ *      Provides the value to use for setting the horizontal scrollbar.
  */
 
 void
@@ -175,6 +215,14 @@ gui_window_gtk2::scroll_hset (Gtk::Adjustment & hadjust, double value)
 }
 
 /**
+ *  This function is the vertical scroll setter.
+ *
+ * \param hadjust
+ *      Provides a reference to the adjustment object to be set.  It is
+ *      clamped as necessary.
+ *
+ * \param value
+ *      Provides the value to use for setting the vertical scrollbar.
  *
  */
 

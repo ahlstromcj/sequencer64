@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-22
- * \updates       2016-05-30
+ * \updates       2016-07-15
  * \license       GNU GPLv2 or above
  *
  *  This module declares/defines the base class for main window of the
@@ -154,6 +154,8 @@ protected:
         return m_is_realized;
     }
 
+    bool is_ctrl_key (GdkEventKey * ev);
+    bool is_shift_key (GdkEventKey * ev);
     void scroll_hadjust (Gtk::Adjustment & hadjust, double step);
     void scroll_vadjust (Gtk::Adjustment & vadjust, double step);
     void scroll_hset (Gtk::Adjustment & hadjust, double value);

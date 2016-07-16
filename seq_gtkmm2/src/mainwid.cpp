@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-07-12
+ * \updates       2016-07-16
  * \license       GNU GPLv2 or above
  *
  *  Note that this representation is, in a sense, inside the mainwnd
@@ -47,6 +47,7 @@
 #include "calculations.hpp"             /* seq64::shorten_file_spec()       */
 #include "click.hpp"                    /* SEQ64_CLICK_LEFT(), etc.         */
 #include "font.hpp"                     /* access to font bitmap functions  */
+#include "gui_key_tests.hpp"            /* is_ctrl_key(), etc.              */
 #include "mainwid.hpp"                  /* seq64::mainwid (patterns panel)  */
 #include "perform.hpp"                  /* seq64::perform music control     */
 #include "settings.hpp"                 /* seq64::usr()                     */
@@ -873,7 +874,7 @@ mainwid::on_expose_event (GdkEventExpose * ev)
  *  And we use the Alt key to enable window movement or resizing in our window
  *  manager, so that's out.
  *
- * \param p
+ * \param ev
  *      Provides the parameters of the button event.
  *
  * \return
@@ -881,11 +882,11 @@ mainwid::on_expose_event (GdkEventExpose * ev)
  */
 
 bool
-mainwid::on_button_press_event (GdkEventButton * p)
+mainwid::on_button_press_event (GdkEventButton * ev)
 {
     grab_focus();
-    int seqnum = seq_from_xy(int(p->x), int(p->y));
-    if (CAST_EQUIVALENT(p->type, SEQ64_2BUTTON_PRESS))  /* double-click?    */
+    int seqnum = seq_from_xy(int(ev->x), int(ev->y));
+    if (CAST_EQUIVALENT(ev->type, SEQ64_2BUTTON_PRESS))  /* double-click?    */
     {
         seq_edit();                                     /* seqmenu function */
         update_sequences_on_window();
@@ -893,19 +894,46 @@ mainwid::on_button_press_event (GdkEventButton * p)
     else
     {
         current_seq(seqnum);
-        if (p->state & SEQ64_CONTROL_MASK)
+
+#ifdef USE_CTRL_KEY_TO_EDIT_SEQUENCE
+
+        /*
+         * This feature will interfere with user setups that (unwisely)
+         * use the Ctrl keys as sequencer control keys.  We can already
+         * double-click to open a sequence for editing, so let's be satisfied
+         * with that.
+         */
+
+        if (is_ctrl_key(ev))
         {
             seq_edit();                                 /* seqmenu function */
             update_sequences_on_window();
         }
         else
         {
-            if (current_seq() >= 0 && SEQ64_CLICK_LEFT(p->button))
+            if (current_seq() >= 0 && SEQ64_CLICK_LEFT(ev->button))
             {
                 m_button_down = true;
                 update_sequences_on_window();
             }
         }
+#else
+        /*
+         * Do not let a click toggle the mute state if the control key is
+         * pressed.
+         */
+
+        bool ok = ! is_ctrl_key(ev);
+        if (ok)
+            ok = current_seq() >= 0 && SEQ64_CLICK_LEFT(ev->button);
+
+        if (ok)
+        {
+            m_button_down = true;
+            update_sequences_on_window();
+        }
+#endif
+
     }
     return true;
 }
@@ -919,7 +947,7 @@ mainwid::on_button_press_event (GdkEventButton * p)
  *  Also now implements the new "toggle all other patterns" action, initiated
  *  via Shift-Left-Click.
  *
- * \param p
+ * \param ev
  *      Provides the parameters of the button event.
  *
  * \return
@@ -927,7 +955,7 @@ mainwid::on_button_press_event (GdkEventButton * p)
  */
 
 bool
-mainwid::on_button_release_event (GdkEventButton * p)
+mainwid::on_button_release_event (GdkEventButton * ev)
 {
     /**
      * Tried disabling the setting of the current sequence; it completely
@@ -937,13 +965,13 @@ mainwid::on_button_release_event (GdkEventButton * p)
      */
 
     if (m_moving)
-        current_seq(seq_from_xy(int(p->x), int(p->y)));
+        current_seq(seq_from_xy(int(ev->x), int(ev->y)));
 
     m_button_down = false;
     if (current_seq() < 0)
         return true;
 
-    if (SEQ64_CLICK_LEFT(p->button))
+    if (SEQ64_CLICK_LEFT(ev->button))
     {
         if (m_moving)
         {
@@ -968,13 +996,10 @@ mainwid::on_button_release_event (GdkEventButton * p)
         else
         {
             /*
-             * If shift is held, toggle all the other sequences.  We could
-             * move this modifiers code into functions in the base class.
+             * If shift is held, toggle all the other sequences.
              */
 
-            guint modifiers;        /* for filtering out caps/num lock etc. */
-            modifiers = gtk_accelerator_get_default_mod_mask();
-            if ((p->state & modifiers) == SEQ64_SHIFT_MASK)
+            if (is_shift_key(ev))
             {
                 for (int s = 0; s < c_max_sequence; ++s)
                 {
@@ -982,7 +1007,7 @@ mainwid::on_button_release_event (GdkEventButton * p)
                         perf().sequence_playing_toggle(s);
                 }
             }
-            else
+            else if (! is_ctrl_key(ev))
             {
                 /*
                  * This is the original action, a toggle of one pattern.
@@ -996,7 +1021,7 @@ mainwid::on_button_release_event (GdkEventButton * p)
             }
         }
     }
-    else if (SEQ64_CLICK_RIGHT(p->button))
+    else if (SEQ64_CLICK_RIGHT(ev->button))
         popup_menu();
 
     return true;
@@ -1008,7 +1033,7 @@ mainwid::on_button_release_event (GdkEventButton * p)
  *  moves the selected pattern to another pattern slot.  The
  *  perform::delete_sequence() function sets the perform modification flag.
  *
- * \param p
+ * \param ev
  *      Provides the parameters of the button event.
  *
  * \return
@@ -1016,9 +1041,9 @@ mainwid::on_button_release_event (GdkEventButton * p)
  */
 
 bool
-mainwid::on_motion_notify_event (GdkEventMotion * p)
+mainwid::on_motion_notify_event (GdkEventMotion * ev)
 {
-    int seq = seq_from_xy(int(p->x), int(p->y));
+    int seq = seq_from_xy(int(ev->x), int(ev->y));
     if (m_button_down)
     {
         if (seq != current_seq() && ! m_moving && ! is_current_seq_in_edit())

@@ -91,38 +91,6 @@ gui_window_gtk2::~gui_window_gtk2 ()
 }
 
 /**
- *  Encapsulates the safe test for the control key, as described here:
- *  https://developer.gnome.org/gtk3/stable/checklist-modifiers.html.
- *  It's a shame that GdkEventAny doesn't also encapsulate the keyboard
- *  state, since that is also available for other events, such as scroll
- *  events.
- *
- * \param ev
- *      The keystroke event to be tested.
- */
-
-bool
-gui_window_gtk2::is_ctrl_key (GdkEventKey * ev)
-{
-    guint modifiers = gtk_accelerator_get_default_mod_mask();
-    return (ev->state & modifiers) == SEQ64_CONTROL_MASK;
-}
-
-/**
- *  Encapsulates the safe test for the shift key.
- *
- * \param ev
- *      The keystroke event to be tested.
- */
-
-bool
-gui_window_gtk2::is_shift_key (GdkEventKey * ev)
-{
-    guint modifiers = gtk_accelerator_get_default_mod_mask();
-    return (ev->state & modifiers) == SEQ64_SHIFT_MASK;
-}
-
-/**
  *  This function provides optimization for the on_scroll_event() functions,
  *  and should provide support for having the seqedit/seqroll/seqtime/seqdata
  *  panes follow the scrollbar, in a future upgrade.  This function

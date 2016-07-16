@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-05-17
+ * \updates       2016-07-16
  * \license       GNU GPLv2 or above
  *
  */
@@ -34,6 +34,7 @@
 #include <gdkmm/cursor.h>
 
 #include "click.hpp"                    /* SEQ64_CLICK_LEFT(), etc.    */
+#include "gui_key_tests.hpp"            /* seq64::is_super_key()       */
 #include "perform.hpp"
 #include "perfroll_input.hpp"
 #include "perfroll.hpp"
@@ -215,7 +216,7 @@ Seq24PerfInput::on_button_release_event (GdkEventButton * ev, perfroll & roll)
 
         bool addmode_exit = ! rc().allow_mod4_mode();
         if (! addmode_exit)
-            addmode_exit = ! (ev->state & SEQ64_MOD4_MASK); /* Mod4 held? */
+            addmode_exit = ! is_super_key(ev);              /* Mod4 held? */
 
         if (addmode_exit)
         {
@@ -230,7 +231,6 @@ Seq24PerfInput::on_button_release_event (GdkEventButton * ev, perfroll & roll)
     if (p.is_active(roll.m_drop_sequence))
     {
         roll.draw_all();
-        // result = true;
     }
     return result;
 }

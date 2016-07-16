@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-05-13
+ * \updates       2016-07-15
  * \license       GNU GPLv2 or above
  *
  *  This module is almost exclusively user-interface code.  There are some
@@ -45,8 +45,9 @@
 
 #include <gtkmm/adjustment.h>
 
-#include "click.hpp"                    /* SEQ64_CLICK_LEFT(), etc.    */
+#include "click.hpp"                    /* SEQ64_CLICK_LEFT(), etc.     */
 #include "font.hpp"
+#include "gui_key_tests.hpp"            /* is_ctrl_key(), etc.          */
 #include "perfedit.hpp"
 #include "perform.hpp"
 #include "perfnames.hpp"
@@ -363,9 +364,7 @@ perfnames::on_button_press_event (GdkEventButton * ev)
     {
         if (perf().is_active(seqnum))
         {
-            guint modifiers;        /* for filtering out caps/num lock etc. */
-            modifiers = gtk_accelerator_get_default_mod_mask();
-            if ((ev->state & modifiers) == SEQ64_SHIFT_MASK)
+            if (is_shift_key(ev))
             {
                 /*
                  *  If the Shift key is pressed, toggle the mute state of all

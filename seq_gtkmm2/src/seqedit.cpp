@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-06-30
+ * \updates       2016-07-15
  * \license       GNU GPLv2 or above
  *
  *  Compare this class to eventedit, which has to do some similar things,
@@ -55,6 +55,7 @@
 #include "gdk_basic_keys.h"
 #include "globals.h"
 #include "gtk_helpers.h"
+#include "gui_key_tests.hpp"            /* is_ctrl_key(), etc.          */
 #include "mainwid.hpp"
 #include "midibus.hpp"
 #include "options.hpp"
@@ -2194,31 +2195,21 @@ seqedit::on_delete_event (GdkEventAny *)
 bool
 seqedit::on_scroll_event (GdkEventScroll * ev)
 {
-    guint modifiers;                    /* to filter caps/num lock etc. */
-    modifiers = gtk_accelerator_get_default_mod_mask();
-    if ((ev->state & modifiers) == SEQ64_CONTROL_MASK)
+    if (is_ctrl_key(ev))
     {
         if (CAST_EQUIVALENT(ev->direction, SEQ64_SCROLL_DOWN))
-        {
             set_zoom(m_zoom * 2);       /* validates the new zoom value */
-        }
         else if (CAST_EQUIVALENT(ev->direction, SEQ64_SCROLL_UP))
-        {
             set_zoom(m_zoom / 2);       /* validates the new zoom value */
-        }
         return true;
     }
-    else if ((ev->state & modifiers) == SEQ64_SHIFT_MASK)
+    else if (is_shift_key(ev))
     {
         double step = m_hadjust->get_step_increment();
         if (CAST_EQUIVALENT(ev->direction, SEQ64_SCROLL_DOWN))
-        {
             horizontal_adjust(step);
-        }
         else if (CAST_EQUIVALENT(ev->direction, SEQ64_SCROLL_UP))
-        {
             horizontal_adjust(-step);
-        }
         return true;
     }
     else
@@ -2260,9 +2251,6 @@ bool
 seqedit::on_key_press_event (GdkEventKey * ev)
 {
     bool result = false;
-//  guint modifiers;            /* for filtering out caps/num-lock etc.     */
-//  modifiers = gtk_accelerator_get_default_mod_mask();
-//  if ((ev->state & modifiers) == SEQ64_CONTROL_MASK)
     if (is_ctrl_key(ev))
     {
         if (ev->keyval == 'w')
@@ -2285,7 +2273,6 @@ seqedit::on_key_press_event (GdkEventKey * ev)
             result = true;
         }
     }
-//  else if ((ev->state & modifiers) == SEQ64_SHIFT_MASK)
     else if (is_shift_key(ev))
     {
         if (ev->keyval == SEQ64_Page_Down)      /* scroll rightward     */

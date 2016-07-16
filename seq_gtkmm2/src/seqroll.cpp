@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-07-14
+ * \updates       2016-07-16
  * \license       GNU GPLv2 or above
  *
  *  There are a large number of existing items to discuss.  But for now let's
@@ -76,6 +76,7 @@
 #include "click.hpp"                    /* SEQ64_CLICK_LEFT(), etc.     */
 #include "event.hpp"
 #include "gdk_basic_keys.h"
+#include "gui_key_tests.hpp"            /* seq64::is_no_modifier()      */
 #include "keystroke.hpp"
 #include "scales.h"
 #include "seqroll.hpp"
@@ -1546,7 +1547,7 @@ seqroll::button_press (GdkEventButton * ev)
                 );
                 if (eventcount == 0)
                 {
-                    if (! (ev->state & SEQ64_CONTROL_MASK))
+                     if (! is_ctrl_key(ev))
                         m_seq.unselect();
 
                     eventcount = m_seq.select_note_events /* direct click   */
@@ -1569,14 +1570,12 @@ seqroll::button_press (GdkEventButton * ev)
                 {
                     /*
                      * Moving and selecting, left-click (without Ctrl key)
-                     * only.  Get the box that selected elements are in.
+                     * only.  Get the box that selected elements are in.  Then
+                     * test for the middle mouse button or left-ctrl-click
+                     * (2-button mice).
                      */
 
-                    if
-                    (
-                        SEQ64_CLICK_LEFT(ev->button) &&
-                        ! (ev->state & SEQ64_CONTROL_MASK)
-                    )
+                    if (SEQ64_CLICK_LEFT(ev->button) && ! is_ctrl_key(ev))
                     {
                         align_selection
                         (
@@ -1584,11 +1583,6 @@ seqroll::button_press (GdkEventButton * ev)
                         );
                         needs_update = true;
                     }
-
-                    /*
-                     * Middle mouse button, or left-ctrl-click (2-button mice)
-                     */
-
                     if (SEQ64_CLICK_CTRL_LEFT_MIDDLE(ev->button, ev->state))
                     {
                         m_growing = true;         /* moving, normal x  */
@@ -1678,12 +1672,12 @@ seqroll::button_release (GdkEventButton * ev)
             /**
              * A left/middle click converts deltas into screen coordinates,
              * then pushs the undo state.  Shift causes a "stretch selected"
-             * which currently acts like a "move selected" operation.
+             * which currently acts like a "move selected" operation. BUG?
              * Otherwise, Ctrl indirectly allows a "grow selected" operation.
              */
 
             convert_xy(delta_x, delta_y, delta_tick, delta_note);
-            if (ev->state & SEQ64_SHIFT_MASK)
+            if (is_shift_key(ev))
                 m_seq.stretch_selected(delta_tick);
             else
                 m_seq.grow_selected(delta_tick);
@@ -1704,7 +1698,7 @@ seqroll::button_release (GdkEventButton * ev)
 
         bool addmode_exit = ! rc().allow_mod4_mode();
         if (! addmode_exit)
-            addmode_exit = ! (ev->state & SEQ64_MOD4_MASK); /* Mod4 held? */
+            addmode_exit = ! is_super_key(ev);              /* Mod4 held? */
 
         if (addmode_exit)
             set_adding(false);
@@ -2033,7 +2027,7 @@ seqroll::on_key_press_event (GdkEventKey * ev)
     }
     else
     {
-        if (ev->state & SEQ64_CONTROL_MASK)
+        if (is_ctrl_key(ev))
         {
             if (OR_EQUIVALENT(ev->keyval, SEQ64_x, SEQ64_X))        /* cut */
             {
@@ -2175,10 +2169,9 @@ seqroll::on_size_allocate (Gtk::Allocation & a)
 }
 
 /**
- *  Implements the on-scroll event handling.  This scroll event only
- *  handles basic scrolling without any modifier keys such as
- *  SEQ64_CONTROL_MASK or SEQ64_SHIFT_MASK.  The seqedit class handles that
- *  fun stuff.
+ *  Implements the on-scroll event handling.  This scroll event only handles
+ *  basic scrolling without any modifier keys such as the Ctrl or Shift masks.
+ *  The seqedit class handles that fun stuff.
  *
  *  Note that this function seems to duplicate the functionality of
  *  seqkeys::on_scroll_event().  Do we really need both?  Which one do we
@@ -2194,9 +2187,7 @@ seqroll::on_size_allocate (Gtk::Allocation & a)
 bool
 seqroll::on_scroll_event (GdkEventScroll * ev)
 {
-    guint modifiers;                /* used to filter out caps/num lock etc. */
-    modifiers = gtk_accelerator_get_default_mod_mask();
-    if ((ev->state & modifiers) != 0)
+    if (! is_no_modifier(ev))
         return false;
 
     double val = m_vadjust.get_value();

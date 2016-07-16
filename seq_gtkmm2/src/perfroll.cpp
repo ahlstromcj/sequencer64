@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-06-26
+ * \updates       2016-07-16
  * \license       GNU GPLv2 or above
  *
  *  The performance window allows automatic control of when each
@@ -40,6 +40,7 @@
 #include "event.hpp"
 #include "keystroke.hpp"
 #include "fruityperfroll_input.hpp"     /* alternate mouse-input class  */
+#include "gui_key_tests.hpp"            /* is_ctrl_key(), etc.          */
 #include "perfedit.hpp"
 #include "perform.hpp"
 #include "perfroll.hpp"
@@ -899,8 +900,7 @@ perfroll::on_button_release_event (GdkEventButton * ev)
  *  scrolling, then the scrolling is horizontal, otherwise it is vertical.
  *  This matches the convention of the seqedit class.
  *
- *  Note the guint modifiers value; it is used to filter out CAPS/Num-Lock etc.
- *  Also note that, unlike the seqedit class, Ctrl-Scroll is not used to modify
+ *  Note that, unlike the seqedit class, Ctrl-Scroll is not used to modify
  *  the zoom value.  Rather than mess up legacy behavior, we will rely on
  *  keystrokes (z, 0, Z, and Ctrl-Page-Up and Ctrl-Page-Down) to implement this
  *  zoom.
@@ -915,8 +915,7 @@ perfroll::on_button_release_event (GdkEventButton * ev)
 bool
 perfroll::on_scroll_event (GdkEventScroll * ev)
 {
-    guint modifiers = gtk_accelerator_get_default_mod_mask();
-    if ((ev->state & modifiers) == SEQ64_SHIFT_MASK)
+    if (is_shift_key(ev))
     {
         double val = m_hadjust.get_value();
         double increment = m_hadjust.get_step_increment();
@@ -1027,8 +1026,8 @@ perfroll::on_key_press_event (GdkEventKey * ev)
          *      perfroll_key_event() if the Ctrl key was pressed.  Be careful.
          */
 
-        bool is_ctrl = (ev->state & SEQ64_CONTROL_MASK) != 0;
-        bool is_shift = (ev->state & SEQ64_SHIFT_MASK) != 0;
+        bool is_ctrl = is_ctrl_key(ev);
+        bool is_shift = is_shift_key(ev);
         if (! perf().is_running())
         {
             if (is_ctrl)

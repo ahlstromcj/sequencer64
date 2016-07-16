@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-06-04
+ * \updates       2016-07-16
  * \license       GNU GPLv2 or above
  *
  */
@@ -35,6 +35,7 @@
 #include "app_limits.h"                 /* SEQ64_SOLID_PIANOROLL_GRID   */
 #include "event.hpp"
 #include "gdk_basic_keys.h"
+#include "gui_key_tests.hpp"            /* seq64::is_no_modifier()      */
 #include "perform.hpp"
 #include "seqevent.hpp"
 #include "seqdata.hpp"
@@ -801,51 +802,29 @@ seqevent::on_key_press_event (GdkEventKey * ev)
     {
         if (ev->keyval == SEQ64_Delete || ev->keyval == SEQ64_BackSpace)
         {
-            /*
-             * m_seq.push_undo();
-             * m_seq.mark_selected();
-             * m_seq.remove_marked();
-             * perf().modify();
-             */
-
             m_seq.cut_selected(false);      /* cut events without copying   */
             result = true;
         }
-        if (ev->state & SEQ64_CONTROL_MASK)
+        if (is_ctrl_key(ev))
         {
             if (ev->keyval == SEQ64_x || ev->keyval == SEQ64_X)     /* cut  */
             {
-                /*
-                 * m_seq.copy_selected();
-                 * m_seq.mark_selected();
-                 * m_seq.remove_marked();
-                 * perf().modify();
-                 */
-
                 m_seq.cut_selected();       /* cut events with copying      */
                 result = true;
             }
-            if (ev->keyval == SEQ64_c || ev->keyval == SEQ64_C) /* copy */
+            if (ev->keyval == SEQ64_c || ev->keyval == SEQ64_C)     /* copy */
             {
                 m_seq.copy_selected();
                 result = true;
             }
-            if (ev->keyval == SEQ64_v || ev->keyval == SEQ64_V) /* paste */
+            if (ev->keyval == SEQ64_v || ev->keyval == SEQ64_V)    /* paste */
             {
-                /*
-                 * Let the actual paste call do this: perf().modify();
-                 */
-
-                start_paste();
+                start_paste();              /* also calls perf().modify()   */
                 result = true;
             }
-            if (ev->keyval == SEQ64_z || ev->keyval == SEQ64_Z) /* Undo */
+            if (ev->keyval == SEQ64_z || ev->keyval == SEQ64_Z)     /* Undo */
             {
-                /*
-                 * How to detect when all modifications are undone?
-                 */
-
-                m_seq.pop_undo();
+                m_seq.pop_undo();   // how to detect all modifications undone?
                 result = true;
             }
         }

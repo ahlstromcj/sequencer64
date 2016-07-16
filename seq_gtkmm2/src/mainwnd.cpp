@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-07-12
+ * \updates       2016-07-15
  * \license       GNU GPLv2 or above
  *
  *  The main window holds the menu and the main controls of the application,
@@ -86,6 +86,7 @@
 
 #include "globals.h"
 #include "gtk_helpers.h"
+#include "gui_key_tests.hpp"            /* is_ctrl_key(), etc.          */
 #include "keys_perform.hpp"             /* \new ca 2015-09-16           */
 #include "keystroke.hpp"
 #include "maintime.hpp"
@@ -1452,10 +1453,8 @@ mainwnd::on_key_press_event (GdkEventKey * ev)
             {
                 bool ok = perf().is_control_status();
                 if (! ok)
-                {
-                    guint modifiers = gtk_accelerator_get_default_mod_mask();
-                    ok = (ev->state & modifiers) != SEQ64_CONTROL_MASK;
-                }
+                    ok = ! is_ctrl_key(ev);
+
                 if (ok)
                 {
                     int seqnum = perf().lookup_keyevent_seq(k.key());
@@ -1494,13 +1493,10 @@ mainwnd::on_key_press_event (GdkEventKey * ev)
 
                     /*
                      * Ctrl-L to toggle the group-learn mode.  Similar to
-                     * Ctrl-E to bring up the Song Editor.  Another
-                     * overly-complex Ctrl-key test?  Fold into the base class
-                     * later!
+                     * Ctrl-E to bring up the Song Editor.
                      */
 
-                    guint modifiers = gtk_accelerator_get_default_mod_mask();
-                    bool ok = (ev->state & modifiers) == SEQ64_CONTROL_MASK;
+                    bool ok = is_ctrl_key(ev);
                     if (ok && (k.key() == SEQ64_l))
                         perf().learn_toggle();
                 }

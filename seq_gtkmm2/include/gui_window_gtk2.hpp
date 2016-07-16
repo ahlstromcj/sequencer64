@@ -154,8 +154,6 @@ protected:
         return m_is_realized;
     }
 
-    bool is_ctrl_key (GdkEventKey * ev);
-    bool is_shift_key (GdkEventKey * ev);
     void scroll_hadjust (Gtk::Adjustment & hadjust, double step);
     void scroll_vadjust (Gtk::Adjustment & vadjust, double step);
     void scroll_hset (Gtk::Adjustment & hadjust, double value);

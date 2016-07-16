@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-06-19
+ * \updates       2016-07-16
  * \license       GNU GPLv2 or above
  *
  *  The data area consists of vertical lines, with the height of each line
@@ -38,6 +38,7 @@
 
 #include "font.hpp"
 #include "gdk_basic_keys.h"
+#include "gui_key_tests.hpp"            /* is_ctrl_key(), etc.          */
 #include "perform.hpp"
 #include "seqdata.hpp"
 #include "sequence.hpp"
@@ -492,9 +493,7 @@ seqdata::on_expose_event (GdkEventExpose * ev)
 
 /**
  *  Implements the on-scroll event.  This scroll event only handles basic
- *  scrolling, without any modifier keys such as SEQ64_CONTROL_MASK or
- *  SEQ64K_SHIFT_MASK.
- *
+ *  scrolling, without any modifier keys such as the Ctrl of Shift masks.
  *  If there is a note (seqroll pane) or event (seqevent pane) selected,
  *  and mouse hovers over the data area (seqdata pane), then this scrolling
  *  action will increase or decrease the value of the data item, which
@@ -513,9 +512,7 @@ seqdata::on_expose_event (GdkEventExpose * ev)
 bool
 seqdata::on_scroll_event (GdkEventScroll * ev)
 {
-    guint modifiers;                    // Used to filter out caps/num lock etc.
-    modifiers = gtk_accelerator_get_default_mod_mask();
-    if ((ev->state & modifiers) != 0)
+    if (! is_no_modifier(ev))
         return false;
 
     if (CAST_EQUIVALENT(ev->direction, SEQ64_SCROLL_UP))
@@ -546,7 +543,6 @@ seqdata::on_button_press_event (GdkEventButton * ev)
 {
     if (CAST_EQUIVALENT(ev->type, SEQ64_BUTTON_PRESS))
     {
-        // m_seq.push_undo();                       // WHY???
         m_drop_x = int(ev->x) + m_scroll_offset_x;  /* set values for line  */
         m_drop_y = int(ev->y);
         m_old.x = m_old.y = m_old.width = m_old.height = 0;

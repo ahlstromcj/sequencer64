@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-08-02
- * \updates       2016-06-08
+ * \updates       2016-07-16
  * \license       GNU GPLv2 or above
  *
  *  This code was extracted from seqevent to make that module more
@@ -41,6 +41,7 @@
 #include <gtkmm/button.h>
 
 #include "click.hpp"                    /* SEQ64_CLICK_LEFT(), etc.     */
+#include "gui_key_tests.hpp"            /* seq64::is_no_modifier()      */
 #include "seq24seq.hpp"
 #include "seqevent.hpp"
 #include "sequence.hpp"                 /* for full usage of seqevent   */
@@ -147,7 +148,7 @@ Seq24SeqEventInput::on_button_press_event
                 );
                 if (eventcount == 0)
                 {
-                    if (! (ev->state & SEQ64_CONTROL_MASK))
+                    if (! is_ctrl_key(ev))
                         seqev.m_seq.unselect();
 
                     eventcount = seqev.m_seq.select_events

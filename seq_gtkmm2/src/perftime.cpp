@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-05-17
+ * \updates       2016-07-16
  * \license       GNU GPLv2 or above
  *
  *  The time bar shows markers and numbers for the measures of the song,
@@ -36,6 +36,7 @@
 
 #include "click.hpp"                    /* SEQ64_CLICK_LEFT() etc.      */
 #include "font.hpp"
+#include "gui_key_tests.hpp"            /* seq64::is_no_modifier()      */
 #include "keystroke.hpp"                /* for new keystroke actions    */
 #include "perfedit.hpp"
 #include "perform.hpp"
@@ -90,12 +91,6 @@ perftime::perftime
     m_perf_scale_x          (c_perf_scale_x),   // 32 ticks per pixel
     m_timearea_y            (c_timearea_y)      // pixel-height of time scale
 {
-    /*
-     * This adds many fewer events than the base class.  Any bad effects? No.
-     * add_events(Gdk::BUTTON_PRESS_MASK | Gdk::BUTTON_RELEASE_MASK);
-     * set_double_buffered(false);
-     */
-
     m_hadjust.signal_value_changed().connect
     (
         mem_fun(*this, &perftime::change_horz)
@@ -302,7 +297,7 @@ bool
 perftime::on_button_press_event (GdkEventButton * p0)
 {
     midipulse tick = pixel_to_tick(long(p0->x));
-    tick -= (tick % m_snap);
+    tick -= tick % m_snap;
 
     /**
      * Why is setting the start-tick disabled?  We re-enable it and see if it
@@ -317,7 +312,7 @@ perftime::on_button_press_event (GdkEventButton * p0)
     }
     else if (SEQ64_CLICK_LEFT(p0->button))
     {
-        if (p0->state & SEQ64_CONTROL_MASK)
+        if (is_ctrl_key(p0))
             perf().set_start_tick(tick);
         else
             perf().set_left_tick(tick);

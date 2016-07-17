@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-07-14
+ * \updates       2016-07-16
  * \license       GNU GPLv2 or above
  *
  *  This module handles "fruity" interactions only in the piano roll
@@ -34,8 +34,9 @@
 
 #include <gdkmm/cursor.h>
 
-#include "click.hpp"                    /* SEQ64_CLICK_LEFT(), etc.    */
+#include "click.hpp"                    /* SEQ64_CLICK_LEFT(), etc.     */
 #include "event.hpp"
+#include "gui_key_tests.hpp"            /* seq64::is_no_modifier() etc. */
 #include "perform.hpp"
 #include "seqroll.hpp"
 #include "sequence.hpp"
@@ -117,7 +118,7 @@ FruitySeqRollInput::on_button_press_event (GdkEventButton * ev, seqroll & sroll)
             (
                 tick_s, note_h, tick_s, note_h, sequence::e_would_select
             );
-            if (eventcount == 0 && ! (ev->state & SEQ64_CONTROL_MASK))
+            if (eventcount == 0 && ! is_ctrl_key(ev))
             {
                 sroll.set_adding(true);              /* not on top of event */
                 sroll.m_painting = true;             /* start the paint job */
@@ -158,7 +159,7 @@ FruitySeqRollInput::on_button_press_event (GdkEventButton * ev, seqroll & sroll)
                          * If clicking a note, unselect all if ctrl not held.
                          */
 
-                        if (! (ev->state & SEQ64_CONTROL_MASK))
+                        if (! is_ctrl_key(ev))
                             seq.unselect();
                     }
                     else
@@ -168,11 +169,7 @@ FruitySeqRollInput::on_button_press_event (GdkEventButton * ev, seqroll & sroll)
                          * ctrl-shift not held.
                          */
 
-                        if
-                        (
-                            ! ( (ev->state & SEQ64_CONTROL_MASK) &&
-                                (ev->state & SEQ64_SHIFT_MASK) )
-                        )
+                        if (! is_ctrl_shift_key(ev))
                             seq.unselect();
                     }
 
@@ -189,7 +186,7 @@ FruitySeqRollInput::on_button_press_event (GdkEventButton * ev, seqroll & sroll)
 
                     /* if nothing selected, start the selection box */
 
-                    if (eventcount == 0 && (ev->state & SEQ64_CONTROL_MASK))
+                    if (eventcount == 0 && is_ctrl_key(ev))
                         sroll.m_selecting = true;
 
                     needs_update = true;
@@ -251,7 +248,7 @@ FruitySeqRollInput::on_button_press_event (GdkEventButton * ev, seqroll & sroll)
                     if                              /* grab/move the note */
                     (
                         center_mouse_handle && SEQ64_CLICK_LEFT(ev->button) &&
-                        ! (ev->state & SEQ64_CONTROL_MASK)
+                        ! is_ctrl_key(ev)
                     )
                     {
                         /*
@@ -277,8 +274,7 @@ FruitySeqRollInput::on_button_press_event (GdkEventButton * ev, seqroll & sroll)
                     else if /* ctrl left click when stuff is already selected */
                     (
                         SEQ64_CLICK_LEFT(ev->button) &&
-                        (ev->state & SEQ64_CONTROL_MASK) &&
-                        seq.select_note_events
+                        is_ctrl_key(ev) && seq.select_note_events
                         (
                             tick_s, note_h, tick_s, note_h,
                             sequence::e_is_selected
@@ -294,8 +290,7 @@ FruitySeqRollInput::on_button_press_event (GdkEventButton * ev, seqroll & sroll)
                         SEQ64_CLICK_MIDDLE(ev->button) ||
                         (
                             right_mouse_handle &&
-                            SEQ64_CLICK_LEFT(ev->button) &&
-                            ! (ev->state & SEQ64_CONTROL_MASK)
+                            SEQ64_CLICK_LEFT(ev->button) && ! is_ctrl_key(ev)
                         )
                     )
                     {
@@ -323,9 +318,9 @@ FruitySeqRollInput::on_button_press_event (GdkEventButton * ev, seqroll & sroll)
                 )
             )
             {
-                /* right ctrl click: remove all selected notes */
+                /* ctrl-right click: remove all selected notes */
 
-                if (ev->state & SEQ64_CONTROL_MASK)
+                if (is_ctrl_key(ev))
                 {
                     seq.select_note_events
                     (
@@ -355,7 +350,7 @@ FruitySeqRollInput::on_button_press_event (GdkEventButton * ev, seqroll & sroll)
             }
             else                                            /* selecting */
             {
-                if (!(ev->state & SEQ64_CONTROL_MASK))
+                if (! is_ctrl_key(ev))
                     seq.unselect();
 
                 sroll.m_selecting = true;   /* start the new selection box */
@@ -416,7 +411,7 @@ FruitySeqRollInput::on_button_release_event
             /* convert deltas into screen coordinates */
 
             sroll.convert_xy(delta_x, delta_y, delta_tick, delta_note);
-            if (ev->state & SEQ64_SHIFT_MASK)
+            if (is_shift_key(ev))
                 seq.stretch_selected(delta_tick);
             else
                 seq.grow_selected(delta_tick);
@@ -465,13 +460,14 @@ FruitySeqRollInput::on_button_release_event
 
             if
             (
+                is_ctrl_key(ev) &&
                 ! sroll.m_justselected_one &&
                 seq.select_note_events
                 (
                     current_tick, current_note, current_tick, current_note,
                     sequence::e_is_selected
-                ) &&
-                (ev->state & SEQ64_CONTROL_MASK))
+                )
+            )
             {
                 (void) seq.select_note_events
                 (

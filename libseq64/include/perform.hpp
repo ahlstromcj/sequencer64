@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-07-13
+ * \updates       2016-07-16
  * \license       GNU GPLv2 or above
  *
  *  This class still has way too many members, even with the JACK and
@@ -51,12 +51,10 @@
 #include "midi_control.hpp"             /* seq64::midi_control "struct"     */
 #include "sequence.hpp"                 /* seq64::sequence                  */
 
-#define USE_REPLACEMENT_FUNCTION        /* totally EXPERIMENTAL!!!!         */
-
 /**
  *  Try to highlight the selected pattern using black-on-cyan
  *  coloring, in addition to the red progress bar marking that already exists.
- *  Currently, it still has issues.  Moved from seqmenu.
+ *  Moved from seqmenu.  Seems to work pretty well now.
  */
 
 #define SEQ64_EDIT_SEQUENCE_HIGHLIGHT
@@ -531,6 +529,15 @@ private:
     int m_screenset;
 
     /**
+     *  New.  Attempting to provide a feature where moving to another
+     *  screenset automatically cues the current screenset for turning off,
+     *  and the new screenset for turning on.  EXPERIMENTAL.  Will be a menu
+     *  option once it works.
+     */
+
+    bool m_auto_screenset_queue;
+
+    /**
      *  We will eventually replace c_seqs_in_set with this member, which
      *  defaults to the value of c_seqs_in_set.  This change will require some
      *  arrays to be dynamically allocated (vectors).
@@ -572,12 +579,11 @@ private:
 
     int m_edit_sequence;
 
-#endif  // SEQ64_EDIT_SEQUENCE_HIGHLIGHT
+#endif
 
     /**
      *  It may be a good idea to eventually centralize all of the dirtiness of
      *  a performance here.  All the GUIs seem to use a perform object.
-     *  IN PROGRESS.
      */
 
     bool m_is_modified;
@@ -1013,9 +1019,7 @@ public:
     midi_control & midi_control_toggle (int seq);
     midi_control & midi_control_on (int seq);
     midi_control & midi_control_off (int seq);
-
     void handle_midi_control (int control, bool state);
-
     const std::string & get_screen_set_notepad (int screen_set) const;
 
     /**
@@ -1041,8 +1045,6 @@ public:
         set_screen_set_notepad(m_screenset, note);
     }
 
-    void set_screenset (int ss);        // a little much to inline
-
     /**
      * \getter m_screenset
      */
@@ -1052,7 +1054,9 @@ public:
         return m_screenset;
     }
 
-    void set_playing_screenset ();      // a little much to inline
+    void set_playing_screenset ();
+    void set_screenset (int ss);
+    void swap_screenset_queues (int ss0, int ss1);
 
     /**
      * \getter m_playing_screen
@@ -1252,10 +1256,14 @@ public:
     void set_sequence_control_status (int status);
     void unset_sequence_control_status (int status);
     void sequence_playing_toggle (int seq);
-
-#ifdef USE_REPLACEMENT_FUNCTION
-
     void sequence_playing_change (int seq, bool on);
+
+    /**
+     *  Calls sequence_playing_change() with a value of true.
+     *
+     * \param seq
+     *      The sequence number of the sequence to turn on.
+     */
 
     void sequence_playing_on (int seq)
     {
@@ -1274,12 +1282,6 @@ public:
         sequence_playing_change(seq, false);
     }
 
-#else
-
-    void sequence_playing_on (int seq);
-    void sequence_playing_off (int seq);
-
-#endif
     void mute_all_tracks (bool flag = true);
     void output_func ();
     void input_func ();

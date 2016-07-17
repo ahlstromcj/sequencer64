@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and Tim Deagan
  * \date          2015-07-24
- * \updates       2016-07-13
+ * \updates       2016-07-16
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -44,6 +44,12 @@
 #include "midibus.hpp"
 #include "perform.hpp"
 #include "settings.hpp"                 /* seq64::rc() and choose_ppqn()    */
+
+/**
+ * EXPERIMENTAL.  Not yet working.
+ */
+
+#undef  USE_AUTO_SCREENSET_QUEUE
 
 /**
  *  Indicates if the playing-screenset code is in force or not, for
@@ -168,7 +174,12 @@ perform::perform (gui_assistant & mygui, int ppqn)
     m_midi_cc_off               (),         // midi_control array
     m_offset                    (0),
     m_control_status            (0),
-    m_screenset                 (0),
+    m_screenset                 (0),        // or SEQ64_NULL_SEQUENCE
+#ifdef USE_AUTO_SCREENSET_QUEUE
+    m_auto_screenset_queue      (true),
+#else
+    m_auto_screenset_queue      (false),
+#endif
     m_seqs_in_set               (c_seqs_in_set),
     m_max_sets                  (c_max_sets),
     m_sequence_count            (0),
@@ -293,9 +304,9 @@ perform::clear_all ()
 }
 
 /**
- *  Provides common code to keep the track value valid.  Note the bug we
- *  found, where we checked for track > m_seqs_in_set, but set it to
- *  m_seqs_in_set - 1 in that case!
+ *  Provides common code to keep the track value valid.  Fixed the bug we
+ *  found, where we checked for track > m_seqs_in_set, instead of using
+ *  the >= operator.
  *
  * \param track
  *      The track value to be checked and rectified as necessary.
@@ -310,7 +321,7 @@ perform::clamp_track (int track) const
 {
     if (track < 0)
         track = 0;
-    else if (track >= m_seqs_in_set)        /* bug: was just ">" !!! */
+    else if (track >= m_seqs_in_set)
         track = m_seqs_in_set - 1;
 
     return track;
@@ -362,7 +373,7 @@ perform::select_group_mute (int mutegroup)
     mutegroup = clamp_track(mutegroup);
     if (m_mode_group_learn)
     {
-        int groupbase = mutegroup * m_seqs_in_set;    /* 1st seq in group */
+        int groupbase = mutegroup * m_seqs_in_set;      /* 1st seq in group */
         for (int i = 0; i < m_seqs_in_set; ++i)
         {
             int source = m_playscreen_offset + i;       /* m_screenset?     */
@@ -383,7 +394,7 @@ perform::select_group_mute (int mutegroup)
 void
 perform::set_mode_group_learn ()
 {
-    set_mode_group_mute();                          /* m_mode_group = true */
+    set_mode_group_mute();                              /* m_mode_group=true */
     m_mode_group_learn = true;
     for (size_t x = 0; x < m_notify.size(); ++x)
         m_notify[x]->on_grouplearnchange(true);
@@ -1206,9 +1217,15 @@ perform::get_screen_set_notepad (int screenset) const
  *  It's not clear that we need to set the "is modified" flag just because we
  *  changed the screen set, so we don't.
  *
+ *  As a new feature, we would like to queue-mute the previous screenset,
+ *  and queue-unmute the newly-selected screenset.  Still working on getting
+ *  it right.
+ *
  * \param ss
- *      The index of the desired string set.  It is forced to range from
- *      0 to m_max_sets - 1.  The clamping seems wrong, but hews to seq24.
+ *      The index of the desired new screen set.  It is forced to range from
+ *      0 to m_max_sets - 1.  The clamping seems weird, but hews to seq24.
+ *      What it does is let the user wrap around the screen-sets in the user
+ *      interface.
  */
 
 void
@@ -1220,9 +1237,41 @@ perform::set_screenset (int ss)
         ss = 0;
 
     if (ss != m_screenset)
-        m_screenset = ss;
+    {
+        if (m_auto_screenset_queue)
+            swap_screenset_queues(m_screenset, ss);
 
+        m_screenset = ss;
+    }
     set_offset(ss);             /* was called in mainwid::set_screenset() */
+}
+
+/**
+ *  EXPERIMENTAL.
+ *  Queues all of the sequences in the given screen-set.
+ *
+ * \param ss0
+ *      The original screenset, will be unqueued.
+ *
+ * \param ss1
+ *      The destination screenset, will be queued.
+ */
+
+void
+perform::swap_screenset_queues (int ss0, int ss1)
+{
+    int base0 = ss0 * m_seqs_in_set;
+    int base1 = ss1 * m_seqs_in_set;
+    for (int i = 0; i < m_seqs_in_set; ++i)
+    {
+        int seq0 = base0 + i;
+        if (is_active(seq0))
+            m_seqs[seq0]->off_queued();        // toggle_queued();
+
+        int seq1 = base1 + i;
+        if (is_active(seq1))
+            m_seqs[seq1]->on_queued();        // toggle_queued();
+    }
 }
 
 /**
@@ -2533,6 +2582,10 @@ perform::input_func ()
                                 {
                                     if (midi_control_toggle(i).in_range(data[1]))
                                     {
+                                        /*
+                                         * i < m_seqs_in_set?  Huh?
+                                         */
+
                                         if (i < m_seqs_in_set)
                                             sequence_playing_toggle(offset);
                                     }
@@ -2711,8 +2764,6 @@ perform::seq_in_playing_screen (int seq)
     );
 }
 
-#ifdef USE_REPLACEMENT_FUNCTION
-
 /**
  *  Turn the playing of a sequence on or off, if it is active.  Used for the
  *  implementation of sequence_playing_on() and sequence_playing_off().
@@ -2755,79 +2806,6 @@ perform::sequence_playing_change (int seq, bool on)
         }
     }
 }
-
-#else   // USE_REPLACEMENT_FUNCTION
-
-/**
- *  Turn off the playing of a sequence, if it is active.  Compare it to
- *  sequence_playing_toggle().
- *
- * \param seq
- *      The number of the sequence to be turned on.
- */
-
-void
-perform::sequence_playing_on (int seq)
-{
-    if (is_active(seq))
-    {
-        if (seq_in_playing_screen(seq))
-            m_tracks_mute_state[seq - m_playscreen_offset] = true;
-
-        bool queued = m_seqs[seq]->get_queued();
-        if (! m_seqs[seq]->get_playing())
-        {
-            if (m_control_status & c_status_queue)
-            {
-                if (! queued)
-                    m_seqs[seq]->toggle_queued();
-            }
-            else
-                m_seqs[seq]->set_playing(true);
-        }
-        else
-        {
-            if (queued && (m_control_status & c_status_queue) != 0)
-                m_seqs[seq]->toggle_queued();
-        }
-    }
-}
-
-/**
- *  Turn off the playing of a sequence, if it is active.
- *
- * \param seq
- *      The number of the sequence to be turned off.
- */
-
-void
-perform::sequence_playing_off (int seq)
-{
-    if (is_active(seq))
-    {
-        if (seq_in_playing_screen(seq))
-            m_tracks_mute_state[seq - m_playscreen_offset] = false;
-
-        bool queued = m_seqs[seq]->get_queued();
-        if (m_seqs[seq]->get_playing())
-        {
-            if (m_control_status & c_status_queue)
-            {
-                if (! queued)
-                    m_seqs[seq]->toggle_queued();
-            }
-            else
-                m_seqs[seq]->set_playing(false);
-        }
-        else
-        {
-            if (queued && (m_control_status & c_status_queue) != 0)
-                m_seqs[seq]->toggle_queued();
-        }
-    }
-}
-
-#endif  // USE_REPLACEMENT_FUNCTION
 
 /*
  * Non-inline encapsulation functions start here.

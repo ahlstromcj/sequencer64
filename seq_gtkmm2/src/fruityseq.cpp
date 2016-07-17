@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-08-02
- * \updates       2016-06-08
+ * \updates       2016-07-16
  * \license       GNU GPLv2 or above
  *
  *  This code was extracted from seqevent to make that module more
@@ -37,6 +37,7 @@
 
 #include "click.hpp"                    /* SEQ64_CLICK_LEFT() etc.       */
 #include "fruityseq.hpp"
+#include "gui_key_tests.hpp"            /* seq64::is_no_modifier() etc. */
 #include "perform.hpp"
 #include "seqevent.hpp"
 #include "sequence.hpp"                 /* for full usage of seqevent       */
@@ -144,7 +145,7 @@ FruitySeqEventInput::on_button_press_event
                 tick_s, tick_f, seqev.m_status, seqev.m_cc,
                 sequence::e_would_select
             );
-            if (! (ev->state & SEQ64_CONTROL_MASK) && eventcount == 0)
+            if (! is_ctrl_key(ev) && eventcount == 0)
             {
                 seqev.m_painting = true;
                 seqev.snap_x(seqev.m_drop_x);
@@ -177,19 +178,13 @@ FruitySeqEventInput::on_button_press_event
                     );
                     if (eventcount > 0)             /* if clicking event */
                     {
-                        if (! (ev->state & SEQ64_CONTROL_MASK))
+                        if (! is_ctrl_key(ev))
                             seqev.m_seq.unselect();
                     }
                     else /* clicking empty space, unselect all if no Ctrl-Sh  */
                     {
-                        if
-                        (
-                            ! ((ev->state & SEQ64_CONTROL_MASK) &&
-                                (ev->state & SEQ64_SHIFT_MASK))
-                        )
-                        {
+                        if (! is_ctrl_shift_key(ev))
                             seqev.m_seq.unselect();
-                        }
                     }
 
                     /* on direct click select only one event */
@@ -204,7 +199,7 @@ FruitySeqEventInput::on_button_press_event
 
                     /* if nothing selected, start the selection box */
 
-                    if (eventcount == 0 && (ev->state & SEQ64_CONTROL_MASK))
+                    if (is_ctrl_key(ev) && eventcount == 0)
                         seqev.m_selecting = true;
                 }
                 eventcount = seqev.m_seq.select_events
@@ -214,15 +209,15 @@ FruitySeqEventInput::on_button_press_event
                 );
                 if (eventcount > 0)         /* if event under cursor selected */
                 {
-                    if (! (ev->state & SEQ64_CONTROL_MASK)) /* grab/move note */
+                    if (! is_ctrl_key(ev))          /* grab/move note       */
                     {
                         seqev.m_moving_init = true;
                         int note;
                         seqev.m_seq.get_selected_box(tick_s, note, tick_f, note);
                         tick_f += tick_w;
-                        seqev.convert_t(tick_s, x);  /* convert to X,Y values */
+                        seqev.convert_t(tick_s, x); /* convert to X,Y values */
                         seqev.convert_t(tick_f, w);
-                        w -= x;                      /* w is coordinates now  */
+                        w -= x;                     /* w is coordinates now  */
 
                         /* set the m_selected rectangle for x,y,w,h */
 
@@ -246,7 +241,7 @@ FruitySeqEventInput::on_button_press_event
                     }
                     else if   /* Ctrl-Left-click when stuff already selected */
                     (
-                        (ev->state & SEQ64_CONTROL_MASK) &&
+                        is_ctrl_key(ev) &&
                         seqev.m_seq.select_events(tick_s, tick_f,
                            seqev. m_status, seqev.m_cc, sequence::e_is_selected)
                     )
@@ -286,7 +281,7 @@ FruitySeqEventInput::on_button_press_event
             }
             else                                        /* selecting        */
             {
-                if (! (ev->state & SEQ64_CONTROL_MASK))
+                if (! is_ctrl_key(ev))
                     seqev.m_seq.unselect();             /* nothing selected   */
 
                 seqev.m_selecting = true;               /* start select-box   */
@@ -369,13 +364,12 @@ FruitySeqEventInput::on_button_release_event
 
             if                                  /* deselect the event? */
             (
+                is_ctrl_key(ev) &&
                 ! m_justselected_one &&
                 seqev.m_seq.select_events
                 (
-                    t_s, t_f,
-                    seqev.m_status, seqev.m_cc, sequence::e_is_selected
-                ) &&
-                (ev->state & SEQ64_CONTROL_MASK)
+                    t_s, t_f, seqev.m_status, seqev.m_cc, sequence::e_is_selected
+                ) 
             )
             {
                 (void) seqev.m_seq.select_events

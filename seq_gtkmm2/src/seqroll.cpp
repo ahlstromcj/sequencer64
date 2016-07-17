@@ -76,7 +76,7 @@
 #include "click.hpp"                    /* SEQ64_CLICK_LEFT(), etc.     */
 #include "event.hpp"
 #include "gdk_basic_keys.h"
-#include "gui_key_tests.hpp"            /* seq64::is_no_modifier()      */
+#include "gui_key_tests.hpp"            /* seq64::is_no_modifier() etc. */
 #include "keystroke.hpp"
 #include "scales.h"
 #include "seqroll.hpp"

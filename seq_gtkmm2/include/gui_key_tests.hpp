@@ -44,6 +44,7 @@ namespace seq64
     extern bool is_shift_key (GdkEventScroll * ev);
     extern bool is_ctrl_key (GdkEventButton * ev);
     extern bool is_shift_key (GdkEventButton * ev);
+    extern bool is_ctrl_shift_key (GdkEventButton * ev);
     extern bool is_super_key (GdkEventButton * ev);
 }
 

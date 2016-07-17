@@ -144,6 +144,20 @@ is_shift_key (GdkEventButton * ev)
 }
 
 /**
+ *  Encapsulates the safe test for the ctrl-shift key combination.
+ *
+ * \param ev
+ *      The keystroke event to be tested.
+ */
+
+bool
+is_ctrl_shift_key (GdkEventButton * ev)
+{
+    guint modifiers = gtk_accelerator_get_default_mod_mask();
+    return (ev->state & modifiers) == (SEQ64_SHIFT_MASK & SEQ64_CONTROL_MASK);
+}
+
+/**
  *  Encapsulates the test for the super (mod4, windows) key for buttons.
  *  Basically just masks off the MOD4 bit; the "safe" method does not work for
  *  this key.

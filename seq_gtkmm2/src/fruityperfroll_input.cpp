@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-10-13
- * \updates       2016-06-10
+ * \updates       2016-07-16
  * \license       GNU GPLv2 or above
  *
  */
@@ -34,8 +34,9 @@
 #include <gdkmm/cursor.h>
 
 #include "click.hpp"                    /* SEQ64_CLICK_LEFT(), etc.    */
-#include "perform.hpp"
+#include "gui_key_tests.hpp"            /* seq64::is_no_modifier() etc. */
 #include "fruityperfroll_input.hpp"
+#include "perform.hpp"
 #include "perfroll.hpp"
 #include "sequence.hpp"
 
@@ -185,7 +186,7 @@ FruityPerfInput::on_left_button_pressed (GdkEventButton * ev, perfroll & roll)
     bool result = false;
     perform & p = roll.perf();
     int dropseq = roll.m_drop_sequence;
-    if (ev->state & SEQ64_CONTROL_MASK)
+    if (is_ctrl_key(ev))
     {
         if (p.is_active(dropseq))
         {

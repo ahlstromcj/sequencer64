@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-07-03
+ * \updates       2016-07-16
  * \license       GNU GPLv2 or above
  *
  *  The functionality of this class also includes handling some of the
@@ -96,7 +96,7 @@ sequence::sequence (int ppqn)
     m_raise                     (false),
     m_name                      (),             // c_dummy:  leave it empty
     m_last_tick                 (0),
-    m_queued_tick               (0),
+    m_queued_tick               (0),            // accessed by perform::play()
     m_trigger_offset            (0),            // needed for record-keeping
     m_maxbeats                  (c_maxbeats),
     m_ppqn                      (0),            // set in constructor body
@@ -367,8 +367,9 @@ sequence::toggle_queued ()
 
 /**
  * \setter m_queued
- *
- *  Toggles the queued flag and sets the dirty-mp flag.
+ *      Turns off (resets) the queued flag and sets the dirty-mp flag.
+ *      Do we need to set m_queued_tick as in toggle_queued()?  Currently not
+ *      used.
  *
  * \threadsafe
  */
@@ -378,6 +379,25 @@ sequence::off_queued ()
 {
     automutex locker(m_mutex);
     m_queued = false;
+    m_queued_tick = m_last_tick - mod_last_tick() + m_length;
+    set_dirty_mp();
+}
+
+/**
+ * \setter m_queued
+ *      Turns on (sets) the queued flag and sets the dirty-mp flag.
+ *      Do we need to set m_queued_tick as in toggle_queued()?  Currently not
+ *      used.
+ *
+ * \threadsafe
+ */
+
+void
+sequence::on_queued ()
+{
+    automutex locker(m_mutex);
+    m_queued = true;
+    m_queued_tick = m_last_tick - mod_last_tick() + m_length;
     set_dirty_mp();
 }
 
@@ -3179,8 +3199,8 @@ sequence::set_length (midipulse len, bool adjust_triggers)
 }
 
 /**
- *  Sets the playing state of this sequence.  When playing, and the
- *  sequencer is running, notes get dumped to the ALSA buffers.
+ *  Sets the playing state of this sequence.  When playing, and the sequencer
+ *  is running, notes get dumped to the ALSA buffers.
  *
  * \param p
  *      Provides the playing status to set.  True means to turn on the

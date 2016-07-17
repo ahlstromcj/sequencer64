@@ -28,14 +28,15 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-10-10
- * \updates       2016-06-27
+ * \updates       2016-07-16
  * \license       GNU GPLv2 or above
  *
  */
 
-#include <cstddef>                      /* std::size_t      */
+#include <cstddef>                      /* std::size_t          */
 
-#include "midibyte.hpp"                 /* seq64::midibyte  */
+#include "app_limits.h"                 /* SEQ64_NULL_SEQUENCE  */
+#include "midibyte.hpp"                 /* seq64::midibyte      */
 
 /**
  *  This macro is used for detecting SeqSpec data that Sequencer64 does not
@@ -94,7 +95,7 @@
  *  yet been assigned.
  */
 
-#define SEQ64_IS_NULL_SEQUENCE(s)       ((s) == (-1))
+#define SEQ64_IS_NULL_SEQUENCE(s)       ((s) == SEQ64_NULL_SEQUENCE)
 
 namespace seq64
 {

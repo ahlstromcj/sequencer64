@@ -28,10 +28,12 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2015-11-22
+ * \updates       2016-07-16
  * \license       GNU GPLv2 or above
  *
  */
+
+#include "midibyte.hpp"                 /* seq64::midipulse typedef     */
 
 namespace seq64
 {

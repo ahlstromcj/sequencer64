@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-11-08
- * \updates       2016-06-24
+ * \updates       2016-07-16
  * \license       GNU GPLv2 or above
  *
  *  This collection of global variables describes some facets of the
@@ -109,6 +109,12 @@
  */
 
 #define SEQ64_SET_KEYS_COLUMNS             8
+
+/**
+ *  Defines a sequence that is invalid and cannot be used.
+ */
+
+#define SEQ64_NULL_SEQUENCE              (-1)
 
 /**
  *  No global buss override is in force if the global buss override number is

@@ -452,14 +452,22 @@ seqevent::draw_selection_on_window ()
         x -= m_scroll_offset_x;
         m_old.x = x;
         m_old.width = w;
+#ifdef SEQ64_USE_BLACK_SELECTION_BOX
         draw_rectangle(black(), x, y, w, h, false);
+#else
+        draw_rectangle(dark_orange(), x, y, w, h, false);
+#endif
     }
     if (m_moving || m_paste)
     {
         int delta_x = m_current_x - m_drop_x;
         x = m_selected.x + delta_x;
         x -= m_scroll_offset_x;
+#ifdef SEQ64_USE_BLACK_SELECTION_BOX
         draw_rectangle(black(), x, y, m_selected.width, h, false);
+#else
+        draw_rectangle(dark_orange(), x, y, m_selected.width, h, false);
+#endif
         m_old.x = x;
         m_old.width = m_selected.width;
     }

@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-07-16
+ * \updates       2016-07-17
  * \license       GNU GPLv2 or above
  *
  *  This class still has way too many members, even with the JACK and
@@ -50,6 +50,16 @@
 #include "mastermidibus.hpp"            /* seq64::mastermidibus             */
 #include "midi_control.hpp"             /* seq64::midi_control "struct"     */
 #include "sequence.hpp"                 /* seq64::sequence                  */
+
+/**
+ *  EXPERIMENTAL.  Not yet working.
+ *  The idea is to go into an auto-screen-set mode via a menu entry, where the
+ *  first set is unmuted, and then changes to the screen-set number queue the
+ *  previous screen-set for muting, and queue up the current one for
+ *  unmuting.
+ */
+
+#define SEQ64_AUTO_SCREENSET_QUEUE
 
 /**
  *  Try to highlight the selected pattern using black-on-cyan
@@ -528,6 +538,8 @@ private:
 
     int m_screenset;
 
+#ifdef SEQ64_AUTO_SCREENSET_QUEUE
+
     /**
      *  New.  Attempting to provide a feature where moving to another
      *  screenset automatically cues the current screenset for turning off,
@@ -536,6 +548,8 @@ private:
      */
 
     bool m_auto_screenset_queue;
+
+#endif  // SEQ64_AUTO_SCREENSET_QUEUE
 
     /**
      *  We will eventually replace c_seqs_in_set with this member, which
@@ -1056,7 +1070,6 @@ public:
 
     void set_playing_screenset ();
     void set_screenset (int ss);
-    void swap_screenset_queues (int ss0, int ss1);
 
     /**
      * \getter m_playing_screen
@@ -1283,6 +1296,7 @@ public:
     }
 
     void mute_all_tracks (bool flag = true);
+    void mute_screenset (int ss, bool flag = true);
     void output_func ();
     void input_func ();
 
@@ -1619,6 +1633,31 @@ public:
         return seq.is_smf_0();
     }
 
+#ifdef SEQ64_AUTO_SCREENSET_QUEUE
+
+    void set_auto_screenset (bool flag);
+    void swap_screenset_queues (int ss0, int ss1);
+
+    /**
+     * \getter m_auto_screenset_queue
+     */
+
+    bool auto_screenset () const
+    {
+        return m_auto_screenset_queue;
+    }
+
+    /*
+     * \setter m_auto_screenset_queue
+
+    void auto_screenset (bool flag)
+    {
+        m_auto_screenset_queue = flag;
+    }
+     */
+
+#endif  // SEQ64_AUTO_SCREENSET_QUEUE
+
     void sequence_key (int seq);                        // encapsulation
     std::string sequence_label(const sequence & seq);
     void set_input_bus (int bus, bool input_active);    // used in options
@@ -1627,6 +1666,8 @@ public:
     bool playback_key_event (const keystroke & k, bool songmode = false);
 
 private:
+
+    int max_active_set () const;
 
     /*
      * See launch() instead.
@@ -1821,6 +1862,10 @@ private:
     {
         keys().set_key_group(keycode, group_slot);
     }
+
+#ifdef PLATFORM_DEBUG
+    void dump_mute_statuses ();
+#endif
 
 };
 

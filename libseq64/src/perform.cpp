@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and Tim Deagan
  * \date          2015-07-24
- * \updates       2016-07-16
+ * \updates       2016-07-17
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -44,12 +44,6 @@
 #include "midibus.hpp"
 #include "perform.hpp"
 #include "settings.hpp"                 /* seq64::rc() and choose_ppqn()    */
-
-/**
- * EXPERIMENTAL.  Not yet working.
- */
-
-#undef  USE_AUTO_SCREENSET_QUEUE
 
 /**
  *  Indicates if the playing-screenset code is in force or not, for
@@ -175,9 +169,7 @@ perform::perform (gui_assistant & mygui, int ppqn)
     m_offset                    (0),
     m_control_status            (0),
     m_screenset                 (0),        // or SEQ64_NULL_SEQUENCE
-#ifdef USE_AUTO_SCREENSET_QUEUE
-    m_auto_screenset_queue      (true),
-#else
+#ifdef SEQ64_AUTO_SCREENSET_QUEUE
     m_auto_screenset_queue      (false),
 #endif
     m_seqs_in_set               (c_seqs_in_set),
@@ -525,7 +517,7 @@ perform::select_and_mute_group (int group)
 }
 
 /**
- *  Mutes all tracks in the current set of active patterns/sequences.
+ *  Mutes/unmutes all tracks in the current set of active patterns/sequences.
  *  Covers tracks from 0 to m_sequence_max.
  *
  * \param flag
@@ -540,6 +532,26 @@ perform::mute_all_tracks (bool flag)
     {
         if (is_active(i))
             m_seqs[i]->set_song_mute(flag);
+    }
+}
+
+/**
+ *  Mutes/unmutes all tracks in the desired screen-set.
+ *
+ * \param flag
+ *      If true (the default), the song-mute of the sequence is turned on.
+ *      Otherwise, it is turned off.
+ */
+
+void
+perform::mute_screenset (int ss, bool flag)
+{
+    int base = ss * m_seqs_in_set;
+    for (int i = 0; i < m_sequence_max; ++i)
+    {
+        int seq = base + i;
+        if (is_active(seq))
+            m_seqs[seq]->set_song_mute(flag);
     }
 }
 
@@ -1238,12 +1250,45 @@ perform::set_screenset (int ss)
 
     if (ss != m_screenset)
     {
+#ifdef SEQ64_AUTO_SCREENSET_QUEUE
         if (m_auto_screenset_queue)
             swap_screenset_queues(m_screenset, ss);
-
+#endif
         m_screenset = ss;
     }
     set_offset(ss);             /* was called in mainwid::set_screenset() */
+}
+
+#ifdef SEQ64_AUTO_SCREENSET_QUEUE
+
+/**
+ *  EXPERIMENTAL.
+ *
+ *  If the flag is true:
+ *
+ *      -#  Mute all tracks in order to start from a known status for all
+ *          screen-sets.
+ *      -#  Unmute screen-set 0 (the first screen-set).
+ */
+
+void
+perform::set_auto_screenset (bool flag)
+{
+    if (flag)
+    {
+        mute_all_tracks();
+        mute_screenset(0, false);
+    }
+    else
+    {
+        mute_all_tracks();
+    }
+    m_auto_screenset_queue = flag;
+
+#ifdef PLATFORM_DEBUG
+    dump_mute_statuses();
+#endif
+
 }
 
 /**
@@ -1272,7 +1317,14 @@ perform::swap_screenset_queues (int ss0, int ss1)
         if (is_active(seq1))
             m_seqs[seq1]->on_queued();        // toggle_queued();
     }
+
+#ifdef PLATFORM_DEBUG
+    dump_mute_statuses();
+#endif
+
 }
+
+#endif  // SEQ64_AUTO_SCREENSET_QUEUE
 
 /**
  *  Sets the screen set that is active, based on the value of m_screenset.
@@ -3237,7 +3289,92 @@ perform::apply_song_transpose ()
     }
 }
 
-#endif
+#endif      // SEQ64_STAZED_TRANSPOSE
+
+/**
+ *  Checks the whole universe of sequences to determine the current
+ *  last-active set, that is, the highest set that has any active sequences in
+ *  it.
+ *
+ * \return
+ *      Returns the value of the highest active set.  A value of 0 represents
+ *      the first set.  If no sequences are active, then -1 is returned.
+ */
+
+int
+perform::max_active_set () const
+{
+    int result = -1;
+    for (int i = 0; i < m_sequence_max; ++i)
+    {
+        if (is_active(i))
+            result = i;
+    }
+    if (result >= 0)
+        result = result / m_seqs_in_set;
+
+    return result;
+}
+
+#ifdef PLATFORM_DEBUG
+
+/**
+ *  Dumps the status of all tracks in all active sets in a compact format.
+ *  The format is 32 lines of 32 characters each, with each character
+ *  representing the most important of flags:
+ *
+ *      -   "o" armed/unmuted
+ *      -   "-" unarmed/muted
+ *      -   " " inactive
+ *      -   "t" NOT transposable
+ *      -   "q" queued
+ *      -   "p" playing
+ *      -   "r" recording
+ *      -   "0" SMF 0 format track
+ */
+
+void
+perform::dump_mute_statuses ()
+{
+    puts(" ================================");      /* includes the newline */
+    int setmax = max_active_set();
+    if (setmax < 0)
+        setmax = 0;                                 /* show at least one    */
+
+    int currseq = 0;
+    for (int ss = 0; ss <= setmax; ++ss)
+    {
+        putc('|', stdout);
+        for (int seq = 0; seq < m_seqs_in_set; ++seq, ++currseq)
+        {
+            char c = ' ';
+            if (is_active(currseq))
+            {
+                const sequence * s = m_seqs[currseq];
+                c = s->get_song_mute() ? '-' : 'o' ;
+                if (! s->get_transposable())
+                    c = 't';
+
+                if (s->get_queued())
+                    c = 'q';
+
+                if (s->get_playing())
+                    c = 'p';
+
+                if (s->get_recording())
+                    c = 'r';
+
+                if (s->is_smf_0())
+                    c = '0';
+            }
+            putc(c, stdout);
+        }
+        puts("|");                                  /* includes the newline */
+    }
+    puts(" ================================");      /* includes the newline */
+}
+
+#endif      // PLATFORM_DEBUG
 
 }           // namespace seq64
 

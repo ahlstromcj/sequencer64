@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-07-16
+ * \updates       2016-07-17
  * \license       GNU GPLv2 or above
  *
  *  The functionality of this class also includes handling some of the
@@ -71,11 +71,10 @@ sequence::sequence (int ppqn)
     m_triggers                  (*this),
     m_events_undo               (),
     m_events_redo               (),
-    m_iterator_play             (),
-    m_iterator_draw             (),
+    m_iterator_draw             (m_events.begin()),
     m_midi_channel              (0),
     m_bus                       (0),
-    m_song_mute                 (false),
+    m_song_mute                 (true),         // was (false), ////////////
 #ifdef SEQ64_STAZED_TRANSPOSE
     m_transposable              (true),
 #endif

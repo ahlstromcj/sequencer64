@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-06-29
+ * \updates       2016-07-17
  * \license       GNU GPLv2 or above
  *
  *  This object also does some minor coordination of editing a sequence via
@@ -46,7 +46,6 @@
 
 #include "eventedit.hpp"
 #include "font.hpp"
-#include "perform.hpp"
 #include "seqedit.hpp"
 #include "seqmenu.hpp"
 #include "settings.hpp"                 /* seq64::usr()                 */
@@ -183,6 +182,27 @@ seqmenu::popup_menu ()
         MenuElem("Unmute All Tracks", mem_fun(*this, &seqmenu::unmute_all_tracks))
     );
 
+#ifdef SEQ64_AUTO_SCREENSET_QUEUE
+
+#define SET_AUTO    mem_fun(*this, &seqmenu::set_auto_screenset)
+
+    if (m_mainperf.auto_screenset())
+    {
+        menu_song->items().push_back
+        (
+            MenuElem("Disable Auto Queuing", sigc::bind(SET_AUTO, false))
+        );
+    }
+    else
+    {
+        menu_song->items().push_back
+        (
+            MenuElem("Enable Auto Queuing", sigc::bind(SET_AUTO, true))
+        );
+    }
+
+#endif  // SEQ64_AUTO_SCREENSET_QUEUE
+
     /*
      * This is the bottom part of the menu accessible from a non-empty pattern
      * slot on the main window.  Some of the seqedit settings functions are
@@ -279,6 +299,23 @@ seqmenu::set_bus_and_midi_channel (int bus, int ch)
         }
     }
 }
+
+#ifdef SEQ64_AUTO_SCREENSET_QUEUE
+
+/**
+ *  Sets up or resets the experimental "auto screen-set queuing" feature.
+ *
+ * \param flag
+ *      The value to use to set the flag.
+ */
+
+void
+seqmenu::set_auto_screenset (bool flag)
+{
+    m_mainperf.set_auto_screenset(flag);
+}
+
+#endif  // SEQ64_AUTO_SCREENSET_QUEUE
 
 /**
  *  Sets the "is-transposable" flag of the current sequence.

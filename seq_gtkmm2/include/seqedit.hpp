@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-06-29
+ * \updates       2016-07-17
  * \license       GNU GPLv2 or above
  *
  *  The seqedit is a kind of master class for holding aseqroll, seqkeys,
@@ -39,7 +39,10 @@
 #include <string>
 #include <gtkmm/window.h>
 
-#include "gui_window_gtk2.hpp"
+#include "app_limits.h"                 /* SEQ64_USE_DEFAULT_PPQN           */
+#include "gui_window_gtk2.hpp"          /* seq64::gui_window_gtk2 class     */
+#include "midibyte.hpp"                 /* seq64::midibyte typedef          */
+#include "sequence.hpp"                 /* seq64::sequence class            */
 
 namespace Gtk
 {
@@ -66,7 +69,17 @@ namespace seq64
     class seqmenu;                      /* new */
     class seqroll;
     class seqtime;
-    class sequence;
+
+/**
+ *  Mouse actions, for the Pattern Editor.
+ */
+
+enum mouse_action_e
+{
+    e_action_select,
+    e_action_draw,
+    e_action_grow
+};
 
 /**
  *  Implements the Pattern Editor, which has references to:

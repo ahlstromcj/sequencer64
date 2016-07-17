@@ -222,12 +222,6 @@ private:
     EventStack m_events_redo;
 
     /**
-     *  An iterator for playing events.
-     */
-
-    event_list::iterator m_iterator_play;
-
-    /**
      *  An iterator for drawing events.
      */
 

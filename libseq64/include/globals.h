@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-25
- * \updates       2016-07-05
+ * \updates       2016-07-17
  * \license       GNU GPLv2 or above
  *
  *  We're going to try to collect all the globals here in one module, and
@@ -347,18 +347,6 @@ const int c_redraw_ms = 40;
 const int c_names_x = 6 * 24;           /* width of name box, 24 characters */
 const int c_names_y = 24;               /* max height of name box, pixels   */
 const int c_perf_scale_x = 32;          /* units are ticks per pixel        */
-
-/**
- *  Mouse actions, for the Pattern Editor.  Be sure to update seq24-doc
- *  to use this nomenclature.
- */
-
-enum mouse_action_e
-{
-    e_action_select,
-    e_action_draw,
-    e_action_grow
-};
 
 /**
  *  Provides names for the mouse-handling used by the application.

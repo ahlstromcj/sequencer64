@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-06-28
+ * \updates       2016-07-17
  * \license       GNU GPLv2 or above
  *
  *  This module is the base class for the perfnames and mainwid classes.
@@ -304,6 +304,11 @@ private:
     void seq_clear_perf ();
     void set_bus_and_midi_channel (int a_bus, int a_ch);
     void set_transposable (bool flag);
+
+#ifdef SEQ64_AUTO_SCREENSET_QUEUE
+    void set_auto_screenset (bool flag);
+#endif
+
     void mute_all_tracks ();
     void unmute_all_tracks ();
 

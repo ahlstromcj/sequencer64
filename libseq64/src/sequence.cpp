@@ -74,7 +74,7 @@ sequence::sequence (int ppqn)
     m_iterator_draw             (m_events.begin()),
     m_midi_channel              (0),
     m_bus                       (0),
-    m_song_mute                 (true),         // was (false), ////////////
+    m_song_mute                 (false),
 #ifdef SEQ64_STAZED_TRANSPOSE
     m_transposable              (true),
 #endif
@@ -851,8 +851,8 @@ sequence::select_note_events
         event & er = DREF(i);
         if (er.get_note() <= note_h && er.get_note() >= note_l)
         {
-            midipulse stick = 0;                   // must be initialized
-            midipulse ftick = 0;                   // must be initialized
+            midipulse stick = 0;                    // must be initialized
+            midipulse ftick = 0;                    // must be initialized
             if (er.is_linked())
             {
                 event * ev = er.get_linked();       // pointer
@@ -1621,7 +1621,7 @@ sequence::paste_selected (midipulse tick, int note)
         for (event_list::iterator i = clipbd.begin(); i != clipbd.end(); ++i)
         {
             event & e = DREF(i);
-            if (e.is_note_on() || e.is_note_off())        // just note on?
+            if (e.is_note_on() || e.is_note_off())
             {
                 midibyte n = e.get_note();
                 if (n > highest_note)
@@ -3354,7 +3354,7 @@ sequence::put_event_on_bus (event & ev)
     midibyte note = ev.get_note();
     bool skip = false;
     if (ev.is_note_on())
-        m_playing_notes[note]++;                // *(m_playing_notes + note)++
+        m_playing_notes[note]++;
 
     if (ev.is_note_off())
     {
@@ -3644,7 +3644,7 @@ sequence::quantize_events
                 t_delta = -e.get_timestamp();
 
             e.set_timestamp(e.get_timestamp() + t_delta);
-            quantized_events.add(e, false);         // will sort afterward
+            quantized_events.add(e, false);
             if (er.is_linked() && linked)
             {
                 event f = *er.get_linked();
@@ -3652,12 +3652,12 @@ sequence::quantize_events
                 f.unmark();
                 er.get_linked()->select();
                 f.set_timestamp(ft + t_delta);
-                quantized_events.add(f, false);     // will sort afterward
+                quantized_events.add(f, false);
             }
         }
     }
     (void) remove_marked();
-    m_events.merge(quantized_events);       // quantized events get presorted
+    m_events.merge(quantized_events);       /* quantized events presorted   */
     verify_and_link();
 }
 

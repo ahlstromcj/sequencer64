@@ -52,14 +52,14 @@
 #include "sequence.hpp"                 /* seq64::sequence                  */
 
 /**
- *  EXPERIMENTAL.  Not yet working.
+ *  EXPERIMENTAL.  Not yet working.  A very tough problem.
  *  The idea is to go into an auto-screen-set mode via a menu entry, where the
  *  first set is unmuted, and then changes to the screen-set number queue the
  *  previous screen-set for muting, and queue up the current one for
  *  unmuting.
  */
 
-#define SEQ64_AUTO_SCREENSET_QUEUE
+#undef  SEQ64_AUTO_SCREENSET_QUEUE
 
 /**
  *  Try to highlight the selected pattern using black-on-cyan
@@ -1296,6 +1296,7 @@ public:
     }
 
     void mute_all_tracks (bool flag = true);
+    void toggle_all_tracks ();
     void mute_screenset (int ss, bool flag = true);
     void output_func ();
     void input_func ();
@@ -1647,15 +1648,6 @@ public:
         return m_auto_screenset_queue;
     }
 
-    /*
-     * \setter m_auto_screenset_queue
-
-    void auto_screenset (bool flag)
-    {
-        m_auto_screenset_queue = flag;
-    }
-     */
-
 #endif  // SEQ64_AUTO_SCREENSET_QUEUE
 
     void sequence_key (int seq);                        // encapsulation
@@ -1863,8 +1855,8 @@ private:
         keys().set_key_group(keycode, group_slot);
     }
 
-#ifdef PLATFORM_DEBUG
-    void dump_mute_statuses ();
+#ifdef PLATFORM_DEBUG_XXX
+    void dump_mute_statuses (const std::string & tag);
 #endif
 
 };

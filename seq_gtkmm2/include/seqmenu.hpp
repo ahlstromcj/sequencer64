@@ -311,6 +311,7 @@ private:
 
     void mute_all_tracks ();
     void unmute_all_tracks ();
+    void toggle_all_tracks ();
 
     virtual void redraw (int a_sequence) = 0;   /* pure virtual function    */
 

@@ -181,6 +181,10 @@ seqmenu::popup_menu ()
     (
         MenuElem("Unmute All Tracks", mem_fun(*this, &seqmenu::unmute_all_tracks))
     );
+    menu_song->items().push_back
+    (
+        MenuElem("Toggle All Tracks", mem_fun(*this, &seqmenu::toggle_all_tracks))
+    );
 
 #ifdef SEQ64_AUTO_SCREENSET_QUEUE
 
@@ -355,6 +359,16 @@ void
 seqmenu::unmute_all_tracks ()
 {
     m_mainperf.mute_all_tracks(false);
+}
+
+/**
+ *  Toggles the mute-status of  all tracks in the main perform object.
+ */
+
+void
+seqmenu::toggle_all_tracks ()
+{
+    m_mainperf.toggle_all_tracks();
 }
 
 /**

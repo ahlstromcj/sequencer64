@@ -186,6 +186,10 @@ mainwid::draw_sequences_on_pixmap ()
 int
 mainwid::timeout ()
 {
+    /*
+     * update_sequences_on_window();           // EXPERIMENTAL
+     */
+
     return true;
 }
 
@@ -452,7 +456,7 @@ mainwid::draw_sequence_on_pixmap (int seqnum)
 
                     draw_line_on_pixmap
                     (
-                        eventcolor,                         // fg_color()
+                        eventcolor,
                         rectangle_x + tick_s_x, rectangle_y + note_y,
                         rectangle_x + tick_f_x, rectangle_y + note_y
                     );
@@ -460,7 +464,7 @@ mainwid::draw_sequence_on_pixmap (int seqnum)
                 } while (dt != DRAW_FIN);
             }
         }
-        else                                /* sequence not active          */
+        else                                            /* sequence inactive */
         {
             /*
              *  Draws grids that contain no sequence.  The first section

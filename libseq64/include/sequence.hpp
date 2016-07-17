@@ -680,6 +680,17 @@ public:
     }
 
     /**
+     * \setter m_song_mute
+     *      This function toogles the song muting status.
+     */
+
+    void toggle_song_mute ()
+    {
+        m_song_mute = ! m_song_mute;
+        set_dirty_mp();
+    }
+
+    /**
      * \getter m_song_mute
      */
 
@@ -805,7 +816,8 @@ public:
     }
 
     /**
-     *  Toggles the playing status of this sequence.
+     *  Toggles the playing status of this sequence.  How exactly does this
+     *  differ from toggling the mute status?
      */
 
     void toggle_playing ()
@@ -1058,7 +1070,7 @@ public:
     void play_note_off (int note);
     void off_playing_notes ();
     void pause ();
-    void reset (bool live_mode);    // , bool pause = false);
+    void reset (bool live_mode);
     void reset_draw_marker ();
     void reset_draw_trigger_marker ();
     draw_type get_next_note_event

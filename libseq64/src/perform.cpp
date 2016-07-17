@@ -202,13 +202,13 @@ perform::perform (gui_assistant & mygui, int ppqn)
         m_seqs_active[i] = m_was_active_main[i] = m_was_active_edit[i] =
             m_was_active_perf[i] = m_was_active_names[i] = false;
     }
-    for (int i = 0; i < c_gmute_tracks; ++i)    // use c_sequence_max!
+    for (int i = 0; i < c_gmute_tracks; ++i)    /* use c_sequence_max!      */
         m_mute_group[i] = false;
 
     for (int i = 0; i < c_seqs_in_set; ++i)
         m_tracks_mute_state[i] = false;
 
-    midi_control zero;                      /* all members false or 0   */
+    midi_control zero;                          /* all members false or 0   */
     for (int i = 0; i < c_midi_controls; ++i)
     {
         m_midi_cc_toggle[i] = zero;
@@ -478,7 +478,7 @@ perform::mute_group_tracks ()
 {
     if (m_mode_group)
     {
-        for (int i = 0; i < m_max_sets; ++i)            // see note in banner
+        for (int i = 0; i < m_max_sets; ++i)
         {
             int seqoffset = i * m_seqs_in_set;
             for (int j = 0; j < m_seqs_in_set; ++j)
@@ -520,6 +520,10 @@ perform::select_and_mute_group (int group)
  *  Mutes/unmutes all tracks in the current set of active patterns/sequences.
  *  Covers tracks from 0 to m_sequence_max.
  *
+ *  We have to also set the sequence's playing status, in opposition to the
+ *  mute status, in order to see the sequence status change on the
+ *  user-interface.   HMMMMMM.
+ *
  * \param flag
  *      If true (the default), the song-mute of the sequence is turned on.
  *      Otherwise, it is turned off.
@@ -531,7 +535,32 @@ perform::mute_all_tracks (bool flag)
     for (int i = 0; i < m_sequence_max; ++i)
     {
         if (is_active(i))
+        {
             m_seqs[i]->set_song_mute(flag);
+            m_seqs[i]->set_playing(! flag); /* needed to show mute status!  */
+        }
+    }
+}
+
+/**
+ *  Toggles the mutes status of all tracks in the current set of active
+ *  patterns/sequences.  Covers tracks from 0 to m_sequence_max.
+ *
+ * \param flag
+ *      If true (the default), the song-mute of the sequence is turned on.
+ *      Otherwise, it is turned off.
+ */
+
+void
+perform::toggle_all_tracks ()
+{
+    for (int i = 0; i < m_sequence_max; ++i)
+    {
+        if (is_active(i))
+        {
+            m_seqs[i]->toggle_song_mute();
+            m_seqs[i]->toggle_playing();    /* needed to show mute status!  */
+        }
     }
 }
 
@@ -546,12 +575,14 @@ perform::mute_all_tracks (bool flag)
 void
 perform::mute_screenset (int ss, bool flag)
 {
-    int base = ss * m_seqs_in_set;
-    for (int i = 0; i < m_sequence_max; ++i)
+    int seq = ss * m_seqs_in_set;
+    for (int i = 0; i < m_seqs_in_set; ++i, ++seq)
     {
-        int seq = base + i;
         if (is_active(seq))
+        {
             m_seqs[seq]->set_song_mute(flag);
+            m_seqs[i]->set_playing(! flag); /* needed to show mute status!  */
+        }
     }
 }
 
@@ -1253,8 +1284,9 @@ perform::set_screenset (int ss)
 #ifdef SEQ64_AUTO_SCREENSET_QUEUE
         if (m_auto_screenset_queue)
             swap_screenset_queues(m_screenset, ss);
-#endif
+#else
         m_screenset = ss;
+#endif
     }
     set_offset(ss);             /* was called in mainwid::set_screenset() */
 }
@@ -1284,16 +1316,12 @@ perform::set_auto_screenset (bool flag)
         mute_all_tracks();
     }
     m_auto_screenset_queue = flag;
-
-#ifdef PLATFORM_DEBUG
-    dump_mute_statuses();
-#endif
-
 }
 
 /**
  *  EXPERIMENTAL.
- *  Queues all of the sequences in the given screen-set.
+ *  Queues all of the sequences in the given screen-set.  Doesn't work, even
+ *  after a lot of hacking on it, so disabled for now.
  *
  * \param ss0
  *      The original screenset, will be unqueued.
@@ -1305,23 +1333,29 @@ perform::set_auto_screenset (bool flag)
 void
 perform::swap_screenset_queues (int ss0, int ss1)
 {
-    int base0 = ss0 * m_seqs_in_set;
-    int base1 = ss1 * m_seqs_in_set;
-    for (int i = 0; i < m_seqs_in_set; ++i)
+    int seq0 = ss0 * m_seqs_in_set;
+    for (int i = 0; i < m_seqs_in_set; ++i, ++seq0)
     {
-        int seq0 = base0 + i;
         if (is_active(seq0))
-            m_seqs[seq0]->off_queued();        // toggle_queued();
-
-        int seq1 = base1 + i;
-        if (is_active(seq1))
-            m_seqs[seq1]->on_queued();        // toggle_queued();
+        {
+            m_seqs[seq0]->off_queued();         // toggle_queued();
+        }
     }
 
-#ifdef PLATFORM_DEBUG
-    dump_mute_statuses();
-#endif
+    int seq1 = ss1 * m_seqs_in_set;
+    m_screenset = ss1;
+    for (int i = 0; i < m_seqs_in_set; ++i, ++seq1)
+    {
+        if (is_active(seq1))
+        {
+            m_seqs[seq1]->on_queued();          // toggle_queued();
+        }
+    }
+    set_playing_screenset();
 
+#ifdef PLATFORM_DEBUG_XXX
+    dump_mute_statuses("screen-set change");
+#endif
 }
 
 #endif  // SEQ64_AUTO_SCREENSET_QUEUE
@@ -2697,7 +2731,8 @@ perform::input_func ()
 /**
  *  For all active patterns/sequences, this function gets the playing
  *  status and saves it in m_sequence_state[i].  Inactive patterns get the
- *  value set to false.
+ *  value set to false.  Used in unsetting the snapshot status
+ *  (c_status_snapshot).
  */
 
 void
@@ -2714,7 +2749,8 @@ perform::save_playing_state ()
 
 /**
  *  For all active patterns/sequences, this function gets the playing
- *  status from m_sequence_state[i] and sets it for the sequence.
+ *  status from m_sequence_state[i] and sets it for the sequence.  Used in
+ *  unsetting the snapshot status (c_status_snapshot).
  */
 
 void
@@ -2869,13 +2905,14 @@ perform::sequence_playing_change (int seq, bool on)
  *  the mute/unmute setting using keyboard keys.
  *
  * \param seq
- *      The sequence's sequence number.
+ *      The sequence's control-key number, which is relative to the current
+ *      screen-set.
  */
 
 void
 perform::sequence_key (int seq)
 {
-    seq += get_screenset() * c_mainwnd_rows * c_mainwnd_cols;
+    seq += m_screenset * m_seqs_in_set;
     if (is_active(seq))
         sequence_playing_toggle(seq);
 }
@@ -3316,7 +3353,7 @@ perform::max_active_set () const
     return result;
 }
 
-#ifdef PLATFORM_DEBUG
+#ifdef PLATFORM_DEBUG_XXX
 
 /**
  *  Dumps the status of all tracks in all active sets in a compact format.
@@ -3334,8 +3371,9 @@ perform::max_active_set () const
  */
 
 void
-perform::dump_mute_statuses ()
+perform::dump_mute_statuses (const std::string & tag)
 {
+    puts(tag.c_str());
     puts(" ================================");      /* includes the newline */
     int setmax = max_active_set();
     if (setmax < 0)
@@ -3374,7 +3412,7 @@ perform::dump_mute_statuses ()
     puts(" ================================");      /* includes the newline */
 }
 
-#endif      // PLATFORM_DEBUG
+#endif      // PLATFORM_DEBUG_XXX
 
 }           // namespace seq64
 

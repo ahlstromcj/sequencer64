@@ -1,6 +1,176 @@
+2016-07-17  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/include/perform.hpp, libseq64/include/sequence.hpp,
+	libseq64/src/perform.cpp, libseq64/src/sequence.cpp,
+	seq_gtkmm2/include/seqmenu.hpp, seq_gtkmm2/src/mainwid.cpp,
+	seq_gtkmm2/src/seqmenu.cpp: Disabled the auto-queuing feature,
+	cannot get it to work.
+	* libseq64/include/globals.h, libseq64/include/perform.hpp,
+	libseq64/include/sequence.hpp, libseq64/src/perform.cpp,
+	libseq64/src/sequence.cpp, seq_gtkmm2/include/seqedit.hpp,
+	seq_gtkmm2/include/seqmenu.hpp, seq_gtkmm2/src/seqmenu.cpp: 
+	Continued experimenting with the weird flags of auto-queuing and
+	muting.
+
+2016-07-16  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/include/app_limits.h,
+	libseq64/include/midi_container.hpp, libseq64/include/perform.hpp,
+	libseq64/include/sequence.hpp, libseq64/src/perform.cpp,
+	libseq64/src/sequence.cpp, seq_gtkmm2/include/gui_key_tests.hpp,
+	seq_gtkmm2/include/perfroll_input.hpp,
+	seq_gtkmm2/src/fruityperfroll_input.cpp,
+	seq_gtkmm2/src/fruityseq.cpp, seq_gtkmm2/src/fruityseqroll.cpp,
+	seq_gtkmm2/src/gui_key_tests.cpp, seq_gtkmm2/src/seqevent.cpp,
+	seq_gtkmm2/src/seqroll.cpp: Adding support for experimental
+	auto-queuing, currently disabled.
+	* seq_gtkmm2/include/Makefile.am,
+	seq_gtkmm2/include/gui_key_tests.hpp,
+	seq_gtkmm2/include/gui_window_gtk2.hpp,
+	seq_gtkmm2/include/seq24seqroll.hpp, seq_gtkmm2/src/Makefile.am,
+	seq_gtkmm2/src/gui_key_tests.cpp,
+	seq_gtkmm2/src/gui_window_gtk2.cpp, seq_gtkmm2/src/mainwid.cpp,
+	seq_gtkmm2/src/mainwnd.cpp, seq_gtkmm2/src/perfnames.cpp,
+	seq_gtkmm2/src/perfroll.cpp, seq_gtkmm2/src/perfroll_input.cpp,
+	seq_gtkmm2/src/perftime.cpp, seq_gtkmm2/src/seq24seq.cpp,
+	seq_gtkmm2/src/seq24seqroll.cpp, seq_gtkmm2/src/seqdata.cpp,
+	seq_gtkmm2/src/seqedit.cpp, seq_gtkmm2/src/seqevent.cpp,
+	seq_gtkmm2/src/seqroll.cpp: Removed seq24seqroll files, converted
+	many Ctrl/Shift tests to use the new gui_key_tests functions.
+
+2016-07-15  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* seq_gtkmm2/include/gui_window_gtk2.hpp,
+	seq_gtkmm2/src/gui_window_gtk2.cpp, seq_gtkmm2/src/seqedit.cpp: 
+	Trial of ctrl/shift key test function.
+
+2016-07-14  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* configure.ac, contrib/notes/bugs_to_investigate.txt,
+	seq_gtkmm2/include/Makefile.am,
+	seq_gtkmm2/include/seq24seqroll.hpp,
+	seq_gtkmm2/include/seqroll.hpp, seq_gtkmm2/src/Makefile.am,
+	seq_gtkmm2/src/fruityseqroll.cpp, seq_gtkmm2/src/mainwid.cpp,
+	seq_gtkmm2/src/mainwnd.cpp, seq_gtkmm2/src/seq24seqroll.cpp,
+	seq_gtkmm2/src/seqroll.cpp: Fixed Ctrl-key regression, removed dead
+	code including seq24seqroll module.
+
+2016-07-13  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* configure.ac, libseq64/src/optionsfile.cpp,
+	seq_gtkmm2/src/mainwid.cpp, seq_gtkmm2/src/mainwnd.cpp: Fixed
+	configure.ac, relaxed mute-group error check in optionsfile, and
+	investigating Ctrl-E bug.
+	* contrib/code/stazed/perform.cpp, contrib/notes/mute_groups.txt,
+	libseq64/include/perform.hpp, libseq64/src/perform.cpp,
+	seq_gtkmm2/include/mainwid.hpp, seq_gtkmm2/src/mainwid.cpp,
+	seq_gtkmm2/src/mainwnd.cpp, seq_gtkmm2/src/seqroll.cpp: Some cleanup
+	and optimization, also see the USE_REPLACEMENT_FUNCTION macro.
+
+2016-07-12  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/include/perform.hpp, libseq64/src/perform.cpp,
+	seq_gtkmm2/include/mainwid.hpp, seq_gtkmm2/src/mainwid.cpp,
+	seq_gtkmm2/src/mainwnd.cpp, seq_gtkmm2/src/seqroll.cpp: Enabled
+	experimental screen-set code for testing, see USE_EXPERIMENTAL_CODE
+	macro usage.
+	* libseq64/include/perform.hpp, libseq64/src/perform.cpp,
+	seq_gtkmm2/src/mainwid.cpp, seq_gtkmm2/src/mainwnd.cpp: Experimental
+	offloading of screenset calculations to the perform object in
+	progress.
+
+2016-07-11  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* contrib/configs/sequencer64.rc.example,
+	contrib/notes/bugs_to_investigate.txt,
+	contrib/notes/mute_groups.txt, libseq64/include/perform.hpp,
+	libseq64/src/optionsfile.cpp, libseq64/src/perform.cpp,
+	libseq64/src/sequence.cpp, seq_gtkmm2/src/mainwnd.cpp: Fixed the
+	replace functionality, verified some of the mute-group
+	functionality.
+
+2016-07-10  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* INSTALL, configure.ac, libseq64/include/perform.hpp,
+	libseq64/src/midifile.cpp, libseq64/src/optionsfile.cpp: Made the
+	empty-mute strip option an official build configuration option,
+	enabled by default.
+
+2016-07-09  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* contrib/README, contrib/configs/README,
+	contrib/configs/sequencer64.rc.keys, contrib/notes/mute_groups.txt,
+	libseq64/include/keystroke.hpp, libseq64/src/keystroke.cpp,
+	libseq64/src/perform.cpp, seq_gtkmm2/src/mainwnd.cpp: Fixed a minor
+	bug in activating a mute-group.
+	* libseq64/include/perform.hpp, libseq64/src/optionsfile.cpp: 
+	Disabling empty-mute-groups-unsaved feature for awhile, weird stuff
+	happens.
+	* Sequencer64/sequencer64.cpp, libseq64/include/optionsfile.hpp,
+	libseq64/include/perform.hpp, libseq64/src/optionsfile.cpp: Made rc
+	file reading more robust, added back the strip-empty-mutes feature,
+	but only for rc reading and for MIDI file reading and writing.
+	* contrib/configs/sequencer64.conf, libseq64/src/midifile.cpp,
+	libseq64/src/optionsfile.cpp: Added sequencer64.conf for
+	/etc/ld.so.conf.d and disabled the removal of empty group mutes,
+	which has serious side-effects.
+
+2016-07-08  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* seq_gtkmm2/src/mainwnd.cpp: Added Ctrl-L as an alternative to the
+	clumsy Insert key or using the L-button.
+	* contrib/notes/mute_groups.txt, libseq64/include/keystroke.hpp,
+	libseq64/include/perform.hpp, seq_gtkmm2/src/mainwnd.cpp: Added
+	automatic caps-lock functionality when in Learn mode in the main
+	window.
+	* libseq64/include/jack_assistant.hpp,
+	libseq64/src/jack_assistant.cpp: Added support for getting UUID from
+	JACK.
+	* contrib/notes/mute_groups.txt,
+	libseq64/include/jack_assistant.hpp,
+	libseq64/src/jack_assistant.cpp, libseq64/src/midifile.cpp: Added
+	retrieval of JACK client name, but it does not work if a UUID is
+	provided, at present.
+
+2016-07-07  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/src/cmdlineopts.cpp: Fixed bug in detecting the
+	jack-session-uuid option.
+	* libseq64/include/perform.hpp, libseq64/src/midifile.cpp,
+	libseq64/src/optionsfile.cpp, libseq64/src/perform.cpp: No longer
+	write the mute-group information to the MIDI file or the rc/options
+	file when the mute statuses are all zero. (Actually, we still write
+	it to the "rc" file, for consistency's sake.)
+	* contrib/notes/mute_groups.txt, libseq64/include/perform.hpp,
+	libseq64/src/optionsfile.cpp: More mute-group research and
+	clarification.
+
+2016-07-06  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* contrib/notes/mute_groups.txt, libseq64/include/perform.hpp,
+	libseq64/src/perform.cpp: Continued mute-group research.
+	* libseq64/include/perform.hpp, libseq64/src/perform.cpp: Continued
+	research and documentation of mute groups.
+
+2016-07-05  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* contrib/notes/mute_groups.txt, libseq64/include/globals.h,
+	libseq64/include/perform.hpp, libseq64/src/perform.cpp: Research
+	mute groups, continued.
+	* contrib/notes/mute_groups.txt, seq_gtkmm2/include/mainwid.hpp,
+	seq_gtkmm2/include/mainwnd.hpp, seq_gtkmm2/src/mainwid.cpp: 
+	Optimizing mainwid while research muting behavior.
+
 2016-07-04  Chris Ahlstrom <ahlstromcj@gmail.com>
 
-	* README: Stamping for official version 0.9.15.2.
+	* ChangeLog, INSTALL, README, VERSION, configure.ac,
+	doc/dox/doxy-reference.cfg, libseq64/src/cmdlineopts.cpp: 
+	Preparation for fixups for future 0.9.16.
+
+2016-07-04  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* ChangeLog, README, ROADMAP, VERSION: Stamping README for version
+	0.9.15.2.
 
 2016-07-03  Chris Ahlstrom <ahlstromcj@gmail.com>
 

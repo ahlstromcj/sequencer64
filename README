@@ -1,6 +1,6 @@
 README for Sequencer64 0.9.16
 Chris Ahlstrom
-2015-09-10 to 2016-07-04 (initial work started in July of 2015)
+2015-09-10 to 2016-07-18 (initial work started in July of 2015)
 
 Sequencer64 (replaces sequencer24) is a reboot of seq24 to refactor it to be
 tighter and easier to transition to GTKmm 3, and much more.  It is now
@@ -15,7 +15,15 @@ with the --legacy option.
 Major updates:
 
     -   Version 0.9.16:
-        -   TBD
+        -   If there is no mute-group information, it is no longer written
+            to the MIDI file (unless --legacy is in force).  Saves 4000+
+            bytes.  It can be disabled with build option --disable-mutestrip.
+        -   Fixed bug in detecting the --jack-session-uuid option.
+        -   Hardwired Ctrl-L as an alternative to the "L" (learn) button,
+            and added automatic "Caps Lock" when in Learn mode, for keyboards
+            that disable Caps Lock.
+        -   Fixes and testing of replace, queue, and mute-groups.
+        -   Much cleanup and optimization.
         -   See earlier version fixes near the end of this README.
     -   Sequencer64 loads SMF 0 files and splits the channels into separate
         tracks/sequences.

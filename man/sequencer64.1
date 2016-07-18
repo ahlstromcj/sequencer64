@@ -1,4 +1,4 @@
-.TH Sequencer64 "June 13 2016" "Version 0.9.13" "Sequencer64 Manual Page"
+.TH Sequencer64 "July 18 2016" "Version 0.9.17" "Sequencer64 Manual Page"
 
 .SH NAME
 Sequencer64 - Real-time MIDI sequencer refactored from Seq24
@@ -17,6 +17,8 @@ It uses gtk-2 for the user interface.
 Sequencer64 accepts the following options, plus an optional name of
 a MIDI file. Note that the legacy options, which use underscores or
 are missing the option hyphen, are still unofficially supported.
+Note that many of the options are "sticky".  That is, they will
+be saved to the "rc" configuration file.
 .TP 8
 .B  \-h, \-\-help
 Display a list of all commandline options.
@@ -86,7 +88,7 @@ configuration).
 .TP 8
 .B \-A, \-\-alsa
 Sequencer64 will use ALSA MIDI ports.  This option is useful to override the
-configuration file, if it was set up for JACK.
+configuration file, if it was set up for JACK.  This is a sticky option.
 .TP 8
 .B \-s, \-\-show-midi
 Dumps incoming MIDI to screen.
@@ -103,7 +105,7 @@ Passes any incoming SYSEX messages to all outputs.
 Not yet fully implemented.
 .TP 8
 .B \-i, \-\-ignore \fI<number>\fP
-Ignore ALSA device <number>
+Ignore ALSA device <number>.
 .TP 8
 .B \-x, \-\-interaction-method \fI<number>\fP
 Select the mouse interaction method
@@ -119,7 +121,7 @@ not compiled for JACK support.
 Sequencer64 will sync to JACK transport.
 .TP 8
 .B \-J, \-\-jack-master
-Sequencer64 will try to be the JACK master.
+Sequencer64 will try to be the JACK master.  This is a sticky option.
 .TP 8
 .B \-C, \-\-jack-master-cond
 JACK master will fail if there is already a JACK master.

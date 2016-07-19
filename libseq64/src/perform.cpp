@@ -119,6 +119,7 @@ midi_control perform::sm_mc_dummy;
 perform::perform (gui_assistant & mygui, int ppqn)
  :
 #ifdef USE_STAZED_JACK_EXTRAS
+    m_reposition                (false),
     m_excell_FF_RW              (1.0),
     m_FF_RW_button_type         (0),        // need an enumeration
 #endif

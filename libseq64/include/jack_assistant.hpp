@@ -145,6 +145,12 @@ class jack_assistant
         void * arg
     );
 
+#ifndef USE_STAZED_JACK_SUPPORT
+
+    friend long get_current_jack_position (void * arg);
+
+#endif
+
 #ifdef SEQ64_JACK_SESSION
     friend void jack_session_callback (jack_session_event_t * ev, void * arg);
 #endif
@@ -199,6 +205,12 @@ private:
      */
 
     jack_nframes_t m_jack_frame_last;
+
+#ifndef USE_STAZED_JACK_SUPPORT
+
+    jack_nframes_t m_jack_frame_rate;
+
+#endif  // USE_STAZED_JACK_SUPPORT
 
     /**
      *  Provides positioning information on JACK playback.  This structure is
@@ -628,6 +640,12 @@ extern void jack_timebase_callback
  */
 
 extern int jack_process_callback (jack_nframes_t nframes, void * arg);
+
+#ifndef USE_STAZED_JACK_SUPPORT
+
+extern long get_current_jack_position (void * arg);
+
+#endif
 
 #ifdef SEQ64_JACK_SESSION
 extern void jack_session_callback (jack_session_event_t * ev, void * arg);

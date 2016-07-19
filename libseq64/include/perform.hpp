@@ -168,6 +168,7 @@ private:
 
 #ifdef USE_STAZED_JACK_EXTRAS
 
+    bool m_reposition;
     float m_excell_FF_RW;
     int m_FF_RW_button_type;            // was extern in perfedit, need enum
 
@@ -897,6 +898,11 @@ public:
 #ifdef USE_STAZED_JACK_EXTRAS
 
     void FF_rewind ();
+
+    void set_reposition (bool postype)
+    {
+        m_reposition = postype;
+    }
 
 #endif  // USE_STAZED_JACK_EXTRAS
 

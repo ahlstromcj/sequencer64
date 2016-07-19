@@ -1606,6 +1606,31 @@ jack_shutdown_callback (void * arg)
     }
 }
 
+#ifdef USE_STAZED_JACK_SUPPORT
+
+long
+get_current_jack_position (void * arg)
+{
+    // jack_assistant * jack = (jack_assistant *)(arg);
+    // double ppqn = double(jack->get_ppqn());
+
+    perform * p = (perform *) arg;
+    jack_nframes_t current_frame;
+    double jack_tick;
+    double ppqn = double(c_ppqn);
+    double ticks_per_beat = ppqn * 10;              // 192 * 10 = 1920
+    double beats_per_minute = p->get_bpm();
+    double beat_type = p->get_bw();
+    current_frame = jack_get_current_transport_frame(p->m_jack_client);
+
+    jack_tick = current_frame * ticks_per_beat * beats_per_minute /
+        (p->m_jack_frame_rate * 60.0);
+
+    return jack_tick * (ppqn / (ticks_per_beat * beat_type / 4.0));
+}
+
+#endif      // USE_STAZED_JACK_SUPPORT
+
 }           // namespace seq64
 
 #endif      // SEQ64_JACK_SUPPORT

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-14
- * \updates       2016-07-08
+ * \updates       2016-07-18
  * \license       GNU GPLv2 or above
  *
  *  This module was created from code that existed in the perform object.
@@ -188,9 +188,16 @@ jack_assistant::jack_assistant
 #endif
     m_jack_running              (false),
     m_jack_master               (false),
+#ifdef USE_STAZED_JACK_EXTRAS
+    m_toggle_jack               (false),        // perform?
+    m_jack_stop_tick            (0),
+    m_playback_mode             (false),        // perform?
+    m_follow_transport          (true),         // perform?
+    m_start_from_perfedit       (false),        // perform?
+#endif
     m_ppqn                      (0),
-    m_beats_per_measure         (bpm),
-    m_beat_width                (beatwidth),
+    m_beats_per_measure         (bpm),          // m_bp_measure
+    m_beat_width                (beatwidth),    // m_bw
     m_beats_per_minute          (bpminute)
 {
     m_ppqn = choose_ppqn(ppqn);
@@ -325,6 +332,24 @@ jack_assistant::get_jack_client_info ()
  *      client application, such as Qtractor, is running as JACK Master (and
  *      then seq24 will apparently follow it).
  *
+ *  STAZED:
+ *      The call to jack_timebase_callback() to supply jack with BBT, etc would
+ *      occasionally fail when the *pos information had zero or some garbage in
+ *      the pos.frame_rate variable. This would occur when there was a rapid
+ *      change of frame position by another client... i.e.  qjackctl.  From the
+ *      jack API:
+ *
+ *      "pos address of the position structure for the next cycle; pos->frame
+ *      will be its frame number. If new_pos is FALSE, this structure contains
+ *      extended position information from the current cycle.  If TRUE, it
+ *      contains whatever was set by the requester.  The timebase_callback's
+ *      task is to update the extended information here."
+ *
+ *      The "If TRUE" line seems to be the issue. It seems that qjackctl does
+ *      not always set pos.frame_rate so we get garbage and some strange BBT
+ *      calculations that display in qjackctl. So we need to set it here and
+ *      just use m_jack_frame_rate for calculations instead of pos.frame_rate.
+ *
  * \return
  *      Returns true if JACK is now considered to be running (or if it was
  *      already running.)
@@ -345,12 +370,14 @@ jack_assistant::init ()
         get_jack_client_info();
         jack_on_shutdown(m_jack_client, jack_shutdown_callback, (void *) this);
 
+#ifndef USE_STAZED_JACK_SUPPORT
         int jackcode = jack_set_sync_callback
         (
             m_jack_client, jack_sync_callback, (void *) this
         );
         if (jackcode != 0)
             return error_message("jack_set_sync_callback() failed");
+#endif
 
         /*
          * Although they say this code is needed to get JACK transport to work
@@ -359,8 +386,8 @@ jack_assistant::init ()
 
         jackcode = jack_set_process_callback        /* see notes in banner  */
         (
-#ifdef SEQ64_USE_DEBUG_OUTPUT                       /* EXPERIMENTS          */
-            m_jack_client, jack_process_callback, this
+#ifdef USE_STAZED_JACK_SUPPORT
+            m_jack_client, jack_process_callback, (void *) this
 #else
             m_jack_client, jack_process_callback, NULL
 #endif
@@ -424,7 +451,12 @@ jack_assistant::init ()
             m_jack_master = false;
         }
         if (jack_activate(m_jack_client) != 0)
+        {
             return error_message("Cannot activate as JACK client");
+#ifdef USE_STAZED_JACK_SUPPORT
+            m_jack_running = false;
+#endif
+        }
 
         if (m_jack_running)
             (void) info_message("JACK sync now enabled");
@@ -454,12 +486,18 @@ jack_assistant::deinit ()
     if (m_jack_running)
     {
         m_jack_running = false;
+#ifdef USE_STAZED_JACK_SUPPORT
+        m_jack_master = false;
+        if (jack_release_timebase(m_jack_client) != 0)
+            (void) error_message("Cannot release JACK timebase");
+#else
         if (m_jack_master)
         {
             m_jack_master = false;
             if (jack_release_timebase(m_jack_client) != 0)
                 (void) error_message("Cannot release JACK timebase");
         }
+#endif
 
         /*
          * New:  Simply to be symmetric with the startup flow.  Not yet sure
@@ -474,7 +512,7 @@ jack_assistant::deinit ()
             (void) error_message("Cannot close JACK client");
     }
     if (! m_jack_running)
-        (void) info_message("JACK sync now disabled");
+        (void) info_message("JACK sync disabled");
 
     return m_jack_running;
 }

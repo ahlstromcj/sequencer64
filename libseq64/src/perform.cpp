@@ -118,6 +118,10 @@ midi_control perform::sm_mc_dummy;
 
 perform::perform (gui_assistant & mygui, int ppqn)
  :
+#ifdef USE_STAZED_JACK_EXTRAS
+    m_excell_FF_RW              (1.0),
+    m_FF_RW_button_type         (0),        // need an enumeration
+#endif
     m_gui_support               (mygui),
     m_mute_group                (),         // boolean array, size 32 * 32
     m_tracks_mute_state         (),         // boolean array
@@ -3352,6 +3356,38 @@ perform::max_active_set () const
 
     return result;
 }
+
+#ifdef USE_STAZED_JACK_EXTRAS
+
+void
+perform::FF_rewind ()
+{
+    if (m_FF_RW_button_type == 0)
+        return;
+
+    long tick = 0;
+    long measure_ticks = (c_ppqn * 4) * m_bp_measure / m_bw / 4 * m_excell_FF_RW;
+    if (m_FF_RW_button_type < 0)  // rewind
+    {
+        tick = m_tick - measure_ticks;
+        if (tick < 0)
+            tick = 0;
+    }
+    if (m_FF_RW_button_type > 0)  // Fast Forward
+        tick = m_tick + measure_ticks;
+
+    if (m_jack_running)
+    {
+        position_jack(true, tick);
+    }
+    else
+    {
+        set_starting_tick(tick);  // this will set progress line
+        set_reposition();
+    }
+}
+
+#endif  // USE_STAZED_JACK_EXTRAS
 
 #ifdef PLATFORM_DEBUG_XXX
 

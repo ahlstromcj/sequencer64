@@ -99,8 +99,7 @@
 
 namespace seq64
 {
-
-class keystroke;
+    class keystroke;
 
 /**
  *      Provides for notification of events.  Provide a response to a
@@ -166,6 +165,13 @@ private:
      */
 
     static midi_control sm_mc_dummy;
+
+#ifdef USE_STAZED_JACK_EXTRAS
+
+    float m_excell_FF_RW;
+    int m_FF_RW_button_type;            // was extern in perfedit, need enum
+
+#endif  // USE_STAZED_JACK_EXTRAS
 
     /**
      *  Support for a wide range of GUI-related operations.
@@ -875,16 +881,6 @@ public:
         return m_is_paused && ! m_jack_asst.is_running();
     }
 
-    /*
-     * \getter m_mode_group_learn
-     *  Redundant, use is_group_learn().
-
-    bool is_learn_mode () const
-    {
-        return m_mode_group_learn;
-    }
-     */
-
     /**
      *  Adds a pointer to an object to be notified by this perform object.
      *
@@ -897,6 +893,12 @@ public:
         if (not_nullptr(pfcb))
             m_notify.push_back(pfcb);
     }
+
+#ifdef USE_STAZED_JACK_EXTRAS
+
+    void FF_rewind ();
+
+#endif  // USE_STAZED_JACK_EXTRAS
 
 public:
 

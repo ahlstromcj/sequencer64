@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-07-23
- * \updates       2016-07-08
+ * \updates       2016-07-18
  * \license       GNU GPLv2 or above
  *
  *  This class contains a number of functions that used to reside in the
@@ -252,6 +252,40 @@ private:
 
     bool m_jack_master;
 
+#ifdef USE_STAZED_JACK_EXTRAS
+
+    /**
+     *  Used for toggling the usage of JACK.  Need to investigate more.
+     */
+
+    bool m_toggle_jack;                 // better in perform?
+
+    /**
+     *  TBD.
+     */
+
+    long m_jack_stop_tick;
+
+    /**
+     *  TBD.
+     */
+
+    bool m_playback_mode;               // better in perform?
+
+    /**
+     *  TBD.
+     */
+
+    bool m_follow_transport;            // better in perform?
+
+    /**
+     *  TBD.
+     */
+
+    bool m_start_from_perfedit;         // better in perform?
+
+#endif  // USE_STAZED_JACK_EXTRAS
+
     /**
      *  Holds the global PPQN value for the Sequencer64 session.  It is used
      *  for calculating ticks/beat (pulses/beat) and for setting the tick
@@ -437,7 +471,7 @@ public:
     {
         return m_jack_tick;
     }
-    
+
     /**
      * \getter m_jack_pos
      */
@@ -446,6 +480,73 @@ public:
     {
         return m_jack_pos;
     }
+
+#ifdef USE_STAZED_JACK_EXTRAS
+
+    void toggle_jack_mode ()
+    {
+        set_jack_mode(! m_jack_running);
+    }
+
+    void set_jack_mode (bool mode)
+    {
+        m_toggle_jack = mode;
+    }
+
+    /**
+     * \getter m_jack_stop_tick
+     */
+
+    long get_jack_stop_tick () const
+    {
+        return m_jack_stop_tick;
+    }
+
+    /**
+     * \setter m_jack_stop_tick
+     */
+
+    void set_jack_stop_tick (long tick)
+    {
+        m_jack_stop_tick = tick;
+    }
+
+    bool get_follow_transport () const
+    {
+        return m_follow_transport;
+    }
+
+    void set_follow_transport (bool aset)
+    {
+        m_follow_transport = aset;
+    }
+
+    void toggle_follow_transport ()
+    {
+        set_follow_transport(! m_follow_transport);
+    }
+
+    void toggle_song_mode ()                // for the "rc" settings
+    {
+        if(global_song_start_mode)
+            global_song_start_mode = false;
+        else
+        {
+            global_song_start_mode = true;
+        }
+    }
+
+    void set_start_from_perfedit (bool start)
+    {
+        m_start_from_perfedit = start;
+    }
+
+    void set_playback_mode (bool mode)
+    {
+        m_playback_mode = mode;
+    }
+
+#endif  // USE_STAZED_JACK_EXTRAS
 
 private:
 
@@ -460,7 +561,7 @@ private:
     {
         m_jack_running = flag;
     }
-    
+
     /**
      * \getter m_jack_client
      */

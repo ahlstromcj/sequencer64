@@ -206,6 +206,10 @@ private:
 
 #ifndef USE_STAZED_JACK_SUPPORT
 
+    /**
+     *  Holds the current frame rate?
+     */
+
     jack_nframes_t m_jack_frame_rate;
 
 #endif

@@ -901,8 +901,8 @@ jack_process_callback (jack_nframes_t /* nframes */, void * arg)
             if (s == JackTransportRolling || s == JackTransportStarting)
             {
                 j->m_jack_transport_state_last = JackTransportStarting;
-                if (p.m_start_from_perfedit)
-                    p.inner_start(p.m_start_from_perfedit);
+                if (p.start_from_perfedit())
+                    p.inner_start(true);
                 else
                     p.inner_start(rc().jack_start_mode());
                     // global_song_start_mode);
@@ -1673,20 +1673,16 @@ jack_shutdown_callback (void * arg)
 long
 get_current_jack_position (void * arg)
 {
-    // jack_assistant * jack = (jack_assistant *)(arg);
-    // double ppqn = double(jack->get_ppqn());
-
-    perform * p = (perform *) arg;
-    jack_nframes_t current_frame;
-    double jack_tick;
-    double ppqn = double(c_ppqn);
+//  perform * p = (perform *) arg;
+    jack_assistant * j= (jack_assistant *)(arg);
+    double ppqn = double(j->get_ppqn());
+//  double ppqn = double(c_ppqn);
     double ticks_per_beat = ppqn * 10;              // 192 * 10 = 1920
-    double beats_per_minute = p->get_bpm();
-    double beat_type = p->get_bw();
-    current_frame = jack_get_current_transport_frame(p->m_jack_client);
-
-    jack_tick = current_frame * ticks_per_beat * beats_per_minute /
-        (p->m_jack_frame_rate * 60.0);
+    double beats_per_minute = j->get_beats_per_measure();
+    double beat_type = j->get_beat_width();
+    jack_nframes_t current_frame = jack_get_current_transport_frame(j->client());
+    double jack_tick = current_frame * ticks_per_beat * beats_per_minute /
+        (j->m_jack_frame_rate * 60.0);  ///// need accessor and research
 
     return jack_tick * (ppqn / (ticks_per_beat * beat_type / 4.0));
 }

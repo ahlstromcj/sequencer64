@@ -192,8 +192,22 @@ private:
 
     bool m_start_from_perfedit;         // better in perform?
 
+    /**
+     *  TBD.
+     */
+
     bool m_reposition;
+
+    /**
+     *  TBD.
+     */
+
     float m_excell_FF_RW;
+
+    /**
+     *  TBD.
+     */
+
     int m_FF_RW_button_type;            // was extern in perfedit, need enum
 
 #endif  // USE_STAZED_JACK_EXTRAS
@@ -1810,6 +1824,19 @@ private:
     {
         m_playback_mode = playbackmode;
     }
+
+#ifdef USE_STAZED_JACK_EXTRAS
+
+    /**
+     * \getter
+     */
+
+    bool start_from_perfedit () const
+    {
+        return m_start_from_perfedit;
+    }
+
+#endif
 
     /**
      *  A helper function to calculate the index into the mute-group array,

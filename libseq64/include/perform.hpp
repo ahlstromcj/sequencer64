@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-07-17
+ * \updates       2016-07-20
  * \license       GNU GPLv2 or above
  *
  *  This class still has way too many members, even with the JACK and
@@ -167,6 +167,30 @@ private:
     static midi_control sm_mc_dummy;
 
 #ifdef USE_STAZED_JACK_EXTRAS
+
+    /**
+     *  Used for toggling the usage of JACK.  Need to investigate more.
+     */
+
+    bool m_toggle_jack;                 // better in perform?
+
+    /**
+     *  TBD.
+     */
+
+    bool m_playback_mode;               // better in perform?
+
+    /**
+     *  TBD.
+     */
+
+    bool m_follow_transport;            // better in perform?
+
+    /**
+     *  TBD.
+     */
+
+    bool m_start_from_perfedit;         // better in perform?
 
     bool m_reposition;
     float m_excell_FF_RW;

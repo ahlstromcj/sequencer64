@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-07-23
- * \updates       2016-07-18
+ * \updates       2016-07-20
  * \license       GNU GPLv2 or above
  *
  *  This class contains a number of functions that used to reside in the
@@ -146,9 +146,7 @@ class jack_assistant
     );
 
 #ifndef USE_STAZED_JACK_SUPPORT
-
     friend long get_current_jack_position (void * arg);
-
 #endif
 
 #ifdef SEQ64_JACK_SESSION
@@ -210,7 +208,7 @@ private:
 
     jack_nframes_t m_jack_frame_rate;
 
-#endif  // USE_STAZED_JACK_SUPPORT
+#endif
 
     /**
      *  Provides positioning information on JACK playback.  This structure is
@@ -267,34 +265,10 @@ private:
 #ifdef USE_STAZED_JACK_EXTRAS
 
     /**
-     *  Used for toggling the usage of JACK.  Need to investigate more.
-     */
-
-    bool m_toggle_jack;                 // better in perform?
-
-    /**
      *  TBD.
      */
 
     long m_jack_stop_tick;
-
-    /**
-     *  TBD.
-     */
-
-    bool m_playback_mode;               // better in perform?
-
-    /**
-     *  TBD.
-     */
-
-    bool m_follow_transport;            // better in perform?
-
-    /**
-     *  TBD.
-     */
-
-    bool m_start_from_perfedit;         // better in perform?
 
 #endif  // USE_STAZED_JACK_EXTRAS
 
@@ -540,12 +514,7 @@ public:
 
     void toggle_song_mode ()                // for the "rc" settings
     {
-        if(global_song_start_mode)
-            global_song_start_mode = false;
-        else
-        {
-            global_song_start_mode = true;
-        }
+        global_song_start_mode = ! global_song_start_mode;
     }
 
     void set_start_from_perfedit (bool start)

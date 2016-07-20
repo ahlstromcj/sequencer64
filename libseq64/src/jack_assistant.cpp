@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-14
- * \updates       2016-07-18
+ * \updates       2016-07-20
  * \license       GNU GPLv2 or above
  *
  *  This module was created from code that existed in the perform object.
@@ -189,11 +189,7 @@ jack_assistant::jack_assistant
     m_jack_running              (false),
     m_jack_master               (false),
 #ifdef USE_STAZED_JACK_EXTRAS
-    m_toggle_jack               (false),        // perform?
     m_jack_stop_tick            (0),
-    m_playback_mode             (false),        // perform?
-    m_follow_transport          (true),         // perform?
-    m_start_from_perfedit       (false),        // perform?
 #endif
     m_ppqn                      (0),
     m_beats_per_measure         (bpm),          // m_bp_measure
@@ -365,12 +361,20 @@ jack_assistant::init ()
         m_jack_master = true;               /* ditto, too tricky, though    */
         m_jack_client = client_open(package);
         if (m_jack_client == NULL)
+        {
+            m_jack_master = false;
             return error_message("JACK server not running, JACK sync disabled");
+        }
 
         get_jack_client_info();
         jack_on_shutdown(m_jack_client, jack_shutdown_callback, (void *) this);
 
 #ifndef USE_STAZED_JACK_SUPPORT
+
+        /*
+         * Stazed JACK support uses only the jack_process_callback().
+         */
+
         int jackcode = jack_set_sync_callback
         (
             m_jack_client, jack_sync_callback, (void *) this
@@ -382,6 +386,7 @@ jack_assistant::init ()
         /*
          * Although they say this code is needed to get JACK transport to work
          * properly, seq24 doesn't use this.  But it doesn't hurt to set it up.
+         * The Stazed code does use it.
          */
 
         jackcode = jack_set_process_callback        /* see notes in banner  */
@@ -854,6 +859,14 @@ jack_assistant::sync (jack_transport_state_t state)
  *  though it can be send when calling show_position() in the
  *  jack_process_callback() function.
  *
+ * Stazed:
+ *
+ *      This process callback is called by jack whether stopped or rolling.
+ *      Assuming every jack cycle...  "...client supplied function that is
+ *      called by the engine anytime there is work to be done".  There seems to
+ *      be no definition of '...work to be done'.  nframes = buffer_size -- is
+ *      not used.
+ *
  * \param nframes
  *      Unused.
  *
@@ -869,18 +882,45 @@ jack_assistant::sync (jack_transport_state_t state)
 int
 jack_process_callback (jack_nframes_t /* nframes */, void * arg)
 {
-    const jack_assistant * jack = (jack_assistant *)(arg);
-    if (not_nullptr(jack))
+    const jack_assistant * j = (jack_assistant *)(arg);
+    if (not_nullptr(j))
     {
-#ifdef SEQ64_USE_DEBUG_OUTPUT                   /* EXPERIMENTS              */
-        static long s_show_counter = 0;
-        if ((s_show_counter++ % 100) == 0)      /* slows down the output    */
+
+#ifdef USE_STAZED_JACK_SUPPORT
+
+        perform & p = j->m_jack_parent;
+
+        /*
+         * For start or for FF/RW/key-p when not running.  If we're stopped, we
+         * need to start, otherwise we need to reposition the transport marker.
+         */
+
+        if (! p.is_running())               // or j->is_running() ?
         {
-            jack_position_t pos;
-            (void) jack_transport_query(jack->client(), &pos);
-            jack->show_position(pos);
+            jack_transport_state_t s = jack_transport_query(j->client(), nullptr);
+            if (s == JackTransportRolling || s == JackTransportStarting)
+            {
+                j->m_jack_transport_state_last = JackTransportStarting;
+                if (p.m_start_from_perfedit)
+                    p.inner_start(p.m_start_from_perfedit);
+                else
+                    p.inner_start(rc().jack_start_mode());
+                    // global_song_start_mode);
+            }
+            else        /* don't start, just reposition transport marker */
+            {
+                long tick = get_current_jack_position((void *) &p);
+                long diff = tick - p.get_jack_stop_tick();
+                if (diff != 0)
+                {
+                    p.set_reposition();
+                    p.set_starting_tick(tick);
+                    p.set_jack_stop_tick(tick);
+                }
+            }
         }
-#endif
+
+#endif  // USE_STAZED_JACK_SUPPORT
 
 #ifdef SAMPLE_AUDIO_CODE    // disabled, shown only for reference & learning
         jack_transport_state_t ts = jack_transport_query(jack->client(), NULL);
@@ -1404,9 +1444,9 @@ jack_assistant::client_open (const std::string & clientname)
     jack_client_t * result = nullptr;
     const char * name = clientname.c_str();
     jack_status_t status;
-    jack_status_t * pstatus = &status;          // or NULL
 
 #ifdef SEQ64_JACK_SESSION
+    jack_status_t * pstatus = &status;
     if (rc().jack_session_uuid().empty())
     {
         result = jack_client_open(name, JackNullOption, pstatus);   // 0x800000
@@ -1417,10 +1457,11 @@ jack_assistant::client_open (const std::string & clientname)
         result = jack_client_open(name, JackSessionID, pstatus, uuid);
     }
 #else
+    jack_status_t * pstatus = NULL;
     result = jack_client_open(name, JackNullOption, pstatus);       // 0x800000
 #endif
 
-    if (not_nullptr(result) && not_nullptr(pstatus))
+    if (not_nullptr(result))            /* why? "&& not_nullptr(pstatus))"  */
     {
         if (status & JackServerStarted)
             (void) info_message("JACK server started now");
@@ -1432,7 +1473,7 @@ jack_assistant::client_open (const std::string & clientname)
 
         show_statuses(status);
     }
-    return result;
+    return result;                      /* bad result handled by caller     */
 }
 
 /**
@@ -1471,6 +1512,27 @@ jack_assistant::client_open (const std::string & clientname)
  *              operations.
  *          -   New code:  Calculations are made by increments and decrements
  *              in a while loop.
+ *
+ *  Stazed:
+ *
+ *      The call to jack_timebase_callback() to supply JACK with BBT, etc. would
+ *      occasionally fail when the pos information had zero or some garbage in
+ *      the pos.frame_rate variable. This would occur when there was a rapid
+ *      change of frame position by another client... i.e. qjackctl.  From the
+ *      JACK API:
+ *
+ *          pos	address of the position structure for the next cycle;
+ *          pos->frame will be its frame number. If new_pos is FALSE, this
+ *          structure contains extended position information from the current
+ *          cycle.  If TRUE, it contains whatever was set by the requester.
+ *          The timebase_callback's task is to update the extended information
+ *          here."
+ *
+ *          The "If TRUE" line seems to be the issue. It seems that qjackctl
+ *          does not always set pos.frame_rate so we get garbage and some
+ *          strange BBT calculations that display in qjackctl. So we need to
+ *          set it here and just use m_jack_frame_rate for calculations instead
+ *          of pos.frame_rate.
  *
  * \param state
  *      Indicates the current state of JACK transport.
@@ -1583,8 +1645,8 @@ jack_timebase_callback
 }
 
 /**
- *  This callback is to shutdown JACK by clearing the
- *  jack_assistant::m_jack_running flag.
+ *  This callback is to shut down JACK by clearing the jack_assistant ::
+ *  m_jack_running flag.
  *
  * \param arg
  *      Points to the jack_assistant in charge of JACK support for the perform
@@ -1598,7 +1660,7 @@ jack_shutdown_callback (void * arg)
     if (not_nullptr(jack))
     {
         jack->set_jack_running(false);
-        infoprint("[JACK shutdown]");
+        infoprint("[JACK shutdown. JACK sync disabled.]");
     }
     else
     {

@@ -909,13 +909,13 @@ jack_process_callback (jack_nframes_t /* nframes */, void * arg)
             }
             else        /* don't start, just reposition transport marker */
             {
-                long tick = get_current_jack_position((void *) &p);
-                long diff = tick - p.get_jack_stop_tick();
+                long tick = get_current_jack_position((void *) j);
+                long diff = tick - j->get_jack_stop_tick();
                 if (diff != 0)
                 {
-                    p.set_reposition();
-                    p.set_starting_tick(tick);
-                    p.set_jack_stop_tick(tick);
+                    p.set_reposition();         // a perform option
+                    p.set_start_tick(tick);     // p.set_starting_tick(tick);
+                    j->set_jack_stop_tick(tick);
                 }
             }
         }
@@ -1075,9 +1075,24 @@ jack_session_callback (jack_session_event_t * ev, void * arg)
  *      understood correctly, recent jack1 transport no longer goes into
  *      Jack_Transport_Starting state before going to Jack_Transport_Rolling
  *      (this was deliberately dropped), but seq24 currently needs this to
- *      start off with jack transport."  On the other hand, some people have
+ *      start off with JACK transport."  On the other hand, some people have
  *      no issues.  This may have been due to the lack of m_jack_pos
  *      initialization.
+ *
+ * Stazed:
+ *
+ *      Another note about JACK....  If another JACK client is supplying
+ *      tempo/BBT info that is different from seq42 (as Master), the perfroll
+ *      grid will be incorrect. Perfroll uses internal temp/BBT and cannot
+ *      update on the fly. Even if seq42 could support tempo/BBT changes, all
+ *      info would have to be available before the transport start, to work.
+ *      For this reason, the tempo/BBT info will be plugged from the seq42
+ *      internal settings here... always. This is the method used by probably
+ *      all other JACK clients with some sort of time-line. The JACK API
+ *      indicates that BBT is optional and AFIK, other sequencers only use
+ *      frame & frame_rate from JACK for internal calculations. The tempo and
+ *      BBT info is always internal. Also, if there is no Master set, then we
+ *      would need to plug it here to follow the JACK frame anyways.
  *
  * \param pad
  *      Provide a JACK scratchpad for sharing certain items between the
@@ -1096,11 +1111,18 @@ jack_assistant::output (jack_scratchpad & pad)
         double jack_ticks_delta;
         pad.js_init_clock = false;                  // no init until a good lock
         m_jack_transport_state = jack_transport_query(m_jack_client, &m_jack_pos);
+#ifdef USE_STAZED_JACK_SUPPORT
+        m_jack_pos.beats_per_bar = m_beats_per_measure;
+        m_jack_pos.beat_type = m_beat_width;
+        m_jack_pos.ticks_per_beat = m_ppqn * 10;
+        m_jack_pos.beats_per_minute = parent().master_bus().get_bpm();
+#else
         m_jack_frame_current = jack_get_current_transport_frame(m_jack_client);
 
         bool ok = m_jack_pos.frame_rate > 1000;         /* usually 48000       */
         if (! ok)
             info_message("jack_assistant::output(): small frame rate");
+#endif
 
         if
         (
@@ -1133,8 +1155,8 @@ jack_assistant::output (jack_scratchpad & pad)
 
             if (pad.js_looping && pad.js_playback_mode)
             {
-                if (pad.js_current_tick >= m_jack_parent.get_right_tick())
-                {
+//              if (pad.js_current_tick >= m_jack_parent.get_right_tick())
+//              {
                     while (pad.js_current_tick >= m_jack_parent.get_right_tick())
                     {
                         double lrsize = m_jack_parent.get_right_tick() -
@@ -1144,7 +1166,7 @@ jack_assistant::output (jack_scratchpad & pad)
                     }
                     m_jack_parent.reset_sequences();
                     m_jack_parent.set_orig_ticks(long(pad.js_current_tick));
-                }
+//              }
             }
         }
         if

@@ -2060,7 +2060,7 @@ perform::output_func ()
         {
             pad.js_current_tick = 0.0;      // tick and tick fraction
             pad.js_total_tick = 0.0;
-#ifdef USE_SEQ24_0_9_3_CODE
+#if defined USE_SEQ24_0_9_3_CODE || defined USE_STAZED_JACK_SUPPORT
             pad.js_clock_tick = 0;          // long probably offers more ticks
 #else
             pad.js_clock_tick = 0.0;        // double
@@ -2071,6 +2071,10 @@ perform::output_func ()
         pad.js_dumping = false;
         pad.js_init_clock = true;
         pad.js_looping = m_looping;
+#ifdef USE_STAZED_JACK_SUPPORT
+        pad.js_jack_ticks_converted = 0.0;
+        pad.js_ticks_delta = 0.0;
+#endif
         pad.js_playback_mode = m_playback_mode;
         pad.js_ticks_converted_last = 0.0;
 #ifdef USE_SEQ24_0_9_3_CODE
@@ -2188,49 +2192,22 @@ perform::output_func ()
              * seq24 0.9.3 changes delta_tick's type and adds some code --
              * delta_ticks_frac is in 1000th of a tick.  This code is meant to
              * correct for some clock drift.  However, this code breaks the
-             * MIDI clock speed.  So let's revert to our original code, by not
-             * defining USE_SEQ24_0_9_3_CODE.  I'm thinking we can just keep
-             * the delta_tick value as a double, but accumulate at a higher
-             * resolution and calculate delta_tick from that.
+             * MIDI clock speed.  So let's try the "Stazed" version of the
+             * code, from his seq32 project.  We get delta ticks,
+             * delta_ticks_f is in 1000th of a tick.
              */
 
-#ifdef USE_SEQ24_0_9_3_CODE
+#if defined USE_SEQ24_0_9_3_CODE || USE_STAZED_JACK_SUPPORT
+            long long delta_tick_denom = 60000000LL;
             long long delta_tick_num = bpm * ppqn * delta_us +
                 pad.js_delta_tick_frac;
 
-            long long delta_tick_denom = 60000000LL;
-
-            /*
-             * Store as a double value instead of long.
-             *
-             *  long delta_tick = long(delta_tick_num / delta_tick_denom);
-             *
-             * This seems to get truncated.  Convert to double instead.
-             *
-             *  double ll_delta_tick = double(delta_tick_num / delta_tick_denom);
-             *
-             * But even with this change, we still get wide variations:
-             *
-             *  delta_tick: seq24 0.9.3 --> 2.24403, normal --> 1.57286
-             *  delta_tick: seq24 0.9.3 --> 1.82496, normal --> 1.58093
-             *  delta_tick: seq24 0.9.3 --> 2.40896, normal --> 1.584
-             *  delta_tick: seq24 0.9.3 --> 1.98643, normal --> 1.57747
-             */
-
-            double ll_delta_tick = double(delta_tick_num) / 60000000.0;
+            long delta_tick = long(delta_tick_num / delta_tick_denom);
             pad.js_delta_tick_frac = long(delta_tick_num % delta_tick_denom);
 #else
-            // FYI: delta_tick = double(bpm * ppqn * (delta_us / 60000000.0f));
+            // delta_tick = double(bpm * ppqn * (delta_us / 60000000.0f));
 
             double delta_tick = delta_time_us_to_ticks(delta_us, bpm, ppqn);
-#endif
-
-#ifdef USE_EXPERIMENTAL_DEBUG_OUTPUT
-            printf
-            (
-                "delta_tick: seq24 0.9.3 --> %g, normal --> %g\n",
-                ll_delta_tick, delta_tick
-            );
 #endif
 
             if (m_usemidiclock)
@@ -2269,9 +2246,29 @@ perform::output_func ()
             }
 #endif
 
+#ifdef USE_STAZED_JACK_SUPPORT
+
             /*
-             * init_clock will be true when we run for the first time, or
-             * as soon as JACK gets a good lock on playback.
+             * If we reposition key-p from perfroll, reset to adjusted
+             * start.
+             */
+
+            if
+            (
+                m_playback_mode && ! jackrunning &&
+                ! m_usemidiclock && m_reposition
+            )
+            {
+                current_tick = m_starting_tick;     // reposition sets this
+                set_orig_ticks(m_starting_tick);
+                m_starting_tick = m_left_tick;      // restart at left marker
+                m_reposition = false;
+            }
+#endif
+
+            /*
+             * pad.js_init_clock will be true when we run for the first time,
+             * or as soon as JACK gets a good lock on playback.
              */
 
             if (pad.js_init_clock)
@@ -2283,6 +2280,43 @@ perform::output_func ()
             {
                 if (m_looping && m_playback_mode)
                 {
+#ifdef USE_STAZED_JACK_SUPPORT
+                    static bool jack_position_once = false;
+                    midipulse rtick = get_right_tick();
+                    if (pad.js_current_tick >= rtick)
+                    {
+                        if
+                        (
+                            is_jack_running() && m_jack_asst.is_master() &&
+                            ! jack_position_once
+                        )
+                        {
+                            position_jack(true, m_left_tick);
+                            jack_position_once = true;
+                        }
+                        double leftover_tick = pad.js_current_tick - rtick;
+
+                        /*
+                         * Do not play during starting to avoid xruns on
+                         * fast-forward or rewind.
+                         */
+
+                        if (is_jack_running())
+                        {
+                            if (m_jack_transport_state != JackTransportStarting)
+                            play(rtick - 1);                        // play!
+                        }
+                        else
+                            play(rtick - 1);                        // play!
+
+                        midipulse ltick = get_left_tick();
+                        reset_sequences();                          // reset!
+                        set_orig_ticks(ltick);
+                        pad.js_current_tick = double(ltick) + leftover_tick;
+                    }
+                    else
+                        jack_position_once = false;
+#else
                     midipulse rtick = get_right_tick();
                     if (pad.js_current_tick >= rtick)
                     {
@@ -2293,10 +2327,24 @@ perform::output_func ()
                         set_orig_ticks(ltick);
                         pad.js_current_tick = double(ltick) + leftover_tick;
                     }
+#endif  // USE_STAZED_JACK_SUPPORT
                 }
-                play(midipulse(pad.js_current_tick));               // play!
 
-#ifdef SEQ64_PAUSE_SUPPORT
+#ifdef USE_STAZED_JACK_SUPPORT
+                if (is_jack_running())
+                {
+                    if (m_jack_transport_state != JackTransportStarting)
+                        play(midipulse(pad.js_current_tick));       // play!
+                }
+                else
+                    play(midipulse(pad.js_current_tick));           // play!
+#else
+                play(midipulse(pad.js_current_tick));               // play!
+#endif
+
+
+
+#if defined SEQ64_PAUSE_SUPPORT && ! defined USE_STAZED_JACK_SUPPORT
                 set_jack_tick(pad.js_current_tick);
 #endif
                 m_master_bus.clock(midipulse(pad.js_clock_tick));   // MIDI clock
@@ -2466,8 +2514,51 @@ perform::output_func ()
          * Disabling this setting allows all of the progress bars (seqroll,
          * perfroll, and the slots in the mainwid) to stay visible where
          * they paused.  However, the progress still restarts when playback
-         * begins again, without some other changes.
+         * begins again, without some other changes.  m_tick is the progress
+         * play tick that displays the progress bar.
          */
+
+#ifdef USE_STAZED_JACK_SUPPORT
+#ifdef JACK_SUPPORT
+        if (m_playback_mode)
+        {
+            if (m_jack_asst.is_master())                // master in song mode
+                position_jack(m_playback_mode, m_left_tick);
+        }
+        else
+        {
+            if (is_jack_running())
+            {
+                if (m_jack_asst.is_master())            // master in live mode
+                    position_jack(m_playback_mode,0);
+            }
+        }
+#endif
+
+        if (! m_usemidiclock)                           // stop by MIDI event?
+        {
+            if (! is_jack_running())
+            {
+                if (m_playback_mode)
+                    m_tick = m_left_tick;               // song mode default
+                else
+                    m_tick = 0;                         // live mode default
+            }
+        }
+
+        /*
+         * This means we leave m_tick at stopped location if in slave mode or
+         * if m_usemidiclock == true.
+         */
+
+        m_master_bus.flush();
+        m_master_bus.stop();
+
+#ifdef JACK_SUPPORT
+        if(m_jack_running)
+            m_jack_stop_tick = get_current_jack_position((void *)this);
+#endif // JACK_SUPPORT
+#else
 
 #ifdef SEQ64_PAUSE_SUPPORT
         if (is_jack_running())
@@ -2476,9 +2567,13 @@ perform::output_func ()
 
         m_master_bus.flush();
         m_master_bus.stop();
+#endif  // USE_STAZED_JACK_SUPPORT
+
     }
     pthread_exit(0);
 }
+
+// CONTINUE HERE HERE HERE
 
 /**
  *  Set up the performance, and set the process to realtime privileges.

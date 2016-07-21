@@ -91,6 +91,10 @@ public:
     bool js_init_clock;                 /**< We now have a good JACK lock.  */
     bool js_looping;                    /**< seqedit loop button is active. */
     bool js_playback_mode;              /**< Song mode (versus live mode).  */
+#ifdef USE_STAZED_JACK_SUPPORT
+    double js_ticks_converted;          /**< Keeps track of ...?            */
+    double js_ticks_delta;              /**< Minor difference in tick.      */
+#endif
     double js_ticks_converted_last;     /**< Keeps track of position?       */
 #ifdef USE_SEQ24_0_9_3_CODE
     long js_delta_tick_frac;            /* seq24 0.9.3                      */

@@ -190,7 +190,7 @@ private:
      *  TBD.
      */
 
-    bool m_start_from_perfedit;         // better in perform?
+    bool m_start_from_perfedit;
 
     /**
      *  TBD.

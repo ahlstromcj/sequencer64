@@ -179,6 +179,9 @@ jack_assistant::jack_assistant
     m_jack_client_uuid          (),
     m_jack_frame_current        (0),
     m_jack_frame_last           (0),
+#ifdef USE_STAZED_JACK_SUPPORT
+    m_jack_frame_rate           (0),
+#endif
     m_jack_pos                  (),
     m_jack_transport_state      (JackTransportStopped),
     m_jack_transport_state_last (JackTransportStopped),
@@ -188,7 +191,7 @@ jack_assistant::jack_assistant
 #endif
     m_jack_running              (false),
     m_jack_master               (false),
-#ifdef USE_STAZED_JACK_EXTRAS
+#ifdef USE_STAZED_JACK_SUPPORT
     m_jack_stop_tick            (0),
 #endif
     m_ppqn                      (0),
@@ -365,6 +368,10 @@ jack_assistant::init ()
             m_jack_master = false;
             return error_message("JACK server not running, JACK sync disabled");
         }
+#ifdef USE_STAZED_JACK_SUPPORT
+        else
+            m_jack_frame_rate = jack_get_sample_rate(m_jack_client);
+#endif
 
         get_jack_client_info();
         jack_on_shutdown(m_jack_client, jack_shutdown_callback, (void *) this);
@@ -446,7 +453,7 @@ jack_assistant::init ()
                  * seq24 doesn't set this flag, but that seems incorrect.
                  */
 
-                m_jack_master = false;
+                m_jack_master = false;      // m_jack_running = false too?
                 return error_message("jack_set_timebase_callback() failed");
             }
         }
@@ -457,10 +464,8 @@ jack_assistant::init ()
         }
         if (jack_activate(m_jack_client) != 0)
         {
+            m_jack_running = false;             // USE_STAZED_JACK_SUPPORT
             return error_message("Cannot activate as JACK client");
-#ifdef USE_STAZED_JACK_SUPPORT
-            m_jack_running = false;
-#endif
         }
 
         if (m_jack_running)
@@ -1483,7 +1488,7 @@ jack_assistant::client_open (const std::string & clientname)
     result = jack_client_open(name, JackNullOption, pstatus);       // 0x800000
 #endif
 
-    if (not_nullptr(result))            /* why? "&& not_nullptr(pstatus))"  */
+    if (not_nullptr(result))
     {
         if (status & JackServerStarted)
             (void) info_message("JACK server started now");

@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and Tim Deagan
  * \date          2015-07-24
- * \updates       2016-07-20
+ * \updates       2016-07-21
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -203,12 +203,8 @@ perform::perform (gui_assistant & mygui, int ppqn)
     for (int i = 0; i < m_sequence_max; ++i)
     {
         m_seqs[i] = nullptr;
-
-        /*
-         * seq24 0.9.3 (!) added initialization of these.
-         */
-
-        m_seqs_active[i] = m_was_active_main[i] = m_was_active_edit[i] =
+        m_seqs_active[i] =                      /* seq24 0.9.3 addition     */
+            m_was_active_main[i] = m_was_active_edit[i] =
             m_was_active_perf[i] = m_was_active_names[i] = false;
     }
     for (int i = 0; i < c_gmute_tracks; ++i)    /* use c_sequence_max!      */
@@ -2558,6 +2554,7 @@ perform::output_func ()
         if(m_jack_running)
             m_jack_stop_tick = get_current_jack_position((void *)this);
 #endif // JACK_SUPPORT
+
 #else
 
 #ifdef SEQ64_PAUSE_SUPPORT
@@ -2590,33 +2587,33 @@ perform::output_func ()
 void *
 input_thread_func (void * myperf)
 {
-#ifndef PLATFORM_WINDOWS                // MinGW RCB
-    if (rc().priority())
+    if (not_nullptr(myperf))
     {
-        struct sched_param schp;
-        memset(&schp, 0, sizeof(sched_param));
-        schp.sched_priority = 1;
-        if (sched_setscheduler(0, SCHED_FIFO, &schp) != 0)
+        perform * p = (perform *) myperf;
+
+#ifndef PLATFORM_WINDOWS                // MinGW RCB
+        if (rc().priority())
         {
-            printf
-            (
-                "input_thread_func: couldn't sched_setscheduler"
-               "(FIFO), you need to be root.\n"
-            );
-            pthread_exit(0);
+            struct sched_param schp;
+            memset(&schp, 0, sizeof(sched_param));
+            schp.sched_priority = 1;
+            if (sched_setscheduler(0, SCHED_FIFO, &schp) != 0)
+            {
+                printf
+                (
+                    "input_thread_func: couldn't sched_setscheduler"
+                   "(FIFO), you need to be root.\n"
+                );
+                pthread_exit(0);
+            }
         }
-    }
-#endif
-
-    perform * p = (perform *) myperf;
-
-#ifdef PLATFORM_WINDOWS
-    timeBeginPeriod(1);
-    p->input_func();
-    timeEndPeriod(1);
+        p->input_func();
 #else
-    p->input_func();
+        timeBeginPeriod(1);
+        p->input_func();
+        timeEndPeriod(1);
 #endif
+    }
     return nullptr;
 }
 

@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-07-23
- * \updates       2016-07-20
+ * \updates       2016-07-22
  * \license       GNU GPLv2 or above
  *
  *  This class contains a number of functions that used to reside in the
@@ -208,10 +208,10 @@ private:
 
     jack_nframes_t m_jack_frame_last;
 
-#ifndef USE_STAZED_JACK_SUPPORT
+#ifdef USE_STAZED_JACK_SUPPORT
 
     /**
-     *  Holds the current frame rate?
+     *  Holds the current frame rate.  Just in case.
      */
 
     jack_nframes_t m_jack_frame_rate;
@@ -270,7 +270,7 @@ private:
 
     bool m_jack_master;
 
-#ifdef USE_STAZED_JACK_EXTRAS
+#ifdef USE_STAZED_JACK_SUPPORT
 
     /**
      *  TBD.
@@ -278,7 +278,7 @@ private:
 
     long m_jack_stop_tick;
 
-#endif  // USE_STAZED_JACK_EXTRAS
+#endif  // USE_STAZED_JACK_SUPPORT
 
     /**
      *  Holds the global PPQN value for the Sequencer64 session.  It is used
@@ -475,7 +475,7 @@ public:
         return m_jack_pos;
     }
 
-#ifdef USE_STAZED_JACK_EXTRAS
+#ifdef USE_STAZED_JACK_SUPPORT
 
     void toggle_jack_mode ()
     {
@@ -535,7 +535,7 @@ public:
         m_playback_mode = mode;
     }
 
-#endif  // USE_STAZED_JACK_EXTRAS
+#endif  // USE_STAZED_JACK_SUPPORT
 
 private:
 

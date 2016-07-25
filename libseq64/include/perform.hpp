@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-07-20
+ * \updates       2016-07-24
  * \license       GNU GPLv2 or above
  *
  *  This class still has way too many members, even with the JACK and
@@ -157,6 +157,21 @@ class perform
 
 #endif
 
+#ifdef USE_STAZED_JACK_SUPPORT
+
+    /**
+     *  Provides settings for muting.
+     */
+
+    enum mute_op
+    {
+        MUTE_TOGGLE = -1,
+        MUTE_OFF = 0,
+        MUTE_ON = 1
+    };
+
+#endif
+
 private:
 
     /**
@@ -166,7 +181,7 @@ private:
 
     static midi_control sm_mc_dummy;
 
-#ifdef USE_STAZED_JACK_EXTRAS
+#ifdef USE_STAZED_JACK_SUPPORT
 
     /**
      *  Used for toggling the usage of JACK.  Need to investigate more.
@@ -210,7 +225,7 @@ private:
 
     int m_FF_RW_button_type;            // was extern in perfedit, need enum
 
-#endif  // USE_STAZED_JACK_EXTRAS
+#endif  // USE_STAZED_JACK_SUPPORT
 
     /**
      *  Support for a wide range of GUI-related operations.
@@ -902,6 +917,15 @@ public:
     }
 
     /**
+     * \getter m_jack_asst.is_master()
+     */
+
+    bool is_jack_master () const
+    {
+        return m_jack_asst.is_master();
+    }
+
+    /**
      * \getter m_is_paused
      */
 
@@ -933,7 +957,7 @@ public:
             m_notify.push_back(pfcb);
     }
 
-#ifdef USE_STAZED_JACK_EXTRAS
+#ifdef USE_STAZED_JACK_SUPPORT
 
     void FF_rewind ();
 
@@ -942,7 +966,7 @@ public:
         m_reposition = postype;
     }
 
-#endif  // USE_STAZED_JACK_EXTRAS
+#endif  // USE_STAZED_JACK_SUPPORT
 
 public:
 
@@ -1022,6 +1046,15 @@ public:
         m_starting_tick = tick;
     }
 
+    /**
+     * \setter m_starting_tick
+     */
+
+    midipulse get_start_tick () const
+    {
+        return m_starting_tick;
+    }
+
     /*
      * Obsolete:  midipulse get_max_tick () const;
      */
@@ -1035,6 +1068,19 @@ public:
     midipulse get_right_tick () const
     {
         return m_right_tick;
+    }
+
+    /**
+     *  Convenience function for JACK support when loop in song mode.
+     *
+     * \return
+     *      Returns the difference between the right and left tick, cast to
+     *      double.
+     */
+
+    double left_right_size () const
+    {
+        return double(m_right_tick - m_left_tick);
     }
 
     void move_triggers (bool direction);
@@ -1129,6 +1175,10 @@ public:
     bool any_group_unmutes () const;
     void mute_group_tracks ();
     void select_and_mute_group (int g_group);
+
+#ifdef USE_STAZED_JACK_SUPPORT
+    void set_song_mute (mute_op op);
+#endif
 
     /**
      * \setter m_mode_group
@@ -1289,26 +1339,6 @@ public:
     {
         return m_transpose;
     }
-
-    /**
-     *  Gets the transposition value stored in the master MIDI buss.
-     *  A convenience function.  We've moved the transpose variable into
-     *  perform, where it belongs.
-
-    int get_midi_transpose () const
-    {
-        return m_master_bus->get_transpose();
-    }
-     */
-
-    /**
-     *  Sets the transposition value in the master MIDI buss.
-
-    void set_midi_transpose (int transpose)
-    {
-        m_master_bus->set_transpose(transpose);
-    }
-     */
 
 #endif
 
@@ -1825,7 +1855,7 @@ private:
         m_playback_mode = playbackmode;
     }
 
-#ifdef USE_STAZED_JACK_EXTRAS
+#ifdef USE_STAZED_JACK_SUPPORT
 
     /**
      * \getter

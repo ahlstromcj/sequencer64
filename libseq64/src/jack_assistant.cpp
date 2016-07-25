@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-14
- * \updates       2016-07-20
+ * \updates       2016-07-23
  * \license       GNU GPLv2 or above
  *
  *  This module was created from code that existed in the perform object.
@@ -78,7 +78,7 @@
 namespace seq64
 {
 
-#undef  USE_JACK_DEBUG_PRINT
+#undef USE_JACK_DEBUG_PRINT
 #ifdef USE_JACK_DEBUG_PRINT
 
 /**
@@ -379,7 +379,8 @@ jack_assistant::init ()
 #ifndef USE_STAZED_JACK_SUPPORT
 
         /*
-         * Stazed JACK support uses only the jack_process_callback().
+         * Stazed JACK support uses only the jack_process_callback().  Makes
+         * sense, since seq24/32/64 are not "slow-sync" clients.
          */
 
         int jackcode = jack_set_sync_callback
@@ -604,6 +605,22 @@ jack_assistant::stop ()
  *      Returns 0 if a valid request, EINVAL if the position structure is
  *      rejected.
  *
+ * Stazed:
+ *
+ *      The jack_frame calculation is all that is needed to change JACK
+ *      position The BBT calc can be sent but will be overridden by the first
+ *      call to jack_timebase_callback() of any Master set. If no Master is
+ *      set, then the BBT will display the new position but will not change
+ *      even if the transport is rolling. There is no need to send BBT on
+ *      position change - the fact that the function jack_transport_locate()
+ *      exists and only uses the frame position is proof that BBT is not
+ *      needed! Upon further reflection, why not send BBT?  Because other
+ *      programs do not.... let's follow convention.  The below calculation for
+ *      jack_transport_locate(), works, is simpler and does not send BBT. The
+ *      calculation for jack_transport_reposition() will be commented out
+ *      again.  The BBT call to jack_BBT_position() is not necessary to
+ *      change jack position!
+ *
  * \warning
  *      A lot of this code is effectively disabled by an early return
  *      statement.
@@ -623,6 +640,29 @@ jack_assistant::stop ()
  *      "klick -j -P" work, after a fashion.  It clicks, but at a way too
  *      rapid rate.
  */
+
+#ifdef USE_STAZED_JACK_SUPPORT
+
+void
+jack_assistant::position (bool to_left_tick, bool relocate)
+{
+    long current_tick = 0;
+    if (to_left_tick)                   /* actually master in song mode */
+        current_tick = to_left_tick;
+
+    current_tick *= 10;
+
+    int ticks_per_beat = m_ppqn * 10;                   /* 192 * 10 = 1920 */
+    int beats_per_minute =  m_master_bus.get_bpm();
+    uint64_t tick_rate = uint64_t(m_jack_frame_rate * current_tick * 60.0);
+    long tpb_bpm = ticks_per_beat * beats_per_minute / (m_beat_width / 4.0 );
+    uint64_t jack_frame = tick_rate / tpb_bpm;
+    jack_transport_locate(m_jack_client,jack_frame);
+    if (! j->is_running())   // or p.is_jack_running() or global_is_running ?
+        m_reposition = false;
+}
+
+#else   // USE_STAZED_JACK_SUPPORT
 
 void
 jack_assistant::position (bool to_left_tick, bool relocate)
@@ -649,6 +689,8 @@ jack_assistant::position (bool to_left_tick, bool relocate)
         }
     }
 }
+
+#endif  // USE_STAZED_JACK_SUPPORT
 
 /**
  *  Provides the code that was effectively commented out in the
@@ -716,49 +758,11 @@ jack_assistant::set_position (midipulse currenttick)
     }
 }
 
-#ifdef USE_NEW_EXPERIMENTAL_JACKBBTFRAMEOFFSET_CODE
-
-/**
- *  Experimental code from Hydrogen/src/core/src/IO/jack_output.cpp.  Utterly
- *  unusable at present.
- *
- *  Take the beat-bar-tick (BBT) information from the JACK system, and
- *  translate it to a new internal frame position and tick-size.  This code is
- *  not relevant if Sequencer64 is the JACK Master.
- *
- *  Also see http://www.teuton.org/~gabriel/jack_midi_clock/.
- */
-
-void
-jack_assistant::relocate_bbt ()
-{
-    float TPB = float(resolution / pos.beat_type * 4);
-    long bar_ticks = 0;
-    if (song_mode)
-    {
-        bar_ticks = get_tick_for_position(pos.bar - 1);
-        if (bar_ticks < 0)
-            bar_ticks = 0;
-    }
-    float ticks_to_locate = bar_ticks + (pos.beat - 1) * TPB +
-        pos.tick * (TPB / pos.ticks_per_beat);
-
-    float new_tick_size = get_sample_rate() * 60.0 / m_BPM / resolution;
-    if (new_tick_size == 0)
-        return;
-
-    long long new_frames = (long long)(tick_to_locate * new_tick_size);
-    if (pos.valid & JackBBTFrameOffset)
-        new_frames += pos.bbt_offset;
-}
-
-#endif  // USE_NEW_EXPERIMENTAL_JACKBBTFRAMEOFFSET_CODE
-
 /**
  *  A helper function for syncing up with JACK parameters.  Sequencer64 is not
- *  a slow-sync client, so that callback is not really needed, but we probably
- *  need this sub-function here to start out with the right values for
- *  interacting with JACK.
+ *  a slow-sync client (and Stazed support doesn't use it), so that callback
+ *  is not really needed, but we probably need this sub-function here to
+ *  start out with the right values for interacting with JACK.
  *
  *  Note the call to jack_transport_query().  This call is <i> not </i> is
  *  seq24, but seems to be needed in sequencer64 because we put m_jack_pos in
@@ -866,8 +870,8 @@ jack_assistant::sync (jack_transport_state_t state)
  *
  * Stazed:
  *
- *      This process callback is called by jack whether stopped or rolling.
- *      Assuming every jack cycle...  "...client supplied function that is
+ *      This process callback is called by JACK whether stopped or rolling.
+ *      Assuming every JACK cycle...  "...client supplied function that is
  *      called by the engine anytime there is work to be done".  There seems to
  *      be no definition of '...work to be done'.  nframes = buffer_size -- is
  *      not used.
@@ -902,7 +906,9 @@ jack_process_callback (jack_nframes_t /* nframes */, void * arg)
 
         if (! p.is_running())               // or j->is_running() ?
         {
-            jack_transport_state_t s = jack_transport_query(j->client(), nullptr);
+            jack_transport_state_t s =
+                jack_transport_query(j->client(), nullptr);
+
             if (s == JackTransportRolling || s == JackTransportStarting)
             {
                 j->m_jack_transport_state_last = JackTransportStarting;
@@ -960,6 +966,9 @@ jack_process_callback (jack_nframes_t /* nframes */, void * arg)
  *      -   JackTransportStarting when the transport is waiting to start.
  *      -   JackTransportRolling when the timeout has expired, and the
  *          position is now a moving target.
+ *
+ *  This is the slow-sync callback, which stazed replaces with
+ *  jack_process_callback().
  *
  * \param state
  *      The JACK Transport state.
@@ -1034,7 +1043,7 @@ jack_assistant::session_event ()
         f.write(m_jack_parent);
         m_jsession_ev->command_line = strdup(cmd.c_str());
         jack_session_reply(m_jack_client, m_jsession_ev);
-         if (m_jsession_ev->type == JackSessionSaveAndQuit)
+        if (m_jsession_ev->type == JackSessionSaveAndQuit)
             m_jack_parent.gui().quit();
 
         jack_session_event_free(m_jsession_ev);
@@ -1122,7 +1131,6 @@ jack_assistant::output (jack_scratchpad & pad)
         m_jack_pos.ticks_per_beat = m_ppqn * 10;
         m_jack_pos.beats_per_minute = parent().master_bus().get_bpm();
 #else
-        m_jack_frame_current = jack_get_current_transport_frame(m_jack_client);
 
         bool ok = m_jack_pos.frame_rate > 1000;         /* usually 48000       */
         if (! ok)
@@ -1135,17 +1143,15 @@ jack_assistant::output (jack_scratchpad & pad)
             m_jack_transport_state == JackTransportRolling
         )
         {
+            m_jack_frame_current =
+                jack_get_current_transport_frame(m_jack_client);
+
             m_jack_frame_last = m_jack_frame_current;
             pad.js_dumping = true;          // info_message("Start playback");
-            m_jack_tick = m_jack_pos.frame *
-                m_jack_pos.ticks_per_beat *
+            m_jack_tick = m_jack_pos.frame * m_jack_pos.ticks_per_beat *
                 m_jack_pos.beats_per_minute / (m_jack_pos.frame_rate * 60.0);
 
-            jack_ticks_converted = m_jack_tick *        /* convert ticks */
-            (
-                double(m_ppqn) /                        // 4.0 --> use member?
-                (m_jack_pos.ticks_per_beat * m_jack_pos.beat_type / 4.0)
-            );
+            jack_ticks_converted = m_jack_tick * tick_multiplier();
             m_jack_parent.set_orig_ticks(long(jack_ticks_converted));
             pad.js_init_clock = true;
             pad.js_current_tick = pad.js_clock_tick = pad.js_total_tick =
@@ -1160,18 +1166,16 @@ jack_assistant::output (jack_scratchpad & pad)
 
             if (pad.js_looping && pad.js_playback_mode)
             {
-//              if (pad.js_current_tick >= m_jack_parent.get_right_tick())
-//              {
-                    while (pad.js_current_tick >= m_jack_parent.get_right_tick())
-                    {
-                        double lrsize = m_jack_parent.get_right_tick() -
-                            m_jack_parent.get_left_tick();
-
-                        pad.js_current_tick -= lrsize;
-                    }
-                    m_jack_parent.reset_sequences();
-                    m_jack_parent.set_orig_ticks(long(pad.js_current_tick));
-//              }
+                while (pad.js_current_tick >= m_jack_parent.get_right_tick())
+                {
+                    pad.js_current_tick -= m_jack_parent.left_right_size();
+                }
+#ifdef USE_STAZED_JACK_SUPPORT
+                m_jack_parent.off_sequences();
+#else
+                m_jack_parent.reset_sequences();            /* seq24 */
+#endif
+                m_jack_parent.set_orig_ticks(long(pad.js_current_tick));
             }
         }
         if
@@ -1208,11 +1212,7 @@ jack_assistant::output (jack_scratchpad & pad)
                 m_jack_frame_last = m_jack_frame_current;
             }
 
-            jack_ticks_converted = m_jack_tick *
-            (
-                double(m_ppqn) /                                // use member?
-                    (m_jack_pos.ticks_per_beat * m_jack_pos.beat_type / 4.0)
-            );
+            jack_ticks_converted = m_jack_tick * tick_multiplier();
             jack_ticks_delta = jack_ticks_converted - pad.js_ticks_converted_last;
             pad.js_clock_tick += jack_ticks_delta;
             pad.js_current_tick += jack_ticks_delta;
@@ -1488,7 +1488,7 @@ jack_assistant::client_open (const std::string & clientname)
     result = jack_client_open(name, JackNullOption, pstatus);       // 0x800000
 #endif
 
-    if (not_nullptr(result))
+    if (not_nullptr(result) && not_nullptr(pstatus))
     {
         if (status & JackServerStarted)
             (void) info_message("JACK server started now");

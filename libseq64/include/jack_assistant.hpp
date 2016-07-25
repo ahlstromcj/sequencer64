@@ -578,6 +578,21 @@ private:
         return m_jack_client_uuid;
     }
 
+    /**
+     *  Convenience function for internal use.  Should we change 4.0 to a
+     *  member value?  What does it mean?
+     *
+     * \return
+     *      Returns the multiplier to convert a JACK tick value according to
+     *      the PPQN, ticks/beat, and beat-type settings.
+     */
+
+    double tick_multiplier () const
+    {
+        double denom = (m_jack_pos.ticks_per_beat * m_jack_pos.beat_type / 4.0);
+        return double(m_ppqn) / denom;
+    }
+
     bool info_message (const std::string & msg);
     bool error_message (const std::string & msg);
     jack_client_t * client_open (const std::string & clientname);

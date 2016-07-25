@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and Tim Deagan
  * \date          2015-07-24
- * \updates       2016-07-21
+ * \updates       2016-07-25
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -118,7 +118,7 @@ midi_control perform::sm_mc_dummy;
 
 perform::perform (gui_assistant & mygui, int ppqn)
  :
-#ifdef USE_STAZED_JACK_EXTRAS
+#ifdef USE_STAZED_JACK_SUPPORT
     m_toggle_jack               (false),
     m_playback_mode             (false),
     m_follow_transport          (true),
@@ -298,6 +298,12 @@ perform::clear_all ()
         set_screen_set_notepad(i, e);
 
     is_modified(false);                     /* new, we start afresh     */
+
+#ifdef USE_STAZED_JACK_SUPPORT
+    set_bpm(c_bpm);                         /* hmmmmmmmmmmmmmmmmmmmmmmm */
+    set_have_undo(false);
+    set_have_redo(false);
+#endif
 }
 
 /**
@@ -569,6 +575,41 @@ perform::toggle_all_tracks ()
     }
 }
 
+#ifdef USE_STAZED_JACK_SUPPORT
+
+/**
+ *  Provides for various settings of the song-mute status of all sequences in
+ *  the song. The sequence::set_song_mute() and toggle_song_mute() functions
+ *  do all the work, including mp-dirtying the sequence.
+ */
+
+void
+perform::set_song_mute (mute_op op)
+{
+    for (int i = 0; i < m_sequence_max; ++i)
+    {
+        if (is_active(i))
+        {
+            switch (op)
+            {
+                case MUTE_ON:
+                    m_seqs[i]->set_song_mute(true);
+                    break;
+
+                case MUTE_OFF:
+                    m_seqs[i]->set_song_mute(false);
+                    break;
+
+                case MUTE_TOGGLE:
+                    m_seqs[i]->toggle_song_mute();
+                    break;
+            }
+        }
+    }
+}
+
+#endif  // USE_STAZED_JACK_SUPPORT
+
 /**
  *  Mutes/unmutes all tracks in the desired screen-set.
  *
@@ -617,6 +658,17 @@ perform::set_left_tick (midipulse tick, bool setstart)
     if (setstart)
         set_start_tick(tick);
 
+#ifdef USE_STAZED_JACK_SUPPORT
+
+    if (is_jack_master())               /* don't use in slave mode  */
+        position_jack(true, tick);
+    else if (! is_jack_running())
+        m_tick = tick;
+
+    m_reposition = false;
+
+#endif
+
     if (m_left_tick >= m_right_tick)
         m_right_tick = m_left_tick + m_one_measure;
 }
@@ -646,8 +698,22 @@ perform::set_right_tick (midipulse tick, bool setstart)
         if (m_right_tick <= m_left_tick)
         {
             m_left_tick = m_right_tick - m_one_measure;
+
+#ifdef USE_STAZED_JACK_SUPPORT
+            if (setstart)
+            {
+                set_start_tick(m_left_tick);
+                if (is_jack_master() && is_jack_running())
+                    position_jack(true, m_left_tick);
+                else
+                    m_tick = m_left_tick;
+
+                m_reposition = false;
+            }
+#else
             if (setstart)
                 set_start_tick(m_left_tick);
+#endif
         }
     }
 }
@@ -730,6 +796,10 @@ perform::install_sequence (sequence * seq, int seqnum)
  * \todo
  *      Shouldn't we wrap around the sequence list if we can't find an empty
  *      sequence slot after prefnum?
+ *
+ * \todo
+ *      This function needs some deeper analysis against the original, in my
+ *      opinion.
  *
  * \warning
  *      The logic of the if-statement in this function was such that \a
@@ -888,7 +958,7 @@ perform::set_was_active (int seq)
 {
     if (is_seq_valid(seq))
     {
-        m_was_active_main[seq] = 
+        m_was_active_main[seq] =
             m_was_active_edit[seq] =
             m_was_active_perf[seq] =
             m_was_active_names[seq] = true;
@@ -1053,7 +1123,9 @@ perform::set_beats_per_minute (int bpm)
     if (ok)
         m_jack_asst.set_beats_per_minute(bpm);
 #else
+
     bool ok = ! m_running;
+
 #endif
 
     if (ok)
@@ -1154,6 +1226,8 @@ perform::is_sequence_in_edit (int seq)
     else
         return false;
 }
+
+// CONTINUE HERE HERE HERE
 
 /**
  *  Retrieves a reference to a value from m_midi_cc_toggle[].
@@ -1709,31 +1783,33 @@ perform::start (bool state)
  *
  * Stazed:
  *
- *  This function's sole purpose was to prevent inner_stop() from being called
- *  internally when jack was running...potentially twice?. inner_stop() was
- *  called by output_func() when jack sent a JackTransportStopped message. If
- *  seq42 initiated the stop, then stop_jack() was called which then triggered
- *  the JackTransportStopped message to output_func() which then triggered the
- *  bool stop_jack to call inner_stop().  The output_func() call to
- *  inner_stop() is only necessary when some other jack client sends a
- *  jack_transport_stop message to jack, not when it is initiated by seq42.
- *  The method of relying on jack to call inner_stop() when internally
- *  initiated caused a (very) obscure apparent freeze if you press and hold the
- *  start/stop key if set to toggle. This occurs because of the delay between
- *  JackTransportStarting and JackTransportStopped if both triggered in rapid
- *  succession by holding the toggle key down.  The variable global_is_running
- *  gets set false by a delayed inner_stop() from jack after the start (true)
- *  is already sent. This means the global is set to true when jack is actually
- *  off (false). Any subsequent presses to the toggle key send a stop message
- *  because the global is set to true. Because jack is not running,
- *  output_func() is not running to send the inner_stop() call which resets the
- *  global to false. Thus an apparent freeze as the toggle key endlessly sends
- *  a stop, but inner_stop() never gets called to reset. Whoo! So, to fix this
- *  we just need to call inner_stop() directly rather than wait for jack to
- *  send a delayed stop, only when running. This makes the whole purpose of
- *  this stop() function unneeded. The check for m_jack_running is commented
- *  out and this function could be removed. It is being left for future
- *  generations to ponder!!!
+ *      This function's sole purpose was to prevent inner_stop() from being
+ *      called internally when jack was running...potentially twice?.
+ *      inner_stop() was called by output_func() when jack sent a
+ *      JackTransportStopped message. If seq42 initiated the stop, then
+ *      stop_jack() was called which then triggered the JackTransportStopped
+ *      message to output_func() which then triggered the bool stop_jack to
+ *      call inner_stop().  The output_func() call to inner_stop() is only
+ *      necessary when some other jack client sends a jack_transport_stop
+ *      message to jack, not when it is initiated by seq42.  The method of
+ *      relying on jack to call inner_stop() when internally initiated caused
+ *      a (very) obscure apparent freeze if you press and hold the start/stop
+ *      key if set to toggle. This occurs because of the delay between
+ *      JackTransportStarting and JackTransportStopped if both triggered in
+ *      rapid succession by holding the toggle key down.  The variable
+ *      global_is_running gets set false by a delayed inner_stop() from jack
+ *      after the start (true) is already sent. This means the global is set
+ *      to true when jack is actually off (false). Any subsequent presses to
+ *      the toggle key send a stop message because the global is set to true.
+ *      Because jack is not running, output_func() is not running to send the
+ *      inner_stop() call which resets the global to false. Thus an apparent
+ *      freeze as the toggle key endlessly sends a stop, but inner_stop()
+ *      never gets called to reset. Whoo! So, to fix this we just need to
+ *      call inner_stop() directly rather than wait for jack to send a
+ *      delayed stop, only when running. This makes the whole purpose of this
+ *      stop() function unneeded. The check for m_jack_running is commented
+ *      out and this function could be removed. It is being left for future
+ *      generations to ponder!!!
  */
 
 void
@@ -2067,12 +2143,12 @@ perform::output_func ()
         pad.js_dumping = false;
         pad.js_init_clock = true;
         pad.js_looping = m_looping;
+        pad.js_playback_mode = m_playback_mode;
+        pad.js_ticks_converted_last = 0.0;
 #ifdef USE_STAZED_JACK_SUPPORT
         pad.js_jack_ticks_converted = 0.0;
         pad.js_ticks_delta = 0.0;
 #endif
-        pad.js_playback_mode = m_playback_mode;
-        pad.js_ticks_converted_last = 0.0;
 #ifdef USE_SEQ24_0_9_3_CODE
         pad.js_delta_tick_frac = 0L;        // from seq24 0.9.3, long value
 #endif
@@ -2251,7 +2327,7 @@ perform::output_func ()
 
             if
             (
-                m_playback_mode && ! jackrunning &&
+                m_playback_mode && ! is_jack_running() &&
                 ! m_usemidiclock && m_reposition
             )
             {
@@ -2278,12 +2354,12 @@ perform::output_func ()
                 {
 #ifdef USE_STAZED_JACK_SUPPORT
                     static bool jack_position_once = false;
-                    midipulse rtick = get_right_tick();
+                    midipulse rtick = get_right_tick();     /* can change? */
                     if (pad.js_current_tick >= rtick)
                     {
                         if
                         (
-                            is_jack_running() && m_jack_asst.is_master() &&
+                            is_jack_running() && is_jack_master() &&
                             ! jack_position_once
                         )
                         {
@@ -2300,13 +2376,13 @@ perform::output_func ()
                         if (is_jack_running())
                         {
                             if (m_jack_transport_state != JackTransportStarting)
-                            play(rtick - 1);                        // play!
+                                play(rtick - 1);                    // play!
                         }
                         else
                             play(rtick - 1);                        // play!
 
                         midipulse ltick = get_left_tick();
-                        reset_sequences();                          // reset!
+                        reset_sequences();   // off_sequences()?    // reset!
                         set_orig_ticks(ltick);
                         pad.js_current_tick = double(ltick) + leftover_tick;
                     }
@@ -2327,6 +2403,12 @@ perform::output_func ()
                 }
 
 #ifdef USE_STAZED_JACK_SUPPORT
+
+                /*
+                 * Don't play during JackTransportStarting to avoid xruns on
+                 * FF or RW.
+                 */
+
                 if (is_jack_running())
                 {
                     if (m_jack_transport_state != JackTransportStarting)
@@ -2338,11 +2420,12 @@ perform::output_func ()
                 play(midipulse(pad.js_current_tick));               // play!
 #endif
 
-
-
-#if defined SEQ64_PAUSE_SUPPORT && ! defined USE_STAZED_JACK_SUPPORT
+#ifndef USE_STAZED_JACK_SUPPORT
+#ifdef SEQ64_PAUSE_SUPPORT
                 set_jack_tick(pad.js_current_tick);
 #endif
+#endif
+
                 m_master_bus.clock(midipulse(pad.js_clock_tick));   // MIDI clock
 
 #ifdef SEQ64_STATISTICS_SUPPORT
@@ -2518,15 +2601,15 @@ perform::output_func ()
 #ifdef JACK_SUPPORT
         if (m_playback_mode)
         {
-            if (m_jack_asst.is_master())                // master in song mode
+            if (is_jack_master())                       // master in song mode
                 position_jack(m_playback_mode, m_left_tick);
         }
         else
         {
             if (is_jack_running())
             {
-                if (m_jack_asst.is_master())            // master in live mode
-                    position_jack(m_playback_mode,0);
+                if (is_jack_master())                   // master in live mode
+                    position_jack(m_playback_mode, 0);
             }
         }
 #endif
@@ -2551,11 +2634,11 @@ perform::output_func ()
         m_master_bus.stop();
 
 #ifdef JACK_SUPPORT
-        if(m_jack_running)
-            m_jack_stop_tick = get_current_jack_position((void *)this);
+        if (is_jack_running())
+            m_jack_stop_tick = get_current_jack_position((void *) this);
 #endif // JACK_SUPPORT
 
-#else
+#else  // USE_STAZED_JACK_SUPPORT
 
 #ifdef SEQ64_PAUSE_SUPPORT
         if (is_jack_running())
@@ -2564,6 +2647,7 @@ perform::output_func ()
 
         m_master_bus.flush();
         m_master_bus.stop();
+
 #endif  // USE_STAZED_JACK_SUPPORT
 
     }
@@ -3482,7 +3566,7 @@ perform::max_active_set () const
     return result;
 }
 
-#ifdef USE_STAZED_JACK_EXTRAS
+#ifdef USE_STAZED_JACK_SUPPORT
 
 void
 perform::FF_rewind ()
@@ -3491,7 +3575,11 @@ perform::FF_rewind ()
         return;
 
     long tick = 0;
-    long measure_ticks = (c_ppqn * 4) * m_bp_measure / m_bw / 4 * m_excell_FF_RW;
+//  long measure_ticks = (c_ppqn * 4) * m_bp_measure / m_bw / 4 * m_excell_FF_RW;
+    long measure_ticks =
+        measures_to_ticks(m_beats_per_bar, m_ppqn, m_beat_width) /
+            4 * m_excell_FF_RW;
+
     if (m_FF_RW_button_type < 0)  // rewind
     {
         tick = m_tick - measure_ticks;
@@ -3501,7 +3589,7 @@ perform::FF_rewind ()
     if (m_FF_RW_button_type > 0)  // Fast Forward
         tick = m_tick + measure_ticks;
 
-    if (m_jack_running)
+    if (is_jack_running())
     {
         position_jack(true, tick);
     }
@@ -3512,7 +3600,7 @@ perform::FF_rewind ()
     }
 }
 
-#endif  // USE_STAZED_JACK_EXTRAS
+#endif  // USE_STAZED_JACK_SUPPORT
 
 #ifdef PLATFORM_DEBUG_XXX
 

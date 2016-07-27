@@ -3796,6 +3796,34 @@ sequence::set_parent (perform * p)
         m_parent = p;
 }
 
+#ifdef USE_THIS_COOL_FUNCTION
+
+/**
+ *  Provides encapsulation for a series of called used in perform::play().
+ *  Just an idea to considered for the future.
+ *
+ *  Starts the playing of a pattern/sequence.  This function just has the
+ *  sequence dump its events.  It ignores the sequence if it has no playable
+ *  MIDI events.
+ *
+ */
+
+void
+sequence::play_queue (midipulse tick, bool playbackmode)
+{
+    if (event_count() > 0)               /* playable events? */
+    {
+        if (check_queued_tick(tick))
+        {
+            play(s->get_queued_tick() - 1, playbackmode);
+            toggle_playing();
+        }
+        play(tick, playbackmode);
+    }
+}
+
+#endif  // USE_THIS_COOL_FUNCTION
+
 }           // namespace seq64
 
 /*

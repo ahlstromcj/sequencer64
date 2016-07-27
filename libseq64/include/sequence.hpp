@@ -919,6 +919,9 @@ public:
     void print () const;
     void print_triggers () const;
     void play (midipulse tick, bool playback_mode);
+#ifdef USE_THIS_COOL_FUNCTION
+    void play_queue (midipulse tick, bool playbackmode);
+#endif
     bool add_event (const event & er);
     void add_trigger
     (

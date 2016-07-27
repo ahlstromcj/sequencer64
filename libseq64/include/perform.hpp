@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-07-24
+ * \updates       2016-07-27
  * \license       GNU GPLv2 or above
  *
  *  This class still has way too many members, even with the JACK and
@@ -96,6 +96,13 @@
 
 #define PERFORM_KEY_LABELS_ON_SEQUENCE  9998
 #define PERFORM_NUM_LABELS_ON_SEQUENCE  9999
+
+/**
+ *  A new parameter value for track/sequence number incorporated from
+ *  Stazed's seq32 project.
+ */
+
+#define SEQ64_ALL_TRACKS                (-1)
 
 namespace seq64
 {
@@ -1085,8 +1092,43 @@ public:
 
     void move_triggers (bool direction);
     void copy_triggers ();
-    void push_trigger_undo ();
+    void push_trigger_undo (int track = SEQ64_ALL_TRACKS);
     void pop_trigger_undo ();
+
+#ifdef USE_SEQ32_PUSH_POP_SUPPORT
+
+    /*
+     * Not sure that we need this code; we'll think about it some more.  One
+     * issue with it is that we really can't keep good track of the modify
+     * flag in this case, in general.
+     */
+
+    /*
+     * used for undo/redo track number
+     */
+
+    std::vector<int> m_undo_vect;
+    std::vector<int> m_redo_vect;
+
+    bool m_have_undo;
+    bool m_have_redo;
+
+    void pop_trigger_undo ();
+    void pop_trigger_redo ();
+
+    void set_have_undo (bool undo)
+    {
+        m_have_undo = undo;
+        modify();
+    }
+
+    void set_have_redo (bool redo)
+    {
+        m_have_redo = redo;
+    }
+
+#endif      // USE_SEQ32_PUSH_POP_SUPPORT
+
     void split_trigger (int seqnum, midipulse tick);
     midipulse get_max_trigger ();
 

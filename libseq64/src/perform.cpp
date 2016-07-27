@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and Tim Deagan
  * \date          2015-07-24
- * \updates       2016-07-25
+ * \updates       2016-07-27
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -1227,8 +1227,6 @@ perform::is_sequence_in_edit (int seq)
         return false;
 }
 
-// CONTINUE HERE HERE HERE
-
 /**
  *  Retrieves a reference to a value from m_midi_cc_toggle[].
  *
@@ -1477,6 +1475,9 @@ perform::set_playing_screenset ()
  *  down the list of sequences and has them dump their events.  It skips
  *  sequences that have no playable MIDI events.
  *
+ *  Note how often the "s" (sequence) pointer is used.  Is it worth
+ *  offloading all these calls to a new sequence function?
+ *
  * \param tick
  *      Provides the tick at which to start playing.
  */
@@ -1489,6 +1490,9 @@ perform::play (midipulse tick)
     {
         if (is_active(i))
         {
+#ifdef USE_THIS_COOL_FUNCTION
+            m_seqs[i]->play_queue(tick, m_playback_mode);
+#else
             sequence * s = m_seqs[i];
             if (s->event_count() > 0)               /* playable events? */
             {
@@ -1499,6 +1503,7 @@ perform::play (midipulse tick)
                 }
                 s->play(tick, m_playback_mode);
             }
+#endif
         }
     }
     m_master_bus.flush();                           /* flush MIDI buss  */
@@ -1520,7 +1525,7 @@ perform::set_orig_ticks (midipulse tick)
     for (int s = 0; s < m_sequence_max; ++s)
     {
         if (is_active(s))
-            m_seqs[s]->set_last_tick(tick);
+            m_seqs[s]->set_last_tick(tick);         /* set_orig_tick()  */
     }
 }
 
@@ -1566,32 +1571,151 @@ perform::move_triggers (bool direction)
  *  For every active sequence, call that sequence's push_trigger_undo()
  *  function.  Too bad we cannot yet keep track of all the undoes for the sake
  *  of properly handling the "is modified" flag.
+ *
+ *  This function now has a new parameter.  Not added to this function is the
+ *  seemingly redundant undo-push the seq32 code does; is this actually a
+ *  seq42 thing?
+ *
+ *  Also, there is still an issue with our undo-handling for a single track.
+ *  See pop_trigger_undo().
+ *
+ * \param track
+ *      A new parameter (found in the stazed seq32 code) that allows this
+ *      function to operate on a single track.  A parameter value of
+ *      SEQ64_ALL_TRACKS (-1, the default) implements the original behavior.
  */
 
 void
-perform::push_trigger_undo ()
+perform::push_trigger_undo (int track)
 {
-    for (int i = 0; i < m_sequence_max; ++i)
+    if (track == SEQ64_ALL_TRACKS)
     {
-        if (is_active(i))
-            m_seqs[i]->push_trigger_undo();
+        for (int i = 0; i < m_sequence_max; ++i)
+        {
+            if (is_active(i))
+                m_seqs[i]->push_trigger_undo();
+        }
+    }
+    else
+    {
+        if (is_active(track))
+            m_seqs[track]->push_trigger_undo();
     }
 }
 
 /**
  *  For every active sequence, call that sequence's pop_trigger_undo()
  *  function.
+ *
+ * \todo
+ *      Look at seq32/src/perform.cpp and the
+ *      perform::push_trigger_undo(track) function, which has a track
+ *      parameter that has a -1 values the supports all tracks.  It requires
+ *      two new vectors (one for undo, one for redo), two new flags
+ *      (likewise).  We've put this code in place, macroed out.
  */
 
 void
 perform::pop_trigger_undo ()
 {
+
+#ifdef USE_SEQ32_PUSH_POP_SUPPORT
+    int track = m_undo_vect[m_undo_vect.size() - 1];
+    m_undo_vect.pop_back();                     // WHAT IF size is already 0?
+    m_redo_vect.push_back(track);
+
+    if (track < 0)
+    {
+#endif
+
     for (int i = 0; i < m_sequence_max; ++i)
     {
         if (is_active(i))
             m_seqs[i]->pop_trigger_undo();
     }
+
+#ifdef USE_SEQ32_PUSH_POP_SUPPORT
+    }
+    else
+    {
+        if (is_active(track))
+            m_seqs[track]->pop_trigger_undo();
+    }
+    set_have_undo(m_undo_vect.size() > 0);
+    set_have_redo(m_redo_vect.size() > 0);
+#endif
+
 }
+
+// CONTINUE HERE HERE HERE
+
+#ifdef USE_SEQ32_PUSH_POP_SUPPORT
+
+void
+perform::pop_trigger_undo ()
+{
+    int track = m_undo_vect[m_undo_vect.size()-1];
+    m_undo_vect.pop_back();                     // WHAT IF size is already 0?
+    m_redo_vect.push_back(track);
+    if (track == SEQ64_ALL_TRACKS)
+    {
+        for (int i = 0; i < m_sequence_max; ++i)
+        {
+            if (is_active(i))
+                m_seqs[i]->pop_trigger_undo();
+        }
+    }
+    else
+    {
+        if ( is_active(track) == true )
+        {
+            assert( m_seqs[track] );
+            m_seqs[track]->pop_trigger_undo( );
+        }
+    }
+
+    if(undo_vect.size() == 0)
+        set_have_undo(false);
+    else
+        set_have_undo(true);
+
+    if(redo_vect.size() == 0)
+        set_have_redo(false);
+    else
+        set_have_redo(true);
+}
+
+void
+perform::pop_trigger_redo ()
+{
+    int track = m_redo_vect[m_redo_vect.size()-1];
+    m_redo_vect.pop_back();                       // WHAT IF size is already 0?
+    m_undo_vect.push_back(track);
+    if (track < 0)
+    {
+        for (int i=0; i< m_sequence_max; i++ )
+        {
+            if (is_active(track))
+                m_seqs[i]->pop_trigger_redo( );
+        }
+    }
+    else
+    {
+        if (is_active(track))
+            m_seqs[track]->pop_trigger_redo( );
+    }
+
+    if(redo_vect.size() == 0)
+        set_have_redo(false);
+    else
+        set_have_redo(true);
+
+    if(undo_vect.size() == 0)
+        set_have_undo(false);
+    else
+        set_have_undo(true);
+}
+#endif  // USE_SEQ32_PUSH_POP_SUPPORT
 
 /**
  *  If the left tick is less than the right tick, then, for each sequence that
@@ -2653,8 +2777,6 @@ perform::output_func ()
     }
     pthread_exit(0);
 }
-
-// CONTINUE HERE HERE HERE
 
 /**
  *  Set up the performance, and set the process to realtime privileges.

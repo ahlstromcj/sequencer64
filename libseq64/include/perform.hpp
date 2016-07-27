@@ -977,7 +977,7 @@ public:
 
 public:
 
-    void clear_all ();
+    bool clear_all ();
     void launch (int ppqn);
     void new_sequence (int seq);                    /* seqmenu & mainwid    */
     void add_sequence (sequence * seq, int perf);   /* midifile             */

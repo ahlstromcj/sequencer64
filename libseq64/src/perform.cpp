@@ -283,27 +283,46 @@ perform::launch (int ppqn)
  *
  *  Anything else to clear?  What about all the other sequence flags?  We can
  *  beef up delete_sequence() for them, at some point.
+ *
+ *  Added stazed code from 1.0.5 to abort clearing if any of the sequences are
+ *  in editing.
  */
 
-void
+bool
 perform::clear_all ()
 {
-    reset_sequences();
+    bool result = true;
     for (int i = 0; i < m_sequence_max; ++i)
-        if (is_active(i))
-            delete_sequence(i);             /* can set "is modified"    */
+    {
+        if (is_active(i) && m_seqs[i]->get_editing())
+        {
+            result = false;
+            break;
+        }
+    }
+    if (result)
+    {
+        reset_sequences();
+        for (int i = 0; i < m_sequence_max; ++i)
+            if (is_active(i))
+                delete_sequence(i);             /* can set "is modified"    */
 
-    std::string e;                          /* an empty string          */
-    for (int i = 0; i < m_max_sets; ++i)
-        set_screen_set_notepad(i, e);
+        std::string e;                          /* an empty string          */
+        for (int i = 0; i < m_max_sets; ++i)
+            set_screen_set_notepad(i, e);
 
-    is_modified(false);                     /* new, we start afresh     */
+        is_modified(false);                     /* new, we start afresh     */
 
 #ifdef USE_STAZED_JACK_SUPPORT
-    set_bpm(c_bpm);                         /* hmmmmmmmmmmmmmmmmmmmmmmm */
-    set_have_undo(false);
-    set_have_redo(false);
+        set_bpm(c_bpm);                         /* hmmmmmmmmmmmmmmmmmmmmmmm */
 #endif
+
+#ifdef USE_SEQ32_PUSH_POP_SUPPORT
+        set_have_undo(false);
+        set_have_redo(false);
+#endif
+    }
+    return result;
 }
 
 /**
@@ -1620,102 +1639,92 @@ perform::pop_trigger_undo ()
 {
 
 #ifdef USE_SEQ32_PUSH_POP_SUPPORT
-    int track = m_undo_vect[m_undo_vect.size() - 1];
-    m_undo_vect.pop_back();                     // WHAT IF size is already 0?
-    m_redo_vect.push_back(track);
-
-    if (track < 0)
+    if (m_undo_vect.size() > 0)
     {
+        int track = m_undo_vect[m_undo_vect.size() - 1];
+        m_undo_vect.pop_back();
+        m_redo_vect.push_back(track);
+        if (track < 0)
+        {
 #endif
 
-    for (int i = 0; i < m_sequence_max; ++i)
-    {
-        if (is_active(i))
-            m_seqs[i]->pop_trigger_undo();
-    }
+        for (int i = 0; i < m_sequence_max; ++i)
+        {
+            if (is_active(i))
+                m_seqs[i]->pop_trigger_undo();
+        }
 
 #ifdef USE_SEQ32_PUSH_POP_SUPPORT
+        }
+        else
+        {
+            if (is_active(track))
+                m_seqs[track]->pop_trigger_undo();
+        }
+        set_have_undo(m_undo_vect.size() > 0);
+        set_have_redo(m_redo_vect.size() > 0);
     }
-    else
-    {
-        if (is_active(track))
-            m_seqs[track]->pop_trigger_undo();
-    }
-    set_have_undo(m_undo_vect.size() > 0);
-    set_have_redo(m_redo_vect.size() > 0);
 #endif
 
 }
-
-// CONTINUE HERE HERE HERE
 
 #ifdef USE_SEQ32_PUSH_POP_SUPPORT
 
 void
 perform::pop_trigger_undo ()
 {
-    int track = m_undo_vect[m_undo_vect.size()-1];
-    m_undo_vect.pop_back();                     // WHAT IF size is already 0?
-    m_redo_vect.push_back(track);
-    if (track == SEQ64_ALL_TRACKS)
+    if (m_undo_vect.size() > 0)
     {
-        for (int i = 0; i < m_sequence_max; ++i)
+        int track = m_undo_vect[m_undo_vect.size()-1];
+        m_undo_vect.pop_back();
+        m_redo_vect.push_back(track);
+        if (track == SEQ64_ALL_TRACKS)
         {
-            if (is_active(i))
-                m_seqs[i]->pop_trigger_undo();
+            for (int i = 0; i < m_sequence_max; ++i)
+            {
+                if (is_active(i))
+                    m_seqs[i]->pop_trigger_undo();
+            }
         }
-    }
-    else
-    {
-        if ( is_active(track) == true )
+        else
         {
-            assert( m_seqs[track] );
-            m_seqs[track]->pop_trigger_undo( );
+            if (is_active(track))
+                m_seqs[track]->pop_trigger_undo( );
         }
+        set_have_undo(m_undo_vect.size() > 0);
+        set_have_redo(m_redo_vect.size() > 0);
     }
-
-    if(undo_vect.size() == 0)
-        set_have_undo(false);
-    else
-        set_have_undo(true);
-
-    if(redo_vect.size() == 0)
-        set_have_redo(false);
-    else
-        set_have_redo(true);
 }
 
 void
 perform::pop_trigger_redo ()
 {
-    int track = m_redo_vect[m_redo_vect.size()-1];
-    m_redo_vect.pop_back();                       // WHAT IF size is already 0?
-    m_undo_vect.push_back(track);
-    if (track < 0)
+    if (m_undo_vect.size() > 0)
     {
-        for (int i=0; i< m_sequence_max; i++ )
+        int track = m_redo_vect[m_redo_vect.size()-1];
+        m_redo_vect.pop_back();
+        m_undo_vect.push_back(track);
+        if (track == SEQ64_ALL_TRACKS)
+        {
+            for (int i = 0; i < m_sequence_max; ++i)
+            {
+                if (is_active(track))
+                    m_seqs[i]->pop_trigger_redo();
+            }
+        }
+        else
         {
             if (is_active(track))
-                m_seqs[i]->pop_trigger_redo( );
+                m_seqs[track]->pop_trigger_redo();
         }
+        set_have_undo(m_undo_vect.size() > 0);
+        set_have_redo(m_redo_vect.size() > 0);
     }
-    else
-    {
-        if (is_active(track))
-            m_seqs[track]->pop_trigger_redo( );
-    }
-
-    if(redo_vect.size() == 0)
-        set_have_redo(false);
-    else
-        set_have_redo(true);
-
-    if(undo_vect.size() == 0)
-        set_have_undo(false);
-    else
-        set_have_undo(true);
 }
+
 #endif  // USE_SEQ32_PUSH_POP_SUPPORT
+
+// CONTINUE HERE HERE HERE
 
 /**
  *  If the left tick is less than the right tick, then, for each sequence that

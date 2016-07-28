@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-30
- * \updates       2016-06-26
+ * \updates       2016-07-28
  * \license       GNU GPLv2 or above
  *
  *  This file provides a Linux-only implementation of MIDI support.
@@ -111,12 +111,13 @@ mastermidibus::mastermidibus (int ppqn, int bpm)
     m_ppqn = choose_ppqn(ppqn);
     for (int i = 0; i < c_max_busses; ++i)
     {
-        m_buses_in_active[i] = false;
-        m_buses_out_active[i] = false;
-        m_buses_in_init[i] = false;
-        m_buses_out_init[i] = false;
+        m_buses_in_active[i] =
+            m_buses_out_active[i] =
+            m_buses_in_init[i] =
+            m_buses_out_init[i] =
+            m_init_input[i] = false;
+
         m_init_clock[i] = e_clock_off;
-        m_init_input[i] = false;
     }
 
 #ifdef SEQ64_HAVE_LIBASOUND
@@ -240,6 +241,10 @@ mastermidibus::init (int ppqn)
     snd_seq_client_info_set_client(cinfo, -1);
     if (rc().manual_alsa_ports())
     {
+        /*
+         * Output busses
+         */
+
         int num_buses = SEQ64_ALSA_OUTPUT_BUSS_MAX;
         for (int i = 0; i < num_buses; ++i)
         {
@@ -253,8 +258,7 @@ mastermidibus::init (int ppqn)
                 snd_seq_client_id(m_alsa_seq), m_alsa_seq, i+1, m_queue
             );
             m_buses_out[i]->init_out_sub();
-            m_buses_out_active[i] = true;
-            m_buses_out_init[i] = true;
+            m_buses_out_active[i] = m_buses_out_init[i] = true;
         }
         m_num_out_buses = num_buses;
         if (not_nullptr(m_buses_in[0]))
@@ -262,14 +266,19 @@ mastermidibus::init (int ppqn)
             delete m_buses_in[0];
             errprint("mmbus::init() manual: m_buses_[0] not null");
         }
+
+        /*
+         * Input buss.  Only the first element is set up.  The rest are used
+         * only for non-manual ALSA ports in the else-class below.
+         */
+
         m_num_in_buses = 1;
         m_buses_in[0] = new midibus
         (
             snd_seq_client_id(m_alsa_seq), m_alsa_seq, m_num_in_buses, m_queue
         );
         m_buses_in[0]->init_in_sub();
-        m_buses_in_active[0] = true;
-        m_buses_in_init[0] = true;
+        m_buses_in_active[0] = m_buses_in_init[0] = true;
     }
     else
     {
@@ -298,10 +307,13 @@ mastermidibus::init (int ppqn)
                 )
                 {
                     /*
+                     * Output busses:
+                     *
                      * Why are we doing the ALSA client check again here?
+                     * Because it could be altered in the if-clause above.
                      */
 
-                    if (CAP_WRITE(cap) && ALSA_CLIENT_CHECK(pinfo)) /* outputs */
+                    if (CAP_WRITE(cap) && ALSA_CLIENT_CHECK(pinfo))
                     {
                         if (not_nullptr(m_buses_out[m_num_out_buses]))
                         {
@@ -331,6 +343,11 @@ mastermidibus::init (int ppqn)
 
                         ++m_num_out_buses;
                     }
+
+                    /*
+                     * Input busses
+                     */
+
                     if (CAP_READ(cap) && ALSA_CLIENT_CHECK(pinfo)) /* inputs */
                     {
                         if (not_nullptr(m_buses_in[m_num_in_buses]))
@@ -409,7 +426,7 @@ mastermidibus::start ()
 #ifdef SEQ64_HAVE_LIBASOUND
     automutex locker(m_mutex);
     snd_seq_start_queue(m_alsa_seq, m_queue, NULL);     /* start timer */
-    for (int i = 0; i < m_num_out_buses; i++)
+    for (int i = 0; i < m_num_out_buses; ++i)
         m_buses_out[i]->start();
 #endif
 }
@@ -468,7 +485,7 @@ mastermidibus::stop ()
 #ifdef SEQ64_HAVE_LIBASOUND
     snd_seq_drain_output(m_alsa_seq);
     snd_seq_sync_output_queue(m_alsa_seq);
-    snd_seq_stop_queue(m_alsa_seq, m_queue, NULL); /* start timer */
+    snd_seq_stop_queue(m_alsa_seq, m_queue, NULL);  /* start timer */
 #endif
 }
 
@@ -485,7 +502,7 @@ void
 mastermidibus::clock (midipulse tick)
 {
     automutex locker(m_mutex);
-    for (int i = 0; i < m_num_out_buses; i++)
+    for (int i = 0; i < m_num_out_buses; ++i)
         m_buses_out[i]->clock(tick);
 }
 
@@ -574,7 +591,7 @@ void
 mastermidibus::sysex (event * ev)
 {
     automutex locker(m_mutex);
-    for (int i = 0; i < m_num_out_buses; i++)
+    for (int i = 0; i < m_num_out_buses; ++i)
         m_buses_out[i]->sysex(ev);
 
     flush();                /* recursive locking! */
@@ -779,7 +796,7 @@ void
 mastermidibus::print ()
 {
     printf("Available busses:\n");
-    for (int i = 0; i < m_num_out_buses; i++)
+    for (int i = 0; i < m_num_out_buses; ++i)
         printf("%s\n", m_buses_out[i]->m_name.c_str());
 }
 
@@ -854,7 +871,7 @@ mastermidibus::port_start (int client, int port)
         {
             bool replacement = false;
             int bus_slot = m_num_out_buses;
-            for (int i = 0; i < m_num_out_buses; i++)
+            for (int i = 0; i < m_num_out_buses; ++i)
             {
                 if
                 (
@@ -897,7 +914,7 @@ mastermidibus::port_start (int client, int port)
         {
             bool replacement = false;
             int bus_slot = m_num_in_buses;
-            for (int i = 0; i < m_num_in_buses; i++)
+            for (int i = 0; i < m_num_in_buses; ++i)
             {
                 if
                 (
@@ -967,7 +984,7 @@ mastermidibus::port_exit (int client, int port)
 {
 #ifdef SEQ64_HAVE_LIBASOUND
     automutex locker(m_mutex);
-    for (int i = 0; i < m_num_out_buses; i++)
+    for (int i = 0; i < m_num_out_buses; ++i)
     {
         if (m_buses_out[i]->get_client() == client &&
             m_buses_out[i]->get_port() == port)
@@ -975,7 +992,7 @@ mastermidibus::port_exit (int client, int port)
             m_buses_out_active[i] = false;
         }
     }
-    for (int i = 0; i < m_num_in_buses; i++)
+    for (int i = 0; i < m_num_in_buses; ++i)
     {
         if (m_buses_in[i]->get_client() == client &&
             m_buses_in[i]->get_port() == port)
@@ -1097,6 +1114,81 @@ mastermidibus::get_midi_event (event * inev)
  *      sequence setting.
  */
 
+#ifdef USE_SEQ32_MIDIBUS_SUPPORT
+
+void
+mastermidibus::set_sequence_input (bool state, sequence * seq)
+{
+    automutex locker(m_mutex);
+    if (state)
+    {
+        /*
+         * We have a sequence with true - add the sequence if not already
+         * set.
+         */
+
+        if (not_nullptr(seq))
+        {
+            bool have_seq_already = false;
+            for (unsigned i = 0; i < m_vector_sequence.size(); ++i)
+            {
+                if (m_vector_sequence[i] == seq)
+                    have_seq_already = true;
+            }
+            if (! have_seq_already)
+                m_vector_sequence.push_back(seq);
+        }
+    }
+    else
+    {
+        /*
+         * No sequence and false state - we don't want to record.
+         * Have a sequence with false - remove the sequence.
+         */
+
+        if (is_nullptr(seq))
+            m_vector_sequence.clear();
+        else
+        {
+            for (unsigned i = 0; i < m_vector_sequence.size(); ++i)
+            {
+                if (m_vector_sequence[i] == seq)
+                    m_vector_sequence.erase(m_vector_sequence.begin() + i);
+            }
+        }
+    }
+}
+
+/**
+ *  TBD
+ *
+ *      Why use a pointer???
+ */
+
+void
+mastermidibus::dump_midi_input (event * in)
+{
+    event ev = *in;
+    for (unsigned i = 0; i < m_vector_sequence.size(); ++i)
+    {
+        if
+        (
+            (is_nullptr(m_vector_sequence[i]) ||        // error check
+            m_vector_sequence[i]->stream_event(&ev)
+        )
+        {
+            /*
+             * Did we find a match to sequence channel?  Then don't bother
+             * with remaining sequences.
+             */
+
+            break;
+        }
+    }
+}
+
+#else
+
 void
 mastermidibus::set_sequence_input (bool state, sequence * seq)
 {
@@ -1104,6 +1196,8 @@ mastermidibus::set_sequence_input (bool state, sequence * seq)
     m_seq = seq;
     m_dumping_input = state;
 }
+
+#endif      // USE_SEQ32_MIDIBUS_SUPPORT
 
 }           // namespace seq64
 

@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-30
- * \updates       2016-06-26
+ * \updates       2016-07-27
  * \license       GNU GPLv2 or above
  *
  *  The mastermidibus module is the Linux version of the mastermidibus module.
@@ -255,6 +255,7 @@ public:
     bool is_more_input ();
     bool get_midi_event (event * in);
     void set_sequence_input (bool state, sequence * seq);
+    void dump_midi_input (event * in);          /* a seq32 function */
 
     /**
      * \getter m_dumping_input

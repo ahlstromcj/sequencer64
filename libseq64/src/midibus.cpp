@@ -185,6 +185,32 @@ midibus::midibus
 
 #endif   // SEQ64_HAVE_LIBASOUND
 
+#ifdef PLATFORM_WINDOWS
+
+midibus::midibus (char id, int queue)
+ :
+    m_id                (id),
+    m_clock_type        (e_clock_off),
+    m_inputing          (false),
+    m_ppqn              (0),
+    m_seq               (seq),
+    m_dest_addr_client  (-1),
+    m_dest_addr_port    (-1),
+    m_local_addr_client (),                 // ??
+    m_local_addr_port   (-1),
+    m_queue             (queue),
+    m_name              (),
+    m_lasttick          (0),
+    m_mutex             ()
+{
+    char name[64];
+    snprintf(name, sizeof name, "[%d] sequencer64 %d", m_id, m_id);
+    m_name = name;
+    m_ppqn = choose_ppqn(ppqn);
+}
+
+#endif  // PLATFORM_WINDOWS
+
 /**
  *  A rote empty destructor.
  */
@@ -207,8 +233,7 @@ midibus::init_out ()
 #ifdef SEQ64_HAVE_LIBASOUND
     int result = snd_seq_create_simple_port         /* create ports */
     (
-        m_seq,
-        m_name.c_str(),
+        m_seq, m_name.c_str(),
         SND_SEQ_PORT_CAP_NO_EXPORT | SND_SEQ_PORT_CAP_READ,
         SND_SEQ_PORT_TYPE_MIDI_GENERIC | SND_SEQ_PORT_TYPE_APPLICATION
     );

@@ -286,6 +286,10 @@ perform::launch (int ppqn)
  *
  *  Added stazed code from 1.0.5 to abort clearing if any of the sequences are
  *  in editing.
+ *
+ * \return
+ *      Returns true if the clear-all operation could be performed.  If false,
+ *      then at least one active sequence was in editing mode.
  */
 
 bool
@@ -294,7 +298,7 @@ perform::clear_all ()
     bool result = true;
     for (int i = 0; i < m_sequence_max; ++i)
     {
-        if (is_active(i) && m_seqs[i]->get_editing())
+        if (is_active(i) && m_seqs[i]->get_editing())   /* stazed check */
         {
             result = false;
             break;
@@ -311,10 +315,8 @@ perform::clear_all ()
         for (int i = 0; i < m_max_sets; ++i)
             set_screen_set_notepad(i, e);
 
+#ifndef USE_STAZED_JACK_SUPPORT
         is_modified(false);                     /* new, we start afresh     */
-
-#ifdef USE_STAZED_JACK_SUPPORT
-        set_bpm(c_bpm);                         /* hmmmmmmmmmmmmmmmmmmmmmmm */
 #endif
 
 #ifdef USE_SEQ32_PUSH_POP_SUPPORT
@@ -1607,6 +1609,10 @@ perform::move_triggers (bool direction)
 void
 perform::push_trigger_undo (int track)
 {
+#ifdef USE_SEQ32_PUSH_POP_SUPPORT
+    m_undo_vect.push_back(track);
+#endif
+
     if (track == SEQ64_ALL_TRACKS)
     {
         for (int i = 0; i < m_sequence_max; ++i)
@@ -1620,6 +1626,9 @@ perform::push_trigger_undo (int track)
         if (is_active(track))
             m_seqs[track]->push_trigger_undo();
     }
+#ifdef USE_SEQ32_PUSH_POP_SUPPORT
+    set_have_undo(true);
+#endif
 }
 
 /**
@@ -1644,15 +1653,15 @@ perform::pop_trigger_undo ()
         int track = m_undo_vect[m_undo_vect.size() - 1];
         m_undo_vect.pop_back();
         m_redo_vect.push_back(track);
-        if (track < 0)
+        if (track == SEQ64_ALL_TRACKS)
         {
 #endif
 
-        for (int i = 0; i < m_sequence_max; ++i)
-        {
-            if (is_active(i))
-                m_seqs[i]->pop_trigger_undo();
-        }
+            for (int i = 0; i < m_sequence_max; ++i)
+            {
+                if (is_active(i))
+                    m_seqs[i]->pop_trigger_undo();
+            }
 
 #ifdef USE_SEQ32_PUSH_POP_SUPPORT
         }
@@ -1669,32 +1678,6 @@ perform::pop_trigger_undo ()
 }
 
 #ifdef USE_SEQ32_PUSH_POP_SUPPORT
-
-void
-perform::pop_trigger_undo ()
-{
-    if (m_undo_vect.size() > 0)
-    {
-        int track = m_undo_vect[m_undo_vect.size()-1];
-        m_undo_vect.pop_back();
-        m_redo_vect.push_back(track);
-        if (track == SEQ64_ALL_TRACKS)
-        {
-            for (int i = 0; i < m_sequence_max; ++i)
-            {
-                if (is_active(i))
-                    m_seqs[i]->pop_trigger_undo();
-            }
-        }
-        else
-        {
-            if (is_active(track))
-                m_seqs[track]->pop_trigger_undo( );
-        }
-        set_have_undo(m_undo_vect.size() > 0);
-        set_have_redo(m_redo_vect.size() > 0);
-    }
-}
 
 void
 perform::pop_trigger_redo ()
@@ -1787,6 +1770,39 @@ perform::copy_triggers ()
  *      intuitive, because it is really following Live mode.
  */
 
+#ifdef USE_STAZED_JACK_SUPPORT
+
+void
+perform::start_playing (bool songmode)
+{
+    if (songmode || m_start_from_perfedit)
+    {
+        if (m_jack_master)
+        {
+           /*
+            * Allow to start at key-p position if set;
+            * for cosmetic reasons, to stop transport line flicker on start,
+            * position to the left tick.
+            */
+
+           if (! m_reposition)
+                position_jack(true, m_left_tick);
+        }
+        start_jack();
+        start(true);    // for setting song m_playback_mode = true
+    }
+    else
+    {
+        if (m_jack_master)
+            position_jack(false, 0);
+
+        start(false);
+        start_jack();
+    }
+}
+
+#else   // USE_STAZED_JACK_SUPPORT
+
 void
 perform::start_playing (bool songmode)
 {
@@ -1833,6 +1849,8 @@ perform::start_playing (bool songmode)
     rc().is_pattern_playing(true);      /* cannot deprecate this flag yet   */
 }
 
+#endif  // USE_STAZED_JACK_SUPPORT
+
 /**
  *  Pause playback, so that progress bars stay where they are, and playback
  *  always resumes where it left off, even in ALSA mode.
@@ -1876,9 +1894,13 @@ perform::stop_playing ()
 {
     stop_jack();
     stop();
+
+#ifndef USE_STAZED_JACK_SUPPORT
     m_is_paused = false;
     rc().is_pattern_playing(false);
     m_tick = 0;                         // or get_left_tick()
+#endif
+
 }
 
 /**
@@ -1948,7 +1970,7 @@ perform::start (bool state)
 void
 perform::stop ()
 {
-#ifdef SEQ64_JACK_SUPPORT
+#if defined SEQ64_JACK_SUPPORT && ! defined USE_STAZED_JACK_SUPPORT
     if (! is_jack_running())
 #endif
         inner_stop();
@@ -2942,10 +2964,18 @@ perform::input_func ()
             {
                 if (m_master_bus.get_midi_event(&ev))
                 {
+                    /*
+                     * Used when starting from the beginning of the song.
+                     */
+
                     if (ev.get_status() == EVENT_MIDI_START) // MIDI Time Clock
                     {
+#ifdef USE_STAZED_JACK_SUPPORT
+                        start(rc().song_start_mode());  // jack_start_mode()?
+#else
                         stop();
                         start(false);
+#endif
                         m_midiclockrunning = true;
                         m_usemidiclock = true;
                         m_midiclocktick = 0;
@@ -2953,10 +2983,20 @@ perform::input_func ()
                     }
                     else if (ev.get_status() == EVENT_MIDI_CONTINUE)
                     {
-                        // MIDI continue: start from current position.
+                        /*
+                         * MIDI continue: start from current position.  this
+                         * will be sent immediately after
+                         * EVENT_MIDI_SONG_POS and is used for start from
+                         * other than beginning of the song, or to start from
+                         * previous location at EVENT_MIDI_STOP
+                         */
 
                         m_midiclockrunning = true;
+#ifdef USE_STAZED_JACK_SUPPORT
+                        start(rc().song_start_mode());
+#else
                         start(false);
+#endif
                         // m_usemidiclock = true;   ???
                     }
                     else if (ev.get_status() == EVENT_MIDI_STOP)
@@ -2966,10 +3006,24 @@ perform::input_func ()
                          * ticks after the stop, the song won't advance when
                          * start is received, we'll reset the position, or when
                          * continue is received, we won't reset the position.
+                         * Should hold the stop position in case the next
+                         * event is "continue".
                          */
 
                         m_midiclockrunning = false;
                         all_notes_off();
+
+#ifdef USE_STAZED_JACK_SUPPORT
+
+                        /*
+                         * inner_stop(true) = m_usemidiclock = true, i.e.
+                         * hold m_tick position(output_func).  Set the
+                         * position to last location on stop, for continue.
+                         */
+
+                        inner_stop(true);
+                        m_midiclockpos = m_tick;
+#endif
                     }
                     else if (ev.get_status() == EVENT_MIDI_CLOCK)
                     {
@@ -2980,7 +3034,33 @@ perform::input_func ()
                     {
                         midibyte a, b;     // not tested (todo: test it!)
                         ev.get_data(a, b);
+
+#ifdef USE_STAZED_JACK_SUPPORT
+
+                        /*
+                         *  http://www.blitter.com/~russtopia/MIDI/
+                         *      ~jglatt/tech/midispec/ssp.htm
+                         *
+                         *  Example: If a Song Position value of 8 is
+                         *  received, then a sequencer (or drum box) should
+                         *  cue playback to the third quarter note of the
+                         *  song.  (8 MIDI beats * 6 MIDI clocks per MIDI
+                         *  beat = 48 MIDI Clocks.  Since there are 24 MIDI
+                         *  Clocks in a quarter note, the first quarter
+                         *  occurs on a time of 0 MIDI Clocks, the second
+                         *  quarter note occurs upon the 24th MIDI Clock, and
+                         *  the third quarter note occurs on the 48th MIDI
+                         *  Clock).
+                         *
+                         * 8 MIDI beats * 6 MIDI clocks per MIDI beat =
+                         *      48 MIDI Clocks.
+                         */
+
+                        m_midiclockpos = combine_bytes(a,b);
+                        m_midiclockpos *= 48;
+#else
                         m_midiclockpos = (int(a) << 7) && int(b);
+#endif
                     }
 
                     /*
@@ -2995,12 +3075,22 @@ perform::input_func ()
                         if (rc().show_midi())
                             ev.print();
 
+                        /*
+                         * Is there are least one sequence set?  Then, if the
+                         * seq32 support is in force, dump to it, with
+                         * possibly multiple sequences set.
+                         */
+
                         if (m_master_bus.is_dumping())
                         {
                             ev.set_timestamp(m_tick);
+#ifdef USE_SEQ32_MIDI_DUMP
+                            m_master_bus.dump_midi_input(&ev);
+#else
                             m_master_bus.get_sequence()->stream_event(ev);
+#endif
                         }
-                        else
+                        else            /* use it to control our sequencer */
                         {
                             for (int i = 0; i < c_midi_controls; ++i)
                             {
@@ -3071,6 +3161,35 @@ perform::input_func ()
     }
     pthread_exit(0);
 }
+
+#ifdef USE_STAZED_JACK_SUPPORT
+
+/**
+ *  Combines bytes into an unsigned-short value.
+ *
+ *  http://www.blitter.com/~russtopia/MIDI/~jglatt/tech/midispec/wheel.htm
+ *
+ *  Two data bytes follow the status. The two bytes should be combined
+ *  together to form a 14-bit value. The first data byte's bits 0 to 6 are
+ *  bits 0 to 6 of the 14-bit value. The second data byte's bits 0 to 6 are
+ *  really bits 7 to 13 of the 14-bit value. In other words, assuming that a
+ *  C program has the first byte in the variable First and the second data
+ *  byte in the variable Second, here's how to combine them into a 14-bit
+ *  value (actually 16-bit since most computer CPUs deal with 16-bit, not
+ *  14-bit, integers).
+ */
+
+unsigned short
+perform::combine_bytes (unsigned char first, unsigned char second)
+{
+   unsigned short short_14bit;
+   short_14bit = (unsigned short)(second);
+   short_14bit <<= 7;
+   short_14bit |= (unsigned short)(First);
+   return short_14bit;
+}
+
+#endif  // USE_STAZED_JACK_SUPPORT
 
 /**
  *  For all active patterns/sequences, this function gets the playing

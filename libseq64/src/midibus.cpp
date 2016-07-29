@@ -373,7 +373,8 @@ midibus::init_in_sub ()
 }
 
 /**
- *  Deinitialize the MIDI input?
+ *  Deinitialize the MIDI input.  Set the input and the output ports.
+ *  The destination port is actually our local port.
  *
  * \return
  *      Returns true, unless an error occurs.
@@ -386,22 +387,20 @@ midibus::deinit_in  ()
     snd_seq_port_subscribe_t * subs;
     snd_seq_port_subscribe_alloca(&subs);
 
-    snd_seq_addr_t sender;
+    snd_seq_addr_t sender;                                  /* output       */
     sender.client = m_dest_addr_client;
     sender.port = m_dest_addr_port;
     snd_seq_port_subscribe_set_sender(subs, &sender);
 
-    snd_seq_addr_t dest;
+    snd_seq_addr_t dest;                                    /* input        */
     dest.client = m_local_addr_client;
     dest.port = m_local_addr_port;
     snd_seq_port_subscribe_set_dest(subs, &dest);
 
-    /* use the master queue, and get ticks */
+    snd_seq_port_subscribe_set_queue(subs, m_queue);        /* master queue */
+    snd_seq_port_subscribe_set_time_update(subs, 1);        /* get ticks    */
 
-    snd_seq_port_subscribe_set_queue(subs, m_queue);
-    snd_seq_port_subscribe_set_time_update(subs, 1);
-
-    int result = snd_seq_unsubscribe_port(m_seq, subs);     /* subscribe */
+    int result = snd_seq_unsubscribe_port(m_seq, subs);     /* subscribe    */
     if (result < 0)
     {
         fprintf
@@ -425,7 +424,6 @@ midibus::print ()
     printf("%s" , m_name.c_str());
 }
 
-
 /**
  *  This play() function takes a native event, encodes it to an ALSA event,
  *  and puts it in the queue.
@@ -444,12 +442,12 @@ midibus::play (event * e24, midibyte channel)
 {
 #ifdef SEQ64_HAVE_LIBASOUND
     automutex locker(m_mutex);
-    midibyte buffer[4];                 /* temp for MIDI data               */
-    buffer[0] = e24->get_status();      /* fill buffer & set MIDI channel   */
+    midibyte buffer[4];                             /* temp for MIDI data   */
+    buffer[0] = e24->get_status();                  /* fill buffer          */
     buffer[0] += (channel & 0x0F);
-    e24->get_data(buffer[1], buffer[2]);
+    e24->get_data(buffer[1], buffer[2]);            /* set MIDI channel     */
 
-    snd_midi_event_t * midi_ev;         /* ALSA MIDI parser                 */
+    snd_midi_event_t * midi_ev;                     /* ALSA MIDI parser     */
     snd_midi_event_new(10, &midi_ev);
 
     snd_seq_event_t ev;
@@ -614,13 +612,13 @@ midibus::continue_from (midipulse tick)
         snd_seq_ev_set_fixed(&evc);
         snd_seq_ev_set_priority(&ev, 1);
         snd_seq_ev_set_priority(&evc, 1);
-        snd_seq_ev_set_source(&evc, m_local_addr_port); /* set source */
+        snd_seq_ev_set_source(&evc, m_local_addr_port); /* set the source   */
         snd_seq_ev_set_subs(&evc);
         snd_seq_ev_set_source(&ev, m_local_addr_port);
         snd_seq_ev_set_subs(&ev);
-        snd_seq_ev_set_direct(&ev);                     /* it's immediate */
+        snd_seq_ev_set_direct(&ev);                     /* it's immediate   */
         snd_seq_ev_set_direct(&evc);
-        snd_seq_event_output(m_seq, &evc);              /* pump it into queue */
+        snd_seq_event_output(m_seq, &evc);              /* pump into queue  */
         flush();
         snd_seq_event_output(m_seq, &ev);
     }
@@ -643,10 +641,10 @@ midibus::start ()
         ev.type = SND_SEQ_EVENT_START;
         snd_seq_ev_set_fixed(&ev);
         snd_seq_ev_set_priority(&ev, 1);
-        snd_seq_ev_set_source(&ev, m_local_addr_port);  /* set source */
+        snd_seq_ev_set_source(&ev, m_local_addr_port);  /* set the source   */
         snd_seq_ev_set_subs(&ev);
-        snd_seq_ev_set_direct(&ev);                     /* it's immediate */
-        snd_seq_event_output(m_seq, &ev);               /* pump it into queue */
+        snd_seq_ev_set_direct(&ev);                     /* it's immediate   */
+        snd_seq_event_output(m_seq, &ev);               /* pump into queue  */
     }
 #endif  // SEQ64_HAVE_LIBASOUND
 }
@@ -665,7 +663,7 @@ midibus::set_input (bool inputing)
     if (m_inputing != inputing)
     {
         m_inputing = inputing;
-        if (m_inputing)
+        if (inputing)
             init_in();
         else
             deinit_in();
@@ -687,10 +685,10 @@ midibus::stop ()
         ev.type = SND_SEQ_EVENT_STOP;
         snd_seq_ev_set_fixed(&ev);
         snd_seq_ev_set_priority(&ev, 1);
-        snd_seq_ev_set_source(&ev, m_local_addr_port);  /* set source */
+        snd_seq_ev_set_source(&ev, m_local_addr_port);  /* set the source   */
         snd_seq_ev_set_subs(&ev);
-        snd_seq_ev_set_direct(&ev);                     /* it's immediate */
-        snd_seq_event_output(m_seq, &ev);               /* pump it into queue */
+        snd_seq_ev_set_direct(&ev);                     /* it's immediate   */
+        snd_seq_event_output(m_seq, &ev);               /* pump into queue  */
     }
 #endif  // SEQ64_HAVE_LIBASOUND
 }
@@ -710,12 +708,12 @@ midibus::clock (midipulse tick)
     if (m_clock_type != e_clock_off)
     {
         bool done = m_lasttick >= tick;
+        int ct = clock_ticks_from_ppqn(m_ppqn);         /* ppqn / 24    */
         while (! done)
         {
-            int ct = clock_ticks_from_ppqn(m_ppqn);     /* ppqn / 24    */
-            m_lasttick++;
+            ++m_lasttick;
             done = m_lasttick >= tick;
-            if ((m_lasttick % ct) == 0)                 /* tick time?   */
+            if ((m_lasttick % ct) == 0)                 /* tick time?           */
             {
                 /*
                  * Set the event tag to 127 so the sequences won't remove it.
@@ -726,10 +724,10 @@ midibus::clock (midipulse tick)
                 ev.tag = 127;
                 snd_seq_ev_set_fixed(&ev);
                 snd_seq_ev_set_priority(&ev, 1);
-                snd_seq_ev_set_source(&ev, m_local_addr_port); /* set source */
+                snd_seq_ev_set_source(&ev, m_local_addr_port); /* set source    */
                 snd_seq_ev_set_subs(&ev);
-                snd_seq_ev_set_direct(&ev);                 /* it's immediate */
-                snd_seq_event_output(m_seq, &ev);       /* pump it into queue */
+                snd_seq_ev_set_direct(&ev);             /* it's immediate       */
+                snd_seq_event_output(m_seq, &ev);       /* pump it into queue   */
             }
         }
         flush();            /* and send out */

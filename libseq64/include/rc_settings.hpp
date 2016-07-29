@@ -273,14 +273,12 @@ public:
     {
         return
         (
-            m_with_jack_transport ||
-            m_with_jack_master ||
-            m_with_jack_master_cond
+            m_with_jack_transport || m_with_jack_master || m_with_jack_master_cond
         );
     }
 
     /**
-     * \accessor m_jack_start_mode, 
+     * \accessor m_jack_start_mode,
      */
 
     bool jack_start_mode () const

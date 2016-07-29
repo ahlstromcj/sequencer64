@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-19
- * \updates       2016-07-03
+ * \updates       2016-07-27
  * \license       GNU GPLv2 or above
  *
  */
@@ -442,17 +442,25 @@ event_list::clear_links ()
 
 /**
  *  Marks all selected events.
+ *
+ * \return
+ *      Returns true if there was even one event selected and marked.
  */
 
-void
+bool
 event_list::mark_selected ()
 {
+    bool result = false;
     for (Events::iterator i = m_events.begin(); i != m_events.end(); ++i)
     {
         event & e = dref(i);
         if (e.is_selected())
+        {
             e.mark();
+            result = true;
+        }
     }
+    return result;
 }
 
 /**

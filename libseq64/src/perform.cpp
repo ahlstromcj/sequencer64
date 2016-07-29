@@ -319,7 +319,7 @@ perform::clear_all ()
         is_modified(false);                     /* new, we start afresh     */
 #endif
 
-#ifdef USE_SEQ32_PUSH_POP_SUPPORT
+#ifdef USE_STAZED_PUSH_POP_SUPPORT
         set_have_undo(false);
         set_have_redo(false);
 #endif
@@ -1609,7 +1609,7 @@ perform::move_triggers (bool direction)
 void
 perform::push_trigger_undo (int track)
 {
-#ifdef USE_SEQ32_PUSH_POP_SUPPORT
+#ifdef USE_STAZED_PUSH_POP_SUPPORT
     m_undo_vect.push_back(track);
 #endif
 
@@ -1626,7 +1626,7 @@ perform::push_trigger_undo (int track)
         if (is_active(track))
             m_seqs[track]->push_trigger_undo();
     }
-#ifdef USE_SEQ32_PUSH_POP_SUPPORT
+#ifdef USE_STAZED_PUSH_POP_SUPPORT
     set_have_undo(true);
 #endif
 }
@@ -1647,7 +1647,7 @@ void
 perform::pop_trigger_undo ()
 {
 
-#ifdef USE_SEQ32_PUSH_POP_SUPPORT
+#ifdef USE_STAZED_PUSH_POP_SUPPORT
     if (m_undo_vect.size() > 0)
     {
         int track = m_undo_vect[m_undo_vect.size() - 1];
@@ -1663,7 +1663,7 @@ perform::pop_trigger_undo ()
                     m_seqs[i]->pop_trigger_undo();
             }
 
-#ifdef USE_SEQ32_PUSH_POP_SUPPORT
+#ifdef USE_STAZED_PUSH_POP_SUPPORT
         }
         else
         {
@@ -1677,7 +1677,7 @@ perform::pop_trigger_undo ()
 
 }
 
-#ifdef USE_SEQ32_PUSH_POP_SUPPORT
+#ifdef USE_STAZED_PUSH_POP_SUPPORT
 
 void
 perform::pop_trigger_redo ()
@@ -1705,7 +1705,7 @@ perform::pop_trigger_redo ()
     }
 }
 
-#endif  // USE_SEQ32_PUSH_POP_SUPPORT
+#endif  // USE_STAZED_PUSH_POP_SUPPORT
 
 // CONTINUE HERE HERE HERE
 
@@ -2027,6 +2027,19 @@ perform::inner_start (bool state)
  *  sequence.
  */
 
+#ifdef USE_STAZED_JACK_SUPPORT
+
+void
+perform::inner_stop (bool midiclock)
+{
+    set_start_from_perfedit(false);
+    is_running(false);                  // rc().global_is_running() = false;
+    reset_sequences();
+    m_usemidiclock = midiclock;
+}
+
+#else
+
 void
 perform::inner_stop ()
 {
@@ -2036,6 +2049,8 @@ perform::inner_stop ()
 
     m_usemidiclock = false;
 }
+
+#endif  // USE_STAZED_JACK_SUPPORT
 
 /**
  *  For all active patterns/sequences, set the playing state to false.
@@ -2073,17 +2088,37 @@ perform::all_notes_off ()
  *  playback mode, restore the playing state.  Note that these calls are
  *  folded into one member function of the sequence class.  Finally, flush the
  *  master MIDI buss.
+ *
+ * \param pause
+ *      Try to prevent notes from lingering on pause if true.
  */
+
+#ifdef USE_STAZED_JACK_SUPPORT
+
+void perform::reset_sequences ()
+{
+    for (int i = 0; i < m_sequence_max; ++i)
+    {
+        if (is_active(i))
+        {
+            bool state = m_seqs[i]->get_playing();
+            m_seqs[i]->off_playing_notes();
+            m_seqs[i]->set_playing(false);
+            m_seqs[i]->zero_markers();
+            if (! m_playback_mode)
+                m_seqs[i]->set_playing(state);
+        }
+    }
+    m_master_bus.flush();                           /* flush the bus */
+}
+
+#else   // USE_STAZED_JACK_SUPPORT
 
 void
 perform::reset_sequences (bool pause)
 {
     if (pause)
     {
-        /*
-         * Try to prevent notes from lingering on pause.
-         */
-
         for (int s = 0; s < m_sequence_max; ++s)
         {
             if (is_active(s))
@@ -2100,6 +2135,8 @@ perform::reset_sequences (bool pause)
     }
     m_master_bus.flush();                           /* flush the MIDI buss  */
 }
+
+#endif  // USE_STAZED_JACK_SUPPORT
 
 /**
  *  Creates the output thread using output_thread_func().  This might be a
@@ -2198,13 +2235,14 @@ perform::get_max_trigger ()
 void *
 output_thread_func (void * myperf)
 {
+    perform * p = (perform *) myperf;
+
 #ifndef PLATFORM_WINDOWS                /* Not in MinGW RCB */
     if (rc().priority())
     {
         struct sched_param schp;
         memset(&schp, 0, sizeof(sched_param));
         schp.sched_priority = 1;
-
         if (sched_setscheduler(0, SCHED_FIFO, &schp) != 0)
         {
             errprint
@@ -2217,7 +2255,6 @@ output_thread_func (void * myperf)
     }
 #endif
 
-    perform * p = (perform *) myperf;
 
 #ifdef PLATFORM_WINDOWS
     timeBeginPeriod(1);
@@ -2249,7 +2286,7 @@ perform::output_func ()
     while (m_outputing)
     {
         m_condition_var.lock();
-        while (! m_running)
+        while (! is_running())              /* m_running */
         {
             m_condition_var.wait();
             if (! m_outputing)              /* if stopping, kill thread */
@@ -2985,10 +3022,10 @@ perform::input_func ()
                     {
                         /*
                          * MIDI continue: start from current position.  this
-                         * will be sent immediately after
-                         * EVENT_MIDI_SONG_POS and is used for start from
-                         * other than beginning of the song, or to start from
-                         * previous location at EVENT_MIDI_STOP
+                         * will be sent immediately after EVENT_MIDI_SONG_POS
+                         * and is used for start from other than beginning of
+                         * the song, or to start from previous location at
+                         * EVENT_MIDI_STOP.
                          */
 
                         m_midiclockrunning = true;
@@ -3006,8 +3043,8 @@ perform::input_func ()
                          * ticks after the stop, the song won't advance when
                          * start is received, we'll reset the position, or when
                          * continue is received, we won't reset the position.
-                         * Should hold the stop position in case the next
-                         * event is "continue".
+                         * Should hold the stop position in case the next event
+                         * is "continue".
                          */
 
                         m_midiclockrunning = false;
@@ -3084,7 +3121,7 @@ perform::input_func ()
                         if (m_master_bus.is_dumping())
                         {
                             ev.set_timestamp(m_tick);
-#ifdef USE_SEQ32_MIDI_DUMP
+#ifdef USE_STAZED_MIDI_DUMP
                             m_master_bus.dump_midi_input(&ev);
 #else
                             m_master_bus.get_sequence()->stream_event(ev);

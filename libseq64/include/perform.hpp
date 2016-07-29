@@ -1095,7 +1095,7 @@ public:
     void push_trigger_undo (int track = SEQ64_ALL_TRACKS);
     void pop_trigger_undo ();
 
-#ifdef USE_SEQ32_PUSH_POP_SUPPORT
+#ifdef USE_STAZED_PUSH_POP_SUPPORT
 
     /*
      * Not sure that we need this code; we'll think about it some more.  One
@@ -1127,7 +1127,7 @@ public:
         m_have_redo = redo;
     }
 
-#endif      // USE_SEQ32_PUSH_POP_SUPPORT
+#endif      // USE_STAZED_PUSH_POP_SUPPORT
 
     void split_trigger (int seqnum, midipulse tick);
     midipulse get_max_trigger ();

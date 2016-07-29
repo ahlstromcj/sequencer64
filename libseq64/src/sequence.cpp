@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-07-17
+ * \updates       2016-07-29
  * \license       GNU GPLv2 or above
  *
  *  The functionality of this class also includes handling some of the
@@ -69,6 +69,9 @@ sequence::sequence (int ppqn)
     m_parent                    (nullptr),
     m_events                    (),
     m_triggers                  (*this),
+#ifdef USE_STAZED_LFO_SUPPORT
+    m_events_undo_hold          (),
+#endif
     m_events_undo               (),
     m_events_redo               (),
     m_iterator_draw             (m_events.begin()),
@@ -110,6 +113,11 @@ sequence::sequence (int ppqn)
     m_us_per_quarter_note       (0),
 #endif
     m_rec_vol                   (0),
+#ifdef SEQ64_STAZED_UNDO_REDO
+    m_have_undo                 (false),
+    m_have_redo                 (false)
+    m_paste_tick                (0),            // correct init value?
+#endif
     m_musical_key               (SEQ64_KEY_OF_C),
     m_musical_scale             (int(c_scale_off)),
     m_background_sequence       (SEQ64_SEQUENCE_LIMIT),
@@ -178,6 +186,30 @@ sequence::partial_assign (const sequence & rhs)
     }
 }
 
+#ifdef SEQ64_STAZED_UNDO_REDO
+
+void
+sequence::set_hold_undo (bool hold)
+{
+    automutex locker(m_mutex);
+    EventStack::iterator i;  // ????        //  list<event>::iterator i;
+    if (hold)
+    {
+        for (i = m_list_event.begin(); i != m_list_event.end(); ++i)
+            m_list_undo_hold.push_back(*i);
+    }
+    else
+       m_list_undo_hold.clear();
+}
+
+int
+sequence::get_hold_undo ()
+{
+    return m_list_undo_hold.size();
+}
+
+#endif  // SEQ64_STAZED_UNDO_REDO
+
 /**
  *  Returns the number of events stored in m_events.  Note that only playable
  *  events are counted in a sequence.  If a sequence class function provides a
@@ -196,6 +228,22 @@ sequence::event_count () const
     return int(m_events.count());
 }
 
+#ifdef SEQ64_STAZED_UNDO_REDO
+
+void
+sequence::push_undo (bool hold)
+{
+    automutex locker(m_mutex);
+    if (hold)
+        m_list_undo.push(m_list_undo_hold);
+    else
+        m_list_undo.push(m_list_event);
+
+    set_have_undo();
+}
+
+#else   // SEQ64_STAZED_UNDO_REDO
+
 /**
  *  Pushes the event-list into the undo-list.
  *
@@ -208,6 +256,8 @@ sequence::push_undo ()
     automutex locker(m_mutex);
     m_events_undo.push(m_events);
 }
+
+#endif  // SEQ64_STAZED_UNDO_REDO
 
 /**
  *  If there are items on the undo list, this function pushes the
@@ -222,14 +272,20 @@ void
 sequence::pop_undo ()
 {
     automutex locker(m_mutex);
-    if (m_events_undo.size() > 0)
+    if (m_events_undo.size() > 0)               // stazed: m_list_undo
     {
-        m_events_redo.push(m_events);
+        m_events_redo.push(m_events);           // move to triggers module?
         m_events = m_events_undo.top();
         m_events_undo.pop();
         verify_and_link();
         unselect();
     }
+
+#ifdef SEQ64_STAZED_UNDO_REDO
+    set_have_undo();
+    set_have_redo();
+#endif
+
 }
 
 /**
@@ -245,7 +301,7 @@ void
 sequence::pop_redo ()
 {
     automutex locker(m_mutex);
-    if (m_events_redo.size() > 0)
+    if (m_events_redo.size() > 0)               // move to triggers module?
     {
         m_events_undo.push(m_events);
         m_events = m_events_redo.top();
@@ -253,6 +309,12 @@ sequence::pop_redo ()
         verify_and_link();
         unselect();
     }
+
+#ifdef SEQ64_STAZED_UNDO_REDO
+    set_have_undo();
+    set_have_redo();
+#endif
+
 }
 
 /**
@@ -265,7 +327,7 @@ void
 sequence::push_trigger_undo ()
 {
     automutex locker(m_mutex);
-    m_triggers.push_undo();
+    m_triggers.push_undo(); // todo:  see how stazed's sequence function works
 }
 
 /**
@@ -276,8 +338,24 @@ void
 sequence::pop_trigger_undo ()
 {
     automutex locker(m_mutex);
-    m_triggers.pop_undo();
+    m_triggers.pop_undo();  // todo:  see how stazed's sequence function works
 }
+
+#ifdef SEQ64_STAZED_UNDO_REDO
+
+void
+sequence::pop_trigger_redo()
+{
+    automutex locker(m_mutex);
+    if (m_list_trigger_redo.size() > 0)         // move to triggers module?
+    {
+        m_list_trigger_undo.push(m_list_trigger);
+        m_list_trigger = m_list_trigger_redo.top();
+        m_list_trigger_redo.pop();
+    }
+}
+
+#endif  // SEQ64_STAZED_UNDO_REDO
 
 /**
  * \setter m_masterbus
@@ -378,7 +456,9 @@ sequence::off_queued ()
 {
     automutex locker(m_mutex);
     m_queued = false;
+#ifndef USE_STAZED_JACK_SUPPORT
     m_queued_tick = m_last_tick - mod_last_tick() + m_length;
+#endif
     set_dirty_mp();
 }
 
@@ -496,7 +576,7 @@ sequence::play (midipulse tick, bool playback_mode)
                 }
                 else
 #endif
-                put_event_on_bus(er);               /* frame still going    */
+                    put_event_on_bus(er);           /* frame still going    */
             }
             else if (stamp > end_tick_offset)
                 break;                              /* frame is done        */
@@ -618,14 +698,18 @@ sequence::remove_marked ()
  *  Marks the selected events.
  *
  * \threadsafe
+ *
+ * \return
+ *      Returns true if there were any events that got marked.
  */
 
-void
+bool
 sequence::mark_selected ()
 {
     automutex locker(m_mutex);
-    m_events.mark_selected();
+    bool result = m_events.mark_selected();
     reset_draw_marker();
+    return result;
 }
 
 /**

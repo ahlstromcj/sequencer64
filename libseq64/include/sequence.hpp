@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-07-16
+ * \updates       2016-07-29
  * \license       GNU GPLv2 or above
  *
  *  The functions add_list_var() and add_long_list() have been replaced by
@@ -38,10 +38,14 @@
  *  module, and now just call its member functions to do the actual work.
  */
 
+#ifdef USE_STAZED_LFO_SUPPORT
+#include <list>
+#endif
+
 #include <string>
 #include <stack>
 
-#include "easy_macros.h"                /* fun macros for you       */
+#include "easy_macros.h"                /* macros and configuration */
 #include "event_list.hpp"               /* seq64::event_list        */
 #include "midi_container.hpp"           /* seq64::midi_container    */
 #include "mutex.hpp"                    /* seq64::mutex, automutex  */
@@ -209,6 +213,29 @@ private:
 
     triggers m_triggers;
 
+#ifdef USE_STAZED_LFO_SUPPORT
+
+    /**
+     *  Provides a typedef for a list of events.  For now, we will not
+     *  try to use a multimap for this purpose.  Note that this definition is
+     *  the same as the old list of events defined in the event_list.hpp
+     *  module.
+     */
+
+    typedef std::list<event> Events;
+    typedef std::list<event>::iterator iterator;
+    typedef std::list<event>::const_iterator const_iterator;
+
+    /**
+     *  Provides a list of event actions to undo for the Stazed LFO and
+     *  seqdata support.  Changed, of course, from std::list<event> to
+     *  the sequence::Events typedef.
+     */
+
+    Events m_events_undo_hold;
+
+#endif
+
     /**
      *  Provides a list of event actions to undo.
      */
@@ -251,7 +278,8 @@ private:
 
     /**
      *  Indicate if the sequence is transposable or not.  A potential feature
-     *  from stazed's seq32 project.
+     *  from stazed's seq32 project.  Now it is an actual, configurable
+     *  feature.
      */
 
     bool m_transposable;
@@ -447,6 +475,12 @@ private:
      */
 
     int m_rec_vol;
+
+#ifdef SEQ64_STAZED_UNDO_REDO
+    bool m_have_undo;
+    bool m_have_redo;
+    midipulse m_paste_tick;
+#endif
 
     /**
      *  Holds a copy of the musical key for this sequence, which we now
@@ -1044,12 +1078,30 @@ public:
         midibyte status, midibyte cc,
         int d_s, int d_f
     );
+
+#ifdef USE_STAZED_LFO_SUPPORT
+    void change_event_data_lfo
+    (
+        double value, double range, double speed, double phase,
+        int wave, unsigned char status, unsigned char cc
+    );
+#endif
+
     void increment_selected (midibyte status, midibyte /*control*/);
     void decrement_selected (midibyte status, midibyte /*control*/);
     void grow_selected (midipulse deltatick);
     void stretch_selected (midipulse deltatick);
+
+#ifdef USE_STAZED_RANDOMIZE_SUPPORT
+    void randomize_selected
+    (
+        unsigned char status, unsigned char control, int plus_minus
+    );
+    void adjust_data_handle (unsigned char status, int data);
+#endif
+
     bool remove_marked ();                      /* a forwarding function */
-    void mark_selected ();
+    bool mark_selected ();
     void remove_selected ();
     void unpaint_all ();
     void unselect ();

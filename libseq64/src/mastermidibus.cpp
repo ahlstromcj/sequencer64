@@ -908,7 +908,7 @@ mastermidibus::port_start (int client, int port)
             m_buses_out_active[bus_slot] = true;
             m_buses_out_init[bus_slot] = true;
             if (! replacement)
-                m_num_out_buses++;
+                ++m_num_out_buses;
         }
         if (CAP_FULL_READ(cap) && ALSA_CLIENT_CHECK(pinfo)) /* inputs */
         {
@@ -1020,7 +1020,7 @@ mastermidibus::get_midi_event (event * inev)
     snd_seq_event_t * ev;
     bool sysex = false;
     bool result = false;
-    midibyte buffer[0x1000];       /* temporary buffer for midi data */
+    midibyte buffer[0x1000];                /* temporary buffer for MIDI data */
     snd_seq_event_input(m_alsa_seq, &ev);
     if (! rc().manual_alsa_ports())
     {
@@ -1114,7 +1114,7 @@ mastermidibus::get_midi_event (event * inev)
  *      sequence setting.
  */
 
-#ifdef USE_SEQ32_MIDIBUS_SUPPORT
+#ifdef USE_STAZED_MIDIBUS_SUPPORT
 
 void
 mastermidibus::set_sequence_input (bool state, sequence * seq)
@@ -1197,7 +1197,7 @@ mastermidibus::set_sequence_input (bool state, sequence * seq)
     m_dumping_input = state;
 }
 
-#endif      // USE_SEQ32_MIDIBUS_SUPPORT
+#endif      // USE_STAZED_MIDIBUS_SUPPORT
 
 }           // namespace seq64
 

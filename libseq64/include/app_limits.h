@@ -28,16 +28,24 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-11-08
- * \updates       2016-07-16
+ * \updates       2016-07-30
  * \license       GNU GPLv2 or above
  *
- *  This collection of global variables describes some facets of the
+ *  This collection of macros describes some facets of the
  *  "Patterns Panel" or "Sequences Window", which is visually presented by
  *  the Gtk::Window-derived class called mainwnd.
  *
  *  The Patterns Panel contains an 8-by-4 grid of "pattern boxes" or
  *  "sequence boxes".  All of the patterns in this grid comprise what is
  *  called a "set" (in the musical sense) or a "screen set".
+ *
+ *  These macros also specify other parameters, as well.
+ *
+ *  Why do we use macros instead of const values?  First, it really doesn't
+ *  matter for simple values.  Second, we want to follow the convention that
+ *  important values are all upper-case, as is convention with most
+ *  macros.  They just stand out more in code. Call us old school or old
+ *  fools, you decide.  Hell, we still like snprintf() for some uses!
  */
 
 /**
@@ -330,10 +338,35 @@
 
 /**
  *  Defines the maximum number of MIDI values, and one more than the
- *  highest MIDI value, which is 127.
+ *  highest MIDI value, which is 17.
  */
 
 #define SEQ64_MIDI_COUNT_MAX             128
+
+/**
+ *  Defines the maximum Note On velocity.
+ */
+
+#define SEQ64_MAX_NOTE_ON_VELOCITY       127
+
+/**
+ *  An older value, previously used for both Note On and Note Off velocity.
+ *  See the "Stazed" note in the sequence::add_note() function.
+ */
+
+#define SEQ64_DEFAULT_NOTE_VELOCITY      100
+
+/**
+ *  Defines the default Note On velocity, a new "stazed" feature.
+ */
+
+#define SEQ64_DEFAULT_NOTE_ON_VELOCITY   100
+
+/**
+ *  Defines the default Note Off velocity, a new "stazed" feature.
+ */
+
+#define SEQ64_DEFAULT_NOTE_OFF_VELOCITY   64
 
 /**
  *  Defines the maximum number of notes playing at one time that the

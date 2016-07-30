@@ -177,8 +177,9 @@ private:
 
     /**
      *  This is the status byte without the channel.  The channel will be
-     *  appended on the MIDI bus.  The high nibble = type of event; The
-     *  low nibble = channel.  Bit 7 is present in all status bytes.
+     *  appended on the MIDI bus upon playback.  The high nibble = type of
+     *  event; The low nibble = channel.  Bit 7 is present in all status
+     *  bytes.
      */
 
     midibyte m_status;

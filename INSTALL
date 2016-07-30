@@ -1,6 +1,6 @@
 INSTALL for Sequencer64 v. 0.9.17
 Chris Ahlstrom
-2015-09-10 to 2016-07-18
+2015-09-10 to 2016-07-30
 
 The current packaging for Sequencer64 is primarily aimed at developers.
 There is currently no configure script... it must be bootstrapped.
@@ -258,6 +258,20 @@ MANUALLY-DEFINED MACROS IN CODE:
         Generally, you do not want to change the status of these macros unless
         you are very familiar with the code and willing to temporarily break
         stuff.
+
+        We are incorporated some very useful code from the seq32 project
+        of the user "stazed".  He includes some new features and some bug
+        fixes that we have overlooked.  At present, we are not enabling this
+        functionality, just adding it, macroed out by the following macros:
+
+        USE_STAZED_JACK_SUPPORT
+        USE_STAZED_LFO_SUPPORT
+        USE_STAZED_MIDIBUS_SUPPORT
+        USE_STAZED_PUSH_POP_SUPPORT
+        USE_STAZED_RANDOMIZE_SUPPORT
+        USE_STAZED_SELECTION_EXTENSIONS
+        USE_STAZED_EVEN_ODD_SUPPORT
+        USE_STAZED_TRIGGER_EXTENSIONS
 
 DEPENDENCIES:
 

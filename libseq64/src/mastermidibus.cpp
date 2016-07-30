@@ -105,6 +105,9 @@ mastermidibus::mastermidibus (int ppqn, int bpm)
     m_num_poll_descriptors (0),
     m_poll_descriptors  (nullptr),
     m_dumping_input     (false),
+#ifdef USE_STAZED_MIDIBUS_SUPPORT
+    m_vector_sequence   (),
+#endif
     m_seq               (nullptr),
     m_mutex             ()
 {
@@ -1066,7 +1069,7 @@ mastermidibus::get_midi_event (event * inev)
      */
 
 #if USE_SYSEX_PROCESSING                /* currently disabled           */
-    if (buffer[0] == EVENT_SYSEX 
+    if (buffer[0] == EVENT_SYSEX
     {
         inev->restart_sysex();          /* set up for sysex if needed   */
         sysex = inev->append_sysex(buffer, bytes);
@@ -1160,22 +1163,25 @@ mastermidibus::set_sequence_input (bool state, sequence * seq)
 }
 
 /**
- *  TBD
+ *  This function augments the recording functionality by looking for a
+ *  sequence that has a matching channel number, logging the event to that
+ *  sequence, and then immediately exiting.
  *
- *      Why use a pointer???
+ * \param ev
+ *      The event that was recorded.  Why use a pointer?  We copy it anyway.
+ *      Let the C compiler make the copy.
  */
 
 void
-mastermidibus::dump_midi_input (event * in)
+mastermidibus::dump_midi_input (event ev)
 {
-    event ev = *in;
     for (unsigned i = 0; i < m_vector_sequence.size(); ++i)
     {
-        if
-        (
-            (is_nullptr(m_vector_sequence[i]) ||        // error check
-            m_vector_sequence[i]->stream_event(&ev)
-        )
+        if (is_nullptr(m_vector_sequence[i]))          // error check
+        {
+            break;
+        }
+        else if (m_vector_sequence[i]->stream_event(&ev))
         {
             /*
              * Did we find a match to sequence channel?  Then don't bother

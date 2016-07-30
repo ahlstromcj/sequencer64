@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-07-29
+ * \updates       2016-07-30
  * \license       GNU GPLv2 or above
  *
  *  The functionality of this class also includes handling some of the
@@ -43,7 +43,6 @@
 #include "sequence.hpp"
 #include "settings.hpp"                 /* seq64::rc() and choose_ppqn()    */
 
-#define SEQ64_DEFAULT_NOTE_VELOCITY     100
 #define USE_NON_NOTE_EVENT_ADJUSTMENT
 
 namespace seq64
@@ -51,7 +50,7 @@ namespace seq64
 
 /**
  *  A static clipboard for holding pattern/sequence events.  Being static
- *  allows for copy/paste between patterns. 
+ *  allows for copy/paste between patterns.
  */
 
 event_list sequence::m_events_clipboard;
@@ -69,12 +68,13 @@ sequence::sequence (int ppqn)
     m_parent                    (nullptr),
     m_events                    (),
     m_triggers                  (*this),
-#ifdef USE_STAZED_LFO_SUPPORT
+#ifdef SEQ64_STAZED_UNDO_REDO
     m_events_undo_hold          (),
 #endif
     m_events_undo               (),
     m_events_redo               (),
     m_iterator_draw             (m_events.begin()),
+    m_channel_match             (false),        // a future stazed feature
     m_midi_channel              (0),
     m_bus                       (0),
     m_song_mute                 (false),
@@ -113,10 +113,12 @@ sequence::sequence (int ppqn)
     m_us_per_quarter_note       (0),
 #endif
     m_rec_vol                   (0),
+    m_note_on_velocity          (SEQ64_DEFAULT_NOTE_ON_VELOCITY),
+    m_note_off_velocity         (SEQ64_DEFAULT_NOTE_OFF_VELOCITY),
 #ifdef SEQ64_STAZED_UNDO_REDO
     m_have_undo                 (false),
     m_have_redo                 (false)
-    m_paste_tick                (0),            // correct init value?
+    m_paste_tick                (-1),
 #endif
     m_musical_key               (SEQ64_KEY_OF_C),
     m_musical_scale             (int(c_scale_off)),
@@ -192,7 +194,7 @@ void
 sequence::set_hold_undo (bool hold)
 {
     automutex locker(m_mutex);
-    EventStack::iterator i;  // ????        //  list<event>::iterator i;
+    Events::iterator i;                 //  std::list<event>::iterator i;
     if (hold)
     {
         for (i = m_list_event.begin(); i != m_list_event.end(); ++i)
@@ -228,36 +230,33 @@ sequence::event_count () const
     return int(m_events.count());
 }
 
-#ifdef SEQ64_STAZED_UNDO_REDO
+/**
+ *  Pushes the event-list into the undo-list or the upcoming undo-hold-list.
+ *
+ * \threadsafe
+ *
+ * \param hold
+ *      A new parameter for the stazed undo/redo support, not yet used.
+ *      If true, then the events go into the undo-hold-list.
+ */
 
 void
 sequence::push_undo (bool hold)
 {
     automutex locker(m_mutex);
     if (hold)
-        m_list_undo.push(m_list_undo_hold);
+    {
+#ifdef SEQ64_STAZED_UNDO_REDO
+        m_events_undo.push(m_list_undo_hold);
+#endif
+    }
     else
-        m_list_undo.push(m_list_event);
+        m_events_undo.push(m_events);
 
+#ifdef SEQ64_STAZED_UNDO_REDO
     set_have_undo();
+#endif
 }
-
-#else   // SEQ64_STAZED_UNDO_REDO
-
-/**
- *  Pushes the event-list into the undo-list.
- *
- * \threadsafe
- */
-
-void
-sequence::push_undo ()
-{
-    automutex locker(m_mutex);
-    m_events_undo.push(m_events);
-}
-
-#endif  // SEQ64_STAZED_UNDO_REDO
 
 /**
  *  If there are items on the undo list, this function pushes the
@@ -280,6 +279,10 @@ sequence::pop_undo ()
         verify_and_link();
         unselect();
     }
+
+    /*
+     * Shouldn't these be inside the if-statement?
+     */
 
 #ifdef SEQ64_STAZED_UNDO_REDO
     set_have_undo();
@@ -309,6 +312,10 @@ sequence::pop_redo ()
         verify_and_link();
         unselect();
     }
+
+    /*
+     * Shouldn't these be inside the if-statement?
+     */
 
 #ifdef SEQ64_STAZED_UNDO_REDO
     set_have_undo();
@@ -344,7 +351,7 @@ sequence::pop_trigger_undo ()
 #ifdef SEQ64_STAZED_UNDO_REDO
 
 void
-sequence::pop_trigger_redo()
+sequence::pop_trigger_redo ()
 {
     automutex locker(m_mutex);
     if (m_list_trigger_redo.size() > 0)         // move to triggers module?
@@ -409,20 +416,427 @@ sequence::set_beat_width (int beatwidth)
     set_dirty_mp();
 }
 
+#ifdef USE_STAZED_SELECTION_EXTENSIONS
+
+int
+sequence::select_even_or_odd_notes (int note_len, bool even)
+{
+    int result = 0;
+    unselect();
+
+    automutex locker(m_mutex);
+    for (iterator i = m_list_event.begin(); i != m_list_event.end(); ++i)
+    {
+        if (i->is_note_on() )
+        {
+            long tick = i->get_timestamp();
+            if (tick % note_len == 0)
+            {
+                /*
+                 * Note that from the user's point of view of even and odd,
+                 * we start counting from 1, not 0.
+                 */
+
+                int is_even = (tick / note_len) % 2;
+                if ((even && is_even) || (! even && ! is_even))
+                {
+                    i->select();
+                    ++result;
+                    if (i->is_linked())
+                    {
+                        event * note_off = i->get_linked();
+                        note_off->select();
+                        ++result;
+                    }
+                }
+            }
+        }
+    }
+    return result;
+}
+
+/**
+ *  Selects events in range provided.
+ *  tick start, note high, tick end note low.
+ *
+ * \note
+ *      The continuation below ("continue") is necessary since channel
+ *      pressure and control change use d0 for seqdata [which is returned by
+ *      get_note()]. This causes seqroll note selection to occasionally
+ *      select them when their seqdata values are within the range of tick
+ *      selection. So only, note ons and offs.  What about Aftertouch?
+ *      We have the event::is_note() function for that.
+ */
+
+int
+sequence::select_note_events
+(
+    long tick_s, int note_h, long tick_f, int note_l,
+    select_action_e action
+)
+{
+    int result = 0;
+    long tick_s = 0;
+    long tick_f = 0;
+    automutex locker(m_mutex);
+
+    for (iterator i = m_list_event.begin(); i != m_list_event.end(); i++ )
+    {
+//      if (i->get_status()!=EVENT_NOTE_ON && i->get_status()!=EVENT_NOTE_OFF)
+        if (i->is_note())
+            continue;
+
+        if (i->get_note() <= note_h && i->get_note() >= note_l)
+        {
+            if (i->is_linked())
+            {
+                event * ev = i->get_linked();
+                if (i->is_note_off())
+                {
+                    tick_s = ev->get_timestamp();
+                    tick_f = i->get_timestamp();
+                }
+                if (i->is_note_on())
+                {
+                    tick_f = ev->get_timestamp();
+                    tick_s = i->get_timestamp();
+                }
+
+                /*
+                 * These tests are crazy.  Fix them.
+                 */
+
+                bool validrange = tick_s <= tick_f && tick_f >= tick_s;
+                bool use_it = ((tick_s <= tick_f) && validrange) ||
+                    ((tick_s > tick_f) && validrange);
+
+//                  ( (tick_s <= tick_f) && ((tick_s <= tick_f) &&
+//                     (tick_f >= tick_s)) ) ||
+//                  ( (tick_s > tick_f) &&
+//                  ((tick_s <= tick_f) || (tick_f >= tick_s)) )
+
+                if (use_it)
+                {
+                    /*
+                     * Could use a switch statement here.
+                     */
+
+                    if (action == e_select || action == e_select_one)
+                    {
+                        i->select();
+                        ev->select();
+                        ++result;
+                        if (action == e_select_one)
+                            break;
+                    }
+                    if (action == e_is_selected)
+                    {
+                        if (i->is_selected())
+                        {
+                            result = 1;
+                            break;
+                        }
+                    }
+                    if (action == e_would_select)
+                    {
+                        result = 1;
+                        break;
+                    }
+                    if (action == e_deselect)
+                    {
+                        result = 0;
+                        i->unselect();
+                        ev->unselect();
+                    }
+
+                    /*
+                     * Don't toggle twice.
+                     */
+
+                    if (action == e_toggle_selection && i->is_note_on())
+                    {
+                        if (i->is_selected())
+                        {
+                            i->unselect();
+                            ev->unselect();
+                            ++result;
+                        }
+                        else
+                        {
+                            i->select();
+                            ev->select();
+                            ++result;
+                        }
+                    }
+                    if (action == e_remove_one)
+                    {
+                        remove(i);
+                        remove(ev);
+                        reset_draw_marker();
+                        ++result;
+                        break;
+                    }
+                }
+            }
+            else
+            {
+                /*
+                 * If NOT linked note on/off, then it is junk...
+                 */
+
+                tick_s = tick_f = i->get_timestamp();
+                if (tick_s >= tick_s - 16 && tick_f <= tick_f)
+                {
+                    /*
+                     * Could use a switch statement here.
+                     */
+
+                    if (action == e_select || action == e_select_one)
+                    {
+                        i->select();
+                        ++result;
+                        if (action == e_select_one)
+                            break;
+                    }
+                    if (action == e_is_selected)
+                    {
+                        if (i->is_selected())
+                        {
+                            result = 1;
+                            break;
+                        }
+                    }
+                    if (action == e_would_select)
+                    {
+                        result = 1;
+                        break;
+                    }
+                    if (action == e_deselect)
+                    {
+                        result = 0;
+                        i->unselect();
+                    }
+                    if (action == e_toggle_selection)
+                    {
+                        if (i->is_selected())
+                        {
+                            i->unselect();
+                            ++result;
+                        }
+                        else
+                        {
+                            i->select();
+                            ++result;
+                        }
+                    }
+                    if (action == e_remove_one)
+                    {
+                        remove(i);
+                        reset_draw_marker();
+                        ++result;
+                        break;
+                    }
+                }
+            }
+        }
+    }
+    return result;
+}
+
+/**
+ *  Used with seqevent when selecting NOTEON/NOTEOFF, this function will
+ *  select the opposite linked event.
+ */
+
+int
+sequence::select_linked (long tick_s, long tick_f, unsigned char status)
+{
+    int result = 0;
+    automutex locker(m_mutex);
+    for (iterator i = m_list_event.begin(); i != m_list_event.end(); ++i)
+    {
+        if
+        (
+            i->get_status() == status &&
+            i->get_timestamp() >= tick_s &&
+            i->get_timestamp() <= tick_f
+        )
+        {
+            if (i->is_linked())
+            {
+                if (i->is_selected())
+                    i->get_linked()->select();
+                else
+                    i->get_linked()->unselect();
+
+                ++result;
+            }
+        }
+    }
+    return result;
+}
+
+/**
+ *  Use selected note ons if any.
+ */
+
+int
+sequence::select_event_handle
+(
+    long tick_s, long tick_f, unsigned char status, unsigned char cc, int dats
+)
+{
+    int result = 0;
+    bool have_selection = false;
+    if (status == EVENT_NOTE_ON)                    // use a function!
+    {
+        if (get_num_selected_events(status, cc))
+            have_selection = true;
+    }
+    for (iterator i = m_list_event.begin(); i != m_list_event.end(); ++i)
+    {
+        if
+        (
+            i->get_status() == status &&
+            i->get_timestamp() >= tick_s &&
+            i->get_timestamp() <= tick_f
+        )
+        {
+            unsigned char d0, d1;
+            i->get_data(&d0, &d1);
+            if (status == EVENT_CONTROL_CHANGE && d0 == cc)
+            {
+                if (d1 <= (dats + 2) && d1 >= (dats - 2))   // is it in range
+                {
+                    unselect();
+                    i->select();
+                    ++result;
+                    break;
+                }
+            }
+            if  (status != EVENT_CONTROL_CHANGE)            // use a function!
+            {
+                if(status == EVENT_NOTE_ON || status == EVENT_NOTE_OFF
+                   || status == EVENT_AFTERTOUCH || status == EVENT_PITCH_WHEEL )
+                {
+                    if(d1 <= (dats + 2) && d1 >= (dats - 2) ) // is it in range
+                    {
+                        if (have_selection)                 // note on only
+                        {
+                            if (i->is_selected())
+                            {
+                                unselect();                 // all events
+                                i->select( );               // only this one
+                                if (result)
+                                {
+                                    /*
+                                     * If we have a marked (unselected) one,
+                                     * then clear it.
+                                     */
+
+                                    for
+                                    (
+                                        iterator i = m_list_event.begin();
+                                        i != m_list_event.end(); ++i)
+                                    {
+                                        if (i->is_marked())
+                                        {
+                                            i->unmark();
+                                            break;
+                                        }
+                                    }
+                                    --result;        // clear marked one
+                                    // reset for marked flag at end
+                                    have_selection = false;
+                                }
+                                ++result;            // for the selected one
+                                break;
+                            }
+                            else        // NOT selected note on, but in range
+                            {
+                                if (! result)       // only mark the first one
+                                {
+                                    i->mark();      // marked for hold until done
+                                    ++result;       // indicate we got one
+                                }
+
+                                // keep going until we find a selected one if
+                                // any, or are done
+
+                                continue;
+                            }
+                        }
+                        else                      // NOT note on
+                        {
+                            unselect();
+                            i->select();
+                            ++result;
+                            break;
+                        }
+                    }
+                }
+                else
+                {
+                    if (d0 <= (dats + 2) && d0 >= (dats - 2))   // is it in range
+                    {
+                        unselect();
+                        i->select();
+                        ++result;
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+    /*
+     * Is it a note on that is unselected but in range? Then use it...
+     *
+     * have_selection will be set to false if we found a selected one in
+     * range.
+     */
+
+    if (result && have_selection)
+    {
+        for (iterator i = m_list_event.begin(); i != m_list_event.end(); ++i)
+        {
+            if (i->is_marked())
+            {
+                unselect();
+                i->unmark();
+                i->select();
+                break;
+            }
+        }
+    }
+    set_dirty();
+    return result;
+}
+
+#endif   // USE_STAZED_SELECTION_EXTENSIONS
+
 /**
  * \setter m_rec_vol
+ *      If this velocity is greater than zero, then m_note_on_velocity will
+ *      be set as well.
  *
  * \threadsafe
  *
  * \param recvol
- *      The new setting of the recording volume setting.
+ *      The new setting of the recording volume setting.  It is used only if
+ *      it ranges from 0 to SEQ64_MAX_NOTE_ON_VELOCITY.
  */
 
 void
 sequence::set_rec_vol (int recvol)
 {
     automutex locker(m_mutex);
-    m_rec_vol = recvol;
+    if (m_rec_vol >= 0 && m_rec_vol <= SEQ64_MAX_NOTE_ON_VELOCITY)
+    {
+        m_rec_vol = recvol;
+        if (m_rec_vol > 0)
+            m_note_on_velocity = m_rec_vol;
+    }
 }
 
 /**
@@ -1218,32 +1632,34 @@ sequence::move_selected_notes (midipulse delta_tick, int delta_note)
 {
     automutex locker(m_mutex);
     push_undo();                                    /* do it for caller     */
-    mark_selected();                                /* locked recursively   */
-    for (event_list::iterator i = m_events.begin(); i != m_events.end(); ++i)
+    if (mark_selected())                            /* locked recursively   */
     {
-        event & er = DREF(i);
-        if (er.is_marked())                         /* is it being moved ?  */
+        for (event_list::iterator i = m_events.begin(); i != m_events.end(); ++i)
         {
-            event e = er;                           /* copy event           */
-            e.unmark();                             /* unmark the new event */
-            int newnote = e.get_note() + delta_note;
-            if (newnote >= 0 && newnote < c_num_keys)
+            event & er = DREF(i);
+            if (er.is_marked())                     /* is it being moved ?  */
             {
-                midipulse newts = e.get_timestamp() + delta_tick;
-                newts = adjust_timestamp(newts, e.is_note_off());
-                if (e.is_note())                    /* Note On or Note Off  */
-                    e.set_note(midibyte(newnote));
+                event e = er;                       /* copy event           */
+                e.unmark();                         /* unmark the new event */
+                int newnote = e.get_note() + delta_note;
+                if (newnote >= 0 && newnote < c_num_keys)
+                {
+                    midipulse newts = e.get_timestamp() + delta_tick;
+                    newts = adjust_timestamp(newts, e.is_note_off());
+                    if (e.is_note())                /* Note On or Note Off  */
+                        e.set_note(midibyte(newnote));
 
-                e.set_timestamp(newts);
-                e.select();                         /* keep it selected     */
-                add_event(e);
-                if (not_nullptr(m_parent))
-                    m_parent->modify();             /* new, centralize      */
+                    e.set_timestamp(newts);
+                    e.select();                     /* keep it selected     */
+                    add_event(e);
+                    if (not_nullptr(m_parent))
+                        m_parent->modify();         /* new, centralize      */
+                }
             }
         }
+        if (remove_marked())
+            verify_and_link();
     }
-    if (remove_marked())
-        verify_and_link();
 }
 
 /**
@@ -1334,42 +1750,49 @@ void
 sequence::stretch_selected (midipulse delta_tick)
 {
     automutex locker(m_mutex);
-    unsigned first_ev = 0x7fffffff;                 /* timestamp lower limit */
-    unsigned last_ev = 0x00000000;                  /* timestamp upper limit */
-    push_undo();                                    /* do it for caller      */
-    for (event_list::iterator i = m_events.begin(); i != m_events.end(); ++i)
+    if (mark_selected())
     {
-        event & er = DREF(i);
-        if (er.is_selected())
-        {
-            event * e = &er;
-            if (e->get_timestamp() < midipulse(first_ev))
-                first_ev = e->get_timestamp();
-
-            if (e->get_timestamp() > midipulse(last_ev))
-                last_ev = e->get_timestamp();
-        }
-    }
-    unsigned old_len = last_ev - first_ev;
-    unsigned new_len = old_len + delta_tick;
-    if (new_len > 1)
-    {
-        float ratio = float(new_len) / float(old_len);
-        mark_selected();                            /* locked recursively   */
+        unsigned first_ev = 0x7fffffff;             /* timestamp lower limit */
+        unsigned last_ev = 0x00000000;              /* timestamp upper limit */
+        push_undo();                                /* do it for caller      */
         for (event_list::iterator i = m_events.begin(); i != m_events.end(); ++i)
         {
             event & er = DREF(i);
-            if (er.is_marked())
+            if (er.is_selected())
             {
-                event n = er;                       /* copy the event       */
-                midipulse t = er.get_timestamp();
-                n.set_timestamp(midipulse(ratio * (t-first_ev)) + first_ev);
-                n.unmark();
-                add_event(n);
+                event * e = &er;
+                if (e->get_timestamp() < midipulse(first_ev))
+                    first_ev = e->get_timestamp();
+
+                if (e->get_timestamp() > midipulse(last_ev))
+                    last_ev = e->get_timestamp();
             }
         }
-        if (remove_marked())
-            verify_and_link();
+        unsigned old_len = last_ev - first_ev;
+        unsigned new_len = old_len + delta_tick;
+        if (new_len > 1)
+        {
+            float ratio = float(new_len) / float(old_len);
+            mark_selected();                        /* locked recursively   */
+            for
+            (
+                event_list::iterator i = m_events.begin();
+                i != m_events.end(); ++i
+            )
+            {
+                event & er = DREF(i);
+                if (er.is_marked())
+                {
+                    event n = er;                   /* copy the event       */
+                    midipulse t = er.get_timestamp();
+                    n.set_timestamp(midipulse(ratio * (t-first_ev)) + first_ev);
+                    n.unmark();
+                    add_event(n);
+                }
+            }
+            if (remove_marked())
+                verify_and_link();
+        }
     }
 }
 
@@ -1420,46 +1843,142 @@ sequence::grow_selected (midipulse delta_tick)
 {
     automutex locker(m_mutex);
     push_undo();                                    /* do it for caller     */
-    mark_selected();                                /* locked recursively   */
-    for (event_list::iterator i = m_events.begin(); i != m_events.end(); ++i)
+    if (mark_selected())                            /* locked recursively   */
     {
-        event & er = DREF(i);
-        if (er.is_note())
+        for (event_list::iterator i = m_events.begin(); i != m_events.end(); ++i)
         {
-            if (er.is_marked() && er.is_note_on() && er.is_linked())
+            event & er = DREF(i);
+            if (er.is_note())
             {
-                event * off = er.get_linked();
-                event e = *off;                     /* original off-event   */
+                if (er.is_marked() && er.is_note_on() && er.is_linked())
+                {
+                    event * off = er.get_linked();
+                    event e = *off;                 /* original off-event   */
+                    midipulse ontime = er.get_timestamp();
+                    midipulse offtime = off->get_timestamp();
+                    midipulse newtime = clip_timestamp(ontime, offtime + delta_tick);
+                    off->mark();                    /* kill old off event   */
+                    er.unmark();                    /* keep old on event    */
+                    e.unmark();                     /* keep new off event   */
+                    e.set_timestamp(newtime);       /* new off-time         */
+                    add_event(e);                   /* add fixed off event  */
+                    if (not_nullptr(m_parent))
+                        m_parent->modify();         /* new, centralize      */
+                }
+            }
+            else if (er.is_marked())                /* non-Note event?      */
+            {
+#ifdef USE_NON_NOTE_EVENT_ADJUSTMENT                /* currenty defined     */
+                event e = er;                       /* copy original event  */
                 midipulse ontime = er.get_timestamp();
-                midipulse offtime = off->get_timestamp();
-                midipulse newtime = clip_timestamp(ontime, offtime + delta_tick);
-                off->mark();                        /* kill old off event   */
-                er.unmark();                        /* keep old on event    */
-                e.unmark();                         /* keep new off event   */
-                e.set_timestamp(newtime);           /* new off-time         */
-                add_event(e);                       /* add fixed off event  */
+                midipulse newtime = clip_timestamp(ontime, ontime + delta_tick);
+                e.set_timestamp(newtime);           /* adjust time-stamp    */
+                add_event(e);                       /* add adjusted event   */
                 if (not_nullptr(m_parent))
                     m_parent->modify();             /* new, centralize      */
+#else
+                er.unmark();                        /* unmark old version   */
+#endif
             }
         }
-        else if (er.is_marked())                    /* non-Note event?      */
+        if (remove_marked())
+            verify_and_link();
+    }
+}
+
+#ifdef USE_STAZED_RANDOMIZE_SUPPORT
+
+void
+sequence::randomize_selected
+(
+    unsigned char status, unsigned char control, int plus_minus
+)
+{
+    int random;
+    unsigned char data[2];
+    unsigned char datitem;
+    int datidx = 0;
+    automutex locker(m_mutex);
+    for (iterator i = m_list_event.begin(); i != m_list_event.end(); ++i)
+    {
+        if (i->is_selected() && i->get_status() == status)
         {
-#ifdef USE_NON_NOTE_EVENT_ADJUSTMENT
-            event e = er;                           /* copy original event  */
-            midipulse ontime = er.get_timestamp();
-            midipulse newtime = clip_timestamp(ontime, ontime + delta_tick);
-            e.set_timestamp(newtime);               /* adjust time-stamp    */
-            add_event(e);                           /* add adjusted event   */
-            if (not_nullptr(m_parent))
-                m_parent->modify();                 /* new, centralize      */
-#else
-            er.unmark();                            /* unmark old version   */
-#endif
+            i->get_data(data, data+1);
+
+//          if ( status == EVENT_NOTE_ON ||
+//                  status == EVENT_NOTE_OFF ||
+//                  status == EVENT_AFTERTOUCH ||
+//                  status == EVENT_CONTROL_CHANGE ||
+//                  status == EVENT_PITCH_WHEEL )
+
+            if (event::is_two_byte_msg(status))
+                datidx = 1;
+
+//          if ( status == EVENT_PROGRAM_CHANGE || status == EVENT_CHANNEL_PRESSURE )
+
+            if (event::is_one_byte_message(status))
+                datidx = 0;
+
+            datitem = data[datidx];
+
+            // See http://c-faq.com/lib/randrange.html
+
+            random = (rand() / (RAND_MAX / ((2 * plus_minus) + 1) + 1)) -
+                plus_minus;
+
+            datitem += random;
+            if (datitem > 127)
+                datitem = 127;
+            else if (datitem < 0)
+                datitem = 0;
+
+            data[datidx] = datitem;
+            i->set_data(data[0], data[1]);
         }
     }
-    if (remove_marked())
-        verify_and_link();
 }
+
+void
+sequence::adjust_dathandle (unsigned char status, int data)
+{
+    unsigned char data[2];
+    unsigned char datitem;;
+    int datidx = 0;
+    automutex locker(m_mutex);
+    for (iterator i = m_list_event.begin(); i != m_list_event.end(); ++i)
+    {
+        if (i->is_selected() && i->get_status() == status)
+        {
+            i->get_data( ata, data+1);
+
+//          if ( status == EVENT_NOTE_ON ||
+//                  status == EVENT_NOTE_OFF ||
+//                  status == EVENT_AFTERTOUCH ||
+//                  status == EVENT_CONTROL_CHANGE ||
+//                  status == EVENT_PITCH_WHEEL )
+
+            if (event::is_two_byte_msg(status))
+                datidx = 1;
+
+//          if ( status == EVENT_PROGRAM_CHANGE ||
+//                  status == EVENT_CHANNEL_PRESSURE )
+
+            if (event::is_one_byte_message(status))
+                datidx = 0;
+
+            datitem = data;
+            if (datitem > 127)
+                datitem = 127;
+            else if (datitem < 0)
+                datitem = 0;
+
+            data[datidx] = datitem;
+            i->set_data(data[0], data[1]);
+        }
+    }
+}
+
+#endif   // USE_STAZED_RANDOMIZE_SUPPORT
 
 /**
  *  Increments events the match the given status and control values.
@@ -1804,21 +2323,18 @@ sequence::change_event_data_range
 {
     automutex locker(m_mutex);
     bool result = false;
-    bool have_selection = false;
-    if (get_num_selected_events(status, cc))
-        have_selection = true;
-
+    bool have_selection = get_num_selected_events(status, cc) > 0;
     for (event_list::iterator i = m_events.begin(); i != m_events.end(); ++i)
     {
         midibyte d0, d1;
         event & er = DREF(i);
         er.get_data(d0, d1);
         bool match = er.get_status() == status;
-        bool good;
+        bool good;                          /* event::is_desired_cc_or_not_cc */
         if (status == EVENT_CONTROL_CHANGE)
-            good = match && d0 == cc;        /* correct status and correct cc */
+            good = match && d0 == cc;       /* correct status and correct cc */
         else
-            good = match;                    /* correct status and not a cc   */
+            good = match;                   /* correct status and not a cc   */
 
         midipulse tick = er.get_timestamp();
         if (! (tick >= tick_s && tick <= tick_f))       /* in range?         */
@@ -1829,6 +2345,11 @@ sequence::change_event_data_range
 
         if (good)
         {
+
+#ifdef SEQ64_STAZED_UNDO_REDO
+            if (! get_hold_undo())
+                set_hold_undo(true);
+#endif
             if (tick_f == tick_s)
                 tick_f = tick_s + 1;                    /* avoid divide-by-0 */
 
@@ -1840,7 +2361,7 @@ sequence::change_event_data_range
             if (newdata < 0)
                 newdata = 0;
 
-            if (newdata >= SEQ64_MIDI_COUNT_MAX)
+            if (newdata >= SEQ64_MIDI_COUNT_MAX)        /* 127              */
                 newdata = SEQ64_MIDI_COUNT_MAX - 1;
 
             /*
@@ -1860,6 +2381,95 @@ sequence::change_event_data_range
     return result;
 }
 
+#ifdef USE_STAZED_LFO_SUPPORT
+
+void
+sequence::change_event_data_lfo
+(
+    double value, double range,
+    double speed, double phase, int wave,
+    unsigned char status,
+    unsigned char cc
+)
+{
+    automutex locker(m_mutex);
+    bool have_selection = false; /* change only selected events, if any */
+    if( get_num_selected_events(status, cc) )
+        have_selection = true;
+
+    for (iterator i = m_list_event.begin(); i != m_list_event.end(); ++i)
+    {
+        bool set = false;
+        unsigned char d0, d1;
+        i->get_data(&d0, &d1);
+
+        /* correct status and not CC */
+
+        if (status != EVENT_CONTROL_CHANGE && i->get_status() == status )
+            set = true;
+
+        /* correct status and correct cc */
+
+        if
+        (
+            status == EVENT_CONTROL_CHANGE && i->get_status() == status &&
+            d0 == cc
+        )
+            set = true;
+
+        /* in selection? */
+
+        if (have_selection && (!i->is_selected()))
+            set = false;
+
+        if (set)
+        {
+            if (! get_hold_undo())
+                set_hold_undo(true);
+
+            int tick = i->get_timestamp();
+            int newdata = value + lfownd::wave_func
+            (
+                (
+                    speed * (double)tick / (double) m_length *
+                    (double) m_time_beat_width + phase
+                ), wave
+            ) * range;
+
+            if ( newdata < 0 )
+                newdata = 0;
+
+            if (newdata > 127)
+                newdata = 127;
+
+            if ( status == EVENT_NOTE_ON )
+                d1 = newdata;
+
+            if ( status == EVENT_NOTE_OFF )
+                d1 = newdata;
+
+            if ( status == EVENT_AFTERTOUCH )
+                d1 = newdata;
+
+            if ( status == EVENT_CONTROL_CHANGE )
+                d1 = newdata;
+
+            if ( status == EVENT_PROGRAM_CHANGE )
+                d0 = newdata; /* d0 == new patch */
+
+            if ( status == EVENT_CHANNEL_PRESSURE )
+                d0 = newdata; /* d0 == pressure */
+
+            if ( status == EVENT_PITCH_WHEEL )
+                d1 = newdata;
+
+            i->set_data(d0, d1);
+        }
+    }
+}
+
+#endif   // USE_STAZED_LFO_SUPPORT
+
 /**
  *  Adds a note of a given length and  note value, at a given tick
  *  location.  It adds a single note-on / note-off pair.
@@ -1873,6 +2483,24 @@ sequence::change_event_data_range
  *
  *  Here, we could ignore events not on the sequence's channel, as an option.
  *  We have to be careful because this function can be used in painting notes.
+ *
+ * Stazed:
+ *
+ *      http://www.blitter.com/~russtopia/MIDI/~jglatt/tech/midispec.htm
+ *
+ *      Note Off: The first data is the note number. There are 128 possible
+ *      notes on a MIDI device, numbered 0 to 127 (where Middle C is note
+ *      number 60). This indicates which note should be released.  The second
+ *      data byte is the velocity, a value from 0 to 127. This indicates how
+ *      quickly the note should be released (where 127 is the fastest). It's
+ *      up to a MIDI device how it uses velocity information. Often velocity
+ *      will be used to tailor the VCA release time.  MIDI devices that can
+ *      generate Note Off messages, but don't implement velocity features,
+ *      will transmit Note Off messages with a preset velocity of 64.
+ *
+ *  Also, we now see that seq24 never used the recording-velocity member
+ *  (m_rec_vol).  We use it to modify the new m_note_on_velocity member if
+ *  the user changes it in the seqedit window.
  *
  * \threadsafe
  *
@@ -1933,12 +2561,12 @@ sequence::add_note (midipulse tick, midipulse len, int note, bool paint)
                 e.paint();
 
             e.set_status(EVENT_NOTE_ON);
-            e.set_data(note, SEQ64_DEFAULT_NOTE_VELOCITY);
+            e.set_data(note, m_note_on_velocity);
             e.set_timestamp(tick);
             add_event(e);
 
             e.set_status(EVENT_NOTE_OFF);
-            e.set_data(note, SEQ64_DEFAULT_NOTE_VELOCITY);
+            e.set_data(note, m_note_off_velocity);
             e.set_timestamp(tick + len);
             add_event(e);
         }
@@ -2119,63 +2747,92 @@ sequence::add_event
  *
  *  If MIDI Thru is enabled, the event is put on the buss.
  *
+ *  We are adding a feature where events are rejected if their channel
+ *  doesn't match that of the sequence.  This has been a complaint of some
+ *  people.  Could modify the add_event() and add_note() functions, but
+ *  better to do it here for comprehensive event support.  Also have to make
+ *  sure the event-channel is preserved before this function is called, and
+ *  also need to make sure that the channel is appended on both playback and
+ *  in saving of the MIDI file.
+ *
+ *  We are also adding the usage, at last, of the m_rec_vol member.
+ *
  * \todo
- *      Consider adding a feature where event's are rejected if their channel
- *      doesn't match that of the sequence.  This has been a complaint of some
- *      people.  Would modify the add_event() and add_note() functions.
+ *      When we feel like debugging, we will replace the global is-playing
+ *      call with the parent perform's is-running call.
  *
  * \threadsafe
  *
  * \param ev
  *      Provides the event to stream.
+ *
+ * \return
+ *      Returns true if the event's channel matched that of this sequence,
+ *      and the channel-matching feature was set to true.  Also returns true
+ *      if we're not using channel-matching.  A return value of true means
+ *      the event should be saved.
  */
 
-void
+bool
 sequence::stream_event (event & ev)
 {
     automutex locker(m_mutex);
-    ev.mod_timestamp(m_length);                 /* adjust the tick */
-    if (m_recording)
+    bool result = channel_match(ev);            /* set if channel matches   */
+    if (result)
     {
-        if (rc().is_pattern_playing())
+        ev.set_status(ev.get_status());         /* clear the channel nybble */
+        ev.mod_timestamp(m_length);             /* adjust the tick          */
+        if (m_recording)
         {
-            add_event(ev);
-            set_dirty();
-        }
-        else
-        {
-            if (ev.is_note_on())
+            if (rc().is_pattern_playing())      /* m_parent->is_running()   */
             {
-                push_undo();
-                add_note
-                (
-                    mod_last_tick(), m_snap_tick - m_note_off_margin,
-                    ev.get_note(), false
-                );
+                if (m_rec_vol > 0 && ev.is_note_on())
+                    ev.set_note_velocity(m_rec_vol);
+
+                add_event(ev);                          /* more locking     */
                 set_dirty();
-                ++m_notes_on;
             }
-            if (ev.is_note_off())
-                --m_notes_on;
+            else
+            {
+                /*
+                 * Supports the step-edit feature, so we set the generic
+                 * default note length and volume to the snap.
+                 */
 
-            if (m_notes_on <= 0)
-                m_last_tick += m_snap_tick;
+                if (ev.is_note_on())
+                {
+                    push_undo();
+                    add_note                            /* more locking     */
+                    (
+                        mod_last_tick(), m_snap_tick - m_note_off_margin,
+                        ev.get_note(), false
+                    );
+                    set_dirty();
+                    ++m_notes_on;
+                }
+                else if (ev.is_note_off())
+                    --m_notes_on;
+
+                if (m_notes_on <= 0)
+                    m_last_tick += m_snap_tick;
+            }
         }
-    }
-    if (m_thru)
-        put_event_on_bus(ev);
+        if (m_thru)
+            put_event_on_bus(ev);                       /* more locking     */
 
-    link_new();
-    if (m_quantized_rec && rc().is_pattern_playing())
-    {
-        if (ev.is_note_off())
+        link_new();                                     /* more locking     */
+        if (m_quantized_rec && rc().is_pattern_playing())
         {
-            midipulse timestamp = ev.get_timestamp();
-            midibyte note = ev.get_note();
-            select_note_events(timestamp, note, timestamp, note, e_select);
-            quantize_events(EVENT_NOTE_ON, 0, m_snap_tick, 1 , true);
+            if (ev.is_note_off())
+            {
+                midipulse timestamp = ev.get_timestamp();
+                midibyte note = ev.get_note();
+                select_note_events(timestamp, note, timestamp, note, e_select);
+                quantize_events(EVENT_NOTE_ON, 0, m_snap_tick, 1 , true);
+            }
         }
     }
+    return result;
 }
 
 /**
@@ -2295,7 +2952,8 @@ sequence::is_dirty_edit ()
  * \threadsafe
  *
  * \param note
- *      The note to play.
+ *      The note to play.  It is not checked for range validity, for the sake
+ *      of speed.
  */
 
 void
@@ -2304,7 +2962,7 @@ sequence::play_note_on (int note)
     automutex locker(m_mutex);
     event e;
     e.set_status(EVENT_NOTE_ON);
-    e.set_data(note, SEQ64_MIDI_COUNT_MAX-1);
+    e.set_data(note, m_note_on_velocity);           // SEQ64_MIDI_COUNT_MAX-1
     m_masterbus->play(m_bus, &e, m_midi_channel);
     m_masterbus->flush();
 }
@@ -2316,7 +2974,8 @@ sequence::play_note_on (int note)
  * \threadsafe
  *
  * \param note
- *      The note to turn off.
+ *      The note to turn off.  It is not checked for range validity, for the
+ *      sake of speed.
  */
 
 void
@@ -2325,7 +2984,7 @@ sequence::play_note_off (int note)
     automutex locker(m_mutex);
     event e;
     e.set_status(EVENT_NOTE_OFF);
-    e.set_data(note, SEQ64_MIDI_COUNT_MAX-1);
+    e.set_data(note, m_note_off_velocity);          // SEQ64_MIDI_COUNT_MAX-1
     m_masterbus->play(m_bus, &e, m_midi_channel);
     m_masterbus->flush();
 }
@@ -2874,8 +3533,22 @@ void
 sequence::copy_selected_trigger ()
 {
     automutex locker(m_mutex);
+#ifdef USE_STAZED_TRIGGER_EXTENSIONS
+    set_trigger_paste_tick(-1);         /* clear any unpasted middle-click  */
+#endif
     m_triggers.copy_selected();
 }
+
+#ifdef USE_STAZED_TRIGGER_EXTENSIONS
+
+void
+sequence::get_sequence_triggers (std::vector<trigger> & trigvect)
+{
+    automutex locker(m_mutex);
+    trigvect.assign(m_list_trigger.begin(), m_list_trigger.end());
+}
+
+#endif  // USE_STAZED_TRIGGER_EXTENSIONS
 
 /**
  *  If there is a copied trigger, then this function grabs it from the trigger

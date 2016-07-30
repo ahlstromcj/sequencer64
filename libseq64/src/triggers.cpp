@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-10-30
- * \updates       2016-05-10
+ * \updates       2016-07-30
  * \license       GNU GPLv2 or above
  *
  *  Man, we need to learn a lot more about triggers.  One important thing to
@@ -959,6 +959,42 @@ triggers::copy_selected ()
  *  clipboard and adds it.  It pastes at the copy end.
  */
 
+#ifdef USE_STAZED_TRIGGER_EXTENSIONS
+
+void
+triggers::paste ()
+{
+    if (m_trigger_copied)
+    {
+        midipulse len = m_clipboard.tick_end() - m_clipboard.tick_start() + 1;
+        if (get_trigger_paste_tick() < 0)       /* no paste-tick set?   */
+        {
+            add(m_clipboard.tick_end() + 1, len, m_clipboard.offset() + len);
+            m_clipboard.tick_start(m_clipboard.tick_end() + 1);
+            m_clipboard.tick_end(m_clipboard.tick_start() + len - 1);
+
+            midipulse offset = m_clipboard.offset() + len;
+            m_clipboard.offset(adjust_offset(offset));
+        }
+        else
+        {
+            /*
+             * Set the +/- distance to paste the tick, from the start.
+             */
+
+            long offset = get_trigger_paste_tick() - m_clipboard.m_tick_start;
+            add(get_trigger_paste_tick(), len, m_clipboard.m_offset + offset);
+            m_clipboard.m_tick_start = get_trigger_paste_tick();
+            m_clipboard.m_tick_end = m_clipboard.m_tick_start + length - 1;
+            m_clipboard.m_offset += offset_adjust;
+            m_clipboard.m_offset = adjust_offset(m_clipboard.m_offset);
+            set_trigger_paste_tick(-1);         /* reset to the default */
+        }
+    }
+}
+
+#else   // USE_STAZED_TRIGGER_EXTENSIONS
+
 void
 triggers::paste ()
 {
@@ -973,6 +1009,8 @@ triggers::paste ()
         m_clipboard.offset(adjust_offset(offset));
     }
 }
+
+#endif  // USE_STAZED_TRIGGER_EXTENSIONS
 
 /**
  *  Get the next trigger in the trigger list, and set the parameters based

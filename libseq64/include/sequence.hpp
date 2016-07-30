@@ -27,8 +27,8 @@
  *
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
- * \date          2015-07-24
- * \updates       2016-07-29
+ * \date          2015-07-30
+ * \updates       2016-07-30
  * \license       GNU GPLv2 or above
  *
  *  The functions add_list_var() and add_long_list() have been replaced by
@@ -213,26 +213,28 @@ private:
 
     triggers m_triggers;
 
-#ifdef USE_STAZED_LFO_SUPPORT
+#ifdef SEQ64_STAZED_UNDO_REDO
 
     /**
      *  Provides a typedef for a list of events.  For now, we will not
      *  try to use a multimap for this purpose.  Note that this definition is
      *  the same as the old list of events defined in the event_list.hpp
      *  module.
-     */
 
-    typedef std::list<event> Events;
-    typedef std::list<event>::iterator iterator;
-    typedef std::list<event>::const_iterator const_iterator;
+     typedef std::list<event> Events;
+     typedef std::list<event>::iterator iterator;
+     typedef std::list<event>::const_iterator const_iterator;
+     */
 
     /**
      *  Provides a list of event actions to undo for the Stazed LFO and
      *  seqdata support.  Changed, of course, from std::list<event> to
      *  the sequence::Events typedef.
-     */
 
     Events m_events_undo_hold;
+     */
+
+    event_list m_list_undo_hold;
 
 #endif
 
@@ -253,6 +255,15 @@ private:
      */
 
     event_list::iterator m_iterator_draw;
+
+    /**
+     *  A new feature for recording, based on a "stazed" feature.  If true
+     *  (not yet the default), then the seqedit window will record only MIDI
+     *  events that match its channel.  The old behavior is preserved if this
+     *  variable is set to false.
+     */
+
+    bool m_channel_match;
 
     /**
      *  Contains the proper MIDI channel for this sequence.  However, if this
@@ -476,7 +487,24 @@ private:
 
     int m_rec_vol;
 
-#ifdef SEQ64_STAZED_UNDO_REDO
+    /**
+     *  The Note On velocity used.  Currently set to
+     *  SEQ64_DEFAULT_NOTE_ON_VELOCITY.  If the recording velocity
+     *  (m_rec_vol) is non-zero, this value will be set to the desired
+     *  recording velocity.  A "stazed" feature.
+     */
+
+    int m_note_on_velocity;
+
+    /**
+     *  The Note Off velocity used.  Currently set to
+     *  SEQ64_DEFAULT_NOTE_OFF_VELOCITY, and currently unmodifiable.  A
+     *  "stazed" feature.
+     */
+
+    int m_note_off_velocity;
+
+#ifdef USE_STAZED_PUSH_POP_SUPPORT
     bool m_have_undo;
     bool m_have_redo;
     midipulse m_paste_tick;
@@ -596,7 +624,24 @@ public:
     }
 
     int event_count () const;
-    void push_undo ();
+
+#ifdef USE_STAZED_PUSH_POP_SUPPORT
+    void pop_trigger_redo ();
+
+    void set_have_undo ()
+    {
+        m_have_undo = m_list_undo.size() > 0;
+        m_parent->modify();
+    }
+
+    void set_have_redo ()
+    {
+        m_have_redo = m_list_redo.size() > 0;
+    }
+
+#else
+    void push_undo (bool hold = false);         // adds stazed parameter
+#endif
     void pop_undo ();
     void pop_redo ();
     void push_trigger_undo ();
@@ -1071,7 +1116,7 @@ public:
         midipulse tick, midibyte status,
         midibyte d0, midibyte d1, bool paint = false
     );
-    void stream_event (event & ev);
+    bool stream_event (event & ev);
     bool change_event_data_range
     (
         midipulse tick_s, midipulse tick_f,
@@ -1242,6 +1287,27 @@ private:
     void remove (event_list::iterator i);
     void remove (event & e);
     void remove_all ();
+
+    /**
+     *  Checks to see if the event's channel matches the sequence's nominal
+     *  channel.
+     *
+     * \param e
+     *      The event whose channel nybble is to be checked.
+     *
+     * \return
+     *      Returns true if the channel-matching feature is enable and the
+     *      channels match, or true if the channel-matching feature is turned
+     *      off.
+     */
+
+    bool channel_match (const event & e) const
+    {
+        if (m_channel_match)
+            return (e.get_status() & 0x0F) == m_midi_channel;
+        else
+            return true;
+    }
 
 };          // class sequence
 

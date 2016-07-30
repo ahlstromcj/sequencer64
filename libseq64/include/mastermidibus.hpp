@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-30
- * \updates       2016-07-27
+ * \updates       2016-07-30
  * \license       GNU GPLv2 or above
  *
  *  The mastermidibus module is the Linux version of the mastermidibus module.
@@ -170,6 +170,17 @@ private:
 
     bool m_dumping_input;
 
+#ifdef USE_STAZED_MIDIBUS_SUPPORT
+
+    /**
+     *  Used for the new "stazed" feature of filtering MIDI channels so that
+     *  a sequence gets only the channels meant for it.
+     */
+
+    std::vector<sequence *> m_vector_sequence;
+
+#endif  // USE_STAZED_MIDIBUS_SUPPORT
+
     /**
      *  Points to the sequence object.
      */
@@ -255,7 +266,7 @@ public:
     bool is_more_input ();
     bool get_midi_event (event * in);
     void set_sequence_input (bool state, sequence * seq);
-    void dump_midi_input (event * in);          /* a seq32 function */
+    void dump_midi_input (event in);                        /* seq32 function */
 
     /**
      * \getter m_dumping_input

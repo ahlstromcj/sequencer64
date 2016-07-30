@@ -42,7 +42,7 @@
 namespace seq64
 {
 
-class sequence;
+    class sequence;
 
 /**
  *  This class hold a single trigger for a sequence object.
@@ -307,6 +307,16 @@ private:
 
     bool m_trigger_copied;
 
+#ifdef USE_STAZED_TRIGGER_EXTENSIONS
+
+    /**
+     *  The tick point for pasting.  Set to -1 if not in force.
+     */
+
+    midipulse m_paste_tick;
+
+#endif
+
     /**
      *  Holds the value of the PPQN from the parent sequence, for easy access.
      *  This should not change, but we have to set it after construction, and
@@ -418,6 +428,20 @@ public:
     {
         m_iterator_draw_trigger = m_triggers.begin();
     }
+
+#ifdef USE_STAZED_TRIGGER_EXTENSIONS
+
+    void set_trigger_paste_tick (midipulse tick)
+    {
+        m_paste_tick = tick;
+    }
+
+    midipulse get_trigger_paste_tick () const
+    {
+        return m_paste_tick;
+    }
+
+#endif
 
 private:
 

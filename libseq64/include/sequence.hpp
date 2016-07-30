@@ -507,7 +507,6 @@ private:
 #ifdef USE_STAZED_PUSH_POP_SUPPORT
     bool m_have_undo;
     bool m_have_redo;
-    midipulse m_paste_tick;
 #endif
 
     /**
@@ -601,6 +600,20 @@ public:
     {
         return m_triggers.triggerlist();
     }
+
+#ifdef USE_STAZED_TRIGGER_EXTENSIONS
+
+    void set_trigger_paste_tick (midipulse tick)
+    {
+        m_triggers.set_trigger_paste_tick(tick);
+    }
+
+    midipulse get_trigger_paste_tick () const
+    {
+        return m_triggers.get_trigger_paste_tick();
+    }
+
+#endif
 
     /**
      * \getter m_seq_number
@@ -1179,12 +1192,20 @@ public:
         bool * selected, int * velocity
     );
     bool get_minmax_note_events (int & lowest, int & highest);
+#ifdef USE_STAZED_SELECTION_EXTENSIONS
     bool get_next_event
     (
         midibyte status, midibyte cc,
-        midipulse * tick, midibyte * d0, midibyte * d1,
-        bool * selected
+        midipulse * tick, midibyte * d0, midibyte * d1, bool * selected,
+        int type
     );
+#else
+    bool get_next_event
+    (
+        midibyte status, midibyte cc,
+        midipulse * tick, midibyte * d0, midibyte * d1, bool * selected
+    );
+#endif
     bool get_next_event (midibyte * status, midibyte * cc);
     bool get_next_trigger
     (

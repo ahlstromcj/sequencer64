@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-06-26
+ * \updates       2016-07-30
  * \license       GNU GPLv2 or above
  *
  *  A MIDI event (i.e. "track event") is encapsulated by the seq64::event
@@ -93,7 +93,11 @@ event::event ()
     m_status        (EVENT_NOTE_OFF),
     m_channel       (EVENT_NULL_CHANNEL),
     m_data          (),                     /* a two-element array  */
+#ifdef USE_STAZED_SYSEX_SUPPORT
+    m_sysex         (),                     /* an std::vector       */
+#else
     m_sysex         (nullptr),
+#endif
     m_sysex_size    (0),
     m_linked        (nullptr),
     m_has_link      (false),
@@ -101,8 +105,7 @@ event::event ()
     m_marked        (false),
     m_painted       (false)
 {
-    m_data[0] = 0;
-    m_data[1] = 0;
+    m_data[0] = m_data[1] = 0;
 }
 
 /**
@@ -275,25 +278,47 @@ event::transpose_note (int tn)
  *
  *  He also provided a very similar routine: set_status_midibus().
  *
+ *  Stazed:
+ *
+ *      The record parameter, if true, does not clear channel portion on record
+ *      for channel specific recording. The channel portion is cleared in
+ *      sequence::stream_event() by calling set_status() (a_record = false)
+ *      after the matching channel is determined.  Otherwise, we use a bitwise
+ *      AND to clear the channel portion of the status.  All events will be
+ *      stored without the channel nybble.  This is necessary since the channel
+ *      is appended by midibus::play() based on the track.
+ *
  * \param status
  *      The status byte, perhaps read from a MIDI file or edited in the
  *      sequencer's event editor.  Sometime, this byte will have the channel
  *      nybble masked off.  If that is the case, the eventcode/channel
  *      overload of this function is more appropriate.
+ *
+ * \param record
+ *      If true, we want to keep the channel byte.  Used in recording events on
+ *      the channel associated with a given sequence.  The default value is
+ *      false.  This is a "stazed" feature.
  */
 
 void
-event::set_status (midibyte status)
+event::set_status (midibyte status, bool record)
 {
-    if (status >= 0xF0)
+    if (record)
     {
         m_status = status;
-        m_channel = EVENT_NULL_CHANNEL;         /* i.e. "not applicable"    */
     }
     else
     {
-        m_status = status & EVENT_CLEAR_CHAN_MASK;
-        m_channel = status & EVENT_GET_CHAN_MASK;
+        if (status >= 0xF0)
+        {
+            m_status = status;
+            m_channel = EVENT_NULL_CHANNEL;     /* i.e. "not applicable"    */
+        }
+        else
+        {
+            m_status = status & EVENT_CLEAR_CHAN_MASK;
+            m_channel = status & EVENT_GET_CHAN_MASK;
+        }
     }
 }
 
@@ -326,10 +351,15 @@ event::set_status (midibyte eventcode, midibyte channel)
 void
 event::restart_sysex ()
 {
+#ifdef USE_STAZED_SYSEX_SUPPORT
+    m_sysex.clear();
+#else
     if (not_nullptr(m_sysex))
         delete [] m_sysex;
 
     m_sysex = nullptr;
+#endif
+
     m_sysex_size = 0;
 }
 
@@ -353,6 +383,23 @@ event::restart_sysex ()
  *      data, or if an error occurred, and the caller needs to stop trying to
  *      process the data.
  */
+
+#ifdef USE_STAZED_SYSEX_SUPPORT
+
+bool
+event::append_sysex (midibyte * data, int dsize)
+{
+    bool result = true;
+    for (int i = 0; i < dsize; ++i)
+    {
+        m_sysex.push_back(data[i]);
+        if (data[i] == EVENT_SYSEX_END)
+            result = false;
+    }
+    return result;
+}
+
+#else   // USE_STAZED_SYSEX_SUPPORT
 
 bool
 event::append_sysex (midibyte * data, int dsize)
@@ -392,6 +439,8 @@ event::append_sysex (midibyte * data, int dsize)
     }
     return result;
 }
+
+#endif  // USE_STAZED_SYSEX_SUPPORT
 
 /**
  *  Prints out the timestamp, data size, the current status byte, any SYSEX

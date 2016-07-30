@@ -112,7 +112,7 @@ midi_container::add_long (midipulse x)
  *  current sequence, preparatory to writing it to a file.  Note that some of
  *  the events might not come out in the same order they were stored in (we
  *  see that with program-change events).  This function replaces
- *  sequence::fill_container().
+ *  sequence::fill_list().
  *
  *  Now, for sequence 0, an alternate format for writing the sequencer number
  *  chunk is "FF 00 00".  But that format can only occur in the first track,

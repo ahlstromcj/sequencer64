@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-07-17
+ * \updates       2016-07-30
  * \license       GNU GPLv2 or above
  *
  *  The seqedit is a kind of master class for holding aseqroll, seqkeys,
@@ -47,6 +47,7 @@
 namespace Gtk
 {
     class Adjustment;
+    class Button;
     class Entry;
     class HScrollbar;
     class Image;

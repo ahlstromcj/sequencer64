@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-07-03
+ * \updates       2016-07-30
  * \license       GNU GPLv2 or above
  *
  *  This module also declares/defines the various constants, status-byte
@@ -37,6 +37,10 @@
  */
 
 #include <string>                       /* used in to_string()          */
+
+#ifdef USE_STAZED_SYSEX_SUPPORT
+#include <vector>                       /* SYSEX data stored in vector  */
+#endif
 
 #include "midibyte.hpp"                 /* seq64::midibyte typedef      */
 
@@ -149,6 +153,14 @@ const midibyte EVENT_GET_CHAN_MASK     = 0x0F;
 const midibyte EVENT_CLEAR_CHAN_MASK   = 0xF0;
 
 /**
+ *  Variable from the "stazed" extras.  We reversed the parts of each token
+ *  for consistency with the macros defined above.
+ */
+
+const int EVENTS_ALL                    = -1;
+const int EVENTS_SELECTED               =  0;
+
+/**
  *  Provides events for management of MIDI events.
  *
  *  A MIDI event consists of 3 bytes:
@@ -176,8 +188,10 @@ private:
     midipulse m_timestamp;
 
     /**
-     *  This is the status byte without the channel.  The channel will be
-     *  appended on the MIDI bus upon playback.  The high nibble = type of
+     *  This is the status byte without the channel. The channel is included
+     *  when recording MIDI, but, once a sequence with a matching channel is
+     *  found, the channel nybble is cleared for storage.  The channel will be
+     *  added back on the MIDI bus upon playback.  The high nibble = type of
      *  event; The low nibble = channel.  Bit 7 is present in all status
      *  bytes.
      */
@@ -195,18 +209,30 @@ private:
 
     /**
      *  The two bytes of data for the MIDI event.  Remember that the
-     *  most-significant bit of a data byte is always 0.
+     *  most-significant bit of a data byte is always 0.  A one-byte message
+     *  uses only the 0th index.
      */
 
     midibyte m_data[SEQ64_MIDI_DATA_BYTE_COUNT];
 
+#ifdef USE_STAZED_SYSEX_SUPPORT
+
     /**
-     *  Points to the data buffer for SYSEX messages.
-     *  This really ought to be a Boost or STD scoped pointer.  Currently, it
-     *  doesn't seem to be used.
+     *  The data buffer for SYSEX messages.
+     */
+
+    std::vector<midibyte> m_sysex;
+
+#else
+
+    /**
+     *  Points to the data buffer for SYSEX messages.  This really ought to be a
+     *  Boost or STD scoped pointer.  Currently, it doesn't seem to be used.
      */
 
     midibyte * m_sysex;
+
+#endif
 
     /**
      *  Gives the size of the SYSEX message.
@@ -450,7 +476,7 @@ public:
         m_timestamp %= a_mod;
     }
 
-    void set_status (midibyte status);
+    void set_status (midibyte status, bool record = false);
     void set_status (midibyte eventcode, midibyte channel);
 
     /**
@@ -565,8 +591,23 @@ public:
         m_data[1] = (m_data[1] - 1) & 0x7F;
     }
 
-    void restart_sysex ();
     bool append_sysex (midibyte * data, int len);
+    void restart_sysex ();
+
+#ifdef USE_STAZED_SYSEX_SUPPORT
+
+    std::vector<midibyte> & get_sysex () const
+    {
+        return m_sysex;
+    }
+
+    void set_sysex_size (int len)
+    {
+        m_sysex.resize(len);
+        m_sysex_size = len;
+    }
+
+#else   // USE_STAZED_SYSEX_SUPPORT
 
     /**
      * \getter m_sysex
@@ -588,6 +629,8 @@ public:
     {
         m_sysex_size = len;
     }
+
+#endif  // USE_STAZED_SYSEX_SUPPORT
 
     /**
      * \getter m_sysex_size
@@ -783,9 +826,9 @@ public:
      *      Provides the velocity value to set.
      */
 
-    void set_note_velocity (int a_vel)
+    void set_note_velocity (int vel)
     {
-        m_data[1] = a_vel & 0x7F;
+        m_data[1] = vel & 0x7F;
     }
 
     /**

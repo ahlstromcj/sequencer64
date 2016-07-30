@@ -6,7 +6,7 @@
 # \library    	libseq_gtkmm2 library
 # \author     	Chris Ahlstrom
 # \date       	2015-09-11
-# \update      2016-07-15
+# \update      2016-07-30
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -141,6 +141,7 @@ libseq_gtkmm2_la_SOURCES = \
    gui_window_gtk2.cpp \
 	keybindentry.cpp \
    keys_perform_gtk2.cpp \
+   lfownd.cpp \
 	maintime.cpp \
 	mainwid.cpp \
 	mainwnd.cpp \

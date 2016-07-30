@@ -29,7 +29,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-06-07
+ * \updates       2016-07-30
  * \license       GNU GPLv2 or above
  *
  *  The data pane is the drawing-area below the seqedit's event area, and
@@ -39,6 +39,7 @@
 
 #include "globals.h"
 #include "gui_drawingarea_gtk2.hpp"
+#include "midibyte.hpp"                 /* midibyte typedef */
 
 namespace Gtk
 {
@@ -56,9 +57,9 @@ namespace seq64
 
 class seqdata : public gui_drawingarea_gtk2
 {
-
-    friend class seqroll;
+    friend class lfownd;
     friend class seqevent;
+    friend class seqroll;
 
 private:
 

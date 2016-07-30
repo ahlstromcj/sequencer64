@@ -118,7 +118,6 @@ sequence::sequence (int ppqn)
 #ifdef SEQ64_STAZED_UNDO_REDO
     m_have_undo                 (false),
     m_have_redo                 (false)
-    m_paste_tick                (-1),
 #endif
     m_musical_key               (SEQ64_KEY_OF_C),
     m_musical_scale             (int(c_scale_off)),
@@ -3804,7 +3803,55 @@ sequence::get_next_event (midibyte * status, midibyte * cc)
  *
  * \param selected
  *      A pointer return value for the is-selected status of the event.
+ *
+ * \param type
+ *      A stazed parameter for picking either all event or unselected events.
  */
+
+#ifdef USE_STAZED_SELECTION_EXTENSIONS
+
+bool
+sequence::get_next_event
+(
+    midibyte status, midibyte cc,
+    midipulse * tick, midibyte * d0, midibyte * d1, bool * selected,
+    int type
+)
+{
+    while (m_iterator_draw != m_events.end())
+    {
+        event & drawevent = DREF(m_iterator_draw);
+        bool ok = drawevent.get_status() == status;
+        if (ok)
+        {
+            if (type == EVENTS_UNSELECTED && drawevent.is_selected())
+            {
+                ++m_iterator_draw;
+                continue;
+            }
+
+            // type >= EVENTS_SELECTED ???
+
+            if (type > EVENTS_SELECTED && ! drawevent.is_selected())
+            {
+                ++m_iterator_draw;
+                continue;
+            }
+            drawevent.get_data(*d0, *d1);
+            *tick = drawevent.get_timestamp();
+            *selected = drawevent.is_selected();
+            if (event::is_desired_cc_or_not_cc(status, cc, *d0))
+            {
+                ++m_iterator_draw;  /* good one, so update and return       */
+                return true;
+            }
+        }
+        ++m_iterator_draw;          /* keep going until null or a Note On   */
+    }
+    return false;
+}
+
+#else   // USE_STAZED_SELECTION_EXTENSIONS
 
 bool
 sequence::get_next_event
@@ -3835,6 +3882,8 @@ sequence::get_next_event
     }
     return false;
 }
+
+#endif  // USE_STAZED_SELECTION_EXTENSIONS
 
 /**
  *  Get the next trigger in the trigger list, and set the parameters based
@@ -4243,48 +4292,90 @@ sequence::select_events
 void
 sequence::transpose_notes (int steps, int scale)
 {
-    event e;
     event_list transposed_events;
     const int * transpose_table = nullptr;
     automutex locker(m_mutex);
     m_events_undo.push(m_events);                   /* do this for callers  */
-    mark_selected();                                /* mark original notes  */
-    if (steps < 0)
+    if (mark_selected())                            /* mark original notes  */
     {
-        transpose_table = &c_scales_transpose_dn[scale][0];     /* down */
-        steps *= -1;
-    }
-    else
-        transpose_table = &c_scales_transpose_up[scale][0];     /* up   */
-
-    for (event_list::iterator i = m_events.begin(); i != m_events.end(); ++i)
-    {
-        event & er = DREF(i);
-        if (er.is_marked() && er.is_note())         /* transposable event?  */
+        if (steps < 0)
         {
-            e = er;
-            e.unmark();
-            int  note = e.get_note();
-            bool off_scale = false;
-            if (transpose_table[note % SEQ64_OCTAVE_SIZE] == 0)
-            {
-                off_scale = true;
-                note -= 1;
-            }
-            for (int x = 0; x < steps; ++x)
-                note += transpose_table[note % SEQ64_OCTAVE_SIZE];
-
-            if (off_scale)
-                note += 1;
-
-            e.set_note(note);
-            transposed_events.add(e, false);        /* will sort afterward  */
+            transpose_table = &c_scales_transpose_dn[scale][0];     /* down */
+            steps *= -1;
         }
+        else
+            transpose_table = &c_scales_transpose_up[scale][0];     /* up   */
+
+        for (event_list::iterator i = m_events.begin(); i != m_events.end(); ++i)
+        {
+            event & er = DREF(i);
+            if (er.is_marked() && er.is_note())     /* transposable event?  */
+            {
+                event e = er;
+                e.unmark();
+                int note = e.get_note();
+                bool off_scale = false;
+                if (transpose_table[note % SEQ64_OCTAVE_SIZE] == 0)
+                {
+                    off_scale = true;
+                    note -= 1;
+                }
+                for (int x = 0; x < steps; ++x)
+                    note += transpose_table[note % SEQ64_OCTAVE_SIZE];
+
+                if (off_scale)
+                    note += 1;
+
+                e.set_note(note);
+                transposed_events.add(e, false);    /* will sort afterward  */
+            }
+            else
+                er.unmark();                        /* ignore, no transpose */
+        }
+        (void) remove_marked();                     /* remove original notes */
+        m_events.merge(transposed_events);          /* events get presorted  */
+        verify_and_link();
     }
-    (void) remove_marked();                         /* remove original notes */
-    m_events.merge(transposed_events);              /* events get presorted  */
-    verify_and_link();
 }
+
+#ifdef USE_STAZED_SHIFT_SUPPORT
+
+void
+sequence::shift_notes (int ticks)
+{
+    if (mark_selected())
+    {
+        automutex locker(m_mutex);
+        event_list shifted_events;
+        push_undo();
+        for (event_list::iterator i = m_events.begin(); i != m_events.end(); ++i)
+        {
+            event & er = DREF(i);
+            if (er.is_marked() && er.is_note())     /* shiftable event?  */
+            {
+                event e = er;
+                e.unmark();
+
+                midipulse timestamp = e.get_timestamp() + ticks;
+                if (timestamp < 0L)                     /* wraparound */
+                    timestamp = m_length - ((-timestamp) % m_length);
+                else
+                    timestamp %= m_length;
+
+                e.set_timestamp(timestamp);
+                shifted_events.add(e);
+            }
+        }
+        (void) remove_marked();
+#ifndef SEQ64_USE_EVENT_MAP
+        shifted_events.sort();
+        m_events.merge(shifted_events);
+#endif
+        verify_and_link();
+    }
+}
+
+#endif  // USE_STAZED_SHIFT_SUPPORT
 
 #ifdef SEQ64_STAZED_TRANSPOSE
 
@@ -4366,56 +4457,58 @@ sequence::quantize_events
 )
 {
     automutex locker(m_mutex);
-    event_list quantized_events;
-    mark_selected();
-    for (event_list::iterator i = m_events.begin(); i != m_events.end(); ++i)
+    if (mark_selected())
     {
-        event & er = DREF(i);
-        midibyte d0, d1;
-        er.get_data(d0, d1);
-        bool match = er.get_status() == status;
-        bool canselect;
-        if (status == EVENT_CONTROL_CHANGE)
-            canselect = match && d0 == cc;  /* correct status and correct cc */
-        else
-            canselect = match;              /* correct status, cc irrelevant */
-
-        if (! er.is_marked())
-            canselect = false;
-
-        if (canselect)
+        event_list quantized_events;
+        for (event_list::iterator i = m_events.begin(); i != m_events.end(); ++i)
         {
-            event e = er;                   /* copy the event               */
-            er.select();                    /* selected the original event  */
-            e.unmark();                     /* unmark the copy of the event */
-
-            midipulse t = e.get_timestamp();
-            midipulse t_remainder = t % snap_tick;
-            midipulse t_delta = 0;
-            if (t_remainder < snap_tick / 2)
-                t_delta = -(t_remainder / divide);
+            event & er = DREF(i);
+            midibyte d0, d1;
+            er.get_data(d0, d1);
+            bool match = er.get_status() == status;
+            bool canselect;
+            if (status == EVENT_CONTROL_CHANGE)
+                canselect = match && d0 == cc;  /* correct status and correct cc */
             else
-                t_delta = (snap_tick - t_remainder) / divide;
+                canselect = match;              /* correct status, cc irrelevant */
 
-            if ((t_delta + t) >= m_length)
-                t_delta = -e.get_timestamp();
+            if (! er.is_marked())
+                canselect = false;
 
-            e.set_timestamp(e.get_timestamp() + t_delta);
-            quantized_events.add(e, false);
-            if (er.is_linked() && linked)
+            if (canselect)
             {
-                event f = *er.get_linked();
-                midipulse ft = f.get_timestamp();
-                f.unmark();
-                er.get_linked()->select();
-                f.set_timestamp(ft + t_delta);
-                quantized_events.add(f, false);
+                event e = er;                   /* copy the event               */
+                er.select();                    /* selected the original event  */
+                e.unmark();                     /* unmark the copy of the event */
+
+                midipulse t = e.get_timestamp();
+                midipulse t_remainder = t % snap_tick;
+                midipulse t_delta = 0;
+                if (t_remainder < snap_tick / 2)
+                    t_delta = -(t_remainder / divide);
+                else
+                    t_delta = (snap_tick - t_remainder) / divide;
+
+                if ((t_delta + t) >= m_length)
+                    t_delta = -e.get_timestamp();
+
+                e.set_timestamp(e.get_timestamp() + t_delta);
+                quantized_events.add(e, false);
+                if (er.is_linked() && linked)
+                {
+                    event f = *er.get_linked();
+                    midipulse ft = f.get_timestamp();
+                    f.unmark();
+                    er.get_linked()->select();
+                    f.set_timestamp(ft + t_delta);
+                    quantized_events.add(f, false);
+                }
             }
         }
+        (void) remove_marked();
+        m_events.merge(quantized_events);       /* quantized events presorted   */
+        verify_and_link();
     }
-    (void) remove_marked();
-    m_events.merge(quantized_events);       /* quantized events presorted   */
-    verify_and_link();
 }
 
 /**
@@ -4433,6 +4526,38 @@ sequence::push_quantize
     m_events_undo.push(m_events);
     quantize_events(status, cc, snap_tick, divide, linked);
 }
+
+#ifdef USE_STAZED_MULTIPLY_PATTERN
+
+void
+sequence::multiply_pattern (float multiplier )
+{
+    automutex locker(m_mutex);
+    long orig_length = get_length();
+    long new_length = orig_length * multiplier;
+    if (new_length > orig_length)
+        set_length(new_length);
+
+    for (event_list::iterator i = m_events.begin(); i != m_events.end(); ++i)
+    {
+        event & er = DREF(i);
+        long timestamp = er.get_timestamp();
+        if (er.is_note_off())
+            timestamp += c_note_off_margin;
+
+        timestamp *= multiplier;
+        if (er.is_note_off())
+            timestamp -= c_note_off_margin;
+
+        timestamp %= m_length;
+        er.set_timestamp(timestamp);
+    }
+    verify_and_link();
+    if (new_length < orig_length)
+        set_length(new_length);
+}
+
+#endif  // USE_STAZED_MULTIPLY_PATTERN
 
 /**
  *  This function fills the given MIDI container with MIDI data from the

@@ -6,7 +6,7 @@
 # \library    	libseq_gtkmm2 library
 # \author     	Chris Ahlstrom
 # \date       	2015-09-11
-# \update      2016-07-15
+# \update      2016-07-30
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -84,7 +84,8 @@ pkginclude_HEADERS = \
    gui_palette_gtk2.hpp \
    gui_window_gtk2.hpp \
 	keybindentry.hpp \
-   keys_perform_gtk2.hpp
+   keys_perform_gtk2.hpp \
+   lfownd.hpp \
 	maintime.hpp \
 	mainwid.hpp \
 	mainwnd.hpp \

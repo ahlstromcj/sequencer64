@@ -59,6 +59,9 @@ triggers::triggers (sequence & parent)
     m_iterator_play_trigger     (),
     m_iterator_draw_trigger     (),
     m_trigger_copied            (false),
+#ifdef USE_STAZED_TRIGGER_EXTENSIONS
+    m_paste_tick                (-1),
+#endif
     m_ppqn                      (0),
     m_length                    (0)
 {

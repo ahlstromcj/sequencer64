@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-07-30
+ * \updates       2016-07-31
  * \license       GNU GPLv2 or above
  *
  *  This module also declares/defines the various constants, status-byte
@@ -341,6 +341,9 @@ public:
      *      The channel status or message byte to be tested, with the channel
      *      bits masked off.
      *
+     *  We could add an optional boolean to cause the channel nybble to be
+     *  explicitly cleared.
+     *
      * \return
      *      Returns true if the byte represents a MIDI channel message.
      */
@@ -366,6 +369,9 @@ public:
      *      The channel status or message byte to be tested, with the channel
      *      bits masked off.
      *
+     *  We could add an optional boolean to cause the channel nybble to be
+     *  explicitly cleared.
+     *
      * \return
      *      Returns true if the byte represents a MIDI channel message that
      *      has only one data byte.  However, if this function returns false,
@@ -386,6 +392,9 @@ public:
      *      The channel status or message byte to be tested, with the channel
      *      bits masked off.
      *
+     *  We could add an optional boolean to cause the channel nybble to be
+     *  explicitly cleared.
+     *
      * \return
      *      Returns true if the byte represents a MIDI channel message that
      *      has two data bytes.  However, if this function returns false,
@@ -405,11 +414,14 @@ public:
     /**
      *  Static test for messages that involve notes and velocity: Note On,
      *  Note Off, and Aftertouch.  This function requires that the channel
-     *  data have already been masked off.
+     *  nybble has already been masked off.
      *
      * \param m
      *      The channel status or message byte to be tested, with the channel
      *      bits masked off.
+     *
+     *  We could add an optional boolean to cause the channel nybble to be
+     *  explicitly cleared.
      *
      * \return
      *      Returns true if the byte represents a MIDI note message.
@@ -476,8 +488,21 @@ public:
         m_timestamp %= a_mod;
     }
 
-    void set_status (midibyte status, bool record = false);
+    void set_status (midibyte status);
     void set_status (midibyte eventcode, midibyte channel);
+
+    /**
+     *  This function is used in recording to preserve the input channel
+     *  information for deciding what to do with an incoming MIDI event.
+     *
+     * \param eventcode
+     *      The status byte, generally read from the MIDI buss.
+     */
+
+    void set_status_keep_channel (midibyte eventcode)
+    {
+        m_status = eventcode;
+    }
 
     /**
      *  Sets the channel "nybble", without modifying the status "nybble".
@@ -832,6 +857,9 @@ public:
     }
 
     /**
+     *  Check for the Note On value in m_status.  Currently assumes that the
+     *  channel nybble has already been stripped.
+     *
      * \return
      *      Returns true if m_status is EVENT_NOTE_ON.
      */
@@ -842,6 +870,9 @@ public:
     }
 
     /**
+     *  Check for the Note Off value in m_status.  Currently assumes that the
+     *  channel nybble has already been stripped.
+     *
      * \return
      *      Returns true if m_status is EVENT_NOTE_OFF.
      */
@@ -863,6 +894,24 @@ public:
     bool is_note () const
     {
         return is_note_msg(m_status);
+    }
+
+    /**
+     *  Some keyboards send Note On with velocity 0 for Note Off, so we
+     *  provide this function to test that during recording.  The channel
+     *  nybble is masked off before the test.
+     *
+     * \return
+     *      Returns true if the event is a Note On event with velocity of 0.
+     */
+
+    bool is_note_off_recorded () const
+    {
+        return
+        (
+            m_status == EVENT_NOTE_ON &&
+            (m_data[1] & EVENT_CLEAR_CHAN_MASK) == 0
+        );
     }
 
     void print () const;

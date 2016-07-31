@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-07-13
+ * \updates       2016-07-30
  * \license       GNU GPLv2 or above
  *
  */
@@ -96,6 +96,17 @@ private:
      */
 
     long m_last_tick_x[c_max_sequence];
+
+#ifdef USE_LAST_PLAYING_LOGGING
+
+    /**
+     *  Holds the last playing tick for each sequence.  This doesn't seem to be
+     *  used anywhere, even though values are logged, so it is macroed out.
+     */
+
+    long m_last_playing[c_max_sequence];
+
+#endif
 
     /**
      *  These values are assigned to the values given by the constants of

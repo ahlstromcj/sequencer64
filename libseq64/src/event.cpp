@@ -293,32 +293,20 @@ event::transpose_note (int tn)
  *      sequencer's event editor.  Sometime, this byte will have the channel
  *      nybble masked off.  If that is the case, the eventcode/channel
  *      overload of this function is more appropriate.
- *
- * \param record
- *      If true, we want to keep the channel byte.  Used in recording events on
- *      the channel associated with a given sequence.  The default value is
- *      false.  This is a "stazed" feature.
  */
 
 void
-event::set_status (midibyte status, bool record)
+event::set_status (midibyte status)
 {
-    if (record)
+    if (status >= 0xF0)
     {
         m_status = status;
+        m_channel = EVENT_NULL_CHANNEL;     /* i.e. "not applicable"    */
     }
     else
     {
-        if (status >= 0xF0)
-        {
-            m_status = status;
-            m_channel = EVENT_NULL_CHANNEL;     /* i.e. "not applicable"    */
-        }
-        else
-        {
-            m_status = status & EVENT_CLEAR_CHAN_MASK;
-            m_channel = status & EVENT_GET_CHAN_MASK;
-        }
+        m_status = status & EVENT_CLEAR_CHAN_MASK;
+        m_channel = status & EVENT_GET_CHAN_MASK;
     }
 }
 

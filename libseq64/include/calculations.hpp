@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-07
- * \updates       2016-04-12
+ * \updates       2016-07-31
  * \license       GNU GPLv2 or above
  *
  *  These items were moved from the globals.h module so that only the modules
@@ -69,6 +69,20 @@
 
 namespace seq64
 {
+
+/**
+ *  Provides a clear enumation of wave types supported by the wave function.
+ *  We still have to clarify these type values, though.
+ */
+
+enum wave_type_t
+{
+    WAVE_NONE               = 0,
+    WAVE_SINE               = 1,
+    WAVE_TRIANGLE           = 2,        // true?
+    WAVE_INVERSE_TRIANGLE   = 3,        // true?
+    WAVE_STEP               = 4         // true?
+};
 
 /*
  * Free functions in the seq64 namespace.
@@ -389,6 +403,8 @@ measures_to_ticks (int bpm, int ppqn, int bw, int measures = 1)
 {
     return (bw > 0) ? (4 * measures * bpm * ppqn / bw) : 0 ;
 }
+
+extern double wave_func (double angle, wave_type_t wavetype);
 
 }           // namespace seq64
 

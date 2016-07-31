@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-07-27
+ * \updates       2016-07-31
  * \license       GNU GPLv2 or above
  *
  *  This class still has way too many members, even with the JACK and
@@ -146,7 +146,6 @@ struct performcallback
 
 class perform
 {
-
     friend class jack_assistant;
     friend class keybindentry;
     friend class midifile;
@@ -164,20 +163,18 @@ class perform
 
 #endif
 
-#ifdef USE_STAZED_JACK_SUPPORT
+public:
 
     /**
      *  Provides settings for muting.
      */
 
-    enum mute_op
+    enum mute_op_t
     {
         MUTE_TOGGLE = -1,
         MUTE_OFF = 0,
         MUTE_ON = 1
     };
-
-#endif
 
 private:
 
@@ -194,19 +191,13 @@ private:
      *  Used for toggling the usage of JACK.  Need to investigate more.
      */
 
-    bool m_toggle_jack;                 // better in perform?
+    bool m_toggle_jack;
 
     /**
      *  TBD.
      */
 
-    bool m_playback_mode;               // better in perform?
-
-    /**
-     *  TBD.
-     */
-
-    bool m_follow_transport;            // better in perform?
+    bool m_follow_transport;
 
     /**
      *  TBD.
@@ -411,11 +402,21 @@ private:
 
     bool m_in_thread_launched;
 
-    /*
-     *  Indicates that playback is running.
+    /**
+     *  Indicates that playback is running.  However, this flag is conflated
+     *  with some JACK support, and we have to supplement it with another
+     *  flag, m_pattern_playing.
      */
 
     bool m_running;
+
+    /**
+     *  Indicates that a pattern is playing.  It replaces rc_settings ::
+     *  is_pattern_playing(), which is gone, since the perform object is now
+     *  visible to all classes that care about it.
+     */
+
+    bool m_is_pattern_playing;
 
     /**
      *  Indicates that events are being written to the MIDI input busses in
@@ -913,6 +914,15 @@ public:
     }
 
     /**
+     * \setter m_is_pattern_playing
+     */
+
+    bool is_pattern_playing () const
+    {
+        return m_is_pattern_playing;
+    }
+
+    /**
      * \getter m_jack_asst.is_running()
      *      This function is useful for announcing the status of JACK in
      *      user-interface items that only have access to the perform object.
@@ -1217,10 +1227,7 @@ public:
     bool any_group_unmutes () const;
     void mute_group_tracks ();
     void select_and_mute_group (int g_group);
-
-#ifdef USE_STAZED_JACK_SUPPORT
-    void set_song_mute (mute_op op);
-#endif
+    void set_song_mute (mute_op_t op);
 
     /**
      * \setter m_mode_group
@@ -1366,11 +1373,13 @@ public:
 
     /**
      * \setter m_transpose
+     *      For sanity's sake, the values are restricted to +-64.
      */
 
-    void set_transpose (int transpose)
+    void set_transpose (int t)
     {
-        m_transpose = transpose;
+        if (t >= SEQ64_TRANSPOSE_DOWN_LIMIT && t <= SEQ64_TRANSPOSE_UP_LIMIT)
+            m_transpose = t;
     }
 
     /**
@@ -1883,6 +1892,15 @@ private:
     void set_running (bool running)
     {
         m_running = running;
+    }
+
+    /**
+     * \setter m_is_pattern_playing
+     */
+
+    void is_pattern_playing (bool flag)
+    {
+        m_is_pattern_playing = flag;
     }
 
     /**

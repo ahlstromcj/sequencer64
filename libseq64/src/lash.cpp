@@ -76,7 +76,7 @@ static lash * s_global_lash_driver = nullptr;
  *
  * \return
  *      This function returns true if a lash object was created.  This
- *      function will not create one in not configured to, if the command-line
+ *      function will not create one if not configured to, if the command-line
  *      options did not specify the creation of the LASH driver, or if the
  *      LASH driver was already created.
  */
@@ -282,7 +282,7 @@ lash::handle_event (lash_event_t * ev)
     if (not_nullptr(cstring))
     {
         str = cstring;
-        str += "sequencer64.midi";
+        str += "/sequencer64.midi";
     }
     else
         str = "~/sequencer64.midi";

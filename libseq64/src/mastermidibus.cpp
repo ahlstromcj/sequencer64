@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-30
- * \updates       2016-07-28
+ * \updates       2016-07-31
  * \license       GNU GPLv2 or above
  *
  *  This file provides a Linux-only implementation of MIDI support.
@@ -88,6 +88,7 @@ namespace seq64
 mastermidibus::mastermidibus (int ppqn, int bpm)
  :
     m_alsa_seq          (nullptr),  // one pointer
+    m_max_busses        (c_max_busses),
     m_num_out_buses     (0),        // or c_max_busses, or what?
     m_num_in_buses      (0),        // or c_max_busses, or 1, or what?
     m_buses_out         (),         // array of c_max_busses midibus pointers
@@ -112,7 +113,7 @@ mastermidibus::mastermidibus (int ppqn, int bpm)
     m_mutex             ()
 {
     m_ppqn = choose_ppqn(ppqn);
-    for (int i = 0; i < c_max_busses; ++i)
+    for (int i = 0; i < m_max_busses; ++i)
     {
         m_buses_in_active[i] =
             m_buses_out_active[i] =
@@ -642,7 +643,7 @@ void
 mastermidibus::set_clock (bussbyte bus, clock_e clocktype)
 {
     automutex locker(m_mutex);
-    if (bus < c_max_busses)
+    if (bus < m_max_busses)
         m_init_clock[bus] = clocktype;
 
     if (m_buses_out_active[bus] && bus < m_num_out_buses)
@@ -689,7 +690,7 @@ void
 mastermidibus::set_input (bussbyte bus, bool inputing)
 {
     automutex locker(m_mutex);
-    if (bus < c_max_busses)         // should be m_num_in_buses I believe!!!
+    if (bus < m_max_busses)         // should be m_num_in_buses I believe!!!
         m_init_input[bus] = inputing;
 
     if (m_buses_in_active[bus] && bus < m_num_in_buses)
@@ -1019,6 +1020,7 @@ bool
 mastermidibus::get_midi_event (event * inev)
 {
 #ifdef SEQ64_HAVE_LIBASOUND
+
     automutex locker(m_mutex);
     snd_seq_event_t * ev;
     bool sysex = false;
@@ -1053,37 +1055,43 @@ mastermidibus::get_midi_event (event * inev)
     if (result)
         return false;
 
-    snd_midi_event_t * midi_ev;                         /* ALSA midi parser */
+    snd_midi_event_t * midi_ev;             /* used in the ALSA midi parser */
     snd_midi_event_new(sizeof(buffer), &midi_ev);
     long bytes = snd_midi_event_decode(midi_ev, buffer, sizeof(buffer), ev);
     if (bytes <= 0)
         return false;
 
     inev->set_timestamp(ev->time.tick);
-    inev->set_status(buffer[0]);
+    inev->set_status_keep_channel(buffer[0]);
     inev->set_sysex_size(bytes);
 
-    /*
+    /**
      *  We will only get EVENT_SYSEX on the first packet of MIDI data;
-     *  the rest we have to poll for.
+     *  the rest we have to poll for.  SysEx processing is currently
+     *  disabled.
      */
 
-#if USE_SYSEX_PROCESSING                /* currently disabled           */
+#if USE_SYSEX_PROCESSING                    /* currently disabled           */
     if (buffer[0] == EVENT_SYSEX
     {
-        inev->restart_sysex();          /* set up for sysex if needed   */
+        inev->restart_sysex();              /* set up for sysex if needed   */
         sysex = inev->append_sysex(buffer, bytes);
     }
     else
     {
 #endif
-        /* some keyboards send Note On with velocity 0 for Note Off */
+        /*
+         *  Some keyboards send Note On with velocity 0 for Note Off, so we
+         *  take care of that situation here by creating a Note Off event,
+         *  with the channel nybble preserved.
+         */
 
         inev->set_data(buffer[1], buffer[2]);
-        if (inev->get_status() == EVENT_NOTE_ON && inev->get_note_velocity() == 0)
-            inev->set_status(EVENT_NOTE_OFF);
+        if (inev->is_note_off_recorded())
+            inev->set_status_keep_channel(EVENT_NOTE_OFF);
 
         sysex = false;
+
 #if USE_SYSEX_PROCESSING
     }
 #endif
@@ -1098,7 +1106,9 @@ mastermidibus::get_midi_event (event * inev)
             sysex = false;
     }
     snd_midi_event_free(midi_ev);
+
 #endif  // SEQ64_HAVE_LIBASOUND
+
     return true;
 }
 
@@ -1149,9 +1159,7 @@ mastermidibus::set_sequence_input (bool state, sequence * seq)
          * Have a sequence with false - remove the sequence.
          */
 
-        if (is_nullptr(seq))
-            m_vector_sequence.clear();
-        else
+        if (not_nullptr(seq))
         {
             for (unsigned i = 0; i < m_vector_sequence.size(); ++i)
             {
@@ -1159,7 +1167,11 @@ mastermidibus::set_sequence_input (bool state, sequence * seq)
                     m_vector_sequence.erase(m_vector_sequence.begin() + i);
             }
         }
+        else
+            m_vector_sequence.clear();
     }
+    if (m_vector_sequence.size() > 0)
+        m_dumping_input = true;
 }
 
 /**

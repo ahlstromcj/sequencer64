@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-22
- * \updates       2016-06-11
+ * \updates       2016-07-30
  * \license       GNU GPLv2 or above
  *
  *  Note that this module also sets the legacy global variables, so that
@@ -86,7 +86,6 @@ rc_settings::rc_settings ()
     m_jack_start_mode           (false),
     m_manual_alsa_ports         (false),
     m_reveal_alsa_ports         (false),
-    m_is_pattern_playing        (false),
     m_print_keys                (false),
     m_device_ignore             (false),
     m_device_ignore_num         (0),
@@ -126,7 +125,6 @@ rc_settings::rc_settings (const rc_settings & rhs)
     m_jack_start_mode           (rhs.m_jack_start_mode),
     m_manual_alsa_ports         (rhs.m_manual_alsa_ports),
     m_reveal_alsa_ports         (rhs.m_reveal_alsa_ports),
-    m_is_pattern_playing        (rhs.m_is_pattern_playing),
     m_print_keys                (rhs.m_print_keys),
     m_device_ignore             (rhs.m_device_ignore),
     m_device_ignore_num         (rhs.m_device_ignore_num),
@@ -172,7 +170,6 @@ rc_settings::operator = (const rc_settings & rhs)
         m_jack_start_mode           = rhs.m_jack_start_mode;
         m_manual_alsa_ports         = rhs.m_manual_alsa_ports;
         m_reveal_alsa_ports         = rhs.m_reveal_alsa_ports;
-        m_is_pattern_playing        = rhs.m_is_pattern_playing;
         m_print_keys                = rhs.m_print_keys;
         m_device_ignore             = rhs.m_device_ignore;
         m_device_ignore_num         = rhs.m_device_ignore_num;
@@ -210,7 +207,6 @@ rc_settings::set_defaults ()
     m_jack_start_mode           = true;
     m_manual_alsa_ports         = false;
     m_reveal_alsa_ports         = false;
-    m_is_pattern_playing        = false;
     m_print_keys                = false;
     m_device_ignore             = false;
     m_device_ignore_num         = 0;

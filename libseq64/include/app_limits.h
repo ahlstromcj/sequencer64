@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-11-08
- * \updates       2016-07-30
+ * \updates       2016-07-31
  * \license       GNU GPLv2 or above
  *
  *  This collection of macros describes some facets of the
@@ -374,6 +374,13 @@
  */
 
 #define SEQ64_MIDI_NOTES_MAX             256
+
+/**
+ *  Provides a sanity check for transposition values.
+ */
+
+#define SEQ64_TRANSPOSE_UP_LIMIT        (SEQ64_MIDI_COUNT_MAX / 2)
+#define SEQ64_TRANSPOSE_DOWN_LIMIT      (-SEQ64_MIDI_COUNT_MAX / 2)
 
 #endif      // SEQ64_APP_LIMITS_H
 

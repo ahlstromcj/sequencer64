@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-22
- * \updates       2016-06-11
+ * \updates       2016-07-30
  * \license       GNU GPLv2 or above
  *
  *  This collection of variables describes the options of the application,
@@ -80,7 +80,6 @@ private:
     bool m_jack_start_mode;
     bool m_manual_alsa_ports;
     bool m_reveal_alsa_ports;
-    bool m_is_pattern_playing;
     bool m_print_keys;
     bool m_device_ignore;                       /* seq24 module, unused!    */
     int m_device_ignore_num;                    /* seq24 module, unused!    */
@@ -317,20 +316,6 @@ public:
     void reveal_alsa_ports (bool flag)
     {
         m_reveal_alsa_ports = flag;
-    }
-
-    /**
-     * \accessor m_is_pattern_playing
-     */
-
-    bool is_pattern_playing () const
-    {
-        return m_is_pattern_playing;
-    }
-
-    void is_pattern_playing (bool flag)
-    {
-        m_is_pattern_playing = flag;
     }
 
     /**

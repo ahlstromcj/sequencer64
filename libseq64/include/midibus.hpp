@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-05-06
+ * \updates       2016-07-31
  * \license       GNU GPLv2 or above
  *
  *  The midibus module is the Linux version of the midibus module.
@@ -45,6 +45,8 @@
 #if SEQ64_HAVE_LIBASOUND
 #include <alsa/asoundlib.h>
 #include <alsa/seq_midi_event.h>
+#else
+#include "midibus_portmidi.h"           /* see the seq_portmidi library */
 #endif
 
 namespace seq64

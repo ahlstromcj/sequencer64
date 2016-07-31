@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-07
- * \updates       2016-05-07
+ * \updates       2016-07-31
  * \license       GNU GPLv2 or above
  *
  *  This code was moved from the globals module so that other modules
@@ -76,6 +76,10 @@
 
 #include "app_limits.h"
 #include "calculations.hpp"
+
+#ifndef PI
+#define PI     3.14159265359
+#endif
 
 namespace seq64
 {
@@ -834,6 +838,52 @@ tempo_to_bytes (midibyte t[3], int tempo_us)
     t[0] = midibyte(tempo_us & 0x0000FF);
     t[1] = midibyte((tempo_us & 0x00FF00) >> 8);
     t[2] = midibyte((tempo_us & 0xFF0000) >> 16);
+}
+
+/**
+ *  Calculates a wave function for use as an LFO (low-frequency oscillator)
+ *  for modifying data values in a sequence.  We extracted this function from
+ *  mattias's lfownd module, as it is more generally useful.
+ *
+ * \param angle
+ *      Provides the radial angle to be applied.
+ *
+ * \param wavetype
+ *      Provides the wave_type_t value to select the type of wave data-point
+ *      to be generated.
+ */
+
+double
+wave_func (double angle, wave_type_t wavetype)
+{
+    double result = 0.0;
+    switch (wavetype)
+    {
+    case WAVE_SINE:
+        result = sin(angle * PI * 2.0);
+        break;
+
+    case WAVE_TRIANGLE:
+        result = (angle - int(angle)) * 2.0 - 1.0;
+        break;
+
+    case WAVE_INVERSE_TRIANGLE:
+        result = (angle - int(angle)) * -2.0 + 1.0;
+        break;
+
+    case WAVE_STEP:
+    {
+        result = (angle * 2.0 - int(angle * 2.0));
+        if ((int(angle * 2.0)) % 2 == 1)
+            result = 1.0 - result;
+
+        result = result * 2.0 - 1.0;
+        break;
+    }
+    default:
+        break;
+    }
+    return result;
 }
 
 }       // namespace seq64

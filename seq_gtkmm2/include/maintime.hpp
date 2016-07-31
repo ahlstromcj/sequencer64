@@ -142,11 +142,7 @@ private:
 
 public:
 
-    maintime
-    (
-        perform & p,
-        int ppqn = SEQ64_USE_DEFAULT_PPQN
-    );
+    maintime (perform & p, int ppqn = SEQ64_USE_DEFAULT_PPQN);
 
     /**
      *  Let's provide a do-nothing virtual destructor.

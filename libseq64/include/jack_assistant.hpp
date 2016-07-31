@@ -530,11 +530,6 @@ public:
         m_start_from_perfedit = start;
     }
 
-    void set_playback_mode (bool mode)
-    {
-        m_playback_mode = mode;
-    }
-
 #endif  // USE_STAZED_JACK_SUPPORT
 
 private:

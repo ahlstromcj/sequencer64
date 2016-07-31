@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and Tim Deagan
  * \date          2015-07-24
- * \updates       2016-07-27
+ * \updates       2016-07-30
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -120,7 +120,6 @@ perform::perform (gui_assistant & mygui, int ppqn)
  :
 #ifdef USE_STAZED_JACK_SUPPORT
     m_toggle_jack               (false),
-    m_playback_mode             (false),
     m_follow_transport          (true),
     m_start_from_perfedit       (false),
     m_reposition                (false),
@@ -315,14 +314,19 @@ perform::clear_all ()
         for (int i = 0; i < m_max_sets; ++i)
             set_screen_set_notepad(i, e);
 
-#ifndef USE_STAZED_JACK_SUPPORT
-        is_modified(false);                     /* new, we start afresh     */
-#endif
-
 #ifdef USE_STAZED_PUSH_POP_SUPPORT
         set_have_undo(false);
         set_have_redo(false);
 #endif
+
+        /*
+         * TODO
+         *
+        set_beats_per_minute(c_bpm);
+         *
+         */
+
+        is_modified(false);                     /* new, we start afresh     */
     }
     return result;
 }
@@ -596,8 +600,6 @@ perform::toggle_all_tracks ()
     }
 }
 
-#ifdef USE_STAZED_JACK_SUPPORT
-
 /**
  *  Provides for various settings of the song-mute status of all sequences in
  *  the song. The sequence::set_song_mute() and toggle_song_mute() functions
@@ -605,7 +607,7 @@ perform::toggle_all_tracks ()
  */
 
 void
-perform::set_song_mute (mute_op op)
+perform::set_song_mute (mute_op_t op)
 {
     for (int i = 0; i < m_sequence_max; ++i)
     {
@@ -628,8 +630,6 @@ perform::set_song_mute (mute_op op)
         }
     }
 }
-
-#endif  // USE_STAZED_JACK_SUPPORT
 
 /**
  *  Mutes/unmutes all tracks in the desired screen-set.
@@ -1846,7 +1846,7 @@ perform::start_playing (bool songmode)
     if (! is_jack_running())
         set_running(true);
 
-    rc().is_pattern_playing(true);      /* cannot deprecate this flag yet   */
+    is_pattern_playing(true);
 }
 
 #endif  // USE_STAZED_JACK_SUPPORT
@@ -1879,7 +1879,7 @@ perform::pause_playing ()
     }
 #endif
     m_is_paused = true;
-    rc().is_pattern_playing(false);     /* cannot yet deprecate this    */
+    is_pattern_playing(false);
 }
 
 /**
@@ -1897,7 +1897,7 @@ perform::stop_playing ()
 
 #ifndef USE_STAZED_JACK_SUPPORT
     m_is_paused = false;
-    rc().is_pattern_playing(false);
+    is_pattern_playing(false);
     m_tick = 0;                         // or get_left_tick()
 #endif
 

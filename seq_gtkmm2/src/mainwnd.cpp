@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-07-15
+ * \updates       2016-07-31
  * \license       GNU GPLv2 or above
  *
  *  The main window holds the menu and the main controls of the application,
@@ -145,6 +145,9 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
     performcallback         (),
     m_tooltips              (manage(new Gtk::Tooltips())),  /* valgrind bitches */
     m_menubar               (manage(new Gtk::MenuBar())),
+#ifdef USE_STAZED_EDIT_MENU
+    m_menu_edit             (manage(new Gtk::Menu())),
+#endif
     m_menu_file             (manage(new Gtk::Menu())),
     m_menu_view             (manage(new Gtk::Menu())),
     m_menu_help             (manage(new Gtk::Menu())),
@@ -160,6 +163,12 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
     m_button_stop           (manage(new Gtk::Button())),
     m_button_play           (manage(new Gtk::Button())),
     m_button_perfedit       (manage(new Gtk::Button())),
+#ifdef USE_STAZED_SONG_MODE_BUTTON
+    m_button_mode           (manage(new Gtk::ToggleButton("Song Mode")),
+#endif
+#ifdef USE_STAZED_MENU_MODE_BUTTON
+    m_button_menu           (manage(new Gtk::ToggleButton("Menu"));
+#endif
     m_adjust_bpm
     (
         manage
@@ -189,6 +198,7 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
     m_is_running            (false),
 #endif
     m_timeout_connect       (),                     /* handler              */
+    m_menu_mode             (false),                /* stazed 2016-07-30    */
     m_call_seq_edit         (false),                /* new ca 2016-05-15    */
     m_call_seq_eventedit    (false)                 /* new ca 2016-05-19    */
 {
@@ -202,6 +212,9 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
     perf().enregister(this);                        /* register for notify  */
     update_window_title();                          /* main window          */
     m_menubar->items().push_front(MenuElem("_File", *m_menu_file));
+#ifdef USE_STAZED_EDIT_MENU
+    m_menubar->items().push_back(MenuElem("_Edit", *m_menu_edit));
+#endif
     m_menubar->items().push_back(MenuElem("_View", *m_menu_view));
     m_menubar->items().push_back(MenuElem("_Help", *m_menu_help));
 
@@ -237,7 +250,8 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
     (
         MenuElem
         (
-            "Save _as...", mem_fun(*this, &mainwnd::file_save_as)
+            "Save _as...",
+            sigc::bind(mem_fun(*this, &mainwnd::file_save_as), false)
         )
     );
     m_menu_file->items().push_back(SeparatorElem());
@@ -259,8 +273,76 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
         )
     );
 
+#ifdef USE_STAZED_EDIT_MENU
+
     /**
-     * View menu items and their hot keys.
+     * Edit menu items and their hot keys.
+     */
+
+    m_menu_edit->items().push_back
+    (
+        MenuElem
+        (
+            "_Song Editor...", Gtk::AccelKey("<control>E"),
+            mem_fun(*this, &mainwnd::open_performance_edit)
+        )
+    );
+
+#ifdef SEQ64_STAZED_TRANSPOSE
+
+    m_menu_edit->items().push_back
+    (
+        MenuElem
+        (
+            "_Apply song transpose",
+            mem_fun(*this, &mainwnd::apply_song_transpose)
+        )
+    );
+
+#endif
+
+    m_menu_edit->items().push_back(SeparatorElem());
+    m_menu_edit->items().push_back
+    (
+        MenuElem("_Mute all tracks",
+        sigc::bind(mem_fun(*this, &mainwnd::set_song_mute), MUTE_ON))
+    );
+    m_menu_edit->items().push_back
+    (
+        MenuElem("_Unmute all tracks",
+        sigc::bind(mem_fun(*this, &mainwnd::set_song_mute), MUTE_OFF))
+    );
+    m_menu_edit->items().push_back
+    (
+        MenuElem("_Toggle mute all tracks",
+        sigc::bind(mem_fun(*this, &mainwnd::set_song_mute), MUTE_TOGGLE))
+    );
+
+    m_menu_edit->items().push_back          // a repeat
+    (
+        MenuElem("_Import...", mem_fun(*this, &mainwnd::file_import_dialog))
+    );
+
+    /*
+     * Exporting is just writing the tune to a file and not making the
+     * filename the new active filename for the current tune.
+     */
+
+    m_menu_edit->items().push_back
+    (
+        MenuElem
+        (
+            "Export _song",
+            sigc::bind(mem_fun(*this, &mainwnd::file_save_as), true)
+        )
+    );
+
+#endif  // USE_STAZED_EDIT_MENU
+
+    /**
+     * View menu items and their hot keys.  It repeats the song editor edit
+     * command, just to help those whose muscle memory is already
+     * seq32-oriented.
      */
 
     m_menu_view->items().push_back
@@ -308,6 +390,43 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
         sequencer64_legacy_xpm : sequencer64_square_xpm ;
 
     tophbox->pack_start(*manage(new PIXBUF_IMAGE(bitmap)), false, false);
+
+#ifdef USE_STAZED_SONG_MODE_BUTTON
+
+    m_button_mode->set_can_focus(false);
+    m_button_mode->signal_toggled().connect
+    (
+        sigc::mem_fun(*this, &mainwnd::set_song_mode)
+    );
+    add_tooltip( m_button_mode, "Toggle song mode (or live/sequence mode)." );
+    if (rc().song_start_mode())
+    {
+        m_button_mode->set_active(true);
+    }
+    tophbox->pack_start(*m_button_mode, false, false);
+
+#endif
+
+#ifdef USE_STAZED_MENU_MODE_BUTTON
+
+    // m_button_menu->add
+    // (
+    //     *manage(new Image(Gdk::Pixbuf::create_from_xpm_data(menu_xpm)))
+    // );
+
+    m_button_menu->signal_toggled().connect
+    (
+        sigc::mem_fun(*this, &mainwnd::set_menu_mode)
+    );
+    add_tooltip
+    (
+        m_button_menu,
+        "Toggle to disable/enable menu when sequencer is not running. "
+        "The menu is automatically disabled when the sequencer is running."
+    );
+    tophbox->pack_start(*m_button_menu, false, false);
+
+#endif
 
     /* Adjust placement of the logo. */
 
@@ -557,12 +676,38 @@ mainwnd::timer_callback ()
         m_entry_notes->set_text(perf().current_screen_set_notepad());
     }
 
+#ifdef USE_STAZED_SONG_MODE_BUTTON
+
+    if (m_button_mode->get_active() != global_song_start_mode)
+        m_button_mode->set_active(global_song_start_mode);
+
+    if (perf().is_pattern_playing() && m_button_mode->get_sensitive())
+        m_button_mode->set_sensitive(false);
+    else if(! perf().is_pattern_playing() && ! m_button_mode->get_sensitive())
+        m_button_mode->set_sensitive(true);
+
+#endif
+
+#ifdef USE_STAZED_JACK_SUPPORT
+
+    /*
+     * For seqroll keybinding, this is needed here instead of perfedit
+     * timeout(), since perfedit may not be open all the time.
+     */
+
+    if (m_perf_edit->get_toggle_jack() != perf().get_toggle_jack())
+        m_perf_edit->toggle_jack();
+
+#endif
+
 #ifdef SEQ64_PAUSE_SUPPORT
+
     if (perf().is_running() != m_is_running)
     {
         m_is_running = perf().is_running();
         set_image(m_is_running);
     }
+
 #endif
 
     return true;
@@ -666,21 +811,61 @@ mainwnd::on_grouplearnchange (bool state)
 void
 mainwnd::new_file ()
 {
-    perf().clear_all();
-    m_main_wid->reset();
-    m_entry_notes->set_text(perf().current_screen_set_notepad());
-    rc().filename("");
-    update_window_title();
+    if (perf().clear_all())
+    {
+        /*
+         * TODO
+         *
+        m_perf_edit->set_bp_measure(4);
+        m_perf_edit->set_bw(4);
+        m_perf_edit->set_transpose(0);
+         *
+         */
+
+        m_main_wid->reset();
+        m_entry_notes->set_text(perf().current_screen_set_notepad());
+        rc().filename("");
+        update_window_title();
+    }
+    else
+        new_open_error_dialog();
 }
 
 /**
- *  A callback function for the File / Save As menu entry.
+ *  Tells the user to close all the edit windows first.
  */
 
 void
-mainwnd::file_save_as ()
+mainwnd::new_open_error_dialog ()
 {
-    Gtk::FileChooserDialog dialog("Save file as", Gtk::FILE_CHOOSER_ACTION_SAVE);
+    std::string prompt =
+        "All sequence edit windows must be closed\n"
+        "before opening a new file." ;
+
+    Gtk::MessageDialog errdialog
+    (
+        *this, prompt, false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK, true
+    );
+    errdialog.run();
+}
+
+/**
+ *  A callback function for the File / Save As menu entry.  Please note that
+ *  Sequencer64 will not adopt the "c_seq32_midi" type of file, because
+ *  it already saves its files in a format that other sequencers should be
+ *  able to read.
+ *
+ * \param do_export
+ *      If true, then just write out the file and don't change the name of
+ *      the current file based on the file-name the user selected.  The
+ *      default value of this parameter is false.
+ */
+
+void
+mainwnd::file_save_as (bool do_export)
+{
+    const char * const prompt = do_export ? "Export file as" : "Save file as" ;
+    Gtk::FileChooserDialog dialog(prompt, Gtk::FILE_CHOOSER_ACTION_SAVE);
     dialog.set_transient_for(*this);
     dialog.add_button(Gtk::Stock::CANCEL, Gtk::RESPONSE_CANCEL);
     dialog.add_button(Gtk::Stock::SAVE, Gtk::RESPONSE_OK);
@@ -734,9 +919,26 @@ mainwnd::file_save_as ()
                 if (response == Gtk::RESPONSE_NO)
                     return;
             }
-            rc().filename(fname);
-            update_window_title();
-            save_file();
+            if (do_export)
+            {
+                midifile f(fname, ppqn());
+                bool result = f.write(perf());      // f.write_song(perf());
+                if (! result)
+                {
+                    Gtk::MessageDialog errdialog
+                    (
+                        *this, "Error exporting file.",
+                        false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK, true
+                    );
+                    errdialog.run();
+                }
+            }
+            else
+            {
+                rc().filename(fname);
+                update_window_title();
+                save_file();
+            }
             break;
         }
         default:
@@ -1191,10 +1393,18 @@ mainwnd::apply_song_transpose ()
 void
 mainwnd::start_playing ()               /* Play!            */
 {
+#ifdef USE_STAZED_JACK_SUPPORT
+
+    perf().start_playing();             /* stazed behavior  */
+
+#else
+
 #ifdef SEQ64_PAUSE_SUPPORT
     perf().pause_key();                 /* perf().start_key() */
 #else
     perf().start_playing();             /* legacy behavior  */
+#endif
+
 #endif
 }
 
@@ -1230,15 +1440,23 @@ mainwnd::pause_playing ()               /* Stop in place!   */
  */
 
 void
-mainwnd::stop_playing ()                /* Stop!            */
+mainwnd::stop_playing ()                        /* Stop! */
 {
+#ifdef USE_STAZED_JACK_SUPPORT
+
+    perf().stop_playing();
+
+#else
+
 #ifdef SEQ64_PAUSE_SUPPORT
     perf().stop_key();
 #else
     perf().stop_playing();
 #endif
 
-    m_main_wid->update_sequences_on_window();   // update_mainwid_sequences()
+#endif
+
+    m_main_wid->update_sequences_on_window();   /* update_mainwid_sequences() */
 }
 
 /**
@@ -1272,15 +1490,14 @@ mainwnd::toggle_playing ()
  *  This callback function handles a delete event from ...?
  *
  *  Any changed data is saved.  If the pattern is playing, then it is
- *  stopped.  We now use is_running(), instead of the global
- *  rc().is_pattern_playing() function.
+ *  stopped.  We now use perform::is_pattern_playing().
  */
 
 bool
 mainwnd::on_delete_event (GdkEventAny * /*ev*/)
 {
     bool result = is_save();
-    if (result && perf().is_running())      /* \change ca 2016-03-19    */
+    if (result && perf().is_pattern_playing())
         stop_playing();
 
     return ! result;

@@ -1528,6 +1528,32 @@ midifile::prop_item_size (long data_length) const
 /**
  *  Write the whole MIDI data and Seq24 information out to the file.
  *
+ * Stazed/Seq32:
+ *
+ *      The alternate version of this function, write_song(), is not
+ *      included in Sequencer64 because it Sequencer64 writes standard MIDI
+ *      files (with SeqSpec information that a decent sequencer should
+ *      ignore).  The write_song() function doesn't count tracks that are
+ *      muted or that have no triggers.  For sequences that have triggers,
+ *      it adds the events in order, to create a long sequence.
+ *
+ *      We think this is a good feature for export, and will probably
+ *      eventually make the Export command do this:
+ *
+ *      The sequence trigger is NOT part of the standard midi format and is
+ *      proprietary to seq32.  It is added here because the trigger
+ *      combining has an alternative benefit for editing.  The user can
+ *      split, slice and rearrange triggers to form a new sequence. Then
+ *      mute all other tracks and export to a temporary midi file. Now they
+ *      can import the combined triggers/sequence as a new item. This makes
+ *      editing of long improvised sequences into smaller or modified
+ *      sequences as well as combining several sequence parts painless.
+ *      Also, if the user has a variety of common items such as drum beats,
+ *      control codes, etc that can be used in other projects, this method
+ *      is very convenient. The common items can be kept in one file and
+ *      exported all, individually, or in part by creating triggers and
+ *      muting.
+ *
  * \param p
  *      Provides the object that will contain and manage the entire
  *      performance.

@@ -96,7 +96,8 @@ maintime::on_realize ()
 
     /*
      * Odd, we now notice that the pill bar isn't showing until the tune
-     * starts to play.  Let's make sure it appears.  Doesn't work.
+     * starts to play.  Let's make sure it appears.  Doesn't work.  Something
+     * else fixed it, and we forgot to document it.
      *
      * (void) idle_progress(0);
      */
@@ -122,6 +123,10 @@ maintime::on_realize ()
 int
 maintime::idle_progress (midipulse ticks)
 {
+#ifdef USE_STAZED_JACK_SUPPORT
+    m_tick = ticks;
+#endif
+
     if (ticks >= 0)                     /* ca 2016-03-17 to make bar appear */
     {
         int tick_x = (ticks % m_ppqn) * m_box_width / m_ppqn;

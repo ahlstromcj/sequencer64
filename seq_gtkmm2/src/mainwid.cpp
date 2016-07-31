@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-07-16
+ * \updates       2016-07-30
  * \license       GNU GPLv2 or above
  *
  *  Note that this representation is, in a sense, inside the mainwnd
@@ -123,6 +123,9 @@ mainwid::mainwid (perform & p)
     m_old_seq               (0),
     m_screenset             (0),
     m_last_tick_x           (),                 // array of size c_max_sequence
+#ifdef USE_LAST_PLAYING_LOGGING
+    m_last_last_playing     (),                 // array of size c_max_sequence
+#endif
     m_mainwnd_rows          (c_mainwnd_rows),
     m_mainwnd_cols          (c_mainwnd_cols),
     m_seqarea_x             (c_seqarea_x),
@@ -279,11 +282,17 @@ mainwid::draw_sequence_on_pixmap (int seqnum)
             {
                 if (seq->get_playing())
                 {
+#ifdef USE_LAST_PLAYING_LOGGING
+                    m_last_playing[seqnum] = true;
+#endif
                     bg_color(black());
                     fg_color(yellow());
                 }
                 else
                 {
+#ifdef USE_LAST_PLAYING_LOGGING
+                    m_last_playing[seqnum] = false;
+#endif
                     bg_color(yellow());
                     fg_color(black());
                 }

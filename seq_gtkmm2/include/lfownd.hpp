@@ -28,26 +28,23 @@
  * \library       sequencer64 application
  * \author        Seq42 team; modifications by Chris Ahlstrom
  * \date          2016-07-30
- * \updates       2016-07-30
+ * \updates       2016-07-31
  * \license       GNU GPLv2 or above
  *
  *  Created on: 22 mar 2013
  *      Author: mattias
  *
  *  The LFO window holds the menu and the controls of the LFO support.
+ *
+ *  Note that we move the wave_func() function to the calculations module to
+ *  make it available without needing to include GUI code in the libseq64
+ *  library.
  */
-
-// #include <gtkmm.h>
-// #include <sigc++/bind.h>
-
-// #include "globals.h"
 
 #include <gdkmm/cursor.h>
 #include <gtkmm/window.h>
 
 #include "gui_window_gtk2.hpp"          // seq64::qui_window_gtk2
-
-// using namespace Gtk;
 
 namespace Gtk
 {
@@ -102,8 +99,6 @@ public:
     virtual ~lfownd ();
 
     void toggle_visible ();
-
-    static double wave_func (double angle, int wave_type);
 
 private:
 

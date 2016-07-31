@@ -43,6 +43,10 @@
 #include "sequence.hpp"
 #include "settings.hpp"                 /* seq64::rc() and choose_ppqn()    */
 
+#ifdef USE_STAZED_LFO_SUPPORT
+#include "calculations.hpp"
+#endif
+
 #define USE_NON_NOTE_EVENT_ADJUSTMENT
 
 namespace seq64
@@ -455,8 +459,12 @@ sequence::select_even_or_odd_notes (int note_len, bool even)
 }
 
 /**
- *  Selects events in range provided.
- *  tick start, note high, tick end note low.
+ *  Selects events in range provided:
+ *  tick start, note high, tick end, and  note low.
+ *
+ *  Be aware the the event::is_note() function is used, and that it includes
+ *  Aftertouch events, which generally need to stick with their Note On
+ *  counterparts.
  *
  * \note
  *      The continuation below ("continue") is necessary since channel
@@ -481,8 +489,7 @@ sequence::select_note_events
 
     for (iterator i = m_list_event.begin(); i != m_list_event.end(); i++ )
     {
-//      if (i->get_status()!=EVENT_NOTE_ON && i->get_status()!=EVENT_NOTE_OFF)
-        if (i->is_note())
+        if (! i->is_note())
             continue;
 
         if (i->get_note() <= note_h && i->get_note() >= note_l)
@@ -696,8 +703,7 @@ sequence::select_event_handle
     {
         if
         (
-            i->get_status() == status &&
-            i->get_timestamp() >= tick_s &&
+            i->get_status() == status && i->get_timestamp() >= tick_s &&
             i->get_timestamp() <= tick_f
         )
         {
@@ -713,12 +719,11 @@ sequence::select_event_handle
                     break;
                 }
             }
-            if  (status != EVENT_CONTROL_CHANGE)            // use a function!
+            if (status != EVENT_CONTROL_CHANGE)             // use a function!
             {
-                if(status == EVENT_NOTE_ON || status == EVENT_NOTE_OFF
-                   || status == EVENT_AFTERTOUCH || status == EVENT_PITCH_WHEEL )
+                if (is_note_msg(status) || status == EVENT_PITCH_WHEEL)
                 {
-                    if(d1 <= (dats + 2) && d1 >= (dats - 2) ) // is it in range
+                    if(d1 <= (dats+2) && d1 >= (dats-2))    // is it in range
                     {
                         if (have_selection)                 // note on only
                         {
@@ -790,7 +795,6 @@ sequence::select_event_handle
 
     /*
      * Is it a note on that is unselected but in range? Then use it...
-     *
      * have_selection will be set to false if we found a selected one in
      * range.
      */
@@ -1309,6 +1313,9 @@ sequence::get_num_selected_events (midibyte status, midibyte cc) const
 /**
  *  This function selects events in range of tick start, note high, tick end,
  *  and note low.  Returns the number selected.
+ *
+ *  Compare this function to the convenience function select_all_notes(),
+ *  which doesn't use range information.
  *
  * \threadsafe
  *
@@ -1903,17 +1910,8 @@ sequence::randomize_selected
         if (i->is_selected() && i->get_status() == status)
         {
             i->get_data(data, data+1);
-
-//          if ( status == EVENT_NOTE_ON ||
-//                  status == EVENT_NOTE_OFF ||
-//                  status == EVENT_AFTERTOUCH ||
-//                  status == EVENT_CONTROL_CHANGE ||
-//                  status == EVENT_PITCH_WHEEL )
-
             if (event::is_two_byte_msg(status))
                 datidx = 1;
-
-//          if ( status == EVENT_PROGRAM_CHANGE || status == EVENT_CHANNEL_PRESSURE )
 
             if (event::is_one_byte_message(status))
                 datidx = 0;
@@ -1926,8 +1924,8 @@ sequence::randomize_selected
                 plus_minus;
 
             datitem += random;
-            if (datitem > 127)
-                datitem = 127;
+            if (datitem > (SEQ64_MIDI_COUNT_MAX - 1))
+                datitem = (SEQ64_MIDI_COUNT_MAX - 1);
             else if (datitem < 0)
                 datitem = 0;
 
@@ -1949,25 +1947,15 @@ sequence::adjust_dathandle (unsigned char status, int data)
         if (i->is_selected() && i->get_status() == status)
         {
             i->get_data( ata, data+1);
-
-//          if ( status == EVENT_NOTE_ON ||
-//                  status == EVENT_NOTE_OFF ||
-//                  status == EVENT_AFTERTOUCH ||
-//                  status == EVENT_CONTROL_CHANGE ||
-//                  status == EVENT_PITCH_WHEEL )
-
             if (event::is_two_byte_msg(status))
                 datidx = 1;
-
-//          if ( status == EVENT_PROGRAM_CHANGE ||
-//                  status == EVENT_CHANNEL_PRESSURE )
 
             if (event::is_one_byte_message(status))
                 datidx = 0;
 
             datitem = data;
-            if (datitem > 127)
-                datitem = 127;
+            if (datitem > (SEQ64_MIDI_COUNT_MAX - 1))
+                datitem = (SEQ64_MIDI_COUNT_MAX - 1);
             else if (datitem < 0)
                 datitem = 0;
 
@@ -2360,7 +2348,7 @@ sequence::change_event_data_range
             if (newdata < 0)
                 newdata = 0;
 
-            if (newdata >= SEQ64_MIDI_COUNT_MAX)        /* 127              */
+            if (newdata >= SEQ64_MIDI_COUNT_MAX)        /* 128              */
                 newdata = SEQ64_MIDI_COUNT_MAX - 1;
 
             /*
@@ -2418,7 +2406,7 @@ sequence::change_event_data_lfo
 
         /* in selection? */
 
-        if (have_selection && (!i->is_selected()))
+        if (have_selection && ! i->is_selected())
             set = false;
 
         if (set)
@@ -2427,39 +2415,35 @@ sequence::change_event_data_lfo
                 set_hold_undo(true);
 
             int tick = i->get_timestamp();
-            int newdata = value + lfownd::wave_func
-            (
-                (
-                    speed * (double)tick / (double) m_length *
-                    (double) m_time_beat_width + phase
-                ), wave
-            ) * range;
+            int angle = speed * double(tick) / double(m_length) *
+                    double(m_time_beat_width) + phase;
 
+            int newdata = value + wave_func(angle, wave) * range;
             if ( newdata < 0 )
                 newdata = 0;
 
-            if (newdata > 127)
-                newdata = 127;
+            if (newdata > (SEQ64_MIDI_COUNT_MAX - 1))
+                newdata = (SEQ64_MIDI_COUNT_MAX - 1);
 
-            if ( status == EVENT_NOTE_ON )
+            if (status == EVENT_NOTE_ON)
                 d1 = newdata;
 
-            if ( status == EVENT_NOTE_OFF )
+            if (status == EVENT_NOTE_OFF)
                 d1 = newdata;
 
-            if ( status == EVENT_AFTERTOUCH )
+            if (status == EVENT_AFTERTOUCH)
                 d1 = newdata;
 
-            if ( status == EVENT_CONTROL_CHANGE )
+            if (status == EVENT_CONTROL_CHANGE)
                 d1 = newdata;
 
-            if ( status == EVENT_PROGRAM_CHANGE )
-                d0 = newdata; /* d0 == new patch */
+            if (status == EVENT_PROGRAM_CHANGE)
+                d0 = newdata;                           /* d0 == new patch  */
 
-            if ( status == EVENT_CHANNEL_PRESSURE )
-                d0 = newdata; /* d0 == pressure */
+            if (status == EVENT_CHANNEL_PRESSURE)
+                d0 = newdata;                           /* d0 == pressure   */
 
-            if ( status == EVENT_PITCH_WHEEL )
+            if (status == EVENT_PITCH_WHEEL)
                 d1 = newdata;
 
             i->set_data(d0, d1);
@@ -2783,7 +2767,7 @@ sequence::stream_event (event & ev)
         ev.mod_timestamp(m_length);             /* adjust the tick          */
         if (m_recording)
         {
-            if (rc().is_pattern_playing())      /* m_parent->is_running()   */
+            if (m_parent->is_pattern_playing()) /* m_parent->is_running()   */
             {
                 if (m_rec_vol > 0 && ev.is_note_on())
                     ev.set_note_velocity(m_rec_vol);
@@ -2820,7 +2804,7 @@ sequence::stream_event (event & ev)
             put_event_on_bus(ev);                       /* more locking     */
 
         link_new();                                     /* more locking     */
-        if (m_quantized_rec && rc().is_pattern_playing())
+        if (m_quantized_rec && m_parent->is_pattern_playing())
         {
             if (ev.is_note_off())
             {

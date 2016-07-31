@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-30
- * \updates       2016-07-30
+ * \updates       2016-07-31
  * \license       GNU GPLv2 or above
  *
  *  The mastermidibus module is the Linux version of the mastermidibus module.
@@ -39,6 +39,10 @@
 #include "midibus_common.hpp"
 #include "mutex.hpp"
 #include "user_midi_bus.hpp"
+
+#ifdef USE_STAZED_MIDIBUS_SUPPORT
+#include <vector>
+#endif
 
 #if SEQ64_HAVE_LIBASOUND                // covers this whole module
 
@@ -66,6 +70,12 @@ private:
      */
 
     snd_seq_t * m_alsa_seq;
+
+    /**
+     *  The maximum number of busses supported.  Set to c_max_busses for now.
+     */
+
+    int m_max_busses;
 
     /**
      *  The number of output busses.

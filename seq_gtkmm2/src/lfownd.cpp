@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq42 team; modifications by Chris Ahlstrom
  * \date          2016-07-30
- * \updates       2016-07-30
+ * \updates       2016-07-31
  * \license       GNU GPLv2 or above
  *
  *  Created on: 22 mar 2013
@@ -35,23 +35,15 @@
  */
 
 #include <string>
-#include <math.h>
 #include <sigc++/slot.h>
 
 #include <gtkmm/box.h>
 #include <gtkmm/scale.h>
-// #include <gtkmm/menu.h>
 
 #include "lfownd.hpp"
 #include "seqdata.hpp"
 #include "seqedit.hpp"
 #include "sequence.hpp"
-
-#ifndef PI
-#define PI     3.14159265359
-#endif
-
-// using namespace Gtk::Menu_Helpers;      /* MenuElem, etc.                */
 
 namespace seq64
 {
@@ -117,38 +109,6 @@ lfownd::lfownd (perform & p, sequence & seq, seqdata & sdata)
     m_hbox->pack_start(*m_scale_speed);
     m_hbox->pack_start(*m_scale_phase);
     m_hbox->pack_start(*m_scale_wave);
-}
-
-/**
- *
- */
-
-double
-lfownd::wave_func (double angle, int wave_type)
-{
-    switch (wave_type)
-    {
-    case 1:
-        return sin(angle * PI * 2.0);
-
-    case 2:
-        return (angle - int(angle)) * 2.0 - 1.0;
-
-    case 3:
-        return (angle - int(angle)) * -2.0 + 1.0;
-
-    case 4:
-    {
-        double tmp = (angle * 2.0 - int(angle * 2.0));
-        if ((int(angle * 2.0)) % 2 == 1)
-            tmp = 1.0 - tmp;
-
-        tmp = tmp * 2.0 - 1.0;
-        return tmp;
-    }
-    default:
-        return 0.0;
-    }
 }
 
 lfownd::~lfownd ()

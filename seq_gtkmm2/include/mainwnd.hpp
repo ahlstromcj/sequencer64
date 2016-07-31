@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-06-26
+ * \updates       2016-07-31
  * \license       GNU GPLv2 or above
  *
  *  The main window is known as the "Patterns window" or "Patterns
@@ -95,6 +95,9 @@ private:
 
     Gtk::MenuBar * m_menubar;           /**< The whole menu bar.        */
     Gtk::Menu * m_menu_file;            /**< The File menu entry.       */
+#ifdef USE_STAZED_EDIT_MENU
+    Gtk::Menu * m_menu_edit;            /**< The (new) Edit menu entry. */
+#endif
     Gtk::Menu * m_menu_view;            /**< The View menu entry.       */
     Gtk::Menu * m_menu_help;            /**< The Help menu entry.       */
 
@@ -182,6 +185,15 @@ private:
 
     Gtk::Button * m_button_perfedit;
 
+#ifdef USE_STAZED_SONG_MODE_BUTTON
+    ToggleButton * m_button_mode;
+#endif
+
+#ifdef USE_STAZED_MENU_MODE_BUTTON
+    ToggleButton * m_button_menu;
+#endif
+
+
     /**
      *  The spin/adjustment controls for the BPM (beats-per-minute) value.
      */
@@ -232,6 +244,13 @@ private:
     sigc::connection m_timeout_connect;
 
     /**
+     *  Indicates if the menu bar is to be greyed out or not.  This is a
+     *  "stazed" feature that might be generally useful.
+     */
+
+    bool m_menu_mode;
+
+    /**
      *  Indicates that this object is in a mode where the usual mute/unmute
      *  keystroke will instead bring up the pattern slot for editing.
      *  Currently, the hard-wired key for this function is the equals key.
@@ -251,7 +270,7 @@ public:
 
     mainwnd
     (
-        perform & a_p,
+        perform & p,
         bool allowperf2 = true,
         int ppqn = SEQ64_USE_DEFAULT_PPQN
     );
@@ -285,9 +304,9 @@ private:
 
     static void handle_signal (int sig);
 
-    void file_import_dialog ();
-    void options_dialog ();
-    void about_dialog ();
+#ifdef USE_STAZED_EDIT_MENU
+    void popup_menu (Menu * menu);
+#endif
 
     void adj_callback_ss ();            // make 'em void at some point
     void adj_callback_bpm ();
@@ -327,6 +346,53 @@ private:
     void apply_song_transpose ();
 #endif
 
+#ifdef USE_STAZED_SONG_MODE_BUTTON
+
+    /**
+     *  Sets the song mode, which is actually the JACK start mode.  If true, we
+     *  are in playback/song mode.  If false, we are in live mode.
+     */
+
+    void set_song_mode ()
+    {
+        rc().jack_start_mode(m_button_mode->get_active());
+    }
+
+    /**
+     *  Toggles the song mode.  Note that calling this function will trigger the
+     *  button signal callback.  It only operates if the patterns are not
+     *  playing.
+     */
+
+    void toggle_song_mode()
+    {
+        if (! perf().is_pattern_playing())
+        {
+            m_button_mode->set_active(! m_button_mode->get_active());
+        }
+    }
+
+#endif
+
+#ifdef USE_STAZED_MENU_MODE_BUTTON
+
+    void set_menu_mode ()
+    {
+        m_menu_mode = m_button_menu->get_active();
+    }
+
+    /**
+     *  Toggles the menu mode.  Note that calling this function will trigger the
+     *  button signal callback.
+     */
+
+    void toggle_menu_mode ()
+    {
+        m_button_menu->set_active(! m_button_menu->get_active());
+    }
+
+#endif
+
     void update_window_title ();
     void toLower (std::string &);       // isn't this part of std::string?
 
@@ -359,21 +425,37 @@ private:
         save_file();
     }
 
-    void file_save_as ();
+    /**
+     *  Sets the song-mute mode.
+     */
+
+    void set_song_mute (perform::mute_op_t op)
+    {
+        perf().set_song_mute(op);       // and modifies
+    }
+
+private:
+
+    void file_import_dialog ();
+    void options_dialog ();
+    void about_dialog ();
+    int query_save_changes ();
+    void new_open_error_dialog ();
+
+    void file_save_as (bool do_export = false);
     void file_exit ();
     void new_file ();
     bool save_file ();
     void choose_file ();
-    int query_save_changes ();
     bool is_save ();
     bool install_signal_handlers ();
     bool signal_action (Glib::IOCondition condition);
 
 private:
 
-    bool on_delete_event (GdkEventAny * a_e);
-    bool on_key_press_event (GdkEventKey * a_ev);
-    bool on_key_release_event (GdkEventKey * a_ev);
+    bool on_delete_event (GdkEventAny * ev);
+    bool on_key_press_event (GdkEventKey * ev);
+    bool on_key_release_event (GdkEventKey * ev);
 
 private:
 

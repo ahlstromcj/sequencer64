@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-30
- * \updates       2016-07-30
+ * \updates       2016-07-31
  * \license       GNU GPLv2 or above
  *
  *  The functions add_list_var() and add_long_list() have been replaced by
@@ -1091,14 +1091,21 @@ public:
         midibyte status, midibyte cc, bool inverse = false
     );
 
-    /*
-     *  New convenience function.
+    /**
+     *  New convenience function.  What about Aftertouch events?  I think we
+     *  need to select them as well in seqedit, so let's add that selection
+     *  here as well.
+     *
+     * \param inverse
+     *      If set to true (the default is false), then this causes the
+     *      selection to be inverted.
      */
 
     void select_all_notes (bool inverse = false)
     {
         (void) select_events(EVENT_NOTE_ON, 0, inverse);
         (void) select_events(EVENT_NOTE_OFF, 0, inverse);
+        (void) select_events(EVENT_AFTERTOUCH, 0, inverse);
     }
 
     int get_num_selected_notes () const;

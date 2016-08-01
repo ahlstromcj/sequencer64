@@ -1317,6 +1317,23 @@ public:
 
     /**
      *  Retrieves the actual sequence, based on the pattern/sequence number.
+     *  This is the const version.
+     *
+     * \param seq
+     *      The prospective sequence number.
+     *
+     * \return
+     *      Returns the value of m_seqs[seq] if seq is valid.  Otherwise, a
+     *      null pointer is returned.
+     */
+
+    const sequence * get_sequence (int seq) const
+    {
+        return is_mseq_valid(seq) ? m_seqs[seq] : nullptr ;
+    }
+
+    /**
+     *  Retrieves the actual sequence, based on the pattern/sequence number.
      *
      * \param seq
      *      The prospective sequence number.
@@ -1331,6 +1348,7 @@ public:
         return is_mseq_valid(seq) ? m_seqs[seq] : nullptr ;
     }
 
+    bool is_exportable (int seq) const;
     void reset_sequences (bool pause = false);
 
     /**

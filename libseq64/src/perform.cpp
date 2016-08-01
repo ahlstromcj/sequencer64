@@ -1191,6 +1191,29 @@ perform::is_seq_valid (int seq) const
 }
 
 /**
+ *  Indicates that the desired sequence is active, unmuted, and has
+ *  a non-zero trigger count.
+ *
+ * \param seq
+ *      The index of the desired sequence.
+ *
+ * \return
+ *      Returns true if the sequence has the three properties noted above.
+ */
+
+bool
+perform::is_exportable (int seq) const
+{
+    bool ok = is_active(seq);
+    if (ok)
+    {
+        const sequence * s = get_sequence(seq);
+        ok = ! s->get_song_mute() && s->get_trigger_count() > 0;
+    }
+    return ok;
+}
+
+/**
  *  Validates the sequence number, which is important since they're currently
  *  used as array indices.  It also evaluates the m_seq[seq] pointer value.
  *

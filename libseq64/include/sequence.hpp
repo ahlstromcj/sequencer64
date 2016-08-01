@@ -201,7 +201,9 @@ private:
     perform * m_parent;
 
     /**
-     *  This list holds the current pattern/sequence events.
+     *  This list holds the current pattern/sequence events.  It used to be
+     *  called m_list_events, but a map implementation is now available, and
+     *  is the default.
      */
 
     event_list m_events;
@@ -594,11 +596,30 @@ public:
 
     /**
      * \getter m_triggers
+     *      This is the const version.
+     */
+
+    const triggers::List & triggerlist () const
+    {
+        return m_triggers.triggerlist();
+    }
+
+    /**
+     * \getter m_triggers
      */
 
     triggers::List & triggerlist ()
     {
         return m_triggers.triggerlist();
+    }
+
+    /**
+     *  Gets the trigger count, useful for exporting a sequence.
+     */
+
+    int get_trigger_count () const
+    {
+        return int(m_triggers.triggerlist().size());
     }
 
 #ifdef USE_STAZED_TRIGGER_EXTENSIONS
@@ -1025,6 +1046,7 @@ public:
     void del_trigger (midipulse tick);
     bool get_trigger_state (midipulse tick);
     bool select_trigger (midipulse tick);
+    triggers::List get_triggers () const;
     bool unselect_triggers ();
     bool intersect_triggers
     (

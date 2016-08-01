@@ -1445,6 +1445,17 @@ midifile::varinum_size (long len) const
  *          -# Track End. 3 bytes.
  */
 
+bool
+midifile::write_header (int numtracks)
+{
+    write_long(0x4D546864);                 /* MIDI Format 1 header MThd    */
+    write_long(6);                          /* Length of the header         */
+    write_short(1);                         /* MIDI Format 1                */
+    write_short(numtracks);                 /* number of tracks             */
+    write_short(m_ppqn);                    /* parts per quarter note       */
+    return numtracks > 0;
+}
+
 /**
  *  Writes a "proprietary" (SeqSpec) Seq24 footer header in either the new
  *  MIDI-compliant format, or the legacy Seq24 format.  This function does not
@@ -1574,49 +1585,38 @@ midifile::write (perform & p)
         if (p.is_active(i))
             ++numtracks;
     }
-    write_long(0x4D546864);                 /* MIDI Format 1 header MThd    */
-    write_long(6);                          /* Length of the header         */
-    write_short(1);                         /* MIDI Format 1                */
-    write_short(numtracks);                 /* number of tracks             */
-    write_short(m_ppqn);                    /* parts per quarter note       */
+    if (! write_header(numtracks))
+        return false;
 
     /*
      * Write out the active tracks.  The value of c_max_sequence is 1024.
+     * Note that we don't need to check the sequence pointer.
      */
 
     for (int curtrack = 0; curtrack < c_max_sequence; ++curtrack)
     {
         if (p.is_active(curtrack))
         {
-            sequence * s = p.get_sequence(curtrack);
-            if (not_nullptr(s))
-            {
-                sequence & seq = *s;
+            sequence & seq = *p.get_sequence(curtrack);
 
 #if defined SEQ64_USE_MIDI_VECTOR
-                midi_vector lst(seq);
+            midi_vector lst(seq);
 #else
-                midi_list lst(seq);
+            midi_list lst(seq);
 #endif
-                seq.fill_container(lst, curtrack);
-                write_long(0x4D54726B);     /* magic number 'MTrk'          */
-                write_long(lst.size());
 
-                /**
-                 * \note
-                 *      Seq24 reverses the order of some events, due to
-                 *      popping from its container.  Not an issue here.
-                 */
+            seq.fill_container(lst, curtrack);
+            write_long(0x4D54726B);     /* magic number 'MTrk'          */
+            write_long(lst.size());
 
-                while (! lst.done())        /* write the track data         */
-                    write_byte(lst.get());
-            }
-            else
-            {
-                m_error_message = "Error in MIDI buffer, failed to get sequence";
-                result = false;
-                break;
-            }
+            /**
+             * \note
+             *      Seq24 reverses the order of some events, due to
+             *      popping from its container.  Not an issue here.
+             */
+
+            while (! lst.done())        /* write the track data         */
+                write_byte(lst.get());
         }
     }
     if (result)
@@ -1650,9 +1650,199 @@ midifile::write (perform & p)
     return result;
 }
 
+#ifdef USE_STAZED_WRITE_SONG
+
 /**
- *  Writes out the proprietary/SeqSpec section, using the new format if the
- *  legacy format is not in force.
+ *  Write the whole MIDI data and Seq24 information out to a MIDI file, writing
+ *  out patterns based on their song/performance information (triggers) and
+ *  ignoring any patterns that are muted.
+ *
+ *  We get the number of active tracks, and we don't count tracks with no
+ *  triggers, or tracks that are muted.
+ *
+ * Stazed/Seq32:
+ *
+ *      The alternate version of this function, write_song(), was not included
+ *      in Sequencer64 because it Sequencer64 writes standard MIDI files (with
+ *      SeqSpec information that a decent sequencer should ignore).  But we now
+ *      think this is a good feature for export, and will probably eventually
+ *      make the Export command do this.  The write_song() function doesn't
+ *      count tracks that are muted or that have no triggers.  For sequences
+ *      that have triggers, it adds the events in order, to create a long
+ *      sequence.
+ *
+ *      The sequence trigger is not part of the standard MIDI format and is
+ *      proprietary to seq32/sequencer64.  It is added here because the trigger
+ *      combining has an alternative benefit for editing.  The user can split,
+ *      slice and rearrange triggers to form a new sequence. Then mute all
+ *      other tracks and export to a temporary midi file. Now they can import
+ *      the combined triggers/sequence as a new item. This makes editing of
+ *      long improvised sequences into smaller or modified sequences as well as
+ *      combining several sequence parts painless.  Also, if the user has a
+ *      variety of common items such as drum beats, control codes, etc that can
+ *      be used in other projects, this method is very convenient. The common
+ *      items can be kept in one file and exported all, individually, or in
+ *      part by creating triggers and muting.
+ *
+ * \param p
+ *      Provides the object that will contain and manage the entire
+ *      performance.
+ *
+ * \return
+ *      Returns true if the write operations succeeded.
+ */
+
+bool
+midifile::write_song (perform & p)
+{
+    bool result = true;
+    int numtracks = 0;
+    m_error_message.clear();
+    printf("[Exporting MIDI file, %d ppqn]\n", m_ppqn);
+    for (int i = 0; i < c_max_sequence; ++i)    /* count exportable tracks  */
+    {
+        if (p.is_exportable(i))
+            ++numtracks;
+    }
+    if (! write_header(numtracks))
+        return false;
+
+    numtracks = 0;                              /* reset for seq->fill_list */
+    for (int curtrack = 0; curtrack < c_max_sequence; ++curtrack)
+    {
+        /*
+         * This is a mistake.  We need to use the same criterion we used to
+         * count the tracks in the first place.
+         *
+         * if (p.is_active(curtrack) && !p.get_sequence(curtrack)->get_song_mute())
+         *
+         * Also, since we already know that an exportable track is valid, no
+         * need to check for the null pointer.
+         */
+
+        if (p.is_exportable(curtrack))
+        {
+            sequence * s = p.get_sequence(curtrack);
+
+#if defined SEQ64_USE_MIDI_VECTOR
+            midi_vector lst(seq);
+#else
+            midi_list lst(seq);
+#endif
+
+            triggers::List trigs = s->get_triggers();   /* copy the triggers */
+            lst.fill_seq_number(numtracks);
+            lst.fill_seq_number(seq.name());            /* hmmmmmmmm */
+
+            /*
+             * Now for each trigger get sequence and add events to list char
+             * below - fill_list one by one in order, essentially creating a
+             * single long sequence.  Then set a single trigger for the big
+             * sequence - start at zero, end at last trigger end + snap.
+             */
+
+            midipulse total_seq_length = 0;
+            midipulse prev_timestamp = 0;
+            for (int i = 0; i < int(trigs.size()); ++i)
+            {
+                a_trig = &trig_vect[i]; // get the trigger
+
+                // put events on list
+
+                if (a_trig != NULL)
+                    prev_timestamp = seq->song_fill_list_seq_event
+                        (&l, a_trig, prev_timestamp);
+            }
+
+            // INSTEAD:
+            // {
+
+            for
+            (
+                triggers::List::const_iterator ti = trigs.begin();
+                ti != trigs.end(); ++ti
+            )
+            {
+                const trigger & t = *ti;
+            }
+
+            WE STILL need to write midi_container versions (or free functions
+            using a midi_container) of 
+
+                sequence::song_fill_list_seq_event()
+                sequence::song_fill_list_seq_trigger()
+
+            In the meantime, test the new version of midifile::write()
+
+            // }
+
+            total_seq_length = trig_vect[vect_size-1].m_tick_end;
+
+            /* adjust sequence length to snap nearest measure past end */
+            long measure_ticks = (c_ppqn * 4) * seq->get_bp_measure() / seq->get_bw();
+            long remainder = total_seq_length % measure_ticks;
+            if (remainder != measure_ticks -1)
+                total_seq_length += (measure_ticks - remainder - 1);
+
+            if (a_trig != NULL)
+                seq->song_fill_list_seq_trigger(&l,a_trig,total_seq_length,prev_timestamp); // the big sequence trigger
+
+            /* magic number 'MTrk' */
+            write_long (0x4D54726B);
+
+            int size_tempo_time_sig = 0;
+            if(numtracks == 0)
+                size_tempo_time_sig = 15; // size, (s/b 19(total) - 4(trk end) = 15 bytes)
+
+            write_long (l.size () + size_tempo_time_sig);
+
+            /*
+                Add the bpm and timesignature stuff here to the first track (0).
+                So we don't have an extra one...
+            */
+
+            if(numtracks == 0)
+            {
+                write_time_sig(a_perf);
+                write_tempo(a_perf);
+            }
+
+            while (l.size () > 0)
+            {
+                write_byte (l.back ());
+                l.pop_back ();
+            }
+            ++numtracks;
+        }
+    }
+
+    /* open binary file */
+    ofstream file (m_name.c_str (), ios::out | ios::binary | ios::trunc);
+
+    if (!file.is_open ())
+        return false;
+
+    /* enable bufferization */
+    char file_buffer[1024];
+    file.rdbuf()->pubsetbuf(file_buffer, sizeof file_buffer);
+
+    for (list < unsigned char >::iterator i = m_l.begin ();
+            i != m_l.end (); i++)
+    {
+        char c = *i;
+        file.write(&c, 1);
+    }
+
+    m_l.clear ();
+
+    return true;
+}
+
+#endif  // USE_STAZED_WRITE_SONG
+
+/**
+ *  Writes out the final proprietary/SeqSpec section, using the new format if
+ *  the legacy format is not in force.
  *
  *  The first thing to do, for the new format only, is calculate the length
  *  of this big section of data.  This was quite tricky; we tweaked and

@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-10-10
- * \updates       2016-07-16
+ * \updates       2016-08-01
  * \license       GNU GPLv2 or above
  *
  */
@@ -99,8 +99,8 @@
 
 namespace seq64
 {
-
-class sequence;
+    class event;
+    class sequence;
 
 /**
  *  Provides tags used by the midifile class to control the reading and
@@ -182,6 +182,7 @@ const midilong c_transpose =    0x24240014; /**< Track transpose value.     */
 
 class midi_container
 {
+    friend class midifile;
 
 private:
 
@@ -249,6 +250,12 @@ public:
 
     virtual midibyte get () = 0;
 
+    /**
+     *  Provides a way to clear the container.
+     */
+
+    virtual void clear () = 0;
+
 protected:
 
     /**
@@ -286,6 +293,11 @@ private:
 
     void add_variable (midipulse v);
     void add_long (midipulse x);
+    void add_short (midishort x);
+    void add_event (const event & e, midipulse deltatime);
+    void fill_seq_number (int seq);
+    void fill_seq_name (const std::string & name);
+    void fill_meta_track_end (midipulse deltatime);
 
 };
 

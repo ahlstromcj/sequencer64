@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-10-30
- * \updates       2016-04-09
+ * \updates       2016-07-31
  * \license       GNU GPLv2 or above
  *
  *  By segregating trigger support into its own module, the sequence class is
@@ -367,12 +367,23 @@ public:
 
     /**
      * \getter m_triggers
+     *      This is the const version
+     */
+
+    const List & triggerlist () const
+    {
+        return m_triggers;
+    }
+
+    /**
+     * \getter m_triggers
      */
 
     List & triggerlist ()
     {
         return m_triggers;
     }
+
     void push_undo ();
     void pop_undo ();
     void print (const std::string & seqname) const;

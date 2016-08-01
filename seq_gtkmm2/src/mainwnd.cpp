@@ -102,7 +102,7 @@
 #include "pixmaps/learn2.xpm"
 #include "pixmaps/perfedit.xpm"
 #include "pixmaps/seq64.xpm"
-#include "pixmaps/sequencer64_square.xpm"
+#include "pixmaps/sequencer64_square_small.xpm" // sequencer64_square.xpm
 #include "pixmaps/sequencer64_legacy.xpm"
 
 using namespace Gtk::Menu_Helpers;      /* MenuElem, etc.                */
@@ -387,7 +387,7 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
 
     Gtk::HBox * tophbox = manage(new Gtk::HBox(false, 0));
     const char ** bitmap = rc().legacy_format() ?
-        sequencer64_legacy_xpm : sequencer64_square_xpm ;
+        sequencer64_legacy_xpm : sequencer64_square_small_xpm ;
 
     tophbox->pack_start(*manage(new PIXBUF_IMAGE(bitmap)), false, false);
 
@@ -594,6 +594,11 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
     contentvbox->pack_start(*tophbox, Gtk::PACK_SHRINK);
     contentvbox->pack_start(*m_main_wid, Gtk::PACK_SHRINK);
     contentvbox->pack_start(*bottomhbox, Gtk::PACK_SHRINK);
+
+    /* TENTATIVE from stazed */
+
+    m_main_wid->set_can_focus();
+    m_main_wid->grab_focus();
 
     /*
      * Main container for menu and window content.

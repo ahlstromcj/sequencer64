@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-07-30
+ * \updates       2016-08-01
  * \license       GNU GPLv2 or above
  *
  *  The functionality of this class also includes handling some of the
@@ -200,7 +200,7 @@ sequence::set_hold_undo (bool hold)
     Events::iterator i;                 //  std::list<event>::iterator i;
     if (hold)
     {
-        for (i = m_list_event.begin(); i != m_list_event.end(); ++i)
+        for (i = m_events.begin(); i != m_events.end(); ++i)
             m_list_undo_hold.push_back(*i);
     }
     else
@@ -428,7 +428,7 @@ sequence::select_even_or_odd_notes (int note_len, bool even)
     unselect();
 
     automutex locker(m_mutex);
-    for (iterator i = m_list_event.begin(); i != m_list_event.end(); ++i)
+    for (iterator i = m_events.begin(); i != m_events.end(); ++i)
     {
         if (i->is_note_on() )
         {
@@ -487,7 +487,7 @@ sequence::select_note_events
     long tick_f = 0;
     automutex locker(m_mutex);
 
-    for (iterator i = m_list_event.begin(); i != m_list_event.end(); i++ )
+    for (iterator i = m_events.begin(); i != m_events.end(); i++ )
     {
         if (! i->is_note())
             continue;
@@ -659,7 +659,7 @@ sequence::select_linked (long tick_s, long tick_f, unsigned char status)
 {
     int result = 0;
     automutex locker(m_mutex);
-    for (iterator i = m_list_event.begin(); i != m_list_event.end(); ++i)
+    for (iterator i = m_events.begin(); i != m_events.end(); ++i)
     {
         if
         (
@@ -699,7 +699,7 @@ sequence::select_event_handle
         if (get_num_selected_events(status, cc))
             have_selection = true;
     }
-    for (iterator i = m_list_event.begin(); i != m_list_event.end(); ++i)
+    for (iterator i = m_events.begin(); i != m_events.end(); ++i)
     {
         if
         (
@@ -740,8 +740,8 @@ sequence::select_event_handle
 
                                     for
                                     (
-                                        iterator i = m_list_event.begin();
-                                        i != m_list_event.end(); ++i)
+                                        iterator i = m_events.begin();
+                                        i != m_events.end(); ++i)
                                     {
                                         if (i->is_marked())
                                         {
@@ -801,7 +801,7 @@ sequence::select_event_handle
 
     if (result && have_selection)
     {
-        for (iterator i = m_list_event.begin(); i != m_list_event.end(); ++i)
+        for (iterator i = m_events.begin(); i != m_events.end(); ++i)
         {
             if (i->is_marked())
             {
@@ -1905,7 +1905,7 @@ sequence::randomize_selected
     unsigned char datitem;
     int datidx = 0;
     automutex locker(m_mutex);
-    for (iterator i = m_list_event.begin(); i != m_list_event.end(); ++i)
+    for (iterator i = m_events.begin(); i != m_events.end(); ++i)
     {
         if (i->is_selected() && i->get_status() == status)
         {
@@ -1942,7 +1942,7 @@ sequence::adjust_dathandle (unsigned char status, int data)
     unsigned char datitem;;
     int datidx = 0;
     automutex locker(m_mutex);
-    for (iterator i = m_list_event.begin(); i != m_list_event.end(); ++i)
+    for (iterator i = m_events.begin(); i != m_events.end(); ++i)
     {
         if (i->is_selected() && i->get_status() == status)
         {
@@ -2384,7 +2384,7 @@ sequence::change_event_data_lfo
     if( get_num_selected_events(status, cc) )
         have_selection = true;
 
-    for (iterator i = m_list_event.begin(); i != m_list_event.end(); ++i)
+    for (iterator i = m_events.begin(); i != m_events.end(); ++i)
     {
         bool set = false;
         unsigned char d0, d1;
@@ -3448,6 +3448,21 @@ sequence::get_trigger_state (midipulse tick)
 {
     automutex locker(m_mutex);
     return m_triggers.get_state(tick);
+}
+
+/**
+ *  Returns a copy of the triggers for this sequence.  This function is
+ *  basically a threadsafe version of sequence::triggerlist().
+ *
+ * \return
+ *      Returns of copy of m_triggers.triggerlist().
+ */
+
+triggers::List
+sequence::get_triggers () const
+{
+    automutex locker(m_mutex);
+    return triggerlist();
 }
 
 /**

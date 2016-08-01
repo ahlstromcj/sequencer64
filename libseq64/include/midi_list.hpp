@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-10-10
- * \updates       2015-11-12
+ * \updates       2016-07-31
  * \license       GNU GPLv2 or above
  *
  *  This implementation mirrors the original Seq24 handling of events that get
@@ -122,6 +122,15 @@ public:
         midibyte result = m_char_list.back();
         m_char_list.pop_back();
         return result;
+    }
+
+    /**
+     *  Provides a way to clear the container.
+     */
+
+    virtual void clear ()
+    {
+        m_char_list.clear();
     }
 
 };

@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-10-10
- * \updates       2016-06-26
+ * \updates       2016-08-01
  * \license       GNU GPLv2 or above
  *
  *  This class is important when writing the MIDI and sequencer data out to a
@@ -108,6 +108,333 @@ midi_container::add_long (midipulse x)
 }
 
 /**
+ *  Adds a short value (two bytes) to the container.
+ *
+ * \param x
+ *      Provides the timestamp (pulse value) to be added to the container.
+ */
+
+void
+midi_container::add_short (midishort x)
+{
+    put((x & 0x0000FF00) >> 8);
+    put((x & 0x000000FF));
+}
+
+/**
+ *  Adds an event to the container.  If the sequence's MIDI channel is
+ *  EVENT_NULL_CHANNEL == 0xFF, then it is the copy of an SMF 0 sequence that
+ *  the midi_splitter created.  We want to be able to save it along with the
+ *  other tracks, but won't be able to read it back if all the channels are
+ *  bad.  So we just use the channel from the event.
+ */
+
+void
+midi_container::add_event (const event & e, midipulse deltatime)
+{
+    midibyte d0 = e.data(0);                    /* encode status & data */
+    midibyte d1 = e.data(1);
+    add_variable(deltatime);                    /* encode delta_time    */
+
+    midibyte channel = m_sequence.get_midi_channel();
+    if (channel == EVENT_NULL_CHANNEL)
+        put(e.get_status() | e.get_channel());  /* channel from event   */
+    else
+        put(e.get_status() | channel);          /* the sequence channel */
+
+    switch (e.get_status() & EVENT_CLEAR_CHAN_MASK)         /* 0xF0     */
+    {
+    case EVENT_NOTE_OFF:                                    /* 0x80:    */
+    case EVENT_NOTE_ON:                                     /* 0x90:    */
+    case EVENT_AFTERTOUCH:                                  /* 0xA0:    */
+    case EVENT_CONTROL_CHANGE:                              /* 0xB0:    */
+    case EVENT_PITCH_WHEEL:                                 /* 0xE0:    */
+        put(d0);
+        put(d1);
+        break;
+
+    case EVENT_PROGRAM_CHANGE:                              /* 0xC0:    */
+    case EVENT_CHANNEL_PRESSURE:                            /* 0xD0:    */
+        put(d0);
+        break;
+
+    default:
+        break;
+    }
+}
+
+/**
+ *  Fills in the sequence number.  Writes 0xFF 0x00 0x02, and then the number.
+ *  This function is used in the new midifile::write_song() function, which
+ *  should be ready to go by the time you're reading this.
+ *
+ *  Compare this function to the beginning of midi_container::fill().
+ *
+ * \param seq
+ *      The sequence/track number to write.
+ */
+
+void
+midi_container::fill_seq_number (int seq)
+{
+    add_variable(0);                                /* sequence number  */
+    put(0xFF);
+    put(0x00);                                      /* 0 delta time     */
+    put(0x02);
+    add_short(seq);
+}
+
+/**
+ *  Fills in the sequence name.  Writes 0xFF 0x03, and then the track name.
+ *  This function is used in the new midifile::write_song() function, which
+ *  should be ready to go by the time you're reading this.
+ *
+ *  Compare this function to the beginning of midi_container::fill().
+ *
+ * \param seq
+ *      The sequence/track number to write.
+ */
+
+void
+midi_container::fill_seq_name (const std::string & name)
+{
+    add_variable(0);                                /* sequence number  */
+    put(0xFF);
+    put(0x03);
+
+    int len = name.length();
+    if (len > 0x7F)
+        len = 0x7f;
+
+    put(midibyte(len));
+    for (int i = 0; i < len; ++i)
+        put(midibyte(name[i]));
+}
+
+/*
+ * Last, but certainly not least, write the end-of-track meta-event.
+ */
+
+void
+midi_container::fill_meta_track_end (midipulse deltatime)
+{
+    add_variable(deltatime);
+    put(0xFF);
+    put(0x2F);
+    put(0x00);
+}
+
+#ifdef USE_STAZED_WRITE_SONG
+
+long
+midi_container::song_fill_seq_event
+(
+   const trigger & trig,
+   long prev_timestamp
+)
+{
+    long trigger_offset = trig.offset() % m_length;
+    long start_offset = trig.tick_start() % m_length;
+    long timestamp_adjust = trig.tick_start() - start_offset + trigger_offset;
+    int times_played = 1;
+    int note_is_used[c_midi_notes];
+    for (int i = 0; i < c_midi_notes; ++i)
+        note_is_used[i] = 0;                 /* initialize to off */
+
+    times_played += (trig.tick_end() - trig.tick_start())/ m_length;
+
+    // in this case the total offset is m_length too far
+
+    if ((trigger_offset - start_offset) > 0)
+        timestamp_adjust -= m_length;
+
+    for (int p = 0; p <= times_played; ++p)
+    {
+        long timestamp = 0, delta_time = 0;  /* events */
+        Events::iterator i;                 //  std::list<event>::iterator i;
+        for (i = m_events.begin(); i != m_events.end(); i++ )
+        {
+            event & e = *i;
+            timestamp = e.get_timestamp();
+            timestamp += timestamp_adjust;
+
+            /* if the event is after the trigger start */
+
+            if (timestamp >= trig.tick_start())
+            {
+                // need to save the event note if note_on, then eliminate the
+                // note_off if the note_on is NOT used
+
+                midibyte note = e.get_note();
+                if (e.is_note_on())
+                {
+                    if (timestamp > trig.tick_end())
+                        continue;                   // skip
+                    else
+                        ++note_is_used[note];       // count the note
+                }
+                if (e.is_note_off())
+                {
+                    if (note_is_used[note] <= 0)    // if no Note On then skip
+                    {
+                        continue;
+                    }
+                    else                            // we have a Note On
+                    {
+                        // if past the end of trigger then use trigger end
+
+                        if (timestamp >= trig.tick_end())
+                        {
+                            --note_is_used[note];           // turn off the note
+                            timestamp = trig.tick_end();
+                        }
+                        else                                // not past end, use it
+                            --note_is_used[note];
+                    }
+                }
+            }
+            else
+                continue;   // event is before the trigger start - skip
+
+            /* if the event is past the trigger end - for non notes - skip */
+            /* what about Aftertouch events? */
+
+            if (timestamp >= trig.tick_end())
+            {
+                if (! e.is_note_on() && ! e.is_note_off())
+                    continue;           // these were already taken care of...
+            }
+
+            delta_time = timestamp - prev_timestamp;
+            prev_timestamp = timestamp;
+            add_event(e, delta_time);
+        }
+        timestamp_adjust += m_length;
+    }
+    return prev_timestamp;
+}
+
+/* trigger for whole sequence */
+
+void
+midi_container::song_fill_seq_trigger
+(
+    list<char> *a_list,
+    trigger *a_trig,
+    long a_length,
+    long prev_timestamp
+)
+{
+    int num_triggers = 1;                       // only one
+    add_variable(0);
+    put(0xFF);
+    put(0x7F);
+    add_variable((num_triggers * 3 * 4) + 4);
+    add_long(c_triggers_new);
+    add_long(0 );                               // start tick
+    add_long(trig.tick_end());
+    add_long(0);                                // offset - done in event
+    fill_proprietary();
+
+    long delta_time = a_length - prev_timestamp;
+    meta_track_end( a_list, delta_time );
+}
+
+void
+midi_container::fill_proprietary ()
+{
+    add_variable(0);                                /* bus delta time   */
+    put(0xFF);
+    put(0x7F);
+    put(0x05);
+    add_long(c_midibus);
+    put(m_sequence.get_midi_bus());
+
+    add_variable(0);                                /* timesig delta t  */
+    put(0xFF);
+    put(0x7F);
+    put(0x06);
+    add_long(c_timesig);
+    put(m_sequence.get_beats_per_bar());
+    put(m_sequence.get_beat_width());
+
+    add_variable(0);                                /* channel delta t  */
+    put(0xFF);
+    put(0x7F);
+    put(0x05);
+    add_long(c_midich);
+    put(m_sequence.get_midi_channel());
+    if (! rc().legacy_format())
+    {
+        if (! usr().global_seq_feature())
+        {
+            /**
+             * New feature: save more sequence-specific values, if not legacy
+             * format and not saved globally.  We use a single byte for the
+             * key and scale, and a long for the background sequence.  We save
+             * these values only if they are different from the defaults; in
+             * most cases they will have been left alone by the user.  We save
+             * per-sequence values here only if the global-background-sequence
+             * feature is not in force.
+             */
+
+            if (m_sequence.musical_key() != SEQ64_KEY_OF_C)
+            {
+                add_variable(0);                        /* key selection dt */
+                put(0xFF);
+                put(0x7F);
+                put(0x05);                              /* long + midibyte  */
+                add_long(c_musickey);
+                put(m_sequence.musical_key());
+            }
+            if (m_sequence.musical_scale() != int(c_scale_off))
+            {
+                add_variable(0);                        /* scale selection  */
+                put(0xFF);
+                put(0x7F);
+                put(0x05);                              /* long + midibyte  */
+                add_long(c_musicscale);
+                put(m_sequence.musical_scale());
+            }
+            if (SEQ64_IS_VALID_SEQUENCE(m_sequence.background_sequence()))
+            {
+                add_variable(0);                        /* b'ground seq.    */
+                put(0xFF);
+                put(0x7F);
+                put(0x08);                              /* two long values  */
+                add_long(c_backsequence);
+                add_long(m_sequence.background_sequence()); /* put_long()?  */
+            }
+        }
+    }
+}
+
+#ifdef SEQ64_STAZED_TRANSPOSE
+
+        /**
+         *  For the new "transposable" flag (tagged by the value c_transpose)
+         *  we really only care about saving the value of "false", because
+         *  otherwise we can assume the value is true for the given sequence,
+         *  and save space by not saving it... generally only drum patterns
+         *  will not be transposable.
+         */
+
+        bool transpose = m_sequence.get_transposable();
+        if (! transpose)                                /* save only false  */
+        {
+            add_variable(0);                            /* transposition    */
+            put(0xFF);
+            put(0x7F);
+            put(0x05);                                  /* long + midibyte  */
+            add_long(c_transpose);
+            put(transpose);                             /* a boolean        */
+        }
+
+#endif
+
+#endif  // USE_STAZED_WRITE_SONG
+
+/**
  *  This function fills the given track (sequence) with MIDI data from the
  *  current sequence, preparatory to writing it to a file.  Note that some of
  *  the events might not come out in the same order they were stored in (we
@@ -117,7 +444,14 @@ midi_container::add_long (midipulse x)
  *  Now, for sequence 0, an alternate format for writing the sequencer number
  *  chunk is "FF 00 00".  But that format can only occur in the first track,
  *  and the rest of the tracks then don't need a sequence number, since it is
- *  assume to increment.  This application doesn't use with that shortcut.
+ *  assumed to increment.  This application doesn't use that shortcut.
+ *
+ * Stazed:
+ *
+ *      The "stazed" (seq32) code implements a function like this one
+ *      using a function sequence::fill_proprietary_list() that we
+ *      don't need for our implementation... it is part of our
+ *      midi_container::fill() function.
  *
  * Triggers:
  *
@@ -140,24 +474,8 @@ midi_container::add_long (midipulse x)
 void
 midi_container::fill (int tracknumber)
 {
-    add_variable(0);                                /* sequence number  */
-    put(0xFF);
-    put(0x00);                                      /* 0 delta time     */
-    put(0x02);
-    put((tracknumber & 0xFF00) >> 8);
-    put(tracknumber & 0x00FF);
-    add_variable(0);                                /* track name       */
-    put(0xFF);
-    put(0x03);
-
-    const std::string & trackname = m_sequence.name();
-    int len = trackname.length();
-    if (len > 0x7F)
-        len = 0x7f;
-
-    put(midibyte(len));
-    for (int i = 0; i < len; ++i)
-        put(midibyte(trackname[i]));
+    fill_seq_number(tracknumber);
+    fill_seq_name(m_sequence.name());
 
 #ifdef SEQ64_HANDLE_TIMESIG_AND_TEMPO           /* defined in sequence.hpp */
 
@@ -166,6 +484,8 @@ midi_container::fill (int tracknumber)
      * provide the Time Signature and Tempo meta events, in the 0th (first)
      * track (sequence).  These events must precede any "real" MIDI events.
      * They are not included if the legacy-format option is in force.
+     *
+     * THIS WILL ALSO NEED TO BE A SEPARATE FUNCTION.
      */
 
     if (tracknumber == 0 && ! rc().legacy_format())
@@ -210,46 +530,9 @@ midi_container::fill (int tracknumber)
             break;
         }
         prevtimestamp = timestamp;
-        add_variable(deltatime);                    /* encode delta_time    */
-
-        midibyte d0 = e.data(0);                    /* encode status & data */
-        midibyte d1 = e.data(1);
-
-        /*
-         * If the sequence's MIDI channel is EVENT_NULL_CHANNEL == 0xFF, then
-         * it is the copy of an SMF 0 sequence that the midi_splitter created.
-         * We want to be able to save it along with the other tracks, but
-         * won't be able to read it back if all the channels are bad.  So we
-         * just use the channel from the event.
-         */
-
-        midibyte channel = m_sequence.get_midi_channel();
-        if (channel == EVENT_NULL_CHANNEL)
-            put(e.get_status() | e.get_channel());  /* channel from event   */
-        else
-            put(e.get_status() | channel);          /* the sequence channel */
-
-        switch (e.get_status() & EVENT_CLEAR_CHAN_MASK)         /* 0xF0     */
-        {
-        case EVENT_NOTE_OFF:                                    /* 0x80:    */
-        case EVENT_NOTE_ON:                                     /* 0x90:    */
-        case EVENT_AFTERTOUCH:                                  /* 0xA0:    */
-        case EVENT_CONTROL_CHANGE:                              /* 0xB0:    */
-        case EVENT_PITCH_WHEEL:                                 /* 0xE0:    */
-            put(d0);
-            put(d1);
-            break;
-
-        case EVENT_PROGRAM_CHANGE:                              /* 0xC0:    */
-        case EVENT_CHANNEL_PRESSURE:                            /* 0xD0:    */
-            put(d0);
-            break;
-
-        default:
-            break;
-        }
+        add_event(e, deltatime);
     }
-    
+
     /*
      * Here, we add SeqSpec entries (specific to seq24) for triggers
      * (c_triggers_new), the MIDI buss (c_midibus), time signature
@@ -286,6 +569,11 @@ midi_container::fill (int tracknumber)
         counter++;
 #endif
     }
+
+    /*
+     * THIS CAN BE A NEW FUNCTION, fill_proprietary().
+     */
+
     add_variable(0);                                /* bus delta time   */
     put(0xFF);
     put(0x7F);
@@ -380,10 +668,7 @@ midi_container::fill (int tracknumber)
      */
 
     deltatime = m_sequence.get_length() - prevtimestamp; /* meta track end */
-    add_variable(deltatime);
-    put(0xFF);
-    put(0x2F);
-    put(0x00);
+    fill_meta_track_end(deltatime);
 }
 
 }           // namespace seq64

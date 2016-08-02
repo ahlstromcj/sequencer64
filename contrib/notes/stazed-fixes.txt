@@ -1,6 +1,6 @@
 Fixes and Other Ideas from Stan Preston (stazed)
 Chris Ahlstrom
-2016-06-06 to 2016-06-06
+2016-06-06 to 2016-08-02
 
 
 Date: Sat, 19 Mar 2016 13:55:24 -0500
@@ -599,3 +599,58 @@ Features from seq32
       -  Modify time (expand and compress)
       -  Randomize event values
 
+---------------------------------------------------------------
+
+ate: Sun, 31 Jul 2016 12:50:02 -0500
+From: Stan Preston <stazed10@gmail.com>
+To: Chris Ahlstrom <ahlstromcj@gmail.com>
+Subject: Re: Sequencer64 Version 0.9.15.2
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:45.0) Gecko/20100101
+
+Re: Trigger support.
+
+I believe there were only two things I did with triggers. First, you could
+split triggers with a middle mouse button click and seq24 would cut the
+trigger down the middle. I fixed the code to allow the split on the mouse
+pointer location, grid snapped. This was actually a simplification of code
+- just removed the calculation of trigger mid point and added the grid
+snap calc.
+
+The second issue was ctrl-c copy of selected triggers and ctrl-v paste of
+triggers. Original seq24 just pasted after the selected ctrl-c trigger,
+and repeated ctrl-v would continue paste after the previous paste. I added
+the ability to paste to any location on the sequence track line if open.
+This is done with a middle mouse click on the open track (same commit as
+above) . (if you middle mouse click on a trigger, you split it :)) The
+mouse click sets the location and ctrl-v will paste it via
+set_trigger_paste_tick() Then the paste tick is set to -1 (none) and the
+original method applies, i.e. subsequent ctrl-v will paste after the
+previous paste. Middle click on a new location and it will use the new          > location for the first paste. if you paste very close to, in front of an
+existing trigger that overlaps, it will overwrite and crop. Fruity method
+uses middle mouse or ctrl-Left mouse click for paste location.
+
+Oops! Just noticed I had an extra unnecessary call to
+set_trigger_paste_tick() in: Seq32PerfInput::on_button_press_event() -
+fixed now!:-[
+
+Re: undo/redo:
+
+Most of the undo/redo stuff was done to eliminate pushes to undo when
+nothing actually changed or to optimize the push - perfedit. I believe the
+seqdata never actually pushed to undo when changed.
+For seqdata the push is held until on_leave_notify_event() occurs so that
+any changes that occur on a single sweep will be all considered part of
+one edit item (thus one undo).
+The same applies to lfownd - just uses on_focus_out_event() instead.
+
+When I added the sensitive/insensitive stuff it became very obvious that
+undo was doing a lot of unnecessary pushes which previously seemed like
+undo was broken - from a user point of view. You would often have to hit
+the undo button many times before the undo occurred because useless undos
+were pushed from simply clicking on an open space in the perfedit, etc.
+
+Hope this helps!
+
+Stan
+
+# vim: sw=4 ts=4 wm=8 et ft=sh

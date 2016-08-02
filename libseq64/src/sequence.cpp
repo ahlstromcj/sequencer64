@@ -4573,7 +4573,6 @@ sequence::multiply_pattern (float multiplier )
  * \param tracknumber
  *      Provides the track number.  This number is masked into the track
  *      information.
- */
 
 void
 sequence::fill_container (midi_container & c, int tracknumber)
@@ -4581,6 +4580,7 @@ sequence::fill_container (midi_container & c, int tracknumber)
     automutex locker(m_mutex);
     c.fill(tracknumber);
 }
+ */
 
 /**
  *  A member function to dump a summary of events stored in the event-list of

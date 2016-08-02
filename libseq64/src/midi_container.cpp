@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-10-10
- * \updates       2016-08-01
+ * \updates       2016-08-02
  * \license       GNU GPLv2 or above
  *
  *  This class is important when writing the MIDI and sequencer data out to a
@@ -224,120 +224,40 @@ midi_container::fill_meta_track_end (midipulse deltatime)
     put(0x00);
 }
 
-#ifdef USE_STAZED_WRITE_SONG
-
-long
-midi_container::song_fill_seq_event
-(
-   const trigger & trig,
-   long prev_timestamp
-)
-{
-    long trigger_offset = trig.offset() % m_length;
-    long start_offset = trig.tick_start() % m_length;
-    long timestamp_adjust = trig.tick_start() - start_offset + trigger_offset;
-    int times_played = 1;
-    int note_is_used[c_midi_notes];
-    for (int i = 0; i < c_midi_notes; ++i)
-        note_is_used[i] = 0;                 /* initialize to off */
-
-    times_played += (trig.tick_end() - trig.tick_start())/ m_length;
-
-    // in this case the total offset is m_length too far
-
-    if ((trigger_offset - start_offset) > 0)
-        timestamp_adjust -= m_length;
-
-    for (int p = 0; p <= times_played; ++p)
-    {
-        long timestamp = 0, delta_time = 0;  /* events */
-        Events::iterator i;                 //  std::list<event>::iterator i;
-        for (i = m_events.begin(); i != m_events.end(); i++ )
-        {
-            event & e = *i;
-            timestamp = e.get_timestamp();
-            timestamp += timestamp_adjust;
-
-            /* if the event is after the trigger start */
-
-            if (timestamp >= trig.tick_start())
-            {
-                // need to save the event note if note_on, then eliminate the
-                // note_off if the note_on is NOT used
-
-                midibyte note = e.get_note();
-                if (e.is_note_on())
-                {
-                    if (timestamp > trig.tick_end())
-                        continue;                   // skip
-                    else
-                        ++note_is_used[note];       // count the note
-                }
-                if (e.is_note_off())
-                {
-                    if (note_is_used[note] <= 0)    // if no Note On then skip
-                    {
-                        continue;
-                    }
-                    else                            // we have a Note On
-                    {
-                        // if past the end of trigger then use trigger end
-
-                        if (timestamp >= trig.tick_end())
-                        {
-                            --note_is_used[note];           // turn off the note
-                            timestamp = trig.tick_end();
-                        }
-                        else                                // not past end, use it
-                            --note_is_used[note];
-                    }
-                }
-            }
-            else
-                continue;   // event is before the trigger start - skip
-
-            /* if the event is past the trigger end - for non notes - skip */
-            /* what about Aftertouch events? */
-
-            if (timestamp >= trig.tick_end())
-            {
-                if (! e.is_note_on() && ! e.is_note_off())
-                    continue;           // these were already taken care of...
-            }
-
-            delta_time = timestamp - prev_timestamp;
-            prev_timestamp = timestamp;
-            add_event(e, delta_time);
-        }
-        timestamp_adjust += m_length;
-    }
-    return prev_timestamp;
-}
-
-/* trigger for whole sequence */
+/**
+ *  Fill in the time-signature and tempo information.  This function is used in
+ *  the first track,  The sizes of these meta events consists of the delta time
+ *  of 0 (1 byte), the event and size bytes (3 bytes), and the data (4 bytes for
+ *  time-signature and 3 bytes for the tempo.  So, 8 bytes for the
+ *  time-signature and 7 bytes for the tempo.
+ */
 
 void
-midi_container::song_fill_seq_trigger
-(
-    list<char> *a_list,
-    trigger *a_trig,
-    long a_length,
-    long prev_timestamp
-)
+midi_container::fill_time_sig_and_tempo ()
 {
-    int num_triggers = 1;                       // only one
-    add_variable(0);
-    put(0xFF);
-    put(0x7F);
-    add_variable((num_triggers * 3 * 4) + 4);
-    add_long(c_triggers_new);
-    add_long(0 );                               // start tick
-    add_long(trig.tick_end());
-    add_long(0);                                // offset - done in event
-    fill_proprietary();
+    if (! rc().legacy_format())
+    {
+        int bw = log2_time_sig_value(m_sequence.get_beat_width());
+        midibyte t[4];                              /* hold tempo bytes */
+        tempo_to_bytes(t, m_sequence.us_per_quarter_note());
 
-    long delta_time = a_length - prev_timestamp;
-    meta_track_end( a_list, delta_time );
+        add_variable(0);                            /* delta time       */
+        put(0xFF);                                  /* meta event       */
+        put(0x58);                                  /* time sig event   */
+        put(0x04);
+        put(m_sequence.get_beats_per_bar());
+        put(bw);
+        put(m_sequence.clocks_per_metronome());
+        put(m_sequence.get_32nds_per_quarter());
+
+        add_variable(0);                            /* delta time       */
+        put(0xFF);                                  /* meta event       */
+        put(0x51);                                  /* tempo event      */
+        put(0x03);
+        put(t[2]);
+        put(t[1]);
+        put(t[0]);
+    }
 }
 
 void
@@ -406,8 +326,6 @@ midi_container::fill_proprietary ()
                 add_long(m_sequence.background_sequence()); /* put_long()?  */
             }
         }
-    }
-}
 
 #ifdef SEQ64_STAZED_TRANSPOSE
 
@@ -432,7 +350,147 @@ midi_container::fill_proprietary ()
 
 #endif
 
-#endif  // USE_STAZED_WRITE_SONG
+    }
+}
+
+/**
+ *  Fills in sequence events based on the trigger and events in the sequence
+ *  associated with this midi_container.
+ *
+ * \param trig
+ *      The current trigger to be processed.
+ *
+ * \param prev_timestamp
+ *      The time-stamp of the previous event.
+ *
+ * \return
+ *      The next time-stamp value is returned.
+ */
+
+midipulse
+midi_container::song_fill_seq_event
+(
+   const trigger & trig,
+   midipulse prev_timestamp
+)
+{
+    midipulse len = m_sequence.get_length();
+    midipulse trigger_offset = trig.offset() % len;
+    midipulse start_offset = trig.tick_start() % len;
+    midipulse timestamp_adjust = trig.tick_start() - start_offset + trigger_offset;
+    int times_played = 1;
+    int note_is_used[c_midi_notes];
+    for (int i = 0; i < c_midi_notes; ++i)
+        note_is_used[i] = 0;                        /* initialize to off */
+
+    times_played += (trig.tick_end() - trig.tick_start()) / len;
+
+    // in this case the total offset is m_length too far
+
+    if ((trigger_offset - start_offset) > 0)
+        timestamp_adjust -= len;
+
+    for (int p = 0; p <= times_played; ++p)
+    {
+        midipulse timestamp = 0, delta_time = 0;         /* events */
+        event_list::Events::iterator i;         //  std::list<event>::iterator i;
+        for (i = m_sequence.events().begin(); i != m_sequence.events().end(); ++i)
+        {
+            const event & e = i->second;            // *i;
+            timestamp = e.get_timestamp();
+            timestamp += timestamp_adjust;
+
+            /* if the event is after the trigger start */
+
+            if (timestamp >= trig.tick_start())
+            {
+                // need to save the event note if note_on, then eliminate the
+                // note_off if the note_on is NOT used
+
+                midibyte note = e.get_note();
+                if (e.is_note_on())
+                {
+                    if (timestamp > trig.tick_end())
+                        continue;                   // skip
+                    else
+                        ++note_is_used[note];       // count the note
+                }
+                if (e.is_note_off())
+                {
+                    if (note_is_used[note] <= 0)    // if no Note On then skip
+                    {
+                        continue;
+                    }
+                    else                            // we have a Note On
+                    {
+                        // if past the end of trigger then use trigger end
+
+                        if (timestamp >= trig.tick_end())
+                        {
+                            --note_is_used[note];           // turn off the note
+                            timestamp = trig.tick_end();
+                        }
+                        else                                // not past end, use it
+                            --note_is_used[note];
+                    }
+                }
+            }
+            else
+                continue;   // event is before the trigger start - skip
+
+            /* if the event is past the trigger end - for non notes - skip */
+            /* what about Aftertouch events? */
+
+            if (timestamp >= trig.tick_end())
+            {
+                if (! e.is_note_on() && ! e.is_note_off())
+                    continue;           // these were already taken care of...
+            }
+
+            delta_time = timestamp - prev_timestamp;
+            prev_timestamp = timestamp;
+            add_event(e, delta_time);
+        }
+        timestamp_adjust += len;
+    }
+    return prev_timestamp;
+}
+
+/**
+ *  Fills in the trigger for the whole sequence.
+ *
+ * \param trig
+ *      The current trigger to be processed.
+ *
+ * \param length
+ *      Provides the total length of the sequence.
+ *
+ * \param prev_timestamp
+ *      The time-stamp of the previous event, which is actually the first event.
+ */
+
+void
+midi_container::song_fill_seq_trigger
+(
+    const trigger & trig,
+    midipulse length,
+    midipulse prev_timestamp
+)
+{
+    int num_triggers = 1;                       /* only one trigger here    */
+    add_variable(0);
+    put(0xFF);
+    put(0x7F);
+    add_variable((num_triggers * 3 * 4) + 4);
+    add_long(c_triggers_new);
+    add_long(0);                                /* the start tick           */
+    add_long(trig.tick_end());
+    add_long(0);                                /* offset is done in event  */
+    fill_proprietary();
+
+    midipulse delta_time = length - prev_timestamp;
+    fill_meta_track_end(delta_time);
+}
 
 /**
  *  This function fills the given track (sequence) with MIDI data from the
@@ -484,35 +542,12 @@ midi_container::fill (int tracknumber)
      * provide the Time Signature and Tempo meta events, in the 0th (first)
      * track (sequence).  These events must precede any "real" MIDI events.
      * They are not included if the legacy-format option is in force.
-     *
-     * THIS WILL ALSO NEED TO BE A SEPARATE FUNCTION.
      */
 
-    if (tracknumber == 0 && ! rc().legacy_format())
-    {
-        int bw = log2_time_sig_value(m_sequence.get_beat_width());
-        midibyte t[3];                              /* hold tempo bytes */
-        tempo_to_bytes(t, m_sequence.us_per_quarter_note());
+    if (tracknumber == 0)
+        fill_time_sig_and_tempo();
 
-        add_variable(0);                            /* delta time       */
-        put(0xFF);                                  /* meta event       */
-        put(0x58);                                  /* time sig event   */
-        put(0x04);
-        put(m_sequence.get_beats_per_bar());
-        put(bw);
-        put(m_sequence.clocks_per_metronome());
-        put(m_sequence.get_32nds_per_quarter());
-
-        add_variable(0);                            /* delta time       */
-        put(0xFF);                                  /* meta event       */
-        put(0x51);                                  /* tempo event      */
-        put(0x03);
-        put(t[2]);
-        put(t[1]);
-        put(t[0]);
-    }
-
-#endif  // SEQ64_HANDLE_TIMESIG_AND_TEMPO
+#endif
 
     midipulse timestamp = 0;
     midipulse deltatime = 0;
@@ -548,9 +583,6 @@ midi_container::fill (int tracknumber)
     put(0x7F);
     add_variable((triggercount * 3 * 4) + 4);       /* 3 long ints plus...  */
     add_long(c_triggers_new);                       /* ...the triggers code */
-#ifdef SEQ64_USE_DEBUG_OUTPUT
-    int counter = 0;
-#endif
     for
     (
         triggers::List::iterator ti = triggerlist.begin();
@@ -560,108 +592,8 @@ midi_container::fill (int tracknumber)
         add_long(ti->tick_start());
         add_long(ti->tick_end());
         add_long(ti->offset());
-#ifdef SEQ64_USE_DEBUG_OUTPUT
-        printf
-        (
-            "Trk %2d: trigger %2d: start = %ld, end = %ld, offset = %ld\n",
-            tracknumber, counter, ti->tick_start(), ti->tick_end(), ti->offset()
-        );
-        counter++;
-#endif
     }
-
-    /*
-     * THIS CAN BE A NEW FUNCTION, fill_proprietary().
-     */
-
-    add_variable(0);                                /* bus delta time   */
-    put(0xFF);
-    put(0x7F);
-    put(0x05);
-    add_long(c_midibus);
-    put(m_sequence.get_midi_bus());
-
-    add_variable(0);                                /* timesig delta t  */
-    put(0xFF);
-    put(0x7F);
-    put(0x06);
-    add_long(c_timesig);
-    put(m_sequence.get_beats_per_bar());
-    put(m_sequence.get_beat_width());
-
-    add_variable(0);                                /* channel delta t  */
-    put(0xFF);
-    put(0x7F);
-    put(0x05);
-    add_long(c_midich);
-    put(m_sequence.get_midi_channel());
-    if (! rc().legacy_format())
-    {
-        if (! usr().global_seq_feature())
-        {
-            /**
-             * New feature: save more sequence-specific values, if not legacy
-             * format and not saved globally.  We use a single byte for the
-             * key and scale, and a long for the background sequence.  We save
-             * these values only if they are different from the defaults; in
-             * most cases they will have been left alone by the user.  We save
-             * per-sequence values here only if the global-background-sequence
-             * feature is not in force.
-             */
-
-            if (m_sequence.musical_key() != SEQ64_KEY_OF_C)
-            {
-                add_variable(0);                        /* key selection dt */
-                put(0xFF);
-                put(0x7F);
-                put(0x05);                              /* long + midibyte  */
-                add_long(c_musickey);
-                put(m_sequence.musical_key());
-            }
-            if (m_sequence.musical_scale() != int(c_scale_off))
-            {
-                add_variable(0);                        /* scale selection  */
-                put(0xFF);
-                put(0x7F);
-                put(0x05);                              /* long + midibyte  */
-                add_long(c_musicscale);
-                put(m_sequence.musical_scale());
-            }
-            if (SEQ64_IS_VALID_SEQUENCE(m_sequence.background_sequence()))
-            {
-                add_variable(0);                        /* b'ground seq.    */
-                put(0xFF);
-                put(0x7F);
-                put(0x08);                              /* two long values  */
-                add_long(c_backsequence);
-                add_long(m_sequence.background_sequence()); /* put_long()?  */
-            }
-        }
-
-#ifdef SEQ64_STAZED_TRANSPOSE
-
-        /**
-         *  For the new "transposable" flag (tagged by the value c_transpose)
-         *  we really only care about saving the value of "false", because
-         *  otherwise we can assume the value is true for the given sequence,
-         *  and save space by not saving it... generally only drum patterns
-         *  will not be transposable.
-         */
-
-        bool transpose = m_sequence.get_transposable();
-        if (! transpose)                                /* save only false  */
-        {
-            add_variable(0);                            /* transposition    */
-            put(0xFF);
-            put(0x7F);
-            put(0x05);                                  /* long + midibyte  */
-            add_long(c_transpose);
-            put(transpose);                             /* a boolean        */
-        }
-
-#endif
-
-    }
+    fill_proprietary ();
 
     /*
      * Last, but certainly not least, write the end-of-track meta-event.

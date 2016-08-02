@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-07-09
+ * \updates       2016-08-01
  * \license       GNU GPLv2 or above
  *
  *  For a quick guide to the MIDI format, see, for example:
@@ -157,6 +157,7 @@ midifile::midifile
     bool oldformat,
     bool globalbgs
 ) :
+    m_mutex                 (),         /* new ca 2016-08-01 */
     m_file_size             (0),
     m_error_message         (),
     m_error_is_fatal        (false),
@@ -358,9 +359,7 @@ midifile::parse (perform & p, int screenset)
     if (file_size <= 0)
     {
         m_error_is_fatal = true;
-        m_error_message =
-            "Invalid file size... are you trying to read a directory?";
-
+        m_error_message = "Invalid file size... trying to read a directory?";
         errprint(m_error_message.c_str());
         return false;
     }
@@ -1576,6 +1575,7 @@ midifile::prop_item_size (long data_length) const
 bool
 midifile::write (perform & p)
 {
+    automutex locker(m_mutex);          /* new ca 2016-08-01 */
     bool result = true;
     int numtracks = 0;
     m_error_message.clear();
@@ -1605,9 +1605,25 @@ midifile::write (perform & p)
             midi_list lst(seq);
 #endif
 
-            seq.fill_container(lst, curtrack);
-            write_long(0x4D54726B);     /* magic number 'MTrk'          */
-            write_long(lst.size());
+            /*
+             * The following function calls fill_container(), and adds only
+             * locking.  The locking should be in the container or in this
+             * midifile class, perhaps.  Done.
+             *
+             *      seq.fill_container(lst, curtrack);
+             */
+
+            lst.fill(curtrack);
+
+            midilong tracksize = midilong(lst.size());
+
+#ifdef SEQ64_HANDLE_TIMESIG_AND_TEMPO           /* defined in sequence.hpp   */
+            if (curtrack == 0)
+                tracksize += 15;      /* fill_time_sig_and_tempo() */
+#endif
+
+            write_long(0x4D54726B);             /* magic number 'MTrk'       */
+            write_long(tracksize);
 
             /**
              * \note
@@ -1695,6 +1711,7 @@ midifile::write (perform & p)
 bool
 midifile::write_song (perform & p)
 {
+    automutex locker(m_mutex);                  /* new ca 2016-08-01 */
     bool result = true;
     int numtracks = 0;
     m_error_message.clear();
@@ -1707,22 +1724,19 @@ midifile::write_song (perform & p)
     if (! write_header(numtracks))
         return false;
 
-    numtracks = 0;                              /* reset for seq->fill_list */
+    /*
+     * Write out the exportable tracks.  The value of c_max_sequence is 1024.
+     * Note that we don't need to check the sequence pointer.  We need to use
+     * the same criterion we used to count the tracks in the first place, not
+     * just if the track is active and unmuted.  Also, since we already know
+     * that an exportable track is valid, no need to check for a null pointer.
+     */
+
     for (int curtrack = 0; curtrack < c_max_sequence; ++curtrack)
     {
-        /*
-         * This is a mistake.  We need to use the same criterion we used to
-         * count the tracks in the first place.
-         *
-         * if (p.is_active(curtrack) && !p.get_sequence(curtrack)->get_song_mute())
-         *
-         * Also, since we already know that an exportable track is valid, no
-         * need to check for the null pointer.
-         */
-
         if (p.is_exportable(curtrack))
         {
-            sequence * s = p.get_sequence(curtrack);
+            sequence & seq = *p.get_sequence(curtrack);
 
 #if defined SEQ64_USE_MIDI_VECTOR
             midi_vector lst(seq);
@@ -1730,8 +1744,8 @@ midifile::write_song (perform & p)
             midi_list lst(seq);
 #endif
 
-            triggers::List trigs = s->get_triggers();   /* copy the triggers */
-            lst.fill_seq_number(numtracks);
+            triggers::List trigs = seq.get_triggers();   /* copy the triggers */
+            lst.fill_seq_number(curtrack);
             lst.fill_seq_number(seq.name());            /* hmmmmmmmm */
 
             /*
@@ -1741,100 +1755,70 @@ midifile::write_song (perform & p)
              * sequence - start at zero, end at last trigger end + snap.
              */
 
+            midipulse previous_ts = 0;
+            triggers::List::iterator i;
+            for (i = m_triggers.begin(); i != m_triggers.end(); ++i)
+                previous_ts = lst.song_fill_seq_event(*i, previous_ts);
+
             midipulse total_seq_length = 0;
-            midipulse prev_timestamp = 0;
-            for (int i = 0; i < int(trigs.size()); ++i)
-            {
-                a_trig = &trig_vect[i]; // get the trigger
-
-                // put events on list
-
-                if (a_trig != NULL)
-                    prev_timestamp = seq->song_fill_list_seq_event
-                        (&l, a_trig, prev_timestamp);
-            }
-
-            // INSTEAD:
-            // {
-
-            for
-            (
-                triggers::List::const_iterator ti = trigs.begin();
-                ti != trigs.end(); ++ti
-            )
-            {
-                const trigger & t = *ti;
-            }
-
-            WE STILL need to write midi_container versions (or free functions
-            using a midi_container) of 
-
-                sequence::song_fill_list_seq_event()
-                sequence::song_fill_list_seq_trigger()
-
-            In the meantime, test the new version of midifile::write()
-
-            // }
-
-            total_seq_length = trig_vect[vect_size-1].m_tick_end;
-
-            /* adjust sequence length to snap nearest measure past end */
-            long measure_ticks = (c_ppqn * 4) * seq->get_bp_measure() / seq->get_bw();
-            long remainder = total_seq_length % measure_ticks;
-            if (remainder != measure_ticks -1)
-                total_seq_length += (measure_ticks - remainder - 1);
-
-            if (a_trig != NULL)
-                seq->song_fill_list_seq_trigger(&l,a_trig,total_seq_length,prev_timestamp); // the big sequence trigger
-
-            /* magic number 'MTrk' */
-            write_long (0x4D54726B);
-
-            int size_tempo_time_sig = 0;
-            if(numtracks == 0)
-                size_tempo_time_sig = 15; // size, (s/b 19(total) - 4(trk end) = 15 bytes)
-
-            write_long (l.size () + size_tempo_time_sig);
+            if (m_triggers.size() > 0)
+                total_seq_length = m_triggers.back().tick_end();
 
             /*
-                Add the bpm and timesignature stuff here to the first track (0).
-                So we don't have an extra one...
-            */
+             * Adjust the sequence length to snap to the nearest measure past
+             * the end.
+             */
 
-            if(numtracks == 0)
-            {
-                write_time_sig(a_perf);
-                write_tempo(a_perf);
-            }
+            midipulse measticks = seq.measures_to_ticks();
+            midipulse remainder = total_seq_length % measticks;
+            midipulse measminus = measticks - 1;
+            if (remainder != measminus)
+                total_seq_length += measminus - remainder;
 
-            while (l.size () > 0)
+            lst.song_fill_seq_trigger(*i, total_seq_length, previous_ts);
+
+            midilong tracksize = midilong(lst.size());
+
+#ifdef SEQ64_HANDLE_TIMESIG_AND_TEMPO           /* defined in sequence.hpp   */
+            if (curtrack == 0)
+                tracksize += 15;                /* fill_time_sig_and_tempo() */
+#endif
+
+            write_long(0x4D54726B);             /* magic number 'MTrk'       */
+            write_long(tracksize);
+
+            /*
+             *  Add the bpm and timesignature stuff here to the first track
+             *  (0).  So we don't have an extra one...
+             */
+
+            if (curtrack == 0)
             {
-                write_byte (l.back ());
-                l.pop_back ();
+                write_time_sig(p);
+                write_tempo(p);
             }
-            ++numtracks;
+            while (lst.size() > 0)
+            {
+                write_byte(lst.back());
+                lst.pop_back();
+            }
         }
     }
 
     /* open binary file */
-    ofstream file (m_name.c_str (), ios::out | ios::binary | ios::trunc);
 
-    if (!file.is_open ())
+    std::ofstream file (m_name.c_str (), ios::out | ios::binary | ios::trunc);
+    if (! file.is_open())
         return false;
 
-    /* enable bufferization */
-    char file_buffer[1024];
+    char file_buffer[1024];                     /* enable bufferization */
     file.rdbuf()->pubsetbuf(file_buffer, sizeof file_buffer);
-
-    for (list < unsigned char >::iterator i = m_l.begin ();
-            i != m_l.end (); i++)
+    for (list < unsigned char >::iterator i = m_l.begin (); i != m_l.end (); i++)
     {
         char c = *i;
         file.write(&c, 1);
     }
-
-    m_l.clear ();
-
+    lst.clear();
     return true;
 }
 

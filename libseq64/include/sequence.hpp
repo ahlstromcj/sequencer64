@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-30
- * \updates       2016-07-31
+ * \updates       2016-08-02
  * \license       GNU GPLv2 or above
  *
  *  The functions add_list_var() and add_long_list() have been replaced by
@@ -45,7 +45,7 @@
 #include <string>
 #include <stack>
 
-#include "easy_macros.h"                /* macros and configuration */
+#include "calculations.hpp"             /* measures_to_ticks()      */
 #include "event_list.hpp"               /* seq64::event_list        */
 #include "midi_container.hpp"           /* seq64::midi_container    */
 #include "mutex.hpp"                    /* seq64::mutex, automutex  */
@@ -719,6 +719,19 @@ public:
         return m_time_beat_width;
     }
 
+    /**
+     *  A convenience function for calculating the number of ticks in the given
+     *  number of measures.
+     */
+
+    midipulse measures_to_ticks (int measures = 1) const
+    {
+        return seq64::measures_to_ticks
+        (
+            m_time_beats_per_measure, m_ppqn, m_time_beat_width, measures
+        );
+    }
+
 #ifdef SEQ64_HANDLE_TIMESIG_AND_TEMPO
 
     /**
@@ -1241,7 +1254,7 @@ public:
         midipulse * tick_on, midipulse * tick_off,
         bool * selected, midipulse * tick_offset
     );
-    void fill_container (midi_container & c, int tracknumber);
+//  void fill_container (midi_container & c, int tracknumber);
     void quantize_events
     (
         midibyte status, midibyte cc,

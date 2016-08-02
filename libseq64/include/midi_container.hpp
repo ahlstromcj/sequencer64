@@ -28,12 +28,13 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-10-10
- * \updates       2016-08-01
+ * \updates       2016-08-02
  * \license       GNU GPLv2 or above
  *
  */
 
 #include <cstddef>                      /* std::size_t          */
+#include <string>                       /* std::string          */
 
 #include "app_limits.h"                 /* SEQ64_NULL_SEQUENCE  */
 #include "midibyte.hpp"                 /* seq64::midibyte      */
@@ -101,6 +102,7 @@ namespace seq64
 {
     class event;
     class sequence;
+    class trigger;
 
 /**
  *  Provides tags used by the midifile class to control the reading and
@@ -298,6 +300,13 @@ private:
     void fill_seq_number (int seq);
     void fill_seq_name (const std::string & name);
     void fill_meta_track_end (midipulse deltatime);
+    void fill_proprietary ();
+    void fill_time_sig_and_tempo ();
+    midipulse song_fill_seq_event (const trigger & trig, midipulse prev_timestamp);
+    void song_fill_seq_trigger
+    (
+        const trigger & trig, midipulse len, midipulse prev_timestamp
+    );
 
 };
 

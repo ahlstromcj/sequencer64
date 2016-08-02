@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-07-31
+ * \updates       2016-08-01
  * \license       GNU GPLv2 or above
  *
  *  The Seq24 MIDI file is a standard, Format 1 MIDI file, with some extra
@@ -50,6 +50,7 @@
 #include "globals.h"                    /* SEQ64_USE_DEFAULT_PPQN       */
 #include "midibyte.hpp"                 /* midishort, midibyte, etc.    */
 #include "midi_splitter.hpp"            /* seq64::midi_splitter         */
+#include "mutex.hpp"                    /* seq64::mutex, automutex  */
 
 namespace seq64
 {
@@ -66,6 +67,13 @@ class midifile
 {
 
 private:
+
+    /**
+     *  Provides locking for the sequence.  Made mutable for use in
+     *  certain locked getter functions.
+     */
+
+    mutable mutex m_mutex;
 
     /**
      *  Holds the size of the MIDI file.  This variable was added when loading

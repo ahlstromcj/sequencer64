@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-07-31
+ * \updates       2016-08-02
  * \license       GNU GPLv2 or above
  *
  *  The main window holds the menu and the main controls of the application,
@@ -145,10 +145,10 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
     performcallback         (),
     m_tooltips              (manage(new Gtk::Tooltips())),  /* valgrind bitches */
     m_menubar               (manage(new Gtk::MenuBar())),
-#ifdef USE_STAZED_EDIT_MENU
+    m_menu_file             (manage(new Gtk::Menu())),
+#ifdef SEQ64_STAZED_EDIT_MENU
     m_menu_edit             (manage(new Gtk::Menu())),
 #endif
-    m_menu_file             (manage(new Gtk::Menu())),
     m_menu_view             (manage(new Gtk::Menu())),
     m_menu_help             (manage(new Gtk::Menu())),
     m_ppqn                  (choose_ppqn(ppqn)),
@@ -212,7 +212,7 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
     perf().enregister(this);                        /* register for notify  */
     update_window_title();                          /* main window          */
     m_menubar->items().push_front(MenuElem("_File", *m_menu_file));
-#ifdef USE_STAZED_EDIT_MENU
+#ifdef SEQ64_STAZED_EDIT_MENU
     m_menubar->items().push_back(MenuElem("_Edit", *m_menu_edit));
 #endif
     m_menubar->items().push_back(MenuElem("_View", *m_menu_view));
@@ -273,7 +273,7 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
         )
     );
 
-#ifdef USE_STAZED_EDIT_MENU
+#ifdef SEQ64_STAZED_EDIT_MENU
 
     /**
      * Edit menu items and their hot keys.
@@ -305,17 +305,17 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
     m_menu_edit->items().push_back
     (
         MenuElem("_Mute all tracks",
-        sigc::bind(mem_fun(*this, &mainwnd::set_song_mute), MUTE_ON))
+        sigc::bind(mem_fun(*this, &mainwnd::set_song_mute), perform::MUTE_ON))
     );
     m_menu_edit->items().push_back
     (
         MenuElem("_Unmute all tracks",
-        sigc::bind(mem_fun(*this, &mainwnd::set_song_mute), MUTE_OFF))
+        sigc::bind(mem_fun(*this, &mainwnd::set_song_mute), perform::MUTE_OFF))
     );
     m_menu_edit->items().push_back
     (
         MenuElem("_Toggle mute all tracks",
-        sigc::bind(mem_fun(*this, &mainwnd::set_song_mute), MUTE_TOGGLE))
+        sigc::bind(mem_fun(*this, &mainwnd::set_song_mute), perform::MUTE_TOGGLE))
     );
 
     m_menu_edit->items().push_back          // a repeat
@@ -332,12 +332,12 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
     (
         MenuElem
         (
-            "Export _song",
+            "Ex_port song...",
             sigc::bind(mem_fun(*this, &mainwnd::file_save_as), true)
         )
     );
 
-#endif  // USE_STAZED_EDIT_MENU
+#endif  // SEQ64_STAZED_EDIT_MENU
 
     /**
      * View menu items and their hot keys.  It repeats the song editor edit
@@ -927,13 +927,14 @@ mainwnd::file_save_as (bool do_export)
             if (do_export)
             {
                 midifile f(fname, ppqn());
-                bool result = f.write(perf());      // f.write_song(perf());
+                bool result = f.write_song(perf());     // f.write(perf());
                 if (! result)
                 {
+                    std::string errmsg = f.error_message();
                     Gtk::MessageDialog errdialog
                     (
-                        *this, "Error exporting file.",
-                        false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK, true
+                        *this, errmsg, false, Gtk::MESSAGE_ERROR,
+                        Gtk::BUTTONS_OK, true
                     );
                     errdialog.run();
                 }

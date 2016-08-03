@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-08-01
+ * \updates       2016-08-02
  * \license       GNU GPLv2 or above
  *
  *  For a quick guide to the MIDI format, see, for example:
@@ -34,11 +34,22 @@
  *  It is important to note that most sequencers have taken a shortcut or
  *  two in reading the MIDI format.  For example, most will silently
  *  ignored an unadorned control tag (0x242400nn) which has not been
- *  package up as a proper sequencer-specific meta event.  The midicvt
+ *  packages up as a proper sequencer-specific meta event.  The midicvt
  *  program (https://github.com/ahlstromcj/midicvt, derived from midicomp,
  *  midi2text, and mf2t/t2mf) does not ignore this lack, and hence we
  *  decided to provide a new, more strict input and output format for the
- *  the proprietary/SeqSpec track in Sequencer24.
+ *  the proprietary/SeqSpec track in Sequencer64.
+ *
+ *  Elements written:
+ *
+ *      -   MIDI header.
+ *      -   Tracks.
+ *          -   Sequence number.
+ *          -   Sequence name.
+ *          -   Time-signature and tempo (sequence 0 only)
+ *          -   Sequence events.
+ *          These items are then written, preceded by the "MTrk" tag and
+ *          the track size.
  */
 
 #include <fstream>
@@ -1611,6 +1622,10 @@ midifile::write (perform & p)
              * midifile class, perhaps.  Done.
              *
              *      seq.fill_container(lst, curtrack);
+             *
+             * midi_container.fill() also handles the time-signature and tempo
+             * meta events.  All the events are put into the container, and then
+             * the container's bytes are written out below.
              */
 
             lst.fill(curtrack);
@@ -1619,7 +1634,7 @@ midifile::write (perform & p)
 
 #ifdef SEQ64_HANDLE_TIMESIG_AND_TEMPO           /* defined in sequence.hpp   */
             if (curtrack == 0)
-                tracksize += 15;      /* fill_time_sig_and_tempo() */
+                tracksize += SEQ64_TIME_TEMPO_SIZE; /* fill_time_sig_and_tempo() */
 #endif
 
             write_long(0x4D54726B);             /* magic number 'MTrk'       */
@@ -1636,8 +1651,10 @@ midifile::write (perform & p)
         }
     }
     if (result)
+        result = write_proprietary_track(p);
+
+    if (result)
     {
-        (void) write_proprietary_track(p);
         std::ofstream file
         (
             m_name.c_str(), std::ios::out | std::ios::binary | std::ios::trunc
@@ -1666,7 +1683,7 @@ midifile::write (perform & p)
     return result;
 }
 
-#ifdef USE_STAZED_WRITE_SONG
+#ifdef SEQ64_STAZED_EXPORT_SONG
 
 /**
  *  Write the whole MIDI data and Seq24 information out to a MIDI file, writing
@@ -1712,7 +1729,6 @@ bool
 midifile::write_song (perform & p)
 {
     automutex locker(m_mutex);                  /* new ca 2016-08-01 */
-    bool result = true;
     int numtracks = 0;
     m_error_message.clear();
     printf("[Exporting MIDI file, %d ppqn]\n", m_ppqn);
@@ -1721,108 +1737,134 @@ midifile::write_song (perform & p)
         if (p.is_exportable(i))
             ++numtracks;
     }
-    if (! write_header(numtracks))
-        return false;
-
-    /*
-     * Write out the exportable tracks.  The value of c_max_sequence is 1024.
-     * Note that we don't need to check the sequence pointer.  We need to use
-     * the same criterion we used to count the tracks in the first place, not
-     * just if the track is active and unmuted.  Also, since we already know
-     * that an exportable track is valid, no need to check for a null pointer.
-     */
-
-    for (int curtrack = 0; curtrack < c_max_sequence; ++curtrack)
+    bool result = numtracks > 0;
+    if (result)
     {
-        if (p.is_exportable(curtrack))
+        result = write_header(numtracks);
+    }
+    else
+    {
+        m_error_message =
+            "The current MIDI song has no exportable tracks; "
+            "you need to create a performance in the Song Editor first."
+            ;
+        result = false;
+    }
+
+    if (result)
+    {
+        /*
+         * Write out the exportable tracks.  The value of c_max_sequence is
+         * 1024.  Note that we don't need to check the sequence pointer.  We
+         * need to use the same criterion we used to count the tracks in the
+         * first place, not just if the track is active and unmuted.  Also,
+         * since we already know that an exportable track is valid, no need to
+         * check for a null pointer.
+         */
+
+        for (int curtrack = 0; curtrack < c_max_sequence; ++curtrack)
         {
-            sequence & seq = *p.get_sequence(curtrack);
+            if (p.is_exportable(curtrack))
+            {
+                sequence & seq = *p.get_sequence(curtrack);
 
 #if defined SEQ64_USE_MIDI_VECTOR
-            midi_vector lst(seq);
+                midi_vector lst(seq);
 #else
-            midi_list lst(seq);
+                midi_list lst(seq);
 #endif
 
-            triggers::List trigs = seq.get_triggers();   /* copy the triggers */
-            lst.fill_seq_number(curtrack);
-            lst.fill_seq_number(seq.name());            /* hmmmmmmmm */
+                lst.fill_seq_number(curtrack);
+                lst.fill_seq_name(seq.name());          /* hmmmmmmmm        */
 
-            /*
-             * Now for each trigger get sequence and add events to list char
-             * below - fill_list one by one in order, essentially creating a
-             * single long sequence.  Then set a single trigger for the big
-             * sequence - start at zero, end at last trigger end + snap.
-             */
+#ifdef SEQ64_HANDLE_TIMESIG_AND_TEMPO                   /* in sequence.hpp  */
+                if (curtrack == 0)
+                    lst.fill_time_sig_and_tempo();
+#endif
 
-            midipulse previous_ts = 0;
-            triggers::List::iterator i;
-            for (i = m_triggers.begin(); i != m_triggers.end(); ++i)
-                previous_ts = lst.song_fill_seq_event(*i, previous_ts);
+                /*
+                 * For each trigger, get sequence and add events to list char
+                 * below - fill_list one by one in order, essentially creating
+                 * a single long sequence.  Then set a single trigger for the
+                 * big sequence - start at zero, end at last trigger end +
+                 * snap.
+                 */
 
-            midipulse total_seq_length = 0;
-            if (m_triggers.size() > 0)
-                total_seq_length = m_triggers.back().tick_end();
+                midipulse previous_ts = 0;
+                triggers::List trigs = seq.get_triggers();  /* copy triggers */
+                triggers::List::iterator i;
+                for (i = trigs.begin(); i != trigs.end(); ++i)
+                    previous_ts = lst.song_fill_seq_event(*i, previous_ts);
 
-            /*
-             * Adjust the sequence length to snap to the nearest measure past
-             * the end.
-             */
+                midipulse total_seq_length = 0;
+                if (trigs.size() > 0)
+                    total_seq_length = trigs.back().tick_end();
 
-            midipulse measticks = seq.measures_to_ticks();
-            midipulse remainder = total_seq_length % measticks;
-            midipulse measminus = measticks - 1;
-            if (remainder != measminus)
-                total_seq_length += measminus - remainder;
+                /*
+                 * Adjust the sequence length to snap to the nearest measure
+                 * past the end.  We fill the MIDI container with events based
+                 * on the triggers, and then the container's bytes are written
+                 * out below.
+                 */
 
-            lst.song_fill_seq_trigger(*i, total_seq_length, previous_ts);
+                midipulse measticks = seq.measures_to_ticks();
+                midipulse remainder = total_seq_length % measticks;
+                midipulse measminus = measticks - 1;
+                if (remainder != measminus)
+                    total_seq_length += measminus - remainder;
 
-            midilong tracksize = midilong(lst.size());
+                lst.song_fill_seq_trigger(*i, total_seq_length, previous_ts);
+
+                midilong tracksize = midilong(lst.size());
 
 #ifdef SEQ64_HANDLE_TIMESIG_AND_TEMPO           /* defined in sequence.hpp   */
-            if (curtrack == 0)
-                tracksize += 15;                /* fill_time_sig_and_tempo() */
+                if (curtrack == 0)
+                    tracksize += SEQ64_TIME_TEMPO_SIZE;
 #endif
 
-            write_long(0x4D54726B);             /* magic number 'MTrk'       */
-            write_long(tracksize);
-
-            /*
-             *  Add the bpm and timesignature stuff here to the first track
-             *  (0).  So we don't have an extra one...
-             */
-
-            if (curtrack == 0)
-            {
-                write_time_sig(p);
-                write_tempo(p);
-            }
-            while (lst.size() > 0)
-            {
-                write_byte(lst.back());
-                lst.pop_back();
+                write_long(0x4D54726B);         /* magic number 'MTrk'       */
+                write_long(tracksize);
+                while (! lst.done())            /* write the track data      */
+                    write_byte(lst.get());
             }
         }
     }
-
-    /* open binary file */
-
-    std::ofstream file (m_name.c_str (), ios::out | ios::binary | ios::trunc);
-    if (! file.is_open())
-        return false;
-
-    char file_buffer[1024];                     /* enable bufferization */
-    file.rdbuf()->pubsetbuf(file_buffer, sizeof file_buffer);
-    for (list < unsigned char >::iterator i = m_l.begin (); i != m_l.end (); i++)
+    if (result)
     {
-        char c = *i;
-        file.write(&c, 1);
+        std::ofstream file
+        (
+            m_name.c_str(), std::ios::out | std::ios::binary | std::ios::trunc
+        );
+        if (file.is_open())
+        {
+            char file_buffer[SEQ64_MIDI_LINE_MAX];  /* enable bufferization */
+            file.rdbuf()->pubsetbuf(file_buffer, sizeof file_buffer);
+            std::list<midibyte>::iterator it;
+            for (it = m_char_list.begin(); it != m_char_list.end(); ++it)
+            {
+                char c = *it;
+                file.write(&c, 1);
+            }
+            m_char_list.clear();
+        }
+        else
+        {
+            m_error_message = "Error opening MIDI file for exporting";
+            result = false;
+        }
     }
-    lst.clear();
-    return true;
+
+    /*
+     * Does not apply to exporting.
+     *
+     * if (result)
+     *      p.is_modified(false);
+     */
+
+    return result;
 }
 
-#endif  // USE_STAZED_WRITE_SONG
+#endif  // SEQ64_STAZED_EXPORT_SONG
 
 /**
  *  Writes out the final proprietary/SeqSpec section, using the new format if

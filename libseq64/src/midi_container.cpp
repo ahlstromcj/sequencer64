@@ -226,10 +226,8 @@ midi_container::fill_meta_track_end (midipulse deltatime)
 
 /**
  *  Fill in the time-signature and tempo information.  This function is used in
- *  the first track,  The sizes of these meta events consists of the delta time
- *  of 0 (1 byte), the event and size bytes (3 bytes), and the data (4 bytes for
- *  time-signature and 3 bytes for the tempo.  So, 8 bytes for the
- *  time-signature and 7 bytes for the tempo.
+ *  the first track,  The sizes of these meta events are defined as
+ *  SEQ64_TIME_TEMPO_SIZE.
  */
 
 void
@@ -384,50 +382,47 @@ midi_container::song_fill_seq_event
         note_is_used[i] = 0;                        /* initialize to off */
 
     times_played += (trig.tick_end() - trig.tick_start()) / len;
-
-    // in this case the total offset is m_length too far
-
-    if ((trigger_offset - start_offset) > 0)
+    if ((trigger_offset - start_offset) > 0) /* total offset is len too far */
         timestamp_adjust -= len;
 
     for (int p = 0; p <= times_played; ++p)
     {
         midipulse timestamp = 0, delta_time = 0;         /* events */
-        event_list::Events::iterator i;         //  std::list<event>::iterator i;
+        event_list::Events::iterator i;
         for (i = m_sequence.events().begin(); i != m_sequence.events().end(); ++i)
         {
-            const event & e = i->second;            // *i;
+            const event & e = i->second;
             timestamp = e.get_timestamp();
             timestamp += timestamp_adjust;
-
-            /* if the event is after the trigger start */
-
-            if (timestamp >= trig.tick_start())
+            if (timestamp >= trig.tick_start()) /* event is after trigger start */
             {
-                // need to save the event note if note_on, then eliminate the
-                // note_off if the note_on is NOT used
+                /*
+                 * Save the note; eliminate Note Off if Note On is unused.
+                 */
 
                 midibyte note = e.get_note();
                 if (e.is_note_on())
                 {
                     if (timestamp > trig.tick_end())
-                        continue;                   // skip
+                        continue;                   /* skip                 */
                     else
-                        ++note_is_used[note];       // count the note
+                        ++note_is_used[note];       /* count the note       */
                 }
                 if (e.is_note_off())
                 {
-                    if (note_is_used[note] <= 0)    // if no Note On then skip
+                    if (note_is_used[note] <= 0)    /* if no Note On, skip  */
                     {
                         continue;
                     }
-                    else                            // we have a Note On
+                    else                            /* we have a Note On    */
                     {
-                        // if past the end of trigger then use trigger end
+                        /*
+                         * If past the end of trigger, use trigger end
+                         */
 
                         if (timestamp >= trig.tick_end())
                         {
-                            --note_is_used[note];           // turn off the note
+                            --note_is_used[note];           // turn off note
                             timestamp = trig.tick_end();
                         }
                         else                                // not past end, use it

@@ -98,6 +98,16 @@
 
 #define SEQ64_IS_NULL_SEQUENCE(s)       ((s) == SEQ64_NULL_SEQUENCE)
 
+/**
+ *  Defines the size of the time-signature and tempo information.  The sizes of
+ *  these meta events consists of the delta time of 0 (1 byte), the event and
+ *  size bytes (3 bytes), and the data (4 bytes for time-signature and 3 bytes
+ *  for the tempo.  So, 8 bytes for the time-signature and 7 bytes for the
+ *  tempo.
+ */
+
+#define SEQ64_TIME_TEMPO_SIZE           15
+
 namespace seq64
 {
     class event;

@@ -46,6 +46,8 @@
 #include "gui_window_gtk2.hpp"          // seq64::qui_window_gtk2
 #include "perform.hpp"                  // seq64::perform and performcallback
 
+#define SEQ64_STAZED_EDIT_MENU
+
 namespace Gtk
 {
     class Adjustment;
@@ -95,7 +97,7 @@ private:
 
     Gtk::MenuBar * m_menubar;           /**< The whole menu bar.        */
     Gtk::Menu * m_menu_file;            /**< The File menu entry.       */
-#ifdef USE_STAZED_EDIT_MENU
+#ifdef SEQ64_STAZED_EDIT_MENU
     Gtk::Menu * m_menu_edit;            /**< The (new) Edit menu entry. */
 #endif
     Gtk::Menu * m_menu_view;            /**< The View menu entry.       */
@@ -304,9 +306,9 @@ private:
 
     static void handle_signal (int sig);
 
-#ifdef USE_STAZED_EDIT_MENU
-    void popup_menu (Menu * menu);
-#endif
+//#ifdef SEQ64_STAZED_EDIT_MENU
+//  void popup_menu (Gtk::Menu * menu);
+//#endif
 
     void adj_callback_ss ();            // make 'em void at some point
     void adj_callback_bpm ();

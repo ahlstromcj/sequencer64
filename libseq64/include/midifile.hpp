@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-08-01
+ * \updates       2016-08-02
  * \license       GNU GPLv2 or above
  *
  *  The Seq24 MIDI file is a standard, Format 1 MIDI file, with some extra
@@ -51,6 +51,14 @@
 #include "midibyte.hpp"                 /* midishort, midibyte, etc.    */
 #include "midi_splitter.hpp"            /* seq64::midi_splitter         */
 #include "mutex.hpp"                    /* seq64::mutex, automutex  */
+
+
+/**
+ *  A feature to use the song/performance triggers to write out the MIDI
+ *  data as laid out in the perfedit window.
+ */
+
+#define SEQ64_STAZED_EXPORT_SONG
 
 namespace seq64
 {
@@ -194,8 +202,12 @@ public:
     );
     ~midifile ();
 
-    bool parse (perform & a_perf, int a_screen_set = 0);
-    bool write (perform & a_perf);
+    bool parse (perform & p, int a_screen_set = 0);
+    bool write (perform & p);
+
+#ifdef SEQ64_STAZED_EXPORT_SONG
+    bool write_song (perform & p);
+#endif
 
     /**
      * \getter m_error_message

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-08-02
+ * \updates       2016-08-03
  * \license       GNU GPLv2 or above
  *
  *  The main window holds the menu and the main controls of the application,
@@ -259,6 +259,20 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
     (
         MenuElem("_Import...", mem_fun(*this, &mainwnd::file_import_dialog))
     );
+
+    /*
+     * Export means to write out the song as a standard MIDI file based on the
+     * triggers shown in the performance window.
+     */
+
+    m_menu_file->items().push_back
+    (
+        MenuElem
+        (
+            "E_xport...",
+            sigc::bind(mem_fun(*this, &mainwnd::file_save_as), true)
+        )
+    );
     m_menu_file->items().push_back
     (
         MenuElem("O_ptions...", mem_fun(*this, &mainwnd::options_dialog))
@@ -318,6 +332,13 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
         sigc::bind(mem_fun(*this, &mainwnd::set_song_mute), perform::MUTE_TOGGLE))
     );
 
+    /*
+     * Doesn't really make sense to call Import and Export "editing"
+     * functions.  They are file functions.
+     */
+
+#ifdef USE_IMPORT_EXPORT_IN_EDIT
+
     m_menu_edit->items().push_back          // a repeat
     (
         MenuElem("_Import...", mem_fun(*this, &mainwnd::file_import_dialog))
@@ -336,6 +357,8 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
             sigc::bind(mem_fun(*this, &mainwnd::file_save_as), true)
         )
     );
+
+#endif
 
 #endif  // SEQ64_STAZED_EDIT_MENU
 

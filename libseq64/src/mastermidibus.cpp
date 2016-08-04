@@ -1116,10 +1116,13 @@ mastermidibus::get_midi_event (event * inev)
  *  Set the input sequence object, and set the m_dumping_input value to
  *  the given state.
  *
+ * \note
+ *      Can we rework the for-loops to use iterators?
+ *
  * \threadsafe
  *
  * \param state
- *      Provides the dumping-input state to be set.
+ *      Provides the dumping-input (recording) state to be set.
  *
  * \param seq
  *      Provides the sequence object to be logged as the mastermidibus's
@@ -1135,15 +1138,15 @@ mastermidibus::set_sequence_input (bool state, sequence * seq)
     automutex locker(m_mutex);
     if (state)
     {
-        /*
-         * We have a sequence with true - add the sequence if not already
-         * set.
-         */
-
         if (not_nullptr(seq))
         {
+            /*
+             * We have a sequence in the sequence vector; add the sequence if
+             * not already added.
+             */
+
             bool have_seq_already = false;
-            for (unsigned i = 0; i < m_vector_sequence.size(); ++i)
+            for (size_t i = 0; i < m_vector_sequence.size(); ++i)
             {
                 if (m_vector_sequence[i] == seq)
                     have_seq_already = true;
@@ -1155,13 +1158,14 @@ mastermidibus::set_sequence_input (bool state, sequence * seq)
     else
     {
         /*
-         * No sequence and false state - we don't want to record.
-         * Have a sequence with false - remove the sequence.
+         * No sequence and false state means we don't want to record, so clear
+         * the vector.  If we have a sequence that is in the vector- remove
+         * the sequence.
          */
 
         if (not_nullptr(seq))
         {
-            for (unsigned i = 0; i < m_vector_sequence.size(); ++i)
+            for (size_t i = 0; i < m_vector_sequence.size(); ++i)
             {
                 if (m_vector_sequence[i] == seq)
                     m_vector_sequence.erase(m_vector_sequence.begin() + i);
@@ -1180,14 +1184,13 @@ mastermidibus::set_sequence_input (bool state, sequence * seq)
  *  sequence, and then immediately exiting.
  *
  * \param ev
- *      The event that was recorded.  Why use a pointer?  We copy it anyway.
- *      Let the C compiler make the copy.
+ *      The event that was recorded, passed as a copy.
  */
 
 void
 mastermidibus::dump_midi_input (event ev)
 {
-    for (unsigned i = 0; i < m_vector_sequence.size(); ++i)
+    for (size_t i = 0; i < m_vector_sequence.size(); ++i)
     {
         if (is_nullptr(m_vector_sequence[i]))          // error check
         {
@@ -1196,8 +1199,8 @@ mastermidibus::dump_midi_input (event ev)
         else if (m_vector_sequence[i]->stream_event(&ev))
         {
             /*
-             * Did we find a match to sequence channel?  Then don't bother
-             * with remaining sequences.
+             * Did we find a match to the sequence channel?  Then don't bother
+             * with the remaining sequences.
              */
 
             break;

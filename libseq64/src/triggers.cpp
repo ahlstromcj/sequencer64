@@ -60,7 +60,7 @@ triggers::triggers (sequence & parent)
     m_iterator_draw_trigger     (),
     m_trigger_copied            (false),
 #ifdef USE_STAZED_TRIGGER_EXTENSIONS
-    m_paste_tick                (-1),
+    m_paste_tick                (SEQ64_NO_PASTE_TRIGGER),
 #endif
     m_ppqn                      (0),
     m_length                    (0)
@@ -965,12 +965,14 @@ triggers::copy_selected ()
 #ifdef USE_STAZED_TRIGGER_EXTENSIONS
 
 void
-triggers::paste ()
+triggers::paste (midipulse paste_tick)
 {
     if (m_trigger_copied)
     {
         midipulse len = m_clipboard.tick_end() - m_clipboard.tick_start() + 1;
-        if (get_trigger_paste_tick() < 0)       /* no paste-tick set?   */
+
+////    if (get_trigger_paste_tick() < 0)       /* no paste-tick set?   */
+        if (paste_tick == SEQ64_NO_PASTE_TRIGGER)
         {
             add(m_clipboard.tick_end() + 1, len, m_clipboard.offset() + len);
             m_clipboard.tick_start(m_clipboard.tick_end() + 1);
@@ -985,9 +987,11 @@ triggers::paste ()
              * Set the +/- distance to paste the tick, from the start.
              */
 
-            long offset = get_trigger_paste_tick() - m_clipboard.m_tick_start;
+////        long offset = get_trigger_paste_tick() - m_clipboard.m_tick_start;
+            long offset = paste_tick - m_clipboard.m_tick_start;
             add(get_trigger_paste_tick(), len, m_clipboard.m_offset + offset);
-            m_clipboard.m_tick_start = get_trigger_paste_tick();
+////        m_clipboard.m_tick_start = get_trigger_paste_tick();
+            m_clipboard.m_tick_start = paste_tick;
             m_clipboard.m_tick_end = m_clipboard.m_tick_start + length - 1;
             m_clipboard.m_offset += offset_adjust;
             m_clipboard.m_offset = adjust_offset(m_clipboard.m_offset);
@@ -999,7 +1003,7 @@ triggers::paste ()
 #else   // USE_STAZED_TRIGGER_EXTENSIONS
 
 void
-triggers::paste ()
+triggers::paste (midipulse /*paste_tick*/)
 {
     if (m_trigger_copied)
     {

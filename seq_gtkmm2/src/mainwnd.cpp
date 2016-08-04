@@ -273,6 +273,7 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
             sigc::bind(mem_fun(*this, &mainwnd::file_save_as), true)
         )
     );
+    m_menu_file->items().push_back(SeparatorElem());
     m_menu_file->items().push_back
     (
         MenuElem("O_ptions...", mem_fun(*this, &mainwnd::options_dialog))

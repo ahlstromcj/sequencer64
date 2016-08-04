@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-10-30
- * \updates       2016-07-31
+ * \updates       2016-08-03
  * \license       GNU GPLv2 or above
  *
  *  By segregating trigger support into its own module, the sequence class is
@@ -39,9 +39,15 @@
 #include <list>
 #include <stack>
 
+/**
+ *  Indicates that there is no paste-trigger.  This is a new feature from the
+ *  stazed/seq32 code.
+ */
+
+#define SEQ64_NO_PASTE_TRIGGER          (-1)
+
 namespace seq64
 {
-
     class sequence;
 
 /**
@@ -404,7 +410,7 @@ public:
     bool intersect (midipulse position, midipulse & start, midipulse & end);
     void remove_selected ();
     void copy_selected ();
-    void paste ();
+    void paste (midipulse paste_tick = SEQ64_NO_PASTE_TRIGGER);
     bool move_selected
     (
         midipulse tick, bool adjustoffset, int which = 2
@@ -440,7 +446,8 @@ public:
         m_iterator_draw_trigger = m_triggers.begin();
     }
 
-#ifdef USE_STAZED_TRIGGER_EXTENSIONS
+///#ifdef USE_STAZED_TRIGGER_EXTENSIONS
+#if 0
 
     void set_trigger_paste_tick (midipulse tick)
     {

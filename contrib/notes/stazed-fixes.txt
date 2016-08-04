@@ -85,15 +85,15 @@ love feedback on that."
 Check out the recent 6/5/2016 commits in seq32.  I wrote a lengthy explanation
 about an obscure bug that occurs when using qjackctl in master mode.  I checked
 it out on sequencer64 and it does also occur.  I also removed the new position
-change stuff because I don't see any need for it. It seems to me that all the
+change stuff because I do not see any need for it. It seems to me that all the
 timebase callback is     doing, is calculating BBT info to send to jack based
 on pos.frame. It does not seem to matter if the position changes... and it
 seems a lot easier and cleaner. This might not work with the superlooper method
 of "Calculations are made by increments and decrement in a while loop."
 
 To create the obscure bug... set sequencer64 to master, then start jack
-rolling.  In qjackctl hold down the >> (fast forward) button for a while and
-watch the BBT display.  Try the << button as well.  If you pay close attention
+rolling.  In qjackctl hold down the > > (fast forward) button for a while and
+watch the BBT display.  Try the < < button as well.  If you pay close attention
 you will see a brief flash of some very large numbers that are obviously wrong
 due to the zero (or junk) value of pos.frame_rate sent when new_pos = TRUE;
 
@@ -123,7 +123,6 @@ Anything you can use you are welcome to...
 Stazed
 
 PARTIAL CHANGELOG:
-
 
 commit 8978a3efc65c97f1f5ab52d10f9050943ce21909
 Author: Stazed <Stazed@mapson.com>
@@ -310,13 +309,9 @@ Date:   Tue Nov 10 19:21:45 2015 -0600
     	got rid of a few magic numbers for consistency
 
 
-
-
-
 ----------------
  JACK
 ----------------
-
 
 Date: Sat, 11 Jun 2016 19:29:46 -0500
 From: Stan Preston <stazed10@gmail.com>
@@ -328,7 +323,7 @@ User-Agent: Mozilla/5.0 (X11; Linux i686; rv:38.0) Gecko/20100101
 jack,jack,jack....
 
 Well, first let me explain how I think it works. From what I can tell, there is
-only one difference between jack master and jack slave. The master gets it's
+only one difference between jack master and jack slave. The master gets it is
 jack_timebase_callback() called and gets to send to jack BBT (and other) info.
 Any client, master or slave can send position changes and start/stop messages.
 It appears that the BBT is largely ignored by all other time-line based DAWs or
@@ -376,12 +371,12 @@ when rolling, as well as from qjackctl and they will still stay in sync.
 
 What this all means to me is that as far as time-line type programs are
 concerned, BBT from jack is just pretty, but superficial display in qjackctl.
-It's not necessary for them to sync when received from jack. Other type
+It is not necessary for them to sync when received from jack. Other type
 programs, the only one I can think of is klick, do use BBT.
 
 Try this test with klick. Set sequencer64 up as master, and klick running.
 Start the transport rolling then change on the perfroll the beats per bar.
-klick won't adjust. Sequencer64 is not resetting the beats per bar when changed
+klick wo not adjust. Sequencer64 is not resetting the beats per bar when changed
 internally? Is the button callback connected? Try this same test with seq32 and
 klick adjusts to the new beats per bar. klick will not work when no master is
 set.
@@ -460,7 +455,7 @@ So, to explain what I did for seq32 as of last night...
 The set_left_frame() stuff worked but really, really, really ugly.
 
 The actual transport reposition calculations/BBT in position_jack() that were
-NOT used were actually very close. The problem with them was... I can't think
+NOT used were actually very close. The problem with them was... I can not think
 of the correct programming term... the variable size was too small... the
 calculations were truncated?? They also hard coded beats_per_bar and beat_type
 to 4.
@@ -481,7 +476,7 @@ Now:
 
 The only real difference between the before calculation above and the one that
 calculated m_left_frame in set_left_frame() was I separated things and added a
-few more casts to uint64_t and stored them in uint64_t's to stop the
+few more casts to uint64_t and stored them in uint64_t to stop the
 truncation. It was really ugly looking... but I think it calculated
 correctly... well at least I did not find it to be wrong... :) I removed
 set_left_frame() and m_left_frame last morning.
@@ -497,7 +492,7 @@ From my note:
     The BBT calc below can be sent but will be overridden by the first call to
     jack_timebase_callback() of any master set. If no master is set, then the
     BBT will display the new position but will not change even if the transport
-    is rolling. I'm going with the KISS (keep it simple stupid) rule here.
+    is rolling. I am going with the KISS (keep it simple stupid) rule here.
     There is no need to send BBT on position change - the fact that the
     function jack_transport_locate() exists and only uses the frame position is
     proof that BBT is not needed!
@@ -527,7 +522,7 @@ non-timeline which allows the user to adjust the position on the perfedit to
 the mouse pointer with key-p. The mouse must be focused on the perfroll.  In
 seq42 I also added FF and rewind buttons that use it also.
 
-If you don't want the key-p type position change, then m_left_tick can be hard
+If you do not want the key-p type position change, then m_left_tick can be hard
 code.
 
 To summarize how things work now in seq32:
@@ -651,6 +646,50 @@ were pushed from simply clicking on an open space in the perfedit, etc.
 
 Hope this helps!
 
+Stan
+
+
+Date: Wed, 3 Aug 2016 14:55:02 -0500
+From: Stan Preston <stazed10@gmail.com>
+To: Chris Ahlstrom <ahlstromcj@gmail.com>
+Subject: Re: Sequencer64 Version 0.9.15.2
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:45.0) Gecko/20100101
+        Thunderbird/45.2.0
+
+Re:
+
+> Quick question.  What exactly is the Export function for?
+> I thought it was to use any triggers in each sequence to export
+> a reassembled standard MIDI file that would then play as if
+> it were layed out in the performance editor, but no longer need
+> the trigger information.
+
+Well, that was the original intention, to be able to play it in something like
+timidity, etc. After I completed things I realized that there could be an
+editing benefit as well. I like to record from my midi keyboard, improvised to
+a drum beat, on a long sequence (64 measures). Some is junk, but there are
+usually parts that I can use. In original seq24, to cut out the good or bad
+stuff, you would have to search the sequence by listening, then cut and move
+or copy and paste to a new sequence. It could be done but was always tedious.
+The paste box for the sequence sometimes made it difficult to find the correct
+note location, measure, and beat. Also, on a long sequence, you need to zoom
+out to see the copy location as it played, but zoom in for the precise paste
+location. In addition if you wanted to change the measure of the notes, it
+became a trial and error of copy/paste, listen, move , listen, move... etc.
+
+With the added song editor feature of split trigger to mouse and copy paste
+trigger to mouse, you can now do all the editing from the song editor. Listen
+to the sequence, cut out the good or bad parts and reassemble. Move or copy
+all good trigger parts to the left start and delete all the bad stuff. Now you
+can use the song export to create the new sequence. Just mute all other tracks
+and export. Re-import and the new cleaned sequence is already done. Also I use
+it for importing drum beats from a single '32/'42 file that contains dozens of
+different styles with intros and endings. I like to sync two instances of '32
+or '42 together with jack, then play/experiment with the different beats. If I
+find something I like, create the song trigger for the part I like in the drum
+file, export and import.
+
+I actually do not use the song export for anything but editing myself...
 Stan
 
 # vim: sw=4 ts=4 wm=8 et ft=sh

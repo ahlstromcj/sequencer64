@@ -3555,16 +3555,17 @@ sequence::get_sequence_triggers (std::vector<trigger> & trigvect)
  *  Why isn't this protected by a mutex?  We will enable this if anything bad
  *  happens, such as a deadlock, or corruption, that we can prove happens
  *  here.
+ *
+ * \param paste_tick
+ *      A new parameter that provides the tick for pasting, or
+ *      SEQ64_NO_PASTE_TRIGGER (-1) if there is none.
  */
 
 void
-sequence::paste_trigger ()
+sequence::paste_trigger (midipulse paste_tick)
 {
-    /*
-     * TODO: automutex locker(m_mutex);
-     */
-
-    m_triggers.paste();
+    automutex locker(m_mutex);          /* @new ca 2016-08-03   */
+    m_triggers.paste(paste_tick);
 }
 
 /**

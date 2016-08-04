@@ -1,8 +1,14 @@
 Sample Configuration Files
 Chris Ahlstrom
-2016-07-09 to 2016-07-09
+2016-07-09 to 2016-08-04
 
 This README explains what each of these files are.
+
+*.vim:
+
+   These are my vim syntax files for highlighting tokens such as
+   "midipulse".  Copy them to your ~/.vim/after/syntax directory.
+   Makes our code magically more readable :-D.
 
 sequencer64.conf:
 

@@ -1750,7 +1750,6 @@ midifile::write_song (perform & p)
             ;
         result = false;
     }
-
     if (result)
     {
         /*
@@ -1783,37 +1782,43 @@ midifile::write_song (perform & p)
 #endif
 
                 /*
-                 * For each trigger, get sequence and add events to list char
-                 * below - fill_list one by one in order, essentially creating
-                 * a single long sequence.  Then set a single trigger for the
-                 * big sequence - start at zero, end at last trigger end +
-                 * snap.
+                 * For each trigger in the sequence, add events to the list
+                 * below; fill one-by-one in order, creating a single long
+                 * sequence.  Then set a single trigger for the big sequence:
+                 * start at zero, end at last trigger end with snap.  We're
+                 * going to reference (not copy) the triggers now, since the
+                 * write_song() function is now locked.
                  */
 
                 midipulse previous_ts = 0;
-                triggers::List trigs = seq.get_triggers();  /* copy triggers */
-                triggers::List::iterator i;
+                const triggers::List & trigs = seq.get_triggers();
+                triggers::List::const_iterator i;
                 for (i = trigs.begin(); i != trigs.end(); ++i)
                     previous_ts = lst.song_fill_seq_event(*i, previous_ts);
 
-                midipulse total_seq_length = 0;
-                if (trigs.size() > 0)
-                    total_seq_length = trigs.back().tick_end();
-
                 /*
                  * Adjust the sequence length to snap to the nearest measure
-                 * past the end.  We fill the MIDI container with events based
-                 * on the triggers, and then the container's bytes are written
-                 * out below.
+                 * past the end.  We fill the MIDI container with trigger
+                 * "events", and then the container's bytes are written.
                  */
 
-                midipulse measticks = seq.measures_to_ticks();
-                midipulse remainder = total_seq_length % measticks;
-                midipulse measminus = measticks - 1;
-                if (remainder != measminus)
-                    total_seq_length += measminus - remainder;
+                if (! trigs.empty())
+                {
+                    midipulse seqlength = 0;
+                    const trigger & end_trigger = trigs.back();
+                    seqlength = end_trigger.tick_end();
 
-                lst.song_fill_seq_trigger(*i, total_seq_length, previous_ts);
+                    midipulse measticks = seq.measures_to_ticks();
+                    midipulse remainder = seqlength % measticks;
+                    midipulse measminus = measticks - 1;
+                    if (remainder != measminus)
+                        seqlength += measminus - remainder;
+
+                    lst.song_fill_seq_trigger
+                    (
+                        end_trigger, seqlength, previous_ts
+                    );
+                }
 
                 midilong tracksize = midilong(lst.size());
 
@@ -1839,10 +1844,10 @@ midifile::write_song (perform & p)
         {
             char file_buffer[SEQ64_MIDI_LINE_MAX];  /* enable bufferization */
             file.rdbuf()->pubsetbuf(file_buffer, sizeof file_buffer);
-            std::list<midibyte>::iterator it;
+            std::list<midibyte>::const_iterator it;
             for (it = m_char_list.begin(); it != m_char_list.end(); ++it)
             {
-                char c = *it;
+                const char c = *it;
                 file.write(&c, 1);
             }
             m_char_list.clear();

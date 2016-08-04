@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-10-10
- * \updates       2016-08-02
+ * \updates       2016-08-04
  * \license       GNU GPLv2 or above
  *
  *  This class is important when writing the MIDI and sequencer data out to a
@@ -192,7 +192,9 @@ midi_container::fill_seq_number (int seq)
  *  Compare this function to the beginning of midi_container::fill().
  *
  * \param seq
- *      The sequence/track number to write.
+ *      The sequence/track number to write.  We could get this item from
+ *      m_sequence, but the parameter allows the flexibility to change the
+ *      name.
  */
 
 void

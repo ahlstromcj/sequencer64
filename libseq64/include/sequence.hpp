@@ -1078,7 +1078,7 @@ public:
     void del_selected_trigger ();
     void cut_selected_trigger ();
     void copy_selected_trigger ();
-    void paste_trigger ();
+    void paste_trigger (midipulse paste_tick = SEQ64_NO_PASTE_TRIGGER);
     bool move_selected_triggers_to
     (
         midipulse tick, bool adjust_offset, int which = 2

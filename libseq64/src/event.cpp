@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-07-30
+ * \updates       2016-08-04
  * \license       GNU GPLv2 or above
  *
  *  A MIDI event (i.e. "track event") is encapsulated by the seq64::event
@@ -179,12 +179,12 @@ event::operator = (const event & rhs)
         m_data[0]       = rhs.m_data[0];
         m_data[1]       = rhs.m_data[1];
         m_sysex         = nullptr;
-        m_sysex_size    = rhs.m_sysex_size;         /* 0 instead?       */
+        m_sysex_size    = 0;                        /* rhs.m_sysex_size;    */
         m_linked        = nullptr;
-        m_has_link      = rhs.m_has_link;           /* false instead?   */
-        m_selected      = rhs.m_selected;           /* false instead?   */
-        m_marked        = rhs.m_marked;             /* false instead?   */
-        m_painted       = rhs.m_painted;            /* false instead?   */
+        m_has_link      = rhs.m_has_link;           /* false instead?       */
+        m_selected      = rhs.m_selected;           /* false instead?       */
+        m_marked        = rhs.m_marked;             /* false instead?       */
+        m_painted       = rhs.m_painted;            /* false instead?       */
     }
     return *this;
 }
@@ -280,13 +280,17 @@ event::transpose_note (int tn)
  *
  *  Stazed:
  *
- *      The record parameter, if true, does not clear channel portion on record
- *      for channel specific recording. The channel portion is cleared in
- *      sequence::stream_event() by calling set_status() (a_record = false)
- *      after the matching channel is determined.  Otherwise, we use a bitwise
- *      AND to clear the channel portion of the status.  All events will be
- *      stored without the channel nybble.  This is necessary since the channel
- *      is appended by midibus::play() based on the track.
+ *      The record parameter, if true, does not clear channel portion
+ *      on record for channel specific recording. The channel portion is
+ *      cleared in sequence::stream_event() by calling set_status() (a_record
+ *      = false) after the matching channel is determined.  Otherwise, we use
+ *      a bitwise AND to clear the channel portion of the status.  All events
+ *      will be stored without the channel nybble.  This is necessary since
+ *      the channel is appended by midibus::play() based on the track.
+ *
+ *      Instead of adding a "record" parameter to set_status(), we provide a
+ *      more specific function, set_status_keep_channel(), for use in the
+ *      mastermidibus class.
  *
  * \param status
  *      The status byte, perhaps read from a MIDI file or edited in the

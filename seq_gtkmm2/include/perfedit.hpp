@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-06-26
+ * \updates       2016-08-05
  * \license       GNU GPLv2 or above
  *
  *  Note that, as of version 0.9.11, the z and Z keys, when focus is on the
@@ -241,9 +241,27 @@ public:
 
     void set_zoom (int z);
 
+#ifdef USE_STAZED_JACK_SUPPORT
+
+    void rewind (bool press)
+    {
+        perf().rewind(press);
+        gtk_timeout_add(120, FF_RW_timeout, perf());
+    }
+
+    void fast_forward (bool press)
+    {
+        perf().fast_forward(press);
+        gtk_timeout_add(120, FF_RW_timeout, perf());
+    }
+
+#endif
+
 #ifdef SEQ64_STAZED_TRANSPOSE
+
     void set_transpose (int transpose);
     void transpose_button_callback (int transpose);
+
 #endif
 
 private:
@@ -258,7 +276,7 @@ private:
     void collapse ();
     void copy ();
     void undo ();
-    void popup_menu (Gtk::Menu * menu);
+    void popup_menu (Gtk::Menu * menu);     /* used in other classes */
     void draw_sequences ();
     bool timeout ();
     void set_image (bool isrunning);

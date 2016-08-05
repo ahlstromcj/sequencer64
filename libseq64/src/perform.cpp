@@ -124,7 +124,7 @@ perform::perform (gui_assistant & mygui, int ppqn)
     m_start_from_perfedit       (false),
     m_reposition                (false),
     m_excell_FF_RW              (1.0),
-    m_FF_RW_button_type         (0),        // need an enumeration
+    m_FF_RW_button_type         (FF_RW_NONE),
 #endif
     m_gui_support               (mygui),
     m_mute_group                (),         // boolean array, size 32 * 32
@@ -3881,7 +3881,7 @@ perform::max_active_set () const
 void
 perform::FF_rewind ()
 {
-    if (m_FF_RW_button_type == 0)
+    if (m_FF_RW_button_type == FF_RW_NONE)
         return;
 
     long tick = 0;
@@ -3890,13 +3890,13 @@ perform::FF_rewind ()
         measures_to_ticks(m_beats_per_bar, m_ppqn, m_beat_width) /
             4 * m_excell_FF_RW;
 
-    if (m_FF_RW_button_type < 0)  // rewind
+    if (m_FF_RW_button_type == FF_RW_REWIND)
     {
         tick = m_tick - measure_ticks;
         if (tick < 0)
             tick = 0;
     }
-    if (m_FF_RW_button_type > 0)  // Fast Forward
+    else if (m_FF_RW_button_type == FF_RW_FORWARD)
         tick = m_tick + measure_ticks;
 
     if (is_jack_running())

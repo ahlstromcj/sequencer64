@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-06-29
+ * \updates       2016-08-05
  * \license       GNU GPLv2 or above
  *
  */
@@ -66,6 +66,11 @@
 #include "pixmaps/undo.xpm"
 #include "pixmaps/down.xpm"
 #include "pixmaps/perfedit.xpm"
+
+#ifdef USE_STAZED_JACK_SUPPORT
+#include "pixmaps/jack.xpm"
+#include "pixmaps/transport_follow.xpm"
+#endif
 
 #ifdef SEQ64_STAZED_TRANSPOSE
 #include "pixmaps/transpose.xpm"

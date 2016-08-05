@@ -172,8 +172,19 @@ public:
     enum mute_op_t
     {
         MUTE_TOGGLE = -1,
-        MUTE_OFF = 0,
-        MUTE_ON = 1
+        MUTE_OFF    =  0,
+        MUTE_ON     =  1
+    };
+
+    /**
+     *  Provides setting for the fast-forward and rewind functionality.
+     */
+
+    enum ff_rw_t
+    {
+        FF_RW_REWIND    = -1,
+        FF_RW_NONE      =  0,
+        FF_RW_FORWARD   =  1
     };
 
 private:
@@ -221,7 +232,7 @@ private:
      *  TBD.
      */
 
-    int m_FF_RW_button_type;            // was extern in perfedit, need enum
+    ff_rw_t m_FF_RW_button_type;    // was extern int in perfedit
 
 #endif  // USE_STAZED_JACK_SUPPORT
 
@@ -981,6 +992,26 @@ public:
     void set_reposition (bool postype)
     {
         m_reposition = postype;
+    }
+
+    ff_rw_t ff_rw_type () const
+    {
+        return m_FF_RW_button_type;
+    }
+
+    void ff_rw_type (ff_rw_t button_type)
+    {
+        m_FF_RW_button_type = button_type;
+    }
+
+    void rewind (bool press)
+    {
+        ff_rw_type(press ? FF_RW_REWIND : FF_RW_NONE);
+    }
+
+    void fast_forward (bool press)
+    {
+        ff_rw_type(press ? FF_RW_FORWARD : FF_RW_NONE);
     }
 
 #endif  // USE_STAZED_JACK_SUPPORT

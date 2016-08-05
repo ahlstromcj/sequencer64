@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-07-31
+ * \updates       2016-08-04
  * \license       GNU GPLv2 or above
  *
  *  This module also declares/defines the various constants, status-byte
@@ -494,6 +494,8 @@ public:
     /**
      *  This function is used in recording to preserve the input channel
      *  information for deciding what to do with an incoming MIDI event.
+     *  It replaces stazed's set_status() with the optional "record"
+     *  parameter.
      *
      * \param eventcode
      *      The status byte, generally read from the MIDI buss.

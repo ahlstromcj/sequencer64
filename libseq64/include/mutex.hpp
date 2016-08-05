@@ -32,9 +32,10 @@
  *
  *  This module defines the following classes:
  *
- *      -   mutex.  A primitive wrapper for pthread_mutex_t.
- *      -   automutex. A way to lock a function exception-safely and easily.
- *      -   condition_var.  Provides a common usage paradigm, for the
+ *      -   seq64::mutex.  A primitive wrapper for pthread_mutex_t.
+ *      -   seq64::automutex. A way to lock a function exception-safely and
+ *          easily.
+ *      -   seq64::condition_var.  Provides a common usage paradigm, for the
  *          perform object.
  */
 
@@ -100,7 +101,7 @@ private:        // do not allow these functions to be used
 
     automutex ();
     automutex (const automutex &);
-    automutex & operator =(const automutex &);
+    automutex & operator = (const automutex &);
 
 public:
 
@@ -168,3 +169,4 @@ public:
  *
  * vim: sw=4 ts=4 wm=4 et ft=cpp
  */
+

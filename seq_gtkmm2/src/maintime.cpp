@@ -135,7 +135,7 @@ maintime::idle_progress (midipulse ticks)
         m_tick = ticks;
         clear_window();
         draw_rectangle(black(), 0, 0, m_box_width, m_box_height, false);
-        if (tick_x <= m_flash_x)       /* flash */
+        if (tick_x <= m_flash_x)       /* for flashing the maintime bar     */
             draw_rectangle(grey(), 2, 2, m_flash_width, m_flash_height);
 
         draw_rectangle(black(), beat_x + 2, 2, m_pill_width, m_flash_height);

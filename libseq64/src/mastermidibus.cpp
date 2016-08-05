@@ -1083,7 +1083,10 @@ mastermidibus::get_midi_event (event * inev)
         /*
          *  Some keyboards send Note On with velocity 0 for Note Off, so we
          *  take care of that situation here by creating a Note Off event,
-         *  with the channel nybble preserved.
+         *  with the channel nybble preserved. Note that we call
+         *  event :: set_status_keep_channel() instead of using stazed's
+         *  set_status function with the "record" parameter.  A little more
+         *  confusing, but faster.
          */
 
         inev->set_data(buffer[1], buffer[2]);

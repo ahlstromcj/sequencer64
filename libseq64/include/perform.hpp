@@ -180,7 +180,7 @@ public:
      *  Provides setting for the fast-forward and rewind functionality.
      */
 
-    enum ff_rw_t
+    enum ff_rw_button_t
     {
         FF_RW_REWIND    = -1,
         FF_RW_NONE      =  0,
@@ -248,7 +248,7 @@ private:
      *  TBD.
      */
 
-    ff_rw_t m_FF_RW_button_type;    // was extern int in perfedit
+    ff_rw_button_t m_FF_RW_button_type;    // was extern int in perfedit
 
 #endif  // USE_STAZED_TRANSPORT
 
@@ -1039,6 +1039,7 @@ public:
 #ifdef USE_STAZED_TRANSPORT
 
     void FF_rewind ();
+    bool FF_RW_timeout ();
 
     void toggle_song_mode ()
     {
@@ -1066,12 +1067,12 @@ public:
         m_reposition = postype;
     }
 
-    ff_rw_t ff_rw_type () const
+    ff_rw_button_t ff_rw_type () const
     {
         return m_FF_RW_button_type;
     }
 
-    void ff_rw_type (ff_rw_t button_type)
+    void ff_rw_type (ff_rw_button_t button_type)
     {
         m_FF_RW_button_type = button_type;
     }
@@ -1085,6 +1086,8 @@ public:
     {
         ff_rw_type(press ? FF_RW_FORWARD : FF_RW_NONE);
     }
+
+    void reposition (midipulse tick);
 
 #endif  // USE_STAZED_TRANSPORT
 

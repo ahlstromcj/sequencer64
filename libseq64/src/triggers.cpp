@@ -505,8 +505,6 @@ triggers::adjust_offsets_to_length (midipulse newlength)
 {
     for (List::iterator i = m_triggers.begin(); i != m_triggers.end(); ++i)
     {
-        /** COMMON CODE? **/
-
         i->offset(adjust_offset(i->offset()));
         i->offset(m_length - i->offset());               /* flip */
 
@@ -748,6 +746,7 @@ triggers::get_selected_end ()
  *
  * \param which
  *      Selects which movement will be done, as discussed above.
+ *      See the values of the trigger::grow_edit_t type.
  *
  * \return
  *      Returns true if there was room to move.  Otherwise, false is returned.
@@ -760,7 +759,7 @@ triggers::get_selected_end ()
  */
 
 bool
-triggers::move_selected (midipulse tick, bool fixoffset, int which)
+triggers::move_selected (midipulse tick, bool fixoffset, grow_edit_t which)
 {
     bool result = true;
     midipulse mintick = 0;
@@ -780,7 +779,7 @@ triggers::move_selected (midipulse tick, bool fixoffset, int which)
                 maxtick = i->tick_start() - 1;
 
             midipulse deltatick = 0;
-            if (which == 1)
+            if (which == GROW_END)
             {
                 midipulse ppqn_start = s->tick_start() + (m_ppqn / 8);
                 deltatick = tick - s->tick_end();
@@ -790,7 +789,7 @@ triggers::move_selected (midipulse tick, bool fixoffset, int which)
                 if (deltatick < 0 && (deltatick + s->tick_end() <= ppqn_start))
                     deltatick = ppqn_start - s->tick_end();
             }
-            else if (which == 0)
+            else if (which == GROW_START)
             {
                 midipulse ppqn_end = s->tick_end() - (m_ppqn / 8);
                 deltatick = tick - s->tick_start();
@@ -800,7 +799,7 @@ triggers::move_selected (midipulse tick, bool fixoffset, int which)
                 if (deltatick > 0 && (deltatick + s->tick_start() >= ppqn_end))
                     deltatick = ppqn_end - s->tick_start();
             }
-            else if (which == 2)
+            else if (which == GROW_MOVE)
             {
                 deltatick = tick - s->tick_start();
                 if (deltatick < 0 && tick < mintick)
@@ -816,10 +815,10 @@ triggers::move_selected (midipulse tick, bool fixoffset, int which)
              * in selection movement with the arrow keys in the perfroll.
              */
 
-            if (which == 0 || which == 2)
+            if (which == GROW_START || which == GROW_MOVE)
                 s->increment_tick_start(deltatick);
 
-            if (which == 1 || which == 2)
+            if (which == GROW_END || which == GROW_MOVE)
                 s->increment_tick_end(deltatick);
 
             if (fixoffset)

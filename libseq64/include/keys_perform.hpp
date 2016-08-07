@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-09-13
- * \updates       2016-08-06
+ * \updates       2016-08-07
  * \license       GNU GPLv2 or above
  *
  */
@@ -79,6 +79,7 @@ struct keys_perform_transfer
     unsigned int kpt_follow_transport;
     unsigned int kpt_fast_forward;
     unsigned int kpt_rewind;
+    unsigned int kpt_pointer;
 #endif
 
 };
@@ -192,6 +193,7 @@ private:
     unsigned int m_key_follow_transport;        /**< Toggle following JACK. */
     unsigned int m_key_fast_forward;            /**< Start fast-forward.    */
     unsigned int m_key_rewind;                  /**< Start rewind.          */
+    unsigned int m_key_pointer;                 /**< Set progress to mouse. */
 #endif
 
     unsigned int m_key_pattern_edit;            /**< Show pattern editor.   */
@@ -644,6 +646,16 @@ public:
     void rewind (unsigned int key)
     {
         m_key_rewind = key;
+    }
+
+    unsigned int pointer () const
+    {
+        return m_key_pointer;
+    }
+
+    void pointer (unsigned int key)
+    {
+        m_key_pointer = key;
     }
 
     unsigned int toggle_jack () const

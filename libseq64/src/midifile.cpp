@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-08-02
+ * \updates       2016-08-07
  * \license       GNU GPLv2 or above
  *
  *  For a quick guide to the MIDI format, see, for example:
@@ -1282,6 +1282,29 @@ midifile::parse_proprietary_track (perform & p, int file_size)
             usr().seqedit_bgsequence(seqnum);
         }
 
+#ifdef USE_STAZED_TRANSPORT
+
+        /*
+         * Store the beats/measure and beat-width values from the perfedit
+         * window.
+         */
+
+        seqspec = parse_prop_header(file_size);
+        if (seqspec == c_perf_bp_mes)
+        {
+            int bpmes = int(read_long());
+            p.set_beats_per_measure(bpmes);
+        }
+
+        seqspec = parse_prop_header(file_size);
+        if (seqspec == c_perf_bw)
+        {
+            int bw = int(read_long());
+            p.set_beat_width(bw);
+        }
+
+#endif  // USE_STAZED_TRANSPORT
+
         /*
          * ADD NEW CONTROL TAGS AT THE END OF THE LIST HERE.
          */
@@ -1922,7 +1945,7 @@ midifile::write_proprietary_track (perform & p)
 
 #ifdef SEQ64_STRIP_EMPTY_MUTES
 
-    if (! rc().legacy_format())
+    if (! rc().legacy_format())                 // m_new_format???
     {
         if (! p.any_group_unmutes())
             gmutesz = 0;
@@ -1946,6 +1969,12 @@ midifile::write_proprietary_track (perform & p)
             tracklength += prop_item_size(1);   /* c_musickey               */
             tracklength += prop_item_size(1);   /* c_musicscale             */
             tracklength += prop_item_size(4);   /* c_backsequence           */
+
+#ifdef USE_STAZED_TRANSPORT
+            tracklength += prop_item_size(4);   /* c_perf_bp_mes            */
+            tracklength += prop_item_size(4);   /* c_perf_bw                */
+#endif
+
         }
         tracklength += track_end_size();        /* Meta TrkEnd              */
     }
@@ -1994,6 +2023,14 @@ midifile::write_proprietary_track (perform & p)
             write_prop_header(c_backsequence, 4);           /* control tag+4 */
             write_long(long(usr().seqedit_bgsequence()));   /* background    */
         }
+
+#ifdef USE_STAZED_TRANSPORT
+            write_prop_header(c_perf_bp_mes, 4);            /* control tag+4 */
+            write_long(long(p.get_beats_per_measure));      /* perfedit BPM  */
+            write_prop_header(c_perf_bw, 4);                /* control tag+4 */
+            write_long(long(p.get_beat_width));             /* perfedit BW   */
+#endif
+
         write_track_end();
     }
     return true;

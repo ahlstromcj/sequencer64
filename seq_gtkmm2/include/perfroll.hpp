@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-06-25
+ * \updates       2016-08-07
  * \license       GNU GPLv2 or above
  *
  *  This class represents the central piano-roll user-interface area of the
@@ -163,6 +163,13 @@ private:
      */
 
     int m_scroll_page;
+
+#endif
+
+#ifdef USE_STAZED_TRANSPORT
+
+    bool m_transport_follow;
+    bool m_trans_button_press;
 
 #endif
 

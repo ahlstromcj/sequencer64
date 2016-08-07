@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-07-16
+ * \updates       2016-08-07
  * \license       GNU GPLv2 or above
  *
  *  There are a large number of existing items to discuss.  But for now let's
@@ -705,7 +705,7 @@ seqroll::draw_events_on (Glib::RefPtr<Gdk::Drawable> draw)
     int note;
     bool selected;
     int velocity;
-    draw_type dt;
+    draw_type_t dt;
     int starttick = m_scroll_offset_ticks;
     int endtick = (m_window_x * m_zoom) + m_scroll_offset_ticks;
     sequence * seq = nullptr;

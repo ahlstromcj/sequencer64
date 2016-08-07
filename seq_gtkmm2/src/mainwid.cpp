@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-07-30
+ * \updates       2016-08-07
  * \license       GNU GPLv2 or above
  *
  *  Note that this representation is, in a sense, inside the mainwnd
@@ -432,7 +432,7 @@ mainwid::draw_sequence_on_pixmap (int seqnum)
                 int note;
                 bool selected;
                 int velocity;
-                draw_type dt;
+                draw_type_t dt;
                 seq->reset_draw_marker();
 
                 Color eventcolor;

@@ -281,11 +281,18 @@ Seq24PerfInput::on_motion_notify_event (GdkEventMotion * ev, perfroll & roll)
             if (roll.m_growing)
             {
                 if (roll.m_grow_direction)
-                    p.get_sequence(dropseq)->
-                        move_selected_triggers_to(tick, false, 0);
+                {
+                    p.get_sequence(dropseq)->move_selected_triggers_to
+                    (
+                        tick, false, triggers::GROW_START
+                    );
+                }
                 else
-                    p.get_sequence(dropseq)->
-                        move_selected_triggers_to(tick - 1, false, 1);
+                {
+                    p.get_sequence(dropseq)->move_selected_triggers_to
+                    (
+                        tick - 1, false, triggers::GROW_END);
+                }
 
                 result = true;
             }

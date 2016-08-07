@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-07-16
+ * \updates       2016-08-07
  * \license       GNU GPLv2 or above
  *
  *  The performance window allows automatic control of when each
@@ -95,6 +95,10 @@ perfroll::perfroll
     m_old_progress_ticks    (0),
 #ifdef SEQ64_FOLLOW_PROGRESS_BAR
     m_scroll_page           (0),
+#endif
+#ifdef USE_STAZED_TRANSPORT
+    m_transport_follow      (true),
+    m_trans_button_press    (false),
 #endif
     m_4bar_offset           (0),                            // now a full offset
     m_sequence_offset       (0),
@@ -174,6 +178,12 @@ perfroll::change_horz ()
 /**
  *  Changes the 4-bar vertical offset member and queues up a draw
  *  operation.
+ *
+ * Stazed;
+ *
+ *      Must adjust m_drop_y or perfroll_input's unselect_triggers() will not
+ *      work if scrolled up or down to a new location.  See the note in
+ *      on_button_press_event() in the perfroll_input module.
  */
 
 void
@@ -181,6 +191,9 @@ perfroll::change_vert ()
 {
     if (m_sequence_offset != int(m_vadjust.get_value()))
     {
+        m_drop_y += (m_sequence_offset - int(m_vadjust.get_value())) *
+            c_names_y;
+
         m_sequence_offset = int(m_vadjust.get_value());
         enqueue_draw();
     }
@@ -409,11 +422,29 @@ perfroll::draw_progress ()
     else
         draw_drawable(old_progress_x, 0, old_progress_x, 0, 1, m_window_y);
 
+    /*
+     * Stazed:
+     *      draw_drawable(old_progress_x, 0, old_progress_x, 0, 2, m_window_y);
+     *      set_line_attributes(2, Gdk::LINE_SOLID, Gdk::CAP_NOT_LAST,
+     *          Gdk::JOIN_MITER);
+     */
+
     draw_line(progress_color(), progress_x, 0, progress_x, m_window_y);
     if (usr().progress_bar_thick())
         set_line(Gdk::LINE_SOLID, 1);
 
+    /*
+     * Stazed:
+     *      set_line_attributes(1, Gdk::LINE_SOLID, Gdk::CAP_NOT_LAST,
+     *          Gdk::JOIN_MITER);
+     */
+
     m_old_progress_ticks = tick;
+
+#ifdef USE_STAZED_TRANSPORT_XXX
+    auto_scroll_horz();             // but sequencer64 now does this anyway
+#endif
+
 }
 
 #ifdef SEQ64_FOLLOW_PROGRESS_BAR
@@ -449,6 +480,66 @@ perfqroll::follow_progress ()
 }
 
 #endif      // SEQ64_FOLLOW_PROGRESS_BAR
+
+#ifdef USE_STAZED_TRANSPORT_XXX
+
+void
+perfroll::auto_scroll_horz ()
+{
+    if(! perf().get_follow_transport())
+        return;
+
+    if (m_zoom >= c_perf_scale_x)
+    {
+        double progress = double(perf().get_tick() / m_zoom / c_ppen);
+        int zoom_ratio = m_zoom / c_perf_scale_x;
+        progress *= zoom_ratio;
+
+        int offset = zoom_ratio;
+        if (zoom_ratio != 1)
+            offset *= -2;
+
+        double page_size_adjust = (m_hadjust->get_page_size()/zoom_ratio)/2;
+        double get_value_adjust = m_hadjust->get_value()*zoom_ratio;
+        if (progress > page_size_adjust || get_value_adjust > progress)
+            m_hadjust.et_value(progress - page_size_adjust + offset);
+
+        return;
+    }
+
+    long progress_tick = perf().get_tick();
+    long tick_offset = m_4bar_offset * c_ppqn * 16;
+    int progress_x = (progress_tick - tick_offset) / m_zoom  + 100;
+    int page = progress_x / m_window_x;
+    if (page != 0 || progress_x < 0)
+    {
+        double left_tick = (double) progress_tick /m_zoom/c_ppen;
+        switch (m_zoom)
+        {
+        case 8:
+            m_hadjust->set_value(left_tick / 4);
+            break;
+        case 16:
+            m_hadjust->set_value(left_tick / 2 );
+            break;
+/*
+        case 32:
+            m_hadjust->set_value(left_tick );
+            break;
+        case 64:
+            m_hadjust->set_value(left_tick * 2 );
+            break;
+        case 128:
+            m_hadjust->set_value(left_tick * 4 );
+            break;
+ */
+        default:
+            break;
+        }
+    }
+}
+
+#endif  // USE_STAZED_TRANSPORT_XXX
 
 /**
  *  Draws the given pattern/sequence on the given drawable area.
@@ -528,7 +619,7 @@ perfroll::draw_sequence_on (int seqnum)
                         int note;
                         bool selected;
                         int velocity;
-                        draw_type dt;
+                        draw_type_t dt;
                         seq->reset_draw_marker();
 
 #ifdef SEQ64_STAZED_TRANSPOSE
@@ -651,15 +742,18 @@ perfroll::redraw_dirty_sequences ()
  *
  *  What's weird is that we divide y by m_names_y, then multiply it by
  *  m_names_y, before passing the result to draw_drawable().  However, if we
- *  just as y casted to an int, then the drawing of the row is only partial,
+ *  just use y casted to an int, then the drawing of the row is only partial,
  *  vertically.
  */
 
 void
 perfroll::draw_drawable_row (long y)
 {
-    int s = y / m_names_y;
-    draw_drawable(0, s * m_names_y, 0, s * m_names_y, m_window_x, m_names_y);
+    if (y >= 0)             /* make sure user didn't scroll up off window */
+    {
+        int s = y / m_names_y;
+        draw_drawable(0, s * m_names_y, 0, s * m_names_y, m_window_x, m_names_y);
+    }
 }
 
 /**
@@ -861,6 +955,21 @@ bool
 perfroll::on_button_press_event (GdkEventButton * ev)
 {
     bool result;
+
+#ifdef USE_STAZED_TRANSPORT
+
+    /*
+     *  To avoid double button press on normal seq42 method...
+     */
+
+    if (! m_trans_button_press)
+    {
+        m_transport_follow = m_mainperf->get_follow_transport();
+        perf().set_follow_transport(false);
+        m_trans_button_press = true;
+    }
+#endif
+
     if (rc().interaction_method() == e_seq24_interaction)
         result = m_seq24_interaction.on_button_press_event(ev, *this);
     else
@@ -890,6 +999,11 @@ perfroll::on_button_release_event (GdkEventButton * ev)
 
     if (result)
         perf().modify();
+
+#ifdef USE_STAZED_TRANSPORT
+    perf().set_follow_transport(m_transport_follow);
+    m_trans_button_press = false;
+#endif
 
     enqueue_draw();
     return result;
@@ -925,6 +1039,17 @@ perfroll::on_scroll_event (GdkEventScroll * ev)
             val += increment;
 
         m_hadjust.clamp_page(val, val + m_hadjust.get_page_size());
+    }
+    else if (is_ctrl_key(ev))
+    {
+        /*
+         * Stazed addition, use Ctrl key to effect zoom changes.
+         */
+
+        if (CAST_EQUIVALENT(ev->direction, SEQ64_SCROLL_UP))
+            m_parent.set_zoom(m_zoom / 2);
+        else if (CAST_EQUIVALENT(ev->direction, SEQ64_SCROLL_DOWN))
+            m_parent.set_zoom(m_zoom * 2);
     }
     else
     {
@@ -989,12 +1114,40 @@ perfroll::on_motion_notify_event (GdkEventMotion * ev)
  *  The Keypad-End key is an issue on our ASUS "gaming" laptop.  Whether it is 
  *  seen as a "1" or an "End" key depends on an interaction between the Shift
  *  and the Num Lock key.  Annoying, takes some time to get used to.
+ *
+ * Stazed:  there are many changes from seq32 that need to be studied before
+ *          including them here.
  */
 
 bool
 perfroll::on_key_press_event (GdkEventKey * ev)
 {
     keystroke k(ev->keyval, SEQ64_KEYSTROKE_PRESS, ev->state);
+
+#ifdef USE_STAZED_TRANSPORT
+
+    /*
+     * If this keystroke is click, move the song position to the location of
+     * the mouse pointer.  Stazed used p, but we need an alternative.
+     */
+
+    if (k == key_pointer)
+    {
+        int x = 0;
+        int y = 0;
+        long tick = 0;
+
+        get_pointer(x, y);
+        if (x < 0)
+            x = 0;
+
+        snap_x(&x);
+        convert_x(x, &tick);
+        perf().reposition(tick);
+        return true;
+    }
+
+#endif  // USE_STAZED_TRANSPORT
 
     /*
      * EXPERIMENT:  add this call to try to make seqroll and perfroll act the

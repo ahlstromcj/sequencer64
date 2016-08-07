@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-08-06
+ * \updates       2016-08-07
  * \license       GNU GPLv2 or above
  *
  */
@@ -113,6 +113,25 @@ update_perfedit_sequences ()
 
     if (not_nullptr(gs_perfedit_pointer_1))
         gs_perfedit_pointer_1->draw_sequences();
+}
+
+/**
+ *  This global function in the seq64 namespace is pass to the gtk_timeout
+ *  callback.
+ */
+
+int
+FF_RW_timeout (void * arg)
+{
+#ifdef USE_STAZED_TRANSPORT
+    perform * p = (perform *)(arg);
+    if (not_nullptr(p))
+        return p->FF_RW_timeout();
+    else
+        return false;
+#else
+    return false;
+#endif
 }
 
 /**
@@ -828,20 +847,40 @@ perfedit::draw_sequences ()
 bool
 perfedit::timeout ()
 {
+
+#ifdef USE_STAZED_JACK_SUPPORT
+    m_perfroll->redraw_dirty_sequences();
+    m_perfroll->draw_progress();
+    m_perfnames->redraw_dirty_sequences();
+
+#ifdef USE_STAZED_TRANSPORT
+    if (m_button_follow->get_active() != perf().get_follow_transport())
+        m_button_follow->set_active(perf().get_follow_transport());
+#endif
+
+    if (perf().is_running())
+        m_button_jack->set_sensitive(false);
+    else
+        m_button_jack->set_sensitive(true);
+#else
     m_perfroll->follow_progress();          /* keep up with progress        */
     m_perfroll->redraw_progress();
     m_perfnames->redraw_dirty_sequences();
+#endif
 
-#ifdef USE_IMMEDIATE_REDRAW
+#ifdef USE_STAZED_UNDO_REDO
+
+    m_button_undo->set_sensitive(perf()->have_undo());
+    m_button_redo->set_sensitive(perf()->have_redo());
+
+#else   // USE_STAZED_UNDO_REDO
 
     /*
      * Do not enable this code, it makes the whole perfedit panel flicker.
      * Instead, one can set (for example) the sequence's "dirty mp" flag.
+     *
+     * m_perfroll->enqueue_draw();
      */
-
-    m_perfroll->enqueue_draw();             /* necessary to force redraw    */
-
-#endif
 
 #ifdef SEQ64_PAUSE_SUPPORT
     if (perf().is_running() != m_is_running)
@@ -850,6 +889,8 @@ perfedit::timeout ()
         set_image(m_is_running);
     }
 #endif
+
+#endif   // USE_STAZED_UNDO_REDO
 
     return true;
 }

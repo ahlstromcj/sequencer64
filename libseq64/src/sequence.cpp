@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-08-01
+ * \updates       2016-08-07
  * \license       GNU GPLv2 or above
  *
  *  The functionality of this class also includes handling some of the
@@ -3409,7 +3409,7 @@ sequence::selected_trigger_end ()
 bool
 sequence::move_selected_triggers_to
 (
-    midipulse tick, bool adjustoffset, int which
+    midipulse tick, bool adjustoffset, triggers::grow_edit_t which
 )
 {
     automutex locker(m_mutex);
@@ -3706,14 +3706,14 @@ sequence::get_minmax_note_events (int & lowest, int & highest)
  *      Probably should be a midibyte value.
  */
 
-draw_type
+draw_type_t
 sequence::get_next_note_event
 (
     midipulse * tick_s, midipulse * tick_f,
     int * note, bool * selected, int * velocity
 )
 {
-    draw_type result = DRAW_FIN;
+    draw_type_t result = DRAW_FIN;
     *tick_f = 0;
     while (m_iterator_draw != m_events.end())
     {

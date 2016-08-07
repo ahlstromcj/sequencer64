@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-10-30
- * \updates       2016-08-03
+ * \updates       2016-08-07
  * \license       GNU GPLv2 or above
  *
  *  By segregating trigger support into its own module, the sequence class is
@@ -249,8 +249,25 @@ public:
 
 class triggers
 {
+    friend class midi_container;
+    friend class midifile;
+    friend class sequence;
+    friend class Seq24PerfInput;        /* we need better encapsulation */
+    friend class FruityPerfInput;       /* we need better encapsulation */
 
-public:
+private:
+
+    /**
+     *  Provides a typedef introduced by Stazed to make the trigger grow/move
+     *  code easier to understand.
+     */
+
+    enum grow_edit_t
+    {
+        GROW_START  = 0,    /**< Grow the start of the trigger.         */
+        GROW_END    = 1,    /**< Grow the end of the trigger.           */
+        GROW_MOVE   = 2     /**< Move the entire trigger block.         */
+    };
 
     /**
      *  Exposes the triggers type, currently needed for midi_container only.
@@ -258,7 +275,10 @@ public:
 
     typedef std::list<trigger> List;
 
-private:
+    /**
+     *  Provides a stack for use with the undo/redo features of the
+     *  trigger support.
+     */
 
     typedef std::stack<List> Stack;
 
@@ -413,7 +433,7 @@ public:
     void paste (midipulse paste_tick = SEQ64_NO_PASTE_TRIGGER);
     bool move_selected
     (
-        midipulse tick, bool adjustoffset, int which = 2
+        midipulse tick, bool adjustoffset, grow_edit_t which = GROW_MOVE
     );
     midipulse get_selected_start ();
     midipulse get_selected_end ();

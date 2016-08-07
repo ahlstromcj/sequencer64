@@ -395,9 +395,19 @@ FruityPerfInput::on_motion_notify_event (GdkEventMotion * ev, perfroll & roll)
             {
                 result = true;
                 if (roll.m_grow_direction)
-                    seq->move_selected_triggers_to(tick, false, 0);
+                {
+                    seq->move_selected_triggers_to
+                    (
+                        tick, false, triggers::GROW_START
+                    );
+                }
                 else
-                    seq->move_selected_triggers_to(tick - 1, false, 1);
+                {
+                    seq->move_selected_triggers_to
+                    (
+                        tick - 1, false, triggers::GROW_END
+                    );
+                }
             }
             roll.draw_all();
         }

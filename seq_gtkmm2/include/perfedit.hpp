@@ -348,6 +348,7 @@ private:        // Gtkmm 2.4 callbacks
  */
 
 extern void update_perfedit_sequences ();
+extern int FF_RW_timeout (void * arg);
 
 }               // namespace seq64
 

@@ -3998,6 +3998,47 @@ perform::FF_rewind ()
     }
 }
 
+/**
+ *  Encapsulates some repositioning code needed to move the position to the
+ *  mouse pointer location in perfroll.
+ */
+
+void
+perform::reposition (midipulse tick)
+{
+    if (is_jack_running())
+    {
+        set_reposition();
+        set_starting_tick(tick);
+        position_jack(true, tick);
+    }
+    else
+    {
+        set_reposition();
+        set_starting_tick(tick);
+    }
+}
+
+/**
+ *  Convenience function.  This function is used in the free function version fo
+ *  FF_RW_timeout() as a callback to the gtk_timeout() function.
+ */
+
+bool
+perform::FF_RW_timeout ()
+{
+    if (FF_RW_button_type != FF_RW_NONE)
+    {
+        FF_rewind();
+        if (m_excell_FF_RW < 60.0f)
+            m_excell_FF_RW *= 1.1f;
+
+        return true;
+    }
+    m_excell_FF_RW = 1.0;
+    return false;
+}
+
 #endif  // USE_STAZED_JACK_SUPPORT
 
 #ifdef PLATFORM_DEBUG_XXX

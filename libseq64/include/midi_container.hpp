@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-10-10
- * \updates       2016-08-06
+ * \updates       2016-08-07
  * \license       GNU GPLv2 or above
  *
  */
@@ -143,6 +143,8 @@ namespace seq64
             c_notes
             c_bpmtag (beats per minute)
             c_mutegroups
+            c_perf_bp_mes (perfedit's beats-per-measure setting)
+            c_perf_bw     (perfedit's beat-width setting)
 \endverbatim
  *
  *  Also see the PDF file in the following project for more information about
@@ -173,6 +175,7 @@ namespace seq64
  *      The code to support this option is turned on via the
  *      build-configurable SEQ64_STAZED_TRANSPOSE macro, but here we
  *      reserved the value even if that option is not enabled by the user.
+ *      There are additional values from Stazed/seq32, not yet used.
  */
 
 const midilong c_midibus =      0x24240001; /**< Track buss number.         */
@@ -189,6 +192,8 @@ const midilong c_musickey =     0x24240011; /**< The track's key.           */
 const midilong c_musicscale =   0x24240012; /**< The track's scale.         */
 const midilong c_backsequence = 0x24240013; /**< Track background sequence. */
 const midilong c_transpose =    0x24240014; /**< Track transpose value.     */
+const midilong c_perf_bp_mes =  0x24240015; /**< Perfedit beats/measure.    */
+const midilong c_perf_bw     =  0x24240016; /**< Perfedit beat-width.       */
 
 /**
  *    This class is the abstract base class for a container of MIDI track

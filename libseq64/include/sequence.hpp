@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-30
- * \updates       2016-08-02
+ * \updates       2016-08-07
  * \license       GNU GPLv2 or above
  *
  *  The functions add_list_var() and add_long_list() have been replaced by
@@ -80,7 +80,7 @@ namespace seq64
  *  used in the sequence, seqroll, perfroll, and mainwid classes.
  */
 
-enum draw_type
+enum draw_type_t
 {
     /**
      *  Indicates that drawing is finished?
@@ -115,7 +115,6 @@ enum draw_type
 
 class sequence
 {
-
     friend class perform;               /* access to set_parent()   */
     friend class triggers;              /* will unfriend later      */
 
@@ -1081,7 +1080,8 @@ public:
     void paste_trigger (midipulse paste_tick = SEQ64_NO_PASTE_TRIGGER);
     bool move_selected_triggers_to
     (
-        midipulse tick, bool adjust_offset, int which = 2
+        midipulse tick, bool adjust_offset,
+        triggers::grow_edit_t which = triggers::GROW_MOVE
     );
     midipulse selected_trigger_start ();
     midipulse selected_trigger_end ();
@@ -1228,7 +1228,7 @@ public:
     void reset (bool live_mode);
     void reset_draw_marker ();
     void reset_draw_trigger_marker ();
-    draw_type get_next_note_event
+    draw_type_t get_next_note_event
     (
         midipulse * tick_s, midipulse * tick_f, int * note,
         bool * selected, int * velocity

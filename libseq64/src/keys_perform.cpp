@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-13
- * \updates       2016-08-06
+ * \updates       2016-08-07
  * \license       GNU GPLv2 or above
  *
  * \change ca 2016-05-22
@@ -77,6 +77,7 @@ keys_perform::keys_perform ()
     m_key_follow_transport          (SEQ64_F4),
     m_key_fast_forward              (SEQ64_F5),
     m_key_rewind                    (SEQ64_F6),
+    m_key_pointer                   (SEQ64_F7),
 #endif
     m_key_pattern_edit              (SEQ64_equal),
     m_key_event_edit                (SEQ64_minus),
@@ -153,6 +154,7 @@ keys_perform::set_keys (const keys_perform_transfer & kpt)
     m_key_follow_transport          = kpt.kpt_follow_transport;
     m_key_fast_forward              = kpt.kpt_fast_forward;
     m_key_rewind                    = kpt.kpt_rewind;
+    m_key_pointer                   = kpt.kpt_pointer;
 #endif
     m_key_pattern_edit              = kpt.kpt_pattern_edit;
     m_key_event_edit                = kpt.kpt_event_edit;
@@ -196,6 +198,7 @@ keys_perform::get_keys (keys_perform_transfer & kpt)
     m_key_follow_transport           = kpt.kpt_follow_transport;
     m_key_fast_forward               = kpt.kpt_fast_forward;
     m_key_rewind                     = kpt.kpt_rewind;
+    m_key_pointer                    = kpt.kpt_pointer;
 #endif
      kpt.kpt_pattern_edit            = m_key_pattern_edit;
      kpt.kpt_event_edit              = m_key_event_edit;
@@ -372,6 +375,9 @@ keyval_normalize (keys_perform_transfer & k)
 
     if (k.kpt_rewind == 0 || k.kpt_rewind > 65536)
         kpt.kpt_rewind = SEQ64_F6;
+
+    if (k.kpt_pointer == 0 || k.kpt_pointer > 65536)
+        kpt.kpt_pointer = SEQ64_F6;
 #endif
 }
 

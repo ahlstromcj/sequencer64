@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-10-10
- * \updates       2016-08-02
+ * \updates       2016-08-06
  * \license       GNU GPLv2 or above
  *
  */
@@ -167,6 +167,12 @@ namespace seq64
  *  We could also add snap and note-length to the per-song defaults, but
  *  the "user" configuration file seems like a better place to store these
  *  preferences.
+ *
+ * \note
+ *      The new value c_transpose value is from Stazed's seq32 project.
+ *      The code to support this option is turned on via the
+ *      build-configurable SEQ64_STAZED_TRANSPOSE macro, but here we
+ *      reserved the value even if that option is not enabled by the user.
  */
 
 const midilong c_midibus =      0x24240001; /**< Track buss number.         */
@@ -182,10 +188,7 @@ const midilong c_midictrl =     0x24240010; /**< Song MIDI control.         */
 const midilong c_musickey =     0x24240011; /**< The track's key.           */
 const midilong c_musicscale =   0x24240012; /**< The track's scale.         */
 const midilong c_backsequence = 0x24240013; /**< Track background sequence. */
-
-#ifdef SEQ64_STAZED_TRANSPOSE
 const midilong c_transpose =    0x24240014; /**< Track transpose value.     */
-#endif
 
 /**
  *    This class is the abstract base class for a container of MIDI track

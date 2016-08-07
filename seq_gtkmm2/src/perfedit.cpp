@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-08-05
+ * \updates       2016-08-06
  * \license       GNU GPLv2 or above
  *
  */
@@ -69,6 +69,9 @@
 
 #ifdef USE_STAZED_JACK_SUPPORT
 #include "pixmaps/jack.xpm"
+#endif
+
+#ifdef USE_STAZED_TRANSPORT
 #include "pixmaps/transport_follow.xpm"
 #endif
 
@@ -167,6 +170,15 @@ perfedit::perfedit
     m_button_copy       (manage(new Gtk::Button())),
     m_button_grow       (manage(new Gtk::Button())),
     m_button_undo       (manage(new Gtk::Button())),
+#ifdef SEQ64_STAZED_UNDO_REDO
+    m_button_redo       (manage(new Gtk::Button())),
+#endif
+#ifdef USE_STAZED_JACK_SUPPORT
+    m_button_jack       (manage(new Gtk::ToggleButton())),
+#endif
+#ifdef USE_STAZED_TRANSPORT
+    m_button_follow     (manage(new Gtk::ToggleButton())),
+#endif
     m_button_bpm        (manage(new Gtk::Button())),
     m_entry_bpm         (manage(new Gtk::Entry())),
     m_button_bw         (manage(new Gtk::Button())),
@@ -227,20 +239,45 @@ perfedit::perfedit
 #define SET_SNAP    mem_fun(*this, &perfedit::set_snap)
 #define SET_BW      mem_fun(*this, &perfedit::set_beat_width)
 
-    static const int s_width_items [] = { 1, 2, 4, 8, 16, 32 };
+//  static const int s_width_items [] = { 1, 2, 4, 8, 16, 32 };
+    static const int s_width_items [] =
+    {
+        1, 2, 4, 8, 16, 32,
+        0,
+        3, 6, 12, 24,
+#ifdef USE_STAZED_EXTRA_SNAPS
+        0,
+        5, 10, 20, 40,
+        0,
+        7, 9, 11, 13, 14, 15
+#endif
+    };
     static const int s_width_count = sizeof(s_width_items) / sizeof(int);
     for (int si = 0; si < s_width_count; ++si)
     {
         int item = s_width_items[si];
         char fmt[8];
+        bool use_separator = false;
         if (item > 1)
             snprintf(fmt, sizeof fmt, "1/%d", item);
+        else if (item == 0)
+            use_separator = true;
         else
             snprintf(fmt, sizeof fmt, "%d", item);
 
-        m_menu_snap->items().push_back(MenuElem(fmt, sigc::bind(SET_SNAP, item)));
-        snprintf(fmt, sizeof fmt, "%d", item);
-        m_menu_bw->items().push_back(MenuElem(fmt, sigc::bind(SET_BW, item)));
+        if (use_separator)
+        {
+            m_menu_snap->items().push_back(SeparatorElem());
+        }
+        else
+        {
+            m_menu_snap->items().push_back
+            (
+                MenuElem(fmt, sigc::bind(SET_SNAP, item))
+            );
+            snprintf(fmt, sizeof fmt, "%d", item);
+            m_menu_bw->items().push_back(MenuElem(fmt, sigc::bind(SET_BW, item)));
+        }
     }
 
 #define SET_POPUP   mem_fun(*this, &perfedit::popup_menu)
@@ -276,7 +313,6 @@ perfedit::perfedit
             )
         );
     }
-
     m_button_xpose->add
     (
         *manage(new Gtk::Image(Gdk::Pixbuf::create_from_xpm_data(transpose_xpm)))
@@ -309,7 +345,7 @@ perfedit::perfedit
     );
     add_tooltip
     (
-        m_button_bpm, "Time signature: beats per measure, beats per bar."
+        m_button_bpm, "Time signature: beats per measure or bar."
     );
     m_entry_bpm->set_width_chars(2);
     m_entry_bpm->set_editable(false);
@@ -319,24 +355,30 @@ perfedit::perfedit
     (
         sigc::bind<Gtk::Menu *>(SET_POPUP, m_menu_bw)
     );
-    add_tooltip(m_button_bw, "Time signature: length of beat.");
+    add_tooltip(m_button_bw, "Time signature: length of measure or bar.");
     m_entry_bw->set_width_chars(2);
     m_entry_bw->set_editable(false);
 
     m_button_undo->add(*manage(new PIXBUF_IMAGE(undo_xpm)));
     m_button_undo->signal_clicked().connect(mem_fun(*this, &perfedit::undo));
-    add_tooltip(m_button_undo, "Undo.");
+    add_tooltip(m_button_undo, "Undo last action.");
+
+#ifdef SEQ64_STAZED_UNDO_REDO
+    m_button_redo->add(*manage(new PIXBUF_IMAGE(redo_xpm)));
+    m_button_redo->signal_clicked().connect(mem_fun(*this, &perfedit::redo));
+    add_tooltip(m_button_redo, "Redo last action.");
+#endif
 
     m_button_expand->add(*manage(new PIXBUF_IMAGE(expand_xpm)));
     m_button_expand->signal_clicked().connect(mem_fun(*this, &perfedit::expand));
-    add_tooltip(m_button_expand, "Expand between the L and R markers.");
+    add_tooltip(m_button_expand, "Expand space between L and R markers.");
 
     m_button_collapse->add(*manage(new PIXBUF_IMAGE(collapse_xpm)));
     m_button_collapse->signal_clicked().connect
     (
         mem_fun(*this, &perfedit::collapse)
     );
-    add_tooltip(m_button_collapse, "Collapse between the L and R markers.");
+    add_tooltip(m_button_collapse, "Collapse patter between L and R markers.");
 
     m_button_copy->add(*manage(new PIXBUF_IMAGE(copy_xpm))); /* expand+copy */
     m_button_copy->signal_clicked().connect(mem_fun(*this, &perfedit::copy));
@@ -367,10 +409,35 @@ perfedit::perfedit
     add_tooltip(m_button_play, "Begin playback at the L marker.");
     m_button_play->set_sensitive(true);
 
+#ifdef USE_STAZED_JACK_SUPPORT
+    m_button_jack->add(*manage(new PIXBUF_IMAGE(jack_xpm)));
+    m_button_jack->signal_clicked().connect
+    (
+        mem_fun(*this, &perfedit::set_jack_mode)
+    );
+    add_tooltip(m_button_jack, "Toggle JACK sync connection.");
+    if (rc().with_jack_transport())
+        m_button_jack->set_active(true);
+#endif
+
+#ifdef USE_STAZED_TRANSPORT
+    m_button_follow->add(*manage(new PIXBUF_IMAGE(jack_xpm)));
+    m_button_follow->signal_clicked().connect
+    (
+        mem_fun(*this, &perfedit::set_follow_transport)
+    );
+    add_tooltip(m_button_follow, "Follow JACK transport.");
+    m_button_follow->set_active(true);
+#endif
+
+
     m_hlbox->pack_end(*m_button_copy , false, false);
     m_hlbox->pack_end(*m_button_expand , false, false);
     m_hlbox->pack_end(*m_button_collapse , false, false);
     m_hlbox->pack_end(*m_button_undo , false, false);
+#ifdef SEQ64_STAZED_UNDO_REDO
+    m_hlbox->pack_end(*m_button_redo , false, false);
+#endif
     m_hlbox->pack_start(*m_button_stop , false, false);
     m_hlbox->pack_start(*m_button_play , false, false);
     m_hlbox->pack_start(*m_button_loop , false, false);
@@ -383,10 +450,21 @@ perfedit::perfedit
     m_hlbox->pack_start(*(manage(new Gtk::Label("x"))), false, false, 4);
     m_hlbox->pack_start(*m_button_snap , false, false);
     m_hlbox->pack_start(*m_entry_snap , false, false);
+
 #ifdef SEQ64_STAZED_TRANSPOSE
     m_hlbox->pack_start(*m_button_xpose , false, false);
     m_hlbox->pack_start(*m_entry_xpose , false, false);
 #endif
+
+#ifdef USE_STAZED_JACK_SUPPORT
+    m_hlbox->pack_start(*(manage(new VSeparator())), false, false, 4);
+    m_hlbox->pack_start(*m_button_jack, false, false);
+#endif
+
+#ifdef USE_STAZED_TRANSPORT
+    m_hlbox->pack_start(*m_button_follow, false, false);
+#endif
+
     add(*m_table);
 
     /*
@@ -399,6 +477,7 @@ perfedit::perfedit
     set_beats_per_bar(SEQ64_DEFAULT_BEATS_PER_MEASURE); /* time-sig numerator   */
     set_beat_width(SEQ64_DEFAULT_BEAT_WIDTH);           /* time-sig denominator */
     set_snap(SEQ64_DEFAULT_PERFEDIT_SNAP);
+
 #ifdef SEQ64_STAZED_TRANSPOSE
     set_transpose(0);
 #endif
@@ -463,6 +542,22 @@ perfedit::undo ()
     enqueue_draw();
 }
 
+#ifdef SEQ64_STAZED_UNDO_REDO
+
+/**
+ *  Implement the redo feature (Ctrl-?).  We pop an Redo trigger, and then
+ *  ask the perfroll to queue up a (re)drawing action.
+ */
+
+void
+perfedit::redo ()
+{
+    perf().pop_trigger_redo();
+    enqueue_draw();
+}
+
+#endif
+
 /**
  *  Implement the collapse action.  This action removes all events between
  *  the L and R (left and right) markers.  This action is preceded by
@@ -526,6 +621,58 @@ perfedit::popup_menu (Gtk::Menu * menu)
 {
     menu->popup(0, 0);
 }
+
+#ifdef USE_STAZED_TRANSPORT
+
+void
+perfedit::set_follow_transport ()
+{
+    perf().set_follow_transport(m_button_follow->get_active());
+}
+
+/**
+ *  Note that this will trigger the button signal callback.
+ */
+
+void
+perfedit::toggle_follow_transport ()
+{
+    perf().set_active(! m_button_follow->get_active());
+}
+
+#endif  // USE_STAZED_TRANSPORT
+
+#ifdef USE_STAZED_JACK_SUPPORT
+
+/**
+ *  To avoid a lot of pointer dereferencing, much of the code is offload to
+ *  perform::set_jack_mode(), which now returns a boolean.
+ */
+
+void
+perfedit::set_jack_mode ()
+{
+    bool active = perf().set_jack_mode(m_button_jack->get_active());
+    m_button_jack->set_active(active);
+}
+
+bool
+perfedit::get_toggle_jack ()
+{
+    return m_button_jack->get_active();
+}
+
+/**
+ *  Note that this will trigger the button signal callback.
+ */
+
+void
+perfedit::toggle_jack ()
+{
+    m_button_jack->set_active(! m_button_jack->get_active());
+}
+
+#endif  // USE_STAZED_JACK_SUPPORT
 
 /**
  *  Sets the guides, which are the L and R user-interface elements.
@@ -740,10 +887,15 @@ perfedit::set_image (bool isrunning)
 void
 perfedit::start_playing ()
 {
+#ifdef USE_STAZED_TRANSPORT
+    perf().set_start_from_perfedit(true);
+    perf().start_playing();
+#else
 #ifdef SEQ64_PAUSE_SUPPORT
     perf().pause_key();                 /* perf().start_key() */
 #else
     perf().start_playing();             /* legacy behavior  */
+#endif
 #endif
 }
 

@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-09-13
- * \updates       2016-06-23
+ * \updates       2016-08-06
  * \license       GNU GPLv2 or above
  *
  */
@@ -70,6 +70,15 @@ struct keys_perform_transfer
 
 #ifdef SEQ64_PAUSE_SUPPORT
     unsigned int kpt_pause;
+#endif
+
+#ifdef USE_STAZED_TRANSPORT
+    unsigned int kpt_song_mode;
+    unsigned int kpt_toggle_jack;
+    unsigned int kpt_menu_mode;
+    unsigned int kpt_follow_transport;
+    unsigned int kpt_fast_forward;
+    unsigned int kpt_rewind;
 #endif
 
 };
@@ -176,14 +185,23 @@ private:
     unsigned int m_key_pause;                   /**< Pause play, Period.    */
 #endif
 
+#ifdef USE_STAZED_TRANSPORT
+    unsigned int m_key_song_mode;               /**< Song versus Live mode. */
+    unsigned int m_key_toggle_jack;             /**< Toggle JACK connect.   */
+    unsigned int m_key_menu_mode;               /**< Menu enabled/disabled. */
+    unsigned int m_key_follow_transport;        /**< Toggle following JACK. */
+    unsigned int m_key_fast_forward;            /**< Start fast-forward.    */
+    unsigned int m_key_rewind;                  /**< Start rewind.          */
+#endif
+
     unsigned int m_key_pattern_edit;            /**< Show pattern editor.   */
     unsigned int m_key_event_edit;              /**< Show event editor.     */
     unsigned int m_key_stop;                    /**< Stop play, Escape.     */
 
 #ifdef USE_STAZED_JACK_SUPPORT
-    unsigned int m_key_song;                    /**< Toggle Song Mode.      */
-    unsigned int m_key_jack;                    /**< Toggle JACK connect.   */
-    unsigned int m_key_follow_trans;            /**< Toggle following JACK. */
+//  unsigned int m_key_song;                    /**< Toggle Song Mode.      */
+//  unsigned int m_key_jack;
+//  unsigned int m_key_follow_trans;
 #endif
 
 public:
@@ -575,6 +593,70 @@ public:
     {
         m_key_stop = x;
     }
+
+#ifdef USE_STAZED_TRANSPORT
+
+    unsigned int song_mode () const
+    {
+        return m_key_song_mode;
+    }
+
+    void song_mode (unsigned int key)
+    {
+        m_key_song_mode = key;
+    }
+
+    unsigned int menu_mode () const
+    {
+        return m_key_menu_mode;
+    }
+
+    void menu_mode (unsigned int key)
+    {
+        m_key_menu_mode = key;
+    }
+
+    unsigned int follow_transport () const
+    {
+        return m_key_follow_transport;
+    }
+
+    void follow_transport (unsigned int key)
+    {
+        m_key_follow_transport = key;
+    }
+
+    unsigned int fast_forward () const
+    {
+        return m_key_fast_forward;
+    }
+
+    void fast_forward (unsigned int key)
+    {
+        m_key_fast_forward = key;
+    }
+
+    unsigned int rewind () const
+    {
+        return m_key_rewind;
+    }
+
+    void rewind (unsigned int key)
+    {
+        m_key_rewind = key;
+    }
+
+    unsigned int toggle_jack () const
+    {
+        return m_key_toggle_jack;
+    }
+
+    void toggle_jack (unsigned int key)
+    {
+        m_key_toggle_jack = key;
+    }
+
+#endif  // USE_STAZED_TRANSPORT
 
     /**
      * \getter m_key_show_ui_sequency_key

@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-07-31
+ * \updates       2016-08-07
  * \license       GNU GPLv2 or above
  *
  *  This class still has way too many members, even with the JACK and
@@ -205,6 +205,22 @@ private:
     bool m_toggle_jack;
 
     /**
+     *  Holds the position of JACK stop.
+     */
+
+    midipulse m_jack_stop_tick;
+
+#endif  // USE_STAZED_JACK_SUPPORT
+
+#ifdef USE_STAZED_TRANSPORT
+
+    /**
+     *  If true, playback is done in Song mode, not Live mode.
+     */
+
+    bool m_song_start_mode;         // redundant re m_playback_mode ?????
+
+    /**
      *  TBD.
      */
 
@@ -234,7 +250,7 @@ private:
 
     ff_rw_t m_FF_RW_button_type;    // was extern int in perfedit
 
-#endif  // USE_STAZED_JACK_SUPPORT
+#endif  // USE_STAZED_TRANSPORT
 
     /**
      *  Support for a wide range of GUI-related operations.
@@ -987,7 +1003,63 @@ public:
 
 #ifdef USE_STAZED_JACK_SUPPORT
 
+    /**
+     * \getter
+     */
+
+    bool start_from_perfedit () const
+    {
+        return m_start_from_perfedit;
+    }
+
+    bool set_jack_mode (bool jack_button_active);
+
+    void toggle_jack_mode ()
+    {
+        set_jack_mode(! m_jack_running);
+    }
+
+    void set_jack_mode (bool mode)
+    {
+        m_toggle_jack = mode;
+    }
+
+    bool get_toggle_jack () const
+    {
+        return m_toggle_jack;
+    }
+
+    void set_jack_stop_tick (midipulse tick)
+    {
+        m_jack_stop_tick = tick;
+    }
+
+#endif
+
+#ifdef USE_STAZED_TRANSPORT
+
     void FF_rewind ();
+
+    void toggle_song_mode ()
+    {
+        m_song_start_mode = ! m_song_start_mode;
+//      m_playback_mode != m_playback_mode;     // ?????
+    }
+
+    void set_follow_transport (bool flag)
+    {
+        m_follow_transport = flag;
+    }
+
+    bool get_follow_transport () const
+    {
+        return m_follow_transport;
+    }
+
+    void toggle_follow_transport ()
+    {
+        set_follow_transport(! m_follow_transport);
+    }
 
     void set_reposition (bool postype)
     {
@@ -1014,7 +1086,7 @@ public:
         ff_rw_type(press ? FF_RW_FORWARD : FF_RW_NONE);
     }
 
-#endif  // USE_STAZED_JACK_SUPPORT
+#endif  // USE_STAZED_TRANSPORT
 
 public:
 
@@ -1963,19 +2035,6 @@ private:
     {
         m_playback_mode = playbackmode;
     }
-
-#ifdef USE_STAZED_JACK_SUPPORT
-
-    /**
-     * \getter
-     */
-
-    bool start_from_perfedit () const
-    {
-        return m_start_from_perfedit;
-    }
-
-#endif
 
     /**
      *  A helper function to calculate the index into the mute-group array,

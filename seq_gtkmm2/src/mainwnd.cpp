@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-08-03
+ * \updates       2016-08-05
  * \license       GNU GPLv2 or above
  *
  *  The main window holds the menu and the main controls of the application,
@@ -883,6 +883,41 @@ mainwnd::new_open_error_dialog ()
  *  Sequencer64 will not adopt the "c_seq32_midi" type of file, because
  *  it already saves its files in a format that other sequencers should be
  *  able to read.
+ *
+ * Stazed on the intent of the export functionality:
+ *
+ *      The original intent was to be able to play an exported song in
+ *      something like TiMIDIty. After I completed things I realized that
+ *      there could be an editing benefit as well. I like to record from my
+ *      MIDI keyboard, improvised to a drum beat, on a long sequence (64
+ *      measures). Some is junk, but there are usually parts that I can use.
+ *      In original seq24, to cut out the good or bad stuff, you would have to
+ *      search the sequence by listening, then cut and move or copy and paste
+ *      to a new sequence. It could be done but was always tedious.  The paste
+ *      box for the sequence sometimes made it difficult to find the correct
+ *      note location, measure, and beat. Also, on a long sequence, you need
+ *      to zoom out to see the copy location as it played, but zoom in for the
+ *      precise paste location. In addition if you wanted to change the
+ *      measure of the notes, it became a trial and error of copy/paste,
+ *      listen, move, listen, move....
+
+ *      With the added Song editor feature of split trigger to mouse and copy
+ *      paste trigger to mouse, you can now do all the editing from the song
+ *      editor. Listen to the sequence, cut out the good or bad parts and
+ *      reassemble. Move or copy all good trigger parts to the left start and
+ *      delete all the bad stuff. Now you can use the song export to create
+ *      the new sequence. Just mute all other tracks and export. Re-import and
+ *      the new cleaned sequence is already done. Also I use it for importing
+ *      drum beats from a single '32/'42 file that contains dozens of
+ *      different styles with intros and endings. I like to sync two instances
+ *      of '32 or '42 together with jack, then play/experiment with the
+ *      different beats. If I find something I like, create the song trigger
+ *      for the part I like in the drum file, export and import.
+ *
+ *      I actually do not use the song export for anything but editing.
+ *
+ *  Note that the split trigger variant of Stazed, where it doesn't just split
+ *  the section in half, is not yet implemented (2016-08-05).
  *
  * \param do_export
  *      If true, then just write out the file and don't change the name of

@@ -134,6 +134,15 @@ private:
     Gtk::Button * m_button_copy;        /**< Expand and copy between L/R.       */
     Gtk::Button * m_button_grow;        /**< Expand grid (bottom-right button). */
     Gtk::Button * m_button_undo;        /**< Button to undo previous action.    */
+#ifdef SEQ64_STAZED_UNDO_REDO
+    Gtk::Button * m_button_redo;        /**< Button to redo previous action.    */
+#endif
+#ifdef USE_STAZED_JACK_SUPPORT
+    Gtk::ToggleButton * m_button_jack;  /**< Button to toggle JACK connection.  */
+#endif
+#ifdef USE_STAZED_TRANSPORT
+    Gtk::ToggleButton * m_button_follow; /**< Button to toggle JACK following.  */
+#endif
     Gtk::Button * m_button_bpm;         /**< Beats-per-measure menu button.     */
     Gtk::Entry * m_entry_bpm;           /**< Text-edit for beats-per-measure.   */
     Gtk::Button * m_button_bw;          /**< Beat-width menu button.            */
@@ -243,6 +252,15 @@ public:
 
 #ifdef USE_STAZED_JACK_SUPPORT
 
+    bool get_toggle_jack();
+    void toggle_jack();
+
+#endif
+
+#ifdef USE_STAZED_TRANSPORT
+
+    friend int FF_RW_timeout (void * arg);
+
     void rewind (bool press)
     {
         perf().rewind(press);
@@ -254,7 +272,13 @@ public:
         perf().fast_forward(press);
         gtk_timeout_add(120, FF_RW_timeout, perf());
     }
+    void set_follow_transport ();
+    void toggle_follow_transport ();
 
+#endif
+
+#ifdef USE_STAZED_JACK_SUPPORT
+    void set_jack_mode ();
 #endif
 
 #ifdef SEQ64_STAZED_TRANSPOSE
@@ -276,6 +300,9 @@ private:
     void collapse ();
     void copy ();
     void undo ();
+#ifdef SEQ64_STAZED_UNDO_REDO
+    void redo ();
+#endif
     void popup_menu (Gtk::Menu * menu);     /* used in other classes */
     void draw_sequences ();
     bool timeout ();

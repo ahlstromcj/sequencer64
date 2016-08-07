@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-07
- * \updates       2016-07-31
+ * \updates       2016-08-06
  * \license       GNU GPLv2 or above
  *
  *  These items were moved from the globals.h module so that only the modules
@@ -40,8 +40,9 @@
 
 #include <string>
 
+#include "app_limits.h"                 /* SEQ64_DEFAULT_PPQN           */
 #include "easy_macros.h"                /* with platform_macros.h, too  */
-#include "midibyte.hpp"
+#include "midibyte.hpp"                 /* midipulse typedef            */
 
 /**
  *  The MIDI beat clock (also known as "MIDI timing clock" or "MIDI clock") is
@@ -356,6 +357,20 @@ double_ticks_from_ppqn (int ppqn)
 }
 
 /**
+ *  Calculates the pulses per measure.  This calculation is extremely simple,
+ *  and it provides an important constraint to pulse (ticks) calculations:
+ *  the number of pulses in a measure is always 4 times the PPQN value,
+ *  regardless of the time signature.  The number pulses in a 7/8 measure is the
+ *  the same as in a 4/4/ measure.
+ */
+
+inline midipulse
+pulses_per_measure (int ppqn = SEQ64_DEFAULT_PPQN)
+{
+    return 4 * ppqn;
+}
+
+/**
  *  Calculates the length of an integral number of measures, in ticks.
  *  This function is called in seqedit::apply_length(), when the user
  *  selects a sequence length in measures.  That function calculates the
@@ -376,7 +391,10 @@ double_ticks_from_ppqn (int ppqn)
  *
  *  For our "b4uacuse" MIDI file, M can be about 100 measures, B is 4,
  *  P can be 192 (but we want to support higher values), and W is 4.
- *  So p = 100 * 4 * 4 * 192 / 4 = 76800 ticks.  Seems small.
+ *  So p = 100 * 4 * 4 * 192 / 4 = 76800 ticks.
+ *
+ *  Note that 4 * P is a constraint encapsulated by the inline function
+ *  pulses_per_measure().
  *
  * \param bpm
  *      The B value in the equation, beats/measure.
@@ -387,7 +405,7 @@ double_ticks_from_ppqn (int ppqn)
  * \param bw
  *      The W value in the equation, the denominator of the time signature.
  *      If this value is 0, we'll get an arithmetic exception (crash), so we
- *      just return 0 in this case..
+ *      just return 0 in this case.
  *
  * \param measures
  *      The M value in the equation.  It defaults to 1, in case one desires a
@@ -401,7 +419,7 @@ double_ticks_from_ppqn (int ppqn)
 inline midipulse
 measures_to_ticks (int bpm, int ppqn, int bw, int measures = 1)
 {
-    return (bw > 0) ? (4 * measures * bpm * ppqn / bw) : 0 ;
+    return (bw > 0) ? (4 * ppqn * measures * bpm / bw) : 0 ;
 }
 
 extern double wave_func (double angle, wave_type_t wavetype);

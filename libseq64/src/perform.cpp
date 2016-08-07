@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and Tim Deagan
  * \date          2015-07-24
- * \updates       2016-07-30
+ * \updates       2016-08-07
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -120,6 +120,10 @@ perform::perform (gui_assistant & mygui, int ppqn)
  :
 #ifdef USE_STAZED_JACK_SUPPORT
     m_toggle_jack               (false),
+    m_jack_stop_tick            (0),        // ???
+#endif
+#ifdef USE_STAZED_TRANSPORT
+    m_song_start_mode           (false),    // ??? m_playback_mode????
     m_follow_transport          (true),
     m_start_from_perfedit       (false),
     m_reposition                (false),
@@ -1822,6 +1826,45 @@ perform::start_playing (bool songmode)
         start(false);
         start_jack();
     }
+}
+
+/**
+ *  Encapsulates behavior needed by perfedit.
+ *
+ * \param jack_button_active
+ *      Indicates if the perfedit JACK button shows it is active.
+ *
+ * \return
+ *      Returns the value to set the JACK button to.
+ */
+
+bool
+perform::set_jack_mode (bool jack_button_active)
+{
+    if (! is_running())                              // global_is_running
+    {
+        if (jack_button_active)
+            init_jack();
+        else
+            deinit_jack();
+    }
+    m_toggle_jack = is_jack_running();              // for seqroll keybinding
+
+    /*
+     *  For setting the transport tick to display in the correct location.
+     *  FIXME: currently does not work for slave from disconnected; need JACK
+     *  position.
+     */
+
+    if (rc().song_start_mode())
+    {
+        set_reposition(false);
+        set_starting_tick(get_left_tick());
+    }
+    else
+        set_starting_tick(get_tick());
+
+    return m_toggle_jack;
 }
 
 #else   // USE_STAZED_JACK_SUPPORT
@@ -3689,17 +3732,62 @@ perform::perfroll_key_event (const keystroke & k, int drop_sequence)
                 }
                 else if (k.is_letter('z'))                      /* undo     */
                 {
-                    /*
-                     * \change ca 2016-05-11
-                     *      Can we support undo here?  It seems to work.
-                     */
-
-                   pop_trigger_undo();
-                   result = true;
+#ifdef SEQ64_STAZED_UNDO_REDO
+                    undo();
+#else
+                    pop_trigger_undo();
+#endif
+                    result = true;
                 }
+#ifdef SEQ64_STAZED_UNDO_REDO
+                else if (k.is_letter('r'))                      /* redo     */
+                {
+                    redo();
+                    result = true;
+                }
+#endif
+#ifdef USE_STAZED_TRANSPORT
+                else if (k == keys().follow_transport())
+                {
+                    toggle_follow_transport();
+                    result = true;
+                }
+                else if (k == keys().fast_forward())
+                {
+                    fast_forward(true);
+                    result = true;
+                }
+                else if (k == keys().rewind())
+                {
+                    rewind(true);
+                    result = true;
+                }
+#endif
+#ifdef USE_STAZED_JACK_SUPPORT
+                else if (k == keys().toggle_jack())
+                {
+                    toggle_jack();
+                    result = true;
+                }
+#endif
             }
         }
     }
+#ifdef USE_STAZED_TRANSPORT
+    else
+    {
+        if (k == keys().fast_forward())
+        {
+            fast_forward(false);
+            result = true;
+        }
+        else if (k == keys().rewind())
+        {
+            rewind(false);
+            result = true;
+        }
+    }
+#endif
     return result;
 }
 

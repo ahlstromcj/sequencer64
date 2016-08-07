@@ -692,4 +692,65 @@ file, export and import.
 I actually do not use the song export for anything but editing myself...
 Stan
 
+
+Just a quick add on:
+
+The reason I left the trigger stuff in is for seq42. '42 has no mainwnd so
+there is no quick visual display on import. You can see the track being added
+and can open the sequence, but I prefer to see the sequence via the trigger
+immediately.
+
+Date: Fri, 5 Aug 2016 22:20:09 -0500
+From: Stan Preston <stazed10@gmail.com>
+To: Chris Ahlstrom <ahlstromcj@gmail.com>
+Subject: Re: Sequencer64 Version 0.9.15.2
+User-Agent: Mozilla/5.0 (X11; Linux i686; rv:45.0) Gecko/20100101
+        Thunderbird/45.2.0
+
+The additional snaps were put in to match the beats per measure (bar) on the
+perfedit. If you have a time signature of 7/8, there is no snap to get you to
+each beat. Add a trigger and move it. Zoom in so you can see where the trigger
+lands. I originally added the extras before adding zoom so I didn't think I
+needed more. But in looking at it now with zoom, I will add more to get half
+beats on the higher beats per bar. I might also take some out - 1/40 - a 1/8
+beat of 5 beats per bar or 1/4 beat of 10? - WTF was I thinking :)!
+
+Just a heads up, the original seq24 did not save beats per bar or beat width
+from the perfedit, and it seems this is imported into sequencer64.
+
+
+
+Date: Sat, 6 Aug 2016 11:57:50 -0500
+From: Stan Preston <stazed10@gmail.com>
+To: Chris Ahlstrom <ahlstromcj@gmail.com>
+Subject: Re: Sequencer64 Version 0.9.15.2
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:45.0) Gecko/20100101
+        Thunderbird/45.2.0
+
+Actually, the seven in 7/8 is the BEAT in beats per bar. The 8 is the beat
+width. So 1/8 should not snap to a beats per bar of 7. I think your zoom and
+grid are OK.
+
+Does seq32 save the perfedit beat info?
+
+Argh! Well it did!. I originally used proprietary:
+
+c_bp_measure = 0x24240011;
+
+c_beat_width   = 0x24240012;
+
+On per my ca. 7/20 change I decided to plug it into the SMF track  0, and just
+assume the first track as perfedit.
+
+I now see the error in my ways. What if there is no track 0? What if the first
+sequence time signature is different from the perfedit? Stupid!
+
+I will be reverting it back to the proprietary method.  It would be nice to
+keep the midi files of '32,'42,'64 somewhat consistent since they are all
+using the 0x24 ID. Since you used 11, 12, and 13 for other stuff and I changed
+'32 transpose to 14 to be consistent with '64, how about beats per bar = 15
+and beat width = 16 for perfedit? Unless you know of a better way of doing
+it....
+
+
 # vim: sw=4 ts=4 wm=8 et ft=sh

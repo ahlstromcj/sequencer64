@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-13
- * \updates       2016-05-23
+ * \updates       2016-08-06
  * \license       GNU GPLv2 or above
  *
  * \change ca 2016-05-22
@@ -69,6 +69,14 @@ keys_perform::keys_perform ()
     m_key_start                     (SEQ64_space),
 #ifdef SEQ64_PAUSE_SUPPORT
     m_key_pause                     (SEQ64_period),
+#endif
+#ifdef USE_STAZED_TRANSPORT
+    m_key_song_mode                 (SEQ64_F1),
+    m_key_toggle_jack               (SEQ64_F2),
+    m_key_menu_mode                 (SEQ64_F3),
+    m_key_follow_transport          (SEQ64_F4),
+    m_key_fast_forward              (SEQ64_F5),
+    m_key_rewind                    (SEQ64_F6),
 #endif
     m_key_pattern_edit              (SEQ64_equal),
     m_key_event_edit                (SEQ64_minus),
@@ -138,6 +146,14 @@ keys_perform::set_keys (const keys_perform_transfer & kpt)
 #ifdef SEQ64_PAUSE_SUPPORT
     m_key_pause                     = kpt.kpt_pause;
 #endif
+#ifdef USE_STAZED_TRANSPORT
+    m_key_song_mode                 = kpt.kpt_song_mode;
+    m_key_toggle_jack               = kpt.kpt_toggle_jack;
+    m_key_menu_mode                 = kpt.kpt_menu_mode;
+    m_key_follow_transport          = kpt.kpt_follow_transport;
+    m_key_fast_forward              = kpt.kpt_fast_forward;
+    m_key_rewind                    = kpt.kpt_rewind;
+#endif
     m_key_pattern_edit              = kpt.kpt_pattern_edit;
     m_key_event_edit                = kpt.kpt_event_edit;
     m_key_stop                      = kpt.kpt_stop;
@@ -172,6 +188,14 @@ keys_perform::get_keys (keys_perform_transfer & kpt)
      kpt.kpt_start                   = m_key_start;
 #ifdef SEQ64_PAUSE_SUPPORT
      kpt.kpt_pause                   = m_key_pause;
+#endif
+#ifdef USE_STAZED_TRANSPORT
+    m_key_song_mode                  = kpt.kpt_song_mode;
+    m_key_toggle_jack                = kpt.kpt_toggle_jack;
+    m_key_menu_mode                  = kpt.kpt_menu_mode;
+    m_key_follow_transport           = kpt.kpt_follow_transport;
+    m_key_fast_forward               = kpt.kpt_fast_forward;
+    m_key_rewind                     = kpt.kpt_rewind;
 #endif
      kpt.kpt_pattern_edit            = m_key_pattern_edit;
      kpt.kpt_event_edit              = m_key_event_edit;
@@ -329,6 +353,25 @@ keyval_normalize (keys_perform_transfer & k)
 #ifdef SEQ64_PAUSE_SUPPORT
     if (k.kpt_event_edit == 0 || k.kpt_pause > 65536)
         k.kpt_event_edit = '.';
+#endif
+#ifdef USE_STAZED_TRANSPORT
+    if (k.kpt_song_mode == 0 || k.kpt_song_mode > 65536)
+        kpt.kpt_song_mode = SEQ64_F1;
+
+    if (k.kpt_toggle_jack == 0 || k.kpt_toggle_jack > 65536)
+        kpt.kpt_toggle_jack = SEQ64_F2;
+
+    if (k.kpt_menu_mode == 0 || k.kpt_menu_mode > 65536)
+        kpt.kpt_menu_mode = SEQ64_F3;
+
+    if (k.kpt_follow_transport == 0 || k.kpt_follow_transport > 65536)
+        kpt.kpt_follow_transport = SEQ64_F4;
+
+    if (k.kpt_fast_forward == 0 || k.kpt_fast_forward > 65536)
+        kpt.kpt_fast_forward = SEQ64_F5;
+
+    if (k.kpt_rewind == 0 || k.kpt_rewind > 65536)
+        kpt.kpt_rewind = SEQ64_F6;
 #endif
 }
 

@@ -70,9 +70,8 @@ Seq24PerfInput::set_adding (bool adding, perfroll & roll)
 }
 
 /**
- *  Handles the normal variety of button-press event.
- *  Is there any easy way to use ctrl-left-click as the middle button
- *  here?
+ *  Handles the normal variety of button-press event.  Is there any easy way
+ *  to use ctrl-left-click as the middle button here?
  *
  * \return
  *      Returns true if a modification occurred.
@@ -84,85 +83,103 @@ Seq24PerfInput::on_button_press_event (GdkEventButton * ev, perfroll & roll)
     bool result = false;
     perform & p = roll.perf();
     int & dropseq = roll.m_drop_sequence;
+    sequence * seq = p.get_sequence(dropseq);
     roll.grab_focus();
     if (p.is_active(dropseq))
     {
-        p.get_sequence(dropseq)->unselect_triggers();
+        seq->unselect_triggers();
         roll.draw_all();
+    }
+    else
+    {
+        // Shouldn't we return if the sequence is not active?  It's pointer is
+        // probably null, anyway.  Do we need to reflexively set certain
+        // flags, such as m_adding_pressed = true?
+
+        if (SEQ64_CLICK_LEFT(ev->button))
+        {
+            if (m_adding)
+                m_adding_pressed = true;
+        }
+        return false;                                   /* BUG OUT      */
     }
     roll.m_drop_x = int(ev->x);
     roll.m_drop_y = int(ev->y);
-    roll.convert_xy                                 /* side-effects */
+    roll.convert_xy                                     /* side-effects */
     (
         roll.m_drop_x, roll.m_drop_y, roll.m_drop_tick, dropseq
     );
     if (SEQ64_CLICK_LEFT(ev->button))
     {
-        midipulse tick = roll.m_drop_tick;
+        midipulse droptick = roll.m_drop_tick;
         if (m_adding)         /* add a new note if we didn't select anything */
         {
             m_adding_pressed = true;
-            if (p.is_active(dropseq))
+            midipulse seqlength = seq->get_length();
+            bool state = seq->get_trigger_state(droptick);
+            if (state)
             {
-                midipulse seqlength = p.get_sequence(dropseq)->get_length();
-                bool state = p.get_sequence(dropseq)->get_trigger_state(tick);
-                if (state)
-                {
-                    p.push_trigger_undo();
-                    p.get_sequence(dropseq)->del_trigger(tick);
-                    result = true;
-                }
-                else
-                {
-                    tick -= (tick % seqlength);    // snap to sequence length
-                    p.push_trigger_undo();
-                    p.get_sequence(dropseq)->add_trigger(tick, seqlength);
-                    result = true;
-                    roll.draw_all();
-                }
+                p.push_trigger_undo(dropseq);           /* stazed fix   */
+                seq->del_trigger(droptick);
+                result = true;
+            }
+            else
+            {
+                droptick -= (droptick % seqlength);     /* snap         */
+                p.push_trigger_undo(dropseq);           /* stazed fix   */
+                seq->add_trigger(droptick, seqlength);
+                result = true;
+                roll.draw_all();
             }
         }
         else
         {
-            if (p.is_active(dropseq))
-            {
-                p.push_trigger_undo();
-                p.get_sequence(dropseq)->select_trigger(tick);
+#ifdef USE_STAZED_UNDO_REDO
 
-                midipulse tick0 = p.get_sequence(dropseq)->selected_trigger_start();
-                midipulse tick1 = p.get_sequence(dropseq)->selected_trigger_end();
-                int wscalex = s_perfroll_size_box_click_w * c_perf_scale_x;
-                int ydrop = roll.m_drop_y % c_names_y;
-                if
-                (
-                    tick >= tick0 && tick <= (tick0 + wscalex) &&
-                    ydrop <= s_perfroll_size_box_click_w + 1
-                )
-                {
-                    roll.m_growing = true;
-                    roll.m_grow_direction = true;
-                    roll.m_drop_tick_trigger_offset = roll.m_drop_tick -
-                         p.get_sequence(dropseq)->selected_trigger_start();
-                }
-                else if
-                (
-                    tick >= (tick1 - wscalex) && tick <= tick1 &&
-                    ydrop >= c_names_y - s_perfroll_size_box_click_w - 1
-                )
-                {
-                    roll.m_growing = true;
-                    roll.m_grow_direction = false;
-                    roll.m_drop_tick_trigger_offset = roll.m_drop_tick -
-                        p.get_sequence(dropseq)->selected_trigger_end();
-                }
-                else
-                {
-                    roll.m_moving = true;
-                    roll.m_drop_tick_trigger_offset = roll.m_drop_tick -
-                         p.get_sequence(dropseq)->selected_trigger_start();
-                }
-                roll.draw_all();
+            /*
+             * Set this flag to tell on_motion_notify() to call
+             * p.push_trigger_undo().
+             */
+
+            roll.m_have_button_press = seq->select_trigger(droptick);
+#else
+            p.push_trigger_undo();
+            (void) seq->select_trigger(droptick);
+#endif
+
+            midipulse tick0 = seq->selected_trigger_start();
+            midipulse tick1 = seq->selected_trigger_end();
+            int wscalex = s_perfroll_size_box_click_w * c_perf_scale_x;
+            int ydrop = roll.m_drop_y % c_names_y;
+            if
+            (
+                droptick >= tick0 && droptick <= (tick0 + wscalex) &&
+                ydrop <= s_perfroll_size_box_click_w + 1
+            )
+            {
+                roll.m_growing = true;
+                roll.m_grow_direction = true;
+                roll.m_drop_tick_trigger_offset = droptick -
+                     seq->selected_trigger_start();
             }
+            else if
+            (
+                droptick >= (tick1 - wscalex) && droptick <= tick1 &&
+                ydrop >= c_names_y - s_perfroll_size_box_click_w - 1
+            )
+            {
+                roll.m_growing = true;
+                roll.m_grow_direction = false;
+                roll.m_drop_tick_trigger_offset = droptick -
+                    seq->selected_trigger_end();
+            }
+            else
+            {
+                roll.m_moving = true;
+                roll.m_drop_tick_trigger_offset = droptick -
+                     seq->selected_trigger_start();
+            }
+            roll.draw_all();
         }
     }
     else if (SEQ64_CLICK_RIGHT(ev->button))
@@ -171,16 +188,21 @@ Seq24PerfInput::on_button_press_event (GdkEventButton * ev, perfroll & roll)
     }
     else if (SEQ64_CLICK_MIDDLE(ev->button))                   /* split    */
     {
-        if (p.is_active(dropseq))
-        {
-            bool state = p.get_sequence(dropseq)->
-                get_trigger_state(roll.m_drop_tick);
+        /*
+         * The middle click in seq24 interaction mode is either for splitting
+         * the triggers or for setting the paste location of copy/paste.
+         */
 
-            if (state)
-            {
-                roll.split_trigger(dropseq, roll.m_drop_tick);
-                result = true;
-            }
+        bool state = seq->get_trigger_state(roll.m_drop_tick);
+        if (state)
+        {
+            roll.split_trigger(dropseq, roll.m_drop_tick);
+            result = true;
+        }
+        else
+        {
+            p.push_trigger_undo(dropseq);
+            seq->paste_trigger(roll.m_drop_tick);
         }
     }
     return result;
@@ -250,54 +272,67 @@ Seq24PerfInput::on_motion_notify_event (GdkEventMotion * ev, perfroll & roll)
     int x = int(ev->x);
     perform & p = roll.perf();
     int dropseq = roll.m_drop_sequence;
+    sequence * seq = p.get_sequence(dropseq);
+    if (! p.is_active(dropseq))
+    {
+        return false;
+    }
     if (m_adding && m_adding_pressed)
     {
+        midipulse seqlength = seq->get_length();
         midipulse tick;
         roll.convert_x(x, tick);
-        if (p.is_active(dropseq))
-        {
-            midipulse seqlength = p.get_sequence(dropseq)->get_length();
-            tick -= (tick % seqlength);
+        tick -= (tick % seqlength);
 
-            midipulse length = seqlength;
-            p.get_sequence(dropseq)->grow_trigger(roll.m_drop_tick, tick, length);
-            roll.draw_all();
-            result = true;
-        }
+        midipulse length = seqlength;
+        seq->grow_trigger(roll.m_drop_tick, tick, length);
+        roll.draw_all();
+        result = true;
     }
     else if (roll.m_moving || roll.m_growing)
     {
-        if (p.is_active(dropseq))
-        {
-            midipulse tick;
-            roll.convert_x(x, tick);
-            tick -= roll.m_drop_tick_trigger_offset;
-            tick -= tick % roll.m_snap;
-            if (roll.m_moving)
-            {
-                p.get_sequence(dropseq)->move_selected_triggers_to(tick, true);
-                result = true;
-            }
-            if (roll.m_growing)
-            {
-                if (roll.m_grow_direction)
-                {
-                    p.get_sequence(dropseq)->move_selected_triggers_to
-                    (
-                        tick, false, triggers::GROW_START
-                    );
-                }
-                else
-                {
-                    p.get_sequence(dropseq)->move_selected_triggers_to
-                    (
-                        tick - 1, false, triggers::GROW_END);
-                }
 
-                result = true;
-            }
-            roll.draw_all();
+#ifdef USE_STAZED_UNDO_REDO
+
+        /*
+         * This code is necessary to insure that there is no push unless
+         * we have a motion notification.
+         */
+
+        if (roll.m_have_button_press)
+        {
+            p.push_trigger_undo(dropseq);
+            roll.m_have_button_press = false;
         }
+#endif
+
+        midipulse tick;
+        roll.convert_x(x, tick);
+        tick -= roll.m_drop_tick_trigger_offset;
+        tick -= tick % roll.m_snap;
+        if (roll.m_moving)
+        {
+            seq->move_selected_triggers_to(tick, true);
+            result = true;
+        }
+        if (roll.m_growing)
+        {
+            if (roll.m_grow_direction)
+            {
+                seq->move_selected_triggers_to
+                (
+                    tick, false, triggers::GROW_START
+                );
+            }
+            else
+            {
+                seq->move_selected_triggers_to
+                (
+                    tick - 1, false, triggers::GROW_END);
+            }
+            result = true;
+        }
+        roll.draw_all();
     }
     return result;
 }

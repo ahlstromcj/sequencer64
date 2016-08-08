@@ -29,7 +29,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-07-30
+ * \updates       2016-08-08
  * \license       GNU GPLv2 or above
  *
  *  The data pane is the drawing-area below the seqedit's event area, and
@@ -143,6 +143,12 @@ private:
 
     GdkRectangle m_old;
 
+#ifdef USE_STAZED_SEQDATA_EXTENSIONS
+
+    bool m_drag_handle;
+
+#endif
+
     /**
      *  This value is true if the mouse is being dragged in the data pane,
      *  which is done in order to change the height and value of each data
@@ -153,13 +159,7 @@ private:
 
 public:
 
-    seqdata
-    (
-        sequence & seq,
-        perform & p,
-        int zoom,
-        Gtk::Adjustment & hadjust
-    );
+    seqdata (sequence & seq, perform & p, int zoom, Gtk::Adjustment & hadjust);
 
     /**
      *  Let's provide a do-nothing virtual destructor.
@@ -193,11 +193,12 @@ private:
     void draw_line_on_window ();
     void xy_to_rect
     (
-      int x1, int y1,
-      int x2, int y2,
-      int & rx, int & ry,
-      int & rw, int & rh
-   );
+        int x1, int y1,
+        int x2, int y2,
+        int & rx, int & ry,
+        int & rw, int & rh
+    );
+
     void draw_events_on (Glib::RefPtr<Gdk::Drawable> drawable);
     void change_horz ();
 

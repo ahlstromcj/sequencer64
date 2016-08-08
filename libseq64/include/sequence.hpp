@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-30
- * \updates       2016-08-07
+ * \updates       2016-08-08
  * \license       GNU GPLv2 or above
  *
  *  The functions add_list_var() and add_long_list() have been replaced by
@@ -82,29 +82,10 @@ namespace seq64
 
 enum draw_type_t
 {
-    /**
-     *  Indicates that drawing is finished?
-     */
-
-    DRAW_FIN = 0,
-
-    /**
-     *  Probably used for drawing linked notes.
-     */
-
-    DRAW_NORMAL_LINKED,
-
-    /**
-     *  For starting the drawing of a note?
-     */
-
-    DRAW_NOTE_ON,
-
-    /**
-     *  For finishing the drawing of a note?
-     */
-
-    DRAW_NOTE_OFF
+    DRAW_FIN = 0,           /**< Indicates that drawing is finished.        */
+    DRAW_NORMAL_LINKED,     /**< Used for drawing linked notes.             */
+    DRAW_NOTE_ON,           /**< For starting the drawing of a note.        */
+    DRAW_NOTE_OFF           /**< For finishing the drawing of a note.       */
 };
 
 /**
@@ -127,47 +108,13 @@ public:
 
     enum select_action_e
     {
-        /**
-         *  To select an event.
-         */
-
-        e_select,
-
-        /**
-         *  To select a single event.
-         */
-
-        e_select_one,
-
-        /**
-         *  The events are selected.
-         */
-
-        e_is_selected,
-
-        /**
-         *  The events would be selected.
-         */
-
-        e_would_select,
-
-        /**
-         *  To deselect the event under the cursor.
-         */
-
-        e_deselect,
-
-        /**
-         *  To toggle the selection of the event under the cursor.
-         */
-
-        e_toggle_selection,
-
-        /**
-         *  To remove one note under the cursor.
-         */
-
-        e_remove_one
+        e_select,               /**< Selection in progress.                 */
+        e_select_one,           /**< To select a single event.              */
+        e_is_selected,          /**< The events are selected.               */
+        e_would_select,         /**< The events would be selected.          */
+        e_deselect,             /**< To deselect event under the cursor.    */
+        e_toggle_selection,     /**< Toggle selection under cursor.         */
+        e_remove_one            /**< To remove one note under the cursor.   */
     };
 
 private:
@@ -1126,6 +1073,23 @@ public:
         midibyte status, midibyte cc, bool inverse = false
     );
 
+#ifdef USE_STAZED_SELECTION_EXTENSIONS
+    int select_events (midipulse tick_s, midipulse tick_f, midibyte status);
+    int select_event_handle
+    (
+        midipulse tick_s, midipulse tick_f, midibyte status,
+        midibyte cc, int data_s
+    );
+
+    /*
+     *  Given a note length (in ticks) and a boolean indicating even or odd,
+     *  select all notes where the note on even occurs exactly on an even (or odd)
+     *  multiple of note length.
+     *  Example use: select every note that starts on an even eighth note beat.
+     */
+    int select_even_or_odd_notes (int note_len, bool even);
+#endif
+
     /**
      *  New convenience function.  What about Aftertouch events?  I think we
      *  need to select them as well in seqedit, so let's add that selection
@@ -1234,6 +1198,7 @@ public:
         bool * selected, int * velocity
     );
     bool get_minmax_note_events (int & lowest, int & highest);
+
 #ifdef USE_STAZED_SELECTION_EXTENSIONS
     bool get_next_event
     (
@@ -1248,6 +1213,7 @@ public:
         midipulse * tick, midibyte * d0, midibyte * d1, bool * selected
     );
 #endif
+
     bool get_next_event (midibyte * status, midibyte * cc);
     bool get_next_trigger
     (

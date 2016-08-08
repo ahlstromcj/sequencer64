@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-07-16
+ * \updates       2016-08-08
  * \license       GNU GPLv2 or above
  *
  *  The data area consists of vertical lines, with the height of each line
@@ -84,6 +84,9 @@ seqdata::seqdata
     m_cc                    (0),
     m_numbers               (),             // an array
     m_old                   (),
+#ifdef USE_STAZED_SEQDATA_EXTENSIONS
+    m_drag_handle           (false),
+#endif
     m_dragging              (false)
 {
     set_flags(Gtk::CAN_FOCUS);
@@ -186,9 +189,20 @@ seqdata::update_pixmap ()
  *  Draws events on the given drawable object.  Very similar to seqevent ::
  *  draw_events_on().  And yet it doesn't handle zooming as well, must fix!
  *
- * \change ca 2016-04-13, 2016-05-24
- *      We now draw the data line for selected event in dark orange, instead
- *      of black.
+ * Stazed:
+ *
+ *      For note ON there can be multiple events on the same vertical in which
+ *      the selected item can be covered.  For note ON's the selected item
+ *      needs to be drawn last so it can be seen.  So, for other events the
+ *      below var num_selected_events will be -1 for ALL_EVENTS. For note ON's
+ *      only, the var will be the number of selected events. If 0 then only one
+ *      pass is needed. If > 0 then two passes are needed, one for unselected
+ *      (first), and one for selected (last).
+ *
+ *  We now draw the data line for selected event in dark orange, instead of
+ *  black.  We're not likely to adopt the Stazed convention of drawing in blue.
+ *  Also, there seem to be some bugs in how the data selection works.  Needs
+ *  more evaluation.
  *
  * \param drawable
  *      The given drawable object.
@@ -545,8 +559,37 @@ seqdata::on_button_press_event (GdkEventButton * ev)
     {
         m_drop_x = int(ev->x) + m_scroll_offset_x;  /* set values for line  */
         m_drop_y = int(ev->y);
+
+#ifdef USE_STAZED_SEQDATA_EXTENSIONS
+
+        /*
+         * If the user selects the "handle"...
+         */
+
+        midipulse tick_s, tick_f;
+        convert_x(m_drop_x - 3, tick_s);            /* side-effect  */
+        convert_x(m_drop_x + 3, tick_f);            /* side-effect  */
+        m_drag_handle = m_seq.select_event_handle
+        (
+            tick_s, tick_f, m_status, m_cc, c_dataarea_y - m_drop_y + 3
+        );
+
+        if (m_drag_handle)
+        {
+            /* if they used line draw but did not leave... */
+
+            if (! m_seq.get_hold_undo())
+                m_seq.push_undo();
+        }
+
+        /* reset box that holds dirty redraw spot */
+
+        m_old.x = m_old.y = m_old.width = m_old.height = 0;
+        m_dragging = ! m_drag_handle;
+#else
         m_old.x = m_old.y = m_old.width = m_old.height = 0;
         m_dragging = true;                          /* may be dragging now  */
+#endif
     }
     return true;
 }

@@ -166,11 +166,18 @@ private:
 
 #endif
 
-#ifdef USE_STAZED_TRANSPORT
+#ifdef USE_STAZED_UNDO_REDO
 
+    /**
+     *  Used in the fruity and seq24 perfroll input classes.
+     */
+
+    bool m_have_button_press;
+#endif
+
+#ifdef USE_STAZED_TRANSPORT
     bool m_transport_follow;
     bool m_trans_button_press;
-
 #endif
 
     /**

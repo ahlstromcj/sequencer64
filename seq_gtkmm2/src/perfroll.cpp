@@ -31,6 +31,17 @@
  *  The performance window allows automatic control of when each
  *  sequence/pattern starts and stops, and thus offers a fixed-composition
  *  option, as opposed to live control of the sequences/patterns.
+ *
+ * Stazed:
+ *
+ *      Most of the undo/redo changes were done to eliminate pushes to undo
+ *      when nothing actually changed, or to optimize the push inperfedit.
+ *      When I [stazed] added the sensitive/insensitive stuff it became very
+ *      obvious that undo was doing a lot of unnecessary pushes which
+ *      previously seemed like undo was broken - from a user point of view.
+ *      You would often have to hit the undo button many times before the undo
+ *      occurred because useless undos were pushed from simply clicking on an
+ *      open space in the perfedit.
  */
 
 #include <gtkmm/accelkey.h>
@@ -95,6 +106,9 @@ perfroll::perfroll
     m_old_progress_ticks    (0),
 #ifdef SEQ64_FOLLOW_PROGRESS_BAR
     m_scroll_page           (0),
+#endif
+#ifdef USE_STAZED_UNDO_REDO
+    m_have_button_press     (false),
 #endif
 #ifdef USE_STAZED_TRANSPORT
     m_transport_follow      (true),
@@ -183,7 +197,8 @@ perfroll::change_horz ()
  *
  *      Must adjust m_drop_y or perfroll_input's unselect_triggers() will not
  *      work if scrolled up or down to a new location.  See the note in
- *      on_button_press_event() in the perfroll_input module.
+ *      on_button_press_event() in the perfroll_input module.  Also see the
+ *      note in the draw_all() function.
  */
 
 void
@@ -758,6 +773,11 @@ perfroll::draw_drawable_row (long y)
 
 /**
  *  Provides a very common sequence of calls used in perfroll_input.
+ *
+ *  m_drop_y is adjusted by perfroll::change_vert() for any scroll after it
+ *  was originally selected. The call below to draw_drawable_row() will have
+ *  the wrong y location and un-select will not occur if the user scrolls the
+ *  track up or down to a new y location, if not adjusted.
  */
 
 void
@@ -765,11 +785,6 @@ perfroll::draw_all ()
 {
     draw_background_on(m_drop_sequence);
     draw_sequence_on(m_drop_sequence);
-
-    /*
-     * We can replace this with stock code.
-     */
-
     draw_drawable_row(m_drop_y);
 }
 

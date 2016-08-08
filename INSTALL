@@ -1,6 +1,6 @@
 INSTALL for Sequencer64 v. 0.9.17
 Chris Ahlstrom
-2015-09-10 to 2016-08-07
+2015-09-10 to 2016-08-08
 
 The current packaging for Sequencer64 is primarily aimed at developers.
 There is currently no configure script... it must be bootstrapped.
@@ -282,6 +282,7 @@ MANUALLY-DEFINED MACROS IN CODE:
         USE_STAZED_MIDIBUS_SUPPORT
         USE_STAZED_PUSH_POP_SUPPORT
         USE_STAZED_RANDOMIZE_SUPPORT
+        USE_STAZED_SEQDATA_EXTENSIONS
         USE_STAZED_SELECTION_EXTENSIONS
         USE_STAZED_EVEN_ODD_SUPPORT
         USE_STAZED_TRIGGER_EXTENSIONS

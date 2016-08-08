@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-08-07
+ * \updates       2016-08-08
  * \license       GNU GPLv2 or above
  *
  *  The functionality of this class also includes handling some of the
@@ -650,7 +650,7 @@ sequence::select_note_events
 }
 
 /**
- *  Used with seqevent when selecting NOTEON/NOTEOFF, this function will
+ *  Used with seqevent when selecting Note On or Note Off, this function will
  *  select the opposite linked event.
  */
 
@@ -816,7 +816,7 @@ sequence::select_event_handle
     return result;
 }
 
-#endif   // USE_STAZED_SELECTION_EXTENSIONS
+#endif  // USE_STAZED_SELECTION_EXTENSIONS
 
 /**
  * \setter m_rec_vol

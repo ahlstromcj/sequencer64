@@ -147,18 +147,25 @@ int seqedit::m_initial_chord = 0;
  * action menu.
  */
 
-static const int c_select_all_notes         =  1;
-static const int c_select_all_events        =  2;
-static const int c_select_inverse_notes     =  3;
-static const int c_select_inverse_events    =  4;
-static const int c_quantize_notes           =  5;
-static const int c_quantize_events          =  6;
-static const int c_tighten_events           =  8;
-static const int c_tighten_notes            =  9;
-static const int c_transpose_notes          = 10;
-static const int c_reserved                 = 11;
-static const int c_transpose_h              = 12;
-static const int c_swing_notes              = 13;   /* swing quantize   */
+enum edit_action_t
+{
+    c_select_all_notes         =  1,
+    c_select_all_events        =  2,
+    c_select_inverse_notes     =  3,
+    c_select_inverse_events    =  4,
+    c_quantize_notes           =  5,
+    c_quantize_events          =  6,
+    c_tighten_events           =  8,
+    c_tighten_notes            =  9,
+    c_transpose_notes          = 10,    /* basic transpose      */
+    c_reserved                 = 11,
+    c_transpose_h              = 12,    /* harmonic transpose   */
+    c_expand_pattern           = 13,
+    c_compress_pattern         = 14,
+    c_select_even_notes        = 15,
+    c_select_odd_notes         = 16,
+    c_swing_notes              = 17     /* swing quantize       */
+};
 
 /**
  *  Principal constructor.
@@ -402,7 +409,7 @@ seqedit::seqedit
     (
         sigc::bind<Gtk::Menu *>(SET_POPUP, m_menu_rec_vol)
     );
-    add_tooltip(m_button_rec_vol, "Select recording volume.");
+    add_tooltip(m_button_rec_vol, "Select recording/generation volume.");
     m_toggle_thru->add(*manage(new PIXBUF_IMAGE(thru_xpm)));
     m_toggle_thru->signal_clicked().connect
     (

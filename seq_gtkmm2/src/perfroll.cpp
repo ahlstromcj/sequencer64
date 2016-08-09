@@ -64,13 +64,19 @@
  *  s_perfroll_background_x per the selected PPQN value.  This adjustment is
  *  made in the constructor, and assigned to the perfroll::m_background_x
  *  member.  We need named values for 4 and for 16 here.
+ *
+ *  FIXME
+ *  The 1200 added to background_x is necessary for proper display of zoomed
+ *  grid on high bp_measure (5 and above) with low bw (1) - the amount should
+ *  probably be "c_perf_scale_x/m_perf_scale_x". The 1200 is the max needed
+ *  for full zoom of 8 with 16 bp_mes and 1 bw.  Without the adjustment the
+ *  grid display gets truncated on zoom.  Figure this out when you are really
+ *  bored!
  */
 
+static int s_perfroll_size_box_w = 6;               /* 3; */
 static int s_perfroll_background_x =
-(
-    (SEQ64_DEFAULT_PPQN * 4 * 16) / c_perf_scale_x
-);
-static int s_perfroll_size_box_w = 6;           /* 3; */
+    (SEQ64_DEFAULT_PPQN * 4 * 16) / c_perf_scale_x; /* TODO: + 1200 */
 
 namespace seq64
 {
@@ -590,6 +596,16 @@ perfroll::draw_sequence_on (int seqnum)
                 int y = m_names_y * seqnum + 1;         // + 2
                 int h = m_names_y - 2;                  // - 4
                 x -= x_offset;                  /* adjust to screen coords  */
+
+                /*
+                 * Items drawn:
+                 *
+                 *  1. Main trigger box
+                 *  2. Trigger outline
+                 *  3. The left hand side of the little sequence grab handle
+                 *  4. Its right side.
+                 */
+
                 draw_rectangle_on_pixmap(selected ? grey() : white(), x, y, w, h);
                 draw_rectangle_on_pixmap(black(), x, y, w, h, false);
                 draw_rectangle_on_pixmap

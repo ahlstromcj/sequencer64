@@ -1204,7 +1204,7 @@ public:
     (
         midibyte status, midibyte cc,
         midipulse * tick, midibyte * d0, midibyte * d1, bool * selected,
-        int type
+        int evtype = EVENTS_ALL
     );
 #else
     bool get_next_event

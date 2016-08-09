@@ -158,7 +158,7 @@ const midibyte EVENT_CLEAR_CHAN_MASK   = 0xF0;
  */
 
 const int EVENTS_ALL                    = -1;
-const int EVENTS_SELECTED               =  0;
+const int EVENTS_UNSELECTED             =  0;
 
 /**
  *  Provides events for management of MIDI events.

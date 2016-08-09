@@ -3815,7 +3815,7 @@ sequence::get_next_event
 (
     midibyte status, midibyte cc,
     midipulse * tick, midibyte * d0, midibyte * d1, bool * selected,
-    int type
+    int evtype
 )
 {
     while (m_iterator_draw != m_events.end())
@@ -3824,18 +3824,15 @@ sequence::get_next_event
         bool ok = drawevent.get_status() == status;
         if (ok)
         {
-            if (type == EVENTS_UNSELECTED && drawevent.is_selected())
+            if (evtype == EVENTS_UNSELECTED && drawevent.is_selected())
             {
                 ++m_iterator_draw;
-                continue;
+                continue;           /* keep trying to find one              */
             }
-
-            // type >= EVENTS_SELECTED ???
-
-            if (type > EVENTS_SELECTED && ! drawevent.is_selected())
+            if (evtype > EVENTS_UNSELECTED && ! drawevent.is_selected())
             {
                 ++m_iterator_draw;
-                continue;
+                continue;           /* keep trying to find one              */
             }
             drawevent.get_data(*d0, *d1);
             *tick = drawevent.get_timestamp();

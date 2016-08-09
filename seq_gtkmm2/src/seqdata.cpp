@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-08-08
+ * \updates       2016-08-09
  * \license       GNU GPLv2 or above
  *
  *  The data area consists of vertical lines, with the height of each line
@@ -124,6 +124,13 @@ seqdata::update_sizes ()
 void
 seqdata::reset ()
 {
+    /*
+     * Stazed fix; same code found in change_horz().
+     */
+
+    m_scroll_offset_ticks = int(m_hadjust.get_value());
+    m_scroll_offset_x = m_scroll_offset_ticks / m_zoom;
+
     update_sizes();
 
     /*
@@ -191,18 +198,23 @@ seqdata::update_pixmap ()
  *
  * Stazed:
  *
- *      For note ON there can be multiple events on the same vertical in which
- *      the selected item can be covered.  For note ON's the selected item
+ *      For Note On there can be multiple events on the same vertical in which
+ *      the selected item can be covered.  For Note On the selected item
  *      needs to be drawn last so it can be seen.  So, for other events the
- *      below var num_selected_events will be -1 for ALL_EVENTS. For note ON's
- *      only, the var will be the number of selected events. If 0 then only one
- *      pass is needed. If > 0 then two passes are needed, one for unselected
- *      (first), and one for selected (last).
+ *      variable num_selected_events will be -1 for ALL_EVENTS. For Note On
+ *      only, the variable will be the number of selected events. If 0 then
+ *      only one pass is needed. If > 0 then two passes are needed, one for
+ *      unselected (first), and one for selected (last).  For the first pass,
+ *      if any events are selected, the selection type is EVENTS_UNSELECTED.
+ *      For the second pass, it will be set to num_selected_events.
  *
  *  We now draw the data line for selected event in dark orange, instead of
  *  black.  We're not likely to adopt the Stazed convention of drawing in blue.
  *  Also, there seem to be some bugs in how the data selection works.  Needs
  *  more evaluation.
+ *
+ *  Also, if we decide to draw handle on each vertical data line, it would
+ *  look nicer if a circle.
  *
  * \param drawable
  *      The given drawable object.
@@ -218,8 +230,29 @@ seqdata::draw_events_on (Glib::RefPtr<Gdk::Drawable> drawable)
     int endtick = (m_window_x * m_zoom) + m_scroll_offset_ticks;
     draw_rectangle(drawable, white(), 0, 0, m_window_x, m_window_y);
     m_gc->set_foreground(black());
+
+#ifdef USE_STAZED_SEQDATA_EXTENSIONS
+    int numselected = EVENTS_ALL;                   // -1
+    int seltype = numselected;
+    if (m_status == EVENT_NOTE_ON)                  // ??????? iffy.
+    {
+        numselected = m_seq.get_num_selected_event(m_status, m_cc);
+        if (numselected > 0)
+            seltype = EVENTS_UNSELECTED;
+    }
+    do
+    {
+#endif
+
     m_seq.reset_draw_marker();
+#ifdef USE_STAZED_SEQDATA_EXTENSIONS
+    while
+    (
+        m_seq.get_next_event(m_status, m_cc, &tick, &d0, &d1, &selected, seltype)
+    )
+#else
     while (m_seq.get_next_event(m_status, m_cc, &tick, &d0, &d1, &selected))
+#endif
     {
         if (tick >= starttick && tick <= endtick)
         {
@@ -232,6 +265,18 @@ seqdata::draw_events_on (Glib::RefPtr<Gdk::Drawable> drawable)
                 drawable, selected ? dark_orange() : black(),
                 x, c_dataarea_y - event_height, x, c_dataarea_y
             );
+
+#ifdef USE_STAZED_SEQDATA_EXTENSIONS
+			draw_rectangle                          /* draw handle          */
+			(
+                drawable, selected ? dark_orange() : black(), // true,
+                event_x - m_scroll_offset_x - 3,
+                c_dataarea_y - event_height,
+                c_data_handle_x,
+                c_data_handle_y
+            );
+#endif
+
             drawable->draw_drawable
             (
                 m_gc, m_numbers[event_height], 0, 0,
@@ -240,6 +285,12 @@ seqdata::draw_events_on (Glib::RefPtr<Gdk::Drawable> drawable)
             );
         }
     }
+#ifdef USE_STAZED_SEQDATA_EXTENSIONS
+    if (seltype == EVENTS_UNSELECTED)
+        seltype = numselected;
+    else
+        break;
+#endif
 }
 
 /**
@@ -380,6 +431,19 @@ bool
 seqdata::on_motion_notify_event (GdkEventMotion * ev)
 {
     bool result = false;
+#ifdef USE_STAZED_SEQDATA_EXTENSIONS
+    if (m_drag_handle)
+    {
+        m_current_y = int(ev->y = 3);
+        m_current_y = c_dataarea_y - m_current_y;
+        if (m_current_y < 0)
+            m_currrent_y = 0;
+
+        m_seq.adjust_data_handle(m_status, m_current_y);
+        update_pixmap();
+        draw_events_on(m_window);
+    }
+#endif
     if (m_dragging)
     {
         int adj_x_min, adj_x_max, adj_y_min, adj_y_max;
@@ -442,6 +506,13 @@ seqdata::on_motion_notify_event (GdkEventMotion * ev)
 bool
 seqdata::on_leave_notify_event (GdkEventCrossing * /*p0*/)
 {
+#ifdef USE_STAZED_SEQDATA_EXTENSIONS
+    if (m_seq.get_hold_undo())
+    {
+        m_seq.push_undo(true);
+        m_seq.set_hold_undo(false);
+    }
+#endif
     redraw();
     return true;
 }
@@ -638,6 +709,16 @@ seqdata::on_button_release_event (GdkEventButton * ev)
          *      perf().modify();
          */
     }
+
+#ifdef USE_STAZED_SEQDATA_EXTENSIONS
+    if (m_drag_handle)
+    {
+        m_drag_handle = false;
+        m_seq.unselect();
+        m_seq.set_dirty();
+    }
+#endif
+
     update_pixmap();
     queue_draw();
     return result;

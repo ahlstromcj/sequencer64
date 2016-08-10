@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-07-30
+ * \updates       2016-08-10
  * \license       GNU GPLv2 or above
  *
  *  The seqedit is a kind of master class for holding aseqroll, seqkeys,
@@ -184,6 +184,12 @@ private:
      */
 
     int m_ppqn;
+
+#ifdef USE_STAZED_ODD_EVEN_SELECTION
+    int m_pp_whole;
+    int m_pp_eighth;
+    int m_pp_sixteenth;
+#endif
 
     /**
      *  Holds a reference to the sequence that this window represents.

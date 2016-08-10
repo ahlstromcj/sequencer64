@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-07-15
+ * \updates       2016-08-10
  * \license       GNU GPLv2 or above
  *
  *  Compare this class to eventedit, which has to do some similar things,
@@ -71,6 +71,10 @@
 #include "sequence.hpp"
 #include "settings.hpp"                 /* seq64::rc() or seq64::usr()  */
 #include "user_instrument.hpp"          /* seq64::user_instrument       */
+
+#ifdef USE_STAZED_LFO_SUPPORT
+#include "lfownd.hpp"
+#endif
 
 #include "pixmaps/play.xpm"
 #include "pixmaps/q_rec.xpm"
@@ -212,6 +216,11 @@ seqedit::seqedit
     m_bgsequence        (usr().seqedit_bgsequence()),   // m_initial_sequence
     m_measures          (0),                            // fixed below
     m_ppqn              (0),                            // fixed below
+#ifdef USE_STAZED_ODD_EVEN_SELECTION
+    m_pp_whole          (0),
+    m_pp_eighth         (0),
+    m_pp_sixteenth      (0),
+#endif
     m_seq               (seq),
     m_menubar           (manage(new Gtk::MenuBar())),
     m_menu_tools        (manage(new Gtk::Menu())),
@@ -256,6 +265,9 @@ seqedit::seqedit
             )
         )
     ),
+#ifdef USE_STAZED_LFO_SUPPORT
+    m_lfo_wnd           (new lfownd(m_seq, m_seqdata_wid),
+#endif
     m_table             (manage(new Gtk::Table(7, 4, false))),
     m_vbox              (manage(new Gtk::VBox(false, 2))),
     m_hbox              (manage(new Gtk::HBox(false, 2))),
@@ -292,6 +304,9 @@ seqedit::seqedit
     m_tooltips          (manage(new Gtk::Tooltips())),
     m_button_data       (manage(new Gtk::Button(" Event "))),
     m_entry_data        (manage(new Gtk::Entry())),
+#ifdef USE_STAZED_LFO_SUPPORT
+    m_button_lfo        (manage(new Gtk::Button("LFO"))),
+#endif
     m_button_bpm        (nullptr),
     m_entry_bpm         (nullptr),
     m_button_bw         (nullptr),
@@ -317,7 +332,12 @@ seqedit::seqedit
     set_title(title);
     set_icon(Gdk::Pixbuf::create_from_xpm_data(seq_editor_xpm));
     m_seq.set_editing(true);
-    m_ppqn = choose_ppqn(ppqn);
+    m_ppqn          = choose_ppqn(ppqn);
+#ifdef USE_STAZED_ODD_EVEN_SELECTION
+    m_pp_whole      = m_ppqn * 4;
+    m_pp_eighth     = m_ppqn / 2;
+    m_pp_sixteenth  = m_ppqn / 4;
+#endif
     create_menus();
 
     Gtk::HBox * dhbox = manage(new Gtk::HBox(false, 2));
@@ -364,8 +384,17 @@ seqedit::seqedit
     );
     m_entry_data->set_size_request(40, -1);
     m_entry_data->set_editable(false);
+
     dhbox->pack_start(*m_button_data, false, false);
     dhbox->pack_start(*m_entry_data, true, true);
+
+#ifdef USE_STAZED_LFO_SUPPORT
+    dhbox->pack_start(*m_button_lfo, false, false);
+    m_button_lfo->signal_clicked().connect
+    (
+        mem_fun(m_lfo_wnd, &lfownd::toggle_visible)
+    );
+#endif
 
 #ifdef SEQ64_STAZED_TRANSPOSE
     m_toggle_transpose->add(*manage(new PIXBUF_IMAGE(transpose_xpm)));
@@ -430,6 +459,15 @@ seqedit::seqedit
     dhbox->pack_end(*m_toggle_play, false, false, 4);
     dhbox->pack_end(*(manage(new Gtk::VSeparator())), false, false, 4);
     fill_top_bar();
+
+#ifdef USE_STAZED_EXTRAS
+    if (m_seq.get_name() ! std::string("Untitled")
+    {
+        m_seqroll_wid->set_can_focus();
+        m_seqroll_wid->grab_focus();
+    }
+#endif
+
     add(*m_vbox);                              /* add table */
 
     /*
@@ -754,11 +792,67 @@ seqedit::popup_tool_menu ()
         MenuElem("Inverse notes", sigc::bind(DO_ACTION, c_select_inverse_notes, 0))
     );
 
+#ifdef USE_STAZED_ODD_EVEN_SELECTION
+
+    holder->items().push_back
+    (
+        MenuElem
+        (
+            "Even 1/4 Note Beats",
+            sigc::bind(DO_ACTION, select_even_notes, c_ppqn)
+        )
+    );
+    holder->items().push_back
+    (
+        MenuElem
+        (
+            "Odd 1/4 Note Beats",
+            sigc::bind(DO_ACTION, select_odd_notes, c_ppqn)
+        )
+    );
+    holder->items().push_back
+    (
+        MenuElem
+        (
+            "Even 1/8 Note Beats",
+            sigc::bind(DO_ACTION, select_even_notes, c_ppen)
+        )
+    );
+    holder->items().push_back
+    (
+        MenuElem
+        (
+            "Odd 1/8 Note Beats",
+            sigc::bind(DO_ACTION,
+                select_odd_notes, c_ppen)
+        )
+    );
+    holder->items().push_back
+    (
+        MenuElem
+        (
+            "Even 1/16 Note Beats",
+            sigc::bind(DO_ACTION, select_even_notes, c_ppsn)
+        )
+    );
+    holder->items().push_back
+    (
+        MenuElem
+        (
+            "Odd 1/16 Note Beats",
+            sigc::bind(DO_ACTION, select_odd_notes, c_ppsn)
+        )
+    );
+
+#endif  // USE_STAZED_ODD_EVEN_SELECTION
+
     /*
      * This is an interesting wrinkle to document.
      */
 
-    if (m_editing_status != EVENT_NOTE_ON && m_editing_status != EVENT_NOTE_OFF)
+//  if (m_editing_status != EVENT_NOTE_ON && m_editing_status != EVENT_NOTE_OFF)
+
+    if (! event::is_note_msg(m_editing_status))
     {
         holder->items().push_back(SeparatorElem());
         holder->items().push_back
@@ -785,7 +879,9 @@ seqedit::popup_tool_menu ()
             sigc::bind(DO_ACTION, c_tighten_notes, 0))
     );
 
-    if (m_editing_status != EVENT_NOTE_ON && m_editing_status != EVENT_NOTE_OFF)
+//  if (m_editing_status != EVENT_NOTE_ON && m_editing_status != EVENT_NOTE_OFF)
+
+    if (! event::is_note_msg(m_editing_status))
     {
         /*
          *  The action code here is c_quantize_events, not
@@ -804,6 +900,24 @@ seqedit::popup_tool_menu ()
                 sigc::bind(DO_ACTION, c_tighten_events, 0))
         );
     }
+
+#ifdef USE_STAZED_COMPANDING
+
+    holder->items().push_back(SeparatorElem());
+    holder->items().push_back
+    (
+        MenuElem("Expand Pattern (double)",
+            sigc::bind(DO_ACTION, expand_pattern, 0))
+    );
+
+    holder->items().push_back
+    (
+        MenuElem("Compress Pattern (halve)",
+            sigc::bind(DO_ACTION, compress_pattern, 0))
+    );
+
+#endif
+
     m_menu_tools->items().push_back(MenuElem("Modify time", *holder));
     holder = manage(new Gtk::Menu());
 
@@ -845,6 +959,25 @@ seqedit::popup_tool_menu ()
         );
     }
     m_menu_tools->items().push_back(MenuElem("Modify Pitch", *holder));
+
+#ifdef USE_STAZED_RANDOMIZE_SUPPORT
+
+    holder = manage( new Menu());
+    for (int i = 1; i < 17; ++i)
+    {
+        snprintf(num, sizeof(num), "+/- %d", i);
+        holder->items().push_back
+        (
+            MenuElem(num, sigc::bind(DO_ACTION, randomize_events, i))
+        );
+    }
+    m_menu_tools->items().push_back
+    (
+        MenuElem("Randomize Event Values", *holder)
+    );
+
+#endif
+
     m_menu_tools->popup(0, 0);
 }
 
@@ -876,6 +1009,27 @@ seqedit::do_action (int action, int var)
         m_seq.select_events(m_editing_status, m_editing_cc, true);
         break;
 
+#ifdef USE_STAZED_ODD_EVEN_SELECTION
+
+    case select_even_notes:
+        m_seq.select_even_or_odd_notes(var, true);
+        break;
+
+    case select_odd_notes:
+        m_seq.select_even_or_odd_notes(var, false);
+        break;
+
+#endif
+
+#ifdef USE_STAZED_RANDOMIZE_SUPPORT
+
+    case randomize_events:
+        m_seq.push_undo();                      // MOVE TO THE FUNCTION?
+        m_seq.randomize_selected(m_editing_status, m_editing_cc, var);
+        break;
+
+#endif
+
     case c_quantize_notes:
 
         /*
@@ -884,7 +1038,7 @@ seqedit::do_action (int action, int var)
          * a new function to do that.
          */
 
-        m_seq.push_quantize(EVENT_NOTE_ON, 0, m_snap, 1 , true);
+        m_seq.push_quantize(EVENT_NOTE_ON, 0, m_snap, 1, true);
         break;
 
     case c_quantize_events:
@@ -892,20 +1046,33 @@ seqedit::do_action (int action, int var)
         break;
 
     case c_tighten_notes:
-        m_seq.push_quantize(EVENT_NOTE_ON, 0, m_snap, 2 , true);
+        m_seq.push_quantize(EVENT_NOTE_ON, 0, m_snap, 2, true);
         break;
 
     case c_tighten_events:
         m_seq.push_quantize(m_editing_status, m_editing_cc, m_snap, 2);
         break;
 
-    case c_transpose:
+    case c_transpose:                           /* regular transpose    */
         m_seq.transpose_notes(var, 0);
         break;
 
-    case c_transpose_h:                     // harmonic transpose
+    case c_transpose_h:                         /* harmonic transpose   */
         m_seq.transpose_notes(var, m_scale);
         break;
+
+#ifdef USE_STAZED_COMPANDING
+
+    case expand_pattern:
+        m_seq.push_undo();                      // MOVE TO THE FUNCTION?
+        m_seq.multiply_pattern(2.0);
+        break;
+
+    case compress_pattern:
+        m_seq.push_undo();                      // MOVE TO THE FUNCTION?
+        m_seq.multiply_pattern(0.5);
+        break;
+#endif
 
     default:
         break;
@@ -1040,7 +1207,8 @@ seqedit::fill_top_bar ()
      *  Second row of top bar
      */
 
-    m_button_undo = manage(new Gtk::Button());              /* undo          */
+    m_button_undo = manage(new Gtk::Button());              /* undo         */
+    m_button_undo->set_can_focus(false);                    /* stazed       */
     m_button_undo->add(*manage(new PIXBUF_IMAGE(undo_xpm)));
     m_button_undo->signal_clicked().connect
     (
@@ -1048,7 +1216,8 @@ seqedit::fill_top_bar ()
     );
     add_tooltip(m_button_undo, "Undo.");
     m_hbox2->pack_start(*m_button_undo , false, false);
-    m_button_redo = manage(new Gtk::Button());              /* redo          */
+    m_button_redo = manage(new Gtk::Button());              /* redo         */
+    m_button_redo->set_can_focus(false);                    /* stazed       */
     m_button_redo->add(*manage(new PIXBUF_IMAGE(redo_xpm)));
     m_button_redo->signal_clicked().connect
     (

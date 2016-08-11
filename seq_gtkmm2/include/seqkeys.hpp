@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-06-01
+ * \updates       2016-08-11
  * \license       GNU GPLv2 or above
  *
  *      We've added the feature of a right-click toggling between showing the
@@ -52,11 +52,14 @@ namespace seq64
 
 /**
  *  This class implements the left side piano of the pattern/sequence
- *  editor.
+ *  editor.  Note the friends of this class, seqroll and FruitySeqRollInput.
+ *  Where is Seq24SeqRollInput?  Gone.  It has been folded back into seqroll.
  */
 
 class seqkeys : public gui_drawingarea_gtk2
 {
+    friend class seqroll;
+    friend class FruitySeqRollInput;
 
 private:
 
@@ -150,6 +153,32 @@ public:
 private:
 
     virtual void force_draw ();
+
+private:
+
+    /**
+     *  Sneaky accessor for the seqroll friend.  From the stazed code.
+     *
+     * \param ev
+     *      The event to be forwarded from the seqroll.
+     */
+
+    void set_listen_button_press (GdkEventButton * ev)
+    {
+        on_button_press_event(ev);
+    }
+
+    void set_listen_button_release (GdkEventButton * ev)
+    {
+        on_button_release_event(ev);
+    }
+
+    void set_listen_motion_notify (GdkEventMotion * ev)
+    {
+        on_motion_notify_event(ev);
+    }
+
+private:
 
     void draw_area ();
     void update_pixmap ();

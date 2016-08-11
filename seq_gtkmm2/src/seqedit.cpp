@@ -2091,13 +2091,29 @@ seqedit::play_change_callback ()
 
 /**
  *  Passes the recording status to the sequence object.
+ *
+ * Stazed:
+ *
+ *      Both record_change_callback() and thru_change_callback() will call
+ *      set_sequence_input() for the same sequence. We only need to call it if
+ *      it is not already set, if setting. And, we should not unset it if the
+ *      m_toggle_thru->get_active() is true.
  */
 
 void
 seqedit::record_change_callback ()
 {
+#ifdef USE_STAZED_FIX
+    bool thru_active = m_toggle_thru->get_active();
+    bool record_active = m_toggle_record->get_active();
+    if (! thru_active)
+        perf().master_bus().set_sequence_input(record_active, &m_seq);
+
+    m_seq->set_recording(record_active);
+#else
     perf().master_bus().set_sequence_input(true, &m_seq);
     m_seq.set_recording(m_toggle_record->get_active());
+#endif
 }
 
 /**
@@ -2142,13 +2158,29 @@ seqedit::redo_callback ()
 
 /**
  *  Passes the MIDI Thru status to the sequence object.
+ *
+ * Stazed:
+ *
+ *      Both record_change_callback() and thru_change_callback() will call
+ *      set_sequence_input() for the same sequence. We only need to call it if
+ *      it is not already set, if setting. And, we should not unset it if the
+ *      m_toggle_thru->get_active() is true.
  */
 
 void
 seqedit::thru_change_callback ()
 {
+#ifdef USE_STAZED_FIX
+    bool thru_active = m_toggle_thru->get_active();
+    bool record_active = m_toggle_record->get_active();
+    if (! record_active)
+        perf().master_bus().set_sequence_input(thru_active, &m_seq);
+
+    m_seq->set_recording(thru_active);
+#else
     perf().master_bus().set_sequence_input(true, &m_seq);
     m_seq.set_thru(m_toggle_thru->get_active());
+#endif
 }
 
 /**
@@ -2223,6 +2255,29 @@ seqedit::timeout ()
         m_seq.set_raise(false);
         raise();
     }
+#ifdef USE_STAZED_TRANSPORT
+    if (m_seq.is_dirty_edit())                  /* m_seq.is_dirty_main()    */
+    {
+        m_seqroll_wid->redraw_events();
+        m_seqevent_wid->redraw();
+        m_seqdata_wid->redraw();
+    }
+    m_seqroll_wid->draw_progress_on_window();
+    if (perf().is_running() && perf().get_follow_transport())
+        m_seqroll_wid->follow_progress();       /* keep up with progress    */
+
+    bool undo_on = m_button_undo->get_sensitive();
+    bool redo_on = m_button_redo->get_sensitive();
+    if (m_seq.have_undo() && ! undo_on)
+        m_button_undo->set_sensitive(true);
+    else if (! m_seq.have_undo && undo_on)
+        m_button_undo->set_sensitive(false);
+
+    if (m_seq.have_redo() && ! redo_on)
+        m_button_redo->set_sensitive(true);
+    else if (! m_seq.have_redo && redo_on)
+        m_button_redo->set_sensitive(false);
+#else
     m_seqroll_wid->follow_progress();           /* keep up with progress    */
     if (m_seq.is_dirty_edit())                  /* m_seq.is_dirty_main()    */
     {
@@ -2231,6 +2286,8 @@ seqedit::timeout ()
         m_seqdata_wid->redraw();
     }
     m_seqroll_wid->draw_progress_on_window();
+#endif
+
     return true;
 }
 
@@ -2275,11 +2332,36 @@ seqedit::change_focus (bool set_it)
 void
 seqedit::handle_close ()
 {
-    perf().master_bus().set_sequence_input(false, nullptr);
+    /*
+     * Stazed fix, change this line:
+     *
+     * perf().master_bus().set_sequence_input(false, nullptr);
+     */
+
+    perf().master_bus().set_sequence_input(false, &m_seq);
     m_seq.set_recording(false);
     m_seq.set_editing(false);
     change_focus(false);
 }
+
+#ifdef USE_STAZED_PLAYING_CONTROL
+
+void
+seqedit::start_playing ()
+{
+    if(! rc().song_start_mode)
+        m_seq.set_playing(m_toggle_play->get_active());
+
+    perf().start_playing();
+}
+
+void
+seqedit::stop_playing()
+{
+    perf().stop_playing();
+}
+
+#endif
 
 /**
  *  On realization, calls the base-class version, and connects the redraw
@@ -2348,6 +2430,11 @@ bool
 seqedit::on_delete_event (GdkEventAny *)
 {
     handle_close();
+
+#ifdef USE_STAZED_LFO_SUPPORT
+    delete m_lfo_wnd;
+#endif
+
     delete this;
     return false;
 }
@@ -2437,6 +2524,14 @@ seqedit::on_key_press_event (GdkEventKey * ev)
              */
 
             return on_delete_event((GdkEventAny *)(ev));
+        }
+        else if
+        (
+            get_focus()->get_name() == "Sequence Name" ||
+            ! m_seqroll_wid->on_key_press_event(ev)
+        )
+        {
+            return Gtk::Window::on_key_press_event(ev);
         }
         else if (ev->keyval == SEQ64_Page_Up)   /* zoom in              */
         {

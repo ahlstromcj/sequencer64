@@ -105,8 +105,14 @@ Seq24SeqEventInput::on_button_press_event
         seqev.snap_x(seqev.m_current_x);
         seqev.convert_x(seqev.m_current_x, tick_s);
         seqev.m_paste = false;
-        // seqev.m_seq.push_undo();
+
+        /*
+         * TODO: fold into sequence::paste_selected().
+         */
+
+        seqev.m_seq.push_undo();                        /* stazed fix */
         seqev.m_seq.paste_selected(tick_s, 0);
+        seqev.m_seq.set_dirty();                        /* stazed fix */
         result = true;
     }
     else
@@ -146,6 +152,21 @@ Seq24SeqEventInput::on_button_press_event
                     tick_s, tick_f, seqev.m_status,
                     seqev.m_cc, sequence::e_is_selected
                 );
+
+#ifdef USE_STAZED_SELECTION_EXTENSIONS
+
+                /*
+                 * Stazed fix: if we did'nt select anything (user clicked empty
+                 * space), then unselect all notes, and start selecting.
+                 */
+                
+                if (event::is_strict_note_msg(seqev.m_status))
+                {
+                    seqev.m_seq.select_linked(tick_s, tick_f, seqev.m_status);
+                    seqev.m_seq.set_dirty();
+                }
+#endif
+
                 if (eventcount == 0)
                 {
                     if (! is_ctrl_key(ev))
@@ -263,6 +284,21 @@ Seq24SeqEventInput::on_button_release_event
             (
                 tick_s, tick_f, seqev.m_status, seqev.m_cc, sequence::e_select
             );
+
+#ifdef USE_STAZED_SELECTION_EXTENSIONS
+
+            /*
+             * Stazed fix: if we did'nt select anything (user clicked empty
+             * space), then unselect all notes, and start selecting.
+             */
+            
+            if (event::is_strict_note_msg(seqev.m_status))
+            {
+                seqev.m_seq.select_linked(tick_s, tick_f, seqev.m_status);
+            }
+            seqev.m_seq.set_dirty();    // ??????????? Why not in brackets?
+#endif
+
         }
         if (seqev.m_moving)
         {

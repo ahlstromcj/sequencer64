@@ -71,6 +71,10 @@ namespace seq64
     class seqroll;
     class seqtime;
 
+#ifdef USE_STAZED_LFO_SUPPORT
+    class lfownd;
+#endif
+
 /**
  *  Mouse actions, for the Pattern Editor.
  */
@@ -209,20 +213,30 @@ private:
     Gtk::Menu * m_menu_snap;            /**< Two-arrows grid-snap menu.     */
     Gtk::Menu * m_menu_note_length;     /**< Notes menu for note length.    */
     Gtk::Menu * m_menu_length;          /**< Pattern-length "bars" menu.    */
+
 #ifdef SEQ64_STAZED_TRANSPOSE
     Gtk::ToggleButton * m_toggle_transpose;  /**< Transpose toggle button.  */
 #endif
+
     Gtk::Menu * m_menu_midich;          /**< MIDI channel DIN menu button.  */
     Gtk::Menu * m_menu_midibus;         /**< MIDI output buss menu button.  */
     Gtk::Menu * m_menu_data;            /**< "Event" button to select data. */
     Gtk::Menu * m_menu_key;             /**< "Music key" menu button.       */
     Gtk::Menu * m_menu_scale;           /**< "Music scale" menu button.     */
+
 #ifdef SEQ64_STAZED_CHORD_GENERATOR
     Gtk::Menu * m_menu_chords;          /**< "Chords" menu button.          */
 #endif
+
     Gtk::Menu * m_menu_sequences;       /**< "Background sequence" button.  */
     Gtk::Menu * m_menu_bpm;             /**< Beats/measure numerator menu.  */
     Gtk::Menu * m_menu_bw;              /**< Beat-width denominator menu.   */
+
+#ifdef USE_STAZED_LFO_SUPPORT
+    Button * m_button_lfo;
+    lfownd * m_lfo_wnd;
+#endif
+
     Gtk::Menu * m_menu_rec_vol;         /**< Recording level "Vol" button.  */
 
     /**
@@ -470,6 +484,12 @@ private:
     bool timeout ();
     void do_action (int action, int var);
     void mouse_action (mouse_action_e action);
+
+#ifdef USE_STAZED_PLAYING_CONTROL
+    void start_playing ();
+    void stop_playing ();
+#endif
+
     void change_focus (bool set_it = true);
     void handle_close ();
 

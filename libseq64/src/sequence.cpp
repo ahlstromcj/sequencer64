@@ -655,7 +655,7 @@ sequence::select_note_events
  */
 
 int
-sequence::select_linked (long tick_s, long tick_f, unsigned char status)
+sequence::select_linked (long tick_s, long tick_f, midibyte status)
 {
     int result = 0;
     automutex locker(m_mutex);

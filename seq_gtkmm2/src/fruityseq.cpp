@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-08-02
- * \updates       2016-07-16
+ * \updates       2016-08-10
  * \license       GNU GPLv2 or above
  *
  *  This code was extracted from seqevent to make that module more
@@ -126,13 +126,14 @@ FruitySeqEventInput::on_button_press_event
         seqev.convert_x(seqev.m_current_x, tick_s);
         seqev.m_paste = false;
         seqev.m_seq.paste_selected(tick_s, 0);
+        seqev.m_seq.set_dirty();                        /* a stazed fix     */
         result = true;
     }
     else
     {
         int x, w;
         midipulse tick_f;
-        if (SEQ64_CLICK_LEFT(ev->button))       /* Note 1   */
+        if (SEQ64_CLICK_LEFT(ev->button))               /* Note 1   */
         {
             seqev.convert_x(seqev.m_drop_x, tick_s); /* x,y into tick/note    */
             tick_f = tick_s + seqev.m_zoom;          /* shift back some ticks */
@@ -162,7 +163,7 @@ FruitySeqEventInput::on_button_press_event
                     result = true;
                 }
             }
-            else                                    /* selecting */
+            else                                        /* selecting         */
             {
                 eventcount = seqev.m_seq.select_events
                 (
@@ -176,12 +177,12 @@ FruitySeqEventInput::on_button_press_event
                         tick_s, tick_f, seqev.m_status, seqev.m_cc,
                         sequence::e_would_select
                     );
-                    if (eventcount > 0)             /* if clicking event */
+                    if (eventcount > 0)                 /* if clicking event */
                     {
                         if (! is_ctrl_key(ev))
                             seqev.m_seq.unselect();
                     }
-                    else /* clicking empty space, unselect all if no Ctrl-Sh  */
+                    else    /* clickempty space, unselect all if no Ctrl-Sh  */
                     {
                         if (! is_ctrl_shift_key(ev))
                             seqev.m_seq.unselect();
@@ -194,6 +195,19 @@ FruitySeqEventInput::on_button_press_event
                         tick_s, tick_f, seqev.m_status,
                         seqev.m_cc, sequence::e_select_one
                     );
+
+                    /*
+                     * Stazed fix:
+                     */
+
+#ifdef USE_STAZED_SELECTION_EXTENSIONS
+                    if (event::is_strict_note_msg(seqev.m_status))
+                    {
+                        seqev.m_seq.select_linked(tick_s, tick_f, seqev.m_status);
+                        seqev.m_seq.set_dirty();
+                    }
+#endif
+
                     if (eventcount)
                         m_justselected_one = true;  /* stop deselect on release */
 
@@ -259,6 +273,15 @@ FruitySeqEventInput::on_button_press_event
             tick_s -= (tick_w);
             if (tick_s < 0)
                 tick_s = 0;
+
+            /*
+             * Stazed fix: don't allow individual deletion of Note On/Off
+             * events.  Should we do the same for AfterTouch events?  No, they
+             * are not linked to Note On or Note Off events.
+             */
+
+            if (event::is_strict_note_msg(seqev.m_status))
+                return true;
 
             int eventcount = seqev.m_seq.select_events
             (
@@ -388,7 +411,16 @@ FruitySeqEventInput::on_button_release_event
             result = true;
         }
     }
-    if (SEQ64_CLICK_LEFT_RIGHT(ev->button))
+
+    /*
+     * Yet another stazed fix.  :-)
+     */
+
+    bool right = SEQ64_CLICK_RIGHT(ev->button);
+    if (! right)
+        right = is_ctrl_key(ev) && SEQ64_CLICK_LEFT(ev->button);
+
+    if (right)
     {
         if (seqev.m_selecting)
         {
@@ -401,6 +433,24 @@ FruitySeqEventInput::on_button_release_event
                 tick_s, tick_f,
                 seqev.m_status, seqev.m_cc, sequence::e_toggle_selection
             );
+
+#ifdef USE_STAZED_SELECTION_EXTENSIONS
+
+            /*
+             * Stazed fix
+             */
+
+            if (event::is_strict_note_msg(seqev.m_status))
+                seqev.m_seq.select_linked(tick_s, tick_f, seqev.m_status);
+#endif
+
+            /*
+             * To update the select or unselect of notes by this action.
+             * Not sure this makes sense, though.  How does selection dirty
+             * anything?
+             */
+
+            seqev.m_seq.set_dirty();
         }
     }
     seqev.m_selecting = false;          /* turn it all off */

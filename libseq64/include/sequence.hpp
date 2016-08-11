@@ -1080,6 +1080,7 @@ public:
         midipulse tick_s, midipulse tick_f, midibyte status,
         midibyte cc, int data_s
     );
+    int select_linked (long tick_s, long tick_f, midibyte status);
 
     /*
      *  Given a note length (in ticks) and a boolean indicating even or odd,

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-07-16
+ * \updates       2016-08-11
  * \license       GNU GPLv2 or above
  *
  *  This module handles "fruity" interactions only in the piano roll
@@ -103,9 +103,9 @@ FruitySeqRollInput::on_button_press_event (GdkEventButton * ev, seqroll & sroll)
     int note_h, note_l;
     sequence & seq = sroll.m_seq;                   /* just do this once!   */
     int norm_x, snapped_x, snapped_y;
-    bool needs_update = sroll.button_press_initial
+    bool needs_update = sroll.button_press_initial  /* focus grab and more! */
     (
-        ev, norm_x, snapped_x, snapped_y                /* 3 side-effects   */
+        ev, norm_x, snapped_x, snapped_y            /* 3 side-effects       */
     );
     if (! needs_update)
     {
@@ -127,13 +127,20 @@ FruitySeqRollInput::on_button_press_event (GdkEventButton * ev, seqroll & sroll)
                 (
                     sroll.m_drop_x, sroll.m_drop_y, tick_s, note_h
                 );
+
+                /*
+                 * Stazed fix, forwards the event to play the hint note.
+                 */
+
+                sroll.m_seqkeys_wid.set_listen_button_press(ev);
+
                 eventcount = seq.select_note_events /* note already there?  */
                 (
                     tick_s, note_h, tick_s, note_h, sequence::e_would_select
                 );
                 if (eventcount == 0)
                 {
-                    sroll.add_note(tick_s, note_h);     /* also does chords */
+                    sroll.add_note(tick_s, note_h); /* also does chords */
                     needs_update = true;
                 }
             }
@@ -216,33 +223,23 @@ FruitySeqRollInput::on_button_press_event (GdkEventButton * ev, seqroll & sroll)
                             seq.intersect_notes
                             (
                                 drop_tick, drop_note, start, end, note
-                            ) &&
-                            note == drop_note
+                            ) && note == drop_note
                         )
                         {
                             long handle_size = clamp // 16 wide unless very small
                             (
                                 s_handlesize, 0, (end - start) / 3
                             );
-                            if
-                            (
-                                start <= drop_tick &&
-                                drop_tick <= start + handle_size
-                            )
-                            {
+                            bool center = start <= drop_tick &&
+                                    drop_tick <= (start + handle_size);
+                            bool right = end - handle_size <= drop_tick &&
+                                    drop_tick <= end;
+                            if (center)
                                 center_mouse_handle = true;
-                            }
-                            else if
-                            (
-                                end - handle_size <= drop_tick && drop_tick <= end
-                            )
-                            {
+                            else if (right)
                                 right_mouse_handle = true;
-                            }
                             else
-                            {
                                 center_mouse_handle = true;
-                            }
                         }
                     }
                     if                              /* grab/move the note */
@@ -270,6 +267,13 @@ FruitySeqRollInput::on_button_press_event (GdkEventButton * ev, seqroll & sroll)
 
                         sroll.snap_x(sroll.m_selected.x);
                         sroll.set_current_drop_x(snapped_x);
+
+                        /*
+                         * Stazed fix, forwards the event to play the hint
+                         * note.
+                         */
+
+                        sroll.m_seqkeys_wid.set_listen_button_press(ev);
                     }
                     else if /* ctrl left click when stuff is already selected */
                     (
@@ -326,7 +330,17 @@ FruitySeqRollInput::on_button_press_event (GdkEventButton * ev, seqroll & sroll)
                     (
                         tick_s, note_h, tick_s, note_h, sequence::e_select_one
                     );
-                    seq.remove_selected();
+
+                    /*
+                     * Stazed fix.  TODO:  incorporated the mark-check and the
+                     * push-undo into sequence::remove_selected().
+                     */
+
+                    if (seq.mark_selected())
+                    {
+                        seq.push_undo();
+                        seq.remove_selected();
+                    }
                 }
                 else
                 {
@@ -401,6 +415,12 @@ FruitySeqRollInput::on_button_release_event
     int delta_y = sroll.current_y() - sroll.drop_y();
     midipulse delta_tick;
     int delta_note;
+
+    /*
+     * Stazed fix, forwards the event to turn off the hint note.
+     */
+
+    sroll.m_seqkeys_wid.set_listen_button_press(ev);
 
     /* middle click, or ctrl- (???) left click button up */
 
@@ -599,8 +619,11 @@ FruitySeqRollInput::on_motion_notify_event
     sroll.m_seqkeys_wid.set_hint_key(note);
     if (sroll.select_action())
     {
-        if (sroll.drop_action())
+        if (sroll.drop_action())                        /* moving or paste  */
             sroll.snap_x(sroll.m_current_x);
+
+        if (sroll.moving())                             /* stazed fix       */
+            sroll.m_seqkeys_wid.set_listen_motion_notify(ev);
 
         sroll.draw_selection_on_window();
         result = true;

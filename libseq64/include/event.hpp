@@ -433,6 +433,23 @@ public:
     }
 
     /**
+     *  Static test for messages that involve notes only: Note On and
+     *  Note Off.
+     *
+     * \param m
+     *      The channel status or message byte to be tested, with the channel
+     *      bits masked off.
+     *
+     * \return
+     *      Returns true if the byte represents a MIDI note on/off message.
+     */
+
+    static bool is_strict_note_msg (midibyte m)
+    {
+        return m == EVENT_NOTE_ON || m == EVENT_NOTE_OFF;
+    }
+
+    /**
      *  Static test for channel messages that are either not control-change
      *  messages, or are and match the given controller value.
      *

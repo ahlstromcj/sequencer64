@@ -549,18 +549,21 @@ void
 seqevent::drop_event (midipulse tick)
 {
     midibyte status = m_status;
-    midibyte d0 = m_cc;
-    midibyte d1 = 0x40;
-    if (m_status == EVENT_AFTERTOUCH)
-        d0 = 0;
-    else if (m_status == EVENT_PROGRAM_CHANGE)
-        d0 = 0;                                     /* d0 == new patch */
-    else if (m_status == EVENT_CHANNEL_PRESSURE)
-        d0 = 0x40;                                  /* d0 == pressure */
-    else if (m_status == EVENT_PITCH_WHEEL)
-        d0 = 0;
+    if (! event::is_strict_note_msg(status))            /* a stazed fix     */
+    {
+        midibyte d0 = m_cc;
+        midibyte d1 = 0x40;
+        if (status == EVENT_AFTERTOUCH)
+            d0 = 0;
+        else if (status == EVENT_PROGRAM_CHANGE)
+            d0 = 0;                                     /* d0 == new patch  */
+        else if (status == EVENT_CHANNEL_PRESSURE)
+            d0 = 0x40;                                  /* d0 == pressure   */
+        else if (status == EVENT_PITCH_WHEEL)
+            d0 = 0;
 
-    m_seq.add_event(tick, status, d0, d1, true);
+        m_seq.add_event(tick, status, d0, d1, true);
+    }
 }
 
 /**

@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-07-14
+ * \updates       2016-08-10
  * \license       GNU GPLv2 or above
  *
  *  We are currently moving toward making this class a base class.
@@ -99,6 +99,13 @@ class seqroll : public gui_drawingarea_gtk2
      */
 
     friend class FruitySeqRollInput;
+
+    /**
+     *  For accessing on_key_press_event().  It would be good to be able to
+     *  avoid this access!
+     */
+
+    friend class seqedit;
 
 private:
 
@@ -764,7 +771,16 @@ private:            // new internal/friend functions
 
     bool drop_action () const
     {
-        return m_moving || m_paste;
+        return moving() || m_paste;
+    }
+
+    /**
+     * \getter m_moving
+     */
+
+    bool moving () const
+    {
+        return m_moving;
     }
 
 private:            // callbacks

@@ -71,7 +71,7 @@ seqmenu::seqmenu (perform & p)
     m_clipboard     (),
     m_seqedit       (nullptr),
     m_eventedit     (nullptr),
-    m_current_seq   (-1)            /* (0) is not really current yet    */
+    m_current_seq   (SEQ64_ALL_TRACKS)  /* (0) is not really current yet    */
 {
     m_clipboard.set_master_midi_bus(&m_mainperf.master_bus());
 }
@@ -579,9 +579,9 @@ seqmenu::seq_paste ()
 void
 seqmenu::seq_clear_perf ()
 {
-    if (is_current_seq_active())        /* checks the sequence pointer  */
+    if (is_current_seq_active())                /* check sequence pointer   */
     {
-        m_mainperf.push_trigger_undo();
+        m_mainperf.push_trigger_undo(m_current_seq);        /* stazed fix   */
         m_mainperf.clear_sequence_triggers(current_seq());
         sequence * s = get_current_sequence();
         s->set_dirty();

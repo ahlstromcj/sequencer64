@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-25
- * \updates       2016-07-17
+ * \updates       2016-08-12
  * \license       GNU GPLv2 or above
  *
  *  We're going to try to collect all the globals here in one module, and
@@ -56,6 +56,17 @@
  *
  *  Also note that this file really is a C++ header file, and should have
  *  the "hpp" file extension.  We will fix that Real Soon Now.
+ *
+ * Stazed:
+ *
+ *      Some additional variables have been added for supporting stazed/seq32
+ *      features.  However, the following will note be added:
+ *
+ *      -   c_seq32_midi and c_song_midi:  Both the Save and Export functions
+ *          write files that are standard MIDI files (with SeqSpec sections)
+ *          that any sequencer should be able to read.
+ *      -   global_is_running and global_is_modified: These statuses are
+ *          maintained in the perform object.
  */
 
 #include <string>
@@ -70,9 +81,7 @@
  *  force.  Also, enabling it hear might cause an explosion of output.
  */
 
-#ifdef PLATFORM_DEBUG
 #undef  SEQ64_USE_DEBUG_OUTPUT          /* off by default... TMI        */
-#endif
 
 /**
  *  Number of rows in the Patterns Panel.  The current value is 4, and
@@ -221,7 +230,7 @@ const int c_control_height = 0;
  *  controllers, as well as note on and off velocity.  This value looks to
  *  be in pixels; one pixel per MIDI value, which ranges from 0 to 127.
  *  We're trying to avoid header clutter, and are using a hardwired constant
- *  for this variable, which will eventually go away..
+ *  for this variable, which will eventually go away.
  */
 
 const int c_dataarea_y = 128;
@@ -232,6 +241,18 @@ const int c_dataarea_y = 128;
  */
 
 const int c_data_x = 2;
+
+/**
+ *  The width of the seqdata data-handle, a stazed feature.
+ */
+
+const int c_data_handle_x = 8;
+
+/**
+ *  The height of the seqdata data-handle, a stazed feature.
+ */
+
+const int c_data_handle_y = 4;
 
 /**
  *  The dimensions of each key of the virtual keyboard at the left of the

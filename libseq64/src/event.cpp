@@ -149,6 +149,16 @@ event::event (const event & rhs)
 }
 
 /**
+ *  This destructor explicitly deletes m_sysex and sets it to null.
+ *  The restart_sysex() function does what we need.
+ */
+
+event::~event ()
+{
+    restart_sysex();                    /* tricky code */
+}
+
+/**
  *  This principal assignment operator sets most of the class members.  This
  *  function is currently geared only toward support of the SMF 0
  *  channel-splitting feature.  Many of the member are not set to useful value
@@ -178,8 +188,13 @@ event::operator = (const event & rhs)
         m_channel       = rhs.m_channel;
         m_data[0]       = rhs.m_data[0];
         m_data[1]       = rhs.m_data[1];
-        m_sysex         = nullptr;
-        m_sysex_size    = 0;                        /* rhs.m_sysex_size;    */
+
+        /*
+         * m_sysex         = nullptr;
+         * m_sysex_size    = 0;                     // rhs.m_sysex_size;
+         */
+
+        restart_sysex();
         m_linked        = nullptr;
         m_has_link      = rhs.m_has_link;           /* false instead?       */
         m_selected      = rhs.m_selected;           /* false instead?       */
@@ -187,16 +202,6 @@ event::operator = (const event & rhs)
         m_painted       = rhs.m_painted;            /* false instead?       */
     }
     return *this;
-}
-
-/**
- *  This destructor explicitly deletes m_sysex and sets it to null.
- *  The restart_sysex() function does what we need.
- */
-
-event::~event ()
-{
-    restart_sysex();                    /* tricky code */
 }
 
 /**

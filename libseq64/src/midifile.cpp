@@ -367,7 +367,7 @@ midifile::parse (perform & p, int screenset)
     }
 
     int file_size = file.tellg();                   /* get end offset       */
-    if (file_size <= 0)
+    if (file_size <= sizeof(long))
     {
         m_error_is_fatal = true;
         m_error_message = "Invalid file size... trying to read a directory?";
@@ -552,9 +552,14 @@ midifile::add_trigger (sequence & seq, midishort ppqn)
 
 /**
  *  This function parses an SMF 1 binary MIDI file; it is basically the
- *  original seq25 midifile::parse() function.  It assumes the file-data has
+ *  original seq24 midifile::parse() function.  It assumes the file-data has
  *  already been read into memory.  It also assumes that the ID, track-length,
  *  and format have already been read.
+ *
+ *  If the MIDI file contains both proprietary (c_timesig) and MIDI type 0x58
+ *  then it came from seq42 or seq32 (Stazed versions).  In this case the MIDI
+ *  type is parsed first (because it is listed first) then it gets overwritten
+ *  by the proprietary, above.
  *
  * \param p
  *      Provides a reference to the perform object into which sequences/tracks
@@ -828,14 +833,21 @@ midifile::parse_smf_1 (perform & p, int screenset, bool is_smf0)
                                 unsigned tt = unsigned(read_byte());
                                 tt = (tt * 256) + unsigned(read_byte());
                                 tt = (tt * 256) + unsigned(read_byte());
-                                int bpm = int
-                                (
-                                    beats_per_minute_from_tempo(double(tt))
-                                );
-                                p.set_beats_per_minute(bpm);
+                                if (curtrack == 0)
+                                {
+                                    int bpm = int
+                                    (
+                                        beats_per_minute_from_tempo(double(tt))
+                                    );
+                                    p.set_beats_per_minute(bpm);
 #ifdef SEQ64_HANDLE_TIMESIG_AND_TEMPO
-                                seq.us_per_quarter_note(int(tt));
+                                    seq.us_per_quarter_note(int(tt));
 #endif
+                                }
+                                else
+                                {
+                                    errdump("ignoring tempo data after track 0");
+                                }
                             }
                             else
                                 m_pos += len;           /* eat it           */
@@ -925,7 +937,7 @@ midifile::parse_smf_1 (perform & p, int screenset, bool is_smf0)
 
                 default:
 
-                    errdump("Unknown MIDI event", midilong(status));
+                    errdump("Unsupported MIDI event", midilong(status));
                     return false;
                     break;
                 }
@@ -1232,27 +1244,34 @@ midifile::parse_proprietary_track (perform & p, int file_size)
             p.set_beats_per_minute(bpm);                /* 2nd way to set!  */
         }
 
-        /* Read in the mute group information. */
+        /*
+         * Read in the mute group information.  If the length of the mute
+         * group section is 0, then this file is a Seq42 file, and we
+         * ignore the section.  (Thanks to Stazed for that catch!)
+         */
 
         seqspec = parse_prop_header(file_size);
         if (seqspec == c_mutegroups)
         {
             long length = read_long();
-            if (c_gmute_tracks != length)
+            if (length > 0)
             {
-                m_error_is_fatal = true;
-                m_error_message = "Corrupt data in mute-group section";
-                errdump(m_error_message.c_str());
-                result = false;                         /* but keep going   */
-            }
-            for (int i = 0; i < c_seqs_in_set; ++i)
-            {
-                midilong groupmute = read_long();
-                p.select_group_mute(int(groupmute));
-                for (int k = 0; k < c_seqs_in_set; ++k)
+                if (c_gmute_tracks != length)
                 {
-                    midilong gmutestate = read_long();
-                    p.set_group_mute_state(k, gmutestate != 0);
+                    m_error_is_fatal = true;
+                    m_error_message = "Corrupt data in mute-group section";
+                    errdump(m_error_message.c_str());
+                    result = false;                     /* but keep going   */
+                }
+                for (int i = 0; i < c_seqs_in_set; ++i)
+                {
+                    midilong groupmute = read_long();
+                    p.select_group_mute(int(groupmute));
+                    for (int k = 0; k < c_seqs_in_set; ++k)
+                    {
+                        midilong gmutestate = read_long();
+                        p.set_group_mute_state(k, gmutestate != 0);
+                    }
                 }
             }
         }

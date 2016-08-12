@@ -1525,6 +1525,12 @@ seqroll::button_press (GdkEventButton * ev)
                 set_current_drop_x(snapped_x);          /* used snapped x   */
                 convert_xy(m_drop_x, m_drop_y, tick_s, note_h);
 
+                /*
+                 * Stazed fix, forwards the event to play the hint note.
+                 */
+
+                m_seqkeys_wid.set_listen_button_press(ev);
+
                 int eventcount = m_seq.select_note_events
                 (
                     tick_s, note_h, tick_s, note_h, sequence::e_would_select
@@ -1532,8 +1538,10 @@ seqroll::button_press (GdkEventButton * ev)
                 if (eventcount == 0)                    /* no note? add one */
                 {
                     /*
-                     * Do we need push_undo() here?
+                     * Do we need push_undo() here?  Stazed does.
                      */
+
+                    m_seq.push_undo();
 
                     add_note(tick_s, note_h);           /* also does chords */
                     needs_update = true;
@@ -1568,6 +1576,12 @@ seqroll::button_press (GdkEventButton * ev)
                 );
                 if (eventcount > 0)
                 {
+                    /*
+                     * Stazed fix, forwards the event to play the hint note.
+                     */
+
+                    m_seqkeys_wid.set_listen_button_press(ev);
+
                     /*
                      * Moving and selecting, left-click (without Ctrl key)
                      * only.  Get the box that selected elements are in.  Then
@@ -1630,6 +1644,13 @@ seqroll::button_release (GdkEventButton * ev)
     int delta_y = m_current_y - m_drop_y;
     midipulse delta_tick;
     int delta_note;
+
+    /*
+     * Stazed fix to turn play off.
+     */
+
+    m_seqkeys_wid.set_listen_button_release(ev);
+
     if (SEQ64_CLICK_LEFT(ev->button))
     {
         if (m_selecting)
@@ -1747,6 +1768,9 @@ seqroll::motion_notify (GdkEventMotion * ev)
         if (drop_action())
             snap_x(m_current_x);
 
+        if (moving())
+            m_seqkeys_wid.set_listen_motion_notify(ev);     // play
+
         draw_selection_on_window();
         result = true;
     }
@@ -1762,6 +1786,7 @@ seqroll::motion_notify (GdkEventMotion * ev)
             snap_x(m_current_x);
             convert_xy(m_current_x, m_current_y, tick, note);
             add_note(tick, note);
+            m_seqkeys_wid.set_listen_motion_notify(ev);            // play
             result = true;
         }
     }

@@ -157,7 +157,7 @@ private:
 private:
 
     /**
-     *  Sneaky accessor for the seqroll friend.  From the stazed code.
+     *  Sneaky accessors for the seqroll friend.  From the stazed code.
      *
      * \param ev
      *      The event to be forwarded from the seqroll.

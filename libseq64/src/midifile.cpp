@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-08-07
+ * \updates       2016-08-13
  * \license       GNU GPLv2 or above
  *
  *  For a quick guide to the MIDI format, see, for example:
@@ -367,7 +367,7 @@ midifile::parse (perform & p, int screenset)
     }
 
     int file_size = file.tellg();                   /* get end offset       */
-    if (file_size <= sizeof(long))
+    if (size_t(file_size) <= sizeof(long))
     {
         m_error_is_fatal = true;
         m_error_message = "Invalid file size... trying to read a directory?";

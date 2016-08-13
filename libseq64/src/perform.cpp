@@ -1419,8 +1419,6 @@ perform::set_screenset (int ss)
 #ifdef SEQ64_AUTO_SCREENSET_QUEUE
 
 /**
- *  EXPERIMENTAL.
- *
  *  If the flag is true:
  *
  *      -#  Mute all tracks in order to start from a known status for all

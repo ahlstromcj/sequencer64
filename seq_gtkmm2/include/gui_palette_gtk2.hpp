@@ -55,16 +55,10 @@
 #define USE_STATIC_MEMBER_COLORS
 
 #ifdef USE_STATIC_MEMBER_COLORS         /* saves some space and time        */
-// #define STATIC_COLOR     const gui_palette_gtk2::Color
 #define STATIC_COLOR        gui_palette_gtk2::Color
 #endif
 
-/**
- *  EXPERIMENTAL
- */
-
-// #define KONST            const
-#define KONST
+#define KONST                           /* #define KONST const              */
 
 namespace seq64
 {

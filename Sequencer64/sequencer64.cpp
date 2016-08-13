@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-07-09
+ * \updates       2016-08-13
  * \license       GNU GPLv2 or above
  *
  *  Note that there are a number of header files that we don't need to add
@@ -47,16 +47,11 @@
 #include "file_functions.hpp"           /* seq64::file_accessible()         */
 #include "font.hpp"                     /* seq64::font (colored pixmaps)    */
 #include "gui_assistant_gtk2.hpp"       /* seq64::gui_assistant_gtk2        */
+#include "gui_palette_gtk2.hpp"         /* colors and "inverse" colors      */
 #include "lash.hpp"                     /* seq64::lash_driver functions     */
 #include "mainwid.hpp"                  /* needed to fulfill mainwnd        */
 #include "mainwnd.hpp"                  /* the main window of sequencer64   */
 #include "settings.hpp"                 /* seq64::usr() and seq64::rc()     */
-
-/*
- * EXPERIMENTAL
- */
-
-#include "gui_palette_gtk2.hpp"
 
 /**
  *  The standard C/C++ entry point to this application.  This first thing
@@ -127,13 +122,8 @@ main (int argc, char * argv [])
             optionindex = seq64::parse_command_line_options(argc, argv);
 
         p.launch(seq64::usr().midi_ppqn());     /* set up performance       */
-
-        /*
-         * EXPERIMENTAL
-         *
-        seq64::gui_palette_gtk2::load_inverse_palette(true);
-         *
-         */
+        if (seq64::rc().inverse_colors())
+            seq64::gui_palette_gtk2::load_inverse_palette(true);
 
         /*
          * Push the mainwnd window onto the stack, with an option for allowing

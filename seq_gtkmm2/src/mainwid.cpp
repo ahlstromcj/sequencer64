@@ -189,10 +189,6 @@ mainwid::draw_sequences_on_pixmap ()
 int
 mainwid::timeout ()
 {
-    /*
-     * update_sequences_on_window();           // EXPERIMENTAL
-     */
-
     return true;
 }
 
@@ -438,7 +434,12 @@ mainwid::draw_sequence_on_pixmap (int seqnum)
                 Color eventcolor;
 #ifdef SEQ64_STAZED_TRANSPOSE
                 if (! seq->get_transposable())
-                    eventcolor = red();
+                {
+                    if (rc().inverse_colors())
+                        eventcolor = yellow();
+                    else
+                        eventcolor = red();
+                }
                 else
 #endif
                     eventcolor = fg_color();

@@ -67,11 +67,6 @@
 #include "easy_macros.h"
 #include "font.hpp"
 #include "settings.hpp"                 /* seq64::rc() or seq64::usr()      */
-
-/*
- * EXPERIMENTAL
- */
-
 #include "gui_palette_gtk2.hpp"
 
 /*
@@ -287,12 +282,8 @@ font::render_string_on_drawable
     else
         m_pixmap = &m_black_pixmap;     /* user lied, provide legal pointer */
 
-    /*
-     * EXPERIMENTAL
-     */
-
     if (gui_palette_gtk2::is_inverse())
-        gc->set_function(Gdk::INVERT);
+        gc->set_function(Gdk::COPY_INVERT);  /* XOR or INVERT?              */
 
     for (int k = 0; k < length; ++k)
     {
@@ -309,9 +300,8 @@ font::render_string_on_drawable
             x + (k * m_font_w), y, m_font_w, m_font_h
         );
     }
-
     if (gui_palette_gtk2::is_inverse())
-        gc->set_function(Gdk::SET);
+        gc->set_function(Gdk::COPY);    /* not NOOP or SET                  */
 }
 
 }           // namespace seq64

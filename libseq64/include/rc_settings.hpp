@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-22
- * \updates       2016-07-30
+ * \updates       2016-08-13
  * \license       GNU GPLv2 or above
  *
  *  This collection of variables describes the options of the application,
@@ -81,6 +81,7 @@ private:
     bool m_manual_alsa_ports;
     bool m_reveal_alsa_ports;
     bool m_print_keys;
+    bool m_inverse_colors;
     bool m_device_ignore;                       /* seq24 module, unused!    */
     int m_device_ignore_num;                    /* seq24 module, unused!    */
     interaction_method_t m_interaction_method;
@@ -330,6 +331,20 @@ public:
     void print_keys (bool flag)
     {
         m_print_keys = flag;
+    }
+    
+    /**
+     * \accessor m_inverse_colors
+         */
+
+    bool inverse_colors () const
+    {
+        return m_inverse_colors;
+    }
+
+    void inverse_colors (bool flag)
+    {
+        m_inverse_colors = flag;
     }
 
     /**

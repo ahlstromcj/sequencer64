@@ -98,6 +98,7 @@ static struct option long_options [] =
     {"legacy",              0, 0, 'l'},                 /* new */
     {"show-midi",           0, 0, 's'},
     {"show-keys",           0, 0, 'k'},
+    {"inverse",             0, 0, 'K'},
     {"stats",               0, 0, 'S'},
     {"priority",            0, 0, 'p'},
     {"ignore",              required_argument, 0, 'i'},
@@ -156,7 +157,7 @@ static struct option long_options [] =
  */
 
 static const std::string s_arg_list =
-    "AaB:b:Cc:F:f:H:hi:JjkLlM:mnPpq:RrSsU:uVx:"         /* modern args      */
+    "AaB:b:Cc:F:f:H:hi:JjKkLlM:mnPpq:RrSsU:uVx:"        /* modern args      */
     "1234:5:67:89@"                                     /* legacy args      */
     ;
 
@@ -209,6 +210,7 @@ static const char * const s_help_1b =
 
 static const char * const s_help_2 =
 "   -k, --show-keys          Prints pressed key value.\n"
+"   -K, --inverse            Inverse (night) color scheme (experimental).\n"
 "   -S, --stats              Show global statistics.\n"
 #ifdef SEQ64_JACK_SUPPORT
 "   -j, --jack-transport     Synchronize to JACK transport.\n"
@@ -503,6 +505,10 @@ parse_command_line_options (int argc, char * argv [])
         case 'k':
         case '6':
             seq64::rc().print_keys(true);
+            break;
+
+        case 'K':
+            seq64::rc().inverse_colors(true);
             break;
 
         case 'L':

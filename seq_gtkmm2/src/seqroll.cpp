@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-08-07
+ * \updates       2016-08-13
  * \license       GNU GPLv2 or above
  *
  *  There are a large number of existing items to discuss.  But for now let's
@@ -1234,17 +1234,7 @@ seqroll::move_selection_box (int dx, int dy)
 	convert_xy(0, m_current_y, tick, note);
     m_seqkeys_wid.set_hint_key(note);
     snap_x(m_current_x);
-
-#ifdef USE_EXPERIMENTAL_CODE_XXX
-    int x0 = m_old.x;
-    int y0 = m_old.y;
-    int w = m_old.width;
-    int h = m_old.height;
-    draw_drawable(x0, y0, x0, y0, w + 1, h + 1);    /* erase old rectangle */
-    draw_rectangle(dark_orange(), x, y, w, h, false);
-#else
     draw_selection_on_window();         /* m_old.x = x, m_old.y = y handled */
-#endif
 }
 
 /**

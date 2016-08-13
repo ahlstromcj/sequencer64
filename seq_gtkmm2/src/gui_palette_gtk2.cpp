@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-21
- * \updates       2016-05-24
+ * \updates       2016-08-13
  * \license       GNU GPLv2 or above
  *
  *  One possible idea would be a color configuration that would radically
@@ -39,6 +39,76 @@ namespace seq64
 {
 
 /**
+ *  By default, the inverse color palette is not loaded.
+ */
+
+bool gui_palette_gtk2::m_is_inverse = false;
+
+#ifdef USE_STATIC_MEMBER_COLORS         /* saves some space and time        */
+
+STATIC_COLOR gui_palette_gtk2::m_black       = Color("black");
+STATIC_COLOR gui_palette_gtk2::m_white       = Color("white");
+STATIC_COLOR gui_palette_gtk2::m_grey        = Color("grey");
+STATIC_COLOR gui_palette_gtk2::m_dk_grey     = Color("grey50");
+STATIC_COLOR gui_palette_gtk2::m_lt_grey     = Color("light grey");
+STATIC_COLOR gui_palette_gtk2::m_red         = Color("red");
+STATIC_COLOR gui_palette_gtk2::m_orange      = Color("orange");
+STATIC_COLOR gui_palette_gtk2::m_dk_orange   = Color("dark orange");
+STATIC_COLOR gui_palette_gtk2::m_yellow      = Color("yellow");
+STATIC_COLOR gui_palette_gtk2::m_green       = Color("green");
+STATIC_COLOR gui_palette_gtk2::m_blue        = Color("blue");
+STATIC_COLOR gui_palette_gtk2::m_dk_cyan     = Color("dark cyan");
+STATIC_COLOR gui_palette_gtk2::m_blk_key     = Color("black");
+STATIC_COLOR gui_palette_gtk2::m_wht_key     = Color("white");
+
+#endif
+
+/**
+ * EXPERIMENTAL
+ */
+
+void
+gui_palette_gtk2::load_inverse_palette (bool inverse)
+{
+    if (inverse)
+    {
+        m_black       = Color("white");
+        m_white       = Color("black");
+        m_grey        = Color("grey");
+        m_dk_grey     = Color("light grey");
+        m_lt_grey     = Color("grey50");
+        m_red         = Color("dark cyan");
+        m_orange      = Color("blue");
+        m_dk_orange   = Color("dark blue");
+        m_yellow      = Color("magenta");
+        m_green       = Color("red");
+        m_blue        = Color("yellow");
+        m_dk_cyan     = Color("red");
+        m_blk_key     = Color("black");
+        m_wht_key     = Color("grey");
+        m_is_inverse  = true;
+    }
+    else
+    {
+        m_black       = Color("black");
+        m_white       = Color("white");
+        m_grey        = Color("grey");
+        m_dk_grey     = Color("grey50");
+        m_lt_grey     = Color("light grey");
+        m_red         = Color("red");
+        m_orange      = Color("orange");
+        m_dk_orange   = Color("dark orange");
+        m_yellow      = Color("yellow");
+        m_green       = Color("green");
+        m_blue        = Color("blue");
+        m_dk_cyan     = Color("dark cyan");
+        m_blk_key     = Color("black");
+        m_wht_key     = Color("white");
+        m_is_inverse  = false;
+    }
+}
+
+/**
  *  Principal constructor.  In the constructor one can only allocate colors;
  *  get_window() returns 0 because this window has not yet been realized.
  *  Also note that the possible color names that can be used are found in
@@ -48,6 +118,7 @@ namespace seq64
 gui_palette_gtk2::gui_palette_gtk2 ()
  :
     Gtk::DrawingArea    (),
+#ifndef USE_STATIC_MEMBER_COLORS
     m_black             (Color("black")),
     m_white             (Color("white")),
     m_grey              (Color("grey")),
@@ -60,8 +131,14 @@ gui_palette_gtk2::gui_palette_gtk2 ()
     m_green             (Color("green")),
     m_blue              (Color("blue")),
     m_dk_cyan           (Color("dark cyan")),
+    m_blk_key           (Color("black")),
+    m_wht_key           (Color("black")),
+#endif
     m_line_color        (Color("dark cyan")),           // alternative to black
-    m_progress_color    (Color(usr().progress_bar_colored() ? "red" : "black")),
+    m_progress_color
+    (
+        Color(usr().progress_bar_colored() ? "dark cyan" : "black")
+    ),
     m_bg_color          (),
     m_fg_color          ()
 {
@@ -78,6 +155,8 @@ gui_palette_gtk2::gui_palette_gtk2 ()
     colormap->alloc_color(const_cast<Color &>(m_green));
     colormap->alloc_color(const_cast<Color &>(m_blue));
     colormap->alloc_color(const_cast<Color &>(m_dk_cyan));
+    colormap->alloc_color(const_cast<Color &>(m_blk_key));
+    colormap->alloc_color(const_cast<Color &>(m_wht_key));
     colormap->alloc_color(const_cast<Color &>(m_line_color));
     colormap->alloc_color(const_cast<Color &>(m_progress_color));
 }

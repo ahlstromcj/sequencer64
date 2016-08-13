@@ -179,7 +179,7 @@ seqkeys::update_pixmap ()
     {
         draw_rectangle_on_pixmap
         (
-            white(), kx, (c_key_y * key) + 1, c_key_x - 2, c_key_y - 1
+            white_key(), kx, (c_key_y * key) + 1, c_key_x - 2, c_key_y - 1
         );
 
         int okey = (c_num_keys - key - 1) % SEQ64_OCTAVE_SIZE;
@@ -187,7 +187,7 @@ seqkeys::update_pixmap ()
         {
             draw_rectangle_on_pixmap
             (
-                black(), kx, (c_key_y * key) + 2, c_key_x - 3, c_key_y - 3
+                black_key(), kx, (c_key_y * key) + 2, c_key_x - 3, c_key_y - 3
             );
         }
 
@@ -313,7 +313,7 @@ seqkeys::draw_key (int key, bool state)
     int y = (c_key_y * key) + 2 - m_scroll_offset_y;
     int w = c_key_x - 3;                            /* x length of key      */
     int h = c_key_y - 3;                            /* y height of key      */
-    m_gc->set_foreground(is_black_key(k) ? black() : white());
+    m_gc->set_foreground(is_black_key(k) ? black_key() : white_key());
     if (state)
         draw_rectangle(grey(), x, y, w, h);
     else

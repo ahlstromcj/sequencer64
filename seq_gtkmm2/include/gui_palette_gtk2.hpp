@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-21
- * \updates       2016-05-24
+ * \updates       2016-08-13
  * \license       GNU GPLv2 or above
  *
  *  This module defines some Gdk::Color objects.  However, note that this
@@ -41,6 +41,30 @@
  */
 
 #include <gtkmm/drawingarea.h>          // or #include <gtkmm/widget.h>
+
+/**
+ *  We define this value to select the static versions of some of the colors
+ *  in the palette.  This saves about 3000 bytes, and a tiny bit of time in
+ *  creating a new window.  :-)
+ *
+ *  Also, one possibility for a future upgrade is to make the palette loadable
+ *  from the configuration.  That might be a little easier if these colors are
+ *  non-static members.
+ */
+
+#define USE_STATIC_MEMBER_COLORS
+
+#ifdef USE_STATIC_MEMBER_COLORS         /* saves some space and time        */
+// #define STATIC_COLOR     const gui_palette_gtk2::Color
+#define STATIC_COLOR        gui_palette_gtk2::Color
+#endif
+
+/**
+ *  EXPERIMENTAL
+ */
+
+// #define KONST            const
+#define KONST
 
 namespace seq64
 {
@@ -97,30 +121,66 @@ protected:
 
     typedef Gdk::Color Color;
 
-private:                                // use the accessor functions
+private:                            /* use the accessor functions           */
 
-    const Color m_black;                /**< Provides the black color.      */
-    const Color m_white;                /**< Provides the white color.      */
-    const Color m_grey;                 /**< Provides the grey color.       */
-    const Color m_dk_grey;              /**< Provides the dark grey color.  */
-    const Color m_lt_grey;              /**< Provides the light grey color. */
-    const Color m_red;                  /**< Provides the red color.        */
-    const Color m_orange;               /**< Provides the orange color.     */
-    const Color m_dk_orange;            /**< Provides a dark orange color.  */
-    const Color m_yellow;               /**< Provides the yellow color.     */
-    const Color m_green;                /**< Provides the green color.      */
-    const Color m_blue;                 /**< Provides the blue color.       */
-    const Color m_dk_cyan;              /**< Provides the dark cyan color.  */
-    const Color m_line_color;           /**< Provides the line color.       */
-    const Color m_progress_color;       /**< Provides the progress color.   */
+    /**
+     *  Flags the presense of the inverse color palette.
+     */
 
-    Color m_bg_color;                   /**< The background color.          */
-    Color m_fg_color;                   /**< The foreground color.          */
+    static bool m_is_inverse;
+
+#ifdef USE_STATIC_MEMBER_COLORS
+    static KONST Color m_black;     /**< Provides the black color.          */
+    static KONST Color m_white;     /**< Provides the white color.          */
+    static KONST Color m_grey;      /**< Provides the grey color.           */
+    static KONST Color m_dk_grey;   /**< Provides the dark grey color.      */
+    static KONST Color m_lt_grey;   /**< Provides the light grey color.     */
+    static KONST Color m_red;       /**< Provides the red color.            */
+    static KONST Color m_orange;    /**< Provides the orange color.         */
+    static KONST Color m_dk_orange; /**< Provides a dark orange color.      */
+    static KONST Color m_yellow;    /**< Provides the yellow color.         */
+    static KONST Color m_green;     /**< Provides the green color.          */
+    static KONST Color m_blue;      /**< Provides the blue color.           */
+    static KONST Color m_dk_cyan;   /**< Provides the dark cyan color.      */
+    static KONST Color m_blk_key;   /**< Provides the color of a black key. */
+    static KONST Color m_wht_key;   /**< Provides the color of a black key. */
+#else
+    KONST Color m_black;            /**< Provides the black color.          */
+    KONST Color m_white;            /**< Provides the white color.          */
+    KONST Color m_grey;             /**< Provides the grey color.           */
+    KONST Color m_dk_grey;          /**< Provides the dark grey color.      */
+    KONST Color m_lt_grey;          /**< Provides the light grey color.     */
+    KONST Color m_red;              /**< Provides the red color.            */
+    KONST Color m_orange;           /**< Provides the orange color.         */
+    KONST Color m_dk_orange;        /**< Provides a dark orange color.      */
+    KONST Color m_yellow;           /**< Provides the yellow color.         */
+    KONST Color m_green;            /**< Provides the green color.          */
+    KONST Color m_blue;             /**< Provides the blue color.           */
+    KONST Color m_dk_cyan;          /**< Provides the dark cyan color.      */
+    KONST Color m_blk_key;          /**< Provides the color of a black key. */
+    KONST Color m_wht_key;          /**< Provides the color of a black key. */
+#endif
+
+    Color m_line_color;             /**< Provides the line color.           */
+    Color m_progress_color;         /**< Provides the progress bar color.   */
+    Color m_bg_color;               /**< The background color.              */
+    Color m_fg_color;               /**< The foreground color.              */
 
 public:
 
     gui_palette_gtk2 ();
     ~gui_palette_gtk2 ();
+
+    static void load_inverse_palette (bool inverse = true);
+
+    /**
+     *  Indicates if the inverse color palette is loaded.
+     */
+
+    static bool is_inverse ()
+    {
+        return m_is_inverse;
+    }
 
     /**
      * \getter m_line_color
@@ -148,6 +208,9 @@ public:
 
     /**
      * \getter m_black
+     *      Although these color getters return static values (if so
+     *      compiled), these colors are used only in the window and
+     *      drawing-area classes, so no need to make these functions static.
      */
 
     const Color & black () const
@@ -252,6 +315,24 @@ public:
     const Color & dark_cyan () const
     {
         return m_dk_cyan;
+    }
+
+    /**
+     * \getter m_blk_key
+     */
+
+    const Color & black_key () const
+    {
+        return m_blk_key;
+    }
+
+    /**
+     * \getter m_wht_key
+     */
+
+    const Color & white_key () const
+    {
+        return m_wht_key;
     }
 
     /**

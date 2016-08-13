@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-05-17
+ * \updates       2016-08-13
  * \license       GNU GPLv2 or above
  *
  *  The interesting thing about this font class is that font files are not
@@ -67,6 +67,12 @@
 #include "easy_macros.h"
 #include "font.hpp"
 #include "settings.hpp"                 /* seq64::rc() or seq64::usr()      */
+
+/*
+ * EXPERIMENTAL
+ */
+
+#include "gui_palette_gtk2.hpp"
 
 /*
  * Old and New values for the fonts, and additional font files for cyan
@@ -281,6 +287,13 @@ font::render_string_on_drawable
     else
         m_pixmap = &m_black_pixmap;     /* user lied, provide legal pointer */
 
+    /*
+     * EXPERIMENTAL
+     */
+
+    if (gui_palette_gtk2::is_inverse())
+        gc->set_function(Gdk::INVERT);
+
     for (int k = 0; k < length; ++k)
     {
         int c = int(str[k]);
@@ -296,6 +309,9 @@ font::render_string_on_drawable
             x + (k * m_font_w), y, m_font_w, m_font_h
         );
     }
+
+    if (gui_palette_gtk2::is_inverse())
+        gc->set_function(Gdk::SET);
 }
 
 }           // namespace seq64

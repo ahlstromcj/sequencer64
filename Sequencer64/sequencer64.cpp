@@ -52,6 +52,12 @@
 #include "mainwnd.hpp"                  /* the main window of sequencer64   */
 #include "settings.hpp"                 /* seq64::usr() and seq64::rc()     */
 
+/*
+ * EXPERIMENTAL
+ */
+
+#include "gui_palette_gtk2.hpp"
+
 /**
  *  The standard C/C++ entry point to this application.  This first thing
  *  this function does is scan the argument vector and strip off all
@@ -121,6 +127,13 @@ main (int argc, char * argv [])
             optionindex = seq64::parse_command_line_options(argc, argv);
 
         p.launch(seq64::usr().midi_ppqn());     /* set up performance       */
+
+        /*
+         * EXPERIMENTAL
+         *
+        seq64::gui_palette_gtk2::load_inverse_palette(true);
+         *
+         */
 
         /*
          * Push the mainwnd window onto the stack, with an option for allowing

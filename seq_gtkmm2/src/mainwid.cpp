@@ -705,10 +705,15 @@ mainwid::draw_marker_on_sequence (int seqnum, int tick)
             }
             else
             {
-                m_gc->set_foreground
-                (
-                    seq->get_playing() ? white() : progress_color()
-                );
+                /*
+                 * We like the look of a cyan-colored progress bar in both the
+                 * muted and unmuted sequence slots.  We might make the color
+                 * of the progress bar configurable at some point.
+                 *
+                 * seq->get_playing() ? white() : progress_color()
+                 */
+
+                m_gc->set_foreground(progress_color());
             }
         }
         draw_line

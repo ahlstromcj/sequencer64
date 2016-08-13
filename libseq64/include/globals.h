@@ -368,6 +368,7 @@ const int c_redraw_ms = 40;
 const int c_names_x = 6 * 24;           /* width of name box, 24 characters */
 const int c_names_y = 24;               /* max height of name box, pixels   */
 const int c_perf_scale_x = 32;          /* units are ticks per pixel        */
+const int c_perf_max_zoom = 8;          /* limit the amount of perf zoom    */
 
 /**
  *  Provides names for the mouse-handling used by the application.

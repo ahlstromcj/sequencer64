@@ -178,8 +178,8 @@ private:
      *  Provides a list of event actions to undo for the Stazed LFO and
      *  seqdata support.  Changed, of course, from std::list<event> to
      *  the sequence::Events typedef.
-
-    Events m_events_undo_hold;
+     *
+     *      Events m_events_undo_hold;
      */
 
     event_list m_list_undo_hold;

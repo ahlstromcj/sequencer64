@@ -1024,7 +1024,7 @@ seqedit::do_action (int action, int var)
 #ifdef USE_STAZED_RANDOMIZE_SUPPORT
 
     case randomize_events:
-        m_seq.push_undo();                      // MOVE TO THE FUNCTION?
+//      m_seq.push_undo();                      // MOVE TO THE FUNCTION?
         m_seq.randomize_selected(m_editing_status, m_editing_cc, var);
         break;
 
@@ -1064,12 +1064,12 @@ seqedit::do_action (int action, int var)
 #ifdef USE_STAZED_COMPANDING
 
     case expand_pattern:
-        m_seq.push_undo();                      // MOVE TO THE FUNCTION?
+//      m_seq.push_undo();                      // MOVE TO THE FUNCTION?
         m_seq.multiply_pattern(2.0);
         break;
 
     case compress_pattern:
-        m_seq.push_undo();                      // MOVE TO THE FUNCTION?
+//      m_seq.push_undo();                      // MOVE TO THE FUNCTION?
         m_seq.multiply_pattern(0.5);
         break;
 #endif

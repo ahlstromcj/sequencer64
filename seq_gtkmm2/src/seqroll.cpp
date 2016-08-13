@@ -1287,15 +1287,10 @@ seqroll::move_selected_notes (int dx, int dy)
     {
         int snap_x = dx * m_snap;                   /* time-stamp snap  */
         int snap_y = -dy;                           /* note pitch snap  */
-        if (m_seq.any_selected_notes())
-        {
+        if (m_seq.any_selected_notes())             /* redundant!       */
             m_seq.move_selected_notes(snap_x, snap_y);
-        }
-        else
-        {
-            if (snap_x != 0)
-                m_seq.set_last_tick(m_seq.get_last_tick() + snap_x);
-        }
+        else if (snap_x != 0)
+            m_seq.set_last_tick(m_seq.get_last_tick() + snap_x);
     }
 }
 
@@ -1542,7 +1537,6 @@ seqroll::button_press (GdkEventButton * ev)
                      */
 
                     m_seq.push_undo();
-
                     add_note(tick_s, note_h);           /* also does chords */
                     needs_update = true;
                 }

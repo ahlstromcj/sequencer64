@@ -63,6 +63,7 @@
 #include "pixmaps/collapse.xpm"
 #include "pixmaps/loop.xpm"
 #include "pixmaps/copy.xpm"
+#include "pixmaps/redo.xpm"
 #include "pixmaps/undo.xpm"
 #include "pixmaps/down.xpm"
 #include "pixmaps/perfedit.xpm"

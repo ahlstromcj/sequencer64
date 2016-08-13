@@ -229,7 +229,9 @@ public:
 
     static bool zoom_check (int z)
     {
-        return z > 1 && z <= (4 * c_perf_scale_x);
+//      return z > 1 && z <= (4 * c_perf_scale_x);
+
+        return z > c_perf_max_zoom && z <= (4 * c_perf_scale_x);
     }
 
     /**

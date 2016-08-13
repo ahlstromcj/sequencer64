@@ -76,7 +76,9 @@
 
 static int s_perfroll_size_box_w = 6;               /* 3; */
 static int s_perfroll_background_x =
-    (SEQ64_DEFAULT_PPQN * 4 * 16) / c_perf_scale_x; /* TODO: + 1200 */
+    (SEQ64_DEFAULT_PPQN * 4 * 16) / c_perf_max_zoom; /* stazed */
+
+//  (SEQ64_DEFAULT_PPQN * 4 * 16) / c_perf_scale_x;
 
 namespace seq64
 {
@@ -910,6 +912,20 @@ perfroll::set_zoom (int z)
  *
  *  Then it allocates the additional resources need, that couldn't be
  *  initialized in the constructor, and makes some connections.
+ *
+ * Stazed:
+ *
+ *      This creation of m_background needs to be set to the max width for
+ *      proper drawing of zoomed measures or they will get truncated with high
+ *      beats per measure and low beat width. Since this is a constant size,
+ *      it cannot be adjusted later for zoom. The constant
+ *      c_perfroll_background_x is set to the max amount by default for use
+ *      here. The drawing functions fill_background_pixmap() and
+ *      draw_background_on() which use c_perfroll_background_x also, could be
+ *      adjusted by zoom with a substituted variable. Not sure if there is any
+ *      benefit to doing the adjustment...  Perhaps a small benefit in speed?
+ *      Maybe FIXME if really, really bored...
+ *
  */
 
 void

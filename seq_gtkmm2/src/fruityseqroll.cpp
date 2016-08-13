@@ -333,14 +333,16 @@ FruitySeqRollInput::on_button_press_event (GdkEventButton * ev, seqroll & sroll)
 
                     /*
                      * Stazed fix.  TODO:  incorporated the mark-check and the
-                     * push-undo into sequence::remove_selected().
+                     * push-undo into sequence::remove_selected().  Done.
+                     *
+                     * if (seq.mark_selected())
+                     * {
+                     *     seq.push_undo();
+                     *     seq.remove_selected();
+                     * }
                      */
 
-                    if (seq.mark_selected())
-                    {
-                        seq.push_undo();
-                        seq.remove_selected();
-                    }
+                    seq.remove_selected();
                 }
                 else
                 {

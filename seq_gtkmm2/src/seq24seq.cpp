@@ -105,14 +105,7 @@ Seq24SeqEventInput::on_button_press_event
         seqev.snap_x(seqev.m_current_x);
         seqev.convert_x(seqev.m_current_x, tick_s);
         seqev.m_paste = false;
-
-        /*
-         * TODO: fold into sequence::paste_selected().
-         */
-
-        seqev.m_seq.push_undo();                        /* stazed fix */
-        seqev.m_seq.paste_selected(tick_s, 0);
-        seqev.m_seq.set_dirty();                        /* stazed fix */
+        seqev.m_seq.paste_selected(tick_s, 0);      /* handles undo & modify    */
         result = true;
     }
     else
@@ -121,8 +114,8 @@ Seq24SeqEventInput::on_button_press_event
         midipulse tick_f;
         if (SEQ64_CLICK_LEFT(ev->button))
         {
-            seqev.convert_x(seqev.m_drop_x, tick_s); /* x,y in to tick/note    */
-            tick_f = tick_s + seqev.m_zoom;          /* shift back a few ticks */
+            seqev.convert_x(seqev.m_drop_x, tick_s); /* x,y in to tick/note     */
+            tick_f = tick_s + seqev.m_zoom;          /* shift back a few ticks  */
             tick_s -= tick_w;
             if (tick_s < 0)
                 tick_s = 0;
@@ -132,7 +125,7 @@ Seq24SeqEventInput::on_button_press_event
             {
                 seqev.m_painting = true;
                 seqev.snap_x(seqev.m_drop_x);
-                seqev.convert_x(seqev.m_drop_x, tick_s); /* x,y to tick/note */
+                seqev.convert_x(seqev.m_drop_x, tick_s); /* x,y to tick/note    */
                 eventcount = seqev.m_seq.select_events
                 (
                     tick_s, tick_f, seqev.m_status, seqev.m_cc,
@@ -304,7 +297,6 @@ Seq24SeqEventInput::on_button_release_event
         {
             delta_x -= seqev.m_move_snap_offset_x;  /* adjust for snap       */
             seqev.convert_x(delta_x, delta_tick);   /* to screen coordinates */
-            // seqev.m_seq.push_undo();             /* still moves events    */
             seqev.m_seq.move_selected_notes(delta_tick, 0);
             result = true;
         }

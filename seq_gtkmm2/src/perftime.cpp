@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-07-16
+ * \updates       2016-08-12
  * \license       GNU GPLv2 or above
  *
  *  The time bar shows markers and numbers for the measures of the song,
@@ -258,13 +258,45 @@ perftime::draw_background ()
     long last_measure = first_measure +
         (m_window_x * m_perf_scale_x / m_measure_length) + 1;
 
+#ifdef USE_STAZED_EXTRAS
+
+    float bar_draw = m_measure_length / float(m_perf_scale_x);
+    int bar_skip = 1;
+    if (bar_draw < 24)
+        bar_skip = 4;
+
+    if (bar_draw < 12)
+        bar_skip = 8;
+
+    if (bar_draw < 6)
+        bar_skip = 16;
+
+    if (bar_draw < 3)
+        bar_skip = 32;
+
+    if (bar_draw < .75)
+        bar_skip = 64;
+#endif
+
     m_gc->set_foreground(grey());                   /* draw vertical lines  */
+
+#ifdef USE_STAZED_EXTRAS
+    int last_measure = (m_window_x * m_perf_scale_x / (m_measure_length)) +
+        first_measure + 1;
+
+    for (int i = first_measure; i < last_measure; i += bar_skip)
+#else
     for (long i = first_measure; i < last_measure; ++i)
+#endif
     {
+#ifdef USE_STAZED_EXTRAS
+        int x_pos = ((i * m_measure_length) - tick_offset) / m_perf_scale_x;
+#else
         int x_pos = tick_to_pixel(i * m_measure_length);
+#endif
         char bar[8];
-        snprintf(bar, sizeof(bar), "%ld", i + 1);
-        draw_line(x_pos, 0, x_pos, m_window_y);                     /* beat */
+        snprintf(bar, sizeof(bar), "%ld", i + 1);           /* bar numbers  */
+        draw_line(x_pos, 0, x_pos, m_window_y);             /* beat         */
         render_string(x_pos + 2, 0, bar, font::BLACK);
     }
 

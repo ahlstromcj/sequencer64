@@ -292,7 +292,6 @@ FruitySeqEventInput::on_button_press_event
             {
                 /* remove only note under cursor, leave selection intact */
 
-                // seqev.m_seq.push_undo();             // WHY???
                 (void) seqev.m_seq.select_events
                 (
                     tick_s, tick_f,
@@ -368,7 +367,6 @@ FruitySeqEventInput::on_button_release_event
             m_is_drag_pasting = false;
             m_is_drag_pasting_start = false;
             seqev.m_paste = false; /* convert deltas into screen coordinates */
-            // seqev.m_seq.push_undo();
             seqev.m_seq.paste_selected(t_s, 0);
             result = true;
         }
@@ -406,7 +404,6 @@ FruitySeqEventInput::on_button_release_event
         {
             delta_x -= seqev.m_move_snap_offset_x; /* adjust for snap         */
             seqev.convert_x(delta_x, delta_tick);  /* deltas to screen coords */
-            // seqev.m_seq.push_undo();            /* still moves events      */
             seqev.m_seq.move_selected_notes(delta_tick, 0);
             result = true;
         }

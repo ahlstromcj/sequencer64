@@ -1107,8 +1107,9 @@ bool
 sequence::remove_marked ()
 {
     automutex locker(m_mutex);
+    bool result = m_events.remove_marked();
     reset_draw_marker();
-    return m_events.remove_marked();
+    return result;
 }
 
 /**
@@ -1142,10 +1143,12 @@ void
 sequence::remove_selected ()
 {
     automutex locker(m_mutex);
-    m_events_undo.push(m_events);
-    m_events.mark_selected();
-    (void) m_events.remove_marked();
-    reset_draw_marker();
+    if (m_events.mark_selected())
+    {
+        push_undo();                            // m_events_undo.push(m_events);
+        (void) m_events.remove_marked();
+        reset_draw_marker();
+    }
 }
 
 /**
@@ -1905,6 +1908,7 @@ sequence::randomize_selected
     unsigned char datitem;
     int datidx = 0;
     automutex locker(m_mutex);
+    push_undo();
     for (iterator i = m_events.begin(); i != m_events.end(); ++i)
     {
         if (i->is_selected() && i->get_status() == status)
@@ -2127,12 +2131,14 @@ sequence::cut_selected (bool copyevents)
     if (copyevents)
         copy_selected();
 
-    mark_selected();                                /* locked recursively   */
-    if (remove_marked())
+    if (mark_selected())                            /* locked recursively   */
     {
-        set_dirty();                                /* do it for the caller */
-        if (not_nullptr(m_parent))
-            m_parent->modify();                     /* new, centralize      */
+        if (remove_marked())
+        {
+            set_dirty();                            /* do it for the caller */
+            if (not_nullptr(m_parent))
+                m_parent->modify();                 /* new, centralize      */
+        }
     }
 }
 
@@ -4530,6 +4536,7 @@ void
 sequence::multiply_pattern (float multiplier )
 {
     automutex locker(m_mutex);
+    push_undo();
     long orig_length = get_length();
     long new_length = orig_length * multiplier;
     if (new_length > orig_length)

@@ -3713,7 +3713,7 @@ perform::perfroll_key_event (const keystroke & k, int drop_sequence)
             {
                 if (k.is_letter('x'))                           /* cut      */
                 {
-                    push_trigger_undo();
+                    push_trigger_undo();                        /* needed?  */
                     s->cut_selected_trigger();
                     modify();
                     result = true;

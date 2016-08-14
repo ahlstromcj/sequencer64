@@ -221,7 +221,7 @@ gui_drawingarea_gtk2::draw_rectangle_on_pixmap
 
 /**
  *  A small wrapper function for readability in box-drawing on the pixmap.
- *  It uses Gtk to get the proper background styling for the rectange.
+ *  It uses Gtk to get the proper background styling for the rectangle.
  *
  * \param x
  *      The x-coordinate of the origin.

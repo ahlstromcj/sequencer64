@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-08-13
+ * \updates       2016-08-14
  * \license       GNU GPLv2 or above
  *
  *  There are a large number of existing items to discuss.  But for now let's
@@ -397,7 +397,7 @@ seqroll::draw_background_on_pixmap ()
 void
 seqroll::update_background ()
 {
-    draw_rectangle(m_background, white(), 0, 0, m_window_x, m_window_y);
+    draw_rectangle(m_background, white_paint(), 0, 0, m_window_x, m_window_y);
 
 #ifdef SEQ64_SOLID_PIANOROLL_GRID
     bool fruity_lines = true;
@@ -479,7 +479,7 @@ seqroll::update_background ()
 #else
             set_line(Gdk::LINE_SOLID);
 #endif
-            m_gc->set_foreground(black());      /* solid line on every beat */
+            m_gc->set_foreground(black_paint());    /* solid line every beat */
         }
         else if (tick % ticks_per_beat == 0)
         {
@@ -724,7 +724,7 @@ seqroll::draw_events_on (Glib::RefPtr<Gdk::Drawable> draw)
         if (method == 1)
             seq = &m_seq;
 
-        m_gc->set_foreground(black());          /* draw boxes from sequence */
+        m_gc->set_foreground(black_paint());    /* draw boxes from sequence */
         seq->reset_draw_marker();
         while
         (
@@ -783,7 +783,7 @@ seqroll::draw_events_on (Glib::RefPtr<Gdk::Drawable> draw)
                 if (method == 0)
                      m_gc->set_foreground(dark_cyan());     /* vs dark_grey() */
                 else
-                    m_gc->set_foreground(black());
+                    m_gc->set_foreground(black_paint());
 
                 draw_rectangle(draw, note_x, note_y, note_width, note_height);
                 if (tick_f < tick_s)
@@ -794,7 +794,7 @@ seqroll::draw_events_on (Glib::RefPtr<Gdk::Drawable> draw)
                     if (selected)
                         m_gc->set_foreground(orange());
                     else
-                        m_gc->set_foreground(white());
+                        m_gc->set_foreground(white_paint());
 
                     if (method == 1)
                     {
@@ -903,7 +903,7 @@ seqroll::draw_selection_on_window ()
             w = 1;
     }
 #ifdef SEQ64_USE_BLACK_SELECTION_BOX
-        draw_rectangle(black(), x, y, w, h, false);
+        draw_rectangle(black_paint(), x, y, w, h, false);
 #else
         draw_rectangle(dark_orange(), x, y, w, h, false);
 #endif
@@ -1494,7 +1494,7 @@ seqroll::button_press (GdkEventButton * ev)
     midipulse tick_s, tick_f;
     int note_h, note_l;
     int norm_x, snapped_x, snapped_y;
-    bool needs_update = button_press_initial
+    bool needs_update = button_press_initial            /* true if pasted   */
     (
         ev, norm_x, snapped_x, snapped_y                /* 3 side-effects   */
     );
@@ -1710,8 +1710,14 @@ seqroll::button_release (GdkEventButton * ev)
     }
     clear_flags();
     m_seq.unpaint_all();
+
+    /*
+     * This setting is needed.  Without it, for example, selecting notes does
+     * not work.
+     */
+
     if (needs_update)               /* if they clicked, something changed   */
-        m_seq.set_dirty();            /* redraw_events();                     */
+        m_seq.set_dirty();          /* redraw_events();                     */
 
     return needs_update;
 }
@@ -1870,8 +1876,14 @@ seqroll::on_button_press_event (GdkEventButton * ev)
     else
         result = m_fruity_interaction.on_button_press_event(ev, *this);
 
-    if (result)
-        perf().modify();
+    /*
+     * MODIFY FIX?  Why modify just because of a button_press?  If we leave this
+     * active, then even just selecting notes makes the application prompt for
+     * saving upon exit.
+     *
+     * if (result)
+     *     perf().modify();
+     */
 
     return result;
 }
@@ -1901,8 +1913,14 @@ seqroll::on_button_release_event (GdkEventButton * ev)
     else
         result = m_fruity_interaction.on_button_release_event(ev, *this);
 
-    if (result)
-        perf().modify();
+    /*
+     * MODIFY FIX?  Why modify just because of a button release?  If we leave
+     * this active, then even just selecting notes makes the application prompt
+     * for saving upon exit.
+     *
+     * if (result)
+     *    perf().modify();
+     */
 
     return result;
 }
@@ -1928,8 +1946,13 @@ seqroll::on_motion_notify_event (GdkEventMotion * ev)
     else
         result = m_fruity_interaction.on_motion_notify_event(ev, *this);
 
-    if (result)
-        perf().modify();
+    /*
+     * MODIFY FIX?  If we leave this active, then even just selecting notes
+     * makes the application prompt for saving upon exit.
+     *
+     * if (result)
+     *    perf().modify();
+     */
 
     return result;
 }

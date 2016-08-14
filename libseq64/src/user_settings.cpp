@@ -146,6 +146,7 @@ user_settings::user_settings ()
     m_v_perf_page_increment     (1),
     m_progress_bar_colored      (false),
     m_progress_bar_thick        (false),
+    m_inverse_colors            (false),
     m_window_redraw_rate_ms     (c_redraw_ms),  // 40 ms or 20 ms; 25 ms
 
     /*
@@ -235,6 +236,7 @@ user_settings::user_settings (const user_settings & rhs)
     m_v_perf_page_increment     (rhs.m_v_perf_page_increment),
     m_progress_bar_colored      (rhs.m_progress_bar_colored),
     m_progress_bar_thick        (rhs.m_progress_bar_thick),
+    m_inverse_colors            (rhs.m_inverse_colors),
     m_window_redraw_rate_ms     (rhs.m_window_redraw_rate_ms),
 
     /*
@@ -327,6 +329,7 @@ user_settings::operator = (const user_settings & rhs)
         m_v_perf_page_increment     = rhs.m_v_perf_page_increment;
         m_progress_bar_colored      = rhs.m_progress_bar_colored;
         m_progress_bar_thick        = rhs.m_progress_bar_thick;
+        m_inverse_colors            = rhs.m_inverse_colors;
         m_window_redraw_rate_ms     = rhs.m_window_redraw_rate_ms;
 
         /*
@@ -409,6 +412,7 @@ user_settings::set_defaults ()
     m_v_perf_page_increment = 8;
     m_progress_bar_colored = false;
     m_progress_bar_thick = false;
+    m_inverse_colors = false;
     m_window_redraw_rate_ms = c_redraw_ms;
     m_text_x =  6;                          // range: 6-6
     m_text_y = 12;                          // range: 12-12

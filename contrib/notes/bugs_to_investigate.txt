@@ -1,15 +1,15 @@
 Bugs and Additional Upgrade Ideas
 Chris Ahlstrom
-2015-10-27 to 2016-08-11 (New bugs)
+2015-10-27 to 2016-08-14 (New bugs)
 
 In no particular order...  "y" means "in progress", and "x" means it is
 basically done.
 
 -  Also see BUG REPORTS below.  Those are bug reports from other people.
-y  Still need to test saving and reading of the new transposable sequence
+x  Still need to test saving and reading of the new transposable sequence
    state.
 -  Need to remove using Ctrl-key as a way to open a pattern for editing.
--  TODO:  Fold mark_selected() and push_undo() into the various functions
+y  TODO:  Fold mark_selected() and push_undo() into the various functions
    they wrap so that the caller code can be streamlined.
 x  Forgot to add the 15 bytes of the time-signature and temp values
    to the size of the first MTrk.  Thanks, Stazed!

@@ -240,7 +240,7 @@ private:
     {
         font_render().render_string_on_drawable
         (
-            m_gc, x, y, pixmap, num, font::BLACK
+            m_gc, x, y, pixmap, num, font::BLACK, true
         );
     }
 

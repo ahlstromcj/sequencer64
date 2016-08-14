@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-21
- * \updates       2016-08-13
+ * \updates       2016-08-14
  * \license       GNU GPLv2 or above
  *
  *  One possible idea would be a color configuration that would radically
@@ -35,6 +35,8 @@
 #include "gui_palette_gtk2.hpp"         /* seq64::gui_palette_gtkw          */
 #include "settings.hpp"                 /* seq64::rc() or seq64::usr()      */
 
+#define STATIC_COLOR        gui_palette_gtk2::Color
+
 namespace seq64
 {
 
@@ -44,31 +46,31 @@ namespace seq64
 
 bool gui_palette_gtk2::m_is_inverse = false;
 
-#ifdef USE_STATIC_MEMBER_COLORS         /* saves some space and time        */
+const STATIC_COLOR gui_palette_gtk2::m_black       = Color("black");
+const STATIC_COLOR gui_palette_gtk2::m_white       = Color("white");
+const STATIC_COLOR gui_palette_gtk2::m_red         = Color("red");
+const STATIC_COLOR gui_palette_gtk2::m_orange      = Color("orange");
+const STATIC_COLOR gui_palette_gtk2::m_dk_orange   = Color("dark orange");
+const STATIC_COLOR gui_palette_gtk2::m_yellow      = Color("yellow");
+const STATIC_COLOR gui_palette_gtk2::m_green       = Color("green");
+const STATIC_COLOR gui_palette_gtk2::m_blue        = Color("blue");
+const STATIC_COLOR gui_palette_gtk2::m_dk_cyan     = Color("dark cyan");
 
-STATIC_COLOR gui_palette_gtk2::m_black       = Color("black");
-STATIC_COLOR gui_palette_gtk2::m_white       = Color("white");
 STATIC_COLOR gui_palette_gtk2::m_grey        = Color("grey");
 STATIC_COLOR gui_palette_gtk2::m_dk_grey     = Color("grey50");
 STATIC_COLOR gui_palette_gtk2::m_lt_grey     = Color("light grey");
-STATIC_COLOR gui_palette_gtk2::m_red         = Color("red");
-STATIC_COLOR gui_palette_gtk2::m_orange      = Color("orange");
-STATIC_COLOR gui_palette_gtk2::m_dk_orange   = Color("dark orange");
-STATIC_COLOR gui_palette_gtk2::m_yellow      = Color("yellow");
-STATIC_COLOR gui_palette_gtk2::m_green       = Color("green");
-STATIC_COLOR gui_palette_gtk2::m_blue        = Color("blue");
-STATIC_COLOR gui_palette_gtk2::m_dk_cyan     = Color("dark cyan");
+STATIC_COLOR gui_palette_gtk2::m_blk_paint   = Color("black");
+STATIC_COLOR gui_palette_gtk2::m_wht_paint   = Color("white");
 STATIC_COLOR gui_palette_gtk2::m_blk_key     = Color("black");
 STATIC_COLOR gui_palette_gtk2::m_wht_key     = Color("white");
-
-#endif
 
 /**
  *  Provides an alternate color palette, somewhat constrained by the colors
  *  in the font bitmaps.
  *
  *  Inverse is not a complete inverse.  It is more like a "night" mode.
- *  However, there are still some bright colors even in this mode.
+ *  However, there are still some bright colors even in this mode.  Some
+ *  colors, such as the selection color (orange) are the same in either mode.
  *
  * \param inverse
  *      If true, load the alternate palette.  Otherwise, load the default
@@ -80,36 +82,22 @@ gui_palette_gtk2::load_inverse_palette (bool inverse)
 {
     if (inverse)
     {
-        m_black       = Color("white");
-        m_white       = Color("black");
         m_grey        = Color("grey");
         m_dk_grey     = Color("light grey");
         m_lt_grey     = Color("grey50");
-        m_red         = Color("red");               // ("dark cyan");
-        m_orange      = Color("blue");
-        m_dk_orange   = Color("dark blue");
-        m_yellow      = Color("blue");              // ("brown");
-        m_green       = Color("green");             // ("red");
-        m_blue        = Color("yellow");
-        m_dk_cyan     = Color("red");               // ("dark cyan");
+        m_blk_paint   = Color("white");
+        m_wht_paint   = Color("black");
         m_blk_key     = Color("black");
-        m_wht_key     = Color("grey");
+        m_wht_key     = Color("light grey");
         m_is_inverse  = true;
     }
     else
     {
-        m_black       = Color("black");
-        m_white       = Color("white");
         m_grey        = Color("grey");
         m_dk_grey     = Color("grey50");
         m_lt_grey     = Color("light grey");
-        m_red         = Color("red");
-        m_orange      = Color("orange");
-        m_dk_orange   = Color("dark orange");
-        m_yellow      = Color("yellow");
-        m_green       = Color("green");
-        m_blue        = Color("blue");
-        m_dk_cyan     = Color("dark cyan");
+        m_blk_paint   = Color("black");
+        m_wht_paint   = Color("white");
         m_blk_key     = Color("black");
         m_wht_key     = Color("white");
         m_is_inverse  = false;
@@ -126,22 +114,6 @@ gui_palette_gtk2::load_inverse_palette (bool inverse)
 gui_palette_gtk2::gui_palette_gtk2 ()
  :
     Gtk::DrawingArea    (),
-#ifndef USE_STATIC_MEMBER_COLORS
-    m_black             (Color("black")),
-    m_white             (Color("white")),
-    m_grey              (Color("grey")),
-    m_dk_grey           (Color("grey50")),
-    m_lt_grey           (Color("light grey")),
-    m_red               (Color("red")),
-    m_orange            (Color("orange")),
-    m_dk_orange         (Color("dark orange")),
-    m_yellow            (Color("yellow")),
-    m_green             (Color("green")),
-    m_blue              (Color("blue")),
-    m_dk_cyan           (Color("dark cyan")),
-    m_blk_key           (Color("black")),
-    m_wht_key           (Color("black")),
-#endif
     m_line_color        (Color("dark cyan")),           // alternative to black
     m_progress_color
     (
@@ -163,6 +135,8 @@ gui_palette_gtk2::gui_palette_gtk2 ()
     colormap->alloc_color(const_cast<Color &>(m_green));
     colormap->alloc_color(const_cast<Color &>(m_blue));
     colormap->alloc_color(const_cast<Color &>(m_dk_cyan));
+    colormap->alloc_color(const_cast<Color &>(m_blk_paint));
+    colormap->alloc_color(const_cast<Color &>(m_wht_paint));
     colormap->alloc_color(const_cast<Color &>(m_blk_key));
     colormap->alloc_color(const_cast<Color &>(m_wht_key));
     colormap->alloc_color(const_cast<Color &>(m_line_color));

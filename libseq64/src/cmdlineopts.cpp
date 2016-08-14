@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-20
- * \updates       2016-07-18
+ * \updates       2016-08-14
  * \license       GNU GPLv2 or above
  *
  *  The "rc" command-line options override setting that are first read from
@@ -508,7 +508,7 @@ parse_command_line_options (int argc, char * argv [])
             break;
 
         case 'K':
-            seq64::rc().inverse_colors(true);
+            seq64::usr().inverse_colors(true);
             break;
 
         case 'L':
@@ -743,7 +743,8 @@ const static std::string s_build_follow_progress = "off";
  *  Generates a string describing the features of the build.
  *
  * \return
- *      Returns an ordered, human-readable string enumerating the features.
+ *      Returns an ordered, human-readable string enumerating the built-in
+ *      features of this application.
  */
 
 std::string

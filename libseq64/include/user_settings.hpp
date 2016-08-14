@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-22
- * \updates       2016-05-29
+ * \updates       2016-08-14
  * \license       GNU GPLv2 or above
  *
  *  This module defines the following categories of "global" variables that
@@ -363,6 +363,13 @@ class user_settings
      */
 
     bool m_progress_bar_thick;
+
+    /**
+     *  If set, use an alternate, neo-inverse color palette.  Not all colors
+     *  are reversed, though.
+     */
+
+    bool m_inverse_colors;
 
     /**
      *  Provides the global setting for redraw rate of windows.  Not all
@@ -1136,6 +1143,15 @@ public:
     }
 
     /**
+     * \accessor m_inverse_colors
+         */
+
+    bool inverse_colors () const
+    {
+        return m_inverse_colors;
+    }
+
+    /**
      * \getter m_window_redraw_rate_ms
      */
 
@@ -1317,6 +1333,15 @@ public:         // used in main application module and the userfile class
     void progress_bar_thick (bool flag)
     {
         m_progress_bar_thick = flag;
+    }
+
+    /**
+     * \setter m_inverse_colors
+     */
+
+    void inverse_colors (bool flag)
+    {
+        m_inverse_colors = flag;
     }
 
     /**

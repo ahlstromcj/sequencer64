@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-06-07
+ * \updates       2016-08-14
  * \license       GNU GPLv2 or above
  *
  *  One thing we must be sure of is the MIDI note range.  Obviously, in terms
@@ -60,6 +60,7 @@
 #include "scales.h"
 #include "seqkeys.hpp"
 #include "sequence.hpp"
+#include "settings.hpp"                 /* rc() and usr() accessors     */
 
 namespace seq64
 {
@@ -173,8 +174,8 @@ void
 seqkeys::update_pixmap ()
 {
     int kx = c_keyoffset_x + 1;
-    draw_rectangle_on_pixmap(black(), 0, 0, c_keyarea_x, c_keyarea_y);
-    draw_rectangle_on_pixmap(white(), 1, 1, c_keyoffset_x-1, c_keyarea_y-2);
+    draw_rectangle_on_pixmap(black_paint(), 0, 0, c_keyarea_x, c_keyarea_y);
+    draw_rectangle_on_pixmap(white_paint(), 1, 1, c_keyoffset_x-1, c_keyarea_y-2);
     for (int key = 0; key < c_num_keys; ++key)
     {
         draw_rectangle_on_pixmap
@@ -202,7 +203,10 @@ seqkeys::update_pixmap ()
                     octave *= -1;
 
                 snprintf(note, sizeof note, "%2s%1d", c_key_text[okey], octave);
-                render_string_on_pixmap(2, c_key_y * key - 1, note, font::BLACK);
+                render_string_on_pixmap
+                (
+                    2, c_key_y * key - 1, note, font::BLACK, true
+                );
             }
         }
         else
@@ -210,7 +214,10 @@ seqkeys::update_pixmap ()
             if ((keyvalue % 2) == 0)
             {
                 snprintf(note, sizeof note, "%3d", keyvalue);
-                render_string_on_pixmap(2, c_key_y * key - 1, note, font::BLACK);
+                render_string_on_pixmap
+                (
+                    2, c_key_y * key - 1, note, font::BLACK, true
+                );
             }
         }
     }
@@ -315,7 +322,12 @@ seqkeys::draw_key (int key, bool state)
     int h = c_key_y - 3;                            /* y height of key      */
     m_gc->set_foreground(is_black_key(k) ? black_key() : white_key());
     if (state)
-        draw_rectangle(grey(), x, y, w, h);
+    {
+        if (usr().inverse_colors())
+            draw_rectangle(red(), x, y, w, h);
+        else
+            draw_rectangle(grey(), x, y, w, h);
+    }
     else
         draw_rectangle(x, y, w, h);
 }

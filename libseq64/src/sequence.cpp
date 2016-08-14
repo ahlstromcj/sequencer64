@@ -466,6 +466,12 @@ sequence::select_even_or_odd_notes (int note_len, bool even)
  *  Aftertouch events, which generally need to stick with their Note On
  *  counterparts.
  *
+ *  If a "note" event is detected, then we skip it.  This is necessary since
+ *  channel pressure and control change use d0 for seqdata, and d0 is returned
+ *  by get_note().  This causes note selection to occasionally select them
+ *  when their seqdata values are within range of the tick selection.  So
+ *  therefore we want only Note Ons and Note Offs.
+ *
  * \note
  *      The continuation below ("continue") is necessary since channel
  *      pressure and control change use d0 for seqdata [which is returned by
@@ -473,23 +479,36 @@ sequence::select_even_or_odd_notes (int note_len, bool even)
  *      select them when their seqdata values are within the range of tick
  *      selection. So only, note ons and offs.  What about Aftertouch?
  *      We have the event::is_note() function for that.
+ *
+ * \param tick_s
+ *      The starting tick.
+ *
+ * \param note_h
+ *      The highest note selected.
+ *
+ * \param tick_f
+ *      The ending, or finishing, tick.
+ *
+ * \param note_l
+ *      The lowest note selected.
+ *
+ * \param action
+ *      The action to perform on the selection.
  */
 
 int
 sequence::select_note_events
 (
-    long tick_s, int note_h, long tick_f, int note_l,
-    select_action_e action
+    long tick_s, int note_h, long tick_f, int note_l, select_action_e action
 )
 {
     int result = 0;
-    long tick_s = 0;
-    long tick_f = 0;
+    long ticks = 0;
+    long tickf = 0;
     automutex locker(m_mutex);
-
     for (iterator i = m_events.begin(); i != m_events.end(); i++ )
     {
-        if (! i->is_note())
+        if (! i->is_note())         // HMMMM, includes Aftertouch
             continue;
 
         if (i->get_note() <= note_h && i->get_note() >= note_l)
@@ -499,29 +518,23 @@ sequence::select_note_events
                 event * ev = i->get_linked();
                 if (i->is_note_off())
                 {
-                    tick_s = ev->get_timestamp();
-                    tick_f = i->get_timestamp();
+                    ticks = ev->get_timestamp();
+                    tickf = i->get_timestamp();
                 }
                 if (i->is_note_on())
                 {
-                    tick_f = ev->get_timestamp();
-                    tick_s = i->get_timestamp();
+                    ticks = i->get_timestamp();
+                    tickf = ev->get_timestamp();
                 }
 
-                /*
-                 * These tests are crazy.  Fix them.
-                 */
-
-                bool validrange = tick_s <= tick_f && tick_f >= tick_s;
-                bool use_it = ((tick_s <= tick_f) && validrange) ||
-                    ((tick_s > tick_f) && validrange);
-
-//                  ( (tick_s <= tick_f) && ((tick_s <= tick_f) &&
-//                     (tick_f >= tick_s)) ) ||
-//                  ( (tick_s > tick_f) &&
-//                  ((tick_s <= tick_f) || (tick_f >= tick_s)) )
-
-                if (use_it)
+                bool valid_and = (ticks <= tick_f) && (tickf >= tick_s);
+                bool valid_or  = (ticks <= tick_f) || (tickf >= tick_s);
+                bool use_it =
+                (
+                    ((ticks <= tickf) && valid_and) ||
+                    ((ticks > tickf)  && valid_or)
+                );
+			    if (use_it)
                 {
                     /*
                      * Could use a switch statement here.
@@ -4657,6 +4670,10 @@ sequence::copy_events (const event_list & newevents)
      * mainwnd::timer_callback() function due to null events, when the event
      * editor has deleted some events.  Not even locking the drawing of the
      * sequence in mainwid helps.  RE-VERIFY!
+     */
+
+    /*
+     * MODIFY FIX?
      */
 
     set_dirty();

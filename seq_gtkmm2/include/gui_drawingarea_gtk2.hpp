@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-21
- * \updates       2016-05-30
+ * \updates       2016-08-14
  * \license       GNU GPLv2 or above
  *
  *  We've added a number of wrapper functions for the "draw-rectangle",
@@ -423,16 +423,20 @@ protected:
      *
      * \param color
      *      The color with which to draw the string.
+     *
+     * \param invert
+     *      If true, apply color inversion, if active.  Defaults to false.
      */
 
     void render_string
     (
-        int x, int y, const std::string & s, font::Color color
+        int x, int y, const std::string & s, font::Color color,
+        bool invert = false
     )
     {
         font_render().render_string_on_drawable
         (
-            m_gc, x, y, m_window, s.c_str(), color
+            m_gc, x, y, m_window, s.c_str(), color, invert
         );
     }
 
@@ -451,16 +455,20 @@ protected:
      *
      * \param color
      *      The color with which to draw the string.
+     *
+     * \param invert
+     *      If true, apply color inversion, if active.  Defaults to false.
      */
 
     void render_string_on_pixmap
     (
-        int x, int y, const std::string & s, font::Color color
+        int x, int y, const std::string & s, font::Color color,
+        bool invert = false
     )
     {
         font_render().render_string_on_drawable
         (
-            m_gc, x, y, m_pixmap, s.c_str(), color
+            m_gc, x, y, m_pixmap, s.c_str(), color, invert
         );
     }
 

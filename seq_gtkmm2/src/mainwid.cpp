@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-08-07
+ * \updates       2016-08-14
  * \license       GNU GPLv2 or above
  *
  *  Note that this representation is, in a sense, inside the mainwnd
@@ -124,7 +124,7 @@ mainwid::mainwid (perform & p)
     m_screenset             (0),
     m_last_tick_x           (),                 // array of size c_max_sequence
 #ifdef USE_LAST_PLAYING_LOGGING
-    m_last_last_playing     (),                 // array of size c_max_sequence
+    m_last_playing          (),                 // array of size c_max_sequence
 #endif
     m_mainwnd_rows          (c_mainwnd_rows),
     m_mainwnd_cols          (c_mainwnd_cols),
@@ -258,7 +258,7 @@ mainwid::draw_sequence_on_pixmap (int seqnum)
         ++base_y;                                       /* overall fix-up   */
         draw_rectangle_on_pixmap                        /* filled black box */
         (
-            black(), base_x, base_y, m_seqarea_x, m_seqarea_y
+            black(), base_x, base_y, m_seqarea_x, m_seqarea_y   // black()
         );
         if (perf().is_active(seqnum))
         {
@@ -315,11 +315,17 @@ mainwid::draw_sequence_on_pixmap (int seqnum)
             {
                 if (seq->get_playing())
                 {
-                    bg_color(black());
-                    fg_color(white());
+#ifdef USE_LAST_PLAYING_LOGGING
+                    m_last_playing[seqnum] = true;      /* active & playing */
+#endif
+                    bg_color(black());              /* never inversed   */
+                    fg_color(white());              /* ditto            */
                 }
                 else
                 {
+#ifdef USE_LAST_PLAYING_LOGGING
+                    m_last_playing[seqnum] = false;     /* active, no play  */
+#endif
                     select_fg_bg_colors(seqnum);
                 }
             }
@@ -390,7 +396,8 @@ mainwid::draw_sequence_on_pixmap (int seqnum)
             std::string label = perf().sequence_label(*seq);
             render_string_on_pixmap                         // bus, ch, etc.
             (
-                base_x + m_text_size_x - 3, base_y + m_text_size_y * 4 - 2,
+                base_x + m_text_size_x - 3,
+                base_y + m_text_size_y * 4 - 2,
                 label, col
             );
 
@@ -434,15 +441,10 @@ mainwid::draw_sequence_on_pixmap (int seqnum)
                 Color eventcolor;
 #ifdef SEQ64_STAZED_TRANSPOSE
                 if (! seq->get_transposable())
-                {
-                    if (rc().inverse_colors())
-                        eventcolor = yellow();
-                    else
-                        eventcolor = red();
-                }
+                    eventcolor = red();
                 else
 #endif
-                    eventcolor = fg_color();
+                eventcolor = fg_color();
 
                 do
                 {
@@ -525,10 +527,12 @@ mainwid::draw_sequence_on_pixmap (int seqnum)
                 y = font_render().char_height() / 2;
                 lx = base_x + m_seqarea_x / 2 - x;              /* center x */
                 ly = base_y + m_seqarea_y / 2 - y;              /* center y */
+
+                font::Color col = font::BLACK;
                 if (usr().grid_is_black())
-                    render_string_on_pixmap(lx, ly, snum, font::YELLOW_ON_BLACK);
-                else
-                    render_string_on_pixmap(lx, ly, snum, font::BLACK);
+                    col = font::YELLOW_ON_BLACK;
+
+                render_string_on_pixmap(lx, ly, snum, col);
             }
         }
     }

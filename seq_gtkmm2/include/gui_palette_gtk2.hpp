@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-21
- * \updates       2016-08-13
+ * \updates       2016-08-14
  * \license       GNU GPLv2 or above
  *
  *  This module defines some Gdk::Color objects.  However, note that this
@@ -41,24 +41,6 @@
  */
 
 #include <gtkmm/drawingarea.h>          // or #include <gtkmm/widget.h>
-
-/**
- *  We define this value to select the static versions of some of the colors
- *  in the palette.  This saves about 3000 bytes, and a tiny bit of time in
- *  creating a new window.  :-)
- *
- *  Also, one possibility for a future upgrade is to make the palette loadable
- *  from the configuration.  That might be a little easier if these colors are
- *  non-static members.
- */
-
-#define USE_STATIC_MEMBER_COLORS
-
-#ifdef USE_STATIC_MEMBER_COLORS         /* saves some space and time        */
-#define STATIC_COLOR        gui_palette_gtk2::Color
-#endif
-
-#define KONST                           /* #define KONST const              */
 
 namespace seq64
 {
@@ -123,42 +105,40 @@ private:                            /* use the accessor functions           */
 
     static bool m_is_inverse;
 
-#ifdef USE_STATIC_MEMBER_COLORS
-    static KONST Color m_black;     /**< Provides the black color.          */
-    static KONST Color m_white;     /**< Provides the white color.          */
-    static KONST Color m_grey;      /**< Provides the grey color.           */
-    static KONST Color m_dk_grey;   /**< Provides the dark grey color.      */
-    static KONST Color m_lt_grey;   /**< Provides the light grey color.     */
-    static KONST Color m_red;       /**< Provides the red color.            */
-    static KONST Color m_orange;    /**< Provides the orange color.         */
-    static KONST Color m_dk_orange; /**< Provides a dark orange color.      */
-    static KONST Color m_yellow;    /**< Provides the yellow color.         */
-    static KONST Color m_green;     /**< Provides the green color.          */
-    static KONST Color m_blue;      /**< Provides the blue color.           */
-    static KONST Color m_dk_cyan;   /**< Provides the dark cyan color.      */
-    static KONST Color m_blk_key;   /**< Provides the color of a black key. */
-    static KONST Color m_wht_key;   /**< Provides the color of a black key. */
-#else
-    KONST Color m_black;            /**< Provides the black color.          */
-    KONST Color m_white;            /**< Provides the white color.          */
-    KONST Color m_grey;             /**< Provides the grey color.           */
-    KONST Color m_dk_grey;          /**< Provides the dark grey color.      */
-    KONST Color m_lt_grey;          /**< Provides the light grey color.     */
-    KONST Color m_red;              /**< Provides the red color.            */
-    KONST Color m_orange;           /**< Provides the orange color.         */
-    KONST Color m_dk_orange;        /**< Provides a dark orange color.      */
-    KONST Color m_yellow;           /**< Provides the yellow color.         */
-    KONST Color m_green;            /**< Provides the green color.          */
-    KONST Color m_blue;             /**< Provides the blue color.           */
-    KONST Color m_dk_cyan;          /**< Provides the dark cyan color.      */
-    KONST Color m_blk_key;          /**< Provides the color of a black key. */
-    KONST Color m_wht_key;          /**< Provides the color of a black key. */
-#endif
+    /*
+     *  Colors that will remain constant.
+     */
+
+    static const Color m_black;     /**< Provides the black color.          */
+    static const Color m_white;     /**< Provides the white color.          */
+    static const Color m_red;       /**< Provides the red color.            */
+    static const Color m_orange;    /**< Provides the orange color.         */
+    static const Color m_dk_orange; /**< Provides a dark orange color.      */
+    static const Color m_yellow;    /**< Provides the yellow color.         */
+    static const Color m_green;     /**< Provides the green color.          */
+    static const Color m_blue;      /**< Provides the blue color.           */
+    static const Color m_dk_cyan;   /**< Provides the dark cyan color.      */
+
+    /*
+     * Colors that can be "inverted" (i.e. changed for the inverse-color mode.
+     */
+
+    static Color m_grey;            /**< Provides the grey color.           */
+    static Color m_dk_grey;         /**< Provides the dark grey color.      */
+    static Color m_lt_grey;         /**< Provides the light grey color.     */
+    static Color m_blk_paint;       /**< An invertible black color.         */
+    static Color m_wht_paint;       /**< An invertible white color.         */
+    static Color m_blk_key;         /**< Provides the color of a black key. */
+    static Color m_wht_key;         /**< Provides the color of a white key. */
+
+    /*
+     * Non-static member colors.
+     */
 
     Color m_line_color;             /**< Provides the line color.           */
     Color m_progress_color;         /**< Provides the progress bar color.   */
-    Color m_bg_color;               /**< The background color.              */
-    Color m_fg_color;               /**< The foreground color.              */
+    Color m_bg_color;               /**< The current background color.      */
+    Color m_fg_color;               /**< The current foreground color.      */
 
 public:
 
@@ -309,6 +289,24 @@ public:
     const Color & dark_cyan () const
     {
         return m_dk_cyan;
+    }
+
+    /**
+     * \getter m_blk_paint
+     */
+
+    const Color & black_paint () const
+    {
+        return m_blk_paint;
+    }
+
+    /**
+     * \getter m_wht_paint
+     */
+
+    const Color & white_paint () const
+    {
+        return m_wht_paint;
     }
 
     /**

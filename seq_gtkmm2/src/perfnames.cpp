@@ -157,11 +157,16 @@ perfnames::draw_sequence (int seqnum)
     {
         char snb[8];                                /* set-number buffer    */
         snprintf(snb, sizeof(snb), "%2d", seqnum / m_seqs_in_set);
-        draw_rectangle(black(), 0, yloc, m_names_x, m_names_y);     /* + 1  */
+        draw_rectangle(black_paint(), 0, yloc, m_names_x, m_names_y);
         if (seqnum % m_seqs_in_set == 0)
-            render_string(m_xy_offset, yloc + m_xy_offset, snb, font::WHITE);
+        {
+            render_string
+            (
+                m_xy_offset, yloc + m_xy_offset, snb, font::WHITE, true
+            );
+        }
         else
-            draw_rectangle(white(), 1, yloc, m_setbox_w + 1, m_names_y);
+            draw_rectangle(white_paint(), 1, yloc, m_setbox_w + 1, m_names_y);
 
         sequence * seq = perf().get_sequence(seqnum);
         Color fg = grey();

@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-08-13
+ * \updates       2016-08-14
  * \license       GNU GPLv2 or above
  *
  *  The interesting thing about this font class is that font files are not
@@ -246,6 +246,9 @@ font::init (Glib::RefPtr<Gdk::Window> wp)
  *      font::YELLOW_ON_BLACK.  The actual correct colors are provided by
  *      selecting one of four font pixmaps, as described in the init()
  *      function.
+ *
+ * \param invert
+ *      If true, apply color inversion, if specified.
  */
 
 void
@@ -255,7 +258,8 @@ font::render_string_on_drawable
     int x, int y,
     Glib::RefPtr<Gdk::Drawable> a_draw,
     const char * str,
-    font::Color col
+    font::Color col,
+    bool invert
 ) const
 {
     int length = 0;
@@ -282,7 +286,7 @@ font::render_string_on_drawable
     else
         m_pixmap = &m_black_pixmap;     /* user lied, provide legal pointer */
 
-    if (gui_palette_gtk2::is_inverse())
+    if (gui_palette_gtk2::is_inverse() && invert)
         gc->set_function(Gdk::COPY_INVERT);  /* XOR or INVERT?              */
 
     for (int k = 0; k < length; ++k)
@@ -300,7 +304,7 @@ font::render_string_on_drawable
             x + (k * m_font_w), y, m_font_w, m_font_h
         );
     }
-    if (gui_palette_gtk2::is_inverse())
+    if (gui_palette_gtk2::is_inverse() && invert)
         gc->set_function(Gdk::COPY);    /* not NOOP or SET                  */
 }
 

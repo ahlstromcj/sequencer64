@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-08-07
+ * \updates       2016-08-14
  * \license       GNU GPLv2 or above
  *
  *  The performance window allows automatic control of when each
@@ -313,7 +313,7 @@ perfroll::increment_size ()
 void
 perfroll::fill_background_pixmap ()
 {
-    draw_rectangle(m_background, white(), 0, 0, m_background_x, m_names_y);
+    draw_rectangle(m_background, white_paint(), 0, 0, m_background_x, m_names_y);
 
 #ifdef SEQ64_SOLID_PIANOROLL_GRID
     set_line(Gdk::LINE_SOLID);
@@ -608,8 +608,11 @@ perfroll::draw_sequence_on (int seqnum)
                  *  4. Its right side.
                  */
 
-                draw_rectangle_on_pixmap(selected ? grey() : white(), x, y, w, h);
-                draw_rectangle_on_pixmap(black(), x, y, w, h, false);
+                draw_rectangle_on_pixmap
+                (
+                    selected ? grey() : white_paint(), x, y, w, h
+                );
+                draw_rectangle_on_pixmap(black_paint(), x, y, w, h, false);
                 draw_rectangle_on_pixmap
                 (
                     dark_cyan(),                /* try instead of black()   */
@@ -663,11 +666,11 @@ perfroll::draw_sequence_on (int seqnum)
                          */
 
                         if (seq->get_transposable())
-                            m_gc->set_foreground(black());
+                            m_gc->set_foreground(black_paint());
                         else
                             m_gc->set_foreground(red());
 #else
-                        m_gc->set_foreground(black());
+                        m_gc->set_foreground(black_paint());
 #endif
                         while
                         (
@@ -731,8 +734,8 @@ void perfroll::draw_background_on (int seqnum)
 
     int h = m_names_y;
     int y = h * seqnum;
-    draw_rectangle_on_pixmap(white(), 0, y, m_window_x, h);
-    m_gc->set_foreground(black());
+    draw_rectangle_on_pixmap(white_paint(), 0, y, m_window_x, h);
+    m_gc->set_foreground(black_paint());
     for (long i = first_measure; i < last_measure; ++i)
     {
         int x_pos = ((i * m_measure_length) - tick_offset) / m_perf_scale_x;

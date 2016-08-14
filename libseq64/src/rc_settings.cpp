@@ -87,7 +87,6 @@ rc_settings::rc_settings ()
     m_manual_alsa_ports         (false),
     m_reveal_alsa_ports         (false),
     m_print_keys                (false),
-    m_inverse_colors            (false),
     m_device_ignore             (false),
     m_device_ignore_num         (0),
     m_interaction_method        (e_seq24_interaction),
@@ -127,7 +126,6 @@ rc_settings::rc_settings (const rc_settings & rhs)
     m_manual_alsa_ports         (rhs.m_manual_alsa_ports),
     m_reveal_alsa_ports         (rhs.m_reveal_alsa_ports),
     m_print_keys                (rhs.m_print_keys),
-    m_inverse_colors            (rhs.m_inverse_colors),
     m_device_ignore             (rhs.m_device_ignore),
     m_device_ignore_num         (rhs.m_device_ignore_num),
     m_interaction_method        (rhs.m_interaction_method),
@@ -173,7 +171,6 @@ rc_settings::operator = (const rc_settings & rhs)
         m_manual_alsa_ports         = rhs.m_manual_alsa_ports;
         m_reveal_alsa_ports         = rhs.m_reveal_alsa_ports;
         m_print_keys                = rhs.m_print_keys;
-        m_inverse_colors            = rhs.m_inverse_colors;
         m_device_ignore             = rhs.m_device_ignore;
         m_device_ignore_num         = rhs.m_device_ignore_num;
         m_interaction_method        = rhs.m_interaction_method;
@@ -211,7 +208,6 @@ rc_settings::set_defaults ()
     m_manual_alsa_ports         = false;
     m_reveal_alsa_ports         = false;
     m_print_keys                = false;
-    m_inverse_colors            = false;
     m_device_ignore             = false;
     m_device_ignore_num         = 0;
     m_device_ignore_num         = e_seq24_interaction;

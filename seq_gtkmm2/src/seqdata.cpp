@@ -228,8 +228,8 @@ seqdata::draw_events_on (Glib::RefPtr<Gdk::Drawable> drawable)
     bool selected;
     int starttick = m_scroll_offset_ticks;
     int endtick = (m_window_x * m_zoom) + m_scroll_offset_ticks;
-    draw_rectangle(drawable, white(), 0, 0, m_window_x, m_window_y);
-    m_gc->set_foreground(black());
+    draw_rectangle(drawable, white_paint(), 0, 0, m_window_x, m_window_y);
+    m_gc->set_foreground(black_paint());
 
 #ifdef USE_STAZED_SEQDATA_EXTENSIONS
     int numselected = EVENTS_ALL;                   // -1
@@ -262,14 +262,14 @@ seqdata::draw_events_on (Glib::RefPtr<Gdk::Drawable> drawable)
             set_line(Gdk::LINE_SOLID, 2);           /* vertical event line  */
             draw_line
             (
-                drawable, selected ? dark_orange() : black(),
+                drawable, selected ? dark_orange() : black_paint(),
                 x, c_dataarea_y - event_height, x, c_dataarea_y
             );
 
 #ifdef USE_STAZED_SEQDATA_EXTENSIONS
 			draw_rectangle                          /* draw handle          */
 			(
-                drawable, selected ? dark_orange() : black(), // true,
+                drawable, selected ? dark_orange() : black_paint(), // true,
                 event_x - m_scroll_offset_x - 3,
                 c_dataarea_y - event_height,
                 c_data_handle_x,
@@ -317,7 +317,7 @@ seqdata::idle_redraw ()
 void
 seqdata::draw_line_on_window ()
 {
-    m_gc->set_foreground(black());
+    m_gc->set_foreground(black_paint());
     set_line(Gdk::LINE_SOLID);
     draw_drawable                                   /* replace old */
     (
@@ -333,7 +333,7 @@ seqdata::draw_line_on_window ()
     m_old.height = h;
     draw_line
     (
-        black(), m_current_x - m_scroll_offset_x, m_current_y,
+        black_paint(), m_current_x - m_scroll_offset_x, m_current_y,
         m_drop_x - m_scroll_offset_x, m_drop_y
     );
 }
@@ -536,7 +536,7 @@ seqdata::on_realize ()
     (
         mem_fun(*this, &seqdata::change_horz)
     );
-    m_gc->set_foreground(white());              /* works for all drawing    */
+    m_gc->set_foreground(white_paint());        /* works for all drawing    */
     char num[8];                                /* pulled this out of loop  */
     memset(num, 0, sizeof num);                 /* only need this once!     */
     for (int i = 0; i < c_dataarea_y; ++i)      /* MIDI_COUNT_MAX; 128      */

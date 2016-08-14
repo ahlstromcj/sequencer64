@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-05-29
+ * \updates       2016-08-14
  * \license       GNU GPLv2 or above
  *
  *  Note that the parse function has some code that is not yet enabled.
@@ -334,6 +334,12 @@ userfile::parse (perform & /* a_perf */)
             if (next_data_line(file))
             {
                 sscanf(m_line, "%d", &scratch);
+                if (scratch <= 1)                           /* boolean?     */
+                {
+                    usr().inverse_colors(scratch != 0);
+                    if (next_data_line(file))
+                        sscanf(m_line, "%d", &scratch);     /* get redraw   */
+                }
                 if (scratch < SEQ64_MINIMUM_REDRAW)
                     scratch = SEQ64_MINIMUM_REDRAW;
                 else if (scratch > SEQ64_MAXIMUM_REDRAW)
@@ -366,6 +372,7 @@ userfile::parse (perform & /* a_perf */)
         usr().perf_v_page_increment(1);
         usr().progress_bar_colored(false);
         usr().progress_bar_thick(false);
+        usr().inverse_colors(false);
         usr().window_redraw_rate(c_redraw_ms);
     }
 
@@ -439,7 +446,7 @@ userfile::write (const perform & /* a_perf */ )
            "# Sequencer64 user configuration file (legacy Seq24 0.9.2 format)\n";
     }
     else
-        file << "# Sequencer64 0.9.13 (and above) user configuration file\n";
+        file << "# Sequencer64 0.9.17 (and above) user configuration file\n";
 
     file << "#\n"
         "# Created by reading the following file and writing it out via the\n"
@@ -783,6 +790,16 @@ userfile::write (const perform & /* a_perf */ )
             "\n"
             << (usr().progress_bar_thick() ? "1" : "0")
             << "      # progress_bar_thick\n"
+            ;
+
+        file << "\n"
+            "# Specifies using an alternate (darker) color palette.  The\n"
+            "# default is the normal palette.  Not all items in the user\n"
+            "# interface are altered by this setting, and it's not perfect.\n"
+            "# Set this value to 1 to enable the feature, 0 to disable it.\n"
+            "\n"
+            << (usr().inverse_colors() ? "1" : "0")
+            << "      # inverse_colors\n"
             ;
 
         file << "\n"

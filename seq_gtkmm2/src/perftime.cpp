@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-08-12
+ * \updates       2016-08-14
  * \license       GNU GPLv2 or above
  *
  *  The time bar shows markers and numbers for the measures of the song,
@@ -252,8 +252,8 @@ perftime::on_expose_event (GdkEventExpose * /* ev */ )
 void
 perftime::draw_background ()
 {
-    draw_rectangle(white(), 0, 0, m_window_x, m_window_y);
-    draw_line(black(), 0, m_window_y - 1, m_window_x, m_window_y - 1);
+    draw_rectangle(white_paint(), 0, 0, m_window_x, m_window_y);
+    draw_line(black_paint(), 0, m_window_y - 1, m_window_x, m_window_y - 1);
     long first_measure = m_tick_offset / m_measure_length;
     long last_measure = first_measure +
         (m_window_x * m_perf_scale_x / m_measure_length) + 1;
@@ -297,20 +297,20 @@ perftime::draw_background ()
         char bar[8];
         snprintf(bar, sizeof(bar), "%ld", i + 1);           /* bar numbers  */
         draw_line(x_pos, 0, x_pos, m_window_y);             /* beat         */
-        render_string(x_pos + 2, 0, bar, font::BLACK);
+        render_string(x_pos + 2, 0, bar, font::BLACK, true);
     }
 
     long left = tick_to_pixel(perf().get_left_tick());
     long right = tick_to_pixel(perf().get_right_tick());
     if (left >= 0 && left <= m_window_x)            /* draw L marker    */
     {
-        draw_rectangle(black(), left, m_window_y - 9, 7, 10);
-        render_string(left + 1, 9, "L", font::WHITE);
+        draw_rectangle(black_paint(), left, m_window_y - 9, 7, 10);
+        render_string(left + 1, 9, "L", font::WHITE, true);
     }
     if (right >= 0 && right <= m_window_x)          /* draw R marker    */
     {
-        draw_rectangle(black(), right - 6, m_window_y - 9, 7, 10);
-        render_string(right - 6 + 1, 9, "R", font::WHITE);
+        draw_rectangle(black_paint(), right - 6, m_window_y - 9, 7, 10);
+        render_string(right - 6 + 1, 9, "R", font::WHITE, true);
     }
 }
 

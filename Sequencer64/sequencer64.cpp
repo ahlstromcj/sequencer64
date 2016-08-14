@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-08-13
+ * \updates       2016-08-14
  * \license       GNU GPLv2 or above
  *
  *  Note that there are a number of header files that we don't need to add
@@ -122,7 +122,7 @@ main (int argc, char * argv [])
             optionindex = seq64::parse_command_line_options(argc, argv);
 
         p.launch(seq64::usr().midi_ppqn());     /* set up performance       */
-        if (seq64::rc().inverse_colors())
+        if (seq64::usr().inverse_colors())
             seq64::gui_palette_gtk2::load_inverse_palette(true);
 
         /*

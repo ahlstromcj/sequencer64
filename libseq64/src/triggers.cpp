@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-10-30
- * \updates       2016-07-30
+ * \updates       2016-08-15
  * \license       GNU GPLv2 or above
  *
  *  Man, we need to learn a lot more about triggers.  One important thing to
@@ -146,13 +146,30 @@ triggers::push_undo ()                  // was push_trigger_undo ()
  */
 
 void
-triggers::pop_undo ()                   // was pop_trigger_undo ()
+triggers::pop_undo ()
 {
     if (m_undo_stack.size() > 0)
     {
         m_redo_stack.push(m_triggers);
         m_triggers = m_undo_stack.top();
         m_undo_stack.pop();
+    }
+}
+
+/**
+ *  If the trigger redo-list has any items, the list-trigger is pushed
+ *  into the undo list, the top of the redo-list is coped into the
+ *  list-trigger, and then pops from the redo-list.
+ */
+
+void
+triggers::pop_redo ()
+{
+    if (m_redo_stack.size() > 0)
+    {
+        m_undo_stack.push(m_triggers);
+        m_triggers = m_redo_stack.top();
+        m_redo_stack.pop();
     }
 }
 

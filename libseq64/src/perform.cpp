@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and Tim Deagan
  * \date          2015-07-24
- * \updates       2016-08-07
+ * \updates       2016-08-14
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -201,6 +201,12 @@ perform::perform (gui_assistant & mygui, int ppqn)
         SEQ64_DEFAULT_BEAT_WIDTH            // may get updated later
     ),
 #endif
+#ifdef USE_STAZED_UNDO_REDO
+    m_have_undo                 (false),
+    m_undo_vect                 (),
+    m_have_redo                 (false),
+    m_redo_vect                 (),
+#endif
     m_notify                    ()          // vector of pointers, public!
 {
     for (int i = 0; i < m_sequence_max; ++i)
@@ -318,7 +324,7 @@ perform::clear_all ()
         for (int i = 0; i < m_max_sets; ++i)
             set_screen_set_notepad(i, e);
 
-#ifdef USE_STAZED_PUSH_POP_SUPPORT
+#ifdef USE_STAZED_UNDO_REDO
         set_have_undo(false);
         set_have_redo(false);
 #endif
@@ -1634,7 +1640,7 @@ perform::move_triggers (bool direction)
 void
 perform::push_trigger_undo (int track)
 {
-#ifdef USE_STAZED_PUSH_POP_SUPPORT
+#ifdef USE_STAZED_UNDO_REDO
     m_undo_vect.push_back(track);
 #endif
 
@@ -1651,7 +1657,7 @@ perform::push_trigger_undo (int track)
         if (is_active(track))
             m_seqs[track]->push_trigger_undo();
     }
-#ifdef USE_STAZED_PUSH_POP_SUPPORT
+#ifdef USE_STAZED_UNDO_REDO
     set_have_undo(true);
 #endif
 }
@@ -1671,8 +1677,7 @@ perform::push_trigger_undo (int track)
 void
 perform::pop_trigger_undo ()
 {
-
-#ifdef USE_STAZED_PUSH_POP_SUPPORT
+#ifdef USE_STAZED_UNDO_REDO
     if (m_undo_vect.size() > 0)
     {
         int track = m_undo_vect[m_undo_vect.size() - 1];
@@ -1688,7 +1693,7 @@ perform::pop_trigger_undo ()
                     m_seqs[i]->pop_trigger_undo();
             }
 
-#ifdef USE_STAZED_PUSH_POP_SUPPORT
+#ifdef USE_STAZED_UNDO_REDO
         }
         else
         {
@@ -1699,15 +1704,14 @@ perform::pop_trigger_undo ()
         set_have_redo(m_redo_vect.size() > 0);
     }
 #endif
-
 }
 
-#ifdef USE_STAZED_PUSH_POP_SUPPORT
+#ifdef USE_STAZED_UNDO_REDO
 
 void
 perform::pop_trigger_redo ()
 {
-    if (m_undo_vect.size() > 0)
+    if (m_redo_vect.size() > 0)
     {
         int track = m_redo_vect[m_redo_vect.size()-1];
         m_redo_vect.pop_back();
@@ -1730,9 +1734,7 @@ perform::pop_trigger_redo ()
     }
 }
 
-#endif  // USE_STAZED_PUSH_POP_SUPPORT
-
-// CONTINUE HERE HERE HERE
+#endif
 
 /**
  *  If the left tick is less than the right tick, then, for each sequence that
@@ -3730,14 +3732,14 @@ perform::perfroll_key_event (const keystroke & k, int drop_sequence)
                 }
                 else if (k.is_letter('z'))                      /* undo     */
                 {
-#ifdef SEQ64_STAZED_UNDO_REDO
+#ifdef USE_STAZED_UNDO_REDO
                     undo();
 #else
                     pop_trigger_undo();
 #endif
                     result = true;
                 }
-#ifdef SEQ64_STAZED_UNDO_REDO
+#ifdef USE_STAZED_UNDO_REDO
                 else if (k.is_letter('r'))                      /* redo     */
                 {
                     redo();
@@ -3971,7 +3973,6 @@ perform::FF_rewind ()
         return;
 
     long tick = 0;
-//  long measure_ticks = (c_ppqn * 4) * m_bp_measure / m_bw / 4 * m_excell_FF_RW;
     long measure_ticks =
         measures_to_ticks(m_beats_per_bar, m_ppqn, m_beat_width) /
             4 * m_excell_FF_RW;

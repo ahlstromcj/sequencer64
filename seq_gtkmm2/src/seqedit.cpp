@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-08-10
+ * \updates       2016-08-14
  * \license       GNU GPLv2 or above
  *
  *  Compare this class to eventedit, which has to do some similar things,
@@ -850,8 +850,6 @@ seqedit::popup_tool_menu ()
      * This is an interesting wrinkle to document.
      */
 
-//  if (m_editing_status != EVENT_NOTE_ON && m_editing_status != EVENT_NOTE_OFF)
-
     if (! event::is_note_msg(m_editing_status))
     {
         holder->items().push_back(SeparatorElem());
@@ -878,14 +876,10 @@ seqedit::popup_tool_menu ()
         MenuElem("Tighten selected notes",
             sigc::bind(DO_ACTION, c_tighten_notes, 0))
     );
-
-//  if (m_editing_status != EVENT_NOTE_ON && m_editing_status != EVENT_NOTE_OFF)
-
     if (! event::is_note_msg(m_editing_status))
     {
         /*
-         *  The action code here is c_quantize_events, not
-         *  c_quantize_notes.
+         *  The action code here is c_quantize_events, not c_quantize_notes.
          */
 
         holder->items().push_back(SeparatorElem());
@@ -1024,7 +1018,6 @@ seqedit::do_action (int action, int var)
 #ifdef USE_STAZED_RANDOMIZE_SUPPORT
 
     case randomize_events:
-//      m_seq.push_undo();                      // MOVE TO THE FUNCTION?
         m_seq.randomize_selected(m_editing_status, m_editing_cc, var);
         break;
 
@@ -1064,12 +1057,10 @@ seqedit::do_action (int action, int var)
 #ifdef USE_STAZED_COMPANDING
 
     case expand_pattern:
-//      m_seq.push_undo();                      // MOVE TO THE FUNCTION?
         m_seq.multiply_pattern(2.0);
         break;
 
     case compress_pattern:
-//      m_seq.push_undo();                      // MOVE TO THE FUNCTION?
         m_seq.multiply_pattern(0.5);
         break;
 #endif
@@ -1567,11 +1558,6 @@ seqedit::set_background_sequence (int seqnum)
 Gtk::Image *
 seqedit::create_menu_image (bool state)
 {
-//  if (state)
-//      return manage(new PIXBUF_IMAGE(menu_full_xpm));
-//  else
-//      return manage(new PIXBUF_IMAGE(menu_empty_xpm));
-
     return manage(new PIXBUF_IMAGE(state ? menu_full_xpm : menu_empty_xpm));
 }
 

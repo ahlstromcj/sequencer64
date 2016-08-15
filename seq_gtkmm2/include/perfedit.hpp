@@ -134,7 +134,7 @@ private:
     Gtk::Button * m_button_copy;        /**< Expand and copy between L/R.       */
     Gtk::Button * m_button_grow;        /**< Expand grid (bottom-right button). */
     Gtk::Button * m_button_undo;        /**< Button to undo previous action.    */
-#ifdef SEQ64_STAZED_UNDO_REDO
+#ifdef USE_STAZED_UNDO_REDO
     Gtk::Button * m_button_redo;        /**< Button to redo previous action.    */
 #endif
 #ifdef USE_STAZED_JACK_SUPPORT
@@ -229,8 +229,6 @@ public:
 
     static bool zoom_check (int z)
     {
-//      return z > 1 && z <= (4 * c_perf_scale_x);
-
         return z > c_perf_max_zoom && z <= (4 * c_perf_scale_x);
     }
 
@@ -302,7 +300,7 @@ private:
     void collapse ();
     void copy ();
     void undo ();
-#ifdef SEQ64_STAZED_UNDO_REDO
+#ifdef USE_STAZED_UNDO_REDO
     void redo ();
 #endif
     void popup_menu (Gtk::Menu * menu);     /* used in other classes */

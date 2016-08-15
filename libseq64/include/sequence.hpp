@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-30
- * \updates       2016-08-08
+ * \updates       2016-08-14
  * \license       GNU GPLv2 or above
  *
  *  The functions add_list_var() and add_long_list() have been replaced by
@@ -69,6 +69,12 @@
  */
 
 #define SEQ64_HANDLE_TIMESIG_AND_TEMPO
+
+/*
+ * EXPERIMENTAL
+ */
+
+#define USE_STAZED_UNDO_REDO_SEQ
 
 namespace seq64
 {
@@ -161,17 +167,19 @@ private:
 
     triggers m_triggers;
 
-#ifdef SEQ64_STAZED_UNDO_REDO
+    /*
+     * USE_STAZED_UNDO_REDO_SEQ
+     */
 
-    /**
+    /*
      *  Provides a typedef for a list of events.  For now, we will not
      *  try to use a multimap for this purpose.  Note that this definition is
      *  the same as the old list of events defined in the event_list.hpp
      *  module.
-
-     typedef std::list<event> Events;
-     typedef std::list<event>::iterator iterator;
-     typedef std::list<event>::const_iterator const_iterator;
+     *
+     *      typedef std::list<event> Events;
+     *      typedef std::list<event>::iterator iterator;
+     *      typedef std::list<event>::const_iterator const_iterator;
      */
 
     /**
@@ -182,9 +190,22 @@ private:
      *      Events m_events_undo_hold;
      */
 
-    event_list m_list_undo_hold;
+    event_list m_events_undo_hold;
 
-#endif
+    /**
+     *  A stazed flag indicating that we have some undo information.
+     */
+
+    bool m_have_undo;
+
+    /**
+     *  A stazed flag indicating that we have some redo information.
+     *  Previously, unlike the perfedit, the seqedit did not provide a redo
+     *  facility.  It does not harm to include this functionality here before
+     *  it actually gets used.
+     */
+
+    bool m_have_redo;
 
     /**
      *  Provides a list of event actions to undo.
@@ -452,11 +473,6 @@ private:
 
     int m_note_off_velocity;
 
-#ifdef USE_STAZED_PUSH_POP_SUPPORT
-    bool m_have_undo;
-    bool m_have_redo;
-#endif
-
     /**
      *  Holds a copy of the musical key for this sequence, which we now
      *  support writing to this sequence.  If the value is
@@ -603,29 +619,55 @@ public:
             m_seq_number = seqnum;
     }
 
+    void modify ();
     int event_count () const;
 
-#ifdef USE_STAZED_PUSH_POP_SUPPORT
-    void pop_trigger_redo ();
+    /*
+     * USE_STAZED_UNDO_REDO_SEQ
+     */
+
+    /*
+     * seqdata and lfownd hold for undo
+     */
+
+    void set_hold_undo (bool hold);
+
+    /**
+     * \getter m_events_undo_hold.count()
+     */
+
+    int get_hold_undo () const
+    {
+        return m_events_undo_hold.count();
+    }
+
+    /**
+     * \setter m_have_undo
+     */
 
     void set_have_undo ()
     {
-        m_have_undo = m_list_undo.size() > 0;
-        m_parent->modify();
+        m_have_undo = m_events_undo.size() > 0;
+        modify();                                   // we have pending changes
     }
+
+    /**
+     * \setter m_have_redo
+     */
 
     void set_have_redo ()
     {
-        m_have_redo = m_list_redo.size() > 0;
+        m_have_redo = m_events_redo.size() > 0;
     }
 
-#else
-    void push_undo (bool hold = false);         // adds stazed parameter
-#endif
+    void push_undo (bool hold = false);             // adds stazed parameter
     void pop_undo ();
     void pop_redo ();
+
     void push_trigger_undo ();
     void pop_trigger_undo ();
+    void pop_trigger_redo ();
+
     void set_name (const std::string & name);
     void set_name (char * name);
     void set_measures (int lengthmeasures);
@@ -1221,7 +1263,6 @@ public:
         midipulse * tick_on, midipulse * tick_off,
         bool * selected, midipulse * tick_offset
     );
-//  void fill_container (midi_container & c, int tracknumber);
     void quantize_events
     (
         midibyte status, midibyte cc,

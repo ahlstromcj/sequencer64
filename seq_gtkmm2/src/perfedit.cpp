@@ -190,7 +190,7 @@ perfedit::perfedit
     m_button_copy       (manage(new Gtk::Button())),
     m_button_grow       (manage(new Gtk::Button())),
     m_button_undo       (manage(new Gtk::Button())),
-#ifdef SEQ64_STAZED_UNDO_REDO
+#ifdef USE_STAZED_UNDO_REDO
     m_button_redo       (manage(new Gtk::Button())),
 #endif
 #ifdef USE_STAZED_JACK_SUPPORT
@@ -259,7 +259,6 @@ perfedit::perfedit
 #define SET_SNAP    mem_fun(*this, &perfedit::set_snap)
 #define SET_BW      mem_fun(*this, &perfedit::set_beat_width)
 
-//  static const int s_width_items [] = { 1, 2, 4, 8, 16, 32 };
     static const int s_width_items [] =
     {
         1, 2, 4, 8, 16, 32,
@@ -381,12 +380,12 @@ perfedit::perfedit
 
     m_button_undo->add(*manage(new PIXBUF_IMAGE(undo_xpm)));
     m_button_undo->signal_clicked().connect(mem_fun(*this, &perfedit::undo));
-    add_tooltip(m_button_undo, "Undo last action.");
+    add_tooltip(m_button_undo, "Undo the last action.");
 
-#ifdef SEQ64_STAZED_UNDO_REDO
+#ifdef USE_STAZED_UNDO_REDO
     m_button_redo->add(*manage(new PIXBUF_IMAGE(redo_xpm)));
     m_button_redo->signal_clicked().connect(mem_fun(*this, &perfedit::redo));
-    add_tooltip(m_button_redo, "Redo last action.");
+    add_tooltip(m_button_redo, "Redo the last undone action.");
 #endif
 
     m_button_expand->add(*manage(new PIXBUF_IMAGE(expand_xpm)));
@@ -455,7 +454,7 @@ perfedit::perfedit
     m_hlbox->pack_end(*m_button_expand , false, false);
     m_hlbox->pack_end(*m_button_collapse , false, false);
     m_hlbox->pack_end(*m_button_undo , false, false);
-#ifdef SEQ64_STAZED_UNDO_REDO
+#ifdef USE_STAZED_UNDO_REDO
     m_hlbox->pack_end(*m_button_redo , false, false);
 #endif
     m_hlbox->pack_start(*m_button_stop , false, false);
@@ -562,7 +561,7 @@ perfedit::undo ()
     enqueue_draw();
 }
 
-#ifdef SEQ64_STAZED_UNDO_REDO
+#ifdef USE_STAZED_UNDO_REDO
 
 /**
  *  Implement the redo feature (Ctrl-?).  We pop an Redo trigger, and then

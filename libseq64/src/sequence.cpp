@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-08-08
+ * \updates       2016-08-15
  * \license       GNU GPLv2 or above
  *
  *  The functionality of this class also includes handling some of the
@@ -72,9 +72,9 @@ sequence::sequence (int ppqn)
     m_parent                    (nullptr),
     m_events                    (),
     m_triggers                  (*this),
-#ifdef SEQ64_STAZED_UNDO_REDO
-    m_events_undo_hold          (),
-#endif
+    m_events_undo_hold          (),             // stazed
+    m_have_undo                 (false),        // stazed
+    m_have_redo                 (false),        // stazed
     m_events_undo               (),
     m_events_redo               (),
     m_iterator_draw             (m_events.begin()),
@@ -119,10 +119,6 @@ sequence::sequence (int ppqn)
     m_rec_vol                   (0),
     m_note_on_velocity          (SEQ64_DEFAULT_NOTE_ON_VELOCITY),
     m_note_off_velocity         (SEQ64_DEFAULT_NOTE_OFF_VELOCITY),
-#ifdef SEQ64_STAZED_UNDO_REDO
-    m_have_undo                 (false),
-    m_have_redo                 (false)
-#endif
     m_musical_key               (SEQ64_KEY_OF_C),
     m_musical_scale             (int(c_scale_off)),
     m_background_sequence       (SEQ64_SEQUENCE_LIMIT),
@@ -145,6 +141,18 @@ sequence::sequence (int ppqn)
 sequence::~sequence ()
 {
     // Empty body
+}
+
+/**
+ *  A convenience function that we have to put here so that the m_parent
+ *  pointer can be used.
+ */
+
+void
+sequence::modify ()
+{
+    if (not_nullptr(m_parent))
+        m_parent->modify();
 }
 
 /**
@@ -191,29 +199,27 @@ sequence::partial_assign (const sequence & rhs)
     }
 }
 
-#ifdef SEQ64_STAZED_UNDO_REDO
+/*
+ * USE_STAZED_UNDO_REDO_SEQ
+ */
 
 void
 sequence::set_hold_undo (bool hold)
 {
     automutex locker(m_mutex);
-    Events::iterator i;                 //  std::list<event>::iterator i;
     if (hold)
     {
-        for (i = m_events.begin(); i != m_events.end(); ++i)
-            m_list_undo_hold.push_back(*i);
+#ifdef SEQ64_USE_EVENT_MAP
+        for (event_list::iterator i = m_events.begin(); i != m_events.end(); ++i)
+            m_events_undo_hold.add(i->second);
+#else
+        for (event_list::iterator i = m_events.begin(); i != m_events.end(); ++i)
+            m_events_undo_hold.add(*i); // m_events_undo_hold.push_back(*i);
+#endif
     }
     else
-       m_list_undo_hold.clear();
+       m_events_undo_hold.clear();
 }
-
-int
-sequence::get_hold_undo ()
-{
-    return m_list_undo_hold.size();
-}
-
-#endif  // SEQ64_STAZED_UNDO_REDO
 
 /**
  *  Returns the number of events stored in m_events.  Note that only playable
@@ -248,17 +254,11 @@ sequence::push_undo (bool hold)
 {
     automutex locker(m_mutex);
     if (hold)
-    {
-#ifdef SEQ64_STAZED_UNDO_REDO
-        m_events_undo.push(m_list_undo_hold);
-#endif
-    }
+        m_events_undo.push(m_events_undo_hold);     // stazed
     else
         m_events_undo.push(m_events);
 
-#ifdef SEQ64_STAZED_UNDO_REDO
-    set_have_undo();
-#endif
+    set_have_undo();                                // stazed
 }
 
 /**
@@ -282,16 +282,8 @@ sequence::pop_undo ()
         verify_and_link();
         unselect();
     }
-
-    /*
-     * Shouldn't these be inside the if-statement?
-     */
-
-#ifdef SEQ64_STAZED_UNDO_REDO
-    set_have_undo();
-    set_have_redo();
-#endif
-
+    set_have_undo();                            // stazed
+    set_have_redo();                            // stazed
 }
 
 /**
@@ -315,16 +307,8 @@ sequence::pop_redo ()
         verify_and_link();
         unselect();
     }
-
-    /*
-     * Shouldn't these be inside the if-statement?
-     */
-
-#ifdef SEQ64_STAZED_UNDO_REDO
-    set_have_undo();
-    set_have_redo();
-#endif
-
+    set_have_undo();                            // stazed
+    set_have_redo();                            // stazed
 }
 
 /**
@@ -348,24 +332,15 @@ void
 sequence::pop_trigger_undo ()
 {
     automutex locker(m_mutex);
-    m_triggers.pop_undo();  // todo:  see how stazed's sequence function works
+    m_triggers.pop_undo();
 }
-
-#ifdef SEQ64_STAZED_UNDO_REDO
 
 void
 sequence::pop_trigger_redo ()
 {
     automutex locker(m_mutex);
-    if (m_list_trigger_redo.size() > 0)         // move to triggers module?
-    {
-        m_list_trigger_undo.push(m_list_trigger);
-        m_list_trigger = m_list_trigger_redo.top();
-        m_list_trigger_redo.pop();
-    }
+    m_triggers.pop_redo();
 }
-
-#endif  // SEQ64_STAZED_UNDO_REDO
 
 /**
  * \setter m_masterbus
@@ -2352,10 +2327,9 @@ sequence::change_event_data_range
         if (good)
         {
 
-#ifdef SEQ64_STAZED_UNDO_REDO
-            if (! get_hold_undo())
+            if (! get_hold_undo())                      /* stazed           */
                 set_hold_undo(true);
-#endif
+
             if (tick_f == tick_s)
                 tick_f = tick_s + 1;                    /* avoid divide-by-0 */
 

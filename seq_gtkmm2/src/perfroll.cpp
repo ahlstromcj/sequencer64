@@ -78,8 +78,6 @@ static int s_perfroll_size_box_w = 6;               /* 3; */
 static int s_perfroll_background_x =
     (SEQ64_DEFAULT_PPQN * 4 * 16) / c_perf_max_zoom; /* stazed */
 
-//  (SEQ64_DEFAULT_PPQN * 4 * 16) / c_perf_scale_x;
-
 namespace seq64
 {
 

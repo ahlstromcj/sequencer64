@@ -200,12 +200,6 @@ private:
     unsigned int m_key_event_edit;              /**< Show event editor.     */
     unsigned int m_key_stop;                    /**< Stop play, Escape.     */
 
-#ifdef USE_STAZED_JACK_SUPPORT
-//  unsigned int m_key_song;                    /**< Toggle Song Mode.      */
-//  unsigned int m_key_jack;
-//  unsigned int m_key_follow_trans;
-#endif
-
 public:
 
     keys_perform ();

@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-10-30
- * \updates       2016-08-07
+ * \updates       2016-08-15
  * \license       GNU GPLv2 or above
  *
  *  By segregating trigger support into its own module, the sequence class is
@@ -412,6 +412,7 @@ public:
 
     void push_undo ();
     void pop_undo ();
+    void pop_redo ();
     void print (const std::string & seqname) const;
     bool play (midipulse & starttick, midipulse & endtick);
     void add

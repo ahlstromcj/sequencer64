@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-08-07
+ * \updates       2016-08-14
  * \license       GNU GPLv2 or above
  *
  *  This class still has way too many members, even with the JACK and
@@ -716,6 +716,26 @@ private:
 
 #endif
 
+#ifdef USE_STAZED_UNDO_REDO
+
+    /*
+     * Not sure that we need this code; we'll think about it some more.  One
+     * issue with it is that we really can't keep good track of the modify
+     * flag in this case, in general.
+     */
+
+    /*
+     * Used for undo/redo track number
+     */
+
+    bool m_have_undo;
+    std::vector<int> m_undo_vect;
+
+    bool m_have_redo;
+    std::vector<int> m_redo_vect;
+
+#endif
+
     /*
      *  Can register here for events.  Used in mainwnd and perform.
      *  Now wrapped in the enregister() function, so no longer public.
@@ -1211,25 +1231,8 @@ public:
     void push_trigger_undo (int track = SEQ64_ALL_TRACKS);
     void pop_trigger_undo ();
 
-#ifdef USE_STAZED_PUSH_POP_SUPPORT
+#ifdef USE_STAZED_UNDO_REDO
 
-    /*
-     * Not sure that we need this code; we'll think about it some more.  One
-     * issue with it is that we really can't keep good track of the modify
-     * flag in this case, in general.
-     */
-
-    /*
-     * used for undo/redo track number
-     */
-
-    std::vector<int> m_undo_vect;
-    std::vector<int> m_redo_vect;
-
-    bool m_have_undo;
-    bool m_have_redo;
-
-    void pop_trigger_undo ();
     void pop_trigger_redo ();
 
     void set_have_undo (bool undo)
@@ -1243,7 +1246,7 @@ public:
         m_have_redo = redo;
     }
 
-#endif      // USE_STAZED_PUSH_POP_SUPPORT
+#endif
 
     void split_trigger (int seqnum, midipulse tick);
     midipulse get_max_trigger ();

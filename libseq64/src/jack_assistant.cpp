@@ -1700,10 +1700,8 @@ jack_shutdown_callback (void * arg)
 long
 get_current_jack_position (void * arg)
 {
-//  perform * p = (perform *) arg;
     jack_assistant * j= (jack_assistant *)(arg);
     double ppqn = double(j->get_ppqn());
-//  double ppqn = double(c_ppqn);
     double ticks_per_beat = ppqn * 10;              // 192 * 10 = 1920
     double beats_per_minute = j->get_beats_per_measure();
     double beat_type = j->get_beat_width();

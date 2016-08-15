@@ -306,10 +306,6 @@ private:
 
     static void handle_signal (int sig);
 
-//#ifdef SEQ64_STAZED_EDIT_MENU
-//  void popup_menu (Gtk::Menu * menu);
-//#endif
-
     void adj_callback_ss ();            // make 'em void at some point
     void adj_callback_bpm ();
     void edit_callback_notepad ();

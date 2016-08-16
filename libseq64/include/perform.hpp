@@ -716,7 +716,7 @@ private:
 
 #endif
 
-#ifdef USE_STAZED_UNDO_REDO
+#ifdef USE_STAZED_UNDO_REDO_SEQ
 
     /*
      * Not sure that we need this code; we'll think about it some more.  One
@@ -761,7 +761,7 @@ public:
      * \setter m_is_modified
      *      This setter only sets the modified-flag to true.
      *      The setter that will, is_modified(), is private.  No one but
-     *      perfrom and its friends should falsify this flag.
+     *      perform and its friends should falsify this flag.
      */
 
     void modify ()
@@ -1231,14 +1231,24 @@ public:
     void push_trigger_undo (int track = SEQ64_ALL_TRACKS);
     void pop_trigger_undo ();
 
-#ifdef USE_STAZED_UNDO_REDO
+#ifdef USE_STAZED_UNDO_REDO_SEQ
 
     void pop_trigger_redo ();
+
+    bool have_undo () const
+    {
+        return m_have_undo;
+    }
 
     void set_have_undo (bool undo)
     {
         m_have_undo = undo;
         modify();
+    }
+
+    bool have_redo () const
+    {
+        return m_have_redo;
     }
 
     void set_have_redo (bool redo)

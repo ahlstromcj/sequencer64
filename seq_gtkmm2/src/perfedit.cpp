@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-08-07
+ * \updates       2016-08-15
  * \license       GNU GPLv2 or above
  *
  */
@@ -870,8 +870,8 @@ perfedit::timeout ()
 
 #ifdef USE_STAZED_UNDO_REDO
 
-    m_button_undo->set_sensitive(perf()->have_undo());
-    m_button_redo->set_sensitive(perf()->have_redo());
+    m_button_undo->set_sensitive(perf().have_undo());
+    m_button_redo->set_sensitive(perf().have_redo());
 
 #else   // USE_STAZED_UNDO_REDO
 

@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-30
- * \updates       2016-08-14
+ * \updates       2016-08-16
  * \license       GNU GPLv2 or above
  *
  *  The functions add_list_var() and add_long_list() have been replaced by
@@ -74,6 +74,7 @@
  * EXPERIMENTAL
  */
 
+#define USE_STAZED_UNDO_REDO
 #define USE_STAZED_UNDO_REDO_SEQ
 
 namespace seq64
@@ -648,7 +649,8 @@ public:
     void set_have_undo ()
     {
         m_have_undo = m_events_undo.size() > 0;
-        modify();                                   // we have pending changes
+        if (m_have_undo)                            /* ca 2016-08-16        */
+            modify();                               /* have pending changes */
     }
 
     /**

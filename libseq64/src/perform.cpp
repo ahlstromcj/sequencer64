@@ -201,7 +201,7 @@ perform::perform (gui_assistant & mygui, int ppqn)
         SEQ64_DEFAULT_BEAT_WIDTH            // may get updated later
     ),
 #endif
-#ifdef USE_STAZED_UNDO_REDO
+#ifdef USE_STAZED_UNDO_REDO_SEQ
     m_have_undo                 (false),
     m_undo_vect                 (),
     m_have_redo                 (false),
@@ -324,7 +324,7 @@ perform::clear_all ()
         for (int i = 0; i < m_max_sets; ++i)
             set_screen_set_notepad(i, e);
 
-#ifdef USE_STAZED_UNDO_REDO
+#ifdef USE_STAZED_UNDO_REDO_SEQ
         set_have_undo(false);
         set_have_redo(false);
 #endif
@@ -1640,7 +1640,7 @@ perform::move_triggers (bool direction)
 void
 perform::push_trigger_undo (int track)
 {
-#ifdef USE_STAZED_UNDO_REDO
+#ifdef USE_STAZED_UNDO_REDO_SEQ
     m_undo_vect.push_back(track);
 #endif
 
@@ -1657,7 +1657,7 @@ perform::push_trigger_undo (int track)
         if (is_active(track))
             m_seqs[track]->push_trigger_undo();
     }
-#ifdef USE_STAZED_UNDO_REDO
+#ifdef USE_STAZED_UNDO_REDO_SEQ
     set_have_undo(true);
 #endif
 }
@@ -1677,7 +1677,7 @@ perform::push_trigger_undo (int track)
 void
 perform::pop_trigger_undo ()
 {
-#ifdef USE_STAZED_UNDO_REDO
+#ifdef USE_STAZED_UNDO_REDO_SEQ
     if (m_undo_vect.size() > 0)
     {
         int track = m_undo_vect[m_undo_vect.size() - 1];
@@ -1686,14 +1686,12 @@ perform::pop_trigger_undo ()
         if (track == SEQ64_ALL_TRACKS)
         {
 #endif
-
             for (int i = 0; i < m_sequence_max; ++i)
             {
                 if (is_active(i))
                     m_seqs[i]->pop_trigger_undo();
             }
-
-#ifdef USE_STAZED_UNDO_REDO
+#ifdef USE_STAZED_UNDO_REDO_SEQ
         }
         else
         {
@@ -1706,7 +1704,7 @@ perform::pop_trigger_undo ()
 #endif
 }
 
-#ifdef USE_STAZED_UNDO_REDO
+#ifdef USE_STAZED_UNDO_REDO_SEQ
 
 void
 perform::pop_trigger_redo ()
@@ -3732,20 +3730,22 @@ perform::perfroll_key_event (const keystroke & k, int drop_sequence)
                 }
                 else if (k.is_letter('z'))                      /* undo     */
                 {
-#ifdef USE_STAZED_UNDO_REDO
-                    undo();
-#else
-                    pop_trigger_undo();
-#endif
+// FIXME:
+// #ifdef USE_STAZED_UNDO_REDO_SEQ
+//                     undo();
+// #else
+//                  pop_trigger_undo();
+// #endif
                     result = true;
                 }
-#ifdef USE_STAZED_UNDO_REDO
+// FIXME:
+// #ifdef USE_STAZED_UNDO_REDO_SEQ
                 else if (k.is_letter('r'))                      /* redo     */
                 {
-                    redo();
+//                  redo();
                     result = true;
                 }
-#endif
+//ndif
 #ifdef USE_STAZED_TRANSPORT
                 else if (k == keys().follow_transport())
                 {

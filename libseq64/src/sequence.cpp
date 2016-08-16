@@ -145,7 +145,8 @@ sequence::~sequence ()
 
 /**
  *  A convenience function that we have to put here so that the m_parent
- *  pointer can be used.
+ *  pointer can be used without an additional #include in the sequence.hpp
+ *  module.
  */
 
 void

@@ -1,6 +1,6 @@
 README for Sequencer64 0.9.17
 Chris Ahlstrom
-2015-09-10 to 2016-08-02 (initial work started in July of 2015)
+2015-09-10 to 2016-08-15 (initial work started in July of 2015)
 
 Sequencer64 (replaces sequencer24) is a reboot of seq24 to refactor it to be
 tighter and easier to transition to GTKmm 3, and much more.  It is now
@@ -15,17 +15,26 @@ with the --legacy option.
 Major updates:
 
     -   Version 0.9.17:
+        -   Added export of a Sequencer64 song performance as a MIDI file,
+            where the MIDI file is laid out as per the song triggers in the
+            performance editor.  The triggers are preserved in the exported
+            file, but any sequencer can read the performance and will ignore
+            the Sequencer64-specific triggers.
+        -   Added an "inverse colors" options so that the user interface is a
+            bit less bright in a "night" environment.
         -   Added an optional Edit menu and the export of a song performance
             to a non-Sequencer64 MIDI file.  (Stazed feature).
         -   Started adding support for recording incoming MIDI to the
             sequences that match the incoming channel data. (Stazed feature).
         -   Enabled actual support for the recording-volume feature, which was
             not actually used in seq24.
+        -   Added better support for undo/redo ability from the stazed project
+            (seq32).
         -   Added support for a lot of other stazed (seq32) features and
             extensions, macroed out until we can get them complete and
             finalized.  Some, noted above are now available.
         -   Added the LFO window module code and refactored it, not yet
-            available through the user interface.
+            available through the user interface, must be enabled in the code.
         -   Playback status now folded completely into the perform and
             jack_assistant classes.
         -   Lots of bug fixed from seq32.

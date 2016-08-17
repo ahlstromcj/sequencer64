@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-08-05
+ * \updates       2016-08-17
  * \license       GNU GPLv2 or above
  *
  *  Note that, as of version 0.9.11, the z and Z keys, when focus is on the
@@ -134,9 +134,7 @@ private:
     Gtk::Button * m_button_copy;        /**< Expand and copy between L/R.       */
     Gtk::Button * m_button_grow;        /**< Expand grid (bottom-right button). */
     Gtk::Button * m_button_undo;        /**< Button to undo previous action.    */
-#ifdef USE_STAZED_UNDO_REDO
     Gtk::Button * m_button_redo;        /**< Button to redo previous action.    */
-#endif
 #ifdef USE_STAZED_JACK_SUPPORT
     Gtk::ToggleButton * m_button_jack;  /**< Button to toggle JACK connection.  */
 #endif
@@ -300,9 +298,7 @@ private:
     void collapse ();
     void copy ();
     void undo ();
-#ifdef USE_STAZED_UNDO_REDO
-    void redo ();
-#endif
+    void redo ();                           /* stazed                */
     void popup_menu (Gtk::Menu * menu);     /* used in other classes */
     void draw_sequences ();
     bool timeout ();

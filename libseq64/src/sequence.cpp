@@ -146,7 +146,9 @@ sequence::~sequence ()
 /**
  *  A convenience function that we have to put here so that the m_parent
  *  pointer can be used without an additional #include in the sequence.hpp
- *  module.
+ *  module.  One minor issue is how can we unmodify the performance?  We'd need
+ *  to keep a count/stack of modifications over all sequences in the
+ *  performance.  Probably not practical.
  */
 
 void
@@ -200,8 +202,12 @@ sequence::partial_assign (const sequence & rhs)
     }
 }
 
-/*
- * USE_STAZED_UNDO_REDO_SEQ
+/**
+ *  Modifies the undo-hold container.
+ *
+ * \param hold
+ *      If true, then the events in the m_events container are added to the
+ *      m_events_undo_hold container.  Otherwise, that container is cleared.
  */
 
 void
@@ -267,6 +273,10 @@ sequence::push_undo (bool hold)
  *  event-list into the redo-list, puts the top of the undo-list into the
  *  event-list, pops from the undo-list, calls verify_and_link(), and then
  *  calls unselect.
+ *
+ *  We would like to be able to set perform's modify flag to false here, but
+ *  other sequences might still be in a modified state.  We could add a modify
+ *  flag to sequence, and falsify that flag here.  Something to think about.
  *
  * \threadsafe
  */
@@ -1650,8 +1660,7 @@ sequence::move_selected_notes (midipulse delta_tick, int delta_note)
                     e.set_timestamp(newts);
                     e.select();                     /* keep it selected     */
                     add_event(e);
-                    if (not_nullptr(m_parent))
-                        m_parent->modify();         /* new, centralize      */
+                    modify();
                 }
             }
         }
@@ -1860,8 +1869,7 @@ sequence::grow_selected (midipulse delta_tick)
                     e.unmark();                     /* keep new off event   */
                     e.set_timestamp(newtime);       /* new off-time         */
                     add_event(e);                   /* add fixed off event  */
-                    if (not_nullptr(m_parent))
-                        m_parent->modify();         /* new, centralize      */
+                    modify();
                 }
             }
             else if (er.is_marked())                /* non-Note event?      */
@@ -1872,8 +1880,7 @@ sequence::grow_selected (midipulse delta_tick)
                 midipulse newtime = clip_timestamp(ontime, ontime + delta_tick);
                 e.set_timestamp(newtime);           /* adjust time-stamp    */
                 add_event(e);                       /* add adjusted event   */
-                if (not_nullptr(m_parent))
-                    m_parent->modify();             /* new, centralize      */
+                modify();
 #else
                 er.unmark();                        /* unmark old version   */
 #endif
@@ -2125,8 +2132,7 @@ sequence::cut_selected (bool copyevents)
         if (remove_marked())
         {
             set_dirty();                            /* do it for the caller */
-            if (not_nullptr(m_parent))
-                m_parent->modify();                 /* new, centralize      */
+            modify();
         }
     }
 }
@@ -2243,8 +2249,7 @@ sequence::paste_selected (midipulse tick, int note)
         m_events.sort();                        /* uh, does nothing in map  */
         verify_and_link();
         reset_draw_marker();
-        if (not_nullptr(m_parent))
-            m_parent->modify();                 /* new, centralize it here  */
+        modify();
     }
 }
 
@@ -4405,10 +4410,8 @@ void
 sequence::set_transposable (bool flag)
 {
     if (flag != m_transposable)
-    {
-        if (not_nullptr(m_parent))
-            m_parent->modify();
-    }
+        modify();
+
     m_transposable = flag;
 }
 
@@ -4652,8 +4655,7 @@ sequence::copy_events (const event_list & newevents)
      */
 
     set_dirty();
-    if (not_nullptr(m_parent))
-        m_parent->modify();                 /* new, centralize it here      */
+    modify();
 }
 
 /**

@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-08-07
+ * \updates       2016-08-17
  * \license       GNU GPLv2 or above
  *
  *  This class represents the central piano-roll user-interface area of the
@@ -166,14 +166,12 @@ private:
 
 #endif
 
-#ifdef USE_STAZED_UNDO_REDO
-
     /**
-     *  Used in the fruity and seq24 perfroll input classes.
+     *  Used in the fruity and seq24 perfroll input classes to help with
+     *  trigger push/pop management.
      */
 
     bool m_have_button_press;
-#endif
 
 #ifdef USE_STAZED_TRANSPORT
     bool m_transport_follow;

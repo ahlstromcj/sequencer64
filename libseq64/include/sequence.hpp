@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-30
- * \updates       2016-08-16
+ * \updates       2016-08-17
  * \license       GNU GPLv2 or above
  *
  *  The functions add_list_var() and add_long_list() have been replaced by
@@ -69,13 +69,6 @@
  */
 
 #define SEQ64_HANDLE_TIMESIG_AND_TEMPO
-
-/*
- * EXPERIMENTAL
- */
-
-#define USE_STAZED_UNDO_REDO
-#define USE_STAZED_UNDO_REDO_SEQ
 
 namespace seq64
 {
@@ -169,10 +162,6 @@ private:
     triggers m_triggers;
 
     /*
-     * USE_STAZED_UNDO_REDO_SEQ
-     */
-
-    /*
      *  Provides a typedef for a list of events.  For now, we will not
      *  try to use a multimap for this purpose.  Note that this definition is
      *  the same as the old list of events defined in the event_list.hpp
@@ -202,8 +191,7 @@ private:
     /**
      *  A stazed flag indicating that we have some redo information.
      *  Previously, unlike the perfedit, the seqedit did not provide a redo
-     *  facility.  It does not harm to include this functionality here before
-     *  it actually gets used.
+     *  facility.
      */
 
     bool m_have_redo;
@@ -624,10 +612,6 @@ public:
     int event_count () const;
 
     /*
-     * USE_STAZED_UNDO_REDO_SEQ
-     */
-
-    /*
      * seqdata and lfownd hold for undo
      */
 
@@ -655,6 +639,7 @@ public:
 
     /**
      * \setter m_have_redo
+     *      No reliable way to "unmodify" the performance here.
      */
 
     void set_have_redo ()

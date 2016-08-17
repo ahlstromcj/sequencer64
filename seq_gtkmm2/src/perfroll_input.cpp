@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-07-16
+ * \updates       2016-08-17
  * \license       GNU GPLv2 or above
  *
  */
@@ -134,18 +134,12 @@ Seq24PerfInput::on_button_press_event (GdkEventButton * ev, perfroll & roll)
         }
         else
         {
-#ifdef USE_STAZED_UNDO_REDO
-
             /*
              * Set this flag to tell on_motion_notify() to call
              * p.push_trigger_undo().
              */
 
             roll.m_have_button_press = seq->select_trigger(droptick);
-#else
-            p.push_trigger_undo();
-            (void) seq->select_trigger(droptick);
-#endif
 
             midipulse tick0 = seq->selected_trigger_start();
             midipulse tick1 = seq->selected_trigger_end();
@@ -291,9 +285,6 @@ Seq24PerfInput::on_motion_notify_event (GdkEventMotion * ev, perfroll & roll)
     }
     else if (roll.m_moving || roll.m_growing)
     {
-
-#ifdef USE_STAZED_UNDO_REDO
-
         /*
          * This code is necessary to insure that there is no push unless
          * we have a motion notification.
@@ -304,7 +295,6 @@ Seq24PerfInput::on_motion_notify_event (GdkEventMotion * ev, perfroll & roll)
             p.push_trigger_undo(dropseq);
             roll.m_have_button_press = false;
         }
-#endif
 
         midipulse tick;
         roll.convert_x(x, tick);

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-10-13
- * \updates       2016-07-16
+ * \updates       2016-08-17
  * \license       GNU GPLv2 or above
  *
  */
@@ -234,18 +234,13 @@ FruityPerfInput::on_left_button_pressed (GdkEventButton * ev, perfroll & roll)
             {
                 m_adding_pressed = false;
 
-#ifdef USE_STAZED_UNDO_REDO
-
                 /*
                  * Set the flag that tells the motion-notify callback to call
                  * push_trigger_undo().
                  */
 
                 roll.m_have_button_press = seq->select_trigger(droptick);
-#else
-                p.push_trigger_undo();
-                (void) seq->select_trigger(droptick);
-#endif
+
                 midipulse starttick = seq->selected_trigger_start();
                 midipulse endtick = seq->selected_trigger_end();
                 int wscalex = s_perfroll_size_box_click_w * c_perf_scale_x;
@@ -404,8 +399,6 @@ FruityPerfInput::on_motion_notify_event (GdkEventMotion * ev, perfroll & roll)
     {
         if (p.is_active(dropseq))
         {
-#ifdef USE_STAZED_UNDO_REDO
-
             /*
              * This code is necessary to insure that there is no push unless
              * we have a motion notification.
@@ -416,8 +409,6 @@ FruityPerfInput::on_motion_notify_event (GdkEventMotion * ev, perfroll & roll)
                 p.push_trigger_undo(dropseq);
                 roll.m_have_button_press = false;
             }
-#endif
-
             roll.convert_x(x, tick);                    /* side-effect  */
             tick -= roll.m_drop_tick_trigger_offset;
             tick -= tick % roll.m_snap;

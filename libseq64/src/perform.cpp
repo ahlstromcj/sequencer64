@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and Tim Deagan
  * \date          2015-07-24
- * \updates       2016-08-14
+ * \updates       2016-08-17
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -201,12 +201,10 @@ perform::perform (gui_assistant & mygui, int ppqn)
         SEQ64_DEFAULT_BEAT_WIDTH            // may get updated later
     ),
 #endif
-#ifdef USE_STAZED_UNDO_REDO_SEQ
     m_have_undo                 (false),
     m_undo_vect                 (),
     m_have_redo                 (false),
     m_redo_vect                 (),
-#endif
     m_notify                    ()          // vector of pointers, public!
 {
     for (int i = 0; i < m_sequence_max; ++i)
@@ -324,16 +322,14 @@ perform::clear_all ()
         for (int i = 0; i < m_max_sets; ++i)
             set_screen_set_notepad(i, e);
 
-#ifdef USE_STAZED_UNDO_REDO_SEQ
         set_have_undo(false);
+        m_undo_vect.clear();                    /* ca 2016-08-16            */
         set_have_redo(false);
-#endif
+        m_redo_vect.clear();                    /* ca 2016-08-16            */
 
         /*
-         * TODO
-         *
-        set_beats_per_minute(c_bpm);
-         *
+         * TODO:
+         *  set_beats_per_minute(c_bpm);
          */
 
         is_modified(false);                     /* new, we start afresh     */
@@ -1640,10 +1636,7 @@ perform::move_triggers (bool direction)
 void
 perform::push_trigger_undo (int track)
 {
-#ifdef USE_STAZED_UNDO_REDO_SEQ
-    m_undo_vect.push_back(track);
-#endif
-
+    m_undo_vect.push_back(track);                       /* stazed   */
     if (track == SEQ64_ALL_TRACKS)
     {
         for (int i = 0; i < m_sequence_max; ++i)
@@ -1657,9 +1650,7 @@ perform::push_trigger_undo (int track)
         if (is_active(track))
             m_seqs[track]->push_trigger_undo();
     }
-#ifdef USE_STAZED_UNDO_REDO_SEQ
-    set_have_undo(true);
-#endif
+    set_have_undo(true);                                /* stazed   */
 }
 
 /**
@@ -1677,7 +1668,6 @@ perform::push_trigger_undo (int track)
 void
 perform::pop_trigger_undo ()
 {
-#ifdef USE_STAZED_UNDO_REDO_SEQ
     if (m_undo_vect.size() > 0)
     {
         int track = m_undo_vect[m_undo_vect.size() - 1];
@@ -1685,13 +1675,11 @@ perform::pop_trigger_undo ()
         m_redo_vect.push_back(track);
         if (track == SEQ64_ALL_TRACKS)
         {
-#endif
             for (int i = 0; i < m_sequence_max; ++i)
             {
                 if (is_active(i))
                     m_seqs[i]->pop_trigger_undo();
             }
-#ifdef USE_STAZED_UNDO_REDO_SEQ
         }
         else
         {
@@ -1701,10 +1689,7 @@ perform::pop_trigger_undo ()
         set_have_undo(m_undo_vect.size() > 0);
         set_have_redo(m_redo_vect.size() > 0);
     }
-#endif
 }
-
-#ifdef USE_STAZED_UNDO_REDO_SEQ
 
 void
 perform::pop_trigger_redo ()
@@ -1731,8 +1716,6 @@ perform::pop_trigger_redo ()
         set_have_redo(m_redo_vect.size() > 0);
     }
 }
-
-#endif
 
 /**
  *  If the left tick is less than the right tick, then, for each sequence that
@@ -3730,22 +3713,14 @@ perform::perfroll_key_event (const keystroke & k, int drop_sequence)
                 }
                 else if (k.is_letter('z'))                      /* undo     */
                 {
-// FIXME:
-// #ifdef USE_STAZED_UNDO_REDO_SEQ
-//                     undo();
-// #else
-//                  pop_trigger_undo();
-// #endif
+                    pop_trigger_undo();                 /* perfedit::undo() */
                     result = true;
                 }
-// FIXME:
-// #ifdef USE_STAZED_UNDO_REDO_SEQ
                 else if (k.is_letter('r'))                      /* redo     */
                 {
-//                  redo();
+                    pop_trigger_redo();                 /* perfedit::redo() */
                     result = true;
                 }
-//ndif
 #ifdef USE_STAZED_TRANSPORT
                 else if (k == keys().follow_transport())
                 {

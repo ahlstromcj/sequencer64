@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-08-14
+ * \updates       2016-08-16
  * \license       GNU GPLv2 or above
  *
  *  This class still has way too many members, even with the JACK and
@@ -716,8 +716,6 @@ private:
 
 #endif
 
-#ifdef USE_STAZED_UNDO_REDO_SEQ
-
     /*
      * Not sure that we need this code; we'll think about it some more.  One
      * issue with it is that we really can't keep good track of the modify
@@ -725,16 +723,28 @@ private:
      */
 
     /*
-     * Used for undo/redo track number
+     * Used for undo track modification support.
      */
 
     bool m_have_undo;
+
+    /**
+     *  Holds ??? for undo operations.
+     */
+
     std::vector<int> m_undo_vect;
 
-    bool m_have_redo;
-    std::vector<int> m_redo_vect;
+    /*
+     * Used for redo track modification support.
+     */
 
-#endif
+    bool m_have_redo;
+
+    /**
+     *  Holds ??? for undo operations.
+     */
+
+    std::vector<int> m_redo_vect;
 
     /*
      *  Can register here for events.  Used in mainwnd and perform.
@@ -1230,10 +1240,11 @@ public:
     void copy_triggers ();
     void push_trigger_undo (int track = SEQ64_ALL_TRACKS);
     void pop_trigger_undo ();
-
-#ifdef USE_STAZED_UNDO_REDO_SEQ
-
     void pop_trigger_redo ();
+
+    /**
+     * \getter m_have_undo
+     */
 
     bool have_undo () const
     {
@@ -1243,20 +1254,27 @@ public:
     void set_have_undo (bool undo)
     {
         m_have_undo = undo;
-        modify();
+        if (undo)
+            modify();
     }
+
+    /**
+     * \getter m_have_redo
+     */
 
     bool have_redo () const
     {
         return m_have_redo;
     }
 
+    /**
+     * \setter m_have_redo
+     */
+
     void set_have_redo (bool redo)
     {
         m_have_redo = redo;
     }
-
-#endif
 
     void split_trigger (int seqnum, midipulse tick);
     midipulse get_max_trigger ();

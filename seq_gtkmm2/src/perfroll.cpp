@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-08-14
+ * \updates       2016-08-17
  * \license       GNU GPLv2 or above
  *
  *  The performance window allows automatic control of when each
@@ -113,9 +113,7 @@ perfroll::perfroll
 #ifdef SEQ64_FOLLOW_PROGRESS_BAR
     m_scroll_page           (0),
 #endif
-#ifdef USE_STAZED_UNDO_REDO
-    m_have_button_press     (false),
-#endif
+    m_have_button_press     (false),                        // stazed
 #ifdef USE_STAZED_TRANSPORT
     m_transport_follow      (true),
     m_trans_button_press    (false),
@@ -127,14 +125,14 @@ perfroll::perfroll
     m_drop_tick_trigger_offset (0),
     m_drop_sequence         (0),
     m_sequence_max          (c_max_sequence),
-    m_sequence_active       (),                     // array [ c_max_sequence ]
+    m_sequence_active       (),                             // [c_max_sequence]
     m_fruity_interaction    (),
     m_seq24_interaction     (),
     m_moving                (false),
     m_growing               (false),
     m_grow_direction        (false)
 {
-    set_ppqn(ppqn);                             // calls choose_ppqn(ppqn);
+    set_ppqn(ppqn);                                         // choose_ppqn(ppqn)
     for (int i = 0; i < m_sequence_max; ++i)
         m_sequence_active[i] = false;
 }

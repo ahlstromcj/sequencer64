@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-08-15
+ * \updates       2016-08-17
  * \license       GNU GPLv2 or above
  *
  */
@@ -190,9 +190,7 @@ perfedit::perfedit
     m_button_copy       (manage(new Gtk::Button())),
     m_button_grow       (manage(new Gtk::Button())),
     m_button_undo       (manage(new Gtk::Button())),
-#ifdef USE_STAZED_UNDO_REDO
-    m_button_redo       (manage(new Gtk::Button())),
-#endif
+    m_button_redo       (manage(new Gtk::Button())),    // stazed
 #ifdef USE_STAZED_JACK_SUPPORT
     m_button_jack       (manage(new Gtk::ToggleButton())),
 #endif
@@ -382,11 +380,9 @@ perfedit::perfedit
     m_button_undo->signal_clicked().connect(mem_fun(*this, &perfedit::undo));
     add_tooltip(m_button_undo, "Undo the last action.");
 
-#ifdef USE_STAZED_UNDO_REDO
     m_button_redo->add(*manage(new PIXBUF_IMAGE(redo_xpm)));
     m_button_redo->signal_clicked().connect(mem_fun(*this, &perfedit::redo));
     add_tooltip(m_button_redo, "Redo the last undone action.");
-#endif
 
     m_button_expand->add(*manage(new PIXBUF_IMAGE(expand_xpm)));
     m_button_expand->signal_clicked().connect(mem_fun(*this, &perfedit::expand));
@@ -454,9 +450,7 @@ perfedit::perfedit
     m_hlbox->pack_end(*m_button_expand , false, false);
     m_hlbox->pack_end(*m_button_collapse , false, false);
     m_hlbox->pack_end(*m_button_undo , false, false);
-#ifdef USE_STAZED_UNDO_REDO
-    m_hlbox->pack_end(*m_button_redo , false, false);
-#endif
+    m_hlbox->pack_end(*m_button_redo , false, false);       // stazed
     m_hlbox->pack_start(*m_button_stop , false, false);
     m_hlbox->pack_start(*m_button_play , false, false);
     m_hlbox->pack_start(*m_button_loop , false, false);
@@ -561,10 +555,8 @@ perfedit::undo ()
     enqueue_draw();
 }
 
-#ifdef USE_STAZED_UNDO_REDO
-
 /**
- *  Implement the redo feature (Ctrl-?).  We pop an Redo trigger, and then
+ *  Implement the redo feature (Ctrl-R).  We pop an Redo trigger, and then
  *  ask the perfroll to queue up a (re)drawing action.
  */
 
@@ -574,8 +566,6 @@ perfedit::redo ()
     perf().pop_trigger_redo();
     enqueue_draw();
 }
-
-#endif
 
 /**
  *  Implement the collapse action.  This action removes all events between
@@ -868,12 +858,8 @@ perfedit::timeout ()
     m_perfnames->redraw_dirty_sequences();
 #endif
 
-#ifdef USE_STAZED_UNDO_REDO
-
     m_button_undo->set_sensitive(perf().have_undo());
     m_button_redo->set_sensitive(perf().have_redo());
-
-#else   // USE_STAZED_UNDO_REDO
 
     /*
      * Do not enable this code, it makes the whole perfedit panel flicker.
@@ -889,8 +875,6 @@ perfedit::timeout ()
         set_image(m_is_running);
     }
 #endif
-
-#endif   // USE_STAZED_UNDO_REDO
 
     return true;
 }

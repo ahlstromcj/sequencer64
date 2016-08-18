@@ -1031,10 +1031,14 @@ triggers::copy_selected ()
 
 /**
  *  If there is a copied trigger, then this function grabs it from the trigger
- *  clipboard and adds it.  It pastes at the copy end.
+ *  clipboard and adds it.  It pastes at the copy end. or at the paste-tick,
+ *  if supplied.
+ *
+ * \param paste_tick
+ *      Provides the optional tick at which to paste the trigger.  If not
+ *      set to SEQ64_NO_PASTE_TRIGGER, this value is used to adjust the paste
+ *      offset.
  */
-
-#ifdef USE_STAZED_TRIGGER_EXTENSIONS
 
 void
 triggers::paste (midipulse paste_tick)
@@ -1042,7 +1046,6 @@ triggers::paste (midipulse paste_tick)
     if (m_trigger_copied)
     {
         midipulse len = m_clipboard.tick_end() - m_clipboard.tick_start() + 1;
-
         if (paste_tick == SEQ64_NO_PASTE_TRIGGER)
         {
             add(m_clipboard.tick_end() + 1, len, m_clipboard.offset() + len);
@@ -1058,35 +1061,16 @@ triggers::paste (midipulse paste_tick)
              * Set the +/- distance to paste the tick, from the start.
              */
 
-            long offset = paste_tick - m_clipboard.m_tick_start;
-            add(get_trigger_paste_tick(), len, m_clipboard.m_offset + offset);
-            m_clipboard.m_tick_start = paste_tick;
-            m_clipboard.m_tick_end = m_clipboard.m_tick_start + length - 1;
-            m_clipboard.m_offset += offset_adjust;
-            m_clipboard.m_offset = adjust_offset(m_clipboard.m_offset);
-            set_trigger_paste_tick(-1);         /* reset to the default */
+            long offset = paste_tick - m_clipboard.tick_start();
+            add(paste_tick, len, m_clipboard.offset() + offset);
+            m_clipboard.tick_start(paste_tick);
+            m_clipboard.tick_end(m_clipboard.tick_start() + len - 1);
+            m_clipboard.increment_offset(offset);
+            m_clipboard.offset(adjust_offset(m_clipboard.offset()));
+            set_trigger_paste_tick(SEQ64_NO_PASTE_TRIGGER);         /* reset */
         }
     }
 }
-
-#else   // USE_STAZED_TRIGGER_EXTENSIONS
-
-void
-triggers::paste (midipulse /*paste_tick*/)
-{
-    if (m_trigger_copied)
-    {
-        midipulse len = m_clipboard.tick_end() - m_clipboard.tick_start() + 1;
-        add(m_clipboard.tick_end() + 1, len, m_clipboard.offset() + len);
-        m_clipboard.tick_start(m_clipboard.tick_end() + 1);
-        m_clipboard.tick_end(m_clipboard.tick_start() + len - 1);
-
-        midipulse offset = m_clipboard.offset() + len;
-        m_clipboard.offset(adjust_offset(offset));
-    }
-}
-
-#endif  // USE_STAZED_TRIGGER_EXTENSIONS
 
 /**
  *  Get the next trigger in the trigger list, and set the parameters based

@@ -3527,33 +3527,17 @@ sequence::cut_selected_trigger ()
 }
 
 /**
- *      Copies the first selected trigger that is found.
+ *  First, this function clears any unpasted middle-click tick setting.
+ *  Then it copies the first selected trigger that is found.
  */
 
 void
 sequence::copy_selected_trigger ()
 {
     automutex locker(m_mutex);
-#ifdef USE_STAZED_TRIGGER_EXTENSIONS
-    set_trigger_paste_tick(-1);         /* clear any unpasted middle-click  */
-#endif
+    set_trigger_paste_tick(SEQ64_NO_PASTE_TRIGGER);
     m_triggers.copy_selected();
 }
-
-#ifdef USE_STAZED_TRIGGER_EXTENSIONS
-
-void
-sequence::get_sequence_triggers (triggers & trigvect)
-{
-    automutex locker(m_mutex);
-
-    /*
-     * TODO:  Need an assign function for seq64::triggers
-    trigvect.assign(m_triggers.begin(), m_triggers.end());
-     */
-}
-
-#endif  // USE_STAZED_TRIGGER_EXTENSIONS
 
 /**
  *  If there is a copied trigger, then this function grabs it from the trigger

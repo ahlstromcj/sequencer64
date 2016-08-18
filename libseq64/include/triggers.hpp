@@ -46,12 +46,6 @@
 
 #define SEQ64_NO_PASTE_TRIGGER          (-1)
 
-/**
- * EXPERIMENTAL.  Currently does not compile if defined.
- */
-
-#undef USE_STAZED_TRIGGER_EXTENSIONS
-
 namespace seq64
 {
     class sequence;

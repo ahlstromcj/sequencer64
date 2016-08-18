@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-08-13
+ * \updates       2016-08-18
  * \license       GNU GPLv2 or above
  *
  *  For a quick guide to the MIDI format, see, for example:
@@ -1735,22 +1735,21 @@ midifile::write (perform & p)
  *  We get the number of active tracks, and we don't count tracks with no
  *  triggers, or tracks that are muted.
  *
- * Stazed/Seq32:
+ *  The alternate version of this function, write_song(), was not included in
+ *  Sequencer64 because it Sequencer64 writes standard MIDI files (with
+ *  SeqSpec information that a decent sequencer should ignore).  But we now
+ *  think this is a good feature for export, and created the Export command to
+ *  do this.  The write_song() function doesn't count tracks that are muted or
+ *  that have no triggers.  For sequences that have triggers, it adds the
+ *  events in order, to create a long sequence.
  *
- *      The alternate version of this function, write_song(), was not included
- *      in Sequencer64 because it Sequencer64 writes standard MIDI files (with
- *      SeqSpec information that a decent sequencer should ignore).  But we now
- *      think this is a good feature for export, and will probably eventually
- *      make the Export command do this.  The write_song() function doesn't
- *      count tracks that are muted or that have no triggers.  For sequences
- *      that have triggers, it adds the events in order, to create a long
- *      sequence.
+ * Stazed/Seq32:
  *
  *      The sequence trigger is not part of the standard MIDI format and is
  *      proprietary to seq32/sequencer64.  It is added here because the trigger
  *      combining has an alternative benefit for editing.  The user can split,
  *      slice and rearrange triggers to form a new sequence. Then mute all
- *      other tracks and export to a temporary midi file. Now they can import
+ *      other tracks and export to a temporary MIDI file. Now they can import
  *      the combined triggers/sequence as a new item. This makes editing of
  *      long improvised sequences into smaller or modified sequences as well as
  *      combining several sequence parts painless.  Also, if the user has a
@@ -1814,16 +1813,6 @@ midifile::write_song (perform & p)
 #else
                 midi_list lst(seq);
 #endif
-                /*
-                 * TODO:  research this stazed feature!  And there is more code
-                 *        that is not yet added from stazed's midifile module!
-                 *
-                std::vector<trigger> trig_vect;
-                seq.get_sequence_triggers(trig_vect);
-                int vect_size = int(trig_vect.size());
-
-                    . . .
-                 */
 
                 lst.fill_seq_number(curtrack);
                 lst.fill_seq_name(seq.name());          /* hmmmmmmmm        */
@@ -1896,6 +1885,7 @@ midifile::write_song (perform & p)
         {
             char file_buffer[SEQ64_MIDI_LINE_MAX];  /* enable bufferization */
             file.rdbuf()->pubsetbuf(file_buffer, sizeof file_buffer);
+
             std::list<midibyte>::const_iterator it;
             for (it = m_char_list.begin(); it != m_char_list.end(); ++it)
             {

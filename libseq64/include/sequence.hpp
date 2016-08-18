@@ -1049,11 +1049,6 @@ public:
     void del_selected_trigger ();
     void cut_selected_trigger ();
     void copy_selected_trigger ();
-
-#ifdef USE_STAZED_TRIGGER_EXTENSIONS
-    void get_sequence_triggers (triggers & trigvect);
-#endif
-
     void paste_trigger (midipulse paste_tick = SEQ64_NO_PASTE_TRIGGER);
     bool move_selected_triggers_to
     (

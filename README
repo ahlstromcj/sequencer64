@@ -1,6 +1,6 @@
 README for Sequencer64 0.9.17
 Chris Ahlstrom
-2015-09-10 to 2016-08-15 (initial work started in July of 2015)
+2015-09-10 to 2016-08-18 (initial work started in July of 2015)
 
 Sequencer64 (replaces sequencer24) is a reboot of seq24 to refactor it to be
 tighter and easier to transition to GTKmm 3, and much more.  It is now
@@ -24,6 +24,11 @@ Major updates:
             bit less bright in a "night" environment.
         -   Added an optional Edit menu and the export of a song performance
             to a non-Sequencer64 MIDI file.  (Stazed feature).
+        -   Ctrl-Left-Click in the Song Editor now works as a middle-click,
+            to split the song trigger in half.
+        -   The seq32 feature of splitting at the nearest snap point near
+            a middle-click, in the Song Editor,  has been added as an optional
+            feature.
         -   Started adding support for recording incoming MIDI to the
             sequences that match the incoming channel data. (Stazed feature).
         -   Enabled actual support for the recording-volume feature, which was
@@ -37,7 +42,7 @@ Major updates:
             available through the user interface, must be enabled in the code.
         -   Playback status now folded completely into the perform and
             jack_assistant classes.
-        -   Lots of bug fixed from seq32.
+        -   Lots of bug fixed based on fixes from seq32.
         -   See earlier version fixes near the end of this README.
     -   Sequencer64 loads SMF 0 files and splits the channels into separate
         tracks/sequences.

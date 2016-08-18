@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-07-10
+ * \updates       2016-08-17
  * \license       GNU GPLv2 or above
  *
  *  The <code> ~/.seq24rc </code> or <code> ~/.config/sequencer64/sequencer64.rc
@@ -543,9 +543,16 @@ optionsfile::parse (perform & p)
 
     if (! rc().legacy_format())
     {
-        next_data_line(file);
-        sscanf(m_line, "%ld", &method);
-        rc().allow_mod4_mode(method != 0);
+        if (next_data_line(file))                   /* a new option */
+        {
+            sscanf(m_line, "%ld", &method);
+            rc().allow_mod4_mode(method != 0);
+        }
+        if (next_data_line(file))                   /* a new option */
+        {
+            sscanf(m_line, "%ld", &method);
+            rc().allow_snap_split(method != 0);
+        }
 
         line_after(file, "[lash-session]");
         sscanf(m_line, "%ld", &method);
@@ -869,11 +876,24 @@ optionsfile::write (const perform & p)
     }
     file
         << "\n" << rc().interaction_method() << "\n\n"
-        "# Set to 1 to allow Sequencer64 to stay in note-adding mode when\n"
-        "# the right-click is released while holding the Mod4 (Super or\n"
-        "# Windows) key.\n"
-        "\n"
-        << (rc().allow_mod4_mode() ? "1" : "0")   // @new 2015-08-28
+        ;
+
+    file
+        << "# Set to 1 to allow Sequencer64 to stay in note-adding mode when\n"
+           "# the right-click is released while holding the Mod4 (Super or\n"
+           "# Windows) key.\n"
+           "\n"
+        << (rc().allow_mod4_mode() ? "1" : "0")     // @new 2015-08-28
+        << "\n\n"
+        ;
+
+    file
+        << "# Set to 1 to allow Sequencer64 to split performance editor\n"
+        << "# triggers at the closest snap position, instead of splitting the\n"
+           "# trigger exactly in its middle.  Remember that the split is\n"
+           "# activated by a middle click.\n"
+           "\n"
+        << (rc().allow_snap_split() ? "1" : "0")    // @new 2016-08-17
         << "\n"
         ;
 

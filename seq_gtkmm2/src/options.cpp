@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-05-22
+ * \updates       2016-08-17
  * \license       GNU GPLv2 or above
  *
  *  Here is a list of the global variables used/stored/modified by this
@@ -575,13 +575,13 @@ options::add_mouse_page ()
         sigc::bind(mem_fun(*this, &options::mouse_fruity_callback), rb_fruity)
     );
 
-    Gtk::Frame * mod4frame = manage(new Gtk::Frame("Sequencer64 Options"));
-    mod4frame->set_border_width(4);
-    vbox->pack_start(*mod4frame, Gtk::PACK_SHRINK);
+    Gtk::Frame * seq64frame = manage(new Gtk::Frame("Sequencer64 Options"));
+    seq64frame->set_border_width(4);
+    vbox->pack_start(*seq64frame, Gtk::PACK_SHRINK);
 
-    Gtk::VBox * mod4box = manage(new Gtk::VBox());
-    mod4box->set_border_width(4);
-    mod4frame->add(*mod4box);
+    Gtk::VBox * seq64box = manage(new Gtk::VBox());
+    seq64box->set_border_width(4);
+    seq64frame->add(*seq64box);
     Gtk::CheckButton * chk_mod4 = manage
     (
         new Gtk::CheckButton
@@ -600,10 +600,36 @@ options::add_mouse_page ()
         "note-add mode, right-click again. An alternative is to use the p "
         "key (paint mode), and the x key to exit (xscape) the paint mode."
     );
-    mod4box->pack_start(*chk_mod4, Gtk::PACK_SHRINK);
+    seq64box->pack_start(*chk_mod4, Gtk::PACK_SHRINK);
     chk_mod4->signal_toggled().connect
     (
         sigc::bind(mem_fun(*this, &options::mouse_mod4_callback), chk_mod4)
+    );
+
+    Gtk::CheckButton * chk_snap_split = manage
+    (
+        new Gtk::CheckButton
+        (
+            "Middle click splits song triggers at nearest snap "
+            "(instead of halfway point)", true
+        )
+    );
+    chk_snap_split->set_active(rc().allow_snap_split());
+    add_tooltip
+    (
+        chk_snap_split,
+        "If checked, middle-click on a trigger block in the performance "
+        "editor splits the trigger block at the nearest snap point. "
+        "Otherwise, the split occurs at the halfway point of the trigger "
+        "block."
+    );
+    seq64box->pack_start(*chk_snap_split, Gtk::PACK_SHRINK);
+    chk_snap_split->signal_toggled().connect
+    (
+        sigc::bind
+        (
+            mem_fun(*this, &options::mouse_snap_split_callback), chk_snap_split
+        )
     );
 }
 
@@ -982,6 +1008,16 @@ void
 options::mouse_mod4_callback (Gtk::CheckButton * btn)
 {
     rc().allow_mod4_mode(btn->get_active());
+}
+
+/**
+ *  Mouse interaction, snap-split option callback function.
+ */
+
+void
+options::mouse_snap_split_callback (Gtk::CheckButton * btn)
+{
+    rc().allow_snap_split(btn->get_active());
 }
 
 /**

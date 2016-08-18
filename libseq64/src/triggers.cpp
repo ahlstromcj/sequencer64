@@ -25,18 +25,44 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-10-30
- * \updates       2016-08-15
+ * \updates       2016-08-18
  * \license       GNU GPLv2 or above
  *
  *  Man, we need to learn a lot more about triggers.  One important thing to
  *  note is that the triggers are written to a MIDI file using the
  *  sequencer-specific code c_triggers_new.
+ *
+ * Stazed:
+ *
+ *      I believe there were only two things I did with triggers. First, you
+ *      could split triggers with a middle mouse button click and seq24 would
+ *      cut the trigger down the middle. I fixed the code to allow the split
+ *      on the mouse pointer location, grid snapped. This was actually a
+ *      simplification of code - just removed the calculation of trigger mid
+ *      point and added the grid snap calc.
+ *
+ *      The second issue was Ctrl-C copy of selected triggers and Ctrl-V
+ *      paste of triggers.  Original seq24 just pasted after the selected
+ *      Ctrl-C trigger, and repeated Ctrl-V would continue paste after the
+ *      previous paste. I added the ability to paste to any location on the
+ *      sequence track line if open.  This is done with a middle mouse click
+ *      on the open part of the track.  The mouse click sets the location,
+ *      and Ctrl-V will paste it via set_trigger_paste_tick(). Then the paste
+ *      tick is set to -1 (none) and the original method applies: subsequent
+ *      Ctrl-Vs will paste after the previous paste.
+ *
+ *      Middle click on a new location and it will use the new location for
+ *      the first paste. If you paste very close to and in front of an
+ *      existing trigger that overlaps, it will overwrite and crop. The
+ *      Fruity method uses middle mouse or Ctrl-Left mouse click for paste
+ *      location.
  */
 
 #include <stdlib.h>
 
-#include "sequence.hpp"
-#include "triggers.hpp"
+#include "sequence.hpp"                 /* the "parent" of the triggers */
+#include "settings.hpp"                 /* seq64::rc() settings access  */
+#include "triggers.hpp"                 /* seq64::triggers helper class */
 
 namespace seq64
 {
@@ -59,9 +85,7 @@ triggers::triggers (sequence & parent)
     m_iterator_play_trigger     (),
     m_iterator_draw_trigger     (),
     m_trigger_copied            (false),
-#ifdef USE_STAZED_TRIGGER_EXTENSIONS
-    m_paste_tick                (SEQ64_NO_PASTE_TRIGGER),
-#endif
+    m_paste_tick                (SEQ64_NO_PASTE_TRIGGER),   // stazed
     m_ppqn                      (0),
     m_length                    (0)
 {
@@ -502,8 +526,15 @@ triggers::split (midipulse splittick)
     {
         if (i->tick_start() <= splittick && splittick <= i->tick_end())
         {
-            midipulse tick = (i->tick_end() - i->tick_start() + 1) / 2;
-            split(*i, i->tick_start() + tick);
+            if (rc().allow_snap_split())
+            {
+                split(*i, splittick);               /* stazed feature   */
+            }
+            else
+            {
+                midipulse tick = (i->tick_end() - i->tick_start() + 1) / 2;
+                split(*i, i->tick_start() + tick);
+            }
             break;
         }
     }
@@ -571,6 +602,31 @@ L       R
 
         [     ]        [ ] [     ]  [] increase all after L
         [     ]        [             ]
+\endverbatim
+ *
+\verbatim
+|...|...|...|...|...|...|...
+
+0123456789abcdef0123456789abcdef
+[      ][      ][      ][      ][      ][
+
+[  ][      ][  ][][][][][      ]  [  ][  ]
+0   4       4   0 7 4 2 0         6   2
+0   4       4   0 1 4 6 0         2   6 inverse offset
+
+[              ][              ][              ]
+[  ][      ][  ][][][][][      ]  [  ][  ]
+0   c       4   0 f c a 8         e   a
+0   4       c   0 1 4 6 8         2   6  inverse offset
+
+[                              ][
+[  ][      ][  ][][][][][      ]  [  ][  ]
+k   g f c a 8
+0   4       c   g h k m n       inverse offset
+
+0123456789abcdefghijklmonpq
+ponmlkjihgfedcba9876543210
+0fedcba9876543210fedcba9876543210fedcba9876543210fedcba9876543210
 \endverbatim
  *
  */
@@ -987,7 +1043,6 @@ triggers::paste (midipulse paste_tick)
     {
         midipulse len = m_clipboard.tick_end() - m_clipboard.tick_start() + 1;
 
-////    if (get_trigger_paste_tick() < 0)       /* no paste-tick set?   */
         if (paste_tick == SEQ64_NO_PASTE_TRIGGER)
         {
             add(m_clipboard.tick_end() + 1, len, m_clipboard.offset() + len);
@@ -1003,10 +1058,8 @@ triggers::paste (midipulse paste_tick)
              * Set the +/- distance to paste the tick, from the start.
              */
 
-////        long offset = get_trigger_paste_tick() - m_clipboard.m_tick_start;
             long offset = paste_tick - m_clipboard.m_tick_start;
             add(get_trigger_paste_tick(), len, m_clipboard.m_offset + offset);
-////        m_clipboard.m_tick_start = get_trigger_paste_tick();
             m_clipboard.m_tick_start = paste_tick;
             m_clipboard.m_tick_end = m_clipboard.m_tick_start + length - 1;
             m_clipboard.m_offset += offset_adjust;

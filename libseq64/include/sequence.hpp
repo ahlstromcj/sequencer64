@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-30
- * \updates       2016-08-17
+ * \updates       2016-08-18
  * \license       GNU GPLv2 or above
  *
  *  The functions add_list_var() and add_long_list() have been replaced by
@@ -37,10 +37,6 @@
  *  We've offloaded most of the trigger code to the triggers class in its own
  *  module, and now just call its member functions to do the actual work.
  */
-
-#ifdef USE_STAZED_LFO_SUPPORT
-#include <list>
-#endif
 
 #include <string>
 #include <stack>
@@ -51,6 +47,10 @@
 #include "mutex.hpp"                    /* seq64::mutex, automutex  */
 #include "scales.h"                     /* key and scale constants  */
 #include "triggers.hpp"                 /* seq64::triggers, etc.    */
+
+#ifdef USE_STAZED_LFO_SUPPORT
+#include <list>
+#endif
 
 #ifdef PLATFORM_WINDOWS
 #include "midibus_portmidi.hpp"         /* only semi-supported      */
@@ -573,8 +573,6 @@ public:
         return int(m_triggers.triggerlist().size());
     }
 
-#ifdef USE_STAZED_TRIGGER_EXTENSIONS
-
     void set_trigger_paste_tick (midipulse tick)
     {
         m_triggers.set_trigger_paste_tick(tick);
@@ -584,8 +582,6 @@ public:
     {
         return m_triggers.get_trigger_paste_tick();
     }
-
-#endif
 
     /**
      * \getter m_seq_number
@@ -1053,6 +1049,11 @@ public:
     void del_selected_trigger ();
     void cut_selected_trigger ();
     void copy_selected_trigger ();
+
+#ifdef USE_STAZED_TRIGGER_EXTENSIONS
+    void get_sequence_triggers (triggers & trigvect);
+#endif
+
     void paste_trigger (midipulse paste_tick = SEQ64_NO_PASTE_TRIGGER);
     bool move_selected_triggers_to
     (
@@ -1339,7 +1340,11 @@ private:
     void set_parent (perform * p);
     void put_event_on_bus (event & ev);
     void set_trigger_offset (midipulse trigger_offset);
+
+#if 0
     void split_trigger (trigger & trig, midipulse splittick);
+#endif
+
     void adjust_trigger_offsets_to_length (midipulse newlen);
     midipulse adjust_offset (midipulse offset);
     void remove (event_list::iterator i);

@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-03-04
+ * \updates       2016-08-17
  * \license       GNU GPLv2 or above
  *
  */
@@ -209,6 +209,7 @@ private:
     void mouse_seq24_callback (Gtk::RadioButton *);
     void mouse_fruity_callback (Gtk::RadioButton *);
     void mouse_mod4_callback (Gtk::CheckButton *);
+    void mouse_snap_split_callback (Gtk::CheckButton *);
     void lash_support_callback (Gtk::CheckButton *);
 
     /* Notebook pages (tabs) */

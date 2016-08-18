@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-08-17
+ * \updates       2016-08-18
  * \license       GNU GPLv2 or above
  *
  */
@@ -92,9 +92,11 @@ Seq24PerfInput::on_button_press_event (GdkEventButton * ev, perfroll & roll)
     }
     else
     {
-        // Shouldn't we return if the sequence is not active?  It's pointer is
-        // probably null, anyway.  Do we need to reflexively set certain
-        // flags, such as m_adding_pressed = true?
+        /*
+         * Shouldn't we return if the sequence is not active?  It's pointer is
+         * probably null, anyway.  Do we need to reflexively set certain
+         * flags, such as m_adding_pressed = true?
+         */
 
         if (SEQ64_CLICK_LEFT(ev->button))
         {
@@ -109,6 +111,33 @@ Seq24PerfInput::on_button_press_event (GdkEventButton * ev, perfroll & roll)
     (
         roll.m_drop_x, roll.m_drop_y, roll.m_drop_tick, dropseq
     );
+
+    /*
+     * EXPERIMENTAL.
+     *  Let's make better use of the Ctrl key here.  First, let Ctrl-Left be
+     *  handled exactly like the Middle click, then bug out.
+     *
+     *  Note that this middle-click code ought to be folded into a function.
+     */
+
+    if (is_ctrl_key(ev))
+    {
+        if (SEQ64_CLICK_LEFT(ev->button))
+        {
+            bool state = seq->get_trigger_state(roll.m_drop_tick);
+            if (state)
+            {
+                roll.split_trigger(dropseq, roll.m_drop_tick);
+            }
+            else
+            {
+                p.push_trigger_undo(dropseq);
+                seq->paste_trigger(roll.m_drop_tick);
+            }
+        }
+        return true;
+    }
+
     if (SEQ64_CLICK_LEFT(ev->button))
     {
         midipulse droptick = roll.m_drop_tick;
@@ -121,16 +150,15 @@ Seq24PerfInput::on_button_press_event (GdkEventButton * ev, perfroll & roll)
             {
                 p.push_trigger_undo(dropseq);           /* stazed fix   */
                 seq->del_trigger(droptick);
-                result = true;
             }
             else
             {
                 droptick -= (droptick % seqlength);     /* snap         */
                 p.push_trigger_undo(dropseq);           /* stazed fix   */
                 seq->add_trigger(droptick, seqlength);
-                result = true;
                 roll.draw_all();
             }
+            result = true;
         }
         else
         {
@@ -179,6 +207,8 @@ Seq24PerfInput::on_button_press_event (GdkEventButton * ev, perfroll & roll)
     else if (SEQ64_CLICK_RIGHT(ev->button))
     {
         set_adding(true, roll);
+        // Should we add this?
+        // result = true;
     }
     else if (SEQ64_CLICK_MIDDLE(ev->button))                   /* split    */
     {
@@ -197,6 +227,8 @@ Seq24PerfInput::on_button_press_event (GdkEventButton * ev, perfroll & roll)
         {
             p.push_trigger_undo(dropseq);
             seq->paste_trigger(roll.m_drop_tick);
+            // Should we add this?
+            // result = true;
         }
     }
     return result;

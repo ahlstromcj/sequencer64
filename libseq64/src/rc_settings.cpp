@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-22
- * \updates       2016-08-13
+ * \updates       2016-08-17
  * \license       GNU GPLv2 or above
  *
  *  Note that this module also sets the legacy global variables, so that
@@ -76,6 +76,7 @@ rc_settings::rc_settings ()
     m_legacy_format             (false),
     m_lash_support              (false),
     m_allow_mod4_mode           (false),
+    m_allow_snap_split          (false),
     m_show_midi                 (false),
     m_priority                  (false),
     m_stats                     (false),
@@ -115,6 +116,7 @@ rc_settings::rc_settings (const rc_settings & rhs)
     m_legacy_format             (rhs.m_legacy_format),
     m_lash_support              (rhs.m_lash_support),
     m_allow_mod4_mode           (rhs.m_allow_mod4_mode),
+    m_allow_snap_split          (rhs.m_allow_snap_split),
     m_show_midi                 (rhs.m_show_midi),
     m_priority                  (rhs.m_priority),
     m_stats                     (rhs.m_stats),
@@ -160,6 +162,7 @@ rc_settings::operator = (const rc_settings & rhs)
         m_legacy_format             = rhs.m_legacy_format;
         m_lash_support              = rhs.m_lash_support;
         m_allow_mod4_mode           = rhs.m_allow_mod4_mode;
+        m_allow_snap_split          = rhs.m_allow_snap_split;
         m_show_midi                 = rhs.m_show_midi;
         m_priority                  = rhs.m_priority;
         m_stats                     = rhs.m_stats;
@@ -197,6 +200,7 @@ rc_settings::set_defaults ()
     m_legacy_format             = false;
     m_lash_support              = false;
     m_allow_mod4_mode           = false;
+    m_allow_snap_split          = false;
     m_show_midi                 = false;
     m_priority                  = false;
     m_stats                     = false;
@@ -349,6 +353,7 @@ rc_settings::interaction_method (interaction_method_t value)
         break;
 
     default:
+
         errprint("illegal interaction-method value");
         break;
     }

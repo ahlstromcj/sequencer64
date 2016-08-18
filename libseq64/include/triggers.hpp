@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-10-30
- * \updates       2016-08-15
+ * \updates       2016-08-18
  * \license       GNU GPLv2 or above
  *
  *  By segregating trigger support into its own module, the sequence class is
@@ -45,6 +45,12 @@
  */
 
 #define SEQ64_NO_PASTE_TRIGGER          (-1)
+
+/**
+ * EXPERIMENTAL.  Currently does not compile if defined.
+ */
+
+#undef USE_STAZED_TRIGGER_EXTENSIONS
 
 namespace seq64
 {
@@ -333,15 +339,12 @@ private:
 
     bool m_trigger_copied;
 
-#ifdef USE_STAZED_TRIGGER_EXTENSIONS
-
     /**
-     *  The tick point for pasting.  Set to -1 if not in force.
+     *  The tick point for pasting.  Set to -1 if not in force.  This is a new
+     *  feature from stazed's Seq32 project.
      */
 
     midipulse m_paste_tick;
-
-#endif
 
     /**
      *  Holds the value of the PPQN from the parent sequence, for easy access.
@@ -422,7 +425,6 @@ public:
     );
     void adjust_offsets_to_length (midipulse newlen);
     void split (midipulse tick);
-    void split (trigger & trig, midipulse splittick);
     void grow (midipulse tickfrom, midipulse tickto, midipulse length);
     void remove (midipulse tick);
     bool get_state (midipulse tick);
@@ -467,9 +469,6 @@ public:
         m_iterator_draw_trigger = m_triggers.begin();
     }
 
-///#ifdef USE_STAZED_TRIGGER_EXTENSIONS
-#if 0
-
     void set_trigger_paste_tick (midipulse tick)
     {
         m_paste_tick = tick;
@@ -480,11 +479,10 @@ public:
         return m_paste_tick;
     }
 
-#endif
-
 private:
 
     midipulse adjust_offset (midipulse offset);
+    void split (trigger & trig, midipulse splittick);
 
 };          // class triggers
 

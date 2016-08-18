@@ -1776,7 +1776,7 @@ midifile::write_song (perform & p)
     printf("[Exporting MIDI file, %d ppqn]\n", m_ppqn);
     for (int i = 0; i < c_max_sequence; ++i)    /* count exportable tracks  */
     {
-        if (p.is_exportable(i))
+        if (p.is_exportable(i))                 /* do muted tracks count?   */
             ++numtracks;
     }
     bool result = numtracks > 0;
@@ -1814,6 +1814,16 @@ midifile::write_song (perform & p)
 #else
                 midi_list lst(seq);
 #endif
+                /*
+                 * TODO:  research this stazed feature!  And there is more code
+                 *        that is not yet added from stazed's midifile module!
+                 *
+                std::vector<trigger> trig_vect;
+                seq.get_sequence_triggers(trig_vect);
+                int vect_size = int(trig_vect.size());
+
+                    . . .
+                 */
 
                 lst.fill_seq_number(curtrack);
                 lst.fill_seq_name(seq.name());          /* hmmmmmmmm        */

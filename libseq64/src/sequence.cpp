@@ -3237,8 +3237,10 @@ sequence::set_trigger_offset (midipulse trigger_offset)
 }
 
 /**
- *  Splits the trigger given by the parameter into two triggers.
- *  This is the private overload of split_trigger.
+ * \obsolete
+ *      Splits the trigger given by the parameter into two triggers.
+ *      This is the private overload of split_trigger.  Not necessary, now
+ *      handled internally.
  *
  * \threadsafe
  *
@@ -3251,12 +3253,14 @@ sequence::set_trigger_offset (midipulse trigger_offset)
  *      truncated, and the new trigger begins.
  */
 
+#if 0
 void
 sequence::split_trigger (trigger & trig, midipulse splittick)
 {
     automutex locker(m_mutex);
     m_triggers.split(trig, splittick);
 }
+#endif
 
 /**
  *  Splits a trigger.  This is the public overload of split_trigger.
@@ -3539,10 +3543,14 @@ sequence::copy_selected_trigger ()
 #ifdef USE_STAZED_TRIGGER_EXTENSIONS
 
 void
-sequence::get_sequence_triggers (std::vector<trigger> & trigvect)
+sequence::get_sequence_triggers (triggers & trigvect)
 {
     automutex locker(m_mutex);
-    trigvect.assign(m_list_trigger.begin(), m_list_trigger.end());
+
+    /*
+     * TODO:  Need an assign function for seq64::triggers
+    trigvect.assign(m_triggers.begin(), m_triggers.end());
+     */
 }
 
 #endif  // USE_STAZED_TRIGGER_EXTENSIONS

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-08-14
+ * \updates       2016-08-19
  * \license       GNU GPLv2 or above
  *
  *  One thing we must be sure of is the MIDI note range.  Obviously, in terms
@@ -324,7 +324,7 @@ seqkeys::draw_key (int key, bool state)
     if (state)
     {
         if (usr().inverse_colors())
-            draw_rectangle(red(), x, y, w, h);
+            draw_rectangle(orange(), x, y, w, h);   /* red()?               */
         else
             draw_rectangle(grey(), x, y, w, h);
     }

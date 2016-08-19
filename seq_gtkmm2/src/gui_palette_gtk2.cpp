@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-21
- * \updates       2016-08-14
+ * \updates       2016-08-19
  * \license       GNU GPLv2 or above
  *
  *  One possible idea would be a color configuration that would radically
@@ -87,8 +87,13 @@ gui_palette_gtk2::load_inverse_palette (bool inverse)
         m_lt_grey     = Color("grey50");
         m_blk_paint   = Color("white");
         m_wht_paint   = Color("black");
+#ifdef USE_ALTERNATE_KEY_COLOR                  /* which looks better?      */
+        m_blk_key     = Color("light grey");    /* too difficult to grok    */
+        m_wht_key     = Color("black");
+#else
         m_blk_key     = Color("black");
-        m_wht_key     = Color("light grey");
+        m_wht_key     = Color("grey");
+#endif
         m_is_inverse  = true;
     }
     else

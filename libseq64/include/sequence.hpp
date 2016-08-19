@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-30
- * \updates       2016-08-18
+ * \updates       2016-08-19
  * \license       GNU GPLv2 or above
  *
  *  The functions add_list_var() and add_long_list() have been replaced by
@@ -634,6 +634,15 @@ public:
     }
 
     /**
+     * \getter m_have_undo
+     */
+
+    bool have_undo () const
+    {
+        return m_have_undo;
+    }
+
+    /**
      * \setter m_have_redo
      *      No reliable way to "unmodify" the performance here.
      */
@@ -641,6 +650,15 @@ public:
     void set_have_redo ()
     {
         m_have_redo = m_events_redo.size() > 0;
+    }
+
+    /**
+     * \getter m_have_redo
+     */
+
+    bool have_redo () const
+    {
+        return m_have_redo;
     }
 
     void push_undo (bool hold = false);             // adds stazed parameter

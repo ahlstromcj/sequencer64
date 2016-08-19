@@ -1,6 +1,6 @@
 Bugs and Additional Upgrade Ideas
 Chris Ahlstrom
-2015-10-27 to 2016-08-17 (New bugs)
+2015-10-27 to 2016-08-19 (New bugs)
 
 In no particular order...  "y" means "in progress", and "x" means it is
 basically done.
@@ -8,7 +8,7 @@ basically done.
 -  Also see BUG REPORTS below.  Those are bug reports from other people.
 x  Still need to test saving and reading of the new transposable sequence
    state.
--  Add undo/redo button sensitivity setting to seqedit as already done in
+x  Add undo/redo button sensitivity setting to seqedit as already done in
    perfedit.
 -  Need to remove using Ctrl-key as a way to open a pattern for editing.
 y  TODO:  Fold mark_selected() and push_undo() into the various functions

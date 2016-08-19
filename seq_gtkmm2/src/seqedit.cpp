@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-08-14
+ * \updates       2016-08-19
  * \license       GNU GPLv2 or above
  *
  *  Compare this class to eventedit, which has to do some similar things,
@@ -2251,18 +2251,6 @@ seqedit::timeout ()
     m_seqroll_wid->draw_progress_on_window();
     if (perf().is_running() && perf().get_follow_transport())
         m_seqroll_wid->follow_progress();       /* keep up with progress    */
-
-    bool undo_on = m_button_undo->get_sensitive();
-    bool redo_on = m_button_redo->get_sensitive();
-    if (m_seq.have_undo() && ! undo_on)
-        m_button_undo->set_sensitive(true);
-    else if (! m_seq.have_undo && undo_on)
-        m_button_undo->set_sensitive(false);
-
-    if (m_seq.have_redo() && ! redo_on)
-        m_button_redo->set_sensitive(true);
-    else if (! m_seq.have_redo && redo_on)
-        m_button_redo->set_sensitive(false);
 #else
     m_seqroll_wid->follow_progress();           /* keep up with progress    */
     if (m_seq.is_dirty_edit())                  /* m_seq.is_dirty_main()    */
@@ -2273,6 +2261,18 @@ seqedit::timeout ()
     }
     m_seqroll_wid->draw_progress_on_window();
 #endif
+
+    bool undo_on = m_button_undo->get_sensitive();
+    bool redo_on = m_button_redo->get_sensitive();
+    if (m_seq.have_undo() && ! undo_on)
+        m_button_undo->set_sensitive(true);
+    else if (! m_seq.have_undo() && undo_on)
+        m_button_undo->set_sensitive(false);
+
+    if (m_seq.have_redo() && ! redo_on)
+        m_button_redo->set_sensitive(true);
+    else if (! m_seq.have_redo() && redo_on)
+        m_button_redo->set_sensitive(false);
 
     return true;
 }

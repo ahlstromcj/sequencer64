@@ -778,7 +778,7 @@ options::add_jack_sync_page ()
 
     Gtk::RadioButton::Group group = rb_live->get_group();
     rb_perform->set_group(group);
-    if (rc().jack_start_mode())
+    if (rc().song_start_mode())
         rb_perform->set_active(true);
     else
         rb_live->set_active(true);
@@ -1109,7 +1109,8 @@ options::transport_callback (button type, Gtk::Button * acheck)
     case e_jack_start_mode_live:
     case e_jack_start_mode_song:
 
-        rc().jack_start_mode(is_active);
+        rc().song_start_mode(is_active);
+        m_mainperf.song_start_mode(is_active);
         break;
 
     case e_jack_connect:

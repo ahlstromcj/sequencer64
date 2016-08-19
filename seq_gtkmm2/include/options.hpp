@@ -107,7 +107,8 @@ private:
         /**
          *  Sets the "JACK start mode" value to true, which means that
          *  sequencer64 is in song mode.  This value is obtained via
-         *  rc_settings::jack_start_mode().
+         *  rc_settings::song_start_mode().  It will eventually be the start
+         *  mode that applies to either ALSA or JACK playback.
          */
 
         e_jack_start_mode_song,

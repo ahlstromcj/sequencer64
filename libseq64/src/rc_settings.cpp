@@ -84,7 +84,7 @@ rc_settings::rc_settings ()
     m_with_jack_transport       (false),
     m_with_jack_master          (false),
     m_with_jack_master_cond     (false),
-    m_jack_start_mode           (false),
+    m_song_start_mode           (false),
     m_manual_alsa_ports         (false),
     m_reveal_alsa_ports         (false),
     m_print_keys                (false),
@@ -124,7 +124,7 @@ rc_settings::rc_settings (const rc_settings & rhs)
     m_with_jack_transport       (rhs.m_with_jack_transport),
     m_with_jack_master          (rhs.m_with_jack_master),
     m_with_jack_master_cond     (rhs.m_with_jack_master_cond),
-    m_jack_start_mode           (rhs.m_jack_start_mode),
+    m_song_start_mode           (rhs.m_song_start_mode),
     m_manual_alsa_ports         (rhs.m_manual_alsa_ports),
     m_reveal_alsa_ports         (rhs.m_reveal_alsa_ports),
     m_print_keys                (rhs.m_print_keys),
@@ -170,7 +170,7 @@ rc_settings::operator = (const rc_settings & rhs)
         m_with_jack_transport       = rhs.m_with_jack_transport;
         m_with_jack_master          = rhs.m_with_jack_master;
         m_with_jack_master_cond     = rhs.m_with_jack_master_cond;
-        m_jack_start_mode           = rhs.m_jack_start_mode;
+        m_song_start_mode           = rhs.m_song_start_mode;
         m_manual_alsa_ports         = rhs.m_manual_alsa_ports;
         m_reveal_alsa_ports         = rhs.m_reveal_alsa_ports;
         m_print_keys                = rhs.m_print_keys;
@@ -208,7 +208,7 @@ rc_settings::set_defaults ()
     m_with_jack_transport       = false;
     m_with_jack_master          = false;
     m_with_jack_master_cond     = false;
-    m_jack_start_mode           = true;
+    m_song_start_mode           = true;
     m_manual_alsa_ports         = false;
     m_reveal_alsa_ports         = false;
     m_print_keys                = false;

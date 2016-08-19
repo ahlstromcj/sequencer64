@@ -91,7 +91,7 @@ private:
     bool m_with_jack_transport;     /**< Enable synchrony with JACK.        */
     bool m_with_jack_master;        /**< Serve as a JACK transport Master.  */
     bool m_with_jack_master_cond;   /**< Serve as JACK Master if possible.  */
-    bool m_jack_start_mode;         /**< True is song mode, false is live.  */
+    bool m_song_start_mode;         /**< True is song mode, false is live.  */
     bool m_manual_alsa_ports;       /**< [manual-alsa-ports] setting.       */
     bool m_reveal_alsa_ports;       /**< [reveal-alsa-ports] setting.       */
     bool m_print_keys;              /**< Show hot-key in main window slot.  */
@@ -283,12 +283,12 @@ public:
     }
 
     /**
-     * \getter m_jack_start_mode,
+     * \getter m_song_start_mode,
      */
 
-    bool jack_start_mode () const
+    bool song_start_mode () const
     {
-        return m_jack_start_mode;
+        return m_song_start_mode;
     }
 
     /**
@@ -528,12 +528,12 @@ protected:
     }
 
     /**
-     * \setter m_jack_start_mode,
+     * \setter m_song_start_mode,
      */
 
-    void jack_start_mode (bool flag)
+    void song_start_mode (bool flag)
     {
-        m_jack_start_mode = flag;
+        m_song_start_mode = flag;
     }
 
     /**

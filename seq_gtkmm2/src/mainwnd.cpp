@@ -423,7 +423,7 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
         sigc::mem_fun(*this, &mainwnd::set_song_mode)
     );
     add_tooltip( m_button_mode, "Toggle song mode (or live/sequence mode)." );
-    if (rc().song_start_mode())
+    if (perf().song_start_mode())
     {
         m_button_mode->set_active(true);
     }
@@ -707,8 +707,8 @@ mainwnd::timer_callback ()
 
 #ifdef USE_STAZED_SONG_MODE_BUTTON
 
-    if (m_button_mode->get_active() != global_song_start_mode)
-        m_button_mode->set_active(global_song_start_mode);
+    if (m_button_mode->get_active() != perf().song_start_mode())
+        m_button_mode->set_active(perf().song_start_mode());
 
     if (perf().is_pattern_playing() && m_button_mode->get_sensitive())
         m_button_mode->set_sensitive(false);
@@ -1442,9 +1442,9 @@ mainwnd::apply_song_transpose ()
 #endif
 
 /**
- *  Starts playing of the song.  The rc_settings::jack_start_mode()
- *  function is used (if jack is running) to determine if the playback
- *  mode is "live" (false) or "song" (true).  An accessor to
+ *  Starts playing of the song.  The rc_settings::song_start_mode() function
+ *  is used (if JACK is running, though this will change soon) to determine if
+ *  the playback mode is "live" (false) or "song" (true).  An accessor to
  *  perform::start_playing().  This function is actually a callback for the
  *  pause/play button.
  *

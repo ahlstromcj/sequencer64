@@ -2335,7 +2335,7 @@ seqedit::handle_close ()
 void
 seqedit::start_playing ()
 {
-    if(! rc().song_start_mode)
+    if(! perf().song_start_mode())
         m_seq.set_playing(m_toggle_play->get_active());
 
     perf().start_playing();

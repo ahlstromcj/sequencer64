@@ -118,15 +118,17 @@ midi_control perform::sm_mc_dummy;
 
 perform::perform (gui_assistant & mygui, int ppqn)
  :
+    m_song_start_mode           (rc().song_start_mode()), // m_playback_mode?
 #ifdef USE_STAZED_JACK_SUPPORT
     m_toggle_jack               (false),
     m_jack_stop_tick            (0),        // ???
 #endif
 #ifdef USE_STAZED_TRANSPORT
-    m_song_start_mode           (false),    // ??? m_playback_mode????
     m_follow_transport          (true),
     m_start_from_perfedit       (false),
+#ifdef USE_STAZED_TRANSPORT
     m_reposition                (false),
+#endif
     m_excell_FF_RW              (1.0),
     m_FF_RW_button_type         (FF_RW_NONE),
 #endif
@@ -687,12 +689,14 @@ perform::set_left_tick (midipulse tick, bool setstart)
 
 #ifdef USE_STAZED_JACK_SUPPORT
 
-    if (is_jack_master())               /* don't use in slave mode  */
-        position_jack(true, tick);
+    if (is_jack_master())                       /* don't use in slave mode  */
+        m_jack_asst.position(true, tick);       /* position_jack()          */
     else if (! is_jack_running())
         m_tick = tick;
 
+#ifdef USE_STAZED_TRANSPORT
     m_reposition = false;
+#endif
 
 #endif
 
@@ -735,7 +739,9 @@ perform::set_right_tick (midipulse tick, bool setstart)
                 else
                     m_tick = m_left_tick;
 
+#ifdef USE_STAZED_TRANSPORT
                 m_reposition = false;
+#endif
             }
 #else
             if (setstart)
@@ -1783,26 +1789,32 @@ perform::copy_triggers ()
 void
 perform::start_playing (bool songmode)
 {
+#ifdef USE_STAZED_TRANSPORT
     if (songmode || m_start_from_perfedit)
+#else
+    if (songmode)
+#endif
     {
-        if (m_jack_master)
+        if (is_jack_master())
         {
            /*
-            * Allow to start at key-p position if set;
-            * for cosmetic reasons, to stop transport line flicker on start,
-            * position to the left tick.
+            * Allow to start at key-p position if set; for cosmetic reasons,
+            * to stop transport line flicker on start, position to the left
+            * tick.
             */
 
+#ifdef USE_STAZED_TRANSPORT
            if (! m_reposition)
-                position_jack(true, m_left_tick);
+                m_jack_asst.position(true, m_left_tick);  /* position_jack() */
+#endif
         }
         start_jack();
         start(true);    // for setting song m_playback_mode = true
     }
     else
     {
-        if (m_jack_master)
-            position_jack(false, 0);
+        if (is_jack_master())
+            m_jack_asst.position(false, 0);              /* position_jack() */
 
         start(false);
         start_jack();
@@ -1814,12 +1826,9 @@ perform::start_playing (bool songmode)
  *
  * \param jack_button_active
  *      Indicates if the perfedit JACK button shows it is active.
- *
- * \return
- *      Returns the value to set the JACK button to.
  */
 
-bool
+void
 perform::set_jack_mode (bool jack_button_active)
 {
     if (! is_running())                              // global_is_running
@@ -1837,15 +1846,15 @@ perform::set_jack_mode (bool jack_button_active)
      *  position.
      */
 
-    if (rc().song_start_mode())
+    if (song_start_mode())
     {
+#ifdef USE_STAZED_TRANSPORT
         set_reposition(false);
-        set_starting_tick(get_left_tick());
+#endif
+        set_start_tick(get_left_tick());
     }
     else
-        set_starting_tick(get_tick());
-
-    return m_toggle_jack;
+        set_start_tick(get_tick());
 }
 
 #else   // USE_STAZED_JACK_SUPPORT
@@ -1857,9 +1866,10 @@ perform::start_playing (bool songmode)
     {
         /*
          * For cosmetic reasons, to stop transport line flicker on start.
+         * if Master and set_left_frame()?
          */
 
-        position_jack(true);            // if Master and set_left_frame()???
+        position_jack(true);        // m_jack_asst.position(false, 0);
         start_jack();
 
         /*
@@ -1954,6 +1964,18 @@ perform::stop_playing ()
  *  If JACK is supported and running, sets the position of the transport.
  */
 
+#ifdef USE_STAZED_JACK_SUPPORT
+
+void
+perform::position_jack (bool state, midipulse tick)
+{
+#ifdef SEQ64_JACK_SUPPORT
+    m_jack_asst.position(state, tick);
+#endif
+}
+
+#else
+
 void
 perform::position_jack (bool state)
 {
@@ -1961,6 +1983,8 @@ perform::position_jack (bool state)
     m_jack_asst.position(state, rc().with_jack_master());
 #endif
 }
+
+#endif
 
 /**
  *  If JACK is not running, call inner_start() with the given state.
@@ -1986,7 +2010,7 @@ perform::start (bool state)
  * Stazed:
  *
  *      This function's sole purpose was to prevent inner_stop() from being
- *      called internally when jack was running...potentially twice?.
+ *      called internally when jack was running...potentially twice.
  *      inner_stop() was called by output_func() when jack sent a
  *      JackTransportStopped message. If seq42 initiated the stop, then
  *      stop_jack() was called which then triggered the JackTransportStopped
@@ -2074,30 +2098,25 @@ perform::inner_start (bool state)
  *  sequence.
  */
 
-#ifdef USE_STAZED_JACK_SUPPORT
 
 void
 perform::inner_stop (bool midiclock)
 {
-    set_start_from_perfedit(false);
-    is_running(false);                  // rc().global_is_running() = false;
+#ifdef USE_STAZED_JACK_SUPPORT
+#ifdef USE_STAZED_TRANSPORT
+    start_from_perfedit(false);
+#endif
+    set_running(false);                 // rc().global_is_running() = false;
     reset_sequences();
     m_usemidiclock = midiclock;
-}
-
 #else
-
-void
-perform::inner_stop ()
-{
     set_running(false);
     if (! is_jack_running())
         reset_sequences();              /* sets the "last-tick" value   */
 
-    m_usemidiclock = false;
+    m_usemidiclock = midiclock;
+#endif
 }
-
-#endif  // USE_STAZED_JACK_SUPPORT
 
 /**
  *  For all active patterns/sequences, set the playing state to false.
@@ -2142,18 +2161,25 @@ perform::all_notes_off ()
 
 #ifdef USE_STAZED_JACK_SUPPORT
 
-void perform::reset_sequences ()
+void perform::reset_sequences (bool pause)
 {
-    for (int i = 0; i < m_sequence_max; ++i)
+    if (pause)
     {
-        if (is_active(i))
+        // TODO
+    }
+    else
+    {
+        for (int i = 0; i < m_sequence_max; ++i)
         {
-            bool state = m_seqs[i]->get_playing();
-            m_seqs[i]->off_playing_notes();
-            m_seqs[i]->set_playing(false);
-            m_seqs[i]->zero_markers();
-            if (! m_playback_mode)
-                m_seqs[i]->set_playing(state);
+            if (is_active(i))
+            {
+                bool state = m_seqs[i]->get_playing();
+                m_seqs[i]->off_playing_notes();
+                m_seqs[i]->set_playing(false);
+                m_seqs[i]->zero_markers();
+                if (! m_playback_mode)
+                    m_seqs[i]->set_playing(state);
+            }
         }
     }
     m_master_bus.flush();                           /* flush the bus */
@@ -2385,10 +2411,11 @@ perform::output_func ()
         pad.js_playback_mode = m_playback_mode;
         pad.js_ticks_converted_last = 0.0;
 #ifdef USE_STAZED_JACK_SUPPORT
-        pad.js_jack_ticks_converted = 0.0;
+        pad.js_ticks_converted = 0.0;
         pad.js_ticks_delta = 0.0;
 #endif
-#ifdef USE_SEQ24_0_9_3_CODE
+
+#if defined USE_SEQ24_0_9_3_CODE || defined USE_STAZED_JACK_SUPPORT
         pad.js_delta_tick_frac = 0L;        // from seq24 0.9.3, long value
 #endif
 
@@ -2508,17 +2535,20 @@ perform::output_func ()
              * delta_ticks_f is in 1000th of a tick.
              */
 
-#if defined USE_SEQ24_0_9_3_CODE || USE_STAZED_JACK_SUPPORT
+#if defined USE_SEQ24_0_9_3_CODE || defined USE_STAZED_JACK_SUPPORT
+
             long long delta_tick_denom = 60000000LL;
             long long delta_tick_num = bpm * ppqn * delta_us +
                 pad.js_delta_tick_frac;
 
             long delta_tick = long(delta_tick_num / delta_tick_denom);
             pad.js_delta_tick_frac = long(delta_tick_num % delta_tick_denom);
+
 #else
             // delta_tick = double(bpm * ppqn * (delta_us / 60000000.0f));
 
             double delta_tick = delta_time_us_to_ticks(delta_us, bpm, ppqn);
+
 #endif
 
             if (m_usemidiclock)
@@ -2564,16 +2594,22 @@ perform::output_func ()
              * start.
              */
 
-            if
-            (
-                m_playback_mode && ! is_jack_running() &&
-                ! m_usemidiclock && m_reposition
-            )
+            bool change_position =
+                m_playback_mode && ! is_jack_running() && ! m_usemidiclock;
+
+#ifdef USE_STAZED_TRANSPORT
+            if (change_position)
+                change_position = m_reposition;
+#endif
+
+            if (change_position)
             {
-                current_tick = m_starting_tick;     // reposition sets this
+//              current_tick = m_starting_tick;     // reposition sets this
                 set_orig_ticks(m_starting_tick);
                 m_starting_tick = m_left_tick;      // restart at left marker
+#ifdef USE_STAZED_TRANSPORT
                 m_reposition = false;
+#endif
             }
 #endif
 
@@ -2614,7 +2650,8 @@ perform::output_func ()
 
                         if (is_jack_running())
                         {
-                            if (m_jack_transport_state != JackTransportStarting)
+//                          if (m_jack_transport_state != JackTransportStarting)
+                            if (m_jack_asst.transport_state() != JackTransportStarting)
                                 play(rtick - 1);                    // play!
                         }
                         else
@@ -2650,7 +2687,7 @@ perform::output_func ()
 
                 if (is_jack_running())
                 {
-                    if (m_jack_transport_state != JackTransportStarting)
+                    if (m_jack_asst.transport_state() != JackTransportStarting)
                         play(midipulse(pad.js_current_tick));       // play!
                 }
                 else
@@ -3055,7 +3092,7 @@ perform::input_func ()
                     if (ev.get_status() == EVENT_MIDI_START) // MIDI Time Clock
                     {
 #ifdef USE_STAZED_JACK_SUPPORT
-                        start(rc().song_start_mode());  // jack_start_mode()?
+                        start(song_start_mode());
 #else
                         stop();
                         start(false);
@@ -3077,7 +3114,7 @@ perform::input_func ()
 
                         m_midiclockrunning = true;
 #ifdef USE_STAZED_JACK_SUPPORT
-                        start(rc().song_start_mode());
+                        start(song_start_mode());
 #else
                         start(false);
 #endif
@@ -3264,12 +3301,12 @@ perform::input_func ()
  */
 
 unsigned short
-perform::combine_bytes (unsigned char first, unsigned char second)
+perform::combine_bytes (midibyte b0, midibyte b1)
 {
    unsigned short short_14bit;
-   short_14bit = (unsigned short)(second);
+   short_14bit = (unsigned short)(b1);
    short_14bit <<= 7;
-   short_14bit |= (unsigned short)(First);
+   short_14bit |= (unsigned short)(b0);
    return short_14bit;
 }
 
@@ -3738,7 +3775,7 @@ perform::perfroll_key_event (const keystroke & k, int drop_sequence)
                     result = true;
                 }
 #endif
-#ifdef USE_STAZED_JACK_SUPPORT
+#ifdef USE_STAZED_JACK_SUPPORT______TODO
                 else if (k == keys().toggle_jack())
                 {
                     toggle_jack();
@@ -3939,7 +3976,7 @@ perform::max_active_set () const
     return result;
 }
 
-#ifdef USE_STAZED_JACK_SUPPORT
+#ifdef USE_STAZED_TRANSPORT
 
 void
 perform::FF_rewind ()
@@ -3967,7 +4004,7 @@ perform::FF_rewind ()
     }
     else
     {
-        set_starting_tick(tick);  // this will set progress line
+        set_start_tick(tick);  // this will set progress line
         set_reposition();
     }
 }
@@ -3983,13 +4020,13 @@ perform::reposition (midipulse tick)
     if (is_jack_running())
     {
         set_reposition();
-        set_starting_tick(tick);
+        set_start_tick(tick);
         position_jack(true, tick);
     }
     else
     {
         set_reposition();
-        set_starting_tick(tick);
+        set_start_tick(tick);
     }
 }
 

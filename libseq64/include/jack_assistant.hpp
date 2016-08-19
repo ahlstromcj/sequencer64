@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-07-23
- * \updates       2016-07-22
+ * \updates       2016-08-18
  * \license       GNU GPLv2 or above
  *
  *  This class contains a number of functions that used to reside in the
@@ -46,11 +46,18 @@
 #include <jack/session.h>
 #endif
 
+/**
+ * EXPERIMENTAL.  Builds, but not ready for actual usage.
+ */
+
+#undef  USE_STAZED_JACK_SUPPORT
+
 #else       // ! SEQ64_JACK_SUPPORT
 
 #undef SEQ64_JACK_SESSION
 
 #endif      // SEQ64_JACK_SUPPORT
+
 
 /**
  * Define this macro to use the new seq24 v. 0.9.3 delta-tick calculation
@@ -96,7 +103,7 @@ public:
     double js_ticks_delta;              /**< Minor difference in tick.      */
 #endif
     double js_ticks_converted_last;     /**< Keeps track of position?       */
-#ifdef USE_SEQ24_0_9_3_CODE
+#if defined USE_SEQ24_0_9_3_CODE || defined USE_STAZED_JACK_SUPPORT
     long js_delta_tick_frac;            /* seq24 0.9.3                      */
 #endif
 
@@ -276,7 +283,19 @@ private:
      *  TBD.
      */
 
-    long m_jack_stop_tick;
+    bool m_toggle_jack;
+
+    /**
+     *  TBD.
+     */
+
+    midipulse m_jack_stop_tick;
+
+    /**
+     *  TBD.
+     */
+
+    bool m_follow_transport;
 
 #endif  // USE_STAZED_JACK_SUPPORT
 
@@ -427,6 +446,15 @@ public:
         m_beats_per_minute = bpminute;
     }
 
+    /**
+     * \getter m_jack_transport_state
+     */
+
+    jack_transport_state_t transport_state () const
+    {
+        return m_jack_transport_state;
+    }
+
     bool init ();                       // init_jack ();
     bool deinit ();                     // deinit_jack ();
 
@@ -436,11 +464,17 @@ public:
 
     void start ();                      // start_jack();
     void stop ();                       // stop();
+
+#ifdef USE_STAZED_JACK_SUPPORT
+    void position (bool state, midipulse tick);
+#else
     void position                       // position_jack();
     (
         bool to_left_tick,              // instead of current tick
         bool relocate = false           // enable "dead code"
     );
+#endif
+
     bool output (jack_scratchpad & pad);
 
     /**
@@ -487,11 +521,16 @@ public:
         m_toggle_jack = mode;
     }
 
+    bool get_jack_mode () const
+    {
+        return m_toggle_jack;
+    }
+
     /**
      * \getter m_jack_stop_tick
      */
 
-    long get_jack_stop_tick () const
+    midipulse get_jack_stop_tick () const
     {
         return m_jack_stop_tick;
     }
@@ -504,6 +543,19 @@ public:
     {
         m_jack_stop_tick = tick;
     }
+
+    /**
+     * \getter m_jack_frame_rate
+     */
+
+    jack_nframes_t jack_frame_rate () const
+    {
+        return m_jack_frame_rate;
+    }
+
+#endif  // USE_STAZED_JACK_SUPPORT
+
+#ifdef USE_STAZED_TRANSPORT
 
     bool get_follow_transport () const
     {
@@ -520,31 +572,11 @@ public:
         set_follow_transport(! m_follow_transport);
     }
 
-    void toggle_song_mode ()                // for the "rc" settings
-    {
-        global_song_start_mode = ! global_song_start_mode;
-    }
+    void song_start_mode ();
+    void toggle_song_start_mode ();
+    void set_start_from_perfedit (bool start);
 
-    void set_start_from_perfedit (bool start)
-    {
-        m_start_from_perfedit = start;
-    }
-
-#endif  // USE_STAZED_JACK_SUPPORT
-
-private:
-
-    /**
-     * \setter m_jack_running
-     *
-     * \param flag
-     *      Provides the is-running value to set.
-     */
-
-    void set_jack_running (bool flag)
-    {
-        m_jack_running = flag;
-    }
+#endif  // USE_STAZED_TRANSPORT
 
     /**
      * \getter m_jack_client
@@ -571,6 +603,20 @@ private:
     const std::string & client_uuid () const
     {
         return m_jack_client_uuid;
+    }
+
+private:
+
+    /**
+     * \setter m_jack_running
+     *
+     * \param flag
+     *      Provides the is-running value to set.
+     */
+
+    void set_jack_running (bool flag)
+    {
+        m_jack_running = flag;
     }
 
     /**
@@ -628,7 +674,7 @@ extern void jack_timebase_callback
 
 extern int jack_process_callback (jack_nframes_t nframes, void * arg);
 
-#ifndef USE_STAZED_JACK_SUPPORT
+#ifdef USE_STAZED_JACK_SUPPORT
 
 extern long get_current_jack_position (void * arg);
 

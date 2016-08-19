@@ -353,7 +353,7 @@ private:
 
     void set_song_mode ()
     {
-        rc().jack_start_mode(m_button_mode->get_active());
+        perf().song_start_mode(m_button_mode->get_active());
     }
 
     /**

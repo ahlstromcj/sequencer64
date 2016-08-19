@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-08-16
+ * \updates       2016-08-18
  * \license       GNU GPLv2 or above
  *
  *  This class still has way too many members, even with the JACK and
@@ -163,6 +163,10 @@ class perform
 
 #endif
 
+#ifdef USE_STAZED_JACK_SUPPORT
+    friend int jack_process_callback (jack_nframes_t nframes, void * arg);
+#endif
+
 public:
 
     /**
@@ -196,6 +200,12 @@ private:
 
     static midi_control sm_mc_dummy;
 
+    /**
+     *  If true, playback is done in Song mode, not Live mode.
+     */
+
+    bool m_song_start_mode;             // redundant re m_playback_mode?
+
 #ifdef USE_STAZED_JACK_SUPPORT
 
     /**
@@ -210,15 +220,9 @@ private:
 
     midipulse m_jack_stop_tick;
 
-#endif  // USE_STAZED_JACK_SUPPORT
+#endif
 
 #ifdef USE_STAZED_TRANSPORT
-
-    /**
-     *  If true, playback is done in Song mode, not Live mode.
-     */
-
-    bool m_song_start_mode;         // redundant re m_playback_mode ?????
 
     /**
      *  TBD.
@@ -980,6 +984,33 @@ public:
     }
 
     /**
+     * \setter m_song_start_mode
+     */
+
+    void toggle_song_start_mode ()
+    {
+        m_song_start_mode = ! m_song_start_mode; // m_playback_mode?
+    }
+
+    /**
+     * \setter m_song_start_mode
+     */
+
+    void song_start_mode (bool flag)
+    {
+        m_song_start_mode = flag;
+    }
+
+    /**
+     * \getter m_song_start_mode
+     */
+
+    bool song_start_mode () const
+    {
+        return m_song_start_mode;
+    }
+
+    /**
      * \getter m_jack_asst.is_running()
      *      This function is useful for announcing the status of JACK in
      *      user-interface items that only have access to the perform object.
@@ -1033,26 +1064,20 @@ public:
 
 #ifdef USE_STAZED_JACK_SUPPORT
 
-    /**
-     * \getter
-     */
-
-    bool start_from_perfedit () const
-    {
-        return m_start_from_perfedit;
-    }
-
-    bool set_jack_mode (bool jack_button_active);
-
     void toggle_jack_mode ()
     {
-        set_jack_mode(! m_jack_running);
+        m_jack_asst.toggle_jack_mode();
     }
 
-    void set_jack_mode (bool mode)
+    void set_jack_mode (bool mode);
+
+    /**
+     * TODO versus stazed definition in cpp
+     *
     {
-        m_toggle_jack = mode;
+        m_jack_asst.set_jack_mode(mode);
     }
+     */
 
     bool get_toggle_jack () const
     {
@@ -1064,6 +1089,8 @@ public:
         m_jack_stop_tick = tick;
     }
 
+    unsigned short combine_bytes (midibyte b0, midibyte b1);
+
 #endif
 
 #ifdef USE_STAZED_TRANSPORT
@@ -1071,10 +1098,22 @@ public:
     void FF_rewind ();
     bool FF_RW_timeout ();
 
-    void toggle_song_mode ()
+    /**
+     * \setter m_start_from_perfedit
+     */
+
+    void start_from_perfedit (bool flag)
     {
-        m_song_start_mode = ! m_song_start_mode;
-//      m_playback_mode != m_playback_mode;     // ?????
+        m_start_from_perfedit = flag;
+    }
+
+    /**
+     * \getter m_start_from_perfedit
+     */
+
+    bool start_from_perfedit () const
+    {
+        return m_start_from_perfedit;
     }
 
     void set_follow_transport (bool flag)
@@ -1092,7 +1131,7 @@ public:
         set_follow_transport(! m_follow_transport);
     }
 
-    void set_reposition (bool postype)
+    void set_reposition (bool postype = true)
     {
         m_reposition = postype;
     }
@@ -1420,7 +1459,12 @@ public:
 #endif
     }
 
+#ifdef USE_STAZED_JACK_SUPPORT
+    void position_jack (bool state, midipulse tick);
+#else
     void position_jack (bool state);
+#endif
+
     void off_sequences ();
     void all_notes_off ();
     void set_active (int seq, bool active);
@@ -2087,7 +2131,7 @@ private:
     bool is_mseq_valid (int seq) const;
     bool install_sequence (sequence * seq, int seqnum);
     void inner_start (bool state);
-    void inner_stop ();
+    void inner_stop (bool midiclock = false);
     int clamp_track (int track) const;
 
     /**

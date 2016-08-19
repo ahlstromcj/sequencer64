@@ -454,7 +454,7 @@ perfedit::perfedit
     m_hlbox->pack_start(*m_button_stop , false, false);
     m_hlbox->pack_start(*m_button_play , false, false);
     m_hlbox->pack_start(*m_button_loop , false, false);
-    m_hlbox->pack_start(*(manage(new Gtk::VSeparator())), false, false, 4);
+//  m_hlbox->pack_start(*(manage(new Gtk::VSeparator())), false, false, 4);
     m_hlbox->pack_start(*m_button_bpm , false, false);
     m_hlbox->pack_start(*m_entry_bpm , false, false);
     m_hlbox->pack_start(*(manage(new Gtk::Label("/"))), false, false, 4);
@@ -470,7 +470,7 @@ perfedit::perfedit
 #endif
 
 #ifdef USE_STAZED_JACK_SUPPORT
-    m_hlbox->pack_start(*(manage(new VSeparator())), false, false, 4);
+//  m_hlbox->pack_start(*(manage(new VSeparator())), false, false, 4);
     m_hlbox->pack_start(*m_button_jack, false, false);
 #endif
 
@@ -661,7 +661,8 @@ perfedit::toggle_follow_transport ()
 void
 perfedit::set_jack_mode ()
 {
-    bool active = perf().set_jack_mode(m_button_jack->get_active());
+    bool active = m_button_jack->get_active();
+    perf().set_jack_mode(active);
     m_button_jack->set_active(active);
 }
 

@@ -163,7 +163,7 @@ optionsfile::error_message (const std::string & sectionname)
  *      -   jack_master - Seq24 will attempt to serve as JACK Master.
  *      -   jack_master_cond - Seq24 will fail to be Master if there is
  *          already a Master set.
- *      -   jack_start_mode:
+ *      -   song_start_mode:
  *          -   0 = Playback will be in Live mode.  Use this to allow
  *              muting and unmuting of loops.
  *          -   1 = Playback will use the Song Editor's data.
@@ -497,7 +497,7 @@ optionsfile::parse (perform & p)
 
     next_data_line(file);
     sscanf(m_line, "%ld", &flag);
-    rc().jack_start_mode(bool(flag));
+    rc().song_start_mode(bool(flag));
 
     line_after(file, "[midi-input]");
     buses = 0;
@@ -1049,14 +1049,14 @@ optionsfile::write (const perform & p)
         "# master exists. Also must enable jack_transport (the user interface\n"
         "# forces this, and disables jack_master).\n\n"
         << rc().with_jack_master_cond()  << "\n\n"
-        "# jack_start_mode (applies only if JACK is enabled).\n\n"
+        "# song_start_mode (applies only if JACK is enabled).\n\n"
         "# 0 = Playback in live mode. Allows muting and unmuting of loops.\n"
         "#     from the main (patterns) window.  Disables both manual and\n"
         "#     automatic muting and unmuting from the performance window.\n"
         "# 1 = Playback uses the song (performance) editor's data and mute\n"
         "#     controls, regardless of which window was used to start the\n"
         "#     playback.\n\n"
-        << rc().jack_start_mode() << "\n"
+        << rc().song_start_mode() << "\n"
         ;
 
     /*

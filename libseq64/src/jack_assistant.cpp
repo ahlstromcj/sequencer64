@@ -192,6 +192,7 @@ jack_assistant::jack_assistant
     m_jack_running              (false),
     m_jack_master               (false),
 #ifdef USE_STAZED_JACK_SUPPORT
+    m_toggle_jack               (false),
     m_jack_stop_tick            (0),
 #endif
     m_ppqn                      (0),
@@ -214,6 +215,40 @@ jack_assistant::~jack_assistant ()
      * Anything to do?  Call deinit()?
      */
 }
+
+#ifdef USE_STAZED_TRANSPORT
+
+/**
+ * \setter parent().toggle_song_start_mode()
+ */
+
+void
+jack_assistant::toggle_song_start_mode ()
+{
+    parent().toggle_song_start_mode();
+}
+
+/**
+ * \getter parent().song_start_mode()
+ */
+
+void
+jack_assistant::song_start_mode ()
+{
+    parent().song_start_mode();
+}
+
+/**
+ * \setter parent().start_from_perfedit()
+ */
+
+void
+jack_assistant::set_start_from_perfedit (bool start)
+{
+    parent().start_from_perfedit(start);
+}
+
+#endif
 
 /**
  *  Common-code for console messages.  Adds markers and a newline.
@@ -389,6 +424,8 @@ jack_assistant::init ()
         );
         if (jackcode != 0)
             return error_message("jack_set_sync_callback() failed");
+#else
+        int jackcode;
 #endif
 
         /*
@@ -644,22 +681,32 @@ jack_assistant::stop ()
 #ifdef USE_STAZED_JACK_SUPPORT
 
 void
-jack_assistant::position (bool to_left_tick, bool relocate)
+jack_assistant::position (bool state, midipulse tick)
 {
+
+#ifdef JACK_SUPPORT
+
     long current_tick = 0;
-    if (to_left_tick)                   /* actually master in song mode */
-        current_tick = to_left_tick;
+    if (state)                              /* master in song mode */
+        current_tick = tick;
 
     current_tick *= 10;
 
-    int ticks_per_beat = m_ppqn * 10;                   /* 192 * 10 = 1920 */
-    int beats_per_minute =  m_master_bus.get_bpm();
-    uint64_t tick_rate = uint64_t(m_jack_frame_rate * current_tick * 60.0);
-    long tpb_bpm = ticks_per_beat * beats_per_minute / (m_beat_width / 4.0 );
+    int ticks_per_beat = m_ppqn * 10;
+    int beats_per_minute = parent().get_beats_per_minute();
+
+    uint64_t tick_rate = (uint64_t(m_jack_frame_rate) * current_tick * 60.0);
+//  long tpb_bpm = ticks_per_beat * beats_per_minute / (m_bw / 4.0 );
+    long tpb_bpm = ticks_per_beat * beats_per_minute * 4.0 / m_bw;
     uint64_t jack_frame = tick_rate / tpb_bpm;
     jack_transport_locate(m_jack_client,jack_frame);
-    if (! j->is_running())   // or p.is_jack_running() or global_is_running ?
-        m_reposition = false;
+#ifdef USE_STAZED_TRANSPORT
+    if (parent().is_running())
+        parent().set_reposition(false);
+#endif
+
+#endif  // JACK_SUPPORT
+
 }
 
 #else   // USE_STAZED_JACK_SUPPORT
@@ -833,7 +880,9 @@ jack_assistant::sync (jack_transport_state_t state)
     case JackTransportStarting:
 
         // infoprint("[JackTransportStarting]");
-        parent().inner_start(rc().jack_start_mode());
+#ifdef USE_STAZED_TRANSPORT
+        parent().inner_start(song_start_mode());
+#endif
         break;
 
     case JackTransportLooping:
@@ -891,7 +940,7 @@ jack_assistant::sync (jack_transport_state_t state)
 int
 jack_process_callback (jack_nframes_t /* nframes */, void * arg)
 {
-    const jack_assistant * j = (jack_assistant *)(arg);
+    /*const*/ jack_assistant * j = (jack_assistant *)(arg);
     if (not_nullptr(j))
     {
 
@@ -912,11 +961,12 @@ jack_process_callback (jack_nframes_t /* nframes */, void * arg)
             if (s == JackTransportRolling || s == JackTransportStarting)
             {
                 j->m_jack_transport_state_last = JackTransportStarting;
+#ifdef USE_STAZED_TRANSPORT
                 if (p.start_from_perfedit())
                     p.inner_start(true);
                 else
-                    p.inner_start(rc().jack_start_mode());
-                    // global_song_start_mode);
+                    p.inner_start(song_start_mode());
+#endif
             }
             else        /* don't start, just reposition transport marker */
             {
@@ -924,7 +974,9 @@ jack_process_callback (jack_nframes_t /* nframes */, void * arg)
                 long diff = tick - j->get_jack_stop_tick();
                 if (diff != 0)
                 {
+#ifdef USE_STAZED_TRANSPORT
                     p.set_reposition();         // a perform option
+#endif
                     p.set_start_tick(tick);     // p.set_starting_tick(tick);
                     j->set_jack_stop_tick(tick);
                 }
@@ -1129,7 +1181,8 @@ jack_assistant::output (jack_scratchpad & pad)
         m_jack_pos.beats_per_bar = m_beats_per_measure;
         m_jack_pos.beat_type = m_beat_width;
         m_jack_pos.ticks_per_beat = m_ppqn * 10;
-        m_jack_pos.beats_per_minute = parent().master_bus().get_bpm();
+//      m_jack_pos.beats_per_minute = parent().master_bus().get_bpm();
+        m_jack_pos.beats_per_minute = parent().get_beats_per_minute();
 #else
 
         bool ok = m_jack_pos.frame_rate > 1000;         /* usually 48000       */
@@ -1707,7 +1760,7 @@ get_current_jack_position (void * arg)
     double beat_type = j->get_beat_width();
     jack_nframes_t current_frame = jack_get_current_transport_frame(j->client());
     double jack_tick = current_frame * ticks_per_beat * beats_per_minute /
-        (j->m_jack_frame_rate * 60.0);  ///// need accessor and research
+        (j->jack_frame_rate() * 60.0);              // need research
 
     return jack_tick * (ppqn / (ticks_per_beat * beat_type / 4.0));
 }

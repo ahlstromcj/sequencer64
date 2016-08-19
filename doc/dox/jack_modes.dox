@@ -13,7 +13,7 @@ This document describes some issues and scenarios involving the JACK, live, and
 song modes.
 
 \page       jack_modes_page JACK, Live, and Song Modes in Sequencer64
-\author     Chris Ahlstrom 2016-01-23
+\author     Chris Ahlstrom 2016-08-18
 
 \section jack_modes_intro Introduction
 
@@ -215,7 +215,7 @@ Returns:
      <li>   jack_transport = 0
      <li>   jack_master = 0
      <li>   jack_master_cond = 0
-     <li>   jack_start_mode = 0
+     <li>   song_start_mode = 0
 </ul>
 
 By changing the start mode to 0 (false), Sequencer64 is put into Live Mode.
@@ -235,7 +235,7 @@ In <tt>~/.config/sequencer64/sequencer64.rc</tt>, set:
      <li>   jack_transport = 0
      <li>   jack_master = 0
      <li>   jack_master_cond = 0
-     <li>   jack_start_mode = 1
+     <li>   song_start_mode = 1
 </ul>
 
 By changing the start mode to 1 (true), Sequencer64 is put into Song Mode.
@@ -256,7 +256,7 @@ In <tt>~/.config/sequencer64/sequencer64.rc</tt>, set:
      <li>   jack_transport = 1
      <li>   jack_master = 0
      <li>   jack_master_cond = 0
-     <li>   jack_start_mode = 0 or 1 (see previous section)
+     <li>   song_start_mode = 0 or 1 (see previous section)
 </ul>
 
 The current behavior is that qjackctl and sequencer64 playback/progress seem to

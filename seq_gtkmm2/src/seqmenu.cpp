@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-07-17
+ * \updates       2016-08-19
  * \license       GNU GPLv2 or above
  *
  *  This object also does some minor coordination of editing a sequence via
@@ -186,7 +186,7 @@ seqmenu::popup_menu ()
         MenuElem("Toggle All Tracks", mem_fun(*this, &seqmenu::toggle_all_tracks))
     );
 
-#ifdef SEQ64_AUTO_SCREENSET_QUEUE
+#ifdef SEQ64_USE_AUTO_SCREENSET_QUEUE
 
 #define SET_AUTO    mem_fun(*this, &seqmenu::set_auto_screenset)
 
@@ -205,7 +205,7 @@ seqmenu::popup_menu ()
         );
     }
 
-#endif  // SEQ64_AUTO_SCREENSET_QUEUE
+#endif  // SEQ64_USE_AUTO_SCREENSET_QUEUE
 
     /*
      * This is the bottom part of the menu accessible from a non-empty pattern
@@ -304,7 +304,7 @@ seqmenu::set_bus_and_midi_channel (int bus, int ch)
     }
 }
 
-#ifdef SEQ64_AUTO_SCREENSET_QUEUE
+#ifdef SEQ64_USE_AUTO_SCREENSET_QUEUE
 
 /**
  *  Sets up or resets the experimental "auto screen-set queuing" feature.
@@ -319,7 +319,7 @@ seqmenu::set_auto_screenset (bool flag)
     m_mainperf.set_auto_screenset(flag);
 }
 
-#endif  // SEQ64_AUTO_SCREENSET_QUEUE
+#endif  // SEQ64_USE_AUTO_SCREENSET_QUEUE
 
 /**
  *  Sets the "is-transposable" flag of the current sequence.

@@ -61,17 +61,11 @@
 #include <vector>
 
 #include "easy_macros.h"                /* with platform_macros.h, too  */
-#include "scales.h"                     /* SEQ64_KEY_OF_C etc.          */
+#include "seq64_features.h"             /* SEQ64_USE_ZOOM_POWER_OF_2    */
 #include "midi_container.hpp"           /* SEQ64_IS_LEGAL_SEQUENCE etc. */
+#include "scales.h"                     /* SEQ64_KEY_OF_C etc.          */
 #include "user_instrument.hpp"
 #include "user_midi_bus.hpp"
-
-/**
- *  This special value of zoom sets the zoom according to a power of two
- *  related to the PPQN value of the song.
- */
-
-#define SEQ64_USE_ZOOM_POWER_OF_2       0
 
 namespace seq64
 {

@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-13
- * \updates       2016-08-07
+ * \updates       2016-08-20
  * \license       GNU GPLv2 or above
  *
  * \change ca 2016-05-22
@@ -357,30 +357,31 @@ keyval_normalize (keys_perform_transfer & k)
     if (k.kpt_event_edit == 0 || k.kpt_pause > 65536)
         k.kpt_event_edit = '.';
 #endif
+
 #ifdef USE_STAZED_TRANSPORT
     if (k.kpt_song_mode == 0 || k.kpt_song_mode > 65536)
-        kpt.kpt_song_mode = SEQ64_F1;
+        k.kpt_song_mode = SEQ64_F1;
 
     if (k.kpt_toggle_jack == 0 || k.kpt_toggle_jack > 65536)
-        kpt.kpt_toggle_jack = SEQ64_F2;
+        k.kpt_toggle_jack = SEQ64_F2;
 
     if (k.kpt_menu_mode == 0 || k.kpt_menu_mode > 65536)
-        kpt.kpt_menu_mode = SEQ64_F3;
+        k.kpt_menu_mode = SEQ64_F3;
 
     if (k.kpt_follow_transport == 0 || k.kpt_follow_transport > 65536)
-        kpt.kpt_follow_transport = SEQ64_F4;
+        k.kpt_follow_transport = SEQ64_F4;
 
     if (k.kpt_fast_forward == 0 || k.kpt_fast_forward > 65536)
-        kpt.kpt_fast_forward = SEQ64_F5;
+        k.kpt_fast_forward = SEQ64_F5;
 
     if (k.kpt_rewind == 0 || k.kpt_rewind > 65536)
-        kpt.kpt_rewind = SEQ64_F6;
+        k.kpt_rewind = SEQ64_F6;
 
     if (k.kpt_pointer == 0 || k.kpt_pointer > 65536)
-        kpt.kpt_pointer = SEQ64_F6;
+        k.kpt_pointer = SEQ64_F6;
 #endif
-}
 
+}
 
 }           // namespace seq64
 

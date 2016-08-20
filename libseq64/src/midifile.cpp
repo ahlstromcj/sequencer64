@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-08-18
+ * \updates       2016-08-20
  * \license       GNU GPLv2 or above
  *
  *  For a quick guide to the MIDI format, see, for example:
@@ -1312,7 +1312,7 @@ midifile::parse_proprietary_track (perform & p, int file_size)
         if (seqspec == c_perf_bp_mes)
         {
             int bpmes = int(read_long());
-            p.set_beats_per_measure(bpmes);
+            p.set_beats_per_bar(bpmes);
         }
 
         seqspec = parse_prop_header(file_size);
@@ -2045,9 +2045,9 @@ midifile::write_proprietary_track (perform & p)
 
 #ifdef USE_STAZED_TRANSPORT
             write_prop_header(c_perf_bp_mes, 4);            /* control tag+4 */
-            write_long(long(p.get_beats_per_measure));      /* perfedit BPM  */
+            write_long(long(p.get_beats_per_bar()));        /* perfedit BPM  */
             write_prop_header(c_perf_bw, 4);                /* control tag+4 */
-            write_long(long(p.get_beat_width));             /* perfedit BW   */
+            write_long(long(p.get_beat_width()));           /* perfedit BW   */
 #endif
 
         write_track_end();

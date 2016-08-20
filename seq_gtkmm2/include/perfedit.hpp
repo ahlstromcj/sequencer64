@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-08-17
+ * \updates       2016-08-20
  * \license       GNU GPLv2 or above
  *
  *  Note that, as of version 0.9.11, the z and Z keys, when focus is on the
@@ -79,6 +79,13 @@ namespace seq64
  * And a lot of the patches from that project were already applied to
  * seq24 v 0.9.2.  They are now all applied.
  */
+
+/*
+ * Free functions and values is the seq64 namespace.
+ */
+
+extern void update_perfedit_sequences ();
+extern int FF_RW_timeout (void * arg);
 
 /**
  *  This class supports a Performance Editor that is used to arrange the
@@ -262,13 +269,13 @@ public:
     void rewind (bool press)
     {
         perf().rewind(press);
-        gtk_timeout_add(120, FF_RW_timeout, perf());
+        gtk_timeout_add(120, seq64::FF_RW_timeout, &perf());
     }
 
     void fast_forward (bool press)
     {
         perf().fast_forward(press);
-        gtk_timeout_add(120, FF_RW_timeout, perf());
+        gtk_timeout_add(120, seq64::FF_RW_timeout, &perf());
     }
     void set_follow_transport ();
     void toggle_follow_transport ();
@@ -338,13 +345,6 @@ private:        // Gtkmm 2.4 callbacks
     }
 
 };              // class perfedit
-
-/*
- * Free functions and values is the seq64 namespace.
- */
-
-extern void update_perfedit_sequences ();
-extern int FF_RW_timeout (void * arg);
 
 }               // namespace seq64
 

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-08-17
+ * \updates       2016-08-20
  * \license       GNU GPLv2 or above
  *
  */
@@ -117,23 +117,31 @@ update_perfedit_sequences ()
 }
 
 /**
- *  This global function in the seq64 namespace is pass to the gtk_timeout
+ *  This global function in the seq64 namespace is passed to the gtk_timeout
  *  callback.
  */
+
+#ifdef USE_STAZED_TRANSPORT
 
 int
 FF_RW_timeout (void * arg)
 {
-#ifdef USE_STAZED_TRANSPORT
     perform * p = (perform *)(arg);
     if (not_nullptr(p))
         return p->FF_RW_timeout();
     else
         return false;
-#else
-    return false;
-#endif
 }
+
+#else
+
+int
+FF_RW_timeout (void * /*arg*/)
+{
+    return false;
+}
+
+#endif
 
 /**
  *  Principal constructor, has a reference to a perform object.  We've
@@ -646,7 +654,7 @@ perfedit::set_follow_transport ()
 void
 perfedit::toggle_follow_transport ()
 {
-    perf().set_active(! m_button_follow->get_active());
+    m_button_follow->set_active( ! m_button_follow->get_active() );
 }
 
 #endif  // USE_STAZED_TRANSPORT
@@ -914,7 +922,7 @@ void
 perfedit::start_playing ()
 {
 #ifdef USE_STAZED_TRANSPORT
-    perf().set_start_from_perfedit(true);
+    perf().start_from_perfedit(true);
     perf().start_playing();
 #else
 #ifdef SEQ64_PAUSE_SUPPORT

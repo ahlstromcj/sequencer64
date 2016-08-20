@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-07-23
- * \updates       2016-08-18
+ * \updates       2016-08-20
  * \license       GNU GPLv2 or above
  *
  *  This class contains a number of functions that used to reside in the
@@ -45,12 +45,6 @@
 #ifdef SEQ64_JACK_SESSION
 #include <jack/session.h>
 #endif
-
-/**
- * EXPERIMENTAL.  Builds, but not ready for actual usage.
- */
-
-#undef  USE_STAZED_JACK_SUPPORT
 
 #else       // ! SEQ64_JACK_SUPPORT
 
@@ -291,13 +285,17 @@ private:
 
     midipulse m_jack_stop_tick;
 
+#endif  // USE_STAZED_JACK_SUPPORT
+
+#ifdef USE_STAZED_TRANSPORT
+
     /**
      *  TBD.
      */
 
     bool m_follow_transport;
 
-#endif  // USE_STAZED_JACK_SUPPORT
+#endif
 
     /**
      *  Holds the global PPQN value for the Sequencer64 session.  It is used
@@ -572,8 +570,8 @@ public:
         set_follow_transport(! m_follow_transport);
     }
 
-    void song_start_mode ();
-    void toggle_song_start_mode ();
+    bool song_start_mode ();
+    bool toggle_song_start_mode ();
     void set_start_from_perfedit (bool start);
 
 #endif  // USE_STAZED_TRANSPORT

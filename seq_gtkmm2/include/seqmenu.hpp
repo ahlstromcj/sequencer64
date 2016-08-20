@@ -305,7 +305,7 @@ private:
     void set_bus_and_midi_channel (int a_bus, int a_ch);
     void set_transposable (bool flag);
 
-#ifdef SEQ64_AUTO_SCREENSET_QUEUE
+#ifdef SEQ64_USE_AUTO_SCREENSET_QUEUE
     void set_auto_screenset (bool flag);
 #endif
 

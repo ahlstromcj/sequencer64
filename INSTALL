@@ -1,6 +1,6 @@
 INSTALL for Sequencer64 v. 0.9.17
 Chris Ahlstrom
-2015-09-10 to 2016-08-18
+2015-09-10 to 2016-08-19
 
 The current packaging for Sequencer64 is primarily aimed at developers.
 There is currently no configure script... it must be bootstrapped.
@@ -153,7 +153,8 @@ MANUALLY-DEFINED MACROS IN CODE:
     The following items are not yet part of the configure script, but can
     be edited manually to achieve the desired settings.  Only crazy or
     experiment-happy people will normally want to change the define-state of
-    these macros.
+    these macros.  We have consolidated them into a single file,
+    libseq64/include/seq64_features.h, to make them easier to find and edit.
 
     SEQ64_EDIT_SEQUENCE_HIGHLIGHT:
 
@@ -285,6 +286,9 @@ MANUALLY-DEFINED MACROS IN CODE:
         USE_STAZED_SELECTION_EXTENSIONS
         USE_STAZED_EVEN_ODD_SUPPORT
         USE_STAZED_TRANSPORT
+
+        Some of these are defined (or undefined) in
+        libseq64/include/seq64_features.h.
 
 DEPENDENCIES:
 

@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-11-08
- * \updates       2016-07-31
+ * \updates       2016-08-19
  * \license       GNU GPLv2 or above
  *
  *  This collection of macros describes some facets of the
@@ -48,38 +48,7 @@
  *  fools, you decide.  Hell, we still like snprintf() for some uses!
  */
 
-/**
- *  Determins which implementation of a MIDI byte container is used.
- *  See the midifile module.
- */
-
-#define SEQ64_USE_MIDI_VECTOR           /* as opposed to the MIDI list      */
-
-/**
- *  Let's try using lighter solid lines in the piano rolls and see how it
- *  looks.  It looks a little better.
- */
-
-#define SEQ64_SOLID_PIANOROLL_GRID
-
-/**
- *  This provides a build option for having the pattern editor window scroll
- *  to keep of with the progress bar, for sequences that are longer than the
- *  measure or two that a pattern window will show.
- *
- *  We thought about making this a configure option or a run-time option, but
- *  this kind of scrolling is a universal convention of MIDI sequencers.  If
- *  you really don't like this feature, let me know, and I will make it a
- *  configure option.  We could also disable it it "legacy" mode, which also
- *  disables a lot of other features.
- *
- * \warning
- *      This code might still have issues with interactions between triggers
- *      and gaps in the performance (song) window when JACK transport is
- *      active.  Still investigating.
- */
-
-#define SEQ64_FOLLOW_PROGRESS_BAR
+#include "seq64_features.h"             /* make sure of the feature macros  */
 
 /**
  *  This macro defines the amount of overlap between horizontal "pages" that

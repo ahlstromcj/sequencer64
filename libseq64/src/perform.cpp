@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and Tim Deagan
  * \date          2015-07-24
- * \updates       2016-08-17
+ * \updates       2016-08-20
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -78,6 +78,11 @@ static const int c_status_snapshot = 0x02;
  */
 
 static const int c_status_queue    = 0x04;
+
+/**
+ *  TODO
+ */
+
 
 /**
  *  Instantiate the dummy midi_control object, which is used in lieu
@@ -183,7 +188,7 @@ perform::perform (gui_assistant & mygui, int ppqn)
     m_offset                    (0),
     m_control_status            (0),
     m_screenset                 (0),        // or SEQ64_NULL_SEQUENCE
-#ifdef SEQ64_AUTO_SCREENSET_QUEUE
+#ifdef SEQ64_USE_AUTO_SCREENSET_QUEUE
     m_auto_screenset_queue      (false),
 #endif
     m_seqs_in_set               (c_seqs_in_set),
@@ -589,10 +594,6 @@ perform::mute_all_tracks (bool flag)
 /**
  *  Toggles the mutes status of all tracks in the current set of active
  *  patterns/sequences.  Covers tracks from 0 to m_sequence_max.
- *
- * \param flag
- *      If true (the default), the song-mute of the sequence is turned on.
- *      Otherwise, it is turned off.
  */
 
 void
@@ -612,6 +613,10 @@ perform::toggle_all_tracks ()
  *  Provides for various settings of the song-mute status of all sequences in
  *  the song. The sequence::set_song_mute() and toggle_song_mute() functions
  *  do all the work, including mp-dirtying the sequence.
+ *
+ * \param op
+ *      Provides the "flag" that indicates if this function is to set mute on,
+ *      off, or to toggle the mute status.
  */
 
 void
@@ -641,6 +646,9 @@ perform::set_song_mute (mute_op_t op)
 
 /**
  *  Mutes/unmutes all tracks in the desired screen-set.
+ *
+ * \param ss
+ *      The screen-set to be operated upon.
  *
  * \param flag
  *      If true (the default), the song-mute of the sequence is turned on.
@@ -1414,7 +1422,7 @@ perform::set_screenset (int ss)
 
     if (ss != m_screenset)
     {
-#ifdef SEQ64_AUTO_SCREENSET_QUEUE
+#ifdef SEQ64_USE_AUTO_SCREENSET_QUEUE
         if (m_auto_screenset_queue)
             swap_screenset_queues(m_screenset, ss);
 #else
@@ -1424,7 +1432,7 @@ perform::set_screenset (int ss)
     set_offset(ss);             /* was called in mainwid::set_screenset() */
 }
 
-#ifdef SEQ64_AUTO_SCREENSET_QUEUE
+#ifdef SEQ64_USE_AUTO_SCREENSET_QUEUE
 
 /**
  *  If the flag is true:
@@ -1489,7 +1497,7 @@ perform::swap_screenset_queues (int ss0, int ss1)
 #endif
 }
 
-#endif  // SEQ64_AUTO_SCREENSET_QUEUE
+#endif  // SEQ64_USE_AUTO_SCREENSET_QUEUE
 
 /**
  *  Sets the screen set that is active, based on the value of m_screenset.
@@ -3759,26 +3767,26 @@ perform::perfroll_key_event (const keystroke & k, int drop_sequence)
                     result = true;
                 }
 #ifdef USE_STAZED_TRANSPORT
-                else if (k == keys().follow_transport())
+                else if (k.is(keys().follow_transport()))
                 {
                     toggle_follow_transport();
                     result = true;
                 }
-                else if (k == keys().fast_forward())
+                else if (k.is(keys().fast_forward()))
                 {
                     fast_forward(true);
                     result = true;
                 }
-                else if (k == keys().rewind())
+                else if (k.is(keys().rewind()))
                 {
                     rewind(true);
                     result = true;
                 }
 #endif
-#ifdef USE_STAZED_JACK_SUPPORT______TODO
-                else if (k == keys().toggle_jack())
+#ifdef USE_STAZED_JACK_SUPPORT
+                else if (k.is(keys().toggle_jack()))
                 {
-                    toggle_jack();
+                    toggle_jack_mode();
                     result = true;
                 }
 #endif
@@ -3788,12 +3796,12 @@ perform::perfroll_key_event (const keystroke & k, int drop_sequence)
 #ifdef USE_STAZED_TRANSPORT
     else
     {
-        if (k == keys().fast_forward())
+        if (k.is(keys().fast_forward()))
         {
             fast_forward(false);
             result = true;
         }
-        else if (k == keys().rewind())
+        else if (k.is(keys().rewind()))
         {
             rewind(false);
             result = true;
@@ -4031,14 +4039,14 @@ perform::reposition (midipulse tick)
 }
 
 /**
- *  Convenience function.  This function is used in the free function version fo
+ *  Convenience function.  This function is used in the free function version of
  *  FF_RW_timeout() as a callback to the gtk_timeout() function.
  */
 
 bool
 perform::FF_RW_timeout ()
 {
-    if (FF_RW_button_type != FF_RW_NONE)
+    if (m_FF_RW_button_type != FF_RW_NONE)
     {
         FF_rewind();
         if (m_excell_FF_RW < 60.0f)

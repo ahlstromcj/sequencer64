@@ -127,7 +127,7 @@ public:
      *      Returns true if m_key == ch.
      */
 
-    bool is (unsigned int ch)
+    bool is (unsigned int ch) const
     {
         return m_key == ch;
     }

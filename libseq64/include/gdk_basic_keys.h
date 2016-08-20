@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-09-13
- * \updates       2016-01-06
+ * \updates       2016-08-20
  * \license       GNU GPLv2 or above
  *
  *  This file is provided as a convenience so that we have some reasonable
@@ -100,6 +100,19 @@
 #define SEQ64_Mode_switch         0xff7e
 #define SEQ64_script_switch       0xff7e
 #define SEQ64_Num_Lock            0xff7f
+
+#define SEQ64_F1                  0xffbe
+#define SEQ64_F2                  0xffbf
+#define SEQ64_F3                  0xffc0
+#define SEQ64_F4                  0xffc1
+#define SEQ64_F5                  0xffc2
+#define SEQ64_F6                  0xffc3
+#define SEQ64_F7                  0xffc4
+#define SEQ64_F8                  0xffc5
+#define SEQ64_F9                  0xffc6
+#define SEQ64_F10                 0xffc7
+#define SEQ64_F11                 0xffc8
+#define SEQ64_F12                 0xffc9
 
 #define SEQ64_KP_Space            0xff80
 #define SEQ64_KP_Tab              0xff89

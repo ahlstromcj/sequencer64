@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-14
- * \updates       2016-07-23
+ * \updates       2016-08-20
  * \license       GNU GPLv2 or above
  *
  *  This module was created from code that existed in the perform object.
@@ -219,23 +219,23 @@ jack_assistant::~jack_assistant ()
 #ifdef USE_STAZED_TRANSPORT
 
 /**
- * \setter parent().toggle_song_start_mode()
+ * \getter parent().toggle_song_start_mode()
  */
 
-void
+bool
 jack_assistant::toggle_song_start_mode ()
 {
-    parent().toggle_song_start_mode();
+    return parent().toggle_song_start_mode();
 }
 
 /**
  * \getter parent().song_start_mode()
  */
 
-void
+bool
 jack_assistant::song_start_mode ()
 {
-    parent().song_start_mode();
+    return parent().song_start_mode();
 }
 
 /**
@@ -961,11 +961,12 @@ jack_process_callback (jack_nframes_t /* nframes */, void * arg)
             if (s == JackTransportRolling || s == JackTransportStarting)
             {
                 j->m_jack_transport_state_last = JackTransportStarting;
+
 #ifdef USE_STAZED_TRANSPORT
                 if (p.start_from_perfedit())
                     p.inner_start(true);
                 else
-                    p.inner_start(song_start_mode());
+                    p.inner_start(p.song_start_mode());
 #endif
             }
             else        /* don't start, just reposition transport marker */

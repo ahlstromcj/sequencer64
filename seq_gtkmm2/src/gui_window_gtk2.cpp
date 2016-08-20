@@ -185,9 +185,9 @@ gui_window_gtk2::scroll_hset (Gtk::Adjustment & hadjust, double value)
 /**
  *  This function is the vertical scroll setter.
  *
- * \param hadjust
- *      Provides a reference to the adjustment object to be set.  It is
- *      clamped as necessary.
+ * \param vadjust
+ *      Provides a reference to the vertical adjustment object to be set.  It
+ *      is clamped as necessary.
  *
  * \param value
  *      Provides the value to use for setting the vertical scrollbar.

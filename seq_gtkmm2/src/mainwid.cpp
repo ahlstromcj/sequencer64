@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-08-14
+ * \updates       2016-08-19
  * \license       GNU GPLv2 or above
  *
  *  Note that this representation is, in a sense, inside the mainwnd
@@ -787,6 +787,9 @@ mainwid::seq_from_xy (int x, int y)
  *
  * \param ss
  *      Provides the screen-set number to set.
+ *
+ * \param setperf
+ *      If true, then also call perfrom::set_screenset().
  */
 
 void

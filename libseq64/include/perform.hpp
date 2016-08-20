@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-08-18
+ * \updates       2016-08-20
  * \license       GNU GPLv2 or above
  *
  *  This class still has way too many members, even with the JACK and
@@ -50,24 +50,6 @@
 #include "mastermidibus.hpp"            /* seq64::mastermidibus             */
 #include "midi_control.hpp"             /* seq64::midi_control "struct"     */
 #include "sequence.hpp"                 /* seq64::sequence                  */
-
-/**
- *  EXPERIMENTAL.  Not yet working.  A very tough problem.
- *  The idea is to go into an auto-screen-set mode via a menu entry, where the
- *  first set is unmuted, and then changes to the screen-set number queue the
- *  previous screen-set for muting, and queue up the current one for
- *  unmuting.
- */
-
-#undef  SEQ64_AUTO_SCREENSET_QUEUE
-
-/**
- *  Try to highlight the selected pattern using black-on-cyan
- *  coloring, in addition to the red progress bar marking that already exists.
- *  Moved from seqmenu.  Seems to work pretty well now.
- */
-
-#define SEQ64_EDIT_SEQUENCE_HIGHLIGHT
 
 /**
  *  We have offloaded the keybinding support to another class, derived
@@ -194,6 +176,16 @@ public:
 private:
 
     /**
+     *  Provides a static self-reference to the one and only perform object
+     *  that exists in the application, for use in callbacks that do not
+     *  support object pointers and require non-member functions.
+
+    static perform & sm_self;
+     */
+
+private:
+
+    /**
      *  Provides a dummy, inactive midi_control object to handle
      *  out-of-range midi_control indicies.
      */
@@ -252,7 +244,7 @@ private:
      *  TBD.
      */
 
-    ff_rw_button_t m_FF_RW_button_type;    // was extern int in perfedit
+    ff_rw_button_t m_FF_RW_button_type;   // was extern int in perfedit
 
 #endif  // USE_STAZED_TRANSPORT
 
@@ -637,7 +629,7 @@ private:
 
     int m_screenset;
 
-#ifdef SEQ64_AUTO_SCREENSET_QUEUE
+#ifdef SEQ64_USE_AUTO_SCREENSET_QUEUE
 
     /**
      *  New.  Attempting to provide a feature where moving to another
@@ -648,7 +640,7 @@ private:
 
     bool m_auto_screenset_queue;
 
-#endif  // SEQ64_AUTO_SCREENSET_QUEUE
+#endif  // SEQ64_USE_AUTO_SCREENSET_QUEUE
 
     /**
      *  We will eventually replace c_seqs_in_set with this member, which
@@ -987,9 +979,10 @@ public:
      * \setter m_song_start_mode
      */
 
-    void toggle_song_start_mode ()
+    bool toggle_song_start_mode ()
     {
         m_song_start_mode = ! m_song_start_mode; // m_playback_mode?
+        return m_song_start_mode;
     }
 
     /**
@@ -1096,7 +1089,8 @@ public:
 #ifdef USE_STAZED_TRANSPORT
 
     void FF_rewind ();
-    bool FF_RW_timeout ();
+
+    bool FF_RW_timeout ();          /* called by free-function of same name */
 
     /**
      * \setter m_start_from_perfedit
@@ -1136,7 +1130,7 @@ public:
         m_reposition = postype;
     }
 
-    ff_rw_button_t ff_rw_type () const
+    ff_rw_button_t ff_rw_type ()
     {
         return m_FF_RW_button_type;
     }
@@ -1960,7 +1954,7 @@ public:
         return seq.is_smf_0();
     }
 
-#ifdef SEQ64_AUTO_SCREENSET_QUEUE
+#ifdef SEQ64_USE_AUTO_SCREENSET_QUEUE
 
     void set_auto_screenset (bool flag);
     void swap_screenset_queues (int ss0, int ss1);
@@ -1974,7 +1968,7 @@ public:
         return m_auto_screenset_queue;
     }
 
-#endif  // SEQ64_AUTO_SCREENSET_QUEUE
+#endif  // SEQ64_USE_AUTO_SCREENSET_QUEUE
 
     void sequence_key (int seq);                        // encapsulation
     std::string sequence_label(const sequence & seq);

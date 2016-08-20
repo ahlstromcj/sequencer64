@@ -47,8 +47,6 @@
 #include "calculations.hpp"
 #endif
 
-#define USE_NON_NOTE_EVENT_ADJUSTMENT
-
 namespace seq64
 {
 
@@ -145,7 +143,7 @@ sequence::~sequence ()
 
 /**
  *  A convenience function that we have to put here so that the m_parent
- *  pointer can be used without an additional #include in the sequence.hpp
+ *  pointer can be used without an additional include-file in the sequence.hpp
  *  module.  One minor issue is how can we unmodify the performance?  We'd need
  *  to keep a count/stack of modifications over all sequences in the
  *  performance.  Probably not practical.
@@ -3236,7 +3234,7 @@ sequence::set_trigger_offset (midipulse trigger_offset)
         m_trigger_offset = trigger_offset;
 }
 
-/**
+/*
  * \obsolete
  *      Splits the trigger given by the parameter into two triggers.
  *      This is the private overload of split_trigger.  Not necessary, now
@@ -3251,16 +3249,15 @@ sequence::set_trigger_offset (midipulse trigger_offset)
  * \param splittick
  *      The position just after where the original trigger will be
  *      truncated, and the new trigger begins.
- */
-
-#if 0
+ *
 void
 sequence::split_trigger (trigger & trig, midipulse splittick)
 {
     automutex locker(m_mutex);
     m_triggers.split(trig, splittick);
 }
-#endif
+ *
+ */
 
 /**
  *  Splits a trigger.  This is the public overload of split_trigger.
@@ -3749,6 +3746,13 @@ sequence::get_next_note_event
 /**
  *  Get the next event in the event list.  Then set the status and control
  *  character parameters using that event.
+ *
+ * \param status
+ *      Provides a pointer to the MIDI status byte to be set, as a way to
+ *      retrieve the event.
+ *
+ * \param cc
+ *      The return pointer for the control value.
  */
 
 bool
@@ -3795,7 +3799,7 @@ sequence::get_next_event (midibyte * status, midibyte * cc)
  * \param selected
  *      A pointer return value for the is-selected status of the event.
  *
- * \param type
+ * \param evtype
  *      A stazed parameter for picking either all event or unselected events.
  */
 
@@ -4545,30 +4549,6 @@ sequence::multiply_pattern (float multiplier )
 }
 
 #endif  // USE_STAZED_MULTIPLY_PATTERN
-
-/**
- *  This function fills the given MIDI container with MIDI data from the
- *  current sequence, preparatory to writing it to a file.
- *
- *  Note that some of the events might not come out in the same order they
- *  were stored in (we see that with program-change events.
- *
- * \param c
- *      Provides the std::list object to push events to the front, which thus
- *      inserts them in backwards order.  (These events are then popped back,
- *      which restores the order, with some exceptions).
- *
- * \param tracknumber
- *      Provides the track number.  This number is masked into the track
- *      information.
-
-void
-sequence::fill_container (midi_container & c, int tracknumber)
-{
-    automutex locker(m_mutex);
-    c.fill(tracknumber);
-}
- */
 
 /**
  *  A member function to dump a summary of events stored in the event-list of

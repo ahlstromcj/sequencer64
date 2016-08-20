@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-10-10
- * \updates       2016-08-04
+ * \updates       2016-08-19
  * \license       GNU GPLv2 or above
  *
  *  This class is important when writing the MIDI and sequencer data out to a
@@ -191,8 +191,8 @@ midi_container::fill_seq_number (int seq)
  *
  *  Compare this function to the beginning of midi_container::fill().
  *
- * \param seq
- *      The sequence/track number to write.  We could get this item from
+ * \param name
+ *      The sequence/track name to set.  We could get this item from
  *      m_sequence, but the parameter allows the flexibility to change the
  *      name.
  */
@@ -215,6 +215,9 @@ midi_container::fill_seq_name (const std::string & name)
 
 /*
  * Last, but certainly not least, write the end-of-track meta-event.
+ *
+ * \param deltatime
+ *      The MIDI delta time to write before the meta-event itself.
  */
 
 void
@@ -259,6 +262,15 @@ midi_container::fill_time_sig_and_tempo ()
         put(t[0]);
     }
 }
+
+/**
+ *  Fills in the Sequencer64-specific information for the current sequence:
+ *  The MIDI buss number, the time-signature, and the MIDI channel.  Then, if
+ *  we're not using the legacy output format, we add the "events" for the
+ *  musical key, musical scale, and the background sequence for the current
+ *  sequence. Finally, if tranpose support has been compiled into the program,
+ *  we add that information as well.
+ */
 
 void
 midi_container::fill_proprietary ()

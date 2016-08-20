@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-08-17
+ * \updates       2016-08-20
  * \license       GNU GPLv2 or above
  *
  *  The performance window allows automatic control of when each
@@ -460,7 +460,7 @@ perfroll::draw_progress ()
 
     m_old_progress_ticks = tick;
 
-#ifdef USE_STAZED_TRANSPORT_XXX
+#ifdef USE_STAZED_PERF_AUTO_SCROLL
     auto_scroll_horz();             // but sequencer64 now does this anyway
 #endif
 
@@ -493,14 +493,14 @@ perfroll::follow_progress ()
 #else
 
 void
-perfqroll::follow_progress ()
+perfroll::follow_progress ()
 {
     // No code, do not follow the progress bar.
 }
 
 #endif      // SEQ64_FOLLOW_PROGRESS_BAR
 
-#ifdef USE_STAZED_TRANSPORT_XXX
+#ifdef USE_STAZED_PERF_AUTO_SCROLL
 
 void
 perfroll::auto_scroll_horz ()
@@ -526,8 +526,8 @@ perfroll::auto_scroll_horz ()
         return;
     }
 
-    long progress_tick = perf().get_tick();
-    long tick_offset = m_4bar_offset * c_ppqn * 16;
+    midipulse progress_tick = perf().get_tick();
+    midipulse tick_offset = m_4bar_offset * c_ppqn * 16;
     int progress_x = (progress_tick - tick_offset) / m_zoom  + 100;
     int page = progress_x / m_window_x;
     if (page != 0 || progress_x < 0)
@@ -558,7 +558,7 @@ perfroll::auto_scroll_horz ()
     }
 }
 
-#endif  // USE_STAZED_TRANSPORT_XXX
+#endif  // USE_STAZED_PERF_AUTO_SCROLL
 
 /**
  *  Draws the given pattern/sequence on the given drawable area.
@@ -571,7 +571,7 @@ perfroll::draw_sequence_on (int seqnum)
     if (perf().is_active(seqnum))
     {
         midipulse tick_offset = m_4bar_offset;          //  * m_ticks_per_bar;
-        long x_offset = tick_offset / m_perf_scale_x;
+        midipulse x_offset = tick_offset / m_perf_scale_x;
         m_sequence_active[seqnum] = true;
         sequence * seq = perf().get_sequence(seqnum);
         seq->reset_draw_trigger_marker();
@@ -587,8 +587,8 @@ perfroll::draw_sequence_on (int seqnum)
         {
             if (tick_off > 0)
             {
-                long x_on  = tick_on  / m_perf_scale_x;
-                long x_off = tick_off / m_perf_scale_x;
+                midipulse x_on  = tick_on  / m_perf_scale_x;
+                midipulse x_off = tick_off / m_perf_scale_x;
                 int w = x_off - x_on + 1;
                 int x = x_on;
                 int y = m_names_y * seqnum + 1;         // + 2
@@ -627,7 +627,9 @@ perfroll::draw_sequence_on (int seqnum)
                 );
                 while (tickmarker < tick_off)
                 {
-                    long tickmarker_x = (tickmarker / m_perf_scale_x) - x_offset;
+                    midipulse tickmarker_x =
+                        (tickmarker / m_perf_scale_x) - x_offset;
+
                     if (tickmarker > tick_on)
                     {
                         draw_rectangle
@@ -1010,7 +1012,7 @@ perfroll::on_button_press_event (GdkEventButton * ev)
 
     if (! m_trans_button_press)
     {
-        m_transport_follow = m_mainperf->get_follow_transport();
+        m_transport_follow = perf().get_follow_transport();
         perf().set_follow_transport(false);
         m_trans_button_press = true;
     }
@@ -1173,22 +1175,22 @@ perfroll::on_key_press_event (GdkEventKey * ev)
 #ifdef USE_STAZED_TRANSPORT
 
     /*
-     * If this keystroke is click, move the song position to the location of
+     * If this keystroke is clicked, move the song position to the location of
      * the mouse pointer.  Stazed used p, but we need an alternative.
      */
 
-    if (k == key_pointer)
+    if (k.is(perf().keys().pointer() )) /* if (k == m_key_pointer)  */
     {
         int x = 0;
         int y = 0;
-        long tick = 0;
+        midipulse tick = 0;
 
         get_pointer(x, y);
         if (x < 0)
             x = 0;
 
-        snap_x(&x);
-        convert_x(x, &tick);
+        snap_x(x);                      /* side-effect */
+        convert_x(x, tick);             /* side-effect */
         perf().reposition(tick);
         return true;
     }

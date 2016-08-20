@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-08-04
+ * \updates       2016-08-19
  * \license       GNU GPLv2 or above
  *
  *  This module also declares/defines the various constants, status-byte
@@ -493,16 +493,16 @@ public:
      *  Calculates the value of the current timestamp modulo the given
      *  parameter.
      *
-     * \param a_mod
+     * \param modtick
      *      The tick value to mod the timestamp against.
      *
      * \return
-     *      Returns a value ranging from 0 to a_mod-1.
+     *      Returns a value ranging from 0 to _mod-1.
      */
 
-    void mod_timestamp (midipulse a_mod)
+    void mod_timestamp (midipulse modtick)
     {
-        m_timestamp %= a_mod;
+        m_timestamp %= modtick;
     }
 
     void set_status (midibyte status);
@@ -688,7 +688,7 @@ public:
     /**
      *  Sets m_has_link and sets m_link to the provided event pointer.
      *
-     * \param a_event
+     * \param ev
      *      Provides a pointer to the event value to set.  If null, then
      *      m_has_link is set to false, to guarantee that is_linked() is
      *      correct.
@@ -866,7 +866,7 @@ public:
      *  Sets the note velocity, which is held in the second data byte, and
      *  clearing off the most-significant-bit, storing it in m_data[1].
      *
-     * \param a_vel
+     * \param vel
      *      Provides the velocity value to set.
      */
 

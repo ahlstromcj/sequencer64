@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-22
- * \updates       2016-08-17
+ * \updates       2016-08-19
  * \license       GNU GPLv2 or above
  *
  *  This collection of variables describes the options of the application,
@@ -41,6 +41,8 @@
  */
 
 #include <string>
+
+#include "seq64_features.h"             /* SEQ64_USE_ZOOM_POWER_OF_2    */
 
 namespace seq64
 {

@@ -28,15 +28,38 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-09-13
- * \updates       2016-08-07
+ * \updates       2016-08-20
  * \license       GNU GPLv2 or above
  *
+ * Stazed:
+ *
+ *      Additional keystrokes are provided by the JACK and transport support
+ *      of seq32:
+ *
+ *      -   Song mode (key F1):
+ *          Toggle between Live versus Song mode.  Provides an easy way to
+ *          toggle without having to traverse menus.
+ *      -   Toggle JACK (key F2):
+ *          Toggle between using JACK and ALSA.  Provides an easy way to
+ *          toggle without having to traverse menus.
+ *      -   Menu mode (key F3):
+ *          Enables and disables the main menu of the main window, to allow
+ *          for the usage of Alt keys in playback hot-keys.
+ *      -   Follow transport (key F4):
+ *          Toggles whether the application follows JACK transport or not.
+ *      -   Fast forward (key f):
+ *          Allows for fast forward.
+ *      -   Rewind (key r):
+ *          Allows for rewind functionality.
+ *      -   Pointer (key p):
+ *          We have to see what this is....
  */
 
-#include <map>                          /* std::map             */
-#include <string>                       /* std::string          */
+#include <map>                          /* std::map                         */
+#include <string>                       /* std::string                      */
 
-#include "easy_macros.h"                /* SEQ64_PAUSE_SUPPORT  */
+#include "easy_macros.h"                /* SEQ64_PAUSE_SUPPORT              */
+#include "seq64_features.h"             /* make sure of the feature macros  */
 
 namespace seq64
 {

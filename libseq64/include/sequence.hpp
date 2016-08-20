@@ -41,6 +41,7 @@
 #include <string>
 #include <stack>
 
+#include "seq64_features.h"             /* various feature #defines */
 #include "calculations.hpp"             /* measures_to_ticks()      */
 #include "event_list.hpp"               /* seq64::event_list        */
 #include "midi_container.hpp"           /* seq64::midi_container    */

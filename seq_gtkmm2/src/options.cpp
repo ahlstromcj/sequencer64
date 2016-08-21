@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-08-17
+ * \updates       2016-08-20
  * \license       GNU GPLv2 or above
  *
  *  Here is a list of the global variables used/stored/modified by this
@@ -229,16 +229,25 @@ options::add_midi_clock_page ()
 }
 
 /**
- *  Adds the MIDI Input page (tab) to the Options dialog.
+ *  Adds the MIDI Input page (tab) to the Options dialog.  We've added a frame
+ *  for the MIDI input, and a frame for additional MIDI input options.
  */
 
 void
 options::add_midi_input_page ()
 {
-    int buses = perf().master_bus().get_num_in_buses(); // input busses
     Gtk::VBox * vbox = manage(new Gtk::VBox());
-    vbox->set_border_width(6);
     m_notebook->append_page(*vbox, "MIDI _Input", true);
+
+    Gtk::Frame * inputframe = manage(new Gtk::Frame("Input Buses"));
+    inputframe->set_border_width(4);
+    vbox->pack_start(*inputframe, Gtk::PACK_SHRINK);
+
+    Gtk::VBox * inputbox = manage(new Gtk::VBox());
+    inputbox->set_border_width(4);
+    inputframe->add(*inputbox);
+
+    int buses = perf().master_bus().get_num_in_buses(); // input busses
     for (int bus = 0; bus < buses; ++bus)
     {
         Gtk::CheckButton * check = manage
@@ -250,8 +259,37 @@ options::add_midi_input_page ()
             bind(mem_fun(*this, &options::input_callback), bus, check)
         );
         check->set_active(perf().master_bus().get_input(bus));
-        vbox->pack_start(*check, false, false);
+        inputbox->pack_start(*check, false, false);
     }
+
+    Gtk::Frame * midioptionframe = manage(new Gtk::Frame("Input Options"));
+    midioptionframe->set_border_width(4);
+    vbox->pack_start(*midioptionframe, Gtk::PACK_SHRINK);
+
+    Gtk::VBox * midioptionbox = manage(new Gtk::VBox());
+    midioptionbox->set_border_width(4);
+    midioptionframe->add(*midioptionbox);
+
+    Gtk::CheckButton * midioptfilter = manage
+    (
+        new Gtk::CheckButton
+        (
+            "Record input into sequence according to channel", true
+        )
+    );
+    midioptfilter->set_active(rc().filter_by_channel());
+    add_tooltip
+    (
+        midioptfilter,
+        "If checked, MIDI recording filters each event into the sequence "
+        "that uses the MIDI channel of the input event.  This is like the "
+        "behavior of Seq32."
+    );
+    midioptionbox->pack_start(*midioptfilter, Gtk::PACK_SHRINK);
+    midioptfilter->signal_toggled().connect
+    (
+        sigc::bind(mem_fun(*this, &options::filter_callback), midioptfilter)
+    );
 }
 
 /**
@@ -586,7 +624,7 @@ options::add_mouse_page ()
     (
         new Gtk::CheckButton
         (
-            "_Mod4 key preserves note-add mode in song and pattern editors",
+            "_Mod4 key preserves add (paint) mode in song and pattern editors",
             true
         )
     );
@@ -976,6 +1014,19 @@ options::input_callback (int bus, Gtk::Button * i_button)
     Gtk::CheckButton * button = (Gtk::CheckButton *) i_button;
     bool input = button->get_active();
     perf().set_input_bus(bus, input);
+}
+
+/**
+ *  NEW
+ */
+
+void
+options::filter_callback (Gtk::Button * f_button)
+{
+    Gtk::CheckButton * button = (Gtk::CheckButton *) f_button;
+    bool input = button->get_active();
+    rc().filter_by_channel(input);
+    perf().filter_by_channel(input);
 }
 
 /**

@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-22
- * \updates       2016-08-19
+ * \updates       2016-08-20
  * \license       GNU GPLv2 or above
  *
  *  This collection of variables describes the options of the application,
@@ -94,6 +94,7 @@ private:
     bool m_with_jack_master;        /**< Serve as a JACK transport Master.  */
     bool m_with_jack_master_cond;   /**< Serve as JACK Master if possible.  */
     bool m_song_start_mode;         /**< True is song mode, false is live.  */
+    bool m_filter_by_channel;       /**< Record only sequence channel data. */
     bool m_manual_alsa_ports;       /**< [manual-alsa-ports] setting.       */
     bool m_reveal_alsa_ports;       /**< [reveal-alsa-ports] setting.       */
     bool m_print_keys;              /**< Show hot-key in main window slot.  */
@@ -291,6 +292,15 @@ public:
     bool song_start_mode () const
     {
         return m_song_start_mode;
+    }
+
+    /**
+     * \getter m_filter_by_channel
+     */
+
+    bool filter_by_channel () const
+    {
+        return m_filter_by_channel;
     }
 
     /**
@@ -536,6 +546,15 @@ protected:
     void song_start_mode (bool flag)
     {
         m_song_start_mode = flag;
+    }
+
+    /**
+     * \setter m_filter_by_channel
+     */
+
+    void filter_by_channel (bool flag)
+    {
+        m_filter_by_channel = flag;
     }
 
     /**

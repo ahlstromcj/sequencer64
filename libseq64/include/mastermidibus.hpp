@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-30
- * \updates       2016-07-31
+ * \updates       2016-08-20
  * \license       GNU GPLv2 or above
  *
  *  The mastermidibus module is the Linux version of the mastermidibus module.
@@ -36,25 +36,22 @@
  *  classes into their own modules.  This module is the latter.
  */
 
+#include <vector>                       /* for channel-filtered recording   */
+
 #include "midibus_common.hpp"
 #include "mutex.hpp"
 #include "user_midi_bus.hpp"
 
-#ifdef USE_STAZED_MIDIBUS_SUPPORT
-#include <vector>
-#endif
-
-#if SEQ64_HAVE_LIBASOUND                // covers this whole module
+#if SEQ64_HAVE_LIBASOUND                /* covers this whole module         */
 
 #include <alsa/asoundlib.h>
 #include <alsa/seq_midi_event.h>
 
 namespace seq64
 {
-
-class event;
-class midibus;
-class sequence;
+    class event;
+    class midibus;
+    class sequence;
 
 /**
  *  The class that "supervises" all of the midibus objects?
@@ -180,16 +177,20 @@ private:
 
     bool m_dumping_input;
 
-#ifdef USE_STAZED_MIDIBUS_SUPPORT
-
     /**
      *  Used for the new "stazed" feature of filtering MIDI channels so that
-     *  a sequence gets only the channels meant for it.
+     *  a sequence gets only the channels meant for it.  We want to make this
+     *  a run-time, non-legacy option.
      */
 
     std::vector<sequence *> m_vector_sequence;
 
-#endif  // USE_STAZED_MIDIBUS_SUPPORT
+    /**
+     *  If true, the m_vector_sequence container is used to divert incoming
+     *  data to the sequence that has the channel it is meant for.
+     */
+
+    bool m_filter_by_channel;
 
     /**
      *  Points to the sequence object.
@@ -246,6 +247,24 @@ public:
     void set_ppqn (int ppqn);
 
     /**
+     * \getter m_filter_by_channel
+     */
+
+    bool filter_by_channel () const
+    {
+        return m_filter_by_channel;
+    }
+
+    /**
+     * \setter m_filter_by_channel
+     */
+
+    void filter_by_channel (bool flag)
+    {
+        m_filter_by_channel = flag;
+    }
+
+    /**
      * \getter m_beats_per_minute
      */
 
@@ -276,7 +295,7 @@ public:
     bool is_more_input ();
     bool get_midi_event (event * in);
     void set_sequence_input (bool state, sequence * seq);
-    void dump_midi_input (event in);                        /* seq32 function */
+    void dump_midi_input (event in);                    /* seq32 function */
 
     /**
      * \getter m_dumping_input

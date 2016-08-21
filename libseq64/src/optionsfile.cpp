@@ -510,6 +510,11 @@ optionsfile::parse (perform & p)
         p.master_bus().set_input(bus, bool(bus_on));
         next_data_line(file);
     }
+    if (next_data_line(file))                       /* new 2016-08-20 */
+    {
+        sscanf(m_line, "%ld", &flag);
+        rc().filter_by_channel(bool(flag));
+    }
 
     line_after(file, "[midi-clock-mod-ticks]");
 
@@ -810,17 +815,14 @@ optionsfile::write (const perform & p)
     file
         << "\n[midi-input]\n\n"
         << buses << "   # number of input MIDI busses\n\n"
-        << "# The first number is the port number, and the second number\n"
-        << "# indicates whether it is disabled (0), or enabled (1).\n\n"
+           "# The first number is the port number, and the second number\n"
+           "# indicates whether it is disabled (0), or enabled (1).\n"
+           "\n"
         ;
 
     for (int i = 0; i < buses; ++i)
     {
-        file
-            << "# "
-            << ucperf.master_bus().get_midi_in_bus_name(i)
-            << "\n"
-            ;
+        file << "# " << ucperf.master_bus().get_midi_in_bus_name(i) << "\n\n";
         snprintf
         (
             outs, sizeof(outs), "%d %d",
@@ -830,17 +832,32 @@ optionsfile::write (const perform & p)
     }
 
     /*
+     * Filter by channel, new option as of 2016-08-20
+     */
+
+    file
+        << "\n"
+        << "# If set to 1, this option allows the master MIDI bus to record\n"
+           "# (filter) incoming MIDI data by channel, allocating each incoming\n"
+           "# MIDI event to the sequence that is set to that channel.\n"
+           "# This is an option adopted from the Seq32 project at GitHub.\n"
+           "\n"
+        << (rc().filter_by_channel() ? "1" : "0")
+        << "   # flag to record incoming data by channel\n"
+        ;
+
+    /*
      * Manual ALSA ports
      */
 
     file
         << "\n[manual-alsa-ports]\n\n"
-        << "# Set to 1 to have sequencer64 create its own ALSA ports and not\n"
-        << "# connect to other clients.  Use 1 to expose all the MIDI ports to\n"
-        << "# JACK (e.g. via a2jmidid).  Use 0 to access the ALSA MIDI ports\n"
-        << "# already running on one's computer, or to use the MIDI Through\n"
-        << "# (capture) output alone in JACK.\n"
-        << "\n"
+           "# Set to 1 to have sequencer64 create its own ALSA ports and not\n"
+           "# connect to other clients.  Use 1 to expose all the MIDI ports to\n"
+           "# JACK (e.g. via a2jmidid).  Use 0 to access the ALSA MIDI ports\n"
+           "# already running on one's computer, or to use the MIDI Through\n"
+           "# (capture) output alone in JACK.\n"
+           "\n"
         << (rc().manual_alsa_ports() ? "1" : "0")
         << "   # flag for manual ALSA ports\n"
         ;

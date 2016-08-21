@@ -1,4 +1,4 @@
-.TH Sequencer64 "July 18 2016" "Version 0.9.17" "Sequencer64 Manual Page"
+.TH Sequencer64 "August 20 2016" "Version 0.9.17" "Sequencer64 Manual Page"
 
 .SH NAME
 Sequencer64 - Real-time MIDI sequencer refactored from Seq24
@@ -19,16 +19,20 @@ a MIDI file. Note that the legacy options, which use underscores or
 are missing the option hyphen, are still unofficially supported.
 Note that many of the options are "sticky".  That is, they will
 be saved to the "rc" configuration file.
+
 .TP 8
 .B  \-h, \-\-help
 Display a list of all commandline options.
+
 .TP 8
 .B  \-v, \-\-version
 Display the program version.
+
 .TP 8
 .B  \-H, \-\-home dir
 Set the directory that holds the configuration files.  It is always
 relative to the user's HOME directory.  The default is ./config/sequencer64.
+
 .TP 8
 .B  \-l, \-\-legacy
 Save the MIDI file in the old Seq24 format, as unspecified
@@ -39,73 +43,100 @@ files, instead of the new ~/.config/sequencer64/sequencer64.rc and
 this mode.  This mode is also used if the application is invoked as the
 \fIseq24\fP command (one can create a soft link to the sequencer64 binary to
 make that happen).
+
 .TP 8
 .B \-b b, \-\-bus b
 Supports modifying the buss number on all tracks when a MIDI file
 is read.  All tracks are loaded with this buss-number override.  This feature
 is useful for testing, making it easy to map the MIDI file onto the system's
 current hardware/software synthesizer setup.
+
 .TP 8
 .B \-B b, \-\-buss b
 The same as the --bus option, just for oldsters to use.
+
 .TP 8
 .B \-q p, \-\-ppqn p
 Supports modifying the PPQN value of Sequencer64, which is currently hardwired
 to a value of 192.  This setting should allow MIDI files to play back at the
 proper speed, and be written with the new PPQN value.  This feature is STILL IN
 PROGRESS, and undependable.
+
 .TP 8
 .B \-L, \-\-lash
 If LASH support is compiled into the program, this option
 enables it.
 If LASH support is not compiled into the program, this option will note
 be shown in the output of the --help option.
+
 .TP 8
 .B \-n, \-\-no-lash
 Disable LASH.  This option is useful if LASH is enabled in the configuration
 file, but one wants it disabled.
+
 .TP 8
 .B \-\-file \fI<filename>\fP
 Load the specified MIDI file on startup.
 This option does not exist.
 Instead, specify the file itself as the last command-line argument.
+
 .TP 8
 .B \-m, \-\-manual-alsa-ports
 Sequencer64 won't attach ALSA MIDI ports.
 Instead, it will create is own set of input and output busses/ports.
+
 .TP 8
 .B \-a, \-\-auto-alsa-ports
 Sequencer64 will attach ALSA ports.  Useful for overriding the
 sequencer64.rc configuration file when set up to use JACK.
+
 .TP 8
 .B \-r, \-\-reveal-alsa-ports
 Do not use the 'user' definition for port names, used the actual
 port names reported by ALSA.
+
 .TP 8
 .B \-r, \-\-hide-alsa-ports
 Use the 'user' definition for port names (useful for overriding a
 configuration).
+
 .TP 8
 .B \-A, \-\-alsa
 Sequencer64 will use ALSA MIDI ports.  This option is useful to override the
 configuration file, if it was set up for JACK.  This is a sticky option.
+
 .TP 8
 .B \-s, \-\-show-midi
 Dumps incoming MIDI to screen.
+
 .TP 8
 .B \-k, \-\-show-keys
 Prints pressed key value.
+
 .TP 8
 .B \-p, \-\-priority
 Runs higher priority with a FIFO scheduler.
 This option needs root access to succeed.
+
 .TP 8
 .B \-P, \-\-pass-sysex
 Passes any incoming SYSEX messages to all outputs.
 Not yet fully implemented.
+
 .TP 8
 .B \-i, \-\-ignore \fI<number>\fP
 Ignore ALSA device <number>.
+
+.TP 8
+.B \-d, \-\-record-by-channel
+Divert MIDI input by cannel into the sequences that are configured for
+each channel.
+
+.TP 8
+.B \-D, \-\-legacy-record
+Record all MIDI into the active sequence.  Also set by the --legacy
+option.
+
 .TP 8
 .B \-x, \-\-interaction-method \fI<number>\fP
 Select the mouse interaction method
@@ -119,35 +150,43 @@ not compiled for JACK support.
 .TP 8
 .B \-j, \-\-jack-transport
 Sequencer64 will sync to JACK transport.
+
 .TP 8
 .B \-J, \-\-jack-master
 Sequencer64 will try to be the JACK master.  This is a sticky option.
+
 .TP 8
 .B \-C, \-\-jack-master-cond
 JACK master will fail if there is already a JACK master.
+
 .TP 8
 .B \-M, \-\-jack-start-mode \fI<x>\fP
 When Sequencer64 is synced to JACK, the following play modes are available:
 	(0 = live mode)
 	(1 = song mode) (default)
+
 .TP 8
 .B \-U, \-\-jack-session-uuid \fI<uuid>\fP
 Set the UUID for the JACK session.
+
 .TP 8
 .B \-S, \-\-stats
 Print statistics on the command-line while running.
+
 .TP 8
 .B \-u, \-\-user-save
 Save the "user" configuration file after exiting.  Normally, it is saved
 only if it does not exist, so as not to make certain command-line "user"
 options (such as --bus) permanent.  (Perhaps the same should be true of the
 "rc" configuration options.)
+
 .TP 8
 .B \-f, \-\-rc filename
 Use a different "rc" configuration file.  It must be a file in the user's
 $HOME/.config/sequencer64 directory or the directory specified by the --home
 option.  Not supported by the --legacy mode.  The '.rc' extension is added if
 no extension is present in the filename.
+
 .TP 8
 .B \-F, \-\-usr filename
 Use a different "usr" configuration file.  It must be a file in the user's

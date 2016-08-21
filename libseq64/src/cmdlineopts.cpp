@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-20
- * \updates       2016-08-18
+ * \updates       2016-08-20
  * \license       GNU GPLv2 or above
  *
  *  The "rc" command-line options override setting that are first read from
@@ -117,6 +117,8 @@ static struct option long_options [] =
     {"alsa",                0, 0, 'A'},                 /* new */
     {"pass-sysex",          0, 0, 'P'},
     {"user-save",           0, 0, 'u'},
+    {"record-by-channel",   0, 0, 'd'},                 /* new */
+    {"legacy-record",       0, 0, 'D'},                 /* new */
     {"config",              required_argument, 0, 'c'}, /* new */
     {"rc",                  required_argument, 0, 'f'}, /* new */
     {"usr",                 required_argument, 0, 'F'}, /* new */
@@ -151,7 +153,7 @@ static struct option long_options [] =
  *  legacy spelling of the option.
  *
  *      0123456789 @AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz
- *       ooooooooo oxxxxxx        xx xxx xxxxx x  xx xxxxx  xxx    x
+ *       ooooooooo oxxxxxx x  xx  xx xxx xxxxx x  xx xxxxx  xxx    x
  *
  *  Previous arg-list, items missing! "ChVH:lRrb:q:Lni:jJmaAM:pPusSU:x:"
  */
@@ -175,7 +177,8 @@ static const char * const s_help_1a =
 "                            always relative to $HOME.  The default is\n"
 "                            .config/sequencer64.\n"
 "   -l, --legacy             Write MIDI file in strict Seq24 format.  Same if\n"
-"                            Sequencer64 is run as 'seq24'.\n"
+"                            Sequencer64 is run as 'seq24'.  Affects some other\n"
+"                            options as well.\n"
 #ifdef SEQ64_LASH_SUPPORT
 "   -L, --lash               Activate built-in LASH support.\n"
 "   -n, --no-lash            Do not activate built-in LASH support.\n"
@@ -219,9 +222,13 @@ static const char * const s_help_2 =
 "   -M, --jack-start-mode m  When synced to JACK, the following play modes are\n"
 "                            available: 0 = live mode; 1 = song mode (default).\n"
 " -U, --jack-session-uuid u  Set UUID for JACK session.\n"
-#endif
 " -x, --interaction-method n Set mouse style: 0 = seq24; 1 = fruity. Note that\n"
 "                            fruity does not support arrow keys and paint key.\n"
+#endif
+"   -d, --record-by-channel  Divert MIDI input by channel into the sequences\n"
+"                            that are configured for each channel.\n"
+"   -D, --legacy-record      Record all MIDI into the active sequence.  The\n"
+"                            default at present.\n"
     ;
 
 /**
@@ -463,6 +470,14 @@ parse_command_line_options (int argc, char * argv [])
             seq64::rc().set_config_files(optarg);
             break;
 
+        case 'D':                           /* --legacy-record option       */
+            seq64::rc().filter_by_channel(false);
+            break;
+
+        case 'd':                           /* --record-by-channel option   */
+            seq64::rc().filter_by_channel(true);
+            break;
+
         case 'F':                           /* --usr option                 */
             seq64::rc().user_filename(optarg);
             break;
@@ -518,7 +533,12 @@ parse_command_line_options (int argc, char * argv [])
 
         case 'l':
             seq64::rc().legacy_format(true);
-            printf("Setting legacy seq24 file format for writing.\n");
+            seq64::rc().filter_by_channel(false);
+            printf
+            (
+                "Setting legacy seq24 file format for configuration, "
+                "writing, and recording.\n"
+            );
             break;
 
         case 'M':

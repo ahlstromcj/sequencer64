@@ -957,6 +957,15 @@ public:
     }
 
     /**
+     * \setter m_master_bus.filter_by_channel()
+     */
+
+    void filter_by_channel (bool flag)
+    {
+        m_master_bus.filter_by_channel(flag);
+    }
+
+    /**
      * \getter m_running
      *      Could also be called "is_playing()".
      */

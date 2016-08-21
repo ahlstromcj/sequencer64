@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-30
- * \updates       2016-07-31
+ * \updates       2016-08-20
  * \license       GNU GPLv2 or above
  *
  *  This file provides a Linux-only implementation of MIDI support.
@@ -42,9 +42,10 @@
 #endif
 
 #include "calculations.hpp"             /* tempo_from_beats_per_minute()    */
-#include "event.hpp"
-#include "mastermidibus.hpp"
-#include "midibus.hpp"
+#include "event.hpp"                    /* seq64::event                     */
+#include "mastermidibus.hpp"            /* seq64::mastermidibus             */
+#include "midibus.hpp"                  /* seq64::midibus                   */
+#include "sequence.hpp"                 /* seq64::sequence                  */
 #include "settings.hpp"                 /* seq64::rc() and choose_ppqn()    */
 
 /**
@@ -106,9 +107,8 @@ mastermidibus::mastermidibus (int ppqn, int bpm)
     m_num_poll_descriptors (0),
     m_poll_descriptors  (nullptr),
     m_dumping_input     (false),
-#ifdef USE_STAZED_MIDIBUS_SUPPORT
     m_vector_sequence   (),
-#endif
+    m_filter_by_channel (false),    // set below based on configuration
     m_seq               (nullptr),
     m_mutex             ()
 {
@@ -1119,9 +1119,6 @@ mastermidibus::get_midi_event (event * inev)
  *  Set the input sequence object, and set the m_dumping_input value to
  *  the given state.
  *
- * \note
- *      Can we rework the for-loops to use iterators?
- *
  * \threadsafe
  *
  * \param state
@@ -1133,52 +1130,61 @@ mastermidibus::get_midi_event (event * inev)
  *      sequence setting.
  */
 
-#ifdef USE_STAZED_MIDIBUS_SUPPORT
-
 void
 mastermidibus::set_sequence_input (bool state, sequence * seq)
 {
     automutex locker(m_mutex);
-    if (state)
+    if (m_filter_by_channel)
     {
         if (not_nullptr(seq))
         {
+            if (state)
+            {
+                /*
+                 * We might have a sequence in the vector; add the sequence if
+                 * not already added.
+                 */
+
+                bool have_seq_already = false;
+                for (size_t i = 0; i < m_vector_sequence.size(); ++i)
+                {
+                    if (m_vector_sequence[i] == seq)
+                        have_seq_already = true;
+                }
+                if (! have_seq_already)
+                    m_vector_sequence.push_back(seq);
+            }
+            else
+            {
+                /*
+                 * If we have a sequence that is in the vector, remove the
+                 * sequence.
+                 */
+
+                for (size_t i = 0; i < m_vector_sequence.size(); ++i)
+                {
+                    if (m_vector_sequence[i] == seq)
+                        m_vector_sequence.erase(m_vector_sequence.begin() + i);
+                }
+            }
+            if (m_vector_sequence.size() != 0)
+                m_dumping_input = true;
+        }
+        else if (! state)
+        {
             /*
-             * We have a sequence in the sequence vector; add the sequence if
-             * not already added.
+             * No sequence and false state means we don't want to record, so
+             * clear the vector.
              */
 
-            bool have_seq_already = false;
-            for (size_t i = 0; i < m_vector_sequence.size(); ++i)
-            {
-                if (m_vector_sequence[i] == seq)
-                    have_seq_already = true;
-            }
-            if (! have_seq_already)
-                m_vector_sequence.push_back(seq);
+            m_vector_sequence.clear();
         }
     }
     else
     {
-        /*
-         * No sequence and false state means we don't want to record, so clear
-         * the vector.  If we have a sequence that is in the vector- remove
-         * the sequence.
-         */
-
-        if (not_nullptr(seq))
-        {
-            for (size_t i = 0; i < m_vector_sequence.size(); ++i)
-            {
-                if (m_vector_sequence[i] == seq)
-                    m_vector_sequence.erase(m_vector_sequence.begin() + i);
-            }
-        }
-        else
-            m_vector_sequence.clear();
+        m_seq = seq;
+        m_dumping_input = state;
     }
-    if (m_vector_sequence.size() > 0)
-        m_dumping_input = true;
 }
 
 /**
@@ -1199,7 +1205,7 @@ mastermidibus::dump_midi_input (event ev)
         {
             break;
         }
-        else if (m_vector_sequence[i]->stream_event(&ev))
+        else if (m_vector_sequence[i]->stream_event(ev))
         {
             /*
              * Did we find a match to the sequence channel?  Then don't bother
@@ -1210,18 +1216,6 @@ mastermidibus::dump_midi_input (event ev)
         }
     }
 }
-
-#else
-
-void
-mastermidibus::set_sequence_input (bool state, sequence * seq)
-{
-    automutex locker(m_mutex);
-    m_seq = seq;
-    m_dumping_input = state;
-}
-
-#endif      // USE_STAZED_MIDIBUS_SUPPORT
 
 }           // namespace seq64
 

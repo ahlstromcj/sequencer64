@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-08-17
+ * \updates       2016-08-20
  * \license       GNU GPLv2 or above
  *
  */
@@ -206,6 +206,7 @@ private:
     void clock_callback_mod (int bus, Gtk::RadioButton * button);
     void clock_mod_callback (Gtk::Adjustment * adj);
     void input_callback (int bus, Gtk::Button * button);
+    void filter_callback (Gtk::Button * button);
     void transport_callback (button type, Gtk::Button * button);
     void mouse_seq24_callback (Gtk::RadioButton *);
     void mouse_fruity_callback (Gtk::RadioButton *);

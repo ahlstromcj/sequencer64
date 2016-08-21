@@ -1,6 +1,6 @@
 README for Sequencer64 0.9.17
 Chris Ahlstrom
-2015-09-10 to 2016-08-18 (initial work started in July of 2015)
+2015-09-10 to 2016-08-20 (initial work started in July of 2015)
 
 Sequencer64 (replaces sequencer24) is a reboot of seq24 to refactor it to be
 tighter and easier to transition to GTKmm 3, and much more.  It is now
@@ -27,10 +27,12 @@ Major updates:
         -   Ctrl-Left-Click in the Song Editor now works as a middle-click,
             to split the song trigger in half.
         -   The seq32 feature of splitting at the nearest snap point near
-            a middle-click, in the Song Editor,  has been added as an optional
+            a middle-click, in the Song Editor, has been added as an optional
             feature.
         -   Started adding support for recording incoming MIDI to the
             sequences that match the incoming channel data. (Stazed feature).
+            This is a run-time option, and can be set from the Options dialog,
+            the command-line, and in the "rc" configuration file.
         -   Enabled actual support for the recording-volume feature, which was
             not actually used in seq24.
         -   Added better support for undo/redo ability from the stazed project

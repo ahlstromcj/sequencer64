@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2016-08-19
- * \updates       2016-08-19
+ * \updates       2016-08-20
  * \license       GNU GPLv2 or above
  *
  *    Some options (the "USE_xxx" options) specify experimental and
@@ -68,7 +68,6 @@
 
 #undef  USE_STAZED_LFO_SUPPORT
 #undef  USE_STAZED_MENU_MODE_BUTTON
-#undef  USE_STAZED_MIDIBUS_SUPPORT
 #undef  USE_STAZED_MIDI_DUMP
 #undef  USE_STAZED_MULTIPLY_PATTERN
 #undef  USE_STAZED_ODD_EVEN_SELECTION

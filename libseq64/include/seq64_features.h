@@ -43,6 +43,11 @@
  *    The rest of the options can be modified only by editing the source code
  *    (soon to be this file) to enable or disable features.  These options are
  *    those that we feel more strongly about.
+ *
+ *    Currently, we've tested all the EXPERIMENTAL options to the extent of
+ *    building them successfully.  However, enabling them is currently
+ *    TEMPORARY; we want to build with them all disabled, and enable them
+ *    one-by-one in a controlled, tested manner.
  */
 
 /*
@@ -63,7 +68,7 @@
  *  accomplished by the sequence::multiply_patten() function.
  */
 
-#define  USE_STAZED_COMPANDING
+#undef  USE_STAZED_COMPANDING
 
 /*
  *  TEMPORARILY defined.
@@ -73,7 +78,7 @@
  *  sequence has been given a name (and thus presumably been edited).
  */
 
-#define USE_STAZED_EXTRAS
+#undef  USE_STAZED_EXTRAS
 
 /*
  *  TEMPORARILY defined.
@@ -84,7 +89,7 @@
  *  this code at least compiles.
  */
 
-#define  USE_STAZED_EXTRA_SNAPS
+#undef  USE_STAZED_EXTRA_SNAPS
 
 /*
  *  TEMPORARILY defined.
@@ -93,7 +98,7 @@
  *  seqedit::thru_change_callback().
  */
 
-#define USE_STAZED_FIX
+#undef  USE_STAZED_FIX
 
 /*
  *  TEMPORARILY defined, will need testing.
@@ -102,7 +107,7 @@
  *  from a file.
  */
 
-#define USE_SYSEX_PROCESSING            /* disabled in Seq24 as well        */
+#undef  USE_SYSEX_PROCESSING            /* disabled in Seq24 as well        */
 
 /*
  *  TEMPORARILY defined
@@ -114,7 +119,7 @@
  *  Seq32.
  */
 
-#define USE_STAZED_JACK_SUPPORT
+#undef  USE_STAZED_JACK_SUPPORT
 
 /*
  *  TEMPORARILY defined
@@ -124,7 +129,7 @@
  *  though.
  */
 
-#define USE_STAZED_LFO_SUPPORT
+#undef  USE_STAZED_LFO_SUPPORT
 
 /*
  *  TEMPORARILY defined
@@ -132,7 +137,7 @@
  *  Adds a button to disable the main menu in the main window.
  */
 
-#define USE_STAZED_MENU_MODE_BUTTON
+#undef  USE_STAZED_MENU_MODE_BUTTON
 
 /*
  *  TEMPORARILY defined
@@ -141,7 +146,7 @@
  *  the main window.
  */
 
-#define  USE_STAZED_SONG_MODE_BUTTON
+#undef  USE_STAZED_SONG_MODE_BUTTON
 
 /*
  *  TEMPORARILY defined
@@ -155,7 +160,7 @@
  *  macro here.
  */
 
-#define  USE_STAZED_MIDI_DUMP
+#undef  USE_STAZED_MIDI_DUMP
 
 /*
  *  TEMPORARILY defined
@@ -163,37 +168,37 @@
  *  Adds the ability to select odd/even notes in seqedit.
  */
 
-#define USE_STAZED_ODD_EVEN_SELECTION
+#undef  USE_STAZED_ODD_EVEN_SELECTION
 
 /*
  *  TEMPORARILY defined
  */
 
-#define USE_STAZED_SELECTION_EXTENSIONS
+#undef  USE_STAZED_SELECTION_EXTENSIONS
 
 /*
  *  TEMPORARILY defined
  */
 
-#define USE_STAZED_PLAYING_CONTROL
+#undef  USE_STAZED_PLAYING_CONTROL
 
 /*
  *  TEMPORARILY defined
  */
 
-#define USE_STAZED_RANDOMIZE_SUPPORT
+#undef  USE_STAZED_RANDOMIZE_SUPPORT
 
 /*
  *  TEMPORARILY defined
  */
 
-#define USE_STAZED_SEQDATA_EXTENSIONS
+#undef  USE_STAZED_SEQDATA_EXTENSIONS
 
 /*
  *  TEMPORARILY defined
  */
 
-#define USE_STAZED_SHIFT_SUPPORT
+#undef  USE_STAZED_SHIFT_SUPPORT
 
 /*
  *  TEMPORARILY defined
@@ -201,7 +206,7 @@
  *  Adds support for various transport features, more to come.
  */
 
-#define USE_STAZED_TRANSPORT
+#undef  USE_STAZED_TRANSPORT
 
 /*
  *  TEMPORARILY defined
@@ -209,7 +214,11 @@
  *  Stazed implementation of auto-scroll.
  */
 
-#define  USE_STAZED_PERF_AUTO_SCROLL
+#undef  USE_STAZED_PERF_AUTO_SCROLL
+
+/*
+ * To recapitulate, all the options above are EXPERIMENTAL and in progress.
+ */
 
 /*
  * Configure-time options.
@@ -234,7 +243,9 @@
  *  The idea is to go into an auto-screen-set mode via a menu entry, where the
  *  first set is unmuted, and then changes to the screen-set number queue the
  *  previous screen-set for muting, and queue up the current one for
- *  unmuting.  DO NOT ENABLE AT THIS TIME.
+ *  unmuting.
+ *
+ *  DO NOT ENABLE AT THIS TIME.
  */
 
 #undef  SEQ64_USE_AUTO_SCREENSET_QUEUE
@@ -277,6 +288,12 @@
 
 #define SEQ64_FOLLOW_PROGRESS_BAR
 
+/**
+ *  Currently enabled by default, this macro turns on code that scrolls the
+ *  sequence/pattern editor horizontally to keep the progress bar in view for
+ *  long patterns, as the tune plays.
+ */
+
 #define SEQ64_HANDLE_TIMESIG_AND_TEMPO
 
 /**
@@ -286,8 +303,24 @@
 
 #define SEQ64_SOLID_PIANOROLL_GRID
 
-#define SEQ64_STATISTICS_SUPPORT
+/**
+ *  An option we've preserved from Seq24, but have disabled until we find a
+ *  need for it, is to tally some "statistics" about recording and playback.
+ */
+
+#undef  SEQ64_STATISTICS_SUPPORT
+
+/**
+ *  Provides additional sequence menu entries from Seq32 that we think are
+ *  pretty useful no matter what.
+ */
+
 #define SEQ64_STAZED_EDIT_MENU
+
+/**
+ *  A color option.
+ */
+
 #define SEQ64_USE_BLACK_SELECTION_BOX
 
 /**
@@ -311,6 +344,10 @@
  */
 
 #define SEQ64_USE_MIDI_VECTOR           /* as opposed to the MIDI list      */
+
+/**
+ *  Enables some mute-group patches contributed by a Sequencer64 user.
+ */
 
 #define SEQ64_USE_TDEAGAN_CODE
 

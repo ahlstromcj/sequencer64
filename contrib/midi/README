@@ -1,6 +1,6 @@
 Contributed MIDI Files
 Chris Ahlstrom
-2015-09-11 to 2016-03-27
+2015-09-11 to 2016-08-21
 
 This directory contains contributed MIDI files for examples and testing.
 Also see the test files from the midicvt as described in
@@ -129,4 +129,10 @@ by loading them into Sequencer64.
         Another song from long ago, configured for the Yoshimi software
         synthesizer, mapped onto bus 0.
 
-# vim: sw=4 ts=4 wm=8 et ft=sh
+   Beh_Firmware_Blank_Sysex.syx
+
+        A sample SysEx-only file obtained from
+
+            http://host.mtnsys.com:81/faq-fcb/ExampleSysexFiles.htm
+
+# vim: sw=3 ts=3 wm=8 et ft=sh

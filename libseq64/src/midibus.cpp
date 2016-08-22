@@ -500,11 +500,22 @@ midibus::sysex (event * e24)
     snd_seq_ev_set_subs(&ev);
     snd_seq_ev_set_direct(&ev);                         /* it's immediate   */
 
-    midibyte * data = e24->get_sysex();
-    long data_size = e24->get_sysex_size();
-    for (long offset = 0; offset < data_size; offset += c_midibus_sysex_chunk)
+    /*
+     *  Replaced by a vector of midibytes:
+     *
+     *      midibyte * data = e24->get_sysex();
+     *
+     *  This is a bit tricky, and relies on the standard property of
+     *  std::vector where all n elements of the vector are guaranteed to be
+     *  stored contiguously (in order to be accessible via random-access
+     *  iterators).
+     */
+
+    event::SysexContainer & data = e24->get_sysex();
+    int data_size = e24->get_sysex_size();
+    for (int offset = 0; offset < data_size; offset += c_midibus_sysex_chunk)
     {
-        long data_left = data_size - offset;
+        int data_left = data_size - offset;
         snd_seq_ev_set_sysex
         (
             &ev, min(data_left, c_midibus_sysex_chunk), &data[offset]

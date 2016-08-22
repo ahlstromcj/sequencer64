@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-08-20
+ * \updates       2016-08-21
  * \license       GNU GPLv2 or above
  *
  *  For a quick guide to the MIDI format, see, for example:
@@ -328,6 +328,10 @@ midifile::read_varinum ()
  *      We've covered some of those cases by disabling access to m_data if the
  *      position passes the size of the file, but we want try to bypass these
  *      odd cases properly.  So we look ahead for one of these special values.
+ *
+ *      Currently, Sequencer64, like Se24, handles SysEx message only to the
+ *      extend of passing them via MIDI Thru.  We hope to improve on that
+ *      capability.
  *
  * \param p
  *      Provides a reference to the perform object into which sequences/tracks
@@ -789,15 +793,10 @@ midifile::parse_smf_1 (perform & p, int screenset, bool is_smf0)
 
                             if ((len == 4) && ! timesig_set)
                             {
-                                /*
-                                 * \change ca 2016-03-27
-                                 *      Found bug when reading allofarow.mid.
-                                 *      Had reversed nn and dd!
-                                 */
-
                                 int bpm = int(read_byte());         // nn
                                 int logbase2 = int(read_byte());    // dd
                                 long bw = long(pow2(logbase2));
+
 #ifdef SEQ64_HANDLE_TIMESIG_AND_TEMPO
                                 int cc = read_byte();               // cc
                                 int bb = read_byte();               // bb
@@ -905,7 +904,7 @@ midifile::parse_smf_1 (perform & p, int screenset, bool is_smf0)
                             break;
                         }
                     }
-                    else if (status == 0xF0)
+                    else if (status == EVENT_MIDI_SYSEX)    /* 0xF0 */
                     {
                         /*
                          * Some files do not properly encode SysEx messages;
@@ -923,9 +922,21 @@ midifile::parse_smf_1 (perform & p, int screenset, bool is_smf0)
                         {
                             --m_pos;                    /* put byte back    */
                             len = read_varinum();       /* sysex            */
+#ifdef USE_SYSEX_PROCESSING
+                            int bcount = 0;
+                            while (len--)
+                            {
+                                midibyte b = read_byte();
+                                ++bcount;
+                                if (! e.append_sysex(b)) /* SysEx end byte? */
+                                    break;
+                            }
+                            m_pos += len;               /* skip the rest    */
+#else
                             m_pos += len;               /* skip it          */
                             if (m_data[m_pos-1] != 0xF7)
                                 errdump("SysEx terminator byte F7 not found");
+#endif
                         }
                     }
                     else

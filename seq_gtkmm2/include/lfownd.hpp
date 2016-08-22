@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq42 team; modifications by Chris Ahlstrom
  * \date          2016-07-30
- * \updates       2016-07-31
+ * \updates       2016-08-21
  * \license       GNU GPLv2 or above
  *
  *  Created on: 22 mar 2013
@@ -59,7 +59,9 @@ namespace seq64
     class sequence;
 
 /**
- *
+ *  One LFO window class.  Personally, it seems a bit of a odd duck to be
+ *  included in Sequencer64, so we're thinking of a better way to manage the
+ *  data managed by this window.
  */
 
 class lfownd : public gui_window_gtk2
@@ -68,30 +70,30 @@ class lfownd : public gui_window_gtk2
 private:
 
     /**
-     *
+     *  The sequence associated with this window.
      */
 
     sequence & m_seq;
 
     /**
-     *
+     *  The seqdata associated with this window.
      */
 
     seqdata & m_seqdata;
 
-    Gtk::HBox * m_hbox;
+    Gtk::HBox * m_hbox;             /**<    */
 
-    Gtk::VScale * m_scale_value;     /**<    */
-    Gtk::VScale * m_scale_range;     /**<    */
-    Gtk::VScale * m_scale_speed;     /**<    */
-    Gtk::VScale * m_scale_phase;     /**<    */
-    Gtk::VScale * m_scale_wave;      /**<    */
+    Gtk::VScale * m_scale_value;    /**<    */
+    Gtk::VScale * m_scale_range;    /**<    */
+    Gtk::VScale * m_scale_speed;    /**<    */
+    Gtk::VScale * m_scale_phase;    /**<    */
+    Gtk::VScale * m_scale_wave;     /**<    */
 
     double m_value;
     double m_range;
     double m_speed;
     double m_phase;
-    int m_wave;
+    wave_type_t m_wave;
 
 public:
 

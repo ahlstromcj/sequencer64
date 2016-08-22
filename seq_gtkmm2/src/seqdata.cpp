@@ -236,7 +236,7 @@ seqdata::draw_events_on (Glib::RefPtr<Gdk::Drawable> drawable)
     int seltype = numselected;
     if (m_status == EVENT_NOTE_ON)                  // ??????? iffy.
     {
-        numselected = m_seq.get_num_selected_event(m_status, m_cc);
+        numselected = m_seq.get_num_selected_events(m_status, m_cc);
         if (numselected > 0)
             seltype = EVENTS_UNSELECTED;
     }
@@ -244,52 +244,54 @@ seqdata::draw_events_on (Glib::RefPtr<Gdk::Drawable> drawable)
     {
 #endif
 
-    m_seq.reset_draw_marker();
+        m_seq.reset_draw_marker();
 #ifdef USE_STAZED_SEQDATA_EXTENSIONS
-    while
-    (
-        m_seq.get_next_event(m_status, m_cc, &tick, &d0, &d1, &selected, seltype)
-    )
+        while
+        (
+            m_seq.get_next_event(m_status, m_cc, &tick, &d0, &d1, &selected, seltype)
+        )
 #else
-    while (m_seq.get_next_event(m_status, m_cc, &tick, &d0, &d1, &selected))
+        while (m_seq.get_next_event(m_status, m_cc, &tick, &d0, &d1, &selected))
 #endif
-    {
-        if (tick >= starttick && tick <= endtick)
         {
-            int event_x = tick / m_zoom;            /* screen coordinate    */
-            int event_height = event::is_one_byte_msg(m_status) ? d0 : d1 ;
-            int x = event_x - m_scroll_offset_x + 1;
-            set_line(Gdk::LINE_SOLID, 2);           /* vertical event line  */
-            draw_line
-            (
-                drawable, selected ? dark_orange() : black_paint(),
-                x, c_dataarea_y - event_height, x, c_dataarea_y
-            );
+            if (tick >= starttick && tick <= endtick)
+            {
+                int event_x = tick / m_zoom;            /* screen coordinate    */
+                int event_height = event::is_one_byte_msg(m_status) ? d0 : d1 ;
+                int x = event_x - m_scroll_offset_x + 1;
+                set_line(Gdk::LINE_SOLID, 2);           /* vertical event line  */
+                draw_line
+                (
+                    drawable, selected ? dark_orange() : black_paint(),
+                    x, c_dataarea_y - event_height, x, c_dataarea_y
+                );
 
 #ifdef USE_STAZED_SEQDATA_EXTENSIONS
-			draw_rectangle                          /* draw handle          */
-			(
-                drawable, selected ? dark_orange() : black_paint(), // true,
-                event_x - m_scroll_offset_x - 3,
-                c_dataarea_y - event_height,
-                c_data_handle_x,
-                c_data_handle_y
-            );
+                draw_rectangle                          /* draw handle          */
+                (
+                    drawable, selected ? dark_orange() : black_paint(), // true,
+                    event_x - m_scroll_offset_x - 3,
+                    c_dataarea_y - event_height,
+                    c_data_handle_x,
+                    c_data_handle_y
+                );
 #endif
 
-            drawable->draw_drawable
-            (
-                m_gc, m_numbers[event_height], 0, 0,
-                x + 2, c_dataarea_y - m_number_h + 3,
-                m_number_w, m_number_h
-            );
+                drawable->draw_drawable
+                (
+                    m_gc, m_numbers[event_height], 0, 0,
+                    x + 2, c_dataarea_y - m_number_h + 3,
+                    m_number_w, m_number_h
+                );
+            }
         }
-    }
 #ifdef USE_STAZED_SEQDATA_EXTENSIONS
-    if (seltype == EVENTS_UNSELECTED)
-        seltype = numselected;
-    else
-        break;
+        if (seltype == EVENTS_UNSELECTED)
+            seltype = numselected;
+        else
+            break;
+
+    } while (seltype == EVENTS_UNSELECTED);
 #endif
 }
 
@@ -437,7 +439,7 @@ seqdata::on_motion_notify_event (GdkEventMotion * ev)
         m_current_y = int(ev->y = 3);
         m_current_y = c_dataarea_y - m_current_y;
         if (m_current_y < 0)
-            m_currrent_y = 0;
+            m_current_y = 0;
 
         m_seq.adjust_data_handle(m_status, m_current_y);
         update_pixmap();

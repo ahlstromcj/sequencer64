@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq42 team; modifications by Chris Ahlstrom
  * \date          2016-07-30
- * \updates       2016-07-31
+ * \updates       2016-08-21
  * \license       GNU GPLv2 or above
  *
  *  Created on: 22 mar 2013
@@ -40,6 +40,7 @@
 #include <gtkmm/box.h>
 #include <gtkmm/scale.h>
 
+#include "calculations.hpp"             /* seq64::wave_type_t enumeration   */
 #include "lfownd.hpp"
 #include "seqdata.hpp"
 #include "seqedit.hpp"
@@ -67,7 +68,7 @@ lfownd::lfownd (perform & p, sequence & seq, seqdata & sdata)
     m_range          (0.0),
     m_speed          (0.0),
     m_phase          (0.0),
-    m_wave           (0)
+    m_wave           (WAVE_NONE)
 {
     std::string title = "Sequencer64 - LFO Editor - ";
     title.append(m_seq.get_name());
@@ -130,7 +131,8 @@ lfownd::scale_lfo_change ()
     m_range = m_scale_range->get_value();
     m_speed = m_scale_speed->get_value();
     m_phase = m_scale_phase->get_value();
-    m_wave = m_scale_wave->get_value();
+    m_wave = wave_type_t(int(m_scale_wave->get_value()));
+
 #ifdef USE_STAZED_LFO_SUPPORT
     m_seq.change_event_data_lfo
     (
@@ -138,6 +140,7 @@ lfownd::scale_lfo_change ()
         m_seqdata.m_status, m_seqdata.m_cc
     );
 #endif
+
     m_seqdata.update_pixmap();
     m_seqdata.draw_pixmap_on_window();
 }

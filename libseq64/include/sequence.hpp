@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-30
- * \updates       2016-08-19
+ * \updates       2016-08-21
  * \license       GNU GPLv2 or above
  *
  *  The functions add_list_var() and add_long_list() have been replaced by
@@ -1118,6 +1118,7 @@ public:
     );
 
 #ifdef USE_STAZED_SELECTION_EXTENSIONS
+
     int select_events (midipulse tick_s, midipulse tick_f, midibyte status);
     int select_event_handle
     (
@@ -1126,13 +1127,19 @@ public:
     );
     int select_linked (long tick_s, long tick_f, midibyte status);
 
+#endif
+
+#ifdef USE_STAZED_ODD_EVEN_SELECTION
+
     /*
      *  Given a note length (in ticks) and a boolean indicating even or odd,
-     *  select all notes where the note on even occurs exactly on an even (or odd)
-     *  multiple of note length.
-     *  Example use: select every note that starts on an even eighth note beat.
+     *  select all notes where the note on even occurs exactly on an even (or
+     *  odd) multiple of note length.  Example use: select every note that
+     *  starts on an even eighth note beat.
      */
+
     int select_even_or_odd_notes (int note_len, bool even);
+
 #endif
 
     /**
@@ -1192,7 +1199,7 @@ public:
     void change_event_data_lfo
     (
         double value, double range, double speed, double phase,
-        int wave, unsigned char status, unsigned char cc
+        wave_type_t wave, midibyte status, midibyte cc
     );
 #endif
 
@@ -1204,9 +1211,9 @@ public:
 #ifdef USE_STAZED_RANDOMIZE_SUPPORT
     void randomize_selected
     (
-        unsigned char status, unsigned char control, int plus_minus
+        midibyte status, midibyte control, int plus_minus
     );
-    void adjust_data_handle (unsigned char status, int data);
+    void adjust_data_handle (midibyte status, int data);
 #endif
 
     bool remove_marked ();                      /* a forwarding function */
@@ -1276,6 +1283,14 @@ public:
         midipulse snap_tick, int divide, bool linked = false
     );
     void transpose_notes (int steps, int scale);
+
+#ifdef USE_STAZED_SHIFT_SUPPORT
+    void shift_notes (midipulse ticks);
+#endif
+
+#ifdef USE_STAZED_COMPANDING
+    void multiply_pattern (double multiplier);
+#endif
 
     /**
      * \getter m_musical_key

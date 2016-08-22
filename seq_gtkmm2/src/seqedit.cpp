@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-08-19
+ * \updates       2016-08-21
  * \license       GNU GPLv2 or above
  *
  *  Compare this class to eventedit, which has to do some similar things,
@@ -159,6 +159,9 @@ enum edit_action_t
     c_select_inverse_events    =  4,
     c_quantize_notes           =  5,
     c_quantize_events          =  6,
+#ifdef USE_STAZED_RANDOMIZE_SUPPORT
+    c_randomize_events         =  7,
+#endif
     c_tighten_events           =  8,
     c_tighten_notes            =  9,
     c_transpose_notes          = 10,    /* basic transpose      */
@@ -242,6 +245,10 @@ seqedit::seqedit
     m_menu_sequences    (nullptr),
     m_menu_bpm          (manage(new Gtk::Menu())),
     m_menu_bw           (manage(new Gtk::Menu())),
+#ifdef USE_STAZED_LFO_SUPPORT
+    m_button_lfo        (manage(new Gtk::Button("LFO"))),
+    m_lfo_wnd           (new lfownd(p, m_seq, *m_seqdata_wid)),
+#endif
     m_menu_rec_vol      (manage(new Gtk::Menu())),
     m_vadjust           (manage(new Gtk::Adjustment(55, 0, c_num_keys, 1, 1, 1))),
     m_hadjust           (manage(new Gtk::Adjustment(0, 0, 1, 1, 1, 1))),
@@ -265,9 +272,6 @@ seqedit::seqedit
             )
         )
     ),
-#ifdef USE_STAZED_LFO_SUPPORT
-    m_lfo_wnd           (new lfownd(m_seq, m_seqdata_wid),
-#endif
     m_table             (manage(new Gtk::Table(7, 4, false))),
     m_vbox              (manage(new Gtk::VBox(false, 2))),
     m_hbox              (manage(new Gtk::HBox(false, 2))),
@@ -304,9 +308,6 @@ seqedit::seqedit
     m_tooltips          (manage(new Gtk::Tooltips())),
     m_button_data       (manage(new Gtk::Button(" Event "))),
     m_entry_data        (manage(new Gtk::Entry())),
-#ifdef USE_STAZED_LFO_SUPPORT
-    m_button_lfo        (manage(new Gtk::Button("LFO"))),
-#endif
     m_button_bpm        (nullptr),
     m_entry_bpm         (nullptr),
     m_button_bw         (nullptr),
@@ -461,7 +462,7 @@ seqedit::seqedit
     fill_top_bar();
 
 #ifdef USE_STAZED_EXTRAS
-    if (m_seq.get_name() ! std::string("Untitled")
+    if (m_seq.get_name() != std::string("Untitled"))
     {
         m_seqroll_wid->set_can_focus();
         m_seqroll_wid->grab_focus();
@@ -799,15 +800,14 @@ seqedit::popup_tool_menu ()
         MenuElem
         (
             "Even 1/4 Note Beats",
-            sigc::bind(DO_ACTION, select_even_notes, c_ppqn)
+            sigc::bind(DO_ACTION, c_select_even_notes, m_ppqn)
         )
     );
     holder->items().push_back
     (
         MenuElem
         (
-            "Odd 1/4 Note Beats",
-            sigc::bind(DO_ACTION, select_odd_notes, c_ppqn)
+            "Odd 1/4 Note Beats", sigc::bind(DO_ACTION, c_select_odd_notes, m_ppqn)
         )
     );
     holder->items().push_back
@@ -815,7 +815,7 @@ seqedit::popup_tool_menu ()
         MenuElem
         (
             "Even 1/8 Note Beats",
-            sigc::bind(DO_ACTION, select_even_notes, c_ppen)
+            sigc::bind(DO_ACTION, c_select_even_notes, m_pp_eighth)
         )
     );
     holder->items().push_back
@@ -823,8 +823,7 @@ seqedit::popup_tool_menu ()
         MenuElem
         (
             "Odd 1/8 Note Beats",
-            sigc::bind(DO_ACTION,
-                select_odd_notes, c_ppen)
+            sigc::bind(DO_ACTION, c_select_odd_notes, m_pp_eighth)
         )
     );
     holder->items().push_back
@@ -832,7 +831,7 @@ seqedit::popup_tool_menu ()
         MenuElem
         (
             "Even 1/16 Note Beats",
-            sigc::bind(DO_ACTION, select_even_notes, c_ppsn)
+            sigc::bind(DO_ACTION, c_select_even_notes, m_pp_sixteenth)
         )
     );
     holder->items().push_back
@@ -840,7 +839,7 @@ seqedit::popup_tool_menu ()
         MenuElem
         (
             "Odd 1/16 Note Beats",
-            sigc::bind(DO_ACTION, select_odd_notes, c_ppsn)
+            sigc::bind(DO_ACTION, c_select_odd_notes, m_pp_sixteenth)
         )
     );
 
@@ -901,13 +900,13 @@ seqedit::popup_tool_menu ()
     holder->items().push_back
     (
         MenuElem("Expand Pattern (double)",
-            sigc::bind(DO_ACTION, expand_pattern, 0))
+            sigc::bind(DO_ACTION, c_expand_pattern, 0))
     );
 
     holder->items().push_back
     (
         MenuElem("Compress Pattern (halve)",
-            sigc::bind(DO_ACTION, compress_pattern, 0))
+            sigc::bind(DO_ACTION, c_compress_pattern, 0))
     );
 
 #endif
@@ -956,13 +955,13 @@ seqedit::popup_tool_menu ()
 
 #ifdef USE_STAZED_RANDOMIZE_SUPPORT
 
-    holder = manage( new Menu());
+    holder = manage(new Gtk::Menu());
     for (int i = 1; i < 17; ++i)
     {
         snprintf(num, sizeof(num), "+/- %d", i);
         holder->items().push_back
         (
-            MenuElem(num, sigc::bind(DO_ACTION, randomize_events, i))
+            MenuElem(num, sigc::bind(DO_ACTION, c_randomize_events, i))
         );
     }
     m_menu_tools->items().push_back
@@ -1005,11 +1004,11 @@ seqedit::do_action (int action, int var)
 
 #ifdef USE_STAZED_ODD_EVEN_SELECTION
 
-    case select_even_notes:
+    case c_select_even_notes:
         m_seq.select_even_or_odd_notes(var, true);
         break;
 
-    case select_odd_notes:
+    case c_select_odd_notes:
         m_seq.select_even_or_odd_notes(var, false);
         break;
 
@@ -1017,7 +1016,7 @@ seqedit::do_action (int action, int var)
 
 #ifdef USE_STAZED_RANDOMIZE_SUPPORT
 
-    case randomize_events:
+    case c_randomize_events:
         m_seq.randomize_selected(m_editing_status, m_editing_cc, var);
         break;
 
@@ -1056,11 +1055,11 @@ seqedit::do_action (int action, int var)
 
 #ifdef USE_STAZED_COMPANDING
 
-    case expand_pattern:
+    case c_expand_pattern:
         m_seq.multiply_pattern(2.0);
         break;
 
-    case compress_pattern:
+    case c_compress_pattern:
         m_seq.multiply_pattern(0.5);
         break;
 #endif
@@ -2095,7 +2094,7 @@ seqedit::record_change_callback ()
     if (! thru_active)
         perf().master_bus().set_sequence_input(record_active, &m_seq);
 
-    m_seq->set_recording(record_active);
+    m_seq.set_recording(record_active);
 #else
     perf().master_bus().set_sequence_input(true, &m_seq);
     m_seq.set_recording(m_toggle_record->get_active());
@@ -2162,7 +2161,7 @@ seqedit::thru_change_callback ()
     if (! record_active)
         perf().master_bus().set_sequence_input(thru_active, &m_seq);
 
-    m_seq->set_recording(thru_active);
+    m_seq.set_recording(thru_active);
 #else
     perf().master_bus().set_sequence_input(true, &m_seq);
     m_seq.set_thru(m_toggle_thru->get_active());

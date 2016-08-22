@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and Tim Deagan
  * \date          2015-07-24
- * \updates       2016-08-20
+ * \updates       2016-08-21
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -3199,7 +3199,7 @@ perform::input_func ()
                      *  control the sequencer, if it is valid for that action.
                      */
 
-                    if (ev.get_status() <= EVENT_SYSEX)
+                    if (ev.get_status() <= EVENT_MIDI_SYSEX)
                     {
                         if (rc().show_midi())
                             ev.print();
@@ -3214,7 +3214,7 @@ perform::input_func ()
                         {
                             ev.set_timestamp(m_tick);
 #ifdef USE_STAZED_MIDI_DUMP
-                            m_master_bus.dump_midi_input(&ev);
+                            m_master_bus.dump_midi_input(ev);
 #else
                             m_master_bus.get_sequence()->stream_event(ev);
 #endif
@@ -3276,7 +3276,7 @@ perform::input_func ()
                             }
                         }
                     }
-                    if (ev.get_status() == EVENT_SYSEX)
+                    if (ev.get_status() == EVENT_MIDI_SYSEX)
                     {
                         if (rc().show_midi())
                             ev.print();

@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-08-19
+ * \updates       2016-08-21
  * \license       GNU GPLv2 or above
  *
  *  This module also declares/defines the various constants, status-byte
@@ -37,12 +37,10 @@
  */
 
 #include <string>                       /* used in to_string()          */
-
-#ifdef USE_STAZED_SYSEX_SUPPORT
 #include <vector>                       /* SYSEX data stored in vector  */
-#endif
 
 #include "midibyte.hpp"                 /* seq64::midibyte typedef      */
+#include "seq64_features.h"             /* feature macros               */
 
 /**
  *  Defines the number of data bytes in MIDI status data.
@@ -95,24 +93,29 @@ const midibyte EVENT_PITCH_WHEEL        = 0xE0;      // 0lllllll 0mmmmmmm
  *      -   EVENT_MIDI_QUARTER_FRAME    = 0xF1      // undefined?
  *      -   EVENT_MIDI_SONG_POS         = 0xF2
  *      -   EVENT_MIDI_SONG_SELECT      = 0xF3
+ *
+ *  A MIDI System Exclusive (SYSEX) message starts with F0, followed
+ *  by the manufacturer ID (how many? bytes), a number of data bytes, and
+ *  ended by an F7.
  */
 
-const midibyte EVENT_MIDI_SYSEX         = 0xF0;      // redundant, see below
-const midibyte EVENT_MIDI_QUARTER_FRAME = 0xF1;      // undefined?
-const midibyte EVENT_MIDI_SONG_POS      = 0xF2;
-const midibyte EVENT_MIDI_SONG_SELECT   = 0xF3;      // not used
-const midibyte EVENT_MIDI_SONG_F4       = 0xF4;      // undefined
-const midibyte EVENT_MIDI_SONG_F5       = 0xF5;      // undefined
-const midibyte EVENT_MIDI_TUNE_SELECT   = 0xF6;      // not used in seq24
-const midibyte EVENT_MIDI_SYSEX_END     = 0xF7;      // redundant, see below
-const midibyte EVENT_MIDI_CLOCK         = 0xF8;
-const midibyte EVENT_MIDI_SONG_F9       = 0xF9;      // undefined
-const midibyte EVENT_MIDI_START         = 0xFA;
-const midibyte EVENT_MIDI_CONTINUE      = 0xFB;
-const midibyte EVENT_MIDI_STOP          = 0xFC;
-const midibyte EVENT_MIDI_SONG_FD       = 0xFD;      // undefined
-const midibyte EVENT_MIDI_ACTIVE_SENS   = 0xFE;      // not used in seq24
-const midibyte EVENT_MIDI_RESET         = 0xFF;      // not used in seq24
+const midibyte EVENT_MIDI_SYSEX          = 0xF0;      // redundant, see below
+const midibyte EVENT_MIDI_QUARTER_FRAME  = 0xF1;      // undefined?
+const midibyte EVENT_MIDI_SONG_POS       = 0xF2;
+const midibyte EVENT_MIDI_SONG_SELECT    = 0xF3;      // not used
+const midibyte EVENT_MIDI_SONG_F4        = 0xF4;      // undefined
+const midibyte EVENT_MIDI_SONG_F5        = 0xF5;      // undefined
+const midibyte EVENT_MIDI_TUNE_SELECT    = 0xF6;      // not used in seq24
+const midibyte EVENT_MIDI_SYSEX_END      = 0xF7;      // redundant, see below
+const midibyte EVENT_MIDI_SYSEX_CONTINUE = 0xF7;      // redundant, see below
+const midibyte EVENT_MIDI_CLOCK          = 0xF8;
+const midibyte EVENT_MIDI_SONG_F9        = 0xF9;      // undefined
+const midibyte EVENT_MIDI_START          = 0xFA;
+const midibyte EVENT_MIDI_CONTINUE       = 0xFB;
+const midibyte EVENT_MIDI_STOP           = 0xFC;
+const midibyte EVENT_MIDI_SONG_FD        = 0xFD;      // undefined
+const midibyte EVENT_MIDI_ACTIVE_SENS    = 0xFE;      // not used in seq24
+const midibyte EVENT_MIDI_RESET          = 0xFF;      // not used in seq24
 
 /**
  *  0xFF is a MIDI "escape code" used in MIDI files to introduce a MIDI meta
@@ -120,16 +123,6 @@ const midibyte EVENT_MIDI_RESET         = 0xFF;      // not used in seq24
  */
 
 const midibyte EVENT_MIDI_META         = 0xFF;      // an escape code
-
-/**
- *  A MIDI System Exclusive (SYSEX) message starts with F0, followed
- *  by the manufacturer ID (how many? bytes), a number of data bytes, and
- *  ended by an F7.
- */
-
-const midibyte EVENT_SYSEX             = 0xF0;
-const midibyte EVENT_SYSEX_END         = 0xF7;
-const midibyte EVENT_SYSEX_CONTINUE    = 0xF7;
 
 /**
  *  This value of 0xFF is Sequencer64's channel value that indicates that
@@ -178,6 +171,14 @@ const int EVENTS_UNSELECTED             =  0;
 class event
 {
 
+public:
+
+    /**
+     *  Provides a type definition for a vector of midibytes.
+     */
+
+    typedef std::vector<midibyte> SysexContainer;
+
 private:
 
     /**
@@ -215,27 +216,15 @@ private:
 
     midibyte m_data[SEQ64_MIDI_DATA_BYTE_COUNT];
 
-#ifdef USE_STAZED_SYSEX_SUPPORT
-
     /**
-     *  The data buffer for SYSEX messages.
+     *  The data buffer for SYSEX messages.  Adapted from Stazed's Seq32
+     *  project on GitHub.
      */
 
-    std::vector<midibyte> m_sysex;
-
-#else
+    SysexContainer m_sysex;
 
     /**
-     *  Points to the data buffer for SYSEX messages.  This really ought to be a
-     *  Boost or STD scoped pointer.  Currently, it doesn't seem to be used.
-     */
-
-    midibyte * m_sysex;
-
-#endif
-
-    /**
-     *  Gives the size of the SYSEX message.
+     *  Gives the size of the SYSEX message.  Perhaps redundant.
      */
 
     int m_sysex_size;
@@ -636,45 +625,36 @@ public:
     }
 
     bool append_sysex (midibyte * data, int len);
+    bool append_sysex (midibyte data);
     void restart_sysex ();
 
-#ifdef USE_STAZED_SYSEX_SUPPORT
+    /**
+     * \getter m_sysex from stazed, non-const version for use by midibus.
+     */
 
-    std::vector<midibyte> & get_sysex () const
+    SysexContainer & get_sysex ()
     {
         return m_sysex;
     }
+
+    /**
+     * \getter m_sysex from stazed
+     */
+
+    const SysexContainer & get_sysex () const
+    {
+        return m_sysex;
+    }
+
+    /**
+     * \setter m_sysex and m_sysex_size from stazed
+     */
 
     void set_sysex_size (int len)
     {
         m_sysex.resize(len);
         m_sysex_size = len;
     }
-
-#else   // USE_STAZED_SYSEX_SUPPORT
-
-    /**
-     * \getter m_sysex
-     */
-
-    midibyte * get_sysex () const
-    {
-        return m_sysex;
-    }
-
-    /**
-     * \setter m_sysex_size
-     *
-     * \param len
-     *      Provides the length value to set as the size of the SYSEX data.
-     */
-
-    void set_sysex_size (int len)
-    {
-        m_sysex_size = len;
-    }
-
-#endif  // USE_STAZED_SYSEX_SUPPORT
 
     /**
      * \getter m_sysex_size

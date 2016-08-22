@@ -444,7 +444,7 @@ perfedit::perfedit
 #endif
 
 #ifdef USE_STAZED_TRANSPORT
-    m_button_follow->add(*manage(new PIXBUF_IMAGE(jack_xpm)));
+    m_button_follow->add(*manage(new PIXBUF_IMAGE(transport_follow_xpm)));
     m_button_follow->signal_clicked().connect
     (
         mem_fun(*this, &perfedit::set_follow_transport)

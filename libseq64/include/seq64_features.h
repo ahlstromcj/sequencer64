@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2016-08-19
- * \updates       2016-08-20
+ * \updates       2016-08-21
  * \license       GNU GPLv2 or above
  *
  *    Some options (the "USE_xxx" options) specify experimental and
@@ -55,37 +55,161 @@
  * Currently undefined as tentative or EXPERIMENTAL.
  */
 
-#undef  USE_STAZED_COMPANDING
-#undef  USE_STAZED_EXTRAS
-#undef  USE_STAZED_EXTRA_SNAPS
-#undef  USE_STAZED_FIX
+/*
+ *  TEMPORARILY defined.
+ *
+ *  Adds a seqedit menu option to expand a pattern/sequence by doubling it, or
+ *  to compress a pattern/sequence by halving it.  These operations are
+ *  accomplished by the sequence::multiply_patten() function.
+ */
+
+#define  USE_STAZED_COMPANDING
 
 /*
- * TEMPORARILY defined
+ *  TEMPORARILY defined.
+ *
+ *  Adds: (1) skipping some bars in drawing the grid in perftime, to allow for
+ *  in-tight zoom levels; (2) setting and grabbing the focus in seqedit if the
+ *  sequence has been given a name (and thus presumably been edited).
+ */
+
+#define USE_STAZED_EXTRAS
+
+/*
+ *  TEMPORARILY defined.
+ *
+ *  If defined, adds some extra snap values to the perfedit snap menu.
+ *  We suspect there's a more elegant way to handle getting snap to handle
+ *  varying zoom values and things like triplets, but we want to make sure
+ *  this code at least compiles.
+ */
+
+#define  USE_STAZED_EXTRA_SNAPS
+
+/*
+ *  TEMPORARILY defined.
+ *
+ *  Modifies the handling of seqedit::record_change_callback() and
+ *  seqedit::thru_change_callback().
+ */
+
+#define USE_STAZED_FIX
+
+/*
+ *  TEMPORARILY defined, will need testing.
+ *
+ *  Adds more SYSEX processing, plus the ability to read SYSEX information
+ *  from a file.
+ */
+
+#define USE_SYSEX_PROCESSING            /* disabled in Seq24 as well        */
+
+/*
+ *  TEMPORARILY defined
+ *
+ *  This is a big one, bringing in some massive changes to how JACK is
+ *  handled.  It looks good, but it is complex enough that we'll leave this
+ *  until about last to officially activate; it will need a lot of testing,
+ *  mostly because of the possibility of errors in porting this code from
+ *  Seq32.
  */
 
 #define USE_STAZED_JACK_SUPPORT
 
-#undef  USE_STAZED_LFO_SUPPORT
-#undef  USE_STAZED_MENU_MODE_BUTTON
-#undef  USE_STAZED_MIDI_DUMP
-#undef  USE_STAZED_MULTIPLY_PATTERN
-#undef  USE_STAZED_ODD_EVEN_SELECTION
-#undef  USE_STAZED_PLAYING_CONTROL
-#undef  USE_STAZED_RANDOMIZE_SUPPORT
-#undef  USE_STAZED_SELECTION_EXTENSIONS
-#undef  USE_STAZED_SEQDATA_EXTENSIONS
-#undef  USE_STAZED_SHIFT_SUPPORT
-#undef  USE_STAZED_SONG_MODE_BUTTON
-#undef  USE_STAZED_SYSEX_SUPPORT
+/*
+ *  TEMPORARILY defined
+ *
+ *  Enables using the lfownd dialog to control the envelope of certain events
+ *  in seqedit's seqdata pane.  We're not too keen on the user interface,
+ *  though.
+ */
+
+#define USE_STAZED_LFO_SUPPORT
 
 /*
- * TEMPORARILY defined
+ *  TEMPORARILY defined
+ *
+ *  Adds a button to disable the main menu in the main window.
+ */
+
+#define USE_STAZED_MENU_MODE_BUTTON
+
+/*
+ *  TEMPORARILY defined
+ *
+ *  Adds a button to set the Song (versus Live) mode from  the main menu in
+ *  the main window.
+ */
+
+#define  USE_STAZED_SONG_MODE_BUTTON
+
+/*
+ *  TEMPORARILY defined
+ *
+ *  In the perform object, replaces a direct call to sequence::stream_event()
+ *  with a call to mastermidibus::dump_midi_input(), which then is supposed to
+ *  allocate the event to the sequence that has a matching channel.
+ *
+ *  Unlike in Seq32, however, this is currently a member option in the sequence
+ *  class.  We will want to make it a run-time option and then remove this
+ *  macro here.
+ */
+
+#define  USE_STAZED_MIDI_DUMP
+
+/*
+ *  TEMPORARILY defined
+ *
+ *  Adds the ability to select odd/even notes in seqedit.
+ */
+
+#define USE_STAZED_ODD_EVEN_SELECTION
+
+/*
+ *  TEMPORARILY defined
+ */
+
+#define USE_STAZED_SELECTION_EXTENSIONS
+
+/*
+ *  TEMPORARILY defined
+ */
+
+#define USE_STAZED_PLAYING_CONTROL
+
+/*
+ *  TEMPORARILY defined
+ */
+
+#define USE_STAZED_RANDOMIZE_SUPPORT
+
+/*
+ *  TEMPORARILY defined
+ */
+
+#define USE_STAZED_SEQDATA_EXTENSIONS
+
+/*
+ *  TEMPORARILY defined
+ */
+
+#define USE_STAZED_SHIFT_SUPPORT
+
+/*
+ *  TEMPORARILY defined
+ *  
+ *  Adds support for various transport features, more to come.
  */
 
 #define USE_STAZED_TRANSPORT
 
-#undef  USE_STAZED_PERF_AUTO_SCROLL
+/*
+ *  TEMPORARILY defined
+ *  
+ *  Stazed implementation of auto-scroll.
+ */
+
+#define  USE_STAZED_PERF_AUTO_SCROLL
 
 /*
  * Configure-time options.
@@ -110,7 +234,7 @@
  *  The idea is to go into an auto-screen-set mode via a menu entry, where the
  *  first set is unmuted, and then changes to the screen-set number queue the
  *  previous screen-set for muting, and queue up the current one for
- *  unmuting.
+ *  unmuting.  DO NOT ENABLE AT THIS TIME.
  */
 
 #undef  SEQ64_USE_AUTO_SCREENSET_QUEUE

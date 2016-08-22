@@ -233,7 +233,7 @@ private:
     Gtk::Menu * m_menu_bw;              /**< Beat-width denominator menu.   */
 
 #ifdef USE_STAZED_LFO_SUPPORT
-    Button * m_button_lfo;
+    Gtk::Button * m_button_lfo;
     lfownd * m_lfo_wnd;
 #endif
 

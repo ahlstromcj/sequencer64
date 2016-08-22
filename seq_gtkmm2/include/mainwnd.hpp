@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-07-31
+ * \updates       2016-08-21
  * \license       GNU GPLv2 or above
  *
  *  The main window is known as the "Patterns window" or "Patterns
@@ -58,6 +58,10 @@ namespace Gtk
     class Menu;
     class SpinButton;
     class Tooltips;
+
+#if defined USE_STAZED_SONG_MODE_BUTTON || defined USE_STAZED_MENU_MODE_BUTTON
+    class ToggleButton;
+#endif
 }
 
 namespace seq64
@@ -188,13 +192,12 @@ private:
     Gtk::Button * m_button_perfedit;
 
 #ifdef USE_STAZED_SONG_MODE_BUTTON
-    ToggleButton * m_button_mode;
+    Gtk::ToggleButton * m_button_mode;
 #endif
 
 #ifdef USE_STAZED_MENU_MODE_BUTTON
-    ToggleButton * m_button_menu;
+    Gtk::ToggleButton * m_button_menu;
 #endif
-
 
     /**
      *  The spin/adjustment controls for the BPM (beats-per-minute) value.
@@ -345,50 +348,13 @@ private:
 #endif
 
 #ifdef USE_STAZED_SONG_MODE_BUTTON
-
-    /**
-     *  Sets the song mode, which is actually the JACK start mode.  If true, we
-     *  are in playback/song mode.  If false, we are in live mode.
-     */
-
-    void set_song_mode ()
-    {
-        perf().song_start_mode(m_button_mode->get_active());
-    }
-
-    /**
-     *  Toggles the song mode.  Note that calling this function will trigger the
-     *  button signal callback.  It only operates if the patterns are not
-     *  playing.
-     */
-
-    void toggle_song_mode()
-    {
-        if (! perf().is_pattern_playing())
-        {
-            m_button_mode->set_active(! m_button_mode->get_active());
-        }
-    }
-
+    void set_song_mode ();
+    void toggle_song_mode();
 #endif
 
 #ifdef USE_STAZED_MENU_MODE_BUTTON
-
-    void set_menu_mode ()
-    {
-        m_menu_mode = m_button_menu->get_active();
-    }
-
-    /**
-     *  Toggles the menu mode.  Note that calling this function will trigger the
-     *  button signal callback.
-     */
-
-    void toggle_menu_mode ()
-    {
-        m_button_menu->set_active(! m_button_menu->get_active());
-    }
-
+    void set_menu_mode ();
+    void toggle_menu_mode ();
 #endif
 
     void update_window_title ();

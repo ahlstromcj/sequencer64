@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-08-04
+ * \updates       2016-08-21
  * \license       GNU GPLv2 or above
  *
  *  A MIDI event (i.e. "track event") is encapsulated by the seq64::event
@@ -93,11 +93,7 @@ event::event ()
     m_status        (EVENT_NOTE_OFF),
     m_channel       (EVENT_NULL_CHANNEL),
     m_data          (),                     /* a two-element array  */
-#ifdef USE_STAZED_SYSEX_SUPPORT
     m_sysex         (),                     /* an std::vector       */
-#else
-    m_sysex         (nullptr),
-#endif
     m_sysex_size    (0),
     m_linked        (nullptr),
     m_has_link      (false),
@@ -136,7 +132,7 @@ event::event (const event & rhs)
     m_status        (rhs.m_status),
     m_channel       (rhs.m_channel),
     m_data          (),                     /* a two-element array      */
-    m_sysex         (nullptr),              /* pointer, not yet handled */
+    m_sysex         (),                     /* copies a vector of data  */
     m_sysex_size    (rhs.m_sysex_size),
     m_linked        (nullptr),              /* pointer, not yet handled */
     m_has_link      (false),                /* must indicate that fact  */
@@ -150,12 +146,13 @@ event::event (const event & rhs)
 
 /**
  *  This destructor explicitly deletes m_sysex and sets it to null.
- *  The restart_sysex() function does what we need.
+ *  The restart_sysex() function does what we need.  But now that m_sysex is a
+ *  vector, no action is needed.
  */
 
 event::~event ()
 {
-    restart_sysex();                    /* tricky code */
+    // restart_sysex() no longer necessary
 }
 
 /**
@@ -165,10 +162,10 @@ event::~event ()
  *  when the MIDI file is read, so we don't handle them for now.
  *
  * \warning
- *      This function does not yet copy the SysEx data.  The inclusion
- *      of SysEx events was not complete in Seq24, and it is still not
- *      complete in Sequencer64.  Nor does it currently bother with the
- *      links.
+ *      This function now copies the SysEx data, but the inclusion of SysEx
+ *      events was not complete in Seq24, and it is still not complete in
+ *      Sequencer64.  Nor does it currently bother with the link the event
+ *      might have.
  *
  * \param rhs
  *      Provides the event object to be assigned.
@@ -188,15 +185,10 @@ event::operator = (const event & rhs)
         m_channel       = rhs.m_channel;
         m_data[0]       = rhs.m_data[0];
         m_data[1]       = rhs.m_data[1];
-
-        /*
-         * m_sysex         = nullptr;
-         * m_sysex_size    = 0;                     // rhs.m_sysex_size;
-         */
-
-        restart_sysex();
+        m_sysex         = rhs.m_sysex;
+        m_sysex_size    = rhs.m_sysex_size;
         m_linked        = nullptr;
-        m_has_link      = rhs.m_has_link;           /* false instead?       */
+        m_has_link      = false;                    /* rhs.m_has_link       */
         m_selected      = rhs.m_selected;           /* false instead?       */
         m_marked        = rhs.m_marked;             /* false instead?       */
         m_painted       = rhs.m_painted;            /* false instead?       */
@@ -342,30 +334,22 @@ event::set_status (midibyte eventcode, midibyte channel)
 }
 
 /**
- *  Deletes and clears out the SYSEX buffer.
+ *  Deletes and clears out the SYSEX buffer.  (The m_sysex member used to be a
+ *  pointer.)
  */
 
 void
 event::restart_sysex ()
 {
-#ifdef USE_STAZED_SYSEX_SUPPORT
     m_sysex.clear();
-#else
-    if (not_nullptr(m_sysex))
-        delete [] m_sysex;
-
-    m_sysex = nullptr;
-#endif
-
     m_sysex_size = 0;
 }
 
 /**
- *  Appends SYSEX data to a new buffer.  First, a buffer of size
- *  m_sysex_size+dsize is created.  The existing SYSEX data (stored in
- *  m_sysex) is copied to this buffer.  Then the data represented by data and
- *  dsize is appended to that data buffer.  Then the original SYSEX buffer,
- *  m_sysex, is deleted, and m_sysex is assigned to the new buffer.
+ *  Appends SYSEX data to a new buffer.  We now use a vector instead of an
+ *  array, so there is no need for reallocation and copying of the current
+ *  SYSEX data.  The data represented by data and dsize is appended to that
+ *  data buffer.
  *
  * \param data
  *      Provides the additional SYSEX data.  If not provided, nothing is done,
@@ -376,27 +360,11 @@ event::restart_sysex ()
  *      nothing is done.
  *
  * \return
- *      Returns false if there was an EVENT_SYSEX_END byte in the appended
- *      data, or if an error occurred, and the caller needs to stop trying to
- *      process the data.
+ *      Returns false if there was an EVENT_MIDI_SYSEX_END byte in the
+ *      appended data, or if an error occurred, and the caller needs to stop
+ *      trying to process the data.  We're not quite sure what to do with any
+ *      extra data remains.
  */
-
-#ifdef USE_STAZED_SYSEX_SUPPORT
-
-bool
-event::append_sysex (midibyte * data, int dsize)
-{
-    bool result = true;
-    for (int i = 0; i < dsize; ++i)
-    {
-        m_sysex.push_back(data[i]);
-        if (data[i] == EVENT_SYSEX_END)
-            result = false;
-    }
-    return result;
-}
-
-#else   // USE_STAZED_SYSEX_SUPPORT
 
 bool
 event::append_sysex (midibyte * data, int dsize)
@@ -404,31 +372,17 @@ event::append_sysex (midibyte * data, int dsize)
     bool result = false;
     if (not_nullptr(data) && (dsize > 0))
     {
-        midibyte * buffer = new midibyte[m_sysex_size + dsize];
-        if (not_nullptr(buffer))
-        {
-            if (not_nullptr(m_sysex))
-            {
-                memcpy(buffer, m_sysex, m_sysex_size);  /* copy original data */
-                delete [] m_sysex;
-            }
-            memcpy(&buffer[m_sysex_size], data, dsize); /* append new data    */
-            m_sysex_size += dsize;
-            m_sysex = buffer;                           /* save the pointer   */
-            result = true;
-        }
-        else
-        {
-            errprint("event::append_sysex(): bad allocation");
-        }
+        result = true;
         for (int i = 0; i < dsize; ++i)
         {
-            if (data[i] == EVENT_SYSEX_END)
+            m_sysex.push_back(data[i]);
+            if (data[i] == EVENT_MIDI_SYSEX_END)
             {
                 result = false;
-                break;                                  // done, already false now
+                break;                  /* is this the right think to do? */
             }
         }
+        m_sysex_size = int(m_sysex.size());
     }
     else
     {
@@ -437,7 +391,20 @@ event::append_sysex (midibyte * data, int dsize)
     return result;
 }
 
-#endif  // USE_STAZED_SYSEX_SUPPORT
+/**
+ *  An overload for obtaining SYSEX data byte-by-byte.
+ *
+ * \param data
+ *      A single MIDI byte of data, assumed to be part of a SYSEX message
+ *      event.
+ */
+
+bool
+event::append_sysex (midibyte data)
+{
+    m_sysex.push_back(data);
+    return data != EVENT_MIDI_SYSEX_END;
+}
 
 /**
  *  Prints out the timestamp, data size, the current status byte, any SYSEX
@@ -452,9 +419,9 @@ event::print () const
         "[%06ld] [%04d] %02X ",
         m_timestamp, m_sysex_size, unsigned(m_status)
     );
-    if (m_status == EVENT_SYSEX)
+    if (m_status == EVENT_MIDI_SYSEX)
     {
-        for (int i = 0; i < m_sysex_size; i++)
+        for (int i = 0; i < m_sysex_size; ++i)
         {
             if (i % 16 == 0)
                 printf("\n    ");

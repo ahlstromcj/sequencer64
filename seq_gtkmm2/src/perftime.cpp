@@ -254,8 +254,8 @@ perftime::draw_background ()
 {
     draw_rectangle(white_paint(), 0, 0, m_window_x, m_window_y);
     draw_line(black_paint(), 0, m_window_y - 1, m_window_x, m_window_y - 1);
-    long first_measure = m_tick_offset / m_measure_length;
-    long last_measure = first_measure +
+    midipulse first_measure = m_tick_offset / m_measure_length;
+    midipulse last_measure = first_measure +
         (m_window_x * m_perf_scale_x / m_measure_length) + 1;
 
 #ifdef USE_STAZED_EXTRAS
@@ -281,33 +281,29 @@ perftime::draw_background ()
     m_gc->set_foreground(grey());                   /* draw vertical lines  */
 
 #ifdef USE_STAZED_EXTRAS
-    int last_measure = (m_window_x * m_perf_scale_x / (m_measure_length)) +
-        first_measure + 1;
-
-    for (int i = first_measure; i < last_measure; i += bar_skip)
-#else
-    for (long i = first_measure; i < last_measure; ++i)
-#endif
+    for (midipulse i = first_measure; i < last_measure; i += bar_skip)
     {
-#ifdef USE_STAZED_EXTRAS
-        int x_pos = ((i * m_measure_length) - tick_offset) / m_perf_scale_x;
+        int x_pos = ((i * m_measure_length) - m_tick_offset) / m_perf_scale_x;
 #else
+    for (midipulse i = first_measure; i < last_measure; ++i)
+    {
         int x_pos = tick_to_pixel(i * m_measure_length);
 #endif
+
         char bar[8];
-        snprintf(bar, sizeof(bar), "%ld", i + 1);           /* bar numbers  */
-        draw_line(x_pos, 0, x_pos, m_window_y);             /* beat         */
+        snprintf(bar, sizeof(bar), "%ld", i + 1);       /* bar numbers      */
+        draw_line(x_pos, 0, x_pos, m_window_y);         /* beat             */
         render_string(x_pos + 2, 0, bar, font::BLACK, true);
     }
 
-    long left = tick_to_pixel(perf().get_left_tick());
-    long right = tick_to_pixel(perf().get_right_tick());
-    if (left >= 0 && left <= m_window_x)            /* draw L marker    */
+    midipulse left = tick_to_pixel(perf().get_left_tick());
+    midipulse right = tick_to_pixel(perf().get_right_tick());
+    if (left >= 0 && left <= m_window_x)                /* draw L marker    */
     {
         draw_rectangle(black_paint(), left, m_window_y - 9, 7, 10);
         render_string(left + 1, 9, "L", font::WHITE, true);
     }
-    if (right >= 0 && right <= m_window_x)          /* draw R marker    */
+    if (right >= 0 && right <= m_window_x)              /* draw R marker    */
     {
         draw_rectangle(black_paint(), right - 6, m_window_y - 9, 7, 10);
         render_string(right - 6 + 1, 9, "R", font::WHITE, true);

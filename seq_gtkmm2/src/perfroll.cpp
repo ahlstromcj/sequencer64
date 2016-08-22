@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-08-20
+ * \updates       2016-08-21
  * \license       GNU GPLv2 or above
  *
  *  The performance window allows automatic control of when each
@@ -510,7 +510,7 @@ perfroll::auto_scroll_horz ()
 
     if (m_zoom >= c_perf_scale_x)
     {
-        double progress = double(perf().get_tick() / m_zoom / c_ppen);
+        double progress = double(2 * perf().get_tick() / m_zoom / m_ppqn);
         int zoom_ratio = m_zoom / c_perf_scale_x;
         progress *= zoom_ratio;
 
@@ -518,38 +518,41 @@ perfroll::auto_scroll_horz ()
         if (zoom_ratio != 1)
             offset *= -2;
 
-        double page_size_adjust = (m_hadjust->get_page_size()/zoom_ratio)/2;
-        double get_value_adjust = m_hadjust->get_value()*zoom_ratio;
+        double page_size_adjust = m_hadjust.get_page_size() / zoom_ratio / 2;
+        double get_value_adjust = m_hadjust.get_value() * zoom_ratio;
         if (progress > page_size_adjust || get_value_adjust > progress)
-            m_hadjust.et_value(progress - page_size_adjust + offset);
+            m_hadjust.set_value(progress - page_size_adjust + offset);
 
         return;
     }
 
     midipulse progress_tick = perf().get_tick();
-    midipulse tick_offset = m_4bar_offset * c_ppqn * 16;
-    int progress_x = (progress_tick - tick_offset) / m_zoom  + 100;
+    midipulse tick_offset = m_4bar_offset * m_ppqn * 16;
+    int progress_x = (progress_tick - tick_offset) / m_zoom + 100;
     int page = progress_x / m_window_x;
     if (page != 0 || progress_x < 0)
     {
-        double left_tick = (double) progress_tick /m_zoom/c_ppen;
+        double left_tick = double(2 * progress_tick / m_zoom / m_ppqn);
         switch (m_zoom)
         {
         case 8:
-            m_hadjust->set_value(left_tick / 4);
+            m_hadjust.set_value(left_tick / 4);
             break;
+
         case 16:
-            m_hadjust->set_value(left_tick / 2 );
+            m_hadjust.set_value(left_tick / 2 );
             break;
 /*
         case 32:
-            m_hadjust->set_value(left_tick );
+            m_hadjust.set_value(left_tick );
             break;
+
         case 64:
-            m_hadjust->set_value(left_tick * 2 );
+            m_hadjust.set_value(left_tick * 2 );
             break;
+
         case 128:
-            m_hadjust->set_value(left_tick * 4 );
+            m_hadjust.set_value(left_tick * 4 );
             break;
  */
         default:
@@ -1016,6 +1019,7 @@ perfroll::on_button_press_event (GdkEventButton * ev)
         perf().set_follow_transport(false);
         m_trans_button_press = true;
     }
+
 #endif
 
     if (rc().interaction_method() == e_seq24_interaction)
@@ -1291,8 +1295,7 @@ perfroll::on_key_press_event (GdkEventKey * ev)
                     m_seq24_interaction.set_adding(false, *this);
                     result = true;
                 }
-#ifdef USE_UNHANDLED_SHIFT_KEY
-
+#if 0
                 /*
                  * Handled in Shift key handling above now.
                  */

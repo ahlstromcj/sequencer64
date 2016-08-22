@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-30
- * \updates       2016-08-20
+ * \updates       2016-08-21
  * \license       GNU GPLv2 or above
  *
  *  This file provides a Linux-only implementation of MIDI support.
@@ -372,8 +372,9 @@ mastermidibus::init (int ppqn)
                             snd_seq_port_info_get_name(pinfo),
                             m_num_in_buses, m_queue
                         );
-                        m_buses_in_active[m_num_in_buses] = true;
-                        m_buses_in_init[m_num_in_buses] = true;
+                        m_buses_in_active[m_num_in_buses] =
+                            m_buses_in_init[m_num_in_buses] = true;
+
                         ++m_num_in_buses;
                     }
                 }
@@ -583,7 +584,8 @@ mastermidibus::flush ()
 }
 
 /**
- *  Handle the sending of SYSEX events.
+ *  Handle the sending of SYSEX events.  The event is sent to all MIDI output
+ *  busses.
  *
  * \threadsafe
  *
@@ -608,7 +610,8 @@ mastermidibus::sysex (event * ev)
  * \threadsafe
  *
  * \param bus
- *      The buss to start play on.
+ *      The buss to start play on.  Ooh, we just noticed that value should be
+ *      checked before usage!
  *
  * \param e24
  *      The seq24 event to play on the buss.
@@ -621,7 +624,7 @@ void
 mastermidibus::play (bussbyte bus, event * e24, midibyte channel)
 {
     automutex locker(m_mutex);
-    if (m_buses_out_active[bus] && bus < m_num_out_buses)
+    if (bus < m_num_out_buses && m_buses_out_active[bus])
         m_buses_out[bus]->play(e24, channel);
 }
 
@@ -632,7 +635,7 @@ mastermidibus::play (bussbyte bus, event * e24, midibyte channel)
  * \threadsafe
  *
  * \param bus
- *      The buss to start play on.
+ *      The buss to start play on.  Checked before usage.
  *
  * \param clocktype
  *      The type of clock to be set, either "off", "pos", or "mod", as noted
@@ -646,7 +649,7 @@ mastermidibus::set_clock (bussbyte bus, clock_e clocktype)
     if (bus < m_max_busses)
         m_init_clock[bus] = clocktype;
 
-    if (m_buses_out_active[bus] && bus < m_num_out_buses)
+    if (bus < m_num_out_buses && m_buses_out_active[bus])
         m_buses_out[bus]->set_clock(clocktype);
 }
 
@@ -654,7 +657,7 @@ mastermidibus::set_clock (bussbyte bus, clock_e clocktype)
  *  Gets the clock setting for the given (legal) buss number.
  *
  * \param bus
- *      Provides the buss number to read.
+ *      Provides the buss number to read.  Checked before usage.
  *
  * \return
  *      If the buss number is legal, and the buss is active, then its clock
@@ -664,7 +667,7 @@ mastermidibus::set_clock (bussbyte bus, clock_e clocktype)
 clock_e
 mastermidibus::get_clock (bussbyte bus)
 {
-    if (m_buses_out_active[bus] && bus < m_num_out_buses)
+    if (bus < m_num_out_buses && m_buses_out_active[bus])
         return m_buses_out[bus]->get_clock();
 
     return e_clock_off;
@@ -720,38 +723,43 @@ mastermidibus::get_input (bussbyte bus)
  *  Get the MIDI output buss name for the given (legal) buss number.
  *
  * \param bus
- *      Provides the output buss number.
+ *      Provides the output buss number.  Checked before usage.
  *
  * \return
  *      Returns the buss name as a standard C++ string, truncated to 80-1
  *      characters.  Also contains an indication that the buss is disconnected
- *      or unconnected.
+ *      or unconnected.  If the buss number is illegal, this string is empty.
  */
 
 std::string
 mastermidibus::get_midi_out_bus_name (int bus)
 {
-    if (m_buses_out_active[bus] && bus < m_num_out_buses)
+    std::string result;
+    if (bus < m_num_out_buses)
     {
-        return m_buses_out[bus]->get_name();
-    }
-    else
-    {
-        char tmp[80];                           /* copy names */
-        if (m_buses_out_init[bus])
+        if (m_buses_out_active[bus])
         {
-            snprintf
-            (
-                tmp, sizeof tmp, "[%d] %d:%d (disconnected)",
-                bus, m_buses_out[bus]->get_client(),
-                m_buses_out[bus]->get_port()
-            );
+            result = m_buses_out[bus]->get_name();
         }
         else
-            snprintf(tmp, sizeof tmp, "[%d] (unconnected)", bus);
+        {
+            char tmp[80];                           /* copy names */
+            if (m_buses_out_init[bus])
+            {
+                snprintf
+                (
+                    tmp, sizeof tmp, "[%d] %d:%d (disconnected)",
+                    bus, m_buses_out[bus]->get_client(),
+                    m_buses_out[bus]->get_port()
+                );
+            }
+            else
+                snprintf(tmp, sizeof tmp, "[%d] (unconnected)", bus);
 
-        return std::string(tmp);
+            result = std::string(tmp);
+        }
     }
+    return result;
 }
 
 /**
@@ -1008,7 +1016,12 @@ mastermidibus::port_exit (int client, int port)
 }
 
 /**
- *  Grab a MIDI event.
+ *  Grab a MIDI event.  First, a rather large buffer is allocated on the stack
+ *  to hold the MIDI event data.  Next, if the --alsa-manual-ports option is
+ *  not in force, then we check to see if the event is a port-start,
+ *  port-exit, or port-change event, and we prcess it, and are done.
+ *
+ *  Otherwise, we create a "MIDI event parser" and decode the MIDI event.
  *
  * \threadsafe
  *
@@ -1055,15 +1068,27 @@ mastermidibus::get_midi_event (event * inev)
     if (result)
         return false;
 
-    snd_midi_event_t * midi_ev;             /* used in the ALSA midi parser */
-    snd_midi_event_new(sizeof(buffer), &midi_ev);
+    snd_midi_event_t * midi_ev;                     /* for ALSA MIDI parser  */
+    snd_midi_event_new(sizeof(buffer), &midi_ev);   /* make ALSA MIDI parser */
     long bytes = snd_midi_event_decode(midi_ev, buffer, sizeof(buffer), ev);
     if (bytes <= 0)
+    {
+        /*
+         * This happens even at startup, before anything is really happening.
+         * Let's not show it.
+         *
+         * if (bytes < 0)
+         * {
+         *     errprint("error decoding MIDI event");
+         * }
+         */
+
         return false;
+    }
 
     inev->set_timestamp(ev->time.tick);
     inev->set_status_keep_channel(buffer[0]);
-    inev->set_sysex_size(bytes);
+//  inev->set_sysex_size(bytes);
 
     /**
      *  We will only get EVENT_SYSEX on the first packet of MIDI data;
@@ -1071,8 +1096,9 @@ mastermidibus::get_midi_event (event * inev)
      *  disabled.
      */
 
-#if USE_SYSEX_PROCESSING                    /* currently disabled           */
-    if (buffer[0] == EVENT_SYSEX
+#ifdef USE_SYSEX_PROCESSING                    /* currently disabled           */
+    inev->set_sysex_size(bytes);
+    if (buffer[0] == EVENT_MIDI_SYSEX)
     {
         inev->restart_sysex();              /* set up for sysex if needed   */
         sysex = inev->append_sysex(buffer, bytes);
@@ -1095,7 +1121,7 @@ mastermidibus::get_midi_event (event * inev)
 
         sysex = false;
 
-#if USE_SYSEX_PROCESSING
+#ifdef USE_SYSEX_PROCESSING
     }
 #endif
 

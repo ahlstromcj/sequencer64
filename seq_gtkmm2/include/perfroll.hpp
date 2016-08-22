@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-08-17
+ * \updates       2016-08-21
  * \license       GNU GPLv2 or above
  *
  *  This class represents the central piano-roll user-interface area of the
@@ -325,6 +325,11 @@ private:
     void draw_background_on (int seqnum);
     void draw_drawable_row (long y);
     void change_horz ();
+
+#ifdef USE_STAZED_PERF_AUTO_SCROLL
+    void auto_scroll_horz ();
+#endif
+
     void change_vert ();
     void split_trigger(int sequence, midipulse tick);
     void enqueue_draw ();

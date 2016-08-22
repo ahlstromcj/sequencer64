@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-08-05
+ * \updates       2016-08-21
  * \license       GNU GPLv2 or above
  *
  *  The main window holds the menu and the main controls of the application,
@@ -164,10 +164,10 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
     m_button_play           (manage(new Gtk::Button())),
     m_button_perfedit       (manage(new Gtk::Button())),
 #ifdef USE_STAZED_SONG_MODE_BUTTON
-    m_button_mode           (manage(new Gtk::ToggleButton("Song Mode")),
+    m_button_mode           (manage(new Gtk::ToggleButton("Song Mode"))),
 #endif
 #ifdef USE_STAZED_MENU_MODE_BUTTON
-    m_button_menu           (manage(new Gtk::ToggleButton("Menu"));
+    m_button_menu           (manage(new Gtk::ToggleButton("Menu"))),
 #endif
     m_adjust_bpm
     (
@@ -664,6 +664,63 @@ mainwnd::~mainwnd ()
     if (m_sigpipe[1] != -1)
         close(m_sigpipe[1]);
 }
+
+#ifdef USE_STAZED_SONG_MODE_BUTTON
+
+/**
+ *  Sets the song mode, which is actually the JACK start mode.  If true, we
+ *  are in playback/song mode.  If false, we are in live mode.  This
+ *  function must be in the cpp module, where the button header file is
+ *  included.
+ */
+
+void
+mainwnd::set_song_mode ()
+{
+    perf().song_start_mode(m_button_mode->get_active());
+}
+
+/**
+ *  Toggles the song mode.  Note that calling this function will trigger the
+ *  button signal callback.  It only operates if the patterns are not
+ *  playing.  This function must be in the cpp module, where the button
+ *  header file is included.
+ */
+
+void
+mainwnd::toggle_song_mode()
+{
+    if (! perf().is_pattern_playing())
+        m_button_mode->set_active(! m_button_mode->get_active());
+}
+
+#endif
+
+#ifdef USE_STAZED_MENU_MODE_BUTTON
+
+/**
+ *  This function must be in the cpp module, where the button header file
+ *  is included.
+ */
+
+void
+mainwnd::set_menu_mode ()
+{
+    m_menu_mode = m_button_menu->get_active();
+}
+
+/**
+ *  Toggles the menu mode.  Note that calling this function will trigger the
+ *  button signal callback.
+ */
+
+void
+mainwnd::toggle_menu_mode ()
+{
+    m_button_menu->set_active(! m_button_menu->get_active());
+}
+
+#endif
 
 /**
  *  This function is the GTK timer callback, used to draw our current time

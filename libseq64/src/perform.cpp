@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and Tim Deagan
  * \date          2015-07-24
- * \updates       2016-08-21
+ * \updates       2016-08-22
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -614,6 +614,10 @@ perform::toggle_all_tracks ()
  *  the song. The sequence::set_song_mute() and toggle_song_mute() functions
  *  do all the work, including mp-dirtying the sequence.
  *
+ *  We've modified this function to call mute_all_tracks() and
+ *  toggle_all_tracks() in order to consolidate the code and (cough cough) fix
+ *  a bug in this functionality from the mainwnd menu.
+ *
  * \param op
  *      Provides the "flag" that indicates if this function is to set mute on,
  *      off, or to toggle the mute status.
@@ -622,25 +626,19 @@ perform::toggle_all_tracks ()
 void
 perform::set_song_mute (mute_op_t op)
 {
-    for (int i = 0; i < m_sequence_max; ++i)
+    switch (op)
     {
-        if (is_active(i))
-        {
-            switch (op)
-            {
-                case MUTE_ON:
-                    m_seqs[i]->set_song_mute(true);
-                    break;
+    case MUTE_ON:
+        mute_all_tracks(true);
+        break;
 
-                case MUTE_OFF:
-                    m_seqs[i]->set_song_mute(false);
-                    break;
+    case MUTE_OFF:
+        mute_all_tracks(false);
+        break;
 
-                case MUTE_TOGGLE:
-                    m_seqs[i]->toggle_song_mute();
-                    break;
-            }
-        }
+    case MUTE_TOGGLE:
+        toggle_all_tracks();
+        break;
     }
 }
 
@@ -2920,7 +2918,7 @@ perform::output_func ()
 #ifdef JACK_SUPPORT
         if (is_jack_running())
             m_jack_stop_tick = get_current_jack_position((void *) this);
-#endif // JACK_SUPPORT
+#endif
 
 #else  // USE_STAZED_JACK_SUPPORT
 

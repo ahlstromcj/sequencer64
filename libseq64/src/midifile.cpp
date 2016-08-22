@@ -1601,32 +1601,7 @@ midifile::prop_item_size (long data_length) const
 
 /**
  *  Write the whole MIDI data and Seq24 information out to the file.
- *
- * Stazed/Seq32:
- *
- *      The alternate version of this function, write_song(), is not
- *      included in Sequencer64 because it Sequencer64 writes standard MIDI
- *      files (with SeqSpec information that a decent sequencer should
- *      ignore).  The write_song() function doesn't count tracks that are
- *      muted or that have no triggers.  For sequences that have triggers,
- *      it adds the events in order, to create a long sequence.
- *
- *      We think this is a good feature for export, and will probably
- *      eventually make the Export command do this:
- *
- *      The sequence trigger is NOT part of the standard midi format and is
- *      proprietary to seq32.  It is added here because the trigger
- *      combining has an alternative benefit for editing.  The user can
- *      split, slice and rearrange triggers to form a new sequence. Then
- *      mute all other tracks and export to a temporary midi file. Now they
- *      can import the combined triggers/sequence as a new item. This makes
- *      editing of long improvised sequences into smaller or modified
- *      sequences as well as combining several sequence parts painless.
- *      Also, if the user has a variety of common items such as drum beats,
- *      control codes, etc that can be used in other projects, this method
- *      is very convenient. The common items can be kept in one file and
- *      exported all, individually, or in part by creating triggers and
- *      muting.
+ *  Also see the write_song() function, for exporting to standard MIDI.
  *
  * \param p
  *      Provides the object that will contain and manage the entire
@@ -1769,6 +1744,22 @@ midifile::write (perform & p)
  *      items can be kept in one file and exported all, individually, or in
  *      part by creating triggers and muting.
  *
+ *  Write out the exportable tracks.  The value of c_max_sequence is 1024.
+ *  Note that we don't need to check the sequence pointer.  We need to use
+ *  the same criterion we used to count the tracks in the first place, not
+ *  just if the track is active and unmuted.  Also, since we already know
+ *  that an exportable track is valid, no need to check for a null pointer.
+ *
+ *  For each trigger in the sequence, add events to the list below; fill
+ *  one-by-one in order, creating a single long sequence.  Then set a single
+ *  trigger for the big sequence: start at zero, end at last trigger end with
+ *  snap.  We're going to reference (not copy) the triggers now, since the
+ *  write_song() function is now locked.
+ *
+ *  The we adjust the sequence length to snap to the nearest measure past the
+ *  end.  We fill the MIDI container with trigger "events", and then the
+ *  container's bytes are written.
+ *
  * \param p
  *      Provides the object that will contain and manage the entire
  *      performance.
@@ -1805,12 +1796,7 @@ midifile::write_song (perform & p)
     if (result)
     {
         /*
-         * Write out the exportable tracks.  The value of c_max_sequence is
-         * 1024.  Note that we don't need to check the sequence pointer.  We
-         * need to use the same criterion we used to count the tracks in the
-         * first place, not just if the track is active and unmuted.  Also,
-         * since we already know that an exportable track is valid, no need to
-         * check for a null pointer.
+         * Write out the exportable tracks as described in the banner.
          */
 
         for (int curtrack = 0; curtrack < c_max_sequence; ++curtrack)
@@ -1826,7 +1812,7 @@ midifile::write_song (perform & p)
 #endif
 
                 lst.fill_seq_number(curtrack);
-                lst.fill_seq_name(seq.name());          /* hmmmmmmmm        */
+                lst.fill_seq_name(seq.name());
 
 #ifdef SEQ64_HANDLE_TIMESIG_AND_TEMPO                   /* in sequence.hpp  */
                 if (curtrack == 0)
@@ -1834,12 +1820,7 @@ midifile::write_song (perform & p)
 #endif
 
                 /*
-                 * For each trigger in the sequence, add events to the list
-                 * below; fill one-by-one in order, creating a single long
-                 * sequence.  Then set a single trigger for the big sequence:
-                 * start at zero, end at last trigger end with snap.  We're
-                 * going to reference (not copy) the triggers now, since the
-                 * write_song() function is now locked.
+                 * Add each trigger as described in the function banner.
                  */
 
                 midipulse previous_ts = 0;
@@ -1848,18 +1829,10 @@ midifile::write_song (perform & p)
                 for (i = trigs.begin(); i != trigs.end(); ++i)
                     previous_ts = lst.song_fill_seq_event(*i, previous_ts);
 
-                /*
-                 * Adjust the sequence length to snap to the nearest measure
-                 * past the end.  We fill the MIDI container with trigger
-                 * "events", and then the container's bytes are written.
-                 */
-
-                if (! trigs.empty())
+                if (! trigs.empty())        /* adjust the sequence length */
                 {
-                    midipulse seqlength = 0;
                     const trigger & end_trigger = trigs.back();
-                    seqlength = end_trigger.tick_end();
-
+                    midipulse seqlength = end_trigger.tick_end();
                     midipulse measticks = seq.measures_to_ticks();
                     midipulse remainder = seqlength % measticks;
                     midipulse measminus = measticks - 1;

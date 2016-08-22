@@ -1,11 +1,12 @@
 Bugs and Additional Upgrade Ideas
 Chris Ahlstrom
-2015-10-27 to 2016-08-19 (New bugs)
+2015-10-27 to 2016-08-22 (New bugs)
 
 In no particular order...  "y" means "in progress", and "x" means it is
 basically done.
 
 -  Also see BUG REPORTS below.  Those are bug reports from other people.
+-  Export works, but the song does not play properly.
 x  Still need to test saving and reading of the new transposable sequence
    state.
 x  Add undo/redo button sensitivity setting to seqedit as already done in

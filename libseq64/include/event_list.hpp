@@ -301,15 +301,19 @@ public:
      */
 
 #ifdef SEQ64_USE_EVENT_MAP
+
     void sort ()
     {
         // Empty body
     }
+
 #else
+
     void sort ()
     {
         m_events.sort();
     }
+
 #endif
 
     /**

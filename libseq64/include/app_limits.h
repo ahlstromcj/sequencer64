@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-11-08
- * \updates       2016-08-19
+ * \updates       2016-08-22
  * \license       GNU GPLv2 or above
  *
  *  This collection of macros describes some facets of the
@@ -317,6 +317,12 @@
  */
 
 #define SEQ64_MAX_NOTE_ON_VELOCITY       127
+
+/**
+ *  Defines the maximum MIDI data value
+ */
+
+#define SEQ64_MAX_DATA_VALUE             127
 
 /**
  *  An older value, previously used for both Note On and Note Off velocity.

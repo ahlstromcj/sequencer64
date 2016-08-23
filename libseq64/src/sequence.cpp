@@ -214,13 +214,8 @@ sequence::set_hold_undo (bool hold)
     automutex locker(m_mutex);
     if (hold)
     {
-#ifdef SEQ64_USE_EVENT_MAP
         for (event_list::iterator i = m_events.begin(); i != m_events.end(); ++i)
-            m_events_undo_hold.add(i->second);
-#else
-        for (event_list::iterator i = m_events.begin(); i != m_events.end(); ++i)
-            m_events_undo_hold.add(*i);
-#endif
+            m_events_undo_hold.add(DREF(i));
     }
     else
        m_events_undo_hold.clear();
@@ -414,12 +409,7 @@ sequence::select_even_or_odd_notes (int note_len, bool even)
     automutex locker(m_mutex);
     for (event_list::iterator i = m_events.begin(); i != m_events.end(); ++i)
     {
-#ifdef SEQ64_USE_EVENT_MAP
-        event & ev = i->second;
-#else
-        event & ev = *i;
-#endif
-
+        event & e = DREF(i);
         if (ev.is_note_on())
         {
             midipulse tick = ev.get_timestamp();
@@ -503,12 +493,7 @@ sequence::select_note_events
     automutex locker(m_mutex);
     for (event_list::iterator i = m_events.begin(); i != m_events.end(); ++i)
     {
-#ifdef SEQ64_USE_EVENT_MAP
-        event & e = i->second;
-#else
-        event & e = *i;
-#endif
-
+        event & e = DREF(i);
         if (! e.is_note())         // HMMMM, includes Aftertouch
             continue;
 
@@ -676,11 +661,7 @@ sequence::select_linked (midipulse tick_s, midipulse tick_f, midibyte status)
     automutex locker(m_mutex);
     for (event_list::iterator i = m_events.begin(); i != m_events.end(); ++i)
     {
-#ifdef SEQ64_USE_EVENT_MAP
-        event & e = i->second;
-#else
-        event & e = *i;
-#endif
+        event & e = DREF(i);
         if
         (
             e.get_status() == status &&
@@ -721,11 +702,7 @@ sequence::select_event_handle
     }
     for (event_list::iterator i = m_events.begin(); i != m_events.end(); ++i)
     {
-#ifdef SEQ64_USE_EVENT_MAP
-        event & e = i->second;
-#else
-        event & e = *i;
-#endif
+        event & e = DREF(i);
         if
         (
             e.get_status() == status && e.get_timestamp() >= tick_s &&
@@ -768,11 +745,7 @@ sequence::select_event_handle
                                         event_list::iterator i = m_events.begin();
                                         i != m_events.end(); ++i)
                                     {
-#ifdef SEQ64_USE_EVENT_MAP
-                                        event & et = i->second;
-#else
-                                        event & et = *i;
-#endif
+                                        event & et = DREF(i);
                                         if (e.is_marked())
                                         {
                                             et.unmark();
@@ -835,11 +808,7 @@ sequence::select_event_handle
     {
         for (event_list::iterator i = m_events.begin(); i != m_events.end(); ++i)
         {
-#ifdef SEQ64_USE_EVENT_MAP
-            event & e = i->second;
-#else
-            event & e = *i;
-#endif
+            event & e = DREF(i);
             if (e.is_marked())
             {
                 unselect();
@@ -1948,11 +1917,7 @@ sequence::randomize_selected
     push_undo();
     for (event_list::iterator i = m_events.begin(); i != m_events.end(); ++i)
     {
-#ifdef SEQ64_USE_EVENT_MAP
-        event & e = i->second;
-#else
-        event & e = *i;
-#endif
+        event & e = DREF(i);
         if (e.is_selected() && e.get_status() == status)
         {
             e.get_data(data[0], data[1]);           /* \tricky code */
@@ -1970,8 +1935,8 @@ sequence::randomize_selected
                 plus_minus;
 
             datitem += random;
-            if (datitem > (SEQ64_MIDI_COUNT_MAX - 1))
-                datitem = (SEQ64_MIDI_COUNT_MAX - 1);
+            if (datitem > (SEQ64_MAX_DATA_VALUE))       /* 127 */
+                datitem = (SEQ64_MAX_DATA_VALUE);
 
             /*
              * Not possible with an unsigned data type.
@@ -1995,11 +1960,7 @@ sequence::adjust_data_handle (midibyte status, int adata)
     automutex locker(m_mutex);
     for (event_list::iterator i = m_events.begin(); i != m_events.end(); ++i)
     {
-#ifdef SEQ64_USE_EVENT_MAP
-        event & e = i->second;
-#else
-        event & e = *i;
-#endif
+        event & e = DREF(i);
         if (e.is_selected() && e.get_status() == status)
         {
             e.get_data(data[0], data[1]);           /* \tricky code */
@@ -2448,13 +2409,7 @@ sequence::change_event_data_lfo
     {
         bool set = false;
         midibyte d0, d1;
-
-#ifdef SEQ64_USE_EVENT_MAP
-        event & e = i->second;
-#else
-        event & e = *i;
-#endif
-
+        event & e = DREF(i);
         e.get_data(d0, d1);
 
         /* correct status and not CC */

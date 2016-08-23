@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-08-09
+ * \updates       2016-08-22
  * \license       GNU GPLv2 or above
  *
  *  The data area consists of vertical lines, with the height of each line
@@ -440,6 +440,9 @@ seqdata::on_motion_notify_event (GdkEventMotion * ev)
         m_current_y = c_dataarea_y - m_current_y;
         if (m_current_y < 0)
             m_current_y = 0;
+
+        if (m_current_y > SEQ64_MAX_DATA_VALUE)             /* 127 */
+            m_current_y = SEQ64_MAX_DATA_VALUE;
 
         m_seq.adjust_data_handle(m_status, m_current_y);
         update_pixmap();

@@ -1662,7 +1662,7 @@ midifile::write (perform & p)
 
 #ifdef SEQ64_HANDLE_TIMESIG_AND_TEMPO           /* defined in sequence.hpp   */
             if (curtrack == 0)
-                tracksize += SEQ64_TIME_TEMPO_SIZE; /* fill_time_sig_and_tempo() */
+                tracksize += SEQ64_TIME_TEMPO_SIZE;
 #endif
 
             write_long(0x4D54726B);             /* magic number 'MTrk'       */
@@ -1797,13 +1797,17 @@ midifile::write_song (perform & p)
     {
         /*
          * Write out the exportable tracks as described in the banner.
+         * Following stazed, we're consolidate the tracks at the beginning of
+         * the song, replacing the actual track number with a counter that is
+         * incremented only if the track was exportable.
          */
 
-        for (int curtrack = 0; curtrack < c_max_sequence; ++curtrack)
+        int track_number = 0;
+        for (int track = 0; track < c_max_sequence; ++track)
         {
-            if (p.is_exportable(curtrack))
+            if (p.is_exportable(track))
             {
-                sequence & seq = *p.get_sequence(curtrack);
+                sequence & seq = *p.get_sequence(track);
 
 #if defined SEQ64_USE_MIDI_VECTOR
                 midi_vector lst(seq);
@@ -1811,11 +1815,11 @@ midifile::write_song (perform & p)
                 midi_list lst(seq);
 #endif
 
-                lst.fill_seq_number(curtrack);
+                lst.fill_seq_number(track_number);
                 lst.fill_seq_name(seq.name());
 
 #ifdef SEQ64_HANDLE_TIMESIG_AND_TEMPO                   /* in sequence.hpp  */
-                if (curtrack == 0)
+                if (track == 0)
                     lst.fill_time_sig_and_tempo();
 #endif
 
@@ -1848,7 +1852,7 @@ midifile::write_song (perform & p)
                 midilong tracksize = midilong(lst.size());
 
 #ifdef SEQ64_HANDLE_TIMESIG_AND_TEMPO           /* defined in sequence.hpp   */
-                if (curtrack == 0)
+                if (track == 0)
                     tracksize += SEQ64_TIME_TEMPO_SIZE;
 #endif
 
@@ -1856,6 +1860,8 @@ midifile::write_song (perform & p)
                 write_long(tracksize);
                 while (! lst.done())            /* write the track data      */
                     write_byte(lst.get());
+
+                ++track_number;
             }
         }
     }

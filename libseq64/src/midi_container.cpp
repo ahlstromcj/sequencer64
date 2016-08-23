@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-10-10
- * \updates       2016-08-19
+ * \updates       2016-08-22
  * \license       GNU GPLv2 or above
  *
  *  This class is important when writing the MIDI and sequencer data out to a
@@ -181,7 +181,7 @@ midi_container::fill_seq_number (int seq)
     put(0xFF);
     put(0x00);                                      /* 0 delta time     */
     put(0x02);
-    add_short(seq);
+    add_short(midishort(seq));
 }
 
 /**
@@ -396,7 +396,7 @@ midi_container::song_fill_seq_event
         note_is_used[i] = 0;                        /* initialize to off */
 
     times_played += (trig.tick_end() - trig.tick_start()) / len;
-    if ((trigger_offset - start_offset) > 0) /* total offset is len too far */
+    if ((trigger_offset - start_offset) > 0)    /* total offset is len too far */
         timestamp_adjust -= len;
 
     for (int p = 0; p <= times_played; ++p)
@@ -405,7 +405,7 @@ midi_container::song_fill_seq_event
         event_list::Events::iterator i;
         for (i = m_sequence.events().begin(); i != m_sequence.events().end(); ++i)
         {
-            const event & e = i->second;
+            const event & e = DREF(i);
             timestamp = e.get_timestamp();
             timestamp += timestamp_adjust;
             if (timestamp >= trig.tick_start()) /* event is after trigger start */
@@ -460,7 +460,7 @@ midi_container::song_fill_seq_event
             prev_timestamp = timestamp;
             add_event(e, delta_time);
         }
-        timestamp_adjust += len;
+        timestamp_adjust += len;        // any side-effects on sequence length?
     }
     return prev_timestamp;
 }
@@ -492,9 +492,20 @@ midi_container::song_fill_seq_trigger
     put(0x7F);
     add_variable((num_triggers * 3 * 4) + 4);
     add_long(c_triggers_new);
-    add_long(0);                                /* the start tick           */
+
+    /*
+     * This doesn't seem right:
+     *
+     * add_long(0);                             // the start tick
+     * add_long(trig.tick_end());
+     * add_long(0);                             // offset is done in event
+     *
+     * But the "fix" below doesn't work, either.
+     */
+
+    add_long(trig.tick_start());                /* the start tick           */
     add_long(trig.tick_end());
-    add_long(0);                                /* offset is done in event  */
+    add_long(trig.offset());                    /* offset is done in event  */
     fill_proprietary();
 
     midipulse delta_time = length - prev_timestamp;

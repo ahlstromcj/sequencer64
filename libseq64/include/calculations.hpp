@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-07
- * \updates       2016-08-06
+ * \updates       2016-08-24
  * \license       GNU GPLv2 or above
  *
  *  These items were moved from the globals.h module so that only the modules
@@ -141,7 +141,7 @@ extern bool string_not_void (const std::string & s);
 extern bool string_is_void (const std::string & s);
 extern bool strings_match (const std::string & target, const std::string & x);
 extern int log2_time_sig_value (int tsd);
-extern void tempo_to_bytes (midibyte t[3], int tempo_us);
+extern void tempo_us_to_bytes (midibyte t[3], int tempo_us);
 extern int zoom_power_of_2 (int ppqn);
 
 /**
@@ -159,9 +159,9 @@ extern int zoom_power_of_2 (int ppqn);
  */
 
 inline double
-beats_per_minute_from_tempo (double tempo)
+beats_per_minute_from_tempo_us (double tempous)
 {
-    return 60000000.0 / tempo;
+    return 60000000.0 / tempous;
 }
 
 /**
@@ -177,9 +177,22 @@ beats_per_minute_from_tempo (double tempo)
  */
 
 inline double
-tempo_from_beats_per_minute (double bpm)
+tempo_us_from_beats_per_minute (double bpm)
 {
     return 60000000.0 / bpm;
+}
+
+/**
+ *  Converts tempo (e.g. 120 beats/minute) to microseconds.
+ *
+ * \param bpm
+ *      Provides the tempo in beats/minute.
+ */
+
+inline long
+tempo_to_us (int bpm)
+{
+    return 60000000L / long(bpm);
 }
 
 /**

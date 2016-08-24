@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and Tim Deagan
  * \date          2015-07-24
- * \updates       2016-08-22
+ * \updates       2016-08-24
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -78,11 +78,6 @@ static const int c_status_snapshot = 0x02;
  */
 
 static const int c_status_queue    = 0x04;
-
-/**
- *  TODO
- */
-
 
 /**
  *  Instantiate the dummy midi_control object, which is used in lieu
@@ -168,6 +163,9 @@ perform::perform (gui_assistant & mygui, int ppqn)
     m_ppqn                      (choose_ppqn(ppqn)),
     m_beats_per_bar             (SEQ64_DEFAULT_BEATS_PER_MEASURE),
     m_beat_width                (SEQ64_DEFAULT_BEAT_WIDTH),
+    m_clocks_per_metronome      (24),
+    m_32nds_per_quarter         (8),
+    m_us_per_quarter_note       (tempo_to_us(SEQ64_DEFAULT_BPM)),
     m_one_measure               (m_ppqn * 4),
     m_left_tick                 (0),
     m_right_tick                (m_one_measure * 4),        // m_ppqn * 16

@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2016-08-19
- * \updates       2016-08-21
+ * \updates       2016-08-24
  * \license       GNU GPLv2 or above
  *
  *    Some options (the "USE_xxx" options) specify experimental and
@@ -289,12 +289,15 @@
 #define SEQ64_FOLLOW_PROGRESS_BAR
 
 /**
+ * \obsolete
+ *      Now a permanent setting.
+ *
  *  Currently enabled by default, this macro turns on code that scrolls the
  *  sequence/pattern editor horizontally to keep the progress bar in view for
  *  long patterns, as the tune plays.
+ *
+ *      #define SEQ64_HANDLE_TIMESIG_AND_TEMPO
  */
-
-#define SEQ64_HANDLE_TIMESIG_AND_TEMPO
 
 /**
  *  Let's try using lighter solid lines in the piano rolls and see how it

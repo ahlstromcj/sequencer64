@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-10-10
- * \updates       2016-08-07
+ * \updates       2016-08-24
  * \license       GNU GPLv2 or above
  *
  */
@@ -111,6 +111,7 @@
 namespace seq64
 {
     class event;
+    class perform;
     class sequence;
     class trigger;
 
@@ -233,7 +234,7 @@ public:
         // empty body
     }
 
-    void fill (int tracknumber);
+    void fill (int tracknumber, const perform & p);
 
     /**
      *  Returns the size of the container, in midibytes.  Must be overridden
@@ -319,7 +320,7 @@ private:
     void fill_seq_name (const std::string & name);
     void fill_meta_track_end (midipulse deltatime);
     void fill_proprietary ();
-    void fill_time_sig_and_tempo ();
+    void fill_time_sig_and_tempo (const perform & p);
     midipulse song_fill_seq_event (const trigger & trig, midipulse prev_timestamp);
     void song_fill_seq_trigger
     (

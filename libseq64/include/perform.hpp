@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-08-20
+ * \updates       2016-08-24
  * \license       GNU GPLv2 or above
  *
  *  This class still has way too many members, even with the JACK and
@@ -38,6 +38,14 @@
  *      -   Mute-group support.
  *      -   MIDI control support.
  *      -   The remaining portions of trigger support.
+ *      -   Sequence array parameters could be usefully combined into
+ *          an array of structures.
+ *
+ *  Important global MIDI parameters:
+ *
+ *      -   m_master_bus
+ *      -   m_beats_per_bar
+ *      -   m_beat_width
  */
 
 #include <vector>                       /* std::vector                      */
@@ -497,10 +505,36 @@ private:
     int m_beat_width;
 
     /**
-     *  Holds the "one measure's worth" of pulses (ticks), which is
-     *  normally m_ppqn * 4.  We can save some multiplications, and, more
-     *  importantly, later define a more flexible definition of "one measure's
-     *  worth" than simply four quarter notes.
+     *  Augments the beats/bar and beat-width with the additional values
+     *  included in a Time Signature meta event.  This value provides the
+     *  number of MIDI clocks between metronome clicks.  The default value of
+     *  this item is 24.  It can also be read from some SMF 1 files, such as
+     *  our hymne.mid example.
+     */
+
+    int m_clocks_per_metronome;
+
+    /**
+     *  Augments the beats/bar and beat-width with the additional values
+     *  included in a Time Signature meta event.  Useful in export.  A
+     *  duplicate of the same member in the sequence class.
+     */
+
+    int m_32nds_per_quarter;
+
+    /**
+     *  Augments the beats/bar and beat-width with the additional values
+     *  included in a Tempo meta event.  Useful in export.  A duplicate of the
+     *  same member in the sequence class.
+     */
+
+    long m_us_per_quarter_note;
+
+    /**
+     *  Holds the "one measure's worth" of pulses (ticks), which is normally
+     *  m_ppqn * 4.  We can save some multiplications, and, more importantly,
+     *  later define a more flexible definition of "one measure's worth" than
+     *  simply four quarter notes.
      */
 
     midipulse m_one_measure;
@@ -905,6 +939,60 @@ public:
 #ifdef SEQ64_JACK_SUPPORT
         m_jack_asst.set_beat_width(bw);
 #endif
+    }
+
+    /**
+     * \setter m_clocks_per_metronome
+     */
+
+    void clocks_per_metronome (int cpm)
+    {
+        m_clocks_per_metronome = cpm;       // needs validation
+    }
+
+    /**
+     * \getter m_clocks_per_metronome
+     */
+
+    int clocks_per_metronome () const
+    {
+        return m_clocks_per_metronome;
+    }
+
+    /**
+     * \setter m_32nds_per_quarter
+     */
+
+    void set_32nds_per_quarter (int tpq)
+    {
+        m_32nds_per_quarter = tpq;              // needs validation
+    }
+
+    /**
+     * \getter m_32nds_per_quarter
+     */
+
+    int get_32nds_per_quarter () const
+    {
+        return m_32nds_per_quarter;
+    }
+
+    /**
+     * \setter m_us_per_quarter_note
+     */
+
+    void us_per_quarter_note (long upqn)
+    {
+        m_us_per_quarter_note = upqn;       // needs validation
+    }
+
+    /**
+     * \getter m_us_per_quarter_note
+     */
+
+    long us_per_quarter_note () const
+    {
+        return m_us_per_quarter_note;
     }
 
     /**

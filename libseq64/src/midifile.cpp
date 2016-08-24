@@ -55,7 +55,7 @@
 #include <fstream>
 
 #include "app_limits.h"                 /* SEQ64_USE_MIDI_VECTOR            */
-#include "calculations.hpp"             /* beats_per_minute_from_tempo()    */
+#include "calculations.hpp"             /* beats_per_minute_from_tempo_us() */
 #include "perform.hpp"                  /* must precede midifile.hpp !      */
 #include "midifile.hpp"                 /* seq64::midifile                  */
 #include "sequence.hpp"                 /* seq64::sequence                  */
@@ -797,26 +797,19 @@ midifile::parse_smf_1 (perform & p, int screenset, bool is_smf0)
                                 int logbase2 = int(read_byte());    // dd
                                 long bw = long(pow2(logbase2));
 
-#ifdef SEQ64_HANDLE_TIMESIG_AND_TEMPO
                                 int cc = read_byte();               // cc
                                 int bb = read_byte();               // bb
                                 seq.set_beats_per_bar(bpm);
                                 seq.set_beat_width(bw);
                                 seq.clocks_per_metronome(cc);
                                 seq.set_32nds_per_quarter(bb);
-
-                                /*
-                                 * @new ca 2016-02-10 Log for use with JACK.
-                                 */
-
-                                p.set_beats_per_bar(bpm);
-                                p.set_beat_width(bw);
-#else
-                                (void) read_byte();                 // cc
-                                (void) read_byte();                 // bb
-                                seq.set_beats_per_bar(bpm);
-                                seq.set_beat_width(bw);
-#endif
+                                if (curtrack == 0)
+                                {
+                                    p.set_beats_per_bar(bpm);
+                                    p.set_beat_width(bw);
+                                    p.clocks_per_metronome(cc);
+                                    p.set_32nds_per_quarter(bb);
+                                }
                             }
                             else
                                 m_pos += len;           /* eat it           */
@@ -832,16 +825,22 @@ midifile::parse_smf_1 (perform & p, int screenset, bool is_smf0)
                                 unsigned tt = unsigned(read_byte());
                                 tt = (tt * 256) + unsigned(read_byte());
                                 tt = (tt * 256) + unsigned(read_byte());
-                                if (curtrack == 0)
+
+                                /*
+                                 * If valid, set values.  Sometimes bad
+                                 * tempos may occur and then they stick around
+                                 * forever, screwing up exported songs.
+                                 */
+
+                                if (curtrack == 0 && tt > 0)
                                 {
                                     int bpm = int
                                     (
-                                        beats_per_minute_from_tempo(double(tt))
+                                        beats_per_minute_from_tempo_us(double(tt))
                                     );
                                     p.set_beats_per_minute(bpm);
-#ifdef SEQ64_HANDLE_TIMESIG_AND_TEMPO
+                                    p.us_per_quarter_note(int(tt));
                                     seq.us_per_quarter_note(int(tt));
-#endif
                                 }
                                 else
                                 {
@@ -1659,7 +1658,7 @@ midifile::write (perform & p)
              * the container's bytes are written out below.
              */
 
-            lst.fill(curtrack);
+            lst.fill(curtrack, p);
 
             midilong tracksize = midilong(lst.size());
             write_long(0x4D54726B);             /* magic number 'MTrk'       */
@@ -1789,7 +1788,9 @@ midifile::write_song (perform & p)
          * Write out the exportable tracks as described in the banner.
          * Following stazed, we're consolidate the tracks at the beginning of
          * the song, replacing the actual track number with a counter that is
-         * incremented only if the track was exportable.
+         * incremented only if the track was exportable.  Note that this loop
+         * is kind of an elaboration of what goes on in the midi_container ::
+         * fill() function for normal Sequencer64 file writing.
          */
 
         int track_number = 0;
@@ -1807,11 +1808,8 @@ midifile::write_song (perform & p)
 
                 lst.fill_seq_number(track_number);
                 lst.fill_seq_name(seq.name());
-
-#ifdef SEQ64_HANDLE_TIMESIG_AND_TEMPO                   /* in sequence.hpp  */
                 if (track_number == 0)
-                    lst.fill_time_sig_and_tempo();
-#endif
+                    lst.fill_time_sig_and_tempo(p);
 
                 /*
                  * Add each trigger as described in the function banner.

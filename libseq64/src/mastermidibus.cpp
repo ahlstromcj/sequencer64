@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-30
- * \updates       2016-08-21
+ * \updates       2016-08-24
  * \license       GNU GPLv2 or above
  *
  *  This file provides a Linux-only implementation of MIDI support.
@@ -556,14 +556,16 @@ mastermidibus::set_ppqn (int ppqn)
 void
 mastermidibus::set_beats_per_minute (int bpm)
 {
-
 #ifdef SEQ64_HAVE_LIBASOUND
     automutex locker(m_mutex);
     m_beats_per_minute = bpm;
     snd_seq_queue_tempo_t *tempo;
     snd_seq_queue_tempo_alloca(&tempo);          /* allocate tempo struct */
     snd_seq_get_queue_tempo(m_alsa_seq, m_queue, tempo);
-    snd_seq_queue_tempo_set_tempo(tempo, int(tempo_from_beats_per_minute(bpm)));
+    snd_seq_queue_tempo_set_tempo
+    (
+        tempo, int(tempo_us_from_beats_per_minute(bpm))
+    );
     snd_seq_set_queue_tempo(m_alsa_seq, m_queue, tempo);
 #endif
 }

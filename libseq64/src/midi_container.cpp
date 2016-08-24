@@ -34,7 +34,8 @@
 #include "globals.h"                    /* c_timesig and other flags        */
 #include "calculations.hpp"             /* log2_time_sig_value(), etc.      */
 #include "midi_container.hpp"           /* seq64::midi_container ABC        */
-#include "sequence.hpp"                 /* seq64::sequence ABC              */
+#include "perform.hpp"                  /* seq64::perform master class      */
+#include "sequence.hpp"                 /* seq64::sequence                  */
 #include "settings.hpp"                 /* seq64::rc() and choose_ppqn()    */
 
 namespace seq64
@@ -230,29 +231,53 @@ midi_container::fill_meta_track_end (midipulse deltatime)
 }
 
 /**
- *  Fill in the time-signature and tempo information.  This function is used in
- *  the first track,  The sizes of these meta events are defined as
+ *  Fill in the time-signature and tempo information.  This function is used
+ *  only for the first track,  The sizes of these meta events are defined as
  *  SEQ64_TIME_TEMPO_SIZE.  However, we do not have to add that value in, as
  *  it is already counted in the intrinsic size of the container.
+ *
+ * \param p
+ *      Provides the performance object from which we get some global MIDI
+ *      parameters.
  */
 
 void
-midi_container::fill_time_sig_and_tempo ()
+midi_container::fill_time_sig_and_tempo (const perform & p)
 {
     if (! rc().legacy_format())
     {
-        int bw = log2_time_sig_value(m_sequence.get_beat_width());
+        int beatwidth = p.get_beat_width();
+//      if (beatwidth == 0)
+//          beatwidth = m_sequence.get_beat_width();
+
+        int usperqn = p.us_per_quarter_note();
+//      if (usperqn == 0)
+//          usperqn = m_sequence.us_per_quarter_note();
+
+        int bpb = p.get_beats_per_bar();;
+//      if (bpb == 0)
+//          bpb = m_sequence.get_beats_per_bar();;
+
+        int cpm = p.clocks_per_metronome();
+//      if (cpm == 0)
+//          cpm = m_sequence.clocks_per_metronome();
+
+        int get32pq = p.get_32nds_per_quarter();
+//      if (get32pq == 0)
+//          get32pq = m_sequence.get_32nds_per_quarter();
+
+        int bw = log2_time_sig_value(beatwidth);
         midibyte t[4];                              /* hold tempo bytes */
-        tempo_to_bytes(t, m_sequence.us_per_quarter_note());
+        tempo_us_to_bytes(t, usperqn);
 
         add_variable(0);                            /* delta time       */
         put(0xFF);                                  /* meta event       */
         put(0x58);                                  /* time sig event   */
         put(0x04);
-        put(m_sequence.get_beats_per_bar());
+        put(bpb);
         put(bw);
-        put(m_sequence.clocks_per_metronome());
-        put(m_sequence.get_32nds_per_quarter());
+        put(cpm);
+        put(get32pq);
 
         add_variable(0);                            /* delta time       */
         put(0xFF);                                  /* meta event       */
@@ -454,8 +479,10 @@ midi_container::song_fill_seq_event
             else
                 continue;   // event is before the trigger start - skip
 
-            /* if the event is past the trigger end - for non notes - skip */
-            /* what about Aftertouch events? */
+            /*
+             * If the event is past the trigger end, for non-notes, skip.
+             * What about Aftertouch events?
+             */
 
             if (timestamp >= trig.tick_end())
             {
@@ -557,12 +584,10 @@ midi_container::song_fill_seq_trigger
  */
 
 void
-midi_container::fill (int tracknumber)
+midi_container::fill (int tracknumber, const perform & p)
 {
     fill_seq_number(tracknumber);
     fill_seq_name(m_sequence.name());
-
-#ifdef SEQ64_HANDLE_TIMESIG_AND_TEMPO           /* defined in sequence.hpp */
 
     /**
      * To allow other sequencers to read Seq24/Sequencer64 files, we should
@@ -572,9 +597,7 @@ midi_container::fill (int tracknumber)
      */
 
     if (tracknumber == 0)
-        fill_time_sig_and_tempo();
-
-#endif
+        fill_time_sig_and_tempo(p);
 
     midipulse timestamp = 0;
     midipulse deltatime = 0;

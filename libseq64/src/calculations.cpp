@@ -833,7 +833,7 @@ zoom_power_of_2 (int ppqn)
  */
 
 void
-tempo_to_bytes (midibyte t[3], int tempo_us)
+tempo_us_to_bytes (midibyte t[3], int tempo_us)
 {
     t[0] = midibyte(tempo_us & 0x0000FF);
     t[1] = midibyte((tempo_us & 0x00FF00) >> 8);

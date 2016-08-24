@@ -109,11 +109,9 @@ sequence::sequence (int ppqn)
     m_snap_tick                 (0),            // set in constructor body
     m_time_beats_per_measure    (4),
     m_time_beat_width           (4),
-#ifdef SEQ64_HANDLE_TIMESIG_AND_TEMPO
     m_clocks_per_metronome      (24),
     m_32nds_per_quarter         (8),
-    m_us_per_quarter_note       (0),
-#endif
+    m_us_per_quarter_note       (tempo_to_us(SEQ64_DEFAULT_BPM)),
     m_rec_vol                   (0),
     m_note_on_velocity          (SEQ64_DEFAULT_NOTE_ON_VELOCITY),
     m_note_off_velocity         (SEQ64_DEFAULT_NOTE_OFF_VELOCITY),

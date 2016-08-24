@@ -1,6 +1,6 @@
 INSTALL for Sequencer64 v. 0.9.17
 Chris Ahlstrom
-2015-09-10 to 2016-08-20
+2015-09-10 to 2016-08-24
 
 The current packaging for Sequencer64 is primarily aimed at developers.
 There is currently no configure script... it must be bootstrapped.
@@ -166,6 +166,8 @@ MANUALLY-DEFINED MACROS IN CODE:
         the focus.
 
     SEQ64_HANDLE_TIMESIG_AND_TEMPO:
+
+        OBSOLETE:  It is now a permanent option, unchangeable.
 
         Provides a new option to save the Time Signature and Tempo data
         that may be present in a MIDI file (in the first track) in the

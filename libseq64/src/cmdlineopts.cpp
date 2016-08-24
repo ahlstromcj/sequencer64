@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-20
- * \updates       2016-08-20
+ * \updates       2016-08-24
  * \license       GNU GPLv2 or above
  *
  *  The "rc" command-line options override setting that are first read from
@@ -735,11 +735,7 @@ const static std::string s_build_edit_highlight = "on";
 const static std::string s_build_edit_highlight = "off";
 #endif
 
-#ifdef SEQ64_HANDLE_TIMESIG_AND_TEMPO
-const static std::string s_build_timesig_tempo = "on";
-#else
-const static std::string s_build_timesig_tempo = "off";
-#endif
+const static std::string s_build_timesig_tempo = "on (permanent)";
 
 #ifdef SEQ64_USE_MIDI_VECTOR
 const static std::string s_build_midi_vector = "on";

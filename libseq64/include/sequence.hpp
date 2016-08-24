@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-30
- * \updates       2016-08-21
+ * \updates       2016-08-24
  * \license       GNU GPLv2 or above
  *
  *  The functions add_list_var() and add_long_list() have been replaced by
@@ -60,6 +60,9 @@
 #endif
 
 /**
+ * \obsolete
+ *      Now a permanent option.
+ *
  *  Provides a new option to save the Time Signature and Tempo data that may
  *  be present in a MIDI file (in the first track) in the sequence object, and
  *  write them back to the MIDI file when saved again, in Sequencer64 format.
@@ -67,9 +70,9 @@
  *  not readable by other MIDI applications, such as QTractor.  By enabling
  *  this macro, other sequencers can read the correct time-signature and tempo
  *  values.
+ *
+ *      #define SEQ64_HANDLE_TIMESIG_AND_TEMPO
  */
-
-#define SEQ64_HANDLE_TIMESIG_AND_TEMPO
 
 namespace seq64
 {
@@ -405,8 +408,6 @@ private:
 
     int m_time_beat_width;
 
-#ifdef SEQ64_HANDLE_TIMESIG_AND_TEMPO
-
     /**
      *  Augments the beats/bar and beat-width with the additional values
      *  included in a Time Signature meta event.  This value provides the
@@ -436,9 +437,7 @@ private:
      *  restored later.
      */
 
-    int m_us_per_quarter_note;
-
-#endif  // SEQ64_HANDLE_TIMESIG_AND_TEMPO
+    long m_us_per_quarter_note;
 
     /**
      *  The volume to be used when recording.
@@ -722,8 +721,6 @@ public:
         );
     }
 
-#ifdef SEQ64_HANDLE_TIMESIG_AND_TEMPO
-
     /**
      * \setter m_clocks_per_metronome
      */
@@ -764,7 +761,7 @@ public:
      * \setter m_us_per_quarter_note
      */
 
-    void us_per_quarter_note (int upqn)
+    void us_per_quarter_note (long upqn)
     {
         m_us_per_quarter_note = upqn;       // needs validation
     }
@@ -773,12 +770,10 @@ public:
      * \getter m_us_per_quarter_note
      */
 
-    int us_per_quarter_note () const
+    long us_per_quarter_note () const
     {
         return m_us_per_quarter_note;
     }
-
-#endif  // SEQ64_HANDLE_TIMESIG_AND_TEMPO
 
     void set_rec_vol (int rec_vol);
 

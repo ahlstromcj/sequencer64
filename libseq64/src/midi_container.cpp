@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-10-10
- * \updates       2016-08-22
+ * \updates       2016-08-24
  * \license       GNU GPLv2 or above
  *
  *  This class is important when writing the MIDI and sequencer data out to a
@@ -177,10 +177,10 @@ midi_container::add_event (const event & e, midipulse deltatime)
 void
 midi_container::fill_seq_number (int seq)
 {
-    add_variable(0);                                /* sequence number  */
-    put(0xFF);
-    put(0x00);                                      /* 0 delta time     */
-    put(0x02);
+    add_variable(0);                                /* delta time N/A   */
+    put(0xFF);                                      /* meta marker      */
+    put(0x00);                                      /* seq-num marker   */
+    put(0x02);                                      /* length of event  */
     add_short(midishort(seq));
 }
 
@@ -200,15 +200,15 @@ midi_container::fill_seq_number (int seq)
 void
 midi_container::fill_seq_name (const std::string & name)
 {
-    add_variable(0);                                /* sequence number  */
-    put(0xFF);
-    put(0x03);
+    add_variable(0);                                /* delta time N/A   */
+    put(0xFF);                                      /* meta marker      */
+    put(0x03);                                      /* track name mark  */
 
     int len = name.length();
-    if (len > 0x7F)
-        len = 0x7f;
+    if (len > SEQ64_MAX_DATA_VALUE)                 /* 0x7F, 127        */
+        len = SEQ64_MAX_DATA_VALUE;
 
-    put(midibyte(len));
+    put(midibyte(len));                             /* length of name   */
     for (int i = 0; i < len; ++i)
         put(midibyte(name[i]));
 }
@@ -232,7 +232,8 @@ midi_container::fill_meta_track_end (midipulse deltatime)
 /**
  *  Fill in the time-signature and tempo information.  This function is used in
  *  the first track,  The sizes of these meta events are defined as
- *  SEQ64_TIME_TEMPO_SIZE.
+ *  SEQ64_TIME_TEMPO_SIZE.  However, we do not have to add that value in, as
+ *  it is already counted in the intrinsic size of the container.
  */
 
 void
@@ -276,11 +277,11 @@ void
 midi_container::fill_proprietary ()
 {
     add_variable(0);                                /* bus delta time   */
-    put(0xFF);
-    put(0x7F);
-    put(0x05);
-    add_long(c_midibus);
-    put(m_sequence.get_midi_bus());
+    put(0xFF);                                      /* meta marker      */
+    put(0x7F);                                      /* SeqSpec marker   */
+    put(0x05);                                      /* event length     */
+    add_long(c_midibus);                            /* Seq24 SeqSpec ID */
+    put(m_sequence.get_midi_bus());                 /* MIDI buss number */
 
     add_variable(0);                                /* timesig delta t  */
     put(0xFF);
@@ -347,18 +348,24 @@ midi_container::fill_proprietary ()
          *  otherwise we can assume the value is true for the given sequence,
          *  and save space by not saving it... generally only drum patterns
          *  will not be transposable.
+         *
+         *  However, for now, write it anyway for consistency with Seq32.
          */
 
         bool transpose = m_sequence.get_transposable();
+#ifdef USE_TRANSPOSE_CHECK_HERE
         if (! transpose)                                /* save only false  */
         {
+#endif
             add_variable(0);                            /* transposition    */
             put(0xFF);
             put(0x7F);
             put(0x05);                                  /* long + midibyte  */
             add_long(c_transpose);
-            put(transpose);                             /* a boolean        */
+            put(transpose);                             /* a boolean byte   */
+#ifdef USE_TRANSPOSE_CHECK_HERE
         }
+#endif
 
 #endif
 
@@ -420,7 +427,7 @@ midi_container::song_fill_seq_event
                     if (timestamp > trig.tick_end())
                         continue;                   /* skip                 */
                     else
-                        ++note_is_used[note];       /* count the note       */
+                        note_is_used[note]++;       /* count the note       */
                 }
                 if (e.is_note_off())
                 {
@@ -436,11 +443,11 @@ midi_container::song_fill_seq_event
 
                         if (timestamp >= trig.tick_end())
                         {
-                            --note_is_used[note];           // turn off note
+                            note_is_used[note]--;           // turn off note
                             timestamp = trig.tick_end();
                         }
                         else                                // not past end, use it
-                            --note_is_used[note];
+                            note_is_used[note]--;
                     }
                 }
             }
@@ -466,7 +473,9 @@ midi_container::song_fill_seq_event
 }
 
 /**
- *  Fills in the trigger for the whole sequence.
+ *  Fills in the trigger for the whole sequence.  For a song-performance,
+ *  there will be only one trigger, covering the beginning to the end of the
+ *  fully unlooped track.
  *
  * \param trig
  *      The current trigger to be processed.
@@ -486,7 +495,7 @@ midi_container::song_fill_seq_trigger
     midipulse prev_timestamp
 )
 {
-    int num_triggers = 1;                       /* only one trigger here    */
+    const int num_triggers = 1;                 /* only one trigger here    */
     add_variable(0);
     put(0xFF);
     put(0x7F);
@@ -494,18 +503,16 @@ midi_container::song_fill_seq_trigger
     add_long(c_triggers_new);
 
     /*
-     * This doesn't seem right:
+     * Using all the trigger values seems to be the same as these values:
      *
-     * add_long(0);                             // the start tick
-     * add_long(trig.tick_end());
-     * add_long(0);                             // offset is done in event
-     *
-     * But the "fix" below doesn't work, either.
+     *  add_long(0);                            // the start tick
+     *  add_long(trig.tick_end());
+     *  add_long(0);                            // offset is done in event
      */
 
-    add_long(trig.tick_start());                /* the start tick           */
+    add_long(trig.tick_start());
     add_long(trig.tick_end());
-    add_long(trig.offset());                    /* offset is done in event  */
+    add_long(trig.offset());
     fill_proprietary();
 
     midipulse delta_time = length - prev_timestamp;

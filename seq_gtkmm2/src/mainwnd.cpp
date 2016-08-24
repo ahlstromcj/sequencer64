@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-08-21
+ * \updates       2016-08-24
  * \license       GNU GPLv2 or above
  *
  *  The main window holds the menu and the main controls of the application,
@@ -257,7 +257,7 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
     m_menu_file->items().push_back(SeparatorElem());
     m_menu_file->items().push_back
     (
-        MenuElem("_Import...", mem_fun(*this, &mainwnd::file_import_dialog))
+        MenuElem("_Import MIDI...", mem_fun(*this, &mainwnd::file_import_dialog))
     );
 
     /*
@@ -269,7 +269,7 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
     (
         MenuElem
         (
-            "E_xport...",
+            "E_xport song as MIDI...",
             sigc::bind(mem_fun(*this, &mainwnd::file_save_as), true)
         )
     );

@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-08-21
+ * \updates       2016-08-24
  * \license       GNU GPLv2 or above
  *
  *  For a quick guide to the MIDI format, see, for example:
@@ -1603,6 +1603,9 @@ midifile::prop_item_size (long data_length) const
  *  Write the whole MIDI data and Seq24 information out to the file.
  *  Also see the write_song() function, for exporting to standard MIDI.
  *
+ *  Seq24 reverses the order of some events, due to popping from its
+ *  container.  Not an issue here.
+ *
  * \param p
  *      Provides the object that will contain and manage the entire
  *      performance.
@@ -1659,21 +1662,8 @@ midifile::write (perform & p)
             lst.fill(curtrack);
 
             midilong tracksize = midilong(lst.size());
-
-#ifdef SEQ64_HANDLE_TIMESIG_AND_TEMPO           /* defined in sequence.hpp   */
-            if (curtrack == 0)
-                tracksize += SEQ64_TIME_TEMPO_SIZE;
-#endif
-
             write_long(0x4D54726B);             /* magic number 'MTrk'       */
             write_long(tracksize);
-
-            /**
-             * \note
-             *      Seq24 reverses the order of some events, due to
-             *      popping from its container.  Not an issue here.
-             */
-
             while (! lst.done())        /* write the track data         */
                 write_byte(lst.get());
         }
@@ -1819,7 +1809,7 @@ midifile::write_song (perform & p)
                 lst.fill_seq_name(seq.name());
 
 #ifdef SEQ64_HANDLE_TIMESIG_AND_TEMPO                   /* in sequence.hpp  */
-                if (track == 0)
+                if (track_number == 0)
                     lst.fill_time_sig_and_tempo();
 #endif
 
@@ -1839,9 +1829,8 @@ midifile::write_song (perform & p)
                     midipulse seqlength = end_trigger.tick_end();
                     midipulse measticks = seq.measures_to_ticks();
                     midipulse remainder = seqlength % measticks;
-                    midipulse measminus = measticks - 1;
-                    if (remainder != measminus)
-                        seqlength += measminus - remainder;
+                    if (remainder != measticks - 1)
+                        seqlength += measticks - remainder - 1;
 
                     lst.song_fill_seq_trigger
                     (
@@ -1850,12 +1839,6 @@ midifile::write_song (perform & p)
                 }
 
                 midilong tracksize = midilong(lst.size());
-
-#ifdef SEQ64_HANDLE_TIMESIG_AND_TEMPO           /* defined in sequence.hpp   */
-                if (track == 0)
-                    tracksize += SEQ64_TIME_TEMPO_SIZE;
-#endif
-
                 write_long(0x4D54726B);         /* magic number 'MTrk'       */
                 write_long(tracksize);
                 while (! lst.done())            /* write the track data      */

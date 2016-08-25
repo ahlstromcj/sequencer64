@@ -1166,7 +1166,10 @@ perform::set_beats_per_minute (int bpm)
 #endif
 
     if (ok)
+    {
         m_master_bus.set_beats_per_minute(bpm);
+        m_us_per_quarter_note = tempo_to_us(bpm);
+    }
 }
 
 /**

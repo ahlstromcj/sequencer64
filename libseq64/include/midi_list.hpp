@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-10-10
- * \updates       2016-07-31
+ * \updates       2016-08-25
  * \license       GNU GPLv2 or above
  *
  *  This implementation mirrors the original Seq24 handling of events that get
@@ -64,10 +64,11 @@ private:
     typedef std::list<midibyte> CharList;
 
     /**
-     *  The container itself.
+     *  The container itself.  It has to be mutable because the const-function
+     *  get() actually modifies the container when getting a byte.
      */
 
-    CharList m_char_list;
+    mutable CharList m_char_list;
 
 public:
 
@@ -114,10 +115,11 @@ public:
     /**
      *  Provide a way to get the next byte from the container.  In this
      *  implementation, m_position_for_get is not used.  The elements of the
-     *  container are popped off backward!
+     *  container are popped off backward!  This modifies the character list,
+     *  so it has to be mutable.
      */
 
-    virtual midibyte get ()
+    virtual midibyte get () const
     {
         midibyte result = m_char_list.back();
         m_char_list.pop_back();

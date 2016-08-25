@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-10-10
- * \updates       2016-08-24
+ * \updates       2016-08-25
  * \license       GNU GPLv2 or above
  *
  *  This class is important when writing the MIDI and sequencer data out to a
@@ -145,17 +145,17 @@ midi_container::add_event (const event & e, midipulse deltatime)
 
     switch (e.get_status() & EVENT_CLEAR_CHAN_MASK)         /* 0xF0     */
     {
-    case EVENT_NOTE_OFF:                                    /* 0x80:    */
-    case EVENT_NOTE_ON:                                     /* 0x90:    */
-    case EVENT_AFTERTOUCH:                                  /* 0xA0:    */
-    case EVENT_CONTROL_CHANGE:                              /* 0xB0:    */
-    case EVENT_PITCH_WHEEL:                                 /* 0xE0:    */
+    case EVENT_NOTE_OFF:                                    /* 0x80     */
+    case EVENT_NOTE_ON:                                     /* 0x90     */
+    case EVENT_AFTERTOUCH:                                  /* 0xA0     */
+    case EVENT_CONTROL_CHANGE:                              /* 0xB0     */
+    case EVENT_PITCH_WHEEL:                                 /* 0xE0     */
         put(d0);
         put(d1);
         break;
 
-    case EVENT_PROGRAM_CHANGE:                              /* 0xC0:    */
-    case EVENT_CHANNEL_PRESSURE:                            /* 0xD0:    */
+    case EVENT_PROGRAM_CHANGE:                              /* 0xC0     */
+    case EVENT_CHANNEL_PRESSURE:                            /* 0xD0     */
         put(d0);
         break;
 
@@ -236,6 +236,10 @@ midi_container::fill_meta_track_end (midipulse deltatime)
  *  SEQ64_TIME_TEMPO_SIZE.  However, we do not have to add that value in, as
  *  it is already counted in the intrinsic size of the container.
  *
+ *  We now make sure that the proper values are part of the perform object for
+ *  usage in this particular track.  For export, we cannot guarantee that the
+ *  first (0th) track/sequence is exportable.
+ *
  * \param p
  *      Provides the performance object from which we get some global MIDI
  *      parameters.
@@ -247,25 +251,10 @@ midi_container::fill_time_sig_and_tempo (const perform & p)
     if (! rc().legacy_format())
     {
         int beatwidth = p.get_beat_width();
-//      if (beatwidth == 0)
-//          beatwidth = m_sequence.get_beat_width();
-
         int usperqn = p.us_per_quarter_note();
-//      if (usperqn == 0)
-//          usperqn = m_sequence.us_per_quarter_note();
-
         int bpb = p.get_beats_per_bar();;
-//      if (bpb == 0)
-//          bpb = m_sequence.get_beats_per_bar();;
-
         int cpm = p.clocks_per_metronome();
-//      if (cpm == 0)
-//          cpm = m_sequence.clocks_per_metronome();
-
         int get32pq = p.get_32nds_per_quarter();
-//      if (get32pq == 0)
-//          get32pq = m_sequence.get_32nds_per_quarter();
-
         int bw = log2_time_sig_value(beatwidth);
         midibyte t[4];                              /* hold tempo bytes */
         tempo_us_to_bytes(t, usperqn);
@@ -273,7 +262,7 @@ midi_container::fill_time_sig_and_tempo (const perform & p)
         add_variable(0);                            /* delta time       */
         put(0xFF);                                  /* meta event       */
         put(0x58);                                  /* time sig event   */
-        put(0x04);
+        put(0x04);                                  /* data length      */
         put(bpb);
         put(bw);
         put(cpm);
@@ -282,7 +271,7 @@ midi_container::fill_time_sig_and_tempo (const perform & p)
         add_variable(0);                            /* delta time       */
         put(0xFF);                                  /* meta event       */
         put(0x51);                                  /* tempo event      */
-        put(0x03);
+        put(0x03);                                  /* data length      */
         put(t[2]);
         put(t[1]);
         put(t[0]);
@@ -523,11 +512,11 @@ midi_container::song_fill_seq_trigger
 )
 {
     const int num_triggers = 1;                 /* only one trigger here    */
-    add_variable(0);
-    put(0xFF);
-    put(0x7F);
-    add_variable((num_triggers * 3 * 4) + 4);
-    add_long(c_triggers_new);
+    add_variable(0);                            /* no delta time            */
+    put(0xFF);                                  /* indicates a meta event   */
+    put(0x7F);                                  /* sequencer-specific       */
+    add_variable((num_triggers * 3 * 4) + 4);   /* 3 long values + tag      */
+    add_long(c_triggers_new);                   /* Seq24 tag for triggers   */
 
     /*
      * Using all the trigger values seems to be the same as these values:

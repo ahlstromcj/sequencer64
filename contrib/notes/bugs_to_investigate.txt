@@ -1,12 +1,14 @@
 Bugs and Additional Upgrade Ideas
 Chris Ahlstrom
-2015-10-27 to 2016-08-23 (New bugs)
+2015-10-27 to 2016-08-24 (New bugs)
 
 In no particular order...  "y" means "in progress", and "x" means it is
 basically done.
 
 -  Also see BUG REPORTS below.  Those are bug reports from other people.
--  Export works, but the song does not play properly.
+x  Export works, but the song does not play properly.  It turns out that
+   earlier saves of files were writing tempo events of value "0", which
+   was causing the issues with exported files playback.
 y  Use the event_list::dref() function to access events.  Check all remaining
    usage of SEQ64_USE_EVENT_MAP
 x  Still need to test saving and reading of the new transposable sequence

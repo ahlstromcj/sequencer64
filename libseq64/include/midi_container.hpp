@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-10-10
- * \updates       2016-08-24
+ * \updates       2016-08-25
  * \license       GNU GPLv2 or above
  *
  */
@@ -269,7 +269,7 @@ public:
      *  increments m_position_for_get.
      */
 
-    virtual midibyte get () = 0;
+    virtual midibyte get () const = 0;
 
     /**
      *  Provides a way to clear the container.

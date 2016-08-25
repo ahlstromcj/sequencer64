@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-08-02
+ * \updates       2016-08-25
  * \license       GNU GPLv2 or above
  *
  *  The Seq24 MIDI file is a standard, Format 1 MIDI file, with some extra
@@ -62,8 +62,13 @@
 
 namespace seq64
 {
+    class perform;                      /* forward reference            */
 
-class perform;                          /* forward reference            */
+#if defined SEQ64_USE_MIDI_VECTOR
+    class midi_vector;
+#else
+    class midi_list;
+#endif
 
 /**
  *  This class handles the parsing and writing of MIDI files.  In addition to
@@ -301,6 +306,14 @@ private:
     long track_name_size (const std::string & trackname) const;
     void errdump (const std::string & msg);
     void errdump (const std::string & msg, unsigned long p);
+    void write_track
+    (
+#if defined SEQ64_USE_MIDI_VECTOR
+        const midi_vector & lst
+#else
+        const midi_list & lst
+#endif
+    );
 
     /**
      *  Returns the size of a sequence-number event, which is always 5

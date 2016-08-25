@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-10-11
- * \updates       2016-07-31
+ * \updates       2016-08-25
  * \license       GNU GPLv2 or above
  *
  *  This implementation attempts to avoid the reversals that can occur using
@@ -125,7 +125,7 @@ public:
      *      Returns the next byte in the character vector.
      */
 
-    virtual midibyte get ()
+    virtual midibyte get () const
     {
         midibyte result = m_char_vector[position()];
         position_increment();

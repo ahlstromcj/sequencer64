@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-08-24
+ * \updates       2016-08-25
  * \license       GNU GPLv2 or above
  *
  *  For a quick guide to the MIDI format, see, for example:
@@ -84,13 +84,13 @@
  *  Highlights the MIDI file header value, "MThd".
  */
 
-#define SEQ64_HEADER_TAG            0x4D546864      /* magic number 'MThd'  */
+#define SEQ64_MTHD_TAG              0x4D546864      /* magic number 'MThd'  */
 
 /**
  *  Highlights the MIDI file track-marker (chunk) value, "MTrk".
  */
 
-#define SEQ64_TRACK_TAG             0x4D54726B      /* magic number 'MTrk'  */
+#define SEQ64_MTRK_TAG              0x4D54726B      /* magic number 'MTrk'  */
 
 /**
  *  The chunk header value for the Sequencer64 proprietary/SeqSpec section.
@@ -99,7 +99,7 @@
  *  (or our midicvt program).  For now, we stick with "MTrk".
  */
 
-#define PROPRIETARY_CHUNK_TAG       SEQ64_TRACK_TAG
+#define PROPRIETARY_CHUNK_TAG       SEQ64_MTRK_TAG
 
 /**
  *  Provides the sequence number for the proprietary/SeqSpec data when using
@@ -399,7 +399,7 @@ midifile::parse (perform & p, int screenset)
 
     midilong ID = read_long();                      /* read hdr chunk info  */
     midilong hdrlength = read_long();               /* stock MThd length    */
-    if (ID != SEQ64_HEADER_TAG && hdrlength != 6)   /* magic number 'MThd'  */
+    if (ID != SEQ64_MTHD_TAG && hdrlength != 6)     /* magic number 'MThd'  */
     {
         m_error_is_fatal = true;
         errdump("Invalid MIDI header chunk detected", ID);
@@ -603,7 +603,7 @@ midifile::parse_smf_1 (perform & p, int screenset, bool is_smf0)
         char TrackName[SEQ64_TRACKNAME_MAX];        /* track name from file */
         midilong ID = read_long();                  /* get track marker     */
         midilong TrackLength = read_long();         /* get track length     */
-        if (ID == SEQ64_TRACK_TAG)                  /* magic number 'MTrk'  */
+        if (ID == SEQ64_MTRK_TAG)                   /* magic number 'MTrk'  */
         {
             bool timesig_set = false;               /* seq24 style wins     */
             midishort seqnum = 0;
@@ -827,24 +827,23 @@ midifile::parse_smf_1 (perform & p, int screenset, bool is_smf0)
                                 tt = (tt * 256) + unsigned(read_byte());
 
                                 /*
-                                 * If valid, set values.  Sometimes bad
-                                 * tempos may occur and then they stick around
-                                 * forever, screwing up exported songs.
+                                 * If valid, set values.  Sometimes bad tempos
+                                 * occur, and they stick around forever,
+                                 * screwing up exported songs.
                                  */
 
-                                if (curtrack == 0 && tt > 0)
+                                if (tt > 0)
                                 {
                                     int bpm = int
                                     (
                                         beats_per_minute_from_tempo_us(double(tt))
                                     );
-                                    p.set_beats_per_minute(bpm);
-                                    p.us_per_quarter_note(int(tt));
+                                    if (curtrack == 0)
+                                    {
+                                        p.set_beats_per_minute(bpm);
+                                        p.us_per_quarter_note(int(tt));
+                                    }
                                     seq.us_per_quarter_note(int(tt));
-                                }
-                                else
-                                {
-                                    errdump("ignoring tempo data after track 0");
                                 }
                             }
                             else
@@ -1567,6 +1566,23 @@ midifile::write_prop_header
     write_long(control_tag);                /* use legacy output call       */
 }
 
+void
+midifile::write_track
+(
+#if defined SEQ64_USE_MIDI_VECTOR
+    const midi_vector & lst
+#else
+    const midi_list & lst
+#endif
+)
+{
+    midilong tracksize = midilong(lst.size());
+    write_long(SEQ64_MTRK_TAG);             /* magic number 'MTrk'          */
+    write_long(tracksize);
+    while (! lst.done())                    /* write the track data         */
+        write_byte(lst.get());
+}
+
 /**
  *  Calculates the size of a proprietary item, as written by the
  *  write_prop_header() function, plus whatever is called to write the data.
@@ -1659,12 +1675,7 @@ midifile::write (perform & p)
              */
 
             lst.fill(curtrack, p);
-
-            midilong tracksize = midilong(lst.size());
-            write_long(0x4D54726B);             /* magic number 'MTrk'       */
-            write_long(tracksize);
-            while (! lst.done())        /* write the track data         */
-                write_byte(lst.get());
+            write_track(lst);
         }
     }
     if (result)
@@ -1835,13 +1846,7 @@ midifile::write_song (perform & p)
                         end_trigger, seqlength, previous_ts
                     );
                 }
-
-                midilong tracksize = midilong(lst.size());
-                write_long(0x4D54726B);         /* magic number 'MTrk'       */
-                write_long(tracksize);
-                while (! lst.done())            /* write the track data      */
-                    write_byte(lst.get());
-
+                write_track(lst);
                 ++track_number;
             }
         }

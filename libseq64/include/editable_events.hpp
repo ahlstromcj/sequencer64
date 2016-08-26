@@ -29,7 +29,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-12-04
- * \updates       2016-06-12
+ * \updates       2016-08-26
  * \license       GNU GPLv2 or above
  *
  *  This module extends the event class to support conversions between events
@@ -212,6 +212,38 @@ public:
     const_iterator end () const
     {
         return m_events.end();
+    }
+
+    /**
+     *  Dereference access for list or map.
+     *
+     * \param ie
+     *      Provides the iterator to the event to which to get a reference.
+     */
+
+    static event & dref (iterator ie)
+    {
+#ifdef SEQ64_USE_EVENT_MAP
+        return ie->second;
+#else
+        return *ie;
+#endif
+    }
+
+    /**
+     *  Dereference const access for list or map.
+     *
+     * \param ie
+     *      Provides the iterator to the event to which to get a reference.
+     */
+
+    static const event & dref (const_iterator ie)
+    {
+#ifdef SEQ64_USE_EVENT_MAP
+        return ie->second;
+#else
+        return *ie;
+#endif
     }
 
     /**

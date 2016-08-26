@@ -2102,12 +2102,17 @@ sequence::copy_selected ()
     event_list clipbd;
     for (event_list::iterator i = m_events.begin(); i != m_events.end(); ++i)
     {
+#ifdef USE_THIS_NEW_CODE                        // undefined
+        if (DREF(i).is_selected())
+            clipbd.add(DREF(i));                /* no post-sort */
+#else
 #ifdef SEQ64_USE_EVENT_MAP
         if (DREF(i).is_selected())
             clipbd.add(DREF(i), false);         /* no post-sort */
 #else
         if (DREF(i).is_selected())
             clipbd.push_back(DREF(i));
+#endif
 #endif
     }
     if (clipbd.count() > 0)
@@ -4382,6 +4387,7 @@ sequence::shift_notes (midipulse ticks)
             }
         }
         (void) remove_marked();
+
 #ifndef SEQ64_USE_EVENT_MAP
         shifted_events.sort();
         m_events.merge(shifted_events);

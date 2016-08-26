@@ -1,11 +1,13 @@
 Bugs and Additional Upgrade Ideas
 Chris Ahlstrom
-2015-10-27 to 2016-08-24 (New bugs)
+2015-10-27 to 2016-08-26 (New bugs)
 
 In no particular order...  "y" means "in progress", and "x" means it is
 basically done.
 
 -  Also see BUG REPORTS below.  Those are bug reports from other people.
+-  Is it worthwhile to save lyric events within a sequence and restoring them
+   upon writing the file (while filtering out 0-length lyrics)?
 x  Export works, but the song does not play properly.  It turns out that
    earlier saves of files were writing tempo events of value "0", which
    was causing the issues with exported files playback.

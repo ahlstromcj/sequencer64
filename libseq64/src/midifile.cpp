@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-08-25
+ * \updates       2016-08-26
  * \license       GNU GPLv2 or above
  *
  *  For a quick guide to the MIDI format, see, for example:
@@ -79,6 +79,13 @@
  */
 
 #define SEQ64_TRACKNAME_MAX          256
+
+/**
+ *  The maximum allowed variable length value for a MIDI file, which allows
+ *  the length to fit in a 32-bit integer.
+ */
+
+#define SEQ64_VARLENGTH_MAX         0x0FFFFFFF
 
 /**
  *  Highlights the MIDI file header value, "MThd".
@@ -496,30 +503,42 @@ midifile::pow2 (int logbase2)
 
 /**
  *  Internal function to check for and report a bad length value.
+ *  A length of zero is now considered legal, but a "warning" message is shown.
+ *  The largest value allowed within a MIDI file is 0x0FFFFFFF. This limit is
+ *  set to allow variable-length quantities to be manipulated as 32-bit
+ *  integers.
  *
  * \param len
  *      The length value to be checked, and it should be greater than 0.
+ *      However, we have seen files with zero-length events, such as Lyric
+ *      events (0x05).
  *
  * \param type
  *      The type of meta event.  Used for displaying an error.
  *
  * \return
- *      Returns true if the length parameter is valid.
+ *      Returns true if the length parameter is valid.  This now means it is
+ *      simply less than 0x0FFFFFFF.
  */
 
 bool
 midifile::checklen (midilong len, midibyte type)
 {
-    bool result = len > 0;
-    if (! result)
+    bool result = len <= SEQ64_VARLENGTH_MAX;               /* 0x0FFFFFFF */
+    if (result)
     {
-        char tmp[64];
-        snprintf
-        (
-            tmp, sizeof tmp,
-            "0 data length for meta type 0x%02X, bad MIDI data", type
-        );
-        errdump(tmp);
+        if (len == 0)
+        {
+            char m[40];
+            snprintf(m, sizeof m, "0 data length for meta type 0x%02X", type);
+            errdump(m);
+        }
+    }
+    else
+    {
+        char m[40];
+        snprintf(m, sizeof m, "bad data length for meta type 0x%02X", type);
+        errdump(m);
     }
     return result;
 }

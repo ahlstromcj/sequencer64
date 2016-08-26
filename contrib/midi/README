@@ -1,6 +1,6 @@
 Contributed MIDI Files
 Chris Ahlstrom
-2015-09-11 to 2016-08-21
+2015-09-11 to 2016-08-25
 
 This directory contains contributed MIDI files for examples and testing.
 Also see the test files from the midicvt as described in
@@ -13,6 +13,16 @@ by loading them into Sequencer64.
         In Sequencer64, it loads as 140 BPM, but plays really slowly.
 
         In seq24, it loads as 120 BPM, but plays somewhat normally!
+
+   allofarow.midi:
+
+        The song above, saved by a recent version of Sequencer64.
+
+   allofarow-unstripped.midi:
+
+        The song above, saved by an earlier version of Sequencer64, which
+        followed Seq24 in saving the mute groups information, even if
+        basically unused.
 
    ameeting.mid:
 

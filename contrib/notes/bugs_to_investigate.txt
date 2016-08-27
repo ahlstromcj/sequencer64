@@ -457,14 +457,14 @@ bad length value following the c_mutegroups = 0x24240009 specification.
 Note that we added time-signature and tempo support, but have not fixed the
 garbage that appears via midicvt.
 
-Date: Tue, 02 Feb 2016 15:32:40 -0800                                             
-From: Daniel Appelt <notifications@github.com>                                    
-                                                                                  
+Date: Tue, 02 Feb 2016 15:32:40 -0800
+From: Daniel Appelt <notifications@github.com>
+
 Manual NSM support may be achieved using the nsm-proxy helper client. sequencer64 
-and seq24 both support signals SIGUSR1 (saving) and SIGINT (closing). You just    
-have to provide an initial Midi file to work on in the directory created for the  
-proxy, and specify its file name as command line argument.                       
-                                                                                  
+and seq24 both support signals SIGUSR1 (saving) and SIGINT (closing). You just
+have to provide an initial Midi file to work on in the directory created for the
+proxy, and specify its file name as command line argument.
+
 There is even a helper script to support this scenario in
 [github](https://github.com/rhetr/nsm-scripts/blob/master/scripts/seq24-nsm).
 Please note that this script expects to find an (empty) Midi file in
@@ -501,5 +501,193 @@ Ctrl-select bug:
    1:4:144 On  54
    1:4:190 Off 54
    1:4:190 Off 54
+
+
+
+
+
+
+Date: Sun, 14 Aug 2016 14:48:31 -0700
+From: Arnaud Jacquemin <notifications@github.com>
+To: ahlstromcj/sequencer64 <sequencer64@noreply.github.com>
+Cc: "C. Ahlstrom" <ahlstromcj@gmail.com>, Comment <comment@noreply.github.com>
+Subject: Re: [ahlstromcj/sequencer64] Loops not playing when using jack (#20)
+
+Hello everybody,
+
+I think I have the same issue if I only check "JACK Transport" in the _Options_ >
+_JACK/LASH tab_. When I press _Play_, the playback cursor stays stuck, and no note
+is played. Nothing moves, the window stays still like on this screenshot:
+![sequencer64-transport-bug](https://cloud.githubusercontent.com/assets/1387489/17
+652230/635e08ec-6277-11e6-81e1-d1d29d33f436.png)
+
+If I check "_Transport Master_" or "_Master Conditional_" everything works  as
+expected.
+
+I use a recent version, compiled straight from the master branch on github :
+"Sequencer64 0.9.16  2016-07-14 0.9.16-0-g0193728 * master". My OS is KXStudio
+14.04.5 with jackd 1.9.11
+
+(English is not my mother tongue, please excuse any errors on my part... I hope
+I'm clear enough.)
+
+By the way, thank you Chris for your work! It's my first day playing with
+Sequencer64 and I'm having fun already!
+
+Have a nice day
+
+
+
+
+
+Date: Tue, 23 Aug 2016 14:58:09 -0700
+From: Arnaud Jacquemin <notifications@github.com>
+To: ahlstromcj/sequencer64 <sequencer64@noreply.github.com>
+Cc: "C. Ahlstrom" <ahlstromcj@gmail.com>, Comment <comment@noreply.github.com>
+Subject: Re: [ahlstromcj/sequencer64] Loops not playing when using jack (#20)
+
+Hello Chris, thanks for you answer.
+I confirm that there is a similar issue with seq24 0.9.3, when only "Jack
+Transport" is checked.
+If you need someone to test these changes, I would be happy to help.
+
+
+
+
+
+Date: Tue, 23 Aug 2016 05:07:16 -0700
+From: Arnaud Jacquemin <notifications@github.com>
+To: ahlstromcj/sequencer64 <sequencer64@noreply.github.com>
+Cc: "C. Ahlstrom" <ahlstromcj@gmail.com>, Comment <comment@noreply.github.com>
+Subject: Re: [ahlstromcj/sequencer64] Would like unique set of mute groups per
+        screen (1024 instead of 32) (#4)
+
+Hello Chris and Tim, thank you for your answers !
+
+Chris, your "auto-queuing" feature is interesting, it could be useful in some
+cases. But it should be optional, because some users would also want to "mix and
+match" patterns from different screen sets, a bit like a techno DJ mix.
+
+Tim, I'm sorry to read that you had such a bad experience with your Raspberry Pi, 
+and that you lost all your work...
+
+So bad my C++ skills are almost nonexistent, I would really like to contribute to 
+the "32 mute-groups for each screen set" feature. I think it would be as good as
+the "scene" concept in Ableton Live.
+
+
+
+
+Date: Tue, 23 Aug 2016 14:44:43 -0700
+From: Arnaud Jacquemin <notifications@github.com>
+To: ahlstromcj/sequencer64 <sequencer64@noreply.github.com>
+Subject: Re: [ahlstromcj/sequencer64] Mute Groups should be applied to active
+        screen (#5)
+
+Hello Tim,
+
+I'm using a recent version of Sequencer64 (0.9.16, dated 14/07/2016), and mute
+groups seems to be  applied to the currently displayed screen. Have you been
+successful fixing this issue ?
+
+Thanks in advance
+
+
+
+Date: Fri, 26 Aug 2016 15:12:30 -0700
+From: Arnaud Jacquemin <notifications@github.com>
+To: ahlstromcj/sequencer64 <sequencer64@noreply.github.com>
+Subject: [ahlstromcj/sequencer64] MIDI controller toggles the wrong pattern (#23) 
+
+Hello,
+
+I've updated my  `~/.config/sequencer64/sequencer64.rc` file in order to control
+the pattern toggling with a MIDI controller (Launchpad Mini).
+
+Here's a except of my file:
+
+```
+[midi-control]
+
+74      # MIDI controls count
+0 [1 0 144   0   1 127] [0 0   0   0   0   0] [0 0   0   0   0   0]
+1 [1 0 144   1   1 127] [0 0   0   0   0   0] [0 0   0   0   0   0]
+2 [1 0 144   2   1 127] [0 0   0   0   0   0] [0 0   0   0   0   0]
+3 [1 0 144   3   1 127] [0 0   0   0   0   0] [0 0   0   0   0   0]
+4 [1 0 144   4   1 127] [0 0   0   0   0   0] [0 0   0   0   0   0]
+5 [1 0 144   5   1 127] [0 0   0   0   0   0] [0 0   0   0   0   0]
+6 [1 0 144   6   1 127] [0 0   0   0   0   0] [0 0   0   0   0   0]
+7 [1 0 144   7   1 127] [0 0   0   0   0   0] [0 0   0   0   0   0]
+8 [1 0 144   8   1 127] [0 0   0   0   0   0] [0 0   0   0   0   0]
+9 [1 0 144   9   1 127] [0 0   0   0   0   0] [0 0   0   0   0   0]
+```
+
+I wanted each of my pad to toggle a different pattern, but every one toggles the
+same pattern: the second one (numbered 1) of the current screen set.
+
+The version I'm using is Sequencer64 0.9.16 2016-07-14 0.9.16-0-g0193728 * master 
+(compiled from the Github souces)
+
+It works as intended with seq24 0.9.3 (to test I copied the RC file to
+`~/.seq24.rc`), so it looks like it's a regression.
+
+Thanks in advance for your help
+
+
+
+
+
+Date: Fri, 26 Aug 2016 15:31:48 -0700
+From: Arnaud Jacquemin <notifications@github.com>
+To: ahlstromcj/sequencer64 <sequencer64@noreply.github.com>
+Subject: Re: [ahlstromcj/sequencer64] Enabled experimental screen-set code for
+        testing, see USE_EXPERIMENTAL_CODE macro usage. (a9e14fe)
+
+I think this change is the cause of #23:
+
+`i+m_offset` is changed to `m_offset + 1`
+
+So the variable `i` (number of the pattern to toggle) becomes a constant `1`
+
+
+
+
+
+
+Date: Fri, 26 Aug 2016 16:21:40 -0700
+From: Arnaud Jacquemin <notifications@github.com>
+To: ahlstromcj/sequencer64 <sequencer64@noreply.github.com>
+Subject: [ahlstromcj/sequencer64] Fix for issue #23 "MIDI controller toggles the
+        wrong pattern" (#24)
+
+Fix for issue ahlstromcj/sequencer64#23
+
+It was a regression introduced in commit a9e14fe5cfd8f03b65d2acb1b2710ed9e5637463 
+You can view, comment on, or merge this pull request online at:
+
+  https://github.com/ahlstromcj/sequencer64/pull/24
+
+-- Commit Summary --
+
+  * Fix for issue "MIDI controller toggles the wrong pattern" ahlstromcj/sequencer
+64#23
+
+-- File Changes --
+
+    M libseq64/src/perform.cpp (2)
+
+-- Patch Links --
+
+https://github.com/ahlstromcj/sequencer64/pull/24.patch
+https://github.com/ahlstromcj/sequencer64/pull/24.diff
+
+
+
+
+
+
+
+
+
 
 # vim: sw=4 ts=4 wm=4 et ft=sh

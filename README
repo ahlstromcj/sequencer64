@@ -1,6 +1,6 @@
 README for Sequencer64 0.9.17
 Chris Ahlstrom
-2015-09-10 to 2016-08-21 (initial work started in July of 2015)
+2015-09-10 to 2016-08-27 (initial work started in July of 2015)
 
 Sequencer64 (replaces sequencer24) is a reboot of seq24 to refactor it to be
 tighter and easier to transition to GTKmm 3, and much more.  It is now
@@ -44,7 +44,9 @@ Major updates:
             available through the user interface, must be enabled in the code.
         -   Playback status now folded completely into the perform and
             jack_assistant classes.
-        -   Lots of bug fixed based on fixes from seq32.
+        -   Lots of bug fixed based on fixes from seq32.  Also merged a
+            fix from Arnaud for issue "MIDI controller toggles the wrong
+            pattern", a regression caused by my fat fingers.
         -   See earlier version fixes near the end of this README.
     -   Sequencer64 loads SMF 0 files and splits the channels into separate
         tracks/sequences.

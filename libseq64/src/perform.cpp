@@ -3220,9 +3220,14 @@ perform::input_func ()
                         }
                         else            /* use it to control our sequencer */
                         {
+	                        /*
+                             * Incorporates pull request #24, arnaud-jacquemin,
+                             * issue #23 "MIDI controller toggles wrong pattern"
+                             */
+
                             for (int i = 0; i < c_midi_controls; ++i)
                             {
-                                int offset = m_offset + i;
+                                int offset = m_offset + i;      /* arnaud fix */
                                 midibyte data[2] = { 0, 0 };
                                 midibyte status = ev.get_status();
                                 ev.get_data(data[0], data[1]);

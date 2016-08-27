@@ -576,30 +576,10 @@ the "32 mute-groups for each screen set" feature. I think it would be as good as
 the "scene" concept in Ableton Live.
 
 
-
-
-Date: Tue, 23 Aug 2016 14:44:43 -0700
-From: Arnaud Jacquemin <notifications@github.com>
-To: ahlstromcj/sequencer64 <sequencer64@noreply.github.com>
-Subject: Re: [ahlstromcj/sequencer64] Mute Groups should be applied to active
-        screen (#5)
-
-Hello Tim,
-
-I'm using a recent version of Sequencer64 (0.9.16, dated 14/07/2016), and mute
-groups seems to be  applied to the currently displayed screen. Have you been
-successful fixing this issue ?
-
-Thanks in advance
-
-
-
 Date: Fri, 26 Aug 2016 15:12:30 -0700
 From: Arnaud Jacquemin <notifications@github.com>
 To: ahlstromcj/sequencer64 <sequencer64@noreply.github.com>
 Subject: [ahlstromcj/sequencer64] MIDI controller toggles the wrong pattern (#23) 
-
-Hello,
 
 I've updated my  `~/.config/sequencer64/sequencer64.rc` file in order to control
 the pattern toggling with a MIDI controller (Launchpad Mini).
@@ -631,11 +611,6 @@ The version I'm using is Sequencer64 0.9.16 2016-07-14 0.9.16-0-g0193728 * maste
 It works as intended with seq24 0.9.3 (to test I copied the RC file to
 `~/.seq24.rc`), so it looks like it's a regression.
 
-Thanks in advance for your help
-
-
-
-
 
 Date: Fri, 26 Aug 2016 15:31:48 -0700
 From: Arnaud Jacquemin <notifications@github.com>
@@ -648,10 +623,6 @@ I think this change is the cause of #23:
 `i+m_offset` is changed to `m_offset + 1`
 
 So the variable `i` (number of the pattern to toggle) becomes a constant `1`
-
-
-
-
 
 
 Date: Fri, 26 Aug 2016 16:21:40 -0700
@@ -667,11 +638,6 @@ You can view, comment on, or merge this pull request online at:
 
   https://github.com/ahlstromcj/sequencer64/pull/24
 
--- Commit Summary --
-
-  * Fix for issue "MIDI controller toggles the wrong pattern" ahlstromcj/sequencer
-64#23
-
 -- File Changes --
 
     M libseq64/src/perform.cpp (2)
@@ -682,12 +648,7 @@ https://github.com/ahlstromcj/sequencer64/pull/24.patch
 https://github.com/ahlstromcj/sequencer64/pull/24.diff
 
 
-
-
-
-
-
-
+DONE, merged into fixups as well.
 
 
 # vim: sw=4 ts=4 wm=4 et ft=sh

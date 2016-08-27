@@ -3222,7 +3222,7 @@ perform::input_func ()
                         {
                             for (int i = 0; i < c_midi_controls; ++i)
                             {
-                                int offset = m_offset + 1;
+                                int offset = m_offset + i;
                                 midibyte data[2] = { 0, 0 };
                                 midibyte status = ev.get_status();
                                 ev.get_data(data[0], data[1]);

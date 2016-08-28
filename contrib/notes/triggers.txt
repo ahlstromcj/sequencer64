@@ -1,9 +1,9 @@
 Triggers in Sequencer64
 Chris Ahlstrom
-2016-04-09 to 2016-04-09
+2016-04-09 to 2016-08-27
 
 This document analyzes how triggers work.  We turn on the printing of triggers
-and look at some examples.
+and look at some examples.  Then we discuss triggers and seq32 export.
 
 b4uacus-GM-alternate.midi:
 
@@ -62,10 +62,66 @@ TODO:
     Document that, after selecting (greying) a segment, and then going
     into Paint mode, the Left and Right arrow keys can move then segment.
 
-    FIX the zZ keys so that they DO NOT work if Ctrl is held.  Very
-    confusing!!!!
-
     Figure out how to keep tables (in the documentation) in their proper
     location.
+
+EXPORT:
+
+    The Seq32 export functionality imported into Sequencer64 seems to
+    work for some simple files, but not for files where the triggers have
+    a gap between them.  The trigger before the gap is dropped.  Time to
+    understand what we want to do when exporting triggers.  We assume we
+    are dealing only with exportable tracks, tracks that have triggers,
+    and aren't muted.  Empty tracks are still exportable, but one has to
+    add triggers for them to get them to export.
+
+    Here's how the export currently works:
+
+    1.  In midifile::write_song(), pass each trigger to
+        midi_vector::song_fill_seq_event().
+
+        a.  Get the sequence length, and get the trigger start and offset
+            values mod the sequence length; thus they are less than the
+            sequence length.
+
+        b.  Get the timestamp adjustment, which is the trigger's
+            start+offset position minus the start offet.  If the trigger
+            offset is greater than the start offset, this means the the
+            total offset is too much, so subtract the sequence length from
+            the timestamp adjustment.
+
+        b.  Calculate the times played, roughly 1 plus the trigger length
+            divided by the sequence length.       
+
+        c.  For p = 0 to 1 (or more if times played is greater than 1),
+            and for all events in the sequence:
+
+            1.  If the event's time-stamp is less than the trigger's start
+                time, then the even is before the trigger start, so
+                skip it, and continue with the next event.
+
+            2.  If the event is a Note On and lies within the trigger,
+                then count the note, otherwise skip the event.
+
+            3.  If the event is a Note Off and has at least on Note On
+                corresponding to it, then if the Note Off is past the end
+                of the trigger, then consume it and set its timestamp to
+                the end of the trigger.  Otherwise just consume it.
+
+            4.  Finally, the event (whatever kind it is) gets a
+                recalculated delta-time and is added to the MIDI vector.
+
+            There's a problem in that, in sequences with many triggers,
+            with a gap between them, the earlier triggers and events get
+            summarily dropped.  We must solve this issue.  We either need
+            to make the one trigger have the earlier events and the gap
+            covered by the "one big trigger", or save the original
+            triggers to covered the earlier events and the gap.
+
+    2.  In midifile::write_song(), pass the LAST trigger to
+        midi_vector::song_fill_seq_trigger().
+
+
+
 
 # vim: sw=4 ts=4 wm=8 et ft=c

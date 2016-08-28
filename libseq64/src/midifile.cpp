@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-08-26
+ * \updates       2016-08-27
  * \license       GNU GPLv2 or above
  *
  *  For a quick guide to the MIDI format, see, for example:
@@ -1854,16 +1854,20 @@ midifile::write_song (perform & p)
                 if (! trigs.empty())        /* adjust the sequence length */
                 {
                     const trigger & end_trigger = trigs.back();
-                    midipulse seqlength = end_trigger.tick_end();
-                    midipulse measticks = seq.measures_to_ticks();
-                    midipulse remainder = seqlength % measticks;
-                    if (remainder != measticks - 1)
-                        seqlength += measticks - remainder - 1;
 
-                    lst.song_fill_seq_trigger
-                    (
-                        end_trigger, seqlength, previous_ts
-                    );
+                    /*
+                     * This isn't really the trigger length.  It is off by 1.
+                     * But subtracting the tick_start() value can really screw
+                     * things up.
+                     */
+
+                    midipulse seqend = end_trigger.tick_end();
+                    midipulse measticks = seq.measures_to_ticks();
+                    midipulse remainder = seqend % measticks;
+                    if (remainder != measticks - 1)
+                        seqend += measticks - remainder - 1;
+
+                    lst.song_fill_seq_trigger(end_trigger, seqend, previous_ts);
                 }
                 write_track(lst);
                 ++track_number;

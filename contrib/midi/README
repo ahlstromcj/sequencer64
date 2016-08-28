@@ -1,22 +1,23 @@
-Contributed MIDI Files
+Contributed MIDI/Test Files
 Chris Ahlstrom
-2015-09-11 to 2016-08-25
+2015-09-11 to 2016-08-28
 
 This directory contains contributed MIDI files for examples and testing.
 Also see the test files from the midicvt as described in
-midicvt-test-files.txt; we found a few bugs and potential features to add
-by loading them into Sequencer64.
+midicvt-test-files.txt; we found a few bugs to fix, and potential features
+to add, by loading them into Sequencer64.  Some of these files have been
+resaved with the new features.  For example, see the various versions of
+the "example1" file.
 
    allofarow.mid:
 
         A file having a lot of empty tracks and one filled track.
         In Sequencer64, it loads as 140 BPM, but plays really slowly.
-
         In seq24, it loads as 120 BPM, but plays somewhat normally!
 
    allofarow.midi:
 
-        The song above, saved by a recent version of Sequencer64.
+        The song above, saved by a recent, upgrade, version of Sequencer64.
 
    allofarow-unstripped.midi:
 
@@ -102,6 +103,56 @@ by loading them into Sequencer64.
         A simple SMF 0 MIDI file from the midicvt project.  Useful in
         testing the channel-split feature, small enough to step through
         under the debugger :-D
+
+        Also has notes that end at the very beginning (tick 0) of the
+        second  measure, instead of ending at the end (tick 191) of the
+        first measure.  This should be a good test of the new Export
+        functionality.
+
+   example1-original.midi:
+
+        A saving of example1.mid after loading into an earlier version of
+        Sequencer64.  It contains SeqSpec events for MIDI clocks (0x03),
+        song data (0x05), beats per minute (0x07), and mute groups (0x09)
+        which are all zero (unused).  Compare it to the next file.
+
+   example1.midi:
+
+        A recent save of example1.mid after loading into a much newer
+        version of Sequencer64.  It contains the SeqSpec events as
+        example1-original.midi, except that the unused mute groups (0x09)
+        have been stripped out, and the following SeqSpecs have been
+        added: global music key (0x11), global music scale (0x12), and
+        global background sequence (0x13).  Also added, to track 0, are
+        the time signature and tempo meta events.
+
+   example1-minimal.midi:
+
+        A load of example1.mid with all but one track removed, for testing
+        the Export functionality with a more tractable sample file.  Also,
+        fixing the length of the two notes exposed a bug in the Event
+        Editor, now fixed.
+
+   example1-minimal-export.midi:
+
+        Illustrates how export works with a simple track with two sections
+        created by painting them separately onto the Song Editor.
+
+   example1-expanded.midi:
+
+        The example1-minimal.midi file with the track layed out four times
+        in the song editor, then expanded so that the gap is due to a
+        split, rather than explicit drawing.  Use for a test of expansion
+        and of export.  This file shows that full repeats of a track are
+        exported properly.
+
+   example2-minimal.midi:
+
+        The file example1-minimal.midi modified to make the track 4
+        measures long, so that splitting a pattern in two can be tested
+        for export.  The track is repeated 4 times in the Song Editor.
+        Then we put a gap in the middle of the second repetition of the 4
+        measures.
 
    Hapwandr.mid
 

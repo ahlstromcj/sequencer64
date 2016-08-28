@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-10-30
- * \updates       2016-08-18
+ * \updates       2016-08-27
  * \license       GNU GPLv2 or above
  *
  *  By segregating trigger support into its own module, the sequence class is
@@ -112,6 +112,18 @@ public:
     bool operator < (const trigger & rhs)
     {
         return m_tick_start < rhs.m_tick_start;
+    }
+
+    /**
+     * \getter m_tick_end and m_tick_start.
+     *      We've seen that some of the calculations of trigger length are
+     *      wrong, being 1 tick less than the true length of the trigger in
+     *      pulses.  This function calculates trigger length the correct way.
+     */
+
+    midipulse length () const
+    {
+        return m_tick_end - m_tick_start + 1;
     }
 
     /**

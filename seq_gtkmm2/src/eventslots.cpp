@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-12-05
- * \updates       2016-06-12
+ * \updates       2016-08-28
  * \license       GNU GPLv2 or above
  *
  *  This module is user-interface code.  It is loosely based on the workings
@@ -533,12 +533,21 @@ eventslots::modify_current_event
         result = delete_current_event();
         if (result)
         {
-            result = m_event_container.add(ev);
-            if (result)
-            {
-                m_parent.set_dirty();
-                select_event(m_current_index);      /* does this work?  */
-            }
+            /*
+             * @change ca 2016-08-28
+             * This is not sufficient.  It doesn't modify m_event_count, which
+             * will cause save_events() to fail.  And it does the other stuff
+             * needed when adding an event.
+             *
+             *      result = m_event_container.add(ev);
+             *      if (result)
+             *      {
+             *          m_parent.set_dirty();
+             *          select_event(m_current_index);
+             *      }
+             */
+
+            result = insert_event(ev);              /* full karaoke add */
         }
     }
     return result;

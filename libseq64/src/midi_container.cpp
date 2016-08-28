@@ -408,28 +408,42 @@ midi_container::song_fill_seq_event
 )
 {
     midipulse len = m_sequence.get_length();
-    midipulse trigger_offset = trig.offset() % len;
+    midipulse trig_offset = trig.offset() % len;
     midipulse start_offset = trig.tick_start() % len;
-    midipulse timestamp_adjust = trig.tick_start() - start_offset + trigger_offset;
-    int times_played = 1;
+    midipulse timestamp_adjust = trig.tick_start() + trig_offset - start_offset;
     int note_is_used[c_midi_notes];
     for (int i = 0; i < c_midi_notes; ++i)
         note_is_used[i] = 0;                        /* initialize to off */
 
-    times_played += (trig.tick_end() - trig.tick_start()) / len;
-    if ((trigger_offset - start_offset) > 0)    /* total offset is len too far */
+    /*
+     * This calculation needs investigation.  The number of times the pattern
+     * is played is given by how many pattern lengths fit in the trigger
+     * length.   But the commented calculation adds to the value of 1 already
+     * assigned.  And what about triggers that are somehow of 0 size?  Let's
+     * try a different calculation, currently the same.
+     *
+     * int times_played = 1;
+     * times_played += (trig.tick_end() - trig.tick_start()) / len;
+     */
+
+    int times_played = 1 + (trig.length() - 1) / len;
+
+    /*
+     * Old: if ((trig_offset - start_offset) > 0)
+     */
+
+    if (trig_offset > start_offset)                 /* offset len too far   */
         timestamp_adjust -= len;
 
     for (int p = 0; p <= times_played; ++p)
     {
-        midipulse timestamp = 0, delta_time = 0;         /* events */
+        midipulse delta_time = 0;
         event_list::Events::iterator i;
         for (i = m_sequence.events().begin(); i != m_sequence.events().end(); ++i)
         {
             const event & e = DREF(i);
-            timestamp = e.get_timestamp();
-            timestamp += timestamp_adjust;
-            if (timestamp >= trig.tick_start()) /* event is after trigger start */
+            midipulse timestamp = e.get_timestamp() + timestamp_adjust;
+            if (timestamp >= trig.tick_start())     /* at/after trigger     */
             {
                 /*
                  * Save the note; eliminate Note Off if Note On is unused.
@@ -438,45 +452,39 @@ midi_container::song_fill_seq_event
                 midibyte note = e.get_note();
                 if (e.is_note_on())
                 {
-                    if (timestamp > trig.tick_end())
-                        continue;                   /* skip                 */
-                    else
+                    if (timestamp <= trig.tick_end())
                         note_is_used[note]++;       /* count the note       */
+                    else
+                        continue;                   /* skip                 */
                 }
-                if (e.is_note_off())
+                else if (e.is_note_off())
                 {
-                    if (note_is_used[note] <= 0)    /* if no Note On, skip  */
-                    {
-                        continue;
-                    }
-                    else                            /* we have a Note On    */
+                    if (note_is_used[note] > 0)
                     {
                         /*
-                         * If past the end of trigger, use trigger end
+                         * We have a Note On, and if past the end of trigger,
+                         * use the trigger end.
                          */
 
-                        if (timestamp >= trig.tick_end())
-                        {
-                            note_is_used[note]--;           // turn off note
+                        note_is_used[note]--;       /* turn off the note    */
+                        if (timestamp > trig.tick_end())
                             timestamp = trig.tick_end();
-                        }
-                        else                                // not past end, use it
-                            note_is_used[note]--;
                     }
+                    else
+                        continue;                   /* if no Note On, skip  */
                 }
             }
             else
-                continue;   // event is before the trigger start - skip
+                continue;                           /* before trigger, skip */
 
             /*
              * If the event is past the trigger end, for non-notes, skip.
-             * What about Aftertouch events?
              */
 
-            if (timestamp >= trig.tick_end())
+            if (timestamp >= trig.tick_end())       /* event past trigger   */
             {
                 if (! e.is_note_on() && ! e.is_note_off())
-                    continue;           // these were already taken care of...
+                    continue;                       /* drop the event       */
             }
 
             delta_time = timestamp - prev_timestamp;
@@ -519,16 +527,19 @@ midi_container::song_fill_seq_trigger
     add_long(c_triggers_new);                   /* Seq24 tag for triggers   */
 
     /*
-     * Using all the trigger values seems to be the same as these values:
+     * Using all the trigger values seems to be the same as these values, but
+     * we're basically zeroing the start and offset values to make "one big
+     * trigger" for the whole pattern.
      *
-     *  add_long(0);                            // the start tick
-     *  add_long(trig.tick_end());
-     *  add_long(0);                            // offset is done in event
+     * add_long(trig.tick_start());
+     * add_long(trig.tick_end());
+     * add_long(trig.offset());
      */
 
-    add_long(trig.tick_start());
+    add_long(0);                            // the start tick
     add_long(trig.tick_end());
-    add_long(trig.offset());
+    add_long(0);                            // offset is done in event
+
     fill_proprietary();
 
     midipulse delta_time = length - prev_timestamp;
@@ -628,6 +639,10 @@ midi_container::fill (int tracknumber, const perform & p)
         ti != triggerlist.end(); ++ti
     )
     {
+        /*
+         * Similar to the code in song_fill_seq_trigger().
+         */
+
         add_long(ti->tick_start());
         add_long(ti->tick_end());
         add_long(ti->offset());

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-08-20
+ * \updates       2016-08-28
  * \license       GNU GPLv2 or above
  *
  */
@@ -48,6 +48,7 @@
 
 #include "gdk_basic_keys.h"
 #include "gtk_helpers.h"
+#include "gui_key_tests.hpp"            /* seq64::is_ctrl_key()         */
 #include "keystroke.hpp"
 #include "perfedit.hpp"
 #include "perfnames.hpp"
@@ -386,11 +387,11 @@ perfedit::perfedit
 
     m_button_undo->add(*manage(new PIXBUF_IMAGE(undo_xpm)));
     m_button_undo->signal_clicked().connect(mem_fun(*this, &perfedit::undo));
-    add_tooltip(m_button_undo, "Undo the last action.");
+    add_tooltip(m_button_undo, "Undo the last action (Ctrl-Z).");
 
     m_button_redo->add(*manage(new PIXBUF_IMAGE(redo_xpm)));
     m_button_redo->signal_clicked().connect(mem_fun(*this, &perfedit::redo));
-    add_tooltip(m_button_redo, "Redo the last undone action.");
+    add_tooltip(m_button_redo, "Redo the last undone action (Ctrl-R).");
 
     m_button_expand->add(*manage(new PIXBUF_IMAGE(expand_xpm)));
     m_button_expand->signal_clicked().connect(mem_fun(*this, &perfedit::expand));
@@ -401,7 +402,7 @@ perfedit::perfedit
     (
         mem_fun(*this, &perfedit::collapse)
     );
-    add_tooltip(m_button_collapse, "Collapse patter between L and R markers.");
+    add_tooltip(m_button_collapse, "Collapse pattern between L and R markers.");
 
     m_button_copy->add(*manage(new PIXBUF_IMAGE(copy_xpm))); /* expand+copy */
     m_button_copy->signal_clicked().connect(mem_fun(*this, &perfedit::copy));
@@ -1034,7 +1035,22 @@ perfedit::on_key_press_event (GdkEventKey * ev)
         keystroke k(ev->keyval, SEQ64_KEYSTROKE_PRESS, ev->state);
         bool startstop = perf().playback_key_event(k, true);
         if (startstop)
+        {
             return true;                                        // event handled
+        }
+        else if (is_ctrl_key(ev))
+        {
+            if (OR_EQUIVALENT(ev->keyval, SEQ64_z, SEQ64_Z))   /* undo  */
+            {
+                undo();
+                return true;
+            }
+            else if (OR_EQUIVALENT(ev->keyval, SEQ64_r, SEQ64_R))   /* redo  */
+            {
+                redo();
+                return true;
+            }
+        }
     }
     (void) m_perftime->key_press_event(ev);
     return Gtk::Window::on_key_press_event(ev);

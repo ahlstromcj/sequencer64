@@ -2061,12 +2061,12 @@ seqroll::on_key_press_event (GdkEventKey * ev)
     {
         if (is_ctrl_key(ev))
         {
-            if (OR_EQUIVALENT(ev->keyval, SEQ64_x, SEQ64_X))        /* cut */
+            if (OR_EQUIVALENT(ev->keyval, SEQ64_x, SEQ64_X))        /* cut   */
             {
                 m_seq.cut_selected();
                 result = true;
             }
-            else if (OR_EQUIVALENT(ev->keyval, SEQ64_c, SEQ64_C))   /* copy */
+            else if (OR_EQUIVALENT(ev->keyval, SEQ64_c, SEQ64_C))   /* copy  */
             {
                 m_seq.copy_selected();
                 result = true;
@@ -2076,12 +2076,17 @@ seqroll::on_key_press_event (GdkEventKey * ev)
                 start_paste();
                 result = true;
             }
-            else if (OR_EQUIVALENT(ev->keyval, SEQ64_z, SEQ64_Z))   /* Undo */
+            else if (OR_EQUIVALENT(ev->keyval, SEQ64_z, SEQ64_Z))   /* undo  */
             {
                 m_seq.pop_undo();
                 result = true;
             }
-            else if (OR_EQUIVALENT(ev->keyval, SEQ64_a, SEQ64_A))   /* sel all */
+            else if (OR_EQUIVALENT(ev->keyval, SEQ64_r, SEQ64_R))   /* redo  */
+            {
+                m_seq.pop_redo();
+                result = true;
+            }
+            else if (OR_EQUIVALENT(ev->keyval, SEQ64_a, SEQ64_A))   /* all   */
             {
                 m_seq.select_all();
                 result = true;
@@ -2143,17 +2148,17 @@ seqroll::on_key_press_event (GdkEventKey * ev)
 
                 /*
                  * Do we just want to call clear_flags() here?
-
-                if (m_growing)
-                    m_growing = false;
-
-                if (m_moving)
-                    m_moving = false;
-
-                m_selecting = false;
+                 *
+                 *  if (m_growing)
+                 *      m_growing = false;
+                 *
+                 *  if (m_moving)
+                 *      m_moving = false;
+                 *
+                 *  m_selecting = false;
                  */
 
-                clear_flags();          // NEW NEW NEW NEW NEW
+                clear_flags();
                 clear_selected();
                 m_seq.unselect();
                 result = true;

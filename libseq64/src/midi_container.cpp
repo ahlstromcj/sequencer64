@@ -427,11 +427,6 @@ midi_container::song_fill_seq_event
      */
 
     int times_played = 1 + (trig.length() - 1) / len;
-
-    /*
-     * Old: if ((trig_offset - start_offset) > 0)
-     */
-
     if (trig_offset > start_offset)                 /* offset len too far   */
         timestamp_adjust -= len;
 

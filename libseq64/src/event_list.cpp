@@ -168,8 +168,8 @@ event_list::~event_list ()
  *  For the std::multimap implementation, This is an option if we want to make
  *  sure the insertion succeed.
  *
- *      std::pair<Events::iterator, bool> result = m_events.insert(p);
- *      return result.second;
+ *  If the std::list implementation has been built in, then the event list is
+ *  sorted after the addition.  This is a time-consuming operation.
  *
  * \warning
  *      This pushing (and, in writing the MIDI file, the popping),
@@ -181,18 +181,13 @@ event_list::~event_list ()
  * \param e
  *      Provides the event to be added to the list.
  *
- * \param postsort
- *      If true, and the std::list implementation has been built in, then the
- *      event list is sorted after the addition.  This is a time-consuming
- *      operation.
- *
  * \return
  *      Returns true if the insertion succeeded, as evidenced by an increment
  *      in container size.
  */
 
 bool
-event_list::add (const event & e, bool postsort)
+event_list::add (const event & e)
 {
     size_t count = m_events.size();
 
@@ -216,8 +211,9 @@ event_list::add (const event & e, bool postsort)
     if (result)
         m_is_modified = true;
 
-    if (postsort)
+#if ! defined SEQ64_USE_EVENT_MAP
         sort();                         /* by time-stamp and "rank" */
+#endif
 
     return result;
 }
@@ -264,10 +260,10 @@ event_list::add (const event & e, bool postsort)
  */
 
 void
-event_list::merge (event_list & el, bool presort)
+event_list::merge (event_list & el, bool /*presort*/ )
 {
-    if (presort)
-        el.sort();
+//  if (presort)
+//      el.sort();
 
     int initialsize = count();
     int addedsize = el.count();

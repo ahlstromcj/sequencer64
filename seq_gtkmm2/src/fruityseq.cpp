@@ -95,6 +95,10 @@ FruitySeqEventInput::update_mouse_pointer (seqevent & seqev)
  *          -#  Otherwise, select the notes and events.
  *          -#  If no events selected in the end, undo the selection.
  *  -   Ctrl-left button:
+ *      -   TODO.
+ *
+ *  The opening part of this function matches that of Seq24SeqEventInput ::
+ *  on_button_press_event().
  *
  * \param ev
  *      The button event for the press of a mouse button.
@@ -125,7 +129,7 @@ FruitySeqEventInput::on_button_press_event
         seqev.snap_x(seqev.m_current_x);
         seqev.convert_x(seqev.m_current_x, tick_s);
         seqev.m_paste = false;
-        seqev.m_seq.paste_selected(tick_s, 0);
+        seqev.m_seq.paste_selected(tick_s, 0);          /* does undo/mod    */
         seqev.m_seq.set_dirty();                        /* a stazed fix     */
         result = true;
     }

@@ -149,7 +149,7 @@ Seq24SeqEventInput::on_button_press_event
 #ifdef USE_STAZED_SELECTION_EXTENSIONS
 
                 /*
-                 * Stazed fix: if we did'nt select anything (user clicked empty
+                 * Stazed fix: if we didn't select anything (user clicked empty
                  * space), then unselect all notes, and start selecting.
                  */
                 

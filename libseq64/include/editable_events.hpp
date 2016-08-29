@@ -29,7 +29,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-12-04
- * \updates       2016-08-26
+ * \updates       2016-08-28
  * \license       GNU GPLv2 or above
  *
  *  This module extends the event class to support conversions between events
@@ -40,6 +40,14 @@
 
 #include "event_list.hpp"               /* seq64::event_list::event_key */
 #include "editable_event.hpp"           /* seq64::editable_event        */
+
+/**
+ *  Provides a brief, searchable notation for the use of the
+ *  editable_events::dref() function.  Comparable to the DREF() macro in the
+ *  event_list module.
+ */
+
+#define EEDREF(e)       editable_events::dref(e)
 
 namespace seq64
 {
@@ -221,7 +229,7 @@ public:
      *      Provides the iterator to the event to which to get a reference.
      */
 
-    static event & dref (iterator ie)
+    static editable_event & dref (iterator ie)
     {
 #ifdef SEQ64_USE_EVENT_MAP
         return ie->second;
@@ -237,7 +245,7 @@ public:
      *      Provides the iterator to the event to which to get a reference.
      */
 
-    static const event & dref (const_iterator ie)
+    static const editable_event & dref (const_iterator ie)
     {
 #ifdef SEQ64_USE_EVENT_MAP
         return ie->second;

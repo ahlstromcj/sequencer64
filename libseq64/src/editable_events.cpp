@@ -186,7 +186,6 @@ editable_events::add (const editable_event & e)
     
 #endif  // SEQ64_USE_EVENT_MAP
 
-
     return result;
 }
 
@@ -216,15 +215,11 @@ editable_events::load_events ()
         ei != m_sequence.events().end(); ++ei
     )
     {
-#ifdef SEQ64_USE_EVENT_MAP
-        if (! add(ei->second))
+        if (! add(DREF(ei)))
             break;
-#else
-        if (! add(*ei))
-            break;
-#endif
     }
     result = count() == original_count;
+
 #ifdef USE_VERIFY_AND_LINK                  /* not yet ready */
     if (result && count() > 1)
         m_events.verify_and_link();
@@ -258,11 +253,7 @@ editable_events::save_events ()
         m_sequence.events().clear();
         for (const_iterator ei = events().begin(); ei != events().end(); ++ei)
         {
-#ifdef SEQ64_USE_EVENT_MAP
-            event ev = ei->second;
-#else
-            event ev = *ei;
-#endif
+            event ev = EEDREF(ei);            /* actually a conversion! */
             if (! m_sequence.add_event(ev))
                 break;
         }

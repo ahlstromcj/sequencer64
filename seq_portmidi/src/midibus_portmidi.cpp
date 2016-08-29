@@ -204,9 +204,7 @@ min (long a, long b)
 void
 midibus::sysex (event * a_e24)
 {
-#if 0
-    automutex locker(m_mutex);
-#endif
+    // no code at present
 }
 
 /**

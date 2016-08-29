@@ -1683,7 +1683,11 @@ perform::pop_trigger_undo ()
 {
     if (m_undo_vect.size() > 0)
     {
-        int track = m_undo_vect[m_undo_vect.size() - 1];
+        /*
+         * int track = m_undo_vect[m_undo_vect.size() - 1];
+         */
+
+        int track = m_undo_vect.back();
         m_undo_vect.pop_back();
         m_redo_vect.push_back(track);
         if (track == SEQ64_ALL_TRACKS)
@@ -1709,14 +1713,18 @@ perform::pop_trigger_redo ()
 {
     if (m_redo_vect.size() > 0)
     {
-        int track = m_redo_vect[m_redo_vect.size()-1];
+        /*
+         * int track = m_redo_vect[m_redo_vect.size()-1];
+         */
+
+        int track = m_redo_vect.back();
         m_redo_vect.pop_back();
         m_undo_vect.push_back(track);
         if (track == SEQ64_ALL_TRACKS)
         {
             for (int i = 0; i < m_sequence_max; ++i)
             {
-                if (is_active(track))
+                if (is_active(i))                   /* oops, was "track"!   */
                     m_seqs[i]->pop_trigger_redo();
             }
         }

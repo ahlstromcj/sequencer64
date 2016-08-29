@@ -82,7 +82,8 @@ the "example1" file.
    b4uacuse-GM-format.midi:
    
         Hopefully, a good General MIDI file; created by using the midicvt
-        application on the imported MIDI file.
+        application on the imported MIDI file.  Export this file and
+        verify that it simply adds a gap into the consolidate performance.
 
    b4uacuse-GM-alternate.midi:
 
@@ -152,7 +153,8 @@ the "example1" file.
         measures long, so that splitting a pattern in two can be tested
         for export.  The track is repeated 4 times in the Song Editor.
         Then we put a gap in the middle of the second repetition of the 4
-        measures.
+        measures.  Export this file and verify that it simply adds a gap
+        into the consolidate performance.
 
    Hapwandr.mid
 

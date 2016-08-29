@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-30
- * \updates       2016-08-24
+ * \updates       2016-08-28
  * \license       GNU GPLv2 or above
  *
  *  The functions add_list_var() and add_long_list() have been replaced by
@@ -1361,14 +1361,43 @@ public:
 
 private:
 
+    /**
+     *  A convenience function used a couple of times.  Makes if-clauses
+     *  easier to read.
+     *
+     * \param e
+     *      Provides the event to be checked.
+     *
+     * \param status
+     *      Provides the event type that must be matched.
+     *
+     * \param tick_s
+     *      The lower end of the range of timestamps that the event must fall
+     *      within.
+     *
+     * \param tick_f
+     *      The upper end of the range of timestamps that the event must fall
+     *      within.
+     *
+     * \return
+     *      Returns true if the event matchs all of the restrictions noted.
+     */
+
+    bool event_in_range
+    (
+        const event & e, midibyte status, midipulse tick_s, midipulse tick_f
+    ) const
+    {
+        return
+        (
+            e.get_status() == status &&
+            e.get_timestamp() >= tick_s && e.get_timestamp() <= tick_f
+        );
+    }
+
     void set_parent (perform * p);
     void put_event_on_bus (event & ev);
     void set_trigger_offset (midipulse trigger_offset);
-
-#if 0
-    void split_trigger (trigger & trig, midipulse splittick);
-#endif
-
     void adjust_trigger_offsets_to_length (midipulse newlen);
     midipulse adjust_offset (midipulse offset);
     void remove (event_list::iterator i);

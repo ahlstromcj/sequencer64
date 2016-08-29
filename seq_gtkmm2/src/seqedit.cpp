@@ -1204,7 +1204,7 @@ seqedit::fill_top_bar ()
     (
         mem_fun(*this, &seqedit::undo_callback)
     );
-    add_tooltip(m_button_undo, "Undo.");
+    add_tooltip(m_button_undo, "Undo the last action (Ctrl-Z).");
     m_hbox2->pack_start(*m_button_undo , false, false);
     m_button_redo = manage(new Gtk::Button());              /* redo         */
     m_button_redo->set_can_focus(false);                    /* stazed       */
@@ -1213,7 +1213,7 @@ seqedit::fill_top_bar ()
     (
         mem_fun(*this, &seqedit::redo_callback)
     );
-    add_tooltip(m_button_redo, "Redo.");
+    add_tooltip(m_button_redo, "Redo the last undone action (Ctrl-R).");
     m_hbox2->pack_start(*m_button_redo , false, false);
 
     /*

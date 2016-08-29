@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-08-21
+ * \updates       2016-08-28
  * \license       GNU GPLv2 or above
  *
  *  The functionality of this class also includes handling some of the
@@ -402,16 +402,15 @@ int
 sequence::select_even_or_odd_notes (int note_len, bool even)
 {
     int result = 0;
-    unselect();
-
     automutex locker(m_mutex);
+    unselect();
     for (event_list::iterator i = m_events.begin(); i != m_events.end(); ++i)
     {
         event & e = DREF(i);
-        if (ev.is_note_on())
+        if (e.is_note_on())
         {
-            midipulse tick = ev.get_timestamp();
-            if (tick % note_len == 0)
+            midipulse tick = e.get_timestamp();
+            if ((tick % note_len) == 0)
             {
                 /*
                  * Note that from the user's point of view of even and odd,
@@ -421,11 +420,11 @@ sequence::select_even_or_odd_notes (int note_len, bool even)
                 int is_even = (tick / note_len) % 2;
                 if ((even && is_even) || (! even && ! is_even))
                 {
-                    ev.select();
+                    e.select();
                     ++result;
-                    if (ev.is_linked())
+                    if (e.is_linked())
                     {
-                        event * note_off = ev.get_linked();
+                        event * note_off = e.get_linked();
                         note_off->select();
                         ++result;
                     }
@@ -482,43 +481,45 @@ int
 sequence::select_note_events
 (
     midipulse tick_s, int note_h,
-    midipulse tick_f, int note_l, select_action_e action
+    midipulse tick_f, int note_l,
+    select_action_e action
 )
 {
     int result = 0;
-    midipulse ticks = 0;
-    midipulse tickf = 0;
     automutex locker(m_mutex);
     for (event_list::iterator i = m_events.begin(); i != m_events.end(); ++i)
     {
         event & e = DREF(i);
-        if (! e.is_note())         // HMMMM, includes Aftertouch
-            continue;
+        if (! e.is_note())              /* HMMMM, includes Aftertouch   */
+            continue;                   /* see the note in the banner   */
 
         if (e.get_note() <= note_h && e.get_note() >= note_l)
         {
+            midipulse ts = 0;
+            midipulse tf = 0;
             if (e.is_linked())
             {
                 event * ev = e.get_linked();
                 if (e.is_note_off())
                 {
-                    ticks = ev->get_timestamp();
-                    tickf = e.get_timestamp();
+                    ts = ev->get_timestamp();
+                    tf = e.get_timestamp();
                 }
-                if (e.is_note_on())
+                else if (e.is_note_on())
                 {
-                    ticks = e.get_timestamp();
-                    tickf = ev->get_timestamp();
+                    ts = e.get_timestamp();
+                    tf = ev->get_timestamp();
                 }
 
-                bool valid_and = (ticks <= tick_f) && (tickf >= tick_s);
-                bool valid_or  = (ticks <= tick_f) || (tickf >= tick_s);
-                bool use_it =
-                (
-                    ((ticks <= tickf) && valid_and) ||
-                    ((ticks > tickf)  && valid_or)
-                );
-			    if (use_it)
+                /*
+                 * A pretty convoluted check!  Someone tell me what this is!
+                 *    :-D
+                 */
+
+                bool tand = (ts <= tick_f && tf >= tick_s);
+                bool tor =  (ts <= tick_f || tf >= tick_s);
+                bool ok = ((ts <= tf) && tand) || ((ts > tf) && tor);
+			    if (ok)
                 {
                     /*
                      * Could use a switch statement here.
@@ -584,12 +585,12 @@ sequence::select_note_events
             else
             {
                 /*
-                 * If NOT linked note on/off, then it is junk...
+                 * If NOT linked note on/off, then it is junk....  What is the
+                 * 17?  It used to be 16.
                  */
 
-                tick_s = tick_f = e.get_timestamp();
-//              if (tick_s >= tick_s - 16 && tick_f <= tick_f)
-                if (tick_s >= tick_s - 16 && tick_s <= tick_f)
+                ts = tf = e.get_timestamp();
+                if (ts >= tick_s - 17 && tf <= tick_f)
                 {
                     /*
                      * Could use a switch statement here.
@@ -701,11 +702,7 @@ sequence::select_event_handle
     for (event_list::iterator i = m_events.begin(); i != m_events.end(); ++i)
     {
         event & e = DREF(i);
-        if
-        (
-            e.get_status() == status && e.get_timestamp() >= tick_s &&
-            e.get_timestamp() <= tick_f
-        )
+        if (event_in_range(e, status, tick_s, tick_f))
         {
             midibyte d0, d1;
             e.get_data(d0, d1);
@@ -730,7 +727,7 @@ sequence::select_event_handle
                             if (e.is_selected())
                             {
                                 unselect();                 // all events
-                                e.select( );               // only this one
+                                e.select();                 // only this one
                                 if (result)
                                 {
                                     /*
@@ -741,7 +738,8 @@ sequence::select_event_handle
                                     for
                                     (
                                         event_list::iterator i = m_events.begin();
-                                        i != m_events.end(); ++i)
+                                        i != m_events.end(); ++i
+                                    )
                                     {
                                         event & et = DREF(i);
                                         if (e.is_marked())
@@ -763,7 +761,7 @@ sequence::select_event_handle
                             {
                                 if (! result)       // only mark the first one
                                 {
-                                    e.mark();      // marked for hold until done
+                                    e.mark();       // marked for hold until done
                                     ++result;       // indicate we got one
                                 }
 
@@ -1528,8 +1526,10 @@ sequence::select_events
     for (event_list::iterator i = m_events.begin(); i != m_events.end(); ++i)
     {
         event & er = DREF(i);
-        midipulse t = er.get_timestamp();
-        if (er.get_status() == status && t >= tick_s && t <= tick_f)
+//      midipulse t = er.get_timestamp();
+//      if (er.get_status() == status && t >= tick_s && t <= tick_f)
+
+        if (event_in_range(er, status, tick_s, tick_f))
         {
             midibyte d0, d1;
             er.get_data(d0, d1);
@@ -1800,7 +1800,7 @@ sequence::stretch_selected (midipulse delta_tick)
                 {
                     event n = er;                   /* copy the event       */
                     midipulse t = er.get_timestamp();
-                    n.set_timestamp(midipulse(ratio * (t-first_ev)) + first_ev);
+                    n.set_timestamp(midipulse(ratio * (t - first_ev)) + first_ev);
                     n.unmark();
                     add_event(n);
                 }
@@ -1871,7 +1871,10 @@ sequence::grow_selected (midipulse delta_tick)
                     event e = *off;                 /* original off-event   */
                     midipulse ontime = er.get_timestamp();
                     midipulse offtime = off->get_timestamp();
-                    midipulse newtime = clip_timestamp(ontime, offtime + delta_tick);
+                    midipulse newtime = clip_timestamp
+                    (
+                        ontime, offtime + delta_tick
+                    );
                     off->mark();                    /* kill old off event   */
                     er.unmark();                    /* keep old on event    */
                     e.unmark();                     /* keep new off event   */
@@ -2102,20 +2105,10 @@ sequence::copy_selected ()
     event_list clipbd;
     for (event_list::iterator i = m_events.begin(); i != m_events.end(); ++i)
     {
-#ifdef USE_THIS_NEW_CODE                        // undefined
         if (DREF(i).is_selected())
-            clipbd.add(DREF(i));                /* no post-sort */
-#else
-#ifdef SEQ64_USE_EVENT_MAP
-        if (DREF(i).is_selected())
-            clipbd.add(DREF(i), false);         /* no post-sort */
-#else
-        if (DREF(i).is_selected())
-            clipbd.push_back(DREF(i));
-#endif
-#endif
+            clipbd.add(DREF(i));
     }
-    if (clipbd.count() > 0)
+    if (! clipbd.empty())                           /* (clipbd.count() > 0) */
     {
         midipulse first_tick = DREF(clipbd.begin()).get_timestamp();
         if (first_tick >= 0)
@@ -2267,11 +2260,15 @@ sequence::paste_selected (midipulse tick, int note)
             clipbd_updated.add(DREF(i));
 
         clipbd = clipbd_updated;
+        m_events.merge(clipbd);
 
-#endif      // SEQ64_USE_EVENT_MAP
+#else
 
         m_events.merge(clipbd, false);          /* don't presort clipboard  */
         m_events.sort();                        /* uh, does nothing in map  */
+
+#endif      // SEQ64_USE_EVENT_MAP
+
         verify_and_link();
         reset_draw_marker();
         modify();
@@ -3261,31 +3258,6 @@ sequence::set_trigger_offset (midipulse trigger_offset)
     else
         m_trigger_offset = trigger_offset;
 }
-
-/*
- * \obsolete
- *      Splits the trigger given by the parameter into two triggers.
- *      This is the private overload of split_trigger.  Not necessary, now
- *      handled internally.
- *
- * \threadsafe
- *
- * \param trig
- *      Provides the original trigger, and also holds the changes made to
- *      that trigger as it is shortened.
- *
- * \param splittick
- *      The position just after where the original trigger will be
- *      truncated, and the new trigger begins.
- *
-void
-sequence::split_trigger (trigger & trig, midipulse splittick)
-{
-    automutex locker(m_mutex);
-    m_triggers.split(trig, splittick);
-}
- *
- */
 
 /**
  *  Splits a trigger.  This is the public overload of split_trigger.
@@ -4347,7 +4319,7 @@ sequence::transpose_notes (int steps, int scale)
                     note += 1;
 
                 e.set_note(note);
-                transposed_events.add(e, false);    /* will sort afterward  */
+                transposed_events.add(e);   // , false);    sort afterward
             }
             else
                 er.unmark();                        /* ignore, no transpose */
@@ -4388,10 +4360,11 @@ sequence::shift_notes (midipulse ticks)
         }
         (void) remove_marked();
 
-#ifndef SEQ64_USE_EVENT_MAP
+#if ! defined SEQ64_USE_EVENT_MAP
         shifted_events.sort();
         m_events.merge(shifted_events);
 #endif
+
         verify_and_link();
     }
 }
@@ -4512,7 +4485,7 @@ sequence::quantize_events
                     t_delta = -e.get_timestamp();
 
                 e.set_timestamp(e.get_timestamp() + t_delta);
-                quantized_events.add(e, false);
+                quantized_events.add(e);            // sort afterward: , false);
                 if (er.is_linked() && linked)
                 {
                     event f = *er.get_linked();
@@ -4520,12 +4493,12 @@ sequence::quantize_events
                     f.unmark();
                     er.get_linked()->select();
                     f.set_timestamp(ft + t_delta);
-                    quantized_events.add(f, false);
+                    quantized_events.add(f);        // sort afterward: , false);
                 }
             }
         }
         (void) remove_marked();
-        m_events.merge(quantized_events);       /* quantized events presorted   */
+        m_events.merge(quantized_events);       /* presort quantized events */
         verify_and_link();
     }
 }

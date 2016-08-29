@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-19
- * \updates       2016-08-19
+ * \updates       2016-08-28
  * \license       GNU GPLv2 or above
  *
  *  This module extracts the event-list functionality from the sequencer
@@ -63,10 +63,11 @@
  *  event_list::dref() function that allows treating list and multimap
  *  iterators the same in client code.  It turned out to be worth the
  *  time, the experiment, and the somewhat obtuse notation, to be able to
- *  switch between std::multimap and std::list at compile time.
+ *  switch between std::multimap and std::list at compile time with fewer uses
+ *  of the clumsy SEQ64_USE_EVENT_MAP macro.
  */
 
-#define DREF(e)     event_list::dref(e)
+#define DREF(e)         event_list::dref(e)
 
 #include "event.hpp"
 
@@ -223,16 +224,18 @@ public:
 
     /**
      *  Returns true if there are no events.
+     *
+     *  return m_events.size() == 0;
      */
 
     bool empty () const
     {
-        return m_events.size() == 0;
+        return m_events.empty();
     }
 
-    bool add (const event & e, bool postsort = true);
+    bool add (const event & e);
 
-#ifndef SEQ64_USE_EVENT_MAP
+#if ! defined SEQ64_USE_EVENT_MAP
 
     /**
      *  Needed as a special case when std::list is used.
@@ -241,7 +244,7 @@ public:
      *      Provides the event value to push at the back of the event list.
      */
 
-    void push_back (event & e)
+    void push_back (const event & e)
     {
         m_events.push_back(e);
     }
@@ -300,14 +303,7 @@ public:
      *  an empty function.
      */
 
-#ifdef SEQ64_USE_EVENT_MAP
-
-    void sort ()
-    {
-        // Empty body
-    }
-
-#else
+#if ! defined SEQ64_USE_EVENT_MAP
 
     void sort ()
     {

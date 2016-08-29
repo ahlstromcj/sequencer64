@@ -163,11 +163,7 @@ eventslots::set_current_event
 {
     char tmp[32];
     midibyte d0, d1;
-#ifdef SEQ64_USE_EVENT_MAP
-    const editable_event & ev = ei->second;
-#else
-    const editable_event & ev = *ei;
-#endif
+    const editable_event & ev = EEDREF(ei);
     ev.get_data(d0, d1);
     snprintf(tmp, sizeof tmp, "%d (0x%02x)", int(d0), int(d0));
     std::string data_0(tmp);
@@ -523,11 +519,7 @@ eventslots::modify_current_event
     bool result = m_event_count > 0;
     if (result)
     {
-#ifdef SEQ64_USE_EVENT_MAP
-        editable_event ev = m_current_iterator->second;
-#else
-        editable_event ev = *m_current_iterator;
-#endif
+        editable_event & ev = EEDREF(m_current_iterator);
         ev.set_channel(m_seq.get_midi_channel());   /* just in case     */
         ev.set_status_from_string(evtimestamp, evname, evdata0, evdata1);
         result = delete_current_event();
@@ -596,11 +588,12 @@ eventslots::save_events ()
             ei != m_event_container.end(); ++ei
         )
         {
-#ifdef SEQ64_USE_EVENT_MAP
-            seq64::event e = ei->second;
-#else
-            seq64::event e = *ei;
-#endif
+            /*
+             * Have to add the seq64 namespace to distinguish it from
+             * Gtk::Widget::event.
+             */
+
+            seq64::event e = EEDREF(ei);        /* actually a conversion    */
             newevents.add(e);
         }
         result = newevents.count() == m_event_count;
@@ -846,11 +839,7 @@ eventslots::draw_event (editable_events::iterator ei, int index)
         col = font::CYAN_ON_BLACK;      /* BLACK_ON_YELLOW, YELLOW_ON_BLACK */
     }
 
-#ifdef SEQ64_USE_EVENT_MAP
-    editable_event & evp = ei->second;
-#else
-    editable_event & evp = *ei;
-#endif
+    editable_event & evp = EEDREF(ei);
     char tmp[16];
     snprintf(tmp, sizeof tmp, "%4d-", m_top_index + index);
     std::string temp = tmp;

@@ -35,7 +35,7 @@
  * Stazed:
  *
  *      Most of the undo/redo changes were done to eliminate pushes to undo
- *      when nothing actually changed, or to optimize the push inperfedit.
+ *      when nothing actually changed, or to optimize the push in perfedit.
  *      When I [stazed] added the sensitive/insensitive stuff it became very
  *      obvious that undo was doing a lot of unnecessary pushes which
  *      previously seemed like undo was broken - from a user point of view.
@@ -1219,7 +1219,13 @@ perfroll::on_key_press_event (GdkEventKey * ev)
     else
         result = perf().perfroll_key_event(k, m_drop_sequence);
 
-    if (! result)
+    if (result)
+    {
+        /*
+         * enqueue_draw();
+         */
+    }
+    else
     {
         /**
          *  Note that, even though we filter out the Ctrl key here, it still
@@ -1295,17 +1301,6 @@ perfroll::on_key_press_event (GdkEventKey * ev)
                     m_seq24_interaction.set_adding(false, *this);
                     result = true;
                 }
-#if 0
-                /*
-                 * Handled in Shift key handling above now.
-                 */
-
-                else if (ev->keyval == SEQ64_Z)     /* zoom in              */
-                {
-                    m_parent.set_zoom(m_zoom / 2);
-                    result = true;
-                }
-#endif
                 else if (ev->keyval == SEQ64_0)     /* reset to normal zoom */
                 {
                     m_parent.set_zoom(c_perf_scale_x);
@@ -1320,7 +1315,10 @@ perfroll::on_key_press_event (GdkEventKey * ev)
                 {
                     if (m_seq24_interaction.is_adding())
                     {
-                        result = m_seq24_interaction.handle_motion_key(true, *this);
+                        result = m_seq24_interaction.handle_motion_key
+                        (
+                            true, *this
+                        );
                         if (result)
                             perf().modify();
                     }

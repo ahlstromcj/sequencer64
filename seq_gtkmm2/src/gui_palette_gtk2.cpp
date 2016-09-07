@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-21
- * \updates       2016-08-19
+ * \updates       2016-09-07
  * \license       GNU GPLv2 or above
  *
  *  One possible idea would be a color configuration that would radically
@@ -46,23 +46,28 @@ namespace seq64
 
 bool gui_palette_gtk2::m_is_inverse = false;
 
-const STATIC_COLOR gui_palette_gtk2::m_black       = Color("black");
-const STATIC_COLOR gui_palette_gtk2::m_white       = Color("white");
-const STATIC_COLOR gui_palette_gtk2::m_red         = Color("red");
-const STATIC_COLOR gui_palette_gtk2::m_orange      = Color("orange");
-const STATIC_COLOR gui_palette_gtk2::m_dk_orange   = Color("dark orange");
-const STATIC_COLOR gui_palette_gtk2::m_yellow      = Color("yellow");
-const STATIC_COLOR gui_palette_gtk2::m_green       = Color("green");
-const STATIC_COLOR gui_palette_gtk2::m_blue        = Color("blue");
-const STATIC_COLOR gui_palette_gtk2::m_dk_cyan     = Color("dark cyan");
+const STATIC_COLOR gui_palette_gtk2::m_black        = Color("black");
+const STATIC_COLOR gui_palette_gtk2::m_dk_red       = Color("dark red");
+const STATIC_COLOR gui_palette_gtk2::m_dk_green     = Color("dark green");
+const STATIC_COLOR gui_palette_gtk2::m_dk_orange    = Color("dark orange");
+const STATIC_COLOR gui_palette_gtk2::m_dk_blue      = Color("dark blue");
+const STATIC_COLOR gui_palette_gtk2::m_dk_magenta   = Color("dark magenta");
+const STATIC_COLOR gui_palette_gtk2::m_dk_cyan      = Color("dark cyan");
 
-STATIC_COLOR gui_palette_gtk2::m_grey        = Color("grey");
-STATIC_COLOR gui_palette_gtk2::m_dk_grey     = Color("grey50");
-STATIC_COLOR gui_palette_gtk2::m_lt_grey     = Color("light grey");
-STATIC_COLOR gui_palette_gtk2::m_blk_paint   = Color("black");
-STATIC_COLOR gui_palette_gtk2::m_wht_paint   = Color("white");
-STATIC_COLOR gui_palette_gtk2::m_blk_key     = Color("black");
-STATIC_COLOR gui_palette_gtk2::m_wht_key     = Color("white");
+const STATIC_COLOR gui_palette_gtk2::m_white        = Color("white");
+const STATIC_COLOR gui_palette_gtk2::m_red          = Color("red");
+const STATIC_COLOR gui_palette_gtk2::m_orange       = Color("orange");
+const STATIC_COLOR gui_palette_gtk2::m_yellow       = Color("yellow");
+const STATIC_COLOR gui_palette_gtk2::m_green        = Color("green");
+const STATIC_COLOR gui_palette_gtk2::m_blue         = Color("blue");
+
+STATIC_COLOR gui_palette_gtk2::m_grey               = Color("grey");
+STATIC_COLOR gui_palette_gtk2::m_dk_grey            = Color("grey50");
+STATIC_COLOR gui_palette_gtk2::m_lt_grey            = Color("light grey");
+STATIC_COLOR gui_palette_gtk2::m_blk_paint          = Color("black");
+STATIC_COLOR gui_palette_gtk2::m_wht_paint          = Color("white");
+STATIC_COLOR gui_palette_gtk2::m_blk_key            = Color("black");
+STATIC_COLOR gui_palette_gtk2::m_wht_key            = Color("white");
 
 /**
  *  Provides an alternate color palette, somewhat constrained by the colors
@@ -120,32 +125,76 @@ gui_palette_gtk2::gui_palette_gtk2 ()
  :
     Gtk::DrawingArea    (),
     m_line_color        (Color("dark cyan")),           // alternative to black
-    m_progress_color
-    (
-        Color(usr().progress_bar_colored() ? "dark cyan" : "black")
-    ),
+    m_progress_color    (Color("black")),
+//  (
+//      Color(usr().progress_bar_colored() ? "dark cyan" : "black")
+//  ),
     m_bg_color          (),
     m_fg_color          ()
 {
     Glib::RefPtr<Gdk::Colormap> colormap = get_default_colormap();
     colormap->alloc_color(const_cast<Color &>(m_black));
-    colormap->alloc_color(const_cast<Color &>(m_white));
-    colormap->alloc_color(const_cast<Color &>(m_grey));
-    colormap->alloc_color(const_cast<Color &>(m_dk_grey));
-    colormap->alloc_color(const_cast<Color &>(m_lt_grey));
-    colormap->alloc_color(const_cast<Color &>(m_red));
-    colormap->alloc_color(const_cast<Color &>(m_orange));
+    colormap->alloc_color(const_cast<Color &>(m_dk_red));
+    colormap->alloc_color(const_cast<Color &>(m_dk_green));
     colormap->alloc_color(const_cast<Color &>(m_dk_orange));
+    colormap->alloc_color(const_cast<Color &>(m_dk_blue));
+    colormap->alloc_color(const_cast<Color &>(m_dk_magenta));
+    colormap->alloc_color(const_cast<Color &>(m_dk_cyan));
+
+    colormap->alloc_color(const_cast<Color &>(m_red));
+    colormap->alloc_color(const_cast<Color &>(m_white));
+    colormap->alloc_color(const_cast<Color &>(m_orange));
     colormap->alloc_color(const_cast<Color &>(m_yellow));
     colormap->alloc_color(const_cast<Color &>(m_green));
     colormap->alloc_color(const_cast<Color &>(m_blue));
-    colormap->alloc_color(const_cast<Color &>(m_dk_cyan));
+
+    colormap->alloc_color(const_cast<Color &>(m_grey));
+    colormap->alloc_color(const_cast<Color &>(m_dk_grey));
+    colormap->alloc_color(const_cast<Color &>(m_lt_grey));
     colormap->alloc_color(const_cast<Color &>(m_blk_paint));
     colormap->alloc_color(const_cast<Color &>(m_wht_paint));
     colormap->alloc_color(const_cast<Color &>(m_blk_key));
     colormap->alloc_color(const_cast<Color &>(m_wht_key));
-    colormap->alloc_color(const_cast<Color &>(m_line_color));
-    colormap->alloc_color(const_cast<Color &>(m_progress_color));
+
+    /*
+     * Not sure we need these variable colors need to be pre-allocated.
+     *
+     * colormap->alloc_color(const_cast<Color &>(m_line_color));
+     * colormap->alloc_color(const_cast<Color &>(m_progress_color));
+     */
+
+    int colorcode = usr().progress_bar_colored();
+    switch (colorcode)
+    {
+    case 0:
+        m_progress_color = m_black;
+        break;
+
+    case 1:
+        m_progress_color = m_dk_red;
+        break;
+
+    case 2:
+        m_progress_color = m_dk_green;
+        break;
+
+    case 3:
+        m_progress_color = m_dk_orange;
+        break;
+
+    case 4:
+        m_progress_color = m_dk_blue;
+        break;
+
+    case 5:
+        m_progress_color = m_dk_magenta;
+        break;
+
+    case 6:
+        m_progress_color = m_dk_cyan;
+        break;
+
+    }
 }
 
 /**

@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-08-14
+ * \updates       2016-09-07
  * \license       GNU GPLv2 or above
  *
  *  Note that the parse function has some code that is not yet enabled.
@@ -324,8 +324,8 @@ userfile::parse (perform & /* a_perf */)
 
         if (next_data_line(file))
         {
-            sscanf(m_line, "%d", &scratch);
-            usr().progress_bar_colored(scratch != 0);
+            sscanf(m_line, "%d", &scratch);                 /* now an int   */
+            usr().progress_bar_colored(scratch);            /* pick a color */
             if (next_data_line(file))
             {
                 sscanf(m_line, "%d", &scratch);
@@ -370,7 +370,7 @@ userfile::parse (perform & /* a_perf */)
         usr().allow_two_perfedits(false);
         usr().perf_h_page_increment(1);
         usr().perf_v_page_increment(1);
-        usr().progress_bar_colored(false);
+        usr().progress_bar_colored(0);
         usr().progress_bar_thick(false);
         usr().inverse_colors(false);
         usr().window_redraw_rate(c_redraw_ms);
@@ -774,11 +774,17 @@ userfile::write (const perform & /* a_perf */ )
 
         file << "\n"
             "# Specifies if the progress bar is colored black, or a different\n"
-            "# color.  Currently, the different color is hardwired, and is\n"
-            "# red.  The other colors are washed out compared to red. Set this\n"
-            "# value to 1 to enable the feature, 0 to disable it.\n"
+            "# color.  The following integer color values are supported:\n"
+            "# \n"
+            "# 0 = black\n"
+            "# 1 = dark red\n"
+            "# 2 = dark green\n"
+            "# 3 = dark orange\n"
+            "# 4 = dark blue\n"
+            "# 5 = dark magenta\n"
+            "# 6 = dark cyan\n"
             "\n"
-            << (usr().progress_bar_colored() ? "1" : "0")
+            << usr().progress_bar_colored() // (usr().progress_bar_colored() ? "1" : "0")
             << "      # progress_bar_colored\n"
             ;
 

@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-21
- * \updates       2016-08-14
+ * \updates       2016-09-07
  * \license       GNU GPLv2 or above
  *
  *  This module defines some Gdk::Color objects.  However, note that this
@@ -106,18 +106,28 @@ private:                            /* use the accessor functions           */
     static bool m_is_inverse;
 
     /*
-     *  Colors that will remain constant.
+     *  Colors that will remain constant.  We now provide a darker palette.
+     *  Doesn't include dark-grey, which is an "invertible" color.
      */
 
     static const Color m_black;     /**< Provides the black color.          */
-    static const Color m_white;     /**< Provides the white color.          */
-    static const Color m_red;       /**< Provides the red color.            */
-    static const Color m_orange;    /**< Provides the orange color.         */
+    static const Color m_dk_red;    /**< Provides a blood-red color.        */
+    static const Color m_dk_green;  /**< Provides a dark green color.       */
     static const Color m_dk_orange; /**< Provides a dark orange color.      */
+    static const Color m_dk_blue;   /**< Provides the dark blue color.      */
+    static const Color m_dk_magenta; /**< Provides the dark cyan color.     */
+    static const Color m_dk_cyan;   /**< Provides the dark cyan color.      */
+
+    /*
+     *  Colors that will remain constant, providing a brighter palette.
+     */
+
+    static const Color m_red;       /**< Provides the red color.            */
+    static const Color m_white;     /**< Provides the white color.          */
+    static const Color m_orange;    /**< Provides the orange color.         */
     static const Color m_yellow;    /**< Provides the yellow color.         */
     static const Color m_green;     /**< Provides the green color.          */
     static const Color m_blue;      /**< Provides the blue color.           */
-    static const Color m_dk_cyan;   /**< Provides the dark cyan color.      */
 
     /*
      * Colors that can be "inverted" (i.e. changed for the inverse-color mode.
@@ -171,8 +181,8 @@ public:
     /**
      * \getter m_progress_color
      *      Provides an experimental way to change the progress line color
-     *      from black to something else.  Might eventually be selectable from
-     *      the "user" configuration file
+     *      from black to something else.  Now selectable from the "user"
+     *      configuration file.
      */
 
     const Color & progress_color () const
@@ -190,6 +200,60 @@ public:
     const Color & black () const
     {
         return m_black;
+    }
+
+    /**
+     * \getter m_dk_red
+     */
+
+    const Color & dark_red () const
+    {
+        return m_dk_red;
+    }
+
+    /**
+     * \getter m_dk_green
+     */
+
+    const Color & dark_green () const
+    {
+        return m_dk_green;
+    }
+
+    /**
+     * \getter m_dk_orange
+     */
+
+    const Color & dark_orange () const
+    {
+        return m_dk_orange;
+    }
+
+    /**
+     * \getter m_dk_blue
+     */
+
+    const Color & dark_blue () const
+    {
+        return m_dk_blue;
+    }
+
+    /**
+     * \getter m_dk_magenta
+     */
+
+    const Color & dark_magenta () const
+    {
+        return m_dk_magenta;
+    }
+
+    /**
+     * \getter m_dk_cyan
+     */
+
+    const Color & dark_cyan () const
+    {
+        return m_dk_cyan;
     }
 
     /**
@@ -247,15 +311,6 @@ public:
     }
 
     /**
-     * \getter m_dk_orange
-     */
-
-    const Color & dark_orange () const
-    {
-        return m_dk_orange;
-    }
-
-    /**
      * \getter m_yellow
      */
 
@@ -280,15 +335,6 @@ public:
     const Color & blue () const
     {
         return m_blue;
-    }
-
-    /**
-     * \getter m_dk_cyan
-     */
-
-    const Color & dark_cyan () const
-    {
-        return m_dk_cyan;
     }
 
     /**

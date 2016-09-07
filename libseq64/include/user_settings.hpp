@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-22
- * \updates       2016-08-14
+ * \updates       2016-09-07
  * \license       GNU GPLv2 or above
  *
  *  This module defines the following categories of "global" variables that
@@ -345,11 +345,13 @@ class user_settings
 
     /**
      *  If set, makes progress bars have the "progress_color()", instead of
-     *  black.  This value is hardwired in the gui_palette_gtk2 module, to
-     *  red.  Really, that is the only color that stands out as well as black.
+     *  black.  This value is no longer hardwired in the gui_palette_gtk2
+     *  module to be red.  Now we want to let the color select from a slightly
+     *  large palette.  We chande this from a boolean to an integer to allow
+     *  the selection of more colors.
      */
 
-    bool m_progress_bar_colored;
+    int m_progress_bar_colored;
 
     /**
      *  If set, makes progress bars thicker than 1 pixel... 2 pixels.
@@ -1122,7 +1124,7 @@ public:
      * \getter m_progress_bar_colored
      */
 
-    bool progress_bar_colored () const
+    int progress_bar_colored () const
     {
         return m_progress_bar_colored;
     }
@@ -1315,9 +1317,9 @@ public:         // used in main application module and the userfile class
      * \setter m_progress_bar_colored
      */
 
-    void progress_bar_colored (bool flag)
+    void progress_bar_colored (int palcode)
     {
-        m_progress_bar_colored = flag;
+        m_progress_bar_colored = palcode;
     }
 
     /**

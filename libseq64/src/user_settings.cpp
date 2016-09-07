@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-23
- * \updates       2016-05-29
+ * \updates       2016-09-07
  * \license       GNU GPLv2 or above
  *
  *  Note that this module also sets the remaining legacy global variables, so
@@ -144,7 +144,7 @@ user_settings::user_settings ()
     m_allow_two_perfedits       (false),
     m_h_perf_page_increment     (1),
     m_v_perf_page_increment     (1),
-    m_progress_bar_colored      (false),
+    m_progress_bar_colored      (0),
     m_progress_bar_thick        (false),
     m_inverse_colors            (false),
     m_window_redraw_rate_ms     (c_redraw_ms),  // 40 ms or 20 ms; 25 ms
@@ -410,7 +410,7 @@ user_settings::set_defaults ()
     m_allow_two_perfedits = true;
     m_h_perf_page_increment = 4;
     m_v_perf_page_increment = 8;
-    m_progress_bar_colored = false;
+    m_progress_bar_colored = 0;
     m_progress_bar_thick = false;
     m_inverse_colors = false;
     m_window_redraw_rate_ms = c_redraw_ms;

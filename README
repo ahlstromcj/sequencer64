@@ -1,6 +1,6 @@
 README for Sequencer64 0.9.17
 Chris Ahlstrom
-2015-09-10 to 2016-08-27 (initial work started in July of 2015)
+2015-09-10 to 2016-09-08 (initial work started in July of 2015)
 
 Sequencer64 (replaces sequencer24) is a reboot of seq24 to refactor it to be
 tighter and easier to transition to GTKmm 3, and much more.  It is now
@@ -21,7 +21,8 @@ Major updates:
             file, but any sequencer can read the performance and will ignore
             the Sequencer64-specific triggers.
         -   Added an "inverse colors" options so that the user interface is a
-            bit less bright in a "night" environment.
+            bit less bright in a "night" environment.  Also, the progress bar
+            can be changed to a number of different colors.
         -   Added an optional Edit menu and the export of a song performance
             to a non-Sequencer64 MIDI file.  (Stazed feature).
         -   Ctrl-Left-Click in the Song Editor now works as a middle-click,
@@ -60,7 +61,7 @@ Major updates:
         still rewinds the sequences.  The Pause feature does not affect JACK
         transport, which already supports pause; we would like to add rewind
         to JACK transport eventually.  Also added is a Pause key (by default,
-        the period).  Pause can be disabled at configure time (--disable-pnause).
+        the period).  Pause can be disabled at configure time (--disable-pause).
     -   Long sequences/patterns now auto-scroll horizontally during playback
         to keep up with the progress bar in the sequence/pattern editor.
     -   Highlighting of the current sequence brought up for editing.

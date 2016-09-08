@@ -1,3 +1,290 @@
+2016-09-08  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/src/cmdlineopts.cpp, man/sequencer64.1: Updated app help
+	and man page.
+
+2016-09-07  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/include/user_settings.hpp,
+	libseq64/src/user_settings.cpp, libseq64/src/userfile.cpp,
+	seq_gtkmm2/include/gui_palette_gtk2.hpp,
+	seq_gtkmm2/src/gui_palette_gtk2.cpp: Made the progress-bar color
+	selectable, up to 7 colors available now, and saved in the usr
+	configuration file.
+
+2016-08-29  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* contrib/midi/README, libseq64/include/editable_events.hpp,
+	libseq64/include/event_list.hpp, libseq64/include/sequence.hpp,
+	libseq64/src/editable_events.cpp, libseq64/src/event_list.cpp,
+	libseq64/src/midi_container.cpp, libseq64/src/perform.cpp,
+	libseq64/src/sequence.cpp, seq_gtkmm2/src/eventslots.cpp,
+	seq_gtkmm2/src/fruityseq.cpp, seq_gtkmm2/src/perfedit.cpp,
+	seq_gtkmm2/src/perfroll.cpp, seq_gtkmm2/src/seq24seq.cpp,
+	seq_gtkmm2/src/seqedit.cpp, seq_gtkmm2/src/seqroll.cpp,
+	seq_portmidi/src/midibus_portmidi.cpp: Fixed some selection issues,
+	still have minor bugs in undo/redo.
+
+2016-08-28  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* contrib/midi/README, contrib/midi/example1.asc,
+	contrib/notes/bugs_to_investigate.txt, contrib/notes/triggers.txt,
+	libseq64/include/triggers.hpp, libseq64/src/midi_container.cpp,
+	libseq64/src/midifile.cpp, seq_gtkmm2/src/eventslots.cpp: Fixed a
+	bug in modifying events in eventedit, and added sample files for
+	tests of Export.
+	* README, configure.ac, contrib/notes/bugs_to_investigate.txt,
+	libseq64/src/perform.cpp: Merged the arnaud pattern fix to fixups
+	and documented it.
+
+2016-08-27  C. Ahlstrom <ahlstromcj@gmail.com>
+
+	* : Merge pull request #24 from arnaud-jacquemin/issue23 Fix for issue #23 "MIDI controller toggles the wrong pattern"
+
+2016-08-26  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* contrib/midi/README, contrib/notes/bugs_to_investigate.txt,
+	libseq64/include/editable_events.hpp, libseq64/src/midifile.cpp,
+	libseq64/src/sequence.cpp: Upgrading var-length checking, added
+	editable_events::dref() function.
+
+2016-08-25  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* contrib/notes/bugs_to_investigate.txt,
+	libseq64/include/midi_container.hpp,
+	libseq64/include/midi_list.hpp, libseq64/include/midi_vector.hpp,
+	libseq64/include/midifile.hpp, libseq64/src/midi_container.cpp,
+	libseq64/src/midifile.cpp, libseq64/src/perform.cpp: Sync changes in
+	tempo in the new members of perform.
+
+2016-08-24  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* INSTALL, libseq64/include/calculations.hpp,
+	libseq64/include/midi_container.hpp, libseq64/include/perform.hpp,
+	libseq64/include/seq64_features.h, libseq64/include/sequence.hpp,
+	libseq64/src/calculations.cpp, libseq64/src/cmdlineopts.cpp,
+	libseq64/src/mastermidibus.cpp, libseq64/src/midi_container.cpp,
+	libseq64/src/midifile.cpp, libseq64/src/perform.cpp,
+	libseq64/src/sequence.cpp: Fix issue with bogus zero tempo being
+	loaded from a file and then written to an exported file.
+	* : Temporarily adding short MIDI files for testing Export.
+	* libseq64/src/midi_container.cpp, libseq64/src/midifile.cpp,
+	seq_gtkmm2/src/mainwnd.cpp: Fixed nasty bug in calculating track
+	length, but exported files still won't play.
+
+2016-08-23  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* contrib/notes/bugs_to_investigate.txt,
+	libseq64/include/app_limits.h, libseq64/include/event_list.hpp,
+	libseq64/src/midi_container.cpp, libseq64/src/midifile.cpp,
+	libseq64/src/sequence.cpp, seq_gtkmm2/src/seqdata.cpp: Still working
+	on fixing the Export functionality....
+
+2016-08-22  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* contrib/notes/bugs_to_investigate.txt, libseq64/src/midifile.cpp,
+	libseq64/src/perform.cpp: Fixed bug in track muting from main menu,
+	still have a bug in the Export functionality.
+
+2016-08-21  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* README, libseq64/include/seq64_features.h: Disabled all the
+	experimental options macros, so the current emphasis will be on
+	testing what remains enabled.
+	* contrib/midi/README, libseq64/include/event.hpp,
+	libseq64/include/seq64_features.h, libseq64/include/sequence.hpp,
+	libseq64/src/event.cpp, libseq64/src/mastermidibus.cpp,
+	libseq64/src/midibus.cpp, libseq64/src/midifile.cpp,
+	libseq64/src/perform.cpp, libseq64/src/sequence.cpp,
+	seq_gtkmm2/include/lfownd.hpp, seq_gtkmm2/include/mainwnd.hpp,
+	seq_gtkmm2/include/perfroll.hpp, seq_gtkmm2/include/seqedit.hpp,
+	seq_gtkmm2/src/lfownd.cpp, seq_gtkmm2/src/mainwnd.cpp,
+	seq_gtkmm2/src/perfedit.cpp, seq_gtkmm2/src/perfroll.cpp,
+	seq_gtkmm2/src/perftime.cpp, seq_gtkmm2/src/seqdata.cpp,
+	seq_gtkmm2/src/seqedit.cpp: Defined all the macros in
+	seq64_features.h to test the building of them all, but will undefine
+	them in the next commit, for more complete testing later.
+
+2016-08-20  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* INSTALL, README, libseq64/include/mastermidibus.hpp,
+	libseq64/include/perform.hpp, libseq64/include/rc_settings.hpp,
+	libseq64/include/seq64_features.h, libseq64/src/cmdlineopts.cpp,
+	libseq64/src/mastermidibus.cpp, libseq64/src/optionsfile.cpp,
+	man/sequencer64.1, seq_gtkmm2/include/options.hpp,
+	seq_gtkmm2/src/options.cpp: Added Seq32 record-by-channel feature as
+	a run-time option.
+	* INSTALL, configure.ac, doc/dox/doxy-reference.cfg,
+	libseq64/include/Makefile.am, libseq64/include/app_limits.h,
+	libseq64/include/event.hpp, libseq64/include/event_list.hpp,
+	libseq64/include/gdk_basic_keys.h,
+	libseq64/include/jack_assistant.hpp,
+	libseq64/include/keys_perform.hpp, libseq64/include/keystroke.hpp,
+	libseq64/include/perform.hpp, libseq64/include/rc_settings.hpp,
+	libseq64/include/seq64_features.h, libseq64/include/sequence.hpp,
+	libseq64/include/settings.hpp, libseq64/include/user_settings.hpp,
+	libseq64/src/jack_assistant.cpp, libseq64/src/keys_perform.cpp,
+	libseq64/src/midi_container.cpp, libseq64/src/midifile.cpp,
+	libseq64/src/perform.cpp, libseq64/src/sequence.cpp,
+	seq_gtkmm2/include/perfedit.hpp, seq_gtkmm2/include/seqmenu.hpp,
+	seq_gtkmm2/src/gui_window_gtk2.cpp, seq_gtkmm2/src/mainwid.cpp,
+	seq_gtkmm2/src/perfedit.cpp, seq_gtkmm2/src/perfroll.cpp,
+	seq_gtkmm2/src/seqmenu.cpp: Temporarily enabled Stazed JACK and
+	transport support and they at least build now.  Note they are still
+	enabled in this interim commit.
+
+2016-08-19  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* contrib/notes/bugs_to_investigate.txt,
+	libseq64/include/sequence.hpp, seq_gtkmm2/src/gui_palette_gtk2.cpp,
+	seq_gtkmm2/src/seqedit.cpp, seq_gtkmm2/src/seqkeys.cpp: Enabled
+	sensitive undo/redo buttons in seqedit, thanks to stazed.
+	* doc/dox/jack_modes.dox, libseq64/include/jack_assistant.hpp,
+	libseq64/include/perform.hpp, libseq64/include/rc_settings.hpp,
+	libseq64/src/cmdlineopts.cpp, libseq64/src/jack_assistant.cpp,
+	libseq64/src/optionsfile.cpp, libseq64/src/perform.cpp,
+	libseq64/src/rc_settings.cpp, seq_gtkmm2/include/mainwnd.hpp,
+	seq_gtkmm2/include/options.hpp, seq_gtkmm2/src/mainwnd.cpp,
+	seq_gtkmm2/src/options.cpp, seq_gtkmm2/src/perfedit.cpp,
+	seq_gtkmm2/src/seqedit.cpp: Got code to build with Stazed JACK
+	support enabled, but not ready for usage yet.
+
+2016-08-18  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* INSTALL, libseq64/include/sequence.hpp,
+	libseq64/include/triggers.hpp, libseq64/src/midifile.cpp,
+	libseq64/src/sequence.cpp, libseq64/src/triggers.cpp: Fully enabled
+	Stazed trigger support.
+	* README, configure.ac, libseq64/include/rc_settings.hpp,
+	libseq64/include/sequence.hpp, libseq64/include/triggers.hpp,
+	libseq64/src/midifile.cpp, libseq64/src/optionsfile.cpp,
+	libseq64/src/rc_settings.cpp, libseq64/src/sequence.cpp,
+	libseq64/src/triggers.cpp, seq_gtkmm2/include/options.hpp,
+	seq_gtkmm2/src/options.cpp, seq_gtkmm2/src/perfroll_input.cpp: Added
+	Ctrl-Middle-Click to Song Editor for splits, still working on Stazed
+	trigger extensions.
+
+2016-08-17  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* INSTALL, contrib/notes/bugs_to_investigate.txt,
+	libseq64/include/perform.hpp, libseq64/include/sequence.hpp,
+	libseq64/src/perform.cpp, libseq64/src/sequence.cpp,
+	seq_gtkmm2/include/perfedit.hpp, seq_gtkmm2/include/perfroll.hpp,
+	seq_gtkmm2/src/fruityperfroll_input.cpp,
+	seq_gtkmm2/src/perfedit.cpp, seq_gtkmm2/src/perfroll.cpp,
+	seq_gtkmm2/src/perfroll_input.cpp: Completely activated Stazed
+	undo/redo support, no more macro, needs more testing.
+
+2016-08-16  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* INSTALL, README, configure.ac, libseq64/include/perform.hpp,
+	libseq64/include/sequence.hpp, libseq64/src/perform.cpp,
+	libseq64/src/sequence.cpp, seq_gtkmm2/src/perfedit.cpp: 
+	Provisionally enabled Stazed undo/redo extensions, still cannot undo
+	the modify flag via Ctrl-Z.
+
+2016-08-15  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/include/keys_perform.hpp, libseq64/include/perform.hpp,
+	libseq64/include/sequence.hpp, libseq64/include/triggers.hpp,
+	libseq64/src/jack_assistant.cpp, libseq64/src/perform.cpp,
+	libseq64/src/sequence.cpp, libseq64/src/triggers.cpp,
+	seq_gtkmm2/include/mainwnd.hpp, seq_gtkmm2/include/perfedit.hpp,
+	seq_gtkmm2/src/perfedit.cpp, seq_gtkmm2/src/perfroll.cpp,
+	seq_gtkmm2/src/seqedit.cpp: Enabled Stazed undo/redo support in
+	triggers and sequence modules.
+
+2016-08-14  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* Sequencer64/sequencer64.cpp,
+	contrib/notes/bugs_to_investigate.txt,
+	libseq64/include/rc_settings.hpp,
+	libseq64/include/user_settings.hpp, libseq64/src/cmdlineopts.cpp,
+	libseq64/src/rc_settings.cpp, libseq64/src/sequence.cpp,
+	libseq64/src/user_settings.cpp, libseq64/src/userfile.cpp,
+	seq_gtkmm2/include/font.hpp,
+	seq_gtkmm2/include/gui_drawingarea_gtk2.hpp,
+	seq_gtkmm2/include/gui_palette_gtk2.hpp,
+	seq_gtkmm2/include/seqdata.hpp, seq_gtkmm2/src/font.cpp,
+	seq_gtkmm2/src/gui_drawingarea_gtk2.cpp,
+	seq_gtkmm2/src/gui_palette_gtk2.cpp, seq_gtkmm2/src/mainwid.cpp,
+	seq_gtkmm2/src/perfnames.cpp, seq_gtkmm2/src/perfroll.cpp,
+	seq_gtkmm2/src/perftime.cpp, seq_gtkmm2/src/seqdata.cpp,
+	seq_gtkmm2/src/seqkeys.cpp, seq_gtkmm2/src/seqroll.cpp,
+	seq_gtkmm2/src/seqtime.cpp: Reworked and completed the
+	inverse-colors option and fixed a bug in selecting notes.
+
+2016-08-13  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* Sequencer64/sequencer64.cpp, libseq64/include/rc_settings.hpp,
+	libseq64/src/cmdlineopts.cpp, libseq64/src/midifile.cpp,
+	libseq64/src/perform.cpp, libseq64/src/rc_settings.cpp,
+	seq_gtkmm2/include/gui_palette_gtk2.hpp, seq_gtkmm2/src/font.cpp,
+	seq_gtkmm2/src/gui_palette_gtk2.cpp, seq_gtkmm2/src/mainwid.cpp,
+	seq_gtkmm2/src/seqroll.cpp: Completed basic experimental
+	inverse/night color feature, finalized some EXPERIMENTAL code.
+	* Sequencer64/sequencer64.cpp,
+	seq_gtkmm2/include/gui_palette_gtk2.hpp, seq_gtkmm2/src/font.cpp,
+	seq_gtkmm2/src/gui_palette_gtk2.cpp, seq_gtkmm2/src/mainwid.cpp,
+	seq_gtkmm2/src/seqkeys.cpp: Added experimental inverse palette
+	feature, incomplete, disabled.
+
+2016-08-12  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/include/globals.h, libseq64/include/sequence.hpp,
+	libseq64/src/perform.cpp, libseq64/src/sequence.cpp,
+	seq_gtkmm2/include/perfedit.hpp, seq_gtkmm2/src/fruityseq.cpp,
+	seq_gtkmm2/src/fruityseqroll.cpp, seq_gtkmm2/src/perfedit.cpp,
+	seq_gtkmm2/src/perfroll.cpp, seq_gtkmm2/src/perftime.cpp,
+	seq_gtkmm2/src/seq24seq.cpp, seq_gtkmm2/src/seqedit.cpp,
+	seq_gtkmm2/src/seqroll.cpp: Adding more undo support to sequence
+	functions.
+
+2016-08-12  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/include/globals.h, libseq64/src/event.cpp,
+	libseq64/src/midifile.cpp, seq_gtkmm2/include/seqkeys.hpp,
+	seq_gtkmm2/src/seqmenu.cpp, seq_gtkmm2/src/seqroll.cpp: Slowly
+	merging Stazed JACK/extras code, macroed out.
+
+2016-08-11  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* contrib/notes/bugs_to_investigate.txt,
+	libseq64/include/event.hpp, libseq64/include/sequence.hpp,
+	libseq64/src/sequence.cpp, seq_gtkmm2/include/seqedit.hpp,
+	seq_gtkmm2/include/seqkeys.hpp, seq_gtkmm2/include/seqroll.hpp,
+	seq_gtkmm2/src/fruityseq.cpp, seq_gtkmm2/src/fruityseqroll.cpp,
+	seq_gtkmm2/src/seq24seq.cpp, seq_gtkmm2/src/seqedit.cpp,
+	seq_gtkmm2/src/seqevent.cpp: Slowly merging Stazed JACK/extras code,
+	macroed out.
+
+2016-08-10  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* seq_gtkmm2/include/seqedit.hpp, seq_gtkmm2/src/seqedit.cpp: Slowly
+	merging Stazed JACK/extras code, macroed out.
+
+2016-08-09  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* contrib/configs/dot-ctags, contrib/configs/sequencer64.conf,
+	seq_gtkmm2/src/perfroll.cpp, seq_gtkmm2/src/seqedit.cpp: Changing
+	seqedit actions from const ints to a private enumeration.
+
+2016-07-18 to 2016-08-09  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/include/event.hpp, libseq64/include/sequence.hpp,
+	libseq64/src/sequence.cpp, seq_gtkmm2/src/seqdata.cpp: Slowly
+	merging Stazed JACK/extras code, macroed out.
+
+2016-07-18  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* INSTALL, README, VERSION, configure.ac,
+	contrib/code/stazed/jack_assistant.cpp,
+	contrib/code/stazed/jack_assistant.hpp,
+	contrib/code/stazed/perform.cpp, contrib/code/stazed/perform.hpp,
+	doc/dox/doxy-reference.cfg, libseq64/src/cmdlineopts.cpp,
+	man/sequencer64.1: Setup for next version 0.9.17, will aim for
+	Stazed JACK support.
+
 2016-07-17  Chris Ahlstrom <ahlstromcj@gmail.com>
 
 	* libseq64/include/perform.hpp, libseq64/include/sequence.hpp,

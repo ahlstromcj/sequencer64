@@ -1,4 +1,4 @@
-.TH Sequencer64 "August 20 2016" "Version 0.9.17" "Sequencer64 Manual Page"
+.TH Sequencer64 "September 7 2016" "Version 0.9.17" "Sequencer64 Manual Page"
 
 .SH NAME
 Sequencer64 - Real-time MIDI sequencer refactored from Seq24
@@ -114,6 +114,11 @@ Dumps incoming MIDI to screen.
 Prints pressed key value.
 
 .TP 8
+.B \-K, \-\-inverse
+Changes the sequence editor and performance editor colors to an inverse-color
+mode.  This mode can be considered a "night mode".
+
+.TP 8
 .B \-p, \-\-priority
 Runs higher priority with a FIFO scheduler.
 This option needs root access to succeed.
@@ -171,7 +176,8 @@ Set the UUID for the JACK session.
 
 .TP 8
 .B \-S, \-\-stats
-Print statistics on the command-line while running.
+Print statistics on the command-line while running, if built for
+showing statistics.
 
 .TP 8
 .B \-u, \-\-user-save

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-20
- * \updates       2016-08-24
+ * \updates       2016-09-07
  * \license       GNU GPLv2 or above
  *
  *  The "rc" command-line options override setting that are first read from
@@ -755,6 +755,12 @@ const static std::string s_build_follow_progress = "on";
 const static std::string s_build_follow_progress = "off";
 #endif
 
+#ifdef SEQ64_STATISTICS_SUPPORT
+const static std::string s_statistics_support = "on";
+#else
+const static std::string s_statistics_support = "off";
+#endif
+
 /**
  *  Generates a string describing the features of the build.
  *
@@ -781,6 +787,7 @@ build_details ()
 << "  Use MIDI vector (vs list): " << s_build_midi_vector << std::endl
 << "  Solid piano-roll grid:     " << s_build_solid_grid << std::endl
 << "  Follow progress bar:       " << s_build_follow_progress << std::endl
+<< "  Statistics support:        " << s_statistics_support << std::endl
     ;
     return result.str();
 }

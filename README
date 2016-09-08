@@ -1,4 +1,4 @@
-README for Sequencer64 0.9.17
+README for Sequencer64 0.9.18
 Chris Ahlstrom
 2015-09-10 to 2016-09-08 (initial work started in July of 2015)
 
@@ -14,41 +14,8 @@ with the --legacy option.
 
 Major updates:
 
-    -   Version 0.9.17:
-        -   Added export of a Sequencer64 song performance as a MIDI file,
-            where the MIDI file is laid out as per the song triggers in the
-            performance editor.  The triggers are preserved in the exported
-            file, but any sequencer can read the performance and will ignore
-            the Sequencer64-specific triggers.
-        -   Added an "inverse colors" options so that the user interface is a
-            bit less bright in a "night" environment.  Also, the progress bar
-            can be changed to a number of different colors.
-        -   Added an optional Edit menu and the export of a song performance
-            to a non-Sequencer64 MIDI file.  (Stazed feature).
-        -   Ctrl-Left-Click in the Song Editor now works as a middle-click,
-            to split the song trigger in half.
-        -   The seq32 feature of splitting at the nearest snap point near
-            a middle-click, in the Song Editor, has been added as an optional
-            feature.
-        -   Started adding support for recording incoming MIDI to the
-            sequences that match the incoming channel data. (Stazed feature).
-            This is a run-time option, and can be set from the Options dialog,
-            the command-line, and in the "rc" configuration file.
-        -   Enabled actual support for the recording-volume feature, which was
-            not actually used in seq24.
-        -   Added better support for undo/redo ability from the stazed project
-            (seq32).
-        -   Added support for a lot of other stazed (seq32) features and
-            extensions, macroed out until we can get them complete and
-            finalized.  Some, noted above, are now available.
-        -   Added the LFO window module code and refactored it, not yet
-            available through the user interface, must be enabled in the code.
-        -   Playback status now folded completely into the perform and
-            jack_assistant classes.
-        -   Lots of bug fixed based on fixes from seq32.  Also merged a
-            fix from Arnaud for issue "MIDI controller toggles the wrong
-            pattern", a regression caused by my fat fingers.
-        -   See earlier version fixes near the end of this README.
+    -   Version 0.9.18:
+        -   TODO
     -   Sequencer64 loads SMF 0 files and splits the channels into separate
         tracks/sequences.
     -   JACK support has been improved.  Sequencer64 will track JACK transport
@@ -162,6 +129,41 @@ Major updates:
         -   Constant variables are slowly being assigned to new members, in
             preparation for support of altering the number of sequences and
             screen sets supported.
+    -   Version 0.9.17:
+        -   Added export of a Sequencer64 song performance as a MIDI file,
+            where the MIDI file is laid out as per the song triggers in the
+            performance editor.  The triggers are preserved in the exported
+            file, but any sequencer can read the performance and will ignore
+            the Sequencer64-specific triggers.
+        -   Added an "inverse colors" options so that the user interface is a
+            bit less bright in a "night" environment.  Also, the progress bar
+            can be changed to a number of different colors.
+        -   Added an optional Edit menu and the export of a song performance
+            to a non-Sequencer64 MIDI file.  (Stazed feature).
+        -   Ctrl-Left-Click in the Song Editor now works as a middle-click,
+            to split the song trigger in half.
+        -   The seq32 feature of splitting at the nearest snap point near
+            a middle-click, in the Song Editor, has been added as an optional
+            feature.
+        -   Started adding support for recording incoming MIDI to the
+            sequences that match the incoming channel data. (Stazed feature).
+            This is a run-time option, and can be set from the Options dialog,
+            the command-line, and in the "rc" configuration file.
+        -   Enabled actual support for the recording-volume feature, which was
+            not actually used in seq24.
+        -   Added better support for undo/redo ability from the stazed project
+            (seq32).
+        -   Added support for a lot of other stazed (seq32) features and
+            extensions, macroed out until we can get them complete and
+            finalized.  Some, noted above, are now available.
+        -   Added the LFO window module code and refactored it, not yet
+            available through the user interface, must be enabled in the code.
+        -   Playback status now folded completely into the perform and
+            jack_assistant classes.
+        -   Lots of bug fixed based on fixes from seq32.  Also merged a
+            fix from Arnaud for issue "MIDI controller toggles the wrong
+            pattern", a regression caused by my fat fingers.
+        -   See earlier version fixes near the end of this README.
     -   Version 0.9.16:
         -   If there is no mute-group information, it is no longer written
             to the MIDI file (unless --legacy is in force).  Saves 4000+

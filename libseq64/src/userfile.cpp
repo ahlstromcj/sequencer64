@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-09-07
+ * \updates       2016-09-08
  * \license       GNU GPLv2 or above
  *
  *  Note that the parse function has some code that is not yet enabled.
@@ -446,7 +446,7 @@ userfile::write (const perform & /* a_perf */ )
            "# Sequencer64 user configuration file (legacy Seq24 0.9.2 format)\n";
     }
     else
-        file << "# Sequencer64 0.9.17 (and above) user configuration file\n";
+        file << "# Sequencer64 0.9.18 (and above) user configuration file\n";
 
     file << "#\n"
         "# Created by reading the following file and writing it out via the\n"

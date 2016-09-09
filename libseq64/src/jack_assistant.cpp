@@ -881,7 +881,7 @@ jack_assistant::sync (jack_transport_state_t state)
 
         // infoprint("[JackTransportStarting]");
 
-        parent().inner_start(song_start_mode());
+        parent().inner_start(parent().song_start_mode());       // shorten!
         break;
 
     case JackTransportLooping:

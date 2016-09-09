@@ -1,6 +1,6 @@
 User Testing of JACK in Sequencer64
 Chris Ahlstrom
-2016-01-16 to 2016-03-24
+2016-01-16 to 2016-09-09
 
 ===========================================================================
  SETTINGS TESTS
@@ -142,6 +142,15 @@ JACK:
 
             a2j:Midi Through 14 (capture): Midi Throu...
                 ---------> yoshimi-01:midi in
+
+            If that doesn't work, and you see extra entries:
+
+            a2j:sequencer64[130] (capture): sequ...
+                ---------> yoshimi-01:midi in
+
+            You can see these entries if you make sure that the file
+            ~/.config/sequencer64/sequencer64.usr section is empty...
+            we think.  Not sure about that still investigating.
 
     Load a complex test tune, such as b4uacuse-GM-format.midi.
 

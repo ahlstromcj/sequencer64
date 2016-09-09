@@ -18,7 +18,8 @@ Major updates:
         -   TODO
     -   Version 0.9.17.1:
         -   An important regression/bug for JACK transport support.  I am
-            so embarrassed!
+            so embarrassed!  It seems to be fixed; basically one line of code
+            accidentally commented out.
     -   Sequencer64 loads SMF 0 files and splits the channels into separate
         tracks/sequences.
     -   JACK support has been improved.  Sequencer64 will track JACK transport

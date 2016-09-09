@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-14
- * \updates       2016-08-20
+ * \updates       2016-09-09
  * \license       GNU GPLv2 or above
  *
  *  This module was created from code that existed in the perform object.
@@ -880,9 +880,8 @@ jack_assistant::sync (jack_transport_state_t state)
     case JackTransportStarting:
 
         // infoprint("[JackTransportStarting]");
-#ifdef USE_STAZED_TRANSPORT
+
         parent().inner_start(song_start_mode());
-#endif
         break;
 
     case JackTransportLooping:
@@ -1185,6 +1184,12 @@ jack_assistant::output (jack_scratchpad & pad)
 //      m_jack_pos.beats_per_minute = parent().master_bus().get_bpm();
         m_jack_pos.beats_per_minute = parent().get_beats_per_minute();
 #else
+        /*
+         * @change ca 2016-09-09
+         *      Was removed to below, move it back to here..
+         */
+
+        m_jack_frame_current = jack_get_current_transport_frame(m_jack_client);
 
         bool ok = m_jack_pos.frame_rate > 1000;         /* usually 48000       */
         if (! ok)
@@ -1197,6 +1202,10 @@ jack_assistant::output (jack_scratchpad & pad)
             m_jack_transport_state == JackTransportRolling
         )
         {
+            /*
+             * This is a second time we get the frame number.
+             */
+
             m_jack_frame_current =
                 jack_get_current_transport_frame(m_jack_client);
 

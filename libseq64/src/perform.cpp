@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and Tim Deagan
  * \date          2015-07-24
- * \updates       2016-08-24
+ * \updates       2016-09-09
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -156,6 +156,7 @@ perform::perform (gui_assistant & mygui, int ppqn)
     m_out_thread_launched       (false),
     m_in_thread_launched        (false),
     m_running                   (false),
+    m_is_pattern_playing        (false),
     m_inputing                  (true),
     m_outputing                 (true),
     m_looping                   (false),

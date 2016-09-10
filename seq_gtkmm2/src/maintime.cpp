@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-03-17
+ * \updates       2016-09-10
  * \license       GNU GPLv2 or above
  *
  *  The "time" window is the horizontal bar at the upper right of the main
@@ -48,8 +48,8 @@
  */
 
 static const int c_maintime_x = 300;
-static const int c_maintime_y = 10;
-static const int c_pill_width = 8;
+static const int c_maintime_y =  14;        /* was 10 */
+static const int c_pill_width =  10;        /* was  8 */
 
 namespace seq64
 {
@@ -61,11 +61,8 @@ namespace seq64
  *  realized.
  */
 
-maintime::maintime
-(
-    perform & p,
-    int ppqn
-) :
+maintime::maintime (perform & p, int ppqn)
+ :
     gui_drawingarea_gtk2    (p, c_maintime_x, c_maintime_y),
     m_beat_width            (4),                                // TODO
     m_bar_width             (16),                               // TODO
@@ -77,9 +74,9 @@ maintime::maintime
     m_flash_x               (m_window_x / m_beat_width),
     m_box_less_pill         (m_window_x - m_pill_width - 1),
     m_tick                  (0),
-    m_ppqn                  (0)
+    m_ppqn                  (choose_ppqn(ppqn))
 {
-    m_ppqn = choose_ppqn(ppqn);
+    // No other code
 }
 
 /**
@@ -123,23 +120,20 @@ maintime::on_realize ()
 int
 maintime::idle_progress (midipulse ticks)
 {
-#ifdef USE_STAZED_JACK_SUPPORT
-    m_tick = ticks;
-#endif
-
     if (ticks >= 0)                     /* ca 2016-03-17 to make bar appear */
     {
+        const int yoff = 4;
         int tick_x = (ticks % m_ppqn) * m_box_width / m_ppqn;
         int beat_x = ((ticks / m_beat_width) % m_ppqn) * m_box_less_pill / m_ppqn;
         int bar_x  = ((ticks / m_bar_width)  % m_ppqn) * m_box_less_pill / m_ppqn;
         m_tick = ticks;
         clear_window();
-        draw_rectangle(black(), 0, 0, m_box_width, m_box_height, false);
+        draw_rectangle(black(), 0, yoff, m_box_width, m_box_height, false);
         if (tick_x <= m_flash_x)       /* for flashing the maintime bar     */
-            draw_rectangle(grey(), 2, 2, m_flash_width, m_flash_height);
+            draw_rectangle(grey(), 2, yoff+2, m_flash_width, m_flash_height);
 
-        draw_rectangle(black(), beat_x + 2, 2, m_pill_width, m_flash_height);
-        draw_rectangle(bar_x + 2, 2, m_pill_width, m_flash_height);
+        draw_rectangle(black(), beat_x + 2, yoff+2, m_pill_width, m_flash_height);
+        draw_rectangle(bar_x + 2, yoff+2, m_pill_width, m_flash_height);
     }
     return true;
 }

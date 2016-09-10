@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-08-28
+ * \updates       2016-09-10
  * \license       GNU GPLv2 or above
  *
  *  The functionality of this class also includes handling some of the
@@ -1526,9 +1526,6 @@ sequence::select_events
     for (event_list::iterator i = m_events.begin(); i != m_events.end(); ++i)
     {
         event & er = DREF(i);
-//      midipulse t = er.get_timestamp();
-//      if (er.get_status() == status && t >= tick_s && t <= tick_f)
-
         if (event_in_range(er, status, tick_s, tick_f))
         {
             midibyte d0, d1;

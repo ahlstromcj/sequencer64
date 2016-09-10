@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-20
- * \updates       2016-09-08
+ * \updates       2016-09-10
  * \license       GNU GPLv2 or above
  *
  *  The "rc" command-line options override setting that are first read from
@@ -426,7 +426,7 @@ parse_options_files (perform & p, int argc, char * argv [])
  */
 
 int
-parse_command_line_options (int argc, char * argv [])
+parse_command_line_options (perform & p, int argc, char * argv [])
 {
     int result = 0;
     optind = 0;
@@ -543,7 +543,7 @@ parse_command_line_options (int argc, char * argv [])
 
         case 'M':
         case '4':
-            seq64::rc().song_start_mode(atoi(optarg) > 0);
+            p.song_start_mode(atoi(optarg) > 0);
             break;
 
         case 'm':
@@ -761,6 +761,28 @@ const static std::string s_statistics_support = "on";
 const static std::string s_statistics_support = "off";
 #endif
 
+/*
+ * Still EXPERIMENTAL/UNOFFICIAL support.
+ */
+
+#ifdef USE_STAZED_JACK_SUPPORT
+const static std::string s_seq32_jack_support = "on";
+#else
+const static std::string s_seq32_jack_support = "off";
+#endif
+
+#ifdef USE_STAZED_TRANSPORT
+const static std::string s_seq32_transport = "on";
+#else
+const static std::string s_seq32_transport = "off";
+#endif
+
+#ifdef USE_STAZED_SONG_MODE_BUTTON
+const static std::string s_seq32_song_button = "on";
+#else
+const static std::string s_seq32_song_button = "off";
+#endif
+
 /**
  *  Generates a string describing the features of the build.
  *
@@ -788,6 +810,9 @@ build_details ()
 << "  Solid piano-roll grid:     " << s_build_solid_grid << std::endl
 << "  Follow progress bar:       " << s_build_follow_progress << std::endl
 << "  Statistics support:        " << s_statistics_support << std::endl
+<< "  Seq32 JACK support (exp):  " << s_seq32_jack_support << std::endl
+<< "  Seq32 transport (exp):     " << s_seq32_transport << std::endl
+<< "  Seq32 song button (exp):   " << s_seq32_song_button << std::endl
     ;
     return result.str();
 }

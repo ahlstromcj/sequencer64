@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-14
- * \updates       2016-09-09
+ * \updates       2016-09-10
  * \license       GNU GPLv2 or above
  *
  *  This module was created from code that existed in the perform object.
@@ -687,6 +687,9 @@ jack_assistant::position (bool state, midipulse tick)
 #ifdef JACK_SUPPORT
 
     long current_tick = 0;
+    if (is_null_midipulse(tick))
+        tick = 0;
+
     if (state)                              /* master in song mode */
         current_tick = tick;
 
@@ -696,7 +699,6 @@ jack_assistant::position (bool state, midipulse tick)
     int beats_per_minute = parent().get_beats_per_minute();
 
     uint64_t tick_rate = (uint64_t(m_jack_frame_rate) * current_tick * 60.0);
-//  long tpb_bpm = ticks_per_beat * beats_per_minute / (m_bw / 4.0 );
     long tpb_bpm = ticks_per_beat * beats_per_minute * 4.0 / m_bw;
     uint64_t jack_frame = tick_rate / tpb_bpm;
     jack_transport_locate(m_jack_client,jack_frame);
@@ -712,22 +714,22 @@ jack_assistant::position (bool state, midipulse tick)
 #else   // USE_STAZED_JACK_SUPPORT
 
 void
-jack_assistant::position (bool to_left_tick, bool relocate)
+jack_assistant::position (bool to_left_tick, midipulse tick)
 {
     if (m_jack_running)
     {
-        if (relocate)                           // false by default
+        if (is_null_midipulse(tick))
         {
             /*
              * This seems to be needed to prevent klick from aborting.
              * Otherwise, it has no effect on klick.
              */
 
-            midipulse currenttick = 0;
+            tick = 0;
             if (to_left_tick)
-                currenttick = parent().get_left_tick();
+                tick = parent().get_left_tick();
 
-            set_position(currenttick);          // doesn't quite work
+            set_position(tick);                 // doesn't quite work
         }
         else
         {
@@ -1181,7 +1183,6 @@ jack_assistant::output (jack_scratchpad & pad)
         m_jack_pos.beats_per_bar = m_beats_per_measure;
         m_jack_pos.beat_type = m_beat_width;
         m_jack_pos.ticks_per_beat = m_ppqn * 10;
-//      m_jack_pos.beats_per_minute = parent().master_bus().get_bpm();
         m_jack_pos.beats_per_minute = parent().get_beats_per_minute();
 #else
         /*

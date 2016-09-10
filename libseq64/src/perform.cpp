@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and Tim Deagan
  * \date          2015-07-24
- * \updates       2016-09-09
+ * \updates       2016-09-10
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -118,7 +118,7 @@ midi_control perform::sm_mc_dummy;
 
 perform::perform (gui_assistant & mygui, int ppqn)
  :
-    m_song_start_mode           (rc().song_start_mode()), // m_playback_mode?
+    m_song_start_mode           (false),    // set later during options read
 #ifdef USE_STAZED_JACK_SUPPORT
     m_toggle_jack               (false),
     m_jack_stop_tick            (0),        // ???
@@ -1763,31 +1763,14 @@ perform::copy_triggers ()
 /**
  *  Encapsulates a series of calls used in mainwnd.  We've reversed the
  *  start() and start_jack() calls so that JACK is started first, to match all
- *  of the other use-cases for playing that we've found in the code.
- *  Note that the complementary function, stop_playing(), is an inline
- *  function defined in the header file.
+ *  of the other use-cases for playing that we've found in the code.  Note
+ *  that the complementary function, stop_playing(), is an inline function
+ *  defined in the header file.
  *
- * \note
- *      It would be nice to know why the following code snippet disables the
- *      mute/unmute functionality of the performance/song editor:
- *
-\verbatim
-        position_jack(false);
-        start_jack();
-        start(false);
-\endverbatim
- *
- *      The jack_assistant::position() function doesn't use the boolean
- *      parameter at present; that code is effectively disabled.  Okay, now it
- *      does, if the "relocate" parameter is true.  See
- *      perform::position_jack() and jack_assistant::position().  This
- *      parameter, when true, allows the "klick" application to get proper
- *      position data.
- *
- *      The perform::start() function passes its boolean flag to
- *      perform::inner_start(), which sets the playback mode to that flag; if
- *      that flag is false, that turns off "song" mode.  So that explains why
- *      mute/unmute is disabled.
+ *  The perform::start() function passes its boolean flag to
+ *  perform::inner_start(), which sets the playback mode to that flag; if that
+ *  flag is false, that turns off "song" mode.  So that explains why
+ *  mute/unmute is disabled.
  *
  * \param songmode
  *      Indicates if the caller wants to start the playback in JACK mode.
@@ -1821,7 +1804,7 @@ perform::start_playing (bool songmode)
 
 #ifdef USE_STAZED_TRANSPORT
            if (! m_reposition)
-                m_jack_asst.position(true, m_left_tick);  /* position_jack() */
+                m_jack_asst.position(true, m_left_tick);    /* position_jack() */
 #endif
         }
         start_jack();
@@ -1830,12 +1813,63 @@ perform::start_playing (bool songmode)
     else
     {
         if (is_jack_master())
-            m_jack_asst.position(false, 0);              /* position_jack() */
+            m_jack_asst.position(false, 0);                 /* position_jack() */
 
         start(false);
         start_jack();
     }
 }
+
+#else   // USE_STAZED_JACK_SUPPORT
+
+void
+perform::start_playing (bool songmode)
+{
+    if (songmode)                       /* || m_start_from_perfedit???      */
+    {
+        /*
+         * For cosmetic reasons, to stop transport line flicker on start,
+         * we tell position_jack() to position to the left tick, and tell
+         * start() to use the perfedit rewind.
+         *
+         * Is an "if Master and set_left_frame()" test needed?
+         */
+
+        position_jack(true);            /* m_jack_asst.position(false, 0);  */
+        start_jack();
+        start(true);                    /* causes perfedit rewind           */
+    }
+    else                                /* live mode                        */
+    {
+        /*
+         * For cosmetic reasons, to stop transport line flicker on start.
+         */
+
+        position_jack(false);           // if Master???
+        start(false);                   /* disables perfedit mute control   */
+        start_jack();
+    }
+
+    /*
+     * Let's let the output() function clear this, so that we can use this
+     * flag in that function to control the next tick to play at resume time.
+     *
+     *      m_is_paused = false;
+     *
+     * Shouldn't this be needed as well?  It is set in ALSA mode, but not JACK
+     * mode. But DO NOT call set_running() here in JACK mode, it prevents
+     * Sequencer64 from starting JACK transport!
+     */
+
+    if (! is_jack_running())
+        set_running(true);
+
+    is_pattern_playing(true);
+}
+
+#endif  // USE_STAZED_JACK_SUPPORT
+
+#ifdef USE_STAZED_JACK_SUPPORT
 
 /**
  *  Encapsulates behavior needed by perfedit.
@@ -1871,55 +1905,6 @@ perform::set_jack_mode (bool jack_button_active)
     }
     else
         set_start_tick(get_tick());
-}
-
-#else   // USE_STAZED_JACK_SUPPORT
-
-void
-perform::start_playing (bool songmode)
-{
-    if (songmode)                       // || m_start_from_perfedit???
-    {
-        /*
-         * For cosmetic reasons, to stop transport line flicker on start.
-         * if Master and set_left_frame()?
-         */
-
-        position_jack(true);        // m_jack_asst.position(false, 0);
-        start_jack();
-
-        /*
-         * true for setting song m_playback_mode = true
-         */
-
-        start(true);                    /* causes perfedit rewind           */
-    }
-    else                                /* live mode                        */
-    {
-        /*
-         * For cosmetic reasons, to stop transport line flicker on start.
-         */
-
-        position_jack(false);           // if Master???
-        start(false);                   /* disables perfedit mute control   */
-        start_jack();
-    }
-
-    /*
-     * Let's let the output() function clear this, so that we can use this
-     * flag in that function to control the next tick to play at resume time.
-     *
-     *      m_is_paused = false;
-     *
-     * Shouldn't this be needed as well?  It is set in ALSA mode, but not JACK
-     * mode. But DO NOT call set_running() here in JACK mode, it prevents
-     * Sequencer64 from starting JACK transport!
-     */
-
-    if (! is_jack_running())
-        set_running(true);
-
-    is_pattern_playing(true);
 }
 
 #endif  // USE_STAZED_JACK_SUPPORT
@@ -1980,27 +1965,20 @@ perform::stop_playing ()
  *  If JACK is supported and running, sets the position of the transport.
  */
 
-#ifdef USE_STAZED_JACK_SUPPORT
-
 void
 perform::position_jack (bool state, midipulse tick)
 {
 #ifdef SEQ64_JACK_SUPPORT
+#ifdef USE_STAZED_JACK_SUPPORT
+    m_jack_asst.position(state, tick);
+#else
+    if (rc().with_jack_master())
+        tick = SEQ64_NULL_MIDIPULSE;
+
     m_jack_asst.position(state, tick);
 #endif
-}
-
-#else
-
-void
-perform::position_jack (bool state)
-{
-#ifdef SEQ64_JACK_SUPPORT
-    m_jack_asst.position(state, rc().with_jack_master());
 #endif
 }
-
-#endif
 
 /**
  *  If JACK is not running, call inner_start() with the given state.
@@ -2620,7 +2598,6 @@ perform::output_func ()
 
             if (change_position)
             {
-//              current_tick = m_starting_tick;     // reposition sets this
                 set_orig_ticks(m_starting_tick);
                 m_starting_tick = m_left_tick;      // restart at left marker
 #ifdef USE_STAZED_TRANSPORT
@@ -2666,7 +2643,6 @@ perform::output_func ()
 
                         if (is_jack_running())
                         {
-//                          if (m_jack_transport_state != JackTransportStarting)
                             if (m_jack_asst.transport_state() != JackTransportStarting)
                                 play(rtick - 1);                    // play!
                         }

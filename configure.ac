@@ -6,7 +6,7 @@ dnl \file          configure.ac
 dnl \library       Sequencer64
 dnl \author        Chris Ahlstrom
 dnl \date          2015-09-11
-dnl \update        2016-09-09
+dnl \update        2016-09-10
 dnl \version       $Revision$
 dnl \license       $XPC_SUITE_GPL_LICENSE$
 dnl
@@ -19,7 +19,7 @@ dnl ---------------------------------------------------------------------------
 
 AC_PREREQ(2.60)
 AC_REVISION($Revision: 0.9$)dnl
-AC_INIT(Sequencer64, [0.9.17.1], [ahlstromcj@gmail.com])
+AC_INIT(Sequencer64, [0.9.17.2], [ahlstromcj@gmail.com])
 AC_CONFIG_AUX_DIR([aux-files])
 
 dnl AC_CONFIG_SRCDIR([libseq64/src/midibus.cpp])
@@ -53,7 +53,7 @@ PACKAGE=sequencer64
 AC_DEFINE_UNQUOTED(PACKAGE, "$PACKAGE")
 AC_SUBST(PACKAGE)
 
-VERSION="0.9.17.1"
+VERSION="0.9.17.2"
 AC_DEFINE_UNQUOTED(VERSION, "$VERSION")
 AC_SUBST(VERSION)
 
@@ -528,8 +528,8 @@ dnl #define API_VERSION "0.9"             // defined on command line
 
 AH_TOP(
 
-#define VERSION_DATE_SHORT "2016-09-09"
-#define VERSION "0.9.17.1"
+#define VERSION_DATE_SHORT "2016-09-10"
+#define VERSION "0.9.17.2"
 
 )
 

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-07
- * \updates       2016-07-31
+ * \updates       2016-09-10
  * \license       GNU GPLv2 or above
  *
  *  This code was moved from the globals module so that other modules
@@ -201,15 +201,15 @@ pulses_to_string (midipulse p)
  *
  * \param p
  *      The number of MIDI pulses (clocks, divisions, ticks, you name it) to
- *      be converted.  If the value is SEQ64_ILLEGAL_PULSE, it is converted to
- *      0, because callers don't generally worry about such niceties, and the
- *      least we can do is convert illegal measure-strings (like "000:0:000")
- *      to a legal value.
+ *      be converted.  If the value is SEQ64_NULL_MIDIPULSE, it is converted
+ *      to 0, because callers don't generally worry about such niceties, and
+ *      the least we can do is convert illegal measure-strings (like
+ *      "000:0:000") to a legal value.
  *
  * \param seqparms
  *      This small structure provides the beats/measure, beat-width, and PPQN
  *      that hold for the sequence involved in this calculation.  These values
- *      are needed in the calculations
+ *      are needed in the calculations.
  *
  * \return
  *      Returns the string, in measures notation, for the absolute pulses that
@@ -221,7 +221,7 @@ pulses_to_measurestring (midipulse p, const midi_timing & seqparms)
 {
     midi_measures measures;
     char tmp[32];
-    if (p == SEQ64_ILLEGAL_PULSE)
+    if (is_null_midipulse(p))
         p = 0;                                      /* punt!                */
 
     pulses_to_midi_measures(p, seqparms, measures); /* fill measures struct */
@@ -441,7 +441,7 @@ measurestring_to_pulses
  *
  * \return
  *      Returns the absolute pulses that mark this duration.  If the
- *      pulse-value cannot be calculated, then SEQ64_ILLEGAL_PULSE is
+ *      pulse-value cannot be calculated, then SEQ64_NULL_MIDIPULSE is
  *      returned.
  */
 
@@ -452,7 +452,7 @@ midi_measures_to_pulses
     const midi_timing & seqparms
 )
 {
-    midipulse result = SEQ64_ILLEGAL_PULSE;
+    midipulse result = SEQ64_NULL_MIDIPULSE;
     int m = measures.measures() - 1;                /* true measure count   */
     int b = measures.beats() - 1;
     if (m >= 0 && b >= 0)
@@ -467,7 +467,6 @@ midi_measures_to_pulses
 
         result *= seqparms.ppqn();
         result += measures.divisions();
-
     }
     return result;
 }

@@ -41,7 +41,7 @@
  *      -   Sequence pattern drag and drop.
  *      -   Sequence pattern playback toggling.
  *      -   Menu entry access for each slot.
- *      -   Current-edit highlighting
+ *      -   Current-edit highlighting.
  */
 
 #include "calculations.hpp"             /* seq64::shorten_file_spec()       */
@@ -51,6 +51,10 @@
 #include "mainwid.hpp"                  /* seq64::mainwid (patterns panel)  */
 #include "perform.hpp"                  /* seq64::perform music control     */
 #include "settings.hpp"                 /* seq64::usr()                     */
+
+/*
+ *  We don't document namespaces because it screws up Doxygen.
+ */
 
 namespace seq64
 {
@@ -640,7 +644,7 @@ mainwid::update_markers (int tick)
 /**
  *  Does the actual drawing of one pattern/sequence position marker, a
  *  vertical progress bar.  If the sequence has no events, this function
- *  doesn't bother even drawing a position marker.
+ *  doesn't bother drawing a position marker.
  *
  *  Note that, when Sequencer64 first comes up, and perform::is_dirty_main()
  *  is called, no sequences exist yet.  Also, currently the redraw() is hit

@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-08-14
+ * \updates       2016-09-10
  * \license       GNU GPLv2 or above
  *
  *  Note that there are a number of header files that we don't need to add
@@ -93,7 +93,7 @@ main (int argc, char * argv [])
      * settings were made via the configuration files.
      */
 
-    (void) seq64::parse_command_line_options(argc, argv);
+//  (void) seq64::parse_command_line_options(argc, argv);
 
     /*
      * Set up objects that are specific to the Gtk-2 GUI.  Pass them to
@@ -106,6 +106,7 @@ main (int argc, char * argv [])
 
     seq64::gui_assistant_gtk2 gui;              /* GUI-specific objects     */
     seq64::perform p(gui);                      /* main performance object  */
+    (void) seq64::parse_command_line_options(p, argc, argv);
     bool is_help = seq64::help_check(argc, argv);
     bool ok = true;
     int optionindex = SEQ64_NULL_OPTION_INDEX;
@@ -119,7 +120,7 @@ main (int argc, char * argv [])
 
         ok = seq64::parse_options_files(p, argc, argv);
         if (ok)
-            optionindex = seq64::parse_command_line_options(argc, argv);
+            optionindex = seq64::parse_command_line_options(p, argc, argv);
 
         p.launch(seq64::usr().midi_ppqn());     /* set up performance       */
         if (seq64::usr().inverse_colors())

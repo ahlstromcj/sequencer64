@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-08-24
+ * \updates       2016-09-10
  * \license       GNU GPLv2 or above
  *
  *  This class still has way too many members, even with the JACK and
@@ -1550,12 +1550,7 @@ public:
 #endif
     }
 
-#ifdef USE_STAZED_JACK_SUPPORT
-    void position_jack (bool state, midipulse tick);
-#else
-    void position_jack (bool state);
-#endif
-
+    void position_jack (bool state, midipulse tick = 0);
     void off_sequences ();
     void all_notes_off ();
     void set_active (int seq, bool active);

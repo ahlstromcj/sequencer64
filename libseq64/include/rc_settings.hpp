@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-22
- * \updates       2016-08-20
+ * \updates       2016-09-10
  * \license       GNU GPLv2 or above
  *
  *  This collection of variables describes the options of the application,
@@ -46,6 +46,7 @@
 
 namespace seq64
 {
+    class perform;                      /* forward declaration          */
 
 /**
  *  Provides codes for the mouse-handling used by the application.  Moved
@@ -71,7 +72,7 @@ class rc_settings
     friend class optionsfile;
     friend class options;
     friend class mainwnd;
-    friend int parse_command_line_options (int argc, char * argv []);
+    friend int parse_command_line_options (perform & p, int argc, char * argv []);
     friend bool help_check (int argc, char * argv []);
 
 private:
@@ -93,7 +94,7 @@ private:
     bool m_with_jack_transport;     /**< Enable synchrony with JACK.        */
     bool m_with_jack_master;        /**< Serve as a JACK transport Master.  */
     bool m_with_jack_master_cond;   /**< Serve as JACK Master if possible.  */
-    bool m_song_start_mode;         /**< True is song mode, false is live.  */
+//  bool m_song_start_mode;         /**< True is song mode, false is live.  */
     bool m_filter_by_channel;       /**< Record only sequence channel data. */
     bool m_manual_alsa_ports;       /**< [manual-alsa-ports] setting.       */
     bool m_reveal_alsa_ports;       /**< [reveal-alsa-ports] setting.       */
@@ -287,12 +288,12 @@ public:
 
     /**
      * \getter m_song_start_mode,
-     */
 
     bool song_start_mode () const
     {
         return m_song_start_mode;
     }
+     */
 
     /**
      * \getter m_filter_by_channel
@@ -541,12 +542,12 @@ protected:
 
     /**
      * \setter m_song_start_mode,
-     */
 
     void song_start_mode (bool flag)
     {
         m_song_start_mode = flag;
     }
+     */
 
     /**
      * \setter m_filter_by_channel

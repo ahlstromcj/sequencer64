@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-08-20
+ * \updates       2016-09-10
  * \license       GNU GPLv2 or above
  *
  *  Here is a list of the global variables used/stored/modified by this
@@ -816,7 +816,8 @@ options::add_jack_sync_page ()
 
     Gtk::RadioButton::Group group = rb_live->get_group();
     rb_perform->set_group(group);
-    if (rc().song_start_mode())
+//  if (rc().song_start_mode())
+    if (m_mainperf.song_start_mode())
         rb_perform->set_active(true);
     else
         rb_live->set_active(true);
@@ -1160,7 +1161,7 @@ options::transport_callback (button type, Gtk::Button * acheck)
     case e_jack_start_mode_live:
     case e_jack_start_mode_song:
 
-        rc().song_start_mode(is_active);
+//      rc().song_start_mode(is_active);
         m_mainperf.song_start_mode(is_active);
         break;
 

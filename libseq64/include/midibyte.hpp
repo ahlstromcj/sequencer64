@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-23
- * \updates       2016-06-26
+ * \updates       2016-09-10
  * \license       GNU GPLv2 or above
  *
  *  These typedef specifications are intended to remove the ambiguity we have
@@ -60,13 +60,19 @@
  */
 
 /**
- *  We need an unlike midipulse value that can be used to be indicate a bad,
- *  unusable pulse value.  This value should be modified in the typedef of
+ *  We need a unique midipulse value that can be used to be indicate a bad,
+ *  unusable pulse value.  This value should be modified if the typedef of
  *  midipulse is changed.  For a signed long value, -1 can be used.  For an
- *  unsigned long value, ULONG_MAX is probably best.
+ *  unsigned long value, ULONG_MAX is probably best.  To avoid issues, when
+ *  testing for this value, use the inline function is_null_midipulse().
  */
 
-#define SEQ64_ILLEGAL_PULSE     (-1)
+#define SEQ64_NULL_MIDIPULSE            (-1)        /* ULONG_MAX */
+
+/*
+ *  This namespace is not documented because it screws up the document
+ *  processing done by Doxygen.
+ */
 
 namespace seq64
 {
@@ -352,6 +358,17 @@ public:
     }
 
 };          // class midi_timing
+
+/**
+ *  Compares a midipulse value to SEQ64_NULL_MIDIPULSE.  By "null" in this
+ *  case, we mean "unusable", not 0.  Sigh, it's always something.
+ */
+
+inline bool
+is_null_midipulse (midipulse p)
+{
+    return p == SEQ64_NULL_MIDIPULSE;
+}
 
 }           // namespace seq64
 

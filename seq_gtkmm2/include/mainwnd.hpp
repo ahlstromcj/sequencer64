@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-08-21
+ * \updates       2016-09-10
  * \license       GNU GPLv2 or above
  *
  *  The main window is known as the "Patterns window" or "Patterns
@@ -42,11 +42,14 @@
 #include <gdkmm/cursor.h>
 #include <gtkmm/window.h>
 
-#include "app_limits.h"                 // SEQ64_USE_DEFAULT_PPQN
-#include "gui_window_gtk2.hpp"          // seq64::qui_window_gtk2
-#include "perform.hpp"                  // seq64::perform and performcallback
+#include "seq64_features.h"             /* feature macros for the app   */
+#include "app_limits.h"                 /* SEQ64_USE_DEFAULT_PPQN       */
+#include "gui_window_gtk2.hpp"          /* seq64::qui_window_gtk2       */
+#include "perform.hpp"                  // seq64::perform and callback  */
 
-#define SEQ64_STAZED_EDIT_MENU
+/*
+ *  Easier access to Gtk-2 classes.
+ */
 
 namespace Gtk
 {
@@ -63,6 +66,10 @@ namespace Gtk
     class ToggleButton;
 #endif
 }
+
+/*
+ *  The main namespace for the Sequencer64 libraries.
+ */
 
 namespace seq64
 {
@@ -101,9 +108,7 @@ private:
 
     Gtk::MenuBar * m_menubar;           /**< The whole menu bar.        */
     Gtk::Menu * m_menu_file;            /**< The File menu entry.       */
-#ifdef SEQ64_STAZED_EDIT_MENU
     Gtk::Menu * m_menu_edit;            /**< The (new) Edit menu entry. */
-#endif
     Gtk::Menu * m_menu_view;            /**< The View menu entry.       */
     Gtk::Menu * m_menu_help;            /**< The Help menu entry.       */
 

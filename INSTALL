@@ -1,6 +1,6 @@
-INSTALL for Sequencer64 v. 0.9.17.1
+INSTALL for Sequencer64 v. 0.9.17.2
 Chris Ahlstrom
-2015-09-10 to 2016-09-09
+2015-09-10 to 2016-09-10
 
 The current packaging for Sequencer64 is primarily aimed at developers.
 There is currently no configure script... it must be bootstrapped.
@@ -236,14 +236,15 @@ MANUALLY-DEFINED MACROS IN CODE:
 
         Enables suppport for exporting a Sequencer64 song with performance
         (Song Editor) data as a standard MIDI file (format 1).  Enabled in the
-        code (midifile.hpp).  Requires SEQ64_STAZED_EDIT_MENU to be defined
-        in order to access this feature.
+        code (midifile.hpp).
 
     SEQ64_STAZED_EDIT_MENU:
 
         Enables a new Edit menu, used for accessing features such as
         whole-song transposition and exporting performances to normal MIDI
         files.
+
+        Obsolete:  Now a permanent, unmacroed feature.
 
     SEQ64_USE_DEBUG_OUTPUT:
 

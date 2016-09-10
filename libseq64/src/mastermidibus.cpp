@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-30
- * \updates       2016-08-24
+ * \updates       2016-09-10
  * \license       GNU GPLv2 or above
  *
  *  This file provides a Linux-only implementation of MIDI support.
@@ -1090,7 +1090,6 @@ mastermidibus::get_midi_event (event * inev)
 
     inev->set_timestamp(ev->time.tick);
     inev->set_status_keep_channel(buffer[0]);
-//  inev->set_sysex_size(bytes);
 
     /**
      *  We will only get EVENT_SYSEX on the first packet of MIDI data;

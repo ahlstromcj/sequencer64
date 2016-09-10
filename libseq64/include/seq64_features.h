@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2016-08-19
- * \updates       2016-08-24
+ * \updates       2016-09-10
  * \license       GNU GPLv2 or above
  *
  *    Some options (the "USE_xxx" options) specify experimental and
@@ -61,8 +61,6 @@
  */
 
 /*
- *  TEMPORARILY defined.
- *
  *  Adds a seqedit menu option to expand a pattern/sequence by doubling it, or
  *  to compress a pattern/sequence by halving it.  These operations are
  *  accomplished by the sequence::multiply_patten() function.
@@ -71,8 +69,6 @@
 #undef  USE_STAZED_COMPANDING
 
 /*
- *  TEMPORARILY defined.
- *
  *  Adds: (1) skipping some bars in drawing the grid in perftime, to allow for
  *  in-tight zoom levels; (2) setting and grabbing the focus in seqedit if the
  *  sequence has been given a name (and thus presumably been edited).
@@ -81,8 +77,6 @@
 #undef  USE_STAZED_EXTRAS
 
 /*
- *  TEMPORARILY defined.
- *
  *  If defined, adds some extra snap values to the perfedit snap menu.
  *  We suspect there's a more elegant way to handle getting snap to handle
  *  varying zoom values and things like triplets, but we want to make sure
@@ -92,8 +86,6 @@
 #undef  USE_STAZED_EXTRA_SNAPS
 
 /*
- *  TEMPORARILY defined.
- *
  *  Modifies the handling of seqedit::record_change_callback() and
  *  seqedit::thru_change_callback().
  */
@@ -101,8 +93,6 @@
 #undef  USE_STAZED_FIX
 
 /*
- *  TEMPORARILY defined, will need testing.
- *
  *  Adds more SYSEX processing, plus the ability to read SYSEX information
  *  from a file.
  */
@@ -110,8 +100,6 @@
 #undef  USE_SYSEX_PROCESSING            /* disabled in Seq24 as well        */
 
 /*
- *  TEMPORARILY defined
- *
  *  This is a big one, bringing in some massive changes to how JACK is
  *  handled.  It looks good, but it is complex enough that we'll leave this
  *  until about last to officially activate; it will need a lot of testing,
@@ -122,8 +110,6 @@
 #undef  USE_STAZED_JACK_SUPPORT
 
 /*
- *  TEMPORARILY defined
- *
  *  Enables using the lfownd dialog to control the envelope of certain events
  *  in seqedit's seqdata pane.  We're not too keen on the user interface,
  *  though.
@@ -132,25 +118,19 @@
 #undef  USE_STAZED_LFO_SUPPORT
 
 /*
- *  TEMPORARILY defined
- *
  *  Adds a button to disable the main menu in the main window.
  */
 
 #undef  USE_STAZED_MENU_MODE_BUTTON
 
 /*
- *  TEMPORARILY defined
- *
  *  Adds a button to set the Song (versus Live) mode from  the main menu in
  *  the main window.
  */
 
-#undef  USE_STAZED_SONG_MODE_BUTTON
+#define USE_STAZED_SONG_MODE_BUTTON
 
 /*
- *  TEMPORARILY defined
- *
  *  In the perform object, replaces a direct call to sequence::stream_event()
  *  with a call to mastermidibus::dump_midi_input(), which then is supposed to
  *  allocate the event to the sequence that has a matching channel.
@@ -163,54 +143,48 @@
 #undef  USE_STAZED_MIDI_DUMP
 
 /*
- *  TEMPORARILY defined
- *
  *  Adds the ability to select odd/even notes in seqedit.
  */
 
 #undef  USE_STAZED_ODD_EVEN_SELECTION
 
 /*
- *  TEMPORARILY defined
+ *  Not yet defined.
  */
 
 #undef  USE_STAZED_SELECTION_EXTENSIONS
 
 /*
- *  TEMPORARILY defined
+ *  Not yet defined.
  */
 
 #undef  USE_STAZED_PLAYING_CONTROL
 
 /*
- *  TEMPORARILY defined
+ *  Not yet defined.
  */
 
 #undef  USE_STAZED_RANDOMIZE_SUPPORT
 
 /*
- *  TEMPORARILY defined
+ *  Not yet defined.
  */
 
 #undef  USE_STAZED_SEQDATA_EXTENSIONS
 
 /*
- *  TEMPORARILY defined
+ *  Not yet defined.
  */
 
 #undef  USE_STAZED_SHIFT_SUPPORT
 
 /*
- *  TEMPORARILY defined
- *  
  *  Adds support for various transport features, more to come.
  */
 
-#undef  USE_STAZED_TRANSPORT
+#define USE_STAZED_TRANSPORT                ///////////////////
 
 /*
- *  TEMPORARILY defined
- *  
  *  Stazed implementation of auto-scroll.
  */
 
@@ -315,10 +289,10 @@
 
 /**
  *  Provides additional sequence menu entries from Seq32 that we think are
- *  pretty useful no matter what.
+ *  pretty useful no matter what.  Now a permanent option.
+ *
+ *  #define SEQ64_STAZED_EDIT_MENU
  */
-
-#define SEQ64_STAZED_EDIT_MENU
 
 /**
  *  A color option.

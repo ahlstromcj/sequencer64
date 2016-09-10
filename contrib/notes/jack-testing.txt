@@ -1,6 +1,46 @@
 User Testing of JACK in Sequencer64
 Chris Ahlstrom
-2016-01-16 to 2016-09-09
+2016-01-16 to 2016-09-10
+
+===========================================================================
+ RECENT NEW BEHAVIOR
+===========================================================================
+
+On our Debian Sid dev laptop, running Sequencer64 in JACK mode with JACK
+not running would cause a notable delay, then a fallback to ALSA.  Now
+(2016-09-10), we see the following behavior:
+
+	Cannot connect to server socket err = No such file or directory
+	Cannot connect to server request channel
+	jackdmp 1.9.11
+	Copyright 2001-2005 Paul Davis and others.
+	Copyright 2004-2014 Grame.
+	jackdmp comes with ABSOLUTELY NO WARRANTY
+	This is free software, and you are welcome to redistribute it
+	under certain conditions; see the file COPYING for details
+	JACK server starting in realtime mode with priority 10
+	self-connect-mode is "Don't restrict self connect requests"
+	audio_reservation_init
+	Acquire audio card Audio1
+	creating alsa driver ... hw:PCH|hw:PCH|1024|3|48000|0|0|nomon|swmeter|-|32bit
+	configuring for 48000Hz, period = 1024 frames (21.3 ms), buffer = 3 periods
+	ALSA: final selected sample format for capture: 32bit integer little-endian
+	ALSA: use 3 periods for capture
+	ALSA: final selected sample format for playback: 32bit integer little-endian
+	ALSA: use 3 periods for playback
+	[JACK server started now]
+	[JackServerStarted, JACK started by this operation, not running already]
+	[sequencer64:0]
+	[JACK transport master]
+	[JACK sync now enabled]
+	JackTemporaryException : now quits...
+	Jack main caught signal 2
+	[JACK sync disabled]
+	[Writing rc configuration /home/ahlstrom/.config/sequencer64/sequencer64.rc]
+	Released audio card Audio1
+	audio_reservation_finish
+
+Why this all of a sudden?
 
 ===========================================================================
  SETTINGS TESTS

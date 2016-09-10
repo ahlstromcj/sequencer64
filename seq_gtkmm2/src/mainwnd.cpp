@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-08-24
+ * \updates       2016-09-10
  * \license       GNU GPLv2 or above
  *
  *  The main window holds the menu and the main controls of the application,
@@ -105,7 +105,22 @@
 #include "pixmaps/sequencer64_square_small.xpm" // sequencer64_square.xpm
 #include "pixmaps/sequencer64_legacy.xpm"
 
+/**
+ *  Provides the value of padding, in pixels, to use for the top horizontal
+ *  box containing the Sequencer64 label and some extra buttons.
+ */
+
+#define HBOX_PADDING        10
+
+/*
+ * Access some menu elements more easily.
+ */
+
 using namespace Gtk::Menu_Helpers;      /* MenuElem, etc.                */
+
+/*
+ *  All library code for this project is in the "seq64" namespace.
+ */
 
 namespace seq64
 {
@@ -146,9 +161,7 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
     m_tooltips              (manage(new Gtk::Tooltips())),  /* valgrind bitches */
     m_menubar               (manage(new Gtk::MenuBar())),
     m_menu_file             (manage(new Gtk::Menu())),
-#ifdef SEQ64_STAZED_EDIT_MENU
     m_menu_edit             (manage(new Gtk::Menu())),
-#endif
     m_menu_view             (manage(new Gtk::Menu())),
     m_menu_help             (manage(new Gtk::Menu())),
     m_ppqn                  (choose_ppqn(ppqn)),
@@ -164,7 +177,7 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
     m_button_play           (manage(new Gtk::Button())),
     m_button_perfedit       (manage(new Gtk::Button())),
 #ifdef USE_STAZED_SONG_MODE_BUTTON
-    m_button_mode           (manage(new Gtk::ToggleButton("Song Mode"))),
+    m_button_mode           (manage(new Gtk::ToggleButton("Live"))),
 #endif
 #ifdef USE_STAZED_MENU_MODE_BUTTON
     m_button_menu           (manage(new Gtk::ToggleButton("Menu"))),
@@ -212,9 +225,7 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
     perf().enregister(this);                        /* register for notify  */
     update_window_title();                          /* main window          */
     m_menubar->items().push_front(MenuElem("_File", *m_menu_file));
-#ifdef SEQ64_STAZED_EDIT_MENU
     m_menubar->items().push_back(MenuElem("_Edit", *m_menu_edit));
-#endif
     m_menubar->items().push_back(MenuElem("_View", *m_menu_view));
     m_menubar->items().push_back(MenuElem("_Help", *m_menu_help));
 
@@ -288,8 +299,6 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
         )
     );
 
-#ifdef SEQ64_STAZED_EDIT_MENU
-
     /**
      * Edit menu items and their hot keys.
      */
@@ -361,8 +370,6 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
 
 #endif
 
-#endif  // SEQ64_STAZED_EDIT_MENU
-
     /**
      * View menu items and their hot keys.  It repeats the song editor edit
      * command, just to help those whose muscle memory is already
@@ -413,7 +420,10 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
     const char ** bitmap = rc().legacy_format() ?
         sequencer64_legacy_xpm : sequencer64_square_small_xpm ;
 
-    tophbox->pack_start(*manage(new PIXBUF_IMAGE(bitmap)), false, false);
+    tophbox->pack_start
+    (
+        *manage(new PIXBUF_IMAGE(bitmap)), false, false, HBOX_PADDING
+    );
 
 #ifdef USE_STAZED_SONG_MODE_BUTTON
 
@@ -422,11 +432,16 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
     (
         sigc::mem_fun(*this, &mainwnd::set_song_mode)
     );
-    add_tooltip( m_button_mode, "Toggle song mode (or live/sequence mode)." );
-    if (perf().song_start_mode())
-    {
-        m_button_mode->set_active(true);
-    }
+    add_tooltip
+    (
+        m_button_mode,
+        "Toggle song mode vs live mode).  If this button is "
+        "active, Sequencer64 is in song mode, and follows the performance "
+        "layout. The button label also reflects the current mode.  If playback "
+        "is started from the Song Editor, then this setting is ignored, and "
+        "song mode is used."
+    );
+    m_button_mode->set_active(perf().song_start_mode()); /* set_song_mode() */
     tophbox->pack_start(*m_button_mode, false, false);
 
 #endif
@@ -454,12 +469,11 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
 
     /* Adjust placement of the logo. */
 
-    Gtk::VBox * vbox_b = manage(new Gtk::VBox());
-    Gtk::HBox * hbox3 = manage(new Gtk::HBox(false, 0));
+    Gtk::VBox * vbox_b = manage(new Gtk::VBox(true, 20));
+    Gtk::HBox * hbox3 = manage(new Gtk::HBox(false, 10));
     vbox_b->pack_start(*hbox3, false, false);
     tophbox->pack_end(*vbox_b, false, false);
-    hbox3->set_spacing(10);
-    hbox3->pack_start(*m_main_time, false, false);  /* timeline          */
+    hbox3->pack_start(*m_main_time, false, false);  /* pill timeline    */
 
     m_button_learn->set_focus_on_click(false);
     m_button_learn->set_flags(m_button_learn->get_flags() & ~Gtk::CAN_FOCUS);
@@ -677,14 +691,20 @@ mainwnd::~mainwnd ()
 void
 mainwnd::set_song_mode ()
 {
-    perf().song_start_mode(m_button_mode->get_active());
+    bool is_active = m_button_mode->get_active();
+    std::string label = is_active ? "Song" : "Live";
+    perf().song_start_mode(is_active);
+
+    Gtk::Label * lblptr(dynamic_cast<Gtk::Label *>(m_button_mode->get_child()));
+    if (not_nullptr(lblptr))
+        lblptr->set_text(label);
 }
 
 /**
  *  Toggles the song mode.  Note that calling this function will trigger the
- *  button signal callback.  It only operates if the patterns are not
- *  playing.  This function must be in the cpp module, where the button
- *  header file is included.
+ *  button signal callback, set_song_mode().  It only operates if the patterns
+ *  are not playing.  This function must be in the cpp module, where the
+ *  button header file is included.
  */
 
 void
@@ -1522,9 +1542,9 @@ mainwnd::start_playing ()               /* Play!            */
 #else
 
 #ifdef SEQ64_PAUSE_SUPPORT
-    perf().pause_key();                 /* perf().start_key() */
+    perf().pause_key(perf().song_start_mode());     /* perf().start_key() */
 #else
-    perf().start_playing();             /* legacy behavior  */
+    perf().start_playing(perf().song_start_mode()); /* legacyish behavior */
 #endif
 
 #endif
@@ -1601,9 +1621,12 @@ mainwnd::toggle_playing ()
     else
     {
 #ifdef SEQ64_PAUSE_SUPPORT
-        (void) perf().playback_key_event(perf().keys().start());
+        (void) perf().playback_key_event
+        (
+            perf().keys().start(), perf().song_start_mode()     // NEW arg
+        );
 #else
-        perf().start_playing();
+        perf().start_playing(perf().song_start_mode());         // NEW arg
 #endif
     }
 }
@@ -1663,7 +1686,12 @@ bool
 mainwnd::on_key_press_event (GdkEventKey * ev)
 {
     bool result = false;
-    Gtk::Window::on_key_press_event(ev);
+
+    /*
+     * We need to do this near the end of this function:
+     * Gtk::Window::on_key_press_event(ev);
+     */
+
     if (CAST_EQUIVALENT(ev->type, SEQ64_KEY_PRESS))
     {
         keystroke k(ev->keyval, SEQ64_KEYSTROKE_PRESS);
@@ -1772,8 +1800,7 @@ mainwnd::on_key_press_event (GdkEventKey * ev)
                 perf().unset_mode_group_learn();
             }
         }
-
-        if (! perf().playback_key_event(k))
+        if (! perf().playback_key_event(k, perf().song_start_mode()))
         {
             /*
              *  Toggle the sequence mute/unmute setting using keyboard keys.
@@ -1842,6 +1869,7 @@ mainwnd::on_key_press_event (GdkEventKey * ev)
             }
         }
     }
+    (void) Gtk::Window::on_key_press_event(ev);
     return result;
 }
 

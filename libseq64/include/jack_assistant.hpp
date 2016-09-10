@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-07-23
- * \updates       2016-08-20
+ * \updates       2016-09-10
  * \license       GNU GPLv2 or above
  *
  *  This class contains a number of functions that used to reside in the
@@ -463,16 +463,7 @@ public:
     void start ();                      // start_jack();
     void stop ();                       // stop();
 
-#ifdef USE_STAZED_JACK_SUPPORT
-    void position (bool state, midipulse tick);
-#else
-    void position                       // position_jack();
-    (
-        bool to_left_tick,              // instead of current tick
-        bool relocate = false           // enable "dead code"
-    );
-#endif
-
+    void position (bool state, midipulse tick = 0);
     bool output (jack_scratchpad & pad);
 
     /**

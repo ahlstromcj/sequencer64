@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-08-17
+ * \updates       2016-09-10
  * \license       GNU GPLv2 or above
  *
  *  The <code> ~/.seq24rc </code> or <code> ~/.config/sequencer64/sequencer64.rc
@@ -182,7 +182,6 @@ optionsfile::error_message (const std::string & sectionname)
  *
  *  [manual-alsa-ports]
  *
- *  This section covers....
  *  Set to 1 if you want seq24 to create its own ALSA ports and not
  *  connect to other clients.
  *
@@ -348,13 +347,12 @@ optionsfile::parse (perform & p)
         return error_message("keyboard-control");
 
     /*
-     * Bug involving the optionsfile and perform modules:  At the
-     * 4th or 5th line of data in the "rc" file, setting this key event
-     * results in the size remaining at 4, so the final size is 31.
-     * This bug is present even in seq24 r.0.9.2, and occurs only if the
-     * Keyboard options are actually edited.  Also, the size of the
-     * reverse container is constant at 32.  Clearing the latter container
-     * as well appears to fix both bugs.
+     * Bug involving the optionsfile and perform modules:  At the 4th or 5th
+     * line of data in the "rc" file, setting this key event results in the
+     * size remaining at 4, so the final size is 31.  This bug is present even
+     * in seq24 r.0.9.2, and occurs only if the Keyboard options are actually
+     * edited.  Also, the size of the reverse container is constant at 32.
+     * Clearing the latter container as well appears to fix both bugs.
      */
 
     p.get_key_events().clear();
@@ -497,7 +495,7 @@ optionsfile::parse (perform & p)
 
     next_data_line(file);
     sscanf(m_line, "%ld", &flag);
-    rc().song_start_mode(bool(flag));
+    p.song_start_mode(bool(flag));
 
     line_after(file, "[midi-input]");
     buses = 0;
@@ -545,7 +543,6 @@ optionsfile::parse (perform & p)
     line_after(file, "[interaction-method]");
     sscanf(m_line, "%ld", &method);
     rc().interaction_method(interaction_method_t(method));
-
     if (! rc().legacy_format())
     {
         if (next_data_line(file))                   /* a new option */
@@ -892,7 +889,7 @@ optionsfile::write (const perform & p)
         ++x;
     }
     file
-        << "\n" << rc().interaction_method() << "\n\n"
+        << "\n" << rc().interaction_method() << "   # interaction_method\n\n"
         ;
 
     file
@@ -901,7 +898,7 @@ optionsfile::write (const perform & p)
            "# Windows) key.\n"
            "\n"
         << (rc().allow_mod4_mode() ? "1" : "0")     // @new 2015-08-28
-        << "\n\n"
+        << "   # allow_mod4_mode\n\n"
         ;
 
     file
@@ -911,7 +908,7 @@ optionsfile::write (const perform & p)
            "# activated by a middle click.\n"
            "\n"
         << (rc().allow_snap_split() ? "1" : "0")    // @new 2016-08-17
-        << "\n"
+        << "   # allow_snap_split\n"
         ;
 
     size_t kevsize = ucperf.get_key_events().size() < size_t(c_seqs_in_set) ?
@@ -1057,15 +1054,15 @@ optionsfile::write (const perform & p)
     file
         << "\n[jack-transport]\n\n"
         "# jack_transport - Enable slave synchronization with JACK Transport.\n\n"
-        << rc().with_jack_transport() << "\n\n"
+        << rc().with_jack_transport() << "   # jack_transport\n\n"
         "# jack_master - Sequencer64 attempts to serve as JACK Master.\n"
         "# Also must enable jack_transport (the user interface forces this,\n"
         "# and also disables jack_master_cond).\n\n"
-        << rc().with_jack_master() << "\n\n"
+        << rc().with_jack_master() << "   # jack_master\n\n"
         "# jack_master_cond - Sequencer64 is JACK master if no other JACK\n"
         "# master exists. Also must enable jack_transport (the user interface\n"
         "# forces this, and disables jack_master).\n\n"
-        << rc().with_jack_master_cond()  << "\n\n"
+        << rc().with_jack_master_cond()  << "   # jack_master_cond\n\n"
         "# song_start_mode (applies only if JACK is enabled).\n\n"
         "# 0 = Playback in live mode. Allows muting and unmuting of loops.\n"
         "#     from the main (patterns) window.  Disables both manual and\n"
@@ -1073,7 +1070,7 @@ optionsfile::write (const perform & p)
         "# 1 = Playback uses the song (performance) editor's data and mute\n"
         "#     controls, regardless of which window was used to start the\n"
         "#     playback.\n\n"
-        << rc().song_start_mode() << "\n"
+        << p.song_start_mode() << "   # song_start_mode\n"
         ;
 
     /*

@@ -9,7 +9,7 @@
  *
  * \author  Chris Ahlstrom
  * \date    2015-11-20
- * \updates 2016-06-21
+ * \updates 2016-09-10
  * \version $Revision$
  *
  *    Also see the file_functions.cpp module.  These modules together simplify
@@ -28,7 +28,7 @@
 
 namespace seq64
 {
-    class perform;                          /* forward reference */
+    class perform;                      /* forward reference */
 
 /*
  * Global function declarations.
@@ -36,7 +36,7 @@ namespace seq64
 
 extern bool help_check (int argc, char * argv []);
 extern bool parse_options_files (perform & p, int argc, char * argv []);
-extern int parse_command_line_options (int argc, char * argv []);
+extern int parse_command_line_options (perform & p, int argc, char * argv []);
 extern bool write_options_files (const perform & p);
 extern std::string build_details ();
 

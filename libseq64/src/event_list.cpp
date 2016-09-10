@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-19
- * \updates       2016-07-27
+ * \updates       2016-09-10
  * \license       GNU GPLv2 or above
  *
  */
@@ -262,9 +262,6 @@ event_list::add (const event & e)
 void
 event_list::merge (event_list & el, bool /*presort*/ )
 {
-//  if (presort)
-//      el.sort();
-
     int initialsize = count();
     int addedsize = el.count();
     m_events.insert(el.events().begin(), el.events().end());

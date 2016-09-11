@@ -70,7 +70,7 @@ keys_perform::keys_perform ()
 #ifdef SEQ64_PAUSE_SUPPORT
     m_key_pause                     (SEQ64_period),
 #endif
-#ifdef USE_STAZED_TRANSPORT
+#ifdef SEQ64_STAZED_TRANSPORT
     m_key_song_mode                 (SEQ64_F1),
     m_key_toggle_jack               (SEQ64_F2),
     m_key_menu_mode                 (SEQ64_F3),
@@ -147,7 +147,7 @@ keys_perform::set_keys (const keys_perform_transfer & kpt)
 #ifdef SEQ64_PAUSE_SUPPORT
     m_key_pause                     = kpt.kpt_pause;
 #endif
-#ifdef USE_STAZED_TRANSPORT
+#ifdef SEQ64_STAZED_TRANSPORT
     m_key_song_mode                 = kpt.kpt_song_mode;
     m_key_toggle_jack               = kpt.kpt_toggle_jack;
     m_key_menu_mode                 = kpt.kpt_menu_mode;
@@ -191,7 +191,7 @@ keys_perform::get_keys (keys_perform_transfer & kpt)
 #ifdef SEQ64_PAUSE_SUPPORT
      kpt.kpt_pause                   = m_key_pause;
 #endif
-#ifdef USE_STAZED_TRANSPORT
+#ifdef SEQ64_STAZED_TRANSPORT
     m_key_song_mode                  = kpt.kpt_song_mode;
     m_key_toggle_jack                = kpt.kpt_toggle_jack;
     m_key_menu_mode                  = kpt.kpt_menu_mode;
@@ -358,7 +358,7 @@ keyval_normalize (keys_perform_transfer & k)
         k.kpt_event_edit = '.';
 #endif
 
-#ifdef USE_STAZED_TRANSPORT
+#ifdef SEQ64_STAZED_TRANSPORT
     if (k.kpt_song_mode == 0 || k.kpt_song_mode > 65536)
         k.kpt_song_mode = SEQ64_F1;
 

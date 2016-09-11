@@ -216,7 +216,7 @@ jack_assistant::~jack_assistant ()
      */
 }
 
-#ifdef USE_STAZED_TRANSPORT
+#ifdef SEQ64_STAZED_TRANSPORT
 
 /**
  * \getter parent().toggle_song_start_mode()
@@ -702,7 +702,7 @@ jack_assistant::position (bool state, midipulse tick)
     long tpb_bpm = ticks_per_beat * beats_per_minute * 4.0 / m_bw;
     uint64_t jack_frame = tick_rate / tpb_bpm;
     jack_transport_locate(m_jack_client,jack_frame);
-#ifdef USE_STAZED_TRANSPORT
+#ifdef SEQ64_STAZED_TRANSPORT
     if (parent().is_running())
         parent().set_reposition(false);
 #endif
@@ -963,7 +963,7 @@ jack_process_callback (jack_nframes_t /* nframes */, void * arg)
             {
                 j->m_jack_transport_state_last = JackTransportStarting;
 
-#ifdef USE_STAZED_TRANSPORT
+#ifdef SEQ64_STAZED_TRANSPORT
                 if (p.start_from_perfedit())
                     p.inner_start(true);
                 else
@@ -976,7 +976,7 @@ jack_process_callback (jack_nframes_t /* nframes */, void * arg)
                 long diff = tick - j->get_jack_stop_tick();
                 if (diff != 0)
                 {
-#ifdef USE_STAZED_TRANSPORT
+#ifdef SEQ64_STAZED_TRANSPORT
                     p.set_reposition();         // a perform option
 #endif
                     p.set_start_tick(tick);     // p.set_starting_tick(tick);

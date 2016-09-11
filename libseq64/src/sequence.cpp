@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-09-10
+ * \updates       2016-09-11
  * \license       GNU GPLv2 or above
  *
  *  The functionality of this class also includes handling some of the
@@ -4647,8 +4647,6 @@ sequence::set_parent (perform * p)
         m_parent = p;
 }
 
-#ifdef USE_THIS_COOL_FUNCTION
-
 /**
  *  Provides encapsulation for a series of called used in perform::play().
  *  Just an idea to considered for the future.
@@ -4657,6 +4655,8 @@ sequence::set_parent (perform * p)
  *  sequence dump its events.  It ignores the sequence if it has no playable
  *  MIDI events.
  *
+ * \param playbackmode
+ *      Indicates if the playback is in live mode (false) or song mode (true).
  */
 
 void
@@ -4666,14 +4666,12 @@ sequence::play_queue (midipulse tick, bool playbackmode)
     {
         if (check_queued_tick(tick))
         {
-            play(s->get_queued_tick() - 1, playbackmode);
+            play(get_queued_tick() - 1, playbackmode);
             toggle_playing();
         }
         play(tick, playbackmode);
     }
 }
-
-#endif  // USE_THIS_COOL_FUNCTION
 
 }           // namespace seq64
 

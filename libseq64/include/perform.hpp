@@ -222,7 +222,7 @@ private:
 
 #endif
 
-#ifdef USE_STAZED_TRANSPORT
+#ifdef SEQ64_STAZED_TRANSPORT
 
     /**
      *  TBD.
@@ -254,7 +254,7 @@ private:
 
     ff_rw_button_t m_FF_RW_button_type;   // was extern int in perfedit
 
-#endif  // USE_STAZED_TRANSPORT
+#endif  // SEQ64_STAZED_TRANSPORT
 
     /**
      *  Support for a wide range of GUI-related operations.
@@ -1183,7 +1183,7 @@ public:
 
 #endif
 
-#ifdef USE_STAZED_TRANSPORT
+#ifdef SEQ64_STAZED_TRANSPORT
 
     void FF_rewind ();
 
@@ -1249,7 +1249,7 @@ public:
 
     void reposition (midipulse tick);
 
-#endif  // USE_STAZED_TRANSPORT
+#endif  // SEQ64_STAZED_TRANSPORT
 
 public:
 

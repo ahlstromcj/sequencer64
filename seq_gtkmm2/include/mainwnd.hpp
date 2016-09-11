@@ -62,7 +62,7 @@ namespace Gtk
     class SpinButton;
     class Tooltips;
 
-#if defined USE_STAZED_SONG_MODE_BUTTON || defined USE_STAZED_MENU_MODE_BUTTON
+#if defined SEQ64_STAZED_SONG_MODE_BUTTON || defined USE_STAZED_MENU_MODE_BUTTON
     class ToggleButton;
 #endif
 }
@@ -196,7 +196,7 @@ private:
 
     Gtk::Button * m_button_perfedit;
 
-#ifdef USE_STAZED_SONG_MODE_BUTTON
+#ifdef SEQ64_STAZED_SONG_MODE_BUTTON
     Gtk::ToggleButton * m_button_mode;
 #endif
 
@@ -352,7 +352,7 @@ private:
     void apply_song_transpose ();
 #endif
 
-#ifdef USE_STAZED_SONG_MODE_BUTTON
+#ifdef SEQ64_STAZED_SONG_MODE_BUTTON
     void set_song_mode ();
     void toggle_song_mode();
 #endif

@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and Tim Deagan
  * \date          2015-07-24
- * \updates       2016-09-10
+ * \updates       2016-09-11
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -123,12 +123,10 @@ perform::perform (gui_assistant & mygui, int ppqn)
     m_toggle_jack               (false),
     m_jack_stop_tick            (0),        // ???
 #endif
-#ifdef USE_STAZED_TRANSPORT
+#ifdef SEQ64_STAZED_TRANSPORT
     m_follow_transport          (true),
     m_start_from_perfedit       (false),
-#ifdef USE_STAZED_TRANSPORT
     m_reposition                (false),
-#endif
     m_excell_FF_RW              (1.0),
     m_FF_RW_button_type         (FF_RW_NONE),
 #endif
@@ -699,7 +697,7 @@ perform::set_left_tick (midipulse tick, bool setstart)
     else if (! is_jack_running())
         m_tick = tick;
 
-#ifdef USE_STAZED_TRANSPORT
+#ifdef SEQ64_STAZED_TRANSPORT
     m_reposition = false;
 #endif
 
@@ -744,7 +742,7 @@ perform::set_right_tick (midipulse tick, bool setstart)
                 else
                     m_tick = m_left_tick;
 
-#ifdef USE_STAZED_TRANSPORT
+#ifdef SEQ64_STAZED_TRANSPORT
                 m_reposition = false;
 #endif
             }
@@ -1435,6 +1433,8 @@ perform::set_screenset (int ss)
 #ifdef SEQ64_USE_AUTO_SCREENSET_QUEUE
 
 /**
+ *  EXPERIMENTAL.
+ *
  *  If the flag is true:
  *
  *      -#  Mute all tracks in order to start from a known status for all
@@ -1452,13 +1452,14 @@ perform::set_auto_screenset (bool flag)
     }
     else
     {
-        mute_all_tracks();
+        mute_all_tracks(false);             // the default is true !!!!
     }
     m_auto_screenset_queue = flag;
 }
 
 /**
  *  EXPERIMENTAL.
+ *
  *  Queues all of the sequences in the given screen-set.  Doesn't work, even
  *  after a lot of hacking on it, so disabled for now.
  *
@@ -1538,7 +1539,7 @@ perform::set_playing_screenset ()
  *  sequences that have no playable MIDI events.
  *
  *  Note how often the "s" (sequence) pointer is used.  Is it worth
- *  offloading all these calls to a new sequence function?
+ *  offloading all these calls to a new sequence function?  Yes.
  *
  * \param tick
  *      Provides the tick at which to start playing.
@@ -1552,9 +1553,8 @@ perform::play (midipulse tick)
     {
         if (is_active(i))
         {
-#ifdef USE_THIS_COOL_FUNCTION
             m_seqs[i]->play_queue(tick, m_playback_mode);
-#else
+#if 0
             sequence * s = m_seqs[i];
             if (s->event_count() > 0)               /* playable events? */
             {
@@ -1788,7 +1788,7 @@ perform::copy_triggers ()
 void
 perform::start_playing (bool songmode)
 {
-#ifdef USE_STAZED_TRANSPORT
+#ifdef SEQ64_STAZED_TRANSPORT
     if (songmode || m_start_from_perfedit)
 #else
     if (songmode)
@@ -1802,7 +1802,7 @@ perform::start_playing (bool songmode)
             * tick.
             */
 
-#ifdef USE_STAZED_TRANSPORT
+#ifdef SEQ64_STAZED_TRANSPORT
            if (! m_reposition)
                 m_jack_asst.position(true, m_left_tick);    /* position_jack() */
 #endif
@@ -1898,7 +1898,7 @@ perform::set_jack_mode (bool jack_button_active)
 
     if (song_start_mode())
     {
-#ifdef USE_STAZED_TRANSPORT
+#ifdef SEQ64_STAZED_TRANSPORT
         set_reposition(false);
 #endif
         set_start_tick(get_left_tick());
@@ -2097,7 +2097,7 @@ void
 perform::inner_stop (bool midiclock)
 {
 #ifdef USE_STAZED_JACK_SUPPORT
-#ifdef USE_STAZED_TRANSPORT
+#ifdef SEQ64_STAZED_TRANSPORT
     start_from_perfedit(false);
 #endif
     set_running(false);                 // rc().global_is_running() = false;
@@ -2304,8 +2304,12 @@ output_thread_func (void * myperf)
 {
     perform * p = (perform *) myperf;
 
-#ifndef PLATFORM_WINDOWS                /* Not in MinGW RCB */
-    if (rc().priority())
+#ifdef PLATFORM_WINDOWS
+    timeBeginPeriod(1);
+    p->output_func();
+    timeEndPeriod(1);
+#else
+    if (rc().priority())                        /* Not in MinGW RCB */
     {
         struct sched_param schp;
         memset(&schp, 0, sizeof(sched_param));
@@ -2320,16 +2324,9 @@ output_thread_func (void * myperf)
             pthread_exit(0);
         }
     }
-#endif
-
-
-#ifdef PLATFORM_WINDOWS
-    timeBeginPeriod(1);
-    p->output_func();
-    timeEndPeriod(1);
-#else
     p->output_func();
 #endif
+
     return nullptr;
 }
 
@@ -2591,7 +2588,7 @@ perform::output_func ()
             bool change_position =
                 m_playback_mode && ! is_jack_running() && ! m_usemidiclock;
 
-#ifdef USE_STAZED_TRANSPORT
+#ifdef SEQ64_STAZED_TRANSPORT
             if (change_position)
                 change_position = m_reposition;
 #endif
@@ -2600,7 +2597,7 @@ perform::output_func ()
             {
                 set_orig_ticks(m_starting_tick);
                 m_starting_tick = m_left_tick;      // restart at left marker
-#ifdef USE_STAZED_TRANSPORT
+#ifdef SEQ64_STAZED_TRANSPORT
                 m_reposition = false;
 #endif
             }
@@ -3061,8 +3058,21 @@ perform::handle_midi_control (int ctrl, bool state)
 }
 
 /**
- *
  *  This function is called by input_thread_func().
+ *
+ * Stazed:
+ *
+ *      http://www.blitter.com/~russtopia/MIDI/~jglatt/tech/midispec/ssp.htm
+ *
+ *      Example: If a Song Position value of 8 is received, then a sequencer
+ *      (or drum box) should cue playback to the third quarter note of the
+ *      song.  (8 MIDI beats * 6 MIDI clocks per MIDI beat = 48 MIDI Clocks.
+ *      Since there are 24 MIDI Clocks in a quarter note, the first quarter
+ *      occurs on a time of 0 MIDI Clocks, the second quarter note occurs upon
+ *      the 24th MIDI Clock, and the third quarter note occurs on the 48th
+ *      MIDI Clock).
+ *
+ *      8 MIDI beats * 6 MIDI clocks per MIDI beat = 48 MIDI Clocks.
  */
 
 void
@@ -3145,30 +3155,10 @@ perform::input_func ()
                     }
                     else if (ev.get_status() == EVENT_MIDI_SONG_POS)
                     {
-                        midibyte a, b;     // not tested (todo: test it!)
+                        midibyte a, b;
                         ev.get_data(a, b);
 
-#ifdef USE_STAZED_JACK_SUPPORT
-
-                        /*
-                         *  http://www.blitter.com/~russtopia/MIDI/
-                         *      ~jglatt/tech/midispec/ssp.htm
-                         *
-                         *  Example: If a Song Position value of 8 is
-                         *  received, then a sequencer (or drum box) should
-                         *  cue playback to the third quarter note of the
-                         *  song.  (8 MIDI beats * 6 MIDI clocks per MIDI
-                         *  beat = 48 MIDI Clocks.  Since there are 24 MIDI
-                         *  Clocks in a quarter note, the first quarter
-                         *  occurs on a time of 0 MIDI Clocks, the second
-                         *  quarter note occurs upon the 24th MIDI Clock, and
-                         *  the third quarter note occurs on the 48th MIDI
-                         *  Clock).
-                         *
-                         * 8 MIDI beats * 6 MIDI clocks per MIDI beat =
-                         *      48 MIDI Clocks.
-                         */
-
+#ifdef USE_STAZED_JACK_SUPPORT                      /* see notes in banner */
                         m_midiclockpos = combine_bytes(a,b);
                         m_midiclockpos *= 48;
 #else
@@ -3755,7 +3745,7 @@ perform::perfroll_key_event (const keystroke & k, int drop_sequence)
                     pop_trigger_redo();                 /* perfedit::redo() */
                     result = true;
                 }
-#ifdef USE_STAZED_TRANSPORT
+#ifdef SEQ64_STAZED_TRANSPORT
                 else if (k.is(keys().follow_transport()))
                 {
                     toggle_follow_transport();
@@ -3782,7 +3772,7 @@ perform::perfroll_key_event (const keystroke & k, int drop_sequence)
             }
         }
     }
-#ifdef USE_STAZED_TRANSPORT
+#ifdef SEQ64_STAZED_TRANSPORT
     else
     {
         if (k.is(keys().fast_forward()))
@@ -3973,7 +3963,7 @@ perform::max_active_set () const
     return result;
 }
 
-#ifdef USE_STAZED_TRANSPORT
+#ifdef SEQ64_STAZED_TRANSPORT
 
 void
 perform::FF_rewind ()

@@ -176,7 +176,7 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
     m_button_stop           (manage(new Gtk::Button())),
     m_button_play           (manage(new Gtk::Button())),
     m_button_perfedit       (manage(new Gtk::Button())),
-#ifdef USE_STAZED_SONG_MODE_BUTTON
+#ifdef SEQ64_STAZED_SONG_MODE_BUTTON
     m_button_mode           (manage(new Gtk::ToggleButton("Live"))),
 #endif
 #ifdef USE_STAZED_MENU_MODE_BUTTON
@@ -347,7 +347,7 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
      * functions.  They are file functions.
      */
 
-#ifdef USE_IMPORT_EXPORT_IN_EDIT
+#if 0
 
     m_menu_edit->items().push_back          // a repeat
     (
@@ -425,7 +425,7 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
         *manage(new PIXBUF_IMAGE(bitmap)), false, false, HBOX_PADDING
     );
 
-#ifdef USE_STAZED_SONG_MODE_BUTTON
+#ifdef SEQ64_STAZED_SONG_MODE_BUTTON
 
     m_button_mode->set_can_focus(false);
     m_button_mode->signal_toggled().connect
@@ -679,7 +679,7 @@ mainwnd::~mainwnd ()
         close(m_sigpipe[1]);
 }
 
-#ifdef USE_STAZED_SONG_MODE_BUTTON
+#ifdef SEQ64_STAZED_SONG_MODE_BUTTON
 
 /**
  *  Sets the song mode, which is actually the JACK start mode.  If true, we
@@ -782,7 +782,7 @@ mainwnd::timer_callback ()
         m_entry_notes->set_text(perf().current_screen_set_notepad());
     }
 
-#ifdef USE_STAZED_SONG_MODE_BUTTON
+#ifdef SEQ64_STAZED_SONG_MODE_BUTTON
 
     if (m_button_mode->get_active() != perf().song_start_mode())
         m_button_mode->set_active(perf().song_start_mode());
@@ -1584,18 +1584,10 @@ mainwnd::pause_playing ()               /* Stop in place!   */
 void
 mainwnd::stop_playing ()                        /* Stop! */
 {
-#ifdef USE_STAZED_JACK_SUPPORT
-
-    perf().stop_playing();
-
-#else
-
 #ifdef SEQ64_PAUSE_SUPPORT
-    perf().stop_key();
+    perf().stop_key();                          /* make sure it's seq32able */
 #else
     perf().stop_playing();
-#endif
-
 #endif
 
     m_main_wid->update_sequences_on_window();   /* update_mainwid_sequences() */

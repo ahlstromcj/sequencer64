@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-30
- * \updates       2016-08-28
+ * \updates       2016-09-11
  * \license       GNU GPLv2 or above
  *
  *  The functions add_list_var() and add_long_list() have been replaced by
@@ -1030,9 +1030,7 @@ public:
     void print () const;
     void print_triggers () const;
     void play (midipulse tick, bool playback_mode);
-#ifdef USE_THIS_COOL_FUNCTION
     void play_queue (midipulse tick, bool playbackmode);
-#endif
     bool add_event (const event & er);
     void add_trigger
     (

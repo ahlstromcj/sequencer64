@@ -168,7 +168,7 @@ static const std::string s_arg_list =
  */
 
 static const char * const s_help_1a =
-"sequencer64 v 0.9.18  A significant reboot of the seq24 live sequencer.\n"
+"sequencer64 v 0.9.17.2  A significant reboot of the seq24 live sequencer.\n"
 "Usage: sequencer64 [options] [MIDI filename]\n\n"
 "Options:\n"
 "   -h, --help               Show this message and exit.\n"
@@ -771,13 +771,13 @@ const static std::string s_seq32_jack_support = "on";
 const static std::string s_seq32_jack_support = "off";
 #endif
 
-#ifdef USE_STAZED_TRANSPORT
+#ifdef SEQ64_STAZED_TRANSPORT
 const static std::string s_seq32_transport = "on";
 #else
 const static std::string s_seq32_transport = "off";
 #endif
 
-#ifdef USE_STAZED_SONG_MODE_BUTTON
+#ifdef SEQ64_STAZED_SONG_MODE_BUTTON
 const static std::string s_seq32_song_button = "on";
 #else
 const static std::string s_seq32_song_button = "off";

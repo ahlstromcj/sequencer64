@@ -287,7 +287,7 @@ private:
 
 #endif  // USE_STAZED_JACK_SUPPORT
 
-#ifdef USE_STAZED_TRANSPORT
+#ifdef SEQ64_STAZED_TRANSPORT
 
     /**
      *  TBD.
@@ -544,7 +544,7 @@ public:
 
 #endif  // USE_STAZED_JACK_SUPPORT
 
-#ifdef USE_STAZED_TRANSPORT
+#ifdef SEQ64_STAZED_TRANSPORT
 
     bool get_follow_transport () const
     {
@@ -565,7 +565,7 @@ public:
     bool toggle_song_start_mode ();
     void set_start_from_perfedit (bool start);
 
-#endif  // USE_STAZED_TRANSPORT
+#endif  // SEQ64_STAZED_TRANSPORT
 
     /**
      * \getter m_jack_client

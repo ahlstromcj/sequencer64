@@ -1329,7 +1329,7 @@ midifile::parse_proprietary_track (perform & p, int file_size)
             usr().seqedit_bgsequence(seqnum);
         }
 
-#ifdef USE_STAZED_TRANSPORT
+#ifdef SEQ64_STAZED_TRANSPORT
 
         /*
          * Store the beats/measure and beat-width values from the perfedit
@@ -1350,7 +1350,7 @@ midifile::parse_proprietary_track (perform & p, int file_size)
             p.set_beat_width(bw);
         }
 
-#endif  // USE_STAZED_TRANSPORT
+#endif  // SEQ64_STAZED_TRANSPORT
 
         /*
          * ADD NEW CONTROL TAGS AT THE END OF THE LIST HERE.
@@ -1988,7 +1988,7 @@ midifile::write_proprietary_track (perform & p)
             tracklength += prop_item_size(1);   /* c_musicscale             */
             tracklength += prop_item_size(4);   /* c_backsequence           */
 
-#ifdef USE_STAZED_TRANSPORT
+#ifdef SEQ64_STAZED_TRANSPORT
             tracklength += prop_item_size(4);   /* c_perf_bp_mes            */
             tracklength += prop_item_size(4);   /* c_perf_bw                */
 #endif
@@ -2042,7 +2042,7 @@ midifile::write_proprietary_track (perform & p)
             write_long(long(usr().seqedit_bgsequence()));   /* background    */
         }
 
-#ifdef USE_STAZED_TRANSPORT
+#ifdef SEQ64_STAZED_TRANSPORT
             write_prop_header(c_perf_bp_mes, 4);            /* control tag+4 */
             write_long(long(p.get_beats_per_bar()));        /* perfedit BPM  */
             write_prop_header(c_perf_bw, 4);                /* control tag+4 */

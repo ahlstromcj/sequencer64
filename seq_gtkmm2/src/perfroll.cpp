@@ -114,7 +114,7 @@ perfroll::perfroll
     m_scroll_page           (0),
 #endif
     m_have_button_press     (false),                        // stazed
-#ifdef USE_STAZED_TRANSPORT
+#ifdef SEQ64_STAZED_TRANSPORT
     m_transport_follow      (true),
     m_trans_button_press    (false),
 #endif
@@ -1007,7 +1007,7 @@ perfroll::on_button_press_event (GdkEventButton * ev)
 {
     bool result;
 
-#ifdef USE_STAZED_TRANSPORT
+#ifdef SEQ64_STAZED_TRANSPORT
 
     /*
      *  To avoid double button press on normal seq42 method...
@@ -1052,7 +1052,7 @@ perfroll::on_button_release_event (GdkEventButton * ev)
     if (result)
         perf().modify();
 
-#ifdef USE_STAZED_TRANSPORT
+#ifdef SEQ64_STAZED_TRANSPORT
     perf().set_follow_transport(m_transport_follow);
     m_trans_button_press = false;
 #endif
@@ -1176,7 +1176,7 @@ perfroll::on_key_press_event (GdkEventKey * ev)
 {
     keystroke k(ev->keyval, SEQ64_KEYSTROKE_PRESS, ev->state);
 
-#ifdef USE_STAZED_TRANSPORT
+#ifdef SEQ64_STAZED_TRANSPORT
 
     /*
      * If this keystroke is clicked, move the song position to the location of
@@ -1199,7 +1199,7 @@ perfroll::on_key_press_event (GdkEventKey * ev)
         return true;
     }
 
-#endif  // USE_STAZED_TRANSPORT
+#endif  // SEQ64_STAZED_TRANSPORT
 
     /*
      * EXPERIMENT:  add this call to try to make seqroll and perfroll act the

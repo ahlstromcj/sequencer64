@@ -1,6 +1,6 @@
 INSTALL for Sequencer64 v. 0.9.17.2
 Chris Ahlstrom
-2015-09-10 to 2016-09-10
+2015-09-10 to 2016-09-11
 
 The current packaging for Sequencer64 is primarily aimed at developers.
 There is currently no configure script... it must be bootstrapped.
@@ -246,6 +246,20 @@ MANUALLY-DEFINED MACROS IN CODE:
 
         Obsolete:  Now a permanent, unmacroed feature.
 
+    SEQ64_STAZED_SONG_MODE_BUTTON:
+
+        Enables a Live/Song-mode toggle-button on the main window, so
+        that one can choose the mode directly, rather than focussing the
+        main window versus the song-editor window.  Comes from the seq32
+        project.
+
+    SEQ64_STAZED_TRANSPORT:
+
+        Adds some transport features from the seq32 project.  These include
+        fast-forward and rewind support, storage of the song editor time
+        signature, and more.  Some features also depend upon seq32 JACK suport
+        being enabled.
+
     SEQ64_USE_DEBUG_OUTPUT:
 
         Enable this macro in the globals.h header file, to see extra console
@@ -287,7 +301,6 @@ MANUALLY-DEFINED MACROS IN CODE:
         USE_STAZED_SEQDATA_EXTENSIONS
         USE_STAZED_SELECTION_EXTENSIONS
         USE_STAZED_EVEN_ODD_SUPPORT
-        USE_STAZED_TRANSPORT
 
         Some of these are defined (or undefined) in
         libseq64/include/seq64_features.h.

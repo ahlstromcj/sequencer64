@@ -173,7 +173,7 @@ private:
 
     bool m_have_button_press;
 
-#ifdef USE_STAZED_TRANSPORT
+#ifdef SEQ64_STAZED_TRANSPORT
     bool m_transport_follow;
     bool m_trans_button_press;
 #endif

@@ -145,7 +145,7 @@ private:
 #ifdef USE_STAZED_JACK_SUPPORT
     Gtk::ToggleButton * m_button_jack;  /**< Button to toggle JACK connection.  */
 #endif
-#ifdef USE_STAZED_TRANSPORT
+#ifdef SEQ64_STAZED_TRANSPORT
     Gtk::ToggleButton * m_button_follow; /**< Button to toggle JACK following.  */
 #endif
     Gtk::Button * m_button_bpm;         /**< Beats-per-measure menu button.     */
@@ -262,7 +262,7 @@ public:
 
 #endif
 
-#ifdef USE_STAZED_TRANSPORT
+#ifdef SEQ64_STAZED_TRANSPORT
 
     friend int FF_RW_timeout (void * arg);
 

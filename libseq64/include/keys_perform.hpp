@@ -95,7 +95,7 @@ struct keys_perform_transfer
     unsigned int kpt_pause;
 #endif
 
-#ifdef USE_STAZED_TRANSPORT
+#ifdef SEQ64_STAZED_TRANSPORT
     unsigned int kpt_song_mode;
     unsigned int kpt_toggle_jack;
     unsigned int kpt_menu_mode;
@@ -209,7 +209,7 @@ private:
     unsigned int m_key_pause;                   /**< Pause play, Period.    */
 #endif
 
-#ifdef USE_STAZED_TRANSPORT
+#ifdef SEQ64_STAZED_TRANSPORT
     unsigned int m_key_song_mode;               /**< Song versus Live mode. */
     unsigned int m_key_toggle_jack;             /**< Toggle JACK connect.   */
     unsigned int m_key_menu_mode;               /**< Menu enabled/disabled. */
@@ -613,7 +613,7 @@ public:
         m_key_stop = x;
     }
 
-#ifdef USE_STAZED_TRANSPORT
+#ifdef SEQ64_STAZED_TRANSPORT
 
     unsigned int song_mode () const
     {
@@ -685,7 +685,7 @@ public:
         m_key_toggle_jack = key;
     }
 
-#endif  // USE_STAZED_TRANSPORT
+#endif  // SEQ64_STAZED_TRANSPORT
 
     /**
      * \getter m_key_show_ui_sequency_key

@@ -128,7 +128,7 @@
  *  the main window.
  */
 
-#define USE_STAZED_SONG_MODE_BUTTON
+#undef  SEQ64_STAZED_SONG_MODE_BUTTON       ///////////////////////
 
 /*
  *  In the perform object, replaces a direct call to sequence::stream_event()
@@ -182,7 +182,7 @@
  *  Adds support for various transport features, more to come.
  */
 
-#define USE_STAZED_TRANSPORT                ///////////////////
+#undef  SEQ64_STAZED_TRANSPORT                ///////////////////
 
 /*
  *  Stazed implementation of auto-scroll.

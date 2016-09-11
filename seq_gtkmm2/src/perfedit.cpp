@@ -73,7 +73,7 @@
 #include "pixmaps/jack.xpm"
 #endif
 
-#ifdef USE_STAZED_TRANSPORT
+#ifdef SEQ64_STAZED_TRANSPORT
 #include "pixmaps/transport_follow.xpm"
 #endif
 
@@ -122,7 +122,7 @@ update_perfedit_sequences ()
  *  callback.
  */
 
-#ifdef USE_STAZED_TRANSPORT
+#ifdef SEQ64_STAZED_TRANSPORT
 
 int
 FF_RW_timeout (void * arg)
@@ -203,7 +203,7 @@ perfedit::perfedit
 #ifdef USE_STAZED_JACK_SUPPORT
     m_button_jack       (manage(new Gtk::ToggleButton())),
 #endif
-#ifdef USE_STAZED_TRANSPORT
+#ifdef SEQ64_STAZED_TRANSPORT
     m_button_follow     (manage(new Gtk::ToggleButton())),
 #endif
     m_button_bpm        (manage(new Gtk::Button())),
@@ -444,7 +444,7 @@ perfedit::perfedit
         m_button_jack->set_active(true);
 #endif
 
-#ifdef USE_STAZED_TRANSPORT
+#ifdef SEQ64_STAZED_TRANSPORT
     m_button_follow->add(*manage(new PIXBUF_IMAGE(transport_follow_xpm)));
     m_button_follow->signal_clicked().connect
     (
@@ -483,7 +483,7 @@ perfedit::perfedit
     m_hlbox->pack_start(*m_button_jack, false, false);
 #endif
 
-#ifdef USE_STAZED_TRANSPORT
+#ifdef SEQ64_STAZED_TRANSPORT
     m_hlbox->pack_start(*m_button_follow, false, false);
 #endif
 
@@ -640,7 +640,7 @@ perfedit::popup_menu (Gtk::Menu * menu)
     menu->popup(0, 0);
 }
 
-#ifdef USE_STAZED_TRANSPORT
+#ifdef SEQ64_STAZED_TRANSPORT
 
 void
 perfedit::set_follow_transport ()
@@ -658,7 +658,7 @@ perfedit::toggle_follow_transport ()
     m_button_follow->set_active( ! m_button_follow->get_active() );
 }
 
-#endif  // USE_STAZED_TRANSPORT
+#endif  // SEQ64_STAZED_TRANSPORT
 
 #ifdef USE_STAZED_JACK_SUPPORT
 
@@ -853,7 +853,7 @@ perfedit::timeout ()
     m_perfroll->draw_progress();
     m_perfnames->redraw_dirty_sequences();
 
-#ifdef USE_STAZED_TRANSPORT
+#ifdef SEQ64_STAZED_TRANSPORT
     if (m_button_follow->get_active() != perf().get_follow_transport())
         m_button_follow->set_active(perf().get_follow_transport());
 #endif
@@ -922,7 +922,7 @@ perfedit::set_image (bool isrunning)
 void
 perfedit::start_playing ()
 {
-#ifdef USE_STAZED_TRANSPORT
+#ifdef SEQ64_STAZED_TRANSPORT
     perf().start_from_perfedit(true);
     perf().start_playing();
 #else

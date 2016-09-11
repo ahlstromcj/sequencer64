@@ -2240,7 +2240,7 @@ seqedit::timeout ()
         m_seq.set_raise(false);
         raise();
     }
-#ifdef USE_STAZED_TRANSPORT
+#ifdef SEQ64_STAZED_TRANSPORT
     if (m_seq.is_dirty_edit())                  /* m_seq.is_dirty_main()    */
     {
         m_seqroll_wid->redraw_events();

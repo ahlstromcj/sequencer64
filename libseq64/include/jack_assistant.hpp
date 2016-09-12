@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-07-23
- * \updates       2016-09-10
+ * \updates       2016-09-11
  * \license       GNU GPLv2 or above
  *
  *  This class contains a number of functions that used to reside in the
@@ -546,24 +546,62 @@ public:
 
 #ifdef SEQ64_STAZED_TRANSPORT
 
+    /**
+     * \getter m_follow_transport
+     */
+
     bool get_follow_transport () const
     {
         return m_follow_transport;
     }
+
+    /**
+     * \setter m_follow_transport
+     */
 
     void set_follow_transport (bool aset)
     {
         m_follow_transport = aset;
     }
 
+    /**
+     * \setter m_follow_transport
+     */
+
     void toggle_follow_transport ()
     {
         set_follow_transport(! m_follow_transport);
     }
 
-    bool song_start_mode ();
-    bool toggle_song_start_mode ();
-    void set_start_from_perfedit (bool start);
+    /**
+     * \getter parent().toggle_song_start_mode()
+     */
+
+    bool
+    jack_assistant::toggle_song_start_mode ()
+    {
+        return parent().toggle_song_start_mode();
+    }
+
+    /**
+     * \getter parent().song_start_mode()
+     */
+
+    bool
+    jack_assistant::song_start_mode ()
+    {
+        return parent().song_start_mode();
+    }
+
+    /**
+     * \setter parent().start_from_perfedit()
+     */
+
+    void
+    jack_assistant::set_start_from_perfedit (bool start)
+    {
+        parent().start_from_perfedit(start);
+    }
 
 #endif  // SEQ64_STAZED_TRANSPORT
 

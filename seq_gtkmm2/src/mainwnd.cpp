@@ -105,6 +105,10 @@
 #include "pixmaps/sequencer64_square_small.xpm" // sequencer64_square.xpm
 #include "pixmaps/sequencer64_legacy.xpm"
 
+#ifdef USE_STAZED_MENU_MODE_BUTTON
+#include "pixmaps/menu.xpm"
+#endif
+
 /**
  *  Provides the value of padding, in pixels, to use for the top horizontal
  *  box containing the Sequencer64 label and some extra buttons.
@@ -178,6 +182,7 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
     m_button_perfedit       (manage(new Gtk::Button())),
 #ifdef SEQ64_STAZED_SONG_MODE_BUTTON
     m_button_mode           (manage(new Gtk::ToggleButton("Live"))),
+    m_button_mute           (manage(new Gtk::ToggleButton("Muting"))),
 #endif
 #ifdef USE_STAZED_MENU_MODE_BUTTON
     m_button_menu           (manage(new Gtk::ToggleButton("Menu"))),
@@ -425,7 +430,7 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
         *manage(new PIXBUF_IMAGE(bitmap)), false, false, HBOX_PADDING
     );
 
-#ifdef SEQ64_STAZED_SONG_MODE_BUTTON
+#ifdef SEQ64_STAZED_SONG_MODE_BUTTON        /* also enables muting button */
 
     m_button_mode->set_can_focus(false);
     m_button_mode->signal_toggled().connect
@@ -441,18 +446,25 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
         "is started from the Song Editor, then this setting is ignored, and "
         "song mode is used."
     );
-    m_button_mode->set_active(perf().song_start_mode()); /* set_song_mode() */
+    m_button_mode->set_active(perf().song_start_mode());
+    tophbox->pack_start(*m_button_mode, false, false);
+
+    m_button_mute->set_can_focus(false);
+    m_button_mute->signal_toggled().connect
+    (
+        sigc::mem_fun(*this, &seqmenu::toggle_all_tracks)
+    );
+    add_tooltip(m_button_mute, "Toggle the mute status of all tracks.");
     tophbox->pack_start(*m_button_mode, false, false);
 
 #endif
 
 #ifdef USE_STAZED_MENU_MODE_BUTTON
 
-    // m_button_menu->add
-    // (
-    //     *manage(new Image(Gdk::Pixbuf::create_from_xpm_data(menu_xpm)))
-    // );
-
+    m_button_menu->add
+    (
+        *manage(new Image(Gdk::Pixbuf::create_from_xpm_data(menu_xpm)))
+    );
     m_button_menu->signal_toggled().connect
     (
         sigc::mem_fun(*this, &mainwnd::set_menu_mode)

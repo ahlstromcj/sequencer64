@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-21
- * \updates       2016-09-07
+ * \updates       2016-09-11
  * \license       GNU GPLv2 or above
  *
  *  One possible idea would be a color configuration that would radically
@@ -126,9 +126,6 @@ gui_palette_gtk2::gui_palette_gtk2 ()
     Gtk::DrawingArea    (),
     m_line_color        (Color("dark cyan")),           // alternative to black
     m_progress_color    (Color("black")),
-//  (
-//      Color(usr().progress_bar_colored() ? "dark cyan" : "black")
-//  ),
     m_bg_color          (),
     m_fg_color          ()
 {

@@ -218,36 +218,6 @@ jack_assistant::~jack_assistant ()
 
 #ifdef SEQ64_STAZED_TRANSPORT
 
-/**
- * \getter parent().toggle_song_start_mode()
- */
-
-bool
-jack_assistant::toggle_song_start_mode ()
-{
-    return parent().toggle_song_start_mode();
-}
-
-/**
- * \getter parent().song_start_mode()
- */
-
-bool
-jack_assistant::song_start_mode ()
-{
-    return parent().song_start_mode();
-}
-
-/**
- * \setter parent().start_from_perfedit()
- */
-
-void
-jack_assistant::set_start_from_perfedit (bool start)
-{
-    parent().start_from_perfedit(start);
-}
-
 #endif
 
 /**
@@ -684,7 +654,7 @@ void
 jack_assistant::position (bool state, midipulse tick)
 {
 
-#ifdef JACK_SUPPORT
+#ifdef SEQ64_JACK_SUPPORT
 
     long current_tick = 0;
     if (is_null_midipulse(tick))
@@ -707,7 +677,7 @@ jack_assistant::position (bool state, midipulse tick)
         parent().set_reposition(false);
 #endif
 
-#endif  // JACK_SUPPORT
+#endif  // SEQ64_JACK_SUPPORT
 
 }
 

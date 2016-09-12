@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-09-10
+ * \updates       2016-09-11
  * \license       GNU GPLv2 or above
  *
  *  The main window is known as the "Patterns window" or "Patterns
@@ -198,6 +198,7 @@ private:
 
 #ifdef SEQ64_STAZED_SONG_MODE_BUTTON
     Gtk::ToggleButton * m_button_mode;
+    Gtk::ToggleButton * m_button_mute;
 #endif
 
 #ifdef USE_STAZED_MENU_MODE_BUTTON

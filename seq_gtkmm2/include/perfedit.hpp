@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-08-20
+ * \updates       2016-09-11
  * \license       GNU GPLv2 or above
  *
  *  Note that, as of version 0.9.11, the z and Z keys, when focus is on the
@@ -42,8 +42,6 @@
 
 #include "gui_window_gtk2.hpp"
 #include "perform.hpp"
-
-#define DEFAULT_PERFEDIT_SNAP   8
 
 /*
  *  Since these items are pointers, we were able to move (most) of the
@@ -66,6 +64,10 @@ namespace Gtk
     class VScrollbar;
 }
 
+/*
+ * All Sequencer64 library code is wrapped by the seq64 namespace.
+ */
+
 namespace seq64
 {
     class perfnames;
@@ -73,19 +75,42 @@ namespace seq64
     class perftime;
 
 /*
- * ca 2015-07-24
- * Just a note:  The patches in the pld-linux/seq24 GitHub project had a
- * namespace sigc declaration here, which does not seem to be needed.
- * And a lot of the patches from that project were already applied to
- * seq24 v 0.9.2.  They are now all applied.
+ * \note
+ *      The patches in the pld-linux/seq24 GitHub project had a namespace sigc
+ *      declaration here, which does not seem to be needed.  And a lot of the
+ *      patches from that project were already applied to seq24 v 0.9.2.  They
+ *      are now all applied.
  */
 
 /*
- * Free functions and values is the seq64 namespace.
+ * Free functions in the seq64 namespace.
  */
 
 extern void update_perfedit_sequences ();
-extern int FF_RW_timeout (void * arg);
+
+/**
+ *  This global function in the seq64 namespace is passed to the gtk_timeout
+ *  callback.
+ *
+ * \param arg
+ *      Provide a putative pointer to the perform object.
+ *
+ * \return
+ *      Returns the value of the perform::FF_RW_timeout() call if Seq32
+ *      transport support is enabled and the arg parameter is good, otherwise
+ *      false is returned.
+ */
+
+inline int
+FF_RW_timeout (void * arg)
+{
+#ifdef SEQ64_STAZED_TRANSPORT
+    perform * p = dynamic_cast<perform *>(arg);
+    return not_nullptr(p) ? p->FF_RW_timeout() : false ;
+#else
+    return false;
+#endif
+}
 
 /**
  *  This class supports a Performance Editor that is used to arrange the
@@ -215,7 +240,16 @@ public:
         bool second_perfedit    = false,
         int ppqn                = SEQ64_USE_DEFAULT_PPQN
     );
-    virtual ~perfedit ();
+
+    /**
+     *  This rote destructor does nothing.  We're going to have to run the
+     *  application through valgrind to make sure that nothing is left behind.
+     */
+
+    virtual ~perfedit ()
+    {
+        // Empty body
+    }
 
     void init_before_show ();
     void enqueue_draw (bool forward = true);
@@ -277,6 +311,7 @@ public:
         perf().fast_forward(press);
         gtk_timeout_add(120, seq64::FF_RW_timeout, &perf());
     }
+
     void set_follow_transport ();
     void toggle_follow_transport ();
 

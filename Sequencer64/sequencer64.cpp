@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-09-10
+ * \updates       2016-09-11
  * \license       GNU GPLv2 or above
  *
  *  Note that there are a number of header files that we don't need to add
@@ -87,21 +87,11 @@ main (int argc, char * argv [])
     seq64::usr().set_defaults();            /* start out with normal values */
 
     /*
-     * First parse any command-line options to see if they might affect what
-     * gets read from the 'rc' or 'user' configuration files.  They will be
-     * parsed again later so that they can still override whatever other
-     * settings were made via the configuration files.
-     */
-
-//  (void) seq64::parse_command_line_options(argc, argv);
-
-    /*
-     * Set up objects that are specific to the Gtk-2 GUI.  Pass them to
-     * the perform constructor.
-     *
-     * ISSUE:  We really need to create the perform object after reading
-     * the configuration, but we also need to fill it in from the
-     * configuration, I believe.
+     * Set up objects that are specific to the Gtk-2 GUI.  Pass them to the
+     * perform constructor.  Then parse any command-line options to see if
+     * they might affect what gets read from the 'rc' or 'user' configuration
+     * files.  They will be parsed again later so that they can still override
+     * whatever other settings were made via the configuration files.
      */
 
     seq64::gui_assistant_gtk2 gui;              /* GUI-specific objects     */
@@ -113,9 +103,10 @@ main (int argc, char * argv [])
     if (! is_help)
     {
         /*
-         * TODO:  If parsing fails at all, we need to report it and
-         *        disable usage of the application and saving bad garbage
-         *        out when exiting.
+         * \todo
+         *      If parsing fails at all, we need to report it and disable
+         *      usage of the application and saving bad garbage out when
+         *      exiting.
          */
 
         ok = seq64::parse_options_files(p, argc, argv);

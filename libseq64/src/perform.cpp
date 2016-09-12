@@ -4037,7 +4037,7 @@ perform::FF_RW_timeout ()
     return false;
 }
 
-#endif  // USE_STAZED_JACK_SUPPORT
+#endif  // SEQ64_STAZED_TRANSPORT
 
 #ifdef PLATFORM_DEBUG_XXX
 

@@ -118,33 +118,6 @@ update_perfedit_sequences ()
 }
 
 /**
- *  This global function in the seq64 namespace is passed to the gtk_timeout
- *  callback.
- */
-
-#ifdef SEQ64_STAZED_TRANSPORT
-
-int
-FF_RW_timeout (void * arg)
-{
-    perform * p = (perform *)(arg);
-    if (not_nullptr(p))
-        return p->FF_RW_timeout();
-    else
-        return false;
-}
-
-#else
-
-int
-FF_RW_timeout (void * /*arg*/)
-{
-    return false;
-}
-
-#endif
-
-/**
  *  Principal constructor, has a reference to a perform object.  We've
  *  reordered the pointer members and put them in the initializer list to make
  *  the constructor a bit cleaner.
@@ -450,10 +423,9 @@ perfedit::perfedit
     (
         mem_fun(*this, &perfedit::set_follow_transport)
     );
-    add_tooltip(m_button_follow, "Follow JACK transport.");
+    add_tooltip(m_button_follow, "Toggle the following of JACK transport.");
     m_button_follow->set_active(true);
 #endif
-
 
     m_hlbox->pack_end(*m_button_copy , false, false);
     m_hlbox->pack_end(*m_button_expand , false, false);
@@ -463,7 +435,6 @@ perfedit::perfedit
     m_hlbox->pack_start(*m_button_stop , false, false);
     m_hlbox->pack_start(*m_button_play , false, false);
     m_hlbox->pack_start(*m_button_loop , false, false);
-//  m_hlbox->pack_start(*(manage(new Gtk::VSeparator())), false, false, 4);
     m_hlbox->pack_start(*m_button_bpm , false, false);
     m_hlbox->pack_start(*m_entry_bpm , false, false);
     m_hlbox->pack_start(*(manage(new Gtk::Label("/"))), false, false, 4);
@@ -479,7 +450,6 @@ perfedit::perfedit
 #endif
 
 #ifdef USE_STAZED_JACK_SUPPORT
-//  m_hlbox->pack_start(*(manage(new VSeparator())), false, false, 4);
     m_hlbox->pack_start(*m_button_jack, false, false);
 #endif
 
@@ -519,16 +489,6 @@ perfedit::perfedit
         if (is_nullptr(gs_perfedit_pointer_0))
             gs_perfedit_pointer_0 = this;
     }
-}
-
-/**
- *  This rote constructor does nothing.  We're going to have to run the
- *  application through valgrind to make sure that nothing is left behind.
- */
-
-perfedit::~perfedit ()
-{
-    // Empty body
 }
 
 /**
@@ -642,6 +602,10 @@ perfedit::popup_menu (Gtk::Menu * menu)
 
 #ifdef SEQ64_STAZED_TRANSPORT
 
+/**
+ *  Note that this will trigger the button signal callback.
+ */
+
 void
 perfedit::set_follow_transport ()
 {
@@ -655,7 +619,7 @@ perfedit::set_follow_transport ()
 void
 perfedit::toggle_follow_transport ()
 {
-    m_button_follow->set_active( ! m_button_follow->get_active() );
+    m_button_follow->set_active(! m_button_follow->get_active());
 }
 
 #endif  // SEQ64_STAZED_TRANSPORT
@@ -706,7 +670,7 @@ perfedit::toggle_jack ()
 void
 perfedit::set_guides ()
 {
-    if (m_bw > 0 && m_snap > 0)
+    if (m_bw > 0 && m_snap > 0 && m_bpm > 0)
     {
         midipulse measure_pulses = m_ppqn * m_standard_bpm * m_bpm / m_bw;
         midipulse snap_pulses = measure_pulses / m_snap;
@@ -808,13 +772,13 @@ void
 perfedit::grow ()
 {
     m_perfroll->increment_size();
-    m_perftime->increment_size();           /* a do-nothing function        */
+    m_perftime->increment_size();
 }
 
 /**
- *  This function forwards its call to the perfroll function of the same
- *  name.  It does not seem to need to also forward to the perftime
- *  function of the same name.
+ *  This function forwards its call to the perfroll function of the same name.
+ *  It does not seem to need to also forward to the perftime function of the
+ *  same name.
  */
 
 void
@@ -824,9 +788,9 @@ perfedit::init_before_show ()
 }
 
 /**
- *  Forces a redraw of the sequences, though currently just the perfnames
- *  part of each sequence in the performance editor.  This is meant to be
- *  called when the focus of an open seqedit or eventedit window changes.
+ *  Forces a redraw of the sequences, though currently just the perfnames part
+ *  of each sequence in the performance editor.  This is meant to be called
+ *  when the focus of an open seqedit or eventedit window changes.
  */
 
 void
@@ -924,13 +888,12 @@ perfedit::start_playing ()
 {
 #ifdef SEQ64_STAZED_TRANSPORT
     perf().start_from_perfedit(true);
-    perf().start_playing();
-#else
+#endif
+
 #ifdef SEQ64_PAUSE_SUPPORT
     perf().pause_key();                 /* perf().start_key() */
 #else
     perf().start_playing();             /* legacy behavior  */
-#endif
 #endif
 }
 
@@ -943,6 +906,10 @@ perfedit::start_playing ()
 void
 perfedit::pause_playing ()                      /* Stop in place!   */
 {
+#ifdef SEQ64_STAZED_TRANSPORT
+    perf().start_from_perfedit(false);  /* complement to start_playing()    */
+#endif
+
 #ifdef SEQ64_PAUSE_SUPPORT
     perf().pause_key();
 #else
@@ -960,6 +927,10 @@ perfedit::pause_playing ()                      /* Stop in place!   */
 void
 perfedit::stop_playing ()
 {
+#ifdef SEQ64_STAZED_TRANSPORT
+    perf().start_from_perfedit(false);  /* complement to start_playing()    */
+#endif
+
 #ifdef SEQ64_PAUSE_SUPPORT
     perf().stop_key();
 #else
@@ -969,6 +940,10 @@ perfedit::stop_playing ()
 
 /**
  *  Implements the horizontal zoom feature.
+ *
+ * \param z
+ *      The zoom value to be set.  The functions each check that this value is
+ *      valid.
  */
 
 void
@@ -980,6 +955,13 @@ perfedit::set_zoom (int z)
 
 #ifdef SEQ64_STAZED_TRANSPOSE
 
+/**
+ *  The button callback for transposition for this window.
+ *
+ * \param transpose
+ *      The amount to transpose the transposable sequences.
+ */
+
 void
 perfedit::transpose_button_callback (int transpose)
 {
@@ -987,8 +969,17 @@ perfedit::transpose_button_callback (int transpose)
         set_transpose(transpose);
 }
 
+/**
+ *  Sets the value of transposition for this window.
+ *
+ * \param transpose
+ *      The amount to transpose the transposable sequences.
+ *      We need to add validation at some point, if the widget does not
+ *      enforce that.
+ */
+
 void
-perfedit::set_transpose( int transpose  )
+perfedit::set_transpose (int transpose)
 {
     char b[12];
     snprintf(b, sizeof b, "%+d", transpose);

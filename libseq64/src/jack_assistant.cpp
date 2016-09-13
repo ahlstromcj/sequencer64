@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-14
- * \updates       2016-09-10
+ * \updates       2016-09-12
  * \license       GNU GPLv2 or above
  *
  *  This module was created from code that existed in the perform object.
@@ -65,15 +65,19 @@
 
 #include <stdio.h>
 
-#include "jack_assistant.hpp"
-#include "midifile.hpp"
-#include "perform.hpp"
-#include "settings.hpp"
+#include "jack_assistant.hpp"           /* this seq64::jack_ass class   */
+#include "midifile.hpp"                 /* seq64::midifile class        */
+#include "perform.hpp"                  /* seq64::perform class         */
+#include "settings.hpp"                 /* "rc" and "user" settings     */
 
 #undef  SEQ64_USE_DEBUG_OUTPUT          /* define for EXPERIMENTS only  */
 #define USE_JACK_BBT_OFFSET             /* another EXPERIMENT           */
 
 #ifdef SEQ64_JACK_SUPPORT
+
+/*
+ *  All library code in the Sequencer64 project is in the seq64 namespace.
+ */
 
 namespace seq64
 {
@@ -217,6 +221,36 @@ jack_assistant::~jack_assistant ()
 }
 
 #ifdef SEQ64_STAZED_TRANSPORT
+
+/**
+ * \setter parent().toggle_song_start_mode()
+ */
+
+bool
+jack_assistant::toggle_song_start_mode ()
+{
+    return parent().toggle_song_start_mode();
+}
+
+/**
+ * \getter parent().song_start_mode()
+ */
+
+bool
+jack_assistant::song_start_mode () const
+{
+    return parent().song_start_mode();
+}
+
+/**
+ * \setter parent().start_from_perfedit()
+ */
+
+void
+jack_assistant::set_start_from_perfedit (bool start)
+{
+    parent().start_from_perfedit(start);
+}
 
 #endif
 

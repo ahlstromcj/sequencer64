@@ -105,7 +105,7 @@ inline int
 FF_RW_timeout (void * arg)
 {
 #ifdef SEQ64_STAZED_TRANSPORT
-    perform * p = dynamic_cast<perform *>(arg);
+    perform * p = reinterpret_cast<perform *>(arg);
     return not_nullptr(p) ? p->FF_RW_timeout() : false ;
 #else
     return false;

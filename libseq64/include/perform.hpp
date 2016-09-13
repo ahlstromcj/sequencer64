@@ -94,6 +94,10 @@
 
 #define SEQ64_ALL_TRACKS                (-1)
 
+/*
+ *  All Sequencer64 library code is in the seq64 namespace.
+ */
+
 namespace seq64
 {
     class keystroke;
@@ -165,9 +169,9 @@ public:
 
     enum mute_op_t
     {
-        MUTE_TOGGLE = -1,
-        MUTE_OFF    =  0,
-        MUTE_ON     =  1
+        MUTE_TOGGLE     = -1,
+        MUTE_OFF        =  0,
+        MUTE_ON         =  1
     };
 
     /**

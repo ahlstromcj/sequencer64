@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-07-23
- * \updates       2016-09-11
+ * \updates       2016-09-12
  * \license       GNU GPLv2 or above
  *
  *  This class contains a number of functions that used to reside in the
@@ -36,7 +36,7 @@
  */
 
 #include "globals.h"                    /* globals, nullptr, and more       */
-#include "midibyte.hpp"                 /* midipulse typedef                */
+#include "midibyte.hpp"                 /* seq64::midipulse typedef         */
 
 #ifdef SEQ64_JACK_SUPPORT
 
@@ -64,8 +64,7 @@
 
 namespace seq64
 {
-
-class perform;                          /* jack_assistant parent is perform */
+    class perform;                      /* forward reference                */
 
 /**
  *  Provide a temporary structure for passing data and results between a
@@ -350,6 +349,15 @@ public:
     }
 
     /**
+     * \getter m_jack_parent, const version
+     */
+
+    const perform & parent () const
+    {
+        return m_jack_parent;
+    }
+
+    /**
      * \getter m_jack_running
      */
 
@@ -573,35 +581,9 @@ public:
         set_follow_transport(! m_follow_transport);
     }
 
-    /**
-     * \getter parent().toggle_song_start_mode()
-     */
-
-    bool
-    jack_assistant::toggle_song_start_mode ()
-    {
-        return parent().toggle_song_start_mode();
-    }
-
-    /**
-     * \getter parent().song_start_mode()
-     */
-
-    bool
-    jack_assistant::song_start_mode ()
-    {
-        return parent().song_start_mode();
-    }
-
-    /**
-     * \setter parent().start_from_perfedit()
-     */
-
-    void
-    jack_assistant::set_start_from_perfedit (bool start)
-    {
-        parent().start_from_perfedit(start);
-    }
+    bool toggle_song_start_mode ();
+    bool song_start_mode () const;
+    void set_start_from_perfedit (bool start);
 
 #endif  // SEQ64_STAZED_TRANSPORT
 

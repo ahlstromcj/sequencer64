@@ -44,7 +44,6 @@ namespace Gtk
 
 namespace seq64
 {
-
     class eventedit;
     class seqedit;
 
@@ -57,6 +56,7 @@ namespace seq64
 
 class seqmenu : public virtual Glib::ObjectBase
 {
+    friend class mainwnd;           /* access to seqmenu::toggle_all_tracks() */
 
 private:
 
@@ -297,6 +297,8 @@ protected:
 
 private:
 
+    virtual void redraw (int a_sequence) = 0;   /* pure virtual function    */
+
     void seq_new ();
     void seq_copy ();
     void seq_cut ();
@@ -312,8 +314,6 @@ private:
     void mute_all_tracks ();
     void unmute_all_tracks ();
     void toggle_all_tracks ();
-
-    virtual void redraw (int a_sequence) = 0;   /* pure virtual function    */
 
 private:        // callback
 

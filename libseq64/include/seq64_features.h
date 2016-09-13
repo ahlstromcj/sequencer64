@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2016-08-19
- * \updates       2016-09-10
+ * \updates       2016-09-12
  * \license       GNU GPLv2 or above
  *
  *    Some options (the "USE_xxx" options) specify experimental and
@@ -121,14 +121,14 @@
  *  Adds a button to disable the main menu in the main window.
  */
 
-#undef  USE_STAZED_MENU_MODE_BUTTON
+#define USE_STAZED_MENU_MODE_BUTTON
 
 /*
  *  Adds a button to set the Song (versus Live) mode from  the main menu in
  *  the main window.
  */
 
-#undef  SEQ64_STAZED_SONG_MODE_BUTTON       ///////////////////////
+#define SEQ64_STAZED_SONG_MODE_BUTTON
 
 /*
  *  In the perform object, replaces a direct call to sequence::stream_event()
@@ -182,7 +182,7 @@
  *  Adds support for various transport features, more to come.
  */
 
-#undef  SEQ64_STAZED_TRANSPORT                ///////////////////
+#define SEQ64_STAZED_TRANSPORT
 
 /*
  *  Stazed implementation of auto-scroll.

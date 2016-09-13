@@ -198,7 +198,7 @@ private:
 
 #ifdef SEQ64_STAZED_SONG_MODE_BUTTON
     Gtk::ToggleButton * m_button_mode;
-    Gtk::ToggleButton * m_button_mute;
+    Gtk::Button * m_button_mute;
 #endif
 
 #ifdef USE_STAZED_MENU_MODE_BUTTON

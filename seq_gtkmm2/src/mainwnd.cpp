@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-09-10
+ * \updates       2016-09-13
  * \license       GNU GPLv2 or above
  *
  *  The main window holds the menu and the main controls of the application,
@@ -182,10 +182,10 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
     m_button_perfedit       (manage(new Gtk::Button())),
 #ifdef SEQ64_STAZED_SONG_MODE_BUTTON
     m_button_mode           (manage(new Gtk::ToggleButton("Live"))),
-    m_button_mute           (manage(new Gtk::ToggleButton("Muting"))),
+    m_button_mute           (manage(new Gtk::Button("Muting"))),
 #endif
 #ifdef USE_STAZED_MENU_MODE_BUTTON
-    m_button_menu           (manage(new Gtk::ToggleButton("Menu"))),
+    m_button_menu           (manage(new Gtk::ToggleButton(/*"Menu"*/))),
 #endif
     m_adjust_bpm
     (
@@ -447,35 +447,38 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
         "song mode is used."
     );
     m_button_mode->set_active(perf().song_start_mode());
-    tophbox->pack_start(*m_button_mode, false, false);
+    tophbox->pack_start(*m_button_mode, false, false, HBOX_PADDING/2);
+
+    /*
+     * We bind the muting button to the mainwid's toggle_all_tracks()
+     * function.  A little tricky.
+     */
 
     m_button_mute->set_can_focus(false);
-    m_button_mute->signal_toggled().connect
+    m_button_mute->signal_clicked().connect
     (
-        sigc::mem_fun(*this, &seqmenu::toggle_all_tracks)
+        sigc::mem_fun(*m_main_wid, &seqmenu::toggle_all_tracks)
     );
     add_tooltip(m_button_mute, "Toggle the mute status of all tracks.");
-    tophbox->pack_start(*m_button_mode, false, false);
+    tophbox->pack_start(*m_button_mute, false, false);
 
 #endif
 
 #ifdef USE_STAZED_MENU_MODE_BUTTON
 
-    m_button_menu->add
-    (
-        *manage(new Image(Gdk::Pixbuf::create_from_xpm_data(menu_xpm)))
-    );
-    m_button_menu->signal_toggled().connect
-    (
-        sigc::mem_fun(*this, &mainwnd::set_menu_mode)
-    );
+    m_button_menu->add(*manage(new PIXBUF_IMAGE(menu_xpm)));
     add_tooltip
     (
         m_button_menu,
         "Toggle to disable/enable menu when sequencer is not running. "
         "The menu is automatically disabled when the sequencer is running."
     );
-    tophbox->pack_start(*m_button_menu, false, false);
+    m_button_menu->set_can_focus(false);
+    m_button_menu->signal_toggled().connect
+    (
+        sigc::mem_fun(*this, &mainwnd::set_menu_mode)
+    );
+    tophbox->pack_start(*m_button_menu, false, false, HBOX_PADDING/2);
 
 #endif
 

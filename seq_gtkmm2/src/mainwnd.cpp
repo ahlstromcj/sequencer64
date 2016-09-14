@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-09-13
+ * \updates       2016-09-14
  * \license       GNU GPLv2 or above
  *
  *  The main window holds the menu and the main controls of the application,
@@ -105,8 +105,17 @@
 #include "pixmaps/sequencer64_square_small.xpm" // sequencer64_square.xpm
 #include "pixmaps/sequencer64_legacy.xpm"
 
-#ifdef USE_STAZED_MENU_MODE_BUTTON
+#define USE_MENU_BUTTON_PIXMAPS         // EXPERIMENTAL
+
+#ifdef SEQ64_STAZED_MENU_BUTTONS
+#ifdef USE_MENU_BUTTON_PIXMAPS          /* still haven't decided        */
+#include "pixmaps/live_mode.xpm"
 #include "pixmaps/menu.xpm"
+#include "pixmaps/muting.xpm"
+#ifdef USE_MODIFIABLE_IMAGE             /* cannot get it to work right  */
+#include "pixmaps/song_mode.xpm"
+#endif
+#endif
 #endif
 
 /**
@@ -180,12 +189,16 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
     m_button_stop           (manage(new Gtk::Button())),
     m_button_play           (manage(new Gtk::Button())),
     m_button_perfedit       (manage(new Gtk::Button())),
-#ifdef SEQ64_STAZED_SONG_MODE_BUTTON
+#ifdef SEQ64_STAZED_MENU_BUTTONS
+#ifdef USE_MENU_BUTTON_PIXMAPS          /* still haven't decided        */
+    m_button_mode           (manage(new Gtk::ToggleButton())),
+    m_button_mute           (manage(new Gtk::Button())),
+    m_button_menu           (manage(new Gtk::ToggleButton())),
+#else
     m_button_mode           (manage(new Gtk::ToggleButton("Live"))),
     m_button_mute           (manage(new Gtk::Button("Muting"))),
+    m_button_menu           (manage(new Gtk::ToggleButton("Menu"))),
 #endif
-#ifdef USE_STAZED_MENU_MODE_BUTTON
-    m_button_menu           (manage(new Gtk::ToggleButton(/*"Menu"*/))),
 #endif
     m_adjust_bpm
     (
@@ -430,22 +443,27 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
         *manage(new PIXBUF_IMAGE(bitmap)), false, false, HBOX_PADDING
     );
 
-#ifdef SEQ64_STAZED_SONG_MODE_BUTTON        /* also enables muting button */
+#ifdef SEQ64_STAZED_MENU_BUTTONS            /* also enables muting button */
 
+#ifdef USE_MENU_BUTTON_PIXMAPS
+    m_button_mode->add(*manage(new PIXBUF_IMAGE(live_mode_xpm)));
+#endif
     m_button_mode->set_can_focus(false);
     m_button_mode->signal_toggled().connect
     (
         sigc::mem_fun(*this, &mainwnd::set_song_mode)
     );
-    add_tooltip
-    (
-        m_button_mode,
-        "Toggle song mode vs live mode).  If this button is "
-        "active, Sequencer64 is in song mode, and follows the performance "
-        "layout. The button label also reflects the current mode.  If playback "
-        "is started from the Song Editor, then this setting is ignored, and "
-        "song mode is used."
-    );
+    std::string modetext =
+        "Toggle Song mode vs Live mode.  If this button is active, "
+        "Sequencer64 is in song mode, and follows the performance laybout. "
+        "If playback is started from the Song Editor, this setting is ignored, "
+        "and song mode is used."
+#ifndef USE_MENU_BUTTON_PIXMAPS
+        "The button label also reflects the current mode."
+#endif
+        ;
+
+    add_tooltip(m_button_mode, modetext);
     m_button_mode->set_active(perf().song_start_mode());
     tophbox->pack_start(*m_button_mode, false, false, HBOX_PADDING/2);
 
@@ -454,6 +472,9 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
      * function.  A little tricky.
      */
 
+#ifdef USE_MENU_BUTTON_PIXMAPS          /* still haven't decided        */
+    m_button_mute->add(*manage(new PIXBUF_IMAGE(muting_xpm)));
+#endif
     m_button_mute->set_can_focus(false);
     m_button_mute->signal_clicked().connect
     (
@@ -462,11 +483,9 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
     add_tooltip(m_button_mute, "Toggle the mute status of all tracks.");
     tophbox->pack_start(*m_button_mute, false, false);
 
-#endif
-
-#ifdef USE_STAZED_MENU_MODE_BUTTON
-
+#ifdef USE_MENU_BUTTON_PIXMAPS          /* still haven't decided        */
     m_button_menu->add(*manage(new PIXBUF_IMAGE(menu_xpm)));
+#endif
     add_tooltip
     (
         m_button_menu,
@@ -480,7 +499,7 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
     );
     tophbox->pack_start(*m_button_menu, false, false, HBOX_PADDING/2);
 
-#endif
+#endif  // SEQ64_STAZED_MENU_BUTTONS
 
     /* Adjust placement of the logo. */
 
@@ -694,7 +713,7 @@ mainwnd::~mainwnd ()
         close(m_sigpipe[1]);
 }
 
-#ifdef SEQ64_STAZED_SONG_MODE_BUTTON
+#ifdef SEQ64_STAZED_MENU_BUTTONS
 
 /**
  *  Sets the song mode, which is actually the JACK start mode.  If true, we
@@ -707,12 +726,33 @@ void
 mainwnd::set_song_mode ()
 {
     bool is_active = m_button_mode->get_active();
-    std::string label = is_active ? "Song" : "Live";
-    perf().song_start_mode(is_active);
 
-    Gtk::Label * lblptr(dynamic_cast<Gtk::Label *>(m_button_mode->get_child()));
-    if (not_nullptr(lblptr))
-        lblptr->set_text(label);
+#ifndef USE_MENU_BUTTON_PIXMAPS         /* still haven't decided        */
+     std::string label = is_active ? "Song" : "Live";
+     Gtk::Label * lblptr(dynamic_cast<Gtk::Label *>
+     (
+          m_button_mode->get_child())
+     );
+     if (not_nullptr(lblptr))
+         lblptr->set_text(label);
+#else
+
+
+#ifdef USE_MODIFIABLE_IMAGE             /* cannot get it to work right  */
+    static bool s_first_image = true;
+    static Gtk::Image * s_live_image = manage(new PIXBUF_IMAGE(live_mode_xpm));
+    static Gtk::Image * s_song_image = manage(new PIXBUF_IMAGE(song_mode_xpm));
+    Gtk::Image * current_image = is_active ? s_song_image : s_live_image;
+    if (! s_first_image)
+        m_button_mode->remove();        /* no need to specify widget here */
+
+    s_first_image = false;
+    m_button_mode->add(*current_image);
+#endif
+
+#endif
+
+    perf().song_start_mode(is_active);
 }
 
 /**
@@ -731,7 +771,7 @@ mainwnd::toggle_song_mode()
 
 #endif
 
-#ifdef USE_STAZED_MENU_MODE_BUTTON
+#ifdef SEQ64_STAZED_MENU_BUTTONS
 
 /**
  *  This function must be in the cpp module, where the button header file
@@ -797,15 +837,27 @@ mainwnd::timer_callback ()
         m_entry_notes->set_text(perf().current_screen_set_notepad());
     }
 
-#ifdef SEQ64_STAZED_SONG_MODE_BUTTON
+#ifdef SEQ64_STAZED_MENU_BUTTONS
 
     if (m_button_mode->get_active() != perf().song_start_mode())
         m_button_mode->set_active(perf().song_start_mode());
 
-    if (perf().is_pattern_playing() && m_button_mode->get_sensitive())
-        m_button_mode->set_sensitive(false);
-    else if(! perf().is_pattern_playing() && ! m_button_mode->get_sensitive())
-        m_button_mode->set_sensitive(true);
+    if (perf().is_pattern_playing())
+    {
+        if (m_button_mode->get_sensitive())
+            m_button_mode->set_sensitive(false);
+
+        if (m_menubar->get_sensitive())
+            m_menubar->set_sensitive(false);
+    }
+    else
+    {
+        if (! m_button_mode->get_sensitive())
+            m_button_mode->set_sensitive(true);
+
+        if (m_menubar->get_sensitive() == m_menu_mode)
+            m_menubar->set_sensitive(! m_menu_mode);
+    }
 
 #endif
 

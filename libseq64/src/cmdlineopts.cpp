@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-20
- * \updates       2016-09-10
+ * \updates       2016-09-14
  * \license       GNU GPLv2 or above
  *
  *  The "rc" command-line options override setting that are first read from
@@ -777,10 +777,10 @@ const static std::string s_seq32_transport = "on";
 const static std::string s_seq32_transport = "off";
 #endif
 
-#ifdef SEQ64_STAZED_SONG_MODE_BUTTON
-const static std::string s_seq32_song_button = "on";
+#ifdef SEQ64_STAZED_MENU_BUTTONS
+const static std::string s_seq32_menu_buttons = "on";
 #else
-const static std::string s_seq32_song_button = "off";
+const static std::string s_seq32_menu_buttons = "off";
 #endif
 
 /**
@@ -812,7 +812,7 @@ build_details ()
 << "  Statistics support:        " << s_statistics_support << std::endl
 << "  Seq32 JACK support (exp):  " << s_seq32_jack_support << std::endl
 << "  Seq32 transport (exp):     " << s_seq32_transport << std::endl
-<< "  Seq32 song button (exp):   " << s_seq32_song_button << std::endl
+<< "  Seq32 menu buttons (exp):  " << s_seq32_menu_buttons << std::endl
     ;
     return result.str();
 }

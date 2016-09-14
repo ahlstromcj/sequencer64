@@ -118,17 +118,11 @@
 #undef  USE_STAZED_LFO_SUPPORT
 
 /*
- *  Adds a button to disable the main menu in the main window.
+ *  Adds a button to disable the main menu in the main window.  Adds a button
+ *  to set the Song (versus Live) mode from  the main menu in the main window.
  */
 
-#define USE_STAZED_MENU_MODE_BUTTON
-
-/*
- *  Adds a button to set the Song (versus Live) mode from  the main menu in
- *  the main window.
- */
-
-#define SEQ64_STAZED_SONG_MODE_BUTTON
+#define SEQ64_STAZED_MENU_BUTTONS
 
 /*
  *  In the perform object, replaces a direct call to sequence::stream_event()

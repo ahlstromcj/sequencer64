@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-09-11
+ * \updates       2016-09-14
  * \license       GNU GPLv2 or above
  *
  *  The main window is known as the "Patterns window" or "Patterns
@@ -62,7 +62,7 @@ namespace Gtk
     class SpinButton;
     class Tooltips;
 
-#if defined SEQ64_STAZED_SONG_MODE_BUTTON || defined USE_STAZED_MENU_MODE_BUTTON
+#if defined SEQ64_STAZED_MENU_BUTTONS
     class ToggleButton;
 #endif
 }
@@ -196,28 +196,25 @@ private:
 
     Gtk::Button * m_button_perfedit;
 
-#ifdef SEQ64_STAZED_SONG_MODE_BUTTON
-    Gtk::ToggleButton * m_button_mode;
-    Gtk::Button * m_button_mute;
-#endif
-
-#ifdef USE_STAZED_MENU_MODE_BUTTON
-    Gtk::ToggleButton * m_button_menu;
+#ifdef SEQ64_STAZED_MENU_BUTTONS
+    Gtk::ToggleButton * m_button_mode;  /**< Live/Song mode button.         */
+    Gtk::Button * m_button_mute;        /**< Mute toggle button.            */
+    Gtk::ToggleButton * m_button_menu;  /**< Menu enable/disable button.    */
 #endif
 
     /**
      *  The spin/adjustment controls for the BPM (beats-per-minute) value.
      */
 
-    Gtk::Adjustment * m_adjust_bpm;         /**< BPM adjustment object.     */
-    Gtk::SpinButton * m_spinbutton_bpm;     /**< BPM spin-button object.    */
+    Gtk::Adjustment * m_adjust_bpm;     /**< BPM adjustment object.         */
+    Gtk::SpinButton * m_spinbutton_bpm; /**< BPM spin-button object.        */
 
     /**
      *  The spin/adjustment controls for the screenset value.
      */
 
-    Gtk::Adjustment * m_adjust_ss;          /**< Screenset adjustment.      */
-    Gtk::SpinButton * m_spinbutton_ss;      /**< Screenset adjustment.      */
+    Gtk::Adjustment * m_adjust_ss;      /**< Screenset adjustment.          */
+    Gtk::SpinButton * m_spinbutton_ss;  /**< Screenset adjustment.          */
 
     /**
      *  The spin/adjustment controls for the load offset value.
@@ -226,8 +223,8 @@ private:
      *  from 0 to 1024 in blocks of 32 patterns.
      */
 
-    Gtk::Adjustment * m_adjust_load_offset;     /**< Load number for import.    */
-    Gtk::SpinButton * m_spinbutton_load_offset; /**< Spin button for import.    */
+    Gtk::Adjustment * m_adjust_load_offset;     /**< Load number for import. */
+    Gtk::SpinButton * m_spinbutton_load_offset; /**< Spin button for import. */
 
     /**
      *  This item provides user-interface access to the screenset notepad
@@ -283,7 +280,7 @@ public:
     (
         perform & p,
         bool allowperf2 = true,
-        int ppqn = SEQ64_USE_DEFAULT_PPQN
+        int ppqn        = SEQ64_USE_DEFAULT_PPQN
     );
     virtual ~mainwnd ();
 
@@ -353,12 +350,9 @@ private:
     void apply_song_transpose ();
 #endif
 
-#ifdef SEQ64_STAZED_SONG_MODE_BUTTON
+#ifdef SEQ64_STAZED_MENU_BUTTONS
     void set_song_mode ();
     void toggle_song_mode();
-#endif
-
-#ifdef USE_STAZED_MENU_MODE_BUTTON
     void set_menu_mode ();
     void toggle_menu_mode ();
 #endif

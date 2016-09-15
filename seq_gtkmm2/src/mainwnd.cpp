@@ -105,16 +105,12 @@
 #include "pixmaps/sequencer64_square_small.xpm" // sequencer64_square.xpm
 #include "pixmaps/sequencer64_legacy.xpm"
 
-#define USE_MENU_BUTTON_PIXMAPS         // EXPERIMENTAL
-
 #ifdef SEQ64_STAZED_MENU_BUTTONS
-#ifdef USE_MENU_BUTTON_PIXMAPS          /* still haven't decided        */
+#ifdef SEQ64_MENU_BUTTON_PIXMAPS
 #include "pixmaps/live_mode.xpm"
 #include "pixmaps/menu.xpm"
 #include "pixmaps/muting.xpm"
-#ifdef USE_MODIFIABLE_IMAGE             /* cannot get it to work right  */
 #include "pixmaps/song_mode.xpm"
-#endif
 #endif
 #endif
 
@@ -190,7 +186,8 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
     m_button_play           (manage(new Gtk::Button())),
     m_button_perfedit       (manage(new Gtk::Button())),
 #ifdef SEQ64_STAZED_MENU_BUTTONS
-#ifdef USE_MENU_BUTTON_PIXMAPS          /* still haven't decided        */
+#ifdef SEQ64_MENU_BUTTON_PIXMAPS
+    m_image_songlive        (),
     m_button_mode           (manage(new Gtk::ToggleButton())),
     m_button_mute           (manage(new Gtk::Button())),
     m_button_menu           (manage(new Gtk::ToggleButton())),
@@ -360,34 +357,6 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
         sigc::bind(mem_fun(*this, &mainwnd::set_song_mute), perform::MUTE_TOGGLE))
     );
 
-    /*
-     * Doesn't really make sense to call Import and Export "editing"
-     * functions.  They are file functions.
-     */
-
-#if 0
-
-    m_menu_edit->items().push_back          // a repeat
-    (
-        MenuElem("_Import...", mem_fun(*this, &mainwnd::file_import_dialog))
-    );
-
-    /*
-     * Exporting is just writing the tune to a file and not making the
-     * filename the new active filename for the current tune.
-     */
-
-    m_menu_edit->items().push_back
-    (
-        MenuElem
-        (
-            "Ex_port song...",
-            sigc::bind(mem_fun(*this, &mainwnd::file_save_as), true)
-        )
-    );
-
-#endif
-
     /**
      * View menu items and their hot keys.  It repeats the song editor edit
      * command, just to help those whose muscle memory is already
@@ -445,10 +414,10 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
 
 #ifdef SEQ64_STAZED_MENU_BUTTONS            /* also enables muting button */
 
-#ifdef USE_MENU_BUTTON_PIXMAPS
+#ifdef SEQ64_MENU_BUTTON_PIXMAPS
     m_button_mode->add(*manage(new PIXBUF_IMAGE(live_mode_xpm)));
 #endif
-    m_button_mode->set_can_focus(false);
+    m_button_mode->set_focus_on_click(false); // set_can_focus(false);
     m_button_mode->signal_toggled().connect
     (
         sigc::mem_fun(*this, &mainwnd::set_song_mode)
@@ -458,7 +427,7 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
         "Sequencer64 is in song mode, and follows the performance laybout. "
         "If playback is started from the Song Editor, this setting is ignored, "
         "and song mode is used."
-#ifndef USE_MENU_BUTTON_PIXMAPS
+#ifndef SEQ64_MENU_BUTTON_PIXMAPS
         "The button label also reflects the current mode."
 #endif
         ;
@@ -472,7 +441,7 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
      * function.  A little tricky.
      */
 
-#ifdef USE_MENU_BUTTON_PIXMAPS          /* still haven't decided        */
+#ifdef SEQ64_MENU_BUTTON_PIXMAPS
     m_button_mute->add(*manage(new PIXBUF_IMAGE(muting_xpm)));
 #endif
     m_button_mute->set_can_focus(false);
@@ -483,7 +452,7 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
     add_tooltip(m_button_mute, "Toggle the mute status of all tracks.");
     tophbox->pack_start(*m_button_mute, false, false);
 
-#ifdef USE_MENU_BUTTON_PIXMAPS          /* still haven't decided        */
+#ifdef SEQ64_MENU_BUTTON_PIXMAPS
     m_button_menu->add(*manage(new PIXBUF_IMAGE(menu_xpm)));
 #endif
     add_tooltip
@@ -522,8 +491,8 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
         "Mute Group Learn. "
         "Click the 'L' button, then press a mute-group key to store "
         "the mute state of the sequences in that key. "
-        "See File/Options/Keyboard for available mute-group keys "
-        "and the corresponding hotkey for the 'L' button."
+        "See File / Options / Keyboard for available mute-group keys "
+        "and the hotkey for the 'L' button."
     );
     hbox3->pack_end(*m_button_learn, false, false);
 
@@ -556,7 +525,7 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
     (
         mem_fun(*this, &mainwnd::stop_playing)
     );
-    add_tooltip(m_button_stop, "Stop playing the MIDI sequence.");
+    add_tooltip(m_button_stop, "Stop playing the MIDI sequences.");
     startstophbox->pack_start(*m_button_stop, Gtk::PACK_SHRINK);
     m_button_stop->set_sensitive(true);
 
@@ -572,7 +541,7 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
     (
         mem_fun(*this, &mainwnd::start_playing)             /* ca 2016-03-17 */
     );
-    add_tooltip(m_button_play, "Play the MIDI sequence.");
+    add_tooltip(m_button_play, "Start playback from the current location.");
     startstophbox->pack_start(*m_button_play, Gtk::PACK_SHRINK);
     m_button_play->set_sensitive(true);
 
@@ -727,29 +696,16 @@ mainwnd::set_song_mode ()
 {
     bool is_active = m_button_mode->get_active();
 
-#ifndef USE_MENU_BUTTON_PIXMAPS         /* still haven't decided        */
-     std::string label = is_active ? "Song" : "Live";
-     Gtk::Label * lblptr(dynamic_cast<Gtk::Label *>
-     (
-          m_button_mode->get_child())
-     );
-     if (not_nullptr(lblptr))
-         lblptr->set_text(label);
+#ifdef SEQ64_MENU_BUTTON_PIXMAPS
+    set_songlive_image(is_active);
 #else
-
-
-#ifdef USE_MODIFIABLE_IMAGE             /* cannot get it to work right  */
-    static bool s_first_image = true;
-    static Gtk::Image * s_live_image = manage(new PIXBUF_IMAGE(live_mode_xpm));
-    static Gtk::Image * s_song_image = manage(new PIXBUF_IMAGE(song_mode_xpm));
-    Gtk::Image * current_image = is_active ? s_song_image : s_live_image;
-    if (! s_first_image)
-        m_button_mode->remove();        /* no need to specify widget here */
-
-    s_first_image = false;
-    m_button_mode->add(*current_image);
-#endif
-
+    std::string label = is_active ? "Song" : "Live";
+    Gtk::Label * lblptr(dynamic_cast<Gtk::Label *>
+    (
+        m_button_mode->get_child())
+    );
+    if (not_nullptr(lblptr))
+        lblptr->set_text(label);
 #endif
 
     perf().song_start_mode(is_active);
@@ -878,7 +834,7 @@ mainwnd::timer_callback ()
     if (perf().is_running() != m_is_running)
     {
         m_is_running = perf().is_running();
-        set_image(m_is_running);
+        set_play_image(m_is_running);
     }
 
 #endif
@@ -1550,7 +1506,7 @@ mainwnd::edit_callback_notepad ()
  */
 
 void
-mainwnd::set_image (bool isrunning)
+mainwnd::set_play_image (bool isrunning)
 {
     delete m_image_play;
     if (isrunning)
@@ -1565,6 +1521,35 @@ mainwnd::set_image (bool isrunning)
     }
     m_button_play->set_image(*m_image_play);
 }
+
+#ifdef SEQ64_MENU_BUTTON_PIXMAPS
+
+/**
+ *  Changes the image used for the song/live mode button
+ *
+ * \param isrunning
+ *      If true, set the image to the "Pause" icon, since playback is running.
+ *      Otherwise, set it to the "Play" button, since playback is not running.
+ */
+
+void
+mainwnd::set_songlive_image (bool issong)
+{
+    delete m_image_songlive;
+    if (issong)
+    {
+        m_image_songlive = manage(new PIXBUF_IMAGE(song_mode_xpm));
+        add_tooltip(m_button_mode, "The Song playback mode is active.");
+    }
+    else
+    {
+        m_image_songlive = manage(new PIXBUF_IMAGE(live_mode_xpm));
+        add_tooltip(m_button_mode, "The Live playback mode is active.");
+    }
+    m_button_mode->set_image(*m_image_songlive);
+}
+
+#endif  // SEQ64_MENU_BUTTON_PIXMAPS
 
 #ifdef SEQ64_STAZED_TRANSPOSE
 

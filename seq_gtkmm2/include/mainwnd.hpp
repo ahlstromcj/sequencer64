@@ -47,6 +47,14 @@
 #include "gui_window_gtk2.hpp"          /* seq64::qui_window_gtk2       */
 #include "perform.hpp"                  // seq64::perform and callback  */
 
+/**
+ *  This macro chooses between pixmap-labelling for the "stazed/seq32" menu
+ *  buttons, and text labels for them.  Text labels are okay, but the icons
+ *  seem to present a prettier appearance.
+ */
+
+#define SEQ64_MENU_BUTTON_PIXMAPS
+
 /*
  *  Easier access to Gtk-2 classes.
  */
@@ -197,6 +205,17 @@ private:
     Gtk::Button * m_button_perfedit;
 
 #ifdef SEQ64_STAZED_MENU_BUTTONS
+
+#ifdef SEQ64_MENU_BUTTON_PIXMAPS
+
+    /**
+     *  Provides a pointer to hold the images for the song/live button.
+     */
+
+    Gtk::Image * m_image_songlive;
+
+#endif
+
     Gtk::ToggleButton * m_button_mode;  /**< Live/Song mode button.         */
     Gtk::Button * m_button_mute;        /**< Mute toggle button.            */
     Gtk::ToggleButton * m_button_menu;  /**< Menu enable/disable button.    */
@@ -312,11 +331,14 @@ private:
 
     static void handle_signal (int sig);
 
-    void adj_callback_ss ();            // make 'em void at some point
+    void adj_callback_ss ();
     void adj_callback_bpm ();
     void edit_callback_notepad ();
     bool timer_callback ();
-    void set_image (bool isrunning);
+    void set_play_image (bool isrunning);
+#ifdef SEQ64_MENU_BUTTON_PIXMAPS
+    void set_songlive_image (bool issong);
+#endif
     void start_playing ();
     void pause_playing ();
     void stop_playing ();

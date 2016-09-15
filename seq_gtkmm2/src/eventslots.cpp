@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-12-05
- * \updates       2016-08-28
+ * \updates       2016-09-15
  * \license       GNU GPLv2 or above
  *
  *  This module is user-interface code.  It is loosely based on the workings
@@ -77,8 +77,8 @@ eventslots::eventslots
     m_line_count            (0),
     m_line_maximum          (43),   /* need a way to calculate this value   */
     m_line_overlap          (5),
-    m_top_index             (0),    /* SEQ64_NULL_EVENT_INDEX               */
-    m_current_index         (SEQ64_NULL_EVENT_INDEX),
+    m_top_index             (0),
+    m_current_index         (SEQ64_NULL_EVENT_INDEX),   /* -1 */
     m_top_iterator          (),
     m_bottom_iterator       (),
     m_current_iterator      (),
@@ -445,7 +445,7 @@ eventslots::delete_current_event ()
                     (void) increment_bottom();
                     m_bottom_iterator = m_event_container.end();
                 }
-                else
+                else            // if (m_current_index >= 0)  /* issues/26 */
                     --m_current_index;
             }
         }
@@ -1246,7 +1246,7 @@ eventslots::on_size_allocate (Gtk::Allocation & a)
  *  Move to the previous event.  We must scroll up if the event is now
  *  before the frame, and should be made the new top event of the frame.  Note
  *  that this function isn't really an event-response callback.  It is called
- *  byh eventedit::on_key_press_event().
+ *  by eventedit::on_key_press_event().
  */
 
 void
@@ -1268,11 +1268,11 @@ eventslots::on_move_up ()
             select_event(m_current_index);
         }
     }
-    else
+    else if (m_current_index > 0)                   /* /issues/26           */
     {
         int old_index = m_current_index--;
         draw_event(m_current_iterator, old_index);
-        select_event(m_current_index, false);       /* no full redraw here */
+        select_event(m_current_index, false);       /* no full redraw here  */
     }
 }
 

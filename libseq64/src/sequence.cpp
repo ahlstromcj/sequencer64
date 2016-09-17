@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-09-11
+ * \updates       2016-09-17
  * \license       GNU GPLv2 or above
  *
  *  The functionality of this class also includes handling some of the
@@ -33,6 +33,12 @@
  *
  *  We had added null-pointer checks for the master MIDI buss pointer, but
  *  these just take up needless time, in most cases.
+ *
+ * \note
+ *      We leave a small gap in various functions where mark_selected() locks
+ *      and unlocks, then we lock again.  This should only be an issue if
+ *      altering selected notes while recording.  We will test this at some
+ *      point, and add better locking coverage if necessary.  EXPERIMENTAL.
  */
 
 #include <stdlib.h>
@@ -1147,7 +1153,7 @@ sequence::remove_selected ()
     automutex locker(m_mutex);
     if (m_events.mark_selected())
     {
-        push_undo();                            // m_events_undo.push(m_events);
+        m_events_undo.push(m_events);           /* push_undo() without lock */
         (void) m_events.remove_marked();
         reset_draw_marker();
     }
@@ -1628,6 +1634,11 @@ sequence::unselect ()
  *  velocity. For non-Notes, event::get_note() returns m_data[0], and we don't
  *  want to adjust that.
  *
+ * \note
+ *      We leave a small gap where mark_selected() locks and unlocks, then
+ *      we lock again.  This should only be an issue if moving notes while
+ *      the sequence is playing.
+ *
  * \param delta_tick
  *      Provides the amount of time to move the selected notes.  Note that it
  *      also applies to events.  Note-Off events are expanded to m_length if
@@ -1643,10 +1654,10 @@ sequence::unselect ()
 void
 sequence::move_selected_notes (midipulse delta_tick, int delta_note)
 {
-    automutex locker(m_mutex);
-    push_undo();                                    /* do it for caller     */
     if (mark_selected())                            /* locked recursively   */
     {
+        automutex locker(m_mutex);
+        m_events_undo.push(m_events);               /* push_undo(), no lock */
         for (event_list::iterator i = m_events.begin(); i != m_events.end(); ++i)
         {
             event & er = DREF(i);
@@ -1676,9 +1687,44 @@ sequence::move_selected_notes (midipulse delta_tick, int delta_note)
 
 /**
  *  A new function to consolidate the adjustment of timestamps in a pattern.
- *  If the timestamp is greater that m_length, we do round robin magic.  Taken
- *  from similar code in move_selected_notes() and grow_selected().
- *  Be careful using this function.
+ *  Similar to adjust_timestamp, but it doesn't have an \a isnoteoff
+ *  parameter.
+ *
+ * \param t
+ *      Provides the timestamp to be adjusted based on m_length.
+ *
+ * \return
+ *      Returns the adjusted timestamp.
+ */
+
+midipulse
+sequence::trim_timestamp (midipulse t)
+{
+    if (t > m_length)
+        t -= m_length;
+
+    if (t < 0)                          /* only if midipulse is signed  */
+        t += m_length;
+
+    if (t == 0)
+        t = m_length - m_note_off_margin;
+
+    return t;
+}
+
+/**
+ *  A new function to consolidate the adjustment of timestamps in a pattern.
+ *
+ *      -   If the timestamp plus the delta is greater that m_length, we do
+ *          round robin magic.
+ *      -   If the timestamp is greater than m_length, then it is wrapped
+ *          around to the beginning.
+ *      -   If the timestamp equals m_length, then it is set to 0, and later,
+ *          trimmed.
+ *      -   If the timestamp is less than 0, then it is set to the end.
+ *
+ *  Taken from similar code in move_selected_notes() and grow_selected().  Be
+ *  careful using this function.
  *
  * \param t
  *      Provides the timestamp to be adjusted based on m_length.
@@ -1761,12 +1807,12 @@ sequence::clip_timestamp (midipulse ontime, midipulse offtime)
 void
 sequence::stretch_selected (midipulse delta_tick)
 {
-    automutex locker(m_mutex);
     if (mark_selected())
     {
+        automutex locker(m_mutex);
         unsigned first_ev = 0x7fffffff;             /* timestamp lower limit */
         unsigned last_ev = 0x00000000;              /* timestamp upper limit */
-        push_undo();                                /* do it for caller      */
+        m_events_undo.push(m_events);               /* push_undo(), no lock  */
         for (event_list::iterator i = m_events.begin(); i != m_events.end(); ++i)
         {
             event & er = DREF(i);
@@ -1835,10 +1881,9 @@ sequence::stretch_selected (midipulse delta_tick)
  *
  *  This function now tries to prevent pathological growth, such as trying to
  *  shrink the notes to zero length or less, or stretch them beyond the length
- *  of the sequence.  Otherwise we get weird and unexpected results.
- *
- *  Also, we've moved external calls to push_undo() into this function.
- *  The caller shouldn't have to do that.
+ *  of the sequence.  Otherwise we get weird and unexpected results.  Also,
+ *  we've moved external calls to push_undo() into this function.  The caller
+ *  shouldn't have to do that.
  *
  *  A comment on terminology:  The user "selects" notes, while the sequencer
  *  "marks" notes. The first thing this function does is mark all the selected
@@ -1846,17 +1891,17 @@ sequence::stretch_selected (midipulse delta_tick)
  *
  * \threadsafe
  *
- * \param delta_tick
+ * \param delta
  *      An offset for each linked event's timestamp.
  */
 
 void
-sequence::grow_selected (midipulse delta_tick)
+sequence::grow_selected (midipulse delta)
 {
-    automutex locker(m_mutex);
-    push_undo();                                    /* do it for caller     */
     if (mark_selected())                            /* locked recursively   */
     {
+        automutex locker(m_mutex);                  /* lock it again, dude  */
+        m_events_undo.push(m_events);               /* push_undo(), no lock */
         for (event_list::iterator i = m_events.begin(); i != m_events.end(); ++i)
         {
             event & er = DREF(i);
@@ -1866,12 +1911,14 @@ sequence::grow_selected (midipulse delta_tick)
                 {
                     event * off = er.get_linked();
                     event e = *off;                 /* original off-event   */
-                    midipulse ontime = er.get_timestamp();
                     midipulse offtime = off->get_timestamp();
-                    midipulse newtime = clip_timestamp
-                    (
-                        ontime, offtime + delta_tick
-                    );
+
+                    /*
+                     * midipulse ontime = er.get_timestamp();
+                     * midipulse newtime = clip_timestamp(ontime, offtime+delta);
+                     */
+
+                    midipulse newtime = trim_timestamp(offtime + delta);
                     off->mark();                    /* kill old off event   */
                     er.unmark();                    /* keep old on event    */
                     e.unmark();                     /* keep new off event   */
@@ -1885,7 +1932,7 @@ sequence::grow_selected (midipulse delta_tick)
 #ifdef USE_NON_NOTE_EVENT_ADJUSTMENT                /* currenty defined     */
                 event e = er;                       /* copy original event  */
                 midipulse ontime = er.get_timestamp();
-                midipulse newtime = clip_timestamp(ontime, ontime + delta_tick);
+                midipulse newtime = clip_timestamp(ontime, ontime + delta);
                 e.set_timestamp(newtime);           /* adjust time-stamp    */
                 add_event(e);                       /* add adjusted event   */
                 modify();
@@ -1912,7 +1959,7 @@ sequence::randomize_selected
     midibyte datitem;
     int datidx = 0;
     automutex locker(m_mutex);
-    push_undo();
+    m_events_undo.push(m_events);               /* push_undo(), no lock  */
     for (event_list::iterator i = m_events.begin(); i != m_events.end(); ++i)
     {
         event & e = DREF(i);
@@ -2211,11 +2258,11 @@ sequence::cut_selected (bool copyevents)
 void
 sequence::paste_selected (midipulse tick, int note)
 {
-    automutex locker(m_mutex);
-    event_list clipbd = m_events_clipboard;         /* copy the clipboard   */
-    push_undo();                                    /* do it for caller     */
-    if (clipbd.count() > 0)
+    if (m_events_clipboard.count() > 0)
     {
+        automutex locker(m_mutex);
+        event_list clipbd = m_events_clipboard;     /* copy the clipboard   */
+        m_events_undo.push(m_events);               /* push_undo(), no lock */
         for (event_list::iterator i = clipbd.begin(); i != clipbd.end(); ++i)
         {
             event & e = DREF(i);
@@ -2803,7 +2850,7 @@ sequence::stream_event (event & ev)
 
                 if (ev.is_note_on())
                 {
-                    push_undo();
+                    m_events_undo.push(m_events);       /* push_undo()      */
                     add_note                            /* more locking     */
                     (
                         mod_last_tick(), m_snap_tick - m_note_off_margin,
@@ -4281,12 +4328,12 @@ sequence::select_events
 void
 sequence::transpose_notes (int steps, int scale)
 {
-    event_list transposed_events;
-    const int * transpose_table = nullptr;
-    automutex locker(m_mutex);
-    m_events_undo.push(m_events);                   /* do this for callers  */
     if (mark_selected())                            /* mark original notes  */
     {
+        automutex locker(m_mutex);
+        event_list transposed_events;
+        const int * transpose_table;
+        m_events_undo.push(m_events);               /* push_undo(), no lock  */
         if (steps < 0)
         {
             transpose_table = &c_scales_transpose_dn[scale][0];     /* down */
@@ -4336,7 +4383,7 @@ sequence::shift_notes (midipulse ticks)
     {
         automutex locker(m_mutex);
         event_list shifted_events;
-        push_undo();
+        m_events_undo.push(m_events);               /* push_undo(), no lock  */
         for (event_list::iterator i = m_events.begin(); i != m_events.end(); ++i)
         {
             event & er = DREF(i);
@@ -4382,11 +4429,11 @@ sequence::apply_song_transpose ()
     if (transpose != 0)
     {
         automutex locker(m_mutex);
-        m_events_undo.push(m_events);   /* push_undo() without lock         */
+        m_events_undo.push(m_events);               /* push_undo(), no lock */
         for (event_list::iterator i = m_events.begin(); i != m_events.end(); ++i)
         {
             event & er = DREF(i);
-            if (er.is_note())           /* includes aftertouch events       */
+            if (er.is_note())                       /* also aftertouch      */
                 er.transpose_note(transpose);
         }
         set_dirty();
@@ -4448,6 +4495,13 @@ sequence::quantize_events
     automutex locker(m_mutex);
     if (mark_selected())
     {
+        /*
+         * \note
+         *      Do NOT call push_undo() here; quantize_events() is used in
+         *      recording.  If you need the push_undo(), please use the
+         *      push_quantize() function!
+         */
+
         event_list quantized_events;
         for (event_list::iterator i = m_events.begin(); i != m_events.end(); ++i)
         {
@@ -4457,18 +4511,18 @@ sequence::quantize_events
             bool match = er.get_status() == status;
             bool canselect;
             if (status == EVENT_CONTROL_CHANGE)
-                canselect = match && d0 == cc;  /* correct status and correct cc */
+                canselect = match && d0 == cc;  /* correct status, correct cc */
             else
-                canselect = match;              /* correct status, cc irrelevant */
+                canselect = match;              /* correct status, any cc     */
 
             if (! er.is_marked())
                 canselect = false;
 
             if (canselect)
             {
-                event e = er;                   /* copy the event               */
-                er.select();                    /* selected the original event  */
-                e.unmark();                     /* unmark the copy of the event */
+                event e = er;                   /* copy the event             */
+                er.select();                    /* selected original event    */
+                e.unmark();                     /* unmark copy of the event   */
 
                 midipulse t = e.get_timestamp();
                 midipulse t_remainder = t % snap_tick;
@@ -4478,19 +4532,46 @@ sequence::quantize_events
                 else
                     t_delta = (snap_tick - t_remainder) / divide;
 
-                if ((t_delta + t) >= m_length)
+                if ((t_delta + t) >= m_length)      /* wrap-around Note On    */
                     t_delta = -e.get_timestamp();
 
                 e.set_timestamp(e.get_timestamp() + t_delta);
-                quantized_events.add(e);            // sort afterward: , false);
+                quantized_events.add(e);
+
+                /*
+                 * The only events linked are notes; the status of all notes
+                 * in this function are On, so the link must be only Note Off.
+                 */
+
                 if (er.is_linked() && linked)
                 {
                     event f = *er.get_linked();
-                    midipulse ft = f.get_timestamp();
+                    midipulse ft = f.get_timestamp() + t_delta; /* seq32 */
                     f.unmark();
                     er.get_linked()->select();
-                    f.set_timestamp(ft + t_delta);
-                    quantized_events.add(f);        // sort afterward: , false);
+
+                    /*
+                     * Seq32: If ft is negative, then we have a Note Off
+                     * previously wrapped before adjustment. Since the delta
+                     * is based on the Note On (not wrapped), we must add back
+                     * the m_length for the wrapping.  If the ft is then >=
+                     * m_length, it will be deleted by verify_and_link(),
+                     * which discards any notes (ON or OFF) that are >=
+                     * m_length. So we must wrap if > m_length and trim if ==
+                     * m_length.  Compare to trim_timestamp().
+                     */
+
+                    if (ft < 0)                     /* unwrap Note Off      */
+                        ft += m_length;
+
+                    if (ft == m_length)             /* trim it a little     */
+                        ft -= m_note_off_margin;
+
+                    if (ft > m_length)              /* wrap it around       */
+                        ft -= m_length;
+
+                    f.set_timestamp(ft);
+                    quantized_events.add(f);
                 }
             }
         }
@@ -4522,7 +4603,7 @@ void
 sequence::multiply_pattern (double multiplier)
 {
     automutex locker(m_mutex);
-    push_undo();
+    m_events_undo.push(m_events);               /* push_undo(), no lock */
     midipulse orig_length = get_length();
     midipulse new_length = midipulse(orig_length * multiplier);
     if (new_length > orig_length)

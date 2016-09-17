@@ -1,6 +1,6 @@
 Quick Reference for Git Processes on GitHub
 Chris Ahlstrom
-2015-09-09 to 2016-09-15
+2015-09-09 to 2016-09-16
 
 Creating a GitHub Repository:
 
@@ -208,5 +208,25 @@ Pull Requests:
        $ git checkout master 
        $ git merge --no-ff otherproject-master
        $ git  push origin master 
+
+Diffs:
+
+    Just a quick note on summarizing differences between commits.  This
+    command summarizes the changes between commits, much like
+    "svn diff --summarize":
+
+        $ git diff --name-status <commit1> <commit2>
+
+    Then, if one has the following in the .gitconfig file:
+
+        [diff]
+            tool = gvimdiff
+        [difftool]
+            prompt = false
+
+    one can cycle through a series of diffs on the involved files with one
+    of the best diff viewers ever:
+
+        $ git difftool <commit1> <commit2>
 
 # vim: sw=4 ts=4 wm=8 et ft=sh

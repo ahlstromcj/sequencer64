@@ -168,7 +168,7 @@ perfroll::set_ppqn (int ppqn)
     if (ppqn_is_valid(ppqn))
     {
         m_ppqn = choose_ppqn(ppqn);
-        m_ticks_per_bar = m_ppqn * m_divs_per_beat;
+        m_ticks_per_bar = m_ppqn * m_divs_per_beat;             /* 16 */
         m_background_x = (m_ppqn * 4 * 16) / c_perf_scale_x;
         m_perf_scale_x = m_zoom * m_ppqn / SEQ64_DEFAULT_PPQN;
         if (m_perf_scale_x == 0)

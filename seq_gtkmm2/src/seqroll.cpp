@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-08-14
+ * \updates       2016-09-17
  * \license       GNU GPLv2 or above
  *
  *  There are a large number of existing items to discuss.  But for now let's
@@ -742,6 +742,7 @@ seqroll::draw_events_on (Glib::RefPtr<Gdk::Drawable> draw)
             )
             {
                 int note_width;
+                int note_off_width = 0;             /* for wrapped Note Off    */
                 int note_x = tick_s / m_zoom;       /* turn into screen coords */
                 int note_y = c_rollarea_y - (note * c_key_y) - c_key_y + 1;
                 int note_height = c_key_y - 3;
@@ -756,7 +757,15 @@ seqroll::draw_events_on (Glib::RefPtr<Gdk::Drawable> draw)
                             note_width = 1;
                     }
                     else
+                    {
+                        /*
+                         * For a wrap-around note, calculate the Note On width,
+                         * then the Note Off width.  From Stazed's seq32 fixes.
+                         */
+
                         note_width = (m_seq.get_length() - tick_s) / m_zoom;
+                        note_off_width = tick_f / m_zoom;
+                    }
                 }
                 else
                     note_width = 16 / m_zoom;
@@ -786,16 +795,20 @@ seqroll::draw_events_on (Glib::RefPtr<Gdk::Drawable> draw)
                     m_gc->set_foreground(black_paint());
 
                 draw_rectangle(draw, note_x, note_y, note_width, note_height);
-                if (tick_f < tick_s)
+                if (tick_f < tick_s)                        /* note wraps?    */
                     draw_rectangle(draw, 0, note_y, tick_f / m_zoom, note_height);
 
-                if (note_width > 3)     /* draw inside box if there is room */
-                {
-                    if (selected)
-                        m_gc->set_foreground(orange());
-                    else
-                        m_gc->set_foreground(white_paint());
+                /*
+                 *  Draw inside box if there is room.  The check for note_width
+                 *  is based on the Note ON width. If the Note On is less than
+                 *  3 and there is a wrapped Note Off of width > 3 then the
+                 *  Note Off portion would not draw the inside rectangle. Thus
+                 *  the need for the additional (seq32) note_off_width check.
+                 */
 
+                if (note_width > 3 || note_off_width > 3)
+                {
+                    m_gc->set_foreground(selected ? orange() : white_paint());
                     if (method == 1)
                     {
                         int xinc = note_x + 1;
@@ -811,7 +824,7 @@ seqroll::draw_events_on (Glib::RefPtr<Gdk::Drawable> draw)
                         }
                         else
                         {
-                            draw_rectangle
+                            draw_rectangle          /* Note On */
                             (
                                 draw, xinc + in_shift, yinc, note_width, hdec
                             );
@@ -821,6 +834,18 @@ seqroll::draw_events_on (Glib::RefPtr<Gdk::Drawable> draw)
                                 width = note_width;     // 0;
 
                             draw_rectangle(draw, 0, yinc, width, hdec);
+
+                            /*
+                             *  Note Off wrapped (seq32). If off_width < 0,
+                             *  the draw would span the entire sequence
+                             *  (because the negative is treated like a large
+                             *  number). This occurs occasionally with a very
+                             *  small wrapped Note Off, due to rounding.
+                             */
+
+                            long off_width = tick_f / m_zoom - 3 + length_add;
+                            if (off_width >= 0)
+                                draw_rectangle(draw, 0, yinc, off_width, hdec);
                         }
                     }
                 }

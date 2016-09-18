@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-09-10
+ * \updates       2016-09-18
  * \license       GNU GPLv2 or above
  *
  *  This class still has way too many members, even with the JACK and
@@ -157,7 +157,7 @@ class perform
 
 #endif
 
-#ifdef USE_STAZED_JACK_SUPPORT
+#ifdef SEQ64_STAZED_JACK_SUPPORT
     friend int jack_process_callback (jack_nframes_t nframes, void * arg);
 #endif
 
@@ -210,7 +210,7 @@ private:
 
     bool m_song_start_mode;             // redundant re m_playback_mode?
 
-#ifdef USE_STAZED_JACK_SUPPORT
+#ifdef SEQ64_STAZED_JACK_SUPPORT
 
     /**
      *  Used for toggling the usage of JACK.  Need to investigate more.
@@ -1156,7 +1156,7 @@ public:
             m_notify.push_back(pfcb);
     }
 
-#ifdef USE_STAZED_JACK_SUPPORT
+#ifdef SEQ64_STAZED_JACK_SUPPORT
 
     void toggle_jack_mode ()
     {

@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2016-08-19
- * \updates       2016-09-12
+ * \updates       2016-09-18
  * \license       GNU GPLv2 or above
  *
  *    Some options (the "USE_xxx" options) specify experimental and
@@ -104,10 +104,11 @@
  *  handled.  It looks good, but it is complex enough that we'll leave this
  *  until about last to officially activate; it will need a lot of testing,
  *  mostly because of the possibility of errors in porting this code from
- *  Seq32.
+ *  Seq32.  Now a SEQ64_STAZED_JACK_SUPPORT option, currently disabled
+ *  by default in the configure script (until we have it fully tested).
+ *
+ * #define USE_STAZED_JACK_SUPPORT
  */
-
-#undef  USE_STAZED_JACK_SUPPORT
 
 /*
  *  Enables using the lfownd dialog to control the envelope of certain events
@@ -195,6 +196,7 @@
  *    SEQ64_HIGHLIGHT_EMPTY_SEQS
  *    SEQ64_JACK_SESSION
  *    SEQ64_JACK_SUPPORT
+ *    SEQ64_STAZED_JACK_SUPPORT
  *    SEQ64_LASH_SUPPORT
  *    SEQ64_PAUSE_SUPPORT
  *    SEQ64_STAZED_CHORD_GENERATOR

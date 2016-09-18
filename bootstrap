@@ -8,7 +8,7 @@
 # \library    	Sequencer64
 # \author     	Chris Ahlstrom
 # \date       	2015-09-10
-# \update     	2016-05-28
+# \update     	2016-09-18
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -33,9 +33,9 @@ export LANG
 CYGWIN=binmode
 export CYGWIN
 
-export SEQUENCER64_SCRIPT_EDIT_DATE="2016-05-28"
+export SEQUENCER64_SCRIPT_EDIT_DATE="2016-09-18"
 export SEQUENCER64_LIBRARY_API_VERSION="0.9"
-export SEQUENCER64_LIBRARY_VERSION="$SEQUENCER64_LIBRARY_API_VERSION.9.17"
+export SEQUENCER64_LIBRARY_VERSION="$SEQUENCER64_LIBRARY_API_VERSION.9.18"
 
 #******************************************************************************
 #  Version info
@@ -446,7 +446,8 @@ E_O_F
          cat << E_O_F
 
 Now run './configure' to configure Sequencer64 for compilation, or './configure
---help' for configuration options.
+--help' for configuration options.  Useful options are --enable-debug,
+--disable-shared, and --enable-seq32jack.
 E_O_F
       fi
    fi

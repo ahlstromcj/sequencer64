@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-09-14
+ * \updates       2016-09-18
  * \license       GNU GPLv2 or above
  *
  *  The main window holds the menu and the main controls of the application,
@@ -817,7 +817,7 @@ mainwnd::timer_callback ()
 
 #endif
 
-#ifdef USE_STAZED_JACK_SUPPORT
+#ifdef SEQ64_STAZED_JACK_SUPPORT
 
     /*
      * For seqroll keybinding, this is needed here instead of perfedit
@@ -1587,7 +1587,7 @@ mainwnd::apply_song_transpose ()
 void
 mainwnd::start_playing ()               /* Play!            */
 {
-#ifdef USE_STAZED_JACK_SUPPORT
+#ifdef SEQ64_STAZED_JACK_SUPPORT
 
     perf().start_playing();             /* stazed behavior  */
 

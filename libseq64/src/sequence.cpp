@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-09-17
+ * \updates       2016-09-18
  * \license       GNU GPLv2 or above
  *
  *  The functionality of this class also includes handling some of the
@@ -881,7 +881,7 @@ sequence::off_queued ()
 {
     automutex locker(m_mutex);
     m_queued = false;
-#ifndef USE_STAZED_JACK_SUPPORT
+#ifndef SEQ64_STAZED_JACK_SUPPORT
     m_queued_tick = m_last_tick - mod_last_tick() + m_length;
 #endif
     set_dirty_mp();

@@ -1,6 +1,6 @@
 Fixes and Other Ideas from Stan Preston (stazed)
 Chris Ahlstrom
-2016-06-06 to 2016-08-02
+2016-06-06 to 2016-09-18
 
 
 Date: Sat, 19 Mar 2016 13:55:24 -0500
@@ -751,6 +751,37 @@ using the 0x24 ID. Since you used 11, 12, and 13 for other stuff and I changed
 '32 transpose to 14 to be consistent with '64, how about beats per bar = 15
 and beat width = 16 for perfedit? Unless you know of a better way of doing
 it....
+
+
+
+
+
+Date: Tue, 13 Sep 2016 13:03:15 -0500
+From: Stan Preston <stazed10@gmail.com>
+To: Chris Ahlstrom <ahlstromcj@gmail.com>
+Subject: Re: Seq32 menu disabling
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:45.0) Gecko/20100101
+        Thunderbird/45.2.0
+
+"why disabling is needed when playing"
+
+The original seq24 had numerous conflicts between the menu key binding and the
+default seq24 key binding for the mainwind sequence triggers. For example:
+ctrl-q (quits the program without prompt) - If you place a sequence in the
+default 'q' slot, you cannot use it with ctrl-l or ctrl-r (default replace or
+queue) because the menu grabs the keys. Same goes for the alt-l or alt-r
+(default snapshot 1 or 2). Try same as above with alt-f, alt-v, alt-h, ctrl-n,
+ctrl-o... etc. So I just shut off all the menus by default when playing
+because it seems that they should not be needed then... especially in a live
+performance.
+
+"why a button?"
+
+On occasion I wanted to use the mainwnd key binding when stopped to set the
+sequences to be ready before starting. It's also a sort of safety feature as
+well, just toggle the menus off before going live so that you don't hit
+ctrl-q, ctrl-n etc.. forgetting things are not playing....
+
 
 
 # vim: sw=4 ts=4 wm=8 et ft=sh

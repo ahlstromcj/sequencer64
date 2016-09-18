@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-20
- * \updates       2016-09-14
+ * \updates       2016-09-18
  * \license       GNU GPLv2 or above
  *
  *  The "rc" command-line options override setting that are first read from
@@ -765,7 +765,7 @@ const static std::string s_statistics_support = "off";
  * Still EXPERIMENTAL/UNOFFICIAL support.
  */
 
-#ifdef USE_STAZED_JACK_SUPPORT
+#ifdef SEQ64_STAZED_JACK_SUPPORT
 const static std::string s_seq32_jack_support = "on";
 #else
 const static std::string s_seq32_jack_support = "off";

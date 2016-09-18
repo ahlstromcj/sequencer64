@@ -1,6 +1,6 @@
 INSTALL for Sequencer64 v. 0.9.18
 Chris Ahlstrom
-2015-09-10 to 2016-09-12
+2015-09-10 to 2016-09-18
 
 The current packaging for Sequencer64 is primarily aimed at developers.
 There is currently no configure script... it must be bootstrapped.
@@ -246,6 +246,11 @@ MANUALLY-DEFINED MACROS IN CODE:
 
         Obsolete:  Now a permanent, unmacroed feature.
 
+    SEQ64_STAZED_JACK_SUPPORT:
+
+        Enables Seq32 JACK handling, which incorporates many improvements to
+        JACK transport, including the fix from Seq24 v. 0.9.3.
+
     SEQ64_STAZED_SONG_MODE_BUTTON:
 
         Enables a Live/Song-mode toggle-button on the main window, so
@@ -295,7 +300,6 @@ MANUALLY-DEFINED MACROS IN CODE:
         fixes that we have overlooked.  At present, we are not enabling this
         functionality, just adding it, macroed out by the following macros:
 
-        USE_STAZED_JACK_SUPPORT
         USE_STAZED_LFO_SUPPORT
         USE_STAZED_RANDOMIZE_SUPPORT
         USE_STAZED_SEQDATA_EXTENSIONS

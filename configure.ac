@@ -6,7 +6,7 @@ dnl \file          configure.ac
 dnl \library       Sequencer64
 dnl \author        Chris Ahlstrom
 dnl \date          2015-09-11
-dnl \update        2016-09-14
+dnl \update        2016-09-18
 dnl \version       $Revision$
 dnl \license       $XPC_SUITE_GPL_LICENSE$
 dnl
@@ -472,6 +472,20 @@ else
     AC_MSG_WARN([*** Running statistics gathering not enabled.]);
 fi
 
+dnl Support for using the stazed JACK support.  Currently disabled by default,
+dnl until we get it fully integrated and working.
+
+AC_ARG_ENABLE(seq32jack,
+    [AS_HELP_STRING(--enable-seq32jack, [Enable using Seq32-style JACK support])],
+    [seq32jack=$enableval],
+    [seq32jack=no])
+
+if test "$seq32jack" != "no"; then
+    AC_DEFINE(STAZED_JACK_SUPPORT, 1, [Define to enable Seq32 JACK support])
+else
+    AC_MSG_WARN([*** Seq32 JACK support not enabled.]);
+fi
+
 dnl Support for using the stazed chord generator.
 
 AC_ARG_ENABLE(chords,
@@ -528,7 +542,7 @@ dnl #define API_VERSION "0.9"             // defined on command line
 
 AH_TOP(
 
-#define VERSION_DATE_SHORT "2016-09-14"
+#define VERSION_DATE_SHORT "2016-09-18"
 #define VERSION "0.9.18"
 
 )

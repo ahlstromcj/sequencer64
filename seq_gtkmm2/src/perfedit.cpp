@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-08-28
+ * \updates       2016-09-18
  * \license       GNU GPLv2 or above
  *
  */
@@ -69,8 +69,8 @@
 #include "pixmaps/down.xpm"
 #include "pixmaps/perfedit.xpm"
 
-#ifdef USE_STAZED_JACK_SUPPORT
-#include "pixmaps/jack.xpm"
+#ifdef SEQ64_STAZED_JACK_SUPPORT
+#include "pixmaps/jack_black.xpm"       /* #include "pixmaps/jack.xpm"  */
 #endif
 
 #ifdef SEQ64_STAZED_TRANSPORT
@@ -173,7 +173,7 @@ perfedit::perfedit
     m_button_grow       (manage(new Gtk::Button())),
     m_button_undo       (manage(new Gtk::Button())),
     m_button_redo       (manage(new Gtk::Button())),    // stazed
-#ifdef USE_STAZED_JACK_SUPPORT
+#ifdef SEQ64_STAZED_JACK_SUPPORT
     m_button_jack       (manage(new Gtk::ToggleButton())),
 #endif
 #ifdef SEQ64_STAZED_TRANSPORT
@@ -406,8 +406,8 @@ perfedit::perfedit
     add_tooltip(m_button_play, "Begin playback at the L marker.");
     m_button_play->set_sensitive(true);
 
-#ifdef USE_STAZED_JACK_SUPPORT
-    m_button_jack->add(*manage(new PIXBUF_IMAGE(jack_xpm)));
+#ifdef SEQ64_STAZED_JACK_SUPPORT
+    m_button_jack->add(*manage(new PIXBUF_IMAGE(jack_black_xpm)));
     m_button_jack->signal_clicked().connect
     (
         mem_fun(*this, &perfedit::set_jack_mode)
@@ -449,7 +449,7 @@ perfedit::perfedit
     m_hlbox->pack_start(*m_entry_xpose , false, false);
 #endif
 
-#ifdef USE_STAZED_JACK_SUPPORT
+#ifdef SEQ64_STAZED_JACK_SUPPORT
     m_hlbox->pack_start(*m_button_jack, false, false);
 #endif
 
@@ -624,7 +624,7 @@ perfedit::toggle_follow_transport ()
 
 #endif  // SEQ64_STAZED_TRANSPORT
 
-#ifdef USE_STAZED_JACK_SUPPORT
+#ifdef SEQ64_STAZED_JACK_SUPPORT
 
 /**
  *  To avoid a lot of pointer dereferencing, much of the code is offload to
@@ -655,7 +655,7 @@ perfedit::toggle_jack ()
     m_button_jack->set_active(! m_button_jack->get_active());
 }
 
-#endif  // USE_STAZED_JACK_SUPPORT
+#endif  // SEQ64_STAZED_JACK_SUPPORT
 
 /**
  *  Sets the guides, which are the L and R user-interface elements.
@@ -812,7 +812,7 @@ bool
 perfedit::timeout ()
 {
 
-#ifdef USE_STAZED_JACK_SUPPORT
+#ifdef SEQ64_STAZED_JACK_SUPPORT
     m_perfroll->redraw_dirty_sequences();
     m_perfroll->draw_progress();
     m_perfnames->redraw_dirty_sequences();

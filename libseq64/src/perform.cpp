@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and Tim Deagan
  * \date          2015-07-24
- * \updates       2016-09-11
+ * \updates       2016-09-18
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -119,7 +119,7 @@ midi_control perform::sm_mc_dummy;
 perform::perform (gui_assistant & mygui, int ppqn)
  :
     m_song_start_mode           (false),    // set later during options read
-#ifdef USE_STAZED_JACK_SUPPORT
+#ifdef SEQ64_STAZED_JACK_SUPPORT
     m_toggle_jack               (false),
     m_jack_stop_tick            (0),        // ???
 #endif
@@ -690,7 +690,7 @@ perform::set_left_tick (midipulse tick, bool setstart)
     if (setstart)
         set_start_tick(tick);
 
-#ifdef USE_STAZED_JACK_SUPPORT
+#ifdef SEQ64_STAZED_JACK_SUPPORT
 
     if (is_jack_master())                       /* don't use in slave mode  */
         m_jack_asst.position(true, tick);       /* position_jack()          */
@@ -733,7 +733,7 @@ perform::set_right_tick (midipulse tick, bool setstart)
         {
             m_left_tick = m_right_tick - m_one_measure;
 
-#ifdef USE_STAZED_JACK_SUPPORT
+#ifdef SEQ64_STAZED_JACK_SUPPORT
             if (setstart)
             {
                 set_start_tick(m_left_tick);
@@ -1783,7 +1783,7 @@ perform::copy_triggers ()
  *      intuitive, because it is really following Live mode.
  */
 
-#ifdef USE_STAZED_JACK_SUPPORT
+#ifdef SEQ64_STAZED_JACK_SUPPORT
 
 void
 perform::start_playing (bool songmode)
@@ -1820,7 +1820,7 @@ perform::start_playing (bool songmode)
     }
 }
 
-#else   // USE_STAZED_JACK_SUPPORT
+#else   // SEQ64_STAZED_JACK_SUPPORT
 
 void
 perform::start_playing (bool songmode)
@@ -1867,9 +1867,9 @@ perform::start_playing (bool songmode)
     is_pattern_playing(true);
 }
 
-#endif  // USE_STAZED_JACK_SUPPORT
+#endif  // SEQ64_STAZED_JACK_SUPPORT
 
-#ifdef USE_STAZED_JACK_SUPPORT
+#ifdef SEQ64_STAZED_JACK_SUPPORT
 
 /**
  *  Encapsulates behavior needed by perfedit.
@@ -1907,7 +1907,7 @@ perform::set_jack_mode (bool jack_button_active)
         set_start_tick(get_tick());
 }
 
-#endif  // USE_STAZED_JACK_SUPPORT
+#endif  // SEQ64_STAZED_JACK_SUPPORT
 
 /**
  *  Pause playback, so that progress bars stay where they are, and playback
@@ -1953,7 +1953,7 @@ perform::stop_playing ()
     stop_jack();
     stop();
 
-#ifndef USE_STAZED_JACK_SUPPORT
+#ifndef SEQ64_STAZED_JACK_SUPPORT
     m_is_paused = false;
     is_pattern_playing(false);
     m_tick = 0;                         // or get_left_tick()
@@ -1969,7 +1969,7 @@ void
 perform::position_jack (bool state, midipulse tick)
 {
 #ifdef SEQ64_JACK_SUPPORT
-#ifdef USE_STAZED_JACK_SUPPORT
+#ifdef SEQ64_STAZED_JACK_SUPPORT
     m_jack_asst.position(state, tick);
 #else
     if (rc().with_jack_master())
@@ -2035,7 +2035,7 @@ perform::start (bool state)
 void
 perform::stop ()
 {
-#if defined SEQ64_JACK_SUPPORT && ! defined USE_STAZED_JACK_SUPPORT
+#if defined SEQ64_JACK_SUPPORT && ! defined SEQ64_STAZED_JACK_SUPPORT
     if (! is_jack_running())
 #endif
         inner_stop();
@@ -2096,7 +2096,7 @@ perform::inner_start (bool state)
 void
 perform::inner_stop (bool midiclock)
 {
-#ifdef USE_STAZED_JACK_SUPPORT
+#ifdef SEQ64_STAZED_JACK_SUPPORT
 #ifdef SEQ64_STAZED_TRANSPORT
     start_from_perfedit(false);
 #endif
@@ -2153,7 +2153,7 @@ perform::all_notes_off ()
  *      Try to prevent notes from lingering on pause if true.
  */
 
-#ifdef USE_STAZED_JACK_SUPPORT
+#ifdef SEQ64_STAZED_JACK_SUPPORT
 
 void perform::reset_sequences (bool pause)
 {
@@ -2179,7 +2179,7 @@ void perform::reset_sequences (bool pause)
     m_master_bus.flush();                           /* flush the bus */
 }
 
-#else   // USE_STAZED_JACK_SUPPORT
+#else   // SEQ64_STAZED_JACK_SUPPORT
 
 void
 perform::reset_sequences (bool pause)
@@ -2203,7 +2203,7 @@ perform::reset_sequences (bool pause)
     m_master_bus.flush();                           /* flush the MIDI buss  */
 }
 
-#endif  // USE_STAZED_JACK_SUPPORT
+#endif  // SEQ64_STAZED_JACK_SUPPORT
 
 /**
  *  Creates the output thread using output_thread_func().  This might be a
@@ -2388,7 +2388,7 @@ perform::output_func ()
         {
             pad.js_current_tick = 0.0;      // tick and tick fraction
             pad.js_total_tick = 0.0;
-#if defined USE_SEQ24_0_9_3_CODE || defined USE_STAZED_JACK_SUPPORT
+#if defined USE_SEQ24_0_9_3_CODE || defined SEQ64_STAZED_JACK_SUPPORT
             pad.js_clock_tick = 0;          // long probably offers more ticks
 #else
             pad.js_clock_tick = 0.0;        // double
@@ -2401,12 +2401,12 @@ perform::output_func ()
         pad.js_looping = m_looping;
         pad.js_playback_mode = m_playback_mode;
         pad.js_ticks_converted_last = 0.0;
-#ifdef USE_STAZED_JACK_SUPPORT
+#ifdef SEQ64_STAZED_JACK_SUPPORT
         pad.js_ticks_converted = 0.0;
         pad.js_ticks_delta = 0.0;
 #endif
 
-#if defined USE_SEQ24_0_9_3_CODE || defined USE_STAZED_JACK_SUPPORT
+#if defined USE_SEQ24_0_9_3_CODE || defined SEQ64_STAZED_JACK_SUPPORT
         pad.js_delta_tick_frac = 0L;        // from seq24 0.9.3, long value
 #endif
 
@@ -2526,7 +2526,7 @@ perform::output_func ()
              * delta_ticks_f is in 1000th of a tick.
              */
 
-#if defined USE_SEQ24_0_9_3_CODE || defined USE_STAZED_JACK_SUPPORT
+#if defined USE_SEQ24_0_9_3_CODE || defined SEQ64_STAZED_JACK_SUPPORT
 
             long long delta_tick_denom = 60000000LL;
             long long delta_tick_num = bpm * ppqn * delta_us +
@@ -2578,7 +2578,7 @@ perform::output_func ()
             }
 #endif
 
-#ifdef USE_STAZED_JACK_SUPPORT
+#ifdef SEQ64_STAZED_JACK_SUPPORT
 
             /*
              * If we reposition key-p from perfroll, reset to adjusted
@@ -2617,7 +2617,7 @@ perform::output_func ()
             {
                 if (m_looping && m_playback_mode)
                 {
-#ifdef USE_STAZED_JACK_SUPPORT
+#ifdef SEQ64_STAZED_JACK_SUPPORT
                     static bool jack_position_once = false;
                     midipulse rtick = get_right_tick();     /* can change? */
                     if (pad.js_current_tick >= rtick)
@@ -2664,10 +2664,10 @@ perform::output_func ()
                         set_orig_ticks(ltick);
                         pad.js_current_tick = double(ltick) + leftover_tick;
                     }
-#endif  // USE_STAZED_JACK_SUPPORT
+#endif  // SEQ64_STAZED_JACK_SUPPORT
                 }
 
-#ifdef USE_STAZED_JACK_SUPPORT
+#ifdef SEQ64_STAZED_JACK_SUPPORT
 
                 /*
                  * Don't play during JackTransportStarting to avoid xruns on
@@ -2685,7 +2685,7 @@ perform::output_func ()
                 play(midipulse(pad.js_current_tick));               // play!
 #endif
 
-#ifndef USE_STAZED_JACK_SUPPORT
+#ifndef SEQ64_STAZED_JACK_SUPPORT
 #ifdef SEQ64_PAUSE_SUPPORT
                 set_jack_tick(pad.js_current_tick);
 #endif
@@ -2862,8 +2862,8 @@ perform::output_func ()
          * play tick that displays the progress bar.
          */
 
-#ifdef USE_STAZED_JACK_SUPPORT
-#ifdef JACK_SUPPORT
+#ifdef SEQ64_STAZED_JACK_SUPPORT
+#ifdef SEQ64_JACK_SUPPORT
         if (m_playback_mode)
         {
             if (is_jack_master())                       // master in song mode
@@ -2903,7 +2903,7 @@ perform::output_func ()
             m_jack_stop_tick = get_current_jack_position((void *) this);
 #endif
 
-#else  // USE_STAZED_JACK_SUPPORT
+#else  // SEQ64_STAZED_JACK_SUPPORT
 
 #ifdef SEQ64_PAUSE_SUPPORT
         if (is_jack_running())
@@ -2913,7 +2913,7 @@ perform::output_func ()
         m_master_bus.flush();
         m_master_bus.stop();
 
-#endif  // USE_STAZED_JACK_SUPPORT
+#endif  // SEQ64_STAZED_JACK_SUPPORT
 
     }
     pthread_exit(0);
@@ -3093,7 +3093,7 @@ perform::input_func ()
 
                     if (ev.get_status() == EVENT_MIDI_START) // MIDI Time Clock
                     {
-#ifdef USE_STAZED_JACK_SUPPORT
+#ifdef SEQ64_STAZED_JACK_SUPPORT
                         start(song_start_mode());
 #else
                         stop();
@@ -3115,7 +3115,7 @@ perform::input_func ()
                          */
 
                         m_midiclockrunning = true;
-#ifdef USE_STAZED_JACK_SUPPORT
+#ifdef SEQ64_STAZED_JACK_SUPPORT
                         start(song_start_mode());
 #else
                         start(false);
@@ -3136,7 +3136,7 @@ perform::input_func ()
                         m_midiclockrunning = false;
                         all_notes_off();
 
-#ifdef USE_STAZED_JACK_SUPPORT
+#ifdef SEQ64_STAZED_JACK_SUPPORT
 
                         /*
                          * inner_stop(true) = m_usemidiclock = true, i.e.
@@ -3158,7 +3158,7 @@ perform::input_func ()
                         midibyte a, b;
                         ev.get_data(a, b);
 
-#ifdef USE_STAZED_JACK_SUPPORT                      /* see notes in banner */
+#ifdef SEQ64_STAZED_JACK_SUPPORT                      /* see notes in banner */
                         m_midiclockpos = combine_bytes(a,b);
                         m_midiclockpos *= 48;
 #else
@@ -3270,7 +3270,7 @@ perform::input_func ()
     pthread_exit(0);
 }
 
-#ifdef USE_STAZED_JACK_SUPPORT
+#ifdef SEQ64_STAZED_JACK_SUPPORT
 
 /**
  *  Combines bytes into an unsigned-short value.
@@ -3297,7 +3297,7 @@ perform::combine_bytes (midibyte b0, midibyte b1)
    return short_14bit;
 }
 
-#endif  // USE_STAZED_JACK_SUPPORT
+#endif  // SEQ64_STAZED_JACK_SUPPORT
 
 /**
  *  For all active patterns/sequences, this function gets the playing
@@ -3762,7 +3762,7 @@ perform::perfroll_key_event (const keystroke & k, int drop_sequence)
                     result = true;
                 }
 #endif
-#ifdef USE_STAZED_JACK_SUPPORT
+#ifdef SEQ64_STAZED_JACK_SUPPORT
                 else if (k.is(keys().toggle_jack()))
                 {
                     toggle_jack_mode();

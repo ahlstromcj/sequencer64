@@ -1,11 +1,18 @@
 Bugs and Additional Upgrade Ideas
 Chris Ahlstrom
-2015-10-27 to 2016-08-28 (New bugs and fixed bugs)
+2015-10-27 to 2016-09-18 (New bugs and fixed bugs)
 
 In no particular order...  "y" means "in progress", and "x" means it is
 basically done.
 
 -  Also see BUG REPORTS below.  Those are bug reports from other people.
+-  Things to fix while getting the stazed/seq32 JACK support working:
+   - Make the perfedit JACK icon work like setting File / Options /
+     JACK Transport plus JACK Connect options.
+   - Make the perfedit JACK icon look less phallic.   :-D
+   - Add this icon and functionality to the main window.
+   - Make Pause functionality work properly in ALSA and JACK mode when
+     SEQ64_STAZED_JACK_SUPPORT is active.
 -  Is it worthwhile to save lyric events within a sequence and restoring them
    upon writing the file (while filtering out 0-length lyrics)?
 x  Saving of a track of a stripped-down example1.mid with the notes shortened

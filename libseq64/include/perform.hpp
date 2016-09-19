@@ -1163,7 +1163,7 @@ public:
         m_jack_asst.toggle_jack_mode();
     }
 
-    void set_jack_mode (bool mode);
+    bool set_jack_mode (bool mode);
 
     /**
      * TODO versus stazed definition in cpp

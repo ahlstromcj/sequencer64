@@ -33,6 +33,11 @@ when making the changes.
 Of special interest:
 
 - fixed jack master to work, it now loops and starts on left frame
+
+  CA Note: Is this what we want in all circumstances?  It would be nice
+  to continue where the playback stopped, if the Pause button/key is
+  pressed.
+
 - from the seq24 TODO, added note listen on paint and move notes in the seqroll
 - refactored the menu so it will not conflict with the live keybinding - added
   off button!

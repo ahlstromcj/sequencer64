@@ -635,8 +635,8 @@ void
 perfedit::set_jack_mode ()
 {
     bool active = m_button_jack->get_active();
-    perf().set_jack_mode(active);
-    m_button_jack->set_active(active);
+    bool isjackrunning = perf().set_jack_mode(active);
+    m_button_jack->set_active(isjackrunning);
 }
 
 bool

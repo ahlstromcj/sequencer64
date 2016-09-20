@@ -6,7 +6,7 @@ dnl \file          configure.ac
 dnl \library       Sequencer64
 dnl \author        Chris Ahlstrom
 dnl \date          2015-09-11
-dnl \update        2016-09-18
+dnl \update        2016-09-19
 dnl \version       $Revision$
 dnl \license       $XPC_SUITE_GPL_LICENSE$
 dnl
@@ -482,6 +482,7 @@ AC_ARG_ENABLE(seq32jack,
 
 if test "$seq32jack" != "no"; then
     AC_DEFINE(STAZED_JACK_SUPPORT, 1, [Define to enable Seq32 JACK support])
+    AC_DEFINE(JACK_SUPPORT, 1, [Define to enable JACK driver])
 else
     AC_MSG_WARN([*** Seq32 JACK support not enabled.]);
 fi
@@ -542,7 +543,7 @@ dnl #define API_VERSION "0.9"             // defined on command line
 
 AH_TOP(
 
-#define VERSION_DATE_SHORT "2016-09-18"
+#define VERSION_DATE_SHORT "2016-09-19"
 #define VERSION "0.9.18"
 
 )

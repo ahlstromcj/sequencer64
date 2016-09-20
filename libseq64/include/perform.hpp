@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-09-18
+ * \updates       2016-09-19
  * \license       GNU GPLv2 or above
  *
  *  This class still has way too many members, even with the JACK and
@@ -155,11 +155,11 @@ class perform
         void * arg
     );
 
-#endif
-
 #ifdef SEQ64_STAZED_JACK_SUPPORT
     friend int jack_process_callback (jack_nframes_t nframes, void * arg);
 #endif
+
+#endif  // SEQ64_JACK_SUPPORT
 
 public:
 
@@ -184,16 +184,6 @@ public:
         FF_RW_NONE      =  0,
         FF_RW_FORWARD   =  1
     };
-
-private:
-
-    /**
-     *  Provides a static self-reference to the one and only perform object
-     *  that exists in the application, for use in callbacks that do not
-     *  support object pointers and require non-member functions.
-
-    static perform & sm_self;
-     */
 
 private:
 

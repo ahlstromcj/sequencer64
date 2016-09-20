@@ -25,17 +25,28 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-09-19
- * \updates       2016-01-15
+ * \updates       2016-09-20
  * \license       GNU GPLv2 or above
  *
  */
 
-#include <gtkmm/main.h>                 // Glib::Main
+#include <gtkmm/main.h>                 /* Glib::Main                   */
 #include <sigc++/slot.h>
 
-#include "gui_assistant_gtk2.hpp"       // seq64::gui_assistant_gtk2
-#include "jack_assistant.hpp"           // seq64::jack_assistant
-#include "lash.hpp"                     // seq64::lash
+#include "gui_assistant_gtk2.hpp"       /* seq64::gui_assistant_gtk2    */
+#include "jack_assistant.hpp"           /* seq64::jack_assistant        */
+#include "lash.hpp"                     /* seq64::lash                  */
+
+#if defined SEQ64_JACK_SESSION || defined SEQ64_LASH_SUPPORT
+#include <glibmm.h>                     /* Glib::signal_idle() etc.     */
+#endif
+
+/**
+ *  A manifest constant for the LASH time-out signal value.  This value is in
+ *  milliseconds.
+ */
+
+#define SEQ64_LASH_TIMEOUT      250
 
 namespace seq64
 {
@@ -101,11 +112,16 @@ gui_assistant_gtk2::lash_timeout_connect (lash * lashobject)
 #ifdef SEQ64_LASH_SUPPORT
         Glib::signal_timeout().connect
         (
-            sigc::mem_fun(lashobject, &lash::process_events), 250   // timeout
+            sigc::mem_fun(lashobject, &lash::process_events),
+            SEQ64_LASH_TIMEOUT
         );
 #else
         infoprint("[No LASH support]");
 #endif
+    }
+    else
+    {
+        infoprint("[No LASH support]");
     }
 }
 

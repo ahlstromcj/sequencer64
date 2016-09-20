@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2016-08-19
- * \updates       2016-09-18
+ * \updates       2016-09-19
  * \license       GNU GPLv2 or above
  *
  *    Some options (the "USE_xxx" options) specify experimental and
@@ -50,6 +50,12 @@
  *    one-by-one in a controlled, tested manner.
  */
 
+#ifdef PLATFORM_WINDOWS
+#include "configwin32.h"
+#else
+#include "seq64-config.h"
+#endif
+
 /*
  * Odds and ends that we missed.
  */
@@ -57,7 +63,7 @@
 #define USE_NON_NOTE_EVENT_ADJUSTMENT   /* see sequence.cpp                 */
 
 /*
- * Currently undefined as tentative or EXPERIMENTAL.
+ * Currently, many macros are undefined as tentative or EXPERIMENTAL.
  */
 
 /*

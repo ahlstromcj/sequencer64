@@ -219,7 +219,8 @@ private:
 #ifdef SEQ64_STAZED_TRANSPORT
 
     /**
-     *  TBD.
+     *  Implements the "follow JACK transport" button of the perfedit window.
+     *  This is a separate function from the "JACK sync button of that window.
      */
 
     bool m_follow_transport;
@@ -1180,7 +1181,6 @@ public:
 #ifdef SEQ64_STAZED_TRANSPORT
 
     void FF_rewind ();
-
     bool FF_RW_timeout ();          /* called by free-function of same name */
 
     /**
@@ -1201,40 +1201,80 @@ public:
         return m_start_from_perfedit;
     }
 
+    /**
+     * \getter m_follow_transport
+     */
+
     void set_follow_transport (bool flag)
     {
         m_follow_transport = flag;
     }
+
+    /**
+     * \getter m_follow_transport
+     */
 
     bool get_follow_transport () const
     {
         return m_follow_transport;
     }
 
+    /**
+     * \getter m_follow_transport toggling
+     */
+
     void toggle_follow_transport ()
     {
         set_follow_transport(! m_follow_transport);
     }
+
+    /**
+     * \getter m_reposition
+     */
 
     void set_reposition (bool postype = true)
     {
         m_reposition = postype;
     }
 
+    /**
+     * \getter m_FF_RW_button_type
+     */
+
     ff_rw_button_t ff_rw_type ()
     {
         return m_FF_RW_button_type;
     }
+
+    /**
+     * \getter m_FF_RW_button_type
+     */
 
     void ff_rw_type (ff_rw_button_t button_type)
     {
         m_FF_RW_button_type = button_type;
     }
 
+    /**
+     *  Sets the rewind status.
+     *
+     * \param press
+     *      If true, the status is set to FF_RW_REWIND, otherwise it is set to
+     *      FF_RW_NONE.
+     */
+
     void rewind (bool press)
     {
         ff_rw_type(press ? FF_RW_REWIND : FF_RW_NONE);
     }
+
+    /**
+     *  Sets the fast-forward status.
+     *
+     * \param press
+     *      If true, the status is set to FF_RW_FORWARD, otherwise it is set to
+     *      FF_RW_NONE.
+     */
 
     void fast_forward (bool press)
     {
@@ -1375,6 +1415,10 @@ public:
         return m_have_undo;
     }
 
+    /**
+     * \setter m_have_undo
+     */
+
     void set_have_undo (bool undo)
     {
         m_have_undo = undo;
@@ -1513,6 +1557,10 @@ public:
     void set_mode_group_learn ();
     void unset_mode_group_learn ();
 
+    /**
+     * \getter m_mode_group_learn
+     */
+
     bool is_group_learning ()
     {
         return m_mode_group_learn;
@@ -1556,10 +1604,6 @@ public:
 
     /**
      *  Checks the pattern/sequence for activity.
-     *
-     * \todo
-     *      We should have the sequence object keep track of its own activity
-     *      and access that via a reference or pointer.
      *
      * \param seq
      *      The pattern number.  It is checked for invalidity.  This can

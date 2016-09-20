@@ -471,12 +471,15 @@ perfroll::draw_progress ()
 /**
  *  Checks the position of the tick, and, if it is in a different piano-roll
  *  "page" than the last page, moves the page to the next page.
+ *
+ *  Currently, this functionality is broken if Stazed's JACK and transport
+ *  support are enabled.
  */
 
 void
 perfroll::follow_progress ()
 {
-    midipulse progress_tick = m_old_progress_ticks; // m_seq.get_last_tick();
+    midipulse progress_tick = m_old_progress_ticks;
     if (progress_tick > 0)
     {
         int progress_x = progress_tick / m_zoom + SEQ64_PROGRESS_PAGE_OVERLAP;
@@ -505,7 +508,7 @@ perfroll::follow_progress ()
 void
 perfroll::auto_scroll_horz ()
 {
-    if(! perf().get_follow_transport())
+    if (! perf().get_follow_transport())
         return;
 
     if (m_zoom >= c_perf_scale_x)

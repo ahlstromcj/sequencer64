@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-09-18
+ * \updates       2016-09-20
  * \license       GNU GPLv2 or above
  *
  */
@@ -323,7 +323,7 @@ perfedit::perfedit
             mem_fun(*this, &perfedit::popup_menu), m_menu_xpose
         )
     );
-    add_tooltip(m_button_xpose, "Song transpose, for all transposable sequences");
+    add_tooltip(m_button_xpose, "Song-transpose all transposable sequences.");
     m_entry_xpose->set_size_request(30, -1);
     m_entry_xpose->set_editable(false);
 

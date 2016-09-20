@@ -48,6 +48,10 @@
 
 #define SEQ64_LASH_TIMEOUT      250
 
+/*
+ * Provides the namespace for all Sequencer64 libraries.
+ */
+
 namespace seq64
 {
 

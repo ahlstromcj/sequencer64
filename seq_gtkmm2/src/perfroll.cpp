@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-08-21
+ * \updates       2016-09-21
  * \license       GNU GPLv2 or above
  *
  *  The performance window allows automatic control of when each
@@ -460,7 +460,7 @@ perfroll::draw_progress ()
 
     m_old_progress_ticks = tick;
 
-#ifdef USE_STAZED_PERF_AUTO_SCROLL
+#ifdef USE_STAZED_PERF_AUTO_SCROLL  // no longer needed, left here just in case
     auto_scroll_horz();             // but sequencer64 now does this anyway
 #endif
 
@@ -471,9 +471,6 @@ perfroll::draw_progress ()
 /**
  *  Checks the position of the tick, and, if it is in a different piano-roll
  *  "page" than the last page, moves the page to the next page.
- *
- *  Currently, this functionality is broken if Stazed's JACK and transport
- *  support are enabled.
  */
 
 void
@@ -504,6 +501,14 @@ perfroll::follow_progress ()
 #endif      // SEQ64_FOLLOW_PROGRESS_BAR
 
 #ifdef USE_STAZED_PERF_AUTO_SCROLL
+
+/**
+ *  Supports auto-scrolling.  However, the follow_progress() function seems to
+ *  work fine in both ALSA and JACK mode, so it may be that the
+ *  auto_scroll_horz() function will never be necessary.  Let's wait until the
+ *  Stazed/Seq32 JACK code is fully tested, including how well it works under
+ *  various zooms.
+ */
 
 void
 perfroll::auto_scroll_horz ()

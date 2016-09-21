@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-09-17
+ * \updates       2016-09-20
  * \license       GNU GPLv2 or above
  *
  *  There are a large number of existing items to discuss.  But for now let's
@@ -685,6 +685,14 @@ seqroll::follow_progress ()
             m_hadjust.set_value(double(left_tick));
         }
     }
+}
+
+#else
+
+void
+seqroll::follow_progress ()
+{
+    // No code, do not follow the progress bar.
 }
 
 #endif      // SEQ64_FOLLOW_PROGRESS_BAR

@@ -811,10 +811,8 @@ perfedit::draw_sequences ()
 bool
 perfedit::timeout ()
 {
-
-#ifdef SEQ64_STAZED_JACK_SUPPORT
-    m_perfroll->redraw_dirty_sequences();
-    m_perfroll->draw_progress();
+    m_perfroll->follow_progress();          /* keep up with progress        */
+    m_perfroll->redraw_progress();
     m_perfnames->redraw_dirty_sequences();
 
 #ifdef SEQ64_STAZED_TRANSPORT
@@ -822,14 +820,11 @@ perfedit::timeout ()
         m_button_follow->set_active(perf().get_follow_transport());
 #endif
 
+#ifdef SEQ64_STAZED_JACK_SUPPORT
     if (perf().is_running())
         m_button_jack->set_sensitive(false);
     else
         m_button_jack->set_sensitive(true);
-#else
-    m_perfroll->follow_progress();          /* keep up with progress        */
-    m_perfroll->redraw_progress();
-    m_perfnames->redraw_dirty_sequences();
 #endif
 
     m_button_undo->set_sensitive(perf().have_undo());

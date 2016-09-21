@@ -505,15 +505,7 @@ public:
     }
 
     void complete_paste (int x, int y);
-
-#ifdef SEQ64_FOLLOW_PROGRESS_BAR
     void follow_progress ();
-#else
-    void follow_progress ()
-    {
-        // No code, do not follow the progress bar.
-    }
-#endif
 
 private:
 

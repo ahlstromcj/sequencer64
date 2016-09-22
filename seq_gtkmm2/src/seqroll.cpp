@@ -526,7 +526,8 @@ seqroll::update_background ()
  *  Sets the zoom to the given value, and then resets the view.
  *
  * \param zoom
- *      The desired zoom value.
+ *      The desired zoom value, assumed to be validated already.  See the
+ *      seqedit::set_zoom() function.
  */
 
 void

@@ -576,11 +576,11 @@ seqedit::create_menus ()
 #define SET_SNAP    mem_fun(*this, &seqedit::set_snap)
 #define SET_NOTE    mem_fun(*this, &seqedit::set_note_length)
 
-    /*
+    /**
      * To reduce the amount of written code, we now use a static array to
-     * initialize som e of the menu entries.  0 denotes the separator.  This
-     * same setup is used to set up both the snap and note menu, since they
-     * are exactly the same.  Saves a *lot* of code.
+     * initialize some of the seqedit menu entries.  0 denotes the separator.
+     * This same setup is used to set up both the snap and note menu, since
+     * they are exactly the same.  Saves a *lot* of code.
      */
 
     static const int s_snap_items [] =

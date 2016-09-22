@@ -1,13 +1,19 @@
 Bugs and Additional Upgrade Ideas
 Chris Ahlstrom
-2015-10-27 to 2016-09-21 (New bugs and fixed bugs)
+2015-10-27 to 2016-09-22 (New bugs and fixed bugs)
 
 In no particular order...  "y" means "in progress", and "x" means it is
 basically done.
 
 -  Also see BUG REPORTS below.  Those are bug reports from other people.
 -  A single Z (zoom in) in seqroll makes the END marker drawn in the wrong
-   place (in b4uacuse-GM-format.midi).
+   place (in b4uacuse-GM-format.midi).  Actually, it is correct for the
+   sequence, but paging to the end shows seqtime and seqroll measure markers
+   out of sync.
+-  We need to figure out if we want the sequence length to reflect
+   the actual length of long sequences, or the last measure, like it does for
+   short sequences.
+-  Need an alternate icon for the transposable button in seqedit.
 -  Things to fix while getting the stazed/seq32 JACK support working:
    - Make the perfedit JACK icon work like setting File / Options /
      JACK Transport plus JACK Connect options.

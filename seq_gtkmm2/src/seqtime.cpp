@@ -197,6 +197,7 @@ seqtime::update_pixmap ()
     int bwidth = m_seq.get_beat_width();
     int ticks_per_major = 4 * m_ppqn * bpbar / bwidth;
 
+#define USE_TRIAL_CODE
 #ifdef USE_TRIAL_CODE
 
     /*
@@ -218,8 +219,8 @@ seqtime::update_pixmap ()
         measures_per_line = 1;
 
     int ticks_per_step = ticks_per_major * measures_per_line;
-    int end_tick = (m_window_x * m_zoom) + m_scroll_offset_ticks;
-    int start_tick = m_scroll_offset_ticks -
+    int endtick = (m_window_x * m_zoom) + m_scroll_offset_ticks;
+    int starttick = m_scroll_offset_ticks -
         (m_scroll_offset_ticks % ticks_per_step);
 
 #else

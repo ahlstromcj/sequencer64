@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-08-21
+ * \updates       2016-09-22
  * \license       GNU GPLv2 or above
  *
  *  Compare this class to eventedit, which has to do some similar things,
@@ -103,6 +103,7 @@
 #endif
 
 #ifdef SEQ64_STAZED_TRANSPOSE
+#include "pixmaps/drum.xpm"
 #include "pixmaps/transpose.xpm"
 #endif
 
@@ -233,6 +234,7 @@ seqedit::seqedit
     m_menu_length       (manage(new Gtk::Menu())),
 #ifdef SEQ64_STAZED_TRANSPOSE
     m_toggle_transpose  (manage(new Gtk::ToggleButton())),
+    m_image_transpose   (),
 #endif
     m_menu_midich       (nullptr),
     m_menu_midibus      (nullptr),
@@ -399,6 +401,7 @@ seqedit::seqedit
 
 #ifdef SEQ64_STAZED_TRANSPOSE
     m_toggle_transpose->add(*manage(new PIXBUF_IMAGE(transpose_xpm)));
+    m_toggle_transpose->set_focus_on_click(false); // set_can_focus(false);
     m_toggle_transpose->signal_clicked().connect
     (
         mem_fun(*this, &seqedit::transpose_change_callback)
@@ -2059,7 +2062,34 @@ seqedit::name_change_callback ()
 void
 seqedit::transpose_change_callback ()
 {
-    m_seq.set_transposable(m_toggle_transpose->get_active());
+    bool istransposable = m_toggle_transpose->get_active();
+    set_transpose_image(istransposable);
+    m_seq.set_transposable(istransposable);
+}
+
+/**
+ *  Changes the image used for the transpose button.
+ *
+ * \param istransposable
+ *      If true, set the image to the "Transpose" icon.  Otherwise, set
+ *      it to the "Drum" (not transposable) icon.
+ */
+
+void
+seqedit::set_transpose_image (bool istransposable)
+{
+    delete m_image_transpose;
+    if (istransposable)
+    {
+        m_image_transpose = manage(new PIXBUF_IMAGE(transpose_xpm));
+        add_tooltip(m_toggle_transpose, "Sequence is transposable.");
+    }
+    else
+    {
+        m_image_transpose = manage(new PIXBUF_IMAGE(drum_xpm));
+        add_tooltip(m_toggle_transpose, "Sequence is not transposable.");
+    }
+    m_toggle_transpose->set_image(*m_image_transpose);
 }
 
 #endif

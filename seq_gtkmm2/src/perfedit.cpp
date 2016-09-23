@@ -882,13 +882,13 @@ void
 perfedit::start_playing ()
 {
 #ifdef SEQ64_STAZED_TRANSPORT
-    perf().start_from_perfedit(true);
+    perf().start_from_perfedit(true);   /* song mode when perfedit plays    */
 #endif
 
 #ifdef SEQ64_PAUSE_SUPPORT
-    perf().pause_key();                 /* perf().start_key() */
+    perf().pause_key();                 /* perf().start_key()               */
 #else
-    perf().start_playing();             /* legacy behavior  */
+    perf().start_playing();             /* legacy and stazed behavior       */
 #endif
 }
 
@@ -896,10 +896,11 @@ perfedit::start_playing ()
  *  Pauses the playing of the song, leaving the progress bar where it stopped.
  *  Currently, it is just the same as stop_playing(), but we will get it to
  *  work.  Keeps the stop button enabled as a kind of rewind for ALSA.
+ *  Stop in place!
  */
 
 void
-perfedit::pause_playing ()                      /* Stop in place!   */
+perfedit::pause_playing ()
 {
 #ifdef SEQ64_STAZED_TRANSPORT
     perf().start_from_perfedit(false);  /* complement to start_playing()    */

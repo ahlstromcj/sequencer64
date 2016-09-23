@@ -1772,6 +1772,30 @@ perform::copy_triggers ()
  *  flag is false, that turns off "song" mode.  So that explains why
  *  mute/unmute is disabled.
  *
+ * Playback use cases:
+ *
+ *      These use cases are meant to apply to either a Seq32 or a regular build
+ *      of Sequencer64, eventually.  Currently, the regular build does not have
+ *      a concept of a "global" perform song-mode flag.
+ *
+ *      -#  mainwnd.
+ *          -#  Play.  If the perform song-mode is "Song", then use that mode.
+ *              Otherwise, use "Live" mode.
+ *          -#  Stop.  This action is modeless here.  In ALSA, it will cause
+ *              a rewind (but currently seqroll doesn't rewind until Play is
+ *              clicked, a minor bug).
+ *          -#  Pause.  Same processing as Play or Stop, depending on current
+ *              status.  When stopping, the progress bars in seqroll and
+ *              perfroll remain at their current point.
+ *      -#  perfedit.
+ *          -#  Play.  Override the current perform song-mode to use "Song".
+ *          -#  Stop.  Revert the perfedit setting, in case play is restarted
+ *              or resumed via mainwnd.
+ *          -#  Pause.  Same processing as Play or Stop, depending on current
+ *              status.
+ *       -# ALSA versus JACK.
+ *          -# TODO.
+ *
  * \param songmode
  *      Indicates if the caller wants to start the playback in JACK mode.
  *      In the seq42 (yes, "42", not "24") code at GitHub, this flag was
@@ -1781,6 +1805,7 @@ perform::copy_triggers ()
  *      "paused", then we start it in Live mode, which works because Song
  *      mode has already turned on the sequences.  This method is not quite
  *      intuitive, because it is really following Live mode.
+ *      mainwnd uses this parameter, passing in perform::song_start_mode().
  */
 
 #ifdef SEQ64_STAZED_JACK_SUPPORT
@@ -1789,7 +1814,8 @@ void
 perform::start_playing (bool songmode)
 {
 #ifdef SEQ64_STAZED_TRANSPORT
-    if (songmode || m_start_from_perfedit)
+//  if (songmode || m_start_from_perfedit)
+    if (song_start_mode() || m_start_from_perfedit)
 #else
     if (songmode)
 #endif
@@ -1821,6 +1847,11 @@ perform::start_playing (bool songmode)
 }
 
 #else   // SEQ64_STAZED_JACK_SUPPORT
+
+/*
+ * In this legacy version, the songmode parameter simply indicates which GUI,
+ * mainwnd ("live", false) or perfedit ("song", true) started the playback.
+ */
 
 void
 perform::start_playing (bool songmode)

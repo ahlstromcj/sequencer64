@@ -1594,6 +1594,11 @@ mainwnd::start_playing ()               /* Play!            */
 #else
 
 #ifdef SEQ64_PAUSE_SUPPORT
+
+    /*
+     * I don't think we need the parameter here... think about it.
+     */
+
     perf().pause_key(perf().song_start_mode());     /* perf().start_key() */
 #else
     perf().start_playing(perf().song_start_mode()); /* legacyish behavior */

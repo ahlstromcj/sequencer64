@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-08-14
+ * \updates       2016-09-25
  * \license       GNU GPLv2 or above
  *
  *  The patterns/sequence editor is expandable in both directions, but the
@@ -265,10 +265,6 @@ seqtime::update_pixmap ()
     int height = 10;
     int y_text = 6;
 
-//  int x_end = m_seq.get_length() / m_zoom - m_scroll_offset_x - 21;
-//  draw_rectangle_on_pixmap(black_paint(), x_end, 7, 20, 10);
-//  render_string_on_pixmap(x_end + 1, 6, "END", font::WHITE, true);
-
 #else
 
     int x = m_scroll_offset_x;
@@ -276,10 +272,6 @@ seqtime::update_pixmap ()
     int width = 20;
     int height = 8;
     int y_text = 7;
-
-//  int x_end = m_seq.get_length() / m_zoom - m_scroll_offset_x;
-//  draw_rectangle_on_pixmap(black_paint(), x_end, 9, 19, 8);
-//  render_string_on_pixmap(x_end + 1, 7, "END", font::WHITE, true);
 
 #endif
 

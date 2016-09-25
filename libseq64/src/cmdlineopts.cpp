@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-20
- * \updates       2016-09-18
+ * \updates       2016-09-24
  * \license       GNU GPLv2 or above
  *
  *  The "rc" command-line options override setting that are first read from
@@ -711,6 +711,12 @@ const static std::string s_build_jack_session = "on";
 const static std::string s_build_jack_session = "off";
 #endif
 
+#ifdef SEQ64_ENABLE_EVENT_EDITOR
+const static std::string s_event_editor = "on";
+#else
+const static std::string s_event_editor = "off";
+#endif
+
 #ifdef SEQ64_PAUSE_SUPPORT
 const static std::string s_build_pause_support = "on";
 #else
@@ -760,6 +766,12 @@ const static std::string s_statistics_support = "on";
 #else
 const static std::string s_statistics_support = "off";
 #endif
+ 
+#ifdef SEQ64_STRIP_EMPTY_MUTES
+const static std::string s_strip_empty_mutes = "on";
+#else
+const static std::string s_strip_empty_mutes = "off";
+#endif
 
 /*
  * Still EXPERIMENTAL/UNOFFICIAL support.
@@ -769,6 +781,12 @@ const static std::string s_statistics_support = "off";
 const static std::string s_seq32_jack_support = "on";
 #else
 const static std::string s_seq32_jack_support = "off";
+#endif
+
+#ifdef SEQ64_STAZED_TRANSPOSE
+const static std::string s_seq32_transpose = "on";
+#else
+const static std::string s_seq32_transpose = "off";
 #endif
 
 #ifdef SEQ64_STAZED_TRANSPORT
@@ -797,22 +815,27 @@ build_details ()
     std::ostringstream result;
     result
 << "Build features:" << std::endl
-<< "  Highlight empty sequences: " << s_build_highlight_empty << std::endl
-<< "  LASH support:              " << s_build_lash_support << std::endl
-<< "  JACK support:              " << s_build_jack_support << std::endl
-<< "  JACK session:              " << s_build_jack_session << std::endl
-<< "  Pause support:             " << s_build_pause_support << std::endl
-<< "  Stazed chord generator:    " << s_build_chord_generator << std::endl
-<< "  Event multimap (vs list):  " << s_build_use_event_map << std::endl
-<< "  Highlight pattern in edit: " << s_build_edit_highlight << std::endl
-<< "  Save time-signature/tempo: " << s_build_timesig_tempo << std::endl
-<< "  Use MIDI vector (vs list): " << s_build_midi_vector << std::endl
-<< "  Solid piano-roll grid:     " << s_build_solid_grid << std::endl
-<< "  Follow progress bar:       " << s_build_follow_progress << std::endl
-<< "  Statistics support:        " << s_statistics_support << std::endl
-<< "  Seq32 JACK support (exp):  " << s_seq32_jack_support << std::endl
-<< "  Seq32 transport (exp):     " << s_seq32_transport << std::endl
-<< "  Seq32 menu buttons (exp):  " << s_seq32_menu_buttons << std::endl
+<< "  Highlight empty sequences: " << s_build_highlight_empty   << std::endl
+<< "* LASH support:              " << s_build_lash_support      << std::endl
+<< "* JACK support:              " << s_build_jack_support      << std::endl
+<< "* JACK session:              " << s_build_jack_session      << std::endl
+<< "* Event editor:              " << s_event_editor            << std::endl
+<< "* Pause support:             " << s_build_pause_support     << std::endl
+<< "* Seq32 chord generator:     " << s_build_chord_generator   << std::endl
+<< "  Event multimap (vs list):  " << s_build_use_event_map     << std::endl
+<< "* Highlight pattern in edit: " << s_build_edit_highlight    << std::endl
+<< "  Save time-signature/tempo: " << s_build_timesig_tempo     << std::endl
+<< "  Use MIDI vector (vs list): " << s_build_midi_vector       << std::endl
+<< "  Solid piano-roll grid:     " << s_build_solid_grid        << std::endl
+<< "  Follow progress bar:       " << s_build_follow_progress   << std::endl
+<< "* Statistics support:        " << s_statistics_support      << std::endl
+<< "* Strip empty mutes section: " << s_strip_empty_mutes       << std::endl
+<< "* Seq32 JACK support (exp):  " << s_seq32_jack_support      << std::endl
+<< "* Seq32 transpose (exp):     " << s_seq32_transpose         << std::endl
+<< "  Seq32 transport (exp):     " << s_seq32_transport         << std::endl
+<< "  Seq32 menu buttons (exp):  " << s_seq32_menu_buttons      << std::endl
+<< "* Means option is enabled/disabled with configure script."  << std::endl
+<< "  Otherwise, edit libseq64/include/seq64_features.h."       << std::endl
     ;
     return result.str();
 }

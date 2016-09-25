@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and Tim Deagan
  * \date          2015-07-24
- * \updates       2016-09-18
+ * \updates       2016-09-25
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -1797,15 +1797,14 @@ perform::copy_triggers ()
  *          -# TODO.
  *
  * \param songmode
- *      Indicates if the caller wants to start the playback in JACK mode.
- *      In the seq42 (yes, "42", not "24") code at GitHub, this flag was
- *      identical to the "global_jack_start_mode" flag, which is true for
- *      Song mode, and false for Live mode.  False disables Song mode, and
- *      is the default, which matches seq24.  If the previous state was
- *      "paused", then we start it in Live mode, which works because Song
- *      mode has already turned on the sequences.  This method is not quite
- *      intuitive, because it is really following Live mode.
- *      mainwnd uses this parameter, passing in perform::song_start_mode().
+ *      Indicates if the caller wants to start the playback in Song mode
+ *      (sometimes erroneously referred to as "JACK mode").  In the seq32 code
+ *      at GitHub, this flag was identical to the "global_jack_start_mode"
+ *      flag, which is true for Song mode, and false for Live mode.  False
+ *      disables Song mode, and is the default, which matches seq24.
+ *      Generally, we pass true in this parameter if we're starting playback
+ *      from the perfedit window.  It alters the m_start_from_perfedit member,
+ *      not the m_song_start_mode member (which replaces the global flag now).
  */
 
 #ifdef SEQ64_STAZED_JACK_SUPPORT
@@ -1814,8 +1813,8 @@ void
 perform::start_playing (bool songmode)
 {
 #ifdef SEQ64_STAZED_TRANSPORT
-//  if (songmode || m_start_from_perfedit)
-    if (song_start_mode() || m_start_from_perfedit)
+    m_start_from_perfedit = songmode;
+    if (songmode || song_start_mode())
 #else
     if (songmode)
 #endif
@@ -1955,24 +1954,38 @@ perform::set_jack_mode (bool jack_button_active)
  *
  *  We still need to make restarting pick up at the same place in ALSA mode;
  *  in JACK mode, JACK transport takes care of that feature.
+ *
+ * \param songmode
+ *      Indicates that, if resuming play, it should play in Song mode (true)
+ *      or Live mode (false).  See the comments for the start_playing()
+ *      function.
  */
 
 void
-perform::pause_playing ()
+perform::pause_playing (bool songmode)
 {
 #ifdef SEQ64_JACK_SUPPORT
-    m_jack_asst.stop();                 /* stop_jack()                  */
-    if (! is_jack_running())            /* stop() { inner_stop(); }     */
+    m_jack_asst.stop();                     /* stop_jack()                  */
+    if (! is_jack_running())                /* stop() { inner_stop(); }     */
     {
 #endif
         set_running(false);
-        reset_sequences(true);          /* reset "last-tick" for pause  */
+        reset_sequences(true);              /* reset "last-tick" for pause  */
         m_usemidiclock = false;
 #ifdef SEQ64_JACK_SUPPORT
     }
 #endif
+
+#ifdef SEQ64_STAZED_TRANSPORT
+    // EXPERIMENTAL:
+    if (! m_is_paused)                      /* seq64 was in output_func()   */
+        m_start_from_perfedit = false;      /* act like stop_playing()      */
+    else
+        m_start_from_perfedit = songmode;   /* act like start_playing()     */
+#endif
+
     m_is_paused = true;
-    is_pattern_playing(false);
+    is_pattern_playing(false);              // hmmmmmmmmmmmmmmmmmm
 }
 
 /**
@@ -1992,6 +2005,10 @@ perform::stop_playing ()
     m_is_paused = false;
     is_pattern_playing(false);
     m_tick = 0;                         // or get_left_tick()
+#endif
+
+#ifdef SEQ64_STAZED_TRANSPORT
+    m_start_from_perfedit = false;
 #endif
 
 }
@@ -2385,7 +2402,7 @@ perform::output_func ()
     while (m_outputing)
     {
         m_condition_var.lock();
-        while (! is_running())              /* m_running */
+        while (! is_running())
         {
             m_condition_var.wait();
             if (! m_outputing)              /* if stopping, kill thread */
@@ -2417,7 +2434,11 @@ perform::output_func ()
 #ifdef SEQ64_PAUSE_SUPPORT
             pad.js_current_tick = get_jack_tick();
 #endif
-            m_is_paused = false;
+            /*
+             * We still need this flag, so move this setting until later.
+             *
+             * m_is_paused = false;
+             */
         }
         else
         {
@@ -2473,7 +2494,10 @@ perform::output_func ()
 
         /*
          * If we are in the performance view (song editor), we care about
-         * starting from the m_starting_tick offset.
+         * starting from the m_starting_tick offset.  However, if the pause
+         * key is what is resuming playback, then we do not want to reset the
+         * position.  So how to detect that situation, since m_is_pause is now
+         * false?
          */
 
 #ifdef SEQ64_JACK_SUPPORT
@@ -2482,6 +2506,10 @@ perform::output_func ()
         bool ok = m_playback_mode;
 #endif
 
+#ifdef SEQ64_PAUSE_SUPPORT
+        ok = ok && ! m_is_paused;
+#endif
+        m_is_paused = false;
         if (ok)
         {
             pad.js_current_tick = long(m_starting_tick);    // midipulse
@@ -3917,7 +3945,7 @@ perform::playback_key_event (const keystroke & k, bool songmode)
             if (onekey)
             {
                 if (is_running())
-                    pause_playing();
+                    pause_playing(songmode);    // EXPERIMENTAL
                 else
                     start_playing(songmode);
             }
@@ -3932,7 +3960,7 @@ perform::playback_key_event (const keystroke & k, bool songmode)
         else if (k.key() == PAUSEKEY)
         {
             if (is_running())
-                pause_playing();
+                pause_playing(songmode);        // EXPERIMENTAL
             else
                 start_playing(songmode);
         }

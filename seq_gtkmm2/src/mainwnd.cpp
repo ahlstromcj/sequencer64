@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-09-18
+ * \updates       2016-09-25
  * \license       GNU GPLv2 or above
  *
  *  The main window holds the menu and the main controls of the application,
@@ -183,7 +183,7 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
     m_image_play            (),
     m_button_learn          (manage(new Gtk::Button())),    /* group learn (L) */
     m_button_stop           (manage(new Gtk::Button())),
-    m_button_play           (manage(new Gtk::Button())),
+    m_button_play           (manage(new Gtk::Button())),    /* also for pause  */
     m_button_perfedit       (manage(new Gtk::Button())),
 #ifdef SEQ64_STAZED_MENU_BUTTONS
 #ifdef SEQ64_MENU_BUTTON_PIXMAPS
@@ -1571,39 +1571,23 @@ mainwnd::apply_song_transpose ()
 #endif
 
 /**
- *  Starts playing of the song.  The rc_settings::song_start_mode() function
- *  is used (if JACK is running, though this will change soon) to determine if
- *  the playback mode is "live" (false) or "song" (true).  An accessor to
- *  perform::start_playing().  This function is actually a callback for the
- *  pause/play button.
- *
- * \note
- *      This overrides the old behavior of playing live mode if the song
- *      is started from the main window.  So let's go back to the way
- *      seq24 handles it.  We could also make it dependent on the --legacy
- *      option, but that's too much trouble for now.
+ *  Starts playing of the song.  An accessor to perform::start_playing().
+ *  This function is actually a callback for the pause/play button.
+ *  Now very similar to perfedit::start_playing(), except that the implicit
+ *  songmode == false parameter is used here.
  */
 
 void
-mainwnd::start_playing ()               /* Play!            */
+mainwnd::start_playing ()                           /* Play!                */
 {
 #ifdef SEQ64_STAZED_JACK_SUPPORT
-
-    perf().start_playing();             /* stazed behavior  */
-
+    perf().start_key();                             /* pause_key()????      */
 #else
-
 #ifdef SEQ64_PAUSE_SUPPORT
-
-    /*
-     * I don't think we need the parameter here... think about it.
-     */
-
-    perf().pause_key(perf().song_start_mode());     /* perf().start_key() */
+    perf().pause_key();
 #else
-    perf().start_playing(perf().song_start_mode()); /* legacyish behavior */
+    perf().start_playing();                         /* legacy behavior      */
 #endif
-
 #endif
 }
 
@@ -1662,7 +1646,7 @@ mainwnd::toggle_playing ()
     if (perf().is_running())
     {
 #ifdef SEQ64_PAUSE_SUPPORT
-        (void) perf().playback_key_event(perf().keys().stop());
+        perf().stop_key();
 #else
         perf().stop_playing();
 #endif
@@ -1670,12 +1654,9 @@ mainwnd::toggle_playing ()
     else
     {
 #ifdef SEQ64_PAUSE_SUPPORT
-        (void) perf().playback_key_event
-        (
-            perf().keys().start(), perf().song_start_mode()     // NEW arg
-        );
+        perf().start_key();
 #else
-        perf().start_playing(perf().song_start_mode());         // NEW arg
+        perf().start_playing();
 #endif
     }
 }
@@ -1700,9 +1681,8 @@ mainwnd::on_delete_event (GdkEventAny * /*ev*/)
 /**
  *  Handles a key release event.  Is this worth turning into a switch
  *  statement?  Or offloading to a perform member function?  The latter.
- *
  *  Also, we now effectively press the CAPS LOCK key for the user if in
- *  group-learn mode.
+ *  group-learn mode.  The function that does this is keystroke::shift_lock().
  *
  * \todo
  *      Test this functionality in old and new application.
@@ -1849,7 +1829,7 @@ mainwnd::on_key_press_event (GdkEventKey * ev)
                 perf().unset_mode_group_learn();
             }
         }
-        if (! perf().playback_key_event(k, perf().song_start_mode()))
+        if (! perf().playback_key_event(k))
         {
             /*
              *  Toggle the sequence mute/unmute setting using keyboard keys.

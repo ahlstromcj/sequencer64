@@ -180,10 +180,11 @@
 #undef  USE_STAZED_SHIFT_SUPPORT
 
 /*
- *  Adds support for various transport features, more to come.
+ *  Adds support for various transport features, more to come.  Now a
+ *  configure-time option.
+ *
+ * #define SEQ64_STAZED_TRANSPORT
  */
-
-#define SEQ64_STAZED_TRANSPORT
 
 /*
  *  Stazed implementation of auto-scroll.
@@ -207,6 +208,7 @@
  *    SEQ64_PAUSE_SUPPORT
  *    SEQ64_STAZED_CHORD_GENERATOR
  *    SEQ64_STAZED_TRANSPOSE
+ *    SEQ64_STAZED_TRANSPORT
  *    SEQ64_STRIP_EMPTY_MUTES
  */
 

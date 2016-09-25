@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-09-18
+ * \updates       2016-09-24
  * \license       GNU GPLv2 or above
  *
  *  The functionality of this class also includes handling some of the
@@ -4743,7 +4743,7 @@ sequence::set_parent (perform * p)
 void
 sequence::play_queue (midipulse tick, bool playbackmode)
 {
-    if (event_count() > 0)               /* playable events? */
+    if (event_count() > 0)               /* any playable events? */
     {
         if (check_queued_tick(tick))
         {

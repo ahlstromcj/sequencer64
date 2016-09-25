@@ -213,8 +213,18 @@ seqtime::update_pixmap ()
      * int starttick = m_scroll_offset_ticks;      // EXPERIMENTAL
      */
 
-    int measure_length_32nds = bpbar * 32 / bwidth;
-    int measures_per_line = (128 / measure_length_32nds) / (32 / m_zoom);
+    /*
+     * User layk found that m_zoom > 32 causes a seqfault.  Not sure when this
+     * issue crept in.  He offered the solution of using float value, but
+     * let's try refactoring the equation first.  And let's go even further,
+     * using the measure_length_32nds directly in the full calculation -- it
+     * makes the calculation a lot simpler.
+     *
+     * int measure_length_32nds = bpbar * 32 / bwidth;
+     * int measures_per_line = (128 / measure_length_32nds) / (32 / m_zoom);
+     */
+
+    int measures_per_line = m_zoom * bwidth * bpbar * 2;
     if (measures_per_line <= 0)
         measures_per_line = 1;
 

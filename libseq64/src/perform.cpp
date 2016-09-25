@@ -1552,21 +1552,7 @@ perform::play (midipulse tick)
     for (int i = 0; i < m_sequence_max; ++i)
     {
         if (is_active(i))
-        {
             m_seqs[i]->play_queue(tick, m_playback_mode);
-#if 0
-            sequence * s = m_seqs[i];
-            if (s->event_count() > 0)               /* playable events? */
-            {
-                if (s->check_queued_tick(tick))
-                {
-                    s->play(s->get_queued_tick() - 1, m_playback_mode);
-                    s->toggle_playing();
-                }
-                s->play(tick, m_playback_mode);
-            }
-#endif
-        }
     }
     m_master_bus.flush();                           /* flush MIDI buss  */
 }
@@ -1840,8 +1826,19 @@ perform::start_playing (bool songmode)
         if (is_jack_master())
             m_jack_asst.position(false, 0);                 /* position_jack() */
 
-        start(false);
+        /*
+         * EXPERIMENTAL, let's see if this works.
+         *
+         * It makes more sense to reverse the order of these calls.  The
+         * start() call signals the output function to continue.  The
+         * start_jack() call starts JACK transport.
+         *
+         *  start(false);
+         *  start_jack();
+         */
+
         start_jack();
+        start(false);
     }
 }
 
@@ -2140,10 +2137,9 @@ perform::inner_start (bool state)
  *  circumstances.
  *
  *  However, if JACK is running, we do not want to reset the sequences... this
- *  causes the progress bar for each sequence to remove to near the end of the
+ *  causes the progress bar for each sequence to move to near the end of the
  *  sequence.
  */
-
 
 void
 perform::inner_stop (bool midiclock)

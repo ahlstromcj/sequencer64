@@ -1700,7 +1700,7 @@ sequence::move_selected_notes (midipulse delta_tick, int delta_note)
 midipulse
 sequence::trim_timestamp (midipulse t)
 {
-    if (t > m_length)
+    if (t >= m_length)
         t -= m_length;
 
     if (t < 0)                          /* only if midipulse is signed  */
@@ -1919,6 +1919,7 @@ sequence::grow_selected (midipulse delta)
                      */
 
                     midipulse newtime = trim_timestamp(offtime + delta);
+
                     off->mark();                    /* kill old off event   */
                     er.unmark();                    /* keep old on event    */
                     e.unmark();                     /* keep new off event   */
@@ -4730,11 +4731,12 @@ sequence::set_parent (perform * p)
 
 /**
  *  Provides encapsulation for a series of called used in perform::play().
- *  Just an idea to considered for the future.
- *
  *  Starts the playing of a pattern/sequence.  This function just has the
  *  sequence dump its events.  It ignores the sequence if it has no playable
  *  MIDI events.
+ *
+ * \param tick
+ *  Provides the tick/pulse from which to start playing.
  *
  * \param playbackmode
  *      Indicates if the playback is in live mode (false) or song mode (true).

@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-09-19
+ * \updates       2016-09-26
  * \license       GNU GPLv2 or above
  *
  *  This class still has way too many members, even with the JACK and
@@ -195,10 +195,16 @@ private:
     static midi_control sm_mc_dummy;
 
     /**
-     *  If true, playback is done in Song mode, not Live mode.
+     *  If true, playback is done in Song mode, not Live mode.  This is
+     *  a replacement for the global setting, but is essentially a global
+     *  setting itself, and is saved to and restored from the "rc"
+     *  configuration file.  Sometimes called "JACK start mode", it used
+     *  to be a JACK setting, but now applies to any playback.  Do not confuse
+     *  this setting with m_playback_mode, which has a similar meaning but is
+     *  more transitory.  Probably, the concept needs some clean-up.
      */
 
-    bool m_song_start_mode;             // redundant re m_playback_mode?
+    bool m_song_start_mode;
 
 #ifdef SEQ64_STAZED_JACK_SUPPORT
 

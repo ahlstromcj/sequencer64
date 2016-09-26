@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and Tim Deagan
  * \date          2015-07-24
- * \updates       2016-09-25
+ * \updates       2016-09-26
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -307,9 +307,9 @@ bool
 perform::clear_all ()
 {
     bool result = true;
-    for (int i = 0; i < m_sequence_max; ++i)
+    for (int s = 0; s < m_sequence_max; ++s)
     {
-        if (is_active(i) && m_seqs[i]->get_editing())   /* stazed check */
+        if (is_active(s) && m_seqs[s]->get_editing())   /* stazed check */
         {
             result = false;
             break;
@@ -318,13 +318,13 @@ perform::clear_all ()
     if (result)
     {
         reset_sequences();
-        for (int i = 0; i < m_sequence_max; ++i)
-            if (is_active(i))
-                delete_sequence(i);             /* can set "is modified"    */
+        for (int s = 0; s < m_sequence_max; ++s)
+            if (is_active(s))
+                delete_sequence(s);             /* can set "is modified"    */
 
         std::string e;                          /* an empty string          */
-        for (int i = 0; i < m_max_sets; ++i)
-            set_screen_set_notepad(i, e);
+        for (int sset = 0; sset < m_max_sets; ++sset)
+            set_screen_set_notepad(sset, e);
 
         set_have_undo(false);
         m_undo_vect.clear();                    /* ca 2016-08-16            */
@@ -367,6 +367,8 @@ perform::clamp_track (int track) const
 
 /**
  * \getter m_mute_group[]
+ *
+ * \return
  *      Returns true if there are any unmute statuses in the mute-group
  *      array.  If they're all zero, we don't need to save them.
  */
@@ -1354,9 +1356,9 @@ perform::midi_control_off (int seq)
  *      m_screen_set_xxx[] arrays.
  *
  * \param notepad
- *      Provides the string date to copy into the notepad.
- *      Not sure why a pointer is used, instead of nice "const std::string
- *      &" parameter.  And this pointer isn't checked.  Fixed.
+ *      Provides the string date to copy into the notepad.  Not sure why a
+ *      pointer is used, instead of nice "const std::string &" parameter.  And
+ *      this pointer isn't checked.  Fixed.
  */
 
 void
@@ -1433,10 +1435,10 @@ perform::set_screenset (int ss)
 #ifdef SEQ64_USE_AUTO_SCREENSET_QUEUE
 
 /**
- *  EXPERIMENTAL.
+ *  EXPERIMENTAL.  Doesn't quite work.
  *
- *  If the flag is true:
- *
+ * \param flag
+ *      If the flag is true:
  *      -#  Mute all tracks in order to start from a known status for all
  *          screen-sets.
  *      -#  Unmute screen-set 0 (the first screen-set).
@@ -1458,7 +1460,7 @@ perform::set_auto_screenset (bool flag)
 }
 
 /**
- *  EXPERIMENTAL.
+ *  EXPERIMENTAL.  Doesn't quite work.
  *
  *  Queues all of the sequences in the given screen-set.  Doesn't work, even
  *  after a lot of hacking on it, so disabled for now.
@@ -1522,11 +1524,11 @@ perform::swap_screenset_queues (int ss0, int ss1)
 void
 perform::set_playing_screenset ()
 {
-    for (int i = 0; i < m_seqs_in_set; ++i)
+    for (int s = 0; s < m_seqs_in_set; ++s)
     {
-        int source = m_playscreen_offset + i;
+        int source = m_playscreen_offset + s;
         if (is_active(source))
-            m_tracks_mute_state[i] = m_seqs[source]->get_playing();
+            m_tracks_mute_state[s] = m_seqs[source]->get_playing();
     }
     m_playing_screen = m_screenset;
     m_playscreen_offset = m_playing_screen * m_seqs_in_set;
@@ -1538,8 +1540,9 @@ perform::set_playing_screenset ()
  *  down the list of sequences and has them dump their events.  It skips
  *  sequences that have no playable MIDI events.
  *
- *  Note how often the "s" (sequence) pointer is used.  Is it worth
- *  offloading all these calls to a new sequence function?  Yes.
+ *  Note how often the "s" (sequence) pointer is used.  Is it worth offloading
+ *  all these calls to a new sequence function?  Yes.  Hence the new
+ *  sequence::play_queue function.
  *
  * \param tick
  *      Provides the tick at which to start playing.
@@ -1549,10 +1552,10 @@ void
 perform::play (midipulse tick)
 {
     m_tick = tick;
-    for (int i = 0; i < m_sequence_max; ++i)
+    for (int s = 0; s < m_sequence_max; ++s)
     {
-        if (is_active(i))
-            m_seqs[i]->play_queue(tick, m_playback_mode);
+        if (is_active(s))
+            m_seqs[s]->play_queue(tick, m_playback_mode);
     }
     m_master_bus.flush();                           /* flush MIDI buss  */
 }
@@ -1658,11 +1661,11 @@ perform::push_trigger_undo (int track)
  *  function.
  *
  * \todo
- *      Look at seq32/src/perform.cpp and the
- *      perform::push_trigger_undo(track) function, which has a track
- *      parameter that has a -1 values the supports all tracks.  It requires
- *      two new vectors (one for undo, one for redo), two new flags
- *      (likewise).  We've put this code in place, macroed out.
+ *      Look at seq32/src/perform.cpp and the perform ::
+ *      push_trigger_undo(track) function, which has a track parameter that
+ *      has a -1 values the supports all tracks.  It requires two new vectors
+ *      (one for undo, one for redo), two new flags (likewise).  We've put
+ *      this code in place, no longer macroed out, now permanent.
  */
 
 void
@@ -1670,19 +1673,15 @@ perform::pop_trigger_undo ()
 {
     if (m_undo_vect.size() > 0)
     {
-        /*
-         * int track = m_undo_vect[m_undo_vect.size() - 1];
-         */
-
         int track = m_undo_vect.back();
         m_undo_vect.pop_back();
         m_redo_vect.push_back(track);
         if (track == SEQ64_ALL_TRACKS)
         {
-            for (int i = 0; i < m_sequence_max; ++i)
+            for (int s = 0; s < m_sequence_max; ++s)
             {
-                if (is_active(i))
-                    m_seqs[i]->pop_trigger_undo();
+                if (is_active(s))
+                    m_seqs[s]->pop_trigger_undo();
             }
         }
         else
@@ -1700,19 +1699,15 @@ perform::pop_trigger_redo ()
 {
     if (m_redo_vect.size() > 0)
     {
-        /*
-         * int track = m_redo_vect[m_redo_vect.size()-1];
-         */
-
         int track = m_redo_vect.back();
         m_redo_vect.pop_back();
         m_undo_vect.push_back(track);
         if (track == SEQ64_ALL_TRACKS)
         {
-            for (int i = 0; i < m_sequence_max; ++i)
+            for (int s = 0; s < m_sequence_max; ++s)
             {
-                if (is_active(i))                   /* oops, was "track"!   */
-                    m_seqs[i]->pop_trigger_redo();
+                if (is_active(s))                   /* oops, was "track"!   */
+                    m_seqs[s]->pop_trigger_redo();
             }
         }
         else
@@ -1738,10 +1733,10 @@ perform::copy_triggers ()
     if (m_left_tick < m_right_tick)
     {
         midipulse distance = m_right_tick - m_left_tick;
-        for (int i = 0; i < m_sequence_max; ++i)
+        for (int s = 0; s < m_sequence_max; ++s)
         {
-            if (is_active(i))
-                m_seqs[i]->copy_triggers(m_left_tick, distance);
+            if (is_active(s))
+                m_seqs[s]->copy_triggers(m_left_tick, distance);
         }
     }
 }
@@ -1819,7 +1814,7 @@ perform::start_playing (bool songmode)
 #endif
         }
         start_jack();
-        start(true);    // for setting song m_playback_mode = true
+        start(true);                                        /* song mode       */
     }
     else
     {
@@ -1838,7 +1833,7 @@ perform::start_playing (bool songmode)
          */
 
         start_jack();
-        start(false);
+        start(false);                                       /* live mode       */
     }
 }
 
@@ -1873,8 +1868,20 @@ perform::start_playing (bool songmode)
          */
 
         position_jack(false);           // if Master???
-        start(false);                   /* disables perfedit mute control   */
+
+        /*
+         * EXPERIMENTAL, let's see if this works.
+         *
+         * It makes more sense to reverse the order of these calls.  The
+         * start() call signals the output function to continue.  The
+         * start_jack() call starts JACK transport.
+         *
+         *  start(false);
+         *  start_jack();
+         */
+
         start_jack();
+        start(false);                   /* disables perfedit mute control   */
     }
 
     /*
@@ -2012,19 +2019,26 @@ perform::stop_playing ()
 
 /**
  *  If JACK is supported and running, sets the position of the transport.
+ *
+ * \param songmode
+ *      If true, playback is to be in Song mode.  Otherwise, it is to be in
+ *      Live mode.
+ *
+ * \param tick
+ *      Provides the pulse position to be set.
  */
 
 void
-perform::position_jack (bool state, midipulse tick)
+perform::position_jack (bool songmode, midipulse tick)
 {
 #ifdef SEQ64_JACK_SUPPORT
 #ifdef SEQ64_STAZED_JACK_SUPPORT
-    m_jack_asst.position(state, tick);
+    m_jack_asst.position(songmode, tick);
 #else
     if (rc().with_jack_master())
         tick = SEQ64_NULL_MIDIPULSE;
 
-    m_jack_asst.position(state, tick);
+    m_jack_asst.position(songmode, tick);
 #endif
 #endif
 }
@@ -2032,17 +2046,18 @@ perform::position_jack (bool state, midipulse tick)
 /**
  *  If JACK is not running, call inner_start() with the given state.
  *
- * \param state
- *      What does this state mean?
+ * \param songmode
+ *      If true, playback is to be in Song mode.  Otherwise, it is to be in
+ *      Live mode.
  */
 
 void
-perform::start (bool state)
+perform::start (bool songmode)
 {
 #ifdef SEQ64_JACK_SUPPORT
     if (! is_jack_running())
 #endif
-        inner_start(state);
+        inner_start(songmode);
 }
 
 /**
@@ -2102,24 +2117,23 @@ perform::stop ()
  *      beginning of the sequence, even if just pausing.  This is fixed by
  *      compiling with SEQ64_PAUSE_SUPPORT, which disables calling
  *      off_sequences() when starting playback from the song editor /
- *      performance window.  WE STILL HAVE TO EVALUATE WHAT SIDE-EFFECTS MIGHT
- *      OCCUR.  ALSO CONSIDER A RUN-TIME --pause-support option for this
- *      feature.
+ *      performance window.  We still should evaluate what side-effects might
+ *      occur.  Consider a run-time --pause-support option for this feature.
  *
- * \param state
+ * \param songmode
  *      Sets the playback mode, and, if true, turns off all of the sequences.
  */
 
 void
-perform::inner_start (bool state)
+perform::inner_start (bool songmode)
 {
     m_condition_var.lock();
     if (! is_running())
     {
-        set_playback_mode(state);
+        set_playback_mode(songmode);
 
 #ifndef SEQ64_PAUSE_SUPPORT
-        if (state)
+        if (songmode)
             off_sequences();
 #endif
 
@@ -2139,6 +2153,9 @@ perform::inner_start (bool state)
  *  However, if JACK is running, we do not want to reset the sequences... this
  *  causes the progress bar for each sequence to move to near the end of the
  *  sequence.
+ *
+ * \param midiclock
+ *      If true, indicates that the MIDI clock should be used.
  */
 
 void
@@ -2167,10 +2184,10 @@ perform::inner_stop (bool midiclock)
 void
 perform::off_sequences ()
 {
-    for (int i = 0; i < m_sequence_max; ++i)
+    for (int s = 0; s < m_sequence_max; ++s)
     {
-        if (is_active(i))
-            m_seqs[i]->set_playing(false);
+        if (is_active(s))
+            m_seqs[s]->set_playing(false);
     }
 }
 
@@ -2182,10 +2199,10 @@ perform::off_sequences ()
 void
 perform::all_notes_off ()
 {
-    for (int i = 0; i < m_sequence_max; ++i)
+    for (int s = 0; s < m_sequence_max; ++s)
     {
-        if (is_active(i))
-            m_seqs[i]->off_playing_notes();
+        if (is_active(s))
+            m_seqs[s]->off_playing_notes();
     }
     m_master_bus.flush();               /* flush the MIDI buss  */
 }
@@ -2203,7 +2220,8 @@ perform::all_notes_off ()
 
 #ifdef SEQ64_STAZED_JACK_SUPPORT
 
-void perform::reset_sequences (bool pause)
+void
+perform::reset_sequences (bool pause)
 {
     if (pause)
     {
@@ -2211,16 +2229,16 @@ void perform::reset_sequences (bool pause)
     }
     else
     {
-        for (int i = 0; i < m_sequence_max; ++i)
+        for (int s = 0; s < m_sequence_max; ++s)
         {
-            if (is_active(i))
+            if (is_active(s))
             {
-                bool state = m_seqs[i]->get_playing();
-                m_seqs[i]->off_playing_notes();
-                m_seqs[i]->set_playing(false);
-                m_seqs[i]->zero_markers();
+                bool state = m_seqs[s]->get_playing();
+                m_seqs[s]->off_playing_notes();
+                m_seqs[s]->set_playing(false);
+                m_seqs[s]->zero_markers();
                 if (! m_playback_mode)
-                    m_seqs[i]->set_playing(state);
+                    m_seqs[s]->set_playing(state);
             }
         }
     }
@@ -2322,11 +2340,11 @@ midipulse
 perform::get_max_trigger ()
 {
     midipulse result = 0;
-    for (int i = 0; i < m_sequence_max; ++i)
+    for (int s = 0; s < m_sequence_max; ++s)
     {
-        if (is_active(i))
+        if (is_active(s))
         {
-            midipulse t = m_seqs[i]->get_max_trigger();
+            midipulse t = m_seqs[s]->get_max_trigger();
             if (t > result)
                 result = t;
         }
@@ -3344,13 +3362,21 @@ perform::input_func ()
  *  byte in the variable Second, here's how to combine them into a 14-bit
  *  value (actually 16-bit since most computer CPUs deal with 16-bit, not
  *  14-bit, integers).
+ *
+ * \param b0
+ *      The first byte to be combined.
+ *
+ * \param b1
+ *      The second byte to be combined.
+ *
+ * \return
+ *      Returns the bytes basically OR'd together.
  */
 
 unsigned short
 perform::combine_bytes (midibyte b0, midibyte b1)
 {
-   unsigned short short_14bit;
-   short_14bit = (unsigned short)(b1);
+   unsigned short short_14bit = (unsigned short)(b1);
    short_14bit <<= 7;
    short_14bit |= (unsigned short)(b0);
    return short_14bit;
@@ -3368,12 +3394,12 @@ perform::combine_bytes (midibyte b0, midibyte b1)
 void
 perform::save_playing_state ()
 {
-    for (int i = 0; i < m_sequence_max; ++i)
+    for (int s = 0; s < m_sequence_max; ++s)
     {
-        if (is_active(i))
-            m_sequence_state[i] = m_seqs[i]->get_playing();
+        if (is_active(s))
+            m_sequence_state[s] = m_seqs[s]->get_playing();
         else
-            m_sequence_state[i] = false;
+            m_sequence_state[s] = false;
     }
 }
 
@@ -3386,10 +3412,10 @@ perform::save_playing_state ()
 void
 perform::restore_playing_state ()
 {
-    for (int i = 0; i < m_sequence_max; ++i)
+    for (int s = 0; s < m_sequence_max; ++s)
     {
-        if (is_active(i))
-            m_seqs[i]->set_playing(m_sequence_state[i]);
+        if (is_active(s))
+            m_seqs[s]->set_playing(m_sequence_state[s]);
     }
 }
 
@@ -3751,7 +3777,7 @@ perform::mainwnd_key_event (const keystroke & k)
  *
  * \param drop_sequence
  *      Provides the index of the sequence whose selected trigger is to be
- *      cut, copied, or pasted.  (Undo not yet supported).
+ *      cut, copied, or pasted.  Undo and redo are now supported.
  *
  * \return
  *      Returns true if the key was handled.
@@ -3988,10 +4014,10 @@ perform::print_triggers () const
 void
 perform::apply_song_transpose ()
 {
-    for (int i = 0; i < m_sequence_max; ++i)
+    for (int s = 0; s < m_sequence_max; ++s)
     {
-        if (is_active(i))
-            get_sequence(i)->apply_song_transpose();
+        if (is_active(s))
+            get_sequence(s)->apply_song_transpose();
     }
 }
 
@@ -4011,10 +4037,10 @@ int
 perform::max_active_set () const
 {
     int result = -1;
-    for (int i = 0; i < m_sequence_max; ++i)
+    for (int s = 0; s < m_sequence_max; ++s)
     {
-        if (is_active(i))
-            result = i;
+        if (is_active(s))
+            result = s;
     }
     if (result >= 0)
         result = result / m_seqs_in_set;

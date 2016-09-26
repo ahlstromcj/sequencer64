@@ -1,19 +1,23 @@
 Bugs and Additional Upgrade Ideas
 Chris Ahlstrom
-2015-10-27 to 2016-09-22 (New bugs and fixed bugs)
+2015-10-27 to 2016-09-26 (New bugs and fixed bugs)
 
 In no particular order...  "y" means "in progress", and "x" means it is
 basically done.
 
 -  Also see BUG REPORTS below.  Those are bug reports from other people.
--  A single Z (zoom in) in seqroll makes the END marker drawn in the wrong
+-  The Song/Live button does not seem to work if Seq32 transport is not
+   compiled in.
+x  A single Z (zoom in) in seqroll makes the END marker drawn in the wrong
    place (in b4uacuse-GM-format.midi).  Actually, it is correct for the
    sequence, but paging to the end shows seqtime and seqroll measure markers
-   out of sync.
+   out of sync.  Seems to be fixed by using Stazed/Seq32 code, though user
+   layk found that zoom > 32 would cause an exception.
 -  We need to figure out if we want the sequence length to reflect
    the actual length of long sequences, or the last measure, like it does for
    short sequences.
--  Need an alternate icon for the transposable button in seqedit.
+x  Need an alternate icon for the transposable button in seqedit.  Done, see
+   drum.xpm.
 -  Things to fix while getting the stazed/seq32 JACK support working:
    - Make the perfedit JACK icon work like setting File / Options /
      JACK Transport plus JACK Connect options.
@@ -669,6 +673,29 @@ https://github.com/ahlstromcj/sequencer64/pull/24.diff
 
 
 DONE, merged into fixups as well.
+
+
+
+Date: Sun, 25 Sep 2016 19:25:42 -0700                                             
+From: alejg <notifications@github.com>                                            
+To: ahlstromcj/sequencer64 <sequencer64@noreply.github.com>                       
+Subject: [ahlstromcj/sequencer64] Cannot edit note length (#29)                   
+                                                                                  
+When the note length is longer than the measure the editor behaves incorrectly,
+not allowing to change the note off position.
+
+![seq64](https://cloud.githubusercontent.com/assets/15330205/18820832/4973aac4-837
+7-11e6-8a01-4ee1a11214bd.png)
+
+
+
+Date: Sun, 25 Sep 2016 19:42:34 -0700                                             
+From: alejg <notifications@github.com>                                            
+To: ahlstromcj/sequencer64 <sequencer64@noreply.github.com>                       
+Subject: [ahlstromcj/sequencer64] Unable to write the BPM (#30)                   
+                                                                                  
+The BPM spin box shows that is allowed to write on it, but when try to enter      
+numbers, the pattern toggle shortcuts are triggered.     
 
 
 # vim: sw=4 ts=4 wm=4 et ft=sh

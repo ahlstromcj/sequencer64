@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-09-26
+ * \updates       2016-09-27
  * \license       GNU GPLv2 or above
  *
  *  The main window is known as the "Patterns window" or "Patterns
@@ -54,6 +54,12 @@
  */
 
 #define SEQ64_MENU_BUTTON_PIXMAPS
+
+/**
+ *  EXPERIMENTAL
+ */
+
+#undef  USE_MAINWND_TAP_BUTTON          // EXPERIMENTAL
 
 /*
  *  Easier access to Gtk-2 classes.
@@ -228,6 +234,10 @@ private:
     Gtk::Adjustment * m_adjust_bpm;     /**< BPM adjustment object.         */
     Gtk::SpinButton * m_spinbutton_bpm; /**< BPM spin-button object.        */
 
+#ifdef USE_MAINWND_TAP_BUTTON
+    Gtk::Button * m_button_tap;         /**< Tap-for-tempo button.          */
+#endif
+
     /**
      *  The spin/adjustment controls for the screenset value.
      */
@@ -269,6 +279,18 @@ private:
      */
 
     sigc::connection m_timeout_connect;
+
+#ifdef USE_MAINWND_TAP_BUTTON
+
+    /**
+     *  EXPERIMENTAL
+     */
+
+    int m_current_beats;
+
+    long m_base_time_ms;
+
+#endif
 
     /**
      *  Indicates if the menu bar is to be greyed out or not.  This is a
@@ -343,6 +365,11 @@ private:
     void pause_playing ();
     void stop_playing ();
     void toggle_playing ();
+
+#ifdef USE_MAINWND_TAP_BUTTON
+    void tap ();        // EXPERIMENTAL
+    int update_bpm ();  // EXPERIMENTAL
+#endif
 
     /**
      *  Toggle the group-learn status.  Simply forwards the call to

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-09-26
+ * \updates       2016-09-27
  * \license       GNU GPLv2 or above
  *
  *  The main window holds the menu and the main controls of the application,
@@ -209,6 +209,9 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
         )
     ),
     m_spinbutton_bpm        (manage(new Gtk::SpinButton(*m_adjust_bpm))),
+#ifdef USE_MAINWND_TAP_BUTTON
+    m_button_tap            (manage(new Gtk::Button("0"))),
+#endif
     m_adjust_ss             (manage(new Gtk::Adjustment(0, 0, c_max_sets-1, 1))),
     m_spinbutton_ss         (manage(new Gtk::SpinButton(*m_adjust_ss))),
 
@@ -226,6 +229,10 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
     m_is_running            (false),
 #endif
     m_timeout_connect       (),                     /* handler              */
+#ifdef USE_MAINWND_TAP_BUTTON
+    m_current_beats         (0),
+    m_base_time_ms          (0),
+#endif
     m_menu_mode             (false),                /* stazed 2016-07-30    */
     m_call_seq_edit         (false),                /* new ca 2016-05-15    */
     m_call_seq_eventedit    (false)                 /* new ca 2016-05-19    */
@@ -539,7 +546,7 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
     m_button_play->add(*manage(new PIXBUF_IMAGE(play2_xpm)));
     m_button_play->signal_clicked().connect
     (
-        mem_fun(*this, &mainwnd::start_playing)             /* ca 2016-03-17 */
+        mem_fun(*this, &mainwnd::start_playing)
     );
     add_tooltip(m_button_play, "Start playback from the current location.");
     startstophbox->pack_start(*m_button_play, Gtk::PACK_SHRINK);
@@ -557,6 +564,20 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
     m_spinbutton_bpm->set_sensitive(true);
     m_spinbutton_bpm->set_editable(true);
 
+#ifdef USE_MAINWND_TAP_BUTTON
+
+    /*
+     * EXPERIMENTAL
+     */
+
+    m_button_tap->signal_clicked().connect(mem_fun(*this, &mainwnd::tap));
+    add_tooltip
+    (
+        m_button_tap, "Tap in time to set the beats per minute (BPM) value."
+    );
+
+#endif
+
     m_adjust_bpm->signal_value_changed().connect
     (
         mem_fun(*this, &mainwnd::adj_callback_bpm)
@@ -566,6 +587,10 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
     bpmlabel->set_mnemonic_widget(*m_spinbutton_bpm);
     bpmhbox->pack_start(*bpmlabel, Gtk::PACK_SHRINK);
     bpmhbox->pack_start(*m_spinbutton_bpm, Gtk::PACK_SHRINK);
+
+#ifdef USE_MAINWND_TAP_BUTTON
+    bpmhbox->pack_start(*m_button_tap, Gtk::PACK_SHRINK);
+#endif
 
     /*
      * Screen set name edit line.
@@ -1695,6 +1720,60 @@ mainwnd::toggle_playing ()
 #endif
     }
 }
+
+#ifdef USE_MAINWND_TAP_BUTTON
+
+/**
+ *  EXPERIMENTAL
+ */
+
+void
+mainwnd::tap ()
+{
+    int s = update_bpm();
+    printf("TAP #%2d @ %d ms\n", m_current_beats, s);
+    char temp[4];
+    snprintf(temp, sizeof(temp), "%d", m_current_beats);
+
+    // m_button_tap->set_text(temp);
+
+    Gtk::Label * lblptr(dynamic_cast<Gtk::Label *>
+    (
+        m_button_tap->get_child())
+    );
+    if (not_nullptr(lblptr))
+        lblptr->set_text(temp);
+}
+
+/**
+ *  EXPERIMENTAL
+ */
+
+int
+mainwnd::update_bpm ()
+{
+    ///// int bpm = 0;
+    struct timespec spec;
+    clock_gettime(CLOCK_REALTIME, &spec);
+    long s = long(spec.tv_sec) * 1000;      /* seconds to milliseconds      */
+    long ms = round(spec.tv_nsec / 1.0e6);  /* nanoseconds to milliseconds  */
+    s += ms;
+    if (m_current_beats == 0)
+    {
+        m_base_time_ms = s;
+    }
+    else if (m_current_beats > 1)
+ 	{
+		// var now = new Date();
+		// int ms = now.getTime() - startTime.getTime();
+		// int minutes = ms / 60000.0;
+		// int bpm = (currentBeats - 1) / minutes;
+	}
+    ++m_current_beats;
+    return int(s);                          /* TEMPORARY FOR DEBUGGING      */
+}
+
+#endif
 
 /**
  *  This callback function handles a delete event from ...?

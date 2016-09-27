@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-09-20
+ * \updates       2016-09-26
  * \license       GNU GPLv2 or above
  *
  *  There are a large number of existing items to discuss.  But for now let's
@@ -185,6 +185,10 @@ seqroll::seqroll
 #ifdef SEQ64_FOLLOW_PROGRESS_BAR
     m_scroll_page           (0),
 #endif
+#ifdef USE_STAZED_TRANSPORT_SEQROLL_BUTTON  /* just discovered this code    */
+    m_transport_follow      (true),
+    m_trans_button_press    (false),
+#endif
     m_background_sequence   (0),
     m_drawing_background_seq(false),
     m_status                (0),
@@ -301,6 +305,14 @@ seqroll::change_horz ()
 {
     m_scroll_offset_ticks = int(m_hadjust.get_value());
     m_scroll_offset_x = m_scroll_offset_ticks / m_zoom;
+
+    /*
+     * Not needed:
+     *
+     * if (m_ignore_redraw)
+     *     return;
+     */
+
     update_and_draw(true);
 }
 
@@ -313,6 +325,14 @@ seqroll::change_vert ()
 {
     m_scroll_offset_key = int(m_vadjust.get_value());
     m_scroll_offset_y = m_scroll_offset_key * c_key_y;
+
+    /*
+     * Not needed:
+     *
+     * if (m_ignore_redraw)
+     *     return;
+     */
+
     update_and_draw(true);
 }
 
@@ -327,6 +347,14 @@ seqroll::reset ()
 {
     m_scroll_offset_ticks = int(m_hadjust.get_value());
     m_scroll_offset_x = m_scroll_offset_ticks / m_zoom;
+
+    /*
+     * Not needed:
+     *
+     * if (m_ignore_redraw)
+     *     return;
+     */
+
     update_sizes();
     update_and_draw();
 }
@@ -351,6 +379,7 @@ seqroll::redraw ()
  *
  * \param force
  *      If true, force an immediate draw, otherwise just queue up a draw.
+ *      This value defaults to false.
  */
 
 void
@@ -372,6 +401,13 @@ seqroll::update_and_draw (int force)
 void
 seqroll::redraw_events ()
 {
+    /*
+     * Not needed:
+     *
+     * if (m_ignore_redraw)
+     *     return;
+     */
+
     update_pixmap();
     force_draw();
 }
@@ -901,10 +937,10 @@ seqroll::idle_redraw ()
 void
 seqroll::draw_selection_on_window ()
 {
-    const int thickness = 1;            /* normally 1       */
-    int x = 0, y = 0, w = 0, h = 0;     /* used throughout  */
-    set_line(Gdk::LINE_SOLID, thickness);
-    if (select_action())
+    const int thickness = 1;                /* normally 1               */
+    int x = 0, y = 0, w = 0, h = 0;         /* used throughout          */
+    set_line(Gdk::LINE_SOLID, thickness);   /* set_line_attributes()    */
+    if (select_action())                    /* select, grow, drop       */
     {
         x = m_old.x;
         y = m_old.y;
@@ -919,7 +955,7 @@ seqroll::draw_selection_on_window ()
         y -= m_scroll_offset_y;
         h += c_key_y;
     }
-    if (drop_action())
+    if (drop_action())                      /* move, paste              */
     {
         x = m_selected.x + m_current_x - m_drop_x - m_scroll_offset_x;
         y = m_selected.y + m_current_y - m_drop_y - m_scroll_offset_y;
@@ -937,9 +973,9 @@ seqroll::draw_selection_on_window ()
             w = 1;
     }
 #ifdef SEQ64_USE_BLACK_SELECTION_BOX
-        draw_rectangle(black_paint(), x, y, w, h, false);
+    draw_rectangle(black_paint(), x, y, w, h, false);
 #else
-        draw_rectangle(dark_orange(), x, y, w, h, false);
+    draw_rectangle(dark_orange(), x, y, w, h, false);
 #endif
     m_old.x = x;
     m_old.y = y;
@@ -1904,6 +1940,21 @@ seqroll::on_expose_event (GdkEventExpose * ev)
 bool
 seqroll::on_button_press_event (GdkEventButton * ev)
 {
+
+#ifdef USE_STAZED_TRANSPORT_SEQROLL_BUTTON  /* just discovered this code    */
+
+    /*
+     *  In order to avoid a double button press on a normal seq32 method.
+     */
+
+    if (! m_trans_button_press)
+    {
+        m_transport_follow = perf().get_follow_transport();
+        perf().set_follow_transport(false);
+        m_trans_button_press = true;
+    }
+#endif
+
     bool result;
     if (rc().interaction_method() == e_seq24_interaction)
         result = button_press(ev);
@@ -1955,6 +2006,11 @@ seqroll::on_button_release_event (GdkEventButton * ev)
      * if (result)
      *    perf().modify();
      */
+
+#ifdef USE_STAZED_TRANSPORT_SEQROLL_BUTTON  /* just discovered this code    */
+    perf().set_follow_transport(m_transport_follow);
+    m_trans_button_press = false;
+#endif
 
     return result;
 }

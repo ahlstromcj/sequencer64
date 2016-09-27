@@ -498,6 +498,10 @@ seqedit::seqedit
     if (usr().zoom() == SEQ64_USE_ZOOM_POWER_OF_2)      /* i.e. 0 */
         zoom = zoom_power_of_2(m_ppqn);
 
+    /*
+     * Not needed: m_seqroll_wid->set_ignore_redraw(true);
+     */
+
     set_zoom(zoom);
     set_beats_per_bar(m_seq.get_beats_per_bar());
     set_beat_width(m_seq.get_beat_width());
@@ -532,9 +536,7 @@ seqedit::seqedit
      *      m_seqroll_wid->set_can_focus();
      *      m_seqroll_wid->grab_focus();
      *
-     * Not needed:
-     *
-     * m_seqroll_wid->set_ignore_redraw(false);
+     * Not needed: m_seqroll_wid->set_ignore_redraw(false);
      */
 }
 

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-09-25
+ * \updates       2016-09-26
  * \license       GNU GPLv2 or above
  *
  *  The main window holds the menu and the main controls of the application,
@@ -547,12 +547,16 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
 
     /*
      * BPM spin button with label.  Be sure to document that right-clicking on
-     * the up or down button brings it to the very end of its range.
+     * the up or down button brings it to the very end of its range.  We now
+     * set the editable status of the spin to be true.  This still also
+     * affects the muting of slots that have a digit for a shortcut (hot) key.
      */
 
     Gtk::HBox * bpmhbox = manage(new Gtk::HBox(false, 4));
     bottomhbox->pack_start(*bpmhbox, Gtk::PACK_SHRINK);
-    m_spinbutton_bpm->set_editable(false);
+    m_spinbutton_bpm->set_sensitive(true);
+    m_spinbutton_bpm->set_editable(true);
+
     m_adjust_bpm->signal_value_changed().connect
     (
         mem_fun(*this, &mainwnd::adj_callback_bpm)
@@ -594,8 +598,18 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
 
     Gtk::HBox * sethbox = manage(new Gtk::HBox(false, 4));
     bottomhbox->pack_start(*sethbox, Gtk::PACK_SHRINK);
-    m_spinbutton_ss->set_editable(false);
-    m_spinbutton_ss->set_wrap(true);
+    m_spinbutton_ss->set_sensitive(true);
+    m_spinbutton_ss->set_editable(true);
+
+    /*
+     * @note ca 2016-09-26
+     *  We have a minor quandary here.  If this is set, we cannot edit the
+     *  numeric value directly.  If it is false, then there is no wrap-around.
+     *
+     * m_spinbutton_ss->set_wrap(true);
+     */
+
+    m_spinbutton_ss->set_wrap(false);
     m_adjust_ss->signal_value_changed().connect
     (
         mem_fun(*this, &mainwnd::adj_callback_ss)
@@ -680,6 +694,27 @@ mainwnd::~mainwnd ()
 
     if (m_sigpipe[1] != -1)
         close(m_sigpipe[1]);
+}
+
+/**
+ *  Check if one of the edit fields (BPM spinbutton, screenset spinbutton, or
+ *  the Name field) has focus.
+ *
+ * \return
+ *      Returns true if one of the three editable/modifiable fields has the
+ *      keyboard focus.
+ */
+
+bool
+mainwnd::edit_field_has_focus () const
+{
+    bool result =
+    (
+        m_spinbutton_bpm->has_focus() ||
+        m_spinbutton_ss->has_focus()  ||
+        m_entry_notes->has_focus()
+    );
+    return result;
 }
 
 #ifdef SEQ64_STAZED_MENU_BUTTONS
@@ -1838,6 +1873,9 @@ mainwnd::on_key_press_event (GdkEventKey * ev)
              *  toggle the sequence controlled by the "e" key.  Will also see
              *  if the Alt key could/should be intercepted.
              *
+             *  Also, try to avoid using the hotkeys if an editable field has
+             *  focus.
+             *
              *  Also, if the pattern-edit keys (will be minus and equals by
              *  default) are enabled and have been pressed, then bring up one
              *  of the editors (pattern or event) when the slot shortcut key
@@ -1849,6 +1887,9 @@ mainwnd::on_key_press_event (GdkEventKey * ev)
                 bool ok = perf().is_control_status();
                 if (! ok)
                     ok = ! is_ctrl_key(ev);
+
+                if (ok)
+                    ok = ! edit_field_has_focus();
 
                 if (ok)
                 {

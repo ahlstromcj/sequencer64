@@ -344,6 +344,14 @@ private:
 
 #endif
 
+#ifdef USE_STAZED_TRANSPORT_SEQROLL_BUTTON  /* just discovered this code    */
+
+    bool m_transport_follow;
+
+    bool m_trans_button_press;
+
+#endif
+
     /**
      *  Holds the value of the musical background sequence that is shown in
      *  cyan (formerly grey) on the background of the piano roll.

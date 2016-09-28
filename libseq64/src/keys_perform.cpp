@@ -362,8 +362,13 @@ keyval_normalize (keys_perform_transfer & k)
     if (k.kpt_event_edit == 0 || k.kpt_event_edit > 65536)
         k.kpt_event_edit = '-';
 
+#ifdef SEQ64_MAINWND_TAP_BUTTON
+    if (k.kpt_tap_bpm == 0 || k.kpt_tap_bpm > 65536)
+        k.kpt_tap_bpm = SEQ64_F9;
+#endif
+
 #ifdef SEQ64_PAUSE_SUPPORT
-    if (k.kpt_event_edit == 0 || k.kpt_pause > 65536)
+    if (k.kpt_event_edit == 0 || k.kpt_event_edit > 65536)
         k.kpt_event_edit = '.';
 #endif
 

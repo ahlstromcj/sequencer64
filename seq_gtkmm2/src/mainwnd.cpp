@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-09-27
+ * \updates       2016-09-28
  * \license       GNU GPLv2 or above
  *
  *  The main window holds the menu and the main controls of the application,
@@ -87,7 +87,7 @@
 #include "globals.h"
 #include "gtk_helpers.h"
 #include "gui_key_tests.hpp"            /* is_ctrl_key(), etc.          */
-#include "keys_perform.hpp"             /* \new ca 2015-09-16           */
+#include "keys_perform.hpp"
 #include "keystroke.hpp"
 #include "maintime.hpp"
 #include "mainwid.hpp"
@@ -120,6 +120,15 @@
  */
 
 #define HBOX_PADDING        10
+
+/**
+ *  The amount of time to wait for inaction before clearing the tap-button
+ *  values, in milliseconds.
+ */
+
+#ifdef SEQ64_MAINWND_TAP_BUTTON
+#define SEQ64_TAP_BUTTON_TIMEOUT    5000L
+#endif
 
 /*
  * Access some menu elements more easily.
@@ -209,7 +218,7 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
         )
     ),
     m_spinbutton_bpm        (manage(new Gtk::SpinButton(*m_adjust_bpm))),
-#ifdef USE_MAINWND_TAP_BUTTON
+#ifdef SEQ64_MAINWND_TAP_BUTTON
     m_button_tap            (manage(new Gtk::Button("0"))),
 #endif
     m_adjust_ss             (manage(new Gtk::Adjustment(0, 0, c_max_sets-1, 1))),
@@ -229,9 +238,10 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
     m_is_running            (false),
 #endif
     m_timeout_connect       (),                     /* handler              */
-#ifdef USE_MAINWND_TAP_BUTTON
+#ifdef SEQ64_MAINWND_TAP_BUTTON
     m_current_beats         (0),
     m_base_time_ms          (0),
+    m_last_time_ms          (0),
 #endif
     m_menu_mode             (false),                /* stazed 2016-07-30    */
     m_call_seq_edit         (false),                /* new ca 2016-05-15    */
@@ -564,7 +574,7 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
     m_spinbutton_bpm->set_sensitive(true);
     m_spinbutton_bpm->set_editable(true);
 
-#ifdef USE_MAINWND_TAP_BUTTON
+#ifdef SEQ64_MAINWND_TAP_BUTTON
 
     /*
      * EXPERIMENTAL
@@ -588,7 +598,7 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
     bpmhbox->pack_start(*bpmlabel, Gtk::PACK_SHRINK);
     bpmhbox->pack_start(*m_spinbutton_bpm, Gtk::PACK_SHRINK);
 
-#ifdef USE_MAINWND_TAP_BUTTON
+#ifdef SEQ64_MAINWND_TAP_BUTTON
     bpmhbox->pack_start(*m_button_tap, Gtk::PACK_SHRINK);
 #endif
 
@@ -895,6 +905,33 @@ mainwnd::timer_callback ()
     {
         m_is_running = perf().is_running();
         set_play_image(m_is_running);
+    }
+
+#endif
+
+#ifdef SEQ64_MAINWND_TAP_BUTTON
+
+    if (m_current_beats > 0 && m_last_time_ms > 0)
+    {
+        struct timespec spec;
+        clock_gettime(CLOCK_REALTIME, &spec);
+        long ms = long(spec.tv_sec) * 1000;     /* seconds to ms      */
+        ms += round(spec.tv_nsec * 1.0e-6);     /* nanoseconds to ms  */
+        long difference = ms - m_last_time_ms;
+
+#if 0
+        printf
+        (
+            "time - last_time == %ld - %ld = %ld\n",
+            ms, m_last_time_ms, difference
+        );
+#endif
+
+        if (difference > SEQ64_TAP_BUTTON_TIMEOUT)
+        {
+            m_current_beats = m_base_time_ms = m_last_time_ms = 0;
+            set_tap_button(0);
+        }
     }
 
 #endif
@@ -1721,56 +1758,66 @@ mainwnd::toggle_playing ()
     }
 }
 
-#ifdef USE_MAINWND_TAP_BUTTON
+#ifdef SEQ64_MAINWND_TAP_BUTTON
 
 /**
- *  EXPERIMENTAL
+ *  Implements the Tap button or Tap keystroke (currently hard-wired as F9).
  */
 
 void
 mainwnd::tap ()
 {
-    int s = update_bpm();
-    printf("TAP #%2d @ %d ms\n", m_current_beats, s);
-    char temp[4];
-    snprintf(temp, sizeof(temp), "%d", m_current_beats);
-
-    // m_button_tap->set_text(temp);
-
-    Gtk::Label * lblptr(dynamic_cast<Gtk::Label *>
-    (
-        m_button_tap->get_child())
-    );
-    if (not_nullptr(lblptr))
-        lblptr->set_text(temp);
+    int bpm = update_bpm();
+    set_tap_button(m_current_beats);
+    m_adjust_bpm->set_value(double(bpm));
 }
 
 /**
- *  EXPERIMENTAL
+ *  Sets the label in the Tap button to the given number of taps.
+ *
+ * \param beats
+ *      The current number of times the user has clicked the Tap button/key.
+ */
+
+void
+mainwnd::set_tap_button (int beats)
+{
+    Gtk::Label * tapptr(dynamic_cast<Gtk::Label *>(m_button_tap->get_child()));
+    if (not_nullptr(tapptr))
+    {
+        char temp[8];
+        snprintf(temp, sizeof(temp), "%d", beats);
+        tapptr->set_text(temp);
+    }
+}
+
+/**
+ *  Calculates the running BPM value from the user's sequences of taps.
+ *
+ * \return
+ *      Returns the current BPM value.
  */
 
 int
 mainwnd::update_bpm ()
 {
-    ///// int bpm = 0;
+    int bpm = 0;
     struct timespec spec;
     clock_gettime(CLOCK_REALTIME, &spec);
-    long s = long(spec.tv_sec) * 1000;      /* seconds to milliseconds      */
-    long ms = round(spec.tv_nsec / 1.0e6);  /* nanoseconds to milliseconds  */
-    s += ms;
+    long ms = long(spec.tv_sec) * 1000;     /* seconds to milliseconds      */
+    ms += round(spec.tv_nsec * 1.0e-6);     /* nanoseconds to milliseconds  */
     if (m_current_beats == 0)
     {
-        m_base_time_ms = s;
+        m_base_time_ms = ms;
     }
-    else if (m_current_beats > 1)
+    else if (m_current_beats >= 1)
  	{
-		// var now = new Date();
-		// int ms = now.getTime() - startTime.getTime();
-		// int minutes = ms / 60000.0;
-		// int bpm = (currentBeats - 1) / minutes;
+        int diffms = ms - m_base_time_ms;
+        bpm = int(m_current_beats * 60000.0 / diffms);
+        m_last_time_ms = ms;
 	}
     ++m_current_beats;
-    return int(s);                          /* TEMPORARY FOR DEBUGGING      */
+    return bpm;
 }
 
 #endif
@@ -1879,6 +1926,12 @@ mainwnd::on_key_press_event (GdkEventKey * ev)
                 m_adjust_ss->set_value(newss);
                 m_entry_notes->set_text(perf().current_screen_set_notepad());
             }
+#ifdef SEQ64_MAINWND_TAP_BUTTON
+            else if (k.key() == PREFKEY(tap_bpm))
+            {
+                tap();
+            }
+#endif
         }
 
         /*

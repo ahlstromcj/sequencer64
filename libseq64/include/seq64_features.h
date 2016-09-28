@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2016-08-19
- * \updates       2016-09-19
+ * \updates       2016-09-28
  * \license       GNU GPLv2 or above
  *
  *    Some options (the "USE_xxx" options) specify experimental and
@@ -130,6 +130,15 @@
  */
 
 #define SEQ64_STAZED_MENU_BUTTONS
+
+/**
+ *  If defined, this macro adds a small button next to the BPM setting that
+ *  can be used to calculate a tempo based on the user's periodic clicks.
+ *  (Later, a shortcut key will be added).  Inspired by a request from user
+ *  alejg.
+ */
+
+#define SEQ64_MAINWND_TAP_BUTTON
 
 /*
  *  In the perform object, replaces a direct call to sequence::stream_event()

@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-09-13
- * \updates       2016-08-20
+ * \updates       2016-09-28
  * \license       GNU GPLv2 or above
  *
  * Stazed:
@@ -90,6 +90,10 @@ struct keys_perform_transfer
     bool kpt_show_ui_sequence_number;
     unsigned int kpt_pattern_edit;
     unsigned int kpt_event_edit;
+
+#ifdef SEQ64_MAINWND_TAP_BUTTON
+    unsigned int kpt_tap_bpm;
+#endif
 
 #ifdef SEQ64_PAUSE_SUPPORT
     unsigned int kpt_pause;
@@ -217,6 +221,10 @@ private:
     unsigned int m_key_fast_forward;            /**< Start fast-forward.    */
     unsigned int m_key_rewind;                  /**< Start rewind.          */
     unsigned int m_key_pointer;                 /**< Set progress to mouse. */
+#endif
+
+#ifdef SEQ64_MAINWND_TAP_BUTTON
+    unsigned int m_key_tap_bpm;                 /**< To tap out the BPM.    */
 #endif
 
     unsigned int m_key_pattern_edit;            /**< Show pattern editor.   */
@@ -686,6 +694,20 @@ public:
     }
 
 #endif  // SEQ64_STAZED_TRANSPORT
+
+#ifdef SEQ64_MAINWND_TAP_BUTTON
+
+    unsigned int tap_bpm () const
+    {
+        return m_key_tap_bpm;
+    }
+
+    void tap_bpm (unsigned int key)
+    {
+        m_key_tap_bpm = key;
+    }
+
+#endif
 
     /**
      * \getter m_key_show_ui_sequency_key

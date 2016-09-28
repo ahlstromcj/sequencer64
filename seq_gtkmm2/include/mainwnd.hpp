@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-09-27
+ * \updates       2016-09-28
  * \license       GNU GPLv2 or above
  *
  *  The main window is known as the "Patterns window" or "Patterns
@@ -54,12 +54,6 @@
  */
 
 #define SEQ64_MENU_BUTTON_PIXMAPS
-
-/**
- *  EXPERIMENTAL
- */
-
-#undef  USE_MAINWND_TAP_BUTTON          // EXPERIMENTAL
 
 /*
  *  Easier access to Gtk-2 classes.
@@ -211,7 +205,6 @@ private:
     Gtk::Button * m_button_perfedit;
 
 #ifdef SEQ64_STAZED_MENU_BUTTONS
-
 #ifdef SEQ64_MENU_BUTTON_PIXMAPS
 
     /**
@@ -225,6 +218,7 @@ private:
     Gtk::ToggleButton * m_button_mode;  /**< Live/Song mode button.         */
     Gtk::Button * m_button_mute;        /**< Mute toggle button.            */
     Gtk::ToggleButton * m_button_menu;  /**< Menu enable/disable button.    */
+
 #endif
 
     /**
@@ -234,7 +228,7 @@ private:
     Gtk::Adjustment * m_adjust_bpm;     /**< BPM adjustment object.         */
     Gtk::SpinButton * m_spinbutton_bpm; /**< BPM spin-button object.        */
 
-#ifdef USE_MAINWND_TAP_BUTTON
+#ifdef SEQ64_MAINWND_TAP_BUTTON
     Gtk::Button * m_button_tap;         /**< Tap-for-tempo button.          */
 #endif
 
@@ -280,15 +274,28 @@ private:
 
     sigc::connection m_timeout_connect;
 
-#ifdef USE_MAINWND_TAP_BUTTON
+#ifdef SEQ64_MAINWND_TAP_BUTTON
 
     /**
-     *  EXPERIMENTAL
+     *  Indicates the number of beats considered in calculating the BPM via
+     *  button tapping.  This value is displayed in the button.
      */
 
     int m_current_beats;
 
+    /**
+     *  Indicates the first time the tap button was ... tapped.
+     */
+
     long m_base_time_ms;
+
+    /**
+     *  Indicates the last time the tap button was tapped.  If this button
+     *  wasn't tapped for awhile, we assume the user has been satisfied with
+     *  the tempo he/she tapped out.
+     */
+
+    long m_last_time_ms;
 
 #endif
 
@@ -366,9 +373,10 @@ private:
     void stop_playing ();
     void toggle_playing ();
 
-#ifdef USE_MAINWND_TAP_BUTTON
-    void tap ();        // EXPERIMENTAL
-    int update_bpm ();  // EXPERIMENTAL
+#ifdef SEQ64_MAINWND_TAP_BUTTON
+    void tap ();
+    int update_bpm ();
+    void set_tap_button (int beats);
 #endif
 
     /**

@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-09-13
- * \updates       2016-09-28
+ * \updates       2016-09-29
  * \license       GNU GPLv2 or above
  *
  * Stazed:
@@ -59,7 +59,6 @@
 #include <string>                       /* std::string                      */
 
 #include "easy_macros.h"                /* SEQ64_PAUSE_SUPPORT              */
-#include "seq64_features.h"             /* make sure of the feature macros  */
 
 namespace seq64
 {
@@ -87,19 +86,21 @@ struct keys_perform_transfer
     unsigned int kpt_start;
     unsigned int kpt_stop;
     bool kpt_show_ui_sequence_key;
+
+    /*
+     * Sequencer64 additions
+     */
+
     bool kpt_show_ui_sequence_number;
     unsigned int kpt_pattern_edit;
     unsigned int kpt_event_edit;
-
-#ifdef SEQ64_MAINWND_TAP_BUTTON
     unsigned int kpt_tap_bpm;
-#endif
-
-#ifdef SEQ64_PAUSE_SUPPORT
     unsigned int kpt_pause;
-#endif
 
-#ifdef SEQ64_STAZED_TRANSPORT
+    /*
+     * Seq32 (stazed) additions
+     */
+
     unsigned int kpt_song_mode;
     unsigned int kpt_toggle_jack;
     unsigned int kpt_menu_mode;
@@ -107,7 +108,6 @@ struct keys_perform_transfer
     unsigned int kpt_fast_forward;
     unsigned int kpt_rewind;
     unsigned int kpt_pointer;
-#endif
 
 };
 
@@ -208,12 +208,7 @@ private:
     unsigned int m_key_group_off;               /**< Group off, apostrophe! */
     unsigned int m_key_group_learn;             /**< Group learn, Insert.   */
     unsigned int m_key_start;                   /**< Start play, Space key. */
-
-#ifdef SEQ64_PAUSE_SUPPORT
     unsigned int m_key_pause;                   /**< Pause play, Period.    */
-#endif
-
-#ifdef SEQ64_STAZED_TRANSPORT
     unsigned int m_key_song_mode;               /**< Song versus Live mode. */
     unsigned int m_key_toggle_jack;             /**< Toggle JACK connect.   */
     unsigned int m_key_menu_mode;               /**< Menu enabled/disabled. */
@@ -221,12 +216,7 @@ private:
     unsigned int m_key_fast_forward;            /**< Start fast-forward.    */
     unsigned int m_key_rewind;                  /**< Start rewind.          */
     unsigned int m_key_pointer;                 /**< Set progress to mouse. */
-#endif
-
-#ifdef SEQ64_MAINWND_TAP_BUTTON
     unsigned int m_key_tap_bpm;                 /**< To tap out the BPM.    */
-#endif
-
     unsigned int m_key_pattern_edit;            /**< Show pattern editor.   */
     unsigned int m_key_event_edit;              /**< Show event editor.     */
     unsigned int m_key_stop;                    /**< Stop play, Escape.     */
@@ -533,8 +523,6 @@ public:
         m_key_start = x;
     }
 
-#ifdef SEQ64_PAUSE_SUPPORT
-
     /**
      * \getter m_key_pause
      */
@@ -555,8 +543,6 @@ public:
     {
         m_key_pause = x;
     }
-
-#endif
 
     /**
      * \getter m_key_pattern_edit
@@ -620,8 +606,6 @@ public:
     {
         m_key_stop = x;
     }
-
-#ifdef SEQ64_STAZED_TRANSPORT
 
     unsigned int song_mode () const
     {
@@ -693,10 +677,6 @@ public:
         m_key_toggle_jack = key;
     }
 
-#endif  // SEQ64_STAZED_TRANSPORT
-
-#ifdef SEQ64_MAINWND_TAP_BUTTON
-
     unsigned int tap_bpm () const
     {
         return m_key_tap_bpm;
@@ -706,8 +686,6 @@ public:
     {
         m_key_tap_bpm = key;
     }
-
-#endif
 
     /**
      * \getter m_key_show_ui_sequency_key
@@ -1056,8 +1034,6 @@ protected:
         return &m_key_start;
     }
 
-#ifdef SEQ64_PAUSE_SUPPORT
-
     /**
      * \getter m_key_pause
      *
@@ -1068,8 +1044,6 @@ protected:
     {
         return &m_key_pause;
     }
-
-#endif
 
     /**
      * \getter m_key_pattern_edit

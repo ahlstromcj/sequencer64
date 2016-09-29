@@ -19,17 +19,20 @@
 /**
  * \file          keys_perform.cpp
  *
- *  This module defines base-class keyboard interface items, VERY TENTATIVE
+ *  This module defines base-class keyboard interface items.
  *
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-13
- * \updates       2016-09-28
+ * \updates       2016-09-29
  * \license       GNU GPLv2 or above
  *
- * \change ca 2016-05-22
- *      Added pattern-edit and event-edit keys which change the pattern slot
- *      shortcut/toggle keys to bring up one of the editor dialogs.
+ *  Added pattern-edit and event-edit keys which change the pattern slot
+ *  shortcut/toggle keys to bring up one of the editor dialogs.  Also added
+ *  a Tap button and some keys from Seq32.  These additions are no longer
+ *  toggled by macros, they are always available.  It makes the "rc" file too
+ *  difficult to maintain if some keys are disabled in the build.
+ *  Simplification, at a small space cost.
  */
 
 #include <stdio.h>                      /* snprintf() */
@@ -67,10 +70,7 @@ keys_perform::keys_perform ()
     m_key_group_off                 (SEQ64_apostrophe),       // a repeat
     m_key_group_learn               (SEQ64_Insert),
     m_key_start                     (SEQ64_space),
-#ifdef SEQ64_PAUSE_SUPPORT
     m_key_pause                     (SEQ64_period),
-#endif
-#ifdef SEQ64_STAZED_TRANSPORT
     m_key_song_mode                 (SEQ64_F1),
     m_key_toggle_jack               (SEQ64_F2),
     m_key_menu_mode                 (SEQ64_F3),
@@ -78,10 +78,7 @@ keys_perform::keys_perform ()
     m_key_fast_forward              (SEQ64_F5),
     m_key_rewind                    (SEQ64_F6),
     m_key_pointer                   (SEQ64_F7),
-#endif
-#ifdef SEQ64_MAINWND_TAP_BUTTON
     m_key_tap_bpm                   (SEQ64_F9),
-#endif
     m_key_pattern_edit              (SEQ64_equal),
     m_key_event_edit                (SEQ64_minus),
     m_key_stop                      (SEQ64_Escape)
@@ -147,10 +144,7 @@ keys_perform::set_keys (const keys_perform_transfer & kpt)
     m_key_group_off                 = kpt.kpt_group_off;
     m_key_group_learn               = kpt.kpt_group_learn;
     m_key_start                     = kpt.kpt_start;
-#ifdef SEQ64_PAUSE_SUPPORT
     m_key_pause                     = kpt.kpt_pause;
-#endif
-#ifdef SEQ64_STAZED_TRANSPORT
     m_key_song_mode                 = kpt.kpt_song_mode;
     m_key_toggle_jack               = kpt.kpt_toggle_jack;
     m_key_menu_mode                 = kpt.kpt_menu_mode;
@@ -158,10 +152,7 @@ keys_perform::set_keys (const keys_perform_transfer & kpt)
     m_key_fast_forward              = kpt.kpt_fast_forward;
     m_key_rewind                    = kpt.kpt_rewind;
     m_key_pointer                   = kpt.kpt_pointer;
-#endif
-#ifdef SEQ64_MAINWND_TAP_BUTTON
     m_key_tap_bpm                   = kpt.kpt_tap_bpm;
-#endif
     m_key_pattern_edit              = kpt.kpt_pattern_edit;
     m_key_event_edit                = kpt.kpt_event_edit;
     m_key_stop                      = kpt.kpt_stop;
@@ -194,10 +185,7 @@ keys_perform::get_keys (keys_perform_transfer & kpt)
      kpt.kpt_group_off              = m_key_group_off;
      kpt.kpt_group_learn            = m_key_group_learn;
      kpt.kpt_start                  = m_key_start;
-#ifdef SEQ64_PAUSE_SUPPORT
      kpt.kpt_pause                  = m_key_pause;
-#endif
-#ifdef SEQ64_STAZED_TRANSPORT
     kpt.kpt_song_mode               = m_key_song_mode;
     kpt.kpt_toggle_jack             = m_key_toggle_jack;
     kpt.kpt_menu_mode               = m_key_menu_mode;
@@ -205,10 +193,7 @@ keys_perform::get_keys (keys_perform_transfer & kpt)
     kpt.kpt_fast_forward            = m_key_fast_forward;
     kpt.kpt_rewind                  = m_key_rewind;
     kpt.kpt_pointer                 = m_key_pointer;
-#endif
-#ifdef SEQ64_MAINWND_TAP_BUTTON
     kpt.kpt_tap_bpm                 = m_key_tap_bpm;
-#endif
     kpt.kpt_pattern_edit            = m_key_pattern_edit;
     kpt.kpt_event_edit              = m_key_event_edit;
     kpt.kpt_stop                    = m_key_stop;
@@ -357,12 +342,9 @@ keyval_normalize (keys_perform_transfer & k)
     if (invalid_key(k.kpt_start))
         k.kpt_start = SEQ64_space;                      /* ' '      */
 
-#ifdef SEQ64_PAUSE_SUPPORT
     if (invalid_key(k.kpt_pause))
         k.kpt_pause = SEQ64_period;                     /* .        */
-#endif
 
-#ifdef SEQ64_STAZED_TRANSPORT
     if (invalid_key(k.kpt_song_mode))
         k.kpt_song_mode = SEQ64_F1;
 
@@ -383,12 +365,9 @@ keyval_normalize (keys_perform_transfer & k)
 
     if (invalid_key(k.kpt_pointer))
         k.kpt_pointer = SEQ64_F7;
-#endif
 
-#ifdef SEQ64_MAINWND_TAP_BUTTON
     if (invalid_key(k.kpt_tap_bpm))
         k.kpt_tap_bpm = SEQ64_F9;
-#endif
 
     if (invalid_key(k.kpt_pattern_edit))
         k.kpt_pattern_edit = SEQ64_equal;               /* =        */

@@ -160,6 +160,16 @@ optionsfile::error_message (const std::string & sectionname)
  *  specifies the Group number.  This section should be better described
  *  in the seq24-doc project on GitHub.
  *
+ *  [extended-keys]
+ *
+ *  Additional keys (not yet represented in the Options dialog) to support
+ *  additional keys for tempo-tapping, Seq32's new transport and connection
+ *  functionality, and maybe a little more.
+ *
+ *  [New-keys]
+ *
+ *  Conditional support for reading Seq32 "rc" files.
+ *
  *  [jack-transport]
  *
  *  This section covers various JACK settings, one setting per line.  In
@@ -400,6 +410,7 @@ optionsfile::parse (perform & p)
     }
 
     keys_perform_transfer ktx;
+    memset(&ktx, 0, sizeof(ktx));
     sscanf(m_line, "%u %u", &ktx.kpt_bpm_up, &ktx.kpt_bpm_dn);
     next_data_line(file);
     sscanf
@@ -442,9 +453,7 @@ optionsfile::parse (perform & p)
         ktx.kpt_show_ui_sequence_number = false;
         ktx.kpt_pattern_edit = 0;
         ktx.kpt_event_edit = 0;
-#ifdef SEQ64_PAUSE_SUPPORT
         ktx.kpt_pause = 0;
-#endif
     }
     else
     {
@@ -457,7 +466,6 @@ optionsfile::parse (perform & p)
          * them.
          */
 
-#ifdef SEQ64_PAUSE_SUPPORT
         next_data_line(file);
         sscanf(m_line, "%u", &ktx.kpt_pause);
         if (ktx.kpt_pause <= 1)             /* no pause key value present   */
@@ -467,7 +475,6 @@ optionsfile::parse (perform & p)
         }
         else
         {
-#endif
             /*
              * New feature for showing sequence numbers in the mainwnd GUI.
              */
@@ -475,9 +482,7 @@ optionsfile::parse (perform & p)
             next_data_line(file);
             sscanf(m_line, "%d", &show_key);
             ktx.kpt_show_ui_sequence_number = bool(show_key);
-#ifdef SEQ64_PAUSE_SUPPORT
         }
-#endif
 
         /*
          * Might need to be fixed up for existing config files.  Will fix when
@@ -494,22 +499,40 @@ optionsfile::parse (perform & p)
         next_data_line(file);
         sscanf(m_line, "%u", &ktx.kpt_event_edit);
 
-#ifdef USE_ADDITIONAL_KEYS
-
-        if (line_after(file, "[additional-keys]"))
+        if (line_after(file, "[New-keys]"))
         {
-#ifdef SEQ64_MAINWND_TAP_BUTTON
+            sscanf(m_line, "%u", &ktx.kpt_song_mode);
+            next_data_line(file);
+            sscanf(m_line, "%u", &ktx.kpt_menu_mode);
+            next_data_line(file);
+            sscanf(m_line, "%u", &ktx.kpt_follow_transport);
+            next_data_line(file);
+            sscanf(m_line, "%u", &ktx.kpt_toggle_jack);
+            next_data_line(file);
+        }
+        else if (line_after(file, "[extended-keys]"))
+        {
+            sscanf(m_line, "%u", &ktx.kpt_song_mode);
+            next_data_line(file);
+            sscanf(m_line, "%u", &ktx.kpt_toggle_jack);
+            next_data_line(file);
+            sscanf(m_line, "%u", &ktx.kpt_menu_mode);
+            next_data_line(file);
+            sscanf(m_line, "%u", &ktx.kpt_follow_transport);
+            next_data_line(file);
+            sscanf(m_line, "%u", &ktx.kpt_fast_forward);
+            next_data_line(file);
+            sscanf(m_line, "%u", &ktx.kpt_rewind);
+            next_data_line(file);
+            sscanf(m_line, "%u", &ktx.kpt_pointer);
+            next_data_line(file);
             sscanf(m_line, "%u", &ktx.kpt_tap_bpm);
             next_data_line(file);
-#endif
         }
         else
         {
-            warnprint("WARNING:  no [additional-keys] section");
+            warnprint("WARNING:  no [extended-keys] section");
         }
-
-#endif  // USE_ADDITIONAL_KEYS
-
     }
 
     keyval_normalize(ktx);                  /* fix any missing values   */
@@ -645,8 +668,8 @@ optionsfile::write (const perform & p)
             "# This file holds the main configuration options for Sequencer64.\n"
             "# It follows the format of the legacy seq24 'rc' configuration\n"
             "# file, but adds some new options, such as LASH, Mod4 interaction\n"
-            "# support, and an auto-save-on-exit option.  Also provided is a\n"
-            "# legacy mode.\n"
+            "# support, an auto-save-on-exit option, and more.  Also provided\n"
+            "# is a legacy mode.\n"
             ;
     }
     file << "\n"
@@ -1059,14 +1082,11 @@ optionsfile::write (const perform & p)
 
     if (! rc().legacy_format())
     {
-
-#ifdef SEQ64_PAUSE_SUPPORT
         file
             << ktx.kpt_pause << "    # "
             << ucperf.key_name(ktx.kpt_pause)
             << " pause sequencer\n"
             ;
-#endif
 
         file
             << ktx.kpt_show_ui_sequence_number << "     #"
@@ -1086,8 +1106,6 @@ optionsfile::write (const perform & p)
             << " is the shortcut key to bring up the event editor\n"
             ;
 
-#ifdef USE_ADDITIONAL_KEYS
-
         /*
          * This section writes all of the new additional keystrokes created by
          * seq32 (stazed) and sequencer64.  Eventually we will provide a
@@ -1096,43 +1114,33 @@ optionsfile::write (const perform & p)
          */
 
         file
-            << "\n[additional-keys]\n\n"
+            << "\n[extended-keys]\n\n"
             << "# Currently there is no user interface for this section.\n\n"
-
-#ifdef SEQ64_MAINWND_TAP_BUTTON
-            << ktx.kpt_tap_bpm << "    # "
-            << ucperf.key_name(ktx.kpt_tap_bpm)
-            << " is the key that emulates clicking the Tap (BPM) button\n"
-#endif
-
-#ifdef SEQ64_STAZED_TRANSPORT
             << ktx.kpt_song_mode << "    # "
             << ucperf.key_name(ktx.kpt_song_mode)
-            << " is the key that handles the Song/Live mode\n"
+            << " handles the Song/Live mode\n"
             << ktx.kpt_toggle_jack << "    # "
             << ucperf.key_name(ktx.kpt_toggle_jack)
-            << " is the key that handles the JACK mode\n"
+            << " handles the JACK mode\n"
             << ktx.kpt_menu_mode << "    # "
             << ucperf.key_name(ktx.kpt_menu_mode)
-            << " is the key that handles the menu mode\n"
+            << " handles the menu mode\n"
             << ktx.kpt_follow_transport << "    # "
             << ucperf.key_name(ktx.kpt_follow_transport)
-            << " is the key that handles the following of JACK transport\n"
+            << " handles the following of JACK transport\n"
             << ktx.kpt_fast_forward << "    # "
             << ucperf.key_name(ktx.kpt_fast_forward)
-            << " is the key that handles the Fast-Forward function\n"
+            << " handles the Fast-Forward function\n"
             << ktx.kpt_rewind << "    # "
             << ucperf.key_name(ktx.kpt_rewind)
-            << " is the key that handles Rewind function\n"
+            << " handles Rewind function\n"
             << ktx.kpt_pointer << "    # "
             << ucperf.key_name(ktx.kpt_pointer)
-            << " is the key that handles pointer function\n"
-#endif
-            << "\n"
+            << " handles pointer function\n"
+            << ktx.kpt_tap_bpm << "    # "
+            << ucperf.key_name(ktx.kpt_tap_bpm)
+            << " emulates clicking the Tap (BPM) button\n"
             ;
-
-#endif  // USE_ADDITIONAL_KEYS
-
     }
 
     file

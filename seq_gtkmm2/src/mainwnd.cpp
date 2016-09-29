@@ -583,7 +583,9 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
     m_button_tap->signal_clicked().connect(mem_fun(*this, &mainwnd::tap));
     add_tooltip
     (
-        m_button_tap, "Tap in time to set the beats per minute (BPM) value."
+        m_button_tap,
+        "Tap in time to set the beats per minute (BPM) value. "
+        "After 5 seconds of no taps, the tap-counter will reset."
     );
 
 #endif
@@ -1769,7 +1771,8 @@ mainwnd::tap ()
 {
     int bpm = update_bpm();
     set_tap_button(m_current_beats);
-    m_adjust_bpm->set_value(double(bpm));
+    if (m_current_beats > 1)                    /* first one is useless */
+        m_adjust_bpm->set_value(double(bpm));
 }
 
 /**

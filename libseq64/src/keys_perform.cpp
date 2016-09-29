@@ -311,90 +311,93 @@ keys_perform::set_key_group (unsigned int keycode, long group_slot)
 void
 keyval_normalize (keys_perform_transfer & k)
 {
-    if (k.kpt_bpm_up == 0 || k.kpt_bpm_up > 65536)
-        k.kpt_bpm_up = '\'';
+    if (invalid_key(k.kpt_bpm_up))
+        k.kpt_bpm_up = SEQ64_apostrophe;                /* '        */
 
-    if (k.kpt_bpm_dn == 0 || k.kpt_bpm_dn > 65536)
-        k.kpt_bpm_dn = ';';
+    if (invalid_key(k.kpt_bpm_dn))
+        k.kpt_bpm_dn = SEQ64_semicolon;                 /* ;        */
 
-    if (k.kpt_screenset_up == 0 || k.kpt_screenset_up > 65536)
-        k.kpt_screenset_up = ']';
+    if (invalid_key(k.kpt_replace))
+        k.kpt_replace = SEQ64_Control_L;                /* Ctrl-L   */
 
-    if (k.kpt_screenset_dn == 0 || k.kpt_screenset_dn > 65536)
-        k.kpt_screenset_dn = '[';
+    if (invalid_key(k.kpt_queue))
+        k.kpt_queue = SEQ64_KP_Divide;                  /* Keypad-/ */
 
-    if (k.kpt_set_playing_screenset == 0 || k.kpt_set_playing_screenset > 65536)
-        k.kpt_set_playing_screenset = 65360;    /* Home         */
+    if (invalid_key(k.kpt_keep_queue))
+        k.kpt_keep_queue = SEQ64_backslash;             /* \        */
 
-    if (k.kpt_group_on == 0 || k.kpt_group_on > 65536)
-        k.kpt_group_on = '`';                   /* igrave       */
+    if (invalid_key(k.kpt_snapshot_1))
+        k.kpt_snapshot_1 = SEQ64_Alt_L;                 /* Alt-L    */
 
-    if (k.kpt_group_off == 0 || k.kpt_group_off > 65536)
-        k.kpt_group_off = '\'';                 /* bpm up too!! */
+    if (invalid_key(k.kpt_snapshot_2))
+        k.kpt_snapshot_2 = SEQ64_Alt_R;                 /* Alt-R    */
 
-    if (k.kpt_group_learn == 0 || k.kpt_group_learn > 65536)
-        k.kpt_group_learn = 65379;              /* Insert       */
+    if (invalid_key(k.kpt_screenset_up))
+        k.kpt_screenset_up = SEQ64_bracketright;        /* ]        */
 
-    if (k.kpt_replace == 0 || k.kpt_replace > 65536)
-        k.kpt_replace = 65507;                  /* Ctrl-L       */
+    if (invalid_key(k.kpt_screenset_dn))
+        k.kpt_screenset_dn = SEQ64_bracketright;        /* [        */
 
-    if (k.kpt_queue == 0 || k.kpt_queue > 65536)
-        k.kpt_queue = 65455;                    /* Keypad-/     */
+    if (invalid_key(k.kpt_set_playing_screenset))
+        k.kpt_set_playing_screenset = SEQ64_Home;       /* Home     */
 
-    if (k.kpt_keep_queue == 0 || k.kpt_keep_queue > 65536)
-        k.kpt_keep_queue = '\\';
+    if (invalid_key(k.kpt_group_on))
+        k.kpt_group_on = SEQ64_igrave;                  /* `        */
 
-    if (k.kpt_snapshot_1 == 0 || k.kpt_snapshot_1 > 65536)
-        k.kpt_snapshot_1 = 65513;               /* Alt-L        */
+    /*
+     * TODO:  fix this redundancy
+     */
 
-    if (k.kpt_snapshot_2 == 0 || k.kpt_snapshot_2 > 65536)
-        k.kpt_snapshot_2 = 65514;               /* Alt-R        */
+    if (invalid_key(k.kpt_group_off))
+        k.kpt_group_off = SEQ64_apostrophe;             /* bpm up!! */
 
-    if (k.kpt_start == 0 || k.kpt_start > 65536)
-        k.kpt_start = ' ';
+    if (invalid_key(k.kpt_group_learn))
+        k.kpt_group_learn = SEQ64_Insert;               /* Insert   */
 
-    if (k.kpt_stop == 0 || k.kpt_stop > 65536)
-        k.kpt_stop = 65307;                     /* Escape       */
-
-    if (k.kpt_pattern_edit == 0 || k.kpt_pattern_edit > 65536)
-        k.kpt_pattern_edit = '=';
-
-    if (k.kpt_event_edit == 0 || k.kpt_event_edit > 65536)
-        k.kpt_event_edit = '-';
-
-#ifdef SEQ64_MAINWND_TAP_BUTTON
-    if (k.kpt_tap_bpm == 0 || k.kpt_tap_bpm > 65536)
-        k.kpt_tap_bpm = SEQ64_F9;
-#endif
+    if (invalid_key(k.kpt_start))
+        k.kpt_start = SEQ64_space;                      /* ' '      */
 
 #ifdef SEQ64_PAUSE_SUPPORT
-    if (k.kpt_event_edit == 0 || k.kpt_event_edit > 65536)
-        k.kpt_event_edit = '.';
+    if (invalid_key(k.kpt_pause))
+        k.kpt_pause = SEQ64_period;                     /* .        */
 #endif
 
 #ifdef SEQ64_STAZED_TRANSPORT
-    if (k.kpt_song_mode == 0 || k.kpt_song_mode > 65536)
+    if (invalid_key(k.kpt_song_mode))
         k.kpt_song_mode = SEQ64_F1;
 
-    if (k.kpt_toggle_jack == 0 || k.kpt_toggle_jack > 65536)
+    if (invalid_key(k.kpt_toggle_jack))
         k.kpt_toggle_jack = SEQ64_F2;
 
-    if (k.kpt_menu_mode == 0 || k.kpt_menu_mode > 65536)
+    if (invalid_key(k.kpt_menu_mode))
         k.kpt_menu_mode = SEQ64_F3;
 
-    if (k.kpt_follow_transport == 0 || k.kpt_follow_transport > 65536)
+    if (invalid_key(k.kpt_follow_transport))
         k.kpt_follow_transport = SEQ64_F4;
 
-    if (k.kpt_fast_forward == 0 || k.kpt_fast_forward > 65536)
+    if (invalid_key(k.kpt_fast_forward))
         k.kpt_fast_forward = SEQ64_F5;
 
-    if (k.kpt_rewind == 0 || k.kpt_rewind > 65536)
+    if (invalid_key(k.kpt_rewind))
         k.kpt_rewind = SEQ64_F6;
 
-    if (k.kpt_pointer == 0 || k.kpt_pointer > 65536)
-        k.kpt_pointer = SEQ64_F6;
+    if (invalid_key(k.kpt_pointer))
+        k.kpt_pointer = SEQ64_F7;
 #endif
 
+#ifdef SEQ64_MAINWND_TAP_BUTTON
+    if (invalid_key(k.kpt_tap_bpm))
+        k.kpt_tap_bpm = SEQ64_F9;
+#endif
+
+    if (invalid_key(k.kpt_pattern_edit))
+        k.kpt_pattern_edit = SEQ64_equal;               /* =        */
+
+    if (invalid_key(k.kpt_event_edit))
+        k.kpt_event_edit = SEQ64_minus;                 /* -        */
+
+    if (invalid_key(k.kpt_stop))
+        k.kpt_stop = SEQ64_Escape;                      /* Escape   */
 }
 
 }           // namespace seq64

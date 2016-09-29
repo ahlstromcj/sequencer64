@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-02-14
+ * \updates       2016-09-29
  * \license       GNU GPLv2 or above
  *
  *  We found a couple of unused members in this module and removed them.
@@ -102,6 +102,11 @@ configfile::next_data_line (std::ifstream & file)
  *  This function gets a specific line of text, specified as a tag.
  *  Then it gets the next non-blank line (i.e. data line) after that.
  *
+ *  This function always starts from the beginning of the file.  Therefore,
+ *  it can handle reading Sequencer64 configuration files that have had
+ *  their tagged sections arranged in a different order.  This feature makes
+ *  the configuration file a little more robust against errors.
+ *
  * \param file
  *      Points to the input file stream.
  *
@@ -109,18 +114,28 @@ configfile::next_data_line (std::ifstream & file)
  *      Provides a tag to be found.  Lines are read until a match occurs
  *      with this tag.  Normally, the tag is a section marker, such as
  *      "[user-interface]".  Best to assume an exact match is needed.
+ *
+ * \return
+ *      Returns true if the tag was found.  Otherwise, false is returned.
  */
 
-void
+bool
 configfile::line_after (std::ifstream & file, const std::string & tag)
 {
+    bool result = false;
     file.clear();
     file.seekg(0, std::ios::beg);
     file.getline(m_line, sizeof(m_line));
-    while (strncmp(m_line, tag.c_str(), tag.length()) != 0  && ! file.eof())
-        file.getline(m_line, sizeof(m_line));
-
+    while (! file.eof())
+    {
+        result = strncmp(m_line, tag.c_str(), tag.length()) == 0;
+        if (result)
+            break;
+        else
+            file.getline(m_line, sizeof(m_line));
+    }
     (void) next_data_line(file);
+    return result;
 }
 
 }           // namespace seq64

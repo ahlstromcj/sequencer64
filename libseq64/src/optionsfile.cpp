@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-09-26
+ * \updates       2016-09-29
  * \license       GNU GPLv2 or above
  *
  *  The <code> ~/.seq24rc </code> or <code> ~/.config/sequencer64/sequencer64.rc
@@ -42,16 +42,22 @@
  *  Note that these options are primarily read/written from/to the perform
  *  object that is passed to the parse() and write() functions.
  *
+ *  Also note that the parse() and write() functions process sections in a
+ *  different order!  The reason this does not mess things up is that the
+ *  line_after() function always rescans from the beginning of the file.  As
+ *  long as each section's sub-values are read and written in the same order,
+ *  there will be no problem.
+ *
  * Fixups:
  *
- *  As of version 0.9.11, a "Pause" key is added, if SEQ64_PAUSE_SUPPORT is
- *  defined.  One must fix up the sequencer64.rc file.  First, run
- *  Sequencer64.  Then open File / Options, and go to the Keyboard tab.
- *  Fix the Start, Stop, and Pause fields as desired.  The recommended
- *  character for Pause is the period (".").
+ *      As of version 0.9.11, a "Pause" key is added, if SEQ64_PAUSE_SUPPORT is
+ *      defined.  One must fix up the sequencer64.rc file.  First, run
+ *      Sequencer64.  Then open File / Options, and go to the Keyboard tab.
+ *      Fix the Start, Stop, and Pause fields as desired.  The recommended
+ *      character for Pause is the period (".").
  *
- *  Or better yet, add a Pause line to the sequencer.rc file after the
- *  "stop sequencer" line:
+ *      Or better yet, add a Pause line to the sequencer.rc file after the
+ *      "stop sequencer" line:
  *
  *      46   # period pause sequencer
  */
@@ -221,8 +227,15 @@ optionsfile::parse (perform & p)
         return false;
     }
     file.seekg(0, std::ios::beg);                           /* seek to start */
-    line_after(file, "[midi-control]");                     /* find section  */
+
+    /*
+     * This call causes parsing to skip all of the header material.  Please note
+     * that the line_after() function always starts from the beginning of the
+     * file every time.  A lot a rescanning!  But it goes fast.
+     */
+
     unsigned sequences = 0;
+    line_after(file, "[midi-control]");                     /* find section  */
     sscanf(m_line, "%u", &sequences);
 
     /*
@@ -435,19 +448,28 @@ optionsfile::parse (perform & p)
     }
     else
     {
+        /*
+         * We have removed the individual key fixups in this module, since
+         * keyval_normalize() is called afterward to make sure all key values
+         * are legitimate.  However, we do have an issue with all of these
+         * conditional compile macros.  We will ultimately read and write them
+         * all, even if the application is built to not actually use some of
+         * them.
+         */
+
 #ifdef SEQ64_PAUSE_SUPPORT
         next_data_line(file);
         sscanf(m_line, "%u", &ktx.kpt_pause);
-        if (ktx.kpt_pause <= 1)             /* need to fix the values   */
+        if (ktx.kpt_pause <= 1)             /* no pause key value present   */
         {
             ktx.kpt_show_ui_sequence_number = bool(ktx.kpt_pause);
-            ktx.kpt_pause = 46;             /* use period by default    */
+            ktx.kpt_pause = 0;              /* make key_normalize() fix it  */
         }
         else
         {
 #endif
             /*
-             * New feature for showing sequence number in the GUI.
+             * New feature for showing sequence numbers in the mainwnd GUI.
              */
 
             next_data_line(file);
@@ -468,13 +490,26 @@ optionsfile::parse (perform & p)
 
         next_data_line(file);
         sscanf(m_line, "%u", &ktx.kpt_pattern_edit);
-        if (ktx.kpt_pattern_edit == 0)
-            ktx.kpt_pattern_edit = SEQ64_equal;
 
         next_data_line(file);
         sscanf(m_line, "%u", &ktx.kpt_event_edit);
-        if (ktx.kpt_event_edit == 0)
-            ktx.kpt_event_edit = SEQ64_minus;
+
+#ifdef USE_ADDITIONAL_KEYS
+
+        if (line_after(file, "[additional-keys]"))
+        {
+#ifdef SEQ64_MAINWND_TAP_BUTTON
+            sscanf(m_line, "%u", &ktx.kpt_tap_bpm);
+            next_data_line(file);
+#endif
+        }
+        else
+        {
+            warnprint("WARNING:  no [additional-keys] section");
+        }
+
+#endif  // USE_ADDITIONAL_KEYS
+
     }
 
     keyval_normalize(ktx);                  /* fix any missing values   */
@@ -962,6 +997,7 @@ optionsfile::write (const perform & p)
     keys_perform_transfer ktx;
     ucperf.keys().get_keys(ktx);      /* copy perform key to structure    */
     file
+        << "\n"
         << "# bpm up and bpm down:\n"
         << ktx.kpt_bpm_up << " "
         << ktx.kpt_bpm_dn << "          # "
@@ -1041,14 +1077,62 @@ optionsfile::write (const perform & p)
         file
             << ktx.kpt_pattern_edit << "    # "
             << ucperf.key_name(ktx.kpt_pattern_edit)
-            << " toggle use of slot shortcut key to bring up pattern editor\n"
+            << " is the shortcut key to bring up the pattern editor\n"
             ;
 
         file
             << ktx.kpt_event_edit << "    # "
             << ucperf.key_name(ktx.kpt_event_edit)
-            << " toggle use of slot shortcut key to bring up event editor\n"
+            << " is the shortcut key to bring up the event editor\n"
             ;
+
+#ifdef USE_ADDITIONAL_KEYS
+
+        /*
+         * This section writes all of the new additional keystrokes created by
+         * seq32 (stazed) and sequencer64.  Eventually we will provide a
+         * use-interface options page for them.  Note that the Pause key is
+         * handled elsewhere; it was a much earlier option for Sequencer64.
+         */
+
+        file
+            << "\n[additional-keys]\n\n"
+            << "# Currently there is no user interface for this section.\n\n"
+
+#ifdef SEQ64_MAINWND_TAP_BUTTON
+            << ktx.kpt_tap_bpm << "    # "
+            << ucperf.key_name(ktx.kpt_tap_bpm)
+            << " is the key that emulates clicking the Tap (BPM) button\n"
+#endif
+
+#ifdef SEQ64_STAZED_TRANSPORT
+            << ktx.kpt_song_mode << "    # "
+            << ucperf.key_name(ktx.kpt_song_mode)
+            << " is the key that handles the Song/Live mode\n"
+            << ktx.kpt_toggle_jack << "    # "
+            << ucperf.key_name(ktx.kpt_toggle_jack)
+            << " is the key that handles the JACK mode\n"
+            << ktx.kpt_menu_mode << "    # "
+            << ucperf.key_name(ktx.kpt_menu_mode)
+            << " is the key that handles the menu mode\n"
+            << ktx.kpt_follow_transport << "    # "
+            << ucperf.key_name(ktx.kpt_follow_transport)
+            << " is the key that handles the following of JACK transport\n"
+            << ktx.kpt_fast_forward << "    # "
+            << ucperf.key_name(ktx.kpt_fast_forward)
+            << " is the key that handles the Fast-Forward function\n"
+            << ktx.kpt_rewind << "    # "
+            << ucperf.key_name(ktx.kpt_rewind)
+            << " is the key that handles Rewind function\n"
+            << ktx.kpt_pointer << "    # "
+            << ucperf.key_name(ktx.kpt_pointer)
+            << " is the key that handles pointer function\n"
+#endif
+            << "\n"
+            ;
+
+#endif  // USE_ADDITIONAL_KEYS
+
     }
 
     file

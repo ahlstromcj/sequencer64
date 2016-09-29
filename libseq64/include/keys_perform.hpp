@@ -1134,6 +1134,11 @@ protected:
  * implementation is in seq_gtkmm2/src/keys_perform_gtk2.cpp.
  */
 
+inline bool invalid_key (unsigned int key)
+{
+    return (key == 0) || (key > 0xffff);
+}
+
 extern std::string keyval_name (unsigned int key);
 extern void keyval_normalize (keys_perform_transfer & k);
 

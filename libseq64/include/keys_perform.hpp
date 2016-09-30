@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-09-13
- * \updates       2016-09-29
+ * \updates       2016-09-30
  * \license       GNU GPLv2 or above
  *
  * Stazed:
@@ -712,7 +712,7 @@ public:
     }
 
     /**
-     * \getter m_key_show_ui_sequency_number
+     * \getter m_key_show_ui_sequence_number
      *
      *  Used in mainwid, options, optionsfile, userfile, and perform.
      */
@@ -723,7 +723,7 @@ public:
     }
 
     /**
-     * \setter m_key_show_ui_sequency_key
+     * \setter m_key_show_ui_sequence_key
      *
      * \param flag
      *      The flag for showing the sequence number in each pattern
@@ -1046,9 +1046,97 @@ protected:
     }
 
     /**
+     * \getter m_key_song_mode
+     *
+     *  Address getter for the song-mode operation.
+     */
+
+    unsigned int * at_song_mode ()
+    {
+        return &m_key_song_mode;
+    }
+
+    /**
+     * \getter m_key_toggle_jack
+     *
+     *  Address getter for the toggle-jack operation.
+     */
+
+    unsigned int * at_toggle_jack ()
+    {
+        return &m_key_toggle_jack;
+    }
+
+    /**
+     * \getter m_key_menu_mode
+     *
+     *  Address getter for the menu-mode operation.
+     */
+
+    unsigned int * at_menu_mode ()
+    {
+        return &m_key_menu_mode;
+    }
+
+    /**
+     * \getter m_key_follow_transport
+     *
+     *  Address getter for the follow-transport operation.
+     */
+
+    unsigned int * at_follow_transport ()
+    {
+        return &m_key_follow_transport;
+    }
+
+    /**
+     * \getter m_key_fast_forward
+     *
+     *  Address getter for the fast-forward operation.
+     */
+
+    unsigned int * at_fast_forward ()
+    {
+        return &m_key_fast_forward;
+    }
+
+    /**
+     * \getter m_key_rewind
+     *
+     *  Address getter for the rewind operation.
+     */
+
+    unsigned int * at_rewind ()
+    {
+        return &m_key_rewind;
+    }
+
+    /**
+     * \getter m_key_pointer
+     *
+     *  Address getter for the pointer operation.
+     */
+
+    unsigned int * at_pointer ()
+    {
+        return &m_key_pointer;
+    }
+
+    /**
+     * \getter m_key_tap_bpm
+     *
+     *  Address getter for the tap_bpm operation.
+     */
+
+    unsigned int * at_tap_bpm ()
+    {
+        return &m_key_tap_bpm;
+    }
+
+    /**
      * \getter m_key_pattern_edit
      *
-     *  Address getter for the pattern edit operation.
+     *  Address getter for the pattern-edit operation.
      */
 
     unsigned int * at_pattern_edit ()
@@ -1059,7 +1147,7 @@ protected:
     /**
      * \getter m_key_event_edit
      *
-     *  Address getter for the event edit operation.
+     *  Address getter for the event-edit operation.
      */
 
     unsigned int * at_event_edit ()

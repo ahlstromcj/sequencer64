@@ -4,7 +4,7 @@ static const char * live_mode_xpm[] = {
 " 	c None",
 ".	c #000000",
 "+	c #A5A5A5",
-"@	c #4DE8EA",
+"@	c #C6EF94",
 "#	c #FFFFFF",
 "..................",
 ".++++++++++++++++.",

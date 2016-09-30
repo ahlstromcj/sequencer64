@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-09-11
+ * \updates       2016-09-30
  * \license       GNU GPLv2 or above
  *
  *  Here is a list of the global variables used/stored/modified by this
@@ -115,6 +115,10 @@ options::options
     add_midi_clock_page();
     add_midi_input_page();
     add_keyboard_page();
+// #ifdef USE_EXTENDED_KEYS_PAGE           // STILL IN PROGRESS
+    if (! rc().legacy_format())
+        add_extended_keys_page();
+// #endif
     add_mouse_page();
     add_jack_sync_page();
 }
@@ -380,13 +384,16 @@ options::add_keyboard_page ()
     controltable->attach(*entry, 1, 2, 1, 2);
 
 #ifdef SEQ64_PAUSE_SUPPORT
-    label = manage(new Gtk::Label("Pause", Gtk::ALIGN_RIGHT));
-    entry = manage
-    (
-        new keybindentry(keybindentry::location, PREFKEY_ADDR(pause))
-    );
-    controltable->attach(*label, 0, 1, 2, 3);
-    controltable->attach(*entry, 1, 2, 2, 3);
+    if (! rc().legacy_format())
+    {
+        label = manage(new Gtk::Label("Pause", Gtk::ALIGN_RIGHT));
+        entry = manage
+        (
+            new keybindentry(keybindentry::location, PREFKEY_ADDR(pause))
+        );
+        controltable->attach(*label, 0, 1, 2, 3);
+        controltable->attach(*entry, 1, 2, 2, 3);
+    }
 #endif
 
     label = manage(new Gtk::Label("Snapshot 1", Gtk::ALIGN_RIGHT));
@@ -559,6 +566,103 @@ options::add_keyboard_page ()
     AddKey("Disable:", PREFKEY_ADDR(group_off));
     AddKey("Enable:", PREFKEY_ADDR(group_on));
     mainbox->pack_start(*hbox, false, false);
+}
+
+/**
+ *  Adds the Keyboard page (tab) to the Options dialog.  This tab is the
+ *  setup editor for the <tt> ~/.config/sequencer64/sequencer64.rc </tt>
+ *  keybindings.
+ */
+
+void
+options::add_extended_keys_page ()
+{
+    Gtk::VBox * mainbox = manage(new Gtk::VBox());
+    mainbox->set_spacing(6);
+    m_notebook->append_page(*mainbox, "E_xt Keys", true);
+
+//  Gtk::HBox * hbox = manage(new Gtk::HBox());
+
+    /* Frame for sequence toggle keys */
+
+    Gtk::Frame * controlframe = manage
+    (
+        new Gtk::Frame("Extended keys [extended-keys]")
+    );
+    controlframe->set_border_width(4);
+    mainbox->pack_start(*controlframe, Gtk::PACK_SHRINK);
+
+    Gtk::Table * controltable = manage(new Gtk::Table(4, 8, false));
+    controltable->set_border_width(4);
+    controltable->set_spacings(4);
+    controlframe->add(*controltable);
+
+    Gtk::Label * label = manage
+    (
+        new Gtk::Label("Song/Live toggle", Gtk::ALIGN_RIGHT)
+    );
+    keybindentry * entry = manage
+    (
+        new keybindentry(keybindentry::location, PREFKEY_ADDR(song_mode))
+    );
+    controltable->attach(*label, 0, 1, 0, 1);
+    controltable->attach(*entry, 1, 2, 0, 1);
+
+    label = manage(new Gtk::Label("Toggle JACK", Gtk::ALIGN_RIGHT));
+    entry = manage
+    (
+        new keybindentry(keybindentry::location, PREFKEY_ADDR(toggle_jack))
+    );
+    controltable->attach(*label, 0, 1, 1, 2);
+    controltable->attach(*entry, 1, 2, 1, 2);
+
+    label = manage(new Gtk::Label("Menu mode", Gtk::ALIGN_RIGHT));
+    entry = manage
+    (
+        new keybindentry(keybindentry::location, PREFKEY_ADDR(menu_mode))
+    );
+    controltable->attach(*label, 0, 1, 2, 3);
+    controltable->attach(*entry, 1, 2, 2, 3);
+
+    label = manage(new Gtk::Label("Follow transport", Gtk::ALIGN_RIGHT));
+    entry = manage
+    (
+        new keybindentry(keybindentry::location, PREFKEY_ADDR(follow_transport))
+    );
+    controltable->attach(*label, 2, 3, 0, 1);
+    controltable->attach(*entry, 3, 4, 0, 1);
+
+    label = manage(new Gtk::Label("Fast forward", Gtk::ALIGN_RIGHT));
+    entry = manage
+    (
+        new keybindentry(keybindentry::location, PREFKEY_ADDR(fast_forward))
+    );
+    controltable->attach(*label, 2, 3, 1, 2);
+    controltable->attach(*entry, 3, 4, 1, 2);
+
+    label = manage(new Gtk::Label("Rewind", Gtk::ALIGN_RIGHT));
+    entry = manage
+    (
+        new keybindentry(keybindentry::location, PREFKEY_ADDR(rewind))
+    );
+    controltable->attach(*label, 2, 3, 2, 3);
+    controltable->attach(*entry, 3, 4, 2, 3);
+
+    label = manage(new Gtk::Label("Pointer", Gtk::ALIGN_RIGHT));
+    entry = manage
+    (
+        new keybindentry(keybindentry::location, PREFKEY_ADDR(pointer))
+    );
+    controltable->attach(*label, 2, 3, 3, 4);
+    controltable->attach(*entry, 3, 4, 3, 4);
+
+    label = manage(new Gtk::Label("Tap BPM", Gtk::ALIGN_RIGHT));
+    entry = manage
+    (
+        new keybindentry(keybindentry::location, PREFKEY_ADDR(tap_bpm))
+    );
+    controltable->attach(*label, 4, 5, 0, 1);
+    controltable->attach(*entry, 5, 6, 0, 1);
 }
 
 #undef AddKey

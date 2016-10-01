@@ -627,7 +627,7 @@ perfedit::toggle_follow_transport ()
 #ifdef SEQ64_STAZED_JACK_SUPPORT
 
 /**
- *  To avoid a lot of pointer dereferencing, much of the code is offload to
+ *  To avoid a lot of pointer dereferencing, much of the code is offloaded to
  *  perform::set_jack_mode(), which now returns a boolean.
  */
 

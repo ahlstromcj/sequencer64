@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-09-21
+ * \updates       2016-10-01
  * \license       GNU GPLv2 or above
  *
  *  The performance window allows automatic control of when each
@@ -1191,7 +1191,7 @@ perfroll::on_key_press_event (GdkEventKey * ev)
      * the mouse pointer.  Stazed used p, but we need an alternative.
      */
 
-    if (k.is(perf().keys().pointer() )) /* if (k == m_key_pointer)  */
+    if (k.is(perf().keys().pointer_position())) /* if (k == m_key_pointer)  */
     {
         int x = 0;
         int y = 0;

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-09-28
+ * \updates       2016-10-01
  * \license       GNU GPLv2 or above
  *
  *  The main window holds the menu and the main controls of the application,
@@ -439,16 +439,8 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
     (
         sigc::mem_fun(*this, &mainwnd::set_song_mode)
     );
-    std::string modetext =
-        "Toggle Song mode vs Live mode.  If this button is active, "
-        "Sequencer64 is in song mode, and follows the performance laybout. "
-        "If playback is started from the Song Editor, this setting is ignored, "
-        "and song mode is used."
-#ifndef SEQ64_MENU_BUTTON_PIXMAPS
-        "The button label also reflects the current mode."
-#endif
-        ;
 
+    std::string modetext = "Toggle Song mode vs Live mode.";
     add_tooltip(m_button_mode, modetext);
     m_button_mode->set_active(perf().song_start_mode());
     tophbox->pack_start(*m_button_mode, false, false, HBOX_PADDING/2);
@@ -823,7 +815,7 @@ mainwnd::toggle_menu_mode ()
     m_button_menu->set_active(! m_button_menu->get_active());
 }
 
-#endif
+#endif  // SEQ64_STAZED_MENU_BUTTONS
 
 /**
  *  This function is the GTK timer callback, used to draw our current time
@@ -1638,12 +1630,23 @@ mainwnd::set_songlive_image (bool issong)
     if (issong)
     {
         m_image_songlive = manage(new PIXBUF_IMAGE(song_mode_xpm));
-        add_tooltip(m_button_mode, "The Song playback mode is active.");
+        add_tooltip
+        (
+            m_button_mode,
+            "The Song playback mode is active, and will apply no matter what "
+            "window (song, pattern, and main) is used to start the playback."
+        );
     }
     else
     {
         m_image_songlive = manage(new PIXBUF_IMAGE(live_mode_xpm));
-        add_tooltip(m_button_mode, "The Live playback mode is active.");
+        add_tooltip
+        (
+            m_button_mode,
+            "The Live playback mode is active. If playback is started from "
+            "the Song Editor, this setting is ignored, to preserve legacy "
+            "behavior."
+        );
     }
     m_button_mode->set_image(*m_image_songlive);
 }
@@ -1933,6 +1936,20 @@ mainwnd::on_key_press_event (GdkEventKey * ev)
             else if (k.key() == PREFKEY(tap_bpm))
             {
                 tap();
+            }
+#endif
+#ifdef SEQ64_STAZED_MENU_BUTTONS
+            else if (k.key() == PREFKEY(toggle_mutes))
+            {
+                m_main_wid->toggle_all_tracks();
+            }
+            else if (k.key() == PREFKEY(song_mode))
+            {
+                toggle_song_mode();
+            }
+            else if (k.key() == PREFKEY(menu_mode))
+            {
+                toggle_menu_mode();
             }
 #endif
         }

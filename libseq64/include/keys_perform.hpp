@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-09-13
- * \updates       2016-09-30
+ * \updates       2016-10-01
  * \license       GNU GPLv2 or above
  *
  * Stazed:
@@ -107,8 +107,8 @@ struct keys_perform_transfer
     unsigned int kpt_follow_transport;
     unsigned int kpt_fast_forward;
     unsigned int kpt_rewind;
-    unsigned int kpt_pointer;
-
+    unsigned int kpt_pointer_position;
+    unsigned int kpt_toggle_mutes;
 };
 
 /**
@@ -215,7 +215,8 @@ private:
     unsigned int m_key_follow_transport;        /**< Toggle following JACK. */
     unsigned int m_key_fast_forward;            /**< Start fast-forward.    */
     unsigned int m_key_rewind;                  /**< Start rewind.          */
-    unsigned int m_key_pointer;                 /**< Set progress to mouse. */
+    unsigned int m_key_pointer_position;        /**< Set progress to mouse. */
+    unsigned int m_key_toggle_mutes;            /**< Toggle all patterns.   */
     unsigned int m_key_tap_bpm;                 /**< To tap out the BPM.    */
     unsigned int m_key_pattern_edit;            /**< Show pattern editor.   */
     unsigned int m_key_event_edit;              /**< Show event editor.     */
@@ -657,14 +658,24 @@ public:
         m_key_rewind = key;
     }
 
-    unsigned int pointer () const
+    unsigned int pointer_position () const
     {
-        return m_key_pointer;
+        return m_key_pointer_position;
     }
 
-    void pointer (unsigned int key)
+    void pointer_position (unsigned int key)
     {
-        m_key_pointer = key;
+        m_key_pointer_position = key;
+    }
+
+    unsigned int toggle_mutes () const
+    {
+        return m_key_toggle_mutes;
+    }
+
+    void toggle_mutes (unsigned int key)
+    {
+        m_key_toggle_mutes = key;
     }
 
     unsigned int toggle_jack () const
@@ -1112,14 +1123,25 @@ protected:
     }
 
     /**
-     * \getter m_key_pointer
+     * \getter m_key_pointer_position
      *
      *  Address getter for the pointer operation.
      */
 
-    unsigned int * at_pointer ()
+    unsigned int * at_pointer_position ()
     {
-        return &m_key_pointer;
+        return &m_key_pointer_position;
+    }
+
+    /**
+     * \getter m_key_toggle_mutes
+     *
+     *  Address getter for the toggle-mutes operation.
+     */
+
+    unsigned int * at_toggle_mutes ()
+    {
+        return &m_key_toggle_mutes;
     }
 
     /**

@@ -698,4 +698,23 @@ The BPM spin box shows that is allowed to write on it, but when try to enter
 numbers, the pattern toggle shortcuts are triggered.     
 
 
+
+Date: Tue, 27 Sep 2016 06:21:01 -0700                                             
+From: alejg <notifications@github.com>                                            
+To: ahlstromcj/sequencer64 <sequencer64@noreply.github.com>                       
+Cc: "C. Ahlstrom" <ahlstromcj@gmail.com>, Comment <comment@noreply.github.com>    
+Subject: Re: [ahlstromcj/sequencer64] Cannot edit note length (#29)               
+                                                                                  
+Thanks!                                                                           
+I've tried and now it's working!.                                                 
+A strange behaviour appears when I CTRL + Arrow left or right over a note,        
+an outline is being drawn and do not disappears until you do a click on the       
+background.
+
+[This happens if another note is already selected, and that's where the action
+ takes place.  Also, if ctrl-right-arrow is done on a note and it then extends
+ it into the next note, then the note gets super long.  We should stop
+ just before the next note.]
+
+
 # vim: sw=4 ts=4 wm=4 et ft=sh

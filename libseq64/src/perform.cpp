@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and Tim Deagan
  * \date          2015-07-24
- * \updates       2016-09-26
+ * \updates       2016-10-01
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -1842,11 +1842,17 @@ perform::start_playing (bool songmode)
 /*
  * In this legacy version, the songmode parameter simply indicates which GUI,
  * mainwnd ("live", false) or perfedit ("song", true) started the playback.
+ * However, if the song-mode is false, then we fall back to the value of
+ * song_start_mode(), in order not to violate user expectations from the
+ * setting on of the song-sart mode on mainwnd.
  */
 
 void
 perform::start_playing (bool songmode)
 {
+    if (! songmode)
+        songmode = song_start_mode();
+
     if (songmode)                       /* || m_start_from_perfedit???      */
     {
         /*

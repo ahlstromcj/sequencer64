@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-20
- * \updates       2016-09-24
+ * \updates       2016-10-01
  * \license       GNU GPLv2 or above
  *
  *  The "rc" command-line options override setting that are first read from
@@ -150,10 +150,12 @@ static struct option long_options [] =
  *  Provides a complete list of the short options, and is passed to
  *  getopt_long().  The following string keeps track of the characters used so
  *  far.  An 'x' means the character is used; an 'o' means it is used for the
- *  legacy spelling of the option.
+ *  legacy spelling of the option, which uses underscores instead of hyphens..
  *
- *      0123456789 @AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz
- *       ooooooooo oxxxxxx x  xx  xx xxx xxxxx x  xx xxxxx  xxx    x
+\verbatim
+        0123456789 @AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz
+         ooooooooo oxxxxxx x  xx  xx xxx xxxxx x  xx xxxxx  xxx    x
+\endverbatim
  *
  *  Previous arg-list, items missing! "ChVH:lRrb:q:Lni:jJmaAM:pPusSU:x:"
  */
@@ -172,7 +174,7 @@ static const char * const s_help_1a =
 "Usage: sequencer64 [options] [MIDI filename]\n\n"
 "Options:\n"
 "   -h, --help               Show this message and exit.\n"
-"   -V, --version            Show program version information and exit.\n"
+"   -V, --version            Show program version/build  information and exit.\n"
 "   -H, --home dir           Set the directory to hold the configuration files,\n"
 "                            always relative to $HOME.  The default is\n"
 "                            .config/sequencer64.\n"
@@ -815,27 +817,27 @@ build_details ()
     std::ostringstream result;
     result
 << "Build features:" << std::endl
-<< "  Highlight empty sequences: " << s_build_highlight_empty   << std::endl
-<< "* LASH support:              " << s_build_lash_support      << std::endl
-<< "* JACK support:              " << s_build_jack_support      << std::endl
-<< "* JACK session:              " << s_build_jack_session      << std::endl
-<< "* Event editor:              " << s_event_editor            << std::endl
-<< "* Pause support:             " << s_build_pause_support     << std::endl
-<< "* Seq32 chord generator:     " << s_build_chord_generator   << std::endl
-<< "  Event multimap (vs list):  " << s_build_use_event_map     << std::endl
-<< "* Highlight pattern in edit: " << s_build_edit_highlight    << std::endl
-<< "  Save time-signature/tempo: " << s_build_timesig_tempo     << std::endl
-<< "  Use MIDI vector (vs list): " << s_build_midi_vector       << std::endl
-<< "  Solid piano-roll grid:     " << s_build_solid_grid        << std::endl
-<< "  Follow progress bar:       " << s_build_follow_progress   << std::endl
-<< "* Statistics support:        " << s_statistics_support      << std::endl
-<< "* Strip empty mutes section: " << s_strip_empty_mutes       << std::endl
-<< "* Seq32 JACK support (exp):  " << s_seq32_jack_support      << std::endl
-<< "* Seq32 transpose (exp):     " << s_seq32_transpose         << std::endl
-<< "  Seq32 transport (exp):     " << s_seq32_transport         << std::endl
-<< "  Seq32 menu buttons (exp):  " << s_seq32_menu_buttons      << std::endl
-<< "* Means option is enabled/disabled with configure script."  << std::endl
-<< "  Otherwise, edit libseq64/include/seq64_features.h."       << std::endl
+<< "  Highlight empty sequences: " << s_build_highlight_empty       << std::endl
+<< "* LASH support:              " << s_build_lash_support          << std::endl
+<< "* JACK support:              " << s_build_jack_support          << std::endl
+<< "* JACK session:              " << s_build_jack_session          << std::endl
+<< "* Event editor:              " << s_event_editor                << std::endl
+<< "* Pause support:             " << s_build_pause_support         << std::endl
+<< "* Seq32 chord generator:     " << s_build_chord_generator       << std::endl
+<< "  Event multimap (vs list):  " << s_build_use_event_map         << std::endl
+<< "* Highlight pattern in edit: " << s_build_edit_highlight        << std::endl
+<< "  Save time-signature/tempo: " << s_build_timesig_tempo         << std::endl
+<< "  Use MIDI vector (vs list): " << s_build_midi_vector           << std::endl
+<< "  Solid piano-roll grid:     " << s_build_solid_grid            << std::endl
+<< "  Follow progress bar:       " << s_build_follow_progress       << std::endl
+<< "* Statistics support:        " << s_statistics_support          << std::endl
+<< "* Strip empty mutes section: " << s_strip_empty_mutes           << std::endl
+<< "* Seq32 JACK support (exp):  " << s_seq32_jack_support          << std::endl
+<< "* Seq32 transpose (exp):     " << s_seq32_transpose             << std::endl
+<< "  Seq32 transport (exp):     " << s_seq32_transport             << std::endl
+<< "  Seq32 menu buttons (exp):  " << s_seq32_menu_buttons          << std::endl
+<< "* means option is enabled/disabled via the configure script."   << std::endl
+<< "  Otherwise, one can edit libseq64/include/seq64_features.h."   << std::endl
     ;
     return result.str();
 }

@@ -524,9 +524,11 @@ optionsfile::parse (perform & p)
             next_data_line(file);
             sscanf(m_line, "%u", &ktx.kpt_rewind);
             next_data_line(file);
-            sscanf(m_line, "%u", &ktx.kpt_pointer);
+            sscanf(m_line, "%u", &ktx.kpt_pointer_position);
             next_data_line(file);
             sscanf(m_line, "%u", &ktx.kpt_tap_bpm);
+            next_data_line(file);
+            sscanf(m_line, "%u", &ktx.kpt_toggle_mutes);
             next_data_line(file);
         }
         else
@@ -1134,12 +1136,15 @@ optionsfile::write (const perform & p)
             << ktx.kpt_rewind << "    # "
             << ucperf.key_name(ktx.kpt_rewind)
             << " handles Rewind function\n"
-            << ktx.kpt_pointer << "    # "
-            << ucperf.key_name(ktx.kpt_pointer)
-            << " handles pointer function\n"
+            << ktx.kpt_pointer_position << "    # "
+            << ucperf.key_name(ktx.kpt_pointer_position)
+            << " handles song pointer-position function\n"
             << ktx.kpt_tap_bpm << "    # "
             << ucperf.key_name(ktx.kpt_tap_bpm)
             << " emulates clicking the Tap (BPM) button\n"
+            << ktx.kpt_toggle_mutes << "    # "
+            << ucperf.key_name(ktx.kpt_toggle_mutes)
+            << " handles the toggling-all-pattern-mutes function\n"
             ;
     }
 

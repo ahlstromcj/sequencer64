@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-09-30
+ * \updates       2016-10-01
  * \license       GNU GPLv2 or above
  *
  *  Here is a list of the global variables used/stored/modified by this
@@ -115,10 +115,9 @@ options::options
     add_midi_clock_page();
     add_midi_input_page();
     add_keyboard_page();
-// #ifdef USE_EXTENDED_KEYS_PAGE           // STILL IN PROGRESS
     if (! rc().legacy_format())
         add_extended_keys_page();
-// #endif
+
     add_mouse_page();
     add_jack_sync_page();
 }
@@ -581,8 +580,6 @@ options::add_extended_keys_page ()
     mainbox->set_spacing(6);
     m_notebook->append_page(*mainbox, "E_xt Keys", true);
 
-//  Gtk::HBox * hbox = manage(new Gtk::HBox());
-
     /* Frame for sequence toggle keys */
 
     Gtk::Frame * controlframe = manage
@@ -615,6 +612,9 @@ options::add_extended_keys_page ()
     );
     controltable->attach(*label, 0, 1, 1, 2);
     controltable->attach(*entry, 1, 2, 1, 2);
+#if ! defined SEQ64_STAZED_JACK_SUPPORT
+    entry->set_sensitive(false);
+#endif
 
     label = manage(new Gtk::Label("Menu mode", Gtk::ALIGN_RIGHT));
     entry = manage
@@ -623,6 +623,9 @@ options::add_extended_keys_page ()
     );
     controltable->attach(*label, 0, 1, 2, 3);
     controltable->attach(*entry, 1, 2, 2, 3);
+#if ! defined SEQ64_STAZED_MENU_BUTTONS
+    entry->set_sensitive(false);
+#endif
 
     label = manage(new Gtk::Label("Follow transport", Gtk::ALIGN_RIGHT));
     entry = manage
@@ -651,18 +654,26 @@ options::add_extended_keys_page ()
     label = manage(new Gtk::Label("Pointer", Gtk::ALIGN_RIGHT));
     entry = manage
     (
-        new keybindentry(keybindentry::location, PREFKEY_ADDR(pointer))
+        new keybindentry(keybindentry::location, PREFKEY_ADDR(pointer_position))
     );
     controltable->attach(*label, 2, 3, 3, 4);
     controltable->attach(*entry, 3, 4, 3, 4);
+
+    label = manage(new Gtk::Label("Toggle mutes", Gtk::ALIGN_RIGHT));
+    entry = manage
+    (
+        new keybindentry(keybindentry::location, PREFKEY_ADDR(toggle_mutes))
+    );
+    controltable->attach(*label, 4, 5, 0, 1);
+    controltable->attach(*entry, 5, 6, 0, 1);
 
     label = manage(new Gtk::Label("Tap BPM", Gtk::ALIGN_RIGHT));
     entry = manage
     (
         new keybindentry(keybindentry::location, PREFKEY_ADDR(tap_bpm))
     );
-    controltable->attach(*label, 4, 5, 0, 1);
-    controltable->attach(*entry, 5, 6, 0, 1);
+    controltable->attach(*label, 4, 5, 1, 2);
+    controltable->attach(*entry, 5, 6, 1, 2);
 }
 
 #undef AddKey
@@ -1269,6 +1280,14 @@ options::transport_callback (button type, Gtk::Button * acheck)
 
     case e_jack_connect:
 
+        /*
+         * This is legacy behavior.  If Stazed JACK support is enabled,
+         * the perform::set_jack_mode() function as called from perfedit
+         * will call init_jack().  But that won't affect the buttons here.
+         * Needs to be reconciled.  Perhaps read the status during the opening
+         * of the JACK options page.
+         */
+
         if (perf().init_jack())                             // true = it worked
         {
             m_button_jack_connect->set_sensitive(false);    // disable connect
@@ -1280,6 +1299,10 @@ options::transport_callback (button type, Gtk::Button * acheck)
         break;
 
     case e_jack_disconnect:
+
+        /*
+         * Also legacy behavior, like the comment above.
+         */
 
         if (! perf().deinit_jack())                         // false = it worked
         {

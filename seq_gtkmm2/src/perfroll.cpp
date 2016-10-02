@@ -1188,10 +1188,12 @@ perfroll::on_key_press_event (GdkEventKey * ev)
 
     /*
      * If this keystroke is clicked, move the song position to the location of
-     * the mouse pointer.  Stazed used p, but we need an alternative.
+     * the mouse pointer.  Stazed used p, but we need an alternative.  The
+     * default is F7, but it is configurable in the File / Options / Ext Keys
+     * tab page.
      */
 
-    if (k.is(perf().keys().pointer_position())) /* if (k == m_key_pointer)  */
+    if (k.is(perf().keys().pointer_position()))
     {
         int x = 0;
         int y = 0;

@@ -1795,10 +1795,8 @@ perform::start_playing (bool songmode)
 {
 #ifdef SEQ64_STAZED_TRANSPORT
     m_start_from_perfedit = songmode;
-    if (songmode || song_start_mode())
-#else
-    if (songmode)
 #endif
+    if (songmode || song_start_mode())
     {
         if (is_jack_master())
         {
@@ -1850,10 +1848,7 @@ perform::start_playing (bool songmode)
 void
 perform::start_playing (bool songmode)
 {
-    if (! songmode)
-        songmode = song_start_mode();
-
-    if (songmode)                       /* || m_start_from_perfedit???      */
+    if (songmode || song_start_mode())
     {
         /*
          * For cosmetic reasons, to stop transport line flicker on start,
@@ -4109,8 +4104,8 @@ perform::reposition (midipulse tick)
 }
 
 /**
- *  Convenience function.  This function is used in the free function version of
- *  FF_RW_timeout() as a callback to the gtk_timeout() function.
+ *  Convenience function.  This function is used in the free function version
+ *  of FF_RW_timeout() as a callback to the gtk_timeout() function.
  */
 
 bool

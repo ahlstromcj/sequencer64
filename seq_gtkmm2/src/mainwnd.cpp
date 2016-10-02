@@ -905,26 +905,20 @@ mainwnd::timer_callback ()
 
 #ifdef SEQ64_MAINWND_TAP_BUTTON
 
-    if (m_current_beats > 0 && m_last_time_ms > 0)
+    if (m_current_beats > 0)
     {
-        struct timespec spec;
-        clock_gettime(CLOCK_REALTIME, &spec);
-        long ms = long(spec.tv_sec) * 1000;     /* seconds to ms      */
-        ms += round(spec.tv_nsec * 1.0e-6);     /* nanoseconds to ms  */
-        long difference = ms - m_last_time_ms;
-
-#if 0
-        printf
-        (
-            "time - last_time == %ld - %ld = %ld\n",
-            ms, m_last_time_ms, difference
-        );
-#endif
-
-        if (difference > SEQ64_TAP_BUTTON_TIMEOUT)
+        if (m_last_time_ms > 0)
         {
-            m_current_beats = m_base_time_ms = m_last_time_ms = 0;
-            set_tap_button(0);
+            struct timespec spec;
+            clock_gettime(CLOCK_REALTIME, &spec);
+            long ms = long(spec.tv_sec) * 1000;     /* seconds to ms        */
+            ms += round(spec.tv_nsec * 1.0e-6);     /* nanoseconds to ms    */
+            long difference = ms - m_last_time_ms;
+            if (difference > SEQ64_TAP_BUTTON_TIMEOUT)
+            {
+                m_current_beats = m_base_time_ms = m_last_time_ms = 0;
+                set_tap_button(0);
+            }
         }
     }
 
@@ -1815,6 +1809,7 @@ mainwnd::update_bpm ()
     if (m_current_beats == 0)
     {
         m_base_time_ms = ms;
+        m_last_time_ms = 0;
     }
     else if (m_current_beats >= 1)
  	{

@@ -634,6 +634,9 @@ options::add_extended_keys_page ()
     );
     controltable->attach(*label, 2, 3, 0, 1);
     controltable->attach(*entry, 3, 4, 0, 1);
+#if ! defined SEQ64_STAZED_TRANSPORT
+    entry->set_sensitive(false);
+#endif
 
     label = manage(new Gtk::Label("Fast forward", Gtk::ALIGN_RIGHT));
     entry = manage
@@ -642,6 +645,9 @@ options::add_extended_keys_page ()
     );
     controltable->attach(*label, 2, 3, 1, 2);
     controltable->attach(*entry, 3, 4, 1, 2);
+#if ! defined SEQ64_STAZED_TRANSPORT
+    entry->set_sensitive(false);
+#endif
 
     label = manage(new Gtk::Label("Rewind", Gtk::ALIGN_RIGHT));
     entry = manage
@@ -650,14 +656,20 @@ options::add_extended_keys_page ()
     );
     controltable->attach(*label, 2, 3, 2, 3);
     controltable->attach(*entry, 3, 4, 2, 3);
+#if ! defined SEQ64_STAZED_TRANSPORT
+    entry->set_sensitive(false);
+#endif
 
-    label = manage(new Gtk::Label("Pointer", Gtk::ALIGN_RIGHT));
+    label = manage(new Gtk::Label("Pointer Position", Gtk::ALIGN_RIGHT));
     entry = manage
     (
         new keybindentry(keybindentry::location, PREFKEY_ADDR(pointer_position))
     );
     controltable->attach(*label, 2, 3, 3, 4);
     controltable->attach(*entry, 3, 4, 3, 4);
+#if ! defined SEQ64_STAZED_TRANSPORT
+    entry->set_sensitive(false);
+#endif
 
     label = manage(new Gtk::Label("Toggle mutes", Gtk::ALIGN_RIGHT));
     entry = manage

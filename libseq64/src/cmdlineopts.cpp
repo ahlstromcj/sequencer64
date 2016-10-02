@@ -150,18 +150,19 @@ static struct option long_options [] =
  *  Provides a complete list of the short options, and is passed to
  *  getopt_long().  The following string keeps track of the characters used so
  *  far.  An 'x' means the character is used; an 'o' means it is used for the
- *  legacy spelling of the option, which uses underscores instead of hyphens..
+ *  legacy spelling of the option, which uses underscores instead of hyphens.
+ *  An 'a' indicates we could repurpose the key with minimal impact.
  *
 \verbatim
         0123456789 @AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz
-         ooooooooo oxxxxxx x  xx  xx xxx xxxxx x  xx xxxxx  xxx    x
+         ooooooooo oxxxxxx x  xx  xx xxx xxxxx x  xx xxxxx  xxxa   x
 \endverbatim
  *
  *  Previous arg-list, items missing! "ChVH:lRrb:q:Lni:jJmaAM:pPusSU:x:"
  */
 
 static const std::string s_arg_list =
-    "AaB:b:Cc:F:f:H:hi:JjKkLlM:mnPpq:RrSsU:uVx:"        /* modern args      */
+    "AaB:b:Cc:F:f:H:hi:JjKkLlM:mnPpq:RrSsU:uVvx:"       /* modern args      */
     "1234:5:67:89@"                                     /* legacy args      */
     ;
 
@@ -174,7 +175,7 @@ static const char * const s_help_1a =
 "Usage: sequencer64 [options] [MIDI filename]\n\n"
 "Options:\n"
 "   -h, --help               Show this message and exit.\n"
-"   -V, --version            Show program version/build  information and exit.\n"
+"   -v, -V, --version        Show program version/build  information and exit.\n"
 "   -H, --home dir           Set the directory to hold the configuration files,\n"
 "                            always relative to $HOME.  The default is\n"
 "                            .config/sequencer64.\n"
@@ -279,7 +280,7 @@ static const char * const s_help_4 =
  *      The array of command-line argument pointers.
  *
  * \return
- *      Returns true only if -V, --version, -h, --help, or "?" were
+ *      Returns true only if -v, -V, --version, -h, --help, or "?" were
  *      encountered.  If the legacy options occurred, then
  *      rc().legacy_format(true) is called, as a side effect, because it will
  *      be needed before we parse the options.
@@ -295,7 +296,8 @@ help_check (int argc, char * argv [])
         if
         (
             (arg == "-h") || (arg == "--help") ||
-            (arg == "-V") || (arg == "--version")
+            (arg == "-v") || (arg == "-V") || (arg == "--version") ||
+            (arg == "--v") || (arg == "--V")
         )
         {
             result = true;
@@ -598,6 +600,7 @@ parse_command_line_options (perform & p, int argc, char * argv [])
             seq64::usr().save_user_config(true);    /* usr(), not rc()! */
             break;
 
+        case 'v':
         case 'V':
             printf("%s", versiontext.c_str());
             printf("%s", build_details().c_str());

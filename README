@@ -1,6 +1,6 @@
 README for Sequencer64 0.9.18
 Chris Ahlstrom
-2015-09-10 to 2016-09-12 (initial work started in July of 2015)
+2015-09-10 to 2016-10-02 (initial work started in July of 2015)
 
 Sequencer64 (replaces sequencer24) is a reboot of seq24 to refactor it to be
 tighter and easier to transition to GTKmm 3, and much more.  It is now
@@ -10,18 +10,22 @@ refactored, although the heart of seq24 definitely remains intact.
 See the screenshot in the project root for some idea of what has changed
 visually.  It is an old friend with some user-interface lipstick and a lot of
 internal fixups.  And it still maintains backward-compatibility with seq24,
-with the --legacy option.
+with the --legacy option.  See https://github.com/ahlstromcj/sequencer64-doc.git.
 
 Major updates:
 
     -   Version 0.9.18:
-        -   TODO
-    -   Version 0.9.17.2:
-        -   A regression in the handling of muting in Live mode was fixed.
-    -   Version 0.9.17.1:
-        -   An important regression/bug for JACK transport support.  I am
-            so embarrassed!  It seems to be fixed; basically one line of code
-            accidentally commented out.
+        -   Added new buttons in the main window for easier control of muting,
+            live/song mode, and menu enabling.  (From Seq32).
+        -   Added more hotkeys and a second keys page to the Options dialog
+            (From Seq32).
+        -   Added a Tap-BPM button and hotkey.
+        -   Can now edit the text fields in the main window without triggering
+            patterns.
+        -   Improved the handling of wrap-around notes in a pattern.
+        -   Fixed a segfault in the zoom functionality.
+        -   A bad bug in the Song Editor (acting on the wrong pattern) was
+            fixed.  I am an idiot.
     -   Sequencer64 loads SMF 0 files and splits the channels into separate
         tracks/sequences.
     -   JACK support has been improved.  Sequencer64 will track JACK transport
@@ -135,6 +139,12 @@ Major updates:
         -   Constant variables are slowly being assigned to new members, in
             preparation for support of altering the number of sequences and
             screen sets supported.
+    -   Version 0.9.17.2:
+        -   A regression in the handling of muting in Live mode was fixed.
+    -   Version 0.9.17.1:
+        -   An important regression/bug for JACK transport support.  I am
+            so embarrassed!  It seems to be fixed; basically one line of code
+            accidentally commented out.
     -   Version 0.9.17:
         -   Added export of a Sequencer64 song performance as a MIDI file,
             where the MIDI file is laid out as per the song triggers in the

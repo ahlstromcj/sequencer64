@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and Tim Deagan
  * \date          2015-07-24
- * \updates       2016-10-01
+ * \updates       2016-10-02
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -1982,7 +1982,6 @@ perform::pause_playing (bool songmode)
 #endif
 
 #ifdef SEQ64_STAZED_TRANSPORT
-    // EXPERIMENTAL:
     if (! m_is_paused)                      /* seq64 was in output_func()   */
         m_start_from_perfedit = false;      /* act like stop_playing()      */
     else
@@ -3968,7 +3967,7 @@ perform::playback_key_event (const keystroke & k, bool songmode)
             if (onekey)
             {
                 if (is_running())
-                    pause_playing(songmode);    // EXPERIMENTAL
+                    pause_playing(songmode);
                 else
                     start_playing(songmode);
             }
@@ -3983,7 +3982,7 @@ perform::playback_key_event (const keystroke & k, bool songmode)
         else if (k.key() == PAUSEKEY)
         {
             if (is_running())
-                pause_playing(songmode);        // EXPERIMENTAL
+                pause_playing(songmode);
             else
                 start_playing(songmode);
         }

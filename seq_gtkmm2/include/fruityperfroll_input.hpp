@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-06-08
+ * \updates       2016-10-02
  * \license       GNU GPLv2 or above
  *
  *  Note that this class doesn't handle keystrokes (directly), so even if the
@@ -88,6 +88,16 @@ private:
     void update_mouse_pointer (perfroll & roll);
     bool on_left_button_pressed (GdkEventButton * ev, perfroll & roll);
     bool on_right_button_pressed (GdkEventButton * ev, perfroll & roll);
+
+    virtual void activate_adding (bool /*adding*/, perfroll & /*roll*/)
+    {
+        // No action in fruity method
+    }
+
+    virtual bool handle_motion_key (bool /*is_left*/, perfroll & /*roll*/)
+    {
+        return false;                   /* No action in fruity method   */
+    }
 
 };          // FruityPerfInput
 

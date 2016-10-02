@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-08-18
+ * \updates       2016-10-02
  * \license       GNU GPLv2 or above
  *
  */
@@ -55,23 +55,28 @@ namespace seq64
  */
 
 void
-Seq24PerfInput::set_adding (bool adding, perfroll & roll)
+Seq24PerfInput::activate_adding (bool adding, perfroll & roll)
 {
     if (adding)
-    {
         roll.get_window()->set_cursor(Gdk::Cursor(Gdk::PENCIL));
-        m_adding = true;
-    }
     else
-    {
         roll.get_window()->set_cursor(Gdk::Cursor(Gdk::LEFT_PTR));
-        m_adding = false;
-    }
+
+    set_adding(adding);
 }
 
 /**
  *  Handles the normal variety of button-press event.  Is there any easy way
  *  to use ctrl-left-click as the middle button here?
+ *
+ * Stazed:
+ *
+ *      roll.m_drop_y will be adjusted by perfroll::change_vert() for any scroll
+ *      after it was originally selected. The call here to draw_drawable_row()
+ *      [now folded into draw_all()] will have the wrong y location and
+ *      un-select will not occur (or the wrong sequence will be unselected) if
+ *      the user scrolls the track up or down to a new y location, if not
+ *      adjusted.
  *
  * \return
  *      Returns true if a modification occurred.
@@ -84,8 +89,9 @@ Seq24PerfInput::on_button_press_event (GdkEventButton * ev, perfroll & roll)
     perform & p = roll.perf();
     int & dropseq = roll.m_drop_sequence;
     sequence * seq = p.get_sequence(dropseq);
+    bool dropseq_active = p.is_active(dropseq);
     roll.grab_focus();
-    if (p.is_active(dropseq))
+    if (dropseq_active)
     {
         seq->unselect_triggers();
         roll.draw_all();
@@ -100,17 +106,18 @@ Seq24PerfInput::on_button_press_event (GdkEventButton * ev, perfroll & roll)
 
         if (SEQ64_CLICK_LEFT(ev->button))
         {
-            if (m_adding)
-                m_adding_pressed = true;
+            if (is_adding())
+                set_adding_pressed(true);
         }
         return false;                                   /* BUG OUT      */
     }
     roll.m_drop_x = int(ev->x);
     roll.m_drop_y = int(ev->y);
-    roll.convert_xy                                     /* side-effects */
-    (
-        roll.m_drop_x, roll.m_drop_y, roll.m_drop_tick, dropseq
-    );
+    roll.convert_drop_xy();                             /* affects dropseq  */
+    seq = p.get_sequence(dropseq);
+    dropseq_active = p.is_active(dropseq);
+    if (! dropseq_active)
+        return false;
 
     /*
      * EXPERIMENTAL.
@@ -141,9 +148,9 @@ Seq24PerfInput::on_button_press_event (GdkEventButton * ev, perfroll & roll)
     if (SEQ64_CLICK_LEFT(ev->button))
     {
         midipulse droptick = roll.m_drop_tick;
-        if (m_adding)         /* add a new note if we didn't select anything */
+        if (is_adding())                /* add new note if nothing selected */
         {
-            m_adding_pressed = true;
+            set_adding_pressed(true);
             midipulse seqlength = seq->get_length();
             bool state = seq->get_trigger_state(droptick);
             if (state)
@@ -206,7 +213,7 @@ Seq24PerfInput::on_button_press_event (GdkEventButton * ev, perfroll & roll)
     }
     else if (SEQ64_CLICK_RIGHT(ev->button))
     {
-        set_adding(true, roll);
+        activate_adding(true, roll);
         // Should we add this?
         // result = true;
     }
@@ -248,8 +255,8 @@ Seq24PerfInput::on_button_release_event (GdkEventButton * ev, perfroll & roll)
     bool result = false;
     if (SEQ64_CLICK_LEFT(ev->button))
     {
-        if (m_adding)
-            m_adding_pressed = false;
+        if (is_adding())
+            set_adding_pressed(false);
     }
     else if (SEQ64_CLICK_RIGHT(ev->button))
     {
@@ -268,13 +275,14 @@ Seq24PerfInput::on_button_release_event (GdkEventButton * ev, perfroll & roll)
 
         if (addmode_exit)
         {
-            m_adding_pressed = false;
-            set_adding(false, roll);
+            set_adding_pressed(false);
+            activate_adding(false, roll);
         }
     }
 
     perform & p = roll.perf();
-    roll.m_moving = roll.m_growing = m_adding_pressed = false;
+    roll.m_moving = roll.m_growing = false;
+    set_adding_pressed(false);
     m_effective_tick = 0;
     if (p.is_active(roll.m_drop_sequence))
     {
@@ -303,7 +311,7 @@ Seq24PerfInput::on_motion_notify_event (GdkEventMotion * ev, perfroll & roll)
     {
         return false;
     }
-    if (m_adding && m_adding_pressed)
+    if (is_adding() && is_adding_pressed())
     {
         midipulse seqlength = seq->get_length();
         midipulse tick;

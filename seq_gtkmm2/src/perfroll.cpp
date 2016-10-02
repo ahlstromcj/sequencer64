@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-10-01
+ * \updates       2016-10-02
  * \license       GNU GPLv2 or above
  *
  *  The performance window allows automatic control of when each
@@ -65,7 +65,7 @@
  *  made in the constructor, and assigned to the perfroll::m_background_x
  *  member.  We need named values for 4 and for 16 here.
  *
- *  FIXME
+ *  FIXME:
  *  The 1200 added to background_x is necessary for proper display of zoomed
  *  grid on high bp_measure (5 and above) with low bw (1) - the amount should
  *  probably be "c_perf_scale_x/m_perf_scale_x". The 1200 is the max needed
@@ -128,6 +128,12 @@ perfroll::perfroll
     m_sequence_active       (),                             // [c_max_sequence]
     m_fruity_interaction    (),
     m_seq24_interaction     (),
+    m_interaction
+    (
+        rc().interaction_method() == e_seq24_interaction ?
+            dynamic_cast<AbstractPerfInput &>(m_seq24_interaction) :
+            dynamic_cast<AbstractPerfInput &>(m_fruity_interaction)
+    ),
     m_moving                (false),
     m_growing               (false),
     m_grow_direction        (false)
@@ -186,18 +192,18 @@ perfroll::set_ppqn (int ppqn)
 void
 perfroll::change_horz ()
 {
-    if (m_4bar_offset != int(m_hadjust.get_value()))
+    long current_offset = long(m_hadjust.get_value()) * m_ticks_per_bar;
+    if (m_4bar_offset != current_offset)
     {
-        m_4bar_offset = int(m_hadjust.get_value()) * m_ticks_per_bar;
+        m_4bar_offset = current_offset;
         enqueue_draw();
     }
 }
 
 /**
- *  Changes the 4-bar vertical offset member and queues up a draw
- *  operation.
+ *  Changes the vertical offset member and queues up a draw operation.
  *
- * Stazed;
+ * Stazed:
  *
  *      Must adjust m_drop_y or perfroll_input's unselect_triggers() will not
  *      work if scrolled up or down to a new location.  See the note in
@@ -208,12 +214,11 @@ perfroll::change_horz ()
 void
 perfroll::change_vert ()
 {
-    if (m_sequence_offset != int(m_vadjust.get_value()))
+    int vvalue = int(m_vadjust.get_value());
+    if (m_sequence_offset != vvalue)
     {
-        m_drop_y += (m_sequence_offset - int(m_vadjust.get_value())) *
-            c_names_y;
-
-        m_sequence_offset = int(m_vadjust.get_value());
+        m_drop_y += (m_sequence_offset - vvalue) * m_names_y;
+        m_sequence_offset = vvalue;
         enqueue_draw();
     }
 }
@@ -852,16 +857,21 @@ perfroll::snap_x (int & x)
 }
 
 /**
- *  Converts a tick-offset on the x coordinate.
+ *  Converts an x-coordinate to a tick-offset on the x axis.
+ *  The result is returned via the tick parameter.  Note that m_4bar_offset
+ *  already includes the m_ticks_per_bar = ppqn * 16 factor, for speed.
  *
- *  The result is returned via the tick parameter.
+ * \param x
+ *      The input x (pixel) value.
+ *
+ * \param [out] tick
+ *      Holds the result of the calculation.
  */
 
 void
 perfroll::convert_x (int x, midipulse & tick)
 {
-    midipulse tick_offset = m_4bar_offset;              //  * m_ticks_per_bar;
-    tick = x * m_perf_scale_x + tick_offset;
+    tick = m_4bar_offset + midipulse(x * m_perf_scale_x);
 }
 
 /**
@@ -887,9 +897,8 @@ perfroll::convert_x (int x, midipulse & tick)
 void
 perfroll::convert_xy (int x, int y, midipulse & d_tick, int & d_seq)
 {
-    midipulse tick_offset = m_4bar_offset;              //  * m_ticks_per_bar;
-    midipulse tick = x * m_perf_scale_x + tick_offset;
-    int seq = y / m_names_y + m_sequence_offset;
+    midipulse tick = m_4bar_offset + midipulse(x * m_perf_scale_x);
+    int seq = m_sequence_offset + (y / m_names_y);
     if (seq >= m_sequence_max)
         seq = m_sequence_max - 1;
     else if (seq < 0)
@@ -1013,8 +1022,6 @@ perfroll::on_expose_event (GdkEventExpose * ev)
 bool
 perfroll::on_button_press_event (GdkEventButton * ev)
 {
-    bool result;
-
 #ifdef SEQ64_STAZED_TRANSPORT
 
     /*
@@ -1030,11 +1037,7 @@ perfroll::on_button_press_event (GdkEventButton * ev)
 
 #endif
 
-    if (rc().interaction_method() == e_seq24_interaction)
-        result = m_seq24_interaction.on_button_press_event(ev, *this);
-    else
-        result = m_fruity_interaction.on_button_press_event(ev, *this);
-
+    bool result = m_interaction.on_button_press_event(ev, *this);
     if (result)
         perf().modify();
 
@@ -1051,12 +1054,7 @@ perfroll::on_button_press_event (GdkEventButton * ev)
 bool
 perfroll::on_button_release_event (GdkEventButton * ev)
 {
-    bool result;
-    if (rc().interaction_method() == e_seq24_interaction)
-        result = m_seq24_interaction.on_button_release_event(ev, *this);
-    else
-        result = m_fruity_interaction.on_button_release_event(ev, *this);
-
+    bool result = m_interaction.on_button_release_event(ev, *this);
     if (result)
         perf().modify();
 
@@ -1133,12 +1131,7 @@ perfroll::on_scroll_event (GdkEventScroll * ev)
 bool
 perfroll::on_motion_notify_event (GdkEventMotion * ev)
 {
-    bool result;
-    if (rc().interaction_method() == e_seq24_interaction)
-        result = m_seq24_interaction.on_motion_notify_event(ev, *this);
-    else
-        result = m_fruity_interaction.on_motion_notify_event(ev, *this);
-
+    bool result = m_interaction.on_motion_notify_event(ev, *this);
     if (result)
     {
         /*
@@ -1212,9 +1205,9 @@ perfroll::on_key_press_event (GdkEventKey * ev)
 #endif  // SEQ64_STAZED_TRANSPORT
 
     /*
-     * EXPERIMENT:  add this call to try to make seqroll and perfroll act the
-     * same for start/stop/play.  Doesn't work, but doesn't break anything.
-     * Turns out perfedit handles this event.
+     * Add this call to try to make seqroll and perfroll act the same for
+     * start/stop/play.  Doesn't work, but doesn't break anything.  Turns out
+     * perfedit handles this event.
      */
 
     bool result = perf().playback_key_event(k);
@@ -1303,12 +1296,14 @@ perfroll::on_key_press_event (GdkEventKey * ev)
             {
                 if (ev->keyval == SEQ64_p)
                 {
-                    m_seq24_interaction.set_adding(true, *this);
+                    // m_seq24_interaction.set_adding(true, *this);
+                    m_interaction.activate_adding(true, *this);
                     result = true;
                 }
                 else if (ev->keyval == SEQ64_x)     /* "x-scape" the mode   */
                 {
-                    m_seq24_interaction.set_adding(false, *this);
+                    // m_seq24_interaction.set_adding(false, *this);
+                    m_interaction.activate_adding(false, *this);
                     result = true;
                 }
                 else if (ev->keyval == SEQ64_0)     /* reset to normal zoom */
@@ -1323,21 +1318,22 @@ perfroll::on_key_press_event (GdkEventKey * ev)
                 }
                 else if (ev->keyval == SEQ64_Left)
                 {
-                    if (m_seq24_interaction.is_adding())
+                    // if (m_seq24_interaction.is_adding())
+                    if (m_interaction.is_adding())
                     {
-                        result = m_seq24_interaction.handle_motion_key
-                        (
-                            true, *this
-                        );
+                        // result = m_seq24_interaction.handle_motion_key
+                        result = m_interaction.handle_motion_key(true, *this);
                         if (result)
                             perf().modify();
                     }
                 }
                 else if (ev->keyval == SEQ64_Right)
                 {
-                    if (m_seq24_interaction.is_adding())
+                    // if (m_seq24_interaction.is_adding())
+                    if (m_interaction.is_adding())
                     {
-                        result = m_seq24_interaction.handle_motion_key(false, *this);
+                        // result = m_seq24_interaction.handle_motion_key(false, *this);
+                        result = m_interaction.handle_motion_key(false, *this);
                         if (result)
                             perf().modify();
                     }

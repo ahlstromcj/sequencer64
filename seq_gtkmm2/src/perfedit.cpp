@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-08-28
+ * \updates       2016-09-25
  * \license       GNU GPLv2 or above
  *
  */
@@ -69,8 +69,8 @@
 #include "pixmaps/down.xpm"
 #include "pixmaps/perfedit.xpm"
 
-#ifdef USE_STAZED_JACK_SUPPORT
-#include "pixmaps/jack.xpm"
+#ifdef SEQ64_STAZED_JACK_SUPPORT
+#include "pixmaps/jack_black.xpm"       /* #include "pixmaps/jack.xpm"  */
 #endif
 
 #ifdef SEQ64_STAZED_TRANSPORT
@@ -173,7 +173,7 @@ perfedit::perfedit
     m_button_grow       (manage(new Gtk::Button())),
     m_button_undo       (manage(new Gtk::Button())),
     m_button_redo       (manage(new Gtk::Button())),    // stazed
-#ifdef USE_STAZED_JACK_SUPPORT
+#ifdef SEQ64_STAZED_JACK_SUPPORT
     m_button_jack       (manage(new Gtk::ToggleButton())),
 #endif
 #ifdef SEQ64_STAZED_TRANSPORT
@@ -323,7 +323,7 @@ perfedit::perfedit
             mem_fun(*this, &perfedit::popup_menu), m_menu_xpose
         )
     );
-    add_tooltip(m_button_xpose, "Song transpose, for all transposable sequences");
+    add_tooltip(m_button_xpose, "Song-transpose all transposable sequences.");
     m_entry_xpose->set_size_request(30, -1);
     m_entry_xpose->set_editable(false);
 
@@ -406,8 +406,8 @@ perfedit::perfedit
     add_tooltip(m_button_play, "Begin playback at the L marker.");
     m_button_play->set_sensitive(true);
 
-#ifdef USE_STAZED_JACK_SUPPORT
-    m_button_jack->add(*manage(new PIXBUF_IMAGE(jack_xpm)));
+#ifdef SEQ64_STAZED_JACK_SUPPORT
+    m_button_jack->add(*manage(new PIXBUF_IMAGE(jack_black_xpm)));
     m_button_jack->signal_clicked().connect
     (
         mem_fun(*this, &perfedit::set_jack_mode)
@@ -449,7 +449,7 @@ perfedit::perfedit
     m_hlbox->pack_start(*m_entry_xpose , false, false);
 #endif
 
-#ifdef USE_STAZED_JACK_SUPPORT
+#ifdef SEQ64_STAZED_JACK_SUPPORT
     m_hlbox->pack_start(*m_button_jack, false, false);
 #endif
 
@@ -624,10 +624,10 @@ perfedit::toggle_follow_transport ()
 
 #endif  // SEQ64_STAZED_TRANSPORT
 
-#ifdef USE_STAZED_JACK_SUPPORT
+#ifdef SEQ64_STAZED_JACK_SUPPORT
 
 /**
- *  To avoid a lot of pointer dereferencing, much of the code is offload to
+ *  To avoid a lot of pointer dereferencing, much of the code is offloaded to
  *  perform::set_jack_mode(), which now returns a boolean.
  */
 
@@ -635,8 +635,8 @@ void
 perfedit::set_jack_mode ()
 {
     bool active = m_button_jack->get_active();
-    perf().set_jack_mode(active);
-    m_button_jack->set_active(active);
+    bool isjackrunning = perf().set_jack_mode(active);
+    m_button_jack->set_active(isjackrunning);
 }
 
 bool
@@ -655,7 +655,7 @@ perfedit::toggle_jack ()
     m_button_jack->set_active(! m_button_jack->get_active());
 }
 
-#endif  // USE_STAZED_JACK_SUPPORT
+#endif  // SEQ64_STAZED_JACK_SUPPORT
 
 /**
  *  Sets the guides, which are the L and R user-interface elements.
@@ -811,10 +811,8 @@ perfedit::draw_sequences ()
 bool
 perfedit::timeout ()
 {
-
-#ifdef USE_STAZED_JACK_SUPPORT
-    m_perfroll->redraw_dirty_sequences();
-    m_perfroll->draw_progress();
+    m_perfroll->follow_progress();          /* keep up with progress        */
+    m_perfroll->redraw_progress();
     m_perfnames->redraw_dirty_sequences();
 
 #ifdef SEQ64_STAZED_TRANSPORT
@@ -822,14 +820,11 @@ perfedit::timeout ()
         m_button_follow->set_active(perf().get_follow_transport());
 #endif
 
+#ifdef SEQ64_STAZED_JACK_SUPPORT
     if (perf().is_running())
         m_button_jack->set_sensitive(false);
     else
         m_button_jack->set_sensitive(true);
-#else
-    m_perfroll->follow_progress();          /* keep up with progress        */
-    m_perfroll->redraw_progress();
-    m_perfnames->redraw_dirty_sequences();
 #endif
 
     m_button_undo->set_sensitive(perf().have_undo());
@@ -887,29 +882,30 @@ void
 perfedit::start_playing ()
 {
 #ifdef SEQ64_STAZED_TRANSPORT
-    perf().start_from_perfedit(true);
+#ifdef SEQ64_PAUSE_SUPPORT
+    perf().pause_key(true);             /* was perf().start_key(true)       */
+#else
+    perf().start_playing(true);         /* forces start-from-perfedit       */
+#endif
+#else
+#ifdef SEQ64_PAUSE_SUPPORT
+    perf().pause_key();                 /* perf().start_key()               */
+#else
+    perf().start_playing();             /* legacy behavior                  */
+#endif
 #endif
 
-#ifdef SEQ64_PAUSE_SUPPORT
-    perf().pause_key();                 /* perf().start_key() */
-#else
-    perf().start_playing();             /* legacy behavior  */
-#endif
 }
 
 /**
  *  Pauses the playing of the song, leaving the progress bar where it stopped.
- *  Currently, it is just the same as stop_playing(), but we will get it to
- *  work.  Keeps the stop button enabled as a kind of rewind for ALSA.
+ *  Keeps the stop button enabled as a kind of rewind for ALSA.  Stop in
+ *  place!
  */
 
 void
-perfedit::pause_playing ()                      /* Stop in place!   */
+perfedit::pause_playing ()
 {
-#ifdef SEQ64_STAZED_TRANSPORT
-    perf().start_from_perfedit(false);  /* complement to start_playing()    */
-#endif
-
 #ifdef SEQ64_PAUSE_SUPPORT
     perf().pause_key();
 #else
@@ -927,10 +923,6 @@ perfedit::pause_playing ()                      /* Stop in place!   */
 void
 perfedit::stop_playing ()
 {
-#ifdef SEQ64_STAZED_TRANSPORT
-    perf().start_from_perfedit(false);  /* complement to start_playing()    */
-#endif
-
 #ifdef SEQ64_PAUSE_SUPPORT
     perf().stop_key();
 #else

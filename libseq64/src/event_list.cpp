@@ -353,7 +353,15 @@ event_list::link_new ()
  *  This function verifies state: all note-ons have an off, and it links
  *  note-offs with their note-ons.
  *
+ * Stazed (seq32):
+ * 
+ *      This function now deletes any notes that are >= m_length, so any
+ *      resize or move of notes must modify for wrapping if Note Off is >=
+ *      m_length.
+ *
  * \threadunsafe
+ *      As in most case, the caller will use an automutex to call this
+ *      function safely.
  *
  * \param slength
  *      Provides the length beyond which events will be pruned.
@@ -501,7 +509,7 @@ event_list::mark_out_of_range (midipulse slength)
     for (Events::iterator i = m_events.begin(); i != m_events.end(); ++i)
     {
         event & e = dref(i);
-        bool prune = e.get_timestamp() > slength;   /* was ">="             */
+        bool prune = e.get_timestamp() > slength;   /* WAS ">=", SEE BANNER */
         if (! prune)
             prune = e.get_timestamp() < 0;          /* added back, seq24    */
 

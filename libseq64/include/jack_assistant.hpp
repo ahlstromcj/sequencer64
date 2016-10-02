@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-07-23
- * \updates       2016-09-11
+ * \updates       2016-09-18
  * \license       GNU GPLv2 or above
  *
  *  This class contains a number of functions that used to reside in the
@@ -36,7 +36,7 @@
  */
 
 #include "globals.h"                    /* globals, nullptr, and more       */
-#include "midibyte.hpp"                 /* midipulse typedef                */
+#include "midibyte.hpp"                 /* seq64::midipulse typedef         */
 
 #ifdef SEQ64_JACK_SUPPORT
 
@@ -64,8 +64,7 @@
 
 namespace seq64
 {
-
-class perform;                          /* jack_assistant parent is perform */
+    class perform;                      /* forward reference                */
 
 /**
  *  Provide a temporary structure for passing data and results between a
@@ -92,12 +91,12 @@ public:
     bool js_init_clock;                 /**< We now have a good JACK lock.  */
     bool js_looping;                    /**< seqedit loop button is active. */
     bool js_playback_mode;              /**< Song mode (versus live mode).  */
-#ifdef USE_STAZED_JACK_SUPPORT
+#ifdef SEQ64_STAZED_JACK_SUPPORT
     double js_ticks_converted;          /**< Keeps track of ...?            */
     double js_ticks_delta;              /**< Minor difference in tick.      */
 #endif
     double js_ticks_converted_last;     /**< Keeps track of position?       */
-#if defined USE_SEQ24_0_9_3_CODE || defined USE_STAZED_JACK_SUPPORT
+#if defined USE_SEQ24_0_9_3_CODE || defined SEQ64_STAZED_JACK_SUPPORT
     long js_delta_tick_frac;            /* seq24 0.9.3                      */
 #endif
 
@@ -150,7 +149,7 @@ class jack_assistant
         void * arg
     );
 
-#ifndef USE_STAZED_JACK_SUPPORT
+#ifndef SEQ64_STAZED_JACK_SUPPORT
     friend long get_current_jack_position (void * arg);
 #endif
 
@@ -209,7 +208,7 @@ private:
 
     jack_nframes_t m_jack_frame_last;
 
-#ifdef USE_STAZED_JACK_SUPPORT
+#ifdef SEQ64_STAZED_JACK_SUPPORT
 
     /**
      *  Holds the current frame rate.  Just in case.
@@ -271,7 +270,7 @@ private:
 
     bool m_jack_master;
 
-#ifdef USE_STAZED_JACK_SUPPORT
+#ifdef SEQ64_STAZED_JACK_SUPPORT
 
     /**
      *  TBD.
@@ -285,7 +284,7 @@ private:
 
     midipulse m_jack_stop_tick;
 
-#endif  // USE_STAZED_JACK_SUPPORT
+#endif  // SEQ64_STAZED_JACK_SUPPORT
 
 #ifdef SEQ64_STAZED_TRANSPORT
 
@@ -345,6 +344,15 @@ public:
      */
 
     perform & parent ()
+    {
+        return m_jack_parent;
+    }
+
+    /**
+     * \getter m_jack_parent, const version
+     */
+
+    const perform & parent () const
     {
         return m_jack_parent;
     }
@@ -498,7 +506,7 @@ public:
         return m_jack_pos;
     }
 
-#ifdef USE_STAZED_JACK_SUPPORT
+#ifdef SEQ64_STAZED_JACK_SUPPORT
 
     void toggle_jack_mode ()
     {
@@ -542,7 +550,7 @@ public:
         return m_jack_frame_rate;
     }
 
-#endif  // USE_STAZED_JACK_SUPPORT
+#endif  // SEQ64_STAZED_JACK_SUPPORT
 
 #ifdef SEQ64_STAZED_TRANSPORT
 
@@ -573,35 +581,9 @@ public:
         set_follow_transport(! m_follow_transport);
     }
 
-    /**
-     * \getter parent().toggle_song_start_mode()
-     */
-
-    bool
-    jack_assistant::toggle_song_start_mode ()
-    {
-        return parent().toggle_song_start_mode();
-    }
-
-    /**
-     * \getter parent().song_start_mode()
-     */
-
-    bool
-    jack_assistant::song_start_mode ()
-    {
-        return parent().song_start_mode();
-    }
-
-    /**
-     * \setter parent().start_from_perfedit()
-     */
-
-    void
-    jack_assistant::set_start_from_perfedit (bool start)
-    {
-        parent().start_from_perfedit(start);
-    }
+    bool toggle_song_start_mode ();
+    bool song_start_mode () const;
+    void set_start_from_perfedit (bool start);
 
 #endif  // SEQ64_STAZED_TRANSPORT
 
@@ -701,7 +683,7 @@ extern void jack_timebase_callback
 
 extern int jack_process_callback (jack_nframes_t nframes, void * arg);
 
-#ifdef USE_STAZED_JACK_SUPPORT
+#ifdef SEQ64_STAZED_JACK_SUPPORT
 
 extern long get_current_jack_position (void * arg);
 

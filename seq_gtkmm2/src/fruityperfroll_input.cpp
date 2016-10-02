@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-10-13
- * \updates       2016-08-17
+ * \updates       2016-10-02
  * \license       GNU GPLv2 or above
  *
  */
@@ -225,14 +225,14 @@ FruityPerfInput::on_left_button_pressed (GdkEventButton * ev, perfroll & roll)
     else                    /* add a new note if we didn't select anything  */
     {
         midipulse droptick = roll.m_drop_tick;
-        m_adding_pressed = true;
+        set_adding_pressed(true);
         if (p.is_active(dropseq))
         {
             midipulse seqlength = seq->get_length();
             bool state = seq->get_trigger_state(droptick);
             if (state)      /* resize or move event based on where clicked  */
             {
-                m_adding_pressed = false;
+                set_adding_pressed(false);
 
                 /*
                  * Set the flag that tells the motion-notify callback to call
@@ -348,7 +348,7 @@ FruityPerfInput::on_button_release_event (GdkEventButton * ev, perfroll & roll)
     perform & p = roll.perf();
     roll.m_moving = false;
     roll.m_growing = false;
-    m_adding_pressed = false;
+    set_adding_pressed(false);
     if (p.is_active(roll.m_drop_sequence))
         roll.draw_all();
 
@@ -381,7 +381,7 @@ FruityPerfInput::on_motion_notify_event (GdkEventMotion * ev, perfroll & roll)
     midipulse tick = 0;
     m_current_x = int(ev->x);
     m_current_y = int(ev->y);
-    if (m_adding_pressed)
+    if (is_adding_pressed())
     {
         roll.convert_x(x, tick);        /* side-effect */
         if (p.is_active(dropseq))

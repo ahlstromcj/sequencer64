@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-08-20
+ * \updates       2016-09-30
  * \license       GNU GPLv2 or above
  *
  */
@@ -219,6 +219,7 @@ private:
     void add_midi_clock_page ();
     void add_midi_input_page ();
     void add_keyboard_page ();
+    void add_extended_keys_page ();
     void add_mouse_page ();
     void add_jack_sync_page ();
 

@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2016-08-19
- * \updates       2016-09-10
+ * \updates       2016-10-01
  * \license       GNU GPLv2 or above
  *
  *    Some options (the "USE_xxx" options) specify experimental and
@@ -50,17 +50,24 @@
  *    one-by-one in a controlled, tested manner.
  */
 
-/*
- * Odds and ends that we missed.
+#ifdef PLATFORM_WINDOWS
+#include "configwin32.h"
+#else
+#include "seq64-config.h"
+#endif
+
+/**
+ * Odds and ends that we missed.  This value allows non-notes to be included
+ * in a selection for movement or other adjustment.
  */
 
 #define USE_NON_NOTE_EVENT_ADJUSTMENT   /* see sequence.cpp                 */
 
-/*
- * Currently undefined as tentative or EXPERIMENTAL.
+/**
+ * Currently, many macros are undefined as tentative or EXPERIMENTAL.
  */
 
-/*
+/**
  *  Adds a seqedit menu option to expand a pattern/sequence by doubling it, or
  *  to compress a pattern/sequence by halving it.  These operations are
  *  accomplished by the sequence::multiply_patten() function.
@@ -68,7 +75,7 @@
 
 #undef  USE_STAZED_COMPANDING
 
-/*
+/**
  *  Adds: (1) skipping some bars in drawing the grid in perftime, to allow for
  *  in-tight zoom levels; (2) setting and grabbing the focus in seqedit if the
  *  sequence has been given a name (and thus presumably been edited).
@@ -76,7 +83,7 @@
 
 #undef  USE_STAZED_EXTRAS
 
-/*
+/**
  *  If defined, adds some extra snap values to the perfedit snap menu.
  *  We suspect there's a more elegant way to handle getting snap to handle
  *  varying zoom values and things like triplets, but we want to make sure
@@ -85,31 +92,33 @@
 
 #undef  USE_STAZED_EXTRA_SNAPS
 
-/*
+/**
  *  Modifies the handling of seqedit::record_change_callback() and
  *  seqedit::thru_change_callback().
  */
 
 #undef  USE_STAZED_FIX
 
-/*
+/**
  *  Adds more SYSEX processing, plus the ability to read SYSEX information
  *  from a file.
  */
 
 #undef  USE_SYSEX_PROCESSING            /* disabled in Seq24 as well        */
 
-/*
+/**
  *  This is a big one, bringing in some massive changes to how JACK is
  *  handled.  It looks good, but it is complex enough that we'll leave this
  *  until about last to officially activate; it will need a lot of testing,
  *  mostly because of the possibility of errors in porting this code from
- *  Seq32.
+ *  Seq32.  Now a SEQ64_STAZED_JACK_SUPPORT option, settable at configure
+ *  time, currently disabled by default in the configure script (until we have
+ *  it fully tested).
+ *
+ *  #define USE_STAZED_JACK_SUPPORT
  */
 
-#undef  USE_STAZED_JACK_SUPPORT
-
-/*
+/**
  *  Enables using the lfownd dialog to control the envelope of certain events
  *  in seqedit's seqdata pane.  We're not too keen on the user interface,
  *  though.
@@ -117,20 +126,28 @@
 
 #undef  USE_STAZED_LFO_SUPPORT
 
-/*
- *  Adds a button to disable the main menu in the main window.
+/**
+ *  Adds a button to disable the main menu in the main window.  Adds a button
+ *  to set the Song (versus Live) mode from  the main menu in the main window.
+ *  There is also an other, less public macro, SEQ64_MENU_BUTTON_PIXMAPS,
+ *  that selects between using pixmaps to represent the "Song"/"Live",
+ *  "Muting", and "Menu" buttons in the mainwnd window, or the text
+ *  equivalents.  That value can be found in the seq_gtkmm2/include/mainwnd.hpp
+ *  file, should one want to use text instead.
  */
 
-#undef  USE_STAZED_MENU_MODE_BUTTON
+#define SEQ64_STAZED_MENU_BUTTONS
 
-/*
- *  Adds a button to set the Song (versus Live) mode from  the main menu in
- *  the main window.
+/**
+ *  If defined, this macro adds a small button next to the BPM setting that
+ *  can be used to calculate a tempo based on the user's periodic clicks.
+ *  (Later, a shortcut key will be added).  Inspired by a request from user
+ *  alejg.
  */
 
-#undef  SEQ64_STAZED_SONG_MODE_BUTTON       ///////////////////////
+#define SEQ64_MAINWND_TAP_BUTTON
 
-/*
+/**
  *  In the perform object, replaces a direct call to sequence::stream_event()
  *  with a call to mastermidibus::dump_midi_input(), which then is supposed to
  *  allocate the event to the sequence that has a matching channel.
@@ -142,49 +159,50 @@
 
 #undef  USE_STAZED_MIDI_DUMP
 
-/*
+/**
  *  Adds the ability to select odd/even notes in seqedit.
  */
 
 #undef  USE_STAZED_ODD_EVEN_SELECTION
 
-/*
+/**
  *  Not yet defined.
  */
 
 #undef  USE_STAZED_SELECTION_EXTENSIONS
 
-/*
+/**
  *  Not yet defined.
  */
 
 #undef  USE_STAZED_PLAYING_CONTROL
 
-/*
+/**
  *  Not yet defined.
  */
 
 #undef  USE_STAZED_RANDOMIZE_SUPPORT
 
-/*
+/**
  *  Not yet defined.
  */
 
 #undef  USE_STAZED_SEQDATA_EXTENSIONS
 
-/*
+/**
  *  Not yet defined.
  */
 
 #undef  USE_STAZED_SHIFT_SUPPORT
 
-/*
- *  Adds support for various transport features, more to come.
+/**
+ *  Adds support for various transport features, more to come.  Now a
+ *  configure-time option.
+ *
+ * #define SEQ64_STAZED_TRANSPORT
  */
 
-#undef  SEQ64_STAZED_TRANSPORT                ///////////////////
-
-/*
+/**
  *  Stazed implementation of auto-scroll.
  */
 
@@ -194,18 +212,20 @@
  * To recapitulate, all the options above are EXPERIMENTAL and in progress.
  */
 
-/*
+/**
  * Configure-time options.
  *
- *    SEQ64_HAVE_LIBASOUND
- *    SEQ64_HIGHLIGHT_EMPTY_SEQS
- *    SEQ64_JACK_SESSION
- *    SEQ64_JACK_SUPPORT
- *    SEQ64_LASH_SUPPORT
- *    SEQ64_PAUSE_SUPPORT
- *    SEQ64_STAZED_CHORD_GENERATOR
- *    SEQ64_STAZED_TRANSPOSE
- *    SEQ64_STRIP_EMPTY_MUTES
+ *    - SEQ64_HAVE_LIBASOUND
+ *    - SEQ64_HIGHLIGHT_EMPTY_SEQS
+ *    - SEQ64_JACK_SESSION
+ *    - SEQ64_JACK_SUPPORT
+ *    - SEQ64_STAZED_JACK_SUPPORT
+ *    - SEQ64_LASH_SUPPORT
+ *    - SEQ64_PAUSE_SUPPORT
+ *    - SEQ64_STAZED_CHORD_GENERATOR
+ *    - SEQ64_STAZED_TRANSPOSE
+ *    - SEQ64_STAZED_TRANSPORT
+ *    - SEQ64_STRIP_EMPTY_MUTES
  */
 
 /*
@@ -215,10 +235,8 @@
 /**
  *  EXPERIMENTAL.  Not yet working.  A very tough problem.
  *  The idea is to go into an auto-screen-set mode via a menu entry, where the
- *  first set is unmuted, and then changes to the screen-set number queue the
- *  previous screen-set for muting, and queue up the current one for
- *  unmuting.
- *
+ *  current screen-set is queued for muting, while the next selected
+ *  screen-set is queued for unmuting.
  *  DO NOT ENABLE AT THIS TIME.
  */
 

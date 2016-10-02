@@ -149,7 +149,8 @@ seqdata::reset ()
  *  function.  Called by seqedit::set_zoom(), which validates the zoom value.
  *
  * \param z
- *      The zoom value to be set.
+ *      The desired zoom value, assumed to be validated already.  See the
+ *      seqedit::set_zoom() function.
  */
 
 void

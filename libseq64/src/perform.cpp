@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and Tim Deagan
  * \date          2015-07-24
- * \updates       2016-09-11
+ * \updates       2016-10-02
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -119,7 +119,7 @@ midi_control perform::sm_mc_dummy;
 perform::perform (gui_assistant & mygui, int ppqn)
  :
     m_song_start_mode           (false),    // set later during options read
-#ifdef USE_STAZED_JACK_SUPPORT
+#ifdef SEQ64_STAZED_JACK_SUPPORT
     m_toggle_jack               (false),
     m_jack_stop_tick            (0),        // ???
 #endif
@@ -307,9 +307,9 @@ bool
 perform::clear_all ()
 {
     bool result = true;
-    for (int i = 0; i < m_sequence_max; ++i)
+    for (int s = 0; s < m_sequence_max; ++s)
     {
-        if (is_active(i) && m_seqs[i]->get_editing())   /* stazed check */
+        if (is_active(s) && m_seqs[s]->get_editing())   /* stazed check */
         {
             result = false;
             break;
@@ -318,13 +318,13 @@ perform::clear_all ()
     if (result)
     {
         reset_sequences();
-        for (int i = 0; i < m_sequence_max; ++i)
-            if (is_active(i))
-                delete_sequence(i);             /* can set "is modified"    */
+        for (int s = 0; s < m_sequence_max; ++s)
+            if (is_active(s))
+                delete_sequence(s);             /* can set "is modified"    */
 
         std::string e;                          /* an empty string          */
-        for (int i = 0; i < m_max_sets; ++i)
-            set_screen_set_notepad(i, e);
+        for (int sset = 0; sset < m_max_sets; ++sset)
+            set_screen_set_notepad(sset, e);
 
         set_have_undo(false);
         m_undo_vect.clear();                    /* ca 2016-08-16            */
@@ -367,6 +367,8 @@ perform::clamp_track (int track) const
 
 /**
  * \getter m_mute_group[]
+ *
+ * \return
  *      Returns true if there are any unmute statuses in the mute-group
  *      array.  If they're all zero, we don't need to save them.
  */
@@ -690,7 +692,7 @@ perform::set_left_tick (midipulse tick, bool setstart)
     if (setstart)
         set_start_tick(tick);
 
-#ifdef USE_STAZED_JACK_SUPPORT
+#ifdef SEQ64_STAZED_JACK_SUPPORT
 
     if (is_jack_master())                       /* don't use in slave mode  */
         m_jack_asst.position(true, tick);       /* position_jack()          */
@@ -733,7 +735,7 @@ perform::set_right_tick (midipulse tick, bool setstart)
         {
             m_left_tick = m_right_tick - m_one_measure;
 
-#ifdef USE_STAZED_JACK_SUPPORT
+#ifdef SEQ64_STAZED_JACK_SUPPORT
             if (setstart)
             {
                 set_start_tick(m_left_tick);
@@ -1354,9 +1356,9 @@ perform::midi_control_off (int seq)
  *      m_screen_set_xxx[] arrays.
  *
  * \param notepad
- *      Provides the string date to copy into the notepad.
- *      Not sure why a pointer is used, instead of nice "const std::string
- *      &" parameter.  And this pointer isn't checked.  Fixed.
+ *      Provides the string date to copy into the notepad.  Not sure why a
+ *      pointer is used, instead of nice "const std::string &" parameter.  And
+ *      this pointer isn't checked.  Fixed.
  */
 
 void
@@ -1433,10 +1435,10 @@ perform::set_screenset (int ss)
 #ifdef SEQ64_USE_AUTO_SCREENSET_QUEUE
 
 /**
- *  EXPERIMENTAL.
+ *  EXPERIMENTAL.  Doesn't quite work.
  *
- *  If the flag is true:
- *
+ * \param flag
+ *      If the flag is true:
  *      -#  Mute all tracks in order to start from a known status for all
  *          screen-sets.
  *      -#  Unmute screen-set 0 (the first screen-set).
@@ -1458,7 +1460,7 @@ perform::set_auto_screenset (bool flag)
 }
 
 /**
- *  EXPERIMENTAL.
+ *  EXPERIMENTAL.  Doesn't quite work.
  *
  *  Queues all of the sequences in the given screen-set.  Doesn't work, even
  *  after a lot of hacking on it, so disabled for now.
@@ -1522,11 +1524,11 @@ perform::swap_screenset_queues (int ss0, int ss1)
 void
 perform::set_playing_screenset ()
 {
-    for (int i = 0; i < m_seqs_in_set; ++i)
+    for (int s = 0; s < m_seqs_in_set; ++s)
     {
-        int source = m_playscreen_offset + i;
+        int source = m_playscreen_offset + s;
         if (is_active(source))
-            m_tracks_mute_state[i] = m_seqs[source]->get_playing();
+            m_tracks_mute_state[s] = m_seqs[source]->get_playing();
     }
     m_playing_screen = m_screenset;
     m_playscreen_offset = m_playing_screen * m_seqs_in_set;
@@ -1538,8 +1540,9 @@ perform::set_playing_screenset ()
  *  down the list of sequences and has them dump their events.  It skips
  *  sequences that have no playable MIDI events.
  *
- *  Note how often the "s" (sequence) pointer is used.  Is it worth
- *  offloading all these calls to a new sequence function?  Yes.
+ *  Note how often the "s" (sequence) pointer is used.  Is it worth offloading
+ *  all these calls to a new sequence function?  Yes.  Hence the new
+ *  sequence::play_queue function.
  *
  * \param tick
  *      Provides the tick at which to start playing.
@@ -1549,24 +1552,10 @@ void
 perform::play (midipulse tick)
 {
     m_tick = tick;
-    for (int i = 0; i < m_sequence_max; ++i)
+    for (int s = 0; s < m_sequence_max; ++s)
     {
-        if (is_active(i))
-        {
-            m_seqs[i]->play_queue(tick, m_playback_mode);
-#if 0
-            sequence * s = m_seqs[i];
-            if (s->event_count() > 0)               /* playable events? */
-            {
-                if (s->check_queued_tick(tick))
-                {
-                    s->play(s->get_queued_tick() - 1, m_playback_mode);
-                    s->toggle_playing();
-                }
-                s->play(tick, m_playback_mode);
-            }
-#endif
-        }
+        if (is_active(s))
+            m_seqs[s]->play_queue(tick, m_playback_mode);
     }
     m_master_bus.flush();                           /* flush MIDI buss  */
 }
@@ -1672,11 +1661,11 @@ perform::push_trigger_undo (int track)
  *  function.
  *
  * \todo
- *      Look at seq32/src/perform.cpp and the
- *      perform::push_trigger_undo(track) function, which has a track
- *      parameter that has a -1 values the supports all tracks.  It requires
- *      two new vectors (one for undo, one for redo), two new flags
- *      (likewise).  We've put this code in place, macroed out.
+ *      Look at seq32/src/perform.cpp and the perform ::
+ *      push_trigger_undo(track) function, which has a track parameter that
+ *      has a -1 values the supports all tracks.  It requires two new vectors
+ *      (one for undo, one for redo), two new flags (likewise).  We've put
+ *      this code in place, no longer macroed out, now permanent.
  */
 
 void
@@ -1684,19 +1673,15 @@ perform::pop_trigger_undo ()
 {
     if (m_undo_vect.size() > 0)
     {
-        /*
-         * int track = m_undo_vect[m_undo_vect.size() - 1];
-         */
-
         int track = m_undo_vect.back();
         m_undo_vect.pop_back();
         m_redo_vect.push_back(track);
         if (track == SEQ64_ALL_TRACKS)
         {
-            for (int i = 0; i < m_sequence_max; ++i)
+            for (int s = 0; s < m_sequence_max; ++s)
             {
-                if (is_active(i))
-                    m_seqs[i]->pop_trigger_undo();
+                if (is_active(s))
+                    m_seqs[s]->pop_trigger_undo();
             }
         }
         else
@@ -1714,19 +1699,15 @@ perform::pop_trigger_redo ()
 {
     if (m_redo_vect.size() > 0)
     {
-        /*
-         * int track = m_redo_vect[m_redo_vect.size()-1];
-         */
-
         int track = m_redo_vect.back();
         m_redo_vect.pop_back();
         m_undo_vect.push_back(track);
         if (track == SEQ64_ALL_TRACKS)
         {
-            for (int i = 0; i < m_sequence_max; ++i)
+            for (int s = 0; s < m_sequence_max; ++s)
             {
-                if (is_active(i))                   /* oops, was "track"!   */
-                    m_seqs[i]->pop_trigger_redo();
+                if (is_active(s))                   /* oops, was "track"!   */
+                    m_seqs[s]->pop_trigger_redo();
             }
         }
         else
@@ -1752,10 +1733,10 @@ perform::copy_triggers ()
     if (m_left_tick < m_right_tick)
     {
         midipulse distance = m_right_tick - m_left_tick;
-        for (int i = 0; i < m_sequence_max; ++i)
+        for (int s = 0; s < m_sequence_max; ++s)
         {
-            if (is_active(i))
-                m_seqs[i]->copy_triggers(m_left_tick, distance);
+            if (is_active(s))
+                m_seqs[s]->copy_triggers(m_left_tick, distance);
         }
     }
 }
@@ -1772,27 +1753,50 @@ perform::copy_triggers ()
  *  flag is false, that turns off "song" mode.  So that explains why
  *  mute/unmute is disabled.
  *
+ * Playback use cases:
+ *
+ *      These use cases are meant to apply to either a Seq32 or a regular build
+ *      of Sequencer64, eventually.  Currently, the regular build does not have
+ *      a concept of a "global" perform song-mode flag.
+ *
+ *      -#  mainwnd.
+ *          -#  Play.  If the perform song-mode is "Song", then use that mode.
+ *              Otherwise, use "Live" mode.
+ *          -#  Stop.  This action is modeless here.  In ALSA, it will cause
+ *              a rewind (but currently seqroll doesn't rewind until Play is
+ *              clicked, a minor bug).
+ *          -#  Pause.  Same processing as Play or Stop, depending on current
+ *              status.  When stopping, the progress bars in seqroll and
+ *              perfroll remain at their current point.
+ *      -#  perfedit.
+ *          -#  Play.  Override the current perform song-mode to use "Song".
+ *          -#  Stop.  Revert the perfedit setting, in case play is restarted
+ *              or resumed via mainwnd.
+ *          -#  Pause.  Same processing as Play or Stop, depending on current
+ *              status.
+ *       -# ALSA versus JACK.
+ *          -# TODO.
+ *
  * \param songmode
- *      Indicates if the caller wants to start the playback in JACK mode.
- *      In the seq42 (yes, "42", not "24") code at GitHub, this flag was
- *      identical to the "global_jack_start_mode" flag, which is true for
- *      Song mode, and false for Live mode.  False disables Song mode, and
- *      is the default, which matches seq24.  If the previous state was
- *      "paused", then we start it in Live mode, which works because Song
- *      mode has already turned on the sequences.  This method is not quite
- *      intuitive, because it is really following Live mode.
+ *      Indicates if the caller wants to start the playback in Song mode
+ *      (sometimes erroneously referred to as "JACK mode").  In the seq32 code
+ *      at GitHub, this flag was identical to the "global_jack_start_mode"
+ *      flag, which is true for Song mode, and false for Live mode.  False
+ *      disables Song mode, and is the default, which matches seq24.
+ *      Generally, we pass true in this parameter if we're starting playback
+ *      from the perfedit window.  It alters the m_start_from_perfedit member,
+ *      not the m_song_start_mode member (which replaces the global flag now).
  */
 
-#ifdef USE_STAZED_JACK_SUPPORT
+#ifdef SEQ64_STAZED_JACK_SUPPORT
 
 void
 perform::start_playing (bool songmode)
 {
 #ifdef SEQ64_STAZED_TRANSPORT
-    if (songmode || m_start_from_perfedit)
-#else
-    if (songmode)
+    m_start_from_perfedit = songmode;
 #endif
+    if (songmode || song_start_mode())
     {
         if (is_jack_master())
         {
@@ -1808,24 +1812,43 @@ perform::start_playing (bool songmode)
 #endif
         }
         start_jack();
-        start(true);    // for setting song m_playback_mode = true
+        start(true);                                        /* song mode       */
     }
     else
     {
         if (is_jack_master())
             m_jack_asst.position(false, 0);                 /* position_jack() */
 
-        start(false);
+        /*
+         * EXPERIMENTAL, let's see if this works.
+         *
+         * It makes more sense to reverse the order of these calls.  The
+         * start() call signals the output function to continue.  The
+         * start_jack() call starts JACK transport.
+         *
+         *  start(false);
+         *  start_jack();
+         */
+
         start_jack();
+        start(false);                                       /* live mode       */
     }
 }
 
-#else   // USE_STAZED_JACK_SUPPORT
+#else   // SEQ64_STAZED_JACK_SUPPORT
+
+/*
+ * In this legacy version, the songmode parameter simply indicates which GUI,
+ * mainwnd ("live", false) or perfedit ("song", true) started the playback.
+ * However, if the song-mode is false, then we fall back to the value of
+ * song_start_mode(), in order not to violate user expectations from the
+ * setting on of the song-sart mode on mainwnd.
+ */
 
 void
 perform::start_playing (bool songmode)
 {
-    if (songmode)                       /* || m_start_from_perfedit???      */
+    if (songmode || song_start_mode())
     {
         /*
          * For cosmetic reasons, to stop transport line flicker on start,
@@ -1846,8 +1869,20 @@ perform::start_playing (bool songmode)
          */
 
         position_jack(false);           // if Master???
-        start(false);                   /* disables perfedit mute control   */
+
+        /*
+         * EXPERIMENTAL, let's see if this works.
+         *
+         * It makes more sense to reverse the order of these calls.  The
+         * start() call signals the output function to continue.  The
+         * start_jack() call starts JACK transport.
+         *
+         *  start(false);
+         *  start_jack();
+         */
+
         start_jack();
+        start(false);                   /* disables perfedit mute control   */
     }
 
     /*
@@ -1867,33 +1902,35 @@ perform::start_playing (bool songmode)
     is_pattern_playing(true);
 }
 
-#endif  // USE_STAZED_JACK_SUPPORT
+#endif  // SEQ64_STAZED_JACK_SUPPORT
 
-#ifdef USE_STAZED_JACK_SUPPORT
+#ifdef SEQ64_STAZED_JACK_SUPPORT
 
 /**
  *  Encapsulates behavior needed by perfedit.
  *
  * \param jack_button_active
  *      Indicates if the perfedit JACK button shows it is active.
+ *
+ * \return
+ *      Returns true if JACK is running currently, and false otherwise.
  */
 
-void
+bool
 perform::set_jack_mode (bool jack_button_active)
 {
-    if (! is_running())                              // global_is_running
+    if (! is_running())                         /* was global_is_running    */
     {
         if (jack_button_active)
             init_jack();
         else
             deinit_jack();
     }
-    m_toggle_jack = is_jack_running();              // for seqroll keybinding
+    m_toggle_jack = is_jack_running();          /* for seqroll keybinding   */
 
     /*
      *  For setting the transport tick to display in the correct location.
-     *  FIXME: currently does not work for slave from disconnected; need JACK
-     *  position.
+     *  FIXME: does not work for slave from disconnected; need JACK position.
      */
 
     if (song_start_mode())
@@ -1905,9 +1942,11 @@ perform::set_jack_mode (bool jack_button_active)
     }
     else
         set_start_tick(get_tick());
+
+    return is_jack_running();
 }
 
-#endif  // USE_STAZED_JACK_SUPPORT
+#endif  // SEQ64_STAZED_JACK_SUPPORT
 
 /**
  *  Pause playback, so that progress bars stay where they are, and playback
@@ -1920,24 +1959,37 @@ perform::set_jack_mode (bool jack_button_active)
  *
  *  We still need to make restarting pick up at the same place in ALSA mode;
  *  in JACK mode, JACK transport takes care of that feature.
+ *
+ * \param songmode
+ *      Indicates that, if resuming play, it should play in Song mode (true)
+ *      or Live mode (false).  See the comments for the start_playing()
+ *      function.
  */
 
 void
-perform::pause_playing ()
+perform::pause_playing (bool songmode)
 {
 #ifdef SEQ64_JACK_SUPPORT
-    m_jack_asst.stop();                 /* stop_jack()                  */
-    if (! is_jack_running())            /* stop() { inner_stop(); }     */
+    m_jack_asst.stop();                     /* stop_jack()                  */
+    if (! is_jack_running())                /* stop() { inner_stop(); }     */
     {
 #endif
         set_running(false);
-        reset_sequences(true);          /* reset "last-tick" for pause  */
+        reset_sequences(true);              /* reset "last-tick" for pause  */
         m_usemidiclock = false;
 #ifdef SEQ64_JACK_SUPPORT
     }
 #endif
+
+#ifdef SEQ64_STAZED_TRANSPORT
+    if (! m_is_paused)                      /* seq64 was in output_func()   */
+        m_start_from_perfedit = false;      /* act like stop_playing()      */
+    else
+        m_start_from_perfedit = songmode;   /* act like start_playing()     */
+#endif
+
     m_is_paused = true;
-    is_pattern_playing(false);
+    is_pattern_playing(false);              // hmmmmmmmmmmmmmmmmmm
 }
 
 /**
@@ -1953,29 +2005,40 @@ perform::stop_playing ()
     stop_jack();
     stop();
 
-#ifndef USE_STAZED_JACK_SUPPORT
+#ifndef SEQ64_STAZED_JACK_SUPPORT
     m_is_paused = false;
     is_pattern_playing(false);
     m_tick = 0;                         // or get_left_tick()
+#endif
+
+#ifdef SEQ64_STAZED_TRANSPORT
+    m_start_from_perfedit = false;
 #endif
 
 }
 
 /**
  *  If JACK is supported and running, sets the position of the transport.
+ *
+ * \param songmode
+ *      If true, playback is to be in Song mode.  Otherwise, it is to be in
+ *      Live mode.
+ *
+ * \param tick
+ *      Provides the pulse position to be set.
  */
 
 void
-perform::position_jack (bool state, midipulse tick)
+perform::position_jack (bool songmode, midipulse tick)
 {
 #ifdef SEQ64_JACK_SUPPORT
-#ifdef USE_STAZED_JACK_SUPPORT
-    m_jack_asst.position(state, tick);
+#ifdef SEQ64_STAZED_JACK_SUPPORT
+    m_jack_asst.position(songmode, tick);
 #else
     if (rc().with_jack_master())
         tick = SEQ64_NULL_MIDIPULSE;
 
-    m_jack_asst.position(state, tick);
+    m_jack_asst.position(songmode, tick);
 #endif
 #endif
 }
@@ -1983,17 +2046,18 @@ perform::position_jack (bool state, midipulse tick)
 /**
  *  If JACK is not running, call inner_start() with the given state.
  *
- * \param state
- *      What does this state mean?
+ * \param songmode
+ *      If true, playback is to be in Song mode.  Otherwise, it is to be in
+ *      Live mode.
  */
 
 void
-perform::start (bool state)
+perform::start (bool songmode)
 {
 #ifdef SEQ64_JACK_SUPPORT
     if (! is_jack_running())
 #endif
-        inner_start(state);
+        inner_start(songmode);
 }
 
 /**
@@ -2004,28 +2068,28 @@ perform::start (bool state)
  * Stazed:
  *
  *      This function's sole purpose was to prevent inner_stop() from being
- *      called internally when jack was running...potentially twice.
- *      inner_stop() was called by output_func() when jack sent a
+ *      called internally when JACK was running... potentially twice.
+ *      inner_stop() was called by output_func() when JACK sent a
  *      JackTransportStopped message. If seq42 initiated the stop, then
  *      stop_jack() was called which then triggered the JackTransportStopped
  *      message to output_func() which then triggered the bool stop_jack to
  *      call inner_stop().  The output_func() call to inner_stop() is only
- *      necessary when some other jack client sends a jack_transport_stop
- *      message to jack, not when it is initiated by seq42.  The method of
- *      relying on jack to call inner_stop() when internally initiated caused
+ *      necessary when some other JACK client sends a jack_transport_stop
+ *      message to JACK, not when it is initiated by seq42.  The method of
+ *      relying on JACK to call inner_stop() when internally initiated caused
  *      a (very) obscure apparent freeze if you press and hold the start/stop
  *      key if set to toggle. This occurs because of the delay between
  *      JackTransportStarting and JackTransportStopped if both triggered in
  *      rapid succession by holding the toggle key down.  The variable
- *      global_is_running gets set false by a delayed inner_stop() from jack
+ *      global_is_running gets set false by a delayed inner_stop() from JACK
  *      after the start (true) is already sent. This means the global is set
- *      to true when jack is actually off (false). Any subsequent presses to
+ *      to true when JACK is actually off (false). Any subsequent presses to
  *      the toggle key send a stop message because the global is set to true.
- *      Because jack is not running, output_func() is not running to send the
+ *      Because JACK is not running, output_func() is not running to send the
  *      inner_stop() call which resets the global to false. Thus an apparent
  *      freeze as the toggle key endlessly sends a stop, but inner_stop()
  *      never gets called to reset. Whoo! So, to fix this we just need to
- *      call inner_stop() directly rather than wait for jack to send a
+ *      call inner_stop() directly rather than wait for JACK to send a
  *      delayed stop, only when running. This makes the whole purpose of this
  *      stop() function unneeded. The check for m_jack_running is commented
  *      out and this function could be removed. It is being left for future
@@ -2035,7 +2099,7 @@ perform::start (bool state)
 void
 perform::stop ()
 {
-#if defined SEQ64_JACK_SUPPORT && ! defined USE_STAZED_JACK_SUPPORT
+#if defined SEQ64_JACK_SUPPORT && ! defined SEQ64_STAZED_JACK_SUPPORT
     if (! is_jack_running())
 #endif
         inner_stop();
@@ -2053,24 +2117,23 @@ perform::stop ()
  *      beginning of the sequence, even if just pausing.  This is fixed by
  *      compiling with SEQ64_PAUSE_SUPPORT, which disables calling
  *      off_sequences() when starting playback from the song editor /
- *      performance window.  WE STILL HAVE TO EVALUATE WHAT SIDE-EFFECTS MIGHT
- *      OCCUR.  ALSO CONSIDER A RUN-TIME --pause-support option for this
- *      feature.
+ *      performance window.  We still should evaluate what side-effects might
+ *      occur.  Consider a run-time --pause-support option for this feature.
  *
- * \param state
+ * \param songmode
  *      Sets the playback mode, and, if true, turns off all of the sequences.
  */
 
 void
-perform::inner_start (bool state)
+perform::inner_start (bool songmode)
 {
     m_condition_var.lock();
     if (! is_running())
     {
-        set_playback_mode(state);
+        set_playback_mode(songmode);
 
 #ifndef SEQ64_PAUSE_SUPPORT
-        if (state)
+        if (songmode)
             off_sequences();
 #endif
 
@@ -2088,15 +2151,17 @@ perform::inner_start (bool state)
  *  circumstances.
  *
  *  However, if JACK is running, we do not want to reset the sequences... this
- *  causes the progress bar for each sequence to remove to near the end of the
+ *  causes the progress bar for each sequence to move to near the end of the
  *  sequence.
+ *
+ * \param midiclock
+ *      If true, indicates that the MIDI clock should be used.
  */
-
 
 void
 perform::inner_stop (bool midiclock)
 {
-#ifdef USE_STAZED_JACK_SUPPORT
+#ifdef SEQ64_STAZED_JACK_SUPPORT
 #ifdef SEQ64_STAZED_TRANSPORT
     start_from_perfedit(false);
 #endif
@@ -2119,10 +2184,10 @@ perform::inner_stop (bool midiclock)
 void
 perform::off_sequences ()
 {
-    for (int i = 0; i < m_sequence_max; ++i)
+    for (int s = 0; s < m_sequence_max; ++s)
     {
-        if (is_active(i))
-            m_seqs[i]->set_playing(false);
+        if (is_active(s))
+            m_seqs[s]->set_playing(false);
     }
 }
 
@@ -2134,10 +2199,10 @@ perform::off_sequences ()
 void
 perform::all_notes_off ()
 {
-    for (int i = 0; i < m_sequence_max; ++i)
+    for (int s = 0; s < m_sequence_max; ++s)
     {
-        if (is_active(i))
-            m_seqs[i]->off_playing_notes();
+        if (is_active(s))
+            m_seqs[s]->off_playing_notes();
     }
     m_master_bus.flush();               /* flush the MIDI buss  */
 }
@@ -2153,9 +2218,10 @@ perform::all_notes_off ()
  *      Try to prevent notes from lingering on pause if true.
  */
 
-#ifdef USE_STAZED_JACK_SUPPORT
+#ifdef SEQ64_STAZED_JACK_SUPPORT
 
-void perform::reset_sequences (bool pause)
+void
+perform::reset_sequences (bool pause)
 {
     if (pause)
     {
@@ -2163,23 +2229,23 @@ void perform::reset_sequences (bool pause)
     }
     else
     {
-        for (int i = 0; i < m_sequence_max; ++i)
+        for (int s = 0; s < m_sequence_max; ++s)
         {
-            if (is_active(i))
+            if (is_active(s))
             {
-                bool state = m_seqs[i]->get_playing();
-                m_seqs[i]->off_playing_notes();
-                m_seqs[i]->set_playing(false);
-                m_seqs[i]->zero_markers();
+                bool state = m_seqs[s]->get_playing();
+                m_seqs[s]->off_playing_notes();
+                m_seqs[s]->set_playing(false);
+                m_seqs[s]->zero_markers();
                 if (! m_playback_mode)
-                    m_seqs[i]->set_playing(state);
+                    m_seqs[s]->set_playing(state);
             }
         }
     }
     m_master_bus.flush();                           /* flush the bus */
 }
 
-#else   // USE_STAZED_JACK_SUPPORT
+#else   // SEQ64_STAZED_JACK_SUPPORT
 
 void
 perform::reset_sequences (bool pause)
@@ -2203,7 +2269,7 @@ perform::reset_sequences (bool pause)
     m_master_bus.flush();                           /* flush the MIDI buss  */
 }
 
-#endif  // USE_STAZED_JACK_SUPPORT
+#endif  // SEQ64_STAZED_JACK_SUPPORT
 
 /**
  *  Creates the output thread using output_thread_func().  This might be a
@@ -2274,11 +2340,11 @@ midipulse
 perform::get_max_trigger ()
 {
     midipulse result = 0;
-    for (int i = 0; i < m_sequence_max; ++i)
+    for (int s = 0; s < m_sequence_max; ++s)
     {
-        if (is_active(i))
+        if (is_active(s))
         {
-            midipulse t = m_seqs[i]->get_max_trigger();
+            midipulse t = m_seqs[s]->get_max_trigger();
             if (t > result)
                 result = t;
         }
@@ -2350,7 +2416,7 @@ perform::output_func ()
     while (m_outputing)
     {
         m_condition_var.lock();
-        while (! is_running())              /* m_running */
+        while (! is_running())
         {
             m_condition_var.wait();
             if (! m_outputing)              /* if stopping, kill thread */
@@ -2382,13 +2448,17 @@ perform::output_func ()
 #ifdef SEQ64_PAUSE_SUPPORT
             pad.js_current_tick = get_jack_tick();
 #endif
-            m_is_paused = false;
+            /*
+             * We still need this flag, so move this setting until later.
+             *
+             * m_is_paused = false;
+             */
         }
         else
         {
             pad.js_current_tick = 0.0;      // tick and tick fraction
             pad.js_total_tick = 0.0;
-#if defined USE_SEQ24_0_9_3_CODE || defined USE_STAZED_JACK_SUPPORT
+#if defined USE_SEQ24_0_9_3_CODE || defined SEQ64_STAZED_JACK_SUPPORT
             pad.js_clock_tick = 0;          // long probably offers more ticks
 #else
             pad.js_clock_tick = 0.0;        // double
@@ -2401,12 +2471,12 @@ perform::output_func ()
         pad.js_looping = m_looping;
         pad.js_playback_mode = m_playback_mode;
         pad.js_ticks_converted_last = 0.0;
-#ifdef USE_STAZED_JACK_SUPPORT
+#ifdef SEQ64_STAZED_JACK_SUPPORT
         pad.js_ticks_converted = 0.0;
         pad.js_ticks_delta = 0.0;
 #endif
 
-#if defined USE_SEQ24_0_9_3_CODE || defined USE_STAZED_JACK_SUPPORT
+#if defined USE_SEQ24_0_9_3_CODE || defined SEQ64_STAZED_JACK_SUPPORT
         pad.js_delta_tick_frac = 0L;        // from seq24 0.9.3, long value
 #endif
 
@@ -2438,7 +2508,10 @@ perform::output_func ()
 
         /*
          * If we are in the performance view (song editor), we care about
-         * starting from the m_starting_tick offset.
+         * starting from the m_starting_tick offset.  However, if the pause
+         * key is what is resuming playback, then we do not want to reset the
+         * position.  So how to detect that situation, since m_is_pause is now
+         * false?
          */
 
 #ifdef SEQ64_JACK_SUPPORT
@@ -2447,6 +2520,10 @@ perform::output_func ()
         bool ok = m_playback_mode;
 #endif
 
+#ifdef SEQ64_PAUSE_SUPPORT
+        ok = ok && ! m_is_paused;
+#endif
+        m_is_paused = false;
         if (ok)
         {
             pad.js_current_tick = long(m_starting_tick);    // midipulse
@@ -2526,7 +2603,7 @@ perform::output_func ()
              * delta_ticks_f is in 1000th of a tick.
              */
 
-#if defined USE_SEQ24_0_9_3_CODE || defined USE_STAZED_JACK_SUPPORT
+#if defined USE_SEQ24_0_9_3_CODE || defined SEQ64_STAZED_JACK_SUPPORT
 
             long long delta_tick_denom = 60000000LL;
             long long delta_tick_num = bpm * ppqn * delta_us +
@@ -2578,7 +2655,7 @@ perform::output_func ()
             }
 #endif
 
-#ifdef USE_STAZED_JACK_SUPPORT
+#ifdef SEQ64_STAZED_JACK_SUPPORT
 
             /*
              * If we reposition key-p from perfroll, reset to adjusted
@@ -2617,7 +2694,7 @@ perform::output_func ()
             {
                 if (m_looping && m_playback_mode)
                 {
-#ifdef USE_STAZED_JACK_SUPPORT
+#ifdef SEQ64_STAZED_JACK_SUPPORT
                     static bool jack_position_once = false;
                     midipulse rtick = get_right_tick();     /* can change? */
                     if (pad.js_current_tick >= rtick)
@@ -2664,10 +2741,10 @@ perform::output_func ()
                         set_orig_ticks(ltick);
                         pad.js_current_tick = double(ltick) + leftover_tick;
                     }
-#endif  // USE_STAZED_JACK_SUPPORT
+#endif  // SEQ64_STAZED_JACK_SUPPORT
                 }
 
-#ifdef USE_STAZED_JACK_SUPPORT
+#ifdef SEQ64_STAZED_JACK_SUPPORT
 
                 /*
                  * Don't play during JackTransportStarting to avoid xruns on
@@ -2685,7 +2762,7 @@ perform::output_func ()
                 play(midipulse(pad.js_current_tick));               // play!
 #endif
 
-#ifndef USE_STAZED_JACK_SUPPORT
+#ifndef SEQ64_STAZED_JACK_SUPPORT
 #ifdef SEQ64_PAUSE_SUPPORT
                 set_jack_tick(pad.js_current_tick);
 #endif
@@ -2862,8 +2939,8 @@ perform::output_func ()
          * play tick that displays the progress bar.
          */
 
-#ifdef USE_STAZED_JACK_SUPPORT
-#ifdef JACK_SUPPORT
+#ifdef SEQ64_STAZED_JACK_SUPPORT
+#ifdef SEQ64_JACK_SUPPORT
         if (m_playback_mode)
         {
             if (is_jack_master())                       // master in song mode
@@ -2903,7 +2980,7 @@ perform::output_func ()
             m_jack_stop_tick = get_current_jack_position((void *) this);
 #endif
 
-#else  // USE_STAZED_JACK_SUPPORT
+#else  // SEQ64_STAZED_JACK_SUPPORT
 
 #ifdef SEQ64_PAUSE_SUPPORT
         if (is_jack_running())
@@ -2913,7 +2990,7 @@ perform::output_func ()
         m_master_bus.flush();
         m_master_bus.stop();
 
-#endif  // USE_STAZED_JACK_SUPPORT
+#endif  // SEQ64_STAZED_JACK_SUPPORT
 
     }
     pthread_exit(0);
@@ -3093,7 +3170,7 @@ perform::input_func ()
 
                     if (ev.get_status() == EVENT_MIDI_START) // MIDI Time Clock
                     {
-#ifdef USE_STAZED_JACK_SUPPORT
+#ifdef SEQ64_STAZED_JACK_SUPPORT
                         start(song_start_mode());
 #else
                         stop();
@@ -3115,7 +3192,7 @@ perform::input_func ()
                          */
 
                         m_midiclockrunning = true;
-#ifdef USE_STAZED_JACK_SUPPORT
+#ifdef SEQ64_STAZED_JACK_SUPPORT
                         start(song_start_mode());
 #else
                         start(false);
@@ -3136,7 +3213,7 @@ perform::input_func ()
                         m_midiclockrunning = false;
                         all_notes_off();
 
-#ifdef USE_STAZED_JACK_SUPPORT
+#ifdef SEQ64_STAZED_JACK_SUPPORT
 
                         /*
                          * inner_stop(true) = m_usemidiclock = true, i.e.
@@ -3158,7 +3235,7 @@ perform::input_func ()
                         midibyte a, b;
                         ev.get_data(a, b);
 
-#ifdef USE_STAZED_JACK_SUPPORT                      /* see notes in banner */
+#ifdef SEQ64_STAZED_JACK_SUPPORT                      /* see notes in banner */
                         m_midiclockpos = combine_bytes(a,b);
                         m_midiclockpos *= 48;
 #else
@@ -3270,7 +3347,7 @@ perform::input_func ()
     pthread_exit(0);
 }
 
-#ifdef USE_STAZED_JACK_SUPPORT
+#ifdef SEQ64_STAZED_JACK_SUPPORT
 
 /**
  *  Combines bytes into an unsigned-short value.
@@ -3285,19 +3362,27 @@ perform::input_func ()
  *  byte in the variable Second, here's how to combine them into a 14-bit
  *  value (actually 16-bit since most computer CPUs deal with 16-bit, not
  *  14-bit, integers).
+ *
+ * \param b0
+ *      The first byte to be combined.
+ *
+ * \param b1
+ *      The second byte to be combined.
+ *
+ * \return
+ *      Returns the bytes basically OR'd together.
  */
 
 unsigned short
 perform::combine_bytes (midibyte b0, midibyte b1)
 {
-   unsigned short short_14bit;
-   short_14bit = (unsigned short)(b1);
+   unsigned short short_14bit = (unsigned short)(b1);
    short_14bit <<= 7;
    short_14bit |= (unsigned short)(b0);
    return short_14bit;
 }
 
-#endif  // USE_STAZED_JACK_SUPPORT
+#endif  // SEQ64_STAZED_JACK_SUPPORT
 
 /**
  *  For all active patterns/sequences, this function gets the playing
@@ -3309,12 +3394,12 @@ perform::combine_bytes (midibyte b0, midibyte b1)
 void
 perform::save_playing_state ()
 {
-    for (int i = 0; i < m_sequence_max; ++i)
+    for (int s = 0; s < m_sequence_max; ++s)
     {
-        if (is_active(i))
-            m_sequence_state[i] = m_seqs[i]->get_playing();
+        if (is_active(s))
+            m_sequence_state[s] = m_seqs[s]->get_playing();
         else
-            m_sequence_state[i] = false;
+            m_sequence_state[s] = false;
     }
 }
 
@@ -3327,10 +3412,10 @@ perform::save_playing_state ()
 void
 perform::restore_playing_state ()
 {
-    for (int i = 0; i < m_sequence_max; ++i)
+    for (int s = 0; s < m_sequence_max; ++s)
     {
-        if (is_active(i))
-            m_seqs[i]->set_playing(m_sequence_state[i]);
+        if (is_active(s))
+            m_seqs[s]->set_playing(m_sequence_state[s]);
     }
 }
 
@@ -3692,7 +3777,7 @@ perform::mainwnd_key_event (const keystroke & k)
  *
  * \param drop_sequence
  *      Provides the index of the sequence whose selected trigger is to be
- *      cut, copied, or pasted.  (Undo not yet supported).
+ *      cut, copied, or pasted.  Undo and redo are now supported.
  *
  * \return
  *      Returns true if the key was handled.
@@ -3762,7 +3847,7 @@ perform::perfroll_key_event (const keystroke & k, int drop_sequence)
                     result = true;
                 }
 #endif
-#ifdef USE_STAZED_JACK_SUPPORT
+#ifdef SEQ64_STAZED_JACK_SUPPORT
                 else if (k.is(keys().toggle_jack()))
                 {
                     toggle_jack_mode();
@@ -3882,7 +3967,7 @@ perform::playback_key_event (const keystroke & k, bool songmode)
             if (onekey)
             {
                 if (is_running())
-                    pause_playing();
+                    pause_playing(songmode);
                 else
                     start_playing(songmode);
             }
@@ -3897,7 +3982,7 @@ perform::playback_key_event (const keystroke & k, bool songmode)
         else if (k.key() == PAUSEKEY)
         {
             if (is_running())
-                pause_playing();
+                pause_playing(songmode);
             else
                 start_playing(songmode);
         }
@@ -3929,10 +4014,10 @@ perform::print_triggers () const
 void
 perform::apply_song_transpose ()
 {
-    for (int i = 0; i < m_sequence_max; ++i)
+    for (int s = 0; s < m_sequence_max; ++s)
     {
-        if (is_active(i))
-            get_sequence(i)->apply_song_transpose();
+        if (is_active(s))
+            get_sequence(s)->apply_song_transpose();
     }
 }
 
@@ -3952,10 +4037,10 @@ int
 perform::max_active_set () const
 {
     int result = -1;
-    for (int i = 0; i < m_sequence_max; ++i)
+    for (int s = 0; s < m_sequence_max; ++s)
     {
-        if (is_active(i))
-            result = i;
+        if (is_active(s))
+            result = s;
     }
     if (result >= 0)
         result = result / m_seqs_in_set;
@@ -4018,8 +4103,8 @@ perform::reposition (midipulse tick)
 }
 
 /**
- *  Convenience function.  This function is used in the free function version of
- *  FF_RW_timeout() as a callback to the gtk_timeout() function.
+ *  Convenience function.  This function is used in the free function version
+ *  of FF_RW_timeout() as a callback to the gtk_timeout() function.
  */
 
 bool

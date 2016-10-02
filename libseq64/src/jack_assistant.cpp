@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-14
- * \updates       2016-09-10
+ * \updates       2016-09-18
  * \license       GNU GPLv2 or above
  *
  *  This module was created from code that existed in the perform object.
@@ -65,15 +65,19 @@
 
 #include <stdio.h>
 
-#include "jack_assistant.hpp"
-#include "midifile.hpp"
-#include "perform.hpp"
-#include "settings.hpp"
+#include "jack_assistant.hpp"           /* this seq64::jack_ass class   */
+#include "midifile.hpp"                 /* seq64::midifile class        */
+#include "perform.hpp"                  /* seq64::perform class         */
+#include "settings.hpp"                 /* "rc" and "user" settings     */
 
 #undef  SEQ64_USE_DEBUG_OUTPUT          /* define for EXPERIMENTS only  */
 #define USE_JACK_BBT_OFFSET             /* another EXPERIMENT           */
 
 #ifdef SEQ64_JACK_SUPPORT
+
+/*
+ *  All library code in the Sequencer64 project is in the seq64 namespace.
+ */
 
 namespace seq64
 {
@@ -179,7 +183,7 @@ jack_assistant::jack_assistant
     m_jack_client_uuid          (),
     m_jack_frame_current        (0),
     m_jack_frame_last           (0),
-#ifdef USE_STAZED_JACK_SUPPORT
+#ifdef SEQ64_STAZED_JACK_SUPPORT
     m_jack_frame_rate           (0),
 #endif
     m_jack_pos                  (),
@@ -191,7 +195,7 @@ jack_assistant::jack_assistant
 #endif
     m_jack_running              (false),
     m_jack_master               (false),
-#ifdef USE_STAZED_JACK_SUPPORT
+#ifdef SEQ64_STAZED_JACK_SUPPORT
     m_toggle_jack               (false),
     m_jack_stop_tick            (0),
 #endif
@@ -217,6 +221,36 @@ jack_assistant::~jack_assistant ()
 }
 
 #ifdef SEQ64_STAZED_TRANSPORT
+
+/**
+ * \setter parent().toggle_song_start_mode()
+ */
+
+bool
+jack_assistant::toggle_song_start_mode ()
+{
+    return parent().toggle_song_start_mode();
+}
+
+/**
+ * \getter parent().song_start_mode()
+ */
+
+bool
+jack_assistant::song_start_mode () const
+{
+    return parent().song_start_mode();
+}
+
+/**
+ * \setter parent().start_from_perfedit()
+ */
+
+void
+jack_assistant::set_start_from_perfedit (bool start)
+{
+    parent().start_from_perfedit(start);
+}
 
 #endif
 
@@ -373,7 +407,7 @@ jack_assistant::init ()
             m_jack_master = false;
             return error_message("JACK server not running, JACK sync disabled");
         }
-#ifdef USE_STAZED_JACK_SUPPORT
+#ifdef SEQ64_STAZED_JACK_SUPPORT
         else
             m_jack_frame_rate = jack_get_sample_rate(m_jack_client);
 #endif
@@ -381,7 +415,7 @@ jack_assistant::init ()
         get_jack_client_info();
         jack_on_shutdown(m_jack_client, jack_shutdown_callback, (void *) this);
 
-#ifndef USE_STAZED_JACK_SUPPORT
+#ifndef SEQ64_STAZED_JACK_SUPPORT
 
         /*
          * Stazed JACK support uses only the jack_process_callback().  Makes
@@ -406,7 +440,7 @@ jack_assistant::init ()
 
         jackcode = jack_set_process_callback        /* see notes in banner  */
         (
-#ifdef USE_STAZED_JACK_SUPPORT
+#ifdef SEQ64_STAZED_JACK_SUPPORT
             m_jack_client, jack_process_callback, (void *) this
 #else
             m_jack_client, jack_process_callback, NULL
@@ -472,7 +506,7 @@ jack_assistant::init ()
         }
         if (jack_activate(m_jack_client) != 0)
         {
-            m_jack_running = false;             // USE_STAZED_JACK_SUPPORT
+            m_jack_running = false;             // SEQ64_STAZED_JACK_SUPPORT
             return error_message("Cannot activate as JACK client");
         }
 
@@ -504,7 +538,7 @@ jack_assistant::deinit ()
     if (m_jack_running)
     {
         m_jack_running = false;
-#ifdef USE_STAZED_JACK_SUPPORT
+#ifdef SEQ64_STAZED_JACK_SUPPORT
         m_jack_master = false;
         if (jack_release_timebase(m_jack_client) != 0)
             (void) error_message("Cannot release JACK timebase");
@@ -648,7 +682,7 @@ jack_assistant::stop ()
  *      rapid rate.
  */
 
-#ifdef USE_STAZED_JACK_SUPPORT
+#ifdef SEQ64_STAZED_JACK_SUPPORT
 
 void
 jack_assistant::position (bool state, midipulse tick)
@@ -669,7 +703,7 @@ jack_assistant::position (bool state, midipulse tick)
     int beats_per_minute = parent().get_beats_per_minute();
 
     uint64_t tick_rate = (uint64_t(m_jack_frame_rate) * current_tick * 60.0);
-    long tpb_bpm = ticks_per_beat * beats_per_minute * 4.0 / m_bw;
+    long tpb_bpm = ticks_per_beat * beats_per_minute * 4.0 / m_beat_width;
     uint64_t jack_frame = tick_rate / tpb_bpm;
     jack_transport_locate(m_jack_client,jack_frame);
 #ifdef SEQ64_STAZED_TRANSPORT
@@ -681,7 +715,7 @@ jack_assistant::position (bool state, midipulse tick)
 
 }
 
-#else   // USE_STAZED_JACK_SUPPORT
+#else   // SEQ64_STAZED_JACK_SUPPORT
 
 void
 jack_assistant::position (bool to_left_tick, midipulse tick)
@@ -709,7 +743,7 @@ jack_assistant::position (bool to_left_tick, midipulse tick)
     }
 }
 
-#endif  // USE_STAZED_JACK_SUPPORT
+#endif  // SEQ64_STAZED_JACK_SUPPORT
 
 /**
  *  Provides the code that was effectively commented out in the
@@ -915,7 +949,7 @@ jack_process_callback (jack_nframes_t /* nframes */, void * arg)
     if (not_nullptr(j))
     {
 
-#ifdef USE_STAZED_JACK_SUPPORT
+#ifdef SEQ64_STAZED_JACK_SUPPORT
 
         perform & p = j->m_jack_parent;
 
@@ -955,7 +989,7 @@ jack_process_callback (jack_nframes_t /* nframes */, void * arg)
             }
         }
 
-#endif  // USE_STAZED_JACK_SUPPORT
+#endif  // SEQ64_STAZED_JACK_SUPPORT
 
 #ifdef SAMPLE_AUDIO_CODE    // disabled, shown only for reference & learning
         jack_transport_state_t ts = jack_transport_query(jack->client(), NULL);
@@ -1149,7 +1183,7 @@ jack_assistant::output (jack_scratchpad & pad)
         double jack_ticks_delta;
         pad.js_init_clock = false;                  // no init until a good lock
         m_jack_transport_state = jack_transport_query(m_jack_client, &m_jack_pos);
-#ifdef USE_STAZED_JACK_SUPPORT
+#ifdef SEQ64_STAZED_JACK_SUPPORT
         m_jack_pos.beats_per_bar = m_beats_per_measure;
         m_jack_pos.beat_type = m_beat_width;
         m_jack_pos.ticks_per_beat = m_ppqn * 10;
@@ -1204,7 +1238,7 @@ jack_assistant::output (jack_scratchpad & pad)
                 {
                     pad.js_current_tick -= m_jack_parent.left_right_size();
                 }
-#ifdef USE_STAZED_JACK_SUPPORT
+#ifdef SEQ64_STAZED_JACK_SUPPORT
                 m_jack_parent.off_sequences();
 #else
                 m_jack_parent.reset_sequences();            /* seq24 */
@@ -1729,7 +1763,7 @@ jack_shutdown_callback (void * arg)
     }
 }
 
-#ifdef USE_STAZED_JACK_SUPPORT
+#ifdef SEQ64_STAZED_JACK_SUPPORT
 
 long
 get_current_jack_position (void * arg)
@@ -1746,7 +1780,7 @@ get_current_jack_position (void * arg)
     return jack_tick * (ppqn / (ticks_per_beat * beat_type / 4.0));
 }
 
-#endif      // USE_STAZED_JACK_SUPPORT
+#endif      // SEQ64_STAZED_JACK_SUPPORT
 
 }           // namespace seq64
 

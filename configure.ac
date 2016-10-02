@@ -6,7 +6,7 @@ dnl \file          configure.ac
 dnl \library       Sequencer64
 dnl \author        Chris Ahlstrom
 dnl \date          2015-09-11
-dnl \update        2016-09-15
+dnl \update        2016-10-02
 dnl \version       $Revision$
 dnl \license       $XPC_SUITE_GPL_LICENSE$
 dnl
@@ -19,7 +19,7 @@ dnl ---------------------------------------------------------------------------
 
 AC_PREREQ(2.60)
 AC_REVISION($Revision: 0.9$)dnl
-AC_INIT(Sequencer64, [0.9.17.3], [ahlstromcj@gmail.com])
+AC_INIT(Sequencer64, [0.9.18], [ahlstromcj@gmail.com])
 AC_CONFIG_AUX_DIR([aux-files])
 
 dnl AC_CONFIG_SRCDIR([libseq64/src/midibus.cpp])
@@ -53,7 +53,7 @@ PACKAGE=sequencer64
 AC_DEFINE_UNQUOTED(PACKAGE, "$PACKAGE")
 AC_SUBST(PACKAGE)
 
-VERSION="0.9.17.3"
+VERSION="0.9.18"
 AC_DEFINE_UNQUOTED(VERSION, "$VERSION")
 AC_SUBST(VERSION)
 
@@ -202,7 +202,12 @@ AC_SUBST(sequencer64datadir)
 sequencer64doxygendir="${datadir}/doc/sequencer64-${SEQUENCER64_API_VERSION}"
 AC_SUBST(sequencer64doxygendir)
 
-dnl Do we have -Wl,--as-needed?
+dnl Do we have -Wl,--as-needed?  This option allows the linker to ignore, i.e.,
+dnl not link against, some of the libraries supplied on its command line if
+dnl they are not actually used by the shared library that is being created.
+dnl For example, if you supply the -lm option on the command line to the linker
+dnl but do not actually use any maths functions then the libm.so library will
+dnl not be linked against.
 
 AC_MSG_CHECKING(if --as-needed works)
 AC_ARG_ENABLE(as_needed,
@@ -427,10 +432,11 @@ else
     AC_MSG_WARN([*** Highlighting empty sequences not enabled.]);
 fi
 
-dnl Support for using the event editor.  It currently causes issues if
-dnl used, so we want the option to disable it.  We leave it in the code,
-dnl but comment out the menu entries to access it, until we can work out the
-dnl issues.  Ah, finally worked them out, by adding calls to verify_and_link().
+dnl Support for using the event editor.  It can cause issues if used, and adds
+dnl to the size of the application, so we want the option to disable it.  We
+dnl leave it in the code, but comment out the menu entries to access it, until
+dnl we can work out the issues.  Ah, finally worked them out, by adding calls
+dnl to verify_and_link().
 
 AC_ARG_ENABLE(eveditor,
     [AS_HELP_STRING(--disable-eveditor, [Disable using the event editor])],
@@ -472,6 +478,21 @@ else
     AC_MSG_WARN([*** Running statistics gathering not enabled.]);
 fi
 
+dnl Support for using the stazed JACK support.  Currently disabled by default,
+dnl until we get it fully integrated and working.
+
+AC_ARG_ENABLE(seq32jack,
+    [AS_HELP_STRING(--enable-seq32jack, [Enable using Seq32-style JACK support])],
+    [seq32jack=$enableval],
+    [seq32jack=no])
+
+if test "$seq32jack" != "no"; then
+    AC_DEFINE(STAZED_JACK_SUPPORT, 1, [Define to enable Seq32 JACK support])
+    AC_DEFINE(JACK_SUPPORT, 1, [Define to enable JACK driver])
+else
+    AC_MSG_WARN([*** Seq32 JACK support not enabled.]);
+fi
+
 dnl Support for using the stazed chord generator.
 
 AC_ARG_ENABLE(chords,
@@ -496,7 +517,21 @@ AC_ARG_ENABLE(transpose,
 if test "$transpose" != "no"; then
     AC_DEFINE(STAZED_TRANSPOSE, 1, [Define to enable global transpose])
 else
-    AC_MSG_WARN([*** Global transpose not enabled.]);
+    AC_MSG_WARN([*** Global seq32 transpose not enabled.]);
+fi
+
+dnl Support for using the stazed transport feature.  This adds rewind, fast-
+dnl forward, and some other features.
+
+AC_ARG_ENABLE(transport,
+    [AS_HELP_STRING(--enable-transport, [Enable using extended transport])],
+    [transport=$enableval],
+    [transport=no])
+
+if test "$transport" != "no"; then
+    AC_DEFINE(STAZED_TRANSPORT, 1, [Define to enable extended transport])
+else
+    AC_MSG_WARN([*** Extended seq32 transport not enabled.]);
 fi
 
 dnl Support for stripping unused mute-group specifications from the output MIDI
@@ -512,7 +547,7 @@ AC_ARG_ENABLE(mutestrip,
 if test "$mutestrip" != "no"; then
     AC_DEFINE(STRIP_EMPTY_MUTES, 1, [Define to enable stripping empty mute groups])
 else
-    AC_MSG_WARN([*** mutestrip not enabled.]);
+    AC_MSG_WARN([*** Empty mute strip not enabled.]);
 fi
 
 dnl 6.0  Top portion of the config.h/sequencer64-config.h header files.
@@ -528,8 +563,8 @@ dnl #define API_VERSION "0.9"             // defined on command line
 
 AH_TOP(
 
-#define VERSION_DATE_SHORT "2016-09-15"
-#define VERSION "0.9.17.3"
+#define VERSION_DATE_SHORT "2016-10-02"
+#define VERSION "0.9.18"
 
 )
 

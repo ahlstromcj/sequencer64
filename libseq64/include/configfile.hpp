@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-02-14
+ * \updates       2016-09-29
  * \license       GNU GPLv2 or above
  *
  *  This is actually an elegant little parser, and works well as long as one
@@ -84,7 +84,7 @@ protected:
 protected:
 
     bool next_data_line (std::ifstream & file);
-    void line_after (std::ifstream & file, const std::string & tag);
+    bool line_after (std::ifstream & file, const std::string & tag);
 
 public:
 

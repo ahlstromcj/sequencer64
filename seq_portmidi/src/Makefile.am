@@ -6,7 +6,7 @@
 # \library    	libseq_portmidi library
 # \author     	Chris Ahlstrom
 # \date       	2015-09-11
-# \update      2016-03-04
+# \update      2016-09-18
 # \version    	$Revision$
 # \license    	$XPC_SUITE_GPL_LICENSE$
 #
@@ -55,13 +55,13 @@ SEQUENCER64_LT_AGE = @SEQUENCER64_LT_AGE@
 # Install directories
 #------------------------------------------------------------------------------
 
+sequencer64docdir = @sequencer64docdir@
+sequencer64includedir = @sequencer64includedir@
+sequencer64libdir = @sequencer64libdir@
+
 prefix = @prefix@
 libdir = @sequencer64libdir@
 datadir = @datadir@
-sequencer64docdir = @sequencer64docdir@
-sequencer64libdir = @sequencer64libdir@
-sequencer64includedir = @sequencer64includedir@
-sequencer64libdir = @sequencer64libdir@
 
 #******************************************************************************
 # localedir

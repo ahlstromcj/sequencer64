@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-09-10
+ * \updates       2016-09-26
  * \license       GNU GPLv2 or above
  *
  *  This class still has way too many members, even with the JACK and
@@ -94,6 +94,10 @@
 
 #define SEQ64_ALL_TRACKS                (-1)
 
+/*
+ *  All Sequencer64 library code is in the seq64 namespace.
+ */
+
 namespace seq64
 {
     class keystroke;
@@ -151,11 +155,11 @@ class perform
         void * arg
     );
 
-#endif
-
-#ifdef USE_STAZED_JACK_SUPPORT
+#ifdef SEQ64_STAZED_JACK_SUPPORT
     friend int jack_process_callback (jack_nframes_t nframes, void * arg);
 #endif
+
+#endif  // SEQ64_JACK_SUPPORT
 
 public:
 
@@ -165,9 +169,9 @@ public:
 
     enum mute_op_t
     {
-        MUTE_TOGGLE = -1,
-        MUTE_OFF    =  0,
-        MUTE_ON     =  1
+        MUTE_TOGGLE     = -1,
+        MUTE_OFF        =  0,
+        MUTE_ON         =  1
     };
 
     /**
@@ -184,16 +188,6 @@ public:
 private:
 
     /**
-     *  Provides a static self-reference to the one and only perform object
-     *  that exists in the application, for use in callbacks that do not
-     *  support object pointers and require non-member functions.
-
-    static perform & sm_self;
-     */
-
-private:
-
-    /**
      *  Provides a dummy, inactive midi_control object to handle
      *  out-of-range midi_control indicies.
      */
@@ -201,12 +195,18 @@ private:
     static midi_control sm_mc_dummy;
 
     /**
-     *  If true, playback is done in Song mode, not Live mode.
+     *  If true, playback is done in Song mode, not Live mode.  This is
+     *  a replacement for the global setting, but is essentially a global
+     *  setting itself, and is saved to and restored from the "rc"
+     *  configuration file.  Sometimes called "JACK start mode", it used
+     *  to be a JACK setting, but now applies to any playback.  Do not confuse
+     *  this setting with m_playback_mode, which has a similar meaning but is
+     *  more transitory.  Probably, the concept needs some clean-up.
      */
 
-    bool m_song_start_mode;             // redundant re m_playback_mode?
+    bool m_song_start_mode;
 
-#ifdef USE_STAZED_JACK_SUPPORT
+#ifdef SEQ64_STAZED_JACK_SUPPORT
 
     /**
      *  Used for toggling the usage of JACK.  Need to investigate more.
@@ -225,7 +225,8 @@ private:
 #ifdef SEQ64_STAZED_TRANSPORT
 
     /**
-     *  TBD.
+     *  Implements the "follow JACK transport" button of the perfedit window.
+     *  This is a separate function from the "JACK sync button of that window.
      */
 
     bool m_follow_transport;
@@ -1152,14 +1153,14 @@ public:
             m_notify.push_back(pfcb);
     }
 
-#ifdef USE_STAZED_JACK_SUPPORT
+#ifdef SEQ64_STAZED_JACK_SUPPORT
 
     void toggle_jack_mode ()
     {
         m_jack_asst.toggle_jack_mode();
     }
 
-    void set_jack_mode (bool mode);
+    bool set_jack_mode (bool mode);
 
     /**
      * TODO versus stazed definition in cpp
@@ -1186,7 +1187,6 @@ public:
 #ifdef SEQ64_STAZED_TRANSPORT
 
     void FF_rewind ();
-
     bool FF_RW_timeout ();          /* called by free-function of same name */
 
     /**
@@ -1207,40 +1207,80 @@ public:
         return m_start_from_perfedit;
     }
 
+    /**
+     * \getter m_follow_transport
+     */
+
     void set_follow_transport (bool flag)
     {
         m_follow_transport = flag;
     }
+
+    /**
+     * \getter m_follow_transport
+     */
 
     bool get_follow_transport () const
     {
         return m_follow_transport;
     }
 
+    /**
+     * \getter m_follow_transport toggling
+     */
+
     void toggle_follow_transport ()
     {
         set_follow_transport(! m_follow_transport);
     }
+
+    /**
+     * \getter m_reposition
+     */
 
     void set_reposition (bool postype = true)
     {
         m_reposition = postype;
     }
 
+    /**
+     * \getter m_FF_RW_button_type
+     */
+
     ff_rw_button_t ff_rw_type ()
     {
         return m_FF_RW_button_type;
     }
+
+    /**
+     * \getter m_FF_RW_button_type
+     */
 
     void ff_rw_type (ff_rw_button_t button_type)
     {
         m_FF_RW_button_type = button_type;
     }
 
+    /**
+     *  Sets the rewind status.
+     *
+     * \param press
+     *      If true, the status is set to FF_RW_REWIND, otherwise it is set to
+     *      FF_RW_NONE.
+     */
+
     void rewind (bool press)
     {
         ff_rw_type(press ? FF_RW_REWIND : FF_RW_NONE);
     }
+
+    /**
+     *  Sets the fast-forward status.
+     *
+     * \param press
+     *      If true, the status is set to FF_RW_FORWARD, otherwise it is set to
+     *      FF_RW_NONE.
+     */
 
     void fast_forward (bool press)
     {
@@ -1381,6 +1421,10 @@ public:
         return m_have_undo;
     }
 
+    /**
+     * \setter m_have_undo
+     */
+
     void set_have_undo (bool undo)
     {
         m_have_undo = undo;
@@ -1519,6 +1563,10 @@ public:
     void set_mode_group_learn ();
     void unset_mode_group_learn ();
 
+    /**
+     * \getter m_mode_group_learn
+     */
+
     bool is_group_learning ()
     {
         return m_mode_group_learn;
@@ -1562,10 +1610,6 @@ public:
 
     /**
      *  Checks the pattern/sequence for activity.
-     *
-     * \todo
-     *      We should have the sequence object keep track of its own activity
-     *      and access that via a reference or pointer.
      *
      * \param seq
      *      The pattern number.  It is checked for invalidity.  This can
@@ -1945,7 +1989,7 @@ public:
     }
 
     void start_playing (bool songmode = false);
-    void pause_playing ();
+    void pause_playing (bool songmode = false);
     void stop_playing ();
     void start_key (bool songmode = false);
     void pause_key (bool songmode = false);

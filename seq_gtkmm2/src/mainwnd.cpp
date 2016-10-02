@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-09-10
+ * \updates       2016-10-01
  * \license       GNU GPLv2 or above
  *
  *  The main window holds the menu and the main controls of the application,
@@ -87,7 +87,7 @@
 #include "globals.h"
 #include "gtk_helpers.h"
 #include "gui_key_tests.hpp"            /* is_ctrl_key(), etc.          */
-#include "keys_perform.hpp"             /* \new ca 2015-09-16           */
+#include "keys_perform.hpp"
 #include "keystroke.hpp"
 #include "maintime.hpp"
 #include "mainwid.hpp"
@@ -105,8 +105,13 @@
 #include "pixmaps/sequencer64_square_small.xpm" // sequencer64_square.xpm
 #include "pixmaps/sequencer64_legacy.xpm"
 
-#ifdef USE_STAZED_MENU_MODE_BUTTON
+#ifdef SEQ64_STAZED_MENU_BUTTONS
+#ifdef SEQ64_MENU_BUTTON_PIXMAPS
+#include "pixmaps/live_mode.xpm"
 #include "pixmaps/menu.xpm"
+#include "pixmaps/muting.xpm"
+#include "pixmaps/song_mode.xpm"
+#endif
 #endif
 
 /**
@@ -115,6 +120,15 @@
  */
 
 #define HBOX_PADDING        10
+
+/**
+ *  The amount of time to wait for inaction before clearing the tap-button
+ *  values, in milliseconds.
+ */
+
+#ifdef SEQ64_MAINWND_TAP_BUTTON
+#define SEQ64_TAP_BUTTON_TIMEOUT    5000L
+#endif
 
 /*
  * Access some menu elements more easily.
@@ -178,14 +192,19 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
     m_image_play            (),
     m_button_learn          (manage(new Gtk::Button())),    /* group learn (L) */
     m_button_stop           (manage(new Gtk::Button())),
-    m_button_play           (manage(new Gtk::Button())),
+    m_button_play           (manage(new Gtk::Button())),    /* also for pause  */
     m_button_perfedit       (manage(new Gtk::Button())),
-#ifdef SEQ64_STAZED_SONG_MODE_BUTTON
+#ifdef SEQ64_STAZED_MENU_BUTTONS
+#ifdef SEQ64_MENU_BUTTON_PIXMAPS
+    m_image_songlive        (),
+    m_button_mode           (manage(new Gtk::ToggleButton())),
+    m_button_mute           (manage(new Gtk::Button())),
+    m_button_menu           (manage(new Gtk::ToggleButton())),
+#else
     m_button_mode           (manage(new Gtk::ToggleButton("Live"))),
-    m_button_mute           (manage(new Gtk::ToggleButton("Muting"))),
-#endif
-#ifdef USE_STAZED_MENU_MODE_BUTTON
+    m_button_mute           (manage(new Gtk::Button("Muting"))),
     m_button_menu           (manage(new Gtk::ToggleButton("Menu"))),
+#endif
 #endif
     m_adjust_bpm
     (
@@ -199,6 +218,9 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
         )
     ),
     m_spinbutton_bpm        (manage(new Gtk::SpinButton(*m_adjust_bpm))),
+#ifdef SEQ64_MAINWND_TAP_BUTTON
+    m_button_tap            (manage(new Gtk::Button("0"))),
+#endif
     m_adjust_ss             (manage(new Gtk::Adjustment(0, 0, c_max_sets-1, 1))),
     m_spinbutton_ss         (manage(new Gtk::SpinButton(*m_adjust_ss))),
 
@@ -216,6 +238,11 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
     m_is_running            (false),
 #endif
     m_timeout_connect       (),                     /* handler              */
+#ifdef SEQ64_MAINWND_TAP_BUTTON
+    m_current_beats         (0),
+    m_base_time_ms          (0),
+    m_last_time_ms          (0),
+#endif
     m_menu_mode             (false),                /* stazed 2016-07-30    */
     m_call_seq_edit         (false),                /* new ca 2016-05-15    */
     m_call_seq_eventedit    (false)                 /* new ca 2016-05-19    */
@@ -347,34 +374,6 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
         sigc::bind(mem_fun(*this, &mainwnd::set_song_mute), perform::MUTE_TOGGLE))
     );
 
-    /*
-     * Doesn't really make sense to call Import and Export "editing"
-     * functions.  They are file functions.
-     */
-
-#if 0
-
-    m_menu_edit->items().push_back          // a repeat
-    (
-        MenuElem("_Import...", mem_fun(*this, &mainwnd::file_import_dialog))
-    );
-
-    /*
-     * Exporting is just writing the tune to a file and not making the
-     * filename the new active filename for the current tune.
-     */
-
-    m_menu_edit->items().push_back
-    (
-        MenuElem
-        (
-            "Ex_port song...",
-            sigc::bind(mem_fun(*this, &mainwnd::file_save_as), true)
-        )
-    );
-
-#endif
-
     /**
      * View menu items and their hot keys.  It repeats the song editor edit
      * command, just to help those whose muscle memory is already
@@ -430,54 +429,55 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
         *manage(new PIXBUF_IMAGE(bitmap)), false, false, HBOX_PADDING
     );
 
-#ifdef SEQ64_STAZED_SONG_MODE_BUTTON        /* also enables muting button */
+#ifdef SEQ64_STAZED_MENU_BUTTONS            /* also enables muting button */
 
-    m_button_mode->set_can_focus(false);
+#ifdef SEQ64_MENU_BUTTON_PIXMAPS
+    m_button_mode->add(*manage(new PIXBUF_IMAGE(live_mode_xpm)));
+#endif
+    m_button_mode->set_focus_on_click(false); // set_can_focus(false);
     m_button_mode->signal_toggled().connect
     (
         sigc::mem_fun(*this, &mainwnd::set_song_mode)
     );
-    add_tooltip
-    (
-        m_button_mode,
-        "Toggle song mode vs live mode).  If this button is "
-        "active, Sequencer64 is in song mode, and follows the performance "
-        "layout. The button label also reflects the current mode.  If playback "
-        "is started from the Song Editor, then this setting is ignored, and "
-        "song mode is used."
-    );
-    m_button_mode->set_active(perf().song_start_mode());
-    tophbox->pack_start(*m_button_mode, false, false);
 
+    std::string modetext = "Toggle Song mode vs Live mode.";
+    add_tooltip(m_button_mode, modetext);
+    m_button_mode->set_active(perf().song_start_mode());
+    tophbox->pack_start(*m_button_mode, false, false, HBOX_PADDING/2);
+
+    /*
+     * We bind the muting button to the mainwid's toggle_all_tracks()
+     * function.  A little tricky.
+     */
+
+#ifdef SEQ64_MENU_BUTTON_PIXMAPS
+    m_button_mute->add(*manage(new PIXBUF_IMAGE(muting_xpm)));
+#endif
     m_button_mute->set_can_focus(false);
-    m_button_mute->signal_toggled().connect
+    m_button_mute->signal_clicked().connect
     (
-        sigc::mem_fun(*this, &seqmenu::toggle_all_tracks)
+        sigc::mem_fun(*m_main_wid, &seqmenu::toggle_all_tracks)
     );
     add_tooltip(m_button_mute, "Toggle the mute status of all tracks.");
-    tophbox->pack_start(*m_button_mode, false, false);
+    tophbox->pack_start(*m_button_mute, false, false);
 
+#ifdef SEQ64_MENU_BUTTON_PIXMAPS
+    m_button_menu->add(*manage(new PIXBUF_IMAGE(menu_xpm)));
 #endif
-
-#ifdef USE_STAZED_MENU_MODE_BUTTON
-
-    m_button_menu->add
-    (
-        *manage(new Image(Gdk::Pixbuf::create_from_xpm_data(menu_xpm)))
-    );
-    m_button_menu->signal_toggled().connect
-    (
-        sigc::mem_fun(*this, &mainwnd::set_menu_mode)
-    );
     add_tooltip
     (
         m_button_menu,
         "Toggle to disable/enable menu when sequencer is not running. "
         "The menu is automatically disabled when the sequencer is running."
     );
-    tophbox->pack_start(*m_button_menu, false, false);
+    m_button_menu->set_can_focus(false);
+    m_button_menu->signal_toggled().connect
+    (
+        sigc::mem_fun(*this, &mainwnd::set_menu_mode)
+    );
+    tophbox->pack_start(*m_button_menu, false, false, HBOX_PADDING/2);
 
-#endif
+#endif  // SEQ64_STAZED_MENU_BUTTONS
 
     /* Adjust placement of the logo. */
 
@@ -500,8 +500,8 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
         "Mute Group Learn. "
         "Click the 'L' button, then press a mute-group key to store "
         "the mute state of the sequences in that key. "
-        "See File/Options/Keyboard for available mute-group keys "
-        "and the corresponding hotkey for the 'L' button."
+        "See File / Options / Keyboard for available mute-group keys "
+        "and the hotkey for the 'L' button."
     );
     hbox3->pack_end(*m_button_learn, false, false);
 
@@ -534,7 +534,7 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
     (
         mem_fun(*this, &mainwnd::stop_playing)
     );
-    add_tooltip(m_button_stop, "Stop playing the MIDI sequence.");
+    add_tooltip(m_button_stop, "Stop playing the MIDI sequences.");
     startstophbox->pack_start(*m_button_stop, Gtk::PACK_SHRINK);
     m_button_stop->set_sensitive(true);
 
@@ -548,20 +548,40 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
     m_button_play->add(*manage(new PIXBUF_IMAGE(play2_xpm)));
     m_button_play->signal_clicked().connect
     (
-        mem_fun(*this, &mainwnd::start_playing)             /* ca 2016-03-17 */
+        mem_fun(*this, &mainwnd::start_playing)
     );
-    add_tooltip(m_button_play, "Play the MIDI sequence.");
+    add_tooltip(m_button_play, "Start playback from the current location.");
     startstophbox->pack_start(*m_button_play, Gtk::PACK_SHRINK);
     m_button_play->set_sensitive(true);
 
     /*
      * BPM spin button with label.  Be sure to document that right-clicking on
-     * the up or down button brings it to the very end of its range.
+     * the up or down button brings it to the very end of its range.  We now
+     * set the editable status of the spin to be true.  This still also
+     * affects the muting of slots that have a digit for a shortcut (hot) key.
      */
 
     Gtk::HBox * bpmhbox = manage(new Gtk::HBox(false, 4));
     bottomhbox->pack_start(*bpmhbox, Gtk::PACK_SHRINK);
-    m_spinbutton_bpm->set_editable(false);
+    m_spinbutton_bpm->set_sensitive(true);
+    m_spinbutton_bpm->set_editable(true);
+
+#ifdef SEQ64_MAINWND_TAP_BUTTON
+
+    /*
+     * EXPERIMENTAL
+     */
+
+    m_button_tap->signal_clicked().connect(mem_fun(*this, &mainwnd::tap));
+    add_tooltip
+    (
+        m_button_tap,
+        "Tap in time to set the beats per minute (BPM) value. "
+        "After 5 seconds of no taps, the tap-counter will reset."
+    );
+
+#endif
+
     m_adjust_bpm->signal_value_changed().connect
     (
         mem_fun(*this, &mainwnd::adj_callback_bpm)
@@ -571,6 +591,10 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
     bpmlabel->set_mnemonic_widget(*m_spinbutton_bpm);
     bpmhbox->pack_start(*bpmlabel, Gtk::PACK_SHRINK);
     bpmhbox->pack_start(*m_spinbutton_bpm, Gtk::PACK_SHRINK);
+
+#ifdef SEQ64_MAINWND_TAP_BUTTON
+    bpmhbox->pack_start(*m_button_tap, Gtk::PACK_SHRINK);
+#endif
 
     /*
      * Screen set name edit line.
@@ -603,8 +627,18 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
 
     Gtk::HBox * sethbox = manage(new Gtk::HBox(false, 4));
     bottomhbox->pack_start(*sethbox, Gtk::PACK_SHRINK);
-    m_spinbutton_ss->set_editable(false);
-    m_spinbutton_ss->set_wrap(true);
+    m_spinbutton_ss->set_sensitive(true);
+    m_spinbutton_ss->set_editable(true);
+
+    /*
+     * @note ca 2016-09-26
+     *  We have a minor quandary here.  If this is set, we cannot edit the
+     *  numeric value directly.  If it is false, then there is no wrap-around.
+     *
+     * m_spinbutton_ss->set_wrap(true);
+     */
+
+    m_spinbutton_ss->set_wrap(false);
     m_adjust_ss->signal_value_changed().connect
     (
         mem_fun(*this, &mainwnd::adj_callback_ss)
@@ -691,7 +725,28 @@ mainwnd::~mainwnd ()
         close(m_sigpipe[1]);
 }
 
-#ifdef SEQ64_STAZED_SONG_MODE_BUTTON
+/**
+ *  Check if one of the edit fields (BPM spinbutton, screenset spinbutton, or
+ *  the Name field) has focus.
+ *
+ * \return
+ *      Returns true if one of the three editable/modifiable fields has the
+ *      keyboard focus.
+ */
+
+bool
+mainwnd::edit_field_has_focus () const
+{
+    bool result =
+    (
+        m_spinbutton_bpm->has_focus() ||
+        m_spinbutton_ss->has_focus()  ||
+        m_entry_notes->has_focus()
+    );
+    return result;
+}
+
+#ifdef SEQ64_STAZED_MENU_BUTTONS
 
 /**
  *  Sets the song mode, which is actually the JACK start mode.  If true, we
@@ -704,12 +759,20 @@ void
 mainwnd::set_song_mode ()
 {
     bool is_active = m_button_mode->get_active();
-    std::string label = is_active ? "Song" : "Live";
-    perf().song_start_mode(is_active);
 
-    Gtk::Label * lblptr(dynamic_cast<Gtk::Label *>(m_button_mode->get_child()));
+#ifdef SEQ64_MENU_BUTTON_PIXMAPS
+    set_songlive_image(is_active);
+#else
+    std::string label = is_active ? "Song" : "Live";
+    Gtk::Label * lblptr(dynamic_cast<Gtk::Label *>
+    (
+        m_button_mode->get_child())
+    );
     if (not_nullptr(lblptr))
         lblptr->set_text(label);
+#endif
+
+    perf().song_start_mode(is_active);
 }
 
 /**
@@ -728,7 +791,7 @@ mainwnd::toggle_song_mode()
 
 #endif
 
-#ifdef USE_STAZED_MENU_MODE_BUTTON
+#ifdef SEQ64_STAZED_MENU_BUTTONS
 
 /**
  *  This function must be in the cpp module, where the button header file
@@ -752,7 +815,7 @@ mainwnd::toggle_menu_mode ()
     m_button_menu->set_active(! m_button_menu->get_active());
 }
 
-#endif
+#endif  // SEQ64_STAZED_MENU_BUTTONS
 
 /**
  *  This function is the GTK timer callback, used to draw our current time
@@ -794,19 +857,31 @@ mainwnd::timer_callback ()
         m_entry_notes->set_text(perf().current_screen_set_notepad());
     }
 
-#ifdef SEQ64_STAZED_SONG_MODE_BUTTON
+#ifdef SEQ64_STAZED_MENU_BUTTONS
 
     if (m_button_mode->get_active() != perf().song_start_mode())
         m_button_mode->set_active(perf().song_start_mode());
 
-    if (perf().is_pattern_playing() && m_button_mode->get_sensitive())
-        m_button_mode->set_sensitive(false);
-    else if(! perf().is_pattern_playing() && ! m_button_mode->get_sensitive())
-        m_button_mode->set_sensitive(true);
+    if (perf().is_pattern_playing())
+    {
+        if (m_button_mode->get_sensitive())
+            m_button_mode->set_sensitive(false);
+
+        if (m_menubar->get_sensitive())
+            m_menubar->set_sensitive(false);
+    }
+    else
+    {
+        if (! m_button_mode->get_sensitive())
+            m_button_mode->set_sensitive(true);
+
+        if (m_menubar->get_sensitive() == m_menu_mode)
+            m_menubar->set_sensitive(! m_menu_mode);
+    }
 
 #endif
 
-#ifdef USE_STAZED_JACK_SUPPORT
+#ifdef SEQ64_STAZED_JACK_SUPPORT
 
     /*
      * For seqroll keybinding, this is needed here instead of perfedit
@@ -823,7 +898,28 @@ mainwnd::timer_callback ()
     if (perf().is_running() != m_is_running)
     {
         m_is_running = perf().is_running();
-        set_image(m_is_running);
+        set_play_image(m_is_running);
+    }
+
+#endif
+
+#ifdef SEQ64_MAINWND_TAP_BUTTON
+
+    if (m_current_beats > 0)
+    {
+        if (m_last_time_ms > 0)
+        {
+            struct timespec spec;
+            clock_gettime(CLOCK_REALTIME, &spec);
+            long ms = long(spec.tv_sec) * 1000;     /* seconds to ms        */
+            ms += round(spec.tv_nsec * 1.0e-6);     /* nanoseconds to ms    */
+            long difference = ms - m_last_time_ms;
+            if (difference > SEQ64_TAP_BUTTON_TIMEOUT)
+            {
+                m_current_beats = m_base_time_ms = m_last_time_ms = 0;
+                set_tap_button(0);
+            }
+        }
     }
 
 #endif
@@ -1495,7 +1591,7 @@ mainwnd::edit_callback_notepad ()
  */
 
 void
-mainwnd::set_image (bool isrunning)
+mainwnd::set_play_image (bool isrunning)
 {
     delete m_image_play;
     if (isrunning)
@@ -1510,6 +1606,46 @@ mainwnd::set_image (bool isrunning)
     }
     m_button_play->set_image(*m_image_play);
 }
+
+#ifdef SEQ64_MENU_BUTTON_PIXMAPS
+
+/**
+ *  Changes the image used for the song/live mode button
+ *
+ * \param isrunning
+ *      If true, set the image to the "Pause" icon, since playback is running.
+ *      Otherwise, set it to the "Play" button, since playback is not running.
+ */
+
+void
+mainwnd::set_songlive_image (bool issong)
+{
+    delete m_image_songlive;
+    if (issong)
+    {
+        m_image_songlive = manage(new PIXBUF_IMAGE(song_mode_xpm));
+        add_tooltip
+        (
+            m_button_mode,
+            "The Song playback mode is active, and will apply no matter what "
+            "window (song, pattern, and main) is used to start the playback."
+        );
+    }
+    else
+    {
+        m_image_songlive = manage(new PIXBUF_IMAGE(live_mode_xpm));
+        add_tooltip
+        (
+            m_button_mode,
+            "The Live playback mode is active. If playback is started from "
+            "the Song Editor, this setting is ignored, to preserve legacy "
+            "behavior."
+        );
+    }
+    m_button_mode->set_image(*m_image_songlive);
+}
+
+#endif  // SEQ64_MENU_BUTTON_PIXMAPS
 
 #ifdef SEQ64_STAZED_TRANSPOSE
 
@@ -1531,34 +1667,23 @@ mainwnd::apply_song_transpose ()
 #endif
 
 /**
- *  Starts playing of the song.  The rc_settings::song_start_mode() function
- *  is used (if JACK is running, though this will change soon) to determine if
- *  the playback mode is "live" (false) or "song" (true).  An accessor to
- *  perform::start_playing().  This function is actually a callback for the
- *  pause/play button.
- *
- * \note
- *      This overrides the old behavior of playing live mode if the song
- *      is started from the main window.  So let's go back to the way
- *      seq24 handles it.  We could also make it dependent on the --legacy
- *      option, but that's too much trouble for now.
+ *  Starts playing of the song.  An accessor to perform::start_playing().
+ *  This function is actually a callback for the pause/play button.
+ *  Now very similar to perfedit::start_playing(), except that the implicit
+ *  songmode == false parameter is used here.
  */
 
 void
-mainwnd::start_playing ()               /* Play!            */
+mainwnd::start_playing ()                           /* Play!                */
 {
-#ifdef USE_STAZED_JACK_SUPPORT
-
-    perf().start_playing();             /* stazed behavior  */
-
+#ifdef SEQ64_STAZED_JACK_SUPPORT
+    perf().start_key();                             /* pause_key()????      */
 #else
-
 #ifdef SEQ64_PAUSE_SUPPORT
-    perf().pause_key(perf().song_start_mode());     /* perf().start_key() */
+    perf().pause_key();
 #else
-    perf().start_playing(perf().song_start_mode()); /* legacyish behavior */
+    perf().start_playing();                         /* legacy behavior      */
 #endif
-
 #endif
 }
 
@@ -1617,7 +1742,7 @@ mainwnd::toggle_playing ()
     if (perf().is_running())
     {
 #ifdef SEQ64_PAUSE_SUPPORT
-        (void) perf().playback_key_event(perf().keys().stop());
+        perf().stop_key();
 #else
         perf().stop_playing();
 #endif
@@ -1625,15 +1750,78 @@ mainwnd::toggle_playing ()
     else
     {
 #ifdef SEQ64_PAUSE_SUPPORT
-        (void) perf().playback_key_event
-        (
-            perf().keys().start(), perf().song_start_mode()     // NEW arg
-        );
+        perf().start_key();
 #else
-        perf().start_playing(perf().song_start_mode());         // NEW arg
+        perf().start_playing();
 #endif
     }
 }
+
+#ifdef SEQ64_MAINWND_TAP_BUTTON
+
+/**
+ *  Implements the Tap button or Tap keystroke (currently hard-wired as F9).
+ */
+
+void
+mainwnd::tap ()
+{
+    int bpm = update_bpm();
+    set_tap_button(m_current_beats);
+    if (m_current_beats > 1)                    /* first one is useless */
+        m_adjust_bpm->set_value(double(bpm));
+}
+
+/**
+ *  Sets the label in the Tap button to the given number of taps.
+ *
+ * \param beats
+ *      The current number of times the user has clicked the Tap button/key.
+ */
+
+void
+mainwnd::set_tap_button (int beats)
+{
+    Gtk::Label * tapptr(dynamic_cast<Gtk::Label *>(m_button_tap->get_child()));
+    if (not_nullptr(tapptr))
+    {
+        char temp[8];
+        snprintf(temp, sizeof(temp), "%d", beats);
+        tapptr->set_text(temp);
+    }
+}
+
+/**
+ *  Calculates the running BPM value from the user's sequences of taps.
+ *
+ * \return
+ *      Returns the current BPM value.
+ */
+
+int
+mainwnd::update_bpm ()
+{
+    int bpm = 0;
+    struct timespec spec;
+    clock_gettime(CLOCK_REALTIME, &spec);
+    long ms = long(spec.tv_sec) * 1000;     /* seconds to milliseconds      */
+    ms += round(spec.tv_nsec * 1.0e-6);     /* nanoseconds to milliseconds  */
+    if (m_current_beats == 0)
+    {
+        m_base_time_ms = ms;
+        m_last_time_ms = 0;
+    }
+    else if (m_current_beats >= 1)
+ 	{
+        int diffms = ms - m_base_time_ms;
+        bpm = int(m_current_beats * 60000.0 / diffms);
+        m_last_time_ms = ms;
+	}
+    ++m_current_beats;
+    return bpm;
+}
+
+#endif
 
 /**
  *  This callback function handles a delete event from ...?
@@ -1655,9 +1843,8 @@ mainwnd::on_delete_event (GdkEventAny * /*ev*/)
 /**
  *  Handles a key release event.  Is this worth turning into a switch
  *  statement?  Or offloading to a perform member function?  The latter.
- *
  *  Also, we now effectively press the CAPS LOCK key for the user if in
- *  group-learn mode.
+ *  group-learn mode.  The function that does this is keystroke::shift_lock().
  *
  * \todo
  *      Test this functionality in old and new application.
@@ -1740,6 +1927,26 @@ mainwnd::on_key_press_event (GdkEventKey * ev)
                 m_adjust_ss->set_value(newss);
                 m_entry_notes->set_text(perf().current_screen_set_notepad());
             }
+#ifdef SEQ64_MAINWND_TAP_BUTTON
+            else if (k.key() == PREFKEY(tap_bpm))
+            {
+                tap();
+            }
+#endif
+#ifdef SEQ64_STAZED_MENU_BUTTONS
+            else if (k.key() == PREFKEY(toggle_mutes))
+            {
+                m_main_wid->toggle_all_tracks();
+            }
+            else if (k.key() == PREFKEY(song_mode))
+            {
+                toggle_song_mode();
+            }
+            else if (k.key() == PREFKEY(menu_mode))
+            {
+                toggle_menu_mode();
+            }
+#endif
         }
 
         /*
@@ -1804,7 +2011,7 @@ mainwnd::on_key_press_event (GdkEventKey * ev)
                 perf().unset_mode_group_learn();
             }
         }
-        if (! perf().playback_key_event(k, perf().song_start_mode()))
+        if (! perf().playback_key_event(k))
         {
             /*
              *  Toggle the sequence mute/unmute setting using keyboard keys.
@@ -1812,6 +2019,9 @@ mainwnd::on_key_press_event (GdkEventKey * ev)
              *  Ctrl-E, for example, brings up the Song Editor, and should not
              *  toggle the sequence controlled by the "e" key.  Will also see
              *  if the Alt key could/should be intercepted.
+             *
+             *  Also, try to avoid using the hotkeys if an editable field has
+             *  focus.
              *
              *  Also, if the pattern-edit keys (will be minus and equals by
              *  default) are enabled and have been pressed, then bring up one
@@ -1824,6 +2034,9 @@ mainwnd::on_key_press_event (GdkEventKey * ev)
                 bool ok = perf().is_control_status();
                 if (! ok)
                     ok = ! is_ctrl_key(ev);
+
+                if (ok)
+                    ok = ! edit_field_has_focus();
 
                 if (ok)
                 {

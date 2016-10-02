@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-08-21
+ * \updates       2016-09-24
  * \license       GNU GPLv2 or above
  *
  *  Compare this class to eventedit, which has to do some similar things,
@@ -103,6 +103,7 @@
 #endif
 
 #ifdef SEQ64_STAZED_TRANSPOSE
+#include "pixmaps/drum.xpm"
 #include "pixmaps/transpose.xpm"
 #endif
 
@@ -233,6 +234,7 @@ seqedit::seqedit
     m_menu_length       (manage(new Gtk::Menu())),
 #ifdef SEQ64_STAZED_TRANSPOSE
     m_toggle_transpose  (manage(new Gtk::ToggleButton())),
+    m_image_transpose   (),
 #endif
     m_menu_midich       (nullptr),
     m_menu_midibus      (nullptr),
@@ -399,6 +401,7 @@ seqedit::seqedit
 
 #ifdef SEQ64_STAZED_TRANSPOSE
     m_toggle_transpose->add(*manage(new PIXBUF_IMAGE(transpose_xpm)));
+    m_toggle_transpose->set_focus_on_click(false); // set_can_focus(false);
     m_toggle_transpose->signal_clicked().connect
     (
         mem_fun(*this, &seqedit::transpose_change_callback)
@@ -409,6 +412,7 @@ seqedit::seqedit
         "Sequence is allowed to be transposed if button is highighted (checked)."
     );
     m_toggle_transpose->set_active(m_seq.get_transposable());
+    set_transpose_image(m_seq.get_transposable());
 #endif
 
     /* play, rec, thru */
@@ -494,6 +498,10 @@ seqedit::seqedit
     if (usr().zoom() == SEQ64_USE_ZOOM_POWER_OF_2)      /* i.e. 0 */
         zoom = zoom_power_of_2(m_ppqn);
 
+    /*
+     * Not needed: m_seqroll_wid->set_ignore_redraw(true);
+     */
+
     set_zoom(zoom);
     set_beats_per_bar(m_seq.get_beats_per_bar());
     set_beat_width(m_seq.get_beat_width());
@@ -528,9 +536,7 @@ seqedit::seqedit
      *      m_seqroll_wid->set_can_focus();
      *      m_seqroll_wid->grab_focus();
      *
-     * Not needed:
-     *
-     * m_seqroll_wid->set_ignore_redraw(false);
+     * Not needed: m_seqroll_wid->set_ignore_redraw(false);
      */
 }
 
@@ -576,11 +582,11 @@ seqedit::create_menus ()
 #define SET_SNAP    mem_fun(*this, &seqedit::set_snap)
 #define SET_NOTE    mem_fun(*this, &seqedit::set_note_length)
 
-    /*
+    /**
      * To reduce the amount of written code, we now use a static array to
-     * initialize som e of the menu entries.  0 denotes the separator.  This
-     * same setup is used to set up both the snap and note menu, since they
-     * are exactly the same.  Saves a *lot* of code.
+     * initialize some of the seqedit menu entries.  0 denotes the separator.
+     * This same setup is used to set up both the snap and note menu, since
+     * they are exactly the same.  Saves a *lot* of code.
      */
 
     static const int s_snap_items [] =
@@ -2059,7 +2065,34 @@ seqedit::name_change_callback ()
 void
 seqedit::transpose_change_callback ()
 {
-    m_seq.set_transposable(m_toggle_transpose->get_active());
+    bool istransposable = m_toggle_transpose->get_active();
+    set_transpose_image(istransposable);
+    m_seq.set_transposable(istransposable);
+}
+
+/**
+ *  Changes the image used for the transpose button.
+ *
+ * \param istransposable
+ *      If true, set the image to the "Transpose" icon.  Otherwise, set
+ *      it to the "Drum" (not transposable) icon.
+ */
+
+void
+seqedit::set_transpose_image (bool istransposable)
+{
+    delete m_image_transpose;
+    if (istransposable)
+    {
+        m_image_transpose = manage(new PIXBUF_IMAGE(transpose_xpm));
+        add_tooltip(m_toggle_transpose, "Sequence is transposable.");
+    }
+    else
+    {
+        m_image_transpose = manage(new PIXBUF_IMAGE(drum_xpm));
+        add_tooltip(m_toggle_transpose, "Sequence is not transposable.");
+    }
+    m_toggle_transpose->set_image(*m_image_transpose);
 }
 
 #endif

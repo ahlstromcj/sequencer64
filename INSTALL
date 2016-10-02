@@ -1,6 +1,6 @@
-INSTALL for Sequencer64 v. 0.9.17.2
+INSTALL for Sequencer64 v. 0.9.18
 Chris Ahlstrom
-2015-09-10 to 2016-09-11
+2015-09-10 to 2016-10-01
 
 The current packaging for Sequencer64 is primarily aimed at developers.
 There is currently no configure script... it must be bootstrapped.
@@ -147,6 +147,13 @@ CONFIGURE OPTIONS FOR APPLICATION FEATURES:
         saving 4096 bytes in a single file is not too useful.  Note that this
         feature, even if enabled, is not used if Sequencer64 is run in
         "legacy" mode.
+
+    --enable-seq32jack
+
+        Defines the SEQ64_STAZED_JACK_SUPPORT macro, which is currently
+        undefined by default until we can test it thoroughly.
+        Enables Seq32 JACK handling, which incorporates many improvements to
+        JACK transport, including the MIDI clock fix from Seq24 v. 0.9.3.
 
 MANUALLY-DEFINED MACROS IN CODE:
 
@@ -295,7 +302,6 @@ MANUALLY-DEFINED MACROS IN CODE:
         fixes that we have overlooked.  At present, we are not enabling this
         functionality, just adding it, macroed out by the following macros:
 
-        USE_STAZED_JACK_SUPPORT
         USE_STAZED_LFO_SUPPORT
         USE_STAZED_RANDOMIZE_SUPPORT
         USE_STAZED_SEQDATA_EXTENSIONS

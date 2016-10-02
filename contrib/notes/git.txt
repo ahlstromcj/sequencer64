@@ -1,6 +1,6 @@
 Quick Reference for Git Processes on GitHub
 Chris Ahlstrom
-2015-09-09 to 2016-07-19
+2015-09-09 to 2016-09-16
 
 Creating a GitHub Repository:
 
@@ -176,6 +176,23 @@ Tagging:
     commit changes, or there are many 12th commits.  Note that the output
     also depends on the current branch that is checked out.
 
+Cherry-Picking:
+
+    If one makes a fix in a branch and wants just that commit to be merged
+    (into master), then do the following after committing the fix in the
+    branch, assuming the branch and master are both now clean:
+
+    $ git log                   # and record the last commit hash
+    $ git checkout master
+    $ git cherry-pick --edit a2d34fb
+
+    And then one can push the fix and the new tag.
+
+    See this article on why you should generally avoid cherry-picking
+    in git:
+
+        http://www.draconianoverlord.com/2013/09/07/no-cherry-picking.html
+
 Pull Requests:
 
     When one gets an email about a pull request, there are a couple of
@@ -191,5 +208,25 @@ Pull Requests:
        $ git checkout master 
        $ git merge --no-ff otherproject-master
        $ git  push origin master 
+
+Diffs:
+
+    Just a quick note on summarizing differences between commits.  This
+    command summarizes the changes between commits, much like
+    "svn diff --summarize":
+
+        $ git diff --name-status <commit1> <commit2>
+
+    Then, if one has the following in the .gitconfig file:
+
+        [diff]
+            tool = gvimdiff
+        [difftool]
+            prompt = false
+
+    one can cycle through a series of diffs on the involved files with one
+    of the best diff viewers ever:
+
+        $ git difftool <commit1> <commit2>
 
 # vim: sw=4 ts=4 wm=8 et ft=sh

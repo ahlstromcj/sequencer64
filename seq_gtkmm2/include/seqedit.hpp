@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-08-10
+ * \updates       2016-09-22
  * \license       GNU GPLv2 or above
  *
  *  The seqedit is a kind of master class for holding aseqroll, seqkeys,
@@ -216,6 +216,8 @@ private:
 
 #ifdef SEQ64_STAZED_TRANSPOSE
     Gtk::ToggleButton * m_toggle_transpose;  /**< Transpose toggle button.  */
+
+    Gtk::Image * m_image_transpose;     /**< Image for transpose button.    */
 #endif
 
     Gtk::Menu * m_menu_midich;          /**< MIDI channel DIN menu button.  */
@@ -377,6 +379,7 @@ private:
     void set_note_length (int note_length);
     void set_beats_per_bar (int bpm);
     void set_beat_width (int bw);
+    void set_transpose_image (bool istransposable);
 
     /**
      *  Passes the given parameter to sequence::set_rec_vol().

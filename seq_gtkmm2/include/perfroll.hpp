@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-08-21
+ * \updates       2016-10-02
  * \license       GNU GPLv2 or above
  *
  *  This class represents the central piano-roll user-interface area of the
@@ -101,7 +101,7 @@ private:
     int m_ppqn;                     /**< Parts-per-quarter-note value.      */
     int m_page_factor;              /**< 4096, horizonal page sizing.       */
     int m_divs_per_beat;            /**< Holds current tick scaling value.  */
-    int m_ticks_per_bar;            /**< Holds current bar scaling value.   */
+    midipulse m_ticks_per_bar;      /**< Holds current bar scaling value.   */
     int m_perf_scale_x;             /**< Scaling based on zoom and PPQN.    */
 
     /**
@@ -174,8 +174,20 @@ private:
     bool m_have_button_press;
 
 #ifdef SEQ64_STAZED_TRANSPORT
+
+    /**
+     *  Indicates that the application should follow JACK transport.
+     *  The alternative is ...?
+     */
+
     bool m_transport_follow;
+
+    /**
+     *  Indicates if the follow-transport button is pressed.
+     */
+
     bool m_trans_button_press;
+
 #endif
 
     /**
@@ -186,7 +198,7 @@ private:
      *  value.  See the change_horz() function.
      */
 
-    int m_4bar_offset;
+    midipulse m_4bar_offset;
 
     /**
      *  This value is the vertical version of m_4bar_offset.  It is obtained
@@ -262,6 +274,13 @@ private:
     Seq24PerfInput m_seq24_interaction;
 
     /**
+     *  Provides a reference to the selected (at startup time) method of mouse
+     *  interaction.
+     */
+
+    AbstractPerfInput & m_interaction;
+
+    /**
      *  Used in the Seq24 or Fruity processing when moving a section of
      *  triggers.
      */
@@ -334,6 +353,15 @@ private:
     void split_trigger(int sequence, midipulse tick);
     void enqueue_draw ();
     void set_zoom (int z);
+
+    /**
+     *  A convenience function.
+     */
+
+    void convert_drop_xy ()
+    {
+        convert_xy(m_drop_x, m_drop_y, m_drop_tick, m_drop_sequence);
+    }
 
     /**
      *  This function provides optimization for the on_scroll_event() function.

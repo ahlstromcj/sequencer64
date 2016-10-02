@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-09-13
- * \updates       2016-08-20
+ * \updates       2016-10-01
  * \license       GNU GPLv2 or above
  *
  * Stazed:
@@ -59,7 +59,6 @@
 #include <string>                       /* std::string                      */
 
 #include "easy_macros.h"                /* SEQ64_PAUSE_SUPPORT              */
-#include "seq64_features.h"             /* make sure of the feature macros  */
 
 namespace seq64
 {
@@ -87,24 +86,29 @@ struct keys_perform_transfer
     unsigned int kpt_start;
     unsigned int kpt_stop;
     bool kpt_show_ui_sequence_key;
+
+    /*
+     * Sequencer64 additions
+     */
+
     bool kpt_show_ui_sequence_number;
     unsigned int kpt_pattern_edit;
     unsigned int kpt_event_edit;
-
-#ifdef SEQ64_PAUSE_SUPPORT
+    unsigned int kpt_tap_bpm;
     unsigned int kpt_pause;
-#endif
 
-#ifdef SEQ64_STAZED_TRANSPORT
+    /*
+     * Seq32 (stazed) additions
+     */
+
     unsigned int kpt_song_mode;
     unsigned int kpt_toggle_jack;
     unsigned int kpt_menu_mode;
     unsigned int kpt_follow_transport;
     unsigned int kpt_fast_forward;
     unsigned int kpt_rewind;
-    unsigned int kpt_pointer;
-#endif
-
+    unsigned int kpt_pointer_position;
+    unsigned int kpt_toggle_mutes;
 };
 
 /**
@@ -204,21 +208,16 @@ private:
     unsigned int m_key_group_off;               /**< Group off, apostrophe! */
     unsigned int m_key_group_learn;             /**< Group learn, Insert.   */
     unsigned int m_key_start;                   /**< Start play, Space key. */
-
-#ifdef SEQ64_PAUSE_SUPPORT
     unsigned int m_key_pause;                   /**< Pause play, Period.    */
-#endif
-
-#ifdef SEQ64_STAZED_TRANSPORT
     unsigned int m_key_song_mode;               /**< Song versus Live mode. */
     unsigned int m_key_toggle_jack;             /**< Toggle JACK connect.   */
     unsigned int m_key_menu_mode;               /**< Menu enabled/disabled. */
     unsigned int m_key_follow_transport;        /**< Toggle following JACK. */
     unsigned int m_key_fast_forward;            /**< Start fast-forward.    */
     unsigned int m_key_rewind;                  /**< Start rewind.          */
-    unsigned int m_key_pointer;                 /**< Set progress to mouse. */
-#endif
-
+    unsigned int m_key_pointer_position;        /**< Set progress to mouse. */
+    unsigned int m_key_toggle_mutes;            /**< Toggle all patterns.   */
+    unsigned int m_key_tap_bpm;                 /**< To tap out the BPM.    */
     unsigned int m_key_pattern_edit;            /**< Show pattern editor.   */
     unsigned int m_key_event_edit;              /**< Show event editor.     */
     unsigned int m_key_stop;                    /**< Stop play, Escape.     */
@@ -525,8 +524,6 @@ public:
         m_key_start = x;
     }
 
-#ifdef SEQ64_PAUSE_SUPPORT
-
     /**
      * \getter m_key_pause
      */
@@ -547,8 +544,6 @@ public:
     {
         m_key_pause = x;
     }
-
-#endif
 
     /**
      * \getter m_key_pattern_edit
@@ -613,8 +608,6 @@ public:
         m_key_stop = x;
     }
 
-#ifdef SEQ64_STAZED_TRANSPORT
-
     unsigned int song_mode () const
     {
         return m_key_song_mode;
@@ -665,14 +658,24 @@ public:
         m_key_rewind = key;
     }
 
-    unsigned int pointer () const
+    unsigned int pointer_position () const
     {
-        return m_key_pointer;
+        return m_key_pointer_position;
     }
 
-    void pointer (unsigned int key)
+    void pointer_position (unsigned int key)
     {
-        m_key_pointer = key;
+        m_key_pointer_position = key;
+    }
+
+    unsigned int toggle_mutes () const
+    {
+        return m_key_toggle_mutes;
+    }
+
+    void toggle_mutes (unsigned int key)
+    {
+        m_key_toggle_mutes = key;
     }
 
     unsigned int toggle_jack () const
@@ -685,7 +688,15 @@ public:
         m_key_toggle_jack = key;
     }
 
-#endif  // SEQ64_STAZED_TRANSPORT
+    unsigned int tap_bpm () const
+    {
+        return m_key_tap_bpm;
+    }
+
+    void tap_bpm (unsigned int key)
+    {
+        m_key_tap_bpm = key;
+    }
 
     /**
      * \getter m_key_show_ui_sequency_key
@@ -712,7 +723,7 @@ public:
     }
 
     /**
-     * \getter m_key_show_ui_sequency_number
+     * \getter m_key_show_ui_sequence_number
      *
      *  Used in mainwid, options, optionsfile, userfile, and perform.
      */
@@ -723,7 +734,7 @@ public:
     }
 
     /**
-     * \setter m_key_show_ui_sequency_key
+     * \setter m_key_show_ui_sequence_key
      *
      * \param flag
      *      The flag for showing the sequence number in each pattern
@@ -1034,8 +1045,6 @@ protected:
         return &m_key_start;
     }
 
-#ifdef SEQ64_PAUSE_SUPPORT
-
     /**
      * \getter m_key_pause
      *
@@ -1047,12 +1056,109 @@ protected:
         return &m_key_pause;
     }
 
-#endif
+    /**
+     * \getter m_key_song_mode
+     *
+     *  Address getter for the song-mode operation.
+     */
+
+    unsigned int * at_song_mode ()
+    {
+        return &m_key_song_mode;
+    }
+
+    /**
+     * \getter m_key_toggle_jack
+     *
+     *  Address getter for the toggle-jack operation.
+     */
+
+    unsigned int * at_toggle_jack ()
+    {
+        return &m_key_toggle_jack;
+    }
+
+    /**
+     * \getter m_key_menu_mode
+     *
+     *  Address getter for the menu-mode operation.
+     */
+
+    unsigned int * at_menu_mode ()
+    {
+        return &m_key_menu_mode;
+    }
+
+    /**
+     * \getter m_key_follow_transport
+     *
+     *  Address getter for the follow-transport operation.
+     */
+
+    unsigned int * at_follow_transport ()
+    {
+        return &m_key_follow_transport;
+    }
+
+    /**
+     * \getter m_key_fast_forward
+     *
+     *  Address getter for the fast-forward operation.
+     */
+
+    unsigned int * at_fast_forward ()
+    {
+        return &m_key_fast_forward;
+    }
+
+    /**
+     * \getter m_key_rewind
+     *
+     *  Address getter for the rewind operation.
+     */
+
+    unsigned int * at_rewind ()
+    {
+        return &m_key_rewind;
+    }
+
+    /**
+     * \getter m_key_pointer_position
+     *
+     *  Address getter for the pointer operation.
+     */
+
+    unsigned int * at_pointer_position ()
+    {
+        return &m_key_pointer_position;
+    }
+
+    /**
+     * \getter m_key_toggle_mutes
+     *
+     *  Address getter for the toggle-mutes operation.
+     */
+
+    unsigned int * at_toggle_mutes ()
+    {
+        return &m_key_toggle_mutes;
+    }
+
+    /**
+     * \getter m_key_tap_bpm
+     *
+     *  Address getter for the tap_bpm operation.
+     */
+
+    unsigned int * at_tap_bpm ()
+    {
+        return &m_key_tap_bpm;
+    }
 
     /**
      * \getter m_key_pattern_edit
      *
-     *  Address getter for the pattern edit operation.
+     *  Address getter for the pattern-edit operation.
      */
 
     unsigned int * at_pattern_edit ()
@@ -1063,7 +1169,7 @@ protected:
     /**
      * \getter m_key_event_edit
      *
-     *  Address getter for the event edit operation.
+     *  Address getter for the event-edit operation.
      */
 
     unsigned int * at_event_edit ()
@@ -1111,6 +1217,11 @@ protected:
  * depend on the GUI environment; currently it is GTK 2.x, so the
  * implementation is in seq_gtkmm2/src/keys_perform_gtk2.cpp.
  */
+
+inline bool invalid_key (unsigned int key)
+{
+    return (key == 0) || (key > 0xffff);
+}
 
 extern std::string keyval_name (unsigned int key);
 extern void keyval_normalize (keys_perform_transfer & k);

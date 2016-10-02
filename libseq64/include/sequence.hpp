@@ -1166,7 +1166,8 @@ public:
     (
         midipulse & tick_s, int & note_h, midipulse & tick_f, int & note_l
     );
-    midipulse adjust_timestamp (midipulse t, bool isnoteoff = false);
+    midipulse adjust_timestamp (midipulse t, bool isnoteoff);
+    midipulse trim_timestamp (midipulse t);
     midipulse clip_timestamp (midipulse ontime, midipulse offtime);
     void move_selected_notes (midipulse deltatick, int deltanote);
     void add_note (midipulse tick, midipulse len, int note, bool paint = false);

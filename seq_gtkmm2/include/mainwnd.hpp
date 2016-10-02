@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-09-11
+ * \updates       2016-09-28
  * \license       GNU GPLv2 or above
  *
  *  The main window is known as the "Patterns window" or "Patterns
@@ -47,6 +47,14 @@
 #include "gui_window_gtk2.hpp"          /* seq64::qui_window_gtk2       */
 #include "perform.hpp"                  // seq64::perform and callback  */
 
+/**
+ *  This macro chooses between pixmap-labelling for the "stazed/seq32" menu
+ *  buttons, and text labels for them.  Text labels are okay, but the icons
+ *  seem to present a prettier appearance.
+ */
+
+#define SEQ64_MENU_BUTTON_PIXMAPS
+
 /*
  *  Easier access to Gtk-2 classes.
  */
@@ -62,7 +70,7 @@ namespace Gtk
     class SpinButton;
     class Tooltips;
 
-#if defined SEQ64_STAZED_SONG_MODE_BUTTON || defined USE_STAZED_MENU_MODE_BUTTON
+#if defined SEQ64_STAZED_MENU_BUTTONS
     class ToggleButton;
 #endif
 }
@@ -196,28 +204,40 @@ private:
 
     Gtk::Button * m_button_perfedit;
 
-#ifdef SEQ64_STAZED_SONG_MODE_BUTTON
-    Gtk::ToggleButton * m_button_mode;
-    Gtk::ToggleButton * m_button_mute;
+#ifdef SEQ64_STAZED_MENU_BUTTONS
+#ifdef SEQ64_MENU_BUTTON_PIXMAPS
+
+    /**
+     *  Provides a pointer to hold the images for the song/live button.
+     */
+
+    Gtk::Image * m_image_songlive;
+
 #endif
 
-#ifdef USE_STAZED_MENU_MODE_BUTTON
-    Gtk::ToggleButton * m_button_menu;
+    Gtk::ToggleButton * m_button_mode;  /**< Live/Song mode button.         */
+    Gtk::Button * m_button_mute;        /**< Mute toggle button.            */
+    Gtk::ToggleButton * m_button_menu;  /**< Menu enable/disable button.    */
+
 #endif
 
     /**
      *  The spin/adjustment controls for the BPM (beats-per-minute) value.
      */
 
-    Gtk::Adjustment * m_adjust_bpm;         /**< BPM adjustment object.     */
-    Gtk::SpinButton * m_spinbutton_bpm;     /**< BPM spin-button object.    */
+    Gtk::Adjustment * m_adjust_bpm;     /**< BPM adjustment object.         */
+    Gtk::SpinButton * m_spinbutton_bpm; /**< BPM spin-button object.        */
+
+#ifdef SEQ64_MAINWND_TAP_BUTTON
+    Gtk::Button * m_button_tap;         /**< Tap-for-tempo button.          */
+#endif
 
     /**
      *  The spin/adjustment controls for the screenset value.
      */
 
-    Gtk::Adjustment * m_adjust_ss;          /**< Screenset adjustment.      */
-    Gtk::SpinButton * m_spinbutton_ss;      /**< Screenset adjustment.      */
+    Gtk::Adjustment * m_adjust_ss;      /**< Screenset adjustment.          */
+    Gtk::SpinButton * m_spinbutton_ss;  /**< Screenset adjustment.          */
 
     /**
      *  The spin/adjustment controls for the load offset value.
@@ -226,8 +246,8 @@ private:
      *  from 0 to 1024 in blocks of 32 patterns.
      */
 
-    Gtk::Adjustment * m_adjust_load_offset;     /**< Load number for import.    */
-    Gtk::SpinButton * m_spinbutton_load_offset; /**< Spin button for import.    */
+    Gtk::Adjustment * m_adjust_load_offset;     /**< Load number for import. */
+    Gtk::SpinButton * m_spinbutton_load_offset; /**< Spin button for import. */
 
     /**
      *  This item provides user-interface access to the screenset notepad
@@ -253,6 +273,31 @@ private:
      */
 
     sigc::connection m_timeout_connect;
+
+#ifdef SEQ64_MAINWND_TAP_BUTTON
+
+    /**
+     *  Indicates the number of beats considered in calculating the BPM via
+     *  button tapping.  This value is displayed in the button.
+     */
+
+    int m_current_beats;
+
+    /**
+     *  Indicates the first time the tap button was ... tapped.
+     */
+
+    long m_base_time_ms;
+
+    /**
+     *  Indicates the last time the tap button was tapped.  If this button
+     *  wasn't tapped for awhile, we assume the user has been satisfied with
+     *  the tempo he/she tapped out.
+     */
+
+    long m_last_time_ms;
+
+#endif
 
     /**
      *  Indicates if the menu bar is to be greyed out or not.  This is a
@@ -283,7 +328,7 @@ public:
     (
         perform & p,
         bool allowperf2 = true,
-        int ppqn = SEQ64_USE_DEFAULT_PPQN
+        int ppqn        = SEQ64_USE_DEFAULT_PPQN
     );
     virtual ~mainwnd ();
 
@@ -315,15 +360,24 @@ private:
 
     static void handle_signal (int sig);
 
-    void adj_callback_ss ();            // make 'em void at some point
+    void adj_callback_ss ();
     void adj_callback_bpm ();
     void edit_callback_notepad ();
     bool timer_callback ();
-    void set_image (bool isrunning);
+    void set_play_image (bool isrunning);
+#ifdef SEQ64_MENU_BUTTON_PIXMAPS
+    void set_songlive_image (bool issong);
+#endif
     void start_playing ();
     void pause_playing ();
     void stop_playing ();
     void toggle_playing ();
+
+#ifdef SEQ64_MAINWND_TAP_BUTTON
+    void tap ();
+    int update_bpm ();
+    void set_tap_button (int beats);
+#endif
 
     /**
      *  Toggle the group-learn status.  Simply forwards the call to
@@ -353,12 +407,9 @@ private:
     void apply_song_transpose ();
 #endif
 
-#ifdef SEQ64_STAZED_SONG_MODE_BUTTON
+#ifdef SEQ64_STAZED_MENU_BUTTONS
     void set_song_mode ();
     void toggle_song_mode();
-#endif
-
-#ifdef USE_STAZED_MENU_MODE_BUTTON
     void set_menu_mode ();
     void toggle_menu_mode ();
 #endif
@@ -420,6 +471,7 @@ private:
     bool is_save ();
     bool install_signal_handlers ();
     bool signal_action (Glib::IOCondition condition);
+    bool edit_field_has_focus () const;
 
 private:
 

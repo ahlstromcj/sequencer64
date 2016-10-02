@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-08-14
+ * \updates       2016-09-26
  * \license       GNU GPLv2 or above
  *
  *  There are a large number of existing items to discuss.  But for now let's
@@ -185,6 +185,10 @@ seqroll::seqroll
 #ifdef SEQ64_FOLLOW_PROGRESS_BAR
     m_scroll_page           (0),
 #endif
+#ifdef USE_STAZED_TRANSPORT_SEQROLL_BUTTON  /* just discovered this code    */
+    m_transport_follow      (true),
+    m_trans_button_press    (false),
+#endif
     m_background_sequence   (0),
     m_drawing_background_seq(false),
     m_status                (0),
@@ -301,6 +305,14 @@ seqroll::change_horz ()
 {
     m_scroll_offset_ticks = int(m_hadjust.get_value());
     m_scroll_offset_x = m_scroll_offset_ticks / m_zoom;
+
+    /*
+     * Not needed:
+     *
+     * if (m_ignore_redraw)
+     *     return;
+     */
+
     update_and_draw(true);
 }
 
@@ -313,6 +325,14 @@ seqroll::change_vert ()
 {
     m_scroll_offset_key = int(m_vadjust.get_value());
     m_scroll_offset_y = m_scroll_offset_key * c_key_y;
+
+    /*
+     * Not needed:
+     *
+     * if (m_ignore_redraw)
+     *     return;
+     */
+
     update_and_draw(true);
 }
 
@@ -327,6 +347,14 @@ seqroll::reset ()
 {
     m_scroll_offset_ticks = int(m_hadjust.get_value());
     m_scroll_offset_x = m_scroll_offset_ticks / m_zoom;
+
+    /*
+     * Not needed:
+     *
+     * if (m_ignore_redraw)
+     *     return;
+     */
+
     update_sizes();
     update_and_draw();
 }
@@ -351,6 +379,7 @@ seqroll::redraw ()
  *
  * \param force
  *      If true, force an immediate draw, otherwise just queue up a draw.
+ *      This value defaults to false.
  */
 
 void
@@ -372,6 +401,13 @@ seqroll::update_and_draw (int force)
 void
 seqroll::redraw_events ()
 {
+    /*
+     * Not needed:
+     *
+     * if (m_ignore_redraw)
+     *     return;
+     */
+
     update_pixmap();
     force_draw();
 }
@@ -526,7 +562,8 @@ seqroll::update_background ()
  *  Sets the zoom to the given value, and then resets the view.
  *
  * \param zoom
- *      The desired zoom value.
+ *      The desired zoom value, assumed to be validated already.  See the
+ *      seqedit::set_zoom() function.
  */
 
 void
@@ -687,6 +724,14 @@ seqroll::follow_progress ()
     }
 }
 
+#else
+
+void
+seqroll::follow_progress ()
+{
+    // No code, do not follow the progress bar.
+}
+
 #endif      // SEQ64_FOLLOW_PROGRESS_BAR
 
 /**
@@ -742,6 +787,7 @@ seqroll::draw_events_on (Glib::RefPtr<Gdk::Drawable> draw)
             )
             {
                 int note_width;
+                int note_off_width = 0;             /* for wrapped Note Off    */
                 int note_x = tick_s / m_zoom;       /* turn into screen coords */
                 int note_y = c_rollarea_y - (note * c_key_y) - c_key_y + 1;
                 int note_height = c_key_y - 3;
@@ -756,7 +802,15 @@ seqroll::draw_events_on (Glib::RefPtr<Gdk::Drawable> draw)
                             note_width = 1;
                     }
                     else
+                    {
+                        /*
+                         * For a wrap-around note, calculate the Note On width,
+                         * then the Note Off width.  From Stazed's seq32 fixes.
+                         */
+
                         note_width = (m_seq.get_length() - tick_s) / m_zoom;
+                        note_off_width = tick_f / m_zoom;
+                    }
                 }
                 else
                     note_width = 16 / m_zoom;
@@ -786,16 +840,20 @@ seqroll::draw_events_on (Glib::RefPtr<Gdk::Drawable> draw)
                     m_gc->set_foreground(black_paint());
 
                 draw_rectangle(draw, note_x, note_y, note_width, note_height);
-                if (tick_f < tick_s)
+                if (tick_f < tick_s)                        /* note wraps?    */
                     draw_rectangle(draw, 0, note_y, tick_f / m_zoom, note_height);
 
-                if (note_width > 3)     /* draw inside box if there is room */
-                {
-                    if (selected)
-                        m_gc->set_foreground(orange());
-                    else
-                        m_gc->set_foreground(white_paint());
+                /*
+                 *  Draw inside box if there is room.  The check for note_width
+                 *  is based on the Note ON width. If the Note On is less than
+                 *  3 and there is a wrapped Note Off of width > 3 then the
+                 *  Note Off portion would not draw the inside rectangle. Thus
+                 *  the need for the additional (seq32) note_off_width check.
+                 */
 
+                if (note_width > 3 || note_off_width > 3)
+                {
+                    m_gc->set_foreground(selected ? orange() : white_paint());
                     if (method == 1)
                     {
                         int xinc = note_x + 1;
@@ -811,7 +869,7 @@ seqroll::draw_events_on (Glib::RefPtr<Gdk::Drawable> draw)
                         }
                         else
                         {
-                            draw_rectangle
+                            draw_rectangle          /* Note On */
                             (
                                 draw, xinc + in_shift, yinc, note_width, hdec
                             );
@@ -821,6 +879,18 @@ seqroll::draw_events_on (Glib::RefPtr<Gdk::Drawable> draw)
                                 width = note_width;     // 0;
 
                             draw_rectangle(draw, 0, yinc, width, hdec);
+
+                            /*
+                             *  Note Off wrapped (seq32). If off_width < 0,
+                             *  the draw would span the entire sequence
+                             *  (because the negative is treated like a large
+                             *  number). This occurs occasionally with a very
+                             *  small wrapped Note Off, due to rounding.
+                             */
+
+                            long off_width = tick_f / m_zoom - 3 + length_add;
+                            if (off_width >= 0)
+                                draw_rectangle(draw, 0, yinc, off_width, hdec);
                         }
                     }
                 }
@@ -867,10 +937,10 @@ seqroll::idle_redraw ()
 void
 seqroll::draw_selection_on_window ()
 {
-    const int thickness = 1;            /* normally 1       */
-    int x = 0, y = 0, w = 0, h = 0;     /* used throughout  */
-    set_line(Gdk::LINE_SOLID, thickness);
-    if (select_action())
+    const int thickness = 1;                /* normally 1               */
+    int x = 0, y = 0, w = 0, h = 0;         /* used throughout          */
+    set_line(Gdk::LINE_SOLID, thickness);   /* set_line_attributes()    */
+    if (select_action())                    /* select, grow, drop       */
     {
         x = m_old.x;
         y = m_old.y;
@@ -885,7 +955,7 @@ seqroll::draw_selection_on_window ()
         y -= m_scroll_offset_y;
         h += c_key_y;
     }
-    if (drop_action())
+    if (drop_action())                      /* move, paste              */
     {
         x = m_selected.x + m_current_x - m_drop_x - m_scroll_offset_x;
         y = m_selected.y + m_current_y - m_drop_y - m_scroll_offset_y;
@@ -903,9 +973,9 @@ seqroll::draw_selection_on_window ()
             w = 1;
     }
 #ifdef SEQ64_USE_BLACK_SELECTION_BOX
-        draw_rectangle(black_paint(), x, y, w, h, false);
+    draw_rectangle(black_paint(), x, y, w, h, false);
 #else
-        draw_rectangle(dark_orange(), x, y, w, h, false);
+    draw_rectangle(dark_orange(), x, y, w, h, false);
 #endif
     m_old.x = x;
     m_old.y = y;
@@ -1870,6 +1940,21 @@ seqroll::on_expose_event (GdkEventExpose * ev)
 bool
 seqroll::on_button_press_event (GdkEventButton * ev)
 {
+
+#ifdef USE_STAZED_TRANSPORT_SEQROLL_BUTTON  /* just discovered this code    */
+
+    /*
+     *  In order to avoid a double button press on a normal seq32 method.
+     */
+
+    if (! m_trans_button_press)
+    {
+        m_transport_follow = perf().get_follow_transport();
+        perf().set_follow_transport(false);
+        m_trans_button_press = true;
+    }
+#endif
+
     bool result;
     if (rc().interaction_method() == e_seq24_interaction)
         result = button_press(ev);
@@ -1921,6 +2006,11 @@ seqroll::on_button_release_event (GdkEventButton * ev)
      * if (result)
      *    perf().modify();
      */
+
+#ifdef USE_STAZED_TRANSPORT_SEQROLL_BUTTON  /* just discovered this code    */
+    perf().set_follow_transport(m_transport_follow);
+    m_trans_button_press = false;
+#endif
 
     return result;
 }

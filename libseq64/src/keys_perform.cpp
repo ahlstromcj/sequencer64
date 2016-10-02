@@ -19,17 +19,20 @@
 /**
  * \file          keys_perform.cpp
  *
- *  This module defines base-class keyboard interface items, VERY TENTATIVE
+ *  This module defines base-class keyboard interface items.
  *
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-13
- * \updates       2016-08-20
+ * \updates       2016-10-01
  * \license       GNU GPLv2 or above
  *
- * \change ca 2016-05-22
- *      Added pattern-edit and event-edit keys which change the pattern slot
- *      shortcut/toggle keys to bring up one of the editor dialogs.
+ *  Added pattern-edit and event-edit keys which change the pattern slot
+ *  shortcut/toggle keys to bring up one of the editor dialogs.  Also added
+ *  a Tap button and some keys from Seq32.  These additions are no longer
+ *  toggled by macros, they are always available.  It makes the "rc" file too
+ *  difficult to maintain if some keys are disabled in the build.
+ *  Simplification, at a small space cost.
  */
 
 #include <stdio.h>                      /* snprintf() */
@@ -67,18 +70,16 @@ keys_perform::keys_perform ()
     m_key_group_off                 (SEQ64_apostrophe),       // a repeat
     m_key_group_learn               (SEQ64_Insert),
     m_key_start                     (SEQ64_space),
-#ifdef SEQ64_PAUSE_SUPPORT
     m_key_pause                     (SEQ64_period),
-#endif
-#ifdef SEQ64_STAZED_TRANSPORT
     m_key_song_mode                 (SEQ64_F1),
     m_key_toggle_jack               (SEQ64_F2),
     m_key_menu_mode                 (SEQ64_F3),
     m_key_follow_transport          (SEQ64_F4),
     m_key_fast_forward              (SEQ64_F5),
     m_key_rewind                    (SEQ64_F6),
-    m_key_pointer                   (SEQ64_F7),
-#endif
+    m_key_pointer_position          (SEQ64_F7),
+    m_key_toggle_mutes              (SEQ64_F8),
+    m_key_tap_bpm                   (SEQ64_F9),
     m_key_pattern_edit              (SEQ64_equal),
     m_key_event_edit                (SEQ64_minus),
     m_key_stop                      (SEQ64_Escape)
@@ -144,18 +145,16 @@ keys_perform::set_keys (const keys_perform_transfer & kpt)
     m_key_group_off                 = kpt.kpt_group_off;
     m_key_group_learn               = kpt.kpt_group_learn;
     m_key_start                     = kpt.kpt_start;
-#ifdef SEQ64_PAUSE_SUPPORT
     m_key_pause                     = kpt.kpt_pause;
-#endif
-#ifdef SEQ64_STAZED_TRANSPORT
     m_key_song_mode                 = kpt.kpt_song_mode;
     m_key_toggle_jack               = kpt.kpt_toggle_jack;
     m_key_menu_mode                 = kpt.kpt_menu_mode;
     m_key_follow_transport          = kpt.kpt_follow_transport;
     m_key_fast_forward              = kpt.kpt_fast_forward;
     m_key_rewind                    = kpt.kpt_rewind;
-    m_key_pointer                   = kpt.kpt_pointer;
-#endif
+    m_key_pointer_position          = kpt.kpt_pointer_position;
+    m_key_toggle_mutes              = kpt.kpt_toggle_mutes;
+    m_key_tap_bpm                   = kpt.kpt_tap_bpm;
     m_key_pattern_edit              = kpt.kpt_pattern_edit;
     m_key_event_edit                = kpt.kpt_event_edit;
     m_key_stop                      = kpt.kpt_stop;
@@ -174,37 +173,35 @@ keys_perform::set_keys (const keys_perform_transfer & kpt)
 void
 keys_perform::get_keys (keys_perform_transfer & kpt)
 {
-     kpt.kpt_bpm_up                  = m_key_bpm_up;
-     kpt.kpt_bpm_dn                  = m_key_bpm_dn;
-     kpt.kpt_replace                 = m_key_replace;
-     kpt.kpt_queue                   = m_key_queue;
-     kpt.kpt_keep_queue              = m_key_keep_queue;
-     kpt.kpt_snapshot_1              = m_key_snapshot_1;
-     kpt.kpt_snapshot_2              = m_key_snapshot_2;
-     kpt.kpt_screenset_up            = m_key_screenset_up;
-     kpt.kpt_screenset_dn            = m_key_screenset_dn;
-     kpt.kpt_set_playing_screenset   = m_key_set_playing_screenset;
-     kpt.kpt_group_on                = m_key_group_on;
-     kpt.kpt_group_off               = m_key_group_off;
-     kpt.kpt_group_learn             = m_key_group_learn;
-     kpt.kpt_start                   = m_key_start;
-#ifdef SEQ64_PAUSE_SUPPORT
-     kpt.kpt_pause                   = m_key_pause;
-#endif
-#ifdef SEQ64_STAZED_TRANSPORT
-    m_key_song_mode                  = kpt.kpt_song_mode;
-    m_key_toggle_jack                = kpt.kpt_toggle_jack;
-    m_key_menu_mode                  = kpt.kpt_menu_mode;
-    m_key_follow_transport           = kpt.kpt_follow_transport;
-    m_key_fast_forward               = kpt.kpt_fast_forward;
-    m_key_rewind                     = kpt.kpt_rewind;
-    m_key_pointer                    = kpt.kpt_pointer;
-#endif
-     kpt.kpt_pattern_edit            = m_key_pattern_edit;
-     kpt.kpt_event_edit              = m_key_event_edit;
-     kpt.kpt_stop                    = m_key_stop;
-     kpt.kpt_show_ui_sequence_key    = m_key_show_ui_sequence_key;
-     kpt.kpt_show_ui_sequence_number = m_key_show_ui_sequence_number;
+     kpt.kpt_bpm_up                 = m_key_bpm_up;
+     kpt.kpt_bpm_dn                 = m_key_bpm_dn;
+     kpt.kpt_replace                = m_key_replace;
+     kpt.kpt_queue                  = m_key_queue;
+     kpt.kpt_keep_queue             = m_key_keep_queue;
+     kpt.kpt_snapshot_1             = m_key_snapshot_1;
+     kpt.kpt_snapshot_2             = m_key_snapshot_2;
+     kpt.kpt_screenset_up           = m_key_screenset_up;
+     kpt.kpt_screenset_dn           = m_key_screenset_dn;
+     kpt.kpt_set_playing_screenset  = m_key_set_playing_screenset;
+     kpt.kpt_group_on               = m_key_group_on;
+     kpt.kpt_group_off              = m_key_group_off;
+     kpt.kpt_group_learn            = m_key_group_learn;
+     kpt.kpt_start                  = m_key_start;
+     kpt.kpt_pause                  = m_key_pause;
+    kpt.kpt_song_mode               = m_key_song_mode;
+    kpt.kpt_toggle_jack             = m_key_toggle_jack;
+    kpt.kpt_menu_mode               = m_key_menu_mode;
+    kpt.kpt_follow_transport        = m_key_follow_transport;
+    kpt.kpt_fast_forward            = m_key_fast_forward;
+    kpt.kpt_rewind                  = m_key_rewind;
+    kpt.kpt_pointer_position        = m_key_pointer_position;
+    kpt.kpt_toggle_mutes            = m_key_toggle_mutes;
+    kpt.kpt_tap_bpm                 = m_key_tap_bpm;
+    kpt.kpt_pattern_edit            = m_key_pattern_edit;
+    kpt.kpt_event_edit              = m_key_event_edit;
+    kpt.kpt_stop                    = m_key_stop;
+    kpt.kpt_show_ui_sequence_key    = m_key_show_ui_sequence_key;
+    kpt.kpt_show_ui_sequence_number = m_key_show_ui_sequence_number;
 }
 
 /**
@@ -302,85 +299,90 @@ keys_perform::set_key_group (unsigned int keycode, long group_slot)
 void
 keyval_normalize (keys_perform_transfer & k)
 {
-    if (k.kpt_bpm_up == 0 || k.kpt_bpm_up > 65536)
-        k.kpt_bpm_up = '\'';
+    if (invalid_key(k.kpt_bpm_up))
+        k.kpt_bpm_up = SEQ64_apostrophe;                /* '        */
 
-    if (k.kpt_bpm_dn == 0 || k.kpt_bpm_dn > 65536)
-        k.kpt_bpm_dn = ';';
+    if (invalid_key(k.kpt_bpm_dn))
+        k.kpt_bpm_dn = SEQ64_semicolon;                 /* ;        */
 
-    if (k.kpt_screenset_up == 0 || k.kpt_screenset_up > 65536)
-        k.kpt_screenset_up = ']';
+    if (invalid_key(k.kpt_replace))
+        k.kpt_replace = SEQ64_Control_L;                /* Ctrl-L   */
 
-    if (k.kpt_screenset_dn == 0 || k.kpt_screenset_dn > 65536)
-        k.kpt_screenset_dn = '[';
+    if (invalid_key(k.kpt_queue))
+        k.kpt_queue = SEQ64_KP_Divide;                  /* Keypad-/ */
 
-    if (k.kpt_set_playing_screenset == 0 || k.kpt_set_playing_screenset > 65536)
-        k.kpt_set_playing_screenset = 65360;    /* Home         */
+    if (invalid_key(k.kpt_keep_queue))
+        k.kpt_keep_queue = SEQ64_backslash;             /* \        */
 
-    if (k.kpt_group_on == 0 || k.kpt_group_on > 65536)
-        k.kpt_group_on = '`';                   /* igrave       */
+    if (invalid_key(k.kpt_snapshot_1))
+        k.kpt_snapshot_1 = SEQ64_Alt_L;                 /* Alt-L    */
 
-    if (k.kpt_group_off == 0 || k.kpt_group_off > 65536)
-        k.kpt_group_off = '\'';                 /* bpm up too!! */
+    if (invalid_key(k.kpt_snapshot_2))
+        k.kpt_snapshot_2 = SEQ64_Alt_R;                 /* Alt-R    */
 
-    if (k.kpt_group_learn == 0 || k.kpt_group_learn > 65536)
-        k.kpt_group_learn = 65379;              /* Insert       */
+    if (invalid_key(k.kpt_screenset_up))
+        k.kpt_screenset_up = SEQ64_bracketright;        /* ]        */
 
-    if (k.kpt_replace == 0 || k.kpt_replace > 65536)
-        k.kpt_replace = 65507;                  /* Ctrl-L       */
+    if (invalid_key(k.kpt_screenset_dn))
+        k.kpt_screenset_dn = SEQ64_bracketright;        /* [        */
 
-    if (k.kpt_queue == 0 || k.kpt_queue > 65536)
-        k.kpt_queue = 65455;                    /* Keypad-/     */
+    if (invalid_key(k.kpt_set_playing_screenset))
+        k.kpt_set_playing_screenset = SEQ64_Home;       /* Home     */
 
-    if (k.kpt_keep_queue == 0 || k.kpt_keep_queue > 65536)
-        k.kpt_keep_queue = '\\';
+    if (invalid_key(k.kpt_group_on))
+        k.kpt_group_on = SEQ64_igrave;                  /* `        */
 
-    if (k.kpt_snapshot_1 == 0 || k.kpt_snapshot_1 > 65536)
-        k.kpt_snapshot_1 = 65513;               /* Alt-L        */
+    /*
+     * TODO:  fix this redundancy
+     */
 
-    if (k.kpt_snapshot_2 == 0 || k.kpt_snapshot_2 > 65536)
-        k.kpt_snapshot_2 = 65514;               /* Alt-R        */
+    if (invalid_key(k.kpt_group_off))
+        k.kpt_group_off = SEQ64_apostrophe;             /* bpm up!! */
 
-    if (k.kpt_start == 0 || k.kpt_start > 65536)
-        k.kpt_start = ' ';
+    if (invalid_key(k.kpt_group_learn))
+        k.kpt_group_learn = SEQ64_Insert;               /* Insert   */
 
-    if (k.kpt_stop == 0 || k.kpt_stop > 65536)
-        k.kpt_stop = 65307;                     /* Escape       */
+    if (invalid_key(k.kpt_start))
+        k.kpt_start = SEQ64_space;                      /* ' '      */
 
-    if (k.kpt_pattern_edit == 0 || k.kpt_pattern_edit > 65536)
-        k.kpt_pattern_edit = '=';
+    if (invalid_key(k.kpt_pause))
+        k.kpt_pause = SEQ64_period;                     /* .        */
 
-    if (k.kpt_event_edit == 0 || k.kpt_event_edit > 65536)
-        k.kpt_event_edit = '-';
-
-#ifdef SEQ64_PAUSE_SUPPORT
-    if (k.kpt_event_edit == 0 || k.kpt_pause > 65536)
-        k.kpt_event_edit = '.';
-#endif
-
-#ifdef SEQ64_STAZED_TRANSPORT
-    if (k.kpt_song_mode == 0 || k.kpt_song_mode > 65536)
+    if (invalid_key(k.kpt_song_mode))
         k.kpt_song_mode = SEQ64_F1;
 
-    if (k.kpt_toggle_jack == 0 || k.kpt_toggle_jack > 65536)
+    if (invalid_key(k.kpt_toggle_jack))
         k.kpt_toggle_jack = SEQ64_F2;
 
-    if (k.kpt_menu_mode == 0 || k.kpt_menu_mode > 65536)
+    if (invalid_key(k.kpt_menu_mode))
         k.kpt_menu_mode = SEQ64_F3;
 
-    if (k.kpt_follow_transport == 0 || k.kpt_follow_transport > 65536)
+    if (invalid_key(k.kpt_follow_transport))
         k.kpt_follow_transport = SEQ64_F4;
 
-    if (k.kpt_fast_forward == 0 || k.kpt_fast_forward > 65536)
+    if (invalid_key(k.kpt_fast_forward))
         k.kpt_fast_forward = SEQ64_F5;
 
-    if (k.kpt_rewind == 0 || k.kpt_rewind > 65536)
+    if (invalid_key(k.kpt_rewind))
         k.kpt_rewind = SEQ64_F6;
 
-    if (k.kpt_pointer == 0 || k.kpt_pointer > 65536)
-        k.kpt_pointer = SEQ64_F6;
-#endif
+    if (invalid_key(k.kpt_pointer_position))
+        k.kpt_pointer_position = SEQ64_F7;
 
+    if (invalid_key(k.kpt_toggle_mutes))
+        k.kpt_toggle_mutes = SEQ64_F8;
+
+    if (invalid_key(k.kpt_tap_bpm))
+        k.kpt_tap_bpm = SEQ64_F9;
+
+    if (invalid_key(k.kpt_pattern_edit))
+        k.kpt_pattern_edit = SEQ64_equal;               /* =        */
+
+    if (invalid_key(k.kpt_event_edit))
+        k.kpt_event_edit = SEQ64_minus;                 /* -        */
+
+    if (invalid_key(k.kpt_stop))
+        k.kpt_stop = SEQ64_Escape;                      /* Escape   */
 }
 
 }           // namespace seq64

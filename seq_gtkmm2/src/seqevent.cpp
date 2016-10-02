@@ -287,7 +287,8 @@ seqevent::draw_background ()
  *  changed.
  *
  * \param z
- *      The desired zoom value, presumably already validated by the caller.
+ *      The desired zoom value, assumed to be validated already.  See the
+ *      seqedit::set_zoom() function.
  */
 
 void

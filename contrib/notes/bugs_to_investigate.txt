@@ -1,12 +1,14 @@
 Bugs and Additional Upgrade Ideas
 Chris Ahlstrom
-2015-10-27 to 2016-09-26 (New bugs and fixed bugs)
+2015-10-27 to 2016-10-02 (New bugs and fixed bugs)
 
 In no particular order...  "y" means "in progress", and "x" means it is
 basically done.
 
 -  Also see BUG REPORTS below.  Those are bug reports from other people.
--  The Song/Live button does not seem to work if Seq32 transport is not
+-  If a non-active sequence is attempted to be painted in the perfroll,
+   painting is disable for the duration of the Sequencer64 run.
+x  The Song/Live button does not seem to work if Seq32 transport is not
    compiled in.
 x  A single Z (zoom in) in seqroll makes the END marker drawn in the wrong
    place (in b4uacuse-GM-format.midi).  Actually, it is correct for the

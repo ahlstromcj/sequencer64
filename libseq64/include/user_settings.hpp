@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-22
- * \updates       2016-09-07
+ * \updates       2016-10-03
  * \license       GNU GPLv2 or above
  *
  *  This module defines the following categories of "global" variables that
@@ -375,6 +375,14 @@ class user_settings
      */
 
     int m_window_redraw_rate_ms;
+
+    /**
+     *  Another [user-interface-settings] item.  If set to 1, icons will
+     *  be used for more buttons.  This setting affects only a few buttons
+     *  so far, such as the buttons at the top of the main window.
+     */
+
+    bool m_use_more_icons;
 
     /**
      *  Constants for the mainwid class.  The m_text_x and m_text_y
@@ -1157,6 +1165,15 @@ public:
     }
 
     /**
+     * \getter m_use_more_icons
+     */
+
+    bool use_more_icons () const
+    {
+        return m_use_more_icons;
+    }
+
+    /**
      * \getter m_save_user_config
      */
 
@@ -1347,6 +1364,15 @@ public:         // used in main application module and the userfile class
     void window_redraw_rate (int ms)
     {
         m_window_redraw_rate_ms = ms;
+    }
+
+    /**
+     * \setter m_use_more_icons
+     */
+
+    void use_more_icons (bool flag)
+    {
+        m_use_more_icons = flag;
     }
 
     void midi_ppqn (int ppqn);

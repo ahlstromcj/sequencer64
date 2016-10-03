@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-10-02
+ * \updates       2016-10-03
  * \license       GNU GPLv2 or above
  *
  *  The main window holds the menu and the main controls of the application,
@@ -106,12 +106,10 @@
 #include "pixmaps/sequencer64_legacy.xpm"
 
 #ifdef SEQ64_STAZED_MENU_BUTTONS
-#ifdef SEQ64_MENU_BUTTON_PIXMAPS
 #include "pixmaps/live_mode.xpm"
 #include "pixmaps/menu.xpm"
 #include "pixmaps/muting.xpm"
 #include "pixmaps/song_mode.xpm"
-#endif
 #endif
 
 /**
@@ -195,16 +193,25 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
     m_button_play           (manage(new Gtk::Button())),    /* also for pause  */
     m_button_perfedit       (manage(new Gtk::Button())),
 #ifdef SEQ64_STAZED_MENU_BUTTONS
-#ifdef SEQ64_MENU_BUTTON_PIXMAPS
     m_image_songlive        (),
-    m_button_mode           (manage(new Gtk::ToggleButton())),
-    m_button_mute           (manage(new Gtk::Button())),
-    m_button_menu           (manage(new Gtk::ToggleButton())),
-#else
-    m_button_mode           (manage(new Gtk::ToggleButton("Live"))),
-    m_button_mute           (manage(new Gtk::Button("Muting"))),
-    m_button_menu           (manage(new Gtk::ToggleButton("Menu"))),
-#endif
+    m_button_mode
+    (
+        usr().use_more_icons() ?
+            manage(new Gtk::ToggleButton()) :
+            manage(new Gtk::ToggleButton("Live"))
+    ),
+    m_button_mute
+    (
+        usr().use_more_icons() ?
+            manage(new Gtk::Button()) :
+            manage(new Gtk::Button("Mute"))
+    ),
+    m_button_menu
+    (
+        usr().use_more_icons() ?
+            manage(new Gtk::ToggleButton()) :
+            manage(new Gtk::ToggleButton("Menu"))
+    ),
 #endif
     m_adjust_bpm
     (
@@ -431,9 +438,9 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
 
 #ifdef SEQ64_STAZED_MENU_BUTTONS            /* also enables muting button */
 
-#ifdef SEQ64_MENU_BUTTON_PIXMAPS
-    m_button_mode->add(*manage(new PIXBUF_IMAGE(live_mode_xpm)));
-#endif
+    if (usr().use_more_icons())
+        m_button_mode->add(*manage(new PIXBUF_IMAGE(live_mode_xpm)));
+
     m_button_mode->set_focus_on_click(false); // set_can_focus(false);
     m_button_mode->signal_toggled().connect
     (
@@ -454,9 +461,9 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
      * function.  A little tricky.
      */
 
-#ifdef SEQ64_MENU_BUTTON_PIXMAPS
-    m_button_mute->add(*manage(new PIXBUF_IMAGE(muting_xpm)));
-#endif
+    if (usr().use_more_icons())
+        m_button_mute->add(*manage(new PIXBUF_IMAGE(muting_xpm)));
+
     m_button_mute->set_can_focus(false);
     m_button_mute->signal_clicked().connect
     (
@@ -465,9 +472,9 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
     add_tooltip(m_button_mute, "Toggle the mute status of all tracks.");
     tophbox->pack_start(*m_button_mute, false, false);
 
-#ifdef SEQ64_MENU_BUTTON_PIXMAPS
-    m_button_menu->add(*manage(new PIXBUF_IMAGE(menu_xpm)));
-#endif
+    if (usr().use_more_icons())
+        m_button_menu->add(*manage(new PIXBUF_IMAGE(menu_xpm)));
+
     add_tooltip
     (
         m_button_menu,
@@ -763,19 +770,20 @@ void
 mainwnd::set_song_mode ()
 {
     bool is_active = m_button_mode->get_active();
-
-#ifdef SEQ64_MENU_BUTTON_PIXMAPS
-    set_songlive_image(is_active);
-#else
-    std::string label = is_active ? "Song" : "Live";
-    Gtk::Label * lblptr(dynamic_cast<Gtk::Label *>
-    (
-        m_button_mode->get_child())
-    );
-    if (not_nullptr(lblptr))
-        lblptr->set_text(label);
-#endif
-
+    if (usr().use_more_icons())
+    {
+        set_songlive_image(is_active);
+    }
+    else
+    {
+        std::string label = is_active ? "Song" : "Live";
+        Gtk::Label * lblptr(dynamic_cast<Gtk::Label *>
+        (
+            m_button_mode->get_child())
+        );
+        if (not_nullptr(lblptr))
+            lblptr->set_text(label);
+    }
     perf().song_start_mode(is_active);
 }
 
@@ -1611,8 +1619,6 @@ mainwnd::set_play_image (bool isrunning)
     m_button_play->set_image(*m_image_play);
 }
 
-#ifdef SEQ64_MENU_BUTTON_PIXMAPS
-
 /**
  *  Changes the image used for the song/live mode button
  *
@@ -1648,8 +1654,6 @@ mainwnd::set_songlive_image (bool issong)
     }
     m_button_mode->set_image(*m_image_songlive);
 }
-
-#endif  // SEQ64_MENU_BUTTON_PIXMAPS
 
 #ifdef SEQ64_STAZED_TRANSPOSE
 

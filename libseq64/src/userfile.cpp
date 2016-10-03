@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-09-08
+ * \updates       2016-10-03
  * \license       GNU GPLv2 or above
  *
  *  Note that the parse function has some code that is not yet enabled.
@@ -346,6 +346,12 @@ userfile::parse (perform & /* a_perf */)
                     scratch = SEQ64_MAXIMUM_REDRAW;
 
                 usr().window_redraw_rate(scratch);
+            }
+            if (next_data_line(file))
+            {
+                sscanf(m_line, "%d", &scratch);
+                if (scratch <= 1)                           /* boolean?     */
+                    usr().use_more_icons(scratch != 0);
             }
         }
         usr().normalize();    /* calculate derived values */
@@ -814,6 +820,16 @@ userfile::write (const perform & /* a_perf */ )
             "\n"
             << usr().window_redraw_rate()
             << "      # window_redraw_rate\n"
+            ;
+
+        file << "\n"
+            "# Specifies using icons for some of the user-interface buttons\n"
+            "# instead of text buttons.  This is purely a preference setting.\n"
+            "# If 0, text is used in some buttons (the main window buttons).\n"
+            "# Otherwise, icons are used.  One will have to experiment :-).\n"
+            "\n"
+            << usr().use_more_icons()
+            << "      # use_more_icons (currently affects only main window)\n"
             ;
     }
 

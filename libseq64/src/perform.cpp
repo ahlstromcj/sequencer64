@@ -34,7 +34,7 @@
 #include <sched.h>
 #include <stdio.h>
 
-#ifndef PLATFORM_WINDOWS
+#if ! defined PLATFORM_WINDOWS
 #include <time.h>                       /* struct timespec                  */
 #endif
 
@@ -2005,7 +2005,7 @@ perform::stop_playing ()
     stop_jack();
     stop();
 
-#ifndef SEQ64_STAZED_JACK_SUPPORT
+#if ! defined SEQ64_STAZED_JACK_SUPPORT
     m_is_paused = false;
     is_pattern_playing(false);
     m_tick = 0;                         // or get_left_tick()
@@ -2132,7 +2132,7 @@ perform::inner_start (bool songmode)
     {
         set_playback_mode(songmode);
 
-#ifndef SEQ64_PAUSE_SUPPORT
+#if ! defined SEQ64_PAUSE_SUPPORT
         if (songmode)
             off_sequences();
 #endif
@@ -2535,7 +2535,7 @@ perform::output_func ()
 
 #ifdef SEQ64_STATISTICS_SUPPORT
 
-#ifndef PLATFORM_WINDOWS
+#if ! defined PLATFORM_WINDOWS
         clock_gettime(CLOCK_REALTIME, &last);   // get start time position
         if (rc().stats())
             stats_last_clock_us = (last.tv_sec*1000000) + (last.tv_nsec/1000);
@@ -2547,7 +2547,7 @@ perform::output_func ()
 
 #else   // SEQ64_STATISTICS_SUPPORT
 
-#ifndef PLATFORM_WINDOWS
+#if ! defined PLATFORM_WINDOWS
         clock_gettime(CLOCK_REALTIME, &last);   // get start time position
 #else
         last = timeGetTime();                   // get start time position
@@ -2568,7 +2568,7 @@ perform::output_func ()
 #ifdef SEQ64_STATISTICS_SUPPORT
             if (rc().stats())
             {
-#ifndef PLATFORM_WINDOWS
+#if ! defined PLATFORM_WINDOWS
                 clock_gettime(CLOCK_REALTIME, &stats_loop_start);
 #else
                 stats_loop_start = timeGetTime();
@@ -2762,7 +2762,7 @@ perform::output_func ()
                 play(midipulse(pad.js_current_tick));               // play!
 #endif
 
-#ifndef SEQ64_STAZED_JACK_SUPPORT
+#if ! defined SEQ64_STAZED_JACK_SUPPORT
 #ifdef SEQ64_PAUSE_SUPPORT
                 set_jack_tick(pad.js_current_tick);
 #endif
@@ -2784,7 +2784,7 @@ perform::output_func ()
                         int ct = clock_ticks_from_ppqn(m_ppqn);
                         if ((stats_total_tick % ct) == 0)
                         {
-#ifndef PLATFORM_WINDOWS
+#if ! defined PLATFORM_WINDOWS
                             long current_us = (current.tv_sec * 1000000) +
                                 (current.tv_nsec / 1000);
 #else
@@ -2811,7 +2811,7 @@ perform::output_func ()
 
             last = current;
 
-#ifndef PLATFORM_WINDOWS
+#if ! defined PLATFORM_WINDOWS
             clock_gettime(CLOCK_REALTIME, &current);
             delta.tv_sec  = current.tv_sec  - last.tv_sec;
             delta.tv_nsec = current.tv_nsec - last.tv_nsec;
@@ -2868,7 +2868,7 @@ perform::output_func ()
 #ifdef SEQ64_STATISTICS_SUPPORT
             if (rc().stats())
             {
-#ifndef PLATFORM_WINDOWS
+#if ! defined PLATFORM_WINDOWS
                 clock_gettime(CLOCK_REALTIME, &stats_loop_finish);
                 delta.tv_sec  = stats_loop_finish.tv_sec-stats_loop_start.tv_sec;
                 delta.tv_nsec = stats_loop_finish.tv_nsec-stats_loop_start.tv_nsec;
@@ -3015,7 +3015,7 @@ input_thread_func (void * myperf)
     {
         perform * p = (perform *) myperf;
 
-#ifndef PLATFORM_WINDOWS                // MinGW RCB
+#if ! defined PLATFORM_WINDOWS                // MinGW RCB
         if (rc().priority())
         {
             struct sched_param schp;

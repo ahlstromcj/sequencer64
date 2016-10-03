@@ -77,7 +77,7 @@
 #include "app_limits.h"
 #include "calculations.hpp"
 
-#ifndef PI
+#if ! defined PI
 #define PI     3.14159265359
 #endif
 

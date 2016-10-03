@@ -192,7 +192,6 @@ event_list::add (const event & e)
     size_t count = m_events.size();
 
 #ifdef SEQ64_USE_EVENT_MAP
-
     event_key key(e);
 #if __cplusplus >= 201103L              /* C++11                    */
     EventsPair p = std::make_pair(key, e);
@@ -200,21 +199,19 @@ event_list::add (const event & e)
     EventsPair p = std::make_pair<event_key, event>(key, e);
 #endif
     m_events.insert(p);                 /* std::multimap operation  */
-
 #else
-
     m_events.push_front(e);             /* std::list operation      */
-
 #endif
 
     bool result = m_events.size() == (count + 1);
     if (result)
+    {
         m_is_modified = true;
 
 #if ! defined SEQ64_USE_EVENT_MAP
         sort();                         /* by time-stamp and "rank" */
 #endif
-
+    }
     return result;
 }
 

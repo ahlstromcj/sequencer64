@@ -415,7 +415,7 @@ jack_assistant::init ()
         get_jack_client_info();
         jack_on_shutdown(m_jack_client, jack_shutdown_callback, (void *) this);
 
-#ifndef SEQ64_STAZED_JACK_SUPPORT
+#if ! defined SEQ64_STAZED_JACK_SUPPORT
 
         /*
          * Stazed JACK support uses only the jack_process_callback().  Makes

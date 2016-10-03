@@ -654,7 +654,7 @@ So the variable `i` (number of the pattern to toggle) becomes a constant `1`
 Date: Fri, 26 Aug 2016 16:21:40 -0700
 From: Arnaud Jacquemin <notifications@github.com>
 To: ahlstromcj/sequencer64 <sequencer64@noreply.github.com>
-Subject: [ahlstromcj/sequencer64] Fix for issue #23 "MIDI controller toggles the
+Subject: [ahlstromcj/sequencer64] Fix for issue #23 MIDI controller toggles the
         wrong pattern" (#24)
 
 Fix for issue ahlstromcj/sequencer64#23
@@ -678,11 +678,11 @@ DONE, merged into fixups as well.
 
 
 
-Date: Sun, 25 Sep 2016 19:25:42 -0700                                             
-From: alejg <notifications@github.com>                                            
-To: ahlstromcj/sequencer64 <sequencer64@noreply.github.com>                       
-Subject: [ahlstromcj/sequencer64] Cannot edit note length (#29)                   
-                                                                                  
+Date: Sun, 25 Sep 2016 19:25:42 -0700
+From: alejg <notifications@github.com>
+To: ahlstromcj/sequencer64 <sequencer64@noreply.github.com>
+Subject: [ahlstromcj/sequencer64] Cannot edit note length (#29)
+
 When the note length is longer than the measure the editor behaves incorrectly,
 not allowing to change the note off position.
 
@@ -691,26 +691,26 @@ not allowing to change the note off position.
 
 
 
-Date: Sun, 25 Sep 2016 19:42:34 -0700                                             
-From: alejg <notifications@github.com>                                            
-To: ahlstromcj/sequencer64 <sequencer64@noreply.github.com>                       
-Subject: [ahlstromcj/sequencer64] Unable to write the BPM (#30)                   
-                                                                                  
-The BPM spin box shows that is allowed to write on it, but when try to enter      
-numbers, the pattern toggle shortcuts are triggered.     
+Date: Sun, 25 Sep 2016 19:42:34 -0700
+From: alejg <notifications@github.com>
+To: ahlstromcj/sequencer64 <sequencer64@noreply.github.com>
+Subject: [ahlstromcj/sequencer64] Unable to write the BPM (#30)
+
+The BPM spin box shows that is allowed to write on it, but when try to enter
+numbers, the pattern toggle shortcuts are triggered.
 
 
 
-Date: Tue, 27 Sep 2016 06:21:01 -0700                                             
-From: alejg <notifications@github.com>                                            
-To: ahlstromcj/sequencer64 <sequencer64@noreply.github.com>                       
-Cc: "C. Ahlstrom" <ahlstromcj@gmail.com>, Comment <comment@noreply.github.com>    
-Subject: Re: [ahlstromcj/sequencer64] Cannot edit note length (#29)               
-                                                                                  
-Thanks!                                                                           
-I've tried and now it's working!.                                                 
-A strange behaviour appears when I CTRL + Arrow left or right over a note,        
-an outline is being drawn and do not disappears until you do a click on the       
+Date: Tue, 27 Sep 2016 06:21:01 -0700
+From: alejg <notifications@github.com>
+To: ahlstromcj/sequencer64 <sequencer64@noreply.github.com>
+Cc: "C. Ahlstrom" <ahlstromcj@gmail.com>, Comment <comment@noreply.github.com>
+Subject: Re: [ahlstromcj/sequencer64] Cannot edit note length (#29)
+
+Thanks!
+I've tried and now it's working!.
+A strange behaviour appears when I CTRL + Arrow left or right over a note,
+an outline is being drawn and do not disappears until you do a click on the
 background.
 
 [This happens if another note is already selected, and that's where the action
@@ -719,4 +719,51 @@ background.
  just before the next note.]
 
 
-# vim: sw=4 ts=4 wm=4 et ft=sh
+
+Date: Sat, 02 Oct 2016
+From: Sebastien Mondet <notifications@github.com>
+
+To reproduce:
+
+create a track
+edit it, add one note (with the "classical" editor")
+then "Edit events"
+select the "Note On"
+"Modify Event"
+Happened with seq64 compiled from master just now.
+
+
+
+Date: Sun, 02 Oct 2016 17:24:28 -0700
+From: Sebastien Mondet <notifications@github.com>
+To: ahlstromcj/sequencer64 <sequencer64@noreply.github.com>
+Cc: "C. Ahlstrom" <ahlstromcj@gmail.com>, Comment <comment@noreply.github.com>
+Subject: Re: [ahlstromcj/sequencer64] SegFault in Event Editor → "Modify Event"
+        (#31)
+
+Here it is:
+
+```
+ $ libtool --mode=execute gdb ./Sequencer64/sequencer64
+
+
+#0  0x00007ffff6ecf5cb in std::basic_string<char, std::char_traits<char>,
+std::allocator<char> >::basic_string(std::string const&) () from
+/usr/lib/x86_64-linux-gnu/libstdc++.so.6
+#1  0x00007ffff77716dc in seq64::editable_event::editable_event
+(this=0x7fffffff7900, rhs=...) at editable_event.cpp:374
+#2  0x00007ffff777294c in pair<seq64::event_list::event_key&, void> (__y=...,
+__x=..., this=0x7fffffff78f0) at /usr/include/c++/4.8/bits/stl_pair.h:134
+#3  make_pair<seq64::event_list::event_key&, seq64::editable_event const&>
+(__y=..., __x=...) at /usr/include/c++/4.8/bits/stl_pair.h:281
+#4  seq64::editable_events::add (this=this@entry=0x87caa0, e=...) at
+editable_events.cpp:172
+#5  0x00007ffff7aa7205 in seq64::eventslots::insert_event (this=0x87ca00,
+edev=...) at eventslots.cpp:256
+#6  0x00007ffff7aa262e in seq64::eventedit::handle_modify (this=0x825e00) at
+eventedit.cpp:688
+#7  0x00007ffff5b4b038 in Glib::SignalProxyNormal::slot0_void_callback(_GObject*, 
+void*) () from /usr/lib/x86_64-linux-gnu/libglibmm-2.4.so.1
+
+
+# vim: sw=4 ts=4 wm=4 et ft=rc

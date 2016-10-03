@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-12-05
- * \updates       2016-09-15
+ * \updates       2016-10-03
  * \license       GNU GPLv2 or above
  *
  *  This module is user-interface code.  It is loosely based on the workings
@@ -518,8 +518,18 @@ eventslots::modify_current_event
 {
     bool result = m_event_count > 0;
     if (result)
+       result =  m_current_iterator != m_event_container.end();
+
+    if (result)
     {
-        editable_event & ev = EEDREF(m_current_iterator);
+        /*
+         * We need to make a copy here, because the iterator will get
+         * modified during the deletion-and-insertion process.
+         *
+         * editable_event & ev = EEDREF(m_current_iterator);
+         */
+
+        editable_event ev = EEDREF(m_current_iterator);
         ev.set_channel(m_seq.get_midi_channel());   /* just in case     */
         ev.set_status_from_string(evtimestamp, evname, evdata0, evdata1);
         result = delete_current_event();

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-10-01
+ * \updates       2016-10-02
  * \license       GNU GPLv2 or above
  *
  *  Here is a list of the global variables used/stored/modified by this
@@ -660,7 +660,7 @@ options::add_extended_keys_page ()
     entry->set_sensitive(false);
 #endif
 
-    label = manage(new Gtk::Label("Pointer Position", Gtk::ALIGN_RIGHT));
+    label = manage(new Gtk::Label("Pointer position", Gtk::ALIGN_RIGHT));
     entry = manage
     (
         new keybindentry(keybindentry::location, PREFKEY_ADDR(pointer_position))

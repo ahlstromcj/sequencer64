@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-09-28
+ * \updates       2016-10-02
  * \license       GNU GPLv2 or above
  *
  *  The main window is known as the "Patterns window" or "Patterns
@@ -50,7 +50,8 @@
 /**
  *  This macro chooses between pixmap-labelling for the "stazed/seq32" menu
  *  buttons, and text labels for them.  Text labels are okay, but the icons
- *  seem to present a prettier appearance.
+ *  seem to present a prettier appearance.  But now we like the labels a bit
+ *  better.
  */
 
 #define SEQ64_MENU_BUTTON_PIXMAPS

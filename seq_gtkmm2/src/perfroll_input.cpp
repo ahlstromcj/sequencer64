@@ -96,6 +96,10 @@ Seq24PerfInput::on_button_press_event (GdkEventButton * ev, perfroll & roll)
         seq->unselect_triggers();
         roll.draw_all();
     }
+
+#if 0
+    This code breaks perfedit painting for the duration of the program!
+
     else
     {
         /*
@@ -106,11 +110,13 @@ Seq24PerfInput::on_button_press_event (GdkEventButton * ev, perfroll & roll)
 
         if (SEQ64_CLICK_LEFT(ev->button))
         {
-            if (is_adding())
-                set_adding_pressed(true);
+            set_adding(false);
+            set_adding_pressed(false);
         }
         return false;                                   /* BUG OUT      */
     }
+#endif
+
     roll.m_drop_x = int(ev->x);
     roll.m_drop_y = int(ev->y);
     roll.convert_drop_xy();                             /* affects dropseq  */

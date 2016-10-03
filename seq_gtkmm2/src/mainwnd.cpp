@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-10-01
+ * \updates       2016-10-02
  * \license       GNU GPLv2 or above
  *
  *  The main window holds the menu and the main controls of the application,
@@ -440,7 +440,11 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
         sigc::mem_fun(*this, &mainwnd::set_song_mode)
     );
 
-    std::string modetext = "Toggle Song mode vs Live mode.";
+    std::string modetext =
+        "Toggle Song mode vs Live mode.  If the button is active, the Song "
+        "mode is active.  The label also shows which mode is active."
+        ;
+
     add_tooltip(m_button_mode, modetext);
     m_button_mode->set_active(perf().song_start_mode());
     tophbox->pack_start(*m_button_mode, false, false, HBOX_PADDING/2);

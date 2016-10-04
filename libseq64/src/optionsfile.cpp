@@ -665,7 +665,7 @@ optionsfile::write (const perform & p)
     else
     {
         file <<
-            "# Sequencer64 0.9.18 (and above) rc configuration file\n"
+            "# Sequencer64 0.9.18.1 (and above) rc configuration file\n"
             "#\n"
             "# This file holds the main configuration options for Sequencer64.\n"
             "# It follows the format of the legacy seq24 'rc' configuration\n"

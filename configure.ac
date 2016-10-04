@@ -19,7 +19,7 @@ dnl ---------------------------------------------------------------------------
 
 AC_PREREQ(2.60)
 AC_REVISION($Revision: 0.9$)dnl
-AC_INIT(Sequencer64, [0.9.18], [ahlstromcj@gmail.com])
+AC_INIT(Sequencer64, [0.9.18.1], [ahlstromcj@gmail.com])
 AC_CONFIG_AUX_DIR([aux-files])
 
 dnl AC_CONFIG_SRCDIR([libseq64/src/midibus.cpp])
@@ -53,7 +53,7 @@ PACKAGE=sequencer64
 AC_DEFINE_UNQUOTED(PACKAGE, "$PACKAGE")
 AC_SUBST(PACKAGE)
 
-VERSION="0.9.18"
+VERSION="0.9.18.1"
 AC_DEFINE_UNQUOTED(VERSION, "$VERSION")
 AC_SUBST(VERSION)
 
@@ -564,7 +564,7 @@ dnl #define API_VERSION "0.9"             // defined on command line
 AH_TOP(
 
 #define VERSION_DATE_SHORT "2016-10-02"
-#define VERSION "0.9.18"
+#define VERSION "0.9.18.1"
 
 )
 

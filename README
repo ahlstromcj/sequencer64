@@ -1,4 +1,4 @@
-README for Sequencer64 0.9.18
+README for Sequencer64 0.9.18.1
 Chris Ahlstrom
 2015-09-10 to 2016-10-02 (initial work started in July of 2015)
 
@@ -14,6 +14,11 @@ with the --legacy option.  See https://github.com/ahlstromcj/sequencer64-doc.git
 
 Major updates:
 
+    -   Version 0.9.18.1:
+        -   Fixed a bug in perfedit looping.
+        -   Fixed a segfault when modifying an event in the event editor.
+        -   Fixed a bug that disabled editing in the Song Editor if an
+            inactive sequence was clicked in.
     -   Version 0.9.18:
         -   Added new buttons in the main window for easier control of muting,
             live/song mode, and menu enabling.  (From Seq32).

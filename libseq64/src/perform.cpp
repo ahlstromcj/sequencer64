@@ -2692,7 +2692,20 @@ perform::output_func ()
             }
             if (pad.js_dumping)
             {
-                if (m_looping && m_playback_mode)
+                // This is a mess we will have to sort out soon:
+                //
+                // if (m_looping && m_playback_mode)
+                // if (m_looping && (m_playback_mode || start_from_perfedit()))
+
+                bool perfloop = m_looping;
+#ifdef SEQ64_STAZED_TRANSPORT
+                if (perfloop)
+                    perfloop = m_playback_mode || start_from_perfedit();
+#else
+                if (perfloop)
+                    perfloop = m_playback_mode || song_start_mode();
+#endif
+                if (perfloop)
                 {
 #ifdef SEQ64_STAZED_JACK_SUPPORT
                     static bool jack_position_once = false;
@@ -2717,8 +2730,11 @@ perform::output_func ()
 
                         if (is_jack_running())
                         {
-                            if (m_jack_asst.transport_state() != JackTransportStarting)
+                            if (m_jack_asst.transport_state() !=
+                                    JackTransportStarting)
+                            {
                                 play(rtick - 1);                    // play!
+                            }
                         }
                         else
                             play(rtick - 1);                        // play!

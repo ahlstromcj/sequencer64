@@ -1,13 +1,22 @@
 Bugs and Additional Upgrade Ideas
 Chris Ahlstrom
-2015-10-27 to 2016-10-02 (New bugs and fixed bugs)
+2015-10-27 to 2016-10-04 (New bugs and fixed bugs)
 
 In no particular order...  "y" means "in progress", and "x" means it is
 basically done.
 
 -  Also see BUG REPORTS below.  Those are bug reports from other people.
+-  Consider adding --version output to Help/About.
 -  If a non-active sequence is attempted to be painted in the perfroll,
    painting is disable for the duration of the Sequencer64 run.
+-  The perfedit L/R setting:
+   - Is not respected in looping fully.
+   - The mainwnd Pause button is not working in loop mode.  The Pause
+     key (.) does work, though.
+   - In perfedit, the Pause key (.) causes a complete rewind, then
+	 enters the L/R loop fine.
+   - More interactions?  This all is with Seq32 JACK and Transport support
+     built in.  It is even worse with them disabled!
 x  The Song/Live button does not seem to work if Seq32 transport is not
    compiled in.
 x  A single Z (zoom in) in seqroll makes the END marker drawn in the wrong
@@ -486,7 +495,7 @@ garbage that appears via midicvt.
 Date: Tue, 02 Feb 2016 15:32:40 -0800
 From: Daniel Appelt <notifications@github.com>
 
-Manual NSM support may be achieved using the nsm-proxy helper client. sequencer64 
+Manual NSM support may be achieved using the nsm-proxy helper client. sequencer64
 and seq24 both support signals SIGUSR1 (saving) and SIGINT (closing). You just
 have to provide an initial Midi file to work on in the directory created for the
 proxy, and specify its file name as command line argument.
@@ -528,6 +537,121 @@ Ctrl-select bug:
    1:4:190 Off 54
    1:4:190 Off 54
 
+
+
+
+
+Date: Sat, 19 Mar 2016 13:55:24 -0500
+From: Stan Preston <sspresto10@hotmail.com>
+To: ahlstromcj@gmail.com
+Subject: sequencer64
+User-Agent: Mozilla/5.0 (X11; Linux i686; rv:38.0) Gecko/20100101
+        Thunderbird/38.6.0
+
+Hello Chris,
+
+It seems that seq24 has become very popular lately!
+
+FYI, last November I began reviving seq42, the fork of seq24 that began in
+2010 by Sam Brauer.
+
+https://github.com/Stazed/seq42
+
+In working with the program I noticed some bugs, some of which were imported
+from seq24 and still existed in the current version.  I also got carried away
+and started adding some enhancements to seq24 that I found useful. To get to
+the point... this happened :)
+
+https://github.com/Stazed/seq24
+
+There are many enhancements, bug fixes, some refactoring etc.  I tried to keep
+the original design purpose of simplicity as well as live performance in mind
+when making the changes.
+Of special interest:
+- fixed jack master to work, it now loops and starts on left frame
+- from the seq24 TODO, added note listen on paint and move notes in the
+seqroll                                                                           - refactored the menu so it will not conflict with the live keybinding - added
+off button!
+
+There are many other items, see the changelog, commits.
+
+About a week ago I came across your sequencer64 project and was very impressed
+and humbled!
+I confess that I have already used some of your code...
+
+I wanted to let you know in case any of my stuff could be of help to you since
+your project has already been of help to me.
+
+FYI, I have no formal training in programming, just a part time hobby that I
+picked up recently from taking some online tutorials. In part, my work on
+seq42/seq24 was a learning experience and also served to make the projects
+more useful to me.
+
+Thank you again for the work on sequencer64, the documentation is very
+helpful.
+
+Emulation is the sincerest form of flattery!
+
+Stan (AKA Stazed)
+
+
+
+
+
+
+Date: Sat, 9 Jul 2016 07:59:41 -0400
+From: Ken Long <kelargo1000@gmail.com>
+To: Chris Ahlstrom <ahlstromcj@gmail.com>
+Subject: Re: sequencer64 - connecting to jack. ?
+
+Ill try that.  I like testing the code.. I'm not familiar with using this
+application.
+
+On Jul 9, 2016 7:42 AM, "Chris Ahlstrom" <ahlstromcj@gmail.com> wrote:
+
+> Well, it looks like I screwed things up royally with a new feature to strip
+> out unused mute groups.  So I commented out that bad code, rebuilt, and
+> things seem to work again.  I think the new "feature" was messing up the
+> reading of the "[midi-clock]" section.
+>
+> You will have to "git pull origin fixups" again and rebuild.
+> Also, you will have to open the contrib/configs/sequencer64.rc.example file
+> and copy lines 97 to 132 (the whole [mute-group] section) back into
+> your ~/.config/sequencer64/sequencer64.rc file following the
+> "[midi-control]" section.
+>
+> Let me know if that cures your ills.  Sorry about that!  That'll teach me
+> to
+> commit untest code!  And making the poor user the guinea pig!
+>
+> Chris
+>
+> -------- Ken Long 23:29 Fri 08 Jul      --------
+>
+> hi,  here's what I see today... I think I compiled it with the correct          >> fixup applied?
+>>
+>> this error below (snd_seq_unsubscribe_port).. appears when I go into
+>> Sequencer64 -> option -> midi tab.  and check / uncheck the name.. for me,
+>> I see "[1]sequencer64 1"  doesn't seem to matter whether I use "-j" or
+>> "-J"
+>> not sure if I'm doing things correctly?
+>> jack is running first.. and the "-m" option makes it appear in qtjackctl.
+>>
+>> regards
+>>
+>>
+>> papa@papa-Latitude-E6420:~/Sequencer64/sequencer64-20160708/Sequencer64$
+>> ./sequencer64 -m -U1 -j
+>> [Reading rc configuration /home/papa/.config/sequencer64/sequencer64.rc]
+>> [Reading user configuration
+>> /home/papa/.config/sequencer64/sequencer64.usr]
+>> snd_seq_connect_from(-1:-1) error
+>> [JACK server already started]
+>> [sequencer64:1]
+>> [JACK transport master]
+>> [JACK sync now enabled]
+>> snd_seq_unsubscribe_port(-1:-1) error
+>> snd_seq_connect_from(-1:-1) error
 
 
 
@@ -594,10 +718,10 @@ Chris, your "auto-queuing" feature is interesting, it could be useful in some
 cases. But it should be optional, because some users would also want to "mix and
 match" patterns from different screen sets, a bit like a techno DJ mix.
 
-Tim, I'm sorry to read that you had such a bad experience with your Raspberry Pi, 
+Tim, I'm sorry to read that you had such a bad experience with your Raspberry Pi,
 and that you lost all your work...
 
-So bad my C++ skills are almost nonexistent, I would really like to contribute to 
+So bad my C++ skills are almost nonexistent, I would really like to contribute to
 the "32 mute-groups for each screen set" feature. I think it would be as good as
 the "scene" concept in Ableton Live.
 
@@ -605,7 +729,7 @@ the "scene" concept in Ableton Live.
 Date: Fri, 26 Aug 2016 15:12:30 -0700
 From: Arnaud Jacquemin <notifications@github.com>
 To: ahlstromcj/sequencer64 <sequencer64@noreply.github.com>
-Subject: [ahlstromcj/sequencer64] MIDI controller toggles the wrong pattern (#23) 
+Subject: [ahlstromcj/sequencer64] MIDI controller toggles the wrong pattern (#23)
 
 I've updated my  `~/.config/sequencer64/sequencer64.rc` file in order to control
 the pattern toggling with a MIDI controller (Launchpad Mini).
@@ -631,7 +755,7 @@ Here's a except of my file:
 I wanted each of my pad to toggle a different pattern, but every one toggles the
 same pattern: the second one (numbered 1) of the current screen set.
 
-The version I'm using is Sequencer64 0.9.16 2016-07-14 0.9.16-0-g0193728 * master 
+The version I'm using is Sequencer64 0.9.16 2016-07-14 0.9.16-0-g0193728 * master
 (compiled from the Github souces)
 
 It works as intended with seq24 0.9.3 (to test I copied the RC file to
@@ -659,7 +783,7 @@ Subject: [ahlstromcj/sequencer64] Fix for issue #23 MIDI controller toggles the
 
 Fix for issue ahlstromcj/sequencer64#23
 
-It was a regression introduced in commit a9e14fe5cfd8f03b65d2acb1b2710ed9e5637463 
+It was a regression introduced in commit a9e14fe5cfd8f03b65d2acb1b2710ed9e5637463
 You can view, comment on, or merge this pull request online at:
 
   https://github.com/ahlstromcj/sequencer64/pull/24
@@ -675,6 +799,45 @@ https://github.com/ahlstromcj/sequencer64/pull/24.diff
 
 
 DONE, merged into fixups as well.
+
+
+
+Date: Mon, 12 Sep 2016 14:11:32 -0700
+From: Arnaud Jacquemin <notifications@github.com>
+To: ahlstromcj/sequencer64 <sequencer64@noreply.github.com>
+Cc: "C. Ahlstrom" <ahlstromcj@gmail.com>, Comment <comment@noreply.github.com>
+Subject: Re: [ahlstromcj/sequencer64] Impossible to unmute patterns when JACK
+        Transport is activated (#25)
+
+Closed #25.
+
+
+
+
+
+Date: Tue, 13 Sep 2016 13:03:15 -0500
+From: Stan Preston <stazed10@gmail.com>
+To: Chris Ahlstrom <ahlstromcj@gmail.com>
+Subject: Re: Seq32 menu disabling
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:45.0) Gecko/20100101
+        Thunderbird/45.2.0
+
+"why disabling is needed when playing"  ...
+
+
+
+
+Date: Sun, 25 Sep 2016 12:32:25 -0700
+From: layk <notifications@github.com>
+To: ahlstromcj/sequencer64 <sequencer64@noreply.github.com>
+Subject: Re: [ahlstromcj/sequencer64] Zooming sequencer edit window more than
+        1:32 kills the program. (#28)
+
+diff attached.
+[diff.txt](https://github.com/ahlstromcj/sequencer64/files/491849/diff.txt)
+
+
+
 
 
 
@@ -698,6 +861,36 @@ Subject: [ahlstromcj/sequencer64] Unable to write the BPM (#30)
 
 The BPM spin box shows that is allowed to write on it, but when try to enter
 numbers, the pattern toggle shortcuts are triggered.
+
+
+
+
+Date: Mon, 26 Sep 2016 09:51:57 -0700
+From: alejg <notifications@github.com>
+To: ahlstromcj/sequencer64 <sequencer64@noreply.github.com>
+Cc: "C. Ahlstrom" <ahlstromcj@gmail.com>, Comment <comment@noreply.github.com>
+Subject: Re: [ahlstromcj/sequencer64] Unable to write the BPM (#30)
+
+thanks! meanwhile you can simply make look as read only (grayed out), also a TAP
+button feature (with it's corresponding keyboard shortcut) would be nice.
+
+
+
+
+Date: Mon, 26 Sep 2016 13:19:53 -0700
+From: F0rth <notifications@github.com>
+To: ahlstromcj/sequencer64 <sequencer64@noreply.github.com>
+Cc: "C. Ahlstrom" <ahlstromcj@gmail.com>, Comment <comment@noreply.github.com>
+Subject: Re: [ahlstromcj/sequencer64] [feature request] script language (#16)
+
+For the records, an example of a bitwig script to add launchpad mini support
+https://github.com/bitwig/novation-launchpad/
+but OSC look far more appealing.
+
+
+
+
+
 
 
 
@@ -747,23 +940,43 @@ Here it is:
  $ libtool --mode=execute gdb ./Sequencer64/sequencer64
 
 
-#0  0x00007ffff6ecf5cb in std::basic_string<char, std::char_traits<char>,
-std::allocator<char> >::basic_string(std::string const&) () from
-/usr/lib/x86_64-linux-gnu/libstdc++.so.6
-#1  0x00007ffff77716dc in seq64::editable_event::editable_event
-(this=0x7fffffff7900, rhs=...) at editable_event.cpp:374
-#2  0x00007ffff777294c in pair<seq64::event_list::event_key&, void> (__y=...,
-__x=..., this=0x7fffffff78f0) at /usr/include/c++/4.8/bits/stl_pair.h:134
-#3  make_pair<seq64::event_list::event_key&, seq64::editable_event const&>
-(__y=..., __x=...) at /usr/include/c++/4.8/bits/stl_pair.h:281
-#4  seq64::editable_events::add (this=this@entry=0x87caa0, e=...) at
-editable_events.cpp:172
-#5  0x00007ffff7aa7205 in seq64::eventslots::insert_event (this=0x87ca00,
-edev=...) at eventslots.cpp:256
-#6  0x00007ffff7aa262e in seq64::eventedit::handle_modify (this=0x825e00) at
-eventedit.cpp:688
-#7  0x00007ffff5b4b038 in Glib::SignalProxyNormal::slot0_void_callback(_GObject*, 
-void*) () from /usr/lib/x86_64-linux-gnu/libglibmm-2.4.so.1
+
+
+
+
+
+Date: Mon, 03 Oct 2016 12:00:17 -0700
+From: AndrewPy <notifications@github.com>
+To: ahlstromcj/sequencer64 <sequencer64@noreply.github.com>
+Subject: [ahlstromcj/sequencer64] Loop setting is ignored (#32)
+
+When I create a song in the song editor and then activate loop playing, the left
+and right marks are ignored.
+
+(Sequencer64 0.9.18 2016-10-02 (Ubuntu 16.04 64bit))
+
+
+
+
+
+
+
+Date: Mon, 03 Oct 2016 12:05:15 -0700
+From: AndrewPy <notifications@github.com>
+To: ahlstromcj/sequencer64 <sequencer64@noreply.github.com>
+Subject: [ahlstromcj/sequencer64] Song cannot be edited any more after playing
+        (#33)
+
+When i play a song in the song editor and then try to edit the song while it is
+playing and then stop the song, the song cannot be edited any more.
+
+(Sequencer64 0.9.18 2016-10-02 (Ubuntu 16.04 64bit))
+
+
+
+
+
+
 
 
 # vim: sw=4 ts=4 wm=4 et ft=rc

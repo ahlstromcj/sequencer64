@@ -881,7 +881,7 @@ sequence::off_queued ()
 {
     automutex locker(m_mutex);
     m_queued = false;
-#ifndef SEQ64_STAZED_JACK_SUPPORT
+#if ! defined SEQ64_STAZED_JACK_SUPPORT
     m_queued_tick = m_last_tick - mod_last_tick() + m_length;
 #endif
     set_dirty_mp();

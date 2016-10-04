@@ -63,7 +63,7 @@
  *  on the headers of a particular user-interface framework.
  */
 
-#ifndef SEQ64_Home
+#if ! defined SEQ64_Home
 
 #define SEQ64_BackSpace           0xff08
 #define SEQ64_Tab                 0xff09

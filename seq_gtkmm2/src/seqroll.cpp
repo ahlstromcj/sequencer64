@@ -553,7 +553,7 @@ seqroll::update_background ()
         int x = (tick / m_zoom) - m_scroll_offset_x;
         draw_line(m_background, x, 0, x, m_window_y);
     }
-#ifndef SEQ64_SOLID_PIANOROLL_GRID
+#if ! defined SEQ64_SOLID_PIANOROLL_GRID
     set_line(Gdk::LINE_SOLID);                  /* reset the line style     */
 #endif
 }

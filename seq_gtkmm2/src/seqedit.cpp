@@ -1237,7 +1237,7 @@ seqedit::fill_top_bar ()
     add_tooltip(m_button_quantize, "Quantize the selection.");
     m_hbox2->pack_start(*m_button_quantize , false, false);
 
-#ifndef SEQ64_STAZED_CHORD_GENERATOR
+#if ! defined SEQ64_STAZED_CHORD_GENERATOR
     m_hbox2->pack_start(*(manage(new Gtk::VSeparator())), false, false, 4);
 #endif
 
@@ -1250,7 +1250,7 @@ seqedit::fill_top_bar ()
     m_tooltips->set_tip(*m_button_tools, "Tools");
     m_hbox2->pack_start(*m_button_tools , false, false);
 
-#ifndef SEQ64_STAZED_CHORD_GENERATOR
+#if ! defined SEQ64_STAZED_CHORD_GENERATOR
     m_hbox2->pack_start(*(manage(new Gtk::VSeparator())), false, false, 4);
 #endif
 
@@ -1291,7 +1291,7 @@ seqedit::fill_top_bar ()
     m_hbox2->pack_start(*m_button_zoom , false, false);
     m_hbox2->pack_start(*m_entry_zoom , false, false);
 
-#ifndef SEQ64_STAZED_CHORD_GENERATOR
+#if ! defined SEQ64_STAZED_CHORD_GENERATOR
     m_hbox2->pack_start(*(manage(new Gtk::VSeparator())), false, false, 4);
 #endif
 
@@ -1320,7 +1320,7 @@ seqedit::fill_top_bar ()
     m_hbox2->pack_start(*m_button_scale , false, false);
     m_hbox2->pack_start(*m_entry_scale , true, true);
 
-#ifndef SEQ64_STAZED_CHORD_GENERATOR
+#if ! defined SEQ64_STAZED_CHORD_GENERATOR
     m_hbox2->pack_start(*(manage(new Gtk::VSeparator())), false, false, 4);
 #endif
 

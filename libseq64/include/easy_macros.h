@@ -46,7 +46,7 @@
  *    Provides an alternative to NULL.
  */
 
-#ifndef __cplus_plus
+#if ! defined __cplus_plus
 #define nullptr                  0
 #elif __cplus_plus <= 199711L
 #define nullptr                  0
@@ -57,7 +57,7 @@
  *    interface.
  */
 
-#ifndef EXTERN_C_DEC
+#if ! defined EXTERN_C_DEC
 
 #ifdef __cplusplus
 #define EXTERN_C_DEC extern "C" {
@@ -85,7 +85,7 @@
  *    A more obvious boolean type.
  */
 
-#ifndef __cplus_plus
+#if ! defined __cplus_plus
 typedef int cbool_t;
 #elif __cplusplus <= 199711L
 typedef bool cbool_t;
@@ -95,7 +95,7 @@ typedef bool cbool_t;
  *  Provides the "false" value of the wbool_t type definition.
  */
 
-#ifndef __cplus_plus
+#if ! defined __cplus_plus
 #define false    0
 #endif
 
@@ -103,7 +103,7 @@ typedef bool cbool_t;
  *  Provides the "true" value of the wbool_t type definition.
  */
 
-#ifndef __cplus_plus
+#if ! defined __cplus_plus
 #define true     1
 #endif
 
@@ -137,7 +137,7 @@ typedef bool cbool_t;
 
 #ifdef PLATFORM_GNU
 
-#ifndef __func__
+#if ! defined __func__
 #if __STDC_VERSION__ < 199901L
 #if __GNUC__ >= 2
 
@@ -157,7 +157,7 @@ typedef bool cbool_t;
 
 #else   // ! PLATFORM_GNU
 
-#ifndef __func__
+#if ! defined __func__
 #define __func__        __FUNCTION__    // Windows?
 #endif
 

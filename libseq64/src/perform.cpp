@@ -2707,7 +2707,11 @@ perform::output_func ()
 #endif
                 if (perfloop)
                 {
-#ifdef SEQ64_STAZED_JACK_SUPPORT
+                    /*
+                     * This stazed JACK code works better than the original
+                     * code, so it is now permanent code.
+                     */
+
                     static bool jack_position_once = false;
                     midipulse rtick = get_right_tick();     /* can change? */
                     if (pad.js_current_tick >= rtick)
@@ -2746,18 +2750,6 @@ perform::output_func ()
                     }
                     else
                         jack_position_once = false;
-#else
-                    midipulse rtick = get_right_tick();
-                    if (pad.js_current_tick >= rtick)
-                    {
-                        midipulse ltick = get_left_tick();
-                        double leftover_tick = pad.js_current_tick - rtick;
-                        play(rtick - 1);                            // play!
-                        reset_sequences();                          // reset!
-                        set_orig_ticks(ltick);
-                        pad.js_current_tick = double(ltick) + leftover_tick;
-                    }
-#endif  // SEQ64_STAZED_JACK_SUPPORT
                 }
 
 #ifdef SEQ64_STAZED_JACK_SUPPORT

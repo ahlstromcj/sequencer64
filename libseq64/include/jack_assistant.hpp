@@ -97,7 +97,7 @@ public:
 #endif
     double js_ticks_converted_last;     /**< Keeps track of position?       */
 #if defined USE_SEQ24_0_9_3_CODE || defined SEQ64_STAZED_JACK_SUPPORT
-    long js_delta_tick_frac;            /* seq24 0.9.3                      */
+    long js_delta_tick_frac;            /**< More precision for seq24 0.9.3 */
 #endif
 
 };

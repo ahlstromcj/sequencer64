@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-10-02
+ * \updates       2016-10-05
  * \license       GNU GPLv2 or above
  *
  *  The main window is known as the "Patterns window" or "Patterns
@@ -45,7 +45,7 @@
 #include "seq64_features.h"             /* feature macros for the app   */
 #include "app_limits.h"                 /* SEQ64_USE_DEFAULT_PPQN       */
 #include "gui_window_gtk2.hpp"          /* seq64::qui_window_gtk2       */
-#include "perform.hpp"                  // seq64::perform and callback  */
+#include "perform.hpp"                  /* seq64::perform and callback  */
 
 /*
  *  Easier access to Gtk-2 classes.
@@ -446,9 +446,9 @@ private:
     void file_import_dialog ();
     void options_dialog ();
     void about_dialog ();
+    void build_info_dialog ();
     int query_save_changes ();
     void new_open_error_dialog ();
-
     void file_save_as (bool do_export = false);
     void file_exit ();
     void new_file ();

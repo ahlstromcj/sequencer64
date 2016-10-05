@@ -7,15 +7,15 @@ basically done.
 
 -  Also see BUG REPORTS below.  Those are bug reports from other people.
 -  Consider adding --version output to Help/About.
--  If a non-active sequence is attempted to be painted in the perfroll,
+x  If a non-active sequence is attempted to be painted in the perfroll,
    painting is disable for the duration of the Sequencer64 run.
 -  The perfedit L/R setting:
-   - Is not respected in looping fully.
-   - The mainwnd Pause button is not working in loop mode.  The Pause
+   x Is not respected in looping fully.
+   y The mainwnd Pause button is not working in loop mode.  The Pause
      key (.) does work, though.
-   - In perfedit, the Pause key (.) causes a complete rewind, then
+   y In perfedit, the Pause key (.) causes a complete rewind, then
 	 enters the L/R loop fine.
-   - More interactions?  This all is with Seq32 JACK and Transport support
+   x More interactions?  This all is with Seq32 JACK and Transport support
      built in.  It is even worse with them disabled!
 x  The Song/Live button does not seem to work if Seq32 transport is not
    compiled in.

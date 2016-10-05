@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-20
- * \updates       2016-10-01
+ * \updates       2016-10-05
  * \license       GNU GPLv2 or above
  *
  *  The "rc" command-line options override setting that are first read from
@@ -693,87 +693,87 @@ write_options_files (const perform & p)
  */
 
 #ifdef SEQ64_HIGHLIGHT_EMPTY_SEQS
-const static std::string s_build_highlight_empty = "on";
+const static std::string s_build_highlight_empty = "ON";
 #else
 const static std::string s_build_highlight_empty = "off";
 #endif
 
 #ifdef SEQ64_LASH_SUPPORT
-const static std::string s_build_lash_support = "on";
+const static std::string s_build_lash_support = "ON";
 #else
 const static std::string s_build_lash_support = "off";
 #endif
 
 #ifdef SEQ64_JACK_SUPPORT
-const static std::string s_build_jack_support = "on";
+const static std::string s_build_jack_support = "ON";
 #else
 const static std::string s_build_jack_support = "off";
 #endif
 
 #ifdef SEQ64_JACK_SESSION
-const static std::string s_build_jack_session = "on";
+const static std::string s_build_jack_session = "ON";
 #else
 const static std::string s_build_jack_session = "off";
 #endif
 
 #ifdef SEQ64_ENABLE_EVENT_EDITOR
-const static std::string s_event_editor = "on";
+const static std::string s_event_editor = "ON";
 #else
 const static std::string s_event_editor = "off";
 #endif
 
 #ifdef SEQ64_PAUSE_SUPPORT
-const static std::string s_build_pause_support = "on";
+const static std::string s_build_pause_support = "ON";
 #else
 const static std::string s_build_pause_support = "off";
 #endif
 
 #ifdef SEQ64_USE_EVENT_MAP
-const static std::string s_build_use_event_map = "on";
+const static std::string s_build_use_event_map = "ON";
 #else
 const static std::string s_build_use_event_map = "off";
 #endif
 
 #ifdef SEQ64_STAZED_CHORD_GENERATOR
-const static std::string s_build_chord_generator = "on";
+const static std::string s_build_chord_generator = "ON";
 #else
 const static std::string s_build_chord_generator = "off";
 #endif
 
 #ifdef SEQ64_EDIT_SEQUENCE_HIGHLIGHT
-const static std::string s_build_edit_highlight = "on";
+const static std::string s_build_edit_highlight = "ON";
 #else
 const static std::string s_build_edit_highlight = "off";
 #endif
 
-const static std::string s_build_timesig_tempo = "on (permanent)";
+const static std::string s_build_timesig_tempo = "ON";
 
 #ifdef SEQ64_USE_MIDI_VECTOR
-const static std::string s_build_midi_vector = "on";
+const static std::string s_build_midi_vector = "ON";
 #else
 const static std::string s_build_midi_vector = "off";
 #endif
 
 #ifdef SEQ64_SOLID_PIANOROLL_GRID
-const static std::string s_build_solid_grid = "on";
+const static std::string s_build_solid_grid = "ON";
 #else
 const static std::string s_build_solid_grid = "off";
 #endif
 
 #ifdef SEQ64_FOLLOW_PROGRESS_BAR
-const static std::string s_build_follow_progress = "on";
+const static std::string s_build_follow_progress = "ON";
 #else
 const static std::string s_build_follow_progress = "off";
 #endif
 
 #ifdef SEQ64_STATISTICS_SUPPORT
-const static std::string s_statistics_support = "on";
+const static std::string s_statistics_support = "ON";
 #else
 const static std::string s_statistics_support = "off";
 #endif
  
 #ifdef SEQ64_STRIP_EMPTY_MUTES
-const static std::string s_strip_empty_mutes = "on";
+const static std::string s_strip_empty_mutes = "ON";
 #else
 const static std::string s_strip_empty_mutes = "off";
 #endif
@@ -783,25 +783,25 @@ const static std::string s_strip_empty_mutes = "off";
  */
 
 #ifdef SEQ64_STAZED_JACK_SUPPORT
-const static std::string s_seq32_jack_support = "on";
+const static std::string s_seq32_jack_support = "ON";
 #else
 const static std::string s_seq32_jack_support = "off";
 #endif
 
 #ifdef SEQ64_STAZED_TRANSPOSE
-const static std::string s_seq32_transpose = "on";
+const static std::string s_seq32_transpose = "ON";
 #else
 const static std::string s_seq32_transpose = "off";
 #endif
 
 #ifdef SEQ64_STAZED_TRANSPORT
-const static std::string s_seq32_transport = "on";
+const static std::string s_seq32_transport = "ON";
 #else
 const static std::string s_seq32_transport = "off";
 #endif
 
 #ifdef SEQ64_STAZED_MENU_BUTTONS
-const static std::string s_seq32_menu_buttons = "on";
+const static std::string s_seq32_menu_buttons = "ON";
 #else
 const static std::string s_seq32_menu_buttons = "off";
 #endif
@@ -820,27 +820,29 @@ build_details ()
     std::ostringstream result;
     result
 << "Build features:" << std::endl
-<< "  Highlight empty sequences: " << s_build_highlight_empty       << std::endl
-<< "* LASH support:              " << s_build_lash_support          << std::endl
-<< "* JACK support:              " << s_build_jack_support          << std::endl
-<< "* JACK session:              " << s_build_jack_session          << std::endl
-<< "* Event editor:              " << s_event_editor                << std::endl
-<< "* Pause support:             " << s_build_pause_support         << std::endl
-<< "* Seq32 chord generator:     " << s_build_chord_generator       << std::endl
-<< "  Event multimap (vs list):  " << s_build_use_event_map         << std::endl
-<< "* Highlight pattern in edit: " << s_build_edit_highlight        << std::endl
-<< "  Save time-signature/tempo: " << s_build_timesig_tempo         << std::endl
-<< "  Use MIDI vector (vs list): " << s_build_midi_vector           << std::endl
-<< "  Solid piano-roll grid:     " << s_build_solid_grid            << std::endl
-<< "  Follow progress bar:       " << s_build_follow_progress       << std::endl
-<< "* Statistics support:        " << s_statistics_support          << std::endl
-<< "* Strip empty mutes section: " << s_strip_empty_mutes           << std::endl
-<< "* Seq32 JACK support (exp):  " << s_seq32_jack_support          << std::endl
-<< "* Seq32 transpose (exp):     " << s_seq32_transpose             << std::endl
-<< "  Seq32 transport (exp):     " << s_seq32_transport             << std::endl
-<< "  Seq32 menu buttons (exp):  " << s_seq32_menu_buttons          << std::endl
-<< "* means option is enabled/disabled via the configure script."   << std::endl
-<< "  Otherwise, one can edit libseq64/include/seq64_features.h."   << std::endl
+<< std::endl
+<< "Highlight empty patterns:  " << s_build_highlight_empty       << std::endl
+<< "LASH support *:            " << s_build_lash_support          << std::endl
+<< "JACK support *:            " << s_build_jack_support          << std::endl
+<< "JACK session *:            " << s_build_jack_session          << std::endl
+<< "Event editor *:            " << s_event_editor                << std::endl
+<< "Pause support *:           " << s_build_pause_support         << std::endl
+<< "Seq32 chord generator *:   " << s_build_chord_generator       << std::endl
+<< "Event multimap (vs list):  " << s_build_use_event_map         << std::endl
+<< "Highlight edit pattern *:  " << s_build_edit_highlight        << std::endl
+<< "Save time-sig/tempo:       " << s_build_timesig_tempo         << std::endl
+<< "MIDI vector (vs list):     " << s_build_midi_vector           << std::endl
+<< "Solid piano-roll grid:     " << s_build_solid_grid            << std::endl
+<< "Follow progress bar:       " << s_build_follow_progress       << std::endl
+<< "Statistics support *:      " << s_statistics_support          << std::endl
+<< "Strip empty mutes *:       " << s_strip_empty_mutes           << std::endl
+<< "Seq32 JACK support *:      " << s_seq32_jack_support          << std::endl
+<< "Seq32 transpose *:         " << s_seq32_transpose             << std::endl
+<< "Seq32 transport:           " << s_seq32_transport             << std::endl
+<< "Seq32 menu buttons:        " << s_seq32_menu_buttons          << std::endl
+<< std::endl
+<< "* option is enabled/disabled via the configure script."   << std::endl
+<< "Otherwise, libseq64/include/seq64_features.h sets it."   << std::endl
     ;
     return result.str();
 }

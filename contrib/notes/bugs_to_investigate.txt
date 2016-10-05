@@ -1,6 +1,6 @@
 Bugs and Additional Upgrade Ideas
 Chris Ahlstrom
-2015-10-27 to 2016-10-04 (New bugs and fixed bugs)
+2015-10-27 to 2016-10-05 (New bugs and fixed bugs)
 
 In no particular order...  "y" means "in progress", and "x" means it is
 basically done.
@@ -17,8 +17,9 @@ x  If a non-active sequence is attempted to be painted in the perfroll,
 	 enters the L/R loop fine.
    x More interactions?  This all is with Seq32 JACK and Transport support
      built in.  It is even worse with them disabled!
-x  The Song/Live button does not seem to work if Seq32 transport is not
-   compiled in.
+y  The Song/Live button does not seem to work if Seq32 transport is not
+   compiled in.  The button now works, but perf mode doesn't override
+   the Live button the way it should when the Song Editor has focus.
 x  A single Z (zoom in) in seqroll makes the END marker drawn in the wrong
    place (in b4uacuse-GM-format.midi).  Actually, it is correct for the
    sequence, but paging to the end shows seqtime and seqroll measure markers

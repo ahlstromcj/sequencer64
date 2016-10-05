@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-10-02
+ * \updates       2016-10-05
  * \license       GNU GPLv2 or above
  *
  *  The performance window allows automatic control of when each
@@ -1164,7 +1164,7 @@ perfroll::on_motion_notify_event (GdkEventMotion * ev)
  *  and right (Shift Page-Up and Page-Down), paging to top and bottom (Home
  *  and End), and paging to start and end (Shift Home and End).
  *
- *  The Keypad-End key is an issue on our ASUS "gaming" laptop.  Whether it is 
+ *  The Keypad-End key is an issue on our ASUS "gaming" laptop.  Whether it is
  *  seen as a "1" or an "End" key depends on an interaction between the Shift
  *  and the Num Lock key.  Annoying, takes some time to get used to.
  *
@@ -1207,10 +1207,11 @@ perfroll::on_key_press_event (GdkEventKey * ev)
     /*
      * Add this call to try to make seqroll and perfroll act the same for
      * start/stop/play.  Doesn't work, but doesn't break anything.  Turns out
-     * perfedit handles this event.
+     * perfedit handles this event.  Added the "true" parameter to force
+     * song mode when starting from perfedit.
      */
 
-    bool result = perf().playback_key_event(k);
+    bool result = perf().playback_key_event(k, true);
     if (result)
     {
         /*

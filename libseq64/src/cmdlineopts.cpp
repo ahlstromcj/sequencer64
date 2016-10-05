@@ -821,25 +821,25 @@ build_details ()
     result
 << "Build features:" << std::endl
 << std::endl
-<< "Highlight empty patterns:  " << s_build_highlight_empty       << std::endl
-<< "LASH support *:            " << s_build_lash_support          << std::endl
-<< "JACK support *:            " << s_build_jack_support          << std::endl
-<< "JACK session *:            " << s_build_jack_session          << std::endl
-<< "Event editor *:            " << s_event_editor                << std::endl
-<< "Pause support *:           " << s_build_pause_support         << std::endl
-<< "Seq32 chord generator *:   " << s_build_chord_generator       << std::endl
-<< "Event multimap (vs list):  " << s_build_use_event_map         << std::endl
-<< "Highlight edit pattern *:  " << s_build_edit_highlight        << std::endl
-<< "Save time-sig/tempo:       " << s_build_timesig_tempo         << std::endl
-<< "MIDI vector (vs list):     " << s_build_midi_vector           << std::endl
-<< "Solid piano-roll grid:     " << s_build_solid_grid            << std::endl
-<< "Follow progress bar:       " << s_build_follow_progress       << std::endl
-<< "Statistics support *:      " << s_statistics_support          << std::endl
-<< "Strip empty mutes *:       " << s_strip_empty_mutes           << std::endl
-<< "Seq32 JACK support *:      " << s_seq32_jack_support          << std::endl
-<< "Seq32 transpose *:         " << s_seq32_transpose             << std::endl
-<< "Seq32 transport:           " << s_seq32_transport             << std::endl
-<< "Seq32 menu buttons:        " << s_seq32_menu_buttons          << std::endl
+<< "Highlight empty patterns = " << s_build_highlight_empty       << std::endl
+<< "LASH support * = "           << s_build_lash_support          << std::endl
+<< "JACK support * = "           << s_build_jack_support          << std::endl
+<< "JACK session * = "           << s_build_jack_session          << std::endl
+<< "Event editor * = "           << s_event_editor                << std::endl
+<< "Pause support * = "          << s_build_pause_support         << std::endl
+<< "Seq32 chord generator * = "  << s_build_chord_generator       << std::endl
+<< "Event multimap (vs list) = " << s_build_use_event_map         << std::endl
+<< "Highlight edit pattern * = " << s_build_edit_highlight        << std::endl
+<< "Save time-sig/tempo = "      << s_build_timesig_tempo         << std::endl
+<< "MIDI vector (vs list) = "    << s_build_midi_vector           << std::endl
+<< "Solid piano-roll grid = "    << s_build_solid_grid            << std::endl
+<< "Follow progress bar = "      << s_build_follow_progress       << std::endl
+<< "Statistics support * = "     << s_statistics_support          << std::endl
+<< "Strip empty mutes * = "      << s_strip_empty_mutes           << std::endl
+<< "Seq32 JACK support * = "     << s_seq32_jack_support          << std::endl
+<< "Seq32 transpose * = "        << s_seq32_transpose             << std::endl
+<< "Seq32 transport = "          << s_seq32_transport             << std::endl
+<< "Seq32 menu buttons = "       << s_seq32_menu_buttons          << std::endl
 << std::endl
 << "* option is enabled/disabled via the configure script."   << std::endl
 << "Otherwise, libseq64/include/seq64_features.h sets it."   << std::endl

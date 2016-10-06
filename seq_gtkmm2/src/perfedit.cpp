@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-09-25
+ * \updates       2016-10-06
  * \license       GNU GPLv2 or above
  *
  */
@@ -875,26 +875,19 @@ perfedit::set_image (bool isrunning)
 
 /**
  *  Implement the playing.  JACK will be used if it is present and, in
- *  the application, enabled and working.
+ *  the application, enabled and working.  Note the new flag to let perform
+ *  know that it is a pause/play request from the perfedit window.  In
+ *  other words, a forced Song mode.
  */
 
 void
 perfedit::start_playing ()
 {
-#ifdef SEQ64_STAZED_TRANSPORT
 #ifdef SEQ64_PAUSE_SUPPORT
     perf().pause_key(true);             /* was perf().start_key(true)       */
 #else
     perf().start_playing(true);         /* forces start-from-perfedit       */
 #endif
-#else
-#ifdef SEQ64_PAUSE_SUPPORT
-    perf().pause_key();                 /* perf().start_key()               */
-#else
-    perf().start_playing();             /* legacy behavior                  */
-#endif
-#endif
-
 }
 
 /**
@@ -907,9 +900,9 @@ void
 perfedit::pause_playing ()
 {
 #ifdef SEQ64_PAUSE_SUPPORT
-    perf().pause_key();
+    perf().pause_key(true);
 #else
-    perf().pause_playing();
+    perf().pause_playing(true);
 #endif
 }
 
@@ -934,8 +927,8 @@ perfedit::stop_playing ()
  *  Implements the horizontal zoom feature.
  *
  * \param z
- *      The zoom value to be set.  The functions each check that this value is
- *      valid.
+ *      The zoom value to be set.  The child zoom functions called each check
+ *      that this value is valid.
  */
 
 void
@@ -1019,11 +1012,11 @@ perfedit::on_key_press_event (GdkEventKey * ev)
         bool startstop = perf().playback_key_event(k, true);
         if (startstop)
         {
-            return true;                                        // event handled
+            return true;                                    /* event handled */
         }
         else if (is_ctrl_key(ev))
         {
-            if (OR_EQUIVALENT(ev->keyval, SEQ64_z, SEQ64_Z))   /* undo  */
+            if (OR_EQUIVALENT(ev->keyval, SEQ64_z, SEQ64_Z))        /* undo  */
             {
                 undo();
                 return true;

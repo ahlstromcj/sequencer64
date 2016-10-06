@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-09-26
+ * \updates       2016-10-05
  * \license       GNU GPLv2 or above
  *
  *  This class still has way too many members, even with the JACK and
@@ -2182,7 +2182,7 @@ private:
     /**
      *  Checks the parameter against c_midi_controls.
      *
-     * \param seq
+     * \param ctrl
      *      The value that should be in the c_midi_controls range.
      *
      * \return
@@ -2190,9 +2190,9 @@ private:
      *      error print-out is generated.
      */
 
-    bool is_midi_control_valid (int seq) const
+    bool is_midi_control_valid (int ctrl) const
     {
-        return seq < c_midi_controls;
+        return ctrl >= c_midi_track_ctrl && ctrl < c_midi_controls;
     }
 
     /**

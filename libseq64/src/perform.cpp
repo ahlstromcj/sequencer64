@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and Tim Deagan
  * \date          2015-07-24
- * \updates       2016-10-02
+ * \updates       2016-10-05
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -226,11 +226,8 @@ perform::perform (gui_assistant & mygui, int ppqn)
 
     midi_control zero;                          /* all members false or 0   */
     for (int i = 0; i < c_midi_controls; ++i)
-    {
-        m_midi_cc_toggle[i] = zero;
-        m_midi_cc_on[i] = zero;
-        m_midi_cc_off[i] = zero;
-    }
+        m_midi_cc_toggle[i] = m_midi_cc_on[i] = m_midi_cc_off[i] = zero;
+
     set_all_key_events();
     set_all_key_groups();
 }
@@ -526,7 +523,7 @@ perform::mute_group_tracks ()
 {
     if (m_mode_group)
     {
-        for (int i = 0; i < m_max_sets; ++i)
+        for (int i = 0; i < m_seqs_in_set; ++i)         /* was m_max_sets!! */
         {
             int seqoffset = i * m_seqs_in_set;
             for (int j = 0; j < m_seqs_in_set; ++j)
@@ -539,10 +536,14 @@ perform::mute_group_tracks ()
 #else
                     bool on = (i == m_playing_screen) && m_tracks_mute_state[j];
 #endif
-                    if (on)
-                        sequence_playing_on(seqnum);
-                    else
-                        sequence_playing_off(seqnum);
+                    /*
+                     * if (on)
+                     *     sequence_playing_on(seqnum);
+                     * else
+                     *     sequence_playing_off(seqnum);
+                     */
+
+                    sequence_playing_change(seqnum, on);
                 }
             }
         }
@@ -661,7 +662,7 @@ perform::mute_screenset (int ss, bool flag)
         if (is_active(seq))
         {
             m_seqs[seq]->set_song_mute(flag);
-            m_seqs[i]->set_playing(! flag); /* needed to show mute status!  */
+            m_seqs[seq]->set_playing(! flag); /* needed to show mute status!  */
         }
     }
 }
@@ -1435,7 +1436,9 @@ perform::set_screenset (int ss)
 #ifdef SEQ64_USE_AUTO_SCREENSET_QUEUE
 
 /**
- *  EXPERIMENTAL.  Doesn't quite work.
+ *  EXPERIMENTAL.  Doesn't quite work.  This may be due to a bug we found in
+ *  mute_screenset(), on 2016-10-05, so we will revisit this functionality for
+ *  0.9.19.
  *
  * \param flag
  *      If the flag is true:
@@ -1479,9 +1482,7 @@ perform::swap_screenset_queues (int ss0, int ss1)
     for (int i = 0; i < m_seqs_in_set; ++i, ++seq0)
     {
         if (is_active(seq0))
-        {
             m_seqs[seq0]->off_queued();         // toggle_queued();
-        }
     }
 
     int seq1 = ss1 * m_seqs_in_set;
@@ -1489,9 +1490,7 @@ perform::swap_screenset_queues (int ss0, int ss1)
     for (int i = 0; i < m_seqs_in_set; ++i, ++seq1)
     {
         if (is_active(seq1))
-        {
             m_seqs[seq1]->on_queued();          // toggle_queued();
-        }
     }
     set_playing_screenset();
 
@@ -1528,7 +1527,14 @@ perform::set_playing_screenset ()
     {
         int source = m_playscreen_offset + s;
         if (is_active(source))
+        {
+            /*
+             * \tricky
+             *      These indices are what we want, don't change them.
+             */
+
             m_tracks_mute_state[s] = m_seqs[source]->get_playing();
+        }
     }
     m_playing_screen = m_screenset;
     m_playscreen_offset = m_playing_screen * m_seqs_in_set;
@@ -3295,10 +3301,6 @@ perform::input_func ()
                                 {
                                     if (midi_control_toggle(i).in_range(data[1]))
                                     {
-                                        /*
-                                         * i < m_seqs_in_set?  Huh?
-                                         */
-
                                         if (i < m_seqs_in_set)
                                             sequence_playing_toggle(offset);
                                     }
@@ -3322,7 +3324,12 @@ perform::input_func ()
                                 }
                                 if (midi_control_off(i).match(status, data[0]))
                                 {
-                                    if (midi_control_on(i).in_range(data[1]))
+                                    /*
+                                     * \change ca 2016-10-05
+                                     *      Issue #35.  Changed "on" to "off".
+                                     */
+
+                                    if (midi_control_off(i).in_range(data[1]))
                                     {
                                         if (i < m_seqs_in_set)
                                             sequence_playing_off(offset);

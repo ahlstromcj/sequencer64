@@ -1,6 +1,6 @@
 User Testing of JACK in Sequencer64
 Chris Ahlstrom
-2016-01-16 to 2016-09-10
+2016-01-16 to 2016-10-05
 
 ===========================================================================
  RECENT NEW BEHAVIOR
@@ -40,7 +40,7 @@ not running would cause a notable delay, then a fallback to ALSA.  Now
 	Released audio card Audio1
 	audio_reservation_finish
 
-Why this all of a sudden?
+Why this all of a sudden?  As of 2016-10-05, it seems to have "gone away".
 
 ===========================================================================
  SETTINGS TESTS
@@ -393,6 +393,120 @@ MIDI Clock Testing
         Master option stored in the "rc" configuration file.  We have to 
         change the settings in the user-interface and disconnect and
         reconnect.
+
+===========================================================================
+ Seq24 JACK Behavior
+===========================================================================
+
+    Running QjackCtl, Yoshimi with the horse.state file, and a2jmidid.
+    Then run seq24.  Here are the behaviors under different settings of
+    File / Option / Jack Sync, where we press the Disconnect button, make
+    the setting, then press the Connect button.
+
+    1. Jack Transport only [JACK transport slave].
+
+      Live Mode:
+
+       o  Main window
+              a. Play button:
+                 - QJackCtl resets to 0 if not already at 0.
+                 - QJackCtl starts counting.
+                 - Seq24 does not show any progress.
+              b. Stop button:
+                 - QJackCtl stops counting; the count stays at its current value.
+       o  Song window: Same as Main window (and no arming).
+       o  QJackCtl:
+             - All its buttons do their functions.
+             - But Seq24 does not follow.
+
+      Song Mode:
+
+          Same, but arming and unarming occur.  No movement.
+
+    2. Jack Transport + Transport Master [JACK transport master].
+
+      Live Mode:
+
+       o  Main window
+              a. Play button:
+                 - QJackCtl resets to 0 if not already at 0.
+                 - QJackCtl starts counting.
+                 - Seq24 shows progress.
+              b. Stop button:
+                 - QJackCtl stops counting; the count stays at its current
+                   value.
+       o  Song window: Same as Main window (and no arming).
+       o  QJackCtl:
+             - All its buttons do their functions.
+             - Seq24 follows progress.
+             - Progress resets at Stop or Pause.
+             - Progress in Seq24 resumes where it left off.
+
+      Song Mode:
+
+          -  Same, but arming and unarming occur.
+          -  Every time Play is hit, the progress goes back to 0.
+
+===========================================================================
+ Seq32 JACK Behavior
+===========================================================================
+
+    Running QjackCtl, Yoshimi with the horse.state file, and a2jmidid.
+    Then run seq32.  Here are the behaviors under different settings of
+    File / Option / Jack Sync. Instead of the Disconnect button, though,
+    we have to activate/deactivate the JACK button on the Song Editor window.
+    And the "song mode" button on the Main window sets the Live/Song mode.
+
+    1. Jack Transport only [JACK transport slave].
+
+      Live Mode:
+
+       o  Main window
+              a. Play button:
+                 - QJackCtl does not reset its time counter.
+                 - QJackCtl starts counting.
+                 - Seq32 shows progress.
+                 - Further presses have no effect, playback proceeds.
+                 - After a Stop, progress resumes where it left off.
+              b. Stop button:
+                 - Seq32 stops progress.
+                 - Seq32 progress does not reset.
+                 - QJackCtl stops counting; the count stays at its current
+                   value.
+       o  Song window: Same as Main window, but...
+          - Song arming/disarming occurs.
+       o  QJackCtl:
+             - All its buttons do their functions.
+             - Seq32 follows progress.
+             - Progress resumes at Stop or Pause.
+             - Progress in Seq32 resumes where it left off.
+
+      Song Mode:  Behaves as if the Song window controls were used.
+
+    2. Jack Transport + Transport Master [JACK transport master].
+
+      Live Mode:
+
+       o  Main window
+              a. Play button:
+                 - QJackCtl resets to 0 if not already at 0.
+                 - QJackCtl starts counting.
+                 - Seq32 shows progress.
+                 - Further presses reset the position and playback proceeds.
+                 - QJackCtl follows Seq32's position.
+              b. Stop button:
+                 - Seq32 stops progress.
+                 - Seq32 progress resets the position.
+                 - QJackCtl stops counting and resets its position.
+       o  Song window: Same as Main window, but...
+          - Song arming/disarming occurs.
+       o  QJackCtl:
+             - Only the Play and Pause buttons work.
+             - They reset the position when press.
+
+      Song Mode:
+          - Behaves as if the Song window controls were used.
+
 
 ===========================================================================
  Notes from Other Sites

@@ -538,16 +538,9 @@ Ctrl-select bug:
    1:4:190 Off 54
    1:4:190 Off 54
 
-
-
-
-
 Date: Sat, 19 Mar 2016 13:55:24 -0500
 From: Stan Preston <sspresto10@hotmail.com>
-To: ahlstromcj@gmail.com
 Subject: sequencer64
-User-Agent: Mozilla/5.0 (X11; Linux i686; rv:38.0) Gecko/20100101
-        Thunderbird/38.6.0
 
 Hello Chris,
 
@@ -595,20 +588,14 @@ Emulation is the sincerest form of flattery!
 
 Stan (AKA Stazed)
 
-
-
-
-
-
 Date: Sat, 9 Jul 2016 07:59:41 -0400
 From: Ken Long <kelargo1000@gmail.com>
-To: Chris Ahlstrom <ahlstromcj@gmail.com>
 Subject: Re: sequencer64 - connecting to jack. ?
 
 Ill try that.  I like testing the code.. I'm not familiar with using this
 application.
 
-On Jul 9, 2016 7:42 AM, "Chris Ahlstrom" <ahlstromcj@gmail.com> wrote:
+On Jul 9, 2016 7:42 AM, "Chris Ahlstrom" wrote:
 
 > Well, it looks like I screwed things up royally with a new feature to strip
 > out unused mute groups.  So I commented out that bad code, rebuilt, and
@@ -654,14 +641,8 @@ On Jul 9, 2016 7:42 AM, "Chris Ahlstrom" <ahlstromcj@gmail.com> wrote:
 >> snd_seq_unsubscribe_port(-1:-1) error
 >> snd_seq_connect_from(-1:-1) error
 
-
-
-
-
 Date: Sun, 14 Aug 2016 14:48:31 -0700
 From: Arnaud Jacquemin <notifications@github.com>
-To: ahlstromcj/sequencer64 <sequencer64@noreply.github.com>
-Cc: "C. Ahlstrom" <ahlstromcj@gmail.com>, Comment <comment@noreply.github.com>
 Subject: Re: [ahlstromcj/sequencer64] Loops not playing when using jack (#20)
 
 Hello everybody,
@@ -687,14 +668,8 @@ Sequencer64 and I'm having fun already!
 
 Have a nice day
 
-
-
-
-
 Date: Tue, 23 Aug 2016 14:58:09 -0700
 From: Arnaud Jacquemin <notifications@github.com>
-To: ahlstromcj/sequencer64 <sequencer64@noreply.github.com>
-Cc: "C. Ahlstrom" <ahlstromcj@gmail.com>, Comment <comment@noreply.github.com>
 Subject: Re: [ahlstromcj/sequencer64] Loops not playing when using jack (#20)
 
 Hello Chris, thanks for you answer.
@@ -702,14 +677,8 @@ I confirm that there is a similar issue with seq24 0.9.3, when only "Jack
 Transport" is checked.
 If you need someone to test these changes, I would be happy to help.
 
-
-
-
-
 Date: Tue, 23 Aug 2016 05:07:16 -0700
 From: Arnaud Jacquemin <notifications@github.com>
-To: ahlstromcj/sequencer64 <sequencer64@noreply.github.com>
-Cc: "C. Ahlstrom" <ahlstromcj@gmail.com>, Comment <comment@noreply.github.com>
 Subject: Re: [ahlstromcj/sequencer64] Would like unique set of mute groups per
         screen (1024 instead of 32) (#4)
 
@@ -726,10 +695,8 @@ So bad my C++ skills are almost nonexistent, I would really like to contribute t
 the "32 mute-groups for each screen set" feature. I think it would be as good as
 the "scene" concept in Ableton Live.
 
-
 Date: Fri, 26 Aug 2016 15:12:30 -0700
 From: Arnaud Jacquemin <notifications@github.com>
-To: ahlstromcj/sequencer64 <sequencer64@noreply.github.com>
 Subject: [ahlstromcj/sequencer64] MIDI controller toggles the wrong pattern (#23)
 
 I've updated my  `~/.config/sequencer64/sequencer64.rc` file in order to control
@@ -762,10 +729,8 @@ The version I'm using is Sequencer64 0.9.16 2016-07-14 0.9.16-0-g0193728 * maste
 It works as intended with seq24 0.9.3 (to test I copied the RC file to
 `~/.seq24.rc`), so it looks like it's a regression.
 
-
 Date: Fri, 26 Aug 2016 15:31:48 -0700
 From: Arnaud Jacquemin <notifications@github.com>
-To: ahlstromcj/sequencer64 <sequencer64@noreply.github.com>
 Subject: Re: [ahlstromcj/sequencer64] Enabled experimental screen-set code for
         testing, see USE_EXPERIMENTAL_CODE macro usage. (a9e14fe)
 
@@ -774,7 +739,6 @@ I think this change is the cause of #23:
 `i+m_offset` is changed to `m_offset + 1`
 
 So the variable `i` (number of the pattern to toggle) becomes a constant `1`
-
 
 Date: Fri, 26 Aug 2016 16:21:40 -0700
 From: Arnaud Jacquemin <notifications@github.com>
@@ -801,50 +765,29 @@ https://github.com/ahlstromcj/sequencer64/pull/24.diff
 
 DONE, merged into fixups as well.
 
-
-
 Date: Mon, 12 Sep 2016 14:11:32 -0700
 From: Arnaud Jacquemin <notifications@github.com>
-To: ahlstromcj/sequencer64 <sequencer64@noreply.github.com>
-Cc: "C. Ahlstrom" <ahlstromcj@gmail.com>, Comment <comment@noreply.github.com>
 Subject: Re: [ahlstromcj/sequencer64] Impossible to unmute patterns when JACK
         Transport is activated (#25)
 
 Closed #25.
 
-
-
-
-
 Date: Tue, 13 Sep 2016 13:03:15 -0500
 From: Stan Preston <stazed10@gmail.com>
-To: Chris Ahlstrom <ahlstromcj@gmail.com>
 Subject: Re: Seq32 menu disabling
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:45.0) Gecko/20100101
-        Thunderbird/45.2.0
 
 "why disabling is needed when playing"  ...
 
-
-
-
 Date: Sun, 25 Sep 2016 12:32:25 -0700
 From: layk <notifications@github.com>
-To: ahlstromcj/sequencer64 <sequencer64@noreply.github.com>
 Subject: Re: [ahlstromcj/sequencer64] Zooming sequencer edit window more than
         1:32 kills the program. (#28)
 
 diff attached.
 [diff.txt](https://github.com/ahlstromcj/sequencer64/files/491849/diff.txt)
 
-
-
-
-
-
 Date: Sun, 25 Sep 2016 19:25:42 -0700
 From: alejg <notifications@github.com>
-To: ahlstromcj/sequencer64 <sequencer64@noreply.github.com>
 Subject: [ahlstromcj/sequencer64] Cannot edit note length (#29)
 
 When the note length is longer than the measure the editor behaves incorrectly,
@@ -853,52 +796,30 @@ not allowing to change the note off position.
 ![seq64](https://cloud.githubusercontent.com/assets/15330205/18820832/4973aac4-837
 7-11e6-8a01-4ee1a11214bd.png)
 
-
-
 Date: Sun, 25 Sep 2016 19:42:34 -0700
 From: alejg <notifications@github.com>
-To: ahlstromcj/sequencer64 <sequencer64@noreply.github.com>
 Subject: [ahlstromcj/sequencer64] Unable to write the BPM (#30)
 
 The BPM spin box shows that is allowed to write on it, but when try to enter
 numbers, the pattern toggle shortcuts are triggered.
 
-
-
-
 Date: Mon, 26 Sep 2016 09:51:57 -0700
 From: alejg <notifications@github.com>
-To: ahlstromcj/sequencer64 <sequencer64@noreply.github.com>
-Cc: "C. Ahlstrom" <ahlstromcj@gmail.com>, Comment <comment@noreply.github.com>
 Subject: Re: [ahlstromcj/sequencer64] Unable to write the BPM (#30)
 
 thanks! meanwhile you can simply make look as read only (grayed out), also a TAP
 button feature (with it's corresponding keyboard shortcut) would be nice.
 
-
-
-
 Date: Mon, 26 Sep 2016 13:19:53 -0700
 From: F0rth <notifications@github.com>
-To: ahlstromcj/sequencer64 <sequencer64@noreply.github.com>
-Cc: "C. Ahlstrom" <ahlstromcj@gmail.com>, Comment <comment@noreply.github.com>
 Subject: Re: [ahlstromcj/sequencer64] [feature request] script language (#16)
 
 For the records, an example of a bitwig script to add launchpad mini support
 https://github.com/bitwig/novation-launchpad/
 but OSC look far more appealing.
 
-
-
-
-
-
-
-
 Date: Tue, 27 Sep 2016 06:21:01 -0700
 From: alejg <notifications@github.com>
-To: ahlstromcj/sequencer64 <sequencer64@noreply.github.com>
-Cc: "C. Ahlstrom" <ahlstromcj@gmail.com>, Comment <comment@noreply.github.com>
 Subject: Re: [ahlstromcj/sequencer64] Cannot edit note length (#29)
 
 Thanks!
@@ -912,8 +833,6 @@ background.
  it into the next note, then the note gets super long.  We should stop
  just before the next note.]
 
-
-
 Date: Sat, 02 Oct 2016
 From: Sebastien Mondet <notifications@github.com>
 
@@ -926,25 +845,14 @@ select the "Note On"
 "Modify Event"
 Happened with seq64 compiled from master just now.
 
-
-
 Date: Sun, 02 Oct 2016 17:24:28 -0700
 From: Sebastien Mondet <notifications@github.com>
-To: ahlstromcj/sequencer64 <sequencer64@noreply.github.com>
-Cc: "C. Ahlstrom" <ahlstromcj@gmail.com>, Comment <comment@noreply.github.com>
 Subject: Re: [ahlstromcj/sequencer64] SegFault in Event Editor → "Modify Event"
         (#31)
 
 Here it is:
 
-```
  $ libtool --mode=execute gdb ./Sequencer64/sequencer64
-
-
-
-
-
-
 
 Date: Mon, 03 Oct 2016 12:00:17 -0700
 From: AndrewPy <notifications@github.com>
@@ -955,12 +863,6 @@ When I create a song in the song editor and then activate loop playing, the left
 and right marks are ignored.
 
 (Sequencer64 0.9.18 2016-10-02 (Ubuntu 16.04 64bit))
-
-
-
-
-
-
 
 Date: Mon, 03 Oct 2016 12:05:15 -0700
 From: AndrewPy <notifications@github.com>
@@ -973,11 +875,26 @@ playing and then stop the song, the song cannot be edited any more.
 
 (Sequencer64 0.9.18 2016-10-02 (Ubuntu 16.04 64bit))
 
+Date: Wed, 05 Oct 2016 09:04:57 -0700
+From: y1ds <notifications@github.com>
+To: ahlstromcj/sequencer64 <sequencer64@noreply.github.com>
+Subject: [ahlstromcj/sequencer64] loops on/off with midi controller (#35)
 
+I`m having problems turning on and off loops with a controller.
+First i tried to use the config file that i used for seq24, and was working.
+I realised that the "turn on" and "turn off" in the bindings in the rc file are
+the other way around, also turning on did not work. I can only turn a loop off.
+When i run sequencer64 in legacy mode, the on/off is not inverted anymore, but
+still, only turning a loop off works.
 
+Date: Wed, 05 Oct 2016 11:24:29 -0700
+From: y1ds <notifications@github.com>
+Subject: [ahlstromcj/sequencer64] stop playback and jack transport (#36)
 
-
-
-
+I am not sure if this is a bug or not, but when jack transport is enabled and
+sequencer64 is transport master, pressing the stop button doesn't go to the
+beginning  of the loops.
+also when it is not master, but another jack master is used, when
+jack_transport_stop() is called, the loops do not return to the beginning.
 
 # vim: sw=4 ts=4 wm=4 et ft=rc

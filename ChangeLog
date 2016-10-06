@@ -1,5 +1,312 @@
+2016-10-05  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* contrib/notes/bugs_to_investigate.txt,
+	contrib/notes/jack-testing.txt, libseq64/include/perform.hpp,
+	libseq64/src/midibus.cpp, libseq64/src/perform.cpp: Issue #35, fixed
+	a couple bugs related to it, still more investigation needed.
+	* libseq64/src/cmdlineopts.cpp, seq_gtkmm2/src/perfroll.cpp: Interim
+	check-in, minor changes related to playback and build features.
+	* README, contrib/notes/bugs_to_investigate.txt: Release 0.9.18.1 in
+	master, with one known bug.
+	* configure.ac, contrib/notes/bugs_to_investigate.txt,
+	libseq64/src/cmdlineopts.cpp, seq_gtkmm2/include/mainwnd.hpp,
+	seq_gtkmm2/src/mainwnd.cpp: Pending 0.9.18.1 in fixups branch.
+
+2016-10-04  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/include/easy_macros.h,
+	libseq64/include/gdk_basic_keys.h,
+	libseq64/include/jack_assistant.hpp, libseq64/src/perform.cpp,
+	libseq64/src/sequence.cpp, seq_gtkmm2/src/mainwid.cpp,
+	seq_gtkmm2/src/seqedit.cpp, seq_gtkmm2/src/seqroll.cpp: Partial fix
+	to perfedit loop by permanently enabling the Stazed-JACK version of
+	the loop processing.
+	* INSTALL, README, ROADMAP, VERSION, configure.ac,
+	contrib/notes/bugs_to_investigate.txt,
+	libseq64/src/cmdlineopts.cpp, libseq64/src/optionsfile.cpp,
+	libseq64/src/perform.cpp, libseq64/src/userfile.cpp,
+	man/sequencer64.1: Attempting to fix looping bugs for pending bugfix
+	release of 0.9.18.1, still important issues present.
+
+2016-10-03  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/include/user_settings.hpp,
+	libseq64/src/user_settings.cpp, libseq64/src/userfile.cpp,
+	seq_gtkmm2/include/mainwnd.hpp, seq_gtkmm2/src/mainwnd.cpp: Made the
+	use of icons/text in mainwnd a 'usr' configuration opt9on,
+	use_more_icons.
+	* seq_gtkmm2/src/eventslots.cpp: Fixed event edit bug causing
+	segfault during event modification, iterator was being modified
+	during the delete/insert process, now we copy the event.
+	* contrib/notes/bugs_to_investigate.txt,
+	libseq64/src/calculations.cpp, libseq64/src/event_list.cpp,
+	libseq64/src/jack_assistant.cpp, libseq64/src/perform.cpp: Added a
+	stack trace from a bug report in the event editor, cannot yet
+	reproduce the bug.
+
+2016-10-02  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* seq_gtkmm2/include/mainwnd.hpp, seq_gtkmm2/src/mainwnd.cpp,
+	seq_gtkmm2/src/options.cpp, seq_gtkmm2/src/perfroll_input.cpp: 
+	Fixing a fat-finger bug with clicking/painting in the perfroll.
+	* contrib/notes/bugs_to_investigate.txt: Added a minor bug report,
+	can wait until 0.9.19 to be fixed.
+	* : Fixed minor fixups/master merge conflicts.
+	* configure.ac, configure.help, libseq64/src/perform.cpp,
+	seq_gtkmm2/include/fruityperfroll_input.hpp,
+	seq_gtkmm2/include/perfroll.hpp,
+	seq_gtkmm2/include/perfroll_input.hpp,
+	seq_gtkmm2/src/fruityperfroll_input.cpp,
+	seq_gtkmm2/src/perfroll.cpp, seq_gtkmm2/src/perfroll_input.cpp: 
+	Fixed nasty/stupid bug in painting patterns in the performance
+	editor.
+
+2016-10-01  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* INSTALL, configure.ac, libseq64/src/cmdlineopts.cpp,
+	libseq64/src/perform.cpp, seq_gtkmm2/src/mainwnd.cpp,
+	seq_gtkmm2/src/options.cpp, seq_gtkmm2/src/perfroll.cpp: Tweaked
+	command-line options and made unsupported Ext Keys non-editable from
+	Options.
+	* contrib/notes/bugs_to_investigate.txt,
+	libseq64/include/keys_perform.hpp,
+	libseq64/include/seq64_features.h, libseq64/src/cmdlineopts.cpp,
+	libseq64/src/keys_perform.cpp, libseq64/src/optionsfile.cpp,
+	libseq64/src/perform.cpp, seq_gtkmm2/src/mainwnd.cpp,
+	seq_gtkmm2/src/options.cpp, seq_gtkmm2/src/perfedit.cpp,
+	seq_gtkmm2/src/perfroll.cpp: Made sure new mainwnd buttons work and
+	have configurable hot-keys associated with them.
+
+2016-09-30  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/include/keys_perform.hpp,
+	resources/pixmaps/live_mode.xpm, resources/pixmaps/menu.xpm,
+	resources/pixmaps/muting.xpm, resources/pixmaps/song_mode.xpm,
+	seq_gtkmm2/include/options.hpp, seq_gtkmm2/src/options.cpp: Added
+	extended-keys page to the Options dialog.
+
+2016-09-29  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/include/keys_perform.hpp, libseq64/src/keys_perform.cpp,
+	libseq64/src/optionsfile.cpp: Added new extended-keys section to the
+	rc file, eliminated using macros to provide the new keys.
+	* libseq64/include/configfile.hpp,
+	libseq64/include/keys_perform.hpp, libseq64/src/configfile.cpp,
+	libseq64/src/keys_perform.cpp, libseq64/src/optionsfile.cpp,
+	seq_gtkmm2/src/mainwnd.cpp: Still beefing up the new key support and
+	configuration file handling, currently macroed out.
+
+2016-09-28  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/src/keys_perform.cpp: Fixed initialization of tap-BPM
+	key, still need to fix keys_perform and optionsfile discrepancies.
+	* libseq64/include/keys_perform.hpp,
+	libseq64/include/seq64_features.h, libseq64/src/keys_perform.cpp,
+	seq_gtkmm2/include/mainwnd.hpp, seq_gtkmm2/src/mainwnd.cpp: More Tap
+	button support, some keys fixes, still in progress.
+
+2016-09-27  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* seq_gtkmm2/include/mainwnd.hpp, seq_gtkmm2/src/mainwnd.cpp: Adding
+	experimental tap button to mainwnd, currently disabled, per request
+	of alejg.
+
+2016-09-26  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* seq_gtkmm2/include/mainwnd.hpp, seq_gtkmm2/include/seqroll.hpp,
+	seq_gtkmm2/src/mainwnd.cpp, seq_gtkmm2/src/seqedit.cpp,
+	seq_gtkmm2/src/seqroll.cpp: Grow of wrapped notes seems to work, and
+	can now edit mainwnd numeric fields without arming patterns, at
+	sacrifice of screen-set spinbutton wrapping.
+	* contrib/notes/bugs_to_investigate.txt,
+	libseq64/include/perform.hpp, libseq64/src/optionsfile.cpp,
+	libseq64/src/perform.cpp, libseq64/src/sequence.cpp: Interim
+	check-in, bug reports, tweaks.
+
+2016-09-25  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/src/perform.cpp, libseq64/src/sequence.cpp,
+	seq_gtkmm2/src/seqtime.cpp: Fixed zoom bug found by user layk, but
+	need a way to make max zoom dependent on ppqn option.
+	* configure.ac, libseq64/include/perform.hpp,
+	libseq64/include/rc_settings.hpp,
+	libseq64/include/seq64_features.h, libseq64/src/cmdlineopts.cpp,
+	libseq64/src/perform.cpp, resources/pixmaps/live_mode.xpm,
+	seq_gtkmm2/src/mainwnd.cpp, seq_gtkmm2/src/perfedit.cpp,
+	seq_gtkmm2/src/seqedit.cpp, seq_gtkmm2/src/seqtime.cpp: Regularized
+	start/stop/pause and got perfedit pause to work properly.
+
+2016-09-24  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* resources/pixmaps/drum.xpm, resources/pixmaps/jack_black.xpm,
+	resources/pixmaps/live_mode.xpm, resources/pixmaps/menu.xpm,
+	resources/pixmaps/muting.xpm, resources/pixmaps/song_mode.xpm: Added
+	some cyan highlighting to some of the button pixmaps.
+
+2016-09-23  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* configure.ac, libseq64/src/perform.cpp,
+	resources/pixmaps/drum.xpm, resources/pixmaps/transpose.xpm,
+	seq_gtkmm2/src/mainwnd.cpp, seq_gtkmm2/src/perfedit.cpp: Starting to
+	reorganize playback management as per Stazed/Seq32.
+
+2016-09-22  ahlstrom <ahlstromcj@gmail.com>
+
+	* seq_gtkmm2/include/seqedit.hpp, seq_gtkmm2/src/seqedit.cpp,
+	seq_gtkmm2/src/seqtime.cpp: Added transposable drum icon to seqedit
+	toggle button.
+	* contrib/notes/bugs_to_investigate.txt,
+	resources/pixmaps/drum.xpm, resources/pixmaps/transpose.xpm,
+	seq_gtkmm2/src/seqdata.cpp, seq_gtkmm2/src/seqedit.cpp,
+	seq_gtkmm2/src/seqevent.cpp, seq_gtkmm2/src/seqroll.cpp,
+	seq_gtkmm2/src/seqtime.cpp: Fixing seqtime END marker at zoom still
+	in progress.
+
+2016-09-21  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* contrib/notes/bugs_to_investigate.txt,
+	seq_gtkmm2/include/seqroll.hpp, seq_gtkmm2/src/perfedit.cpp,
+	seq_gtkmm2/src/perfroll.cpp, seq_gtkmm2/src/seqroll.cpp: Got normal
+	progress bars working in seq32 JACK build mode.
+
+2016-09-20  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* doc/dox/doxy-reference.cfg, libseq64/include/perform.hpp,
+	seq_gtkmm2/src/gui_assistant_gtk2.cpp, seq_gtkmm2/src/perfedit.cpp,
+	seq_gtkmm2/src/perfroll.cpp: Some minor documentation updates in the
+	code.
+	* configure.ac, libseq64/include/perform.hpp,
+	libseq64/include/seq64_features.h,
+	resources/pixmaps/jack_black.xpm,
+	seq_gtkmm2/src/gui_assistant_gtk2.cpp: Added glibmm.h to
+	gui_assistant_gtk2 due to sudden compiler error after a Debian Sid
+	update, and fixed the jack icon.
+
+2016-09-19  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* contrib/notes/stazed-fixes.txt, libseq64/include/perform.hpp,
+	libseq64/src/perform.cpp, resources/pixmaps/jack_black.xpm,
+	seq_gtkmm2/src/perfedit.cpp: Commencing Stazed-JACK testing and
+	tweaking.
+
+2016-09-18  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* INSTALL, bootstrap, configure.ac,
+	contrib/notes/bugs_to_investigate.txt,
+	contrib/notes/stazed-fixes.txt,
+	libseq64/include/jack_assistant.hpp, libseq64/include/perform.hpp,
+	libseq64/include/seq64_features.h, libseq64/src/cmdlineopts.cpp,
+	libseq64/src/jack_assistant.cpp, libseq64/src/perform.cpp,
+	libseq64/src/sequence.cpp, resources/pixmaps/jack_black.xpm,
+	seq_gtkmm2/include/perfedit.hpp, seq_gtkmm2/src/mainwnd.cpp,
+	seq_gtkmm2/src/perfedit.cpp, seq_portmidi/include/Makefile.am,
+	seq_portmidi/src/Makefile.am: Made Seq32 JACK support a configure
+	option, currently disabled by default while testing is performed.
+
+2016-09-17  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* contrib/notes/git.txt, libseq64/include/sequence.hpp,
+	libseq64/src/event_list.cpp, libseq64/src/sequence.cpp,
+	seq_gtkmm2/src/perfroll.cpp, seq_gtkmm2/src/seqroll.cpp: Added
+	stazed fixes to seqroll, sequence, and some minor and experimental
+	optimizations.
+
+2016-09-15  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* contrib/notes/git.txt: Added a note about git cherry-picking.
+	* README, configure.ac: Created 0.9.17.3 to fix a segfault in the
+	event editor, see issues/26.
+	* seq_gtkmm2/src/eventslots.cpp: Fixed issues/26, segfault upon
+	up-arrow.  Occurred in empty event edit. Fixed in the fixups branch, and
+	cherry-picked from 89b12b1.
+	* seq_gtkmm2/src/eventslots.cpp: Fixed issues/26, segfault upon
+	up-arrow in empty event edit, in the fixups branch.
+	* resources/pixmaps/live_mode.xpm, resources/pixmaps/menu.xpm,
+	resources/pixmaps/muting.xpm, resources/pixmaps/song_mode.xpm,
+	seq_gtkmm2/include/mainwnd.hpp, seq_gtkmm2/src/mainwnd.cpp: 
+	Finalized main window menu-button handling.
+
+2016-09-14  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* configure.ac, libseq64/include/seq64_features.h,
+	libseq64/src/cmdlineopts.cpp, resources/pixmaps/live_mode.xpm,
+	resources/pixmaps/menu.xpm, resources/pixmaps/muting.xpm,
+	resources/pixmaps/song_mode.xpm, seq_gtkmm2/include/mainwnd.hpp,
+	seq_gtkmm2/src/mainwnd.cpp: Attempting better management of stazed
+	menu buttons and icons for them.
+
+2016-09-13  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* INSTALL, README, ROADMAP, VERSION, configure.ac,
+	doc/dox/doxy-reference.cfg, libseq64/include/jack_assistant.hpp,
+	libseq64/include/perform.hpp, libseq64/include/seq64_features.h,
+	libseq64/src/cmdlineopts.cpp, libseq64/src/jack_assistant.cpp,
+	libseq64/src/optionsfile.cpp, man/sequencer64.1,
+	seq_gtkmm2/include/mainwnd.hpp, seq_gtkmm2/include/perfedit.hpp,
+	seq_gtkmm2/include/seqmenu.hpp, seq_gtkmm2/src/mainwnd.cpp: Prepping
+	for 0.9.18, getting menu-toggle exposed and working.
+
+2016-09-12  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* README, configure.ac: Version 0.9.17.2 to fix a muting regression.
+	* Sequencer64/sequencer64.cpp, libseq64/include/jack_assistant.hpp,
+	libseq64/src/jack_assistant.cpp, libseq64/src/perform.cpp,
+	resources/pixmaps/menu.xpm, seq_gtkmm2/include/mainwnd.hpp,
+	seq_gtkmm2/include/perfedit.hpp,
+	seq_gtkmm2/src/gui_palette_gtk2.cpp, seq_gtkmm2/src/mainwnd.cpp,
+	seq_gtkmm2/src/options.cpp, seq_gtkmm2/src/perfedit.cpp: Prep for
+	bugfix release 0.9.17.2 and some additions to future versions.
+
+2016-09-11  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* INSTALL, configure.ac, libseq64/include/jack_assistant.hpp,
+	libseq64/include/keys_perform.hpp, libseq64/include/perform.hpp,
+	libseq64/include/seq64_features.h, libseq64/include/sequence.hpp,
+	libseq64/src/cmdlineopts.cpp, libseq64/src/jack_assistant.cpp,
+	libseq64/src/keys_perform.cpp, libseq64/src/midifile.cpp,
+	libseq64/src/perform.cpp, libseq64/src/sequence.cpp,
+	man/sequencer64.1, seq_gtkmm2/include/mainwnd.hpp,
+	seq_gtkmm2/include/perfedit.hpp, seq_gtkmm2/include/perfroll.hpp,
+	seq_gtkmm2/src/maintime.cpp, seq_gtkmm2/src/mainwnd.cpp,
+	seq_gtkmm2/src/perfedit.cpp, seq_gtkmm2/src/perfroll.cpp,
+	seq_gtkmm2/src/seqedit.cpp: Potential fixes for 0.9.17.2 version,
+	plus work on perform playback-mode management, please evaluate.
+
+2016-09-10  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* INSTALL, Sequencer64/sequencer64.cpp, configure.ac,
+	contrib/notes/jack-testing.txt, libseq64/include/cmdlineopts.hpp,
+	libseq64/include/jack_assistant.hpp, libseq64/include/midibyte.hpp,
+	libseq64/include/perform.hpp, libseq64/include/rc_settings.hpp,
+	libseq64/include/seq64_features.h, libseq64/src/calculations.cpp,
+	libseq64/src/cmdlineopts.cpp, libseq64/src/event_list.cpp,
+	libseq64/src/jack_assistant.cpp, libseq64/src/mastermidibus.cpp,
+	libseq64/src/optionsfile.cpp, libseq64/src/perform.cpp,
+	libseq64/src/rc_settings.cpp, libseq64/src/sequence.cpp,
+	resources/pixmaps/learn.xpm, resources/pixmaps/learn2.xpm,
+	resources/pixmaps/sequencer64_square_small.xpm,
+	seq_gtkmm2/include/mainwnd.hpp, seq_gtkmm2/src/maintime.cpp,
+	seq_gtkmm2/src/mainwid.cpp, seq_gtkmm2/src/mainwnd.cpp,
+	seq_gtkmm2/src/options.cpp: Interim check-in for 0.9.17.2/0.9.18,
+	added song button, better mainwnd alignment, and song-mode support.
+
+2016-09-09  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* README, contrib/notes/jack-testing.txt,
+	libseq64/src/jack_assistant.cpp: Seem to have fixed the JACK
+	regression in 0.9.17.
+	* INSTALL, README, configure.ac, libseq64/src/jack_assistant.cpp,
+	libseq64/src/perform.cpp, man/sequencer64.1: Initial attempt at
+	fixing JACK starting, for 0.9.17.1.
+
 2016-09-08  Chris Ahlstrom <ahlstromcj@gmail.com>
 
+	* INSTALL, README, ROADMAP, configure.ac,
+	libseq64/src/cmdlineopts.cpp, libseq64/src/userfile.cpp,
+	man/sequencer64.1: Initial setup for pending version 0.9.18 in
+	fixups branch.
+	* ChangeLog, README, configure.ac: Prepared for release 0.9.17, it
+	has been a long trek.
 	* libseq64/src/cmdlineopts.cpp, man/sequencer64.1: Updated app help
 	and man page.
 

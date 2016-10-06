@@ -1,7 +1,7 @@
 [Desktop Entry]
 Name=Sequencer64
 GenericName=
-Comment=MIDI Loop Sequencer
+Comment=MIDI Loop Sequencer derived from seq24
 Icon=/usr/share/pixmaps/sequencer64.xpm
 
 Type=Application

@@ -1,3 +1,10 @@
+sequencer64 (0.9.18-2) unstable; urgency=low
+
+  * Debian package fixes.
+  * See the source-code ChangeLog for the full list of changes.
+
+ -- Chris Ahlstrom <ahlstromcj@gmail.com>  Thu, 06 Oct 2016 12:00:00 +0400
+
 sequencer64 (0.9.10-0) unstable; urgency=low
 
   * Forked new version of sequencer64 project

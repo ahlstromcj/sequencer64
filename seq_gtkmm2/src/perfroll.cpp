@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-10-05
+ * \updates       2016-10-06
  * \license       GNU GPLv2 or above
  *
  *  The performance window allows automatic control of when each
@@ -114,7 +114,7 @@ perfroll::perfroll
     m_scroll_page           (0),
 #endif
     m_have_button_press     (false),                        // stazed
-#ifdef SEQ64_STAZED_TRANSPORT
+#ifdef SEQ64_STAZED_JACK_SUPPORT
     m_transport_follow      (true),
     m_trans_button_press    (false),
 #endif
@@ -1022,7 +1022,7 @@ perfroll::on_expose_event (GdkEventExpose * ev)
 bool
 perfroll::on_button_press_event (GdkEventButton * ev)
 {
-#ifdef SEQ64_STAZED_TRANSPORT
+#ifdef SEQ64_STAZED_JACK_SUPPORT
 
     /*
      *  To avoid double button press on normal seq42 method...
@@ -1058,7 +1058,7 @@ perfroll::on_button_release_event (GdkEventButton * ev)
     if (result)
         perf().modify();
 
-#ifdef SEQ64_STAZED_TRANSPORT
+#ifdef SEQ64_STAZED_JACK_SUPPORT
     perf().set_follow_transport(m_transport_follow);
     m_trans_button_press = false;
 #endif
@@ -1177,7 +1177,7 @@ perfroll::on_key_press_event (GdkEventKey * ev)
 {
     keystroke k(ev->keyval, SEQ64_KEYSTROKE_PRESS, ev->state);
 
-#ifdef SEQ64_STAZED_TRANSPORT
+#ifdef SEQ64_STAZED_JACK_SUPPORT
 
     /*
      * If this keystroke is clicked, move the song position to the location of
@@ -1202,7 +1202,7 @@ perfroll::on_key_press_event (GdkEventKey * ev)
         return true;
     }
 
-#endif  // SEQ64_STAZED_TRANSPORT
+#endif  // SEQ64_STAZED_JACK_SUPPORT
 
     /*
      * Add this call to try to make seqroll and perfroll act the same for

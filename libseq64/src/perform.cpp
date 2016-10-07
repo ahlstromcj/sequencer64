@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and Tim Deagan
  * \date          2015-07-24
- * \updates       2016-10-05
+ * \updates       2016-10-06
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -122,8 +122,6 @@ perform::perform (gui_assistant & mygui, int ppqn)
 #ifdef SEQ64_STAZED_JACK_SUPPORT
     m_toggle_jack               (false),
     m_jack_stop_tick            (0),        // ???
-#endif
-#ifdef SEQ64_STAZED_TRANSPORT
     m_follow_transport          (true),
     m_start_from_perfedit       (false),
     m_reposition                (false),
@@ -136,7 +134,7 @@ perform::perform (gui_assistant & mygui, int ppqn)
     m_mode_group                (true),
     m_mode_group_learn          (false),
     m_mute_group_selected       (0),
-    m_playing_screen            (0),
+    m_playing_screen            (0),        // vice m_screenset
     m_playscreen_offset         (0),
     m_seqs                      (),         // pointer array
     m_seqs_active               (),         // boolean array
@@ -184,7 +182,7 @@ perform::perform (gui_assistant & mygui, int ppqn)
     m_midi_cc_off               (),         // midi_control array
     m_offset                    (0),
     m_control_status            (0),
-    m_screenset                 (0),        // or SEQ64_NULL_SEQUENCE
+    m_screenset                 (0),        // vice m_playing_screen
 #ifdef SEQ64_USE_AUTO_SCREENSET_QUEUE
     m_auto_screenset_queue      (false),
 #endif
@@ -411,10 +409,10 @@ perform::select_group_mute (int mutegroup)
     if (m_mode_group_learn)
     {
         int groupbase = mutegroup * m_seqs_in_set;      /* 1st seq in group */
-        for (int i = 0; i < m_seqs_in_set; ++i)
+        for (int s = 0; s < m_seqs_in_set; ++s)
         {
-            int source = m_playscreen_offset + i;       /* m_screenset?     */
-            int dest = groupbase + i;
+            int source = m_playscreen_offset + s;       /* m_screenset?     */
+            int dest = groupbase + s;
             if (is_active(source))
                 m_mute_group[dest] = m_seqs[source]->get_playing();
         }
@@ -488,18 +486,18 @@ perform::set_and_copy_mute_group (int mutegroup)
 #ifdef SEQ64_USE_TDEAGAN_CODE
     int setbase = m_screenset * m_seqs_in_set;  /* was m_playscreen_offset  */
 #else
-    int setbase = m_playscreen_offset;
+    int setbase = m_playscreen_offset;          /* includes m_seqs_in_set   */
 #endif
     m_mute_group_selected = mutegroup;          /* must set it before loop  */
-    for (int i = 0; i < m_seqs_in_set; ++i)
+    for (int s = 0; s < m_seqs_in_set; ++s)
     {
-        int source = setbase + i;
+        int source = setbase + s;
         if (m_mode_group_learn && is_active(source))
         {
-            int dest = groupbase + i;
+            int dest = groupbase + s;
             m_mute_group[dest] = m_seqs[source]->get_playing();
         }
-        m_tracks_mute_state[i] = m_mute_group[mute_group_offset(i)];
+        m_tracks_mute_state[s] = m_mute_group[mute_group_offset(s)];
     }
 }
 
@@ -513,9 +511,8 @@ perform::set_and_copy_mute_group (int mutegroup)
  * \change tdeagan 2015-12-22 via git pull.
  *      Replaced m_playing_screen with m_screenset.
  *
- * \change 2016-05-06
- *      It seems to us that the for (i) clause should have i range from 0 to
- *      m_max_sets, not m_seqs_in_set.  So let's do it, pre-emptively.
+ *  It seems to us that the for (g) clause should have g range from 0 to
+ *  m_max_sets, not m_seqs_in_set.
  */
 
 void
@@ -523,26 +520,19 @@ perform::mute_group_tracks ()
 {
     if (m_mode_group)
     {
-        for (int i = 0; i < m_seqs_in_set; ++i)         /* was m_max_sets!! */
+        for (int g = 0; g < m_seqs_in_set; ++g)         /* was m_max_sets!! */
         {
-            int seqoffset = i * m_seqs_in_set;
-            for (int j = 0; j < m_seqs_in_set; ++j)
+            int seqoffset = g * m_seqs_in_set;
+            for (int s = 0; s < m_seqs_in_set; ++s)
             {
-                int seqnum = seqoffset++;
+                int seqnum = seqoffset + s;
                 if (is_active(seqnum))
                 {
 #ifdef SEQ64_USE_TDEAGAN_CODE
-                    bool on = (i == m_screenset) && m_tracks_mute_state[j];
+                    bool on = (g == m_screenset) && m_tracks_mute_state[s];
 #else
-                    bool on = (i == m_playing_screen) && m_tracks_mute_state[j];
+                    bool on = (g == m_playing_screen) && m_tracks_mute_state[s];
 #endif
-                    /*
-                     * if (on)
-                     *     sequence_playing_on(seqnum);
-                     * else
-                     *     sequence_playing_off(seqnum);
-                     */
-
                     sequence_playing_change(seqnum, on);
                 }
             }
@@ -700,9 +690,7 @@ perform::set_left_tick (midipulse tick, bool setstart)
     else if (! is_jack_running())
         m_tick = tick;
 
-#ifdef SEQ64_STAZED_TRANSPORT
     m_reposition = false;
-#endif
 
 #endif
 
@@ -745,9 +733,7 @@ perform::set_right_tick (midipulse tick, bool setstart)
                 else
                     m_tick = m_left_tick;
 
-#ifdef SEQ64_STAZED_TRANSPORT
                 m_reposition = false;
-#endif
             }
 #else
             if (setstart)
@@ -1426,6 +1412,8 @@ perform::set_screenset (int ss)
 #ifdef SEQ64_USE_AUTO_SCREENSET_QUEUE
         if (m_auto_screenset_queue)
             swap_screenset_queues(m_screenset, ss);
+        else
+            m_screenset = ss;
 #else
         m_screenset = ss;
 #endif
@@ -1450,6 +1438,12 @@ perform::set_screenset (int ss)
 void
 perform::set_auto_screenset (bool flag)
 {
+    /*
+     *  Not sure why we're doing this changing, as it is just a option
+     *  setting.
+     */
+
+#if 0
     if (flag)
     {
         mute_all_tracks();
@@ -1459,6 +1453,8 @@ perform::set_auto_screenset (bool flag)
     {
         mute_all_tracks(false);             // the default is true !!!!
     }
+#endif
+
     m_auto_screenset_queue = flag;
 }
 
@@ -1478,25 +1474,28 @@ perform::set_auto_screenset (bool flag)
 void
 perform::swap_screenset_queues (int ss0, int ss1)
 {
-    int seq0 = ss0 * m_seqs_in_set;
-    for (int i = 0; i < m_seqs_in_set; ++i, ++seq0)
+    if (is_pattern_playing())
     {
-        if (is_active(seq0))
-            m_seqs[seq0]->off_queued();         // toggle_queued();
-    }
+        int seq0 = ss0 * m_seqs_in_set;
+        for (int s = 0; s < m_seqs_in_set; ++s, ++seq0)
+        {
+            if (is_active(seq0))
+                m_seqs[seq0]->off_queued();         // toggle_queued();
+        }
 
-    int seq1 = ss1 * m_seqs_in_set;
-    m_screenset = ss1;
-    for (int i = 0; i < m_seqs_in_set; ++i, ++seq1)
-    {
-        if (is_active(seq1))
-            m_seqs[seq1]->on_queued();          // toggle_queued();
-    }
-    set_playing_screenset();
+        int seq1 = ss1 * m_seqs_in_set;
+        m_screenset = ss1;
+        for (int s = 0; s < m_seqs_in_set; ++s, ++seq1)
+        {
+            if (is_active(seq1))
+                m_seqs[seq1]->on_queued();          // toggle_queued();
+        }
+        set_playing_screenset();
 
 #ifdef PLATFORM_DEBUG_XXX
-    dump_mute_statuses("screen-set change");
+        dump_mute_statuses("screen-set change");
 #endif
+    }
 }
 
 #endif  // SEQ64_USE_AUTO_SCREENSET_QUEUE
@@ -1537,7 +1536,7 @@ perform::set_playing_screenset ()
         }
     }
     m_playing_screen = m_screenset;
-    m_playscreen_offset = m_playing_screen * m_seqs_in_set;
+    m_playscreen_offset = m_screenset * m_seqs_in_set;
     mute_group_tracks();
 }
 
@@ -1799,9 +1798,7 @@ perform::copy_triggers ()
 void
 perform::start_playing (bool songmode)
 {
-#ifdef SEQ64_STAZED_TRANSPORT
     m_start_from_perfedit = songmode;
-#endif
     if (songmode || song_start_mode())
     {
         if (is_jack_master())
@@ -1812,10 +1809,8 @@ perform::start_playing (bool songmode)
             * tick.
             */
 
-#ifdef SEQ64_STAZED_TRANSPORT
            if (! m_reposition)
                 m_jack_asst.position(true, m_left_tick);    /* position_jack() */
-#endif
         }
         start_jack();
         start(true);                                        /* song mode       */
@@ -1941,9 +1936,7 @@ perform::set_jack_mode (bool jack_button_active)
 
     if (song_start_mode())
     {
-#ifdef SEQ64_STAZED_TRANSPORT
         set_reposition(false);
-#endif
         set_start_tick(get_left_tick());
     }
     else
@@ -1985,9 +1978,7 @@ perform::pause_playing (bool songmode)
         m_usemidiclock = false;
 #ifdef SEQ64_JACK_SUPPORT
     }
-#endif
 
-#ifdef SEQ64_STAZED_TRANSPORT
     if (! m_is_paused)                      /* seq64 was in output_func()   */
         m_start_from_perfedit = false;      /* act like stop_playing()      */
     else
@@ -2011,14 +2002,12 @@ perform::stop_playing ()
     stop_jack();
     stop();
 
-#if ! defined SEQ64_STAZED_JACK_SUPPORT
+#ifdef SEQ64_STAZED_JACK_SUPPORT
+    m_start_from_perfedit = false;
+#else
     m_is_paused = false;
     is_pattern_playing(false);
     m_tick = 0;                         // or get_left_tick()
-#endif
-
-#ifdef SEQ64_STAZED_TRANSPORT
-    m_start_from_perfedit = false;
 #endif
 
 }
@@ -2168,9 +2157,7 @@ void
 perform::inner_stop (bool midiclock)
 {
 #ifdef SEQ64_STAZED_JACK_SUPPORT
-#ifdef SEQ64_STAZED_TRANSPORT
     start_from_perfedit(false);
-#endif
     set_running(false);                 // rc().global_is_running() = false;
     reset_sequences();
     m_usemidiclock = midiclock;
@@ -2671,21 +2658,16 @@ perform::output_func ()
             bool change_position =
                 m_playback_mode && ! is_jack_running() && ! m_usemidiclock;
 
-#ifdef SEQ64_STAZED_TRANSPORT
             if (change_position)
                 change_position = m_reposition;
-#endif
 
             if (change_position)
             {
                 set_orig_ticks(m_starting_tick);
                 m_starting_tick = m_left_tick;      // restart at left marker
-#ifdef SEQ64_STAZED_TRANSPORT
                 m_reposition = false;
-#endif
             }
 #endif
-
             /*
              * pad.js_init_clock will be true when we run for the first time,
              * or as soon as JACK gets a good lock on playback.
@@ -2704,7 +2686,7 @@ perform::output_func ()
                 // if (m_looping && (m_playback_mode || start_from_perfedit()))
 
                 bool perfloop = m_looping;
-#ifdef SEQ64_STAZED_TRANSPORT
+#ifdef SEQ64_STAZED_JACK_SUPPORT
                 if (perfloop)
                     perfloop = m_playback_mode || start_from_perfedit();
 #else
@@ -3845,7 +3827,7 @@ perform::perfroll_key_event (const keystroke & k, int drop_sequence)
                     pop_trigger_redo();                 /* perfedit::redo() */
                     result = true;
                 }
-#ifdef SEQ64_STAZED_TRANSPORT
+#ifdef SEQ64_STAZED_JACK_SUPPORT
                 else if (k.is(keys().follow_transport()))
                 {
                     toggle_follow_transport();
@@ -3861,8 +3843,6 @@ perform::perfroll_key_event (const keystroke & k, int drop_sequence)
                     rewind(true);
                     result = true;
                 }
-#endif
-#ifdef SEQ64_STAZED_JACK_SUPPORT
                 else if (k.is(keys().toggle_jack()))
                 {
                     toggle_jack_mode();
@@ -3872,7 +3852,7 @@ perform::perfroll_key_event (const keystroke & k, int drop_sequence)
             }
         }
     }
-#ifdef SEQ64_STAZED_TRANSPORT
+#ifdef SEQ64_STAZED_JACK_SUPPORT
     else
     {
         if (k.is(keys().fast_forward()))
@@ -4063,7 +4043,7 @@ perform::max_active_set () const
     return result;
 }
 
-#ifdef SEQ64_STAZED_TRANSPORT
+#ifdef SEQ64_STAZED_JACK_SUPPORT
 
 void
 perform::FF_rewind ()
@@ -4137,7 +4117,7 @@ perform::FF_RW_timeout ()
     return false;
 }
 
-#endif  // SEQ64_STAZED_TRANSPORT
+#endif  // SEQ64_STAZED_JACK_SUPPORT
 
 #ifdef PLATFORM_DEBUG_XXX
 

@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-13
- * \updates       2016-10-01
+ * \updates       2016-10-06
  * \license       GNU GPLv2 or above
  *
  *  Added pattern-edit and event-edit keys which change the pattern slot
@@ -75,8 +75,8 @@ keys_perform::keys_perform ()
     m_key_toggle_jack               (SEQ64_F2),
     m_key_menu_mode                 (SEQ64_F3),
     m_key_follow_transport          (SEQ64_F4),
-    m_key_fast_forward              (SEQ64_F5),
-    m_key_rewind                    (SEQ64_F6),
+    m_key_rewind                    (SEQ64_F5),
+    m_key_fast_forward              (SEQ64_F6),
     m_key_pointer_position          (SEQ64_F7),
     m_key_toggle_mutes              (SEQ64_F8),
     m_key_tap_bpm                   (SEQ64_F9),
@@ -150,8 +150,8 @@ keys_perform::set_keys (const keys_perform_transfer & kpt)
     m_key_toggle_jack               = kpt.kpt_toggle_jack;
     m_key_menu_mode                 = kpt.kpt_menu_mode;
     m_key_follow_transport          = kpt.kpt_follow_transport;
-    m_key_fast_forward              = kpt.kpt_fast_forward;
     m_key_rewind                    = kpt.kpt_rewind;
+    m_key_fast_forward              = kpt.kpt_fast_forward;
     m_key_pointer_position          = kpt.kpt_pointer_position;
     m_key_toggle_mutes              = kpt.kpt_toggle_mutes;
     m_key_tap_bpm                   = kpt.kpt_tap_bpm;
@@ -188,20 +188,20 @@ keys_perform::get_keys (keys_perform_transfer & kpt)
      kpt.kpt_group_learn            = m_key_group_learn;
      kpt.kpt_start                  = m_key_start;
      kpt.kpt_pause                  = m_key_pause;
-    kpt.kpt_song_mode               = m_key_song_mode;
-    kpt.kpt_toggle_jack             = m_key_toggle_jack;
-    kpt.kpt_menu_mode               = m_key_menu_mode;
-    kpt.kpt_follow_transport        = m_key_follow_transport;
-    kpt.kpt_fast_forward            = m_key_fast_forward;
-    kpt.kpt_rewind                  = m_key_rewind;
-    kpt.kpt_pointer_position        = m_key_pointer_position;
-    kpt.kpt_toggle_mutes            = m_key_toggle_mutes;
-    kpt.kpt_tap_bpm                 = m_key_tap_bpm;
-    kpt.kpt_pattern_edit            = m_key_pattern_edit;
-    kpt.kpt_event_edit              = m_key_event_edit;
-    kpt.kpt_stop                    = m_key_stop;
-    kpt.kpt_show_ui_sequence_key    = m_key_show_ui_sequence_key;
-    kpt.kpt_show_ui_sequence_number = m_key_show_ui_sequence_number;
+     kpt.kpt_song_mode              = m_key_song_mode;
+     kpt.kpt_toggle_jack            = m_key_toggle_jack;
+     kpt.kpt_menu_mode              = m_key_menu_mode;
+     kpt.kpt_follow_transport       = m_key_follow_transport;
+     kpt.kpt_rewind                 = m_key_rewind;
+     kpt.kpt_fast_forward           = m_key_fast_forward;
+     kpt.kpt_pointer_position       = m_key_pointer_position;
+     kpt.kpt_toggle_mutes           = m_key_toggle_mutes;
+     kpt.kpt_tap_bpm                = m_key_tap_bpm;
+     kpt.kpt_pattern_edit           = m_key_pattern_edit;
+     kpt.kpt_event_edit             = m_key_event_edit;
+     kpt.kpt_stop                   = m_key_stop;
+     kpt.kpt_show_ui_sequence_key   = m_key_show_ui_sequence_key;
+     kpt.kpt_show_ui_sequence_number = m_key_show_ui_sequence_number;
 }
 
 /**
@@ -360,11 +360,11 @@ keyval_normalize (keys_perform_transfer & k)
     if (invalid_key(k.kpt_follow_transport))
         k.kpt_follow_transport = SEQ64_F4;
 
-    if (invalid_key(k.kpt_fast_forward))
-        k.kpt_fast_forward = SEQ64_F5;
-
     if (invalid_key(k.kpt_rewind))
-        k.kpt_rewind = SEQ64_F6;
+        k.kpt_rewind = SEQ64_F5;
+
+    if (invalid_key(k.kpt_fast_forward))
+        k.kpt_fast_forward = SEQ64_F6;
 
     if (invalid_key(k.kpt_pointer_position))
         k.kpt_pointer_position = SEQ64_F7;

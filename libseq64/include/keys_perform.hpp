@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-09-13
- * \updates       2016-10-01
+ * \updates       2016-10-06
  * \license       GNU GPLv2 or above
  *
  * Stazed:
@@ -51,8 +51,10 @@
  *          Allows for fast forward.
  *      -   Rewind (key r):
  *          Allows for rewind functionality.
- *      -   Pointer (key p):
- *          We have to see what this is....
+ *      -   Position pointer (key p):
+ *          Moves the tick position to the current mouse location.
+ *      -   There are many more keystrokes if some of the Seq32 build
+ *          options are enabled.
  */
 
 #include <map>                          /* std::map                         */
@@ -213,8 +215,8 @@ private:
     unsigned int m_key_toggle_jack;             /**< Toggle JACK connect.   */
     unsigned int m_key_menu_mode;               /**< Menu enabled/disabled. */
     unsigned int m_key_follow_transport;        /**< Toggle following JACK. */
-    unsigned int m_key_fast_forward;            /**< Start fast-forward.    */
     unsigned int m_key_rewind;                  /**< Start rewind.          */
+    unsigned int m_key_fast_forward;            /**< Start fast-forward.    */
     unsigned int m_key_pointer_position;        /**< Set progress to mouse. */
     unsigned int m_key_toggle_mutes;            /**< Toggle all patterns.   */
     unsigned int m_key_tap_bpm;                 /**< To tap out the BPM.    */

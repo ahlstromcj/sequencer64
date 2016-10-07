@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-20
- * \updates       2016-10-05
+ * \updates       2016-10-06
  * \license       GNU GPLv2 or above
  *
  *  The "rc" command-line options override setting that are first read from
@@ -784,20 +784,16 @@ const static std::string s_strip_empty_mutes = "off";
 
 #ifdef SEQ64_STAZED_JACK_SUPPORT
 const static std::string s_seq32_jack_support = "ON";
+const static std::string s_seq32_transport = "ON";
 #else
 const static std::string s_seq32_jack_support = "off";
+const static std::string s_seq32_transport = "off";
 #endif
 
 #ifdef SEQ64_STAZED_TRANSPOSE
 const static std::string s_seq32_transpose = "ON";
 #else
 const static std::string s_seq32_transpose = "off";
-#endif
-
-#ifdef SEQ64_STAZED_TRANSPORT
-const static std::string s_seq32_transport = "ON";
-#else
-const static std::string s_seq32_transport = "off";
 #endif
 
 #ifdef SEQ64_STAZED_MENU_BUTTONS

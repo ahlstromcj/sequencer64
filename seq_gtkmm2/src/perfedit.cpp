@@ -71,9 +71,6 @@
 
 #ifdef SEQ64_STAZED_JACK_SUPPORT
 #include "pixmaps/jack_black.xpm"       /* #include "pixmaps/jack.xpm"  */
-#endif
-
-#ifdef SEQ64_STAZED_TRANSPORT
 #include "pixmaps/transport_follow.xpm"
 #endif
 
@@ -175,8 +172,6 @@ perfedit::perfedit
     m_button_redo       (manage(new Gtk::Button())),    // stazed
 #ifdef SEQ64_STAZED_JACK_SUPPORT
     m_button_jack       (manage(new Gtk::ToggleButton())),
-#endif
-#ifdef SEQ64_STAZED_TRANSPORT
     m_button_follow     (manage(new Gtk::ToggleButton())),
 #endif
     m_button_bpm        (manage(new Gtk::Button())),
@@ -415,9 +410,7 @@ perfedit::perfedit
     add_tooltip(m_button_jack, "Toggle JACK sync connection.");
     if (rc().with_jack_transport())
         m_button_jack->set_active(true);
-#endif
 
-#ifdef SEQ64_STAZED_TRANSPORT
     m_button_follow->add(*manage(new PIXBUF_IMAGE(transport_follow_xpm)));
     m_button_follow->signal_clicked().connect
     (
@@ -451,9 +444,6 @@ perfedit::perfedit
 
 #ifdef SEQ64_STAZED_JACK_SUPPORT
     m_hlbox->pack_start(*m_button_jack, false, false);
-#endif
-
-#ifdef SEQ64_STAZED_TRANSPORT
     m_hlbox->pack_start(*m_button_follow, false, false);
 #endif
 
@@ -600,7 +590,7 @@ perfedit::popup_menu (Gtk::Menu * menu)
     menu->popup(0, 0);
 }
 
-#ifdef SEQ64_STAZED_TRANSPORT
+#ifdef SEQ64_STAZED_JACK_SUPPORT
 
 /**
  *  Note that this will trigger the button signal callback.
@@ -621,10 +611,6 @@ perfedit::toggle_follow_transport ()
 {
     m_button_follow->set_active(! m_button_follow->get_active());
 }
-
-#endif  // SEQ64_STAZED_TRANSPORT
-
-#ifdef SEQ64_STAZED_JACK_SUPPORT
 
 /**
  *  To avoid a lot of pointer dereferencing, much of the code is offloaded to
@@ -815,12 +801,10 @@ perfedit::timeout ()
     m_perfroll->redraw_progress();
     m_perfnames->redraw_dirty_sequences();
 
-#ifdef SEQ64_STAZED_TRANSPORT
+#ifdef SEQ64_STAZED_JACK_SUPPORT
     if (m_button_follow->get_active() != perf().get_follow_transport())
         m_button_follow->set_active(perf().get_follow_transport());
-#endif
 
-#ifdef SEQ64_STAZED_JACK_SUPPORT
     if (perf().is_running())
         m_button_jack->set_sensitive(false);
     else

@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2016-08-19
- * \updates       2016-10-01
+ * \updates       2016-10-06
  * \license       GNU GPLv2 or above
  *
  *    Some options (the "USE_xxx" options) specify experimental and
@@ -197,7 +197,8 @@
 
 /**
  *  Adds support for various transport features, more to come.  Now a
- *  configure-time option.
+ *  configure-time option, but now rolled into SEQ64_STAZED_JACK_SUPPORT
+ *  because the two features are really co-mingled.
  *
  * #define SEQ64_STAZED_TRANSPORT
  */
@@ -219,12 +220,11 @@
  *    - SEQ64_HIGHLIGHT_EMPTY_SEQS
  *    - SEQ64_JACK_SESSION
  *    - SEQ64_JACK_SUPPORT
- *    - SEQ64_STAZED_JACK_SUPPORT
+ *    - SEQ64_STAZED_JACK_SUPPORT (now includes SEQ64_STAZED_TRANSPORT code)
  *    - SEQ64_LASH_SUPPORT
  *    - SEQ64_PAUSE_SUPPORT
  *    - SEQ64_STAZED_CHORD_GENERATOR
  *    - SEQ64_STAZED_TRANSPOSE
- *    - SEQ64_STAZED_TRANSPORT
  *    - SEQ64_STRIP_EMPTY_MUTES
  */
 

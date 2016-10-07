@@ -19,7 +19,7 @@ dnl ---------------------------------------------------------------------------
 
 AC_PREREQ(2.60)
 AC_REVISION($Revision: 0.9$)dnl
-AC_INIT(Sequencer64, [0.9.18.1], [ahlstromcj@gmail.com])
+AC_INIT(Sequencer64, [0.9.18.2], [ahlstromcj@gmail.com])
 AC_CONFIG_AUX_DIR([aux-files])
 
 dnl AC_CONFIG_SRCDIR([libseq64/src/midibus.cpp])
@@ -53,7 +53,7 @@ PACKAGE=sequencer64
 AC_DEFINE_UNQUOTED(PACKAGE, "$PACKAGE")
 AC_SUBST(PACKAGE)
 
-VERSION="0.9.18.1"
+VERSION="0.9.18.2"
 AC_DEFINE_UNQUOTED(VERSION, "$VERSION")
 AC_SUBST(VERSION)
 
@@ -381,6 +381,7 @@ if test "$jack" != "no"; then
                           [Define to enable JACK session support])
             fi
         fi
+        AC_MSG_RESULT([JACK support enabled.]);
 
     else
         AC_MSG_WARN([*** Could not find JACK library, disabling JACK support])
@@ -406,6 +407,7 @@ if test "$lash" != "no"; then
         AC_DEFINE(LASH_SUPPORT, 1, [Define to enable LASH support])
         AC_SUBST(LASH_CFLAGS)
         AC_SUBST(LASH_LIBS)
+        AC_MSG_RESULT([LASH support enabled.]);
     else
         AC_MSG_WARN([*** LASH not found, session support will not be built.])
     fi
@@ -428,6 +430,7 @@ AC_ARG_ENABLE(highlight,
 
 if test "$highlight" != "no"; then
     AC_DEFINE(HIGHLIGHT_EMPTY_SEQS, 1, [Define to enable highlighting empty sequences])
+    AC_MSG_RESULT([Highlighting empty sequences enabled.]);
 else
     AC_MSG_WARN([*** Highlighting empty sequences not enabled.]);
 fi
@@ -445,6 +448,7 @@ AC_ARG_ENABLE(eveditor,
 
 if test "$eveditor" != "no"; then
     AC_DEFINE(ENABLE_EVENT_EDITOR, 1, [Define to enable the event editor])
+    AC_MSG_RESULT([Event editor enabled.]);
 else
     AC_MSG_WARN([*** Event editor not enabled.]);
 fi
@@ -459,8 +463,9 @@ AC_ARG_ENABLE(pause,
 
 if test "$pause" != "no"; then
     AC_DEFINE(PAUSE_SUPPORT, 1, [Define to enable pausing and pause button])
+    AC_MSG_RESULT([Pausing sequences and pause-button enabled.]);
 else
-    AC_MSG_WARN([*** Pausing sequences and pause button not enabled.]);
+    AC_MSG_WARN([*** Pausing sequences and pause-button not enabled.]);
 fi
 
 dnl Support for re-enabling the "statistics" code.
@@ -474,8 +479,9 @@ AC_ARG_ENABLE(statistics,
 
 if test "$statistics" != "no"; then
     AC_DEFINE(STATISTICS_SUPPORT, 1, [Define to enable statistics gathering])
+    AC_MSG_RESULT([Statistics gathering enabled.]);
 else
-    AC_MSG_WARN([*** Running statistics gathering not enabled.]);
+    AC_MSG_WARN([*** Statistics gathering not enabled.]);
 fi
 
 dnl Support for using the stazed JACK support.  Currently disabled by default,
@@ -489,6 +495,7 @@ AC_ARG_ENABLE(seq32jack,
 if test "$seq32jack" != "no"; then
     AC_DEFINE(STAZED_JACK_SUPPORT, 1, [Define to enable Seq32 JACK support])
     AC_DEFINE(JACK_SUPPORT, 1, [Define to enable JACK driver])
+    AC_MSG_RESULT([Seq32 JACK support enabled.]);
 else
     AC_MSG_WARN([*** Seq32 JACK support not enabled.]);
 fi
@@ -502,6 +509,7 @@ AC_ARG_ENABLE(chords,
 
 if test "$chords" != "no"; then
     AC_DEFINE(STAZED_CHORD_GENERATOR, 1, [Define to enable the chord generator])
+    AC_MSG_RESULT(Chord generator enabled.)
 else
     AC_MSG_WARN([*** Chord generator not enabled.]);
 fi
@@ -516,23 +524,30 @@ AC_ARG_ENABLE(transpose,
 
 if test "$transpose" != "no"; then
     AC_DEFINE(STAZED_TRANSPOSE, 1, [Define to enable global transpose])
+    AC_MSG_RESULT(Global seq32 transpose enabled.)
 else
     AC_MSG_WARN([*** Global seq32 transpose not enabled.]);
 fi
 
 dnl Support for using the stazed transport feature.  This adds rewind, fast-
 dnl forward, and some other features.
-
-AC_ARG_ENABLE(transport,
-    [AS_HELP_STRING(--enable-transport, [Enable using extended transport])],
-    [transport=$enableval],
-    [transport=no])
-
-if test "$transport" != "no"; then
-    AC_DEFINE(STAZED_TRANSPORT, 1, [Define to enable extended transport])
-else
-    AC_MSG_WARN([*** Extended seq32 transport not enabled.]);
-fi
+dnl
+dnl ca 2016-10-06:
+dnl     Let's merge Stazed JACK and transport support, since they basically
+dnl     need each other to work properly.
+dnl
+dnl AC_ARG_ENABLE(transport,
+dnl     [AS_HELP_STRING(--enable-transport, [Enable using extended seq32 transport])],
+dnl     [transport=$enableval],
+dnl     [transport=no])
+dnl 
+dnl if test "$transport" != "no"; then
+dnl     AC_DEFINE(STAZED_TRANSPORT, 1, [
+dnl          Define to enable extended seq32 transport])
+dnl     AC_MSG_RESULT(Extended seq32 transport enabled.)
+dnl else
+dnl     AC_MSG_WARN([*** Extended seq32 transport not enabled.]);
+dnl fi
 
 dnl Support for stripping unused mute-group specifications from the output MIDI
 dnl file.  They are still left in the "rc" configuration file, but can be
@@ -546,8 +561,9 @@ AC_ARG_ENABLE(mutestrip,
 
 if test "$mutestrip" != "no"; then
     AC_DEFINE(STRIP_EMPTY_MUTES, 1, [Define to enable stripping empty mute groups])
+    AC_MSG_RESULT(Empty mute-strip enabled.)
 else
-    AC_MSG_WARN([*** Empty mute strip not enabled.]);
+    AC_MSG_WARN([*** Empty mute-strip not enabled.]);
 fi
 
 dnl 6.0  Top portion of the config.h/sequencer64-config.h header files.

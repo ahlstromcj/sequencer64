@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-10-02
+ * \updates       2016-10-06
  * \license       GNU GPLv2 or above
  *
  *  This class represents the central piano-roll user-interface area of the
@@ -173,7 +173,7 @@ private:
 
     bool m_have_button_press;
 
-#ifdef SEQ64_STAZED_TRANSPORT
+#ifdef SEQ64_STAZED_JACK_SUPPORT
 
     /**
      *  Indicates that the application should follow JACK transport.

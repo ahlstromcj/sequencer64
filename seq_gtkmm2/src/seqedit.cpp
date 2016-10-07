@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-09-24
+ * \updates       2016-10-06
  * \license       GNU GPLv2 or above
  *
  *  Compare this class to eventedit, which has to do some similar things,
@@ -2273,7 +2273,7 @@ seqedit::timeout ()
         m_seq.set_raise(false);
         raise();
     }
-#ifdef SEQ64_STAZED_TRANSPORT
+#ifdef SEQ64_STAZED_JACK_SUPPORT
     if (m_seq.is_dirty_edit())                  /* m_seq.is_dirty_main()    */
     {
         m_seqroll_wid->redraw_events();

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-10-02
+ * \updates       2016-10-06
  * \license       GNU GPLv2 or above
  *
  *  Here is a list of the global variables used/stored/modified by this
@@ -634,18 +634,7 @@ options::add_extended_keys_page ()
     );
     controltable->attach(*label, 2, 3, 0, 1);
     controltable->attach(*entry, 3, 4, 0, 1);
-#if ! defined SEQ64_STAZED_TRANSPORT
-    entry->set_sensitive(false);
-#endif
-
-    label = manage(new Gtk::Label("Fast forward", Gtk::ALIGN_RIGHT));
-    entry = manage
-    (
-        new keybindentry(keybindentry::location, PREFKEY_ADDR(fast_forward))
-    );
-    controltable->attach(*label, 2, 3, 1, 2);
-    controltable->attach(*entry, 3, 4, 1, 2);
-#if ! defined SEQ64_STAZED_TRANSPORT
+#if ! defined SEQ64_STAZED_JACK_SUPPORT
     entry->set_sensitive(false);
 #endif
 
@@ -654,9 +643,20 @@ options::add_extended_keys_page ()
     (
         new keybindentry(keybindentry::location, PREFKEY_ADDR(rewind))
     );
+    controltable->attach(*label, 2, 3, 1, 2);
+    controltable->attach(*entry, 3, 4, 1, 2);
+#if ! defined SEQ64_STAZED_JACK_SUPPORT
+    entry->set_sensitive(false);
+#endif
+
+    label = manage(new Gtk::Label("Fast forward", Gtk::ALIGN_RIGHT));
+    entry = manage
+    (
+        new keybindentry(keybindentry::location, PREFKEY_ADDR(fast_forward))
+    );
     controltable->attach(*label, 2, 3, 2, 3);
     controltable->attach(*entry, 3, 4, 2, 3);
-#if ! defined SEQ64_STAZED_TRANSPORT
+#if ! defined SEQ64_STAZED_JACK_SUPPORT
     entry->set_sensitive(false);
 #endif
 
@@ -667,7 +667,7 @@ options::add_extended_keys_page ()
     );
     controltable->attach(*label, 2, 3, 3, 4);
     controltable->attach(*entry, 3, 4, 3, 4);
-#if ! defined SEQ64_STAZED_TRANSPORT
+#if ! defined SEQ64_STAZED_JACK_SUPPORT
     entry->set_sensitive(false);
 #endif
 

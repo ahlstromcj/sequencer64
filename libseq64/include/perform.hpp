@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-10-05
+ * \updates       2016-10-06
  * \license       GNU GPLv2 or above
  *
  *  This class still has way too many members, even with the JACK and
@@ -220,10 +220,6 @@ private:
 
     midipulse m_jack_stop_tick;
 
-#endif
-
-#ifdef SEQ64_STAZED_TRANSPORT
-
     /**
      *  Implements the "follow JACK transport" button of the perfedit window.
      *  This is a separate function from the "JACK sync button of that window.
@@ -255,7 +251,7 @@ private:
 
     ff_rw_button_t m_FF_RW_button_type;   // was extern int in perfedit
 
-#endif  // SEQ64_STAZED_TRANSPORT
+#endif  // SEQ64_STAZED_JACK_SUPPORT
 
     /**
      *  Support for a wide range of GUI-related operations.
@@ -1181,11 +1177,6 @@ public:
     }
 
     unsigned short combine_bytes (midibyte b0, midibyte b1);
-
-#endif
-
-#ifdef SEQ64_STAZED_TRANSPORT
-
     void FF_rewind ();
     bool FF_RW_timeout ();          /* called by free-function of same name */
 
@@ -1289,7 +1280,7 @@ public:
 
     void reposition (midipulse tick);
 
-#endif  // SEQ64_STAZED_TRANSPORT
+#endif  // SEQ64_STAZED_JACK_SUPPORT
 
 public:
 
@@ -2254,7 +2245,7 @@ private:
 
     int mute_group_offset (int track)
     {
-        return clamp_track(track) + m_mute_group_selected * c_seqs_in_set;
+        return clamp_track(track) + m_mute_group_selected * m_seqs_in_set;
     }
 
     bool is_seq_valid (int seq) const;

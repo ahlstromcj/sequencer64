@@ -1,6 +1,6 @@
-INSTALL for Sequencer64 v. 0.9.18.1
+INSTALL for Sequencer64 v. 0.9.18.2
 Chris Ahlstrom
-2015-09-10 to 2016-10-03
+2015-09-10 to 2016-10-06
 
 The current packaging for Sequencer64 is primarily aimed at developers.
 There is currently no configure script... it must be bootstrapped.
@@ -261,6 +261,8 @@ MANUALLY-DEFINED MACROS IN CODE:
         project.
 
     SEQ64_STAZED_TRANSPORT:
+
+        OBSOLETE.  Now rolled into SEQ64_STAZED_JACK_SUPPORT.
 
         Adds some transport features from the seq32 project.  These include
         fast-forward and rewind support, storage of the song editor time

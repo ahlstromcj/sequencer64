@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-14
- * \updates       2016-09-18
+ * \updates       2016-10-06
  * \license       GNU GPLv2 or above
  *
  *  This module was created from code that existed in the perform object.
@@ -220,7 +220,7 @@ jack_assistant::~jack_assistant ()
      */
 }
 
-#ifdef SEQ64_STAZED_TRANSPORT
+#ifdef SEQ64_STAZED_JACK_SUPPORT
 
 /**
  * \setter parent().toggle_song_start_mode()
@@ -706,7 +706,8 @@ jack_assistant::position (bool state, midipulse tick)
     long tpb_bpm = ticks_per_beat * beats_per_minute * 4.0 / m_beat_width;
     uint64_t jack_frame = tick_rate / tpb_bpm;
     jack_transport_locate(m_jack_client,jack_frame);
-#ifdef SEQ64_STAZED_TRANSPORT
+
+#ifdef SEQ64_STAZED_JACK_SUPPORT
     if (parent().is_running())
         parent().set_reposition(false);
 #endif
@@ -967,12 +968,10 @@ jack_process_callback (jack_nframes_t /* nframes */, void * arg)
             {
                 j->m_jack_transport_state_last = JackTransportStarting;
 
-#ifdef SEQ64_STAZED_TRANSPORT
                 if (p.start_from_perfedit())
                     p.inner_start(true);
                 else
                     p.inner_start(p.song_start_mode());
-#endif
             }
             else        /* don't start, just reposition transport marker */
             {
@@ -980,9 +979,7 @@ jack_process_callback (jack_nframes_t /* nframes */, void * arg)
                 long diff = tick - j->get_jack_stop_tick();
                 if (diff != 0)
                 {
-#ifdef SEQ64_STAZED_TRANSPORT
                     p.set_reposition();         // a perform option
-#endif
                     p.set_start_tick(tick);     // p.set_starting_tick(tick);
                     j->set_jack_stop_tick(tick);
                 }

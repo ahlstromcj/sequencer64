@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-09-18
+ * \updates       2016-10-06
  * \license       GNU GPLv2 or above
  *
  *  Note that, as of version 0.9.11, the z and Z keys, when focus is on the
@@ -104,7 +104,7 @@ extern void update_perfedit_sequences ();
 inline int
 FF_RW_timeout (void * arg)
 {
-#ifdef SEQ64_STAZED_TRANSPORT
+#ifdef SEQ64_STAZED_JACK_SUPPORT
     perform * p = reinterpret_cast<perform *>(arg);
     return not_nullptr(p) ? p->FF_RW_timeout() : false ;
 #else
@@ -169,8 +169,6 @@ private:
     Gtk::Button * m_button_redo;        /**< Button to redo previous action.    */
 #ifdef SEQ64_STAZED_JACK_SUPPORT
     Gtk::ToggleButton * m_button_jack;  /**< Button to toggle JACK connection.  */
-#endif
-#ifdef SEQ64_STAZED_TRANSPORT
     Gtk::ToggleButton * m_button_follow; /**< Button to toggle JACK following.  */
 #endif
     Gtk::Button * m_button_bpm;         /**< Beats-per-measure menu button.     */
@@ -291,14 +289,10 @@ public:
 
 #ifdef SEQ64_STAZED_JACK_SUPPORT
 
+    friend int FF_RW_timeout (void * arg);
+
     bool get_toggle_jack();
     void toggle_jack();
-
-#endif
-
-#ifdef SEQ64_STAZED_TRANSPORT
-
-    friend int FF_RW_timeout (void * arg);
 
     void rewind (bool press)
     {
@@ -314,11 +308,8 @@ public:
 
     void set_follow_transport ();
     void toggle_follow_transport ();
-
-#endif
-
-#ifdef SEQ64_STAZED_JACK_SUPPORT
     void set_jack_mode ();
+
 #endif
 
 #ifdef SEQ64_STAZED_TRANSPOSE

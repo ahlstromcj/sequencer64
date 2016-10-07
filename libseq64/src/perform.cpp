@@ -1979,10 +1979,13 @@ perform::pause_playing (bool songmode)
 #ifdef SEQ64_JACK_SUPPORT
     }
 
+#ifdef SEQ64_STAZED_JACK_SUPPORT
     if (! m_is_paused)                      /* seq64 was in output_func()   */
         m_start_from_perfedit = false;      /* act like stop_playing()      */
     else
         m_start_from_perfedit = songmode;   /* act like start_playing()     */
+#endif
+
 #endif
 
     m_is_paused = true;

@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-10-06
+ * \updates       2016-10-07
  * \license       GNU GPLv2 or above
  *
  *  This class still has way too many members, even with the JACK and
@@ -2171,19 +2171,27 @@ private:
     }
 
     /**
-     *  Checks the parameter against c_midi_controls.
+     *  Checks the parameter against c_midi_controls.  We were checking
+     *  against c_midi_track_ctrl as well, but that was a bug.  This function
+     *  is meant to check that the supplied sequence number does not exceed
+     *  the value of c_midi_controls (32 * 2 + 10 = 74).  The track (sequence
+     *  or pattern) controls rangoe from 0 to 64.  Next come the
+     *  "c_midi_control" values:  bpm_up, bpm_dn, ..., play_ss, and, lastly,
+     *  c_midi_controls itself.
      *
-     * \param ctrl
-     *      The value that should be in the c_midi_controls range.
+     * \param seq
+     *      The sequence number value that should be inside the
+     *      c_midi_controls range.
      *
      * \return
-     *      Returns true if the parameter is valid.  For this function, no
-     *      error print-out is generated.
+     *      Returns true if the sequence number is valid for accessing the
+     *      MIDI control values.  For this function, no error print-out is
+     *      generated.
      */
 
-    bool is_midi_control_valid (int ctrl) const
+    bool valid_midi_control_seq (int seq) const
     {
-        return ctrl >= c_midi_track_ctrl && ctrl < c_midi_controls;
+        return seq < c_midi_controls;
     }
 
     /**

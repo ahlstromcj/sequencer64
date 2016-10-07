@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and Tim Deagan
  * \date          2015-07-24
- * \updates       2016-10-06
+ * \updates       2016-10-07
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -85,6 +85,9 @@ static const int c_status_queue    = 0x04;
  *  sense that it never seems to access a null pointer.  So we're not even
  *  risking data transfers between this dummy object and the ones we really
  *  want to use.
+ *
+ *  However, it would be nice to be able to detect any errors that occur.
+ *  How?
  */
 
 midi_control perform::sm_mc_dummy;
@@ -1282,7 +1285,7 @@ perform::is_sequence_in_edit (int seq)
  *  Retrieves a reference to a value from m_midi_cc_toggle[].
  *
  * \param seq
- *      Provides the index to pass to is_midi_control_valid() to obtain a
+ *      Provides the index to pass to valid_midi_control_seq() to obtain a
  *      control value (such as c_midi_control_bpm_up) to use to retrieve the
  *      desired midi_control object.  Note that this value is unsigned simply
  *      to make the legality check of the parameter easier.
@@ -1295,14 +1298,14 @@ perform::is_sequence_in_edit (int seq)
 midi_control &
 perform::midi_control_toggle (int seq)
 {
-    return is_midi_control_valid(seq) ? m_midi_cc_toggle[seq] : sm_mc_dummy ;
+    return valid_midi_control_seq(seq) ? m_midi_cc_toggle[seq] : sm_mc_dummy ;
 }
 
 /**
  *  Retrieves a reference to a value from m_midi_cc_on[].
  *
  * \param seq
- *      Provides the index to pass to is_midi_control_valid() to obtain a
+ *      Provides the index to pass to valid_midi_control_seq() to obtain a
  *      control value (such as c_midi_control_bpm_up) to use to retrieve the
  *      desired midi_control object.
  *
@@ -1314,7 +1317,7 @@ perform::midi_control_toggle (int seq)
 midi_control &
 perform::midi_control_on (int seq)
 {
-    return is_midi_control_valid(seq) ? m_midi_cc_on[seq] : sm_mc_dummy ;
+    return valid_midi_control_seq(seq) ? m_midi_cc_on[seq] : sm_mc_dummy ;
 }
 
 /**
@@ -1332,7 +1335,7 @@ perform::midi_control_on (int seq)
 midi_control &
 perform::midi_control_off (int seq)
 {
-    return is_midi_control_valid(seq) ? m_midi_cc_off[seq] : sm_mc_dummy ;
+    return valid_midi_control_seq(seq) ? m_midi_cc_off[seq] : sm_mc_dummy ;
 }
 
 /**

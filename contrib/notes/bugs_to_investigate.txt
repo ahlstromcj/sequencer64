@@ -877,7 +877,6 @@ playing and then stop the song, the song cannot be edited any more.
 
 Date: Wed, 05 Oct 2016 09:04:57 -0700
 From: y1ds <notifications@github.com>
-To: ahlstromcj/sequencer64 <sequencer64@noreply.github.com>
 Subject: [ahlstromcj/sequencer64] loops on/off with midi controller (#35)
 
 I`m having problems turning on and off loops with a controller.
@@ -896,5 +895,20 @@ sequencer64 is transport master, pressing the stop button doesn't go to the
 beginning  of the loops.
 also when it is not master, but another jack master is used, when
 jack_transport_stop() is called, the loops do not return to the beginning.
+
+
+
+Date: Fri, 07 Oct 2016 05:39:26 -0700
+From: y1ds <notifications@github.com>
+Subject: Re: [ahlstromcj/sequencer64] loops on/off with midi controller (#35)
+
+I tried the fixup branch but im sorry to say, it got worse...  now also loops
+are not turning off anymore.  also, when you quit seq64, all the midi bindings
+from the sequencer64.rc file are removed... Haven`t really had any time to
+look into it but I will try to help finding the problem.
+
+PROVISIONALLY FIXED
+
+
 
 # vim: sw=4 ts=4 wm=4 et ft=rc

@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-09-29
+ * \updates       2016-10-07
  * \license       GNU GPLv2 or above
  *
  *  The <code> ~/.seq24rc </code> or <code> ~/.config/sequencer64/sequencer64.rc
@@ -254,34 +254,47 @@ optionsfile::parse (perform & p)
      * we should modify that value, instead of the throw-away "sequences"
      * values.  Note that c_midi_controls is, in a roundabout way, defined
      * as 74.  See the old "dot-seq24rc" file in the contrib directory.
-     * We should do some testing on what happens if "sequences" is 0.
+     * We should do some testing on what happens if "sequences" is 0 or
+     * greater than or equal to 74 (c_midi_controls)).
      */
 
-    bool ok = next_data_line(file);
-    if (! ok)
-        return error_message("midi-control");
-
-    for (unsigned i = 0; i < sequences; ++i)    /* 0 to c_midi_controls-1 */
+    bool ok = false;
+    if (sequences > c_midi_controls)                /* 1 to 74 are valid      */
     {
-        int sequence = 0;
-        int a[6], b[6], c[6];
-        sscanf
-        (
-            m_line,
-            "%d [ %d %d %d %d %d %d ]"
-              " [ %d %d %d %d %d %d ]"
-              " [ %d %d %d %d %d %d ]",
-            &sequence,
-            &a[0], &a[1], &a[2], &a[3], &a[4], &a[5],
-            &b[0], &b[1], &b[2], &b[3], &b[4], &b[5],
-            &c[0], &c[1], &c[2], &c[3], &c[4], &c[5]
-        );
-        p.midi_control_toggle(i).set(a);
-        p.midi_control_on(i).set(b);
-        p.midi_control_off(i).set(c);
+        return error_message("midi-control, too many values");
+    }
+    else if (sequences > 0)
+    {
         ok = next_data_line(file);
-        if (! ok && i < (sequences - 1))
-            return error_message("midi-control data line");
+        if (! ok)
+            return error_message("midi-control");
+
+        for (unsigned i = 0; i < sequences; ++i)    /* 0 to c_midi_controls-1 */
+        {
+            int sequence = 0;
+            int a[6], b[6], c[6];
+            sscanf
+            (
+                m_line,
+                "%d [ %d %d %d %d %d %d ]"
+                  " [ %d %d %d %d %d %d ]"
+                  " [ %d %d %d %d %d %d ]",
+                &sequence,
+                &a[0], &a[1], &a[2], &a[3], &a[4], &a[5],
+                &b[0], &b[1], &b[2], &b[3], &b[4], &b[5],
+                &c[0], &c[1], &c[2], &c[3], &c[4], &c[5]
+            );
+            p.midi_control_toggle(i).set(a);
+            p.midi_control_on(i).set(b);
+            p.midi_control_off(i).set(c);
+            ok = next_data_line(file);
+            if (! ok && i < (sequences - 1))
+                return error_message("midi-control data line");
+        }
+    }
+    else
+    {
+        warnprint("[midi-controls] specifies a count of 0, so skipped");
     }
 
     line_after(file, "[mute-group]");               /* Group MIDI control   */

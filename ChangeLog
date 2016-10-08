@@ -1,3 +1,48 @@
+2016-10-08  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* README: Stamped bug-fix version 0.9.18.2.
+	* README, ROADMAP, VERSION, configure.ac,
+	contrib/notes/bugs_to_investigate.txt,
+	contrib/notes/mute_groups.txt, libseq64/include/globals.h,
+	libseq64/include/perform.hpp, libseq64/src/cmdlineopts.cpp,
+	libseq64/src/midifile.cpp, libseq64/src/optionsfile.cpp,
+	libseq64/src/perform.cpp, libseq64/src/userfile.cpp,
+	man/sequencer64.1, seq_gtkmm2/include/mainwnd.hpp,
+	seq_gtkmm2/include/seqmenu.hpp, seq_gtkmm2/src/eventedit.cpp,
+	seq_gtkmm2/src/eventslots.cpp, seq_gtkmm2/src/mainwnd.cpp,
+	seq_gtkmm2/src/seqmenu.cpp: Fixed some recent issues from GitHub,
+	added macroed-out support for a requested feature, better toggling
+	of armed patterns, and prep for v. 0.9.18.2.
+
+2016-10-07  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* contrib/notes/bugs_to_investigate.txt,
+	libseq64/include/perform.hpp, libseq64/src/optionsfile.cpp,
+	libseq64/src/perform.cpp: Fixed another aspect of issues/35, was
+	checking sequence number against c_midi_controls incorrectly.
+
+2016-10-06  Chris Ahlstrom <ahlstromcj@gmail.com>
+
+	* libseq64/src/perform.cpp: Fixed a minor regression in compiling
+	without Stazed JACK support, which is currently a build default.
+	* INSTALL, configure.ac, libseq64/include/jack_assistant.hpp,
+	libseq64/include/keys_perform.hpp, libseq64/include/perform.hpp,
+	libseq64/include/seq64_features.h, libseq64/src/cmdlineopts.cpp,
+	libseq64/src/jack_assistant.cpp, libseq64/src/keys_perform.cpp,
+	libseq64/src/midifile.cpp, libseq64/src/perform.cpp,
+	libseq64/src/sequence.cpp, seq_gtkmm2/include/perfedit.hpp,
+	seq_gtkmm2/include/perfroll.hpp, seq_gtkmm2/src/mainwnd.cpp,
+	seq_gtkmm2/src/options.cpp, seq_gtkmm2/src/perfedit.cpp,
+	seq_gtkmm2/src/perfroll.cpp, seq_gtkmm2/src/seqedit.cpp: Merged
+	Stazed transport code into Stazed JACK support macro because the
+	features are somewhat interdependent.
+	* seq_gtkmm2/src/perfedit.cpp, seq_gtkmm2/src/perfroll_input.cpp: 
+	Fix perfedit so that it now forces Song mode in the Play/Pause
+	button as well as the Space and Period keystrokes.
+	* ChangeLog, configure.ac, debian/README, debian/changelog,
+	debian/copyright, debian/menu, debian/sequencer64.desktop: Updating
+	the debian package-building directory.
+
 2016-10-05  Chris Ahlstrom <ahlstromcj@gmail.com>
 
 	* contrib/notes/bugs_to_investigate.txt,

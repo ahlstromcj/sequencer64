@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-10-06
+ * \updates       2016-10-08
  * \license       GNU GPLv2 or above
  *
  *  The functionality of this class also includes handling some of the
@@ -1251,7 +1251,7 @@ sequence::get_clipboard_box
     tick_f = 0;
     note_h = 0;
     note_l = SEQ64_MIDI_COUNT_MAX;
-    if (m_events_clipboard.count() == 0)
+    if (m_events_clipboard.empty())     /* m_events_clipboard.count() == 0 */
     {
         tick_s = tick_f = note_h = note_l = 0;
     }
@@ -2120,7 +2120,9 @@ sequence::decrement_selected (midibyte astat, midibyte /*acontrol*/)
  *  by user 0rel, of events being modified after being added to the clipboard.
  *  So we add his reconstruction fix here as well.  To summarize the steps:
  *
- *      -#  Clear the m_events_clipboard.
+ *      -#  Clear the m_events_clipboard.  NO!  If we have no events to
+ *          copy to the clipboard, we do not want to clear it.  This kills
+ *          cut-and-paste functionality.
  *      -#  Add all selected events in this clipboard to the sequence.
  *      -#  Normalize the timestamps of the events in the clip relative to the
  *          timestamp of the first selected event.  (Is this really needed?)
@@ -2149,7 +2151,7 @@ sequence::copy_selected ()
         if (DREF(i).is_selected())
             clipbd.add(DREF(i));
     }
-    if (! clipbd.empty())                           /* (clipbd.count() > 0) */
+    if (! clipbd.empty())
     {
         midipulse first_tick = DREF(clipbd.begin()).get_timestamp();
         if (first_tick >= 0)
@@ -2163,8 +2165,14 @@ sequence::copy_selected ()
         }
         m_events_clipboard = clipbd;
     }
-    else
-        m_events_clipboard.clear();
+
+    /*
+     * Issue #40 This seems to break cut-and-paste in the sequence editor
+     * when the events have been *cut*, as opposed to copied.
+     *
+     * else
+     *   m_events_clipboard.clear();
+     */
 }
 
 /**
@@ -2255,7 +2263,7 @@ sequence::cut_selected (bool copyevents)
 void
 sequence::paste_selected (midipulse tick, int note)
 {
-    if (m_events_clipboard.count() > 0)
+    if (! m_events_clipboard.empty())       /* m_events_clipboard.count() > 0 */
     {
         automutex locker(m_mutex);
         event_list clipbd = m_events_clipboard;     /* copy the clipboard   */

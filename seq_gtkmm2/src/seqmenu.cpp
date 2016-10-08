@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-08-19
+ * \updates       2016-10-08
  * \license       GNU GPLv2 or above
  *
  *  This object also does some minor coordination of editing a sequence via
@@ -185,6 +185,16 @@ seqmenu::popup_menu ()
     (
         MenuElem("Toggle All Tracks", mem_fun(*this, &seqmenu::toggle_all_tracks))
     );
+#ifdef USE_TOGGLE_PLAYING
+    menu_song->items().push_back
+    (
+        MenuElem
+        (
+            "Toggle Playing Tracks",
+            mem_fun(*this, &seqmenu::toggle_playing_tracks)
+        )
+    );
+#endif  // USE_TOGGLE_PLAYING
 
 #ifdef SEQ64_USE_AUTO_SCREENSET_QUEUE
 
@@ -362,7 +372,7 @@ seqmenu::unmute_all_tracks ()
 }
 
 /**
- *  Toggles the mute-status of  all tracks in the main perform object.
+ *  Toggles the mute-status of all tracks in the main perform object.
  */
 
 void
@@ -370,6 +380,23 @@ seqmenu::toggle_all_tracks ()
 {
     m_mainperf.toggle_all_tracks();
 }
+
+#ifdef USE_TOGGLE_PLAYING
+
+/**
+ *  Toggles the mute-status of ony the playing tracks in the main perform
+ *  object.
+ */
+
+void
+seqmenu::toggle_playing_tracks ()
+{
+    static bool s_are_armed_saved = false;      /* worth making a member? */
+    m_mainperf.toggle_playing_tracks(s_are_armed_saved);
+    s_are_armed_saved = ! s_are_armed_saved;
+}
+
+#endif  // USE_TOGGLE_PLAYING
 
 /**
  *  This menu callback launches the sequence-editor (pattern editor) window.

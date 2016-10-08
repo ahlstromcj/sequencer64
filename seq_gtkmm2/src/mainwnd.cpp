@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-10-06
+ * \updates       2016-10-08
  * \license       GNU GPLv2 or above
  *
  *  The main window holds the menu and the main controls of the application,
@@ -205,8 +205,13 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
     m_button_mute
     (
         usr().use_more_icons() ?
+#ifdef USE_TOGGLE_PLAYING
+            manage(new Gtk::ToggleButton()) :
+            manage(new Gtk::ToggleButton("Mute"))
+#else
             manage(new Gtk::Button()) :
             manage(new Gtk::Button("Mute"))
+#endif
     ),
     m_button_menu
     (
@@ -242,7 +247,7 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
 
     m_adjust_load_offset    (nullptr),  /* created in file_import_dialog()  */
     m_spinbutton_load_offset(nullptr),  /* created in file_import_dialog()  */
-    m_entry_notes           (nullptr),
+    m_entry_notes           (nullptr),  /* (manage(new Gtk::Entry())),      */
 #ifdef SEQ64_PAUSE_SUPPORT
     m_is_running            (false),
 #endif
@@ -468,18 +473,29 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
 
     /*
      * We bind the muting button to the mainwid's toggle_all_tracks()
-     * function.  A little tricky.
+     * function.  A little tricky.  Testing calling a new function,
+     * toggle_playing_tracks(), now.
      */
 
     if (usr().use_more_icons())
         m_button_mute->add(*manage(new PIXBUF_IMAGE(muting_xpm)));
 
     m_button_mute->set_can_focus(false);
+
+#ifdef USE_TOGGLE_PLAYING
+    m_button_mute->signal_clicked().connect
+    (
+        sigc::mem_fun(*m_main_wid, &seqmenu::toggle_playing_tracks)
+    );
+    add_tooltip(m_button_mute, "Toggle the mute status of playing tracks.");
+#else
     m_button_mute->signal_clicked().connect
     (
         sigc::mem_fun(*m_main_wid, &seqmenu::toggle_all_tracks)
     );
     add_tooltip(m_button_mute, "Toggle the mute status of all tracks.");
+#endif
+
     tophbox->pack_start(*m_button_mute, false, false);
 
     if (usr().use_more_icons())
@@ -488,7 +504,7 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
     add_tooltip
     (
         m_button_menu,
-        "Toggle to disable/enable menu when sequencer is not running. "
+        "Toggle to disable/enable the menu when sequencer is not running. "
         "The menu is automatically disabled when the sequencer is running."
     );
     m_button_menu->set_can_focus(false);
@@ -1972,7 +1988,11 @@ mainwnd::on_key_press_event (GdkEventKey * ev)
 #ifdef SEQ64_STAZED_MENU_BUTTONS
             else if (k.key() == PREFKEY(toggle_mutes))
             {
+#ifdef USE_TOGGLE_PLAYING
+                m_main_wid->toggle_playing_tracks();
+#else
                 m_main_wid->toggle_all_tracks();
+#endif
             }
             else if (k.key() == PREFKEY(song_mode))
             {

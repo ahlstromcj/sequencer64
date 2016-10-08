@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-12-05
- * \updates       2016-10-03
+ * \updates       2016-10-08
  * \license       GNU GPLv2 or above
  *
  *  This module is user-interface code.  It is loosely based on the workings
@@ -669,7 +669,16 @@ eventslots::page_movement (int new_value)
         m_pager_index = new_value;
         if (movement != 0)
         {
+            /*
+             * @change ca 2016-10-08
+             *      Issue #38.  We see a double-increment when moving the
+             *      scroll down one slot.  But if we don't do this, the event
+             *      indices at the left always start at 0 at the top of the
+             *      view, no matter what the page.  Weird!
+             */
+
             m_top_index += movement;
+
             if (movement > 0)
             {
                 for (int i = 0; i < movement; ++i)
@@ -688,7 +697,7 @@ eventslots::page_movement (int new_value)
             }
 
             /*
-             * Don't move the current event (highlighted in yellow) unless
+             * Don't move the current event (highlighted) unless
              * we move more than one event.  Annoying to the user.
              */
 
@@ -1185,16 +1194,12 @@ eventslots::on_button_press_event (GdkEventButton * ev)
 
 
 /**
- *  Handles a button-release for the right button, bringing up a popup
- *  menu.
+ *  Currently does nothing.
  */
 
 bool
 eventslots::on_button_release_event (GdkEventButton * p0)
 {
-    //  if (SEQ64_CLICK_RIGHT(p0->button))
-    //      popup_menu();
-
     return false;
 }
 

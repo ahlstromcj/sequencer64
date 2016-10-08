@@ -1,6 +1,6 @@
 Mute-Group Explorations
 Chris Ahlstrom
-2015-12-23 to 2016-07-09
+2015-12-23 to 2016-10-08
 
 In this document we explore mute-groups, how they might work, and
 Tim fixes to them.  The primary module under discussion is the
@@ -265,13 +265,13 @@ Flow diagrams:
                        |
                         ---> track + m_mute_group_selected * c_seqs_in_set;
 
-    In the other direction, we write c_gmute_tracks (1024),
-    select_group_mute(g) for each of 32 groups, and write 32
-    get_group_mute_state(track) values for each group.
+    In the other direction, we write c_gmute_tracks (1024, replaced now by
+    c_max_sequence), select_group_mute(g) for each of 32 groups, and
+    write 32 get_group_mute_state(track) values for each group.
 
  o  MIDI file --->
         c_mutegroups --->
-        length, must match c_gmute_tracks --->
+        length, must match c_gmute_tracks (now c_max_sequence) --->
         m_mute_group_selected = g (we are not in learn mode) --->
         set_group_mute_state(track, mute != 0)
 

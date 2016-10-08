@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-25
- * \updates       2016-08-12
+ * \updates       2016-10-08
  * \license       GNU GPLv2 or above
  *
  *  We're going to try to collect all the globals here in one module, and
@@ -117,19 +117,21 @@ const int c_seqs_in_set = c_mainwnd_rows * c_mainwnd_cols;
 const int c_max_sets = SEQ64_DEFAULT_SET_MAX;
 
 /**
- *  Number of group-mute tracks that can be support, which is
- *  c_seqs_in_set squared, or 1024.
- */
-
-const int c_gmute_tracks = c_max_sets * c_seqs_in_set;
-
-/**
  *  The maximum number of patterns supported is given by the number of
  *  patterns supported in the panel (32) times the maximum number of sets
  *  (32), or 1024 patterns.
  */
 
-const int c_max_sequence = c_seqs_in_set * c_max_sets;
+const int c_max_sequence = c_max_sets * c_seqs_in_set;
+
+/*
+ *  Number of group-mute tracks that can be support, which is
+ *  c_seqs_in_set squared, or 1024.  This value is the same size as
+ *  c_max_sequence, and actually conceptually the same value (it covers all
+ *  sequences), and so we're going to optimize this value out.
+ *
+ * const int c_gmute_tracks = c_max_sets * c_seqs_in_set;
+ */
 
 /**
  *  Provides the default number BPM (beats per minute), which describes

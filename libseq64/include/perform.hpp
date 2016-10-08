@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-10-07
+ * \updates       2016-10-08
  * \license       GNU GPLv2 or above
  *
  *  This class still has way too many members, even with the JACK and
@@ -58,6 +58,16 @@
 #include "mastermidibus.hpp"            /* seq64::mastermidibus             */
 #include "midi_control.hpp"             /* seq64::midi_control "struct"     */
 #include "sequence.hpp"                 /* seq64::sequence                  */
+
+/**
+ *  An experimental option to improve how the main window's new Mute button
+ *  works.
+ *
+ *  The basics work, but we're leaving this feature off until 0.9.19 (the next
+ *  version).
+ */
+
+#undef USE_TOGGLE_PLAYING
 
 /**
  *  We have offloaded the keybinding support to another class, derived
@@ -262,12 +272,30 @@ private:
     /**
      *  Mute group support.  This value determines whether a particular track
      *  will be muted or unmuted, and it can handle all tracks available in
-     *  the application (currently 1024).  Note that the current state of
-     *  playing can be "learned", and stored herein as the desired state for
-     *  the track.
+     *  the application (currently c_max_sets * c_seqs_in_set, i.e. 1024).
+     *  Note that the current state of playing can be "learned", and stored
+     *  herein as the desired state for the track.
      */
 
-    bool m_mute_group[c_gmute_tracks];
+    bool m_mute_group[c_max_sequence];              /* c_gmute_tracks */
+
+#ifdef USE_TOGGLE_PLAYING
+
+    /**
+     *  Indicates if the m_saved_armed[] values are the saved state of the
+     *  sequences, and can be restored.
+
+    bool m_armed_statuses_saved;
+     */
+
+    /**
+     *  Holds the "global" saved status of the playing tracks, for restoration
+     *  after saving.
+     */
+
+    bool m_saved_armed[c_max_sequence];
+
+#endif  // USE_TOGGLE_PLAYING
 
     /**
      *  Holds the current mute states of each track.  Unlike the
@@ -1743,7 +1771,13 @@ public:
     }
 
     void mute_all_tracks (bool flag = true);
+
     void toggle_all_tracks ();
+
+#ifdef USE_TOGGLE_PLAYING
+    void toggle_playing_tracks (bool restore);
+#endif
+
     void mute_screenset (int ss, bool flag = true);
     void output_func ();
     void input_func ();

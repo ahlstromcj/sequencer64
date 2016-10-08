@@ -910,5 +910,65 @@ look into it but I will try to help finding the problem.
 PROVISIONALLY FIXED
 
 
+Date: Wed, 05 Oct 2016
+From: smondet
+Subject: [feature request] Tempo Track? #34
+
+I'd be nice to have a tempo-track in "song mode" (like many midi editors
+have).
+
+(Or how do people handle tempo variations in song-mode?)
+
+
+Date: Sat, 08 Oct 2016
+From: AndrewPy <notifications@github.com>
+Subject: Strange behavior of the mute button in live mode #37
+
+When playing is stopped, the mute button toggles the mute status of the
+tracks. That's ok.
+
+But while playing, the first press on the mute button mutes all tracks (and
+activates the empty ones). And the next press on the mute button activates all
+tracks (and mutes the empty ones).
+
+Date: Sat, 08 Oct 2016 04:19:44 -0700
+From: AndrewPy <notifications@github.com>
+To: ahlstromcj/sequencer64 <sequencer64@noreply.github.com>
+Cc: "C. Ahlstrom" <ahlstromcj@gmail.com>, Comment <comment@noreply.github.com>
+Subject: Re: [ahlstromcj/sequencer64] Strange behavior of the mute button in live
+        mode (#37)
+
+Thank you, yes it would be clearer if it is the same as when the playing is
+stopped. At least the previous state should be restored in the case of un-mute.
+
+As it is now, one also can not recognize (in "play mode") whether it is muted or
+not .
+
+
+
+Date: Sat, 08 Oct 2016
+From: AndrewPy <notifications@github.com>
+Subject: No "play cursor" in empty piano roll #39
+
+No "play cursor" is displayed in the piano roll of an empty track, but it
+would be very useful for recording. (The cursor is visible after the first
+note has been recorded.)
+
+
+Date: Sat, 08 Oct 2016
+From: AndrewPy <notifications@github.com>
+Subject: Small quirks in event editor #38
+
+No big deal, but in the edit fields of the event editor I see no cursor.
+
+And in a list with many events, a different event is selected each time when I
+use the scroll bar.
+
+(Sequencer64 0.9.18.1 2016-10-05, Xubuntu 16.04, xfce 4.12)
+
+
+
+
+
 
 # vim: sw=4 ts=4 wm=4 et ft=rc

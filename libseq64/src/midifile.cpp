@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-10-06
+ * \updates       2016-10-08
  * \license       GNU GPLv2 or above
  *
  *  For a quick guide to the MIDI format, see, for example:
@@ -1281,10 +1281,10 @@ midifile::parse_proprietary_track (perform & p, int file_size)
         seqspec = parse_prop_header(file_size);
         if (seqspec == c_mutegroups)
         {
-            long length = read_long();
-            if (length > 0)
+            long len = read_long();
+            if (len > 0)
             {
-                if (c_gmute_tracks != length)
+                if (c_max_sequence != len)              /* c_gmute_tracks   */
                 {
                     m_error_is_fatal = true;
                     m_error_message = "Corrupt data in mute-group section";
@@ -2021,7 +2021,12 @@ midifile::write_proprietary_track (perform & p)
     if (gmutesz > 0)
     {
         write_prop_header(c_mutegroups, gmutesz);   /* mute groups tag etc. */
-        write_long(c_gmute_tracks);                 /* data, not a tag      */
+
+        /*
+         * write_long(c_gmute_tracks);              // data, not a tag
+         */
+
+        write_long(c_max_sequence);                 /* data, not a tag      */
         for (int j = 0; j < c_seqs_in_set; ++j)     /* now is optional      */
         {
             p.select_group_mute(j);

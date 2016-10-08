@@ -26,7 +26,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-10-07
+ * \updates       2016-10-08
  * \license       GNU GPLv2 or above
  *
  *  The <code> ~/.seq24rc </code> or <code> ~/.config/sequencer64/sequencer64.rc
@@ -678,7 +678,7 @@ optionsfile::write (const perform & p)
     else
     {
         file <<
-            "# Sequencer64 0.9.18.1 (and above) rc configuration file\n"
+            "# Sequencer64 0.9.18.2 (and above) rc configuration file\n"
             "#\n"
             "# This file holds the main configuration options for Sequencer64.\n"
             "# It follows the format of the legacy seq24 'rc' configuration\n"
@@ -792,23 +792,19 @@ optionsfile::write (const perform & p)
      * We might as well save the empty mutes in the "rc" configuration file,
      * even if we don't save empty mutes to the MIDI file.  This is less
      * confusing to the user, especially if issues with the mute groups occur,
-     * and is not a lot of space to waste, it's just one file.  We do save the
-     * mute-group of 0 if it applies.
+     * and is not a lot of space to waste, it's just one file.
+     *
+     * We've replaced c_gmute_tracks with c_max_sequence, since they're the
+     * same concept and same number (1024).
      */
 
-#ifdef SEQ64_STRIP_EMPTY_MUTES
-    if (rc().legacy_format())
-    {
-        file << c_gmute_tracks << "    # group mute value count (0 or 1024)\n";
-    }
-    else
-    {
-        if (! p.any_group_unmutes())
-            file << 0 << "       # group mute value count (0 or 1024)\n";
-    }
-#else
-    file << c_gmute_tracks << "    # group mute value count (0 or 1024)\n";
-#endif
+    file <<
+        "# All mute-group values are saved, even if the all are zero, and will\n"
+        "# be stripped out from the MIDI file by the new strip-empty-mutes\n"
+        "# functionality (a build option).  This is less confusing to the user.\n"
+        "\n"
+        << c_max_sequence << "       # group mute count\n"
+        ;
 
     for (int seqj = 0; seqj < c_seqs_in_set; ++seqj)
     {

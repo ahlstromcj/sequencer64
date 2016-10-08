@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-12-05
- * \updates       2016-06-22
+ * \updates       2016-10-08
  * \license       GNU GPLv2 or above
  *
  * To consider:
@@ -341,12 +341,21 @@ eventedit::eventedit (perform & p, sequence & seq)
     m_entry_ev_timestamp->set_max_length(16);
     m_entry_ev_timestamp->set_editable(true);
     m_entry_ev_timestamp->set_width_chars(16);
-    m_entry_ev_timestamp->set_text("001:1:000");
+    m_entry_ev_timestamp->set_text("000:0:000");
+
+    /*
+     * Let's see if we can get the key cursor to show in this entry box.
+     * Hope it doesn't mess up edited-sequence highlighting!
+     *
+     * m_entry_ev_timestamp->set_can_focus(true);
+     * m_entry_ev_timestamp->grab_focus();
+     */
+
     add_tooltip
     (
         m_entry_ev_timestamp,
         "Timestamp field.  Currently only 'measures:beats:divisions' format "
-        "is supported. Measure and beat numbers start at 1, not 0!"
+        "is supported. Measure and beat numbers start at 1, not 0."
     );
     m_editbox->pack_start(*m_entry_ev_timestamp, false, false);
 

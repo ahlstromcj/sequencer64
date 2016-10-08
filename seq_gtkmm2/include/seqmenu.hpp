@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-07-17
+ * \updates       2016-10-08
  * \license       GNU GPLv2 or above
  *
  *  This module is the base class for the perfnames and mainwid classes.
@@ -314,6 +314,10 @@ private:
     void mute_all_tracks ();
     void unmute_all_tracks ();
     void toggle_all_tracks ();
+
+#ifdef USE_TOGGLE_PLAYING
+    void toggle_playing_tracks ();
+#endif
 
 private:        // callback
 

@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and Tim Deagan
  * \date          2015-07-24
- * \updates       2016-10-07
+ * \updates       2016-10-08
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -133,7 +133,10 @@ perform::perform (gui_assistant & mygui, int ppqn)
 #endif
     m_gui_support               (mygui),
     m_mute_group                (),         // boolean array, size 32 * 32
-    m_tracks_mute_state         (),         // boolean array
+#ifdef USE_TOGGLE_PLAYING
+//  m_armed_statuses_saved      (false),
+    m_saved_armed               (),         // boolean array, size 1024
+#endif
     m_mode_group                (true),
     m_mode_group_learn          (false),
     m_mute_group_selected       (0),
@@ -219,8 +222,13 @@ perform::perform (gui_assistant & mygui, int ppqn)
             m_was_active_main[i] = m_was_active_edit[i] =
             m_was_active_perf[i] = m_was_active_names[i] = false;
     }
-    for (int i = 0; i < c_gmute_tracks; ++i)    /* use c_sequence_max!      */
+    for (int i = 0; i < m_sequence_max; ++i)    /* not c_gmute_tracks now   */
+    {
         m_mute_group[i] = false;
+#ifdef USE_TOGGLE_PLAYING
+        m_saved_armed[i] = false;
+#endif
+    }
 
     for (int i = 0; i < c_seqs_in_set; ++i)
         m_tracks_mute_state[i] = false;
@@ -376,7 +384,7 @@ perform::any_group_unmutes () const
 {
     bool result = false;
     const bool * mp = &m_mute_group[0];
-    for (int i = 0; i < c_gmute_tracks; ++i, ++mp)
+    for (int i = 0; i < m_sequence_max; ++i, ++mp)      /* c_gmute_tracks */
     {
         if (*mp)
         {
@@ -597,10 +605,56 @@ perform::toggle_all_tracks ()
         if (is_active(i))
         {
             m_seqs[i]->toggle_song_mute();
-            m_seqs[i]->toggle_playing();    /* needed to show mute status!  */
+            m_seqs[i]->toggle_playing();        /* needed to show mute status */
         }
     }
 }
+
+#ifdef USE_TOGGLE_PLAYING
+
+/**
+ *  Toggles the mutes status of all playing (currently unmuted) tracks in the
+ *  current set of active patterns/sequences.  Covers tracks from 0 to
+ *  m_sequence_max.  The statuses are preserved for restoration.
+ *
+ * \param restore
+ *      If true, the saved statuses are to be restored.  Otherwise, the
+ *      current armed/disarmed (unmuted/muted) are stored.
+ */
+
+void
+perform::toggle_playing_tracks (bool restore)
+{
+    if (restore)
+    {
+        for (int i = 0; i < m_sequence_max; ++i)
+        {
+            if (m_saved_armed[i])
+            {
+                m_seqs[i]->toggle_song_mute();
+                m_seqs[i]->toggle_playing();    /* needed to show mute status */
+            }
+        }
+    }
+    else
+    {
+        for (int i = 0; i < m_sequence_max; ++i)
+        {
+            bool armed_status = false;
+            if (is_active(i))
+                armed_status = m_seqs[i]->get_playing();
+
+            m_saved_armed[i] = armed_status;
+            if (armed_status)
+            {
+                m_seqs[i]->toggle_song_mute();
+                m_seqs[i]->toggle_playing();    /* needed to show mute status */
+            }
+        }
+    }
+}
+
+#endif  // USE_TOGGLE_PLAYING
 
 /**
  *  Provides for various settings of the song-mute status of all sequences in

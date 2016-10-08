@@ -27,7 +27,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-10-05
+ * \updates       2016-10-08
  * \license       GNU GPLv2 or above
  *
  *  The main window is known as the "Patterns window" or "Patterns
@@ -204,7 +204,11 @@ private:
 
     Gtk::Image * m_image_songlive;
     Gtk::ToggleButton * m_button_mode;  /**< Live/Song mode button.         */
-    Gtk::Button * m_button_mute;        /**< Mute toggle button.            */
+#ifdef USE_TOGGLE_PLAYING
+    Gtk::ToggleButton * m_button_mute;  /**< Mute toggle button.            */
+#else
+    Gtk::Button * m_button_mute;        /**< Mute button, sort of a toggle. */
+#endif
     Gtk::ToggleButton * m_button_menu;  /**< Menu enable/disable button.    */
 
 #endif

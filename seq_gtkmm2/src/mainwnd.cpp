@@ -205,7 +205,7 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
     m_button_mute
     (
         usr().use_more_icons() ?
-#ifdef USE_TOGGLE_PLAYING
+#ifdef SEQ64_TOGGLE_PLAYING
             manage(new Gtk::ToggleButton()) :
             manage(new Gtk::ToggleButton("Mute"))
 #else
@@ -482,7 +482,7 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
 
     m_button_mute->set_can_focus(false);
 
-#ifdef USE_TOGGLE_PLAYING
+#ifdef SEQ64_TOGGLE_PLAYING
     m_button_mute->signal_clicked().connect
     (
         sigc::mem_fun(*m_main_wid, &seqmenu::toggle_playing_tracks)
@@ -1988,7 +1988,7 @@ mainwnd::on_key_press_event (GdkEventKey * ev)
 #ifdef SEQ64_STAZED_MENU_BUTTONS
             else if (k.key() == PREFKEY(toggle_mutes))
             {
-#ifdef USE_TOGGLE_PLAYING
+#ifdef SEQ64_TOGGLE_PLAYING
                 m_main_wid->toggle_playing_tracks();
 #else
                 m_main_wid->toggle_all_tracks();

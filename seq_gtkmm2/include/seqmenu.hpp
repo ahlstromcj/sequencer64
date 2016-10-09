@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-10-08
+ * \updates       2016-10-09
  * \license       GNU GPLv2 or above
  *
  *  This module is the base class for the perfnames and mainwid classes.
@@ -311,12 +311,45 @@ private:
     void set_auto_screenset (bool flag);
 #endif
 
-    void mute_all_tracks ();
-    void unmute_all_tracks ();
-    void toggle_all_tracks ();
+    /**
+     *  Mutes all tracks in the main perform object.
+     */
 
-#ifdef USE_TOGGLE_PLAYING
-    void toggle_playing_tracks ();
+    void mute_all_tracks ()
+    {
+        m_mainperf.mute_all_tracks();
+    }
+
+    /**
+     *  Unmutes all tracks in the main perform object.
+     */
+
+    void unmute_all_tracks ()
+    {
+        m_mainperf.mute_all_tracks(false);
+    }
+
+    /**
+     *  Toggles the mute-status of all tracks in the main perform object.
+     */
+
+    void toggle_all_tracks ()
+    {
+        m_mainperf.toggle_all_tracks();
+    }
+
+#ifdef SEQ64_TOGGLE_PLAYING
+
+    /**
+     *  Toggles the mute-status of only the playing tracks in the main perform
+     *  object.
+     */
+
+    void toggle_playing_tracks ()
+    {
+        m_mainperf.toggle_playing_tracks();
+    }
+
 #endif
 
 private:        // callback

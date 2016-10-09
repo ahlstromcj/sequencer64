@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-10-08
+ * \updates       2016-10-09
  * \license       GNU GPLv2 or above
  *
  *  This class still has way too many members, even with the JACK and
@@ -67,7 +67,7 @@
  *  version).
  */
 
-#undef USE_TOGGLE_PLAYING
+#define SEQ64_TOGGLE_PLAYING
 
 /**
  *  We have offloaded the keybinding support to another class, derived
@@ -279,23 +279,23 @@ private:
 
     bool m_mute_group[c_max_sequence];              /* c_gmute_tracks */
 
-#ifdef USE_TOGGLE_PLAYING
+#ifdef SEQ64_TOGGLE_PLAYING
 
     /**
-     *  Indicates if the m_saved_armed[] values are the saved state of the
+     *  Indicates if the m_saved_armed_statuses[] values are the saved state of the
      *  sequences, and can be restored.
-
-    bool m_armed_statuses_saved;
      */
+
+    bool m_armed_saved;
 
     /**
      *  Holds the "global" saved status of the playing tracks, for restoration
      *  after saving.
      */
 
-    bool m_saved_armed[c_max_sequence];
+    bool m_armed_statuses[c_max_sequence];
 
-#endif  // USE_TOGGLE_PLAYING
+#endif  // SEQ64_TOGGLE_PLAYING
 
     /**
      *  Holds the current mute states of each track.  Unlike the
@@ -1774,8 +1774,19 @@ public:
 
     void toggle_all_tracks ();
 
-#ifdef USE_TOGGLE_PLAYING
-    void toggle_playing_tracks (bool restore);
+#ifdef SEQ64_TOGGLE_PLAYING
+
+    /**
+     * \getter m_armed_saved
+     */
+
+    bool armed_saved () const
+    {
+        return m_armed_saved;
+    }
+
+    void toggle_playing_tracks ();
+
 #endif
 
     void mute_screenset (int ss, bool flag = true);

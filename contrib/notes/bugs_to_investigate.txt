@@ -954,6 +954,8 @@ No "play cursor" is displayed in the piano roll of an empty track, but it
 would be very useful for recording. (The cursor is visible after the first
 note has been recorded.)
 
+(ALSO SEE his 09 Oct 2016 below)
+
 
 Date: Sat, 08 Oct 2016
 From: AndrewPy <notifications@github.com>
@@ -966,6 +968,31 @@ use the scroll bar.
 
 (Sequencer64 0.9.18.1 2016-10-05, Xubuntu 16.04, xfce 4.12)
 
+
+ate: Sun, 09 Oct 2016 09:56:05 -0700
+From: AndrewPy <notifications@github.com>
+To: ahlstromcj/sequencer64 <sequencer64@noreply.github.com>
+Subject: [ahlstromcj/sequencer64] Sometimes "play cursor" shows wrong position in
+        main window (#41)
+
+I am not sure whether this is a bug or a system-conditioned "feature" but it is at
+least somewhat confusing when playing songs.
+
+If you have a sequence with 2 or more measures and start it at an "odd" measure in
+the song editor,  the "play cursor" in the main window (and in the piano roll, but
+only for the first measure(?)) shows the wrong position for this sequence.
+
+Steps to reproduce:
+
+* Create a sequence with 2 measures and enter some notes
+
+* Now create a Song and set the start for this sequence not at the first bar but
+at the 2nd (or 4th and so on) bar.
+
+* Play the song
+
+* Now look at the "play cursor" for this sequence in the main window. It shows the
+position as if the sequence would start at the first bar of the song.
 
 
 

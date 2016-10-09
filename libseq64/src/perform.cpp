@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and Tim Deagan
  * \date          2015-07-24
- * \updates       2016-10-08
+ * \updates       2016-10-09
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -133,9 +133,9 @@ perform::perform (gui_assistant & mygui, int ppqn)
 #endif
     m_gui_support               (mygui),
     m_mute_group                (),         // boolean array, size 32 * 32
-#ifdef USE_TOGGLE_PLAYING
-//  m_armed_statuses_saved      (false),
-    m_saved_armed               (),         // boolean array, size 1024
+#ifdef SEQ64_TOGGLE_PLAYING
+    m_armed_saved               (false),
+    m_armed_statuses            (),         // boolean array, size 1024
 #endif
     m_mode_group                (true),
     m_mode_group_learn          (false),
@@ -224,9 +224,10 @@ perform::perform (gui_assistant & mygui, int ppqn)
     }
     for (int i = 0; i < m_sequence_max; ++i)    /* not c_gmute_tracks now   */
     {
+#ifdef SEQ64_TOGGLE_PLAYING
+        m_mute_group[i] = m_armed_statuses[i] = false;
+#else
         m_mute_group[i] = false;
-#ifdef USE_TOGGLE_PLAYING
-        m_saved_armed[i] = false;
 #endif
     }
 
@@ -610,26 +611,23 @@ perform::toggle_all_tracks ()
     }
 }
 
-#ifdef USE_TOGGLE_PLAYING
+#ifdef SEQ64_TOGGLE_PLAYING
 
 /**
  *  Toggles the mutes status of all playing (currently unmuted) tracks in the
  *  current set of active patterns/sequences.  Covers tracks from 0 to
  *  m_sequence_max.  The statuses are preserved for restoration.
- *
- * \param restore
- *      If true, the saved statuses are to be restored.  Otherwise, the
- *      current armed/disarmed (unmuted/muted) are stored.
  */
 
 void
-perform::toggle_playing_tracks (bool restore)
+perform::toggle_playing_tracks ()
 {
-    if (restore)
+    if (m_armed_saved)
     {
+        m_armed_saved = false;
         for (int i = 0; i < m_sequence_max; ++i)
         {
-            if (m_saved_armed[i])
+            if (m_armed_statuses[i])
             {
                 m_seqs[i]->toggle_song_mute();
                 m_seqs[i]->toggle_playing();    /* needed to show mute status */
@@ -644,9 +642,10 @@ perform::toggle_playing_tracks (bool restore)
             if (is_active(i))
                 armed_status = m_seqs[i]->get_playing();
 
-            m_saved_armed[i] = armed_status;
+            m_armed_statuses[i] = armed_status;
             if (armed_status)
             {
+                m_armed_saved = true;           /* at least one was armed     */
                 m_seqs[i]->toggle_song_mute();
                 m_seqs[i]->toggle_playing();    /* needed to show mute status */
             }
@@ -654,7 +653,7 @@ perform::toggle_playing_tracks (bool restore)
     }
 }
 
-#endif  // USE_TOGGLE_PLAYING
+#endif  // SEQ64_TOGGLE_PLAYING
 
 /**
  *  Provides for various settings of the song-mute status of all sequences in

@@ -1,6 +1,6 @@
-INSTALL for Sequencer64 v. 0.9.18.2
+INSTALL for Sequencer64 v. 0.9.18.3
 Chris Ahlstrom
-2015-09-10 to 2016-10-06
+2015-09-10 to 2016-10-09
 
 The current packaging for Sequencer64 is primarily aimed at developers.
 There is currently no configure script... it must be bootstrapped.
@@ -148,10 +148,11 @@ CONFIGURE OPTIONS FOR APPLICATION FEATURES:
         feature, even if enabled, is not used if Sequencer64 is run in
         "legacy" mode.
 
-    --enable-seq32jack
+    --enable-seq32jack (still experimental and in progress)
 
         Defines the SEQ64_STAZED_JACK_SUPPORT macro, which is currently
         undefined by default until we can test it thoroughly.
+
         Enables Seq32 JACK handling, which incorporates many improvements to
         JACK transport, including the MIDI clock fix from Seq24 v. 0.9.3.
 
@@ -283,12 +284,16 @@ MANUALLY-DEFINED MACROS IN CODE:
             user_settings
             And more...
 
-    SEQ64_USE_VI_SEQROLL_MODE:
+    SEQ64_TOGGLE_PLAYING:
 
-        Definable in the seqroll module, this macro allows the vi hjkl keys to
-        be used as arrow keys for moving notes.  Not yet tested.  We will not
-        make this a default, because it could drive non-vi users nuts.
-        It is an extra complication for usage and testing, as well.
+        If defined (in the perform module), this macro makes the Mute button
+        of the Main window toggle only the tracks that are armed.  The
+        armed status of these tracks are saved, and then turned off.  Toggling
+        again turns only the armed tracks back on.  Please note that any
+        tracks that are armed while the previously-armed tracks are toggled
+        off will stay armed when the previously-armed tracks are toggled back
+        on.  This feature currently is not a strict "restore previous state"
+        button.
 
     USE_xxxxxx:
     SEQ64_xxxxxx_XXX:

@@ -204,7 +204,7 @@ private:
 
     Gtk::Image * m_image_songlive;
     Gtk::ToggleButton * m_button_mode;  /**< Live/Song mode button.         */
-#ifdef USE_TOGGLE_PLAYING
+#ifdef SEQ64_TOGGLE_PLAYING
     Gtk::ToggleButton * m_button_mute;  /**< Mute toggle button.            */
 #else
     Gtk::Button * m_button_mute;        /**< Mute button, sort of a toggle. */

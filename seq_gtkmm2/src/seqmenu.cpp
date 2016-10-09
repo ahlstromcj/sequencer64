@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-10-08
+ * \updates       2016-10-09
  * \license       GNU GPLv2 or above
  *
  *  This object also does some minor coordination of editing a sequence via
@@ -168,7 +168,7 @@ seqmenu::popup_menu ()
         (
             MenuElem
             (
-                "Clear Track's Song Data",
+                "Clear This Track's Song Data",
                 mem_fun(*this, &seqmenu::seq_clear_perf)
             )
         );
@@ -185,7 +185,7 @@ seqmenu::popup_menu ()
     (
         MenuElem("Toggle All Tracks", mem_fun(*this, &seqmenu::toggle_all_tracks))
     );
-#ifdef USE_TOGGLE_PLAYING
+#ifdef SEQ64_TOGGLE_PLAYING
     menu_song->items().push_back
     (
         MenuElem
@@ -194,9 +194,9 @@ seqmenu::popup_menu ()
             mem_fun(*this, &seqmenu::toggle_playing_tracks)
         )
     );
-#endif  // USE_TOGGLE_PLAYING
+#endif  // SEQ64_TOGGLE_PLAYING
 
-#ifdef SEQ64_USE_AUTO_SCREENSET_QUEUE
+#ifdef SEQ64_USE_AUTO_SCREENSET_QUEUE       // currently doesn't work well
 
 #define SET_AUTO    mem_fun(*this, &seqmenu::set_auto_screenset)
 
@@ -350,53 +350,6 @@ seqmenu::set_transposable (bool flag)
         s->set_transposable(flag);
     }
 }
-
-/**
- *  Mutes all tracks in the main perform object.
- */
-
-void
-seqmenu::mute_all_tracks ()
-{
-    m_mainperf.mute_all_tracks();
-}
-
-/**
- *  Unmutes all tracks in the main perform object.
- */
-
-void
-seqmenu::unmute_all_tracks ()
-{
-    m_mainperf.mute_all_tracks(false);
-}
-
-/**
- *  Toggles the mute-status of all tracks in the main perform object.
- */
-
-void
-seqmenu::toggle_all_tracks ()
-{
-    m_mainperf.toggle_all_tracks();
-}
-
-#ifdef USE_TOGGLE_PLAYING
-
-/**
- *  Toggles the mute-status of ony the playing tracks in the main perform
- *  object.
- */
-
-void
-seqmenu::toggle_playing_tracks ()
-{
-    static bool s_are_armed_saved = false;      /* worth making a member? */
-    m_mainperf.toggle_playing_tracks(s_are_armed_saved);
-    s_are_armed_saved = ! s_are_armed_saved;
-}
-
-#endif  // USE_TOGGLE_PLAYING
 
 /**
  *  This menu callback launches the sequence-editor (pattern editor) window.
@@ -597,10 +550,6 @@ seqmenu::seq_paste ()
  *  If the current sequence is active, this function pushes a trigger
  *  undo in the main perform object, clears its sequence triggers for the
  *  current sequence, and sets the dirty flag of the sequence.
- *
- * \todo
- *      All of seq_paste() can be offloaded to a (new) perform member
- *      function.
  */
 
 void

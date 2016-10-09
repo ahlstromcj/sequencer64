@@ -13,6 +13,9 @@
 	seq_gtkmm2/src/seqmenu.cpp: Fixed some recent issues from GitHub,
 	added macroed-out support for a requested feature, better toggling
 	of armed patterns, and prep for v. 0.9.18.2.
+	* README, configure.ac, libseq64/src/cmdlineopts.cpp,
+	libseq64/src/sequence.cpp, man/sequencer64.1: Fixed issue 40,
+	cut-and-paste broken in sequence editor, prep for v. 0.9.18.3.
 
 2016-10-07  Chris Ahlstrom <ahlstromcj@gmail.com>
 

@@ -1,6 +1,6 @@
 Bugs and Additional Upgrade Ideas
 Chris Ahlstrom
-2015-10-27 to 2016-10-05 (New bugs and fixed bugs)
+2015-10-27 to 2016-10-11 (New bugs and fixed bugs)
 
 In no particular order...  "y" means "in progress", and "x" means it is
 basically done.
@@ -994,6 +994,59 @@ at the 2nd (or 4th and so on) bar.
 * Now look at the "play cursor" for this sequence in the main window. It shows the
 position as if the sequence would start at the first bar of the song.
 
+
+
+
+Date: Mon, 10 Oct 2016 15:48:04 -0700
+From: layk <notifications@github.com>
+Subject: [ahlstromcj/sequencer64] recording midi note is fixed length due to
+        missing handling of is_pattern_playing(bool) in perform.cpp (#42)
+
+Hi
+Trying to record midi notes all notes are recorded in fixed length due to
+is_pattern_playing() is always false in sequence::stream_event (event & ev) in
+perform.cpp line 2841 thus going to step-edit feature in that same function.
+
+As a side note setting this boolean value was done in mainwind.cpp in seq24 0.9.3
+
+To me the most logical place to set the flag seems to be for given functionality
+(toggle between live record and step-edit) in perform::playback_key_event (const
+keystroke & k, bool songmode) in perform.cpp since all possibilities are in that
+function (pause/play/stop). I added is_pattern_playing(bool); for all the
+possibilities.
+
+With this attached patch is_pattern_playing is set and note length is now
+recorded.
+
+BTW There was one declaration in perform.cpp line 2048 with a comment 'Hmmmmm'.
+    is_pattern_playing(false);              // hmmmmmmmmmmmmmmmmmm
+
+I'm using fixups with --enable-debug --disable-shared --enable-seq32jack
+
+Patch attached below.
+
+[diff_fix.txt](https://github.com/ahlstromcj/sequencer64/files/520552/diff_fix.txt
+)
+
+
+
+
+
+Date: Mon, 10 Oct 2016 23:48:45 -0700
+From: layk <notifications@github.com>
+Subject: [ahlstromcj/sequencer64] Upper case midi file extension filtering when
+        opening file (#43)
+
+Hi
+
+I downloaded some midi files the other day with uppercase midi file
+extensions(*.MID) and did sot see those when opening in sequencer64 with default
+filter 'MIDI Files' but only with 'Any Files'.
+
+I added upper case filters in mainwnd.cpp mainwnd::choose_file () function.
+
+Patch attached
+[diff.txt](https://github.com/ahlstromcj/sequencer64/files/521098/diff.txt)
 
 
 

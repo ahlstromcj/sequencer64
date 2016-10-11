@@ -152,9 +152,14 @@ class perform
 {
     friend class jack_assistant;
     friend class keybindentry;
+    friend class mainwnd;
     friend class midifile;
     friend class optionsfile;           // needs cleanup
     friend class options;
+    friend class perfedit;
+    friend class perfroll;
+    friend void * input_thread_func (void * myperf);
+    friend void * output_thread_func (void * myperf);
 
 #ifdef SEQ64_JACK_SUPPORT
 
@@ -167,6 +172,15 @@ class perform
 
 #ifdef SEQ64_STAZED_JACK_SUPPORT
     friend int jack_process_callback (jack_nframes_t nframes, void * arg);
+#ifdef XXX_ADDITIONAL_FRIENDS               // new stuff on seq32, needed here?
+    friend void jack_shutdown (void * arg);
+    friend void jack_timebase_callback
+    (
+        jack_transport_state_t state, jack_nframes_t nframes,
+        jack_position_t * pos, int new_pos, void * arg
+    );
+    friend long get_current_jack_position (void * arg);
+#endif
 #endif
 
 #endif  // SEQ64_JACK_SUPPORT
@@ -1425,207 +1439,7 @@ public:
         return double(m_right_tick - m_left_tick);
     }
 
-    void move_triggers (bool direction);
-    void copy_triggers ();
-    void push_trigger_undo (int track = SEQ64_ALL_TRACKS);
-    void pop_trigger_undo ();
-    void pop_trigger_redo ();
-
-    /**
-     * \getter m_have_undo
-     */
-
-    bool have_undo () const
-    {
-        return m_have_undo;
-    }
-
-    /**
-     * \setter m_have_undo
-     */
-
-    void set_have_undo (bool undo)
-    {
-        m_have_undo = undo;
-        if (undo)
-            modify();
-    }
-
-    /**
-     * \getter m_have_redo
-     */
-
-    bool have_redo () const
-    {
-        return m_have_redo;
-    }
-
-    /**
-     * \setter m_have_redo
-     */
-
-    void set_have_redo (bool redo)
-    {
-        m_have_redo = redo;
-    }
-
-    void split_trigger (int seqnum, midipulse tick);
-    midipulse get_max_trigger ();
-
-    /**
-     *  Convenience function for perfedit's collapse functionality.
-     */
-
-    void collapse ()
-    {
-        push_trigger_undo();
-        move_triggers(false);
-        is_modified(true);
-    }
-
-    /**
-     *  Convenience function for perfedit's copy functionality.
-     */
-
-    void copy ()
-    {
-        push_trigger_undo();
-        copy_triggers();
-    }
-
-    /**
-     *  Convenience function for perfedit's expand functionality.
-     */
-
-    void expand ()
-    {
-        push_trigger_undo();
-        move_triggers(true);
-        is_modified(true);
-    }
-
-    midi_control & midi_control_toggle (int seq);
-    midi_control & midi_control_on (int seq);
-    midi_control & midi_control_off (int seq);
-    void handle_midi_control (int control, bool state);
-    const std::string & get_screen_set_notepad (int screen_set) const;
-
-    /**
-     *  Returns the notepad text for the current screen-set.
-     */
-
-    const std::string & current_screen_set_notepad () const
-    {
-        return get_screen_set_notepad(m_screenset);
-    }
-
-    void set_screen_set_notepad (int screenset, const std::string & note);
-
-    /**
-     *  Sets the notepad text for the current screen-set.
-     *
-     * \param note
-     *      The string value to set into the notepad text.
-     */
-
-    void set_screen_set_notepad (const std::string & note)
-    {
-        set_screen_set_notepad(m_screenset, note);
-    }
-
-    /**
-     * \getter m_screenset
-     */
-
-    int get_screenset () const
-    {
-        return m_screenset;
-    }
-
-    void set_playing_screenset ();
-    void set_screenset (int ss);
-
-    /**
-     * \getter m_playing_screen
-     */
-
-    int get_playing_screenset () const
-    {
-        return m_playing_screen;
-    }
-
-    bool any_group_unmutes () const;
-    void mute_group_tracks ();
-    void select_and_mute_group (int g_group);
-    void set_song_mute (mute_op_t op);
-
-    /**
-     * \setter m_mode_group
-     */
-
-    void set_mode_group_mute ()
-    {
-        m_mode_group = true;
-    }
-
-    /**
-     * \setter m_mode_group
-     *      Unsets this member.
-     */
-
-    void unset_mode_group_mute ()
-    {
-        m_mode_group = false;
-    }
-
-    void select_group_mute (int g_mute);
-    void set_mode_group_learn ();
-    void unset_mode_group_learn ();
-
-    /**
-     * \getter m_mode_group_learn
-     */
-
-    bool is_group_learning ()
-    {
-        return m_mode_group_learn;
-    }
-
-    void set_and_copy_mute_group (int group);
-    void start (bool state);
-    void stop ();
-
-    /**
-     *  If JACK is supported, starts the JACK transport.
-     */
-
-    void start_jack ()
-    {
-#ifdef SEQ64_JACK_SUPPORT
-        m_jack_asst.start();
-#endif
-    }
-
-    /**
-     *  If JACK is supported, stops the JACK transport.
-     */
-
-    void stop_jack ()
-    {
-#ifdef SEQ64_JACK_SUPPORT
-        m_jack_asst.stop();
-#endif
-    }
-
-    void position_jack (bool state, midipulse tick = 0);
-    void off_sequences ();
-    void all_notes_off ();
-    void set_active (int seq, bool active);
-    void set_was_active (int seq);
-    bool is_dirty_main (int seq);
-    bool is_dirty_edit (int seq);
-    bool is_dirty_perf (int seq);
-    bool is_dirty_names (int seq);
+public:
 
     /**
      *  Checks the pattern/sequence for activity.
@@ -1643,76 +1457,6 @@ public:
     bool is_active (int seq) const
     {
         return is_mseq_valid(seq) ? m_seqs_active[seq] : false ;
-    }
-
-    /**
-     *  Retrieves the actual sequence, based on the pattern/sequence number.
-     *  This is the const version.
-     *
-     * \param seq
-     *      The prospective sequence number.
-     *
-     * \return
-     *      Returns the value of m_seqs[seq] if seq is valid.  Otherwise, a
-     *      null pointer is returned.
-     */
-
-    const sequence * get_sequence (int seq) const
-    {
-        return is_mseq_valid(seq) ? m_seqs[seq] : nullptr ;
-    }
-
-    /**
-     *  Retrieves the actual sequence, based on the pattern/sequence number.
-     *
-     * \param seq
-     *      The prospective sequence number.
-     *
-     * \return
-     *      Returns the value of m_seqs[seq] if seq is valid.  Otherwise, a
-     *      null pointer is returned.
-     */
-
-    sequence * get_sequence (int seq)
-    {
-        return is_mseq_valid(seq) ? m_seqs[seq] : nullptr ;
-    }
-
-    bool is_exportable (int seq) const;
-    void reset_sequences (bool pause = false);
-
-    /**
-     *  Plays all notes to the current tick.
-     */
-
-    void play (midipulse tick);
-    void set_orig_ticks (midipulse tick);
-    void set_beats_per_minute (int bpm);        /* more than just a setter  */
-
-    /**
-     * \getter m_master_bus.get_beats_per_minute
-     *      Retrieves the BPM setting of the master MIDI buss.
-     *
-     * \return
-     *      Returns the value of beats/minute from the master buss.
-     */
-
-    int get_beats_per_minute ()
-    {
-        return m_master_bus.get_beats_per_minute();
-    }
-
-    /**
-     * \setter m_looping
-     *
-     * \param looping
-     *      The boolean value to set for looping, used in the performance
-     *      editor.
-     */
-
-    void set_looping (bool looping)
-    {
-        m_looping = looping;
     }
 
 #ifdef SEQ64_STAZED_TRANSPOSE
@@ -1740,6 +1484,19 @@ public:
     }
 
 #endif
+
+    /**
+     * \getter m_master_bus.get_beats_per_minute
+     *      Retrieves the BPM setting of the master MIDI buss.
+     *
+     * \return
+     *      Returns the value of beats/minute from the master buss.
+     */
+
+    int get_beats_per_minute ()
+    {
+        return m_master_bus.get_beats_per_minute();
+    }
 
     void set_sequence_control_status (int status);
     void unset_sequence_control_status (int status);
@@ -2126,6 +1883,39 @@ public:
         return seq.is_smf_0();
     }
 
+    /**
+     *  Retrieves the actual sequence, based on the pattern/sequence number.
+     *  This is the const version.
+     *
+     * \param seq
+     *      The prospective sequence number.
+     *
+     * \return
+     *      Returns the value of m_seqs[seq] if seq is valid.  Otherwise, a
+     *      null pointer is returned.
+     */
+
+    const sequence * get_sequence (int seq) const
+    {
+        return is_mseq_valid(seq) ? m_seqs[seq] : nullptr ;
+    }
+
+    /**
+     *  Retrieves the actual sequence, based on the pattern/sequence number.
+     *
+     * \param seq
+     *      The prospective sequence number.
+     *
+     * \return
+     *      Returns the value of m_seqs[seq] if seq is valid.  Otherwise, a
+     *      null pointer is returned.
+     */
+
+    sequence * get_sequence (int seq)
+    {
+        return is_mseq_valid(seq) ? m_seqs[seq] : nullptr ;
+    }
+
 #ifdef SEQ64_USE_AUTO_SCREENSET_QUEUE
 
     void set_auto_screenset (bool flag);
@@ -2149,7 +1939,237 @@ public:
     bool perfroll_key_event (const keystroke & k, int drop_sequence);
     bool playback_key_event (const keystroke & k, bool songmode = false);
 
+    void move_triggers (bool direction);
+    void copy_triggers ();
+    void push_trigger_undo (int track = SEQ64_ALL_TRACKS);
+    void pop_trigger_undo ();
+    void pop_trigger_redo ();
+
+    bool is_dirty_main (int seq);
+    bool is_dirty_edit (int seq);
+    bool is_dirty_perf (int seq);
+    bool is_dirty_names (int seq);
+    bool is_exportable (int seq) const;
+
+    void set_screenset (int ss);
+
+    /**
+     * \getter m_screenset
+     */
+
+    int get_screenset () const
+    {
+        return m_screenset;
+    }
+
+    /**
+     * \getter m_playing_screen
+     */
+
+    int get_playing_screenset () const
+    {
+        return m_playing_screen;
+    }
+
 private:
+
+    /**
+     * \getter m_have_undo
+     */
+
+    bool have_undo () const
+    {
+        return m_have_undo;
+    }
+
+    /**
+     * \setter m_have_undo
+     *      Note that, if the \a undo parameter is true, then we mark the
+     *      performance as modified.  Once it is set, it remains set, unless
+     *      cleared by saving the file.
+     */
+
+    void set_have_undo (bool undo)
+    {
+        m_have_undo = undo;
+        if (undo)
+            modify();
+    }
+
+    /**
+     * \getter m_have_redo
+     */
+
+    bool have_redo () const
+    {
+        return m_have_redo;
+    }
+
+    /**
+     * \setter m_have_redo
+     */
+
+    void set_have_redo (bool redo)
+    {
+        m_have_redo = redo;
+    }
+
+    void split_trigger (int seqnum, midipulse tick);
+    midipulse get_max_trigger ();
+
+    /**
+     *  Convenience function for perfedit's collapse functionality.
+     */
+
+    void collapse ()
+    {
+        push_trigger_undo();
+        move_triggers(false);
+        is_modified(true);
+    }
+
+    /**
+     *  Convenience function for perfedit's copy functionality.
+     */
+
+    void copy ()
+    {
+        push_trigger_undo();
+        copy_triggers();
+    }
+
+    /**
+     *  Convenience function for perfedit's expand functionality.
+     */
+
+    void expand ()
+    {
+        push_trigger_undo();
+        move_triggers(true);
+        is_modified(true);
+    }
+
+    midi_control & midi_control_toggle (int seq);
+    midi_control & midi_control_on (int seq);
+    midi_control & midi_control_off (int seq);
+    void handle_midi_control (int control, bool state);
+    const std::string & get_screen_set_notepad (int screen_set) const;
+
+    /**
+     *  Returns the notepad text for the current screen-set.
+     */
+
+    const std::string & current_screen_set_notepad () const
+    {
+        return get_screen_set_notepad(m_screenset);
+    }
+
+    void set_screen_set_notepad (int screenset, const std::string & note);
+
+    /**
+     *  Sets the notepad text for the current screen-set.
+     *
+     * \param note
+     *      The string value to set into the notepad text.
+     */
+
+    void set_screen_set_notepad (const std::string & note)
+    {
+        set_screen_set_notepad(m_screenset, note);
+    }
+
+    void set_playing_screenset ();
+
+    bool any_group_unmutes () const;
+    void mute_group_tracks ();
+    void select_and_mute_group (int g_group);
+    void set_song_mute (mute_op_t op);
+
+    /**
+     * \setter m_mode_group
+     */
+
+    void set_mode_group_mute ()
+    {
+        m_mode_group = true;
+    }
+
+    /**
+     * \setter m_mode_group
+     *      Unsets this member.
+     */
+
+    void unset_mode_group_mute ()
+    {
+        m_mode_group = false;
+    }
+
+    void select_group_mute (int g_mute);
+    void set_mode_group_learn ();
+    void unset_mode_group_learn ();
+
+    /**
+     * \getter m_mode_group_learn
+     */
+
+    bool is_group_learning ()
+    {
+        return m_mode_group_learn;
+    }
+
+    void set_and_copy_mute_group (int group);
+    void start (bool state);
+    void stop ();
+
+    /**
+     *  If JACK is supported, starts the JACK transport.
+     */
+
+    void start_jack ()
+    {
+#ifdef SEQ64_JACK_SUPPORT
+        m_jack_asst.start();
+#endif
+    }
+
+    /**
+     *  If JACK is supported, stops the JACK transport.
+     */
+
+    void stop_jack ()
+    {
+#ifdef SEQ64_JACK_SUPPORT
+        m_jack_asst.stop();
+#endif
+    }
+
+    void position_jack (bool state, midipulse tick = 0);
+    void off_sequences ();
+    void all_notes_off ();
+    void set_active (int seq, bool active);
+    void set_was_active (int seq);
+    void reset_sequences (bool pause = false);
+
+    /**
+     *  Plays all notes to the current tick.
+     */
+
+    void play (midipulse tick);
+    void set_orig_ticks (midipulse tick);
+    void set_beats_per_minute (int bpm);        /* more than just a setter  */
+
+    /**
+     * \setter m_looping
+     *
+     * \param looping
+     *      The boolean value to set for looping, used in the performance
+     *      editor.
+     */
+
+    void set_looping (bool looping)
+    {
+        m_looping = looping;
+    }
 
     int max_active_set () const;
 

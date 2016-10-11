@@ -124,7 +124,7 @@ perform::perform (gui_assistant & mygui, int ppqn)
     m_song_start_mode           (false),    // set later during options read
 #ifdef SEQ64_STAZED_JACK_SUPPORT
     m_toggle_jack               (false),
-    m_jack_stop_tick            (0),        // ???
+    m_jack_stop_tick            (0),
     m_follow_transport          (true),
     m_start_from_perfedit       (false),
     m_reposition                (false),
@@ -337,12 +337,6 @@ perform::clear_all ()
         m_undo_vect.clear();                    /* ca 2016-08-16            */
         set_have_redo(false);
         m_redo_vect.clear();                    /* ca 2016-08-16            */
-
-        /*
-         * TODO:
-         *  set_beats_per_minute(c_bpm);
-         */
-
         is_modified(false);                     /* new, we start afresh     */
     }
     return result;
@@ -1601,8 +1595,8 @@ perform::set_playing_screenset ()
  *  down the list of sequences and has them dump their events.  It skips
  *  sequences that have no playable MIDI events.
  *
- *  Note how often the "s" (sequence) pointer is used.  Is it worth offloading
- *  all these calls to a new sequence function?  Yes.  Hence the new
+ *  Note how often the "s" (sequence) pointer was used.  It was worth
+ *  offloading all these calls to a new sequence function.  Hence the new
  *  sequence::play_queue function.
  *
  * \param tick
@@ -1732,7 +1726,7 @@ perform::push_trigger_undo (int track)
 void
 perform::pop_trigger_undo ()
 {
-    if (m_undo_vect.size() > 0)
+    if (! m_undo_vect.empty())
     {
         int track = m_undo_vect.back();
         m_undo_vect.pop_back();
@@ -1750,15 +1744,15 @@ perform::pop_trigger_undo ()
             if (is_active(track))
                 m_seqs[track]->pop_trigger_undo();
         }
-        set_have_undo(m_undo_vect.size() > 0);
-        set_have_redo(m_redo_vect.size() > 0);
+        set_have_undo(! m_undo_vect.empty());
+        set_have_redo(! m_redo_vect.empty());
     }
 }
 
 void
 perform::pop_trigger_redo ()
 {
-    if (m_redo_vect.size() > 0)
+    if (! m_redo_vect.empty())
     {
         int track = m_redo_vect.back();
         m_redo_vect.pop_back();
@@ -1776,8 +1770,8 @@ perform::pop_trigger_redo ()
             if (is_active(track))
                 m_seqs[track]->pop_trigger_redo();
         }
-        set_have_undo(m_undo_vect.size() > 0);
-        set_have_redo(m_redo_vect.size() > 0);
+        set_have_undo(! m_undo_vect.empty());
+        set_have_redo(! m_redo_vect.empty());
     }
 }
 
@@ -2036,10 +2030,10 @@ perform::pause_playing (bool songmode)
     }
 
 #ifdef SEQ64_STAZED_JACK_SUPPORT
-    if (! m_is_paused)                      /* seq64 was in output_func()   */
-        m_start_from_perfedit = false;      /* act like stop_playing()      */
-    else
+    if (m_is_paused)                        /* seq64 was in output_func()   */
         m_start_from_perfedit = songmode;   /* act like start_playing()     */
+    else
+        m_start_from_perfedit = false;      /* act like stop_playing()      */
 #endif
 
 #endif
@@ -2064,11 +2058,11 @@ perform::stop_playing ()
 #ifdef SEQ64_STAZED_JACK_SUPPORT
     m_start_from_perfedit = false;
 #else
-    m_is_paused = false;
-    is_pattern_playing(false);
     m_tick = 0;                         // or get_left_tick()
 #endif
 
+    m_is_paused = false;
+    is_pattern_playing(false);
 }
 
 /**
@@ -2153,7 +2147,7 @@ perform::start (bool songmode)
 void
 perform::stop ()
 {
-#if defined SEQ64_JACK_SUPPORT && ! defined SEQ64_STAZED_JACK_SUPPORT
+#if ! defined SEQ64_STAZED_JACK_SUPPORT && defined SEQ64_JACK_SUPPORT
     if (! is_jack_running())
 #endif
         inner_stop();
@@ -2175,7 +2169,8 @@ perform::stop ()
  *      occur.  Consider a run-time --pause-support option for this feature.
  *
  * \param songmode
- *      Sets the playback mode, and, if true, turns off all of the sequences.
+ *      Sets the playback mode, and, if true, turns off all of the sequences
+ *      before setting the is-running condition.
  */
 
 void
@@ -2185,11 +2180,8 @@ perform::inner_start (bool songmode)
     if (! is_running())
     {
         set_playback_mode(songmode);
-
-#if ! defined SEQ64_PAUSE_SUPPORT
         if (songmode)
             off_sequences();
-#endif
 
         set_running(true);
         m_condition_var.signal();
@@ -2267,7 +2259,8 @@ perform::all_notes_off ()
  *  master MIDI buss.
  *
  * \param pause
- *      Try to prevent notes from lingering on pause if true.
+ *      Try to prevent notes from lingering on pause if true.  By default, it
+ *      is false.
  */
 
 #ifdef SEQ64_STAZED_JACK_SUPPORT
@@ -2275,23 +2268,22 @@ perform::all_notes_off ()
 void
 perform::reset_sequences (bool pause)
 {
-    if (pause)
+    for (int s = 0; s < m_sequence_max; ++s)
     {
-        // TODO
-    }
-    else
-    {
-        for (int s = 0; s < m_sequence_max; ++s)
+        if (is_active(s))
         {
-            if (is_active(s))
-            {
-                bool state = m_seqs[s]->get_playing();
-                m_seqs[s]->off_playing_notes();
-                m_seqs[s]->set_playing(false);
+#if 0
+            bool state = m_seqs[s]->get_playing();
+            m_seqs[s]->off_playing_notes();
+            m_seqs[s]->set_playing(false);
+
+            if (! m_playback_mode)
+                m_seqs[s]->set_playing(state);
+#endif
+
+            m_seqs[s]->reset(m_playback_mode);
+            if (! pause)                            /* TRIAL CODE */
                 m_seqs[s]->zero_markers();
-                if (! m_playback_mode)
-                    m_seqs[s]->set_playing(state);
-            }
         }
     }
     m_master_bus.flush();                           /* flush the bus */
@@ -4112,8 +4104,8 @@ perform::FF_rewind ()
 
     long tick = 0;
     long measure_ticks =
-        measures_to_ticks(m_beats_per_bar, m_ppqn, m_beat_width) /
-            4 * m_excell_FF_RW;
+        measures_to_ticks(m_beats_per_bar, m_ppqn, m_beat_width) / 4 *
+            m_excell_FF_RW;
 
     if (m_FF_RW_button_type == FF_RW_REWIND)
     {

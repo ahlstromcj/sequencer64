@@ -247,7 +247,7 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
 
     m_adjust_load_offset    (nullptr),  /* created in file_import_dialog()  */
     m_spinbutton_load_offset(nullptr),  /* created in file_import_dialog()  */
-    m_entry_notes           (nullptr),  /* (manage(new Gtk::Entry())),      */
+    m_entry_notes           (manage(new Gtk::Entry())),
 #ifdef SEQ64_PAUSE_SUPPORT
     m_is_running            (false),
 #endif
@@ -639,7 +639,6 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
 
     Gtk::HBox * notebox = manage(new Gtk::HBox(false, 4));
     bottomhbox->pack_start(*notebox, Gtk::PACK_EXPAND_WIDGET);
-    m_entry_notes = manage(new Gtk::Entry());
     m_entry_notes->signal_changed().connect
     (
         mem_fun(*this, &mainwnd::edit_callback_notepad)
@@ -882,6 +881,11 @@ mainwnd::timer_callback ()
     int screenset = perf().get_screenset();
     if (m_adjust_ss->get_value() != screenset)
     {
+        /*
+         * Why are not we passing a second parameter, "true", here, given the
+         * note below?
+         */
+
         m_main_wid->set_screenset(screenset);
 
         /*

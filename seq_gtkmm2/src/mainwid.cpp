@@ -793,11 +793,12 @@ mainwid::seq_from_xy (int x, int y)
  *      Provides the screen-set number to set.
  *
  * \param setperf
- *      If true, then also call perfrom::set_screenset().
+ *      If true, then also call perfrom::set_screenset().  Defaults to false.
+ *      It might be better if it defaults to true.
  */
 
 void
-mainwid::set_screenset (int ss, bool setperf)   // default = false? true?
+mainwid::set_screenset (int ss, bool setperf)
 {
     if (setperf)
         perf().set_screenset(ss);

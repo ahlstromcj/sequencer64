@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-14
- * \updates       2016-10-06
+ * \updates       2016-10-10
  * \license       GNU GPLv2 or above
  *
  *  This module was created from code that existed in the perform object.
@@ -605,6 +605,121 @@ jack_assistant::stop ()
         (void) error_message("Transport Stop: JACK not running");
 }
 
+#ifdef SEQ64_STAZED_JACK_SUPPORT
+
+/**
+ *  If JACK is supported and running, sets the position of the transport to
+ *  the new frame number, frame 0.  This new position takes effect in two
+ *  process cycles. If there are slow-sync clients and the transport is
+ *  already rolling, it will enter the JackTransportStarting state and begin
+ *  invoking their sync_callbacks until ready. This function is realtime-safe.
+ *
+ *      http://jackaudio.org/files/docs/html/transport-design.html
+ *
+ *  This position() function is called via perform::position_jack() in the
+ *  mainwnd, perfedit, perfroll, and seqroll graphical user-interface support
+ *  objects.
+ *
+ *  The code that was disabled sets the current tick to 0 or, if state was
+ *  true, to the leftmost tick (which is probably the position of the L
+ *  marker).  The current tick is then converted to a frame number, and then
+ *  we locate the transport to that position.  We're going to enable this
+ *  code, but make it dependent on a new boolean parameter that defaults to
+ *  false, in anticipation of trying it out later.
+ *
+ * Stazed:
+ *
+ *      The jack_frame calculation is all that is needed to change JACK
+ *      position The BBT calc can be sent but will be overridden by the first
+ *      call to jack_timebase_callback() of any Master set. If no Master is
+ *      set, then the BBT will display the new position but will not change
+ *      even if the transport is rolling. There is no need to send BBT on
+ *      position change - the fact that the function jack_transport_locate()
+ *      exists and only uses the frame position is proof that BBT is not
+ *      needed! Upon further reflection, why not send BBT?  Because other
+ *      programs do not.... let's follow convention.  The below calculation for
+ *      jack_transport_locate(), works, is simpler and does not send BBT. The
+ *      calculation for jack_transport_reposition() will be commented out
+ *      again.  The BBT call to jack_BBT_position() is not necessary to
+ *      change jack position!
+ *
+ * \param state
+ *      TODO.
+ *
+ * \param tick
+ *      TODO.
+ */
+
+void
+jack_assistant::position (bool state, midipulse tick)
+{
+
+#ifdef SEQ64_JACK_SUPPORT
+
+    long current_tick = 0;
+    if (is_null_midipulse(tick))
+        tick = 0;
+
+    if (state)                              /* master in song mode */
+        current_tick = tick;
+
+    current_tick *= 10;
+
+    int ticks_per_beat = m_ppqn * 10;
+    int beats_per_minute = parent().get_beats_per_minute();
+    uint64_t tick_rate = (uint64_t(m_jack_frame_rate) * current_tick * 60.0);
+    long tpb_bpm = ticks_per_beat * beats_per_minute * 4.0 / m_beat_width;
+    uint64_t jack_frame = tick_rate / tpb_bpm;
+    jack_transport_locate(m_jack_client, jack_frame);
+
+#ifdef SEQ64_STAZED_JACK_SUPPORT
+
+#if 0
+
+    /*
+     * The call to jack_BBT_position() is not necessary to change JACK
+     * position!  Must set these here since they are set in timebase.
+     */
+
+    jack_position_t pos;
+    double jack_tick = current_tick * m_bw / 4.0;
+    pos.ticks_per_beat = m_ppqn * 10;
+    pos.beats_per_minute = m_master_bus.get_bpm();
+    jack_BBT_position(pos, jack_tick);
+
+    /*
+     * Calculate JACK frame to put into pos.frame; it is what matters for
+     * position change.  Very similar to the uncommented code above.
+     */
+
+    uint64_t tick_rate = ((uint64_t)pos.frame_rate * current_tick * 60.0);
+    long tpb_bpm = pos.ticks_per_beat * pos.beats_per_minute *
+        4.0 / pos.beat_type;
+
+    pos.frame = tick_rate / tpb_bpm;
+
+    /*
+     * ticks * 10 = jack ticks;
+     * jack ticks / ticks per beat = num beats;
+     * num beats / beats per minute = num minutes
+     * num minutes * 60 = num seconds
+     * num secords * frame_rate  = frame
+     */
+
+    jack_transport_reposition(m_jack_client, &pos);
+
+#endif  // 0
+
+    if (parent().is_running())
+        parent().set_reposition(false);
+#endif
+
+#endif  // SEQ64_JACK_SUPPORT
+
+}
+
+#else   // SEQ64_STAZED_JACK_SUPPORT
+
 /**
  *  If JACK is supported and running, sets the position of the transport to
  *  the new frame number, frame 0.  This new position takes effect in two
@@ -646,22 +761,6 @@ jack_assistant::stop ()
  *      Returns 0 if a valid request, EINVAL if the position structure is
  *      rejected.
  *
- * Stazed:
- *
- *      The jack_frame calculation is all that is needed to change JACK
- *      position The BBT calc can be sent but will be overridden by the first
- *      call to jack_timebase_callback() of any Master set. If no Master is
- *      set, then the BBT will display the new position but will not change
- *      even if the transport is rolling. There is no need to send BBT on
- *      position change - the fact that the function jack_transport_locate()
- *      exists and only uses the frame position is proof that BBT is not
- *      needed! Upon further reflection, why not send BBT?  Because other
- *      programs do not.... let's follow convention.  The below calculation for
- *      jack_transport_locate(), works, is simpler and does not send BBT. The
- *      calculation for jack_transport_reposition() will be commented out
- *      again.  The BBT call to jack_BBT_position() is not necessary to
- *      change jack position!
- *
  * \warning
  *      A lot of this code is effectively disabled by an early return
  *      statement.
@@ -681,42 +780,6 @@ jack_assistant::stop ()
  *      "klick -j -P" work, after a fashion.  It clicks, but at a way too
  *      rapid rate.
  */
-
-#ifdef SEQ64_STAZED_JACK_SUPPORT
-
-void
-jack_assistant::position (bool state, midipulse tick)
-{
-
-#ifdef SEQ64_JACK_SUPPORT
-
-    long current_tick = 0;
-    if (is_null_midipulse(tick))
-        tick = 0;
-
-    if (state)                              /* master in song mode */
-        current_tick = tick;
-
-    current_tick *= 10;
-
-    int ticks_per_beat = m_ppqn * 10;
-    int beats_per_minute = parent().get_beats_per_minute();
-
-    uint64_t tick_rate = (uint64_t(m_jack_frame_rate) * current_tick * 60.0);
-    long tpb_bpm = ticks_per_beat * beats_per_minute * 4.0 / m_beat_width;
-    uint64_t jack_frame = tick_rate / tpb_bpm;
-    jack_transport_locate(m_jack_client,jack_frame);
-
-#ifdef SEQ64_STAZED_JACK_SUPPORT
-    if (parent().is_running())
-        parent().set_reposition(false);
-#endif
-
-#endif  // SEQ64_JACK_SUPPORT
-
-}
-
-#else   // SEQ64_STAZED_JACK_SUPPORT
 
 void
 jack_assistant::position (bool to_left_tick, midipulse tick)
@@ -966,8 +1029,11 @@ jack_process_callback (jack_nframes_t /* nframes */, void * arg)
 
             if (s == JackTransportRolling || s == JackTransportStarting)
             {
-                j->m_jack_transport_state_last = JackTransportStarting;
+                /*
+                 * We need to start.
+                 */
 
+                j->m_jack_transport_state_last = JackTransportStarting;
                 if (p.start_from_perfedit())
                     p.inner_start(true);
                 else
@@ -1007,6 +1073,7 @@ jack_process_callback (jack_nframes_t /* nframes */, void * arg)
                 client_state = Exit;
         }
 #endif
+
     }
     return 0;
 }
@@ -1022,7 +1089,7 @@ jack_process_callback (jack_nframes_t /* nframes */, void * arg)
  *      -   JackTransportRolling when the timeout has expired, and the
  *          position is now a moving target.
  *
- *  This is the slow-sync callback, which stazed replaces with
+ *  This is the slow-sync callback, which the stazed code replaces with
  *  jack_process_callback().
  *
  * \param state

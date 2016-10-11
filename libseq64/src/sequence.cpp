@@ -3611,26 +3611,26 @@ sequence::paste_trigger (midipulse paste_tick)
  *  playback, while otherwise JACK or the performance/song editor controls
  *  playback.  (We're still a bit confounded about these modes, alas.)
  *
- * \param live_mode
- *      True if live mode is on.  This means that JACK transport is not in
+ * \param song_mode
+ *      True if song mode is on.  This can mean that JACK transport is not in
  *      control of playback.
  */
 
 void
-sequence::reset (bool live_mode)
+sequence::reset (bool song_mode)
 {
     bool state = get_playing();
     off_playing_notes();
     set_playing(false);
     zero_markers();                 /* sets the "last-tick" value   */
-    if (! live_mode)
+    if (! song_mode)
         set_playing(state);
 }
 
 /**
  *  A pause version of reset().  The reset() function is currently not called
  *  when pausing, but we still need the note-shutoff capability to prevent
- *  notes from lingering.  Not that we do not call set_playing(false)... it
+ *  notes from lingering.  Note that we do not call set_playing(false)... it
  *  disarms the sequence, which we do not want upon pausing.
  */
 

@@ -78,7 +78,7 @@
 #include "settings.hpp"                 /* seq64::rc() or seq64::usr()  */
 #include "pixmaps/perfedit.xpm"
 
-using namespace Gtk::Menu_Helpers;
+using namespace Gtk::Menu_Helpers;      /* MenuElem, etc.                */
 
 namespace seq64
 {
@@ -255,7 +255,8 @@ eventedit::eventedit (perform & p, sequence & seq)
         m_button_ins,
         "Insert a new event using the data in the edit fields. Its actual "
         "location is determined by the timestamp field, not the current "
-        "event.  The Insert key is reserved for the edit fields."
+        "event.  The Insert key is reserved for the edit fields, and only "
+        "the Insert button will work."
     );
 
     m_button_modify->set_label("Modify Current Event");
@@ -347,9 +348,18 @@ eventedit::eventedit (perform & p, sequence & seq)
      * Let's see if we can get the key cursor to show in this entry box.
      * Hope it doesn't mess up edited-sequence highlighting!
      *
-     * m_entry_ev_timestamp->set_can_focus(true);
-     * m_entry_ev_timestamp->grab_focus();
+     *  m_entry_ev_timestamp->set_focus_on_click(true);
+     *  m_entry_ev_timestamp->set_can_focus(true);
+     *  m_entry_ev_timestamp->grab_focus();
+     *  m_entry_ev_timestamp->set_flags
+     *  (
+     *      m_entry_ev_timestamp->get_flags() | Gtk::CAN_FOCUS
+     *  );
+     *  m_entry_ev_timestamp->set_has_frame(true);
+     *
+     *  m_editbox->set_focus_child(m_entry_ev_timestamp);
      */
+
 
     add_tooltip
     (
@@ -836,6 +846,13 @@ void
 eventedit::on_set_focus (Widget * focus)
 {
     gui_window_gtk2::on_set_focus(focus);
+
+    /*
+     * This will cause a stack overflow :-D
+     *
+     * focus->grab_focus();
+     */
+
     change_focus();
 }
 

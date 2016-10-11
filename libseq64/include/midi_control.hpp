@@ -228,7 +228,7 @@ public:
      *      members in this order: m_active, m_inverse_active, m_status,
      *      m_data, m_min_value, and m_max_value.
      */
-    
+
     void set (int values[6])
     {
         m_active = bool(values[0]);

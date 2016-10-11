@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and Tim Deagan
  * \date          2015-07-24
- * \updates       2016-10-09
+ * \updates       2016-10-11
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -2039,14 +2039,23 @@ perform::pause_playing (bool songmode)
 #endif
 
     m_is_paused = true;
-    is_pattern_playing(false);              // hmmmmmmmmmmmmmmmmmm
+
+    /*
+     * \change ca 2016-10-11
+     *      User layk noted this call, and it makes sense to not do this here,
+     *      since it is unknown at this point what the actual status is.  Note
+     *      that we STILL need to FOLLOW UP on calls to pause_playing() and
+     *      stop_playing() in perfedit, mainwnd, 
+     *
+     * is_pattern_playing(false);
+     */
 }
 
 /**
  *  Encapsulates a series of calls used in mainwnd.  Stops playback,
  *  turns off the (new) m_is_paused flag, and set the "is-pattern-playing"
  *  flag to false.  With stop, reset the start-tick to either the left-tick or
- *  the 0th tick (to be determined, currently resets to 0)..
+ *  the 0th tick (to be determined, currently resets to 0).
  */
 
 void
@@ -3976,6 +3985,11 @@ perform::stop_key ()
  *
  *  Checking is_running() may not work completely in JACK.
  *
+ * \change layk 2016-10-11
+ *      Issue #42 to prevent inadvertent step-edit in sequence ::
+ *      stream_event().  We did it slightly different to save a little code;
+ *      also found a spot that was missed.
+ *
  * \param k
  *      Provides the encapsulated keystroke to check.
  *
@@ -4008,17 +4022,26 @@ perform::playback_key_event (const keystroke & k, bool songmode)
     if (result)
     {
         bool onekey = keys().start() == keys().stop();
+        bool isplaying = false;
         if (k.key() == keys().start())
         {
             if (onekey)
             {
                 if (is_running())
+                {
                     pause_playing(songmode);
+                }
                 else
+                {
                     start_playing(songmode);
+                    isplaying = true;
+                }
             }
             else if (! is_running())
+            {
                 start_playing(songmode);
+                isplaying = true;
+            }
         }
         else if (k.key() == keys().stop())
         {
@@ -4030,9 +4053,13 @@ perform::playback_key_event (const keystroke & k, bool songmode)
             if (is_running())
                 pause_playing(songmode);
             else
+            {
                 start_playing(songmode);
+                isplaying = true;
+            }
         }
 #endif
+        is_pattern_playing(isplaying);
     }
     return result;
 }

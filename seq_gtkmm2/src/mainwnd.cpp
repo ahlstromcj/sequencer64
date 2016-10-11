@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-10-08
+ * \updates       2016-10-11
  * \license       GNU GPLv2 or above
  *
  *  The main window holds the menu and the main controls of the application,
@@ -1286,6 +1286,9 @@ mainwnd::open_file (const std::string & fn)
 
 /**
  *  Creates a file-chooser dialog.
+ *
+ * \change layk 2016-10-11
+ *      Issue #43 Added filters for upper-case MIDI-file extensions.
  */
 
 void
@@ -1299,7 +1302,9 @@ mainwnd::choose_file ()
     Gtk::FileFilter filter_midi;
     filter_midi.set_name("MIDI files");
     filter_midi.add_pattern("*.midi");
+    filter_midi.add_pattern("*.MIDI");
     filter_midi.add_pattern("*.mid");
+    filter_midi.add_pattern("*.MID");
     dlg.add_filter(filter_midi);
 
     Gtk::FileFilter filter_any;

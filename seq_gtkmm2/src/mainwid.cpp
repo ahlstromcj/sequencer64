@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-08-19
+ * \updates       2016-10-12
  * \license       GNU GPLv2 or above
  *
  *  Note that this representation is, in a sense, inside the mainwnd
@@ -680,10 +680,8 @@ mainwid::draw_marker_on_sequence (int seqnum, int tick)
          * issue.
          */
 
-#ifdef USE_NO_PROGRESS_BAR_HERE_DUDE
         if (seq->event_count() == 0)        /* an event-free track          */
             return;                         /* new 2015-08-23 don't update  */
-#endif
 
 #ifdef SEQ64_PAUSE_SUPPORT
         tick = seq->get_last_tick();        /* seems to work, see banner    */

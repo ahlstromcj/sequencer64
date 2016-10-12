@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-10-08
+ * \updates       2016-10-12
  * \license       GNU GPLv2 or above
  *
  *  The functionality of this class also includes handling some of the
@@ -4739,6 +4739,10 @@ sequence::set_parent (perform * p)
  *  sequence dump its events.  It ignores the sequence if it has no playable
  *  MIDI events.
  *
+ * \change ca 2016-10-12
+ *      Issue #39.  Removed the check for a non-zero event count.  This lets
+ *      the seqroll show the progress bar in motion.
+ *
  * \param tick
  *  Provides the tick/pulse from which to start playing.
  *
@@ -4749,15 +4753,12 @@ sequence::set_parent (perform * p)
 void
 sequence::play_queue (midipulse tick, bool playbackmode)
 {
-    if (event_count() > 0)               /* any playable events? */
+    if (check_queued_tick(tick))
     {
-        if (check_queued_tick(tick))
-        {
-            play(get_queued_tick() - 1, playbackmode);
-            toggle_playing();
-        }
-        play(tick, playbackmode);
+        play(get_queued_tick() - 1, playbackmode);
+        toggle_playing();
     }
+    play(tick, playbackmode);
 }
 
 }           // namespace seq64

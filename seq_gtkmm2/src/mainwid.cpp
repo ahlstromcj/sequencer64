@@ -672,8 +672,18 @@ mainwid::draw_marker_on_sequence (int seqnum, int tick)
     if (perf().is_active(seqnum))           /* also checks for nullptr      */
     {
         sequence * seq = perf().get_sequence(seqnum);
+
+        /*
+         * If this is commented out, a non-moving progress-bar appears at the
+         * left of each empty track.  We do want to show the moving progress
+         * bar in seqroll, so this note here is an investigation into that
+         * issue.
+         */
+
+#ifdef USE_NO_PROGRESS_BAR_HERE_DUDE
         if (seq->event_count() == 0)        /* an event-free track          */
             return;                         /* new 2015-08-23 don't update  */
+#endif
 
 #ifdef SEQ64_PAUSE_SUPPORT
         tick = seq->get_last_tick();        /* seems to work, see banner    */

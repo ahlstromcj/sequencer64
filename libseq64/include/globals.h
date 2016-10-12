@@ -66,7 +66,7 @@
  *          write files that are standard MIDI files (with SeqSpec sections)
  *          that any sequencer should be able to read.
  *      -   global_is_running and global_is_modified: These statuses are
- *          maintained in the perform object.
+ *          now maintained in the perform object, instead of globally.
  */
 
 #include <string>

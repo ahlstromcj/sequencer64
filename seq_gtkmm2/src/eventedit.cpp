@@ -19,13 +19,13 @@
 /**
  * \file          eventedit.cpp
  *
- *  This module declares/defines the base class for the Performance Editor,
- *  also known as the Song Editor.
+ *  This module declares/defines the base class for the Event Editor, a new
+ *  feature.
  *
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-12-05
- * \updates       2016-10-08
+ * \updates       2016-10-12
  * \license       GNU GPLv2 or above
  *
  * To consider:
@@ -48,7 +48,7 @@
  *          events.
  *
  *      Actually, some of these bugs might already be fixed, but we don't
- *      remember which.
+ *      remember which.  :-D
  */
 
 #include <string>
@@ -76,9 +76,13 @@
 #include "perfedit.hpp"
 #include "perform.hpp"
 #include "settings.hpp"                 /* seq64::rc() or seq64::usr()  */
-#include "pixmaps/perfedit.xpm"
+#include "pixmaps/perfedit.xpm"         /* just a stock app icon        */
 
-using namespace Gtk::Menu_Helpers;      /* MenuElem, etc.                */
+using namespace Gtk::Menu_Helpers;      /* MenuElem, etc.               */
+
+/*
+ * The namespace of all Sequencer64 library modules.
+ */
 
 namespace seq64
 {
@@ -197,7 +201,6 @@ eventedit::eventedit (perform & p, sequence & seq)
     title += "\"";
     set_title(title);                                       /* caption bar  */
     set_icon(Gdk::Pixbuf::create_from_xpm_data(perfedit_xpm));
-    m_seq.set_editing(true);
 
     /**
      *  The seqedit class indirectly sets the sequence dirty flags, and this
@@ -208,6 +211,7 @@ eventedit::eventedit (perform & p, sequence & seq)
      *  saving the file when exiting.
      */
 
+    m_seq.set_editing(true);
     m_seq.set_dirty_mp();
 
     m_table->set_border_width(2);
@@ -256,7 +260,7 @@ eventedit::eventedit (perform & p, sequence & seq)
         "Insert a new event using the data in the edit fields. Its actual "
         "location is determined by the timestamp field, not the current "
         "event.  The Insert key is reserved for the edit fields, and only "
-        "the Insert button will work."
+        "the Insert New Event button will work."
     );
 
     m_button_modify->set_label("Modify Current Event");
@@ -293,7 +297,7 @@ eventedit::eventedit (perform & p, sequence & seq)
     (
         m_button_cancel,
         "Abort the edit and close the dialog.  Any changes made in this "
-        "dialog are thrown away (without prompting), unless the Save button "
+        "window are thrown away (without prompting), unless the Save button "
         "was pressed earlier."
     );
 
@@ -342,11 +346,12 @@ eventedit::eventedit (perform & p, sequence & seq)
     m_entry_ev_timestamp->set_max_length(16);
     m_entry_ev_timestamp->set_editable(true);
     m_entry_ev_timestamp->set_width_chars(16);
-    m_entry_ev_timestamp->set_text("000:0:000");
+    m_entry_ev_timestamp->set_text("001:1:000");
 
     /*
      * Let's see if we can get the key cursor to show in this entry box.
-     * Hope it doesn't mess up edited-sequence highlighting!
+     * Hope it doesn't mess up edited-sequence highlighting!  None of this
+     * works.  Why no edit cursor!?!?
      *
      *  m_entry_ev_timestamp->set_focus_on_click(true);
      *  m_entry_ev_timestamp->set_can_focus(true);
@@ -360,12 +365,11 @@ eventedit::eventedit (perform & p, sequence & seq)
      *  m_editbox->set_focus_child(m_entry_ev_timestamp);
      */
 
-
     add_tooltip
     (
         m_entry_ev_timestamp,
-        "Timestamp field.  Currently only 'measures:beats:divisions' format "
-        "is supported. Measure and beat numbers start at 1, not 0."
+        "Timestamp field.  Currently only the 'measures:beats:divisions' "
+        "format is supported. Measure and beat numbers start at 1, not 0."
     );
     m_editbox->pack_start(*m_entry_ev_timestamp, false, false);
 
@@ -376,8 +380,8 @@ eventedit::eventedit (perform & p, sequence & seq)
     add_tooltip
     (
         m_entry_ev_name,
-        "Event name field.  Recognized events: Note On/Off, Aftertouch, "
-        "Control/Program Change, Channel Pressure, and Pitch Wheel."
+        "Event name field.  Recognized events: Note On, Note Off, Aftertouch, "
+        "Control Change, Program Change, Channel Pressure, and Pitch Wheel."
     );
     m_editbox->pack_start(*m_entry_ev_name, false, false);
 
@@ -388,7 +392,7 @@ eventedit::eventedit (perform & p, sequence & seq)
     add_tooltip
     (
         m_entry_ev_data_0,
-        "Type the numeric value of the first data byte here. "
+        "Type the numeric (hex or decimal) value of the first data byte here. "
         "Digits are converted until a non-digit is encountered."
         "The events that support only one value are Program Change and "
         "Channel Pressure."
@@ -402,9 +406,9 @@ eventedit::eventedit (perform & p, sequence & seq)
     add_tooltip
     (
         m_entry_ev_data_1,
-        "Type the numeric value of the second data byte here. "
+        "Type the numeric (hex or decimal) value of the second data byte here. "
         "Digits are converted until a non-digit is encountered. "
-        "The events that support two values are Note On/Off, Aftertouch, "
+        "The events that support two values are Note On, Note Off, Aftertouch, "
         "Control Change, and Pitch Wheel."
     );
     m_editbox->pack_start(*m_entry_ev_data_1, false, false);
@@ -907,16 +911,14 @@ eventedit::on_delete_event (GdkEventAny *)
  *  also cause movement from one edit field to the next, so we disable
  *  that process if the event was handled here.
  *
- *  Note that some vi-like keys were supported, but they are needed for the
- *  edit fields, so cannot be used here.  Also, the Delete key is needed for
- *  the edit fields.  For now, we replace it with the asterisk, which is
- *  easy to access from the numeric pad of a keyboard, and allows for rapid
- *  deletion.  The Insert key also causes confusing effects in the edit
- *  fields, so we replace it by the slash.  Note that the asterisk and slash
- *  should not be required in any of the edit fields.
- *
- *  HOWEVER, "/" still gets passed the edit fields (!), so you'll just have to
- *  click the button to insert an event.  Let's try the backslash!
+ *  Note that the Delete key is needed for the edit fields.  For now, we
+ *  replace it with the asterisk, which is easy to access from the numeric pad
+ *  of a keyboard, and allows for rapid deletion.  The Insert key also causes
+ *  confusing effects in the edit fields, so we replaced it by the slash, but
+ *  that didn't work.  Note that the asterisk and slash should not be required
+ *  in any of the edit fields.  HOWEVER, "/" still gets passed the edit fields
+ *  (!), so you'll just have to click the button to insert an event.  Let's
+ *  try the backslash!  No go there, either.
  *
  * \param ev
  *      The key event to process.
@@ -928,75 +930,76 @@ eventedit::on_delete_event (GdkEventAny *)
 bool
 eventedit::on_key_press_event (GdkEventKey * ev)
 {
-    bool result = true;
-    bool event_was_handled = false;
+    bool result = false;
     if (CAST_EQUIVALENT(ev->type, SEQ64_KEY_PRESS))
     {
+        int key = int(ev->keyval);
         if (rc().print_keys())
         {
             printf
             (
                 "key_press[%d] == %s\n",
-                ev->keyval,
-                keyval_name(ev->keyval).c_str() // gdk_keyval_name(ev->keyval)
+                key, keyval_name(key).c_str()
             );
         }
-        if (ev->keyval == SEQ64_Down)
+        if (key == SEQ64_Down)
         {
-            event_was_handled = true;
+            result = true;
             m_eventslots->on_move_down();
         }
-        else if (ev->keyval == SEQ64_Up)
+        else if (key == SEQ64_Up)
         {
-            event_was_handled = true;
+            result = true;
             m_eventslots->on_move_up();
         }
-        else if (ev->keyval == SEQ64_Page_Down)
+        else if (key == SEQ64_Page_Down)
         {
-            event_was_handled = true;
+            result = true;
             m_eventslots->on_frame_down();
             v_adjustment(m_eventslots->pager_index());
         }
-        else if (ev->keyval == SEQ64_Page_Up)
+        else if (key == SEQ64_Page_Up)
         {
-            event_was_handled = true;
+            result = true;
             m_eventslots->on_frame_up();
             v_adjustment(m_eventslots->pager_index());
         }
-        else if (ev->keyval == SEQ64_Home)
+        else if (key == SEQ64_Home)
         {
-            event_was_handled = true;
+            result = true;
             m_eventslots->on_frame_home();
             v_adjustment(m_eventslots->pager_index());
         }
-        else if (ev->keyval == SEQ64_End)
+        else if (key == SEQ64_End)
         {
-            event_was_handled = true;
+            result = true;
             m_eventslots->on_frame_end();
             v_adjustment(m_eventslots->pager_index());
         }
 #ifdef CAN_USE_SLASH_PROPERLY                   /* we cannot    */
-        else if (ev->keyval == '/')             /* SEQ64_Insert */
+        else if (key == '/')                    /* SEQ64_Insert */
         {
+            result = true;
             handle_insert ();
         }
-        else if (ev->keyval == '\\')            /* SEQ64_Insert */
+        else if (key == '\\')                   /* SEQ64_Insert */
         {
+            result = true;
             handle_insert ();
         }
 #endif
-        else if (ev->keyval == '*')             /* SEQ64_Delete */
+        else if (key == '*')                    /* SEQ64_Delete */
         {
-            event_was_handled = true;
+            result = true;
             handle_delete();
         }
-        else if (ev->keyval == SEQ64_KP_Multiply)
+        else if (key == SEQ64_KP_Multiply)
         {
-            event_was_handled = true;
+            result = true;
             handle_delete();
         }
     }
-    if (! event_was_handled)
+    if (! result)
         result = Gtk::Window::on_key_press_event(ev);
 
     return result;

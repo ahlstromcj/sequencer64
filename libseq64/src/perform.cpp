@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and Tim Deagan
  * \date          2015-07-24
- * \updates       2016-10-11
+ * \updates       2016-10-13
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -4022,6 +4022,27 @@ perform::playback_key_event (const keystroke & k, bool songmode)
     if (result)
     {
         bool onekey = keys().start() == keys().stop();
+
+#ifdef USE_CONSOLIDATED_PLAYBACK
+
+        playback_action_t action = PLAYBACK_STOP;
+        if (k.key() == keys().start())
+        {
+            if (onekey)
+            {
+                if (is_running())
+                    action = PLAYBACK_PAUSE;            // why pause, not stop?
+                else
+                    action = PLAYBACK_START;
+            }
+            else if (! is_running())
+                action = PLAYBACK_START;
+        }
+        else if (k.key() == PAUSEKEY)
+            action = PLAYBACK_PAUSE;
+
+#else   // USE_CONSOLIDATED_PLAYBACK
+
         bool isplaying = false;
         if (k.key() == keys().start())
         {
@@ -4029,7 +4050,7 @@ perform::playback_key_event (const keystroke & k, bool songmode)
             {
                 if (is_running())
                 {
-                    pause_playing(songmode);
+                    pause_playing(songmode);            // why pause, not stop?
                 }
                 else
                 {
@@ -4060,9 +4081,75 @@ perform::playback_key_event (const keystroke & k, bool songmode)
         }
 #endif
         is_pattern_playing(isplaying);
+
+#endif  // USE_CONSOLIDATED_PLAYBACK
+
     }
     return result;
 }
+
+#ifdef USE_CONSOLIDATED_PLAYBACK
+
+/**
+ *  More rational new  function provided to unify the stop/start
+ *  (space/escape) behavior of the various windows where playback can be
+ *  started, paused, or stopped.  To be used in mainwnd, perfedit, and
+ *  seqroll.  We want this function to be the one maintaining the various
+ *  flags, if possible:  m_start_from_perfedit (seq32) and m_is_pattern_playing
+ *  at a minimum.
+ *
+ * \param p
+ *      Provides the playback action to perform.
+ *
+ * \param songmode
+ *      Provides the "jack flag" needed by the mainwnd, seqroll, and perfedit
+ *      windows.  Defaults to false, which disables Song mode, and enables
+ *      Live mode.  But using Song mode seems to make the Pause key not work
+ *      in the performance editor.
+ *
+ * \return
+ *      Returns true if the patterns are playing, as opposed to not playing,
+ *      by the end of this function.
+ *
+ * \sideeffect
+ *      The m_is_pattern_playing flag is set to the return value for the
+ *      caller.
+ */
+
+bool
+perform::playback_action (playback_action_t p, bool songmode)
+{
+    bool isplaying = false;
+    if (p == PLAYBACK_START)
+    {
+        if (! is_running())             /* what about a restart???? */
+        {
+            start_playing(songmode);
+            isplaying = true;
+        }
+    }
+    else if (p == PLAYBACK_STOP)
+    {
+        stop_playing();
+#ifdef SEQ64_STAZED_JACK_SUPPORT
+        m_start_from_perfedit = false;
+#endif
+    }
+    else if (p == PLAYBACK_PAUSE)
+    {
+        if (is_running())
+            pause_playing(songmode);
+        else
+        {
+            start_playing(songmode);
+            isplaying = true;
+        }
+    }
+    is_pattern_playing(isplaying);
+    return isplaying;
+}
+
+#endif  // USE_CONSOLIDATED_PLAYBACK
 
 /**
  *  Shows all the triggers of all the sequences.

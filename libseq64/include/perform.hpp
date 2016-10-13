@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-10-09
+ * \updates       2016-10-13
  * \license       GNU GPLv2 or above
  *
  *  This class still has way too many members, even with the JACK and
@@ -208,6 +208,23 @@ public:
         FF_RW_NONE      =  0,
         FF_RW_FORWARD   =  1
     };
+
+#ifdef USE_CONSOLIDATED_PLAYBACK
+
+    /**
+     *  We're experimenting with consolidating all the various playback
+     *  functions that have gotten scattered throughout the code.  Might
+     *  fold the ff_rw_button_t in at some point.
+     */
+
+    enum playback_action_t
+    {
+        PLAYBACK_STOP,
+        PLAYBACK_PAUSE,
+        PLAYBACK_START
+    };
+
+#endif  // USE_CONSOLIDATED_PLAYBACK
 
 private:
 
@@ -1938,6 +1955,10 @@ public:
     bool mainwnd_key_event (const keystroke & k);
     bool perfroll_key_event (const keystroke & k, int drop_sequence);
     bool playback_key_event (const keystroke & k, bool songmode = false);
+
+#ifdef USE_CONSOLIDATED_PLAYBACK
+    bool playback_action (playback_action_t p, bool songmode = false);
+#endif
 
     void move_triggers (bool direction);
     void copy_triggers ();

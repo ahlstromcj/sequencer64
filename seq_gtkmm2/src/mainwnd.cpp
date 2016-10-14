@@ -25,8 +25,8 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-10-11
- * \license       GNU GPLv2 or above
+ * \updates       2016-10-13
+ * \license       GNU 3PLv2 or above
  *
  *  The main window holds the menu and the main controls of the application,
  *  and the mainwid that holds the patterns is nestled in the interior of the
@@ -248,9 +248,7 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
     m_adjust_load_offset    (nullptr),  /* created in file_import_dialog()  */
     m_spinbutton_load_offset(nullptr),  /* created in file_import_dialog()  */
     m_entry_notes           (manage(new Gtk::Entry())),
-#ifdef SEQ64_PAUSE_SUPPORT
     m_is_running            (false),
-#endif
     m_timeout_connect       (),                     /* handler              */
 #ifdef SEQ64_MAINWND_TAP_BUTTON
     m_current_beats         (0),
@@ -935,15 +933,13 @@ mainwnd::timer_callback ()
 
 #endif
 
-#ifdef SEQ64_PAUSE_SUPPORT
-
     if (perf().is_running() != m_is_running)
     {
         m_is_running = perf().is_running();
+#ifdef SEQ64_PAUSE_SUPPORT
         set_play_image(m_is_running);
-    }
-
 #endif
+    }
 
 #ifdef SEQ64_MAINWND_TAP_BUTTON
 
@@ -1732,20 +1728,19 @@ mainwnd::apply_song_transpose ()
  *  This function is actually a callback for the pause/play button.
  *  Now very similar to perfedit::start_playing(), except that the implicit
  *  songmode == false parameter is used here.
+ *
+ *  We still need to see if pause_key() is workable with Stazed JACK support
+ *  in force.  Doesn't work at present.
  */
 
 void
 mainwnd::start_playing ()                           /* Play!                */
 {
-#ifdef SEQ64_STAZED_JACK_SUPPORT
-    perf().start_key();                             /* pause_key()????      */
-#else
-#ifdef SEQ64_PAUSE_SUPPORT
+///// #ifdef SEQ64_STAZED_JACK_SUPPORT
+/////  perf().start_key();                             /* pause_key()????      */
+///// #else
     perf().pause_key();
-#else
-    perf().start_playing();                         /* legacy behavior      */
-#endif
-#endif
+///// #endif
 }
 
 /**
@@ -1757,11 +1752,7 @@ mainwnd::start_playing ()                           /* Play!                */
 void
 mainwnd::pause_playing ()               /* Stop in place!   */
 {
-#ifdef SEQ64_PAUSE_SUPPORT
     perf().pause_key();
-#else
-    perf().pause_playing();
-#endif
 }
 
 /**
@@ -1782,12 +1773,7 @@ mainwnd::pause_playing ()               /* Stop in place!   */
 void
 mainwnd::stop_playing ()                        /* Stop! */
 {
-#ifdef SEQ64_PAUSE_SUPPORT
     perf().stop_key();                          /* make sure it's seq32able */
-#else
-    perf().stop_playing();
-#endif
-
     m_main_wid->update_sequences_on_window();   /* update_mainwid_sequences() */
 }
 
@@ -1802,19 +1788,11 @@ mainwnd::toggle_playing ()
 {
     if (perf().is_running())
     {
-#ifdef SEQ64_PAUSE_SUPPORT
         perf().stop_key();
-#else
-        perf().stop_playing();
-#endif
     }
     else
     {
-#ifdef SEQ64_PAUSE_SUPPORT
         perf().start_key();
-#else
-        perf().start_playing();
-#endif
     }
 }
 

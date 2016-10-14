@@ -1,6 +1,6 @@
 INSTALL for Sequencer64 v. 0.9.18.3
 Chris Ahlstrom
-2015-09-10 to 2016-10-09
+2015-09-10 to 2016-10-13
 
 The current packaging for Sequencer64 is primarily aimed at developers.
 There is currently no configure script... it must be bootstrapped.
@@ -109,15 +109,16 @@ CONFIGURE OPTIONS FOR APPLICATION FEATURES:
     --disable-pause
 
         Undefines the SEQ64_PAUSE_SUPPORT macro.  If this macro is defined,
-        then the application is built with support for a Pause button and
-        for pause functionality.  This means that, in ALSA mode, the progress
-        bars stay in place when Pause is activated (by click or keystroke),
-        and playback resumes where it left off.  The Stop button still rewinds
-        to the beginning.  The behavior of JACK transport, if enabled, is
-        (should be!) unchanged.  To go back to the legacy stop/play behavior,
-        use the --disable-pause option when running the configure script.
-        Note that we are still working through issues with the pause option,
-        and there are a lot of situations to test.
+        then the application is built with support for a Pause button.  It
+        used to control the addition of pause functionality, but that
+        functionality is now permanent..  This means that, in ALSA mode, the
+        progress bars stay in place when Pause is activated (by click or
+        keystroke), and playback resumes where it left off.  The Stop button
+        still rewinds to the beginning.  The behavior of JACK transport, if
+        enabled, is (should be!) unchanged.  To go back to the legacy
+        stop/play behavior, use the --disable-pause option when running the
+        configure script.  Note that we are still working through issues with
+        the pause option, and there are a lot of situations to test.
 
     --disable-chords
 

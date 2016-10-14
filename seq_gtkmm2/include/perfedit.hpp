@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-10-06
+ * \updates       2016-10-13
  * \license       GNU GPLv2 or above
  *
  *  Note that, as of version 0.9.11, the z and Z keys, when focus is on the
@@ -212,16 +212,12 @@ private:
 
     int m_ppqn;
 
-#ifdef SEQ64_PAUSE_SUPPORT
-
     /**
      *  Holds the current status of running, for use in display the play
      *  versus pause icon.
      */
 
     bool m_is_running;
-
-#endif
 
     /**
      *  The standard "beats per measure" of Sequencer64, which here matches

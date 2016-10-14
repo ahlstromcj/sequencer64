@@ -627,16 +627,12 @@ private:
 
     mutable midipulse m_tick;
 
-#ifdef SEQ64_PAUSE_SUPPORT
-
     /**
      *  Let's try to save the last JACK pad structure tick for re-use with
      *  resume after pausing.
      */
 
     midipulse m_jack_tick;
-
-#endif
 
     /**
      *  More MIDI clock support.
@@ -664,10 +660,11 @@ private:
 
     /**
      *  Support for pause, which does not reset the "last tick" when playback
-     *  stops/starts.
+     *  stops/starts.  All this member is used for is keeping the last tick
+     *  from being reset.
      */
 
-    bool m_is_paused;
+    bool m_dont_reset_ticks;
 
 private:
 
@@ -1177,25 +1174,6 @@ public:
     }
 
     /**
-     * \getter m_is_paused
-     */
-
-    bool is_paused () const
-    {
-        return m_is_paused;
-    }
-
-    /**
-     * \getter m_is_paused and ! m_jack_asst.is_running()
-     *      We might just make this internal.
-     */
-
-    bool is_pausable () const
-    {
-        return m_is_paused && ! m_jack_asst.is_running();
-    }
-
-    /**
      *  Adds a pointer to an object to be notified by this perform object.
      *
      * \param pfcb
@@ -1371,8 +1349,6 @@ public:
         return m_tick;
     }
 
-#ifdef SEQ64_PAUSE_SUPPORT
-
     /**
      * \getter m_jack_tick
      */
@@ -1393,8 +1369,6 @@ public:
     {
         m_jack_tick = tick;
     }
-
-#endif
 
     void set_left_tick (midipulse tick, bool setstart = true);
 

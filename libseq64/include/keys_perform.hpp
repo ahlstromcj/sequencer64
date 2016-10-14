@@ -60,7 +60,7 @@
 #include <map>                          /* std::map                         */
 #include <string>                       /* std::string                      */
 
-#include "easy_macros.h"                /* SEQ64_PAUSE_SUPPORT              */
+#include "easy_macros.h"
 
 namespace seq64
 {

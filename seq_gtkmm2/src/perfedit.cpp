@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-10-06
+ * \updates       2016-10-13
  * \license       GNU GPLv2 or above
  *
  */
@@ -187,9 +187,7 @@ perfedit::perfedit
     m_bpm               (0),
     m_bw                (0),
     m_ppqn              (0),
-#ifdef SEQ64_PAUSE_SUPPORT
     m_is_running        (false),
-#endif
     m_standard_bpm      (SEQ64_DEFAULT_LINES_PER_MEASURE)   /* 4            */
 {
     std::string title = "Sequencer64 - Song Editor";
@@ -821,14 +819,13 @@ perfedit::timeout ()
      * m_perfroll->enqueue_draw();
      */
 
-#ifdef SEQ64_PAUSE_SUPPORT
     if (perf().is_running() != m_is_running)
     {
         m_is_running = perf().is_running();
+#ifdef SEQ64_PAUSE_SUPPORT
         set_image(m_is_running);
-    }
 #endif
-
+    }
     return true;
 }
 
@@ -867,11 +864,7 @@ perfedit::set_image (bool isrunning)
 void
 perfedit::start_playing ()
 {
-#ifdef SEQ64_PAUSE_SUPPORT
     perf().pause_key(true);             /* was perf().start_key(true)       */
-#else
-    perf().start_playing(true);         /* forces start-from-perfedit       */
-#endif
 }
 
 /**
@@ -883,11 +876,7 @@ perfedit::start_playing ()
 void
 perfedit::pause_playing ()
 {
-#ifdef SEQ64_PAUSE_SUPPORT
     perf().pause_key(true);
-#else
-    perf().pause_playing(true);
-#endif
 }
 
 /**
@@ -900,11 +889,7 @@ perfedit::pause_playing ()
 void
 perfedit::stop_playing ()
 {
-#ifdef SEQ64_PAUSE_SUPPORT
     perf().stop_key();
-#else
-    perf().stop_playing();
-#endif
 }
 
 /**

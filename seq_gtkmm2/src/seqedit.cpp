@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-10-06
+ * \updates       2016-10-14
  * \license       GNU GPLv2 or above
  *
  *  Compare this class to eventedit, which has to do some similar things,
@@ -2274,17 +2274,16 @@ seqedit::timeout ()
         raise();
     }
 #ifdef SEQ64_STAZED_JACK_SUPPORT
-    if (m_seq.is_dirty_edit())                  /* m_seq.is_dirty_main()    */
-    {
-        m_seqroll_wid->redraw_events();
-        m_seqevent_wid->redraw();
-        m_seqdata_wid->redraw();
-    }
-    m_seqroll_wid->draw_progress_on_window();
+
+    /*
+     * This is needed only when in JACK mode, we think.  But progress
+     * is still followed in ALSA mode.
+     */
+
     if (perf().is_running() && perf().get_follow_transport())
+#endif
         m_seqroll_wid->follow_progress();       /* keep up with progress    */
-#else
-    m_seqroll_wid->follow_progress();           /* keep up with progress    */
+
     if (m_seq.is_dirty_edit())                  /* m_seq.is_dirty_main()    */
     {
         m_seqroll_wid->redraw_events();
@@ -2292,15 +2291,14 @@ seqedit::timeout ()
         m_seqdata_wid->redraw();
     }
     m_seqroll_wid->draw_progress_on_window();
-#endif
 
     bool undo_on = m_button_undo->get_sensitive();
-    bool redo_on = m_button_redo->get_sensitive();
     if (m_seq.have_undo() && ! undo_on)
         m_button_undo->set_sensitive(true);
     else if (! m_seq.have_undo() && undo_on)
         m_button_undo->set_sensitive(false);
 
+    bool redo_on = m_button_redo->get_sensitive();
     if (m_seq.have_redo() && ! redo_on)
         m_button_redo->set_sensitive(true);
     else if (! m_seq.have_redo() && redo_on)

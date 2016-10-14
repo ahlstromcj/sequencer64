@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-10-12
+ * \updates       2016-10-13
  * \license       GNU GPLv2 or above
  *
  *  Note that this representation is, in a sense, inside the mainwnd
@@ -173,9 +173,6 @@ mainwid::draw_sequences_on_pixmap ()
     for (int s = 0; s < m_screenset_slots; ++s, ++offset)
     {
         draw_sequence_on_pixmap(offset);
-#if ! defined SEQ64_PAUSE_SUPPORT
-        m_last_tick_x[offset] = 0;
-#endif
     }
 }
 
@@ -683,9 +680,7 @@ mainwid::draw_marker_on_sequence (int seqnum, int tick)
         if (seq->event_count() == 0)        /* an event-free track          */
             return;                         /* new 2015-08-23 don't update  */
 
-#ifdef SEQ64_PAUSE_SUPPORT
         tick = seq->get_last_tick();        /* seems to work, see banner    */
-#endif
 
         int base_x, base_y;
         calculate_base_sizes(seqnum, base_x, base_y);    /* side-effects    */

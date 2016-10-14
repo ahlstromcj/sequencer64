@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-10-06
+ * \updates       2016-10-13
  * \license       GNU GPLv2 or above
  *
  *  Here is a list of the global variables used/stored/modified by this
@@ -382,7 +382,6 @@ options::add_keyboard_page ()
     controltable->attach(*label, 0, 1, 1, 2);
     controltable->attach(*entry, 1, 2, 1, 2);
 
-#ifdef SEQ64_PAUSE_SUPPORT
     if (! rc().legacy_format())
     {
         label = manage(new Gtk::Label("Pause", Gtk::ALIGN_RIGHT));
@@ -393,7 +392,6 @@ options::add_keyboard_page ()
         controltable->attach(*label, 0, 1, 2, 3);
         controltable->attach(*entry, 1, 2, 2, 3);
     }
-#endif
 
     label = manage(new Gtk::Label("Snapshot 1", Gtk::ALIGN_RIGHT));
     entry = manage

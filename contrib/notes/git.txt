@@ -117,6 +117,9 @@ Caching your credentials (be careful!):
 
 Pulls and merges:
 
+    For a GitHub project, you can use the handy "Merge pull request"
+    button on your project page, or you can do it from the command line.
+
     Step 1: From your project repository, check out a new branch and test
             the changes.
 

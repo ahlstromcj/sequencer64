@@ -174,14 +174,12 @@ perform::perform (gui_assistant & mygui, int ppqn)
     m_right_tick                (m_one_measure * 4),        // m_ppqn * 16
     m_starting_tick             (0),
     m_tick                      (0),
-#ifdef SEQ64_PAUSE_SUPPORT
     m_jack_tick                 (0),
-#endif
     m_usemidiclock              (false),
     m_midiclockrunning          (false),
     m_midiclocktick             (0),
     m_midiclockpos              (-1),
-    m_is_paused                 (false),
+    m_dont_reset_ticks          (false),
     m_screen_set_notepad        (),         // string array of size c_max_sets
     m_midi_cc_toggle            (),         // midi_control array
     m_midi_cc_on                (),         // midi_control array
@@ -842,9 +840,7 @@ perform::install_sequence (sequence * seq, int seqnum)
     if (not_nullptr(seq))
     {
         set_active(seqnum, true);
-#if SEQ64_PAUSE_SUPPORT
         seq->set_parent(this);
-#endif
         ++m_sequence_count;
         result = true;                  /* a modification occurred  */
     }
@@ -1940,7 +1936,7 @@ perform::start_playing (bool songmode)
      * Let's let the output() function clear this, so that we can use this
      * flag in that function to control the next tick to play at resume time.
      *
-     *      m_is_paused = false;
+     *      m_dont_reset_ticks = false;
      *
      * Shouldn't this be needed as well?  It is set in ALSA mode, but not JACK
      * mode. But DO NOT call set_running() here in JACK mode, it prevents
@@ -2024,13 +2020,20 @@ perform::pause_playing (bool songmode)
     {
 #endif
         set_running(false);
+
+        /*
+         * Do we really want to do this now?  Make it conditional on
+         * m_dont_reset_ticks?
+         */
+
         reset_sequences(true);              /* reset "last-tick" for pause  */
         m_usemidiclock = false;
+
 #ifdef SEQ64_JACK_SUPPORT
     }
 
 #ifdef SEQ64_STAZED_JACK_SUPPORT
-    if (m_is_paused)                        /* seq64 was in output_func()   */
+    if (m_dont_reset_ticks)                 /* seq64 was in output_func()   */
         m_start_from_perfedit = songmode;   /* act like start_playing()     */
     else
         m_start_from_perfedit = false;      /* act like stop_playing()      */
@@ -2038,24 +2041,24 @@ perform::pause_playing (bool songmode)
 
 #endif
 
-    m_is_paused = true;
+    m_dont_reset_ticks = true;
 
     /*
      * \change ca 2016-10-11
      *      User layk noted this call, and it makes sense to not do this here,
      *      since it is unknown at this point what the actual status is.  Note
      *      that we STILL need to FOLLOW UP on calls to pause_playing() and
-     *      stop_playing() in perfedit, mainwnd, 
+     *      stop_playing() in perfedit, mainwnd,
      *
      * is_pattern_playing(false);
      */
 }
 
 /**
- *  Encapsulates a series of calls used in mainwnd.  Stops playback,
- *  turns off the (new) m_is_paused flag, and set the "is-pattern-playing"
- *  flag to false.  With stop, reset the start-tick to either the left-tick or
- *  the 0th tick (to be determined, currently resets to 0).
+ *  Encapsulates a series of calls used in mainwnd.  Stops playback, turns off
+ *  the (new) m_dont_reset_ticks flag, and set the "is-pattern-playing" flag
+ *  to false.  With stop, reset the start-tick to either the left-tick or the
+ *  0th tick (to be determined, currently resets to 0).
  */
 
 void
@@ -2067,10 +2070,11 @@ perform::stop_playing ()
 #ifdef SEQ64_STAZED_JACK_SUPPORT
     m_start_from_perfedit = false;
 #else
-    m_tick = 0;                         // or get_left_tick()
+//  m_tick = 0;                         // or get_left_tick()
 #endif
+    m_tick = 0;                         // or get_left_tick()
 
-    m_is_paused = false;
+    m_dont_reset_ticks = false;
     is_pattern_playing(false);
 }
 
@@ -2174,8 +2178,7 @@ perform::stop ()
  *      beginning of the sequence, even if just pausing.  This is fixed by
  *      compiling with SEQ64_PAUSE_SUPPORT, which disables calling
  *      off_sequences() when starting playback from the song editor /
- *      performance window.  We still should evaluate what side-effects might
- *      occur.  Consider a run-time --pause-support option for this feature.
+ *      performance window.
  *
  * \param songmode
  *      Sets the playback mode, and, if true, turns off all of the sequences
@@ -2281,15 +2284,6 @@ perform::reset_sequences (bool pause)
     {
         if (is_active(s))
         {
-#if 0
-            bool state = m_seqs[s]->get_playing();
-            m_seqs[s]->off_playing_notes();
-            m_seqs[s]->set_playing(false);
-
-            if (! m_playback_mode)
-                m_seqs[s]->set_playing(state);
-#endif
-
             m_seqs[s]->reset(m_playback_mode);
             if (! pause)                            /* TRIAL CODE */
                 m_seqs[s]->zero_markers();
@@ -2496,15 +2490,14 @@ perform::output_func ()
 #endif
 
         jack_scratchpad pad;
-        if (m_is_paused)
+        if (m_dont_reset_ticks)
         {
-#ifdef SEQ64_PAUSE_SUPPORT
             pad.js_current_tick = get_jack_tick();
-#endif
+
             /*
              * We still need this flag, so move this setting until later.
              *
-             * m_is_paused = false;
+             * m_dont_reset_ticks = false;
              */
         }
         else
@@ -2573,10 +2566,8 @@ perform::output_func ()
         bool ok = m_playback_mode;
 #endif
 
-#ifdef SEQ64_PAUSE_SUPPORT
-        ok = ok && ! m_is_paused;
-#endif
-        m_is_paused = false;
+        ok = ok && ! m_dont_reset_ticks;
+        m_dont_reset_ticks = false;
         if (ok)
         {
             pad.js_current_tick = long(m_starting_tick);    // midipulse
@@ -2819,9 +2810,7 @@ perform::output_func ()
 #endif
 
 #if ! defined SEQ64_STAZED_JACK_SUPPORT
-#ifdef SEQ64_PAUSE_SUPPORT
                 set_jack_tick(pad.js_current_tick);
-#endif
 #endif
 
                 m_master_bus.clock(midipulse(pad.js_clock_tick));   // MIDI clock
@@ -3038,9 +3027,7 @@ perform::output_func ()
 
 #else  // SEQ64_STAZED_JACK_SUPPORT
 
-#ifdef SEQ64_PAUSE_SUPPORT
         if (is_jack_running())
-#endif
             m_tick = 0;
 
         m_master_bus.flush();
@@ -3957,11 +3944,7 @@ perform::start_key (bool songmode)
 void
 perform::pause_key (bool songmode)
 {
-#ifdef SEQ64_PAUSE_SUPPORT
     (void) playback_key_event(keys().pause(), songmode);
-#else
-    (void) playback_key_event(keys().start(), songmode);
-#endif
 }
 
 /**
@@ -4008,16 +3991,9 @@ perform::stop_key ()
 bool
 perform::playback_key_event (const keystroke & k, bool songmode)
 {
-
-#ifdef SEQ64_PAUSE_SUPPORT
-#define PAUSEKEY    keys().pause()
-#else
-#define PAUSEKEY    0
-#endif
-
     bool result = OR_EQUIVALENT(k.key(), keys().start(), keys().stop());
     if (! result)
-        result = k.key() == PAUSEKEY;
+        result = k.key() == keys().pause();
 
     if (result)
     {
@@ -4038,7 +4014,7 @@ perform::playback_key_event (const keystroke & k, bool songmode)
             else if (! is_running())
                 action = PLAYBACK_START;
         }
-        else if (k.key() == PAUSEKEY)
+        else if (k.key() == keys().pause())
             action = PLAYBACK_PAUSE;
 
 #else   // USE_CONSOLIDATED_PLAYBACK
@@ -4068,8 +4044,7 @@ perform::playback_key_event (const keystroke & k, bool songmode)
         {
             stop_playing();
         }
-#ifdef SEQ64_PAUSE_SUPPORT
-        else if (k.key() == PAUSEKEY)
+        else if (k.key() == keys().pause())
         {
             if (is_running())
                 pause_playing(songmode);
@@ -4079,7 +4054,6 @@ perform::playback_key_event (const keystroke & k, bool songmode)
                 isplaying = true;
             }
         }
-#endif
         is_pattern_playing(isplaying);
 
 #endif  // USE_CONSOLIDATED_PLAYBACK
@@ -4243,23 +4217,20 @@ perform::FF_rewind ()
 
 /**
  *  Encapsulates some repositioning code needed to move the position to the
- *  mouse pointer location in perfroll.
+ *  mouse pointer location in perfroll.  Used only in perfroll ::
+ *  on_key_press_event() to implement the Seq32 pointer-position feature.
+ *
+ * \param tick
+ *      Provides the position value to be set.
  */
 
 void
 perform::reposition (midipulse tick)
 {
+    set_reposition();
+    set_start_tick(tick);
     if (is_jack_running())
-    {
-        set_reposition();
-        set_start_tick(tick);
         position_jack(true, tick);
-    }
-    else
-    {
-        set_reposition();
-        set_start_tick(tick);
-    }
 }
 
 /**

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-11-20
- * \updates       2016-10-06
+ * \updates       2016-10-13
  * \license       GNU GPLv2 or above
  *
  *  The "rc" command-line options override setting that are first read from
@@ -722,11 +722,7 @@ const static std::string s_event_editor = "ON";
 const static std::string s_event_editor = "off";
 #endif
 
-#ifdef SEQ64_PAUSE_SUPPORT
 const static std::string s_build_pause_support = "ON";
-#else
-const static std::string s_build_pause_support = "off";
-#endif
 
 #ifdef SEQ64_USE_EVENT_MAP
 const static std::string s_build_use_event_map = "ON";

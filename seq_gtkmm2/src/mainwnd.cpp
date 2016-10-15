@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-10-13
+ * \updates       2016-10-15
  * \license       GNU 3PLv2 or above
  *
  *  The main window holds the menu and the main controls of the application,
@@ -481,17 +481,30 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
     m_button_mute->set_can_focus(false);
 
 #ifdef SEQ64_TOGGLE_PLAYING
+
     m_button_mute->signal_clicked().connect
     (
         sigc::mem_fun(*m_main_wid, &seqmenu::toggle_playing_tracks)
     );
-    add_tooltip(m_button_mute, "Toggle the mute status of playing tracks.");
+    add_tooltip
+    (
+        m_button_mute,
+        "Toggle the mute status of playing tracks. Effective only in Live "
+        "mode.  Affects only tracks that are currently armed."
+    );
+
 #else
+
+    /*
+     * \deprecated
+     */
+
     m_button_mute->signal_clicked().connect
     (
         sigc::mem_fun(*m_main_wid, &seqmenu::toggle_all_tracks)
     );
     add_tooltip(m_button_mute, "Toggle the mute status of all tracks.");
+
 #endif
 
     tophbox->pack_start(*m_button_mute, false, false);
@@ -899,6 +912,7 @@ mainwnd::timer_callback ()
 
 #ifdef SEQ64_STAZED_MENU_BUTTONS
 
+    m_button_mute->set_sensitive(! perf().song_start_mode());
     if (m_button_mode->get_active() != perf().song_start_mode())
         m_button_mode->set_active(perf().song_start_mode());
 
@@ -1978,7 +1992,7 @@ mainwnd::on_key_press_event (GdkEventKey * ev)
 #ifdef SEQ64_TOGGLE_PLAYING
                 m_main_wid->toggle_playing_tracks();
 #else
-                m_main_wid->toggle_all_tracks();
+                m_main_wid->toggle_all_tracks();    /* \deprecated */
 #endif
             }
             else if (k.key() == PREFKEY(song_mode))

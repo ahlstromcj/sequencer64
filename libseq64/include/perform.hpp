@@ -313,8 +313,8 @@ private:
 #ifdef SEQ64_TOGGLE_PLAYING
 
     /**
-     *  Indicates if the m_saved_armed_statuses[] values are the saved state of the
-     *  sequences, and can be restored.
+     *  Indicates if the m_saved_armed_statuses[] values are the saved state
+     *  of the sequences, and can be restored.
      */
 
     bool m_armed_saved;

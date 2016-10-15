@@ -19,12 +19,12 @@
 /**
  * \file          perform.cpp
  *
- *  This module defines the base class for the performance mode.
+ *  This module defines the base class for the performance of MIDI patterns.
  *
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and Tim Deagan
  * \date          2015-07-24
- * \updates       2016-10-13
+ * \updates       2016-10-15
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -47,8 +47,8 @@
 
 /**
  *  Indicates if the playing-screenset code is in force or not, for
- *  experimenting.  Without this patch, ignoring snapshots, it seems
- *  like mute-groups only work on screen-set 0, where as with the patch (again
+ *  experimenting.  Without this patch, ignoring snapshots, it seems like
+ *  mute-groups only work on screen-set 0, where as with the patch (again
  *  ignoring snapshots), they apply to the "in-view" screen-set.
  */
 
@@ -609,11 +609,17 @@ perform::toggle_all_tracks ()
  *  Toggles the mutes status of all playing (currently unmuted) tracks in the
  *  current set of active patterns/sequences.  Covers tracks from 0 to
  *  m_sequence_max.  The statuses are preserved for restoration.
+ *
+ *  Note that this function operates only in Live mode; it is too confusing to
+ *  use in Song mode.
  */
 
 void
 perform::toggle_playing_tracks ()
 {
+    if (song_start_mode())
+        return;
+
     if (m_armed_saved)
     {
         m_armed_saved = false;

@@ -185,15 +185,18 @@ seqmenu::popup_menu ()
     (
         MenuElem("Toggle All Tracks", mem_fun(*this, &seqmenu::toggle_all_tracks))
     );
+
 #ifdef SEQ64_TOGGLE_PLAYING
+
     menu_song->items().push_back
     (
         MenuElem
         (
-            "Toggle Playing Tracks",
+            "Toggle Live Tracks",
             mem_fun(*this, &seqmenu::toggle_playing_tracks)
         )
     );
+
 #endif  // SEQ64_TOGGLE_PLAYING
 
 #ifdef SEQ64_USE_AUTO_SCREENSET_QUEUE       // currently doesn't work well

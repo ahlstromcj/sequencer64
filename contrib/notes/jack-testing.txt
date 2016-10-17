@@ -1,6 +1,6 @@
 User Testing of JACK in Sequencer64
 Chris Ahlstrom
-2016-01-16 to 2016-10-05
+2016-01-16 to 2016-10-17
 
 ===========================================================================
  RECENT NEW BEHAVIOR
@@ -163,13 +163,13 @@ JACK:
 
         $ yoshimi -j -J         (don't use the ampersand)
 
-    Run Sequencer64 from a console, in JACK Master mode:
-
-        $ sequencer64 -J &
-
     To make it available to JACK, run a MIDI bridge program:
 
         $ a2jmidid --export-hw &
+
+    Run Sequencer64 from a console, in JACK Master mode:
+
+        $ sequencer64 -J &
 
     In QJackCtl, make the following connections:
 
@@ -180,18 +180,25 @@ JACK:
 
         MIDI tab:
 
-            a2j:Midi Through 14 (capture): Midi Throu...
-                ---------> yoshimi-01:midi in
+            If the [manual-alsa-ports] section is set to 0, one will see
+            the simple setup below:
 
-            If that doesn't work, and you see extra entries:
+                a2j:Midi Through 14 (capture): Midi Throu...
+                    ---------> yoshimi-01:midi in
 
-            a2j:sequencer64[130] (capture): sequ...
-                ---------> yoshimi-01:midi in
+            If the [manual-alsa-ports] section is set to 1, one will see
+            a more complex setup:
 
-            You can see these entries if you make sure that the file
-            ~/.config/sequencer64/sequencer64.usr section is empty...
-            we think.  Not sure about that still investigating.
+                a2j:sequencer64[130] (capture): sequ...
+                    ---------> yoshimi-01:midi in
 
+            The names differ in details depending on the exact versions of
+            software.
+
+            The bottom line is to connect the desired port in the
+            "Readable Clients / Output Ports" section to the synthesizer's
+            port in the "Writeable Clients / Input Ports" section.
+            
     Load a complex test tune, such as b4uacuse-GM-format.midi.
 
     Go to Yoshimi and enable multiple parts.  Any instrument, such as

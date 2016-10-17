@@ -24,7 +24,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom and Tim Deagan
  * \date          2015-07-24
- * \updates       2016-10-15
+ * \updates       2016-10-16
  * \license       GNU GPLv2 or above
  *
  *  This class is probably the single most important class in Sequencer64, as
@@ -123,9 +123,6 @@ perform::perform (gui_assistant & mygui, int ppqn)
  :
     m_song_start_mode           (false),    // set later during options read
 #ifdef SEQ64_STAZED_JACK_SUPPORT
-    m_toggle_jack               (false),
-    m_jack_stop_tick            (0),
-    m_follow_transport          (true),
     m_start_from_perfedit       (false),
     m_reposition                (false),
     m_excell_FF_RW              (1.0),
@@ -782,7 +779,7 @@ perform::set_right_tick (midipulse tick, bool setstart)
             if (setstart)
             {
                 set_start_tick(m_left_tick);
-                if (is_jack_master() && is_jack_running())
+                if (is_jack_master())                   // && is_jack_running())
                     position_jack(true, m_left_tick);
                 else
                     m_tick = m_left_tick;
@@ -1831,8 +1828,8 @@ perform::copy_triggers ()
  *              or resumed via mainwnd.
  *          -#  Pause.  Same processing as Play or Stop, depending on current
  *              status.
- *       -# ALSA versus JACK.
- *          -# TODO.
+ *       -# ALSA versus JACK.  One issue here is that, if JACK isn't "running"
+ *          at all (i.e. we are in ALSA mode), then we cannot be JACK Master.
  *
  * \param songmode
  *      Indicates if the caller wants to start the playback in Song mode
@@ -1859,18 +1856,26 @@ perform::start_playing (bool songmode)
             * Allow to start at key-p position if set; for cosmetic reasons,
             * to stop transport line flicker on start, position to the left
             * tick.
+            *
+            *   m_jack_asst.position(true, m_left_tick);    // position_jack()
+            *
+            * The "! m_repostion" doesn't seem to make sense.
             */
 
            if (! m_reposition)
-                m_jack_asst.position(true, m_left_tick);    /* position_jack() */
+               position_jack(true, m_left_tick);
         }
         start_jack();
         start(true);                                        /* song mode       */
     }
     else
     {
+        /*
+         * m_jack_asst.position(false, 0);                  // position_jack()
+         */
+
         if (is_jack_master())
-            m_jack_asst.position(false, 0);                 /* position_jack() */
+            position_jack(false);
 
         /*
          * EXPERIMENTAL, let's see if this works.
@@ -1960,7 +1965,8 @@ perform::start_playing (bool songmode)
 #ifdef SEQ64_STAZED_JACK_SUPPORT
 
 /**
- *  Encapsulates behavior needed by perfedit.
+ *  Encapsulates behavior needed by perfedit.  Note that we moved some of the
+ *  code from perfedit::set_jack_mode() [the seq32 version] to this function.
  *
  * \param jack_button_active
  *      Indicates if the perfedit JACK button shows it is active.
@@ -1979,7 +1985,7 @@ perform::set_jack_mode (bool jack_button_active)
         else
             deinit_jack();
     }
-    m_toggle_jack = is_jack_running();          /* for seqroll keybinding   */
+    m_jack_asst.set_jack_mode(is_jack_running());    /* seqroll keybinding  */
 
     /*
      *  For setting the transport tick to display in the correct location.
@@ -2075,11 +2081,9 @@ perform::stop_playing ()
 
 #ifdef SEQ64_STAZED_JACK_SUPPORT
     m_start_from_perfedit = false;
-#else
-//  m_tick = 0;                         // or get_left_tick()
 #endif
-    m_tick = 0;                         // or get_left_tick()
 
+    m_tick = 0;                         // or get_left_tick()
     m_dont_reset_ticks = false;
     is_pattern_playing(false);
 }
@@ -2092,21 +2096,18 @@ perform::stop_playing ()
  *      Live mode.
  *
  * \param tick
- *      Provides the pulse position to be set.
+ *      Provides the pulse position to be set.  The default value is 0.
  */
 
 void
 perform::position_jack (bool songmode, midipulse tick)
 {
 #ifdef SEQ64_JACK_SUPPORT
-#ifdef SEQ64_STAZED_JACK_SUPPORT
-    m_jack_asst.position(songmode, tick);
-#else
+#if ! defined SEQ64_STAZED_JACK_SUPPORT
     if (rc().with_jack_master())
         tick = SEQ64_NULL_MIDIPULSE;
-
-    m_jack_asst.position(songmode, tick);
 #endif
+    m_jack_asst.position(songmode, tick);
 #endif
 }
 
@@ -2761,11 +2762,7 @@ perform::output_func ()
                     midipulse rtick = get_right_tick();     /* can change? */
                     if (pad.js_current_tick >= rtick)
                     {
-                        if
-                        (
-                            is_jack_running() && is_jack_master() &&
-                            ! jack_position_once
-                        )
+                        if (is_jack_master() && ! jack_position_once)
                         {
                             position_jack(true, m_left_tick);
                             jack_position_once = true;
@@ -2779,17 +2776,14 @@ perform::output_func ()
 
                         if (is_jack_running())
                         {
-                            if (m_jack_asst.transport_state() !=
-                                    JackTransportStarting)
-                            {
+                            if (m_jack_asst.transport_not_starting())
                                 play(rtick - 1);                    // play!
-                            }
                         }
                         else
                             play(rtick - 1);                        // play!
 
                         midipulse ltick = get_left_tick();
-                        reset_sequences();   // off_sequences()?    // reset!
+                        reset_sequences();                          // reset!
                         set_orig_ticks(ltick);
                         pad.js_current_tick = double(ltick) + leftover_tick;
                     }
@@ -2806,7 +2800,7 @@ perform::output_func ()
 
                 if (is_jack_running())
                 {
-                    if (m_jack_asst.transport_state() != JackTransportStarting)
+                    if (m_jack_asst.transport_not_starting())
                         play(midipulse(pad.js_current_tick));       // play!
                 }
                 else
@@ -2994,16 +2988,13 @@ perform::output_func ()
 #ifdef SEQ64_JACK_SUPPORT
         if (m_playback_mode)
         {
-            if (is_jack_master())                       // master in song mode
+            if (is_jack_master())                       // running Song Master
                 position_jack(m_playback_mode, m_left_tick);
         }
         else
         {
-            if (is_jack_running())
-            {
-                if (is_jack_master())                   // master in live mode
-                    position_jack(m_playback_mode, 0);
-            }
+            if (is_jack_master())                       // running Live Master
+                position_jack(m_playback_mode, 0);
         }
 #endif
 
@@ -3028,7 +3019,7 @@ perform::output_func ()
 
 #ifdef JACK_SUPPORT
         if (is_jack_running())
-            m_jack_stop_tick = get_current_jack_position((void *) this);
+            set_jack_stop_tick(get_current_jack_position((void *) this));
 #endif
 
 #else  // SEQ64_STAZED_JACK_SUPPORT

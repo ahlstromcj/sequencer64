@@ -1,12 +1,12 @@
 Bugs and Additional Upgrade Ideas
 Chris Ahlstrom
-2015-10-27 to 2016-10-14 (New bugs and fixed bugs)
+2015-10-27 to 2016-10-15 (New bugs and fixed bugs)
 
 In no particular order...  "y" means "in progress", and "x" means it is
 basically done.
 
 -  Also see BUG REPORTS below.  Those are bug reports from other people.
--  Probably need to make play-toggle button useable only during Live mode.
+x  Probably need to make play-toggle button useable only during Live mode.
 x  Consider adding --version output to Help/About.
 x  If a non-active sequence is attempted to be painted in the perfroll,
    painting is disable for the duration of the Sequencer64 run.
@@ -18,7 +18,7 @@ x  If a non-active sequence is attempted to be painted in the perfroll,
 	 enters the L/R loop fine.
    x More interactions?  This all is with Seq32 JACK and Transport support
      built in.  It is even worse with them disabled!
-y  The Song/Live button does not seem to work if Seq32 transport is not
+x  The Song/Live button does not seem to work if Seq32 transport is not
    compiled in.  The button now works, but perf mode doesn't override
    the Live button the way it should when the Song Editor has focus.
 x  A single Z (zoom in) in seqroll makes the END marker drawn in the wrong

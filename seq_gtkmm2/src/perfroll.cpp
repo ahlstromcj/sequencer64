@@ -509,10 +509,10 @@ perfroll::follow_progress ()
 
 /**
  *  Supports auto-scrolling.  However, the follow_progress() function seems to
- *  work fine in both ALSA and JACK mode, so it may be that the
- *  auto_scroll_horz() function will never be necessary.  Let's wait until the
- *  Stazed/Seq32 JACK code is fully tested, including how well it works under
- *  various zooms.
+ *  work fine in both ALSA and JACK mode, and it is simpler, so it may be that
+ *  the auto_scroll_horz() function will never be necessary.  Let's wait until
+ *  the Stazed/Seq32 JACK code is fully tested, including how well it works
+ *  under various zooms.
  */
 
 void
@@ -555,19 +555,21 @@ perfroll::auto_scroll_horz ()
         case 16:
             m_hadjust.set_value(left_tick / 2 );
             break;
-/*
+
+#if 0
         case 32:
-            m_hadjust.set_value(left_tick );
+            m_hadjust.set_value(left_tick);
             break;
 
         case 64:
-            m_hadjust.set_value(left_tick * 2 );
+            m_hadjust.set_value(left_tick * 2);
             break;
 
         case 128:
-            m_hadjust.set_value(left_tick * 4 );
+            m_hadjust.set_value(left_tick * 4);
             break;
- */
+#endif
+
         default:
             break;
         }
@@ -1059,8 +1061,10 @@ perfroll::on_button_release_event (GdkEventButton * ev)
         perf().modify();
 
 #ifdef SEQ64_STAZED_JACK_SUPPORT
+
     perf().set_follow_transport(m_transport_follow);
     m_trans_button_press = false;
+
 #endif
 
     enqueue_draw();

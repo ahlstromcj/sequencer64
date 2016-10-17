@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Chris Ahlstrom
  * \date          2015-07-23
- * \updates       2016-10-06
+ * \updates       2016-10-16
  * \license       GNU GPLv2 or above
  *
  *  This class contains a number of functions that used to reside in the
@@ -149,7 +149,7 @@ class jack_assistant
         void * arg
     );
 
-#ifndef SEQ64_STAZED_JACK_SUPPORT
+#if ! defined SEQ64_STAZED_JACK_SUPPORT
     friend long get_current_jack_position (void * arg);
 #endif
 
@@ -208,16 +208,6 @@ private:
 
     jack_nframes_t m_jack_frame_last;
 
-#ifdef SEQ64_STAZED_JACK_SUPPORT
-
-    /**
-     *  Holds the current frame rate.  Just in case.
-     */
-
-    jack_nframes_t m_jack_frame_rate;
-
-#endif
-
     /**
      *  Provides positioning information on JACK playback.  This structure is
      *  filled via a call to jack_transport_query().  It holds, among other
@@ -255,6 +245,7 @@ private:
      */
 
     jack_session_event_t * m_jsession_ev;
+
 #endif
 
     /**
@@ -273,13 +264,23 @@ private:
 #ifdef SEQ64_STAZED_JACK_SUPPORT
 
     /**
-     *  TBD.
+     *  Holds the current frame rate.  Just in case.  QJackCtl does not always
+     *  set pos.frame_rate, so we get garbage and some strange BBT
+     *  calculations displayed in qjackctl.
+     */
+
+    jack_nframes_t m_jack_frame_rate;
+
+    /**
+     *  Ostensibly a toggle, the functions that access this member are called
+     *  "jack_mode" functions.
      */
 
     bool m_toggle_jack;
 
     /**
-     *  TBD.
+     *  Used in jack_process_callback() to reposition when JACK transport is
+     *  not rolling or starting.  Repositions the transport marker.
      */
 
     midipulse m_jack_stop_tick;
@@ -457,6 +458,15 @@ public:
         return m_jack_transport_state;
     }
 
+    /**
+     *  Returns true if the JACK transport state is not JackTransportStarting.
+     */
+
+    bool transport_not_starting () const
+    {
+        return m_jack_transport_state != JackTransportStarting;
+    }
+
     bool init ();                       // init_jack ();
     bool deinit ();                     // deinit_jack ();
 
@@ -513,6 +523,11 @@ public:
     {
         m_toggle_jack = mode;
     }
+    
+    /**
+     * \getter m_toggle_jack
+     *      Seems misnamed.
+     */
 
     bool get_jack_mode () const
     {

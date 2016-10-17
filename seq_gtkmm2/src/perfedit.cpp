@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-10-13
+ * \updates       2016-10-15
  * \license       GNU GPLv2 or above
  *
  */
@@ -190,7 +190,8 @@ perfedit::perfedit
     m_is_running        (false),
     m_standard_bpm      (SEQ64_DEFAULT_LINES_PER_MEASURE)   /* 4            */
 {
-    std::string title = "Sequencer64 - Song Editor";
+    std::string title = SEQ64_PACKAGE_NAME; /* "Sequencer64 - Song Editor"  */
+    title += " - Song Editor";
     if (second_perfedit)
         title += " 2";
 
@@ -849,7 +850,11 @@ perfedit::set_image (bool isrunning)
     else
     {
         m_image_play = manage(new PIXBUF_IMAGE(play2_xpm));
-        add_tooltip(m_button_play, "Resume playback from the current location.");
+        add_tooltip
+        (
+            m_button_play,
+            "Restart playback, or resume it from the current location."
+        );
     }
     m_button_play->set_image(*m_image_play);
 }

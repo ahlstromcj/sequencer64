@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-08-10
+ * \updates       2016-10-16
  * \license       GNU GPLv2 or above
  *
  *  We are currently moving toward making this class a base class.
@@ -344,9 +344,17 @@ private:
 
 #endif
 
-#ifdef USE_STAZED_TRANSPORT_SEQROLL_BUTTON  /* just discovered this code    */
+#ifdef SEQ64_STAZED_JACK_SUPPORT
+
+    /**
+     *  TBD.
+     */
 
     bool m_transport_follow;
+
+    /**
+     *  TBD.
+     */
 
     bool m_trans_button_press;
 

@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-09-14
- * \updates       2016-10-10
+ * \updates       2016-10-16
  * \license       GNU GPLv2 or above
  *
  *  This module was created from code that existed in the perform object.
@@ -183,9 +183,6 @@ jack_assistant::jack_assistant
     m_jack_client_uuid          (),
     m_jack_frame_current        (0),
     m_jack_frame_last           (0),
-#ifdef SEQ64_STAZED_JACK_SUPPORT
-    m_jack_frame_rate           (0),
-#endif
     m_jack_pos                  (),
     m_jack_transport_state      (JackTransportStopped),
     m_jack_transport_state_last (JackTransportStopped),
@@ -196,6 +193,7 @@ jack_assistant::jack_assistant
     m_jack_running              (false),
     m_jack_master               (false),
 #ifdef SEQ64_STAZED_JACK_SUPPORT
+    m_jack_frame_rate           (0),
     m_toggle_jack               (false),
     m_jack_stop_tick            (0),
 #endif
@@ -643,27 +641,30 @@ jack_assistant::stop ()
  *      again.  The BBT call to jack_BBT_position() is not necessary to
  *      change jack position!
  *
- * \param state
- *      TODO.
+ *  Note that there are potentially a couple of divide-by-zero opportunities
+ *  in this function.
+ *
+ * \param songmode
+ *      True if the caller wants to position while in Song mode.
  *
  * \param tick
- *      TODO.
+ *      If using Song mode for this call then this value is set as the
+ *      "current tick" value.  If it's value is bad (SEQ64_NULL_MIDIPULSE),
+ *      then this parameter is set to 0 before being used.
  */
 
 void
-jack_assistant::position (bool state, midipulse tick)
+jack_assistant::position (bool songmode, midipulse tick)
 {
 
 #ifdef SEQ64_JACK_SUPPORT
 
     long current_tick = 0;
-    if (is_null_midipulse(tick))
-        tick = 0;
-
-    if (state)                              /* master in song mode */
-        current_tick = tick;
-
-    current_tick *= 10;
+    if (songmode)                               /* master in song mode */
+    {
+        if (! is_null_midipulse(tick))
+            current_tick = tick * 10;
+    }
 
     int ticks_per_beat = m_ppqn * 10;
     int beats_per_minute = parent().get_beats_per_minute();
@@ -712,7 +713,8 @@ jack_assistant::position (bool state, midipulse tick)
 
     if (parent().is_running())
         parent().set_reposition(false);
-#endif
+
+#endif  // SEQ64_STAZED_JACK_SUPPORT
 
 #endif  // SEQ64_JACK_SUPPORT
 
@@ -1009,7 +1011,7 @@ jack_assistant::sync (jack_transport_state_t state)
 int
 jack_process_callback (jack_nframes_t /* nframes */, void * arg)
 {
-    /*const*/ jack_assistant * j = (jack_assistant *)(arg);
+    jack_assistant * j = (jack_assistant *)(arg);
     if (not_nullptr(j))
     {
 

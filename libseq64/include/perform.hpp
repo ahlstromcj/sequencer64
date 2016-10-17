@@ -28,7 +28,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-10-13
+ * \updates       2016-10-15
  * \license       GNU GPLv2 or above
  *
  *  This class still has way too many members, even with the JACK and
@@ -250,32 +250,15 @@ private:
 #ifdef SEQ64_STAZED_JACK_SUPPORT
 
     /**
-     *  Used for toggling the usage of JACK.  Need to investigate more.
-     */
-
-    bool m_toggle_jack;
-
-    /**
-     *  Holds the position of JACK stop.
-     */
-
-    midipulse m_jack_stop_tick;
-
-    /**
-     *  Implements the "follow JACK transport" button of the perfedit window.
-     *  This is a separate function from the "JACK sync button of that window.
-     */
-
-    bool m_follow_transport;
-
-    /**
-     *  TBD.
+     *  Indicates that, no matter what the current Song/Live setting, the
+     *  playback was started from the perfedit window.
      */
 
     bool m_start_from_perfedit;
 
     /**
-     *  TBD.
+     *  It seems that this member, if true, forces a repositioning to the left
+     *  (L) tick marker.
      */
 
     bool m_reposition;
@@ -792,10 +775,11 @@ private:
 #ifdef SEQ64_JACK_SUPPORT
 
     /**
-     *  A wrapper object for the JACK support of this application.
+     *  A wrapper object for the JACK support of this application.  It
+     *  implements most of the JACK stuff.
      */
 
-    jack_assistant m_jack_asst;         // implements most of the JACK stuff
+    jack_assistant m_jack_asst;
 
 #endif
 
@@ -1166,11 +1150,13 @@ public:
 
     /**
      * \getter m_jack_asst.is_master()
+     *      Also now includes is_jack_running(), since one cannot be JACK
+     *      Master if JACK is not running.
      */
 
     bool is_jack_master () const
     {
-        return m_jack_asst.is_master();
+        return m_jack_asst.is_running() && m_jack_asst.is_master();
     }
 
     /**
@@ -1196,21 +1182,21 @@ public:
     bool set_jack_mode (bool mode);
 
     /**
-     * TODO versus stazed definition in cpp
-     *
-    {
-        m_jack_asst.set_jack_mode(mode);
-    }
+     * \getter m_jack_asst.get_jack_mode()
      */
 
     bool get_toggle_jack () const
     {
-        return m_toggle_jack;
+        return m_jack_asst.get_jack_mode();          // m_toggle_jack;
     }
+
+    /**
+     * \setter m_jack_asst.set_jack_stop_tick()
+     */
 
     void set_jack_stop_tick (midipulse tick)
     {
-        m_jack_stop_tick = tick;
+        m_jack_asst.set_jack_stop_tick(tick);
     }
 
     unsigned short combine_bytes (midibyte b0, midibyte b1);
@@ -1236,30 +1222,30 @@ public:
     }
 
     /**
-     * \getter m_follow_transport
+     * \getter m_jack_asst.set_follow_transport()
      */
 
     void set_follow_transport (bool flag)
     {
-        m_follow_transport = flag;
+        m_jack_asst.set_follow_transport(flag);
     }
 
     /**
-     * \getter m_follow_transport
+     * \getter m_jack_asst.get_follow_transport()
      */
 
     bool get_follow_transport () const
     {
-        return m_follow_transport;
+        return m_jack_asst.get_follow_transport();
     }
 
     /**
-     * \getter m_follow_transport toggling
+     * \setter m_jack_asst.toggle_follow_transport()
      */
 
     void toggle_follow_transport ()
     {
-        set_follow_transport(! m_follow_transport);
+        m_jack_asst.toggle_follow_transport();
     }
 
     /**
@@ -1306,8 +1292,8 @@ public:
      *  Sets the fast-forward status.
      *
      * \param press
-     *      If true, the status is set to FF_RW_FORWARD, otherwise it is set to
-     *      FF_RW_NONE.
+     *      If true, the status is set to FF_RW_FORWARD, otherwise it is set
+     *      to FF_RW_NONE.
      */
 
     void fast_forward (bool press)

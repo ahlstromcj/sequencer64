@@ -490,7 +490,8 @@ mainwnd::mainwnd (perform & p, bool allowperf2, int ppqn)
     (
         m_button_mute,
         "Toggle the mute status of playing tracks. Effective only in Live "
-        "mode.  Affects only tracks that are currently armed."
+        "mode.  Affects only tracks that are currently armed. Muted tracks "
+        "are remembered even if the mode is toggled to Song and back to Live."
     );
 
 #else
@@ -1744,17 +1745,13 @@ mainwnd::apply_song_transpose ()
  *  songmode == false parameter is used here.
  *
  *  We still need to see if pause_key() is workable with Stazed JACK support
- *  in force.  Doesn't work at present.
+ *  in force.  Doesn't pause at present.
  */
 
 void
 mainwnd::start_playing ()                           /* Play!                */
 {
-///// #ifdef SEQ64_STAZED_JACK_SUPPORT
-/////  perf().start_key();                             /* pause_key()????      */
-///// #else
-    perf().pause_key();
-///// #endif
+    perf().pause_key();                             /* not start_key()      */
 }
 
 /**
@@ -1764,7 +1761,7 @@ mainwnd::start_playing ()                           /* Play!                */
  */
 
 void
-mainwnd::pause_playing ()               /* Stop in place!   */
+mainwnd::pause_playing ()                           /* Stop in place!       */
 {
     perf().pause_key();
 }
@@ -1785,7 +1782,7 @@ mainwnd::pause_playing ()               /* Stop in place!   */
  */
 
 void
-mainwnd::stop_playing ()                        /* Stop! */
+mainwnd::stop_playing ()                        /* Stop!                    */
 {
     perf().stop_key();                          /* make sure it's seq32able */
     m_main_wid->update_sequences_on_window();   /* update_mainwid_sequences() */

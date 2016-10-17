@@ -25,7 +25,7 @@
  * \library       sequencer64 application
  * \author        Seq24 team; modifications by Chris Ahlstrom
  * \date          2015-07-24
- * \updates       2016-09-26
+ * \updates       2016-10-16
  * \license       GNU GPLv2 or above
  *
  *  There are a large number of existing items to discuss.  But for now let's
@@ -185,7 +185,7 @@ seqroll::seqroll
 #ifdef SEQ64_FOLLOW_PROGRESS_BAR
     m_scroll_page           (0),
 #endif
-#ifdef USE_STAZED_TRANSPORT_SEQROLL_BUTTON  /* just discovered this code    */
+#ifdef SEQ64_STAZED_JACK_SUPPORT
     m_transport_follow      (true),
     m_trans_button_press    (false),
 #endif
@@ -1941,7 +1941,7 @@ bool
 seqroll::on_button_press_event (GdkEventButton * ev)
 {
 
-#ifdef USE_STAZED_TRANSPORT_SEQROLL_BUTTON  /* just discovered this code    */
+#ifdef SEQ64_STAZED_JACK_SUPPORT
 
     /*
      *  In order to avoid a double button press on a normal seq32 method.
@@ -1953,6 +1953,7 @@ seqroll::on_button_press_event (GdkEventButton * ev)
         perf().set_follow_transport(false);
         m_trans_button_press = true;
     }
+
 #endif
 
     bool result;
@@ -2007,9 +2008,11 @@ seqroll::on_button_release_event (GdkEventButton * ev)
      *    perf().modify();
      */
 
-#ifdef USE_STAZED_TRANSPORT_SEQROLL_BUTTON  /* just discovered this code    */
+#ifdef SEQ64_STAZED_JACK_SUPPORT
+
     perf().set_follow_transport(m_transport_follow);
     m_trans_button_press = false;
+
 #endif
 
     return result;
